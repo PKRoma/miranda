@@ -56,7 +56,7 @@ static int SRMMStatusToPf2(int status)
 	return 0;
 }
 
-static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
+static INT_PTR ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 {
 	struct NewMessageWindowLParam newData = { 0 };
 	HWND hwndExisting;
@@ -119,7 +119,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 }
 
 #if defined(_UNICODE)
-static int SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
+static INT_PTR SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd;
 	struct NewMessageWindowLParam newData = { 0 };
@@ -158,7 +158,7 @@ static int SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 }
 #endif
 
-static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
+static INT_PTR SendMessageCommand(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd;
 	struct NewMessageWindowLParam newData = { 0 };
@@ -196,7 +196,7 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int TypingMessageCommand(WPARAM wParam, LPARAM lParam)
+static INT_PTR TypingMessageCommand(WPARAM wParam, LPARAM lParam)
 {
 	CLISTEVENT *cle = (CLISTEVENT *) lParam;
 
@@ -415,12 +415,12 @@ static int PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int GetWindowAPI(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetWindowAPI(WPARAM wParam, LPARAM lParam)
 {
 	return PLUGIN_MAKE_VERSION(0,0,0,4);
 }
 
-static int GetWindowClass(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetWindowClass(WPARAM wParam, LPARAM lParam)
 {
 	char *szBuf = (char*)wParam;
 	int size = (int)lParam;
@@ -428,7 +428,7 @@ static int GetWindowClass(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int GetWindowData(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetWindowData(WPARAM wParam, LPARAM lParam)
 {
 	MessageWindowInputData *mwid = (MessageWindowInputData*)wParam;
 	MessageWindowData *mwd = (MessageWindowData*)lParam;

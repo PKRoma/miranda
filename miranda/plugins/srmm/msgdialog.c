@@ -186,7 +186,7 @@ static void SetDialogToType(HWND hwndDlg)
 
 	ShowMultipleControls(hwndDlg, sendControls, SIZEOF(sendControls), SW_SHOW);
 	if (!dat->hwndStatus) {
-		int grip = (GetWindowLong(hwndDlg, GWL_STYLE) & WS_THICKFRAME) ? SBARS_SIZEGRIP : 0;
+		int grip = (GetWindowLongPtr(hwndDlg, GWL_STYLE) & WS_THICKFRAME) ? SBARS_SIZEGRIP : 0;
 		dat->hwndStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE | grip, 0, 0, 0, 0, hwndDlg, NULL, g_hInst, NULL);
 		SendMessage(dat->hwndStatus, SB_SETMINHEIGHT, GetSystemMetrics(SM_CYSMICON), 0);
 	}
@@ -322,7 +322,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 		}
 
 	case WM_CHAR:
-		if (GetWindowLong(hwnd, GWL_STYLE) & ES_READONLY)
+		if (GetWindowLongPtr(hwnd, GWL_STYLE) & ES_READONLY)
 			break;
 		//for saved msg queue the keyup/keydowns generate wm_chars themselves
 		if (wParam == '\n' || wParam == '\r') {
@@ -373,7 +373,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 		break;
 
 	case WM_KEYUP:
-		if (GetWindowLong(hwnd, GWL_STYLE) & ES_READONLY) {
+		if (GetWindowLongPtr(hwnd, GWL_STYLE) & ES_READONLY) {
 			int i;
 			//mustn't allow keyups for which there is no keydown
 			for (i = 0; i < dat->msgQueueCount; i++)
@@ -397,7 +397,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 		break;
 
 	case WM_KEYDOWN:
-		if (GetWindowLong(hwnd, GWL_STYLE) & ES_READONLY) {
+		if (GetWindowLongPtr(hwnd, GWL_STYLE) & ES_READONLY) {
 	#ifdef EDITMSGQUEUE_PASSTHRUCLIPBOARD
 			if (GetKeyState(VK_CONTROL) & 0x8000) {
 				if (wParam == 'X' || wParam == 'C' || wParam == 'V' || wParam == VK_INSERT)
@@ -470,7 +470,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 	case WM_SYSCHAR:
 		dat->lastEnterTime = 0;
 		if ((wParam == 's' || wParam == 'S') && GetKeyState(VK_MENU) & 0x8000) {
-			if (GetWindowLong(hwnd, GWL_STYLE) & ES_READONLY)
+			if (GetWindowLongPtr(hwnd, GWL_STYLE) & ES_READONLY)
 				SaveKeyboardMessage(dat, msg, wParam, lParam);
 			else
 				PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
@@ -1434,7 +1434,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 	case DM_SCROLLLOGTOBOTTOM:
 		{
 			SCROLLINFO si = { 0 };
-			if ((GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_STYLE) & WS_VSCROLL) == 0)
+			if ((GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_LOG), GWL_STYLE) & WS_VSCROLL) == 0)
 				break;
 			si.cbSize = sizeof(si);
 			si.fMask = SIF_PAGE | SIF_RANGE;
