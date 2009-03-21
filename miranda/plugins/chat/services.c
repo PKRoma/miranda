@@ -94,7 +94,7 @@ void ShowRoom(SESSION_INFO* si, WPARAM wp, BOOL bSetForeground)
 		if (g_TabSession.hWnd == NULL)
 			g_TabSession.hWnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHANNEL), NULL, RoomWndProc, (LPARAM)&g_TabSession);
 
-		SetWindowLong(g_TabSession.hWnd, GWL_EXSTYLE, GetWindowLong(g_TabSession.hWnd, GWL_EXSTYLE) | WS_EX_APPWINDOW);
+		SetWindowLongPtr(g_TabSession.hWnd, GWL_EXSTYLE, GetWindowLongPtr(g_TabSession.hWnd, GWL_EXSTYLE) | WS_EX_APPWINDOW);
 
 		// if the session was not the current tab we need to tell the window to
 		// redraw to show the contents of the current SESSION_INFO
@@ -132,7 +132,7 @@ void ShowRoom(SESSION_INFO* si, WPARAM wp, BOOL bSetForeground)
 	if (si->hWnd == NULL)
 		si->hWnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHANNEL), NULL, RoomWndProc, (LPARAM)si);
 
-	SetWindowLong(si->hWnd, GWL_EXSTYLE, GetWindowLong(si->hWnd, GWL_EXSTYLE) | WS_EX_APPWINDOW);
+	SetWindowLongPtr(si->hWnd, GWL_EXSTYLE, GetWindowLongPtr(si->hWnd, GWL_EXSTYLE) | WS_EX_APPWINDOW);
 	if (!IsWindowVisible(si->hWnd) || wp == WINDOW_HIDDEN)
 		SendMessage(si->hWnd, GC_EVENT_CONTROL + WM_USER + 500, wp, 0);
 	else {
@@ -241,7 +241,7 @@ static int ModulesLoaded(WPARAM wParam,LPARAM lParam)
  	return 0;
 }
 
-static int Service_GetCount(WPARAM wParam,LPARAM lParam)
+static INT_PTR Service_GetCount(WPARAM wParam,LPARAM lParam)
 {
 	int i;
 
@@ -256,7 +256,7 @@ static int Service_GetCount(WPARAM wParam,LPARAM lParam)
 	return i;
 }
 
-static int Service_GetInfo(WPARAM wParam,LPARAM lParam)
+static INT_PTR Service_GetInfo(WPARAM wParam,LPARAM lParam)
 {
 	GC_INFO * gci = (GC_INFO *) lParam;
 	SESSION_INFO* si = NULL;
@@ -300,7 +300,7 @@ static int Service_GetInfo(WPARAM wParam,LPARAM lParam)
 	return 1;
 }
 
-static int Service_Register(WPARAM wParam, LPARAM lParam)
+static INT_PTR Service_Register(WPARAM wParam, LPARAM lParam)
 {
 
 	GCREGISTER *gcr = (GCREGISTER *)lParam;
@@ -360,7 +360,7 @@ static int Service_Register(WPARAM wParam, LPARAM lParam)
 	return GC_REGISTER_ERROR;
 }
 
-static int Service_NewChat(WPARAM wParam, LPARAM lParam)
+static INT_PTR Service_NewChat(WPARAM wParam, LPARAM lParam)
 {
 	MODULEINFO* mi;
 	GCSESSION *gcw =(GCSESSION *)lParam;
@@ -589,7 +589,7 @@ static void AddUser(GCEVENT * gce)
 				SendMessage(si->hWnd, GC_UPDATENICKLIST, (WPARAM)0, (LPARAM)0);
 }	}	}	}
 
-static int Service_AddEvent(WPARAM wParam, LPARAM lParam)
+static INT_PTR Service_AddEvent(WPARAM wParam, LPARAM lParam)
 {
 	GCEVENT *gce = (GCEVENT*)lParam, save_gce;
 	GCDEST *gcd = NULL, save_gcd;
@@ -783,7 +783,7 @@ LBL_Exit:
 	return iRetVal;
 }
 
-static int Service_GetAddEventPtr(WPARAM wParam, LPARAM lParam)
+static INT_PTR Service_GetAddEventPtr(WPARAM wParam, LPARAM lParam)
 {
 	GCPTRS * gp = (GCPTRS *) lParam;
 

@@ -56,7 +56,7 @@ static RECT CalculateButtonToCoordinates(COLORCHOOSER * pCC, int buttonPosition)
 	return pt;
 }
 
-BOOL CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static COLORCHOOSER* pCC = NULL;
 	static int iCurrentHotTrack;
@@ -88,7 +88,7 @@ BOOL CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			rc.right =  100 +  iColumns * 25 + 1;
 			rc.bottom = iRows * 20 + 100 + 20;
 
-			AdjustWindowRectEx(&rc, GetWindowLong(hwndDlg, GWL_STYLE), FALSE, GetWindowLong(hwndDlg, GWL_EXSTYLE));
+			AdjustWindowRectEx(&rc, GetWindowLongPtr(hwndDlg, GWL_STYLE), FALSE, GetWindowLongPtr(hwndDlg, GWL_EXSTYLE));
 
 			width = rc.right - rc.left;
 			height = rc.bottom - rc.top;

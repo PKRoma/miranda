@@ -274,7 +274,7 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 	#endif
 }
 
-static DWORD CALLBACK Message_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
+static DWORD CALLBACK Message_StreamCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
 {
 	static DWORD dwRead;
 	char ** ppText = (char **) dwCookie;

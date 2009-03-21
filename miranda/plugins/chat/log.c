@@ -441,7 +441,7 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 	return buffer;
 }
 
-static DWORD CALLBACK Log_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
+static DWORD CALLBACK Log_StreamCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
 {
 	LOGSTREAMDATA *lstrdat = (LOGSTREAMDATA *) dwCookie;
 
