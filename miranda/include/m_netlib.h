@@ -223,7 +223,7 @@ typedef struct {
 //socket will be closed.
 //Errors: ERROR_INVALID_PARAMETER
 #define MS_NETLIB_CLOSEHANDLE   "Netlib/CloseHandle"
-__inline static int Netlib_CloseHandle(HANDLE h) {return CallService(MS_NETLIB_CLOSEHANDLE,(WPARAM)h,0);}
+__inline static INT_PTR Netlib_CloseHandle(HANDLE h) {return CallService(MS_NETLIB_CLOSEHANDLE,(WPARAM)h,0);}
 
 //Open a port and wait for connections on it
 //wParam=(WPARAM)(HANDLE)hUser
@@ -549,7 +549,7 @@ typedef struct {
 	int flags;
 } NETLIBBUFFER;
 #define MS_NETLIB_SEND	   "Netlib/Send"
-static __inline int Netlib_Send(HANDLE hConn,const char *buf,int len,int flags) {
+static __inline INT_PTR Netlib_Send(HANDLE hConn,const char *buf,int len,int flags) {
 	NETLIBBUFFER nlb={(char*)buf,len,flags};
 	return CallService(MS_NETLIB_SEND,(WPARAM)hConn,(LPARAM)&nlb);
 }
@@ -576,7 +576,7 @@ static __inline int Netlib_Send(HANDLE hConn,const char *buf,int len,int flags) 
 //						  nlu.pfnHttpGatewayUnwrapRecv, socket(), connect(),
 //						  MS_NETLIB_SENDHTTPREQUEST
 #define MS_NETLIB_RECV	   "Netlib/Recv"
-static __inline int Netlib_Recv(HANDLE hConn,char *buf,int len,int flags) {
+static __inline INT_PTR Netlib_Recv(HANDLE hConn,char *buf,int len,int flags) {
 	NETLIBBUFFER nlb={buf,len,flags};
 	return CallService(MS_NETLIB_RECV,(WPARAM)hConn,(LPARAM)&nlb);
 }
@@ -695,7 +695,7 @@ typedef struct
 //#include <stdarg.h> and <stdio.h> before including this header in order to
 //use it.
 #if defined va_start && (defined _STDIO_DEFINED || defined _STDIO_H_) && (!defined NETLIB_NOLOGGING)
-static __inline int Netlib_Logf(HANDLE hUser,const char *fmt,...)
+static __inline INT_PTR Netlib_Logf(HANDLE hUser,const char *fmt,...)
 {
 	va_list va;
 	char szText[1024];

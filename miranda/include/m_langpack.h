@@ -77,7 +77,7 @@ typedef struct {
 #define LPTDF_NOTITLE        2     //do not translate the title of the dialog
 
 #define MS_LANGPACK_TRANSLATEDIALOG  "LangPack/TranslateDialog"
-__inline static int TranslateDialogDefault(HWND hwndDlg)
+__inline static INT_PTR TranslateDialogDefault(HWND hwndDlg)
 {
 	LANGPACKTRANSLATEDIALOG lptd;
 	lptd.cbSize=sizeof(lptd);
