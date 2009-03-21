@@ -109,7 +109,7 @@ static INT_PTR CALLBACK FtMgrPageDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 		dat = (struct TFtPageData *)mir_alloc(sizeof(struct TFtPageData));
 		dat->wnds = (struct TLayoutWindowList *)List_Create(0, 1);
 		dat->scrollPos = 0;
-		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG)dat);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)dat);
 		break;
 	}
 
@@ -251,7 +251,7 @@ static INT_PTR CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 		Window_SetIcon_IcoLib(hwnd, SKINICON_EVENT_FILE);
 
 		dat = (struct TFtMgrData *)mir_alloc(sizeof(struct TFtMgrData));
-		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG)dat);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)dat);
 
 		dat->hhkPreshutdown = HookEventMessage(ME_SYSTEM_PRESHUTDOWN, hwnd, M_PRESHUTDOWN);
 		dat->hhkShutdown = HookEventMessage(ME_SYSTEM_SHUTDOWN, hwnd, WM_DESTROY);

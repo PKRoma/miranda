@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 static char szMirandaPath[MAX_PATH];
 static char szMirandaPathLower[MAX_PATH];
 
-static int replaceVars(WPARAM wParam, LPARAM lParam);
+static INT_PTR replaceVars(WPARAM wParam, LPARAM lParam);
 
 static int pathIsAbsolute(const char *path)
 {
@@ -40,7 +40,7 @@ static int pathIsAbsolute(const char *path)
 	return 0;
 }
 
-static int pathToRelative(WPARAM wParam, LPARAM lParam)
+static INT_PTR pathToRelative(WPARAM wParam, LPARAM lParam)
 {
 	char *pSrc = (char*)wParam;
 	char *pOut = (char*)lParam;
@@ -86,7 +86,7 @@ int pathToAbsolute(const char *pSrc, char *pOut, char* base)
     return GetFullPathNameA(buf, MAX_PATH, pOut, NULL);
 }
 
-static int pathToAbsolute(WPARAM wParam, LPARAM lParam) 
+static INT_PTR pathToAbsolute(WPARAM wParam, LPARAM lParam) 
 {
 	return pathToAbsolute((char*)wParam, (char*)lParam, szMirandaPath);
 }
@@ -110,7 +110,7 @@ int CreateDirectoryTree( const char *szDir )
 	return ( CreateDirectoryA( szTestDir, NULL ) == 0 ) ? GetLastError() : 0;
 }
 
-static int createDirTree(WPARAM, LPARAM lParam)
+static INT_PTR createDirTree(WPARAM, LPARAM lParam)
 {
 	if ( lParam == 0 )
 		return 1;
@@ -131,7 +131,7 @@ static int pathIsAbsoluteW(const TCHAR *path)
 	return 0;
 }
 
-static int pathToRelativeW(WPARAM wParam, LPARAM lParam)
+static INT_PTR pathToRelativeW(WPARAM wParam, LPARAM lParam)
 {
 	TCHAR *pSrc = (TCHAR*)wParam;
 	TCHAR *pOut = (TCHAR*)lParam;
@@ -174,7 +174,7 @@ int pathToAbsoluteW(const TCHAR *pSrc, TCHAR *pOut, TCHAR* base)
     return GetFullPathName(buf, MAX_PATH, pOut, NULL);
 }
 
-static int pathToAbsoluteW(WPARAM wParam, LPARAM lParam)
+static INT_PTR pathToAbsoluteW(WPARAM wParam, LPARAM lParam)
 {
 	return pathToAbsoluteW((TCHAR*)wParam, (TCHAR*)lParam, szMirandaPathW);
 }
@@ -198,7 +198,7 @@ int CreateDirectoryTreeW( const WCHAR* szDir )
 	return ( CreateDirectoryW( szTestDir, NULL ) == 0 ) ? GetLastError() : 0;
 }
 
-static int createDirTreeW(WPARAM, LPARAM lParam)
+static INT_PTR createDirTreeW(WPARAM, LPARAM lParam)
 {
 	if ( lParam == 0 )
 		return 1;
@@ -230,7 +230,7 @@ int InitPathUtilsW(void)
 
 static __forceinline int _xcscmp(const char *s1, const char *s2) { return strcmp(s1, s2); }
 static __forceinline int _xcsncmp(const char *s1, const char *s2, int n) { return strncmp(s1, s2, n); }
-static __forceinline int _xcslen(const char *s1) { return strlen(s1); }
+static __forceinline size_t _xcslen(const char *s1) { return strlen(s1); }
 static __forceinline char *_xcscpy(char *s1, const char *s2) { return strcpy(s1, s2); }
 static __forceinline char *_xcsncpy(char *s1, const char *s2, int n) { return strncpy(s1, s2, n); }
 static __forceinline char *_xstrselect(char *, char *s1, TCHAR *s2) { return s1; }
@@ -273,7 +273,7 @@ static __forceinline char *GetUserNameX(char *)
 #ifdef _UNICODE
 static __forceinline int _xcscmp(const TCHAR *s1, const TCHAR *s2) { return _tcscmp(s1, s2); }
 static __forceinline int _xcsncmp(const TCHAR *s1, const TCHAR *s2, int n) { return _tcsncmp(s1, s2, n); }
-static __forceinline int _xcslen(const TCHAR *s1) { return _tcslen(s1); }
+static __forceinline size_t _xcslen(const TCHAR *s1) { return _tcslen(s1); }
 static __forceinline TCHAR *_xcscpy(TCHAR *s1, const TCHAR *s2) { return _tcscpy(s1, s2); }
 static __forceinline TCHAR *_xcsncpy(TCHAR *s1, const TCHAR *s2, int n) { return _tcsncpy(s1, s2, n); }
 static __forceinline TCHAR *_xstrselect(TCHAR *, char *s1, TCHAR *s2) { return s2; }
@@ -414,7 +414,7 @@ XCHAR *ReplaceVariables(XCHAR *str, REPLACEVARSDATA *data)
 
 	XCHAR *p;
 	XCHAR *varStart = 0;
-	int length = 0;
+	size_t length = 0;
 	bool bFree;
 
 	for (p = str; *p; ++p) {
@@ -469,11 +469,11 @@ XCHAR *ReplaceVariables(XCHAR *str, REPLACEVARSDATA *data)
 	return result;
 }
 
-static int replaceVars(WPARAM wParam, LPARAM lParam)
+static INT_PTR replaceVars(WPARAM wParam, LPARAM lParam)
 {
 	REPLACEVARSDATA *data = (REPLACEVARSDATA *)lParam;
 	if (!(data->dwFlags & RVF_UNICODE))
-		return (int)ReplaceVariables<char>((char *)wParam, data);
+		return (INT_PTR)ReplaceVariables<char>((char *)wParam, data);
 
 #ifdef _UNICODE
 	return (int)ReplaceVariables<WCHAR>((WCHAR *)wParam, data);

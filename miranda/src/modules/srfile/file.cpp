@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "file.h"
 
-static int SendFileCommand(WPARAM wParam, LPARAM)
+static INT_PTR SendFileCommand(WPARAM wParam, LPARAM)
 {
 	struct FileSendData fsd;
 	fsd.hContact=(HANDLE)wParam;
@@ -32,7 +32,7 @@ static int SendFileCommand(WPARAM wParam, LPARAM)
 	return 0;
 }
 
-static int SendSpecificFiles(WPARAM wParam,LPARAM lParam)
+static INT_PTR SendSpecificFiles(WPARAM wParam,LPARAM lParam)
 {
 	struct FileSendData fsd;
 	fsd.hContact=(HANDLE)wParam;
@@ -41,13 +41,13 @@ static int SendSpecificFiles(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int GetReceivedFilesFolder(WPARAM wParam,LPARAM lParam)
+static INT_PTR GetReceivedFilesFolder(WPARAM wParam,LPARAM lParam)
 {
 	GetContactReceivedFilesDir((HANDLE)wParam,(char*)lParam,MAX_PATH,TRUE);
 	return 0;
 }
 
-static int RecvFileCommand(WPARAM, LPARAM lParam)
+static INT_PTR RecvFileCommand(WPARAM, LPARAM lParam)
 {
 	CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_FILERECV),NULL,DlgProcRecvFile,lParam);
 	return 0;
@@ -253,13 +253,13 @@ static int SRFileAccountsChanged( WPARAM eventCode, LPARAM lParam )
 	return 0;
 }
 
-int FtMgrShowCommand(WPARAM, LPARAM)
+INT_PTR FtMgrShowCommand(WPARAM, LPARAM)
 {
 	FtMgr_Show(true);
 	return 0;
 }
 
-int openContRecDir(WPARAM wparam, LPARAM)
+INT_PTR openContRecDir(WPARAM wparam, LPARAM)
 {
 	char szContRecDir[MAX_PATH];
 	HANDLE hContact = (HANDLE)wparam;
@@ -267,7 +267,7 @@ int openContRecDir(WPARAM wparam, LPARAM)
 	ShellExecuteA(0, "open", szContRecDir, 0, 0, SW_SHOW);
 	return 0;
 }
-int openRecDir(WPARAM, LPARAM)
+INT_PTR openRecDir(WPARAM, LPARAM)
 {
 	char szContRecDir[MAX_PATH];
 	GetReceivedFilesDir(szContRecDir, SIZEOF(szContRecDir));

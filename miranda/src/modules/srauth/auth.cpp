@@ -28,13 +28,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 INT_PTR CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK DlgProcAdded(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-int ShowReqWindow(WPARAM, LPARAM lParam)
+INT_PTR ShowReqWindow(WPARAM, LPARAM lParam)
 {
 	CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_AUTHREQ),NULL,DlgProcAuthReq,(LPARAM)((CLISTEVENT *)lParam)->hDbEvent);
 	return 0;
 }
 
-int ShowAddedWindow(WPARAM, LPARAM lParam)
+INT_PTR ShowAddedWindow(WPARAM, LPARAM lParam)
 {
 	CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_ADDED),NULL,DlgProcAdded,(LPARAM)((CLISTEVENT *)lParam)->hDbEvent);
 	return 0;

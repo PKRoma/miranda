@@ -376,14 +376,14 @@ static LRESULT MHeaderbar_OnPaint(HWND hwndDlg, MHeaderbarCtrl *mit, UINT  msg, 
 
 static LRESULT CALLBACK MHeaderbarWndProc(HWND hwndDlg, UINT  msg, WPARAM wParam, LPARAM lParam)
 {
-	MHeaderbarCtrl* itc =  (MHeaderbarCtrl *)GetWindowLong(hwndDlg, 0);
+	MHeaderbarCtrl* itc =  (MHeaderbarCtrl *)GetWindowLongPtr(hwndDlg, 0);
 	switch(msg) {
 	case WM_NCCREATE:
 		itc = new MHeaderbarCtrl; //(MHeaderbarCtrl*)mir_alloc(sizeof(MHeaderbarCtrl));
 		if (itc==NULL)
 			return FALSE;
 
-		SetWindowLong(hwndDlg, 0, (LONG)itc);
+		SetWindowLongPtr(hwndDlg, 0, (LONG_PTR)itc);
 		MHeaderbar_SetupColors(itc);
 
 		if (IsAeroMode()) {

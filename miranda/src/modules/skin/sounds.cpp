@@ -34,7 +34,7 @@ static struct SoundItem *soundList = NULL;
 static int soundCount;
 static HANDLE hPlayEvent = NULL;
 
-static int ServiceSkinAddNewSound(WPARAM, LPARAM lParam)
+static INT_PTR ServiceSkinAddNewSound(WPARAM, LPARAM lParam)
 {
 	struct SoundItem* item;
 	SKINSOUNDDESCEX *ssd=(SKINSOUNDDESCEX*)lParam;
@@ -70,7 +70,7 @@ static int SkinPlaySoundDefault(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int ServiceSkinPlaySound(WPARAM, LPARAM lParam)
+static INT_PTR ServiceSkinPlaySound(WPARAM, LPARAM lParam)
 {
 	char* pszSoundName = ( char* )lParam;
 	int j;
@@ -124,7 +124,7 @@ INT_PTR CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 		hwndTree = GetDlgItem(hwndDlg, IDC_SOUNDTREE);
-		SetWindowLong(hwndTree,GWL_STYLE,GetWindowLong(hwndTree,GWL_STYLE)|TVS_NOHSCROLL|TVS_CHECKBOXES);
+		SetWindowLongPtr(hwndTree,GWL_STYLE,GetWindowLongPtr(hwndTree,GWL_STYLE)|TVS_NOHSCROLL|TVS_CHECKBOXES);
 		SendMessage(hwndDlg, DM_HIDEPANE, 0, 0);
 		SendMessage(hwndDlg, DM_REBUILD_STREE, 0, 0);
 		TreeView_SetItemState(hwndTree, 0, TVIS_SELECTED, TVIS_SELECTED);

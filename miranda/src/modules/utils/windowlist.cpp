@@ -26,19 +26,19 @@ static WINDOWLISTENTRY *windowList=NULL;
 static int windowListCount=0;
 static int nextWindowListId=1;
 
-static int AllocWindowList(WPARAM, LPARAM)
+static INT_PTR AllocWindowList(WPARAM, LPARAM)
 {
 	return nextWindowListId++;
 }
 
-static int AddToWindowList(WPARAM, LPARAM lParam)
+static INT_PTR AddToWindowList(WPARAM, LPARAM lParam)
 {
 	windowList=(WINDOWLISTENTRY*)mir_realloc(windowList,sizeof(WINDOWLISTENTRY)*(windowListCount+1));
 	windowList[windowListCount++]=*(WINDOWLISTENTRY*)lParam;
 	return 0;
 }
 
-static int RemoveFromWindowList(WPARAM wParam,LPARAM lParam)
+static INT_PTR RemoveFromWindowList(WPARAM wParam,LPARAM lParam)
 {
 	int i;
 	for(i=0;i<windowListCount;i++)
@@ -50,16 +50,16 @@ static int RemoveFromWindowList(WPARAM wParam,LPARAM lParam)
 	return 1;
 }
 
-static int FindInWindowList(WPARAM wParam,LPARAM lParam)
+static INT_PTR FindInWindowList(WPARAM wParam,LPARAM lParam)
 {
 	int i;
 	for(i=0;i<windowListCount;i++)
 		if(windowList[i].hContact==(HANDLE)lParam && windowList[i].hList==(HANDLE)wParam)
-			return (int)windowList[i].hwnd;
-	return (int)(HWND)NULL;
+			return (INT_PTR)windowList[i].hwnd;
+	return (INT_PTR)(HWND)NULL;
 }
 
-static int BroadcastToWindowList(WPARAM wParam,LPARAM lParam)
+static INT_PTR BroadcastToWindowList(WPARAM wParam,LPARAM lParam)
 {
 	int i;
 	MSG *msg=(MSG*)lParam;
@@ -69,7 +69,7 @@ static int BroadcastToWindowList(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int BroadcastToWindowListAsync(WPARAM wParam,LPARAM lParam)
+static INT_PTR BroadcastToWindowListAsync(WPARAM wParam,LPARAM lParam)
 {
 	int i;
 	MSG *msg=(MSG*)lParam;

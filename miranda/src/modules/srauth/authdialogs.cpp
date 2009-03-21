@@ -81,7 +81,7 @@ INT_PTR CALLBACK DlgProcAdded(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 }
             }
 			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,lParam);
-			SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_DETAILS),GWLP_USERDATA,(LONG)hcontact);
+			SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_DETAILS),GWLP_USERDATA,(LONG_PTR)hcontact);
 			mir_free(dbei.pBlob);
 			return TRUE;
 		}
@@ -257,7 +257,7 @@ INT_PTR CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			SetDlgItemTextA(hwndDlg,IDC_MAIL,email[0]?email:Translate("(Unknown)"));
 			SetDlgItemTextA(hwndDlg,IDC_REASON,reason);
 			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,lParam);
-			SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_DETAILS),GWLP_USERDATA,(LONG)hcontact);
+			SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_DETAILS),GWLP_USERDATA,(LONG_PTR)hcontact);
 			mir_free(dbei.pBlob);
 		}
 		return TRUE;

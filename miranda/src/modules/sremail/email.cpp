@@ -31,7 +31,7 @@ void SendEmailThread(void *szUrl)
 	return;
 }
 
-static int SendEMailCommand(WPARAM wParam,LPARAM lParam)
+static INT_PTR SendEMailCommand(WPARAM wParam,LPARAM lParam)
 {
 	DBVARIANT dbv;
 	char *szUrl;

@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 
-int ResizeDialog(WPARAM wParam,LPARAM lParam);
+INT_PTR ResizeDialog(WPARAM wParam,LPARAM lParam);
 int InitOpenUrl(void);
 int InitWindowList(void);
 void FreeWindowList(void);
@@ -291,7 +291,7 @@ static struct CountryListEntry countries[]={
 };
 
 
-static int SaveWindowPosition(WPARAM, LPARAM lParam)
+static INT_PTR SaveWindowPosition(WPARAM, LPARAM lParam)
 {
 	SAVEWINDOWPOS *swp=(SAVEWINDOWPOS*)lParam;
 	WINDOWPLACEMENT wp;
@@ -310,7 +310,7 @@ static int SaveWindowPosition(WPARAM, LPARAM lParam)
 	return 0;
 }
 
-static int RestoreWindowPosition(WPARAM wParam,LPARAM lParam)
+static INT_PTR RestoreWindowPosition(WPARAM wParam,LPARAM lParam)
 {
 	SAVEWINDOWPOS *swp=(SAVEWINDOWPOS*)lParam;
 	WINDOWPLACEMENT wp;
@@ -387,23 +387,23 @@ static int RestoreWindowPosition(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int GetCountryByNumber(WPARAM wParam, LPARAM)
+static INT_PTR GetCountryByNumber(WPARAM wParam, LPARAM)
 {
 	int i;
 
 	for(i=0; i < SIZEOF(countries); i++ )
-		if((int)wParam==countries[i].id) return (int)countries[i].szName;
-	return (int)(char*)NULL;
+		if((int)wParam==countries[i].id) return (INT_PTR)countries[i].szName;
+	return (INT_PTR)NULL;
 }
 
-static int GetCountryList(WPARAM wParam,LPARAM lParam)
+static INT_PTR GetCountryList(WPARAM wParam,LPARAM lParam)
 {
 	*(int*)wParam = SIZEOF(countries);
 	*(struct CountryListEntry**)lParam=countries;
 	return 0;
 }
 
-int GetMD5Interface(WPARAM, LPARAM lParam)
+INT_PTR GetMD5Interface(WPARAM, LPARAM lParam)
 {
 	struct MD5_INTERFACE *md5i = (struct MD5_INTERFACE*) lParam;
 	if ( md5i == NULL )
@@ -418,7 +418,7 @@ int GetMD5Interface(WPARAM, LPARAM lParam)
 	return 0;
 }
 
-int GetSHA1Interface(WPARAM, LPARAM lParam)
+INT_PTR GetSHA1Interface(WPARAM, LPARAM lParam)
 {
 	struct SHA1_INTERFACE *sha1i = (struct SHA1_INTERFACE*) lParam;
 	if ( sha1i == NULL )
@@ -433,7 +433,7 @@ int GetSHA1Interface(WPARAM, LPARAM lParam)
 	return 0;
 }
 
-static int RestartMiranda(WPARAM, LPARAM)
+static INT_PTR RestartMiranda(WPARAM, LPARAM)
 {
 	TCHAR mirandaPath[ MAX_PATH ], cmdLine[ 100 ];
 	PROCESS_INFORMATION pi;
@@ -447,7 +447,7 @@ static int RestartMiranda(WPARAM, LPARAM)
 
 typedef BOOL (APIENTRY *PGENRANDOM)( PVOID, ULONG );
 
-static int GenerateRandom(WPARAM wParam, LPARAM lParam)
+static INT_PTR GenerateRandom(WPARAM wParam, LPARAM lParam)
 {
     if (wParam == 0 || lParam == 0) return 0;
 

@@ -426,7 +426,7 @@ static LRESULT MIcoTab_OnPaint(HWND hwndDlg, MIcoTabCtrl *mit, UINT  msg, WPARAM
 
 static LRESULT CALLBACK MIcoTabWndProc(HWND hwndDlg, UINT  msg, WPARAM wParam, LPARAM lParam)
 {
-	MIcoTabCtrl* itc =  (MIcoTabCtrl *)GetWindowLong(hwndDlg, 0);
+	MIcoTabCtrl* itc =  (MIcoTabCtrl *)GetWindowLongPtr(hwndDlg, 0);
 	switch(msg) {
 	case WM_NCCREATE:
 		itc = new MIcoTabCtrl; //(MIcoTabCtrl*)mir_alloc(sizeof(MIcoTabCtrl));
@@ -434,7 +434,7 @@ static LRESULT CALLBACK MIcoTabWndProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 		itc->nSelectedIdx=-1;
 		itc->nHotIdx=-1;
 		itc->bMouseInside = FALSE;
-		SetWindowLong(hwndDlg, 0, (LONG)itc);
+		SetWindowLongPtr(hwndDlg, 0, (LONG_PTR)itc);
 		MIcoTab_SetupColors(itc);
 
 		if (IsAeroMode()) {
@@ -490,7 +490,7 @@ static LRESULT CALLBACK MIcoTabWndProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 			itc->nSelectedIdx = itc->nHotIdx;
 			RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE);
 			SendMessage(GetParent(hwndDlg), WM_COMMAND,
-				MAKEWPARAM(GetWindowLong(hwndDlg, GWL_ID), ITCN_SELCHANGED),
+				MAKEWPARAM(GetWindowLongPtr(hwndDlg, GWL_ID), ITCN_SELCHANGED),
 				itc->nSelectedIdx);
 		}
 		return 0;
@@ -553,7 +553,7 @@ static LRESULT CALLBACK MIcoTabWndProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 			itc->nSelectedIdx = wParam;
 			RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE);
 			SendMessage(GetParent(hwndDlg), WM_COMMAND,
-				MAKEWPARAM(GetWindowLong(hwndDlg, GWL_ID), ITCN_SELCHANGED),
+				MAKEWPARAM(GetWindowLongPtr(hwndDlg, GWL_ID), ITCN_SELCHANGED),
 				itc->nSelectedIdx);
 		}
 		return TRUE;

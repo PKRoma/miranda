@@ -140,7 +140,7 @@ static BOOL CALLBACK BoldGroupTitlesEnumChildren(HWND hwnd,LPARAM lParam)
 	TCHAR szClass[64];
 
 	GetClassName(hwnd,szClass,SIZEOF(szClass));
-	if(!lstrcmp(szClass,_T("Button")) && (GetWindowLong(hwnd,GWL_STYLE)&0x0F)==BS_GROUPBOX)
+	if(!lstrcmp(szClass,_T("Button")) && (GetWindowLongPtr(hwnd,GWL_STYLE)&0x0F)==BS_GROUPBOX)
 		SendMessage(hwnd,WM_SETFONT,lParam,0);
 	return TRUE;
 }
@@ -454,14 +454,14 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 				COMBOBOXINFO cbi;
 				cbi.cbSize = sizeof(COMBOBOXINFO);
 				getComboBoxInfo(GetDlgItem( hdlg, IDC_KEYWORD_FILTER), &cbi);
-				OptionsFilterDefaultProc = (WNDPROC)SetWindowLongPtr( cbi.hwndItem, GWLP_WNDPROC, (LONG) OptionsFilterSubclassProc );
+				OptionsFilterDefaultProc = (WNDPROC)SetWindowLongPtr( cbi.hwndItem, GWLP_WNDPROC, (LONG_PTR) OptionsFilterSubclassProc );
 
 				if (IsAeroMode())
 				{
 					SetWindowLongPtr(cbi.hwndCombo, GWLP_USERDATA, GetWindowLongPtr(cbi.hwndCombo, GWLP_WNDPROC));
-					SetWindowLongPtr(cbi.hwndCombo, GWLP_WNDPROC, (LONG)AeroPaintSubclassProc);
+					SetWindowLongPtr(cbi.hwndCombo, GWLP_WNDPROC, (LONG_PTR)AeroPaintSubclassProc);
 					SetWindowLongPtr(cbi.hwndItem, GWLP_USERDATA, GetWindowLongPtr(cbi.hwndItem, GWLP_WNDPROC));
-					SetWindowLongPtr(cbi.hwndItem, GWLP_WNDPROC, (LONG)AeroPaintSubclassProc);
+					SetWindowLongPtr(cbi.hwndItem, GWLP_WNDPROC, (LONG_PTR)AeroPaintSubclassProc);
 				}
 			}
 
@@ -472,7 +472,7 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 			CheckDlgButton(hdlg,IDC_EXPERT,DBGetContactSettingByte(NULL,"Options","Expert",SETTING_SHOWEXPERT_DEFAULT)?BST_CHECKED:BST_UNCHECKED);
 			EnableWindow(GetDlgItem(hdlg,IDC_APPLY),FALSE);
 			dat=(struct OptionsDlgData*)mir_alloc(sizeof(struct OptionsDlgData));
-			SetWindowLongPtr(hdlg,GWLP_USERDATA,(LONG)dat);
+			SetWindowLongPtr(hdlg,GWLP_USERDATA,(LONG_PTR)dat);
 			SetWindowText(hdlg,psh->pszCaption);
 			
 			dat->hBoldFont=(HFONT)SendDlgItemMessage(hdlg,IDC_EXPERT,WM_GETFONT,0,0);
@@ -778,7 +778,7 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 		return TRUE;
 
 	case PSM_GETBOLDFONT:
-		SetWindowLongPtr(hdlg,DWLP_MSGRESULT,(LONG)dat->hBoldFont);
+		SetWindowLongPtr(hdlg,DWLP_MSGRESULT,(LONG_PTR)dat->hBoldFont);
 		return TRUE;
 
 	case WM_NOTIFY:
@@ -1271,7 +1271,7 @@ static void OpenOptionsNow(const char *pszGroup,const char *pszPage,const char *
 			FreeOptionsData( &opi );
 }	}	}
 
-static int OpenOptions(WPARAM, LPARAM lParam)
+static INT_PTR OpenOptions(WPARAM, LPARAM lParam)
 {
 	OPENOPTIONSDIALOG *ood=(OPENOPTIONSDIALOG*)lParam;
 	if ( ood == NULL )
@@ -1287,7 +1287,7 @@ static int OpenOptions(WPARAM, LPARAM lParam)
 	return 0;
 }
 
-static int OpenOptionsPage(WPARAM, LPARAM lParam)
+static INT_PTR OpenOptionsPage(WPARAM, LPARAM lParam)
 {
 	OPENOPTIONSDIALOG *ood=(OPENOPTIONSDIALOG*)lParam;
 	if ( ood == NULL )
@@ -1300,10 +1300,10 @@ static int OpenOptionsPage(WPARAM, LPARAM lParam)
 	else
 		return 1;
 
-	return (int)hwndOptions;
+	return (INT_PTR)hwndOptions;
 }
 
-static int OpenOptionsDialog(WPARAM, LPARAM)
+static INT_PTR OpenOptionsDialog(WPARAM, LPARAM)
 {
 	if (GetAsyncKeyState(VK_CONTROL) || !ServiceExists(MS_MODERNOPT_SHOW))
 		OpenOptionsNow(NULL,NULL,NULL);
@@ -1312,7 +1312,7 @@ static int OpenOptionsDialog(WPARAM, LPARAM)
 	return 0;
 }
 
-static int AddOptionsPage(WPARAM wParam,LPARAM lParam)
+static INT_PTR AddOptionsPage(WPARAM wParam,LPARAM lParam)
 {	OPTIONSDIALOGPAGE *odp=(OPTIONSDIALOGPAGE*)lParam, *dst;
 	struct OptionsPageInit *opi=(struct OptionsPageInit*)wParam;
 

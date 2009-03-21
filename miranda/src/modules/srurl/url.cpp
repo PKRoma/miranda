@@ -31,7 +31,7 @@ HANDLE hContactDeleted=NULL;
 INT_PTR CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-static int ReadUrlCommand(WPARAM, LPARAM lParam)
+static INT_PTR ReadUrlCommand(WPARAM, LPARAM lParam)
 {
 	CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_URLRECV),NULL,DlgProcUrlRecv,lParam);
 	return 0;
@@ -63,7 +63,7 @@ static int UrlEventAdded(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int SendUrlCommand(WPARAM wParam, LPARAM)
+static INT_PTR SendUrlCommand(WPARAM wParam, LPARAM)
 {
 	CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_URLSEND),NULL,DlgProcUrlSend,wParam);
 	return 0;

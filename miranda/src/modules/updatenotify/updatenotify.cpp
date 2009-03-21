@@ -55,7 +55,7 @@ static DWORD dwUpdateThreadID = 0;
 static HWND hwndUpdateDlg = 0, hwndManualUpdateDlg = 0;
 
 static int UpdateNotifyOptInit(WPARAM wParam, LPARAM lParam);
-static int UpdateNotifyMenuCommand(WPARAM wParam, LPARAM lParam);
+static INT_PTR UpdateNotifyMenuCommand(WPARAM wParam, LPARAM lParam);
 static VOID CALLBACK UpdateNotifyTimerCheck(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
 static int UpdateNotifyMakeRequest(UpdateNotifyData *und);
 static void UpdateNotifyPerform(void *m);
@@ -129,7 +129,7 @@ static int UpdateNotifyOptInit(WPARAM wParam, LPARAM) {
 	return 0;
 }
 
-static int UpdateNotifyMenuCommand(WPARAM, LPARAM) {
+static INT_PTR UpdateNotifyMenuCommand(WPARAM, LPARAM) {
 	UpdateNotifyData und;
 	
 	if (IsWindow(hwndManualUpdateDlg)) {

@@ -423,7 +423,7 @@ static void enumPlugins(SCAN_PLUGINS_CALLBACK cb, WPARAM wParam, LPARAM lParam)
 }
 
 // this is called by the db module to return all DBs plugins, then when it finds the one it likes the others are unloaded
-static int PluginsEnum(WPARAM, LPARAM lParam)
+static INT_PTR PluginsEnum(WPARAM, LPARAM lParam)
 {
 	PLUGIN_DB_ENUM * de = (PLUGIN_DB_ENUM *) lParam;
 	pluginEntry * x = pluginListDb;
@@ -448,9 +448,9 @@ static int PluginsEnum(WPARAM, LPARAM lParam)
 	return pluginListDb != NULL ? 1 : -1;
 }
 
-static int PluginsGetDefaultArray(WPARAM, LPARAM)
+static INT_PTR PluginsGetDefaultArray(WPARAM, LPARAM)
 {
-	return (int) &pluginDefModList;
+	return (INT_PTR)&pluginDefModList;
 }
 
 // called in the first pass to create pluginEntry* structures and validate database plugins

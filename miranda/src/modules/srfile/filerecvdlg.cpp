@@ -30,7 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 static BOOL CALLBACK ClipSiblingsChildEnumProc(HWND hwnd, LPARAM)
 {
-	SetWindowLong(hwnd,GWL_STYLE,GetWindowLong(hwnd,GWL_STYLE)|WS_CLIPSIBLINGS);
+	SetWindowLongPtr(hwnd,GWL_STYLE,GetWindowLongPtr(hwnd,GWL_STYLE)|WS_CLIPSIBLINGS);
 	return TRUE;
 }
 
@@ -51,7 +51,7 @@ static void GetLowestExistingDirName(const char *szTestDir,char *szExistingDir,i
 static const char validFilenameChars[]="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_!&{}-=#@~,. ";
 static void RemoveInvalidFilenameChars(char *szString)
 {
-	int i;
+	size_t i;
 	for(i=strspn(szString,validFilenameChars);szString[i];i+=strspn(szString+i+1,validFilenameChars)+1)
 		if(szString[i]>=0) szString[i]='%';
 }
@@ -75,7 +75,7 @@ int BrowseForFolder(HWND hwnd,char *szPath)
 {
 	BROWSEINFOA bi={0};
 	LPMALLOC pMalloc;
-	ITEMIDLIST *pidlResult;
+	PIDLIST_ABSOLUTE pidlResult;
 	int result=0;
 
 	if(SUCCEEDED(OleInitialize(NULL))) {
@@ -188,7 +188,7 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		TranslateDialogDefault(hwndDlg);
 
 		dat=(struct FileDlgData*)mir_calloc(sizeof(struct FileDlgData));
-		SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG)dat);
+		SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)dat);
 		dat->hContact=((CLISTEVENT*)lParam)->hContact;
 		dat->hDbEvent=((CLISTEVENT*)lParam)->hDbEvent;
 		dat->hPreshutdownEvent=HookEventMessage(ME_SYSTEM_PRESHUTDOWN,hwndDlg,M_PRESHUTDOWN);

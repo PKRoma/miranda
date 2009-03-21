@@ -30,7 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define WM_MY_REFRESH	(WM_USER+0x1000)
 #define WM_MY_RENAME	(WM_USER+0x1001)
 
-int  Proto_EnumProtocols( WPARAM, LPARAM );
+INT_PTR  Proto_EnumProtocols( WPARAM, LPARAM );
 int isProtoSuitable( PROTO_INTERFACE* ppi );
 
 #define errMsg \
@@ -239,7 +239,7 @@ static LRESULT CALLBACK sttEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				int length = GetWindowTextLength(hwnd) + 1;
 				TCHAR *str = ( TCHAR* )mir_alloc(sizeof(TCHAR) * length);
 				GetWindowText(hwnd, str, length);
-				SendMessage(GetParent(GetParent(hwnd)), WM_COMMAND, MAKEWPARAM(GetWindowLong(GetParent(hwnd), GWL_ID), LBN_MY_RENAME), (LPARAM)str);
+				SendMessage(GetParent(GetParent(hwnd)), WM_COMMAND, MAKEWPARAM(GetWindowLongPtr(GetParent(hwnd), GWL_ID), LBN_MY_RENAME), (LPARAM)str);
 				DestroyWindow(hwnd);
 			}
 			return 0;
@@ -287,7 +287,7 @@ static LRESULT CALLBACK AccListWndProc(HWND hwnd,UINT msg, WPARAM wParam, LPARAM
 		{
 			POINT pt = {LOWORD(lParam), HIWORD(lParam)};
 			if ((dat->iItem >= 0) && PtInRect(&dat->rcCheck, pt))
-				PostMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(GetWindowLong(hwnd, GWL_ID), LBN_MY_CHECK), (LPARAM)dat->iItem);
+				PostMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(GetWindowLongPtr(hwnd, GWL_ID), LBN_MY_CHECK), (LPARAM)dat->iItem);
 			dat->iItem = -1;
 		}
 		break;
@@ -296,7 +296,7 @@ static LRESULT CALLBACK AccListWndProc(HWND hwnd,UINT msg, WPARAM wParam, LPARAM
 		if (wParam == ' ') {
 			int iItem = ListBox_GetCurSel(hwnd);
 			if (iItem >= 0)
-				PostMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(GetWindowLong(hwnd, GWL_ID), LBN_MY_CHECK), (LPARAM)iItem);
+				PostMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(GetWindowLongPtr(hwnd, GWL_ID), LBN_MY_CHECK), (LPARAM)iItem);
 			return 0;
 		}
 
@@ -324,7 +324,7 @@ static LRESULT CALLBACK AccListWndProc(HWND hwnd,UINT msg, WPARAM wParam, LPARAM
 			++rc.top; --rc.right;
 
 			dat->hwndEdit = CreateWindow(_T("EDIT"), acc->tszAccountName, WS_CHILD|WS_BORDER|ES_AUTOHSCROLL, rc.left, rc.top, rc.right-rc.left, rc.bottom-rc.top, hwnd, NULL, hMirandaInst, NULL);
-			SetWindowLongPtr(dat->hwndEdit, GWLP_USERDATA, SetWindowLongPtr(dat->hwndEdit, GWLP_WNDPROC, (LONG)sttEditSubclassProc));
+			SetWindowLongPtr(dat->hwndEdit, GWLP_USERDATA, SetWindowLongPtr(dat->hwndEdit, GWLP_WNDPROC, (LONG_PTR)sttEditSubclassProc));
 			SendMessage(dat->hwndEdit, WM_SETFONT, (WPARAM)parentDat->hfntTitle, 0);
 			SendMessage(dat->hwndEdit, EM_SETMARGINS, EC_LEFTMARGIN|EC_RIGHTMARGIN|EC_USEFONTINFO, 0);
 			SendMessage(dat->hwndEdit, EM_SETSEL, 0, (LPARAM) (-1));
@@ -366,12 +366,12 @@ static void sttSubclassAccList(HWND hwnd, BOOL subclass)
 		struct TAccListData *dat = (struct TAccListData *)mir_alloc(sizeof(struct TAccListData));
 		dat->iItem = -1;
 		dat->oldWndProc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_WNDPROC);
-		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG)dat);
-		SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG)AccListWndProc);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)dat);
+		SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)AccListWndProc);
 	}
 	else {
 		struct TAccListData *dat = (struct TAccListData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-		SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG)dat->oldWndProc);
+		SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)dat->oldWndProc);
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
 		mir_free(dat);
 }	}
@@ -452,7 +452,7 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 	case WM_INITDIALOG:
 		{
 			struct TAccMgrData *dat = (struct TAccMgrData *)mir_alloc(sizeof(struct TAccMgrData));
-			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG)dat);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 
 			TranslateDialogDefault(hwndDlg);
 			Utils_RestoreWindowPositionNoSize(hwndDlg, NULL, "AccMgr", "");
@@ -681,7 +681,7 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 		break;
 
 	case WM_CONTEXTMENU:
-		if ( GetWindowLong(( HWND )wParam, GWL_ID ) == IDC_ACCLIST ) {
+		if ( GetWindowLongPtr(( HWND )wParam, GWL_ID ) == IDC_ACCLIST ) {
 			HWND hwndList = GetDlgItem( hwndDlg, IDC_ACCLIST );
 			POINT pt = { (signed short)LOWORD( lParam ), (signed short)HIWORD( lParam ) };
 			int iItem = ListBox_GetCurSel( hwndList );
@@ -978,7 +978,7 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 	return FALSE;
 }
 
-static int OptProtosShow(WPARAM, LPARAM)
+static INT_PTR OptProtosShow(WPARAM, LPARAM)
 {
 	if ( !hAccMgr )
 		hAccMgr = CreateDialogParam( hMirandaInst, MAKEINTRESOURCE(IDD_ACCMGR), NULL, AccMgrDlgProc, 0 );

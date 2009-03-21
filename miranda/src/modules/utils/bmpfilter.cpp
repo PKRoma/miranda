@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "m_png.h"
 
-static int BmpFilterLoadBitmap(WPARAM, LPARAM lParam)
+static INT_PTR BmpFilterLoadBitmap(WPARAM, LPARAM lParam)
 {
 	IPicture *pic;
 	HBITMAP hBmp,hBmpCopy;
@@ -46,18 +46,18 @@ static int BmpFilterLoadBitmap(WPARAM, LPARAM lParam)
 		char* pszExt = szFilename+filenameLen-4;
 		
 		if(ServiceExists("IMG/Load")) {
-            return (int)CallService("IMG/Load", (WPARAM)szFilename, 0);
+            return CallService("IMG/Load", (WPARAM)szFilename, 0);
         }
 		
 		if ( !lstrcmpiA( pszExt,".bmp" ) || !lstrcmpiA( pszExt, ".rle" )) {
 			//LoadImage can do this much faster
-			return (int)LoadImageA( hMirandaInst, szFilename, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE );
+			return (INT_PTR)LoadImageA( hMirandaInst, szFilename, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE );
 		}
 
 		if ( !lstrcmpiA( pszExt, ".png" )) {
 			HANDLE hFile, hMap = NULL;
 			BYTE* ppMap = NULL;
-			long  cbFileSize = 0;
+			INT_PTR  cbFileSize = 0;
 			BITMAPINFOHEADER* pDib;
 			BYTE* pDibBits;
 
@@ -83,7 +83,7 @@ static int BmpFilterLoadBitmap(WPARAM, LPARAM lParam)
 					SelectObject( sDC, hBitmap );
 					ReleaseDC( NULL, sDC );
 					GlobalFree( pDib );
-					cbFileSize = (long)hBitmap;
+					cbFileSize = (INT_PTR)hBitmap;
 				}
 				else cbFileSize = 0;
 			}
@@ -92,7 +92,7 @@ static int BmpFilterLoadBitmap(WPARAM, LPARAM lParam)
 			if ( hMap  != NULL )	CloseHandle( hMap );
 			if ( hFile != NULL ) CloseHandle( hFile );
 
-			return (int)cbFileSize;
+			return (INT_PTR)cbFileSize;
 	}	}
 
 	OleInitialize(NULL);
@@ -127,10 +127,10 @@ static int BmpFilterLoadBitmap(WPARAM, LPARAM lParam)
 	DeleteObject(hBmp);
 	pic->lpVtbl->Release(pic);
 	OleUninitialize();
-	return (int)hBmpCopy;
+	return (INT_PTR)hBmpCopy;
 }
 
-static int BmpFilterGetStrings(WPARAM wParam,LPARAM lParam)
+static INT_PTR BmpFilterGetStrings(WPARAM wParam,LPARAM lParam)
 {
 	int bytesLeft=wParam;
 	char *filter=(char*)lParam,*pfilter;

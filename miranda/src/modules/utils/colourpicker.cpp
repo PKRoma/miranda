@@ -26,33 +26,33 @@ static LRESULT CALLBACK ColourPickerWndProc(HWND hwnd,UINT message,WPARAM wParam
 {
 	switch(message) {
 		case WM_CREATE:
-			SetWindowLong(hwnd,0,0);
-			SetWindowLong(hwnd,sizeof(COLORREF),0);
+			SetWindowLongPtr(hwnd,0,0);
+			SetWindowLongPtr(hwnd,sizeof(COLORREF),0);
 			break;
 		case CPM_SETDEFAULTCOLOUR:
-			SetWindowLong(hwnd,sizeof(COLORREF),lParam);
+			SetWindowLongPtr(hwnd,sizeof(COLORREF),lParam);
 			break;
 		case CPM_GETDEFAULTCOLOUR:
-			return GetWindowLong(hwnd,sizeof(COLORREF));
+			return GetWindowLongPtr(hwnd,sizeof(COLORREF));
 		case CPM_SETCOLOUR:
-			SetWindowLong(hwnd,0,lParam);
+			SetWindowLongPtr(hwnd,0,lParam);
 			InvalidateRect(hwnd,NULL,FALSE);
 			break;
 		case CPM_GETCOLOUR:
-			return GetWindowLong(hwnd,0);
+			return GetWindowLongPtr(hwnd,0);
 		case WM_LBUTTONUP:
 		{
             CHOOSECOLOR cc={0};
             COLORREF custColours[16]={0};
-			custColours[0]=GetWindowLong(hwnd,sizeof(COLORREF));
+			custColours[0]=GetWindowLongPtr(hwnd,sizeof(COLORREF));
             cc.lStructSize=sizeof(CHOOSECOLOR);
             cc.hwndOwner=hwnd;
             cc.hInstance=(HWND)hMirandaInst;
-            cc.rgbResult=GetWindowLong(hwnd,0);
+            cc.rgbResult=GetWindowLongPtr(hwnd,0);
             cc.lpCustColors=custColours;
             cc.Flags=CC_ANYCOLOR|CC_FULLOPEN|CC_RGBINIT;
             if(ChooseColor(&cc)) {
-				SetWindowLong(hwnd,0,cc.rgbResult);
+				SetWindowLongPtr(hwnd,0,cc.rgbResult);
 				SendMessage(GetParent(hwnd),WM_COMMAND,MAKEWPARAM(GetDlgCtrlID(hwnd),CPN_COLOURCHANGED),(LPARAM)hwnd);
 				InvalidateRect(hwnd,NULL,FALSE);
 			}
@@ -73,7 +73,7 @@ static LRESULT CALLBACK ColourPickerWndProc(HWND hwnd,UINT message,WPARAM wParam
 			DrawEdge(hdc1,&rc,EDGE_ETCHED,BF_RECT);
 			InflateRect(&rc,-2,-2);
 			if(IsWindowEnabled(hwnd))
-				hBrush=CreateSolidBrush(GetWindowLong(hwnd,0));
+				hBrush=CreateSolidBrush(GetWindowLongPtr(hwnd,0));
 			else
 				hBrush=CreateHatchBrush(HS_BDIAGONAL,GetSysColor(COLOR_GRAYTEXT));
 			SetBkColor(hdc1,GetSysColor(COLOR_BTNFACE));

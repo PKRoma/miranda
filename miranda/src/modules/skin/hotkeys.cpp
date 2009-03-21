@@ -85,11 +85,11 @@ static LRESULT CALLBACK sttHotkeyEditProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 static void sttRegisterHotkeys();
 static void sttUnregisterHotkeys();
 
-static int svcHotkeySubclass(WPARAM wParam, LPARAM lParam);
-static int svcHotkeyUnsubclass(WPARAM wParam, LPARAM lParam);
-static int svcHotkeyRegister(WPARAM wParam, LPARAM lParam);
-static int svcHotkeyUnregister(WPARAM wParam, LPARAM lParam);
-static int svcHotkeyCheck(WPARAM wParam, LPARAM lParam);
+static INT_PTR svcHotkeySubclass(WPARAM wParam, LPARAM lParam);
+static INT_PTR svcHotkeyUnsubclass(WPARAM wParam, LPARAM lParam);
+static INT_PTR svcHotkeyRegister(WPARAM wParam, LPARAM lParam);
+static INT_PTR svcHotkeyUnregister(WPARAM wParam, LPARAM lParam);
+static INT_PTR svcHotkeyCheck(WPARAM wParam, LPARAM lParam);
 
 HHOOK hhkKeyboard = NULL;
 static LRESULT CALLBACK sttKeyboardProc(int code, WPARAM wParam, LPARAM lParam);
@@ -150,19 +150,19 @@ static LRESULT CALLBACK sttKeyboardProc(int code, WPARAM wParam, LPARAM lParam)
 	return CallNextHookEx(hhkKeyboard, code, wParam, lParam);
 }
 
-static int svcHotkeySubclass(WPARAM wParam, LPARAM)
+static INT_PTR svcHotkeySubclass(WPARAM wParam, LPARAM)
 {
 	sttHotkeyEditCreate((HWND)wParam);
 	return 0;
 }
 
-static int svcHotkeyUnsubclass(WPARAM wParam, LPARAM)
+static INT_PTR svcHotkeyUnsubclass(WPARAM wParam, LPARAM)
 {
 	sttHotkeyEditDestroy((HWND)wParam);
 	return 0;
 }
 
-static int svcHotkeyRegister(WPARAM wParam, LPARAM lParam)
+static INT_PTR svcHotkeyRegister(WPARAM wParam, LPARAM lParam)
 {
 	char nameBuf[MAXMODULELABELLENGTH], buf[256];
 
@@ -236,7 +236,7 @@ static int svcHotkeyRegister(WPARAM wParam, LPARAM lParam)
 	return item->idHotkey;
 }
 
-static int svcHotkeyUnregister(WPARAM, LPARAM lParam)
+static INT_PTR svcHotkeyUnregister(WPARAM, LPARAM lParam)
 {
 	int i;
 	char *pszName = (char *)lParam;
@@ -270,7 +270,7 @@ static int svcHotkeyUnregister(WPARAM, LPARAM lParam)
 	return 0;
 }
 
-static int svcHotkeyCheck(WPARAM wParam, LPARAM lParam)
+static INT_PTR svcHotkeyCheck(WPARAM wParam, LPARAM lParam)
 {
 	MSG *msg = (MSG *)wParam;
 	TCHAR *pszSection = mir_a2t((char *)lParam);
@@ -455,14 +455,14 @@ static LRESULT CALLBACK sttHotkeyEditProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 			SetWindowText(hwnd, buf);
 
 			if (bKeyDown && data->key)
-				SendMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(GetWindowLong(hwnd, GWL_ID), 0), (LPARAM)hwnd);
+				SendMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(GetWindowLongPtr(hwnd, GWL_ID), 0), (LPARAM)hwnd);
 			return TRUE;
 		}
 
 		case WM_DESTROY:
 		{
 			WNDPROC saveOldWndProc = data->oldWndProc;
-			SetWindowLongPtr(hwnd, GWLP_WNDPROC, (ULONG_PTR)data->oldWndProc);
+			SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)data->oldWndProc);
 			SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
 			mir_free(data);
 			return CallWindowProc(saveOldWndProc, hwnd, msg, wParam, lParam);
@@ -1002,7 +1002,7 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 		break;
 
 	case WM_CONTEXTMENU:
-		if (GetWindowLong((HWND)wParam, GWL_ID) == IDC_LV_HOTKEYS)
+		if (GetWindowLongPtr((HWND)wParam, GWL_ID) == IDC_LV_HOTKEYS)
 		{
 			HWND hwndList = (HWND)wParam;
 			POINT pt = { (signed short)LOWORD( lParam ), (signed short)HIWORD( lParam ) };

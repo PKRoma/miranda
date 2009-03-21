@@ -184,7 +184,7 @@ void __cdecl ChooseFilesThread(void* param)
 
 static BOOL CALLBACK ClipSiblingsChildEnumProc(HWND hwnd,LPARAM)
 {
-	SetWindowLong(hwnd,GWL_STYLE,GetWindowLong(hwnd,GWL_STYLE)|WS_CLIPSIBLINGS);
+	SetWindowLongPtr(hwnd,GWL_STYLE,GetWindowLongPtr(hwnd,GWL_STYLE)|WS_CLIPSIBLINGS);
 	return TRUE;
 }
 
@@ -220,7 +220,7 @@ INT_PTR CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
 		dat=(struct FileDlgData*)mir_alloc(sizeof(struct FileDlgData));
 		memset(dat,0,sizeof(struct FileDlgData));
-		SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(long)dat);
+		SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)dat);
 		dat->hContact=fsd->hContact;
 		dat->send=1;
 		dat->hPreshutdownEvent=HookEventMessage(ME_SYSTEM_PRESHUTDOWN,hwndDlg,M_PRESHUTDOWN);
@@ -229,7 +229,7 @@ INT_PTR CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
 		TranslateDialogDefault(hwndDlg);
 		EnumChildWindows(hwndDlg,ClipSiblingsChildEnumProc,0);
-		OldSendEditProc=(WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MSG),GWLP_WNDPROC,(LONG)SendEditSubclassProc);
+		OldSendEditProc=(WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MSG),GWLP_WNDPROC,(LONG_PTR)SendEditSubclassProc);
 
 		Window_SetIcon_IcoLib(hwndDlg, SKINICON_EVENT_FILE);
 		Button_SetIcon_IcoLib(hwndDlg, IDC_DETAILS, SKINICON_OTHER_USERDETAILS, "View User's Details");
@@ -361,7 +361,7 @@ INT_PTR CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		Button_FreeIcon_IcoLib(hwndDlg,IDC_HISTORY);
 		Button_FreeIcon_IcoLib(hwndDlg,IDC_USERMENU);
 		if(dat->hPreshutdownEvent) UnhookEvent(dat->hPreshutdownEvent);
-		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MSG),GWLP_WNDPROC,(LONG)OldSendEditProc);
+		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MSG),GWLP_WNDPROC,(LONG_PTR)OldSendEditProc);
 		return TRUE;
 	}
 	return FALSE;

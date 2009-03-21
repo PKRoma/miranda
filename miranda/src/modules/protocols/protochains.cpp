@@ -24,14 +24,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_protomod.h>
 
 //Protocol chain is list of integers "0".."n", with network protocol named "p"
-int Proto_CallContactService(WPARAM wParam,LPARAM lParam)
+INT_PTR Proto_CallContactService(WPARAM wParam,LPARAM lParam)
 //note that this is ChainSend() too, due to a quirk of function definitions
 {
 	CCSDATA *ccs=(CCSDATA*)lParam;
 	int i;
 	char str[10];
 	DBVARIANT dbv;
-	int ret;
+	INT_PTR ret;
 	PROTOACCOUNT* pa;
 
 	if ( wParam == (WPARAM)(-1))
@@ -68,10 +68,11 @@ int Proto_CallContactService(WPARAM wParam,LPARAM lParam)
 	return ret;
 }
 
-static int CallRecvChain(WPARAM wParam,LPARAM lParam)
+static INT_PTR CallRecvChain(WPARAM wParam,LPARAM lParam)
 {
 	CCSDATA *ccs=(CCSDATA*)lParam;
-	int i,ret;
+	int i;
+	INT_PTR ret;
 	char str[10];
 	DBVARIANT dbv;
 	PROTOACCOUNT* pa;
@@ -120,13 +121,13 @@ static int CallRecvChain(WPARAM wParam,LPARAM lParam)
 	return ret;
 }
 
-static int Proto_ChainRecv(WPARAM wParam,LPARAM lParam)
+static INT_PTR Proto_ChainRecv(WPARAM wParam,LPARAM lParam)
 {
 	/* this will switch threads just like before */
 	return CallServiceSync(MS_PROTO_CHAINRECV "ThreadSafe",wParam,lParam);
 }
 
-static int Proto_GetContactBaseProto(WPARAM wParam, LPARAM)
+static INT_PTR Proto_GetContactBaseProto(WPARAM wParam, LPARAM)
 {
 	DBVARIANT dbv;
 	PROTOCOLDESCRIPTOR *pd;
@@ -140,20 +141,20 @@ static int Proto_GetContactBaseProto(WPARAM wParam, LPARAM)
 	dbcgs.szModule = "Protocol";
 	dbcgs.szSetting = "p";
 	if ( CallService( MS_DB_CONTACT_GETSETTINGSTATIC, wParam, (LPARAM)&dbcgs ))
-		return (int)(char*)NULL;
+		return (INT_PTR)(char*)NULL;
 
 	pd = ( PROTOCOLDESCRIPTOR* )Proto_IsProtocolLoaded( dbv.pszVal );
 	if ( pd == NULL ) {
 		PROTOACCOUNT* pa = ProtoGetAccount(( char* )dbv.pszVal );
 		if ( pa )
-			return (int)pa->szModuleName;
+			return (INT_PTR)pa->szModuleName;
 
-		return (int)(char*)NULL;
+		return (INT_PTR)(char*)NULL;
 	}
-	return (int)pd->szName;
+	return (INT_PTR)pd->szName;
 }
 
-static int Proto_IsProtoOnContact(WPARAM wParam,LPARAM lParam)
+static INT_PTR Proto_IsProtoOnContact(WPARAM wParam,LPARAM lParam)
 {
 	int i;
 	char str[10];
@@ -178,7 +179,7 @@ static int Proto_IsProtoOnContact(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int Proto_AddToContact(WPARAM wParam,LPARAM lParam)
+static INT_PTR Proto_AddToContact(WPARAM wParam,LPARAM lParam)
 {
 	PROTOCOLDESCRIPTOR *pd,*pdCompare;
 
@@ -227,7 +228,7 @@ static int Proto_AddToContact(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int Proto_RemoveFromContact(WPARAM wParam,LPARAM lParam)
+static INT_PTR Proto_RemoveFromContact(WPARAM wParam,LPARAM lParam)
 {
 	int i;
 	DBVARIANT dbv;

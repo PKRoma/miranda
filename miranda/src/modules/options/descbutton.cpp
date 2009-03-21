@@ -224,7 +224,7 @@ static LRESULT MDescButton_OnPaint(HWND hwndDlg, MDescButtonCtrl *dat, UINT  msg
 
 static LRESULT CALLBACK MDescButtonWndProc(HWND hwndDlg, UINT  msg, WPARAM wParam, LPARAM lParam)
 {
-	MDescButtonCtrl *dat =  (MDescButtonCtrl *)GetWindowLong(hwndDlg, 0);
+	MDescButtonCtrl *dat =  (MDescButtonCtrl *)GetWindowLongPtr(hwndDlg, 0);
 	switch(msg) {
 	case WM_NCCREATE:
 		dat = (MDescButtonCtrl*)mir_alloc(sizeof(MDescButtonCtrl));
@@ -232,7 +232,7 @@ static LRESULT CALLBACK MDescButtonWndProc(HWND hwndDlg, UINT  msg, WPARAM wPara
 			return FALSE;
 
 		memset(dat, 0, sizeof(MDescButtonCtrl));
-		SetWindowLong(hwndDlg, 0, (LONG)dat);
+		SetWindowLongPtr(hwndDlg, 0, (LONG_PTR)dat);
 		MDescButton_SetupColors(dat);
 		return TRUE;
 
@@ -265,7 +265,7 @@ static LRESULT CALLBACK MDescButtonWndProc(HWND hwndDlg, UINT  msg, WPARAM wPara
 		return 0;
 
 	case WM_LBUTTONUP:
-		SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKEWPARAM(GetWindowLong(hwndDlg, GWL_ID), 0), 0);
+		SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKEWPARAM(GetWindowLongPtr(hwndDlg, GWL_ID), 0), 0);
 		return 0;
 
 	case WM_ERASEBKGND:

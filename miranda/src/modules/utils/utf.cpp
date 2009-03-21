@@ -94,7 +94,8 @@ static char* Ucs2toUtf8( const wchar_t* in, char* out )
 
 char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 )
 {
-	int len, needs_free = 0;
+	size_t len; 
+    bool needs_free = false;
 	wchar_t* tempBuf = NULL;
 
 	if ( str == NULL )
@@ -119,7 +120,7 @@ char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 )
 		__except( EXCEPTION_EXECUTE_HANDLER )
 		{
 			tempBuf = NULL;
-			needs_free = 1;
+			needs_free = false;
 		}
 	}
 
@@ -149,7 +150,7 @@ char* Utf8Decode( char* str, wchar_t** ucs2 )
 
 wchar_t* Utf8DecodeUcs2( const char* str )
 {
-	int len;
+	size_t len;
 	wchar_t* ucs2;
 
 	if ( str == NULL )
@@ -179,7 +180,8 @@ wchar_t* Utf8DecodeUcs2( const char* str )
 
 char* Utf8EncodeCP( const char* src, int codepage )
 {
-	int len, needs_free = 0;
+	size_t len; 
+    bool needs_free = false;
 	char* result;
 	wchar_t* tempBuf;
 
@@ -198,7 +200,7 @@ char* Utf8EncodeCP( const char* src, int codepage )
 	__except( EXCEPTION_EXECUTE_HANDLER )
 	{
 		tempBuf = ( wchar_t* )mir_alloc(( len+1 )*sizeof( wchar_t ));
-		needs_free = 1;
+		needs_free = true;
 	}
 
 	MultiByteToWideChar( codepage, 0, src, -1, tempBuf, len );
@@ -222,7 +224,7 @@ char* Utf8Encode( const char* src )
 
 char* Utf8EncodeUcs2( const wchar_t* src )
 {
-	int len = wcslen( src );
+	size_t len = wcslen( src );
 	char* result = ( char* )mir_alloc( len*3 + 1 );
 	if ( result == NULL )
 		return NULL;

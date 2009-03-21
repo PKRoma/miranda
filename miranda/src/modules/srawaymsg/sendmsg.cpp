@@ -66,13 +66,13 @@ static char *StatusModeToDbSetting(int status,const char *suffix)
 }
 
 //remember to mir_free() the return value
-static int GetAwayMessage(WPARAM wParam, LPARAM)
+static INT_PTR GetAwayMessage(WPARAM wParam, LPARAM)
 {
 	DBVARIANT dbv;
 	int statusMode = (int)wParam;
 
 	if(DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(wParam,"Ignore"),0))
-		return (int)NULL;
+		return (INT_PTR)NULL;
 
 	if(DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(statusMode,"UsePrev"),0)) {
 		if(DBGetContactSettingString(NULL,"SRAway",StatusModeToDbSetting(statusMode,"Msg"),&dbv))
@@ -111,7 +111,7 @@ static int GetAwayMessage(WPARAM wParam, LPARAM)
 			CopyMemory(dbv.pszVal+i,substituteStr,lstrlenA(substituteStr));
 		}
 	}
-	return (int)dbv.pszVal;
+	return (INT_PTR)dbv.pszVal;
 }
 
 static WNDPROC OldMessageEditProc;
@@ -190,12 +190,12 @@ static INT_PTR CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 			struct SetAwasMsgNewData *newdat = (struct SetAwasMsgNewData*)lParam;
 			TranslateDialogDefault(hwndDlg);
 			dat=(struct SetAwayMsgData*)mir_alloc(sizeof(struct SetAwayMsgData));
-			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG)dat);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)dat);
 			dat->statusMode=newdat->statusMode;
 			dat->szProto=newdat->szProto;
 			mir_free(newdat);
 			SendDlgItemMessage(hwndDlg,IDC_MSG,EM_LIMITTEXT,1024,0);
-			OldMessageEditProc=(WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MSG),GWLP_WNDPROC,(LONG)MessageEditSubclassProc);
+			OldMessageEditProc=(WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MSG),GWLP_WNDPROC,(LONG_PTR)MessageEditSubclassProc);
 			{	TCHAR str[256],format[128];
 				GetWindowText( hwndDlg, format, SIZEOF( format ));
 				mir_sntprintf( str, SIZEOF(str), format, cli.pfnGetStatusModeDescription( dat->statusMode, 0 ));
@@ -246,7 +246,7 @@ static INT_PTR CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 			DBWriteContactSettingString(NULL,"SRAway",StatusModeToDbSetting(dat->statusMode,"Msg"),str);
 		}
 		Window_FreeIcon_IcoLib(hwndDlg);
-		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MSG),GWLP_WNDPROC,(LONG)OldMessageEditProc);
+		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MSG),GWLP_WNDPROC,(LONG_PTR)OldMessageEditProc);
 		mir_free(dat);
 		break;
 	}
@@ -299,7 +299,7 @@ struct AwayMsgDlgData {
 	int oldPage;
 };
 
-INT_PTR CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct AwayMsgDlgData *dat;
 
@@ -313,7 +313,7 @@ INT_PTR CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			DBVARIANT dbv;
 			TranslateDialogDefault(hwndDlg);
 			dat = (struct AwayMsgDlgData*)mir_alloc(sizeof(struct AwayMsgDlgData));
-			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG)dat);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)dat);
 			dat->oldPage=-1;
 			for ( i=0; i < SIZEOF(statusModes); i++ ) {
 				if ( !(protoModeMsgFlags & Proto_Status2Flag( statusModes[i] )))

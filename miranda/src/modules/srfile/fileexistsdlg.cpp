@@ -216,13 +216,13 @@ INT_PTR CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			TranslateDialogDefault(hwndDlg);
 			fts=(PROTOFILETRANSFERSTATUS*)mir_alloc(sizeof(PROTOFILETRANSFERSTATUS));
 			CopyProtoFileTransferStatus(fts,dat->fts);
-			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG)fts);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)fts);
 			SetDlgItemTextA(hwndDlg,IDC_FILENAME,fts->currentFile);
 			SetControlToUnixTime(hwndDlg,IDC_NEWDATE,fts->currentFileTime);
 			GetSensiblyFormattedSize(fts->currentFileSize,szSize,SIZEOF(szSize),0,1,NULL);
 			SetDlgItemText(hwndDlg,IDC_NEWSIZE,szSize);
 
-			pfnIconWindowProc=(WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_EXISTINGICON),GWLP_WNDPROC,(LONG)IconCtrlSubclassProc);
+			pfnIconWindowProc=(WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_EXISTINGICON),GWLP_WNDPROC,(LONG_PTR)IconCtrlSubclassProc);
 
 			hwndFocus=GetDlgItem(hwndDlg,IDC_RESUME);
 			if(_stat(fts->currentFile,&statbuf)==0) {
@@ -240,7 +240,7 @@ INT_PTR CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			//can be a little slow, so why not?
 			forkthread(LoadIconsAndTypesThread,0,lisi);			
 			SetFocus(hwndFocus);
-			SetWindowLong(hwndFocus,GWL_STYLE,GetWindowLong(hwndFocus,GWL_STYLE)|BS_DEFPUSHBUTTON);
+			SetWindowLongPtr(hwndFocus,GWL_STYLE,GetWindowLongPtr(hwndFocus,GWL_STYLE)|BS_DEFPUSHBUTTON);
 			return FALSE;
 		}
 		case WM_COMMAND:

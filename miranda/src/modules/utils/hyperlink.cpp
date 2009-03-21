@@ -39,12 +39,12 @@ struct HyperlinkWndData {
 
 static LRESULT CALLBACK HyperlinkWndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 {
-	struct HyperlinkWndData *dat=(struct HyperlinkWndData*)GetWindowLong(hwnd,0);
+	struct HyperlinkWndData *dat=(struct HyperlinkWndData*)GetWindowLongPtr(hwnd,0);
 	switch(msg) {
 		case WM_NCCREATE:
 			dat=(struct HyperlinkWndData*)mir_calloc(sizeof(struct HyperlinkWndData));
 			if(dat==NULL) return FALSE; /* fail creation */
-			SetWindowLong(hwnd,0,(LONG)dat); /* always succeeds */
+			SetWindowLongPtr(hwnd,0,(LONG_PTR)dat); /* always succeeds */
 			/* fall thru */
 		case WM_SYSCOLORCHANGE:
 			if(!(dat->flags&HLKF_HASENABLECOLOR)) {
@@ -123,7 +123,7 @@ static LRESULT CALLBACK HyperlinkWndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM
 					if(GetClientRect(hwnd,&rc)) {
 						dat->rcText.top=0;
 						dat->rcText.bottom=dat->rcText.top+textSize.cy;
-						style=GetWindowLong(hwnd,GWL_STYLE);
+						style=GetWindowLongPtr(hwnd,GWL_STYLE);
 						if(style&SS_CENTER) dat->rcText.left=(rc.right-textSize.cx)/2;
 						else if(style&SS_RIGHT) dat->rcText.left=rc.right-textSize.cx;
 						else dat->rcText.left=0;
@@ -184,7 +184,7 @@ static LRESULT CALLBACK HyperlinkWndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM
 				if(GetClientRect(hwnd,&rc) && GetWindowText(hwnd,szText,SIZEOF(szText))) {
 					SetTextColor(hdc,textColor);
 					SetBkMode(hdc,TRANSPARENT);
-					alignFlag=(GetWindowLong(hwnd,GWL_STYLE)&(SS_CENTER|SS_RIGHT|SS_LEFT));
+					alignFlag=(GetWindowLongPtr(hwnd,GWL_STYLE)&(SS_CENTER|SS_RIGHT|SS_LEFT));
 					DrawText(hdc,szText,-1,&rc,alignFlag|DT_NOPREFIX|DT_SINGLELINE|DT_TOP);
 				}
 				if(hPrevFont!=NULL) SelectObject(hdc,hPrevFont);

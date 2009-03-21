@@ -52,7 +52,7 @@ static int CompareProtos( const PROTOCOLDESCRIPTOR* p1, const PROTOCOLDESCRIPTOR
 
 static LIST<PROTOCOLDESCRIPTOR> protos( 10, CompareProtos );
 
-static int Proto_BroadcastAck(WPARAM wParam,LPARAM lParam)
+static INT_PTR Proto_BroadcastAck(WPARAM wParam,LPARAM lParam)
 {
 	return NotifyEventHooks(hAckEvent,wParam,lParam);
 }
@@ -70,14 +70,14 @@ PROTOCOLDESCRIPTOR* Proto_IsProtocolLoaded( const char* szProtoName )
 	return NULL;
 }
 
-int srvProto_IsLoaded(WPARAM, LPARAM lParam)
+INT_PTR srvProto_IsLoaded(WPARAM, LPARAM lParam)
 {
-	return (int)Proto_GetAccount(( char* )lParam );
+	return (INT_PTR)Proto_GetAccount(( char* )lParam );
 }
 
-int Proto_EnumProtocols(WPARAM wParam,LPARAM lParam)
+INT_PTR Proto_EnumProtocols(WPARAM wParam,LPARAM lParam)
 {
-	*( int* )wParam = protos.getCount();
+	*( INT_PTR* )wParam = protos.getCount();
 	*( PROTOCOLDESCRIPTOR*** )lParam = protos.getArray();
 	return 0;
 }
@@ -87,7 +87,7 @@ static PROTO_INTERFACE* defInitProto( const char* szModuleName, const TCHAR* )
 	return AddDefaultAccount( szModuleName );
 }
 
-static int Proto_RegisterModule(WPARAM, LPARAM lParam)
+static INT_PTR Proto_RegisterModule(WPARAM, LPARAM lParam)
 {
 	PROTOCOLDESCRIPTOR* pd = ( PROTOCOLDESCRIPTOR* )lParam, *p;
 	if ( pd->cbSize != sizeof( PROTOCOLDESCRIPTOR ) && pd->cbSize != PROTOCOLDESCRIPTOR_V3_SIZE )
@@ -134,7 +134,7 @@ static int Proto_RegisterModule(WPARAM, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // Basic core services
 
-static int Proto_RecvFile(WPARAM, LPARAM lParam)
+static INT_PTR Proto_RecvFile(WPARAM,LPARAM lParam)
 {
 	CCSDATA* ccs = ( CCSDATA* )lParam;
 	PROTORECVEVENT* pre = ( PROTORECVEVENT* )ccs->lParam;
@@ -153,7 +153,7 @@ static int Proto_RecvFile(WPARAM, LPARAM lParam)
 	return 0;
 }
 
-static int Proto_RecvMessage(WPARAM, LPARAM lParam)
+static INT_PTR Proto_RecvMessage(WPARAM,LPARAM lParam)
 {
 	CCSDATA *ccs = ( CCSDATA* )lParam;
 	PROTORECVEVENT *pre = ( PROTORECVEVENT* )ccs->lParam;
@@ -186,7 +186,7 @@ static int Proto_ValidTypingContact(HANDLE hContact, char *szProto)
 	return ( CallProtoService(szProto,PS_GETCAPS,PFLAGNUM_4,0) & PF4_SUPPORTTYPING ) ? 1 : 0;
 }
 
-static int Proto_SelfIsTyping(WPARAM wParam,LPARAM lParam)
+static INT_PTR Proto_SelfIsTyping(WPARAM wParam,LPARAM lParam)
 {
 	if ( lParam == PROTOTYPE_SELFTYPING_OFF || lParam == PROTOTYPE_SELFTYPING_ON ) {
 		char* szProto = ( char* )CallService( MS_PROTO_GETCONTACTBASEPROTO, wParam, 0 );
@@ -200,7 +200,7 @@ static int Proto_SelfIsTyping(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int Proto_ContactIsTyping(WPARAM wParam,LPARAM lParam)
+static INT_PTR Proto_ContactIsTyping(WPARAM wParam,LPARAM lParam)
 {
 	int type = (int)lParam;
 	char *szProto = ( char* )CallService( MS_PROTO_GETCONTACTBASEPROTO, wParam, 0 );
@@ -233,12 +233,12 @@ PROTOACCOUNT* Proto_GetAccount( const char* accName )
 	return accounts[idx];
 }
 
-static int srvProto_GetAccount(WPARAM, LPARAM lParam)
+static INT_PTR srvProto_GetAccount(WPARAM, LPARAM lParam)
 {
-	return ( int )Proto_GetAccount(( char* )lParam );
+	return ( INT_PTR )Proto_GetAccount(( char* )lParam );
 }
 
-static int Proto_EnumAccounts(WPARAM wParam, LPARAM lParam)
+static INT_PTR Proto_EnumAccounts(WPARAM wParam, LPARAM lParam)
 {
 	*( int* )wParam = accounts.getCount();
 	*( PROTOACCOUNT*** )lParam = accounts.getArray();

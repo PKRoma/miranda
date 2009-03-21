@@ -46,7 +46,7 @@ typedef struct {
 	short  cy;
 } START_OF_DLGTEMPLATEEX;
 
-int ResizeDialog(WPARAM, LPARAM lParam)
+INT_PTR ResizeDialog(WPARAM, LPARAM lParam)
 {
 	UTILRESIZEDIALOG *urd=(UTILRESIZEDIALOG*)lParam;
 	HDWP hDwp;

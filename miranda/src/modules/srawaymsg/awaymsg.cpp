@@ -41,7 +41,7 @@ static INT_PTR CALLBACK ReadAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wPar
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
 			dat=(struct AwayMsgDlgData*)mir_alloc(sizeof(struct AwayMsgDlgData));
-			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG)dat);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)dat);
 			dat->hContact=(HANDLE)lParam;
 			{
 #ifdef _UNICODE
@@ -114,7 +114,7 @@ static INT_PTR CALLBACK ReadAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wPar
 	return FALSE;
 }
 
-static int GetMessageCommand(WPARAM wParam, LPARAM)
+static INT_PTR GetMessageCommand(WPARAM wParam, LPARAM)
 {
 	HWND hwnd;
 	if(hwnd=WindowList_Find(hWindowList,(HANDLE)wParam)) {

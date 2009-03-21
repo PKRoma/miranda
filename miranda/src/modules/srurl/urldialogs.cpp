@@ -90,7 +90,7 @@ INT_PTR CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		Button_SetIcon_IcoLib(hwndDlg, IDC_USERMENU, SKINICON_OTHER_DOWNARROW, "User Menu");
 
 		dat=(struct UrlRcvData*)mir_alloc(sizeof(struct UrlRcvData));
-		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG)dat);
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 
 		dat->hContact = ((CLISTEVENT*)lParam)->hContact;
 		dat->hDbEvent = ((CLISTEVENT*)lParam)->hDbEvent;
@@ -259,7 +259,7 @@ static HWND hwndDde;
 static HGLOBAL hGlobalDdeData;
 static LRESULT DdeMessage(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
 {
-	UINT_PTR hSzItem;
+	UINT hSzItem;
 
 	switch(msg) {
 	case WM_DDE_ACK:
@@ -268,7 +268,7 @@ static LRESULT DdeMessage(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
 		break;
 
 	case WM_DDE_DATA:
-		UnpackDDElParam( msg, lParam, ( PUINT_PTR )&hGlobalDdeData, &hSzItem );
+		UnpackDDElParam(msg,lParam,(PUINT_PTR)&hGlobalDdeData,(PUINT_PTR)&hSzItem);
 		ddeData = 1;
 		if( hGlobalDdeData ) {
 			DDEDATA* data = ( DDEDATA* )GlobalLock( hGlobalDdeData );
@@ -374,7 +374,7 @@ static void GetOpenBrowserUrlsForBrowser(const char *szBrowser,HWND hwndDlg,HWND
 	ATOM hSzBrowser,hSzTopic;
 	int windowCount,i;
 	DWORD *windowId;
-	DWORD_PTR dwResult;
+	DWORD dwResult;
 	HGLOBAL hData;
 	DDEDATA *data;
 	int dataLength;
@@ -383,7 +383,7 @@ static void GetOpenBrowserUrlsForBrowser(const char *szBrowser,HWND hwndDlg,HWND
 
 	hSzTopic=GlobalAddAtomA("WWW_ListWindows");
 	ddeAcked=0;
-	if(!SendMessageTimeout(HWND_BROADCAST,WM_DDE_INITIATE,(WPARAM)hwndDlg,MAKELPARAM(hSzBrowser,hSzTopic),SMTO_ABORTIFHUNG|SMTO_NORMAL,DDEMESSAGETIMEOUT,&dwResult)
+	if(!SendMessageTimeout(HWND_BROADCAST,WM_DDE_INITIATE,(WPARAM)hwndDlg,MAKELPARAM(hSzBrowser,hSzTopic),SMTO_ABORTIFHUNG|SMTO_NORMAL,DDEMESSAGETIMEOUT,(PDWORD_PTR)&dwResult)
 	   || !ddeAcked) {
 		GlobalDeleteAtom(hSzTopic);
 		GlobalDeleteAtom(hSzBrowser);
@@ -407,7 +407,7 @@ static void GetOpenBrowserUrlsForBrowser(const char *szBrowser,HWND hwndDlg,HWND
 
 	hSzTopic=GlobalAddAtomA("WWW_GetWindowInfo");
 	ddeAcked=0;
-	if(!SendMessageTimeout(HWND_BROADCAST,WM_DDE_INITIATE,(WPARAM)hwndDlg,MAKELPARAM(hSzBrowser,hSzTopic),SMTO_ABORTIFHUNG|SMTO_NORMAL,DDEMESSAGETIMEOUT,&dwResult)
+	if(!SendMessageTimeout(HWND_BROADCAST,WM_DDE_INITIATE,(WPARAM)hwndDlg,MAKELPARAM(hSzBrowser,hSzTopic),SMTO_ABORTIFHUNG|SMTO_NORMAL,DDEMESSAGETIMEOUT,(PDWORD_PTR)&dwResult)
 	   || !ddeAcked) {
 		GlobalDeleteAtom(hSzTopic);
 		GlobalDeleteAtom(hSzBrowser);
@@ -475,7 +475,7 @@ INT_PTR CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 		SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_LIMITTEXT, 450, 0);
 		dat=(struct UrlSendData*)mir_alloc(sizeof(struct UrlSendData));
-		SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG)dat);
+		SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)dat);
 		dat->hContact=(HANDLE)lParam;
 		dat->hAckEvent=NULL;
 		dat->hSendId=NULL;
@@ -492,8 +492,8 @@ INT_PTR CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		if (SendDlgItemMessage(hwndDlg,IDC_URLS,CB_GETCOUNT,0,0))SendMessage(hwndDlg,WM_COMMAND,MAKEWPARAM(IDC_URLS,CBN_SELCHANGE),0);
 		EnableWindow(GetDlgItem(hwndDlg, IDOK), (SendDlgItemMessage(hwndDlg, IDC_URLS, CB_GETCURSEL, 0, 0) == CB_ERR)?FALSE:TRUE);
 		Utils_RestoreWindowPositionNoSize(hwndDlg,NULL,"SRUrl","send");
-		OldSendEditProc=(WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MESSAGE),GWLP_WNDPROC,(LONG)SendEditSubclassProc);
-		OldSendEditProc=(WNDPROC)SetWindowLongPtr(GetWindow(GetDlgItem(hwndDlg,IDC_URLS),GW_CHILD),GWLP_WNDPROC,(LONG)SendEditSubclassProc);
+		OldSendEditProc=(WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MESSAGE),GWLP_WNDPROC,(LONG_PTR)SendEditSubclassProc);
+		OldSendEditProc=(WNDPROC)SetWindowLongPtr(GetWindow(GetDlgItem(hwndDlg,IDC_URLS),GW_CHILD),GWLP_WNDPROC,(LONG_PTR)SendEditSubclassProc);
 
 		// From message dlg
 		if (!DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0))
@@ -650,8 +650,8 @@ INT_PTR CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		Button_FreeIcon_IcoLib(hwndDlg,IDC_USERMENU);
 
 		WindowList_Remove(hUrlWindowList, hwndDlg);
-		SetWindowLongPtr(GetWindow(GetDlgItem(hwndDlg,IDC_URLS),GW_CHILD),GWLP_WNDPROC,(LONG)OldSendEditProc);
-		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MESSAGE),GWLP_WNDPROC,(LONG)OldSendEditProc);
+		SetWindowLongPtr(GetWindow(GetDlgItem(hwndDlg,IDC_URLS),GW_CHILD),GWLP_WNDPROC,(LONG_PTR)OldSendEditProc);
+		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MESSAGE),GWLP_WNDPROC,(LONG_PTR)OldSendEditProc);
 		if(dat->hAckEvent) UnhookEvent(dat->hAckEvent);
 		if(dat->sendBuffer!=NULL) mir_free(dat->sendBuffer);
 		mir_free(dat);

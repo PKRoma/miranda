@@ -29,7 +29,7 @@ static INT_PTR CALLBACK EditUserEmailDlgProc(HWND hwndDlg, UINT msg, WPARAM wPar
 {
 	switch(msg) {
 		case WM_INITDIALOG:
-			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,lParam);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)lParam);
 			if(*(char*)lParam) SetWindowText(hwndDlg,TranslateT("Edit E-Mail Address"));
 			TranslateDialogDefault(hwndDlg);
 			SetDlgItemTextA(hwndDlg,IDC_EMAIL,(char*)lParam);
@@ -61,7 +61,7 @@ static INT_PTR CALLBACK EditUserPhoneDlgProc(HWND hwndDlg, UINT msg, WPARAM wPar
 		{	char *szText=(char*)lParam;
 			int i,item,countryCount;
 			struct CountryListEntry *countries;
-			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,lParam);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)lParam);
 			if(szText[0]) SetWindowTextA(hwndDlg,"Edit Phone Number");
 			TranslateDialogDefault(hwndDlg);
 			if(lstrlenA(szText)>4 && !lstrcmpA(szText+lstrlenA(szText)-4," SMS")) {
@@ -198,7 +198,7 @@ INT_PTR CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 {
 	switch(msg) {
 		case WM_INITDIALOG:
-			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,lParam);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)lParam);
 			if(hEmailFont) DeleteObject(hEmailFont);
 			{	LOGFONT lf;
 				hEmailFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_EMAILS,WM_GETFONT,0,0);

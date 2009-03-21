@@ -72,7 +72,7 @@ static int PageSortProc(OPTIONSDIALOGPAGE *item1,OPTIONSDIALOGPAGE *item2)
 	return lstrcmp(item1->ptszTab, item2->ptszTab);
 }
 
-static int ShowDetailsDialogCommand(WPARAM wParam,LPARAM)
+static INT_PTR ShowDetailsDialogCommand(WPARAM wParam,LPARAM)
 {
 	HWND hwnd;
 	PROPSHEETHEADER psh;
@@ -111,7 +111,7 @@ static int ShowDetailsDialogCommand(WPARAM wParam,LPARAM)
 	return 0;
 }
 
-static int AddDetailsPage(WPARAM wParam,LPARAM lParam)
+static INT_PTR AddDetailsPage(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE *odp=(OPTIONSDIALOGPAGE*)lParam, *dst;
 	struct DetailsPageInit *opi=(struct DetailsPageInit*)wParam;
@@ -225,7 +225,7 @@ static INT_PTR CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		{
 			PROPSHEETHEADER *psh=(PROPSHEETHEADER*)lParam;
 			dat=(struct DetailsData*)mir_alloc(sizeof(struct DetailsData));
-			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG)dat);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 			dat->hContact=(HANDLE)psh->pszCaption;
 			dat->hProtoAckEvent=HookEventMessage(ME_PROTO_ACK,hwndDlg,HM_PROTOACK);
 			dat->infosUpdated=NULL;

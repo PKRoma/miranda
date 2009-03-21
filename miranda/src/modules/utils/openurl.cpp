@@ -37,7 +37,7 @@ static LRESULT CALLBACK DdeMessageWindow(HWND hwnd,UINT msg,WPARAM wParam,LPARAM
 	ATOM hSzItem;
 	HGLOBAL hDdeData;
 
-	dat=(struct DdeMsgWindowData*)GetWindowLong(hwnd,0);
+	dat=(struct DdeMsgWindowData*)GetWindowLongPtr(hwnd,0);
 	switch(msg) {
 		case WM_DDE_ACK:
 			dat->fAcked=1;
@@ -70,7 +70,7 @@ static int DoDdeRequest(const char *szItemName,HWND hwndDdeMsg)
 	ATOM hSzItemName;
 	DWORD timeoutTick,thisTick;
 	MSG msg;
-	struct DdeMsgWindowData *dat=(struct DdeMsgWindowData*)GetWindowLong(hwndDdeMsg,0);
+	struct DdeMsgWindowData *dat=(struct DdeMsgWindowData*)GetWindowLongPtr(hwndDdeMsg,0);
 
 	hSzItemName=GlobalAddAtomA(szItemName);
 	if(!PostMessage(dat->hwndDde,WM_DDE_REQUEST,(WPARAM)hwndDdeMsg,MAKELPARAM(CF_TEXT,hSzItemName))) {
@@ -102,7 +102,7 @@ static int DdeOpenUrl(const char *szBrowser,char *szUrl,int newWindow,HWND hwndD
 	ATOM hSzBrowser,hSzTopic;
 	DWORD_PTR dwResult;
 	char *szItemName;
-	struct DdeMsgWindowData *dat=(struct DdeMsgWindowData*)GetWindowLong(hwndDdeMsg,0);
+	struct DdeMsgWindowData *dat=(struct DdeMsgWindowData*)GetWindowLongPtr(hwndDdeMsg,0);
 
 	hSzBrowser=GlobalAddAtomA(szBrowser);
 	hSzTopic=GlobalAddAtomA("WWW_OpenURL");
@@ -148,7 +148,7 @@ static void OpenURLThread(void *arg)
     
    if (!hUrlInfo->szUrl) return;
 	hwndDdeMsg=CreateWindow(WNDCLASS_DDEMSGWINDOW,_T(""),0,0,0,0,0,NULL,NULL,hMirandaInst,NULL);
-	SetWindowLong(hwndDdeMsg,0,(LONG)&msgWndData);
+	SetWindowLongPtr(hwndDdeMsg,0,(LONG)&msgWndData);
 
 	if(!_strnicmp(hUrlInfo->szUrl,"ftp:",4) || !_strnicmp(hUrlInfo->szUrl,"ftp.",4)) pszProtocol="ftp";
 	if(!_strnicmp(hUrlInfo->szUrl,"mailto:",7)) pszProtocol="mailto";
@@ -201,7 +201,7 @@ static void OpenURLThread(void *arg)
 	return;
 }
 
-static int OpenURL(WPARAM wParam,LPARAM lParam) {
+static INT_PTR OpenURL(WPARAM wParam,LPARAM lParam) {
 	TOpenUrlInfo *hUrlInfo = (TOpenUrlInfo*)mir_alloc(sizeof(TOpenUrlInfo));
 	hUrlInfo->szUrl = (char*)lParam?mir_strdup((char*)lParam):NULL;
 	hUrlInfo->newWindow = (int)wParam;

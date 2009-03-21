@@ -390,12 +390,12 @@ static void convertOneProtocol( char* moduleName, char* iconName )
 			DBDeleteContactSetting( NULL, "Icons", moduleName );
 }	}	}
 
-static int SRV_LoadSkinIcon( WPARAM wParam, LPARAM lParam )
+static INT_PTR SRV_LoadSkinIcon( WPARAM wParam, LPARAM lParam )
 {
 	if ( lParam == 0 )
-		return ( int )LoadSkinIcon( wParam );
+		return (INT_PTR)LoadSkinIcon( wParam );
 
-	return ( int )GetSkinIconHandle( wParam );
+	return (INT_PTR)GetSkinIconHandle( wParam );
 }
 
 int LoadSkinIcons(void)
