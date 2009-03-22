@@ -769,18 +769,15 @@ static INT_PTR DrawMenuItem(WPARAM, LPARAM lParam)
 
 int RecursiveDeleteMenu(HMENU hMenu)
 {
-	int i=GetMenuItemCount(hMenu);
-	while (i>0)
-	{
+	do {
 		HMENU submenu=GetSubMenu(hMenu,0);
 		if (submenu)
 		{
 			RecursiveDeleteMenu(submenu);
 			DestroyMenu(submenu);
 		}
-		DeleteMenu(hMenu,0,MF_BYPOSITION);
-		i=GetMenuItemCount(hMenu);
-	}
+    } 
+    while (DeleteMenu(hMenu,0,MF_BYPOSITION));
 	return 0;
 }
 
