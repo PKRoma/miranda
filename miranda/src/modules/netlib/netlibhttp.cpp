@@ -823,7 +823,9 @@ next:
 			nlhrReply->pData = szData;
 			nlhrReply->dataLength = bufsz;
 
-			memmove(&nlhrReply->headers[cenc], &nlhrReply->headers[cenc+1], (--nlhrReply->headersCount-cenc)*sizeof(nlhrReply->headers[0]));
+			mir_free(nlhrReply->headers[cenc].szName);
+			mir_free(nlhrReply->headers[cenc].szValue);
+            memmove(&nlhrReply->headers[cenc], &nlhrReply->headers[cenc+1], (--nlhrReply->headersCount-cenc)*sizeof(nlhrReply->headers[0]));
 		}
         else if (bufsz == 0)
         {
