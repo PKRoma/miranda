@@ -1070,6 +1070,8 @@ int LoadNewPluginsModuleInfos(void)
 	pluginCoreLink.NotifyEventHooksDirect         = CallHookSubscribers;
 	pluginCoreLink.CallProtoService               = CallProtoService;
 	pluginCoreLink.CallContactService             = CallContactService;
+	pluginCoreLink.KillObjectServices             = KillObjectServices;
+	pluginCoreLink.KillObjectEventHooks           = KillObjectEventHooks;
 
 	// remember where the mirandaboot.ini goes
     pathToAbsoluteT(_T("mirandaboot.ini"), mirandabootini, NULL);
