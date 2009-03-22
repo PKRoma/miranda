@@ -305,6 +305,7 @@ struct GlobalLogSettings_t {
 	BOOL        StripFormat;
 	BOOL        SoundsFocus;
 	BOOL        SkipWhenNoWindow;
+	BOOL        BBCodeInPopups;
 	BOOL        TrayIconInactiveOnly;
 	BOOL        AddColonToAutoComplete;
 	BOOL        LogLimitNames;

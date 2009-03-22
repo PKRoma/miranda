@@ -243,6 +243,16 @@ static BOOL DoPopup(SESSION_INFO* si, GCEVENT* gce, struct MessageWindowData* da
 	struct ContainerWindowData *pContainer = dat ? dat->pContainer : NULL;
 	char *szProto = dat ? dat->szProto : si->pszModule;
 
+	TCHAR *bbStart, *bbEnd;
+	if (g_Settings.BBCodeInPopups)
+	{
+		bbStart = _T("[b]");
+		bbEnd = _T("[/b]");
+	} else
+	{
+		bbStart = bbEnd = _T("");
+	}
+
 	if (si && (iEvent & si->iLogPopupFlags)) {
 
 		if (nen_options.iDisable || (dat == 0 && g_Settings.SkipWhenNoWindow))                          // no popups at all. Period
@@ -299,15 +309,16 @@ static BOOL DoPopup(SESSION_INFO* si, GCEVENT* gce, struct MessageWindowData* da
 			return 0;
 		}
 passed:
+
 		switch (iEvent) {
 			case GC_EVENT_MESSAGE | GC_EVENT_HIGHLIGHT :
-				ShowPopup(si->hContact, si, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE), si->pszModule, si->ptszName, aFonts[16].color, TranslateT("%s says: %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
+				ShowPopup(si->hContact, si, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE), si->pszModule, si->ptszName, aFonts[16].color, TranslateT("%s%s says:%s %s"), bbStart, gce->ptszNick, bbEnd, RemoveFormatting(gce->ptszText));
 				break;
 			case GC_EVENT_ACTION | GC_EVENT_HIGHLIGHT :
 				ShowPopup(si->hContact, si, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE), si->pszModule, si->ptszName, aFonts[16].color, _T("%s %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 				break;
 			case GC_EVENT_MESSAGE :
-				ShowPopup(si->hContact, si, hIcons[ICON_MESSAGE], si->pszModule, si->ptszName, aFonts[9].color, TranslateT("%s says: %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
+				ShowPopup(si->hContact, si, hIcons[ICON_MESSAGE], si->pszModule, si->ptszName, aFonts[9].color, TranslateT("%s%s says:%s %s"), bbStart, gce->ptszNick, bbEnd, RemoveFormatting(gce->ptszText));
 				break;
 			case GC_EVENT_ACTION:
 				ShowPopup(si->hContact, si, hIcons[ICON_ACTION], si->pszModule, si->ptszName, aFonts[15].color, _T("%s %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));

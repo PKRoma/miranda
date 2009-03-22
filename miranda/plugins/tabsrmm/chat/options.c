@@ -235,6 +235,7 @@ static struct branch_t branch6[] = {
 	{LPGENT("Show pop-up for name changes"), "PopupFlags", GC_EVENT_NICK, 0, NULL},
 	{LPGENT("Show pop-up for information messages"), "PopupFlags", GC_EVENT_INFORMATION, 0, NULL},
 	{LPGENT("Show pop-up for status changes"), "PopupFlags", GC_EVENT_ADDSTATUS, 0, NULL},
+	{LPGENT("Use bold form for nickname (requires BBCode support)"), "BBCodeInPopups", 0, 0, NULL},
 };
 
 static struct branch_t branch7[] = {
@@ -1341,6 +1342,7 @@ void LoadGlobalSettings(void)
 	g_Settings.StripFormat = (BOOL)DBGetContactSettingByte(NULL, "Chat", "StripFormatting", 0);
 	g_Settings.TrayIconInactiveOnly = (BOOL)DBGetContactSettingByte(NULL, "Chat", "TrayIconInactiveOnly", 1);
 	g_Settings.SkipWhenNoWindow = (BOOL)DBGetContactSettingByte(NULL, "Chat", "SkipWhenNoWindow", 0);
+	g_Settings.BBCodeInPopups = (BOOL)DBGetContactSettingByte(NULL, "Chat", "BBCodeInPopups", 0);
 	g_Settings.AddColonToAutoComplete = (BOOL)DBGetContactSettingByte(NULL, "Chat", "AddColonToAutoComplete", 1);
 	g_Settings.iPopupStyle = DBGetContactSettingByte(NULL, "Chat", "PopupStyle", 1);
 	g_Settings.iPopupTimeout = DBGetContactSettingWord(NULL, "Chat", "PopupTimeout", 3);
