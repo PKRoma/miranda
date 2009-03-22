@@ -674,7 +674,7 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 			if (data->hContact == NULL)
 				ace = (avatarCacheEntry *) CallService(MS_AV_GETMYAVATAR, 0, (LPARAM) data->proto);
 			else
-				ace = (avatarCacheEntry *) CallService(MS_AV_GETAVATARBITMAP, 0, (LPARAM) data->hContact);
+				ace = (avatarCacheEntry *) CallService(MS_AV_GETAVATARBITMAP, (WPARAM) data->hContact, 0);
 
 			if (ace == NULL || ace->bmHeight == 0 || ace->bmWidth == 0 
 				|| (data->respectHidden && (ace->dwFlags & AVS_HIDEONCLIST)))
