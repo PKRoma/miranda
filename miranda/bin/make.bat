@@ -118,6 +118,11 @@ call :Nmake modernb.mak "modernb - Win32 Release"
 popd
 if errorlevel 1 goto :Error
 
+pushd ..\..\miranda\plugins\modernopt
+call :Nmake modernopt.mak "modernopt - Win32 Release"
+popd
+if errorlevel 1 goto :Error
+
 pushd ..\..\miranda\plugins\mwclist
 call :Nmake mwclist.mak "mwclist - Win32 Release"
 popd
