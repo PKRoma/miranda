@@ -200,6 +200,18 @@ void CacheLogFonts()
 	myGlobals.crOldOutgoing =DBGetContactSettingDword(NULL, FONTMODULE, "oldoutbg", SRMSGDEFSET_BKGOUTCOLOUR);
 }
 
+void FreeLogFonts()
+{
+	int i;
+
+	for (i = 0; i < IPFONTCOUNT; i++)
+		if (myGlobals.ipConfig.hFonts[i])
+			DeleteObject(myGlobals.ipConfig.hFonts[i]);
+
+	if (myGlobals.ipConfig.bkgBrush)
+		DeleteObject(myGlobals.ipConfig.bkgBrush);
+}
+
 /*
 #define RTFPICTHEADERMAXSIZE   78
 */

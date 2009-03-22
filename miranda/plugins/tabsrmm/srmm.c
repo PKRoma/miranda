@@ -126,6 +126,7 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 
 int __declspec(dllexport) Unload(void)
 {
+	FreeLogFonts();
 	Chat_Unload();
 	return SplitmsgShutdown();
 }
