@@ -31,14 +31,8 @@ int InitColourPicker(void);
 int InitBitmapFilter(void);
 void InitXmlApi(void);
 int InitPathUtils(void);
-void md5_init(mir_md5_state_t *pms);
-void md5_append(mir_md5_state_t *pms, const mir_md5_byte_t *data, int nbytes);
-void md5_finish(mir_md5_state_t *pms, mir_md5_byte_t digest[16]);
-void md5_hash_string(const mir_md5_byte_t *data, int len, mir_md5_byte_t digest[16]);
-void shaInit(mir_sha1_ctx *ctx);
-void shaUpdate(mir_sha1_ctx *ctx, mir_sha1_byte_t *dataIn, int len);
-void shaFinal(mir_sha1_ctx *ctx, mir_sha1_byte_t hashout[20]);
-void shaBlock(mir_sha1_byte_t *dataIn, int len, mir_sha1_byte_t hashout[20]);
+int GetMD5Interface(WPARAM, LPARAM);
+int GetSHA1Interface(WPARAM, LPARAM);
 
 static BOOL bModuleInitialized = FALSE;
 
@@ -400,36 +394,6 @@ static INT_PTR GetCountryList(WPARAM wParam,LPARAM lParam)
 {
 	*(int*)wParam = SIZEOF(countries);
 	*(struct CountryListEntry**)lParam=countries;
-	return 0;
-}
-
-INT_PTR GetMD5Interface(WPARAM, LPARAM lParam)
-{
-	struct MD5_INTERFACE *md5i = (struct MD5_INTERFACE*) lParam;
-	if ( md5i == NULL )
-		return 1;
-	if ( md5i->cbSize != sizeof( struct MD5_INTERFACE ))
-		return 1;
-
-	md5i->md5_init = md5_init;
-	md5i->md5_append = md5_append;
-	md5i->md5_finish = md5_finish;
-	md5i->md5_hash = md5_hash_string;
-	return 0;
-}
-
-INT_PTR GetSHA1Interface(WPARAM, LPARAM lParam)
-{
-	struct SHA1_INTERFACE *sha1i = (struct SHA1_INTERFACE*) lParam;
-	if ( sha1i == NULL )
-		return 1;
-	if ( sha1i->cbSize != sizeof( struct SHA1_INTERFACE ))
-		return 1;
-
-	sha1i->sha1_init = shaInit;
-	sha1i->sha1_append = shaUpdate;
-	sha1i->sha1_finish = shaFinal;
-	sha1i->sha1_hash = shaBlock;
 	return 0;
 }
 

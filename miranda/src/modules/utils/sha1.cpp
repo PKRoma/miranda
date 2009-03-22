@@ -159,3 +159,17 @@ static void shaHashBlock(mir_sha1_ctx *ctx) {
   ctx->H[4] += E;
 }
 
+int GetSHA1Interface(WPARAM, LPARAM lParam)
+{
+	struct SHA1_INTERFACE *sha1i = (struct SHA1_INTERFACE*) lParam;
+	if ( sha1i == NULL )
+		return 1;
+	if ( sha1i->cbSize != sizeof( struct SHA1_INTERFACE ))
+		return 1;
+
+	sha1i->sha1_init = shaInit;
+	sha1i->sha1_append = shaUpdate;
+	sha1i->sha1_finish = shaFinal;
+	sha1i->sha1_hash = shaBlock;
+	return 0;
+}
