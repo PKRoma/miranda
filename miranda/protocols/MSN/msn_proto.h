@@ -153,6 +153,7 @@ struct CMsnProto : public PROTO_INTERFACE
     OBJLIST<MsgQueueEntry> msgQueueList;
 
 	int tridUrlInbox;
+    LONG sttChatID;
 
 	int msnPingTimeout;
 	HANDLE hKeepAliveThreadEvt;

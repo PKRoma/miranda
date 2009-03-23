@@ -484,7 +484,7 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="wsock32.lib comctl32.lib Rpcrt4.lib"
-				OutputFile="$(OutDir)\$(ProjectName).dll"
+				OutputFile="c:\Miranda IM\plugins\msn.dll"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"

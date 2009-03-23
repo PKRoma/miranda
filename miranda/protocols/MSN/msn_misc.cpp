@@ -22,13 +22,44 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "msn_proto.h"
 #include "version.h"
 
-typedef INT ( WINAPI pIncrementFunc )( PINT );
+#if !defined(_UNICODE) && !defined(_AMD64_)
+
+typedef LONG ( WINAPI pIncrementFunc )( PLONG );
 static pIncrementFunc  MyInterlockedIncrement95;
 static pIncrementFunc  MyInterlockedIncrementInit;
 
 pIncrementFunc *MyInterlockedIncrement = MyInterlockedIncrementInit;
 
 static CRITICAL_SECTION csInterlocked95;
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// InterlockedIncrement emulation
+
+static LONG WINAPI MyInterlockedIncrement95(PLONG pVal)
+{
+	DWORD ret;
+	EnterCriticalSection(&csInterlocked95);
+	ret=++*pVal;
+	LeaveCriticalSection(&csInterlocked95);
+	return ret;
+}
+
+//there's a possible hole here if too many people call this at the same time, but that doesn't happen
+static INT WINAPI MyInterlockedIncrementInit(PLONG pVal)
+{
+    DWORD ver = GetVersion();
+    if (( ver & 0x80000000 ) && LOWORD( ver ) == 0x0004 )
+    {
+        InitializeCriticalSection( &csInterlocked95 );
+        MyInterlockedIncrement = MyInterlockedIncrement95;
+    }
+    else
+        MyInterlockedIncrement = (pIncrementFunc*)InterlockedIncrement;
+
+    return MyInterlockedIncrement( pVal );
+}
+
+#endif
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MirandaStatusToMSN - status helper functions
@@ -415,7 +446,7 @@ LONG ThreadData::sendRawMessage( int msgType, const char* data, int datLen )
 
 	char* buf = ( char* )alloca( datLen + 100 );
 
-	INT thisTrid = MyInterlockedIncrement( &mTrid );
+	LONG thisTrid = MyInterlockedIncrement( &mTrid );
 	int nBytes = mir_snprintf( buf, 100, "MSG %d %c %d\r\n%s",
 		thisTrid, msgType, datLen + sizeof(sttHeaderStart)-1, sttHeaderStart );
 	memcpy( buf + nBytes, data, datLen );
@@ -1065,33 +1096,6 @@ char* TWinErrorCode::getText()
 	}
 
 	return mErrorText;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// InterlockedIncrement emulation
-
-static INT WINAPI MyInterlockedIncrement95(PINT pVal)
-{
-	DWORD ret;
-	EnterCriticalSection(&csInterlocked95);
-	ret=++*pVal;
-	LeaveCriticalSection(&csInterlocked95);
-	return ret;
-}
-
-//there's a possible hole here if too many people call this at the same time, but that doesn't happen
-
-static INT WINAPI MyInterlockedIncrementInit(PINT pVal)
-{
-    DWORD ver = GetVersion();
-    if (( ver & 0x80000000 ) && LOWORD( ver ) == 0x0004 )
-    {
-        InitializeCriticalSection( &csInterlocked95 );
-        MyInterlockedIncrement = MyInterlockedIncrement95;
-    }
-    else  MyInterlockedIncrement = ( pIncrementFunc* )InterlockedIncrement;
-
-    return MyInterlockedIncrement( pVal );
 }
 
 // Process a string, and double all % characters, according to chat.dll's restrictions

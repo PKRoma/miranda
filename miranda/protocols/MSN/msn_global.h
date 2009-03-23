@@ -206,7 +206,15 @@ char*  rtrim( char* string );
 wchar_t* rtrim( wchar_t* string );
 char* arrayToHex(BYTE* data, size_t datasz);
 
-extern INT (WINAPI *MyInterlockedIncrement)(PINT pVal);
+#if defined(_UNICODE) || defined(_AMD64_)
+
+#define MyInterlockedIncrement InterlockedIncrement
+
+#else
+
+extern LONG (WINAPI *MyInterlockedIncrement)(PLONG pVal);
+
+#endif
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // PNG library interface
@@ -444,7 +452,7 @@ struct ThreadData
 	HANDLE         mInitialContact;  // initial switchboard contact
 	HANDLE*        mJoinedContacts;  //	another contacts
 	int            mJoinedCount;     // another contacts count
-	INT            mTrid;            // current message ID
+	LONG           mTrid;            // current message ID
 	UINT           mTimerId;         // typing notifications timer id
 	bool           firstMsgRecv;
 
