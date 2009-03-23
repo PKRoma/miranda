@@ -285,40 +285,37 @@ void CJabberProto::OnIqResultSetAuth( HXML iqNode )
 		m_ThreadInfo = NULL;	// To disallow auto reconnect
 }	}
 
-void CJabberProto::OnIqResultBind( HXML iqNode )
+void CJabberProto::OnIqResultBind( HXML iqNode, CJabberIqInfo* pInfo )
 {
-	HXML n = xmlGetChild( iqNode , "bind" );
-	if ( n != NULL ) {
-		if ( n = xmlGetChild( n , "jid" )) {
-			if ( xmlGetText( n ) ) {
-				if ( !_tcsncmp( m_ThreadInfo->fullJID, xmlGetText( n ), SIZEOF( m_ThreadInfo->fullJID )))
-					Log( "Result Bind: "TCHAR_STR_PARAM" %s "TCHAR_STR_PARAM, m_ThreadInfo->fullJID, "confirmed.", NULL );
-				else {
-					Log( "Result Bind: "TCHAR_STR_PARAM" %s "TCHAR_STR_PARAM, m_ThreadInfo->fullJID, "changed to", xmlGetText( n ));
-					_tcsncpy( m_ThreadInfo->fullJID, xmlGetText( n ), SIZEOF( m_ThreadInfo->fullJID ));
-		}	}	}
-
-		if ( m_ThreadInfo->bIsSessionAvailable ) {
-			int iqId = SerialNext();
-			IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultSession );
-			m_ThreadInfo->send(
-				XmlNodeIq( _T("set")) << XATTRID( iqId )
-					<< XCHILDNS( _T("session"), _T("urn:ietf:params:xml:ns:xmpp-session")));
+	if ( !m_ThreadInfo || !iqNode )
+		return;
+	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT) {
+		LPCTSTR szJid = XPathT( iqNode, "bind[@xmlns='urn:ietf:params:xml:ns:xmpp-bind']/jid" );
+		if ( szJid ) {
+			if ( !_tcsncmp( m_ThreadInfo->fullJID, szJid, SIZEOF( m_ThreadInfo->fullJID )))
+				Log( "Result Bind: " TCHAR_STR_PARAM " confirmed ", m_ThreadInfo->fullJID );
+			else {
+				Log( "Result Bind: " TCHAR_STR_PARAM " changed to " TCHAR_STR_PARAM, m_ThreadInfo->fullJID, szJid);
+				_tcsncpy( m_ThreadInfo->fullJID, szJid, SIZEOF( m_ThreadInfo->fullJID ));
+			}
 		}
-		else OnLoggedIn();
+		if ( m_ThreadInfo->bIsSessionAvailable )
+			m_ThreadInfo->send(
+				XmlNodeIq( m_iqManager.AddHandler( &CJabberProto::OnIqResultSession, JABBER_IQ_TYPE_SET ))
+				<< XCHILDNS( _T("session"), _T("urn:ietf:params:xml:ns:xmpp-session" )));
+		else
+			OnLoggedIn();
 	}
-   else if ( n = xmlGetChild( n , "error" )) {
+	else {
 		//rfc3920 page 39
 		m_ThreadInfo->send( "</stream:stream>" );
 		m_ThreadInfo = NULL;	// To disallow auto reconnect
-}	}
+	}
+}
 
-void CJabberProto::OnIqResultSession( HXML iqNode )
+void CJabberProto::OnIqResultSession( HXML iqNode, CJabberIqInfo* pInfo )
 {
-	const TCHAR* type;
-	if (( type=xmlGetAttrValue( iqNode, _T("type"))) == NULL ) return;
-
-	if ( !lstrcmp( type, _T("result")))
+	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT)
 		OnLoggedIn();
 }
 

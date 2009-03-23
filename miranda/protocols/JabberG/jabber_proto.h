@@ -494,7 +494,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   IqRemove( int index );
 	void   IqExpire();
 		  
-	void   OnIqResultBind( HXML iqNode );
+	void   OnIqResultBind( HXML iqNode, CJabberIqInfo* pInfo );
 	void   OnIqResultDiscoBookmarks( HXML iqNode );
 	void   OnIqResultSetBookmarks( HXML iqNode );
 	void   OnIqResultExtSearch( HXML iqNode );
@@ -515,7 +515,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   OnIqResultMucGetVoiceList( HXML iqNode );
 	void   OnIqResultNestedRosterGroups( HXML iqNode, CJabberIqInfo* pInfo );
 	void   OnIqResultNotes( HXML iqNode, CJabberIqInfo* pInfo );
-	void   OnIqResultSession( HXML iqNode );
+	void   OnIqResultSession( HXML iqNode, CJabberIqInfo* pInfo );
 	void   OnIqResultSetAuth( HXML iqNode );
 	void   OnIqResultSetPassword( HXML iqNode );
 	void   OnIqResultSetRegister( HXML iqNode );

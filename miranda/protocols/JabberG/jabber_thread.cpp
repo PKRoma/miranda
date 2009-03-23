@@ -760,10 +760,10 @@ void CJabberProto::OnProcessFeatures( HXML node, ThreadData* info )
 
 	// mechanisms are not defined.
 	if ( info->auth ) { //We are already logged-in
-		int iqId = SerialNext();
-		IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultBind );
-		info->send( XmlNodeIq( _T("set"), iqId ) << XCHILDNS( _T("bind"), _T("urn:ietf:params:xml:ns:xmpp-bind" )) 
-			<< XCHILD( _T("resource"), info->resource ));
+		info->send(
+			XmlNodeIq( m_iqManager.AddHandler( &CJabberProto::OnIqResultBind, JABBER_IQ_TYPE_SET ))
+				<< XCHILDNS( _T("bind"), _T("urn:ietf:params:xml:ns:xmpp-bind" )) 
+				<< XCHILD( _T("resource"), info->resource ));
 
 		if ( isSessionAvailable )
 			info->bIsSessionAvailable = TRUE;
