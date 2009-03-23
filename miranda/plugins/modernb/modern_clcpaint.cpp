@@ -2835,7 +2835,7 @@ void CLCPaint::_CalcItemsPos( HWND hwnd, HDC hdcMem, struct ClcData *dat, struct
     RECT free_row_rc = *in_free_row_rc;
     RECT row_rc = *in_row_rc;
     Drawing->ext_nItemsNum = 0;
-    text_left_pos = 0;
+    text_left_pos = row_rc.right;
     // Now let's check what we have to draw
     for ( item_iterator = 0 ; item_iterator < NUM_ITEM_TYPE && free_row_rc.left < free_row_rc.right ; item_iterator++ )
     {

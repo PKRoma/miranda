@@ -160,6 +160,7 @@ static int clcHookModulesLoaded(WPARAM wParam,LPARAM lParam)
 	ModernHookEvent(ME_BACKGROUNDCONFIG_CHANGED,clcHookBkgndConfigChanged);
 	ModernHookEvent(ME_BACKGROUNDCONFIG_CHANGED,BgStatusBarChange);
 	ModernHookEvent(ME_BACKGROUNDCONFIG_CHANGED,OnFrameTitleBarBackgroundChange);
+	ModernHookEvent(ME_COLOUR_RELOAD, OnFrameTitleBarBackgroundChange);
 
 	AniAva_UpdateOptions();
 	return 0;

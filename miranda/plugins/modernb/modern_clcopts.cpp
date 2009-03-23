@@ -178,13 +178,14 @@ void RegisterCLUIFonts( void )
 
 	}
     colourid.cbSize = sizeof( ColourIDT );
-    strncpy(colourid.dbSettingsGroup, "CLC", sizeof(colourid.dbSettingsGroup));
+    
 
     for ( i = 0; i < SIZEOF( colourOptionsList); i++ )
     {
-        _tcsncpy(colourid.group,    colourOptionsList[i].szGroup, SIZEOF(colourid.group));
-        _tcsncpy(colourid.name,     colourOptionsList[i].szDescr, SIZEOF(colourid.group));
-        strncpy(colourid.setting,   colourOptionsList[i].chName,  sizeof(colourid.setting));
+        _tcsncpy(colourid.group,          colourOptionsList[i].szGroup, SIZEOF(colourid.group));
+        _tcsncpy(colourid.name,           colourOptionsList[i].szDescr, SIZEOF(colourid.group));
+        strncpy(colourid.setting,         colourOptionsList[i].chName,  sizeof(colourid.setting));
+        strncpy(colourid.dbSettingsGroup, colourOptionsList[i].chGroup, sizeof(colourid.dbSettingsGroup));
         colourid.defcolour =  colourOptionsList[i].defColour;
         colourid.order = i + 1;
         CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);

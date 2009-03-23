@@ -2862,8 +2862,11 @@ int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam)
 			backgroundBmpUse=ModernGetSettingWord(NULL,"FrameTitleBar","BkBmpUse",CLCDEFAULT_BKBMPUSE);
 		}
 	};
+  
+	CLUI__cliInvalidateRect( pcli->hwndContactList, 0, 0 );
 
 	RedrawWindow(pcli->hwndContactList,NULL,NULL,RDW_UPDATENOW|RDW_ALLCHILDREN|RDW_ERASE|RDW_INVALIDATE);
+	
 	return 0;
 }
 

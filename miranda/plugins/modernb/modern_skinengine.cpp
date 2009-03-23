@@ -3032,6 +3032,9 @@ static int ske_AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRec
 	int  workRectWidth  = workRect.right - workRect.left;
 	int  workRectHeight = workRect.bottom - workRect.top;
 	
+	if ( workRectWidth <= 0 || workRectHeight <= 0 )
+		return 0;
+
 	SIZE textSize;
 	GetTextExtentPoint32( hOffscreenDC, lpString, nCount, &textSize );
 
@@ -3139,7 +3142,7 @@ static int ske_AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRec
 
 		//Draw text on offscreen bitmap
 
-		TextOut( bufDC, 2, 2, lpString, nCount);
+		TextOut( bufDC, 2, 2, lpWorkString, nCount);
 
 		MODERNEFFECT effect;
 		if (ske_GetTextEffect( hDC, &effect ) ) 
@@ -3174,7 +3177,7 @@ static int ske_AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRec
 			pDestScanLine = bits + lineBytes;
 			pBufScanLine  = bufbits + lineBytes;
 			
-			for( x = 2; x < width - 3; x++)
+			for( x = 2; x < width - 2; x++)
 			{
 				pix    = pDestScanLine + ( x<<2 );
 				bufpix = pBufScanLine  + ( x<<2 );
