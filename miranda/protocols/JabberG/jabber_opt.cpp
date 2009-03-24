@@ -572,6 +572,17 @@ private:
 
 	void btnRegister_OnClick(CCtrlButton *)
 	{
+		TCHAR buf[128] = {0}, pass[128];
+		if (!m_proto->EnterString(buf, SIZEOF(buf), TranslateT("Confirm password"), JES_PASSWORD))
+			return;
+
+		m_txtPassword.GetText(pass, SIZEOF(pass));
+		if (lstrcmp(buf, pass))
+		{
+			MessageBox(m_hwnd, TranslateT("Passwords do not match."), _T("Miranda IM"), MB_ICONSTOP|MB_OK);
+			return;
+		}
+
 		ThreadData regInfo(m_proto, JABBER_SESSION_NORMAL);
 		m_txtUsername.GetText(regInfo.username, SIZEOF(regInfo.username));
 		m_txtPassword.GetTextA(regInfo.password, SIZEOF(regInfo.password));
@@ -1873,6 +1884,17 @@ private:
 
 	void btnRegister_OnClick(CCtrlButton *)
 	{
+		TCHAR buf[128] = {0}, pass[128];
+		if (!m_proto->EnterString(buf, SIZEOF(buf), TranslateT("Confirm password"), JES_PASSWORD))
+			return;
+
+		m_txtPassword.GetText(pass, SIZEOF(pass));
+		if (lstrcmp(buf, pass))
+		{
+			MessageBox(m_hwnd, TranslateT("Passwords do not match."), _T("Miranda IM"), MB_ICONSTOP|MB_OK);
+			return;
+		}
+
 		ThreadData regInfo(m_proto, JABBER_SESSION_NORMAL);
 		m_txtUsername.GetText(regInfo.username, SIZEOF(regInfo.username));
 		m_txtPassword.GetTextA(regInfo.password, SIZEOF(regInfo.password));

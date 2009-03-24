@@ -171,6 +171,15 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	mir_snprintf( text, sizeof( text ), "%s/%s", m_szModuleName, DBSETTING_DISPLAY_UID );
 	JCallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
 
+	mir_snprintf( text, sizeof( text ), "%s/SubscriptionText", m_szModuleName );
+	JCallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
+	mir_snprintf( text, sizeof( text ), "%s/Subscription", m_szModuleName );
+	JCallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
+	mir_snprintf( text, sizeof( text ), "%s/Auth", m_szModuleName );
+	JCallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
+	mir_snprintf( text, sizeof( text ), "%s/Grant", m_szModuleName );
+	JCallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
+
 	CleanLastResourceMap();
 }
 

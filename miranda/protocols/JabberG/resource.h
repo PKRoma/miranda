@@ -246,6 +246,7 @@
 #define IDC_TABS                        1141
 #define IDC_TOPIC                       1141
 #define IDC_TXT_MULTILINE               1141
+#define IDC_TXT_PASSWORD                1142
 #define IDC_FONT                        1143
 #define IDC_ENTER                       1144
 #define IDC_CTRLENTER                   1145

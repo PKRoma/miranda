@@ -47,7 +47,7 @@ typedef int  ( __cdecl CJabberProto::*JServiceFuncParam )( WPARAM, LPARAM, LPARA
 enum TJabberGcLogInfoType { INFO_BAN, INFO_STATUS, INFO_CONFIG, INFO_AFFILIATION, INFO_ROLE };
 
 // for JabberEnterString
-enum { JES_MULTINE, JES_COMBO, JES_RICHEDIT };
+enum { JES_MULTINE, JES_COMBO, JES_RICHEDIT, JES_PASSWORD };
 
 typedef UNIQUE_MAP<TCHAR,TCharKeyCmp> U_TCHAR_MAP;
 

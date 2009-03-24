@@ -50,7 +50,7 @@ enum {
 	IDM_RJID, IDM_RJID_ADD, IDM_RJID_VCARD, IDM_RJID_COPY,
 	IDM_SET_VISITOR, IDM_SET_PARTICIPANT, IDM_SET_MODERATOR,
 	IDM_SET_NONE, IDM_SET_MEMBER, IDM_SET_ADMIN, IDM_SET_OWNER, IDM_SET_BAN,
-	IDM_CPY_NICK, IDM_CPY_TOPIC, IDM_CPY_RJID,
+	IDM_CPY_NICK, IDM_CPY_TOPIC, IDM_CPY_RJID, IDM_CPY_INROOMJID,
 
 	IDM_LINK0, IDM_LINK1, IDM_LINK2, IDM_LINK3, IDM_LINK4, IDM_LINK5, IDM_LINK6, IDM_LINK7, IDM_LINK8, IDM_LINK9,
 };
@@ -573,6 +573,7 @@ int CJabberProto::JabberGcMenuHook( WPARAM, LPARAM lParam )
 			{ NULL,									0,						MENU_SEPARATOR		},
 			{ TranslateT("Copy &nickname"),			IDM_CPY_NICK,			MENU_ITEM			},
 			{ TranslateT("Copy real &JID"),			IDM_CPY_RJID,			MENU_ITEM			},
+			{ TranslateT("Copy in-room JID"),		IDM_CPY_INROOMJID,		MENU_ITEM			},
 		};
 
 		gcmi->nItems = SIZEOF(sttListItems);
@@ -1022,7 +1023,7 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 	enum { BAN_KICK_INTERVAL = 1000 };
 	static DWORD dwLastBanKickTime = 0;
 
-	TCHAR szBuffer[ 1024 ];
+	TCHAR szBuffer[1024];
 	TCHAR szTitle[256];
 
 	if ((gch->dwData >= CLISTMENUIDMIN) && (gch->dwData <= CLISTMENUIDMAX))
@@ -1157,6 +1158,10 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 	case IDM_RJID_COPY:
 	case IDM_CPY_RJID:
 		JabberCopyText((HWND)CallService(MS_CLUI_GETHWND, 0, 0), him->szRealJid);
+		break;
+	case IDM_CPY_INROOMJID:
+		mir_sntprintf(szBuffer, SIZEOF(szBuffer), _T("%s/%s"), item->jid, him->resourceName);
+		JabberCopyText((HWND)CallService(MS_CLUI_GETHWND, 0, 0), szBuffer);
 		break;
 
 	case IDM_RJID_VCARD:

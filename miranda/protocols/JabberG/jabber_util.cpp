@@ -1280,6 +1280,12 @@ static BOOL CALLBACK sttEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 		RECT rc; GetWindowRect(hwndDlg, &rc);
 		switch (params->type)
 		{
+			case JES_PASSWORD:
+			{
+				params->idcControl = IDC_TXT_PASSWORD;
+				params->height = rc.bottom-rc.top;
+				break;
+			}
 			case JES_MULTINE:
 			{
 				params->idcControl = IDC_TXT_MULTILINE;
