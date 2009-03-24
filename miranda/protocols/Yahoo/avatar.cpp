@@ -52,7 +52,7 @@ void upload_avt(int id, int fd, int error, void *data)
 		return;
 	}
 
-    myhFile  = CreateFile(sf->filename,
+    myhFile  = CreateFileA(sf->filename,
                           GENERIC_READ,
                           FILE_SHARE_READ|FILE_SHARE_WRITE,
 			           NULL,
@@ -193,10 +193,10 @@ static void __cdecl yahoo_recv_avatarthread(void *pavt)
 			HANDLE myhFile;
 
 			GetAvatarFileName(hContact, buf, 1024, DBGetContactSettingByte(hContact, yahooProtocolName,"AvatarType", 0));
-			DeleteFile(buf);
+			DeleteFileA(buf);
 			
 			LOG(("Saving file: %s size: %u", buf, nlhrReply->dataLength));
-			myhFile = CreateFile(buf,
+			myhFile = CreateFileA(buf,
 								GENERIC_WRITE,
 								FILE_SHARE_WRITE,
 								NULL, OPEN_ALWAYS,  FILE_ATTRIBUTE_NORMAL,  0);
@@ -235,7 +235,7 @@ static void __cdecl yahoo_recv_avatarthread(void *pavt)
 	AI.cbSize = sizeof AI;
 	AI.format = PA_FORMAT_PNG;
 	AI.hContact = hContact;
-	lstrcpy(AI.filename,buf);
+	lstrcpyA(AI.filename,buf);
 
 	if (error) 
 		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
@@ -387,7 +387,7 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 			LOG(("[ext_yahoo_got_picture] My Checksum: %d", mcksum));
 			
 			if (!DBGetContactSettingString(NULL, yahooProtocolName, "AvatarURL", &dbv)){
-					if (lstrcmpi(pic_url, dbv.pszVal) == 0) {
+					if (lstrcmpiA(pic_url, dbv.pszVal) == 0) {
 						DBVARIANT dbv2;
 						/*time_t  ts;
 						DWORD	ae;*/
@@ -462,7 +462,7 @@ void ext_yahoo_got_picture_checksum(int id, const char *me, const char *who, int
 			
 			// Need to delete the Avatar File!!
 			GetAvatarFileName(hContact, szFile, sizeof szFile, 0);
-			DeleteFile(szFile);
+			DeleteFileA(szFile);
 			
 			// Reset the avatar and cleanup.
 			yahoo_reset_avatar(hContact);
@@ -617,22 +617,22 @@ void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, int type)
 {
   CallService(MS_DB_GETPROFILEPATH, cbLen, (LPARAM)pszDest);
 
-  lstrcat(pszDest, "\\");
-  lstrcat(pszDest, yahooProtocolName);
-  CreateDirectory(pszDest, NULL);
+  lstrcatA(pszDest, "\\");
+  lstrcatA(pszDest, yahooProtocolName);
+  CreateDirectoryA(pszDest, NULL);
 
   if (hContact != NULL) {
 	int ck_sum = DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0);
 	
 	_snprintf(pszDest, cbLen, "%s\\%lX", pszDest, ck_sum);
   }else {
-	lstrcat(pszDest, "\\avatar");
+	lstrcatA(pszDest, "\\avatar");
   }
 
   if (type == 1) {
-	lstrcat(pszDest, ".swf" );
+	lstrcatA(pszDest, ".swf" );
   } else
-	lstrcat(pszDest, ".png" );
+	lstrcatA(pszDest, ".png" );
   
 }
 
@@ -822,14 +822,14 @@ int YahooSetMyAvatar(WPARAM wParam, LPARAM lParam)
 		
 		YAHOO_SetByte("ShareAvatar",0);
 		
-		DeleteFile(szMyFile);
+		DeleteFileA(szMyFile);
 	} else {
 		DWORD  dwPngSize, dw;
 		BYTE* pResult;
 		unsigned int hash;
 		HANDLE  hFile;
 
-		hFile = CreateFile(szFile, 
+		hFile = CreateFileA(szFile, 
 							GENERIC_READ, 
 							FILE_SHARE_READ|FILE_SHARE_WRITE, 
 							NULL, 
@@ -847,7 +847,7 @@ int YahooSetMyAvatar(WPARAM wParam, LPARAM lParam)
 		ReadFile( hFile, pResult, dwPngSize, &dw, NULL );
 		CloseHandle( hFile );
 
-		hFile = CreateFile(szMyFile, 
+		hFile = CreateFileA(szMyFile, 
 							GENERIC_WRITE, 
 							FILE_SHARE_WRITE, 
 							NULL, 

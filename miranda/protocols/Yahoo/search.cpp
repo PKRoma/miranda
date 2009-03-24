@@ -28,9 +28,9 @@ static void __cdecl yahoo_search_simplethread(void *snsearch)
     static char m[255];
     char *c;
     
-	if (lstrlen(nick) < 4) {
+	if (lstrlenA(nick) < 4) {
 		YAHOO_SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
-		MessageBox(NULL, "Please enter a valid ID to search for.", "Search", MB_OK);
+		MessageBoxA(NULL, "Please enter a valid ID to search for.", "Search", MB_OK);
 		
 		return;
 	} 
@@ -165,11 +165,11 @@ static void __cdecl yahoo_searchadv_thread(void *pHWND)
 	char searchid[128];
 	int pid = 0;
 	
-	GetDlgItemText(hwndDlg, IDC_SEARCH_ID, searchid, 128);
+	GetDlgItemTextA(hwndDlg, IDC_SEARCH_ID, searchid, 128);
 	
-	if (lstrlen(searchid) == 0) {
+	if (lstrlenA(searchid) == 0) {
 		YAHOO_SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
-		MessageBox(NULL, "Please enter a valid ID to search for.", "Search", MB_OK);
+		MessageBoxA(NULL, "Please enter a valid ID to search for.", "Search", MB_OK);
 		
 		return;
 	} 

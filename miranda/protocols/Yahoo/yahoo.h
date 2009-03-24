@@ -14,12 +14,12 @@
 #define _YAHOO_YAHOO_H_
 
 #define MIRANDA_VER 0x0700
-#define _USE_32BIT_TIME_T
 
-#include <time.h>
-#include <malloc.h>
+#include <m_stdhdr.h>
+
 #include <sys/stat.h>
 #include <io.h>
+#include <time.h>
 
 #include <windows.h>
 

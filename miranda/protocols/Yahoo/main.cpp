@@ -93,7 +93,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	char tModuleDescr[ 100 ];
 	NETLIBUSER nlu = {0};
 
-	wsprintf(tModuleDescr, Translate( "%s plugin connections" ), yahooProtocolName);
+	wsprintfA(tModuleDescr, Translate( "%s plugin connections" ), yahooProtocolName);
 	
 	nlu.cbSize = sizeof(nlu);
 
@@ -150,7 +150,7 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 	 */
 	DisableThreadLibraryCalls( hinstance );
 	
-	GetModuleFileName( hinstance, path, sizeof( path ));
+	GetModuleFileNameA( hinstance, path, sizeof( path ));
 
 	protocolname = strrchr(path,'\\');
 	
@@ -163,10 +163,10 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 		if (fend != NULL)
 			*fend = '\0';
 		
-		CharUpper( protocolname );
-		lstrcpyn(yahooProtocolName, protocolname, MAX_PATH);
+		CharUpperA( protocolname );
+		lstrcpynA(yahooProtocolName, protocolname, MAX_PATH);
 	} else 
-		lstrcpy(yahooProtocolName, "YAHOO");
+		lstrcpyA(yahooProtocolName, "YAHOO");
 
 	
 	mir_snprintf( path, sizeof( path ), "%s/Status", yahooProtocolName );
@@ -201,8 +201,8 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 	hHookOptsInit = HookEvent( ME_OPT_INITIALISE, YahooOptInit );
 
 	// Create nudge event
-	lstrcpyn(tNudge, yahooProtocolName , sizeof( tNudge ) - 7);
-	lstrcat(tNudge, "/Nudge");
+	lstrcpynA(tNudge, yahooProtocolName , sizeof( tNudge ) - 7);
+	lstrcatA(tNudge, "/Nudge");
 	hYahooNudge = CreateHookableEvent(tNudge);
 	
 	// 2.
@@ -269,7 +269,7 @@ __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 	 * This requires the latest trunk... [md5, sha, etc..]
 	 */
     if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 24)) {
-		MessageBox( NULL, 
+		MessageBoxA( NULL, 
 				"Yahoo plugin cannot be loaded. It requires Miranda IM 0.8.0.24 or later.", 
 				"Yahoo", 
 				MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );

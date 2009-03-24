@@ -898,34 +898,34 @@ static void yahoo_packet_dump(unsigned char *data, int len)
 		for (i = 0; i < len; i++) {
 			if ((i % 8 == 0) && i)
 				//YAHOO_CALLBACK(ext_yahoo_log)(" ");
-				lstrcat(z, " ");
+				lstrcatA(z, " ");
 			if ((i % 16 == 0) && i)
-				lstrcat(z, "\n");
+				lstrcatA(z, "\n");
 			
-			wsprintf(t, "%02x ", data[i]);
-			lstrcat(z, t);
+			wsprintfA(t, "%02x ", data[i]);
+			lstrcatA(z, t);
 		}
-		lstrcat(z, "\n");
+		lstrcatA(z, "\n");
 		YAHOO_CALLBACK(ext_yahoo_log)(z);
 		
 		z[0]='\0';
 		for (i = 0; i < len; i++) {
 			if ((i % 8 == 0) && i)
 				//YAHOO_CALLBACK(ext_yahoo_log)(" ");
-				lstrcat(z, " ");
+				lstrcatA(z, " ");
 			if ((i % 16 == 0) && i)
 				//YAHOO_CALLBACK(ext_yahoo_log)("\n");
-				lstrcat(z, "\n");
+				lstrcatA(z, "\n");
 			if (isprint(data[i])) {
 				//YAHOO_CALLBACK(ext_yahoo_log)(" %c ", data[i]);
-				wsprintf(t, " %c ", data[i]);
-				lstrcat(z, t);
+				wsprintfA(t, " %c ", data[i]);
+				lstrcatA(z, t);
 			} else
 				//YAHOO_CALLBACK(ext_yahoo_log)(" . ");
-				lstrcat(z, " . ");
+				lstrcatA(z, " . ");
 		}
 		//YAHOO_CALLBACK(ext_yahoo_log)("\n");
-		lstrcat(z, "\n");
+		lstrcatA(z, "\n");
 		YAHOO_CALLBACK(ext_yahoo_log)(z);
 	}
 }
@@ -1388,7 +1388,7 @@ char *yahoo_decode(const char *t)
 	int i, k;
 
 	n = y;
-	end = t + lstrlen(t);
+	end = t + lstrlenA(t);
 	
 	for (p = t; p < end; p++, n++) {
 		if (*p == '\\') {
@@ -3645,7 +3645,7 @@ static void yahoo_process_ignore(struct yahoo_input_data *yid, struct yahoo_pack
 			while (buddy) {
 				struct yahoo_buddy *b = (struct yahoo_buddy *) buddy->data;
 				
-				if (lstrcmpi(b->id, who) == 0) 
+				if (lstrcmpiA(b->id, who) == 0) 
 					break;
 				
 				buddy = buddy->next;

@@ -11,12 +11,6 @@
  * and for answering some of my questions during development of this plugin.
  */
 
-#define _USE_32BIT_TIME_T
-
-#include <time.h>
-#include <malloc.h>
-#include <io.h>
-
 /*
  * Miranda headers
  */
@@ -260,28 +254,28 @@ HANDLE getbuddyH(const char *yahoo_id)
 {
 	char  *szProto;
 	HANDLE hContact;
-		
+
 	for ( hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-		   hContact != NULL;
-			hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 ))
+		hContact != NULL;
+		hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 ))
 	{
 		szProto = ( char* )YAHOO_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
-		if ( szProto != NULL && !lstrcmp( szProto, yahooProtocolName ))
+		if ( szProto != NULL && !lstrcmpA( szProto, yahooProtocolName ))
 		{
 			DBVARIANT dbv;
 			if ( DBGetContactSettingString( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv ))
 				continue;
 
 			{	
-                int tCompareResult = lstrcmpi( dbv.pszVal, yahoo_id );
+				int tCompareResult = lstrcmpiA( dbv.pszVal, yahoo_id );
 				DBFreeVariant( &dbv );
 				if ( tCompareResult )
 					continue;
 			}
 
 			return hContact;
-			}	
-    }
+		}	
+	}
 
 	return NULL;
 }
@@ -310,7 +304,7 @@ HANDLE add_buddy( const char *yahoo_id, const char *yahoo_name, int protocol, DW
 	YAHOO_SetString( hContact, YAHOO_LOGINID, yahoo_id );
 	YAHOO_Set_Protocol( hContact, protocol );
 	
-	if (lstrlen(yahoo_name) > 0)
+	if (lstrlenA(yahoo_name) > 0)
 		YAHOO_SetStringUtf( hContact, "Nick", yahoo_name );
 	else
 	    YAHOO_SetStringUtf( hContact, "Nick", yahoo_id );
@@ -552,7 +546,7 @@ void ext_yahoo_got_stealth(int id, char *stealthlist)
 			hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 ))
 	{
 		szProto = ( char* )YAHOO_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
-		if ( szProto != NULL && !lstrcmp( szProto, yahooProtocolName )) {
+		if ( szProto != NULL && !lstrcmpA( szProto, yahooProtocolName )) {
 			DBVARIANT dbv;
 			if ( DBGetContactSettingString( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv ))
 				continue;
@@ -561,7 +555,7 @@ void ext_yahoo_got_stealth(int id, char *stealthlist)
 			
 			for(s = stealth; s && *s; s++) {
 				
-				if (lstrcmpi(*s, dbv.pszVal) == 0) {
+				if (lstrcmpiA(*s, dbv.pszVal) == 0) {
 					YAHOO_DebugLog("GOT id = %s", dbv.pszVal);
 					found = 1;
 					break;
@@ -693,7 +687,7 @@ void ext_yahoo_rejected(int id, const char *who, const char *msg)
 	}
     
 	mir_snprintf(buff, sizeof(buff), Translate("%s has rejected your request and sent the following message:"), who);    
-    MessageBox( NULL, msg, buff, MB_OK | MB_ICONINFORMATION );
+	MessageBoxA( NULL, msg, buff, MB_OK | MB_ICONINFORMATION );
 }
 
 void YAHOO_add_buddy(const char *who, int protocol, const char *group, const char *msg)
@@ -799,7 +793,7 @@ void ext_yahoo_contact_added(int id, const char *myid, const char *who, const ch
 	
 	hContact = add_buddy(who, nick, protocol, PALF_TEMPORARY);
 	
-	if (lstrcmp(nick, who) != 0)
+	if (lstrcmpA(nick, who) != 0)
 		YAHOO_SetStringUtf( hContact, "Nick", nick);
 	
 	//YAHOO_SetWord(hContact, "yprotoid", protocol);
@@ -812,16 +806,16 @@ void ext_yahoo_contact_added(int id, const char *myid, const char *who, const ch
 	pre.flags			= 0;
 	pre.timestamp		= time(NULL);
 	
-	pre.lParam = sizeof(DWORD)*2+lstrlen(who)+lstrlen(nick)+5;
+	pre.lParam = sizeof(DWORD)*2+lstrlenA(who)+lstrlenA(nick)+5;
 	
 	if (fname != NULL)
-		pre.lParam += lstrlen(fname);
+		pre.lParam += lstrlenA(fname);
 	
 	if (lname != NULL)
-		pre.lParam += lstrlen(lname);
+		pre.lParam += lstrlenA(lname);
 	
 	if (msg != NULL)
-		pre.lParam += lstrlen(msg);
+		pre.lParam += lstrlenA(msg);
 	
 	pCurBlob=(PBYTE)malloc(pre.lParam);
 	pre.szMessage = (char *)pCurBlob;
@@ -843,24 +837,24 @@ void ext_yahoo_contact_added(int id, const char *myid, const char *who, const ch
     pCurBlob+=sizeof(DWORD);
     
     // NICK
-	lstrcpy((char *)pCurBlob, nick); 
+	lstrcpyA((char *)pCurBlob, nick); 
 
-	pCurBlob+=lstrlen((char *)pCurBlob)+1;
+	pCurBlob+=lstrlenA((char *)pCurBlob)+1;
     
     // FIRST
-    lstrcpy((char *)pCurBlob, (fname != NULL) ? fname : ""); 
-    pCurBlob+=lstrlen((char *)pCurBlob)+1;
+    lstrcpyA((char *)pCurBlob, (fname != NULL) ? fname : ""); 
+    pCurBlob+=lstrlenA((char *)pCurBlob)+1;
     
     // LAST
-    lstrcpy((char *)pCurBlob, (lname != NULL) ? lname : ""); 
-    pCurBlob+=lstrlen((char *)pCurBlob)+1;
+    lstrcpyA((char *)pCurBlob, (lname != NULL) ? lname : ""); 
+    pCurBlob+=lstrlenA((char *)pCurBlob)+1;
     
     // E-mail    
-	lstrcpy((char *)pCurBlob,who); 
-	pCurBlob+=lstrlen((char *)pCurBlob)+1;
+	lstrcpyA((char *)pCurBlob,who); 
+	pCurBlob+=lstrlenA((char *)pCurBlob)+1;
 	
 	// Reason
-	lstrcpy((char *)pCurBlob, (msg != NULL) ? msg : "" ); 
+	lstrcpyA((char *)pCurBlob, (msg != NULL) ? msg : "" ); 
 	
 	CallService(MS_PROTO_CHAINRECV,0,(LPARAM)&ccs);
 }
@@ -936,7 +930,7 @@ void ext_yahoo_game_notify(int id, const char *me, const char *who, int stat, co
 		 * [17:18:38 YAHOO] [ext_yahoo_game_notify] id: 1, me: xxxxx, who: rrrrr, 
 		 *	stat: 2, msg: 1	ygamesa	2
 		 */
-		z = (char *) _alloca(lstrlen(l) + 50);
+		z = (char *) _alloca(lstrlenA(l) + 50);
 		
 		z[0]='\0';
 		do{
@@ -957,16 +951,16 @@ void ext_yahoo_game_notify(int id, const char *me, const char *who, int stat, co
 				
 				if (c != NULL) {
 					(*c) = '\0';
-					lstrcat(z, l);
-					lstrcat(z, "\r\n");
+					lstrcatA(z, l);
+					lstrcatA(z, "\r\n");
 					l = c + 1;
 				} else {
-					lstrcat(z, l);
+					lstrcatA(z, l);
 				}
 			} while (c != NULL);
 			
-			lstrcat(z, "\r\n\r\nhttp://games.yahoo.com/games/");
-			lstrcat(z, u);
+			lstrcatA(z, "\r\n\r\nhttp://games.yahoo.com/games/");
+			lstrcatA(z, u);
 			c = strchr(z, 0x09);
 			(*c) = '\0';
 		}
@@ -1014,8 +1008,8 @@ void ext_yahoo_system_message(int id, const char *me, const char *who, const cha
 {
 	LOG(("Yahoo System Message to: %s from: %s msg: %s", me, who, msg));
 	
-	if (strncmp(msg, "A user on Windows Live", lstrlen("A user on Windows Live")) != 0
-		&& strncmp(msg, "Your contact is using Windows Live", lstrlen("Your contact is using Windows Live")) != 0)
+	if (strncmp(msg, "A user on Windows Live", lstrlenA("A user on Windows Live")) != 0
+		&& strncmp(msg, "Your contact is using Windows Live", lstrlenA("Your contact is using Windows Live")) != 0)
 		YAHOO_ShowPopup( (who != NULL) ? who : "Yahoo System Message", msg, NULL);
 }
 
@@ -1070,7 +1064,7 @@ void check_for_update(void)
 		for (i=0; i < nlhrReply->headersCount; i++) {
 			LOG(("%s: %s", nlhrReply->headers[i].szName, nlhrReply->headers[i].szValue));
 			
-			if (lstrcmpi(nlhrReply->headers[i].szName, "Set-Cookie") == 0) {
+			if (lstrcmpiA(nlhrReply->headers[i].szName, "Set-Cookie") == 0) {
 				LOG(("Found Cookie... Yum yum..."));
 				
 				if (nlhrReply->headers[i].szValue[0] == 'B' && nlhrReply->headers[i].szValue[1] == '=') {
@@ -1095,9 +1089,9 @@ void ext_yahoo_got_cookies(int id)
     LOG(("C Cookie: '%s'", yahoo_get_cookie(id, "c")));
     LOG(("Login Cookie: '%s'", yahoo_get_cookie(id, "login")));
     
-    //wsprintf(z, "Cookie: %s; C=%s; Y=%s; T=%s", Bcookie, yahoo_get_cookie(id, "c"), yahoo_get_cookie(id, "y"), yahoo_get_cookie(id, "t"));
-    //wsprintf(z, "Cookie: %s; Y=%s", Bcookie, yahoo_get_cookie(id, "y"), yahoo_get_cookie(id, "t"));    
-    wsprintf(z, "Cookie: Y=%s; T=%s", yahoo_get_cookie(id, "y"), yahoo_get_cookie(id, "t"));    
+    //wsprintfA(z, "Cookie: %s; C=%s; Y=%s; T=%s", Bcookie, yahoo_get_cookie(id, "c"), yahoo_get_cookie(id, "y"), yahoo_get_cookie(id, "t"));
+    //wsprintfA(z, "Cookie: %s; Y=%s", Bcookie, yahoo_get_cookie(id, "y"), yahoo_get_cookie(id, "t"));    
+    wsprintfA(z, "Cookie: Y=%s; T=%s", yahoo_get_cookie(id, "y"), yahoo_get_cookie(id, "t"));    
     LOG(("Our Cookie: '%s'", z));
     YAHOO_CallService(MS_NETLIB_SETSTICKYHEADERS, (WPARAM)hnuMain, (LPARAM)z);*/
 
@@ -1283,9 +1277,9 @@ int ext_yahoo_connect(const char *h, int p, int type)
 void ext_yahoo_send_http_request(int id, const char *method, const char *url, const char *cookies, long content_length,
 		yahoo_get_fd_callback callback, void *callback_data)
 {
-/*	if (lstrcmpi(method, "GET") == 0) 
+/*	if (lstrcmpiA(method, "GET") == 0) 
 		yahoo_http_get(id, url, cookies, callback, callback_data);
-	else if (lstrcmpi(method, "POST") == 0) 
+	else if (lstrcmpiA(method, "POST") == 0) 
 		yahoo_http_post(id, url, cookies, content_length, callback, callback_data);
 	else 
 		LOG(("ERROR: Unknown method: %s", method));
@@ -1311,7 +1305,7 @@ void ext_yahoo_send_http_request(int id, const char *method, const char *url, co
 		//return;
 	} else {
 		nlhr.cbSize=sizeof(nlhr);
-		nlhr.requestType=(lstrcmpi(method, "GET") == 0) ? REQUEST_GET : REQUEST_POST;
+		nlhr.requestType=(lstrcmpiA(method, "GET") == 0) ? REQUEST_GET : REQUEST_POST;
 		nlhr.flags=NLHRF_DUMPASTEXT|NLHRF_HTTP11;
 		nlhr.szUrl=(char *)path;
 		nlhr.headers = httpHeaders;
@@ -1479,7 +1473,7 @@ char *ext_yahoo_send_https_request(struct yahoo_data *yd, const char *host, cons
 	char z[4096], *result=NULL;
 	int i;
 	
-	wsprintf(z, "https://%s%s", host, path);
+	wsprintfA(z, "https://%s%s", host, path);
 	nlhr.cbSize		= sizeof(nlhr);
 	nlhr.requestType= REQUEST_GET;
 	nlhr.flags		= NLHRF_HTTP11 | NLHRF_NODUMP; /* Use HTTP/1.1 and don't dump the requests to the log */
@@ -1510,7 +1504,7 @@ char *ext_yahoo_send_https_request(struct yahoo_data *yd, const char *host, cons
 		for (i=0; i < nlhrReply->headersCount; i++) {
 			//LOG(("%s: %s", nlhrReply->headers[i].szName, nlhrReply->headers[i].szValue));
 			
-			if (lstrcmpi(nlhrReply->headers[i].szName, "Set-Cookie") == 0) {
+			if (lstrcmpiA(nlhrReply->headers[i].szName, "Set-Cookie") == 0) {
 				//LOG(("Found Cookie... Yum yum..."));
 				
 				if (nlhrReply->headers[i].szValue[0] == 'B' && nlhrReply->headers[i].szValue[1] == '=') {
@@ -1624,7 +1618,7 @@ void ext_yahoo_login(int login_mode)
         return;
     }
 
-	lstrcpyn(fthost,YAHOO_GetByte("YahooJapan",0)?"filetransfer.msg.yahoo.co.jp":"filetransfer.msg.yahoo.com" , sizeof(fthost));
+	lstrcpynA(fthost,YAHOO_GetByte("YahooJapan",0)?"filetransfer.msg.yahoo.co.jp":"filetransfer.msg.yahoo.com" , sizeof(fthost));
 	port = DBGetContactSettingWord(NULL, yahooProtocolName, YAHOO_LOGINPORT, YAHOO_DEFAULT_PORT);
 	
 #ifdef HTTP_GATEWAY			

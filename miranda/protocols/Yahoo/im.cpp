@@ -10,8 +10,6 @@
  * I want to thank Robert Rainwater and George Hazan for their code and support
  * and for answering some of my questions during development of this plugin.
  */
-#include <time.h>
-#include <malloc.h>
 
 #include "yahoo.h"
 #include <m_langpack.h>
@@ -44,7 +42,7 @@ void ext_yahoo_got_im(int id, const char *me, const char *who, int protocol, con
 	HANDLE 			hContact;
 
 	
-    LOG(("YAHOO_GOT_IM id:%s %s: %s (len: %d) tm:%lu stat:%i utf8:%i buddy_icon: %i", me, who, msg, lstrlen(msg), tm, stat, utf8, buddy_icon));
+    LOG(("YAHOO_GOT_IM id:%s %s: %s (len: %d) tm:%lu stat:%i utf8:%i buddy_icon: %i", me, who, msg, lstrlenA(msg), tm, stat, utf8, buddy_icon));
    	
 	if(stat == 2) {
 		char z[1024];
@@ -77,7 +75,7 @@ void ext_yahoo_got_im(int id, const char *me, const char *who, int protocol, con
 	}
 
 	// make a bigger buffer for \n -> \r\n conversion (x2)
-	umsg = (char *) alloca(lstrlen(msg) * 2 + 1); 
+	umsg = (char *) alloca(lstrlenA(msg) * 2 + 1); 
 	
 	while ( *c != '\0') {
 			// Strip the font tag
@@ -213,7 +211,7 @@ int YahooSendMessage(WPARAM wParam, LPARAM lParam)
 		msg = mir_utf8encode(( char* )ccs->lParam );
 	}
         
-    if (lstrlen(msg) > 800) {
+    if (lstrlenA(msg) > 800) {
         mir_forkthread(	yahoo_im_sendackfail_longmsg, ccs->hContact);
         return 1;
     }
@@ -244,7 +242,7 @@ int YahooRecvMessage(WPARAM wParam, LPARAM lParam)
     DBDeleteContactSetting(ccs->hContact, "CList", "Hidden");
 
 	// NUDGES
-    if( !lstrcmp(pre->szMessage, "<ding>")  && ServiceExists("NUDGE/Send")){
+    if( !lstrcmpA(pre->szMessage, "<ding>")  && ServiceExists("NUDGE/Send")){
 		YAHOO_DebugLog("[YahooRecvMessage] Doing Nudge Service!");
 		NotifyEventHooks(hYahooNudge, (WPARAM) ccs->hContact, pre->timestamp);
 		return 0;

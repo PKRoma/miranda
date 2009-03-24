@@ -176,13 +176,13 @@ int __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, const char
 		return 0;
 
 	ZeroMemory(&ppd, sizeof(ppd) );
-	lstrcpy( ppd.lpzContactName, nickname );
-	lstrcpy( ppd.lpzText, msg );
+	lstrcpyA( ppd.lpzContactName, nickname );
+	lstrcpyA( ppd.lpzText, msg );
 
 	ppd.PluginWindowProc = ( WNDPROC )PopupWindowProc;
 
 	if (szURL != NULL) {
-		if (lstrcmpi(szURL, "http://mail.yahoo.com") == 0) {
+		if (lstrcmpiA(szURL, "http://mail.yahoo.com") == 0) {
 			ppd.lchIcon = LoadIconEx( "mail" );
 		} else {
 			ppd.lchIcon = LoadIconEx( "calendar" );
@@ -216,7 +216,7 @@ int YAHOO_shownotification(const char *title, const char *info, DWORD flags)
 			return 1;
     } 
 	
-	MessageBox(NULL, info, title, MB_OK | MB_ICONINFORMATION);
+	MessageBoxA(NULL, info, title, MB_OK | MB_ICONINFORMATION);
 	
     return 0;
 }

@@ -10,11 +10,11 @@
  * I want to thank Robert Rainwater and George Hazan for their code and support
  * and for answering some of my questions during development of this plugin.
  */
-#include <windows.h>
-#include <shlwapi.h>
 
 #include "yahoo.h"
 #include "resource.h"
+
+#include <shlwapi.h>
 
 #include <m_langpack.h>
 #include <m_utils.h>
@@ -34,22 +34,21 @@ int YahooOptInit(WPARAM wParam,LPARAM lParam)
 	odp.cbSize						= sizeof(odp);
 	odp.position					= -790000000;
 	odp.hInstance					= hinstance;
-	odp.pszTemplate				    = MAKEINTRESOURCE(IDD_OPT_YAHOO);
+	odp.pszTemplate            = MAKEINTRESOURCEA(IDD_OPT_YAHOO);
 	odp.pszTitle					= yahooProtocolName;
 	odp.pszGroup					= LPGEN("Network");
 	odp.ptszTab      				= LPGENT("Account");
 	odp.flags						= ODPF_BOLDGROUPS;
-	//odp.nIDBottomSimpleControl      = IDC_STYAHOOGROUP;
 	odp.pfnDlgProc					= DlgProcYahooOpts;
 	YAHOO_CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );
 
 	odp.ptszTab      				= LPGENT("Connection");
-	odp.pszTemplate				    = MAKEINTRESOURCE(IDD_OPT_YAHOO_CONNECTION);
+	odp.pszTemplate            = MAKEINTRESOURCEA(IDD_OPT_YAHOO_CONNECTION);
 	odp.pfnDlgProc					= DlgProcYahooOptsConn;
 	YAHOO_CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );
 	
 	odp.ptszTab      				= LPGENT("Ignore List");
-	odp.pszTemplate				    = MAKEINTRESOURCE(IDD_OPT_YAHOO_IGNORE);
+	odp.pszTemplate            = MAKEINTRESOURCEA(IDD_OPT_YAHOO_IGNORE);
 	odp.pfnDlgProc					= DlgProcYahooOptsIgnore;
 	YAHOO_CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );
 	
@@ -68,19 +67,19 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 		TranslateDialogDefault( hwndDlg );
 
 		if ( !DBGetContactSettingString( NULL, yahooProtocolName, YAHOO_LOGINID, &dbv )) {
-			SetDlgItemText(hwndDlg,IDC_HANDLE,dbv.pszVal);
+			SetDlgItemTextA(hwndDlg,IDC_HANDLE,dbv.pszVal);
 			DBFreeVariant(&dbv);
 		}
 
 		if ( !DBGetContactSettingString( NULL, yahooProtocolName, "Nick", &dbv )) {
-			SetDlgItemText(hwndDlg,IDC_NICK,dbv.pszVal);
+			SetDlgItemTextA(hwndDlg,IDC_NICK,dbv.pszVal);
 			DBFreeVariant(&dbv);
 		}
 
 		if ( !DBGetContactSettingString( NULL, yahooProtocolName, YAHOO_PASSWORD, &dbv )) {
 			//bit of a security hole here, since it's easy to extract a password from an edit box
 			YAHOO_CallService( MS_DB_CRYPT_DECODESTRING, strlen( dbv.pszVal )+1, ( LPARAM )dbv.pszVal );
-			SetDlgItemText( hwndDlg, IDC_PASSWORD, dbv.pszVal );
+			SetDlgItemTextA( hwndDlg, IDC_PASSWORD, dbv.pszVal );
 			DBFreeVariant( &dbv );
 		}
 
@@ -104,7 +103,7 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
     			return TRUE;
     
 			case IDC_YAHOO_JAPAN:
-					SetDlgItemText( hwndDlg, IDC_LOGINSERVER, 
+					SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, 
 										(IsDlgButtonChecked(hwndDlg,IDC_YAHOO_JAPAN)==BST_CHECKED)
 										?YAHOO_DEFAULT_JAPAN_LOGIN_SERVER
 										:YAHOO_DEFAULT_LOGIN_SERVER );
@@ -136,27 +135,27 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			BOOL	    reconnectRequired = FALSE/*, restartRequired = FALSE*/;
 			char	    str[128];
 
-			GetDlgItemText( hwndDlg, IDC_HANDLE, str, sizeof( str ));
+			GetDlgItemTextA( hwndDlg, IDC_HANDLE, str, sizeof( str ));
 			dbv.pszVal = NULL;
 			
 			if ( DBGetContactSettingString( NULL, yahooProtocolName, YAHOO_LOGINID, &dbv ) || 
-                  lstrcmp( str, dbv.pszVal ))
+                  lstrcmpA( str, dbv.pszVal ))
 				reconnectRequired = TRUE;
 				
 			if ( dbv.pszVal != NULL ) DBFreeVariant( &dbv );
 			
 			YAHOO_SetString( NULL, YAHOO_LOGINID, str );
 
-			GetDlgItemText( hwndDlg, IDC_PASSWORD, str, sizeof( str ));
+			GetDlgItemTextA( hwndDlg, IDC_PASSWORD, str, sizeof( str ));
 			YAHOO_CallService( MS_DB_CRYPT_ENCODESTRING, sizeof( str ),( LPARAM )str );
 			dbv.pszVal = NULL;
 			if ( DBGetContactSettingString( NULL, yahooProtocolName, YAHOO_PASSWORD, &dbv ) || 
-				lstrcmp( str, dbv.pszVal ))
+				lstrcmpA( str, dbv.pszVal ))
 				reconnectRequired = TRUE;
 			if ( dbv.pszVal != NULL ) DBFreeVariant( &dbv );
 			
 			YAHOO_SetString( NULL, YAHOO_PASSWORD, str );
-			GetDlgItemText( hwndDlg, IDC_NICK, str, sizeof( str ));
+			GetDlgItemTextA( hwndDlg, IDC_NICK, str, sizeof( str ));
 			YAHOO_SetString( NULL, "Nick", str );
 
 			YAHOO_SetByte("YahooJapan", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_YAHOO_JAPAN ));
@@ -168,10 +167,10 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			YAHOO_SetByte("ShowErrors", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SHOW_ERRORS )); 
 
 			/*if ( restartRequired )
-				MessageBox( hwndDlg, Translate( "The changes you have made require you to restart Miranda IM before they take effect"), Translate("YAHOO Options"), MB_OK );
+				MessageBoxA( hwndDlg, Translate( "The changes you have made require you to restart Miranda IM before they take effect"), Translate("YAHOO Options"), MB_OK );
 			else */
 			if ( reconnectRequired && yahooLoggedIn )
-				MessageBox( hwndDlg, Translate( "The changes you have made require you to reconnect to the Yahoo network before they take effect"), Translate("YAHOO Options"), MB_OK );
+				MessageBoxA( hwndDlg, Translate( "The changes you have made require you to reconnect to the Yahoo network before they take effect"), Translate("YAHOO Options"), MB_OK );
 
 			return TRUE;
 		}
@@ -192,10 +191,10 @@ BOOL CALLBACK DlgProcYahooOptsConn(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		TranslateDialogDefault( hwndDlg );
 
 		if ( !DBGetContactSettingString( NULL, yahooProtocolName, YAHOO_LOGINSERVER, &dbv )){
-			SetDlgItemText( hwndDlg, IDC_LOGINSERVER, dbv. pszVal );
+			SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, dbv. pszVal );
 			DBFreeVariant( &dbv );
 		}
-		else SetDlgItemText( hwndDlg, IDC_LOGINSERVER, YAHOO_DEFAULT_LOGIN_SERVER );
+		else SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, YAHOO_DEFAULT_LOGIN_SERVER );
 
 		SetDlgItemInt( hwndDlg, IDC_YAHOOPORT, YAHOO_GetWord( NULL, YAHOO_LOGINPORT, YAHOO_DEFAULT_PORT ), FALSE );
 		
@@ -205,13 +204,13 @@ BOOL CALLBACK DlgProcYahooOptsConn(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
     		case IDC_RESETSERVER:
-				SetDlgItemText( hwndDlg, IDC_LOGINSERVER, YAHOO_DEFAULT_LOGIN_SERVER );
+				SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, YAHOO_DEFAULT_LOGIN_SERVER );
     			SetDlgItemInt(  hwndDlg, IDC_YAHOOPORT,  YAHOO_DEFAULT_PORT, FALSE );
     			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
     			break;
     		
 			case IDC_YAHOO_JAPAN:
-					SetDlgItemText( hwndDlg, IDC_LOGINSERVER, 
+					SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, 
 										(IsDlgButtonChecked(hwndDlg,IDC_YAHOO_JAPAN)==BST_CHECKED)
 										?YAHOO_DEFAULT_JAPAN_LOGIN_SERVER
 										:YAHOO_DEFAULT_LOGIN_SERVER );
@@ -238,10 +237,10 @@ BOOL CALLBACK DlgProcYahooOptsConn(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			DBVARIANT 	dbv;
 			int			port;
 
-			GetDlgItemText( hwndDlg, IDC_LOGINSERVER, str, sizeof( str ));
+			GetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, str, sizeof( str ));
 			
 			if ( DBGetContactSettingString( NULL, yahooProtocolName, YAHOO_LOGINSERVER, &dbv ) || 
-                  lstrcmp( str, dbv.pszVal ))
+                  lstrcmpA( str, dbv.pszVal ))
 				reconnectRequired = TRUE;
 				
 			if ( dbv.pszVal != NULL ) DBFreeVariant( &dbv );
@@ -257,10 +256,10 @@ BOOL CALLBACK DlgProcYahooOptsConn(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			YAHOO_SetByte("YahooJapan", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_YAHOO_JAPAN ));
 
 			/*if ( restartRequired )
-				MessageBox( hwndDlg, Translate( "The changes you have made require you to restart Miranda IM before they take effect"), Translate("YAHOO Options"), MB_OK );
+				MessageBoxA( hwndDlg, Translate( "The changes you have made require you to restart Miranda IM before they take effect"), Translate("YAHOO Options"), MB_OK );
 			else */
 			if ( reconnectRequired && yahooLoggedIn )
-				MessageBox( hwndDlg, Translate( "The changes you have made require you to reconnect to the Yahoo network before they take effect"), Translate("YAHOO Options"), MB_OK );
+				MessageBoxA( hwndDlg, Translate( "The changes you have made require you to reconnect to the Yahoo network before they take effect"), Translate("YAHOO Options"), MB_OK );
 
 			return TRUE;
 		}
@@ -297,7 +296,7 @@ BOOL CALLBACK DlgProcYahooOptsIgnore(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		while (l != NULL) {
 			struct yahoo_buddy *b = (struct yahoo_buddy *) l->data;
 			
-			//MessageBox(NULL, b->id, "ID", MB_OK);
+			//MessageBoxA(NULL, b->id, "ID", MB_OK);
 			SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_ADDSTRING, 0, (LPARAM)b->id);
 			l = l->next;
 		}
@@ -323,26 +322,26 @@ BOOL CALLBACK DlgProcYahooOptsIgnore(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 							  int i;
 							  
 							  if (!yahooLoggedIn) {
-								MessageBox(hwndDlg, Translate("You need to be connected to Yahoo to add to Ignore List."), Translate("Yahoo Ignore"), MB_OK| MB_ICONINFORMATION);
+								MessageBoxA(hwndDlg, Translate("You need to be connected to Yahoo to add to Ignore List."), Translate("Yahoo Ignore"), MB_OK| MB_ICONINFORMATION);
 								break;
 							  }
 
 							  
-							  i = GetDlgItemText( hwndDlg, IDC_YIGN_EDIT, id, sizeof( id ));
+							  i = GetDlgItemTextA( hwndDlg, IDC_YIGN_EDIT, id, sizeof( id ));
 							  
 							  if (i < 3) {
-								MessageBox(hwndDlg, Translate("Please enter a valid buddy name to ignore."), Translate("Yahoo Ignore"), MB_OK| MB_ICONINFORMATION);
+								MessageBoxA(hwndDlg, Translate("Please enter a valid buddy name to ignore."), Translate("Yahoo Ignore"), MB_OK| MB_ICONINFORMATION);
 								break;
 							  }
 							  
 							  i = SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_FINDSTRINGEXACT,(WPARAM) -1, (LPARAM)id);
 							  if (i != LB_ERR ) {
-								MessageBox(hwndDlg, Translate("The buddy is already on your ignore list. "), Translate("Yahoo Ignore"), MB_OK | MB_ICONINFORMATION);
+								MessageBoxA(hwndDlg, Translate("The buddy is already on your ignore list. "), Translate("Yahoo Ignore"), MB_OK | MB_ICONINFORMATION);
 								break;
 							  }
 							   YAHOO_IgnoreBuddy(id, 0);
 							   SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_ADDSTRING, 0, (LPARAM)id);
-							   SetDlgItemText( hwndDlg, IDC_YIGN_EDIT, "" );
+							   SetDlgItemTextA( hwndDlg, IDC_YIGN_EDIT, "" );
 							}  
 							break;
 			
@@ -352,13 +351,13 @@ BOOL CALLBACK DlgProcYahooOptsIgnore(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 								char id[128];
 								
 								if (!yahooLoggedIn) {
-									MessageBox(hwndDlg, Translate("You need to be connected to Yahoo to remove from the Ignore List."), Translate("Yahoo Ignore"), MB_OK| MB_ICONINFORMATION);
+									MessageBoxA(hwndDlg, Translate("You need to be connected to Yahoo to remove from the Ignore List."), Translate("Yahoo Ignore"), MB_OK| MB_ICONINFORMATION);
 									break;
 								}
 							  
 								i = SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_GETCURSEL, 0, 0);
 								if (i == LB_ERR) {
-									MessageBox(hwndDlg, Translate("Please select a buddy on the ignore list to remove."), Translate("Yahoo Ignore"), MB_OK| MB_ICONINFORMATION);
+									MessageBoxA(hwndDlg, Translate("Please select a buddy on the ignore list to remove."), Translate("Yahoo Ignore"), MB_OK| MB_ICONINFORMATION);
 									break;
 								}
 								

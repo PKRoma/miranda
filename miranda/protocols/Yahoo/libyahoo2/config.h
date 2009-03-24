@@ -12,10 +12,10 @@
 #include <windows.h>
 #include <stdio.h>
 
-#define strlen lstrlen
-#define strcat lstrcat
-#define strcmp lstrcmp
-#define strcpy lstrcpy
+#define strlen lstrlenA
+#define strcat lstrcatA
+#define strcmp lstrcmpA
+#define strcpy lstrcpyA
 
 #ifdef _MSC_VER
 
