@@ -39,7 +39,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="vc7to6.lib eh7.lib wsock32.lib"
+				AdditionalDependencies="vc7to6.lib eh7.lib wsock32.lib oldnames.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="../../lib"
@@ -227,7 +227,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="vc7to6.lib eh7.lib wsock32.lib"
+				AdditionalDependencies="vc7to6.lib eh7.lib wsock32.lib oldnames.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="../../lib"
@@ -330,9 +330,6 @@
 				RelativePath=".\snac.cpp">
 			</File>
 			<File
-				RelativePath=".\strl.cpp">
-			</File>
-			<File
 				RelativePath=".\theme.cpp">
 			</File>
 			<File
@@ -342,10 +339,10 @@
 				RelativePath=".\tlv.cpp">
 			</File>
 			<File
-				RelativePath=".\utility.cpp">
+				RelativePath=".\ui.cpp">
 			</File>
 			<File
-				RelativePath=".\ui.cpp">
+				RelativePath=".\utility.cpp">
 			</File>
 		</Filter>
 		<Filter
@@ -458,10 +455,10 @@
 				RelativePath=".\tlv.h">
 			</File>
 			<File
-				RelativePath=".\utility.h">
+				RelativePath=".\ui.h">
 			</File>
 			<File
-				RelativePath=".\ui.h">
+				RelativePath=".\utility.h">
 			</File>
 		</Filter>
 		<File
