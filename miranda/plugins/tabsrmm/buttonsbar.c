@@ -272,7 +272,7 @@ void CB_HardReInit()
 	NotifyEventHooks(hHookToolBarLoadedEvt, (WPARAM)0, (LPARAM)0);
 	}
 
-static int CB_AddButton(WPARAM wParam, LPARAM lParam)
+static INT_PTR CB_AddButton(WPARAM wParam, LPARAM lParam)
 	{
 	BBButton * bbdi=(BBButton *)lParam;
 	bNeedResort=TRUE;
@@ -340,7 +340,7 @@ static int CB_AddButton(WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 
-static int CB_GetButtonState(WPARAM wParam, LPARAM lParam)
+static INT_PTR CB_GetButtonState(WPARAM wParam, LPARAM lParam)
 	{
 	HWND hwndDlg=NULL;
 	int i;
@@ -372,7 +372,7 @@ static int CB_GetButtonState(WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 
-static int CB_SetButtonState(WPARAM wParam, LPARAM lParam)
+static INT_PTR CB_SetButtonState(WPARAM wParam, LPARAM lParam)
 	{
 	HWND hwndDlg;
 	int i;
@@ -424,7 +424,7 @@ static int CB_SetButtonState(WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 
-static int CB_RemoveButton(WPARAM wParam, LPARAM lParam)
+static INT_PTR CB_RemoveButton(WPARAM wParam, LPARAM lParam)
 	{
 	int i;
 	DWORD tempCID=0;
@@ -463,7 +463,7 @@ static int CB_RemoveButton(WPARAM wParam, LPARAM lParam)
 	return 0;
 	}
 
-static int CB_ModifyButton(WPARAM wParam, LPARAM lParam)
+static INT_PTR CB_ModifyButton(WPARAM wParam, LPARAM lParam)
 	{
 	int i;
 	BOOL bFound=0;
@@ -1264,19 +1264,19 @@ HANDLE hDragItem=NULL;
 HANDLE hToolBarTree=NULL;
 
 
-BOOL CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 	switch (uMsg) {
 	case WM_INITDIALOG:{
 		DWORD style;
 		hToolBarTree=GetDlgItem(hwndDlg,IDC_TOOLBARTREE);
 
-		style = GetWindowLong(hToolBarTree,GWL_STYLE);
+		style = GetWindowLongPtr(hToolBarTree,GWL_STYLE);
 		style ^= TVS_CHECKBOXES;
-		SetWindowLong(hToolBarTree,GWL_STYLE, style);
+		SetWindowLongPtr(hToolBarTree,GWL_STYLE, style);
 		style |= TVS_CHECKBOXES;
 		style |=TVS_NOHSCROLL;
-		SetWindowLong(hToolBarTree,GWL_STYLE, style);
+		SetWindowLongPtr(hToolBarTree,GWL_STYLE, style);
 
 		EnterCriticalSection(&ToolBarCS);
 

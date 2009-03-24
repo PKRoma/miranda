@@ -68,9 +68,9 @@ static BOOL CALLBACK FillCpCombo(LPCTSTR str)
 
 static int have_ieview = 0, have_hpp = 0;
 
-static BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	HANDLE hContact = (HANDLE)GetWindowLong(hwndDlg, GWL_USERDATA);
+	HANDLE hContact = (HANDLE)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	switch (msg) {
 		case WM_INITDIALOG: {
@@ -99,7 +99,7 @@ static BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			hContact = (HANDLE)lParam;
 
 			TranslateDialogDefault(hwndDlg);
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)lParam);
 
 			SendDlgItemMessage(hwndDlg, IDC_INFOPANEL, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Use global Setting"));
 			SendDlgItemMessage(hwndDlg, IDC_INFOPANEL, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Always On"));
@@ -152,7 +152,7 @@ static BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 #if defined(_UNICODE)
 			hCpCombo = GetDlgItem(hwndDlg, IDC_CODEPAGES);
 			sCodePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", 0);
-			EnumSystemCodePages(FillCpCombo, CP_INSTALLED);
+			EnumSystemCodePages((CODEPAGE_ENUMPROC)FillCpCombo, CP_INSTALLED);
 			SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_INSERTSTRING, 0, (LPARAM)TranslateT("Use default codepage"));
 			if (sCodePage == 0)
 				SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_SETCURSEL, (WPARAM)0, 0);
@@ -204,7 +204,7 @@ static BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					BYTE	bAvatarVisible = 0;
 
 					if (hWnd) {
-						dat = (struct MessageWindowData *)GetWindowLong(hWnd, GWL_USERDATA);
+						dat = (struct MessageWindowData *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 						if (dat)
 							iOldIEView = GetIEViewMode(hWnd, dat->hContact);
 					}
@@ -404,9 +404,9 @@ int LoadLocalFlags(HWND hwnd, struct MessageWindowData *dat)
 	return 0;
 }
 
-static BOOL CALLBACK DlgProcUserPrefs1(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcUserPrefs1(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	HANDLE hContact = (HANDLE)GetWindowLong(hwndDlg, GWL_USERDATA);
+	HANDLE hContact = (HANDLE)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	switch(msg) {
 		case WM_INITDIALOG: {
 			DWORD	dwLocalFlags, dwLocalMask, maskval;
@@ -414,7 +414,7 @@ static BOOL CALLBACK DlgProcUserPrefs1(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 			hContact = (HANDLE)lParam;
 			TranslateDialogDefault(hwndDlg);
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)hContact);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)hContact);
 
 			dwLocalFlags = DBGetContactSettingDword(hContact, SRMSGMOD_T, "mwflags", 0);
 			dwLocalMask = DBGetContactSettingDword(hContact, SRMSGMOD_T, "mwmask", 0);
@@ -440,7 +440,7 @@ static BOOL CALLBACK DlgProcUserPrefs1(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					DWORD	*dwActionToTake = (DWORD *)lParam, dwMask = 0, dwFlags = 0, maskval;
 
 					if(hwnd)
-						dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
+						dat = (struct MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 					while(checkboxes[i].uId) {
 						maskval = checkboxes[i].uFlag;
@@ -476,7 +476,7 @@ static BOOL CALLBACK DlgProcUserPrefs1(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 BOOL CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	HANDLE hContact = (HANDLE)GetWindowLong(hwndDlg, GWL_USERDATA);
+	HANDLE hContact = (HANDLE)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	switch(msg) {
 		case WM_INITDIALOG: {
@@ -485,7 +485,7 @@ BOOL CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			TCHAR szBuffer[180];
 
 			hContact = (HANDLE)lParam;
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)hContact);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)hContact);
 
 			WindowList_Add(hUserPrefsWindowList, hwndDlg, hContact);
 			TranslateDialogDefault(hwndDlg);
@@ -556,7 +556,7 @@ BOOL CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						SendMessage((HWND)tci.lParam, WM_COMMAND, WM_USER + 100, (LPARAM)&dwActionToTake);
 					}
 					if(hwnd) {
-						struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
+						struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 						if(dat) {
 							DWORD	dwOldFlags = (dat->dwFlags & MWF_LOG_ALL);
 

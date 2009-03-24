@@ -312,7 +312,7 @@ static void ResizeIeView(HWND hwndDlg, struct MessageWindowData *dat, DWORD px, 
 
 LRESULT CALLBACK IEViewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLong(GetParent(hwnd), GWL_USERDATA);
+	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
 
 	switch (msg) {
 		case WM_NCCALCSIZE:
@@ -331,7 +331,7 @@ LRESULT CALLBACK IEViewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 LRESULT CALLBACK IEViewKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLong(GetParent(GetParent(GetParent(hwnd))), GWL_USERDATA);
+	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLongPtr(GetParent(GetParent(GetParent(hwnd))), GWLP_USERDATA);
 
 	BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 	BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
@@ -362,7 +362,7 @@ LRESULT CALLBACK IEViewKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 LRESULT CALLBACK HPPKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 
-	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLong(GetParent(hwnd), GWL_USERDATA);
+	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
 	BOOL isCtrl	 = GetKeyState(VK_CONTROL) & 0x8000;
 	BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
 	BOOL isAlt 	 = GetKeyState(VK_MENU) & 0x8000;
@@ -486,7 +486,7 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UI
 			pt.y = rcRTF.top;
 			if (dat->hwndIEView) {
 				if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "subclassIEView", 0) && dat->oldIEViewProc == 0) {
-					WNDPROC wndProc = (WNDPROC)SetWindowLong(dat->hwndIEView, GWL_WNDPROC, (LONG)IEViewSubclassProc);
+					WNDPROC wndProc = (WNDPROC)SetWindowLongPtr(dat->hwndIEView, GWLP_WNDPROC, (LONG_PTR)IEViewSubclassProc);
 					if (OldIEViewProc == 0)
 						OldIEViewProc = wndProc;
 					dat->oldIEViewProc = wndProc;
@@ -611,7 +611,7 @@ void SetDialogToType(HWND hwndDlg)
 	struct MessageWindowData *dat;
 	int showToolbar = 0;
 
-	dat = (struct MessageWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
+	dat = (struct MessageWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
 
 	if (dat->hContact) {
@@ -692,7 +692,7 @@ UINT NcCalcRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID
 	BOOL bReturn = FALSE;
 
 	if (myGlobals.g_DisableScrollbars) {
-		SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_VSCROLL);
+		SetWindowLongPtr(hwnd, GWL_STYLE, GetWindowLongPtr(hwnd, GWL_STYLE) & ~WS_VSCROLL);
 		EnableScrollBar(hwnd, SB_VERT, ESB_DISABLE_BOTH);
 		ShowScrollBar(hwnd, SB_VERT, FALSE);
 	}
@@ -755,8 +755,8 @@ UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, 
 		RECT rcWindow;
 		POINT pt;
 		LONG left_off, top_off, right_off, bottom_off;
-		LONG dwStyle = GetWindowLong(hwnd, GWL_STYLE);
-		LONG dwExStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+		LONG dwStyle = GetWindowLongPtr(hwnd, GWL_STYLE);
+		LONG dwExStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
 
 		GetWindowRect(hwnd, &rcWindow);
 		pt.x = pt.y = 0;
@@ -799,7 +799,7 @@ UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, 
 static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndParent = GetParent(hwnd);
-	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLong(hwndParent, GWL_USERDATA);
+	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 	//MAD
 	BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 	BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
@@ -867,7 +867,7 @@ static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 		}
 		case WM_NCDESTROY:
          if(OldMessageLogProc)
-                SetWindowLong(hwnd, GWL_WNDPROC, (LONG) OldMessageLogProc);
+				SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR) OldMessageLogProc);
 			break;
 
 		}
@@ -876,9 +876,9 @@ static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 
 static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	LONG lastEnterTime = GetWindowLong(hwnd, GWL_USERDATA);
+	LONG lastEnterTime = GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	HWND hwndParent = GetParent(hwnd);
-	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLong(hwndParent, GWL_USERDATA);
+	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 
 	switch (msg) {
 		case WM_NCCALCSIZE:
@@ -1001,7 +1001,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 						if (myGlobals.m_SendOnDblEnter) {
 							if (lastEnterTime + 2 < time(NULL)) {
 								lastEnterTime = time(NULL);
-								SetWindowLong(hwnd, GWL_USERDATA, lastEnterTime);
+								SetWindowLongPtr(hwnd, GWLP_USERDATA, lastEnterTime);
 								break;
 							} else {
 								SendMessage(hwnd, WM_KEYDOWN, VK_BACK, 0);
@@ -1016,13 +1016,13 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 				} else
 					break;
 			} else
-				SetWindowLong(hwnd, GWL_USERDATA, 0);
+				SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
 
 			if (isCtrl && !isAlt && !isShift) {
 				if (!isShift && (wParam == VK_UP || wParam == VK_DOWN)) {          // input history scrolling (ctrl-up / down)
 					SETTEXTEX stx = {ST_DEFAULT, CP_UTF8};
 
-					SetWindowLong(hwnd, GWL_USERDATA, 0);
+					SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
 					if (mwdat) {
 						if (mwdat->history != NULL && mwdat->history[0].szText != NULL) {     // at least one entry needs to be alloced, otherwise we get a nice infinite loop ;)
 							if (mwdat->dwFlags & MWF_NEEDHISTORYSAVE) {
@@ -1075,7 +1075,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 					case VK_END: {
 						WPARAM wp = 0;
 
-						SetWindowLong(hwnd, GWL_USERDATA, 0);
+						SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
 						if (wParam == VK_UP)
 							wp = MAKEWPARAM(SB_LINEUP, 0);
 						else if (wParam == VK_PRIOR)
@@ -1110,7 +1110,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			if (isAlt && !isShift && !isCtrl) {
 				switch (LOBYTE(VkKeyScan((TCHAR)wParam))) {
 					case 'S':
-						if (!(GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_STYLE) & ES_READONLY)) {
+						if (!(GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_STYLE) & ES_READONLY)) {
 							PostMessage(hwndDlg, WM_COMMAND, IDOK, 0);
 							return 0;
 						}
@@ -1259,7 +1259,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 		}
 		case WM_NCDESTROY:
 			if(OldMessageEditProc)
-				SetWindowLong(hwnd, GWL_WNDPROC, (LONG) OldMessageEditProc);
+				SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR) OldMessageEditProc);
 			break;
 
 
@@ -1286,7 +1286,7 @@ static LRESULT CALLBACK AvatarSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, L
 
 static LRESULT CALLBACK MsgIndicatorSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(GetParent(hwnd), GWL_USERDATA);
+	struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
 
 	switch (msg) {
 		case WM_PAINT: {
@@ -1351,7 +1351,7 @@ static LRESULT CALLBACK MsgIndicatorSubclassProc(HWND hwnd, UINT msg, WPARAM wPa
 LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndParent = GetParent(hwnd);
-	struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwndParent, GWL_USERDATA);
+	struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 
 	switch (msg) {
 		case WM_NCHITTEST:
@@ -1366,7 +1366,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			if (hwnd == GetDlgItem(hwndParent, IDC_SPLITTER) || hwnd == GetDlgItem(hwndParent, IDC_SPLITTERY)) {
 				RECT rc;
 
-				struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwndParent, GWL_USERDATA);
+				struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 				if (dat) {
 					GetClientRect(hwnd, &rc);
 					dat->savedSplitter = rc.right > rc.bottom ? (short) HIWORD(GetMessagePos()) + rc.bottom / 2 : (short) LOWORD(GetMessagePos()) + rc.right / 2;
@@ -1392,7 +1392,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			}
 			return 0;
 		case WM_PAINT: {
-			struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(GetParent(hwnd), GWL_USERDATA);
+			struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
 			RECT rc;
 			PAINTSTRUCT ps;
 			HDC dc = BeginPaint(hwnd, &ps);
@@ -1833,13 +1833,13 @@ static void NotifyTyping(struct MessageWindowData *dat, int mode)
 	}
 }
 
-BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct MessageWindowData *dat = 0;
 	HWND   hwndTab, hwndContainer;
 	struct ContainerWindowData *m_pContainer = 0;
 
-	dat = (struct MessageWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
+	dat = (struct MessageWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	hwndTab = GetParent(hwndDlg);
 
@@ -1869,7 +1869,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				m_pContainer = dat->pContainer;
 				hwndContainer = m_pContainer->hwnd;
 			}
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) dat);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR) dat);
 
 			if (rtf_ctable == NULL)
 				RTF_CTableInit();
@@ -2122,15 +2122,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			 * subclassing stuff
 			 */
 
-			OldMessageEditProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) MessageEditSubclassProc);
+			OldMessageEditProc = (WNDPROC) SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MESSAGE), GWLP_WNDPROC, (LONG_PTR) MessageEditSubclassProc);
 
- 			OldAvatarWndProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_CONTACTPIC), GWL_WNDPROC, (LONG) AvatarSubclassProc);
- 			SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELPIC), GWL_WNDPROC, (LONG) AvatarSubclassProc);
+			OldAvatarWndProc = (WNDPROC) SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CONTACTPIC), GWLP_WNDPROC, (LONG_PTR) AvatarSubclassProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_PANELPIC), GWLP_WNDPROC, (LONG_PTR) AvatarSubclassProc);
 
-			OldSplitterProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) SplitterSubclassProc);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), GWL_WNDPROC, (LONG) SplitterSubclassProc);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWL_WNDPROC, (LONG) SplitterSubclassProc);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGINDICATOR), GWL_WNDPROC, (LONG) MsgIndicatorSubclassProc);
+			OldSplitterProc = (WNDPROC) SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWLP_WNDPROC, (LONG_PTR) SplitterSubclassProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), GWLP_WNDPROC, (LONG_PTR) SplitterSubclassProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWLP_WNDPROC, (LONG_PTR) SplitterSubclassProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MSGINDICATOR), GWLP_WNDPROC, (LONG_PTR) MsgIndicatorSubclassProc);
 
 			/*
 			 * load old messages from history (if wanted...)
@@ -2211,9 +2211,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 				ZeroMemory(&wndClass, sizeof(wndClass));
 				GetClassInfoA(g_hInst, "RichEdit20A", &wndClass);
-				//OldMessageLogProc = (WNDPROC)GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_WNDPROC);
+				//OldMessageLogProc = (WNDPROC)GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_LOG), GWLP_WNDPROC);
 				OldMessageLogProc = wndClass.lpfnWndProc;
-				SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_WNDPROC, (LONG) MessageLogSubclassProc);
+				SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_LOG), GWLP_WNDPROC, (LONG_PTR) MessageLogSubclassProc);
 			}
 
 			SetWindowPos(dat->hwndTip, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOZORDER);
@@ -2256,7 +2256,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			//MAD
 			if(dat->hwndHPP) {
 				if(dat->oldIEViewProc == 0) {
-					WNDPROC wndProc = (WNDPROC)SetWindowLong(dat->hwndHPP, GWL_WNDPROC, (LONG)HPPKFSubclassProc);
+					WNDPROC wndProc = (WNDPROC)SetWindowLongPtr(dat->hwndHPP, GWLP_WNDPROC, (LONG_PTR)HPPKFSubclassProc);
 					if(OldHppProc == 0)
 						OldHppProc = wndProc;
 					dat->oldIEViewProc = wndProc;
@@ -2266,7 +2266,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			else if(dat->hwndIEView) {
 				if(dat->oldIEViewProc == 0) {
 					WNDPROC wndProc;
-					wndProc= (WNDPROC)SetWindowLong(GetLastChild(dat->hwndIEView), GWL_WNDPROC, (LONG)IEViewKFSubclassProc);
+					wndProc= (WNDPROC)SetWindowLongPtr(GetLastChild(dat->hwndIEView), GWLP_WNDPROC, (LONG_PTR)IEViewKFSubclassProc);
 					// alex: fixed double subclassing issue with IEView (IE parent frame must also be subclassed with different
 					//       procedure to enable visual style IEView control border.
 					//if(OldIEViewProc == 0)
@@ -2297,7 +2297,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		case DM_TYPING: {
             int preTyping = dat->nTypeSecs != 0;
 			dat->nTypeSecs = (int) lParam > 0 ? (int) lParam : 0;
-            SetWindowLong(hwndDlg, DWL_MSGRESULT, preTyping);
+            SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, preTyping);
 			return TRUE;
 		}
 		case DM_UPDATEWINICON: {
@@ -2340,11 +2340,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			splitterEdges = DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitteredges", 1);
 
 			if (splitterEdges == 0) {
-				SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
-				SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
+				SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
+				SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 			} else {
-				SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) | WS_EX_STATICEDGE);
-				SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) | WS_EX_STATICEDGE);
+				SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) | WS_EX_STATICEDGE);
+				SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) | WS_EX_STATICEDGE);
 			}
 			if (lParam == 1) {
 				GetSendFormat(hwndDlg, dat, 1);
@@ -2487,13 +2487,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				 */
 
 				if (dat->dwFlags & MWF_LOG_RTL) {
-					SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE) | WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR);
-					SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE) | WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR);
-					SetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES), GWL_EXSTYLE) | (WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
+					SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE) | WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR);
+					SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE) | WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR);
+					SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_NOTES), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_NOTES), GWL_EXSTYLE) | (WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
 				} else {
-					SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE) &~(WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
-					SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE) &~(WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
-					SetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES), GWL_EXSTYLE) & ~(WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
+					SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE) &~(WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
+					SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE) &~(WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
+					SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_NOTES), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_NOTES), GWL_EXSTYLE) & ~(WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
 				}
 				SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
 				InvalidateRect(GetDlgItem(hwndDlg, IDC_NOTES), NULL, FALSE);
@@ -3267,7 +3267,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						DM_UpdateLastMessage(hwndDlg, dat);
 						SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
 						HandleIconFeedback(hwndDlg, dat, (HICON) - 1);
-						dat_active = (struct MessageWindowData *)GetWindowLong(m_pContainer->hwndActive, GWL_USERDATA);
+						dat_active = (struct MessageWindowData *)GetWindowLongPtr(m_pContainer->hwndActive, GWLP_USERDATA);
 						if (dat_active && dat_active->bType == SESSIONTYPE_IM)
 							SendMessage(hwndContainer, DM_UPDATETITLE, 0, 0);
 						else
@@ -4809,7 +4809,7 @@ quote_from_last:
 									HCURSOR hCur = GetCursor();
 									if (hCur == LoadCursor(NULL, IDC_SIZENS) || hCur == LoadCursor(NULL, IDC_SIZEWE)
 											|| hCur == LoadCursor(NULL, IDC_SIZENESW) || hCur == LoadCursor(NULL, IDC_SIZENWSE)) {
-										SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
+										SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
 										return TRUE;
 									}
 									break;
@@ -4864,7 +4864,7 @@ quote_from_last:
 							switch (((ENLINK *) lParam)->msg) {
 								case WM_SETCURSOR:
 									SetCursor(myGlobals.hCurHyperlinkHand);
-									SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
+									SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
 									return TRUE;
 								case WM_RBUTTONDOWN:
 								case WM_LBUTTONUP: {
@@ -4914,7 +4914,7 @@ quote_from_last:
 											}
 											mir_free(tr.lpstrText);
 											DestroyMenu(hMenu);
-											SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
+											SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
 											return TRUE;
 										} else {
 											CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
@@ -5317,7 +5317,7 @@ quote_from_last:
 				state |= MSG_WINDOW_STATE_FOCUS;
 			if (IsIconic(hwndContainer))
 				state |= MSG_WINDOW_STATE_ICONIC;
-			SetWindowLong(hwndDlg, DWL_MSGRESULT, state);
+			SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, state);
 			return TRUE;
 		}
 		case DM_CLIENTCHANGED: {
@@ -5719,13 +5719,13 @@ quote_from_last:
 
 			}
 
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGINDICATOR), GWL_WNDPROC, (LONG) OldSplitterProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), GWLP_WNDPROC, (LONG_PTR) OldSplitterProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWLP_WNDPROC, (LONG_PTR) OldSplitterProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MSGINDICATOR), GWLP_WNDPROC, (LONG_PTR) OldSplitterProc);
 
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_CONTACTPIC), GWL_WNDPROC, (LONG) OldAvatarWndProc);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELPIC), GWL_WNDPROC, (LONG) OldAvatarWndProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWLP_WNDPROC, (LONG_PTR) OldSplitterProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CONTACTPIC), GWLP_WNDPROC, (LONG_PTR) OldAvatarWndProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_PANELPIC), GWLP_WNDPROC, (LONG_PTR) OldAvatarWndProc);
 
 			/* remove temporary contacts... */
 
@@ -5769,11 +5769,11 @@ quote_from_last:
 				ieWindow.iType = IEW_DESTROY;
 				ieWindow.hwnd = dat->hwndIEView;
 				if (dat->oldIEViewLastChildProc) {
-					SetWindowLong(GetLastChild(dat->hwndIEView), GWL_WNDPROC, (LONG)dat->oldIEViewLastChildProc);
+					SetWindowLongPtr(GetLastChild(dat->hwndIEView), GWLP_WNDPROC, (LONG_PTR)dat->oldIEViewLastChildProc);
 					dat->oldIEViewLastChildProc = 0;
 				}
 				if (dat->oldIEViewProc) {
-					SetWindowLong(dat->hwndIEView, GWL_WNDPROC, (LONG)dat->oldIEViewProc);
+					SetWindowLongPtr(dat->hwndIEView, GWLP_WNDPROC, (LONG_PTR)dat->oldIEViewProc);
 					dat->oldIEViewProc = 0;
 					}
 				CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
@@ -5784,7 +5784,7 @@ quote_from_last:
 				ieWindow.iType = IEW_DESTROY;
 				ieWindow.hwnd = dat->hwndHPP;
 				if (dat->oldIEViewProc) {
-					SetWindowLong(dat->hwndHPP, GWL_WNDPROC, (LONG)dat->oldIEViewProc);
+					SetWindowLongPtr(dat->hwndHPP, GWLP_WNDPROC, (LONG_PTR)dat->oldIEViewProc);
 					dat->oldIEViewProc = 0;
 				}
 				CallService(MS_HPP_EG_WINDOW, 0, (LPARAM)&ieWindow);
@@ -5793,7 +5793,7 @@ quote_from_last:
 		case WM_NCDESTROY:
 			if (dat)
 				free(dat);
-			SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 			break;
 	}
 	return FALSE;

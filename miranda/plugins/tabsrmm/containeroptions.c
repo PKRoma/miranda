@@ -126,11 +126,11 @@ static void ShowPage(HWND hwndDlg, int iPage, BOOL fShow)
 	}
 }
 
-BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct ContainerWindowData *pContainer = 0;
 	HWND   hwndTree = GetDlgItem(hwndDlg, IDC_SECTIONTREE);
-	pContainer = (struct ContainerWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
+	pContainer = (struct ContainerWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	switch (msg) {
 		case WM_INITDIALOG: {
@@ -150,7 +150,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			hFont = CreateFontIndirect(&lf);
 			SendDlgItemMessage(hwndDlg, IDC_WHITERECT, WM_SETFONT, (WPARAM)hFont, 0);
 
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) lParam);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR) lParam);
 			pContainer = (struct ContainerWindowData *) lParam;
 			pContainer->hWndOptions = hwndDlg;
 			TranslateDialogDefault(hwndDlg);
@@ -452,7 +452,7 @@ do_apply:
 			SendDlgItemMessage(hwndDlg, IDC_WHITERECT, WM_SETFONT, SendDlgItemMessage(hwndDlg, IDOK, WM_GETFONT, 0, 0), 0);
 			DeleteObject(hFont);
 			pContainer->hWndOptions = 0;
-			SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 			break;
 		}
 	}

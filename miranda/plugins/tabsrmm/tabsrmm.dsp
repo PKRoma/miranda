@@ -172,6 +172,7 @@ SOURCE=.\chat\chatprototypes.h
 
 SOURCE=.\chat\clist.c
 DEP_CPP_CLIST=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -200,7 +201,6 @@ DEP_CPP_CLIST=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -226,6 +226,7 @@ DEP_CPP_CLIST=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -233,6 +234,7 @@ DEP_CPP_CLIST=\
 
 SOURCE=.\chat\colorchooser.c
 DEP_CPP_COLOR=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -261,7 +263,6 @@ DEP_CPP_COLOR=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -287,6 +288,7 @@ DEP_CPP_COLOR=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -294,6 +296,7 @@ DEP_CPP_COLOR=\
 
 SOURCE=.\chat\log.c
 DEP_CPP_LOG_C=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -322,7 +325,6 @@ DEP_CPP_LOG_C=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -348,6 +350,7 @@ DEP_CPP_LOG_C=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -359,6 +362,7 @@ SOURCE=.\chat\m_chat.h
 
 SOURCE=.\chat\main.c
 DEP_CPP_MAIN_=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -387,7 +391,6 @@ DEP_CPP_MAIN_=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -413,6 +416,7 @@ DEP_CPP_MAIN_=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -420,6 +424,7 @@ DEP_CPP_MAIN_=\
 
 SOURCE=.\chat\manager.c
 DEP_CPP_MANAG=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -448,7 +453,6 @@ DEP_CPP_MANAG=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -474,6 +478,7 @@ DEP_CPP_MANAG=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -481,6 +486,7 @@ DEP_CPP_MANAG=\
 
 SOURCE=.\chat\message.c
 DEP_CPP_MESSA=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -509,7 +515,6 @@ DEP_CPP_MESSA=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -535,6 +540,7 @@ DEP_CPP_MESSA=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -542,6 +548,7 @@ DEP_CPP_MESSA=\
 
 SOURCE=.\chat\options.c
 DEP_CPP_OPTIO=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -570,7 +577,6 @@ DEP_CPP_OPTIO=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -596,6 +602,7 @@ DEP_CPP_OPTIO=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -603,6 +610,7 @@ DEP_CPP_OPTIO=\
 
 SOURCE=.\chat\services.c
 DEP_CPP_SERVI=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -631,7 +639,6 @@ DEP_CPP_SERVI=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -657,6 +664,7 @@ DEP_CPP_SERVI=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -664,6 +672,7 @@ DEP_CPP_SERVI=\
 
 SOURCE=.\chat\tools.c
 DEP_CPP_TOOLS=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -692,7 +701,6 @@ DEP_CPP_TOOLS=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -718,6 +726,7 @@ DEP_CPP_TOOLS=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -725,6 +734,7 @@ DEP_CPP_TOOLS=\
 
 SOURCE=.\chat\window.c
 DEP_CPP_WINDO=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -753,7 +763,6 @@ DEP_CPP_WINDO=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -779,6 +788,7 @@ DEP_CPP_WINDO=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -855,6 +865,7 @@ SOURCE=.\API\m_updater.h
 
 SOURCE=.\buttonsbar.c
 DEP_CPP_BUTTO=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -883,7 +894,6 @@ DEP_CPP_BUTTO=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -909,12 +919,14 @@ DEP_CPP_BUTTO=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
 SOURCE=.\container.c
 DEP_CPP_CONTA=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -943,7 +955,6 @@ DEP_CPP_CONTA=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -970,6 +981,7 @@ DEP_CPP_CONTA=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -989,6 +1001,7 @@ DEP_CPP_CONTA=\
 
 SOURCE=.\containeroptions.c
 DEP_CPP_CONTAI=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1017,7 +1030,6 @@ DEP_CPP_CONTAI=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1043,6 +1055,7 @@ DEP_CPP_CONTAI=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1062,6 +1075,7 @@ DEP_CPP_CONTAI=\
 
 SOURCE=eventpopups.c
 DEP_CPP_EVENT=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1091,7 +1105,6 @@ DEP_CPP_EVENT=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1117,6 +1130,7 @@ DEP_CPP_EVENT=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1136,6 +1150,7 @@ DEP_CPP_EVENT=\
 
 SOURCE=.\formatting.cpp
 DEP_CPP_FORMA=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1164,7 +1179,6 @@ DEP_CPP_FORMA=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1190,6 +1204,7 @@ DEP_CPP_FORMA=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1217,6 +1232,7 @@ DEP_CPP_FORMA=\
 
 SOURCE=.\generic_msghandlers.c
 DEP_CPP_GENER=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1245,7 +1261,6 @@ DEP_CPP_GENER=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1271,6 +1286,7 @@ DEP_CPP_GENER=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1290,6 +1306,7 @@ DEP_CPP_GENER=\
 
 SOURCE=.\hotkeyhandler.c
 DEP_CPP_HOTKE=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1318,7 +1335,6 @@ DEP_CPP_HOTKE=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1345,6 +1361,7 @@ DEP_CPP_HOTKE=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1364,6 +1381,7 @@ DEP_CPP_HOTKE=\
 
 SOURCE=ImageDataObject.cpp
 DEP_CPP_IMAGE=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1392,7 +1410,6 @@ DEP_CPP_IMAGE=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1419,6 +1436,7 @@ DEP_CPP_IMAGE=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1444,11 +1462,8 @@ DEP_CPP_IMAGE=\
 # Begin Source File
 
 SOURCE=.\tabmodplus\modplus.c
-# End Source File
-# Begin Source File
-
-SOURCE=msgdialog.c
-DEP_CPP_MSGDI=\
+DEP_CPP_MODPL=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1477,7 +1492,68 @@ DEP_CPP_MSGDI=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
+	".\API\m_cln_skinedit.h"\
+	".\API\m_fingerprint.h"\
+	".\API\m_flash.h"\
+	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
+	".\API\m_ieview.h"\
+	".\API\m_mathmodule.h"\
+	".\API\m_metacontacts.h"\
+	".\API\m_msg_buttonsbar.h"\
+	".\API\m_nudge.h"\
+	".\API\m_popup.h"\
+	".\API\m_smileyadd.h"\
+	".\API\m_spellchecker.h"\
+	".\buttonsbar.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\generic_msghandlers.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\tabmodplus\commonheaders.h"\
+	".\templates.h"\
+	".\typingnotify.h"\
+	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
+	
+# End Source File
+# Begin Source File
+
+SOURCE=msgdialog.c
+DEP_CPP_MSGDI=\
+	"..\..\include\m_acc.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1530,6 +1606,7 @@ DEP_CPP_MSGDI=\
 
 SOURCE=msgdlgutils.c
 DEP_CPP_MSGDL=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1558,7 +1635,6 @@ DEP_CPP_MSGDL=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1584,6 +1660,7 @@ DEP_CPP_MSGDL=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1603,6 +1680,7 @@ DEP_CPP_MSGDL=\
 
 SOURCE=msglog.c
 DEP_CPP_MSGLO=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1631,7 +1709,6 @@ DEP_CPP_MSGLO=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1657,6 +1734,7 @@ DEP_CPP_MSGLO=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1682,6 +1760,7 @@ DEP_CPP_MSGLO=\
 
 SOURCE=msgoptions.c
 DEP_CPP_MSGOP=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1697,6 +1776,7 @@ DEP_CPP_MSGOP=\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
+	"..\..\include\m_modernopt.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
@@ -1710,7 +1790,6 @@ DEP_CPP_MSGOP=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1761,11 +1840,8 @@ DEP_CPP_MSGOP=\
 # Begin Source File
 
 SOURCE=.\tabmodplus\msgoptions_plus.c
-# End Source File
-# Begin Source File
-
-SOURCE=msgs.c
-DEP_CPP_MSGS_=\
+DEP_CPP_MSGOPT=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1794,7 +1870,68 @@ DEP_CPP_MSGS_=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
+	".\API\m_cln_skinedit.h"\
+	".\API\m_fingerprint.h"\
+	".\API\m_flash.h"\
+	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
+	".\API\m_ieview.h"\
+	".\API\m_mathmodule.h"\
+	".\API\m_metacontacts.h"\
+	".\API\m_msg_buttonsbar.h"\
+	".\API\m_nudge.h"\
+	".\API\m_popup.h"\
+	".\API\m_smileyadd.h"\
+	".\API\m_spellchecker.h"\
+	".\buttonsbar.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\generic_msghandlers.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\tabmodplus\commonheaders.h"\
+	".\templates.h"\
+	".\typingnotify.h"\
+	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
+	
+# End Source File
+# Begin Source File
+
+SOURCE=msgs.c
+DEP_CPP_MSGS_=\
+	"..\..\include\m_acc.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1823,6 +1960,7 @@ DEP_CPP_MSGS_=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1848,6 +1986,7 @@ DEP_CPP_MSGS_=\
 
 SOURCE=.\selectcontainer.c
 DEP_CPP_SELEC=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1876,7 +2015,6 @@ DEP_CPP_SELEC=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1902,6 +2040,7 @@ DEP_CPP_SELEC=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1921,6 +2060,7 @@ DEP_CPP_SELEC=\
 
 SOURCE=sendqueue.c
 DEP_CPP_SENDQ=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1949,7 +2089,6 @@ DEP_CPP_SENDQ=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1976,6 +2115,7 @@ DEP_CPP_SENDQ=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1995,6 +2135,7 @@ DEP_CPP_SENDQ=\
 
 SOURCE=srmm.c
 DEP_CPP_SRMM_=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2023,7 +2164,6 @@ DEP_CPP_SRMM_=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -2049,6 +2189,7 @@ DEP_CPP_SRMM_=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2074,6 +2215,7 @@ DEP_CPP_SRMM_=\
 
 SOURCE=.\tabctrl.c
 DEP_CPP_TABCT=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2102,7 +2244,6 @@ DEP_CPP_TABCT=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -2148,6 +2289,7 @@ DEP_CPP_TABCT=\
 
 SOURCE=templates.c
 DEP_CPP_TEMPL=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2176,7 +2318,6 @@ DEP_CPP_TEMPL=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -2202,6 +2343,7 @@ DEP_CPP_TEMPL=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2221,6 +2363,7 @@ DEP_CPP_TEMPL=\
 
 SOURCE=.\themes.c
 DEP_CPP_THEME=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2249,7 +2392,6 @@ DEP_CPP_THEME=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -2275,6 +2417,7 @@ DEP_CPP_THEME=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2294,6 +2437,7 @@ DEP_CPP_THEME=\
 
 SOURCE=trayicon.c
 DEP_CPP_TRAYI=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2322,7 +2466,6 @@ DEP_CPP_TRAYI=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -2348,6 +2491,7 @@ DEP_CPP_TRAYI=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2367,6 +2511,7 @@ DEP_CPP_TRAYI=\
 
 SOURCE=TSButton.c
 DEP_CPP_TSBUT=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2395,7 +2540,6 @@ DEP_CPP_TSBUT=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -2421,6 +2565,7 @@ DEP_CPP_TSBUT=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2440,6 +2585,7 @@ DEP_CPP_TSBUT=\
 
 SOURCE=.\typingnotify.c
 DEP_CPP_TYPIN=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2468,7 +2614,6 @@ DEP_CPP_TYPIN=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -2494,12 +2639,14 @@ DEP_CPP_TYPIN=\
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
 SOURCE=userprefs.c
 DEP_CPP_USERP=\
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2528,7 +2675,6 @@ DEP_CPP_USERP=\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -2576,10 +2722,6 @@ DEP_CPP_USERP=\
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=.\buttonsbar.h
-# End Source File
-# Begin Source File
-
 SOURCE=commonheaders.h
 # End Source File
 # Begin Source File
@@ -2597,6 +2739,10 @@ SOURCE=IcoLib.h
 # Begin Source File
 
 SOURCE=ImageDataObject.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\API\m_buttonbar.h
 # End Source File
 # Begin Source File
 

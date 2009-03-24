@@ -306,7 +306,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 {
 	RECT rc, rcTabs;
 	SESSION_INFO* si = (SESSION_INFO*)lParam;
-	struct      MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+	struct      MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	int			TabHeight;
 	BOOL		bToolbar = !(dat->pContainer->dwFlags & CNT_HIDETOOLBAR);
 	BOOL		bBottomToolbar = dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR ? 1 : 0;
@@ -445,10 +445,10 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 	struct MessageWindowData *mwdat;
 	HWND hwndParent = GetParent(hwnd);
 
-	mwdat = (struct MessageWindowData *)GetWindowLong(hwndParent, GWL_USERDATA);
+	mwdat = (struct MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 	Parentsi = mwdat->si;
 
-	dat = (MESSAGESUBDATA *) GetWindowLong(hwnd, GWL_USERDATA);
+	dat = (MESSAGESUBDATA *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	switch (msg) {
 		case WM_NCCALCSIZE:
 			return(NcCalcRichEditFrame(hwnd, mwdat, ID_EXTBKINPUTAREA, msg, wParam, lParam, OldMessageProc));
@@ -459,7 +459,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 		case EM_SUBCLASSED:
 			dat = (MESSAGESUBDATA *) mir_alloc(sizeof(MESSAGESUBDATA));
 
-			SetWindowLong(hwnd, GWL_USERDATA, (LONG) dat);
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) dat);
 			dat->szTabSave[0] = '\0';
 			dat->lastEnterTime = 0;
 			return 0;
@@ -572,7 +572,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			if (isMenu && !isShift && !isCtrl) {
 				switch (LOBYTE(VkKeyScan((TCHAR)wParam))) {
 					case 'S':
-						if (!(GetWindowLong(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), GWL_STYLE) & ES_READONLY)) {
+						if (!(GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), GWL_STYLE) & ES_READONLY)) {
 							PostMessage(hwndDlg, WM_COMMAND, IDOK, 0);
 							return 0;
 						}
@@ -615,7 +615,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				return 0;
 			}
 
-			if (GetWindowLong(hwnd, GWL_STYLE) & ES_READONLY)
+			if (GetWindowLongPtr(hwnd, GWL_STYLE) & ES_READONLY)
 				break;
 
 			if (wParam == 9 && isCtrl && !isMenu) // ctrl-i (italics)
@@ -1075,9 +1075,9 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
  * session
  */
 
-static BOOL CALLBACK FilterWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK FilterWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	SESSION_INFO * si = (SESSION_INFO *)GetWindowLong(hwndDlg, GWL_USERDATA);
+	SESSION_INFO * si = (SESSION_INFO *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	switch (uMsg) {
 		case WM_INITDIALOG: {
 			DWORD dwMask, dwFlags;
@@ -1085,7 +1085,7 @@ static BOOL CALLBACK FilterWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
 			si = (SESSION_INFO *)lParam;
 			dwMask = DBGetContactSettingDword(si->hContact, "Chat", "FilterMask", 0);
 			dwFlags = DBGetContactSettingDword(si->hContact, "Chat", "FilterFlags", 0);
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)si);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)si);
 
 			CheckDlgButton(hwndDlg, IDC_1, dwMask & GC_EVENT_ACTION ? (dwFlags & GC_EVENT_ACTION ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
 			CheckDlgButton(hwndDlg, IDC_2, dwMask & GC_EVENT_MESSAGE ? (dwFlags & GC_EVENT_MESSAGE ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
@@ -1329,7 +1329,7 @@ static BOOL CALLBACK FilterWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
 			break;
 
 		case WM_DESTROY:
-			SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 			break;
 	}
 	return(FALSE);
@@ -1369,7 +1369,7 @@ static LRESULT CALLBACK ButtonSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, L
 static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndParent = GetParent(hwnd);
-	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLong(hwndParent, GWL_USERDATA);
+	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 
 	switch (msg) {
 		case WM_NCCALCSIZE:
@@ -1525,7 +1525,7 @@ static void ProcessNickListHovering(HWND hwnd, int hoveredItem, POINT * pt, SESS
 static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndParent = GetParent(hwnd);
-	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLong(hwndParent, GWL_USERDATA);
+	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 
 	switch (msg) {
 		//MAD: attemp to fix weird bug, when combobox with hidden vscroll
@@ -1547,7 +1547,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 		case WM_ERASEBKGND: {
 			HDC dc = (HDC)wParam;
-			struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwndParent, GWL_USERDATA);
+			struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 			SESSION_INFO * parentdat = dat->si;
 			if (dc) {
 				int height, index, items = 0;
@@ -1722,7 +1722,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 			int item;
 			int height;
 			USERINFO * ui;
-			struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwndParent, GWL_USERDATA);
+			struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 			SESSION_INFO * parentdat = dat->si;
 
 
@@ -1814,7 +1814,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
   */
 			if (bInClient) {
 				//hit test item under mouse
-				struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwndParent, GWL_USERDATA);
+				struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 				SESSION_INFO * parentdat = dat->si;
 
 				DWORD nItemUnderMouse = (DWORD)SendMessage(hwnd, LB_ITEMFROMPOINT, 0, lParam);
@@ -1889,7 +1889,7 @@ static void __cdecl forkthread_r(void *param)
 
 static unsigned long forkthread(void (__cdecl *threadcode)(void*), unsigned long stacksize, void *arg)
 {
-	unsigned long rc;
+	uintptr_t rc;
 	struct FORK_ARG fa;
 
 	fa.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -1898,7 +1898,7 @@ static unsigned long forkthread(void (__cdecl *threadcode)(void*), unsigned long
 
 	rc = _beginthread(forkthread_r, stacksize, &fa);
 
-	if ((unsigned long) - 1L != rc)
+	if ((uintptr_t) - 1L != rc)
 		WaitForSingleObject(fa.hEvent, INFINITE);
 
 	CloseHandle(fa.hEvent);
@@ -1920,11 +1920,11 @@ static void __cdecl phase2(void * lParam)
  * which is usually a (tabbed) child of a container class window.
  */
 
-BOOL CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	SESSION_INFO * si = NULL;
 	HWND hwndTab = GetParent(hwndDlg);
-	struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+	struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	if (dat)
 		si = (SESSION_INFO *)dat->si;
 
@@ -1946,7 +1946,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			dat->hContact = psi->hContact;
 			dat->szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)psi->hContact, 0);
 
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 			dat->bType = SESSIONTYPE_CHAT;
 			newData->item.lParam = (LPARAM) hwndDlg;
 			TabCtrl_SetItem(hwndTab, newData->iTabID, &newData->item);
@@ -1972,14 +1972,14 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			//TODO: unify "change font color" button behavior in IM and Chat windows
 			SendMessage(GetDlgItem(hwndDlg,IDC_COLOR), BUTTONSETASPUSHBTN, 0, 0);
 			//
-			OldSplitterProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTERX), GWL_WNDPROC, (LONG)SplitterSubclassProc);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTERY), GWL_WNDPROC, (LONG)SplitterSubclassProc);
-			OldNicklistProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg, IDC_LIST), GWL_WNDPROC, (LONG)NicklistSubclassProc);
-			OldLogProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg, IDC_CHAT_LOG), GWL_WNDPROC, (LONG)LogSubclassProc);
-			OldFilterButtonProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg, IDC_FILTER), GWL_WNDPROC, (LONG)ButtonSubclassProc);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_COLOR), GWL_WNDPROC, (LONG)ButtonSubclassProc);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_BKGCOLOR), GWL_WNDPROC, (LONG)ButtonSubclassProc);
-			OldMessageProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), GWL_WNDPROC, (LONG)MessageSubclassProc);
+			OldSplitterProc = (WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTERX), GWLP_WNDPROC, (LONG_PTR)SplitterSubclassProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTERY), GWLP_WNDPROC, (LONG_PTR)SplitterSubclassProc);
+			OldNicklistProc = (WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_LIST), GWLP_WNDPROC, (LONG_PTR)NicklistSubclassProc);
+			OldLogProc = (WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CHAT_LOG), GWLP_WNDPROC, (LONG_PTR)LogSubclassProc);
+			OldFilterButtonProc = (WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_FILTER), GWLP_WNDPROC, (LONG_PTR)ButtonSubclassProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_COLOR), GWLP_WNDPROC, (LONG_PTR)ButtonSubclassProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_BKGCOLOR), GWLP_WNDPROC, (LONG_PTR)ButtonSubclassProc);
+			OldMessageProc = (WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), GWLP_WNDPROC, (LONG_PTR)MessageSubclassProc);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SUBCLASSED, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_AUTOURLDETECT, 1, 0);
 
@@ -2005,8 +2005,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			splitterEdges = DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitteredges", 1);
 			if (splitterEdges) {
-				SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTERX), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTERX), GWL_EXSTYLE) | WS_EX_STATICEDGE);
-				SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTERY), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTERY), GWL_EXSTYLE) | WS_EX_STATICEDGE);
+				SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTERX), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTERX), GWL_EXSTYLE) | WS_EX_STATICEDGE);
+				SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTERY), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTERY), GWL_EXSTYLE) | WS_EX_STATICEDGE);
 			}
 
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BUTTONSETASFLATBTN + 10, 0, 0);
@@ -2988,7 +2988,7 @@ LABEL_SHOWWINDOW:
 							if (g_Settings.DoubleClick4Privat ? GetKeyState(VK_SHIFT) & 0x8000 : !(GetKeyState(VK_SHIFT) & 0x8000)) {
 								LRESULT lResult = (LRESULT)SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), EM_GETSEL, (WPARAM)NULL, (LPARAM)NULL);
 								int start = LOWORD(lResult);
-								TCHAR* pszName = (TCHAR*)alloca(sizeof(TCHAR) * (lstrlen(ui->pszUID) + 3));
+								TCHAR* pszName = (TCHAR*)_malloca(sizeof(TCHAR) * (lstrlen(ui->pszUID) + 3));
 								if (start == 0)
 									mir_sntprintf(pszName, lstrlen(ui->pszUID) + 3, _T("%s: "), ui->pszUID);
 								else
@@ -3513,7 +3513,7 @@ LABEL_SHOWWINDOW:
 				state |= MSG_WINDOW_STATE_FOCUS;
 			if (IsIconic(dat->pContainer->hwnd))
 				state |= MSG_WINDOW_STATE_ICONIC;
-			SetWindowLong(hwndDlg, DWL_MSGRESULT, state);
+			SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, state);
 			return TRUE;
 		}
 
@@ -3577,7 +3577,7 @@ LABEL_SHOWWINDOW:
 		case WM_NCDESTROY:
 			if (dat) {
 				free(dat);
-				SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+				SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 			}
 			break;
 
@@ -3588,16 +3588,16 @@ LABEL_SHOWWINDOW:
 				CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)szChatIconString);
 			si->wState &= ~STATE_TALK;
 			si->hWnd = NULL;
-			//SetWindowLong(hwndDlg,GWL_USERDATA,0);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTERX), GWL_WNDPROC, (LONG)OldSplitterProc);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTERY), GWL_WNDPROC, (LONG)OldSplitterProc);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_LIST), GWL_WNDPROC, (LONG)OldNicklistProc);
+			//SetWindowLongPtr(hwndDlg,GWLP_USERDATA,0);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTERX), GWLP_WNDPROC, (LONG_PTR)OldSplitterProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTERY), GWLP_WNDPROC, (LONG_PTR)OldSplitterProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_LIST), GWLP_WNDPROC, (LONG_PTR)OldNicklistProc);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_UNSUBCLASSED, 0, 0);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), GWL_WNDPROC, (LONG)OldMessageProc);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_CHAT_LOG), GWL_WNDPROC, (LONG)OldLogProc);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_FILTER), GWL_WNDPROC, (LONG)OldFilterButtonProc);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_COLOR), GWL_WNDPROC, (LONG)OldFilterButtonProc);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_BKGCOLOR), GWL_WNDPROC, (LONG)OldFilterButtonProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), GWLP_WNDPROC, (LONG_PTR)OldMessageProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CHAT_LOG), GWLP_WNDPROC, (LONG_PTR)OldLogProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_FILTER), GWLP_WNDPROC, (LONG_PTR)OldFilterButtonProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_COLOR), GWLP_WNDPROC, (LONG_PTR)OldFilterButtonProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_BKGCOLOR), GWLP_WNDPROC, (LONG_PTR)OldFilterButtonProc);
 
 			TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING, 0);
 

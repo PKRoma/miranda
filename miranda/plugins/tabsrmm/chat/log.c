@@ -238,7 +238,7 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, BOOL simpleMode, char **buff
 {
 	va_list va;
 	int lineLen, textCharsCount = 0;
-	TCHAR* line = (TCHAR*)alloca(8001 * sizeof(TCHAR));
+	TCHAR* line = (TCHAR*)_malloca(8001 * sizeof(TCHAR));
 	char* d;
 
 	va_start(va, fmt);
@@ -648,7 +648,7 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 	return buffer;
 }
 
-static DWORD CALLBACK Log_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
+static DWORD CALLBACK Log_StreamCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
 {
 	LOGSTREAMDATA *lstrdat = (LOGSTREAMDATA *) dwCookie;
 
@@ -684,7 +684,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 	SCROLLINFO scroll;
 	WPARAM wp;
 	HWND hwndRich;
-	struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+	struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	if (hwndDlg == 0 || lin == 0 || si == 0 || dat == 0)
 		return;

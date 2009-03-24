@@ -492,10 +492,10 @@ bg_done:
 
 static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, LPARAM lParam)
 {
-	MButtonCtrl* bct = (MButtonCtrl *)GetWindowLong(hwndDlg, 0);
+	MButtonCtrl* bct = (MButtonCtrl *)GetWindowLongPtr(hwndDlg, 0);
 	switch (msg) {
 		case WM_NCCREATE: {
-			SetWindowLong(hwndDlg, GWL_STYLE, GetWindowLong(hwndDlg, GWL_STYLE) | BS_OWNERDRAW);
+			SetWindowLongPtr(hwndDlg, GWL_STYLE, GetWindowLongPtr(hwndDlg, GWL_STYLE) | BS_OWNERDRAW);
 			bct = malloc(sizeof(MButtonCtrl));
 			if (bct == NULL) return FALSE;
 			bct->hwnd = hwndDlg;
@@ -517,7 +517,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			bct->pContainer = NULL;
 			bct->item = NULL;
 			LoadTheme(bct);
-			SetWindowLong(hwndDlg, 0, (LONG)bct);
+			SetWindowLongPtr(hwndDlg, 0, (LONG_PTR)bct);
 			if (((CREATESTRUCTA *)lParam)->lpszName) SetWindowTextA(hwndDlg, ((CREATESTRUCTA *)lParam)->lpszName);
 			return TRUE;
 		}
@@ -546,7 +546,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 				DestroyTheme(bct);
 				free(bct);
 			}
-			SetWindowLong(hwndDlg, 0, (LONG)NULL);
+			SetWindowLongPtr(hwndDlg, 0, (LONG_PTR)NULL);
 			break;	// DONT! fall thru
 		}
 		case WM_SETTEXT: {
@@ -766,7 +766,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 		case WM_LBUTTONUP: {
 			RECT rc;
 			int  showClick = 0;
-            
+
 			if (bct->pushBtn) {
 				if (bct->pbState) bct->pbState = 0;
 				else bct->pbState = 1;
@@ -774,9 +774,9 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			if (bct->stateId != PBS_DISABLED) { // don't change states if disabled
 				if(bct->stateId == PBS_PRESSED || bct->stateId == PBS_PUSHDOWNPRESSED)
 					showClick = 1;
-				if (msg == WM_LBUTTONUP) 
+				if (msg == WM_LBUTTONUP)
 					bct->stateId = PBS_HOT;
-				else 
+				else
 					bct->stateId = PBS_NORMAL;
 				InvalidateRect(bct->hwnd, NULL, TRUE);
 			}

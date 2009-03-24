@@ -116,7 +116,7 @@ int Chat_IconsChanged(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int Service_GetCount(WPARAM wParam, LPARAM lParam)
+INT_PTR Service_GetCount(WPARAM wParam, LPARAM lParam)
 {
 	int i;
 
@@ -131,7 +131,7 @@ int Service_GetCount(WPARAM wParam, LPARAM lParam)
 	return i;
 }
 
-static int Service_GetInfo(WPARAM wParam,LPARAM lParam)
+INT_PTR Service_GetInfo(WPARAM wParam, LPARAM lParam)
 {
 	GC_INFO * gci = (GC_INFO *) lParam;
 	SESSION_INFO* si = NULL;
@@ -175,7 +175,7 @@ static int Service_GetInfo(WPARAM wParam,LPARAM lParam)
 	return 1;
 }
 
-static int Service_Register(WPARAM wParam, LPARAM lParam)
+INT_PTR Service_Register(WPARAM wParam, LPARAM lParam)
 {
 
 	GCREGISTER *gcr = (GCREGISTER *)lParam;
@@ -222,7 +222,7 @@ static int Service_Register(WPARAM wParam, LPARAM lParam)
 	return GC_REGISTER_ERROR;
 }
 
-static int Service_NewChat(WPARAM wParam, LPARAM lParam)
+INT_PTR Service_NewChat(WPARAM wParam, LPARAM lParam)
 {
 	MODULEINFO* mi;
 	GCSESSION *gcw = (GCSESSION *)lParam;
@@ -532,7 +532,7 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
 				item.mask = TCIF_PARAM;
 				TabCtrl_GetItem(hwndTab, i, &item);
 				hwnd = (HWND)item.lParam;
-				dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
+				dat = (struct MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 				if (dat) {
 					relPos = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "tabindex", i * 100);
 					if (iTabIndex_wanted <= relPos)
@@ -600,7 +600,7 @@ void ShowRoom(SESSION_INFO* si, WPARAM wp, BOOL bSetForeground)
 	} else ActivateExistingTab(si->pContainer, si->hWnd);
 }
 
-int Service_AddEvent(WPARAM wParam, LPARAM lParam)
+INT_PTR Service_AddEvent(WPARAM wParam, LPARAM lParam)
 {
 	GCEVENT *gce = (GCEVENT*)lParam;
 	GCDEST *gcd = NULL;
@@ -818,7 +818,7 @@ LBL_Exit:
 	return iRetVal;
 }
 
-static int Service_GetAddEventPtr(WPARAM wParam, LPARAM lParam)
+static INT_PTR Service_GetAddEventPtr(WPARAM wParam, LPARAM lParam)
 {
 	GCPTRS * gp = (GCPTRS *) lParam;
 
@@ -836,7 +836,7 @@ void HookEvents(void)
 {
 	InitializeCriticalSection(&cs);
 	g_hHookContactDblClick = HookEvent(ME_CLIST_DOUBLECLICKED, CList_RoomDoubleclicked);
-	g_hHookPrebuildMenu = HookEvent(ME_CLIST_PREBUILDCONTACTMENU, CList_PrebuildContactMenu);
+	g_hHookPrebuildMenu = HookEvent(ME_CLIST_PREBUILDCONTACTMENU, CList_PrebuildContactMenu); // MIRANDAHOOK should return INT_PTR too
 }
 
 void UnhookEvents(void)

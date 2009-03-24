@@ -97,8 +97,8 @@ HICON       MY_GetContactIcon(struct MessageWindowData *dat);
 void        MTH_updatePreview(HWND hwndDlg, struct MessageWindowData *dat);
 void        MTH_updateMathWindow(HWND hwndDlg, struct MessageWindowData *dat);
 
-extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 struct RTFColorTable {
     TCHAR szName[10];

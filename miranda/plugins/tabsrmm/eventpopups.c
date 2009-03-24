@@ -43,7 +43,7 @@ extern      NEN_OPTIONS nen_options;
 extern      HANDLE hMessageWindowList;
 extern      MYGLOBALS myGlobals;
 extern      struct ContainerWindowData *pFirstContainer;
-extern      BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern      INT_PTR CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern      HIMAGELIST CreateStateImageList();
 extern      HANDLE hTrayAnimThread, g_hEvent;
 
@@ -206,7 +206,7 @@ static struct LISTOPTIONSITEM defaultItems[] = {
 	0, NULL, 0, 0, 0, 0
 };
 
-BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	NEN_OPTIONS *options = &nen_options;
 	LRESULT iIndex;
@@ -216,7 +216,7 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 			TVINSERTSTRUCT tvi = {0};
 			int i = 0;
 
-			SetWindowLong(GetDlgItem(hWnd, IDC_EVENTOPTIONS), GWL_STYLE, GetWindowLong(GetDlgItem(hWnd, IDC_EVENTOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
+			SetWindowLongPtr(GetDlgItem(hWnd, IDC_EVENTOPTIONS), GWL_STYLE, GetWindowLongPtr(GetDlgItem(hWnd, IDC_EVENTOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
 			SendDlgItemMessage(hWnd, IDC_EVENTOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
 			TranslateDialogDefault(hWnd);
 
@@ -590,7 +590,7 @@ static int PopupUpdate(HANDLE hContact, HANDLE hEvent)
 				strncpy(formatTime, "%Y.%m.%d ", sizeof(formatTime));
 			if (pdata->pluginOptions->bShowTime)
 				strncat(formatTime, "%H:%M", sizeof(formatTime));
-			strftime(timestamp, sizeof(timestamp), formatTime, localtime((time_t *)&dbe.timestamp));
+			strftime(timestamp, sizeof(timestamp), formatTime, _localtime32((__time32_t *)&dbe.timestamp));
 			mir_snprintf(pdata->eventData[pdata->nrMerged].szText, MAX_SECONDLINE, "\n[b][i]%s[/i][/b]\n", timestamp);
 		}
 		strncat(pdata->eventData[pdata->nrMerged].szText, GetPreview(dbe.eventType, (char *)dbe.pBlob), MAX_SECONDLINE);
@@ -978,7 +978,7 @@ static int PopupUpdateW(HANDLE hContact, HANDLE hEvent)
 				wcsncpy(formatTime, L"%Y.%m.%d ", MAX_DATASIZE);
 			if (pdata->pluginOptions->bShowTime)
 				wcsncat(formatTime, L"%H:%M", MAX_DATASIZE);
-			wcsftime(timestamp, MAX_DATASIZE, formatTime, localtime((time_t *)&dbe.timestamp));
+			wcsftime(timestamp, MAX_DATASIZE, formatTime, _localtime32((__time32_t *)&dbe.timestamp));
 			mir_snprintfW(pdata->eventData[pdata->nrMerged].szText, MAX_SECONDLINE, L"\n[b][i]%s[/i][/b]\n", timestamp);
 		}
 		szPreview = GetPreviewW(dbe.eventType, &dbe, &isUnicode);

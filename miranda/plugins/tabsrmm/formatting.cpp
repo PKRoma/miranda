@@ -28,7 +28,6 @@ $Id$
 License: GPL
 */
 
-#define __TSR_CXX
 #include "commonheaders.h"
 
 #include <tchar.h>
@@ -38,8 +37,6 @@ License: GPL
 #include <string>
 #include "msgdlgutils.h"
 #include "API\m_smileyadd.h"
-
-//#include "m_MathModule.h"
 
 #define MWF_LOG_BBCODE 1
 #define MWF_LOG_TEXTFORMAT 0x2000000
@@ -81,7 +78,7 @@ static WCHAR *formatting_strings_end[] = { L"b0 ", L"i0 ", L"u0 ", L"s0 ", L
 extern "C" const WCHAR *FilterEventMarkers(WCHAR *wszText)
 {
 	std::wstring text(wszText);
-	unsigned int beginmark = 0, endmark = 0;
+	INT_PTR beginmark = 0, endmark = 0;
 
 	while (TRUE) {
 		if ((beginmark = text.find(_T("~-+"))) != text.npos) {
@@ -116,7 +113,7 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags, co
 {
 	bool clr_was_added = false, was_added;
 	static std::wstring message(msg);
-	unsigned beginmark = 0, endmark = 0, tempmark = 0, index;
+	INT_PTR beginmark = 0, endmark = 0, tempmark = 0, index;
 	int i, endindex;
 	WCHAR endmarker;
 	message.assign(msg);
@@ -132,7 +129,7 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags, co
 		iHaveSmileyadd = MY_ServiceExists(MS_SMILEYADD_BATCHPARSE);
 
 	if (haveMathMod && mathModDelimiter) {
-		unsigned mark = 0;
+		INT_PTR mark = 0;
 		int      nrDelims = 0;
 		while ((mark = message.find(mathModDelimiter, mark)) != message.npos) {
 			nrDelims++;
@@ -232,7 +229,7 @@ nobbcode:
 				continue;
 			}
 			// search a corresponding endmarker which fulfills the criteria
-			unsigned tempmark = beginmark + 1;
+			INT_PTR tempmark = beginmark + 1;
 			while ((endmark = message.find(endmarker, tempmark)) != message.npos) {
 				if (iswpunct(message[endmark + 1]) || iswspace(message[endmark + 1]) || message[endmark + 1] == 0 || wcschr(L"*/_", message[endmark + 1]) != NULL)
 					goto ok;
@@ -501,8 +498,8 @@ extern "C" int MY_DBFreeVariant(DBVARIANT *dbv);
 extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const TCHAR *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus, WORD wStatus)
 {
 	TCHAR *szResult = 0;
-	int length = 0;
-	int tempmark = 0;
+	INT_PTR length = 0;
+	INT_PTR tempmark = 0;
 	TCHAR szTemp[512];
 
 #if defined(_UNICODE)
@@ -635,7 +632,7 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 extern "C" const char *FilterEventMarkersA(char *szText)
 {
 	std::string text(szText);
-	unsigned int beginmark = 0, endmark = 0;
+	INT_PTR beginmark = 0, endmark = 0;
 
 	while (TRUE) {
 		if ((beginmark = text.find("~-+")) != text.npos) {
@@ -687,7 +684,7 @@ extern "C" const TCHAR *DoubleAmpersands(TCHAR *pszText)
 	std::string text(pszText);
 #endif
 	//tstring text(pszText);
-	unsigned int textPos = 0;
+	INT_PTR textPos = 0;
 
 	while (TRUE) {
 		if ((textPos = text.find(_T("&"),textPos)) != text.npos) {

@@ -548,9 +548,10 @@ char *GetThemeFileName(int iMode)
 	OPENFILENAMEA ofn = {0};
 	char szInitialDir[MAX_PATH];
 
-	if(!myGlobals.szSkinsPath&&myGlobals.szDataPath)
+	if(!myGlobals.szSkinsPath && myGlobals.szDataPath)
 		mir_snprintf(szInitialDir, MAX_PATH, "%sskins\\", myGlobals.szDataPath);
-	else mir_snprintf(szInitialDir, MAX_PATH,"%s",myGlobals.szSkinsPath);
+	else
+		mir_snprintf(szInitialDir, MAX_PATH,"%s",myGlobals.szSkinsPath);
 
 
 	szFilename[0] = 0;
@@ -901,8 +902,6 @@ void __forceinline gradientVertical(UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UCHA
  * render a skin image to the given rect.
  * all parameters are in ImageItem already pre-configured
  */
-
-// TODO: add support for more stretching options (stretch/tile divided image parts etc.
 
 void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc)
 {

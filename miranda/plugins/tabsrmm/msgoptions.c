@@ -41,23 +41,23 @@ extern		HANDLE hMessageWindowList;
 extern		HINSTANCE g_hInst;
 extern		struct ContainerWindowData *pFirstContainer;
 extern		int g_chat_integration_enabled;
-extern		BOOL CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern		BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern		BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern		BOOL CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-extern		BOOL CALLBACK PlusOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+extern		INT_PTR CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern		INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern		INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern		INT_PTR CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+extern		INT_PTR CALLBACK PlusOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-extern		BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-extern		BOOL CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+extern		INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+extern		INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 extern		BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
 extern		StatusItems_t StatusItems[];
 
 extern NEN_OPTIONS nen_options;
 
-BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK GroupOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+static INT_PTR CALLBACK GroupOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+static INT_PTR CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 struct FontOptionsList {
 	COLORREF defColour;
@@ -182,63 +182,6 @@ void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour, char *szModule)
 	LOGFONT lfResult;
 	LoadMsgDlgFont((i < 100) ? FONTSECTION_IM : FONTSECTION_IP, i, lf, colour, szModule);
 #endif
-/*
-	char str[20];
-	int style;
-	DBVARIANT dbv;
-	char bSize;
-
-	if (colour) {
-		_snprintf(str, sizeof(str), "Font%dCol", i);
-		*colour = DBGetContactSettingDword(NULL, szModule, str, GetSysColor(COLOR_BTNTEXT));
-	}
-	if (lf) {
-		mir_snprintf(str, sizeof(str), "Font%dSize", i);
-		if (i == H_MSGFONTID_DIVIDERS && !strcmp(szModule, FONTMODULE))
-			lf->lfHeight = 5;
-		else {
-			bSize = (char)DBGetContactSettingByte(NULL, szModule, str, -10);
-			if (bSize < 0)
-				lf->lfHeight = abs(bSize);
-			else
-				lf->lfHeight = (LONG)bSize;
-		}
-
-		lf->lfWidth = 0;
-		lf->lfEscapement = 0;
-		lf->lfOrientation = 0;
-		mir_snprintf(str, sizeof(str), "Font%dSty", i);
-		style = DBGetContactSettingByte(NULL, szModule, str, fontOptionsList[0].defStyle);
-		lf->lfWeight = style & FONTF_BOLD ? FW_BOLD : FW_NORMAL;
-		lf->lfItalic = style & FONTF_ITALIC ? 1 : 0;
-		lf->lfUnderline = style & FONTF_UNDERLINE ? 1 : 0;
-		lf->lfStrikeOut =style & FONTF_STRIKEOUT ? 1 : 0;
-		lf->lfOutPrecision = OUT_DEFAULT_PRECIS;
-		lf->lfClipPrecision = CLIP_DEFAULT_PRECIS;
-		lf->lfQuality = DEFAULT_QUALITY;
-		lf->lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
-		mir_snprintf(str, sizeof(str), "Font%d", i);
-		if ((i == MSGFONTID_SYMBOLS_IN || i == MSGFONTID_SYMBOLS_OUT) && !strcmp(szModule, FONTMODULE)) {
-			lstrcpynA(lf->lfFaceName, "Webdings", LF_FACESIZE);
-			lf->lfCharSet = SYMBOL_CHARSET;
-		} else {
-			if (DBGetContactSettingString(NULL, szModule, str, &dbv)) {
-				lstrcpynA(lf->lfFaceName, fontOptionsList[0].szDefFace, LF_FACESIZE);
-				lf->lfFaceName[LF_FACESIZE - 1] = 0;
-			} else {
-				lstrcpynA(lf->lfFaceName, dbv.pszVal, LF_FACESIZE);
-				lf->lfFaceName[LF_FACESIZE - 1] = 0;
-				DBFreeVariant(&dbv);
-			}
-		}
-		if ((i == MSGFONTID_SYMBOLS_IN || i == MSGFONTID_SYMBOLS_OUT) && !strcmp(szModule, FONTMODULE))
-			lf->lfCharSet = SYMBOL_CHARSET;
-		else {
-			mir_snprintf(str, sizeof(str), "Font%dSet", i);
-			lf->lfCharSet = DBGetContactSettingByte(NULL, szModule, str, MsgDlgGetFontDefaultCharset(lf->lfFaceName));
-		}
-	}
-*/
 }
 
 static struct LISTOPTIONSGROUP defaultGroups[] = {
@@ -266,7 +209,7 @@ static struct LISTOPTIONSITEM defaultItems[] = {
 
 HIMAGELIST g_himlOptions;
 
-static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 		case WM_INITDIALOG: {
@@ -278,7 +221,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			DWORD dwFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
 
 			TranslateDialogDefault(hwndDlg);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_WINDOWOPTIONS), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_WINDOWOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_WINDOWOPTIONS), GWL_STYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_WINDOWOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
 
 
 			g_himlOptions = (HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_WINDOWOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
@@ -520,7 +463,7 @@ static struct LISTOPTIONSITEM lvItems[] = {
 
 static int have_ieview = 0, have_hpp = 0;
 
-static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	BOOL translated;
 	DWORD dwFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
@@ -548,7 +491,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					EnableWindow(GetDlgItem(hwndDlg, IDC_STMINSOLD), TRUE);
 					break;
 			}
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_LOGOPTIONS), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_LOGOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_LOGOPTIONS), GWL_STYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_LOGOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
 
 			g_himlOptions = (HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_LOGOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
 			if (g_himlOptions)
@@ -728,7 +671,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 								else
 									DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 1);
 								break;
-							
+
 							case 2:
 								DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 1);
 								break;
@@ -824,7 +767,7 @@ static void SaveList(HWND hwndDlg, HANDLE hItemNew, HANDLE hItemUnknown)
 	} while (hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0));
 }
 
-static BOOL CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static HANDLE hItemNew, hItemUnknown;
 
@@ -840,7 +783,7 @@ static BOOL CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				cii.pszText = TranslateT("** Unknown contacts **");
 				hItemUnknown = (HANDLE) SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_ADDINFOITEM, 0, (LPARAM) & cii);
 			}
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_CLIST), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_CLIST), GWL_STYLE) | (CLS_SHOWHIDDEN));
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CLIST), GWL_STYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CLIST), GWL_STYLE) | (CLS_SHOWHIDDEN));
 			ResetCList(hwndDlg);
 			RebuildList(hwndDlg, hItemNew, hItemUnknown);
 
@@ -981,7 +924,7 @@ static struct LISTOPTIONSITEM tabItems[] = {
 	0, NULL, 0, 0, 0, 0
 };
 
-static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 		case WM_INITDIALOG: {
@@ -989,7 +932,7 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 			int i = 0;
 
 			TranslateDialogDefault(hwndDlg);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_TABMSGOPTIONS), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_TABMSGOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_TABMSGOPTIONS), GWL_STYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_TABMSGOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
 
 			g_himlOptions = (HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_TABMSGOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
 			if (g_himlOptions)
@@ -1136,7 +1079,7 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 	return FALSE;
 }
 
-static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 		case WM_INITDIALOG: {
@@ -1407,7 +1350,7 @@ void OptCheckBox_Save(HWND hwnd, struct OptCheckBox *cb)
 	}
 }
 
-static BOOL CALLBACK DlgProcTabSrmmModernOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcTabSrmmModernOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct OptCheckBox opts[] =
 	{
@@ -1582,8 +1525,8 @@ static BOOL CALLBACK DlgProcTabSrmmModernOptions(HWND hwndDlg, UINT msg, WPARAM 
 					CheckDlgButton(hwndDlg, IDC_USETABS, BST_CHECKED);
 				else
 				{
-					LONG s = (GetWindowLong(GetDlgItem(hwndDlg, IDC_USETABS), GWL_STYLE) & ~BS_TYPEMASK) | BS_AUTO3STATE;
-					SetWindowLong(GetDlgItem(hwndDlg, IDC_USETABS), GWL_STYLE, s);
+					LONG s = (GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_USETABS), GWL_STYLE) & ~BS_TYPEMASK) | BS_AUTO3STATE;
+					SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_USETABS), GWL_STYLE, s);
 					CheckDlgButton(hwndDlg, IDC_USETABS, BST_INDETERMINATE);
 				}
 			}
@@ -1707,9 +1650,9 @@ int InitOptions(void)
 	return 0;
 }
 
-BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	DWORD dwStatusMask = GetWindowLong(hwndDlg, GWL_USERDATA);
+	DWORD dwStatusMask = GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	static DWORD dwNewStatusMask = 0;
 	static HWND hwndParent = 0;
 
@@ -1718,7 +1661,7 @@ BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			int i;
 
 			TranslateDialogDefault(hwndDlg);
-			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 			dwStatusMask = lParam;
 
 			SetWindowText(hwndDlg, TranslateT("Choose status modes"));
@@ -1768,7 +1711,7 @@ BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			}
 		}
 		case WM_DESTROY:
-			SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 			break;
 		default:
 			break;
@@ -1780,7 +1723,7 @@ BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
  * main options dialog. creates and manages the tabbed option pages
  */
 
-static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static int iInit = TRUE;
 
@@ -1907,7 +1850,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
  * parent dialog for the group chat option pages
  */
 
-static BOOL CALLBACK GroupOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK GroupOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static int iInit = TRUE;
 
@@ -2002,7 +1945,7 @@ static BOOL CALLBACK GroupOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 
 static HWND hwndTabConfig = 0;
 
-static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 		case WM_INITDIALOG: {
@@ -2061,9 +2004,10 @@ static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					OPENFILENAMEA ofn = {0};
 					char str[MAX_PATH] = "*.tsk", final_path[MAX_PATH], initDir[MAX_PATH];
 
-					if(!myGlobals.szSkinsPath&&myGlobals.szDataPath)
+					if(!myGlobals.szSkinsPath && myGlobals.szDataPath)
 						mir_snprintf(initDir, MAX_PATH, "%sskins\\", myGlobals.szDataPath);
-					else mir_snprintf(initDir, MAX_PATH,"%s",myGlobals.szSkinsPath);
+					else
+						mir_snprintf(initDir, MAX_PATH,"%s",myGlobals.szSkinsPath);
 
 					ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 					ofn.hwndOwner = hwndDlg;
@@ -2119,7 +2063,7 @@ static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 	return FALSE;
 }
 
-static BOOL CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static int iInit = TRUE;
 	static HWND hwndSkinEdit = 0;
@@ -2400,8 +2344,6 @@ void ReloadGlobals()
 	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &myGlobals.ncm, 0);
 }
 
-
-
 /*
  * get the default format string for the window (container) title bar.
  */
@@ -2410,22 +2352,17 @@ void GetDefaultContainerTitleFormat()
 {
 	DBVARIANT dbv = {0};
 #if defined(_UNICODE)
-	if (DBGetContactSettingTString(NULL, SRMSGMOD_T, "titleformatW", &dbv)) {
-		DBWriteContactSettingTString(NULL, SRMSGMOD_T, "titleformatW", _T("%n - %s"));
-		_tcsncpy(myGlobals.szDefaultTitleFormat, L"%n - %s", safe_sizeof(myGlobals.szDefaultTitleFormat));
+	const	char *tszKeyName = "titleformatW";
+#else
+	const	char *tszKeyName = "titleformatW";
+#endif
+
+	if (DBGetContactSettingTString(NULL, SRMSGMOD_T, tszKeyName, &dbv)) {
+		DBWriteContactSettingTString(NULL, SRMSGMOD_T, tszKeyName, _T("%n - %s"));
+		_tcsncpy(myGlobals.szDefaultTitleFormat, _T("%n - %s"), safe_sizeof(myGlobals.szDefaultTitleFormat));
 	} else {
 		_tcsncpy(myGlobals.szDefaultTitleFormat, dbv.ptszVal, safe_sizeof(myGlobals.szDefaultTitleFormat));
 		DBFreeVariant(&dbv);
 	}
 	myGlobals.szDefaultTitleFormat[255] = 0;
-#else
-	if (DBGetContactSettingString(NULL, SRMSGMOD_T, "titleformat", &dbv)) {
-		DBWriteContactSettingString(NULL, SRMSGMOD_T, "titleformat", "%n - %s");
-		_tcsncpy(myGlobals.szDefaultTitleFormat, "%n - %s", sizeof(myGlobals.szDefaultTitleFormat));
-	} else {
-		_tcsncpy(myGlobals.szDefaultTitleFormat, dbv.pszVal, sizeof(myGlobals.szDefaultTitleFormat));
-		DBFreeVariant(&dbv);
-	}
-	myGlobals.szDefaultTitleFormat[255] = 0;
-#endif
 }

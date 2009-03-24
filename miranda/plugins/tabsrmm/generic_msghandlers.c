@@ -242,7 +242,7 @@ LRESULT DM_ScrollToBottom(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wP
 	SCROLLINFO si = { 0 };
 
 	if (dat == NULL)
-		dat = (struct MessageWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+		dat = (struct MessageWindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	if (dat) {
 
@@ -385,9 +385,7 @@ LRESULT DM_UpdateLastMessage(HWND hwndDlg, struct MessageWindowData *dat)
 				}
 			if (dat->pContainer->dwFlags & CNT_UINSTATUSBAR) {
 				char fmt[100];
-				char *uidName = (char *)CallProtoService(dat->szProto, PS_GETCAPS, PFLAG_UNIQUEIDTEXT, 0);
-				if (!uidName) uidName = Translate("ID");
-				mir_snprintf(fmt, sizeof(fmt), "%s: %s", uidName, dat->uin);
+				mir_snprintf(fmt, sizeof(fmt), Translate("UIN: %s"), dat->uin);
 				SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) fmt);
 				} else {
 					TCHAR fmt[100];
@@ -489,11 +487,11 @@ HWND DM_CreateClist(HWND hwndParent, struct MessageWindowData *dat)
 	//
 	hItem = (HANDLE) SendDlgItemMessage(hwndParent, IDC_CLIST, CLM_FINDCONTACT, (WPARAM) dat->hContact, 0);
 
-	SetWindowLong(hwndClist, GWL_EXSTYLE, GetWindowLong(hwndClist, GWL_EXSTYLE) & ~CLS_EX_TRACKSELECT);
-	SetWindowLong(hwndClist, GWL_EXSTYLE, GetWindowLong(hwndClist, GWL_EXSTYLE) | (CLS_EX_NOSMOOTHSCROLLING | CLS_EX_NOTRANSLUCENTSEL));
+	SetWindowLongPtr(hwndClist, GWL_EXSTYLE, GetWindowLongPtr(hwndClist, GWL_EXSTYLE) & ~CLS_EX_TRACKSELECT);
+	SetWindowLongPtr(hwndClist, GWL_EXSTYLE, GetWindowLongPtr(hwndClist, GWL_EXSTYLE) | (CLS_EX_NOSMOOTHSCROLLING | CLS_EX_NOTRANSLUCENTSEL));
 	//MAD: show offline contacts in multi-send
 	if (!myGlobals.m_AllowOfflineMultisend)
-		SetWindowLong(hwndClist, GWL_STYLE, GetWindowLong(hwndClist, GWL_STYLE) | CLS_HIDEOFFLINE);
+		SetWindowLongPtr(hwndClist, GWL_STYLE, GetWindowLongPtr(hwndClist, GWL_STYLE) | CLS_HIDEOFFLINE);
 	//
 	if (hItem)
 		SendMessage(hwndClist, CLM_SETCHECKMARK, (WPARAM) hItem, 1);
@@ -581,16 +579,16 @@ LRESULT DM_ThemeChanged(HWND hwnd, struct MessageWindowData *dat)
 
 	if (dat->bType == SESSIONTYPE_IM) {
 		if (dat->bFlatMsgLog || dat->hTheme != 0 || (dat->pContainer->bSkinned && !item_log->IGNORED))
-			SetWindowLong(GetDlgItem(hwnd, IDC_LOG), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwnd, IDC_LOG), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
+			SetWindowLongPtr(GetDlgItem(hwnd, IDC_LOG), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwnd, IDC_LOG), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 		if (dat->bFlatMsgLog || dat->hTheme != 0 || (dat->pContainer->bSkinned && !item_msg->IGNORED))
-			SetWindowLong(GetDlgItem(hwnd, IDC_MESSAGE), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwnd, IDC_MESSAGE), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
+			SetWindowLongPtr(GetDlgItem(hwnd, IDC_MESSAGE), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwnd, IDC_MESSAGE), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 		} else {
 			if (dat->bFlatMsgLog || dat->hTheme != 0 || (dat->pContainer->bSkinned && !item_log->IGNORED)) {
-				SetWindowLong(GetDlgItem(hwnd, IDC_CHAT_LOG), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwnd, IDC_CHAT_LOG), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
-				SetWindowLong(GetDlgItem(hwnd, IDC_LIST), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwnd, IDC_LIST), GWL_EXSTYLE) & ~(WS_EX_CLIENTEDGE | WS_EX_STATICEDGE));
+				SetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_LOG), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_LOG), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
+				SetWindowLongPtr(GetDlgItem(hwnd, IDC_LIST), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwnd, IDC_LIST), GWL_EXSTYLE) & ~(WS_EX_CLIENTEDGE | WS_EX_STATICEDGE));
 				}
 			if (dat->bFlatMsgLog || dat->hTheme != 0 || (dat->pContainer->bSkinned && !item_msg->IGNORED))
-				SetWindowLong(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
+				SetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 		}
 	return 0;
 	}
@@ -604,7 +602,7 @@ static HANDLE hHookIconPressedEvt;
 struct StatusIconListNode *status_icon_list = 0;
 int status_icon_list_size = 0;
 
-static int SI_AddStatusIcon(WPARAM wParam, LPARAM lParam)
+static INT_PTR SI_AddStatusIcon(WPARAM wParam, LPARAM lParam)
 	{
 	StatusIconData *sid = (StatusIconData *)lParam;
 	struct StatusIconListNode *siln = (struct StatusIconListNode *)mir_alloc(sizeof(struct StatusIconListNode));
@@ -626,7 +624,7 @@ static int SI_AddStatusIcon(WPARAM wParam, LPARAM lParam)
 	return 0;
 	}
 
-static int SI_RemoveStatusIcon(WPARAM wParam, LPARAM lParam)
+static INT_PTR SI_RemoveStatusIcon(WPARAM wParam, LPARAM lParam)
 	{
 	StatusIconData *sid = (StatusIconData *)lParam;
 	struct StatusIconListNode *current = status_icon_list, *prev = 0;
@@ -671,7 +669,7 @@ static void SI_RemoveAllStatusIcons(void)
 	WindowList_Broadcast(hMessageWindowList, DM_STATUSICONCHANGE, 0, 0);
 	}
 
-static int SI_ModifyStatusIcon(WPARAM wParam, LPARAM lParam)
+static INT_PTR SI_ModifyStatusIcon(WPARAM wParam, LPARAM lParam)
 	{
 	HANDLE hContact = (HANDLE)wParam;
 
@@ -708,7 +706,7 @@ static int SI_ModifyStatusIcon(WPARAM wParam, LPARAM lParam)
  						if(sid->flags&MBF_OWNERSTATE){
 
   							struct StatusIconListNode *siln = NULL;
-							struct MessageWindowData *dat =(struct MessageWindowData *) GetWindowLong(hwnd, GWL_USERDATA);
+							struct MessageWindowData *dat =(struct MessageWindowData *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
  							struct StatusIconListNode *psi=dat->pSINod;
 							while (psi)
 								{

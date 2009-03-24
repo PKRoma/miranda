@@ -5,7 +5,7 @@ void FreeIcons(void);
 void UpgradeCheck(void);
 
 //colorchooser.c
-BOOL CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 //log.c
 void   Log_StreamInEvent(HWND hwndDlg, LOGINFO* lin, SESSION_INFO* si, BOOL bRedraw, BOOL bPhaseTwo);
@@ -16,7 +16,7 @@ TCHAR* MakeTimeStamp(TCHAR* pszStamp, time_t time);
 char*  Log_CreateRtfHeader(MODULEINFO * mi);
 
 //window.c
-BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
+INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
 int GetTextPixelSize( TCHAR* pszText, HFONT hFont, BOOL bWidth);
 
 //options.c
@@ -41,11 +41,11 @@ int  SmileyOptionsChanged(WPARAM wParam,LPARAM lParam);
 int  PreShutdown(WPARAM wParam,LPARAM lParam);
 int  IconsChanged(WPARAM wParam,LPARAM lParam);
 void ShowRoom(SESSION_INFO* si, WPARAM wp, BOOL bSetForeground);
-int  Service_AddEvent(WPARAM wParam, LPARAM lParam);
+INT_PTR  Service_AddEvent(WPARAM wParam, LPARAM lParam);
 int  Service_ItemData(WPARAM wParam, LPARAM lParam);
 int  Service_SetSBText(WPARAM wParam, LPARAM lParam);
 int  Service_SetVisibility(WPARAM wParam, LPARAM lParam);
-int  Service_GetCount(WPARAM wParam,LPARAM lParam);
+INT_PTR  Service_GetCount(WPARAM wParam,LPARAM lParam);
 
 HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOOL bActivateTab, BOOL bPopupContainer, BOOL bWantPopup);
 
@@ -121,10 +121,10 @@ HANDLE        CList_AddRoom(const char* pszModule, const TCHAR* pszRoom, const T
 BOOL          CList_SetOffline(HANDLE hContact, BOOL bHide);
 BOOL          CList_SetAllOffline(BOOL bHide, const char *pszModule);
 int           CList_RoomDoubleclicked(WPARAM wParam,LPARAM lParam);
-int           CList_EventDoubleclicked(WPARAM wParam,LPARAM lParam);
-int           CList_JoinChat(WPARAM wParam, LPARAM lParam);
-int           CList_LeaveChat(WPARAM wParam, LPARAM lParam);
-int           CList_PrebuildContactMenu(WPARAM wParam, LPARAM lParam);
+INT_PTR           CList_EventDoubleclicked(WPARAM wParam,LPARAM lParam);
+INT_PTR           CList_JoinChat(WPARAM wParam, LPARAM lParam);
+INT_PTR           CList_LeaveChat(WPARAM wParam, LPARAM lParam);
+INT_PTR           CList_PrebuildContactMenu(WPARAM wParam, LPARAM lParam);
 void          CList_CreateGroup(TCHAR* group);
 BOOL          CList_AddEvent(HANDLE hContact, HICON Icon, HANDLE event, int type, TCHAR* fmt, ... ) ;
 HANDLE        CList_FindRoom (const char* pszModule, const TCHAR* pszRoom) ;

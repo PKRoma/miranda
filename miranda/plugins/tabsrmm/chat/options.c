@@ -137,7 +137,7 @@ static struct branch_t branch1[] = {
 	{LPGENT("Flash window when someone speaks"), "FlashWindow", 0, 0, NULL},
 	{LPGENT("Flash window when a word is highlighted"), "FlashWindowHighlight", 0, 1, NULL},
 //MAD: highlight mod
-	{LPGENT("Create container/tab on highlight, if it's not available"), "CreateWindowOnHighlight", 0,1, NULL},
+	{LPGENT("Create container/tab on highlight, if it's not available"), "CreateWindowOnHighlight", 0,0, NULL},
 	{LPGENT("Activate chat window on highlight"), "AnnoyingHighlight", 0,0, NULL},
 //
 	{LPGENT("Show list of users in the chat room"), "ShowNicklist", 0, 1, NULL},
@@ -553,7 +553,7 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			if (g_chat_integration_enabled) {
 				HIMAGELIST himlOptions;
 
-				SetWindowLong(GetDlgItem(hwndDlg, IDC_CHECKBOXES), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_CHECKBOXES), GWL_STYLE) | TVS_NOHSCROLL | TVS_CHECKBOXES);
+				SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CHECKBOXES), GWL_STYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CHECKBOXES), GWL_STYLE) | TVS_NOHSCROLL | TVS_CHECKBOXES);
 
 				himlOptions = (HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_CHECKBOXES, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
 				if (himlOptions)
@@ -651,7 +651,7 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 								else if (tvi.hItem == hListHeading6)
 									CheckBranches(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading6);
 								else if (tvi.hItem == hListHeading7)
-									CheckBranches(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading7);							
+									CheckBranches(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading7);
 								else {
 
 									if (tvi.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
@@ -729,8 +729,8 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				b = TreeView_GetItemState(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading6, TVIS_EXPANDED) & TVIS_EXPANDED ? 1 : 0;
 				DBWriteContactSettingByte(NULL, "Chat", "Branch6Exp", b);
 			}
-			b = TreeView_GetItemState(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading7, TVIS_EXPANDED) & TVIS_EXPANDED ? 1 : 0; 
-            DBWriteContactSettingByte(NULL, "Chat", "Branch7Exp", b); 
+			b = TreeView_GetItemState(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading7, TVIS_EXPANDED) & TVIS_EXPANDED ? 1 : 0;
+            DBWriteContactSettingByte(NULL, "Chat", "Branch7Exp", b);
 
 		}
 		break;
@@ -978,7 +978,7 @@ int FontServiceFontsChanged(WPARAM wParam, LPARAM lParam)
 		MM_FontsChanged();
 		MM_FixColors();
 		SM_BroadcastMessage(NULL, GC_SETWNDPROPS, 0, 0, TRUE);
-		}
+	}
 
 	ReloadGlobals();
 	CacheMsgLogIcons();
@@ -1216,7 +1216,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	return FALSE;
 }
 
-static BOOL CALLBACK DlgProcOptionsPopup(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcOptionsPopup(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 		case WM_INITDIALOG:

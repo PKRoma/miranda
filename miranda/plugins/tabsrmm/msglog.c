@@ -1367,7 +1367,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 {
 	EDITSTREAM stream = { 0 };
 	struct LogStreamData streamData = {	0 };
-	struct MessageWindowData *dat = (struct MessageWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
+	struct MessageWindowData *dat = (struct MessageWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	CHARRANGE oldSel, sel;
 	HWND hwndrtf;
 	LONG startAt = 0;
@@ -1392,7 +1392,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 		GetScrollInfo(hwndrtf, SB_VERT, &si);
 		SendMessage(hwndrtf, EM_GETSCROLLPOS, 0, (LPARAM) &pt);
 
-		if (GetWindowLong(hwndrtf, GWL_STYLE) & WS_VSCROLL)
+		if (GetWindowLongPtr(hwndrtf, GWL_STYLE) & WS_VSCROLL)
 			psi = &si;
 		else
 			psi = NULL;

@@ -116,7 +116,7 @@ static void __stdcall ShowRoomFromPopup(void * pi)
 	ShowRoom(si, WINDOW_VISIBLE, TRUE);
 }
 
-static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message) {
 		case WM_COMMAND:
@@ -471,7 +471,7 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 	params->bActiveTab = params->bMustFlash = params->bMustAutoswitch = FALSE;
 
 	if (si->hWnd) {
-		params->dat = dat = (struct MessageWindowData *)GetWindowLong(si->hWnd, GWL_USERDATA);
+		params->dat = dat = (struct MessageWindowData *)GetWindowLongPtr(si->hWnd, GWLP_USERDATA);
 		if (dat) {
 			hwndContainer = dat->pContainer->hwnd;
 			params->bInactive = hwndContainer != GetForegroundWindow();
@@ -488,14 +488,13 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 			DBDeleteContactSetting(si->hContact, "CList", "Hidden");
 		if (params->bInactive)
 			DoTrayIcon(si, gce);
-		//MAD
-		if(g_Settings.CreateWindowOnHighlight)
-			{
+		//MAD -- highlighted words create and activate the chat window
+		if(g_Settings.CreateWindowOnHighlight) {
 			if (!dat)
-			CallService(MS_CLIST_CONTACTDOUBLECLICKED, (WPARAM)si->hContact, 0);
-			else if(g_Settings.AnnoyingHighlight&&params->bInactive)
-			  SetForegroundWindow(dat->hwnd);
-			}
+				CallService(MS_CLIST_CONTACTDOUBLECLICKED, (WPARAM)si->hContact, 0);
+			else if(g_Settings.AnnoyingHighlight && params->bInactive)
+				SetForegroundWindow(dat->hwnd);
+		}
 		//
 		if (dat || !g_Settings.SkipWhenNoWindow)
 			DoPopup(si, gce, dat);
@@ -867,7 +866,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 					mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s kicked %s (%s)"), (char *)gce->pszStatus, gce->ptszNick, RemoveFormatting(gce->ptszText));
 				break;
 			case GC_EVENT_NOTICE:
-				p = 'ï¿½';
+				p = '½';
 				mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("Notice from %s: %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 				break;
 			case GC_EVENT_TOPIC:

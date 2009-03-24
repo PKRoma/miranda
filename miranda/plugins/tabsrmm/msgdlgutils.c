@@ -176,11 +176,11 @@ static BOOL CALLBACK OpenFileSubclass(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 {
 	switch (msg) {
 		case WM_INITDIALOG: {
-			SetWindowLong(hwnd, GWL_USERDATA, (LONG)lParam);
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)lParam);
 			break;
 		}
 		case WM_NOTIFY: {
-			OPENFILENAMEA *ofn = (OPENFILENAMEA *)GetWindowLong(hwnd, GWL_USERDATA);
+			OPENFILENAMEA *ofn = (OPENFILENAMEA *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			HWND hwndParent = GetParent(hwnd);
 			HWND hwndLv = FindWindowEx(hwndParent, NULL, _T("SHELLDLL_DefView"), NULL) ;
 
@@ -215,7 +215,7 @@ static void SaveAvatarToFile(struct MessageWindowData *dat, HBITMAP hbm, int isO
 
 	mir_snprintf(szTimestamp, 100, "%04u %02u %02u_%02u%02u", lt->tm_year + 1900, lt->tm_mon, lt->tm_mday, lt->tm_hour, lt->tm_min);
 
-	if (!myGlobals.szSkinsPath&&myGlobals.szDataPath)
+	if (!myGlobals.szSkinsPath && myGlobals.szDataPath)
 		mir_snprintf(szFinalPath, MAX_PATH,"%sSaved Contact Pictures\\%s", myGlobals.szDataPath, dat->bIsMeta ? dat->szMetaProto : dat->szProto);
 	else
 		mir_snprintf(szFinalPath, MAX_PATH,"%s%s",myGlobals.szAvatarsPath,dat->bIsMeta ? dat->szMetaProto : dat->szProto);
@@ -1091,7 +1091,7 @@ void FlashOnClist(HWND hwndDlg, struct MessageWindowData *dat, HANDLE hEvent, DB
  * callback function for text streaming
  */
 
-static DWORD CALLBACK Message_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
+static DWORD CALLBACK Message_StreamCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
 {
 	static DWORD dwRead;
 	char ** ppText = (char **) dwCookie;
@@ -1631,7 +1631,7 @@ static void CheckAndDestroyHPP(struct MessageWindowData *dat)
 		ieWindow.hwnd = dat->hwndHPP;
 		//MAD: restore old wndProc
 		if(dat->oldIEViewProc){
-			SetWindowLong(dat->hwndHPP, GWL_WNDPROC, (LONG)dat->oldIEViewProc);
+			SetWindowLongPtr(dat->hwndHPP, GWLP_WNDPROC, (LONG_PTR)dat->oldIEViewProc);
 			dat->oldIEViewProc=0;
 			}
 		//MAD_
@@ -1648,12 +1648,12 @@ static void CheckAndDestroyIEView(struct MessageWindowData *dat)
 		ieWindow.iType = IEW_DESTROY;
 		ieWindow.hwnd = dat->hwndIEView;
 		if (dat->oldIEViewProc){
-			SetWindowLong(dat->hwndIEView, GWL_WNDPROC, (LONG)dat->oldIEViewProc);
+			SetWindowLongPtr(dat->hwndIEView, GWLP_WNDPROC, (LONG_PTR)dat->oldIEViewProc);
 			dat->oldIEViewProc =0;
 			}
 		if (dat->oldIEViewLastChildProc) {
 			//mad: get LAST child, because ieserver has many of them..
-			SetWindowLong(GetLastChild(dat->hwndIEView), GWL_WNDPROC, (LONG)dat->oldIEViewLastChildProc);
+			SetWindowLongPtr(GetLastChild(dat->hwndIEView), GWLP_WNDPROC, (LONG_PTR)dat->oldIEViewLastChildProc);
 			dat->oldIEViewLastChildProc = 0;
 			}
 		//mad_
@@ -1732,16 +1732,16 @@ void SwitchMessageLog(HWND hwndDlg, struct MessageWindowData *dat, int iMode)
 	//MAD: simple subclassing after log changed
 	if (dat->hwndIEView) {
 		if (dat->oldIEViewLastChildProc == 0) {
-			WNDPROC wndProc = (WNDPROC)SetWindowLong(GetLastChild(dat->hwndIEView), GWL_WNDPROC, (LONG)IEViewKFSubclassProc);
+			WNDPROC wndProc = (WNDPROC)SetWindowLongPtr(GetLastChild(dat->hwndIEView), GWLP_WNDPROC, (LONG_PTR)IEViewKFSubclassProc);
 			dat->oldIEViewLastChildProc = wndProc;
 		}
  		if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "subclassIEView", 0)&&dat->oldIEViewProc == 0) {
- 			WNDPROC wndProc = (WNDPROC)SetWindowLong(dat->hwndIEView, GWL_WNDPROC, (LONG)IEViewSubclassProc);
+ 			WNDPROC wndProc = (WNDPROC)SetWindowLongPtr(dat->hwndIEView, GWLP_WNDPROC, (LONG_PTR)IEViewSubclassProc);
  			dat->oldIEViewProc = wndProc;
  		}
 	} else if (dat->hwndHPP) {
 		if (dat->oldIEViewProc == 0) {
-			WNDPROC wndProc = (WNDPROC)SetWindowLong(dat->hwndHPP, GWL_WNDPROC, (LONG)HPPKFSubclassProc);
+			WNDPROC wndProc = (WNDPROC)SetWindowLongPtr(dat->hwndHPP, GWLP_WNDPROC, (LONG_PTR)HPPKFSubclassProc);
 			dat->oldIEViewProc = wndProc;
 		}
 	}
@@ -2870,7 +2870,6 @@ void SendNudge(struct MessageWindowData *dat, HWND hwndDlg)
 	mir_snprintf(szServiceName, 128, "%s/SendNudge", szProto);
 	if (ServiceExists(szServiceName) && ServiceExists(MS_NUDGE_SEND))
 		CallService(MS_NUDGE_SEND, (WPARAM)hContact, 0);
-	//CallProtoService(szProto, "/SendNudge", (WPARAM)hContact, 0);
 }
 
 void GetClientIcon(struct MessageWindowData *dat, HWND hwndDlg)

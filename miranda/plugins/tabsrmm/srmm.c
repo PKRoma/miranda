@@ -237,7 +237,7 @@ int _DebugPopup(HANDLE hContact, const TCHAR *fmt, ...)
 	return 0;
 }
 
-BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	COLORREF url_visited = RGB(128, 0, 128);
 	COLORREF url_unvisited = RGB(0, 0, 255);

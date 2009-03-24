@@ -34,11 +34,11 @@ $Id$
 
 extern      struct ContainerWindowData *pFirstContainer;
 
-BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndMsgDlg = 0;
 
-	hwndMsgDlg = (HWND) GetWindowLong(hwndDlg, GWL_USERDATA);
+	hwndMsgDlg = (HWND) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	switch (msg) {
 		case WM_INITDIALOG: {
@@ -46,13 +46,13 @@ BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			RECT rc, rcParent;
 			struct ContainerWindowData *pContainer = 0;
 
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) lParam);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR) lParam);
 			hwndMsgDlg = (HWND) lParam;
 
 			TranslateDialogDefault(hwndDlg);
 
 			if (lParam) {
-				struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong((HWND)lParam, GWL_USERDATA);
+				struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
 				if (dat) {
 					mir_sntprintf(szNewTitle, safe_sizeof(szNewTitle), TranslateT("Select container for %s"), dat->szNickname);
 					SetWindowText(hwndDlg, szNewTitle);

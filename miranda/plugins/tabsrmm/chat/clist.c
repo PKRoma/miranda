@@ -185,12 +185,12 @@ int CList_RoomDoubleclicked(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int CList_EventDoubleclicked(WPARAM wParam, LPARAM lParam)
+INT_PTR CList_EventDoubleclicked(WPARAM wParam, LPARAM lParam)
 {
 	return CList_RoomDoubleclicked((WPARAM)((CLISTEVENT*)lParam)->hContact, (LPARAM) 0);
 }
 
-int CList_JoinChat(WPARAM wParam, LPARAM lParam)
+INT_PTR CList_JoinChat(WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hContact = (HANDLE)wParam;
 	if ( hContact ) {
@@ -205,7 +205,7 @@ int CList_JoinChat(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int CList_LeaveChat(WPARAM wParam, LPARAM lParam)
+INT_PTR CList_LeaveChat(WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hContact = (HANDLE)wParam;
 	if ( hContact ) {
@@ -216,7 +216,7 @@ int CList_LeaveChat(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int CList_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
+INT_PTR CList_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hContact = (HANDLE)wParam;
 	if ( hContact ) {
@@ -282,7 +282,7 @@ BOOL CList_AddEvent(HANDLE hContact, HICON Icon, HANDLE event, int type, TCHAR* 
 {
 	CLISTEVENT cle;
 	va_list marker;
-	TCHAR* szBuf = (TCHAR*)alloca(4096 * sizeof(TCHAR));
+	TCHAR* szBuf = (TCHAR*)_malloca(4096 * sizeof(TCHAR));
 
 	if (!fmt || lstrlen(fmt) < 1 || lstrlen(fmt) > 2000)
 		return FALSE;

@@ -98,7 +98,7 @@ extern BOOL                     show_relnotes;
 extern HINSTANCE                g_hInst;
 static int                      helpActive = 0;
 
-BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 /*
 * loads template set overrides from hContact into the given set of already existing
@@ -140,13 +140,13 @@ void LoadDefaultTemplates()
 	LoadTemplatesFrom(&RTL_Active, (HANDLE)0, 1);
 	}
 
-BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 	struct MessageWindowData *dat = 0;
 	TemplateEditorInfo *teInfo = 0;
 	TemplateSet *tSet;
 	int i;
-	dat = (struct MessageWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
+	dat = (struct MessageWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	/*
 	* since this dialog needs a struct MessageWindowData * but has no container, we can store
 	* the extended info struct in pContainer *)
@@ -199,7 +199,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			mir_sntprintf(dat->szNickname, 80, _T("%s"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, GCDNF_TCHAR));
 			GetContactUIN(hwndDlg, dat);
 
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) dat);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR) dat);
 			ShowWindow(hwndDlg, SW_SHOW);
 			SendDlgItemMessage(hwndDlg, IDC_EDITTEMPLATE, EM_LIMITTEXT, (WPARAM)TEMPLATE_LENGTH - 1, 0);
 			SetWindowText(hwndDlg, TranslateT("Template Set Editor"));
@@ -411,7 +411,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			DBWriteContactSettingDword(NULL, SRMSGMOD_T, "cc4", SendDlgItemMessage(hwndDlg, IDC_COLOR4, CPM_GETCOLOUR, 0, 0));
 			DBWriteContactSettingDword(NULL, SRMSGMOD_T, "cc5", SendDlgItemMessage(hwndDlg, IDC_COLOR5, CPM_GETCOLOUR, 0, 0));
 
-			SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 			break;
 		}
 	return FALSE;
@@ -463,7 +463,7 @@ static char *var_helptxt[] = {
 	NULL
 	};
 
-BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 	switch (msg) {
 		case WM_INITDIALOG: {
@@ -534,7 +534,7 @@ dl_done:
 			switch (((ENLINK *) lParam)->msg) {
 		case WM_SETCURSOR:
 			SetCursor(myGlobals.hCurHyperlinkHand);
-			SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
+			SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
 			return TRUE;
 		case WM_LBUTTONUP: {
 			TEXTRANGEA tr;

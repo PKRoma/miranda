@@ -51,8 +51,8 @@ extern NEN_OPTIONS  nen_options;
 extern PSLWA        pSetLayeredWindowAttributes;
 extern struct       ContainerWindowData *pLastActiveContainer;
 extern HICON		hIcons[];
-int					SendMessageCommand(WPARAM wParam, LPARAM lParam);
-int					SendMessageCommand_W(WPARAM wParam, LPARAM lParam);
+INT_PTR					SendMessageCommand(WPARAM wParam, LPARAM lParam);
+INT_PTR					SendMessageCommand_W(WPARAM wParam, LPARAM lParam);
 
 int g_hotkeysEnabled = 0;
 HWND g_hotkeyHwnd = 0;
@@ -146,7 +146,7 @@ static void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle)
 	}           //if
 }
 
-BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static POINT ptLast;
 	static int iMousedown;
@@ -171,7 +171,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			SendDlgItemMessage(hwndDlg, IDC_TRAYICON, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.m_AnimTrayIcons[0]);
 			ShowWindow(GetDlgItem(hwndDlg, IDC_TRAYCONTAINER), SW_HIDE);
 			if (pSetLayeredWindowAttributes != NULL)
-				SetWindowLong(hwndDlg, GWL_EXSTYLE, GetWindowLong(hwndDlg, GWL_EXSTYLE) | WS_EX_LAYERED);
+				SetWindowLongPtr(hwndDlg, GWL_EXSTYLE, GetWindowLongPtr(hwndDlg, GWL_EXSTYLE) | WS_EX_LAYERED);
 
 			if (Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, "hkh")) {
 				if (Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMSGMOD_T, "hkh"))
@@ -260,7 +260,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				}
 
 				if (hWnd)
-					dat = (struct MessageWindowData *)GetWindowLong(hWnd, GWL_USERDATA);
+					dat = (struct MessageWindowData *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 
 				if (dis->itemData >= 0) {
 					HICON hIcon;

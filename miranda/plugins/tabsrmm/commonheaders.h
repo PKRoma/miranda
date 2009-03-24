@@ -83,13 +83,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include  <m_addcontact.h>
 #include  <m_file.h>
 #include  <m_fontservice.h>
-
-//MAD
-#include "buttonsbar.h"
-//
-//Bolshevik: avatar control
-#include "m_acc.h"
-//Bolshevik_
+#include  <m_acc.h>
 
 extern struct LIST_INTERFACE li;
 
@@ -119,8 +113,9 @@ extern struct LIST_INTERFACE li;
 #include "API/m_spellchecker.h"
 #include "API/m_MathModule.h"
 #include "API/m_historyevents.h"
+#include "API/m_buttonbar.h"
 
-#ifndef __TSR_CXX
+#ifndef __cplusplus
 #include "msgs.h"
 #include "msgdlgutils.h"
 #include "nen.h"

@@ -19,10 +19,11 @@ the file listing the same day.
 Version 2.0.x.x was released in October 2007 and is the current "stable" version.
 It NEEDS Miranda 0.7.x and will not work on older versions.
 
+
 Version 2.2.1.14  - 2009/03/05
 
 	* fixed untranslateable strings
-
+	
 
 Version 2.2.1.13  - 2009/01/02
 ------------------------------

@@ -93,14 +93,14 @@ PAB MyAlphaBlend = 0;
 PGF MyGradientFill = 0;
 
 extern      struct ContainerWindowData *pFirstContainer;
-extern      BOOL CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern      INT_PTR CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern      int g_chat_integration_enabled;
 extern      struct SendJob *sendJobs;
 extern      struct MsgLogIcon msgLogIcons[NR_LOGICONS * 3];
 extern      HINSTANCE g_hInst;
-extern      BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern      INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern      int g_sessionshutdown;
-extern      BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern      INT_PTR CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern      ICONDESC *g_skinIcons;
 extern      int g_nrSkinIcons;
 extern      struct RTFColorTable *rtf_ctable;
@@ -162,7 +162,7 @@ static int SmileyAddOptionsChanged(WPARAM wParam, LPARAM lParam)
  * Message API 0.0.0.3 services
  */
 
-static int GetWindowClass(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetWindowClass(WPARAM wParam, LPARAM lParam)
 
 {
 	char *szBuf = (char*)wParam;
@@ -178,7 +178,7 @@ static int GetWindowClass(WPARAM wParam, LPARAM lParam)
  * is directly used as the handle for the target window
  */
 
-static int GetWindowData(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetWindowData(WPARAM wParam, LPARAM lParam)
 {
 	MessageWindowInputData *mwid = (MessageWindowInputData*)wParam;
 	MessageWindowOutputData *mwod = (MessageWindowOutputData*)lParam;
@@ -199,7 +199,7 @@ static int GetWindowData(WPARAM wParam, LPARAM lParam)
 		mwod->hwndWindow = hwnd;
 		mwod->local = GetParent(GetParent(hwnd));
 		SendMessage(hwnd, DM_GETWINDOWSTATE, 0, 0);
-		mwod->uState = GetWindowLong(hwnd, DWL_MSGRESULT);
+		mwod->uState = GetWindowLongPtr(hwnd, DWLP_MSGRESULT);
 		return 0;
 	}
 	else if ((si = SM_FindSessionByHCONTACT(mwid->hContact)) != NULL && si->hWnd != 0) {
@@ -223,7 +223,7 @@ static int GetWindowData(WPARAM wParam, LPARAM lParam)
  * service function. Invoke the user preferences dialog for the contact given (by handle) in wParam
  */
 
-static int SetUserPrefs(WPARAM wParam, LPARAM lParam)
+static INT_PTR SetUserPrefs(WPARAM wParam, LPARAM lParam)
 {
 	HWND hWnd = WindowList_Find(hUserPrefsWindowList, (HANDLE)wParam);
 	if (hWnd) {
@@ -270,7 +270,7 @@ static int TTB_Loaded(WPARAM wParam, LPARAM lParam)
  * service function - open the tray menu from the TTB button
  */
 
-static int Service_OpenTrayMenu(WPARAM wParam, LPARAM lParam)
+static INT_PTR Service_OpenTrayMenu(WPARAM wParam, LPARAM lParam)
 {
 	if (ServiceExists(MS_TTB_SETBUTTONSTATE))
 		CallService(MS_TTB_SETBUTTONSTATE, lParam ? (WPARAM)hTTB_Tray : (WPARAM)hTTB_Slist, TTBST_RELEASED);
@@ -286,7 +286,7 @@ static int Service_OpenTrayMenu(WPARAM wParam, LPARAM lParam)
  * is directly used as the handle for the target window
  */
 
-static int GetMessageWindowFlags(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetMessageWindowFlags(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndTarget = (HWND)lParam;
 
@@ -294,7 +294,7 @@ static int GetMessageWindowFlags(WPARAM wParam, LPARAM lParam)
 		hwndTarget = WindowList_Find(hMessageWindowList, (HANDLE)wParam);
 
 	if (hwndTarget) {
-		struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwndTarget, GWL_USERDATA);
+		struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(hwndTarget, GWLP_USERDATA);
 		if (dat)
 			return (dat->dwFlags);
 		else
@@ -307,7 +307,7 @@ static int GetMessageWindowFlags(WPARAM wParam, LPARAM lParam)
  * return the version of the window api supported
  */
 
-static int GetWindowAPI(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetWindowAPI(WPARAM wParam, LPARAM lParam)
 {
 	return PLUGIN_MAKE_VERSION(0, 0, 0, 2);
 }
@@ -325,7 +325,7 @@ static int GetWindowAPI(WPARAM wParam, LPARAM lParam)
  * the window..
  */
 
-int MessageWindowOpened(WPARAM wParam, LPARAM lParam)
+INT_PTR MessageWindowOpened(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd = 0;
 	struct ContainerWindowData *pContainer = NULL;
@@ -381,7 +381,7 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
 		for (j = 0; j < NR_SENDJOBS; j++) {
 			for (i = 0; i < sendJobs[j].sendCount; i++) {
 				if (pAck->hProcess == sendJobs[j].hSendId[i] && pAck->hContact == sendJobs[j].hContact[i]) {
-					struct MessageWindowData *dat = sendJobs[j].hwndOwner ? (struct MessageWindowData *)GetWindowLong(sendJobs[j].hwndOwner, GWL_USERDATA) : NULL;
+					struct MessageWindowData *dat = sendJobs[j].hwndOwner ? (struct MessageWindowData *)GetWindowLongPtr(sendJobs[j].hwndOwner, GWLP_USERDATA) : NULL;
 					if (dat) {
 						if (dat->hContact == sendJobs[j].hOwner) {
 							iFound = j;
@@ -433,7 +433,7 @@ static int DispatchNewEvent(WPARAM wParam, LPARAM lParam)
  * message (clicking on a popup, clicking the flashing tray icon and so on).
  */
 
-static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
+static INT_PTR ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndExisting;
 	HANDLE hContact = ((CLISTEVENT *) lParam)->hContact;
@@ -484,7 +484,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam);
 	//mad:mod for actual history
 	if (hwnd) {
-		mwdat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
+		mwdat = (struct MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		if (mwdat && mwdat->bActualHistory)
 			mwdat->messageCount++;
 	//mad_
@@ -677,7 +677,7 @@ nowindowcreate:
 
 #if defined(_UNICODE)
 
-int SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
+INT_PTR SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd;
 	char *szProto;
@@ -752,7 +752,7 @@ int SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
  * contacts handle must be passed in wParam.
  */
 
-int SendMessageCommand(WPARAM wParam, LPARAM lParam)
+INT_PTR SendMessageCommand(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd;
 	char *szProto;
@@ -819,7 +819,7 @@ int SendMessageCommand(WPARAM wParam, LPARAM lParam)
  * forwarding a message - this service is obsolete but still left intact
  */
 
-static int ForwardMessage(WPARAM wParam, LPARAM lParam)
+static INT_PTR ForwardMessage(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndNew, hwndOld;
 	RECT rc;
@@ -853,7 +853,7 @@ static int ForwardMessage(WPARAM wParam, LPARAM lParam)
  * open a window when user clicks on the flashing "typing message" tray icon.
  * just calls SendMessageCommand() for the given contact.
  */
-static int TypingMessageCommand(WPARAM wParam, LPARAM lParam)
+static INT_PTR TypingMessageCommand(WPARAM wParam, LPARAM lParam)
 {
 	CLISTEVENT *cle = (CLISTEVENT *) lParam;
 
@@ -1032,7 +1032,7 @@ static int ContactDeleted(WPARAM wParam, LPARAM lParam)
 	HWND hwnd;
 
 	if (hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam)) {
-		struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
+		struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 		if (dat)
 			dat->bWasDeleted = 1;				// indicate a deleted contact. The WM_CLOSE handler will "fast close" the session and skip housekeeping.
@@ -1349,7 +1349,8 @@ static int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 
 	while(pFirstContainer){
 		//MaD: fix for correct closing hidden contacts
-		if (myGlobals.m_HideOnClose) myGlobals.m_HideOnClose=FALSE;
+		if (myGlobals.m_HideOnClose)
+			myGlobals.m_HideOnClose = FALSE;
 		//
 		SendMessage(pFirstContainer->hwnd, WM_CLOSE, 0, 1);
 	}
@@ -1477,7 +1478,7 @@ static int AvatarChanged(WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 	if (hwnd) {
-		struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
+		struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		if (dat) {
 			dat->ace = ace;
 			if (dat->hwndFlash == 0)
@@ -1781,7 +1782,7 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
 	struct MessageWindowData *dat = 0;
 	NMHDR nmhdr;
 
-	dat = (struct MessageWindowData *) GetWindowLong(hwndChild, GWL_USERDATA);	// needed to obtain the hContact for the message window
+	dat = (struct MessageWindowData *) GetWindowLongPtr(hwndChild, GWLP_USERDATA);	// needed to obtain the hContact for the message window
 	if (dat) {
 		ZeroMemory((void *)&nmhdr, sizeof(nmhdr));
 		nmhdr.code = TCN_SELCHANGE;
@@ -1916,7 +1917,7 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 				item.mask = TCIF_PARAM;
 				TabCtrl_GetItem(hwndTab, i, &item);
 				hwnd = (HWND)item.lParam;
-				dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
+				dat = (struct MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 				if (dat) {
 					relPos = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "tabindex", i * 100);
 					if (iTabIndex_wanted <= relPos)
@@ -2090,7 +2091,7 @@ int TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned in
 {
 	MessageWindowEventData mwe = { 0 };
 	struct TABSRMM_SessionInfo se = { 0 };
-	struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
+	struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	BYTE bType = dat ? dat->bType : SESSIONTYPE_IM;
 
 	if (hContact == NULL || hwnd == NULL)
@@ -2322,10 +2323,6 @@ static int LoadFromIconLib()
 
 static void LoadIconTheme()
 {
-	int cxIcon = GetSystemMetrics(SM_CXSMICON);
-	int cyIcon = GetSystemMetrics(SM_CYSMICON);
-	int i = 0, version = 0, n = 0;
-
 	if (SetupIconLibConfig() == 0)
 		return;
 	else

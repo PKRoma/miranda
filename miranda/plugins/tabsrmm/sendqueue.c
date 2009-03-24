@@ -70,7 +70,7 @@ static DWORD WINAPI DoMultiSend(LPVOID param)
 	HWND	hwndOwner = sendJobs[iIndex].hwndOwner;
 	DWORD	dwDelay = MS_INITIAL_DELAY;               // start with 1sec delay...
 	DWORD	dwDelayAdd = 0;
-	struct	MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwndOwner, GWL_USERDATA);
+	struct	MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(hwndOwner, GWLP_USERDATA);
 	int		i;
 
 	for (i = 0; i < sendJobs[iIndex].sendCount; i++) {
@@ -767,7 +767,7 @@ void NotifyDeliveryFailure(HWND hwndDlg, struct MessageWindowData *dat)
 #endif
 }
 
-static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message) {
 		case WM_COMMAND:
@@ -777,7 +777,7 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 
 
 				hwnd = (HWND)CallService(MS_POPUP_GETPLUGINDATA, (WPARAM)hWnd, (LPARAM) & hwnd);
-				dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
+				dat = (struct MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 				if (dat) {
 					ActivateExistingTab(dat->pContainer, hwnd);
 				}

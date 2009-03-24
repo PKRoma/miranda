@@ -237,7 +237,7 @@ void MinimiseToTray(HWND hWnd, BOOL bForceAnimation)
 	}
 	RemoveTaskbarIcon(hWnd);
 	ShowWindow(hWnd, SW_HIDE);              // experimental - now works with docks like rklauncher..
-	SetWindowLong(hWnd, GWL_STYLE, GetWindowLong(hWnd, GWL_STYLE) & ~WS_VISIBLE);
+	SetWindowLongPtr(hWnd, GWL_STYLE, GetWindowLongPtr(hWnd, GWL_STYLE) & ~WS_VISIBLE);
 }
 
 void MaximiseFromTray(HWND hWnd, BOOL bForceAnimation, RECT *rectTo)
@@ -255,7 +255,7 @@ void MaximiseFromTray(HWND hWnd, BOOL bForceAnimation, RECT *rectTo)
 		SetParent(hWnd, NULL);
 
 	ShowWindow(hWnd, SW_SHOW);
-	SetWindowLong(hWnd, GWL_STYLE, GetWindowLong(hWnd, GWL_STYLE) | WS_VISIBLE);
+	SetWindowLongPtr(hWnd, GWL_STYLE, GetWindowLongPtr(hWnd, GWL_STYLE) | WS_VISIBLE);
 	RedrawWindow(hWnd, NULL, NULL, RDW_UPDATENOW | RDW_ALLCHILDREN | RDW_FRAME |
 				 RDW_INVALIDATE | RDW_ERASE);
 

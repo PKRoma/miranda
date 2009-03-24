@@ -1240,11 +1240,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\dropuser.cur"
+				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
+				RelativePath="..\..\src\res\dropuser.cur"
 				>
 			</File>
 			<File
@@ -1268,11 +1268,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\History.ico"
+				RelativePath="..\..\Miranda-IM\res\history.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico"
+				RelativePath=".\res\angeli-icons\History.ico"
 				>
 			</File>
 			<File
@@ -1296,11 +1296,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\icon1.ico"
+				RelativePath=".\res\icon1.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\icon1.ico"
+				RelativePath="..\..\src\res\icon1.ico"
 				>
 			</File>
 			<File
@@ -1476,11 +1476,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Save.ico"
+				RelativePath=".\res\save.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\save.ico"
+				RelativePath=".\res\angeli-icons\Save.ico"
 				>
 			</File>
 			<File
@@ -1557,10 +1557,6 @@
 			</File>
 			<File
 				RelativePath="langpacks\langpack_tabsrmm_german.txt"
-				>
-			</File>
-			<File
-				RelativePath=".\Makefile.ansi"
 				>
 			</File>
 			<File

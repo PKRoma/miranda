@@ -24,18 +24,30 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _MSGS_H
 #define _MSGS_H
 
+#ifdef _MSC_VER
+#if _MSC_VER < 1400
+#define uintptr_t UINT_PTR
+#define _malloca alloca
+#define _localtime32 localtime
+#define __time32_t time_t
+#endif
+#endif
+/*
+ * required for MingW32 compatibility
+ */
+
 #ifdef __GNUWIN32__
 #define COLOR_HOTLIGHT 26
 #if !defined(SB_SETICON)
+	#define SB_SETICON (WM_USER+15)
+	#define SB_SETTIPTEXTA (WM_USER+16)
+	#define TCS_BOTTOM 0x0002
 
-#define SB_SETICON (WM_USER+15)
-#define SB_SETTIPTEXTA (WM_USER+16)
-#define TCS_BOTTOM 0x0002
+	#define TVS_NOHSCROLL 0x8000
+	#define TVS_CHECKBOXES          0x0100
+#endif // SB_SETICON
 
-#define TVS_NOHSCROLL 0x8000
-#define TVS_CHECKBOXES          0x0100
-#endif
-
+#define BS_TYPEMASK         0x0000000FL
 #define CFM_ALL (CFM_EFFECTS | CFM_SIZE | CFM_FACE | CFM_OFFSET | CFM_CHARSET)
 #define SES_EXTENDBACKCOLOR 4           // missing from the mingw32 headers
 #define GT_SELECTION 2
@@ -51,6 +63,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define NIN_BALLOONUSERCLICK (WM_USER + 5)
 #define NIN_BALLOONTIMEOUT (WM_USER + 4)
 #define IMF_AUTOFONTSIZEADJUST	0x0010
+
+#define __time32_t time_t
+#define _malloca alloca
+#define _localtime32 localtime
 
 typedef struct __gettextex {
 	DWORD	cb;				// Count of bytes in the string

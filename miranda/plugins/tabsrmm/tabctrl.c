@@ -132,7 +132,7 @@ int RegisterTabCtrlClass(void)
 	wce.lpszClassName  = _T("TSStatusBarClass");
 	wce.lpfnWndProc    = StatusBarSubclassProc;
 	wce.hCursor        = LoadCursor(NULL, IDC_ARROW);
-	wce.cbWndExtra     = 4;
+	wce.cbWndExtra     = sizeof(void*);
 	wce.hbrBackground  = 0;
 	wce.style          = CS_GLOBALCLASS | CS_DBLCLKS | CS_PARENTDC;
 	RegisterClassEx(&wce);
@@ -396,7 +396,7 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 	 */
 
 	if (IsWindow((HWND)item.lParam) && item.lParam != 0)
-		dat = (struct MessageWindowData *)GetWindowLong((HWND)item.lParam, GWL_USERDATA);
+		dat = (struct MessageWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
 
 	if (dat) {
 		HICON hIcon;
@@ -625,7 +625,7 @@ b_nonskinned:
 				 */
 
 				if (IsWindow((HWND)item.lParam) && item.lParam != 0)
-					dat = (struct MessageWindowData *)GetWindowLong((HWND)item.lParam, GWL_USERDATA);
+					dat = (struct MessageWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
 
 				if (active && rc.left > 10)
 					rc.left -= 10;
@@ -752,7 +752,7 @@ b_nonskinned:
 				TabCtrl_GetItem(tabdat->hwnd, iItem, &item);
 
 				if (IsWindow((HWND)item.lParam) && item.lParam != 0)
-					dat = (struct MessageWindowData *)GetWindowLong((HWND)item.lParam, GWL_USERDATA);
+					dat = (struct MessageWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
 
 				if (active && rc.left > 10)
 					rc.left -= 10;
@@ -1049,11 +1049,11 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 {
 	struct		TabControlData *tabdat = 0;
 
-	tabdat = (struct TabControlData *)GetWindowLong(hwnd, GWL_USERDATA);
+	tabdat = (struct TabControlData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	if (tabdat) {
 		if (tabdat->pContainer == NULL)
-			tabdat->pContainer = (struct ContainerWindowData *)GetWindowLong(GetParent(hwnd), GWL_USERDATA);
-		tabdat->dwStyle = GetWindowLong(hwnd, GWL_STYLE);
+			tabdat->pContainer = (struct ContainerWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
+		tabdat->dwStyle = GetWindowLongPtr(hwnd, GWL_STYLE);
 	}
 
 	switch (msg) {
@@ -1064,7 +1064,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			GetClassInfoExA(g_hInst, "SysTabControl32", &wcl);
 
 			tabdat = (struct TabControlData *)mir_alloc(sizeof(struct TabControlData));
-			SetWindowLong(hwnd, GWL_USERDATA, (LONG)tabdat);
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)tabdat);
 			ZeroMemory((void *)tabdat, sizeof(struct TabControlData));
 			tabdat->hwnd = hwnd;
 			tabdat->cx = GetSystemMetrics(SM_CXSMICON);
@@ -1163,7 +1163,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 					pfnCloseThemeData(tabdat->hThemeButton);
 				}
 				mir_free(tabdat);
-				SetWindowLong(hwnd, GWL_USERDATA, 0L);
+				SetWindowLongPtr(hwnd, GWLP_USERDATA, 0L);
 			}
 			break;
 		case WM_MBUTTONDOWN: {
@@ -1258,7 +1258,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 
 						tc.mask = TCIF_PARAM;
 						TabCtrl_GetItem(hwnd, i, &tc);
-						dat = (struct MessageWindowData *)GetWindowLong((HWND)tc.lParam, GWL_USERDATA);
+						dat = (struct MessageWindowData *)GetWindowLongPtr((HWND)tc.lParam, GWLP_USERDATA);
 						if (dat)	{
 							tabdat->bDragging = TRUE;
 							tabdat->iBeginIndex = i;
@@ -1291,7 +1291,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 
 						tc.mask = TCIF_PARAM;
 						TabCtrl_GetItem(hwnd, i, &tc);
-						dat = (struct MessageWindowData *)GetWindowLong((HWND)tc.lParam, GWL_USERDATA);
+						dat = (struct MessageWindowData *)GetWindowLongPtr((HWND)tc.lParam, GWLP_USERDATA);
 						if (dat)	{
 							tabdat->bDragging = TRUE;
 							tabdat->iBeginIndex = i;
@@ -1639,7 +1639,7 @@ skip_tabs:
 						 */
 
 						if (IsWindow((HWND)item.lParam) && item.lParam != 0)
-							dat = (struct MessageWindowData *)GetWindowLong((HWND)item.lParam, GWL_USERDATA);
+							dat = (struct MessageWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
 						if (dat) {
 							tabdat->fTipActive = TRUE;
 							ti.isGroup = 0;

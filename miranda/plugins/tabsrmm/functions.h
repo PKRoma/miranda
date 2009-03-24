@@ -99,7 +99,7 @@ void        BroadCastContainer(struct ContainerWindowData *pContainer, UINT mess
 void        GetDefaultContainerTitleFormat();
 extern const WCHAR *EncodeWithNickname(const char *string, const WCHAR *szNick, UINT codePage);
 void        UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat);
-int         MessageWindowOpened(WPARAM wParam, LPARAM lParam);
+INT_PTR         MessageWindowOpened(WPARAM wParam, LPARAM lParam);
 int         TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned int subType);
 LRESULT CALLBACK IEViewKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK IEViewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -131,9 +131,9 @@ static int  LoadFromIconLib();
 static  int SetupIconLibConfig();
 void        RTF_CTableInit();
 
-BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 int         InitOptions(void);
-static      BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static      INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 int         DbEventIsShown(struct MessageWindowData *dat, DBEVENTINFO *dbei);
 void        StreamInEvents(HWND hwndDlg,HANDLE hDbEventFirst,int count,int fAppend, DBEVENTINFO *dbei_s);

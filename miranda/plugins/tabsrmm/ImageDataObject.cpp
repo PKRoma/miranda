@@ -22,7 +22,6 @@ code partially taken from public example on the internet, source unknown.
 originally part of the smileyadd plugin for Miranda IM
 */
 
-#define __TSR_CXX
 #include "commonheaders.h"
 #include "ImageDataObject.h"
 

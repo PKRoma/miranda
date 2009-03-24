@@ -66,7 +66,7 @@ BOOL CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
 
 		case WM_INITDIALOG:	{
 			TranslateDialogDefault(hwndDlg);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_PLUS_CHECKTREE), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_PLUS_CHECKTREE), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_PLUS_CHECKTREE), GWL_STYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_PLUS_CHECKTREE), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
 
 			g_himlOptions = (HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_PLUS_CHECKTREE, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
 			if (g_himlOptions)

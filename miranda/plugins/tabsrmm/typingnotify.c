@@ -4,7 +4,7 @@
 extern HINSTANCE g_hInst;
 extern MYGLOBALS myGlobals;
 
-static int EnableDisableMenuCommand(WPARAM wParam, LPARAM lParam)
+static INT_PTR EnableDisableMenuCommand(WPARAM wParam,LPARAM lParam)
 {
 	Disabled = !(Disabled);
 
@@ -162,7 +162,7 @@ int TN_TypingMessage(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static BOOL CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	WORD i;
 
