@@ -570,6 +570,8 @@ void CJabberProto::OnRosterPushRequest( HXML, CJabberIqInfo *pInfo )
 			}	}
 			else if ( JGetByte( hContact, "ChatRoom", 0 ))
 				DBDeleteContactSetting( hContact, "CList", "Hidden" );
+			else
+				UpdateSubscriptionInfo( hContact, item );
 	}	}
 
 	UI_SAFE_NOTIFY(m_pDlgServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH);

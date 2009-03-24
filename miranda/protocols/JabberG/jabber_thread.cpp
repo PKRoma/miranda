@@ -1734,6 +1734,7 @@ void CJabberProto::OnProcessPresence( HXML node, ThreadData* info )
 					UI_SAFE_NOTIFY(m_pDlgServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH);
 				}
 			}
+			UpdateSubscriptionInfo( hContact, item );
 		}
 	}	
 }

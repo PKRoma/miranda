@@ -561,6 +561,36 @@ void CJabberProto::UpdateMirVer(HANDLE hContact, JABBER_RESOURCE_STATUS *resourc
 	}
 }
 
+void CJabberProto::UpdateSubscriptionInfo(HANDLE hContact, JABBER_LIST_ITEM *item)
+{
+	switch (item->subscription)
+	{
+	case SUB_TO:
+		JSetStringT(hContact, "SubscriptionText", TranslateT("To"));
+		JSetString(hContact, "Subscription", "to");
+		JSetByte(hContact, "Auth", 1);
+		JSetByte(hContact, "Grant", 0);
+		break;
+	case SUB_FROM:
+		JSetStringT(hContact, "SubscriptionText", TranslateT("From"));
+		JSetString(hContact, "Subscription", "from");
+		JSetByte(hContact, "Auth", 0);
+		JSetByte(hContact, "Grant", 1);
+		break;
+	case SUB_BOTH:
+		JSetStringT(hContact, "SubscriptionText", TranslateT("Both"));
+		JSetString(hContact, "Subscription", "both");
+		JSetByte(hContact, "Auth", 0);
+		JSetByte(hContact, "Grant", 0);
+		break;
+	case SUB_NONE:
+		JSetStringT(hContact, "SubscriptionText", TranslateT("None"));
+		JSetString(hContact, "Subscription", "none");
+		JSetByte(hContact, "Auth", 1);
+		JSetByte(hContact, "Grant", 1);
+		break;
+	}
+}
 
 void CJabberProto::SetContactOfflineStatus( HANDLE hContact )
 {

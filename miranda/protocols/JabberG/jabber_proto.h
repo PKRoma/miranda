@@ -629,6 +629,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   FormatMirVer(JABBER_RESOURCE_STATUS *resource, TCHAR *buf, int bufSize);
 	void   UpdateMirVer(JABBER_LIST_ITEM *item);
 	void   UpdateMirVer(HANDLE hContact, JABBER_RESOURCE_STATUS *resource);
+	void   UpdateSubscriptionInfo(HANDLE hContact, JABBER_LIST_ITEM *item);
 	void   SetContactOfflineStatus( HANDLE hContact );
 	void   InitCustomFolders( void );
 
