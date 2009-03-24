@@ -10,10 +10,6 @@
  * I want to thank Robert Rainwater and George Hazan for their code and support
  * and for answering some of my questions during development of this plugin.
  */
-#include <time.h>
-#include <malloc.h>
-#include <sys/stat.h>
-#include <io.h>
 
 #include "yahoo.h"
 #include <m_langpack.h>
@@ -99,7 +95,7 @@ void upload_avt(int id, int fd, int error, void *data)
 
 void __cdecl yahoo_send_avt_thread(void *psf) 
 {
-	struct yahoo_file_info *sf = psf;
+	struct yahoo_file_info *sf = ( yahoo_file_info* )psf;
 	
 	if (sf == NULL) {
 		YAHOO_DebugLog("[yahoo_send_avt_thread] SF IS NULL!!!");
@@ -143,7 +139,7 @@ struct avatar_info{
 static void __cdecl yahoo_recv_avatarthread(void *pavt) 
 {
 	PROTO_AVATAR_INFORMATION AI;
-	struct avatar_info *avt = pavt;
+	struct avatar_info *avt = ( avatar_info* )pavt;
 	int 	error = 0;
 	HANDLE 	hContact = 0;
 	char 	buf[4096];
@@ -250,9 +246,7 @@ static void __cdecl yahoo_recv_avatarthread(void *pavt)
 
 void YAHOO_get_avatar(const char *who, const char *pic_url, long cksum)
 {
-	struct avatar_info *avt;
-	
-	avt = malloc(sizeof(struct avatar_info));
+	struct avatar_info *avt = ( avatar_info* )malloc(sizeof(struct avatar_info));
 	avt->who = strdup(who);
 	avt->pic_url = strdup(pic_url);
 	avt->cksum = cksum;
@@ -833,7 +827,7 @@ int YahooSetMyAvatar(WPARAM wParam, LPARAM lParam)
 		DWORD  dwPngSize, dw;
 		BYTE* pResult;
 		unsigned int hash;
-		HANDLE  *hFile;
+		HANDLE  hFile;
 
 		hFile = CreateFile(szFile, 
 							GENERIC_READ, 
@@ -866,7 +860,7 @@ int YahooSetMyAvatar(WPARAM wParam, LPARAM lParam)
 		SetEndOfFile( hFile);
 		CloseHandle( hFile );
 		
-		hash = YAHOO_avt_hash(pResult, dwPngSize);
+		hash = YAHOO_avt_hash(( const char* )pResult, dwPngSize);
 		free( pResult );
 		
 		if ( hash ) {

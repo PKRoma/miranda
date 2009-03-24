@@ -63,7 +63,7 @@ static y_filetransfer* new_ft(int id, HANDLE hContact, const char *who, const ch
 	ft->pfts.totalBytes = 0;
 	
 	while(l) {
-		fi = l->data;
+		fi = ( yahoo_file_info* )l->data;
 		
 		ft->pfts.files[i++] = strdup(fi->filename);
 		ft->pfts.totalBytes += fi->filesize;
@@ -73,7 +73,7 @@ static y_filetransfer* new_ft(int id, HANDLE hContact, const char *who, const ch
 	
 	ft->pfts.currentFileNumber = 0;
 	
-	fi = fs->data; 
+	fi = ( yahoo_file_info* )fs->data; 
 	ft->pfts.currentFile = strdup(fi->filename);
 	ft->pfts.currentFileSize = fi->filesize; 
 	
@@ -126,7 +126,7 @@ static void free_ft(y_filetransfer* ft)
 	
 	while(ft->files) {
 		YList *tmp = ft->files;
-		struct yahoo_file_info * c = ft->files->data;
+		yahoo_file_info * c = ( yahoo_file_info* )ft->files->data;
 		FREE(c->filename);
 		FREE(c);
 		ft->files = y_list_remove_link(ft->files, ft->files);
@@ -433,7 +433,7 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 			
 			l = sf->files;
 			
-			fi= sf->files->data;
+			fi = ( yahoo_file_info* )sf->files->data;
 			FREE(fi->filename);
 			FREE(fi);
 			
@@ -441,7 +441,7 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 			y_list_free_1(l);
 			
 			// need to move to the next file on the list and fill the file information
-			fi = sf->files->data; 
+			fi = ( yahoo_file_info* )sf->files->data; 
 			sf->pfts.currentFile = strdup(fi->filename);
 			sf->pfts.currentFileSize = fi->filesize; 
 			sf->pfts.currentFileProgress = 0;
@@ -460,7 +460,7 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 //=======================================================
 static void __cdecl yahoo_recv_filethread(void *psf) 
 {
-	y_filetransfer *sf = psf;
+	y_filetransfer *sf = ( y_filetransfer* )psf;
 	struct yahoo_file_info *fi = (struct yahoo_file_info *)sf->files->data;
 	
 //    ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
@@ -503,11 +503,11 @@ void ext_yahoo_got_file(int id, const char *me, const char *who, const char *url
 		char *start, *end;
 		
 		/* based on how gaim does this */
-		start = strrchr(url, '/');
+		start = ( char* )strrchr(url, '/');
 		if (start)
 			start++;
 		
-		end = strrchr(url, '?');
+		end = ( char* )strrchr(url, '?');
 		
 		if (start && *start && end) {
 			lstrcpyn(fn, start, end-start+1);
@@ -816,7 +816,7 @@ int YahooFileResume( WPARAM wParam, LPARAM lParam )
 /**************** Send File ********************/
 static void __cdecl yahoo_send_filethread(void *psf) 
 {
-	y_filetransfer *sf = psf;
+	y_filetransfer *sf = ( y_filetransfer* )psf;
 	struct yahoo_file_info *fi = (struct yahoo_file_info *)sf->files->data;
 	
 	ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, sf, 0);

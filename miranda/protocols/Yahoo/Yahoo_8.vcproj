@@ -408,63 +408,63 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath=".\avatar.c"
+				RelativePath=".\avatar.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\chat.c"
+				RelativePath=".\chat.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\file_transfer.c"
+				RelativePath=".\file_transfer.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\http_gateway.c"
+				RelativePath=".\http_gateway.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\icolib.c"
+				RelativePath=".\icolib.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ignore.c"
+				RelativePath=".\ignore.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\im.c"
+				RelativePath=".\im.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\main.c"
+				RelativePath=".\main.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\options.c"
+				RelativePath=".\options.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\search.c"
+				RelativePath=".\search.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\server.c"
+				RelativePath=".\server.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\services.c"
+				RelativePath=".\services.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\util.c"
+				RelativePath=".\util.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\webcam.c"
+				RelativePath=".\webcam.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\yahoo.c"
+				RelativePath=".\yahoo.cpp"
 				>
 			</File>
 			<Filter

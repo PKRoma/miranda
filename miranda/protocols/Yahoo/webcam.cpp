@@ -25,8 +25,6 @@
 
 extern yahoo_local_account * ylad;
 
-void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, long tm, int stat, int utf8, int buddy_icon);
-
 /* WEBCAM callbacks */
 void ext_yahoo_got_webcam_image(int id, const char *who,
 		const unsigned char *image, unsigned int image_size, unsigned int real_size,
@@ -47,18 +45,17 @@ void ext_yahoo_webcam_closed(int id, const char *who, int reason)
 
 void ext_yahoo_webcam_data_request(int id, int send)
 {
-    LOG(("ext_yahoo_webcam_data_request"));
+	LOG(("ext_yahoo_webcam_data_request"));
 }
 
 void ext_yahoo_webcam_invite(int id, const char *me, const char *from)
 {
-    LOG(("ext_yahoo_webcam_invite"));
-	
-	ext_yahoo_got_im(id, me, from, Translate("[miranda] Got webcam invite. (not currently supported)"), 0, 0, 0, -1);
+	LOG(("ext_yahoo_webcam_invite"));
+
+	ext_yahoo_got_im(id, me, from, 0, Translate("[miranda] Got webcam invite. (not currently supported)"), 0, 0, 0, -1);
 }
 
 void ext_yahoo_webcam_invite_reply(int id, const char *me, const char *from, int accept)
 {
-    LOG(("ext_yahoo_webcam_invite_reply"));
+	LOG(("ext_yahoo_webcam_invite_reply"));
 }
-

@@ -69,21 +69,21 @@ void __cdecl yahoo_server_main(void *empty)
 {
 	int status = (int) empty;
 	time_t lLastPing, lLastKeepAlive, t;
-    YList *l;
-    NETLIBSELECTEX nls = {0};
+	YList *l;
+	NETLIBSELECTEX nls = {0};
 	int recvResult, ridx = 0, widx = 0, i;
-	
-    YAHOO_DebugLog("Server Thread Starting status: %d", status);
-	
+
+	YAHOO_DebugLog("Server Thread Starting status: %d", status);
+
 	do_yahoo_debug=YAHOO_LOG_DEBUG;
-	yahoo_set_log_level(do_yahoo_debug);
+	yahoo_set_log_level(( yahoo_log_level )do_yahoo_debug);
 
 	poll_loop = 1; /* set this so we start looping */
-	
+
 	ext_yahoo_login(status);
 
 	lLastKeepAlive = lLastPing = time(NULL);
-	
+
 	while (poll_loop) {
 		nls.cbSize = sizeof(nls);
 		nls.dwTimeout = 1000; // 1000 millis = 1 sec 
@@ -95,7 +95,7 @@ void __cdecl yahoo_server_main(void *empty)
 		ridx = 0; widx = 0; 
 
 		for(l=connections; l; ) {
-			struct _conn *c = l->data;
+			struct _conn *c = ( _conn * )l->data;
 			//LOG(("Connection tag:%d id:%d fd:%d remove:%d", c->tag, c->id, c->fd, c->remove));
 			if(c->remove) {
 				YList *n = y_list_next(l);
@@ -175,7 +175,7 @@ void __cdecl yahoo_server_main(void *empty)
 		/* do the timer check ends */
 		
 		for(l = connections; l; l = y_list_next(l)) {
-		   struct _conn *c = l->data;
+		   struct _conn *c = ( _conn * )l->data;
 					
 		   if (c->remove) 
 				continue;
@@ -201,7 +201,7 @@ void __cdecl yahoo_server_main(void *empty)
 	/* cleanup the data stuff and close our connection handles */
 	while(connections) {
 		YList *tmp = connections;
-		struct _conn * c = connections->data;
+		struct _conn * c = ( _conn * )connections->data;
 		Netlib_CloseHandle((HANDLE)c->fd);
 		FREE(c);
 		connections = y_list_remove_link(connections, connections);

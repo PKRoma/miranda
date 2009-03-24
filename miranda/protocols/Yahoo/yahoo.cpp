@@ -87,88 +87,88 @@ char * yahoo_status_code(enum yahoo_status s)
 	return "Unknown";
 }
 
-int miranda_to_yahoo(int myyahooStatus)
+yahoo_status miranda_to_yahoo(int myyahooStatus)
 {
-    int ret = YAHOO_STATUS_AVAILABLE;
-	
-    switch (myyahooStatus) {
-	case ID_STATUS_OFFLINE:
-						ret = YAHOO_STATUS_OFFLINE;
-						break;
-						
-	case ID_STATUS_FREECHAT:
-    case ID_STATUS_ONLINE: 
-                        ret = YAHOO_STATUS_AVAILABLE;
-                        break;
-						
-    case ID_STATUS_AWAY:
-                        ret = YAHOO_STATUS_STEPPEDOUT;
-                        break;
-						
-	case ID_STATUS_NA:
-                        ret = YAHOO_STATUS_BRB;
-                        break;
-						
-    case ID_STATUS_OCCUPIED:
-                        ret = YAHOO_STATUS_BUSY;
-                        break;
-						
-    case ID_STATUS_DND:
-                        ret = YAHOO_STATUS_BUSY;
-                        break;
+	yahoo_status ret = YAHOO_STATUS_AVAILABLE;
 
-    case ID_STATUS_ONTHEPHONE:
-                        ret = YAHOO_STATUS_ONPHONE;
-                        break;
-						
-    case ID_STATUS_OUTTOLUNCH:
-                        ret = YAHOO_STATUS_OUTTOLUNCH;                            
-                        break;
-						
-    case ID_STATUS_INVISIBLE:
-                        ret = YAHOO_STATUS_INVISIBLE;
-                        break;
-    }                                                
-    
+	switch (myyahooStatus) {
+	case ID_STATUS_OFFLINE:
+		ret = YAHOO_STATUS_OFFLINE;
+		break;
+
+	case ID_STATUS_FREECHAT:
+	case ID_STATUS_ONLINE: 
+		ret = YAHOO_STATUS_AVAILABLE;
+		break;
+
+	case ID_STATUS_AWAY:
+		ret = YAHOO_STATUS_STEPPEDOUT;
+		break;
+
+	case ID_STATUS_NA:
+		ret = YAHOO_STATUS_BRB;
+		break;
+
+	case ID_STATUS_OCCUPIED:
+		ret = YAHOO_STATUS_BUSY;
+		break;
+
+	case ID_STATUS_DND:
+		ret = YAHOO_STATUS_BUSY;
+		break;
+
+	case ID_STATUS_ONTHEPHONE:
+		ret = YAHOO_STATUS_ONPHONE;
+		break;
+
+	case ID_STATUS_OUTTOLUNCH:
+		ret = YAHOO_STATUS_OUTTOLUNCH;                            
+		break;
+
+	case ID_STATUS_INVISIBLE:
+		ret = YAHOO_STATUS_INVISIBLE;
+		break;
+	}                                                
+
     return ret;
 }
 
 int yahoo_to_miranda_status(int yahooStatus, int away)
 {
-    int ret = ID_STATUS_OFFLINE;
-	
-    switch (yahooStatus) {
-    case YAHOO_STATUS_AVAILABLE: 
-                        ret = ID_STATUS_ONLINE;
-                        break;
-    case YAHOO_STATUS_BRB:
-                        ret = ID_STATUS_NA;
-                        break;
-    case YAHOO_STATUS_BUSY:
-                        ret = ID_STATUS_OCCUPIED;
-                        break;
-    case YAHOO_STATUS_ONPHONE:
-                        ret = ID_STATUS_ONTHEPHONE;
-                        break;
-    case YAHOO_STATUS_OUTTOLUNCH:
-                        ret = ID_STATUS_OUTTOLUNCH;                            
-                        break;
-    case YAHOO_STATUS_INVISIBLE:
-                        ret = ID_STATUS_INVISIBLE;
-                        break;
-    case YAHOO_STATUS_NOTATHOME:
+	int ret = ID_STATUS_OFFLINE;
+
+	switch (yahooStatus) {
+	case YAHOO_STATUS_AVAILABLE: 
+		ret = ID_STATUS_ONLINE;
+		break;
+	case YAHOO_STATUS_BRB:
+		ret = ID_STATUS_NA;
+		break;
+	case YAHOO_STATUS_BUSY:
+		ret = ID_STATUS_OCCUPIED;
+		break;
+	case YAHOO_STATUS_ONPHONE:
+		ret = ID_STATUS_ONTHEPHONE;
+		break;
+	case YAHOO_STATUS_OUTTOLUNCH:
+		ret = ID_STATUS_OUTTOLUNCH;                            
+		break;
+	case YAHOO_STATUS_INVISIBLE:
+		ret = ID_STATUS_INVISIBLE;
+		break;
+	case YAHOO_STATUS_NOTATHOME:
 	case YAHOO_STATUS_NOTATDESK:
 	case YAHOO_STATUS_NOTINOFFICE:
 	case YAHOO_STATUS_ONVACATION:
 	case YAHOO_STATUS_STEPPEDOUT:
-    case YAHOO_STATUS_IDLE:
-                        ret = ID_STATUS_AWAY;
-                        break;
-    case YAHOO_STATUS_CUSTOM:
-                        ret = (away ? ID_STATUS_AWAY:ID_STATUS_ONLINE);
-                        break;
-    }
-    return ret;
+	case YAHOO_STATUS_IDLE:
+		ret = ID_STATUS_AWAY;
+		break;
+	case YAHOO_STATUS_CUSTOM:
+		ret = (away ? ID_STATUS_AWAY:ID_STATUS_ONLINE);
+		break;
+	}
+	return ret;
 }
 
 void yahoo_set_status(int myyahooStatus, char *msg, int away)
@@ -181,7 +181,7 @@ void yahoo_set_status(int myyahooStatus, char *msg, int away)
 		if (YAHOO_CUSTOM_STATUS != myyahooStatus)
 			yahoo_set_away(ylad->id, miranda_to_yahoo(myyahooStatus), msg, away);
 		else
-			yahoo_set_away(ylad->id, YAHOO_CUSTOM_STATUS, msg, away);
+			yahoo_set_away(ylad->id, ( yahoo_status )YAHOO_CUSTOM_STATUS, msg, away);
 	}
 }
 
@@ -601,7 +601,7 @@ void ext_yahoo_got_buddies(int id, YList * buds)
 	for(; buds; buds = buds->next) {
 	    HANDLE hContact;
 	    
-		struct yahoo_buddy *bud = buds->data;
+		yahoo_buddy *bud = ( yahoo_buddy* )buds->data;
 		if (bud == NULL) {
 			LOG(("EMPTY BUDDY LIST??"));
 			continue;
@@ -940,7 +940,7 @@ void ext_yahoo_game_notify(int id, const char *me, const char *who, int stat, co
 		
 		z[0]='\0';
 		do{
-			c = strchr(l, 0x09);
+			c = ( char* )strchr(l, 0x09);
 			i++;
 			if (c != NULL) {
 				l = c;
@@ -953,7 +953,7 @@ void ext_yahoo_game_notify(int id, const char *me, const char *who, int stat, co
 		if (c != NULL) {
 			// insert \r before \n
 			do{
-				c =	strchr(l, '\n');
+				c = ( char* )strchr(l, '\n');
 				
 				if (c != NULL) {
 					(*c) = '\0';
@@ -1035,8 +1035,6 @@ void __cdecl yahoo_get_yab_thread(void *psf)
 	
 	yahoo_get_yab(id);
 }
-
-char * getcookie(char *rawcookie);
 
 void check_for_update(void)
 {
@@ -1382,7 +1380,7 @@ void ext_yahoo_remove_handler(int id, unsigned int tag)
 	LOG(("[ext_yahoo_remove_handler] id:%d tag:%d ", id, tag));
 	
 	for(l = connections; l; l = y_list_next(l)) {
-		struct _conn *c = l->data;
+		struct _conn *c = ( _conn* )l->data;
 		if(c->tag == tag) {
 			/* don't actually remove it, just mark it for removal */
 			/* we'll remove when we start the next poll cycle */
@@ -1402,9 +1400,9 @@ struct connect_callback_data {
 
 static void connect_complete(void *data, int source, yahoo_input_condition condition)
 {
-	struct connect_callback_data *ccd = data;
+	struct connect_callback_data *ccd = ( connect_callback_data* )data;
 	int error = 0;//, err_size = sizeof(error);
-    NETLIBSELECT tSelect = {0};
+	NETLIBSELECT tSelect = {0};
 
 	ext_yahoo_remove_handler(0, ccd->tag);
 	

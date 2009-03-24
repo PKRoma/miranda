@@ -129,7 +129,7 @@ void ext_yahoo_got_im(int id, const char *me, const char *who, int protocol, con
 			DWORD dummy;
 	
 			dbei.cbSize = sizeof (DBEVENTINFO);
-			dbei.pBlob = (char*)&dummy;
+			dbei.pBlob = (BYTE*)&dummy;
 			dbei.cbBlob = 2;
 			if (!CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbei)) 
 				// got that event, if newer than ts then reset to current time

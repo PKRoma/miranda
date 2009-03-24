@@ -10,10 +10,10 @@
  * I want to thank Robert Rainwater and George Hazan for their code and support
  * and for answering some of my questions during development of this plugin.
  */
-#ifdef HTTP_GATEWAY
 
-#include <windows.h>
 #include "yahoo.h"
+
+#ifdef HTTP_GATEWAY
 
 extern yahoo_local_account * ylad;
 

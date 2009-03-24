@@ -17,8 +17,6 @@
 
 extern yahoo_local_account * ylad;
 
-void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, long tm, int stat, int utf8, int buddy_icon);
-
 /* Conference handlers */
 void ext_yahoo_got_conf_invite(int id, const char *me, const char *who, const char *room, const char *msg, YList *members)
 {
@@ -26,7 +24,7 @@ void ext_yahoo_got_conf_invite(int id, const char *me, const char *who, const ch
 	
 	_snprintf(z, sizeof(z), Translate("[miranda] Got conference invite to room: %s with msg: %s"), room ?room:"", msg ?msg:"");
 	LOG(("[ext_yahoo_got_conf_invite] %s", z));
-	ext_yahoo_got_im(id, "me", who, z, 0, 0, 1, -1);
+	ext_yahoo_got_im(id, "me", who, 0, z, 0, 0, 1, -1);
 	
 	yahoo_conference_decline(ylad->id, NULL, members, room, Translate("I am sorry, but i can't join your conference since this feature is not currently implemented in my client."));
 }

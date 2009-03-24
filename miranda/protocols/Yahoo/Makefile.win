@@ -1,8 +1,8 @@
-SRC = http_gateway.c main.c options.c server.c services.c util.c yahoo.c avatar.c \
-	  chat.c webcam.c icolib.c ignore.c file_transfer.c im.c search.c \
+SRC = http_gateway.cpp main.cpp options.cpp server.cpp services.cpp util.cpp yahoo.cpp avatar.cpp \
+	  chat.cpp webcam.cpp icolib.cpp ignore.cpp file_transfer.cpp im.cpp search.cpp \
 	  libyahoo2\crypt.c libyahoo2\libyahoo2.c libyahoo2\yahoo_auth.c \
 	  libyahoo2\yahoo_httplib.c libyahoo2\yahoo_list.c libyahoo2\yahoo_util.c
-OBJ = $(SRC:.c=.o)
+OBJ = $(SRC:.c=.o) $(SRC:.cpp=.o)
 RES = Yahoo.res
 
 LIB = -lcomdlg32 -lgdi32

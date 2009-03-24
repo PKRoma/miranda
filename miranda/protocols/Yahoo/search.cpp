@@ -73,11 +73,11 @@ int YahooBasicSearch(WPARAM wParam,LPARAM lParam)
 
 void ext_yahoo_got_search_result(int id, int found, int start, int total, YList *contacts)
 {
-    PROTOSEARCHRESULT psr = { 0 };
+	PROTOSEARCHRESULT psr = { 0 };
 	struct yahoo_found_contact *yct=NULL;
 	char *c;
 	int i=start;
-    YList *en=contacts;
+	YList *en=contacts;
 
 	LOG(("got search result: "));
 	
@@ -86,11 +86,11 @@ void ext_yahoo_got_search_result(int id, int found, int start, int total, YList 
 	LOG(("Start: %d", start));
 	LOG(("Total: %d", total));
 		
-    psr.cbSize = sizeof(psr);
+	psr.cbSize = sizeof(psr);
 	psr.reserved[0] = YAHOO_IM_YAHOO;
 	
 	while (en) {
-		yct = en->data;
+		yct = ( yahoo_found_contact* )en->data;
 
 		if (yct == NULL) {
 			LOG(("[%d] Empty record?",i++));
@@ -117,7 +117,7 @@ void ext_yahoo_got_search_result(int id, int found, int start, int total, YList 
 		}
 		en = y_list_next(en);
 	}
-    YAHOO_SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
+	YAHOO_SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 }
 
 static BOOL CALLBACK YahooSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)

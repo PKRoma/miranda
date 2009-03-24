@@ -563,7 +563,8 @@ static void __cdecl yahoo_get_statusthread(HANDLE hContact)
 		
 		DBFreeVariant( &dbv );
 	} else {
-		sm = yahoo_status_code(DBGetContactSettingWord(hContact, yahooProtocolName, "YStatus", YAHOO_STATUS_OFFLINE));
+		WORD status = DBGetContactSettingWord(hContact, yahooProtocolName, "YStatus", YAHOO_STATUS_OFFLINE);
+		sm = yahoo_status_code( yahoo_status( status ));
 		if (sm) sm = strdup(sm); /* we need this to go global FREE later */
 	}
 

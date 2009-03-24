@@ -16,15 +16,25 @@
 #define MIRANDA_VER 0x0700
 #define _USE_32BIT_TIME_T
 
+#include <time.h>
+#include <malloc.h>
+#include <sys/stat.h>
+#include <io.h>
+
 #include <windows.h>
 
 /* 
  * Yahoo Services
  */
 #define USE_STRUCT_CALLBACKS
-#include "libyahoo2/yahoo2.h"
-#include "libyahoo2/yahoo2_callbacks.h"
-#include "libyahoo2/yahoo_util.h"
+extern "C"
+{
+	#include "libyahoo2/yahoo2.h"
+	#include "libyahoo2/yahoo2_callbacks.h"
+	#include "libyahoo2/yahoo_util.h"
+	
+	char * getcookie(char *rawcookie);
+};
 
 #include <newpluginapi.h>
 #include <m_system.h>
@@ -153,7 +163,7 @@ HANDLE getbuddyH(const char *yahoo_id);
 
 void yahoo_logoff_buddies();
 void yahoo_set_status(int myyahooStatus, char *msg, int away);
-int miranda_to_yahoo(int myyahooStatus);
+yahoo_status miranda_to_yahoo(int myyahooStatus);
 void yahoo_stealth(const char *buddy, int add);
 
 void register_callbacks();
@@ -184,6 +194,7 @@ void YAHOO_refresh();
 int LoadYahooServices(void);
 void yahoo_logout();
 void yahoo_callback(struct _conn *c, yahoo_input_condition cond);
+void ext_yahoo_got_im(int id, const char *me, const char *who, int protocol, const char *msg, long tm, int stat, int utf8, int buddy_icon, const char *seqn = NULL, int sendn=0);
 void ext_yahoo_login(int login_mode);
 int YahooGotoMailboxCommand( WPARAM wParam, LPARAM lParam );
 
