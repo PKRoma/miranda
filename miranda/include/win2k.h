@@ -54,7 +54,7 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 
 #define SIZEOF(X) (sizeof(X)/sizeof(X[0]))
 
-#ifdef _AMD64_
+#ifdef _WIN64
 #define MENUITEMINFO_V4_SIZE sizeof(MENUITEMINFO)
 #else
 //mii was extended for NT5/Win98, so need the old length for some stuff
