@@ -45,7 +45,7 @@ static LONG WINAPI MyInterlockedIncrement95(PLONG pVal)
 }
 
 //there's a possible hole here if too many people call this at the same time, but that doesn't happen
-static INT WINAPI MyInterlockedIncrementInit(PLONG pVal)
+static LONG WINAPI MyInterlockedIncrementInit(PLONG pVal)
 {
     DWORD ver = GetVersion();
     if (( ver & 0x80000000 ) && LOWORD( ver ) == 0x0004 )
