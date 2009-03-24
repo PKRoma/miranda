@@ -206,7 +206,7 @@ char*  rtrim( char* string );
 wchar_t* rtrim( wchar_t* string );
 char* arrayToHex(BYTE* data, size_t datasz);
 
-#if defined(_UNICODE) || defined(_AMD64_)
+#if defined(_UNICODE) || defined(_WIN64)
 
 #define MyInterlockedIncrement InterlockedIncrement
 

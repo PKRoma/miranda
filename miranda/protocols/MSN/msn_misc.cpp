@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "msn_proto.h"
 #include "version.h"
 
-#if !defined(_UNICODE) && !defined(_AMD64_)
+#if !defined(_UNICODE) && !defined(_WIN64)
 
 typedef LONG ( WINAPI pIncrementFunc )( PLONG );
 static pIncrementFunc  MyInterlockedIncrement95;
