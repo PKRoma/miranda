@@ -358,7 +358,7 @@ void md5_hash_string(const mir_md5_byte_t *data, int len, mir_md5_byte_t digest[
 	md5_finish(&state, digest);
 }
 
-int GetMD5Interface(WPARAM, LPARAM lParam)
+INT_PTR GetMD5Interface(WPARAM, LPARAM lParam)
 {
 	struct MD5_INTERFACE *md5i = (struct MD5_INTERFACE*) lParam;
 	if ( md5i == NULL )

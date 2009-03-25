@@ -259,7 +259,7 @@ static HWND hwndDde;
 static HGLOBAL hGlobalDdeData;
 static LRESULT DdeMessage(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
 {
-	UINT hSzItem;
+	UINT_PTR hSzItem;
 
 	switch(msg) {
 	case WM_DDE_ACK:

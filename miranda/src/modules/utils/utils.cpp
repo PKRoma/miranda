@@ -31,8 +31,8 @@ int InitColourPicker(void);
 int InitBitmapFilter(void);
 void InitXmlApi(void);
 int InitPathUtils(void);
-int GetMD5Interface(WPARAM, LPARAM);
-int GetSHA1Interface(WPARAM, LPARAM);
+INT_PTR GetMD5Interface(WPARAM, LPARAM);
+INT_PTR GetSHA1Interface(WPARAM, LPARAM);
 
 static BOOL bModuleInitialized = FALSE;
 

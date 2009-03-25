@@ -148,7 +148,7 @@ static void OpenURLThread(void *arg)
     
    if (!hUrlInfo->szUrl) return;
 	hwndDdeMsg=CreateWindow(WNDCLASS_DDEMSGWINDOW,_T(""),0,0,0,0,0,NULL,NULL,hMirandaInst,NULL);
-	SetWindowLongPtr(hwndDdeMsg,0,(LONG)&msgWndData);
+	SetWindowLongPtr(hwndDdeMsg,0,(LONG_PTR)&msgWndData);
 
 	if(!_strnicmp(hUrlInfo->szUrl,"ftp:",4) || !_strnicmp(hUrlInfo->szUrl,"ftp.",4)) pszProtocol="ftp";
 	if(!_strnicmp(hUrlInfo->szUrl,"mailto:",7)) pszProtocol="mailto";

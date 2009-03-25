@@ -159,7 +159,7 @@ static void shaHashBlock(mir_sha1_ctx *ctx) {
   ctx->H[4] += E;
 }
 
-int GetSHA1Interface(WPARAM, LPARAM lParam)
+INT_PTR GetSHA1Interface(WPARAM, LPARAM lParam)
 {
 	struct SHA1_INTERFACE *sha1i = (struct SHA1_INTERFACE*) lParam;
 	if ( sha1i == NULL )

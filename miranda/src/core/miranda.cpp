@@ -168,7 +168,7 @@ unsigned long forkthread (
 
 static INT_PTR ForkThreadService(WPARAM wParam, LPARAM lParam)
 {
-	return (int)forkthread(( pThreadFunc )wParam, 0, ( void* )lParam );
+	return (INT_PTR)forkthread(( pThreadFunc )wParam, 0, ( void* )lParam );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -430,7 +430,7 @@ static void __cdecl compactHeapsThread(void*)
 	} //while
 }
 
-DWORD CALLBACK APCWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK APCWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	if (msg==WM_NULL) SleepEx(0,TRUE);
 	return DefWindowProc(hwnd,msg,wParam,lParam);

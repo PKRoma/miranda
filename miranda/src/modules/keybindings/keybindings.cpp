@@ -430,7 +430,7 @@ BOOL CALLBACK DlgProcKeyBindingsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 	case WM_INITDIALOG:
 		{
 			TranslateDialogDefault(hwndDlg);
-			OldEditProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_PREVIEW), GWL_WNDPROC, (LONG_PTR) KeyBindingsEditProc);
+			OldEditProc = (WNDPROC) SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_PREVIEW), GWLP_WNDPROC, (LONG_PTR) KeyBindingsEditProc);
 			currentTreeItem = NULL;
 			loadTempKeyBindings();
 			buildTree(GetDlgItem(hwndDlg, IDC_CATEGORYLIST));

@@ -229,10 +229,10 @@ int InitPathUtilsW(void)
 #define XSTR(target, s) _xstrselect(target, s, _T(s))
 
 static __forceinline int _xcscmp(const char *s1, const char *s2) { return strcmp(s1, s2); }
-static __forceinline int _xcsncmp(const char *s1, const char *s2, int n) { return strncmp(s1, s2, n); }
+static __forceinline int _xcsncmp(const char *s1, const char *s2, size_t n) { return strncmp(s1, s2, n); }
 static __forceinline size_t _xcslen(const char *s1) { return strlen(s1); }
 static __forceinline char *_xcscpy(char *s1, const char *s2) { return strcpy(s1, s2); }
-static __forceinline char *_xcsncpy(char *s1, const char *s2, int n) { return strncpy(s1, s2, n); }
+static __forceinline char *_xcsncpy(char *s1, const char *s2, size_t n) { return strncpy(s1, s2, n); }
 static __forceinline char *_xstrselect(char *, char *s1, TCHAR *s2) { return s1; }
 static __forceinline char *_itox(char *, int a) { return itoa(a, (char *)mir_alloc(sizeof(char)*20), 10); }
 static __forceinline char *mir_a2x(char *, char *s) { return mir_strdup(s); }
@@ -272,10 +272,10 @@ static __forceinline char *GetUserNameX(char *)
 
 #ifdef _UNICODE
 static __forceinline int _xcscmp(const TCHAR *s1, const TCHAR *s2) { return _tcscmp(s1, s2); }
-static __forceinline int _xcsncmp(const TCHAR *s1, const TCHAR *s2, int n) { return _tcsncmp(s1, s2, n); }
+static __forceinline int _xcsncmp(const TCHAR *s1, const TCHAR *s2, size_t n) { return _tcsncmp(s1, s2, n); }
 static __forceinline size_t _xcslen(const TCHAR *s1) { return _tcslen(s1); }
 static __forceinline TCHAR *_xcscpy(TCHAR *s1, const TCHAR *s2) { return _tcscpy(s1, s2); }
-static __forceinline TCHAR *_xcsncpy(TCHAR *s1, const TCHAR *s2, int n) { return _tcsncpy(s1, s2, n); }
+static __forceinline TCHAR *_xcsncpy(TCHAR *s1, const TCHAR *s2, size_t n) { return _tcsncpy(s1, s2, n); }
 static __forceinline TCHAR *_xstrselect(TCHAR *, char *s1, TCHAR *s2) { return s2; }
 static __forceinline TCHAR *_itox(TCHAR *, int a) { return _itot(a, (TCHAR *)mir_alloc(sizeof(TCHAR)*20), 10); }
 static __forceinline TCHAR *mir_a2x(TCHAR *, char *s) { return mir_a2t(s); }
@@ -315,7 +315,7 @@ static __forceinline TCHAR *GetUserNameX(TCHAR *)
 #endif
 
 template<typename XCHAR>
-XCHAR *GetInternalVariable(XCHAR *key, int keyLength, HANDLE hContact)
+XCHAR *GetInternalVariable(XCHAR *key, size_t keyLength, HANDLE hContact)
 {
 	XCHAR *theValue = NULL;
 	XCHAR *theKey = (XCHAR *)_alloca(sizeof(XCHAR) * (keyLength + 1));
@@ -476,7 +476,7 @@ static INT_PTR replaceVars(WPARAM wParam, LPARAM lParam)
 		return (INT_PTR)ReplaceVariables<char>((char *)wParam, data);
 
 #ifdef _UNICODE
-	return (int)ReplaceVariables<WCHAR>((WCHAR *)wParam, data);
+	return (INT_PTR)ReplaceVariables<WCHAR>((WCHAR *)wParam, data);
 #else
 	return NULL;
 #endif
