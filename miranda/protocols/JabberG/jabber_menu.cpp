@@ -62,6 +62,20 @@ static HGENMENU g_hMenuResourcesRoot;
 static HGENMENU g_hMenuResourcesActive;
 static HGENMENU g_hMenuResourcesServer;
 
+static struct
+{
+	int icon;
+	int mode;
+} PresenceModeArray[] =
+{
+	{ SKINICON_STATUS_ONLINE, ID_STATUS_ONLINE },
+	{ SKINICON_STATUS_AWAY, ID_STATUS_AWAY },
+	{ SKINICON_STATUS_NA, ID_STATUS_NA },
+	{ SKINICON_STATUS_DND, ID_STATUS_DND },
+	{ SKINICON_STATUS_FREE4CHAT, ID_STATUS_FREECHAT },
+};
+static HGENMENU g_hMenuDirectPresence[SIZEOF(PresenceModeArray) + 1];
+
 static int JabberMenuChooseService( WPARAM wParam, LPARAM lParam )
 {
 	if ( lParam )
@@ -146,6 +160,12 @@ static int JabberMenuHandleResource( WPARAM wParam, LPARAM lParam, LPARAM lRes )
 {
 	CJabberProto* ppro = JabberGetInstanceByHContact(( HANDLE )wParam );
 	return( ppro ) ? ppro->OnMenuHandleResource( wParam, lParam, lRes ) : 0;
+}
+
+static int JabberMenuHandleDirectPresence( WPARAM wParam, LPARAM lParam, LPARAM lRes )
+{
+	CJabberProto* ppro = JabberGetInstanceByHContact(( HANDLE )wParam );
+	return( ppro ) ? ppro->OnMenuHandleDirectPresence( wParam, lParam, lRes ) : 0;
 }
 
 static void sttEnableMenuItem( HANDLE hMenuItem, BOOL bEnable )
@@ -283,6 +303,33 @@ void g_MenuInit( void )
 	mi.icolibItem = g_GetIconHandle( IDI_SEND_NOTE);
 	g_hMenuSendNote = ( HGENMENU )JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 	CreateServiceFunction( mi.pszService, JabberMenuSendNote );
+
+	// Direct Presence
+	mi.pszService = "Jabber/DirectPresenceDummySvc";
+	mi.pszName = LPGEN("Send Presence");
+	mi.position = -1999901011;
+	mi.pszPopupName = (char *)-1;
+	mi.icolibItem = g_GetIconHandle( IDI_NOTES );
+	g_hMenuDirectPresence[0] = ( HGENMENU )JCallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+
+	mi.flags |= CMIF_ROOTHANDLE;
+	mi.flags &= ~CMIF_ICONFROMICOLIB;
+
+	for (int i = 0; i < SIZEOF(PresenceModeArray); ++i)
+	{
+		char buf[] = "Jabber/DirectPresenceX";
+		buf[SIZEOF(buf)-2] = '0' + i;
+		mi.pszService = buf;
+		mi.pszName = (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, PresenceModeArray[i].mode, 0);
+		mi.position = -1999901000;
+		mi.hParentMenu = g_hMenuDirectPresence[0];
+		mi.icolibItem = LoadSkinnedIcon(PresenceModeArray[i].icon);
+		g_hMenuDirectPresence[i+1] = ( HGENMENU )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+		CreateServiceFunctionParam( mi.pszService, JabberMenuHandleDirectPresence, PresenceModeArray[i].mode );
+	}
+	
+	mi.flags &= ~CMIF_ROOTHANDLE;
+	mi.flags |= CMIF_ICONFROMICOLIB;
 
 	// Resource selector
 	mi.pszService = "Jabber/ResourceSelectorDummySvc";
@@ -1154,6 +1201,25 @@ int __cdecl CJabberProto::OnMenuHandleResource(WPARAM wParam, LPARAM, LPARAM res
 
 	UpdateMirVer(LI);
 	MenuUpdateSrmmIcon(LI);
+	return 0;
+}
+
+int __cdecl CJabberProto::OnMenuHandleDirectPresence(WPARAM wParam, LPARAM lParam, LPARAM res)
+{
+	if ( !m_bJabberOnline || !wParam )
+		return 0;
+
+	HANDLE hContact = (HANDLE)wParam;
+
+	DBVARIANT dbv;
+	int result = JGetStringT( hContact, "jid", &dbv );
+	if (result) result = JGetStringT( hContact, "ChatRoomID", &dbv );
+	if (result) return 0;
+
+	TCHAR buf[1024] = {0};
+	EnterString(buf, SIZEOF(buf), TranslateT("Status Message"), JES_MULTINE);
+	SendPresenceTo(res, dbv.ptszVal, NULL, buf);
+	JFreeVariant(&dbv);
 	return 0;
 }
 

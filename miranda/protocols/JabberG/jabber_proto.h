@@ -598,6 +598,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	int    __cdecl OnMenuBookmarkAdd( WPARAM wParam, LPARAM lParam );
 	int    __cdecl OnMenuRevokeAuth( WPARAM wParam, LPARAM lParam );
 	int    __cdecl OnMenuHandleResource(WPARAM wParam, LPARAM lParam, LPARAM res);
+	int    __cdecl OnMenuHandleDirectPresence(WPARAM wParam, LPARAM lParam, LPARAM res);
 	int    __cdecl OnMenuSetPriority(WPARAM wParam, LPARAM lParam, LPARAM dwDelta);
 
 	void   MenuInit( void );
@@ -792,7 +793,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	HANDLE ChatRoomHContactFromJID( const TCHAR* jid );
 	void   Log( const char* fmt, ... );
 	void   SendVisibleInvisiblePresence( BOOL invisible );
-	void   SendPresenceTo( int status, TCHAR* to, HXML extra );
+	void   SendPresenceTo( int status, TCHAR* to, HXML extra, TCHAR *msg = NULL );
 	void   SendPresence( int m_iStatus, bool bSendToAll );
 	void   StringAppend( char* *str, int *sizeAlloced, const char* fmt, ... );
 	TCHAR* GetClientJID( const TCHAR* jid, TCHAR*, size_t );

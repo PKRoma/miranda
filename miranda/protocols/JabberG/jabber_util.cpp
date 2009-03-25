@@ -791,7 +791,7 @@ int __stdcall JabberCountryNameToId( const TCHAR* ptszCountryName )
 	return 0xffff;
 }
 
-void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra )
+void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra, TCHAR *msg )
 {
 	if ( !m_bJabberOnline ) return;
 
@@ -867,8 +867,8 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra )
 	EnterCriticalSection( &m_csModeMsgMutex );
 	switch ( status ) {
 	case ID_STATUS_ONLINE:
-		if ( m_modeMsgs.szOnline )
-			p << XCHILD( _T("status"), m_modeMsgs.szOnline );
+		if ( msg || m_modeMsgs.szOnline )
+			p << XCHILD( _T("status"), msg ? msg : m_modeMsgs.szOnline );
 		break;
 	case ID_STATUS_INVISIBLE:
 		p << XATTR( _T("type"), _T("invisible"));
@@ -877,24 +877,24 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra )
 	case ID_STATUS_ONTHEPHONE:
 	case ID_STATUS_OUTTOLUNCH:
 		p << XCHILD( _T("show"), _T("away"));
-		if ( m_modeMsgs.szAway )
-			p << XCHILD( _T("status"), m_modeMsgs.szAway );
+		if ( msg || m_modeMsgs.szAway )
+			p << XCHILD( _T("status"), msg ? msg : m_modeMsgs.szAway );
 		break;
 	case ID_STATUS_NA:
 		p << XCHILD( _T("show"), _T("xa"));
-		if ( m_modeMsgs.szNa )
-			p << XCHILD( _T("status"), m_modeMsgs.szNa );
+		if ( msg || m_modeMsgs.szNa )
+			p << XCHILD( _T("status"), msg ? msg : m_modeMsgs.szNa );
 		break;
 	case ID_STATUS_DND:
 	case ID_STATUS_OCCUPIED:
 		p << XCHILD( _T("show"), _T("dnd"));
-		if ( m_modeMsgs.szDnd )
-			p << XCHILD( _T("status"), m_modeMsgs.szDnd );
+		if ( msg || m_modeMsgs.szDnd )
+			p << XCHILD( _T("status"), msg ? msg : m_modeMsgs.szDnd );
 		break;
 	case ID_STATUS_FREECHAT:
 		p << XCHILD( _T("show"), _T("chat"));
-		if ( m_modeMsgs.szFreechat )
-			p << XCHILD( _T("status"), m_modeMsgs.szFreechat );
+		if ( msg || m_modeMsgs.szFreechat )
+			p << XCHILD( _T("status"), msg ? msg : m_modeMsgs.szFreechat );
 		break;
 	default:
 		// Should not reach here
