@@ -69,7 +69,7 @@ static void SearchForDatabases(HWND hdlg,const char *dbPath,const char *type)
 	}
 }
 
-BOOL CALLBACK MirabilisPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
+INT_PTR CALLBACK MirabilisPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
 	switch(message) {
 	case WM_INITDIALOG:
@@ -152,7 +152,7 @@ BOOL CALLBACK MirabilisPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lPar
 		case IDC_OTHER:
 			{	OPENFILENAME ofn;
 				TCHAR str[MAX_PATH], text[256]={0};
-				int index = 0;
+				size_t index = 0;
 
 				// TranslateTS doesnt translate \0 separated strings
 				mir_sntprintf(text + index, 64*sizeof(TCHAR), _T("%s (*.idx)"), TranslateT("Mirabilis ICQ database indexes"));
@@ -192,7 +192,7 @@ BOOL CALLBACK MirabilisPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lPar
 }
 
 
-BOOL CALLBACK MirabilisOptionsPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
+INT_PTR CALLBACK MirabilisOptionsPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
 	switch(message) {
 	case WM_INITDIALOG:

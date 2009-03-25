@@ -39,7 +39,7 @@ static HANDLE hHookOnExit = NULL;
 static HANDLE hImportService = NULL;
 
 
-BOOL CALLBACK WizardDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
+INT_PTR CALLBACK WizardDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
 
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
@@ -65,7 +65,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 	return TRUE;
 }
 
-static int ImportCommand(WPARAM wParam,LPARAM lParam)
+static INT_PTR ImportCommand(WPARAM wParam,LPARAM lParam)
 {
 	if (IsWindow(hwndWizard)) {
 		SetForegroundWindow(hwndWizard);
@@ -285,7 +285,7 @@ int CreateGroup(BYTE type, const char* name, HANDLE hContact)
 	int groupId;
 	TCHAR *tmp, *tszGrpName;
 	char groupIdStr[11];
-	int cbName;
+	size_t cbName;
 
 	if (type == DBVT_UTF8)
 		tmp = mir_utf8decodeT( name );

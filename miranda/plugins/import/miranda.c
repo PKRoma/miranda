@@ -41,11 +41,11 @@ HANDLE AddContact(HWND hdlgProgress, char* pszProtoName, char* pszUniqueSetting,
 BOOL IsProtocolLoaded(char* pszProtocolName);
 BOOL IsDuplicateEvent(HANDLE hContact, DBEVENTINFO dbei);
 
-BOOL CALLBACK ImportTypePageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
-BOOL CALLBACK FinishedPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
-BOOL CALLBACK ProgressPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
-BOOL CALLBACK MirandaOptionsPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
-BOOL CALLBACK MirandaAdvOptionsPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
+INT_PTR CALLBACK ImportTypePageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
+INT_PTR CALLBACK FinishedPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
+INT_PTR CALLBACK ProgressPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
+INT_PTR CALLBACK MirandaOptionsPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
+INT_PTR CALLBACK MirandaAdvOptionsPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
 
 // =====================
 // == LOCAL FUNCTIONS ==
@@ -107,7 +107,7 @@ DWORD nGroupsCount;
 DWORD nSkippedEvents;
 DWORD nSkippedContacts;
 
-DWORD dwSinceDate = 0;
+time_t dwSinceDate = 0;
 
 // =============
 // == DEFINES ==
@@ -176,7 +176,7 @@ static void SearchForLists(HWND hdlg,const char *mirandaPath,const char *pattern
 	}
 }
 
-BOOL CALLBACK MirandaPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
+INT_PTR CALLBACK MirandaPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
 	switch(message) {
 	case WM_INITDIALOG:
@@ -224,7 +224,7 @@ BOOL CALLBACK MirandaPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 			{
 				OPENFILENAME ofn;
 				TCHAR str[MAX_PATH], text[256]={0};
-				int index = 0;
+				size_t index = 0;
 
 				// TranslateTS doesnt translate \0 separated strings
 				mir_sntprintf(text + index, 64*sizeof(TCHAR), _T("%s (*.dat)"), TranslateT("Miranda IM database"));
@@ -265,7 +265,7 @@ BOOL CALLBACK MirandaPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 }
 
 
-BOOL CALLBACK MirandaOptionsPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
+INT_PTR CALLBACK MirandaOptionsPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
 	switch(message) {
 	case WM_INITDIALOG:
@@ -321,7 +321,7 @@ static const UINT InControls[]={IDC_IN_MSG,IDC_IN_URL,IDC_IN_FT,IDC_IN_OTHER};
 static const UINT OutControls[]={IDC_OUT_MSG,IDC_OUT_URL,IDC_OUT_FT,IDC_OUT_OTHER};
 static const UINT SysControls[]={IDC_CONTACTS, IDC_SYSTEM};
 
-BOOL CALLBACK MirandaAdvOptionsPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
+INT_PTR CALLBACK MirandaAdvOptionsPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
 	switch(message) {
 	case WM_INITDIALOG:
