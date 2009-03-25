@@ -455,7 +455,7 @@ INT_PTR CALLBACK DlgProcAvatarOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			if(dat)
 				dat->hContact = (HANDLE)lParam;
 
-			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG)dat);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 			hContact = (HANDLE)lParam;
 			TranslateDialogDefault(hwndDlg);
 			if(hContact) {
@@ -705,7 +705,7 @@ INT_PTR CALLBACK DlgProcAvatarUserInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SendMessage(protopic, AVATAR_RESPECTHIDDEN, 0, (LPARAM) FALSE);
 			SendMessage(protopic, AVATAR_SETRESIZEIFSMALLER, 0, (LPARAM) FALSE);
 
-			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG)dat);
+            SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 			hContact = (HANDLE)lParam;
 			TranslateDialogDefault(hwndDlg);
 			SendMessage(hwndDlg, DM_SETAVATARNAME, 0, 0);

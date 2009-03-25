@@ -1765,7 +1765,7 @@ INT_PTR GetMyAvatar(WPARAM wParam, LPARAM lParam)
 
 	for(i = 0; i < g_MyAvatars.getCount(); i++) {
 		if(!lstrcmpA(szProto, g_MyAvatars[i].szProtoname) && g_MyAvatars[i].hbmPic != 0)
-			return (int)&g_MyAvatars[i];
+			return (INT_PTR)&g_MyAvatars[i];
 	}
 	return 0;
 }

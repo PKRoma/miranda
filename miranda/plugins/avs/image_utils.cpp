@@ -255,7 +255,7 @@ INT_PTR BmpFilterLoadBitmap32(WPARAM wParam,LPARAM lParam)
 			FIBITMAP *dib_new = fei->FI_MakeThumbnail(dib32, 128, FALSE);
             fei->FI_Unload(dib32);
             if(dib_new == NULL)
-				return (int)0;
+				return 0;
             dib32 = dib_new;
         }
 
@@ -263,7 +263,7 @@ INT_PTR BmpFilterLoadBitmap32(WPARAM wParam,LPARAM lParam)
 
         fei->FI_Unload(dib32);
         fei->FI_CorrectBitmap32Alpha(bitmap, FALSE);
-        return (int)bitmap;
+        return (INT_PTR)bitmap;
 	}
     return 0;
 }
