@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 
-static int EnumModuleNames(WPARAM wParam,LPARAM lParam);
+static INT_PTR EnumModuleNames(WPARAM wParam,LPARAM lParam);
 
 typedef struct {
 	char *name;
@@ -178,7 +178,7 @@ char *GetModuleNameByOfs(DWORD ofs)
 	return NULL;
 }
 
-static int EnumModuleNames(WPARAM wParam,LPARAM lParam)
+static INT_PTR EnumModuleNames(WPARAM wParam,LPARAM lParam)
 {
 	int i;
 	int ret;

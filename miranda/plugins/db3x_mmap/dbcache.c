@@ -149,7 +149,7 @@ void DBFlush(int setting)
 	flushBuffersTimerId=SetTimer(NULL,flushBuffersTimerId,50,DoBufferFlushTimerProc);
 }
 
-static int CacheSetSafetyMode(WPARAM wParam,LPARAM lParam)
+static INT_PTR CacheSetSafetyMode(WPARAM wParam,LPARAM lParam)
 {
 	EnterCriticalSection(&csDbAccess);
 	safetyMode=wParam;

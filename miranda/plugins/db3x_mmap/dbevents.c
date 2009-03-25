@@ -28,18 +28,18 @@ extern BOOL safetyMode;
 DWORD GetModuleNameOfs(const char *szName);
 char *GetModuleNameByOfs(DWORD ofs);
 
-static int GetEventCount(WPARAM wParam,LPARAM lParam);
-static int AddEvent(WPARAM wParam,LPARAM lParam);
-static int DeleteEvent(WPARAM wParam,LPARAM lParam);
-static int GetBlobSize(WPARAM wParam,LPARAM lParam);
-static int GetEvent(WPARAM wParam,LPARAM lParam);
-static int MarkEventRead(WPARAM wParam,LPARAM lParam);
-static int GetEventContact(WPARAM wParam,LPARAM lParam);
-static int FindFirstEvent(WPARAM wParam,LPARAM lParam);
-static int FindFirstUnreadEvent(WPARAM wParam,LPARAM lParam);
-static int FindLastEvent(WPARAM wParam,LPARAM lParam);
-static int FindNextEvent(WPARAM wParam,LPARAM lParam);
-static int FindPrevEvent(WPARAM wParam,LPARAM lParam);
+static INT_PTR GetEventCount(WPARAM wParam,LPARAM lParam);
+static INT_PTR AddEvent(WPARAM wParam,LPARAM lParam);
+static INT_PTR DeleteEvent(WPARAM wParam,LPARAM lParam);
+static INT_PTR GetBlobSize(WPARAM wParam,LPARAM lParam);
+static INT_PTR GetEvent(WPARAM wParam,LPARAM lParam);
+static INT_PTR MarkEventRead(WPARAM wParam,LPARAM lParam);
+static INT_PTR GetEventContact(WPARAM wParam,LPARAM lParam);
+static INT_PTR FindFirstEvent(WPARAM wParam,LPARAM lParam);
+static INT_PTR FindFirstUnreadEvent(WPARAM wParam,LPARAM lParam);
+static INT_PTR FindLastEvent(WPARAM wParam,LPARAM lParam);
+static INT_PTR FindNextEvent(WPARAM wParam,LPARAM lParam);
+static INT_PTR FindPrevEvent(WPARAM wParam,LPARAM lParam);
 
 static HANDLE hEventDeletedEvent,hEventAddedEvent,hEventFilterAddedEvent;
 
@@ -67,7 +67,7 @@ void UninitEvents(void)
 {
 }
 
-static int GetEventCount(WPARAM wParam,LPARAM lParam)
+static INT_PTR GetEventCount(WPARAM wParam,LPARAM lParam)
 {
 	int ret;
 	struct DBContact *dbc;
@@ -81,7 +81,7 @@ static int GetEventCount(WPARAM wParam,LPARAM lParam)
 	return ret;
 }
 
-static int AddEvent(WPARAM wParam,LPARAM lParam)
+static INT_PTR AddEvent(WPARAM wParam,LPARAM lParam)
 {
 	DBEVENTINFO *dbei=(DBEVENTINFO*)lParam;
 	struct DBContact dbc;
@@ -89,18 +89,18 @@ static int AddEvent(WPARAM wParam,LPARAM lParam)
 	DWORD ofsNew,ofsModuleName,ofsContact,ofsThis;
 	BOOL neednotify;
 
-	if(dbei==NULL||dbei->cbSize!=sizeof(DBEVENTINFO)) return (int)NULL;
-	if(dbei->timestamp==0) return (int)NULL;
+	if(dbei==NULL||dbei->cbSize!=sizeof(DBEVENTINFO)) return 0;
+	if(dbei->timestamp==0) return 0;
 	if (NotifyEventHooks(hEventFilterAddedEvent,wParam,lParam)) {
-		return (int)NULL;
+		return 0;
 	}
 	EnterCriticalSection(&csDbAccess);
 	if(wParam==0) ofsContact=dbHeader.ofsUser;
-	else ofsContact=wParam;
+	else ofsContact=(DWORD)wParam;
 	dbc=*(struct DBContact*)DBRead(ofsContact,sizeof(struct DBContact),NULL);
 	if(dbc.signature!=DBCONTACT_SIGNATURE) {
 		LeaveCriticalSection(&csDbAccess);
-	  	return (int)NULL;
+	  	return 0;
 	}
 	ofsNew=CreateNewSpace(offsetof(struct DBEvent,blob)+dbei->cbBlob);
 	ofsModuleName=GetModuleNameOfs(dbei->szModule);
@@ -180,10 +180,10 @@ static int AddEvent(WPARAM wParam,LPARAM lParam)
 	if (neednotify)
 		NotifyEventHooks(hEventAddedEvent,wParam,(LPARAM)ofsNew);
 
-	return (int)ofsNew;
+	return (INT_PTR)ofsNew;
 }
 
-static int DeleteEvent(WPARAM wParam,LPARAM lParam)
+static INT_PTR DeleteEvent(WPARAM wParam,LPARAM lParam)
 {
 	struct DBContact dbc;
 	DWORD ofsContact,ofsThis;
@@ -264,7 +264,7 @@ static int DeleteEvent(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int GetBlobSize(WPARAM wParam,LPARAM lParam)
+static INT_PTR GetBlobSize(WPARAM wParam,LPARAM lParam)
 {
 	int ret;
 	struct DBEvent *dbe;
@@ -277,7 +277,7 @@ static int GetBlobSize(WPARAM wParam,LPARAM lParam)
 	return ret;
 }
 
-static int GetEvent(WPARAM wParam,LPARAM lParam)
+static INT_PTR GetEvent(WPARAM wParam,LPARAM lParam)
 {
 	struct DBEvent *dbe;
 	DBEVENTINFO *dbei=(DBEVENTINFO*)lParam;
@@ -315,9 +315,9 @@ static int GetEvent(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int MarkEventRead(WPARAM wParam,LPARAM lParam)
+static INT_PTR MarkEventRead(WPARAM wParam,LPARAM lParam)
 {
-	int ret;
+	INT_PTR ret;
 	struct DBEvent *dbe;
 	struct DBContact dbc;
 	DWORD ofsThis;
@@ -331,7 +331,7 @@ static int MarkEventRead(WPARAM wParam,LPARAM lParam)
 	  	return -1;
 	}
 	if(dbe->flags&DBEF_READ || dbe->flags&DBEF_SENT) {
-		ret=(int)dbe->flags;
+		ret=(INT_PTR)dbe->flags;
 		LeaveCriticalSection(&csDbAccess);
 		return ret;
 	}
@@ -361,7 +361,7 @@ static int MarkEventRead(WPARAM wParam,LPARAM lParam)
 	return ret;
 }
 
-static int GetEventContact(WPARAM wParam,LPARAM lParam)
+static INT_PTR GetEventContact(WPARAM wParam,LPARAM lParam)
 {
 	int ret;
 	struct DBEvent *dbe;
@@ -379,7 +379,7 @@ static int GetEventContact(WPARAM wParam,LPARAM lParam)
 	return ret;
 }
 
-static int FindFirstEvent(WPARAM wParam,LPARAM lParam)
+static INT_PTR FindFirstEvent(WPARAM wParam,LPARAM lParam)
 {
 	int ret;
 	struct DBContact *dbc;
@@ -393,7 +393,7 @@ static int FindFirstEvent(WPARAM wParam,LPARAM lParam)
 	return ret;
 }
 
-static int FindFirstUnreadEvent(WPARAM wParam,LPARAM lParam)
+static INT_PTR FindFirstUnreadEvent(WPARAM wParam,LPARAM lParam)
 {
 	int ret;
 	struct DBContact *dbc;
@@ -407,7 +407,7 @@ static int FindFirstUnreadEvent(WPARAM wParam,LPARAM lParam)
 	return ret;
 }
 
-static int FindLastEvent(WPARAM wParam,LPARAM lParam)
+static INT_PTR FindLastEvent(WPARAM wParam,LPARAM lParam)
 {
 	int ret;
 	struct DBContact *dbc;
@@ -421,7 +421,7 @@ static int FindLastEvent(WPARAM wParam,LPARAM lParam)
 	return ret;
 }
 
-static int FindNextEvent(WPARAM wParam,LPARAM lParam)
+static INT_PTR FindNextEvent(WPARAM wParam,LPARAM lParam)
 {
 	int ret;
 	struct DBEvent *dbe;
@@ -434,7 +434,7 @@ static int FindNextEvent(WPARAM wParam,LPARAM lParam)
 	return ret;
 }
 
-static int FindPrevEvent(WPARAM wParam,LPARAM lParam)
+static INT_PTR FindPrevEvent(WPARAM wParam,LPARAM lParam)
 {
 	int ret;
 	struct DBEvent *dbe;

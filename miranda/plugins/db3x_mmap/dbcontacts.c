@@ -27,15 +27,15 @@ extern HANDLE hCacheHeap;
 extern SortedList lContacts;
 extern HANDLE hLastCachedContact;
 
-int GetContactSettingStatic(WPARAM wParam,LPARAM lParam);
+INT_PTR GetContactSettingStatic(WPARAM wParam,LPARAM lParam);
 void FreeCachedVariant( DBVARIANT* V );
 
-static int GetContactCount(WPARAM wParam,LPARAM lParam);
-static int FindFirstContact(WPARAM wParam,LPARAM lParam);
-static int FindNextContact(WPARAM wParam,LPARAM lParam);
-static int DeleteContact(WPARAM wParam,LPARAM lParam);
-static int AddContact(WPARAM wParam,LPARAM lParam);
-static int IsDbContact(WPARAM wParam,LPARAM lParam);
+static INT_PTR GetContactCount(WPARAM wParam,LPARAM lParam);
+static INT_PTR FindFirstContact(WPARAM wParam,LPARAM lParam);
+static INT_PTR FindNextContact(WPARAM wParam,LPARAM lParam);
+static INT_PTR DeleteContact(WPARAM wParam,LPARAM lParam);
+static INT_PTR AddContact(WPARAM wParam,LPARAM lParam);
+static INT_PTR IsDbContact(WPARAM wParam,LPARAM lParam);
 
 static HANDLE hContactDeletedEvent,hContactAddedEvent;
 
@@ -67,7 +67,7 @@ DBCachedContactValueList* AddToCachedContactList(HANDLE hContact, int index)
 	return VL;
 }
 
-static int GetContactCount(WPARAM wParam,LPARAM lParam)
+static INT_PTR GetContactCount(WPARAM wParam,LPARAM lParam)
 {
 	int ret;
 
@@ -96,18 +96,18 @@ static int CheckProto(HANDLE hContact, const char *proto)
 	return !strcmp(protobuf,proto);
 }
 
-static int FindFirstContact(WPARAM wParam,LPARAM lParam)
+static INT_PTR FindFirstContact(WPARAM wParam,LPARAM lParam)
 {
-	int ret = 0;
+	INT_PTR ret = 0;
 	EnterCriticalSection(&csDbAccess);
-	ret = (int)(HANDLE)dbHeader.ofsFirstContact;
+	ret = (INT_PTR)dbHeader.ofsFirstContact;
 	if (lParam && !CheckProto((HANDLE)ret,(const char*)lParam))
 		ret = FindNextContact((WPARAM)ret,lParam);
 	LeaveCriticalSection(&csDbAccess);
 	return ret;
 }
 
-static int FindNextContact(WPARAM wParam,LPARAM lParam)
+static INT_PTR FindNextContact(WPARAM wParam,LPARAM lParam)
 {
 	int index;
 	struct DBContact *dbc;
@@ -120,7 +120,7 @@ static int FindNextContact(WPARAM wParam,LPARAM lParam)
 			if (VL->hNext != NULL) {
 				if (!lParam || CheckProto(VL->hNext,(const char*)lParam)) {
 					LeaveCriticalSection(&csDbAccess);
-					return (int)VL->hNext;
+					return (INT_PTR)VL->hNext;
 				}
 				else {
 					VLtemp.hContact = VL->hNext;
@@ -137,7 +137,7 @@ static int FindNextContact(WPARAM wParam,LPARAM lParam)
 			VL->hNext = (HANDLE)dbc->ofsNext;
 			if (VL->hNext != NULL && (!lParam || CheckProto(VL->hNext,(const char*)lParam))) {
 				LeaveCriticalSection(&csDbAccess);
-				return (int)VL->hNext;
+				return (INT_PTR)VL->hNext;
 			}
 			VLtemp.hContact = VL->hNext;
 	}	}
@@ -145,7 +145,7 @@ static int FindNextContact(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int DeleteContact(WPARAM wParam,LPARAM lParam)
+static INT_PTR DeleteContact(WPARAM wParam,LPARAM lParam)
 {
 	struct DBContact *dbc,*dbcPrev;
 	DWORD ofsThis,ofsNext,ofsFirstEvent;
@@ -246,7 +246,7 @@ static int DeleteContact(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int AddContact(WPARAM wParam,LPARAM lParam)
+static INT_PTR AddContact(WPARAM wParam,LPARAM lParam)
 {
 	struct DBContact dbc;
 	DWORD ofsNew;
@@ -271,10 +271,10 @@ static int AddContact(WPARAM wParam,LPARAM lParam)
 
 	LeaveCriticalSection(&csDbAccess);
 	NotifyEventHooks(hContactAddedEvent,(WPARAM)ofsNew,0);
-	return (int)ofsNew;
+	return (INT_PTR)ofsNew;
 }
 
-static int IsDbContact(WPARAM wParam,LPARAM lParam)
+static INT_PTR IsDbContact(WPARAM wParam,LPARAM lParam)
 {
 	struct DBContact *dbc;
 	DWORD ofsContact=(DWORD)wParam;

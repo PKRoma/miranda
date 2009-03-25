@@ -587,7 +587,7 @@ static INT_PTR WriteContactSetting(WPARAM wParam,LPARAM lParam)
 	// the db can not tolerate strings/blobs longer than 0xFFFF since the format writes 2 lengths
 	switch( dbcws->value.type ) {
 	case DBVT_ASCIIZ:		case DBVT_BLOB:	case DBVT_UTF8:
-		{	int len = ( dbcws->value.type != DBVT_BLOB ) ? strlen(dbcws->value.pszVal) : dbcws->value.cpbVal;
+		{	size_t len = ( dbcws->value.type != DBVT_BLOB ) ? strlen(dbcws->value.pszVal) : dbcws->value.cpbVal;
 			if ( len >= 0xFFFF ) {
 				#ifdef _DEBUG
 					OutputDebugStringA("WriteContactSetting() writing huge string/blob, rejecting ( >= 0xFFFF ) \n");
