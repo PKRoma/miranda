@@ -104,14 +104,14 @@ __inline static HANDLE CreateProtoServiceFunction(const char *szModule,const cha
 //Thread safety: me_proto_ack is completely thread safe since 0.1.2.0
 //See the notes in core/modules.h under NotifyEventHooks()
 #define MS_PROTO_BROADCASTACK    "Proto/BroadcastAck"
-__inline static int ProtoBroadcastAck(const char *szModule,HANDLE hContact,int type,int result,HANDLE hProcess,LPARAM lParam)
+__inline static INT_PTR ProtoBroadcastAck(const char *szModule,HANDLE hContact,int type,int result,HANDLE hProcess,LPARAM lParam)
 {
 	ACKDATA ack={0};
 	ack.cbSize=sizeof(ACKDATA);
 	ack.szModule=szModule; ack.hContact=hContact;
 	ack.type=type; ack.result=result;
 	ack.hProcess=hProcess; ack.lParam=lParam;
-	return (int)CallService(MS_PROTO_BROADCASTACK,0,(LPARAM)&ack);
+	return CallService(MS_PROTO_BROADCASTACK,0,(LPARAM)&ack);
 }
 
 /* -- Added during 0.3.4 (2004/09/27) development! -----

@@ -376,14 +376,15 @@ typedef struct
 	 * version 5 additions (0.7.0.x) - tray icons
 	 *************************************************************************************/
 
-	struct trayIconInfo_t* trayIcon;
-	int    trayIconCount;
-	int    shellVersion;
-	int    cycleTimerId, cycleStep;
-	TCHAR* szTip;
-	BOOL   bTrayMenuOnScreen;
+	struct   trayIconInfo_t* trayIcon;
+	int      trayIconCount;
+	int      shellVersion;
+	UINT_PTR cycleTimerId;
+    int      cycleStep;
+	TCHAR*   szTip;
+	BOOL     bTrayMenuOnScreen;
 
-	HICON ( *pfnGetIconFromStatusMode )( HANDLE hContact, const char *szProto, int status );
+	HICON  ( *pfnGetIconFromStatusMode )( HANDLE hContact, const char *szProto, int status );
 
 	void   ( *pfnInitTray )( void );
 	int    ( *pfnTrayIconAdd )( HWND hwnd, const char *szProto, const char *szIconProto, int status );
@@ -399,7 +400,7 @@ typedef struct
 	void   ( *pfnLockTray )( void );
 	void   ( *pfnUnlockTray )( void );
 
-	VOID ( CALLBACK *pfnTrayCycleTimerProc )( HWND hwnd, UINT message, UINT_PTR idEvent, DWORD dwTime );
+	VOID   ( CALLBACK *pfnTrayCycleTimerProc )( HWND hwnd, UINT message, UINT_PTR idEvent, DWORD dwTime );
 
 	/*************************************************************************************
 	 * version 6 additions (0.8.0.x) - accounts

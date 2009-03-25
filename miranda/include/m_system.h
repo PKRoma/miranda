@@ -166,7 +166,7 @@ struct MM_INTERFACE
 
 #define MS_SYSTEM_GET_MMI  "Miranda/System/GetMMI"
 
-__forceinline int mir_getMMI( struct MM_INTERFACE* dest )
+__forceinline INT_PTR mir_getMMI( struct MM_INTERFACE* dest )
 {
 	dest->cbSize = sizeof(*dest);
 	return CallService( MS_SYSTEM_GET_MMI, 0, (LPARAM)dest );
@@ -259,7 +259,7 @@ struct LIST_INTERFACE
 
 #define MS_SYSTEM_GET_LI  "Miranda/System/GetLI"
 
-__forceinline int mir_getLI( struct LIST_INTERFACE* dest )
+__forceinline INT_PTR mir_getLI( struct LIST_INTERFACE* dest )
 {
 	dest->cbSize = sizeof(*dest);
 	return CallService( MS_SYSTEM_GET_LI, 0, (LPARAM)dest );
@@ -299,7 +299,7 @@ struct UTF8_INTERFACE
 
 #define MS_SYSTEM_GET_UTFI  "Miranda/System/GetUTFI"
 
-__forceinline int mir_getUTFI( struct UTF8_INTERFACE* dest )
+__forceinline INT_PTR mir_getUTFI( struct UTF8_INTERFACE* dest )
 {
 	dest->cbSize = sizeof(*dest);
 	return CallService( MS_SYSTEM_GET_UTFI, 0, (LPARAM)dest );
@@ -428,7 +428,7 @@ typedef void (__cdecl *pThreadFunc)(void*);
 
 #define MS_SYSTEM_FORK_THREAD    "Miranda/Thread/Fork"
 
-__forceinline int mir_forkthread( pThreadFunc aFunc, void* arg )
+__forceinline INT_PTR mir_forkthread( pThreadFunc aFunc, void* arg )
 {
 	return CallService( MS_SYSTEM_FORK_THREAD, (WPARAM)aFunc, (LPARAM)arg );
 }
@@ -456,7 +456,7 @@ typedef struct
 
 #define MS_SYSTEM_FORK_THREAD_EX    "Miranda/Thread/ForkEx"
 
-static __inline int mir_forkthreadex( pThreadFuncEx aFunc, void* arg, int stackSize, unsigned* pThreadID )
+static __inline INT_PTR mir_forkthreadex( pThreadFuncEx aFunc, void* arg, int stackSize, unsigned* pThreadID )
 {
 	FORK_THREADEX_PARAMS params;
 	params.pFunc      = aFunc;
@@ -475,7 +475,7 @@ passes the owner info and extended parameters info and returns the thread id
 
 */
 
-static __inline int mir_forkthreadowner( pThreadFuncOwner aFunc, void* owner, void* arg, unsigned* pThreadID )
+static __inline INT_PTR mir_forkthreadowner( pThreadFuncOwner aFunc, void* owner, void* arg, unsigned* pThreadID )
 {
 	FORK_THREADEX_PARAMS params;
 	params.pFunc      = ( pThreadFuncEx )aFunc;
@@ -566,7 +566,7 @@ of shutting down
 */
 #define MS_SYSTEM_GETBUILDSTRING "Miranda/GetBuildString"
 
-__inline static int Miranda_Terminated(void)
+__inline static INT_PTR Miranda_Terminated(void)
 {
 	return CallService(MS_SYSTEM_TERMINATED,0,0);
 }

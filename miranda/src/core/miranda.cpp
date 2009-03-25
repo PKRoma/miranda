@@ -147,19 +147,19 @@ void __cdecl forkthread_r(void * arg)
 	return;
 }
 
-unsigned long forkthread (
+UINT_PTR forkthread (
 	void (__cdecl *threadcode)(void*),
 	unsigned long stacksize,
 	void *arg
 )
 {
-	unsigned long rc;
+	UINT_PTR rc;
 	struct FORK_ARG fa;
 	fa.hEvent=CreateEvent(NULL,FALSE,FALSE,NULL);
 	fa.threadcode=threadcode;
 	fa.arg=arg;
 	rc=_beginthread(forkthread_r,stacksize,&fa);
-	if ((unsigned long)-1L != rc)
+	if ((UINT_PTR)-1L != rc)
 		WaitForSingleObject(fa.hEvent,INFINITE);
 
 	CloseHandle(fa.hEvent);
@@ -202,7 +202,7 @@ unsigned __stdcall forkthreadex_r(void * arg)
 	return rc;
 }
 
-unsigned long forkthreadex(
+UINT_PTR forkthreadex(
 	void *sec,
 	unsigned stacksize,
 	unsigned (__stdcall *threadcode)(void*),
@@ -210,7 +210,7 @@ unsigned long forkthreadex(
 	void *arg,
 	unsigned *thraddr )
 {
-	unsigned long rc;
+	UINT_PTR rc;
 	struct FORK_ARG fa = { 0 };
 	fa.threadcodeex = threadcode;
 	fa.arg = arg;

@@ -127,7 +127,7 @@ typedef struct {
 #define MS_SKIN_ADDNEWSOUND      "Skin/Sounds/AddNew"
 
 // inline only works after 0.3.4+ (2004/10/*)
-__inline static int SkinAddNewSoundEx(const char *name,const char *section,const char *description)
+__inline static INT_PTR SkinAddNewSoundEx(const char *name,const char *section,const char *description)
 {
 	SKINSOUNDDESCEX ssd;
 	ZeroMemory(&ssd,sizeof(ssd));
@@ -135,10 +135,10 @@ __inline static int SkinAddNewSoundEx(const char *name,const char *section,const
 	ssd.pszName=name;
 	ssd.pszSection=section;
 	ssd.pszDescription=description;
-	return (int)CallService(MS_SKIN_ADDNEWSOUND, 0, (LPARAM)&ssd);
+	return CallService(MS_SKIN_ADDNEWSOUND, 0, (LPARAM)&ssd);
 }
 
-__inline static int SkinAddNewSound(const char *name,const char *description,const char *defaultFile)
+__inline static INT_PTR SkinAddNewSound(const char *name,const char *description,const char *defaultFile)
 {
 	SKINSOUNDDESC ssd;
 	ZeroMemory(&ssd,sizeof(ssd));
@@ -146,7 +146,7 @@ __inline static int SkinAddNewSound(const char *name,const char *description,con
 	ssd.pszName=name;
 	ssd.pszDescription=description;
 	ssd.pszDefaultFile=defaultFile;
-	return (int)CallService(MS_SKIN_ADDNEWSOUND, 0, (LPARAM)&ssd);
+	return CallService(MS_SKIN_ADDNEWSOUND, 0, (LPARAM)&ssd);
 }
 
 //play a named sound event
@@ -155,7 +155,7 @@ __inline static int SkinAddNewSound(const char *name,const char *description,con
 //pszName should have been added with Skin/Sounds/AddNew, but if not the
 //function will not fail, it will play the Windows default sound instead.
 #define MS_SKIN_PLAYSOUND        "Skin/Sounds/Play"
-__inline static int SkinPlaySound(const char *name) {return (int)CallService(MS_SKIN_PLAYSOUND,0,(LPARAM)name);}
+__inline static INT_PTR SkinPlaySound(const char *name) {return CallService(MS_SKIN_PLAYSOUND,0,(LPARAM)name);}
 
 //sent when the icons DLL has been changed in the options dialog, and everyone
 //should re-make their image lists

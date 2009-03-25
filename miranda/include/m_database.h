@@ -958,13 +958,13 @@ __inline static DWORD DBGetContactSettingDword_Helper(HANDLE hContact,const char
 	return dbv.dVal;
 }
 
-__inline static int DBGetContactSetting_Helper(HANDLE hContact,const char *szModule,const char *szSetting,DBVARIANT *dbv
+__inline static INT_PTR DBGetContactSetting_Helper(HANDLE hContact,const char *szModule,const char *szSetting,DBVARIANT *dbv
 #if defined(_DEBUG)
 	,const char *szFile, const int nLine
 #endif
 )
 {
-	int rc;
+	INT_PTR rc;
 	DBCONTACTGETSETTING cgs;
 	cgs.szModule=szModule;
 	cgs.szSetting=szSetting;
@@ -981,13 +981,13 @@ __inline static int DBGetContactSetting_Helper(HANDLE hContact,const char *szMod
 	return rc;
 }
 
-__inline static int DBGetContactSettingString_Helper(HANDLE hContact,const char *szModule,const char *szSetting,DBVARIANT *dbv,
+__inline static INT_PTR DBGetContactSettingString_Helper(HANDLE hContact,const char *szModule,const char *szSetting,DBVARIANT *dbv,
 #if defined(_DEBUG)
 	const char *szFile, const int nLine,
 #endif
 	const int nType)
 {
-	int rc;
+	INT_PTR rc;
 	DBCONTACTGETSETTING cgs;
 	cgs.szModule=szModule;
 	cgs.szSetting=szSetting;
@@ -1005,7 +1005,7 @@ __inline static int DBGetContactSettingString_Helper(HANDLE hContact,const char 
 	return rc;
 }
 
-__inline static int DBFreeVariant(DBVARIANT *dbv)
+__inline static INT_PTR DBFreeVariant(DBVARIANT *dbv)
 {
 	return CallService(MS_DB_CONTACT_FREEVARIANT,0,(LPARAM)dbv);
 }
@@ -1040,7 +1040,7 @@ __inline static wchar_t *DBGetStringW(HANDLE hContact,const char *szModule,const
 #define DBGetStringT DBGetString
 #endif
 
-__inline static int DBDeleteContactSetting(HANDLE hContact,const char *szModule,const char *szSetting)
+__inline static INT_PTR DBDeleteContactSetting(HANDLE hContact,const char *szModule,const char *szSetting)
 {
 	DBCONTACTGETSETTING cgs;
 	cgs.szModule=szModule;
@@ -1048,7 +1048,7 @@ __inline static int DBDeleteContactSetting(HANDLE hContact,const char *szModule,
 	return CallService(MS_DB_CONTACT_DELETESETTING,(WPARAM)hContact,(LPARAM)&cgs);
 }
 
-__inline static int DBWriteContactSettingByte(HANDLE hContact,const char *szModule,const char *szSetting,BYTE val)
+__inline static INT_PTR DBWriteContactSettingByte(HANDLE hContact,const char *szModule,const char *szSetting,BYTE val)
 {
 	DBCONTACTWRITESETTING cws;
 
@@ -1059,7 +1059,7 @@ __inline static int DBWriteContactSettingByte(HANDLE hContact,const char *szModu
 	return CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)hContact,(LPARAM)&cws);
 }
 
-__inline static int DBWriteContactSettingWord(HANDLE hContact,const char *szModule,const char *szSetting,WORD val)
+__inline static INT_PTR DBWriteContactSettingWord(HANDLE hContact,const char *szModule,const char *szSetting,WORD val)
 {
 	DBCONTACTWRITESETTING cws;
 
@@ -1070,7 +1070,7 @@ __inline static int DBWriteContactSettingWord(HANDLE hContact,const char *szModu
 	return CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)hContact,(LPARAM)&cws);
 }
 
-__inline static int DBWriteContactSettingDword(HANDLE hContact,const char *szModule,const char *szSetting,DWORD val)
+__inline static INT_PTR DBWriteContactSettingDword(HANDLE hContact,const char *szModule,const char *szSetting,DWORD val)
 {
 	DBCONTACTWRITESETTING cws;
 
@@ -1081,7 +1081,7 @@ __inline static int DBWriteContactSettingDword(HANDLE hContact,const char *szMod
 	return CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)hContact,(LPARAM)&cws);
 }
 
-__inline static int DBWriteContactSettingString(HANDLE hContact,const char *szModule,const char *szSetting,const char *val)
+__inline static INT_PTR DBWriteContactSettingString(HANDLE hContact,const char *szModule,const char *szSetting,const char *val)
 {
 	DBCONTACTWRITESETTING cws;
 
@@ -1092,7 +1092,7 @@ __inline static int DBWriteContactSettingString(HANDLE hContact,const char *szMo
 	return CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)hContact,(LPARAM)&cws);
 }
 
-__inline static int DBWriteContactSettingWString(HANDLE hContact,const char *szModule,const char *szSetting,const WCHAR *val)
+__inline static INT_PTR DBWriteContactSettingWString(HANDLE hContact,const char *szModule,const char *szSetting,const WCHAR *val)
 {
 	DBCONTACTWRITESETTING cws;
 
@@ -1109,7 +1109,7 @@ __inline static int DBWriteContactSettingWString(HANDLE hContact,const char *szM
 #define DBWriteContactSettingTString DBWriteContactSettingString
 #endif
 
-__inline static int DBWriteContactSettingUTF8String(HANDLE hContact,const char *szModule,const char *szSetting,const char *val)
+__inline static INT_PTR DBWriteContactSettingUTF8String(HANDLE hContact,const char *szModule,const char *szSetting,const char *val)
 {
 	DBCONTACTWRITESETTING cws;
 

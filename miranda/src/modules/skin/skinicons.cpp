@@ -404,7 +404,7 @@ int LoadSkinIcons(void)
 	int i, j = 0;
 	char iconName[MAX_PATH], moduleName[MAX_PATH];
     TCHAR modulePath[MAX_PATH];
-	int iconNameSuffIndx;
+	size_t iconNameSuffIndx;
 	DBVARIANT dbv;
 
 	//

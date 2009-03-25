@@ -47,13 +47,13 @@ Cavets:
 	creation depends on CRT which can not be shared.
 
 */
-unsigned long forkthread (
+UINT_PTR forkthread (
 	void (__cdecl *threadcode)(void*),
 	unsigned long stacksize,
 	void *arg
 );
 
-unsigned long forkthreadex(
+UINT_PTR forkthreadex(
 	void *sec,
 	unsigned stacksize,
 	unsigned (__stdcall *threadcode)(void*),

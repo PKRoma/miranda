@@ -270,7 +270,8 @@ typedef struct tagListParam
 {
 	int rootlevel;
 	int MenuObjectHandle;
-	int wParam,lParam;
+	WPARAM wParam;
+	LPARAM lParam;
 }
 	ListParam,*lpListParam;
 
