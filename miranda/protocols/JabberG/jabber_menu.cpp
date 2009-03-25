@@ -192,6 +192,7 @@ static int JabberPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 	sttEnableMenuItem( g_hMenuRefresh, FALSE );
 	sttEnableMenuItem( g_hMenuAddBookmark, FALSE );
 	sttEnableMenuItem( g_hMenuResourcesRoot, FALSE );
+	sttEnableMenuItem( g_hMenuDirectPresence[0], FALSE );
 
 	CJabberProto* ppro = JabberGetInstanceByHContact(( HANDLE )wParam );
 	return( ppro ) ? ppro->OnPrebuildContactMenu( wParam, lParam ) : 0;
@@ -431,6 +432,7 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM )
 			sttEnableMenuItem( g_hMenuRevokeAuth, item->subscription == SUB_FROM || item->subscription == SUB_BOTH || bCtrlPressed );
 			sttEnableMenuItem( g_hMenuCommands, (( jcb & JABBER_CAPS_COMMANDS ) != 0) || bCtrlPressed);
 			sttEnableMenuItem( g_hMenuSendNote, TRUE );
+			sttEnableMenuItem( g_hMenuDirectPresence[0], TRUE );
 
 			if ( item->resourceCount >= 1 ) {
 				sttEnableMenuItem( g_hMenuResourcesRoot, TRUE );
