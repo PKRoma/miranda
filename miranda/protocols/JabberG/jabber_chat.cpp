@@ -53,6 +53,12 @@ enum {
 	IDM_CPY_NICK, IDM_CPY_TOPIC, IDM_CPY_RJID, IDM_CPY_INROOMJID,
 
 	IDM_LINK0, IDM_LINK1, IDM_LINK2, IDM_LINK3, IDM_LINK4, IDM_LINK5, IDM_LINK6, IDM_LINK7, IDM_LINK8, IDM_LINK9,
+
+	IDM_PRESENCE_ONLINE = ID_STATUS_ONLINE,
+	IDM_PRESENCE_AWAY = ID_STATUS_AWAY,
+	IDM_PRESENCE_NA = ID_STATUS_NA,
+	IDM_PRESENCE_DND = ID_STATUS_DND,
+	IDM_PRESENCE_FREE4CHAT = ID_STATUS_FREECHAT,
 };
 
 struct TRoleOrAffiliationInfo
@@ -493,6 +499,14 @@ int CJabberProto::JabberGcMenuHook( WPARAM, LPARAM lParam )
 			{ TranslateT("Copy room &JID"),			IDM_CPY_RJID,			MENU_ITEM			},
 			{ TranslateT("Copy room topic"),		IDM_CPY_TOPIC,			MENU_ITEM			},
 			{ NULL,									0,						MENU_SEPARATOR		},
+
+			{ TranslateT("&Send presence"),			0,						MENU_NEWPOPUP},
+			{ TranslateT("Online"),					IDM_PRESENCE_ONLINE,	MENU_POPUPITEM		},
+			{ TranslateT("Away"),					IDM_PRESENCE_AWAY,		MENU_POPUPITEM		},
+			{ TranslateT("NA"),						IDM_PRESENCE_NA,		MENU_POPUPITEM		},
+			{ TranslateT("DND"),					IDM_PRESENCE_DND,		MENU_POPUPITEM		},
+			{ TranslateT("Free for chat"),			IDM_PRESENCE_FREE4CHAT,	MENU_POPUPITEM		},
+
 			{ TranslateT("&Leave chat session"),	IDM_LEAVE,				MENU_ITEM			},
 		};
 
@@ -1314,6 +1328,18 @@ static void sttLogListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK* 
 	case IDM_LEAVE:
 		ppro->GcQuit( item, 0, NULL );
 		break;
+
+	case IDM_PRESENCE_ONLINE:
+	case IDM_PRESENCE_AWAY:
+	case IDM_PRESENCE_NA:
+	case IDM_PRESENCE_DND:
+	case IDM_PRESENCE_FREE4CHAT:
+	{
+		if ( HANDLE h = ppro->HContactFromJID( item->jid ) )
+			ppro->OnMenuHandleDirectPresence( (WPARAM)h, 0, gch->dwData );
+		break;
+	}
+
 
 	case IDM_LINK0: case IDM_LINK1: case IDM_LINK2: case IDM_LINK3: case IDM_LINK4:
 	case IDM_LINK5: case IDM_LINK6: case IDM_LINK7: case IDM_LINK8: case IDM_LINK9:

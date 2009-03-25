@@ -399,6 +399,8 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM )
 	if (!m_bJabberOnline)
 		return 0;
 
+	sttEnableMenuItem( g_hMenuDirectPresence[0], TRUE );
+
 	if ( bIsChatRoom ) {
 		DBVARIANT dbv;
 		if ( !JGetStringT( hContact, "ChatRoomID", &dbv )) {
@@ -432,7 +434,6 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM )
 			sttEnableMenuItem( g_hMenuRevokeAuth, item->subscription == SUB_FROM || item->subscription == SUB_BOTH || bCtrlPressed );
 			sttEnableMenuItem( g_hMenuCommands, (( jcb & JABBER_CAPS_COMMANDS ) != 0) || bCtrlPressed);
 			sttEnableMenuItem( g_hMenuSendNote, TRUE );
-			sttEnableMenuItem( g_hMenuDirectPresence[0], TRUE );
 
 			if ( item->resourceCount >= 1 ) {
 				sttEnableMenuItem( g_hMenuResourcesRoot, TRUE );
