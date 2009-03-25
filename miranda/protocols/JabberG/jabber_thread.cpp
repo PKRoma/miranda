@@ -1331,6 +1331,7 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 		}
 		else if ( !_tcscmp( ptszXmlns, _T("jabber:x:conference"))) {
 			inviteRoomJid = xmlGetAttrValue( xNode, _T("jid"));
+			inviteFromJid = from;
 			if ( inviteReason == NULL )
 				inviteReason = xmlGetText( xNode );
 			isChatRoomInvitation = TRUE;

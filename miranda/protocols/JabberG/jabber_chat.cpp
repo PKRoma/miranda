@@ -526,8 +526,9 @@ int CJabberProto::JabberGcMenuHook( WPARAM, LPARAM lParam )
 			for (TCHAR *p = _tcsstr(item->itemResource.statusMessage, _T("http://")); p && *p; p = _tcsstr(p+1, _T("http://")))
 			{
 				lstrcpyn(bufPtr, p, SIZEOF(url_buf) - (bufPtr - url_buf));
-				sttFindGcMenuItem(gcmi, idx)->pszDesc = bufPtr;
-				sttFindGcMenuItem(gcmi, idx)->uType = MENU_POPUPITEM;
+				gc_item *pItem = sttFindGcMenuItem(gcmi, idx);
+				pItem->pszDesc = bufPtr;
+				pItem->uType = MENU_POPUPITEM;
 				for ( ; *bufPtr && !_istspace(*bufPtr); ++bufPtr) ;
 				*bufPtr++ = 0;
 
@@ -568,6 +569,18 @@ int CJabberProto::JabberGcMenuHook( WPARAM, LPARAM lParam )
 			{ TranslateT("&Add to roster"),			IDM_RJID_ADD,			MENU_POPUPITEM		},
 			{ TranslateT("&Copy to clipboard"),		IDM_RJID_COPY,			MENU_POPUPITEM		},
 
+			{ TranslateT("Invite to room"),			0,						MENU_NEWPOPUP		},
+			{ NULL,									IDM_LINK0,				0					},
+			{ NULL,									IDM_LINK1,				0					},
+			{ NULL,									IDM_LINK2,				0					},
+			{ NULL,									IDM_LINK3,				0					},
+			{ NULL,									IDM_LINK4,				0					},
+			{ NULL,									IDM_LINK5,				0					},
+			{ NULL,									IDM_LINK6,				0					},
+			{ NULL,									IDM_LINK7,				0					},
+			{ NULL,									IDM_LINK8,				0					},
+			{ NULL,									IDM_LINK9,				0					},
+
 			{ NULL,									0,						MENU_SEPARATOR		},
 
 			{ TranslateT("Set &role"),				IDM_ROLE,				MENU_NEWPOPUP		},
@@ -597,9 +610,22 @@ int CJabberProto::JabberGcMenuHook( WPARAM, LPARAM lParam )
 
 		if (me && him)
 		{
-			int i;
+			int i, idx;
 			BOOL force = GetAsyncKeyState(VK_CONTROL);
 			sttSetupGcMenuItem(gcmi, 0, FALSE);
+
+			idx = IDM_LINK0;
+			for (i = ListFindNext(LIST_CHATROOM, 0); i >= 0; i = ListFindNext(LIST_CHATROOM, i+1))
+				if (item = ListGetItemPtrFromIndex(i))
+				{
+					gc_item *pItem = sttFindGcMenuItem(gcmi, idx);
+					pItem->pszDesc = item->jid;
+					pItem->uType = MENU_POPUPITEM;
+					if (++idx > IDM_LINK9) break;
+				}
+
+			for ( ; idx <= IDM_LINK9; ++idx)
+				sttFindGcMenuItem(gcmi, idx)->uType = 0;
 
 			for (i = 0; i < SIZEOF(sttAffiliationItems); ++i)
 			{
@@ -607,6 +633,7 @@ int CJabberProto::JabberGcMenuHook( WPARAM, LPARAM lParam )
 				item->uType = (him->affiliation == sttAffiliationItems[i].value) ? MENU_POPUPCHECK : MENU_POPUPITEM;
 				item->bDisabled = !(force || sttAffiliationItems[i].check(me, him));
 			}
+
 			for (i = 0; i < SIZEOF(sttRoleItems); ++i)
 			{
 				struct gc_item *item = sttFindGcMenuItem(gcmi, sttRoleItems[i].id);
@@ -1165,6 +1192,44 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 		}
 		dwLastBanKickTime = GetTickCount();
 		break;
+
+	case IDM_LINK0: case IDM_LINK1: case IDM_LINK2: case IDM_LINK3: case IDM_LINK4:
+	case IDM_LINK5: case IDM_LINK6: case IDM_LINK7: case IDM_LINK8: case IDM_LINK9:
+	{
+		if ((GetTickCount() - dwLastBanKickTime) > BAN_KICK_INTERVAL)
+		{
+			TCHAR *resourceName_copy = NEWTSTR_ALLOCA(him->resourceName); // copy resource name to prevent possible crash if user list rebuilds
+
+			TCHAR *szInviteTo = 0;
+			int idx = gch->dwData - IDM_LINK0;
+			for (int i = ppro->ListFindNext(LIST_CHATROOM, 0); i >= 0; i = ppro->ListFindNext(LIST_CHATROOM, i+1))
+				if (JABBER_LIST_ITEM *item = ppro->ListGetItemPtrFromIndex(i))
+					if (!idx--)
+					{
+						szInviteTo = item->jid;
+						break;
+					}
+
+			if (!szInviteTo) break;
+
+			mir_sntprintf( szTitle, SIZEOF(szTitle), TranslateT("Invite %s to %s"), him->resourceName, szInviteTo );
+			*szBuffer = 0;
+			if (!ppro->EnterString(szBuffer, SIZEOF(szBuffer), szTitle, JES_MULTINE))
+				break;
+
+			mir_sntprintf(szTitle, SIZEOF(szTitle), _T("%s/%s"), item->jid, resourceName_copy);
+
+			XmlNode msg( _T("message"));
+			HXML invite = msg << XATTR( _T("to"), szTitle ) << XATTRID(ppro->SerialNext())
+				<< XCHILD(_T("x"), szBuffer)
+					<< XATTR(_T("xmlns"), _T("jabber:x:conference"))
+					<< XATTR( _T("jid"), szInviteTo )
+						<< XCHILD(_T("invite")) << XATTR(_T("from"), item->nick);
+			ppro->m_ThreadInfo->send( msg );
+		}
+		dwLastBanKickTime = GetTickCount();
+		break;
+	}
 
 	case IDM_CPY_NICK:
 		JabberCopyText((HWND)CallService(MS_CLUI_GETHWND, 0, 0), him->resourceName);
