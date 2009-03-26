@@ -369,13 +369,22 @@ void CYahooProto::MenuInit( void )
 	YCreateService( servicefunction, &CYahooProto::SetCustomStatCommand );
 
 	CLISTMENUITEM mi = { 0 };
-	mi.ptszPopupName = m_tszUserName;
-	mi.flags = CMIF_TCHAR;
+	mi.ptszName = m_tszUserName;
+	mi.flags = CMIF_ROOTPOPUP | CMIF_TCHAR;
 	mi.cbSize = sizeof( mi );
+	mi.position = -1999901011;
+	mi.pszPopupName = (char *)-1;
+	mi.hIcon = LoadIconEx( "main" );
+	HGENMENU hMenuRoot = (HGENMENU)CallService( MS_CLIST_ADDMAINMENUITEM,  (WPARAM)0, (LPARAM)&mi);
+		
+	mi.flags &= ~(CMIF_ROOTPOPUP | CMIF_TCHAR);
+	mi.flags |= CMIF_CHILDPOPUP;
+
+	mi.hParentMenu = hMenuRoot;
 	mi.popupPosition = 500090000;
 	mi.position = 500090000;
 	mi.hIcon = LoadIconEx( "set_status" );
-	mi.ptszName = LPGENT( "Set &Custom Status" );
+	mi.pszName = LPGEN( "Set &Custom Status" );
 	mi.pszService = servicefunction;
 	CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
@@ -385,7 +394,7 @@ void CYahooProto::MenuInit( void )
 
 	mi.position = 500090005;
 	mi.hIcon = LoadIconEx( "profile" );
-	mi.ptszName = LPGENT( "&Edit My Profile" );
+	mi.pszName = LPGEN( "&Edit My Profile" );
 	mi.pszService = servicefunction;
 	CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 
@@ -395,7 +404,7 @@ void CYahooProto::MenuInit( void )
 
 	mi.position = 500090005;
 	mi.hIcon = LoadIconEx( "profile" );
-	mi.ptszName = LPGENT( "&My Profile" );
+	mi.pszName = LPGEN( "&My Profile" );
 	mi.pszService = servicefunction;
 	CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 
@@ -405,7 +414,7 @@ void CYahooProto::MenuInit( void )
 
 	mi.position = 500090010;
 	mi.hIcon = LoadIconEx( "mail" );
-	mi.ptszName = LPGENT( "&Yahoo Mail" );
+	mi.pszName = LPGEN( "&Yahoo Mail" );
 	mi.pszService = servicefunction;
 	CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 
@@ -415,7 +424,7 @@ void CYahooProto::MenuInit( void )
 
 	mi.position = 500090015;
 	mi.hIcon = LoadIconEx( "yab" );
-	mi.ptszName = LPGENT( "&Address Book" );
+	mi.pszName = LPGEN( "&Address Book" );
 	mi.pszService = servicefunction;
 	CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 
@@ -425,7 +434,7 @@ void CYahooProto::MenuInit( void )
 
 	mi.position = 500090015;
 	mi.hIcon = LoadIconEx( "calendar" );
-	mi.ptszName = LPGENT( "&Calendar" );
+	mi.pszName = LPGEN( "&Calendar" );
 	mi.pszService = servicefunction;
 	CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 
@@ -435,7 +444,7 @@ void CYahooProto::MenuInit( void )
 
 	mi.position = 500090015;
 	mi.hIcon = LoadIconEx( "refresh" );
-	mi.ptszName = LPGENT( "&Refresh" );
+	mi.pszName = LPGEN( "&Refresh" );
 	mi.pszService = servicefunction;
 	CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 	
