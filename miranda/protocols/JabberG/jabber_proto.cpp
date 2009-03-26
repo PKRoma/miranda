@@ -109,9 +109,7 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 
 	JCreateService( PS_CREATEACCMGRUI, &CJabberProto::SvcCreateAccMgrUI );
 
-	JCreateService( PS_GETNAME, &CJabberProto::JabberGetName );
 	JCreateService( PS_GETAVATARINFO, &CJabberProto::JabberGetAvatarInfo );
-	JCreateService( PS_GETSTATUS, &CJabberProto::JabberGetStatus );
 	JCreateService( PS_SET_LISTENINGTO, &CJabberProto::OnSetListeningTo );
 
 	JCreateService( PS_JOINCHAT, &CJabberProto::OnJoinChat );

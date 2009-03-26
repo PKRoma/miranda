@@ -734,11 +734,9 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   CheckMenuItems();
 	void   EnableMenuItems( BOOL bEnable );
 
-	int    __cdecl JabberGetName( WPARAM wParam, LPARAM lParam );
 	int    __cdecl JabberGetAvatar( WPARAM wParam, LPARAM lParam );
 	int    __cdecl JabberGetAvatarCaps( WPARAM wParam, LPARAM lParam );
 	int    __cdecl JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam );
-	int    __cdecl JabberGetStatus( WPARAM wParam, LPARAM lParam );
 	int    __cdecl ServiceSendXML( WPARAM wParam, LPARAM lParam );
 	int    __cdecl JabberSetAvatar( WPARAM wParam, LPARAM lParam );
 	int    __cdecl JabberSendNudge( WPARAM wParam, LPARAM lParam );

@@ -288,6 +288,15 @@ static int stub33( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
 {	return ( int )ppi->SetAwayMsg( wParam, ( const char* )lParam );
 }
 
+static int stub41( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
+{	lstrcpynA(( char* )lParam, ppi->m_szModuleName, wParam );
+	return 0;
+}
+
+static int stub42( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
+{	return ppi->m_iStatus;
+}
+
 static HANDLE CreateProtoServiceEx( const char* szModule, const char* szService, MIRANDASERVICEOBJ pFunc, void* param )
 {
 	char tmp[100];
@@ -326,6 +335,8 @@ BOOL ActivateAccount( PROTOACCOUNT* pa )
 	CreateProtoServiceEx( pa->szModuleName, PS_CREATEADVSEARCHUI, (MIRANDASERVICEOBJ)stub19, pa->ppro );
 	CreateProtoServiceEx( pa->szModuleName, PS_SETSTATUS, (MIRANDASERVICEOBJ)stub29, pa->ppro );
 	CreateProtoServiceEx( pa->szModuleName, PS_SETAWAYMSG, (MIRANDASERVICEOBJ)stub33, pa->ppro );
+	CreateProtoServiceEx( pa->szModuleName, PS_GETNAME, (MIRANDASERVICEOBJ)stub41, pa->ppro );
+	CreateProtoServiceEx( pa->szModuleName, PS_GETSTATUS, (MIRANDASERVICEOBJ)stub42, pa->ppro );
 	return TRUE;
 }
 

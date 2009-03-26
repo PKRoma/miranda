@@ -1030,12 +1030,6 @@ int __cdecl CIrcProto::OnMenuPreBuild(WPARAM wParam, LPARAM)
 	return 0;
 }
 
-int __cdecl CIrcProto::GetName(WPARAM wParam,LPARAM lParam)
-{
-	lstrcpynA(( char* ) lParam, m_szModuleName, wParam);
-	return 0;
-}
-
 void __cdecl CIrcProto::ConnectServerThread( void* )
 {
 	EnterCriticalSection(&cs);

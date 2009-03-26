@@ -150,23 +150,6 @@ int __cdecl CJabberProto::JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam )
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// JabberGetName - returns the protocol name
-
-int __cdecl CJabberProto::JabberGetName( WPARAM wParam, LPARAM lParam )
-{
-	lstrcpynA(( char* )lParam, m_szModuleName, wParam );
-	return 0;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////
-// JabberGetStatus - returns the protocol status
-
-int __cdecl CJabberProto::JabberGetStatus( WPARAM, LPARAM )
-{
-	return m_iStatus;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////
 // JabberGetEventTextChatStates - retrieves a chat state description from an event
 
 int __cdecl CJabberProto::OnGetEventTextChatStates( WPARAM, LPARAM lParam )

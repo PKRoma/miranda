@@ -24,23 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 extern int avsPresent;
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// GetName - obtain the protocol name
-
-int CMsnProto::GetName( WPARAM wParam, LPARAM lParam )
-{
-	mir_snprintf(( char* )lParam, wParam, "%s", m_szModuleName );
-	return 0;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// GetStatus - obtain the protocol status
-
-int CMsnProto::GetStatus(WPARAM wParam,LPARAM lParam)
-{
-	return m_iStatus;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 // GetMyAwayMsg - obtain the current away message
 
 int CMsnProto::GetMyAwayMsg(WPARAM wParam,LPARAM lParam)

@@ -18,17 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "aim.h"
 
-int CAimProto::GetName(WPARAM wParam, LPARAM lParam)
-{
-	lstrcpynA((char *) lParam, m_szModuleName, wParam);
-	return 0;
-}
-
-int CAimProto::GetStatus( WPARAM, LPARAM )
-{
-	return m_iStatus;
-}
-
 int CAimProto::GetMyAwayMsg(WPARAM wParam,LPARAM lParam)
 {
     char** msgptr = getStatusMsgLoc(wParam ? wParam : m_iStatus);

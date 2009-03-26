@@ -556,7 +556,6 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 
 	UINT_PTR  RetryTimer;
 
-	int __cdecl GetName( WPARAM, LPARAM );
 	int __cdecl GetStatus( WPARAM, LPARAM );
 
 	void __cdecl ConnectServerThread( void* );

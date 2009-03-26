@@ -94,8 +94,6 @@ struct CMsnProto : public PROTO_INTERFACE
     //====| Services |====================================================================
     int  __cdecl SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam);
 
-    int  __cdecl GetName(WPARAM wParam, LPARAM lParam);
-    int  __cdecl GetStatus(WPARAM wParam, LPARAM lParam);
     int  __cdecl GetAvatarInfo(WPARAM wParam, LPARAM lParam);
     int  __cdecl GetMyAwayMsg(WPARAM wParam,LPARAM lParam);
 

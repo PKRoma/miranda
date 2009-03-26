@@ -83,8 +83,6 @@ CMsnProto::CMsnProto( const char* aProtoName, const TCHAR* aUserName ) :
 
 	CreateProtoService( PS_CREATEACCMGRUI,        &CMsnProto::SvcCreateAccMgrUI );
 
-	CreateProtoService( PS_GETNAME,               &CMsnProto::GetName );
-	CreateProtoService( PS_GETSTATUS,             &CMsnProto::GetStatus );
 	CreateProtoService( PS_GETAVATARINFO,         &CMsnProto::GetAvatarInfo );
 	CreateProtoService( PS_GETMYAWAYMSG,          &CMsnProto::GetMyAwayMsg );
 

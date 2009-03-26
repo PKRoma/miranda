@@ -50,23 +50,6 @@ void CYahooProto::logoff_buddies()
 }
 
 //=======================================================
-//GetName
-//=======================================================
-int __cdecl CYahooProto::GetName(WPARAM wParam,LPARAM lParam)
-{
-	lstrcpynA(( char* )lParam, m_szModuleName, wParam);
-	return 0;
-}
-
-//=======================================================
-//GetStatus
-//=======================================================
-int __cdecl CYahooProto::GetStatus(WPARAM wParam,LPARAM lParam)
-{
-	return m_iStatus;
-}
-
-//=======================================================
 //Broadcast the user status
 //=======================================================
 void CYahooProto::BroadcastStatus(int s)
@@ -478,9 +461,6 @@ void CYahooProto::LoadYahooServices( void )
 	YHookEvent( ME_DB_CONTACT_DELETED, &CYahooProto::OnContactDeleted );
 
 	//----| Service creation |------------------------------------------------------------
-	YCreateService( PS_GETNAME, &CYahooProto::GetName );
-	YCreateService( PS_GETSTATUS, &CYahooProto::GetStatus );
-
 	YCreateService( YAHOO_SEND_NUDGE, &CYahooProto::SendNudge );
 	YCreateService( YAHOO_GETUNREAD_EMAILCOUNT, &CYahooProto::GetUnreadEmailCount);
 

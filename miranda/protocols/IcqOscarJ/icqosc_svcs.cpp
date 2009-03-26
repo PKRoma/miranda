@@ -469,21 +469,6 @@ int CIcqProto::GetMyAvatar(WPARAM wParam, LPARAM lParam)
 	return -1;
 }
 
-int CIcqProto::GetName(WPARAM wParam, LPARAM lParam)
-{
-	if ( lParam ) {
-		strncpy(( char* )lParam, ICQTranslate(m_szModuleName), wParam);
-		return 0; // Success
-	}
-
-	return 1; // Failure
-}
-
-int CIcqProto::GetStatus(WPARAM wParam, LPARAM lParam)
-{
-	return m_iStatus;
-}
-
 int CIcqProto::GrantAuthorization(WPARAM wParam, LPARAM lParam)
 {
 	if (icqOnline() && wParam != 0)

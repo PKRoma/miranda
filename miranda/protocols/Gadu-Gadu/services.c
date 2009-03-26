@@ -71,14 +71,6 @@ DWORD gg_getcaps(PROTO_INTERFACE *proto, int type, HANDLE hContact)
 }
 
 //////////////////////////////////////////////////////////
-// gets protocol name
-static int gg_getname(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
-{
-	lstrcpyn((char *) lParam, GG_PROTONAME, wParam);
-	return 0;
-}
-
-//////////////////////////////////////////////////////////
 // loads protocol icon
 HICON gg_loadicon(PROTO_INTERFACE *proto, int iconIndex)
 {
@@ -86,13 +78,6 @@ HICON gg_loadicon(PROTO_INTERFACE *proto, int iconIndex)
 		return CopyIcon(LoadIconEx(IDI_GG));
 
 	return (HICON) NULL;
-}
-
-//////////////////////////////////////////////////////////
-// gets protocol status
-int gg_getstatus(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
-{
-	return gg->proto.m_iStatus;
 }
 
 //////////////////////////////////////////////////////////
@@ -817,7 +802,5 @@ void gg_registerservices(GGPROTO *gg)
                                             
 	gg->proto.vtbl->OnEvent                = gg_event;
 	
-	CreateProtoService(PS_GETSTATUS, gg_getstatus, gg);
-	CreateProtoService(PS_GETNAME, gg_getname, gg);
 	CreateProtoService(PS_CREATEACCMGRUI, gg_get_acc_mgr_gui, gg);
 }

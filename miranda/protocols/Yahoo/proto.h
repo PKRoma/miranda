@@ -97,8 +97,6 @@ struct CYahooProto : public PROTO_INTERFACE
 	int __cdecl OnShowProfileCommand( WPARAM, LPARAM );
 
 	//====| Services |====================================================================
-	int __cdecl  GetName( WPARAM, LPARAM );
-	int __cdecl  GetStatus( WPARAM, LPARAM );
 	int __cdecl  GetUnreadEmailCount( WPARAM, LPARAM );
 	int __cdecl  SendNudge( WPARAM, LPARAM );
 	int __cdecl  SetMyAvatar( WPARAM, LPARAM );

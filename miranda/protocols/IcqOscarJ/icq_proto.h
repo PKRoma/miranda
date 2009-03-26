@@ -125,13 +125,11 @@ struct CIcqProto : public PROTO_INTERFACE
 
 	//====| Services |====================================================================
 	int  __cdecl AddServerContact(WPARAM wParam, LPARAM lParam);
-  int  __cdecl GetInfoSetting(WPARAM wParam, LPARAM lParam);
+	int  __cdecl GetInfoSetting(WPARAM wParam, LPARAM lParam);
 	int  __cdecl ChangeInfoEx(WPARAM wParam, LPARAM lParam);
 	int  __cdecl GetAvatarCaps(WPARAM wParam, LPARAM lParam);
 	int  __cdecl GetAvatarInfo(WPARAM wParam, LPARAM lParam);
 	int  __cdecl GetMyAvatar(WPARAM wParam, LPARAM lParam);	
-	int  __cdecl GetName(WPARAM wParam, LPARAM lParam);
-	int  __cdecl GetStatus(WPARAM wParam, LPARAM lParam);
 	int  __cdecl GetXStatus(WPARAM wParam, LPARAM lParam);
 	int  __cdecl GetXStatusEx(WPARAM wParam, LPARAM lParam);
 	int  __cdecl GetXStatusIcon(WPARAM wParam, LPARAM lParam);

@@ -75,14 +75,12 @@ struct CAimProto : public PROTO_INTERFACE
 	//====| Services |====================================================================
 	int  __cdecl SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam);
 
-	int  __cdecl GetName(WPARAM wParam, LPARAM lParam);
-	int  __cdecl GetStatus(WPARAM wParam, LPARAM lParam);
 	int  __cdecl GetAvatarInfo(WPARAM wParam, LPARAM lParam);
-    int  __cdecl GetMyAwayMsg(WPARAM wParam,LPARAM lParam);
+	int  __cdecl GetMyAwayMsg(WPARAM wParam,LPARAM lParam);
 
-    int  __cdecl GetAvatar(WPARAM wParam, LPARAM lParam);
-    int  __cdecl SetAvatar(WPARAM wParam, LPARAM lParam);
-    int  __cdecl GetAvatarCaps(WPARAM wParam, LPARAM lParam);
+	int  __cdecl GetAvatar(WPARAM wParam, LPARAM lParam);
+	int  __cdecl SetAvatar(WPARAM wParam, LPARAM lParam);
+	int  __cdecl GetAvatarCaps(WPARAM wParam, LPARAM lParam);
 
 	int  __cdecl ManageAccount(WPARAM wParam, LPARAM lParam);
 	int  __cdecl CheckMail(WPARAM wParam, LPARAM lParam);
@@ -92,25 +90,25 @@ struct CAimProto : public PROTO_INTERFACE
 	int  __cdecl GetProfile(WPARAM wParam, LPARAM lParam);
 	int  __cdecl EditProfile(WPARAM wParam, LPARAM lParam);
 	int  __cdecl AddToServerList(WPARAM wParam, LPARAM lParam);
-    int  __cdecl BlockBuddy(WPARAM wParam, LPARAM lParam);
+	int  __cdecl BlockBuddy(WPARAM wParam, LPARAM lParam);
 
 	//====| Events |======================================================================
 	int  __cdecl OnContactDeleted(WPARAM wParam,LPARAM lParam);
-    int  __cdecl OnGroupChange(WPARAM wParam,LPARAM lParam);
+	int  __cdecl OnGroupChange(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnExtraIconsRebuild(WPARAM wParam, LPARAM lParam);
 	int  __cdecl OnExtraIconsApply(WPARAM wParam, LPARAM lParam);
 	int  __cdecl OnIdleChanged(WPARAM wParam, LPARAM lParam);
-    int  __cdecl OnWindowEvent(WPARAM wParam, LPARAM lParam);
+	int  __cdecl OnWindowEvent(WPARAM wParam, LPARAM lParam);
 	int  __cdecl OnModulesLoaded( WPARAM wParam, LPARAM lParam );
 	int  __cdecl OnOptionsInit(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnPreBuildContactMenu(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnPreShutdown(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnSettingChanged(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnUserInfoInit(WPARAM wParam,LPARAM lParam);
-    int  __cdecl OnGCEvent(WPARAM wParam,LPARAM lParam);
-    int  __cdecl OnGCMenuHook(WPARAM wParam,LPARAM lParam);
-    int  __cdecl OnJoinChat(WPARAM wParam, LPARAM lParam);
-    int  __cdecl OnLeaveChat(WPARAM wParam, LPARAM lParam);
+	int  __cdecl OnGCEvent(WPARAM wParam,LPARAM lParam);
+	int  __cdecl OnGCMenuHook(WPARAM wParam,LPARAM lParam);
+	int  __cdecl OnJoinChat(WPARAM wParam, LPARAM lParam);
+	int  __cdecl OnLeaveChat(WPARAM wParam, LPARAM lParam);
 
 	//====| Data |========================================================================
 	char* CWD;//current working directory
