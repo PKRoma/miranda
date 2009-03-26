@@ -1089,6 +1089,7 @@ static BOOL CALLBACK DlgProcDspProfiles(HWND hwnd, UINT msg, WPARAM wParam, LPAR
    static int iInit = TRUE;
    static HWND hwndTab;
    static int iTabCount;
+   TranslateDialogDefault(hwnd);
 
    switch(msg)
    {
@@ -1171,13 +1172,13 @@ static BOOL CALLBACK DlgProcDspProfiles(HWND hwnd, UINT msg, WPARAM wParam, LPAR
          iTabCount =  TabCtrl_GetItemCount(hwndTab);
 
          SendMessage(hwnd, WM_USER + 100, 0, (LPARAM)&dsp_default);
-         SendMessage(hwndList, LB_INSERTSTRING, 0, (LPARAM)_T("<current>"));
+         SendMessage(hwndList, LB_INSERTSTRING, 0, (LPARAM)TranslateT("<current>"));
 
          hwndList = GetDlgItem(hwnd, IDC_CLASSLIST);
-         SendMessage(hwndList, LB_INSERTSTRING, 0, (LPARAM)_T("Default"));
-         SendMessage(hwndList, LB_INSERTSTRING, 1, (LPARAM)_T("Offline contact"));
-         SendMessage(hwndList, LB_INSERTSTRING, 2, (LPARAM)_T("Selected contact"));
-         SendMessage(hwndList, LB_INSERTSTRING, 3, (LPARAM)_T("Hottracked contact"));
+         SendMessage(hwndList, LB_INSERTSTRING, 0, (LPARAM)TranslateT("Default"));
+         SendMessage(hwndList, LB_INSERTSTRING, 1, (LPARAM)TranslateT("Offline contact"));
+         SendMessage(hwndList, LB_INSERTSTRING, 2, (LPARAM)TranslateT("Selected contact"));
+         SendMessage(hwndList, LB_INSERTSTRING, 3, (LPARAM)TranslateT("Hottracked contact"));
 
          iInit = FALSE;
          return FALSE;
