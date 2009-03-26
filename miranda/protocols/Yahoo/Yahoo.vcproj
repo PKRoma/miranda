@@ -87,6 +87,7 @@
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;YAHOO_EXPORTS;HAVE_CONFIG_H"
 				StringPooling="TRUE"
+				ExceptionHandling="FALSE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="3"
@@ -217,6 +218,7 @@
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;YAHOO_EXPORTS;HAVE_CONFIG_H"
 				StringPooling="TRUE"
+				ExceptionHandling="FALSE"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="TRUE"
 				UsePrecompiledHeader="3"
@@ -301,6 +303,9 @@
 			</File>
 			<File
 				RelativePath=".\options.cpp">
+			</File>
+			<File
+				RelativePath=".\proto.cpp">
 			</File>
 			<File
 				RelativePath=".\search.cpp">
@@ -546,6 +551,9 @@
 			</File>
 			<File
 				RelativePath=".\ignore.h">
+			</File>
+			<File
+				RelativePath=".\proto.h">
 			</File>
 			<File
 				RelativePath=".\pthread.h">
