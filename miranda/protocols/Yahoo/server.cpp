@@ -13,59 +13,42 @@
 #include "yahoo.h"
 #include <time.h>
 
-int poll_loop = 1;
-long lLastSend;
 extern YList *connections;
 
 int PASCAL send(SOCKET s, const char FAR *buf, int len, int flags)
 {
-    int rlen;
-    //LOG(("send socket: %d, %d bytes", s, len));
-
-    if (yahooStatus == ID_STATUS_OFFLINE) {
-		LOG(("WARNING: WE OFFLINE ALREADY!!"));
-        //return 0;
-	}
-
-    rlen = Netlib_Send((HANDLE)s, buf, len, 0);
+	int rlen = Netlib_Send((HANDLE)s, buf, len, 0);
 
 #ifdef HTTP_GATEWAY				
 	if (iHTTPGateway)
 		lLastSend = time(NULL);
 #endif
-	
-    if (rlen == SOCKET_ERROR) {
-        LOG(("SEND Error."));
-        return -1;
-    }
 
-    return len;
+	if (rlen == SOCKET_ERROR) {
+		LOG(("SEND Error."));
+		return -1;
+	}
+
+	return len;
 }
 
 int PASCAL recv(SOCKET s, char FAR *buf, int len, int flags)
 {
-	int RecvResult;
-	//LOG(("Recv socket: %d", s));
-	if (yahooStatus == ID_STATUS_OFFLINE) 
-		LOG(("WARNING:WE ARE OFFLINE!!"));
-	
-	RecvResult = Netlib_Recv((HANDLE)s, buf, len, (len == 1) ? MSG_NODUMP : 0);
-	
-	//LOG(("Got bytes: %d, len: %d", RecvResult, len));
+	int RecvResult = Netlib_Recv((HANDLE)s, buf, len, (len == 1) ? MSG_NODUMP : 0);
+
 	if (RecvResult == 0) {
 		LOG(("[recv] Connection closed gracefully."));
-        return 0;
-	} else if (RecvResult == SOCKET_ERROR) {
-        LOG(("[recv] Connection abortively closed"));
-        return -1;
-    }
+		return 0;
+	} 
+	if (RecvResult == SOCKET_ERROR) {
+		LOG(("[recv] Connection abortively closed"));
+		return -1;
+	}
 
 	return RecvResult;
 }
 
-extern yahoo_local_account * ylad;
-
-void __cdecl yahoo_server_main(void *empty)
+void __cdecl CYahooProto::server_main(void *empty)
 {
 	int status = (int) empty;
 	time_t lLastPing, lLastKeepAlive, t;
@@ -73,14 +56,14 @@ void __cdecl yahoo_server_main(void *empty)
 	NETLIBSELECTEX nls = {0};
 	int recvResult, ridx = 0, widx = 0, i;
 
-	YAHOO_DebugLog("Server Thread Starting status: %d", status);
+	DebugLog("Server Thread Starting status: %d", status);
 
 	do_yahoo_debug=YAHOO_LOG_DEBUG;
 	yahoo_set_log_level(( yahoo_log_level )do_yahoo_debug);
 
 	poll_loop = 1; /* set this so we start looping */
 
-	ext_yahoo_login(status);
+	ext_login(status);
 
 	lLastKeepAlive = lLastPing = time(NULL);
 
@@ -107,64 +90,64 @@ void __cdecl yahoo_server_main(void *empty)
 			} else {
 				if(c->cond & YAHOO_INPUT_READ)
 					nls.hReadConns[ridx++] = (HANDLE)c->fd;
-				
+
 				if(c->cond & YAHOO_INPUT_WRITE)
 					nls.hWriteConns[widx++] =(HANDLE) c->fd;
-				
+
 				l = y_list_next(l);
 			}
 		}
 
-		//YAHOO_DebugLog("[Yahoo_Server] ridx:%d widx:%d", ridx, widx);
-		
+		//DebugLog("[Yahoo_Server] ridx:%d widx:%d", ridx, widx);
+
 		nls.hReadConns[ridx] = NULL;
 		nls.hWriteConns[widx] = NULL;
-			
+
 		if (connections == NULL){
-			YAHOO_DebugLog("Last connection closed.");
+			DebugLog("Last connection closed.");
 			break;
 		}
 		recvResult = CallService(MS_NETLIB_SELECTEX, (WPARAM) 0, (LPARAM)&nls);
 
 		/* Check for Miranda Exit Status */
 		if (Miranda_Terminated()) {
-			YAHOO_DebugLog("Miranda Exiting... stopping the loop.");
+			DebugLog("Miranda Exiting... stopping the loop.");
 			break;
 		}
-		
+
 		/* do the timer check */
 		if (ylad->id > 0) {
 #ifdef	HTTP_GATEWAY			
-			//YAHOO_DebugLog("HTTPGateway: %d", iHTTPGateway);
+			//DebugLog("HTTPGateway: %d", iHTTPGateway);
 			if	(!iHTTPGateway) {
 #endif					
 				t = time(NULL); 
 
-				if (yahooLoggedIn && t - lLastKeepAlive >= 60) {
+				if (m_bLoggedIn && t - lLastKeepAlive >= 60) {
 					LOG(("[TIMER] Sending a keep alive message"));
 					yahoo_keepalive(ylad->id);
-					
+
 					lLastKeepAlive = t;
 				}
-				
-				if (yahooLoggedIn && t - lLastPing >= 3600) {
+
+				if (m_bLoggedIn && t - lLastPing >= 3600) {
 					LOG(("[TIMER] Sending ping"));
 					yahoo_send_ping(ylad->id);
-					
+
 					lLastPing = t;
 				}
-				
+
 #ifdef HTTP_GATEWAY					
 			} else {
-				YAHOO_DebugLog("[SERVER] Got packets: %d", ylad->rpkts);
-				
-				if ( yahooLoggedIn && ( (ylad->rpkts > 0 && (time(NULL) - lLastSend) >=3) ||
-					 ( (time(NULL) - lLastSend) >= 13) ) ) {
-						 
-					LOG(("[TIMER] Sending an idle message..."));
-					yahoo_send_idle_packet(ylad->id);
+				DebugLog("[SERVER] Got packets: %d", ylad->rpkts);
+
+				if ( m_bLoggedIn && ( (ylad->rpkts > 0 && (time(NULL) - lLastSend) >=3) ||
+					( (time(NULL) - lLastSend) >= 13) ) ) {
+
+						LOG(("[TIMER] Sending an idle message..."));
+						yahoo_send_idle_packet(ylad->id);
 				}
-					 
+
 				//
 				// need to sleep, cause netlibselectex is too fast?
 				//
@@ -173,17 +156,17 @@ void __cdecl yahoo_server_main(void *empty)
 #endif				
 		}
 		/* do the timer check ends */
-		
+
 		for(l = connections; l; l = y_list_next(l)) {
-		   struct _conn *c = ( _conn * )l->data;
-					
-		   if (c->remove) 
+			struct _conn *c = ( _conn * )l->data;
+
+			if (c->remove) 
 				continue;
-		
+
 			for (i = 0; i  < ridx; i++) {
 				if ((HANDLE)c->fd == nls.hReadConns[i]) {
-					   if (nls.hReadStatus[i]) 
-						   yahoo_callback(c, YAHOO_INPUT_READ);
+					if (nls.hReadStatus[i]) 
+						yahoo_callback(c, YAHOO_INPUT_READ);
 				}//if c->fd=
 			}//for i = 0
 
@@ -196,7 +179,7 @@ void __cdecl yahoo_server_main(void *empty)
 		}// for l=connections
 
 	}
-	YAHOO_DebugLog("Exited loop");
+	DebugLog("Exited loop");
 
 	/* cleanup the data stuff and close our connection handles */
 	while(connections) {
@@ -210,15 +193,14 @@ void __cdecl yahoo_server_main(void *empty)
 
 	yahoo_close(ylad->id);
 
-	yahooLoggedIn = FALSE; 
-	
+	m_bLoggedIn = FALSE; 
+
 	ylad->status = YAHOO_STATUS_OFFLINE;
 	ylad->id = 0;
-	
+
 	/* now set ourselves to offline */
-	yahoo_util_broadcaststatus(ID_STATUS_OFFLINE);
-	yahoo_logoff_buddies();	
+	BroadcastStatus(ID_STATUS_OFFLINE);
+	logoff_buddies();	
 
-    YAHOO_DebugLog("Server thread ending");
+	DebugLog("Server thread ending");
 }
-

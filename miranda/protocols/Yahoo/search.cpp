@@ -10,82 +10,75 @@
  * I want to thank Robert Rainwater and George Hazan for their code and support
  * and for answering some of my questions during development of this plugin.
  */
+
 #include "yahoo.h"
 #include <m_protosvc.h>
 #include <m_langpack.h>
 
 #include "resource.h"
 
-extern yahoo_local_account * ylad;
+////////////////////////////////////////////////////////////////////////////////////////
+// SearchBasic - searches the contact by UIN
 
-//=======================================================
-//Search for user
-//=======================================================
-static void __cdecl yahoo_search_simplethread(void *snsearch)
+void __cdecl CYahooProto::search_simplethread(void *snsearch)
 {
 	char *nick = (char *) snsearch;
-    PROTOSEARCHRESULT psr = { 0 };
-    static char m[255];
-    char *c;
-    
+	static char m[255];
+
 	if (lstrlenA(nick) < 4) {
-		YAHOO_SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
+		SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 		MessageBoxA(NULL, "Please enter a valid ID to search for.", "Search", MB_OK);
-		
 		return;
-	} 
+	}
 
-    c = strchr(nick, '@');
-    
-    if (c != NULL){
-        int l =  c - nick;
+	char *c = strchr(nick, '@');
+	if (c != NULL){
+		int l =  c - nick;
 
-        strncpy(m, nick, l);
-        m[l] = '\0';        
-    }else
-        strcpy(m, nick);
-        
+		strncpy(m, nick, l);
+		m[l] = '\0';        
+	}
+	else strcpy(m, nick);
 
-    psr.cbSize = sizeof(psr);
-    psr.nick = strdup(nick);
+	PROTOSEARCHRESULT psr = { 0 };
+	psr.cbSize = sizeof(psr);
+	psr.nick = strdup(nick);
 	psr.reserved[0] = YAHOO_IM_YAHOO;
-	
-    YAHOO_SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
-	
+
+	SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
+
 	yahoo_search(ylad->id, YAHOO_SEARCH_YID, m, YAHOO_GENDER_NONE, YAHOO_AGERANGE_NONE, 0, 1);
-	
+
 	FREE(nick);
 }
 
-int YahooBasicSearch(WPARAM wParam,LPARAM lParam)
+HANDLE __cdecl CYahooProto::SearchBasic( const char* nick )
 {
-	const char *nick = (char *) lParam;
-	
 	LOG(("[YahooBasicSearch] Searching for: %s", nick));
 	
-	if ( !yahooLoggedIn )
+	if ( !m_bLoggedIn )
 		return 0;
 
-    mir_forkthread(yahoo_search_simplethread, (void *) strdup(nick));
-	
-    return 1;
+	YForkThread(&CYahooProto::search_simplethread, strdup( nick ));
+	return ( HANDLE )1;
 }
 
-void ext_yahoo_got_search_result(int id, int found, int start, int total, YList *contacts)
+////////////////////////////////////////////////////////////////////////////////////////
+// SearchAdvanced - searches the contact by UIN
+
+void CYahooProto::ext_got_search_result(int found, int start, int total, YList *contacts)
 {
-	PROTOSEARCHRESULT psr = { 0 };
 	struct yahoo_found_contact *yct=NULL;
-	char *c;
 	int i=start;
 	YList *en=contacts;
 
 	LOG(("got search result: "));
 	
-	LOG(("ID: %d", id));
 	LOG(("Found: %d", found));
 	LOG(("Start: %d", start));
 	LOG(("Total: %d", total));
 		
+	PROTOSEARCHRESULT psr = { 0 };
 	psr.cbSize = sizeof(psr);
 	psr.reserved[0] = YAHOO_IM_YAHOO;
 	
@@ -97,7 +90,7 @@ void ext_yahoo_got_search_result(int id, int found, int start, int total, YList 
 		} else {
 			LOG(("[%d] id: '%s', online: %d, age: %d, sex: '%s', location: '%s'", i++, yct->id, yct->online, yct->age, yct->gender, yct->location));
 			psr.nick = (char *)yct->id;
-			c = (char *)malloc(10);
+			char *c = (char *)malloc(10);
 			
 			if (yct->gender[0] != 5)
 				psr.firstName = yct->gender;
@@ -113,73 +106,63 @@ void ext_yahoo_got_search_result(int id, int found, int start, int total, YList 
 			//void yahoo_search(int id, enum yahoo_search_type t, const char *text, enum yahoo_search_gender g, enum yahoo_search_agerange ar, 
 			//	int photo, int yahoo_only)
 
-			YAHOO_SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
+			SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
 		}
 		en = y_list_next(en);
 	}
-	YAHOO_SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
+	SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 }
-
-static BOOL CALLBACK YahooSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	switch ( msg ) {
-	case WM_INITDIALOG:
-		{
-			TranslateDialogDefault(hwndDlg);
-			
-			SendDlgItemMessage(hwndDlg, IDC_SEARCH_PROTOCOL, CB_ADDSTRING, 0, (LPARAM)(LPCSTR)"Yahoo! Messenger");
-			SendDlgItemMessage(hwndDlg, IDC_SEARCH_PROTOCOL, CB_ADDSTRING, 0, (LPARAM)(LPCSTR)"Lotus Sametime");
-			SendDlgItemMessage(hwndDlg, IDC_SEARCH_PROTOCOL, CB_ADDSTRING, 0, (LPARAM)(LPCSTR)"LCS");
-			SendDlgItemMessage(hwndDlg, IDC_SEARCH_PROTOCOL, CB_ADDSTRING, 0, (LPARAM)(LPCSTR)"Windows Live (MSN)");
-			
-			// select the first one
-			SendDlgItemMessage(hwndDlg, IDC_SEARCH_PROTOCOL, CB_SETCURSEL, 0, 0);
-
-		}
-		return TRUE;
-
-	}
-	return FALSE;
-}
-
 
 /*
  * This service function creates an advanced search dialog in Find/Add contacts Custom area.
  *
  * Returns: 0 on failure or HWND on success
  */
-int YahooCreateAdvancedSearchUI(WPARAM wParam, LPARAM lParam)
+
+static BOOL CALLBACK YahooSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	HWND parent = (HWND) lParam;
-	
-	if ( parent && hinstance)
-		return (int)CreateDialogParam( hinstance, MAKEINTRESOURCE(IDD_SEARCHUSER), parent, YahooSearchAdvancedDlgProc, ( LPARAM )/*this*/ NULL );
+	switch ( msg ) {
+	case WM_INITDIALOG:
+		TranslateDialogDefault(hwndDlg);
+			
+		SendDlgItemMessage(hwndDlg, IDC_SEARCH_PROTOCOL, CB_ADDSTRING, 0, (LPARAM)(LPCSTR)"Yahoo! Messenger");
+		SendDlgItemMessage(hwndDlg, IDC_SEARCH_PROTOCOL, CB_ADDSTRING, 0, (LPARAM)(LPCSTR)"Lotus Sametime");
+		SendDlgItemMessage(hwndDlg, IDC_SEARCH_PROTOCOL, CB_ADDSTRING, 0, (LPARAM)(LPCSTR)"LCS");
+		SendDlgItemMessage(hwndDlg, IDC_SEARCH_PROTOCOL, CB_ADDSTRING, 0, (LPARAM)(LPCSTR)"Windows Live (MSN)");
+		
+		// select the first one
+		SendDlgItemMessage(hwndDlg, IDC_SEARCH_PROTOCOL, CB_SETCURSEL, 0, 0);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+HWND __cdecl CYahooProto::CreateExtendedSearchUI( HWND parent )
+{
+	if ( parent && hInstance )
+		return CreateDialogParam( hInstance, MAKEINTRESOURCE(IDD_SEARCHUSER), parent, YahooSearchAdvancedDlgProc, ( LPARAM )this );
 
 	return 0;
 }
 
-static void __cdecl yahoo_searchadv_thread(void *pHWND)
+void __cdecl CYahooProto::searchadv_thread(void *pHWND)
 {
-    PROTOSEARCHRESULT psr = { 0 };
 	HWND hwndDlg = (HWND) pHWND;
+
 	char searchid[128];
-	int pid = 0;
-	
 	GetDlgItemTextA(hwndDlg, IDC_SEARCH_ID, searchid, 128);
-	
+
 	if (lstrlenA(searchid) == 0) {
-		YAHOO_SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
+		SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 		MessageBoxA(NULL, "Please enter a valid ID to search for.", "Search", MB_OK);
-		
 		return;
 	} 
-	
+
+	PROTOSEARCHRESULT psr = { 0 };
 	psr.cbSize = sizeof(psr);
 	psr.nick = searchid;
-	
-	pid = SendDlgItemMessage(hwndDlg , IDC_SEARCH_PROTOCOL, CB_GETCURSEL, 0, 0);
-	
-	
+
+	int pid = SendDlgItemMessage(hwndDlg , IDC_SEARCH_PROTOCOL, CB_GETCURSEL, 0, 0);
 	switch (pid){
 		case 0: psr.firstName = "<Yahoo >";  pid = YAHOO_IM_YAHOO; break;
 		case 1: psr.firstName = "<Lotus Sametime>"; pid = YAHOO_IM_SAMETIME;break;
@@ -188,33 +171,31 @@ static void __cdecl yahoo_searchadv_thread(void *pHWND)
 	}
 
 	psr.reserved[0] = pid;
-	
-	/*
-	 * Show this in results
-	 */
-	YAHOO_SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
-	
-	/*
-	 * Done searching.
-	 */
-	YAHOO_SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
-}
 
+	/*
+	* Show this in results
+	*/
+	SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
+
+	/*
+	* Done searching.
+	*/
+	SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
+}
 
 /*
  * This service function does the advanced search
  *
  * Returns: 0 on failure or HWND on success
  */
-int YahooAdvancedSearch(WPARAM wParam, LPARAM lParam)
+
+HWND __cdecl CYahooProto::SearchAdvanced( HWND owner )
 {
-	HWND hwndAdvancedSearchDlg = (HWND) lParam;
-	
 	LOG(("[YahooAdvancedSearch]"));
-	
-	if ( !yahooLoggedIn )
+
+	if ( !m_bLoggedIn )
 		return 0;
 
-	mir_forkthread(yahoo_searchadv_thread, (void *) hwndAdvancedSearchDlg);
-	return 1;
+	YForkThread( &CYahooProto::searchadv_thread, owner );
+	return ( HWND )1;
 }

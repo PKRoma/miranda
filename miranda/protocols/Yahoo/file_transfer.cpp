@@ -17,68 +17,66 @@
 #include <m_protosvc.h>
 #include "file_transfer.h"
 
-extern yahoo_local_account * ylad;
-
 YList *file_transfers;
 
-static y_filetransfer* new_ft(int id, HANDLE hContact, const char *who, const char *msg,  
+static y_filetransfer* new_ft(CYahooProto* ppro, int id, HANDLE hContact, const char *who, const char *msg,  
 					const char *url, const char *ft_token, int y7, YList *fs, int sending)
 {
-	y_filetransfer* ft;
-	struct yahoo_file_info * fi;
+	yahoo_file_info * fi;
 	int i=0;
 	YList *l=fs;
-	
+
 
 	LOG(("[new_ft]"));
-	
-	ft = (y_filetransfer*) malloc(sizeof(y_filetransfer));
+
+	y_filetransfer* ft = (y_filetransfer*) malloc(sizeof(y_filetransfer));
+	ft->ppro = ppro;
 	ft->id  = id;
 	ft->who = strdup(who);
 	ft->hWaitEvent = INVALID_HANDLE_VALUE;
-	
+
 	ft->hContact = hContact;
 	ft->files = fs;
-	
+
 	ft->url = (url == NULL) ? NULL : strdup(url);
 	ft->ftoken = (ft_token == NULL) ? NULL : strdup(ft_token);
 	ft->msg = (msg != NULL) ? strdup(msg) : strdup("[no description given]");
-	
+
 	ft->cancel = 0;
 	ft->y7 = y7;
 	ft->savepath = NULL;
-	
-    ft->hWaitEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
-	
+
+	ft->hWaitEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
+
 	ZeroMemory(&ft->pfts, sizeof(PROTOFILETRANSFERSTATUS));
 	ft->pfts.cbSize = sizeof(PROTOFILETRANSFERSTATUS);
 	ft->pfts.hContact = hContact;
 	ft->pfts.sending = sending;
 	ft->pfts.workingDir = NULL;
 	ft->pfts.currentFileTime = 0;
-	
+
 	ft->pfts.totalFiles = y_list_length(fs);
-	
+
 	ft->pfts.files = (char**) malloc(sizeof(char *) * ft->pfts.totalFiles);
 	ft->pfts.totalBytes = 0;
-	
+
 	while(l) {
 		fi = ( yahoo_file_info* )l->data;
-		
+
 		ft->pfts.files[i++] = strdup(fi->filename);
 		ft->pfts.totalBytes += fi->filesize;
-		
+
 		l=l->next;
 	}
-	
+
 	ft->pfts.currentFileNumber = 0;
-	
+
 	fi = ( yahoo_file_info* )fs->data; 
 	ft->pfts.currentFile = strdup(fi->filename);
 	ft->pfts.currentFileSize = fi->filesize; 
-	
+
 	file_transfers = y_list_prepend(file_transfers, ft);
-	
+
 	return ft;
 }
 
@@ -172,14 +170,14 @@ static void upload_file(int id, int fd, int error, void *data)
 		if(myhFile !=INVALID_HANDLE_VALUE) {
 			DWORD lNotify = GetTickCount();
 
-			LOG(("proto: %s, hContact: %p", yahooProtocolName, sf->hContact));
+			LOG(("proto: %s, hContact: %p", sf->ppro->m_szModuleName, sf->hContact));
 
 			LOG(("Sending file: %s", fi->filename));
-			//ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, sf, 0);
-			//ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, sf, 0);
-			ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED, sf, 0);
-			//ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_SENTREQUEST, sf, 0);
-			//ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, sf, 0);
+			//ProtoBroadcastAck(m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, sf, 0);
+			//ProtoBroadcastAck(m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, sf, 0);
+			ProtoBroadcastAck(sf->ppro->m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED, sf, 0);
+			//ProtoBroadcastAck(m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_SENTREQUEST, sf, 0);
+			//ProtoBroadcastAck(m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, sf, 0);
 
 			do {
 				ReadFile(myhFile, buf, sizeof(buf), &dw, NULL);
@@ -199,7 +197,7 @@ static void upload_file(int id, int fd, int error, void *data)
 						sf->pfts.totalProgress = size;
 						sf->pfts.currentFileProgress = size;
 
-						ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_DATA, sf, (LPARAM) & sf->pfts);
+						ProtoBroadcastAck(sf->ppro->m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_DATA, sf, (LPARAM) & sf->pfts);
 						lNotify = GetTickCount();
 					}
 
@@ -217,7 +215,7 @@ static void upload_file(int id, int fd, int error, void *data)
 			sf->pfts.totalProgress = size;
 			sf->pfts.currentFileProgress = size;
 
-			ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_DATA, sf, (LPARAM) & sf->pfts);
+			ProtoBroadcastAck(sf->ppro->m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_DATA, sf, (LPARAM) & sf->pfts);
 
 		}
 	}	
@@ -251,13 +249,13 @@ static void upload_file(int id, int fd, int error, void *data)
 		sf->pfts.currentFileNumber++;
 
 		if (sf->pfts.currentFileNumber >= sf->pfts.totalFiles) {
-			ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, sf, 0);
+			ProtoBroadcastAck(sf->ppro->m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, sf, 0);
 		} else {
 			LOG(("Waiting for next file request packet..."));
 		}
 
 	} else {
-		ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, sf, 0);
+		ProtoBroadcastAck(sf->ppro->m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, sf, 0);
 	}
 }
 
@@ -274,7 +272,7 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 		
 		if (sf->ftoken != NULL) {
 			LOG(("[get_url] DC Detected: asking sender to upload to Yahoo FileServers!"));
-			yahoo_ftdc_deny(ylad->id, sf->who, fi->filename, sf->ftoken, 3);	
+			yahoo_ftdc_deny(id, sf->who, fi->filename, sf->ftoken, 3);	
 		}
 		
 		error = 1;
@@ -299,7 +297,7 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 		
 		ResetEvent(sf->hWaitEvent);
 		
-		if ( YAHOO_SendBroadcast( sf->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, sf, ( LPARAM )&sf->pfts )) {
+		if ( sf->ppro->SendBroadcast( sf->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, sf, ( LPARAM )&sf->pfts )) {
 			WaitForSingleObject( sf->hWaitEvent, INFINITE );
 			
 			switch(sf->action){
@@ -350,9 +348,9 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 				
 				SetEndOfFile(myhFile);
 				
-				LOG(("proto: %s, hContact: %p", yahooProtocolName, sf->hContact));
+				LOG(("proto: %s, hContact: %p", sf->ppro->m_szModuleName, sf->hContact));
 				
-				ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED, sf, 0);
+				ProtoBroadcastAck(sf->ppro->m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED, sf, 0);
 				
 				do {
 					dw = Netlib_Recv((HANDLE)fd, buf, 1024, MSG_NODUMP);
@@ -369,7 +367,7 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 						sf->pfts.currentFileTime = (DWORD)time(NULL);//ntohl(ft->hdr.modtime);
 						sf->pfts.currentFileProgress = rsize;
 						
-						ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_DATA, sf, (LPARAM) & sf->pfts);
+						ProtoBroadcastAck(sf->ppro->m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_DATA, sf, (LPARAM) & sf->pfts);
 						lNotify = GetTickCount();
 						}
 					} else {
@@ -391,7 +389,7 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 				}
 				
 				sf->pfts.totalProgress += rsize;
-				ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_DATA, sf, (LPARAM) & sf->pfts);
+				ProtoBroadcastAck(sf->ppro->m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_DATA, sf, (LPARAM) & sf->pfts);
 				
 				LOG(("[Finished DL] Got %lu/%lu", rsize, size));
 				CloseHandle(myhFile);
@@ -411,7 +409,7 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 	
 		if (sf->cancel || error) {
 			/* abort FT transfer */
-			yahoo_ft7dc_abort(ylad->id, sf->who, sf->ftoken);
+			yahoo_ft7dc_abort(id, sf->who, sf->ftoken);
 		}
 	}
 	
@@ -421,13 +419,13 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 		LOG(("File %d/%d download complete!", sf->pfts.currentFileNumber, sf->pfts.totalFiles));
 		
 		if (sf->pfts.currentFileNumber >= sf->pfts.totalFiles) {
-			ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, sf, 0);
+			ProtoBroadcastAck(sf->ppro->m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, sf, 0);
 		} else {
 			YList *l;
 			struct yahoo_file_info * fi;
 			
 			// Do Next file
-			yahoo_ft7dc_nextfile(ylad->id, sf->who, sf->ftoken);
+			yahoo_ft7dc_nextfile(id, sf->who, sf->ftoken);
 			free(sf->pfts.currentFile);
 			
 			l = sf->files;
@@ -445,69 +443,67 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 			sf->pfts.currentFileSize = fi->filesize; 
 			sf->pfts.currentFileProgress = 0;
 			
-			ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, sf, 0);
+			ProtoBroadcastAck(sf->ppro->m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, sf, 0);
 		}
 	} else {
 		LOG(("File download failed!"));
 		
-		ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, sf, 0);
+		ProtoBroadcastAck(sf->ppro->m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, sf, 0);
 	}
 }
 
 //=======================================================
 //File Transfer
 //=======================================================
-static void __cdecl yahoo_recv_filethread(void *psf) 
+void __cdecl CYahooProto::recv_filethread(void *psf) 
 {
 	y_filetransfer *sf = ( y_filetransfer* )psf;
 	struct yahoo_file_info *fi = (struct yahoo_file_info *)sf->files->data;
 	
-//    ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
-	ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, sf, 0);
+	ProtoBroadcastAck(m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, sf, 0);
 	
-	YAHOO_DebugLog("[yahoo_recv_filethread] who: %s, msg: %s, filename: %s ", sf->who, sf->msg, fi->filename);
+	DebugLog("[yahoo_recv_filethread] who: %s, msg: %s, filename: %s ", sf->who, sf->msg, fi->filename);
 	
 	
 	yahoo_get_url_handle(ylad->id, sf->url, &dl_file, sf);
 	
-	if (sf->pfts.currentFileNumber >= sf->pfts.totalFiles) {
+	if (sf->pfts.currentFileNumber >= sf->pfts.totalFiles)
 		free_ft(sf);
-	} else {
-		YAHOO_DebugLog("[yahoo_recv_filethread] More files coming?");
-	}
+	else
+		DebugLog("[yahoo_recv_filethread] More files coming?");
 }
 
-void ext_yahoo_got_file(int id, const char *me, const char *who, const char *url, long expires, const char *msg, const char *fname, unsigned long fesize, const char *ft_token, int y7)
+void CYahooProto::ext_got_file(const char *me, const char *who, const char *url, long expires, const char *msg, const char *fname, unsigned long fesize, const char *ft_token, int y7)
 {
-    CCSDATA ccs;
-    PROTORECVEVENT pre;
+	CCSDATA ccs;
+	PROTORECVEVENT pre;
 	HANDLE hContact;
 	char *szBlob;
 	y_filetransfer *ft;
 	char fn[1024];
 	struct yahoo_file_info *fi;
 	YList *files=NULL;
-	
-    LOG(("[ext_yahoo_got_file] id: %i, ident:%s, who: %s, url: %s, expires: %lu, msg: %s, fname: %s, fsize: %lu ftoken: %s y7: %d", id, me, who, url, expires, msg, fname, fesize, ft_token == NULL ? "NULL" : ft_token, y7));
-	
+
+	LOG(("[ext_yahoo_got_file] ident:%s, who: %s, url: %s, expires: %lu, msg: %s, fname: %s, fsize: %lu ftoken: %s y7: %d", me, who, url, expires, msg, fname, fesize, ft_token == NULL ? "NULL" : ft_token, y7));
+
 	hContact = getbuddyH(who);
 	if (hContact == NULL) 
 		hContact = add_buddy(who, who, 0 /* NO FT for other IMs */, PALF_TEMPORARY);
-	
+
 	ZeroMemory(fn, 1024);
-	
+
 	if (fname != NULL)
 		lstrcpynA(fn, fname, 1024);
 	else {
 		char *start, *end;
-		
+
 		/* based on how gaim does this */
 		start = ( char* )strrchr(url, '/');
 		if (start)
 			start++;
-		
+
 		end = ( char* )strrchr(url, '?');
-		
+
 		if (start && *start && end) {
 			lstrcpynA(fn, start, end-start+1);
 		} else 
@@ -517,53 +513,53 @@ void ext_yahoo_got_file(int id, const char *me, const char *who, const char *url
 	fi = y_new(struct yahoo_file_info,1);
 	fi->filename = fn;
 	fi->filesize = fesize;
-	
+
 	files = y_list_append(files, fi);
-	
-	ft = new_ft(id, hContact, who, msg,	url, ft_token, y7, files, 0 /* downloading */);
+
+	ft = new_ft(this, ylad->id, hContact, who, msg,	url, ft_token, y7, files, 0 /* downloading */);
 	if (ft == NULL) {
-		YAHOO_DebugLog("SF IS NULL!!!");
+		DebugLog("SF IS NULL!!!");
 		return;
 	}
 
-    // blob is DWORD(*ft), ASCIIZ(filenames), ASCIIZ(description)
-    szBlob = (char *) malloc(sizeof(DWORD) + lstrlenA(fn) + lstrlenA(msg) + 2);
-    *((PDWORD) szBlob) = (DWORD) ft;
-    strcpy(szBlob + sizeof(DWORD), fn);
-    strcpy(szBlob + sizeof(DWORD) + lstrlenA(fn) + 1, msg);
+	// blob is DWORD(*ft), ASCIIZ(filenames), ASCIIZ(description)
+	szBlob = (char *) malloc(sizeof(DWORD) + lstrlenA(fn) + lstrlenA(msg) + 2);
+	*((PDWORD) szBlob) = (DWORD) ft;
+	strcpy(szBlob + sizeof(DWORD), fn);
+	strcpy(szBlob + sizeof(DWORD) + lstrlenA(fn) + 1, msg);
 
 	pre.flags = 0;
 	pre.timestamp = (DWORD)time(NULL);
-    pre.szMessage = szBlob;
-    pre.lParam = 0;
-    ccs.szProtoService = PSR_FILE;
-    ccs.hContact = hContact;
-    ccs.wParam = 0;
-    ccs.lParam = (LPARAM) & pre;
-    CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
+	pre.szMessage = szBlob;
+	pre.lParam = 0;
+	ccs.szProtoService = PSR_FILE;
+	ccs.hContact = hContact;
+	ccs.wParam = 0;
+	ccs.lParam = (LPARAM) & pre;
+	CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
 	free(szBlob);
 }
 
-void ext_yahoo_got_files(int id, const char *me, const char *who, const char *ft_token, int y7, YList* files)
+void CYahooProto::ext_got_files(const char *me, const char *who, const char *ft_token, int y7, YList* files)
 {
-    CCSDATA ccs;
-    PROTORECVEVENT pre;
+	CCSDATA ccs;
+	PROTORECVEVENT pre;
 	HANDLE hContact;
 	char *szBlob;
 	y_filetransfer *ft;
 	YList *f;
 	char fn[4096];
 	int fc = 0;
-	
-    LOG(("[ext_yahoo_got_files] id: %i, ident:%s, who: %s, ftoken: %s ", id, me, who, ft_token == NULL ? "NULL" : ft_token));
-	
+
+	LOG(("[ext_yahoo_got_files] ident:%s, who: %s, ftoken: %s ", me, who, ft_token == NULL ? "NULL" : ft_token));
+
 	hContact = getbuddyH(who);
 	if (hContact == NULL) 
 		hContact = add_buddy(who, who, 0 /* NO FT for other IMs */, PALF_TEMPORARY);
-	
-	ft = new_ft(id, hContact, who, NULL, NULL, ft_token, y7, files, 0 /* downloading */);
+
+	ft = new_ft(this, ylad->id, hContact, who, NULL, NULL, ft_token, y7, files, 0 /* downloading */);
 	if (ft == NULL) {
-		YAHOO_DebugLog("SF IS NULL!!!");
+		DebugLog("SF IS NULL!!!");
 		return;
 	}
 
@@ -571,43 +567,43 @@ void ext_yahoo_got_files(int id, const char *me, const char *who, const char *ft
 	for (f=files; f; f = y_list_next(f)) {
 		char z[1024];
 		struct yahoo_file_info *fi = (struct yahoo_file_info *) f->data;
-		
+
 		snprintf(z, 1024, "%s (%lu)\r\n", fi->filename, fi->filesize);
 		lstrcatA(fn, z);
 		fc++;
 	}
-	
+
 	if (fc > 1) {
 		/* multiple files */
-		
+
 	}
-	
-    // blob is DWORD(*ft), ASCIIZ(filenames), ASCIIZ(description)
-    szBlob = (char *) malloc(sizeof(DWORD) + lstrlenA(fn) + 2);
-    *((PDWORD) szBlob) = (DWORD) ft;
-    strcpy(szBlob + sizeof(DWORD), fn);
-    strcpy(szBlob + sizeof(DWORD) + lstrlenA(fn) + 1, "");
+
+	// blob is DWORD(*ft), ASCIIZ(filenames), ASCIIZ(description)
+	szBlob = (char *) malloc(sizeof(DWORD) + lstrlenA(fn) + 2);
+	*((PDWORD) szBlob) = (DWORD) ft;
+	strcpy(szBlob + sizeof(DWORD), fn);
+	strcpy(szBlob + sizeof(DWORD) + lstrlenA(fn) + 1, "");
 
 	pre.flags = 0;
 	pre.timestamp = (DWORD)time(NULL);
-    pre.szMessage = szBlob;
-    pre.lParam = 0;
-    ccs.szProtoService = PSR_FILE;
-    ccs.hContact = ft->hContact;
-    ccs.wParam = 0;
-    ccs.lParam = (LPARAM) & pre;
-    CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
+	pre.szMessage = szBlob;
+	pre.lParam = 0;
+	ccs.szProtoService = PSR_FILE;
+	ccs.hContact = ft->hContact;
+	ccs.wParam = 0;
+	ccs.lParam = (LPARAM) & pre;
+	CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
 	free(szBlob);
 }
 
-void ext_yahoo_got_file7info(int id, const char *me, const char *who, const char *url, const char *fname, const char *ft_token)
+void CYahooProto::ext_got_file7info(const char *me, const char *who, const char *url, const char *fname, const char *ft_token)
 {
 	y_filetransfer *ft;
 /*	NETLIBHTTPREQUEST nlhr={0},*nlhrReply;
 	NETLIBHTTPHEADER httpHeaders[3];
 	char  z[1024];
 */	
-	LOG(("[ext_yahoo_got_file7info] id: %i, ident:%s, who: %s, url: %s, fname: %s, ft_token: %s", id, me, who, url, fname, ft_token));
+	LOG(("[ext_yahoo_got_file7info] ident:%s, who: %s, url: %s, fname: %s, ft_token: %s", me, who, url, fname, ft_token));
 	
 	ft = find_ft(ft_token);
 	
@@ -616,7 +612,7 @@ void ext_yahoo_got_file7info(int id, const char *me, const char *who, const char
 		return;
 	}
 	
-	ProtoBroadcastAck(yahooProtocolName, ft->hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
+	ProtoBroadcastAck(m_szModuleName, ft->hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 	
 	FREE(ft->url);
 	
@@ -664,7 +660,7 @@ void ext_yahoo_got_file7info(int id, const char *me, const char *who, const char
 	}
 	*/
 	
-	mir_forkthread(yahoo_recv_filethread, (void *) ft);
+	YForkThread(&CYahooProto::recv_filethread, ft);
 }
 
 void ext_yahoo_send_file7info(int id, const char *me, const char *who, const char *ft_token)
@@ -691,12 +687,12 @@ void ext_yahoo_send_file7info(int id, const char *me, const char *who, const cha
 		
 }
 
-void ext_yahoo_ft7_send_file(int id, const char *me, const char *who, const char *filename, const char *token, const char *ft_token)
+void CYahooProto::ext_ft7_send_file(const char *me, const char *who, const char *filename, const char *token, const char *ft_token)
 {
 	y_filetransfer *sf;
 	struct yahoo_file_info *fi;
 	
-	LOG(("[ext_yahoo_send_file7info] id: %i, ident:%s, who: %s, ft_token: %s", id, me, who, ft_token));
+	LOG(("[ext_yahoo_send_file7info] ident:%s, who: %s, ft_token: %s", me, who, ft_token));
 	
 	sf = find_ft(ft_token);
 	
@@ -707,118 +703,27 @@ void ext_yahoo_ft7_send_file(int id, const char *me, const char *who, const char
 	
 	fi = (struct yahoo_file_info *)sf->files->data;
 	
-	ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, sf, 0);
+	ProtoBroadcastAck(m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, sf, 0);
 	
 	LOG(("who %s, msg: %s, filename: %s filesize: %ld", sf->who, sf->msg, fi->filename, fi->filesize));
 	
-	yahoo_send_file_y7(id, me, who, "98.136.112.33", fi->filesize, token,  &upload_file, sf);
+	yahoo_send_file_y7(ylad->id, me, who, "98.136.112.33", fi->filesize, token,  &upload_file, sf);
 	
 	if (sf->pfts.currentFileNumber >= sf->pfts.totalFiles) {
 		free_ft(sf);
 	} else {
-		YAHOO_DebugLog("[yahoo_send_filethread] More files coming?");
+		DebugLog("[yahoo_send_filethread] More files coming?");
 	}
-
-}
-
-
-/**************** Receive File ********************/
-int YahooFileAllow(WPARAM wParam,LPARAM lParam) 
-{
-    CCSDATA *ccs = (CCSDATA *) lParam;
-    y_filetransfer *ft = (y_filetransfer *) ccs->wParam;
-	int len;
-	
-	YAHOO_DebugLog("[YahooFileAllow]");
-	
-    //LOG(LOG_INFO, "[%s] Requesting file from %s", ft->cookie, ft->user);
-    ft->savepath = strdup((char *) ccs->lParam);
-	
-	len = lstrlenA(ft->savepath) - 1;
-	if (ft->savepath[len] == '\\')
-		ft->savepath[len] = '\0';
-
-	if (ft->y7) {
-		YAHOO_DebugLog("[YahooFileAllow] We don't handle y7 stuff yet.");
-		//void yahoo_ft7dc_accept(int id, const char *buddy, const char *ft_token);
-		yahoo_ft7dc_accept(ft->id, ft->who, ft->ftoken);
-
-		return ccs->wParam;
-	}
-	
-    mir_forkthread(yahoo_recv_filethread, (void *) ft);
-	
-    return ccs->wParam;
-}
-
-int YahooFileDeny(WPARAM wParam,LPARAM lParam) 
-{
-	/* deny file receive request.. just ignore it! */
-	CCSDATA *ccs = (CCSDATA *) lParam;
-    y_filetransfer *ft = (y_filetransfer *) ccs->wParam;
-	
-	YAHOO_DebugLog("[YahooFileDeny]");
-	
-	if ( !yahooLoggedIn || ft == NULL ) {
-		YAHOO_DebugLog("[YahooFileDeny] Not logged-in or some other error!");
-		return 1;
-	}
-
-	if (ft->y7) {
-		YAHOO_DebugLog("[YahooFileDeny] We don't handle y7 stuff yet.");
-		//void yahoo_ft7dc_accept(int id, const char *buddy, const char *ft_token);
-		yahoo_ft7dc_deny(ft->id, ft->who, ft->ftoken);
-		return 0;
-	}
-
-	if (ft->ftoken != NULL) {
-		struct yahoo_file_info *fi = (struct yahoo_file_info *)ft->files->data;
-		
-		YAHOO_DebugLog("[] DC Detected: Denying File Transfer!");
-		yahoo_ftdc_deny(ylad->id, ft->who, fi->filename, ft->ftoken, 2);	
-	}
-	return 0;
-}
-
-int YahooFileResume( WPARAM wParam, LPARAM lParam )
-{
-    PROTOFILERESUME *pfr;
-	y_filetransfer *ft = (y_filetransfer *) wParam;
-	
-	YAHOO_DebugLog("[YahooFileResume]");
-	
-	if ( !yahooLoggedIn || ft == NULL ) {
-		YAHOO_DebugLog("[YahooFileResume] Not loggedin or some other error!");
-		return 1;
-	}
-
-	pfr = (PROTOFILERESUME*)lParam;
-	
-	ft->action = pfr->action;
-	
-	YAHOO_DebugLog("[YahooFileResume] Action: %d", pfr->action);
-	
-	if ( pfr->action == FILERESUME_RENAME ) {
-		struct yahoo_file_info *fi = (struct yahoo_file_info *)ft->files->data;
-		
-		YAHOO_DebugLog("[YahooFileResume] Renamed file!");
-		FREE( fi->filename );
-
-		fi->filename = strdup( pfr->szFilename );
-	}	
-	
-
-	SetEvent( ft->hWaitEvent );
-	return 0;
 }
 
 /**************** Send File ********************/
+/*
 static void __cdecl yahoo_send_filethread(void *psf) 
 {
 	y_filetransfer *sf = ( y_filetransfer* )psf;
 	struct yahoo_file_info *fi = (struct yahoo_file_info *)sf->files->data;
 	
-	ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, sf, 0);
+	ProtoBroadcastAck(m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, sf, 0);
 	
 	LOG(("who %s, msg: %s, filename: %s filesize: %ld", sf->who, sf->msg, fi->filename, fi->filesize));
 	
@@ -827,79 +732,56 @@ static void __cdecl yahoo_send_filethread(void *psf)
 	if (sf->pfts.currentFileNumber >= sf->pfts.totalFiles) {
 		free_ft(sf);
 	} else {
-		YAHOO_DebugLog("[yahoo_send_filethread] More files coming?");
+		DebugLog("[yahoo_send_filethread] More files coming?");
 	}
 
 }
+*/
 
-int YahooFileCancel(WPARAM wParam,LPARAM lParam) 
-{
-	CCSDATA* ccs = ( CCSDATA* )lParam;
-	y_filetransfer* ft = (y_filetransfer*)ccs->wParam;
-	
-	YAHOO_DebugLog("[YahooFileCancel]");
-	
-	if ( ft->hWaitEvent != INVALID_HANDLE_VALUE )
-		SetEvent( ft->hWaitEvent );
-	
-	ft->action = FILERESUME_CANCEL;
-	ft->cancel = 1;
-	return 0;
-}
+////////////////////////////////////////////////////////////////////////////////////////
+// SendFile - sends a file
 
-/*
- *
- */
-int YahooSendFile(WPARAM wParam,LPARAM lParam) 
+int __cdecl CYahooProto::SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles )
 {
 	DBVARIANT dbv;
 	y_filetransfer *sf;
-	CCSDATA *ccs;
-	char** files;
 	
 	LOG(("[YahooSendFile]"));
 	
-	if ( !yahooLoggedIn )
+	if ( !m_bLoggedIn )
 		return 0;
 
-	YAHOO_DebugLog("Gathering Data");
+	DebugLog("Getting Files");
 	
-	ccs = ( CCSDATA* )lParam;
-	//if ( YAHOO_GetWord( ccs->hContact, "Status", ID_STATUS_OFFLINE ) == ID_STATUS_OFFLINE )
-	//	return 0;
-
-	YAHOO_DebugLog("Getting Files");
-	
-	files = ( char** )ccs->lParam;
-	if ( files[1] != NULL ){
+	if ( ppszFiles[1] != NULL ){
 		MessageBoxA(NULL, "YAHOO protocol allows only one file to be sent at a time", "Yahoo", MB_OK | MB_ICONINFORMATION);
 		return 0;
  	}
 	
-	YAHOO_DebugLog("Getting Yahoo ID");
+	DebugLog("Getting Yahoo ID");
 	
-	if (!DBGetContactSettingString(ccs->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
+	if (!DBGetContactSettingString(hContact, m_szModuleName, YAHOO_LOGINID, &dbv)) {
 		long tFileSize = 0;
 		struct _stat statbuf;
 		struct yahoo_file_info *fi;
 		YList *fs=NULL;
 	
-		if ( _stat( files[0], &statbuf ) == 0 )
+		if ( _stat( ppszFiles[0], &statbuf ) == 0 )
 			tFileSize = statbuf.st_size;
 
 		fi = y_new(struct yahoo_file_info,1);
-		fi->filename = files[0];
+		fi->filename = ppszFiles[0];
 		fi->filesize = tFileSize;
 	
 		fs = y_list_append(fs, fi);
 	
-		sf = new_ft(ylad->id, ccs->hContact, dbv.pszVal, ( char* )ccs->wParam,
+		sf = new_ft(this, ylad->id, hContact, dbv.pszVal, ( char* )szDescription,
 					NULL, NULL, 0, fs, 1 /* sending */);
 					
 		DBFreeVariant(&dbv);
 		
 		if (sf == NULL) {
-			YAHOO_DebugLog("SF IS NULL!!!");
+			DebugLog("SF IS NULL!!!");
 			return 0;
 		}
 
@@ -915,28 +797,3 @@ int YahooSendFile(WPARAM wParam,LPARAM lParam)
 	LOG(("Exiting SendFile"));
 	return 0;
 }
-
-int YahooRecvFile(WPARAM wParam,LPARAM lParam) 
-{
-    DBEVENTINFO dbei;
-    CCSDATA *ccs = (CCSDATA *) lParam;
-    PROTORECVEVENT *pre = (PROTORECVEVENT *) ccs->lParam;
-    char *szDesc, *szFile;
-
-    DBDeleteContactSetting(ccs->hContact, "CList", "Hidden");
-    szFile = pre->szMessage + sizeof(DWORD);
-    szDesc = szFile + lstrlenA(szFile) + 1;
-    ZeroMemory(&dbei, sizeof(dbei));
-    dbei.cbSize = sizeof(dbei);
-    dbei.szModule = yahooProtocolName;
-    dbei.timestamp = pre->timestamp;
-    dbei.flags = pre->flags & (PREF_CREATEREAD ? DBEF_READ : 0);
-    dbei.eventType = EVENTTYPE_FILE;
-    dbei.cbBlob = sizeof(DWORD) + lstrlenA(szFile) + lstrlenA(szDesc) + 2;
-    dbei.pBlob = (PBYTE) pre->szMessage;
-    CallService(MS_DB_EVENT_ADD, (WPARAM) ccs->hContact, (LPARAM) & dbei);
-    return 0;
-}
-
-
-

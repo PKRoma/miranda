@@ -13,7 +13,7 @@
 #ifndef _YAHOO_YAHOO_H_
 #define _YAHOO_YAHOO_H_
 
-#define MIRANDA_VER 0x0700
+#define MIRANDA_VER 0x0800
 
 #include <m_stdhdr.h>
 
@@ -38,10 +38,13 @@ extern "C"
 
 #include <newpluginapi.h>
 #include <m_system.h>
+#include <m_system_cpp.h>
 #include <m_database.h>
 #include <m_protomod.h>
 #include <m_netlib.h>
 #include <m_clist.h>
+#include <m_protosvc.h>
+#include <m_protoint.h>
 #include <m_langpack.h>
 
 //=======================================================
@@ -63,7 +66,7 @@ extern "C"
 #define YAHOO_DEFAULT_JAPAN_LOGIN_SERVER	"cs.yahoo.co.jp"	
 #define YAHOO_CUSTOM_STATUS					99
 
-#define YAHOO_DEBUGLOG YAHOO_DebugLog
+#define YAHOO_DEBUGLOG DebugLog
 
 extern int do_yahoo_debug;
 
@@ -84,9 +87,6 @@ extern int do_yahoo_debug;
 
 #define STYLE_DEFAULTBGCOLOUR     RGB(173,206,247)
 
-#define MENU_ITEMS_COUNT 7
-extern	HANDLE         YahooMenuItems[ MENU_ITEMS_COUNT ];
-
 #define LocalEventUnhook(hook)	if(hook) UnhookEvent(hook)
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
 
@@ -99,107 +99,45 @@ struct _conn {
 	int remove;
 };
 
+#include "proto.h"
+
 //=======================================================
 //	Defines
 //=======================================================
-extern HANDLE			hNetlibUser;
-extern HINSTANCE		hinstance;
-extern int				yahooStatus, mUnreadMessages;
-extern char				yahooProtocolName[MAX_PATH];
-extern BOOL             yahooLoggedIn;
-extern HANDLE           YahooMenuItems[ MENU_ITEMS_COUNT ];
-
+extern HINSTANCE		hInstance;
 
 #ifdef HTTP_GATEWAY
 extern int 				iHTTPGateway;
 #endif
 
-HANDLE __stdcall YAHOO_CreateProtoServiceFunction( 
-	const char* szService,
-	MIRANDASERVICE serviceProc );
-
 int __stdcall YAHOO_CallService( const char* szSvcName, WPARAM wParam, LPARAM lParam );
-
-#ifdef __GNUC__
-int YAHOO_DebugLog( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
-#else
-int YAHOO_DebugLog( const char *fmt, ... );
-#endif
-
-DWORD __stdcall YAHOO_GetByte( const char* valueName, int parDefltValue );
-DWORD __stdcall YAHOO_SetByte( const char* valueName, int parValue );
-
-DWORD __stdcall YAHOO_GetDword( const char* valueName, DWORD parDefltValue );
-DWORD __stdcall YAHOO_SetDword( const char* valueName, DWORD parValue );
-
-WORD __stdcall YAHOO_GetWord( HANDLE hContact, const char* valueName, int parDefltValue );
-DWORD __stdcall YAHOO_SetWord( HANDLE hContact, const char* valueName, int parValue );
-
-int __stdcall YAHOO_SendBroadcast( HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam );
-
-DWORD __stdcall YAHOO_SetString( HANDLE hContact, const char* valueName, const char* parValue );
-DWORD __stdcall YAHOO_SetStringUtf( HANDLE hContact, const char* valueName, const char* parValue );
-
-DWORD __stdcall YAHOO_Set_Protocol( HANDLE hContact, int protocol );
-
-int __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, const char *szURL );
 
 #define YAHOO_hasnotification() ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)
 
-int YAHOO_shownotification(const char *title, const char *info, DWORD flags);
 int YAHOO_util_dbsettingchanged(WPARAM wParam, LPARAM lParam);
 void YAHOO_utils_logversion();
-void YAHOO_ShowError(const char *title, const char *buff);
 
 //Services.c
-int GetCaps(WPARAM wParam,LPARAM lParam);
-int GetName(WPARAM wParam,LPARAM lParam);
 int SetStatus(WPARAM wParam,LPARAM lParam);
 int GetStatus(WPARAM wParam,LPARAM lParam);
-void yahoo_util_broadcaststatus(int s);
-void __cdecl yahoo_server_main(void *empty);
-const char *find_buddy( const char *yahoo_id);
-HANDLE getbuddyH(const char *yahoo_id);
 
-void yahoo_logoff_buddies();
-void yahoo_set_status(int myyahooStatus, char *msg, int away);
 yahoo_status miranda_to_yahoo(int myyahooStatus);
-void yahoo_stealth(const char *buddy, int add);
 
 void register_callbacks();
 char* YAHOO_GetContactName(HANDLE hContact);
 
-void YAHOO_remove_buddy(const char *who, int protocol);
-void YAHOO_reject(const char *who, int protocol, const char *msg);
-void YAHOO_accept(const char *who, int protocol);
-void YAHOO_add_buddy(const char *who, int protocol, const char *group, const char *msg);
-HANDLE add_buddy( const char *yahoo_id, const char *yahoo_name, int protocol, DWORD flags );
-void YAHOO_sendtyping(const char *who, int protocol, int stat);
-
-typedef struct {
-	char yahoo_id[255];
-	char password[255];
-	int id;
-	int fd;
-	int status;
-	char *msg;
-	int  rpkts;
-} yahoo_local_account;
+#ifdef __GNUC__
+	int DebugLog( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
+#else
+	int DebugLog( const char *fmt, ... );
+#endif
 
 void SetButtonCheck(HWND hwndDlg, int CtrlID, BOOL bCheck);
-void YahooOpenURL(const char *url, int autoLogin);
 
 char * yahoo_status_code(enum yahoo_status s);
-void YAHOO_refresh();
-int LoadYahooServices(void);
-void yahoo_logout();
 void yahoo_callback(struct _conn *c, yahoo_input_condition cond);
-void ext_yahoo_got_im(int id, const char *me, const char *who, int protocol, const char *msg, long tm, int stat, int utf8, int buddy_icon, const char *seqn = NULL, int sendn=0);
-void ext_yahoo_login(int login_mode);
-int YahooGotoMailboxCommand( WPARAM wParam, LPARAM lParam );
 
-void YahooMenuInit( void );
-void YahooIconsInit( void );
-HICON LoadIconEx( const char* name );
-int YahooIdleEvent(WPARAM wParam, LPARAM lParam);
+CYahooProto* __fastcall getProtoById( int id );
+#define GETPROTOBYID(A) CYahooProto* ppro = getProtoById(A); if ( ppro ) ppro
+
 #endif

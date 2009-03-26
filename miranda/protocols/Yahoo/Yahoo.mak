@@ -51,6 +51,7 @@ CLEAN :
 	-@erase "$(INTDIR)\libyahoo2.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\options.obj"
+	-@erase "$(INTDIR)\proto.obj"
 	-@erase "$(INTDIR)\search.obj"
 	-@erase "$(INTDIR)\server.obj"
 	-@erase "$(INTDIR)\services.obj"
@@ -105,7 +106,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\util.obj" \
 	"$(INTDIR)\webcam.obj" \
 	"$(INTDIR)\yahoo.obj" \
-	"$(INTDIR)\Yahoo.res"
+	"$(INTDIR)\Yahoo.res" \
+	"$(INTDIR)\proto.obj"
 
 "..\..\Bin\Release\Plugins\Yahoo.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -132,6 +134,7 @@ CLEAN :
 	-@erase "$(INTDIR)\libyahoo2.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\options.obj"
+	-@erase "$(INTDIR)\proto.obj"
 	-@erase "$(INTDIR)\search.obj"
 	-@erase "$(INTDIR)\server.obj"
 	-@erase "$(INTDIR)\services.obj"
@@ -186,7 +189,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\util.obj" \
 	"$(INTDIR)\webcam.obj" \
 	"$(INTDIR)\yahoo.obj" \
-	"$(INTDIR)\Yahoo.res"
+	"$(INTDIR)\Yahoo.res" \
+	"$(INTDIR)\proto.obj"
 
 "..\..\Bin\Debug\Plugins\Yahoo.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -213,6 +217,7 @@ CLEAN :
 	-@erase "$(INTDIR)\libyahoo2.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\options.obj"
+	-@erase "$(INTDIR)\proto.obj"
 	-@erase "$(INTDIR)\search.obj"
 	-@erase "$(INTDIR)\server.obj"
 	-@erase "$(INTDIR)\services.obj"
@@ -267,7 +272,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\util.obj" \
 	"$(INTDIR)\webcam.obj" \
 	"$(INTDIR)\yahoo.obj" \
-	"$(INTDIR)\Yahoo.res"
+	"$(INTDIR)\Yahoo.res" \
+	"$(INTDIR)\proto.obj"
 
 "..\..\Bin\Debug Unicode\Plugins\Yahoo.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -294,6 +300,7 @@ CLEAN :
 	-@erase "$(INTDIR)\libyahoo2.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\options.obj"
+	-@erase "$(INTDIR)\proto.obj"
 	-@erase "$(INTDIR)\search.obj"
 	-@erase "$(INTDIR)\server.obj"
 	-@erase "$(INTDIR)\services.obj"
@@ -348,7 +355,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\util.obj" \
 	"$(INTDIR)\webcam.obj" \
 	"$(INTDIR)\yahoo.obj" \
-	"$(INTDIR)\Yahoo.res"
+	"$(INTDIR)\Yahoo.res" \
+	"$(INTDIR)\proto.obj"
 
 "..\..\Bin\Release Unicode\Plugins\Yahoo.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -744,6 +752,11 @@ CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /
 SOURCE=.\options.cpp
 
 "$(INTDIR)\options.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Yahoo.pch"
+
+
+SOURCE=.\proto.cpp
+
+"$(INTDIR)\proto.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Yahoo.pch"
 
 
 SOURCE=.\search.cpp

@@ -179,7 +179,6 @@
 				MapFileName=""
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				OptimizeForWindows98="0"
 				LinkTimeCodeGeneration="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -442,6 +441,10 @@
 			</File>
 			<File
 				RelativePath=".\options.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\proto.cpp"
 				>
 			</File>
 			<File
@@ -767,6 +770,10 @@
 			</File>
 			<File
 				RelativePath=".\ignore.h"
+				>
+			</File>
+			<File
+				RelativePath=".\proto.h"
 				>
 			</File>
 			<File

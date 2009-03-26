@@ -13,9 +13,7 @@
 #include "yahoo.h"
 #include "ignore.h"
 
-extern yahoo_local_account *ylad;
-
-const YList* YAHOO_GetIgnoreList(void)
+const YList* CYahooProto::GetIgnoreList(void)
 {
 	if (ylad->id < 1)
 		return NULL;
@@ -23,7 +21,7 @@ const YList* YAHOO_GetIgnoreList(void)
 	return yahoo_get_ignorelist(ylad->id);
 }
 
-void YAHOO_IgnoreBuddy(const char *buddy, int ignore)
+void CYahooProto::IgnoreBuddy(const char *buddy, int ignore)
 {
 	if (ylad->id < 1)
 		return;
@@ -32,16 +30,10 @@ void YAHOO_IgnoreBuddy(const char *buddy, int ignore)
 	//yahoo_get_list(ylad->id);
 }
 
-void ext_yahoo_got_ignore(int id, YList * igns)
-{
-    LOG(("ext_yahoo_got_ignore"));
-}
 
-int YAHOO_BuddyIgnored(const char *who)
+int CYahooProto::BuddyIgnored(const char *who)
 {
-	YList *l;
-		
-	l = (YList *)YAHOO_GetIgnoreList();
+	const YList *l = GetIgnoreList();
 	while (l != NULL) {
 		struct yahoo_buddy *b = (struct yahoo_buddy *) l->data;
 			

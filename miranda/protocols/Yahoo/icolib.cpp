@@ -33,31 +33,30 @@ static iconList[] = {
 	{	LPGEN("Calendar"),     "calendar",   IDI_CALENDAR   }
 };
 
-void YahooIconsInit( void )
+void CYahooProto::IconsInit( void )
 {
-	int i;
-	SKINICONDESC sid = {0};
 	char szFile[MAX_PATH], szSection[MAX_PATH];
-	GetModuleFileNameA(hinstance, szFile, MAX_PATH);
+	GetModuleFileNameA(hInstance, szFile, MAX_PATH);
 
+	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.pszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
-    mir_snprintf( szSection, sizeof(szSection), "%s/%s", Translate("Protocols"), Translate( yahooProtocolName ) );
+	mir_snprintf( szSection, sizeof(szSection), "%s/%s", Translate("Protocols"), Translate( m_szModuleName ) );
 	sid.pszSection = szSection;
 
-	for ( i = 0; i < SIZEOF(iconList); i++ ) {
+	for ( int i = 0; i < SIZEOF(iconList); i++ ) {
 		char szSettingName[100];
-		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", yahooProtocolName, iconList[i].szName );
+		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", m_szModuleName, iconList[i].szName );
 		sid.pszName = szSettingName;
 		sid.pszDescription = Translate( iconList[i].szDescr );
 		sid.iDefaultIndex = -iconList[i].defIconID;
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 }	}
 
-HICON LoadIconEx( const char* name )
+HICON CYahooProto::LoadIconEx( const char* name )
 {
 	char szSettingName[100];
-	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", yahooProtocolName, name );
+	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", m_szModuleName, name );
 	return ( HICON )CallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
 }

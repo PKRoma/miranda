@@ -255,6 +255,10 @@ SOURCE=.\options.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\proto.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\resource.h
 # End Source File
 # Begin Source File
@@ -321,6 +325,10 @@ SOURCE=.\im.h
 # Begin Source File
 
 SOURCE=.\options.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\proto.h
 # End Source File
 # Begin Source File
 

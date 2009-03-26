@@ -16,6 +16,7 @@
 #define FILERESUME_CANCEL	11
 
 typedef struct {
+	CYahooProto* ppro;
 	int id;
 	char *who;
 	char *msg;

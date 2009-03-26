@@ -15,13 +15,11 @@
 
 #ifdef HTTP_GATEWAY
 
-extern yahoo_local_account * ylad;
-
 int YAHOO_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPREQUEST *nlhr)
 {
 	NETLIBHTTPPROXYINFO nlhpi;
 
-	YAHOO_DebugLog("YAHOO_httpGatewayInit!!!");
+	DebugLog("YAHOO_httpGatewayInit!!!");
 	
 	ZeroMemory(&nlhpi, sizeof(nlhpi) );
 	nlhpi.cbSize = sizeof(nlhpi);
@@ -34,7 +32,7 @@ int YAHOO_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPRE
 
 int YAHOO_httpGatewayWrapSend(HANDLE hConn, PBYTE buf, int len, int flags, MIRANDASERVICE pfnNetlibSend)
 {
-	YAHOO_DebugLog("YAHOO_httpGatewayWrapSend!!! Len: %d", len);
+	DebugLog("YAHOO_httpGatewayWrapSend!!! Len: %d", len);
 
 	if (len == 0 && ylad->id > 0) { // we need to send something!!!
 		int n;
@@ -42,12 +40,12 @@ int YAHOO_httpGatewayWrapSend(HANDLE hConn, PBYTE buf, int len, int flags, MIRAN
 		int ret = 0;
 		
 		if (z != NULL) {
-			YAHOO_DebugLog("YAHOO_httpGatewayWrapSend!!! Got Len: %d", n);
+			DebugLog("YAHOO_httpGatewayWrapSend!!! Got Len: %d", n);
 			NETLIBBUFFER tBuf = { ( char* )z, n, flags };
 			ret = pfnNetlibSend(( LPARAM )hConn, (WPARAM) &tBuf );
 			FREE(z);
 		} else {
-			YAHOO_DebugLog("YAHOO_httpGatewayWrapSend!!! GOT NULL???");
+			DebugLog("YAHOO_httpGatewayWrapSend!!! GOT NULL???");
 		}
 		
 		return ret;
@@ -60,15 +58,15 @@ int YAHOO_httpGatewayWrapSend(HANDLE hConn, PBYTE buf, int len, int flags, MIRAN
 
 PBYTE YAHOO_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST *nlhr, PBYTE buf, int len, int *outBufLen, void *(*NetlibRealloc)(void *, size_t))
 {
-    YAHOO_DebugLog("YAHOO_httpGatewayUnwrapRecv!!! Len: %d", len);
+    DebugLog("YAHOO_httpGatewayUnwrapRecv!!! Len: %d", len);
 
-    YAHOO_DebugLog("Got headers: %d", nlhr->headersCount);
+    DebugLog("Got headers: %d", nlhr->headersCount);
     /* we need to get the first 4 bytes! */
 	if (len < 4) 
 		return NULL;
 
 	ylad->rpkts = buf[0] + buf[1] *256;
-	YAHOO_DebugLog("Got packets: %d", ylad->rpkts);
+	DebugLog("Got packets: %d", ylad->rpkts);
 	
     if (len == 4){
         *outBufLen = 0;

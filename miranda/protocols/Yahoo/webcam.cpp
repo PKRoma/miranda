@@ -23,24 +23,22 @@
 #include <m_langpack.h>
 #include <m_message.h>
 
-extern yahoo_local_account * ylad;
-
 /* WEBCAM callbacks */
 void ext_yahoo_got_webcam_image(int id, const char *who,
 		const unsigned char *image, unsigned int image_size, unsigned int real_size,
 		unsigned int timestamp)
 {
-    LOG(("ext_yahoo_got_webcam_image"));
+	LOG(("ext_yahoo_got_webcam_image"));
 }
 
 void ext_yahoo_webcam_viewer(int id, const char *who, int connect)
 {
-    LOG(("ext_yahoo_webcam_viewer"));
+	LOG(("ext_yahoo_webcam_viewer"));
 }
 
 void ext_yahoo_webcam_closed(int id, const char *who, int reason)
 {
-    LOG(("ext_yahoo_webcam_closed"));
+	LOG(("ext_yahoo_webcam_closed"));
 }
 
 void ext_yahoo_webcam_data_request(int id, int send)
@@ -52,7 +50,7 @@ void ext_yahoo_webcam_invite(int id, const char *me, const char *from)
 {
 	LOG(("ext_yahoo_webcam_invite"));
 
-	ext_yahoo_got_im(id, me, from, 0, Translate("[miranda] Got webcam invite. (not currently supported)"), 0, 0, 0, -1);
+	GETPROTOBYID( id )->ext_got_im(me, from, 0, Translate("[miranda] Got webcam invite. (not currently supported)"), 0, 0, 0, -1);
 }
 
 void ext_yahoo_webcam_invite_reply(int id, const char *me, const char *from, int accept)
