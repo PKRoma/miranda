@@ -1089,7 +1089,6 @@ static BOOL CALLBACK DlgProcDspProfiles(HWND hwnd, UINT msg, WPARAM wParam, LPAR
    static int iInit = TRUE;
    static HWND hwndTab;
    static int iTabCount;
-   TranslateDialogDefault(hwnd);
 
    switch(msg)
    {
@@ -1101,6 +1100,7 @@ static BOOL CALLBACK DlgProcDspProfiles(HWND hwnd, UINT msg, WPARAM wParam, LPAR
          HWND hwndAdd;
          DISPLAYPROFILE dsp_default;
 
+		   TranslateDialogDefault(hwnd);
          hwndList = GetDlgItem(hwnd, IDC_PROFILELIST);
 
          hwndAdd = GetDlgItem(hwnd, IDC_DSP_ADD);
