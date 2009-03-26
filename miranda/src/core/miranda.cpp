@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MMI_SIZE_V1 (4*sizeof(void*))
 #define MMI_SIZE_V2 (7*sizeof(void*))
 
+int InitPathUtils(void);
 int InitialiseModularEngine(void);
 int LoadDefaultModules(void);
 void DestroyModularEngine(void);
@@ -846,5 +847,7 @@ int LoadSystemModule(void)
 	CreateServiceFunction(MS_SYSTEM_GET_UTFI,GetUtfInterface);
 	CreateServiceFunction(MS_SYSTEM_GETEXCEPTFILTER,GetExceptionFilter);
 	CreateServiceFunction(MS_SYSTEM_SETEXCEPTFILTER,SetExceptionFilter);
+
+	InitPathUtils();
 	return 0;
 }

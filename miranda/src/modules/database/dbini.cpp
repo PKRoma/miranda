@@ -317,65 +317,63 @@ static void DoAutoExec(void)
 	TCHAR szUse[7], szIniPath[MAX_PATH], szFindPath[MAX_PATH];
 	TCHAR *str2;
 	TCHAR buf[2048], szSecurity[11], szOverrideSecurityFilename[MAX_PATH], szOnCreateFilename[MAX_PATH];
-    char *szSafeSections, *szUnsafeSections;
-    int secur;
+	char *szSafeSections, *szUnsafeSections;
+	int secur;
 
 	GetPrivateProfileString(_T("AutoExec"),_T("Use"),_T("prompt"),szUse,SIZEOF(szUse),mirandabootini);
 	if(!lstrcmpi(szUse,_T("no"))) return;
 	GetPrivateProfileString(_T("AutoExec"),_T("Safe"),_T("CLC Icons CLUI CList SkinSounds"),buf,SIZEOF(buf),mirandabootini);
-    szSafeSections = mir_t2a(buf);
+	szSafeSections = mir_t2a(buf);
 	GetPrivateProfileString(_T("AutoExec"),_T("Unsafe"),_T("ICQ MSN"),buf,SIZEOF(buf),mirandabootini);
-    szUnsafeSections = mir_t2a(buf);
+	szUnsafeSections = mir_t2a(buf);
 	GetPrivateProfileString(_T("AutoExec"),_T("Warn"),_T("notsafe"),szSecurity,SIZEOF(szSecurity),mirandabootini);
 	if (!lstrcmpi(szSecurity,_T("none"))) secur = 0;
 	else if (!lstrcmpi(szSecurity,_T("notsafe"))) secur = 1;
 	else if (!lstrcmpi(szSecurity,_T("onlyunsafe"))) secur = 2;
 
-    GetPrivateProfileString(_T("AutoExec"),_T("OverrideSecurityFilename"),_T(""),szOverrideSecurityFilename,SIZEOF(szOverrideSecurityFilename),mirandabootini);
-    GetPrivateProfileString(_T("AutoExec"),_T("OnCreateFilename"),_T(""),szOnCreateFilename,SIZEOF(szOnCreateFilename),mirandabootini);
+	GetPrivateProfileString(_T("AutoExec"),_T("OverrideSecurityFilename"),_T(""),szOverrideSecurityFilename,SIZEOF(szOverrideSecurityFilename),mirandabootini);
+	GetPrivateProfileString(_T("AutoExec"),_T("OnCreateFilename"),_T(""),szOnCreateFilename,SIZEOF(szOnCreateFilename),mirandabootini);
 	GetPrivateProfileString(_T("AutoExec"),_T("Glob"),_T("autoexec_*.ini"),szFindPath,SIZEOF(szFindPath),mirandabootini);
     
 	REPLACEVARSDATA dat = {0};
 	dat.cbSize = sizeof(dat);
-    dat.dwFlags = RVF_TCHAR;
+	dat.dwFlags = RVF_TCHAR;
 
-    if (dbCreated && szOnCreateFilename[0])
-    {
-        str2 = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)szOnCreateFilename, (LPARAM)&dat);
-        pathToAbsoluteT(str2, szIniPath, NULL);
-        mir_free(str2);
+	if (dbCreated && szOnCreateFilename[0]) {
+		str2 = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)szOnCreateFilename, (LPARAM)&dat);
+		pathToAbsoluteT(str2, szIniPath, NULL);
+		mir_free(str2);
 
-        ProcessIniFile(szIniPath, szSafeSections, szUnsafeSections, 0, 1);
-    }
+		ProcessIniFile(szIniPath, szSafeSections, szUnsafeSections, 0, 1);
+	}
 
-    str2 = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)szFindPath, (LPARAM)&dat);
-    pathToAbsoluteT(str2, szFindPath, NULL);
-    mir_free(str2);
+	str2 = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)szFindPath, (LPARAM)&dat);
+	pathToAbsoluteT(str2, szFindPath, NULL);
+	mir_free(str2);
 
 	WIN32_FIND_DATA fd;
 	HANDLE hFind = FindFirstFile(szFindPath, &fd);
-    if (hFind == INVALID_HANDLE_VALUE) 
-    {
-        mir_free(szSafeSections);
-        mir_free(szUnsafeSections);
-        return;
-    }
+	if (hFind == INVALID_HANDLE_VALUE) {
+		mir_free(szSafeSections);
+		mir_free(szUnsafeSections);
+		return;
+	}
 
-    str2 = _tcsrchr(szFindPath, '\\');
+	str2 = _tcsrchr(szFindPath, '\\');
 	if (str2 == NULL) szFindPath[0] = 0;
 	else str2[1] = 0;
 
 	do {
-        bool secFN = lstrcmpi(fd.cFileName,szOverrideSecurityFilename) == 0;
+		bool secFN = lstrcmpi(fd.cFileName,szOverrideSecurityFilename) == 0;
 
-        mir_sntprintf(szIniPath, SIZEOF(szIniPath), _T("%s%s"), szFindPath, fd.cFileName);
+		mir_sntprintf(szIniPath, SIZEOF(szIniPath), _T("%s%s"), szFindPath, fd.cFileName);
 		if(!lstrcmpi(szUse,_T("prompt")) && !secFN) {
 			int result=DialogBoxParam(hMirandaInst,MAKEINTRESOURCE(IDD_INSTALLINI),NULL,InstallIniDlgProc,(LPARAM)szIniPath);
 			if(result==IDC_NOTOALL) break;
 			if(result==IDCANCEL) continue;
 		}
 
-        ProcessIniFile(szIniPath, szSafeSections, szUnsafeSections, secur, secFN);
+		ProcessIniFile(szIniPath, szSafeSections, szUnsafeSections, secur, secFN);
 
 		if(secFN)
 			DeleteFile(szIniPath);
@@ -406,8 +404,8 @@ static void DoAutoExec(void)
 		}
 	} while (FindNextFile(hFind, &fd));
 	FindClose(hFind);
-    mir_free(szSafeSections);
-    mir_free(szUnsafeSections);
+	mir_free(szSafeSections);
+	mir_free(szUnsafeSections);
 }
 
 static INT_PTR CheckIniImportNow(WPARAM, LPARAM)
@@ -424,7 +422,7 @@ int InitIni(void)
 	bModuleInitialized = true;
 
 	DoAutoExec();
-    pathToAbsoluteT(_T("."), szMirandaDir, NULL);
+	pathToAbsoluteT(_T("."), szMirandaDir, NULL);
 	hIniChangeNotification=FindFirstChangeNotification(szMirandaDir, 0, FILE_NOTIFY_CHANGE_FILE_NAME);
 	if (hIniChangeNotification != INVALID_HANDLE_VALUE) {
 		CreateServiceFunction("DB/Ini/CheckImportNow", CheckIniImportNow);

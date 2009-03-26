@@ -125,10 +125,10 @@ IconSourceFile* IconSourceFile_Get( const TCHAR* file, bool isPath )
 		return NULL;
 
     if (isPath)
-	    pathToAbsoluteT( file, fileFull, NULL );
-	    /// TODO: convert path to long - eliminate duplicate items
-    else
-        _tcscpy( fileFull, file );
+		 pathToAbsoluteT( file, fileFull, NULL );
+		 /// TODO: convert path to long - eliminate duplicate items
+	 else
+		 _tcscpy( fileFull, file );
 
 	IconSourceFile key = { fileFull };
 	int ix;

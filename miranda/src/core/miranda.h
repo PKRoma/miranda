@@ -149,7 +149,7 @@ int CreateDirectoryTreeW(const WCHAR *szDir);
 	#define pathToAbsoluteT pathToAbsoluteW
 	#define CreateDirectoryTreeT CreateDirectoryTreeW
 #else
-    #define pathToAbsoluteT pathToAbsolute
+	#define pathToAbsoluteT pathToAbsolute
 	#define CreateDirectoryTreeT CreateDirectoryTree
 #endif
 

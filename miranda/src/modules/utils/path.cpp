@@ -161,17 +161,17 @@ int pathToAbsoluteW(const TCHAR *pSrc, TCHAR *pOut, TCHAR* base)
 	if ( base == NULL )
 		base = szMirandaPathW;
 
-    TCHAR buf[MAX_PATH];
-    if ( pSrc[0] < ' ')
+	TCHAR buf[MAX_PATH];
+	if ( pSrc[0] < ' ')
 		return mir_sntprintf( pOut, MAX_PATH, _T("%s"), pSrc );
-    else if ( pathIsAbsoluteW( pSrc ))
-        return GetFullPathName(pSrc, MAX_PATH, pOut, NULL);
+	else if ( pathIsAbsoluteW( pSrc ))
+		return GetFullPathName(pSrc, MAX_PATH, pOut, NULL);
 	else if ( pSrc[0] != '\\' )
 		mir_sntprintf( buf, MAX_PATH, _T("%s%s"), base, pSrc );
 	else
 		mir_sntprintf( buf, MAX_PATH, _T("%s%s"), base, pSrc+1 );
 
-    return GetFullPathName(buf, MAX_PATH, pOut, NULL);
+	return GetFullPathName(buf, MAX_PATH, pOut, NULL);
 }
 
 static INT_PTR pathToAbsoluteW(WPARAM wParam, LPARAM lParam)

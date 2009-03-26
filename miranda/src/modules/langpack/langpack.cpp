@@ -330,10 +330,10 @@ int LoadLangPackModule(void)
 
 	ZeroMemory(&langPack,sizeof(langPack));
 	LoadLangPackServices();
-    pathToAbsoluteT(_T("langpack_*.txt"), szSearch, NULL); 
+	pathToAbsoluteT(_T("langpack_*.txt"), szSearch, NULL); 
 	hFind = FindFirstFile( szSearch, &fd );
 	if( hFind != INVALID_HANDLE_VALUE ) {
-        pathToAbsoluteT(fd.cFileName, szSearch, NULL); 
+		pathToAbsoluteT(fd.cFileName, szSearch, NULL); 
 		FindClose(hFind);
 		LoadLangPack(szSearch);
 	}

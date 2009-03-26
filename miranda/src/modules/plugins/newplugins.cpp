@@ -1074,7 +1074,7 @@ int LoadNewPluginsModuleInfos(void)
 	pluginCoreLink.KillObjectEventHooks           = KillObjectEventHooks;
 
 	// remember where the mirandaboot.ini goes
-    pathToAbsoluteT(_T("mirandaboot.ini"), mirandabootini, NULL);
+	pathToAbsoluteT(_T("mirandaboot.ini"), mirandabootini, NULL);
 	// look for all *.dll's
 	enumPlugins(scanPluginsDir, 0, 0);
 	// the database will select which db plugin to use, or fail if no profile is selected

@@ -192,8 +192,7 @@ static int getProfileCmdLineArgs(TCHAR * szProfile, size_t cch)
 void getProfileCmdLine(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 {
 	TCHAR buf[MAX_PATH];
-	if (getProfileCmdLineArgs(buf, SIZEOF(buf))) 
-    {
+	if (getProfileCmdLineArgs(buf, SIZEOF(buf))) {
 		// have something that looks like a .dat, with or without .dat in the filename
 		pathToAbsoluteT(buf, szProfile, profiledir); 
 		if (!isValidProfileName(szProfile))
@@ -373,9 +372,9 @@ int LoadDatabaseModule(void)
 	int iReturn = 0;
 	TCHAR szProfile[MAX_PATH];
 
-    pathToAbsoluteT(_T("."), szProfile, NULL);
-    _tchdir(szProfile);
-    szProfile[0] = 0;
+	pathToAbsoluteT(_T("."), szProfile, NULL);
+	_tchdir(szProfile);
+	szProfile[0] = 0;
 
 	// load the older basic services of the db
 	InitTime();

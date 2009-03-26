@@ -30,7 +30,6 @@ int InitHyperlink(void);
 int InitColourPicker(void);
 int InitBitmapFilter(void);
 void InitXmlApi(void);
-int InitPathUtils(void);
 INT_PTR GetMD5Interface(WPARAM, LPARAM);
 INT_PTR GetSHA1Interface(WPARAM, LPARAM);
 
@@ -456,7 +455,6 @@ int LoadUtilsModule(void)
 	InitHyperlink();
 	InitColourPicker();
 	InitBitmapFilter();
-	InitPathUtils();
 	InitXmlApi();
 	return 0;
 }
