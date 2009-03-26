@@ -351,12 +351,12 @@ static int DeactivationThread( DeactivationThreadParam* param )
 	}
 
 	KillObjectThreads( p ); // waits for them before terminating
+	KillObjectEventHooks( p ); // untie an object from the outside world
 
 	if ( param->fnUninit )
 		param->fnUninit( p );
 
 	KillObjectServices( p );
-	KillObjectEventHooks( p );
 	delete param;
 	return 0;
 }
