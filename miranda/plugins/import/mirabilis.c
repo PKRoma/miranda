@@ -987,8 +987,8 @@ BOOL ImportExtendedMessage(DWORD dwOffset)
 	int nHistoryCount = 0;
 	char* pszText = 0;
 	DWORD dwRichTextOffset = 0;
-	WORD wRichTextLength = 0;
-	WORD wLength = 0;
+	DWORD wRichTextLength = 0;
+	DWORD wLength = 0;
 	BOOL bFreeMe = FALSE;
 
 	// Get timestamp offset. In ICQ, event timestamps are stored
@@ -1035,7 +1035,7 @@ BOOL ImportExtendedMessage(DWORD dwOffset)
 		pszText = _strdup(pDat + dwRichTextOffset + wRichTextLength + 2);
 		bFreeMe = TRUE;
 		mir_utf8decode(pszText, NULL);
-		wLength = strlen(pszText)+1;
+		wLength = (DWORD)strlen(pszText)+1;
 	}
 	else {
 		// Use the ANSI text segment

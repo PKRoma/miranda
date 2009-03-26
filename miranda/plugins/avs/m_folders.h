@@ -135,7 +135,7 @@ typedef struct{
 #ifndef FOLDERS_NO_HELPER_FUNCTIONS
 //#include "../../../include/newpluginapi.h"
 
-__inline static int FoldersRegisterCustomPath(const char *section, const char *name, const char *defaultPath)
+__inline static INT_PTR FoldersRegisterCustomPath(const char *section, const char *name, const char *defaultPath)
 {
 	FOLDERSDATA fd = {0};
 	if (!ServiceExists(MS_FOLDERS_REGISTER_PATH)) return 1;
@@ -148,7 +148,7 @@ __inline static int FoldersRegisterCustomPath(const char *section, const char *n
 	return CallService(MS_FOLDERS_REGISTER_PATH, 0, (LPARAM) &fd);
 }
 
-__inline static int FoldersRegisterCustomPathW(const char *section, const char *name, const wchar_t *defaultPathW)
+__inline static INT_PTR FoldersRegisterCustomPathW(const char *section, const char *name, const wchar_t *defaultPathW)
 {
 	FOLDERSDATA fd = {0};
 	if (!ServiceExists(MS_FOLDERS_REGISTER_PATH)) return 1;
@@ -162,13 +162,13 @@ __inline static int FoldersRegisterCustomPathW(const char *section, const char *
 	return CallService(MS_FOLDERS_REGISTER_PATH, 0, (LPARAM) &fd);
 }
 
-__inline static int FoldersGetCustomPath(HANDLE hFolderEntry, char *path, const int size, char *notFound)
+__inline static INT_PTR FoldersGetCustomPath(HANDLE hFolderEntry, char *path, const int size, char *notFound)
 {
 	FOLDERSGETDATA fgd = {0};
 	fgd.cbSize = sizeof(FOLDERSGETDATA);
 	fgd.nMaxPathSize = size;
 	fgd.szPath = path;
-	int res = CallService(MS_FOLDERS_GET_PATH, (WPARAM) hFolderEntry, (LPARAM) &fgd);
+	INT_PTR res = CallService(MS_FOLDERS_GET_PATH, (WPARAM) hFolderEntry, (LPARAM) &fgd);
 	if (res)
 		{
 			strncpy(path, notFound, size);
@@ -177,13 +177,13 @@ __inline static int FoldersGetCustomPath(HANDLE hFolderEntry, char *path, const 
 	return res;
 }
 
-__inline static int FoldersGetCustomPathW(HANDLE hFolderEntry, wchar_t *pathW, const int count, wchar_t *notFoundW)
+__inline static INT_PTR FoldersGetCustomPathW(HANDLE hFolderEntry, wchar_t *pathW, const int count, wchar_t *notFoundW)
 {
 	FOLDERSGETDATA fgd = {0};
 	fgd.cbSize = sizeof(FOLDERSGETDATA);
 	fgd.nMaxPathSize = count;
 	fgd.szPathW = pathW;
-	int res = CallService(MS_FOLDERS_GET_PATH, (WPARAM) hFolderEntry, (LPARAM) &fgd);
+	INT_PTR res = CallService(MS_FOLDERS_GET_PATH, (WPARAM) hFolderEntry, (LPARAM) &fgd);
 	if (res)
 		{
 			wcsncpy(pathW, notFoundW, count);
