@@ -80,7 +80,7 @@ static BOOL CALLBACK TranslateDialogEnumProc(HWND hwnd,LPARAM lParam)
 		for(i=0;lptd->ignoreControls[i];i++) if(lptd->ignoreControls[i]==id) return TRUE;
 
 	GetClassName(hwnd,szClass,SIZEOF(szClass));
-	if(!lstrcmpi(szClass,_T("static")) || !lstrcmpi(szClass,_T("hyperlink")) || !lstrcmpi(szClass,_T("button")) || !lstrcmpi(szClass,_T("MButtonClass")))
+	if(!lstrcmpi(szClass,_T("static")) || !lstrcmpi(szClass,_T("hyperlink")) || !lstrcmpi(szClass,_T("button")) || !lstrcmpi(szClass,_T("MButtonClass")) || !lstrcmpi(szClass,_T("MHeaderbarCtrl")))
 		TranslateWindow( hwnd );
 	else if(!lstrcmpi(szClass,_T("edit"))) {
 		if(lptd->flags&LPTDF_NOIGNOREEDIT || GetWindowLongPtr(hwnd,GWL_STYLE)&ES_READONLY)
