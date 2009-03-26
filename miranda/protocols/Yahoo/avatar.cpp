@@ -103,7 +103,7 @@ void __cdecl CYahooProto::send_avt_thread(void *psf)
 	}
 
 	SetByte("AvatarUL", 1);
-	yahoo_send_avatar(ylad->id, sf->filename, sf->filesize, &upload_avt, sf);
+	yahoo_send_avatar(m_id, sf->filename, sf->filesize, &upload_avt, sf);
 
 	free(sf->filename);
 	free(sf);
@@ -183,7 +183,7 @@ void __cdecl CYahooProto::recv_avatarthread(void *pavt)
 			if (nlhrReply->resultCode != 200) {
 				LOG(("Update server returned '%d' instead of 200. It also sent the following: %s", nlhrReply->resultCode, nlhrReply->szResultDescr));
 				// make sure it's a real problem and not a problem w/ our connection
-				yahoo_send_picture_info(ylad->id, avt->who, 3, avt->pic_url, avt->cksum);
+				yahoo_send_picture_info(m_id, avt->who, 3, avt->pic_url, avt->cksum);
 				error = 1;
 			} else if (nlhrReply->dataLength < 1 || nlhrReply->pData == NULL) {
 				LOG(("No data??? Got %d bytes.", nlhrReply->dataLength));
@@ -264,7 +264,7 @@ void CYahooProto::ext_got_picture(const char *me, const char *who, const char *p
 			/* need to send avatar info */
 			if (!GetByte( "ShowAvatars", 1 )) {
 				LOG(("[ext_yahoo_got_picture] We are not using/showing avatars!"));
-				yahoo_send_picture_update(ylad->id, who, 0); // no avatar (disabled)
+				yahoo_send_picture_update(m_id, who, 0); // no avatar (disabled)
 				return;
 			}
 		
@@ -275,7 +275,7 @@ void CYahooProto::ext_got_picture(const char *me, const char *who, const char *p
 				if (!DBGetContactSettingString(NULL, m_szModuleName, "AvatarURL", &dbv)) {
 					LOG(("[ext_yahoo_got_picture] Sending url: %s checksum: %d to '%s'!", dbv.pszVal, cksum, who));
 					//void yahoo_send_picture_info(int id, const char *me, const char *who, const char *pic_url, int cksum)
-					yahoo_send_picture_info(ylad->id, who, 2, dbv.pszVal, cksum);
+					yahoo_send_picture_info(m_id, who, 2, dbv.pszVal, cksum);
 					DBFreeVariant(&dbv);
 					break;
 				} else
@@ -362,7 +362,7 @@ void CYahooProto::ext_got_picture(const char *me, const char *who, const char *p
 			/* need to send avatar info */
 			if (!GetByte( "ShowAvatars", 1 )) {
 				LOG(("[ext_yahoo_got_picture] We are not using/showing avatars!"));
-				yahoo_send_picture_update(ylad->id, who, 0); // no avatar (disabled)
+				yahoo_send_picture_update(m_id, who, 0); // no avatar (disabled)
 				return;
 			}
 		
@@ -372,7 +372,7 @@ void CYahooProto::ext_got_picture(const char *me, const char *who, const char *p
 			if (mcksum == 0) {
 				/* this should NEVER Happen??? */
 				LOG(("[ext_yahoo_got_picture] No personal checksum? and Invalidate?!"));
-				yahoo_send_picture_update(ylad->id, who, 0); // no avatar (disabled)
+				yahoo_send_picture_update(m_id, who, 0); // no avatar (disabled)
 				return;
 			}
 			
@@ -412,7 +412,7 @@ void CYahooProto::ext_got_picture(const char *me, const char *who, const char *p
 						}
 					} else {
 						LOG(("[ext_yahoo_got_picture] URL doesn't match? Tell them the right thing!!!"));
-						yahoo_send_picture_info(ylad->id, who, 2, dbv.pszVal, mcksum);
+						yahoo_send_picture_info(m_id, who, 2, dbv.pszVal, mcksum);
 					}
 					// don't leak stuff
 					DBFreeVariant(&dbv);
@@ -525,7 +525,7 @@ void CYahooProto::ext_got_picture_upload(const char *me, const char *url,unsigne
 
 		// This is only meant for message sessions, but we don't got those in miranda yet
 		//YAHOO_bcast_picture_checksum(cksum);
-		yahoo_send_picture_checksum(ylad->id, NULL, cksum);
+		yahoo_send_picture_checksum(m_id, NULL, cksum);
 
 		// need to tell the stupid Yahoo that our icon updated
 		//YAHOO_bcast_picture_update(2);
@@ -540,7 +540,7 @@ void CYahooProto::ext_got_picture_upload(const char *me, const char *url,unsigne
 
 		LOG(("[ext_yahoo_got_picture] Sending url: %s checksum: %d to '%s'!", url, cksum, dbv.pszVal));
 		//void yahoo_send_picture_info(int id, const char *me, const char *who, const char *pic_url, int cksum)
-		yahoo_send_picture_info(ylad->id, dbv.pszVal, 2, url, cksum);
+		yahoo_send_picture_info(m_id, dbv.pszVal, 2, url, cksum);
 
 		DBDeleteContactSetting(NULL, m_szModuleName, "AvatarInv");
 		DBFreeVariant(&dbv);
@@ -592,7 +592,7 @@ void CYahooProto::request_avatar(const char* who)
 			DBWriteContactSettingDword(hContact, m_szModuleName, "PictLastCheck", (DWORD)cur_time);
 
 			LOG(("Requesting Avatar for: %s", who));
-			yahoo_request_buddy_avatar(ylad->id, who);
+			yahoo_request_buddy_avatar(m_id, who);
 	} else {
 		LOG(("Avatar Not Available for: %s Last Check: %ld Current: %ld (Flood Check in Effect)", who, last_chk, cur_time));
 	}
@@ -796,7 +796,7 @@ int __cdecl CYahooProto::SetMyAvatar(WPARAM wParam, LPARAM lParam)
 		DBDeleteContactSetting(NULL, m_szModuleName, "AvatarTS");	
 
 		/* Send a Yahoo packet saying we don't got an avatar anymore */
-		yahoo_send_picture_status(ylad->id, 0);
+		yahoo_send_picture_status(m_id, 0);
 
 		SetByte("ShareAvatar",0);
 
@@ -852,7 +852,7 @@ int __cdecl CYahooProto::SetMyAvatar(WPARAM wParam, LPARAM lParam)
 				/*	Set Sharing to ON if it's OFF */
 				if (GetByte( "ShareAvatar", 0 ) != 2) {
 					SetByte( "ShareAvatar", 2 );
-					yahoo_send_picture_status(ylad->id, 2);
+					yahoo_send_picture_status(m_id, 2);
 				}
 
 				SendAvatar(szMyFile);

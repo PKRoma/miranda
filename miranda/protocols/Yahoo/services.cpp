@@ -322,7 +322,7 @@ int __cdecl CYahooProto::OnRefreshCommand( WPARAM wParam, LPARAM lParam )
 		return 0;
 	}
 
-	yahoo_refresh(ylad->id);
+	yahoo_refresh(m_id);
 	return 0;
 }
 

@@ -15,19 +15,19 @@
 
 const YList* CYahooProto::GetIgnoreList(void)
 {
-	if (ylad->id < 1)
+	if (m_id < 1)
 		return NULL;
 	
-	return yahoo_get_ignorelist(ylad->id);
+	return yahoo_get_ignorelist(m_id);
 }
 
 void CYahooProto::IgnoreBuddy(const char *buddy, int ignore)
 {
-	if (ylad->id < 1)
+	if (m_id < 1)
 		return;
 	
-	yahoo_ignore_buddy(ylad->id, buddy, ignore);
-	//yahoo_get_list(ylad->id);
+	yahoo_ignore_buddy(m_id, buddy, ignore);
+	//yahoo_get_list(m_id);
 }
 
 

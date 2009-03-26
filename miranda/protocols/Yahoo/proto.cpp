@@ -30,7 +30,6 @@ CYahooProto::CYahooProto( const char* aProtoName, const TCHAR* aUserName ) :
 
 	m_startStatus = ID_STATUS_ONLINE;
 
-	ylad = y_new0(yahoo_local_account, 1);
 	logoff_buddies();
 
 	SkinAddNewSoundEx(Translate( "mail" ), m_szModuleName, "New E-mail available in Inbox" );
@@ -45,8 +44,6 @@ CYahooProto::~CYahooProto()
 		logout();
 	DebugLog("Logged out");
 
-	FREE(ylad);
-	
 	DestroyHookableEvent(hYahooNudge);
 
 	mir_free( m_szModuleName );
@@ -407,7 +404,7 @@ int __cdecl CYahooProto::FileDeny( HANDLE /*hContact*/, HANDLE hTransfer, const 
 		struct yahoo_file_info *fi = (struct yahoo_file_info *)ft->files->data;
 
 		DebugLog("[] DC Detected: Denying File Transfer!");
-		yahoo_ftdc_deny(ylad->id, ft->who, fi->filename, ft->ftoken, 2);	
+		yahoo_ftdc_deny(m_id, ft->who, fi->filename, ft->ftoken, 2);	
 	}
 	return 0;
 }
@@ -609,7 +606,7 @@ int __cdecl CYahooProto::SetStatus( int iNewStatus )
 		*/
 		if (!DBGetContactSettingString(NULL, m_szModuleName, YAHOO_LOGINID, &dbv)) {
 			if (lstrlenA(dbv.pszVal) > 0) {
-				lstrcpynA(ylad->yahoo_id, dbv.pszVal, 255);
+				lstrcpynA(m_yahoo_id, dbv.pszVal, 255);
 			} else
 				err++;
 			DBFreeVariant(&dbv);
@@ -624,7 +621,7 @@ int __cdecl CYahooProto::SetStatus( int iNewStatus )
 			if (!DBGetContactSettingString(NULL, m_szModuleName, YAHOO_PASSWORD, &dbv)) {
 				CallService(MS_DB_CRYPT_DECODESTRING, lstrlenA(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
 				if (lstrlenA(dbv.pszVal) > 0) {
-					lstrcpynA(ylad->password, dbv.pszVal, 255);
+					lstrcpynA(m_password, dbv.pszVal, 255);
 				} else
 					err++;
 

@@ -116,7 +116,7 @@ void __cdecl CYahooProto::server_main(void *empty)
 		}
 
 		/* do the timer check */
-		if (ylad->id > 0) {
+		if (m_id > 0) {
 #ifdef	HTTP_GATEWAY			
 			//DebugLog("HTTPGateway: %d", iHTTPGateway);
 			if	(!iHTTPGateway) {
@@ -125,14 +125,14 @@ void __cdecl CYahooProto::server_main(void *empty)
 
 				if (m_bLoggedIn && t - lLastKeepAlive >= 60) {
 					LOG(("[TIMER] Sending a keep alive message"));
-					yahoo_keepalive(ylad->id);
+					yahoo_keepalive(m_id);
 
 					lLastKeepAlive = t;
 				}
 
 				if (m_bLoggedIn && t - lLastPing >= 3600) {
 					LOG(("[TIMER] Sending ping"));
-					yahoo_send_ping(ylad->id);
+					yahoo_send_ping(m_id);
 
 					lLastPing = t;
 				}
@@ -145,7 +145,7 @@ void __cdecl CYahooProto::server_main(void *empty)
 					( (time(NULL) - lLastSend) >= 13) ) ) {
 
 						LOG(("[TIMER] Sending an idle message..."));
-						yahoo_send_idle_packet(ylad->id);
+						yahoo_send_idle_packet(m_id);
 				}
 
 				//
@@ -191,12 +191,12 @@ void __cdecl CYahooProto::server_main(void *empty)
 		y_list_free_1(tmp);
 	}
 
-	yahoo_close(ylad->id);
+	yahoo_close(m_id);
 
 	m_bLoggedIn = FALSE; 
 
-	ylad->status = YAHOO_STATUS_OFFLINE;
-	ylad->id = 0;
+	m_status = YAHOO_STATUS_OFFLINE;
+	m_id = 0;
 
 	/* now set ourselves to offline */
 	BroadcastStatus(ID_STATUS_OFFLINE);

@@ -5,17 +5,6 @@ typedef int  ( __cdecl CYahooProto::*YEventFunc )( WPARAM, LPARAM );
 typedef int  ( __cdecl CYahooProto::*YServiceFunc )( WPARAM, LPARAM );
 typedef int  ( __cdecl CYahooProto::*YServiceFuncParam )( WPARAM, LPARAM, LPARAM );
 
-struct yahoo_local_account
-{
-	char yahoo_id[255];
-	char password[255];
-	int id;
-	int fd;
-	int status;
-	char *msg;
-	int  rpkts;
-};
-
 struct CYahooProto : public PROTO_INTERFACE
 {
 	typedef PROTO_INTERFACE CSuper;
@@ -106,12 +95,19 @@ struct CYahooProto : public PROTO_INTERFACE
 	void   MenuInit( void );
 
 	//====| Data |========================================================================
-	struct yahoo_local_account *ylad;
-
 	BOOL   m_bLoggedIn;
 
 	char*  m_szModuleName;
 	char*  m_startMsg;
+
+	// former ylad structure
+	char   m_yahoo_id[255]; // user id (login)
+	char   m_password[255]; // user password
+	int    m_id;            // libyahoo id allocated for that proto instance
+	int    m_fd;            // socket descriptor
+	int    m_status;
+	char*  m_msg;
+	int    m_rpkts;
 
 	//====| avatar.cpp |==================================================================
 	void __cdecl send_avt_thread(void *psf);

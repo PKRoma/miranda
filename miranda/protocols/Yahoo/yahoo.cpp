@@ -166,12 +166,12 @@ void CYahooProto::set_status(int myyahooStatus, char *msg, int away)
 	LOG(("yahoo_set_status myyahooStatus: %d, msg: %s, away: %d", myyahooStatus, msg, away));
 
 	/* Safety check, don't dereference Invalid pointers */
-	if (ylad->id > 0)  {
+	if (m_id > 0)  {
 			
 		if (YAHOO_CUSTOM_STATUS != myyahooStatus)
-			yahoo_set_away(ylad->id, miranda_to_yahoo(myyahooStatus), msg, away);
+			yahoo_set_away(m_id, miranda_to_yahoo(myyahooStatus), msg, away);
 		else
-			yahoo_set_away(ylad->id, ( yahoo_status )YAHOO_CUSTOM_STATUS, msg, away);
+			yahoo_set_away(m_id, ( yahoo_status )YAHOO_CUSTOM_STATUS, msg, away);
 	}
 }
 
@@ -180,8 +180,8 @@ void CYahooProto::stealth(const char *buddy, int add)
 	LOG(("yahoo_stealth buddy: %s, add: %d", buddy, add));
 
 	/* Safety check, don't dereference Invalid pointers */
-	if (ylad->id > 0)
-		yahoo_set_stealth(ylad->id, buddy, GetWord(getbuddyH(buddy), "yprotoid", 0), add);
+	if (m_id > 0)
+		yahoo_set_stealth(m_id, buddy, GetWord(getbuddyH(buddy), "yprotoid", 0), add);
 }
 
 void CYahooProto::remove_buddy(const char *who, int protocol)
@@ -191,28 +191,28 @@ void CYahooProto::remove_buddy(const char *who, int protocol)
 	DBVARIANT dbv;
 	if ( DBGetContactSettingString( getbuddyH(who), m_szModuleName, "YGroup", &dbv )) {
 		LOG(("WARNING NO DATABASE GROUP  using 'miranda'!"));
-		yahoo_remove_buddy(ylad->id, who, protocol, "miranda");
+		yahoo_remove_buddy(m_id, who, protocol, "miranda");
 		return;
 	}
 
-	yahoo_remove_buddy(ylad->id, who, protocol, dbv.pszVal);
+	yahoo_remove_buddy(m_id, who, protocol, dbv.pszVal);
 	DBFreeVariant( &dbv );
 }
 
 void CYahooProto::sendtyping(const char *who, int protocol, int stat)
 {
 	LOG(("[Yahoo_sendtyping] Sending Typing Notification to '%s' protocol: %d, state: %d", who, protocol, stat));
-	yahoo_send_typing(ylad->id, NULL, who, protocol, stat);
+	yahoo_send_typing(m_id, NULL, who, protocol, stat);
 }
 
 void CYahooProto::accept(const char *who, int protocol)
 {
-	yahoo_accept_buddy(ylad->id, who, protocol);
+	yahoo_accept_buddy(m_id, who, protocol);
 }
 
 void CYahooProto::reject(const char *who, int protocol, const char *msg)
 {
-	yahoo_reject_buddy(ylad->id, who, protocol, msg);
+	yahoo_reject_buddy(m_id, who, protocol, msg);
 }
 
 void CYahooProto::logout()
@@ -220,7 +220,7 @@ void CYahooProto::logout()
 	LOG(("[yahoo_logout]"));
 
 	if (m_bLoggedIn)
-		yahoo_logoff(ylad->id);
+		yahoo_logoff(m_id);
 
 	/* need to stop the server and close all the connections */
 	poll_loop = 0;
@@ -248,7 +248,7 @@ void CYahooProto::AddBuddy( const char *who, int protocol, const char *group, co
 		DBFreeVariant(&dbv);
 	}
 
-	yahoo_add_buddy(ylad->id, fname, lname, who, protocol, group, msg);
+	yahoo_add_buddy(m_id, fname, lname, who, protocol, group, msg);
 
 	FREE(fname);
 	FREE(lname);
@@ -1092,13 +1092,13 @@ void CYahooProto::ext_login_response(int succ, const char *url)
 	LOG(("[ext_yahoo_login_response] succ: %d, url: %s", succ, url));
 	
 	if(succ == YAHOO_LOGIN_OK) {
-		ylad->status = yahoo_current_status(ylad->id);
-		LOG(("logged in status-> %d", ylad->status));
+		m_status = yahoo_current_status(m_id);
+		LOG(("logged in status-> %d", m_status));
 		
 		if (GetByte( "UseYAB", 1 )) {
 			LOG(("GET YAB [Before final check] "));
 			if (m_iStatus != ID_STATUS_OFFLINE)
-				mir_forkthread(yahoo_get_yab_thread, (void *)ylad->id);
+				mir_forkthread(yahoo_get_yab_thread, (void *)m_id);
 		}
 
 		return;
@@ -1279,7 +1279,7 @@ void CYahooProto::ext_send_http_request(const char *method, const char *url, con
 		error = CallService(MS_NETLIB_SENDHTTPREQUEST,(WPARAM)fd,(LPARAM)&nlhr);
 	}
 	
-	callback(ylad->id, fd, error == SOCKET_ERROR, callback_data);
+	callback(m_id, fd, error == SOCKET_ERROR, callback_data);
 }
 
 /*************************************
@@ -1495,8 +1495,8 @@ void CYahooProto::ext_login(int login_mode)
 	LOG(("Proxy Type: %d HTTP Gateway: %d", nlus.proxyType, iHTTPGateway));
 #endif
 
-	//ylad->id = yahoo_init(ylad->yahoo_id, ylad->password);
-	ylad->id = yahoo_init_with_attributes(ylad->yahoo_id, ylad->password, 
+	//m_id = yahoo_init(ylad->yahoo_id, ylad->password);
+	m_id = yahoo_init_with_attributes(m_yahoo_id, m_password, 
 		"pager_host", host,
 		"pager_port", port,
 		"filetransfer_host", fthost,
@@ -1506,10 +1506,10 @@ void CYahooProto::ext_login(int login_mode)
 #endif
 		NULL);
 	
-	ylad->status = YAHOO_STATUS_OFFLINE;
-	yahoo_login(ylad->id, login_mode);
+	m_status = YAHOO_STATUS_OFFLINE;
+	yahoo_login(m_id, login_mode);
 
-	if (ylad->id <= 0) {
+	if (m_id <= 0) {
 		LOG(("Could not connect to Yahoo server.  Please verify that you are connected to the net and the pager host and port are correctly entered."));
 		ShowError(Translate("Yahoo Login Error"), Translate("Could not connect to Yahoo server.  Please verify that you are connected to the net and the pager host and port are correctly entered."));
 		return;
@@ -1524,7 +1524,7 @@ void CYahooProto::ext_login(int login_mode)
 CYahooProto* __fastcall getProtoById( int id )
 {
 	for ( int i=0; i < g_instances.getCount(); i++ )
-		if ( g_instances[i]->ylad->id == id )
+		if ( g_instances[i]->m_id == id )
 			return g_instances[i];
 
 	return NULL;

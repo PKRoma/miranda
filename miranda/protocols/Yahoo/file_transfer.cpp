@@ -465,7 +465,7 @@ void __cdecl CYahooProto::recv_filethread(void *psf)
 	DebugLog("[yahoo_recv_filethread] who: %s, msg: %s, filename: %s ", sf->who, sf->msg, fi->filename);
 	
 	
-	yahoo_get_url_handle(ylad->id, sf->url, &dl_file, sf);
+	yahoo_get_url_handle(m_id, sf->url, &dl_file, sf);
 	
 	if (sf->pfts.currentFileNumber >= sf->pfts.totalFiles)
 		free_ft(sf);
@@ -516,7 +516,7 @@ void CYahooProto::ext_got_file(const char *me, const char *who, const char *url,
 
 	files = y_list_append(files, fi);
 
-	ft = new_ft(this, ylad->id, hContact, who, msg,	url, ft_token, y7, files, 0 /* downloading */);
+	ft = new_ft(this, m_id, hContact, who, msg,	url, ft_token, y7, files, 0 /* downloading */);
 	if (ft == NULL) {
 		DebugLog("SF IS NULL!!!");
 		return;
@@ -557,7 +557,7 @@ void CYahooProto::ext_got_files(const char *me, const char *who, const char *ft_
 	if (hContact == NULL) 
 		hContact = add_buddy(who, who, 0 /* NO FT for other IMs */, PALF_TEMPORARY);
 
-	ft = new_ft(this, ylad->id, hContact, who, NULL, NULL, ft_token, y7, files, 0 /* downloading */);
+	ft = new_ft(this, m_id, hContact, who, NULL, NULL, ft_token, y7, files, 0 /* downloading */);
 	if (ft == NULL) {
 		DebugLog("SF IS NULL!!!");
 		return;
@@ -707,7 +707,7 @@ void CYahooProto::ext_ft7_send_file(const char *me, const char *who, const char 
 	
 	LOG(("who %s, msg: %s, filename: %s filesize: %ld", sf->who, sf->msg, fi->filename, fi->filesize));
 	
-	yahoo_send_file_y7(ylad->id, me, who, "98.136.112.33", fi->filesize, token,  &upload_file, sf);
+	yahoo_send_file_y7(m_id, me, who, "98.136.112.33", fi->filesize, token,  &upload_file, sf);
 	
 	if (sf->pfts.currentFileNumber >= sf->pfts.totalFiles) {
 		free_ft(sf);
@@ -727,7 +727,7 @@ static void __cdecl yahoo_send_filethread(void *psf)
 	
 	LOG(("who %s, msg: %s, filename: %s filesize: %ld", sf->who, sf->msg, fi->filename, fi->filesize));
 	
-	yahoo_send_file(ylad->id, sf->who, sf->msg, fi->filename, fi->filesize, &upload_file, sf);
+	yahoo_send_file(m_id, sf->who, sf->msg, fi->filename, fi->filesize, &upload_file, sf);
 	
 	if (sf->pfts.currentFileNumber >= sf->pfts.totalFiles) {
 		free_ft(sf);
@@ -775,7 +775,7 @@ int __cdecl CYahooProto::SendFile( HANDLE hContact, const char* szDescription, c
 	
 		fs = y_list_append(fs, fi);
 	
-		sf = new_ft(this, ylad->id, hContact, dbv.pszVal, ( char* )szDescription,
+		sf = new_ft(this, m_id, hContact, dbv.pszVal, ( char* )szDescription,
 					NULL, NULL, 0, fs, 1 /* sending */);
 					
 		DBFreeVariant(&dbv);
@@ -788,7 +788,7 @@ int __cdecl CYahooProto::SendFile( HANDLE hContact, const char* szDescription, c
 		LOG(("who: %s, msg: %s, filename: %s", sf->who, sf->msg, fi->filename));
 		//mir_forkthread(yahoo_send_filethread, sf);
 		
-		sf->ftoken=yahoo_ft7dc_send(ylad->id, sf->who, fs);
+		sf->ftoken=yahoo_ft7dc_send(m_id, sf->who, fs);
 		
 		LOG(("Exiting SendRequest..."));
 		return (int)(HANDLE)sf;

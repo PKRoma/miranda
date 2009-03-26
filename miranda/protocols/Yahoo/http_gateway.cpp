@@ -34,9 +34,9 @@ int YAHOO_httpGatewayWrapSend(HANDLE hConn, PBYTE buf, int len, int flags, MIRAN
 {
 	DebugLog("YAHOO_httpGatewayWrapSend!!! Len: %d", len);
 
-	if (len == 0 && ylad->id > 0) { // we need to send something!!!
+	if (len == 0 && m_id > 0) { // we need to send something!!!
 		int n;
-		char *z = yahoo_webmessenger_idle_packet(ylad->id, &n);
+		char *z = yahoo_webmessenger_idle_packet(m_id, &n);
 		int ret = 0;
 		
 		if (z != NULL) {
