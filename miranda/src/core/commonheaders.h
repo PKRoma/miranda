@@ -48,8 +48,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string.h>
 #include <locale.h>
 #include <direct.h>
+
 #include <win2k.h>
+
 #include "modules.h"
+
 #include <m_system.h>
 #include <m_system_cpp.h>
 #include <newpluginapi.h>
@@ -63,6 +66,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_protosvc.h>
 #include <m_protomod.h>
 #include <m_protocols.h>
+#include <m_protoint.h>
 #include <m_plugins.h>
 #include <m_options.h>
 #include <m_skin.h>

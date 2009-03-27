@@ -22,7 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "commonheaders.h"
-#include "m_protoint.h"
 
 #define LBN_MY_CHECK	0x1000
 #define LBN_MY_RENAME	0x1001

@@ -23,8 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 
-#include "m_protoint.h"
-
 INT_PTR Proto_CallContactService(WPARAM wParam,LPARAM lParam);
 
 static int MyCallProtoService( const char *szModule, const char *szService, WPARAM wParam, LPARAM lParam )

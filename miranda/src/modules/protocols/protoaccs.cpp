@@ -23,8 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 
-#include "m_protoint.h"
-
 static BOOL bModuleInitialized = FALSE;
 
 static int CompareAccounts( const PROTOACCOUNT* p1, const PROTOACCOUNT* p2 )
@@ -226,74 +224,74 @@ int LoadAccountsModule( void )
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-static int stub1( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
-{	return ( int )ppi->AddToList( wParam, (PROTOSEARCHRESULT*)lParam );
+static INT_PTR stub1( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
+{	return ( INT_PTR )ppi->AddToList( wParam, (PROTOSEARCHRESULT*)lParam );
 }
 
-static int stub2( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
-{	return ( int )ppi->AddToListByEvent( HIWORD(wParam), LOWORD(wParam), (HANDLE)lParam );
+static INT_PTR stub2( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
+{	return ( INT_PTR )ppi->AddToListByEvent( HIWORD(wParam), LOWORD(wParam), (HANDLE)lParam );
 }
 
-static int stub3( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM )
-{	return ( int )ppi->Authorize(( HANDLE )wParam );
+static INT_PTR stub3( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM )
+{	return ( INT_PTR )ppi->Authorize(( HANDLE )wParam );
 }
 
-static int stub4( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
-{	return ( int )ppi->AuthDeny(( HANDLE )wParam, ( const char* )lParam );
+static INT_PTR stub4( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
+{	return ( INT_PTR )ppi->AuthDeny(( HANDLE )wParam, ( const char* )lParam );
 }
 
-static int stub7( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
-{	return ( int )ppi->ChangeInfo( wParam, ( void* )lParam );
+static INT_PTR stub7( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
+{	return ( INT_PTR )ppi->ChangeInfo( wParam, ( void* )lParam );
 }
 
-static int stub11( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
+static INT_PTR stub11( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
 {	PROTOFILERESUME* pfr = ( PROTOFILERESUME* )lParam;
-	return ( int )ppi->FileResume(( HANDLE )wParam, &pfr->action, &pfr->szFilename );
+	return ( INT_PTR )ppi->FileResume(( HANDLE )wParam, &pfr->action, &pfr->szFilename );
 }
 
-static int stub12( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
-{	return ( int )ppi->GetCaps( wParam, (HANDLE)lParam );
+static INT_PTR stub12( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
+{	return ( INT_PTR )ppi->GetCaps( wParam, (HANDLE)lParam );
 }
 
-static int stub13( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM )
-{	return ( int )ppi->GetIcon( wParam );
+static INT_PTR stub13( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM )
+{	return ( INT_PTR )ppi->GetIcon( wParam );
 }
 
-static int stub15( PROTO_INTERFACE* ppi, WPARAM, LPARAM lParam )
-{	return ( int )ppi->SearchBasic(( char* )lParam );
+static INT_PTR stub15( PROTO_INTERFACE* ppi, WPARAM, LPARAM lParam )
+{	return ( INT_PTR )ppi->SearchBasic(( char* )lParam );
 }
 
-static int stub16( PROTO_INTERFACE* ppi, WPARAM, LPARAM lParam )
-{	return ( int )ppi->SearchByEmail(( char* )lParam );
+static INT_PTR stub16( PROTO_INTERFACE* ppi, WPARAM, LPARAM lParam )
+{	return ( INT_PTR )ppi->SearchByEmail(( char* )lParam );
 }
 
-static int stub17( PROTO_INTERFACE* ppi, WPARAM, LPARAM lParam )
+static INT_PTR stub17( PROTO_INTERFACE* ppi, WPARAM, LPARAM lParam )
 {	PROTOSEARCHBYNAME* psbn = ( PROTOSEARCHBYNAME* )lParam;
-	return ( int )ppi->SearchByName( psbn->pszNick, psbn->pszFirstName, psbn->pszLastName );
+	return ( INT_PTR )ppi->SearchByName( psbn->pszNick, psbn->pszFirstName, psbn->pszLastName );
 }
 
-static int stub18( PROTO_INTERFACE* ppi, WPARAM, LPARAM lParam )
-{	return ( int )ppi->SearchAdvanced(( HWND )lParam );
+static INT_PTR stub18( PROTO_INTERFACE* ppi, WPARAM, LPARAM lParam )
+{	return ( INT_PTR )ppi->SearchAdvanced(( HWND )lParam );
 }
 
-static int stub19( PROTO_INTERFACE* ppi, WPARAM, LPARAM lParam )
-{	return ( int )ppi->CreateExtendedSearchUI (( HWND )lParam );
+static INT_PTR stub19( PROTO_INTERFACE* ppi, WPARAM, LPARAM lParam )
+{	return ( INT_PTR )ppi->CreateExtendedSearchUI (( HWND )lParam );
 }
 
-static int stub29( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM )
-{	return ( int )ppi->SetStatus( wParam );
+static INT_PTR stub29( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM )
+{	return ( INT_PTR )ppi->SetStatus( wParam );
 }
 
-static int stub33( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
-{	return ( int )ppi->SetAwayMsg( wParam, ( const char* )lParam );
+static INT_PTR stub33( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
+{	return ( INT_PTR )ppi->SetAwayMsg( wParam, ( const char* )lParam );
 }
 
-static int stub41( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
+static INT_PTR stub41( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
 {	lstrcpynA(( char* )lParam, ppi->m_szModuleName, wParam );
 	return 0;
 }
 
-static int stub42( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
+static INT_PTR stub42( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
 {	return ppi->m_iStatus;
 }
 
