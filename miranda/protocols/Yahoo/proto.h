@@ -1,16 +1,19 @@
 
 struct CYahooProto;
-typedef void ( __cdecl CYahooProto::*YThreadFunc )( void* );
-typedef int  ( __cdecl CYahooProto::*YEventFunc )( WPARAM, LPARAM );
-typedef int  ( __cdecl CYahooProto::*YServiceFunc )( WPARAM, LPARAM );
-typedef int  ( __cdecl CYahooProto::*YServiceFuncParam )( WPARAM, LPARAM, LPARAM );
+extern "C" {
+
+typedef void ( CYahooProto::*YThreadFunc )( void* );
+typedef int  ( CYahooProto::*YEventFunc )( WPARAM, LPARAM );
+typedef int  ( CYahooProto::*YServiceFunc )( WPARAM, LPARAM );
+typedef int  ( CYahooProto::*YServiceFuncParam )( WPARAM, LPARAM, LPARAM );
+}
 
 struct CYahooProto : public PROTO_INTERFACE
 {
 	typedef PROTO_INTERFACE CSuper;
 
 				CYahooProto( const char*, const TCHAR* );
-				~CYahooProto();
+				virtual ~CYahooProto();
 
 				__inline void* operator new( size_t size )
 				{	return calloc( 1, size );
@@ -198,7 +201,7 @@ struct CYahooProto : public PROTO_INTERFACE
 	int    ShowPopup( const char* nickname, const char* msg, const char *szURL );
 
 	#ifdef __GNUC__
-		int DebugLog( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
+		int DebugLog( const char *fmt, ... ) __attribute__ ((format(printf,2,3)));
 	#else
 		int DebugLog( const char *fmt, ... );
 	#endif
