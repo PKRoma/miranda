@@ -1730,6 +1730,7 @@ BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          int oPage = DBGetContactSettingByte(NULL, "CLUI", "opage", 0);
          SKINDESCRIPTION sd;
 
+         TranslateDialogDefault(hwnd);
          GetClientRect(hwnd, &rcClient);
          iInit = TRUE;
          tci.mask = TCIF_PARAM|TCIF_TEXT;
