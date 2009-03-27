@@ -288,8 +288,8 @@ typedef struct tagACCOUNT
 //lParam=(LPARAM)(PROTOACCOUNT**)paAccounts
 #define MS_PROTO_ENUMACCOUNTS "Proto/EnumAccounts"
 
-__inline static int ProtoEnumAccounts( int* accNumber, PROTOACCOUNT*** accArray )
-{	return (int)CallService( MS_PROTO_ENUMACCOUNTS, ( WPARAM )accNumber, (LPARAM)accArray );
+__inline static INT_PTR ProtoEnumAccounts( int* accNumber, PROTOACCOUNT*** accArray )
+{	return CallService( MS_PROTO_ENUMACCOUNTS, ( WPARAM )accNumber, (LPARAM)accArray );
 }
 
 //retrieves an account's interface by its physical name (database module)
