@@ -231,7 +231,11 @@ lParam.
 Returns CALLSERVICE_NOTFOUND if no service function called 'name' has been
 created, or the value the service function returned otherwise.
 */
-#define CALLSERVICE_NOTFOUND      ((int)0x80000000)
+#ifdef _WIN64
+    #define CALLSERVICE_NOTFOUND      ((INT_PTR)0x8000000000000000)
+#else
+    #define CALLSERVICE_NOTFOUND      ((int)0x80000000)
+#endif
 INT_PTR CallService(const char *name,WPARAM wParam,LPARAM lParam);
 
 /* ServiceExists

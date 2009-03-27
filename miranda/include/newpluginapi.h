@@ -145,7 +145,12 @@ typedef struct {
 	typedef INT_PTR (*MIRANDASERVICEOBJ)(void*,WPARAM,LPARAM);
 	typedef INT_PTR (*MIRANDASERVICEOBJPARAM)(void*,WPARAM,LPARAM,LPARAM);
 
-	#define CALLSERVICE_NOTFOUND      ((int)0x80000000)
+#ifdef _WIN64
+    #define CALLSERVICE_NOTFOUND      ((INT_PTR)0x8000000000000000)
+#else
+    #define CALLSERVICE_NOTFOUND      ((int)0x80000000)
+#endif
+
 #endif
 
 //see modules.h for what all this stuff is
