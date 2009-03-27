@@ -389,13 +389,7 @@ static INT_PTR NetlibLog(WPARAM wParam,LPARAM lParam)
 		FILE *fp;
 		fp = _tfopen(logOptions.szFile, _T("at"));
 		if ( !fp ) {
-			TCHAR* pszLastBackslash = _tcsrchr( logOptions.szFile, '\\' );
-			if ( pszLastBackslash != NULL ) {
-				*pszLastBackslash = '\0';
-				CreateDirectoryTreeT( logOptions.szFile );
-				*pszLastBackslash = '\\';
-			}
-			else CreateDirectoryTreeT( logOptions.szFile );
+			CreatePathToFileT( logOptions.szFile );
 			fp = _tfopen(logOptions.szFile, _T("at"));
 		}
 		if ( fp ) {

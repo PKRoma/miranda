@@ -30,17 +30,6 @@ extern PLUGINLINK pluginCoreLink;
 extern TCHAR mirandabootini[MAX_PATH];
 bool dbCreated;
 
-
-bool fileExist(TCHAR* fname)
-{
-    if (fname[0] == 0) return false;
-
-	FILE* fp = _tfopen(fname, _T("r+"));
-	bool res = fp != NULL;
-	if (res) fclose(fp);
-    return res;
-}
-
 // returns 1 if the profile path was returned, without trailing slash
 int getProfilePath(TCHAR * buf, size_t cch)
 {
@@ -84,7 +73,7 @@ static bool showProfileManager(void)
 
 bool shouldAutoCreate(TCHAR *szProfile)
 {
-    if (szProfile[0] == 0) return false;
+	if (szProfile[0] == 0) return false;
 
 	TCHAR ac[32];
 	GetPrivateProfileString(_T("Database"), _T("AutoCreate"), _T(""), ac, SIZEOF(ac), mirandabootini);
@@ -103,9 +92,8 @@ static void getDefaultProfile(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 	dat.dwFlags = RVF_TCHAR;
 
 	TCHAR* res = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)defaultProfile, (LPARAM)&dat);
-	if (res) 
-    {
-        mir_sntprintf(szProfile, cch, _T("%s%s%s"), profiledir, res, isValidProfileName(res) ? _T("") : _T(".dat"));
+	if (res) {
+		mir_sntprintf(szProfile, cch, _T("%s%s%s"), profiledir, res, isValidProfileName(res) ? _T("") : _T(".dat"));
 		mir_free(res);
 	}
 	else szProfile[0] = 0;
@@ -116,11 +104,10 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
 {
 	unsigned int found = 0;
 
-	bool reqfd = fileExist(szProfile) || shouldAutoCreate(szProfile);
-    bool shpm = showProfileManager();
+	bool reqfd = _taccess(szProfile,0) == 0 || shouldAutoCreate(szProfile);
+	bool shpm = showProfileManager();
 
-	if (shpm || !reqfd) 
-    {
+	if (shpm || !reqfd) {
 		TCHAR searchspec[MAX_PATH];
 		mir_sntprintf(searchspec, SIZEOF(searchspec), _T("%s*.dat"), profiledir);
 
@@ -130,14 +117,13 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
         {
 			do {
 				// make sure the first hit is actually a *.dat file
-				if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName(ffd.cFileName)) 
-                {
+				if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName(ffd.cFileName)) {
 					// copy the profile name early cos it might be the only one
 					if (++found == 1 && szProfile[0] == 0) 
 						mir_sntprintf(szProfile, cch, _T("%s%s"), profiledir, ffd.cFileName);
 				}
 			}
-			while (FindNextFile(hFind, &ffd));
+				while (FindNextFile(hFind, &ffd));
 			FindClose(hFind);
 		}
 		reqfd = !shpm && found == 1;
@@ -146,7 +132,7 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
 	if (noProfiles) 
 		*noProfiles = found == 0;
 
-    return reqfd;
+	return reqfd;
 }
 
 // returns 1 if something that looks like a profile is there
@@ -161,17 +147,14 @@ static int getProfileCmdLineArgs(TCHAR * szProfile, size_t cch)
 	dat.cbSize = sizeof(dat);
 	dat.dwFlags = RVF_TCHAR;
 
-	while(szCmdLine[0]) 
-    {
-		if(szCmdLine[0]=='"') 
-        {
+	while(szCmdLine[0]) {
+		if(szCmdLine[0]=='"') {
 			szEndOfParam=_tcschr(szCmdLine+1,'"');
 			if(szEndOfParam==NULL) break;
 			lstrcpyn(szThisParam,szCmdLine+1,min( SIZEOF(szThisParam),szEndOfParam-szCmdLine));
 			szCmdLine=szEndOfParam+1;
 		}
-		else 
-        {
+		else {
 			szEndOfParam=szCmdLine+_tcscspn(szCmdLine,_T(" \t"));
 			lstrcpyn(szThisParam,szCmdLine,min( SIZEOF(szThisParam),szEndOfParam-szCmdLine+1));
 			szCmdLine=szEndOfParam;
@@ -199,13 +182,12 @@ void getProfileCmdLine(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 			_tcscat(szProfile, _T(".dat"));
 
 		TCHAR *p = _tcsrchr(buf, '\\');
-		if (p) 
-        {
-            _tcscpy(profiledir, szProfile);
-            p = _tcsrchr(profiledir, '\\');
+		if (p) {
+			_tcscpy(profiledir, szProfile);
+			p = _tcsrchr(profiledir, '\\');
 			*(p+1) = 0;
-	    }	
-    }
+		}	
+	}
 }
 
 // returns 1 if a default profile should be selected instead of showing the manager.
@@ -216,7 +198,7 @@ static int getProfileAutoRun(TCHAR * szProfile)
 	if (_tcsicmp(Mgr, _T("never")))
 		return 0;		
 
-    return fileExist(szProfile) || shouldAutoCreate(szProfile);
+	return _taccess(szProfile,0) == 0 || shouldAutoCreate(szProfile);
 }
 
 // returns 1 if a profile was selected
@@ -226,8 +208,8 @@ static int getProfile(TCHAR * szProfile, size_t cch)
 	PROFILEMANAGERDATA pd = {0};
 
 	getProfilePath(profiledir, SIZEOF(profiledir));
-    getDefaultProfile(szProfile, cch, profiledir);
-    getProfileCmdLine(szProfile, cch, profiledir);
+	getDefaultProfile(szProfile, cch, profiledir);
+	getProfileCmdLine(szProfile, cch, profiledir);
 	if (getProfileAutoRun(szProfile)) return 1;
 	if (getProfile1(szProfile, cch, profiledir, &pd.noProfiles)) return 1;
 
@@ -244,8 +226,7 @@ int makeDatabase(TCHAR * profile, DATABASELINK * link, HWND hwndDlg)
 	// check if the file already exists
 	TCHAR * file = _tcsrchr(profile, '\\');
 	if (file) file++;
-	if (_taccess(profile, 0) == 0) 
-    {		
+	if (_taccess(profile, 0) == 0) {		
 		mir_sntprintf(buf, SIZEOF(buf), TranslateTS( _T("The profile '%s' already exists. Do you want to move it to the ")
 			_T("Recycle Bin? \n\nWARNING: The profile will be deleted if Recycle Bin is disabled.\nWARNING: A profile may contain confidential information and should be properly deleted.")),file);
 		// file already exists!
@@ -258,8 +239,7 @@ int makeDatabase(TCHAR * profile, DATABASELINK * link, HWND hwndDlg)
 		sf.pFrom=buf;
 		sf.fFlags=FOF_NOCONFIRMATION|FOF_NOERRORUI|FOF_SILENT;
 		mir_sntprintf(buf, SIZEOF(buf), _T("%s\0"), profile);
-		if ( SHFileOperation(&sf) != 0 ) 
-        {
+		if ( SHFileOperation(&sf) != 0 ) {
 			mir_sntprintf(buf, SIZEOF(buf),TranslateT("Couldn't move '%s' to the Recycle Bin, Please select another profile name."),file);
 			MessageBox(0,buf,TranslateT("Problem moving profile"),MB_ICONINFORMATION|MB_OK);
 			return 0;
@@ -267,9 +247,9 @@ int makeDatabase(TCHAR * profile, DATABASELINK * link, HWND hwndDlg)
 		// now the file should be gone!
 	}
 	// ask the database to create the profile
+	CreatePathToFileT(profile);
 	char *prf = mir_t2a(profile);
-	if (link->makeDatabase(prf, &err)) 
-    { 
+	if (link->makeDatabase(prf, &err)) { 
 		mir_sntprintf(buf, SIZEOF(buf),TranslateT("Unable to create the profile '%s', the error was %x"),file, err);
 		MessageBox(hwndDlg,buf,TranslateT("Problem creating profile"),MB_ICONERROR|MB_OK);
 		mir_free(prf);
@@ -285,21 +265,17 @@ int makeDatabase(TCHAR * profile, DATABASELINK * link, HWND hwndDlg)
 static int FindDbPluginForProfile(char*, DATABASELINK * dblink, LPARAM lParam)
 {
 	int res = DBPE_CONT;
-	if ( dblink && dblink->cbSize == sizeof(DATABASELINK)) 
-    {
+	if ( dblink && dblink->cbSize == sizeof(DATABASELINK)) {
 		char * szProfile = mir_t2a((TCHAR*) lParam);
 		// liked the profile?
 		int err = 0;
-		if (dblink->grokHeader(szProfile, &err) == 0) 
-        { 			
+		if (dblink->grokHeader(szProfile, &err) == 0) { 			
 			// added APIs?
 			res = dblink->Load(szProfile, &pluginCoreLink) ? DBPE_HALT : DBPE_DONE;
 		}
-		else 
-        {
+		else {
 			res = DBPE_HALT;
-			switch ( err ) 
-            {				 
+			switch ( err ) {				 
 			case EGROKPRF_CANTREAD:
 			case EGROKPRF_UNKHEADER:
 				// just not supported.
@@ -319,12 +295,10 @@ static int FindDbPluginForProfile(char*, DATABASELINK * dblink, LPARAM lParam)
 static int FindDbPluginAutoCreate(char*, DATABASELINK * dblink, LPARAM lParam)
 {
 	int res = DBPE_CONT;
-	if (dblink && dblink->cbSize == sizeof(DATABASELINK)) 
-    {
+	if (dblink && dblink->cbSize == sizeof(DATABASELINK)) {
 		int err;
 		char *szProfile = mir_t2a((TCHAR*)lParam);
-		if (dblink->makeDatabase(szProfile, &err) == 0) 
-        {
+		if (dblink->makeDatabase(szProfile, &err) == 0) {
 			dbCreated = true;
 			res = dblink->Load(szProfile, &pluginCoreLink) ? DBPE_HALT : DBPE_DONE;
 		}
@@ -345,10 +319,8 @@ static BOOL CALLBACK EnumMirandaWindows(HWND hwnd, LPARAM lParam)
 	TCHAR classname[256];
 	ENUMMIRANDAWINDOW * x = (ENUMMIRANDAWINDOW *)lParam;
 	DWORD_PTR res=0;
-	if ( GetClassName(hwnd,classname,SIZEOF(classname)) && lstrcmp( _T("Miranda"),classname)==0 ) 
-    {		
-		if ( SendMessageTimeout(hwnd, x->msg, (WPARAM)x->aPath, 0, SMTO_ABORTIFHUNG, 100, &res) && res ) 
-        {
+	if ( GetClassName(hwnd,classname,SIZEOF(classname)) && lstrcmp( _T("Miranda"),classname)==0 ) {		
+		if ( SendMessageTimeout(hwnd, x->msg, (WPARAM)x->aPath, 0, SMTO_ABORTIFHUNG, 100, &res) && res ) {
 			x->found++;
 			return FALSE;
 		}
@@ -381,23 +353,21 @@ int LoadDatabaseModule(void)
 	InitUtils();
 
 	// find out which profile to load
-	if ( getProfile(szProfile, SIZEOF(szProfile))) 
-    {
+	if ( getProfile(szProfile, SIZEOF(szProfile))) {
 		int rc;
 		PLUGIN_DB_ENUM dbe;
 
 		dbe.cbSize=sizeof(PLUGIN_DB_ENUM);
 		dbe.lParam=(LPARAM)szProfile;
 
-        if (_taccess(szProfile, 0) && shouldAutoCreate(szProfile))
-		    dbe.pfnEnumCallback=( int(*) (char*,void*,LPARAM) )FindDbPluginAutoCreate;
-        else
-		    dbe.pfnEnumCallback=( int(*) (char*,void*,LPARAM) )FindDbPluginForProfile;
+		if (_taccess(szProfile, 0) && shouldAutoCreate(szProfile))
+			dbe.pfnEnumCallback=( int(*) (char*,void*,LPARAM) )FindDbPluginAutoCreate;
+		else
+			dbe.pfnEnumCallback=( int(*) (char*,void*,LPARAM) )FindDbPluginForProfile;
 
 		// find a driver to support the given profile
 		rc=CallService(MS_PLUGINS_ENUMDBPLUGINS, 0, (LPARAM)&dbe);
-		switch ( rc ) 
-        {
+		switch ( rc ) {
 		case -1: {
 			// no plugins at all
 			TCHAR buf[256];
@@ -408,8 +378,7 @@ int LoadDatabaseModule(void)
 		}
 		case 1:
 			// if there were drivers but they all failed cos the file is locked, try and find the miranda which locked it
-			if ( !FindMirandaForProfile(szProfile) ) 
-            {
+			if ( !FindMirandaForProfile( szProfile )) {
 				// file isn't locked, just no driver could open it.
 				TCHAR buf[256];
 				TCHAR * p = _tcsrchr(szProfile,'\\');

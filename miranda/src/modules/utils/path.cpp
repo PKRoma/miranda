@@ -91,6 +91,17 @@ static INT_PTR pathToAbsolute(WPARAM wParam, LPARAM lParam)
 	return pathToAbsolute((char*)wParam, (char*)lParam, szMirandaPath);
 }
 
+void CreatePathToFile( char* szFilePath )
+{
+	char* pszLastBackslash = strrchr( szFilePath, '\\' );
+	if ( pszLastBackslash == NULL )
+		return;
+
+	*pszLastBackslash = '\0';
+	CreateDirectoryTree( szFilePath );
+	*pszLastBackslash = '\\';
+}
+
 int CreateDirectoryTree( const char *szDir )
 {
 	DWORD dwAttributes;
@@ -177,6 +188,17 @@ int pathToAbsoluteW(const TCHAR *pSrc, TCHAR *pOut, TCHAR* base)
 static INT_PTR pathToAbsoluteW(WPARAM wParam, LPARAM lParam)
 {
 	return pathToAbsoluteW((TCHAR*)wParam, (TCHAR*)lParam, szMirandaPathW);
+}
+
+void CreatePathToFileW( WCHAR* wszFilePath )
+{
+	WCHAR* pszLastBackslash = wcsrchr( wszFilePath, '\\' );
+	if ( pszLastBackslash == NULL )
+		return;
+
+	*pszLastBackslash = '\0';
+	CreateDirectoryTreeW( wszFilePath );
+	*pszLastBackslash = '\\';
 }
 
 int CreateDirectoryTreeW( const WCHAR* szDir )

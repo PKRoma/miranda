@@ -140,11 +140,14 @@ wchar_t* a2u( const char* src );
 /**** path.c ***************************************************************************/
 
 int pathToAbsolute(const char *pSrc, char *pOut, char* base);
-int pathToAbsoluteW(const TCHAR *pSrc, TCHAR *pOut, TCHAR* base);
+void CreatePathToFile( char* wszFilePath );
 int CreateDirectoryTree(const char *szDir);
-int CreateDirectoryTreeW(const WCHAR *szDir);
 #if defined( _UNICODE )
+	void CreatePathToFileW( WCHAR* wszFilePath );
+	int CreateDirectoryTreeW(const WCHAR *szDir);
+	int pathToAbsoluteW(const TCHAR *pSrc, TCHAR *pOut, TCHAR* base);
 	#define pathToAbsoluteT pathToAbsoluteW
+	#define CreatePathToFileT CreatePathToFileW
 	#define CreateDirectoryTreeT CreateDirectoryTreeW
 #else
 	#define pathToAbsoluteT pathToAbsolute
