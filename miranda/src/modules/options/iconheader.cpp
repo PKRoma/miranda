@@ -549,7 +549,7 @@ static LRESULT CALLBACK MIcoTabWndProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 	}
 
 	case ITCM_SETSEL:
-		if ((wParam >= 0) && (wParam < itc->pList.getCount())) {
+		if ( wParam >= 0 && (int)wParam < itc->pList.getCount()) {
 			itc->nSelectedIdx = wParam;
 			RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE);
 			SendMessage(GetParent(hwndDlg), WM_COMMAND,
@@ -562,7 +562,7 @@ static LRESULT CALLBACK MIcoTabWndProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 		return itc->nSelectedIdx;
 
 	case ITCM_GETITEMDATA:
-		if ((wParam >= 0) && (wParam < itc->pList.getCount()))
+		if ( wParam >= 0 && (int)wParam < itc->pList.getCount())
 			return ((MIcoTab *)itc->pList[wParam])->data;
 		return 0;
 
