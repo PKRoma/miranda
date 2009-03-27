@@ -282,7 +282,7 @@ BOOL EnumProfilesForList(TCHAR * fullpath, TCHAR * profile, LPARAM lParam)
 		}
 		bFileExists = TRUE;
 
-		bFileLocked = _taccess(fullpath,0) != 0;
+	    bFileLocked = !fileExist(fullpath);
 	}
 
 	item.iImage = bFileLocked;
