@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -27,8 +27,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_OPT_FLOATING DIALOG DISCARDABLE  0, 0, 313, 251
-STYLE DS_FIXEDSYS | WS_CHILD
+IDD_OPT_FLOATING DIALOG  0, 0, 313, 251
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Floating contacts appearance",IDC_STATIC,3,4,307,131
@@ -120,8 +120,8 @@ BEGIN
 END
 
 IDD_CLNABOUT DIALOGEX 0, 0, 228, 140
-STYLE DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
-    WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | 
+    WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "About CList Nicer+"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -140,8 +140,8 @@ BEGIN
 END
 
 IDD_DELETECONTACT DIALOGEX 0, 0, 284, 90
-STYLE DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
-    WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | 
+    DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Delete Contact"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -160,7 +160,7 @@ BEGIN
 END
 
 IDD_OPT_DSPPROFILES DIALOGEX 0, 0, 312, 247
-STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -183,7 +183,7 @@ BEGIN
 END
 
 IDD_OPTIONSDIALOG DIALOGEX 0, 0, 312, 247
-STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -191,8 +191,8 @@ BEGIN
                     245,WS_EX_ACCEPTFILES
 END
 
-IDD_OPT_CLIST DIALOG DISCARDABLE  0, 0, 305, 226
-STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+IDD_OPT_CLIST DIALOG  0, 0, 305, 226
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Contact List",IDC_STCLISTGROUP,1,0,163,91
@@ -261,8 +261,8 @@ BEGIN
                     10,211,287,12
 END
 
-IDD_OPT_DSPGROUPS DIALOG DISCARDABLE  0, 0, 227, 205
-STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+IDD_OPT_DSPGROUPS DIALOG  0, 0, 227, 205
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Groups",IDC_STATIC,1,0,224,109
@@ -329,8 +329,8 @@ BEGIN
     GROUPBOX        "Margins and spacing",IDC_STATIC,1,111,224,93
 END
 
-IDD_OPT_DSPITEMS DIALOG DISCARDABLE  0, 0, 227, 205
-STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+IDD_OPT_DSPITEMS DIALOG  0, 0, 227, 205
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Contact List Sorting",IDC_STATIC,1,0,142,86,WS_GROUP
@@ -350,15 +350,15 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,72,134,10
     LTEXT           "Hide as offline",IDC_STATIC,151,1,73,8
     CONTROL         "Tree1",IDC_HIDEOFFLINEOPTS,"SysTreeView32",
-                    TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | TVS_NONEVENHEIGHT | 
-                    WS_BORDER | WS_TABSTOP,147,11,77,74
+                    TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | WS_BORDER | 
+                    WS_TABSTOP | 0x4000,147,11,77,74
     LTEXT           "Right align contacts",IDC_STATIC,6,92,126,10
     COMBOBOX        IDC_CLISTALIGN,147,90,71,56,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_OPT_DSPADVANCED DIALOG DISCARDABLE  0, 0, 227, 205
-STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+IDD_OPT_DSPADVANCED DIALOG  0, 0, 227, 205
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Avatars",IDC_STATIC,1,0,224,109
@@ -403,8 +403,8 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,19,164,196,10
 END
 
-IDD_OPT_XICONS DIALOG DISCARDABLE  0, 0, 227, 205
-STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+IDD_OPT_XICONS DIALOG  0, 0, 227, 205
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Extra icons (drag items to reorder them)",IDC_STATIC,1,
@@ -438,8 +438,8 @@ BEGIN
                     WS_BORDER | WS_TABSTOP,22,113,182,64
 END
 
-IDD_OPT_CLUI DIALOG DISCARDABLE  0, 0, 305, 226
-STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+IDD_OPT_CLUI DIALOG  0, 0, 305, 226
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Window",IDC_STWINDOWGROUP,1,0,302,165
@@ -540,8 +540,8 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,163,205,135,10
 END
 
-IDD_OPT_CLC DIALOG DISCARDABLE  0, 0, 305, 226
-STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+IDD_OPT_CLC DIALOG  0, 0, 305, 226
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Items",IDC_STATIC,1,0,302,110
@@ -582,12 +582,12 @@ BEGIN
     CONTROL         "Grey out entire list when:",IDC_GREYOUT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,12,168,109,10
     CONTROL         "Tree1",IDC_GREYOUTOPTS,"SysTreeView32",
-                    TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | TVS_NONEVENHEIGHT | 
-                    WS_BORDER | WS_TABSTOP,11,181,182,39
+                    TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | WS_BORDER | 
+                    WS_TABSTOP | 0x4000,11,181,182,39
 END
 
 IDD_OPT_CLCBKG DIALOGEX 0, 0, 305, 226
-STYLE DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -620,7 +620,7 @@ BEGIN
 END
 
 IDD_OPT_SBAR DIALOGEX 0, 0, 303, 226
-STYLE DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Status Bar",IDC_STATIC,46,4,204,214
@@ -652,7 +652,8 @@ BEGIN
 END
 
 IDD_OPT_VIEWMODES DIALOGEX 0, 0, 309, 295
-STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_CAPTION | 
+    WS_SYSMENU
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_TAB,"SysTabControl32",0x0,4,4,301,264
@@ -716,13 +717,13 @@ BEGIN
 END
 
 IDD_OPT_SKIN DIALOGEX 0, 0, 303, 200
-STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "Per contact skins:",IDC_STATIC,9,188,71,12,WS_DISABLED
     EDITTEXT        IDC_SKINFILE,70,186,135,13,ES_AUTOHSCROLL | WS_DISABLED
-    PUSHBUTTON      "...",IDC_SKINFILESELECT,209,185,33,12,WS_DISABLED
-    PUSHBUTTON      "< Reload",IDC_RELOAD,240,185,54,12,WS_DISABLED
+    PUSHBUTTON      "...",IDC_SKINFILESELECT,209,185,22,12,WS_DISABLED
+    PUSHBUTTON      "< Reload",IDC_RELOAD,231,185,71,12,WS_DISABLED
     GROUPBOX        "Contact list skin",IDC_STATIC,3,6,297,68
     EDITTEXT        IDC_SKINFILENAME,11,19,256,14,ES_AUTOHSCROLL | 
                     ES_READONLY
@@ -733,30 +734,30 @@ BEGIN
     PUSHBUTTON      "Unload skin",IDC_UNLOAD,206,54,90,14
     CONTROL         "Make selection shape equal to selected item",
                     IDC_EQUALSELECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    7,107,157,10
+                    7,107,178,10
     CONTROL         "Blend selection with background",IDC_SELBLEND,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,118,122,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,118,177,10
     CONTROL         "Automatically fill background with wallpaper (tiled wallpaper only)",
                     IDC_FILLWALLPAPER,"Button",BS_AUTOCHECKBOX | 
-                    BS_MULTILINE | WS_TABSTOP,7,129,223,10
+                    BS_MULTILINE | WS_TABSTOP,7,129,291,10
     CONTROL         "Apply group indent values to background drawing",
                     IDC_APPLYINDENTBG,"Button",BS_AUTOCHECKBOX | 
                     BS_MULTILINE | WS_TABSTOP,7,140,222,10
     CONTROL         "Use per protocol/contact skinning",IDC_USEPERPROTO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,86,149,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,86,155,10
     CONTROL         "Protocol skins override status text colors",
                     IDC_OVERRIDEPERSTATUSCOLOR,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,96,146,10
+                    WS_TABSTOP,7,96,155,10
     CONTROL         "Set all buttons to skinned mode",
                     IDC_SETALLBUTTONSKINNED,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,168,85,128,10
     CONTROL         "Use fast gradient drawing",IDC_FASTGRADIENT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,168,96,99,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,168,96,130,10
     EDITTEXT        IDC_CORNERRAD,256,110,29,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_CORNERSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,290,110,8,
                     13
-    LTEXT           "Corner radius",IDC_STATIC,179,112,59,10
+    LTEXT           "Corner radius",IDC_STATIC,193,112,59,10
     GROUPBOX        "Skin options",IDC_STATIC,3,77,297,105
     EDITTEXT        IDC_GRPTOPPADDING,80,163,29,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_GRPPADDINGSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
@@ -769,11 +770,11 @@ BEGIN
                     UDS_ARROWKEYS,292,163,8,13
     LTEXT           "Frame titlebar height",IDC_STATIC,149,164,85,10
     CONTROL         "Ignore selection for groups",IDC_IGNORESELFORGROUPS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,152,117,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,152,169,10
 END
 
 IDD_OPT DIALOGEX 0, 0, 312, 247
-STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -784,8 +785,8 @@ BEGIN
 END
 
 IDD_QUICKIGNORE DIALOGEX 0, 0, 357, 236
-STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
+    WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -866,12 +867,12 @@ END
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE MOVEABLE PURE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE MOVEABLE PURE 
+2 TEXTINCLUDE 
 BEGIN
     "#include <windows.h>\r\n"
     "#include <winres.h>\r\n"
@@ -879,7 +880,7 @@ BEGIN
     "\0"
 END
 
-3 TEXTINCLUDE MOVEABLE PURE 
+3 TEXTINCLUDE 
 BEGIN
     "\r\n"
     "\0"
@@ -895,53 +896,53 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_NOTICK              ICON    DISCARDABLE     "res/notick.ico"
-IDI_RENAME              ICON    DISCARDABLE     "res/rename.ico"
-IDI_BLANK               ICON    DISCARDABLE     "res/blank.ico"
-IDI_DELETE              ICON    DISCARDABLE     "res/delete.ico"
-IDI_HIDEOFFLINE         ICON    DISCARDABLE     "res/online.ico"
-IDI_HIDEGROUPS          ICON    DISCARDABLE     "res/groups.ico"
-IDI_SOUNDSON            ICON    DISCARDABLE     "res/sounds_on.ico"
-IDI_SOUNDSOFF           ICON    DISCARDABLE     "res/sounds_off.ico"
-IDI_FINDANDADD          ICON    DISCARDABLE     "res/find.ico"
-IDI_TBOPTIONS           ICON    DISCARDABLE     "res/options.ico"
-IDI_MINIMIZE            ICON    DISCARDABLE     "res/minimize.ico"
-IDI_TABSRMMMENU         ICON    DISCARDABLE     "res/tabsrmm_menu.ico"
-IDI_TABSRMMSESSIONLIST  ICON    DISCARDABLE     "res/slist.ico"
-IDI_CLVISIBLE           ICON    DISCARDABLE     "res/visible.ico"
-IDI_CLINVISIBLE         ICON    DISCARDABLE     "res/invisible.ico"
-IDI_PROTOCONNECTING     ICON    DISCARDABLE     "res/connecting.ico"
-IDI_OVL_OFFLINE         ICON    DISCARDABLE     "res/overlay/offline.ico"
-IDI_OVL_ONLINE          ICON    DISCARDABLE     "res/overlay/online.ico"
-IDI_OVL_AWAY            ICON    DISCARDABLE     "res/overlay/away.ico"
-IDI_OVL_DND             ICON    DISCARDABLE     "res/overlay/dnd.ico"
-IDI_OVL_NA              ICON    DISCARDABLE     "res/overlay/na.ico"
-IDI_OVL_OCCUPIED        ICON    DISCARDABLE     "res/overlay/occupied.ico"
-IDI_OVL_FREEFORCHAT     ICON    DISCARDABLE     "res/overlay/chat.ico"
-IDI_OVL_INVISIBLE       ICON    DISCARDABLE     "res/overlay/invisible.ico"
-IDI_OVL_ONTHEPHONE      ICON    DISCARDABLE     "res/overlay/phone.ico"
-IDI_OVL_OUTTOLUNCH      ICON    DISCARDABLE     "res/overlay/lunch.ico"
-IDI_TICK                ICON    DISCARDABLE     "res/notick1.ico"
-IDI_CLVM_SELECT         ICON    DISCARDABLE     "res/arrow-down.ico"
-IDI_CLVM_OPTIONS        ICON    DISCARDABLE     "res/options_clvm.ico"
-IDI_TBTOPMENU           ICON    DISCARDABLE     "res/menu.ico"
-IDI_TBACCOUNTS          ICON    DISCARDABLE     "res/accounts.ico"
+IDI_NOTICK              ICON                    "res/notick.ico"
+IDI_RENAME              ICON                    "res/rename.ico"
+IDI_BLANK               ICON                    "res/blank.ico"
+IDI_DELETE              ICON                    "res/delete.ico"
+IDI_HIDEOFFLINE         ICON                    "res/online.ico"
+IDI_HIDEGROUPS          ICON                    "res/groups.ico"
+IDI_SOUNDSON            ICON                    "res/sounds_on.ico"
+IDI_SOUNDSOFF           ICON                    "res/sounds_off.ico"
+IDI_FINDANDADD          ICON                    "res/find.ico"
+IDI_TBOPTIONS           ICON                    "res/options.ico"
+IDI_MINIMIZE            ICON                    "res/minimize.ico"
+IDI_TABSRMMMENU         ICON                    "res/tabsrmm_menu.ico"
+IDI_TABSRMMSESSIONLIST  ICON                    "res/slist.ico"
+IDI_CLVISIBLE           ICON                    "res/visible.ico"
+IDI_CLINVISIBLE         ICON                    "res/invisible.ico"
+IDI_PROTOCONNECTING     ICON                    "res/connecting.ico"
+IDI_OVL_OFFLINE         ICON                    "res/overlay/offline.ico"
+IDI_OVL_ONLINE          ICON                    "res/overlay/online.ico"
+IDI_OVL_AWAY            ICON                    "res/overlay/away.ico"
+IDI_OVL_DND             ICON                    "res/overlay/dnd.ico"
+IDI_OVL_NA              ICON                    "res/overlay/na.ico"
+IDI_OVL_OCCUPIED        ICON                    "res/overlay/occupied.ico"
+IDI_OVL_FREEFORCHAT     ICON                    "res/overlay/chat.ico"
+IDI_OVL_INVISIBLE       ICON                    "res/overlay/invisible.ico"
+IDI_OVL_ONTHEPHONE      ICON                    "res/overlay/phone.ico"
+IDI_OVL_OUTTOLUNCH      ICON                    "res/overlay/lunch.ico"
+IDI_TICK                ICON                    "res/notick1.ico"
+IDI_CLVM_SELECT         ICON                    "res/arrow-down.ico"
+IDI_CLVM_OPTIONS        ICON                    "res/options_clvm.ico"
+IDI_TBTOPMENU           ICON                    "res/menu.ico"
+IDI_TBACCOUNTS          ICON                    "res/accounts.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor
 //
 
-IDC_HYPERLINKHAND       CURSOR  DISCARDABLE     "res/hyperlin.cur"
-IDC_DROP                CURSOR  DISCARDABLE     "res/DRAGCOPY.CUR"
-IDC_DROPUSER            CURSOR  DISCARDABLE     "res/dropuser.cur"
+IDC_HYPERLINKHAND       CURSOR                  "res/hyperlin.cur"
+IDC_DROP                CURSOR                  "res/DRAGCOPY.CUR"
+IDC_DROPUSER            CURSOR                  "res/dropuser.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menu
 //
 
-IDR_CLISTMENU MENU DISCARDABLE 
+IDR_CLISTMENU MENU 
 BEGIN
     POPUP "&¤"
     BEGIN
@@ -963,7 +964,7 @@ BEGIN
     END
 END
 
-IDR_CONTEXT MENU DISCARDABLE 
+IDR_CONTEXT MENU 
 BEGIN
     POPUP "Tray"
     BEGIN
@@ -1027,61 +1028,6 @@ BEGIN
     END
 END
 
-#ifndef APSTUDIO_INVOKED
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,8,0,3
- PRODUCTVERSION 0,8,0,3
- FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
- FILEFLAGS 0x21L
-#else
- FILEFLAGS 0x20L
-#endif
- FILEOS 0x40004L
- FILETYPE 0x1L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-#if defined(UNICODE)    
-    BEGIN
-        BLOCK "000004b0"
-        BEGIN
-            VALUE "Comments", "Licensed under the terms of the GNU General Public License"
-            VALUE "CompanyName", "Copyright © 2000-2004 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim and others."
-            VALUE "FileDescription", "Clist Nicer+ (UNICODE)"
-            VALUE "FileVersion", "0.8.0.3"
-            VALUE "InternalName", "clist_nicer+ (UNICODE)"
-            VALUE "LegalCopyright", "Copyright © 2000-2008 The Miranda IM project members."
-            VALUE "OriginalFilename", "clist_nicer.dll"
-            VALUE "ProductName", "Miranda IM Contact List"
-            VALUE "ProductVersion", "0.8.0.3"
-            VALUE "SpecialBuild", "11"
-        END
-    END
-#else
-    BEGIN
-        BLOCK "000004b0"
-        BEGIN
-            VALUE "Comments", "Licensed under the terms of the GNU General Public License"
-            VALUE "CompanyName", "Copyright © 2000-2004 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim and others."
-            VALUE "FileDescription", "Clist Nicer+ (ANSI)"
-            VALUE "FileVersion", "0.8.0.3"
-            VALUE "InternalName", "clist_nicer+ (ANSI)"
-            VALUE "LegalCopyright", "Copyright © 2000-2008 The Miranda IM project members."
-            VALUE "OriginalFilename", "clist_nicer.dll"
-            VALUE "ProductName", "Miranda IM Contact List"
-            VALUE "ProductVersion", "0.8.0.3"
-            VALUE "SpecialBuild", "11"
-        END
-    END
-#endif    
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x0, 1200
-    END
-END
-#endif
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1089,7 +1035,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO MOVEABLE PURE 
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_OPT_XICONS, DIALOG
     BEGIN
@@ -1099,7 +1045,7 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Englisch (USA) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -1113,6 +1059,4 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-
-
 
