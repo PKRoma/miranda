@@ -21,23 +21,14 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#if defined( UNICODE ) && !defined( _UNICODE )
-	#define _UNICODE
-#endif
-
-#define _USE_32BIT_TIME_T
-
 #define WINVER 0x0600
 #define _WIN32_WINNT 0x0501
 #define _WIN32_IE 0x0501
 
 #define MIRANDA_VER 0x0700
 
-#if defined( UNICODE ) && !defined( _UNICODE )
-#define _UNICODE
-#endif
+#include <m_stdhdr.h>
 
-#include <tchar.h>
 #include <windows.h>
 #include <commctrl.h>
 #include <uxtheme.h>

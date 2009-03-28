@@ -66,14 +66,14 @@ extern DBHeader dbhdr;
 
 int DoMyControlProcessing(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam,BOOL *bReturn);
 
-BOOL CALLBACK SelectDbDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
-BOOL CALLBACK CleaningDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
-BOOL CALLBACK ProgressDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
-BOOL CALLBACK FileAccessDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
-BOOL CALLBACK WizardDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
-BOOL CALLBACK FinishedDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
-BOOL CALLBACK WelcomeDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
-BOOL CALLBACK OpenErrorDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
+INT_PTR CALLBACK SelectDbDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
+INT_PTR CALLBACK CleaningDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
+INT_PTR CALLBACK ProgressDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
+INT_PTR CALLBACK FileAccessDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
+INT_PTR CALLBACK WizardDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
+INT_PTR CALLBACK FinishedDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
+INT_PTR CALLBACK WelcomeDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
+INT_PTR CALLBACK OpenErrorDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
 
 struct DBSignature {
   char name[15];

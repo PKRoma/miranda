@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="clist_modern"
 	ProjectGUID="{D9057E63-AAAA-4FE7-800A-20C02F4761F3}"
 	RootNamespace="clist_modern"
@@ -10,6 +10,9 @@
 	<Platforms>
 		<Platform
 			Name="Win32"
+		/>
+		<Platform
+			Name="x64"
 		/>
 	</Platforms>
 	<ToolFiles>
@@ -423,6 +426,418 @@
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
+		<Configuration
+			Name="Release|x64"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="3"
+				TypeLibraryName=".\Release/mwclist.tlb"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="3"
+				InlineFunctionExpansion="1"
+				FavorSizeOrSpeed="2"
+				EnableFiberSafeOptimizations="false"
+				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories="../../include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS;_CRT_SECURE_NO_WARNINGS"
+				StringPooling="true"
+				ExceptionHandling="1"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="false"
+				EnableEnhancedInstructionSet="0"
+				DefaultCharIsUnsigned="true"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="hdr/modern_commonheaders.h"
+				AssemblerOutput="2"
+				BrowseInformation="0"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
+				CompileAs="0"
+				DisableSpecificWarnings="4996"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="2057"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
+				AdditionalOptions="/MACHINE:I386"
+				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
+				OutputFile="$(OutDir)/$(ProjectName).dll"
+				SuppressStartupBanner="true"
+				DelayLoadDLLs="gdiplus.dll"
+				GenerateDebugInformation="true"
+				MapExports="false"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				OptimizeForWindows98="0"
+				LinkTimeCodeGeneration="1"
+				BaseAddress=""
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug|x64"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			UseOfATL="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="3"
+				TypeLibraryName=".\Debug/mwclist.tlb"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="../../include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS;_CRT_SECURE_NO_WARNINGS"
+				GeneratePreprocessedFile="0"
+				ExceptionHandling="1"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				DefaultCharIsUnsigned="true"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="hdr/modern_commonheaders.h"
+				BrowseInformation="1"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996"
+				ShowIncludes="false"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
+				AdditionalOptions="/MACHINE:I386"
+				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
+				ShowProgress="0"
+				OutputFile="$(OutDir)/$(ProjectName).dll"
+				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories=""
+				DelayLoadDLLs="gdiplus.dll"
+				GenerateDebugInformation="true"
+				BaseAddress=""
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug Unicode|x64"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			UseOfATL="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="3"
+				TypeLibraryName=".\Debug/mwclist.tlb"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="../../include"
+				PreprocessorDefinitions="_DEBUG_LOG;WIN32;_DEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS;_CRT_SECURE_NO_WARNINGS"
+				GeneratePreprocessedFile="0"
+				ExceptionHandling="1"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				BufferSecurityCheck="true"
+				DefaultCharIsUnsigned="true"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="hdr/modern_commonheaders.h"
+				BrowseInformation="1"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996"
+				ShowIncludes="false"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
+				AdditionalOptions="/MACHINE:I386"
+				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
+				OutputFile="$(OutDir)/$(ProjectName).dll"
+				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories=""
+				DelayLoadDLLs="gdiplus.dll"
+				GenerateDebugInformation="true"
+				BaseAddress=""
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release Unicode|x64"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="3"
+				TypeLibraryName=".\Release/mwclist.tlb"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="3"
+				InlineFunctionExpansion="1"
+				FavorSizeOrSpeed="2"
+				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories="../../include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS;_CRT_SECURE_NO_WARNINGS"
+				StringPooling="true"
+				ExceptionHandling="1"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				EnableEnhancedInstructionSet="0"
+				DefaultCharIsUnsigned="true"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="hdr/modern_commonheaders.h"
+				AssemblerOutput="2"
+				BrowseInformation="0"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
+				CompileAs="0"
+				DisableSpecificWarnings="4996"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="2057"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
+				AdditionalOptions="/MACHINE:I386"
+				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
+				OutputFile="$(OutDir)/$(ProjectName).dll"
+				IgnoreDefaultLibraryNames=""
+				DelayLoadDLLs="gdiplus.dll"
+				GenerateDebugInformation="true"
+				MapExports="false"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				LinkTimeCodeGeneration="1"
+				BaseAddress=""
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
 	</Configurations>
 	<References>
 	</References>
@@ -546,6 +961,38 @@
 						UsePrecompiledHeader="1"
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\modern_contact.cpp"
@@ -592,6 +1039,38 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -994,11 +1473,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\m_clui.h"
+				RelativePath=".\m_api\m_clui.h"
 				>
 			</File>
 			<File
-				RelativePath=".\m_api\m_clui.h"
+				RelativePath="..\..\include\m_clui.h"
 				>
 			</File>
 			<File

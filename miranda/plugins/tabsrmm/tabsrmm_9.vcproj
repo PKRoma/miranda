@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="tabsrmm"
 	ProjectGUID="{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}"
 	RootNamespace="srmm"
@@ -10,6 +10,9 @@
 	<Platforms>
 		<Platform
 			Name="Win32"
+		/>
+		<Platform
+			Name="x64"
 		/>
 	</Platforms>
 	<ToolFiles>
@@ -417,6 +420,408 @@
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
+		<Configuration
+			Name="Debug|x64"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)\Plugins"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="3"
+				TypeLibraryName=".\Debug/srmm.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="../../include; ../include"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="commonheaders.h"
+				AssemblerListingLocation=""
+				BrowseInformation="0"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="2057"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
+				AdditionalDependencies="comctl32.lib shlwapi.lib"
+				SuppressStartupBanner="true"
+				DelayLoadDLLs=""
+				GenerateDebugInformation="true"
+				GenerateMapFile="false"
+				MapFileName=""
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release Unicode|x64"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)\Plugins"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="3"
+				TypeLibraryName=".\Release_Unicode/srmm.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="3"
+				InlineFunctionExpansion="1"
+				FavorSizeOrSpeed="2"
+				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories="../../include; ../include"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
+				StringPooling="true"
+				ExceptionHandling="1"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				FloatingPointModel="1"
+				RuntimeTypeInfo="false"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="commonheaders.h"
+				AssemblerListingLocation=""
+				BrowseInformation="0"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG;UNICODE"
+				Culture="2057"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
+				AdditionalDependencies="comctl32.lib shlwapi.lib"
+				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
+				IgnoreAllDefaultLibraries="false"
+				DelayLoadDLLs=""
+				GenerateDebugInformation="true"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				LinkTimeCodeGeneration="1"
+				BaseAddress="0x6a540000"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|x64"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)\Plugins"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="3"
+				TypeLibraryName=".\Release/srmm.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="3"
+				InlineFunctionExpansion="1"
+				FavorSizeOrSpeed="2"
+				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories="../../include"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
+				StringPooling="true"
+				ExceptionHandling="1"
+				RuntimeLibrary="2"
+				BufferSecurityCheck="false"
+				EnableFunctionLevelLinking="true"
+				RuntimeTypeInfo="false"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="commonheaders.h"
+				AssemblerListingLocation=""
+				BrowseInformation="0"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="2057"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
+				AdditionalDependencies="comctl32.lib shlwapi.lib"
+				SuppressStartupBanner="true"
+				DelayLoadDLLs=""
+				GenerateDebugInformation="true"
+				GenerateMapFile="false"
+				MapFileName=""
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				OptimizeForWindows98="0"
+				LinkTimeCodeGeneration="1"
+				BaseAddress="0x6a540000"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug Unicode|x64"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)\Plugins"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			UseOfATL="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="3"
+				TypeLibraryName=".\Debug_Unicode/srmm.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="../../include; ../include"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
+				StringPooling="false"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				EnableFunctionLevelLinking="true"
+				FloatingPointModel="0"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="commonheaders.h"
+				AssemblerListingLocation=""
+				BrowseInformation="0"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="2057"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
+				AdditionalDependencies="comctl32.lib shlwapi.lib"
+				SuppressStartupBanner="true"
+				DelayLoadDLLs=""
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
+				GenerateMapFile="false"
+				MapFileName=""
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
 	</Configurations>
 	<References>
 	</References>
@@ -476,6 +881,38 @@
 						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\generic_msghandlers.c"
@@ -514,6 +951,38 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -586,6 +1055,38 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -675,6 +1176,38 @@
 							PrecompiledHeaderThrough="../commonheaders.h"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\chat\colorchooser.c"
@@ -705,6 +1238,38 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|x64"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -747,6 +1312,38 @@
 							PrecompiledHeaderThrough="../commonheaders.h"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\chat\main.c"
@@ -777,6 +1374,38 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|x64"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -819,6 +1448,38 @@
 							PrecompiledHeaderThrough="../commonheaders.h"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\chat\message.c"
@@ -849,6 +1510,38 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|x64"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -891,6 +1584,38 @@
 							PrecompiledHeaderThrough="../commonheaders.h"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\chat\services.c"
@@ -921,6 +1646,38 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|x64"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -963,6 +1720,38 @@
 							PrecompiledHeaderThrough="../commonheaders.h"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\chat\window.c"
@@ -993,6 +1782,38 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|x64"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1240,11 +2061,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
+				RelativePath="..\..\src\res\dropuser.cur"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\dropuser.cur"
+				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
 				>
 			</File>
 			<File
@@ -1268,11 +2089,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico"
+				RelativePath=".\res\angeli-icons\History.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\History.ico"
+				RelativePath="..\..\Miranda-IM\res\history.ico"
 				>
 			</File>
 			<File
@@ -1296,11 +2117,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\icon1.ico"
+				RelativePath="..\..\src\res\icon1.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\icon1.ico"
+				RelativePath=".\res\icon1.ico"
 				>
 			</File>
 			<File
@@ -1476,11 +2297,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\save.ico"
+				RelativePath=".\res\angeli-icons\Save.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Save.ico"
+				RelativePath=".\res\save.ico"
 				>
 			</File>
 			<File

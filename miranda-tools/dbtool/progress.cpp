@@ -64,7 +64,7 @@ void ProcessingDone(void)
 	SendMessage(hdlgProgress,WM_PROCESSINGDONE,0,0);
 }
 
-BOOL CALLBACK ProgressDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
+INT_PTR CALLBACK ProgressDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
 	BOOL bReturn;
 	static int fontHeight,listWidth;
@@ -169,7 +169,7 @@ BOOL CALLBACK ProgressDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 				SetEvent(hEventAbort);
 			}
 			SetEvent(hEventRun);
-			SetWindowLong(hdlg,DWL_MSGRESULT,TRUE);
+			SetWindowLongPtr(hdlg,DWLP_MSGRESULT,TRUE);
 			return TRUE;
 		case WM_COMMAND:
 			switch(LOWORD(wParam)) {

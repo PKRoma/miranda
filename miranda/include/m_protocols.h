@@ -124,7 +124,7 @@ typedef struct {
 //when type==ACKTYPE_FILE && (result==ACKRESULT_DATA || result==ACKRESULT_FILERESUME),
 //lParam points to this
 typedef struct {
-	int cbSize;
+	size_t cbSize;
 	HANDLE hContact;
 	int sending;	//true if sending, false if receiving
 	char **files;
@@ -160,7 +160,7 @@ typedef struct {
 //And yes, before you ask, that is triple indirection. Deal with it.
 //Access members using ppProtocolDescriptors[index]->element
 
-#define PROTOCOLDESCRIPTOR_V3_SIZE (sizeof(int)*2+sizeof(char*))
+#define PROTOCOLDESCRIPTOR_V3_SIZE (sizeof(size_t)+sizeof(INT_PTR)+sizeof(char*))
 
  // initializes an empty account
 typedef struct tagPROTO_INTERFACE* ( *pfnInitProto )( const char* szModuleName, const TCHAR* szUserName );
@@ -172,7 +172,7 @@ typedef int ( *pfnUninitProto )( struct tagPROTO_INTERFACE* );
 typedef int ( *pfnDestroyProto )( struct tagPROTO_INTERFACE* );
 
 typedef struct {
-	int   cbSize;
+	size_t cbSize;
 	char *szName;        // unique name of the module
 	int   type;          // module type, see PROTOTYPE_ constants
 

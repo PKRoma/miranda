@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="icqoscar8"
 	ProjectGUID="{01DDCB36-4DE2-405D-BC36-2C8BDEB86659}"
 	RootNamespace="icqoscar8"
@@ -10,6 +10,9 @@
 	<Platforms>
 		<Platform
 			Name="Win32"
+		/>
+		<Platform
+			Name="x64"
 		/>
 	</Platforms>
 	<ToolFiles>
@@ -418,6 +421,409 @@
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
+		<Configuration
+			Name="Release|x64"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)\Plugins"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="3"
+				TypeLibraryName=".\Release/icqoscar8.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="3"
+				InlineFunctionExpansion="1"
+				FavorSizeOrSpeed="2"
+				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories="../../include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;icqoscar8_EXPORTS"
+				StringPooling="true"
+				ExceptionHandling="0"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="icqoscar.h"
+				AssemblerListingLocation=""
+				BrowseInformationFile=""
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
+				CompileAs="0"
+				DisableSpecificWarnings="4996"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1047"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
+				AdditionalOptions="/ALIGN:4096 /ignore:4108"
+				AdditionalDependencies="wsock32.lib comctl32.lib"
+				OutputFile="$(OutDir)/icq.dll"
+				SuppressStartupBanner="true"
+				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
+				GenerateDebugInformation="true"
+				GenerateMapFile="false"
+				MapFileName=""
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				OptimizeForWindows98="0"
+				LinkTimeCodeGeneration="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug|x64"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)\Plugins"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="3"
+				TypeLibraryName=".\Debug/icqoscar8.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="../../include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;icqoscar8_EXPORTS"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="icqoscar.h"
+				AssemblerListingLocation=""
+				BrowseInformationFile=""
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
+				CompileAs="0"
+				DisableSpecificWarnings="4996"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="2057"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
+				AdditionalDependencies="wsock32.lib comctl32.lib"
+				OutputFile="$(OutDir)/icq.dll"
+				SuppressStartupBanner="true"
+				GenerateDebugInformation="true"
+				GenerateMapFile="false"
+				MapFileName=""
+				BaseAddress="0x25000000"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug Unicode|x64"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)\Plugins"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="3"
+				TypeLibraryName=".\Debug/icqoscar8.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="../../include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;icqoscar8_EXPORTS"
+				StringPooling="false"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				EnableFunctionLevelLinking="true"
+				FloatingPointModel="0"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="icqoscar.h"
+				AssemblerListingLocation=""
+				BrowseInformationFile=""
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
+				CompileAs="0"
+				DisableSpecificWarnings="4996"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="2057"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
+				AdditionalDependencies="wsock32.lib comctl32.lib"
+				OutputFile="$(OutDir)/icq.dll"
+				SuppressStartupBanner="true"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
+				GenerateMapFile="false"
+				MapFileName=""
+				BaseAddress="0x25000000"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release Unicode|x64"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)\Plugins"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="3"
+				TypeLibraryName=".\Release/icqoscar8.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="3"
+				InlineFunctionExpansion="1"
+				FavorSizeOrSpeed="2"
+				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories="../../include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;icqoscar8_EXPORTS"
+				StringPooling="true"
+				ExceptionHandling="0"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="icqoscar.h"
+				AssemblerOutput="4"
+				BrowseInformationFile=""
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
+				CompileAs="0"
+				DisableSpecificWarnings="4996"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1047"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
+				AdditionalOptions="/ALIGN:4096 /ignore:4108"
+				AdditionalDependencies="wsock32.lib comctl32.lib"
+				OutputFile="$(OutDir)/icq.dll"
+				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
+				GenerateDebugInformation="true"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				LinkTimeCodeGeneration="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
 	</Configurations>
 	<References>
 	</References>
@@ -624,6 +1030,44 @@
 						AdditionalIncludeDirectories=""
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="chan_02data.cpp"
@@ -659,6 +1103,44 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -708,6 +1190,44 @@
 						AdditionalIncludeDirectories=""
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="chan_04close.cpp"
@@ -750,6 +1270,44 @@
 						AdditionalIncludeDirectories=""
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="chan_05ping.cpp"
@@ -785,6 +1343,44 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -838,6 +1434,44 @@
 						AdditionalIncludeDirectories=""
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="fam_02location.cpp"
@@ -873,6 +1507,44 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -922,6 +1594,44 @@
 						AdditionalIncludeDirectories=""
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="fam_04message.cpp"
@@ -964,6 +1674,44 @@
 						AdditionalIncludeDirectories=""
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="fam_09bos.cpp"
@@ -999,6 +1747,44 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1052,6 +1838,44 @@
 						AdditionalIncludeDirectories=""
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="fam_13servclist.cpp"
@@ -1094,6 +1918,44 @@
 						AdditionalIncludeDirectories=""
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="fam_15icqserver.cpp"
@@ -1129,6 +1991,44 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1186,6 +2086,44 @@
 						AdditionalIncludeDirectories=""
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="icq_directmsg.cpp"
@@ -1221,6 +2159,44 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1270,6 +2246,44 @@
 						AdditionalIncludeDirectories=""
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="icq_filetransfer.cpp"
@@ -1305,6 +2319,44 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1355,6 +2407,44 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1420,6 +2510,44 @@
 						AdditionalIncludeDirectories=""
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="init.cpp"
@@ -1462,6 +2590,44 @@
 						AdditionalIncludeDirectories=""
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="log.cpp"
@@ -1497,6 +2663,44 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1567,6 +2771,44 @@
 						AdditionalIncludeDirectories=""
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\icq_firstrun.cpp"
@@ -1606,6 +2848,44 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1655,6 +2935,44 @@
 						AdditionalIncludeDirectories=""
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="UI\loginpassword.cpp"
@@ -1697,6 +3015,44 @@
 						AdditionalIncludeDirectories=""
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="UI\userinfotab.cpp"
@@ -1732,6 +3088,44 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1818,6 +3212,44 @@
 					AdditionalIncludeDirectories=""
 				/>
 			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug Unicode|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release Unicode|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath=".\cookies.cpp"
@@ -1861,6 +3293,44 @@
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Release Unicode|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug Unicode|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release Unicode|x64"
 				>
 				<Tool
 					Name="VCCLCompilerTool"
@@ -1914,6 +3384,44 @@
 					AdditionalIncludeDirectories=""
 				/>
 			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug Unicode|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release Unicode|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath=".\icq_clients.cpp"
@@ -1953,6 +3461,44 @@
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Release Unicode|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug Unicode|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release Unicode|x64"
 				>
 				<Tool
 					Name="VCCLCompilerTool"
@@ -2002,6 +3548,44 @@
 					AdditionalIncludeDirectories=""
 				/>
 			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug Unicode|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release Unicode|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="icq_infoupdate.cpp"
@@ -2044,6 +3628,44 @@
 					AdditionalIncludeDirectories=""
 				/>
 			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug Unicode|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release Unicode|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="icq_packet.cpp"
@@ -2079,6 +3701,44 @@
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Release Unicode|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug Unicode|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release Unicode|x64"
 				>
 				<Tool
 					Name="VCCLCompilerTool"
@@ -2132,6 +3792,44 @@
 					AdditionalIncludeDirectories=""
 				/>
 			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug Unicode|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release Unicode|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="icq_servlist.cpp"
@@ -2167,6 +3865,44 @@
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Release Unicode|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug Unicode|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release Unicode|x64"
 				>
 				<Tool
 					Name="VCCLCompilerTool"
@@ -2224,6 +3960,48 @@
 					UsePrecompiledHeader="1"
 				/>
 			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+					UsePrecompiledHeader="1"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+					UsePrecompiledHeader="1"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug Unicode|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+					UsePrecompiledHeader="1"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release Unicode|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+					UsePrecompiledHeader="1"
+				/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="stdpackets.cpp"
@@ -2259,6 +4037,44 @@
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Release Unicode|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug Unicode|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release Unicode|x64"
 				>
 				<Tool
 					Name="VCCLCompilerTool"
@@ -2308,6 +4124,44 @@
 					AdditionalIncludeDirectories=""
 				/>
 			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug Unicode|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release Unicode|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="utilities.cpp"
@@ -2343,6 +4197,44 @@
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Release Unicode|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug Unicode|x64"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release Unicode|x64"
 				>
 				<Tool
 					Name="VCCLCompilerTool"

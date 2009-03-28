@@ -75,7 +75,7 @@ BOOL is_utf8_string(LPCSTR str)
 
 char* Utf8EncodeUcs2( const wchar_t* src )
 {
-	int len = wcslen( src );
+	size_t len = wcslen( src );
 	char* result = ( char* )malloc( len*3 + 1 );
 	if ( result == NULL )
 		return NULL;

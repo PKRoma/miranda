@@ -260,7 +260,7 @@ static int LoadLangPack(const TCHAR *szLangPack)
 				lstrcatA(E->local,line);
 				{
 					int iNeeded = MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, 0, 0);
-					int iOldLen = wcslen(E->wlocal);
+					size_t iOldLen = wcslen(E->wlocal);
 					E->wlocal = (wchar_t*)realloc(E->wlocal, ( sizeof(wchar_t) * ( iOldLen + iNeeded + 2)));
 					wcscat(E->wlocal, L"\n");
 					MultiByteToWideChar( langPack.defaultANSICp, 0, line, -1, E->wlocal + iOldLen+1, iNeeded);

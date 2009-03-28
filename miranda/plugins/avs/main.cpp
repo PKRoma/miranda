@@ -2524,7 +2524,7 @@ extern "C" __declspec(dllexport) const MUUID * MirandaPluginInterfaces(void)
 
 extern "C" int __declspec(dllexport) Load(PLUGINLINK * link)
 {
-	int result = CALLSERVICE_NOTFOUND;
+	INT_PTR result = CALLSERVICE_NOTFOUND;
 
 	pluginLink = link;
 

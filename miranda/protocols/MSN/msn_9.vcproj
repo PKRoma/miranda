@@ -519,7 +519,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug Unicode|x64"
-			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)\Plugins"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -585,7 +585,7 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="wsock32.lib comctl32.lib Rpcrt4.lib"
-				OutputFile="c:\Miranda IM\plugins\msn.dll"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"

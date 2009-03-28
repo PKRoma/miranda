@@ -333,7 +333,7 @@ typedef struct _tagFI_interface {
     HBITMAP  (*FI_CreateHBITMAPFromDIB)(FIBITMAP *dib);
     BOOL     (*FI_Premultiply)(HBITMAP hBmp);                               // premultiplies alpha channel for usage with AlphaBlend()
                                                                             // original HBITMAP stays valid and must be 32bit RGBA
-    int      (*FI_BmpFilterResizeBitmap)(WPARAM wParam,LPARAM lParam);      // more generic resizer for avatar images
+    INT_PTR  (*FI_BmpFilterResizeBitmap)(WPARAM wParam,LPARAM lParam);      // more generic resizer for avatar images
     void     (*FI_CorrectBitmap32Alpha)(HBITMAP hBitmap, BOOL force);       // corrects broken images (when all alpha values are 0)
 
     BYTE  reserved[200];            // future usage

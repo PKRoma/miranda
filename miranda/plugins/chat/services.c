@@ -831,7 +831,7 @@ void CreateServiceFunctions(void)
 	hServiceGetCount       = CreateServiceFunction(MS_GC_GETSESSIONCOUNT, Service_GetCount);
 
 	hEventDoubleclicked    = CreateServiceFunction("GChat/DblClickEvent",     CList_EventDoubleclicked);
-	hEventPrebuildMenu     = CreateServiceFunction("GChat/PrebuildMenuEvent", CList_PrebuildContactMenu);
+	hEventPrebuildMenu     = CreateServiceFunction("GChat/PrebuildMenuEvent", CList_PrebuildContactMenuSvc);
 	hEventJoinChat         = CreateServiceFunction("GChat/JoinChat",          CList_JoinChat);
 	hEventLeaveChat        = CreateServiceFunction("GChat/LeaveChat",         CList_LeaveChat);
 }

@@ -125,7 +125,7 @@ TCHAR *addstring(TCHAR *str, TCHAR *add) {
 	return str + _tcslen(add) + 1;
 }
 
-BOOL CALLBACK SelectDbDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
+INT_PTR CALLBACK SelectDbDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
 	BOOL bReturn;
 	if ( DoMyControlProcessing( hdlg, message, wParam, lParam, &bReturn ))

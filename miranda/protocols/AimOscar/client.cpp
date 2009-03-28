@@ -233,7 +233,7 @@ int CAimProto::aim_set_invis(HANDLE hServerConn,unsigned short &seqno,const char
     char buf[SNAC_SIZE+TLV_HEADER_SIZE*2];
     char temp[4];
     memcpy(temp,status_flag,2);
-    memcpy(&temp[sizeof(status_flag)-2],status,2);
+    memcpy(&temp[2],status,2);
     aim_writesnac(0x01,0x1E,offset,buf);
     aim_writetlv(0x06,4,temp,offset,buf);
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);

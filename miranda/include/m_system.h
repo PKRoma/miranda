@@ -141,7 +141,7 @@ wParam=0, lParam = (LPARAM) &MM_INTERFACE
 
 struct MM_INTERFACE
 {
-	int cbSize;
+	size_t cbSize;
 	void* (*mmi_malloc) (size_t);
 	void* (*mmi_realloc) (void*, size_t);
 	void  (*mmi_free) (void*);
@@ -222,8 +222,8 @@ If the sortFunc member of the list gets assigned, the list becomes sorted
 wParam=0, lParam = (LPARAM)LIST_INTERFACE*
 */
 
-#define LIST_INTERFACE_V1_SIZE  (sizeof(int)+7*sizeof(void*))
-#define LIST_INTERFACE_V2_SIZE  (sizeof(int)+9*sizeof(void*))
+#define LIST_INTERFACE_V1_SIZE  (sizeof(size_t)+7*sizeof(void*))
+#define LIST_INTERFACE_V2_SIZE  (sizeof(size_t)+9*sizeof(void*))
 
 typedef int ( *FSortFunc )( void*, void* );
 
@@ -240,13 +240,13 @@ typedef struct
 
 struct LIST_INTERFACE
 {
-	int    cbSize;
+	size_t    cbSize;
 
-   SortedList* ( *List_Create )( int, int );
+    SortedList* ( *List_Create )( int, int );
 	void        ( *List_Destroy )( SortedList* );
 
-	void*	( *List_Find )( SortedList*, void* );
-	int	( *List_GetIndex )( SortedList*, void*, int* );
+	void* ( *List_Find )( SortedList*, void* );
+	int	  ( *List_GetIndex )( SortedList*, void*, int* );
 	int   ( *List_Insert )( SortedList*, void*, int );
 	int   ( *List_Remove )( SortedList*, int );
 	int   ( *List_IndexOf )( SortedList*, void* );
@@ -271,10 +271,10 @@ __forceinline INT_PTR mir_getLI( struct LIST_INTERFACE* dest )
 	Contains functions for utf8-strings encoding & decoding
 */
 
-#define UTF8_INTERFACE_SIZEOF_V1 24
+#define UTF8_INTERFACE_SIZEOF_V1 (sizeof(size_t)+5*sizeof(void*))
 struct UTF8_INTERFACE
 {
-	int cbSize;
+	size_t cbSize;
 
 	// decodes utf8 and places the result back into the same buffer.
 	// if the second parameter is present, the additional wchar_t* string gets allocated,

@@ -127,7 +127,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // special service for tweaking performance
 #define MS_GC_GETEVENTPTR  "GChat/GetNewEventPtr"
-typedef int (*GETEVENTFUNC)(WPARAM wParam, LPARAM lParam);
+typedef INT_PTR (*GETEVENTFUNC)(WPARAM wParam, LPARAM lParam);
 typedef struct  {
 	GETEVENTFUNC pfnAddEvent;
 }GCPTRS;

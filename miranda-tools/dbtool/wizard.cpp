@@ -86,7 +86,7 @@ int DoMyControlProcessing(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam,BOO
 	return FALSE;
 }
 
-BOOL CALLBACK WizardDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
+INT_PTR CALLBACK WizardDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
 	static HWND hdlgPage;
 

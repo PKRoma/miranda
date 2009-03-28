@@ -244,7 +244,7 @@ static FIBITMAP *FreeImage_CreateDIBFromHBITMAP(HBITMAP hBmp)
 // lParam = NULL
 // return NULL on error, ResizeBitmap->hBmp if don't need to resize or a new HBITMAP if resized
 
-static int serviceBmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam)
+static INT_PTR serviceBmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam)
 {
 	BITMAP bminfo;
 	int width, height;
@@ -362,7 +362,7 @@ static int serviceBmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam)
 			FreeImage_Unload(dib_tmp);
         FreeImage_Unload(dib);
 
-		return (int)bitmap_new;
+		return (INT_PTR)bitmap_new;
 	}
 }
 
@@ -839,13 +839,13 @@ static HANDLE hMempng2Dib = NULL;
 ///////////////////////////////////////////////////////////////////////////////
 // Load - initializes the plugin instance
 
-static int serviceDib2Png( WPARAM wParam, LPARAM lParam )
+static INT_PTR serviceDib2Png( WPARAM wParam, LPARAM lParam )
 {
 	DIB2PNG* param = ( DIB2PNG* )lParam;
 	return dib2mempng( param->pbmi, param->pDiData, param->pResult, param->pResultLen );
 }
 
-static int servicePng2Dib( WPARAM wParam, LPARAM lParam )
+static INT_PTR servicePng2Dib( WPARAM wParam, LPARAM lParam )
 {
 	PNG2DIB* param = ( PNG2DIB* )lParam;
 	return mempng2dib( param->pSource, param->cbSourceSize, param->pResult );
@@ -858,7 +858,7 @@ FI_INTERFACE feif = {0};
 * if it doesn't match, error will be returned
 */
 
-static int serviceGetInterface(WPARAM wParam, LPARAM lParam)
+static INT_PTR serviceGetInterface(WPARAM wParam, LPARAM lParam)
 {
 	FI_INTERFACE **ppfe = (FI_INTERFACE **)lParam;
 
@@ -873,7 +873,7 @@ static int serviceGetInterface(WPARAM wParam, LPARAM lParam)
 		return CALLSERVICE_NOTFOUND;
 }
 
-static int serviceLoad(WPARAM wParam, LPARAM lParam)
+static INT_PTR serviceLoad(WPARAM wParam, LPARAM lParam)
 {
 	char *lpszFilename = (char *)wParam;
 	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
@@ -906,12 +906,12 @@ static int serviceLoad(WPARAM wParam, LPARAM lParam)
 		HBITMAP hbm = FreeImage_CreateHBITMAPFromDIB(dib);
 		FreeImage_Unload(dib);
 		FI_CorrectBitmap32Alpha(hbm, FALSE);
-		return((int)hbm);
+		return((INT_PTR)hbm);
 	}
 	return NULL;
 }
 
-static int serviceLoadFromMem(WPARAM wParam, LPARAM lParam)
+static INT_PTR serviceLoadFromMem(WPARAM wParam, LPARAM lParam)
 {
 	IMGSRVC_MEMIO *mio = (IMGSRVC_MEMIO *)wParam;
 	//fiio_mem_handle fiio;
@@ -931,15 +931,15 @@ static int serviceLoadFromMem(WPARAM wParam, LPARAM lParam)
 	//FIBITMAP *dib = FreeImage_LoadFromMem(mio->fif, &fiio, mio->flags);
 
 	if(dib == NULL || (lParam & IMGL_RETURNDIB))
-		return (int)dib;
+		return (INT_PTR)dib;
 
 	HBITMAP hbm = FreeImage_CreateHBITMAPFromDIB(dib);
 
 	FreeImage_Unload(dib);
-	return (int)hbm;
+	return (INT_PTR)hbm;
 }
 
-static int serviceUnload(WPARAM wParam, LPARAM lParam)
+static INT_PTR serviceUnload(WPARAM wParam, LPARAM lParam)
 {
 	FIBITMAP *dib = (FIBITMAP *)wParam;
 
@@ -949,7 +949,7 @@ static int serviceUnload(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int serviceSave(WPARAM wParam, LPARAM lParam)
+static INT_PTR serviceSave(WPARAM wParam, LPARAM lParam)
 {
 	IMGSRVC_INFO *isi = (IMGSRVC_INFO *)wParam;
 	FREE_IMAGE_FORMAT fif;
@@ -1014,7 +1014,7 @@ static int serviceSave(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int serviceGetVersion(WPARAM wParam, LPARAM lParam)
+static INT_PTR serviceGetVersion(WPARAM wParam, LPARAM lParam)
 {
 	return FI_IF_VERSION;
 }

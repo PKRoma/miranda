@@ -32,6 +32,7 @@ int SplitmsgShutdown(void);
 int LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int i, char *szMsg);
 void Chat_Load(PLUGINLINK *link);
 void Chat_Unload();
+void FreeLogFonts();
 
 DWORD g_mirandaVersion = 0;
 

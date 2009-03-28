@@ -121,10 +121,11 @@ HANDLE        CList_AddRoom(const char* pszModule, const TCHAR* pszRoom, const T
 BOOL          CList_SetOffline(HANDLE hContact, BOOL bHide);
 BOOL          CList_SetAllOffline(BOOL bHide, const char *pszModule);
 int           CList_RoomDoubleclicked(WPARAM wParam,LPARAM lParam);
-INT_PTR           CList_EventDoubleclicked(WPARAM wParam,LPARAM lParam);
-INT_PTR           CList_JoinChat(WPARAM wParam, LPARAM lParam);
-INT_PTR           CList_LeaveChat(WPARAM wParam, LPARAM lParam);
-INT_PTR           CList_PrebuildContactMenu(WPARAM wParam, LPARAM lParam);
+INT_PTR       CList_EventDoubleclicked(WPARAM wParam,LPARAM lParam);
+INT_PTR       CList_JoinChat(WPARAM wParam, LPARAM lParam);
+INT_PTR       CList_LeaveChat(WPARAM wParam, LPARAM lParam);
+int           CList_PrebuildContactMenu(WPARAM wParam, LPARAM lParam);
+INT_PTR		  CList_PrebuildContactMenuSvc(WPARAM wParam, LPARAM lParam);
 void          CList_CreateGroup(TCHAR* group);
 BOOL          CList_AddEvent(HANDLE hContact, HICON Icon, HANDLE event, int type, TCHAR* fmt, ... ) ;
 HANDLE        CList_FindRoom (const char* pszModule, const TCHAR* pszRoom) ;

@@ -216,7 +216,7 @@ INT_PTR CList_LeaveChat(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-INT_PTR CList_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
+int CList_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hContact = (HANDLE)wParam;
 	if ( hContact ) {
