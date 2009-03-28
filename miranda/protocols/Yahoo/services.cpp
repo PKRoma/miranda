@@ -126,7 +126,7 @@ int __cdecl CYahooProto::OnContactDeleted( WPARAM wParam, LPARAM lParam )
 //=======================================================
 //Custom status message windows handling
 //=======================================================
-static BOOL CALLBACK DlgProcSetCustStat(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcSetCustStat(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	DBVARIANT dbv;
 
@@ -135,7 +135,7 @@ static BOOL CALLBACK DlgProcSetCustStat(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		TranslateDialogDefault( hwndDlg );
 		{
 			CYahooProto* ppro = ( CYahooProto* )lParam;
-			SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 
 			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)ppro->LoadIconEx( "yahoo" ) );
 
@@ -159,7 +159,7 @@ static BOOL CALLBACK DlgProcSetCustStat(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		case IDOK:
 			{
 				char str[ 255 + 1 ];
-				CYahooProto* ppro = ( CYahooProto* )GetWindowLong( hwndDlg, GWL_USERDATA );
+				CYahooProto* ppro = ( CYahooProto* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 				/* Get String from dialog */
 				GetDlgItemTextA( hwndDlg, IDC_CUSTSTAT, str, sizeof( str ));

@@ -26,17 +26,17 @@
 /*
  * DlgProcYahooOpts - Account Options Dialog
  */
-BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	DBVARIANT dbv;
-	CYahooProto* ppro = (CYahooProto*)GetWindowLong( hwndDlg, GWL_USERDATA );
+	CYahooProto* ppro = (CYahooProto*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
 
 		ppro = (CYahooProto*)lParam;
-		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 
 		if ( !DBGetContactSettingString( NULL, ppro->m_szModuleName, YAHOO_LOGINID, &dbv )) {
 			SetDlgItemTextA(hwndDlg,IDC_HANDLE,dbv.pszVal);
@@ -153,17 +153,17 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 /*
  * DlgProcYahooOpts - Connection Options Dialog
  */
-BOOL CALLBACK DlgProcYahooOptsConn(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcYahooOptsConn(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	DBVARIANT dbv;
-	CYahooProto* ppro = (CYahooProto*)GetWindowLong( hwndDlg, GWL_USERDATA );
+	CYahooProto* ppro = (CYahooProto*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 	
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
 
 		ppro = ( CYahooProto* )lParam;
-		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 
 		if ( !DBGetContactSettingString( NULL, ppro->m_szModuleName, YAHOO_LOGINSERVER, &dbv )){
 			SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, dbv.pszVal );
@@ -246,17 +246,17 @@ BOOL CALLBACK DlgProcYahooOptsConn(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 /*
  * DlgProcYahooOpts - Connection Options Dialog
  */
-BOOL CALLBACK DlgProcYahooOptsIgnore(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcYahooOptsIgnore(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	YList *l;
-	CYahooProto* ppro = (CYahooProto*)GetWindowLong( hwndDlg, GWL_USERDATA );
+	CYahooProto* ppro = (CYahooProto*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
 
 		ppro = ( CYahooProto* )lParam;
-		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 
 		if ( ppro->GetByte( "IgnoreUnknown", 0 )) {
 			CheckDlgButton(hwndDlg, IDC_OPT_IGN_UNKNOWN, 1);

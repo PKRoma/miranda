@@ -119,7 +119,7 @@ void CYahooProto::ext_got_search_result(int found, int start, int total, YList *
  * Returns: 0 on failure or HWND on success
  */
 
-static BOOL CALLBACK YahooSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK YahooSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch ( msg ) {
 	case WM_INITDIALOG:
