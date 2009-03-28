@@ -3050,7 +3050,7 @@ static int MY_pathIsAbsolute(const char *path)
 	return 0;
 }
 
-int MY_pathToRelative(const char *pSrc, char *pOut)
+size_t MY_pathToRelative(const char *pSrc, char *pOut)
 {
 	if (g_szProfilePath[0] == 0) {
 		CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)g_szProfilePath);
@@ -3084,7 +3084,7 @@ int MY_pathToRelative(const char *pSrc, char *pOut)
 	}
 }
 
-int MY_pathToAbsolute(const char *pSrc, char *pOut)
+size_t MY_pathToAbsolute(const char *pSrc, char *pOut)
 {
 	if (g_szProfilePath[0] == 0) {
 		CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)g_szProfilePath);

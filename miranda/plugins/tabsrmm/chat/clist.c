@@ -248,6 +248,12 @@ int CList_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+INT_PTR CList_PrebuildContactMenuSvc(WPARAM wParam, LPARAM lParam)
+{
+	return CList_PrebuildContactMenu(wParam, lParam);
+}
+
+
 void CList_CreateGroup(TCHAR* group)
 {
 	int i;
