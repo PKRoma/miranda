@@ -223,10 +223,10 @@ void OpenAccountOptions( PROTOACCOUNT* pa );
 void LoadDbAccounts( void );
 void WriteDbAccounts( void );
 
-int CallProtoServiceInt( HANDLE hContact, const char* szModule, const char* szService, WPARAM, LPARAM );
-int CallContactService( HANDLE hContact, const char *szProtoService, WPARAM, LPARAM );
+INT_PTR CallProtoServiceInt( HANDLE hContact, const char* szModule, const char* szService, WPARAM, LPARAM );
+INT_PTR CallContactService( HANDLE hContact, const char *szProtoService, WPARAM, LPARAM );
 
-__inline static int CallProtoService( const char* szModule, const char* szService, WPARAM wParam, LPARAM lParam )
+__inline static INT_PTR CallProtoService( const char* szModule, const char* szService, WPARAM wParam, LPARAM lParam )
 {
 	return CallProtoServiceInt( NULL, szModule, szService, wParam, lParam );
 }

@@ -172,8 +172,8 @@ typedef struct {
 	HANDLE (*CreateServiceFunctionParam)(const char *,MIRANDASERVICEPARAM,LPARAM); // v0.7+ (2007/04/24)
 	int (*NotifyEventHooksDirect)(HANDLE,WPARAM,LPARAM); // v0.7+
 	#if MIRANDA_VER >= 0x800
-		int (*CallProtoService)(const char *, const char *, WPARAM, LPARAM );
-		int (*CallContactService)( HANDLE, const char *, WPARAM, LPARAM );
+		INT_PTR (*CallProtoService)(const char *, const char *, WPARAM, LPARAM );
+		INT_PTR (*CallContactService)( HANDLE, const char *, WPARAM, LPARAM );
 		HANDLE (*HookEventParam)(const char *,MIRANDAHOOKPARAM,LPARAM);
 		HANDLE (*HookEventObj)(const char *,MIRANDAHOOKOBJ, void* );
 		HANDLE (*HookEventObjParam)(const char *, MIRANDAHOOKOBJPARAM, void*, LPARAM);

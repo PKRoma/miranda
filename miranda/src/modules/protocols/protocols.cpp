@@ -246,7 +246,7 @@ static INT_PTR Proto_EnumAccounts(WPARAM wParam, LPARAM lParam)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-int CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *szService, WPARAM wParam, LPARAM lParam )
+INT_PTR CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *szService, WPARAM wParam, LPARAM lParam )
 {
 	int idx;
 	char svcName[ MAXMODULELABELLENGTH ];
@@ -260,46 +260,46 @@ int CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *szSe
 			item.name = szService;
 			if (( idx = serviceItems.getIndex( &item )) != -1 ) {
 				switch( serviceItems[ idx ]->id ) {
-					case  1: return ( int )ppi->AddToList( wParam, (PROTOSEARCHRESULT*)lParam ); break;
-					case  2: return ( int )ppi->AddToListByEvent( LOWORD(wParam), HIWORD(wParam), (HANDLE)lParam ); break;
-					case  3: return ( int )ppi->Authorize( ( HANDLE )wParam ); break;
-					case  4: return ( int )ppi->AuthDeny( ( HANDLE )wParam, ( const char* )lParam ); break;
-					case  5: return ( int )ppi->AuthRecv( hContact, ( PROTORECVEVENT* )lParam ); break;
-					case  6: return ( int )ppi->AuthRequest( hContact, ( char* )lParam ); break;
-					case  7: return ( int )ppi->ChangeInfo( wParam, ( void* )lParam ); break;
-					case  8: return ( int )ppi->FileAllow( hContact, ( HANDLE )wParam, ( char* )lParam ); break;
-					case  9: return ( int )ppi->FileCancel( hContact, ( HANDLE )wParam ); break;
-					case 10: return ( int )ppi->FileDeny( hContact, ( HANDLE )wParam, ( char* )lParam ); break;
+					case  1: return ( INT_PTR )ppi->AddToList( wParam, (PROTOSEARCHRESULT*)lParam ); break;
+					case  2: return ( INT_PTR )ppi->AddToListByEvent( LOWORD(wParam), HIWORD(wParam), (HANDLE)lParam ); break;
+					case  3: return ( INT_PTR )ppi->Authorize( ( HANDLE )wParam ); break;
+					case  4: return ( INT_PTR )ppi->AuthDeny( ( HANDLE )wParam, ( const char* )lParam ); break;
+					case  5: return ( INT_PTR )ppi->AuthRecv( hContact, ( PROTORECVEVENT* )lParam ); break;
+					case  6: return ( INT_PTR )ppi->AuthRequest( hContact, ( char* )lParam ); break;
+					case  7: return ( INT_PTR )ppi->ChangeInfo( wParam, ( void* )lParam ); break;
+					case  8: return ( INT_PTR )ppi->FileAllow( hContact, ( HANDLE )wParam, ( char* )lParam ); break;
+					case  9: return ( INT_PTR )ppi->FileCancel( hContact, ( HANDLE )wParam ); break;
+					case 10: return ( INT_PTR )ppi->FileDeny( hContact, ( HANDLE )wParam, ( char* )lParam ); break;
 					case 11: {
 						PROTOFILERESUME* pfr = ( PROTOFILERESUME* )lParam;
-						return ( int )ppi->FileResume( ( HANDLE )wParam, &pfr->action, &pfr->szFilename ); break;
+						return ( INT_PTR )ppi->FileResume( ( HANDLE )wParam, &pfr->action, &pfr->szFilename ); break;
 					}
-					case 12: return ( int )ppi->GetCaps( wParam, (HANDLE)lParam ); break;
-					case 13: return ( int )ppi->GetIcon( wParam ); break;
-					case 14: return ( int )ppi->GetInfo( hContact, wParam ); break;
-					case 15: return ( int )ppi->SearchBasic( ( char* )lParam ); break;
-					case 16: return ( int )ppi->SearchByEmail( ( char* )lParam ); break;
+					case 12: return ( INT_PTR )ppi->GetCaps( wParam, (HANDLE)lParam ); break;
+					case 13: return ( INT_PTR )ppi->GetIcon( wParam ); break;
+					case 14: return ( INT_PTR )ppi->GetInfo( hContact, wParam ); break;
+					case 15: return ( INT_PTR )ppi->SearchBasic( ( char* )lParam ); break;
+					case 16: return ( INT_PTR )ppi->SearchByEmail( ( char* )lParam ); break;
 					case 17: {
 						PROTOSEARCHBYNAME* psbn = ( PROTOSEARCHBYNAME* )lParam;
-						return ( int )ppi->SearchByName( psbn->pszNick, psbn->pszFirstName, psbn->pszLastName ); break;
+						return ( INT_PTR )ppi->SearchByName( psbn->pszNick, psbn->pszFirstName, psbn->pszLastName ); break;
 					}
-					case 18: return ( int )ppi->SearchAdvanced( ( HWND )lParam ); break;
-					case 19: return ( int )ppi->CreateExtendedSearchUI ( ( HWND )lParam ); break;
-					case 20: return ( int )ppi->RecvContacts( hContact, ( PROTORECVEVENT* )lParam ); break;
-					case 21: return ( int )ppi->RecvFile( hContact, ( PROTORECVFILE* )lParam ); break;
-					case 22: return ( int )ppi->RecvMsg( hContact, ( PROTORECVEVENT* )lParam ); break;
-					case 23: return ( int )ppi->RecvUrl( hContact, ( PROTORECVEVENT* )lParam ); break;
-					case 24: return ( int )ppi->SendContacts( hContact, LOWORD(wParam), HIWORD(wParam), ( HANDLE* )lParam ); break;
-					case 25: return ( int )ppi->SendFile( hContact, ( const char* )wParam, ( char** )lParam ); break;
-					case 26: return ( int )ppi->SendMsg( hContact, wParam, ( const char* )lParam ); break;
-					case 27: return ( int )ppi->SendUrl( hContact, wParam, ( const char* )lParam ); break;
-					case 28: return ( int )ppi->SetApparentMode( hContact, wParam ); break;
-					case 29: return ( int )ppi->SetStatus( wParam ); break;
-					case 30: return ( int )ppi->GetAwayMsg( hContact ); break;
-					case 31: return ( int )ppi->RecvAwayMsg( hContact, wParam, ( PROTORECVEVENT* )lParam ); break;
-					case 32: return ( int )ppi->SendAwayMsg( hContact, ( HANDLE )wParam, ( const char* )lParam ); break;
-					case 33: return ( int )ppi->SetAwayMsg( wParam, ( const char* )lParam ); break;
-					case 34: return ( int )ppi->UserIsTyping( ( HANDLE )wParam, lParam ); break;
+					case 18: return ( INT_PTR )ppi->SearchAdvanced( ( HWND )lParam ); break;
+					case 19: return ( INT_PTR )ppi->CreateExtendedSearchUI ( ( HWND )lParam ); break;
+					case 20: return ( INT_PTR )ppi->RecvContacts( hContact, ( PROTORECVEVENT* )lParam ); break;
+					case 21: return ( INT_PTR )ppi->RecvFile( hContact, ( PROTORECVFILE* )lParam ); break;
+					case 22: return ( INT_PTR )ppi->RecvMsg( hContact, ( PROTORECVEVENT* )lParam ); break;
+					case 23: return ( INT_PTR )ppi->RecvUrl( hContact, ( PROTORECVEVENT* )lParam ); break;
+					case 24: return ( INT_PTR )ppi->SendContacts( hContact, LOWORD(wParam), HIWORD(wParam), ( HANDLE* )lParam ); break;
+					case 25: return ( INT_PTR )ppi->SendFile( hContact, ( const char* )wParam, ( char** )lParam ); break;
+					case 26: return ( INT_PTR )ppi->SendMsg( hContact, wParam, ( const char* )lParam ); break;
+					case 27: return ( INT_PTR )ppi->SendUrl( hContact, wParam, ( const char* )lParam ); break;
+					case 28: return ( INT_PTR )ppi->SetApparentMode( hContact, wParam ); break;
+					case 29: return ( INT_PTR )ppi->SetStatus( wParam ); break;
+					case 30: return ( INT_PTR )ppi->GetAwayMsg( hContact ); break;
+					case 31: return ( INT_PTR )ppi->RecvAwayMsg( hContact, wParam, ( PROTORECVEVENT* )lParam ); break;
+					case 32: return ( INT_PTR )ppi->SendAwayMsg( hContact, ( HANDLE )wParam, ( const char* )lParam ); break;
+					case 33: return ( INT_PTR )ppi->SetAwayMsg( wParam, ( const char* )lParam ); break;
+					case 34: return ( INT_PTR )ppi->UserIsTyping( ( HANDLE )wParam, lParam ); break;
 	}	}	}	}
 
 	mir_snprintf( svcName, sizeof(svcName), "%s%s", szModule, szService );
@@ -308,11 +308,11 @@ int CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *szSe
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-int CallContactService( HANDLE hContact, const char *szProtoService, WPARAM wParam, LPARAM lParam )
+INT_PTR CallContactService( HANDLE hContact, const char *szProtoService, WPARAM wParam, LPARAM lParam )
 {
 	int i;
 	DBVARIANT dbv;
-	int ret;
+	INT_PTR ret;
 	PROTOACCOUNT* pa;
 	CCSDATA ccs = { hContact, szProtoService, wParam, lParam };
 
