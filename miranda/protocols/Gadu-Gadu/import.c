@@ -310,7 +310,7 @@ void gg_parsecontacts(GGPROTO *gg, char *contacts)
 
 //////////////////////////////////////////////////////////
 // import from server
-static int gg_import_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
+static INT_PTR gg_import_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
 	char *password;
 	uin_t uin;
@@ -360,7 +360,7 @@ static int gg_import_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 
 //////////////////////////////////////////////////////////
 // remove from server
-static int gg_remove_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
+static INT_PTR gg_remove_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
 	char *password;
 	uin_t uin;
@@ -426,7 +426,7 @@ static int gg_remove_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 #endif // !UNICODE
 #endif // (_WIN32_WINNT >= 0x0500) && !defined(OPENFILENAME_SIZE_VERSION_400)
 
-static int gg_import_text(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
+static INT_PTR gg_import_text(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
 	char str[MAX_PATH] = "\0";
 	OPENFILENAME ofn;
@@ -498,7 +498,7 @@ static int gg_import_text(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int gg_export_text(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
+static INT_PTR gg_export_text(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
 	char str[MAX_PATH];
 	OPENFILENAME ofn;
@@ -570,7 +570,7 @@ static int gg_export_text(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 
 //////////////////////////////////////////////////////////
 // export to server
-static int gg_export_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
+static INT_PTR gg_export_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
 	char *password, *contacts;
 	uin_t uin;

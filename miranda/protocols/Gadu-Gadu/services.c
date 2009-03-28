@@ -562,7 +562,7 @@ int gg_setapparentmode(PROTO_INTERFACE *proto, HANDLE hContact, int mode)
 
 //////////////////////////////////////////////////////////
 // create adv search dialog proc
-BOOL CALLBACK gg_advancedsearchdlgproc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
+INT_PTR CALLBACK gg_advancedsearchdlgproc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
 	switch(message)
 	{
@@ -725,7 +725,7 @@ HWND gg_searchbyadvanced(PROTO_INTERFACE *proto, HWND hwndDlg)
 
 //////////////////////////////////////////////////////////
 // gets caccount manager GUI
-extern BOOL CALLBACK gg_acc_mgr_guidlgproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern INT_PTR CALLBACK gg_acc_mgr_guidlgproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 static int gg_get_acc_mgr_gui(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {

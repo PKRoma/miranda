@@ -63,7 +63,7 @@ typedef struct
 // Prototypes
 int gg_img_add(GGIMAGEDLGDATA *dat);
 int gg_img_remove(GGIMAGEDLGDATA *dat);
-int gg_img_sendimg(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
+INT_PTR gg_img_sendimg(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 
 ////////////////////////////////////////////////////////////////////////////
 // Image Module : Adding item to contact menu, creating sync objects
@@ -261,15 +261,15 @@ int gg_img_saveimage(HWND hwnd, GGIMAGEENTRY *dat)
 			fwrite(dat->lpData, dat->nSize, 1, fp);
 			fclose(fp);
 #ifdef DEBUGMODE
-			gg_netlog(((GGIMAGEDLGDATA *)GetWindowLongPtr(hwnd, DWL_USER))->gg, "gg_img_saveimage(): Image saved to %s.", szFileName);
+			gg_netlog(((GGIMAGEDLGDATA *)GetWindowLongPtr(hwnd, DWLP_USER))->gg, "gg_img_saveimage(): Image saved to %s.", szFileName);
 #endif
 		}
 		else
 		{
 #ifdef DEBUGMODE
-			gg_netlog(((GGIMAGEDLGDATA *)GetWindowLongPtr(hwnd, DWL_USER))->gg, "gg_img_saveimage(): Cannot save image to %s.", szFileName);
+			gg_netlog(((GGIMAGEDLGDATA *)GetWindowLongPtr(hwnd, DWLP_USER))->gg, "gg_img_saveimage(): Cannot save image to %s.", szFileName);
 #endif
-			MessageBox(hwnd, Translate("Image cannot be written to disk."), ((GGIMAGEDLGDATA *)GetWindowLongPtr(hwnd, DWL_USER))->gg->proto.m_szProtoName, MB_OK | MB_ICONERROR);
+			MessageBox(hwnd, Translate("Image cannot be written to disk."), ((GGIMAGEDLGDATA *)GetWindowLongPtr(hwnd, DWLP_USER))->gg->proto.m_szProtoName, MB_OK | MB_ICONERROR);
 		}
 	}
 
@@ -380,9 +380,9 @@ BOOL gg_img_fit(HWND hwndDlg)
 
 ////////////////////////////////////////////////////////////////////////////
 // Send / Recv main dialog proc
-static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	GGIMAGEDLGDATA *dat = (GGIMAGEDLGDATA *)GetWindowLongPtr(hwndDlg, DWL_USER);
+	GGIMAGEDLGDATA *dat = (GGIMAGEDLGDATA *)GetWindowLongPtr(hwndDlg, DWLP_USER);
 
 	switch(msg)
 	{
@@ -397,7 +397,7 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 				// Get dialog data
 				dat = (GGIMAGEDLGDATA *)lParam;
-				SetWindowLongPtr(hwndDlg, DWL_USER, (LONG)dat);
+				SetWindowLongPtr(hwndDlg, DWLP_USER, (LONG_PTR)dat);
 
 				// Save dialog handle
 				dat->hWnd = hwndDlg;
@@ -664,7 +664,7 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 							gg_send_message_richtext(dat->gg->sess, GG_CLASS_CHAT, (uin_t)uin,(unsigned char*)msg,format,len+sizeof(struct gg_msg_richtext));
 
 							// Protect dat from releasing
-							SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG)NULL);
+							SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 
 							EndDialog(hwndDlg, 0);
 						}
@@ -955,7 +955,7 @@ void *gg_img_loadpicture(GGPROTO *gg, struct gg_event* e, char *szFileName)
 
 ////////////////////////////////////////////////////////////////////////////
 // Image Recv : AddEvent proc
-int gg_img_recvimage(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
+INT_PTR gg_img_recvimage(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
 	CLISTEVENT *cle = (CLISTEVENT *)lParam;
 	GGIMAGEENTRY *img = (GGIMAGEENTRY *)cle->lParam;
@@ -1070,7 +1070,7 @@ BOOL gg_img_sendonrequest(GGPROTO *gg, struct gg_event* e)
 
 ////////////////////////////////////////////////////////////////////////////
 // Send Image : Run (Thread and main)
-int gg_img_sendimg(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
+INT_PTR gg_img_sendimg(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
 	pthread_t dwThreadID;
 	HANDLE hContact = (HANDLE)wParam;

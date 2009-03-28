@@ -27,7 +27,9 @@
  * \brief Obsługa połączeń bezpośrednich do wersji Gadu-Gadu 6.x
  */
 
+#ifndef _WIN64
 #define _USE_32BIT_TIME_T
+#endif
 
 #include <sys/types.h>
 #include <sys/stat.h>

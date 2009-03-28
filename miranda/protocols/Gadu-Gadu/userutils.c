@@ -259,7 +259,7 @@ void *gg_dochemail(GGPROTO *gg, uin_t uin, char *password, char *email, char *ne
 
 ////////////////////////////////////////////////////////////////////////////////
 // User Util Dlg Page : Data
-BOOL CALLBACK gg_userutildlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK gg_userutildlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	GGUSERUTILDLGDATA *dat;
 	dat = (GGUSERUTILDLGDATA *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
@@ -269,7 +269,7 @@ BOOL CALLBACK gg_userutildlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
 			dat = (GGUSERUTILDLGDATA  *)lParam;
-			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG)lParam);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)lParam);
 			if(dat)
 			{
 				// Make bold title font

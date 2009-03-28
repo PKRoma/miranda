@@ -36,7 +36,7 @@ typedef struct _GGTOKENDLGDATA
 	HBITMAP hBitmap;
 } GGTOKENDLGDATA;
 
-BOOL CALLBACK gg_tokendlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK gg_tokendlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	GGTOKENDLGDATA *dat = (GGTOKENDLGDATA *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 

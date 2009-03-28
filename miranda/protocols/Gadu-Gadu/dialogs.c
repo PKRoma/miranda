@@ -20,11 +20,11 @@
 
 #include "gg.h"
 
-static BOOL CALLBACK gg_mainoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK gg_confoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK gg_advoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern BOOL CALLBACK gg_userutildlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static INT_PTR CALLBACK gg_mainoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static INT_PTR CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static INT_PTR CALLBACK gg_confoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static INT_PTR CALLBACK gg_advoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern INT_PTR CALLBACK gg_userutildlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 ////////////////////////////////////////////////////////////////////////////////
 // SetValue
@@ -186,7 +186,7 @@ static void gg_optsdlgcheck(HWND hwndDlg)
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Proc: General options dialog
-static BOOL CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 		case WM_INITDIALOG:
@@ -468,7 +468,7 @@ static BOOL CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Proc: General options dialog
-static BOOL CALLBACK gg_confoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK gg_confoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 		case WM_INITDIALOG:
@@ -543,7 +543,7 @@ static BOOL CALLBACK gg_confoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Proc: Advanced options dialog
-static BOOL CALLBACK gg_advoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK gg_advoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 		case WM_INITDIALOG:
@@ -673,7 +673,7 @@ struct GGDETAILSDLGDATA
 
 ////////////////////////////////////////////////////////////////////////////////
 // Info Page : Proc
-static BOOL CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct GGDETAILSDLGDATA *dat = (struct GGDETAILSDLGDATA *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
@@ -882,7 +882,7 @@ int gg_details_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Proc: Account manager options dialog
-BOOL CALLBACK gg_acc_mgr_guidlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK gg_acc_mgr_guidlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 ////////////////////////////////////////////////////////////////////////////////////////////
 {
 	switch (msg) {

@@ -27,11 +27,11 @@
 #define DEBUGMODE // Debug Mode
 #endif
 
-#define _USE_32BIT_TIME_T
-
 #if _WIN32_WINNT < 0x0500
 #define _WIN32_WINNT 0x0501
 #endif
+
+#include <m_stdhdr.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -409,8 +409,8 @@ void gg_keepalive_destroy(GGPROTO *gg);
 int gg_img_init(GGPROTO *gg);
 int gg_img_destroy(GGPROTO *gg);
 int gg_img_shutdown(GGPROTO *gg);
-int gg_img_recvimage(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
-int gg_img_sendimage(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
+INT_PTR gg_img_recvimage(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
+INT_PTR gg_img_sendimage(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 int gg_img_sendonrequest(GGPROTO *gg, struct gg_event* e);
 BOOL gg_img_opened(GGPROTO *gg, uin_t uin);
 void *__stdcall gg_img_dlgthread(void *empty);
@@ -435,7 +435,7 @@ int gg_gc_changenick(GGPROTO *gg, HANDLE hContact, char *pszNick);
 
 /* Event helper */
 #define HookProtoEvent(name, func, proto)             HookEventObj(name, (MIRANDAHOOKOBJ)func, proto)
-#define CreateProtoServiceFunction(name, func, proto) CreateServiceFunctionObj(name, (MIRANDAHOOKOBJ)func, proto)
+#define CreateProtoServiceFunction(name, func, proto) CreateServiceFunctionObj(name, (MIRANDASERVICEOBJ)func, proto)
 typedef int (*GGPROTOFUNC)(GGPROTO*,WPARAM,LPARAM);
 void CreateProtoService(const char* szService, GGPROTOFUNC serviceProc, GGPROTO *gg);
 

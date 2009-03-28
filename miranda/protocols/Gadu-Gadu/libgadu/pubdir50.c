@@ -25,7 +25,9 @@
  * \brief Obsługa katalogu publicznego od wersji Gadu-Gadu 5.x
  */
 
+#ifndef _WIN64
 #define _USE_32BIT_TIME_T
+#endif
 
 #include <errno.h>
 #include <stdlib.h>

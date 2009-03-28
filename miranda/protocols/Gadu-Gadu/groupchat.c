@@ -420,7 +420,7 @@ char *gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients
 	return chat->id;
 }
 
-static BOOL CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
+static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
 	switch(message)
 	{
@@ -429,7 +429,7 @@ static BOOL CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,L
 			CLCINFOITEM cii = {0};
 			LOGFONT lf;
 			HFONT hBoldFont, hNormalFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_NAME, WM_GETFONT, 0, 0);
-			SetWindowLongPtr(hwndDlg, DWL_USER, (LONG_PTR)lParam);
+			SetWindowLongPtr(hwndDlg, DWLP_USER, (LONG_PTR)lParam);
 
 			TranslateDialogDefault(hwndDlg);
 
@@ -444,7 +444,7 @@ static BOOL CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,L
 			lf.lfWeight = FW_BOLD;
 			hBoldFont = CreateFontIndirect(&lf);
 			SendDlgItemMessage(hwndDlg, IDC_NAME, WM_SETFONT, (WPARAM)hBoldFont, 0);
-			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG)hBoldFont);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)hBoldFont);
 		}
 		return TRUE;
 
@@ -456,7 +456,7 @@ static BOOL CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,L
 			case IDOK:
 				{
 					HWND hwndList = GetDlgItem(hwndDlg, IDC_CLIST);
-					GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, DWL_USER);
+					GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, DWLP_USER);
 					int count = 0, i = 0;
 					// Check if connected
 					if (!gg_isonline(gg))
@@ -535,7 +535,7 @@ static BOOL CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,L
 							HANDLE hContact;
 							HANDLE hItem;
 							char* szProto;
-							GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, DWL_USER);
+							GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, DWLP_USER);
 
 							// Delete non-icq contacts
 							hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
@@ -558,7 +558,7 @@ static BOOL CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,L
 							HANDLE hItem, hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 							HWND hwndList = GetDlgItem(hwndDlg, IDC_CLIST);
 							int count = 0;
-							GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, DWL_USER);
+							GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, DWLP_USER);
 							while (hContact && hwndList)
 							{
 								hItem = (HANDLE)SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0);
