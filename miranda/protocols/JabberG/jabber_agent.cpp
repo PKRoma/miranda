@@ -51,7 +51,7 @@ public:
 		TranslateDialogDefault( m_hwnd );
 	}
 
-	virtual BOOL DlgProc( UINT msg, WPARAM wParam, LPARAM lParam )
+	virtual INT_PTR DlgProc( UINT msg, WPARAM wParam, LPARAM lParam )
 	{
 		if ( msg == WM_JABBER_REGDLG_UPDATE ) {
 			if (( TCHAR* )lParam == NULL )
@@ -124,13 +124,13 @@ public:
 		SetActiveWindow( GetParent( m_hwnd ));
 	}
 
-	virtual BOOL DlgProc( UINT msg, WPARAM wParam, LPARAM lParam )
+	virtual INT_PTR DlgProc( UINT msg, WPARAM wParam, LPARAM lParam )
 	{
 		switch( msg ) {
 		case WM_CTLCOLORSTATIC:
 			switch( GetDlgCtrlID(( HWND )lParam )) {
 			case IDC_WHITERECT: case IDC_INSTRUCTION: case IDC_TITLE:
-				return (BOOL)GetStockObject(WHITE_BRUSH);
+				return (INT_PTR)GetStockObject(WHITE_BRUSH);
 			default:
 				return NULL;
 			}

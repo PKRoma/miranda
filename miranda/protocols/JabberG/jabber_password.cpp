@@ -29,7 +29,7 @@ Last change by : $Author$
 #include "jabber_iq.h"
 #include "jabber_caps.h"
 
-static BOOL CALLBACK JabberChangePasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
+static INT_PTR CALLBACK JabberChangePasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
 
 int __cdecl CJabberProto::OnMenuHandleChangePassword( WPARAM, LPARAM )
 {
@@ -41,13 +41,13 @@ int __cdecl CJabberProto::OnMenuHandleChangePassword( WPARAM, LPARAM )
 	return 0;
 }
 
-static BOOL CALLBACK JabberChangePasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK JabberChangePasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	CJabberProto* ppro = (CJabberProto*)GetWindowLong( hwndDlg, GWL_USERDATA );
+	CJabberProto* ppro = (CJabberProto*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		ppro = (CJabberProto*)lParam;
-		SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG )lParam );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, ( LONG_PTR )lParam );
 
 		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )ppro->LoadIconEx( "key" ));
 		TranslateDialogDefault( hwndDlg );

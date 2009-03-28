@@ -52,7 +52,7 @@ int iqIdRegSetReg;
 #define JCPF_ERROR   0x04UL
 
 //extern int bSecureIM;
-static VOID CALLBACK JabberDummyApcFunc( DWORD )
+static VOID CALLBACK JabberDummyApcFunc( DWORD_PTR )
 {
 	return;
 }
@@ -60,7 +60,7 @@ static VOID CALLBACK JabberDummyApcFunc( DWORD )
 static char onlinePassword[128];
 static HANDLE hEventPasswdDlg;
 
-static BOOL CALLBACK JabberPasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK JabberPasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	switch ( msg ) {
 	case WM_INITDIALOG:
@@ -89,7 +89,7 @@ static BOOL CALLBACK JabberPasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 	return FALSE;
 }
 
-static VOID CALLBACK JabberPasswordCreateDialogApcProc( DWORD param )
+static VOID CALLBACK JabberPasswordCreateDialogApcProc( DWORD_PTR param )
 {
 	CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_PASSWORD ), NULL, JabberPasswordDlgProc, ( LPARAM )param );
 }

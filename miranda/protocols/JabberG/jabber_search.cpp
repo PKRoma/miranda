@@ -41,7 +41,7 @@ static int JabberSearchFrameProc(HWND hwnd, int msg, WPARAM wParam, LPARAM lPara
 {
 	if ( msg == WM_COMMAND && lParam != 0 ) {
 		HWND hwndDlg=GetParent(hwnd);
-		JabberSearchData * dat=(JabberSearchData *)GetWindowLong(hwndDlg,GWL_USERDATA);
+		JabberSearchData * dat=(JabberSearchData *)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 		if ( dat && lParam ) {
 			int pos=dat->curPos;
 			RECT MineRect;
@@ -95,7 +95,7 @@ static int JabberSearchAddField(HWND hwndDlg, Data* FieldDat )
 	LONG frameExStyle = GetWindowLong( hwndParent, GWL_EXSTYLE );
 	frameExStyle |= WS_EX_CONTROLPARENT;
 	SetWindowLong( hwndParent, GWL_EXSTYLE, frameExStyle );
-	SetWindowLong(GetDlgItem(hwndDlg,IDC_FRAME),GWL_WNDPROC,(LONG)JabberSearchFrameProc);
+	SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_FRAME),GWLP_WNDPROC,(LONG_PTR)JabberSearchFrameProc);
 
 	int CornerX=1;
 	int CornerY=1;
@@ -118,7 +118,7 @@ static int JabberSearchAddField(HWND hwndDlg, Data* FieldDat )
 	}
 	//remade list
 	//reallocation
-	JabberSearchData * dat=(JabberSearchData *)GetWindowLong(hwndDlg,GWL_USERDATA);
+	JabberSearchData * dat=(JabberSearchData *)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 	if ( dat ) {
 		dat->pJSInf=(JabberSearchFieldsInfo*) realloc(dat->pJSInf, sizeof(JabberSearchFieldsInfo)*(dat->nJSInfCount+1));
 		dat->pJSInf[dat->nJSInfCount].hwndCaptionItem=hwndLabel;
@@ -529,9 +529,9 @@ void CJabberProto::SearchAddToRecent( const TCHAR* szAddr, HWND hwndDialog )
 		JabberSearchAddUrlToRecentCombo( hwndDialog, szAddr );
 }
 
-static BOOL CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	JabberSearchData* dat = ( JabberSearchData* )GetWindowLong( hwndDlg, GWL_USERDATA );
+	JabberSearchData* dat = ( JabberSearchData* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		{
@@ -539,7 +539,7 @@ static BOOL CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM 
 			dat = ( JabberSearchData * )mir_alloc( sizeof( JabberSearchData ));
 			memset( dat, 0, sizeof( JabberSearchData ));
 			dat->ppro = ( CJabberProto* )lParam;
-			SetWindowLong( hwndDlg, GWL_USERDATA, (LPARAM)dat );
+			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, (LONG_PTR)dat );
 
 			/* Server Combo box */
 			char szServerName[100];
@@ -696,7 +696,7 @@ static BOOL CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM 
 		JabberSearchFreeData( hwndDlg, dat );
 		JabberFormDestroyUI( GetDlgItem( hwndDlg, IDC_FRAME ));
 		mir_free( dat );
-		SetWindowLong( hwndDlg, GWL_USERDATA, NULL );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, 0 );
 		return TRUE;
 	}
 	return FALSE;
@@ -718,7 +718,7 @@ HWND __cdecl CJabberProto::SearchAdvanced( HWND hwndDlg )
 	if ( !m_bJabberOnline || !hwndDlg )
 		return 0;	//error
 
-	JabberSearchData * dat=(JabberSearchData *)GetWindowLong(hwndDlg,GWL_USERDATA);
+	JabberSearchData * dat=(JabberSearchData *)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 	if ( !dat )
 		return 0; //error
 

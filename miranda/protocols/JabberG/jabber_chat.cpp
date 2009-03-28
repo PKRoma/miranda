@@ -882,7 +882,7 @@ struct TUserInfoData
 
 static LRESULT CALLBACK sttUserInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	TUserInfoData *dat = (TUserInfoData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+	TUserInfoData *dat = (TUserInfoData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	switch (msg) {
 	case WM_INITDIALOG:
@@ -892,7 +892,7 @@ static LRESULT CALLBACK sttUserInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 
 		TranslateDialogDefault(hwndDlg);
 
-		SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		dat = (TUserInfoData *)lParam;
 
 		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)dat->ppro->LoadIconEx("group"));
@@ -1038,9 +1038,9 @@ static LRESULT CALLBACK sttUserInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 
 	case WM_DESTROY:
 		{
-			TUserInfoData *dat = (TUserInfoData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+			TUserInfoData *dat = (TUserInfoData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 			if (!dat)break;
-			SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 			mir_free(dat);
 			break;
 		}

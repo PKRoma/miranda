@@ -41,7 +41,7 @@ static BOOL CALLBACK JabberFormMultiLineWndProc( HWND hwnd, UINT msg, WPARAM wPa
 		};
 		break;
 	}
-	return CallWindowProc(( WNDPROC ) GetWindowLong( hwnd, GWL_USERDATA ), hwnd, msg, wParam, lParam );
+	return CallWindowProc(( WNDPROC ) GetWindowLongPtr( hwnd, GWLP_USERDATA ), hwnd, msg, wParam, lParam );
 }
 
 struct TJabberFormControlInfo
@@ -305,11 +305,11 @@ void JabberFormLayoutSingleControl(TJabberFormControlInfo *item, TJabberFormLayo
 
 TJabberFormControlInfo *JabberFormAppendControl(HWND hwndStatic, TJabberFormLayoutInfo *layout_info, TJabberFormControlType type, const TCHAR *labelStr, const TCHAR *valueStr)
 {
-	TJabberFormControlList *controls = (TJabberFormControlList *)GetWindowLong(hwndStatic, GWL_USERDATA);
+	TJabberFormControlList *controls = (TJabberFormControlList *)GetWindowLongPtr(hwndStatic, GWLP_USERDATA);
 	if (!controls)
 	{
 		controls = new TJabberFormControlList(5);
-		SetWindowLong(hwndStatic, GWL_USERDATA, (LONG)controls);
+		SetWindowLongPtr(hwndStatic, GWLP_USERDATA, (LONG_PTR)controls);
 	}
 
 	TJabberFormControlInfo *item = (TJabberFormControlInfo *)mir_alloc(sizeof(TJabberFormControlInfo));
@@ -335,8 +335,8 @@ TJabberFormControlInfo *JabberFormAppendControl(HWND hwndStatic, TJabberFormLayo
 				WS_CHILD|WS_VISIBLE|WS_TABSTOP|WS_VSCROLL|ES_LEFT|ES_MULTILINE|ES_AUTOVSCROLL|ES_WANTRETURN,
 				0, 0, 0, 0,
 				hwndStatic, ( HMENU ) layout_info->id, hInst, NULL );
-			WNDPROC oldWndProc = ( WNDPROC ) SetWindowLong( item->hCtrl, GWL_WNDPROC, ( LPARAM )JabberFormMultiLineWndProc );
-			SetWindowLong( item->hCtrl, GWL_USERDATA, ( LONG ) oldWndProc );
+			WNDPROC oldWndProc = ( WNDPROC ) SetWindowLongPtr( item->hCtrl, GWLP_WNDPROC, ( LONG_PTR )JabberFormMultiLineWndProc );
+			SetWindowLongPtr( item->hCtrl, GWLP_USERDATA, ( LONG_PTR ) oldWndProc );
 			++layout_info->id;
 			break;
 		}
@@ -423,7 +423,7 @@ void JabberFormAddListItem(TJabberFormControlInfo *item, TCHAR *text, bool selec
 
 void JabberFormLayoutControls(HWND hwndStatic, TJabberFormLayoutInfo *layout_info, int *formHeight)
 {
-	TJabberFormControlList *controls = (TJabberFormControlList *)GetWindowLong(hwndStatic, GWL_USERDATA);
+	TJabberFormControlList *controls = (TJabberFormControlList *)GetWindowLongPtr(hwndStatic, GWLP_USERDATA);
 	if (!controls) return;
 
 	for (int i = 0; i < controls->getCount(); ++i)
@@ -589,14 +589,14 @@ void JabberFormCreateUI( HWND hwndStatic, HXML xNode, int *formHeight, BOOL bCom
 
 void JabberFormDestroyUI(HWND hwndStatic)
 {
-	TJabberFormControlList *controls = (TJabberFormControlList *)GetWindowLong(hwndStatic, GWL_USERDATA);
+	TJabberFormControlList *controls = (TJabberFormControlList *)GetWindowLongPtr(hwndStatic, GWLP_USERDATA);
 	if (controls)
 	{
 		for ( int i = 0; i < controls->getCount(); i++ )
 			mir_free((*controls)[i]);
 		controls->destroy();
 		delete controls;
-		SetWindowLong(hwndStatic, GWL_USERDATA, 0);
+		SetWindowLongPtr(hwndStatic, GWLP_USERDATA, 0);
 	}
 }
 
@@ -732,7 +732,7 @@ struct JABBER_FORM_INFO
 	void *userdata;
 };
 
-static BOOL CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	JABBER_FORM_INFO *jfi;
 
@@ -790,7 +790,7 @@ static BOOL CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 			frameExStyle |= WS_EX_CONTROLPARENT;
 			SetWindowLong( GetDlgItem( hwndDlg, IDC_FRAME ), GWL_EXSTYLE, frameExStyle );
 
-			SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) jfi );
+			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, ( LONG_PTR ) jfi );
 			if ( jfi->pfnSubmit != NULL )
 				EnableWindow( GetDlgItem( hwndDlg, IDC_SUBMIT ), TRUE );
 		}
@@ -819,7 +819,7 @@ static BOOL CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 		break;
 
 	case WM_VSCROLL:
-		jfi = ( JABBER_FORM_INFO * ) GetWindowLong( hwndDlg, GWL_USERDATA );
+		jfi = ( JABBER_FORM_INFO * ) GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 		if ( jfi != NULL ) {
 			int pos = jfi->curPos;
 			switch ( LOWORD( wParam )) {
@@ -854,7 +854,7 @@ static BOOL CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDC_SUBMIT:
-			jfi = ( JABBER_FORM_INFO * ) GetWindowLong( hwndDlg, GWL_USERDATA );
+			jfi = ( JABBER_FORM_INFO * ) GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 			if ( jfi != NULL ) {
 				HXML n = JabberFormGetData( GetDlgItem( hwndDlg, IDC_FRAME ), jfi->xNode );
 				( jfi->ppro->*(jfi->pfnSubmit))( n, jfi->userdata );
@@ -873,7 +873,7 @@ static BOOL CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 	case WM_DESTROY:
 		JabberFormDestroyUI( GetDlgItem( hwndDlg, IDC_FRAME ));
-		jfi = ( JABBER_FORM_INFO * ) GetWindowLong( hwndDlg, GWL_USERDATA );
+		jfi = ( JABBER_FORM_INFO * ) GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 		delete jfi;
 		break;
 	}
@@ -881,7 +881,7 @@ static BOOL CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 	return FALSE;
 }
 
-static VOID CALLBACK JabberFormCreateDialogApcProc( DWORD param )
+static VOID CALLBACK JabberFormCreateDialogApcProc( DWORD_PTR param )
 {
 	CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_FORM ), NULL, JabberFormDlgProc, ( LPARAM )param );
 }

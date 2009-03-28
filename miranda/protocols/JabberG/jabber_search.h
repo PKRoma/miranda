@@ -80,7 +80,7 @@ static int JabberSearchAddField(HWND hwndDlg, Data* FieldDat );
 static void JabberIqResultGetSearchFields( HXML iqNode, void *userdata );
 static void JabberSearchFreeData(HWND hwndDlg, JabberSearchData * dat);
 static void JabberSearchRefreshFrameScroll(HWND hwndDlg, JabberSearchData * dat);
-static BOOL CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static INT_PTR CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static void JabberSearchDeleteFromRecent(TCHAR * szAddr,BOOL deleteLastFromDB);
 void SearchAddToRecent(TCHAR * szAddr, HWND hwnd);
 

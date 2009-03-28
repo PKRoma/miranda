@@ -589,7 +589,7 @@ protected:
 	void OnInitDialog();
 	void OnClose();
 	void OnDestroy();
-	BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
+	INT_PTR DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
 	int Resizer(UTILRESIZECONTROL *urc);
 
 private:
@@ -947,7 +947,7 @@ void CJabberDlgDiscovery::lstDiscoTree_OnFilter(CCtrlFilterListView *)
 	TreeList_SetFilter(GetDlgItem(m_hwnd, IDC_TREE_DISCO), m_lstDiscoTree.GetFilterText());
 }
 
-BOOL CJabberDlgDiscovery::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CJabberDlgDiscovery::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	BOOL result;
 	if (TreeList_ProcessMessage(m_hwnd, msg, wParam, lParam, IDC_TREE_DISCO, &result))

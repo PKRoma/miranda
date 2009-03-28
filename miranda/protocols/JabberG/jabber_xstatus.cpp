@@ -54,7 +54,7 @@ protected:
 
 	void OnInitDialog();
 	int Resizer(UTILRESIZECONTROL *urc);
-	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
+	virtual INT_PTR DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
 
 	void StopTimer();
 
@@ -93,7 +93,7 @@ int CJabberDlgPepBase::Resizer(UTILRESIZECONTROL *urc)
 	return CSuper::Resizer(urc);
 }
 
-BOOL CJabberDlgPepBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CJabberDlgPepBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 	case WM_TIMER:
@@ -1620,7 +1620,7 @@ CJabberInfoFrame::~CJabberInfoFrame()
 
 	if (m_hhkFontsChanged) UnhookEvent(m_hhkFontsChanged);
 	CallService(MS_CLIST_FRAMES_REMOVEFRAME, (WPARAM)m_frameId, 0);
-	SetWindowLong(m_hwnd, GWL_USERDATA, 0);
+	SetWindowLongPtr(m_hwnd, GWLP_USERDATA, 0);
 	DestroyWindow(m_hwnd);
 	DestroyWindow(m_hwndToolTip);
 	DeleteObject(m_hfntText);
@@ -1653,10 +1653,10 @@ LRESULT CALLBACK CJabberInfoFrame::GlobalWndProc(HWND hwnd, UINT msg, WPARAM wPa
 		CREATESTRUCT *pcs = (CREATESTRUCT *)lParam;
 		pFrame = (CJabberInfoFrame *)pcs->lpCreateParams;
 		if (pFrame) pFrame->m_hwnd = hwnd;
-		SetWindowLong(hwnd, GWL_USERDATA, (LONG)pFrame);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)pFrame);
 	} else
 	{
-		pFrame = (CJabberInfoFrame *)GetWindowLong(hwnd, GWL_USERDATA);
+		pFrame = (CJabberInfoFrame *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	}
 
 	return pFrame ? pFrame->WndProc(msg, wParam, lParam) : DefWindowProc(hwnd, msg, wParam, lParam);

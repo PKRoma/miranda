@@ -431,9 +431,9 @@ static void sttGetNodeText( HWND hwndTree, HTREEITEM hti, UserInfoStringBuf *buf
 			sttGetNodeText( hwndTree, hti, buf, indent + 1 );
 }
 
-static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	JabberUserInfoDlgData *dat = (JabberUserInfoDlgData *)GetWindowLong( hwndDlg, GWL_USERDATA );
+	JabberUserInfoDlgData *dat = (JabberUserInfoDlgData *)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
@@ -460,7 +460,7 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 			ImageList_AddIcon(himl, LoadSkinnedIcon(SKINICON_OTHER_SMALLDOT));
 			TreeView_SetImageList(GetDlgItem(hwndDlg, IDC_TV_INFO), himl, TVSIL_NORMAL);
 
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 			WindowList_Add(hUserInfoList, hwndDlg, dat->hContact);
 		}
 		return TRUE;
@@ -584,7 +584,7 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 		WindowList_Remove(hUserInfoList, hwndDlg);
 		if ( dat ) { 
 			mir_free(dat);
-			SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 		}
 		ImageList_Destroy(TreeView_SetImageList(GetDlgItem(hwndDlg, IDC_TV_INFO), NULL, TVSIL_NORMAL));
 		break;
@@ -602,11 +602,11 @@ struct USER_PHOTO_INFO
 	CJabberProto* ppro;
 };
 
-static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	USER_PHOTO_INFO *photoInfo;
 
-	photoInfo = ( USER_PHOTO_INFO * ) GetWindowLong( hwndDlg, GWL_USERDATA );
+	photoInfo = ( USER_PHOTO_INFO * ) GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
@@ -616,7 +616,7 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		photoInfo->hContact = ( HANDLE ) lParam;
 		photoInfo->ppro = NULL;
 		photoInfo->hBitmap = NULL;
-		SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) photoInfo );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, ( LONG_PTR ) photoInfo );
 		SendMessage( GetDlgItem( hwndDlg, IDC_SAVE ), BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadImage( hInst, MAKEINTRESOURCE( IDI_SAVE ), IMAGE_ICON, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0 ));
 		SendMessage( GetDlgItem( hwndDlg, IDC_SAVE ), BUTTONSETASFLATBTN, 0, 0);
 		ShowWindow( GetDlgItem( hwndDlg, IDC_LOAD ), SW_HIDE );

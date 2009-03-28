@@ -399,7 +399,7 @@ protected:
 	void OnClose();
 	void OnDestroy();
 	void OnProtoRefresh(WPARAM wParam, LPARAM lParam);
-	BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
+	INT_PTR DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
 	int Resizer(UTILRESIZECONTROL *urc);
 };
 
@@ -561,7 +561,7 @@ int CJabberDlgConsole::Resizer(UTILRESIZECONTROL *urc)
 	return CSuper::Resizer(urc);
 }
 
-BOOL CJabberDlgConsole::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CJabberDlgConsole::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch ( msg )
 	{

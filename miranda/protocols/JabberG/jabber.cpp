@@ -152,7 +152,7 @@ int __cdecl CJabberProto::OnPreShutdown( WPARAM, LPARAM )
 ///////////////////////////////////////////////////////////////////////////////
 // OnModulesLoaded - execute some code when all plugins are initialized
 
-static int g_SvcParseXmppUri(WPARAM w, LPARAM l)
+static INT_PTR g_SvcParseXmppUri(WPARAM w, LPARAM l)
 {
 	if (CJabberProto *ppro = JabberChooseInstance(false))
 		return ppro->JabberServiceParseXmppURI(w, l);

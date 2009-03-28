@@ -71,7 +71,7 @@ int CDlgBase::Resizer(UTILRESIZECONTROL*)
 	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
 }
 
-BOOL CDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
@@ -196,7 +196,7 @@ BOOL CDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			OnDestroy();
 			NotifyControls(&CCtrlBase::OnDestroy);
 
-			SetWindowLong(m_hwnd, GWL_USERDATA, 0);
+			SetWindowLongPtr(m_hwnd, GWLP_USERDATA, 0);
 			m_hwnd = NULL;
 			if (m_isModal)
 			{
@@ -212,17 +212,17 @@ BOOL CDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return FALSE;
 }
 
-BOOL CALLBACK CDlgBase::GlobalDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK CDlgBase::GlobalDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	CDlgBase *wnd = NULL;
 	if (msg == WM_INITDIALOG)
 	{
-		SetWindowLong(hwnd, GWL_USERDATA, lParam);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, lParam);
 		wnd = (CDlgBase *)lParam;
 		wnd->m_hwnd = hwnd;
 	} else
 	{
-		wnd = (CDlgBase *)GetWindowLong(hwnd, GWL_USERDATA);
+		wnd = (CDlgBase *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	}
 
 	if (!wnd) return FALSE;
@@ -236,7 +236,7 @@ BOOL CALLBACK CDlgBase::GlobalDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 int CDlgBase::GlobalDlgResizer(HWND hwnd, LPARAM, UTILRESIZECONTROL *urc)
 {
-	CDlgBase *wnd = (CDlgBase *)GetWindowLong(hwnd, GWL_USERDATA);
+	CDlgBase *wnd = (CDlgBase *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	if (!wnd) return 0;
 
 	return wnd->Resizer(urc);
@@ -1412,7 +1412,7 @@ void CCtrlFilterListView::OnInit()
 
 static LRESULT CALLBACK sttEditBoxSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	CFilterData *fdat = (CFilterData *)GetWindowLong(hwnd, GWL_USERDATA);
+	CFilterData *fdat = (CFilterData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	if (!fdat) return DefWindowProc(hwnd, msg, wParam, lParam);
 
 	switch (msg)
@@ -1547,9 +1547,9 @@ LRESULT CCtrlFilterListView::CustomWndProc(UINT msg, WPARAM wParam, LPARAM lPara
 					SetWindowPos(fdat->m_hwndEditBox, HWND_TOP, rc.left-5, rc.top+2, rc.right-rc.left, rc.bottom-rc.top-4, SWP_SHOWWINDOW);
 					SendMessage(fdat->m_hwndEditBox, EM_SETSEL, 0, -1);
 
-					fdat->m_oldWndProc = (WNDPROC)GetWindowLong(fdat->m_hwndEditBox, GWL_WNDPROC);
-					SetWindowLong(fdat->m_hwndEditBox, GWL_USERDATA, (LONG)fdat);
-					SetWindowLong(fdat->m_hwndEditBox, GWL_WNDPROC, (LONG)sttEditBoxSubclassProc);
+					fdat->m_oldWndProc = (WNDPROC)GetWindowLongPtr(fdat->m_hwndEditBox, GWLP_WNDPROC);
+					SetWindowLongPtr(fdat->m_hwndEditBox, GWLP_USERDATA, (LONG_PTR)fdat);
+					SetWindowLongPtr(fdat->m_hwndEditBox, GWLP_WNDPROC, (LONG_PTR)sttEditBoxSubclassProc);
 
 					SetFocus(m_hwnd); // hack to avoid popping of list over the box...
 					SetFocus(fdat->m_hwndEditBox);
@@ -2374,16 +2374,16 @@ LRESULT CCtrlBase::CustomWndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 
 void CCtrlBase::Subclass()
 {
-	SetWindowLong(m_hwnd, GWL_USERDATA, (LONG)this);
-	m_wndproc = (WNDPROC)SetWindowLong(m_hwnd, GWL_WNDPROC, (LONG)GlobalSubclassWndProc);
+	SetWindowLongPtr(m_hwnd, GWLP_USERDATA, (LONG_PTR)this);
+	m_wndproc = (WNDPROC)SetWindowLongPtr(m_hwnd, GWLP_WNDPROC, (LONG_PTR)GlobalSubclassWndProc);
 }
 
 void CCtrlBase::Unsubclass()
 {
 	if (m_wndproc)
 	{
-		SetWindowLong(m_hwnd, GWL_WNDPROC, (LONG)m_wndproc);
-		SetWindowLong(m_hwnd, GWL_USERDATA, (LONG)0);
+		SetWindowLongPtr(m_hwnd, GWLP_WNDPROC, (LONG_PTR)m_wndproc);
+		SetWindowLongPtr(m_hwnd, GWLP_USERDATA, (LONG_PTR)0);
 		m_wndproc = 0;
 }	}
 
@@ -2473,13 +2473,13 @@ void CProtoIntDlgBase::SetStatusText(TCHAR *statusText)
 		SendMessage(m_hwndStatus, SB_SETTEXT, 0, (LPARAM)statusText);
 }
 
-BOOL CProtoIntDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CProtoIntDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
 		case WM_INITDIALOG:
 		{	//	call inherited init code first
-			BOOL result = CSuper::DlgProc(msg, wParam, lParam);
+			INT_PTR result = CSuper::DlgProc(msg, wParam, lParam);
 			if (m_show_label)
 			{
 				m_hwndStatus = CreateStatusWindow(WS_CHILD|WS_VISIBLE, NULL, m_hwnd, IDC_STATUSBAR);

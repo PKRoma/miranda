@@ -873,10 +873,10 @@ void CJabberDlgPrivacyLists::OnInitDialog()
 		CheckDlgButton(m_hwnd, IDC_BTN_ADVANCED, TRUE);
 	}
 
-	SetWindowLong(GetDlgItem(m_hwnd, IDC_LB_LISTS), GWL_USERDATA,
-		SetWindowLong(GetDlgItem(m_hwnd, IDC_LB_LISTS), GWL_WNDPROC, (LONG)LstListsSubclassProc));
-	SetWindowLong(GetDlgItem(m_hwnd, IDC_PL_RULES_LIST), GWL_USERDATA,
-		SetWindowLong(GetDlgItem(m_hwnd, IDC_PL_RULES_LIST), GWL_WNDPROC, (LONG)LstRulesSubclassProc));
+	SetWindowLongPtr(GetDlgItem(m_hwnd, IDC_LB_LISTS), GWLP_USERDATA,
+		SetWindowLongPtr(GetDlgItem(m_hwnd, IDC_LB_LISTS), GWLP_WNDPROC, (LONG_PTR)LstListsSubclassProc));
+	SetWindowLongPtr(GetDlgItem(m_hwnd, IDC_PL_RULES_LIST), GWLP_USERDATA,
+		SetWindowLongPtr(GetDlgItem(m_hwnd, IDC_PL_RULES_LIST), GWLP_WNDPROC, (LONG_PTR)LstRulesSubclassProc));
 
 	SetStatusText(TranslateT("Loading..."));
 
@@ -1691,7 +1691,7 @@ void CJabberDlgPrivacyLists::EnableEditorControls()
 
 LRESULT CALLBACK CJabberDlgPrivacyLists::LstListsSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	WNDPROC sttOldWndProc = (WNDPROC)GetWindowLong(hwnd, GWL_USERDATA);
+	WNDPROC sttOldWndProc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	switch (msg)
 	{
 		case WM_KEYDOWN:
@@ -1716,7 +1716,7 @@ LRESULT CALLBACK CJabberDlgPrivacyLists::LstListsSubclassProc(HWND hwnd, UINT ms
 
 LRESULT CALLBACK CJabberDlgPrivacyLists::LstRulesSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	WNDPROC sttOldWndProc = (WNDPROC)GetWindowLong(hwnd, GWL_USERDATA);
+	WNDPROC sttOldWndProc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	switch (msg)
 	{
 		case WM_KEYDOWN:
@@ -1797,7 +1797,7 @@ void CJabberDlgPrivacyLists::btnActivate_OnClick(CCtrlButton *)
 			return;
 		}
 		EnableWindow( GetDlgItem( m_hwnd, IDC_ACTIVATE ), FALSE );
-		SetWindowLong( GetDlgItem( m_hwnd, IDC_ACTIVATE ), GWL_USERDATA, (DWORD)pList );
+		SetWindowLongPtr( GetDlgItem( m_hwnd, IDC_ACTIVATE ), GWLP_USERDATA, (LONG_PTR)pList );
 		XmlNodeIq iq( m_proto->m_iqManager.AddHandler( &CJabberProto::OnIqResultPrivacyListActive, JABBER_IQ_TYPE_SET, NULL, 0, -1, pList ) );
 		HXML query = iq << XQUERY( _T(JABBER_FEAT_PRIVACY_LISTS));
 		HXML active = query << XCHILD( _T("active"));
@@ -1823,7 +1823,7 @@ void CJabberDlgPrivacyLists::btnSetDefault_OnClick(CCtrlButton *)
 			return;
 		}
 		EnableWindow( GetDlgItem( m_hwnd, IDC_SET_DEFAULT ), FALSE );
-		SetWindowLong( GetDlgItem( m_hwnd, IDC_SET_DEFAULT ), GWL_USERDATA, (DWORD)pList );
+		SetWindowLongPtr( GetDlgItem( m_hwnd, IDC_SET_DEFAULT ), GWLP_USERDATA, (LONG_PTR)pList );
 
 		XmlNodeIq iq( m_proto->m_iqManager.AddHandler( &CJabberProto::OnIqResultPrivacyListDefault, JABBER_IQ_TYPE_SET, NULL, 0, -1, pList ) );
 		HXML query = iq << XQUERY( _T(JABBER_FEAT_PRIVACY_LISTS ));

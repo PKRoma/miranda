@@ -124,7 +124,7 @@ protected:
 		CSuper::OnDestroy();
 	}
 
-	BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+	INT_PTR DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		if (msg == WM_CTLCOLORSTATIC )
 			switch( GetDlgCtrlID((HWND)lParam )) {
@@ -750,7 +750,7 @@ char* __fastcall JTranslate( const char* str );
 #if defined( _DEBUG )
 	#define JCallService CallService
 #else
-	int __stdcall  JCallService( const char* szSvcName, WPARAM wParam, LPARAM lParam );
+	INT_PTR __stdcall  JCallService( const char* szSvcName, WPARAM wParam, LPARAM lParam );
 #endif
 
 //---- jabber_util.cpp ------------------------------------------------------------------

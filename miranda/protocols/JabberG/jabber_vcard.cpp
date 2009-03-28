@@ -62,10 +62,10 @@ static void SetDialogField( CJabberProto* ppro, HWND hwndDlg, int nDlgItem, char
 	else SetDlgItemTextA( hwndDlg, nDlgItem, "" );
 }
 
-static BOOL CALLBACK PersonalDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK PersonalDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	const unsigned long iPageId = 0;
-	CJabberProto* ppro = ( CJabberProto* )GetWindowLong( hwndDlg, GWL_USERDATA );
+	CJabberProto* ppro = ( CJabberProto* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
@@ -74,7 +74,7 @@ static BOOL CALLBACK PersonalDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		TranslateDialogDefault( hwndDlg );
 		SendMessage( GetDlgItem( hwndDlg, IDC_GENDER ), CB_ADDSTRING, 0, ( LPARAM )TranslateT( "Male" ));
 		SendMessage( GetDlgItem( hwndDlg, IDC_GENDER ), CB_ADDSTRING, 0, ( LPARAM )TranslateT( "Female" ));
-		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 		SendMessage( hwndDlg, WM_JABBER_REFRESH_VCARD, 0, 0 );
 		ppro->WindowSubscribe(hwndDlg);
 		return TRUE;
@@ -120,17 +120,17 @@ static BOOL CALLBACK PersonalDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 	return FALSE;
 }
 
-static BOOL CALLBACK HomeDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK HomeDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	const unsigned long iPageId = 1;
-	CJabberProto* ppro = ( CJabberProto* )GetWindowLong( hwndDlg, GWL_USERDATA );
+	CJabberProto* ppro = ( CJabberProto* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		if (!lParam) break; // Launched from userinfo
 		ppro = ( CJabberProto* )lParam;
 		TranslateDialogDefault( hwndDlg );
-		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 		SendMessage( hwndDlg, WM_JABBER_REFRESH_VCARD, 0, 0 );
 		ppro->WindowSubscribe(hwndDlg);
 		return TRUE;
@@ -172,17 +172,17 @@ static BOOL CALLBACK HomeDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	return FALSE;
 }
 
-static BOOL CALLBACK WorkDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK WorkDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	const unsigned long iPageId = 2;
-	CJabberProto* ppro = ( CJabberProto* )GetWindowLong( hwndDlg, GWL_USERDATA );
+	CJabberProto* ppro = ( CJabberProto* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		if (!lParam) break; // Launched from userinfo
 		ppro = ( CJabberProto* )lParam;
 		TranslateDialogDefault( hwndDlg );
-		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 		SendMessage( hwndDlg, WM_JABBER_REFRESH_VCARD, 0, 0 );
 		ppro->WindowSubscribe(hwndDlg);
 		return TRUE;
@@ -237,12 +237,12 @@ struct PhotoDlgProcData
 	HBITMAP hBitmap;
 };
 
-static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	const unsigned long iPageId = 3;
 
 	char szAvatarFileName[ MAX_PATH ], szTempPath[MAX_PATH], szTempFileName[MAX_PATH];
-	PhotoDlgProcData* dat = ( PhotoDlgProcData* )GetWindowLong( hwndDlg, GWL_USERDATA );
+	PhotoDlgProcData* dat = ( PhotoDlgProcData* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
@@ -258,7 +258,7 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			dat->ppro = ( CJabberProto* )lParam;
 			dat->hBitmap = NULL;
 			dat->ppro->m_bPhotoChanged = FALSE;
-			SetWindowLong( hwndDlg, GWL_USERDATA, ( LPARAM )dat );
+			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, ( LONG_PTR )dat );
 			dat->ppro->WindowSubscribe(hwndDlg);
 		}
 		SendMessage( hwndDlg, WM_JABBER_REFRESH_VCARD, 0, 0 );
@@ -464,17 +464,17 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-static BOOL CALLBACK NoteDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK NoteDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	const unsigned long iPageId = 4;
-	CJabberProto* ppro = ( CJabberProto* )GetWindowLong( hwndDlg, GWL_USERDATA );
+	CJabberProto* ppro = ( CJabberProto* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		if (!lParam) break; // Launched from userinfo
 		ppro = ( CJabberProto* )lParam;
 		TranslateDialogDefault( hwndDlg );
-		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 		SendMessage( hwndDlg, WM_JABBER_REFRESH_VCARD, 0, 0 );
 		ppro->WindowSubscribe(hwndDlg);
 		return TRUE;
@@ -519,15 +519,15 @@ struct EditDlgParam
 	CJabberProto* ppro;
 };
 
-static BOOL CALLBACK EditEmailDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK EditEmailDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	EditDlgParam* dat = ( EditDlgParam* )GetWindowLong( hwndDlg, GWL_USERDATA );
+	EditDlgParam* dat = ( EditDlgParam* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		{
 			EditDlgParam* dat = ( EditDlgParam* )lParam;
-			SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 
 			TranslateDialogDefault( hwndDlg );
 
@@ -586,15 +586,15 @@ static BOOL CALLBACK EditEmailDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 	return FALSE;
 }
 
-static BOOL CALLBACK EditPhoneDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK EditPhoneDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	EditDlgParam* dat = ( EditDlgParam* )GetWindowLong( hwndDlg, GWL_USERDATA );
+	EditDlgParam* dat = ( EditDlgParam* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		{
 			EditDlgParam* dat = ( EditDlgParam* )lParam;
-			SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 
 			TranslateDialogDefault( hwndDlg );
 			if ( dat->id >= 0 ) {
@@ -669,10 +669,10 @@ static BOOL CALLBACK EditPhoneDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 }
 
 #define M_REMAKELISTS  ( WM_USER+1 )
-static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM, LPARAM lParam )
+static INT_PTR CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM, LPARAM lParam )
 {
 	const unsigned long iPageId = 5;
-	CJabberProto* ppro = ( CJabberProto* )GetWindowLong( hwndDlg, GWL_USERDATA );
+	CJabberProto* ppro = ( CJabberProto* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch( msg ) {
 	case WM_INITDIALOG:
@@ -682,7 +682,7 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM, LPARAM lPar
 			LVCOLUMN lvc;
 			RECT rc;
 
-			SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 
 			TranslateDialogDefault( hwndDlg );
 			GetClientRect( GetDlgItem( hwndDlg,IDC_EMAILS ), &rc );
@@ -778,7 +778,7 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM, LPARAM lPar
 					switch ( nm->nmcd.dwDrawStage ) {
 					case CDDS_PREPAINT:
 					case CDDS_ITEMPREPAINT:
-						SetWindowLong( hwndDlg, DWL_MSGRESULT, CDRF_NOTIFYSUBITEMDRAW );
+						SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, CDRF_NOTIFYSUBITEMDRAW );
 						return TRUE;
 					case CDDS_SUBITEM|CDDS_ITEMPREPAINT:
 						{
@@ -795,7 +795,7 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM, LPARAM lPar
 							else break;
 							DrawIconEx( nm->nmcd.hdc, ( rc.left+rc.right-GetSystemMetrics( SM_CXSMICON ))/2, ( rc.top+rc.bottom-GetSystemMetrics( SM_CYSMICON ))/2,hIcon, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0, NULL, DI_NORMAL );
 							DestroyIcon( hIcon );
-							SetWindowLong( hwndDlg, DWL_MSGRESULT, CDRF_SKIPDEFAULT );
+							SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, CDRF_SKIPDEFAULT );
 						}
 						return TRUE;
 					}

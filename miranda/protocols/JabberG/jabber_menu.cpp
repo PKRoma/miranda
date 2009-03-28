@@ -76,7 +76,7 @@ static struct
 };
 static HGENMENU g_hMenuDirectPresence[SIZEOF(PresenceModeArray) + 1];
 
-static int JabberMenuChooseService( WPARAM wParam, LPARAM lParam )
+static INT_PTR JabberMenuChooseService( WPARAM wParam, LPARAM lParam )
 {
 	if ( lParam )
 		*( void** )lParam = ( void* )wParam;
@@ -96,73 +96,73 @@ static CJabberProto* JabberGetInstanceByHContact( HANDLE hContact )
 	return NULL;
 }
 
-static int JabberMenuHandleRequestAuth( WPARAM wParam, LPARAM lParam )
+static INT_PTR JabberMenuHandleRequestAuth( WPARAM wParam, LPARAM lParam )
 {
 	CJabberProto* ppro = JabberGetInstanceByHContact(( HANDLE )wParam );
 	return( ppro ) ? ppro->OnMenuHandleRequestAuth( wParam, lParam ) : 0;
 }
 
-static int JabberMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam )
+static INT_PTR JabberMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam )
 {
 	CJabberProto* ppro = JabberGetInstanceByHContact(( HANDLE )wParam );
 	return( ppro ) ? ppro->OnMenuHandleGrantAuth( wParam, lParam ) : 0;
 }
 
-static int JabberMenuRevokeAuth( WPARAM wParam, LPARAM lParam )
+static INT_PTR JabberMenuRevokeAuth( WPARAM wParam, LPARAM lParam )
 {
 	CJabberProto* ppro = JabberGetInstanceByHContact(( HANDLE )wParam );
 	return( ppro ) ? ppro->OnMenuRevokeAuth( wParam, lParam ) : 0;
 }
 
-static int JabberMenuConvertChatContact( WPARAM wParam, LPARAM lParam )
+static INT_PTR JabberMenuConvertChatContact( WPARAM wParam, LPARAM lParam )
 {
 	CJabberProto* ppro = JabberGetInstanceByHContact(( HANDLE )wParam );
 	return( ppro ) ? ppro->OnMenuConvertChatContact( wParam, lParam ) : 0;
 }
 
-static int JabberMenuRosterAdd( WPARAM wParam, LPARAM lParam )
+static INT_PTR JabberMenuRosterAdd( WPARAM wParam, LPARAM lParam )
 {
 	CJabberProto* ppro = JabberGetInstanceByHContact(( HANDLE )wParam );
 	return( ppro ) ? ppro->OnMenuRosterAdd( wParam, lParam ) : 0;
 }
 
-static int JabberMenuBookmarkAdd( WPARAM wParam, LPARAM lParam )
+static INT_PTR JabberMenuBookmarkAdd( WPARAM wParam, LPARAM lParam )
 {
 	CJabberProto* ppro = JabberGetInstanceByHContact(( HANDLE )wParam );
 	return( ppro ) ? ppro->OnMenuBookmarkAdd( wParam, lParam ) : 0;
 }
 
-static int JabberMenuTransportLogin( WPARAM wParam, LPARAM lParam )
+static INT_PTR JabberMenuTransportLogin( WPARAM wParam, LPARAM lParam )
 {
 	CJabberProto* ppro = JabberGetInstanceByHContact(( HANDLE )wParam );
 	return( ppro ) ? ppro->OnMenuTransportLogin( wParam, lParam ) : 0;
 }
 
-static int JabberMenuTransportResolve( WPARAM wParam, LPARAM lParam )
+static INT_PTR JabberMenuTransportResolve( WPARAM wParam, LPARAM lParam )
 {
 	CJabberProto* ppro = JabberGetInstanceByHContact(( HANDLE )wParam );
 	return( ppro ) ? ppro->OnMenuTransportResolve( wParam, lParam ) : 0;
 }
 
-static int JabberContactMenuRunCommands( WPARAM wParam, LPARAM lParam )
+static INT_PTR JabberContactMenuRunCommands( WPARAM wParam, LPARAM lParam )
 {
 	CJabberProto* ppro = JabberGetInstanceByHContact(( HANDLE )wParam );
 	return( ppro ) ? ppro->ContactMenuRunCommands( wParam, lParam ) : 0;
 }
 
-static int JabberMenuSendNote( WPARAM wParam, LPARAM lParam )
+static INT_PTR JabberMenuSendNote( WPARAM wParam, LPARAM lParam )
 {
 	CJabberProto* ppro = JabberGetInstanceByHContact(( HANDLE )wParam );
 	return( ppro ) ? ppro->OnMenuSendNote( wParam, lParam ) : 0;
 }
 
-static int JabberMenuHandleResource( WPARAM wParam, LPARAM lParam, LPARAM lRes )
+static INT_PTR JabberMenuHandleResource( WPARAM wParam, LPARAM lParam, LPARAM lRes )
 {
 	CJabberProto* ppro = JabberGetInstanceByHContact(( HANDLE )wParam );
 	return( ppro ) ? ppro->OnMenuHandleResource( wParam, lParam, lRes ) : 0;
 }
 
-static int JabberMenuHandleDirectPresence( WPARAM wParam, LPARAM lParam, LPARAM lRes )
+static INT_PTR JabberMenuHandleDirectPresence( WPARAM wParam, LPARAM lParam, LPARAM lRes )
 {
 	CJabberProto* ppro = JabberGetInstanceByHContact(( HANDLE )wParam );
 	return( ppro ) ? ppro->OnMenuHandleDirectPresence( wParam, lParam, lRes ) : 0;
@@ -932,21 +932,21 @@ void CJabberProto::MenuInit()
 	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&hkd);
 }
 
-static int g_ToolbarHandleJoinGroupchat(WPARAM w, LPARAM l)
+static INT_PTR g_ToolbarHandleJoinGroupchat(WPARAM w, LPARAM l)
 {
 	if (CJabberProto *ppro = JabberChooseInstance())
 		return ppro->OnMenuHandleJoinGroupchat(w, l);
 	return 0;
 }
 
-static int g_ToolbarHandleBookmarks(WPARAM w, LPARAM l)
+static INT_PTR g_ToolbarHandleBookmarks(WPARAM w, LPARAM l)
 {
 	if (CJabberProto *ppro = JabberChooseInstance())
 		return ppro->OnMenuHandleBookmarks(w, l);
 	return 0;
 }
 
-static int g_ToolbarHandleServiceDiscovery(WPARAM w, LPARAM l)
+static INT_PTR g_ToolbarHandleServiceDiscovery(WPARAM w, LPARAM l)
 {
 	if (CJabberProto *ppro = JabberChooseInstance())
 		return ppro->OnMenuHandleServiceDiscovery(w, l);

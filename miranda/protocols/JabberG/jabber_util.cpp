@@ -1129,7 +1129,7 @@ void CJabberProto::ComboAddRecentString(HWND hwndDlg, UINT idcCombo, char *param
 /////////////////////////////////////////////////////////////////////////////////////////
 // jabber frame maintenance code
 
-static VOID CALLBACK sttRebuildInfoFrameApcProc( DWORD param )
+static VOID CALLBACK sttRebuildInfoFrameApcProc( DWORD_PTR param )
 {
 	CJabberProto *ppro = (CJabberProto *)param;
 	if (!ppro->m_pInfoFrame)
@@ -1262,9 +1262,9 @@ static int sttEnterStringResizer(HWND, LPARAM, UTILRESIZECONTROL *urc)
 	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
 }
 
-static BOOL CALLBACK sttEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK sttEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	JabberEnterStringParams *params = (JabberEnterStringParams *)GetWindowLong( hwndDlg, GWL_USERDATA );
+	JabberEnterStringParams *params = (JabberEnterStringParams *)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
@@ -1274,7 +1274,7 @@ static BOOL CALLBACK sttEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_RENAME));
 		SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_RENAME));
 		JabberEnterStringParams *params = (JabberEnterStringParams *)lParam;
-		SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG )params );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, ( LONG_PTR )params );
 		SetWindowText( hwndDlg, params->caption );
 
 		RECT rc; GetWindowRect(hwndDlg, &rc);

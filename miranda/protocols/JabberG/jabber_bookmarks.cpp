@@ -35,9 +35,9 @@ struct JabberAddBookmarkDlgParam {
 	JABBER_LIST_ITEM* m_item;
 };
 
-static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	JabberAddBookmarkDlgParam* param = (JabberAddBookmarkDlgParam*)GetWindowLong( hwndDlg, GWL_USERDATA );
+	JabberAddBookmarkDlgParam* param = (JabberAddBookmarkDlgParam*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	TCHAR text[128];
 	JABBER_LIST_ITEM *item;
@@ -45,7 +45,7 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		param = (JabberAddBookmarkDlgParam*)lParam;
-		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 
 		param->ppro->m_hwndJabberAddBookmark = hwndDlg;
 		TranslateDialogDefault( hwndDlg );
@@ -182,7 +182,7 @@ protected:
 	void OnDestroy();
 	int Resizer(UTILRESIZECONTROL *urc);
 
-	BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
+	INT_PTR DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
 	void OnProtoCheckOnline(WPARAM wParam, LPARAM lParam);
 	void OnProtoRefresh(WPARAM wParam, LPARAM lParam);
 	void OpenBookmark();
@@ -380,7 +380,7 @@ void CJabberDlgBookmarks::OpenBookmark()
 	}
 }
 
-BOOL CJabberDlgBookmarks::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CJabberDlgBookmarks::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{

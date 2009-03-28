@@ -256,7 +256,7 @@ protected:
 		SetDlgItemText( m_hwnd, IDC_REG_STATUS, text );
 	}
 
-	BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+	INT_PTR DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		switch ( msg ) {
 		case WM_JABBER_REGDLG_UPDATE:	// wParam=progress ( 0-100 ), lparam=status string
@@ -556,7 +556,7 @@ protected:
 			CheckRegistration();
 	}
 
-	BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+	INT_PTR DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		switch (msg)
 		{
@@ -1194,7 +1194,7 @@ static void _RosterItemEditEnd( HWND hEditor, ROSTEREDITDAT * edat, BOOL bCancel
 
 static BOOL CALLBACK _RosterItemNewEditProc( HWND hEditor, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	ROSTEREDITDAT * edat = (ROSTEREDITDAT *) GetWindowLong(hEditor,GWL_USERDATA);
+	ROSTEREDITDAT * edat = (ROSTEREDITDAT *) GetWindowLongPtr(hEditor,GWLP_USERDATA);
 	if (!edat) return 0;
 	switch(msg)
 	{
@@ -1224,8 +1224,8 @@ static BOOL CALLBACK _RosterItemNewEditProc( HWND hEditor, UINT msg, WPARAM wPar
 
 	if (msg==WM_DESTROY)
 	{
-		SetWindowLong(hEditor, GWL_WNDPROC, (LONG) edat->OldEditProc);
-		SetWindowLong(hEditor, GWL_USERDATA, (LONG) 0);
+		SetWindowLongPtr(hEditor, GWLP_WNDPROC, (LONG_PTR) edat->OldEditProc);
+		SetWindowLongPtr(hEditor, GWLP_USERDATA, (LONG_PTR) 0);
 		free(edat);
 		return 0;
 	}
@@ -1426,12 +1426,12 @@ static BOOL CALLBACK _RosterNewListProc( HWND hList, UINT msg, WPARAM wParam, LP
 			mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
 
 			ROSTEREDITDAT * edat=(ROSTEREDITDAT *)malloc(sizeof(ROSTEREDITDAT));
-			edat->OldEditProc=(WNDPROC)GetWindowLong(hEditor, GWL_WNDPROC);
-			SetWindowLong(hEditor,GWL_WNDPROC,(LONG)_RosterItemNewEditProc);
+			edat->OldEditProc=(WNDPROC)GetWindowLongPtr(hEditor, GWLP_WNDPROC);
+			SetWindowLongPtr(hEditor,GWLP_WNDPROC,(LONG_PTR)_RosterItemNewEditProc);
 			edat->hList=hList;
 			edat->index=lvhti.iItem;
 			edat->subindex=lvhti.iSubItem;
-			SetWindowLong(hEditor,GWL_USERDATA,(LONG)edat);
+			SetWindowLongPtr(hEditor,GWLP_USERDATA,(LONG_PTR)edat);
 		}
 	}
 	return CallWindowProc(_RosterOldListProc, hList, msg, wParam, lParam );
@@ -1463,9 +1463,9 @@ static int sttRosterEditorResizer(HWND /*hwndDlg*/, LPARAM, UTILRESIZECONTROL *u
 	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
 }
 
-static BOOL CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	CJabberProto* ppro = ( CJabberProto* )GetWindowLong( hwndDlg, GWL_USERDATA );
+	CJabberProto* ppro = ( CJabberProto* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch ( msg ) {
 	case JM_STATUSCHANGED:
@@ -1491,7 +1491,7 @@ static BOOL CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 	case WM_INITDIALOG:
 		{
 			ppro = ( CJabberProto* )lParam;
-			SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 
 			TranslateDialogDefault( hwndDlg );
 			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )ppro->LoadIconEx( "Agents" ));
@@ -1505,8 +1505,8 @@ static BOOL CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			Utils_RestoreWindowPosition(hwndDlg, NULL, ppro->m_szModuleName, "rosterCtrlWnd_");
 
 			ListView_SetExtendedListViewStyle(GetDlgItem(hwndDlg,IDC_ROSTER),  LVS_EX_CHECKBOXES | LVS_EX_BORDERSELECT /*| LVS_EX_FULLROWSELECT*/ | LVS_EX_GRIDLINES /*| LVS_EX_HEADERDRAGDROP*/ );
-			_RosterOldListProc=(WNDPROC) GetWindowLong(GetDlgItem(hwndDlg,IDC_ROSTER), GWL_WNDPROC);
-			SetWindowLong(GetDlgItem(hwndDlg,IDC_ROSTER), GWL_WNDPROC, (LONG) _RosterNewListProc);
+			_RosterOldListProc=(WNDPROC) GetWindowLongPtr(GetDlgItem(hwndDlg,IDC_ROSTER), GWLP_WNDPROC);
+			SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_ROSTER), GWLP_WNDPROC, (LONG_PTR) _RosterNewListProc);
 			_RosterListClear(hwndDlg);
 			ppro->rrud.hwndDlg = hwndDlg;
 			ppro->rrud.bReadyToDownload = TRUE;
@@ -1868,7 +1868,7 @@ protected:
 			CheckRegistration();
 	}
 
-	BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+	INT_PTR DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		switch (msg) {
 		case WM_JABBER_REFRESH:

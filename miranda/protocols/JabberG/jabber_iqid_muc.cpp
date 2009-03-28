@@ -73,14 +73,14 @@ static void sttFillJidList(HWND hwndDlg)
 	int count, i;
 
 	TCHAR *filter = NULL;
-	if (GetWindowLong(GetDlgItem(hwndDlg, IDC_FILTER), GWL_USERDATA))
+	if (GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_FILTER), GWLP_USERDATA))
 	{
 		int filterLength = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_FILTER)) + 1;
 		filter = (TCHAR *)_alloca(filterLength * sizeof(TCHAR));
 		GetDlgItemText(hwndDlg, IDC_FILTER, filter, filterLength);
 	}
 
-	jidListInfo = ( JABBER_MUC_JIDLIST_INFO * ) GetWindowLong( hwndDlg, GWL_USERDATA );
+	jidListInfo = ( JABBER_MUC_JIDLIST_INFO * ) GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 	if ( !jidListInfo )
 		return;
 
@@ -160,9 +160,9 @@ static int sttJidListResizer(HWND, LPARAM, UTILRESIZECONTROL *urc)
 	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
 }
 
-static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	JABBER_MUC_JIDLIST_INFO* dat = (JABBER_MUC_JIDLIST_INFO*)GetWindowLong( hwndDlg, GWL_USERDATA );
+	JABBER_MUC_JIDLIST_INFO* dat = (JABBER_MUC_JIDLIST_INFO*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch( msg ) {
 	case WM_INITDIALOG:
@@ -243,7 +243,7 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 
 			// Set new GWL_USERDATA
 			dat = ( JABBER_MUC_JIDLIST_INFO * ) lParam;
-			SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) dat );
+			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, ( LONG_PTR ) dat );
 
 			// Populate displayed list from iqNode
 			lstrcpyn( title, TranslateT( "JID List" ), SIZEOF( title ));
@@ -266,7 +266,7 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 			}	}	}	}
 			SetWindowText( hwndDlg, title );
 
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_FILTER), GWL_USERDATA, 0);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_FILTER), GWLP_USERDATA, 0);
 			sttFillJidList(hwndDlg);
 		}
 		break;
@@ -280,7 +280,7 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 					switch ( nm->nmcd.dwDrawStage ) {
 					case CDDS_PREPAINT:
 					case CDDS_ITEMPREPAINT:
-						SetWindowLong( hwndDlg, DWL_MSGRESULT, CDRF_NOTIFYSUBITEMDRAW );
+						SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, CDRF_NOTIFYSUBITEMDRAW );
 						return TRUE;
 					case CDDS_SUBITEM|CDDS_ITEMPREPAINT:
 						{
@@ -295,7 +295,7 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 									hIcon = ( HICON )LoadImage( hInst, MAKEINTRESOURCE( IDI_DELETE ), IMAGE_ICON, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0 );
 								DrawIconEx( nm->nmcd.hdc, ( rc.left+rc.right-GetSystemMetrics( SM_CXSMICON ))/2, ( rc.top+rc.bottom-GetSystemMetrics( SM_CYSMICON ))/2,hIcon, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0, GetSysColorBrush(COLOR_WINDOW), DI_NORMAL );
 								DestroyIcon( hIcon );
-								SetWindowLong( hwndDlg, DWL_MSGRESULT, CDRF_SKIPDEFAULT );
+								SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, CDRF_SKIPDEFAULT );
 								return TRUE;
 				}	}	}	}
 				break;
@@ -359,13 +359,13 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 		if ((LOWORD(wParam) == IDC_BTN_FILTERAPPLY) ||
 			((LOWORD(wParam) == IDOK) && (GetFocus() == GetDlgItem(hwndDlg, IDC_FILTER))))
 		{
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_FILTER), GWL_USERDATA, 1);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_FILTER), GWLP_USERDATA, 1);
 			sttFillJidList(hwndDlg);
 		} else
 		if ((LOWORD(wParam) == IDC_BTN_FILTERRESET) ||
 			((LOWORD(wParam) == IDCANCEL) && (GetFocus() == GetDlgItem(hwndDlg, IDC_FILTER))))
 		{
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_FILTER), GWL_USERDATA, 0);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_FILTER), GWLP_USERDATA, 0);
 			sttFillJidList(hwndDlg);
 		}
 		break;

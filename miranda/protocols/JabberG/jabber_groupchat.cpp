@@ -432,7 +432,7 @@ protected:
 	void OnInitDialog();
 	void OnClose();
 	void OnDestroy();
-	BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
+	INT_PTR DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
 };
 
 CJabberDlgGcJoin::CJabberDlgGcJoin(CJabberProto *proto, TCHAR *jid) :
@@ -548,7 +548,7 @@ void CJabberDlgGcJoin::OnDestroy()
 	CSuper::OnDestroy();
 }
 
-BOOL CJabberDlgGcJoin::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CJabberDlgGcJoin::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	TCHAR text[128];
 
@@ -646,11 +646,11 @@ BOOL CJabberDlgGcJoin::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			case CBN_EDITCHANGE:
 			case CBN_SELCHANGE:
 				{
-					int iqid = GetWindowLong(GetDlgItem(m_hwnd, IDC_ROOM), GWL_USERDATA);
+					int iqid = GetWindowLongPtr(GetDlgItem(m_hwnd, IDC_ROOM), GWLP_USERDATA);
 					if (iqid)
 					{
 						m_proto->m_iqManager.ExpireIq(iqid);
-						SetWindowLong(GetDlgItem(m_hwnd, IDC_ROOM), GWL_USERDATA, 0);
+						SetWindowLongPtr(GetDlgItem(m_hwnd, IDC_ROOM), GWLP_USERDATA, 0);
 					}
 					SendDlgItemMessage(m_hwnd, IDC_ROOM, CB_RESETCONTENT, 0, 0);
 				}
@@ -663,11 +663,11 @@ BOOL CJabberDlgGcJoin::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			case CBN_DROPDOWN:
 				if (!SendDlgItemMessage(m_hwnd, IDC_ROOM, CB_GETCOUNT, 0, 0))
 				{
-					int iqid = GetWindowLong(GetDlgItem(m_hwnd, IDC_ROOM), GWL_USERDATA);
+					int iqid = GetWindowLongPtr(GetDlgItem(m_hwnd, IDC_ROOM), GWLP_USERDATA);
 					if (iqid)
 					{
 						m_proto->m_iqManager.ExpireIq(iqid);
-						SetWindowLong(GetDlgItem(m_hwnd, IDC_ROOM), GWL_USERDATA, 0);
+						SetWindowLongPtr(GetDlgItem(m_hwnd, IDC_ROOM), GWLP_USERDATA, 0);
 					}
 
 					SendDlgItemMessage(m_hwnd, IDC_ROOM, CB_RESETCONTENT, 0, 0);
@@ -686,7 +686,7 @@ BOOL CJabberDlgGcJoin::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 						iq << XQUERY( _T(JABBER_FEAT_DISCO_ITEMS));
 						m_proto->m_ThreadInfo->send(iq);
 
-						SetWindowLong(GetDlgItem(m_hwnd, IDC_ROOM), GWL_USERDATA, pInfo->GetIqId());
+						SetWindowLongPtr(GetDlgItem(m_hwnd, IDC_ROOM), GWLP_USERDATA, pInfo->GetIqId());
 					} else
 					{
 						sttRoomListAppend(GetDlgItem(m_hwnd, IDC_ROOM), RoomInfo::ROOM_FAIL,

@@ -684,7 +684,7 @@ int CJabberProto::AdhocLockWSHandler( HXML, CJabberIqInfo* pInfo, CJabberAdhocSe
 	BOOL bOk = FALSE;
 	HMODULE hLibrary = LoadLibrary( _T("user32.dll") );
 	if ( hLibrary ) {
-		LWS pLws = GetProcAddress( hLibrary, "LockWorkStation" );
+		LWS pLws = (LWS)GetProcAddress( hLibrary, "LockWorkStation" );
 		if ( pLws )
 			bOk = pLws();
 		FreeLibrary( hLibrary );
