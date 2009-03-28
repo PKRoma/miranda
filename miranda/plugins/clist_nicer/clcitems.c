@@ -304,6 +304,7 @@ BYTE GetCachedStatusMsg(int iExtraCacheEntry, char *szProto)
 		else {
 			ICQ_CUSTOM_STATUS cst = {0};
 			int xStatus;
+			WPARAM xStatus2;
 			TCHAR xStatusName[128];
 			char szServiceName[128];
 
@@ -314,7 +315,7 @@ BYTE GetCachedStatusMsg(int iExtraCacheEntry, char *szProto)
 			cst.status = &xStatus;
 			if(ServiceExists(szServiceName) && !CallService(szServiceName, (WPARAM)hContact, (LPARAM)&cst) && xStatus > 0) {
 				cst.flags = CSSF_MASK_NAME | CSSF_DEFAULT_NAME | CSSF_TCHAR;
-				cst.wParam = &xStatus;
+ 				cst.wParam = &xStatus2;
 				cst.ptszName = xStatusName; 
 				if(!CallService(szServiceName, (WPARAM)hContact, (LPARAM)&cst)) {
 					TCHAR *szwXstatusName = TranslateTS(xStatusName);

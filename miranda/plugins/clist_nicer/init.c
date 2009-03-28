@@ -96,8 +96,8 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 int ( *saveRemoveEvent )(HANDLE hContact, HANDLE hDbEvent);
 int RemoveEvent(HANDLE hContact, HANDLE hDbEvent);
 
-int ( *saveTrayIconProcessMessage )(WPARAM wParam, LPARAM lParam);
-int TrayIconProcessMessage(WPARAM wParam, LPARAM lParam);
+INT_PTR ( *saveTrayIconProcessMessage )(WPARAM wParam, LPARAM lParam);
+INT_PTR TrayIconProcessMessage(WPARAM wParam, LPARAM lParam);
 
 void ( *saveRecalcScrollBar )(HWND hwnd, struct ClcData *dat);
 void RecalcScrollBar(HWND hwnd, struct ClcData *dat);

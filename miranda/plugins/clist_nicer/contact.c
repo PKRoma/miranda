@@ -307,7 +307,7 @@ static VOID CALLBACK SortContactsTimer(HWND hwnd, UINT message, UINT idEvent, DW
     CallService(MS_CLUI_SORTLIST, 0, 0);
 }
 
-int SetHideOffline(WPARAM wParam, LPARAM lParam)
+INT_PTR SetHideOffline(WPARAM wParam, LPARAM lParam)
 {
     switch ((int) wParam) {
         case 0:

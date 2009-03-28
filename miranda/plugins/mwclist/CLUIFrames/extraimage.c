@@ -97,7 +97,7 @@ int ExtraToColumnNum(int extra)
 	return (colsum(0,ord)-1);
 };
 
-int SetIconForExtraColumn(WPARAM wParam,LPARAM lParam)
+INT_PTR SetIconForExtraColumn(WPARAM wParam,LPARAM lParam)
 {
 	pIconExtraColumn piec;
 	int icol;
@@ -119,7 +119,7 @@ int SetIconForExtraColumn(WPARAM wParam,LPARAM lParam)
 
 //wparam=hIcon
 //return hImage on success,-1 on failure
-int AddIconToExtraImageList(WPARAM wParam,LPARAM lParam)
+INT_PTR AddIconToExtraImageList(WPARAM wParam,LPARAM lParam)
 {
 	if (hExtraImageList==0||wParam==0){return(-1);};
 	return((int)ImageList_AddIcon(hExtraImageList,(HICON)wParam));

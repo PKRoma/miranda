@@ -87,7 +87,7 @@ void UnloadDatabaseModule(void)
 	DeleteCriticalSection(&csDbAccess);
 }
 
-static int GetProfileName(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetProfileName(WPARAM wParam, LPARAM lParam)
 {
 	char * p = 0;
 	p = strrchr(szDbPath, '\\');
@@ -97,7 +97,7 @@ static int GetProfileName(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int GetProfilePath(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetProfilePath(WPARAM wParam, LPARAM lParam)
 {
 	char * dst = (char*)lParam;
 	char * p = 0;

@@ -30,7 +30,7 @@ void HotKeysUnregister(HWND hwnd);
 void LoadContactTree(void);
 void SortContacts(void);
 
-static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static INT_PTR CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 static UINT expertOnlyControls[]={IDC_ALWAYSSTATUS};
 int CListOptInit(WPARAM wParam,LPARAM lParam)
@@ -52,7 +52,7 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
@@ -69,13 +69,13 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		}
 		case WM_DESTROY: 
 		{
-			UnhookEvent( (HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA) );
+			UnhookEvent( (HANDLE)GetWindowLongPtr(hwndDlg,GWLP_USERDATA) );
 			break;
 		}
 
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)HookEventMessage(ME_DB_CONTACT_SETTINGCHANGED,hwndDlg,WM_USER+1));
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)HookEventMessage(ME_DB_CONTACT_SETTINGCHANGED,hwndDlg,WM_USER+1));
 
 			CheckDlgButton(hwndDlg, IDC_ONTOP, DBGetContactSettingByte(NULL,"CList","OnTop",SETTING_ONTOP_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_HIDEOFFLINE, DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);

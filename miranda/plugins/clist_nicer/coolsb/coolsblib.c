@@ -246,7 +246,7 @@ BOOL WINAPI InitializeCoolSB(HWND hwnd)
 
 	sw->bPreventStyleChange		 = FALSE;
 	
-	sw->oldproc = (WNDPROC)SetWindowLong(hwnd, GWL_WNDPROC, (LONG)CoolSBWndProc);
+	sw->oldproc = (WNDPROC)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)CoolSBWndProc);
 
 	CoolSB_SetMinThumbSize(hwnd, SB_BOTH, CoolSB_GetDefaultMinThumbSize());
 
@@ -581,7 +581,7 @@ HRESULT WINAPI UninitializeCoolSB(HWND hwnd)
 	if(!sw) return E_FAIL;
 
 	//restore the window procedure with the original one
-	SetWindowLong(hwnd, GWL_WNDPROC, (LONG)sw->oldproc);
+	SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)sw->oldproc);
 
 	RemoveProp(hwnd, szPropStr);
 	//SetWindowLong(hwnd, GWL_USERDATA, 0);

@@ -203,7 +203,7 @@ void FLT_SnapToFloater(HWND hwnd)
  * dialog procedure for the floating contacts option page
  */
 
-BOOL CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) {
 		case WM_INITDIALOG:
@@ -578,7 +578,7 @@ void CALLBACK ShowTooltip(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime){
 
 LRESULT CALLBACK ContactFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	int iEntry = GetWindowLong(hwnd, GWL_USERDATA);
+	INT_PTR iEntry = GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	struct ExtraCache *centry = NULL;
 
 	if(iEntry >= 0 && iEntry < g_nextExtraCacheEntry)
@@ -588,7 +588,7 @@ LRESULT CALLBACK ContactFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 		case WM_NCCREATE:
 			{
 				CREATESTRUCT *cs = (CREATESTRUCT *)lParam;
-				SetWindowLong(hwnd, GWL_USERDATA, (LONG)cs->lpCreateParams);
+				SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)cs->lpCreateParams);
 				iEntry = (int)cs->lpCreateParams;
 				if(iEntry >= 0 && iEntry < g_nextExtraCacheEntry)
 					centry = &g_ExtraCache[iEntry];

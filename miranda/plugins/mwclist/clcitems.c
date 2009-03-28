@@ -183,7 +183,7 @@ static struct ClcContact * AddContactToGroup(struct ClcData *dat,struct ClcGroup
 		if (!DBGetContactSettingString(hContact, "CList", "StatusMsg", &dbv)) {
 			int j;
 			lstrcpynA(group->cl.items[i]->szStatusMsg, dbv.pszVal, SIZEOF(group->cl.items[i]->szStatusMsg));
-			for (j=strlen(group->cl.items[i]->szStatusMsg)-1;j>=0;j--) {
+			for (j=(int)strlen(group->cl.items[i]->szStatusMsg)-1;j>=0;j--) {
 				if (group->cl.items[i]->szStatusMsg[j]=='\r' || group->cl.items[i]->szStatusMsg[j]=='\n' || group->cl.items[i]->szStatusMsg[j]=='\t') {
 					group->cl.items[i]->szStatusMsg[j] = ' ';
 				}

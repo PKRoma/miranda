@@ -69,7 +69,7 @@ void UninitEvents(void)
 
 static INT_PTR GetEventCount(WPARAM wParam,LPARAM lParam)
 {
-	int ret;
+	INT_PTR ret;
 	struct DBContact *dbc;
 
 	EnterCriticalSection(&csDbAccess);
@@ -266,7 +266,7 @@ static INT_PTR DeleteEvent(WPARAM wParam,LPARAM lParam)
 
 static INT_PTR GetBlobSize(WPARAM wParam,LPARAM lParam)
 {
-	int ret;
+	INT_PTR ret;
 	struct DBEvent *dbe;
 
 	EnterCriticalSection(&csDbAccess);
@@ -381,69 +381,69 @@ static INT_PTR GetEventContact(WPARAM wParam,LPARAM lParam)
 
 static INT_PTR FindFirstEvent(WPARAM wParam,LPARAM lParam)
 {
-	int ret;
+	INT_PTR ret;
 	struct DBContact *dbc;
 
 	EnterCriticalSection(&csDbAccess);
 	if(wParam==0) wParam=dbHeader.ofsUser;
 	dbc=(struct DBContact*)DBRead(wParam,sizeof(struct DBContact),NULL);
 	if(dbc->signature!=DBCONTACT_SIGNATURE) ret=(int)(HANDLE)NULL;
-	else ret=(int)dbc->ofsFirstEvent;
+	else ret=(INT_PTR)dbc->ofsFirstEvent;
 	LeaveCriticalSection(&csDbAccess);
 	return ret;
 }
 
 static INT_PTR FindFirstUnreadEvent(WPARAM wParam,LPARAM lParam)
 {
-	int ret;
+	INT_PTR ret;
 	struct DBContact *dbc;
 
 	EnterCriticalSection(&csDbAccess);
 	if(wParam==0) wParam=dbHeader.ofsUser;
 	dbc=(struct DBContact*)DBRead(wParam,sizeof(struct DBContact),NULL);
 	if(dbc->signature!=DBCONTACT_SIGNATURE) ret=(int)(HANDLE)NULL;
-	else ret=(int)dbc->ofsFirstUnreadEvent;
+	else ret=(INT_PTR)dbc->ofsFirstUnreadEvent;
 	LeaveCriticalSection(&csDbAccess);
 	return ret;
 }
 
 static INT_PTR FindLastEvent(WPARAM wParam,LPARAM lParam)
 {
-	int ret;
+	INT_PTR ret;
 	struct DBContact *dbc;
 
 	EnterCriticalSection(&csDbAccess);
 	if(wParam==0) wParam=dbHeader.ofsUser;
 	dbc=(struct DBContact*)DBRead(wParam,sizeof(struct DBContact),NULL);
 	if(dbc->signature!=DBCONTACT_SIGNATURE) ret=(int)(HANDLE)NULL;
-	else ret=(int)dbc->ofsLastEvent;
+	else ret=(INT_PTR)dbc->ofsLastEvent;
 	LeaveCriticalSection(&csDbAccess);
 	return ret;
 }
 
 static INT_PTR FindNextEvent(WPARAM wParam,LPARAM lParam)
 {
-	int ret;
+	INT_PTR ret;
 	struct DBEvent *dbe;
 
 	EnterCriticalSection(&csDbAccess);
 	dbe=(struct DBEvent*)DBRead(wParam,sizeof(struct DBEvent),NULL);
 	if(dbe->signature!=DBEVENT_SIGNATURE) ret=(int)(HANDLE)NULL;
-	else ret=(int)(HANDLE)dbe->ofsNext;
+	else ret=(INT_PTR)(HANDLE)dbe->ofsNext;
 	LeaveCriticalSection(&csDbAccess);
 	return ret;
 }
 
 static INT_PTR FindPrevEvent(WPARAM wParam,LPARAM lParam)
 {
-	int ret;
+	INT_PTR ret;
 	struct DBEvent *dbe;
 
 	EnterCriticalSection(&csDbAccess);
 	dbe=(struct DBEvent*)DBRead(wParam,sizeof(struct DBEvent),NULL);
 	if(dbe->signature!=DBEVENT_SIGNATURE) ret=(int)(HANDLE)NULL;
 	else if(dbe->flags&DBEF_FIRST) ret=(int)(HANDLE)NULL;
-	else ret=(int)(HANDLE)dbe->ofsPrev;
+	else ret=(INT_PTR)(HANDLE)dbe->ofsPrev;
 	LeaveCriticalSection(&csDbAccess);
 	return ret;
 }

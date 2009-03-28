@@ -168,8 +168,8 @@ int CompareContacts( const struct ClcContact *contact1, const struct ClcContact 
 
 #undef SAFESTRING
 
-static int resortTimerId=0;
-static VOID CALLBACK SortContactsTimer(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime)
+static UINT_PTR resortTimerId=0;
+static VOID CALLBACK SortContactsTimer(HWND hwnd,UINT message,UINT_PTR idEvent,DWORD dwTime)
 {
 	KillTimer(NULL,resortTimerId);
 	resortTimerId=0;
@@ -185,7 +185,7 @@ void SortContacts(void)
 	resortTimerId=SetTimer(NULL,0,50,SortContactsTimer);
 }
 
-int ContactChangeGroup(WPARAM wParam,LPARAM lParam)
+INT_PTR ContactChangeGroup(WPARAM wParam,LPARAM lParam)
 {
 	CallService(MS_CLUI_CONTACTDELETED,wParam,0);
 	if((HANDLE)lParam==NULL)

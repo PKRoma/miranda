@@ -184,7 +184,7 @@ HICON LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,boolean r
 {
 	char szPath[MAX_PATH],szMyPath[MAX_PATH], szFullPath[MAX_PATH],*str;
 	HICON hIcon=NULL;
-	SKINICONDESC2 sid={0};
+	SKINICONDESC sid={0};
 
 	memset(szMyPath,0,SIZEOF(szMyPath));
 	memset(szFullPath,0,SIZEOF(szFullPath));
@@ -318,7 +318,7 @@ HICON GetConnectingIconForProto(char *szProto,int b)
 
 
 //wParam = szProto
-int GetConnectingIconService(WPARAM wParam,LPARAM lParam)
+INT_PTR GetConnectingIconService(WPARAM wParam,LPARAM lParam)
 {
 	int b;						
 	ProtoTicks *pt=NULL;

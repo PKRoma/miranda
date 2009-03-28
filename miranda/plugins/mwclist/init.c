@@ -62,8 +62,8 @@ int AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText);
 void ( *saveSortCLC )(HWND hwnd,struct ClcData *dat,int useInsertionSort);
 void SortCLC(HWND hwnd,struct ClcData *dat,int useInsertionSort);
 
-int ( *saveTrayIconProcessMessage )(WPARAM wParam,LPARAM lParam);
-int TrayIconProcessMessage(WPARAM wParam,LPARAM lParam);
+INT_PTR ( *saveTrayIconProcessMessage )(WPARAM wParam,LPARAM lParam);
+INT_PTR TrayIconProcessMessage(WPARAM wParam,LPARAM lParam);
 
 int  (*saveIconFromStatusMode)(const char *szProto,int nStatus, HANDLE hContact);
 int  cli_IconFromStatusMode(const char *szProto,int nStatus, HANDLE hContact);
@@ -137,7 +137,7 @@ static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int SetDrawer(WPARAM wParam,LPARAM lParam)
+INT_PTR SetDrawer(WPARAM wParam,LPARAM lParam)
 {
 	pDrawerServiceStruct DSS=(pDrawerServiceStruct)wParam;
 	if (DSS->cbSize!=sizeof(*DSS)) return -1;

@@ -399,7 +399,7 @@ static void CacheClientIcons()
 
 static void InitIcoLib()
 {
-	SKINICONDESC2 sid;
+	SKINICONDESC sid = {0};
 	char szFilename[MAX_PATH];
 	int i = 0, version = 0;
 	char szBuffer[128];
@@ -1156,7 +1156,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					ShowWindow(pcli->hwndStatus, SW_SHOW);
 					SendMessage(pcli->hwndStatus, WM_SIZE, 0, 0);
 				}
-				OldStatusBarProc = (WNDPROC)SetWindowLong(pcli->hwndStatus, GWL_WNDPROC, (LONG)NewStatusBarWndProc);
+				OldStatusBarProc = (WNDPROC)SetWindowLongPtr(pcli->hwndStatus, GWLP_WNDPROC, (LONG_PTR)NewStatusBarWndProc);
 				SetClassLong(pcli->hwndStatus, GCL_STYLE, GetClassLong(pcli->hwndStatus, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
 			}
 			g_oldSize.cx = g_oldSize.cy = 0;
@@ -2307,7 +2307,7 @@ static int MetaChanged(WPARAM wParam, LPARAM lParam)
 
 static BOOL g_AboutDlgActive = 0;
 
-BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HICON hIcon;
 	COLORREF url_visited = RGB(128, 0, 128);
@@ -2398,14 +2398,14 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	return FALSE;
 }
 
-static int CLN_ShowAbout(WPARAM wParam, LPARAM lParam)
+static INT_PTR CLN_ShowAbout(WPARAM wParam, LPARAM lParam)
 {
 	if (!g_AboutDlgActive)
 		CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CLNABOUT), 0, DlgProcAbout, 0);
 	return 0;
 }
 
-static int CLN_ShowMainMenu(WPARAM wParam, LPARAM lParam)
+static INT_PTR CLN_ShowMainMenu(WPARAM wParam, LPARAM lParam)
 {
 	HMENU hMenu;
 	POINT pt;
@@ -2416,7 +2416,7 @@ static int CLN_ShowMainMenu(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int CLN_ShowStatusMenu(WPARAM wParam, LPARAM lParam)
+static INT_PTR CLN_ShowStatusMenu(WPARAM wParam, LPARAM lParam)
 {
 	HMENU hMenu;
 	POINT pt;

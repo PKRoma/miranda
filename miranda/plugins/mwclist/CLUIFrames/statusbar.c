@@ -610,8 +610,8 @@ int RecreateStatusBar(HWND parent)
 		( DBGetContactSettingByte(0,"CLUI","SBarUseSizeGrip",TRUE) && (!UseOwnerDrawStatusBar)?SBARS_SIZEGRIP:0)|
 		WS_CHILD | (DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1)?WS_VISIBLE:0), _T(""), helperhwnd, 0);
 
-	OldWindowProc=(WNDPROC)GetWindowLong(pcli->hwndStatus,GWL_WNDPROC);
-	SetWindowLong(pcli->hwndStatus,GWL_WNDPROC,(LONG)&StatusBarOwnerDrawProc);
+	OldWindowProc=(WNDPROC)GetWindowLongPtr(pcli->hwndStatus,GWLP_WNDPROC);
+	SetWindowLongPtr(pcli->hwndStatus,GWLP_WNDPROC,(LONG_PTR)&StatusBarOwnerDrawProc);
 	CreateStatusBarFrame();
 	{
 		SetWindowPos(helperhwnd,NULL,1,1,1,1,SWP_NOZORDER);

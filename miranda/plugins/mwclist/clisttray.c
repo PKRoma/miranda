@@ -76,13 +76,13 @@ int Param1;
 wparam=handle to the menu item returned by MS_CLIST_ADDCONTACTMENUITEM
 return 0 on success.
 */
-static int RemoveTrayMenuItem(WPARAM wParam,LPARAM lParam)
+static INT_PTR RemoveTrayMenuItem(WPARAM wParam,LPARAM lParam)
 {
 	CallService(MO_REMOVEMENUITEM,wParam,0);
 	return 0;
 }
 
-static int BuildTrayMenu(WPARAM wParam,LPARAM lParam)
+static INT_PTR BuildTrayMenu(WPARAM wParam,LPARAM lParam)
 {
 	int tick;
 	HMENU hMenu;
@@ -102,7 +102,7 @@ static int BuildTrayMenu(WPARAM wParam,LPARAM lParam)
 	return (int)hMenu;
 }
 
-static int AddTrayMenuItem(WPARAM wParam,LPARAM lParam)
+static INT_PTR AddTrayMenuItem(WPARAM wParam,LPARAM lParam)
 {
 	CLISTMENUITEM *mi=(CLISTMENUITEM*)lParam;
 	TMO_MenuItem tmi;
@@ -120,7 +120,7 @@ static int AddTrayMenuItem(WPARAM wParam,LPARAM lParam)
 
 	//pszPopupName for new system mean root level
         //pszPopupName for old system mean that exists popup
-	tmi.root=(int)mi->pszPopupName;
+	tmi.root=(HGENMENU)mi->pszPopupName;
 
 	tmi.ownerdata=NULL;
 	
@@ -142,12 +142,12 @@ static int AddTrayMenuItem(WPARAM wParam,LPARAM lParam)
 	return(op.Handle);
 }
 
-int TrayMenuCheckService(WPARAM wParam,LPARAM lParam) 
+INT_PTR TrayMenuCheckService(WPARAM wParam,LPARAM lParam) 
 {
 	return(0);
 }
 
-int TrayMenuonAddService(WPARAM wParam,LPARAM lParam) 
+INT_PTR TrayMenuonAddService(WPARAM wParam,LPARAM lParam) 
 {
 	MENUITEMINFO *mii=(MENUITEMINFO* )wParam;
 	if (mii==NULL) return 0;
@@ -179,7 +179,7 @@ int TrayMenuonAddService(WPARAM wParam,LPARAM lParam)
 //called with:
 //wparam - ownerdata
 //lparam - lparam from winproc
-int TrayMenuExecService(WPARAM wParam,LPARAM lParam) {
+INT_PTR TrayMenuExecService(WPARAM wParam,LPARAM lParam) {
 	if (wParam!=0)
 	{
 		lpTrayMenuExecParam mmep=(lpTrayMenuExecParam)wParam;	
@@ -193,7 +193,7 @@ int TrayMenuExecService(WPARAM wParam,LPARAM lParam) {
 	return(1);
 }
 
-int FreeOwnerDataTrayMenu (WPARAM wParam,LPARAM lParam)
+INT_PTR FreeOwnerDataTrayMenu (WPARAM wParam,LPARAM lParam)
 {
 
 	lpTrayMenuExecParam mmep;

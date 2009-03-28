@@ -597,7 +597,7 @@ cleanup:
     free(szBuf);
 }
 
-BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     clvmHwnd = hwndDlg;
     

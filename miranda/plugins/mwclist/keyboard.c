@@ -23,13 +23,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include <m_hotkeys.h>
 
-int hkCloseMiranda(WPARAM wParam,LPARAM lParam)
+INT_PTR hkCloseMiranda(WPARAM wParam,LPARAM lParam)
 {
 	SendMessage(pcli->hwndContactList,WM_COMMAND,ID_ICQ_EXIT,0);
 	return 0;
 }
 
-int hkRestoreStatus(WPARAM wParam,LPARAM lParam)
+INT_PTR hkRestoreStatus(WPARAM wParam,LPARAM lParam)
 {
 	int nStatus = DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
 	if (nStatus != ID_STATUS_OFFLINE)

@@ -376,7 +376,7 @@ static __inline int GetContactSettingWorker(HANDLE hContact,DBCONTACTGETSETTING 
 	return 1;
 }
 
-static int GetContactSetting(WPARAM wParam,LPARAM lParam)
+static INT_PTR GetContactSetting(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTGETSETTING* dgs = ( DBCONTACTGETSETTING* )lParam;
 	dgs->pValue->type = 0;
@@ -410,7 +410,7 @@ static int GetContactSetting(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int GetContactSettingStr(WPARAM wParam,LPARAM lParam)
+static INT_PTR GetContactSettingStr(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTGETSETTING* dgs = (DBCONTACTGETSETTING*)lParam;
 	int iSaveType = dgs->pValue->type;
@@ -458,7 +458,7 @@ static int GetContactSettingStr(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int GetContactSettingStatic(WPARAM wParam,LPARAM lParam)
+INT_PTR GetContactSettingStatic(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTGETSETTING* dgs = (DBCONTACTGETSETTING*)lParam;
 	if ( GetContactSettingWorker(( HANDLE )wParam, dgs, 1 ))
@@ -472,7 +472,7 @@ int GetContactSettingStatic(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int FreeVariant(WPARAM wParam,LPARAM lParam)
+static INT_PTR FreeVariant(WPARAM wParam,LPARAM lParam)
 {
 	DBVARIANT *dbv=(DBVARIANT*)lParam;
 	if ( dbv == 0 ) return 1;
@@ -496,7 +496,7 @@ static int FreeVariant(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int SetSettingResident(WPARAM wParam,LPARAM lParam)
+static INT_PTR SetSettingResident(WPARAM wParam,LPARAM lParam)
 {
 	char*  szSetting;
 	size_t cbSettingNameLen = strlen(( char* )lParam );
@@ -516,7 +516,7 @@ static int SetSettingResident(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
+static INT_PTR WriteContactSetting(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTWRITESETTING *dbcws=(DBCONTACTWRITESETTING*)lParam;
 	struct DBContact dbc;
@@ -788,7 +788,7 @@ static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int DeleteContactSetting(WPARAM wParam,LPARAM lParam)
+static INT_PTR DeleteContactSetting(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTGETSETTING *dbcgs=(DBCONTACTGETSETTING*)lParam;
 	struct DBContact *dbc;
@@ -880,7 +880,7 @@ static int DeleteContactSetting(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int EnumContactSettings(WPARAM wParam,LPARAM lParam)
+static INT_PTR EnumContactSettings(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTENUMSETTINGS *dbces=(DBCONTACTENUMSETTINGS*)lParam;
 	struct DBContact dbc;

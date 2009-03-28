@@ -34,10 +34,10 @@ extern int RemoveEvent(WPARAM wParam, LPARAM lParam);
 
 int InitCustomMenus(void);
 void UninitCustomMenus(void);
-int GetContactStatusMessage(WPARAM wParam, LPARAM lParam);
+INT_PTR GetContactStatusMessage(WPARAM wParam, LPARAM lParam);
 void TrayIconUpdateBase(const char *szChangedProto);
 int EventsProcessContactDoubleClick(HANDLE hContact);
-int SetHideOffline(WPARAM wParam, LPARAM lParam);
+INT_PTR SetHideOffline(WPARAM wParam, LPARAM lParam);
 
 HIMAGELIST hCListImages;
 
@@ -47,7 +47,7 @@ extern ImageItem *g_CLUIImageItem;
 
 extern struct CluiData g_CluiData;
 
-static int GetStatusMode(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetStatusMode(WPARAM wParam, LPARAM lParam)
 {
 	return(g_maxStatus == ID_STATUS_OFFLINE ? pcli->currentDesiredStatusMode : g_maxStatus);
 }

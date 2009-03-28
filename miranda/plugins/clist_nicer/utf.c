@@ -88,7 +88,7 @@ void Utf8Decode( char* str, wchar_t** ucs2 )
 
 char* Utf8Encode( const char* src )
 {
-	int len;
+	size_t len;
 	char* result;
 	wchar_t* tempBuf;
 
@@ -134,7 +134,7 @@ char* Utf8Encode( const char* src )
 
 char* Utf8EncodeUcs2( const wchar_t* src )
 {
-	int len = wcslen( src );
+	size_t len = wcslen( src );
 	char* result = ( char* )malloc( len*3 + 1 );
 	if ( result == NULL )
 		return NULL;

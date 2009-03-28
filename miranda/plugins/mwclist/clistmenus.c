@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clui.h"
 #pragma hdrstop
 
-int CloseAction(WPARAM wParam,LPARAM lParam)
+INT_PTR CloseAction(WPARAM wParam,LPARAM lParam)
 {
 	if (CallService(MS_SYSTEM_OKTOEXIT,(WPARAM)0,(LPARAM)0))
 		SendMessage( pcli->hwndContactList,WM_DESTROY,0,0 );
