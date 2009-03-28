@@ -76,7 +76,7 @@ INT_PTR srvProto_IsLoaded(WPARAM, LPARAM lParam)
 
 INT_PTR Proto_EnumProtocols(WPARAM wParam,LPARAM lParam)
 {
-	*( INT_PTR* )wParam = protos.getCount();
+	*( int* )wParam = protos.getCount();
 	*( PROTOCOLDESCRIPTOR*** )lParam = protos.getArray();
 	return 0;
 }
