@@ -676,7 +676,7 @@ cleanup:
 	mir_free(szTempBuf);
 }
 #define IDI_SMALLDOT  211  //from miranda.exe
-BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     clvmHwnd = hwndDlg;
     

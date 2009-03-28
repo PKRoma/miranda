@@ -173,7 +173,7 @@ int cliCompareContacts(const struct ClcContact *contact1,const struct ClcContact
 
 #undef SAFESTRING
 
-int ContactChangeGroup(WPARAM wParam,LPARAM lParam)
+INT_PTR ContactChangeGroup(WPARAM wParam,LPARAM lParam)
 {
 	CallService(MS_CLUI_CONTACTDELETED,wParam,0);
 	if((HANDLE)lParam==NULL)
@@ -184,12 +184,12 @@ int ContactChangeGroup(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int ToggleHideOffline(WPARAM wParam,LPARAM lParam)
+INT_PTR ToggleHideOffline(WPARAM wParam,LPARAM lParam)
 {
 	return pcli->pfnSetHideOffline((WPARAM)-1,0);
 }
 
-int ToggleGroups(WPARAM wParam,LPARAM lParam)
+INT_PTR ToggleGroups(WPARAM wParam,LPARAM lParam)
 {
 
 	ModernWriteSettingByte(NULL, "CList", "UseGroups",
@@ -198,7 +198,7 @@ int ToggleGroups(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int SetUseGroups(WPARAM wParam, LPARAM lParam)
+INT_PTR SetUseGroups(WPARAM wParam, LPARAM lParam)
 {	
 	int newVal= !(GetWindowLong(pcli->hwndContactTree,GWL_STYLE)&CLS_USEGROUPS);
 	if ( wParam != -1 )
@@ -211,7 +211,7 @@ int SetUseGroups(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int ToggleSounds(WPARAM wParam,LPARAM lParam)
+INT_PTR ToggleSounds(WPARAM wParam,LPARAM lParam)
 {
 	ModernWriteSettingByte(NULL, "Skin", "UseSound",
 		(BYTE) !ModernGetSettingByte(NULL, "Skin", "UseSound", SETTING_ENABLESOUNDS_DEFAULT ) );

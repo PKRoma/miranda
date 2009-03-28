@@ -53,8 +53,8 @@ int SkinOptInit(WPARAM wParam,LPARAM lParam);
 int ModernSkinOptInit(WPARAM wParam,LPARAM lParam);
 int EventsProcessContactDoubleClick(HANDLE hContact);
 
-int TrayIconPauseAutoHide(WPARAM wParam,LPARAM lParam);
-int ContactChangeGroup(WPARAM wParam,LPARAM lParam);
+INT_PTR TrayIconPauseAutoHide(WPARAM wParam,LPARAM lParam);
+INT_PTR ContactChangeGroup(WPARAM wParam,LPARAM lParam);
 void InitTrayMenus(void);
 
 
@@ -189,7 +189,7 @@ int GetContactIconC(pdisplayNameCacheEntry cacheEntry)
 // 0 - default - return icon id in order: transport status icon, protostatus icon, meta is affected
 
 
-int GetContactIcon(WPARAM wParam,LPARAM lParam)
+INT_PTR GetContactIcon(WPARAM wParam,LPARAM lParam)
 {
 	char *szProto;
 	int status;
@@ -224,7 +224,7 @@ int CListMod_ContactListShutdownProc(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int CLUIGetCapsService(WPARAM wParam,LPARAM lParam)
+INT_PTR CLUIGetCapsService(WPARAM wParam,LPARAM lParam)
 {
 	if (lParam)
 	{
@@ -233,7 +233,7 @@ int CLUIGetCapsService(WPARAM wParam,LPARAM lParam)
 		case 0:
 			return 0;
 		case CLUIF2_PLUGININFO:
-			return (int)&pluginInfo;
+			return (INT_PTR)&pluginInfo;
 		case CLUIF2_CLISTTYPE:
 	#ifdef UNICODE
 				return 0x0107;
@@ -275,9 +275,9 @@ HRESULT PreLoadContactListModule()
 	return S_OK;
 }
 
-int SvcActiveSkin(WPARAM wParam, LPARAM lParam);
-int SvcPreviewSkin(WPARAM wParam, LPARAM lParam);
-int SvcApplySkin(WPARAM wParam, LPARAM lParam);
+INT_PTR SvcActiveSkin(WPARAM wParam, LPARAM lParam);
+INT_PTR SvcPreviewSkin(WPARAM wParam, LPARAM lParam);
+INT_PTR SvcApplySkin(WPARAM wParam, LPARAM lParam);
 
 HRESULT  CluiLoadModule()
 {

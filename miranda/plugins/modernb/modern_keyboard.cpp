@@ -25,13 +25,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 int InitSkinHotKeys(void);
 
-int hkCloseMiranda(WPARAM wParam,LPARAM lParam)
+INT_PTR hkCloseMiranda(WPARAM wParam,LPARAM lParam)
 {
 	CallService("CloseAction",0,0);
 	return 0;
 }
 
-int hkRestoreStatus(WPARAM wParam,LPARAM lParam)
+INT_PTR hkRestoreStatus(WPARAM wParam,LPARAM lParam)
 {
 	int nStatus = ModernGetSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
 	if (nStatus != ID_STATUS_OFFLINE)

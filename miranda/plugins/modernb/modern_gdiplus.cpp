@@ -11,7 +11,7 @@
 #include "hdr/modern_global_structure.h"
 
 BYTE saved_alpha;
-DWORD g_gdiplusToken;
+ULONG_PTR g_gdiplusToken;
 int mir_strlen(const char *a);
 HBITMAP ske_CreateDIB32(int cx, int cy);
 void InitGdiPlus(void)

@@ -47,7 +47,7 @@ int AddSkinToListFullName( HWND hwndDlg, TCHAR * fullName );
 int AddSkinToList( HWND hwndDlg, TCHAR * path, TCHAR* file );
 int FillAvailableSkinList( HWND hwndDlg );
 
-BOOL CALLBACK DlgSkinOpts( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
+INT_PTR CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 int SkinOptInit( WPARAM wParam, LPARAM lParam )
 {
@@ -93,7 +93,7 @@ int ModernSkinOptInit( WPARAM wParam, LPARAM lParam )
 	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
 	return 0;
 }
-BOOL CALLBACK DlgSkinOpts( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+INT_PTR CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch ( msg )
 	{
@@ -676,7 +676,7 @@ int AddItemToTree( HWND hTree, TCHAR * folder, TCHAR * itemName, void * data )
 
 
 
-int SvcActiveSkin(WPARAM wParam, LPARAM lParam)
+INT_PTR SvcActiveSkin(WPARAM wParam, LPARAM lParam)
 {
 	TCHAR *skinfile;
 	TCHAR skinfull[MAX_PATH];
@@ -685,13 +685,13 @@ int SvcActiveSkin(WPARAM wParam, LPARAM lParam)
 	{
 		CallService( MS_UTILS_PATHTOABSOLUTET, ( WPARAM )skinfile, ( LPARAM )skinfull );
 		mir_free(skinfile);
-		return (int)mir_tstrdup(skinfull);
+		return (INT_PTR)mir_tstrdup(skinfull);
 	}
 
 	return NULL;
 }
 
-int SvcApplySkin(WPARAM wParam, LPARAM lParam)
+INT_PTR SvcApplySkin(WPARAM wParam, LPARAM lParam)
 {
 	ske_LoadSkinFromIniFile( (TCHAR *)lParam, FALSE );
 	ske_LoadSkinFromDB( );	
@@ -716,7 +716,7 @@ int SvcApplySkin(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int SvcPreviewSkin(WPARAM wParam, LPARAM lParam)
+INT_PTR SvcPreviewSkin(WPARAM wParam, LPARAM lParam)
 {
 	DRAWITEMSTRUCT *dis = ( DRAWITEMSTRUCT * )wParam;
 

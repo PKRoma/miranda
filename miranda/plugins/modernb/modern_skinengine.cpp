@@ -80,8 +80,8 @@ static CRITICAL_SECTION cs_SkinChanging={0};
 
 /* Private module procedures */
 static BOOL ske_GetMaskBit(BYTE *line, int x);
-static int  ske_Service_AlphaTextOut(WPARAM wParam,LPARAM lParam);
-static BOOL ske_Service_DrawIconEx(WPARAM wParam,LPARAM lParam);
+static INT_PTR  ske_Service_AlphaTextOut(WPARAM wParam,LPARAM lParam);
+static INT_PTR ske_Service_DrawIconEx(WPARAM wParam,LPARAM lParam);
 
 static int  ske_AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT format, DWORD ARGBcolor);
 static void ske_AddParseTextGlyphObject(char * szGlyphTextID,char * szDefineString,SKINOBJECTSLIST *Skin);
@@ -93,9 +93,9 @@ static HBITMAP ske_LoadGlyphImageByDecoders(char * szFileName);
 static int  ske_LoadSkinFromResource(BOOL bOnlyObjects);
 static void ske_PreMultiplyChanells(HBITMAP hbmp,BYTE Mult);
 static int  ske_ValidateSingleFrameImage(FRAMEWND * Frame, BOOL SkipBkgBlitting);
-static int ske_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam);
-static int ske_Service_InvalidateFrameImage(WPARAM wParam, LPARAM lParam);
-static int ske_Service_DrawTextWithEffect( WPARAM wParam, LPARAM lParam );
+static INT_PTR ske_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam);
+static INT_PTR ske_Service_InvalidateFrameImage(WPARAM wParam, LPARAM lParam);
+static INT_PTR ske_Service_DrawTextWithEffect( WPARAM wParam, LPARAM lParam );
 
 //Decoders
 static HMODULE hImageDecoderModule;
@@ -1695,7 +1695,7 @@ LPSKINOBJECTDESCRIPTOR ske_FindObjectByName(const char * szName, BYTE objType, S
 // lParam - possible direct pointer to modern mask
 //////////////////////////////////////////////////////////////////////////
 
-int ske_Service_DrawGlyph(WPARAM wParam,LPARAM lParam)
+INT_PTR ske_Service_DrawGlyph(WPARAM wParam,LPARAM lParam)
 {
 	LPSKINDRAWREQUEST preq;
 	LPSKINOBJECTDESCRIPTOR pgl;
@@ -2724,7 +2724,7 @@ BOOL ske_TextOut(HDC hdc, int x, int y, LPCTSTR lpString, int nCount)
 	return 1;
 }
 
-static int ske_Service_AlphaTextOut(WPARAM wParam,LPARAM lParam)
+static INT_PTR ske_Service_AlphaTextOut(WPARAM wParam,LPARAM lParam)
 {
 	if (!wParam) return 0;
 	{
@@ -3268,7 +3268,7 @@ static int ske_DrawTextWithEffectWorker( HDC hdc, LPCTSTR lpString, int nCount, 
     return res;
 }
 
-int ske_Service_DrawTextWithEffect( WPARAM wParam, LPARAM lParam )
+INT_PTR ske_Service_DrawTextWithEffect( WPARAM wParam, LPARAM lParam )
 {
     DrawTextWithEffectParam * p = ( DrawTextWithEffectParam * ) wParam;
     if ( p->cbSize != sizeof(DrawTextWithEffectParam) )
@@ -3694,7 +3694,7 @@ BOOL ske_ImageList_DrawEx( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,int dx,i
 }
 
 
-static BOOL ske_Service_DrawIconEx(WPARAM wParam,LPARAM lParam)
+static INT_PTR ske_Service_DrawIconEx(WPARAM wParam,LPARAM lParam)
 {
 	DrawIconFixParam *p=(DrawIconFixParam*)wParam;
 	if (!p) return 0;
@@ -3920,7 +3920,7 @@ int ske_RedrawCompleteWindow()
 // lParam = pointer to sPaintRequest (or NULL to redraw all)
 // return 2 - already queued, data updated, 1-have been queued, 0 - failure
 
-static int ske_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam)           // Immideately recall paint routines for frame and refresh image
+static INT_PTR ske_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam)           // Immideately recall paint routines for frame and refresh image
 {
 	if ( MirandaLoading() ) return 0;
 
@@ -3973,7 +3973,7 @@ static int ske_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam)           
 	}
 	return 1;   
 }
-static int ske_Service_InvalidateFrameImage(WPARAM wParam, LPARAM lParam)       // Post request for updating
+static INT_PTR ske_Service_InvalidateFrameImage(WPARAM wParam, LPARAM lParam)       // Post request for updating
 {
 	if ( MirandaLoading() ) return 0; 
 	if (wParam)

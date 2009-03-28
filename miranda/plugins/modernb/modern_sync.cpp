@@ -9,7 +9,7 @@ typedef struct tagSYNCCALLITEM
 	HANDLE  hDoneEvent;
 	PSYNCCALLBACKPROC pfnProc;    
 } SYNCCALLITEM;
-static void CALLBACK _SyncCallerUserAPCProc(DWORD dwParam)
+static void CALLBACK _SyncCallerUserAPCProc(DWORD_PTR dwParam)
 {
 	SYNCCALLITEM* item = (SYNCCALLITEM*) dwParam;
 	item->nResult = item->pfnProc(item->wParam, item->lParam);

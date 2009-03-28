@@ -99,7 +99,7 @@ int ExtraImage_ExtraIDToColumnNum(int extra)
 	return (colsum(0,ord)-1);
 };
 
-int SetIconForExtraColumn(WPARAM wParam,LPARAM lParam)
+INT_PTR SetIconForExtraColumn(WPARAM wParam,LPARAM lParam)
 {
 	pIconExtraColumn piec;
 	int icol;
@@ -121,7 +121,7 @@ int SetIconForExtraColumn(WPARAM wParam,LPARAM lParam)
 
 //wparam=hIcon
 //return hImage on success,-1 on failure
-int AddIconToExtraImageList(WPARAM wParam,LPARAM lParam)
+INT_PTR AddIconToExtraImageList(WPARAM wParam,LPARAM lParam)
 {
     int res=-1;
 	if (hExtraImageList==0||wParam==0){return(-1);};
@@ -407,7 +407,7 @@ int ehhHideExtraInfoTip(WPARAM wParam, LPARAM lParam)
 	
 }
 
-int WideSetIconForExtraColumn(WPARAM wParam,LPARAM lParam)
+INT_PTR WideSetIconForExtraColumn(WPARAM wParam,LPARAM lParam)
 {
 	pIconExtraColumn piec;
 	int icol;
@@ -431,7 +431,7 @@ int WideSetIconForExtraColumn(WPARAM wParam,LPARAM lParam)
 
 //wparam=hIcon
 //return hImage on success,-1 on failure
-int WideAddIconToExtraImageList(WPARAM wParam,LPARAM lParam)
+INT_PTR WideAddIconToExtraImageList(WPARAM wParam,LPARAM lParam)
 {
 	int res=-1;
 	if (hWideExtraImageList==0||wParam==0){return(-1);};

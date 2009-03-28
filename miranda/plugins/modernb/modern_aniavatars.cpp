@@ -541,7 +541,7 @@ int AniAva_RedrawAllAvatars(BOOL updateZOrder)
 }
 
 //Static procedures
-static void CALLBACK _AniAva_SyncCallerUserAPCProc(DWORD dwParam)
+static void CALLBACK _AniAva_SyncCallerUserAPCProc(DWORD_PTR dwParam)
 {
 	ANIAVA_SYNCCALLITEM* item = (ANIAVA_SYNCCALLITEM*) dwParam;
 	item->nResult = item->pfnProc(item->wParam, item->lParam);
@@ -565,9 +565,9 @@ static HWND _AniAva_CreateAvatarWindowSync(TCHAR *szFileName)
 	item.pfnProc = _AniAva_CreateAvatarWindowSync_Worker;
 	item.hDoneEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	if (GetCurrentThreadId()!=AniAva.AnimationThreadID)
-		QueueUserAPC(_AniAva_SyncCallerUserAPCProc, AniAva.AnimationThreadHandle, (LONG_PTR) &item);
+		QueueUserAPC(_AniAva_SyncCallerUserAPCProc, AniAva.AnimationThreadHandle, (DWORD_PTR) &item);
 	else
-		_AniAva_SyncCallerUserAPCProc((LONG_PTR) &item);
+		_AniAva_SyncCallerUserAPCProc((DWORD_PTR) &item);
 	WaitForSingleObject(item.hDoneEvent, INFINITE);
 	CloseHandle(item.hDoneEvent);
 	return (HWND)item.nResult;
@@ -1128,7 +1128,7 @@ static LRESULT CALLBACK _AniAva_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 {
 	ANIAVA_WINDOWINFO * dat=NULL;
 	if (msg==WM_TIMER || msg==WM_DESTROY ||	(msg>AAM_FIRST && msg<AAM_LAST) )
-		dat=(ANIAVA_WINDOWINFO *)GetWindowLong(hwnd, GWL_USERDATA);
+		dat=(ANIAVA_WINDOWINFO *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 	switch (msg)
 	{
@@ -1251,12 +1251,12 @@ static LRESULT CALLBACK _AniAva_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 		{
 			LONG exStyle;
 			ANIAVA_WINDOWINFO * dat = (ANIAVA_WINDOWINFO *) mir_alloc(sizeof (ANIAVA_WINDOWINFO));
-			SetWindowLong(hwnd,GWL_USERDATA,(LONG)dat);
+			SetWindowLongPtr(hwnd,GWLP_USERDATA,(LONG_PTR)dat);
 			memset(dat,0, sizeof(ANIAVA_WINDOWINFO));
 			dat->hWindow=hwnd;
 			//ShowWindow(dat->hWindow,SW_SHOW);
 			//change layered mode
-			exStyle=GetWindowLong(dat->hWindow,GWL_EXSTYLE);
+			exStyle=GetWindowLongPtr(dat->hWindow,GWL_EXSTYLE);
 			exStyle|=WS_EX_LAYERED;
 			SetWindowLong(dat->hWindow,GWL_EXSTYLE,exStyle);
 			exStyle=GetWindowLong(dat->hWindow,GWL_STYLE);
@@ -1289,7 +1289,7 @@ static LRESULT CALLBACK _AniAva_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 		{
 			_AniAva_Clear_ANIAVA_WINDOWINFO(dat);
 			mir_free(dat);
-			SetWindowLong(hwnd,GWL_USERDATA,(LONG)NULL);
+			SetWindowLongPtr(hwnd,GWLP_USERDATA,(LONG_PTR)NULL);
 			break;
 		}
 

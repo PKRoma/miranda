@@ -298,7 +298,7 @@ void cli_AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int upda
 
 void cli_DeleteItemFromTree(HWND hwnd,HANDLE hItem)
 {
-	struct ClcData *dat = (struct ClcData *) GetWindowLong(hwnd, 0);
+	struct ClcData *dat = (struct ClcData *) GetWindowLongPtr(hwnd, 0);
 	ClearRowByIndexCache();
 	corecli.pfnDeleteItemFromTree(hwnd, hItem);
 

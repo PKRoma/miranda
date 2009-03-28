@@ -60,7 +60,7 @@ void Cache_GetTimezone(struct ClcData *dat, HANDLE hContact)
 {
     PDNCE pdnce=(PDNCE)pcli->pfnGetCacheEntry(hContact);
     if (dat==NULL && pcli->hwndContactTree) 
-        dat=(struct ClcData *)GetWindowLong(pcli->hwndContactTree,0);
+        dat=(struct ClcData *)GetWindowLongPtr(pcli->hwndContactTree,0);
     if (!IsBadStringPtrA(pdnce->m_cache_cszProto,10))
         pdnce->timezone = (DWORD)ModernGetSettingByte(hContact,"UserInfo","Timezone", 
         ModernGetSettingByte(hContact, pdnce->m_cache_cszProto,"Timezone",-1));

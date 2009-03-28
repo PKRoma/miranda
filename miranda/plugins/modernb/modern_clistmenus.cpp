@@ -31,7 +31,7 @@ int UnloadFavoriteContactMenu();
 
 #pragma hdrstop
 
-int CloseAction(WPARAM wParam,LPARAM lParam)
+INT_PTR CloseAction(WPARAM wParam,LPARAM lParam)
 {
 	int k;
 	g_CluiData.bSTATE = STATE_PREPEARETOEXIT;  // workaround for avatar service and other wich destroys service on OK_TOEXIT
@@ -189,7 +189,7 @@ static int FAV_OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int FAV_SetRate(WPARAM hContact, LPARAM nRate)
+INT_PTR FAV_SetRate(WPARAM hContact, LPARAM nRate)
 {
 	if (hContact)
 	{
@@ -198,7 +198,7 @@ int FAV_SetRate(WPARAM hContact, LPARAM nRate)
 	return 0;
 }
 
-int FAV_ToggleShowOffline(WPARAM hContact,LPARAM lParam)
+INT_PTR FAV_ToggleShowOffline(WPARAM hContact,LPARAM lParam)
 {
 	if (hContact)
 	{

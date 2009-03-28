@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clui.h"
 #include "hdr/modern_commonprototypes.h"
 
-int CListTray_GetGlobalStatus(WPARAM wparam,LPARAM lparam);
+INT_PTR CListTray_GetGlobalStatus(WPARAM wparam,LPARAM lparam);
 
 int CLUIUnreadEmailCountChanged(WPARAM wParam,LPARAM lParam)
 {
@@ -33,7 +33,7 @@ int CLUIUnreadEmailCountChanged(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int CLUIServices_ProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
+INT_PTR CLUIServices_ProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 {
 	CallService(MS_SKINENG_INVALIDATEFRAMEIMAGE,(WPARAM)pcli->hwndStatus,0);
 	if (lParam) cliTrayIconUpdateBase((char*)lParam);
@@ -45,7 +45,7 @@ void cliCluiProtocolStatusChanged(int status,const char * proto)
 	CLUIServices_ProtocolStatusChanged((WPARAM)status,(LPARAM)proto);
 }
 
-int SortList(WPARAM wParam,LPARAM lParam)
+INT_PTR SortList(WPARAM wParam,LPARAM lParam)
 {
     pcli->pfnClcBroadcast( WM_TIMER,TIMERID_DELAYEDRESORTCLC,0);
     pcli->pfnClcBroadcast( INTM_SCROLLBARCHANGED,0,0);
@@ -53,22 +53,22 @@ int SortList(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int MetaSupportCheck(WPARAM wParam,LPARAM lParam)
+static INT_PTR MetaSupportCheck(WPARAM wParam,LPARAM lParam)
 {
 	return 1;
 }
 
-static int GetHwnd(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetHwnd(WPARAM wParam, LPARAM lParam)
 {
-	return (int)pcli->hwndContactList;
+	return (INT_PTR)pcli->hwndContactList;
 }
 
-static int GetHwndTree(WPARAM wParam,LPARAM lParam)
+static INT_PTR GetHwndTree(WPARAM wParam,LPARAM lParam)
 {
-	return (int)pcli->hwndContactTree;
+	return (INT_PTR)pcli->hwndContactTree;
 }
 
-static int GroupAdded(WPARAM wParam, LPARAM lParam)
+static INT_PTR GroupAdded(WPARAM wParam, LPARAM lParam)
 {
 	//CLC does this automatically unless it's a new group
 	if (lParam) {
@@ -86,37 +86,37 @@ static int GroupAdded(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int ContactSetIcon(WPARAM wParam, LPARAM lParam)
+static INT_PTR ContactSetIcon(WPARAM wParam, LPARAM lParam)
 {
 	//unnecessary: CLC does this automatically
 	return 0;
 }
 
-static int ContactDeleted(WPARAM wParam, LPARAM lParam)
+static INT_PTR ContactDeleted(WPARAM wParam, LPARAM lParam)
 {
 	//unnecessary: CLC does this automatically
 	return 0;
 }
 
-static int ContactAdded(WPARAM wParam, LPARAM lParam)
+static INT_PTR ContactAdded(WPARAM wParam, LPARAM lParam)
 {
 	//unnecessary: CLC does this automatically
 	return 0;
 }
 
-static int ListBeginRebuild(WPARAM wParam, LPARAM lParam)
+static INT_PTR ListBeginRebuild(WPARAM wParam, LPARAM lParam)
 {
 	//unnecessary: CLC does this automatically
 	return 0;
 }
 
-static int ContactRenamed(WPARAM wParam, LPARAM lParam)
+static INT_PTR ContactRenamed(WPARAM wParam, LPARAM lParam)
 {
 	//unnecessary: CLC does this automatically
 	return 0;
 }
 
-static int ListEndRebuild(WPARAM wParam, LPARAM lParam)
+static INT_PTR ListEndRebuild(WPARAM wParam, LPARAM lParam)
 {
 	int rebuild = 0;
 	//CLC does this automatically, but we need to force it if hideoffline or hideempty has changed

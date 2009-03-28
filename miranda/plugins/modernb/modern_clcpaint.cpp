@@ -134,7 +134,7 @@ HFONT CLCPaint::ChangeToFont( HDC hdc, struct ClcData *dat, int id, int *fontHei
     HFONT res;
 
 	if ( !dat )
-        dat = ( struct ClcData* )GetWindowLong( pcli->hwndContactTree, 0 );
+        dat = ( struct ClcData* )GetWindowLongPtr( pcli->hwndContactTree, 0 );
 
 	if ( !dat ) 
 		return NULL;
@@ -291,7 +291,7 @@ BOOL  CLCPaint::CheckMiniMode( struct ClcData *dat, BOOL selected, BOOL hot )
 
 tPaintCallbackProc CLCPaint::PaintCallbackProc( HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn, DWORD dFlags, void * CallBackData )
 {
-	struct ClcData* dat = ( struct ClcData* )GetWindowLong( hWnd, 0 );
+	struct ClcData* dat = ( struct ClcData* )GetWindowLongPtr( hWnd, 0 );
 	if ( !dat ) return 0;
 	cliPaintClc( hWnd, dat, hDC, rcPaint );
 	return NULL;

@@ -103,7 +103,7 @@ static int ModernSkinButtonPaintWorker(HWND hwnd, HDC whdc)
 	HBITMAP bmp,oldbmp;
 	RECT rc;
 	HDC sdc=NULL;
-	ModernSkinButtonCtrl* bct =  (ModernSkinButtonCtrl *)GetWindowLong(hwnd, GWL_USERDATA);
+	ModernSkinButtonCtrl* bct =  (ModernSkinButtonCtrl *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	if (!bct) return 0;
 	if (!IsWindowVisible(hwnd)) return 0;
 	if (!whdc && !g_CluiData.fLayered) InvalidateRect(hwnd,NULL,FALSE);
@@ -359,7 +359,7 @@ static int _CallServiceStrParams(IN char * toParce, OUT int *Return)
 
 static LRESULT CALLBACK ModernSkinButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, LPARAM lParam)
 {
-	ModernSkinButtonCtrl* bct =  (msg!=WM_NCCREATE)?(ModernSkinButtonCtrl *)GetWindowLong(hwndDlg, GWL_USERDATA):0;
+	ModernSkinButtonCtrl* bct =  (msg!=WM_NCCREATE)?(ModernSkinButtonCtrl *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA):0;
 	if (bct && bct->HandleService && IsBadStringPtrA(bct->HandleService,255))
 		bct->HandleService=NULL;
 
@@ -381,7 +381,7 @@ static LRESULT CALLBACK ModernSkinButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM 
 			case WM_NCCREATE:
 				{
 					SetWindowLong(hwndDlg, GWL_STYLE, GetWindowLong(hwndDlg, GWL_STYLE)|BS_OWNERDRAW);
-					SetWindowLong(hwndDlg, GWL_USERDATA, (long)0);
+					SetWindowLong(hwndDlg, GWLP_USERDATA, 0);
 					if (((CREATESTRUCT *)lParam)->lpszName) SetWindowText(hwndDlg, ((CREATESTRUCT *)lParam)->lpszName);  
 					return TRUE;
 				}
@@ -415,7 +415,7 @@ static LRESULT CALLBACK ModernSkinButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM 
 
 						mir_free_and_nill(bct);
 					}
-					SetWindowLong(hwndDlg, GWL_USERDATA,(long)NULL);
+					SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 					break;	// DONT! fall thru
 				}
 			case WM_SETCURSOR:
@@ -706,7 +706,7 @@ static HWND ModernSkinButtonCreateWindow(ModernSkinButtonCtrl * bct, HWND parent
 
 	bct->hwnd = hwnd;	
 	bct->focus = 0;
-	SetWindowLong(hwnd, GWL_USERDATA, (long)bct);
+	SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)bct);
 	return hwnd;
 }
 

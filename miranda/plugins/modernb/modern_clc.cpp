@@ -454,7 +454,7 @@ static BOOL clcItemNotHiddenOffline(struct ClcData * dat, struct ClcGroup* group
 static LRESULT clcOnCreate(struct ClcData *dat, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	dat=(struct ClcData*)mir_calloc(sizeof(struct ClcData));
-	SetWindowLong(hwnd,0,(long)dat);
+	SetWindowLongPtr(hwnd,0,(LONG_PTR)dat);
 	dat->hCheckBoxTheme=xpt_AddThemeHandle(hwnd, L"BUTTON");
 	dat->m_paintCouter=0;
 	dat->hWnd=hwnd;
@@ -1393,7 +1393,7 @@ static LRESULT clcOnLButtonUp(struct ClcData *dat, HWND hwnd, UINT msg, WPARAM w
 	else if (dat->iHotTrack==-1 && dat->iDragItem==-1)
 		ReleaseCapture();
 	if(dat->iDragItem==-1) return 0;       
-	SetCursor((HCURSOR)GetClassLong(hwnd,GCL_HCURSOR));
+	SetCursor((HCURSOR)GetClassLongPtr(hwnd,GCLP_HCURSOR));
 	if(dat->exStyle&CLS_EX_TRACKSELECT) 
 	{
 		DWORD flags;
@@ -2156,7 +2156,7 @@ int ClcEnterDragToScroll(HWND hwnd, int Y)
 {
 	struct ClcData * dat;
 	if (IsDragToScrollMode) return 0;
-	dat=(struct ClcData*)GetWindowLong(hwnd,0);
+	dat=(struct ClcData*)GetWindowLongPtr(hwnd,0);
 	if (!dat) return 0;
 	StartDragPos=Y;
 	StartScrollPos=dat->yScroll;
@@ -2175,7 +2175,7 @@ LRESULT CALLBACK cli_ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wPara
 #define CASE_MSG_RET(msg, handler) case msg: return handler(dat, hwnd, msg, wParam, lParam); 
 
 	struct ClcData *dat;
-	dat=(struct ClcData*)GetWindowLong(hwnd,0);
+	dat=(struct ClcData*)GetWindowLongPtr(hwnd,0);
 
 	if(msg>=CLM_FIRST && msg<CLM_LAST) 
 		return cli_ProcessExternalMessages(hwnd,dat,msg,wParam,lParam);

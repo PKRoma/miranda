@@ -69,8 +69,8 @@ int CListSettings_GetCopyFromCache(pdisplayNameCacheEntry pDest, DWORD flag);
 int CListSettings_SetToCache(pdisplayNameCacheEntry pSrc, DWORD flag);
 
 int CLUIServices_LoadModule(void);
-int CLUIServices_SortList(WPARAM wParam,LPARAM lParam);
-int CLUIServices_ProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
+INT_PTR CLUIServices_SortList(WPARAM wParam,LPARAM lParam);
+INT_PTR CLUIServices_ProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
 
 void Docking_GetMonitorRectFromWindow(HWND hWnd,RECT *rc);
 

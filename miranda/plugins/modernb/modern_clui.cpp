@@ -189,7 +189,7 @@ int CLUI::OnEvent_DBSettingChanging(WPARAM wParam,LPARAM lParam)
 		ExtraImage_SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
 	return(0);
 };
-int CLUI::Service_ShowMainMenu(WPARAM wParam,LPARAM lParam)
+INT_PTR CLUI::Service_ShowMainMenu(WPARAM wParam,LPARAM lParam)
 {
 	HMENU hMenu;
 	POINT pt;
@@ -198,7 +198,7 @@ int CLUI::Service_ShowMainMenu(WPARAM wParam,LPARAM lParam)
 	TrackPopupMenu(hMenu,TPM_TOPALIGN|TPM_LEFTALIGN|TPM_LEFTBUTTON,pt.x,pt.y,0,pcli->hwndContactList,NULL);				
 	return 0;
 }
-int CLUI::Service_ShowStatusMenu(WPARAM wParam,LPARAM lParam)
+INT_PTR CLUI::Service_ShowStatusMenu(WPARAM wParam,LPARAM lParam)
 {
 	HMENU hMenu;
 	POINT pt;
@@ -208,7 +208,7 @@ int CLUI::Service_ShowStatusMenu(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int CLUI::Service_Menu_ShowContactAvatar(WPARAM wParam,LPARAM lParam)
+INT_PTR CLUI::Service_Menu_ShowContactAvatar(WPARAM wParam,LPARAM lParam)
 {
 	HANDLE hContact = (HANDLE) wParam;
 
@@ -218,7 +218,7 @@ int CLUI::Service_Menu_ShowContactAvatar(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int CLUI::Service_Menu_HideContactAvatar(WPARAM wParam,LPARAM lParam)
+INT_PTR CLUI::Service_Menu_HideContactAvatar(WPARAM wParam,LPARAM lParam)
 {
 	HANDLE hContact = (HANDLE) wParam;
 
@@ -819,13 +819,13 @@ struct  _tagTimerAsync
 	int Timeout; 
 	TIMERPROC proc;
 };
-static int SetTimerSync(WPARAM wParam , LPARAM lParam)
+static UINT_PTR SetTimerSync(WPARAM wParam , LPARAM lParam)
 {
 	struct  _tagTimerAsync * call=(struct  _tagTimerAsync *) wParam;
 	return SetTimer(call->hwnd, call->ID ,call->Timeout, call->proc);
 }
 
-int CLUI_SafeSetTimer(HWND hwnd, int ID, int Timeout, TIMERPROC proc)
+UINT_PTR CLUI_SafeSetTimer(HWND hwnd, int ID, int Timeout, TIMERPROC proc)
 {
 	struct  _tagTimerAsync param={  hwnd, ID, Timeout, proc };
 	return Sync(SetTimerSync, (WPARAM) &param, (LPARAM) 0);		
@@ -1087,7 +1087,7 @@ static HICON CLUI_GetConnectingIconForProto(char *szProto,int b)
 }
 
 
-int CLUI_GetConnectingIconService(WPARAM wParam,LPARAM lParam)
+INT_PTR CLUI_GetConnectingIconService(WPARAM wParam,LPARAM lParam)
 {
 	int b;						
 	PROTOTICKS *pt=NULL;
@@ -1123,7 +1123,7 @@ int CLUI_GetConnectingIconService(WPARAM wParam,LPARAM lParam)
 	}
 
 
-	return (int)hIcon;
+	return (INT_PTR)hIcon;
 };
 
 
@@ -1257,7 +1257,7 @@ static int CLUI_DrawMenuBackGround(HWND hwnd, HDC hdc, int item, int state)
 	HRGN treg,treg2;
 	struct ClcData * dat;
 
-	dat=(struct ClcData*)GetWindowLong(pcli->hwndContactTree,0);
+	dat=(struct ClcData*)GetWindowLongPtr(pcli->hwndContactTree,0);
 	if (!dat) return 1;
 	GetWindowRect(hwnd,&ra);
 	{
@@ -1428,7 +1428,7 @@ int CLUI_SyncSetPDNCE(WPARAM wParam, LPARAM lParam)
 int CLUI_SyncGetShortData(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd=(HWND) wParam;
-	struct ClcData * dat=(struct ClcData * )GetWindowLong(hwnd,0);
+	struct ClcData * dat=(struct ClcData * )GetWindowLongPtr(hwnd,0);
 	//log0("CLUI_SyncGetShortData");
 	return ClcGetShortData(dat,(struct SHORTDATA *)lParam);
 }
@@ -2901,7 +2901,7 @@ LRESULT CLUI::OnMeasureItem( UINT msg, WPARAM wParam, LPARAM lParam )
 
 LRESULT CLUI::OnDrawItem( UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	struct ClcData * dat=(struct ClcData*)GetWindowLong(pcli->hwndContactTree,0);
+	struct ClcData * dat=(struct ClcData*)GetWindowLongPtr(pcli->hwndContactTree,0);
 	LPDRAWITEMSTRUCT dis=(LPDRAWITEMSTRUCT)lParam;
 	if (!dat) return 0;
 

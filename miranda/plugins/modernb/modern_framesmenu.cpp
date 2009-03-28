@@ -22,7 +22,7 @@ void FreeAndNil( void **p )
 		*p = NULL;
 	}	}
 
-static int AddContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
+static INT_PTR AddContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 {
 	CLISTMENUITEM *mi=(CLISTMENUITEM*)lParam;
 	TMO_MenuItem tmi={0};
@@ -55,7 +55,7 @@ static int AddContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 }
 
 
-static int RemoveContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
+static INT_PTR RemoveContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 {
 	lpFrameMenuExecParam fmep;
 	fmep=(lpFrameMenuExecParam)CallService(MO_MENUITEMGETOWNERDATA,wParam,lParam);
@@ -75,7 +75,7 @@ static int RemoveContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 //called with:
 //wparam - ownerdata
 //lparam - lparam from winproc
-int FrameMenuExecService(WPARAM wParam,LPARAM lParam) {
+INT_PTR FrameMenuExecService(WPARAM wParam,LPARAM lParam) {
 	lpFrameMenuExecParam fmep=(lpFrameMenuExecParam)wParam;
 	if (fmep==NULL){return(-1);};
 	CallService(fmep->szServiceName,lParam,fmep->param1);	
@@ -84,7 +84,7 @@ int FrameMenuExecService(WPARAM wParam,LPARAM lParam) {
 };
 
 //true - ok,false ignore
-int FrameMenuCheckService(WPARAM wParam,LPARAM lParam) {
+INT_PTR FrameMenuCheckService(WPARAM wParam,LPARAM lParam) {
 
 	PCheckProcParam pcpp=(PCheckProcParam)wParam;
 	lpFrameMenuExecParam fmep;
@@ -104,13 +104,13 @@ int FrameMenuCheckService(WPARAM wParam,LPARAM lParam) {
 	return(FALSE);
 };
 
-static int ContextFrameMenuNotify(WPARAM wParam,LPARAM lParam)
+static INT_PTR ContextFrameMenuNotify(WPARAM wParam,LPARAM lParam)
 {
 	NotifyEventHooks(g_CluiData.hEventPreBuildFrameMenu,wParam,lParam);
 	return(0);
 };
 
-static int BuildContextFrameMenu(WPARAM wParam,LPARAM lParam)
+static INT_PTR BuildContextFrameMenu(WPARAM wParam,LPARAM lParam)
 {
 	ListParam param = { 0 };
 	param.MenuObjectHandle=hFrameMenuObject;
@@ -121,7 +121,7 @@ static int BuildContextFrameMenu(WPARAM wParam,LPARAM lParam)
 	//NotifyEventHooks(hPreBuildFrameMenuEvent,wParam,-1);
 	ContextFrameMenuNotify(wParam,-1);
 	CallService(MO_BUILDMENU,(WPARAM)hMenu,(LPARAM)&param);
-	return (int)hMenu;
+	return (INT_PTR)hMenu;
 }
 
 //==========================Frames end

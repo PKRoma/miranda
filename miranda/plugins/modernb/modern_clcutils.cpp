@@ -232,10 +232,10 @@ static LRESULT CALLBACK RenameEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 		switch(wParam) 
 		{
 		case VK_RETURN:
-			pcli->pfnEndRename(GetParent(hwnd),(struct ClcData*)GetWindowLong(hwnd,GWL_USERDATA),1);
+			pcli->pfnEndRename(GetParent(hwnd),(struct ClcData*)GetWindowLongPtr(hwnd,GWLP_USERDATA),1);
 			return 0;
 		case VK_ESCAPE:
-			pcli->pfnEndRename(GetParent(hwnd),(struct ClcData*)GetWindowLong(hwnd,GWL_USERDATA),0);
+			pcli->pfnEndRename(GetParent(hwnd),(struct ClcData*)GetWindowLongPtr(hwnd,GWLP_USERDATA),0);
 			return 0;
 		}
 		break;
@@ -248,7 +248,7 @@ static LRESULT CALLBACK RenameEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 		}
 		return DLGC_WANTMESSAGE;
 	case WM_KILLFOCUS:
-		pcli->pfnEndRename(GetParent(hwnd),(struct ClcData*)GetWindowLong(hwnd,GWL_USERDATA),1);
+		pcli->pfnEndRename(GetParent(hwnd),(struct ClcData*)GetWindowLongPtr(hwnd,GWLP_USERDATA),1);
 		SendMessage(pcli->hwndContactTree,WM_SIZE,0,0);
 		return 0;
 	}
@@ -323,12 +323,12 @@ void cliBeginRenameSelection(HWND hwnd,struct ClcData *dat)
 			dat->hwndRenameEdit=CreateWindow(TEXT("EDIT"),pcli->pfnGetContactDisplayName(contact->hContact,0),WS_POPUP|WS_BORDER|ES_AUTOHSCROLL|a,x,y,w,h,hwnd,NULL,g_hInst,NULL);
 	}
 	SetWindowLong(dat->hwndRenameEdit,GWL_STYLE,GetWindowLong(dat->hwndRenameEdit,GWL_STYLE)&(~WS_CAPTION)|WS_BORDER);
-	SetWindowLong(dat->hwndRenameEdit,GWL_USERDATA,(long)dat);
-	OldRenameEditWndProc=(WNDPROC)SetWindowLong(dat->hwndRenameEdit,GWL_WNDPROC,(long)RenameEditSubclassProc);
+	SetWindowLongPtr(dat->hwndRenameEdit,GWLP_USERDATA,(LONG_PTR)dat);
+	OldRenameEditWndProc=(WNDPROC)SetWindowLongPtr(dat->hwndRenameEdit,GWLP_WNDPROC,(LONG_PTR)RenameEditSubclassProc);
 	SendMessage(dat->hwndRenameEdit,WM_SETFONT,(WPARAM)(contact->type==CLCIT_GROUP?dat->fontModernInfo[FONTID_OPENGROUPS].hFont:dat->fontModernInfo[FONTID_CONTACTS].hFont),0);
 	SendMessage(dat->hwndRenameEdit,EM_SETMARGINS,EC_LEFTMARGIN|EC_RIGHTMARGIN|EC_USEFONTINFO,0);
 	SendMessage(dat->hwndRenameEdit,EM_SETSEL,0,(LPARAM)(-1));
-	// SetWindowLong(dat->hwndRenameEdit,GWL_USERDATA,(long)hwnd);
+	// SetWindowLongPtr(dat->hwndRenameEdit,GWLP_USERDATA,(LONG_PTR)hwnd);
 	r.top=1;
 	r.bottom=h-1;
 	r.left=0;

@@ -43,7 +43,7 @@ typedef struct _StatusBarProtocolOptions
 
 static StatusBarProtocolOptions _GlobalOptions = {0};
 
-BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 static void UpdateXStatusIconOptions(HWND hwndDlg, BOOL perProto, StatusBarProtocolOptions* dat, int curSelProto)
 {
@@ -80,7 +80,7 @@ static void UpdateXStatusIconOptions(HWND hwndDlg, BOOL perProto, StatusBarProto
 
 static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 {
-	StatusBarProtocolOptions *dat = (StatusBarProtocolOptions*)GetWindowLong(GetDlgItem(hwndDlg,IDC_STATUSBAR_PROTO_LIST),GWL_USERDATA);
+	StatusBarProtocolOptions *dat = (StatusBarProtocolOptions*)GetWindowLongPtr(GetDlgItem(hwndDlg,IDC_STATUSBAR_PROTO_LIST),GWLP_USERDATA);
 	BOOL perProto = (BOOL)IsDlgButtonChecked(hwndDlg,IDC_STATUSBAR_PER_PROTO);
 	HWND hwndComboBox = GetDlgItem( hwndDlg, IDC_STATUSBAR_PROTO_LIST );
 	StatusBarProtocolOptions sbpo;
@@ -164,9 +164,9 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 		UpdateXStatusIconOptions(hwndDlg, perProto, dat, curSelProto);
 }
 
- BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+ INT_PTR CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	StatusBarProtocolOptions *dat = (StatusBarProtocolOptions*)GetWindowLong(GetDlgItem(hwndDlg,IDC_STATUSBAR_PROTO_LIST),GWL_USERDATA);
+	StatusBarProtocolOptions *dat = (StatusBarProtocolOptions*)GetWindowLongPtr(GetDlgItem(hwndDlg,IDC_STATUSBAR_PROTO_LIST),GWLP_USERDATA);
 	LOGFONTA lf;
 	BOOL perProto = IsDlgButtonChecked(hwndDlg, IDC_STATUSBAR_PER_PROTO);
 	HWND hwndComboBox = GetDlgItem( hwndDlg, IDC_STATUSBAR_PROTO_LIST );
@@ -201,7 +201,7 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 				ProtoEnumAccounts( &count, &accs );
 
 				dat = (StatusBarProtocolOptions*)mir_alloc(sizeof(StatusBarProtocolOptions)*count);
-				SetWindowLong(GetDlgItem(hwndDlg,IDC_STATUSBAR_PROTO_LIST),GWL_USERDATA,(long)dat);
+				SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_STATUSBAR_PROTO_LIST),GWLP_USERDATA,(LONG_PTR)dat);
 
 				SendMessage(hwndComboBox, CB_ADDSTRING, 0, (LPARAM)TranslateT( "<<Global>>" ));
 

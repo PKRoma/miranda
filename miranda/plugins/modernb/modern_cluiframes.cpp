@@ -2044,7 +2044,7 @@ static int _us_DoAddFrame(WPARAM wParam,LPARAM lParam)
 		(g_pfwFrames[g_nFramesCount].TitleBar.ShowTitleBar?WS_VISIBLE:0)|
 		WS_CLIPCHILDREN,
 		0,0,0,0,pcli->hwndContactList,NULL,g_hInst,NULL);
-	SetWindowLong(g_pfwFrames[g_nFramesCount].TitleBar.hwnd,GWL_USERDATA,g_pfwFrames[g_nFramesCount].id);
+	SetWindowLongPtr(g_pfwFrames[g_nFramesCount].TitleBar.hwnd,GWLP_USERDATA,g_pfwFrames[g_nFramesCount].id);
 
 
 	g_pfwFrames[g_nFramesCount].TitleBar.hwndTip 
@@ -3135,7 +3135,7 @@ static LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam
 	int Frameid,Framemod,direction;
 	int xpos,ypos;
 
-	Frameid=(GetWindowLong(hwnd,GWL_USERDATA));
+	Frameid=(GetWindowLongPtr(hwnd,GWLP_USERDATA));
 	memset(&rect,0,sizeof(rect));
 
 
@@ -3649,7 +3649,7 @@ static LRESULT CALLBACK CLUIFrameSubContainerProc(HWND hwnd, UINT msg, WPARAM wP
 	RECT rect;
 	int Frameid;
 
-	Frameid=(GetWindowLong(hwnd,GWL_USERDATA));
+	Frameid=(GetWindowLongPtr(hwnd,GWLP_USERDATA));
 	memset(&rect,0,sizeof(rect));
 
 	/*
@@ -3749,7 +3749,7 @@ static LRESULT CALLBACK CLUIFrameContainerWndProc(HWND hwnd, UINT msg, WPARAM wP
 	RECT rect;
 	int Frameid;
 
-	Frameid=(GetWindowLong(hwnd,GWL_USERDATA));
+	Frameid=(GetWindowLongPtr(hwnd,GWLP_USERDATA));
 	memset(&rect,0,sizeof(rect));
 	/*
 	if ((msg == WM_MOVE) || (msg == WM_MOVING) || (msg == WM_NCLBUTTONDOWN) || (msg == WM_SYSCOMMAND)  )
@@ -3985,7 +3985,7 @@ static int _us_DoSetFrameFloat(WPARAM wParam,LPARAM lParam)
 				CLUI_ShowWindowMod(g_pfwFrames[wParam].OwnerWindow,(g_pfwFrames[wParam].visible && g_pfwFrames[wParam].collapsed && IsWindowVisible(pcli->hwndContactList))?SW_SHOW/*NOACTIVATE*/:SW_HIDE);
 				SetParent(g_pfwFrames[wParam].hWnd,g_pfwFrames[wParam].OwnerWindow);
 				SetParent(g_pfwFrames[wParam].TitleBar.hwnd,pcli->hwndContactList);
-				SetWindowLong(g_pfwFrames[wParam].OwnerWindow,GWL_USERDATA,g_pfwFrames[wParam].id);
+				SetWindowLongPtr(g_pfwFrames[wParam].OwnerWindow,GWLP_USERDATA,g_pfwFrames[wParam].id);
 				g_pfwFrames[wParam].floating=FALSE;
 				if (!(lParam&2))
 				{
@@ -4039,7 +4039,7 @@ static int _us_DoSetFrameFloat(WPARAM wParam,LPARAM lParam)
 			GetBorderSize(g_pfwFrames[wParam].ContainerWnd,&border);
 
 
-			SetWindowLong(g_pfwFrames[wParam].ContainerWnd,GWL_USERDATA,g_pfwFrames[wParam].id);
+			SetWindowLongPtr(g_pfwFrames[wParam].ContainerWnd,GWLP_USERDATA,g_pfwFrames[wParam].id);
 			if ((lParam==1))
 			{
 				//if ((Frames[wParam].FloatingPos.x!=0)&&(Frames[wParam].FloatingPos.y!=0))
