@@ -151,6 +151,7 @@ int CreateDirectoryTree(const char *szDir);
 	#define CreateDirectoryTreeT CreateDirectoryTreeW
 #else
 	#define pathToAbsoluteT pathToAbsolute
+	#define CreatePathToFileT CreatePathToFile
 	#define CreateDirectoryTreeT CreateDirectoryTree
 #endif
 

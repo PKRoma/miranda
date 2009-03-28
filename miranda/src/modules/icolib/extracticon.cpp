@@ -49,7 +49,7 @@ typedef struct
 
 void* _RelativeVirtualAddresstoPtr(IMAGE_DOS_HEADER* pDosHeader, DWORD rva)
 {
-	IMAGE_NT_HEADERS32* pPE = (IMAGE_NT_HEADERS32*)((BYTE*)pDosHeader + pDosHeader->e_lfanew);
+	IMAGE_NT_HEADERS* pPE = (IMAGE_NT_HEADERS*)((BYTE*)pDosHeader + pDosHeader->e_lfanew);
 	IMAGE_SECTION_HEADER* pSection = IMAGE_FIRST_SECTION( pPE );
 	int i;
 
@@ -66,11 +66,11 @@ void* _RelativeVirtualAddresstoPtr(IMAGE_DOS_HEADER* pDosHeader, DWORD rva)
 
 void* _GetResourceTable(IMAGE_DOS_HEADER* pDosHeader)
 {
-	IMAGE_NT_HEADERS32* pPE = (IMAGE_NT_HEADERS32*)((BYTE*)pDosHeader + pDosHeader->e_lfanew);
+	IMAGE_NT_HEADERS* pPE = (IMAGE_NT_HEADERS*)((BYTE*)pDosHeader + pDosHeader->e_lfanew);
 
 	if (pPE->Signature != IMAGE_NT_SIGNATURE)
 		return NULL;
-	if (pPE->FileHeader.SizeOfOptionalHeader < sizeof(IMAGE_OPTIONAL_HEADER32))
+	if (pPE->FileHeader.SizeOfOptionalHeader < sizeof(IMAGE_OPTIONAL_HEADER))
 		return NULL;
 
 	// The DataDirectory is an array of 16 structures. 
