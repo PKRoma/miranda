@@ -72,7 +72,7 @@ int CDlgBase::Resizer(UTILRESIZECONTROL*)
 	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
 }
 
-BOOL CDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
@@ -197,7 +197,7 @@ BOOL CDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			OnDestroy();
 			NotifyControls(&CCtrlBase::OnDestroy);
 
-			SetWindowLong(m_hwnd, GWL_USERDATA, 0);
+			SetWindowLongPtr(m_hwnd, GWLP_USERDATA, 0);
 			m_hwnd = NULL;
 			if (m_isModal)
 			{
@@ -213,17 +213,17 @@ BOOL CDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return FALSE;
 }
 
-BOOL CALLBACK CDlgBase::GlobalDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK CDlgBase::GlobalDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	CDlgBase *wnd = NULL;
 	if (msg == WM_INITDIALOG)
 	{
-		SetWindowLong(hwnd, GWL_USERDATA, lParam);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, lParam);
 		wnd = (CDlgBase *)lParam;
 		wnd->m_hwnd = hwnd;
 	} else
 	{
-		wnd = (CDlgBase *)GetWindowLong(hwnd, GWL_USERDATA);
+		wnd = (CDlgBase *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	}
 
 	if (!wnd) return FALSE;
@@ -237,7 +237,7 @@ BOOL CALLBACK CDlgBase::GlobalDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 int CDlgBase::GlobalDlgResizer(HWND hwnd, LPARAM, UTILRESIZECONTROL *urc)
 {
-	CDlgBase *wnd = (CDlgBase *)GetWindowLong(hwnd, GWL_USERDATA);
+	CDlgBase *wnd = (CDlgBase *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	if (!wnd) return 0;
 
 	return wnd->Resizer(urc);
@@ -1724,16 +1724,16 @@ LRESULT CCtrlBase::CustomWndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 
 void CCtrlBase::Subclass()
 {
-	SetWindowLong(m_hwnd, GWL_USERDATA, (LONG)this);
-	m_wndproc = (WNDPROC)SetWindowLong(m_hwnd, GWL_WNDPROC, (LONG)GlobalSubclassWndProc);
+	SetWindowLongPtr(m_hwnd, GWLP_USERDATA, (LONG_PTR)this);
+	m_wndproc = (WNDPROC)SetWindowLongPtr(m_hwnd, GWLP_WNDPROC, (LONG_PTR)GlobalSubclassWndProc);
 }
 
 void CCtrlBase::Unsubclass()
 {
 	if (m_wndproc)
 	{
-		SetWindowLong(m_hwnd, GWL_WNDPROC, (LONG)m_wndproc);
-		SetWindowLong(m_hwnd, GWL_USERDATA, (LONG)0);
+		SetWindowLongPtr(m_hwnd, GWLP_WNDPROC, (LONG_PTR)m_wndproc);
+		SetWindowLongPtr(m_hwnd, GWLP_USERDATA, 0);
 		m_wndproc = 0;
 }	}
 

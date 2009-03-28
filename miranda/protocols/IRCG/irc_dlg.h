@@ -40,7 +40,7 @@ struct CCoolIrcDlg : public CProtoDlgBase<CIrcProto>
 {
 	CCoolIrcDlg( CIrcProto* _pro, int dlgId, HWND parent = NULL );
 
-	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
+	virtual INT_PTR DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
 
 	virtual void OnInitDialog();
 	virtual void OnDestroy();
@@ -91,7 +91,7 @@ struct CListDlg : public CProtoDlgBase<CIrcProto>
 
 	virtual void OnInitDialog();
 	virtual void OnChange( CCtrlBase* ctrl );
-	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
+	virtual INT_PTR DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
 	virtual void OnDestroy();
 	virtual int Resizer(UTILRESIZECONTROL *urc);
 
@@ -298,7 +298,7 @@ struct CIgnorePrefsDlg : public CProtoDlgBase<CIrcProto>
 	virtual void OnDestroy();
 	virtual void OnApply();
 
-	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
+	virtual INT_PTR DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
 
 	void List_OnColumnClick( CCtrlListView::TEventInfo* );
 	void OnEnableIgnore( CCtrlData* );

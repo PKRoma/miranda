@@ -1035,9 +1035,9 @@ COtherPrefsDlg::COtherPrefsDlg( CIrcProto* _pro ) :
 
 void COtherPrefsDlg::OnInitDialog()
 {
-	OldProc = (WNDPROC)SetWindowLong( m_alias.GetHwnd(), GWL_WNDPROC,(LONG)EditSubclassProc);
-	SetWindowLong( m_quitMessage.GetHwnd(), GWL_WNDPROC,(LONG)EditSubclassProc);
-	SetWindowLong( m_pertormEdit.GetHwnd(), GWL_WNDPROC,(LONG)EditSubclassProc);
+	OldProc = (WNDPROC)SetWindowLongPtr( m_alias.GetHwnd(), GWLP_WNDPROC,(LONG)EditSubclassProc);
+	SetWindowLongPtr( m_quitMessage.GetHwnd(), GWLP_WNDPROC,(LONG)EditSubclassProc);
+	SetWindowLongPtr( m_pertormEdit.GetHwnd(), GWLP_WNDPROC,(LONG)EditSubclassProc);
 
 	m_alias.SetText( m_proto->m_alias );
 	m_quitMessage.SetText( m_proto->m_quitMessage );
@@ -1440,7 +1440,7 @@ CIgnorePrefsDlg::CIgnorePrefsDlg( CIrcProto* _pro ) :
 void CIgnorePrefsDlg::OnInitDialog()
 {
 	m_proto->m_ignoreDlg = this;
-	OldListViewProc = (WNDPROC)SetWindowLong( m_list.GetHwnd(),GWL_WNDPROC, (LONG)ListviewSubclassProc );
+	OldListViewProc = (WNDPROC)SetWindowLongPtr( m_list.GetHwnd(),GWLP_WNDPROC, (LONG_PTR)ListviewSubclassProc );
 
 	m_enable.SetState( m_proto->m_ignore );
 	m_ignoreFile.SetState( !m_proto->m_DCCFileEnabled );
@@ -1476,7 +1476,7 @@ void CIgnorePrefsDlg::OnInitDialog()
 	RebuildList();
 }
 
-BOOL CIgnorePrefsDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CIgnorePrefsDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch( msg ) {
 	case WM_NOTIFY:
@@ -1595,7 +1595,7 @@ void CIgnorePrefsDlg::OnDestroy()
 	}
 
 	m_proto->RewriteIgnoreSettings();
-	SetWindowLong( m_list.GetHwnd(), GWL_WNDPROC, (LONG)OldListViewProc );
+	SetWindowLongPtr( m_list.GetHwnd(), GWLP_WNDPROC, (LONG_PTR)OldListViewProc );
 }
 
 void CIgnorePrefsDlg::FixButtons()

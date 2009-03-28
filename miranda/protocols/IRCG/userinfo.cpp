@@ -40,13 +40,13 @@ struct UserDetailsDlgProcParam
 #define STR_ERROR "Settings could not be saved!\n\nThe \"Nick\" field must contain at least four characters including wildcards,\n and it must also match the default nickname for this contact."
 #define STR_ERROR2 "Settings could not be saved!\n\nA full hostmask must be set for this online detection mode to work."
 
-BOOL CALLBACK UserDetailsDlgProc(HWND m_hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK UserDetailsDlgProc(HWND m_hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	UserDetailsDlgProcParam* p = ( UserDetailsDlgProcParam* )GetWindowLong( m_hwnd, GWL_USERDATA );
+	UserDetailsDlgProcParam* p = ( UserDetailsDlgProcParam* )GetWindowLongPtr( m_hwnd, GWLP_USERDATA );
 	switch (msg) {
 	case WM_INITDIALOG:
 		p = new UserDetailsDlgProcParam( NULL, ( HANDLE )lParam );
-		SetWindowLong( m_hwnd, GWL_USERDATA, ( LPARAM )p );
+		SetWindowLongPtr( m_hwnd, GWLP_USERDATA, ( LPARAM )p );
 		break;
 
 	case WM_NOTIFY:

@@ -302,7 +302,7 @@ void CListDlg::OnInitDialog()
 	m_status.SetText( TranslateT( "Please wait..." ));
 }
 
-BOOL CListDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CListDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	if ( msg == WM_TIMER ) {
 		::KillTimer( m_hwnd, m_timer ); m_timer = 0;
@@ -871,7 +871,7 @@ void CManagerDlg::OnInitDialog()
 	pt.x = 3; 
 	pt.y = 3; 
 	HWND hwndEdit = ChildWindowFromPoint( m_topic.GetHwnd(), pt); 
-	OldMgrEditProc = (WNDPROC)SetWindowLong(hwndEdit, GWL_WNDPROC,(LONG)MgrEditSubclassProc); 
+	OldMgrEditProc = (WNDPROC)SetWindowLongPtr(hwndEdit, GWLP_WNDPROC,(LONG_PTR)MgrEditSubclassProc); 
 	
 	SendMessage( m_hwnd,WM_SETICON,ICON_BIG,(LPARAM)m_proto->LoadIconEx(IDI_MANAGER));
 
@@ -1394,7 +1394,7 @@ void CCoolIrcDlg::OnDestroy()
 	DeleteObject(hFont);
 }
 
-BOOL CCoolIrcDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CCoolIrcDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	if ( msg == WM_CTLCOLOREDIT || msg == WM_CTLCOLORSTATIC ) {
 		switch( GetDlgCtrlID(( HWND )lParam )) {

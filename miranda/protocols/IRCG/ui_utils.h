@@ -209,13 +209,13 @@ public:
 		CDlgBase *(*create)(void *param);
 		void *param;
 	};
-	static BOOL CALLBACK DynamicDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+	static INT_PTR CALLBACK DynamicDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		if (msg == WM_INITDIALOG)
 		{
 			CreateParam *param = (CreateParam *)lParam;
 			CDlgBase *wnd = param->create(param->param);
-			SetWindowLong(hwnd, DWL_DLGPROC, (LONG)GlobalDlgProc);
+			SetWindowLongPtr(hwnd, DWLP_DLGPROC, (LONG_PTR)GlobalDlgProc);
 			return GlobalDlgProc(hwnd, msg, wParam, (LPARAM)wnd);
 		}
 
@@ -251,7 +251,7 @@ protected:
 	virtual void OnChange(CCtrlBase*) {}
 
 	// main dialog procedure
-	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
+	virtual INT_PTR DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
 
 	// resister controls
 	void AddControl(CCtrlBase *ctrl);
@@ -262,7 +262,7 @@ private:
 	void NotifyControls(void (CCtrlBase::*fn)());
 	CCtrlBase *FindControl(int idCtrl);
 
-	static BOOL CALLBACK GlobalDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK GlobalDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static int GlobalDlgResizer(HWND hwnd, LPARAM lParam, UTILRESIZECONTROL *urc);
 };
 
@@ -361,7 +361,7 @@ private:
 	WNDPROC m_wndproc;
 	static LRESULT CALLBACK GlobalSubclassWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
-		if (CCtrlBase *ctrl = (CCtrlBase*)GetWindowLong(hwnd, GWL_USERDATA))
+		if (CCtrlBase *ctrl = (CCtrlBase*)GetWindowLongPtr(hwnd, GWLP_USERDATA))
 			if (ctrl)
 				return ctrl->CustomWndProc(msg, wParam, lParam);
 
