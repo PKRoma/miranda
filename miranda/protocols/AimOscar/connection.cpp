@@ -179,8 +179,10 @@ void __cdecl CAimProto::aim_protocol_negotiation( void* )
 		else if (recvResult == SOCKET_ERROR)
 		{
             if (WSAGetLastError() == ERROR_TIMEOUT)
+			{
                 if (aim_keepalive(hServerConn,seqno) < 0) 
                     break;
+			}
             else
             {
 			    LOG("Connection Closed: Socket Error during Connection Negotiation %d", WSAGetLastError());
@@ -289,8 +291,10 @@ void __cdecl CAimProto::aim_mail_negotiation( void* )
 		if (recvResult == SOCKET_ERROR)
 		{
             if (WSAGetLastError() == ERROR_TIMEOUT)
+			{
                 if (aim_keepalive(hMailConn, mail_seqno) < 0)
                     break;
+			}
             else
 			    break;
 		}
@@ -494,8 +498,10 @@ void __cdecl CAimProto::aim_chat_negotiation( void* param )
 		if (recvResult == SOCKET_ERROR)
         {
             if (WSAGetLastError() == ERROR_TIMEOUT)
+			{
                 if (aim_keepalive(item->hconn, item->seqno) < 0)
                     break;
+			}
             else
 			    break;
         }
