@@ -204,7 +204,7 @@ static LRESULT CALLBACK ExpandButtonSubclassProc(HWND hwnd,UINT msg,WPARAM wPara
 			EscapesToMultiline(text,&selStart,&selEnd);
 			hwndEdit=CreateWindowExA(WS_EX_TOOLWINDOW,"EDIT","",WS_POPUP|WS_BORDER|WS_VISIBLE|ES_WANTRETURN|ES_AUTOVSCROLL|WS_VSCROLL|ES_MULTILINE,rcStart.left,rcStart.top,rcStart.right-rcStart.left,rcStart.bottom-rcStart.top,NULL,NULL,hInst,NULL);
 			SetWindowTextUcs(hwndEdit, text);
-			OldStringEditProc=(WNDPROC)SetWindowLong(hwndEdit,GWL_WNDPROC,(LONG)StringEditSubclassProc);
+			OldStringEditProc=(WNDPROC)SetWindowLongPtr(hwndEdit,GWLP_WNDPROC,(LONG_PTR)StringEditSubclassProc);
 			SendMessage(hwndEdit,WM_SETFONT,(WPARAM)dataStringEdit->hListFont,0);
 			SendMessage(hwndEdit,EM_SETSEL,selStart,selEnd);
 			SetFocus(hwndEdit);
@@ -269,14 +269,14 @@ void ChangeInfoData::BeginStringEdit(int iItem, RECT *rc, int i, WORD wVKey)
 		rc->right-=rc->bottom-rc->top;
 		hwndExpandButton=CreateWindowA("BUTTON","",WS_VISIBLE|WS_CHILD|BS_PUSHBUTTON|BS_ICON,rc->right,rc->top,rc->bottom-rc->top,rc->bottom-rc->top,hwndList,NULL,hInst,NULL);
 		SendMessage(hwndExpandButton,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadImage(hInst,MAKEINTRESOURCE(IDI_EXPANDSTRINGEDIT),IMAGE_ICON,0,0,LR_SHARED));
-		OldExpandButtonProc=(WNDPROC)SetWindowLong(hwndExpandButton,GWL_WNDPROC,(LONG)ExpandButtonSubclassProc);
+		OldExpandButtonProc=(WNDPROC)SetWindowLongPtr(hwndExpandButton,GWLP_WNDPROC,(LONG_PTR)ExpandButtonSubclassProc);
 	}
 
   dataStringEdit = this;
 	hwndEdit = CreateWindow(_T("EDIT"),_T(""),WS_VISIBLE|WS_CHILD|ES_AUTOHSCROLL|((setting[i].displayType&LIM_TYPE)==LI_NUMBER?ES_NUMBER:0)|(setting[i].displayType&LIF_PASSWORD?ES_PASSWORD:0),rc->left,rc->top,rc->right-rc->left,rc->bottom-rc->top,hwndList,NULL,hInst,NULL);
 	SetWindowTextUtf(hwndEdit, szValue);
 	if (alloced) SAFE_FREE((void**)&szValue);
-	OldStringEditProc=(WNDPROC)SetWindowLong(hwndEdit,GWL_WNDPROC,(LONG)StringEditSubclassProc);
+	OldStringEditProc=(WNDPROC)SetWindowLongPtr(hwndEdit,GWLP_WNDPROC,(LONG_PTR)StringEditSubclassProc);
 	SendMessage(hwndEdit,WM_SETFONT,(WPARAM)hListFont,0);
 	if ((setting[i].displayType & LIM_TYPE) == LI_NUMBER) 
 	{

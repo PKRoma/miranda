@@ -40,7 +40,7 @@
 
 #define ICQ_DB_GETEVENTTEXT_MISSEDMESSAGE "ICQ/GetEventTextMissedMessage"
 
-int icq_getEventTextMissedMessage(WPARAM wParam, LPARAM lParam);
+INT_PTR icq_getEventTextMissedMessage(WPARAM wParam, LPARAM lParam);
 
 
 #endif /* __ICQOSC_SVCS_H */

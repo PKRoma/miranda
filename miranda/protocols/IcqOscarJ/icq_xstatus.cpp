@@ -519,9 +519,9 @@ struct InitXStatusData
 };
 
 #define HM_PROTOACK (WM_USER+10)
-static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
+static INT_PTR CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
-	SetXStatusData *dat = (SetXStatusData*)GetWindowLong(hwndDlg,GWL_USERDATA);
+	SetXStatusData *dat = (SetXStatusData*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	char str[MAX_PATH];
 
 	switch(message) {
@@ -553,7 +553,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			ICQTranslateDialog(hwndDlg);
 			dat = (SetXStatusData*)SAFE_MALLOC(sizeof(SetXStatusData));
 			dat->ppro = init->ppro;
-			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)dat);
 			dat->bAction = init->bAction;
 
 			if (!init->bAction)
@@ -561,8 +561,8 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 				dat->bXStatus = init->bXStatus;
 				SendDlgItemMessage(hwndDlg, IDC_XTITLE, EM_LIMITTEXT, 256, 0);
 				SendDlgItemMessage(hwndDlg, IDC_XMSG, EM_LIMITTEXT, 1024, 0);
-				OldMessageEditProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_XTITLE),GWL_WNDPROC,(LONG)MessageEditSubclassProc);
-				OldMessageEditProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_XMSG),GWL_WNDPROC,(LONG)MessageEditSubclassProc);
+				OldMessageEditProc = (WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_XTITLE),GWLP_WNDPROC,(LONG_PTR)MessageEditSubclassProc);
+				OldMessageEditProc = (WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_XMSG),GWLP_WNDPROC,(LONG_PTR)MessageEditSubclassProc);
 				dat->okButtonFormat = GetDlgItemTextUtf(hwndDlg,IDOK);
 
 				SetDlgItemTextUtf(hwndDlg, IDC_XTITLE, init->szXStatusName);
@@ -668,8 +668,8 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 
 			dat->ppro->updateServerCustomStatus(TRUE);
 
-			SetWindowLong(GetDlgItem(hwndDlg,IDC_XMSG),GWL_WNDPROC,(LONG)OldMessageEditProc);
-			SetWindowLong(GetDlgItem(hwndDlg,IDC_XTITLE),GWL_WNDPROC,(LONG)OldMessageEditProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_XMSG),GWLP_WNDPROC,(LONG_PTR)OldMessageEditProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_XTITLE),GWLP_WNDPROC,(LONG_PTR)OldMessageEditProc);
 		}
 		if (dat->hEvent) UnhookEvent(dat->hEvent);
 		SAFE_FREE((void**)&dat->okButtonFormat);

@@ -116,7 +116,7 @@ struct ChangeInfoData
   void EndListEdit(int save);
 };
 
-BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 //editstring.c
 int   IsStringEditWindow(HWND hwnd);

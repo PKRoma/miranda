@@ -157,16 +157,16 @@ static int ChangeInfoDlg_Resize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *
 }
 
 
-BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	ChangeInfoData* dat = (ChangeInfoData*)GetWindowLong(hwndDlg, GWL_USERDATA);
+	ChangeInfoData* dat = (ChangeInfoData*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	switch(msg) {
 	case WM_INITDIALOG:
 		ICQTranslateDialog(hwndDlg);
 
     dat = new ChangeInfoData();
-		SetWindowLong(hwndDlg, GWL_USERDATA, (LPARAM)dat);
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 
     dat->hwndDlg = hwndDlg;
     dat->ppro = (CIcqProto*)lParam;
@@ -237,7 +237,7 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				{
 					if (IDYES!=MessageBoxUtf(hwndDlg, LPGEN("You've made some changes to your ICQ details but it has not been saved to the server. Are you sure you want to close this dialog?"), LPGEN("Change ICQ Details"), MB_YESNOCANCEL))
 					{
-						SetWindowLong(hwndDlg, DWL_MSGRESULT, PSNRET_INVALID_NOCHANGEPAGE);
+						SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, PSNRET_INVALID_NOCHANGEPAGE);
 						return TRUE;
 					}
 				}
@@ -264,7 +264,7 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 					switch(cd->nmcd.dwDrawStage) {
 					case CDDS_PREPAINT:
-						SetWindowLong(hwndDlg, DWL_MSGRESULT, CDRF_NOTIFYSUBITEMDRAW);
+						SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, CDRF_NOTIFYSUBITEMDRAW);
 						return TRUE;
 
 					case CDDS_ITEMPREPAINT:
@@ -311,10 +311,10 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 								rcLine.right = rc.right-3;
 								DrawEdge(cd->nmcd.hdc, &rcLine, BDR_SUNKENOUTER, BF_RECT);
                 SelectObject(cd->nmcd.hdc, hoFont);
-								SetWindowLong(hwndDlg, DWL_MSGRESULT, CDRF_SKIPDEFAULT);
+								SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, CDRF_SKIPDEFAULT);
 							}
 							else
-								SetWindowLong(hwndDlg, DWL_MSGRESULT, CDRF_NOTIFYSUBITEMDRAW|CDRF_NOTIFYPOSTPAINT);
+								SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, CDRF_NOTIFYSUBITEMDRAW|CDRF_NOTIFYPOSTPAINT);
 
 							return TRUE;
 						}
@@ -340,7 +340,7 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							else 
 								dat->PaintItemSetting(cd->nmcd.hdc, &rc, cd->nmcd.lItemlParam, cd->nmcd.uItemState);
               SelectObject(cd->nmcd.hdc, hoFont);
-							SetWindowLong(hwndDlg, DWL_MSGRESULT, CDRF_SKIPDEFAULT);
+							SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, CDRF_SKIPDEFAULT);
 
 							return TRUE;
 						}
@@ -406,7 +406,7 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						dat->BeginListEdit(lvi.iItem,&rc,lvi.lParam,nm->wVKey);
 						break;
 					}
-					SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
+					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
 					return TRUE;
 				}
 			case NM_KILLFOCUS:
@@ -529,7 +529,7 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		  DeleteObject(hFont);
     }
 		dat->FreeStoredDbSettings();
-    SetWindowLong(hwndDlg, GWL_USERDATA, NULL);
+    SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
     delete dat;
 		break;
 	}

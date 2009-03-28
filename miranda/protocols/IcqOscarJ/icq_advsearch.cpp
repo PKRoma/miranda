@@ -53,7 +53,7 @@ static void InitComboBox(HWND hwndCombo, const FieldNamesItem *names)
 	}
 }
 
-BOOL CALLBACK AdvancedSearchDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK AdvancedSearchDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch(message)
 	{

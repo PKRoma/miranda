@@ -712,11 +712,11 @@ void CIcqProto::ICQAddRecvEvent(HANDLE hContact, WORD wType, PROTORECVEVENT* pre
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-int icq_getEventTextMissedMessage(WPARAM wParam, LPARAM lParam)
+INT_PTR icq_getEventTextMissedMessage(WPARAM wParam, LPARAM lParam)
 {
   DBEVENTGETTEXT *pEvent = (DBEVENTGETTEXT *)lParam;
 
-  int nRetVal = 0;
+  INT_PTR nRetVal = 0;
   char *pszText = NULL;
  
   if (pEvent->dbei->cbBlob > 1)
@@ -751,12 +751,12 @@ int icq_getEventTextMissedMessage(WPARAM wParam, LPARAM lParam)
       pwszText = (WCHAR*)_alloca((wchars + 1) * sizeof(WCHAR));
       pwszText[wchars] = 0;
 
-			MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, pszText, strlennull(pszText), pwszText, wchars);
+	  MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, pszText, strlennull(pszText), pwszText, wchars);
 
-      nRetVal = (int)mir_wstrdup(TranslateW(pwszText));
+      nRetVal = (INT_PTR)mir_wstrdup(TranslateW(pwszText));
     }
     else if (pEvent->datatype == DBVT_ASCIIZ)
-      nRetVal = (int)mir_strdup(Translate(pszText));
+      nRetVal = (INT_PTR)mir_strdup(Translate(pszText));
   }
 
   return nRetVal;

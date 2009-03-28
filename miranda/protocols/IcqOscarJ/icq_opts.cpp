@@ -68,16 +68,16 @@ static void OptDlgChanged(HWND hwndDlg)
 /////////////////////////////////////////////////////////////////////////////////////////
 // standalone option pages
 
-static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	CIcqProto* ppro = (CIcqProto*)GetWindowLong( hwndDlg, GWL_USERDATA );
+	CIcqProto* ppro = (CIcqProto*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch (msg) {
 	case WM_INITDIALOG:
 		ICQTranslateDialog(hwndDlg);
 
 		ppro = (CIcqProto*)lParam;
-		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 		{
 			DWORD dwUin = ppro->getContactUin(NULL);
 			if (dwUin)
@@ -206,16 +206,16 @@ static const UINT icqPrivacyControls[] = {
 	IDC_WEBAWARE, IDC_PUBLISHPRIMARY, IDC_STATIC_DC1, IDC_STATIC_DC2, IDC_STATIC_CLIST
 };
 
-static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	CIcqProto* ppro = (CIcqProto*)GetWindowLong( hwndDlg, GWL_USERDATA );
+	CIcqProto* ppro = (CIcqProto*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch (msg) {
 	case WM_INITDIALOG:
 		ICQTranslateDialog(hwndDlg);
 
 		ppro = (CIcqProto*)lParam;
-		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 		{
 			int nDcType = ppro->getSettingByte(NULL, "DCType", 0);
 			int nAddAuth = ppro->getSettingByte(NULL, "Auth", 1);
@@ -378,16 +378,16 @@ static const UINT icqDCMsgControls[] = {IDC_DCPASSIVE};
 static const UINT icqXStatusControls[] = {IDC_XSTATUSAUTO,IDC_XSTATUSRESET};
 static const UINT icqAimControls[] = {IDC_AIMENABLE};
 
-static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	CIcqProto* ppro = (CIcqProto*)GetWindowLong( hwndDlg, GWL_USERDATA );
+	CIcqProto* ppro = (CIcqProto*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch (msg) {
 	case WM_INITDIALOG:
 		ICQTranslateDialog(hwndDlg);
 
 		ppro = (CIcqProto*)lParam;
-		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 		{
 			BYTE bData = ppro->getSettingByte(NULL, "UtfEnabled", DEFAULT_UTF_ENABLED);
 			CheckDlgButton(hwndDlg, IDC_UTFENABLE, bData?TRUE:FALSE);
@@ -482,16 +482,16 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 static const UINT icqContactsControls[] = {IDC_ADDSERVER,IDC_LOADFROMSERVER,IDC_SAVETOSERVER,IDC_UPLOADNOW};
 static const UINT icqAvatarControls[] = {IDC_AUTOLOADAVATARS,IDC_BIGGERAVATARS,IDC_STRICTAVATARCHECK};
 
-static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	CIcqProto* ppro = (CIcqProto*)GetWindowLong( hwndDlg, GWL_USERDATA );
+	CIcqProto* ppro = (CIcqProto*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch (msg) {
 	case WM_INITDIALOG:
 		ICQTranslateDialog(hwndDlg);
 
 		ppro = (CIcqProto*)lParam;
-		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 
 		LoadDBCheckState(ppro, hwndDlg, IDC_ENABLE, "UseServerCList", DEFAULT_SS_ENABLED);
 		LoadDBCheckState(ppro, hwndDlg, IDC_ADDSERVER, "ServerAddRemove", DEFAULT_SS_ADDSERVER);
@@ -557,7 +557,7 @@ static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-BOOL CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 int CIcqProto::OnOptionsInit(WPARAM wParam, LPARAM lParam)
 {

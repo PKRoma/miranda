@@ -215,7 +215,7 @@ static void SetValue(CIcqProto* ppro, HWND hwndDlg, int idCtrl, HANDLE hContact,
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 	case WM_INITDIALOG:
@@ -227,12 +227,12 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		case 0:
 			switch (((LPNMHDR)lParam)->code) {
 			case PSN_PARAMCHANGED:
-				SetWindowLong(hwndDlg, GWL_USERDATA, (( PSHNOTIFY* )lParam )->lParam );
+				SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (( PSHNOTIFY* )lParam )->lParam );
 				break;
 
 			case PSN_INFOCHANGED:
 				{
-					CIcqProto* ppro = (CIcqProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+					CIcqProto* ppro = (CIcqProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
           if (!ppro)
             break;

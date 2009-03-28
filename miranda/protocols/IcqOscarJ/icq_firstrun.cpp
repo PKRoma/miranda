@@ -53,16 +53,16 @@ static void accountLoadDetails(CIcqProto *ppro, HWND hwndDlg)
 }
 
 
-BOOL CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	CIcqProto* ppro = (CIcqProto*)GetWindowLong( hwndDlg, GWL_USERDATA );
+	CIcqProto* ppro = (CIcqProto*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch (msg) {
 	case WM_INITDIALOG:
 		ICQTranslateDialog(hwndDlg);
 
 		ppro = (CIcqProto*)lParam;
-		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 		{
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)ppro->GetIcon( PLI_PROTOCOL | PLIF_LARGE | PLIF_ICOLIB ));
 

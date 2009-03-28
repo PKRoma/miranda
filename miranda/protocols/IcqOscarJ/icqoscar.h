@@ -39,9 +39,7 @@
 #define _WIN32_WINNT 0x0501
 #define _WIN32_IE 0x0501
 
-#define _USE_32BIT_TIME_T
-
-#include "m_stdhdr.h"
+#include <m_stdhdr.h>
 
 // Windows includes
 #include <windows.h>

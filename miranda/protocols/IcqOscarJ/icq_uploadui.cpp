@@ -293,9 +293,9 @@ static char* getServerResultDesc(int wCode)
 #define M_UPLOADMORE    (WM_USER+101)
 #define M_INITCLIST     (WM_USER+102)
 
-static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
+static INT_PTR CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
-	CIcqProto* ppro = (CIcqProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+	CIcqProto* ppro = (CIcqProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	static int working;
 	static HANDLE hProtoAckHook;
@@ -313,7 +313,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 	case WM_INITDIALOG:
 		ICQTranslateDialog(hwndDlg);
 
-		SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		{
 			char str[MAX_PATH];
 

@@ -35,5 +35,5 @@
 
 
 
-BOOL CALLBACK AdvancedSearchDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam);
+INT_PTR CALLBACK AdvancedSearchDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam);
 PBYTE createAdvancedSearchStructure(HWND hwndDlg,int *length);

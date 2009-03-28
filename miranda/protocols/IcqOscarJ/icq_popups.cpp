@@ -56,17 +56,17 @@ static const UINT icqPopupColorControls[] = {
 	IDC_POPUP_LOG0_BACKCOLOR, IDC_POPUP_LOG1_BACKCOLOR, IDC_POPUP_LOG2_BACKCOLOR, IDC_POPUP_LOG3_BACKCOLOR, IDC_POPUP_SPAM_BACKCOLOR
 };
 
-BOOL CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	BYTE bEnabled;
-	CIcqProto* ppro = (CIcqProto*)GetWindowLong( hwndDlg, GWL_USERDATA );
+	CIcqProto* ppro = (CIcqProto*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch (msg) {
 	case WM_INITDIALOG:
 		ICQTranslateDialog(hwndDlg);
 
 		ppro = (CIcqProto*)lParam;
-		SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 
 		CheckDlgButton(hwndDlg, IDC_POPUPS_LOG_ENABLED, ppro->getSettingByte(NULL,"PopupsLogEnabled",DEFAULT_LOG_POPUPS_ENABLED));
 		CheckDlgButton(hwndDlg, IDC_POPUPS_SPAM_ENABLED, ppro->getSettingByte(NULL,"PopupsSpamEnabled",DEFAULT_SPAM_POPUPS_ENABLED));

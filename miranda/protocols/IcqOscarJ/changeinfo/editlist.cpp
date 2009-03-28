@@ -138,7 +138,7 @@ void ChangeInfoData::BeginListEdit(int iItem, RECT *rc, int iSetting, WORD wVKey
   int listCount = SendMessage(hwndListEdit, LB_GETCOUNT, 0, 0);
   if (itemHeight * listCount < 150)
     SetWindowPos(hwndListEdit, 0, 0, 0, rc->right - rc->left, itemHeight * listCount + GetSystemMetrics(SM_CYBORDER) * 2, SWP_NOZORDER|SWP_NOMOVE);
-  OldListEditProc = (WNDPROC)SetWindowLong(hwndListEdit, GWL_WNDPROC, (LONG)ListEditSubclassProc);
+  OldListEditProc = (WNDPROC)SetWindowLongPtr(hwndListEdit, GWLP_WNDPROC, (LONG_PTR)ListEditSubclassProc);
   if (MyAnimateWindow = (BOOL (WINAPI*)(HWND,DWORD,DWORD))GetProcAddress(GetModuleHandleA("user32"), "AnimateWindow")) 
   {
     BOOL enabled;
