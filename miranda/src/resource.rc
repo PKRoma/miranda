@@ -1175,7 +1175,7 @@ BEGIN
     LTEXT           "Pick a default font to be used for most textual messages in all Miranda dialogs. This includes contact list, messaging, notifications and other.",IDC_STATIC,10,66,249,16
     LTEXT           "Minor notes:",IDC_TXT_TITLE3,0,109,259,8
     PUSHBUTTON      "...",IDC_CHOOSEFONTSMALL,244,139,16,14
-    LTEXT           "Sometimes you see less important notes, like status messages or user mood in contact list. This font will be used to display such king of information.",IDC_STATIC,10,120,249,16
+    LTEXT           "Sometimes you see less important notes, like status messages or user mood in contact list. This font will be used to display such kind of information.",IDC_STATIC,10,120,249,16
     CONTROL         "",IDC_PREVIEWSMALL,"Static",SS_OWNERDRAW,10,139,229,15,WS_EX_STATICEDGE
     CONTROL         "",IDC_PREVIEWGENERAL,"Static",SS_OWNERDRAW,10,84,229,15,WS_EX_STATICEDGE
     CONTROL         "",IDC_PREVIEWHEADER,"Static",SS_OWNERDRAW,10,30,229,15,WS_EX_STATICEDGE
