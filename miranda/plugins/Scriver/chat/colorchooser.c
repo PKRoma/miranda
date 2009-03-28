@@ -60,7 +60,7 @@ static RECT CalculateButtonToCoordinates(COLORCHOOSER * pCC, int buttonPosition)
 	return pt;
 }
 
-BOOL CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static COLORCHOOSER* pCC = NULL;
 	static int iCurrentHotTrack;

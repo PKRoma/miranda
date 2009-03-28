@@ -272,7 +272,7 @@ int SetRichTextRTF(HWND hwnd, const char *text) {
 	return GetRichTextLength(hwnd, st.codepage, FALSE);
 }
 
-static DWORD CALLBACK RichTextStreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
+static DWORD CALLBACK RichTextStreamCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
 {
 	static DWORD dwRead;
 	char ** ppText = (char **) dwCookie;

@@ -57,13 +57,13 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern TCHAR *GetNickname(HANDLE hContact, const char* szProto);
 
 void SubclassTabCtrl(HWND hwnd) {
-	OldTabCtrlProc = (WNDPROC) SetWindowLong(hwnd, GWL_WNDPROC, (LONG) TabCtrlProc);
+	OldTabCtrlProc = (WNDPROC) SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR) TabCtrlProc);
 	SendMessage(hwnd, EM_SUBCLASSED, 0, 0);
 }
 
 void UnsubclassTabCtrl(HWND hwnd) {
 	SendMessage(hwnd, EM_UNSUBCLASSED, 0, 0);
-	SetWindowLong(hwnd, GWL_WNDPROC, (LONG) OldTabCtrlProc);
+	SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR) OldTabCtrlProc);
 }
 
 TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
@@ -478,11 +478,11 @@ static void SetContainerWindowStyle(ParentWindowData *dat)
 				SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOSENDCHANGING);
 }
 
-BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	DWORD ws;
 	ParentWindowData *dat;
-	dat = (ParentWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
+	dat = (ParentWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	if (!dat && msg!=WM_INITDIALOG) return FALSE;
 	switch (msg) {
 	case WM_INITDIALOG:
@@ -509,7 +509,7 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			//SetupStatusBar(dat);
 			dat->hwndTabs = GetDlgItem(hwndDlg, IDC_TABS);
 			dat->hwndActive = NULL;
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) dat);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR) dat);
 			if (g_dat->hTabIconList != NULL) {
 				TabCtrl_SetImageList(dat->hwndTabs, g_dat->hTabIconList);
 			}
@@ -917,7 +917,7 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				ReleaseIcon(tci.iImage);
 			}
 			DestroyIcon((HICON)SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, 0));
-			SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 			WindowList_Remove(g_dat->hParentWindowList, hwndDlg);
 			if (savePerContact)
 //			if (!(dat->flags2 & SMF2_USETABS) && DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT))
@@ -1064,13 +1064,13 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		SetFocus(dat->hwndActive);
 		return TRUE;
 	case CM_GETCHILDCOUNT:
-		SetWindowLong(hwndDlg, DWL_MSGRESULT, (LONG)GetChildCount(dat));
+		SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, (LONG_PTR)GetChildCount(dat));
 		return TRUE;
 	case CM_GETACTIVECHILD:
-		SetWindowLong(hwndDlg, DWL_MSGRESULT, (LONG)dat->hwndActive);
+		SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, (LONG_PTR)dat->hwndActive);
 		return TRUE;
 	case CM_GETTOOLBARSTATUS:
-		SetWindowLong(hwndDlg, DWL_MSGRESULT, (LONG)(dat->flags2 & SMF2_SHOWTOOLBAR) != 0);
+		SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, (LONG_PTR)(dat->flags2 & SMF2_SHOWTOOLBAR) != 0);
 		return TRUE;
 	case DM_SENDMESSAGE:
 		{
@@ -1230,7 +1230,7 @@ static void DrawTab(ParentWindowData *dat, HWND hwnd, WPARAM wParam, LPARAM lPar
 	TCITEM tci;
 	LPDRAWITEMSTRUCT lpDIS = (LPDRAWITEMSTRUCT) lParam;
 	int	iTabIndex = lpDIS->itemID;
-	tcdat = (TabCtrlData *) GetWindowLong(hwnd, GWL_USERDATA);
+	tcdat = (TabCtrlData *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	if (iTabIndex >= 0) {
 		TCHAR szLabel[1024];
 		tci.mask = TCIF_TEXT | TCIF_IMAGE | TCIF_STATE;
@@ -1316,11 +1316,11 @@ static void DrawTab(ParentWindowData *dat, HWND hwnd, WPARAM wParam, LPARAM lPar
 BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	TabCtrlData *dat;
-	dat = (TabCtrlData *) GetWindowLong(hwnd, GWL_USERDATA);
+	dat = (TabCtrlData *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
     switch(msg) {
     	case EM_SUBCLASSED:
 			dat = (TabCtrlData *) mir_alloc(sizeof(TabCtrlData));
-			SetWindowLong(hwnd, GWL_USERDATA, (LONG) dat);
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG) dat);
 			dat->bDragging = FALSE;
 			dat->bDragged = FALSE;
 			dat->srcTab = -1;

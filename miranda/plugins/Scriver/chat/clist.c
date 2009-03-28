@@ -175,7 +175,12 @@ int	CList_EventDoubleclicked(WPARAM wParam,LPARAM lParam)
 	return CList_RoomDoubleclicked((WPARAM) ((CLISTEVENT*)lParam)->hContact,(LPARAM) 0);
 }
 
-int CList_JoinChat(WPARAM wParam, LPARAM lParam)
+INT_PTR	CList_EventDoubleclickedSvc(WPARAM wParam,LPARAM lParam)
+{
+	return CList_EventDoubleclicked(wParam, lParam);
+}
+
+INT_PTR CList_JoinChat(WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hContact = (HANDLE)wParam;
 	if ( hContact ) {
@@ -190,7 +195,7 @@ int CList_JoinChat(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int CList_LeaveChat(WPARAM wParam, LPARAM lParam)
+INT_PTR CList_LeaveChat(WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hContact = (HANDLE)wParam;
 	if ( hContact ) {
@@ -231,6 +236,11 @@ int CList_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 		CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hLeaveMenuItem, ( LPARAM )&clmi );
 	}
 	return 0;
+}
+
+INT_PTR CList_PrebuildContactMenuSvc(WPARAM wParam, LPARAM lParam)
+{
+	return CList_PrebuildContactMenu(wParam, lParam);
 }
 
 void CList_CreateGroup(TCHAR* group)

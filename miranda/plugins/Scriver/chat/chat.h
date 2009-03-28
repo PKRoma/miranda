@@ -108,7 +108,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // special service for tweaking performance
 #define MS_GC_GETEVENTPTR  "GChat/GetNewEventPtr"
-typedef int (*GETEVENTFUNC)(WPARAM wParam, LPARAM lParam);
+typedef INT_PTR (*GETEVENTFUNC)(WPARAM wParam, LPARAM lParam);
 typedef struct  {
 	GETEVENTFUNC pfnAddEvent;
 }GCPTRS;
@@ -323,7 +323,7 @@ void FreeIcons(void);
 void UpgradeCheck(void);
 
 //colorchooser.c
-BOOL CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 //log.c
 void   Log_StreamInEvent(HWND hwndDlg, LOGINFO* lin, SESSION_INFO* si, BOOL bRedraw);
@@ -334,7 +334,7 @@ TCHAR* MakeTimeStamp(TCHAR* pszStamp, time_t time);
 char*  Log_CreateRtfHeader(MODULEINFO * mi, SESSION_INFO* si);
 
 //window.c
-BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
+INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
 int GetTextPixelSize( TCHAR* pszText, HFONT hFont, BOOL bWidth);
 
 //options.c
@@ -427,11 +427,13 @@ BOOL          LM_RemoveAll (LOGINFO** ppLogListStart, LOGINFO** ppLogListEnd);
 //clist.c
 HANDLE        CList_AddRoom(const char* pszModule, const TCHAR* pszRoom, const TCHAR* pszDisplayName, int iType);
 BOOL          CList_SetOffline(HANDLE hContact, BOOL bHide);
-BOOL          CList_SetAllOffline(BOOL bHide);
+BOOL          CList_SetAllOffline(BOOL bHide, const char *pszModule);
 int           CList_RoomDoubleclicked(WPARAM wParam,LPARAM lParam);
 int           CList_EventDoubleclicked(WPARAM wParam,LPARAM lParam);
-int           CList_JoinChat(WPARAM wParam, LPARAM lParam);
-int           CList_LeaveChat(WPARAM wParam, LPARAM lParam);
+INT_PTR       CList_EventDoubleclickedSvc(WPARAM wParam,LPARAM lParam);
+INT_PTR       CList_JoinChat(WPARAM wParam, LPARAM lParam);
+INT_PTR       CList_LeaveChat(WPARAM wParam, LPARAM lParam);
+INT_PTR		  CList_PrebuildContactMenuSvc(WPARAM wParam, LPARAM lParam);
 int           CList_PrebuildContactMenu(WPARAM wParam, LPARAM lParam);
 void          CList_CreateGroup(TCHAR* group);
 BOOL          CList_AddEvent(HANDLE hContact, HICON Icon, HANDLE event, int type, TCHAR* fmt, ... ) ;

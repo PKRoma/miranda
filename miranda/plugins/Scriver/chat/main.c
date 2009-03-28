@@ -76,7 +76,7 @@ int Chat_Unload(void)
 	DBWriteContactSettingWord(NULL, "Chat", "SplitterX", (WORD)g_Settings.iSplitterX);
 	DBWriteContactSettingWord(NULL, "Chat", "SplitterY", (WORD)g_Settings.iSplitterY);
 
-	CList_SetAllOffline(TRUE);
+	CList_SetAllOffline(TRUE, NULL);
 
 	mir_free( pszActiveWndID );
 	mir_free( pszActiveWndModule );

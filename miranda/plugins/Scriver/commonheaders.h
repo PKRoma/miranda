@@ -27,18 +27,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define MIRANDA_VER 0x0700
 
-#if defined(UNICODE)
-	#ifndef _UNICODE
-		#define _UNICODE
-	#endif
-#endif
-#undef _WIN32_WINNT
-#undef _WIN32_IE
 #define COMPILE_MULTIMON_STUBS
 #define _WIN32_WINNT 0x0501
 #define _WIN32_IE 0x0501
 #define WIN32_LEAN_AND_MEAN
-#define _USE_32BIT_TIME_T
+
+#include <m_stdhdr.h>
 
 #include <windows.h>
 #include <process.h>

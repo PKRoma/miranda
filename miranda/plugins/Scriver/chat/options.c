@@ -403,7 +403,7 @@ void AddIcons(void)
 	sid.cx = sid.cy = 16;
 	sid.flags = SIDF_ALL_TCHAR;
 
-        mir_sntprintf(tTemp, SIZEOF(tTemp), _T("%s/%s"), LPGENT("Messaging"), LPGENT("Group Chats"));
+    mir_sntprintf(tTemp, SIZEOF(tTemp), _T("%s/%s"), LPGENT("Messaging"), LPGENT("Group Chats"));
 	sid.ptszSection = tTemp;
 	GetModuleFileName(g_hInst, szFile, MAX_PATH);
 	sid.ptszDefaultFile = szFile;
@@ -511,7 +511,7 @@ void AddIcons(void)
 	sid.iDefaultIndex = -IDI_STATUS5;
 	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
-        mir_sntprintf(tTemp, SIZEOF(tTemp), _T("%s/%s"), LPGENT("Messaging"), LPGENT("Group Chats Log"));
+    mir_sntprintf(tTemp, SIZEOF(tTemp), _T("%s/%s"), LPGENT("Messaging"), LPGENT("Group Chats Log"));
 	sid.ptszSection = tTemp;
 	sid.ptszDescription = LPGENT("Message in (10x10)");
 	sid.pszName = "chat_log_message_in";
@@ -582,8 +582,6 @@ void AddIcons(void)
 	sid.pszName = "chat_log_info";
 	sid.iDefaultIndex = -IDI_INFO;
 	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-	return;
 }
 
 // load icons from the skinning module if available
@@ -617,7 +615,7 @@ static void InitSetting(TCHAR** ppPointer, char* pszSetting, TCHAR* pszDefault)
 	}
 
 #define OPT_FIXHEADINGS (WM_USER+1)
-BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
+INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	static HTREEITEM hListHeading1 = 0;
 	static HTREEITEM hListHeading4= 0;
@@ -978,7 +976,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 	return FALSE;
 }
 
-static BOOL CALLBACK DlgProcOptionsPopup(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
+static INT_PTR CALLBACK DlgProcOptionsPopup(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	static HTREEITEM hListHeading6= 0;
 	switch (uMsg)

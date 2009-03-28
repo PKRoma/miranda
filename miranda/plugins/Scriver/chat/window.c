@@ -285,8 +285,8 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 	BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 	BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
 
-	Parentsi=(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
-	dat = (MESSAGESUBDATA *) GetWindowLong(hwnd, GWL_USERDATA);
+	Parentsi=(SESSION_INFO*)GetWindowLongPtr(GetParent(hwnd),GWLP_USERDATA);
+	dat = (MESSAGESUBDATA *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	windowData = &Parentsi->windowData;
 
 	result = InputAreaShortcuts(hwnd, msg, wParam, lParam, windowData);
@@ -298,7 +298,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
    case EM_SUBCLASSED:
       dat = (MESSAGESUBDATA *) mir_alloc(sizeof(MESSAGESUBDATA));
       ZeroMemory(dat, sizeof(MESSAGESUBDATA));
-      SetWindowLong(hwnd, GWL_USERDATA, (LONG) dat);
+      SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) dat);
       return 0;
 
    case WM_MOUSEWHEEL:
@@ -615,7 +615,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
    return CallWindowProc(OldMessageProc, hwnd, msg, wParam, lParam);
 }
 
-static BOOL CALLBACK FilterWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
+static INT_PTR CALLBACK FilterWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
    static SESSION_INFO* si = NULL;
    switch (uMsg) {
@@ -711,7 +711,7 @@ static LRESULT CALLBACK ButtonSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, L
 static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static BOOL inMenu = FALSE;
-	SESSION_INFO* si =(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
+	SESSION_INFO* si =(SESSION_INFO*)GetWindowLongPtr(GetParent(hwnd),GWLP_USERDATA);
 	int result = InputAreaShortcuts(hwnd, msg, wParam, lParam, &si->windowData);
 	if (result != -1) {
 		return result;
@@ -898,7 +898,7 @@ static void ProcessNickListHovering(HWND hwnd, int hoveredItem, POINT * pt, SESS
 
 static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	SESSION_INFO* si =(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
+	SESSION_INFO* si =(SESSION_INFO*)GetWindowLongPtr(GetParent(hwnd),GWLP_USERDATA);
 	int result = InputAreaShortcuts(hwnd, msg, wParam, lParam, &si->windowData);
 	if (result != -1) {
 		return result;
@@ -1181,10 +1181,10 @@ static void __cdecl phase2(void * lParam)
       PostMessage(si->hWnd, GC_REDRAWLOG3, 0, 0);
 }
 
-BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
+INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	SESSION_INFO * si;
-	si = (SESSION_INFO *)GetWindowLong(hwndDlg,GWL_USERDATA);
+	si = (SESSION_INFO *)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 	if (!si && uMsg!=WM_INITDIALOG) return FALSE;
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -1195,16 +1195,16 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			NotifyLocalWinEvent(psi->windowData.hContact, hwndDlg, MSG_WINDOW_EVT_OPENING);
 
 			TranslateDialogDefault(hwndDlg);
-			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)psi);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)psi);
 			si = psi;
-			OldSplitterProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_SPLITTERX),GWL_WNDPROC,(LONG)SplitterSubclassProc);
-			SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_SPLITTERY),GWL_WNDPROC,(LONG)SplitterSubclassProc);
-			OldNicklistProc=(WNDPROC)SetWindowLong(hNickList,GWL_WNDPROC,(LONG)NicklistSubclassProc);
-			OldLogProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_LOG),GWL_WNDPROC,(LONG)LogSubclassProc);
-			OldFilterButtonProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_FILTER),GWL_WNDPROC,(LONG)ButtonSubclassProc);
-			SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_COLOR),GWL_WNDPROC,(LONG)ButtonSubclassProc);
-			SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_BKGCOLOR),GWL_WNDPROC,(LONG)ButtonSubclassProc);
-			OldMessageProc = (WNDPROC)SetWindowLong(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), GWL_WNDPROC,(LONG)MessageSubclassProc);
+			OldSplitterProc=(WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_CHAT_SPLITTERX),GWLP_WNDPROC,(LONG_PTR)SplitterSubclassProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_CHAT_SPLITTERY),GWLP_WNDPROC,(LONG_PTR)SplitterSubclassProc);
+			OldNicklistProc=(WNDPROC)SetWindowLongPtr(hNickList,GWLP_WNDPROC,(LONG_PTR)NicklistSubclassProc);
+			OldLogProc=(WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_CHAT_LOG),GWLP_WNDPROC,(LONG_PTR)LogSubclassProc);
+			OldFilterButtonProc=(WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_CHAT_FILTER),GWLP_WNDPROC,(LONG_PTR)ButtonSubclassProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_CHAT_COLOR),GWLP_WNDPROC,(LONG_PTR)ButtonSubclassProc);
+			SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_CHAT_BKGCOLOR),GWLP_WNDPROC,(LONG_PTR)ButtonSubclassProc);
+			OldMessageProc = (WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), GWLP_WNDPROC,(LONG_PTR)MessageSubclassProc);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SUBCLASSED, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_AUTOURLDETECT, 1, 0);
 			mask = (int)SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_GETEVENTMASK, 0, 0);
@@ -1360,7 +1360,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		}
 		break;
 	case DM_GETCODEPAGE:
-		SetWindowLong(hwndDlg, DWL_MSGRESULT, si->windowData.codePage);
+		SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, si->windowData.codePage);
 		return TRUE;
 	case DM_SETCODEPAGE:
 		si->windowData.codePage = (int) lParam;
@@ -1808,7 +1808,7 @@ LABEL_SHOWWINDOW:
          switch (pNmhdr->code) {
          case EN_MSGFILTER:
             if (pNmhdr->idFrom == IDC_CHAT_LOG && ((MSGFILTER *) lParam)->msg == WM_RBUTTONUP){
-				SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
+				SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
 				return TRUE;
             }
             break;
@@ -1886,7 +1886,7 @@ LABEL_SHOWWINDOW:
 					POINT p;
 					int item;
 					USERINFO * ui;
-					SESSION_INFO* parentdat =(SESSION_INFO*)GetWindowLong(hwndDlg,GWL_USERDATA);
+					SESSION_INFO* parentdat =(SESSION_INFO*)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 
 					GetCursorPos( &p );
 					ScreenToClient( hwndDlg, &p );
@@ -2206,7 +2206,7 @@ LABEL_SHOWWINDOW:
 	case DM_GETCONTEXTMENU:
 		{
 			HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) si->windowData.hContact, 0);
-			SetWindowLong(hwndDlg, DWL_MSGRESULT, (LONG)hMenu);
+			SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, (LONG_PTR)hMenu);
 			return TRUE;
 		}
 
@@ -2232,16 +2232,16 @@ LABEL_SHOWWINDOW:
 
 		NotifyLocalWinEvent(si->windowData.hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING);
 		si->hWnd = NULL;
-		SetWindowLong(hwndDlg,GWL_USERDATA,0);
-		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_SPLITTERX),GWL_WNDPROC,(LONG)OldSplitterProc);
-		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_SPLITTERY),GWL_WNDPROC,(LONG)OldSplitterProc);
-		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_LIST),GWL_WNDPROC,(LONG)OldNicklistProc);
+		SetWindowLongPtr(hwndDlg,GWLP_USERDATA,0);
+		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_CHAT_SPLITTERX),GWLP_WNDPROC,(LONG_PTR)OldSplitterProc);
+		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_CHAT_SPLITTERY),GWLP_WNDPROC,(LONG_PTR)OldSplitterProc);
+		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_CHAT_LIST),GWLP_WNDPROC,(LONG_PTR)OldNicklistProc);
 		SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_UNSUBCLASSED, 0, 0);
-		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_MESSAGE),GWL_WNDPROC,(LONG)OldMessageProc);
-		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_LOG),GWL_WNDPROC,(LONG)OldLogProc);
-		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_FILTER),GWL_WNDPROC,(LONG)OldFilterButtonProc);
-		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_COLOR),GWL_WNDPROC,(LONG)OldFilterButtonProc);
-		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_BKGCOLOR),GWL_WNDPROC,(LONG)OldFilterButtonProc);
+		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_CHAT_MESSAGE),GWLP_WNDPROC,(LONG_PTR)OldMessageProc);
+		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_CHAT_LOG),GWLP_WNDPROC,(LONG_PTR)OldLogProc);
+		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_CHAT_FILTER),GWLP_WNDPROC,(LONG_PTR)OldFilterButtonProc);
+		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_CHAT_COLOR),GWLP_WNDPROC,(LONG_PTR)OldFilterButtonProc);
+		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_CHAT_BKGCOLOR),GWLP_WNDPROC,(LONG_PTR)OldFilterButtonProc);
 
 		SendMessage(GetParent(hwndDlg), CM_REMOVECHILD, 0, (LPARAM) hwndDlg);
 		if (si->windowData.hwndLog != NULL) {

@@ -1006,7 +1006,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 	FINDTEXTEXA fi;
 	EDITSTREAM stream = { 0 };
 	struct LogStreamData streamData = { 0 };
-	struct MessageWindowData *dat = (struct MessageWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
+	struct MessageWindowData *dat = (struct MessageWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	CHARRANGE oldSel, sel;
 
 // IEVIew MOD Begin

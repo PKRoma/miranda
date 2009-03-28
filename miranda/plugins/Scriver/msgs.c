@@ -107,7 +107,7 @@ int IsAutoPopup(HANDLE hContact) {
 	return 0;
 }
 
-static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
+static INT_PTR ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 {
 	NewMessageWindowLParam newData = { 0 };
 	HWND hwndExisting;
@@ -176,7 +176,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 }
 
 #if defined(_UNICODE)
-static int SendMessageCommandW(WPARAM wParam, LPARAM lParam)
+static INT_PTR SendMessageCommandW(WPARAM wParam, LPARAM lParam)
 {
    HWND hwnd;
    NewMessageWindowLParam newData = { 0 };
@@ -220,7 +220,7 @@ static int SendMessageCommandW(WPARAM wParam, LPARAM lParam)
 }
 #endif
 
-static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
+static INT_PTR SendMessageCommand(WPARAM wParam, LPARAM lParam)
 {
    HWND hwnd;
    NewMessageWindowLParam newData = { 0 };
@@ -263,7 +263,7 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
    return 0;
 }
 
-static int TypingMessageCommand(WPARAM wParam, LPARAM lParam)
+static INT_PTR TypingMessageCommand(WPARAM wParam, LPARAM lParam)
 {
    CLISTEVENT *cle = (CLISTEVENT *) lParam;
 
@@ -386,12 +386,12 @@ static void RestoreUnreadMessageAlerts(void)
    }
 }
 
-static int GetWindowAPI(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetWindowAPI(WPARAM wParam, LPARAM lParam)
 {
    return PLUGIN_MAKE_VERSION(0,0,0,3);
 }
 
-static int GetWindowClass(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetWindowClass(WPARAM wParam, LPARAM lParam)
 {
    char *szBuf = (char*)wParam;
    int size = (int)lParam;
@@ -399,7 +399,7 @@ static int GetWindowClass(WPARAM wParam, LPARAM lParam)
    return 0;
 }
 
-static int GetWindowData(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetWindowData(WPARAM wParam, LPARAM lParam)
 {
    MessageWindowInputData *mwid = (MessageWindowInputData*)wParam;
    MessageWindowData *mwd = (MessageWindowData*)lParam;

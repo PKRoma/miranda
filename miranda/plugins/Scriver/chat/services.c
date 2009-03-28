@@ -43,7 +43,7 @@ int Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	char* mods[3] = { "Chat", "ChatFonts" };
 	CallService( "DBEditorpp/RegisterModule", (WPARAM)mods, 2 );
 	RegisterFonts();
-	CList_SetAllOffline(TRUE);
+	CList_SetAllOffline(TRUE, NULL);
  	return 0;
 }
 
@@ -97,7 +97,7 @@ int Chat_IconsChanged(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int Service_GetCount(WPARAM wParam,LPARAM lParam)
+static INT_PTR Service_GetCount(WPARAM wParam,LPARAM lParam)
 {
 	int i;
 
@@ -112,7 +112,7 @@ static int Service_GetCount(WPARAM wParam,LPARAM lParam)
 	return i;
 }
 
-static int Service_GetInfo(WPARAM wParam,LPARAM lParam)
+static INT_PTR Service_GetInfo(WPARAM wParam,LPARAM lParam)
 {
 	GC_INFO * gci = (GC_INFO *) lParam;
 	SESSION_INFO * si = NULL;
@@ -170,7 +170,7 @@ void LoadModuleIcons(MODULEINFO * mi) {
 	ImageList_Destroy(hList);
 }
 
-static int Service_Register(WPARAM wParam, LPARAM lParam)
+static INT_PTR Service_Register(WPARAM wParam, LPARAM lParam)
 {
 	GCREGISTER *gcr = (GCREGISTER *)lParam;
 	MODULEINFO * mi = NULL;
@@ -222,7 +222,7 @@ static int Service_Register(WPARAM wParam, LPARAM lParam)
 	return GC_REGISTER_ERROR;
 }
 
-static int Service_NewChat(WPARAM wParam, LPARAM lParam)
+static INT_PTR Service_NewChat(WPARAM wParam, LPARAM lParam)
 {
 	MODULEINFO* mi;
 	GCSESSION *gcw =(GCSESSION *)lParam;
@@ -311,7 +311,7 @@ static int Service_NewChat(WPARAM wParam, LPARAM lParam)
 	return GC_NEWSESSION_ERROR;
 }
 
-static int DoControl(GCEVENT * gce, WPARAM wp)
+static INT_PTR DoControl(GCEVENT * gce, WPARAM wp)
 {
 	if ( gce->pDest->iType == GC_EVENT_CONTROL ) {
 		switch (wp) {
@@ -469,7 +469,7 @@ void ShowRoom(SESSION_INFO * si, WPARAM wp, BOOL bSetForeground)
 	SetFocus(GetDlgItem(si->hWnd, IDC_CHAT_MESSAGE));
 }
 
-static int Service_AddEvent(WPARAM wParam, LPARAM lParam)
+static INT_PTR Service_AddEvent(WPARAM wParam, LPARAM lParam)
 {
 	GCEVENT *gce = (GCEVENT*)lParam, save_gce;
 	GCDEST *gcd = NULL, save_gcd;
@@ -657,7 +657,7 @@ LBL_Exit:
 	return iRetVal;
 }
 
-static int Service_GetAddEventPtr(WPARAM wParam, LPARAM lParam)
+static INT_PTR Service_GetAddEventPtr(WPARAM wParam, LPARAM lParam)
 {
 	GCPTRS * gp = (GCPTRS *) lParam;
 
@@ -686,8 +686,8 @@ void CreateServiceFunctions(void)
 	CreateServiceFunction_Ex(MS_GC_GETINFO,         Service_GetInfo);
 	CreateServiceFunction_Ex(MS_GC_GETSESSIONCOUNT, Service_GetCount);
 
-	CreateServiceFunction_Ex("GChat/DblClickEvent",     CList_EventDoubleclicked);
-	CreateServiceFunction_Ex("GChat/PrebuildMenuEvent", CList_PrebuildContactMenu);
+	CreateServiceFunction_Ex("GChat/DblClickEvent",     CList_EventDoubleclickedSvc);
+	CreateServiceFunction_Ex("GChat/PrebuildMenuEvent", CList_PrebuildContactMenuSvc);
 	CreateServiceFunction_Ex("GChat/JoinChat",          CList_JoinChat);
 	CreateServiceFunction_Ex("GChat/LeaveChat",         CList_LeaveChat);
 }

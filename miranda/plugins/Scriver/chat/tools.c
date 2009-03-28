@@ -86,7 +86,7 @@ static void __stdcall ShowRoomFromPopup(void * pi)
 	ShowRoom(si, WINDOW_VISIBLE, TRUE);
 }
 
-static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch(message) {
 	case WM_COMMAND:

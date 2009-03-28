@@ -54,7 +54,7 @@ static char buttonAlignment[] = { 0, 0, 0, 1, 1, 1, 1, 1};
 static UINT buttonSpacing[] = { 4, 10, 10, 0, 0, 0, 0, 0};
 static UINT buttonWidth[] = { 24, 24, 24, 24, 24, 24, 24, 38};
 
-static DWORD CALLBACK StreamOutCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
+static DWORD CALLBACK StreamOutCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
 {
 	MessageSendQueueItem * msi = (MessageSendQueueItem *) dwCookie;
 	msi->sendBuffer = (char *)mir_realloc(msi->sendBuffer, msi->sendBufferSize + cb + 2);
@@ -288,7 +288,7 @@ static int GetToolbarWidth(int cControls, const UINT * controls)
 static void SetDialogToType(HWND hwndDlg)
 {
 	BOOL showToolbar = SendMessage(GetParent(hwndDlg), CM_GETTOOLBARSTATUS, 0, 0);
-	struct MessageWindowData *dat = (struct MessageWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
+	struct MessageWindowData *dat = (struct MessageWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	if (dat->windowData.hContact) {
 		ShowToolbarControls(hwndDlg, SIZEOF(buttonControls), buttonControls, g_dat->buttonVisibility, showToolbar ? SW_SHOW : SW_HIDE);
@@ -408,8 +408,8 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 	CommonWindowData *windowData;
 	BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 	BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
-	dat = (struct MsgEditSubclassData *) GetWindowLong(hwnd, GWL_USERDATA);
-	pdat=(struct MessageWindowData *)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
+	dat = (struct MsgEditSubclassData *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	pdat=(struct MessageWindowData *)GetWindowLongPtr(GetParent(hwnd),GWLP_USERDATA);
 	windowData = &pdat->windowData;
 
 	result = InputAreaShortcuts(hwnd, msg, wParam, lParam, windowData);
@@ -420,7 +420,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 	switch (msg) {
 	case EM_SUBCLASSED:
 		dat = (struct MsgEditSubclassData *) mir_alloc(sizeof(struct MsgEditSubclassData));
-		SetWindowLong(hwnd, GWL_USERDATA, (LONG) dat);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) dat);
 		dat->lastEnterTime = 0;
 		return 0;
 
@@ -509,23 +509,23 @@ static LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 }
 
 static void SubclassMessageEdit(HWND hwnd) {
-	OldMessageEditProc = (WNDPROC) SetWindowLong(hwnd, GWL_WNDPROC, (LONG) MessageEditSubclassProc);
+	OldMessageEditProc = (WNDPROC) SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR) MessageEditSubclassProc);
 	SendMessage(hwnd, EM_SUBCLASSED, 0, 0);
 }
 
 static void UnsubclassMessageEdit(HWND hwnd) {
 	SendMessage(hwnd, EM_UNSUBCLASSED, 0, 0);
-	SetWindowLong(hwnd, GWL_WNDPROC, (LONG) OldMessageEditProc);
+	SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR) OldMessageEditProc);
 }
 
 static void SubclassLogEdit(HWND hwnd) {
-	OldLogEditProc = (WNDPROC) SetWindowLong(hwnd, GWL_WNDPROC, (LONG) LogEditSubclassProc);
+	OldLogEditProc = (WNDPROC) SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR) LogEditSubclassProc);
 	SendMessage(hwnd, EM_SUBCLASSED, 0, 0);
 }
 
 static void UnsubclassLogEdit(HWND hwnd) {
 	SendMessage(hwnd, EM_UNSUBCLASSED, 0, 0);
-	SetWindowLong(hwnd, GWL_WNDPROC, (LONG) OldLogEditProc);
+	SetWindowLong(hwnd, GWLP_WNDPROC, (LONG_PTR) OldLogEditProc);
 }
 
 static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int w, int h) {
@@ -740,7 +740,7 @@ static void NotifyTyping(struct MessageWindowData *dat, int mode) {
 	CallService(MS_PROTO_SELFISTYPING, (WPARAM) dat->windowData.hContact, dat->nTypeMode);
 }
 
-static BOOL CALLBACK ConfirmSendAllDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK ConfirmSendAllDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 	case WM_INITDIALOG:
@@ -779,11 +779,11 @@ static BOOL CALLBACK ConfirmSendAllDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 }
 
 
-BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static HMENU hToolbarMenu;
 	struct MessageWindowData *dat;
-	dat = (struct MessageWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
+	dat = (struct MessageWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	if (!dat && msg!=WM_INITDIALOG) return FALSE;
 	switch (msg) {
 	case WM_INITDIALOG:
@@ -794,14 +794,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			//TranslateDialogDefault(hwndDlg);
 			dat = (struct MessageWindowData *) mir_alloc(sizeof(struct MessageWindowData));
 			ZeroMemory(dat, sizeof(struct MessageWindowData));
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) dat);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR) dat);
 			dat->windowData.hContact = newData->hContact;
 			NotifyLocalWinEvent(dat->windowData.hContact, hwndDlg, MSG_WINDOW_EVT_OPENING);
 //			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTMODE, TM_PLAINTEXT, 0);
 
 			dat->hwnd = hwndDlg;
 			dat->hwndParent = GetParent(hwndDlg);
-			dat->parent = (ParentWindowData *) GetWindowLong(dat->hwndParent, GWL_USERDATA);
+			dat->parent = (ParentWindowData *) GetWindowLongPtr(dat->hwndParent, GWLP_USERDATA);
 			dat->windowData.hwndLog = NULL;
 			dat->szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->windowData.hContact, 0);
 			dat->avatarPic = 0;
@@ -933,7 +933,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_LIMITTEXT, (WPARAM) sizeof(TCHAR) * 0x7FFFFFFF, 0);
 			SubclassLogEdit(GetDlgItem(hwndDlg, IDC_LOG));
 			SubclassMessageEdit(GetDlgItem(hwndDlg, IDC_MESSAGE));
-			OldSplitterProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) SplitterSubclassProc);
+			OldSplitterProc = (WNDPROC) SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWLP_WNDPROC, (LONG_PTR) SplitterSubclassProc);
 			if (dat->flags & SMF_USEIEVIEW) {
 				IEVIEWWINDOW ieWindow;
 				ieWindow.cbSize = sizeof(IEVIEWWINDOW);
@@ -1055,7 +1055,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 	case DM_GETCONTEXTMENU:
 		{
 			HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) dat->windowData.hContact, 0);
-			SetWindowLong(hwndDlg, DWL_MSGRESULT, (LONG)hMenu);
+			SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, (LONG_PTR)hMenu);
 			return TRUE;
 		}
 	case WM_CONTEXTMENU:
@@ -1537,7 +1537,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 //		SendMessage(dat->hwndParent, DM_SWITCHTOOLBAR, 0, 0);
 		break;
 	case DM_GETCODEPAGE:
-		SetWindowLong(hwndDlg, DWL_MSGRESULT, dat->windowData.codePage);
+		SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, dat->windowData.codePage);
 		return TRUE;
 	case DM_SETCODEPAGE:
 		dat->windowData.codePage = (int) lParam;
@@ -1602,7 +1602,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				state |= MSG_WINDOW_STATE_FOCUS;
 			if (IsIconic(dat->hwndParent))
 				state |= MSG_WINDOW_STATE_ICONIC;
-			SetWindowLong(hwndDlg, DWL_MSGRESULT, state);
+			SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, state);
 			return TRUE;
 
 		}
@@ -1662,7 +1662,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		return TRUE;
 	case DM_SETPARENT:
 		dat->hwndParent = (HWND) lParam;
-		dat->parent = (ParentWindowData *) GetWindowLong(dat->hwndParent, GWL_USERDATA);
+		dat->parent = (ParentWindowData *) GetWindowLongPtr(dat->hwndParent, GWLP_USERDATA);
 		SetParent(hwndDlg, dat->hwndParent);
 		return TRUE;
 	case WM_GETMINMAXINFO:
@@ -2280,7 +2280,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					{
 						int result = InputAreaShortcuts(GetDlgItem(hwndDlg, IDC_MESSAGE), ((MSGFILTER *) lParam)->msg, ((MSGFILTER *) lParam)->wParam, ((MSGFILTER *) lParam)->lParam, &dat->windowData);
 						if (result != -1) {
-							SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
+							SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
 							return TRUE;
 						}
 					}
@@ -2289,7 +2289,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						if (!(GetKeyState(VK_CONTROL) & 0x8000)) {
 							SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 							SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), ((MSGFILTER *) lParam)->msg, ((MSGFILTER *) lParam)->wParam, ((MSGFILTER *) lParam)->lParam);
-							SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
+							SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
 						}
 						return TRUE;
 					case WM_LBUTTONDOWN:
@@ -2297,7 +2297,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 							HCURSOR hCur = GetCursor();
 							if (hCur == LoadCursor(NULL, IDC_SIZENS) || hCur == LoadCursor(NULL, IDC_SIZEWE)
 								|| hCur == LoadCursor(NULL, IDC_SIZENESW) || hCur == LoadCursor(NULL, IDC_SIZENWSE)) {
-									SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
+									SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
 									return TRUE;
 								}
 								break;
@@ -2311,7 +2311,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 							break;
 						}
 					case WM_RBUTTONUP:
-						SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
+						SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
 						return TRUE;
 					}
 					break;
@@ -2319,7 +2319,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					switch (((ENLINK *) lParam)->msg) {
 					case WM_SETCURSOR:
 						SetCursor(hCurHyperlinkHand);
-						SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
+						SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
 						return TRUE;
 					case WM_RBUTTONDOWN:
 					case WM_LBUTTONUP:
@@ -2377,7 +2377,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 								DestroyMenu(hMenu);
 								mir_free(tr.lpstrText);
 								mir_free(pszUrl);
-								SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
+								SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
 								return TRUE;
 							}
 							CallService(MS_UTILS_OPENURL, 1, (LPARAM) pszUrl);
@@ -2395,7 +2395,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				case EN_MSGFILTER:
 					switch (((MSGFILTER *) lParam)->msg) {
 					case WM_RBUTTONUP:
-						SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
+						SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
 						return TRUE;
 					}
 				}
@@ -2419,7 +2419,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		}
 		tcmdlist_free(dat->windowData.cmdList);
 		WindowList_Remove(g_dat->hMessageWindowList, hwndDlg);
-		SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
+		SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWLP_WNDPROC, (LONG_PTR) OldSplitterProc);
 		UnsubclassMessageEdit(GetDlgItem(hwndDlg, IDC_MESSAGE));
 		UnsubclassLogEdit(GetDlgItem(hwndDlg, IDC_LOG));
 		{
@@ -2438,7 +2438,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				CallService(MS_DB_CONTACT_DELETE, (WPARAM)dat->windowData.hContact, 0);
 			}
 		}
-		SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 		SendMessage(dat->hwndParent, CM_REMOVECHILD, 0, (LPARAM) hwndDlg);
 		if (dat->windowData.hwndLog != NULL) {
 			IEVIEWWINDOW ieWindow;
