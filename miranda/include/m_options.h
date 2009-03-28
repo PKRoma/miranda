@@ -89,9 +89,13 @@ typedef struct {
 }
 	OPTIONSDIALOGPAGE;
 
-#define OPTIONPAGE_OLD_SIZE  40
-#define OPTIONPAGE_OLD_SIZE2 60
-#define OPTIONPAGE_OLD_SIZE3 64
+#define OPTIONPAGE_OLD_SIZE  (offsetof(OPTIONSDIALOGPAGE, flags))
+#if MIRANDA_VER >= 0x0600
+	#define OPTIONPAGE_OLD_SIZE2 (offsetof(OPTIONSDIALOGPAGE, pszTab))
+#endif
+#if MIRANDA_VER >= 0x0800
+	#define OPTIONPAGE_OLD_SIZE3 (offsetof(OPTIONSDIALOGPAGE, dwInitParam))
+#endif
 
 #define ODPF_SIMPLEONLY   1	// page is only shown when in simple mode
 #define ODPF_EXPERTONLY   2	//         "                 expert mode
