@@ -23,9 +23,13 @@ TLV::TLV(char* buf)
 {
 	type_=_htons((*(unsigned short*)&buf[0]));
 	length_=_htons((*(unsigned short*)&buf[2]));
-	value_=(char*)mir_alloc(length_+1);
-	memcpy(value_,&buf[4],length_);
-	value_[length_]='\0';
+	if (length_ > 0)
+	{
+		value_=(char*)mir_alloc(length_+1);
+		memcpy(value_,&buf[4],length_);
+	}
+	else
+		value_= NULL;
 }
 TLV::TLV(unsigned short type, unsigned short length, const char* value)
 {
@@ -36,6 +40,8 @@ TLV::TLV(unsigned short type, unsigned short length, const char* value)
 		value_=(char*)mir_alloc(length_+1);
 		memcpy(value_,value,length_);
 	}
+	else
+		value_= NULL;
 }
 TLV::~TLV()
 {
