@@ -396,8 +396,9 @@ LBL_RecvAgain:
 		        proto->MSN_DebugLog( "Connection abortively closed, error %d", WSAGetLastError() );
 		        return ret;
 	        }
-	        else if ( ret == 0 && isTimeout()) 
-                return 0;
+	        else if ( ret == 0 ) {
+				if ( isTimeout()) return 0;
+			}
             else
                 break;
         }
