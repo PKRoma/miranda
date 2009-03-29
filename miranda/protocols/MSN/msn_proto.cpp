@@ -178,6 +178,7 @@ CMsnProto::~CMsnProto()
 	mir_free( alertsoundname );
 	mir_free( m_tszUserName );
 	mir_free( m_szModuleName );
+	mir_free( m_szProtoName );
 	mir_free( ModuleName );
 
 	for ( int i=0; i < MSN_NUM_MODES; i++ )
