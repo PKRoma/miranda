@@ -610,7 +610,7 @@ void NetlibHttpSetLastErrorUsingHttpResult(int result)
 
 char* gzip_decode(char *gzip_data, int *len_ptr, int window)
 {
-    size_t gzip_len = *len_ptr * 5;
+    int gzip_len = *len_ptr * 5;
     char* output_data = NULL;
 
     int gzip_err;
