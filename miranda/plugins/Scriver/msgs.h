@@ -121,6 +121,7 @@ struct MessageWindowData
 	HWND hwndParent;
 	HANDLE hDbEventFirst, hDbEventLast, hDbUnreadEventFirst;
 	int splitterPos;
+	int desiredInputAreaHeight;
 	SIZE minEditBoxSize;
 	SIZE minTopSize;
 	RECT minEditInit;
@@ -130,8 +131,6 @@ struct MessageWindowData
 	int windowWasCascaded;
 	int nTypeSecs;
 	int nTypeMode;
-	int avatarWidth;
-	int avatarHeight;
 	HBITMAP avatarPic;
 	DWORD nLastTyping;
 	int showTyping;
@@ -139,7 +138,6 @@ struct MessageWindowData
 	DWORD lastMessage;
 	char *szProto;
 	WORD wStatus;
-	WORD wOldStatus;
 	time_t	startTime;
 	time_t 	lastEventTime;
 	int    	lastEventType;
@@ -168,7 +166,6 @@ struct MessageWindowData
 #define DM_USERNAMETOCLIP    (WM_USER+23)
 #define DM_CHANGEICONS		 (WM_USER+24)
 #define DM_UPDATEICON		 (WM_USER+25)
-#define DM_AVATARCALCSIZE    (WM_USER+26)
 #define DM_GETAVATAR         (WM_USER+27)
 #define HM_AVATARACK         (WM_USER+28)
 #define HM_ACKEVENT          (WM_USER+29)
@@ -183,9 +180,10 @@ struct MessageWindowData
 #define DM_SWITCHSTATUSBAR	 (WM_USER+47)
 #define DM_SWITCHTOOLBAR	 (WM_USER+48)
 #define DM_SWITCHTITLEBAR	 (WM_USER+49)
-#define DM_SWITCHRTL		 (WM_USER+50)
-#define DM_SWITCHUNICODE	 (WM_USER+51)
-#define DM_SWITCHTYPING		 (WM_USER+52)
+#define DM_SWITCHINFOBAR	 (WM_USER+50)
+#define DM_SWITCHRTL		 (WM_USER+51)
+#define DM_SWITCHUNICODE	 (WM_USER+52)
+#define DM_SWITCHTYPING		 (WM_USER+53)
 #define DM_MESSAGESENDING	 (WM_USER+54)
 #define DM_GETWINDOWSTATE	 (WM_USER+55)
 #define DM_STATUSICONCHANGE  (WM_USER+56)
@@ -232,6 +230,8 @@ int IsAutoPopup(HANDLE hContact);
 #define MSGFONTID_NOTICE      9
 #define MSGFONTID_MYURL      10
 #define MSGFONTID_YOURURL   11
+#define MSGFONTID_INFOBAR_NAME   12
+#define MSGFONTID_INFOBAR_STATUS 13
 
 void LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour);
 extern int fontOptionsListSize;
@@ -270,12 +270,14 @@ extern int fontOptionsListSize;
 #define SRMSGDEFSET_CASCADE        1
 #define SRMSGSET_SAVEPERCONTACT    "SavePerContact"
 #define SRMSGDEFSET_SAVEPERCONTACT 0
-
+#define SRMSGSET_AUTORESIZE        "EnableAutoresize"
+#define SRMSGDEFSET_AUTORESIZE     1
 #define SRMSGSET_SHOWTITLEBAR	   "ShowTitleBar"
 #define SRMSGDEFSET_SHOWTITLEBAR   1
 #define SRMSGSET_SHOWSTATUSBAR	   "ShowStatusBar"
 #define SRMSGDEFSET_SHOWSTATUSBAR  1
-
+#define SRMSGSET_SHOWINFOBAR	   "ShowInfoBar"
+#define SRMSGDEFSET_SHOWINFOBAR    1
 #define SRMSGSET_TOPMOST		   "Topmost"
 #define SRMSGDEFSET_TOPMOST		   0
 #define SRMSGSET_POPFLAGS          "PopupFlags"
@@ -298,8 +300,6 @@ extern int fontOptionsListSize;
 #define SRMSGDEFSET_AUTOMIN        0
 #define SRMSGSET_AUTOCLOSE         "AutoClose"
 #define SRMSGDEFSET_AUTOCLOSE      0
-#define SRMSGSET_SAVESPLITTERPERCONTACT "SaveSplitterPerContact"
-#define SRMSGDEFSET_SAVESPLITTERPERCONTACT 0
 #define SRMSGSET_SENDONENTER       "SendOnEnter"
 #define SRMSGDEFSET_SENDONENTER    1
 #define SRMSGSET_SENDONDBLENTER    "SendOnDblEnter"
@@ -368,6 +368,9 @@ extern int fontOptionsListSize;
 #define SRMSGDEFSET_INCOMINGBKGCOLOUR	GetSysColor(COLOR_WINDOW)
 #define SRMSGSET_OUTGOINGBKGCOLOUR		"OutgoingBkgColour"
 #define SRMSGDEFSET_OUTGOINGBKGCOLOUR	GetSysColor(COLOR_WINDOW)
+#define SRMSGSET_INFOBARBKGCOLOUR		"InfobarBkgColour"
+#define SRMSGDEFSET_INFOBARBKGCOLOUR	RGB(130,140,170)
+
 #define SRMSGSET_USEIEVIEW				"UseIEView"
 #define SRMSGDEFSET_USEIEVIEW			1
 
@@ -390,15 +393,6 @@ extern int fontOptionsListSize;
 
 #define SRMSGSET_AVATARENABLE       "AvatarEnable"
 #define SRMSGDEFSET_AVATARENABLE    1
-#define SRMSGSET_LIMITAVHEIGHT      "AvatarLimitHeight"
-#define SRMSGDEFSET_LIMITAVHEIGHT   0
-#define SRMSGSET_AVHEIGHT           "AvatarHeight"
-#define SRMSGDEFSET_AVHEIGHT        60
-#define SRMSGSET_AVHEIGHTMIN        "AvatarHeightMin"
-#define SRMSGDEFSET_AVHEIGHTMIN     20
-#define SRMSGSET_AVATAR             "Avatar"
-#define SRMSGSET_ORIGINALAVATARH    "OriginalAvatarSize"
-#define SRMSGDEFSET_ORIGINALAVATARH 0
 
 #define SRMSGSET_USETRANSPARENCY	"UseTransparency"
 #define SRMSGDEFSET_USETRANSPARENCY 0

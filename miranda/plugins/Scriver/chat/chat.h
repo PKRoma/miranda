@@ -223,6 +223,7 @@ typedef struct SESSION_INFO_TYPE
 	int         iFG;
 	int         iBG;
 	int         iSplitterY;
+	int			desiredInputAreaHeight;
 	int         iSplitterX;
 	int         iLogFilterFlags;
 	int         nUsersInNicklist;

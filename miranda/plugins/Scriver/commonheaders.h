@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef SRMM_COMMONHEADERS_H
 #define SRMM_COMMONHEADERS_H
 
-#define MIRANDA_VER 0x0700
+#define MIRANDA_VER 0x0800
 
 #define COMPILE_MULTIMON_STUBS
 #define _WIN32_WINNT 0x0501
@@ -110,4 +110,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 extern HWND SM_FindWindowByContact(HANDLE hContact);
+
+#define SPLITTER_HEIGHT   3
+#define TOOLBAR_HEIGHT   24
+#define INFO_BAR_HEIGHT  56
+#define INFO_BAR_INNER_HEIGHT (INFO_BAR_HEIGHT - 3)
+#define INFO_BAR_COLOR COLOR_INACTIVEBORDER
+
+
 #endif

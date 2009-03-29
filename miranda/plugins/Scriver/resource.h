@@ -102,7 +102,6 @@
 #define IDC_SHOWSTATUSCHANGES           1035
 #define IDC_GROUPMESSAGES               1036
 #define IDC_SAVEPERCONTACT              1037
-#define IDC_SAVESPLITTERPERCONTACT      1038
 #define IDC_LOADCOUNTN                  1039
 #define IDC_LOADCOUNTSPIN               1040
 #define IDC_SHOWINFOLINE                1041
@@ -118,6 +117,7 @@
 #define IDC_SHOWTITLEBAR                1050
 #define IDC_STMINSOLD                   1051
 #define IDC_SHOWPROGRESS                1052
+#define IDC_SHOWINFOBAR                 1053
 #define IDC_DETAILS                     1069
 #define IDC_ADD                         1070
 #define IDC_USERMENU                    1071
@@ -125,6 +125,7 @@
 #define IDC_HISTORY                     1080
 #define IDC_SMILEYS                     1081
 #define IDC_REMEMBER					1082
+#define IDC_AUTORESIZE                  1083
 #define IDC_STMSGLOGGROUP               1442
 #define IDC_ERRORTEXT                   1596
 #define IDC_MSGTEXT                     1597
@@ -139,11 +140,7 @@
 #define IDC_NOTIFYTRAY                  1606
 #define IDC_NOTIFYBALLOON               1607
 #define IDC_DELTEMP                     1609
-#define IDC_AVATAR                      1610
 #define IDC_AVATARSUPPORT               1611
-#define IDC_LIMITAVATARH                1612
-#define IDC_AVATARHEIGHT                1613
-#define IDC_AVATARHEIGHTMIN             1614
 #define IDC_LIMITNAMES                  1615
 #define IDC_TRANSPARENCY                1616
 #define IDC_MARKFOLLOWUPS               1617
@@ -154,8 +151,6 @@
 #define IDC_ITRANSPARENCYPERC           1622
 #define IDC_ALWAYSSHOWTABS              1623
 #define IDC_SENDALL						1624
-#define IDC_AVATARTEXT1                 1625
-#define IDC_AVATARTEXT2					1626
 #define IDC_TRANSPARENCYTEXT1			1627
 #define IDC_TRANSPARENCYTEXT2			1628
 #define IDC_DRAWLINES					1629
@@ -173,6 +168,9 @@
 #define IDC_LOADCOUNTTEXT2				1641
 #define IDC_CHAT_NICKROWTEXT2			1642
 #define IDC_CHAT_LIMITTEXT2				1643
+#define IDC_INFOBAR						1644
+#define IDC_HLINE                       1645
+
 
 #define IDM_CUT                         40000
 #define IDM_COPY                        40001

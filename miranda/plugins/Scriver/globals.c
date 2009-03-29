@@ -111,6 +111,7 @@ void LoadGlobalIcons() {
 	g_dat->hIcons[SMF_ICON_INCOMING] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_INCOMING");
 	g_dat->hIcons[SMF_ICON_OUTGOING] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_OUTGOING");
 	g_dat->hIcons[SMF_ICON_NOTICE] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_NOTICE");
+	g_dat->hIcons[SMF_ICON_MESSAGE] = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
 	for (i=0; i<SIZEOF(buttonIcons); i++) {
 		if (buttonIcons[i] == -1) {
 			ImageList_AddIcon_ProtoEx(g_dat->hButtonIconList, NULL, ID_STATUS_OFFLINE);
@@ -146,6 +147,8 @@ void ReleaseGlobalIcons() {
 	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_INCOMING");
 	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_OUTGOING");
 	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_NOTICE");
+
+	CallService(MS_SKIN2_RELEASEICON, (WPARAM)g_dat->hIcons[SMF_ICON_MESSAGE], 0);
 	ImageList_RemoveAll(g_dat->hButtonIconList);
 	ImageList_RemoveAll(g_dat->hHelperIconList);
 }
@@ -179,9 +182,56 @@ static BOOL CALLBACK LangAddCallback(CHAR * str) {
 	return TRUE;
 }
 
+int FindBorderColour(int colour) {
+	BOOL add = TRUE;
+	int diff = 60;
+	int r = (colour >> 16) &0xFF;
+	int g = (colour >> 8) &0xFF;
+	int b = colour &0xFF;
+	int r2 = r - diff;
+	int g2 = g - diff;
+	int b2 = b - diff;
+	int diff2 = (max(0, r2) - r2) + (max(0, g2) - g2) + (max(0, b2) - b2);
+	if (diff2 > 0) {
+		int r1 = r + diff;
+		int g1 = g + diff;
+		int b1 = b + diff;
+		int diff1 = (r1 - min(255, r1)) + (g1 - min(255, g1)) + (b1 - min(255, b1));
+		if (diff1 < diff2) {
+			return (min(255, r1) << 16) | (min(255, g1) << 8) | (min(255, b1));
+		}
+	}
+	return (max(0, r2) << 16) | (max(0, g2) << 8) | (max(0, b2));
+}
+
+void LoadInfobarFonts()
+{
+	LOGFONT lf;
+	DWORD ibColour;
+	if (g_dat->hContactNameFont != NULL) {
+		DeleteObject(g_dat->hContactNameFont);
+	}
+	if (g_dat->hContactStatusFont != NULL) {
+		DeleteObject(g_dat->hContactStatusFont);
+	}
+	if (g_dat->hInfobarBrush != NULL) {
+		DeleteObject(g_dat->hInfobarBrush);
+	}
+	if (g_dat->hInfobarPen != NULL) {
+		DeleteObject(g_dat->hInfobarPen);
+	}
+	LoadMsgDlgFont(MSGFONTID_INFOBAR_NAME, &lf, &g_dat->contactNameColour);
+	g_dat->hContactNameFont = CreateFontIndirect(&lf);
+	LoadMsgDlgFont(MSGFONTID_INFOBAR_STATUS, &lf, &g_dat->contactStatusColour);
+	g_dat->hContactStatusFont = CreateFontIndirect(&lf);
+	ibColour = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_INFOBARBKGCOLOUR, SRMSGDEFSET_INFOBARBKGCOLOUR);
+	g_dat->hInfobarBrush = CreateSolidBrush(ibColour);
+	g_dat->hInfobarPen = CreatePen(PS_SOLID, 0, FindBorderColour(ibColour));
+}
 
 void InitGlobals() {
 	g_dat = (struct GlobalMessageData *)mir_alloc(sizeof(struct GlobalMessageData));
+	ZeroMemory(g_dat, sizeof(struct GlobalMessageData));
 	g_dat->hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
 	g_dat->hParentWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
 	g_dat->hMenuANSIEncoding = CreatePopupMenu();
@@ -200,10 +250,23 @@ void InitGlobals() {
 	g_dat->hHelperIconList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 0, 0);
 	g_dat->hSearchEngineIconList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 0, 0);
 	g_dat->draftList = NULL;
+	LoadInfobarFonts();
 }
 
 void FreeGlobals() {
 	if (g_dat) {
+		if (g_dat->hContactNameFont != NULL) {
+			DeleteObject(g_dat->hContactNameFont);
+		}
+		if (g_dat->hContactStatusFont != NULL) {
+			DeleteObject(g_dat->hContactStatusFont);
+		}
+		if (g_dat->hInfobarBrush != NULL) {
+			DeleteObject(g_dat->hInfobarBrush);
+		}
+		if (g_dat->hInfobarPen != NULL) {
+			DeleteObject(g_dat->hInfobarPen);
+		}
 		if (g_dat->draftList != NULL) tcmdlist_free(g_dat->draftList);
 		ReleaseGlobalIcons();
 		if (g_dat->hTabIconList)
@@ -216,6 +279,7 @@ void FreeGlobals() {
 			ImageList_Destroy(g_dat->hSearchEngineIconList);
 		mir_free(g_dat->tabIconListUsage);
 		mir_free(g_dat);
+		g_dat = NULL;
 	}
 }
 
@@ -230,10 +294,6 @@ void ReloadGlobals() {
 //		g_dat->flags |= SMF_SENDBTN;
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AVATARENABLE, SRMSGDEFSET_AVATARENABLE)) {
 		g_dat->flags |= SMF_AVATAR;
-		if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_LIMITAVHEIGHT, SRMSGDEFSET_LIMITAVHEIGHT))
-			g_dat->flags |= SMF_LIMITAVATARH;
-		if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_ORIGINALAVATARH, SRMSGDEFSET_ORIGINALAVATARH))
-			g_dat->flags |= SMF_ORIGINALAVATARH;
 	}
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWPROGRESS, SRMSGDEFSET_SHOWPROGRESS))
 		g_dat->flags |= SMF_SHOWPROGRESS;
@@ -266,8 +326,9 @@ void ReloadGlobals() {
 		g_dat->flags |= SMF_STAYMINIMIZED;
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEDRAFTS, SRMSGDEFSET_SAVEDRAFTS))
 		g_dat->flags |= SMF_SAVEDRAFTS;
-	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVESPLITTERPERCONTACT, SRMSGDEFSET_SAVESPLITTERPERCONTACT))
-		g_dat->flags |= SMF_SAVESPLITTERPERCONTACT;
+	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTORESIZE, SRMSGDEFSET_AUTORESIZE))
+		g_dat->flags |= SMF_AUTORESIZE;
+
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_DELTEMP, SRMSGDEFSET_DELTEMP))
 		g_dat->flags |= SMF_DELTEMP;
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER))
@@ -311,6 +372,8 @@ void ReloadGlobals() {
 		g_dat->flags2 |= SMF2_SHOWTITLEBAR;
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWBUTTONLINE, SRMSGDEFSET_SHOWBUTTONLINE))
 		g_dat->flags2 |= SMF2_SHOWTOOLBAR;
+	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWINFOBAR, SRMSGDEFSET_SHOWINFOBAR))
+		g_dat->flags2 |= SMF2_SHOWINFOBAR;
 
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWTYPING, SRMSGDEFSET_SHOWTYPING))
 		g_dat->flags2 |= SMF2_SHOWTYPING;
@@ -323,15 +386,6 @@ void ReloadGlobals() {
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWTYPINGSWITCH, SRMSGDEFSET_SHOWTYPINGSWITCH))
 		g_dat->flags2 |= SMF2_SHOWTYPINGSWITCH;
 
-	g_dat->limitAvatarMaxH = 100000;
-	g_dat->limitAvatarMinH = 0;
-	if (g_dat->flags & SMF_LIMITAVATARH) {
-		g_dat->limitAvatarMaxH = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_AVHEIGHT, SRMSGDEFSET_AVHEIGHT);
-		g_dat->limitAvatarMinH = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_AVHEIGHTMIN, SRMSGDEFSET_AVHEIGHTMIN);
-		if (g_dat->limitAvatarMinH > g_dat->limitAvatarMaxH) {
-			g_dat->limitAvatarMinH = g_dat->limitAvatarMaxH;
-		}
-	}
 	if (LOBYTE(LOWORD(GetVersion())) >= 5  && pSetLayeredWindowAttributes != NULL) {
 		if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_USETRANSPARENCY, SRMSGDEFSET_USETRANSPARENCY))
 			g_dat->flags2 |= SMF2_USETRANSPARENCY;

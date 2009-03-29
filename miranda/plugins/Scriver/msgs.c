@@ -226,9 +226,10 @@ static INT_PTR SendMessageCommand(WPARAM wParam, LPARAM lParam)
    NewMessageWindowLParam newData = { 0 };
 
    {
-      /* does the HCONTACT's protocol support IM messages? */
       char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
+      //logInfo("Show message window for: %s (%s)", CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, 0), szProto);
       if (szProto) {
+	      /* does the HCONTACT's protocol support IM messages? */
          if (!CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND)
             return 1;
       }
@@ -325,7 +326,7 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
    szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
    if (lstrcmpA(cws->szModule, "CList") && (szProto == NULL || lstrcmpA(cws->szModule, szProto)))
       return 0;
-   WindowList_Broadcast(g_dat->hMessageWindowList, DM_UPDATETITLEBAR, (WPARAM) cws, 0);
+   WindowList_Broadcast(g_dat->hMessageWindowList, DM_CLISTSETTINGSCHANGED, (WPARAM) cws, 0);
    return 0;
 }
 

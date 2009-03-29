@@ -70,7 +70,7 @@ TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 {
 	DBVARIANT dbv;
 	int isTemplate;
-	int len, contactNameLen = 0, statusLen = 0, statusMsgLen = 0, protocolLen = 0;
+	int i, j, len, contactNameLen = 0, statusLen = 0, statusMsgLen = 0, protocolLen = 0;
 	TCHAR *p, *tmplt, *szContactName = NULL, *szStatus = NULL, *szStatusMsg = NULL, *szProtocol = NULL, *title;
 	TCHAR *pszNewTitleEnd = mir_tstrdup(TranslateT("Message Session"));
 	isTemplate = 0;
@@ -79,26 +79,21 @@ TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 		contactNameLen = lstrlen(szContactName);
 		szStatus = a2t((char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE), 0));
 		statusLen = lstrlen(szStatus);
-		if (!DBGetContactSettingTString(hContact, "CList", "StatusMsg",&dbv)) {
-			if (_tcslen(dbv.ptszVal) > 0) {
-				int i, j;
-       			szStatusMsg = mir_tstrdup(dbv.ptszVal);
-				statusMsgLen = _tcslen(szStatusMsg);
-				for (i = j = 0; i < statusMsgLen; i++) {
-					if (szStatusMsg[i] == '\r') {
-						continue;
-					} else if (szStatusMsg[i] == '\n') {
-						szStatusMsg[j++] = ' ';
-					} else {
-						szStatusMsg[j++] = szStatusMsg[i];
-					}
+		szStatusMsg = DBGetStringT(hContact, "CList", "StatusMsg");
+		if (szStatusMsg != NULL) {
+			statusMsgLen = _tcslen(szStatusMsg);
+			for (i = j = 0; i < statusMsgLen; i++) {
+				if (szStatusMsg[i] == '\r') {
+					continue;
+				} else if (szStatusMsg[i] == '\n') {
+					szStatusMsg[j++] = ' ';
+				} else {
+					szStatusMsg[j++] = szStatusMsg[i];
 				}
-				szStatusMsg[j] = '\0';
-				statusMsgLen = j;
 			}
-       		DBFreeVariant(&dbv);
+			szStatusMsg[j] = '\0';
+			statusMsgLen = j;
 		}
-
 		if (!DBGetContactSettingTString(NULL, SRMMMOD, SRMSGSET_WINDOWTITLE, &dbv)) {
 			isTemplate = 1;
 			tmplt = mir_tstrdup(dbv.ptszVal);
@@ -785,19 +780,12 @@ INT_PTR CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 //				RedrawWindow(hwndDlg, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
 			}
             break;
-		}
-//		if (LOWORD(wParam) != WA_ACTIVE)
-//			break;
-//	case WM_MOUSEACTIVATE:
-	/*
-		if (!dat->bTopmost) {
-			SetWindowPos(hwndDlg, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-		}*/
-		if (dat->hwndActive == NULL) { // do not set foreground window at all (always stay in the background !)
-//			SendMessage(hwndDlg, DM_DEACTIVATE, 0, 0);
-		} else {
+		} 
+		if (dat->hwndActive != NULL) {
 			ActivateChild(dat, dat->hwndActive);
-			PostMessage(dat->hwndActive, DM_SETFOCUS, 0, msg);
+			if (GetForegroundWindow() == hwndDlg) {
+				SendMessage(dat->hwndActive, DM_SETFOCUS, 0, msg);
+			}
 		}
 		if (KillTimer(hwndDlg, TIMERID_FLASHWND)) {
 			FlashWindow(hwndDlg, FALSE);
@@ -917,6 +905,7 @@ INT_PTR CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				ReleaseIcon(tci.iImage);
 			}
 			DestroyIcon((HICON)SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, 0));
+			DestroyIcon((HICON)SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_SMALL, 0));
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 			WindowList_Remove(g_dat->hParentWindowList, hwndDlg);
 			if (savePerContact)
@@ -1093,8 +1082,8 @@ INT_PTR CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		{
 			HWND hwnd = (HWND) lParam;
 			TitleBarData *tbd = (TitleBarData *) wParam;
-			if (tbd != NULL) {
-				if ((tbd->iFlags & TBDF_TEXT) && dat->hwndActive == hwnd) {
+			if (tbd != NULL && dat->hwndActive == hwnd) {
+				if (tbd->iFlags & TBDF_TEXT) {
 					TCHAR oldtitle[256];
 					GetWindowText(hwndDlg, oldtitle, sizeof(oldtitle));
 					if (lstrcmp(tbd->pszText, oldtitle)) { //swt() flickers even if the title hasn't actually changed
@@ -1103,8 +1092,8 @@ INT_PTR CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					}
 				}
 				if (tbd->iFlags & TBDF_ICON) {
-					if (hwnd == dat->hwndActive)
-						DestroyIcon((HICON)SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) CopyIcon(tbd->hIcon)));
+					DestroyIcon((HICON)SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_SMALL, (LPARAM) CopyIcon(tbd->hIcon)));
+					DestroyIcon((HICON)SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) CopyIcon(tbd->hIcon)));
 				}
 			}
 			break;
@@ -1166,6 +1155,17 @@ INT_PTR CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			mir_free(ptszTemp);
 			break;
 		}
+	case DM_SWITCHINFOBAR:
+		{
+			int i;
+			dat->flags2 ^= SMF2_SHOWINFOBAR;
+			for (i=0;i<dat->childrenCount;i++) {
+				MessageWindowTabData * mwtd = GetChildFromTab(dat->hwndTabs, i);
+				SendMessage(mwtd->hwnd, DM_SWITCHINFOBAR, 0, 0);
+			}
+			SendMessage(hwndDlg, WM_SIZE, 0, 0);
+		}
+		break;
 	case DM_SWITCHSTATUSBAR:
 		dat->flags2 ^= SMF2_SHOWSTATUSBAR;
 		if (!(dat->flags2 & SMF2_SHOWSTATUSBAR)) {

@@ -28,7 +28,7 @@ extern HINSTANCE g_hInst;
 extern HANDLE hHookWinPopup;
 
 enum KB_ACTIONS {KB_PREV_TAB = 1, KB_NEXT_TAB, KB_SWITCHTOOLBAR,
-				 KB_SWITCHSTATUSBAR, KB_SWITCHTITLEBAR, KB_MINIMIZE, KB_CLOSE, KB_CLEAR_LOG,
+				 KB_SWITCHSTATUSBAR, KB_SWITCHTITLEBAR, KB_SWITCHINFOBAR, KB_MINIMIZE, KB_CLOSE, KB_CLEAR_LOG,
 				 KB_TAB1, KB_TAB2, KB_TAB3, KB_TAB4, KB_TAB5, KB_TAB6, KB_TAB7, KB_TAB8, KB_TAB9, KB_SEND_ALL};
 
 void InputAreaContextMenu(HWND hwnd, WPARAM wParam, LPARAM lParam, HANDLE hContact) {
@@ -139,6 +139,9 @@ int InputAreaShortcuts(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, Common
 			return FALSE;
 		case KB_SWITCHTITLEBAR:
 			SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHTITLEBAR, 0, 0);
+			return FALSE;
+		case KB_SWITCHINFOBAR:
+			SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHINFOBAR, 0, 0);
 			return FALSE;
 		case KB_SWITCHTOOLBAR:
 			SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHTOOLBAR, 0, 0);
@@ -324,6 +327,12 @@ void RegisterKeyBindings() {
 	desc.pszDescription = "Window: Toggle Toolbar";
 	desc.lParam = KB_SWITCHTOOLBAR;
 	desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'T');
+	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
+
+	desc.pszName = "Scriver/Wnd/Toggle Infobar";
+	desc.pszDescription = "Window: Toggle Infobar";
+	desc.lParam = KB_SWITCHINFOBAR;
+	desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'N');
 	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
 
 	desc.pszName = "Scriver/Wnd/Clear Log";
