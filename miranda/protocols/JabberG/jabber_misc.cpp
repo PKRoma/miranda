@@ -568,14 +568,14 @@ void CJabberProto::UpdateSubscriptionInfo(HANDLE hContact, JABBER_LIST_ITEM *ite
 	case SUB_TO:
 		JSetStringT(hContact, "SubscriptionText", TranslateT("To"));
 		JSetString(hContact, "Subscription", "to");
-		JSetByte(hContact, "Auth", 1);
-		JSetByte(hContact, "Grant", 0);
+		JSetByte(hContact, "Auth", 0);
+		JSetByte(hContact, "Grant", 1);
 		break;
 	case SUB_FROM:
 		JSetStringT(hContact, "SubscriptionText", TranslateT("From"));
 		JSetString(hContact, "Subscription", "from");
-		JSetByte(hContact, "Auth", 0);
-		JSetByte(hContact, "Grant", 1);
+		JSetByte(hContact, "Auth", 1);
+		JSetByte(hContact, "Grant", 0);
 		break;
 	case SUB_BOTH:
 		JSetStringT(hContact, "SubscriptionText", TranslateT("Both"));
