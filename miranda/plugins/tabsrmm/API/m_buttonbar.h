@@ -12,16 +12,16 @@
 
 typedef struct _tagCustomButtonData
 	{
-	DWORD dwButtonOrigID;		 // id of button used while button creation and to store button info in DB  
+	DWORD dwButtonOrigID;		 // id of button used while button creation and to store button info in DB
 	char * pszModuleName;		 //module name without spaces and underline symbols (e.g. "tabsrmm")
 
 	DWORD dwButtonCID;
 	DWORD dwArrowCID;			//only use with BBBF_ISARROWBUTTON flag
 
-	TCHAR * ptszTooltip;		//button's tooltip	
+	TCHAR * ptszTooltip;		//button's tooltip
 
 	DWORD dwPosition;			 // default order pos of button, counted from window edge (left or right)
-	int iButtonWidth;		//must be 22 for regular button and 33 for button with arrow 
+	int iButtonWidth;		//must be 22 for regular button and 33 for button with arrow
 	HANDLE hIcon;		//Handle to icolib registred icon
 	BOOL bIMButton,bChatButton;
 	BOOL bCanBeHidden,bHidden,bAutoHidden,bDummy,bDisabled,bPushButton;

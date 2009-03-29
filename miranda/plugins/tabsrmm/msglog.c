@@ -135,8 +135,8 @@ int safe_wcslen(wchar_t *msg, int chars)
 
 static void TrimMessage(TCHAR *msg)
 {
-	int iLen = _tcslen(msg) - 1;
-	int i = iLen;
+	size_t iLen = _tcslen(msg) - 1;
+	size_t i = iLen;
 
 	while (i && (msg[i] == '\r' || msg[i] == '\n')) {
 		i--;
@@ -285,9 +285,9 @@ static int AppendUnicodeToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferA
 	DWORD textCharsCount = 0;
 	char *d;
 
-	int lineLen = wcslen(line) * 9 + 8;
+	int  lineLen = (int)(wcslen(line)) * 9 + 8;
 	if (*cbBufferEnd + lineLen > *cbBufferAlloced) {
-		cbBufferAlloced[0] += (lineLen + 1024 - lineLen % 1024);
+		cbBufferAlloced[0] += (lineLen + 1024UL - lineLen % 1024UL);
 		*buffer = (char *) realloc(*buffer, *cbBufferAlloced);
 	}
 
@@ -476,7 +476,7 @@ static int AppendToBufferWithRTF(int mode, char **buffer, int *cbBufferEnd, int 
 			i++;
 		}
 	}
-	return _mbslen(*buffer + *cbBufferEnd);
+	return (int)(_mbslen(*buffer + *cbBufferEnd));
 }
 
 static void Build_RTF_Header(char **buffer, int *bufferEnd, int *bufferAlloced, struct MessageWindowData *dat)
@@ -627,11 +627,12 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 #if !defined(_UNICODE)
 	char *szName;
 #endif
-	TCHAR *szFinalTimestamp;
-	int bufferAlloced, bufferEnd, iTemplateLen;
+	TCHAR 	*szFinalTimestamp;
+	int 	bufferAlloced, bufferEnd;
+	size_t 	iTemplateLen, i = 0;
 	DBEVENTINFO dbei = { 0 };
 	int isSent = 0;
-	int iFontIDOffset = 0, i = 0;
+	int iFontIDOffset = 0;
 	TCHAR *szTemplate;
 	time_t final_time;
 	BOOL skipToNext = FALSE, showTime = TRUE, showDate = TRUE, skipFont = FALSE;
@@ -1768,11 +1769,12 @@ static TCHAR *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t ch
 
 WCHAR *Utf8_Decode(const char *str)
 {
-	int i, len;
+	size_t i, len;
 	char *p;
 	WCHAR *wszTemp = NULL;
 
-	if (str == NULL) return NULL;
+	if (str == NULL)
+		return NULL;
 
 	len = strlen(str);
 
@@ -1805,7 +1807,7 @@ WCHAR *Utf8_Decode(const char *str)
 char *Utf8_Encode(const WCHAR *str)
 {
 	unsigned char *szOut = NULL;
-	int len, i;
+	size_t len, i;
 	const WCHAR *wszTemp, *w;
 
 	if (str == NULL)

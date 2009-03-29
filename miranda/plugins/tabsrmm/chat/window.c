@@ -603,8 +603,8 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			if (wParam == 0x0d && isCtrl && myGlobals.m_MathModAvail) {
 				TCHAR toInsert[100];
 				BYTE keyState[256];
-				int i;
-				int iLen = _tcslen(myGlobals.m_MathModStartDelimiter);
+				size_t i;
+				size_t iLen = _tcslen(myGlobals.m_MathModStartDelimiter);
 				ZeroMemory(keyState, 256);
 				_tcsncpy(toInsert, myGlobals.m_MathModStartDelimiter, 30);
 				_tcsncat(toInsert, myGlobals.m_MathModStartDelimiter, 30);
@@ -665,7 +665,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			break;
 		}
 		case WM_KEYDOWN: {
-			static int start, end;
+			static size_t start, end;
 			BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
 			BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 			BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
@@ -752,7 +752,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 
 			if (wParam == VK_TAB && !isCtrl && !isShift) {    //tab-autocomplete
 				TCHAR* pszText = NULL;
-				int iLen;
+				size_t iLen;
 				GETTEXTLENGTHEX gtl = {0};
 				GETTEXTEX gt = {0};
 				LRESULT lResult = (LRESULT)SendMessage(hwnd, EM_GETSEL, (WPARAM)NULL, (LPARAM)NULL);
@@ -770,7 +770,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 					size_t cbLen;
 					pszText = ( TCHAR* )alloca(sizeof(TCHAR) * (iLen + 100));
 
-					gt.cb = iLen + 99;
+					gt.cb = (DWORD)(iLen + 99);
 					gt.flags = GT_DEFAULT;
 #if defined( _UNICODE )
 					gt.codepage = 1200;
@@ -787,12 +787,12 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 					cbLen = end - start + 1;
 					if (dat->szTabSave[0] == '\0') {
 						size_t cbRealLen = min( SIZEOF(dat->szTabSave)-1, cbLen );
-						lstrcpyn(dat->szTabSave, pszText + start, cbRealLen);
+						lstrcpyn(dat->szTabSave, pszText + start, (int)cbRealLen);
 						dat->szTabSave[ cbRealLen ] = 0;
 					}
 
 					pszSelName = ( TCHAR* )alloca(sizeof(TCHAR) * (cbLen));
-					lstrcpyn(pszSelName, pszText + start, cbLen);
+					lstrcpyn(pszSelName, pszText + start, (int)cbLen);
 					pszName = UM_FindUserAutoComplete(Parentsi->pUsers, dat->szTabSave, pszSelName);
 					if (pszName == NULL) {
 						pszName = dat->szTabSave;
@@ -800,7 +800,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 						if (end != start)
 							SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM) pszName);
 						dat->szTabSave[0] = '\0';
-					} 
+					}
 					else {
 						SendMessage(hwnd, EM_SETSEL, start, end);
 						if (end != start)

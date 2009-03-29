@@ -21,6 +21,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+#if defined( UNICODE ) && !defined( _UNICODE )
+	#define _UNICODE
+#endif
+
 #define WINVER 0x0600
 #define _WIN32_WINNT 0x0501
 #define _WIN32_IE 0x0501
@@ -115,6 +119,12 @@ extern struct LIST_INTERFACE li;
 #include "generic_msghandlers.h"
 #include "chat/chat.h"
 
+#endif
+
+#if !defined(_WIN64) && !defined(_USE_32BIT_TIME_T)
+	#define _USE_32BIT_TIME_T
+#else
+	#undef _USE_32BIT_TIME_T
 #endif
 
 #if _MSC_VER >= 1500

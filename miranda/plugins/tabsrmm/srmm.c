@@ -39,7 +39,7 @@ DWORD g_mirandaVersion = 0;
 PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
 LOGFONT lfDefault = {0};
-LOGFONTA lfDefaultA = {0};
+// LOGFONTA lfDefaultA = {0};
 extern MYGLOBALS myGlobals;
 //MAD
 struct LIST_INTERFACE li;
@@ -114,7 +114,7 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	//
 
 	SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(lfDefault), &lfDefault, FALSE);
-	SystemParametersInfoA(SPI_GETICONTITLELOGFONT, sizeof(lfDefaultA), &lfDefaultA, FALSE);
+	// SystemParametersInfoA(SPI_GETICONTITLELOGFONT, sizeof(lfDefaultA), &lfDefaultA, FALSE);
 	if (!ServiceExists(MS_DB_EVENT_GETTEXT)) {
 		MessageBox(0, _T("Critical error. Unsupported database driver found. tabSRMM will be disabled"), _T("tabSRMM"), MB_OK | MB_ICONERROR);
 		return 1;

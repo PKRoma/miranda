@@ -900,8 +900,8 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 			mir_free(p);
 
 			if (g_Settings.LoggingLimit > 0) {
-				DWORD dwSize;
-				DWORD trimlimit;
+				long  dwSize;
+				long  trimlimit;
 
 				fseek(hFile, 0, SEEK_END);
 				dwSize = ftell(hFile);
@@ -910,12 +910,12 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 				if (dwSize > trimlimit) {
 					BYTE * pBuffer = 0;
 					BYTE * pBufferTemp = 0;
-					int read = 0;
+					size_t read = 0;
 
 					pBuffer = (BYTE *)mir_alloc(g_Settings.LoggingLimit * 1024 + 1);
 					pBuffer[g_Settings.LoggingLimit*1024] = '\0';
 					fseek(hFile, -g_Settings.LoggingLimit*1024, SEEK_END);
-					read = fread(pBuffer, 1, g_Settings.LoggingLimit * 1024, hFile);
+					read = fread(pBuffer, 1UL, g_Settings.LoggingLimit * 1024, hFile);
 					fclose(hFile);
 					hFile = NULL;
 

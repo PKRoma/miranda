@@ -199,7 +199,7 @@ static INT_PTR GetWindowData(WPARAM wParam, LPARAM lParam)
 		mwod->hwndWindow = hwnd;
 		mwod->local = GetParent(GetParent(hwnd));
 		SendMessage(hwnd, DM_GETWINDOWSTATE, 0, 0);
-		mwod->uState = GetWindowLongPtr(hwnd, DWLP_MSGRESULT);
+		mwod->uState = (int)GetWindowLongPtr(hwnd, DWLP_MSGRESULT);
 		return 0;
 	}
 	else if ((si = SM_FindSessionByHCONTACT(mwid->hContact)) != NULL && si->hWnd != 0) {
@@ -207,7 +207,7 @@ static INT_PTR GetWindowData(WPARAM wParam, LPARAM lParam)
 		mwod->hwndWindow = si->hWnd;
 		mwod->local = GetParent(GetParent(si->hWnd));
 		SendMessage(si->hWnd, DM_GETWINDOWSTATE, 0, 0);
-		mwod->uState = GetWindowLongPtr(si->hWnd, DWLP_MSGRESULT);
+		mwod->uState = (int)GetWindowLongPtr(si->hWnd, DWLP_MSGRESULT);
 		return 0;
 	}
 	else {
@@ -1287,7 +1287,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
  	upd.cbSize = sizeof(upd);
  	upd.szComponentName = pluginInfo.shortName;
  	upd.pbVersion = (BYTE *)/*CreateVersionStringPlugin*/CreateVersionString(pluginInfo.version, szCurrentVersion);
- 	upd.cpbVersion = strlen((char *)upd.pbVersion);
+ 	upd.cpbVersion = (int)(strlen((char *)upd.pbVersion));
 	upd.szVersionURL = szFLVersionUrl;
 	upd.szUpdateURL = szFLUpdateurl;
 #if defined(_UNICODE)
@@ -1295,14 +1295,14 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 #else
 	upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">tabSRMM 2.0 ";
 #endif
-	upd.cpbVersionPrefix = strlen((char *)upd.pbVersionPrefix);
+	upd.cpbVersionPrefix = (int)(strlen((char *)upd.pbVersionPrefix));
 
  	upd.szBetaUpdateURL = szUpdateUrl;
  	upd.szBetaVersionURL = szVersionUrl;
 	upd.pbVersion = szCurrentVersion;
 	upd.cpbVersion = lstrlenA(szCurrentVersion);
  	upd.pbBetaVersionPrefix = (BYTE *)szPrefix;
- 	upd.cpbBetaVersionPrefix = strlen((char *)upd.pbBetaVersionPrefix);
+ 	upd.cpbBetaVersionPrefix = (int)(strlen((char *)upd.pbBetaVersionPrefix));
  	upd.szBetaChangelogURL   ="http://miranda.radicaled.ru/public/tabsrmm/chglogeng.txt";
 
  	if (ServiceExists(MS_UPDATE_REGISTER))

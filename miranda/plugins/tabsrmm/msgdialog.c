@@ -899,8 +899,8 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			if (wParam == 0x0d && isCtrl && myGlobals.m_MathModAvail) {
 				TCHAR toInsert[100];
 				BYTE keyState[256];
-				int i;
-				int iLen = _tcslen(myGlobals.m_MathModStartDelimiter);
+				size_t i;
+				size_t iLen = _tcslen(myGlobals.m_MathModStartDelimiter);
 				ZeroMemory(keyState, 256);
 				_tcsncpy(toInsert, myGlobals.m_MathModStartDelimiter, 30);
 				_tcsncat(toInsert, myGlobals.m_MathModStartDelimiter, 30);
@@ -3737,7 +3737,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							} else {
 								flags |= PREF_UTF;
 								utfResult = mir_utf8encodeW(decoded);
-								memRequired = strlen(utfResult) + 1;
+								memRequired = (int)(strlen(utfResult)) + 1;
 							}
 
 							/*
@@ -3929,7 +3929,7 @@ quote_from_last:
 						dbei.pBlob = (BYTE *)szText;
 						CallService(MS_DB_EVENT_GET, (WPARAM)hDBEvent, (LPARAM)&dbei);
 #ifdef _UNICODE
-						iSize = strlen((char *)dbei.pBlob) + 1;
+						iSize = (int)(strlen((char *)dbei.pBlob)) + 1;
 						if (dbei.flags & DBEF_UTF) {
 							szConverted = Utf8_Decode((char*)szText);
 							iAlloced = TRUE;

@@ -44,11 +44,11 @@ BOOL    bWOpened=FALSE;
 BOOL    g_bIMGtagButton;
 BOOL    g_bClientInStatusBar;
 
-char* getMirVer(HANDLE hContact)
+static char* getMirVer(HANDLE hContact)
 {
-	char * szProto=NULL;
-	char* msg=NULL;
-	DBVARIANT dbv = {0};
+	char 		*szProto = NULL;
+	char		*msg = NULL;
+	DBVARIANT 	dbv = {0};
 
 	szProto = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 	if ( !szProto )
@@ -61,14 +61,14 @@ char* getMirVer(HANDLE hContact)
 	return (msg);
 }
 
-TCHAR* getMenuEntry(int i)  {
-	TCHAR* msg=NULL;
-	char MEntry[256]={'\0'};
-	DBVARIANT dbv = {0};
+static TCHAR* getMenuEntry(int i)  {
+	TCHAR		*msg = NULL;
+	char 		MEntry[256] = {'\0'};
+	DBVARIANT 	dbv = {0};
 
-	mir_snprintf(MEntry,255,"MenuEntry_%u",i);
+	mir_snprintf(MEntry, 255, "MenuEntry_%u", i);
 	if ( !DBGetContactSettingTString(NULL, "tabmodplus",MEntry, &dbv) ) {
-		msg=mir_tstrdup(dbv.ptszVal);
+		msg = mir_tstrdup(dbv.ptszVal);
 		DBFreeVariant(&dbv);
 	}
 	return (msg);
@@ -76,15 +76,19 @@ TCHAR* getMenuEntry(int i)  {
 
 int ChangeClientIconInStatusBar(WPARAM wparam,LPARAM lparam)
 {
-	HICON hIcon=NULL;
-	char* msg = getMirVer((HANDLE)wparam);
+	HICON 		hIcon = NULL;
+	char		*msg = getMirVer((HANDLE)wparam);
 
 	if ( !msg )
 		return (1);
 
-	hIcon=(HICON)CallService(MS_FP_GETCLIENTICON,(WPARAM)msg,(LPARAM)1);
-	if ( !hIcon )
+	hIcon = (HICON)CallService(MS_FP_GETCLIENTICON,(WPARAM)msg,(LPARAM)1);
+
+	if ( !hIcon ) {
+		if(msg)
+			mir_free(msg);
 		return (1);
+	}
 
 	if ( ServiceExists(MS_MSG_MODIFYICON) ) {
 		StatusIconData sid = {0};

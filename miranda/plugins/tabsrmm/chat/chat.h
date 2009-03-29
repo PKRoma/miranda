@@ -312,7 +312,7 @@ struct GlobalLogSettings_t {
 	BOOL        TimeStampEventColour;
 	DWORD       dwIconFlags;
 	int         LogTextIndent;
-	int         LoggingLimit;
+	long        LoggingLimit;
 	int         iEventLimit;
 	int         iPopupStyle;
 	int         iPopupTimeout;

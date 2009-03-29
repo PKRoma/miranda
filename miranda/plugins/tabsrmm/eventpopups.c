@@ -421,13 +421,14 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 							if (item.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
 								item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_BOLD;
 								SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
-							} 
-							else if (hti.flags&TVHT_ONITEMSTATEICON){
-								if (((item.state & TVIS_STATEIMAGEMASK) >> 12) == 3) { 
-									item.state = INDEXTOSTATEIMAGEMASK(1);      
-									SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);}
-							SendMessage(GetParent(hWnd), PSM_CHANGED, 0, 0);
+							}
+							else if (hti.flags&TVHT_ONITEMSTATEICON) {
+								if (((item.state & TVIS_STATEIMAGEMASK) >> 12) == 3) {
+									item.state = INDEXTOSTATEIMAGEMASK(1);
+									SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
 								}
+								SendMessage(GetParent(hWnd), PSM_CHANGED, 0, 0);
+							}
 						}
 					}
 					break;
@@ -447,7 +448,7 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 						if (defaultItems[i].uType == LOI_TYPE_SETTING) {
 							BOOL *ptr = (BOOL *)defaultItems[i].lParam;
 							*ptr = (item.state >> 12) == 3/*2*/ ? TRUE : FALSE;
-						} 
+						}
 						else if (defaultItems[i].uType == LOI_TYPE_FLAG) {
 							UINT *uVal = (UINT *)defaultItems[i].lParam;
 							*uVal = ((item.state >> 12) == 3/*2*/) ? *uVal | defaultItems[i].id : *uVal & ~defaultItems[i].id;
@@ -1194,10 +1195,10 @@ static int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
 	codePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", myGlobals.m_LangPackCP);
 
 	if (hContact) {
-		mir_sntprintf(pud.lpwzContactName, MAX_CONTACTNAME, _T("%s"), (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR)); 
+		mir_sntprintf(pud.lpwzContactName, MAX_CONTACTNAME, _T("%s"), (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
 		//MY_GetContactDisplayNameW(hContact, pud.lpwzContactName, MAX_CONTACTNAME, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), 0);
 		//pud.lpwzContactName[MAX_CONTACTNAME - 1] = 0;
-	} 
+	}
 	else {
 		MultiByteToWideChar(myGlobals.m_LangPackCP, 0, dbe.szModule, -1, pud.lpwzContactName, MAX_CONTACTNAME);
 		pud.lpwzContactName[MAX_CONTACTNAME - 1] = 0;
@@ -1355,7 +1356,7 @@ nounicode:
 		nim.szInfo[250] = 0;
 	}
 	if (nen_options.iAnnounceMethod == 3) {                         // announce via OSD service
-		int iLen = _tcslen(nim.szInfo) + _tcslen(nim.szInfoTitle) + 30;
+		size_t iLen = _tcslen(nim.szInfo) + _tcslen(nim.szInfoTitle) + 30;
 		TCHAR *finalOSDString = malloc(iLen * sizeof(TCHAR));
 
 		mir_sntprintf(finalOSDString, iLen, TranslateT("Message from %s: %s"), nim.szInfoTitle, nim.szInfo);
