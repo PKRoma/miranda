@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 HINSTANCE g_hInst = 0;
 PLUGINLINK  *pluginLink;
+MM_INTERFACE mmi;
 LIST_INTERFACE li;
 
 static char     g_szAvatarPath[MAX_PATH];		// avatar cache path (read at startup only)
@@ -289,9 +290,9 @@ int AVS_pathToAbsoluteW(const wchar_t *pSrc, wchar_t *pOut)
 }
 #endif
 
-static void NotifyMetaAware(HANDLE hContact, struct CacheNode *node = NULL, AVATARCACHEENTRY *ace = (AVATARCACHEENTRY *)0xffffffff)
+static void NotifyMetaAware(HANDLE hContact, struct CacheNode *node = NULL, AVATARCACHEENTRY *ace = (AVATARCACHEENTRY *)-1)
 {
-	if(ace == (AVATARCACHEENTRY *)0xffffffff)
+	if(ace == (AVATARCACHEENTRY *)-1)
 		ace = &node->ace;
 
 	NotifyEventHooks(hEventChanged, (WPARAM)hContact, (LPARAM)ace);
@@ -2445,10 +2446,10 @@ static int OnDetailsInit(WPARAM wParam, LPARAM lParam)
 
 static int LoadAvatarModule()
 {
-	init_mir_malloc();
-	init_mir_thread();
+	mir_getMMI ( &mmi );
+	mir_getLI  ( &li );
 
-	mir_getLI( &li );
+	init_mir_thread();
 
 	InitializeCriticalSection(&cachecs);
 	InitializeCriticalSection(&alloccs);
