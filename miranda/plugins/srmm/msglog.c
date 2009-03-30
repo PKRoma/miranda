@@ -75,7 +75,7 @@ static int AppendToBufferWithRTF(char **buffer, int *cbBufferEnd, int *cbBufferA
 	DWORD textCharsCount = 0;
 	char *d;
 
-	int lineLen = _tcslen(line) * 9 + 8;
+	int lineLen = (int)_tcslen(line) * 9 + 8;
 	if (*cbBufferEnd + lineLen > *cbBufferAlloced) {
 		cbBufferAlloced[0] += (lineLen + 1024 - lineLen % 1024);
 		*buffer = (char *) realloc(*buffer, *cbBufferAlloced);
@@ -368,7 +368,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 			else {
 				#if defined( _UNICODE )
 				{
-					int msglen = strlen((char *) dbei.pBlob) + 1;
+					int msglen = (int)strlen((char *) dbei.pBlob) + 1;
 					msg = ( TCHAR* )alloca(sizeof(TCHAR) * msglen);
 					MultiByteToWideChar(CP_ACP, 0, (char *) dbei.pBlob, -1, msg, msglen);
 				}

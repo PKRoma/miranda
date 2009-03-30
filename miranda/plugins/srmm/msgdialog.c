@@ -273,7 +273,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 
 	case EM_SUBCLASSED:
 		dat = (struct MsgEditSubclassData *) malloc(sizeof(struct MsgEditSubclassData));
-		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG) dat);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) dat);
 		dat->lastEnterTime = 0;
 		dat->keyboardMsgQueue = NULL;
 		dat->msgQueueCount = 0;
@@ -1564,7 +1564,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			LoadMsgDlgFont(MSGFONTID_MESSAGEAREA, NULL, &colour);
 			SetTextColor((HDC) wParam, colour);
 			SetBkColor((HDC) wParam, DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR));
-			return (BOOL) dat->hBkgBrush;
+			return (INT_PTR) dat->hBkgBrush;
 		}
 
 	case WM_MEASUREITEM:
