@@ -229,10 +229,6 @@ SOURCE=.\snac.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\strl.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\theme.cpp
 # End Source File
 # Begin Source File
