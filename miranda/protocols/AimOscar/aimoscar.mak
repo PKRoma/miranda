@@ -56,7 +56,6 @@ CLEAN :
 	-@erase "$(INTDIR)\server.obj"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\snac.obj"
-	-@erase "$(INTDIR)\strl.obj"
 	-@erase "$(INTDIR)\theme.obj"
 	-@erase "$(INTDIR)\thread.obj"
 	-@erase "$(INTDIR)\tlv.obj"
@@ -135,7 +134,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\server.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\snac.obj" \
-	"$(INTDIR)\strl.obj" \
 	"$(INTDIR)\theme.obj" \
 	"$(INTDIR)\thread.obj" \
 	"$(INTDIR)\tlv.obj" \
@@ -199,8 +197,6 @@ CLEAN :
 	-@erase "$(INTDIR)\services.sbr"
 	-@erase "$(INTDIR)\snac.obj"
 	-@erase "$(INTDIR)\snac.sbr"
-	-@erase "$(INTDIR)\strl.obj"
-	-@erase "$(INTDIR)\strl.sbr"
 	-@erase "$(INTDIR)\theme.obj"
 	-@erase "$(INTDIR)\theme.sbr"
 	-@erase "$(INTDIR)\thread.obj"
@@ -282,7 +278,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\server.sbr" \
 	"$(INTDIR)\services.sbr" \
 	"$(INTDIR)\snac.sbr" \
-	"$(INTDIR)\strl.sbr" \
 	"$(INTDIR)\theme.sbr" \
 	"$(INTDIR)\thread.sbr" \
 	"$(INTDIR)\tlv.sbr" \
@@ -316,7 +311,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\server.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\snac.obj" \
-	"$(INTDIR)\strl.obj" \
 	"$(INTDIR)\theme.obj" \
 	"$(INTDIR)\thread.obj" \
 	"$(INTDIR)\tlv.obj" \
@@ -358,7 +352,6 @@ CLEAN :
 	-@erase "$(INTDIR)\server.obj"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\snac.obj"
-	-@erase "$(INTDIR)\strl.obj"
 	-@erase "$(INTDIR)\theme.obj"
 	-@erase "$(INTDIR)\thread.obj"
 	-@erase "$(INTDIR)\tlv.obj"
@@ -437,7 +430,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\server.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\snac.obj" \
-	"$(INTDIR)\strl.obj" \
 	"$(INTDIR)\theme.obj" \
 	"$(INTDIR)\thread.obj" \
 	"$(INTDIR)\tlv.obj" \
@@ -501,8 +493,6 @@ CLEAN :
 	-@erase "$(INTDIR)\services.sbr"
 	-@erase "$(INTDIR)\snac.obj"
 	-@erase "$(INTDIR)\snac.sbr"
-	-@erase "$(INTDIR)\strl.obj"
-	-@erase "$(INTDIR)\strl.sbr"
 	-@erase "$(INTDIR)\theme.obj"
 	-@erase "$(INTDIR)\theme.sbr"
 	-@erase "$(INTDIR)\thread.obj"
@@ -584,7 +574,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\server.sbr" \
 	"$(INTDIR)\services.sbr" \
 	"$(INTDIR)\snac.sbr" \
-	"$(INTDIR)\strl.sbr" \
 	"$(INTDIR)\theme.sbr" \
 	"$(INTDIR)\thread.sbr" \
 	"$(INTDIR)\tlv.sbr" \
@@ -618,7 +607,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\server.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\snac.obj" \
-	"$(INTDIR)\strl.obj" \
 	"$(INTDIR)\theme.obj" \
 	"$(INTDIR)\thread.obj" \
 	"$(INTDIR)\tlv.obj" \
@@ -1172,34 +1160,6 @@ SOURCE=.\snac.cpp
 
 
 "$(INTDIR)\snac.obj"	"$(INTDIR)\snac.sbr" : $(SOURCE) "$(INTDIR)"
-
-
-!ENDIF 
-
-SOURCE=.\strl.cpp
-
-!IF  "$(CFG)" == "aim - Win32 Release"
-
-
-"$(INTDIR)\strl.obj" : $(SOURCE) "$(INTDIR)"
-
-
-!ELSEIF  "$(CFG)" == "aim - Win32 Debug"
-
-
-"$(INTDIR)\strl.obj"	"$(INTDIR)\strl.sbr" : $(SOURCE) "$(INTDIR)"
-
-
-!ELSEIF  "$(CFG)" == "aim - Win32 Release Unicode"
-
-
-"$(INTDIR)\strl.obj" : $(SOURCE) "$(INTDIR)"
-
-
-!ELSEIF  "$(CFG)" == "aim - Win32 Debug Unicode"
-
-
-"$(INTDIR)\strl.obj"	"$(INTDIR)\strl.sbr" : $(SOURCE) "$(INTDIR)"
 
 
 !ENDIF 
