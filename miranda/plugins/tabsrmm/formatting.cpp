@@ -46,7 +46,7 @@ extern "C" RTFColorTable *rtf_ctable;
 extern "C" TCHAR *xStatusDescr[];
 extern "C" TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
 extern "C" DWORD m_LangPackCP;
-extern "C" int MY_CallService(const char *svc, WPARAM wParam, LPARAM lParam);
+extern "C" INT_PTR MY_CallService(const char *svc, WPARAM wParam, LPARAM lParam);
 extern "C" int MY_ServiceExists(const char *svc);
 extern "C" void RTF_ColorAdd(const TCHAR *tszColname, size_t length);
 extern "C" int  haveMathMod;
@@ -200,7 +200,7 @@ search_again:
 invalid_code:
 						if (endmark != message.npos)
 							message.erase(endmark, 8);
-						if (closing != message.npos && closing < endmark)
+						if (closing != message.npos && closing < (size_t)endmark)
 							message.erase(beginmark, (closing - beginmark) + 1);
 						else
 							message[beginmark] = ' ';

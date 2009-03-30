@@ -1211,7 +1211,7 @@ create_it:
 		tmpItem.dwFlags &= ~BUTTON_NORMALGLYPHISICON;
 		if ((phIcon = BTN_GetIcon(szBuffer)) != 0) {
 			tmpItem.dwFlags |= BUTTON_NORMALGLYPHISICON;
-			tmpItem.normalGlyphMetrics[0] = (LONG)phIcon;
+			tmpItem.normalGlyphMetrics[0] = (LONG_PTR)phIcon;
 		} else {
 			sscanf(szBuffer, "%d,%d,%d,%d", &tmpItem.normalGlyphMetrics[0], &tmpItem.normalGlyphMetrics[1],
 				   &tmpItem.normalGlyphMetrics[2], &tmpItem.normalGlyphMetrics[3]);
@@ -1224,7 +1224,7 @@ create_it:
 	if (_stricmp(szBuffer, "default")) {
 		tmpItem.dwFlags &= ~BUTTON_PRESSEDGLYPHISICON;
 		if ((phIcon = BTN_GetIcon(szBuffer)) != 0) {
-			tmpItem.pressedGlyphMetrics[0] = (LONG)phIcon;
+			tmpItem.pressedGlyphMetrics[0] = (LONG_PTR)phIcon;
 			tmpItem.dwFlags |= BUTTON_PRESSEDGLYPHISICON;
 		} else {
 			sscanf(szBuffer, "%d,%d,%d,%d", &tmpItem.pressedGlyphMetrics[0], &tmpItem.pressedGlyphMetrics[1],
@@ -1238,7 +1238,7 @@ create_it:
 	if (_stricmp(szBuffer, "default")) {
 		tmpItem.dwFlags &= ~BUTTON_HOVERGLYPHISICON;
 		if ((phIcon = BTN_GetIcon(szBuffer)) != 0) {
-			tmpItem.hoverGlyphMetrics[0] = (LONG)phIcon;
+			tmpItem.hoverGlyphMetrics[0] = (LONG_PTR)phIcon;
 			tmpItem.dwFlags |= BUTTON_HOVERGLYPHISICON;
 		} else {
 			sscanf(szBuffer, "%d,%d,%d,%d", &tmpItem.hoverGlyphMetrics[0], &tmpItem.hoverGlyphMetrics[1],

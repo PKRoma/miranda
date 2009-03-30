@@ -152,15 +152,15 @@ int BTN_GetStockItem(ButtonItem *item, const char *szName)
 			lstrcpyn(item->szTip, sbarItems[i].tszTip, 256);
 			item->szTip[255] = 0;
 			if (sbarItems[i].hIcon) {
-				item->normalGlyphMetrics[0] = (LONG)sbarItems[i].hIcon;
+				item->normalGlyphMetrics[0] = (LONG_PTR)sbarItems[i].hIcon;
 				item->dwFlags |= BUTTON_NORMALGLYPHISICON;
 				}
 			if (sbarItems[i].hIconPressed) {
-				item->pressedGlyphMetrics[0] = (LONG)sbarItems[i].hIconPressed;
+				item->pressedGlyphMetrics[0] = (LONG_PTR)sbarItems[i].hIconPressed;
 				item->dwFlags |= BUTTON_PRESSEDGLYPHISICON;
 				}
 			if (sbarItems[i].hIconHover) {
-				item->hoverGlyphMetrics[0] = (LONG)sbarItems[i].hIconHover;
+				item->hoverGlyphMetrics[0] = (LONG_PTR)sbarItems[i].hIconHover;
 				item->dwFlags |= BUTTON_HOVERGLYPHISICON;
 				}
 			return 1;

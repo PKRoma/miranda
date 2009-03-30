@@ -216,7 +216,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				else
 					SetTextColor((HDC)wParam, RGB(0, 0, 0));
 				SetBkColor((HDC)wParam, RGB(255, 255, 255));
-				return (BOOL)GetStockObject(WHITE_BRUSH);
+				return (INT_PTR)GetStockObject(WHITE_BRUSH);
 			}
 			break;
 		case WM_NOTIFY:

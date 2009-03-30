@@ -1131,7 +1131,7 @@ char * Message_GetFromStream(HWND hwndRtf, struct MessageWindowData* dat, DWORD 
 
 	ZeroMemory(&stream, sizeof(stream));
 	stream.pfnCallback = Message_StreamCallback;
-	stream.dwCookie = (DWORD) & pszText; // pass pointer to pointer
+	stream.dwCookie = (DWORD_PTR) & pszText; // pass pointer to pointer
 #if defined(_UNICODE)
 	if (dwPassedFlags == 0)
 		dwFlags = (CP_UTF8 << 16) | (SF_RTFNOOBJS | SFF_PLAINRTF | SF_USECODEPAGE);
@@ -2932,7 +2932,7 @@ int MY_GetContactDisplayNameW(HANDLE hContact, wchar_t *szwBuf, unsigned int siz
 #endif
 */
 
-int MY_CallService(const char *svc, WPARAM wParam, LPARAM lParam)
+INT_PTR MY_CallService(const char *svc, WPARAM wParam, LPARAM lParam)
 {
 	return(CallService(svc, wParam, lParam));
 }

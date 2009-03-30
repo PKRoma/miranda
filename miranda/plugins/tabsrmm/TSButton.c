@@ -380,7 +380,7 @@ bg_done:
 
 		if (ctl->item) {
 			HICON hIcon = 0;
-			LONG *glyphMetrics = ctl->stateId == PBS_HOT ? ctl->item->hoverGlyphMetrics : (ctl->stateId == PBS_PRESSED ? ctl->item->pressedGlyphMetrics : ctl->item->normalGlyphMetrics);
+			LONG_PTR *glyphMetrics = ctl->stateId == PBS_HOT ? ctl->item->hoverGlyphMetrics : (ctl->stateId == PBS_PRESSED ? ctl->item->pressedGlyphMetrics : ctl->item->normalGlyphMetrics);
 			LONG xOff;
 			HFONT hOldFont;
 			SIZE  szText = {0};
@@ -531,7 +531,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 					ti.cbSize = sizeof(ti);
 					ti.uFlags = TTF_IDISHWND;
 					ti.hwnd = bct->hwnd;
-					ti.uId = (UINT)bct->hwnd;
+					ti.uId = (UINT_PTR)bct->hwnd;
 					if (SendMessage(hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM)&ti)) {
 						SendMessage(hwndToolTips, TTM_DELTOOL, 0, (LPARAM)&ti);
 					}
@@ -712,12 +712,12 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			ti.cbSize = sizeof(ti);
 			ti.uFlags = TTF_IDISHWND;
 			ti.hwnd = bct->hwnd;
-			ti.uId = (UINT)bct->hwnd;
+			ti.uId = (UINT_PTR)bct->hwnd;
 			if (SendMessage(hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM)&ti)) {
 				SendMessage(hwndToolTips, TTM_DELTOOL, 0, (LPARAM)&ti);
 			}
 			ti.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
-			ti.uId = (UINT)bct->hwnd;
+			ti.uId = (UINT_PTR)bct->hwnd;
 			ti.lpszText = (TCHAR *)wParam;
 			SendMessage(hwndToolTips, TTM_ADDTOOL, 0, (LPARAM)&ti);
 			SendMessage(hwndToolTips, TTM_SETMAXTIPWIDTH, 0, 300);

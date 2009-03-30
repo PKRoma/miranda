@@ -311,7 +311,7 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				else
 					SetTextColor((HDC)wParam, RGB(0, 0, 0));
 				SetBkColor((HDC)wParam, RGB(255, 255, 255));
-				return (BOOL)GetStockObject(WHITE_BRUSH);
+				return (INT_PTR)GetStockObject(WHITE_BRUSH);
 			}
 			break;
 		case WM_DESTROY: {

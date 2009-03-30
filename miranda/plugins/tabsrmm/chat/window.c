@@ -1133,7 +1133,7 @@ static INT_PTR CALLBACK FilterWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
 		case WM_CTLCOLORSTATIC:
 			SetTextColor((HDC)wParam, RGB(60, 60, 150));
 			SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
-			return (BOOL)GetSysColorBrush(COLOR_WINDOW);
+			return (INT_PTR)GetSysColorBrush(COLOR_WINDOW);
 
 		case WM_ACTIVATE:
 			if (LOWORD(wParam) == WA_INACTIVE) {
@@ -2286,7 +2286,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 		case WM_CTLCOLORLISTBOX:
 			SetBkColor((HDC) wParam, g_Settings.crUserListBGColor);
-			return (BOOL) hListBkgBrush;
+			return (INT_PTR) hListBkgBrush;
 
 		case WM_MEASUREITEM: {
 			MEASUREITEMSTRUCT *mis = (MEASUREITEMSTRUCT *) lParam;

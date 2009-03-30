@@ -1693,7 +1693,7 @@ static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG start
 		char szPattern[50];
 		FINDTEXTEXA fi;
 
-		_snprintf(szPattern, 40, "~-+%d+-~", dat->hHistoryEvents[0]);
+		_snprintf(szPattern, 40, "~-+%d+-~", (INT_PTR)dat->hHistoryEvents[0]);
 		fi.lpstrText = szPattern;
 		fi.chrg.cpMin = 0;
 		fi.chrg.cpMax = -1;

@@ -406,7 +406,7 @@ addnew:
 		mii.cch = lstrlen(szMenuEntry) + 1;
 	}
 	mii.hbmpItem = HBMMENU_CALLBACK;
-	mii.dwItemData = (ULONG)hIcon;
+	mii.dwItemData = (ULONG_PTR)hIcon;
 	SetMenuItemInfo(hMenu, (UINT)hContact, FALSE, &mii);
 
 	if(szFinalProto)

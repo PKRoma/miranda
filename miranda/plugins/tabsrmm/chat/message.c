@@ -353,7 +353,7 @@ char* Chat_Message_GetFromStream(HWND hwndDlg, SESSION_INFO* si)
 
 	ZeroMemory(&stream, sizeof(stream));
 	stream.pfnCallback = Chat_Message_StreamCallback;
-	stream.dwCookie = (DWORD) & pszText; // pass pointer to pointer
+	stream.dwCookie = (DWORD_PTR) & pszText; // pass pointer to pointer
 
 #if defined(_UNICODE)
 	dwFlags = SF_RTFNOOBJS | SFF_PLAINRTF | SF_USECODEPAGE | (CP_UTF8 << 16);

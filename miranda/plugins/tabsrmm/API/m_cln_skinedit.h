@@ -35,9 +35,9 @@ typedef struct _tagButtonItem {
     LONG    xOff, yOff;
     LONG    width, height;
     ImageItem *imgNormal, *imgPressed, *imgHover;
-    LONG    normalGlyphMetrics[4];
-    LONG    hoverGlyphMetrics[4];
-    LONG    pressedGlyphMetrics[4];
+    LONG_PTR normalGlyphMetrics[4];
+    LONG_PTR hoverGlyphMetrics[4];
+    LONG_PTR pressedGlyphMetrics[4];
     DWORD   dwFlags, dwStockFlags;
     DWORD   uId;
     TCHAR   szTip[256];

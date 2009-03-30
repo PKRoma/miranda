@@ -3666,7 +3666,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			if (dat->theme.fontColors != NULL)
 				SetTextColor((HDC)wParam, dat->theme.fontColors[MSGFONTID_MESSAGEAREA]);
 			SetBkColor((HDC)wParam, dat->inputbg);
-			return (BOOL)dat->hInputBkgBrush;
+			return (INT_PTR)dat->hInputBkgBrush;
 		}
 		case WM_MEASUREITEM: {
 			LPMEASUREITEMSTRUCT lpmi = (LPMEASUREITEMSTRUCT) lParam;
