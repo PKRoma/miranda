@@ -1838,11 +1838,11 @@ struct CDlgAccMgrUI : public CProtoDlgBase<CIrcProto>
 	}	}	}
 };
 
-int CIrcProto::SvcCreateAccMgrUI(WPARAM, LPARAM lParam)
+INT_PTR CIrcProto::SvcCreateAccMgrUI(WPARAM, LPARAM lParam)
 {
 	CDlgAccMgrUI *dlg = new CDlgAccMgrUI(this, (HWND)lParam);
 	dlg->Show();
-	return (int)dlg->GetHwnd();
+	return (INT_PTR)dlg->GetHwnd();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

@@ -118,7 +118,7 @@ void CIrcProto::InitMenus()
 		CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuServer, ( LPARAM )&clmi );
 }
 
-int __cdecl CIrcProto::OnDoubleclicked(WPARAM, LPARAM lParam)
+INT_PTR __cdecl CIrcProto::OnDoubleclicked(WPARAM, LPARAM lParam)
 {
 	if (!lParam)
 		return 0;
@@ -181,7 +181,7 @@ int __cdecl CIrcProto::OnDeletedContact(WPARAM wp, LPARAM)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnJoinChat(WPARAM wp, LPARAM)
+INT_PTR __cdecl CIrcProto::OnJoinChat(WPARAM wp, LPARAM)
 {
 	if (!wp )
 		return 0;
@@ -195,7 +195,7 @@ int __cdecl CIrcProto::OnJoinChat(WPARAM wp, LPARAM)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnLeaveChat(WPARAM wp, LPARAM)
+INT_PTR __cdecl CIrcProto::OnLeaveChat(WPARAM wp, LPARAM)
 {
 	if (!wp )
 		return 0;
@@ -221,7 +221,7 @@ int __cdecl CIrcProto::OnLeaveChat(WPARAM wp, LPARAM)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnMenuChanSettings(WPARAM wp, LPARAM)
+INT_PTR __cdecl CIrcProto::OnMenuChanSettings(WPARAM wp, LPARAM)
 {
 	if (!wp )
 		return 0;
@@ -235,7 +235,7 @@ int __cdecl CIrcProto::OnMenuChanSettings(WPARAM wp, LPARAM)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnMenuWhois(WPARAM wp, LPARAM)
+INT_PTR __cdecl CIrcProto::OnMenuWhois(WPARAM wp, LPARAM)
 {
 	if ( !wp )
 		return 0;
@@ -249,7 +249,7 @@ int __cdecl CIrcProto::OnMenuWhois(WPARAM wp, LPARAM)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnMenuDisconnect(WPARAM wp, LPARAM)
+INT_PTR __cdecl CIrcProto::OnMenuDisconnect(WPARAM wp, LPARAM)
 {
 	CDccSession* dcc = FindDCCSession((HANDLE)wp);
 	if ( dcc )
@@ -257,7 +257,7 @@ int __cdecl CIrcProto::OnMenuDisconnect(WPARAM wp, LPARAM)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnMenuIgnore(WPARAM wp, LPARAM)
+INT_PTR __cdecl CIrcProto::OnMenuIgnore(WPARAM wp, LPARAM)
 {
 	if ( !wp )
 		return 0;
@@ -288,7 +288,7 @@ int __cdecl CIrcProto::OnMenuIgnore(WPARAM wp, LPARAM)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnJoinMenuCommand(WPARAM, LPARAM)
+INT_PTR __cdecl CIrcProto::OnJoinMenuCommand(WPARAM, LPARAM)
 {
 	if ( !m_joinDlg ) {
 		m_joinDlg = new CJoinDlg( this );
@@ -303,7 +303,7 @@ int __cdecl CIrcProto::OnJoinMenuCommand(WPARAM, LPARAM)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnQuickConnectMenuCommand(WPARAM, LPARAM)
+INT_PTR __cdecl CIrcProto::OnQuickConnectMenuCommand(WPARAM, LPARAM)
 {
 	if ( !m_quickDlg ) {
 		m_quickDlg = new CQuickDlg( this );
@@ -319,13 +319,13 @@ int __cdecl CIrcProto::OnQuickConnectMenuCommand(WPARAM, LPARAM)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnShowListMenuCommand(WPARAM, LPARAM)
+INT_PTR __cdecl CIrcProto::OnShowListMenuCommand(WPARAM, LPARAM)
 {
 	PostIrcMessage( _T("/LIST"));
 	return 0;
 }
 
-int __cdecl CIrcProto::OnShowServerMenuCommand(WPARAM, LPARAM)
+INT_PTR __cdecl CIrcProto::OnShowServerMenuCommand(WPARAM, LPARAM)
 {
 	GCEVENT gce = {0};
 	GCDEST gcd = {0};
@@ -339,7 +339,7 @@ int __cdecl CIrcProto::OnShowServerMenuCommand(WPARAM, LPARAM)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnChangeNickMenuCommand(WPARAM, LPARAM)
+INT_PTR __cdecl CIrcProto::OnChangeNickMenuCommand(WPARAM, LPARAM)
 {
 	if ( !m_nickDlg ) {
 		m_nickDlg = new CNickDlg( this );
@@ -1143,7 +1143,7 @@ void CIrcProto::DisconnectFromServer(void)
 	ircFork( &CIrcProto::DisconnectServerThread, 0 );
 }
 
-int __cdecl CIrcProto::GetStatus(WPARAM, LPARAM)
+INT_PTR __cdecl CIrcProto::GetStatus(WPARAM, LPARAM)
 {
 	if (m_iDesiredStatus == ID_STATUS_CONNECTING)
 		return ID_STATUS_CONNECTING;

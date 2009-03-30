@@ -437,13 +437,13 @@ HANDLE __cdecl CIrcProto::ChangeInfo( int, void* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // FileAllow - starts a file transfer
 
-int __cdecl CIrcProto::FileAllow( HANDLE, HANDLE hTransfer, const char* szPath )
+HANDLE __cdecl CIrcProto::FileAllow( HANDLE, HANDLE hTransfer, const char* szPath )
 {
 	DCCINFO* di = ( DCCINFO* )hTransfer;
 
 	if ( !IsConnected() ) {
 		delete di;
-		return ( int )szPath;
+		return (HANDLE)szPath;
 	}
 
 	TCHAR* ptszFileName = mir_a2t_cp( szPath, getCodepage());
@@ -454,7 +454,7 @@ int __cdecl CIrcProto::FileAllow( HANDLE, HANDLE hTransfer, const char* szPath )
 	CDccSession* dcc = new CDccSession( this, di );
 	AddDCCSession( di, dcc );
 	dcc->Connect();
-	return ( int )di;
+	return di;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -538,7 +538,7 @@ int __cdecl CIrcProto::FileResume( HANDLE hTransfer, int* action, const char** s
 ////////////////////////////////////////////////////////////////////////////////////////
 // GetCaps - return protocol capabilities bits
 
-DWORD __cdecl CIrcProto::GetCaps( int type, HANDLE )
+DWORD_PTR __cdecl CIrcProto::GetCaps( int type, HANDLE )
 {
 	switch( type ) {
 	case PFLAGNUM_1:
@@ -554,13 +554,13 @@ DWORD __cdecl CIrcProto::GetCaps( int type, HANDLE )
 		return PF4_NOCUSTOMAUTH | PF4_IMSENDUTF;
 
 	case PFLAG_UNIQUEIDTEXT:
-		return (int) Translate("Nickname");
+		return (DWORD_PTR) Translate("Nickname");
 
 	case PFLAG_MAXLENOFMESSAGE:
 		return 400;
 
 	case PFLAG_UNIQUEIDSETTING:
-		return (int) "Nick";
+		return (DWORD_PTR) "Nick";
 	}
 
 	return 0;
@@ -687,7 +687,7 @@ int __cdecl CIrcProto::SendContacts( HANDLE, int, int, HANDLE* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // SendFile - sends a file
 
-int __cdecl CIrcProto::SendFile( HANDLE hContact, const char*, char** ppszFiles )
+HANDLE __cdecl CIrcProto::SendFile( HANDLE hContact, const char*, char** ppszFiles )
 {
 	DCCINFO* dci = NULL;
 	int iPort = 0;
@@ -825,7 +825,7 @@ int __cdecl CIrcProto::SendFile( HANDLE hContact, const char*, char** ppszFiles 
 	}	}
 
 	if (dci)
-		return (int)(HANDLE) dci;
+		return dci;
 	return NULL;
 }
 
@@ -987,7 +987,7 @@ int CIrcProto::SetStatusInternal( int iNewStatus, bool bIsInternal )
 ////////////////////////////////////////////////////////////////////////////////////////
 // GetAwayMsg - returns a contact's away message
 
-int __cdecl CIrcProto::GetAwayMsg( HANDLE hContact )
+HANDLE __cdecl CIrcProto::GetAwayMsg( HANDLE hContact )
 {
 	WhoisAwayReply = _T("");
 	DBVARIANT dbv;
@@ -1007,7 +1007,7 @@ int __cdecl CIrcProto::GetAwayMsg( HANDLE hContact )
 			DBFreeVariant( &dbv);
 	}	}
 
-	return 1;
+	return (HANDLE)1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

@@ -259,10 +259,10 @@ using namespace irc;
 /////////////////////////////////////////////////////////////////////////////////////////
 
 struct CIrcProto;
-typedef void ( __cdecl CIrcProto::*IrcThreadFunc )( void* param );
-typedef int  ( __cdecl CIrcProto::*IrcEventFunc )( WPARAM, LPARAM );
-typedef int  ( __cdecl CIrcProto::*IrcServiceFunc )( WPARAM, LPARAM );
-typedef int  ( __cdecl CIrcProto::*IrcServiceFuncParam )( WPARAM, LPARAM, LPARAM );
+typedef void    ( __cdecl CIrcProto::*IrcThreadFunc )( void* param );
+typedef int     ( __cdecl CIrcProto::*IrcEventFunc )( WPARAM, LPARAM );
+typedef INT_PTR ( __cdecl CIrcProto::*IrcServiceFunc )( WPARAM, LPARAM );
+typedef INT_PTR ( __cdecl CIrcProto::*IrcServiceFuncParam )( WPARAM, LPARAM, LPARAM );
 
 typedef bool (CIrcProto::*PfnIrcMessageHandler)(const CIrcMessage* pmsg);
 
@@ -294,12 +294,12 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 
 	virtual	HANDLE __cdecl ChangeInfo( int iInfoType, void* pInfoData );
 
-	virtual	int    __cdecl FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath );
+	virtual	HANDLE __cdecl FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath );
 	virtual	int    __cdecl FileCancel( HANDLE hContact, HANDLE hTransfer );
 	virtual	int    __cdecl FileDeny( HANDLE hContact, HANDLE hTransfer, const char* szReason );
 	virtual	int    __cdecl FileResume( HANDLE hTransfer, int* action, const char** szFilename );
 
-	virtual	DWORD  __cdecl GetCaps( int type, HANDLE hContact = NULL );
+	virtual	DWORD_PTR __cdecl GetCaps( int type, HANDLE hContact = NULL );
 	virtual	HICON  __cdecl GetIcon( int iconIndex );
 	virtual	int    __cdecl GetInfo( HANDLE hContact, int infoType );
 
@@ -315,14 +315,14 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	virtual	int    __cdecl RecvUrl( HANDLE hContact, PROTORECVEVENT* );
 
 	virtual	int    __cdecl SendContacts( HANDLE hContact, int flags, int nContacts, HANDLE* hContactsList );
-	virtual	int    __cdecl SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles );
+	virtual	HANDLE __cdecl SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles );
 	virtual	int    __cdecl SendMsg( HANDLE hContact, int flags, const char* msg );
 	virtual	int    __cdecl SendUrl( HANDLE hContact, int flags, const char* url );
 
 	virtual	int    __cdecl SetApparentMode( HANDLE hContact, int mode );
 	virtual	int    __cdecl SetStatus( int iNewStatus );
 
-	virtual	int    __cdecl GetAwayMsg( HANDLE hContact );
+	virtual	HANDLE __cdecl GetAwayMsg( HANDLE hContact );
 	virtual	int    __cdecl RecvAwayMsg( HANDLE hContact, int mode, PROTORECVEVENT* evt );
 	virtual	int    __cdecl SendAwayMsg( HANDLE hContact, HANDLE hProcess, const char* msg );
 	virtual	int    __cdecl SetAwayMsg( int m_iStatus, const char* msg );
@@ -332,27 +332,28 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	virtual	int    __cdecl OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam );
 
 	// Services
-	int  __cdecl SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam);
+
+	INT_PTR __cdecl OnChangeNickMenuCommand( WPARAM, LPARAM );
+	INT_PTR __cdecl OnDoubleclicked( WPARAM, LPARAM );
+    INT_PTR __cdecl OnJoinChat( WPARAM, LPARAM );
+	INT_PTR __cdecl OnJoinMenuCommand( WPARAM, LPARAM );
+	INT_PTR __cdecl OnLeaveChat( WPARAM, LPARAM );
+	INT_PTR __cdecl OnMenuChanSettings( WPARAM, LPARAM );
+	INT_PTR __cdecl OnMenuDisconnect( WPARAM , LPARAM );
+	INT_PTR __cdecl OnMenuIgnore( WPARAM, LPARAM );
+	INT_PTR __cdecl OnMenuWhois( WPARAM, LPARAM );
+	INT_PTR __cdecl OnQuickConnectMenuCommand(WPARAM, LPARAM );
+	INT_PTR __cdecl OnShowListMenuCommand( WPARAM, LPARAM );
+	INT_PTR __cdecl OnShowServerMenuCommand( WPARAM, LPARAM );
 
 	// Events
-	int __cdecl OnChangeNickMenuCommand( WPARAM, LPARAM );
 	int __cdecl OnDeletedContact( WPARAM, LPARAM );
-	int __cdecl OnDoubleclicked( WPARAM, LPARAM );
 	int __cdecl OnInitOptionsPages( WPARAM, LPARAM );
 	int __cdecl OnInitUserInfo( WPARAM, LPARAM );
-	int __cdecl OnJoinChat( WPARAM, LPARAM );
-	int __cdecl OnJoinMenuCommand( WPARAM, LPARAM );
-	int __cdecl OnLeaveChat( WPARAM, LPARAM );
-	int __cdecl OnMenuChanSettings( WPARAM, LPARAM );
-	int __cdecl OnMenuDisconnect( WPARAM , LPARAM );
-	int __cdecl OnMenuIgnore( WPARAM, LPARAM );
-	int __cdecl OnMenuWhois( WPARAM, LPARAM );
 	int __cdecl OnModulesLoaded( WPARAM, LPARAM );
 	int __cdecl OnMenuPreBuild( WPARAM, LPARAM );
 	int __cdecl OnPreShutdown( WPARAM, LPARAM );
-	int __cdecl OnQuickConnectMenuCommand(WPARAM, LPARAM );
-	int __cdecl OnShowListMenuCommand( WPARAM, LPARAM );
-	int __cdecl OnShowServerMenuCommand( WPARAM, LPARAM );
 
 	int __cdecl GCEventHook( WPARAM, LPARAM );
 	int __cdecl GCMenuHook( WPARAM, LPARAM );
@@ -534,11 +535,11 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	BOOL   ShowMessage (const CIrcMessage* pmsg);
 
 	//scripting.cpp
-	int  __cdecl Scripting_InsertRawIn(WPARAM wParam,LPARAM lParam);
-	int  __cdecl Scripting_InsertRawOut(WPARAM wParam,LPARAM lParam);
-	int  __cdecl Scripting_InsertGuiIn(WPARAM wParam,LPARAM lParam);
-	int  __cdecl Scripting_InsertGuiOut(WPARAM wParam,LPARAM lParam);
-	int  __cdecl Scripting_GetIrcData(WPARAM wparam, LPARAM lparam);
+	INT_PTR  __cdecl Scripting_InsertRawIn(WPARAM wParam,LPARAM lParam);
+	INT_PTR  __cdecl Scripting_InsertRawOut(WPARAM wParam,LPARAM lParam);
+	INT_PTR  __cdecl Scripting_InsertGuiIn(WPARAM wParam,LPARAM lParam);
+	INT_PTR  __cdecl Scripting_InsertGuiOut(WPARAM wParam,LPARAM lParam);
+	INT_PTR  __cdecl Scripting_GetIrcData(WPARAM wparam, LPARAM lparam);
 	BOOL Scripting_TriggerMSPRawIn(char ** pszRaw);
 	BOOL Scripting_TriggerMSPRawOut(char ** pszRaw);
 	BOOL Scripting_TriggerMSPGuiIn(WPARAM * wparam, GCEVENT * gce);
@@ -556,7 +557,7 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 
 	UINT_PTR  RetryTimer;
 
-	int __cdecl GetStatus( WPARAM, LPARAM );
+	INT_PTR __cdecl GetStatus( WPARAM, LPARAM );
 
 	void __cdecl ConnectServerThread( void* );
 	void __cdecl DisconnectServerThread( void* );
