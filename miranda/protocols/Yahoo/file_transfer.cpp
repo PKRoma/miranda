@@ -741,7 +741,7 @@ static void __cdecl yahoo_send_filethread(void *psf)
 ////////////////////////////////////////////////////////////////////////////////////////
 // SendFile - sends a file
 
-int __cdecl CYahooProto::SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles )
+HANDLE __cdecl CYahooProto::SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles )
 {
 	DBVARIANT dbv;
 	y_filetransfer *sf;
@@ -791,7 +791,7 @@ int __cdecl CYahooProto::SendFile( HANDLE hContact, const char* szDescription, c
 		sf->ftoken=yahoo_ft7dc_send(m_id, sf->who, fs);
 		
 		LOG(("Exiting SendRequest..."));
-		return (int)(HANDLE)sf;
+		return sf;
 	}
 	
 	LOG(("Exiting SendFile"));

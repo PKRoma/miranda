@@ -336,7 +336,7 @@ HANDLE __cdecl CYahooProto::ChangeInfo( int /*iInfoType*/, void* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // FileAllow - starts a file transfer
 
-int __cdecl CYahooProto::FileAllow( HANDLE /*hContact*/, HANDLE hTransfer, const char* szPath )
+HANDLE __cdecl CYahooProto::FileAllow( HANDLE /*hContact*/, HANDLE hTransfer, const char* szPath )
 {
 	y_filetransfer *ft = (y_filetransfer *)hTransfer;
 	int len;
@@ -355,11 +355,11 @@ int __cdecl CYahooProto::FileAllow( HANDLE /*hContact*/, HANDLE hTransfer, const
 		//void yahoo_ft7dc_accept(int id, const char *buddy, const char *ft_token);
 		yahoo_ft7dc_accept(ft->id, ft->who, ft->ftoken);
 
-		return ( int )hTransfer;
+		return hTransfer;
 	}
 
 	YForkThread(&CYahooProto::recv_filethread, ft);
-	return ( int )hTransfer;
+	return hTransfer;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -442,7 +442,7 @@ int __cdecl CYahooProto::FileResume( HANDLE hTransfer, int* action, const char**
 ////////////////////////////////////////////////////////////////////////////////////////
 // GetCaps - return protocol capabilities bits
 
-DWORD __cdecl CYahooProto::GetCaps( int type, HANDLE /*hContact*/ )
+DWORD_PTR __cdecl CYahooProto::GetCaps( int type, HANDLE /*hContact*/ )
 {
 	int ret = 0;
 	switch ( type ) {        
@@ -466,10 +466,10 @@ DWORD __cdecl CYahooProto::GetCaps( int type, HANDLE /*hContact*/ )
 			|PF4_AVATARS | PF4_OFFLINEFILES | PF4_IMSENDUTF;
 		break;
 	case PFLAG_UNIQUEIDTEXT:
-		ret = (int) Translate("ID");
+		ret = (DWORD_PTR) Translate("ID");
 		break;
 	case PFLAG_UNIQUEIDSETTING:
-		ret = (int) YAHOO_LOGINID;
+		ret = (DWORD_PTR) YAHOO_LOGINID;
 		break;
 	case PFLAG_MAXLENOFMESSAGE:
 		ret = 800; /* STUPID YAHOO!!! */
@@ -735,7 +735,7 @@ void __cdecl CYahooProto::get_status_thread(HANDLE hContact)
 	SendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE )1, ( LPARAM ) fm );
 }
 
-int __cdecl CYahooProto::GetAwayMsg( HANDLE hContact )
+HANDLE __cdecl CYahooProto::GetAwayMsg( HANDLE hContact )
 {
 	DebugLog("[YahooGetAwayMessage] ");
 
@@ -744,7 +744,7 @@ int __cdecl CYahooProto::GetAwayMsg( HANDLE hContact )
 			return 0; /* user offline, what Status message? */
 
 		YForkThread(&CYahooProto::get_status_thread, hContact);
-		return 1; //Success		
+		return (HANDLE)1; //Success		
 	}
 
 	return 0; // Failure

@@ -203,7 +203,7 @@ static INT_PTR CALLBACK DlgProcSetCustStat(HWND hwndDlg, UINT msg, WPARAM wParam
 	return FALSE;
 }
 
-int __cdecl CYahooProto::SetCustomStatCommand( WPARAM wParam, LPARAM lParam )
+INT_PTR __cdecl CYahooProto::SetCustomStatCommand( WPARAM wParam, LPARAM lParam )
 {
 	if ( !m_bLoggedIn ) {
 		ShowNotification(Translate("Yahoo Error"), Translate("You need to be connected to set the custom message"), NIIF_ERROR);
@@ -250,7 +250,7 @@ void CYahooProto::OpenURL(const char *url, int autoLogin)
 //=======================================================
 //Show buddy profile
 //=======================================================
-int __cdecl CYahooProto::OnShowProfileCommand( WPARAM wParam, LPARAM lParam )
+INT_PTR __cdecl CYahooProto::OnShowProfileCommand( WPARAM wParam, LPARAM lParam )
 {
 	char tUrl[ 4096 ];
 	DBVARIANT dbv;
@@ -265,7 +265,7 @@ int __cdecl CYahooProto::OnShowProfileCommand( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-int __cdecl CYahooProto::OnEditMyProfile( WPARAM wParam, LPARAM lParam )
+INT_PTR __cdecl CYahooProto::OnEditMyProfile( WPARAM wParam, LPARAM lParam )
 {
 	OpenURL("http://edit.yahoo.com/config/eval_profile", 1);
 	return 0;
@@ -274,7 +274,7 @@ int __cdecl CYahooProto::OnEditMyProfile( WPARAM wParam, LPARAM lParam )
 //=======================================================
 //Show My profile
 //=======================================================
-int __cdecl CYahooProto::OnShowMyProfileCommand( WPARAM wParam, LPARAM lParam )
+INT_PTR __cdecl CYahooProto::OnShowMyProfileCommand( WPARAM wParam, LPARAM lParam )
 {
 	DBVARIANT dbv;
 	DBGetContactSettingString( NULL, m_szModuleName, YAHOO_LOGINID, &dbv );
@@ -290,7 +290,7 @@ int __cdecl CYahooProto::OnShowMyProfileCommand( WPARAM wParam, LPARAM lParam )
 //=======================================================
 //Show Goto mailbox
 //=======================================================
-int __cdecl CYahooProto::OnGotoMailboxCommand( WPARAM wParam, LPARAM lParam )
+INT_PTR __cdecl CYahooProto::OnGotoMailboxCommand( WPARAM wParam, LPARAM lParam )
 {
 	if (GetByte( "YahooJapan", 0 ))
 		OpenURL("http://mail.yahoo.co.jp/", 1);
@@ -300,13 +300,13 @@ int __cdecl CYahooProto::OnGotoMailboxCommand( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-int __cdecl CYahooProto::OnABCommand( WPARAM wParam, LPARAM lParam )
+INT_PTR __cdecl CYahooProto::OnABCommand( WPARAM wParam, LPARAM lParam )
 {
 	OpenURL("http://address.yahoo.com/yab/", 1);
 	return 0;
 }
 
-int __cdecl CYahooProto::OnCalendarCommand( WPARAM wParam, LPARAM lParam )
+INT_PTR __cdecl CYahooProto::OnCalendarCommand( WPARAM wParam, LPARAM lParam )
 {
 	OpenURL("http://calendar.yahoo.com/", 1);		
 	return 0;
@@ -315,7 +315,7 @@ int __cdecl CYahooProto::OnCalendarCommand( WPARAM wParam, LPARAM lParam )
 //=======================================================
 //Refresh Yahoo
 //=======================================================
-int __cdecl CYahooProto::OnRefreshCommand( WPARAM wParam, LPARAM lParam )
+INT_PTR __cdecl CYahooProto::OnRefreshCommand( WPARAM wParam, LPARAM lParam )
 {
 	if ( !m_bLoggedIn ){
 		ShowNotification(Translate("Yahoo Error"), Translate("You need to be connected to refresh your buddy list"), NIIF_ERROR);
@@ -348,7 +348,7 @@ int __cdecl CYahooProto::OnIdleEvent(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int __cdecl CYahooProto::GetUnreadEmailCount(WPARAM wParam, LPARAM lParam)
+INT_PTR __cdecl CYahooProto::GetUnreadEmailCount(WPARAM wParam, LPARAM lParam)
 {
 	if ( !m_bLoggedIn )
 		return 0;

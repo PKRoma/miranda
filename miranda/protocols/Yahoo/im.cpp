@@ -244,7 +244,7 @@ int __cdecl CYahooProto::RecvMsg( HANDLE hContact, PROTORECVEVENT* pre )
 //Send a nudge
 //=======================================================
 
-int __cdecl CYahooProto::SendNudge(WPARAM wParam, LPARAM lParam)
+INT_PTR __cdecl CYahooProto::SendNudge(WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hContact = (HANDLE) wParam;
 

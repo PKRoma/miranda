@@ -779,7 +779,7 @@ lParam=(const char *)Avatar file name
 return=0 for sucess
 */
 
-int __cdecl CYahooProto::SetMyAvatar(WPARAM wParam, LPARAM lParam)
+INT_PTR __cdecl CYahooProto::SetMyAvatar(WPARAM wParam, LPARAM lParam)
 {
 	char* szFile = ( char* )lParam;
 	char szMyFile[MAX_PATH+1];
