@@ -67,6 +67,8 @@ static int FindAddDlgResizer(HWND,LPARAM lParam,UTILRESIZECONTROL *urc)
 		case IDOK:
 			dat->minDlgHeight=nextY+urc->rcItem.bottom-urc->rcItem.top;
 			return RD_ANCHORX_LEFT|RD_ANCHORY_BOTTOM;
+		case IDC_ADDHDR:
+			return RD_ANCHORX_WIDTH;
 		case IDC_ADD:
 		case IDC_MOREOPTIONS:
 			return RD_ANCHORX_RIGHT|RD_ANCHORY_BOTTOM;
