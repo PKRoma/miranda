@@ -745,7 +745,7 @@ void CIcqProto::setXStatusEx(BYTE bXStatus, BYTE bQuiet)
 	}
 }
 
-int CIcqProto::menuXStatus(WPARAM wParam,LPARAM lParam,LPARAM fParam)
+INT_PTR CIcqProto::menuXStatus(WPARAM wParam,LPARAM lParam,LPARAM fParam)
 {
 	setXStatusEx((BYTE)fParam, 0);
 	return 0;
@@ -838,7 +838,7 @@ void CIcqProto::UninitXStatusIcons()
 }
 
 
-int CIcqProto::ShowXStatusDetails(WPARAM wParam, LPARAM lParam)
+INT_PTR CIcqProto::ShowXStatusDetails(WPARAM wParam, LPARAM lParam)
 {
 	InitXStatusData init;
 	init.ppro = this;
@@ -849,7 +849,7 @@ int CIcqProto::ShowXStatusDetails(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int CIcqProto::SetXStatus(WPARAM wParam, LPARAM lParam)
+INT_PTR CIcqProto::SetXStatus(WPARAM wParam, LPARAM lParam)
 { // obsolete (TODO: remove in next version)
   if (!m_bXStatusEnabled) return 0;
 
@@ -861,7 +861,7 @@ int CIcqProto::SetXStatus(WPARAM wParam, LPARAM lParam)
   return 0;
 }
 
-int CIcqProto::GetXStatus(WPARAM wParam, LPARAM lParam)
+INT_PTR CIcqProto::GetXStatus(WPARAM wParam, LPARAM lParam)
 { // obsolete (TODO: remove in next version)
   BYTE status = getContactXStatus(NULL);
 
@@ -875,7 +875,7 @@ int CIcqProto::GetXStatus(WPARAM wParam, LPARAM lParam)
   return status;
 }
 
-int CIcqProto::SetXStatusEx(WPARAM wParam, LPARAM lParam)
+INT_PTR CIcqProto::SetXStatusEx(WPARAM wParam, LPARAM lParam)
 {
 	ICQ_CUSTOM_STATUS *pData = (ICQ_CUSTOM_STATUS*)lParam;
 
@@ -941,7 +941,7 @@ int CIcqProto::SetXStatusEx(WPARAM wParam, LPARAM lParam)
 	return 0; // Success
 }
 
-int CIcqProto::GetXStatusEx(WPARAM wParam, LPARAM lParam)
+INT_PTR CIcqProto::GetXStatusEx(WPARAM wParam, LPARAM lParam)
 {
 	ICQ_CUSTOM_STATUS *pData = (ICQ_CUSTOM_STATUS*)lParam;
 	HANDLE hContact = (HANDLE)wParam;
@@ -1060,7 +1060,7 @@ int CIcqProto::GetXStatusEx(WPARAM wParam, LPARAM lParam)
 	return 0; // Success
 }
 
-int CIcqProto::GetXStatusIcon(WPARAM wParam, LPARAM lParam)
+INT_PTR CIcqProto::GetXStatusIcon(WPARAM wParam, LPARAM lParam)
 {
 	if (!m_bXStatusEnabled) return 0;
 
@@ -1077,7 +1077,7 @@ int CIcqProto::GetXStatusIcon(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int CIcqProto::RequestXStatusDetails(WPARAM wParam, LPARAM lParam)
+INT_PTR CIcqProto::RequestXStatusDetails(WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hContact = (HANDLE)wParam;
 
@@ -1091,7 +1091,7 @@ int CIcqProto::RequestXStatusDetails(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int CIcqProto::RequestAdvStatusIconIdx(WPARAM wParam, LPARAM lParam)
+INT_PTR CIcqProto::RequestAdvStatusIconIdx(WPARAM wParam, LPARAM lParam)
 {
 	BYTE bXStatus;
 

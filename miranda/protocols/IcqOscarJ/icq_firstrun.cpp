@@ -119,7 +119,7 @@ INT_PTR CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 }
 
 
-int CIcqProto::OnCreateAccMgrUI(WPARAM wParam, LPARAM lParam)
+INT_PTR CIcqProto::OnCreateAccMgrUI(WPARAM wParam, LPARAM lParam)
 {
-	return (int)CreateDialogParam(hInst, MAKEINTRESOURCE(IDD_ICQACCOUNT), (HWND)lParam, icq_FirstRunDlgProc, LPARAM(this));
+	return (INT_PTR)CreateDialogParam(hInst, MAKEINTRESOURCE(IDD_ICQACCOUNT), (HWND)lParam, icq_FirstRunDlgProc, LPARAM(this));
 }

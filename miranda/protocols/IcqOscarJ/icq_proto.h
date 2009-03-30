@@ -47,10 +47,10 @@
 struct CIcqProto;
 typedef void ( CIcqProto::*IcqRateFunc )( void );
 
-typedef void ( __cdecl CIcqProto::*IcqThreadFunc )( void* );
-typedef int  ( __cdecl CIcqProto::*IcqEventFunc )( WPARAM, LPARAM );
-typedef int  ( __cdecl CIcqProto::*IcqServiceFunc )( WPARAM, LPARAM );
-typedef int  ( __cdecl CIcqProto::*IcqServiceFuncParam )( WPARAM, LPARAM, LPARAM );
+typedef void    ( __cdecl CIcqProto::*IcqThreadFunc )( void* );
+typedef int     ( __cdecl CIcqProto::*IcqEventFunc )( WPARAM, LPARAM );
+typedef INT_PTR ( __cdecl CIcqProto::*IcqServiceFunc )( WPARAM, LPARAM );
+typedef INT_PTR ( __cdecl CIcqProto::*IcqServiceFuncParam )( WPARAM, LPARAM, LPARAM );
 
 // for InfoUpdate
 struct userinfo
@@ -86,12 +86,12 @@ struct CIcqProto : public PROTO_INTERFACE
 
 	virtual	HANDLE __cdecl ChangeInfo( int iInfoType, void* pInfoData );
 
-	virtual	int    __cdecl FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath );
+	virtual	HANDLE __cdecl FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath );
 	virtual	int    __cdecl FileCancel( HANDLE hContact, HANDLE hTransfer );
 	virtual	int    __cdecl FileDeny( HANDLE hContact, HANDLE hTransfer, const char* szReason );
 	virtual	int    __cdecl FileResume( HANDLE hTransfer, int* action, const char** szFilename );
 
-	virtual	DWORD  __cdecl GetCaps( int type, HANDLE hContact = NULL );
+	virtual	DWORD_PTR __cdecl GetCaps( int type, HANDLE hContact = NULL );
 	virtual	HICON  __cdecl GetIcon( int iconIndex );
 	virtual	int    __cdecl GetInfo( HANDLE hContact, int infoType );
 
@@ -107,14 +107,14 @@ struct CIcqProto : public PROTO_INTERFACE
 	virtual	int    __cdecl RecvUrl( HANDLE hContact, PROTORECVEVENT* );
 
 	virtual	int    __cdecl SendContacts( HANDLE hContact, int flags, int nContacts, HANDLE* hContactsList );
-	virtual	int    __cdecl SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles );
+	virtual	HANDLE __cdecl SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles );
 	virtual	int    __cdecl SendMsg( HANDLE hContact, int flags, const char* msg );
 	virtual	int    __cdecl SendUrl( HANDLE hContact, int flags, const char* url );
 
 	virtual	int    __cdecl SetApparentMode( HANDLE hContact, int mode );
 	virtual	int    __cdecl SetStatus( int iNewStatus );
 
-	virtual	int    __cdecl GetAwayMsg( HANDLE hContact );
+	virtual	HANDLE __cdecl GetAwayMsg( HANDLE hContact );
 	virtual	int    __cdecl RecvAwayMsg( HANDLE hContact, int mode, PROTORECVEVENT* evt );
 	virtual	int    __cdecl SendAwayMsg( HANDLE hContact, HANDLE hProcess, const char* msg );
 	virtual	int    __cdecl SetAwayMsg( int m_iStatus, const char* msg );
@@ -124,35 +124,36 @@ struct CIcqProto : public PROTO_INTERFACE
 	virtual	int    __cdecl OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam );
 
 	//====| Services |====================================================================
-	int  __cdecl AddServerContact(WPARAM wParam, LPARAM lParam);
-	int  __cdecl GetInfoSetting(WPARAM wParam, LPARAM lParam);
-	int  __cdecl ChangeInfoEx(WPARAM wParam, LPARAM lParam);
-	int  __cdecl GetAvatarCaps(WPARAM wParam, LPARAM lParam);
-	int  __cdecl GetAvatarInfo(WPARAM wParam, LPARAM lParam);
-	int  __cdecl GetMyAvatar(WPARAM wParam, LPARAM lParam);	
-	int  __cdecl GetXStatus(WPARAM wParam, LPARAM lParam);
-	int  __cdecl GetXStatusEx(WPARAM wParam, LPARAM lParam);
-	int  __cdecl GetXStatusIcon(WPARAM wParam, LPARAM lParam);
-	int  __cdecl GrantAuthorization(WPARAM wParam, LPARAM lParam);
-	int  __cdecl menuXStatus(WPARAM wParam,LPARAM lParam,LPARAM fParam);
-	int  __cdecl RecvAuth(WPARAM wParam, LPARAM lParam);
-	int  __cdecl RequestAdvStatusIconIdx(WPARAM wParam, LPARAM lParam);
-	int  __cdecl RequestAuthorization(WPARAM wParam, LPARAM lParam);
-	int  __cdecl RequestXStatusDetails(WPARAM wParam, LPARAM lParam);
-	int  __cdecl RevokeAuthorization(WPARAM wParam, LPARAM lParam);
-	int  __cdecl SendSms(WPARAM wParam, LPARAM lParam);	
-	int  __cdecl SendYouWereAdded(WPARAM wParam, LPARAM lParam);
-	int  __cdecl SetMyAvatar(WPARAM wParam, LPARAM lParam);
-	int  __cdecl SetNickName(WPARAM wParam, LPARAM lParam);
-	int  __cdecl SetPassword(WPARAM wParam, LPARAM lParam);
-	int  __cdecl SetXStatus(WPARAM wParam, LPARAM lParam);
-	int  __cdecl SetXStatusEx(WPARAM wParam, LPARAM lParam);
-	int  __cdecl ShowXStatusDetails(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl AddServerContact(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl GetInfoSetting(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl ChangeInfoEx(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl GetAvatarCaps(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl GetAvatarInfo(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl GetMyAvatar(WPARAM wParam, LPARAM lParam);	
+	INT_PTR  __cdecl GetXStatus(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl GetXStatusEx(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl GetXStatusIcon(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl GrantAuthorization(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl menuXStatus(WPARAM wParam,LPARAM lParam,LPARAM fParam);
+	INT_PTR  __cdecl RecvAuth(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl RequestAdvStatusIconIdx(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl RequestAuthorization(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl RequestXStatusDetails(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl RevokeAuthorization(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl SendSms(WPARAM wParam, LPARAM lParam);	
+	INT_PTR  __cdecl SendYouWereAdded(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl SetMyAvatar(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl SetNickName(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl SetPassword(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl SetXStatus(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl SetXStatusEx(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl ShowXStatusDetails(WPARAM wParam, LPARAM lParam);
 
-	//====| Events |======================================================================
+	INT_PTR  __cdecl OnCreateAccMgrUI(WPARAM, LPARAM);
+
+    //====| Events |======================================================================
 	void __cdecl OnAddContactForever( DBCONTACTWRITESETTING* cws, HANDLE hContact );
 	int  __cdecl OnContactDeleted( WPARAM, LPARAM );
-	int  __cdecl OnCreateAccMgrUI(WPARAM, LPARAM);
 	int  __cdecl OnDbSettingChanged( WPARAM, LPARAM );
 	int  __cdecl OnIdleChanged( WPARAM, LPARAM );
 	int  __cdecl OnModernOptInit( WPARAM, LPARAM );
@@ -887,8 +888,8 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwID1, DWORD dwID2, WORD wCommand);
 	void   handleRecvServResponseOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *szUID, void* ft);
 
-	int    oftInitTransfer(HANDLE hContact, DWORD dwUin, char *szUid, char** files, const char* pszDesc);
-	DWORD  oftFileAllow(HANDLE hContact, HANDLE hTransfer, const char* szPath);
+	HANDLE oftInitTransfer(HANDLE hContact, DWORD dwUin, char *szUid, char** files, const char* pszDesc);
+	HANDLE oftFileAllow(HANDLE hContact, HANDLE hTransfer, const char* szPath);
 	DWORD  oftFileDeny(HANDLE hContact, HANDLE hTransfer, const char* reazon);
 	DWORD  oftFileCancel(HANDLE hContact, HANDLE hTransfer);
 	void   oftFileResume(oscar_filetransfer *ft, int action, const char *szFilename);

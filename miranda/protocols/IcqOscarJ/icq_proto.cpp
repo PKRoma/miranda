@@ -584,7 +584,7 @@ HANDLE __cdecl CIcqProto::ChangeInfo( int iInfoType, void* pInfoData )
 ////////////////////////////////////////////////////////////////////////////////////////
 // PS_FileAllow - starts a file transfer
 
-int __cdecl CIcqProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath )
+HANDLE __cdecl CIcqProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath )
 {
 	DWORD dwUin;
 	uid_str szUid;
@@ -615,7 +615,7 @@ int __cdecl CIcqProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const char*
 			else
 				icq_sendFileAcceptServ(dwUin, ft, 0);
 
-			return (int)hTransfer; // Success
+			return hTransfer; // Success
 		}
 		else if (ft->ft_magic == FT_MAGIC_OSCAR)
 		{ // approve oscar file transfer
@@ -730,9 +730,9 @@ int __cdecl CIcqProto::FileResume( HANDLE hTransfer, int* action, const char** s
 ////////////////////////////////////////////////////////////////////////////////////////
 // GetCaps - return protocol capabilities bits
 
-DWORD __cdecl CIcqProto::GetCaps( int type, HANDLE hContact )
+DWORD_PTR __cdecl CIcqProto::GetCaps( int type, HANDLE hContact )
 {
-	int nReturn = 0;
+	DWORD_PTR nReturn = 0;
 
 	switch ( type ) {
 
@@ -774,11 +774,11 @@ DWORD __cdecl CIcqProto::GetCaps( int type, HANDLE hContact )
 		break;
 
 	case PFLAG_UNIQUEIDTEXT:
-		nReturn = (int)ICQTranslate("User ID");
+		nReturn = (DWORD_PTR)ICQTranslate("User ID");
 		break;
 
 	case PFLAG_UNIQUEIDSETTING:
-		nReturn = (int)UNIQUEIDSETTING;
+		nReturn = (DWORD_PTR)UNIQUEIDSETTING;
 		break;
 
 	case PFLAG_MAXCONTACTSPERPACKET:
@@ -1411,7 +1411,7 @@ int __cdecl CIcqProto::SendContacts( HANDLE hContact, int flags, int nContacts, 
 ////////////////////////////////////////////////////////////////////////////////////////
 // SendFile - sends a file
 
-int __cdecl CIcqProto::SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles )
+HANDLE __cdecl CIcqProto::SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles )
 {
 	if ( !icqOnline())
 		return 0;
@@ -1494,7 +1494,7 @@ int __cdecl CIcqProto::SendFile( HANDLE hContact, const char* szDescription, cha
 								if (m_bDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD, 0))
 								{
 									int iRes = icq_sendFileSendDirectv7(ft, pszFiles);
-									if (iRes) return (int)(HANDLE)ft; // Success
+									if (iRes) return ft; // Success
 								}
 								NetLog_Server("Sending v%u file transfer request through server", 7);
 								icq_sendFileSendServv7(ft, pszFiles);
@@ -1504,7 +1504,7 @@ int __cdecl CIcqProto::SendFile( HANDLE hContact, const char* szDescription, cha
 								if (m_bDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD, 0))
 								{
 									int iRes = icq_sendFileSendDirectv8(ft, pszFiles);
-									if (iRes) return (int)(HANDLE)ft; // Success
+									if (iRes) return ft; // Success
 								}
 								NetLog_Server("Sending v%u file transfer request through server", 8);
 								icq_sendFileSendServv8(ft, pszFiles, ACKTYPE_NONE);
@@ -1512,7 +1512,7 @@ int __cdecl CIcqProto::SendFile( HANDLE hContact, const char* szDescription, cha
 						}
 					}
 
-					return (int)(HANDLE)ft; // Success
+					return ft; // Success
 				}
 			}
 		}
@@ -2099,7 +2099,7 @@ int __cdecl CIcqProto::SetStatus(int iNewStatus)
 ////////////////////////////////////////////////////////////////////////////////////////
 // RecvAuth - returns a contact's away message
 
-int __cdecl CIcqProto::RecvAuth(WPARAM wParam, LPARAM lParam)
+INT_PTR __cdecl CIcqProto::RecvAuth(WPARAM wParam, LPARAM lParam)
 {
 	CCSDATA* ccs = (CCSDATA*)lParam;
 	PROTORECVEVENT* pre = (PROTORECVEVENT*)ccs->lParam;
@@ -2143,7 +2143,7 @@ void __cdecl CIcqProto::GetAwayMsgThread( void *pStatusData )
 ////////////////////////////////////////////////////////////////////////////////////////
 // PS_GetAwayMsg - returns a contact's away message
 
-int __cdecl CIcqProto::GetAwayMsg( HANDLE hContact )
+HANDLE __cdecl CIcqProto::GetAwayMsg( HANDLE hContact )
 {
 	DWORD dwUin;
 	uid_str szUID;
@@ -2163,7 +2163,7 @@ int __cdecl CIcqProto::GetAwayMsg( HANDLE hContact )
     pThreadData->hProcess = (HANDLE)GenerateCookie(0);
     ForkThread(&CIcqProto::GetAwayMsgThread, pThreadData);
 
-    return (int)pThreadData->hProcess;
+    return pThreadData->hProcess;
   }
   SAFE_FREE(&szStatusNote);
 
@@ -2208,18 +2208,18 @@ int __cdecl CIcqProto::GetAwayMsg( HANDLE hContact )
 			if (m_bDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD, 0))
 			{
 				int iRes = icq_sendGetAwayMsgDirect(hContact, wMessageType);
-				if (iRes) return iRes; // we succeded, return
+				if (iRes) return (HANDLE)iRes; // we succeded, return
 			}
 			if (CheckContactCapabilities(hContact, CAPF_STATUSMSG_EXT))
-				return icq_sendGetAwayMsgServExt(hContact, dwUin, wMessageType,
+				return (HANDLE)icq_sendGetAwayMsgServExt(hContact, dwUin, wMessageType,
 				(WORD)(getSettingWord(hContact, "Version", 0)==9?9:ICQ_VERSION)); // Success
 			else
-				return icq_sendGetAwayMsgServ(hContact, dwUin, wMessageType,
+				return (HANDLE)icq_sendGetAwayMsgServ(hContact, dwUin, wMessageType,
 				(WORD)(getSettingWord(hContact, "Version", 0)==9?9:ICQ_VERSION)); // Success
 		}
 	}
 	else if (wStatus == ID_STATUS_AWAY)
-		return icq_sendGetAimAwayMsgServ(hContact, szUID, MTYPE_AUTOAWAY);
+		return (HANDLE)icq_sendGetAimAwayMsgServ(hContact, szUID, MTYPE_AUTOAWAY);
 
 	return 0; // Failure
 }

@@ -95,7 +95,7 @@ static INT_PTR CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 	return FALSE;
 }
 
-int CIcqProto::RequestAuthorization(WPARAM wParam, LPARAM lParam)
+INT_PTR CIcqProto::RequestAuthorization(WPARAM wParam, LPARAM lParam)
 {
 	AskAuthParam param = { this, (HANDLE)wParam };
 	DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_ASKAUTH), NULL, AskAuthProc, (LPARAM)&param);

@@ -861,7 +861,7 @@ static char *oftGetFileContainer(oscar_filetransfer* oft, const char** files, in
 		return oft->file_containers[i];
 }
 
-int CIcqProto::oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, const char* pszDesc)
+HANDLE CIcqProto::oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, const char* pszDesc)
 {
 	oscar_filetransfer *ft;
 	int i, filesCount;
@@ -1004,10 +1004,10 @@ int CIcqProto::oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char**
 		}
 	}
 
-	return (int)(HANDLE)ft; // Success
+	return ft; // Success
 }
 
-DWORD CIcqProto::oftFileAllow(HANDLE hContact, HANDLE hTransfer, const char* szPath)
+HANDLE CIcqProto::oftFileAllow(HANDLE hContact, HANDLE hTransfer, const char* szPath)
 {
 	oscar_filetransfer* ft = (oscar_filetransfer*)hTransfer;
 	DWORD dwUin;
@@ -1032,7 +1032,7 @@ DWORD CIcqProto::oftFileAllow(HANDLE hContact, HANDLE hTransfer, const char* szP
 	ft->dwCookie = AllocateCookie(CKT_FILE, ICQ_MSG_SRV_SEND, hContact, ft);
 
 	OpenOscarConnection(hContact, ft, ft->bUseProxy ? OCT_PROXY_RECV: OCT_NORMAL);
-	return DWORD( hTransfer ); // Success
+	return hTransfer; // Success
 }
 
 DWORD CIcqProto::oftFileDeny(HANDLE hContact, HANDLE hTransfer, const char* reazon)

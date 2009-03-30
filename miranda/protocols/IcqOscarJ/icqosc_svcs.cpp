@@ -36,7 +36,7 @@
 
 #include "icqoscar.h"
 
-int CIcqProto::AddServerContact(WPARAM wParam, LPARAM lParam)
+INT_PTR CIcqProto::AddServerContact(WPARAM wParam, LPARAM lParam)
 {
 	DWORD dwUin;
 	uid_str szUid;
@@ -90,13 +90,13 @@ static int LookupDatabaseSetting(const FieldNamesItem* table, int code, DBVARIAN
   return 0; // Success
 }
 
-int CIcqProto::GetInfoSetting(WPARAM wParam, LPARAM lParam)
+INT_PTR CIcqProto::GetInfoSetting(WPARAM wParam, LPARAM lParam)
 {
   DBCONTACTGETSETTING *cgs = (DBCONTACTGETSETTING*)lParam;
   BYTE type = cgs->pValue->type;
 
   cgs->pValue->type = 0; // original type without conversion
-	int rc = CallService(MS_DB_CONTACT_GETSETTING_STR, wParam, lParam);
+	INT_PTR rc = CallService(MS_DB_CONTACT_GETSETTING_STR, wParam, lParam);
 
   if (!rc)
   { // Success
@@ -186,7 +186,7 @@ int CIcqProto::GetInfoSetting(WPARAM wParam, LPARAM lParam)
 }
 
 
-int CIcqProto::ChangeInfoEx(WPARAM wParam, LPARAM lParam)
+INT_PTR CIcqProto::ChangeInfoEx(WPARAM wParam, LPARAM lParam)
 {
 	if (icqOnline() && wParam)
 	{
@@ -347,7 +347,7 @@ int CIcqProto::ChangeInfoEx(WPARAM wParam, LPARAM lParam)
 	return 0; // Failure
 }
 
-int CIcqProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
+INT_PTR CIcqProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
 {
 	if (wParam == AF_MAXSIZE)
 	{
@@ -402,7 +402,7 @@ int CIcqProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int CIcqProto::GetAvatarInfo(WPARAM wParam, LPARAM lParam)
+INT_PTR CIcqProto::GetAvatarInfo(WPARAM wParam, LPARAM lParam)
 {
 	PROTO_AVATAR_INFORMATION* pai = (PROTO_AVATAR_INFORMATION*)lParam;
 	DWORD dwUIN;
@@ -456,7 +456,7 @@ int CIcqProto::GetAvatarInfo(WPARAM wParam, LPARAM lParam)
 	return GAIR_NOAVATAR;
 }
 
-int CIcqProto::GetMyAvatar(WPARAM wParam, LPARAM lParam)
+INT_PTR CIcqProto::GetMyAvatar(WPARAM wParam, LPARAM lParam)
 {
 	if (!m_bAvatarsEnabled) return -2;
 
@@ -469,7 +469,7 @@ int CIcqProto::GetMyAvatar(WPARAM wParam, LPARAM lParam)
 	return -1;
 }
 
-int CIcqProto::GrantAuthorization(WPARAM wParam, LPARAM lParam)
+INT_PTR CIcqProto::GrantAuthorization(WPARAM wParam, LPARAM lParam)
 {
 	if (icqOnline() && wParam != 0)
 	{
@@ -505,7 +505,7 @@ int CIcqProto::OnIdleChanged(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int CIcqProto::RevokeAuthorization(WPARAM wParam, LPARAM lParam)
+INT_PTR CIcqProto::RevokeAuthorization(WPARAM wParam, LPARAM lParam)
 {
 	if (icqOnline() && wParam != 0)
 	{
@@ -525,7 +525,7 @@ int CIcqProto::RevokeAuthorization(WPARAM wParam, LPARAM lParam)
 }
 
 
-int CIcqProto::SendSms(WPARAM wParam, LPARAM lParam)
+INT_PTR CIcqProto::SendSms(WPARAM wParam, LPARAM lParam)
 {
 	if (icqOnline() && wParam && lParam)
 		return icq_sendSMSServ((const char *)wParam, (const char *)lParam);
@@ -533,7 +533,7 @@ int CIcqProto::SendSms(WPARAM wParam, LPARAM lParam)
 	return 0; // Failure
 }
 
-int CIcqProto::SendYouWereAdded(WPARAM wParam, LPARAM lParam)
+INT_PTR CIcqProto::SendYouWereAdded(WPARAM wParam, LPARAM lParam)
 {
 	if (lParam && icqOnline())
 	{
@@ -558,7 +558,7 @@ int CIcqProto::SendYouWereAdded(WPARAM wParam, LPARAM lParam)
 	return 1; // Failure
 }
 
-int CIcqProto::SetMyAvatar(WPARAM wParam, LPARAM lParam)
+INT_PTR CIcqProto::SetMyAvatar(WPARAM wParam, LPARAM lParam)
 {
 	char* szFile = (char*)lParam;
 	int iRet = -1;
@@ -623,7 +623,7 @@ int CIcqProto::SetMyAvatar(WPARAM wParam, LPARAM lParam)
 	return iRet;
 }
 
-int CIcqProto::SetNickName(WPARAM wParam, LPARAM lParam)
+INT_PTR CIcqProto::SetNickName(WPARAM wParam, LPARAM lParam)
 {
 	if (icqOnline())
 	{
@@ -635,7 +635,7 @@ int CIcqProto::SetNickName(WPARAM wParam, LPARAM lParam)
 	return 0; // Failure
 }
 
-int CIcqProto::SetPassword(WPARAM wParam, LPARAM lParam)
+INT_PTR CIcqProto::SetPassword(WPARAM wParam, LPARAM lParam)
 {
 	char *pwd = (char*)lParam;
 	int len = strlennull(pwd);
