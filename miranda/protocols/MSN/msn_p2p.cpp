@@ -307,7 +307,7 @@ void  CMsnProto::p2p_sendMsg( HANDLE hContact, unsigned appId, P2P_Header& hdrda
 
 		// add message header
 		if ( msgType == 1 ) {
- 			*(unsigned*)p = portion + sizeof(P2P_Header); p += 4;
+ 			*(unsigned*)p = (unsigned)(portion + sizeof(P2P_Header)); p += 4;
 		}
 		else
 		{
@@ -323,7 +323,7 @@ void  CMsnProto::p2p_sendMsg( HANDLE hContact, unsigned appId, P2P_Header& hdrda
 		
 		if ( msgsz )
 		{
-			ph->mPacketLen = portion;
+			ph->mPacketLen = (unsigned)portion;
 			ph->mOffset = offset;
 			ph->mTotalSize = msgsz;
 			
@@ -1697,7 +1697,7 @@ void  CMsnProto::p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 				pContext = (char*)malloc(cbContext);
 				HFileContext* ctx = (HFileContext*)pContext;
 				memset(pContext, 0, cbContext);
-				ctx->len = cbContext;
+				ctx->len = (unsigned)cbContext;
 				ctx->ver = 3; 
 				ctx->type = MSN_TYPEID_FTNOPREVIEW;
 				ctx->dwSize = ft->std.currentFileSize;
@@ -1782,7 +1782,7 @@ void  CMsnProto::p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 		"Context: ",
 		szAppID, sessionID, ft->p2p_appID );
 
-	NETLIBBASE64 nlb = { body+tBytes, cbBody-tBytes, (PBYTE)pContext, cbContext };
+	NETLIBBASE64 nlb = { body+tBytes, (int)cbBody-tBytes, (PBYTE)pContext, (int)cbContext };
 	MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
 	cbBody = tBytes + nlb.cchEncoded;
 	strcpy( body + cbBody - 1, "\r\n\r\n" );

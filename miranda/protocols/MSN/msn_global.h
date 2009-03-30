@@ -437,7 +437,7 @@ struct ThreadData
 	int            mGatewayTimeout;
 	char*          mReadAheadBuffer;
 	char*          mReadAheadBufferPtr;
-	int            mEhoughData;
+	size_t         mEhoughData;
 	bool           sessionClosed;
 	bool		   termPending;
 	bool		   gatewayType;
@@ -506,7 +506,7 @@ struct ThreadData
 
 
 
-inline bool IsChatHandle(HANDLE hContact) { return (int)hContact < 0; }
+inline bool IsChatHandle(HANDLE hContact) { return (INT_PTR)hContact < 0; }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////

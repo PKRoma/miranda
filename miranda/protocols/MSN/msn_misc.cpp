@@ -188,7 +188,7 @@ char* MSN_GetAvatarHash(char* szContext)
 		BYTE szActHash[MIR_SHA1_HASH_SIZE+2];
 		const size_t len = strlen( szAvatarHash );
 
-		NETLIBBASE64 nlb = { (char*)szAvatarHash, len, szActHash, sizeof(szActHash) };
+		NETLIBBASE64 nlb = { (char*)szAvatarHash, (int)len, szActHash, sizeof(szActHash) };
 		int decod = MSN_CallService( MS_NETLIB_BASE64DECODE, 0, LPARAM( &nlb ));
 		if (decod != 0 && nlb.cbDecoded > 0)
 			res = arrayToHex(szActHash, MIR_SHA1_HASH_SIZE);
@@ -208,10 +208,10 @@ void  CMsnProto::MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t c
 	InitCustomFolders();
 
 	char* path = ( char* )alloca( cbLen );
-	if ( hMSNAvatarsFolder == NULL || FoldersGetCustomPath( hMSNAvatarsFolder, path, cbLen, "" ))
+	if ( hMSNAvatarsFolder == NULL || FoldersGetCustomPath( hMSNAvatarsFolder, path, (int)cbLen, "" ))
 	{
         char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
-        lstrcpynA(pszDest, tmpPath, cbLen-1);
+        lstrcpynA(pszDest, tmpPath, (int)cbLen-1);
         mir_free(tmpPath);
 		
 		tPathLen = strlen( pszDest );
@@ -284,7 +284,7 @@ void  CMsnProto::MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, si
 	InitCustomFolders();
 
 	char* path = ( char* )alloca( cbLen );
-	if ( hCustomSmileyFolder == NULL || FoldersGetCustomPath(hCustomSmileyFolder, path, cbLen, "" )) 
+	if ( hCustomSmileyFolder == NULL || FoldersGetCustomPath(hCustomSmileyFolder, path, (int)cbLen, "" )) 
 	{
 		CallService(MS_DB_GETPROFILEPATH, (WPARAM) cbLen, (LPARAM)pszDest);
 		tPathLen = strlen( pszDest );
@@ -442,7 +442,7 @@ LONG ThreadData::sendRawMessage( int msgType, const char* data, int datLen )
 		data = "";
 
 	if ( datLen == -1 )
-		datLen = strlen( data );
+		datLen = (int)strlen( data );
 
 	char* buf = ( char* )alloca( datLen + 100 );
 
@@ -1155,7 +1155,7 @@ char* MSN_Base64Decode( const char* str )
 		*p1 = 0;
 	}
 
-	NETLIBBASE64 nlb = { p, len, ( PBYTE )res, reslen };
+	NETLIBBASE64 nlb = { p, (int)len, ( PBYTE )res, (int)reslen };
 	MSN_CallService( MS_NETLIB_BASE64DECODE, 0, LPARAM( &nlb ));
 	res[nlb.cbDecoded] = 0;
 
@@ -1187,8 +1187,8 @@ void MSN_MakeDigest(const char* chl, char* dgst)
 	DWORD md5hash[ 4 ], md5hashOr[ 4 ];
 	mir_md5_state_t context;
 	mir_md5_init( &context );
-	mir_md5_append( &context, ( BYTE* )chl, strlen( chl ));
-	mir_md5_append( &context, ( BYTE* )msnProtChallenge,  strlen( msnProtChallenge ));
+	mir_md5_append( &context, ( BYTE* )chl, (int)strlen( chl ));
+	mir_md5_append( &context, ( BYTE* )msnProtChallenge, (int)strlen( msnProtChallenge ));
 	mir_md5_finish( &context, ( BYTE* )md5hash );
 
 	memcpy(md5hashOr, md5hash, sizeof(md5hash));

@@ -400,7 +400,7 @@ int CMsnProto::MSN_SendOIM(const char* szEmail, const char* msg)
 		size_t emlen = Netlib_GetBase64EncodedBufferSize(omlen);
 		mynickenc =(char*)alloca(emlen + 20);
 		strcpy(mynickenc, "=?utf-8?B?");
-		NETLIBBASE64 nlb = { mynickenc+10, emlen, (PBYTE)mynick, omlen };
+		NETLIBBASE64 nlb = { mynickenc+10, (int)emlen, (PBYTE)mynick, (int)omlen };
 		MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
 		if (dbv.pszVal != NULL) MSN_FreeVariant( &dbv );
 		strcat(mynickenc, "?=");
@@ -463,7 +463,7 @@ int CMsnProto::MSN_SendOIM(const char* szEmail, const char* msg)
 		
 		strcpy(msgenc2, "\r\n"); msgenc2 += 2;
 
-		NETLIBBASE64 nlb = { msgenc2, emlen, (PBYTE)msg, omlen };
+		NETLIBBASE64 nlb = { msgenc2, (int)emlen, (PBYTE)msg, (int)omlen };
 		MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
 
 		char *pos = msgenc2;

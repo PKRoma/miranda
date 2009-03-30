@@ -648,7 +648,7 @@ INT_PTR CALLBACK admin_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
         {
 		case PSN_PARAMCHANGED:
 		    ppro = (CAimProto*)((LPPSHNOTIFY)lParam)->lParam;
-            SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG)ppro);
+            SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)ppro);
 
             if (ppro->wait_conn(ppro->hAdminConn, ppro->hAdminEvent, 0x07))             // Make a connection
             {
@@ -754,7 +754,7 @@ int CAimProto::OnUserInfoInit(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int CAimProto::EditProfile(WPARAM /*wParam*/, LPARAM /*lParam*/)
+INT_PTR CAimProto::EditProfile(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	DialogBoxParam( hInstance, MAKEINTRESOURCE(IDD_AIM), NULL, userinfo_dialog, LPARAM( this ));
 	return 0;
@@ -1205,9 +1205,9 @@ INT_PTR CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	return FALSE;
 }
 
-int CAimProto::SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam)
+INT_PTR CAimProto::SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam)
 {
-	return (int)CreateDialogParam (hInstance, MAKEINTRESOURCE( IDD_AIMACCOUNT ), 
+	return (INT_PTR)CreateDialogParam (hInstance, MAKEINTRESOURCE( IDD_AIMACCOUNT ), 
 		 (HWND)lParam, first_run_dialog, (LPARAM)this );
 }
 

@@ -4,10 +4,10 @@
 #include "m_protoint.h"
 
 struct CAimProto;
-typedef void ( __cdecl CAimProto::*AimThreadFunc )( void* );
-typedef int  ( __cdecl CAimProto::*AimEventFunc )( WPARAM, LPARAM );
-typedef int  ( __cdecl CAimProto::*AimServiceFunc )( WPARAM, LPARAM );
-typedef int  ( __cdecl CAimProto::*AimServiceFuncParam )( WPARAM, LPARAM, LPARAM );
+typedef void    ( __cdecl CAimProto::*AimThreadFunc )( void* );
+typedef int     ( __cdecl CAimProto::*AimEventFunc )( WPARAM, LPARAM );
+typedef INT_PTR ( __cdecl CAimProto::*AimServiceFunc )( WPARAM, LPARAM );
+typedef INT_PTR ( __cdecl CAimProto::*AimServiceFuncParam )( WPARAM, LPARAM, LPARAM );
 
 struct CAimProto : public PROTO_INTERFACE
 {
@@ -35,12 +35,12 @@ struct CAimProto : public PROTO_INTERFACE
 
 	virtual	HANDLE __cdecl ChangeInfo( int iInfoType, void* pInfoData );
 
-	virtual	int    __cdecl FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath );
+	virtual	HANDLE __cdecl FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath );
 	virtual	int    __cdecl FileCancel( HANDLE hContact, HANDLE hTransfer );
 	virtual	int    __cdecl FileDeny( HANDLE hContact, HANDLE hTransfer, const char* szReason );
 	virtual	int    __cdecl FileResume( HANDLE hTransfer, int* action, const char** szFilename );
 
-	virtual	DWORD  __cdecl GetCaps( int type, HANDLE hContact = NULL );
+	virtual	DWORD_PTR __cdecl GetCaps( int type, HANDLE hContact = NULL );
 	virtual	HICON  __cdecl GetIcon( int iconIndex );
 	virtual	int    __cdecl GetInfo( HANDLE hContact, int infoType );
 
@@ -56,14 +56,14 @@ struct CAimProto : public PROTO_INTERFACE
 	virtual	int    __cdecl RecvUrl( HANDLE hContact, PROTORECVEVENT* );
 
 	virtual	int    __cdecl SendContacts( HANDLE hContact, int flags, int nContacts, HANDLE* hContactsList );
-	virtual	int    __cdecl SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles );
+	virtual	HANDLE __cdecl SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles );
 	virtual	int    __cdecl SendMsg( HANDLE hContact, int flags, const char* msg );
 	virtual	int    __cdecl SendUrl( HANDLE hContact, int flags, const char* url );
 
 	virtual	int    __cdecl SetApparentMode( HANDLE hContact, int mode );
 	virtual	int    __cdecl SetStatus( int iNewStatus );
 
-	virtual	int    __cdecl GetAwayMsg( HANDLE hContact );
+	virtual	HANDLE __cdecl GetAwayMsg( HANDLE hContact );
 	virtual	int    __cdecl RecvAwayMsg( HANDLE hContact, int mode, PROTORECVEVENT* evt );
 	virtual	int    __cdecl SendAwayMsg( HANDLE hContact, HANDLE hProcess, const char* msg );
 	virtual	int    __cdecl SetAwayMsg( int m_iStatus, const char* msg );
@@ -73,26 +73,29 @@ struct CAimProto : public PROTO_INTERFACE
 	virtual	int    __cdecl OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam );
 
 	//====| Services |====================================================================
-	int  __cdecl SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam);
 
-	int  __cdecl GetAvatarInfo(WPARAM wParam, LPARAM lParam);
-	int  __cdecl GetMyAwayMsg(WPARAM wParam,LPARAM lParam);
+	INT_PTR  __cdecl GetAvatarInfo(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl GetMyAwayMsg(WPARAM wParam,LPARAM lParam);
 
-	int  __cdecl GetAvatar(WPARAM wParam, LPARAM lParam);
-	int  __cdecl SetAvatar(WPARAM wParam, LPARAM lParam);
-	int  __cdecl GetAvatarCaps(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl GetAvatar(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl SetAvatar(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl GetAvatarCaps(WPARAM wParam, LPARAM lParam);
 
-	int  __cdecl ManageAccount(WPARAM wParam, LPARAM lParam);
-	int  __cdecl CheckMail(WPARAM wParam, LPARAM lParam);
-	int  __cdecl InstantIdle(WPARAM wParam, LPARAM lParam);
-	int  __cdecl JoinChatUI(WPARAM wParam, LPARAM lParam);
-	int  __cdecl GetHTMLAwayMsg(WPARAM wParam, LPARAM lParam);
-	int  __cdecl GetProfile(WPARAM wParam, LPARAM lParam);
-	int  __cdecl EditProfile(WPARAM wParam, LPARAM lParam);
-	int  __cdecl AddToServerList(WPARAM wParam, LPARAM lParam);
-	int  __cdecl BlockBuddy(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl ManageAccount(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl CheckMail(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl InstantIdle(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl JoinChatUI(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl GetHTMLAwayMsg(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl GetProfile(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl EditProfile(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl AddToServerList(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl BlockBuddy(WPARAM wParam, LPARAM lParam);
 
-	//====| Events |======================================================================
+	INT_PTR  __cdecl OnJoinChat(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl OnLeaveChat(WPARAM wParam, LPARAM lParam);
+
+    //====| Events |======================================================================
 	int  __cdecl OnContactDeleted(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnGroupChange(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnExtraIconsRebuild(WPARAM wParam, LPARAM lParam);
@@ -107,8 +110,6 @@ struct CAimProto : public PROTO_INTERFACE
 	int  __cdecl OnUserInfoInit(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnGCEvent(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnGCMenuHook(WPARAM wParam,LPARAM lParam);
-	int  __cdecl OnJoinChat(WPARAM wParam, LPARAM lParam);
-	int  __cdecl OnLeaveChat(WPARAM wParam, LPARAM lParam);
 
 	//====| Data |========================================================================
 	char* CWD;//current working directory

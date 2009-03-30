@@ -603,7 +603,7 @@ void __cdecl CMsnProto::MsnFileAckThread( void* arg )
 	SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, ft, 0);
 }
 
-int __cdecl CMsnProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath )
+HANDLE __cdecl CMsnProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath )
 {
 	filetransfer* ft = ( filetransfer* )hTransfer;
 
@@ -623,7 +623,7 @@ int __cdecl CMsnProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const char*
 
 	ForkThread( &CMsnProto::MsnFileAckThread, ft );
 
-	return int( ft );
+	return ft;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -726,7 +726,7 @@ int __cdecl CMsnProto::FileResume( HANDLE hTransfer, int* action, const char** s
 
 typedef struct AwayMsgInfo_tag
 {
-	int id;
+	INT_PTR id;
 	HANDLE hContact;
 } AwayMsgInfo;
 
@@ -745,20 +745,20 @@ void __cdecl CMsnProto::MsnGetAwayMsgThread( void* arg )
 	mir_free( inf );
 }
 
-int __cdecl CMsnProto::GetAwayMsg( HANDLE hContact )
+HANDLE __cdecl CMsnProto::GetAwayMsg( HANDLE hContact )
 {
 	AwayMsgInfo* inf = (AwayMsgInfo*)mir_alloc( sizeof( AwayMsgInfo ));
 	inf->hContact = hContact;
 	inf->id = MSN_GenRandom();
 
 	ForkThread( &CMsnProto::MsnGetAwayMsgThread, inf );
-	return inf->id;
+	return (HANDLE)inf->id;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnGetCaps - obtain the protocol capabilities
 
-DWORD __cdecl CMsnProto::GetCaps( int type, HANDLE hContact )
+DWORD_PTR __cdecl CMsnProto::GetCaps( int type, HANDLE hContact )
 {
 	switch( type ) {
 	case PFLAGNUM_1:
@@ -779,10 +779,10 @@ DWORD __cdecl CMsnProto::GetCaps( int type, HANDLE hContact )
 		return PF4_SUPPORTTYPING | PF4_AVATARS | PF4_SUPPORTIDLE | PF4_IMSENDUTF | PF4_IMSENDOFFLINE;
 
 	case PFLAG_UNIQUEIDTEXT:
-		return ( int )MSN_Translate( "Live ID" );
+		return ( UINT_PTR )MSN_Translate( "Live ID" );
 
 	case PFLAG_UNIQUEIDSETTING:
-		return ( int )"e-mail";
+		return ( UINT_PTR )"e-mail";
 
 	case PFLAG_MAXLENOFMESSAGE:
 		return 1202;
@@ -862,7 +862,7 @@ int __cdecl CMsnProto::SendContacts( HANDLE hContact, int flags, int nContacts, 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnSendFile - initiates a file transfer
 
-int __cdecl CMsnProto::SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles )
+HANDLE __cdecl CMsnProto::SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles )
 {
 	if ( !msnLoggedIn )
 		return 0;
@@ -902,7 +902,7 @@ int __cdecl CMsnProto::SendFile( HANDLE hContact, const char* szDescription, cha
 		msnftp_invite( sft );
 
 	SendBroadcast( hContact, ACKTYPE_FILE, ACKRESULT_SENTREQUEST, sft, 0 );
-	return (int)(HANDLE)sft;
+	return sft;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

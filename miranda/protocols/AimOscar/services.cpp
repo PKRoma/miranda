@@ -18,12 +18,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "aim.h"
 
-int CAimProto::GetMyAwayMsg(WPARAM wParam,LPARAM lParam)
+INT_PTR CAimProto::GetMyAwayMsg(WPARAM wParam,LPARAM lParam)
 {
     char** msgptr = getStatusMsgLoc(wParam ? wParam : m_iStatus);
 	if (msgptr == NULL)	return 0;
 
-    return (lParam & SGMA_UNICODE) ? (int)mir_utf8decodeW(*msgptr) : (int)mir_utf8decodeA(*msgptr);
+    return (lParam & SGMA_UNICODE) ? (INT_PTR)mir_utf8decodeW(*msgptr) : (INT_PTR)mir_utf8decodeA(*msgptr);
 }
 
 int CAimProto::OnIdleChanged(WPARAM /*wParam*/, LPARAM lParam)
@@ -83,7 +83,7 @@ int CAimProto::OnWindowEvent(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int CAimProto::GetProfile(WPARAM wParam, LPARAM lParam)
+INT_PTR CAimProto::GetProfile(WPARAM wParam, LPARAM lParam)
 {
 	if ( state != 1 )
 		return 0;
@@ -97,7 +97,7 @@ int CAimProto::GetProfile(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int CAimProto::GetHTMLAwayMsg(WPARAM wParam, LPARAM /*lParam*/)
+INT_PTR CAimProto::GetHTMLAwayMsg(WPARAM wParam, LPARAM /*lParam*/)
 {
 	if ( state != 1 )
 		return 0;
@@ -219,7 +219,7 @@ int CAimProto::OnGroupChange(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int CAimProto::AddToServerList(WPARAM wParam, LPARAM /*lParam*/)
+INT_PTR CAimProto::AddToServerList(WPARAM wParam, LPARAM /*lParam*/)
 {
 	if (state != 1) return 0;
 
@@ -233,7 +233,7 @@ int CAimProto::AddToServerList(WPARAM wParam, LPARAM /*lParam*/)
 	return 0;
 }
 
-int CAimProto::BlockBuddy(WPARAM wParam, LPARAM /*lParam*/)
+INT_PTR CAimProto::BlockBuddy(WPARAM wParam, LPARAM /*lParam*/)
 {
 	if (state != 1)	return 0;
 
@@ -285,13 +285,13 @@ int CAimProto::BlockBuddy(WPARAM wParam, LPARAM /*lParam*/)
 	return 0;
 }
 
- int CAimProto::JoinChatUI(WPARAM /*wParam*/, LPARAM /*lParam*/)
+ INT_PTR CAimProto::JoinChatUI(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	DialogBoxParam( hInstance, MAKEINTRESOURCE(IDD_CHAT), NULL, join_chat_dialog, LPARAM( this ));
 	return 0;
 }
 
-int CAimProto::OnJoinChat(WPARAM wParam, LPARAM /*lParam*/)
+INT_PTR CAimProto::OnJoinChat(WPARAM wParam, LPARAM /*lParam*/)
 {
 	if (state != 1)	return 0;
 
@@ -307,7 +307,7 @@ int CAimProto::OnJoinChat(WPARAM wParam, LPARAM /*lParam*/)
     return 0;
 }
 
-int CAimProto::OnLeaveChat(WPARAM wParam, LPARAM /*lParam*/)
+INT_PTR CAimProto::OnLeaveChat(WPARAM wParam, LPARAM /*lParam*/)
 {
 	if (state != 1)	return 0;
 
@@ -322,13 +322,13 @@ int CAimProto::OnLeaveChat(WPARAM wParam, LPARAM /*lParam*/)
     return 0;
 }
 
-int CAimProto::InstantIdle(WPARAM /*wParam*/, LPARAM /*lParam*/)
+INT_PTR CAimProto::InstantIdle(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	DialogBoxParam( hInstance, MAKEINTRESOURCE(IDD_IDLE), NULL, instant_idle_dialog, LPARAM( this ));
 	return 0;
 }
 
-int CAimProto::CheckMail(WPARAM /*wParam*/, LPARAM /*lParam*/)
+INT_PTR CAimProto::CheckMail(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	if ( state == 1 ) {
 		checking_mail = 1;
@@ -337,13 +337,13 @@ int CAimProto::CheckMail(WPARAM /*wParam*/, LPARAM /*lParam*/)
 	return 0;
 }
 
-int CAimProto::ManageAccount(WPARAM /*wParam*/, LPARAM /*lParam*/)
+INT_PTR CAimProto::ManageAccount(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	execute_cmd("https://my.screenname.aol.com");
 	return 0;
 }
 
-int CAimProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
+INT_PTR CAimProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 {
 	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
     
@@ -392,7 +392,7 @@ int CAimProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	return res;
 }
 
-int CAimProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
+INT_PTR CAimProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
 {
 	int res = 0;
 
@@ -424,7 +424,7 @@ int CAimProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
 	return res;
 }
 
-int CAimProto::GetAvatar(WPARAM wParam, LPARAM lParam)
+INT_PTR CAimProto::GetAvatar(WPARAM wParam, LPARAM lParam)
 {
 	char* buf = (char*)wParam;
 	int  size = (int)lParam;
@@ -436,7 +436,7 @@ int CAimProto::GetAvatar(WPARAM wParam, LPARAM lParam)
 	return _access(buf, 0);
 }
 
-int CAimProto::SetAvatar(WPARAM wParam, LPARAM lParam)
+INT_PTR CAimProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 {
 	char* szFileName = (char*)lParam;
 

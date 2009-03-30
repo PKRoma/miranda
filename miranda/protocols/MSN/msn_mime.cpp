@@ -409,9 +409,9 @@ wchar_t* MimeHeaders::decode(const char* val)
 			ssz -= sz; resp += sz;
 		}
 		else {
-			sz = MultiByteToWideChar(FindCP(cp), 0, fld, -1, resp, ssz);
+			int sz = MultiByteToWideChar(FindCP(cp), 0, fld, -1, resp, (int)ssz);
 			if (sz == 0)
-				sz = MultiByteToWideChar(CP_ACP, 0, fld, -1, resp, ssz);
+				sz = MultiByteToWideChar(CP_ACP, 0, fld, -1, resp, (int)ssz);
 			ssz -= --sz; resp += sz;
 		}
  		p = pe + 2;
@@ -456,13 +456,13 @@ int sttDivideWords( char* parBuffer, int parMinItems, char** parDest )
 	for ( i=0; i < parMinItems; i++ ) {
 		parDest[ i ] = parBuffer;
 
-		int tWordLen = strcspn( parBuffer, " \t" );
+		size_t tWordLen = strcspn( parBuffer, " \t" );
 		if ( tWordLen == 0 )
 			return i;
 
 		parBuffer += tWordLen;
 		if ( *parBuffer != '\0' ) {
-			int tSpaceLen = strspn( parBuffer, " \t" );
+			size_t tSpaceLen = strspn( parBuffer, " \t" );
 			memset( parBuffer, 0, tSpaceLen );
 			parBuffer += tSpaceLen;
 	}	}

@@ -35,7 +35,7 @@ static const char sttGatewayHeader[] =
 
 int ThreadData::send( const char data[], size_t datalen )
 {
-	NETLIBBUFFER nlb = { (char*)data, datalen, 0 };
+	NETLIBBUFFER nlb = { (char*)data, (int)datalen, 0 };
 
 	mWaitPeriod = 60;
 
@@ -170,7 +170,7 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 			}
 			tSelect.hReadConns[ 0 ] = s;
 		}
-		int lstRes = Netlib_Send(s, szCommand, cmdsz, 0);
+		INT_PTR lstRes = Netlib_Send(s, szCommand, (int)cmdsz, 0);
 		if (lstRes != SOCKET_ERROR)
 		{
 			size_t ackSize = 0;
@@ -188,7 +188,7 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 					break; 
 				}
 
-				lstRes = Netlib_Recv(s, szResult + ackSize, bufSize - ackSize, 0);
+				lstRes = Netlib_Recv(s, szResult + ackSize, (int)(bufSize - ackSize), 0);
 				if ( lstRes == 0 ) 
 					proto->MSN_DebugLog( "Connection closed gracefully" );
 
@@ -299,7 +299,7 @@ int ThreadData::recv_dg( char* data, size_t datalen )
 			{
 				memcpy( data, mReadAheadBufferPtr, tBytesToCopy );
 				mReadAheadBufferPtr += tBytesToCopy;
-				return tBytesToCopy;
+				return (int)tBytesToCopy;
 			}
 		}
 
@@ -379,7 +379,7 @@ int ThreadData::recv( char* data, size_t datalen )
 		if ( mType != SERVER_FILETRANS && mType != SERVER_P2P_DIRECT )
 			return recv_dg( data, datalen );
 
-	NETLIBBUFFER nlb = { data, datalen, 0 };
+	NETLIBBUFFER nlb = { data, (int)datalen, 0 };
 
 LBL_RecvAgain:
 	if ( !mIsMainThread && !proto->MyOptions.UseGateway && !proto->MyOptions.UseProxy ) {

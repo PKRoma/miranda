@@ -46,7 +46,7 @@ char* CMsnProto::getSslResult(char** parUrl, const char* parAuthInfo, const char
 	nlhr.requestType = REQUEST_POST;
 	nlhr.flags = NLHRF_HTTP11 | NLHRF_DUMPASTEXT;
 	nlhr.szUrl = *parUrl;
-	nlhr.dataLength = strlen(parAuthInfo);
+	nlhr.dataLength = (int)strlen(parAuthInfo);
 	nlhr.pData = (char*)parAuthInfo;
 
 #ifndef _DEBUG

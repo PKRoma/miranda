@@ -641,7 +641,7 @@ void ThreadData::getGatewayUrl( char* dest, int destlen, bool isPoll )
 
 	if ( !proto->MyOptions.UseProxy ) {
 		char *slash = strchr(dest+7, '/');
-		int len = strlen(dest) - (slash - dest) + 1;
+		size_t len = strlen(dest) - (slash - dest) + 1;
 		memmove(dest, slash, len);
 	}
 }
@@ -723,9 +723,12 @@ HReadBuffer::HReadBuffer( ThreadData* T, int iStart )
 
 HReadBuffer::~HReadBuffer()
 {
-	owner->mBytesInData = totalDataSize - startOffset;
-	if ( owner->mBytesInData != 0 )
-		memmove( owner->mData, owner->mData + startOffset, owner->mBytesInData );
+    if ( totalDataSize > startOffset ) {
+		memmove( buffer, buffer + startOffset, ( totalDataSize -= startOffset ));
+	    owner->mBytesInData = (int)totalDataSize;
+    }
+    else
+        owner->mBytesInData = 0;
 }
 
 BYTE* HReadBuffer::surelyRead( size_t parBytes )
@@ -734,14 +737,12 @@ BYTE* HReadBuffer::surelyRead( size_t parBytes )
 
 	if (( startOffset + parBytes ) > bufferSize )
 	{
-		int tNewLen = totalDataSize - startOffset;
-		if ( tNewLen > 0 )
-			memmove( buffer, buffer + startOffset, tNewLen );
+        if ( totalDataSize > startOffset ) 
+			memmove( buffer, buffer + startOffset, ( totalDataSize -= startOffset ));
 		else
-			tNewLen = 0;
+			totalDataSize = 0;
 
 		startOffset = 0;
-		totalDataSize = tNewLen;
 
 		if ( parBytes > bufferSize ) {
 //			MSN_DebugLog( "HReadBuffer::surelyRead: not enough memory, %d %d %d", parBytes, bufferSize, startOffset );

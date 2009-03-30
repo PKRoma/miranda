@@ -758,9 +758,9 @@ int CMsnProto::OnOptionsInit(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int CMsnProto::SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam)
+INT_PTR CMsnProto::SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam)
 {
-	return (int)CreateDialogParam (hInst, MAKEINTRESOURCE( IDD_ACCMGRUI ), 
+	return (INT_PTR)CreateDialogParam (hInst, MAKEINTRESOURCE( IDD_ACCMGRUI ), 
 		 (HWND)lParam, DlgProcAccMgrUI, (LPARAM)this );
 }
 

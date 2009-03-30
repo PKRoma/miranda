@@ -243,7 +243,7 @@ HANDLE __cdecl CAimProto::ChangeInfo( int iInfoType, void* pInfoData )
 ////////////////////////////////////////////////////////////////////////////////////////
 // FileAllow - starts a file transfer
 
-int __cdecl CAimProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath )
+HANDLE __cdecl CAimProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath )
 {
 	int ft = getByte( hContact, AIM_KEY_FT, 255 );
 	if ( ft != 255 ) {
@@ -259,7 +259,7 @@ int __cdecl CAimProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const char*
 		memcpy(&data[sizeof(HANDLE)],szFile,size-sizeof(HANDLE));
 		setString( hContact, AIM_KEY_FN, szPath );
 		ForkThread( &CAimProto::accept_file_thread, data );
-		return (int)hContact;
+		return hContact;
 	}
 	return 0;
 }
@@ -317,7 +317,7 @@ int __cdecl CAimProto::FileResume( HANDLE hTransfer, int* action, const char** s
 ////////////////////////////////////////////////////////////////////////////////////////
 // GetCaps - return protocol capabilities bits
 
-DWORD __cdecl CAimProto::GetCaps( int type, HANDLE hContact )
+DWORD_PTR __cdecl CAimProto::GetCaps( int type, HANDLE hContact )
 {
 	switch ( type ) {
 	case PFLAGNUM_1:
@@ -339,10 +339,10 @@ DWORD __cdecl CAimProto::GetCaps( int type, HANDLE hContact )
 		return 1024;
 
 	case PFLAG_UNIQUEIDTEXT:
-		return (int) "Screen Name";
+		return (DWORD_PTR) "Screen Name";
 
 	case PFLAG_UNIQUEIDSETTING:
-		return (int) AIM_KEY_SN;
+		return (DWORD_PTR) AIM_KEY_SN;
 	}
 	return 0;
 }
@@ -472,7 +472,7 @@ int __cdecl CAimProto::SendContacts( HANDLE hContact, int flags, int nContacts, 
 ////////////////////////////////////////////////////////////////////////////////////////
 // SendFile - sends a file
 
-int __cdecl CAimProto::SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles )
+HANDLE __cdecl CAimProto::SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles )
 {
 	if ( state != 1 )
 		return 0;
@@ -520,7 +520,7 @@ int __cdecl CAimProto::SendFile( HANDLE hContact, const char* szDescription, cha
 			else aim_send_file( hServerConn, seqno, dbv.pszVal, cookie, InternalIP, LocalPort, 0, 1, pszFile, pszSize, pszDesc );
 
 			DBFreeVariant( &dbv );
-			return (int)hContact;
+			return hContact;
 		}
 		deleteSetting( hContact, AIM_KEY_FT );
 	}
@@ -685,7 +685,7 @@ void __cdecl CAimProto::get_online_msg_thread( void* arg )
 	else sendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE )1, ( LPARAM )0 );
 }
 
-int __cdecl CAimProto::GetAwayMsg( HANDLE hContact )
+HANDLE __cdecl CAimProto::GetAwayMsg( HANDLE hContact )
 {
 	if ( state != 1 )
 		return 0;
@@ -702,7 +702,7 @@ int __cdecl CAimProto::GetAwayMsg( HANDLE hContact )
         return 0;
     }
 
-	return 1;
+	return (HANDLE)1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

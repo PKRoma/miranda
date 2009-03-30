@@ -26,18 +26,18 @@ extern int avsPresent;
 /////////////////////////////////////////////////////////////////////////////////////////
 // GetMyAwayMsg - obtain the current away message
 
-int CMsnProto::GetMyAwayMsg(WPARAM wParam,LPARAM lParam)
+INT_PTR CMsnProto::GetMyAwayMsg(WPARAM wParam,LPARAM lParam)
 {
     char** msgptr = GetStatusMsgLoc(wParam ? wParam : m_iStatus);
 	if (msgptr == NULL)	return 0;
 
-    return (lParam & SGMA_UNICODE) ? (int)mir_utf8decodeW(*msgptr) : (int)mir_utf8decodeA(*msgptr);
+    return (lParam & SGMA_UNICODE) ? (INT_PTR)mir_utf8decodeW(*msgptr) : (INT_PTR)mir_utf8decodeA(*msgptr);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnGetAvatar - retrieves the file name of my own avatar
 
-int CMsnProto::GetAvatar(WPARAM wParam, LPARAM lParam)
+INT_PTR CMsnProto::GetAvatar(WPARAM wParam, LPARAM lParam)
 {
 	if (avsPresent < 0) avsPresent = ServiceExists(MS_AV_SETMYAVATAR) != 0;
 	if (!avsPresent) return 1;
@@ -62,7 +62,7 @@ void CMsnProto::sttFakeAvatarAck( void* arg )
 	SendBroadcast((( PROTO_AVATAR_INFORMATION* )arg )->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, arg, 0 );
 }
 
-int CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
+INT_PTR CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 {
 	if (avsPresent < 0) avsPresent = ServiceExists(MS_AV_SETMYAVATAR) != 0;
 	if (!avsPresent) return GAIR_NOAVATAR;
@@ -199,7 +199,7 @@ int CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnGetAvatarCaps - retrieves avatar capabilities
 
-int CMsnProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
+INT_PTR CMsnProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
 {
 	int res = 0;
 
@@ -229,7 +229,7 @@ int CMsnProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MsnSetAvatar - sets an avatar without UI
 
-int CMsnProto::SetAvatar( WPARAM wParam, LPARAM lParam )
+INT_PTR CMsnProto::SetAvatar( WPARAM wParam, LPARAM lParam )
 {
 	if (avsPresent < 0) avsPresent = ServiceExists(MS_AV_SETMYAVATAR) != 0;
 	if (!avsPresent) return 1;
@@ -275,13 +275,13 @@ int CMsnProto::SetAvatar( WPARAM wParam, LPARAM lParam )
 		ezxml_t xmlp = ezxml_new("msnobj");
 
 		mir_sha1_append( &sha1ctx, ( PBYTE )"Creator", 7 );
-		mir_sha1_append( &sha1ctx, ( PBYTE )MyOptions.szEmail, strlen( MyOptions.szEmail ));
+		mir_sha1_append( &sha1ctx, ( PBYTE )MyOptions.szEmail, (int)strlen( MyOptions.szEmail ));
 		ezxml_set_attr(xmlp, "Creator", MyOptions.szEmail);
 
 		char szFileSize[ 20 ];
 		_ltoa( dwPngSize, szFileSize, 10 );
 		mir_sha1_append( &sha1ctx, ( PBYTE )"Size", 4 );
-		mir_sha1_append( &sha1ctx, ( PBYTE )szFileSize, strlen( szFileSize ));
+		mir_sha1_append( &sha1ctx, ( PBYTE )szFileSize, (int)strlen( szFileSize ));
 		ezxml_set_attr(xmlp, "Size", szFileSize);
 
 		mir_sha1_append( &sha1ctx, ( PBYTE )"Type", 4 );
@@ -297,7 +297,7 @@ int CMsnProto::SetAvatar( WPARAM wParam, LPARAM lParam )
 		ezxml_set_attr(xmlp, "Friendly", "AAA=");
 
 		mir_sha1_append( &sha1ctx, ( PBYTE )"SHA1D", 5 );
-		mir_sha1_append( &sha1ctx, ( PBYTE )szSha1d, strlen( szSha1d ));
+		mir_sha1_append( &sha1ctx, ( PBYTE )szSha1d, (int)strlen( szSha1d ));
 		ezxml_set_attr(xmlp, "SHA1D", szSha1d);
 		
 		mir_sha1_finish( &sha1ctx, sha1c );
@@ -337,7 +337,7 @@ int CMsnProto::SetAvatar( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 //	SetNickname - sets a nick name without UI
 
-int CMsnProto::SetNickName( WPARAM wParam, LPARAM lParam )
+INT_PTR CMsnProto::SetNickName( WPARAM wParam, LPARAM lParam )
 {
 	MSN_SendNicknameA(( char* )lParam );
 	return 0;
@@ -346,7 +346,7 @@ int CMsnProto::SetNickName( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnSendNudge - Sending a nudge
 
-int CMsnProto::SendNudge( WPARAM wParam, LPARAM lParam )
+INT_PTR CMsnProto::SendNudge( WPARAM wParam, LPARAM lParam )
 {
 	if ( !msnLoggedIn ) return 0;
 
@@ -398,7 +398,7 @@ int CMsnProto::SendNudge( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 //	GetCurrentMedia - get current media
 
-int CMsnProto::GetCurrentMedia(WPARAM wParam, LPARAM lParam)
+INT_PTR CMsnProto::GetCurrentMedia(WPARAM wParam, LPARAM lParam)
 {
 	LISTENINGTOINFO *cm = (LISTENINGTOINFO *)lParam;
 
@@ -422,7 +422,7 @@ int CMsnProto::GetCurrentMedia(WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 //	SetCurrentMedia - set current media
 
-int CMsnProto::SetCurrentMedia(WPARAM wParam, LPARAM lParam)
+INT_PTR CMsnProto::SetCurrentMedia(WPARAM wParam, LPARAM lParam)
 {
 	// Clear old info
 	mir_free( msnCurrentMedia.ptszArtist );
@@ -682,7 +682,7 @@ int CMsnProto::OnWindowEvent(WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnGetUnread - returns the actual number of unread emails in the INBOX
 
-int CMsnProto::GetUnreadEmailCount(WPARAM wParam, LPARAM lParam)
+INT_PTR CMsnProto::GetUnreadEmailCount(WPARAM wParam, LPARAM lParam)
 {
 	if ( !msnLoggedIn )
 		return 0;
@@ -692,7 +692,7 @@ int CMsnProto::GetUnreadEmailCount(WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // OnLeaveChat - closes MSN chat window
 
-int CMsnProto::OnLeaveChat(WPARAM wParam,LPARAM lParam)
+INT_PTR CMsnProto::OnLeaveChat(WPARAM wParam,LPARAM lParam)
 {
 	HANDLE hContact = (HANDLE)wParam;
 	if (getByte(hContact, "ChatRoom", 0) != 0) 

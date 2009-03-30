@@ -119,7 +119,7 @@ void CMsnProto::MSN_ChatStart(ThreadData* info)
 	gce.bIsMe = FALSE;
 
 	for ( int j=0; j < info->mJoinedCount; j++ ) {
-		if (( long )info->mJoinedContacts[j] <= 0 )
+		if (( INT_PTR )info->mJoinedContacts[j] <= 0 )
 			continue;
 
 		gce.ptszNick = MSN_GetContactNameT( info->mJoinedContacts[j] );

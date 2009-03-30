@@ -673,9 +673,9 @@ void CAimProto::write_away_message(const char* sn, const char* msg, bool utf)
         if (utf) _write(fid, "\xEF\xBB\xBF", 3);
 		char* s_msg=process_status_msg(msg, sn);
 		_write(fid, "<h3>", 4);
-		_write(fid, sn, strlen(sn));
+		_write(fid, sn, (unsigned)strlen(sn));
 		_write(fid, "'s Away Message:</h3>", 21);
-		_write(fid, s_msg, strlen(s_msg));
+		_write(fid, s_msg, (unsigned)strlen(s_msg));
 		_close(fid);
 		execute_cmd(path);
 		mir_free(path);
@@ -697,9 +697,9 @@ void CAimProto::write_profile(const char* sn, const char* msg, bool utf)
         if (utf) _write(fid, "\xEF\xBB\xBF", 3);
 		char* s_msg=process_status_msg(msg, sn);
 		_write(fid, "<h3>", 4);
-		_write(fid, sn, strlen(sn));
+		_write(fid, sn, (unsigned)strlen(sn));
 		_write(fid, "'s Profile:</h3>", 16);
-		_write(fid, s_msg, strlen(s_msg));
+		_write(fid, s_msg, (unsigned)strlen(s_msg));
 		_close(fid);
 		execute_cmd(path);
 		mir_free(path);

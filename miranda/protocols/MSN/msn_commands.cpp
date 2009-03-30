@@ -298,7 +298,7 @@ void CMsnProto::sttCustomSmiley( const char* msgBody, char* email, char* nick, i
 			size_t rlen = Netlib_GetBase64EncodedBufferSize(slen);
 			char* buf = (char*)mir_alloc(rlen);
 
-			NETLIBBASE64 nlb = { buf, rlen, (PBYTE)lastsml, slen };
+			NETLIBBASE64 nlb = { buf, (int)rlen, (PBYTE)lastsml, (int)slen };
 			MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
 
 			char* smileyName = (char*)mir_alloc(rlen*3);
