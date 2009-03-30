@@ -40,7 +40,7 @@ void	GetDialogStrings(int enableKeywordFiltering, const PageHash key, TCHAR *plu
 
 _inline TCHAR * _tcslwr_locale( TCHAR * buf )
 {
-	LCMapString( LangPackGetDefaultLocale() , LCMAP_LOWERCASE, buf, _tcslen( buf ), buf, _tcslen( buf ) );
+	LCMapString( LangPackGetDefaultLocale() , LCMAP_LOWERCASE, buf, (int)_tcslen( buf ), buf, (int)_tcslen( buf ) );
 	return buf;
 }
 

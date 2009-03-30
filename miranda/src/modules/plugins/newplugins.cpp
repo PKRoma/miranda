@@ -104,7 +104,7 @@ int CallHookSubscribers( HANDLE hEvent, WPARAM wParam, LPARAM lParam );
 int LoadDatabaseModule(void);
 void ListView_SetItemTextA( HWND hwndLV, int i, int iSubItem, char* pszText );
 
-void ListView_GetItemTextA( HWND hwndLV, int i, int iSubItem, char* pszText, size_t cchTextMax )
+void ListView_GetItemTextA( HWND hwndLV, int i, int iSubItem, char* pszText, int cchTextMax )
 {
 	LV_ITEMA  ms_lvi;
 	ms_lvi.iSubItem = iSubItem;

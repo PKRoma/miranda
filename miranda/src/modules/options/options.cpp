@@ -426,7 +426,7 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 			case IDC_DESCRIPTION:
 			case IDC_KEYWORD_FILTER:
 				SetBkColor(( HDC )wParam, GetSysColor( COLOR_WINDOW ));
-				return ( BOOL )GetSysColorBrush( COLOR_WINDOW );
+				return ( INT_PTR )GetSysColorBrush( COLOR_WINDOW );
 		}
 		break;
 
@@ -1210,7 +1210,7 @@ static void FreeOptionsData( struct OptionsPageInit* popi )
 		mir_free(( char* )popi->odp[i].pszTitle );
 		mir_free( popi->odp[i].pszGroup );
 		mir_free( popi->odp[i].pszTab );
-		if (( DWORD )popi->odp[i].pszTemplate & 0xFFFF0000 )
+		if (( DWORD_PTR )popi->odp[i].pszTemplate & 0xFFFF0000 )
 			mir_free((char*)popi->odp[i].pszTemplate);
 	}
 	mir_free(popi->odp);
@@ -1367,7 +1367,7 @@ static INT_PTR AddOptionsPage(WPARAM wParam,LPARAM lParam)
 		#endif
 	}
 
-	if (( DWORD )odp->pszTemplate & 0xFFFF0000 )
+	if (( DWORD_PTR )odp->pszTemplate & 0xFFFF0000 )
 		dst->pszTemplate = mir_strdup( odp->pszTemplate );
 
 	opi->pageCount++;

@@ -294,7 +294,7 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge, const
 
 static INT_PTR InitSecurityProviderService( WPARAM, LPARAM lParam )
 {
-	return (int)NetlibInitSecurityProvider(( char* )lParam );
+	return (INT_PTR)NetlibInitSecurityProvider(( char* )lParam );
 }
 
 static INT_PTR DestroySecurityProviderService( WPARAM wParam, LPARAM lParam )
@@ -306,7 +306,7 @@ static INT_PTR DestroySecurityProviderService( WPARAM wParam, LPARAM lParam )
 static INT_PTR NtlmCreateResponseService( WPARAM wParam, LPARAM lParam )
 {
 	NETLIBNTLMREQUEST* req = ( NETLIBNTLMREQUEST* )lParam;
-	return (int)NtlmCreateResponseFromChallenge(( HANDLE )wParam, req->szChallenge, req->userName, req->password );
+	return (INT_PTR)NtlmCreateResponseFromChallenge(( HANDLE )wParam, req->szChallenge, req->userName, req->password );
 }
 
 void NetlibSecurityInit(void)

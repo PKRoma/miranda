@@ -106,7 +106,7 @@ char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 )
 	if ( len < 2 ) {
 		if ( ucs2 != NULL ) {
 			*ucs2 = ( wchar_t* )mir_alloc(( len+1 )*sizeof( wchar_t ));
-			MultiByteToWideChar( codepage, 0, str, len, *ucs2, len );
+			MultiByteToWideChar( codepage, 0, str, (int)len, *ucs2, (int)len );
 			( *ucs2 )[ len ] = 0;
 		}
 		return str;
@@ -128,7 +128,7 @@ char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 )
 		tempBuf = ( wchar_t* )mir_alloc(( len+1 )*sizeof( wchar_t ));
 	
 	if ( Utf8toUcs2( str, tempBuf )) {
-		WideCharToMultiByte( codepage, 0, tempBuf, -1, str, len, "?", NULL );
+		WideCharToMultiByte( codepage, 0, tempBuf, -1, str, (int)len, "?", NULL );
 
 		if ( ucs2 )
 			*ucs2 = tempBuf;
@@ -160,7 +160,7 @@ wchar_t* Utf8DecodeUcs2( const char* str )
 
 	if ( len < 2 ) {
 		ucs2 = ( wchar_t* )mir_alloc(( len+1 )*sizeof( wchar_t ));
-		MultiByteToWideChar( LangPackGetDefaultCodePage(), 0, str, len, ucs2, len );
+		MultiByteToWideChar( LangPackGetDefaultCodePage(), 0, str, (int)len, ucs2, (int)len );
 		( ucs2 )[ len ] = 0;
 		return ucs2;
 	}
@@ -203,7 +203,7 @@ char* Utf8EncodeCP( const char* src, int codepage )
 		needs_free = true;
 	}
 
-	MultiByteToWideChar( codepage, 0, src, -1, tempBuf, len );
+	MultiByteToWideChar( codepage, 0, src, -1, tempBuf, (int)len );
 	tempBuf[ len ] = 0;
 
 	Ucs2toUtf8( tempBuf, result );

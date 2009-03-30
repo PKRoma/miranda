@@ -105,7 +105,7 @@ static INT_PTR ShowDetailsDialogCommand(WPARAM wParam,LPARAM)
 		//mir_free((char*)opi.odp[i].pszTitle);
 		//mir_free((char*)opi.odp[i].pszTab);
 		if(opi.odp[i].pszGroup!=NULL) mir_free(opi.odp[i].pszGroup);
-		if((DWORD)opi.odp[i].pszTemplate&0xFFFF0000) mir_free((char*)opi.odp[i].pszTemplate);
+		if((DWORD_PTR)opi.odp[i].pszTemplate&0xFFFF0000) mir_free((char*)opi.odp[i].pszTemplate);
 	}
 	mir_free(opi.odp);
 	return 0;
@@ -128,7 +128,7 @@ static INT_PTR AddDetailsPage(WPARAM wParam,LPARAM lParam)
 	dst->hInstance = odp->hInstance;
 	dst->pfnDlgProc = odp->pfnDlgProc;
 	dst->position = odp->position;
-	if((DWORD)odp->pszTemplate&0xFFFF0000) dst->pszTemplate = mir_strdup(odp->pszTemplate);
+	if((DWORD_PTR)odp->pszTemplate&0xFFFF0000) dst->pszTemplate = mir_strdup(odp->pszTemplate);
 	else dst->pszTemplate = odp->pszTemplate;
 
 	#if defined(_UNICODE)
@@ -339,7 +339,7 @@ static INT_PTR CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		case IDC_WHITERECT:
 		case IDC_LOGO:
 			SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
-			return (BOOL)GetSysColorBrush(COLOR_WINDOW);
+			return (INT_PTR)GetSysColorBrush(COLOR_WINDOW);
 		case IDC_UPDATING:
 			{
 				COLORREF textCol,bgCol,newCol;
@@ -352,11 +352,11 @@ static INT_PTR CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							GetBValue(bgCol)+(GetBValue(textCol)-GetBValue(bgCol))*ratio/256);
 				SetTextColor((HDC)wParam,newCol);
 				SetBkColor((HDC)wParam,GetSysColor(COLOR_3DFACE));
-				return (BOOL)GetSysColorBrush(COLOR_3DFACE);
+				return (INT_PTR)GetSysColorBrush(COLOR_3DFACE);
 			}
 		default:
 			SetBkMode((HDC)wParam,TRANSPARENT);
-			return (BOOL)GetStockObject(NULL_BRUSH);
+			return (INT_PTR)GetStockObject(NULL_BRUSH);
 		}
 		break;
 
@@ -408,7 +408,7 @@ static INT_PTR CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				SendMessage(hwndDlg,M_CHECKONLINE,0,0);
 				break;
 			} //if
-			if(dat->infosUpdated==NULL) dat->infosUpdated=(int*)mir_calloc(sizeof(int)*(int)ack->hProcess);
+			if(dat->infosUpdated==NULL) dat->infosUpdated=(int*)mir_calloc(sizeof(int)*(INT_PTR)ack->hProcess);
 			if(ack->result==ACKRESULT_SUCCESS || ack->result==ACKRESULT_FAILED) dat->infosUpdated[ack->lParam]=1;
 			for(i=0;i<(int)ack->hProcess;i++)
 				if(dat->infosUpdated[i]==0) break;

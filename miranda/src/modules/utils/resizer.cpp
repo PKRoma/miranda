@@ -99,7 +99,7 @@ INT_PTR ResizeDialog(WPARAM, LPARAM lParam)
 	else itemCount=pTemplate->cdit;
 	hDwp=BeginDeferWindowPos(itemCount);
 	for(i=0;i<itemCount;i++) {
-		if((unsigned)pWord&2) pWord++;       //dword align
+		if((UINT_PTR)pWord&2) pWord++;       //dword align
 
 		if(extendedDlg) {
 			pItemEx=(START_OF_DLGITEMTEMPLATEEX*)pWord;

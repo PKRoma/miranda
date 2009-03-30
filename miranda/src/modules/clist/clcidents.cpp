@@ -99,7 +99,7 @@ int fnFindItem(HWND hwnd, struct ClcData *dat, HANDLE hItem, struct ClcContact *
 			&& group->cl.items[group->scanIndex]->type == CLCIT_CONTACT
 			&& group->cl.items[group->scanIndex]->hContact == hItem) || (IsHContactInfo(hItem)
 			&& group->cl.items[group->scanIndex]->type == CLCIT_INFO 
-			&& group->cl.items[group->scanIndex]->hContact == (HANDLE) ((unsigned)hItem & ~HCONTACT_ISINFO)))
+			&& group->cl.items[group->scanIndex]->hContact == (HANDLE) ((UINT_PTR)hItem & ~HCONTACT_ISINFO)))
 		{
 			if (isVisible) {
 				if (!nowVisible)
@@ -178,7 +178,7 @@ HANDLE fnContactToHItem(struct ClcContact * contact)
 	case CLCIT_GROUP:
 		return (HANDLE) (contact->groupId | HCONTACT_ISGROUP);
 	case CLCIT_INFO:
-		return (HANDLE) ((DWORD) contact->hContact | HCONTACT_ISINFO);
+		return (HANDLE) ((UINT_PTR) contact->hContact | HCONTACT_ISINFO);
 	}
 	return NULL;
 }
@@ -195,7 +195,7 @@ HANDLE fnContactToItemHandle(struct ClcContact * contact, DWORD * nmFlags)
 	case CLCIT_INFO:
 		if (nmFlags)
 			*nmFlags |= CLNF_ISINFO;
-		return (HANDLE) ((DWORD) contact->hContact | HCONTACT_ISINFO);
+		return (HANDLE) ((UINT_PTR) contact->hContact | HCONTACT_ISINFO);
 	}
 	return NULL;
 }

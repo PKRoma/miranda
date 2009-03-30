@@ -103,7 +103,7 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 			if (!strcmp(szProto, cws->szModule)) {
 				// was a unique setting key written?
 				id = (char *) CallProtoService(szProto, PS_GETCAPS, PFLAG_UNIQUEIDSETTING, 0);
-				if ((int) id != CALLSERVICE_NOTFOUND && id != NULL && !strcmp(id, cws->szSetting)) {
+				if ((INT_PTR) id != CALLSERVICE_NOTFOUND && id != NULL && !strcmp(id, cws->szSetting)) {
 					cli.pfnClcBroadcast( INTM_PROTOCHANGED, wParam, lParam);
 				}
 			}

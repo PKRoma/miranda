@@ -241,7 +241,7 @@ static INT_PTR svcHotkeyUnregister(WPARAM, LPARAM lParam)
 	int i;
 	char *pszName = (char *)lParam;
 	char pszNamePrefix[MAXMODULELABELLENGTH];
-	int cbNamePrefix;
+	size_t cbNamePrefix;
 	mir_snprintf(pszNamePrefix, SIZEOF(pszNamePrefix), "%s$", pszName);
 	cbNamePrefix = strlen(pszNamePrefix);
 

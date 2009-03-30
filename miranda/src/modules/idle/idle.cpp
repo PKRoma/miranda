@@ -199,7 +199,7 @@ static int IdleObject_IsUserIdle(IdleObject * obj)
 {
 	DWORD dwTick;
 	if ( IdleObject_GetMethod(obj) ) {
-		CallService(MS_SYSTEM_GETIDLE, 0, (DWORD)&dwTick);
+		CallService(MS_SYSTEM_GETIDLE, 0, (LPARAM)&dwTick);
 		return GetTickCount() - dwTick > (obj->minutes * 60 * 1000);
 	}
 	

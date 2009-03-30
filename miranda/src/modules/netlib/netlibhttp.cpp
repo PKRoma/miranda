@@ -98,7 +98,7 @@ static int HttpPeekFirstResponseLine(struct NetlibConnection *nlc,DWORD dwTimeou
 		*peol='\0';
 		{
 			char *pResultCode,*pResultDescr,*pHttpMajor,*pHttpMinor;
-			int tokenLen;
+			size_t tokenLen;
 			int httpMajorVer,httpMinorVer;
 			if(peol==buffer
 			   || _strnicmp(buffer,"http/",5)

@@ -122,7 +122,7 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			return FALSE;
       }
 		SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
-		return (BOOL)GetSysColorBrush(COLOR_WINDOW);
+		return (INT_PTR)GetSysColorBrush(COLOR_WINDOW);
 
 	case WM_DESTROY:
 		Window_FreeIcon_IcoLib( hwndDlg );

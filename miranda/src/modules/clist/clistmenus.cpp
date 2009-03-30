@@ -239,7 +239,7 @@ static INT_PTR AddMainMenuItem(WPARAM, LPARAM lParam)
 
 	PMO_IntMenuItem pimi = MO_AddNewMenuItem( hMainMenuObject, &tmi );
 	MO_SetOptionsMenuItem( pimi, OPT_MENUITEMSETUNIQNAME, ( INT_PTR )mi->pszService );
-	return ( int )pimi;
+	return ( INT_PTR )pimi;
 }
 
 int MainMenuCheckService(WPARAM, LPARAM)

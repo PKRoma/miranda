@@ -127,7 +127,7 @@ static INT_PTR DbEventGetText(WPARAM wParam, LPARAM lParam)
 			// ушлепкам типа скотта торжественно посвящается
 			size_t msglen = strlen(( char* )dbei->pBlob) + 1, msglenW = 0;
 			if ( msglen !=  dbei->cbBlob ) {
-				int i, count = (( dbei->cbBlob - msglen ) / sizeof( WCHAR ));
+				size_t i, count = (( dbei->cbBlob - msglen ) / sizeof( WCHAR ));
 				WCHAR* p = ( WCHAR* )&dbei->pBlob[ msglen ];
 				for (  i=0; i < count; i++ ) {
 					if ( p[i] == 0 ) {
@@ -139,7 +139,7 @@ static INT_PTR DbEventGetText(WPARAM wParam, LPARAM lParam)
 				msg = mir_wstrdup(( WCHAR* )&dbei->pBlob[ msglen ] );
 			else {
 				msg = ( WCHAR* )mir_alloc( sizeof(TCHAR) * msglen );
-				MultiByteToWideChar( egt->codepage, 0, (char *) dbei->pBlob, -1, msg, msglen );
+				MultiByteToWideChar( egt->codepage, 0, (char *) dbei->pBlob, -1, msg, (int)msglen );
 		}	}
 		return ( INT_PTR )msg;
 	}

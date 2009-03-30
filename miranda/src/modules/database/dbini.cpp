@@ -206,7 +206,7 @@ static void ProcessIniFile(TCHAR* szIniPath, char *szSafeSections, char *szUnsaf
 			if (szLine[1] == '!')
 				szSection[0] = '\0';
 			else {
-				lstrcpynA(szSection,szLine+1,min(sizeof(szSection),szEnd-szLine));
+				lstrcpynA(szSection,szLine+1,min(sizeof(szSection),(int)(szEnd-szLine)));
 				switch (secur) {
 				case 0:
 					warnThisSection = false;
@@ -237,7 +237,7 @@ static void ProcessIniFile(TCHAR* szIniPath, char *szSafeSections, char *szUnsaf
 			continue;
 
 		char szName[128];
-		lstrcpynA(szName,szLine,min(sizeof(szName),szValue-szLine+1));
+		lstrcpynA(szName,szLine,min(sizeof(szName),(int)(szValue-szLine+1)));
 		szValue++;
 		{
 			warnSettingChangeInfo_t warnInfo;

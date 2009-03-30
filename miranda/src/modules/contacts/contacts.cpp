@@ -205,7 +205,7 @@ static INT_PTR GetContactInfo(WPARAM, LPARAM lParam) {
 			if (!ProcessDatabaseValueDefault(ci, "display_uid"))
 				return 0;
 			char *uid = (char*)CallProtoService(ci->szProto,PS_GETCAPS,PFLAG_UNIQUEIDSETTING,0);
-			if ((int)uid!=CALLSERVICE_NOTFOUND&&uid)
+			if ((INT_PTR)uid!=CALLSERVICE_NOTFOUND&&uid)
 				if (!ProcessDatabaseValueDefault(ci,uid))
 					return 0;
 
@@ -249,7 +249,7 @@ static INT_PTR GetContactInfo(WPARAM, LPARAM lParam) {
 					{
 						// protocol must define a PFLAG_UNIQUEIDSETTING
 						char *uid = (char*)CallProtoService(ci->szProto,PS_GETCAPS,PFLAG_UNIQUEIDSETTING,0);
-						if ((int)uid!=CALLSERVICE_NOTFOUND&&uid) {
+						if ((INT_PTR)uid!=CALLSERVICE_NOTFOUND&&uid) {
 							if (!GetDatabaseString(ci,uid,&dbv)) {
 								if ( dbv.type == DBVT_BYTE || dbv.type == DBVT_WORD || dbv.type == DBVT_DWORD ) {
 									long value = (dbv.type == DBVT_BYTE) ? dbv.bVal:(dbv.type==DBVT_WORD ? dbv.wVal : dbv.dVal);

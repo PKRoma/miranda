@@ -131,7 +131,7 @@ void WriteLine(HANDLE fhand, char *line)
 {
 	DWORD wrote;
 	strcat(line, "\r\n");
-	WriteFile(fhand, line, strlen(line), &wrote, 0);
+	WriteFile(fhand, line, (DWORD)strlen(line), &wrote, 0);
 }
 
 BOOL ExportSettings(HWND hwndDlg, TCHAR *filename, OBJLIST<TFontID>& flist, OBJLIST<TColourID>& clist, OBJLIST<TEffectID>& elist)
@@ -449,7 +449,7 @@ static void sttSaveCollapseState( HWND hwndTree )
 static void sttFreeListItems(HWND hList) 
 {
 	int idx = 0;
-	int res;
+	LRESULT res;
 	FSUIListItemData *itemData;
 	int count = SendMessage( hList, LB_GETCOUNT, 0, 0 ); 
 	if ( count > 0 ) {
@@ -906,7 +906,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
              }
 			rc = dis->rcItem;
 			rc.left += FSUI_FONTLEFT;
-			DrawTextWithEffect(dis->hDC, itemName, _tcslen(itemName), &rc, DT_LEFT|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER|DT_WORD_ELLIPSIS, pEffect );
+			DrawTextWithEffect(dis->hDC, itemName, (int)_tcslen(itemName), &rc, DT_LEFT|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER|DT_WORD_ELLIPSIS, pEffect );
 		} else
 		{
 			RECT rc;
@@ -931,7 +931,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 			rc = dis->rcItem;
 			rc.left += FSUI_FONTLEFT;
 
-			DrawTextWithEffect(dis->hDC, itemName, _tcslen(itemName), &rc, DT_LEFT|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER|DT_WORD_ELLIPSIS, pEffect );
+			DrawTextWithEffect(dis->hDC, itemName, (int)_tcslen(itemName), &rc, DT_LEFT|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER|DT_WORD_ELLIPSIS, pEffect );
 		}
 		if (hoFont) SelectObject(dis->hDC, hoFont);
 		if (hFont) DeleteObject(hFont);
@@ -1366,7 +1366,7 @@ static INT_PTR CALLBACK DlgProcModernOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 			SetBkMode(dis->hDC, TRANSPARENT);
 			SetTextColor(dis->hDC, GetSysColor(COLOR_BTNTEXT));
 			FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_BTNFACE));
-			DrawText(dis->hDC, _T("Sample Text"), _tcslen(_T("Sample Text")), &dis->rcItem, DT_LEFT|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER|DT_WORD_ELLIPSIS|DT_CENTER);
+			DrawText(dis->hDC, _T("Sample Text"), (int)_tcslen(_T("Sample Text")), &dis->rcItem, DT_LEFT|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER|DT_WORD_ELLIPSIS|DT_CENTER);
 			if (hoFont) SelectObject(dis->hDC, hoFont);
 			return TRUE;
 		}

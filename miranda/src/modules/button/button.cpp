@@ -314,7 +314,7 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 				ti.cbSize = sizeof(ti);
 				ti.uFlags = TTF_IDISHWND;
 				ti.hwnd = bct->hwnd;
-				ti.uId = (UINT)bct->hwnd;
+				ti.uId = (UINT_PTR)bct->hwnd;
 				if (SendMessage(bct->hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM)&ti)) {
 					SendMessage(bct->hwndToolTips, TTM_DELTOOL, 0, (LPARAM)&ti);
 				}
@@ -485,11 +485,11 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 			ti.cbSize = sizeof(ti);
 			ti.uFlags = TTF_IDISHWND;
 			ti.hwnd = bct->hwnd;
-			ti.uId = (UINT)bct->hwnd;
+			ti.uId = (UINT_PTR)bct->hwnd;
 			if (SendMessage(bct->hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM)&ti))
 				SendMessage(bct->hwndToolTips, TTM_DELTOOL, 0, (LPARAM)&ti);
 			ti.uFlags = TTF_IDISHWND|TTF_SUBCLASS;
-			ti.uId = (UINT)bct->hwnd;
+			ti.uId = (UINT_PTR)bct->hwnd;
 			#if defined( _UNICODE )
 				if ( lParam & BATF_UNICODE )
 					ti.lpszText = mir_wstrdup( TranslateW(( WCHAR* )wParam ));

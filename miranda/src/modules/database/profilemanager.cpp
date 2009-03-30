@@ -543,7 +543,7 @@ static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam,
 		case IDC_NAME:
 		case IDC_DESCRIPTION:
 			SetBkColor(( HDC )wParam, GetSysColor( COLOR_WINDOW ));
-			return ( BOOL )GetSysColorBrush( COLOR_WINDOW );
+			return ( INT_PTR )GetSysColorBrush( COLOR_WINDOW );
 		}
 		break;
 
@@ -698,7 +698,7 @@ static int AddProfileManagerPage(struct DetailsPageInit * opi, OPTIONSDIALOGPAGE
 		p->groupPosition = odp->groupPosition;
 		p->hGroupIcon    = odp->hGroupIcon;
 		p->hIcon         = odp->hIcon;
-		if (( DWORD )odp->pszTemplate & 0xFFFF0000 )
+		if (( DWORD_PTR )odp->pszTemplate & 0xFFFF0000 )
 			p->pszTemplate = mir_strdup( odp->pszTemplate );
 		else
 			p->pszTemplate = odp->pszTemplate;
@@ -748,7 +748,7 @@ int getProfileManager(PROFILEMANAGERDATA * pd)
 		for ( i=0; i < opi.pageCount; i++ ) {
 			mir_free(( char* )opi.odp[i].pszTitle );
 			mir_free( opi.odp[i].pszGroup );
-			if (( DWORD )opi.odp[i].pszTemplate & 0xFFFF0000 )
+			if (( DWORD_PTR )opi.odp[i].pszTemplate & 0xFFFF0000 )
 				mir_free(( char* )opi.odp[i].pszTemplate );
 		}
 

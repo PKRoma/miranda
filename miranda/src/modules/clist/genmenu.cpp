@@ -328,7 +328,7 @@ INT_PTR MO_MenuItemGetOwnerData(WPARAM wParam, LPARAM)
 		return -1;
 	}
 
-	int res = ( int )pimi->mi.ownerdata;
+	INT_PTR res = ( INT_PTR )pimi->mi.ownerdata;
 	LeaveCriticalSection( &csMenuHook );
 	return res;
 }
@@ -841,7 +841,7 @@ INT_PTR MO_BuildMenu(WPARAM wParam,LPARAM lParam)
 		// DumpMenuItem( g_menus[pimoidx]->m_items.first );
 	#endif
 
-	int res = (int)BuildRecursiveMenu(( HMENU )wParam, g_menus[pimoidx]->m_items.first, ( ListParam* )lParam );
+	INT_PTR res = (INT_PTR)BuildRecursiveMenu(( HMENU )wParam, g_menus[pimoidx]->m_items.first, ( ListParam* )lParam );
 	LeaveCriticalSection( &csMenuHook );
 	return res;
 }

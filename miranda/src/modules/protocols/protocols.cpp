@@ -146,7 +146,7 @@ static INT_PTR Proto_RecvFile(WPARAM,LPARAM lParam)
 	dbei.timestamp = pre->timestamp;
 	dbei.flags = ( pre->flags & PREF_CREATEREAD ) ? DBEF_READ : 0;
 	dbei.eventType = EVENTTYPE_FILE;
-	dbei.cbBlob = sizeof( DWORD ) + strlen( szFile ) + strlen( szDescr ) + 2;
+	dbei.cbBlob = (DWORD)(sizeof( DWORD ) + strlen( szFile ) + strlen( szDescr ) + 2);
 	dbei.pBlob = ( PBYTE )pre->szMessage;
 	CallService( MS_DB_EVENT_ADD, ( WPARAM )ccs->hContact, ( LPARAM )&dbei );
 	return 0;
@@ -162,13 +162,13 @@ static INT_PTR Proto_RecvMessage(WPARAM,LPARAM lParam)
 	dbei.szModule = ( char* )CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)ccs->hContact, 0);
 	dbei.timestamp = pre->timestamp;
 	dbei.eventType = EVENTTYPE_MESSAGE;
-	dbei.cbBlob = strlen( pre->szMessage ) + 1;
+	dbei.cbBlob = (DWORD)strlen( pre->szMessage ) + 1;
 	if ( pre->flags & PREF_CREATEREAD )
 		dbei.flags |= DBEF_READ;
 	if ( pre->flags & PREF_UTF )
 		dbei.flags |= DBEF_UTF;
 	if ( pre->flags & PREF_UNICODE )
-		dbei.cbBlob += sizeof( wchar_t )*( wcslen(( wchar_t* )&pre->szMessage[dbei.cbBlob+1] )+1 );
+		dbei.cbBlob += sizeof( wchar_t )*( (DWORD)wcslen(( wchar_t* )&pre->szMessage[dbei.cbBlob+1] )+1 );
 
 	dbei.pBlob = ( PBYTE ) pre->szMessage;
 	return CallService( MS_DB_EVENT_ADD, ( WPARAM ) ccs->hContact, ( LPARAM )&dbei );

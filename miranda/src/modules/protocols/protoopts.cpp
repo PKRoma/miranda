@@ -523,7 +523,7 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 		case IDC_NAME:
 		case IDC_DESCRIPTION:
 			SetBkColor(( HDC )wParam, GetSysColor( COLOR_WINDOW ));
-			return ( BOOL )GetSysColorBrush( COLOR_WINDOW );
+			return ( INT_PTR )GetSysColorBrush( COLOR_WINDOW );
 		}
 		break;
 

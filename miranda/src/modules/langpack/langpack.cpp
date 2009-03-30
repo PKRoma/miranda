@@ -309,7 +309,7 @@ TCHAR* LangPackPcharToTchar( const char* pszStr )
 		return NULL;
 
 	#if defined( _UNICODE )
-	{	int len = strlen( pszStr );
+	{	int len = (int)strlen( pszStr );
 		TCHAR* result = ( TCHAR* )alloca(( len+1 )*sizeof( TCHAR ));
 		MultiByteToWideChar( LangPackGetDefaultCodePage(), 0, pszStr, -1, result, len );
 		result[len] = 0;

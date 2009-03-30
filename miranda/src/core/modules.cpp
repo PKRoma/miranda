@@ -788,7 +788,7 @@ INT_PTR CallServiceSync(const char *name, WPARAM wParam, LPARAM lParam)
 		item.lParam = lParam;
 		item.name = name;
 		item.hDoneEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-		QueueUserAPC(CallServiceToMainAPCFunc, hMainThread, (DWORD) &item);
+		QueueUserAPC(CallServiceToMainAPCFunc, hMainThread, (ULONG_PTR) &item);
 		PostMessage(hAPCWindow,WM_NULL,0,0); // let this get processed in its own time
 		WaitForSingleObject(item.hDoneEvent, INFINITE);
 		CloseHandle(item.hDoneEvent);
@@ -801,7 +801,7 @@ INT_PTR CallServiceSync(const char *name, WPARAM wParam, LPARAM lParam)
 int CallFunctionAsync( void (__stdcall *func)(void *), void *arg)
 {
 	extern HWND hAPCWindow;
-	int r = QueueUserAPC(( void (__stdcall *)( ULONG_PTR ))func, hMainThread, ( DWORD )arg );
+	int r = QueueUserAPC(( void (__stdcall *)( ULONG_PTR ))func, hMainThread, ( ULONG_PTR )arg );
 	PostMessage(hAPCWindow,WM_NULL,0,0);
 	return r;
 }

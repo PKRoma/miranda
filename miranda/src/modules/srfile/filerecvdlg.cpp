@@ -232,7 +232,7 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			dat->fs=(HANDLE)*(PDWORD)dbei.pBlob;
 			lstrcpynA(szPath, (char*)dbei.pBlob+4, min(dbei.cbBlob+1,SIZEOF(szPath)));
 			SetDlgItemTextA(hwndDlg,IDC_FILENAMES,szPath);
-			lstrcpynA(szPath, (char*)dbei.pBlob+4+strlen((char*)dbei.pBlob+4)+1, min(dbei.cbBlob-4-strlen((char*)dbei.pBlob+4),SIZEOF(szPath)));
+			lstrcpynA(szPath, (char*)dbei.pBlob+4+strlen((char*)dbei.pBlob+4)+1, min((int)(dbei.cbBlob-4-strlen((char*)dbei.pBlob+4)),SIZEOF(szPath)));
 			SetDlgItemTextA(hwndDlg,IDC_MSG,szPath);
 			mir_free(dbei.pBlob);
 

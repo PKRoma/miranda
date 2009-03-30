@@ -341,7 +341,7 @@ void* GetCurrentThreadEntryPoint()
 {
 	LONG  ntStatus;
 	HANDLE hDupHandle, hCurrentProcess;
-	DWORD dwStartAddress;
+	DWORD_PTR dwStartAddress;
 
 	pNtQIT NtQueryInformationThread = (pNtQIT)GetProcAddress(GetModuleHandle(_T("ntdll.dll")), "NtQueryInformationThread" );
 	if(NtQueryInformationThread == NULL) return 0;
@@ -351,7 +351,7 @@ void* GetCurrentThreadEntryPoint()
 		SetLastError(ERROR_ACCESS_DENIED);
 		return NULL;
 	}
-	ntStatus = NtQueryInformationThread(hDupHandle, ThreadQuerySetWin32StartAddress, &dwStartAddress, sizeof(DWORD), NULL);
+	ntStatus = NtQueryInformationThread(hDupHandle, ThreadQuerySetWin32StartAddress, &dwStartAddress, sizeof(DWORD_PTR), NULL);
 	CloseHandle(hDupHandle);
 
 	if(ntStatus != ERROR_SUCCESS) return 0;

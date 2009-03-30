@@ -635,7 +635,7 @@ INT_PTR CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		dbei.flags=DBEF_SENT;
 		dbei.szModule=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)dat->hContact,0);
 		dbei.timestamp=time(NULL);
-		dbei.cbBlob=strlen(dat->sendBuffer)+strlen(dat->sendBuffer+strlen(dat->sendBuffer)+1)+2;
+		dbei.cbBlob=(DWORD)(strlen(dat->sendBuffer)+strlen(dat->sendBuffer+strlen(dat->sendBuffer)+1)+2);
 		dbei.pBlob=(PBYTE)dat->sendBuffer;
 		CallService(MS_DB_EVENT_ADD,(WPARAM)dat->hContact,(LPARAM)&dbei);
 		KillTimer(hwndDlg,0);

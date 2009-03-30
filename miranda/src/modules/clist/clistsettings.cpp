@@ -179,7 +179,7 @@ INT_PTR GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 	HANDLE hContact = (HANDLE)wParam;
 
 	if ( lParam & GCDNF_UNICODE )
-		return ( int )cli.pfnGetContactDisplayName(hContact, lParam & ~GCDNF_UNICODE );
+		return ( INT_PTR )cli.pfnGetContactDisplayName(hContact, lParam & ~GCDNF_UNICODE );
 
 	if ((int) lParam != GCDNF_NOMYHANDLE) {
 		cacheEntry = cli.pfnGetCacheEntry(hContact);

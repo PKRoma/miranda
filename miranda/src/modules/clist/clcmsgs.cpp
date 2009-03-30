@@ -57,7 +57,7 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 		if (cii->hParentGroup == NULL)
 			group = &dat->list;
 		else {
-			if (!cli.pfnFindItem(hwnd, dat, (HANDLE) ((DWORD) cii->hParentGroup | HCONTACT_ISGROUP), &groupContact, NULL, NULL))
+			if (!cli.pfnFindItem(hwnd, dat, (HANDLE) ((UINT_PTR) cii->hParentGroup | HCONTACT_ISGROUP), &groupContact, NULL, NULL))
 				return (LRESULT) (HANDLE) NULL;
 			group = groupContact->group;
 		}
