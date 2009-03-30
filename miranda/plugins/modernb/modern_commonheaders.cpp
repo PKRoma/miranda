@@ -170,7 +170,7 @@ int __cdecl mir_strcmp (const char *a, const char *b)
 int mir_strlen (const char *a)	
 {	
 	if (a==NULL) return 0;	
-	return (strlen(a));	
+	return (int)(strlen(a));	
 };	
  	 	
 #define strlen(a) mir_strlen(a)

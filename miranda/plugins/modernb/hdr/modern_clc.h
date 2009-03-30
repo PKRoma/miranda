@@ -174,9 +174,9 @@ struct ClcGroup;
 #define TEXT_TEXT_MAX_LENGTH 1024
 
 
-#define IsHContactGroup(h)  (((unsigned)(h)^HCONTACT_ISGROUP)<(HCONTACT_ISGROUP^HCONTACT_ISINFO))
-#define IsHContactInfo(h)   (((unsigned)(h)&HCONTACT_ISINFO)==HCONTACT_ISINFO)
-#define IsHContactContact(h) (((unsigned)(h)&HCONTACT_ISGROUP)==0)
+#define IsHContactGroup(h)  (((UINT_PTR)(h)^HCONTACT_ISGROUP)<(HCONTACT_ISGROUP^HCONTACT_ISINFO))
+#define IsHContactInfo(h)   (((UINT_PTR)(h)&HCONTACT_ISINFO)==HCONTACT_ISINFO)
+#define IsHContactContact(h) (((UINT_PTR)(h)&HCONTACT_ISGROUP)==0)
 
 typedef struct tagClcContactTextPiece
 {

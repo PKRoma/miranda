@@ -104,7 +104,7 @@ void CSmileyString::AddListeningToIcon(struct SHORTDATA *dat, PDNCE pdnce, TCHAR
 
     if (szText == NULL) return;
 
-	int text_size = _tcslen( szText );
+	int text_size = (int)_tcslen( szText );
     
     plText = li.List_Create( 0, 1 );
 
@@ -220,7 +220,7 @@ void CSmileyString::ReplaceSmileys(struct SHORTDATA *dat, PDNCE pdnce, TCHAR * s
         return;
     }
 
-	int text_size = _tcslen( szText );
+	int text_size = (int)_tcslen( szText );
 
     // Call service for the first time to see if needs to be used...
     sp.cbSize = sizeof(sp);
@@ -718,8 +718,8 @@ void Cache_GetThirdLineText(struct SHORTDATA *dat, PDNCE pdnce)
 void RemoveTag(TCHAR *to, TCHAR *tag)
 {
     TCHAR * st=to;
-    int len=_tcslen(tag);
-    int lastsize=_tcslen(to)+1;
+    int len=(int)_tcslen(tag);
+    int lastsize=(int)_tcslen(to)+1;
     while (st=_tcsstr(st,tag)) 
     {
         lastsize-=len;

@@ -460,7 +460,7 @@ void  CLCPaint::_DrawTextSmiley( HDC hdcMem, RECT * free_rc, SIZE * text_size, T
         int pos_x = 0;
         int row_height;
         RECT tmp_rc = *free_rc;
-        if ( len == -1 ) len = _tcslen( szText );
+        if ( len == -1 ) len = (int)_tcslen( szText );
         if ( uTextFormat & DT_RTLREADING )
             i = plText->realCount - 1;
         else

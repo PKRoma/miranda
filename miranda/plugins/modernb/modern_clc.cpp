@@ -1596,7 +1596,7 @@ static LRESULT clcOnLButtonUp(struct ClcData *dat, HWND hwnd, UINT msg, WPARAM w
 					TCHAR * sourceGrName=mir_tstrdup(pcli->pfnGetGroupName(destgroup->groupId,0));
 					if (groupName)
 					{
-						int len=_tcslen(groupName);
+						int len=(int)_tcslen(groupName);
 						do {len--;}while(len>=0 && groupName[len]!='\\');
 						if (len>=0) shortGroup=groupName+len+1;
 						else shortGroup=groupName;
