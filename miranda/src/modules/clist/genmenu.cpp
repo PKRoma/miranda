@@ -246,7 +246,7 @@ INT_PTR MO_GetDefaultMenuItem(WPARAM wParam, LPARAM)
 		pimi = MO_RecursiveWalkMenu( pimi, FindDefaultItem, NULL );
 
 	LeaveCriticalSection( &csMenuHook );
-	return ( int )pimi;
+	return ( INT_PTR )pimi;
 }
 
 //wparam MenuItemHandle

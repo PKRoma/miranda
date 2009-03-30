@@ -473,7 +473,7 @@ static int __cdecl ContactSortProc(const void* p1, const void* p2)
 	if (result)
 		return result;
 	//nothing to distinguish them, so make sure they stay in the same order
-	return (int) contact2[0]->hContact - (int) contact1[0]->hContact;
+	return (int)((INT_PTR) contact2[0]->hContact - (INT_PTR) contact1[0]->hContact);
 }
 
 static void InsertionSort(struct ClcContact **pContactArray, int nArray, int (*CompareProc) (const void *, const void *))
