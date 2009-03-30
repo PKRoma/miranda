@@ -532,7 +532,7 @@ void CConnectPrefsDlg::OnInitDialog()
 
 	if ( m_proto->m_serverComboSelection != -1 ) {
 		SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( m_proto->m_serverComboSelection );
-		if ((int)pData != CB_ERR) {
+		if ((INT_PTR)pData != CB_ERR) {
 			m_server.SetTextA( pData->m_address );
 			m_port.SetInt( pData->m_portStart );
 			m_port2.SetInt( pData->m_portEnd );
@@ -593,7 +593,7 @@ void CConnectPrefsDlg::OnServerCombo( CCtrlData* )
 {
 	int i = m_serverCombo.GetCurSel();
 	SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( i );
-	if ( pData && (int)pData != CB_ERR ) {
+	if ( pData && (INT_PTR)pData != CB_ERR ) {
 		m_server.SetTextA( pData->m_address );
 		m_port.SetInt( pData->m_portStart );
 		m_port2.SetInt( pData->m_portEnd );
@@ -783,7 +783,7 @@ void CConnectPrefsDlg::OnApply()
 
 	int i = m_serverCombo.GetCurSel();
 	SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( i );
-	if ( pData && (int)pData != CB_ERR ) {
+	if ( pData && (INT_PTR)pData != CB_ERR ) {
 		if ( m_enableServer.GetState())
 			lstrcpyA(m_proto->m_network, pData->m_group);
 		else
@@ -799,7 +799,7 @@ void CConnectPrefsDlg::OnApply()
 		if (j != CB_ERR && j != 0) {
 			for (int index2 = 0; index2 < j; index2++) {
 				SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( index2 );
-				if ( pData == NULL || (int)pData == CB_ERR )
+				if ( pData == NULL || (INT_PTR)pData == CB_ERR )
 					continue;
 
 				char TextLine[512];
@@ -1035,9 +1035,9 @@ COtherPrefsDlg::COtherPrefsDlg( CIrcProto* _pro ) :
 
 void COtherPrefsDlg::OnInitDialog()
 {
-	OldProc = (WNDPROC)SetWindowLongPtr( m_alias.GetHwnd(), GWLP_WNDPROC,(LONG)EditSubclassProc);
-	SetWindowLongPtr( m_quitMessage.GetHwnd(), GWLP_WNDPROC,(LONG)EditSubclassProc);
-	SetWindowLongPtr( m_pertormEdit.GetHwnd(), GWLP_WNDPROC,(LONG)EditSubclassProc);
+	OldProc = (WNDPROC)SetWindowLongPtr( m_alias.GetHwnd(), GWLP_WNDPROC,(LONG_PTR)EditSubclassProc);
+	SetWindowLongPtr( m_quitMessage.GetHwnd(), GWLP_WNDPROC,(LONG_PTR)EditSubclassProc);
+	SetWindowLongPtr( m_pertormEdit.GetHwnd(), GWLP_WNDPROC,(LONG_PTR)EditSubclassProc);
 
 	m_alias.SetText( m_proto->m_alias );
 	m_quitMessage.SetText( m_proto->m_quitMessage );
@@ -1171,7 +1171,7 @@ void COtherPrefsDlg::OnDestroy()
 	if ( i != CB_ERR && i != 0 ) {
 		for (int index = 0; index < i; index++) {
 			PERFORM_INFO* pPerf = (PERFORM_INFO*)m_performCombo.GetItemData( index );
-			if (( const int )pPerf != CB_ERR && pPerf != NULL )
+			if (( INT_PTR )pPerf != CB_ERR && pPerf != NULL )
 				delete pPerf;
 }	}	}
 
@@ -1196,7 +1196,7 @@ void COtherPrefsDlg::OnApply()
 		int count = m_performCombo.GetCount();
 		for ( int i = 0; i < count; i++ ) {
 			PERFORM_INFO* pPerf = ( PERFORM_INFO* )m_performCombo.GetItemData( i );
-			if (( const int )pPerf == CB_ERR )
+			if (( INT_PTR )pPerf == CB_ERR )
 				continue;
 
 			if ( !pPerf->mText.IsEmpty())
@@ -1826,7 +1826,7 @@ struct CDlgAccMgrUI : public CProtoDlgBase<CIrcProto>
 	{
 		int i = m_serverCombo.GetCurSel();
 		SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( i );
-		if ( pData && (int)pData != CB_ERR ) {
+		if ( pData && (INT_PTR)pData != CB_ERR ) {
 			m_server.SetTextA( pData->m_address );
 			m_port.SetInt( pData->m_portStart );
 			m_port2.SetInt( pData->m_portEnd );

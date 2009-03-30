@@ -235,7 +235,7 @@ int CIrcProto::AddOutgoingMessageToDB(HANDLE hContact, TCHAR* msg)
 		dbei.flags = DBEF_SENT;
 		dbei.pBlob = ( PBYTE )S.c_str();
 	#endif
-	dbei.cbBlob = strlen(( char* )dbei.pBlob) + 1;
+	dbei.cbBlob = (DWORD)strlen(( char* )dbei.pBlob) + 1;
 	CallService( MS_DB_EVENT_ADD, (WPARAM) hContact, (LPARAM) & dbei);
 	#if defined( _UNICODE )
 		mir_free( dbei.pBlob );
@@ -537,7 +537,7 @@ bool CIrcProto::OnIrc_MODE( const CIrcMessage* pmsg )
 							else
 								wi->OwnMode &= ~( 1 << cModeBit );
 
-							DoEvent( GC_EVENT_SETITEMDATA, pmsg->parameters[0].c_str(), NULL, NULL, NULL, NULL, (DWORD)wi, false, false, 0 );
+							DoEvent( GC_EVENT_SETITEMDATA, pmsg->parameters[0].c_str(), NULL, NULL, NULL, NULL, (DWORD_PTR)wi, false, false, 0 );
 						}
 						DoEvent( bAdd ? GC_EVENT_ADDSTATUS : GC_EVENT_REMOVESTATUS, pmsg->parameters[0].c_str(), pmsg->parameters[iParametercount].c_str(), pmsg->prefix.sNick.c_str(), sStatus.c_str(), NULL, NULL, m_oldStyleModes?false:true, false); 
 						iParametercount++;
@@ -1405,7 +1405,7 @@ bool CIrcProto::OnIrc_ENDNAMES( const CIrcMessage* pmsg )
 					wi->pszPassword = 0;
 					wi->pszTopic = 0;
 					wi->codepage = getCodepage();
-					DoEvent(GC_EVENT_SETITEMDATA, sChanName, NULL, NULL, NULL, NULL, (DWORD)wi, false, false, 0);
+					DoEvent(GC_EVENT_SETITEMDATA, sChanName, NULL, NULL, NULL, NULL, (DWORD_PTR)wi, false, false, 0);
 
 					if ( !sTopic.IsEmpty() && !lstrcmpi(GetWord(sTopic.c_str(), 0).c_str(), sChanName )) {
 						DoEvent(GC_EVENT_TOPIC, sChanName, sTopicName.IsEmpty() ? NULL : sTopicName.c_str(), GetWordAddress(sTopic.c_str(), 1), NULL, sTopicTime.IsEmpty() ? NULL : sTopicTime.c_str(), NULL, true, false);

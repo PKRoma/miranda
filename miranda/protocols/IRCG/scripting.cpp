@@ -209,7 +209,7 @@ INT_PTR __cdecl CIrcProto::Scripting_GetIrcData(WPARAM, LPARAM lparam)
 			sOutput = m_alternativeNick;
 
 		else if (sRequest == "myip")
-			return ( int )mir_strdup( m_manualHost ? m_mySpecifiedHostIP : 
+			return ( INT_PTR )mir_strdup( m_manualHost ? m_mySpecifiedHostIP : 
 										( m_IPFromServer ) ? m_myHost : m_myLocalHost);
 
 		else if (sRequest == "usercount" && !sChannel.IsEmpty()) {
@@ -231,7 +231,7 @@ INT_PTR __cdecl CIrcProto::Scripting_GetIrcData(WPARAM, LPARAM lparam)
 			gci.pszModule = m_szModuleName;
 			gci.pszID = ( TCHAR* )S.c_str();
 			if ( !CallServiceSync( MS_GC_GETINFO, 0, (LPARAM)&gci ))
-				return (int)mir_strdup( gci.pszUsers );
+				return (INT_PTR)mir_strdup( gci.pszUsers );
 		}
 		else if (sRequest == "channellist") {
 			CMString S = _T("");
@@ -259,7 +259,7 @@ INT_PTR __cdecl CIrcProto::Scripting_GetIrcData(WPARAM, LPARAM lparam)
 		}
 		// send it to mbot
 		if ( !sOutput.IsEmpty())
-			return ( int )mir_t2a( sOutput.c_str() );
+			return ( INT_PTR )mir_t2a( sOutput.c_str() );
 	}
 	return 0;
 }

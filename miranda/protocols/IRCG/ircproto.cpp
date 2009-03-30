@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 static int CompareSessions( const CDccSession* p1, const CDccSession* p2 )
 {
-	return int( p1->di->hContact ) - int( p2->di->hContact );
+	return INT_PTR( p1->di->hContact ) - INT_PTR( p2->di->hContact );
 }
 
 CIrcProto::CIrcProto( const char* szModuleName, const TCHAR* tszUserName ) :
@@ -497,7 +497,7 @@ int __cdecl CIrcProto::FileResume( HANDLE hTransfer, int* action, const char** s
 		InterlockedExchange(&dcc->dwWhatNeedsDoing, i);
 		if (*action == FILERESUME_RENAME) {
 			char * szTemp = _strdup(*szFilename);
-			InterlockedExchange((long*)&dcc->NewFileName, (long)szTemp);
+			InterlockedExchangePointer((PVOID*)&dcc->NewFileName, szTemp);
 		}
 
 		if (*action == FILERESUME_RESUME) {
@@ -834,12 +834,12 @@ HANDLE __cdecl CIrcProto::SendFile( HANDLE hContact, const char*, char** ppszFil
 
 void __cdecl CIrcProto::AckMessageFail( void* info )
 {
-	ProtoBroadcastAck( m_szModuleName, info, ACKTYPE_MESSAGE, ACKRESULT_FAILED, (HANDLE) 1, (LONG)Translate("The protocol is not online"));
+	ProtoBroadcastAck( m_szModuleName, info, ACKTYPE_MESSAGE, ACKRESULT_FAILED, (HANDLE) 1, (LPARAM)Translate("The protocol is not online"));
 }
 
 void __cdecl CIrcProto::AckMessageFailDcc( void* info )
 {
-	ProtoBroadcastAck( m_szModuleName, info, ACKTYPE_MESSAGE, ACKRESULT_FAILED, (HANDLE) 1, (LONG)Translate("The dcc chat connection is not active"));
+	ProtoBroadcastAck( m_szModuleName, info, ACKTYPE_MESSAGE, ACKRESULT_FAILED, (HANDLE) 1, (LPARAM)Translate("The dcc chat connection is not active"));
 }
 
 void __cdecl CIrcProto::AckMessageSuccess( void* info )

@@ -565,9 +565,9 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	//tools.cpp
 	void     AddToJTemp(TCHAR op, CMString& sCommand);
 	bool     AddWindowItemData(CMString window, const TCHAR* pszLimit, const TCHAR* pszMode, const TCHAR* pszPassword, const TCHAR* pszTopic);
-	int      CallChatEvent(WPARAM wParam, LPARAM lParam);
+	INT_PTR  CallChatEvent(WPARAM wParam, LPARAM lParam);
 	void     CreateProtoService( const char* serviceName, IrcServiceFunc pFunc );
-	int      DoEvent(int iEvent, const TCHAR* pszWindow, const TCHAR* pszNick, const TCHAR* pszText, const TCHAR* pszStatus, const TCHAR* pszUserInfo, DWORD dwItemData, bool bAddToLog, bool bIsMe,time_t timestamp = 1);
+	INT_PTR  DoEvent(int iEvent, const TCHAR* pszWindow, const TCHAR* pszNick, const TCHAR* pszText, const TCHAR* pszStatus, const TCHAR* pszUserInfo, DWORD_PTR dwItemData, bool bAddToLog, bool bIsMe,time_t timestamp = 1);
 	void     FindLocalIP(HANDLE con);
 	bool     FreeWindowItemData(CMString window, CHANNELINFO* wis);
 	#if defined( _UNICODE )

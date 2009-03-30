@@ -176,7 +176,7 @@ void CIrcProto::SendIrcMessage( const TCHAR* msg, bool bNotify, int codepage )
 	if ( this ) {
 		char* str = mir_t2a_cp( msg, codepage );
 		rtrim( str );
-		int cbLen = strlen( str );
+		int cbLen = (int)strlen( str );
 		str = ( char* )mir_realloc( str, cbLen+3 );
 		strcat( str, "\r\n" );
 		NLSend(( const BYTE* )str, cbLen+2 );
@@ -300,7 +300,7 @@ int CIrcProto::NLSend( const TCHAR* fmt, ...)
 	va_end(marker);
 
 	char* buf = mir_t2a_cp( szBuf, getCodepage());
-	int result = NLSend((unsigned char*)buf, strlen(buf));
+	int result = NLSend((unsigned char*)buf, (int)strlen(buf));
 	mir_free( buf );
 	return result;
 }
@@ -974,7 +974,7 @@ int CDccSession::SetupConnection()
 		// dwWhatNeedsDoing will be set using InterlockedExchange() (from other parts of the code depending on action) before SetEvent() is called.
 		// If the user has chosen rename then InterlockedExchange() will be used for setting NewFileName to a string containing the new name.
 		// Furthermore dwResumePos will be set using InterlockedExchange() to indicate what the file position to start from is.
-		if ( ProtoBroadcastAck(m_proto->m_szModuleName, di->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, (void *)di, (long)&pfts)) { 
+		if ( ProtoBroadcastAck(m_proto->m_szModuleName, di->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, (void *)di, (LPARAM)&pfts)) { 
 			WaitForSingleObject( hEvent, INFINITE );
 			switch( dwWhatNeedsDoing ) {
 			case FILERESUME_RENAME:
@@ -1081,7 +1081,7 @@ int CDccSession::SetupConnection()
 	// spawn a new thread to handle receiving/sending of data for the new chat/filetransfer connection to the remote computer
 	mir_forkthread( ThreadProc, this  );
 	
-	return (int)con;
+	return con != NULL;
 }
 
 // called by netlib for incoming connections on a listening socket (chat/filetransfer)
@@ -1175,12 +1175,12 @@ void CDccSession::DoSendFile()
 			// until the connection is dropped it will spin around in this while() loop
 			while ( con ) {
 				// read a packet
-				DWORD iRead = fread(chBuf, 1, wPacketSize, hFile);
-				if ( iRead <= 0 )
+				size_t iRead = fread(chBuf, 1, wPacketSize, hFile);
+				if ( iRead != 0 )
 					break; // break out if everything has already been read
 
 				// send the package
-				DWORD cbSent = NLSend((unsigned char*)chBuf, iRead);
+				DWORD cbSent = NLSend((unsigned char*)chBuf, (int)iRead);
 				if ( cbSent <= 0 )
 					break; // break out if connection is lost or a transmission error has occured
 
@@ -1472,6 +1472,6 @@ void DoIdent(HANDLE hConnection, DWORD, void* extra )
 	char buf[1024*4];
 	mir_snprintf(buf, SIZEOF(buf), "%s : USERID : " TCHAR_STR_PARAM " : " TCHAR_STR_PARAM "\r\n", 
 		szBuf, ppro->m_info.sIdentServerType.c_str() , ppro->m_info.sUserID.c_str());
-	Netlib_Send(hConnection, (const char*)buf, strlen(buf), 0);
+	Netlib_Send(hConnection, (const char*)buf, (int)strlen(buf), 0);
 	Netlib_CloseHandle(hConnection);
 }

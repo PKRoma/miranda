@@ -513,10 +513,10 @@ TCHAR* __stdcall DoColorCodes (const TCHAR* text, bool bStrip, bool bReplacePerc
 	return szTemp;
 }
 
-int CIrcProto::CallChatEvent(WPARAM wParam, LPARAM lParam)
+INT_PTR CIrcProto::CallChatEvent(WPARAM wParam, LPARAM lParam)
 {
 	GCEVENT * gce = (GCEVENT *)lParam;
-	int iVal = 0;
+	INT_PTR iVal = 0;
 
 	// first see if the scripting module should modify or stop this event
 	if ( m_bMbotInstalled && m_scriptingEnabled && gce 
@@ -573,9 +573,9 @@ int CIrcProto::CallChatEvent(WPARAM wParam, LPARAM lParam)
 	return CallServiceSync( MS_GC_EVENT, wParam, ( LPARAM )gce );
 }
 
-int CIrcProto::DoEvent(int iEvent, const TCHAR* pszWindow, const TCHAR* pszNick, 
+INT_PTR CIrcProto::DoEvent(int iEvent, const TCHAR* pszWindow, const TCHAR* pszNick, 
 			const TCHAR* pszText, const TCHAR* pszStatus, const TCHAR* pszUserInfo, 
-			DWORD dwItemData, bool bAddToLog, bool bIsMe, time_t timestamp)
+			DWORD_PTR dwItemData, bool bAddToLog, bool bIsMe, time_t timestamp)
 {						   
 	GCDEST gcd = {0};
 	GCEVENT gce = {0};

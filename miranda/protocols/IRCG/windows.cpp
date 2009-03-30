@@ -629,7 +629,7 @@ void CQuickDlg::OnOk( CCtrlButton* )
 	
 	int i = m_serverCombo.GetCurSel();
 	SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( i );
-	if ( pData && (int)pData != CB_ERR ) {
+	if ( pData && (INT_PTR)pData != CB_ERR ) {
 		lstrcpyA( m_proto->m_network, pData->m_group ); 
 		pData->m_iSSL = 0;
 		if ( IsDlgButtonChecked( m_hwnd, IDC_SSL_ON ))
@@ -1401,7 +1401,7 @@ INT_PTR CCoolIrcDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		case IDC_WHITERECT: case IDC_TEXT: case IDC_CAPTION: case IDC_AWAYTIME: case IDC_LOGO:
 			SetTextColor((HDC)wParam,RGB(0,0,0));
 			SetBkColor((HDC)wParam,RGB(255,255,255));
-			return (BOOL)GetStockObject(WHITE_BRUSH);
+			return (INT_PTR)GetStockObject(WHITE_BRUSH);
 	}	}
 
 	return CDlgBase::DlgProc(msg, wParam, lParam);
