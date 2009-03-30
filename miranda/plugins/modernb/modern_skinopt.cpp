@@ -734,8 +734,8 @@ INT_PTR SvcPreviewSkin(WPARAM wParam, LPARAM lParam)
 		TCHAR prfn[MAX_PATH] = {0};
 		TCHAR imfn[MAX_PATH] = {0};
 		TCHAR skinfolder[MAX_PATH] = {0};
-		GetPrivateProfileString( _T( "Skin_Description_Section" ), _T( "Preview" ), _T( "" ), imfn, SIZEOF( imfn ), (LPCWSTR)lParam );
-		IniParser::GetSkinFolder( (LPCWSTR)lParam, skinfolder );
+		GetPrivateProfileString( _T( "Skin_Description_Section" ), _T( "Preview" ), _T( "" ), imfn, SIZEOF( imfn ), (LPCTSTR)lParam );
+		IniParser::GetSkinFolder( (LPCTSTR)lParam, skinfolder );
 		_sntprintf( prfn, SIZEOF( prfn ), _T("%s\\%s"), skinfolder, imfn );
 		CallService( MS_UTILS_PATHTOABSOLUTET, ( WPARAM )prfn, ( LPARAM ) imfn );
 		char * imfn_ch = mir_t2a( imfn ); 

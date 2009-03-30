@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="clist_modern"
 	ProjectGUID="{D9057E63-AAAA-4FE7-800A-20C02F4761F3}"
 	RootNamespace="clist_modern"
@@ -1192,18 +1192,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\clc.h"
-				>
-			</File>
-			<File
-				RelativePath=".\clist.h"
-				>
-			</File>
-			<File
-				RelativePath=".\clui.h"
-				>
-			</File>
-			<File
 				RelativePath=".\defsettings.h"
 				>
 			</File>
@@ -1485,11 +1473,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\m_clui.h"
+				RelativePath=".\m_api\m_clui.h"
 				>
 			</File>
 			<File
-				RelativePath=".\m_api\m_clui.h"
+				RelativePath="..\..\include\m_clui.h"
 				>
 			</File>
 			<File
