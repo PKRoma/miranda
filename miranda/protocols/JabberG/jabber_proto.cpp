@@ -542,7 +542,7 @@ HANDLE __cdecl CJabberProto::ChangeInfo( int /*iInfoType*/, void* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberFileAllow - starts a file transfer
 
-int __cdecl CJabberProto::FileAllow( HANDLE /*hContact*/, HANDLE hTransfer, const char* szPath )
+HANDLE __cdecl CJabberProto::FileAllow( HANDLE /*hContact*/, HANDLE hTransfer, const char* szPath )
 {
 	if ( !m_bJabberOnline )
 		return 0;
@@ -564,7 +564,7 @@ int __cdecl CJabberProto::FileAllow( HANDLE /*hContact*/, HANDLE hTransfer, cons
 		FtAcceptIbbRequest( ft );
 		break;
 	}
-	return int( hTransfer );
+	return hTransfer;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -648,7 +648,7 @@ int __cdecl CJabberProto::FileResume( HANDLE hTransfer, int* action, const char*
 ////////////////////////////////////////////////////////////////////////////////////////
 // GetCaps - return protocol capabilities bits
 
-DWORD __cdecl CJabberProto::GetCaps( int type, HANDLE /*hContact*/ )
+DWORD_PTR __cdecl CJabberProto::GetCaps( int type, HANDLE /*hContact*/ )
 {
 	switch( type ) {
 	case PFLAGNUM_1:
@@ -660,9 +660,9 @@ DWORD __cdecl CJabberProto::GetCaps( int type, HANDLE /*hContact*/ )
 	case PFLAGNUM_4:
 		return PF4_FORCEAUTH | PF4_NOCUSTOMAUTH | PF4_SUPPORTTYPING | PF4_AVATARS | PF4_IMSENDUTF;
 	case PFLAG_UNIQUEIDTEXT:
-		return ( DWORD ) JTranslate( "JID" );
+		return ( DWORD_PTR ) JTranslate( "JID" );
 	case PFLAG_UNIQUEIDSETTING:
-		return ( DWORD ) "jid";
+		return ( DWORD_PTR ) "jid";
 	}
 	return 0;
 }
@@ -950,7 +950,7 @@ int __cdecl CJabberProto::SendContacts( HANDLE /*hContact*/, int /*flags*/, int 
 ////////////////////////////////////////////////////////////////////////////////////////
 // SendFile - sends a file
 
-int __cdecl CJabberProto::SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles )
+HANDLE __cdecl CJabberProto::SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles )
 {
 	if ( !m_bJabberOnline ) return 0;
 
@@ -1026,7 +1026,7 @@ int __cdecl CJabberProto::SendFile( HANDLE hContact, const char* szDescription, 
 	else if ( jcb & JABBER_CAPS_OOB )
 		JForkThread(( JThreadFunc )&CJabberProto::FileServerThread, ft );
 
-	return ( int )( HANDLE ) ft;
+	return ft;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -1302,12 +1302,12 @@ void __cdecl CJabberProto::GetAwayMsgThread( void* hContact )
 	JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )"" );
 }
 
-int __cdecl CJabberProto::GetAwayMsg( HANDLE hContact )
+HANDLE __cdecl CJabberProto::GetAwayMsg( HANDLE hContact )
 {
 	Log( "GetAwayMsg called, hContact=%08X", hContact );
 
 	JForkThread( &CJabberProto::GetAwayMsgThread, hContact );
-	return 1;
+	return (HANDLE)1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

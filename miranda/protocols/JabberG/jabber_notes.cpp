@@ -862,7 +862,7 @@ bool CJabberProto::OnIncomingNote(const TCHAR *szFrom, HXML hXml)
 	return true;
 }
 
-int __cdecl CJabberProto::OnIncomingNoteEvent(WPARAM, LPARAM lParam)
+INT_PTR __cdecl CJabberProto::OnIncomingNoteEvent(WPARAM, LPARAM lParam)
 {
 	CLISTEVENT *pCle = (CLISTEVENT *)lParam;
 	CNoteItem *pNote = (CNoteItem *)pCle->lParam;
@@ -877,14 +877,14 @@ int __cdecl CJabberProto::OnIncomingNoteEvent(WPARAM, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // Menu handling
 
-int __cdecl CJabberProto::OnMenuHandleNotes( WPARAM, LPARAM)
+INT_PTR __cdecl CJabberProto::OnMenuHandleNotes( WPARAM, LPARAM)
 {
 	UI_SAFE_OPEN_EX(CJabberDlgNotes, m_pDlgNotes, pDlg);
 	pDlg->UpdateData();
 	return 0;
 }
 
-int __cdecl CJabberProto::OnMenuSendNote(WPARAM wParam, LPARAM)
+INT_PTR __cdecl CJabberProto::OnMenuSendNote(WPARAM wParam, LPARAM)
 {
 	if (!wParam) return 0;
 

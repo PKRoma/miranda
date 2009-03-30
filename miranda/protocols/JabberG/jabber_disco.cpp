@@ -1506,25 +1506,25 @@ void CJabberProto::LaunchServiceDiscovery(TCHAR *jid)
 	}
 }
 
-int __cdecl CJabberProto::OnMenuHandleServiceDiscovery( WPARAM, LPARAM )
+INT_PTR __cdecl CJabberProto::OnMenuHandleServiceDiscovery( WPARAM, LPARAM )
 {
 	LaunchServiceDiscovery(NULL);
 	return 0;
 }
 
-int __cdecl CJabberProto::OnMenuHandleServiceDiscoveryMyTransports( WPARAM, LPARAM )
+INT_PTR __cdecl CJabberProto::OnMenuHandleServiceDiscoveryMyTransports( WPARAM, LPARAM )
 {
 	LaunchServiceDiscovery(_T(SD_FAKEJID_MYAGENTS));
 	return 0;
 }
 
-int __cdecl CJabberProto::OnMenuHandleServiceDiscoveryTransports( WPARAM, LPARAM )
+INT_PTR __cdecl CJabberProto::OnMenuHandleServiceDiscoveryTransports( WPARAM, LPARAM )
 {
 	LaunchServiceDiscovery(_T(SD_FAKEJID_AGENTS));
 	return 0;
 }
 
-int __cdecl CJabberProto::OnMenuHandleServiceDiscoveryConferences( WPARAM, LPARAM )
+INT_PTR __cdecl CJabberProto::OnMenuHandleServiceDiscoveryConferences( WPARAM, LPARAM )
 {
 	LaunchServiceDiscovery(_T(SD_FAKEJID_CONFERENCES));
 	return 0;

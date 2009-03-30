@@ -196,7 +196,7 @@ private:
 	}
 };
 
-int __cdecl CJabberProto::OnMenuHandleJoinGroupchat( WPARAM, LPARAM )
+INT_PTR __cdecl CJabberProto::OnMenuHandleJoinGroupchat( WPARAM, LPARAM )
 {
 	if ( jabberChatDllPresent )
 		GroupchatJoinRoomByJid( NULL, NULL );
@@ -205,7 +205,7 @@ int __cdecl CJabberProto::OnMenuHandleJoinGroupchat( WPARAM, LPARAM )
 	return 0;
 }
 
-int __cdecl CJabberProto::OnJoinChat( WPARAM wParam, LPARAM )
+INT_PTR __cdecl CJabberProto::OnJoinChat( WPARAM wParam, LPARAM )
 {
 	DBVARIANT dbv, jid;
 	HANDLE hContact = ( HANDLE )wParam;
@@ -233,7 +233,7 @@ int __cdecl CJabberProto::OnJoinChat( WPARAM wParam, LPARAM )
 	return 0;
 }
 
-int __cdecl CJabberProto::OnLeaveChat( WPARAM wParam, LPARAM )
+INT_PTR __cdecl CJabberProto::OnLeaveChat( WPARAM wParam, LPARAM )
 {
 	DBVARIANT jid;
 	HANDLE hContact = ( HANDLE )wParam;

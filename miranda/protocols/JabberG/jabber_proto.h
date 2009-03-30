@@ -39,10 +39,10 @@ Last change by : $Author: m_mluhov $
 #include "jabber_notes.h"
 
 struct CJabberProto;
-typedef void ( __cdecl CJabberProto::*JThreadFunc )( void* );
-typedef int  ( __cdecl CJabberProto::*JEventFunc )( WPARAM, LPARAM );
-typedef int  ( __cdecl CJabberProto::*JServiceFunc )( WPARAM, LPARAM );
-typedef int  ( __cdecl CJabberProto::*JServiceFuncParam )( WPARAM, LPARAM, LPARAM );
+typedef void    ( __cdecl CJabberProto::*JThreadFunc )( void* );
+typedef int     ( __cdecl CJabberProto::*JEventFunc )( WPARAM, LPARAM );
+typedef INT_PTR ( __cdecl CJabberProto::*JServiceFunc )( WPARAM, LPARAM );
+typedef INT_PTR ( __cdecl CJabberProto::*JServiceFuncParam )( WPARAM, LPARAM, LPARAM );
 
 enum TJabberGcLogInfoType { INFO_BAN, INFO_STATUS, INFO_CONFIG, INFO_AFFILIATION, INFO_ROLE };
 
@@ -116,12 +116,12 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	virtual	HANDLE __cdecl ChangeInfo( int iInfoType, void* pInfoData );
 
-	virtual	int    __cdecl FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath );
+	virtual	HANDLE __cdecl FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath );
 	virtual	int    __cdecl FileCancel( HANDLE hContact, HANDLE hTransfer );
 	virtual	int    __cdecl FileDeny( HANDLE hContact, HANDLE hTransfer, const char* szReason );
 	virtual	int    __cdecl FileResume( HANDLE hTransfer, int* action, const char** szFilename );
 
-	virtual	DWORD  __cdecl GetCaps( int type, HANDLE hContact = NULL );
+	virtual	DWORD_PTR __cdecl GetCaps( int type, HANDLE hContact = NULL );
 	virtual	HICON  __cdecl GetIcon( int iconIndex );
 	virtual	int    __cdecl GetInfo( HANDLE hContact, int infoType );
 
@@ -137,14 +137,14 @@ struct CJabberProto : public PROTO_INTERFACE
 	virtual	int    __cdecl RecvUrl( HANDLE hContact, PROTORECVEVENT* );
 
 	virtual	int    __cdecl SendContacts( HANDLE hContact, int flags, int nContacts, HANDLE* hContactsList );
-	virtual	int    __cdecl SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles );
+	virtual	HANDLE __cdecl SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles );
 	virtual	int    __cdecl SendMsg( HANDLE hContact, int flags, const char* msg );
 	virtual	int    __cdecl SendUrl( HANDLE hContact, int flags, const char* url );
 
 	virtual	int    __cdecl SetApparentMode( HANDLE hContact, int mode );
 	virtual	int    __cdecl SetStatus( int iNewStatus );
 
-	virtual	int    __cdecl GetAwayMsg( HANDLE hContact );
+	virtual	HANDLE __cdecl GetAwayMsg( HANDLE hContact );
 	virtual	int    __cdecl RecvAwayMsg( HANDLE hContact, int mode, PROTORECVEVENT* evt );
 	virtual	int    __cdecl SendAwayMsg( HANDLE hContact, HANDLE hProcess, const char* msg );
 	virtual	int    __cdecl SetAwayMsg( int m_iStatus, const char* msg );
@@ -154,7 +154,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	virtual	int    __cdecl OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam );
 
 	//====| Services |====================================================================
-	int  __cdecl SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam);
 
 	//====| Events |======================================================================
 	void __cdecl OnAddContactForever( DBCONTACTWRITESETTING* cws, HANDLE hContact );
@@ -340,7 +340,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	
 	//---- jabber_bookmarks.c ------------------------------------------------------------
 
-	int    __cdecl OnMenuHandleBookmarks( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl OnMenuHandleBookmarks( WPARAM wParam, LPARAM lParam );
 
 	int    AddEditBookmark( JABBER_LIST_ITEM* item );
 
@@ -351,9 +351,9 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	bool CJabberProto::OnIncomingNote(const TCHAR *szFrom, HXML hXml);
 
-	int    __cdecl CJabberProto::OnMenuSendNote(WPARAM, LPARAM);
-	int    __cdecl CJabberProto::OnMenuHandleNotes(WPARAM, LPARAM);
-	int    __cdecl CJabberProto::OnIncomingNoteEvent(WPARAM, LPARAM);
+	INT_PTR    __cdecl CJabberProto::OnMenuSendNote(WPARAM, LPARAM);
+	INT_PTR    __cdecl CJabberProto::OnMenuHandleNotes(WPARAM, LPARAM);
+	INT_PTR    __cdecl CJabberProto::OnIncomingNoteEvent(WPARAM, LPARAM);
 
 	//---- jabber_byte.c -----------------------------------------------------------------
 
@@ -391,7 +391,7 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//---- jabber_console.cpp ------------------------------------------------------------
 
-	int    __cdecl OnMenuHandleConsole( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl OnMenuHandleConsole( WPARAM wParam, LPARAM lParam );
 	void   __cdecl ConsoleThread( void* );
 
 	void   ConsoleInit( void );
@@ -403,10 +403,10 @@ struct CJabberProto : public PROTO_INTERFACE
 	//---- jabber_disco.cpp --------------------------------------------------------------
 
 	void   LaunchServiceDiscovery(TCHAR *jid);
-	int    __cdecl OnMenuHandleServiceDiscovery( WPARAM wParam, LPARAM lParam );
-	int    __cdecl OnMenuHandleServiceDiscoveryMyTransports( WPARAM wParam, LPARAM lParam );
-	int    __cdecl OnMenuHandleServiceDiscoveryTransports( WPARAM wParam, LPARAM lParam );
-	int    __cdecl OnMenuHandleServiceDiscoveryConferences( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl OnMenuHandleServiceDiscovery( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl OnMenuHandleServiceDiscoveryMyTransports( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl OnMenuHandleServiceDiscoveryTransports( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl OnMenuHandleServiceDiscoveryConferences( WPARAM wParam, LPARAM lParam );
 
 	void   OnIqResultServiceDiscoveryInfo( HXML iqNode, CJabberIqInfo* pInfo );
 	void   OnIqResultServiceDiscoveryItems( HXML iqNode, CJabberIqInfo* pInfo );
@@ -458,11 +458,11 @@ struct CJabberProto : public PROTO_INTERFACE
 	
 	//---- jabber_groupchat.c ------------------------------------------------------------
 
-	int    __cdecl OnMenuHandleJoinGroupchat( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl OnMenuHandleJoinGroupchat( WPARAM wParam, LPARAM lParam );
 	void   __cdecl GroupchatInviteAcceptThread( JABBER_GROUPCHAT_INVITE_INFO *inviteInfo );
 
-	int    __cdecl OnJoinChat( WPARAM wParam, LPARAM lParam );
-	int    __cdecl OnLeaveChat( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl OnJoinChat( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl OnLeaveChat( WPARAM wParam, LPARAM lParam );
 
 	void   GroupchatJoinRoom( LPCTSTR server, LPCTSTR room, LPCTSTR nick, LPCTSTR password, bool autojoin=false );
 	void   GroupchatProcessPresence( HXML node );
@@ -480,7 +480,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	int    GetTransportStatusIconIndex(int iID, int Status);
 	BOOL   DBCheckIsTransportedContact(const TCHAR* jid, HANDLE hContact);
 	void   CheckAllContactsAreTransported( void );
-	int    __cdecl JGetAdvancedStatusIcon(WPARAM wParam, LPARAM lParam );
+	INT_PTR __cdecl JGetAdvancedStatusIcon(WPARAM wParam, LPARAM lParam );
 
 	//---- jabber_iq.c -------------------------------------------------------------------
 
@@ -588,18 +588,18 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//---- jabber_menu.cpp ---------------------------------------------------------------
 
-	int    __cdecl OnMenuConvertChatContact( WPARAM wParam, LPARAM lParam );
-	int    __cdecl OnMenuRosterAdd( WPARAM wParam, LPARAM lParam );
-	int    __cdecl OnMenuHandleRequestAuth( WPARAM wParam, LPARAM lParam );
-	int    __cdecl OnMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam );
-	int    __cdecl OnMenuOptions( WPARAM wParam, LPARAM lParam );
-	int    __cdecl OnMenuTransportLogin( WPARAM wParam, LPARAM lParam );
-	int    __cdecl OnMenuTransportResolve( WPARAM wParam, LPARAM lParam );
-	int    __cdecl OnMenuBookmarkAdd( WPARAM wParam, LPARAM lParam );
-	int    __cdecl OnMenuRevokeAuth( WPARAM wParam, LPARAM lParam );
-	int    __cdecl OnMenuHandleResource(WPARAM wParam, LPARAM lParam, LPARAM res);
-	int    __cdecl OnMenuHandleDirectPresence(WPARAM wParam, LPARAM lParam, LPARAM res);
-	int    __cdecl OnMenuSetPriority(WPARAM wParam, LPARAM lParam, LPARAM dwDelta);
+	INT_PTR    __cdecl OnMenuConvertChatContact( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl OnMenuRosterAdd( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl OnMenuHandleRequestAuth( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl OnMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl OnMenuOptions( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl OnMenuTransportLogin( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl OnMenuTransportResolve( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl OnMenuBookmarkAdd( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl OnMenuRevokeAuth( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl OnMenuHandleResource(WPARAM wParam, LPARAM lParam, LPARAM res);
+	INT_PTR    __cdecl OnMenuHandleDirectPresence(WPARAM wParam, LPARAM lParam, LPARAM res);
+	INT_PTR    __cdecl OnMenuSetPriority(WPARAM wParam, LPARAM lParam, LPARAM dwDelta);
 
 	void   MenuInit( void );
 	void   MenuUninit( void );
@@ -617,8 +617,8 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//---- jabber_misc.c -----------------------------------------------------------------
 
-	int    __cdecl OnGetEventTextChatStates( WPARAM wParam, LPARAM lParam );
-	int    __cdecl OnGetEventTextPresence( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl OnGetEventTextChatStates( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl OnGetEventTextPresence( WPARAM wParam, LPARAM lParam );
 
 	void   AddContactToRoster( const TCHAR* jid, const TCHAR* nick, const TCHAR* grpName );
 	void   DBAddAuthRequest( const TCHAR* jid, const TCHAR* nick );
@@ -640,7 +640,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	CJabberDlgBase::CreateParam		OptCreateGc;
 	CJabberDlgBase::CreateParam		OptCreateAdvanced;
 
-	int    __cdecl OnMenuHandleRosterControl( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl OnMenuHandleRosterControl( WPARAM wParam, LPARAM lParam );
 
 	void   _RosterExportToFile(HWND hwndDlg);
 	void   _RosterImportFromFile(HWND hwndDlg);
@@ -649,13 +649,13 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//---- jabber_password.cpp --------------------------------------------------------------
 	
-	int    __cdecl OnMenuHandleChangePassword( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl OnMenuHandleChangePassword( WPARAM wParam, LPARAM lParam );
 
 	//---- jabber_privacy.cpp ------------------------------------------------------------
 	ROSTERREQUSERDATA rrud;
 
-	int    __cdecl menuSetPrivacyList( WPARAM wParam, LPARAM lParam, LPARAM iList );
-	int    __cdecl OnMenuHandlePrivacyLists( WPARAM wParam, LPARAM lParam );
+	INT_PTR __cdecl menuSetPrivacyList( WPARAM wParam, LPARAM lParam, LPARAM iList );
+	INT_PTR __cdecl OnMenuHandlePrivacyLists( WPARAM wParam, LPARAM lParam );
 
 	void   BuildPrivacyMenu( void );
 	void   BuildPrivacyListsMenu( bool bDeleteOld );
@@ -734,15 +734,15 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   CheckMenuItems();
 	void   EnableMenuItems( BOOL bEnable );
 
-	int    __cdecl JabberGetAvatar( WPARAM wParam, LPARAM lParam );
-	int    __cdecl JabberGetAvatarCaps( WPARAM wParam, LPARAM lParam );
-	int    __cdecl JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam );
-	int    __cdecl ServiceSendXML( WPARAM wParam, LPARAM lParam );
-	int    __cdecl JabberSetAvatar( WPARAM wParam, LPARAM lParam );
-	int    __cdecl JabberSendNudge( WPARAM wParam, LPARAM lParam );
-	int    __cdecl JabberGCGetToolTipText( WPARAM wParam, LPARAM lParam );
-	int    __cdecl JabberServiceParseXmppURI( WPARAM wParam, LPARAM lParam );
-	int    __cdecl OnHttpAuthRequest( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl JabberGetAvatar( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl JabberGetAvatarCaps( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl ServiceSendXML( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl JabberSetAvatar( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl JabberSendNudge( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl JabberGCGetToolTipText( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl JabberServiceParseXmppURI( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl OnHttpAuthRequest( WPARAM wParam, LPARAM lParam );
 
 	BOOL SendHttpAuthReply( CJabberHttpAuthParams *pParams, BOOL bAuthorized );
 
@@ -837,10 +837,10 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//---- jabber_xstatus.c --------------------------------------------------------------
 
-	int    __cdecl OnSetListeningTo( WPARAM wParam, LPARAM lParams );
-	int    __cdecl OnGetXStatusIcon( WPARAM wParam, LPARAM lParams );
-	int    __cdecl OnGetXStatus( WPARAM wParam, LPARAM lParams );
-	int    __cdecl OnSetXStatus( WPARAM wParam, LPARAM lParams );
+	INT_PTR    __cdecl OnSetListeningTo( WPARAM wParam, LPARAM lParams );
+	INT_PTR    __cdecl OnGetXStatusIcon( WPARAM wParam, LPARAM lParams );
+	INT_PTR    __cdecl OnGetXStatus( WPARAM wParam, LPARAM lParams );
+	INT_PTR    __cdecl OnSetXStatus( WPARAM wParam, LPARAM lParams );
 
 	HICON  GetXStatusIcon(int bStatus, UINT flags);
 

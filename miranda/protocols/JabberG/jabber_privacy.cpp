@@ -2205,7 +2205,7 @@ int CJabberDlgPrivacyLists::Resizer(UTILRESIZECONTROL *urc)
 	return CSuper::Resizer(urc);
 }
 
-int __cdecl CJabberProto::OnMenuHandlePrivacyLists( WPARAM, LPARAM )
+INT_PTR __cdecl CJabberProto::OnMenuHandlePrivacyLists( WPARAM, LPARAM )
 {
 	UI_SAFE_OPEN(CJabberDlgPrivacyLists, m_pDlgPrivacyLists);
 	return 0;
@@ -2224,7 +2224,7 @@ void CJabberProto::QueryPrivacyLists( ThreadData *pThreadInfo )
 /////////////////////////////////////////////////////////////////////////////////////////
 // builds privacy menu
 
-int __cdecl CJabberProto::menuSetPrivacyList( WPARAM, LPARAM, LPARAM iList )
+INT_PTR __cdecl CJabberProto::menuSetPrivacyList( WPARAM, LPARAM, LPARAM iList )
 {
 	m_privacyListManager.Lock();
 	CPrivacyList *pList = NULL;

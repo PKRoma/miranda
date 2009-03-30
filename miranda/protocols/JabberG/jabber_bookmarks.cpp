@@ -467,7 +467,7 @@ int CJabberDlgBookmarks::Resizer(UTILRESIZECONTROL *urc)
 /////////////////////////////////////////////////////////////////////////////////////////
 // Launches the Bookmarks manager window
 
-int __cdecl CJabberProto::OnMenuHandleBookmarks( WPARAM, LPARAM)
+INT_PTR __cdecl CJabberProto::OnMenuHandleBookmarks( WPARAM, LPARAM)
 {
 	UI_SAFE_OPEN_EX(CJabberDlgBookmarks, m_pDlgBookmarks, pDlg);
 	pDlg->UpdateData();

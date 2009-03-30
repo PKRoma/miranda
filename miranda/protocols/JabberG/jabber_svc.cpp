@@ -44,7 +44,7 @@ Last change by : $Author$
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberGetAvatar - retrieves the file name of my own avatar
 
-int __cdecl CJabberProto::JabberGetAvatar( WPARAM wParam, LPARAM lParam )
+INT_PTR __cdecl CJabberProto::JabberGetAvatar( WPARAM wParam, LPARAM lParam )
 {
 	char* buf = ( char* )wParam;
 	int  size = ( int )lParam;
@@ -62,7 +62,7 @@ int __cdecl CJabberProto::JabberGetAvatar( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberGetAvatarCaps - returns directives how to process avatars
 
-int __cdecl CJabberProto::JabberGetAvatarCaps( WPARAM wParam, LPARAM lParam )
+INT_PTR __cdecl CJabberProto::JabberGetAvatarCaps( WPARAM wParam, LPARAM lParam )
 {
 	switch( wParam ) {
 	case AF_MAXSIZE:
@@ -88,7 +88,7 @@ int __cdecl CJabberProto::JabberGetAvatarCaps( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberGetAvatarInfo - retrieves the avatar info
 
-int __cdecl CJabberProto::JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam )
+INT_PTR __cdecl CJabberProto::JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam )
 {
 	if ( !m_options.EnableAvatars )
 		return GAIR_NOAVATAR;
@@ -152,7 +152,7 @@ int __cdecl CJabberProto::JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam )
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberGetEventTextChatStates - retrieves a chat state description from an event
 
-int __cdecl CJabberProto::OnGetEventTextChatStates( WPARAM, LPARAM lParam )
+INT_PTR __cdecl CJabberProto::OnGetEventTextChatStates( WPARAM, LPARAM lParam )
 {
 	DBEVENTGETTEXT *pdbEvent = ( DBEVENTGETTEXT * )lParam;
 
@@ -173,7 +173,7 @@ int __cdecl CJabberProto::OnGetEventTextChatStates( WPARAM, LPARAM lParam )
 ////////////////////////////////////////////////////////////////////////////////////////
 // OnGetEventTextPresence - retrieves presence state description from an event
 
-int __cdecl CJabberProto::OnGetEventTextPresence( WPARAM, LPARAM lParam )
+INT_PTR __cdecl CJabberProto::OnGetEventTextPresence( WPARAM, LPARAM lParam )
 {
 	DBEVENTGETTEXT *pdbEvent = ( DBEVENTGETTEXT * )lParam;
 
@@ -239,7 +239,7 @@ int __cdecl CJabberProto::OnGetEventTextPresence( WPARAM, LPARAM lParam )
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberSetAvatar - sets an avatar without UI
 
-int __cdecl CJabberProto::JabberSetAvatar( WPARAM, LPARAM lParam )
+INT_PTR __cdecl CJabberProto::JabberSetAvatar( WPARAM, LPARAM lParam )
 {
 	char* szFileName = ( char* )lParam;
 
@@ -304,12 +304,12 @@ int __cdecl CJabberProto::JabberSetAvatar( WPARAM, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // "/SendXML" - Allows external plugins to send XML to the server
 
-int __cdecl CJabberProto::ServiceSendXML( WPARAM, LPARAM lParam )
+INT_PTR __cdecl CJabberProto::ServiceSendXML( WPARAM, LPARAM lParam )
 {
 	return m_ThreadInfo->send( (char*)lParam);
 }
 
-int __cdecl CJabberProto::JabberGCGetToolTipText( WPARAM wParam, LPARAM lParam )
+INT_PTR __cdecl CJabberProto::JabberGCGetToolTipText( WPARAM wParam, LPARAM lParam )
 {
 	if ( !wParam || !lParam )
 		return 0; //room global tooltip not supported yet
@@ -399,12 +399,12 @@ int __cdecl CJabberProto::JabberGCGetToolTipText( WPARAM wParam, LPARAM lParam )
 	if ( lstrlen( outBuf ) == 0)
 		return 0;
 
-	return (int) mir_tstrdup( outBuf );
+	return (INT_PTR) mir_tstrdup( outBuf );
 }
 
 // File Association Manager plugin support
 
-int __cdecl CJabberProto::JabberServiceParseXmppURI( WPARAM wParam, LPARAM lParam )
+INT_PTR __cdecl CJabberProto::JabberServiceParseXmppURI( WPARAM wParam, LPARAM lParam )
 {
 	UNREFERENCED_PARAMETER( wParam );
 
@@ -522,7 +522,7 @@ int __cdecl CJabberProto::JabberServiceParseXmppURI( WPARAM wParam, LPARAM lPara
 }
 
 // XEP-0224 support (Attention/Nudge)
-int __cdecl CJabberProto::JabberSendNudge( WPARAM wParam, LPARAM )
+INT_PTR __cdecl CJabberProto::JabberSendNudge( WPARAM wParam, LPARAM )
 {
 	if ( !m_bJabberOnline )
 		return 0;
@@ -654,7 +654,7 @@ private:
 };
 
 // XEP-0070 support (http auth)
-int __cdecl CJabberProto::OnHttpAuthRequest( WPARAM wParam, LPARAM lParam )
+INT_PTR __cdecl CJabberProto::OnHttpAuthRequest( WPARAM wParam, LPARAM lParam )
 {
 	CLISTEVENT *pCle = (CLISTEVENT *)lParam;
 	CJabberHttpAuthParams *pParams = (CJabberHttpAuthParams *)pCle->lParam;

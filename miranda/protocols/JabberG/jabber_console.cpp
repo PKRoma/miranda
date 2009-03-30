@@ -741,7 +741,7 @@ void CJabberProto::ConsoleUninit()
 	m_filterInfo.type = TFilterInfo::T_OFF;
 }
 
-int __cdecl CJabberProto::OnMenuHandleConsole(WPARAM, LPARAM)
+INT_PTR __cdecl CJabberProto::OnMenuHandleConsole(WPARAM, LPARAM)
 {
 	if ( m_pDlgConsole )
 		SetForegroundWindow( m_pDlgConsole->GetHwnd() );

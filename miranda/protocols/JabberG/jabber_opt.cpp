@@ -1569,7 +1569,7 @@ static INT_PTR CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM w
 	return FALSE;
 }
 
-int __cdecl CJabberProto::OnMenuHandleRosterControl( WPARAM, LPARAM )
+INT_PTR __cdecl CJabberProto::OnMenuHandleRosterControl( WPARAM, LPARAM )
 {
 	if ( rrud.hwndDlg && IsWindow( rrud.hwndDlg ))
 		SetForegroundWindow( rrud.hwndDlg );
@@ -2142,11 +2142,11 @@ void CJabberDlgAccMgrUI::QueryServerListThread(void *arg)
 		SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)NULL);
 }
 
-int CJabberProto::SvcCreateAccMgrUI(WPARAM, LPARAM lParam)
+INT_PTR CJabberProto::SvcCreateAccMgrUI(WPARAM, LPARAM lParam)
 {
 	CJabberDlgAccMgrUI *dlg = new CJabberDlgAccMgrUI(this, (HWND)lParam);
 	dlg->Show();
-	return (int)dlg->GetHwnd();
+	return (INT_PTR)dlg->GetHwnd();
 }
 
 void CJabberProto::JabberUpdateDialogs( BOOL )
@@ -2155,7 +2155,7 @@ void CJabberProto::JabberUpdateDialogs( BOOL )
 		SendMessage(rrud.hwndDlg, JM_STATUSCHANGED, 0,0);
 }
 
-int __cdecl CJabberProto::OnMenuOptions( WPARAM, LPARAM )
+INT_PTR __cdecl CJabberProto::OnMenuOptions( WPARAM, LPARAM )
 {
 	OPENOPTIONSDIALOG ood = {0};
 	ood.cbSize = sizeof(ood);

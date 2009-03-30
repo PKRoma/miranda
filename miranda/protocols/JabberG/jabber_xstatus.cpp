@@ -1190,7 +1190,7 @@ int CJabberProto::CListMW_ExtraIconsApply( WPARAM wParam, LPARAM )
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberGetXStatus - gets the extended status info (mood)
 
-int __cdecl CJabberProto::OnGetXStatus( WPARAM wParam, LPARAM lParam )
+INT_PTR __cdecl CJabberProto::OnGetXStatus( WPARAM wParam, LPARAM lParam )
 {
 	if ( !m_bJabberOnline || !m_bPepSupported )
 		return 0;
@@ -1206,7 +1206,7 @@ int __cdecl CJabberProto::OnGetXStatus( WPARAM wParam, LPARAM lParam )
 //lParam = flags   // use LR_SHARED for shared HICON
 //return = HICON   // custom status icon (use DestroyIcon to release resources if not LR_SHARED)
 
-int __cdecl CJabberProto::OnGetXStatusIcon( WPARAM wParam, LPARAM lParam )
+INT_PTR __cdecl CJabberProto::OnGetXStatusIcon( WPARAM wParam, LPARAM lParam )
 {
 	if ( !m_bJabberOnline )
 		return 0;
@@ -1220,7 +1220,7 @@ int __cdecl CJabberProto::OnGetXStatusIcon( WPARAM wParam, LPARAM lParam )
 	if ( lParam & LR_SHARED )
 		return (int)GetXStatusIcon( wParam, LR_SHARED );
 
-	return (int)GetXStatusIcon( wParam, 0 );
+	return (INT_PTR)GetXStatusIcon( wParam, 0 );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -1315,7 +1315,7 @@ void overrideStr( TCHAR*& dest, const TCHAR* src, BOOL unicode, const TCHAR* def
 		dest = mir_tstrdup( def );
 }
 
-int __cdecl CJabberProto::OnSetListeningTo( WPARAM, LPARAM lParam )
+INT_PTR __cdecl CJabberProto::OnSetListeningTo( WPARAM, LPARAM lParam )
 {
 	LISTENINGTOINFO *cm = (LISTENINGTOINFO *)lParam;
 	if ( !cm || cm->cbSize != sizeof(LISTENINGTOINFO) ) {
@@ -1404,7 +1404,7 @@ void CJabberProto::XStatusUninit()
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberSetXStatus - sets the extended status info (mood)
 
-int __cdecl CJabberProto::OnSetXStatus( WPARAM wParam, LPARAM )
+INT_PTR __cdecl CJabberProto::OnSetXStatus( WPARAM wParam, LPARAM )
 {
 	if ( !m_bPepSupported || !m_bJabberOnline)
 		return 0;
