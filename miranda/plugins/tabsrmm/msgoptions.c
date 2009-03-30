@@ -551,16 +551,16 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 			have_ieview = ServiceExists(MS_IEVIEW_WINDOW);
 			have_hpp = ServiceExists("History++/ExtGrid/NewWindow");
 
-			SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_INSERTSTRING, -1, (LPARAM)_T("Default"));
+			SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Default"));
 			SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_SETCURSEL, 0, 0);
 
 			if (have_ieview) {
-				SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_INSERTSTRING, -1, (LPARAM)_T("IEView plugin"));
+				SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_INSERTSTRING, -1, (LPARAM)TranslateT("IEView plugin"));
 				if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_ieview", 0))
 					SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_SETCURSEL, 1, 0);
 			}
 			if (have_hpp) {
-				SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_INSERTSTRING, -1, (LPARAM)_T("History++ plugin"));
+				SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_INSERTSTRING, -1, (LPARAM)TranslateT("History++ plugin"));
 				if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_ieview", 0))
 					SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_SETCURSEL, 1, 0);
 				else if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 1))

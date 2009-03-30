@@ -100,7 +100,7 @@ static struct _tagPages {
 	UINT uIds[8];
 } o_pages[] = {
 	{ _T("General options"), NULL, IDC_O_NOTABS, IDC_O_STICKY, IDC_VERTICALMAX, 0, 0, 0, 0, 0},
-	{ _T("Window layout"), NULL, IDC_CNTNOSTATUSBAR, IDC_HIDEMENUBAR, IDC_TABSATBOTTOM, IDC_UINSTATUSBAR, IDC_HIDETOOLBAR, IDC_INFOPANEL, IDC_BOTTOMTOOLBAR, 0},
+	{ _T("Window layout"), NULL, IDC_CNTNOSTATUSBAR, IDC_HIDEMENUBAR, IDC_TABSATBOTTOM, IDC_UIDSTATUSBAR, IDC_HIDETOOLBAR, IDC_INFOPANEL, IDC_BOTTOMTOOLBAR, 0},
 	{ _T("Notifications"), _T("Select, in which cases you want to see event notifications for this message container. These options are disabled when you are using one of the \"simple\" notifications modes"), IDC_O_DONTREPORT, IDC_DONTREPORTUNFOCUSED2, IDC_ALWAYSPOPUPSINACTIVE, IDC_SYNCSOUNDS, 0, 0, 0, 0},
 	{ _T("Flashing"), NULL, IDC_O_FLASHDEFAULT, IDC_O_FLASHALWAYS, IDC_O_FLASHNEVER, 0, 0, 0, 0},
 	{ _T("Title bar"), NULL, IDC_O_HIDETITLE, IDC_STATICICON, IDC_USEPRIVATETITLE, IDC_TITLEFORMAT, 0, 0, 0},
@@ -378,7 +378,7 @@ do_apply:
 			MY_CheckDlgButton(hwndDlg, IDC_STATICICON, dwFlags & CNT_STATICICON);
 			MY_CheckDlgButton(hwndDlg, IDC_HIDETOOLBAR, dwFlags & CNT_HIDETOOLBAR);
 			MY_CheckDlgButton(hwndDlg, IDC_BOTTOMTOOLBAR, dwFlags & CNT_BOTTOMTOOLBAR);
-			MY_CheckDlgButton(hwndDlg, IDC_UINSTATUSBAR, dwFlags & CNT_UINSTATUSBAR);
+			MY_CheckDlgButton(hwndDlg, IDC_UIDSTATUSBAR, dwFlags & CNT_UINSTATUSBAR);
 			MY_CheckDlgButton(hwndDlg, IDC_VERTICALMAX, dwFlags & CNT_VERTICALMAX);
 			MY_CheckDlgButton(hwndDlg, IDC_USEPRIVATETITLE, dwFlags & CNT_TITLE_PRIVATE);
 			MY_CheckDlgButton(hwndDlg, IDC_INFOPANEL, dwFlags & CNT_INFOPANEL);
@@ -432,7 +432,7 @@ do_apply:
 						 (IsDlgButtonChecked(hwndDlg, IDC_STATICICON) ? CNT_STATICICON : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_HIDETOOLBAR) ? CNT_HIDETOOLBAR : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_BOTTOMTOOLBAR) ? CNT_BOTTOMTOOLBAR : 0) |
-						 (IsDlgButtonChecked(hwndDlg, IDC_UINSTATUSBAR) ? CNT_UINSTATUSBAR : 0) |
+						 (IsDlgButtonChecked(hwndDlg, IDC_UIDSTATUSBAR) ? CNT_UINSTATUSBAR : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE) ? CNT_TITLE_PRIVATE : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_USEGLOBALSIZE) ? CNT_GLOBALSIZE : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_INFOPANEL) ? CNT_INFOPANEL : 0) |

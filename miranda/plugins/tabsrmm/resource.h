@@ -428,7 +428,7 @@
 #define IDC_HIDETOOLBAR                 1320
 #define IDC_FLASHCLIST                  1322
 #define IDC_MSGLOGPLUGIN                1323
-#define IDC_UINSTATUSBAR                1324
+#define IDC_UIDSTATUSBAR                1324
 #define IDC_NRFLASH                     1325
 #define IDC_NRFLASHSPIN                 1326
 #define IDC_FLASHINTERVAL               1327

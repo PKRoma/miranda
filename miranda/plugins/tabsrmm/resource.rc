@@ -9,9 +9,11 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include <windows.h>
-#include "../../include/statusmodes.h"
+#include "../../include/statusmodes.h"
+
 #include <version.h>
-
+
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -292,7 +294,7 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,135,77,156,10
     CONTROL         "Tabs at the bottom",IDC_TABSATBOTTOM,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,135,89,156,10
-    CONTROL         "UIN in Status Bar",IDC_UINSTATUSBAR,"Button",
+    CONTROL         "User ID in Status Bar",IDC_UIDSTATUSBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,135,101,156,10
     CONTROL         "Hide the tool bar",IDC_HIDETOOLBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,135,113,156,10
