@@ -142,7 +142,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	mir_getMMI( &mmi );
 
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
-	if ( (int)pcli == CALLSERVICE_NOTFOUND ) {
+	if ( (INT_PTR)pcli == CALLSERVICE_NOTFOUND ) {
 LBL_Error:
 		MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.8.0.9 or later", "Fatal error", MB_OK );
 		return 1;
