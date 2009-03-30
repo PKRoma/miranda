@@ -40,7 +40,6 @@ CLEAN :
 	-@erase "$(INTDIR)\avs.res"
 	-@erase "$(INTDIR)\image_utils.obj"
 	-@erase "$(INTDIR)\main.obj"
-	-@erase "$(INTDIR)\mir_memory.obj"
 	-@erase "$(INTDIR)\mir_thread.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\poll.obj"
@@ -102,7 +101,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\acc.obj" \
 	"$(INTDIR)\image_utils.obj" \
 	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\mir_memory.obj" \
 	"$(INTDIR)\mir_thread.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\poll.obj" \
@@ -132,8 +130,6 @@ CLEAN :
 	-@erase "$(INTDIR)\image_utils.sbr"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\main.sbr"
-	-@erase "$(INTDIR)\mir_memory.obj"
-	-@erase "$(INTDIR)\mir_memory.sbr"
 	-@erase "$(INTDIR)\mir_thread.obj"
 	-@erase "$(INTDIR)\mir_thread.sbr"
 	-@erase "$(INTDIR)\options.obj"
@@ -196,7 +192,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\acc.sbr" \
 	"$(INTDIR)\image_utils.sbr" \
 	"$(INTDIR)\main.sbr" \
-	"$(INTDIR)\mir_memory.sbr" \
 	"$(INTDIR)\mir_thread.sbr" \
 	"$(INTDIR)\options.sbr" \
 	"$(INTDIR)\poll.sbr"
@@ -212,7 +207,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\acc.obj" \
 	"$(INTDIR)\image_utils.obj" \
 	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\mir_memory.obj" \
 	"$(INTDIR)\mir_thread.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\poll.obj" \
@@ -236,7 +230,6 @@ CLEAN :
 	-@erase "$(INTDIR)\avs.res"
 	-@erase "$(INTDIR)\image_utils.obj"
 	-@erase "$(INTDIR)\main.obj"
-	-@erase "$(INTDIR)\mir_memory.obj"
 	-@erase "$(INTDIR)\mir_thread.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\poll.obj"
@@ -297,7 +290,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\acc.obj" \
 	"$(INTDIR)\image_utils.obj" \
 	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\mir_memory.obj" \
 	"$(INTDIR)\mir_thread.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\poll.obj" \
@@ -327,8 +319,6 @@ CLEAN :
 	-@erase "$(INTDIR)\image_utils.sbr"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\main.sbr"
-	-@erase "$(INTDIR)\mir_memory.obj"
-	-@erase "$(INTDIR)\mir_memory.sbr"
 	-@erase "$(INTDIR)\mir_thread.obj"
 	-@erase "$(INTDIR)\mir_thread.sbr"
 	-@erase "$(INTDIR)\options.obj"
@@ -391,7 +381,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\acc.sbr" \
 	"$(INTDIR)\image_utils.sbr" \
 	"$(INTDIR)\main.sbr" \
-	"$(INTDIR)\mir_memory.sbr" \
 	"$(INTDIR)\mir_thread.sbr" \
 	"$(INTDIR)\options.sbr" \
 	"$(INTDIR)\poll.sbr"
@@ -407,7 +396,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\acc.obj" \
 	"$(INTDIR)\image_utils.obj" \
 	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\mir_memory.obj" \
 	"$(INTDIR)\mir_thread.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\poll.obj" \
@@ -511,34 +499,6 @@ SOURCE=.\main.cpp
 
 
 "$(INTDIR)\main.obj"	"$(INTDIR)\main.sbr" : $(SOURCE) "$(INTDIR)"
-
-
-!ENDIF 
-
-SOURCE=.\mir_memory.cpp
-
-!IF  "$(CFG)" == "avs - Win32 Release"
-
-
-"$(INTDIR)\mir_memory.obj" : $(SOURCE) "$(INTDIR)"
-
-
-!ELSEIF  "$(CFG)" == "avs - Win32 Debug"
-
-
-"$(INTDIR)\mir_memory.obj"	"$(INTDIR)\mir_memory.sbr" : $(SOURCE) "$(INTDIR)"
-
-
-!ELSEIF  "$(CFG)" == "avs - Win32 Release Unicode"
-
-
-"$(INTDIR)\mir_memory.obj" : $(SOURCE) "$(INTDIR)"
-
-
-!ELSEIF  "$(CFG)" == "avs - Win32 Debug Unicode"
-
-
-"$(INTDIR)\mir_memory.obj"	"$(INTDIR)\mir_memory.sbr" : $(SOURCE) "$(INTDIR)"
 
 
 !ENDIF 
