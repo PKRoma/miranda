@@ -1014,7 +1014,7 @@ HANDLE ImportContact(HANDLE hDbFile, struct DBContact Contact)
 
 	// Skip protocols with no unique id setting (some non IM protocols return NULL)
 	pszUniqueSetting = (char*)CallProtoService(pszProtoName, PS_GETCAPS, PFLAG_UNIQUEIDSETTING, 0);
-	if ( !pszUniqueSetting || (DWORD)pszUniqueSetting == CALLSERVICE_NOTFOUND ) {
+	if ( !pszUniqueSetting || (INT_PTR)pszUniqueSetting == CALLSERVICE_NOTFOUND ) {
 		AddMessage( LPGEN("Skipping non-IM contact (%s)"), pszProtoName );
 		return INVALID_HANDLE_VALUE;
 	}
@@ -1126,7 +1126,7 @@ static void ImportHistory(HANDLE hDbFile, struct DBContact Contact, PROTOCOLDESC
 				char* pszUniqueSetting = (char*)CallProtoService( proto.pszVal, PS_GETCAPS, PFLAG_UNIQUEIDSETTING, 0);
 
 				// Skip protocols with no unique id setting (some non IM protocols return NULL)
-				if ( pszUniqueSetting && ( DWORD )pszUniqueSetting != CALLSERVICE_NOTFOUND ) {
+				if ( pszUniqueSetting && ( INT_PTR )pszUniqueSetting != CALLSERVICE_NOTFOUND ) {
 					DBVARIANT dbv;
 					if ( GetSetting( hDbFile, &Contact, proto.pszVal, pszUniqueSetting, &dbv )) {
 						if ( dbv.type == DBVT_DWORD )
