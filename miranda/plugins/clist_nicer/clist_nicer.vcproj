@@ -1061,10 +1061,28 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
+				RelativePath=".\res\accounts.ico">
+			</File>
+			<File
+				RelativePath=".\res\arrow-down.ico">
+			</File>
+			<File
+				RelativePath=".\res\overlay\away.ico">
+			</File>
+			<File
 				RelativePath="res\blank.ico">
 			</File>
 			<File
+				RelativePath=".\res\overlay\chat.ico">
+			</File>
+			<File
+				RelativePath=".\res\connecting.ico">
+			</File>
+			<File
 				RelativePath="res\delete.ico">
+			</File>
+			<File
+				RelativePath=".\res\overlay\dnd.ico">
 			</File>
 			<File
 				RelativePath="res\dragcopy.cur">
@@ -1073,10 +1091,31 @@
 				RelativePath="res\dropuser.cur">
 			</File>
 			<File
+				RelativePath=".\res\find.ico">
+			</File>
+			<File
+				RelativePath=".\res\groups.ico">
+			</File>
+			<File
 				RelativePath="res\hyperlin.cur">
 			</File>
 			<File
 				RelativePath="res\invisible.ico">
+			</File>
+			<File
+				RelativePath=".\res\overlay\invisible.ico">
+			</File>
+			<File
+				RelativePath=".\res\overlay\lunch.ico">
+			</File>
+			<File
+				RelativePath=".\res\menu.ico">
+			</File>
+			<File
+				RelativePath=".\res\minimize.ico">
+			</File>
+			<File
+				RelativePath=".\res\overlay\NA.ico">
 			</File>
 			<File
 				RelativePath="res\notick.ico">
@@ -1085,7 +1124,25 @@
 				RelativePath="res\notick1.ico">
 			</File>
 			<File
+				RelativePath=".\res\overlay\occupied.ico">
+			</File>
+			<File
+				RelativePath=".\res\overlay\offline.ico">
+			</File>
+			<File
+				RelativePath=".\res\online.ico">
+			</File>
+			<File
+				RelativePath=".\res\overlay\online.ico">
+			</File>
+			<File
 				RelativePath="res\options.ico">
+			</File>
+			<File
+				RelativePath=".\res\options_clvm.ico">
+			</File>
+			<File
+				RelativePath=".\res\overlay\phone.ico">
 			</File>
 			<File
 				RelativePath="res\rename.ico">
@@ -1120,6 +1177,21 @@
 						PreprocessorDefinitions=""
 						AdditionalIncludeDirectories=""/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\res\slist.ico">
+			</File>
+			<File
+				RelativePath=".\res\sounds_off.ico">
+			</File>
+			<File
+				RelativePath=".\res\sounds_on.ico">
+			</File>
+			<File
+				RelativePath=".\res\tabsrmm_menu.ico">
+			</File>
+			<File
+				RelativePath=".\res\visible.ico">
 			</File>
 		</Filter>
 	</Files>

@@ -1846,10 +1846,9 @@ skipbg:
 					}
 					case IDC_TABSRMMSLIST:
 					case IDC_TABSRMMMENU: {
-						//CLVM_TestEnum();
-						if (ServiceExists("SRMsg_MOD/GetWindowFlags")) {
+						if (ServiceExists("SRMsg_MOD/GetWindowFlags"))
 							CallService("SRMsg_MOD/Show_TrayMenu", 0, LOWORD(wParam) == IDC_TABSRMMSLIST ? 0 : 1);
-						}
+
 						return 0;
 					}
 					case IDC_TBSOUND: {
@@ -1873,15 +1872,9 @@ skipbg:
 					case IDC_TBACCOUNTS:
 						CallService(MS_PROTO_SHOWACCMGR, 0, 0);
 						break;
-					case IDC_TBOPTIONS: {
-						OPENOPTIONSDIALOG ood = {0};
-
-						ood.cbSize = sizeof(ood);
-						CallService(MS_OPT_OPENOPTIONS, 0, (LPARAM) &ood);
+					case IDC_TBOPTIONS:
+						CallService("Options/OptionsCommand", 0, 0);
 						return 0;
-					}
-					default:
-						break;
 				}
 			} else if (CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_MAINMENU), (LPARAM)(HANDLE) NULL))
 				return 0;
@@ -1923,36 +1916,29 @@ buttons_done:
 					CheckDlgButton(hwnd, IDC_TBHIDEGROUPS, newVal ? BST_CHECKED : BST_UNCHECKED);
 					break;
 				}
-				case POPUP_HIDEMIRANDA: {
+				case POPUP_HIDEMIRANDA:
 					pcli->pfnShowHide(0, 0);
 					break;
-				}
-				case POPUP_VISIBILITY: {
+				case POPUP_VISIBILITY:
 					g_CluiData.dwFlags ^= CLUI_SHOWVISI;
 					break;
-				}
-				case POPUP_SHOWMETAICONS: {
+				case POPUP_SHOWMETAICONS:
 					g_CluiData.dwFlags ^= CLUI_USEMETAICONS;
 					SendMessage(pcli->hwndContactTree, CLM_AUTOREBUILD, 0, 0);
 					break;
-				}
-				case POPUP_FRAME: {
+				case POPUP_FRAME:
 					g_CluiData.dwFlags ^= CLUI_FRAME_CLISTSUNKEN;
 					break;
-				}
-				case POPUP_TOOLBAR: {
+				case POPUP_TOOLBAR:
 					g_CluiData.dwFlags ^= CLUI_FRAME_SHOWTOPBUTTONS;
 					break;
-				}
-				case POPUP_BUTTONS: {
+				case POPUP_BUTTONS:
 					g_CluiData.dwFlags ^= CLUI_FRAME_SHOWBOTTOMBUTTONS;
 					break;
-				}
-				case POPUP_SHOWSTATUSICONS: {
+				case POPUP_SHOWSTATUSICONS:
 					g_CluiData.dwFlags ^= CLUI_FRAME_STATUSICONS;
 					break;
-				}
-				case POPUP_FLOATER: {
+				case POPUP_FLOATER:
 					g_CluiData.bUseFloater ^= CLUI_USE_FLOATER;
 					if (g_CluiData.bUseFloater & CLUI_USE_FLOATER) {
 						SFL_Create();
@@ -1961,20 +1947,17 @@ buttons_done:
 						SFL_Destroy();
 					DBWriteContactSettingByte(NULL, "CLUI", "FloaterMode", g_CluiData.bUseFloater);
 					break;
-				}
-				case POPUP_FLOATER_AUTOHIDE: {
+				case POPUP_FLOATER_AUTOHIDE:
 					g_CluiData.bUseFloater ^= CLUI_FLOATER_AUTOHIDE;
 					SFL_SetState(g_CluiData.bUseFloater & CLUI_FLOATER_AUTOHIDE ? (DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL) == SETTING_STATE_NORMAL ? 0 : 1) : 1);
 					DBWriteContactSettingByte(NULL, "CLUI", "FloaterMode", g_CluiData.bUseFloater);
 					break;
-				}
-				case POPUP_FLOATER_EVENTS: {
+				case POPUP_FLOATER_EVENTS:
 					g_CluiData.bUseFloater ^= CLUI_FLOATER_EVENTS;
 					SFL_SetSize();
 					SFL_Update(0, 0, 0, NULL, FALSE);
 					DBWriteContactSettingByte(NULL, "CLUI", "FloaterMode", g_CluiData.bUseFloater);
 					break;
-				}
 			}
 			if (dwOldFlags != g_CluiData.dwFlags) {
 				InvalidateRect(pcli->hwndContactTree, NULL, FALSE);
