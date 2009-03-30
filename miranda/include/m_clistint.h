@@ -29,9 +29,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define HCONTACT_ISGROUP    0x80000000
 #define HCONTACT_ISINFO     0xFFFF0000
-#define IsHContactGroup(h)  (((unsigned)(h)^HCONTACT_ISGROUP)<(HCONTACT_ISGROUP^HCONTACT_ISINFO))
-#define IsHContactInfo(h)   (((unsigned)(h)&HCONTACT_ISINFO)==HCONTACT_ISINFO)
-#define IsHContactContact(h) (((unsigned)(h)&HCONTACT_ISGROUP)==0)
+#define IsHContactGroup(h)  (((UINT_PTR)(h)^HCONTACT_ISGROUP)<(HCONTACT_ISGROUP^HCONTACT_ISINFO))
+#define IsHContactInfo(h)   (((UINT_PTR)(h)&HCONTACT_ISINFO)==HCONTACT_ISINFO)
+#define IsHContactContact(h) (((UINT_PTR)(h)&HCONTACT_ISGROUP)==0)
 #define MAXEXTRACOLUMNS     16
 
 #define MAX_TIP_SIZE 2048
