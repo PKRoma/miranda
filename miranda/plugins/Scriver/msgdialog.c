@@ -68,7 +68,7 @@ TCHAR *GetRichEditSelection(HWND hwnd) {
 		DWORD dwFlags = 0;
 		ZeroMemory(&stream, sizeof(stream));
 		stream.pfnCallback = StreamOutCallback;
-		stream.dwCookie = (DWORD) &msi;
+		stream.dwCookie = (DWORD_PTR) &msi;
 #if defined( _UNICODE )
 		dwFlags = SF_TEXT|SF_UNICODE|SFF_SELECTION;
 #else
@@ -103,7 +103,7 @@ static TCHAR *GetQuotedTextW(TCHAR * text) {
 	int i, j, l, newLine, wasCR;
 	TCHAR *out;
 #ifdef _UNICODE
-	l = wcslen(text);
+	l = (int)wcslen(text);
 #else
 	l = strlen(text);
 #endif
@@ -322,9 +322,9 @@ void SetStatusIcon(struct MessageWindowData *dat) {
 		char *szProto = dat->szProto;
 		HANDLE hContact = dat->windowData.hContact;
 		if (strcmp(dat->szProto, "MetaContacts") == 0 && DBGetContactSettingByte(NULL,"CLC","Meta",0) == 0) {
-			hContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)dat->windowData.hContact, 0);
+			hContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(WPARAM)dat->windowData.hContact, 0);
 			if (hContact != NULL) {
-				szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(UINT)hContact,0);
+				szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
 			} else {
 				hContact = dat->windowData.hContact;
 			}
@@ -934,7 +934,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			SubclassLogEdit(GetDlgItem(hwndDlg, IDC_LOG));
 			SubclassMessageEdit(GetDlgItem(hwndDlg, IDC_MESSAGE));
 			OldSplitterProc = (WNDPROC) SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWLP_WNDPROC, (LONG_PTR) SplitterSubclassProc);
-			OldInfobarProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_INFOBAR), GWL_WNDPROC, (LONG) InfobarSubclassProc);
+			OldInfobarProc = (WNDPROC) SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_INFOBAR), GWLP_WNDPROC, (LONG_PTR) InfobarSubclassProc);
 			if (dat->flags & SMF_USEIEVIEW) {
 				IEVIEWWINDOW ieWindow;
 				ieWindow.cbSize = sizeof(IEVIEWWINDOW);
@@ -1820,7 +1820,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					mir_free(szMsgUtf);
 					break;
 				}
-				item->sendBufferSize = strlen(szMsgUtf) + 1;
+				item->sendBufferSize = (int)strlen(szMsgUtf) + 1;
 				item->sendBuffer = szMsgUtf;
 				item->flags |= PREF_UTF;
 			} else {

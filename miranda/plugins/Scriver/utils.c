@@ -149,7 +149,7 @@ wchar_t *a2w(const char *src, int len) {
 	wchar_t *wline;
 	int i;
 	if (len <0) {
-		len = strlen(src);
+		len = (int)strlen(src);
 	}
 	wline = (wchar_t *)mir_alloc(2 * (len + 1));
 	for (i = 0; i < len; i ++) {
@@ -309,7 +309,7 @@ char* GetRichTextRTF(HWND hwnd)
 
 	ZeroMemory(&stream, sizeof(stream));
 	stream.pfnCallback = RichTextStreamCallback;
-	stream.dwCookie = (DWORD) &pszText; // pass pointer to pointer
+	stream.dwCookie = (DWORD_PTR) &pszText; // pass pointer to pointer
 
 	#if defined( _UNICODE )
 		dwFlags = SF_RTFNOOBJS | SFF_PLAINRTF | SF_USECODEPAGE | (CP_UTF8 << 16);
@@ -401,7 +401,7 @@ void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const
 int MeasureMenuItem(WPARAM wParam, LPARAM lParam)
 {
 	LPMEASUREITEMSTRUCT mis = (LPMEASUREITEMSTRUCT) lParam;
-	if (mis->itemData != (ULONG) g_dat->hButtonIconList && mis->itemData != (ULONG) g_dat->hSearchEngineIconList) {
+	if (mis->itemData != (ULONG_PTR) g_dat->hButtonIconList && mis->itemData != (ULONG_PTR) g_dat->hSearchEngineIconList) {
 		return FALSE;
 	}
 	mis->itemWidth = max(0, GetSystemMetrics(SM_CXSMICON) - GetSystemMetrics(SM_CXMENUCHECK) + 4);
@@ -414,7 +414,7 @@ int DrawMenuItem(WPARAM wParam, LPARAM lParam)
 	int y;
 	int id;
 	LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
-	if (dis->itemData != (ULONG) g_dat->hButtonIconList && dis->itemData != (ULONG) g_dat->hSearchEngineIconList) {
+	if (dis->itemData != (ULONG_PTR) g_dat->hButtonIconList && dis->itemData != (ULONG_PTR) g_dat->hSearchEngineIconList) {
 		return FALSE;
 	}
 	id = dis->itemID;
@@ -496,7 +496,7 @@ void SetSearchEngineIcons(HMENU hMenu, HIMAGELIST hImageList) {
 		minfo.hbmpItem = HBMMENU_CALLBACK;
 		//minfo.fType = MFT_STRING;
 		//minfo.wID = IDM_SEARCH_GOOGLE + i;
-		minfo.dwItemData = (ULONG) hImageList;
+		minfo.dwItemData = (ULONG_PTR) hImageList;
 		SetMenuItemInfo(hMenu, IDM_SEARCH_GOOGLE + i, FALSE, &minfo);
 	}
 }

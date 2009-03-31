@@ -642,7 +642,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 					pBuffer = (BYTE *)mir_alloc(g_Settings.LoggingLimit*1024+1);
 					pBuffer[g_Settings.LoggingLimit*1024] = '\0';
 					fseek(hFile,-g_Settings.LoggingLimit*1024,SEEK_END);
-					read = fread(pBuffer, 1, g_Settings.LoggingLimit*1024, hFile);
+					read = (int)fread(pBuffer, 1, g_Settings.LoggingLimit*1024, hFile);
 					fclose(hFile);
 					hFile = NULL;
 
@@ -650,7 +650,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 					pBufferTemp = strchr(pBuffer, '\n');
 					if ( pBufferTemp ) {
 						pBufferTemp++;
-						read = read - (pBufferTemp - pBuffer);
+						read -= pBufferTemp - pBuffer;
 					}
 					else pBufferTemp = pBuffer;
 
@@ -728,7 +728,7 @@ UINT CreateGCMenu(HWND hwnd, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO* s
 
 		if ( gcmi.Item[i].uType == MENU_NEWPOPUP ) {
 			hSubMenu = CreateMenu();
-			AppendMenu( *hMenu, dwState|MF_POPUP, (UINT)hSubMenu, ptszDescr );
+			AppendMenu( *hMenu, dwState|MF_POPUP, (UINT_PTR)hSubMenu, ptszDescr );
 		}
 		else if (gcmi.Item[i].uType == MENU_POPUPHMENU)
 			AppendMenu( hSubMenu==0?*hMenu:hSubMenu, dwState|MF_POPUP, gcmi.Item[i].dwID, ptszDescr);

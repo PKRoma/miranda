@@ -128,7 +128,7 @@ TCHAR *GetNickname(HANDLE hContact, const char* szProto) {
 	if (szBaseNick != NULL) {
 #if defined ( _UNICODE )
 		int len;
-		len = strlen(szBaseNick) + 1;
+		len = (int)strlen(szBaseNick) + 1;
 		szName = (TCHAR *) mir_alloc(len * 2);
 	    MultiByteToWideChar(CP_ACP, 0, szBaseNick, -1, szName, len);
 		szName[len - 1] = 0;
@@ -260,7 +260,7 @@ static int AppendUnicodeOrAnsiiToBufferL(char **buffer, int *cbBufferEnd, int *c
 	char *d;
 	int wasEOL = 0;
 	WCHAR *maxLine = line + maxLen;
-	int lineLen = wcslen(line) * 9 + 8;
+	int lineLen = (int)wcslen(line) * 9 + 8;
 	if (*cbBufferEnd + lineLen > *cbBufferAlloced) {
 		cbBufferAlloced[0] += (lineLen + 1024 - lineLen % 1024);
 		*buffer = (char *) mir_realloc(*buffer, *cbBufferAlloced);
@@ -560,11 +560,11 @@ static void AppendWithCustomLinks(struct EventData *event, int style, char **buf
 	WCHAR *wText;
 	BOOL isAnsii = (event->dwFlags & IEEDF_UNICODE_TEXT) == 0;
 	if (isAnsii) {
-		len = strlen(event->pszText);
+		len = (int)strlen(event->pszText);
 		wText = a2w(event->pszText, len);
 	} else {
 		wText = event->pszTextW;
-		len = wcslen(event->pszTextW);
+		len = (int)wcslen(event->pszTextW);
 	}
 	for (j = 0; j < len ; j+=newlen) {
 		int l;

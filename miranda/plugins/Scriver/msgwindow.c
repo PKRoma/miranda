@@ -81,7 +81,7 @@ TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 		statusLen = lstrlen(szStatus);
 		szStatusMsg = DBGetStringT(hContact, "CList", "StatusMsg");
 		if (szStatusMsg != NULL) {
-			statusMsgLen = _tcslen(szStatusMsg);
+			statusMsgLen = (int)_tcslen(szStatusMsg);
 			for (i = j = 0; i < statusMsgLen; i++) {
 				if (szStatusMsg[i] == '\r') {
 					continue;
@@ -693,7 +693,7 @@ INT_PTR CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 							CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
 							hUserMenu = (HMENU) SendMessage(mwtd->hwnd, DM_GETCONTEXTMENU, 0, 0);
 							if (hUserMenu != NULL) {
-								InsertMenu(hSubMenu, 0, MF_POPUP | MF_BYPOSITION, (UINT)hUserMenu, TranslateT("User Menu"));
+								InsertMenu(hSubMenu, 0, MF_POPUP | MF_BYPOSITION, (UINT_PTR)hUserMenu, TranslateT("User Menu"));
 								InsertMenu(hSubMenu, 1, MF_SEPARATOR | MF_BYPOSITION, 0, 0);
 							}
 							menuResult = TrackPopupMenu(hSubMenu, TPM_RETURNCMD, x, y, 0, hwndDlg, NULL);
@@ -1320,7 +1320,7 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     switch(msg) {
     	case EM_SUBCLASSED:
 			dat = (TabCtrlData *) mir_alloc(sizeof(TabCtrlData));
-			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG) dat);
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) dat);
 			dat->bDragging = FALSE;
 			dat->bDragged = FALSE;
 			dat->srcTab = -1;

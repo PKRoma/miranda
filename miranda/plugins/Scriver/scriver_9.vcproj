@@ -243,13 +243,18 @@
 				Name="VCCLCompilerTool"
 				Optimization="3"
 				InlineFunctionExpansion="1"
+				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="2"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SRMM_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
+				ExceptionHandling="0"
 				RuntimeLibrary="2"
+				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"
+				FloatingPointModel="2"
+				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
@@ -281,7 +286,6 @@
 				MapFileName=""
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				OptimizeForWindows98="0"
 				LinkTimeCodeGeneration="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -345,13 +349,18 @@
 				Name="VCCLCompilerTool"
 				Optimization="3"
 				InlineFunctionExpansion="1"
+				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="2"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SRMM_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
+				ExceptionHandling="0"
 				RuntimeLibrary="2"
+				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"
+				FloatingPointModel="2"
+				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
@@ -383,7 +392,6 @@
 				MapFileName=""
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				OptimizeForWindows98="0"
 				LinkTimeCodeGeneration="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -447,6 +455,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="3"
 				InlineFunctionExpansion="1"
+				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="2"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="../../include"
@@ -454,7 +463,10 @@
 				StringPooling="true"
 				ExceptionHandling="0"
 				RuntimeLibrary="2"
+				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"
+				FloatingPointModel="2"
+				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
@@ -546,6 +558,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="3"
 				InlineFunctionExpansion="1"
+				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="2"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="../../include"
@@ -553,7 +566,10 @@
 				StringPooling="true"
 				ExceptionHandling="0"
 				RuntimeLibrary="2"
+				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"
+				FloatingPointModel="2"
+				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
@@ -2373,15 +2389,15 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
-				RelativePath="..\..\Miranda-IM\res\addcontact.ico"
-				>
-			</File>
-			<File
 				RelativePath="res\addcontact.ico"
 				>
 			</File>
 			<File
 				RelativePath="..\..\src\res\addcontact.ico"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Miranda-IM\res\addcontact.ico"
 				>
 			</File>
 			<File
@@ -2393,11 +2409,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\delete.ico"
+				RelativePath="res\delete.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\delete.ico"
+				RelativePath="..\..\src\res\delete.ico"
 				>
 			</File>
 			<File
@@ -2421,11 +2437,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\dragcopy.cur"
+				RelativePath="res\dragcopy.cur"
 				>
 			</File>
 			<File
-				RelativePath="res\dragcopy.cur"
+				RelativePath="..\..\src\res\dragcopy.cur"
 				>
 			</File>
 			<File

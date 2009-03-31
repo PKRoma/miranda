@@ -289,7 +289,7 @@ static int Log_AppendIEView(LOGSTREAMDATA* streamData, BOOL simpleMode, TCHAR **
 			}
 
 			if ( szTemp[0] ) {
-				int iLen = _tcslen(szTemp);
+				size_t iLen = _tcslen(szTemp);
 				memcpy( d, szTemp, iLen * sizeof(TCHAR));
 				d += iLen;
 			}
@@ -787,7 +787,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 
 		ZeroMemory(&stream, sizeof(stream));
 		stream.pfnCallback = Log_StreamCallback;
-		stream.dwCookie = (DWORD) & streamData;
+		stream.dwCookie = (DWORD_PTR) & streamData;
 		scroll.cbSize= sizeof(SCROLLINFO);
 		scroll.fMask= SIF_RANGE | SIF_POS|SIF_PAGE;
 		GetScrollInfo(hwndRich, SB_VERT, &scroll);

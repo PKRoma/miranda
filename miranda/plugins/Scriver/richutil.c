@@ -46,7 +46,7 @@ static int RichUtil_CmpVal(void *p1, void *p2) {
 	TRichUtil *tp2 = (TRichUtil*)p2;
 	if (tp1->hwnd==tp2->hwnd)
 		return 0;
-	return (int)((int)tp1->hwnd-(int)tp2->hwnd);
+	return (int)((INT_PTR)tp1->hwnd-(INT_PTR)tp2->hwnd);
 }
 
 // UxTheme Stuff

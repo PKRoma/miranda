@@ -43,7 +43,7 @@ static char *MsgServiceName(HANDLE hContact)
 
 TCHAR * GetSendBufferMsg(MessageSendQueueItem *item) {
     TCHAR *szMsg = NULL;
-    int len = strlen(item->sendBuffer);
+    size_t len = strlen(item->sendBuffer);
 #if defined( _UNICODE )
     if (item->flags & PREF_UTF) {
         szMsg = mir_utf8decodeW(item->sendBuffer);
