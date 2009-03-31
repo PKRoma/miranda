@@ -819,7 +819,7 @@ static INT_PTR CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 		if((HWND)lParam==GetDlgItem(hwndDlg,IDC_SAMPLE)) {
 			SetTextColor((HDC)wParam,SendDlgItemMessage(hwndDlg,IDC_COLOUR,CPM_GETCOLOUR,0,0));
 			SetBkColor((HDC)wParam,GetSysColor(COLOR_3DFACE));
-			return (BOOL)GetSysColorBrush(COLOR_3DFACE);
+			return (INT_PTR)GetSysColorBrush(COLOR_3DFACE);
 		}
 		break;
 	case M_REFRESHSAMEASBOXES:		  //set the disabled flag on the 'same as' checkboxes to the values for fontid wParam

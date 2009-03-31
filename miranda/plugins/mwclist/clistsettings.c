@@ -93,7 +93,7 @@ void CheckPDNCE(ClcCacheEntryBase *_pdnce)
 		if (pdnce->szProto == NULL) 
 			pdnce->protoNotExists=FALSE;
 		else {
-			if (CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)pdnce->szProto) == (int)NULL)
+			if (CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)pdnce->szProto) == 0)
 				pdnce->protoNotExists=TRUE;
 			else {
 				if ( pdnce->szProto && pdnce->name ) {

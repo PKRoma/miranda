@@ -6,7 +6,7 @@ boolean canloadstatusbar=FALSE;
 HWND helperhwnd=0;
 HANDLE hFrameHelperStatusBar;
 extern	 int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
-extern int GetConnectingIconService (WPARAM wParam,LPARAM lParam);
+extern INT_PTR GetConnectingIconService (WPARAM wParam,LPARAM lParam);
 extern int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
 int RecreateStatusBar();
 
@@ -279,7 +279,7 @@ void DrawBackGround(HWND hwnd,HDC mhdc)
 			rc.left=nPanel*sectwidth+startoffset;
 			rc.right=rc.left+sectwidth-1;
 			ds.rcItem=rc;
-			ds.itemData=(DWORD)PD;
+			ds.itemData=(ULONG_PTR)PD;
 			ds.itemID=nPanel;
 
 			DrawDataForStatusBar(&ds);
@@ -568,7 +568,7 @@ HWND CreateStatusHelper(HWND parent)
 		0,0,0,0,parent,NULL,g_hInst,NULL));
 }
 
-int CreateStatusBarFrame()
+HANDLE CreateStatusBarFrame()
 {
 	CLISTFrame Frame;
 	int h;
@@ -590,7 +590,7 @@ int CreateStatusBarFrame()
 	hFrameHelperStatusBar=(HANDLE)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&Frame,(LPARAM)0);
 
 
-	return((int)hFrameHelperStatusBar);
+	return hFrameHelperStatusBar;
 }
 
 int RecreateStatusBar(HWND parent)
@@ -622,12 +622,12 @@ int RecreateStatusBar(HWND parent)
 	return 0;
 }
 
-int CreateStatusBarhWnd(HWND parent)
+HWND CreateStatusBarhWnd(HWND parent)
 {	
 	RecreateStatusBar(parent);
 	OnStatusBarBackgroundChange();
 
 	hStatusBarShowToolTipEvent=CreateHookableEvent(ME_CLIST_FRAMES_SB_SHOW_TOOLTIP);
 	hStatusBarHideToolTipEvent=CreateHookableEvent(ME_CLIST_FRAMES_SB_HIDE_TOOLTIP);
-	return((int)pcli->hwndStatus);
+	return pcli->hwndStatus;
 }

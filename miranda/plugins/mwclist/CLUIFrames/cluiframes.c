@@ -1033,7 +1033,7 @@ INT_PTR CLUIFramesModifyMainMenuItems(WPARAM wParam,LPARAM lParam)
 INT_PTR CLUIFramesGetFrameOptions(WPARAM wParam,LPARAM lParam)
 {
 	int pos;
-	int retval;
+	INT_PTR retval;
 
 	if (FramesSysNotStarted) return 0;
 
@@ -1057,15 +1057,15 @@ INT_PTR CLUIFramesGetFrameOptions(WPARAM wParam,LPARAM lParam)
 			break;
 
 		case FO_NAME:
-			retval=(int)Frames[pos].name;
+			retval=(INT_PTR)Frames[pos].name;
 			break;
 
 		case FO_TBNAME:
-			retval=(int)Frames[pos].TitleBar.tbname;
+			retval=(INT_PTR)Frames[pos].TitleBar.tbname;
 			break;
 
 		case FO_TBTIPNAME:
-			retval=(int)Frames[pos].TitleBar.tooltip;
+			retval=(INT_PTR)Frames[pos].TitleBar.tooltip;
 			break;
 
 		case FO_TBSTYLE:
@@ -1077,18 +1077,18 @@ INT_PTR CLUIFramesGetFrameOptions(WPARAM wParam,LPARAM lParam)
 			break;
 
 		case FO_ICON:
-			retval=(int)Frames[pos].TitleBar.hicon;
+			retval=(INT_PTR)Frames[pos].TitleBar.hicon;
 			break;
 
 		case FO_HEIGHT:
-			retval=(int)Frames[pos].height;
+			retval=(INT_PTR)Frames[pos].height;
 			break;
 
 		case FO_ALIGN:
-			retval=(int)Frames[pos].align;
+			retval=(INT_PTR)Frames[pos].align;
 			break;
 		case FO_FLOATING:
-			retval=(int)Frames[pos].floating;
+			retval=(INT_PTR)Frames[pos].floating;
 			break;
 		default:
 			retval=-1;
@@ -1102,7 +1102,7 @@ INT_PTR CLUIFramesGetFrameOptions(WPARAM wParam,LPARAM lParam)
 INT_PTR CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
 {
 	int pos;
-	int retval; // value to be returned
+	INT_PTR retval; // value to be returned
 
 	lockfrm();
 	pos=id2pos(HIWORD(wParam));
@@ -1661,7 +1661,7 @@ static int CLUIFramesLoadMainMenu()
 	return 0;
 }
 
-static int CLUILoadTitleBarFont()
+static HFONT CLUILoadTitleBarFont()
 {
 	char facename[]="MS Shell Dlg";
 	HFONT hfont;
@@ -1671,7 +1671,7 @@ static int CLUILoadTitleBarFont()
 	logfont.lfWeight=FW_NORMAL;
 	logfont.lfHeight=-10;
 	hfont=CreateFontIndirect(&logfont);
-	return((int)hfont);
+	return hfont;
 }
 
 static int UpdateTBToolTip(int framepos)
@@ -1684,7 +1684,7 @@ static int UpdateTBToolTip(int framepos)
 		ti.lpszText=Frames[framepos].TitleBar.tooltip;
 		ti.hinst=g_hInst;
 		ti.uFlags=TTF_IDISHWND|TTF_SUBCLASS ;
-		ti.uId=(UINT)Frames[framepos].TitleBar.hwnd;
+		ti.uId=(UINT_PTR)Frames[framepos].TitleBar.hwnd;
 
 		return(SendMessage(Frames[framepos].TitleBar.hwndTip,TTM_UPDATETIPTEXT,(WPARAM)0,(LPARAM)&ti));
 		}
@@ -1700,7 +1700,7 @@ INT_PTR CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
 	if(pcli->hwndContactList==0) return -1;
 	if (FramesSysNotStarted) return -1;
 	if(clfrm->cbSize!=sizeof(CLISTFrame)) return -1;
-	if(!(TitleBarFont)) TitleBarFont=(HFONT)CLUILoadTitleBarFont();
+	if(!(TitleBarFont)) TitleBarFont=CLUILoadTitleBarFont();
 
 	lockfrm();
 	if(nFramescount>=MAX_FRAMES) { ulockfrm(); return -1;}
@@ -1777,7 +1777,7 @@ SetWindowPos(Frames[nFramescount].TitleBar.hwndTip, HWND_TOPMOST,0, 0, 0, 0,
 		ti.lpszText="";
 		ti.hinst=g_hInst;
 		ti.uFlags=TTF_IDISHWND|TTF_SUBCLASS ;
-		ti.uId=(UINT)Frames[nFramescount].TitleBar.hwnd;
+		ti.uId=(UINT_PTR)Frames[nFramescount].TitleBar.hwnd;
 		res=SendMessage(Frames[nFramescount].TitleBar.hwndTip,TTM_ADDTOOL,(WPARAM)0,(LPARAM)&ti);
 		}
 
@@ -3131,7 +3131,7 @@ static HWND CreateContainerWindow(HWND parent,int x,int y,int width,int height)
 
 INT_PTR CLUIFrameSetFloat(WPARAM wParam,LPARAM lParam)
 {
-	int hwndtmp,hwndtooltiptmp;
+	HWND hwndtmp,hwndtooltiptmp;
 
 	lockfrm();
 	wParam=id2pos(wParam);
@@ -3222,14 +3222,14 @@ INT_PTR CLUIFrameSetFloat(WPARAM wParam,LPARAM lParam)
 	}
 	CLUIFramesStoreFrameSettings(wParam);
 	Frames[wParam].minmaxenabled=TRUE;
-	hwndtooltiptmp=(int)Frames[wParam].TitleBar.hwndTip;
+	hwndtooltiptmp=Frames[wParam].TitleBar.hwndTip;
 
-	hwndtmp=(int)Frames[wParam].ContainerWnd;
+	hwndtmp=Frames[wParam].ContainerWnd;
 	ulockfrm();
 	CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);
-	SendMessage((HWND)hwndtmp,WM_SIZE,0,0);
+	SendMessage(hwndtmp,WM_SIZE,0,0);
 
-	SetWindowPos((HWND)hwndtooltiptmp, HWND_TOPMOST,0, 0, 0, 0,SWP_NOMOVE | SWP_NOSIZE  );
+	SetWindowPos(hwndtooltiptmp, HWND_TOPMOST,0, 0, 0, 0,SWP_NOMOVE | SWP_NOSIZE  );
 	return 0;
 }
 

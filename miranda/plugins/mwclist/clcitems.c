@@ -279,7 +279,7 @@ struct ClcGroup *RemoveItemFromGroup(HWND hwnd,struct ClcGroup *group,struct Clc
 {
 	ClearRowByIndexCache();
 	if(contact->type==CLCIT_CONTACT) {
-		struct ClcData* dat = (struct ClcData*)GetWindowLong(hwnd,0);
+		struct ClcData* dat = (struct ClcData*)GetWindowLongPtr(hwnd,0);
 		ClearClcContactCache(dat,contact->hContact);
 	}
 
@@ -293,7 +293,7 @@ void DeleteItemFromTree(HWND hwnd,HANDLE hItem)
 {
 	struct ClcContact *contact;
 	struct ClcGroup *group;
-	struct ClcData *dat=(struct ClcData*)GetWindowLong(hwnd,0);
+	struct ClcData *dat=(struct ClcData*)GetWindowLongPtr(hwnd,0);
 	
 	ClearRowByIndexCache();
 	dat->NeedResort=1;

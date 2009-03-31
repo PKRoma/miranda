@@ -235,7 +235,6 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 	pdisplayNameCacheEntry pdnce;
 	int em,pr,sms,a1,a2,w1,c1;
 	int tick=0;
-	int inphcont=(int)hContact;
 	hcontgiven=(hContact!=0);
 
 	if (pcli->hwndContactTree==0){return;};

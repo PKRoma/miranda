@@ -68,8 +68,8 @@ int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
 extern void SetAllExtraIcons(HWND hwndList,HANDLE hContact);
 extern void ReloadExtraIcons();
 extern void LoadExtraImageFunc();
-extern int CreateStatusBarhWnd(HWND parent);
-extern int CreateStatusBarFrame();
+extern HWND CreateStatusBarhWnd(HWND parent);
+extern HANDLE CreateStatusBarFrame();
 extern int CLUIFramesUpdateFrame(WPARAM wParam,LPARAM lParam);
 extern int ExtraToColumnNum(int extra);
 extern void DrawDataForStatusBar(LPDRAWITEMSTRUCT dis);
@@ -222,7 +222,7 @@ HICON LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,boolean r
 			CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 			{
 				char buf[256];
-				sprintf(buf,"Registring Icon %s/%s hDefaultIcon: %x\r\n",SectName,IconName,DefIcon);
+				sprintf(buf,"Registring Icon %s/%s hDefaultIcon: %p\r\n",SectName,IconName,DefIcon);
 				OutputDebugStringA(buf);
 			}
 		}
@@ -336,7 +336,7 @@ INT_PTR GetConnectingIconService(WPARAM wParam,LPARAM lParam)
 		}
 	}
 
-	return (int)hIcon;
+	return (INT_PTR)hIcon;
 }
 
 int CreateTimerForConnectingIcon(WPARAM wParam,LPARAM lParam)
@@ -452,7 +452,7 @@ static void DisconnectAll()
 		CallProtoService( accs[nProto]->szModuleName, PS_SETSTATUS, ID_STATUS_OFFLINE, 0);
 }
 
-int PreCreateCLC(HWND parent)
+HWND PreCreateCLC(HWND parent)
 {
 	pcli->hwndContactTree = CreateWindow(CLISTCONTROL_CLASS,_T(""),
 		WS_CHILD|WS_CLIPCHILDREN|CLS_CONTACTLIST
@@ -465,7 +465,7 @@ int PreCreateCLC(HWND parent)
 		//|DBGetContactSettingByte(NULL,"CLUI","ExtraIconsAlignToLeft",1)?CLS_EX_MULTICOLUMNALIGNLEFT:0
 		,0,0,0,0,parent,NULL,g_hInst,NULL);
 
-	return((int)pcli->hwndContactTree);
+	return pcli->hwndContactTree;
 }
 
 int CreateCLC(HWND parent)

@@ -136,7 +136,7 @@ static int ClcShutdown(WPARAM wParam, LPARAM lParam)
 
 LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {     
-	struct ClcData *dat = (struct ClcData*)GetWindowLong(hwnd,0);
+	struct ClcData *dat = (struct ClcData*)GetWindowLongPtr(hwnd,0);
 	if ( msg >= CLM_FIRST && msg < CLM_LAST )
 		return pcli->pfnProcessExternalMessages(hwnd,dat,msg,wParam,lParam);
 

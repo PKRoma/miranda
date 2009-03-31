@@ -69,7 +69,7 @@ HANDLE hPreBuildTrayMenuEvent;
 //traymenu exec param(ownerdata)
 typedef struct{
 char *szServiceName;
-int Param1;
+INT_PTR Param1;
 }TrayMenuExecParam,*lpTrayMenuExecParam;
 
 /*
@@ -87,7 +87,7 @@ static INT_PTR BuildTrayMenu(WPARAM wParam,LPARAM lParam)
 	int tick;
 	HMENU hMenu;
 	ListParam param = { 0 };
-	param.MenuObjectHandle=(int)hTrayMenuObject;
+	param.MenuObjectHandle=hTrayMenuObject;
 
 	//hMenu=hMainMenu;
 	hMenu=CreatePopupMenu();
@@ -99,7 +99,7 @@ static INT_PTR BuildTrayMenu(WPARAM wParam,LPARAM lParam)
 	CallService(MO_BUILDMENU,(WPARAM)hMenu,(LPARAM)&param);
 	//DrawMenuBar((HWND)CallService("CLUI/GetHwnd",0,0));
 	tick=GetTickCount()-tick;
-	return (int)hMenu;
+	return (INT_PTR)hMenu;
 }
 
 static INT_PTR AddTrayMenuItem(WPARAM wParam,LPARAM lParam)
@@ -135,11 +135,11 @@ static INT_PTR AddTrayMenuItem(WPARAM wParam,LPARAM lParam)
 		
 		tmi.ownerdata=mmep;
 	}
-	op.Handle=CallService(MO_ADDNEWMENUITEM,(WPARAM)hTrayMenuObject,(LPARAM)&tmi);
+	op.Handle=(HANDLE)CallService(MO_ADDNEWMENUITEM,(WPARAM)hTrayMenuObject,(LPARAM)&tmi);
 	op.Setting=OPT_MENUITEMSETUNIQNAME;
-	op.Value=(int)mi->pszService;
+	op.Value=(INT_PTR)mi->pszService;
 	CallService(MO_SETOPTIONSMENUITEM,(WPARAM)0,(LPARAM)&op);
-	return(op.Handle);
+	return (INT_PTR)op.Handle;
 }
 
 INT_PTR TrayMenuCheckService(WPARAM wParam,LPARAM lParam) 
@@ -230,19 +230,19 @@ void InitTrayMenus(void)
 	CreateServiceFunction(MS_CLIST_MENUBUILDTRAY,BuildTrayMenu);
 	hPreBuildTrayMenuEvent=CreateHookableEvent(ME_CLIST_PREBUILDTRAYMENU);
 		
-	op.Handle=(int)hTrayMenuObject;
+	op.Handle=hTrayMenuObject;
 	op.Setting=OPT_USERDEFINEDITEMS;
-	op.Value=(int)TRUE;
+	op.Value=TRUE;
 	CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
 	
-	op.Handle=(int)hTrayMenuObject;
+	op.Handle=hTrayMenuObject;
 	op.Setting=OPT_MENUOBJECT_SET_FREE_SERVICE;
-	op.Value=(int)"CLISTMENUSTRAY/FreeOwnerDataTrayMenu";
+	op.Value=(INT_PTR)"CLISTMENUSTRAY/FreeOwnerDataTrayMenu";
 	CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
 
-	op.Handle=(int)hTrayMenuObject;
+	op.Handle=hTrayMenuObject;
 	op.Setting=OPT_MENUOBJECT_SET_ONADD_SERVICE;
-	op.Value=(int)"CLISTMENUSTRAY/TrayMenuonAddService";
+	op.Value=(INT_PTR)"CLISTMENUSTRAY/TrayMenuonAddService";
 	CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
 
 	{	

@@ -1,7 +1,7 @@
 #include "../commonheaders.h"
 
 //==========================Frames
-int hFrameMenuObject;
+HANDLE hFrameMenuObject;
 static HANDLE hPreBuildFrameMenuEvent;
 extern int InitCustomMenus(void);
 
@@ -10,7 +10,7 @@ extern int InitCustomMenus(void);
 typedef struct{
 	char *szServiceName;
 	int Frameid;
-	int param1;
+	INT_PTR param1;
 }FrameMenuExecParam,*lpFrameMenuExecParam;
 
 void FreeAndNil( void **p )
@@ -59,7 +59,7 @@ static INT_PTR AddContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 		if (fmep==NULL){return(0);}
 		fmep->szServiceName=mir_strdup(mi->pszService);
 		fmep->Frameid=mi->popupPosition;
-		fmep->param1=(int)mi->pszContactOwner;
+		fmep->param1=(INT_PTR)mi->pszContactOwner;
 
 		tmi.ownerdata=fmep;
 	}
@@ -135,7 +135,7 @@ static INT_PTR BuildContextFrameMenu(WPARAM wParam,LPARAM lParam)
 	//NotifyEventHooks(hPreBuildFrameMenuEvent,wParam,-1);
 	ContextFrameMenuNotify(wParam,-1);
 	CallService(MO_BUILDMENU,(WPARAM)hMenu,(LPARAM)&param);
-	return (int)hMenu;
+	return (INT_PTR)hMenu;
 }
 
 //==========================Frames end
@@ -218,12 +218,12 @@ int InitFramesMenus(void)
 		tmp.CheckService="FrameMenuCheckService";
 		tmp.ExecService="FrameMenuExecService";
 		tmp.name="FrameMenu";
-		hFrameMenuObject=CallService(MO_CREATENEWMENUOBJECT,0,(LPARAM)&tmp);
+		hFrameMenuObject=(HANDLE)CallService(MO_CREATENEWMENUOBJECT,0,(LPARAM)&tmp);
 		{
 			OptParam op;
 			op.Handle=hFrameMenuObject;
 			op.Setting=OPT_MENUOBJECT_SET_FREE_SERVICE;
-			op.Value=(int)"FrameMenuFreeService";
+			op.Value=(INT_PTR)"FrameMenuFreeService";
 			CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
 		}
 	}
