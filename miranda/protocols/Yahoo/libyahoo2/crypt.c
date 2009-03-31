@@ -41,7 +41,7 @@
 static const char md5_salt_prefix[] = "$1$";
 
 /* Table with characters for base64 transformation.  */
-static const char b64t[64] =
+static const char b64t[65] =
 "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 char *yahoo_crypt(char *key, char *salt)
@@ -60,7 +60,7 @@ char *yahoo_crypt(char *key, char *salt)
 
 	if (buflen < needed) {
 		buflen = needed;
-		if ((buffer = realloc(buffer, buflen)) == NULL)
+		if ((buffer = (char*)realloc(buffer, buflen)) == NULL)
 			return NULL;
 	}
 
