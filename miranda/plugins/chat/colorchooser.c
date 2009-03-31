@@ -107,7 +107,7 @@ INT_PTR CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		if (( HWND )lParam == GetDlgItem( hwndDlg, IDC_COLORTEXT )) {
 			SetTextColor((HDC)wParam,RGB(60,60,150));
 			SetBkColor((HDC)wParam,GetSysColor(COLOR_WINDOW));
-			return (BOOL)GetSysColorBrush(COLOR_WINDOW);
+			return (INT_PTR)GetSysColorBrush(COLOR_WINDOW);
 		}
 		break;
 

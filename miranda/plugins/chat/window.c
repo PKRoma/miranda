@@ -768,7 +768,7 @@ static INT_PTR CALLBACK FilterWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARA
 	case WM_CTLCOLORSTATIC:
 		SetTextColor((HDC)wParam,RGB(60,60,150));
 		SetBkColor((HDC)wParam,GetSysColor(COLOR_WINDOW));
-		return (BOOL)GetSysColorBrush(COLOR_WINDOW);
+		return (INT_PTR)GetSysColorBrush(COLOR_WINDOW);
 
 	case WM_ACTIVATE:
 		if (LOWORD(wParam) == WA_INACTIVE) {
@@ -1218,7 +1218,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				ti.uFlags = TTF_IDISHWND | TTF_SUBCLASS | TTF_TRANSPARENT;
 				ti.hwnd   = hwndDlg;
 				ti.hinst  = g_hInst;
-				ti.uId    = (UINT)hNickList;
+				ti.uId    = (UINT_PTR)hNickList;
 				ti.lpszText  = LPSTR_TEXTCALLBACK;
 				//GetClientRect( hNickList, &ti.rect );
 				SendMessage( psi->hwndTooltip, TTM_ADDTOOL, 0, ( LPARAM )&ti );
@@ -1825,7 +1825,7 @@ END_REMOVETAB:
 
 	case WM_CTLCOLORLISTBOX:
 		SetBkColor((HDC) wParam, g_Settings.crUserListBGColor);
-		return (BOOL) hListBkgBrush;
+		return (INT_PTR) hListBkgBrush;
 
 	case WM_MEASUREITEM:
 		{
@@ -2387,7 +2387,7 @@ LABEL_SHOWWINDOW:
 				break;
 
 			case TTN_NEEDTEXT:
-				if (pNmhdr->idFrom == (UINT)GetDlgItem(hwndDlg,IDC_LIST))
+				if (pNmhdr->idFrom == (UINT_PTR)GetDlgItem(hwndDlg,IDC_LIST))
 				{
 					LPNMTTDISPINFO lpttd = (LPNMTTDISPINFO)lParam;
 					POINT p;
@@ -2712,7 +2712,7 @@ LABEL_SHOWWINDOW:
 			HWND hNickList = GetDlgItem(hwndDlg,IDC_LIST);
 			TOOLINFO ti = { 0 };
 			ti.cbSize = sizeof(TOOLINFO);
-			ti.uId = (UINT)hNickList;
+			ti.uId = (UINT_PTR)hNickList;
 			ti.hwnd = hNickList;
 			SendMessage( si->hwndTooltip, TTM_DELTOOL, 0, (LPARAM)(LPTOOLINFO)&ti );
 		}

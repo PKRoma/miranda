@@ -499,7 +499,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 
 		ZeroMemory(&stream, sizeof(stream));
 		stream.pfnCallback = Log_StreamCallback;
-		stream.dwCookie = (DWORD) & streamData;
+		stream.dwCookie = (DWORD_PTR) & streamData;
 		scroll.cbSize= sizeof(SCROLLINFO);
 		scroll.fMask= SIF_RANGE | SIF_POS|SIF_PAGE;
 		GetScrollInfo(GetDlgItem(hwndDlg, IDC_LOG), SB_VERT, &scroll);
