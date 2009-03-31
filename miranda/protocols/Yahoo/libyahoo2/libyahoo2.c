@@ -536,7 +536,7 @@ static struct yahoo_data * find_conn_by_id(int id)
 {
 	YList *l;
 	for(l = conns; l; l = y_list_next(l)) {
-		struct yahoo_data *yd = l->data;
+		struct yahoo_data *yd = (struct yahoo_data *) l->data;
 		if(yd->client_id == id)
 			return yd;
 	}
@@ -566,7 +566,7 @@ static struct yahoo_input_data * find_input_by_id_and_webcam_user(int id, const 
 	YList *l;
 	LOG(("find_input_by_id_and_webcam_user"));
 	for(l = inputs; l; l = y_list_next(l)) {
-		struct yahoo_input_data *yid = l->data;
+		struct yahoo_input_data *yid = (struct yahoo_input_data *) l->data;
 		if(yid->type == YAHOO_CONNECTION_WEBCAM && yid->yd->client_id == id 
 				&& yid->wcm && 
 				((who && yid->wcm->user && !strcmp(who, yid->wcm->user)) ||
@@ -596,7 +596,8 @@ static struct yahoo_input_data * find_input_by_id_and_fd(int id, int fd)
 	YList *l;
 	LOG(("find_input_by_id_and_fd"));
 	for(l = inputs; l; l = y_list_next(l)) {
-		struct yahoo_input_data *yid = l->data;
+		struct yahoo_input_data *yid = (struct yahoo_input_data *) l->data;
+		
 		if(yid->fd == fd && yid->yd->client_id == id)
 			return yid;
 	}
@@ -609,7 +610,7 @@ static int count_inputs_with_id(int id)
 	YList *l;
 	LOG(("counting %d", id));
 	for(l = inputs; l; l = y_list_next(l)) {
-		struct yahoo_input_data *yid = l->data;
+		struct yahoo_input_data *yid = (struct yahoo_input_data *) l->data;
 		if(yid->yd->client_id == id)
 			c++;
 	}
@@ -627,7 +628,7 @@ static void yahoo_free_buddies(YList * list)
 
 	for(l = list; l; l = l->next)
 	{
-		struct yahoo_buddy *bud = l->data;
+		struct yahoo_buddy *bud = (struct yahoo_buddy *) l->data;
 		if(!bud)
 			continue;
 
@@ -736,7 +737,7 @@ static int yahoo_packet_length(struct yahoo_packet *pkt)
 	int len = 0;
 
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 		int tmp = pair->key;
 		do {
 			tmp /= 10;
@@ -791,7 +792,7 @@ static void yahoo_packet_read(struct yahoo_packet *pkt, unsigned char *data, int
 
 		struct yahoo_pair *pair = y_new0(struct yahoo_pair, 1);
 
-		key = malloc(len + 1);
+		key = (char *) malloc(len + 1);
 		x = 0;
 		while (pos + 1 < len) {
 			if (data[pos] == 0xc0 && data[pos + 1] == 0x80)
@@ -812,7 +813,7 @@ static void yahoo_packet_read(struct yahoo_packet *pkt, unsigned char *data, int
 		
 		/* if x is 0 there was no key, so don't accept it */
 		if (accept)
-			value = malloc(len - pos + 1);
+			value = (char *) malloc(len - pos + 1);
 		x = 0;
 		while (pos + 1 < len) {
 			if (data[pos] == 0xc0 && data[pos + 1] == 0x80)
@@ -845,7 +846,7 @@ static void yahoo_packet_write(struct yahoo_packet *pkt, unsigned char *data)
 	int pos = 0;
 
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 		unsigned char buf[100];
 
 		snprintf((char *)buf, sizeof(buf), "%d", pair->key);
@@ -867,7 +868,8 @@ static void yahoo_dump_unhandled(struct yahoo_packet *pkt)
 
 	NOTICE(("Service: %s (0x%02x)\tStatus: %s (%d)", dbg_service(pkt->service),pkt->service, dbg_status(pkt->status), pkt->status));
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
+		
 		NOTICE(("\t%d => %s", pair->key, pair->value));
 	}
 }
@@ -1002,7 +1004,7 @@ static void yahoo_send_packet(struct yahoo_input_data *yid, struct yahoo_packet 
 static void yahoo_packet_free(struct yahoo_packet *pkt)
 {
 	while (pkt->hash) {
-		struct yahoo_pair *pair = pkt->hash->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *)pkt->hash->data;
 		YList *tmp;
 		FREE(pair->value);
 		FREE(pair);
@@ -1189,7 +1191,7 @@ static void yahoo_process_notify(struct yahoo_input_data *yid, struct yahoo_pack
 	YList *l;
 	
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 		if (pair->key == 4)
 			from = pair->value;
 		if (pair->key == 5)
@@ -1247,7 +1249,7 @@ static void yahoo_process_filetransfer(struct yahoo_input_data *yid, struct yaho
 
 	YList *l;
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 		if (pair->key == 4)
 			from = pair->value;
 		if (pair->key == 5)
@@ -1307,7 +1309,7 @@ static void yahoo_process_filetransfer7(struct yahoo_input_data *yid, struct yah
 	YList *l, *files=NULL;
 	
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 		switch (pair->key) {
 		case 4: /* from */
 			from = pair->value;
@@ -1545,7 +1547,8 @@ static void yahoo_process_filetransfer7accept(struct yahoo_input_data *yid, stru
 	
 	YList *l;
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
+		
 		switch (pair->key) {
 		case 4:
 			from = pair->value;
@@ -1596,7 +1599,8 @@ static void yahoo_process_conference(struct yahoo_input_data *yid, struct yahoo_
 	YList *l;
 	
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
+		
 		if (pair->key == 50)
 			host = pair->value;
 		
@@ -1639,7 +1643,7 @@ static void yahoo_process_conference(struct yahoo_input_data *yid, struct yahoo_
 
 	if(host) {
 		for(l = members; l; l = l->next) {
-			char * w = l->data;
+			char * w = (char *) l->data;
 			if(!strcmp(w, host))
 				break;
 		}
@@ -1700,7 +1704,7 @@ static void yahoo_process_chat(struct yahoo_input_data *yid, struct yahoo_packet
 	
 	yahoo_dump_unhandled(pkt);
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 
 		if (pair->key == 1) {
 			/* My identity */
@@ -1850,7 +1854,7 @@ static void yahoo_process_message(struct yahoo_input_data *yid, struct yahoo_pac
 	message->buddy_icon = -1; // no info
 	
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 		
 		/* so it seems that key == 1 is not used when receiving messages and causes
 		  problems for mobile IMs? This has been reported in the forum and this patch
@@ -1948,7 +1952,7 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 	char *msg = NULL;
 	
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 
 		switch (pair->key) {
 		case 0: /* we won't actually do anything with this */
@@ -2075,7 +2079,7 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 		state = YAHOO_STATUS_OFFLINE;
 	
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 
 		switch (pair->key) {
 		case 0: /* we won't actually do anything with this */
@@ -2196,7 +2200,7 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 
 	/* we could be getting multiple packets here */
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 
 		switch(pair->key) {
 		case 87: /* buddies */
@@ -2324,7 +2328,7 @@ static void yahoo_process_y8_list(struct yahoo_input_data *yid, struct yahoo_pac
 	
 	/* we could be getting multiple packets here */
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 
 		switch(pair->key) {
 			case 302:
@@ -3044,7 +3048,7 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 			
 				while ( (*c) != '\0' && (*c) != '\r' && (*c) != '\n') c++;
 				
-				token = _alloca(c - t + 1);
+				token = (char *) _alloca(c - t + 1);
 				
 				memcpy(token, t, c - t);
 				token[c - t] = '\0';
@@ -3082,7 +3086,7 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 	
 		while ( (*c) != '\0' && (*c) != '\r' && (*c) != '\n') c++;
 		
-		crumb = _alloca(c - t + 1);
+		crumb = (char *) _alloca(c - t + 1);
 		
 		memcpy(crumb, t, c - t);
 		crumb[c - t] = '\0';
@@ -3098,7 +3102,7 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 		while ( (*c) != '\0' && (*c) != '\r' && (*c) != '\n') c++;
 		
 		FREE(yd->cookie_y);
-		yd->cookie_y = malloc(c - t + 1);
+		yd->cookie_y = (char *) malloc(c - t + 1);
 		
 		memcpy(yd->cookie_y, t, c - t);
 		yd->cookie_y[c - t] = '\0';
@@ -3113,7 +3117,7 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 
 		while ( (*c) != '\0' && (*c) != '\r' && (*c) != '\n') c++;
 		
-		yd->cookie_t = malloc(c - t + 1);
+		yd->cookie_t = (char *) malloc(c - t + 1);
 		
 		memcpy(yd->cookie_t, t, c - t);
 		yd->cookie_t[c - t] = '\0';
@@ -3202,7 +3206,7 @@ static void yahoo_process_auth(struct yahoo_input_data *yid, struct yahoo_packet
 	int m = 0;
 
 	while (l) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 		
 		switch (pair->key){
 		case 94:
@@ -3253,7 +3257,7 @@ static void yahoo_process_auth_resp(struct yahoo_input_data *yid, struct yahoo_p
 	YList *l;
 
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 		if (pair->key == 0)
 			login_id = pair->value;
 		else if (pair->key == 1)
@@ -3280,7 +3284,7 @@ static void yahoo_process_mail(struct yahoo_input_data *yid, struct yahoo_packet
 	YList *l;
 
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 		if (pair->key == 9)
 			count = strtol(pair->value, NULL, 10);
 		else if (pair->key == 43)
@@ -3312,7 +3316,7 @@ static void yahoo_buddy_added_us(struct yahoo_input_data *yid, struct yahoo_pack
 	int protocol = 0;
 
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 		switch (pair->key) {
 		case 1:
 			id = pair->value;
@@ -3347,7 +3351,7 @@ static void yahoo_buddy_denied_our_add(struct yahoo_input_data *yid, struct yaho
 	YList *l;
 	
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 		switch (pair->key) {
 		case 3:
 			who = pair->value;
@@ -3393,7 +3397,7 @@ static void yahoo_process_authorization(struct yahoo_input_data *yid, struct yah
 	YList *l;
 	
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 		switch (pair->key) {
 		case 4: /* who added us */
 			who = pair->value;
@@ -3458,7 +3462,7 @@ static void yahoo_process_buddyadd(struct yahoo_input_data *yid, struct yahoo_pa
 
 	YList *l;
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 		
 		switch (pair->key){ 
 		case 1:
@@ -3510,7 +3514,7 @@ static void yahoo_process_buddydel(struct yahoo_input_data *yid, struct yahoo_pa
 
 	YList *l;
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 		if (pair->key == 1)
 			me = pair->value;
 		else if (pair->key == 7)
@@ -3537,7 +3541,7 @@ static void yahoo_process_buddydel(struct yahoo_input_data *yid, struct yahoo_pa
 	FREE(bud);
 
 	if(buddy) {
-		bud = buddy->data;
+		bud = (struct yahoo_buddy *) buddy->data;
 		yd->buddies = y_list_remove_link(yd->buddies, buddy);
 		y_list_free_1(buddy);
 
@@ -3559,7 +3563,7 @@ static void yahoo_process_yahoo7_change_group(struct yahoo_input_data *yid, stru
 
 	YList *l;
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 		
 		switch (pair->key){ 
 		case 1:
@@ -3590,7 +3594,7 @@ static void yahoo_process_ignore(struct yahoo_input_data *yid, struct yahoo_pack
 
 	YList *l;
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 		if (pair->key == 0)
 			who = pair->value;
 		if (pair->key == 1)
@@ -3638,7 +3642,8 @@ static void yahoo_process_ignore(struct yahoo_input_data *yid, struct yahoo_pack
 			}
 				
 			if(buddy) {
-				struct yahoo_buddy *bud = buddy->data;
+				struct yahoo_buddy *bud = (struct yahoo_buddy *) buddy->data;
+				
 				yd->ignore = y_list_remove_link(yd->ignore, buddy);
 				y_list_free_1(buddy);
 		
@@ -3661,7 +3666,8 @@ static void yahoo_process_stealth(struct yahoo_input_data *yid, struct yahoo_pac
 	
 	YList *l;
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
+		
 		if (pair->key == 7)
 			who = pair->value;
 		
@@ -3681,7 +3687,8 @@ static void yahoo_process_voicechat(struct yahoo_input_data *yid, struct yahoo_p
 
 	YList *l;
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
+		
 		if (pair->key == 4)
 			who = pair->value;
 		if (pair->key == 5)
@@ -3714,7 +3721,7 @@ static void yahoo_process_picture(struct yahoo_input_data *yid, struct yahoo_pac
 	
 	YList *l;
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 		
 		/* based on GAIM code */
 		switch (pair->key) {
@@ -3890,7 +3897,7 @@ static void yahoo_process_picture_update(struct yahoo_input_data *yid, struct ya
 	
 	YList *l;
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *)l->data;
 		if (pair->key == 4)
 			who = pair->value;
 		if (pair->key == 5)
@@ -3911,7 +3918,7 @@ static void yahoo_process_picture_upload(struct yahoo_input_data *yid, struct ya
 	
 	YList *l;
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *)l->data;
 		switch (pair->key){
 		case 5: /* our id */
 				me = pair->value;
@@ -3938,7 +3945,7 @@ static void yahoo_process_picture_status(struct yahoo_input_data *yid, struct ya
 	
 	YList *l;
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 		switch (pair->key){
 		case 5: /* our id */
 				me = pair->value;
@@ -3966,7 +3973,7 @@ static void yahoo_process_audible(struct yahoo_input_data *yid, struct yahoo_pac
 	
 	YList *l;
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 		switch (pair->key){
 		case 5: /* our id */
 				me = pair->value;
@@ -4008,7 +4015,7 @@ static void yahoo_process_calendar(struct yahoo_input_data *yid, struct yahoo_pa
 	YList *l;
 	
 	for (l = pkt->hash; l; l = l->next) {
-		struct yahoo_pair *pair = l->data;
+		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 		switch (pair->key){
 		case 20: /* url to calendar reminder/event */
 				if (pair->value[0] != '\0')
@@ -4089,7 +4096,7 @@ static void yahoo_process_yab_update(struct yahoo_input_data *yid, struct yahoo_
 
 static void _yahoo_webcam_get_server_connected(int fd, int error, void *d)
 {
-	struct yahoo_input_data *yid = d;
+	struct yahoo_input_data *yid = (struct yahoo_input_data *) d;
 	char *who = yid->wcm->user;
 	char *data = NULL;
 	char *packet = NULL;
