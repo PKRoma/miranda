@@ -549,7 +549,7 @@ HANDLE __cdecl CJabberProto::FileAllow( HANDLE /*hContact*/, HANDLE hTransfer, c
 
 	filetransfer* ft = ( filetransfer* )hTransfer;
 	ft->std.workingDir = mir_strdup( szPath );
-	int len = strlen( ft->std.workingDir )-1;
+	size_t len = strlen( ft->std.workingDir )-1;
 	if ( ft->std.workingDir[len] == '/' || ft->std.workingDir[len] == '\\' )
 		ft->std.workingDir[len] = 0;
 
@@ -1059,7 +1059,7 @@ int __cdecl CJabberProto::SendMsg( HANDLE hContact, int flags, const char* pszSr
 	if ( !strncmp( pszSrc, PGP_PROLOG, strlen( PGP_PROLOG ))) {
 		const char* szEnd = strstr( pszSrc, PGP_EPILOG );
 		char* tempstring = ( char* )alloca( strlen( pszSrc ) + 1 );
-		int nStrippedLength = strlen(pszSrc) - strlen(PGP_PROLOG) - (szEnd ? strlen(szEnd) : 0);
+		size_t nStrippedLength = strlen(pszSrc) - strlen(PGP_PROLOG) - (szEnd ? strlen(szEnd) : 0);
 		strncpy( tempstring, pszSrc + strlen(PGP_PROLOG), nStrippedLength );
 		tempstring[ nStrippedLength ] = 0;
 		pszSrc = tempstring;
@@ -1253,7 +1253,8 @@ void __cdecl CJabberProto::GetAwayMsgThread( void* hContact )
 	DBVARIANT dbv;
 	JABBER_LIST_ITEM *item;
 	JABBER_RESOURCE_STATUS *r;
-	int i, len, msgCount;
+	int i, msgCount;
+    size_t len;
 
 	if ( !JGetStringT( hContact, "jid", &dbv )) {
 		if (( item = ListGetItemPtr( LIST_ROSTER, dbv.ptszVal )) != NULL ) {

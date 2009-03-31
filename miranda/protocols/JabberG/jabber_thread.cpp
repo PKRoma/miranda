@@ -184,7 +184,7 @@ void CJabberProto::xmlStreamInitializeNow(ThreadData* info)
 
 	LPTSTR xmlQuery = xi.toString( n, NULL );
 	char* buf = mir_utf8encodeT( xmlQuery );
-	int bufLen = strlen( buf );
+	int bufLen = (int)strlen( buf );
 	if ( bufLen > 2 ) {
 		strdel( buf + bufLen - 2, 1 );
 		bufLen--;
@@ -303,7 +303,7 @@ LBL_FatalError:
 			// Should be better with modeless.
 			onlinePassword[0] = ( char ) -1;
 			hEventPasswdDlg = CreateEvent( NULL, FALSE, FALSE, NULL );
-			QueueUserAPC( JabberPasswordCreateDialogApcProc, hMainThread, ( DWORD )jidStr );
+			QueueUserAPC( JabberPasswordCreateDialogApcProc, hMainThread, ( DWORD_PTR )jidStr );
 			WaitForSingleObject( hEventPasswdDlg, INFINITE );
 			CloseHandle( hEventPasswdDlg );
 
@@ -442,7 +442,7 @@ LBL_FatalError:
 
 		if ( info->type == JABBER_SESSION_NORMAL ) {
 			m_bJabberConnected = TRUE;
-			int len = _tcslen( info->username ) + strlen( info->server )+1;
+			size_t len = _tcslen( info->username ) + strlen( info->server )+1;
 			m_szJabberJID = ( TCHAR* )mir_alloc( sizeof( TCHAR)*( len+1 ));
 			mir_sntprintf( m_szJabberJID, len+1, _T("%s@") _T(TCHAR_STR_PARAM), info->username, info->server );
 			if ( m_options.KeepAlive )
@@ -1086,7 +1086,7 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 	if ( bodyNode != NULL && xmlGetText( bodyNode ) )
 		szMessage = xmlGetText( bodyNode );
 	if (( subjectNode = xmlGetChild( node , "subject" )) && xmlGetText( subjectNode ) && xmlGetText( subjectNode )[0] != _T('\0')) {
-		int cbLen = (szMessage ? _tcslen( szMessage ) : 0) + _tcslen( xmlGetText( subjectNode ) ) + 128;
+		size_t cbLen = (szMessage ? _tcslen( szMessage ) : 0) + _tcslen( xmlGetText( subjectNode ) ) + 128;
 		TCHAR* szTmp = ( TCHAR * )alloca( sizeof(TCHAR) * cbLen );
 		szTmp[0] = _T('\0');
 		if ( szMessage )
@@ -1104,7 +1104,7 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 		if ( addressNode ) {
 			const TCHAR* szJid = xmlGetAttrValue( addressNode, _T("jid"));
 			if ( szJid ) {
-				int cbLen = _tcslen( szMessage ) + 1000;
+				size_t cbLen = _tcslen( szMessage ) + 1000;
 				TCHAR* p = ( TCHAR* )alloca( sizeof( TCHAR ) * cbLen );
 				mir_sntprintf( p, cbLen, TranslateT("Message redirected from: %s\r\n%s"), from, szMessage );
 				szMessage = p;
@@ -1309,7 +1309,7 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 		else if ( !_tcscmp( ptszXmlns, _T("jabber:x:oob"))) {
 			HXML urlNode;
 			if ( ((urlNode = xmlGetChild( xNode , "url" )) != NULL) && xmlGetText( urlNode ) && xmlGetText( urlNode )[0] != _T('\0')) {
-				int cbLen = (szMessage ? _tcslen( szMessage ) : 0) + _tcslen( xmlGetText( urlNode ) ) + 32;
+				size_t cbLen = (szMessage ? _tcslen( szMessage ) : 0) + _tcslen( xmlGetText( urlNode ) ) + 32;
 				TCHAR* szTmp = ( TCHAR * )alloca( sizeof(TCHAR) * cbLen );
 				_tcscpy( szTmp, xmlGetText( urlNode ) );
 				if ( szMessage ) {
@@ -1902,20 +1902,20 @@ int ThreadData::recvws( char* buf, size_t len, int flags )
 	if ( this == NULL )
 		return 0;
 
-	return proto->WsRecv( s, buf, len, flags );
+	return proto->WsRecv( s, buf, (int)len, flags );
 }
 
 int ThreadData::recv( char* buf, size_t len )
 {
 	if ( useZlib )
-		return zlibRecv( buf, len );
+		return zlibRecv( buf, (long)len );
 
 	return recvws( buf, len, MSG_DUMPASTEXT );
 }
 
 int ThreadData::sendws( char* buffer, size_t bufsize, int flags )
 {
-	return proto->WsSend( s, buffer, bufsize, flags );
+	return proto->WsSend( s, buffer, (int)bufsize, flags );
 }
 
 int ThreadData::send( char* buffer, int bufsize )
@@ -1949,7 +1949,7 @@ int ThreadData::send( HXML node )
 
 	TCHAR* str = xi.toString( node, NULL );
 	char* utfStr = mir_utf8encodeT( str );
-	int result = send( utfStr, strlen( utfStr ));
+	int result = send( utfStr, (int)strlen( utfStr ));
 	mir_free( utfStr );
 	xi.freeMem( str );
 	return result;
@@ -1970,7 +1970,7 @@ int ThreadData::send( const char* fmt, ... )
 	}
 	va_end( vararg );
 
-	int result = send( str, strlen( str ));
+	int result = send( str, (int)strlen( str ));
 
 	mir_free( str );
 	return result;

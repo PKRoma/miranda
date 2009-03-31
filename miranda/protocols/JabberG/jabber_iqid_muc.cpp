@@ -493,7 +493,7 @@ void CJabberProto::OnIqResultMucGetJidList( HXML iqNode, JABBER_MUC_JIDLIST_TYPE
 			jidListInfo->roomJid = NULL;	// Set in the dialog procedure
 			if (( jidListInfo->iqNode = xi.copyNode( iqNode )) != NULL ) {
 				if ( GetCurrentThreadId() != jabberMainThreadId )
-					QueueUserAPC(( PAPCFUNC )JabberMucJidListCreateDialogApcProc, hMainThread, ( DWORD )jidListInfo );
+					QueueUserAPC(( PAPCFUNC )JabberMucJidListCreateDialogApcProc, hMainThread, ( DWORD_PTR )jidListInfo );
 				else
 					JabberMucJidListCreateDialogApcProc( jidListInfo );
 			}

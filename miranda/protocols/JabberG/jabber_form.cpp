@@ -510,7 +510,7 @@ void JabberFormCreateUI( HWND hwndStatic, HXML xNode, int *formHeight, BOOL bCom
 							valueStr = mir_tstrdup( valueText );
 						} else
 						{
-							int size = 1;
+							size_t size = 1;
 							for ( j=0; ; j++ ) {
 								v = xmlGetChild( n ,j);
 								if ( !v )
@@ -801,7 +801,7 @@ static INT_PTR CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 			(GetWindowLong((HWND)lParam, GWL_ID) == IDC_INSTRUCTION) ||
 			(GetWindowLong((HWND)lParam, GWL_ID) == IDC_TITLE))
 		{
-			return (BOOL)GetStockObject(WHITE_BRUSH);
+			return (INT_PTR)GetStockObject(WHITE_BRUSH);
 		}
 		
 		return NULL;
@@ -898,9 +898,9 @@ void CJabberProto::FormCreateDialog( HXML xNode, TCHAR* defTitle, JABBER_FORM_SU
 	jfi->userdata = userdata;
 
 	if ( GetCurrentThreadId() != jabberMainThreadId )
-		QueueUserAPC( JabberFormCreateDialogApcProc, hMainThread, ( DWORD )jfi );
+		QueueUserAPC( JabberFormCreateDialogApcProc, hMainThread, ( DWORD_PTR )jfi );
 	else
-		JabberFormCreateDialogApcProc(( DWORD )jfi );
+		JabberFormCreateDialogApcProc(( DWORD_PTR )jfi );
 }
 
 //=======================================================================================

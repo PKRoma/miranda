@@ -1029,7 +1029,7 @@ static LRESULT CALLBACK sttUserInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 		if ( ((HWND)lParam == GetDlgItem(hwndDlg, IDC_WHITERECT)) ||
 			 ((HWND)lParam == GetDlgItem(hwndDlg, IDC_TITLE)) ||
 			 ((HWND)lParam == GetDlgItem(hwndDlg, IDC_DESCRIPTION)) )
-			return (BOOL)GetStockObject(WHITE_BRUSH);
+			return (INT_PTR)GetStockObject(WHITE_BRUSH);
 		return FALSE;
 
 	case WM_CLOSE:

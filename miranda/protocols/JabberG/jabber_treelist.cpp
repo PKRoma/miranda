@@ -92,14 +92,14 @@ static void sttTreeList_CreateItems(HTREELISTITEM hItem, LPARAM data);
 static void sttTreeList_CreateItems_List(HTREELISTITEM hItem, LPARAM data);
 static int CALLBACK sttTreeList_SortFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
 
-static __forceinline void sttTreeList_SeWindowData(HWND hwnd, LONG data)
+static __forceinline void sttTreeList_SeWindowData(HWND hwnd, HANDLE data)
 {
 	SetPropA(hwnd, "Miranda.TreeList", (HANDLE)data);
 }
 
-static __forceinline LONG sttTreeList_GeWindowData(HWND hwnd)
+static __forceinline HANDLE sttTreeList_GeWindowData(HWND hwnd)
 {
-	return (LONG)GetPropA(hwnd, "Miranda.TreeList");
+	return GetPropA(hwnd, "Miranda.TreeList");
 }
 
 // tree list implementation
@@ -131,7 +131,7 @@ void TreeList_Create(HWND hwnd)
 	data->root->flags = TLIF_EXPANDED|TLIF_VISIBLE|TLIF_ROOT;
 	data->root->indent = -1;
 	data->hItemSelected = data->root;
-	sttTreeList_SeWindowData(hwnd, (LONG)data);
+	sttTreeList_SeWindowData(hwnd, data);
 
 	ListView_SetExtendedListViewStyle(hwnd, LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_GRIDLINES | LVS_EX_INFOTIP );
 

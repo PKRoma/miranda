@@ -139,7 +139,7 @@ void CJabberProto::DBAddAuthRequest( const TCHAR* jid, const TCHAR* nick )
 	dbei.timestamp = ( DWORD )time( NULL );
 	dbei.flags = 0;
 	dbei.eventType = EVENTTYPE_AUTHREQUEST;
-	dbei.cbBlob = sizeof( DWORD )+ sizeof( HANDLE ) + strlen( szNick ) + strlen( szJid ) + 5;
+	dbei.cbBlob = (DWORD)(sizeof( DWORD )+ sizeof( HANDLE ) + strlen( szNick ) + strlen( szJid ) + 5);
 	PBYTE pCurBlob = dbei.pBlob = ( PBYTE ) mir_alloc( dbei.cbBlob );
 	*(( PDWORD ) pCurBlob ) = 0; pCurBlob += sizeof( DWORD );
 	*(( PHANDLE ) pCurBlob ) = hContact; pCurBlob += sizeof( HANDLE );
@@ -162,7 +162,7 @@ void CJabberProto::DBAddAuthRequest( const TCHAR* jid, const TCHAR* nick )
 HANDLE CJabberProto::DBCreateContact( const TCHAR* jid, const TCHAR* nick, BOOL temporary, BOOL stripResource )
 {
 	TCHAR* s, *p, *q;
-	int len;
+	size_t len;
 	char* szProto;
 
 	if ( jid==NULL || jid[0]=='\0' )
@@ -187,7 +187,7 @@ HANDLE CJabberProto::DBCreateContact( const TCHAR* jid, const TCHAR* nick, BOOL 
 			DBVARIANT dbv;
 			if ( !JGetStringT( hContact, "jid", &dbv )) {
 				p = dbv.ptszVal;
-				if ( p && ( int )_tcslen( p )>=len && ( p[len]=='\0'||p[len]=='/' ) && !_tcsnicmp( p, s, len )) {
+				if ( p && _tcslen( p )>=len && ( p[len]=='\0'||p[len]=='/' ) && !_tcsnicmp( p, s, len )) {
 					JFreeVariant( &dbv );
 					break;
 				}

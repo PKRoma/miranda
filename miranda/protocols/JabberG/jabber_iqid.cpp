@@ -773,7 +773,7 @@ void CJabberProto::OnIqResultGetVcard( HXML iqNode )
 		return;
 	}
 
-	int len = _tcslen( m_szJabberJID );
+	size_t len = _tcslen( m_szJabberJID );
 	if ( !_tcsnicmp( jid, m_szJabberJID, len ) && ( jid[len]=='/' || jid[len]=='\0' )) {
 		hContact = NULL;
 		Log( "Vcard for myself" );

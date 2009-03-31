@@ -244,7 +244,7 @@ char* __stdcall JabberUrlDecode( char* str )
 			{
 				p += 9;
 				char *tail = strstr(p, "]]>");
-				int count = tail ? (tail-p) : strlen(p);
+				size_t count = tail ? (tail-p) : strlen(p);
 				memmove(q, p, count);
 				q += count-1;
 				p = (tail ? (tail+3) : (p+count)) - 1;
@@ -384,7 +384,7 @@ char* __stdcall JabberSha1( char* str )
 		return NULL;
 
 	mir_sha1_init( &sha );
-	mir_sha1_append( &sha, (mir_sha1_byte_t* )str, strlen( str ));
+	mir_sha1_append( &sha, (mir_sha1_byte_t* )str, (int)strlen( str ));
 	mir_sha1_finish( &sha, digest );
 	if (( result=( char* )mir_alloc( 41 )) == NULL )
 		return NULL;
@@ -921,12 +921,13 @@ void __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt
 {
 	va_list vararg;
 	char* p;
-	int size, len;
+	size_t size, len;
 
 	if ( str == NULL ) return;
 
 	if ( *str==NULL || *sizeAlloced<=0 ) {
-		*sizeAlloced = size = 2048;
+		*sizeAlloced = 2048;
+        size = 2048;
 		*str = ( char* )mir_alloc( size );
 		len = 0;
 	}
@@ -1400,7 +1401,7 @@ static INT_PTR CALLBACK sttEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDOK:
-			GetDlgItemText( hwndDlg, params->idcControl, params->result, params->resultLen );
+			GetDlgItemText( hwndDlg, params->idcControl, params->result, (int)params->resultLen );
 			params->result[ params->resultLen-1 ] = 0;
 
 			if ((params->type == JES_COMBO) && params->windowName && params->recentCount)

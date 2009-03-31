@@ -43,7 +43,7 @@ Last change by : $Author$
 #define MENUITEM_SERVER		2
 #define MENUITEM_RESOURCES	10
 
-static int hChooserMenu;
+static HANDLE hChooserMenu;
 static int iChooserMenuPos = 30000;
 
 static HANDLE hPrebuildMenuHook;
@@ -208,7 +208,7 @@ void g_MenuInit( void )
 	mnu.cbSize = sizeof(mnu);
 	mnu.name = "JabberAccountChooser";
 	mnu.ExecService = "Jabber/MenuChoose";
-	hChooserMenu = JCallService( MO_CREATENEWMENUOBJECT, 0, (LPARAM)&mnu );
+	hChooserMenu = (HANDLE)JCallService( MO_CREATENEWMENUOBJECT, 0, (LPARAM)&mnu );
 
 	TMO_MenuItem tmi = { 0 };
 	tmi.cbSize = sizeof( tmi );
@@ -216,7 +216,7 @@ void g_MenuInit( void )
 	tmi.pszName = "Cancel";
 	tmi.position = 9999999;
 	tmi.hIcolibItem = LoadSkinnedIconHandle(SKINICON_OTHER_DELETE);
-	JCallService( MO_ADDNEWMENUITEM, hChooserMenu, ( LPARAM )&tmi );
+	JCallService( MO_ADDNEWMENUITEM, (WPARAM)hChooserMenu, ( LPARAM )&tmi );
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// Contact menu initialization
@@ -446,7 +446,7 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM )
 
 				char text[ 256 ];
 				strcpy( text, m_szModuleName );
-				int nModuleNameLength = strlen( text );
+				size_t nModuleNameLength = strlen( text );
 				char* tDest = text + nModuleNameLength;
 
 				CLISTMENUITEM mi = { 0 };
@@ -898,9 +898,9 @@ void CJabberProto::MenuInit()
 	tmi.cbSize = sizeof(tmi);
 	tmi.flags = CMIF_TCHAR;
 	tmi.ownerdata = this;
-	tmi.position = m_hChooseMenuPos = iChooserMenuPos++;
+	tmi.position = iChooserMenuPos++;
 	tmi.ptszName = m_tszUserName;
-	m_hChooseMenuItem = JCallService( MO_ADDNEWMENUITEM, hChooserMenu, ( LPARAM )&tmi );
+	m_hChooseMenuItem = (HANDLE)JCallService( MO_ADDNEWMENUITEM, (WPARAM)hChooserMenu, ( LPARAM )&tmi );
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// Hotkeys

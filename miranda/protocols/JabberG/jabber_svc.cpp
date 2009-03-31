@@ -156,14 +156,14 @@ INT_PTR __cdecl CJabberProto::OnGetEventTextChatStates( WPARAM, LPARAM lParam )
 {
 	DBEVENTGETTEXT *pdbEvent = ( DBEVENTGETTEXT * )lParam;
 
-	int nRetVal = 0;
+	INT_PTR nRetVal = 0;
 
 	if ( pdbEvent->dbei->cbBlob > 0 ) {
 		if ( pdbEvent->dbei->pBlob[0] == JABBER_DB_EVENT_CHATSTATES_GONE ) {
 			if ( pdbEvent->datatype == DBVT_WCHAR )
-				nRetVal = (int)mir_tstrdup(TranslateTS(_T("closed chat session")));
+				nRetVal = (INT_PTR)mir_tstrdup(TranslateTS(_T("closed chat session")));
 			else if ( pdbEvent->datatype == DBVT_ASCIIZ )
-				nRetVal = (int)mir_strdup(Translate("closed chat session"));
+				nRetVal = (INT_PTR)mir_strdup(Translate("closed chat session"));
 		}
 	}
 	
@@ -177,7 +177,7 @@ INT_PTR __cdecl CJabberProto::OnGetEventTextPresence( WPARAM, LPARAM lParam )
 {
 	DBEVENTGETTEXT *pdbEvent = ( DBEVENTGETTEXT * )lParam;
 
-	int nRetVal = 0;
+	INT_PTR nRetVal = 0;
 
 	if ( pdbEvent->dbei->cbBlob > 0 ) {
 		switch ( pdbEvent->dbei->pBlob[0] )
@@ -185,49 +185,49 @@ INT_PTR __cdecl CJabberProto::OnGetEventTextPresence( WPARAM, LPARAM lParam )
 		case JABBER_DB_EVENT_PRESENCE_SUBSCRIBE:
 			{
 				if ( pdbEvent->datatype == DBVT_WCHAR )
-					nRetVal = (int)mir_tstrdup(TranslateTS(_T("sent subscription request")));
+					nRetVal = (INT_PTR)mir_tstrdup(TranslateTS(_T("sent subscription request")));
 				else if ( pdbEvent->datatype == DBVT_ASCIIZ )
-					nRetVal = (int)mir_strdup(Translate("sent subscription request"));
+					nRetVal = (INT_PTR)mir_strdup(Translate("sent subscription request"));
 				break;
 			}
 		case JABBER_DB_EVENT_PRESENCE_SUBSCRIBED:
 			{
 				if ( pdbEvent->datatype == DBVT_WCHAR )
-					nRetVal = (int)mir_tstrdup(TranslateTS(_T("approved subscription request")));
+					nRetVal = (INT_PTR)mir_tstrdup(TranslateTS(_T("approved subscription request")));
 				else if ( pdbEvent->datatype == DBVT_ASCIIZ )
-					nRetVal = (int)mir_strdup(Translate("approved subscription request"));
+					nRetVal = (INT_PTR)mir_strdup(Translate("approved subscription request"));
 				break;
 			}
 		case JABBER_DB_EVENT_PRESENCE_UNSUBSCRIBE:
 			{
 				if ( pdbEvent->datatype == DBVT_WCHAR )
-					nRetVal = (int)mir_tstrdup(TranslateTS(_T("declined subscription")));
+					nRetVal = (INT_PTR)mir_tstrdup(TranslateTS(_T("declined subscription")));
 				else if ( pdbEvent->datatype == DBVT_ASCIIZ )
-					nRetVal = (int)mir_strdup(Translate("declined subscription"));
+					nRetVal = (INT_PTR)mir_strdup(Translate("declined subscription"));
 				break;
 			}
 		case JABBER_DB_EVENT_PRESENCE_UNSUBSCRIBED:
 			{
 				if ( pdbEvent->datatype == DBVT_WCHAR )
-					nRetVal = (int)mir_tstrdup(TranslateTS(_T("declined subscription")));
+					nRetVal = (INT_PTR)mir_tstrdup(TranslateTS(_T("declined subscription")));
 				else if ( pdbEvent->datatype == DBVT_ASCIIZ )
-					nRetVal = (int)mir_strdup(Translate("declined subscription"));
+					nRetVal = (INT_PTR)mir_strdup(Translate("declined subscription"));
 				break;
 			}
 		case JABBER_DB_EVENT_PRESENCE_ERROR:
 			{
 				if ( pdbEvent->datatype == DBVT_WCHAR )
-					nRetVal = (int)mir_tstrdup(TranslateTS(_T("sent error presence")));
+					nRetVal = (INT_PTR)mir_tstrdup(TranslateTS(_T("sent error presence")));
 				else if ( pdbEvent->datatype == DBVT_ASCIIZ )
-					nRetVal = (int)mir_strdup(Translate("sent error presence"));
+					nRetVal = (INT_PTR)mir_strdup(Translate("sent error presence"));
 				break;
 			}
 		default:
 			{
 				if ( pdbEvent->datatype == DBVT_WCHAR )
-					nRetVal = (int)mir_tstrdup(TranslateTS(_T("sent unknown presence type")));
+					nRetVal = (INT_PTR)mir_tstrdup(TranslateTS(_T("sent unknown presence type")));
 				else if ( pdbEvent->datatype == DBVT_ASCIIZ )
-					nRetVal = (int)mir_strdup(Translate("sent unknown presence type"));
+					nRetVal = (INT_PTR)mir_strdup(Translate("sent unknown presence type"));
 				break;
 			}
 		}
@@ -640,9 +640,9 @@ public:
 		UI_MESSAGE(WM_CTLCOLORSTATIC, OnCtlColorStatic);
 	UI_MESSAGE_MAP_END();
 
-	BOOL OnCtlColorStatic(UINT, WPARAM, LPARAM)
+	INT_PTR OnCtlColorStatic(UINT, WPARAM, LPARAM)
 	{
-		return (BOOL)GetSysColorBrush(COLOR_WINDOW);
+		return (INT_PTR)GetSysColorBrush(COLOR_WINDOW);
 	}
 
 private:

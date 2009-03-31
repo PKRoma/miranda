@@ -1218,7 +1218,7 @@ INT_PTR __cdecl CJabberProto::OnGetXStatusIcon( WPARAM wParam, LPARAM lParam )
 		return 0;
 
 	if ( lParam & LR_SHARED )
-		return (int)GetXStatusIcon( wParam, LR_SHARED );
+		return (INT_PTR)GetXStatusIcon( wParam, LR_SHARED );
 
 	return (INT_PTR)GetXStatusIcon( wParam, 0 );
 }
@@ -2000,7 +2000,7 @@ void CJabberInfoFrame::UpdateInfoItem(char *pszName, HANDLE hIcolibIcon, TCHAR *
 void CJabberInfoFrame::ShowInfoItem(char *pszName, bool bShow)
 {
 	bool bUpdate = false;
-	int length = strlen(pszName);
+	size_t length = strlen(pszName);
 	for (int i = 0; i < m_pItems.getCount(); ++i)
 		if ((m_pItems[i].m_bShow != bShow) && !strncmp(m_pItems[i].m_pszName, pszName, length))
 		{
@@ -2016,7 +2016,7 @@ void CJabberInfoFrame::ShowInfoItem(char *pszName, bool bShow)
 void CJabberInfoFrame::RemoveInfoItem(char *pszName)
 {
 	bool bUpdate = false;
-	int length = strlen(pszName);
+	size_t length = strlen(pszName);
 	for (int i = 0; i < m_pItems.getCount(); ++i)
 		if (!strncmp(m_pItems[i].m_pszName, pszName, length))
 		{

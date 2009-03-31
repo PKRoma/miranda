@@ -109,7 +109,7 @@ char* TMD5Auth::getChallenge( const TCHAR* challenge )
 	DWORD digest[4], hash1[4], hash2[4];
 	mir_md5_state_t ctx;
 	mir_md5_init( &ctx );
-	mir_md5_append( &ctx, ( BYTE* )randomNumber, strlen(randomNumber));
+	mir_md5_append( &ctx, ( BYTE* )randomNumber, (int)strlen(randomNumber));
 	mir_md5_finish( &ctx, ( BYTE* )digest );
 	sprintf( cnonce, "%08x%08x%08x%08x", htonl(digest[0]), htonl(digest[1]), htonl(digest[2]), htonl(digest[3]));
 
@@ -118,37 +118,37 @@ char* TMD5Auth::getChallenge( const TCHAR* challenge )
 		  *serv  = mir_utf8encode( info->server );
 
 	mir_md5_init( &ctx );
-	mir_md5_append( &ctx, ( BYTE* )uname,  strlen( uname ));
+	mir_md5_append( &ctx, ( BYTE* )uname,  (int)strlen( uname ));
 	mir_md5_append( &ctx, ( BYTE* )":",    1 );
-	mir_md5_append( &ctx, ( BYTE* )realm,  strlen( realm ));
+	mir_md5_append( &ctx, ( BYTE* )realm,  (int)strlen( realm ));
 	mir_md5_append( &ctx, ( BYTE* )":",    1 );
-	mir_md5_append( &ctx, ( BYTE* )passw,  strlen( passw ));
+	mir_md5_append( &ctx, ( BYTE* )passw,  (int)strlen( passw ));
 	mir_md5_finish( &ctx, ( BYTE* )hash1 );
 
 	mir_md5_init( &ctx );
 	mir_md5_append( &ctx, ( BYTE* )hash1,  16 );
 	mir_md5_append( &ctx, ( BYTE* )":",    1 );
-	mir_md5_append( &ctx, ( BYTE* )nonce,  strlen( nonce ));
+	mir_md5_append( &ctx, ( BYTE* )nonce,  (int)strlen( nonce ));
 	mir_md5_append( &ctx, ( BYTE* )":",    1 );
-	mir_md5_append( &ctx, ( BYTE* )cnonce, strlen( cnonce ));
+	mir_md5_append( &ctx, ( BYTE* )cnonce, (int)strlen( cnonce ));
 	mir_md5_finish( &ctx, ( BYTE* )hash1 );
 	
 	mir_md5_init( &ctx );
 	mir_md5_append( &ctx, ( BYTE* )"AUTHENTICATE:xmpp/", 18 );
-	mir_md5_append( &ctx, ( BYTE* )serv,   strlen( serv ));
+	mir_md5_append( &ctx, ( BYTE* )serv,   (int)strlen( serv ));
 	mir_md5_finish( &ctx, ( BYTE* )hash2 );
 
 	mir_md5_init( &ctx );
 	sprintf( tmpBuf, "%08x%08x%08x%08x", htonl(hash1[0]), htonl(hash1[1]), htonl(hash1[2]), htonl(hash1[3]));
-	mir_md5_append( &ctx, ( BYTE* )tmpBuf, strlen( tmpBuf ));
+	mir_md5_append( &ctx, ( BYTE* )tmpBuf, (int)strlen( tmpBuf ));
 	mir_md5_append( &ctx, ( BYTE* )":",    1 );
-	mir_md5_append( &ctx, ( BYTE* )nonce,  strlen( nonce ));
+	mir_md5_append( &ctx, ( BYTE* )nonce,  (int)strlen( nonce ));
 	sprintf( tmpBuf, ":%08d:", iCallCount );
-	mir_md5_append( &ctx, ( BYTE* )tmpBuf, strlen( tmpBuf ));
-	mir_md5_append( &ctx, ( BYTE* )cnonce, strlen( cnonce ));
+	mir_md5_append( &ctx, ( BYTE* )tmpBuf, (int)strlen( tmpBuf ));
+	mir_md5_append( &ctx, ( BYTE* )cnonce, (int)strlen( cnonce ));
 	mir_md5_append( &ctx, ( BYTE* )":auth:", 6 );
 	sprintf( tmpBuf, "%08x%08x%08x%08x", htonl(hash2[0]), htonl(hash2[1]), htonl(hash2[2]), htonl(hash2[3]));
-	mir_md5_append( &ctx, ( BYTE* )tmpBuf, strlen( tmpBuf ));
+	mir_md5_append( &ctx, ( BYTE* )tmpBuf, (int)strlen( tmpBuf ));
 	mir_md5_finish( &ctx, ( BYTE* )digest );
 
 	char* buf = (char*)alloca(8000);
@@ -182,10 +182,10 @@ TPlainAuth::~TPlainAuth()
 char* TPlainAuth::getInitialRequest()
 {
 	char *temp = mir_t2a(info->username);
-	int size = strlen(temp)*2+strlen(info->server)+strlen(info->password)+3;
+	size_t size = strlen(temp)*2+strlen(info->server)+strlen(info->password)+3;
 	char *toEncode = ( char* )alloca( size+1 );
 	mir_snprintf( toEncode, size+1, "%s@%s%c%s%c%s", temp, info->server, 0, temp, 0, info->password );
-	char* result = JabberBase64Encode( toEncode, size );
+	char* result = JabberBase64Encode( toEncode, (int)size );
 	mir_free(temp);
 	return result;
 }

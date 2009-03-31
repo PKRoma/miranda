@@ -496,7 +496,7 @@ void CJabberDlgConsole::OnProtoRefresh(WPARAM, LPARAM lParam)
 	buf->streamOffset = 0;
 
 	EDITSTREAM es = {0};
-	es.dwCookie = (DWORD)buf;
+	es.dwCookie = (DWORD_PTR)buf;
 	es.pfnCallback = sttStreamInCallback;
 
 	SCROLLINFO si = {0};

@@ -129,7 +129,7 @@ protected:
 		if (msg == WM_CTLCOLORSTATIC )
 			switch( GetDlgCtrlID((HWND)lParam )) {
 			case IDC_WHITERECT: case IDC_TITLE: case IDC_DESCRIPTION:
-				return (BOOL)GetStockObject(WHITE_BRUSH);
+				return (INT_PTR)GetStockObject(WHITE_BRUSH);
 			}
 
 		return CSuper::DlgProc(msg, wParam, lParam);
