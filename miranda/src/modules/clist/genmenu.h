@@ -84,16 +84,16 @@ void GetMenuItemName( PMO_IntMenuItem pMenuItem, char* pszDest, size_t cbDestSiz
 
 PMO_IntMenuItem MO_GetIntMenuItem( HGENMENU );
 
-PMO_IntMenuItem MO_AddNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi );
-PMO_IntMenuItem MO_AddOldNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi );
+PMO_IntMenuItem MO_AddNewMenuItem( HANDLE menuobjecthandle, PMO_MenuItem pmi );
+PMO_IntMenuItem MO_AddOldNewMenuItem( HANDLE menuobjecthandle, PMO_MenuItem pmi );
 
 int MO_DrawMenuItem( LPDRAWITEMSTRUCT dis );
 int MO_MeasureMenuItem( LPMEASUREITEMSTRUCT mis );
 int MO_ModifyMenuItem( PMO_IntMenuItem menuHandle, PMO_MenuItem pmiparam );
 int MO_ProcessCommand( PMO_IntMenuItem pimi, LPARAM lParam );
-int MO_ProcessHotKeys( int menuHandle, int vKey );
+INT_PTR MO_ProcessHotKeys( HANDLE menuHandle, INT_PTR vKey );
 int MO_SetOptionsMenuItem( PMO_IntMenuItem menuobjecthandle, int setting, INT_PTR value );
-int MO_SetOptionsMenuObject( int menuobjecthandle, int setting, INT_PTR value );
+int MO_SetOptionsMenuObject( HANDLE menuobjecthandle, int setting, INT_PTR value );
 
 INT_PTR MO_ProcessCommandByMenuIdent(WPARAM wParam,LPARAM lParam);
 int MO_ProcessCommandBySubMenuIdent(int menuID, int command, LPARAM lParam);

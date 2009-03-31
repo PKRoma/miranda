@@ -178,14 +178,14 @@ INT_PTR MO_RemoveMenuObject(WPARAM wParam, LPARAM)
 
 //wparam=MenuObjectHandle
 //lparam=vKey
-int MO_ProcessHotKeys( int menuHandle, int vKey )
+INT_PTR MO_ProcessHotKeys( HANDLE menuHandle, INT_PTR vKey )
 {
 	if ( !bIsGenMenuInited)
 		return -1;
 
 	EnterCriticalSection( &csMenuHook );
 
-	int objidx = GetMenuObjbyId( menuHandle );
+	int objidx = GetMenuObjbyId( (int)menuHandle );
 	if ( objidx == -1 ) {
 		LeaveCriticalSection( &csMenuHook );
 		return FALSE;
@@ -446,7 +446,7 @@ int MO_SetOptionsMenuItem( PMO_IntMenuItem aHandle, int setting, INT_PTR value )
 	return res;
 }
 
-int MO_SetOptionsMenuObject( int handle, int setting, INT_PTR value )
+int MO_SetOptionsMenuObject( HANDLE handle, int setting, INT_PTR value )
 {
 	int  pimoidx;
 	int  res = 0;
@@ -457,7 +457,7 @@ int MO_SetOptionsMenuObject( int handle, int setting, INT_PTR value )
 	EnterCriticalSection( &csMenuHook );
 	__try 
 	{
-		pimoidx = GetMenuObjbyId( handle );
+		pimoidx = GetMenuObjbyId( (int)handle );
 		res = pimoidx != -1;
 		if ( res ) {
 			TIntMenuObject* pmo = g_menus[pimoidx];
@@ -579,7 +579,7 @@ static int GetNextObjectMenuItemId()
 //wparam=MenuObjectHandle
 //lparam=PMO_MenuItem
 //return MenuItemHandle
-PMO_IntMenuItem MO_AddNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
+PMO_IntMenuItem MO_AddNewMenuItem( HANDLE menuobjecthandle, PMO_MenuItem pmi )
 {
 	if ( !bIsGenMenuInited || pmi == NULL || pmi->cbSize != sizeof( TMO_MenuItem ))
 		return NULL;
@@ -589,7 +589,7 @@ PMO_IntMenuItem MO_AddNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 		return MO_AddOldNewMenuItem( menuobjecthandle, pmi );
 
 	EnterCriticalSection( &csMenuHook );
-	int objidx = GetMenuObjbyId( menuobjecthandle );
+	int objidx = GetMenuObjbyId( (int)menuobjecthandle );
 	if ( objidx == -1 ) {
 		LeaveCriticalSection( &csMenuHook );
 		return NULL;
@@ -668,12 +668,12 @@ int FindRoot( PMO_IntMenuItem pimi, void* param )
 	return FALSE;
 }
 
-PMO_IntMenuItem MO_AddOldNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
+PMO_IntMenuItem MO_AddOldNewMenuItem( HANDLE menuobjecthandle, PMO_MenuItem pmi )
 {
 	if ( !bIsGenMenuInited || pmi == NULL )
 		return NULL;
 
-	int objidx = GetMenuObjbyId( menuobjecthandle );
+	int objidx = GetMenuObjbyId( (int)menuobjecthandle );
 	if ( objidx == -1 )
 		return NULL;
 
@@ -831,7 +831,7 @@ INT_PTR MO_BuildMenu(WPARAM wParam,LPARAM lParam)
 	EnterCriticalSection( &csMenuHook );
 
 	ListParam *lp = ( ListParam* )lParam;
-	int pimoidx = GetMenuObjbyId( lp->MenuObjectHandle );
+	int pimoidx = GetMenuObjbyId( (int)lp->MenuObjectHandle );
 	if ( pimoidx == -1 ) {
 		LeaveCriticalSection( &csMenuHook );
 		return 0;
@@ -1027,7 +1027,7 @@ int OnIconLibChanges(WPARAM, LPARAM)
 {
 	EnterCriticalSection( &csMenuHook );
 	for ( int mo=0; mo < g_menus.getCount(); mo++ )
-		if ( hStatusMenuObject != g_menus[mo]->id ) //skip status menu
+		if ( (int)hStatusMenuObject != g_menus[mo]->id ) //skip status menu
 			MO_RecursiveWalkMenu( g_menus[mo]->m_items.first, MO_ReloadIcon, 0 );
 
 	LeaveCriticalSection( &csMenuHook );
@@ -1103,7 +1103,7 @@ int RegisterAllIconsInIconLib()
 {
 	//register all icons
 	for ( int mo=0; mo < g_menus.getCount(); mo++ ) {
-		if ( hStatusMenuObject == g_menus[mo]->id ) //skip status menu
+		if ( (int)hStatusMenuObject == g_menus[mo]->id ) //skip status menu
 			continue;
 
 		MO_RecursiveWalkMenu( g_menus[mo]->m_items.first, MO_RegisterIcon, 0 );
@@ -1114,7 +1114,7 @@ int RegisterAllIconsInIconLib()
 
 int TryProcessDoubleClick( HANDLE hContact )
 {
-	int iMenuID = GetMenuObjbyId( hContactMenuObject );
+	int iMenuID = GetMenuObjbyId( (int)hContactMenuObject );
 	if ( iMenuID != -1 ) {
 		NotifyEventHooks(hPreBuildContactMenuEvent,(WPARAM)hContact,0);
 

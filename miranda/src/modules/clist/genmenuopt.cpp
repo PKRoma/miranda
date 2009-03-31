@@ -117,7 +117,7 @@ static int BuildMenuObjectsTree(HWND hwndDlg)
 		return FALSE;
 
 	for ( i=0; i < g_menus.getCount(); i++ ) {
-		if ( g_menus[i]->id == hStatusMenuObject )
+		if ( g_menus[i]->id == (int)hStatusMenuObject )
 			continue;
 
 		tvis.item.lParam  = ( LPARAM )g_menus[i]->id;

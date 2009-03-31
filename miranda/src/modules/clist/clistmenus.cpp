@@ -41,9 +41,9 @@ typedef struct  {
 	CListIntMenuItem,*lpCListIntMenuItem;
 
 //new menu sys
-int hMainMenuObject = 0;
-int hContactMenuObject = 0;
-int hStatusMenuObject = 0;
+HANDLE hMainMenuObject = 0;
+HANDLE hContactMenuObject = 0;
+HANDLE hStatusMenuObject = 0;
 int UnloadMoveToGroup(void);
 
 int statustopos(int status);
@@ -699,7 +699,7 @@ INT_PTR MenuProcessCommand(WPARAM wParam,LPARAM lParam)
 
 	//process old menu sys
 	if ( HIWORD(wParam) & MPCF_CONTACTMENU )
-		return MO_ProcessCommandBySubMenuIdent( hContactMenuObject, LOWORD(wParam), lParam );
+		return MO_ProcessCommandBySubMenuIdent( (int)hContactMenuObject, LOWORD(wParam), lParam );
 
 	//unknown old menu
 	return MO_ProcessCommandByMenuIdent( LOWORD(wParam), lParam );
@@ -862,7 +862,7 @@ void RebuildMenuOrder( void )
 
 	//status menu
 	if ( hStatusMenuObject != 0 ) {
-		CallService(MO_REMOVEMENUOBJECT,hStatusMenuObject,0);
+		CallService(MO_REMOVEMENUOBJECT,(WPARAM)hStatusMenuObject,0);
 		if ( hStatusMainMenuHandles != NULL)
 			mir_free( hStatusMainMenuHandles );
 
@@ -875,7 +875,7 @@ void RebuildMenuOrder( void )
 	tmp.CheckService = "StatusMenuCheckService";
 	tmp.name = "StatusMenu";
 
-	hStatusMenuObject=(int)CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
+	hStatusMenuObject=(HANDLE)CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 	MO_SetOptionsMenuObject( hStatusMenuObject, OPT_MENUOBJECT_SET_FREE_SERVICE, (INT_PTR)"CLISTMENUS/FreeOwnerDataStatusMenu" );
 
 	hStatusMainMenuHandles = ( PMO_IntMenuItem* )mir_alloc( SIZEOF(statusModeList) * sizeof( PMO_IntMenuItem* ));
@@ -1340,7 +1340,7 @@ void InitCustomMenus(void)
 		tmp.CheckService=NULL;
 		tmp.ExecService="MainMenuExecService";
 		tmp.name="MainMenu";
-		hMainMenuObject=CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
+		hMainMenuObject=(HANDLE)CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 	}
 
 	MO_SetOptionsMenuObject( hMainMenuObject, OPT_USERDEFINEDITEMS, TRUE );
@@ -1353,7 +1353,7 @@ void InitCustomMenus(void)
 		tmp.CheckService="ContactMenuCheckService";
 		tmp.ExecService="ContactMenuExecService";
 		tmp.name="ContactMenu";
-		hContactMenuObject=CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
+		hContactMenuObject=(HANDLE)CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 	}
 
 	MO_SetOptionsMenuObject( hContactMenuObject, OPT_USERDEFINEDITEMS, TRUE );
@@ -1389,8 +1389,8 @@ void UninitCustomMenus(void)
 		mir_free( hStatusMenuHandles );
 	hStatusMenuHandles = NULL;
 
-	if ( hMainMenuObject   ) CallService( MO_REMOVEMENUOBJECT, hMainMenuObject, 0 );
-	if ( hStatusMenuObject ) CallService( MO_REMOVEMENUOBJECT, hMainMenuObject, 0 );
+	if ( hMainMenuObject   ) CallService( MO_REMOVEMENUOBJECT, (WPARAM)hMainMenuObject, 0 );
+	if ( hStatusMenuObject ) CallService( MO_REMOVEMENUOBJECT, (WPARAM)hMainMenuObject, 0 );
 
 	UnloadMoveToGroup();
 	FreeMenuProtos();

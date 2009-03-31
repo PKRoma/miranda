@@ -499,7 +499,7 @@ typedef struct {
 	DWORD dwFlags;						// event flags: GCEF_ADDTOLOG, GC_UNICODE
 
                                  // FALSE any other time than when initializing the window (before sending SESSION_INITDONE)
-	DWORD		dwItemData;          // User specified data.
+	DWORD_PTR dwItemData;          // User specified data.
 	DWORD   time;                // Timestamp of the event
 }
 	GCEVENT;
@@ -553,7 +553,7 @@ typedef struct {
 	char*		pszModule;			// the module name as registered in MS_GC_REGISTER
 	TCHAR*	pszID;				// unique ID of the session
 	TCHAR*	pszName;			// display name of the session
-	DWORD    dwItemData;			// user specified data.
+	DWORD_PTR   dwItemData;			// user specified data.
 	int		iCount;				// count of users in the nicklist
 	char*		pszUsers;			// space separated string containing the UID's of the users in the user list.
 									// NOTE. Use Mirandas mmi_free() on the returned string.
@@ -597,7 +597,7 @@ typedef struct {
 		char*   pszUID;   // unique identifier, usage depends on type of event
 		TCHAR*  ptszUID;
 	};
-	DWORD   dwData;    // user defined data, usage depends on type of event
+	DWORD_PTR dwData;    // user defined data, usage depends on type of event
 }
 	GCHOOK;
 

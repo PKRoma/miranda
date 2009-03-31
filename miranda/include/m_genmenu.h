@@ -269,7 +269,7 @@ typedef struct
 typedef struct tagListParam
 {
 	int rootlevel;
-	int MenuObjectHandle;
+	HANDLE MenuObjectHandle;
 	WPARAM wParam;
 	LPARAM lParam;
 }
@@ -376,9 +376,9 @@ typedef struct
 
 typedef struct tagOptParam
 {
-	int Handle;
+	HANDLE Handle;
 	int Setting;
-	int Value;
+	INT_PTR Value;
 }
 	OptParam,*lpOptParam;
 
