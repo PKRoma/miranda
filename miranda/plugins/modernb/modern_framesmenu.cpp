@@ -2,14 +2,14 @@
 #include "hdr/modern_commonprototypes.h"
 
 //==========================Frames
-int hFrameMenuObject;
+HANDLE hFrameMenuObject;
 
 //contactmenu exec param(ownerdata)
 //also used in checkservice
 typedef struct{
 	char *szServiceName;
 	int Frameid;
-	int param1;
+	INT_PTR param1;
 }FrameMenuExecParam,*lpFrameMenuExecParam;
 
 void FreeAndNil( void **p )
@@ -208,7 +208,7 @@ int InitFramesMenus(void)
 		tmp.CheckService="FrameMenuCheckService";
 		tmp.ExecService="FrameMenuExecService";
 		tmp.name="FrameMenu";
-		hFrameMenuObject=CallService(MO_CREATENEWMENUOBJECT,0,(LPARAM)&tmp);
+		hFrameMenuObject=(HANDLE)CallService(MO_CREATENEWMENUOBJECT,0,(LPARAM)&tmp);
 	}
 	return 0;
 }

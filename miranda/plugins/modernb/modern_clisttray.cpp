@@ -491,7 +491,7 @@ static INT_PTR BuildTrayMenu(WPARAM wParam,LPARAM lParam)
 	ListParam param;
 
 	memset(&param,0,sizeof(param));
-	param.MenuObjectHandle=(int)hTrayMenuObject;
+	param.MenuObjectHandle=hTrayMenuObject;
 
 	//hMenu=hMainMenu;
 	hMenu=CreatePopupMenu();
@@ -539,11 +539,11 @@ static INT_PTR AddTrayMenuItem(WPARAM wParam,LPARAM lParam)
 
 		tmi.ownerdata=mmep;
 	}
-	op.Handle=CallService(MO_ADDNEWMENUITEM,(WPARAM)hTrayMenuObject,(LPARAM)&tmi);
+	op.Handle=(HANDLE)CallService(MO_ADDNEWMENUITEM,(WPARAM)hTrayMenuObject,(LPARAM)&tmi);
 	op.Setting=OPT_MENUITEMSETUNIQNAME;
-	op.Value=(int)mi->pszService;
+	op.Value=(INT_PTR)mi->pszService;
 	CallService(MO_SETOPTIONSMENUITEM,(WPARAM)0,(LPARAM)&op);
-	return(op.Handle);
+	return (INT_PTR)op.Handle;
 
 	//	mainItemCount++;
 	//	return MENU_CUSTOMITEMMAIN|(mainMenuItem[mainItemCount-1].id);
@@ -630,19 +630,19 @@ void InitTrayMenus(void)
 	hTrayMenuObject=(HANDLE)CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 
 
-	op.Handle=(int)hTrayMenuObject;
+	op.Handle=hTrayMenuObject;
 	op.Setting=OPT_USERDEFINEDITEMS;
-	op.Value=(int)TRUE;
+	op.Value=TRUE;
 	CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
 
-	op.Handle=(int)hTrayMenuObject;
+	op.Handle=hTrayMenuObject;
 	op.Setting=OPT_MENUOBJECT_SET_FREE_SERVICE;
-	op.Value=(int)"CLISTMENUSTRAY/FreeOwnerDataTrayMenu";
+	op.Value=(INT_PTR)"CLISTMENUSTRAY/FreeOwnerDataTrayMenu";
 	CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
 
-	op.Handle=(int)hTrayMenuObject;
+	op.Handle=hTrayMenuObject;
 	op.Setting=OPT_MENUOBJECT_SET_ONADD_SERVICE;
-	op.Value=(int)"CLISTMENUSTRAY/TrayMenuonAddService";
+	op.Value=(INT_PTR)"CLISTMENUSTRAY/TrayMenuonAddService";
 	CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
 
 	{

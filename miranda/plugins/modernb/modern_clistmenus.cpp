@@ -138,9 +138,9 @@ static int FAV_OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 		}
 		{
 			OptParam op;
-			op.Handle	= (int) hFavoriteContactMenu;
+			op.Handle	= hFavoriteContactMenu;
 			op.Setting	= OPT_MENUITEMSETUNIQNAME;
-			op.Value	= (int)"ModernClistMenu_ContactRate";
+			op.Value	= (INT_PTR)"ModernClistMenu_ContactRate";
 			CallService(MO_SETOPTIONSMENUITEM,(WPARAM)0,(LPARAM)&op);
 		}
 
