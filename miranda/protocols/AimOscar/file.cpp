@@ -132,10 +132,10 @@ void CAimProto::sending_file(HANDLE hContact, HANDLE hNewConnection)
 						pfts.totalProgress=0;
 						pfts.workingDir=wd;
 						sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_DATA,hContact, (LPARAM) & pfts);
-						size_t bytes;
+						unsigned int bytes;
 						char buffer[1024*4];
 						unsigned int lNotify=GetTickCount()-500;
-						while ((bytes = fread(buffer, 1, 1024*4, fd)))
+						while ((bytes = (unsigned)fread(buffer, 1, 1024*4, fd)))
 						{
 							Netlib_Send(hNewConnection,buffer,bytes,MSG_NODUMP);
 							pfts.currentFileProgress += bytes;

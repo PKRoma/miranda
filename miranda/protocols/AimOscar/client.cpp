@@ -43,10 +43,10 @@ int CAimProto::aim_auth_request(HANDLE hServerConn,unsigned short &seqno,const c
     mir_md5_state_t state;
     
     mir_md5_init(&state);
-    mir_md5_append(&state,(const mir_md5_byte_t *)password, strlen(password));
+    mir_md5_append(&state,(const mir_md5_byte_t *)password, (int)strlen(password));
     mir_md5_finish(&state,pass_hash);
     mir_md5_init(&state);
-    mir_md5_append(&state,(mir_md5_byte_t*)key, strlen(key));
+    mir_md5_append(&state,(mir_md5_byte_t*)key, (int)strlen(key));
     mir_md5_append(&state,(mir_md5_byte_t*)pass_hash,MD5_HASH_LENGTH);
     mir_md5_append(&state,(mir_md5_byte_t*)AIM_MD5_STRING, sizeof(AIM_MD5_STRING)-1);
     mir_md5_finish(&state,auth_hash);

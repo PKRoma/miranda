@@ -951,7 +951,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 					dbei.timestamp = (DWORD)time(NULL);
 					dbei.flags = DBEF_SENT | DBEF_UTF;
 					dbei.eventType = EVENTTYPE_MESSAGE;
-					dbei.cbBlob = len;
+					dbei.cbBlob = (int)len;
 					dbei.pBlob = (PBYTE)buf;
 					CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei);
 					
