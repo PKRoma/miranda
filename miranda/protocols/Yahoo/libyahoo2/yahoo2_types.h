@@ -303,6 +303,20 @@ struct yahoo_webcam_data {
 	unsigned char packet_type;
 };
 
+struct yahoo_server_settings {
+	char *pager_host;
+	int   pager_port;
+	char *filetransfer_host;
+	int   filetransfer_port;
+	char *webcam_host;
+	int   webcam_port;
+	char *webcam_description;
+	char *local_host;
+	int   conn_type;
+	int pic_cksum;
+	int  web_messenger;
+};
+
 struct yahoo_data {
 	char  *user;
 	char  *password;
@@ -331,7 +345,7 @@ struct yahoo_data {
 	char  *rawstealthlist;
 	char  *ignorelist;
 
-	void  *server_settings;
+	struct yahoo_server_settings *server_settings;
 };
 
 struct yab {

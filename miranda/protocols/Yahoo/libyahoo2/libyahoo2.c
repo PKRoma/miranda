@@ -432,21 +432,7 @@ struct yahoo_input_data {
 	int   write_tag;
 };
 
-struct yahoo_server_settings {
-	char *pager_host;
-	int   pager_port;
-	char *filetransfer_host;
-	int   filetransfer_port;
-	char *webcam_host;
-	int   webcam_port;
-	char *webcam_description;
-	char *local_host;
-	int   conn_type;
-	int pic_cksum;
-	int  web_messenger;
-};
-
-static void * _yahoo_default_server_settings()
+static struct yahoo_server_settings* _yahoo_default_server_settings()
 {
 	struct yahoo_server_settings *yss = y_new0(struct yahoo_server_settings, 1);
 
@@ -464,7 +450,7 @@ static void * _yahoo_default_server_settings()
 	return yss;
 }
 
-static void * _yahoo_assign_server_settings(va_list ap)
+static struct yahoo_server_settings * _yahoo_assign_server_settings(va_list ap)
 {
 	struct yahoo_server_settings *yss = _yahoo_default_server_settings();
 	char *key;
@@ -596,7 +582,7 @@ static struct yahoo_input_data * find_input_by_id_and_type(int id, enum yahoo_co
 	
 	//LOG(("[find_input_by_id_and_type] id: %d, type: %d", id, type));
 	for(l = inputs; l; l = y_list_next(l)) {
-		struct yahoo_input_data *yid = l->data;
+		struct yahoo_input_data *yid = (struct yahoo_input_data *)l->data;
 		if(yid->type == type && yid->yd->client_id == id) {
 			//LOG(("[find_input_by_id_and_type] Got it!!!"));
 			return yid;
@@ -6718,8 +6704,10 @@ void yahoo_send_avatar(int id, const char *name, unsigned long size,
 enum yahoo_status yahoo_current_status(int id)
 {
 	struct yahoo_data *yd = find_conn_by_id(id);
+	
 	if(!yd)
 		return YAHOO_STATUS_OFFLINE;
+	
 	return yd->current_status;
 }
 
@@ -6976,7 +6964,7 @@ char *yahoo_ft7dc_send(int id, const char *buddy, YList *files)
 	yahoo_packet_hash(pkt,300, "268");
 	
 	while (l) {
-		struct yahoo_file_info * fi = l->data;
+		struct yahoo_file_info * fi = (struct yahoo_file_info *) l->data;
 		char *c = strrchr(fi->filename, '\\');
 		
 		if (c != NULL) {
