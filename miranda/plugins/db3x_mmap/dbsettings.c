@@ -225,8 +225,8 @@ static __inline int GetContactSettingWorker(HANDLE hContact,DBCONTACTGETSETTING 
 	if ((!dbcgs->szSetting) || (!dbcgs->szModule))
 		return 1;
 	// the db format can't tolerate more than 255 bytes of space (incl. null) for settings+module name
-	settingNameLen=strlen(dbcgs->szSetting);
-	moduleNameLen=strlen(dbcgs->szModule);
+	settingNameLen=(int)strlen(dbcgs->szSetting);
+	moduleNameLen=(int)strlen(dbcgs->szModule);
 	if ( settingNameLen > 0xFE )
 	{
 		#ifdef _DEBUG
@@ -257,7 +257,7 @@ static __inline int GetContactSettingWorker(HANDLE hContact,DBCONTACTGETSETTING 
 				if ( isStatic ) {
 					int cbLen = 0;
 					if ( pCachedValue->pszVal != NULL )
-						cbLen = strlen( pCachedValue->pszVal );
+						cbLen = (int)strlen( pCachedValue->pszVal );
 
 					cbOrigLen--;
 					dbcgs->pValue->pszVal = cbOrigPtr;
@@ -548,8 +548,8 @@ static INT_PTR WriteContactSetting(WPARAM wParam,LPARAM lParam)
 		return 1;
 
 	// the db format can't tolerate more than 255 bytes of space (incl. null) for settings+module name
-	settingNameLen=strlen(dbcws->szSetting);
-	moduleNameLen=strlen(dbcws->szModule);
+	settingNameLen=(int)strlen(dbcws->szSetting);
+	moduleNameLen=(int)strlen(dbcws->szModule);
 	if ( settingNameLen > 0xFE )
 	{
 		#ifdef _DEBUG
@@ -642,7 +642,7 @@ static INT_PTR WriteContactSetting(WPARAM wParam,LPARAM lParam)
 	ofsSettingsGroup=GetSettingsGroupOfsByModuleNameOfs(&dbc,ofsModuleName);
 	if(ofsSettingsGroup==0) {  //module group didn't exist - make it
 		if(dbcws->value.type&DBVTF_VARIABLELENGTH) {
-		  if(dbcws->value.type==DBVT_ASCIIZ || dbcws->value.type==DBVT_UTF8) bytesRequired=strlen(dbcws->value.pszVal)+2;
+		  if(dbcws->value.type==DBVT_ASCIIZ || dbcws->value.type==DBVT_UTF8) bytesRequired=(int)strlen(dbcws->value.pszVal)+2;
 		  else if(dbcws->value.type==DBVT_BLOB) bytesRequired=dbcws->value.cpbVal+2;
 		}
 		else bytesRequired=dbcws->value.type;
@@ -707,7 +707,7 @@ static INT_PTR WriteContactSetting(WPARAM wParam,LPARAM lParam)
 					case DBVT_WORD: DBWrite(ofsBlobPtr,&dbcws->value.wVal,2); break;
 					case DBVT_DWORD: DBWrite(ofsBlobPtr,&dbcws->value.dVal,4); break;
 					case DBVT_UTF8:
-					case DBVT_ASCIIZ: DBWrite(ofsBlobPtr+2,dbcws->value.pszVal,strlen(dbcws->value.pszVal)); break;
+					case DBVT_ASCIIZ: DBWrite(ofsBlobPtr+2,dbcws->value.pszVal,(int)strlen(dbcws->value.pszVal)); break;
 					case DBVT_BLOB: DBWrite(ofsBlobPtr+2,dbcws->value.pbVal,dbcws->value.cpbVal); break;
 				}
 				//quit
@@ -723,7 +723,7 @@ static INT_PTR WriteContactSetting(WPARAM wParam,LPARAM lParam)
 	//pBlob already points to end of list
 	//see if it fits
 	if(dbcws->value.type&DBVTF_VARIABLELENGTH) {
-	  if(dbcws->value.type==DBVT_ASCIIZ || dbcws->value.type==DBVT_UTF8) bytesRequired=strlen(dbcws->value.pszVal)+2;
+	  if(dbcws->value.type==DBVT_ASCIIZ || dbcws->value.type==DBVT_UTF8) bytesRequired=(int)strlen(dbcws->value.pszVal)+2;
 	  else if(dbcws->value.type==DBVT_BLOB) bytesRequired=dbcws->value.cpbVal+2;
 	}
 	else bytesRequired=dbcws->value.type;
@@ -778,7 +778,7 @@ static INT_PTR WriteContactSetting(WPARAM wParam,LPARAM lParam)
 		case DBVT_DWORD: DBWrite(ofsBlobPtr,&dbcws->value.dVal,4); MoveAlong(4); break;
 		case DBVT_UTF8:
 		case DBVT_ASCIIZ:
-			{	int len=strlen(dbcws->value.pszVal);
+			{	int len=(int)strlen(dbcws->value.pszVal);
 				DBWrite(ofsBlobPtr,&len,2);
 				DBWrite(ofsBlobPtr+2,dbcws->value.pszVal,len);
 				MoveAlong(2+len);
@@ -814,8 +814,8 @@ static INT_PTR DeleteContactSetting(WPARAM wParam,LPARAM lParam)
 	if ((!dbcgs->szModule) || (!dbcgs->szSetting))
 		return 1;
 	// the db format can't tolerate more than 255 bytes of space (incl. null) for settings+module name
-	settingNameLen=strlen(dbcgs->szSetting);
-	moduleNameLen=strlen(dbcgs->szModule);
+	settingNameLen=(int)strlen(dbcgs->szSetting);
+	moduleNameLen=(int)strlen(dbcgs->szModule);
 	if ( settingNameLen > 0xFE )
 	{
 		#ifdef _DEBUG

@@ -90,7 +90,7 @@ static INT_PTR FindFirstContact(WPARAM wParam,LPARAM lParam)
 {
 	INT_PTR ret = 0;
 	EnterCriticalSection(&csDbAccess);
-	ret = (INT_PTR)(HANDLE)dbHeader.ofsFirstContact;
+	ret = (INT_PTR)dbHeader.ofsFirstContact;
 	if (lParam && !CheckProto((HANDLE)ret,(const char*)lParam))
 		ret = FindNextContact((WPARAM)ret,lParam);
 	LeaveCriticalSection(&csDbAccess);

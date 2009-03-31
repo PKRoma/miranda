@@ -83,7 +83,7 @@ static DWORD FindExistingModuleNameOfs(const char *szName,int nameLen)
 DWORD GetModuleNameOfs(const char *szName)
 {
 	struct DBModuleName dbmn;
-	int nameLen=strlen(szName);
+	int nameLen=(int)strlen(szName);
 	DWORD ofsNew,ofsExisting;
 
 	ofsExisting=FindExistingModuleNameOfs(szName,nameLen);

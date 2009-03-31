@@ -134,7 +134,7 @@ DWORD GetModuleNameOfs(const char *szName)
 	ofsExisting=FindExistingModuleNameOfs(szName);
 	if(ofsExisting) return ofsExisting;
 
-	nameLen = strlen(szName);
+	nameLen = (int)strlen(szName);
 
 	//need to create the module name
 	ofsNew=CreateNewSpace(nameLen+offsetof(struct DBModuleName,name));

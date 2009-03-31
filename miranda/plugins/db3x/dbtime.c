@@ -144,7 +144,7 @@ static INT_PTR TimestampToString(WPARAM wParam,LPARAM lParam)
 				}
 				continue;
 		}
-		dateTimeStrLen=strlen(dateTimeStr);
+		dateTimeStrLen=(int)strlen(dateTimeStr);
 		if(destCharsLeft<dateTimeStrLen) dateTimeStrLen=destCharsLeft;
 		CopyMemory(pDest,dateTimeStr,dateTimeStrLen);
 		destCharsLeft-=dateTimeStrLen;
