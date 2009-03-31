@@ -237,7 +237,7 @@ static int FS_FontsChanged(WPARAM wParam, LPARAM lParam)
 * last frame of all.
 */
 
-static int PreCreateCLC(HWND parent)
+static HWND PreCreateCLC(HWND parent)
 {
 	pcli->hwndContactTree = CreateWindow(CLISTCONTROL_CLASS, _T(""),
 										 WS_CHILD | CLS_CONTACTLIST
@@ -248,8 +248,8 @@ static int PreCreateCLC(HWND parent)
 										 | CLS_MULTICOLUMN
 										 , 0, 0, 0, 0, parent, NULL, g_hInst, (LPVOID)0xff00ff00);
 
-	g_clcData = (struct ClcData *)GetWindowLong(pcli->hwndContactTree, 0);
-	return((int)pcli->hwndContactTree);
+	g_clcData = (struct ClcData *)GetWindowLongPtr(pcli->hwndContactTree, 0);
+	return pcli->hwndContactTree;
 }
 
 /*
@@ -334,7 +334,7 @@ static int CluiModulesLoaded(WPARAM wParam, LPARAM lParam)
 	upd.cbSize = sizeof(upd);
 	upd.szComponentName = pluginInfo.shortName;
 	upd.pbVersion = (BYTE *)CreateVersionStringPlugin(&pluginInfo, szCurrentVersion);
-	upd.cpbVersion = strlen((char *)upd.pbVersion);
+	upd.cpbVersion = (int)strlen((char *)upd.pbVersion);
 	upd.szVersionURL = szFLVersionUrl;
 	upd.szUpdateURL = szFLUpdateurl;
 
@@ -344,8 +344,8 @@ static int CluiModulesLoaded(WPARAM wParam, LPARAM lParam)
 	upd.pbVersion = szCurrentVersion;
 	upd.cpbVersion = lstrlenA(szCurrentVersion);
 
-	upd.cpbVersionPrefix = strlen((char *)upd.pbVersionPrefix);
-	upd.cpbBetaVersionPrefix = strlen((char *)upd.pbBetaVersionPrefix);
+	upd.cpbVersionPrefix = (int)strlen((char *)upd.pbVersionPrefix);
+	upd.cpbBetaVersionPrefix = (int)strlen((char *)upd.pbBetaVersionPrefix);
 
 	if (ServiceExists(MS_UPDATE_REGISTER))
 		CallService(MS_UPDATE_REGISTER, 0, (LPARAM)&upd);
@@ -1233,7 +1233,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			SetButtonStates(hwnd);
 
 			CreateCLC(hwnd);
-			g_clcData = (struct ClcData *)GetWindowLong(pcli->hwndContactTree, 0);
+			g_clcData = (struct ClcData *)GetWindowLongPtr(pcli->hwndContactTree, 0);
 
 			if (MySetLayeredWindowAttributes != 0 && g_CluiData.bFullTransparent) {
 				if (g_CLUISkinnedBkColorRGB)
@@ -2364,7 +2364,7 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				else
 					SetTextColor((HDC)wParam, RGB(0, 0, 0));
 				SetBkColor((HDC)wParam, RGB(255, 255, 255));
-				return (BOOL)GetStockObject(WHITE_BRUSH);
+				return (INT_PTR)GetStockObject(WHITE_BRUSH);
 			}
 			break;
 		case WM_DESTROY: {

@@ -120,7 +120,7 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 				return 0;
 			if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry <= g_nextExtraCacheEntry) {
 				if(g_ExtraCache[contact->extraCacheEntry].bStatusMsgValid != STATUSMSG_NOTFOUND)
-					return((int)g_ExtraCache[contact->extraCacheEntry].statusMsg);
+					return((INT_PTR)g_ExtraCache[contact->extraCacheEntry].statusMsg);
 		}	}
 		return 0;
 

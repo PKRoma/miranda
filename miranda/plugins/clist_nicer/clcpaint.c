@@ -244,7 +244,7 @@ static void InitThemeAPI()
 
 void PaintNotifyArea(HDC hDC, RECT *rc)
 {
-	struct ClcData *dat = (struct ClcData *) GetWindowLong(pcli->hwndContactTree, 0);
+	struct ClcData *dat = (struct ClcData *) GetWindowLongPtr(pcli->hwndContactTree, 0);
 	int iCount;
 	static int ev_lastIcon = 0;
 

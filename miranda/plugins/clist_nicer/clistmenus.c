@@ -74,7 +74,7 @@ static INT_PTR CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
 			HWND hwndAdd;
 
 			hContact = (HANDLE)lParam;
-			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG)hContact);
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)hContact);
 			dwMask = DBGetContactSettingDword(hContact, "Ignore", "Mask1", 0);
 			SendMessage(hWnd, WM_USER + 100, (WPARAM)hContact, dwMask);
 			SendMessage(hWnd, WM_USER + 120, 0, 0);

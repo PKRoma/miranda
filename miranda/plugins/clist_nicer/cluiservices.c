@@ -34,7 +34,7 @@ extern PLUGININFOEX pluginInfo;
 
 extern ButtonItem *g_ButtonItems;
 
-static int GetClistVersion(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetClistVersion(WPARAM wParam, LPARAM lParam)
 {
 	static char g_szVersionString[256];
 
@@ -42,7 +42,7 @@ static int GetClistVersion(WPARAM wParam, LPARAM lParam)
 	if(!IsBadWritePtr((LPVOID)lParam, 4))
 		*((DWORD *)lParam) = pluginInfo.version;
 
-	return (int)g_szVersionString;
+	return (INT_PTR)g_szVersionString;
 }
 
 

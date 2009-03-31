@@ -1368,7 +1368,7 @@ void LoadPerContactSkins(char *file)
             szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
             if(szProto) {
                 uid = (char *)CallProtoService(szProto, PS_GETCAPS, PFLAG_UNIQUEIDSETTING, 0);
-                if ((int) uid != CALLSERVICE_NOTFOUND && uid != NULL) {
+                if ((INT_PTR) uid != CALLSERVICE_NOTFOUND && uid != NULL) {
                     DBVARIANT dbv = {0};
 
                     DBGetContactSetting(hContact, szProto, uid, &dbv);

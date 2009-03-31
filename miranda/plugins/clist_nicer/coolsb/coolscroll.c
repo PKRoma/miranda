@@ -3174,7 +3174,7 @@ LRESULT CALLBACK CoolSBWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lP
 
 	case WM_NCMOUSEMOVE: 
 		{
-			static LONG lastpos = -1;
+			static LONG_PTR lastpos = -1;
 
 			//TRACE("WM_NCMOUSEMOVE %d\n", count++);
 

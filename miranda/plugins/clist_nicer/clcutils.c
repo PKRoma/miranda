@@ -451,10 +451,10 @@ static LRESULT CALLBACK RenameEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 	case WM_KEYDOWN:
 		switch (wParam) {
 	case VK_RETURN:
-		pcli->pfnEndRename(GetParent(hwnd), (struct ClcData *) GetWindowLong(GetParent(hwnd), 0), 1);
+		pcli->pfnEndRename(GetParent(hwnd), (struct ClcData *) GetWindowLongPtr(GetParent(hwnd), 0), 1);
 		return 0;
 	case VK_ESCAPE:
-		pcli->pfnEndRename(GetParent(hwnd), (struct ClcData *) GetWindowLong(GetParent(hwnd), 0), 0);
+		pcli->pfnEndRename(GetParent(hwnd), (struct ClcData *) GetWindowLongPtr(GetParent(hwnd), 0), 0);
 		return 0;
 		}
 		break;
@@ -468,7 +468,7 @@ static LRESULT CALLBACK RenameEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 		}
 		return DLGC_WANTMESSAGE;
 	case WM_KILLFOCUS:
-		pcli->pfnEndRename(GetParent(hwnd), (struct ClcData *) GetWindowLong(GetParent(hwnd), 0), 1);
+		pcli->pfnEndRename(GetParent(hwnd), (struct ClcData *) GetWindowLongPtr(GetParent(hwnd), 0), 1);
 		return 0;
 	}
 	return CallWindowProc(OldRenameEditWndProc, hwnd, msg, wParam, lParam);

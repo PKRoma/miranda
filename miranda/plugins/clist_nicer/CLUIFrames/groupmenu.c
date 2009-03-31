@@ -72,7 +72,7 @@ static INT_PTR BuildGroupMenu(WPARAM wParam,LPARAM lParam)
 	int tick;
 	HMENU hMenu;
 	ListParam param = { 0 };
-	param.MenuObjectHandle=(int)hGroupMenuObject;
+	param.MenuObjectHandle=hGroupMenuObject;
 
 	//hMenu=hMainMenu;
 	hMenu=CreatePopupMenu();
@@ -84,7 +84,7 @@ static INT_PTR BuildGroupMenu(WPARAM wParam,LPARAM lParam)
 	CallService(MO_BUILDMENU,(WPARAM)hMenu,(LPARAM)&param);
 	//DrawMenuBar((HWND)CallService("CLUI/GetHwnd",0,0));
 	tick=GetTickCount()-tick;
-	return(int)hMenu;
+	return(INT_PTR)hMenu;
 }
 
 static INT_PTR AddGroupMenuItem(WPARAM wParam,LPARAM lParam)
@@ -131,12 +131,12 @@ static INT_PTR AddGroupMenuItem(WPARAM wParam,LPARAM lParam)
 
 		tmi.ownerdata=mmep;
 	}
-	op.Handle=CallService(MO_ADDNEWMENUITEM,(WPARAM)hGroupMenuObject,(LPARAM)&tmi);
+	op.Handle=(HANDLE)CallService(MO_ADDNEWMENUITEM,(WPARAM)hGroupMenuObject,(LPARAM)&tmi);
 	op.Setting=OPT_MENUITEMSETUNIQNAME;
 	sprintf(buf,"%s/%s",mi->pszService,mi->pszName);
-	op.Value=(int)buf;
+	op.Value=(INT_PTR)buf;
 	CallService(MO_SETOPTIONSMENUITEM,(WPARAM)0,(LPARAM)&op);
-	return(op.Handle);
+	return (INT_PTR)op.Handle;
 
 	//	mainItemCount++;
 	//	return MENU_CUSTOMITEMMAIN|(mainMenuItem[mainItemCount-1].id);
@@ -335,19 +335,19 @@ void InitGroupMenus(void)
 	hGroupMenuObject=(HANDLE)CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 
 
-	op.Handle=(int)hGroupMenuObject;
+	op.Handle=hGroupMenuObject;
 	op.Setting=OPT_USERDEFINEDITEMS;
-	op.Value=(int)TRUE;
+	op.Value=TRUE;
 	CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
 
-	op.Handle=(int)hGroupMenuObject;
+	op.Handle=hGroupMenuObject;
 	op.Setting=OPT_MENUOBJECT_SET_FREE_SERVICE;
-	op.Value=(int)"CLISTMENUSGroup/FreeOwnerDataGroupMenu";
+	op.Value=(INT_PTR)"CLISTMENUSGroup/FreeOwnerDataGroupMenu";
 	CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
 
-	op.Handle=(int)hGroupMenuObject;
+	op.Handle=hGroupMenuObject;
 	op.Setting=OPT_MENUOBJECT_SET_ONADD_SERVICE;
-	op.Value=(int)"CLISTMENUSGroup/GroupMenuonAddService";
+	op.Value=(INT_PTR)"CLISTMENUSGroup/GroupMenuonAddService";
 	CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
 
 	{
@@ -517,7 +517,7 @@ static INT_PTR BuildSubGroupMenu(WPARAM wParam,LPARAM lParam)
 	int tick;
 	HMENU hMenu;
 	ListParam param = { 0 };
-	param.MenuObjectHandle=(int)hSubGroupMenuObject;
+	param.MenuObjectHandle=hSubGroupMenuObject;
 	param.wParam=wParam;
 
 	//hMenu=hMainMenu;
@@ -572,12 +572,12 @@ static INT_PTR AddSubGroupMenuItem(WPARAM wParam,LPARAM lParam)
 		tmi.ownerdata=mmep;
 	}
 
-	op.Handle=CallService(MO_ADDNEWMENUITEM,(WPARAM)hSubGroupMenuObject,(LPARAM)&tmi);
+	op.Handle=(HANDLE)CallService(MO_ADDNEWMENUITEM,(WPARAM)hSubGroupMenuObject,(LPARAM)&tmi);
 	op.Setting=OPT_MENUITEMSETUNIQNAME;
 	sprintf(buf,"%s/%s",mi->pszService,mi->pszName);
-	op.Value=(int)buf;
+	op.Value=(INT_PTR)buf;
 	CallService(MO_SETOPTIONSMENUITEM,(WPARAM)0,(LPARAM)&op);
-	return(op.Handle);
+	return (INT_PTR)op.Handle;
 
 	//	mainItemCount++;
 	//	return MENU_CUSTOMITEMMAIN|(mainMenuItem[mainItemCount-1].id);
@@ -686,19 +686,19 @@ void InitSubGroupMenus(void)
 	hSubGroupMenuObject=(HANDLE)CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 
 
-	op.Handle=(int)hSubGroupMenuObject;
+	op.Handle=hSubGroupMenuObject;
 	op.Setting=OPT_USERDEFINEDITEMS;
-	op.Value=(int)TRUE;
+	op.Value=TRUE;
 	CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
 
-	op.Handle=(int)hSubGroupMenuObject;
+	op.Handle=hSubGroupMenuObject;
 	op.Setting=OPT_MENUOBJECT_SET_FREE_SERVICE;
-	op.Value=(int)"CLISTMENUSSubGroup/FreeOwnerDataSubGroupMenu";
+	op.Value=(INT_PTR)"CLISTMENUSSubGroup/FreeOwnerDataSubGroupMenu";
 	CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
 
-	op.Handle=(int)hSubGroupMenuObject;
+	op.Handle=hSubGroupMenuObject;
 	op.Setting=OPT_MENUOBJECT_SET_ONADD_SERVICE;
-	op.Value=(int)"CLISTMENUSSubGroup/SubGroupMenuonAddService";
+	op.Value=(INT_PTR)"CLISTMENUSSubGroup/SubGroupMenuonAddService";
 	CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
 
 	{

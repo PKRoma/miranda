@@ -24,11 +24,6 @@ UNICODE - done.
 
 */
 
-#define HCONTACT_ISGROUP    0x80000000
-#define HCONTACT_ISINFO     0xFFFF0000
-#define IsHContactGroup(h)  (((unsigned)(h)^HCONTACT_ISGROUP)<(HCONTACT_ISGROUP^HCONTACT_ISINFO))
-#define IsHContactInfo(h)   (((unsigned)(h)&HCONTACT_ISINFO)==HCONTACT_ISINFO)
-#define IsHContactContact(h) (((unsigned)(h)&HCONTACT_ISGROUP)==0)
 #define MAXEXTRACOLUMNS     16
 
 #define INTM_XSTATUSCHANGED  (WM_USER+26)
