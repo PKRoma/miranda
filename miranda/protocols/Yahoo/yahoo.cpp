@@ -982,7 +982,7 @@ void check_for_update(void)
 	nlhr.headersCount= 3;
 	
 	httpHeaders[0].szName="Accept";
-	httpHeaders[0].szValue="*\/*";
+	httpHeaders[0].szValue="*\/ *";
 	httpHeaders[1].szName="User-Agent";
 	httpHeaders[1].szValue="Mozilla Compatible/2.0 (WinNT; I; NCC/2.0)";
 	httpHeaders[2].szName="Pragma";
@@ -1530,98 +1530,157 @@ CYahooProto* __fastcall getProtoById( int id )
 	return NULL;
 }
 
-static void ext_yahoo_status_changed(int id, const char *who, int protocol, int stat, const char *msg, int away, int idle, int mobile, int utf8)
-{	GETPROTOBYID( id )->ext_status_changed(who, protocol, stat, msg, away, idle, mobile, utf8); }
-
-static void ext_yahoo_status_logon(int id, const char *who, int protocol, int stat, const char *msg, int away, int idle, int mobile, int cksum, int buddy_icon, long client_version, int utf8)
-{	GETPROTOBYID( id )->ext_status_logon(who, protocol, stat, msg, away, idle, mobile, cksum, buddy_icon, client_version, utf8); }
-
-static void ext_yahoo_got_audible(int id, const char *me, const char *who, const char *aud, const char *msg, const char *aud_hash)
-{	GETPROTOBYID( id )->ext_got_audible(me, who, aud, msg, aud_hash); }
-
-static void ext_yahoo_got_calendar(int id, const char *url, int type, const char *msg, int svc)
-{	GETPROTOBYID( id )->ext_got_calendar(url, type, msg, svc); }
-
-static void ext_yahoo_got_stealth(int id, char *stealthlist)
-{	GETPROTOBYID( id )->ext_got_stealth(stealthlist); }
-
-static void ext_yahoo_got_buddies(int id, YList * buds)
-{	GETPROTOBYID( id )->ext_got_buddies(buds); }
-
-static void ext_yahoo_rejected(int id, const char *who, const char *msg)
-{	GETPROTOBYID( id )->ext_rejected(who, msg); }
-
-static void ext_yahoo_buddy_added(int id, char *myid, char *who, char *group, int status, int auth)
-{	GETPROTOBYID( id )->ext_buddy_added(myid, who, group, status, auth); }
-
-static void ext_yahoo_buddy_group_changed(int id, char *myid, char *who, char *old_group, char *new_group)
-{	LOG(("[ext_yahoo_buddy_group_changed] %s has been moved from group: %s to: %s", who, old_group, new_group));
+void ext_yahoo_status_changed(int id, const char *who, int protocol, int stat, const char *msg, int away, int idle, int mobile, int utf8)
+{	
+	GETPROTOBYID( id )->ext_status_changed(who, protocol, stat, msg, away, idle, mobile, utf8); 
 }
 
-static void ext_yahoo_contact_added(int id, const char *myid, const char *who, const char *fname, const char *lname, const char *msg, int protocol)
-{	GETPROTOBYID( id )->ext_contact_added(myid, who, fname, lname, msg, protocol); }
+void ext_yahoo_status_logon(int id, const char *who, int protocol, int stat, const char *msg, int away, int idle, int mobile, int cksum, int buddy_icon, long client_version, int utf8)
+{	
+	GETPROTOBYID( id )->ext_status_logon(who, protocol, stat, msg, away, idle, mobile, cksum, buddy_icon, client_version, utf8); 
+}
 
-static void ext_yahoo_typing_notify(int id, const char *me, const char *who, int protocol, int stat)
-{	GETPROTOBYID( id )->ext_typing_notify(me, who, protocol, stat); }
+void ext_yahoo_got_audible(int id, const char *me, const char *who, const char *aud, const char *msg, const char *aud_hash)
+{	
+	GETPROTOBYID( id )->ext_got_audible(me, who, aud, msg, aud_hash); 
+}
 
-static void ext_yahoo_game_notify(int id, const char *me, const char *who, int stat, const char *msg)
-{	GETPROTOBYID( id )->ext_game_notify(me, who, stat, msg); }
+void ext_yahoo_got_calendar(int id, const char *url, int type, const char *msg, int svc)
+{	
+	GETPROTOBYID( id )->ext_got_calendar(url, type, msg, svc); 
+}
 
-static void ext_yahoo_mail_notify(int id, const char *from, const char *subj, int cnt)
-{	GETPROTOBYID( id )->ext_mail_notify(from, subj, cnt); }
+void ext_yahoo_got_stealth(int id, char *stealthlist)
+{	
+	GETPROTOBYID( id )->ext_got_stealth(stealthlist); 
+}
 
-static void ext_yahoo_system_message(int id, const char *me, const char *who, const char *msg)
-{	GETPROTOBYID( id )->ext_system_message(me, who, msg); }
+void ext_yahoo_got_buddies(int id, YList * buds)
+{	
+	GETPROTOBYID( id )->ext_got_buddies(buds); 
+}
 
-static void ext_yahoo_got_identities(int id, const char *fname, const char *lname, YList * ids)
-{	GETPROTOBYID( id )->ext_got_identities(fname, lname, ids); }
+void ext_yahoo_rejected(int id, const char *who, const char *msg)
+{	
+	GETPROTOBYID( id )->ext_rejected(who, msg); 
+}
 
-static void ext_yahoo_got_ping(int id, const char *errormsg)
-{	GETPROTOBYID( id )->ext_got_ping(errormsg); }
+void ext_yahoo_buddy_added(int id, char *myid, char *who, char *group, int status, int auth)
+{	
+	GETPROTOBYID( id )->ext_buddy_added(myid, who, group, status, auth); 
+}
 
-static void ext_yahoo_error(int id, const char *err, int fatal, int num)
-{	GETPROTOBYID( id )->ext_error(err, fatal, num); }
+void ext_yahoo_buddy_group_changed(int id, char *myid, char *who, char *old_group, char *new_group)
+{	
+	LOG(("[ext_yahoo_buddy_group_changed] %s has been moved from group: %s to: %s", who, old_group, new_group));
+}
 
-static void ext_yahoo_login_response(int id, int succ, const char *url)
-{	GETPROTOBYID( id )->ext_login_response(succ, url); }
+void ext_yahoo_contact_added(int id, const char *myid, const char *who, const char *fname, const char *lname, const char *msg, int protocol)
+{	
+	GETPROTOBYID( id )->ext_contact_added(myid, who, fname, lname, msg, protocol); 
+}
 
-static void ext_yahoo_got_im(int id, const char *me, const char *who, int protocol, const char *msg, long tm, int stat, int utf8, int buddy_icon, const char *seqn, int sendn)
-{	GETPROTOBYID( id )->ext_got_im(me, who, protocol, msg, tm, stat, utf8, buddy_icon, seqn, sendn); }
+void ext_yahoo_typing_notify(int id, const char *me, const char *who, int protocol, int stat)
+{	
+	GETPROTOBYID( id )->ext_typing_notify(me, who, protocol, stat); 
+}
 
-static void ext_yahoo_got_search_result(int id, int found, int start, int total, YList *contacts)
-{	GETPROTOBYID( id )->ext_got_search_result(found, start, total, contacts); }
+void ext_yahoo_game_notify(int id, const char *me, const char *who, int stat, const char *msg)
+{	
+	GETPROTOBYID( id )->ext_game_notify(me, who, stat, msg); 
+}
 
-static void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *pic_url, int cksum, int type)
-{	GETPROTOBYID( id )->ext_got_picture(me, who, pic_url, cksum, type); }
+void ext_yahoo_mail_notify(int id, const char *from, const char *subj, int cnt)
+{	
+	GETPROTOBYID( id )->ext_mail_notify(from, subj, cnt); 
+}
 
-static void ext_yahoo_got_picture_checksum(int id, const char *me, const char *who, int cksum)
-{	GETPROTOBYID( id )->ext_got_picture_checksum(me, who, cksum); }
+void ext_yahoo_system_message(int id, const char *me, const char *who, const char *msg)
+{	
+	GETPROTOBYID( id )->ext_system_message(me, who, msg); 
+}
 
-static void ext_yahoo_got_picture_update(int id, const char *me, const char *who, int buddy_icon)
-{	GETPROTOBYID( id )->ext_got_picture_update(me, who, buddy_icon); }
+void ext_yahoo_got_identities(int id, const char *fname, const char *lname, YList * ids)
+{	
+	GETPROTOBYID( id )->ext_got_identities(fname, lname, ids); 
+}
 
-static void ext_yahoo_got_picture_status(int id, const char *me, const char *who, int buddy_icon)
-{	GETPROTOBYID( id )->ext_got_picture_status(me, who, buddy_icon); }
+void ext_yahoo_got_ping(int id, const char *errormsg)
+{	
+	GETPROTOBYID( id )->ext_got_ping(errormsg); 
+}
 
-static void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsigned int ts)
-{	GETPROTOBYID( id )->ext_got_picture_upload(me, url, ts); }
+void ext_yahoo_error(int id, const char *err, int fatal, int num)
+{	
+	GETPROTOBYID( id )->ext_error(err, fatal, num); 
+}
 
-static void ext_yahoo_got_avatar_share(int id, int buddy_icon)
-{	GETPROTOBYID( id )->ext_got_avatar_share(buddy_icon); }
+void ext_yahoo_login_response(int id, int succ, const char *url)
+{	
+	GETPROTOBYID( id )->ext_login_response(succ, url); 
+}
 
-static void ext_yahoo_got_file(int id, const char *me, const char *who, const char *url, long expires, const char *msg, const char *fname, unsigned long fesize, const char *ft_token, int y7)
-{	GETPROTOBYID( id )->ext_got_file(me, who, url, expires, msg, fname, fesize, ft_token, y7); }
+void ext_yahoo_got_im(int id, const char *me, const char *who, int protocol, const char *msg, long tm, int stat, int utf8, int buddy_icon, const char *seqn, int sendn)
+{	
+	GETPROTOBYID( id )->ext_got_im(me, who, protocol, msg, tm, stat, utf8, buddy_icon, seqn, sendn); 
+}
 
-static void ext_yahoo_got_files(int id, const char *me, const char *who, const char *ft_token, int y7, YList* files)
-{	GETPROTOBYID( id )->ext_got_files(me, who, ft_token, y7, files); }
+void ext_yahoo_got_search_result(int id, int found, int start, int total, YList *contacts)
+{	
+	GETPROTOBYID( id )->ext_got_search_result(found, start, total, contacts); 
+}
 
-static void ext_yahoo_got_file7info(int id, const char *me, const char *who, const char *url, const char *fname, const char *ft_token)
-{	GETPROTOBYID( id )->ext_got_file7info(me, who, url, fname, ft_token); }
+void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *pic_url, int cksum, int type)
+{	
+	GETPROTOBYID( id )->ext_got_picture(me, who, pic_url, cksum, type); 
+}
 
-static void ext_yahoo_ft7_send_file(int id, const char *me, const char *who, const char *filename, const char *token, const char *ft_token)
-{	GETPROTOBYID( id )->ext_ft7_send_file(me, who, filename, token, ft_token); }
+void ext_yahoo_got_picture_checksum(int id, const char *me, const char *who, int cksum)
+{	
+	GETPROTOBYID( id )->ext_got_picture_checksum(me, who, cksum); 
+}
 
-static int ext_yahoo_connect_async(int id, const char *host, int port, int type, yahoo_connect_callback callback, void *data)
+void ext_yahoo_got_picture_update(int id, const char *me, const char *who, int buddy_icon)
+{	
+	GETPROTOBYID( id )->ext_got_picture_update(me, who, buddy_icon); 
+}
+
+void ext_yahoo_got_picture_status(int id, const char *me, const char *who, int buddy_icon)
+{	
+	GETPROTOBYID( id )->ext_got_picture_status(me, who, buddy_icon); 
+}
+
+void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsigned int ts)
+{	
+	GETPROTOBYID( id )->ext_got_picture_upload(me, url, ts); 
+}
+
+void ext_yahoo_got_avatar_share(int id, int buddy_icon)
+{	
+	GETPROTOBYID( id )->ext_got_avatar_share(buddy_icon); 
+}
+
+void ext_yahoo_got_file(int id, const char *me, const char *who, const char *url, long expires, const char *msg, const char *fname, unsigned long fesize, const char *ft_token, int y7)
+{	
+	GETPROTOBYID( id )->ext_got_file(me, who, url, expires, msg, fname, fesize, ft_token, y7); 
+}
+
+void ext_yahoo_got_files(int id, const char *me, const char *who, const char *ft_token, int y7, YList* files)
+{	
+	GETPROTOBYID( id )->ext_got_files(me, who, ft_token, y7, files); 
+}
+
+void ext_yahoo_got_file7info(int id, const char *me, const char *who, const char *url, const char *fname, const char *ft_token)
+{	
+	GETPROTOBYID( id )->ext_got_file7info(me, who, url, fname, ft_token); 
+}
+
+void ext_yahoo_ft7_send_file(int id, const char *me, const char *who, const char *filename, const char *token, const char *ft_token)
+{	
+	GETPROTOBYID( id )->ext_ft7_send_file(me, who, filename, token, ft_token); 
+}
+
+int ext_yahoo_connect_async(int id, const char *host, int port, int type, yahoo_connect_callback callback, void *data)
 {	
 	CYahooProto* ppro = getProtoById( id ); 
 	if ( ppro ) 
@@ -1629,10 +1688,12 @@ static int ext_yahoo_connect_async(int id, const char *host, int port, int type,
 	return SOCKET_ERROR;
 }
 
-static void ext_yahoo_send_http_request(int id, const char *method, const char *url, const char *cookies, long content_length, yahoo_get_fd_callback callback, void *callback_data)
-{	GETPROTOBYID( id )->ext_send_http_request(method, url, cookies, content_length, callback, callback_data); }
+void ext_yahoo_send_http_request(int id, const char *method, const char *url, const char *cookies, long content_length, yahoo_get_fd_callback callback, void *callback_data)
+{	
+	GETPROTOBYID( id )->ext_send_http_request(method, url, cookies, content_length, callback, callback_data); 
+}
 
-static char *ext_yahoo_send_https_request(struct yahoo_data *yd, const char *host, const char *path)
+char *ext_yahoo_send_https_request(struct yahoo_data *yd, const char *host, const char *path)
 {
 	CYahooProto* ppro = getProtoById( yd->client_id ); 
 	if ( ppro ) 
@@ -1640,8 +1701,10 @@ static char *ext_yahoo_send_https_request(struct yahoo_data *yd, const char *hos
 	return NULL;
 }
 
-static void ext_yahoo_got_ignore(int id, YList * igns)
-{	LOG(("ext_yahoo_got_ignore")); }
+void ext_yahoo_got_ignore(int id, YList * igns)
+{	
+	LOG(("ext_yahoo_got_ignore")); 
+}
 
 void register_callbacks()
 {
