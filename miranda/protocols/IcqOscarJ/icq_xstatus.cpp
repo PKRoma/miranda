@@ -1070,9 +1070,9 @@ INT_PTR CIcqProto::GetXStatusIcon(WPARAM wParam, LPARAM lParam)
 	if (wParam >= 1 && wParam <= XSTATUS_COUNT)
 	{
 		if (lParam == LR_SHARED)
-			return (int)getXStatusIcon((BYTE)wParam, lParam);
+			return (INT_PTR)getXStatusIcon((BYTE)wParam, lParam);
 		else
-			return (int)getXStatusIcon((BYTE)wParam, 0);
+			return (INT_PTR)getXStatusIcon((BYTE)wParam, 0);
 	}
 	return 0;
 }
