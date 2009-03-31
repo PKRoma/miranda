@@ -108,7 +108,6 @@ struct CYahooProto : public PROTO_INTERFACE
 	//====| Data |========================================================================
 	BOOL   m_bLoggedIn;
 
-	char*  m_szModuleName;
 	char*  m_startMsg;
 
 	// former ylad structure
