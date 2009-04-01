@@ -114,8 +114,8 @@ static void LoadTheme(MButtonCtrl *ctl)
 {
 	if (openThemeData) {
 		DestroyTheme(ctl);
-		ctl->hThemeButton = openThemeData(ctl->hwnd, _T("BUTTON"));
-		ctl->hThemeToolbar = openThemeData(ctl->hwnd,_T("TOOLBAR"));
+		ctl->hThemeButton = openThemeData(ctl->hwnd, L"BUTTON");
+		ctl->hThemeToolbar = openThemeData(ctl->hwnd, L"TOOLBAR");
 	}
 }
 

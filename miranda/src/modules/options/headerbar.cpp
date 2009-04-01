@@ -312,15 +312,21 @@ static LRESULT MHeaderbar_OnPaint(HWND hwndDlg, MHeaderbarCtrl *mit, UINT  msg, 
 		dto.dwFlags = DTT_COMPOSITED|DTT_GLOWSIZE;
 		dto.iGlowSize = 10;
 
-		HANDLE hTheme = openThemeData(hwndDlg, _T("Window"));
+		HANDLE hTheme = openThemeData(hwndDlg, L"Window");
 		textRect.left=50;
 		SelectObject(tempDC, hFntBold);
-		drawThemeTextEx(hTheme, tempDC, WP_CAPTION, CS_ACTIVE, szTitle, -1, DT_TOP|DT_LEFT|DT_SINGLELINE|DT_NOPREFIX|DT_NOCLIP|DT_END_ELLIPSIS, &textRect, &dto);
+        
+        wchar_t *szTitleW = mir_t2u(szTitle);
+		drawThemeTextEx(hTheme, tempDC, WP_CAPTION, CS_ACTIVE, szTitleW, -1, DT_TOP|DT_LEFT|DT_SINGLELINE|DT_NOPREFIX|DT_NOCLIP|DT_END_ELLIPSIS, &textRect, &dto);
+        mir_free(szTitleW);
 
 		if (szSubTitle) {
 			textRect.left=66;
 			SelectObject(tempDC, hFont);
-			drawThemeTextEx(hTheme, tempDC, WP_CAPTION, CS_ACTIVE, szSubTitle, -1, DT_BOTTOM|DT_LEFT|DT_SINGLELINE|DT_NOPREFIX|DT_NOCLIP|DT_END_ELLIPSIS, &textRect, &dto);
+
+            wchar_t *szSubTitleW = mir_t2u(szSubTitle);
+			drawThemeTextEx(hTheme, tempDC, WP_CAPTION, CS_ACTIVE, szSubTitleW, -1, DT_BOTTOM|DT_LEFT|DT_SINGLELINE|DT_NOPREFIX|DT_NOCLIP|DT_END_ELLIPSIS, &textRect, &dto);
+            mir_free(szSubTitleW);
 		}
 		closeThemeData(hTheme);
 	}

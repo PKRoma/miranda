@@ -43,17 +43,17 @@ extern pfnOpenInputDesktop openInputDesktop;
 typedef HDESK (WINAPI* pfnCloseDesktop)( HDESK );
 extern pfnCloseDesktop closeDesktop;
 
-typedef HTHEME  ( STDAPICALLTYPE *pfnOpenThemeData )( HWND, LPCTSTR );
+typedef HTHEME  ( STDAPICALLTYPE *pfnOpenThemeData )( HWND, LPCWSTR );
 typedef HRESULT ( STDAPICALLTYPE *pfnIsThemeBackgroundPartiallyTransparent )( HTHEME, int, int );
 typedef HRESULT ( STDAPICALLTYPE *pfnDrawThemeParentBackground )( HWND, HDC, const RECT * );
 typedef HRESULT ( STDAPICALLTYPE *pfnDrawThemeBackground )( HTHEME, HDC, int, int, const RECT *, const RECT * );
 typedef HRESULT ( STDAPICALLTYPE *pfnDrawThemeBackgroundEx )( HTHEME, HDC, int, int, const RECT *,  const struct _DTBGOPTS *pOptions );
-typedef HRESULT ( STDAPICALLTYPE *pfnDrawThemeText)( HTHEME, HDC, int, int, LPCTSTR, int, DWORD, DWORD, const RECT *);
-typedef HRESULT ( STDAPICALLTYPE *pfnDrawThemeTextEx)( HTHEME, HDC, int, int, LPCTSTR, int, DWORD, LPRECT, const struct _DTTOPTS *);
+typedef HRESULT ( STDAPICALLTYPE *pfnDrawThemeText)( HTHEME, HDC, int, int, LPCWSTR, int, DWORD, DWORD, const RECT *);
+typedef HRESULT ( STDAPICALLTYPE *pfnDrawThemeTextEx)( HTHEME, HDC, int, int, LPCWSTR, int, DWORD, LPRECT, const struct _DTTOPTS *);
 typedef HRESULT ( STDAPICALLTYPE *pfnGetThemeFont)( HTHEME,HDC,int,int,int,LOGFONT *);
 typedef HRESULT ( STDAPICALLTYPE *pfnCloseThemeData )( HTHEME );
 typedef HRESULT ( STDAPICALLTYPE *pfnEnableThemeDialogTexture )( HWND hwnd, DWORD dwFlags );
-typedef HRESULT ( STDAPICALLTYPE *pfnSetWindowTheme )( HWND, LPCTSTR, LPCTSTR );
+typedef HRESULT ( STDAPICALLTYPE *pfnSetWindowTheme )( HWND, LPCWSTR, LPCWSTR );
 typedef HRESULT ( STDAPICALLTYPE *pfnSetWindowThemeAttribute )( HWND, enum WINDOWTHEMEATTRIBUTETYPE, PVOID, DWORD );
 typedef BOOL ( STDAPICALLTYPE *pfnIsThemeActive )();
 

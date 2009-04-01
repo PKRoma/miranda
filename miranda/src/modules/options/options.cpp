@@ -294,7 +294,7 @@ static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARA
 	BOOL bDrawnByTheme = FALSE;
 	
 	if ( openThemeData )  {
-		HTHEME hTheme = openThemeData( hWnd, _T("EDIT"));
+		HTHEME hTheme = openThemeData( hWnd, L"EDIT");
 		if ( hTheme ) {
 			int style = IsWinVerVistaPlus() ? EP_BACKGROUND : EP_EDITTEXT;
 			if ( isThemeBackgroundPartiallyTransparent( hTheme, style, ETS_NORMAL) )
@@ -306,8 +306,12 @@ static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARA
 			drawThemeBackgroundEx( hTheme, hdc, style, ETS_NORMAL, &rc, &dtbgopts );
 			HFONT hFont = (HFONT) GetStockObject( DEFAULT_GUI_FONT );
 			HFONT oldFont = (HFONT) SelectObject( hdc, hFont );
-			drawThemeText( hTheme, hdc,  EP_EDITTEXT, ETS_DISABLED, buf, -1, 0, 0, &rc );
-			SelectObject( hdc, oldFont );
+
+            wchar_t *bufW = mir_t2u(buf);
+			drawThemeText( hTheme, hdc,  EP_EDITTEXT, ETS_DISABLED, bufW, -1, 0, 0, &rc );
+			mir_free(bufW);
+
+            SelectObject( hdc, oldFont );
 			DeleteObject( hFont );
 			closeThemeData( hTheme );
 			bDrawnByTheme = TRUE;

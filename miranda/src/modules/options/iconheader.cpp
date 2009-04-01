@@ -304,7 +304,7 @@ static void MIcoTab_DrawItem(HWND hwnd, HDC hdc, MIcoTabCtrl *dat, MIcoTab *tab,
 			rc.top = iTopSpace;
 			rc.right = itemX + dat->itemWidth;
 			rc.bottom = iTopSpace + dat->itemHeight;
-			HANDLE hTheme = openThemeData(hwnd, _T("ListView"));
+			HANDLE hTheme = openThemeData(hwnd, L"ListView");
 			if (dat->nHotIdx == i)
 				drawThemeBackground(hTheme, hdc, LVP_LISTITEM, LISS_HOTSELECTED, &rc, NULL);
 			else
@@ -325,8 +325,8 @@ static void MIcoTab_DrawItem(HWND hwnd, HDC hdc, MIcoTabCtrl *dat, MIcoTab *tab,
 			rc.top = iTopSpace;
 			rc.right = itemX + dat->itemWidth;
 			rc.bottom = iTopSpace + dat->itemHeight;
-			setWindowTheme(hwnd, _T("explorer"), NULL);
-			HANDLE hTheme = openThemeData(hwnd, _T("ListView"));
+			setWindowTheme(hwnd, L"explorer", NULL);
+			HANDLE hTheme = openThemeData(hwnd, L"ListView");
 			drawThemeBackground(hTheme, hdc, LVP_LISTITEM, LISS_HOT, &rc, NULL);
 			closeThemeData(hTheme);
 		} 
@@ -350,8 +350,10 @@ static void MIcoTab_DrawItem(HWND hwnd, HDC hdc, MIcoTabCtrl *dat, MIcoTab *tab,
 		dto.dwSize = sizeof(dto);
 		dto.dwFlags = DTT_COMPOSITED|DTT_GLOWSIZE;
 		dto.iGlowSize = 10;
-		HANDLE hTheme = openThemeData(hwnd, _T("Window"));
-		drawThemeTextEx(hTheme, hdc, WP_CAPTION, CS_ACTIVE, tab->tcsName, -1, DT_VCENTER|DT_CENTER|DT_END_ELLIPSIS, &textRect, &dto);
+		HANDLE hTheme = openThemeData(hwnd, L"Window");
+        wchar_t *tcsNameW = mir_t2u(tab->tcsName);
+		drawThemeTextEx(hTheme, hdc, WP_CAPTION, CS_ACTIVE, tcsNameW, -1, DT_VCENTER|DT_CENTER|DT_END_ELLIPSIS, &textRect, &dto);
+        mir_free(tcsNameW);
 		closeThemeData(hTheme);
 	} 
 	else DrawText(hdc,tab->tcsName,-1,&textRect, DT_VCENTER|DT_CENTER|DT_END_ELLIPSIS);
