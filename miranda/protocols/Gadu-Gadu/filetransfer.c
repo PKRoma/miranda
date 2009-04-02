@@ -108,7 +108,7 @@ static void *__stdcall gg_ftfailthread(void *empty)
 	free(ft);
 	return NULL;
 }
-int ftfail(GGPROTO *gg, HANDLE hContact)
+HANDLE ftfail(GGPROTO *gg, HANDLE hContact)
 {
 	pthread_t tid;
 	struct ftfaildata *ft = malloc(sizeof(struct ftfaildata));
@@ -121,7 +121,7 @@ int ftfail(GGPROTO *gg, HANDLE hContact)
 	ft->gg = gg;
 	pthread_create(&tid, NULL, gg_ftfailthread, ft);
 	pthread_detach(&tid);
-	return (int)ft->hProcess;
+	return ft->hProcess;
 }
 
 ////////////////////////////////////////////////////////////
@@ -689,7 +689,7 @@ int gg_recvfile(PROTO_INTERFACE *proto, HANDLE hContact, PROTORECVFILE *pre)
 
 ////////////////////////////////////////////////////////////
 // Called when user sends a file
-int gg_sendfile(PROTO_INTERFACE *proto, HANDLE hContact, const char* szDescription, char** files)
+HANDLE gg_sendfile(PROTO_INTERFACE *proto, HANDLE hContact, const char* szDescription, char** files)
 {
 	GGPROTO *gg = (GGPROTO *) proto;
 	char *bslash;
@@ -737,7 +737,7 @@ int gg_sendfile(PROTO_INTERFACE *proto, HANDLE hContact, const char* szDescripti
 		else
 			*(dcc7->folder) = 0;
 
-		return (int)(HANDLE)dcc7;
+		return dcc7;
 	}
 
 	// Return if bad connection info
@@ -795,10 +795,10 @@ int gg_sendfile(PROTO_INTERFACE *proto, HANDLE hContact, const char* szDescripti
 	else
 		*(dcc->folder) = 0;
 
-	return (int)(HANDLE)dcc;
+	return dcc;
 }
 
-int gg_dccfileallow(GGPROTO *gg, HANDLE hTransfer, const char* szPath)
+HANDLE gg_dccfileallow(GGPROTO *gg, HANDLE hTransfer, const char* szPath)
 {
 	struct gg_dcc *dcc = (struct gg_dcc *) hTransfer;
 	char fileName[MAX_PATH];
@@ -836,10 +836,10 @@ int gg_dccfileallow(GGPROTO *gg, HANDLE hTransfer, const char* szPath)
 	gg_netlog(gg, "gg_dccfileallow(): Receiving file \"%s\" from %d.", dcc->file_info.filename, dcc->peer_uin);
 #endif
 
-	return (int) hTransfer;
+	return hTransfer;
 }
 
-int gg_dcc7fileallow(GGPROTO *gg, HANDLE hTransfer, const char* szPath)
+HANDLE gg_dcc7fileallow(GGPROTO *gg, HANDLE hTransfer, const char* szPath)
 {
 	struct gg_dcc7 *dcc7 = (struct gg_dcc7 *) hTransfer;
 	char fileName[MAX_PATH];
@@ -878,17 +878,17 @@ int gg_dcc7fileallow(GGPROTO *gg, HANDLE hTransfer, const char* szPath)
 	gg_netlog(gg, "gg_dcc7fileallow(): Receiving file \"%s\" from %d.", dcc7->filename, dcc7->peer_uin);
 #endif
 
-	return (int) hTransfer;
+	return hTransfer;
 }
 
 ////////////////////////////////////////////////////////////
 // File receiving allowed
-int gg_fileallow(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer, const char* szPath)
+HANDLE gg_fileallow(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer, const char* szPath)
 {
 	struct gg_common *c = (struct gg_common *) hTransfer;
 
 	// Check if its proper dcc
-	if (!c) return 0;
+	if (!c) return NULL;
 
 	if (c->type == GG_SESSION_DCC7_GET)
 		return gg_dcc7fileallow((GGPROTO *)proto, hTransfer, szPath);

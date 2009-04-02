@@ -48,7 +48,7 @@ char *gg_status2db(int status, const char *suffix)
 
 //////////////////////////////////////////////////////////
 // checks proto capabilities
-DWORD gg_getcaps(PROTO_INTERFACE *proto, int type, HANDLE hContact)
+DWORD_PTR gg_getcaps(PROTO_INTERFACE *proto, int type, HANDLE hContact)
 {
 	int ret = 0;
 	switch (type) {
@@ -62,9 +62,9 @@ DWORD gg_getcaps(PROTO_INTERFACE *proto, int type, HANDLE hContact)
 		case PFLAGNUM_4:
 			return PF4_NOCUSTOMAUTH;
 		case PFLAG_UNIQUEIDTEXT:
-			return (DWORD) Translate("Gadu-Gadu Number");
+			return (DWORD_PTR) Translate("Gadu-Gadu Number");
 		case PFLAG_UNIQUEIDSETTING:
-			return (DWORD) GG_KEY_UIN;
+			return (DWORD_PTR) GG_KEY_UIN;
 			break;
 	}
 	return 0;
@@ -466,7 +466,7 @@ static void *__stdcall gg_getawaymsgthread(void *empty)
 	free(ctx);
 	return NULL;
 }
-int gg_getawaymsg(PROTO_INTERFACE *proto, HANDLE hContact)
+HANDLE gg_getawaymsg(PROTO_INTERFACE *proto, HANDLE hContact)
 {
 	pthread_t tid;
 
@@ -475,7 +475,7 @@ int gg_getawaymsg(PROTO_INTERFACE *proto, HANDLE hContact)
 	pthread_create(&tid, NULL, gg_getawaymsgthread, ctx);
 	pthread_detach(&tid);
 
-	return 1;
+	return (HANDLE)1;
 }
 
 //////////////////////////////////////////////////////////

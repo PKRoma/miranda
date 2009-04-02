@@ -388,11 +388,11 @@ int gg_img_display(GGPROTO *gg, HANDLE hContact, void *img);
 int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam);
 
 /* File transfer functions */
-int gg_fileallow(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer, const char* szPath);
+HANDLE gg_fileallow(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer, const char* szPath);
 int gg_filecancel(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer);
 int gg_filedeny(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer, const char* szReason);
 int gg_recvfile(PROTO_INTERFACE *proto, HANDLE hContact, PROTORECVFILE *pre);
-int gg_sendfile(PROTO_INTERFACE *proto, HANDLE hContact, const char* szDescription, char** files);
+HANDLE gg_sendfile(PROTO_INTERFACE *proto, HANDLE hContact, const char* szDescription, char** files);
 
 /* Misc module initializers & destroyers */
 void gg_import_init(GGPROTO *gg);
