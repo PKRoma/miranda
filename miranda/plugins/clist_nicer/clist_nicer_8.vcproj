@@ -1169,10 +1169,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\utf.c"
-				>
-			</File>
-			<File
 				RelativePath=".\viewmodes.c"
 				>
 			</File>

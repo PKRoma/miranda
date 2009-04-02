@@ -252,6 +252,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "modernopt"=..\plugins\modernopt\modernopt.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "msn"=..\protocols\MSN\msn.dsp - Package Owner=<4>
 
 Package=<5>

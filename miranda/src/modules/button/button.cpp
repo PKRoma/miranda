@@ -284,23 +284,11 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 	switch(msg) {
 	case WM_NCCREATE:
 		SetWindowLongPtr(hwndDlg, GWL_STYLE, GetWindowLongPtr(hwndDlg, GWL_STYLE)|BS_OWNERDRAW);
-		bct = ( MButtonCtrl* )mir_alloc(sizeof(MButtonCtrl));
+		bct = ( MButtonCtrl* )mir_calloc(sizeof(MButtonCtrl));
 		if (bct==NULL) return FALSE;
 		bct->hwnd = hwndDlg;
 		bct->stateId = PBS_NORMAL;
-		bct->focus = 0;
 		bct->hFont = ( HFONT )GetStockObject(DEFAULT_GUI_FONT);
-		bct->arrow = NULL;
-		bct->defbutton = 0;
-		bct->hIcon = NULL;
-		bct->hBitmap = NULL;
-		bct->pushBtn = 0;
-		bct->pbState = 0;
-		bct->hThemeButton = NULL;
-		bct->hThemeToolbar = NULL;
-		bct->cHot = 0;
-		bct->flatBtn = 0;
-		bct->hwndToolTips = NULL;
 		LoadTheme(bct);
 		SetWindowLongPtr(hwndDlg, 0, (LONG_PTR)bct);
 		if (((CREATESTRUCT *)lParam)->lpszName) SetWindowText(hwndDlg, ((CREATESTRUCT *)lParam)->lpszName);

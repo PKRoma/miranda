@@ -55,6 +55,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IRC", "..\protocols\IRCG\IR
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "aim", "..\protocols\AimOscar\aim_9.vcproj", "{736E59E5-CDCE-4C88-9C3A-E7913D45C9EC}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "modernopt", "..\plugins\modernopt\modernopt_9.vcproj", "{153DD132-084C-4DE4-8F40-A088BCB22723}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Unicode|Win32 = Debug Unicode|Win32
@@ -435,6 +437,18 @@ Global
 		{736E59E5-CDCE-4C88-9C3A-E7913D45C9EC}.Release|Win32.Build.0 = Release|Win32
 		{736E59E5-CDCE-4C88-9C3A-E7913D45C9EC}.Release|x64.ActiveCfg = Release|x64
 		{736E59E5-CDCE-4C88-9C3A-E7913D45C9EC}.Release|x64.Build.0 = Release|x64
+		{153DD132-084C-4DE4-8F40-A088BCB22723}.Debug Unicode|Win32.ActiveCfg = Debug Unicode|Win32
+		{153DD132-084C-4DE4-8F40-A088BCB22723}.Debug Unicode|Win32.Build.0 = Debug Unicode|Win32
+		{153DD132-084C-4DE4-8F40-A088BCB22723}.Debug Unicode|x64.ActiveCfg = Debug Unicode|x64
+		{153DD132-084C-4DE4-8F40-A088BCB22723}.Debug|Win32.ActiveCfg = Debug|Win32
+		{153DD132-084C-4DE4-8F40-A088BCB22723}.Debug|Win32.Build.0 = Debug|Win32
+		{153DD132-084C-4DE4-8F40-A088BCB22723}.Debug|x64.ActiveCfg = Debug|Win32
+		{153DD132-084C-4DE4-8F40-A088BCB22723}.Release Unicode|Win32.ActiveCfg = Release Unicode|Win32
+		{153DD132-084C-4DE4-8F40-A088BCB22723}.Release Unicode|Win32.Build.0 = Release Unicode|Win32
+		{153DD132-084C-4DE4-8F40-A088BCB22723}.Release Unicode|x64.ActiveCfg = Release Unicode|Win32
+		{153DD132-084C-4DE4-8F40-A088BCB22723}.Release|Win32.ActiveCfg = Release|Win32
+		{153DD132-084C-4DE4-8F40-A088BCB22723}.Release|Win32.Build.0 = Release|Win32
+		{153DD132-084C-4DE4-8F40-A088BCB22723}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

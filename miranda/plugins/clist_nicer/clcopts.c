@@ -241,9 +241,9 @@ static int DSP_Read(DISPLAYPROFILESET *p)
          * dword values
          */
 
-        _snprintf(szKey, 256, "{dw_%u_%u}", p->uID, j);
+        mir_snprintf(szKey, 256, "{dw_%u_%u}", p->uID, j);
         if(!DBGetContactSettingString(NULL, DSP_PROFILES_MODULE, szKey, &dbv)) {
-            _snscanf(dbv.pszVal, 255, "%u,%u,%u,%u,%u", dp->dwFlags, dp->dwExtraImageMask, dp->avatarBorder, dp->clcExStyle, dp->clcOfflineModes);
+            sscanf(dbv.pszVal, "%u,%u,%u,%u,%u", dp->dwFlags, dp->dwExtraImageMask, dp->avatarBorder, dp->clcExStyle, dp->clcOfflineModes);
             DBFreeVariant(&dbv);
         }
         else

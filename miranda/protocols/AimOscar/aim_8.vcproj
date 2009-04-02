@@ -522,10 +522,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\strl.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\theme.cpp"
 				>
 			</File>
@@ -757,10 +753,6 @@
 			</File>
 			<File
 				RelativePath=".\snac.h"
-				>
-			</File>
-			<File
-				RelativePath=".\strl.h"
 				>
 			</File>
 			<File

@@ -189,8 +189,9 @@ typedef void (*ItemDestuctor)(void*);
 static void MITListDestructor(void * adr)
 {
 	MIcoTab * mit=(MIcoTab *)adr;
-	if (mit->tcsName) mir_free(mit->tcsName);
+	mir_free(mit->tcsName);
 	if (mit->hIcon && !(mit->flag&MITCF_SHAREDICON)) DestroyIcon(mit->hIcon);
+    mir_free(adr);
 }
 
 void li_ListDestruct(LIST<MIcoTab> &pList, ItemDestuctor pItemDestructor)
@@ -527,8 +528,7 @@ static LRESULT CALLBACK MIcoTabWndProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 		if (!pMit) 
 			return FALSE;
 
-		MIcoTab* pListMit=(MIcoTab *)mir_alloc(sizeof(MIcoTab));
-		memset(pListMit,0,sizeof(MIcoTab));
+		MIcoTab* pListMit=(MIcoTab *)mir_calloc(sizeof(MIcoTab));
 		pListMit->flag=pMit->flag;
 		pListMit->data=pMit->data;
 		if (pMit->flag & MITCF_UNICODE)

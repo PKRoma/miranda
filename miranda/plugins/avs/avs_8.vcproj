@@ -464,10 +464,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mir_memory.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\mir_thread.cpp"
 				>
 			</File>
@@ -522,10 +518,6 @@
 			</File>
 			<File
 				RelativePath="m_updater.h"
-				>
-			</File>
-			<File
-				RelativePath="mir_memory.h"
 				>
 			</File>
 			<File

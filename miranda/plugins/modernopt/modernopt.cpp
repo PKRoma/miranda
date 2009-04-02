@@ -100,22 +100,25 @@ static void ModernOptionsObject_Dtor(void *ptr)
 {
 	struct ModernOptionsObject *obj = (struct ModernOptionsObject *)ptr;
 
-	if (obj->optObject.lptzSubsection) mir_free(obj->optObject.lptzSubsection);
-	if (obj->optObject.iBoldControls) mir_free(obj->optObject.iBoldControls);
-	if (obj->optObject.lpzClassicGroup) mir_free(obj->optObject.lpzClassicGroup);
-	if (obj->optObject.lpzClassicPage) mir_free(obj->optObject.lpzClassicPage);
-	if (obj->optObject.lpzClassicTab) mir_free(obj->optObject.lpzClassicTab);
-	if (obj->optObject.lpzHelpUrl) mir_free(obj->optObject.lpzHelpUrl);
+	mir_free(obj->optObject.lptzSubsection);
+	mir_free(obj->optObject.iBoldControls);
+	mir_free(obj->optObject.lpzClassicGroup);
+	mir_free(obj->optObject.lpzClassicPage);
+	mir_free(obj->optObject.lpzClassicTab);
+	mir_free(obj->optObject.lpzHelpUrl);
+    mir_free(obj->optObject.lpzThemeExtension);
+    mir_free(obj->optObject.lpzThemeModuleName);
 
 	switch (obj->optObject.iType)
 	{
 		case MODERNOPT_TYPE_IGNOREOBJECT:
-			if (obj->optObject.lpzIgnoreModule) mir_free(obj->optObject.lpzIgnoreModule);
-			if (obj->optObject.lpzIgnoreSetting) mir_free(obj->optObject.lpzIgnoreSetting);
+			mir_free(obj->optObject.lpzIgnoreModule);
+			mir_free(obj->optObject.lpzIgnoreSetting);
 			break;
 	}
 
 	if (obj->hwnd) DestroyWindow(obj->hwnd);
+    mir_free(obj);
 }
 
 static int ModernOptionsObject_Comparator(const ModernOptionsObject *ptr1, const ModernOptionsObject *ptr2)
@@ -502,8 +505,7 @@ static INT_PTR svcModernOpt_AddObject(WPARAM wParam, LPARAM lParam)
 {
 	struct ModernOptionsData *dat = (struct ModernOptionsData *)wParam;
 	MODERNOPTOBJECT *obj = (MODERNOPTOBJECT *)lParam;
-	struct ModernOptionsObject *objCopy = (struct ModernOptionsObject *)mir_alloc(sizeof(struct ModernOptionsObject));
-	memset(objCopy, 0, sizeof(struct ModernOptionsObject));
+	struct ModernOptionsObject *objCopy = (struct ModernOptionsObject *)mir_calloc(sizeof(struct ModernOptionsObject));
 
 	objCopy->dwIdx = ++g_dwIdx;
 
