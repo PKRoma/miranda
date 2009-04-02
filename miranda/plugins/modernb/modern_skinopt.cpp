@@ -42,10 +42,10 @@ typedef struct _SkinListData
 } SkinListData;
 
 HBITMAP hPreviewBitmap = NULL;
-int AddItemToTree( HWND hTree, TCHAR * folder, TCHAR * itemName, void * data );
-int AddSkinToListFullName( HWND hwndDlg, TCHAR * fullName );
-int AddSkinToList( HWND hwndDlg, TCHAR * path, TCHAR* file );
-int FillAvailableSkinList( HWND hwndDlg );
+HTREEITEM AddItemToTree( HWND hTree, TCHAR * folder, TCHAR * itemName, void * data );
+HTREEITEM AddSkinToListFullName( HWND hwndDlg, TCHAR * fullName );
+HTREEITEM AddSkinToList( HWND hwndDlg, TCHAR * path, TCHAR* file );
+HTREEITEM FillAvailableSkinList( HWND hwndDlg );
 
 INT_PTR CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -105,11 +105,11 @@ INT_PTR CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 	case WM_INITDIALOG:
 		{ 
-			int it;
+			HTREEITEM it;
 			TranslateDialogDefault( hwndDlg );
 			it = FillAvailableSkinList( hwndDlg );
 			HWND wnd = GetDlgItem( hwndDlg, IDC_TREE1 );
-			TreeView_SelectItem( wnd, ( HTREEITEM )it );						
+			TreeView_SelectItem( wnd, it );						
 		}
 		return 0;
 	case WM_COMMAND:
@@ -243,8 +243,8 @@ INT_PTR CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						}
 						if ( res )
 						{
-							int it = AddSkinToListFullName( hwndDlg, ofn.lpstrFile );
-							TreeView_SelectItem( GetDlgItem( hwndDlg, IDC_TREE1 ), ( HTREEITEM )it );
+							HTREEITEM it = AddSkinToListFullName( hwndDlg, ofn.lpstrFile );
+							TreeView_SelectItem( GetDlgItem( hwndDlg, IDC_TREE1 ), it );
 							//SendDlgItemMessage( hwndDlg, IDC_SKINS_LIST, LB_SETCURSEL, it, 0 ); 
 							//SendMessage( hwndDlg, WM_COMMAND, MAKEWPARAM( IDC_SKINS_LIST, LBN_SELCHANGE ), 0 );
 						}
@@ -469,11 +469,11 @@ int SearchSkinFiles( HWND hwndDlg, TCHAR * Folder )
 	}
 	return 0;
 }
-int FillAvailableSkinList( HWND hwndDlg )
+HTREEITEM FillAvailableSkinList( HWND hwndDlg )
 {
 	struct _finddata_t fd = {0};
 	//long hFile; 
-	int res = -1;
+	HTREEITEM res = (HTREEITEM)-1;
 	TCHAR path[MAX_PATH];//, mask[MAX_PATH];
 	int attrib;
 	TCHAR *SkinsFolder = ModernGetStringT( NULL, "ModernData", "SkinsFolder" );
@@ -500,7 +500,7 @@ int FillAvailableSkinList( HWND hwndDlg )
 	}
 	return res;
 }
-int AddSkinToListFullName( HWND hwndDlg, TCHAR * fullName )
+HTREEITEM AddSkinToListFullName( HWND hwndDlg, TCHAR * fullName )
 {
 	TCHAR path[MAX_PATH] = {0};
 	TCHAR file[MAX_PATH] = {0};
@@ -522,7 +522,7 @@ int AddSkinToListFullName( HWND hwndDlg, TCHAR * fullName )
 }
 
 
-int AddSkinToList( HWND hwndDlg, TCHAR * path, TCHAR* file )
+HTREEITEM AddSkinToList( HWND hwndDlg, TCHAR * path, TCHAR* file )
 {
 	{
 		TCHAR buf[MAX_PATH];
@@ -552,7 +552,7 @@ int AddSkinToList( HWND hwndDlg, TCHAR * path, TCHAR* file )
 		}
 		return AddItemToTree( GetDlgItem( hwndDlg, IDC_TREE1 ), fullName, sd->Name, sd );
 	}
-	return -1;
+	return (HTREEITEM)-1;
 }
 
 
@@ -596,7 +596,7 @@ HTREEITEM FindChild( HWND hTree, HTREEITEM Parent, TCHAR * Caption, void * data 
 }
 
 
-int AddItemToTree( HWND hTree, TCHAR * folder, TCHAR * itemName, void * data )
+HTREEITEM AddItemToTree( HWND hTree, TCHAR * folder, TCHAR * itemName, void * data )
 {
 	HTREEITEM rootItem = NULL;
 	HTREEITEM cItem = NULL;
@@ -654,12 +654,12 @@ int AddItemToTree( HWND hTree, TCHAR * folder, TCHAR * itemName, void * data )
 		tvis.item.mask = TVIF_PARAM|TVIF_TEXT|TVIF_PARAM;
 		tvis.item.pszText = itemName;
 		tvis.item.lParam = ( LPARAM )data;
-		return ( int )TreeView_InsertItem( hTree, &tvis );
+		return TreeView_InsertItem( hTree, &tvis );
 	}
 	else
 	{
 		mir_free_and_nill( data ); //need to free otherwise memory leak
-		return ( int )cItem;
+		return cItem;
 	}
 	return 0;
 }
