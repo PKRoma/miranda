@@ -329,27 +329,34 @@ static void ReleaseIcon(int index) {
 static void ActivateChild(ParentWindowData *dat, HWND child) {
 	int i;
 	RECT rcChild;
-	MessageWindowTabData *mwtd;
 	GetChildWindowRect(dat, &rcChild);
 	SetWindowPos(child, HWND_TOP, rcChild.left, rcChild.top, rcChild.right-rcChild.left, rcChild.bottom - rcChild.top, SWP_NOSIZE);
+
 	i = GetTabFromHWND(dat, child);
-	mwtd = GetChildFromTab(dat->hwndTabs, i);
-	dat->hContact = mwtd->hContact;
-	if(child != dat->hwndActive) {
-		HWND prev = dat->hwndActive;
-		dat->hwndActive = child;
-		SetupStatusBar(dat);
-		SendMessage(dat->hwndActive, DM_UPDATESTATUSBAR, 0, 0);
-		SendMessage(dat->hwndActive, DM_UPDATETITLEBAR, 0, 0);
-		SendMessage(dat->hwnd, WM_SIZE, 0, 0);
-		ShowWindow(dat->hwndActive, SW_SHOWNOACTIVATE);
-		SendMessage(dat->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
-		if (prev!=NULL) ShowWindow(prev, SW_HIDE);
-	} else {
-		SendMessage(dat->hwnd, WM_SIZE, 0, 0);
+	if ( i == -1 )
+		return;
+	else {
+		MessageWindowTabData *mwtd;
+		if (( mwtd = GetChildFromTab(dat->hwndTabs, i)) == NULL )
+			return;
+
+		dat->hContact = mwtd->hContact;
+		if(child != dat->hwndActive) {
+			HWND prev = dat->hwndActive;
+			dat->hwndActive = child;
+			SetupStatusBar(dat);
+			SendMessage(dat->hwndActive, DM_UPDATESTATUSBAR, 0, 0);
+			SendMessage(dat->hwndActive, DM_UPDATETITLEBAR, 0, 0);
+			SendMessage(dat->hwnd, WM_SIZE, 0, 0);
+			ShowWindow(dat->hwndActive, SW_SHOWNOACTIVATE);
+			SendMessage(dat->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
+			if (prev!=NULL) ShowWindow(prev, SW_HIDE);
+		} else {
+			SendMessage(dat->hwnd, WM_SIZE, 0, 0);
+		}
+		TabCtrl_SetCurSel(dat->hwndTabs, i);
+		SendMessage(dat->hwndActive, DM_ACTIVATE, WA_ACTIVE, 0);
 	}
-	TabCtrl_SetCurSel(dat->hwndTabs, i);
-	SendMessage(dat->hwndActive, DM_ACTIVATE, WA_ACTIVE, 0);
 }
 
 static void AddChild(ParentWindowData *dat, HWND hwnd, HANDLE hContact)
