@@ -248,10 +248,16 @@ static int ContactListAccountsChanged( WPARAM eventCode, LPARAM lParam )
 
 static INT_PTR ContactDoubleClicked(WPARAM wParam, LPARAM)
 {
-	// Check and an event from the CList queue for this hContact
-	if (cli.pfnEventsProcessContactDoubleClick((HANDLE) wParam))
-		NotifyEventHooks(hContactDoubleClicked, wParam, 0);
+	// Try to process event myself
+	if ( cli.pfnEventsProcessContactDoubleClick(( HANDLE )wParam ) == 0 )
+		return 0;
 
+	// Allow third-party plugins to process a dblclick
+	if ( NotifyEventHooks( hContactDoubleClicked, wParam, 0 ))
+		return 0;
+
+	// Otherwise try to execute the default action
+	TryProcessDoubleClick(( HANDLE )wParam );
 	return 0;
 }
 

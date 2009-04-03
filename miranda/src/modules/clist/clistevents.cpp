@@ -260,15 +260,13 @@ int fnRemoveEvent( HANDLE hContact, HANDLE dbEvent )
 
 CLISTEVENT* fnGetEvent( HANDLE hContact, int idx )
 {
-	int i;
-
 	if ( hContact == INVALID_HANDLE_VALUE) {
 		if (idx >= cli.events.count)
 			return NULL;
 		return &cli.events.items[idx]->cle;
 	}
 
-	for (i = 0; i < cli.events.count; i++)
+	for (int i = 0; i < cli.events.count; i++)
 		if (cli.events.items[i]->cle.hContact == hContact)
 			if (idx-- == 0)
 				return &cli.events.items[i]->cle;
@@ -277,19 +275,15 @@ CLISTEVENT* fnGetEvent( HANDLE hContact, int idx )
 
 int fnEventsProcessContactDoubleClick(HANDLE hContact)
 {
-	int i;
-	HANDLE hDbEvent;
-
-	for (i = 0; i < cli.events.count; i++) {
+	for (int i = 0; i < cli.events.count; i++) {
 		if (cli.events.items[i]->cle.hContact == hContact) {
-			hDbEvent = cli.events.items[i]->cle.hDbEvent;
+			HANDLE hDbEvent = cli.events.items[i]->cle.hDbEvent;
 			CallService(cli.events.items[i]->cle.pszService, (WPARAM) (HWND) NULL, (LPARAM) & cli.events.items[i]->cle);
 			cli.pfnRemoveEvent(hContact, hDbEvent);
 			return 0;
-		}
-	}
+	}	}
 
-	return TryProcessDoubleClick( hContact );
+	return 1;
 }
 
 int fnEventsProcessTrayDoubleClick(int index)
