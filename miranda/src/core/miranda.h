@@ -77,6 +77,10 @@ typedef HRESULT ( STDAPICALLTYPE *pfnDwmIsCompositionEnabled )( BOOL * );
 extern pfnDwmExtendFrameIntoClientArea dwmExtendFrameIntoClientArea;
 extern pfnDwmIsCompositionEnabled dwmIsCompositionEnabled;
 
+/**** file.c ***************************************************************************/
+
+void PushFileEvent( HANDLE hContact, HANDLE hdbe, LPARAM lParam );
+
 /**** memory.c *************************************************************************/
 
 #ifdef _STATIC

@@ -53,33 +53,42 @@ static INT_PTR RecvFileCommand(WPARAM, LPARAM lParam)
 	return 0;
 }
 
-static int FileEventAdded(WPARAM wParam,LPARAM lParam)
+void PushFileEvent( HANDLE hContact, HANDLE hdbe, LPARAM lParam )
 {
-	DBEVENTINFO dbei={0};
 	CLISTEVENT cle={0};
-
-	dbei.cbSize=sizeof(dbei);
-	dbei.cbBlob=0;
-	CallService(MS_DB_EVENT_GET,lParam,(LPARAM)&dbei);
-	if(dbei.flags&(DBEF_SENT|DBEF_READ) || dbei.eventType!=EVENTTYPE_FILE) return 0;
-
-	cle.cbSize=sizeof(cle);
-	cle.hContact=(HANDLE)wParam;
-	cle.hDbEvent=(HANDLE)lParam;
-	if(DBGetContactSettingByte(NULL,"SRFile","AutoAccept",0) && !DBGetContactSettingByte((HANDLE)wParam,"CList","NotOnList",0)) {
+	cle.cbSize = sizeof(cle);
+	cle.hContact = hContact;
+	cle.hDbEvent = hdbe;
+	cle.lParam = lParam;
+	if ( DBGetContactSettingByte(NULL,"SRFile","AutoAccept",0) && !DBGetContactSettingByte(hContact,"CList","NotOnList",0)) {
 		CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_FILERECV),NULL,DlgProcRecvFile,(LPARAM)&cle);
 	}
 	else {
-		TCHAR szTooltip[256];
-
 		SkinPlaySound("RecvFile");
+
+		TCHAR szTooltip[256];
+		mir_sntprintf(szTooltip,SIZEOF(szTooltip),TranslateT("File from %s"), cli.pfnGetContactDisplayName( hContact, 0 ));
+		cle.ptszTooltip = szTooltip;
+
 		cle.flags |= CLEF_TCHAR;
 		cle.hIcon = LoadSkinIcon( SKINICON_EVENT_FILE );
 		cle.pszService = "SRFile/RecvFile";
-		mir_sntprintf(szTooltip,SIZEOF(szTooltip),TranslateT("File from %s"), cli.pfnGetContactDisplayName(( HANDLE )wParam, 0 ));
-		cle.ptszTooltip=szTooltip;
 		CallService(MS_CLIST_ADDEVENT,0,(LPARAM)&cle);
-	}
+}	}
+
+static int FileEventAdded(WPARAM wParam,LPARAM lParam)
+{
+	DWORD dwSignature;
+
+	DBEVENTINFO dbei={0};
+	dbei.cbSize = sizeof(dbei);
+	dbei.cbBlob = sizeof( DWORD );
+	dbei.pBlob = ( PBYTE )&dwSignature;
+	CallService( MS_DB_EVENT_GET, lParam, ( LPARAM )&dbei );
+	if ( dbei.flags&(DBEF_SENT|DBEF_READ) || dbei.eventType != EVENTTYPE_FILE || dwSignature == 0 )
+		return 0;
+
+	PushFileEvent(( HANDLE )wParam, ( HANDLE )lParam, 0 );
 	return 0;
 }
 

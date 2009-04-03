@@ -184,15 +184,16 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 	case WM_INITDIALOG: {
 		TCHAR *contactName;
 		char szPath[450];
+		CLISTEVENT* cle = (CLISTEVENT*)lParam;
 
 		TranslateDialogDefault(hwndDlg);
 
 		dat=(struct FileDlgData*)mir_calloc(sizeof(struct FileDlgData));
 		SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)dat);
-		dat->hContact=((CLISTEVENT*)lParam)->hContact;
-		dat->hDbEvent=((CLISTEVENT*)lParam)->hDbEvent;
-		dat->hPreshutdownEvent=HookEventMessage(ME_SYSTEM_PRESHUTDOWN,hwndDlg,M_PRESHUTDOWN);
-		dat->dwTicks=GetTickCount();
+		dat->hContact = cle->hContact;
+		dat->hDbEvent = cle->hDbEvent;
+		dat->hPreshutdownEvent = HookEventMessage(ME_SYSTEM_PRESHUTDOWN,hwndDlg,M_PRESHUTDOWN);
+		dat->dwTicks = GetTickCount();
 
 		EnumChildWindows(hwndDlg,ClipSiblingsChildEnumProc,0);
 
@@ -206,11 +207,14 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		SetDlgItemText(hwndDlg,IDC_FROM,contactName);
 		GetContactReceivedFilesDir(dat->hContact,szPath,SIZEOF(szPath),TRUE);
 		SetDlgItemTextA(hwndDlg,IDC_FILEDIR,szPath);
-		{	int i;
+		{
+			int i;
 			char idstr[32];
 			DBVARIANT dbv;
 
-            if (shAutoComplete) shAutoComplete(GetWindow(GetDlgItem(hwndDlg,IDC_FILEDIR),GW_CHILD),1);
+			if (shAutoComplete)
+				shAutoComplete(GetWindow(GetDlgItem(hwndDlg,IDC_FILEDIR),GW_CHILD),1);
+
 			for(i=0;i<MAX_MRU_DIRS;i++) {
 				wsprintfA(idstr,"MruDir%d",i);
 				if(DBGetContactSettingString(NULL,"SRFile",idstr,&dbv)) break;
@@ -220,8 +224,8 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		}
 
 		CallService(MS_DB_EVENT_MARKREAD,(WPARAM)dat->hContact,(LPARAM)dat->hDbEvent);
-
-		{	DBEVENTINFO dbei={0};
+		{
+			DBEVENTINFO dbei={0};
 			DBTIMETOSTRINGT dbtts;
 			TCHAR datetimestr[64];
 
@@ -229,7 +233,7 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)dat->hDbEvent,0);
 			dbei.pBlob=(PBYTE)mir_alloc(dbei.cbBlob);
 			CallService(MS_DB_EVENT_GET,(WPARAM)dat->hDbEvent,(LPARAM)&dbei);
-			dat->fs=(HANDLE)*(PDWORD)dbei.pBlob;
+			dat->fs = cle->lParam ? (HANDLE)cle->lParam : (HANDLE)*(PDWORD)dbei.pBlob;
 			lstrcpynA(szPath, (char*)dbei.pBlob+4, min(dbei.cbBlob+1,SIZEOF(szPath)));
 			SetDlgItemTextA(hwndDlg,IDC_FILENAMES,szPath);
 			lstrcpynA(szPath, (char*)dbei.pBlob+4+strlen((char*)dbei.pBlob+4)+1, min((int)(dbei.cbBlob-4-strlen((char*)dbei.pBlob+4)),SIZEOF(szPath)));
@@ -242,7 +246,8 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, dbei.timestamp, ( LPARAM )&dbtts);
 			SetDlgItemText(hwndDlg, IDC_DATE, datetimestr);
 		}
-		{	char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0);
+		{
+			char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0);
 			if (szProto) {
 				CONTACTINFO ci;
 				int hasName = 0;

@@ -355,9 +355,6 @@ void CJabberProto::FtHandleSiRequest( HXML iqNode )
 
 			if ( optionNode != NULL ) {
 				// Found known stream mechanism
-				CCSDATA ccs;
-				PROTORECVEVENT pre;
-
 				char *localFilename = mir_t2a( filename );
 				char *desc = (( n = xmlGetChild( fileNode , "desc" )) != NULL && xmlGetText( n )!=NULL ) ? mir_t2a( xmlGetText( n ) ) : mir_strdup( "" );
 
@@ -372,13 +369,17 @@ void CJabberProto::FtHandleSiRequest( HXML iqNode )
 				ft->std.currentFile = localFilename;
 				ft->std.totalBytes = ft->std.currentFileSize = filesize;
 				char* szBlob = ( char* )alloca( sizeof( DWORD )+ strlen( localFilename ) + strlen( desc ) + 2 );
-				*(( PDWORD ) szBlob ) = ( DWORD )ft;
+				*(( PDWORD ) szBlob ) = 0;
 				strcpy( szBlob + sizeof( DWORD ), localFilename );
 				strcpy( szBlob + sizeof( DWORD )+ strlen( localFilename ) + 1, desc );
+
+				PROTORECVEVENT pre;
 				pre.flags = 0;
 				pre.timestamp = time( NULL );
 				pre.szMessage = szBlob;
-				pre.lParam = 0;
+				pre.lParam = ( LPARAM )ft;
+
+				CCSDATA ccs;
 				ccs.szProtoService = PSR_FILE;
 				ccs.hContact = ft->std.hContact;
 				ccs.wParam = 0;

@@ -140,6 +140,10 @@ static INT_PTR Proto_RecvFile(WPARAM,LPARAM lParam)
 	char* szFile = pre->szMessage + sizeof( DWORD );
 	char* szDescr = szFile + strlen( szFile ) + 1;
 
+	// Suppress the standard event filter
+	if ( pre->lParam != NULL )
+		*( DWORD* )pre->szMessage = ( DWORD )-1;
+
 	DBEVENTINFO dbei = { 0 };
 	dbei.cbSize = sizeof( dbei );
 	dbei.szModule = ( char* )CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)ccs->hContact, 0);
@@ -148,7 +152,10 @@ static INT_PTR Proto_RecvFile(WPARAM,LPARAM lParam)
 	dbei.eventType = EVENTTYPE_FILE;
 	dbei.cbBlob = (DWORD)(sizeof( DWORD ) + strlen( szFile ) + strlen( szDescr ) + 2);
 	dbei.pBlob = ( PBYTE )pre->szMessage;
-	CallService( MS_DB_EVENT_ADD, ( WPARAM )ccs->hContact, ( LPARAM )&dbei );
+	HANDLE hdbe = ( HANDLE )CallService( MS_DB_EVENT_ADD, ( WPARAM )ccs->hContact, ( LPARAM )&dbei );
+
+	if ( pre->lParam != NULL )
+		PushFileEvent( ccs->hContact, hdbe, pre->lParam );
 	return 0;
 }
 

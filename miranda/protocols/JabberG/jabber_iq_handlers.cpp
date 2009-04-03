@@ -626,8 +626,6 @@ void CJabberProto::OnIqRequestOOB( HXML, CJabberIqInfo *pInfo )
 		ft->iqId = mir_tstrdup( pInfo->GetIdStr() );
 
 	if ( ft->httpHostName && ft->httpPath ) {
-		CCSDATA ccs;
-		PROTORECVEVENT pre;
 		char* szBlob, *desc;
 
 		Log( "Host=%s Port=%d Path=%s", ft->httpHostName, ft->httpPort, ft->httpPath );
@@ -646,13 +644,17 @@ void CJabberProto::OnIqRequestOOB( HXML, CJabberIqInfo *pInfo )
 			str2 = mir_strdup( str2 );
 			JabberHttpUrlDecode( str2 );
 			szBlob = ( char* )mir_alloc( sizeof( DWORD )+ strlen( str2 ) + strlen( desc ) + 2 );
-			*(( PDWORD ) szBlob ) = ( DWORD )ft;
+			*(( PDWORD ) szBlob ) = 0;
 			strcpy( szBlob + sizeof( DWORD ), str2 );
 			strcpy( szBlob + sizeof( DWORD )+ strlen( str2 ) + 1, desc );
+
+			PROTORECVEVENT pre;
 			pre.flags = 0;
 			pre.timestamp = time( NULL );
 			pre.szMessage = szBlob;
-			pre.lParam = 0;
+			pre.lParam = ( LPARAM )ft;
+
+			CCSDATA ccs;
 			ccs.szProtoService = PSR_FILE;
 			ccs.hContact = ft->std.hContact;
 			ccs.wParam = 0;

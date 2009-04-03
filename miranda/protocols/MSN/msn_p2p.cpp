@@ -1048,7 +1048,7 @@ void CMsnProto::p2p_InitFileTransfer(
 				char tComment[ 40 ];
 				int tCommentLen = mir_snprintf( tComment, sizeof( tComment ), "%lu bytes", ft->std.currentFileSize );
 				char* szBlob = ( char* )alloca( sizeof( DWORD ) + tFileNameLen + tCommentLen + 2 );
-				*( PDWORD )szBlob = ( DWORD )ft;
+				*( PDWORD )szBlob = 0;
 				strcpy( szBlob + sizeof( DWORD ), ft->std.currentFile );
 				strcpy( szBlob + sizeof( DWORD ) + tFileNameLen + 1, tComment );
 
@@ -1056,7 +1056,7 @@ void CMsnProto::p2p_InitFileTransfer(
 				pre.flags = 0;
 				pre.timestamp = ( DWORD )time( NULL );
 				pre.szMessage = ( char* )szBlob;
-				pre.lParam = ( LPARAM )( char* )"";
+				pre.lParam = ( LPARAM )ft;
 
 				CCSDATA ccs;
 				ccs.hContact = ft->std.hContact;
