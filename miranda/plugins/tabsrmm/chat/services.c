@@ -37,7 +37,7 @@ extern int			g_chat_fully_initialized;
 HANDLE				hSendEvent;
 HANDLE				hBuildMenuEvent;
 HANDLE            hJoinMenuItem, hLeaveMenuItem;
-HANDLE				g_hHookContactDblClick, g_hHookPrebuildMenu;
+HANDLE				g_hHookPrebuildMenu;
 SESSION_INFO		g_TabSession;
 CRITICAL_SECTION	cs;
 int					g_sessionshutdown = 0;
@@ -835,13 +835,11 @@ static INT_PTR Service_GetAddEventPtr(WPARAM wParam, LPARAM lParam)
 void HookEvents(void)
 {
 	InitializeCriticalSection(&cs);
-	g_hHookContactDblClick = HookEvent(ME_CLIST_DOUBLECLICKED, CList_RoomDoubleclicked);
 	g_hHookPrebuildMenu = HookEvent(ME_CLIST_PREBUILDCONTACTMENU, CList_PrebuildContactMenu); // MIRANDAHOOK should return INT_PTR too
 }
 
 void UnhookEvents(void)
 {
-	UnhookEvent(g_hHookContactDblClick);
 	UnhookEvent(g_hHookPrebuildMenu);
 	DeleteCriticalSection(&cs);
 }

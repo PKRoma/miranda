@@ -673,7 +673,6 @@ static INT_PTR Service_GetAddEventPtr(WPARAM wParam, LPARAM lParam)
 
 void HookEvents(void)
 {
-	HookEvent_Ex(ME_CLIST_DOUBLECLICKED, CList_RoomDoubleclicked);
 	HookEvent_Ex(ME_CLIST_PREBUILDCONTACTMENU, CList_PrebuildContactMenu);
 }
 

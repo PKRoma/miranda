@@ -34,7 +34,7 @@ HANDLE				hBuildMenuEvent ;
 HANDLE				g_hModulesLoaded;
 HANDLE				g_hSystemPreShutdown;
 HANDLE            hJoinMenuItem, hLeaveMenuItem;
-HANDLE				g_hHookContactDblClick, g_hHookPrebuildMenu;
+HANDLE				g_hHookPrebuildMenu;
 HANDLE				g_hIconsChanged, g_hFontsChanged;
 HANDLE				g_hSmileyOptionsChanged = NULL;
 HANDLE				g_hIconsChanged2;
@@ -802,7 +802,6 @@ void HookEvents(void)
 	InitializeCriticalSection(&cs);
 	g_hModulesLoaded =       HookEvent(ME_SYSTEM_MODULESLOADED, ModulesLoaded);
 	g_hHookPrebuildMenu =    HookEvent(ME_CLIST_PREBUILDCONTACTMENU, CList_PrebuildContactMenu);
-	g_hHookContactDblClick = HookEvent(ME_CLIST_DOUBLECLICKED, CList_RoomDoubleclicked);
 	g_hSystemPreShutdown =   HookEvent(ME_SYSTEM_PRESHUTDOWN, PreShutdown);
 	g_hIconsChanged =	       HookEvent(ME_SKIN_ICONSCHANGED, IconsChanged);
 }
@@ -812,7 +811,6 @@ void UnhookEvents(void)
 	UnhookEvent(g_hModulesLoaded);
 	UnhookEvent(g_hSystemPreShutdown);
 	UnhookEvent(g_hHookPrebuildMenu);
-	UnhookEvent(g_hHookContactDblClick);
 	UnhookEvent(g_hIconsChanged);
 	UnhookEvent(g_hIconsChanged2);
 	UnhookEvent(g_hFontsChanged);
