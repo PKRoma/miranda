@@ -61,7 +61,7 @@
 # define y_renew(type, mem, n)	(type *)realloc(mem, n)
 
 void * y_memdup(const void * addr, int n);
-extern "C" char ** y_strsplit(char * str, char * sep, int nelem);
+char ** y_strsplit(char * str, char * sep, int nelem);
 void y_strfreev(char ** vector);
 
 #ifndef _WIN32

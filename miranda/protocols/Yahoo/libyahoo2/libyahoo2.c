@@ -1137,7 +1137,7 @@ static YList * bud_str2list(char *rawlist)
 	return l;
 }
 
-extern "C" char * getcookie(char *rawcookie)
+char * getcookie(char *rawcookie)
 {
 	char * cookie=NULL;
 	char * tmpcookie; 
