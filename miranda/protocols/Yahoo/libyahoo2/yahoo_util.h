@@ -60,6 +60,11 @@
 # define y_new0(type, n)	(type *)calloc((n), sizeof(type))
 # define y_renew(type, mem, n)	(type *)realloc(mem, n)
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 void * y_memdup(const void * addr, int n);
 char ** y_strsplit(char * str, char * sep, int nelem);
 void y_strfreev(char ** vector);
@@ -99,6 +104,10 @@ int vsnprintf(char *str, size_t size, const char *format, va_list ap);
 char * y_string_append(char * str, char * append);
 /*char * y_str_to_utf8(const char * in);
 char * y_utf8_to_str(const char * in);*/
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

@@ -12,7 +12,7 @@ intermediateFilesDirectory=Debug
 outputFilesDirectory=Debug
 compilerPreprocessor=
 extraCompilerOptions=-DHAVE_CONFIG_H
-compilerIncludeDirectory=..\..\include\
+compilerIncludeDirectory=..\..\include
 noWarning=0
 defaultWarning=1
 allWarning=1
@@ -50,7 +50,7 @@ intermediateFilesDirectory=Release
 outputFilesDirectory=Release
 compilerPreprocessor=
 extraCompilerOptions=-DHAVE_CONFIG_H
-compilerIncludeDirectory=..\..\include\
+compilerIncludeDirectory=..\..\include
 noWarning=0
 defaultWarning=1
 allWarning=1
@@ -60,7 +60,7 @@ warningAsErrors=0
 debugType=0
 debugLevel=1
 exceptionEnabled=0
-runtimeTypeEnabled=1
+runtimeTypeEnabled=0
 optimizeLevel=4
 
 // linker
@@ -137,18 +137,16 @@ extraResourceOptions=
 6=libyahoo2\Docs\TODO
 7=libyahoo2\Docs\ymsg-9.txt
 [History]
-file_transfer.h,1316
-proto.h,1686
-main.cpp,0
-im.cpp,444
-yahoo.h,3898
-icolib.cpp,422
-file_transfer.cpp,1069
-options.cpp,3432
-services.cpp,4676
-server.cpp,1875
+libyahoo2\libyahoo2.c,29944
+libyahoo2\yahoo2_types.h,9536
+libyahoo2\crypt.c,2099
 libyahoo2\yahoo2_callbacks.h,17738
-yahoo.cpp,12743
-libyahoo2\crypt.c,2121
-libyahoo2\yahoo2_types.h,9542
-libyahoo2\libyahoo2.c,54129
+server.cpp,1845
+services.cpp,4676
+options.cpp,3432
+file_transfer.cpp,1069
+icolib.cpp,0
+yahoo.h,838
+..\..\include\m_protoint.h,4846
+libyahoo2\yahoo_util.h,0
+yahoo.cpp,43532

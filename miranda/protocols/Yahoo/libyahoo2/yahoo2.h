@@ -219,6 +219,8 @@ void yahoo_send_idle_packet(int id);
 void yahoo_send_im_ack(int id, const char *buddy, const char *seqn, int sendn);
 #include "yahoo_httplib.h"
 
+char * getcookie(char *rawcookie);
+
 #ifdef __cplusplus
 }
 #endif

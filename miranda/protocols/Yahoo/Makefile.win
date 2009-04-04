@@ -1,9 +1,35 @@
-SRC = http_gateway.cpp main.cpp options.cpp server.cpp services.cpp util.cpp yahoo.cpp avatar.cpp \
-	  chat.cpp webcam.cpp icolib.cpp ignore.cpp file_transfer.cpp im.cpp search.cpp \
-	  proto.cpp \
-	  libyahoo2\crypt.c libyahoo2\libyahoo2.c libyahoo2\yahoo_auth.c \
-	  libyahoo2\yahoo_httplib.c libyahoo2\yahoo_list.c libyahoo2\yahoo_util.c
-OBJ = $(SRC:.c=.o) $(SRC:.cpp=.o)
+#
+# Makefile for Miranda IM written by Gennady Feldman <gena01@miranda-im.org>
+#
+#
+
+#
+# List the required object files.
+#
+
+OBJ = http_gateway.o \
+	main.o \
+	options.o \
+	server.o \
+	services.o \
+	util.o \
+	yahoo.o \
+	avatar.o \
+	chat.o \
+	webcam.o \
+	icolib.o \
+	ignore.o \
+	file_transfer.o \
+	im.o \
+	search.o \
+	proto.o \
+	libyahoo2\crypt.o \
+	libyahoo2\libyahoo2.o \
+	libyahoo2\yahoo_auth.o \
+	libyahoo2\yahoo_httplib.o \
+	libyahoo2\yahoo_list.o \
+	libyahoo2\yahoo_util.o
+
 RES = Yahoo.res
 
 LIB = -lcomdlg32 -lgdi32
@@ -13,9 +39,9 @@ RC = windres
 RM = del
 
 ifdef DEBUG
-BIN = ../../bin/debug/plugins/Yahoo.dll
+BIN = ..\..\bin\debug\plugins\Yahoo.dll
 else
-BIN = ../../bin/release/plugins/Yahoo.dll
+BIN = ..\..\bin\release\plugins\Yahoo.dll
 endif
 
 DEFINES = -DHAVE_CONFIG_H
@@ -25,18 +51,27 @@ endif
 
 
 ifdef DEBUG
-CFLAGS  = -g $(DEFINES) -I../../include
+CFLAGS  = -g $(DEFINES) -I../../include -mwindows -c
 LDFLAGS  = -shared 
 else
-CFLAGS  = -Os $(DEFINES) -I../../include
+CFLAGS  = -Os $(DEFINES) -I../../include -mwindows -c
 LDFLAGS  = -shared -s
 endif
 
-all : $(OBJ) $(RES)
-	$(CC) $(LDFLAGS) $(CFLAGS) -o $(BIN) $(OBJ) $(RES) $(LIB) -Wl
+all : ${BIN}
+
+${BIN} : $(OBJ) $(RES)
+	g++ $(LDFLAGS) -o $(BIN) $(OBJ) $(RES) $(LIB) -Wl
 
 $(RES) : $(RES:.res=.rc) $(RES:.res=.h) Makefile.win
 	$(RC) -O COFF -o $(RES) -i $(RES:.res=.rc)
 
+.cpp.o:
+	g++ $(CFLAGS) $< -o $@
+
+.c.o:
+	gcc $(CFLAGS) $< -o $@
+
+
 clean :
-	$(RM) $(OBJ) $(RES)
+	-$(RM) $(OBJ) $(RES) ${BIN}

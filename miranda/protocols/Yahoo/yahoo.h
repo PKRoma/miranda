@@ -27,14 +27,10 @@
  * Yahoo Services
  */
 #define USE_STRUCT_CALLBACKS
-extern "C"
-{
-	#include "libyahoo2/yahoo2.h"
-	#include "libyahoo2/yahoo2_callbacks.h"
-	#include "libyahoo2/yahoo_util.h"
-	
-	char * getcookie(char *rawcookie);
-};
+
+#include "libyahoo2/yahoo2.h"
+#include "libyahoo2/yahoo2_callbacks.h"
+#include "libyahoo2/yahoo_util.h"
 
 #include <newpluginapi.h>
 #include <m_system.h>
