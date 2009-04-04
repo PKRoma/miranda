@@ -790,9 +790,8 @@ INT_PTR CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		} 
 		if (dat->hwndActive != NULL) {
 			ActivateChild(dat, dat->hwndActive);
-			if (GetForegroundWindow() == hwndDlg) {
-				SendMessage(dat->hwndActive, DM_SETFOCUS, 0, msg);
-			}
+			g_dat->hFocusWnd = dat->hwndActive;
+			PostMessage(dat->hwndActive, DM_SETFOCUS, 0, msg);
 		}
 		if (KillTimer(hwndDlg, TIMERID_FLASHWND)) {
 			FlashWindow(hwndDlg, FALSE);

@@ -1826,6 +1826,7 @@ LABEL_SHOWWINDOW:
 				if (si->desiredInputAreaHeight != height) {
 					si->desiredInputAreaHeight = height;
 					SendMessage(hwndDlg, WM_SIZE, 0, 0);
+					PostMessage(hwndDlg, GC_SCROLLTOBOTTOM, 0, 0);
 				}
 			}
 			break;

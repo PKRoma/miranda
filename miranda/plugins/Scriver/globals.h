@@ -145,6 +145,7 @@ struct GlobalMessageData
 	HBRUSH	   hInfobarBrush;
 	HPEN	   hInfobarPen;
 	int		   toolbarPosition;
+	HWND       hFocusWnd;
 };
 
 int IconsChanged(WPARAM wParam, LPARAM lParam);

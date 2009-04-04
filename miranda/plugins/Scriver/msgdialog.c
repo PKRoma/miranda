@@ -1541,7 +1541,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				return TRUE;
 			}
 		}
-		SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+		if (g_dat->hFocusWnd == hwndDlg) {
+			SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+		}
 		return TRUE;
 	case WM_SETFOCUS:
 		SendMessage(dat->hwndParent, CM_ACTIVATECHILD, 0, (LPARAM)hwndDlg);
@@ -2323,6 +2325,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						if (dat->desiredInputAreaHeight != height) {
 							dat->desiredInputAreaHeight = height;
 							SendMessage(hwndDlg, WM_SIZE, 0, 0);
+							PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
 						}
 					}
 					break;
