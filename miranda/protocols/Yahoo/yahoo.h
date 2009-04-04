@@ -30,7 +30,11 @@
 
 #include "libyahoo2/yahoo2.h"
 #include "libyahoo2/yahoo2_callbacks.h"
+
+extern "C"
+{
 #include "libyahoo2/yahoo_util.h"
+};
 
 #include <newpluginapi.h>
 #include <m_system.h>
@@ -89,7 +93,7 @@ extern int do_yahoo_debug;
 struct _conn {
 	unsigned int tag;
 	int id;
-	int fd;
+	INT_PTR fd;
 	yahoo_input_condition cond;
 	void *data;
 	int remove;
@@ -106,7 +110,7 @@ extern HINSTANCE		hInstance;
 extern int 				iHTTPGateway;
 #endif
 
-int __stdcall YAHOO_CallService( const char* szSvcName, WPARAM wParam, LPARAM lParam );
+INT_PTR __stdcall YAHOO_CallService( const char* szSvcName, WPARAM wParam, LPARAM lParam );
 
 #define YAHOO_hasnotification() ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)
 

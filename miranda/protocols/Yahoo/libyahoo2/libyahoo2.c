@@ -132,7 +132,7 @@ struct yahoo_input_data {
 	struct yahoo_webcam_data *wcd;
 	struct yahoo_search_state *ys;
 
-	int   fd;
+	INT_PTR fd;
 	enum yahoo_connection_type type;
 	
 	unsigned char	*rxqueue;
@@ -162,7 +162,7 @@ typedef struct {
 	char *name;
 }value_string;
 
-static int yahoo_send_data(int fd, const char *data, int len);
+static int yahoo_send_data(INT_PTR fd, const char *data, int len);
 
 int yahoo_log_message(char * fmt, ...)
 {
@@ -591,7 +591,7 @@ static struct yahoo_input_data * find_input_by_id_and_type(int id, enum yahoo_co
 	return NULL;
 }
 
-static struct yahoo_input_data * find_input_by_id_and_fd(int id, int fd)
+static struct yahoo_input_data * find_input_by_id_and_fd(int id, INT_PTR fd)
 {
 	YList *l;
 	LOG(("find_input_by_id_and_fd"));
@@ -1015,7 +1015,7 @@ static void yahoo_packet_free(struct yahoo_packet *pkt)
 	FREE(pkt);
 }
 
-static int yahoo_send_data(int fd, const char *data, int len)
+static int yahoo_send_data(INT_PTR fd, const char *data, int len)
 {
 	int ret;
 	int e;
@@ -4102,7 +4102,7 @@ static void yahoo_process_yab_update(struct yahoo_input_data *yid, struct yahoo_
 	//YAHOO_CALLBACK(ext_yahoo_got_ping)(yid->yd->client_id, errormsg);
 }
 
-static void _yahoo_webcam_get_server_connected(int fd, int error, void *d)
+static void _yahoo_webcam_get_server_connected(INT_PTR fd, int error, void *d)
 {
 	struct yahoo_input_data *yid = (struct yahoo_input_data *) d;
 	char *who = yid->wcm->user;
@@ -4761,7 +4761,7 @@ static int yahoo_get_webcam_data(struct yahoo_input_data *yid)
 	return 0;
 }
 
-int yahoo_write_ready(int id, int fd, void *data)
+int yahoo_write_ready(int id, INT_PTR fd, void *data)
 {
 	struct yahoo_input_data *yid = (struct yahoo_input_data *) data;
 	int len;
@@ -4997,7 +4997,7 @@ static void yahoo_process_search_connection(struct yahoo_input_data *yid, int ov
 	}
 }
 
-static void _yahoo_webcam_connected(int fd, int error, void *d)
+static void _yahoo_webcam_connected(INT_PTR fd, int error, void *d)
 {
 	struct yahoo_input_data *yid 	= (struct yahoo_input_data *) d;
 	struct yahoo_webcam * wcm 		= yid->wcm;
@@ -5173,7 +5173,7 @@ static void (*yahoo_process_connection[])(struct yahoo_input_data *, int over) =
 	yahoo_process_search_connection
 };
 
-int yahoo_read_ready(int id, int fd, void *data)
+int yahoo_read_ready(int id, INT_PTR fd, void *data)
 {
 	struct yahoo_input_data *yid = (struct yahoo_input_data *) data;
 	struct yahoo_server_settings *yss;
@@ -5274,7 +5274,7 @@ struct connect_callback_data {
 	int i;
 };
 
-static void yahoo_connected(int fd, int error, void *data)
+static void yahoo_connected(INT_PTR fd, int error, void *data)
 {
 	struct connect_callback_data *ccd = (struct connect_callback_data *) data;
 	struct yahoo_data *yd = ccd->yd;
@@ -5623,7 +5623,7 @@ void yahoo_get_list(int id)
 	}
 }
 
-static void _yahoo_http_connected(int id, int fd, int error, void *data)
+static void _yahoo_http_connected(int id, INT_PTR fd, int error, void *data)
 {
 	struct yahoo_input_data *yid = (struct yahoo_input_data *) data;
 	if(fd <= 0) {
@@ -6516,7 +6516,7 @@ struct send_file_data {
 	void *user_data;
 };
 
-static void _yahoo_send_file_connected(int id, int fd, int error, void *data)
+static void _yahoo_send_file_connected(int id, INT_PTR fd, int error, void *data)
 {
 	struct yahoo_input_data *yid 	= find_input_by_id_and_type(id, YAHOO_CONNECTION_FT);
 	struct send_file_data *sfd 		= (struct send_file_data *) data;

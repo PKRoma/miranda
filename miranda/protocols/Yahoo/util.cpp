@@ -41,7 +41,7 @@ void CYahooProto::YHookEvent( const char* szEvent, YEventFunc handler )
 	::HookEventObj( szEvent, ( MIRANDAHOOKOBJ )*( void** )&handler, this );
 }
 
-int __stdcall YAHOO_CallService( const char* szSvcName, WPARAM wParam, LPARAM lParam )
+INT_PTR __stdcall YAHOO_CallService( const char* szSvcName, WPARAM wParam, LPARAM lParam )
 {
 	return CallService( szSvcName, wParam, lParam );
 }

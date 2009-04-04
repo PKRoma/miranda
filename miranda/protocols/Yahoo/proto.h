@@ -242,7 +242,7 @@ struct CYahooProto : public PROTO_INTERFACE
 	void   set_status(int myyahooStatus, char *msg, int away);
 	void   stealth(const char *buddy, int add);
 
-	int    ext_connect(const char *h, int p, int type);
+	INT_PTR ext_connect(const char *h, int p, int type);
 	int    ext_connect_async(const char *host, int port, int type, yahoo_connect_callback callback, void *data);
 
 	void   ext_send_http_request(const char *method, const char *url, const char *cookies, long content_length, yahoo_get_fd_callback callback, void *callback_data);
