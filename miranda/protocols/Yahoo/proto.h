@@ -21,10 +21,10 @@ struct CYahooProto;
 #ifdef __GNUC__
 extern "C"
 {
-	typedef void ( CYahooProto::*YThreadFunc )( void* );
-	typedef int  ( CYahooProto::*YEventFunc )( WPARAM, LPARAM );
-	typedef int  ( CYahooProto::*YServiceFunc )( WPARAM, LPARAM );
-	typedef int  ( CYahooProto::*YServiceFuncParam )( WPARAM, LPARAM, LPARAM );
+	typedef void    ( CYahooProto::*YThreadFunc )( void* );
+	typedef int     ( CYahooProto::*YEventFunc )( WPARAM, LPARAM );
+	typedef INT_PTR  ( CYahooProto::*YServiceFunc )( WPARAM, LPARAM );
+	typedef INT_PTR  ( CYahooProto::*YServiceFuncParam )( WPARAM, LPARAM, LPARAM );
 }
 #else
 	typedef void    ( __cdecl CYahooProto::*YThreadFunc )( void* );
@@ -35,8 +35,6 @@ extern "C"
 
 struct CYahooProto : public PROTO_INTERFACE
 {
-	typedef PROTO_INTERFACE CSuper;
-
 				CYahooProto( const char*, const TCHAR* );
 				virtual ~CYahooProto();
 

@@ -524,14 +524,14 @@ void CYahooProto::ext_got_file(const char *me, const char *who, const char *url,
 
 	// blob is DWORD(*ft), ASCIIZ(filenames), ASCIIZ(description)
 	szBlob = (char *) malloc(sizeof(DWORD) + lstrlenA(fn) + lstrlenA(msg) + 2);
-	*((PDWORD) szBlob) = (DWORD) ft;
+	*((PDWORD) szBlob) = 0;
 	strcpy(szBlob + sizeof(DWORD), fn);
 	strcpy(szBlob + sizeof(DWORD) + lstrlenA(fn) + 1, msg);
 
 	pre.flags = 0;
 	pre.timestamp = (DWORD)time(NULL);
 	pre.szMessage = szBlob;
-	pre.lParam = 0;
+	pre.lParam = (LPARAM)ft;
 	ccs.szProtoService = PSR_FILE;
 	ccs.hContact = hContact;
 	ccs.wParam = 0;
@@ -580,14 +580,14 @@ void CYahooProto::ext_got_files(const char *me, const char *who, const char *ft_
 
 	// blob is DWORD(*ft), ASCIIZ(filenames), ASCIIZ(description)
 	szBlob = (char *) malloc(sizeof(DWORD) + lstrlenA(fn) + 2);
-	*((PDWORD) szBlob) = (DWORD) ft;
+	*((PDWORD) szBlob) = 0;
 	strcpy(szBlob + sizeof(DWORD), fn);
 	strcpy(szBlob + sizeof(DWORD) + lstrlenA(fn) + 1, "");
 
 	pre.flags = 0;
 	pre.timestamp = (DWORD)time(NULL);
 	pre.szMessage = szBlob;
-	pre.lParam = 0;
+	pre.lParam = (LPARAM)ft;
 	ccs.szProtoService = PSR_FILE;
 	ccs.hContact = ft->hContact;
 	ccs.wParam = 0;

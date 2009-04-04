@@ -53,9 +53,9 @@ char *yahoo_crypt(char *key, char *salt)
 	mir_md5_byte_t alt_result[16];
 	mir_md5_state_t ctx;
 	mir_md5_state_t alt_ctx;
-	size_t salt_len;
-	size_t key_len;
-	size_t cnt;
+	int salt_len;
+	int key_len;
+	int cnt;
 	char *cp;
 
 	if (buflen < needed) {
@@ -70,14 +70,14 @@ char *yahoo_crypt(char *key, char *salt)
 		/* Skip salt prefix.  */
 		salt += sizeof (md5_salt_prefix) - 1;
 
-	salt_len = MIN (strcspn (salt, "$"), 8);
-	key_len = strlen (key);
+	salt_len = (int)MIN (strcspn (salt, "$"), 8);
+	key_len = (int)strlen (key);
 
 	/* Prepare for the real work.  */
 	mir_md5_init(&ctx);
 
 	/* Add the key string.  */
-	mir_md5_append(&ctx, (mir_md5_byte_t *)key, key_len);
+	mir_md5_append(&ctx, (mir_md5_byte_t *)key, (int)key_len);
 
 	/* Because the SALT argument need not always have the salt prefix we
 	   add it separately.  */
@@ -86,7 +86,7 @@ char *yahoo_crypt(char *key, char *salt)
 	/* The last part is the salt string.  This must be at most 8
 	   characters and it ends at the first `$' character (for
 	   compatibility which existing solutions).  */
-	mir_md5_append(&ctx, (mir_md5_byte_t *)salt, salt_len);
+	mir_md5_append(&ctx, (mir_md5_byte_t *)salt, (int)salt_len);
 
 	/* Compute alternate MD5 sum with input KEY, SALT, and KEY.  The
 	   final result will be added to the first context.  */
@@ -161,9 +161,9 @@ char *yahoo_crypt(char *key, char *salt)
 	cp = buffer + strlen(buffer);
 	buflen -= sizeof (md5_salt_prefix);
 
-	strncpy(cp, salt, MIN ((size_t) buflen, salt_len));
+	strncpy(cp, salt, MIN (buflen, salt_len));
 	cp = cp + strlen(cp);
-	buflen -= MIN ((size_t) buflen, salt_len);
+	buflen -= MIN (buflen, salt_len);
 
 	if (buflen > 0) {
 		*cp++ = '$';
