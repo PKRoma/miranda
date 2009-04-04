@@ -543,7 +543,6 @@ void CYahooProto::ext_got_file(const char *me, const char *who, const char *url,
 
 void CYahooProto::ext_got_files(const char *me, const char *who, const char *ft_token, int y7, YList* files)
 {
-	PROTORECVEVENT pre;
 	HANDLE hContact;
 	char *szBlob;
 	y_filetransfer *ft;
@@ -584,13 +583,13 @@ void CYahooProto::ext_got_files(const char *me, const char *who, const char *ft_
 	strcpy(szBlob + sizeof(DWORD), fn);
 	strcpy(szBlob + sizeof(DWORD) + lstrlenA(fn) + 1, "");
 
+	PROTORECVEVENT pre;
 	pre.flags = 0;
 	pre.timestamp = (DWORD)time(NULL);
 	pre.szMessage = szBlob;
 	pre.lParam = (LPARAM)ft;
 
 	CCSDATA ccs;
-	pre.lParam = (LPARAM)ft;
 	ccs.szProtoService = PSR_FILE;
 	ccs.hContact = ft->hContact;
 	ccs.wParam = 0;
