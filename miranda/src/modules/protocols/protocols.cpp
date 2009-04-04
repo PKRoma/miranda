@@ -142,7 +142,7 @@ static INT_PTR Proto_RecvFile(WPARAM,LPARAM lParam)
 
 	// Suppress the standard event filter
 	if ( pre->lParam != NULL )
-		*( DWORD* )pre->szMessage = ( DWORD )-1;
+		*( DWORD* )pre->szMessage = 0;
 
 	DBEVENTINFO dbei = { 0 };
 	dbei.cbSize = sizeof( dbei );

@@ -475,8 +475,6 @@ void __cdecl CYahooProto::recv_filethread(void *psf)
 
 void CYahooProto::ext_got_file(const char *me, const char *who, const char *url, long expires, const char *msg, const char *fname, unsigned long fesize, const char *ft_token, int y7)
 {
-	CCSDATA ccs;
-	PROTORECVEVENT pre;
 	HANDLE hContact;
 	char *szBlob;
 	y_filetransfer *ft;
@@ -528,10 +526,13 @@ void CYahooProto::ext_got_file(const char *me, const char *who, const char *url,
 	strcpy(szBlob + sizeof(DWORD), fn);
 	strcpy(szBlob + sizeof(DWORD) + lstrlenA(fn) + 1, msg);
 
+	PROTORECVEVENT pre;
 	pre.flags = 0;
 	pre.timestamp = (DWORD)time(NULL);
 	pre.szMessage = szBlob;
 	pre.lParam = (LPARAM)ft;
+
+	CCSDATA ccs;
 	ccs.szProtoService = PSR_FILE;
 	ccs.hContact = hContact;
 	ccs.wParam = 0;
@@ -542,7 +543,6 @@ void CYahooProto::ext_got_file(const char *me, const char *who, const char *url,
 
 void CYahooProto::ext_got_files(const char *me, const char *who, const char *ft_token, int y7, YList* files)
 {
-	CCSDATA ccs;
 	PROTORECVEVENT pre;
 	HANDLE hContact;
 	char *szBlob;
@@ -588,10 +588,13 @@ void CYahooProto::ext_got_files(const char *me, const char *who, const char *ft_
 	pre.timestamp = (DWORD)time(NULL);
 	pre.szMessage = szBlob;
 	pre.lParam = (LPARAM)ft;
+
+	CCSDATA ccs;
+	pre.lParam = (LPARAM)ft;
 	ccs.szProtoService = PSR_FILE;
 	ccs.hContact = ft->hContact;
 	ccs.wParam = 0;
-	ccs.lParam = (LPARAM) & pre;
+	ccs.lParam = (LPARAM)&pre;
 	CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
 	free(szBlob);
 }

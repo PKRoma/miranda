@@ -586,8 +586,6 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 					}
 				}
 				{
-					CCSDATA ccs;
-					PROTORECVEVENT pre;
 					char* szBlob;
 					int bAdded;
 					HANDLE hContact = HContactFromUID(dwUin, szUID, &bAdded);
@@ -602,18 +600,21 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 
 					// Send chain event
 					szBlob = (char*)_alloca(sizeof(DWORD) + strlennull(pszFileName) + strlennull(szAnsi) + 2);
-					*(PDWORD)szBlob = (DWORD)ft;
+					*(PDWORD)szBlob = 0;
 					strcpy(szBlob + sizeof(DWORD), pszFileName);
 					strcpy(szBlob + sizeof(DWORD) + strlennull(pszFileName) + 1, szAnsi); // DB event is ansi only!
+
+					PROTORECVEVENT pre;
+					pre.flags = 0;
+					pre.timestamp = time(NULL);
+					pre.szMessage = szBlob;
+					pre.lParam = (LPARAM)ft;
+
+					CCSDATA ccs;
 					ccs.szProtoService = PSR_FILE;
 					ccs.hContact = hContact;
 					ccs.wParam = 0;
 					ccs.lParam = (LPARAM)&pre;
-					pre.flags = 0;
-					pre.timestamp = time(NULL);
-					pre.szMessage = szBlob;
-					pre.lParam = 0;
-
 					CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
 				}
 			}

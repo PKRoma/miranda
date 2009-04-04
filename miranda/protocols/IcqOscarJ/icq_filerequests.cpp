@@ -136,7 +136,6 @@ void CIcqProto::handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCoo
 	WORD wFilenameLength;
 	BOOL bEmptyDesc = FALSE;
 
-
 	if (strlennull(pszDescription) == 0)
 	{
 		pszDescription = ICQTranslate("No description given");
@@ -146,7 +145,6 @@ void CIcqProto::handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCoo
 	// Empty port+pad
 	buf += 4;
 	wLen -= 4;
-
 
 	// Filename
 	unpackLEWord(&buf, &wFilenameLength);
@@ -169,15 +167,11 @@ void CIcqProto::handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCoo
 	wLen -= 4;
 
 	{
-		CCSDATA ccs;
-		PROTORECVEVENT pre;
-		char* szBlob;
-		filetransfer* ft;
 		int bAdded;
 		HANDLE hContact = HContactFromUIN(dwUin, &bAdded);
 
 		// Initialize a filetransfer struct
-		ft = CreateFileTransfer(hContact, dwUin, nVersion);
+		filetransfer* ft = CreateFileTransfer(hContact, dwUin, nVersion);
 		ft->dwCookie = dwCookie;
 		ft->szFilename = null_strdup(pszFileName);
 		ft->szDescription = null_strdup(pszDescription);
@@ -188,21 +182,23 @@ void CIcqProto::handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCoo
 		ft->bDC = bDC;
 		ft->bEmptyDesc = bEmptyDesc;
 
-
 		// Send chain event
-		szBlob = (char*)_alloca(sizeof(DWORD) + strlennull(pszFileName) + strlennull(pszDescription) + 2);
-		*(PDWORD)szBlob = (DWORD)ft;
+		char* szBlob = (char*)_alloca(sizeof(DWORD) + strlennull(pszFileName) + strlennull(pszDescription) + 2);
+		*(PDWORD)szBlob = 0;
 		strcpy(szBlob + sizeof(DWORD), pszFileName);
 		strcpy(szBlob + sizeof(DWORD) + strlennull(pszFileName) + 1, pszDescription);
+
+		PROTORECVEVENT pre;
+		pre.flags = 0;
+		pre.timestamp = time(NULL);
+		pre.szMessage = szBlob;
+		pre.lParam = (LPARAM)ft;
+
+		CCSDATA ccs;
 		ccs.szProtoService = PSR_FILE;
 		ccs.hContact = hContact;
 		ccs.wParam = 0;
 		ccs.lParam = (LPARAM)&pre;
-		pre.flags = 0;
-		pre.timestamp = time(NULL);
-		pre.szMessage = szBlob;
-		pre.lParam = 0;
-
 		CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
 	}
 }

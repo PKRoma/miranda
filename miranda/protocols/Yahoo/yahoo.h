@@ -15,6 +15,13 @@
 
 #define MIRANDA_VER 0x0800
 
+extern "C"
+{
+	extern struct MD5_INTERFACE  md5i;
+	extern struct SHA1_INTERFACE sha1i;
+	extern struct tagPLUGINLINK* pluginLink;
+};
+
 #include <m_stdhdr.h>
 
 #include <sys/stat.h>
@@ -32,8 +39,12 @@
 #include "libyahoo2/yahoo2_callbacks.h"
 #include "libyahoo2/yahoo_util.h"
 
-#include <newpluginapi.h>
-#include <m_system.h>
+extern "C"
+{
+	#include <newpluginapi.h>
+	#include <m_system.h>
+};
+
 #include <m_system_cpp.h>
 #include <m_database.h>
 #include <m_protomod.h>

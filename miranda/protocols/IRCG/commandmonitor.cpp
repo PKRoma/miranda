@@ -1188,21 +1188,21 @@ bool CIrcProto::IsCTCP( const CIrcMessage* pmsg )
 						if( di->bReverse )
 							di->sToken = sTokenBackup;
 
-						CCSDATA ccs = {0}; 
-						PROTORECVEVENT pre = {0};
-						ccs.szProtoService = PSR_FILE;
-						pre.flags = 0;
-						pre.timestamp = (DWORD)time(NULL);
-
 						char* szBlob = ( char* )alloca(sizeof(DWORD) + strlen(szFileName) + 3);
-						*((PDWORD) szBlob) = (DWORD) di;
+						*((PDWORD) szBlob) = 0;
 						strcpy(szBlob + sizeof(DWORD), szFileName );
 						strcpy(szBlob + sizeof(DWORD) + strlen(szFileName) + 1, " ");
 
 						setTString(hContact, "User", pmsg->prefix.sUser.c_str());
 						setTString(hContact, "Host", pmsg->prefix.sHost.c_str());
 
+						PROTORECVEVENT pre = {0};
+						pre.timestamp = (DWORD)time(NULL);
 						pre.szMessage = szBlob;
+						pre.lParam = (LPARAM)di;
+
+						CCSDATA ccs = {0}; 
+						ccs.szProtoService = PSR_FILE;
 						ccs.hContact = hContact;
 						ccs.lParam = (LPARAM) & pre;
 						CallService( MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs );

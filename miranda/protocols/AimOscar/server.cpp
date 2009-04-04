@@ -729,7 +729,6 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 {
 	if(snac.subcmp(0x0007))
 	{   
-		
 		HANDLE hContact=0;
 		unsigned short channel=snac.ushort(8);
 		unsigned char sn_length=snac.ubyte(10);
@@ -779,7 +778,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 				unsigned short msg_length=tlv.ushort(6+caps_length)-4;
 				unsigned short encoding=tlv.ushort(8+caps_length);
 				char* buf=tlv.part(12+caps_length,msg_length);
-		        hContact=contact_from_sn(sn, true, true);
+				hContact=contact_from_sn(sn, true, true);
 				if(hContact)
 				{
 					ccs.hContact = hContact;
@@ -806,56 +805,56 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 				recv_file_type=snac.ushort(offset);
 				icbm_cookie=snac.part(offset+2,8);
 				if(cap_cmp(snac.val(offset+10),AIM_CAP_FILE_TRANSFER) == 0)
-                {
-		            hContact=contact_from_sn(sn, true, true);
-				    for(int i=26;i<tlv.len();)
-				    {
-					    TLV tlv(snac.val(offset+i));
-					    if(tlv.cmp(0x000A))
-					    {
-						    request_num=tlv.ushort();//for file transfer
-					    }
-					    else if(tlv.cmp(0x0002))//proxy ip
-					    {
-						    unsigned long ip=tlv.ulong();
-						    long_ip_to_char_ip(ip,proxy_ip);
-					    }
-					    else if(tlv.cmp(0x0003))//client ip
-					    {
-						    unsigned long ip=tlv.ulong();
-						    long_ip_to_char_ip(ip,local_ip);
-					    }
-					    else if(tlv.cmp(0x0004))//verified ip
-					    {
-						    unsigned long ip=tlv.ulong();
-						    long_ip_to_char_ip(ip,verified_ip);
-					    }
-					    else if(tlv.cmp(0x0005))
-					    {
-						    port=tlv.ushort();
-						    port_tlv=1;
-					    }
-					    else if(tlv.cmp(0x0010))
-					    {
-						    force_proxy=1;
-					    }
-					    else if(tlv.cmp(0x2711))
-					    {
-						    file_size=tlv.ulong(4);
-						    filename=tlv.part(8,tlv.len()-8);
-					    }
-					    else if(tlv.cmp(0x000c))
-					    {
-						    msg_buf=tlv.dup();
-						    html_decode(msg_buf);
-						    descr_included=1;
-					    }
-					    i+=tlv.len()+TLV_HEADER_SIZE;
-				    }
-                }
+				{
+					hContact=contact_from_sn(sn, true, true);
+					for(int i=26;i<tlv.len();)
+					{
+						TLV tlv(snac.val(offset+i));
+						if(tlv.cmp(0x000A))
+						{
+							request_num=tlv.ushort();//for file transfer
+						}
+						else if(tlv.cmp(0x0002))//proxy ip
+						{
+							unsigned long ip=tlv.ulong();
+							long_ip_to_char_ip(ip,proxy_ip);
+						}
+						else if(tlv.cmp(0x0003))//client ip
+						{
+							unsigned long ip=tlv.ulong();
+							long_ip_to_char_ip(ip,local_ip);
+						}
+						else if(tlv.cmp(0x0004))//verified ip
+						{
+							unsigned long ip=tlv.ulong();
+							long_ip_to_char_ip(ip,verified_ip);
+						}
+						else if(tlv.cmp(0x0005))
+						{
+							port=tlv.ushort();
+							port_tlv=1;
+						}
+						else if(tlv.cmp(0x0010))
+						{
+							force_proxy=1;
+						}
+						else if(tlv.cmp(0x2711))
+						{
+							file_size=tlv.ulong(4);
+							filename=tlv.part(8,tlv.len()-8);
+						}
+						else if(tlv.cmp(0x000c))
+						{
+							msg_buf=tlv.dup();
+							html_decode(msg_buf);
+							descr_included=1;
+						}
+						i+=tlv.len()+TLV_HEADER_SIZE;
+					}
+				}
 				else if(cap_cmp(snac.val(offset+10),AIM_CAP_CHAT)==0)//it's a chat invite request
 				{
-		            hContact = contact_from_sn(sn, true, true);
+					hContact = contact_from_sn(sn, true, true);
 					for(int i=26;i<tlv.len();)
 					{
 						TLV tlv(snac.val(offset+i));
@@ -866,12 +865,12 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 						else if(tlv.cmp(0x2711))//room information
 						{
 							int cookie_len=tlv.ubyte(2);
-                            chatnav_param* par = 
-                                new chatnav_param(tlv.part(3,cookie_len), tlv.ushort(), tlv.ushort(3+cookie_len),
-                                                  msg_buf, sn, icbm_cookie);
+							chatnav_param* par = 
+								new chatnav_param(tlv.part(3,cookie_len), tlv.ushort(), tlv.ushort(3+cookie_len),
+								msg_buf, sn, icbm_cookie);
 
-                            invite_chat_req_param* chat_rq = new invite_chat_req_param(par, this, msg_buf, sn, icbm_cookie);
-                            CallFunctionAsync(chat_request_cb, chat_rq);
+							invite_chat_req_param* chat_rq = new invite_chat_req_param(par, this, msg_buf, sn, icbm_cookie);
+							CallFunctionAsync(chat_request_cb, chat_rq);
 						}
 						i+=TLV_HEADER_SIZE+tlv.len();
 					}
@@ -895,13 +894,13 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 		{
 			if(auto_response)//this message must be an autoresponse
 			{
-                char* away = mir_utf8encodeT(TranslateT("[Auto-Response]:"));
-                size_t len = strlen(msg_buf) + strlen(away) + 2;
-                char* buf = (char*)mir_alloc(len);
-                mir_snprintf(buf, len, "%s %s", away, msg_buf);
-                mir_free(away);
-                mir_free(msg_buf);
-                msg_buf = buf;
+				char* away = mir_utf8encodeT(TranslateT("[Auto-Response]:"));
+				size_t len = strlen(msg_buf) + strlen(away) + 2;
+				char* buf = (char*)mir_alloc(len);
+				mir_snprintf(buf, len, "%s %s", away, msg_buf);
+				mir_free(away);
+				mir_free(msg_buf);
+				msg_buf = buf;
 			}
 			//Okay we are setting up the structure to give the message back to miranda's core
 			if(unicode_message)
@@ -933,18 +932,18 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			{
 				unsigned long msg_time = getDword(hContact, AIM_KEY_LM, 0);
 				unsigned long away_time = getDword(AIM_KEY_LA, 0);
-                char** msgptr = getStatusMsgLoc(m_iStatus);
+				char** msgptr = getStatusMsgLoc(m_iStatus);
 				if(away_time>msg_time && *msgptr)
 				{
-                    char* s_msg = process_status_msg(*msgptr, sn);
+					char* s_msg = process_status_msg(*msgptr, sn);
 
-                    char* away = mir_utf8encodeT(TranslateT("[Auto-Response]:"));
-                    size_t len = strlen(s_msg) + strlen(away) + 2;
+					char* away = mir_utf8encodeT(TranslateT("[Auto-Response]:"));
+					size_t len = strlen(s_msg) + strlen(away) + 2;
 					char* buf = (char*)alloca(len);
 					mir_snprintf(buf, len, "%s %s", away, s_msg);
-                    mir_free(away);
-					
-                    DBEVENTINFO dbei;
+					mir_free(away);
+
+					DBEVENTINFO dbei;
 					ZeroMemory(&dbei, sizeof(dbei));
 					dbei.cbSize = sizeof(dbei);
 					dbei.szModule = m_szModuleName;
@@ -954,16 +953,16 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 					dbei.cbBlob = (int)len;
 					dbei.pBlob = (PBYTE)buf;
 					CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei);
-					
-                    if (!is_utf(s_msg))
-	                    aim_send_message(hServerConn, seqno, sn, s_msg, false, true);
-                    else
-                    {
-	                    wchar_t *wmsg = mir_utf8decodeW(s_msg);
-	                    aim_send_message(hServerConn, seqno, sn, (char*)wmsg, true, true);
-	                    mir_free(wmsg);
-                    }
-                    mir_free(s_msg);
+
+					if (!is_utf(s_msg))
+						aim_send_message(hServerConn, seqno, sn, s_msg, false, true);
+					else
+					{
+						wchar_t *wmsg = mir_utf8decodeW(s_msg);
+						aim_send_message(hServerConn, seqno, sn, (char*)wmsg, true, true);
+						mir_free(wmsg);
+					}
+					mir_free(s_msg);
 				}
 				setDword(hContact, AIM_KEY_LM, (DWORD)time(NULL));
 			}
@@ -996,24 +995,27 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			}
 			long size=sizeof(DWORD) + lstrlenA(filename) + lstrlenA(msg_buf)+lstrlenA(local_ip)+lstrlenA(verified_ip)+lstrlenA(proxy_ip)+7;
 			char* szBlob = (char*)alloca(size);
-			*((PDWORD) szBlob) = (DWORD)szBlob;
+			*((PDWORD) szBlob) = 0;
 			strcpy(szBlob + sizeof(DWORD), filename);
-	        strcpy(szBlob + sizeof(DWORD) + lstrlenA(filename) + 1, msg_buf);
+			strcpy(szBlob + sizeof(DWORD) + lstrlenA(filename) + 1, msg_buf);
 			strcpy(szBlob + sizeof(DWORD) + lstrlenA(filename) + lstrlenA(msg_buf) +2,local_ip);
 			strcpy(szBlob + sizeof(DWORD) + lstrlenA(filename) + lstrlenA(msg_buf) + lstrlenA(local_ip)+3,verified_ip);
 			strcpy(szBlob + sizeof(DWORD) + lstrlenA(filename) + lstrlenA(msg_buf) + lstrlenA(local_ip) +lstrlenA(verified_ip)+4,proxy_ip);
-            pre.flags = 0;
-            pre.timestamp =(DWORD)time(NULL);
-	        pre.szMessage = szBlob;
-            pre.lParam = 0;
-            ccs.szProtoService = PSR_FILE;
-            ccs.hContact = hContact;
-            ccs.wParam = 0;
-            ccs.lParam = (LPARAM) & pre;
+
+			pre.flags = 0;
+			pre.timestamp =(DWORD)time(NULL);
+			pre.szMessage = szBlob;
+			pre.lParam = (LPARAM)szBlob;
+
+			ccs.szProtoService = PSR_FILE;
+			ccs.hContact = hContact;
+			ccs.wParam = 0;
+			ccs.lParam = (LPARAM) & pre;
+			CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
+
 			LOG("Local IP: %s:%u",local_ip,port);
 			LOG("Verified IP: %s:%u",verified_ip,port);
 			LOG("Proxy IP: %s:%u",proxy_ip,port);
-			CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
 		}
 		else if(recv_file_type==0&&request_num==2)//we are sending file, but buddy wants us to connect to them cause they cannot connect to us.
 		{

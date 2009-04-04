@@ -154,7 +154,7 @@ typedef struct {
 #endif
 
 //see modules.h for what all this stuff is
-typedef struct {
+typedef struct tagPLUGINLINK {
 	HANDLE (*CreateHookableEvent)(const char *);
 	int (*DestroyHookableEvent)(HANDLE);
 	int (*NotifyEventHooks)(HANDLE,WPARAM,LPARAM);
