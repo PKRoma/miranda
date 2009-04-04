@@ -595,9 +595,9 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Main privacy list dialog
-class CJabberDlgPrivacyLists: public CJabberDlgFancy
+class CJabberDlgPrivacyLists: public CJabberDlgBase
 {
-	typedef CJabberDlgFancy CSuper;
+	typedef CJabberDlgBase CSuper;
 
 public:
 	CJabberDlgPrivacyLists(CJabberProto *proto);
@@ -757,7 +757,7 @@ int CJabberDlgPrivacyLists::idAdvancedControls[] =
 };
 
 CJabberDlgPrivacyLists::CJabberDlgPrivacyLists(CJabberProto *proto):
-	CJabberDlgFancy(proto, IDD_PRIVACY_LISTS, NULL),
+	CSuper(proto, IDD_PRIVACY_LISTS, NULL),
 	m_btnSimple(this,     IDC_BTN_SIMPLE,   proto->LoadIconEx("group"),           LPGEN("Simple mode")),
 	m_btnAdvanced(this,   IDC_BTN_ADVANCED, proto->LoadIconEx("sd_view_list"),    LPGEN("Advanced mode")),
 	m_btnAddJid(this,     IDC_ADDJID,       proto->LoadIconEx("addroster"),       LPGEN("Add JID")),
@@ -805,6 +805,7 @@ void CJabberDlgPrivacyLists::OnInitDialog()
 	CSuper::OnInitDialog();
 
 	SendMessage( m_hwnd, WM_SETICON, ICON_BIG, ( LPARAM )m_proto->LoadIconEx( "privacylists" ));
+	SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)m_proto->LoadIconEx("privacylists"));
 
 	EnableWindow( GetDlgItem( m_hwnd, IDC_ADD_RULE ), FALSE );
 	EnableWindow( GetDlgItem( m_hwnd, IDC_EDIT_RULE ), FALSE );
@@ -820,7 +821,6 @@ void CJabberDlgPrivacyLists::OnInitDialog()
 	HFONT hfnt = CreateFontIndirect(&lf);
 	SendDlgItemMessage(m_hwnd, IDC_TXT_LISTS, WM_SETFONT, (WPARAM)hfnt, TRUE);
 	SendDlgItemMessage(m_hwnd, IDC_TXT_RULES, WM_SETFONT, (WPARAM)hfnt, TRUE);
-	SendDlgItemMessage(m_hwnd, IDC_TITLE, WM_SETFONT, (WPARAM)hfnt, TRUE);
 
 	SetWindowLong(GetDlgItem(m_hwnd, IDC_CLIST), GWL_STYLE,
 		GetWindowLong(GetDlgItem(m_hwnd, IDC_CLIST), GWL_STYLE)|CLS_HIDEEMPTYGROUPS|CLS_USEGROUPS|CLS_GREYALTERNATE);
@@ -2170,10 +2170,7 @@ void CJabberDlgPrivacyLists::clcClist_OnClick(CCtrlClc::TEventInfo *evt)
 int CJabberDlgPrivacyLists::Resizer(UTILRESIZECONTROL *urc)
 {
 	switch (urc->wId) {
-	case IDC_WHITERECT:
-	case IDC_TITLE:
-	case IDC_DESCRIPTION:
-	case IDC_FRAME1:
+	case IDC_HEADERBAR:
 		return RD_ANCHORX_LEFT|RD_ANCHORY_TOP|RD_ANCHORX_WIDTH;
 	case IDC_BTN_SIMPLE:
 	case IDC_BTN_ADVANCED:

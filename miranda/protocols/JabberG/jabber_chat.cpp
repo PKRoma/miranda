@@ -689,9 +689,9 @@ int CJabberProto::JabberGcMenuHook( WPARAM, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Conference invitation dialog
 
-class CGroupchatInviteDlg : public CJabberDlgFancy
+class CGroupchatInviteDlg : public CJabberDlgBase
 {
-	typedef CJabberDlgFancy CSuper;
+	typedef CJabberDlgBase CSuper;
 
 	struct JabberGcLogInviteDlgJidData
 	{
@@ -747,7 +747,7 @@ class CGroupchatInviteDlg : public CJabberDlgFancy
 
 public:
 	CGroupchatInviteDlg(CJabberProto* ppro, TCHAR *room) :
-		CJabberDlgFancy(ppro, IDD_GROUPCHAT_INVITE, NULL),
+		CSuper(ppro, IDD_GROUPCHAT_INVITE, NULL),
 		m_newJids(1),
 		m_btnInvite(this, IDC_INVITE),
 		m_txtNewJid(this, IDC_NEWJID),
@@ -774,8 +774,11 @@ public:
 	{
 		CSuper::OnInitDialog();
 
-		SetDlgItemText( m_hwnd, IDC_TITLE, m_room );
+		TCHAR buf[256];
+		mir_sntprintf(buf, SIZEOF(buf), _T("%s\n%s"), m_room, TranslateT("Send groupchat invitation.") );
+		SetDlgItemText( m_hwnd, IDC_HEADERBAR, buf );
 		SendMessage( m_hwnd, WM_SETICON, ICON_BIG, ( LPARAM )m_proto->LoadIconEx( "group" ));
+		SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)m_proto->LoadIconEx("group"));
 
 		SetWindowLong(GetDlgItem(m_hwnd, IDC_CLIST), GWL_STYLE,
 			GetWindowLong(GetDlgItem(m_hwnd, IDC_CLIST), GWL_STYLE)|CLS_HIDEOFFLINE|CLS_CHECKBOXES|CLS_HIDEEMPTYGROUPS|CLS_USEGROUPS|CLS_GREYALTERNATE|CLS_GROUPCHECKBOXES);
@@ -896,12 +899,12 @@ static LRESULT CALLBACK sttUserInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 		dat = (TUserInfoData *)lParam;
 
 		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)dat->ppro->LoadIconEx("group"));
+		SendDlgItemMessage(hwndDlg, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)dat->ppro->LoadIconEx("group"));
 
 		LOGFONT lf;
-		GetObject((HFONT)SendDlgItemMessage(hwndDlg, IDC_TITLE, WM_GETFONT, 0, 0), sizeof(lf), &lf);
+		GetObject((HFONT)SendDlgItemMessage(hwndDlg, IDC_TXT_NICK, WM_GETFONT, 0, 0), sizeof(lf), &lf);
 		lf.lfWeight = FW_BOLD;
 		HFONT hfnt = CreateFontIndirect(&lf);
-		SendDlgItemMessage(hwndDlg, IDC_TITLE, WM_SETFONT, (WPARAM)hfnt, TRUE);
 		SendDlgItemMessage(hwndDlg, IDC_TXT_NICK, WM_SETFONT, (WPARAM)hfnt, TRUE);
 
 		SendDlgItemMessage(hwndDlg, IDC_BTN_AFFILIATION, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_FILE));
@@ -917,8 +920,8 @@ static LRESULT CALLBACK sttUserInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 		mir_sntprintf(buf, SIZEOF(buf), _T("%s %s"), TranslateT("Member Info:"), dat->him->resourceName);
 		SetWindowText(hwndDlg, buf);
 
-		mir_sntprintf(buf, SIZEOF(buf), _T("%s %s %s"), dat->him->resourceName, TranslateT("from"), dat->item->jid);
-		SetDlgItemText(hwndDlg, IDC_DESCRIPTION, buf);
+		mir_sntprintf(buf, SIZEOF(buf), _T("%s\n%s %s %s"), TranslateT("Member Information"), dat->him->resourceName, TranslateT("from"), dat->item->jid);
+		SetDlgItemText(hwndDlg, IDC_HEADERBAR, buf);
 
 		SetDlgItemText(hwndDlg, IDC_TXT_NICK, dat->him->resourceName);
 		SetDlgItemText(hwndDlg, IDC_TXT_JID, dat->him->szRealJid ? dat->him->szRealJid : TranslateT("Real JID not available"));
@@ -1024,13 +1027,6 @@ static LRESULT CALLBACK sttUserInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 			break;
 		}
 		break;
-
-	case WM_CTLCOLORSTATIC:
-		if ( ((HWND)lParam == GetDlgItem(hwndDlg, IDC_WHITERECT)) ||
-			 ((HWND)lParam == GetDlgItem(hwndDlg, IDC_TITLE)) ||
-			 ((HWND)lParam == GetDlgItem(hwndDlg, IDC_DESCRIPTION)) )
-			return (INT_PTR)GetStockObject(WHITE_BRUSH);
-		return FALSE;
 
 	case WM_CLOSE:
 		DestroyWindow(hwndDlg);

@@ -587,9 +587,9 @@ BOOL CJabberProto::SendHttpAuthReply( CJabberHttpAuthParams *pParams, BOOL bAuth
 	return TRUE;
 }
 
-class CJabberDlgHttpAuth: public CJabberDlgFancy
+class CJabberDlgHttpAuth: public CJabberDlgBase
 {
-	typedef CJabberDlgFancy CSuper;
+	typedef CJabberDlgBase CSuper;
 
 public:
 	CJabberDlgHttpAuth(CJabberProto *proto, HWND hwndParent, CJabberHttpAuthParams *pParams):
@@ -608,7 +608,7 @@ public:
 		CSuper::OnInitDialog();
 
 		SendMessage(m_hwnd, WM_SETICON, ICON_BIG, (LPARAM)m_proto->LoadIconEx("openid"));
-		SendMessage(m_hwnd, WM_SETICON, ICON_SMALL, (LPARAM)m_proto->LoadIconEx("openid"));
+		SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)m_proto->LoadIconEx("openid"));
 
 		SetDlgItemText(m_hwnd, IDC_TXT_URL, m_pParams->m_szUrl);
 		SetDlgItemText(m_hwnd, IDC_TXT_FROM, m_pParams->m_szFrom);

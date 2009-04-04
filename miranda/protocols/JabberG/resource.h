@@ -420,12 +420,13 @@
 #define IDC_TXT_TEXT                    1308
 #define IDC_ST_TAGS                     1309
 #define IDC_UPDATE                      1313
-#define IDC_STATUS                      1414
-#define IDC_INSTRUCTIONS                1414
-#define IDC_PLAN                        1415
-#define IDC_PERSONALGROUP               1434
-#define IDC_EXTRAGROUP                  1436
-#define IDC_COMBO_VALUES                1437
+#define IDC_STATUS                      1314
+#define IDC_INSTRUCTIONS                1315
+#define IDC_PLAN                        1316
+#define IDC_PERSONALGROUP               1317
+#define IDC_EXTRAGROUP                  1318
+#define IDC_COMBO_VALUES                1319
+#define IDC_HEADERBAR                   1320
 #define IDI_BOOKMARKS                   3000
 #define IDD_BOOKMARKS                   3001
 #define IDC_BM_LIST                     3002
@@ -466,7 +467,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        235
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1310
+#define _APS_NEXT_CONTROL_VALUE         1321
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

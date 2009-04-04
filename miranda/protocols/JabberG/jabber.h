@@ -94,54 +94,20 @@ Last change by : $Author$
 #include "ui_utils.h"
 
 struct CJabberProto;
-typedef CProtoDlgBase<CJabberProto> CJabberDlgBase;
 
-class CJabberDlgFancy: public CJabberDlgBase
+class CJabberDlgBase: public CProtoDlgBase<CJabberProto>
 {
-	typedef CJabberDlgBase CSuper;
-public:
-	__inline CJabberDlgFancy(CJabberProto *proto, int idDialog, HWND parent, bool show_label=true ) :
-		CJabberDlgBase( proto, idDialog, parent, show_label )
-	{
-	}
-
+	typedef CProtoDlgBase<CJabberProto> CSuper;
 protected:
-	void OnInitDialog()
+	__inline CJabberDlgBase(CJabberProto *proto, int idDialog, HWND parent, bool show_label=true ) :
+		CSuper( proto, idDialog, parent, show_label )
 	{
-		CSuper::OnInitDialog();
-
-		LOGFONT lf;
-		GetObject((HFONT)SendDlgItemMessage(m_hwnd, IDC_TITLE, WM_GETFONT, 0, 0), sizeof(lf), &lf);
-		lf.lfWeight = FW_BOLD;
-		HFONT hfnt = CreateFontIndirect(&lf);
-		SendDlgItemMessage(m_hwnd, IDC_TITLE, WM_SETFONT, (WPARAM)hfnt, TRUE);
-	}
-
-	void OnDestroy()
-	{
-		DeleteObject((HFONT)SendDlgItemMessage(m_hwnd, IDC_TITLE, WM_GETFONT, 0, 0));
-
-		CSuper::OnDestroy();
-	}
-
-	INT_PTR DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
-	{
-		if (msg == WM_CTLCOLORSTATIC )
-			switch( GetDlgCtrlID((HWND)lParam )) {
-			case IDC_WHITERECT: case IDC_TITLE: case IDC_DESCRIPTION:
-				return (INT_PTR)GetStockObject(WHITE_BRUSH);
-			}
-
-		return CSuper::DlgProc(msg, wParam, lParam);
 	}
 
 	int Resizer(UTILRESIZECONTROL *urc)
 	{
 		switch (urc->wId) {
-		case IDC_WHITERECT:
-		case IDC_TITLE:
-		case IDC_DESCRIPTION:
-		case IDC_FRAME1:
+		case IDC_HEADERBAR:
 			urc->rcItem.right = urc->dlgNewSize.cx;
 			return 0;
 		}

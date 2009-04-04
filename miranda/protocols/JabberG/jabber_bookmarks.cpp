@@ -167,9 +167,9 @@ static INT_PTR CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM
 /////////////////////////////////////////////////////////////////////////////////////////
 // Bookmarks manager window
 
-class CJabberDlgBookmarks : public CJabberDlgFancy
+class CJabberDlgBookmarks : public CJabberDlgBase
 {
-	typedef CJabberDlgFancy CSuper;
+	typedef CJabberDlgBase CSuper;
 
 public:
 	CJabberDlgBookmarks(CJabberProto *proto);
@@ -259,7 +259,7 @@ private:
 };
 
 CJabberDlgBookmarks::CJabberDlgBookmarks(CJabberProto *proto) :
-	CJabberDlgFancy(proto, IDD_BOOKMARKS, NULL),
+	CSuper(proto, IDD_BOOKMARKS, NULL),
 	m_btnAdd(this,      IDC_ADD,    SKINICON_OTHER_ADDCONTACT, LPGEN("Add")),
 	m_btnEdit(this,     IDC_EDIT,   SKINICON_OTHER_RENAME,     LPGEN("Edit")),
 	m_btnRemove(this,   IDC_REMOVE, SKINICON_OTHER_DELETE,     LPGEN("Remove")),
@@ -286,6 +286,7 @@ void CJabberDlgBookmarks::OnInitDialog()
 	CSuper::OnInitDialog();
 
 	SendMessage(m_hwnd, WM_SETICON, ICON_BIG, (LPARAM)m_proto->LoadIconEx("bookmarks"));
+	SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)m_proto->LoadIconEx("bookmarks"));
 
 	m_btnAdd.Disable();
 	m_btnEdit.Disable();

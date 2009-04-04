@@ -1444,10 +1444,7 @@ static int sttRosterEditorResizer(HWND /*hwndDlg*/, LPARAM, UTILRESIZECONTROL *u
 {
 	switch (urc->wId)
 	{
-	case IDC_WHITERECT:
-	case IDC_TITLE:
-	case IDC_DESCRIPTION:
-	case IDC_FRAME1:
+	case IDC_HEADERBAR:
 		return RD_ANCHORX_LEFT|RD_ANCHORY_TOP|RD_ANCHORX_WIDTH;
 	case IDC_ROSTER:
 		return RD_ANCHORX_LEFT|RD_ANCHORY_TOP|RD_ANCHORY_HEIGHT|RD_ANCHORX_WIDTH;
@@ -1484,7 +1481,6 @@ static INT_PTR CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM w
 	case WM_DESTROY:
 		{
 			Utils_SaveWindowPosition(hwndDlg, NULL, ppro->m_szModuleName, "rosterCtrlWnd_");
-			DeleteObject((HFONT)SendDlgItemMessage(hwndDlg, IDC_TITLE, WM_GETFONT, 0, 0));
 			ppro->rrud.hwndDlg = NULL;
 			break;
 		}
@@ -1495,12 +1491,7 @@ static INT_PTR CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM w
 
 			TranslateDialogDefault( hwndDlg );
 			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )ppro->LoadIconEx( "Agents" ));
-
-			LOGFONT lf;
-			GetObject((HFONT)SendDlgItemMessage(hwndDlg, IDC_TITLE, WM_GETFONT, 0, 0), sizeof(lf), &lf);
-			lf.lfWeight = FW_BOLD;
-			HFONT hfnt = CreateFontIndirect(&lf);
-			SendDlgItemMessage(hwndDlg, IDC_TITLE, WM_SETFONT, (WPARAM)hfnt, TRUE);
+			SendDlgItemMessage( hwndDlg, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)ppro->LoadIconEx("Agents"));
 
 			Utils_RestoreWindowPosition(hwndDlg, NULL, ppro->m_szModuleName, "rosterCtrlWnd_");
 
@@ -1515,12 +1506,6 @@ static INT_PTR CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM w
 
 			return TRUE;
 		}
-	case WM_CTLCOLORSTATIC:
-		if ( ((HWND)lParam == GetDlgItem(hwndDlg, IDC_WHITERECT)) ||
-			 ((HWND)lParam == GetDlgItem(hwndDlg, IDC_TITLE)) ||
-			 ((HWND)lParam == GetDlgItem(hwndDlg, IDC_DESCRIPTION)) )
-			return (INT_PTR)GetStockObject(WHITE_BRUSH);
-		return FALSE;
 	case WM_GETMINMAXINFO:
 		{
 			LPMINMAXINFO lpmmi = (LPMINMAXINFO)lParam;

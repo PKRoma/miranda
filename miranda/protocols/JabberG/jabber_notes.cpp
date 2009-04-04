@@ -480,9 +480,9 @@ public:
 	}
 };
 
-class CJabberDlgNotes : public CJabberDlgFancy
+class CJabberDlgNotes : public CJabberDlgBase
 {
-	typedef CJabberDlgFancy CSuper;
+	typedef CJabberDlgBase CSuper;
 
 public:
 	CJabberDlgNotes(CJabberProto *proto);
@@ -673,7 +673,7 @@ private:
 };
 
 CJabberDlgNotes::CJabberDlgNotes(CJabberProto *proto) :
-	CJabberDlgFancy(proto, IDD_NOTEBOOK, NULL),
+	CSuper(proto, IDD_NOTEBOOK, NULL),
 	m_btnAdd(this,      IDC_ADD,    SKINICON_OTHER_ADDCONTACT, LPGEN("Add")),
 	m_btnEdit(this,     IDC_EDIT,   SKINICON_OTHER_RENAME,     LPGEN("Edit")),
 	m_btnRemove(this,   IDC_REMOVE, SKINICON_OTHER_DELETE,     LPGEN("Remove")),
@@ -703,6 +703,7 @@ void CJabberDlgNotes::OnInitDialog()
 {
 	CSuper::OnInitDialog();
 	SendMessage(m_hwnd, WM_SETICON, ICON_BIG, (LPARAM)m_proto->LoadIconEx("notes"));
+	SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)m_proto->LoadIconEx("notes"));
 
 	LOGFONT lf, lfTmp;
 	m_hfntNormal = (HFONT)GetStockObject(DEFAULT_GUI_FONT);

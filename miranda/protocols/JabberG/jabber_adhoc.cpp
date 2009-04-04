@@ -435,7 +435,6 @@ static INT_PTR CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPAR
 			(GetWindowLong((HWND)lParam, GWL_ID) == IDC_INSTRUCTION) ||
 			(GetWindowLong((HWND)lParam, GWL_ID) == IDC_TITLE))
 		{
-			//MessageBeep(MB_ICONSTOP);
 			return (INT_PTR)GetStockObject(WHITE_BRUSH);
 		} else
 		{

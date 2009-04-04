@@ -83,10 +83,8 @@ EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Roster Editor"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_WHITERECT,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,0,0,423,32
-    LTEXT           "Roster editor",IDC_TITLE,7,7,411,8,NOT WS_GROUP
-    LTEXT           "View and modify your server-side contact list.",IDC_DESCRIPTION,17,17,401,8,NOT WS_GROUP
-    CONTROL         "",IDC_FRAME1,"Static",SS_ETCHEDHORZ,0,32,424,1
+    CONTROL         "Roster editor\nView and modify your server-side contact list.",IDC_HEADERBAR,
+                    "MHeaderbarCtrl",NOT WS_TABSTOP,0,0,428,25
     CONTROL         "",IDC_ROSTER,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SORTASCENDING | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,5,38,413,225
     PUSHBUTTON      "Download",IDC_DOWNLOAD,5,268,60,15,WS_DISABLED
     PUSHBUTTON      "Upload",IDC_UPLOAD,70,268,60,15,WS_DISABLED
@@ -420,10 +418,8 @@ EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Create or Join Groupchat"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_WHITERECT,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,0,0,258,32
-    LTEXT           "Jabber Multi-User Conference",IDC_TITLE,7,7,193,8,NOT WS_GROUP
-    LTEXT           "Create or join existing conference room.",IDC_DESCRIPTION,17,17,183,8,NOT WS_GROUP
-    CONTROL         "",IDC_FRAME1,"Static",SS_ETCHEDHORZ,0,32,258,1
+    CONTROL         "Jabber Multi-User Conference\nCreate or join existing conference room.",IDC_HEADERBAR,
+                    "MHeaderbarCtrl",NOT WS_TABSTOP,0,0,428,25
     LTEXT           "Conference server:",IDC_STATIC,7,38,63,12,SS_CENTERIMAGE,WS_EX_RIGHT
     COMBOBOX        IDC_SERVER,75,38,176,100,CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Room:",IDC_STATIC,7,56,63,12,SS_CENTERIMAGE,WS_EX_RIGHT
@@ -471,10 +467,8 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CENTER | 
 CAPTION "Invite Users"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_WHITERECT,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,0,0,215,32
-    LTEXT           "<room jid>",IDC_TITLE,8,7,202,8,NOT WS_GROUP
-    LTEXT           "Send groupchat invitation",IDC_DESCRIPTION,18,18,192,8,NOT WS_GROUP
-    CONTROL         "",IDC_FRAME1,"Static",SS_ETCHEDHORZ,0,32,214,1
+    CONTROL         "<room jid>\nSend groupchat invitation.",IDC_HEADERBAR,
+                    "MHeaderbarCtrl",NOT WS_TABSTOP,0,0,215,25
     CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x1,7,40,201,116,WS_EX_CLIENTEDGE
     LTEXT           "Other JID:",IDC_STATIC,7,162,46,8
     EDITTEXT        IDC_NEWJID,59,160,127,12,ES_AUTOHSCROLL
@@ -491,10 +485,8 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CENTER | 
 CAPTION "Groupchat Invitation"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_WHITERECT,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,0,0,215,32
-    LTEXT           "<room jid>",IDC_TITLE,7,7,202,8,NOT WS_GROUP
-    LTEXT           "Incoming groupchat invitation",IDC_DESCRIPTION,17,17,192,8,NOT WS_GROUP
-    CONTROL         "",IDC_FRAME1,"Static",SS_ETCHEDHORZ,0,32,215,1
+    CONTROL         "<room jid>\nIncoming groupchat invitation.",IDC_HEADERBAR,
+                    "MHeaderbarCtrl",NOT WS_TABSTOP,0,0,216,25
     LTEXT           "You are invited to conference room by",IDC_STATIC,7,40,202,8
     EDITTEXT        IDC_FROM,17,51,192,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
     LTEXT           "with following reason:",IDC_STATIC,7,69,202,8
@@ -512,10 +504,8 @@ EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Jabber Bookmarks"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_WHITERECT,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,0,0,296,32
-    LTEXT           "Server side bookmarks",IDC_TITLE,7,7,200,8,NOT WS_GROUP
-    LTEXT           "Store conference rooms and web links on server.",IDC_DESCRIPTION,17,17,200,8,NOT WS_GROUP
-    CONTROL         "",IDC_FRAME1,"Static",SS_ETCHEDHORZ,0,32,296,1
+    CONTROL         "Server side bookmarks\nStore conference rooms and web links on server.",IDC_HEADERBAR,
+                    "MHeaderbarCtrl",NOT WS_TABSTOP,0,0,428,25
     CONTROL         "List1",IDC_BM_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,5,38,285,187
     CONTROL         "Remove",IDC_REMOVE,"MButtonClass",WS_TABSTOP,37,229,16,14
     CONTROL         "Edit",IDC_EDIT,"MButtonClass",WS_TABSTOP,21,229,16,14
@@ -553,10 +543,8 @@ EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Privacy Lists"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_WHITERECT,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,0,0,424,32
-    LTEXT           "Privacy Lists",IDC_TITLE,7,7,411,8,NOT WS_GROUP
-    LTEXT           "Flexible way to configure visibility and more.",IDC_DESCRIPTION,17,17,401,8,NOT WS_GROUP
-    CONTROL         "",IDC_FRAME1,"Static",SS_ETCHEDHORZ,0,32,424,1
+    CONTROL         "Privacy Lists\nFlexible way to configure visibility and more.",IDC_HEADERBAR,
+                    "MHeaderbarCtrl",NOT WS_TABSTOP,0,0,428,25
     LTEXT           "Lists:",IDC_TXT_LISTS,5,38,121,14,SS_CENTERIMAGE
     LISTBOX         IDC_LB_LISTS,5,55,122,196,LBS_SORT | LBS_OWNERDRAWVARIABLE | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Rules:",IDC_TXT_RULES,135,38,58,14,SS_CENTERIMAGE
@@ -677,10 +665,8 @@ EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Member Information"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_WHITERECT,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,0,0,183,32
-    LTEXT           "Member Information",IDC_TITLE,7,7,153,8,NOT WS_GROUP
-    CONTROL         "...",IDC_DESCRIPTION,"Static",SS_LEFTNOWORDWRAP | SS_WORDELLIPSIS,17,17,161,8
-    CONTROL         "",IDC_FRAME1,"Static",SS_ETCHEDHORZ,0,32,183,1
+    CONTROL         "Member Information\n<user id>",IDC_HEADERBAR,
+                    "MHeaderbarCtrl",NOT WS_TABSTOP,0,0,183,25
     ICON            IDI_JABBER,IDC_ICO_STATUS,5,38,16,17,SS_CENTERIMAGE | SS_REALSIZEIMAGE
     EDITTEXT        IDC_TXT_NICK,26,38,152,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
     EDITTEXT        IDC_TXT_JID,36,47,142,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
@@ -713,10 +699,8 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTI
 CAPTION "Authorization Request"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_WHITERECT,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,0,0,217,32
-    LTEXT           "HTTP Authorization",IDC_TITLE,7,7,209,8,NOT WS_GROUP
-    LTEXT           "Accept or reject incoming request",IDC_DESCRIPTION,17,17,200,8,NOT WS_GROUP
-    CONTROL         "",IDC_FRAME1,"Static",SS_ETCHEDHORZ,0,32,217,1
+    CONTROL         "HTTP Authorization\nAccept or reject incoming request",IDC_HEADERBAR,
+                    "MHeaderbarCtrl",NOT WS_TABSTOP,0,0,428,25
     LTEXT           "Someone (maybe you) has requested the following file:",IDC_STATIC,7,38,203,8
     EDITTEXT        IDC_TXT_URL,27,49,183,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
     LTEXT           "Request was sent from JID:",IDC_STATIC,7,61,203,8
@@ -766,10 +750,8 @@ EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Jabber Notebook"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_WHITERECT,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,0,0,353,32
-    LTEXT           "Jabber notebook",IDC_TITLE,7,7,200,8,NOT WS_GROUP
-    LTEXT           "Store notes on server and access them from anywhere.",IDC_DESCRIPTION,17,17,200,8,NOT WS_GROUP
-    CONTROL         "",IDC_FRAME1,"Static",SS_ETCHEDHORZ,0,32,353,1
+    CONTROL         "Jabber notebook\nStore notes on server and access them from anywhere.",IDC_HEADERBAR,
+                    "MHeaderbarCtrl",NOT WS_TABSTOP,0,0,428,25
     CONTROL         "Remove",IDC_REMOVE,"MButtonClass",WS_TABSTOP,37,229,16,14
     CONTROL         "Edit",IDC_EDIT,"MButtonClass",WS_TABSTOP,21,229,16,14
     CONTROL         "Add",IDC_ADD,"MButtonClass",WS_TABSTOP,5,229,16,14

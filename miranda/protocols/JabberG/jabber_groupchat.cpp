@@ -419,9 +419,9 @@ static void sttJoinDlgShowRecentItems(HWND hwndDlg, int newCount)
 	SetWindowPos(hwndDlg, NULL, 0, 0, rc.right-rc.left, rc.bottom-rc.top+offset, SWP_NOMOVE|SWP_NOZORDER);
 }
 
-class CJabberDlgGcJoin: public CJabberDlgFancy
+class CJabberDlgGcJoin: public CJabberDlgBase
 {
-	typedef CJabberDlgFancy CSuper;
+	typedef CJabberDlgBase CSuper;
 
 public:
 	CJabberDlgGcJoin(CJabberProto *proto, TCHAR *jid);
@@ -436,7 +436,7 @@ protected:
 };
 
 CJabberDlgGcJoin::CJabberDlgGcJoin(CJabberProto *proto, TCHAR *jid) :
-	CJabberDlgFancy(proto, IDD_GROUPCHAT_JOIN, NULL),
+	CSuper(proto, IDD_GROUPCHAT_JOIN, NULL),
 	m_jid(jid)
 {
 	m_autoClose = 0;
@@ -447,7 +447,7 @@ void CJabberDlgGcJoin::OnInitDialog()
 	CSuper::OnInitDialog();
 
 	SendMessage(m_hwnd, WM_SETICON, ICON_BIG, (LPARAM)m_proto->LoadIconEx("group"));
-	SendMessage(m_hwnd, WM_SETICON, ICON_SMALL, (LPARAM)m_proto->LoadIconEx("group"));
+	SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)m_proto->LoadIconEx("group"));
 
 	JabberGcRecentInfo *info = NULL;
 	if ( m_jid )
@@ -498,10 +498,9 @@ void CJabberDlgGcJoin::OnInitDialog()
 
 	{
 		LOGFONT lf = {0};
-		HFONT hfnt = (HFONT)SendDlgItemMessage(m_hwnd, IDC_TITLE, WM_GETFONT, 0, 0);
+		HFONT hfnt = (HFONT)SendDlgItemMessage(m_hwnd, IDC_TXT_RECENT, WM_GETFONT, 0, 0);
 		GetObject(hfnt, sizeof(lf), &lf);
 		lf.lfWeight = FW_BOLD;
-		SendDlgItemMessage(m_hwnd, IDC_TITLE, WM_SETFONT, (WPARAM)CreateFontIndirect(&lf), TRUE);
 		SendDlgItemMessage(m_hwnd, IDC_TXT_RECENT, WM_SETFONT, (WPARAM)CreateFontIndirect(&lf), TRUE);
 	}
 
@@ -543,7 +542,7 @@ void CJabberDlgGcJoin::OnDestroy()
 		mir_free( str );
 
 	m_proto->m_pDlgJabberJoinGroupchat = NULL;
-	DeleteObject((HFONT)SendDlgItemMessage(m_hwnd, IDC_TITLE, WM_GETFONT, 0, 0));
+	DeleteObject((HFONT)SendDlgItemMessage(m_hwnd, IDC_TXT_RECENT, WM_GETFONT, 0, 0));
 
 	CSuper::OnDestroy();
 }
@@ -1147,15 +1146,15 @@ void CJabberProto::GroupchatProcessMessage( HXML node )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Accepting groupchat invitations
 
-class CGroupchatInviteAcceptDlg : public CJabberDlgFancy
+class CGroupchatInviteAcceptDlg : public CJabberDlgBase
 {
-	typedef CJabberDlgFancy CSuper;
+	typedef CJabberDlgBase CSuper;
 	CCtrlButton m_accept;
 	JABBER_GROUPCHAT_INVITE_INFO* m_info;
 
 public:
 	CGroupchatInviteAcceptDlg( CJabberProto* ppro, JABBER_GROUPCHAT_INVITE_INFO* pInfo ) :
-		CJabberDlgFancy( ppro, IDD_GROUPCHAT_INVITE_ACCEPT, NULL ),
+		CSuper( ppro, IDD_GROUPCHAT_INVITE_ACCEPT, NULL ),
 		m_info( pInfo ),
 		m_accept( this, IDC_ACCEPT )
 	{
@@ -1166,7 +1165,10 @@ public:
 	{
 		CSuper::OnInitDialog();
 
-		SetDlgItemText( m_hwnd, IDC_TITLE, m_info->roomJid );
+		TCHAR buf[256];
+		mir_sntprintf(buf, SIZEOF(buf), _T("%s\n%s"), m_info->roomJid, TranslateT("Incoming groupchat invitation.") );
+		SetDlgItemText( m_hwnd, IDC_HEADERBAR, buf );
+
 		SetDlgItemText( m_hwnd, IDC_FROM, m_info->from );
 
 		if ( m_info->reason != NULL )
@@ -1177,6 +1179,7 @@ public:
 		mir_free( myNick );
 
 		SendMessage( m_hwnd, WM_SETICON, ICON_BIG, ( LPARAM )m_proto->LoadIconEx( "group" ));
+		SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)m_proto->LoadIconEx("group"));
 
 		SetFocus(GetDlgItem(m_hwnd, IDC_NICK));
 	}
