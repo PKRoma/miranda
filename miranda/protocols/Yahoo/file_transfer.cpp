@@ -140,7 +140,7 @@ static void free_ft(y_filetransfer* ft)
 	
 }
 
-static void upload_file(int id, INT_PTR fd, int error, void *data) 
+static void upload_file(int id, int fd, int error, void *data) 
 {
 	y_filetransfer *sf = (y_filetransfer*) data;
 	struct yahoo_file_info *fi = (struct yahoo_file_info *)sf->files->data;
@@ -259,7 +259,7 @@ static void upload_file(int id, INT_PTR fd, int error, void *data)
 	}
 }
 
-static void dl_file(int id, INT_PTR fd, int error,	const char *filename, unsigned long size, void *data) 
+static void dl_file(int id, int fd, int error,	const char *filename, unsigned long size, void *data) 
 {
     y_filetransfer *sf = (y_filetransfer*) data;
 	struct yahoo_file_info *fi = (struct yahoo_file_info *)sf->files->data;

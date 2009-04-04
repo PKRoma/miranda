@@ -47,7 +47,7 @@ void ext_yahoo_chat_cat_xml(int id, const char *xml)
 {
 }
 
-void ext_yahoo_chat_join(int id, const char *me, const char *room, const char * topic, YList *members, INT_PTR fd)
+void ext_yahoo_chat_join(int id, const char *me, const char *room, const char * topic, YList *members, int fd)
 {
 }
 

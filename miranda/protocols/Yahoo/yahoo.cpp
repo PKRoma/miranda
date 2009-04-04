@@ -1188,7 +1188,7 @@ void CYahooProto::ext_error(const char *err, int fatal, int num)
 	ShowError(Translate("Yahoo Error"), buff);
 }
 
-INT_PTR CYahooProto::ext_connect(const char *h, int p, int type)
+int CYahooProto::ext_connect(const char *h, int p, int type)
 {
 	LOG(("[ext_yahoo_connect] %s:%d type: %d", h, p, type));
 
@@ -1208,8 +1208,8 @@ INT_PTR CYahooProto::ext_connect(const char *h, int p, int type)
 		return -1;
 	}
 
-	LOG(("[ext_yahoo_connect] Got: %p", con));
-	return (INT_PTR)con;
+	LOG(("[ext_yahoo_connect] Got: %d", (int)con));
+	return (int)con;
 }
 
 void CYahooProto::ext_send_http_request(const char *method, const char *url, const char *cookies, long content_length,
@@ -1288,7 +1288,7 @@ void CYahooProto::ext_send_http_request(const char *method, const char *url, con
 YList *connections = NULL;
 static unsigned int connection_tags=0;
 
-unsigned int ext_yahoo_add_handler(int id, INT_PTR fd, yahoo_input_condition cond, void *data)
+unsigned int ext_yahoo_add_handler(int id, int fd, yahoo_input_condition cond, void *data)
 {
 	struct _conn *c = y_new0(struct _conn, 1);
 	
@@ -1330,7 +1330,7 @@ struct connect_callback_data {
 	int tag;
 };
 
-static void connect_complete(void *data, INT_PTR source, yahoo_input_condition condition)
+static void connect_complete(void *data, int source, yahoo_input_condition condition)
 {
 	struct connect_callback_data *ccd = ( connect_callback_data* )data;
 	int error = 0;//, err_size = sizeof(error);

@@ -31,14 +31,6 @@
 #define write(a,b,c) send(a,b,c,0)
 #define read(a,b,c)  recv(a,b,c,0)
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <newpluginapi.h>
 #include <m_netlib.h>
 #define close(a)	 Netlib_CloseHandle((HANDLE)a)
-
-#ifdef __cplusplus
-}
-#endif
