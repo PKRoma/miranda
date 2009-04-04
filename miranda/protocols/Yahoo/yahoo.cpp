@@ -1460,7 +1460,7 @@ char * CYahooProto::ext_send_https_request(struct yahoo_data *yd, const char *ho
 	return result;
 }
 
-void CYahooProto::ext_login(int login_mode)
+void CYahooProto::ext_login(enum yahoo_status login_mode)
 {
 	char host[128], fthost[128];
 	int port=0;

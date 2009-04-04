@@ -266,8 +266,8 @@ enum yahoo_connection_type {
 };
 
 enum yahoo_webcam_direction_type {
-        YAHOO_WEBCAM_DOWNLOAD=0,
-        YAHOO_WEBCAM_UPLOAD
+	YAHOO_WEBCAM_DOWNLOAD=0,
+	YAHOO_WEBCAM_UPLOAD
 };
 
 enum yahoo_stealth_visibility_type {
@@ -297,8 +297,8 @@ struct yahoo_webcam {
 };
 
 struct yahoo_webcam_data {
-	unsigned int data_size;
-	unsigned int to_read;
+	int data_size;
+	int to_read;
 	unsigned int timestamp;
 	unsigned char packet_type;
 };
@@ -332,8 +332,8 @@ struct yahoo_data {
 	YList *identities;
 	char  *login_id;
 
-	int   current_status;
-	int   initial_status;
+	enum yahoo_status current_status;
+	enum yahoo_status initial_status;
 	int   logged_in;
 
 	int   session_id;

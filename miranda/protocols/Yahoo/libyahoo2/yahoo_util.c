@@ -116,7 +116,7 @@ void y_strfreev(char ** vector)
 	FREE(vector);
 }
 
-char ** y_strsplit(char * str, char * sep, int nelem)
+extern "C" char ** y_strsplit(char * str, char * sep, int nelem)
 {
 	char ** vector;
 	char *s, *p;

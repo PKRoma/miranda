@@ -29,8 +29,8 @@
 YList *y_list_append(YList * list, void *data)
 {
 	YList *n;
-	YList *new_list = malloc(sizeof(YList));
-	YList *attach_to = NULL;
+	YList *new_list 	= (YList *) malloc(sizeof(YList));
+	YList *attach_to 	= NULL;
 
 	new_list->next = NULL;
 	new_list->data = data;
@@ -51,7 +51,7 @@ YList *y_list_append(YList * list, void *data)
 
 YList *y_list_prepend(YList * list, void *data)
 {
-	YList *n = malloc(sizeof(YList));
+	YList *n = (YList *) malloc(sizeof(YList));
 
 	n->next = list;
 	n->prev = NULL;
@@ -213,7 +213,7 @@ YList *y_list_insert_sorted(YList * list, void *data, YListCompFunc comp)
 	if (!list)
 		return y_list_append(list, data);
 
-       	n = malloc(sizeof(YList));
+	n = (YList *) malloc(sizeof(YList));
 	n->data = data;
 	for (l = list; l && comp(l->data, n->data) <= 0; l = l->next)
 		prev = l;

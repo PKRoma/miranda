@@ -50,7 +50,7 @@ int PASCAL recv(SOCKET s, char FAR *buf, int len, int flags)
 
 void __cdecl CYahooProto::server_main(void *empty)
 {
-	int status = (int) empty;
+	enum yahoo_status status = (enum yahoo_status) (int)empty;
 	time_t lLastPing, lLastKeepAlive, t;
 	YList *l;
 	NETLIBSELECTEX nls = {0};

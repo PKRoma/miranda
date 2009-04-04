@@ -1,3 +1,20 @@
+/*
+ * $Id$
+ *
+ * myYahoo Miranda Plugin 
+ *
+ * Authors: Gennady Feldman (aka Gena01) 
+ *          Laurent Marechal (aka Peorth)
+ *
+ * This code is under GPL and is based on AIM, MSN and Miranda source code.
+ * I want to thank Robert Rainwater and George Hazan for their code and support
+ * and for answering some of my questions during development of this plugin.
+ */
+
+#ifndef _YAHOO_PROTO_H_
+#define _YAHOO_PROTO_H_
+
+#include <m_protoint.h>
 
 struct CYahooProto;
 
@@ -250,7 +267,7 @@ struct CYahooProto : public PROTO_INTERFACE
 	void   ext_got_ping(const char *errormsg);
 	void   ext_error(const char *err, int fatal, int num);
 	void   ext_login_response(int succ, const char *url);
-	void   ext_login(int login_mode);
+	void   ext_login(enum yahoo_status login_mode);
 
 	void   AddBuddy( const char *who, int protocol, const char *group, const char *msg);
 
@@ -273,3 +290,5 @@ private:
 };
 
 extern LIST<CYahooProto> g_instances;
+
+#endif

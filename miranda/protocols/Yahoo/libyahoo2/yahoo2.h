@@ -79,7 +79,7 @@ int  yahoo_init(const char *username, const char *password);
 void yahoo_close(int id);
 /* login logs in to the server */
 /* initial is of type enum yahoo_status.  see yahoo2_types.h */
-void yahoo_login(int id, int initial);
+void yahoo_login(int id, enum yahoo_status initial);
 void yahoo_logoff(int id);
 /* reloads status of all buddies */
 void yahoo_refresh(int id);
@@ -214,7 +214,7 @@ void yahoo_send_file7info(int id, const char *me, const char *who, const char *f
 							const char *relay_ip);
 void yahoo_send_file_y7(int id, const char *from, const char *to, const char *relay_ip, 
 				unsigned long size, const char* ft_token, yahoo_get_fd_callback callback, void *data);							
-char *yahoo_webmessenger_idle_packet(int id, int* len);
+unsigned char *yahoo_webmessenger_idle_packet(int id, int* len);
 void yahoo_send_idle_packet(int id);
 void yahoo_send_im_ack(int id, const char *buddy, const char *seqn, int sendn);
 #include "yahoo_httplib.h"

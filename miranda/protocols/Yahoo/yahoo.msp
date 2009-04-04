@@ -60,7 +60,7 @@ warningAsErrors=0
 debugType=0
 debugLevel=1
 exceptionEnabled=0
-runtimeTypeEnabled=0
+runtimeTypeEnabled=1
 optimizeLevel=4
 
 // linker
@@ -102,6 +102,7 @@ extraResourceOptions=
 19=icolib.cpp
 20=libyahoo2\yahoo_auth.c
 21=ignore.cpp
+22=proto.cpp
 [Header]
 1=http_gateway.h
 2=resource.h
@@ -124,6 +125,7 @@ extraResourceOptions=
 19=options.h
 20=libyahoo2\yahoo_auth.h
 21=ignore.h
+22=proto.h
 [Resource]
 1=Yahoo.rc
 [Other]
@@ -135,15 +137,18 @@ extraResourceOptions=
 6=libyahoo2\Docs\TODO
 7=libyahoo2\Docs\ymsg-9.txt
 [History]
+file_transfer.h,1316
+proto.h,1686
 main.cpp,0
-im.cpp,465
-yahoo.h,6529
-icolib.cpp,441
-file_transfer.cpp,1086
-options.cpp,1212
-services.cpp,4778
-libyahoo2\libyahoo2.c,3096
-file_transfer.h,645
-server.cpp,1897
-libyahoo2\yahoo2_callbacks.h,17774
-yahoo.cpp,688
+im.cpp,444
+yahoo.h,3898
+icolib.cpp,422
+file_transfer.cpp,1069
+options.cpp,3432
+services.cpp,4676
+server.cpp,1875
+libyahoo2\yahoo2_callbacks.h,17738
+yahoo.cpp,12743
+libyahoo2\crypt.c,2121
+libyahoo2\yahoo2_types.h,9542
+libyahoo2\libyahoo2.c,54129

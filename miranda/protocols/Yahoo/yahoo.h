@@ -91,7 +91,7 @@ extern int do_yahoo_debug;
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
 
 struct _conn {
-	int tag;
+	unsigned int tag;
 	int id;
 	int fd;
 	yahoo_input_condition cond;
