@@ -35,7 +35,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <time.h>
 
 //Miranda IM includes
-#pragma warning( disable: 4100 )
+#ifdef _MSC_VER
+	#pragma warning( disable: 4100 )
+#endif
 
 #include <newpluginapi.h>
 #include <m_avatars.h>
