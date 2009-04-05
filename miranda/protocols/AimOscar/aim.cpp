@@ -41,7 +41,8 @@ OBJLIST<CAimProto> g_Instances(1, sttCompareProtocols);
 /////////////////////////////////////////////////////////////////////////////////////////
 // Dll entry point
 
-DWORD WINAPI DllMain(HINSTANCE hinstDLL,DWORD /*fdwReason*/,LPVOID /*lpvReserved*/)
+extern "C" 
+BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD /*fdwReason*/,LPVOID /*lpvReserved*/)
 {
 	hInstance = hinstDLL;
 	return TRUE;
