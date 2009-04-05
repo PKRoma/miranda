@@ -22,10 +22,6 @@
 #ifndef __YAHOO_UTIL_H__
 #define __YAHOO_UTIL_H__
 
-#if HAVE_CONFIG_H
-# include "config.h"
-#endif
-
 #if HAVE_GLIB
 # include <glib.h>
 
