@@ -1,5 +1,5 @@
 /*
- * $Id: options.h 8425 2008-10-15 16:02:48Z gena01 $
+ * $Id$
  *
  * myYahoo Miranda Plugin 
  *
