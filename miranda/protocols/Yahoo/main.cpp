@@ -62,7 +62,7 @@ PLUGININFOEX pluginInfo={
  *           BOOL
  * 
  */
-BOOL WINAPI DllMain(HINSTANCE hinst,DWORD fdwReason,LPVOID lpvReserved)
+extern "C" BOOL WINAPI DllMain(HINSTANCE hinst,DWORD /*fdwReason*/,LPVOID /*lpvReserved*/)
 {
 	hInstance = hinst;
 	return TRUE;
