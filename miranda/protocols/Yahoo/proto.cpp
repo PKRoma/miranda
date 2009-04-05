@@ -20,7 +20,9 @@
 #include "resource.h"
 #include "file_transfer.h"
 
-#pragma warning(disable:4355)
+#ifdef _MSC_VER
+	#pragma warning(disable:4355)
+#endif
 
 CYahooProto::CYahooProto( const char* aProtoName, const TCHAR* aUserName ) :
 	poll_loop( 1 )
@@ -55,7 +57,7 @@ CYahooProto::~CYahooProto()
 ////////////////////////////////////////////////////////////////////////////////////////
 // OnModulesLoadedEx - performs hook registration
 
-static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+//static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
 int CYahooProto::OnModulesLoadedEx( WPARAM, LPARAM )
 {
