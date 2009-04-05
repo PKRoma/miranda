@@ -22,6 +22,10 @@ extern "C"
 	extern struct tagPLUGINLINK* pluginLink;
 };
 
+#ifdef _MSC_VER
+	#define snprintf  _snprintf
+#endif
+
 #include <m_stdhdr.h>
 
 #include <sys/stat.h>
