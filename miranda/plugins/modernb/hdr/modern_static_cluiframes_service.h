@@ -8,7 +8,7 @@ static int _us_DoSetFramePaintProc( WPARAM wParam,LPARAM lParam );
 static int _us_DoAddFrame( WPARAM wParam,LPARAM lParam );
 static int _us_DoRemoveFrame( WPARAM wParam,LPARAM lParam );
 static int _us_DoSetFrameOptions( WPARAM wParam,LPARAM lParam );
-static int _us_DoGetFrameOptions( WPARAM wParam,LPARAM lParam );
+static INT_PTR _us_DoGetFrameOptions( WPARAM wParam,LPARAM lParam );
 static int _us_DoUpdateFrame( WPARAM wParam,LPARAM lParam );
 static int _us_DoShowHideFrameTitle( WPARAM wParam,LPARAM lParam );
 static int _us_DoShowTitles( WPARAM wParam,LPARAM lParam );

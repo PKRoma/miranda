@@ -46,7 +46,7 @@ static INT_PTR AddContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 		memset(fmep,0,sizeof(FrameMenuExecParam));
 		fmep->szServiceName=mir_strdup(mi->pszService);
 		fmep->Frameid=mi->popupPosition;
-		fmep->param1=(int)mi->pszContactOwner;
+		fmep->param1=(INT_PTR)mi->pszContactOwner;
 
 		tmi.ownerdata=fmep;
 	};

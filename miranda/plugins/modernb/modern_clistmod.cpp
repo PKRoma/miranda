@@ -146,7 +146,7 @@ int cli_IconFromStatusMode(const char *szProto,int nStatus, HANDLE hContact)
        if (!ModernGetSettingByte(NULL,"CLC","Meta",SETTING_USEMETAICON_DEFAULT) && g_szMetaModuleName && !mir_strcmp(szActProto,g_szMetaModuleName))
        {
             // substitute params by mostonline contact datas
-           HANDLE hMostOnlineContact=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)hActContact,0);
+           HANDLE hMostOnlineContact=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(WPARAM)hActContact,0);
            if (hMostOnlineContact)
            {
                 pdisplayNameCacheEntry cacheEntry;

@@ -72,7 +72,7 @@ static void InvalidateParentRect(HWND hwndChild, RECT * lpRect, BOOL fErase)
 }
 static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, LPARAM lParam)
 {
-	TBBUTTONDATA *lpSBData = (TBBUTTONDATA *) GetWindowLong(hwndDlg, 0);
+	TBBUTTONDATA *lpSBData = (TBBUTTONDATA *) GetWindowLongPtr(hwndDlg, 0);
 	switch (msg) 
 	{
 	case WM_NCCREATE:
@@ -95,7 +95,7 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 			lpSBData->pbState = 0;
 			lpSBData->fSendOnDown = FALSE;
 			lpSBData->nFontID = -1;
-			SetWindowLong(hwndDlg, 0, (LONG) lpSBData);
+			SetWindowLongPtr(hwndDlg, 0, (LONG_PTR) lpSBData);
 			if (((CREATESTRUCTA *) lParam)->lpszName)
 				SetWindowText(hwndDlg, ((CREATESTRUCT *) lParam)->lpszName);
 			lpSBData->hThemeButton = xpt_AddThemeHandle(lpSBData->hWnd, L"BUTTON");
@@ -122,7 +122,7 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 					ti.cbSize = sizeof(ti);
 					ti.uFlags = TTF_IDISHWND;
 					ti.hwnd = lpSBData->hWnd;
-					ti.uId = (UINT) lpSBData->hWnd;
+					ti.uId = (UINT_PTR) lpSBData->hWnd;
 					if (SendMessage(hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM) &ti)) 
 					{
 						SendMessage(hwndToolTips, TTM_DELTOOL, 0, (LPARAM) &ti);
@@ -245,12 +245,12 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 			ti.cbSize = sizeof(ti);
 			ti.uFlags = TTF_IDISHWND;
 			ti.hwnd = lpSBData->hWnd;
-			ti.uId = (UINT) lpSBData->hWnd;
+			ti.uId = (UINT_PTR) lpSBData->hWnd;
 			if (SendMessage(hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM) &ti)) {
 				SendMessage(hwndToolTips, TTM_DELTOOL, 0, (LPARAM) &ti);
 			}
 			ti.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
-			ti.uId = (UINT) lpSBData->hWnd;
+			ti.uId = (UINT_PTR) lpSBData->hWnd;
 			ti.lpszText = (TCHAR *) wParam;
 			SendMessage(hwndToolTips, TTM_ADDTOOL, 0, (LPARAM) &ti);
 			break;

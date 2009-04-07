@@ -525,7 +525,7 @@ INT_PTR BuildSubGroupMenu(WPARAM wParam,LPARAM lParam)
 	CallService(MO_BUILDMENU,(WPARAM)hMenu,(LPARAM)&param);
 	//DrawMenuBar((HWND)CallService("CLUI/GetHwnd",0,0));
 	tick=GetTickCount()-tick;
-	return (int)hMenu;
+	return (INT_PTR)hMenu;
 }
 
 HMENU cliBuildGroupPopupMenu(struct ClcGroup *group)
@@ -577,7 +577,7 @@ static INT_PTR AddSubGroupMenuItem(WPARAM wParam,LPARAM lParam)
 	op.Handle=(HANDLE)CallService(MO_ADDNEWMENUITEM,(WPARAM)hSubGroupMenuObject,(LPARAM)&tmi);
 	op.Setting=OPT_MENUITEMSETUNIQNAME;
 	sprintf(buf,"%s/%s",mi->pszService,mi->pszName);
-	op.Value=(int)buf;
+	op.Value=(INT_PTR)buf;
 	CallService(MO_SETOPTIONSMENUITEM,(WPARAM)0,(LPARAM)&op);
 	return (INT_PTR)op.Handle;
 

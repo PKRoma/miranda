@@ -303,7 +303,7 @@ static int	  ehhToolbarOptInit(WPARAM wParam, LPARAM lParam)
 }
 static INT_PTR    svcToolBarAddButton(WPARAM wParam, LPARAM lParam)
 {
-	int result=0;
+	INT_PTR result=0;
 	BYTE bVisible;
 	BYTE bPanel;
 	DWORD dwOrder;
@@ -327,7 +327,7 @@ static INT_PTR    svcToolBarAddButton(WPARAM wParam, LPARAM lParam)
 		li.List_InsertPtr(tbdat.listOfButtons,mtbi);
 		
 		if (mtbi->bVisible)
-			result=(int)ToolBar_AddButtonToBars(mtbi);
+			result=(INT_PTR)ToolBar_AddButtonToBars(mtbi);
 	}	
 	tbunlock;
 	return result;
@@ -843,7 +843,7 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 	case MTBM_UPDATEFRAMEVISIBILITY:
 		{
 			BOOL vis=(BOOL)wParam;
-			DWORD frameopt; 
+			INT_PTR frameopt; 
 			BOOL curvis=IsWindowVisible(hwnd);
 			BOOL bResize=FALSE;
 			int frameID=Sync( FindFrameID, hwnd );

@@ -151,7 +151,7 @@ struct CListEvent* cli_AddEvent(CLISTEVENT *cle)
 					nmi->iIcon = p->imlIconIndex;
 					nmi->hIcon = p->cle.hIcon;
 					nmi->hDbEvent = p->cle.hDbEvent;
-					mii.dwItemData = (ULONG) nmi;
+					mii.dwItemData = (ULONG_PTR) nmi;
 					mii.wID = g_CluiData.wNextMenuID;
 					SetMenuItemInfo(g_CluiData.hMenuNotify, g_CluiData.wNextMenuID, FALSE, &mii);
 					p-> menuId = g_CluiData.wNextMenuID;
@@ -228,7 +228,7 @@ int cli_RemoveEvent(HANDLE hContact, HANDLE hDbEvent)
 		EventArea_HideShowNotifyFrame();
     }
 
-	if (hContact == g_CluiData.hUpdateContact || (int)hDbEvent == 1)
+	if (hContact == g_CluiData.hUpdateContact || (INT_PTR)hDbEvent == 1)
 		g_CluiData.hUpdateContact = 0;
     CLUI__cliInvalidateRect(g_CluiData.hwndEventFrame, NULL, FALSE);
 	return res;

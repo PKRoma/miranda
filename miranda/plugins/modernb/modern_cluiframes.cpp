@@ -1166,10 +1166,10 @@ static int CLUIFramesModifyMainMenuItems(WPARAM wParam,LPARAM lParam)
 }
 
 
-static int _us_DoGetFrameOptions(WPARAM wParam,LPARAM lParam)
+static INT_PTR _us_DoGetFrameOptions(WPARAM wParam,LPARAM lParam)
 {
 	int pos;
-	int retval;
+	INT_PTR retval;
 	BOOL bUnicodeText=(LOWORD(wParam) & FO_UNICODETEXT)!=0;
 	wParam=MAKEWPARAM((LOWORD(wParam)) & ~FO_UNICODETEXT, HIWORD(wParam));
 
@@ -1203,23 +1203,23 @@ static int _us_DoGetFrameOptions(WPARAM wParam,LPARAM lParam)
 
 	case FO_NAME:
 		if (bUnicodeText)
-			retval=(int)g_pfwFrames[pos].Name;
+			retval=(INT_PTR)g_pfwFrames[pos].Name;
 		else
-			retval=(int)g_pfwFrames[pos].szName;
+			retval=(INT_PTR)g_pfwFrames[pos].szName;
 		break;
 
 	case FO_TBNAME:
 		if (bUnicodeText)
-			retval=(int)g_pfwFrames[pos].TitleBar.tbname;
+			retval=(INT_PTR)g_pfwFrames[pos].TitleBar.tbname;
 		else
-			retval=(int)g_pfwFrames[pos].TitleBar.sztbname;
+			retval=(INT_PTR)g_pfwFrames[pos].TitleBar.sztbname;
 		break;
 
 	case FO_TBTIPNAME:
 		if (bUnicodeText)
-			retval=(int)g_pfwFrames[pos].TitleBar.tooltip;
+			retval=(INT_PTR)g_pfwFrames[pos].TitleBar.tooltip;
 		else
-			retval=(int)g_pfwFrames[pos].TitleBar.sztooltip;
+			retval=(INT_PTR)g_pfwFrames[pos].TitleBar.sztooltip;
 		break;
 
 	case FO_TBSTYLE:
@@ -1231,18 +1231,18 @@ static int _us_DoGetFrameOptions(WPARAM wParam,LPARAM lParam)
 		break;
 
 	case FO_ICON:
-		retval=(int)g_pfwFrames[pos].TitleBar.hicon;
+		retval=(INT_PTR)g_pfwFrames[pos].TitleBar.hicon;
 		break;
 
 	case FO_HEIGHT:
-		retval=(int)g_pfwFrames[pos].height;
+		retval=(INT_PTR)g_pfwFrames[pos].height;
 		break;
 
 	case FO_ALIGN:
-		retval=(int)g_pfwFrames[pos].align;
+		retval=(INT_PTR)g_pfwFrames[pos].align;
 		break;
 	case FO_FLOATING:
-		retval=(int)g_pfwFrames[pos].floating;
+		retval=(INT_PTR)g_pfwFrames[pos].floating;
 		break;
 	default:
 		retval=-1;
@@ -1262,7 +1262,7 @@ static int UpdateTBToolTip(int framepos)
 		ti.lpszText=g_pfwFrames[framepos].TitleBar.tooltip;
 		ti.hinst=g_hInst;
 		ti.uFlags=TTF_IDISHWND|TTF_SUBCLASS ;
-		ti.uId=(UINT)g_pfwFrames[framepos].TitleBar.hwnd;
+		ti.uId=(UINT_PTR)g_pfwFrames[framepos].TitleBar.hwnd;
 
 		return(SendMessage(g_pfwFrames[framepos].TitleBar.hwndTip,TTM_UPDATETIPTEXT ,(WPARAM)0,(LPARAM)&ti));
 	}	
@@ -1941,7 +1941,7 @@ static int CLUIFramesLoadMainMenu()
 	return 0;
 }
 
-static int CLUILoadTitleBarFont()
+static HFONT CLUILoadTitleBarFont()
 {
 	char facename[]="MS Shell Dlg";
 	HFONT hfont;
@@ -1952,7 +1952,7 @@ static int CLUILoadTitleBarFont()
 	logfont.lfHeight=-10;
 	logfont.lfCharSet=DEFAULT_CHARSET;
 	hfont=CreateFontIndirectA(&logfont);
-	return((int)hfont);
+	return hfont;
 }
 
 
@@ -1966,7 +1966,7 @@ static int _us_DoAddFrame(WPARAM wParam,LPARAM lParam)
 	if(pcli->hwndContactList==0) return -1;
 	if (_fCluiFramesModuleNotStarted) return -1;
 	if(clfrm->cbSize!=sizeof(CLISTFrame)) return -1;
-	if(!(_hTitleBarFont)) _hTitleBarFont=(HFONT)CLUILoadTitleBarFont();
+	if(!(_hTitleBarFont)) _hTitleBarFont = CLUILoadTitleBarFont();
 
 	g_pfwFrames=(FRAMEWND*)realloc(g_pfwFrames,sizeof(FRAMEWND)*(g_nFramesCount+1));
 
@@ -2066,7 +2066,7 @@ static int _us_DoAddFrame(WPARAM wParam,LPARAM lParam)
 		ti.lpszText="";
 		ti.hinst=g_hInst;
 		ti.uFlags=TTF_IDISHWND|TTF_SUBCLASS ;
-		ti.uId=(UINT)g_pfwFrames[g_nFramesCount].TitleBar.hwnd;
+		ti.uId=(UINT_PTR)g_pfwFrames[g_nFramesCount].TitleBar.hwnd;
 		res=SendMessageA(g_pfwFrames[g_nFramesCount].TitleBar.hwndTip,TTM_ADDTOOL,(WPARAM)0,(LPARAM)&ti);
 	}
 
@@ -2639,7 +2639,7 @@ int SizeFramesByWindowRect(RECT *r, HDWP * PosBatch, int mode)
 					ShowWindow(g_pfwFrames[i].hWnd,SW_SHOW);
 					if (g_pfwFrames[i].TitleBar.ShowTitleBar) ShowWindow(g_pfwFrames[i].TitleBar.hwnd,SW_SHOW);
 				}
-				if (g_pfwFrames[i].OwnerWindow && (int)(g_pfwFrames[i].OwnerWindow)!=-2 )
+				if (g_pfwFrames[i].OwnerWindow && (INT_PTR)(g_pfwFrames[i].OwnerWindow)!=-2 )
 				{
 					if (!(mode&2))
 					{
@@ -2711,7 +2711,7 @@ int CheckFramesPos(RECT *wr)
 		dy=0;//_window_rect.top-rcOldWindowRect.top;
 		if (!g_pfwFrames[i].floating&&g_pfwFrames[i].visible)
 		{
-			if (!(g_pfwFrames[i].OwnerWindow && (int)(g_pfwFrames[i].OwnerWindow)!=-2))
+			if (!(g_pfwFrames[i].OwnerWindow && (INT_PTR)(g_pfwFrames[i].OwnerWindow)!=-2))
 			{
 				RECT r;
 				GetWindowRect(g_pfwFrames[i].hWnd,&r);
@@ -3968,7 +3968,7 @@ static HWND CreateContainerWindow(HWND parent,int x,int y,int width,int height)
 
 static int _us_DoSetFrameFloat(WPARAM wParam,LPARAM lParam)
 {	
-	int hwndtmp,hwndtooltiptmp;
+	HWND hwndtmp,hwndtooltiptmp;
 
 
 	wParam=id2pos(wParam);
@@ -4082,15 +4082,15 @@ static int _us_DoSetFrameFloat(WPARAM wParam,LPARAM lParam)
 		}
 		CLUIFramesStoreFrameSettings(wParam);
 		g_pfwFrames[wParam].minmaxenabled=TRUE;
-		hwndtooltiptmp=(int)g_pfwFrames[wParam].TitleBar.hwndTip;
+		hwndtooltiptmp=g_pfwFrames[wParam].TitleBar.hwndTip;
 
-		hwndtmp=(int)g_pfwFrames[wParam].ContainerWnd;
+		hwndtmp=g_pfwFrames[wParam].ContainerWnd;
 
 		CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);
-		if (hwndtmp) SendMessage((HWND)hwndtmp,WM_SIZE,0,0);
+		if (hwndtmp) SendMessage(hwndtmp,WM_SIZE,0,0);
 
 
-		SetWindowPos((HWND)hwndtooltiptmp, HWND_TOPMOST,0, 0, 0, 0,SWP_NOMOVE | SWP_NOSIZE|SWP_NOACTIVATE  );
+		SetWindowPos(hwndtooltiptmp, HWND_TOPMOST,0, 0, 0, 0,SWP_NOMOVE | SWP_NOSIZE|SWP_NOACTIVATE  );
 
 		return 0;
 }
@@ -4207,7 +4207,7 @@ int LoadCLUIFramesModule(void)
 	return 0;
 }
 
-static int UnloadMainMenu()
+static INT_PTR UnloadMainMenu()
 {
 	CLUIFrameOnModulesUnload(0,0);
 	if(_hmiRoot!=(HANDLE)-1)
@@ -4216,7 +4216,7 @@ static int UnloadMainMenu()
 		_hmiRoot=(HANDLE)-1;
 	}
 
-	return (int) _hmiRoot;
+	return (INT_PTR) _hmiRoot;
 }
 
 int UnLoadCLUIFramesModule(void)
@@ -4298,7 +4298,7 @@ int CLUIFrames_SetLayeredMode( BOOL fLayeredMode, HWND hwnd )
 			if (GetParent(g_pfwFrames[i].hWnd)==g_pfwFrames[i].OwnerWindow) 
 			{
 				SetParent(g_pfwFrames[i].hWnd,hwnd);
-				if ((int)g_pfwFrames[i].OwnerWindow>0) 
+				if ((INT_PTR)g_pfwFrames[i].OwnerWindow>0) 
 				{
 					DestroyWindow(g_pfwFrames[i].OwnerWindow);
 					g_pfwFrames[i].OwnerWindow=(HWND)-2;

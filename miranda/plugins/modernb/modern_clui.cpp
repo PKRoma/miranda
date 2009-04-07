@@ -366,7 +366,7 @@ HRESULT CLUI::CreateUIFrames()
 {
 	EventArea_Create(pcli->hwndContactList);
 	CreateViewModeFrame();
-	pcli->hwndStatus=(HWND)StatusBar_Create(pcli->hwndContactList);    
+	pcli->hwndStatus = StatusBar_Create(pcli->hwndContactList);    
 
 	return S_OK;
 }
@@ -1082,7 +1082,7 @@ static HICON CLUI_GetConnectingIconForProto(char *szProto,int b)
 	_snprintf(szFullPath, sizeof(szFullPath), "proto_conn_%s.dll",szProto);
 	hIcon=CLUI_LoadIconFromExternalFile(szFullPath,b+1,FALSE,FALSE,NULL,NULL,NULL,0,&needFree);
 	if (hIcon) return hIcon;
-	hIcon=(LoadSmallIcon(g_hInst,(TCHAR *)(IDI_ICQC1+b+1)));
+	hIcon=LoadSmallIcon(g_hInst,(TCHAR *)(IDI_ICQC1+b+1));
 	return(hIcon);
 }
 

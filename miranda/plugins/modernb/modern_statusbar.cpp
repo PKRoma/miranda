@@ -996,7 +996,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-int StatusBar_Create(HWND parent)
+HWND StatusBar_Create(HWND parent)
 {
     WNDCLASS wndclass={0};
     TCHAR pluginname[]=TEXT("ModernStatusBar");
@@ -1036,5 +1036,5 @@ int StatusBar_Create(HWND parent)
     LoadStatusBarData();
     CLUIServices_ProtocolStatusChanged(0,0);
     CallService(MS_CLIST_FRAMES_UPDATEFRAME,-1,0);
-    return (int)hModernStatusBar;
+    return hModernStatusBar;
 }

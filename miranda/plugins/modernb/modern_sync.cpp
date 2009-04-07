@@ -9,13 +9,13 @@ typedef struct tagSYNCCALLITEM
 	HANDLE  hDoneEvent;
 	PSYNCCALLBACKPROC pfnProc;    
 } SYNCCALLITEM;
-static void CALLBACK _SyncCallerUserAPCProc(DWORD_PTR dwParam)
+static void CALLBACK _SyncCallerUserAPCProc(ULONG_PTR dwParam)
 {
 	SYNCCALLITEM* item = (SYNCCALLITEM*) dwParam;
 	item->nResult = item->pfnProc(item->wParam, item->lParam);
 	SetEvent(item->hDoneEvent);
 }
-static int SyncCaller(WPARAM proc, LPARAM lParam)
+static INT_PTR SyncCaller(WPARAM proc, LPARAM lParam)
 {
 	typedef int (*P0PARAMFUNC)();
 	typedef int (*P1PARAMFUNC)(WPARAM);
@@ -129,7 +129,7 @@ HRESULT SyncCallAPCProxy( PSYNCCALLBACKPROC pfnProc, WPARAM wParam, LPARAM lPara
 		item.pfnProc = pfnProc;
 		item.hDoneEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
-		QueueUserAPC(_SyncCallerUserAPCProc, g_hMainThread, (DWORD) &item);	
+		QueueUserAPC(_SyncCallerUserAPCProc, g_hMainThread, (ULONG_PTR) &item);	
 		PostMessage(pcli->hwndContactList,WM_NULL,0,0); // let this get processed in its own time
 		
 		WaitForSingleObject(item.hDoneEvent, INFINITE);

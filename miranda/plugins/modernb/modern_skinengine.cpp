@@ -1794,7 +1794,7 @@ int ske_GetFullFilename(char * buf, char *file, char * skinfolder,BOOL madeAbsol
 	char *SkinPlace= ModernGetStringA(NULL,SKIN,"SkinFolder");
 	if (!SkinPlace) SkinPlace=mir_strdup("\\Skin\\default");
 	if (file[0]!='\\' && file[1]!=':') 
-		_snprintf(b2, MAX_PATH,"%s\\%s",((int)skinfolder==0)?SkinPlace:((int)skinfolder!=-1)?skinfolder:"",file);
+		_snprintf(b2, MAX_PATH,"%s\\%s",(skinfolder==NULL)?SkinPlace:((INT_PTR)skinfolder!=-1)?skinfolder:"",file);
 	else
 		_snprintf(b2, MAX_PATH,"%s",file);
 	if (madeAbsolute) 
@@ -3076,8 +3076,6 @@ static int ske_AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRec
 	// Calc sizes and offsets
 
 	textSize.cx += 2;             // CORRECTION: for italic
-
-	SIZE fsize = textSize;        // ???
 
 	int drx = 0;                  // x-axis offset of draw point
 

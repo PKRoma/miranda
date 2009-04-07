@@ -138,9 +138,9 @@ int FindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **cont
 			continue;
 		}
 		if(nowVisible) index++;
-		if((IsHContactGroup(hItem) && group->cl.items[group->scanIndex]->type==CLCIT_GROUP && ((unsigned)hItem&~HCONTACT_ISGROUP)==group->cl.items[group->scanIndex]->groupId) ||
+		if((IsHContactGroup(hItem) && group->cl.items[group->scanIndex]->type==CLCIT_GROUP && ((UINT_PTR)hItem&~HCONTACT_ISGROUP)==group->cl.items[group->scanIndex]->groupId) ||
 			(IsHContactContact(hItem) && group->cl.items[group->scanIndex]->type==CLCIT_CONTACT && group->cl.items[group->scanIndex]->hContact==hItem) ||
-			(IsHContactInfo(hItem) && group->cl.items[group->scanIndex]->type==CLCIT_INFO && group->cl.items[group->scanIndex]->hContact==(HANDLE)((unsigned)hItem&~HCONTACT_ISINFO))) 
+			(IsHContactInfo(hItem) && group->cl.items[group->scanIndex]->type==CLCIT_INFO && group->cl.items[group->scanIndex]->hContact==(HANDLE)((UINT_PTR)hItem&~HCONTACT_ISINFO))) 
 		{
 			if(isVisible) {
 				if(!nowVisible) *isVisible=0;
@@ -279,7 +279,7 @@ case CLCIT_CONTACT:
 case CLCIT_GROUP:
 	return (HANDLE)(contact->groupId|HCONTACT_ISGROUP);
 case CLCIT_INFO:
-	return (HANDLE)((DWORD)contact->hContact|HCONTACT_ISINFO);
+	return (HANDLE)((DWORD_PTR)contact->hContact|HCONTACT_ISINFO);
 	}
 	return NULL;
 }
@@ -294,7 +294,7 @@ case CLCIT_GROUP:
 	return (HANDLE)contact->groupId;
 case CLCIT_INFO:
 	if(nmFlags) *nmFlags|=CLNF_ISINFO;
-	return (HANDLE)((DWORD)contact->hContact|HCONTACT_ISINFO);
+	return (HANDLE)((DWORD_PTR)contact->hContact|HCONTACT_ISINFO);
 	}
 	return NULL;
 }

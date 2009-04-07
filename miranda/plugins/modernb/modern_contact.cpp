@@ -103,7 +103,7 @@ int CompareContacts2(const struct ClcContact *contact1,const struct ClcContact *
 	int statusa,statusb;
 	char *szProto1,*szProto2;
 	
-	if ((int)contact1<100 || (int)contact2<100) return 0;
+	if ((INT_PTR)contact1<100 || (INT_PTR)contact2<100) return 0;
 	
 	a=contact1->hContact;
 	b=contact2->hContact;

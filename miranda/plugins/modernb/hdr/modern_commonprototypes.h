@@ -85,7 +85,7 @@ extern BYTE gl_TrimText;
 /*                              TYPE DEFS                               */
 /************************************************************************/
 
-typedef int (*PSYNCCALLBACKPROC)(WPARAM,LPARAM);
+typedef INT_PTR (*PSYNCCALLBACKPROC)(WPARAM,LPARAM);
 
 /************************************************************************/
 /*                              PROTOTYPES                              */

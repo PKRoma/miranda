@@ -46,18 +46,18 @@ void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int Se
 static int handleCompare( void* c1, void* c2 )
 {
 
-	int p1, p2;
+	INT_PTR p1, p2;
 
 	displayNameCacheEntry * dnce1=(displayNameCacheEntry *)c1;
 	displayNameCacheEntry * dnce2=(displayNameCacheEntry *)c2;
 
-	p1=(int)dnce1->m_cache_hContact;
-	p2=(int)dnce2->m_cache_hContact;
+	p1=(INT_PTR)dnce1->m_cache_hContact;
+	p2=(INT_PTR)dnce2->m_cache_hContact;
 
 	if ( p1 == p2 )
 		return 0;
 
-	return p1 - p2;
+	return (int)(p1 - p2);
 }
 
 void InitCacheAsync();

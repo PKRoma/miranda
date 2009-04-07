@@ -39,7 +39,7 @@ static HANDLE hookSystemShutdown_ModernSkinButton=NULL;
 static LRESULT CALLBACK ModernSkinButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, LPARAM lParam);
 int ModernSkinButtonUnloadModule(WPARAM wParam, LPARAM lParam);
 int SkinSelector_DeleteMask(MODERNMASK * mm);
-int SetToolTip(HWND hwnd, TCHAR * tip);
+HWND SetToolTip(HWND hwnd, TCHAR * tip);
 
 typedef struct _ModernSkinButtonCtrl
 {
@@ -395,7 +395,7 @@ static LRESULT CALLBACK ModernSkinButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM 
 							ti.cbSize = sizeof(ti);
 							ti.uFlags = TTF_IDISHWND;
 							ti.hwnd = bct->hwnd;
-							ti.uId = (UINT)bct->hwnd;
+							ti.uId = (UINT_PTR)bct->hwnd;
 							if (SendMessage(hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM)&ti)) {
 								SendMessage(hwndToolTips, TTM_DELTOOL, 0, (LPARAM)&ti);
 							}
@@ -536,7 +536,7 @@ static LRESULT CALLBACK ModernSkinButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM 
 }
 
 
-int SetToolTip(HWND hwnd, TCHAR * tip)
+HWND SetToolTip(HWND hwnd, TCHAR * tip)
 {
 	TOOLINFO ti;
 	if (!tip) return 0;
@@ -559,17 +559,17 @@ int SetToolTip(HWND hwnd, TCHAR * tip)
 	ti.cbSize = sizeof(ti);
 	ti.uFlags = TTF_IDISHWND;
 	ti.hwnd = hwnd;
-	ti.uId = (UINT)hwnd;
+	ti.uId = (UINT_PTR)hwnd;
 	if (SendMessage(hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM)&ti)) {
 		SendMessage(hwndToolTips, TTM_DELTOOL, 0, (LPARAM)&ti);
 	}
 	ti.uFlags = TTF_IDISHWND|TTF_SUBCLASS;
-	ti.uId = (UINT)hwnd;
+	ti.uId = (UINT_PTR)hwnd;
 	ti.lpszText=(TCHAR*)tip;
 	SendMessage(hwndToolTips,TTM_ADDTOOL,0,(LPARAM)&ti);
 
 	LeaveCriticalSection(&csTips);
-	return (int)hwndToolTips;
+	return hwndToolTips;
 }
 
 

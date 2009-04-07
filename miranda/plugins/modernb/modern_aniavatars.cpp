@@ -117,7 +117,7 @@ typedef struct _tagAniAvaSyncCallItem
 {
 	WPARAM  wParam;
 	LPARAM  lParam;
-	int     nResult;
+	INT_PTR nResult;
 	HANDLE  hDoneEvent;
 	PSYNCCALLBACKPROC pfnProc;
 } ANIAVA_SYNCCALLITEM;
@@ -547,11 +547,11 @@ static void CALLBACK _AniAva_SyncCallerUserAPCProc(DWORD_PTR dwParam)
 	item->nResult = item->pfnProc(item->wParam, item->lParam);
 	SetEvent(item->hDoneEvent);
 }
-static int	_AniAva_CreateAvatarWindowSync_Worker(WPARAM tszName, LPARAM lParam)
+static INT_PTR _AniAva_CreateAvatarWindowSync_Worker(WPARAM tszName, LPARAM lParam)
 {
 	HWND hwnd=CreateWindowEx( WS_EX_TOPMOST | WS_EX_TRANSPARENT | WS_EX_NOPARENTNOTIFY,ANIAVAWINDOWCLASS,(TCHAR*)tszName,WS_POPUP,
 		0,0,1,1,pcli->hwndContactList, NULL, pcli->hInst, NULL );
-	return (int)hwnd;
+	return (INT_PTR)hwnd;
 }
 
 static HWND _AniAva_CreateAvatarWindowSync(TCHAR *szFileName)

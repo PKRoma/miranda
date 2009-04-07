@@ -96,7 +96,7 @@ BOOL ske_SetRectOpaque(HDC memdc,RECT *fr);
 int ske_UpdateWindowImage();
 int ske_ValidateFrameImageProc(RECT * r);
 
-int StatusBar_Create(HWND parent);
+HWND StatusBar_Create(HWND parent);
 
 void RowHeight_InitModernRow();
 
