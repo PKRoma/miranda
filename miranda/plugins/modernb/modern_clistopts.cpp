@@ -75,9 +75,13 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 	//	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
 	{
+		BOOL hasExtraIconsService = ServiceExists("ExtraIcon/Register");
 		int i;	
 		for (i=0; row_opt_items[i].id!=0; i++)
 		{
+			if (hasExtraIconsService && row_opt_items[i].id == IDD_OPT_ITEM_EXTRAICONS)
+				continue;
+
 			odp.pszTemplate=MAKEINTRESOURCEA(row_opt_items[i].id);
 			odp.ptszTab=TranslateTS(row_opt_items[i].name);
 			odp.pfnDlgProc=row_opt_items[i].wnd_proc;

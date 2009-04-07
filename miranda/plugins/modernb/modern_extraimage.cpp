@@ -32,8 +32,17 @@ BYTE ExtraOrder[]=
 	8, // EXTRA_ICON_ADV3	
 	9, // EXTRA_ICON_ADV4	
 };
+
+BOOL HasExtraIconsService()
+{
+	return ServiceExists("ExtraIcon/Register");
+}
+
 boolean isColumnVisible(int extra)
 {
+	if (HasExtraIconsService())
+		return true;
+
 	int i=0;
 	for (i=0; i<sizeof(ExtraOrder)/sizeof(ExtraOrder[0]); i++)
 		if (ExtraOrder[i]==extra)
@@ -94,6 +103,14 @@ int colsum(int from,int to)
 
 int ExtraImage_ExtraIDToColumnNum(int extra)
 {
+	if (HasExtraIconsService())
+	{
+		if (extra < 0 || extra >= EXTRACOLUMNCOUNT) 
+			return -1;
+		else
+			return extra;
+	}
+
 	int ord=ExtraOrder[extra-1];
     if (!visar[ord]) return -1;
 	return (colsum(0,ord)-1);
@@ -157,6 +174,8 @@ void ExtraImage_ReloadExtraIcons()
 	hExtraImageList=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,1,256);
 	hWideExtraImageList=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,1,256);
 
+	if (!HasExtraIconsService())
+	{
 	//adding protocol icons
 	ProtoEnumAccounts( &count, &accs );
 
@@ -185,6 +204,7 @@ void ExtraImage_ReloadExtraIcons()
 	if (!hicon) {hicon=LoadSmallIcon(g_hInst, MAKEINTRESOURCE(IDI_CHAT));needFree=TRUE;}
 	ExtraImageIconsIndex[5]=ImageList_AddIcon(hExtraImageList,hicon );
 	if (needFree) DestroyIcon_protect(hicon);
+	}
 
 	SendMessage(pcli->hwndContactTree,CLM_SETEXTRAIMAGELIST,(WPARAM)hWideExtraImageList,(LPARAM)hExtraImageList);		
 	//ExtraImage_SetAllExtraIcons(hImgList);
@@ -244,6 +264,9 @@ void ExtraImage_SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 	if (ImageCreated==FALSE) ExtraImage_ReloadExtraIcons();
 
 	SetNewExtraColumnCount();
+
+	BOOL hasExtraIconsService = HasExtraIconsService();
+	if (!hasExtraIconsService)
 	{
 		em=ExtraImage_ExtraIDToColumnNum(EXTRA_ICON_EMAIL);	
 		pr=ExtraImage_ExtraIDToColumnNum(EXTRA_ICON_PROTO);
@@ -252,16 +275,16 @@ void ExtraImage_SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 		a2=ExtraImage_ExtraIDToColumnNum(EXTRA_ICON_ADV2);
 		w1=ExtraImage_ExtraIDToColumnNum(EXTRA_ICON_WEB);
 		c1=ExtraImage_ExtraIDToColumnNum(EXTRA_ICON_CLIENT);
-	};
 
-	memset(&ImgIndex,0,sizeof(&ImgIndex));
-	ProtoEnumAccounts( &count, &accs );
-	maxpr=0;
-	//calc only needed protocols
-	for(i=0;i<count;i++) {
-		if ( accs[i]->bOldProto && CallProtoService(accs[i]->szModuleName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
-		ImgIndex[maxpr]=accs[i]->szModuleName;
-		maxpr++;
+		memset(&ImgIndex,0,sizeof(&ImgIndex));
+		ProtoEnumAccounts( &count, &accs );
+		maxpr=0;
+		//calc only needed protocols
+		for(i=0;i<count;i++) {
+			if ( accs[i]->bOldProto && CallProtoService(accs[i]->szModuleName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
+			ImgIndex[maxpr]=accs[i]->szModuleName;
+			maxpr++;
+		}
 	}
 
 	if (hContact==NULL)
@@ -279,6 +302,9 @@ void ExtraImage_SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 
 		//		szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);		
 		szProto=pdnce->m_cache_cszProto;
+
+		if (!hasExtraIconsService)
+		{
 		{
 			boolean showweb;	
 			showweb=FALSE;     
@@ -374,6 +400,7 @@ void ExtraImage_SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 			}
 			SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraImage_ExtraIDToColumnNum(EXTRA_ICON_VISMODE),iconIndex));	
 		}
+		}
 		NotifyEventHooks(g_CluiData.hEventExtraImageApplying,(WPARAM)hContact,0);
 		if (hcontgiven) break;
 		Sleep(0);
@@ -462,7 +489,6 @@ void ExtraImage_LoadModule()
 	ModernHookEvent(ME_CLC_SHOWEXTRAINFOTIP, ehhShowExtraInfoTip );
 	ModernHookEvent(ME_CLC_HIDEINFOTIP, ehhHideExtraInfoTip );
 	ModernHookEvent(ME_SYSTEM_SHUTDOWN, ehhExtraImage_UnloadModule );
-
 };
 
 
