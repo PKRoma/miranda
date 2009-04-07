@@ -13,6 +13,8 @@
 
 #include "yahoo.h"
 
+#include <shlwapi.h>
+
 #include <m_idle.h>
 #include <m_options.h>
 #include <m_skin.h>
@@ -90,6 +92,7 @@ int CYahooProto::OnModulesLoadedEx( WPARAM, LPARAM )
 #endif	
 	
 	m_hNetlibUser = ( HANDLE )YAHOO_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
+	
 	return 0;
 }
 
@@ -850,4 +853,89 @@ int __cdecl CYahooProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARA
 		case EV_PROTO_ONOPTIONS: return OnOptionsInit( wParam, lParam );
 	}	
 	return 1;
+}
+
+INT_PTR CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg) 
+	{
+	case WM_INITDIALOG:
+		{
+			TranslateDialogDefault(hwndDlg);
+
+			CYahooProto* ppro = (CYahooProto*)lParam;
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
+
+			DBVARIANT dbv;
+			if ( !ppro->getString(YAHOO_LOGINID, &dbv))
+			{
+				SetDlgItemTextA(hwndDlg, IDC_HANDLE, dbv.pszVal);
+				DBFreeVariant(&dbv);
+			}
+
+			if ( !ppro->getString(YAHOO_PASSWORD, &dbv))
+			{
+				CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
+				SetDlgItemTextA(hwndDlg, IDC_PASSWORD, dbv.pszVal);
+				DBFreeVariant(&dbv);
+			}
+			return TRUE;
+		}
+
+	case WM_COMMAND:
+		if ( LOWORD( wParam ) == IDC_NEWYAHOOACCOUNTLINK ) {
+			CallService( MS_UTILS_OPENURL, 1, ( LPARAM ) "http://edit.yahoo.com/config/eval_register" );
+			return TRUE;
+		}
+
+		if ( HIWORD( wParam ) == EN_CHANGE && ( HWND )lParam == GetFocus()) 
+		{
+			switch( LOWORD( wParam )) {
+			case IDC_HANDLE:			
+			case IDC_PASSWORD:
+				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			}
+		}
+		break;
+
+	case WM_NOTIFY:
+		if (((LPNMHDR)lParam)->code == (UINT)PSN_APPLY ) 
+		{
+			CYahooProto* ppro = (CYahooProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+
+			char str[128];
+			GetDlgItemTextA(hwndDlg, IDC_HANDLE, str, sizeof(str));
+			ppro->setString(YAHOO_LOGINID, str);
+			GetDlgItemTextA(hwndDlg, IDC_PASSWORD, str, sizeof(str));
+			CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
+			ppro->setString(YAHOO_PASSWORD, str);
+			return TRUE;
+		}
+		break;
+	}
+
+	return FALSE;
+}
+
+
+INT_PTR CYahooProto::SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam)
+{
+	return (INT_PTR)CreateDialogParam (hInstance, MAKEINTRESOURCE( IDD_YAHOOACCOUNT ), 
+		 (HWND)lParam, first_run_dialog, (LPARAM)this );
+}
+
+int CYahooProto::getString( const char* name, DBVARIANT* result )
+{	return DBGetContactSettingString( NULL, m_szModuleName, name, result );
+}
+
+int CYahooProto::getString( HANDLE hContact, const char* name, DBVARIANT* result )
+{	return DBGetContactSettingString( hContact, m_szModuleName, name, result );
+}
+
+void CYahooProto::setString( const char* name, const char* value )
+{	DBWriteContactSettingString(NULL, m_szModuleName, name, value );
+}
+
+void CYahooProto::setString( HANDLE hContact, const char* name, const char* value )
+{	DBWriteContactSettingString(hContact, m_szModuleName, name, value );
 }

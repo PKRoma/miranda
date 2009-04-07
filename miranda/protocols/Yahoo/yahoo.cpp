@@ -1771,5 +1771,6 @@ void register_callbacks()
 	yc.ext_yahoo_buddy_group_changed = ext_yahoo_buddy_group_changed;
 	
 	yc.ext_yahoo_send_https_request = ext_yahoo_send_https_request;
+	
 	yahoo_register_callbacks(&yc);
 }

@@ -470,6 +470,7 @@ void CYahooProto::LoadYahooServices( void )
 	YHookEvent( ME_DB_CONTACT_DELETED, &CYahooProto::OnContactDeleted );
 
 	//----| Service creation |------------------------------------------------------------
+	YCreateService( PS_CREATEACCMGRUI, &CYahooProto::SvcCreateAccMgrUI);
 	YCreateService( YAHOO_SEND_NUDGE, &CYahooProto::SendNudge );
 	YCreateService( YAHOO_GETUNREAD_EMAILCOUNT, &CYahooProto::GetUnreadEmailCount);
 

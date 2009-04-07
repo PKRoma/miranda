@@ -26,6 +26,7 @@
  * Options
  */
 #define IDD_OPT_YAHOO                   185
+#define IDD_YAHOOACCOUNT				190
 
 #define IDD_SETCUSTSTAT                 186
 #define IDD_OPT_YAHOO_POPUP             187

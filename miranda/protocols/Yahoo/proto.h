@@ -112,6 +112,7 @@ struct CYahooProto : public PROTO_INTERFACE
 	INT_PTR __cdecl OnShowProfileCommand( WPARAM, LPARAM );
 
 	//====| Services |====================================================================
+	INT_PTR  __cdecl SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam);
 	INT_PTR __cdecl  GetUnreadEmailCount( WPARAM, LPARAM );
 	INT_PTR __cdecl  SendNudge( WPARAM, LPARAM );
 	INT_PTR __cdecl  SetMyAvatar( WPARAM, LPARAM );
@@ -269,6 +270,11 @@ struct CYahooProto : public PROTO_INTERFACE
 
 	void   AddBuddy( const char *who, int protocol, const char *group, const char *msg);
 
+	int    getString( const char* name, DBVARIANT* );
+	int    getString( HANDLE hContact, const char* name, DBVARIANT* );
+	
+	void   setString( const char* name, const char* value );
+	void   setString( HANDLE hContact, const char* name, const char* value );
 
 private:
 	int    m_startStatus;
