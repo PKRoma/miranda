@@ -32,7 +32,6 @@ MD5_INTERFACE  md5i;
 SHA1_INTERFACE sha1i;
 LIST_INTERFACE li;
 
-HANDLE hNetlibUser = NULL;
 
 PLUGININFOEX pluginInfo={
 		sizeof(PLUGININFOEX),
@@ -138,9 +137,7 @@ extern "C" int __declspec(dllexport)Load(PLUGINLINK *link)
 
 extern "C" int __declspec(dllexport) Unload(void)
 {
-	DebugLog("Unload");
-	Netlib_CloseHandle( hNetlibUser );
-	
+
 	return 0;
 }
 
