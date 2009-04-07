@@ -814,21 +814,6 @@ static void RestoreMode()
 		PostMessage(pcli->hwndContactList, WM_COMMAND, nStatus, 0);
 }
 
-
-
-// Disconnect all protocols.
-// Happens on shutdown and standby.
-static void DisconnectAll()
-{
-	PROTOACCOUNT **accs;
-	int nProtoCount;
-	int nProto;
-
-	ProtoEnumAccounts( &nProtoCount, &accs );
-	for (nProto = 0; nProto < nProtoCount; nProto++)
-		CallProtoService( accs[nProto]->szModuleName, PS_SETSTATUS, ID_STATUS_OFFLINE, 0);
-}
-
 void BlitWallpaper(HDC hdc, RECT *rc, RECT *rcPaint, struct ClcData *dat)
 {
 	int x, y;

@@ -41,7 +41,6 @@ INT_PTR CloseAction(WPARAM wParam,LPARAM lParam)
 	while (!k);
 
 	if ( k ) {
-		CLUI_DisconnectAll();
 		PostMessage(pcli->hwndContactList,WM_DESTROY,0,0);
 	}
 

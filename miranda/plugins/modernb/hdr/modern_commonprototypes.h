@@ -103,7 +103,6 @@ HANDLE  RegisterIcolibIconHandle(char * szIcoID, char *szSectionName,  char * sz
 void	CLUI_UpdateAeroGlass();
 void	CLUI_ChangeWindowMode();
 BOOL	CLUI_CheckOwnedByClui(HWND hwnd);
-void	CLUI_DisconnectAll();
 INT_PTR	CLUI_GetConnectingIconService(WPARAM wParam,LPARAM lParam);
 int		CLUI_HideBehindEdge();
 int		CLUI_IconsChanged(WPARAM,LPARAM);

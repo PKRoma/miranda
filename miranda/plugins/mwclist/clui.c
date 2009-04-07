@@ -438,20 +438,6 @@ int OnSettingChanging(WPARAM wParam,LPARAM lParam)
 	return(0);
 }
 
-
-// Disconnect all protocols.
-// Happens on shutdown and standby.
-static void DisconnectAll()
-{
-	PROTOACCOUNT** accs;
-	int nProtoCount;
-	int nProto;
-
-	ProtoEnumAccounts( &nProtoCount, &accs );
-	for (nProto = 0; nProto < nProtoCount; nProto++)
-		CallProtoService( accs[nProto]->szModuleName, PS_SETSTATUS, ID_STATUS_OFFLINE, 0);
-}
-
 HWND PreCreateCLC(HWND parent)
 {
 	pcli->hwndContactTree = CreateWindow(CLISTCONTROL_CLASS,_T(""),
