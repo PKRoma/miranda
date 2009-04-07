@@ -1,7 +1,7 @@
 [Project]
 name=Yahoo
 type=2
-defaultConfig=1
+defaultConfig=0
 
 
 [Debug]
@@ -11,7 +11,7 @@ arguments=
 intermediateFilesDirectory=Debug
 outputFilesDirectory=Debug
 compilerPreprocessor=
-extraCompilerOptions=-DHAVE_CONFIG_H
+extraCompilerOptions=-DHAVE_CONFIG_H -DUNICODE -D_UNICODE
 compilerIncludeDirectory=..\..\include
 noWarning=0
 defaultWarning=1

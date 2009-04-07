@@ -5903,7 +5903,7 @@ void yahoo_remove_buddy(int id, const char *who, int protocol, const char *group
 	yahoo_packet_hash(pkt, 1, yd->user);
 	yahoo_packet_hash(pkt, 7, who);
 	yahoo_packet_hash(pkt, 65, group);
-	yahoo_packet_hash(pkt, 66, "0"); // Yahoo 9.0 does login status 0?? What for?
+	//yahoo_packet_hash(pkt, 66, "0"); // Yahoo 9.0 does login status 0?? What for?
 	
 	if (protocol != 0)
 		yahoo_packet_hash_int(pkt, 241, protocol);
