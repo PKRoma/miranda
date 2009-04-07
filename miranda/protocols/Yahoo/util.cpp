@@ -24,9 +24,16 @@
 
 void CYahooProto::YCreateService( const char* szService, YServiceFunc serviceProc )
 {
-	char str[ MAXMODULELABELLENGTH ];
+	char str[ 255 ];
+	int len;
 	
-	wsprintfA(str, "%s%s", m_szModuleName, szService);
+	len = snprintf(str, sizeof(str), "%s%s", m_szModuleName, szService);
+	
+	if (len >= sizeof(str) ) {
+		DebugLog("[YCreateService] Failed Registering Servide: %s. Reason: buffer too small?", szService);
+		return;
+	}
+	
 	::CreateServiceFunctionObj( str, ( MIRANDASERVICEOBJ )*( void** )&serviceProc, this );
 }
 

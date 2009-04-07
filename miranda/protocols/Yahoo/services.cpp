@@ -126,7 +126,7 @@ int __cdecl CYahooProto::OnContactDeleted( WPARAM wParam, LPARAM lParam )
 //=======================================================
 //Custom status message windows handling
 //=======================================================
-static INT_PTR CALLBACK DlgProcSetCustStat(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static BOOL CALLBACK DlgProcSetCustStat(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	DBVARIANT dbv;
 
@@ -360,7 +360,7 @@ INT_PTR __cdecl CYahooProto::GetUnreadEmailCount(WPARAM wParam, LPARAM lParam)
 
 void CYahooProto::MenuInit( void )
 {
-	char servicefunction[ 100 ];
+	char servicefunction[ 200 ];
 	lstrcpyA( servicefunction, m_szModuleName );
 	char* tDest = servicefunction + lstrlenA( servicefunction );
 	
