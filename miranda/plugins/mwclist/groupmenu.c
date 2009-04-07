@@ -502,7 +502,7 @@ static INT_PTR BuildSubGroupMenu(WPARAM wParam,LPARAM lParam)
 	CallService(MO_BUILDMENU,(WPARAM)hMenu,(LPARAM)&param);
 	//DrawMenuBar((HWND)CallService("CLUI/GetHwnd",0,0));
 	tick=GetTickCount()-tick;
-	return (int)hMenu;
+	return (INT_PTR)hMenu;
 }
 
 static INT_PTR AddSubGroupMenuItem(WPARAM wParam,LPARAM lParam)
