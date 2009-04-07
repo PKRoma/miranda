@@ -46,6 +46,7 @@ CYahooProto::~CYahooProto()
 {
 	if (m_bLoggedIn)
 		logout();
+	
 	DebugLog("Logged out");
 
 	DestroyHookableEvent(hYahooNudge);
@@ -54,6 +55,8 @@ CYahooProto::~CYahooProto()
 	mir_free( m_tszUserName );
 
 	FREE(m_startMsg);
+	
+	Netlib_CloseHandle( m_hNetlibUser );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
