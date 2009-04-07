@@ -614,8 +614,8 @@ typedef struct _globals {
 typedef struct _tag_ICONDESC {
 	char    *szName;
 	char    *szDesc;
-	HICON   *phIcon;      // where the handle is saved...
-	int     uId;           // icon ID
+	HICON   *phIcon;       // where the handle is saved...
+	INT_PTR uId;           // icon ID
 	BOOL    bForceSmall;   // true: force 16x16
 } ICONDESC;
 

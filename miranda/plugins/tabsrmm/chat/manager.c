@@ -238,7 +238,7 @@ HICON SM_GetStatusIcon(SESSION_INFO* si, USERINFO* ui, char *szIndicator)
 
 	ti = TM_FindStatus(si->pStatuses, TM_WordToString(si->pStatuses, ui->Status));
 	if (ti) {
-		if ((int)ti->hIcon < STATUSICONCOUNT) {
+		if ((INT_PTR)ti->hIcon < STATUSICONCOUNT) {
 			int id = si->iStatusCount - (int)ti->hIcon - 1;
 			if (id == 0) {
 				*szIndicator = 0;
