@@ -16,9 +16,6 @@
 #include "resource.h"
 
 #include <m_langpack.h>
-#include <m_idle.h>
-#include <m_userinfo.h>
-#include <time.h>
 
 /*
  * Global Variables
@@ -152,9 +149,9 @@ extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD miranda
 	 * This requires the latest trunk... [md5, sha, etc..]
 	 */
     if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 24)) {
-		MessageBoxA( NULL, 
-				"Yahoo plugin cannot be loaded. It requires Miranda IM 0.8.0.24 or later.", 
-				"Yahoo", 
+		MessageBox( NULL, 
+				_T("Yahoo plugin cannot be loaded. It requires Miranda IM 0.8.0.24 or later."), 
+				_T("Yahoo"), 
 				MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 
         return NULL;
