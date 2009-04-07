@@ -42,12 +42,12 @@ void CYahooProto::IconsInit( void )
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.pszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
-	mir_snprintf( szSection, sizeof(szSection), "%s/%s", Translate("Protocols"), Translate( m_szModuleName ) );
+	mir_snprintf( szSection, sizeof(szSection), "%s/%s", Translate("Protocols"), Translate( "YAHOO" ) );
 	sid.pszSection = szSection;
 
 	for ( int i = 0; i < SIZEOF(iconList); i++ ) {
 		char szSettingName[100];
-		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", m_szModuleName, iconList[i].szName );
+		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", "YAHOO", iconList[i].szName );
 		sid.pszName = szSettingName;
 		sid.pszDescription = Translate( iconList[i].szDescr );
 		sid.iDefaultIndex = -iconList[i].defIconID;
@@ -57,6 +57,8 @@ void CYahooProto::IconsInit( void )
 HICON CYahooProto::LoadIconEx( const char* name )
 {
 	char szSettingName[100];
-	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", m_szModuleName, name );
+	
+	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", "YAHOO", name );
+	
 	return ( HICON )CallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
 }
