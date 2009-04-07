@@ -72,7 +72,7 @@ int CYahooProto::OnModulesLoadedEx( WPARAM, LPARAM )
 	YHookEvent(ME_IDLE_CHANGED, &CYahooProto::OnIdleEvent);
 
 	char tModuleDescr[ 100 ];
-	wsprintfA(tModuleDescr, Translate( "%s plugin connections" ), m_szModuleName);
+	snprintf(tModuleDescr, sizeof(tModuleDescr), Translate( "%s plugin connections" ), m_szModuleName);
 	
 	NETLIBUSER nlu = {0};
 	nlu.cbSize = sizeof(nlu);
@@ -596,10 +596,12 @@ int __cdecl CYahooProto::SetApparentMode( HANDLE hContact, int mode )
 int __cdecl CYahooProto::SetStatus( int iNewStatus )
 {
 	DebugLog("[SetStatus] New status %s", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, iNewStatus, 0));
+	
 	if (iNewStatus == ID_STATUS_OFFLINE) {
+		
 		logout();
-	}
-	else if (!m_bLoggedIn) {
+		
+	} else if (!m_bLoggedIn) {
 		DBVARIANT dbv;
 		int err = 0;
 		char errmsg[80];
@@ -612,7 +614,7 @@ int __cdecl CYahooProto::SetStatus( int iNewStatus )
 		/*
 		* Load Yahoo ID from the database.
 		*/
-		if (!DBGetContactSettingString(NULL, m_szModuleName, YAHOO_LOGINID, &dbv)) {
+		if (!getString(YAHOO_LOGINID, &dbv)) {
 			if (lstrlenA(dbv.pszVal) > 0) {
 				lstrcpynA(m_yahoo_id, dbv.pszVal, 255);
 			} else
@@ -626,7 +628,7 @@ int __cdecl CYahooProto::SetStatus( int iNewStatus )
 		if (err) {
 			lstrcpynA(errmsg, Translate("Please enter your yahoo id in Options/Network/Yahoo"), 80);
 		} else {
-			if (!DBGetContactSettingString(NULL, m_szModuleName, YAHOO_PASSWORD, &dbv)) {
+			if (!getString(YAHOO_PASSWORD, &dbv)) {
 				CallService(MS_DB_CRYPT_DECODESTRING, lstrlenA(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
 				if (lstrlenA(dbv.pszVal) > 0) {
 					lstrcpynA(m_password, dbv.pszVal, 255);

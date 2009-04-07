@@ -126,7 +126,6 @@ int __stdcall YAHOO_CallService( const char* szSvcName, WPARAM wParam, LPARAM lP
 #define YAHOO_hasnotification() ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)
 
 int YAHOO_util_dbsettingchanged(WPARAM wParam, LPARAM lParam);
-void YAHOO_utils_logversion();
 
 //Services.c
 int SetStatus(WPARAM wParam,LPARAM lParam);

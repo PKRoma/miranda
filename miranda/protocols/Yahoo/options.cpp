@@ -38,17 +38,17 @@ static BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		ppro = (CYahooProto*)lParam;
 		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 
-		if ( !DBGetContactSettingString( NULL, ppro->m_szModuleName, YAHOO_LOGINID, &dbv )) {
+		if ( !ppro->getString( YAHOO_LOGINID, &dbv )) {
 			SetDlgItemTextA(hwndDlg,IDC_HANDLE,dbv.pszVal);
 			DBFreeVariant(&dbv);
 		}
 
-		if ( !DBGetContactSettingString( NULL, ppro->m_szModuleName, "Nick", &dbv )) {
+		if ( !ppro->getString( "Nick", &dbv )) {
 			SetDlgItemTextA(hwndDlg,IDC_NICK,dbv.pszVal);
 			DBFreeVariant(&dbv);
 		}
 
-		if ( !DBGetContactSettingString( NULL, ppro->m_szModuleName, YAHOO_PASSWORD, &dbv )) {
+		if ( !ppro->getString( YAHOO_PASSWORD, &dbv )) {
 			//bit of a security hole here, since it's easy to extract a password from an edit box
 			YAHOO_CallService( MS_DB_CRYPT_DECODESTRING, strlen( dbv.pszVal )+1, ( LPARAM )dbv.pszVal );
 			SetDlgItemTextA( hwndDlg, IDC_PASSWORD, dbv.pszVal );
@@ -111,7 +111,7 @@ static BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			GetDlgItemTextA( hwndDlg, IDC_HANDLE, str, sizeof( str ));
 			dbv.pszVal = NULL;
 			
-			if ( DBGetContactSettingString( NULL, ppro->m_szModuleName, YAHOO_LOGINID, &dbv ) || lstrcmpA( str, dbv.pszVal ))
+			if ( ppro->getString( YAHOO_LOGINID, &dbv ) || lstrcmpA( str, dbv.pszVal ))
 				reconnectRequired = TRUE;
 				
 			if ( dbv.pszVal != NULL )
@@ -122,7 +122,7 @@ static BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			GetDlgItemTextA( hwndDlg, IDC_PASSWORD, str, sizeof( str ));
 			YAHOO_CallService( MS_DB_CRYPT_ENCODESTRING, sizeof( str ),( LPARAM )str );
 			dbv.pszVal = NULL;
-			if ( DBGetContactSettingString( NULL, ppro->m_szModuleName, YAHOO_PASSWORD, &dbv ) || lstrcmpA( str, dbv.pszVal ))
+			if ( ppro->getString( YAHOO_PASSWORD, &dbv ) || lstrcmpA( str, dbv.pszVal ))
 				reconnectRequired = TRUE;
 			if ( dbv.pszVal != NULL )
 				DBFreeVariant( &dbv );
@@ -168,7 +168,7 @@ static BOOL CALLBACK DlgProcYahooOptsConn(HWND hwndDlg, UINT msg, WPARAM wParam,
 		ppro = ( CYahooProto* )lParam;
 		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 
-		if ( !DBGetContactSettingString( NULL, ppro->m_szModuleName, YAHOO_LOGINSERVER, &dbv )){
+		if ( !ppro->getString( YAHOO_LOGINSERVER, &dbv )){
 			SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, dbv.pszVal );
 			DBFreeVariant( &dbv );
 		}
@@ -217,7 +217,7 @@ static BOOL CALLBACK DlgProcYahooOptsConn(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 			GetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, str, sizeof( str ));
 			
-			if ( DBGetContactSettingString( NULL, ppro->m_szModuleName, YAHOO_LOGINSERVER, &dbv ) || lstrcmpA( str, dbv.pszVal ))
+			if ( ppro->getString( YAHOO_LOGINSERVER, &dbv ) || lstrcmpA( str, dbv.pszVal ))
 				reconnectRequired = TRUE;
 				
 			if ( dbv.pszVal != NULL )
@@ -277,7 +277,7 @@ static BOOL CALLBACK DlgProcYahooOptsIgnore(HWND hwndDlg, UINT msg, WPARAM wPara
 			struct yahoo_buddy *b = (struct yahoo_buddy *) l->data;
 
 			//MessageBoxA(NULL, b->id, "ID", MB_OK);
-			SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_ADDSTRING, 0, (LPARAM)b->id);
+			SendMessageA(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_ADDSTRING, 0, (LPARAM)b->id);
 			l = l->next;
 		}
 		return TRUE;
@@ -308,13 +308,13 @@ static BOOL CALLBACK DlgProcYahooOptsIgnore(HWND hwndDlg, UINT msg, WPARAM wPara
 					break;
 				}
 
-				i = SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_FINDSTRINGEXACT,(WPARAM) -1, (LPARAM)id);
+				i = SendMessageA(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_FINDSTRINGEXACT,(WPARAM) -1, (LPARAM)id);
 				if (i != LB_ERR ) {
 					MessageBoxA(hwndDlg, Translate("The buddy is already on your ignore list. "), Translate("Yahoo Ignore"), MB_OK | MB_ICONINFORMATION);
 					break;
 				}
 				ppro->IgnoreBuddy(id, 0);
-				SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_ADDSTRING, 0, (LPARAM)id);
+				SendMessageA(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_ADDSTRING, 0, (LPARAM)id);
 				SetDlgItemTextA( hwndDlg, IDC_YIGN_EDIT, "" );
 			}
 			break;
@@ -335,7 +335,7 @@ static BOOL CALLBACK DlgProcYahooOptsIgnore(HWND hwndDlg, UINT msg, WPARAM wPara
 					break;
 				}
 
-				SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_GETTEXT, i, (LPARAM)id);
+				SendMessageA(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_GETTEXT, i, (LPARAM)id);
 
 				ppro->IgnoreBuddy(id, 1);
 				SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_DELETESTRING, i, 0);

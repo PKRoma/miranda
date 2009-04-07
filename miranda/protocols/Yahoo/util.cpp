@@ -305,7 +305,7 @@ extern PLUGININFOEX pluginInfo;
 /*
  * Thanks Robert for the following function. Copied from AIM plugin.
  */
-void YAHOO_utils_logversion()
+void CYahooProto::YAHOO_utils_logversion()
 {
     char str[256];
 

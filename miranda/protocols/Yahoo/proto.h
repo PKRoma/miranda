@@ -276,6 +276,8 @@ struct CYahooProto : public PROTO_INTERFACE
 	void   setString( const char* name, const char* value );
 	void   setString( HANDLE hContact, const char* name, const char* value );
 
+	void   YAHOO_utils_logversion();
+	
 private:
 	int    m_startStatus;
 	int    m_unreadMessages;

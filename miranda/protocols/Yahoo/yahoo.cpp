@@ -1471,15 +1471,15 @@ void CYahooProto::ext_login(enum yahoo_status login_mode)
 
 	LOG(("ext_yahoo_login"));
 
-	if (!DBGetContactSettingString(NULL, m_szModuleName, YAHOO_LOGINSERVER, &dbv)) {
+	if (!getString(YAHOO_LOGINSERVER, &dbv)) {
 		mir_snprintf(host, sizeof(host), "%s", dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	else {
-		//_snprintf(host, sizeof(host), "%s", pager_host);
-		ShowError(Translate("Yahoo Login Error"), Translate("Please enter Yahoo server to Connect to in Options."));
+		snprintf(host, sizeof(host), "%s", YAHOO_DEFAULT_LOGIN_SERVER);
+		//ShowError(Translate("Yahoo Login Error"), Translate("Please enter Yahoo server to Connect to in Options."));
 
-		return;
+		//return;
 	}
 
 	lstrcpynA(fthost,GetByte("YahooJapan",0)?"filetransfer.msg.yahoo.co.jp":"filetransfer.msg.yahoo.com" , sizeof(fthost));
