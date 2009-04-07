@@ -26,13 +26,13 @@
 /*
  * DlgProcYahooOpts - Account Options Dialog
  */
-INT_PTR CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	DBVARIANT dbv;
 	CYahooProto* ppro = (CYahooProto*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch ( msg ) {
-	case WM_INITDIALOG:
+	case WM_INITDIALOG: 
 		TranslateDialogDefault( hwndDlg );
 
 		ppro = (CYahooProto*)lParam;
@@ -65,7 +65,8 @@ INT_PTR CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 		return TRUE;
 
-	case WM_COMMAND:
+	case WM_COMMAND: 
+		
 		switch ( LOWORD( wParam )) {
  		case IDC_NEWYAHOOACCOUNTLINK:
  			YAHOO_CallService( MS_UTILS_OPENURL, 1, 
@@ -101,8 +102,9 @@ INT_PTR CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 		break;
 
-	case WM_NOTIFY:
-		if (((LPNMHDR)lParam)->code == PSN_APPLY ) {
+	case WM_NOTIFY: 
+		
+		if (((LPNMHDR)lParam)->code == (UINT) PSN_APPLY ) {
 			BOOL reconnectRequired = FALSE;
 
 			char str[128];
@@ -144,7 +146,8 @@ INT_PTR CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				MessageBoxA( hwndDlg, Translate( "The changes you have made require you to reconnect to the Yahoo network before they take effect"), Translate("YAHOO Options"), MB_OK );
 
 			return TRUE;
-		}
+		  }
+		
 		break;
 	}
 	return FALSE;
@@ -153,7 +156,7 @@ INT_PTR CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 /*
  * DlgProcYahooOpts - Connection Options Dialog
  */
-INT_PTR CALLBACK DlgProcYahooOptsConn(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static BOOL CALLBACK DlgProcYahooOptsConn(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	DBVARIANT dbv;
 	CYahooProto* ppro = (CYahooProto*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
@@ -246,7 +249,7 @@ INT_PTR CALLBACK DlgProcYahooOptsConn(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 /*
  * DlgProcYahooOpts - Connection Options Dialog
  */
-INT_PTR CALLBACK DlgProcYahooOptsIgnore(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static BOOL CALLBACK DlgProcYahooOptsIgnore(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	YList *l;
 	CYahooProto* ppro = (CYahooProto*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
@@ -380,5 +383,6 @@ int __cdecl CYahooProto::OnOptionsInit(WPARAM wParam,LPARAM lParam)
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_YAHOO_IGNORE);
 	odp.pfnDlgProc  = DlgProcYahooOptsIgnore;
 	YAHOO_CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );
+
 	return 0;
 }
