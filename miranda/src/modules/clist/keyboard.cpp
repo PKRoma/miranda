@@ -79,6 +79,7 @@ static INT_PTR hkAllOffline(WPARAM, LPARAM)
 		CallProtoService( accounts[nProto]->szModuleName, PS_SETSTATUS, ID_STATUS_OFFLINE, 0);
 
     NotifyEventHooks( hStatusModeChangeEvent, ID_STATUS_OFFLINE, 0 );
+	DBWriteContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
 	return 0;
 }
 
