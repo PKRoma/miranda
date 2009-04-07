@@ -47,7 +47,7 @@ PLUGININFOEX pluginInfo={
 		"gena01@miranda-im.org",
 		"© 2003-2009 Gennady Feldman, Laurent Marechal",
 		"http://www.miranda-im.org",
-		0, //not transient
+		UNICODE_AWARE, //not transient
 		0, //DEFMOD_PROTOCOLYAHOO - no core yahoo protocol
         {0xa6648b6c, 0x6fb8, 0x4551, { 0xb4, 0xe7, 0x1, 0x36, 0xf9, 0x16, 0xd4, 0x85 }} //{A6648B6C-6FB8-4551-B4E7-0136F916D485}
 };
@@ -99,27 +99,24 @@ static int yahooProtoUninit( CYahooProto* ppro )
 {
 	g_instances.remove( ppro );
 	delete ppro;
+	
 	return 0;
 }
 
 extern "C" int __declspec(dllexport)Load(PLUGINLINK *link)
 {
  	pluginLink = link;
+	
+	/**
+	 * Grab the interface handles (through pluginLink)
+	 */
 	mir_getMMI( &mmi );
 	mir_getLI( &li );
 	mir_getUTFI( &utfi );
 	mir_getMD5I( &md5i );
 	mir_getSHA1I( &sha1i );
 	
-	/*
-	 * Need to disable threading since we got our own routines.
-	 */
-	DisableThreadLibraryCalls( hInstance );
-
-	// 1.
-	srand(( unsigned int )time( NULL ));
 	
-	// 2.
 	PROTOCOLDESCRIPTOR pd = { 0 };
 	pd.cbSize = sizeof(pd);
 	pd.szName = "YAHOO";
@@ -130,6 +127,7 @@ extern "C" int __declspec(dllexport)Load(PLUGINLINK *link)
 
 	// Initialize our important variable
 	register_callbacks();
+	
 	return 0;
 }
 
@@ -142,6 +140,7 @@ extern "C" int __declspec(dllexport) Unload(void)
 {
 	DebugLog("Unload");
 	Netlib_CloseHandle( hNetlibUser );
+	
 	return 0;
 }
 
