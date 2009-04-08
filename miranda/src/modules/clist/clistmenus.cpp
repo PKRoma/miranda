@@ -637,7 +637,8 @@ INT_PTR StatusMenuExecService(WPARAM wParam, LPARAM)
 					if ( MenusProtoCount > 1 && DBGetContactSettingByte( NULL, pa->szModuleName, "LockMainStatus", 0 ))
 						continue;
 
-					CallProtoService( pa->szModuleName, PS_SETSTATUS, cli.currentDesiredStatusMode, 0 );
+					if ( CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0 ) != cli.currentDesiredStatusMode )
+						CallProtoService( pa->szModuleName, PS_SETSTATUS, cli.currentDesiredStatusMode, 0 );
 				}
 				NotifyEventHooks( hStatusModeChangeEvent, cli.currentDesiredStatusMode, 0 );
 
