@@ -554,11 +554,15 @@ static void ChangeLinksAndBBCodes() {
 }
 
 static void AppendWithCustomLinks(struct EventData *event, int style, char **buffer, int *bufferEnd, int *bufferAlloced) {
-	int lasttoken = 0, newtoken = 0;
-	int laststart = 0, newlen = 0;
+	int lasttoken = 0;
+	int laststart = 0;
 	int j, len;
 	WCHAR *wText;
 	BOOL isAnsii = (event->dwFlags & IEEDF_UNICODE_TEXT) == 0;
+
+	if ( event->pszText == NULL )
+		return;
+
 	if (isAnsii) {
 		len = (int)strlen(event->pszText);
 		wText = a2w(event->pszText, len);
@@ -566,14 +570,11 @@ static void AppendWithCustomLinks(struct EventData *event, int style, char **buf
 		wText = event->pszTextW;
 		len = (int)wcslen(event->pszTextW);
 	}
-	for (j = 0; j < len ; j+=newlen) {
-		int l;
-		newtoken = 0;
-		newlen = 1;
-		l = DetectURL(wText + j, j==0);
+	for (j = 0; j < len ; j++) {
+		int newtoken = 0;
+		int l = DetectURL(wText + j, j==0);
 		if (l > 0) {
 			newtoken = 1;
-			newlen = l;
 		}
 		if (j == 0) {
 			lasttoken = newtoken;
