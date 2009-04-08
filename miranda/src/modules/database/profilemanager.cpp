@@ -214,19 +214,6 @@ static INT_PTR CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 	return FALSE;
 }
 
-TCHAR* rtrim( TCHAR *string )
-{
-   TCHAR* p = string + _tcslen( string ) - 1;
-
-   while ( p >= string ) {
-		if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
-         break;
-
-		*p-- = 0;
-   }
-   return string;
-}
-
 static int DetectDbProvider(char*, DATABASELINK * dblink, LPARAM lParam)
 {
 	int error;

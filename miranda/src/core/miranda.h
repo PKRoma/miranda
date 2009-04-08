@@ -234,3 +234,10 @@ __inline static INT_PTR CallProtoService( const char* szModule, const char* szSe
 {
 	return CallProtoServiceInt( NULL, szModule, szService, wParam, lParam );
 }
+
+/**** utils.c **************************************************************************/
+
+#if defined( _UNICODE )
+	char*  rtrim( char* string );
+#endif
+TCHAR* rtrim( TCHAR* string );

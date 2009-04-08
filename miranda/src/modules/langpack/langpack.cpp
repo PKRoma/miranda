@@ -48,17 +48,9 @@ struct LangPackStruct {
 
 static void TrimString(char *str)
 {
-	int len,start;
-	len=lstrlenA(str);
-	while(str[0] && (unsigned char)str[len-1]<=' ') str[--len]=0;
-	for(start=0;str[start] && (unsigned char)str[start]<=' ';start++);
-	MoveMemory(str,str+start,len-start+1);
-}
-
-static void TrimStringSimple(char *str)
-{
-	if (str[lstrlenA(str)-1] == '\n') str[lstrlenA(str)-1] = '\0';
-	if (str[lstrlenA(str)-1] == '\r') str[lstrlenA(str)-1] = '\0';
+	int start, len = lstrlenA( rtrim( str ));
+	for( start=0; str[start] && (unsigned char)str[start]<=' '; start++ );
+	MoveMemory(str, str+start, len-start+1);
 }
 
 static int IsEmpty(char *str)
@@ -224,7 +216,7 @@ static int LoadLangPack(const TCHAR *szLangPack)
 	while(!feof(fp)) {
 		if(fgets(line,SIZEOF(line),fp)==NULL) break;
 		if(IsEmpty(line) || line[0]==';' || line[0]==0) continue;
-		TrimStringSimple(line);
+		rtrim(line);
 		ConvertBackslashes(line);
 		if(line[0]=='[' && line[lstrlenA(line)-1]==']') {
 			if(langPack.entryCount && langPack.entry[langPack.entryCount-1].local==NULL) {

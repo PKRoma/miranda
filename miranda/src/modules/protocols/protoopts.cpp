@@ -69,19 +69,6 @@ typedef struct
 }
 	AccFormDlgParam;
 
-static char* rtrim( char* string )
-{
-   char* p = string + strlen( string ) - 1;
-
-   while ( p >= string ) {
-		if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
-         break;
-
-		*p-- = 0;
-   }
-   return string;
-}
-
 static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch( message ) {

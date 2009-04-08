@@ -283,6 +283,23 @@ static struct CountryListEntry countries[]={
 	{263 ,"Zimbabwe"},
 };
 
+static INT_PTR GetCountryByNumber(WPARAM wParam, LPARAM)
+{
+	int i;
+
+	for(i=0; i < SIZEOF(countries); i++ )
+		if((int)wParam==countries[i].id) return (INT_PTR)countries[i].szName;
+	return (INT_PTR)NULL;
+}
+
+static INT_PTR GetCountryList(WPARAM wParam,LPARAM lParam)
+{
+	*(int*)wParam = SIZEOF(countries);
+	*(struct CountryListEntry**)lParam=countries;
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 
 static INT_PTR SaveWindowPosition(WPARAM, LPARAM lParam)
 {
@@ -380,21 +397,7 @@ static INT_PTR RestoreWindowPosition(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static INT_PTR GetCountryByNumber(WPARAM wParam, LPARAM)
-{
-	int i;
-
-	for(i=0; i < SIZEOF(countries); i++ )
-		if((int)wParam==countries[i].id) return (INT_PTR)countries[i].szName;
-	return (INT_PTR)NULL;
-}
-
-static INT_PTR GetCountryList(WPARAM wParam,LPARAM lParam)
-{
-	*(int*)wParam = SIZEOF(countries);
-	*(struct CountryListEntry**)lParam=countries;
-	return 0;
-}
+/////////////////////////////////////////////////////////////////////////////////////////
 
 static INT_PTR RestartMiranda(WPARAM, LPARAM)
 {
@@ -407,6 +410,8 @@ static INT_PTR RestartMiranda(WPARAM, LPARAM)
 	CreateProcess( mirandaPath, cmdLine, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi );
 	return 0;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
 
 typedef BOOL (APIENTRY *PGENRANDOM)( PVOID, ULONG );
 
@@ -436,6 +441,38 @@ static INT_PTR GenerateRandom(WPARAM wParam, LPARAM lParam)
     }
     return 0;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+#if defined( _UNICODE )
+char* rtrim( char* string )
+{
+   char* p = string + strlen( string ) - 1;
+
+   while ( p >= string ) {
+		if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
+         break;
+
+		*p-- = 0;
+   }
+   return string;
+}
+#endif
+
+TCHAR* rtrim( TCHAR *string )
+{
+   TCHAR* p = string + _tcslen( string ) - 1;
+
+   while ( p >= string ) {
+		if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
+         break;
+
+		*p-- = 0;
+   }
+   return string;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 
 int LoadUtilsModule(void)
 {
