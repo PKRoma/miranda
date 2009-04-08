@@ -1254,10 +1254,11 @@ bool SetupIeProxy(HANDLE hNetlib, bool secur)
 
     if (enabled)
     {
-        char* tDelim = strstr( host, secur? "https=" : "http=" );
-        if ( tDelim != 0 ) 
+        const char *token = secur ? "https=" : "http=";
+        char* tDelim = strstr(host, token);
+        if (tDelim != 0)
         {
-	        tDelim += 5;
+	        tDelim += strlen(token);
 	        memmove(host, tDelim, strlen(tDelim)+1);
 
 	        tDelim = strchr( host, ';' );
