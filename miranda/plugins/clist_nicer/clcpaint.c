@@ -1004,10 +1004,10 @@ bgskipped:
 
 		if((dwFlags & CLUI_FRAME_STATUSICONS && !pi_selectiveIcon) || type != CLCIT_CONTACT || (pi_selectiveIcon && !avatar_done)) {
             HIMAGELIST hImgList = 0;
-            if(!dat->bisEmbedded && type == CLCIT_CONTACT && cEntry && (dwFlags & CLUI_FRAME_USEXSTATUSASSTATUS) && cEntry->iExtraImage[EIMG_EXTRA] != 0xff) {
+            if(!dat->bisEmbedded && type == CLCIT_CONTACT && cEntry && (dwFlags & CLUI_FRAME_USEXSTATUSASSTATUS) && cEntry->iExtraImage[EXTRA_ICON_ADV1] != 0xff) {
                 if(pcli->pfnIconFromStatusMode(contact->proto, contact->wStatus, contact->hContact) == iImage) {
                     hImgList = dat->himlExtraColumns;
-                    iImage = cEntry->iExtraImage[EIMG_EXTRA];
+                    iImage = cEntry->iExtraImage[EXTRA_ICON_ADV1];
                 }
                 else hImgList = hCListImages;
             }

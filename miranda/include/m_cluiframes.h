@@ -17,52 +17,12 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-/************************************************************************/
-/*               Extra Image Column Support +0.5.0.0                    */
-/************************************************************************/
-/*
-	HINT: Common usage of Extra icons by modules
-	Usage sequence is next:
-	The Plugin have to be subscribed to ME_CLIST_EXTRA_LIST_REBUILD and
-	ME_CLIST_EXTRA_IMAGE_APPLY notifications.
-	
-	During .._REBUILD Notification handle plugin should register required 
-	icons in CList internal list via MS_CLIST_EXTRA_ADD_ICON servise 
-	and should to keep returned icon indexes.
-	
-	Note: _REBUILD notification means that list was rebuilded and
-	all previously registered icon indexes became invalid and can not be used.
-
-	Note: After calling _ADD_ICON services the icon handle you provided is not 
-	need for extra images porpouses and have to be released by you in order
-	to reduce GDI resources consumptions. 
-
-	Note: Don't forget that icon handle loaded by LoadIcon GDI function is
-	shared and will be kept in memory till plugin unloading. So it is not 
-	better way to load icon. Please use appropriate Iconlib services.
-
-	Note: The icon can be registered in Clist at any time.
-	
-	During .._ME_CLIST_EXTRA_IMAGE_APPLY the plugin has to call 
-	MS_CLIST_EXTRA_SET_ICON passing appropriate icon index for contact. This 
-	service can be called any time in order to change current extra image.
-
-	ATTENTION: Currently Module support only 254 registered extra icons. The returned
-	value 0xFF internally means 'No extra icon' so thry t register only realy required 
-	icons. The best solution - register not registered/invalidated icon just before 
-	setting of extra image.
-
-	ATTENTION: Due to different module may use same extra icons slot - they will be conflicted. 
-	Please provide ability to end-user to change extra image slot to be used to show
-	your plugin information.
-
-*/
-
 //Extra columns type.
 //column arranged in this way
 //
 //	[statusicon] ContactName	[WEB][ADV1][ADV2][SMS][EMAIL][PROTO][CLIENT]
 //
+
 #define  EXTRA_ICON_RES0	0	// only used by nicer
 #define  EXTRA_ICON_EMAIL	1
 #define  EXTRA_ICON_WEB		2
@@ -115,7 +75,6 @@ typedef struct
 /*               CLUI Frames Support				                    */
 /************************************************************************/
 
-// NOTE: Clui frames engine is in to be reconsructed..
 
 // Constants used below
 typedef struct tagCLISTFrame {
@@ -149,6 +108,7 @@ typedef struct tagCLISTFrame {
 #define F_CANBEVERTICAL		64 //frames can be vertical
 #define F_CANNOTBEHORIZONTAL 128 //frames can NOT be horizontal	F_CANBEVERTICAL have to be set 
 #define F_NO_SUBCONTAINER   1024   //Support skining no subcontainer needed
+#define F_SKINNED           2048    // skinned frame (for owned subframe only)
 #define F_UNICODE			32768 //Use unicode text
 #ifdef _UNICODE
 # define F_TCHAR			F_UNICODE
@@ -276,6 +236,12 @@ typedef struct tagCLISTFrame {
 #define MS_CLIST_FRAMES_SETUNBORDER			"CListFrame/SetUnBorder"
 
 //////////////////////////////////////////////////////////////////////////
+//trigger skinned flags
+//wparam=frameid
+//lparam=0
+#define MS_CLIST_FRAMES_SETSKINNED			"CListFrame/SetSkinnedFrame"
+
+//////////////////////////////////////////////////////////////////////////
 //redraws the frame
 //wParam=FrameId, -1 for all frames
 //lparam=FU_flags
@@ -345,3 +311,4 @@ typedef struct tagCLISTFrame {
 //needed by cluiframes module to add frames menu to main menu.
 //it just calls NotifyEventHooks(hPreBuildFrameMenuEvent,wParam,lParam);
 #define MS_CLIST_FRAMEMENUNOTIFY					"CList/ContextFrameMenuNotify"
+

@@ -831,17 +831,17 @@ static INT_PTR CALLBACK DlgProcDspAdvanced(HWND hwndDlg, UINT msg, WPARAM wParam
 
 ORDERTREEDATA OrderTreeData[]=
 {
-	{EIMG_MAIL, _T("EMail"), EIMG_MAIL, TRUE, 0},
-	{EIMG_URL, _T("Homepage"), EIMG_URL, TRUE, 0},
-	{EIMG_SMS, _T("Telephone"), EIMG_SMS, TRUE, 0},
-	{EIMG_RESERVED, _T("Reserved, unused"), EIMG_RESERVED, TRUE, 0},
-	{EIMG_EXTRA, _T("Advanced #1 (ICQ X-Status)"), EIMG_EXTRA, TRUE, 0},
-	{EIMG_RESERVED2, _T("Advanced #2"), EIMG_RESERVED2, TRUE, 0},
-	{EIMG_CLIENT, _T("Client (fingerprint required)"), EIMG_CLIENT, TRUE, 0},
-	{7, _T("Reserved #1"), 7, TRUE, 0},
-    {8, _T("Reserved #2"), 8, TRUE, 0},
-    {9, _T("Reserved #3"), 9, TRUE, 0},
-    {10, _T("Reserved #4"), 10, TRUE, 0},
+	{EXTRA_ICON_RES0, _T("Reserved, unused"), 9, TRUE, 0},
+	{EXTRA_ICON_EMAIL, _T("E-mail"), 0, TRUE, 0},
+	{EXTRA_ICON_WEB, _T("Homepage"), 1, TRUE, 0},
+	{EXTRA_ICON_SMS, _T("Telephone"), 2, TRUE, 0},
+	{EXTRA_ICON_ADV1, _T("Advanced #1 (ICQ X-Status)"), 3, TRUE, 0},
+	{EXTRA_ICON_ADV2, _T("Advanced #2"), 4, TRUE, 0},
+    {EXTRA_ICON_ADV3, _T("Advanced #3"), 5, TRUE, 0},
+	{EXTRA_ICON_CLIENT, _T("Client (fingerprint required)"), 10, TRUE, 0},
+    {EXTRA_ICON_ADV4, _T("Advanced #4"), 6, TRUE, 0},
+	{EXTRA_ICON_RES1, _T("Reserved #1"), 7, TRUE, 0},
+    {EXTRA_ICON_RES2, _T("Reserved #2"), 8, TRUE, 0},
 };
  
 static int dragging=0;

@@ -469,12 +469,12 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
     g_ExtraCache[index].isChatRoom = DBGetContactSettingByte(contact->hContact, contact->proto, "ChatRoom", 0);
 
     g_ExtraCache[index].iExtraValid &= ~(EIMG_SHOW_MAIL | EIMG_SHOW_SMS | EIMG_SHOW_URL);
-    g_ExtraCache[index].iExtraImage[EIMG_MAIL] = g_ExtraCache[index].iExtraImage[EIMG_URL] = g_ExtraCache[index].iExtraImage[EIMG_SMS] = 0xff;
+    g_ExtraCache[index].iExtraImage[EXTRA_ICON_EMAIL] = g_ExtraCache[index].iExtraImage[EXTRA_ICON_WEB] = g_ExtraCache[index].iExtraImage[EXTRA_ICON_SMS] = 0xff;
 
     if(!DBGetContactSettingString(contact->hContact, contact->proto, "e-mail", &dbv) && lstrlenA(dbv.pszVal) > 1)
-        g_ExtraCache[index].iExtraImage[EIMG_MAIL] = 0;
+        g_ExtraCache[index].iExtraImage[EXTRA_ICON_EMAIL] = 0;
     else if(!DBGetContactSettingString(contact->hContact, "UserInfo", "Mye-mail0", &dbv) && lstrlenA(dbv.pszVal) > 1)
-        g_ExtraCache[index].iExtraImage[EIMG_MAIL] = 0;
+        g_ExtraCache[index].iExtraImage[EXTRA_ICON_EMAIL] = 0;
 
     if(dbv.pszVal) {
         mir_free(dbv.pszVal);
@@ -482,9 +482,9 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
     }
 
     if(!DBGetContactSettingString(contact->hContact, contact->proto, "Homepage", &dbv) && lstrlenA(dbv.pszVal) > 1)
-        g_ExtraCache[index].iExtraImage[EIMG_URL] = 1;
+        g_ExtraCache[index].iExtraImage[EXTRA_ICON_WEB] = 1;
     else if(!DBGetContactSettingString(contact->hContact, "UserInfo", "Homepage", &dbv) && lstrlenA(dbv.pszVal) > 1)
-        g_ExtraCache[index].iExtraImage[EIMG_URL] = 1;
+        g_ExtraCache[index].iExtraImage[EXTRA_ICON_WEB] = 1;
     
     if(dbv.pszVal) {
         mir_free(dbv.pszVal);
@@ -492,11 +492,11 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
     }
 
     if(!DBGetContactSettingString(contact->hContact, "UserInfoEx", "Cellular", &dbv) && lstrlenA(dbv.pszVal) > 1)
-        g_ExtraCache[index].iExtraImage[EIMG_SMS] = 2;
+        g_ExtraCache[index].iExtraImage[EXTRA_ICON_SMS] = 2;
     else if(!DBGetContactSettingString(contact->hContact, contact->proto, "Cellular", &dbv) && lstrlenA(dbv.pszVal) > 1)
-        g_ExtraCache[index].iExtraImage[EIMG_SMS] = 2;
+        g_ExtraCache[index].iExtraImage[EXTRA_ICON_SMS] = 2;
     else if(!DBGetContactSettingString(contact->hContact, "UserInfo", "MyPhone0", &dbv) && lstrlenA(dbv.pszVal) > 1)
-        g_ExtraCache[index].iExtraImage[EIMG_SMS] = 2;
+        g_ExtraCache[index].iExtraImage[EXTRA_ICON_SMS] = 2;
     
     if(dbv.pszVal) {
         mir_free(dbv.pszVal);
@@ -505,9 +505,9 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
 
     // set the mask for valid extra images...
     
-    g_ExtraCache[index].iExtraValid |= ((g_ExtraCache[index].iExtraImage[EIMG_MAIL] != 0xff ? EIMG_SHOW_MAIL : 0) | 
-        (g_ExtraCache[index].iExtraImage[EIMG_URL] != 0xff ? EIMG_SHOW_URL : 0) |
-        (g_ExtraCache[index].iExtraImage[EIMG_SMS] != 0xff ? EIMG_SHOW_SMS : 0));
+    g_ExtraCache[index].iExtraValid |= ((g_ExtraCache[index].iExtraImage[EXTRA_ICON_EMAIL] != 0xff ? EIMG_SHOW_MAIL : 0) | 
+        (g_ExtraCache[index].iExtraImage[EXTRA_ICON_WEB] != 0xff ? EIMG_SHOW_URL : 0) |
+        (g_ExtraCache[index].iExtraImage[EXTRA_ICON_SMS] != 0xff ? EIMG_SHOW_SMS : 0));
 
 
     g_ExtraCache[index].timezone = (DWORD)DBGetContactSettingByte(contact->hContact,"UserInfo","Timezone", DBGetContactSettingByte(contact->hContact, contact->proto,"Timezone",-1));

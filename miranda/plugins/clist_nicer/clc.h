@@ -38,6 +38,10 @@ UNICODE - done.
 #define INTM_INVALIDATECONTACT  (WM_USER+35)
 #define INTM_FORCESORT			(WM_USER+36)
 
+#define DEFAULT_TITLEBAR_HEIGHT		18
+
+#define CLS_SKINNEDFRAME	0x0800   //this control will be the main contact list (v. 0.3.4.3+ 2004/11/02)
+
 #define TIMERID_RENAME         10
 #define TIMERID_DRAGAUTOSCROLL 11
 #define TIMERID_INFOTIP        13
@@ -647,14 +651,6 @@ int CoolSB_SetupScrollBar();
 #define BM_SETSKINNED (WM_USER + 8)
 #define BM_SETASMENUACTION (WM_USER + 9)
 #define BM_SETBTNITEM (WM_USER+10)
-
-#define EIMG_MAIL 0
-#define EIMG_URL 1
-#define EIMG_SMS 2
-#define EIMG_RESERVED 3
-#define EIMG_EXTRA 4
-#define EIMG_RESERVED2 5
-#define EIMG_CLIENT 6
 
 #define EIMG_SHOW_MAIL 1
 #define EIMG_SHOW_URL 2

@@ -65,7 +65,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_icolib.h"
 #include <m_userinfo.h>
 #include "CLUIFrames/cluiframes.h"
-#include "CLUIFrames/m_cluiframes.h"
+#include "m_cluiframes.h"
 #include "m_metacontacts.h"
 #include "BkgrCfg.h"
 #include <m_file.h>
