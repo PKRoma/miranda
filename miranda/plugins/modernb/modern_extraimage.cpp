@@ -489,6 +489,11 @@ void ExtraImage_LoadModule()
 	ModernHookEvent(ME_CLC_SHOWEXTRAINFOTIP, ehhShowExtraInfoTip );
 	ModernHookEvent(ME_CLC_HIDEINFOTIP, ehhHideExtraInfoTip );
 	ModernHookEvent(ME_SYSTEM_SHUTDOWN, ehhExtraImage_UnloadModule );
+
+
+	RegisterIcolibIconHandle("AlwaysVis", "Contact List",Translate("Always Visible"), _T("clisticons.dll"), 5, g_hInst, IDI_ALWAYSVIS);
+	RegisterIcolibIconHandle("NeverVis", "Contact List",Translate("Never Visible"), _T("clisticons.dll"), 6, g_hInst, IDI_NEVERVIS);
+	RegisterIcolibIconHandle("ChatActivity", "Contact List",Translate("Chat Activity"), _T("clisticons.dll"), 7, g_hInst, IDI_CHAT);
 };
 
 

@@ -173,6 +173,9 @@ int CLUI::OnEvent_ContactMenuPreBuild(WPARAM wParam, LPARAM lParam)
 }
 int CLUI::OnEvent_DBSettingChanging(WPARAM wParam,LPARAM lParam)
 {
+	if (ServiceExists("ExtraIcon/Register"))
+		return 0;
+
 	DBCONTACTWRITESETTING *dbcws=(DBCONTACTWRITESETTING *)lParam;
 	if (wParam==0) return 0;  
 	if (dbcws==NULL) return(0);

@@ -1876,7 +1876,8 @@ static LRESULT clcOnIntmNameChanged(struct ClcData *dat, HWND hwnd, UINT msg, WP
 static LRESULT clcOnIntmApparentModeChanged(struct ClcData *dat, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	int lResult=corecli.pfnContactListControlWndProc(hwnd, msg, wParam, lParam);
-	ExtraImage_SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
+	if (!ServiceExists("ExtraIcon/Register"))
+		ExtraImage_SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
 	return lResult;
 }
 
@@ -2036,8 +2037,9 @@ int ClcDoProtoAck(HANDLE wParam,ACKDATA * ack)
 					pcli->clcProto[i].dwStatus = (WORD) ack->lParam;
 					if (pcli->clcProto[i].dwStatus>=ID_STATUS_OFFLINE)
 						pcli->pfnTrayIconUpdateBase(pcli->clcProto[i].szProto);
-					if(ExtraImage_ExtraIDToColumnNum(EXTRA_ICON_VISMODE)!=-1)
-						ExtraImage_SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)NULL);				
+					if (!ServiceExists("ExtraIcon/Register"))
+						if(ExtraImage_ExtraIDToColumnNum(EXTRA_ICON_VISMODE)!=-1)
+							ExtraImage_SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)NULL);				
 					return 0;
 				}
 			}
