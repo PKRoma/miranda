@@ -65,8 +65,8 @@ int NetlibEnterNestedCS(struct NetlibConnection *nlc,int which)
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return 0;
 	}
-	nlncs=which==NLNCS_SEND?&nlc->ncsSend:&nlc->ncsRecv;
-	if(nlncs->lockCount && (nlc->ncsRecv.dwOwningThreadId==dwCurrentThreadId || nlc->ncsSend.dwOwningThreadId==dwCurrentThreadId)) {
+	nlncs = (which == NLNCS_SEND) ? &nlc->ncsSend : &nlc->ncsRecv;
+	if(nlncs->lockCount && nlncs->dwOwningThreadId==dwCurrentThreadId) {
 		nlncs->lockCount++;
 		ReleaseMutex(hConnectionHeaderMutex);
 		return 1;
