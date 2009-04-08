@@ -196,6 +196,7 @@ char*       httpParseHeader(char* buf, unsigned& status);
 int         sttDivideWords( char* parBuffer, int parMinItems, char** parDest );
 void		MSN_MakeDigest(const char* chl, char* dgst);
 char*		getNewUuid(void);
+bool        SetupIeProxy(HANDLE hNetlib, bool secur);
 
 TCHAR* EscapeChatTags(const TCHAR* pszText);
 TCHAR* UnEscapeChatTags(TCHAR* str_in);

@@ -1230,3 +1230,75 @@ void MSN_MakeDigest(const char* chl, char* dgst)
 	strcpy(dgst, str);
 	mir_free(str);
 }
+
+bool SetupIeProxy(HANDLE hNetlib, bool secur)
+{
+	HKEY hSettings;
+	if ( RegOpenKeyExA( HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", 
+		0, KEY_QUERY_VALUE, &hSettings ))
+		return false;
+
+	char host[256] = "";
+    int port = 0;
+    DWORD tValueLen, enabled = 0;
+
+    tValueLen = sizeof(enabled);
+	int tResult = RegQueryValueExA(hSettings, "ProxyEnable", NULL, NULL, (BYTE*)&enabled, &tValueLen);
+    enabled = enabled && tResult == ERROR_SUCCESS;
+
+    tValueLen = SIZEOF(host);
+    tResult = RegQueryValueExA(hSettings, "ProxyServer", NULL, NULL, (BYTE*)host, &tValueLen);
+    enabled = enabled && tResult == ERROR_SUCCESS;
+
+    RegCloseKey(hSettings);
+
+    if (enabled)
+    {
+        char* tDelim = strstr( host, secur? "https=" : "http=" );
+        if ( tDelim != 0 ) 
+        {
+	        tDelim += 5;
+	        memmove(host, tDelim, strlen(tDelim)+1);
+
+	        tDelim = strchr( host, ';' );
+	        if ( tDelim != NULL )
+		        *tDelim = '\0';
+        }
+
+        tDelim = strchr(host, ':');
+        if ( tDelim != NULL ) 
+        {
+	        *tDelim = 0;
+	        port = atol(tDelim+1);
+        }
+
+        rtrim(host);
+
+        enabled = (host[0] != 0);
+    }
+
+    NETLIBUSERSETTINGS nls = {0};
+    nls.cbSize = sizeof(nls);
+    MSN_CallService(MS_NETLIB_GETUSERSETTINGS, WPARAM(hNetlib), LPARAM(&nls));
+
+    if (enabled)
+    {
+        nls.szProxyServer = host;
+        nls.wProxyPort = port ? port : 443;
+        nls.proxyType = secur ? PROXYTYPE_HTTPS : PROXYTYPE_HTTP;
+        nls.dnsThroughProxy = TRUE;
+    }
+    else
+    {
+        nls.szProxyServer = NEWSTR_ALLOCA(nls.szProxyServer);
+    }
+
+    nls.useProxy = enabled != 0;
+    nls.szIncomingPorts = NEWSTR_ALLOCA(nls.szIncomingPorts);
+	nls.szOutgoingPorts = NEWSTR_ALLOCA(nls.szOutgoingPorts);
+	nls.szProxyAuthPassword = NEWSTR_ALLOCA(nls.szProxyAuthPassword);
+	nls.szProxyAuthUser = NEWSTR_ALLOCA(nls.szProxyAuthUser);
+	MSN_CallService(MS_NETLIB_SETUSERSETTINGS, WPARAM(hNetlib), LPARAM(&nls));
+
+    return enabled != 0;
+}

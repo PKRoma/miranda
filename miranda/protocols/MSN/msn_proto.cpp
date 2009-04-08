@@ -229,51 +229,12 @@ int CMsnProto::OnModulesLoaded( WPARAM, LPARAM )
 	mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s plugin connections"), m_tszUserName);
 	hNetlibUser = (HANDLE)MSN_CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
-	if (getByte("UseIeProxy", 0)) 
+   	if (getByte("UseIeProxy", 0))
     {
-		NETLIBUSERSETTINGS nls = {0};
-		nls.cbSize = sizeof(nls);
-		MSN_CallService(MS_NETLIB_GETUSERSETTINGS, WPARAM(hNetlibUserHttps), LPARAM(&nls));
-
-		HKEY hSettings;
-		if ( RegOpenKeyExA( HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", 
-			0, KEY_QUERY_VALUE, &hSettings ))
-			return 0;
-
-		char tValue[ 256 ];
-		DWORD tType = REG_SZ, tValueLen = sizeof( tValue );
-		int tResult = RegQueryValueExA( hSettings, "ProxyServer", NULL, &tType, ( BYTE* )tValue, &tValueLen );
-		RegCloseKey( hSettings );
-
-		if ( !tResult )
-		{
-			char* tDelim = strstr( tValue, "http=" );
-			if ( tDelim != 0 ) {
-				tDelim += 5;
-				memmove(tValue, tDelim, strlen(tDelim)+1);
-
-				tDelim = strchr( tValue, ';' );
-				if ( tDelim != NULL )
-					*tDelim = '\0';
-			}
-
-			tDelim = strchr( tValue, ':' );
-			if ( tDelim != NULL ) {
-				*tDelim = 0;
-				nls.wProxyPort = atol( tDelim+1 );
-			}
-
-			rtrim( tValue );
-			nls.szProxyServer = tValue;
-			nls.useProxy = MyOptions.UseProxy = tValue[0] != 0;
-			nls.proxyType = PROXYTYPE_HTTP;
-			nls.szIncomingPorts = NEWSTR_ALLOCA(nls.szIncomingPorts);
-			nls.szOutgoingPorts = NEWSTR_ALLOCA(nls.szOutgoingPorts);
-			nls.szProxyAuthPassword = NEWSTR_ALLOCA(nls.szProxyAuthPassword);
-			nls.szProxyAuthUser = NEWSTR_ALLOCA(nls.szProxyAuthUser);
-			MSN_CallService(MS_NETLIB_SETUSERSETTINGS, WPARAM(hNetlibUserHttps), LPARAM(&nls));
-		}	
-	}
+        if (MyOptions.UseGateway)
+            MyOptions.UseProxy = SetupIeProxy(hNetlibUser, false);
+        SetupIeProxy(hNetlibUserHttps, true);
+    }
 
 	if ( msnHaveChatDll ) 
 	{
