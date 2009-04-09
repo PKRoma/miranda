@@ -92,7 +92,7 @@ void __fastcall directPacketInit(icq_packet* pPacket, DWORD dwSize)
 
 void __fastcall serverCookieInit(icq_packet* pPacket, BYTE* pCookie, WORD wCookieSize)
 {
-	pPacket->wLen = (WORD)(wCookieSize + 8 + sizeof(CLIENT_ID_STRING) + 61);
+	pPacket->wLen = (WORD)(wCookieSize + 8 + sizeof(CLIENT_ID_STRING) + 66);
 
 	write_flap(pPacket, ICQ_LOGIN_CHAN);
 	packDWord(pPacket, 0x00000001);
@@ -108,7 +108,8 @@ void __fastcall serverCookieInit(icq_packet* pPacket, BYTE* pCookie, WORD wCooki
 	packTLVDWord(pPacket, 0x0014, CLIENT_DISTRIBUTION);
 	packTLV(pPacket, 0x000f, 0x0002, (LPBYTE)CLIENT_LANGUAGE);
 	packTLV(pPacket, 0x000e, 0x0002, (LPBYTE)CLIENT_COUNTRY);
-
+  packDWord(pPacket, 0x00940001); // reconnect flag
+  packByte(pPacket, 0);
 	packTLVDWord(pPacket, 0x8003, 0x00100000); // Unknown
 }
 

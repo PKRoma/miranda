@@ -94,15 +94,17 @@ static INT_PTR CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				SetDlgItemTextA(hwndDlg, IDC_PASSWORD, pszPwd);
 			}
 
+      LoadDBCheckState(ppro, hwndDlg, IDC_SSL, "SecureConnection", DEFAULT_SECURE_CONNECTION);
+			LoadDBCheckState(ppro, hwndDlg, IDC_MD5LOGIN, "SecureLogin", DEFAULT_SECURE_LOGIN);
+
 			char szServer[MAX_PATH];
 			if (!ppro->getSettingStringStatic(NULL, "OscarServer", szServer, MAX_PATH))
 				SetDlgItemTextA(hwndDlg, IDC_ICQSERVER, szServer);
 			else
-				SetDlgItemTextA(hwndDlg, IDC_ICQSERVER, DEFAULT_SERVER_HOST);
+				SetDlgItemTextA(hwndDlg, IDC_ICQSERVER, IsDlgButtonChecked(hwndDlg, IDC_SSL) ? DEFAULT_SERVER_HOST_SSL : DEFAULT_SERVER_HOST);
 
 			SetDlgItemInt(hwndDlg, IDC_ICQPORT, ppro->getSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT), FALSE);
 			LoadDBCheckState(ppro, hwndDlg, IDC_KEEPALIVE, "KeepAlive", 1);
-			LoadDBCheckState(ppro, hwndDlg, IDC_SECURE, "SecureLogin", DEFAULT_SECURE_LOGIN);
 			SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETRANGE, FALSE, MAKELONG(0, 4));
 			SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETPOS, TRUE, 4-ppro->getSettingByte(NULL, "ShowLogLevel", LOG_WARNING));
 			{
@@ -135,8 +137,10 @@ static INT_PTR CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				return TRUE;
 
 			case IDC_RESETSERVER:
-				SetDlgItemTextA(hwndDlg, IDC_ICQSERVER, DEFAULT_SERVER_HOST);
 				SetDlgItemInt(hwndDlg, IDC_ICQPORT, DEFAULT_SERVER_PORT, FALSE);
+
+      case IDC_SSL:
+				SetDlgItemTextA(hwndDlg, IDC_ICQSERVER, IsDlgButtonChecked(hwndDlg, IDC_SSL) ? DEFAULT_SERVER_HOST_SSL : DEFAULT_SERVER_HOST);
 				OptDlgChanged(hwndDlg);
 				return TRUE;
 			}
@@ -185,7 +189,8 @@ static INT_PTR CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					ppro->setSettingString(NULL, "OscarServer", str);
 					ppro->setSettingWord(NULL, "OscarPort", (WORD)GetDlgItemInt(hwndDlg, IDC_ICQPORT, NULL, FALSE));
 					StoreDBCheckState(ppro, hwndDlg, IDC_KEEPALIVE, "KeepAlive");
-					StoreDBCheckState(ppro, hwndDlg, IDC_SECURE, "SecureLogin");
+          StoreDBCheckState(ppro, hwndDlg, IDC_SSL, "SecureConnection");
+					StoreDBCheckState(ppro, hwndDlg, IDC_MD5LOGIN, "SecureLogin");
 					StoreDBCheckState(ppro, hwndDlg, IDC_NOERRMULTI, "IgnoreMultiErrorBox");
 					ppro->setSettingByte(NULL, "ShowLogLevel", (BYTE)(4-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)));
 

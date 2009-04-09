@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -36,15 +36,10 @@
 
 #include "icqoscar.h"
 
-static void handleMigration(serverthread_info *info);
-static int connectNewServer(serverthread_info *info);
-static void handleRuntimeError(WORD wError);
-static void handleSignonError(WORD wError);
 
-void CIcqProto::handleCloseChannel(unsigned char *buf, WORD datalen, serverthread_info *info)
+void CIcqProto::handleCloseChannel(BYTE *buf, WORD datalen, serverthread_info *info)
 {
-	oscar_tlv_chain* chain = NULL;
-	WORD wError;
+	oscar_tlv_chain *chain = NULL;
 
 	// Parse server reply, prepare reconnection
 	if (!info->bLoggedIn && datalen && !info->newServerReady)
@@ -74,7 +69,7 @@ void CIcqProto::handleCloseChannel(unsigned char *buf, WORD datalen, serverthrea
 	if (chain = readIntoTLVChain(&buf, datalen, 0))
 	{
 		// TLV 9 errors (runtime errors?)
-		wError = chain->getWord(0x09, 1);
+		WORD wError = chain->getWord(0x09, 1);
 		if (wError)
 		{
 			SetCurrentStatus(ID_STATUS_OFFLINE);
@@ -88,10 +83,10 @@ void CIcqProto::handleCloseChannel(unsigned char *buf, WORD datalen, serverthrea
 	NetLib_CloseConnection(&hServerConn, TRUE);
 }
 
-void CIcqProto::handleLoginReply(unsigned char *buf, WORD datalen, serverthread_info *info)
+
+void CIcqProto::handleLoginReply(BYTE *buf, WORD datalen, serverthread_info *info)
 {
-	oscar_tlv_chain* chain = NULL;
-	WORD wError;
+	oscar_tlv_chain *chain = NULL;
 
 	icq_sendCloseConnection(); // imitate icq5 behaviour
 
@@ -102,10 +97,8 @@ void CIcqProto::handleLoginReply(unsigned char *buf, WORD datalen, serverthread_
 		return; // Invalid data
 	}
 
-  // TLV 0x8E SSL State
-
 	// TLV 8 errors (signon errors?)
-	wError = chain->getWord(0x08, 1);
+	WORD wError = chain->getWord(0x08, 1);
 	if (wError)
 	{
 		handleSignonError(wError);
@@ -123,6 +116,7 @@ void CIcqProto::handleLoginReply(unsigned char *buf, WORD datalen, serverthread_
 	// We are in the login phase and no errors were reported.
 	// Extract communication server info.
 	info->newServer = chain->getString(0x05, 1);
+  info->newServerSSL = chain->getNumber(0x8E, 1);
 	info->cookieData = (BYTE*)chain->getString(0x06, 1);
 	info->cookieDataLen = chain->getLength(0x06, 1);
 
@@ -133,7 +127,7 @@ void CIcqProto::handleLoginReply(unsigned char *buf, WORD datalen, serverthread_
 	{
 		icq_LogMessage(LOG_FATAL, LPGEN("You could not sign on because the server returned invalid data. Try again."));
 
-		SAFE_FREE((void**)&info->newServer);
+		SAFE_FREE(&info->newServer);
 		SAFE_FREE((void**)&info->cookieData);
 		info->cookieDataLen = 0;
 
@@ -148,10 +142,9 @@ void CIcqProto::handleLoginReply(unsigned char *buf, WORD datalen, serverthread_
 	return;
 }
 
+
 int CIcqProto::connectNewServer(serverthread_info *info)
 {
-	WORD servport;
-	NETLIBOPENCONNECTION nloc = {0};
 	int res = 0;
 
 	if (!m_bGatewayMode)
@@ -160,12 +153,13 @@ int CIcqProto::connectNewServer(serverthread_info *info)
 	}
 
 	/* Get the ip and port */
-	servport = info->wServerPort; // prepare default port
-	parseServerAddress(info->newServer, &servport);
+	WORD wServerPort = info->wServerPort; // prepare default port
+	parseServerAddress(info->newServer, &wServerPort);
 
+	NETLIBOPENCONNECTION nloc = {0};
 	nloc.flags = 0;
 	nloc.szHost = info->newServer;
-	nloc.wPort = servport;
+	nloc.wPort = wServerPort;
 
 	if (!m_bGatewayMode)
 	{
@@ -177,7 +171,15 @@ int CIcqProto::connectNewServer(serverthread_info *info)
 
 		hServerConn = NetLib_OpenConnection(m_hServerNetlibUser, NULL, &nloc);
 		if (hServerConn)
-		{ /* Time to recreate the packet receiver */
+		{ /* Start SSL session if requested */
+      if (info->newServerSSL)
+      {
+#ifdef _DEBUG
+        NetLog_Server("(%d) Starting SSL negotiation", CallService(MS_NETLIB_GETSOCKET, (WPARAM)hServerConn, 0));
+#endif
+  	    CallService(MS_NETLIB_STARTSSL, (WPARAM)hServerConn, 0);
+      }
+      /* Time to recreate the packet receiver */
 			info->hPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 0x2400);
 			if (!info->hPacketRecver)
 			{
@@ -201,10 +203,11 @@ int CIcqProto::connectNewServer(serverthread_info *info)
 
 	// Free allocated memory
 	// NOTE: "cookie" will get freed when we have connected to the communication server.
-	SAFE_FREE((void**)&info->newServer);
+	SAFE_FREE(&info->newServer);
 
 	return res;
 }
+
 
 void CIcqProto::handleMigration(serverthread_info *info)
 {
@@ -214,7 +217,7 @@ void CIcqProto::handleMigration(serverthread_info *info)
 	{
 		icq_LogMessage(LOG_FATAL, LPGEN("You have been disconnected from the ICQ network because the current server shut down."));
 
-		SAFE_FREE((void**)&info->newServer);
+		SAFE_FREE(&info->newServer);
 		SAFE_FREE((void**)&info->cookieData);
 		info->newServerReady = 0;
 		info->isMigrating = 0;
@@ -301,6 +304,7 @@ void CIcqProto::handleSignonError(WORD wError)
 		break;
 	}
 }
+
 
 void CIcqProto::handleRuntimeError(WORD wError)
 {

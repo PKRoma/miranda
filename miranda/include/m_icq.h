@@ -194,6 +194,7 @@ typedef struct {
 #define CSSF_MASK_STATUS    0x0001  // status member valid for set/get
 #define CSSF_MASK_NAME      0x0002  // pszName member valid for set/get
 #define CSSF_MASK_MESSAGE   0x0004  // pszMessage member valid for set/get
+#define CSSF_DISABLE_MENU   0x0020  // disable default custom status menu, wParam = bEnable
 #define CSSF_DISABLE_UI     0x0040  // disable default custom status UI, wParam = bEnable
 #define CSSF_DEFAULT_NAME   0x0080  // only with CSSF_MASK_NAME and get API to get default custom status name (wParam = status)
 #define CSSF_STATUSES_COUNT 0x0100  // returns number of custom statuses in wParam, only get API

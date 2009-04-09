@@ -215,6 +215,7 @@ void CIcqProto::icq_requestnewfamily(WORD wFamily, void (CIcqProto::*familyhandl
 {
 	icq_packet packet;
 	cookie_family_request *request;
+  int bRequestSSL = m_bSecureConnection && (wFamily != ICQ_AVATAR_FAMILY); // Avatar servers does not support SSL
 
 	request = (cookie_family_request*)SAFE_MALLOC(sizeof(cookie_family_request));
 	request->wFamily = wFamily;
@@ -222,9 +223,11 @@ void CIcqProto::icq_requestnewfamily(WORD wFamily, void (CIcqProto::*familyhandl
 
 	DWORD dwCookie = AllocateCookie(CKT_SERVICEREQUEST, ICQ_CLIENT_NEW_SERVICE, 0, request); // generate and alloc cookie
 
-	serverPacketInit(&packet, 12);
+  serverPacketInit(&packet, 12 + (bRequestSSL ? 4 : 0));
 	packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_NEW_SERVICE, 0, dwCookie);
 	packWord(&packet, wFamily);
+  if (bRequestSSL)
+    packDWord(&packet, 0x008C0000); // use SSL
 
 	sendServPacket(&packet);
 }
@@ -270,7 +273,7 @@ void CIcqProto::icq_setstatus(WORD wStatus, const char *szStatusNote)
 
     wSessionDataLen = (wStatusNoteLen ? wStatusNoteLen + 4 : 0) + 4 + wStatusMoodLen + 4;
 	}
-  SAFE_FREE((void**)&szCurrentStatusNote);
+  SAFE_FREE(&szCurrentStatusNote);
 
 	// Pack data in packet
   serverPacketInit(&packet, (WORD)(18 + (wSessionDataLen ? wSessionDataLen + 4 : 0)));
@@ -302,7 +305,7 @@ void CIcqProto::icq_setstatus(WORD wStatus, const char *szStatusNote)
     setSettingStringUtf(NULL, DBSETTING_STATUS_NOTE, szStatusNote);
 	}
   // Release memory
-  SAFE_FREE((void**)&szMoodData);
+  SAFE_FREE(&szMoodData);
 
 	// Send packet
 	sendServPacket(&packet);

@@ -53,7 +53,7 @@ IcqIconHandle hStaticIcons[4];
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"IcqOscarJ Protocol",
-	PLUGIN_MAKE_VERSION(0,5,0,5),
+	PLUGIN_MAKE_VERSION(0,5,0,6),
 	"Support for ICQ network, enhanced.",
 	"Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
 	"jokusoftware@miranda-im.org",
@@ -66,11 +66,11 @@ PLUGININFOEX pluginInfo = {
 
 extern "C" PLUGININFOEX __declspec(dllexport) *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	// Only load for 0.8.0.27 or greater
-	// We need the new Contact Info service support PS_GETINFOSETTING
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 27))
+	// Only load for 0.8.0.29 or greater
+	// We need the core stubs for PS_GETNAME and PS_GETSTATUS
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 29))
 	{
-		MessageBoxA( NULL, "ICQ plugin cannot be loaded. It requires Miranda IM 0.8.0.27 or later.", "ICQ Plugin",
+		MessageBoxA( NULL, "ICQ plugin cannot be loaded. It requires Miranda IM 0.8.0.29 or later.", "ICQ Plugin",
 			MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
@@ -85,7 +85,7 @@ extern "C" __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 	return interfaces;
 }
 
-BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
+extern "C" BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 {
 	hInst = hinstDLL;
 	return TRUE;
@@ -270,6 +270,7 @@ void CIcqProto::UpdateGlobalSettings()
 	}
 
 	m_bSecureLogin = getSettingByte(NULL, "SecureLogin", DEFAULT_SECURE_LOGIN);
+  m_bSecureConnection = getSettingByte(NULL, "SecureConnection", DEFAULT_SECURE_CONNECTION);
 	m_bAimEnabled = getSettingByte(NULL, "AimEnabled", DEFAULT_AIM_ENABLED);
 	m_bUtfEnabled = getSettingByte(NULL, "UtfEnabled", DEFAULT_UTF_ENABLED);
 	m_wAnsiCodepage = getSettingWord(NULL, "AnsiCodePage", DEFAULT_ANSI_CODEPAGE);

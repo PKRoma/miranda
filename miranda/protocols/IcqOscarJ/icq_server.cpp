@@ -62,6 +62,14 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info* infoParam)
 
 		hServerConn = NetLib_OpenConnection(m_hServerNetlibUser, NULL, &nloc);
 
+    if (hServerConn && m_bSecureConnection)
+    {
+#ifdef _DEBUG
+      NetLog_Server("(%d) Starting SSL negotiation", CallService(MS_NETLIB_GETSOCKET, (WPARAM)hServerConn, 0));
+#endif
+	    CallService(MS_NETLIB_STARTSSL, (WPARAM)hServerConn, 0);
+    }
+
 		SAFE_FREE((void**)&nloc.szHost);
 	}
   SAFE_FREE((void**)&infoParam);
@@ -131,6 +139,9 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info* infoParam)
       { // Disconnect requested, send disconnect packet
 			  icq_sendCloseConnection();
 
+        // disconnected upon request
+        m_bConnectionLost = FALSE;
+
 	  		NetLog_Server("Logged off.");
         break;
       }
@@ -158,6 +169,9 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info* infoParam)
 	{
 		if (!info.bLoggedIn)
 			icq_LogMessage(LOG_FATAL, LPGEN("Connection failed.\nLogin sequence failed for unknown reason.\nTry again later."));
+
+    // set flag indicating we were kicked out
+    m_bConnectionLost = TRUE;
 
 		SetCurrentStatus(ID_STATUS_OFFLINE);
 	}
@@ -293,13 +307,15 @@ int CIcqProto::handleServerPackets(unsigned char* buf, int len, serverthread_inf
 
 void CIcqProto::sendServPacket(icq_packet* pPacket)
 {
-	// This critsec makes sure that the sequence order doesn't get screwed up
-	EnterCriticalSection(&localSeqMutex);
+  // make sure to have the connection handle
+  EnterCriticalSection(&connectionHandleMutex);
 
 	if (hServerConn)
 	{
-		int nRetries;
 		int nSendResult;
+
+    // This critsec makes sure that the sequence order doesn't get screwed up
+    EnterCriticalSection(&localSeqMutex);
 
 		// :IMPORTANT:
 		// The FLAP sequence must be a WORD. When it reaches 0xFFFF it should wrap to
@@ -310,7 +326,7 @@ void CIcqProto::sendServPacket(icq_packet* pPacket)
 		pPacket->pData[2] = ((wLocalSequence & 0xff00) >> 8);
 		pPacket->pData[3] = (wLocalSequence & 0x00ff);
 
-		for (nRetries = 3; nRetries >= 0; nRetries--)
+		for (int nRetries = 3; nRetries >= 0; nRetries--)
 		{
 			nSendResult = Netlib_Send(hServerConn, (const char *)pPacket->pData, pPacket->wLen, 0);
 
@@ -319,6 +335,9 @@ void CIcqProto::sendServPacket(icq_packet* pPacket)
 
 			Sleep(1000);
 		}
+
+    LeaveCriticalSection(&localSeqMutex);
+    LeaveCriticalSection(&connectionHandleMutex);
 
 		// Rates management
 		EnterCriticalSection(&ratesMutex);
@@ -339,10 +358,10 @@ void CIcqProto::sendServPacket(icq_packet* pPacket)
 	}
 	else
 	{
+    LeaveCriticalSection(&connectionHandleMutex);
+
 		NetLog_Server("Error: Failed to send packet (no connection)");
 	}
-
-	LeaveCriticalSection(&localSeqMutex);
 
 	SAFE_FREE((void**)&pPacket->pData);
 }

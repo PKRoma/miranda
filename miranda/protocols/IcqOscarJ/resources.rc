@@ -86,42 +86,44 @@ BEGIN
                     250
 END
 
-IDD_OPT_ICQ DIALOGEX 0, 0, 314, 236
+IDD_OPT_ICQ DIALOGEX 0, 0, 310, 234
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "ICQ",IDC_STICQGROUP,4,0,306,95
+    GROUPBOX        "ICQ",IDC_STICQGROUP,4,0,302,93
     RTEXT           "ICQ number:",IDC_STATIC11,12,14,51,8
     EDITTEXT        IDC_ICQNUM,68,12,106,12,ES_AUTOHSCROLL | ES_NUMBER
     RTEXT           "Password:",IDC_STATIC12,12,28,51,8
     EDITTEXT        IDC_PASSWORD,68,26,106,12,ES_PASSWORD | ES_AUTOHSCROLL
     LTEXT           "Hint: If you don't enter your password here, Miranda will ask for the password everytime you try to go online.",
-                    IDC_STATIC,12,43,290,19
+                    IDC_STATIC,12,43,286,19
     CONTROL         "Retrieve a lost password or ICQ number",IDC_LOOKUPLINK,
-                    "Hyperlink",WS_TABSTOP,12,78,290,8
+                    "Hyperlink",WS_TABSTOP,12,78,286,8
     CONTROL         "Create a new ICQ account using the ICQ website",
-                    IDC_NEWUINLINK,"Hyperlink",WS_TABSTOP,12,66,290,8
-    GROUPBOX        "Connection settings",IDC_STATIC,4,96,306,136
-    LTEXT           "Login Server:",IDC_STATIC,12,110,55,8
-    EDITTEXT        IDC_ICQSERVER,68,108,106,12,ES_AUTOHSCROLL
-    LTEXT           "Port:",IDC_STATIC,182,110,25,8
-    EDITTEXT        IDC_ICQPORT,208,108,29,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "Default",IDC_RESETSERVER,244,108,50,12
+                    IDC_NEWUINLINK,"Hyperlink",WS_TABSTOP,12,66,286,8
+    GROUPBOX        "Connection settings",IDC_STATIC,4,94,302,136
+    LTEXT           "Login Server:",IDC_STATIC,12,108,55,8
+    EDITTEXT        IDC_ICQSERVER,68,106,106,12,ES_AUTOHSCROLL
+    LTEXT           "Port:",IDC_STATIC,182,108,25,8
+    EDITTEXT        IDC_ICQPORT,208,106,29,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "Default",IDC_RESETSERVER,244,106,50,12
     LTEXT           "Hint: Use port 0 to connect on a random port. Try port 80 or port 443 if you are having problems connecting through a http proxy server.",
-                    IDC_STATIC,12,125,290,19
-    CONTROL         "Secure (MD5) login",IDC_SECURE,"Button",BS_AUTOCHECKBOX | 
-                    BS_TOP | WS_TABSTOP,12,154,290,10
+                    IDC_STATIC,12,123,286,19
+    CONTROL         "Secure Connection (SSL) [experimental]",IDC_SSL,"Button",BS_AUTOCHECKBOX | 
+                    BS_TOP | WS_TABSTOP,12,143,286,10
+    CONTROL         "Secure (MD5) login",IDC_MD5LOGIN,"Button",BS_AUTOCHECKBOX | 
+                    BS_TOP | WS_TABSTOP,12,154,286,10
     CONTROL         "Send 'Keep-alives' (enable this if you use a proxy server and frequently get disconnected)",
                     IDC_KEEPALIVE,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    BS_MULTILINE | WS_TABSTOP,12,168,290,18
+                    BS_MULTILINE | WS_TABSTOP,12,166,286,18
     CONTROL         "Ignore concurrent error messages",IDC_NOERRMULTI,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,192,290,10
-    LTEXT           "Show connection error messages:",IDC_STATIC,12,206,238,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,190,286,10
+    LTEXT           "Show connection error messages:",IDC_STATIC,12,204,238,
                     8
     CONTROL         "Slider1",IDC_LOGLEVEL,"msctls_trackbar32",TBS_BOTH | 
-                    TBS_NOTICKS | WS_TABSTOP,18,216,52,10
-    LTEXT           "",IDC_LEVELDESCR,72,216,230,8,SS_NOPREFIX
+                    TBS_NOTICKS | WS_TABSTOP,18,214,52,10
+    LTEXT           "",IDC_LEVELDESCR,72,214,226,8,SS_NOPREFIX
 END
 
 IDD_OPT_ICQCONTACTS DIALOGEX 0, 0, 314, 236
@@ -654,7 +656,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,8,0,0
+ FILEVERSION 0,5,0,6
  PRODUCTVERSION 0,8,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -672,9 +674,9 @@ BEGIN
         BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License"
             VALUE "FileDescription", "ICQ protocol plugin for Miranda IM, enhanced"
-            VALUE "FileVersion", "0, 8, 0, 0"
+            VALUE "FileVersion", "0, 5, 0, 6"
             VALUE "InternalName", "ICQJ protocol plugin for Miranda IM"
-            VALUE "LegalCopyright", "Copyright (C) 2000-2007 Joe Kucera, Angeli-Ka, Bio, Martin Öberg, Richard Hughes, Jon Keating"
+            VALUE "LegalCopyright", "Copyright (C) 2000-2009 Joe Kucera, Angeli-Ka, Bio, Martin Öberg, Richard Hughes, Jon Keating"
             VALUE "OriginalFilename", "ICQ.dll"
             VALUE "ProductName", "ICQ Protocol Support"
             VALUE "ProductVersion", "0, 8, 0, 0"

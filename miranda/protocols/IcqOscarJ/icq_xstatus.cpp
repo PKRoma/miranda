@@ -35,7 +35,6 @@
 // -----------------------------------------------------------------------------
 
 #include "icqoscar.h"
-#include "m_cluiframes.h"
 
 void CListShowMenuItem(HANDLE hMenuItem, BYTE bShow);
 
@@ -766,6 +765,9 @@ void CIcqProto::InitXStatusItems(BOOL bAllowStatus)
 
 	if (bStatusMenu && !bAllowStatus) return;
 
+	// Custom Status UI is disabled, no need to continue items' init
+	if (m_bHideXStatusUI || m_bHideXStatusMenu) return;
+
 	null_snprintf(szItem, sizeof(szItem), ICQTranslate("%s Custom Status"), m_szModuleName);
 	mi.cbSize = sizeof(mi);
 	mi.pszPopupName = szItem;
@@ -795,7 +797,7 @@ void CIcqProto::InitXStatusItems(BOOL bAllowStatus)
 		else
 			hXStatusItems[i] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
     // CMIF_HIDDEN does not work for adding services
-    CListShowMenuItem(hXStatusItems[i], !m_bHideXStatusUI);
+    CListShowMenuItem(hXStatusItems[i], !(m_bHideXStatusUI || m_bHideXStatusMenu));
 	}
 }
 
@@ -929,13 +931,13 @@ INT_PTR CIcqProto::SetXStatusEx(WPARAM wParam, LPARAM lParam)
 	}
 
 	if (pData->flags & CSSF_DISABLE_UI)
-	{ // hide menu items
-		int n;
-
+	{ // hide menu items + contact menu item
 		m_bHideXStatusUI = (*pData->wParam) ? 0 : 1;
+	}
 
-		for (n = 0; n <= XSTATUS_COUNT; n++)
-			CListShowMenuItem(hXStatusItems[n], (BYTE)!m_bHideXStatusUI);
+	if (pData->flags & CSSF_DISABLE_MENU)
+	{ // hide menu items only
+		m_bHideXStatusMenu = (*pData->wParam) ? 0 : 1;
 	}
 
 	return 0; // Success
@@ -1024,6 +1026,11 @@ INT_PTR CIcqProto::GetXStatusEx(WPARAM wParam, LPARAM lParam)
 	if (pData->flags & CSSF_DISABLE_UI)
 	{
 		if (pData->wParam) *pData->wParam = !m_bHideXStatusUI;
+	}
+
+	if (pData->flags & CSSF_DISABLE_MENU)
+	{
+		if (pData->wParam) *pData->wParam = !m_bHideXStatusMenu;
 	}
 
 	if (pData->flags & CSSF_STATUSES_COUNT)

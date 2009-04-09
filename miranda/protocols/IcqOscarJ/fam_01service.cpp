@@ -104,13 +104,11 @@ void CIcqProto::handleServiceFam(BYTE *pBuffer, WORD wBufferLength, snac_header 
 
 		if (m_bSsiEnabled)
 		{
-			DWORD dwLastUpdate;
-			WORD wRecordCount;
 			cookie_servlist_action* ack;
 			DWORD dwCookie;
 
-			dwLastUpdate = getSettingDword(NULL, "SrvLastUpdate", 0);
-			wRecordCount = getSettingWord(NULL, "SrvRecordCount", 0);
+			DWORD dwLastUpdate = getSettingDword(NULL, "SrvLastUpdate", 0);
+			WORD wRecordCount = getSettingWord(NULL, "SrvRecordCount", 0);
 
 			// CLI_REQLISTS - we want to use SSI
 #ifdef _DEBUG
@@ -231,33 +229,34 @@ void CIcqProto::handleServiceFam(BYTE *pBuffer, WORD wBufferLength, snac_header 
 
 	case ICQ_SERVER_MIGRATIONREQ:
 		{
-			oscar_tlv_chain *chain = NULL;
-
 #ifdef _DEBUG
 			NetLog_Server("Server migration requested (Flags: %u)", pSnacHeader->wFlags);
 #endif
 			pBuffer += 2; // Unknown, seen: 0
 			wBufferLength -= 2;
-			chain = readIntoTLVChain(&pBuffer, wBufferLength, 0);
+
+			oscar_tlv_chain *chain = readIntoTLVChain(&pBuffer, wBufferLength, 0);
 
 			if (info->cookieDataLen > 0)
 				SAFE_FREE((void**)&info->cookieData);
 
 			info->newServer = chain->getString(0x05, 1);
+      info->newServerSSL = chain->getNumber(0x8E, 1);
 			info->cookieData = (BYTE*)chain->getString(0x06, 1);
 			info->cookieDataLen = chain->getLength(0x06, 1);
+
+			disposeChain(&chain);
 
 			if (!info->newServer || !info->cookieData)
 			{
 				icq_LogMessage(LOG_FATAL, LPGEN("A server migration has failed because the server returned invalid data. You must reconnect manually."));
-				SAFE_FREE((void**)&info->newServer);
+				SAFE_FREE(&info->newServer);
 				SAFE_FREE((void**)&info->cookieData);
 				info->cookieDataLen = 0;
 				info->newServerReady = 0;
 				return;
 			}
 
-			disposeChain(&chain);
 			NetLog_Server("Migration has started. New server will be %s", info->newServer);
 
 			m_iDesiredStatus = m_iStatus;
@@ -380,49 +379,52 @@ void CIcqProto::handleServiceFam(BYTE *pBuffer, WORD wBufferLength, snac_header 
 			FreeCookie(pSnacHeader->dwRef);
 
 			{ // new family entry point received
-				char* pServer;
-				WORD wPort;
-				char* pCookie;
-				WORD wCookieLen;
-				NETLIBOPENCONNECTION nloc = {0};
-				HANDLE hConnection;
-
-				pServer = pChain->getString(0x05, 1);
-				pCookie = pChain->getString(0x06, 1);
-				wCookieLen = pChain->getLength(0x06, 1);
+				char *pServer = pChain->getString(0x05, 1);
+        BYTE bServerSSL = pChain->getNumber(0x8E, 1);
+				char *pCookie = pChain->getString(0x06, 1);
+				WORD wCookieLen = pChain->getLength(0x06, 1);
 
 				if (!pServer || !pCookie)
 				{
 					NetLog_Server("Server returned invalid data, family unavailable.");
 
-					SAFE_FREE((void**)&pServer);
-					SAFE_FREE((void**)&pCookie);
+					SAFE_FREE(&pServer);
+					SAFE_FREE(&pCookie);
 					SAFE_FREE((void**)&pCookieData);
           disposeChain(&pChain);
 					break;
 				}
 
 				// Get new family server ip and port
-				wPort = info->wServerPort; // get default port
+				WORD wPort = info->wServerPort; // get default port
 				parseServerAddress(pServer, &wPort);
 
 				// establish connection
+				NETLIBOPENCONNECTION nloc = {0};
 				nloc.flags = 0;
 				nloc.szHost = pServer; 
 				nloc.wPort = wPort;
 
-				hConnection = NetLib_OpenConnection(m_hServerNetlibUser, wFamily == ICQ_AVATAR_FAMILY ? "Avatar " : NULL, &nloc);
+				HANDLE hConnection = NetLib_OpenConnection(m_hServerNetlibUser, wFamily == ICQ_AVATAR_FAMILY ? "Avatar " : NULL, &nloc);
 
 				if (hConnection == NULL)
 				{
 					NetLog_Server("Unable to connect to ICQ new family server.");
 				} // we want the handler to be called even if the connecting failed
+        else if (bServerSSL)
+        { /* Start SSL session if requested */
+#ifdef _DEBUG
+          NetLog_Server("(%d) Starting SSL negotiation", CallService(MS_NETLIB_GETSOCKET, (WPARAM)hConnection, 0));
+#endif
+          CallService(MS_NETLIB_STARTSSL, (WPARAM)hConnection, 0);
+        }
+
 				(this->*pCookieData->familyHandler)(hConnection, pCookie, wCookieLen);
 
 				// Free allocated memory
 				// NOTE: "cookie" will get freed when we have connected to the avatar server.
 				disposeChain(&pChain);
-				SAFE_FREE((void**)&pServer);
+				SAFE_FREE(&pServer);
 				SAFE_FREE((void**)&pCookieData);
 			}
 
@@ -455,10 +457,10 @@ void CIcqProto::handleServiceFam(BYTE *pBuffer, WORD wBufferLength, snac_header 
 				  { // this refreshes avatar state - it used to work automatically, but now it does not
 					  if (getSettingByte(NULL, "ForceOurAvatar", 0))
 					  { // keep our avatar
-						  char* file = loadMyAvatarFileName();
+						  char *file = loadMyAvatarFileName();
 
 						  SetMyAvatar(0, (LPARAM)file);
-						  SAFE_FREE((void**)&file);
+						  SAFE_FREE(&file);
 					  }
 					  else // only change avatar hash to the same one
 					  {
@@ -874,7 +876,7 @@ void CIcqProto::handleServUINSettings(int nPort, serverthread_info *info)
       setSettingString(NULL, DBSETTING_STATUS_MOOD, szMoodData);
 	  }
     // Release memory
-    SAFE_FREE((void**)&szStatusNote);
+    SAFE_FREE(&szStatusNote);
 
 		sendServPacket(&packet);
 	}
@@ -922,6 +924,7 @@ void CIcqProto::handleServUINSettings(int nPort, serverthread_info *info)
 
 	// login sequence is complete enter logged-in mode
 	info->bLoggedIn = 1;
+  m_bConnectionLost = FALSE;
 
 	// enable auto info-update routine
 	icq_EnableUserLookup(TRUE);

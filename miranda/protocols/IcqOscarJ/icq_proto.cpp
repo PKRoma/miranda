@@ -36,7 +36,6 @@
 
 #include "icqoscar.h"
 
-#include "m_cluiframes.h"
 #include "m_icolib.h"
 #include "m_updater.h"
 
@@ -275,6 +274,8 @@ CIcqProto::~CIcqProto()
 	DeleteCriticalSection(&expectedFileRecvMutex);
 	DeleteCriticalSection(&cookieMutex);
 
+  SAFE_FREE(&m_modeMsgs.szOffline);
+  SAFE_FREE(&m_modeMsgs.szOnline);
 	SAFE_FREE(&m_modeMsgs.szAway);
 	SAFE_FREE(&m_modeMsgs.szNa);
 	SAFE_FREE(&m_modeMsgs.szOccupied);
@@ -2286,7 +2287,6 @@ int __cdecl CIcqProto::SetAwayMsg(int status, const char* msg)
 		}
 	}
 	SAFE_FREE(&szNewUtf);
-	SAFE_FREE(ppszMsg);
 
 	LeaveCriticalSection(&m_modeMsgsMutex);
 

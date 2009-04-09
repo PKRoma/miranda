@@ -181,6 +181,7 @@ struct CIcqProto : public PROTO_INTERFACE
 
 	BYTE m_bGatewayMode;
 	BYTE m_bSecureLogin;
+  BYTE m_bSecureConnection;
 	BYTE m_bAimEnabled;
 	BYTE m_bUtfEnabled;
 	WORD m_wAnsiCodepage;
@@ -196,6 +197,7 @@ struct CIcqProto : public PROTO_INTERFACE
 
 	int   m_bIdleAllow;
 	DWORD m_dwLocalUIN;
+  BYTE m_bConnectionLost;
 
 	char m_szPassword[16];
 	BYTE m_bRememberPwd;
@@ -237,8 +239,8 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   handleErrorChannel(unsigned char *buf, WORD datalen);
 
 	//----| chan_04close.cpp |------------------------------------------------------------
-	void   handleCloseChannel(unsigned char *buf, WORD datalen, serverthread_info *info);
-	void   handleLoginReply(unsigned char *buf, WORD datalen, serverthread_info *info);
+	void   handleCloseChannel(BYTE *buf, WORD datalen, serverthread_info *info);
+	void   handleLoginReply(BYTE *buf, WORD datalen, serverthread_info *info);
 	void   handleMigration(serverthread_info *info);
 	void   handleSignonError(WORD wError);
 
@@ -408,10 +410,10 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   ReleaseSearchCookie(DWORD dwCookie, cookie_search *pCookie);
 
 	//----| fam_17signon.cpp |------------------------------------------------------------
-	void   handleAuthorizationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info);
+	void   handleAuthorizationFam(BYTE *pBuffer, WORD wBufferLength, snac_header *pSnacHeader, serverthread_info *info);
 	void   handleAuthKeyResponse(BYTE *buf, WORD wPacketLen, serverthread_info *info);
 
-	void   sendClientAuth(const char* szKey, WORD wKeyLen, BOOL bSecure);
+	void   sendClientAuth(const char *szKey, WORD wKeyLen, BOOL bSecure);
 
 	//----| icq_avatars.cpp |-------------------------------------------------------------
 	struct avatarthreadstartinfo* currentAvatarThread; 
@@ -822,6 +824,7 @@ struct CIcqProto : public PROTO_INTERFACE
 
 	//----| icq_xstatus.cpp |-------------------------------------------------------------
 	int    m_bHideXStatusUI;
+	int    m_bHideXStatusMenu;
 	int    bStatusMenu;
 	HANDLE hHookExtraIconsRebuild;
 	HANDLE hHookStatusBuild;

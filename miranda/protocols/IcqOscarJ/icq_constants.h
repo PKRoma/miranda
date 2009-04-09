@@ -59,6 +59,7 @@
 /* Some default settings */
 #define DEFAULT_SERVER_PORT         5190
 #define DEFAULT_SERVER_HOST         "login.icq.com"
+#define DEFAULT_SERVER_HOST_SSL     "slogin.oscar.aol.com"
 #define DEFAULT_SS_ENABLED          1
 #define DEFAULT_SS_ADDSERVER        1
 #define DEFAULT_SS_LOAD             0
@@ -66,6 +67,7 @@
 #define DEFAULT_SS_GROUP            "General"
 
 #define DEFAULT_SECURE_LOGIN        1
+#define DEFAULT_SECURE_CONNECTION   1
 #define DEFAULT_AIM_ENABLED         1
 #define DEFAULT_UTF_ENABLED         2 // everything unicode is default
 #define DEFAULT_ANSI_CODEPAGE       CP_ACP
@@ -616,7 +618,7 @@
 
 // Internal Constants
 #define ICQ_PROTOCOL_NAME           LPGEN("ICQ")
-#define ICQ_PLUG_VERSION            0x80050005
+#define ICQ_PLUG_VERSION            0x80050006
 #define ICQ_VERSION                 8         // Protocol version
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_CONTACTSSEND            15
@@ -640,7 +642,7 @@
 #define CLIENT_VERSION_MAJOR        0x0006
 #define CLIENT_VERSION_MINOR        0x0005
 #define CLIENT_VERSION_LESSER       0x0000
-#define CLIENT_VERSION_BUILD        0x03ed
+#define CLIENT_VERSION_BUILD        0x0412
 #define CLIENT_DISTRIBUTION         0x00007537
 #define CLIENT_LANGUAGE             "en"
 #define CLIENT_COUNTRY              "us"
