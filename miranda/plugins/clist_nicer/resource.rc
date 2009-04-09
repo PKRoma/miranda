@@ -784,7 +784,7 @@ BEGIN
     PUSHBUTTON      "Export to skin file",IDC_EXPORT,20,229,125,15
 END
 
-IDD_QUICKIGNORE DIALOGEX 0, 0, 357, 236
+IDD_QUICKIGNORE DIALOGEX 0, 0, 357, 247
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
     WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
@@ -811,12 +811,12 @@ BEGIN
     CONTROL         "Appear always offline (block contact)",
                     IDC_IGN_ALWAYSOFFLINE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,18,111,184,11
-    GROUPBOX        "Other",IDC_STATIC,7,125,197,86
+    GROUPBOX        "Other",IDC_STATIC,7,125,197,96
     CONTROL         "Hide this contact from the list",IDC_HIDECONTACT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,18,132,183,14
     LTEXT           "To show a previously hidden contact, navigate to Options->Events->Ignore, search the contact in the list and tick the checkbox next to its name.",
                     IDC_STATIC,15,146,186,34
-    GROUPBOX        "Display options",IDC_STATIC,209,3,143,207
+    GROUPBOX        "Display options",IDC_STATIC,209,3,143,218
     CONTROL         "Show contact with priority",IDC_IGN_PRIORITY,"Button",
                     BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,218,13,125,11
     LTEXT           "Show Avatar:",IDC_STATIC,225,28,81,11
@@ -826,38 +826,40 @@ BEGIN
     COMBOBOX        IDC_SECONDLINEMODE,220,64,127,56,CBS_DROPDOWNLIST | 
                     CBS_SORT | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
     CONTROL         "",IDC_IGN_ADDPERMANENTLY,"CLCButtonClass",WS_TABSTOP,95,
-                    187,106,15,0x18000000L
-    PUSHBUTTON      "Ok",IDOK,211,217,65,14
-    PUSHBUTTON      "Cancel",IDCANCEL,284,217,65,14
+                    202,106,15,0x18000000L
+    PUSHBUTTON      "Ok",IDOK,211,228,65,14
+    PUSHBUTTON      "Cancel",IDCANCEL,284,228,65,14
     CONTROL         "Draw overlay icon on avatar",IDC_OVERLAYICON,"Button",
                     BS_AUTO3STATE | WS_TABSTOP,221,82,127,10
     CONTROL         "Show local time",IDC_SHOWLOCALTIME1,"Button",
                     BS_AUTO3STATE | WS_TABSTOP,221,94,127,10
-    GROUPBOX        "Extra icons",IDC_STATIC,213,118,134,69
-    CONTROL         "Client",IDC_SHOWCLIENTICONS,"Button",BS_AUTO3STATE | 
+    GROUPBOX        "Extra icons",IDC_STATIC,213,118,134,80
+    CONTROL         "Client",IDC_EXTRA_ICON_CLIENT,"Button",BS_AUTO3STATE | 
                     WS_TABSTOP,219,129,55,11
-    CONTROL         "xStatus",IDC_SHOWEXTENDEDSTATUS,"Button",BS_AUTO3STATE | 
+    CONTROL         "E-Mail",IDC_EXTRA_ICON_EMAIL,"Button",BS_AUTO3STATE | 
                     WS_TABSTOP,219,140,55,11
-    CONTROL         "E-Mail",IDC_EXTRAMAIL,"Button",BS_AUTO3STATE | 
+    CONTROL         "Homepage",IDC_EXTRA_ICON_WEB,"Button",BS_AUTO3STATE | 
                     WS_TABSTOP,219,151,55,11
-    CONTROL         "Homepage",IDC_EXTRAWEB,"Button",BS_AUTO3STATE | 
+    CONTROL         "Telephone",IDC_EXTRA_ICON_SMS,"Button",BS_AUTO3STATE | 
                     WS_TABSTOP,219,162,55,11
-    CONTROL         "Reserved",IDC_EXTRARESERVED,"Button",BS_AUTO3STATE | 
-                    WS_TABSTOP,288,129,55,11
-    CONTROL         "Phone",IDC_EXTRAPHONE,"Button",BS_AUTO3STATE | 
+    CONTROL         "Reserved",IDC_EXTRA_ICON_RES0,"Button",BS_AUTO3STATE | 
                     WS_TABSTOP,219,173,55,11
-    CONTROL         "Reserved2",IDC_EXTRARESERVED2,"Button",BS_AUTO3STATE | 
+    CONTROL         "Advanced #1",IDC_EXTRA_ICON_ADV1,"Button",BS_AUTO3STATE | 
+                    WS_TABSTOP,288,129,55,11
+    CONTROL         "Advanced #2",IDC_EXTRA_ICON_ADV2,"Button",BS_AUTO3STATE | 
                     WS_TABSTOP,288,140,55,11
-    CONTROL         "Reserved3",IDC_EXTRARESERVED3,"Button",BS_AUTO3STATE | 
+    CONTROL         "Advanced #3",IDC_EXTRA_ICON_ADV3,"Button",BS_AUTO3STATE | 
                     WS_TABSTOP,288,151,55,11
-    CONTROL         "Reserved4",IDC_EXTRARESERVED4,"Button",BS_AUTO3STATE | 
+    CONTROL         "Advanced #4",IDC_EXTRA_ICON_ADV4,"Button",BS_AUTO3STATE | 
                     WS_TABSTOP,288,162,55,11
-    CONTROL         "Reserved5",IDC_EXTRARESERVED5,"Button",BS_AUTO3STATE | 
+    CONTROL         "Reserved #1",IDC_EXTRA_ICON_RES1,"Button",BS_AUTO3STATE | 
                     WS_TABSTOP,288,173,55,11
+    CONTROL         "Reserved #2",IDC_EXTRA_ICON_RES2,"Button",BS_AUTO3STATE | 
+                    WS_TABSTOP,288,184,55,11
     CONTROL         "Show visibility icon",IDC_SHOWVISIBILITY,"Button",
                     BS_AUTO3STATE | WS_TABSTOP,221,107,127,10
     CONTROL         "",IDC_DSP_LOADDEFAULT,"CLCButtonClass",WS_TABSTOP,213,
-                    191,135,15,0x18000000L
+                    202,135,15,0x18000000L
 END
 
 

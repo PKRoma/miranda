@@ -1045,7 +1045,7 @@ bgskipped:
 				int i, iIndex, id;
                 DWORD dwOldMask = cEntry->dwXMask;
                 if(dwFlags & CLUI_FRAME_USEXSTATUSASSTATUS)
-                    cEntry->dwXMask &= ~EIMG_SHOW_EXTRA;
+                    cEntry->dwXMask &= ~EIMG_SHOW_ADV1;
 
 				for(i = EXICON_COUNT - 1; i >= 0; i--) {
                     iIndex = g_CluiData.exIconOrder[i] - 1;

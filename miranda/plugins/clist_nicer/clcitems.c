@@ -468,7 +468,7 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
     
     g_ExtraCache[index].isChatRoom = DBGetContactSettingByte(contact->hContact, contact->proto, "ChatRoom", 0);
 
-    g_ExtraCache[index].iExtraValid &= ~(EIMG_SHOW_MAIL | EIMG_SHOW_SMS | EIMG_SHOW_URL);
+    g_ExtraCache[index].iExtraValid &= ~(EIMG_SHOW_EMAIL | EIMG_SHOW_SMS | EIMG_SHOW_WEB);
     g_ExtraCache[index].iExtraImage[EXTRA_ICON_EMAIL] = g_ExtraCache[index].iExtraImage[EXTRA_ICON_WEB] = g_ExtraCache[index].iExtraImage[EXTRA_ICON_SMS] = 0xff;
 
     if(!DBGetContactSettingString(contact->hContact, contact->proto, "e-mail", &dbv) && lstrlenA(dbv.pszVal) > 1)
@@ -505,8 +505,8 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
 
     // set the mask for valid extra images...
     
-    g_ExtraCache[index].iExtraValid |= ((g_ExtraCache[index].iExtraImage[EXTRA_ICON_EMAIL] != 0xff ? EIMG_SHOW_MAIL : 0) | 
-        (g_ExtraCache[index].iExtraImage[EXTRA_ICON_WEB] != 0xff ? EIMG_SHOW_URL : 0) |
+    g_ExtraCache[index].iExtraValid |= ((g_ExtraCache[index].iExtraImage[EXTRA_ICON_EMAIL] != 0xff ? EIMG_SHOW_EMAIL : 0) | 
+        (g_ExtraCache[index].iExtraImage[EXTRA_ICON_WEB] != 0xff ? EIMG_SHOW_WEB : 0) |
         (g_ExtraCache[index].iExtraImage[EXTRA_ICON_SMS] != 0xff ? EIMG_SHOW_SMS : 0));
 
 
