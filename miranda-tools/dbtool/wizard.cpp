@@ -52,7 +52,7 @@ static BOOL CALLBACK MyControlsEnumChildren(HWND hwnd,LPARAM lParam)
 	return TRUE;
 }
 
-int DoMyControlProcessing(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam,BOOL *bReturn)
+int DoMyControlProcessing(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam,INT_PTR *bReturn)
 {
 	switch(message) {
 		case WM_INITDIALOG:
@@ -72,12 +72,12 @@ int DoMyControlProcessing(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam,BOO
 					SetTextColor((HDC)wParam,RGB(255,255,255));
 					SetBkColor((HDC)wParam,RGB(255,255,255));
 					SetBkMode((HDC)wParam,OPAQUE);
-					*bReturn=(BOOL)GetStockObject(WHITE_BRUSH);
+					*bReturn=(INT_PTR)GetStockObject(WHITE_BRUSH);
 					return TRUE;
 				}
 				else {
 					SetBkMode((HDC)wParam,TRANSPARENT);
-					*bReturn=(BOOL)GetStockObject(NULL_BRUSH);
+					*bReturn=(INT_PTR)GetStockObject(NULL_BRUSH);
 					return TRUE;
 				}
 			}

@@ -107,7 +107,7 @@ char* Utf8EncodeUcs2( const wchar_t* src )
 
 static void ConvertOldEvent( DBEvent* dbei )
 {
-	int msglen = strlen(( char* )dbei->blob) + 1, msglenW = 0;
+	int msglen = (int)strlen(( char* )dbei->blob) + 1, msglenW = 0;
 	if ( msglen != (int) dbei->cbBlob ) {
 		int i, count = (( dbei->cbBlob - msglen ) / sizeof( WCHAR ));
 		WCHAR* p = ( WCHAR* )&dbei->blob[ msglen ];
@@ -123,7 +123,7 @@ static void ConvertOldEvent( DBEvent* dbei )
 
 	if ( msglenW > 0 && msglenW <= msglen ) {
 		char* utf8str = Utf8EncodeUcs2(( WCHAR* )&dbei->blob[ msglen ] );
-		dbei->cbBlob = strlen( utf8str )+1;
+		dbei->cbBlob = (DWORD)strlen( utf8str )+1;
 		dbei->flags |= DBEF_UTF;
 		if (offsetof(DBEvent,blob)+dbei->cbBlob > memsize) {
 			memsize = offsetof(DBEvent,blob)+dbei->cbBlob;

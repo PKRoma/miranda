@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 INT_PTR CALLBACK FileAccessDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
-	BOOL bReturn;
+	INT_PTR bReturn;
 
 	if(DoMyControlProcessing(hdlg,message,wParam,lParam,&bReturn)) return bReturn;
 	switch(message) {

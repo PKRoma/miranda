@@ -22,7 +22,7 @@ INT_PTR CALLBACK WelcomeDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lPar
 {
 	static HENHMETAFILE hEmfWatermark;
 	static HFONT hTitleFont;
-	BOOL bReturn;
+	INT_PTR bReturn;
 
 	if(DoMyControlProcessing(hdlg,message,wParam,lParam,&bReturn)) return bReturn;
 	switch(message) {
