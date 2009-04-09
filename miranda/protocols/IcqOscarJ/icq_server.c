@@ -309,14 +309,16 @@ static int handleServerPackets(unsigned char* buf, int len, serverthread_info* i
 
 void sendServPacket(icq_packet* pPacket)
 {
-  // This critsec makes sure that the sequence order doesn't get screwed up
-  EnterCriticalSection(&localSeqMutex);
+  // make sure to have the connection handle
+  EnterCriticalSection(&connectionHandleMutex);
 
   if (hServerConn)
   {
     int nRetries;
     int nSendResult;
 
+    // This critsec makes sure that the sequence order doesn't get screwed up
+    EnterCriticalSection(&localSeqMutex);
 
     // :IMPORTANT:
     // The FLAP sequence must be a WORD. When it reaches 0xFFFF it should wrap to
@@ -337,6 +339,9 @@ void sendServPacket(icq_packet* pPacket)
       Sleep(1000);
     }
 
+    LeaveCriticalSection(&localSeqMutex);
+    LeaveCriticalSection(&connectionHandleMutex);
+
     // Rates management
     EnterCriticalSection(&ratesMutex);
     ratesPacketSent(gRates, pPacket);
@@ -356,10 +361,10 @@ void sendServPacket(icq_packet* pPacket)
   }
   else
   {
+    LeaveCriticalSection(&connectionHandleMutex);
+
     NetLog_Server("Error: Failed to send packet (no connection)");
   }
-
-  LeaveCriticalSection(&localSeqMutex);
 
   SAFE_FREE(&pPacket->pData);
 }
