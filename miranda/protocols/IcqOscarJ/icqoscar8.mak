@@ -1,7 +1,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on icqoscar8.dsp
 !IF "$(CFG)" == ""
-CFG=icqoscar8 - Win32 Debug Unicode
-!MESSAGE No configuration specified. Defaulting to icqoscar8 - Win32 Debug Unicode.
+CFG=icqoscar8 - Win32 Release Unicode
+!MESSAGE No configuration specified. Defaulting to icqoscar8 - Win32 Release Unicode.
 !ENDIF 
 
 !IF "$(CFG)" != "icqoscar8 - Win32 Release" && "$(CFG)" != "icqoscar8 - Win32 Debug" && "$(CFG)" != "icqoscar8 - Win32 Debug Unicode" && "$(CFG)" != "icqoscar8 - Win32 Release Unicode"

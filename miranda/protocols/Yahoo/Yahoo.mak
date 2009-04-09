@@ -1,7 +1,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on Yahoo.dsp
 !IF "$(CFG)" == ""
-CFG=Yahoo - Win32 Release Unicode
-!MESSAGE No configuration specified. Defaulting to Yahoo - Win32 Release Unicode.
+CFG=Yahoo - Win32 Debug Unicode
+!MESSAGE No configuration specified. Defaulting to Yahoo - Win32 Debug Unicode.
 !ENDIF 
 
 !IF "$(CFG)" != "Yahoo - Win32 Release" && "$(CFG)" != "Yahoo - Win32 Debug" && "$(CFG)" != "Yahoo - Win32 Debug Unicode" && "$(CFG)" != "Yahoo - Win32 Release Unicode"
@@ -100,14 +100,14 @@ LINK32_OBJS= \
 	"$(INTDIR)\im.obj" \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\options.obj" \
+	"$(INTDIR)\proto.obj" \
 	"$(INTDIR)\search.obj" \
 	"$(INTDIR)\server.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\util.obj" \
 	"$(INTDIR)\webcam.obj" \
 	"$(INTDIR)\yahoo.obj" \
-	"$(INTDIR)\Yahoo.res" \
-	"$(INTDIR)\proto.obj"
+	"$(INTDIR)\Yahoo.res"
 
 "..\..\Bin\Release\Plugins\Yahoo.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -183,14 +183,14 @@ LINK32_OBJS= \
 	"$(INTDIR)\im.obj" \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\options.obj" \
+	"$(INTDIR)\proto.obj" \
 	"$(INTDIR)\search.obj" \
 	"$(INTDIR)\server.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\util.obj" \
 	"$(INTDIR)\webcam.obj" \
 	"$(INTDIR)\yahoo.obj" \
-	"$(INTDIR)\Yahoo.res" \
-	"$(INTDIR)\proto.obj"
+	"$(INTDIR)\Yahoo.res"
 
 "..\..\Bin\Debug\Plugins\Yahoo.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -241,7 +241,7 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fp"$(INTDIR)\Yahoo.pch" /Yu"yahoo.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+CPP_PROJ=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fp"$(INTDIR)\Yahoo.pch" /Yu"yahoo.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
 RSC_PROJ=/l 0x419 /fo"$(INTDIR)\Yahoo.res" /d "_DEBUG" 
 BSC32=bscmake.exe
@@ -266,14 +266,14 @@ LINK32_OBJS= \
 	"$(INTDIR)\im.obj" \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\options.obj" \
+	"$(INTDIR)\proto.obj" \
 	"$(INTDIR)\search.obj" \
 	"$(INTDIR)\server.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\util.obj" \
 	"$(INTDIR)\webcam.obj" \
 	"$(INTDIR)\yahoo.obj" \
-	"$(INTDIR)\Yahoo.res" \
-	"$(INTDIR)\proto.obj"
+	"$(INTDIR)\Yahoo.res"
 
 "..\..\Bin\Debug Unicode\Plugins\Yahoo.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -324,7 +324,7 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fp"$(INTDIR)\Yahoo.pch" /Yu"yahoo.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fp"$(INTDIR)\Yahoo.pch" /Yu"yahoo.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
 RSC_PROJ=/l 0x419 /fo"$(INTDIR)\Yahoo.res" /d "NDEBUG" 
 BSC32=bscmake.exe
@@ -349,14 +349,14 @@ LINK32_OBJS= \
 	"$(INTDIR)\im.obj" \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\options.obj" \
+	"$(INTDIR)\proto.obj" \
 	"$(INTDIR)\search.obj" \
 	"$(INTDIR)\server.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\util.obj" \
 	"$(INTDIR)\webcam.obj" \
 	"$(INTDIR)\yahoo.obj" \
-	"$(INTDIR)\Yahoo.res" \
-	"$(INTDIR)\proto.obj"
+	"$(INTDIR)\Yahoo.res"
 
 "..\..\Bin\Release Unicode\Plugins\Yahoo.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -430,7 +430,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN
 
 !ELSEIF  "$(CFG)" == "Yahoo - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
 "$(INTDIR)\crypt.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -440,7 +440,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN
 
 !ELSEIF  "$(CFG)" == "Yahoo - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\crypt.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -474,7 +474,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN
 
 !ELSEIF  "$(CFG)" == "Yahoo - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
 "$(INTDIR)\libyahoo2.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -484,7 +484,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN
 
 !ELSEIF  "$(CFG)" == "Yahoo - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\libyahoo2.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -518,7 +518,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN
 
 !ELSEIF  "$(CFG)" == "Yahoo - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
 "$(INTDIR)\yahoo_auth.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -528,7 +528,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN
 
 !ELSEIF  "$(CFG)" == "Yahoo - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\yahoo_auth.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -562,7 +562,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN
 
 !ELSEIF  "$(CFG)" == "Yahoo - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
 "$(INTDIR)\yahoo_httplib.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -572,7 +572,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN
 
 !ELSEIF  "$(CFG)" == "Yahoo - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\yahoo_httplib.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -606,7 +606,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN
 
 !ELSEIF  "$(CFG)" == "Yahoo - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
 "$(INTDIR)\yahoo_list.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -616,7 +616,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN
 
 !ELSEIF  "$(CFG)" == "Yahoo - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\yahoo_list.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -650,7 +650,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN
 
 !ELSEIF  "$(CFG)" == "Yahoo - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
 "$(INTDIR)\yahoo_util.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -660,7 +660,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN
 
 !ELSEIF  "$(CFG)" == "Yahoo - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\yahoo_util.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -729,7 +729,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN
 
 !ELSEIF  "$(CFG)" == "Yahoo - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fp"$(INTDIR)\Yahoo.pch" /Yu"yahoo.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fp"$(INTDIR)\Yahoo.pch" /Yu"yahoo.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
 "$(INTDIR)\main.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Yahoo.pch"
 	$(CPP) @<<
@@ -739,7 +739,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN
 
 !ELSEIF  "$(CFG)" == "Yahoo - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fp"$(INTDIR)\Yahoo.pch" /Yu"yahoo.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fp"$(INTDIR)\Yahoo.pch" /Yu"yahoo.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\main.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Yahoo.pch"
 	$(CPP) @<<
@@ -808,7 +808,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN
 
 !ELSEIF  "$(CFG)" == "Yahoo - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fp"$(INTDIR)\Yahoo.pch" /Yc"yahoo.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fp"$(INTDIR)\Yahoo.pch" /Yc"yahoo.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
 "$(INTDIR)\yahoo.obj"	"$(INTDIR)\Yahoo.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -818,7 +818,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN
 
 !ELSEIF  "$(CFG)" == "Yahoo - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fp"$(INTDIR)\Yahoo.pch" /Yc"yahoo.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fp"$(INTDIR)\Yahoo.pch" /Yc"yahoo.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\yahoo.obj"	"$(INTDIR)\Yahoo.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
