@@ -142,6 +142,8 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	CreateProtoService(MS_ICQ_SENDSMS, &CIcqProto::SendSms);
 	CreateProtoService(PS_SET_NICKNAME, &CIcqProto::SetNickName);
 
+  CreateProtoService(PS_GETMYAWAYMSG, &CIcqProto::GetMyAwayMsg);
+
 	CreateProtoService(PS_GETINFOSETTING, &CIcqProto::GetInfoSetting);
 
 	CreateProtoService(PSS_ADDED, &CIcqProto::SendYouWereAdded);
@@ -2291,6 +2293,42 @@ int __cdecl CIcqProto::SetAwayMsg(int status, const char* msg)
 	LeaveCriticalSection(&m_modeMsgsMutex);
 
 	return 0; // Success
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// GetMyAwayMsg - obtain the current away message
+
+INT_PTR CIcqProto::GetMyAwayMsg(WPARAM wParam, LPARAM lParam)
+{
+	EnterCriticalSection(&m_modeMsgsMutex);
+
+  char **ppszMsg = MirandaStatusToAwayMsg(wParam ? wParam : m_iStatus);
+
+  if (!ppszMsg || !*ppszMsg)
+  {
+    LeaveCriticalSection(&m_modeMsgsMutex);
+    return 0;
+  }
+  INT_PTR res = 0;
+  int nMsgLen = strlennull(*ppszMsg) + 1;
+
+  if (lParam & SGMA_UNICODE)
+  {
+    WCHAR *szMsg = (WCHAR*)_alloca(nMsgLen * sizeof(WCHAR));
+
+    make_unicode_string_static(*ppszMsg, szMsg, nMsgLen);
+    res = (INT_PTR)mir_wstrdup(szMsg);
+  }
+  else
+  { // convert to ansi
+    char *szMsg = (char*)_alloca(nMsgLen);
+
+    if (utf8_decode_static(*ppszMsg, szMsg, nMsgLen))
+      res = (INT_PTR)mir_strdup(szMsg);
+  }
+  LeaveCriticalSection(&m_modeMsgsMutex);
+
+  return res;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

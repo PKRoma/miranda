@@ -130,6 +130,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	INT_PTR  __cdecl GetAvatarCaps(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl GetAvatarInfo(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl GetMyAvatar(WPARAM wParam, LPARAM lParam);	
+  INT_PTR  __cdecl GetMyAwayMsg(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl GetXStatus(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl GetXStatusEx(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl GetXStatusIcon(WPARAM wParam, LPARAM lParam);
