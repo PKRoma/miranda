@@ -58,7 +58,7 @@ popd
 if errorlevel 1 goto :Error
 
 pushd ..\..\miranda\protocols\YAHOO
-call :Nmake Yahoo.mak "Yahoo - Win32 Release"
+call :Nmake Yahoo.mak "Yahoo - Win32 Release Unicode"
 popd
 if errorlevel 1 goto :Error
 
@@ -93,6 +93,11 @@ if errorlevel 1 goto :Error
 
 pushd ..\..\miranda\plugins\db3x_mmap
 call :Nmake db3x_mmap.mak "db3x_mmap - Win32 Release Unicode"
+popd
+if errorlevel 1 goto :Error
+
+pushd ..\..\miranda\plugins\import
+call :Nmake import.mak "import - Win32 Release Unicode"
 popd
 if errorlevel 1 goto :Error
 
@@ -138,8 +143,6 @@ copy ..\release\Icons\xstatus_ICQ.dll    Icons
 
 copy ..\release\Plugins\advaimg.dll      Plugins
 copy ..\release\Plugins\GG.dll           Plugins
-copy ..\release\Plugins\import.dll       Plugins
-copy ..\release\Plugins\Yahoo.dll        Plugins
 
 dir /B /S *.dll | rebaser /NOCRC
 
