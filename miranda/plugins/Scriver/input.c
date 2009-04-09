@@ -56,6 +56,7 @@ void InputAreaContextMenu(HWND hwnd, WPARAM wParam, LPARAM lParam, HANDLE hConta
 	}
 	if (!SendMessage(hwnd, EM_CANPASTE, 0, 0)) {
 		EnableMenuItem(hSubMenu, IDM_PASTE, MF_BYCOMMAND | MF_GRAYED);
+		EnableMenuItem(hSubMenu, IDM_PASTESEND, MF_BYCOMMAND | MF_GRAYED);
 	}
 	if (lParam == 0xFFFFFFFF) {
 		SendMessage(hwnd, EM_POSFROMCHAR, (WPARAM) & pt, (LPARAM) sel.cpMax);
@@ -99,6 +100,10 @@ void InputAreaContextMenu(HWND hwnd, WPARAM wParam, LPARAM lParam, HANDLE hConta
 		break;
 	case IDM_PASTE:
 		SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
+		break;
+	case IDM_PASTESEND:
+		SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
+		PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
 		break;
 	case IDM_DELETE:
 		SendMessage(hwnd, EM_REPLACESEL, TRUE, 0);

@@ -178,6 +178,7 @@
 #define IDM_UNDO                        40003
 #define IDM_DELETE                      40004
 #define IDM_REDO                        40005
+#define IDM_PASTESEND                   40006
 #define IDM_COPYALL                     40011
 #define IDM_SELECTALL                   40012
 #define IDM_CLEAR                       40013

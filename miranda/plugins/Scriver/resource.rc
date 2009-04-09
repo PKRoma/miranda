@@ -619,6 +619,7 @@ BEGIN
         MENUITEM "Cut",                         IDM_CUT
         MENUITEM "Copy",                        IDM_COPY
         MENUITEM "Paste",                       IDM_PASTE
+        MENUITEM "Paste && Send",               IDM_PASTESEND
         MENUITEM "Delete",                      IDM_DELETE
         MENUITEM SEPARATOR
         MENUITEM "Select &All",                 IDM_SELECTALL
