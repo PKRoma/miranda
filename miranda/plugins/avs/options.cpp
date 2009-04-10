@@ -43,6 +43,7 @@ extern void DeleteAvatarFromCache(HANDLE, BOOL);
 extern HBITMAP LoadPNG(struct avatarCacheEntry *ace, char *szFilename);
 extern HANDLE GetContactThatHaveTheAvatar(HANDLE hContact, int locked = -1);
 
+extern int AVS_pathIsAbsolute(const char *path);
 extern size_t AVS_pathToRelative(const char *sPrc, char *pOut);
 extern size_t AVS_pathToAbsolute(const char *pSrc, char *pOut);
 extern void MakePathRelative(HANDLE hContact, char *path);
@@ -341,11 +342,17 @@ INT_PTR CALLBACK DlgProcOptionsProtos(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					g_selectedProto = GetProtoFromList(hwndDlg, iItem);
 					if ( g_selectedProto ) {
 						DBVARIANT dbv = {0};
-						if(!DBGetContactSettingString(NULL, PPICT_MODULE, g_selectedProto, &dbv)) {
-							char szFinalPath[MAX_PATH];
+						if(!DBGetContactSettingString(NULL, PPICT_MODULE, g_selectedProto, &dbv)) 
+                        {
+							if (!AVS_pathIsAbsolute(dbv.pszVal))
+                            {
+							    char szFinalPath[MAX_PATH];
+                                mir_snprintf(szFinalPath, SIZEOF(szFinalPath), "%%miranda_userdata%%\\%s", dbv.pszVal);
+							    SetDlgItemTextA(hwndDlg, IDC_PROTOAVATARNAME, szFinalPath);
+                            }
+                            else
+							    SetDlgItemTextA(hwndDlg, IDC_PROTOAVATARNAME, dbv.pszVal);
 
-							AVS_pathToAbsolute(dbv.pszVal, szFinalPath);
-							SetWindowTextA(GetDlgItem(hwndDlg, IDC_PROTOAVATARNAME), szFinalPath);
 							InvalidateRect(GetDlgItem(hwndDlg, IDC_PROTOPIC), NULL, TRUE);
 							DBFreeVariant(&dbv);
 						}

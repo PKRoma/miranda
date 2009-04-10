@@ -216,7 +216,7 @@ int _DebugTrace(HANDLE hContact, const char *fmt, ...)
  * taken and modified from core services
  */
 
-static int AVS_pathIsAbsolute(const char *path)
+int AVS_pathIsAbsolute(const char *path)
 {
 	if (!path || !(strlen(path) > 2))
 		return 0;
