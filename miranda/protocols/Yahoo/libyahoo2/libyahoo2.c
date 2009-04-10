@@ -5508,12 +5508,16 @@ void yahoo_set_away(int id, enum yahoo_status state, const char *msg, int away)
 			
 			if (yd->current_status == YAHOO_STATUS_CUSTOM) {
 				yahoo_packet_hash(pkt, 19, msg);
+				yahoo_packet_hash(pkt, 97, "1");
 				yahoo_packet_hash(pkt, 47, (away == 2)? "2": (away) ?"1":"0");
+				yahoo_packet_hash(pkt, 187, "0"); // ???
 			} else {
+				yahoo_packet_hash(pkt, 19, "");
+				yahoo_packet_hash(pkt, 97, "1");
 				yahoo_packet_hash(pkt, 47, (away == 2)? "2": (away) ?"1":"0");
 			}
 			
-			//yahoo_packet_hash(pkt, 187, "0"); // ???
+			
 			
 		}
 	}
@@ -6450,7 +6454,7 @@ static void yahoo_search_internal(int id, int t, const char *text, int g, int ar
 	while((p = strchr(ctext, ' ')))
 		*p = '+';
 
-	snprintf(url, 1024, "http://members.yahoo.com/interests?.oc=m&.kw=%s&.sb=%d&.g=%d&.ar=0%s%s%s",
+	snprintf(url, 1024, "http://profiles.yahoo.com/?.oc=m&.kw=%s&.sb=%d&.g=%d&.ar=0%s%s%s",
 			ctext, t, g, photo ? "&.p=y" : "", yahoo_only ? "&.pg=y" : "",
 			startpos ? buff : "");
 
