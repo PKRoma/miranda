@@ -169,10 +169,7 @@ static void SetValue(CIcqProto* ppro, HWND hwndDlg, int idCtrl, HANDLE hContact,
 				if (dbv.dVal == 0)
 					unspecified = 1;
 				else
-				{
-					pstr = asctime(localtime((time_t*)&dbv.dVal));
-					pstr[24] = '\0'; // Remove newline
-				}
+					pstr = time2text(dbv.dVal);
 			}
 			else
 				pstr = _itoa(special == SVS_SIGNED ? dbv.lVal:dbv.dVal, str, 10);

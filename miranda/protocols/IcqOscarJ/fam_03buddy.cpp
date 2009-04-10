@@ -319,7 +319,7 @@ void CIcqProto::handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 #ifdef _DEBUG
 		if (wIdleTimer)
 			NetLog_Server("Idle timer is %u.", wIdleTimer);
-		NetLog_Server("Online since %s", asctime(localtime((time_t*)&dwOnlineSince)));
+		NetLog_Server("Online since %s", time2text(dwOnlineSince));
 #endif
 
 		// Check client capabilities

@@ -1400,7 +1400,7 @@ void CIcqProto::handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, server
 			/* finally we get a time_t of the last update time */
 			unpackDWord(&buf, &dwLastUpdateTime);
 			setSettingDword(NULL, "SrvLastUpdate", dwLastUpdateTime);
-			NetLog_Server("Last update of server list was (%u) %s", dwLastUpdateTime, asctime(localtime((time_t*)&dwLastUpdateTime)));
+			NetLog_Server("Last update of server list was (%u) %s", dwLastUpdateTime, time2text(dwLastUpdateTime));
 
 			sendRosterAck();
 			handleServUINSettings(wListenPort, info);

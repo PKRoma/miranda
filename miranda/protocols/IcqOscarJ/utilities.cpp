@@ -1594,6 +1594,22 @@ int GetGMTOffset(void)
 	return nOffset;
 }
 
+
+char* time2text(time_t time)
+{
+  tm *local = localtime(&time);
+
+  if (local)
+  {
+    char *str = asctime(local);
+    str[24] = '\0'; // remove new line
+    return str;
+  }
+  else
+    return "<invalid>";
+}
+
+
 BOOL CIcqProto::validateStatusMessageRequest(HANDLE hContact, WORD byMessageType)
 {
 	// Privacy control

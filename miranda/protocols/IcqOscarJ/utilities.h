@@ -98,6 +98,7 @@ int RandRange(int nLow, int nHigh);
 BOOL IsStringUIN(const char *pszString);
 
 int GetGMTOffset(void);
+char* time2text(time_t time);
 
 BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType);
 

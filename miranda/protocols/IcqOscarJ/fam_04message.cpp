@@ -389,13 +389,9 @@ void CIcqProto::handleRecvServMsgType1(BYTE *buf, WORD wLen, DWORD dwUin, char *
 							if (pTimeTLV && wTimeTLVType == 0x16 && wTimeTLVLen == 4)
 							{ // found Offline timestamp
 								BYTE *pBuf = pTimeTLV;
-								char *szTime;
 
-								unpackDWord(&pBuf, &dwRecvTime);
-								// TODO: add some checking
-								szTime = asctime(localtime((time_t*)&dwRecvTime));
-								szTime[24] = '\0'; // remove new line
-								NetLog_Server("Message (format %u) - Offline timestamp is %s", 1, szTime);
+                unpackDWord(&pBuf, &dwRecvTime);
+								NetLog_Server("Message (format %u) - Offline timestamp is %s", 1, time2text(dwRecvTime));
 							}
 							SAFE_FREE((void**)&pTimeTLV);
 						}
@@ -1260,13 +1256,9 @@ void CIcqProto::handleRecvServMsgType4(BYTE *buf, WORD wLen, DWORD dwUin, char *
 					if (pTimeTLV && wTimeTLVType == 0x16 && wTimeTLVLen == 4)
 					{ // found Offline timestamp
 						BYTE *pBuf = pTimeTLV;
-						char *szTime;
 
 						unpackDWord(&pBuf, &dwRecvTime);
-						// TODO: add some checking
-						szTime = asctime(localtime((time_t*)&dwRecvTime));
-						szTime[24] = '\0'; // remove new line
-						NetLog_Server("Message (format %u) - Offline timestamp is %s", 4, szTime);
+						NetLog_Server("Message (format %u) - Offline timestamp is %s", 4, time2text(dwRecvTime));
 					}
 					SAFE_FREE((void**)&pTimeTLV);
 				}
