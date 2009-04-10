@@ -252,7 +252,7 @@ struct CMsnProto : public PROTO_INTERFACE
 	void MsnInitMenus( void );
 	void MsnUninitMenus( void );
 	void MSN_EnableMenuItems( bool parEnable );
-	void MsnInvokeMyURL( bool ismail, char* url );
+	void MsnInvokeMyURL( bool ismail, const char* url );
 
 	INT_PTR __cdecl MsnBlockCommand( WPARAM wParam, LPARAM lParam );
 	INT_PTR __cdecl MsnGotoInbox( WPARAM, LPARAM );

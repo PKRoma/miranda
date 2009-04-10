@@ -681,7 +681,7 @@ void  CMsnProto::MSN_SetServerStatus( int newStatus )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Display Hotmail Inbox thread
 
-void CMsnProto::MsnInvokeMyURL( bool ismail, char* url )
+void CMsnProto::MsnInvokeMyURL( bool ismail, const char* url )
 {
 	const char* requrl = url ? url : (ismail ? rru : "http://spaces.live.com");  
 	const char* id = ismail ? urlId : "73625";
