@@ -50,6 +50,8 @@ void __cdecl CYahooProto::search_simplethread(void *snsearch)
 	//yahoo_search(m_id, YAHOO_SEARCH_YID, m, YAHOO_GENDER_NONE, YAHOO_AGERANGE_NONE, 0, 1);
 
 	FREE(nick);
+	
+	SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 }
 
 HANDLE __cdecl CYahooProto::SearchBasic( const char* nick )
