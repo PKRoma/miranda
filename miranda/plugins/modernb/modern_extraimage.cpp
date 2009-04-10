@@ -116,6 +116,18 @@ int ExtraImage_ExtraIDToColumnNum(int extra)
 	return (colsum(0,ord)-1);
 };
 
+int ExtraImage_ColumnNumToExtraID(int column)
+{
+	if (HasExtraIconsService())
+		return column;
+
+	for (int i=0; i<sizeof(ExtraOrder)/sizeof(ExtraOrder[0]); i++)
+		if (ExtraOrder[i]==column)
+			return i+1;
+
+	return -1;
+}
+
 INT_PTR SetIconForExtraColumn(WPARAM wParam,LPARAM lParam)
 {
 	pIconExtraColumn piec;

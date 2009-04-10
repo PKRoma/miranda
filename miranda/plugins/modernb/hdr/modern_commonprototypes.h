@@ -272,6 +272,7 @@ void	UpdateAllAvatars(struct ClcData *dat);												//cache_func.c
 											//cluiframes.c
 void gtaRenewText(HANDLE hContact);
 int ExtraImage_ExtraIDToColumnNum(int extra);
+int ExtraImage_ColumnNumToExtraID(int column);
 
 int		LoadSkinButtonModule();
 void	UninitSkinHotKeys();

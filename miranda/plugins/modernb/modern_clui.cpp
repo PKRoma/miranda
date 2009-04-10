@@ -2773,42 +2773,47 @@ LRESULT CLUI::OnClickNotify( NMCLISTCONTROL * pnmc )
 
 	if (hitFlags&CLCHT_ONITEMEXTRA)
 	{					
-		int v,e,w;
-		pdisplayNameCacheEntry pdnce; 
-		v=ExtraImage_ExtraIDToColumnNum(EXTRA_ICON_PROTO);
-		e=ExtraImage_ExtraIDToColumnNum(EXTRA_ICON_EMAIL);
-		w=ExtraImage_ExtraIDToColumnNum(EXTRA_ICON_WEB);
-
 		if (!IsHContactGroup(hItem)&&!IsHContactInfo(hItem))
 		{
-			pdnce=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(pnmc->hItem);
+			pdisplayNameCacheEntry pdnce=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(pnmc->hItem);
 			if (pdnce==NULL) return 0;
 
-			if(pnmc->iColumn==v) {
-				CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)pnmc->hItem,0);
-			};
-			if(pnmc->iColumn==e) 
+			int extra = ExtraImage_ColumnNumToExtraID(pnmc->iColumn);
+			NotifyEventHooks(g_CluiData.hEventExtraClick, (WPARAM)pnmc->hItem, extra);
+
+			if (!ServiceExists("ExtraIcon/Register"))
 			{
-				char *email,buf[4096];
-				email= ModernGetStringA(pnmc->hItem,"UserInfo", "Mye-mail0");
-				if (!email)
-					email= ModernGetStringA(pnmc->hItem, pdnce->m_cache_cszProto, "e-mail");																						
-				if (email)
+				int v,e,w;
+				v=ExtraImage_ExtraIDToColumnNum(EXTRA_ICON_PROTO);
+				e=ExtraImage_ExtraIDToColumnNum(EXTRA_ICON_EMAIL);
+				w=ExtraImage_ExtraIDToColumnNum(EXTRA_ICON_WEB);
+
+				if(pnmc->iColumn==v) {
+					CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)pnmc->hItem,0);
+				};
+				if(pnmc->iColumn==e) 
 				{
-					sprintf(buf,"mailto:%s",email);
-					mir_free_and_nill(email);
-					ShellExecuteA(m_hWnd,"open",buf,NULL,NULL,SW_SHOW);
-				}											
-			};	
-			if(pnmc->iColumn==w) {
-				char *homepage;
-				homepage= ModernGetStringA(pdnce->m_cache_hContact,"UserInfo", "Homepage");
-				if (!homepage)
-					homepage= ModernGetStringA(pdnce->m_cache_hContact,pdnce->m_cache_cszProto, "Homepage");
-				if (homepage!=NULL)
-				{											
-					ShellExecuteA(m_hWnd,"open",homepage,NULL,NULL,SW_SHOW);
-					mir_free_and_nill(homepage);
+					char *email,buf[4096];
+					email= ModernGetStringA(pnmc->hItem,"UserInfo", "Mye-mail0");
+					if (!email)
+						email= ModernGetStringA(pnmc->hItem, pdnce->m_cache_cszProto, "e-mail");																						
+					if (email)
+					{
+						sprintf(buf,"mailto:%s",email);
+						mir_free_and_nill(email);
+						ShellExecuteA(m_hWnd,"open",buf,NULL,NULL,SW_SHOW);
+					}											
+				};	
+				if(pnmc->iColumn==w) {
+					char *homepage;
+					homepage= ModernGetStringA(pdnce->m_cache_hContact,"UserInfo", "Homepage");
+					if (!homepage)
+						homepage= ModernGetStringA(pdnce->m_cache_hContact,pdnce->m_cache_cszProto, "Homepage");
+					if (homepage!=NULL)
+					{											
+						ShellExecuteA(m_hWnd,"open",homepage,NULL,NULL,SW_SHOW);
+						mir_free_and_nill(homepage);
+					}
 				}
 			}
 		}
