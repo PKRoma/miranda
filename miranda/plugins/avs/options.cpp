@@ -287,7 +287,9 @@ INT_PTR CALLBACK DlgProcOptionsProtos(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 						SetProtoPic( szProto );
 					else
 						RemoveProtoPic( szProto );
-					SendMessage(hwndList, WM_LBUTTONDOWN, 0, 0);
+
+                    NMHDR nm = { hwndList, IDC_PROTOCOLS, NM_CLICK };
+                    SendMessage(hwndDlg, WM_NOTIFY, 0, (LPARAM)&nm);
 				}
 				break;
 			}
