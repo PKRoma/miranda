@@ -79,13 +79,13 @@ static int SaveTree(HWND hwndDlg)
 		if ( iod->pimi ) {
 			GetMenuItemName( iod->pimi, menuItemName, sizeof( menuItemName ));
 
-			wsprintfA( DBString, "%s_visible", menuItemName );
+			mir_snprintf( DBString, SIZEOF(DBString), "%s_visible", menuItemName );
 			DBWriteContactSettingByte( NULL, MenuNameItems, DBString, iod->show );
 
-			wsprintfA( DBString, "%s_pos", menuItemName );
+			mir_snprintf( DBString, SIZEOF(DBString), "%s_pos", menuItemName );
 			DBWriteContactSettingDword( NULL, MenuNameItems, DBString, runtimepos );
 
-			wsprintfA( DBString, "%s_name", menuItemName );
+			mir_snprintf( DBString, SIZEOF(DBString), "%s_name", menuItemName );
 			if ( lstrcmp( iod->name, iod->defname ) != 0 )
 				DBWriteContactSettingTString( NULL, MenuNameItems, DBString, iod->name );
 			else
@@ -235,7 +235,7 @@ static int BuildTree(HWND hwndDlg,int MenuObjectId, BOOL bReread)
 			GetMenuItemName( p, menuItemName, sizeof( menuItemName ));
 			{
 				DBVARIANT dbv;
-				wsprintfA(buf, "%s_name", menuItemName);
+				mir_snprintf(buf, SIZEOF(buf), "%s_name", menuItemName);
 
 				if ( !DBGetContactSettingTString( NULL, MenuNameItems, buf, &dbv )) {
 					PD->name = mir_tstrdup( dbv.ptszVal );
@@ -247,11 +247,11 @@ static int BuildTree(HWND hwndDlg,int MenuObjectId, BOOL bReread)
 			PD->pimi = p;
 			PD->defname = mir_tstrdup( p->mi.ptszName );
 
-			wsprintfA( buf, "%s_visible", menuItemName );
+			mir_snprintf( buf, SIZEOF(buf), "%s_visible", menuItemName );
 			PD->show = DBGetContactSettingByte( NULL, MenuNameItems, buf, 1 );
 
 			if ( bReread ) {
-				wsprintfA( buf, "%s_pos", menuItemName );
+				mir_snprintf( buf, SIZEOF(buf), "%s_pos", menuItemName );
 				PD->pos = DBGetContactSettingDword( NULL, MenuNameItems, buf, 1 );
 			}
 			else PD->pos = ( PD->pimi ) ? PD->pimi->originalPosition : 0;

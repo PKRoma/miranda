@@ -687,23 +687,23 @@ void fnGetFontSetting(int i, LOGFONT* lf, COLORREF* colour)
 	BYTE style;
 
 	cli.pfnGetDefaultFontSetting(i, lf, colour);
-	wsprintfA(idstr, "Font%dName", i);
+	mir_snprintf(idstr, SIZEOF(idstr), "Font%dName", i);
 	if ( !DBGetContactSettingTString(NULL, "CLC", idstr, &dbv )) {
 		lstrcpy(lf->lfFaceName, dbv.ptszVal);
 		mir_free(dbv.pszVal);
 	}
-	wsprintfA(idstr, "Font%dCol", i);
+	mir_snprintf(idstr, SIZEOF(idstr), "Font%dCol", i);
 	*colour = DBGetContactSettingDword(NULL, "CLC", idstr, *colour);
-	wsprintfA(idstr, "Font%dSize", i);
+	mir_snprintf(idstr, SIZEOF(idstr), "Font%dSize", i);
 	lf->lfHeight = (char) DBGetContactSettingByte(NULL, "CLC", idstr, lf->lfHeight);
-	wsprintfA(idstr, "Font%dSty", i);
+	mir_snprintf(idstr, SIZEOF(idstr), "Font%dSty", i);
 	style = (BYTE) DBGetContactSettingByte(NULL, "CLC", idstr, (lf->lfWeight == FW_NORMAL ? 0 : DBFONTF_BOLD) | (lf->lfItalic ? DBFONTF_ITALIC : 0) | (lf->lfUnderline ? DBFONTF_UNDERLINE : 0));
 	lf->lfWidth = lf->lfEscapement = lf->lfOrientation = 0;
 	lf->lfWeight = style & DBFONTF_BOLD ? FW_BOLD : FW_NORMAL;
 	lf->lfItalic = (style & DBFONTF_ITALIC) != 0;
 	lf->lfUnderline = (style & DBFONTF_UNDERLINE) != 0;
 	lf->lfStrikeOut = 0;
-	wsprintfA(idstr, "Font%dSet", i);
+	mir_snprintf(idstr, SIZEOF(idstr), "Font%dSet", i);
 	lf->lfCharSet = DBGetContactSettingByte(NULL, "CLC", idstr, lf->lfCharSet);
 	lf->lfOutPrecision = OUT_DEFAULT_PRECIS;
 	lf->lfClipPrecision = CLIP_DEFAULT_PRECIS;

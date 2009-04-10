@@ -315,17 +315,17 @@ static INT_PTR AddContactMenuItem(WPARAM, LPARAM lParam)
 	PMO_IntMenuItem menuHandle = MO_AddNewMenuItem( hContactMenuObject, &tmi );
 	char buf[ 256 ];
 	if (mi->pszService)
-		sprintf( buf,"%s/%s", (mi->pszContactOwner) ? mi->pszContactOwner : "", (mi->pszService) ? mi->pszService : "" );
+		mir_snprintf( buf, SIZEOF(buf), "%s/%s", (mi->pszContactOwner) ? mi->pszContactOwner : "", (mi->pszService) ? mi->pszService : "" );
 	else if (mi->ptszName)
 	{
 		if (tmi.flags&CMIF_UNICODE)
 		{
 			char * temp=t2a(mi->ptszName);
-			sprintf( buf,"%s/NoService/%s", (mi->pszContactOwner) ? mi->pszContactOwner : "", temp );
+			mir_snprintf( buf, SIZEOF(buf), "%s/NoService/%s", (mi->pszContactOwner) ? mi->pszContactOwner : "", temp );
 			mir_free(temp);
 		}
 		else
-			sprintf( buf,"%s/NoService/%s", (mi->pszContactOwner) ? mi->pszContactOwner : "", mi->ptszName );
+			mir_snprintf( buf, SIZEOF(buf), "%s/NoService/%s", (mi->pszContactOwner) ? mi->pszContactOwner : "", mi->ptszName );
 	}
 	else buf[0]='\0';
 	if (buf[0]) MO_SetOptionsMenuItem( menuHandle, OPT_MENUITEMSETUNIQNAME, ( INT_PTR )buf );
@@ -975,7 +975,7 @@ void RebuildMenuOrder( void )
 		cli.menuProtoCount++;
 		{
 			char buf[256];
-			sprintf( buf, "RootProtocolIcon_%s", pa->szModuleName );
+			mir_snprintf( buf, SIZEOF(buf), "RootProtocolIcon_%s", pa->szModuleName );
 			MO_SetOptionsMenuItem( menuHandle, OPT_MENUITEMSETUNIQNAME, ( INT_PTR )buf );
 		}
 		DestroyIcon(tmi.hIcon);
@@ -1010,7 +1010,7 @@ void RebuildMenuOrder( void )
 			hStatusMenuHandles[i].menuhandle[j] = MO_AddNewMenuItem( hStatusMenuObject, &tmi );
 			{
 				char buf[ 256 ];
-				sprintf(buf,"ProtocolIcon_%s_%s",pa->szModuleName,tmi.pszName);
+				mir_snprintf(buf, SIZEOF(buf), "ProtocolIcon_%s_%s",pa->szModuleName,tmi.pszName);
 				MO_SetOptionsMenuItem( hStatusMenuHandles[i].menuhandle[j], OPT_MENUITEMSETUNIQNAME, ( INT_PTR )buf );
 			}
 			IconLib_ReleaseIcon(tmi.hIcon,0);

@@ -179,15 +179,14 @@ static int FileTransferDlgResizer(HWND, LPARAM, UTILRESIZECONTROL *urc)
 
 INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct FileDlgData *dat=NULL;
+	FileDlgData *dat = (FileDlgData*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
-	dat=(struct FileDlgData*)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 	switch (msg)
 	{
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
-			dat = (struct FileDlgData*)lParam;
-			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LPARAM)dat);
+			dat = (FileDlgData*)lParam;
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 			dat->hNotifyEvent=HookEventMessage(ME_PROTO_ACK,hwndDlg,HM_RECVEVENT);
 			dat->transferStatus.currentFileNumber = -1;
 			if(dat->send) {

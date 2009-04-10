@@ -162,11 +162,10 @@ BOOL ExportSettings(HWND hwndDlg, TCHAR *filename, OBJLIST<TFontID>& flist, OBJL
 		}
 
 		if ( F.flags & FIDF_APPENDNAME )
-			wsprintfA( buff, "%sName", F.prefix );
+			mir_snprintf( buff, SIZEOF(buff), "%sName=s", F.prefix );
 		else
-			wsprintfA( buff, "%s", F.prefix );
+			mir_snprintf( buff, SIZEOF(buff), "%s=s", F.prefix );
 
-		strcat(buff, "=s");
 		#if defined( _UNICODE )
 			WideCharToMultiByte(code_page, 0, F.value.szFace, -1, abuff, 1024, 0, 0);
 			abuff[1023]=0;
@@ -176,7 +175,7 @@ BOOL ExportSettings(HWND hwndDlg, TCHAR *filename, OBJLIST<TFontID>& flist, OBJL
 		#endif
 		WriteLine(fhand, buff);
 
-		wsprintfA(buff, "%sSize=b", F.prefix);
+		mir_snprintf(buff, SIZEOF(buff), "%sSize=b", F.prefix);
 		if ( F.flags & FIDF_SAVEACTUALHEIGHT ) {
 			HDC hdc;
 			SIZE size;

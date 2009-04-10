@@ -105,6 +105,7 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 
 				EnableWindow( GetDlgItem( hwndDlg, IDC_ACCINTERNALNAME ), FALSE );
 			}
+			SendDlgItemMessage( hwndDlg, IDC_ACCINTERNALNAME, EM_LIMITTEXT, 40, 0 );
 		}
 		return TRUE;
 
@@ -118,14 +119,12 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 				case PRAC_UPGRADED:
 					{
 						char szPlugin[ MAX_PATH ];
-						strncpy( szPlugin, pa->szProtoName, SIZEOF( szPlugin ));
-						strcat( szPlugin, ".dll" );
+						mir_snprintf( szPlugin, SIZEOF(szPlugin), "%s.dll", pa->szProtoName );
 						UnloadAccount( pa, TRUE );
 						accounts.remove( pa );
 						if ( UnloadPlugin( szPlugin, SIZEOF( szPlugin ))) {
 							char szNewName[ MAX_PATH ];
-							strcpy( szNewName, szPlugin );
-							strcat( szNewName, "~" );
+   							mir_snprintf( szNewName, SIZEOF(szNewName), "%s~", szPlugin );
 							MoveFileA( szPlugin, szNewName );
 						}
 					}
@@ -155,9 +154,9 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 					rtrim( buf );
 					if ( buf[0] == 0 ) {
 						int count = 1;
-						while( TRUE ) {
+						for( ;; ) {
 							DBVARIANT dbv;
-							sprintf( buf, "%s_%d", pa->szProtoName, count++ );
+							mir_snprintf( buf, SIZEOF(buf), "%s_%d", pa->szProtoName, count++ );
 							if ( DBGetContactSettingString( NULL, buf, "AM_BaseProto", &dbv ))
 								break;
 							DBFreeVariant( &dbv );

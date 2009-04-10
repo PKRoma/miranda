@@ -62,10 +62,10 @@ void SaveColumnSizes(HWND hwndResults)
 		}
 	}
 	for(i=0;i<=COLUMNID_HANDLE;i++) {
-		wsprintfA(szSetting,"ColOrder%d",i);
+		mir_snprintf(szSetting, SIZEOF(szSetting), "ColOrder%d", i);
 		DBWriteContactSettingByte(NULL,"FindAdd",szSetting,(BYTE)columnOrder[i]);
 		if(i>=columnCount) continue;
-		wsprintfA(szSetting,"ColWidth%d",i);
+		mir_snprintf(szSetting, SIZEOF(szSetting), "ColWidth%d", i);
 		DBWriteContactSettingWord(NULL,"FindAdd",szSetting,(WORD)ListView_GetColumnWidth(hwndResults,i));
 	}
 	DBWriteContactSettingByte(NULL,"FindAdd","SortColumn",(BYTE)dat->iLastColumnSortIndex);
@@ -109,7 +109,7 @@ void LoadColumnSizes(HWND hwndResults,const char *szProto)
 				#endif
 			}
 			else lvc.mask &= ~LVCF_TEXT;
-			wsprintfA(szSetting,"ColWidth%d",i);
+			mir_snprintf(szSetting, SIZEOF(szSetting), "ColWidth%d", i);
 			lvc.cx = DBGetContactSettingWord(NULL,"FindAdd",szSetting,defaultColumnSizes[i]);
 			ListView_InsertColumn( hwndResults, i, (LPARAM)&lvc );
 			#if defined( _UNICODE )
@@ -117,7 +117,7 @@ void LoadColumnSizes(HWND hwndResults,const char *szProto)
 					mir_free(lvc.pszText);
 			#endif
 		}
-		wsprintfA(szSetting,"ColOrder%d",i);
+		mir_snprintf(szSetting, SIZEOF(szSetting), "ColOrder%d", i);
 		columnOrder[i]=DBGetContactSettingByte(NULL,"FindAdd",szSetting,-1);
 		if(columnOrder[i]==-1) colOrdersValid=0;
 		if(columnOrder[i]==COLUMNID_HANDLE) handleColumnAfter=i?columnOrder[i-1]:-1;

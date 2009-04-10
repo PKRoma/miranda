@@ -892,7 +892,7 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				if(!lstrcmpA(ack->szModule,"ICQ")) {
 					char str[15];
 					ICQSEARCHRESULT *isr=(ICQSEARCHRESULT*)psr;
-					wsprintfA(str, "%u", isr->uin);
+					mir_snprintf(str, SIZEOF(str), "%u", isr->uin);
 					ListView_SetItemTextA(GetDlgItem(hwndDlg,IDC_RESULTS),i,col++,str);
 				}
 				SetStatusBarResultInfo(hwndDlg);

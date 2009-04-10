@@ -902,13 +902,13 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 			DBVARIANT dbv = { 0 };
 			int pos;
 			char MenuNameItems[256];
-			wsprintfA(MenuNameItems, "%s_Items", pmo->Name);
+			mir_snprintf(MenuNameItems, SIZEOF(MenuNameItems), "%s_Items", pmo->Name);
 
 			char menuItemName[256];
 			GetMenuItemName( pmi, menuItemName, sizeof( menuItemName ));
 
 			// check if it visible
-			wsprintfA( DBString, "%s_visible", menuItemName );
+			mir_snprintf( DBString, SIZEOF(DBString), "%s_visible", menuItemName );
 			if ( DBGetContactSettingByte( NULL, MenuNameItems, DBString, -1 ) == -1 )
 				DBWriteContactSettingByte( NULL, MenuNameItems, DBString, 1 );
 
@@ -919,7 +919,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 			}
 
 			// mi.pszName
-			wsprintfA( DBString, "%s_name", menuItemName );
+			mir_snprintf( DBString, SIZEOF(DBString), "%s_name", menuItemName );
 			if ( !DBGetContactSettingTString( NULL, MenuNameItems, DBString, &dbv )) {
 				if ( _tcslen( dbv.ptszVal ) > 0 ) {
 					if ( pmi->CustomName ) mir_free( pmi->CustomName );
@@ -928,7 +928,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 				DBFreeVariant( &dbv );
 			}
 
-			wsprintfA( DBString, "%s_pos", menuItemName );
+			mir_snprintf( DBString, SIZEOF(DBString), "%s_pos", menuItemName );
 			if (( pos = DBGetContactSettingDword( NULL, MenuNameItems, DBString, -1 )) == -1 ) {
 				DBWriteContactSettingDword( NULL, MenuNameItems, DBString, mi->position );
 				if ( pmi->submenu.first )

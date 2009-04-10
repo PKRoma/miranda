@@ -138,11 +138,11 @@ int GetFontSettingFromDB(char *settings_group, char *prefix, LOGFONT* lf, COLORR
    else retval = 1;
 
 	if (colour) {
-		sprintf(idstr, "%sCol", prefix);
+		mir_snprintf(idstr, SIZEOF(idstr), "%sCol", prefix);
 		*colour = DBGetContactSettingDword(NULL, settings_group, idstr, *colour);
 	}
 
-	sprintf(idstr, "%sSize", prefix);
+	mir_snprintf(idstr, SIZEOF(idstr), "%sSize", prefix);
 	lf->lfHeight = (char)DBGetContactSettingByte(NULL, settings_group, idstr, lf->lfHeight);
 
 
@@ -153,7 +153,7 @@ int GetFontSettingFromDB(char *settings_group, char *prefix, LOGFONT* lf, COLORR
 	//	ReleaseDC(0, hdc);
 	//}
 
-	sprintf(idstr, "%sSty", prefix);
+	mir_snprintf(idstr, SIZEOF(idstr), "%sSty", prefix);
 	style = (BYTE) DBGetContactSettingByte(NULL, settings_group, idstr, 
 		(lf->lfWeight == FW_NORMAL ? 0 : DBFONTF_BOLD) | (lf->lfItalic ? DBFONTF_ITALIC : 0) | (lf->lfUnderline ? DBFONTF_UNDERLINE : 0) | lf->lfStrikeOut ? DBFONTF_STRIKEOUT : 0);
 
@@ -163,7 +163,7 @@ int GetFontSettingFromDB(char *settings_group, char *prefix, LOGFONT* lf, COLORR
 	lf->lfUnderline = (style & DBFONTF_UNDERLINE) != 0;
 	lf->lfStrikeOut = (style & DBFONTF_STRIKEOUT) != 0;
 
-	sprintf(idstr, "%sSet", prefix);
+	mir_snprintf(idstr, SIZEOF(idstr), "%sSet", prefix);
 	lf->lfCharSet = DBGetContactSettingByte(NULL, settings_group, idstr, lf->lfCharSet);
 
 	lf->lfOutPrecision = OUT_DEFAULT_PRECIS;

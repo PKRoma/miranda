@@ -322,7 +322,7 @@ static INT_PTR GetContactInfo(WPARAM, LPARAM lParam) {
 			DBVARIANT dbv;
 
 			if (!DBGetContactSetting(ci->hContact,ci->szProto,"Timezone",&dbv)) {
-				sprintf(str,dbv.cVal?"GMT%+d:%02d":"GMT",-dbv.cVal/2,(dbv.cVal&1)*30);
+				mir_snprintf(str, SIZEOF(str), dbv.cVal?"GMT%+d:%02d":"GMT",-dbv.cVal/2,(dbv.cVal&1)*30);
 				if ( ci->dwFlag & CNF_UNICODE ) {
 					int cbLen = MultiByteToWideChar( CP_ACP, 0, ( LPCSTR )str, -1, NULL, 0 );
 					WCHAR* buf = ( WCHAR* )mir_alloc( sizeof( WCHAR )*(cbLen+1) );

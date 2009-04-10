@@ -73,7 +73,7 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 					if(dbv.cVal==-100) unspecified=1;
 					else {
 						pstr=str;
-						sprintf(str,dbv.cVal?"GMT%+d:%02d":"GMT",-dbv.cVal/2,(dbv.cVal&1)*30);
+						mir_snprintf(str, SIZEOF(str), dbv.cVal?"GMT%+d:%02d":"GMT",-dbv.cVal/2,(dbv.cVal&1)*30);
 					}
 				}
 				else {
