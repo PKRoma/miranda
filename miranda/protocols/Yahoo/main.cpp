@@ -121,7 +121,9 @@ extern "C" int __declspec(dllexport)Load(PLUGINLINK *link)
 	pd.fnUninit = ( pfnUninitProto )yahooProtoUninit;
 	CallService( MS_PROTO_REGISTERMODULE, 0, ( LPARAM )&pd );
 
-	// Initialize our important variable
+	/**
+	 * Register LibYahoo2 callback functions
+	 */
 	register_callbacks();
 	
 	return 0;
