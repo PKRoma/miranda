@@ -706,7 +706,7 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				uITCnt=TreeView_GetCount(tvw);
 				uSic=0;
 				if (uITCnt) {
-					pSIT=(HTREEITEM *)malloc(sizeof(HTREEITEM)*uITCnt);
+					pSIT=(HTREEITEM *)mir_alloc(sizeof(HTREEITEM)*uITCnt);
 					if (pSIT) {
 						HTREEITEM hit;
 						hit=TreeView_GetRoot(tvw);
@@ -733,7 +733,7 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 								if (!i) FirstItem=insertAfter;
 						}	}
 						// free pointers...
-						free(pSIT);
+						mir_free(pSIT);
 				}	}
 
 				if (FirstItem) TreeView_SelectItem(tvw,FirstItem);

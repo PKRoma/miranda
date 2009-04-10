@@ -2055,7 +2055,7 @@ static int OnAccChanged(WPARAM wParam, LPARAM lParam)
 		{
 			int idx;
 			protoPicCacheEntry tmp;
-			tmp.szProtoname = pa->szProtoName;
+			tmp.szProtoname = mir_strdup(pa->szProtoName);
 			if (( idx = g_ProtoPictures.getIndex( &tmp )) != -1 )
 				g_ProtoPictures.remove( idx );
 			if (( idx = g_MyAvatars.getIndex( &tmp )) != -1 )

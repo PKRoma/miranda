@@ -809,11 +809,11 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 
 						ListBox_SetItemData( hList, idx, 0 );
 
+						NotifyEventHooks( hAccListChanged, PRAC_REMOVED, ( LPARAM )pa );
 						char* szSaveModule = NEWSTR_ALLOCA(pa->szModuleName);
 						UnloadAccount( pa, TRUE );
 						EraseAccount( szSaveModule );
 						accounts.remove( pa );
-						NotifyEventHooks( hAccListChanged, PRAC_REMOVED, ( LPARAM )pa );
 						WriteDbAccounts();
 						SendMessage( hwndDlg, WM_MY_REFRESH, 0, 0 );
 
