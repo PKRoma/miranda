@@ -5514,7 +5514,7 @@ void yahoo_set_away(int id, enum yahoo_status state, const char *msg, int away)
 			} else {
 				yahoo_packet_hash(pkt, 19, "");
 				yahoo_packet_hash(pkt, 97, "1");
-				yahoo_packet_hash(pkt, 47, (away == 2)? "2": (away) ?"1":"0");
+				//yahoo_packet_hash(pkt, 47, (away == 2)? "2": (away) ?"1":"0");
 			}
 			
 			
