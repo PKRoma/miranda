@@ -76,6 +76,7 @@ extern PGTBCR pfnGetThemeBackgroundContentRect;
 typedef struct {
 	time_t lastEnterTime;
 	TCHAR  szTabSave[20];
+	BOOL   iSavedSpaces;
 } MESSAGESUBDATA;
 
 
@@ -457,11 +458,8 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			return(DrawRichEditFrame(hwnd, mwdat, ID_EXTBKINPUTAREA, msg, wParam, lParam, OldMessageProc));
 
 		case EM_SUBCLASSED:
-			dat = (MESSAGESUBDATA *) mir_alloc(sizeof(MESSAGESUBDATA));
-
+			dat = (MESSAGESUBDATA *) mir_calloc(sizeof(MESSAGESUBDATA));
 			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) dat);
-			dat->szTabSave[0] = '\0';
-			dat->lastEnterTime = 0;
 			return 0;
 
 		case WM_CONTEXTMENU: {
@@ -712,6 +710,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 
 			if (wParam == VK_RETURN) {
 				dat->szTabSave[0] = '\0';
+				dat->iSavedSpaces = 0;
 
 				if (isShift) {
 					if (myGlobals.m_SendOnShiftEnter) {
@@ -779,8 +778,21 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 #endif
 
 					SendMessage(hwnd, EM_GETTEXTEX, (WPARAM)&gt, (LPARAM)pszText);
-					while (start > 0 /*&& pszText[start-1] != ' '*/ && pszText[start-1] != 13 && pszText[start-1] != VK_TAB)
-						start--;
+					{
+						int n = dat->iSavedSpaces;
+						while (start > 0) {
+							if (pszText[start-1] == '\n' && pszText[start-1] == '\t')
+								break;
+
+							if (pszText[start-1] == ' ') {
+								if (n == 0)
+									break;
+								n--;
+							}
+
+							start--;
+						}
+					}
 					while (end < iLen && pszText[end] != ' ' && pszText[end] != 13 && pszText[end-1] != VK_TAB)
 						end ++;
 
@@ -794,6 +806,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 					pszSelName = ( TCHAR* )alloca(sizeof(TCHAR) * (cbLen));
 					lstrcpyn(pszSelName, pszText + start, (int)cbLen);
 					pszName = UM_FindUserAutoComplete(Parentsi->pUsers, dat->szTabSave, pszSelName);
+					dat->iSavedSpaces = 0;
 					if (pszName == NULL) {
 						pszName = dat->szTabSave;
 						SendMessage(hwnd, EM_SETSEL, start, end);
@@ -802,6 +815,11 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 						dat->szTabSave[0] = '\0';
 					}
 					else {
+						TCHAR* p = pszName;
+						while ( *p )
+							if ( *p++ == ' ' )
+								dat->iSavedSpaces++;
+
 						SendMessage(hwnd, EM_SETSEL, start, end);
 						if (end != start)
 							SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM) pszName);
@@ -818,6 +836,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 						SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM) _T(": "));
 				}
 				dat->szTabSave[0] = '\0';
+				dat->iSavedSpaces = 0;
 			}
 
 			if (wParam == VK_F4 && isCtrl && !isAlt) { // ctrl-F4 (close tab)
