@@ -340,7 +340,13 @@ void CMsnProto::MSN_GoOffline(void)
 	MsgQueue_Clear();
 	clearCachedMsg();
 
-	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+    if ( !Miranda_Terminated() )
+	{
+		int msnOldStatus = m_iStatus; m_iStatus = m_iDesiredStatus = ID_STATUS_OFFLINE; 
+		SendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)msnOldStatus, ID_STATUS_OFFLINE );
+	}
+
+    HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL )
 	{
 		if ( MSN_IsMyContact( hContact ))
@@ -351,12 +357,6 @@ void CMsnProto::MSN_GoOffline(void)
 
 		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
     }	
-
-    if ( !Miranda_Terminated() )
-	{
-		int msnOldStatus = m_iStatus; m_iStatus = m_iDesiredStatus = ID_STATUS_OFFLINE; 
-		SendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)msnOldStatus, ID_STATUS_OFFLINE );
-	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -1234,8 +1234,8 @@ void MSN_MakeDigest(const char* chl, char* dgst)
 bool SetupIeProxy(HANDLE hNetlib, bool secur)
 {
 	HKEY hSettings;
-	if ( RegOpenKeyExA( HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", 
-		0, KEY_QUERY_VALUE, &hSettings ))
+	if (RegOpenKeyExA(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", 
+		0, KEY_QUERY_VALUE, &hSettings))
 		return false;
 
 	char host[256] = "";
@@ -1256,14 +1256,13 @@ bool SetupIeProxy(HANDLE hNetlib, bool secur)
     {
         const char *token = secur ? "https=" : "http=";
         char* tDelim = strstr(host, token);
-        if (tDelim != 0)
+        if (tDelim != NULL)
         {
 	        tDelim += strlen(token);
 	        memmove(host, tDelim, strlen(tDelim)+1);
 
-	        tDelim = strchr( host, ';' );
-	        if ( tDelim != NULL )
-		        *tDelim = '\0';
+	        tDelim = strchr(host, ';');
+	        if (tDelim != NULL) *tDelim = '\0';
         }
 
         tDelim = strchr(host, ':');
