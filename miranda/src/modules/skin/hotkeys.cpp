@@ -1412,13 +1412,13 @@ int LoadSkinHotkeys(void)
 		int i;
 		for ( i = 0; i < SIZEOF( oldSettings ); i++ ) {
 			char szSetting[ 100 ];
-			wsprintfA( szSetting, "HK%s", oldSettings[i] );
+			mir_snprintf( szSetting, SIZEOF(szSetting), "HK%s", oldSettings[i] );
 			if (( key = DBGetContactSettingWord( NULL, "Clist", szSetting, 0 ))) {
 				DBDeleteContactSetting( NULL, "Clist", szSetting );
 				DBWriteContactSettingWord( NULL, DBMODULENAME, newSettings[i], key );
 			}
 
-			wsprintfA( szSetting, "HKEn%s", oldSettings[i] );
+			mir_snprintf( szSetting, SIZEOF(szSetting), "HKEn%s", oldSettings[i] );
 			if (( key = DBGetContactSettingByte( NULL, "Clist", szSetting, 0 ))) {
 				DBDeleteContactSetting( NULL, "Clist", szSetting );
 				DBWriteContactSettingByte( NULL, DBMODULENAME "Off", newSettings[i], (BYTE)(key == 0) );

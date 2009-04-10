@@ -123,7 +123,7 @@ static INT_PTR CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			if(iScanner >= SIZEOF(virusScanners) || iScanner<0) break;
 			str[0]='\0';
 			if(SRFile_GetRegValue(HKEY_LOCAL_MACHINE,virusScanners[iScanner].szExeRegPath,virusScanners[iScanner].szExeRegValue,szScanExe,SIZEOF(szScanExe)))
-				wsprintfA(str,virusScanners[iScanner].szCommandLine,szScanExe);
+				mir_snprintf(str, SIZEOF(str), virusScanners[iScanner].szCommandLine,szScanExe);
 			SetDlgItemTextA(hwndDlg,IDC_SCANCMDLINE,str);
 			break;
 		}

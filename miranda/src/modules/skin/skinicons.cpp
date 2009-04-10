@@ -221,7 +221,7 @@ HICON LoadSkinProtoIcon( const char* szProto, int status )
 	DWORD caps2 = ( szProto == NULL ) ? ( DWORD )-1 : CallProtoService(szProto,PS_GETCAPS,PFLAGNUM_2,0);
 
 	if ( status >= ID_STATUS_CONNECTING && status < ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES ) {
-		sprintf( iconName, "%s%d", mainIconsFmt, 7 );
+		mir_snprintf( iconName, SIZEOF(iconName), "%s%d", mainIconsFmt, 7 );
 		return IcoLib_GetIcon( iconName );
 	}
 

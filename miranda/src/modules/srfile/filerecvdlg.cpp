@@ -216,7 +216,7 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				shAutoComplete(GetWindow(GetDlgItem(hwndDlg,IDC_FILEDIR),GW_CHILD),1);
 
 			for(i=0;i<MAX_MRU_DIRS;i++) {
-				wsprintfA(idstr,"MruDir%d",i);
+				mir_snprintf(idstr, SIZEOF(idstr), "MruDir%d",i);
 				if(DBGetContactSettingString(NULL,"SRFile",idstr,&dbv)) break;
 				SendDlgItemMessageA(hwndDlg,IDC_FILEDIR,CB_ADDSTRING,0,(LPARAM)dbv.pszVal);
 				DBFreeVariant(&dbv);
@@ -336,9 +336,9 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					int i;
 					DBVARIANT dbv;
 					for(i=MAX_MRU_DIRS-2;i>=0;i--) {
-						wsprintfA(idstr,"MruDir%d",i);
+						mir_snprintf(idstr, SIZEOF(idstr), "MruDir%d",i);
 						if(DBGetContactSettingString(NULL,"SRFile",idstr,&dbv)) continue;
-						wsprintfA(idstr,"MruDir%d",i+1);
+						mir_snprintf(idstr, SIZEOF(idstr), "MruDir%d",i+1);
 						DBWriteContactSettingString(NULL,"SRFile",idstr,dbv.pszVal);
 						DBFreeVariant(&dbv);
 					}

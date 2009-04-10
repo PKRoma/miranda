@@ -128,8 +128,8 @@ int GetFontSettingFromDB(char *settings_group, char *prefix, LOGFONT* lf, COLORR
 
 	GetDefaultFontSetting(lf, colour);
 
-	if(flags & FIDF_APPENDNAME) sprintf(idstr, "%sName", prefix);
-	else sprintf(idstr, "%s", prefix);
+	if(flags & FIDF_APPENDNAME) mir_snprintf(idstr, SIZEOF(idstr), "%sName", prefix);
+	else mir_snprintf(idstr, SIZEOF(idstr), "%s", prefix);
 
 	if ( !DBGetContactSettingTString(NULL, settings_group, idstr, &dbv )) {
 		_tcscpy(lf->lfFaceName, dbv.ptszVal);
@@ -279,7 +279,7 @@ static int sttRegisterFontWorker( TFontID* font_id )
 	}
 
 	char idstr[256];
-	sprintf(idstr, "%sFlags", font_id->prefix);
+	mir_snprintf(idstr, SIZEOF(idstr), "%sFlags", font_id->prefix);
 	DBWriteContactSettingDword(0, font_id->dbSettingsGroup, idstr, font_id->flags);
 	{	
 		TFontID* newItem = new TFontID;
@@ -446,13 +446,13 @@ void UpdateEffectSettings(TEffectID* effect_id, TEffectSettings* effectsettings)
 {
    char str[256];
 
-   wsprintfA(str, "%sEffect", effect_id->setting);
+   mir_snprintf(str, SIZEOF(str), "%sEffect", effect_id->setting);
    effectsettings->effectIndex = DBGetContactSettingByte(NULL, effect_id->dbSettingsGroup, str, effect_id->defeffect.effectIndex);
 
-   wsprintfA(str, "%sEffectCol1", effect_id->setting);
+   mir_snprintf(str, SIZEOF(str), "%sEffectCol1", effect_id->setting);
    effectsettings->baseColour = DBGetContactSettingDword(NULL, effect_id->dbSettingsGroup, str, effect_id->defeffect.baseColour);
 
-   wsprintfA(str, "%sEffectCol2", effect_id->setting);
+   mir_snprintf(str, SIZEOF(str), "%sEffectCol2", effect_id->setting);
    effectsettings->secondaryColour = DBGetContactSettingDword(NULL, effect_id->dbSettingsGroup, str, effect_id->defeffect.secondaryColour);
 
 }

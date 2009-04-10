@@ -380,10 +380,10 @@ static INT_PTR CALLBACK BackgroundDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 					lvi.iSubItem=0;
 					lvi.iItem=0;
 					for(i=0;;i++) {
-						wsprintfA(idstr,"Past%d",i);
+						mir_snprintf(idstr, SIZEOF(idstr), "Past%d",i);
 						if(DBGetContactSettingTString(hContact,szProto,idstr,&dbv))
 							break;
-						wsprintfA(idstr,"Past%dText",i);
+						mir_snprintf(idstr, SIZEOF(idstr), "Past%dText",i);
 						if(DBGetContactSettingTString(hContact,szProto,idstr,&dbvText))
 						{DBFreeVariant(&dbv); break;}
 						lvi.pszText=dbv.ptszVal;
@@ -395,10 +395,10 @@ static INT_PTR CALLBACK BackgroundDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 					}
 
 					for(i=0;;i++) {
-						wsprintfA(idstr,"Affiliation%d",i);
+						mir_snprintf(idstr, SIZEOF(idstr), "Affiliation%d", i);
 						if(DBGetContactSettingTString(hContact,szProto,idstr,&dbv))
 							break;
-						wsprintfA(idstr,"Affiliation%dText",i);
+						mir_snprintf(idstr, SIZEOF(idstr), "Affiliation%dText",i);
 						if(DBGetContactSettingTString(hContact,szProto,idstr,&dbvText))
 						{DBFreeVariant(&dbv); break;}
 						lvi.pszText=dbv.ptszVal;
@@ -417,10 +417,10 @@ static INT_PTR CALLBACK BackgroundDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 					lvi.iSubItem=0;
 					lvi.iItem=0;
 					for(i=0;;i++) {
-						wsprintfA(idstr,"Interest%dCat",i);
+						mir_snprintf(idstr, SIZEOF(idstr), "Interest%dCat", i);
 						if(DBGetContactSettingTString(hContact,szProto,idstr,&dbv))
 							break;
-						wsprintfA(idstr,"Interest%dText",i);
+						mir_snprintf(idstr, SIZEOF(idstr), "Interest%dText", i);
 						if(DBGetContactSettingTString(hContact,szProto,idstr,&dbvText))
 						{DBFreeVariant(&dbv); break;}
 						lvi.pszText=dbv.ptszVal;

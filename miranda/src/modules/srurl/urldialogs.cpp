@@ -417,7 +417,7 @@ static void GetOpenBrowserUrlsForBrowser(const char *szBrowser,HWND hwndDlg,HWND
 	for(i=0;i<windowCount;i++) {
 		if(windowId[i]==0) break;
 		{	char str[16];
-			wsprintfA(str,"%d",windowId[i]);
+			mir_snprintf(str, SIZEOF(str), "%d",windowId[i]);
 			hData=DoDdeRequest(str,hwndDlg);
 		}
 		if(hData!=NULL) {

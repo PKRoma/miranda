@@ -202,17 +202,17 @@ BOOL ExportSettings(HWND hwndDlg, TCHAR *filename, OBJLIST<TFontID>& flist, OBJL
 
 		WriteLine(fhand, buff);
 
-		wsprintfA(buff, "%sSty=b%d", F.prefix, (BYTE)F.value.style);
+		mir_snprintf(buff, SIZEOF(buff), "%sSty=b%d", F.prefix, (BYTE)F.value.style);
 		WriteLine(fhand, buff);
-		wsprintfA(buff, "%sSet=b%d", F.prefix, (BYTE)F.value.charset);
+		mir_snprintf(buff, SIZEOF(buff), "%sSet=b%d", F.prefix, (BYTE)F.value.charset);
 		WriteLine(fhand, buff);
-		wsprintfA(buff, "%sCol=d%d", F.prefix, (DWORD)F.value.colour);
+		mir_snprintf(buff, SIZEOF(buff), "%sCol=d%d", F.prefix, (DWORD)F.value.colour);
 		WriteLine(fhand, buff);
 		if(F.flags & FIDF_NOAS) {
-			wsprintfA(buff, "%sAs=w%d", F.prefix, (WORD)0x00FF);
+			mir_snprintf(buff, SIZEOF(buff), "%sAs=w%d", F.prefix, (WORD)0x00FF);
 			WriteLine(fhand, buff);
 		}
-		wsprintfA(buff, "%sFlags=w%d", F.prefix, (WORD)F.flags);
+		mir_snprintf(buff, SIZEOF(buff), "%sFlags=w%d", F.prefix, (WORD)F.flags);
 		WriteLine(fhand, buff);
 	}
 
@@ -220,14 +220,12 @@ BOOL ExportSettings(HWND hwndDlg, TCHAR *filename, OBJLIST<TFontID>& flist, OBJL
 	for ( i=0; i < clist.getCount(); i++ ) {
 		TColourID& C = clist[i];
 
-		strcpy(buff, "[");
-		strcat(buff, C.dbSettingsGroup);
-		strcat(buff, "]");
+        mir_snprintf(buff, SIZEOF(buff), "[%s]", C.dbSettingsGroup );
 		if(strcmp(buff, header) != 0) {
 			strcpy(header, buff);
 			WriteLine(fhand, buff);
 		}
-		wsprintfA(buff, "%s=d%d", C.setting, (DWORD)C.value );
+		mir_snprintf(buff, SIZEOF(buff), "%s=d%d", C.setting, (DWORD)C.value );
 		WriteLine(fhand, buff);
 	}
 
@@ -235,18 +233,16 @@ BOOL ExportSettings(HWND hwndDlg, TCHAR *filename, OBJLIST<TFontID>& flist, OBJL
     for ( i=0; i < elist.getCount(); i++ ) {
         TEffectID& E = elist[i];
 
-        strcpy(buff, "[");
-        strcat(buff, E.dbSettingsGroup);
-        strcat(buff, "]");
+        mir_snprintf(buff, SIZEOF(buff), "[%s]", E.dbSettingsGroup );
         if(strcmp(buff, header) != 0) {
             strcpy(header, buff);
             WriteLine(fhand, buff);
         }
-        wsprintfA(buff, "%sEffect=b%d", E.setting, E.value.effectIndex );
+        mir_snprintf(buff, SIZEOF(buff), "%sEffect=b%d", E.setting, E.value.effectIndex );
         WriteLine(fhand, buff);
-        wsprintfA(buff, "%sEffectCol1=d%d", E.setting, E.value.baseColour );
+        mir_snprintf(buff, SIZEOF(buff), "%sEffectCol1=d%d", E.setting, E.value.baseColour );
         WriteLine(fhand, buff);
-        wsprintfA(buff, "%sEffectCol2=d%d", E.setting, E.value.secondaryColour );
+        mir_snprintf(buff, SIZEOF(buff), "%sEffectCol2=d%d", E.setting, E.value.secondaryColour );
         WriteLine(fhand, buff);
     }
 
@@ -1225,20 +1221,20 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 			for ( i=0; i < colour_id_list_w2.getCount(); i++ ) {
 				TColourID& C = colour_id_list_w2[i];
 
-				wsprintfA(str, "%s", C.setting);
+				mir_snprintf(str, SIZEOF(str), "%s", C.setting);
 				DBWriteContactSettingDword(NULL, C.dbSettingsGroup, str, C.value);
 			}
 
 			for ( i=0; i < effect_id_list_w2.getCount(); i++ ) {
 				TEffectID& E = effect_id_list_w2[i];
 
-				wsprintfA(str, "%sEffect", E.setting);
+				mir_snprintf(str, SIZEOF(str), "%sEffect", E.setting);
 				DBWriteContactSettingByte(NULL, E.dbSettingsGroup, str, E.value.effectIndex);
 
-				wsprintfA(str, "%sEffectCol1", E.setting);
+				mir_snprintf(str, SIZEOF(str), "%sEffectCol1", E.setting);
 				DBWriteContactSettingDword(NULL, E.dbSettingsGroup, str, E.value.baseColour);
 
-				wsprintfA(str, "%sEffectCol2", E.setting);
+				mir_snprintf(str, SIZEOF(str), "%sEffectCol2", E.setting);
 				DBWriteContactSettingDword(NULL, E.dbSettingsGroup, str, E.value.secondaryColour);
 			}
 

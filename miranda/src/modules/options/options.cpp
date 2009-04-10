@@ -183,7 +183,7 @@ static void SaveOptionsTreeState(HWND hdlg)
 	tvi.hItem = TreeView_GetRoot( GetDlgItem( hdlg, IDC_PAGETREE ));
 	while ( tvi.hItem != NULL ) {
 		if ( SendMessageA( GetDlgItem(hdlg,IDC_PAGETREE), TVM_GETITEMA, 0, (LPARAM)&tvi )) {
-			wsprintfA(buf,"%s%s",OPTSTATE_PREFIX,str);
+			mir_snprintf(buf, SIZEOF(buf), "%s%s",OPTSTATE_PREFIX,str);
 			DBWriteContactSettingByte(NULL,"Options",buf,(BYTE)((tvi.state&TVIS_EXPANDED)?1:0));
 		}
 		tvi.hItem = TreeView_GetNextSibling( GetDlgItem( hdlg, IDC_PAGETREE ), tvi.hItem );
@@ -741,7 +741,7 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 			tvi.hItem = TreeView_GetRoot(GetDlgItem(hdlg,IDC_PAGETREE));
 			while ( tvi.hItem != NULL ) {
 				if ( SendMessageA( GetDlgItem(hdlg,IDC_PAGETREE), TVM_GETITEMA, 0, (LPARAM)&tvi )) {
-					wsprintfA(buf,"%s%s",OPTSTATE_PREFIX,str);
+					mir_snprintf(buf, SIZEOF(buf), "%s%s",OPTSTATE_PREFIX,str);
 					if ( !DBGetContactSettingByte( NULL, "Options", buf, 1 ))
 						TreeView_Expand( GetDlgItem(hdlg,IDC_PAGETREE), tvi.hItem, TVE_COLLAPSE );
 				}

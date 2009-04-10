@@ -39,7 +39,7 @@ static void SetControlToUnixTime(HWND hwndDlg, UINT idCtrl, time_t unixTime)
 	FileTimeToSystemTime(&filetime,&st);
 	GetTimeFormatA(LOCALE_USER_DEFAULT,0,&st,NULL,szTime,SIZEOF(szTime));
 	GetDateFormatA(LOCALE_USER_DEFAULT,DATE_SHORTDATE,&st,NULL,szDate,SIZEOF(szDate));
-	wsprintfA(szOutput,"%s %s",szDate,szTime);
+	mir_snprintf(szOutput, SIZEOF(szOutput), "%s %s",szDate,szTime);
 	SetDlgItemTextA(hwndDlg,idCtrl,szOutput);
 }
 
@@ -162,7 +162,7 @@ void __cdecl LoadIconsAndTypesThread(void* param)
 		else {pszExtension="."; szExtension[0]='\0';}
 		CharUpperA(szExtension);
 		if(fileInfo.szTypeName[0]=='\0')
-			wsprintfA(fileInfo.szTypeName,Translate("%s File"),szExtension);
+			mir_snprintf(fileInfo.szTypeName, SIZEOF(fileInfo.szTypeName), Translate("%s File"),szExtension);
 		SetDlgItemTextA(info->hwndDlg,IDC_EXISTINGTYPE,fileInfo.szTypeName);
 		SetDlgItemTextA(info->hwndDlg,IDC_NEWTYPE,fileInfo.szTypeName);
 		SendDlgItemMessage(info->hwndDlg,IDC_EXISTINGICON,STM_SETICON,(WPARAM)fileInfo.hIcon,0);
