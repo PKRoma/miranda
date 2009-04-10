@@ -69,6 +69,8 @@ int CYahooProto::DebugLog( const char *fmt, ... )
 	return CallService( MS_NETLIB_LOG, ( WPARAM )m_hNetlibUser, ( LPARAM )str );
 }
 
+extern HANDLE m_hNetlibUser;
+
 int DebugLog( const char *fmt, ... )
 {
 	char str[ 4096 ];
@@ -81,7 +83,7 @@ int DebugLog( const char *fmt, ... )
 
 	va_end( vararg );
 	
-	return CallService( MS_NETLIB_LOG, 0, ( LPARAM )str );
+	return CallService( MS_NETLIB_LOG, ( WPARAM )m_hNetlibUser, ( LPARAM )str );
 }
 
 DWORD CYahooProto::GetByte( const char* valueName, int parDefltValue )

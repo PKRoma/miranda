@@ -23,6 +23,8 @@
 HINSTANCE   hInstance;
 PLUGINLINK* pluginLink;
 
+HANDLE m_hNetlibUser;
+
 MM_INTERFACE   mmi;
 UTF8_INTERFACE utfi;
 MD5_INTERFACE  md5i;
@@ -121,6 +123,14 @@ extern "C" int __declspec(dllexport)Load(PLUGINLINK *link)
 	pd.fnUninit = ( pfnUninitProto )yahooProtoUninit;
 	CallService( MS_PROTO_REGISTERMODULE, 0, ( LPARAM )&pd );
 
+	NETLIBUSER nlu = {0};
+	nlu.cbSize = sizeof(nlu);
+  	nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS;
+	nlu.szSettingsModule = "YAHOO/libyahoo2";
+	nlu.szDescriptiveName = "YAHOO plugin libyahoo2 logging (Instance agnostic)";
+	
+	m_hNetlibUser = ( HANDLE )YAHOO_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
+
 	/**
 	 * Register LibYahoo2 callback functions
 	 */
@@ -136,7 +146,9 @@ extern "C" int __declspec(dllexport)Load(PLUGINLINK *link)
 
 extern "C" int __declspec(dllexport) Unload(void)
 {
-
+	LOG(( "Unload" ));
+	
+	Netlib_CloseHandle( m_hNetlibUser );
 	return 0;
 }
 
