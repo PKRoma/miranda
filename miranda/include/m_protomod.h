@@ -28,6 +28,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef M_PROTOMOD_H__
 #define M_PROTOMOD_H__ 1
 
+#include <stdio.h>
+
 #include "m_protocols.h"
 
 //notify the protocol manager that you're around
