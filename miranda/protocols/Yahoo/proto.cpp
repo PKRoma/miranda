@@ -825,6 +825,21 @@ int __cdecl CYahooProto::SetAwayMsg( int status, const char* msg )
 	return 0;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////
+// PS_GETMYAWAYMSG
+
+INT_PTR __cdecl CYahooProto::GetMyAwayMsg(WPARAM wParam, LPARAM lParam)
+{
+	if (!m_bLoggedIn || ! m_startMsg)
+		return 0;
+	
+	if (lParam & SGMA_UNICODE)  {
+		return (INT_PTR) mir_a2u(m_startMsg);
+	} else {
+		return (INT_PTR) m_startMsg;
+	}
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // UserIsTyping - sends a UTN notification
 

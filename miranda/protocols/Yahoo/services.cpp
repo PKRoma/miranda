@@ -471,6 +471,7 @@ void CYahooProto::LoadYahooServices( void )
 
 	//----| Service creation |------------------------------------------------------------
 	YCreateService( PS_CREATEACCMGRUI, &CYahooProto::SvcCreateAccMgrUI);
+	YCreateService(	PS_GETMYAWAYMSG, &CYahooProto::GetMyAwayMsg);
 	YCreateService( YAHOO_SEND_NUDGE, &CYahooProto::SendNudge );
 	YCreateService( YAHOO_GETUNREAD_EMAILCOUNT, &CYahooProto::GetUnreadEmailCount);
 

@@ -91,7 +91,8 @@ struct CYahooProto : public PROTO_INTERFACE
 	virtual	int    __cdecl RecvAwayMsg( HANDLE hContact, int mode, PROTORECVEVENT* evt );
 	virtual	int    __cdecl SendAwayMsg( HANDLE hContact, HANDLE hProcess, const char* msg );
 	virtual	int    __cdecl SetAwayMsg( int m_iStatus, const char* msg );
-
+	virtual INT_PTR __cdecl GetMyAwayMsg(WPARAM wParam, LPARAM lParam);
+	
 	virtual	int    __cdecl UserIsTyping( HANDLE hContact, int type );
 
 	virtual	int    __cdecl OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam );
