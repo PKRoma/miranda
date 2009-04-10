@@ -47,7 +47,7 @@ void __cdecl CYahooProto::search_simplethread(void *snsearch)
 
 	SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
 
-	yahoo_search(m_id, YAHOO_SEARCH_YID, m, YAHOO_GENDER_NONE, YAHOO_AGERANGE_NONE, 0, 1);
+	//yahoo_search(m_id, YAHOO_SEARCH_YID, m, YAHOO_GENDER_NONE, YAHOO_AGERANGE_NONE, 0, 1);
 
 	FREE(nick);
 }
@@ -125,10 +125,10 @@ static INT_PTR CALLBACK YahooSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARA
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 			
-		SendDlgItemMessage(hwndDlg, IDC_SEARCH_PROTOCOL, CB_ADDSTRING, 0, (LPARAM)(LPCSTR)"Yahoo! Messenger");
-		SendDlgItemMessage(hwndDlg, IDC_SEARCH_PROTOCOL, CB_ADDSTRING, 0, (LPARAM)(LPCSTR)"Lotus Sametime");
-		SendDlgItemMessage(hwndDlg, IDC_SEARCH_PROTOCOL, CB_ADDSTRING, 0, (LPARAM)(LPCSTR)"LCS");
-		SendDlgItemMessage(hwndDlg, IDC_SEARCH_PROTOCOL, CB_ADDSTRING, 0, (LPARAM)(LPCSTR)"Windows Live (MSN)");
+		SendDlgItemMessageA(hwndDlg, IDC_SEARCH_PROTOCOL, CB_ADDSTRING, 0, (LPARAM)(LPCSTR)"Yahoo! Messenger");
+		SendDlgItemMessageA(hwndDlg, IDC_SEARCH_PROTOCOL, CB_ADDSTRING, 0, (LPARAM)(LPCSTR)"Lotus Sametime");
+		SendDlgItemMessageA(hwndDlg, IDC_SEARCH_PROTOCOL, CB_ADDSTRING, 0, (LPARAM)(LPCSTR)"LCS");
+		SendDlgItemMessageA(hwndDlg, IDC_SEARCH_PROTOCOL, CB_ADDSTRING, 0, (LPARAM)(LPCSTR)"Windows Live (MSN)");
 		
 		// select the first one
 		SendDlgItemMessage(hwndDlg, IDC_SEARCH_PROTOCOL, CB_SETCURSEL, 0, 0);
