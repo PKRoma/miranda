@@ -1471,17 +1471,58 @@ void CYahooProto::ext_login(enum yahoo_status login_mode)
 
 	LOG(("ext_yahoo_login"));
 
-	if (!getString(YAHOO_LOGINSERVER, &dbv)) {
-		mir_snprintf(host, sizeof(host), "%s", dbv.pszVal);
-		DBFreeVariant(&dbv);
-	}
-	else {
-		snprintf(host, sizeof(host), "%s", YAHOO_DEFAULT_LOGIN_SERVER);
-		//ShowError(Translate("Yahoo Login Error"), Translate("Please enter Yahoo server to Connect to in Options."));
+	/**
+	 * Implementing Yahoo 9 2 Stage Login using their VIP server/services
+	 */
+	NETLIBHTTPREQUEST nlhr={0},*nlhrReply;
+	char z[4096];
+	
+	host[0] = '\0';
+	
+	wsprintfA(z, "http://%s%s", "vcs.msg.yahoo.com", "/capacity");
+	nlhr.cbSize		= sizeof(nlhr);
+	nlhr.requestType= REQUEST_GET;
+	nlhr.flags		= NLHRF_HTTP11;
+	nlhr.szUrl		= z;
 
-		//return;
+	nlhrReply=(NETLIBHTTPREQUEST*)CallService(MS_NETLIB_HTTPTRANSACTION,(WPARAM)m_hNetlibUser,(LPARAM)&nlhr);
+	if(nlhrReply) {
+		if (nlhrReply->resultCode == 200 && nlhrReply->pData != NULL) {
+			char *c = strstr(nlhrReply->pData,"CS_IP_ADDRESS=");
+			
+			if (c != NULL) {
+					char *t = c;
+				
+					while ( (*t) != '=') t++; /* scan until = */
+					t++;
+					
+					while ( (*c) != '\0' && (*c) != '\r' && (*c) != '\n') c++;
+					
+					memcpy(host, t, c - t);
+					host[c - t] = '\0';
+					
+					LOG(("Got Host: %s", host));
+			}
+		} else {
+			LOG(( "Problem retrieving a response from VIP server." ));
+		}
+		
+		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT,0,(LPARAM)nlhrReply);
+	} 
+	
+	if 	(host[0] == '\0') {
+		if (!getString(YAHOO_LOGINSERVER, &dbv)) {
+			mir_snprintf(host, sizeof(host), "%s", dbv.pszVal);
+			DBFreeVariant(&dbv);
+		}
+		else {
+			snprintf(host, sizeof(host), "%s", YAHOO_DEFAULT_LOGIN_SERVER);
+			//ShowError(Translate("Yahoo Login Error"), Translate("Please enter Yahoo server to Connect to in Options."));
+	
+			//return;
+		}
 	}
-
+	
 	lstrcpynA(fthost,GetByte("YahooJapan",0)?"filetransfer.msg.yahoo.co.jp":"filetransfer.msg.yahoo.com" , sizeof(fthost));
 	port = DBGetContactSettingWord(NULL, m_szModuleName, YAHOO_LOGINPORT, YAHOO_DEFAULT_PORT);
 	
