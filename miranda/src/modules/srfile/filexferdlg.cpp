@@ -615,9 +615,8 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					if(ack->result==ACKRESULT_FAILED) {
 						SetFtStatus(hwndDlg, LPGENT("File transfer failed"), FTS_TEXT);
 						SkinPlaySound("FileFailed");
-					} else
-						if(DBGetContactSettingByte(NULL,"SRFile","AutoClose",0))
-							PostMessage(hwndDlg,WM_COMMAND,MAKEWPARAM(IDCANCEL,BN_CLICKED),(LPARAM)GetDlgItem(hwndDlg,IDCANCEL));
+					} 
+ 					PostMessage(GetParent(hwndDlg), WM_FT_COMPLETED, ack->result != ACKRESULT_SUCCESS, (LPARAM)hwndDlg);
 					break;
 
 				case ACKRESULT_DENIED:

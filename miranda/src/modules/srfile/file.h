@@ -101,6 +101,7 @@ int FileOptInitialise(WPARAM wParam,LPARAM lParam);
 #define WM_FT_REMOVE		(WM_APP+3)
 #define WM_FT_SELECTPAGE	(WM_APP+4)
 #define WM_FT_CLEANUP		(WM_APP+5)
+#define WM_FT_COMPLETED		(WM_APP+6)
 
 HWND FtMgr_Show(bool bForceActivate);
 void FtMgr_Destroy();

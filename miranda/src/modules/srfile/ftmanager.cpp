@@ -43,7 +43,7 @@ struct TLayoutWindowInfo
 struct TLayoutWindowList
 {
 	struct TLayoutWindowInfo **items;
-	int realCount, limit, increment;
+	int realCount, limit, increment, runningCount;
 	FSortFunc sortFunc;
 };
 
@@ -109,6 +109,7 @@ static INT_PTR CALLBACK FtMgrPageDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 		dat = (struct TFtPageData *)mir_alloc(sizeof(struct TFtPageData));
 		dat->wnds = (struct TLayoutWindowList *)List_Create(0, 1);
 		dat->scrollPos = 0;
+        dat->wnds->runningCount = 0;
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)dat);
 		break;
 	}
@@ -120,6 +121,7 @@ static INT_PTR CALLBACK FtMgrPageDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 		GetWindowRect(wnd->hwnd, &wnd->rc);
 		List_Insert((SortedList *)dat->wnds, wnd, dat->wnds->realCount);
 		LayoutTransfers(hwnd, dat);
+        dat->wnds->runningCount++;
 		break;
 	}
 
@@ -149,6 +151,14 @@ static INT_PTR CALLBACK FtMgrPageDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 		LayoutTransfers(hwnd, dat);
 		break;
 	}
+
+ 	case WM_FT_COMPLETED:
+ 	{ //wParam: 0=completed, 1=failed
+ 		dat->wnds->runningCount--;
+ 		if(dat->wnds->runningCount == 0 && (int)wParam == 0 && DBGetContactSettingByte(NULL,"SRFile","AutoClose",0))
+ 			ShowWindow(hwndFtMgr, SW_HIDE);
+ 		break;
+ 	}
 
 	case WM_FT_CLEANUP:
 	{
