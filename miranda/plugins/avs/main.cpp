@@ -29,10 +29,6 @@ PLUGINLINK  *pluginLink;
 MM_INTERFACE mmi;
 LIST_INTERFACE li;
 
-static char     g_szAvatarPath[MAX_PATH];		// avatar cache path (read at startup only)
-#if defined(_UNICODE)
-	static wchar_t  g_wszAvatarPath[MAX_PATH];
-#endif
 static char     g_szDataPath[MAX_PATH];		// user datae path (read at startup only)
 #if defined(_UNICODE)
 	static wchar_t  g_wszDataPath[MAX_PATH];
@@ -250,8 +246,8 @@ size_t AVS_pathToRelative(const char *pSrc, char *pOut)
 
 		mir_snprintf(szTmp, SIZEOF(szTmp), "%s", pSrc);
 		_strlwr(szTmp);
-		if (strstr(szTmp, g_szAvatarPath)) {
-			mir_snprintf(pOut, MAX_PATH, "%s", pSrc + strlen(g_szAvatarPath) + 1);
+		if (strstr(szTmp, g_szDataPath)) {
+			mir_snprintf(pOut, MAX_PATH, "%s", pSrc + strlen(g_szDataPath) + 1);
 			return strlen(pOut);
 		}
 		else {
@@ -269,7 +265,7 @@ size_t AVS_pathToAbsolute(const char *pSrc, char *pOut)
 		return strlen(pOut);
 	}
 	else {
-		mir_snprintf(pOut, MAX_PATH, "%s\\%s", g_szAvatarPath, pSrc);
+		mir_snprintf(pOut, MAX_PATH, "%s\\%s", g_szDataPath, pSrc);
 		return strlen(pOut);
 	}
 }
@@ -284,7 +280,7 @@ int AVS_pathToAbsoluteW(const wchar_t *pSrc, wchar_t *pOut)
         return lstrlenW(pOut);
     }
     else {
-        mir_sntprintf(pOut, MAX_PATH, _T("%s\\%s"), g_wszAvatarPath, pSrc);
+        mir_sntprintf(pOut, MAX_PATH, _T("%s\\%s"), g_wszDataPath, pSrc);
         return lstrlenW(pOut);
     }
 }
@@ -2111,6 +2107,7 @@ static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
 	// Load global avatar
 	protoPicCacheEntry* pce = new protoPicCacheEntry;
 	CreateAvatarInCache((HANDLE)-1, pce, "");
+    pce->szProtoname = mir_strdup("");
 	g_MyAvatars.insert( pce );
 
 	hAccChanged = HookEvent(ME_PROTO_ACCLISTCHANGED, OnAccChanged);
@@ -2483,21 +2480,13 @@ static int LoadAvatarModule()
 
 	AllocCacheBlock();
 
-	char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
-	lstrcpynA(g_szAvatarPath, tmpPath, sizeof(g_szAvatarPath)-1);
-	mir_free(tmpPath);
-	g_szAvatarPath[MAX_PATH - 1] = 0;
-	_strlwr(g_szAvatarPath);
-
-	tmpPath = Utils_ReplaceVars("%miranda_userdata%");
+	char* tmpPath = Utils_ReplaceVars("%miranda_userdata%");
 	lstrcpynA(g_szDataPath, tmpPath, sizeof(g_szDataPath)-1);
 	mir_free(tmpPath);
 	g_szDataPath[MAX_PATH - 1] = 0;
 	_strlwr(g_szDataPath);
     
 #if defined(_UNICODE)
-	MultiByteToWideChar(CP_ACP, 0, g_szAvatarPath, MAX_PATH, g_wszAvatarPath, MAX_PATH);
-	g_wszAvatarPath[MAX_PATH - 1] = 0;
 	MultiByteToWideChar(CP_ACP, 0, g_szDataPath, MAX_PATH, g_wszDataPath, MAX_PATH);
 	g_wszDataPath[MAX_PATH - 1] = 0;
 #endif

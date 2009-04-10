@@ -875,7 +875,7 @@ static void EnableDisableControls(HWND hwndDlg, char *proto)
 				EnableWindow(GetDlgItem(hwndDlg, IDC_CHANGE), TRUE);
 
 				int width, height;
-				SendMessage(GetDlgItem(hwndDlg, IDC_PROTOPIC), AVATAR_GETUSEDSPACE, (WPARAM) &width, (LPARAM) &height);
+				SendDlgItemMessage(hwndDlg, IDC_PROTOPIC, AVATAR_GETUSEDSPACE, (WPARAM) &width, (LPARAM) &height);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_DELETE), (LPARAM) width != 0 || height != 0);
 			}
 		}
@@ -891,7 +891,7 @@ static void EnableDisableControls(HWND hwndDlg, char *proto)
 		else
 		{
 			int width, height;
-			SendMessage(GetDlgItem(hwndDlg, IDC_PROTOPIC), AVATAR_GETUSEDSPACE, (WPARAM) &width, (LPARAM) &height);
+			SendDlgItemMessage(hwndDlg, IDC_PROTOPIC, AVATAR_GETUSEDSPACE, (WPARAM) &width, (LPARAM) &height);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_DELETE), (LPARAM) width != 0 || height != 0);
 		}
 	}
@@ -932,7 +932,7 @@ static void EnableDisableProtocols(HWND hwndDlg, BOOL init)
 		}
 		else
 		{
-			SendMessage(GetDlgItem(hwndDlg, IDC_PROTOPIC), AVATAR_SETPROTOCOL, 0, (LPARAM) proto);
+			SendDlgItemMessage(hwndDlg, IDC_PROTOPIC, AVATAR_SETPROTOCOL, 0, (LPARAM) proto);
 			EnableDisableControls(hwndDlg, proto);
 		}
 	}
@@ -949,7 +949,7 @@ static void EnableDisableProtocols(HWND hwndDlg, BOOL init)
 			OffsetWindow(hwndDlg, GetDlgItem(hwndDlg, IDC_DELETE), -diff, 0);
 		}
 
-		SendMessage(GetDlgItem(hwndDlg, IDC_PROTOPIC), AVATAR_SETPROTOCOL, 0, NULL);
+		SendDlgItemMessage(hwndDlg, IDC_PROTOPIC, AVATAR_SETPROTOCOL, 0, NULL);
 	}
 }
 
@@ -1025,7 +1025,7 @@ INT_PTR CALLBACK DlgProcAvatarProtoInfo(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						LPNMLISTVIEW li = (LPNMLISTVIEW) nm;
 						if (li->uNewState & LVIS_SELECTED)
 						{
-							SendMessage(GetDlgItem(hwndDlg, IDC_PROTOPIC), AVATAR_SETPROTOCOL, 0, li->lParam);
+							SendDlgItemMessage(hwndDlg, IDC_PROTOPIC, AVATAR_SETPROTOCOL, 0, li->lParam);
 							EnableDisableControls(hwndDlg, (char *) li->lParam);
 						}
 					}
