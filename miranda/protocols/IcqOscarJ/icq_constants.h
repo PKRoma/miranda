@@ -67,7 +67,7 @@
 #define DEFAULT_SS_GROUP            "General"
 
 #define DEFAULT_SECURE_LOGIN        1
-#define DEFAULT_SECURE_CONNECTION   1
+#define DEFAULT_SECURE_CONNECTION   0
 #define DEFAULT_AIM_ENABLED         1
 #define DEFAULT_UTF_ENABLED         2 // everything unicode is default
 #define DEFAULT_ANSI_CODEPAGE       CP_ACP
