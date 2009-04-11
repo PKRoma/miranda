@@ -67,6 +67,9 @@ typedef struct
 //called with wparam=hContact
 #define ME_CLIST_EXTRA_IMAGE_APPLY			"CListFrames/OnExtraImageApply"
 
+//called with wparam=hContact lparam=extra
+#define ME_CLIST_EXTRA_CLICK				"CListFrames/OnExtraClick"
+
 //End of extra images header. TODO move it to separate m_extraimages.h file
 //Cause it has not any relationship to cluiframes engine
 
