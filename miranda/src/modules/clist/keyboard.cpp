@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "clc.h"
 #include <m_hotkeys.h>
 
-extern HANDLE hStatusModeChangeEvent;
+void SetClistGlobalStatus(int status);
 
 static INT_PTR hkHideShow(WPARAM, LPARAM)
 {
@@ -73,14 +73,8 @@ INT_PTR hkRestoreStatus(WPARAM wParam,LPARAM lParam)
 */
 static INT_PTR hkAllOffline(WPARAM, LPARAM)
 {
-	int nProto;
-
-	for (nProto = 0; nProto < accounts.getCount(); nProto++)
-		CallProtoService( accounts[nProto]->szModuleName, PS_SETSTATUS, ID_STATUS_OFFLINE, 0);
-
-    NotifyEventHooks( hStatusModeChangeEvent, ID_STATUS_OFFLINE, 0 );
-	DBWriteContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
-	return 0;
+    SetClistGlobalStatus(ID_STATUS_OFFLINE);
+    return 0;
 }
 
 int InitClistHotKeys(void)

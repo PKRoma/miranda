@@ -578,6 +578,31 @@ INT_PTR StatusMenuCheckService(WPARAM wParam, LPARAM)
 	return TRUE;
 }
 
+void SetClistGlobalStatus(int status)
+{
+	int MenusProtoCount = 0;
+
+	for( int i=0; i < accounts.getCount(); i++ )
+		if ( cli.pfnGetProtocolVisibility( accounts[i]->szModuleName ))
+			MenusProtoCount++;
+
+	cli.currentDesiredStatusMode = status;
+
+	for ( int j=0; j < accounts.getCount(); j++ ) {
+		PROTOACCOUNT* pa = accounts[j];
+		if ( !cli.pfnGetProtocolVisibility( pa->szModuleName ))
+			continue;
+		if ( MenusProtoCount > 1 && DBGetContactSettingByte( NULL, pa->szModuleName, "LockMainStatus", 0 ))
+			continue;
+
+		if ( CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0 ) != cli.currentDesiredStatusMode )
+			CallProtoService( pa->szModuleName, PS_SETSTATUS, cli.currentDesiredStatusMode, 0 );
+	}
+	NotifyEventHooks( hStatusModeChangeEvent, cli.currentDesiredStatusMode, 0 );
+
+	DBWriteContactSettingWord( NULL, "CList", "Status", ( WORD )cli.currentDesiredStatusMode );
+}
+
 INT_PTR StatusMenuExecService(WPARAM wParam, LPARAM)
 {
 	lpStatusMenuExecParam smep = ( lpStatusMenuExecParam )wParam;
@@ -622,27 +647,7 @@ INT_PTR StatusMenuExecService(WPARAM wParam, LPARAM)
 				NotifyEventHooks(hStatusModeChangeEvent, smep->status, (LPARAM)smep->proto);
 			}
 			else {
-				int MenusProtoCount = 0;
-
-				for( int i=0; i < accounts.getCount(); i++ )
-					if ( cli.pfnGetProtocolVisibility( accounts[i]->szModuleName ))
-						MenusProtoCount++;
-
-				cli.currentDesiredStatusMode = smep->status;
-
-				for ( int j=0; j < accounts.getCount(); j++ ) {
-					PROTOACCOUNT* pa = accounts[j];
-					if ( !cli.pfnGetProtocolVisibility( pa->szModuleName ))
-						continue;
-					if ( MenusProtoCount > 1 && DBGetContactSettingByte( NULL, pa->szModuleName, "LockMainStatus", 0 ))
-						continue;
-
-					if ( CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0 ) != cli.currentDesiredStatusMode )
-						CallProtoService( pa->szModuleName, PS_SETSTATUS, cli.currentDesiredStatusMode, 0 );
-				}
-				NotifyEventHooks( hStatusModeChangeEvent, cli.currentDesiredStatusMode, 0 );
-
-				DBWriteContactSettingWord( NULL, "CList", "Status", ( WORD )cli.currentDesiredStatusMode );
+                SetClistGlobalStatus(smep->status);
 				return 1;
 	}	}	}
 
