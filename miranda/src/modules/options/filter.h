@@ -58,18 +58,18 @@ public:
 		for ( int j = 0; j < _pageKeyWords.getCount(); j++ )
 		{
 			TCHAR * data = _pageKeyWords[j];
-			if ( data ) free( data );
+			mir_free( data );
 		}
 		_pageKeyWords.destroy();
 	};
 
 	void AddKeyWord( TCHAR * ptKeyWord )
 	{
-		TCHAR * plwrWord = _tcslwr_locale( _tcsdup( ptKeyWord ) );
+		TCHAR * plwrWord = _tcslwr_locale( mir_tstrdup( ptKeyWord ) );
 		if ( _pageKeyWords.getIndex( plwrWord ) == -1 )
 			_pageKeyWords.insert( plwrWord ) ;
 		else
-			free( plwrWord );
+			mir_free( plwrWord );
 	};
 
 	BOOL ContainsString( TCHAR * data )

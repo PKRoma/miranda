@@ -539,6 +539,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			DisconnectAll();
 			break;
 
+        case PBT_APMRESUMEAUTOMATIC:
 		case PBT_APMRESUMESUSPEND:
 			// Computer is resuming, restore all protocols
 			RestoreMode(NULL);

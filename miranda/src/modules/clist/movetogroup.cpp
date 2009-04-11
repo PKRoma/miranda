@@ -74,7 +74,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM)
 
 	if ( !cbGroupsItems ) {
 		cbGroupsItems = 0x10;
-		lphGroupsItems = (HANDLE*)malloc(cbGroupsItems*sizeof(HANDLE));
+		lphGroupsItems = (HANDLE*)mir_alloc(cbGroupsItems*sizeof(HANDLE));
 	}
 
 	TCHAR *szContactGroup = DBGetStringT((HANDLE)wParam, "CList", "Group");
@@ -106,7 +106,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM)
 			nGroupsItems++;
 			if ( cbGroupsItems < nGroupsItems ) {
 				cbGroupsItems += 0x10;
-				lphGroupsItems = (HANDLE*)realloc( lphGroupsItems, cbGroupsItems*sizeof( HANDLE ));
+				lphGroupsItems = (HANDLE*)mir_realloc( lphGroupsItems, cbGroupsItems*sizeof( HANDLE ));
 			}
 			lphGroupsItems[i] = AddGroupItem( hMoveToGroupItem, szGroupName + 1, pos++, i, checked );
 		}
@@ -143,6 +143,6 @@ int UnloadMoveToGroup(void)
 
 	nGroupsItems = 0;
 	cbGroupsItems = 0;
-	free(lphGroupsItems);
+	mir_free(lphGroupsItems);
 	return 0;
 }

@@ -151,10 +151,10 @@ static LRESULT CALLBACK MIcoTabWndProc(HWND hwnd, UINT  msg, WPARAM wParam, LPAR
 struct MIcoTabCtrl
 {
 	__inline void* operator new( size_t size )
-	{	return calloc( 1, size );
+	{	return mir_calloc( size );
 	}
 	__inline void operator delete( void* p )
-	{	free( p );
+	{	mir_free( p );
 	}
 
 	MIcoTabCtrl(): pList(1) {}

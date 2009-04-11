@@ -148,14 +148,14 @@ static LRESULT CALLBACK MHeaderbarWndProc(HWND hwnd, UINT  msg, WPARAM wParam, L
 struct MHeaderbarCtrl
 {
 	__inline void* operator new( size_t size )
-	{	return calloc( 1, size );
+	{	return mir_calloc( size );
 	}
 	__inline void operator delete( void* p )
-	{	free( p );
+	{	mir_free( p );
 	}
 
 	MHeaderbarCtrl() {}
-	~MHeaderbarCtrl() { free( controlsToRedraw ); }
+	~MHeaderbarCtrl() { mir_free( controlsToRedraw ); }
 
 	HWND		hwnd;
 
@@ -416,7 +416,7 @@ static LRESULT CALLBACK MHeaderbarWndProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 					if (!IsRectEmpty(&rc))
 					{
 						++itc->nControlsToRedraw;
-						itc->controlsToRedraw = (HWND *)realloc(itc->controlsToRedraw, sizeof(HWND) * itc->nControlsToRedraw);
+						itc->controlsToRedraw = (HWND *)mir_realloc(itc->controlsToRedraw, sizeof(HWND) * itc->nControlsToRedraw);
 						itc->controlsToRedraw[itc->nControlsToRedraw - 1] = hChild;
 					}
 				}
