@@ -1924,17 +1924,14 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					}
 					if (dat->avatarPic && (g_dat->flags&SMF_AVATAR) && g_dat->avatarServiceInstalled) {
 						BITMAP bminfo;
-						double aspect;
 						GetObject(dat->avatarPic, sizeof(bminfo), &bminfo);
 						if ( bminfo.bmWidth != 0 && bminfo.bmHeight != 0 ) {
 							AVATARDRAWREQUEST adr;
 							avatarHeight = INFO_BAR_INNER_HEIGHT;
-							aspect = (double)avatarHeight / (double)bminfo.bmHeight;
-							avatarWidth = (int)(bminfo.bmWidth * aspect);
+							avatarWidth = bminfo.bmWidth * avatarHeight / bminfo.bmHeight;
 							if (avatarWidth > 64) {
 								avatarWidth = 64;
-								aspect = (double)avatarWidth / (double)bminfo.bmWidth;
-								avatarHeight = (int)(bminfo.bmHeight * aspect);
+								avatarHeight = bminfo.bmHeight * avatarWidth / bminfo.bmWidth;
 							}
 							ZeroMemory(&adr, sizeof(adr));
 							adr.cbSize = sizeof (AVATARDRAWREQUEST);
