@@ -42,6 +42,45 @@ Last change by : $Author$
 #include "sdk/m_proto_listeningto.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// GetMyAwayMsg - obtain the current away message
+
+INT_PTR __cdecl CJabberProto::GetMyAwayMsg(WPARAM wParam, LPARAM lParam)
+{
+	TCHAR *szStatus = NULL;
+	INT_PTR nRetVal = 0;
+
+	EnterCriticalSection( &m_csModeMsgMutex );
+	switch ( wParam ? (int)wParam : m_iStatus ) {
+	case ID_STATUS_ONLINE:
+		szStatus = m_modeMsgs.szOnline;
+		break;
+	case ID_STATUS_AWAY:
+	case ID_STATUS_ONTHEPHONE:
+	case ID_STATUS_OUTTOLUNCH:
+		szStatus = m_modeMsgs.szAway;
+		break;
+	case ID_STATUS_NA:
+		szStatus = m_modeMsgs.szNa;
+		break;
+	case ID_STATUS_DND:
+	case ID_STATUS_OCCUPIED:
+		szStatus = m_modeMsgs.szDnd;
+		break;
+	case ID_STATUS_FREECHAT:
+		szStatus = m_modeMsgs.szFreechat;
+		break;
+	default:
+		// Should not reach here
+		break;
+	}
+	if ( szStatus ) 
+		nRetVal = ( lParam & SGMA_UNICODE ) ? ( INT_PTR )mir_t2u( szStatus ) : ( INT_PTR )mir_t2a( szStatus );
+	LeaveCriticalSection( &m_csModeMsgMutex );
+
+	return nRetVal;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // JabberGetAvatar - retrieves the file name of my own avatar
 
 INT_PTR __cdecl CJabberProto::JabberGetAvatar( WPARAM wParam, LPARAM lParam )

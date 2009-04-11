@@ -155,6 +155,7 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//====| Services |====================================================================
 	INT_PTR  __cdecl SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl GetMyAwayMsg(WPARAM wParam, LPARAM lParam);
 
 	//====| Events |======================================================================
 	void __cdecl OnAddContactForever( DBCONTACTWRITESETTING* cws, HANDLE hContact );
