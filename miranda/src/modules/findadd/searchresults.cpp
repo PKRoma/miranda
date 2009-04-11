@@ -227,8 +227,10 @@ static void BeginSearchFailed(void * arg)
 {
 	TCHAR buf[128];
 	if ( arg != NULL ) {
-		TCHAR* protoName = LangPackPcharToTchar(( const char* )arg );
-		mir_sntprintf(buf,SIZEOF(buf),TranslateT("Could not start a search on '%s', there was a problem - is %s connected?"),protoName,protoName);
+		const TCHAR* protoName = (TCHAR*)arg;
+		mir_sntprintf(buf,SIZEOF(buf),
+            TranslateT("Could not start a search on '%s', there was a problem - is %s connected?"),
+            protoName,protoName);
 		mir_free((char*)arg);
 	}
 	else lstrcpyn(buf,TranslateT("Could not search on any of the protocols, are you online?"),SIZEOF(buf));
@@ -267,7 +269,8 @@ int BeginSearch(HWND,struct FindAddDlgData *dat,const char *szProto,const char *
 		dat->search[0].szProto=szProto;
 		if(dat->search[0].hProcess==NULL) {
 			//infuriatingly vague error message. fixme.
-			forkthread(BeginSearchFailed,0,(void*)mir_strdup(szProto));
+            PROTOACCOUNT* pa = Proto_GetAccount(szProto);
+			forkthread(BeginSearchFailed, 0, mir_tstrdup(pa->tszAccountName));
 			mir_free(dat->search);
 			dat->search=NULL;
 			dat->searchCount=0;
