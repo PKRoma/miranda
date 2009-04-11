@@ -1413,7 +1413,7 @@ INT_PTR __cdecl CJabberProto::OnSetXStatus( WPARAM wParam, LPARAM )
 	if (!wParam)
 	{
 		pepMood->m_mode = -1;
-		pepMood->Publish();
+		pepMood->Retract();
 		return 0;
 	}
 
