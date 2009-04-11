@@ -11,6 +11,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -36,8 +37,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -53,6 +52,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -78,8 +78,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -95,6 +93,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -119,8 +118,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -136,6 +133,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -160,8 +158,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -177,6 +173,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -204,8 +201,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -221,6 +216,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -245,8 +241,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -262,6 +256,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -286,8 +281,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -303,6 +296,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_icq.h"\
@@ -328,8 +322,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -345,6 +337,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -369,8 +362,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -386,6 +377,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -411,8 +403,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -428,6 +418,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -452,8 +443,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -469,6 +458,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -494,8 +484,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -511,6 +499,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -536,8 +525,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -553,6 +540,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_ignore.h"\
@@ -579,8 +567,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -596,6 +582,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -620,8 +607,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -637,6 +622,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -661,8 +647,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -678,6 +662,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -702,8 +687,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -719,6 +702,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -743,8 +727,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -765,6 +747,7 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_findadd.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_icq.h"\
@@ -792,8 +775,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_updater.h"\
 	".\rowheight_funcs.h"\
@@ -810,6 +791,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -834,8 +816,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -851,6 +831,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_icq.h"\
@@ -877,8 +858,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -894,6 +873,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -918,8 +898,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -935,6 +913,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -959,8 +938,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -990,6 +967,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1014,8 +992,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -1031,6 +1007,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1056,8 +1033,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -1073,6 +1048,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1097,8 +1073,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -1114,6 +1088,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1139,8 +1114,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -1156,6 +1129,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1180,8 +1154,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -1197,6 +1169,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1221,8 +1194,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -1238,6 +1209,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1263,8 +1235,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -1280,6 +1250,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1304,8 +1275,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
@@ -1321,6 +1290,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1346,8 +1316,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_variables.h"\
 	".\rowheight_funcs.h"\
@@ -1364,6 +1332,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1388,8 +1357,6 @@
 	".\forkthread.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
-	".\m_clui.h"\
-	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
