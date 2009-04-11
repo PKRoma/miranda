@@ -994,10 +994,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			dat->avatarWidth=bminfo.bmWidth+2;
 			dat->avatarHeight=bminfo.bmHeight+2;
 			if (dat->limitAvatarH&&dat->avatarHeight>dat->limitAvatarH) {
-				double aspect = 0;
-
-				aspect = (double)dat->limitAvatarH / (double)bminfo.bmHeight;
-				dat->avatarWidth = (int)(bminfo.bmWidth * aspect + 2);
+				dat->avatarWidth = bminfo.bmWidth * dat->limitAvatarH / bminfo.bmHeight + 2;
 				dat->avatarHeight = dat->limitAvatarH + 2;
 			}
 			ShowWindow(GetDlgItem(hwndDlg, IDC_AVATAR), SW_SHOW);
@@ -1601,25 +1598,22 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				BITMAP bminfo;
 				HPEN hPen, hOldPen;
 
-            hPen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
-            hOldPen = SelectObject(dis->hDC, hPen);
-            Rectangle(dis->hDC, 0, 0, dat->avatarWidth, dat->avatarHeight);
-				SelectObject(dis->hDC,hOldPen);
-            DeleteObject(hPen);
-				GetObject(dat->avatarPic, sizeof(bminfo), &bminfo);
+                hPen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
+                hOldPen = SelectObject(dis->hDC, hPen);
+                Rectangle(dis->hDC, 0, 0, dat->avatarWidth, dat->avatarHeight);
+                SelectObject(dis->hDC,hOldPen);
+                DeleteObject(hPen);
+                GetObject(dat->avatarPic, sizeof(bminfo), &bminfo);
 				{
-					HDC hdcMem = CreateCompatibleDC(dis->hDC);
-               HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, dat->avatarPic);
+                    HDC hdcMem = CreateCompatibleDC(dis->hDC);
+                    HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, dat->avatarPic);
 					{
-						double aspect = 0, w = 0;
-
-						aspect = (double)dat->limitAvatarH / (double)bminfo.bmHeight;
-						w = (double)bminfo.bmWidth * aspect;
 						SetStretchBltMode(dis->hDC, HALFTONE);
-                  StretchBlt(dis->hDC, 1, 1, dat->avatarWidth-2, dat->avatarHeight-2, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+                        StretchBlt(dis->hDC, 1, 1, dat->avatarWidth-2, dat->avatarHeight-2, hdcMem, 0, 0, 
+                            bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
 					}
-					SelectObject(hdcMem,hbmMem);
-               DeleteDC(hdcMem);
+                    SelectObject(hdcMem,hbmMem);
+                    DeleteDC(hdcMem);
 			}	}
 			return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
 		}
