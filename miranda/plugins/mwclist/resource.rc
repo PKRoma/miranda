@@ -306,7 +306,8 @@ BEGIN
     EDITTEXT        IDC_TITLETEXT,63,104,72,12,ES_AUTOHSCROLL
     CONTROL         "Enable drop shadow (restart required)",IDC_DROPSHADOW,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,194,138,10
-    GROUPBOX        "Contact List Extra Icons",IDC_STATIC,200,130,110,91
+    GROUPBOX        "Contact List Extra Icons",IDC_EXTRA_FRAME,200,130,110,
+                    91
     CONTROL         "Protocol Type",IDC_EXTRA_PROTO,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,210,143,70,10
     CONTROL         "E-mail",IDC_EXTRA_EMAIL,"Button",BS_AUTOCHECKBOX | 
@@ -836,6 +837,7 @@ END
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
+
 /////////////////////////////////////////////////////////////////////////////
 // English (Canada) resources
 
@@ -921,6 +923,4 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-
-
 

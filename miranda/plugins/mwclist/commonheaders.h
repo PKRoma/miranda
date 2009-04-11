@@ -121,4 +121,8 @@ extern int     ( *saveIconFromStatusMode )( const char *szProto,int nStatus, HAN
 #define ME_BACKGROUNDCONFIG_CHANGED "BkgrCfg/Changed"
 
 
+
+#define EXTRACOLUMNCOUNT 9
+
+
 #endif

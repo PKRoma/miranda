@@ -72,9 +72,11 @@ extern HWND CreateStatusBarhWnd(HWND parent);
 extern HANDLE CreateStatusBarFrame();
 extern int CLUIFramesUpdateFrame(WPARAM wParam,LPARAM lParam);
 extern int ExtraToColumnNum(int extra);
+extern int ColumnNumToExtra(int column);
 extern void DrawDataForStatusBar(LPDRAWITEMSTRUCT dis);
 extern void InitGroupMenus();
 extern int UseOwnerDrawStatusBar;
+extern HANDLE hExtraImageClick;
 
 HICON GetConnectingIconForProto(char *szProto,int b);
 HICON GetConnectingIconForProto_DLL(char *szProto,int b);
@@ -399,39 +401,42 @@ int OnSettingChanging(WPARAM wParam,LPARAM lParam)
 	else
 	{		
 		if (dbcws==NULL){return(0);}
-		
-		if (dbcws->value.type==DBVT_ASCIIZ&&!strcmp(dbcws->szSetting,"e-mail"))
-		{
-			SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
-			return(0);
-		}
-		if (dbcws->value.type==DBVT_ASCIIZ&&!strcmp(dbcws->szSetting,"Cellular"))
-		{		
-			SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
-			return(0);
-		}
 
-		if (dbcws->value.type==DBVT_ASCIIZ&&strstr(dbcws->szModule,"ICQ"))
+		if (!ServiceExists("ExtraIcon/Register"))
 		{
-			if (!strcmp(dbcws->szSetting,(HANDLE)"MirVer"))
+			if (dbcws->value.type==DBVT_ASCIIZ&&!strcmp(dbcws->szSetting,"e-mail"))
+			{
+				SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
+				return(0);
+			}
+			if (dbcws->value.type==DBVT_ASCIIZ&&!strcmp(dbcws->szSetting,"Cellular"))
 			{		
 				SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
 				return(0);
 			}
-		
-		}
-		
-		if (dbcws->value.type==DBVT_ASCIIZ&&!strcmp(dbcws->szModule,"UserInfo"))
-		{
-			if (!strcmp(dbcws->szSetting,(HANDLE)"MyPhone0"))
-			{		
-				SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
-				return(0);
+
+			if (dbcws->value.type==DBVT_ASCIIZ&&strstr(dbcws->szModule,"ICQ"))
+			{
+				if (!strcmp(dbcws->szSetting,(HANDLE)"MirVer"))
+				{		
+					SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
+					return(0);
+				}
+			
 			}
-			if (!strcmp(dbcws->szSetting,(HANDLE)"Mye-mail0"))
-			{	
-				SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);	
-				return(0);
+			
+			if (dbcws->value.type==DBVT_ASCIIZ&&!strcmp(dbcws->szModule,"UserInfo"))
+			{
+				if (!strcmp(dbcws->szSetting,(HANDLE)"MyPhone0"))
+				{		
+					SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
+					return(0);
+				}
+				if (!strcmp(dbcws->szSetting,(HANDLE)"Mye-mail0"))
+				{	
+					SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);	
+					return(0);
+				}
 			}
 		}
 	}
@@ -738,35 +743,42 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					HANDLE hItem = (HANDLE)SendMessage(pcli->hwndContactTree,CLM_HITTEST,(WPARAM)&hitFlags,MAKELPARAM(nm->pt.x,nm->pt.y));
 
 					if (hitFlags&CLCHT_ONITEMEXTRA) {					
-						int v,e,w;
-						pdisplayNameCacheEntry pdnce; 
-						v=ExtraToColumnNum(EXTRA_ICON_PROTO);
-						e=ExtraToColumnNum(EXTRA_ICON_EMAIL);
-						w=ExtraToColumnNum(EXTRA_ICON_ADV1);
-
 						if (!IsHContactGroup(hItem)&&!IsHContactInfo(hItem))
 						{
+							int extra;
+							pdisplayNameCacheEntry pdnce; 
+
 							pdnce = (pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(nm->hItem);
 							if (pdnce==NULL) return 0;
 
-							if(nm->iColumn==v)
-								CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)nm->hItem,0);
+							extra = ColumnNumToExtra(nm->iColumn);
+							NotifyEventHooks(hExtraImageClick, (WPARAM)nm->hItem, extra);
 
-							if(nm->iColumn==e) {
-								//CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)nm->hItem,0);
-								char *email,buf[4096];
-								email=DBGetStringA(nm->hItem,"UserInfo", "Mye-mail0");
-								if (email) {
-									sprintf(buf,"mailto:%s",email);
-									ShellExecuteA(hwnd,"open",buf,NULL,NULL,SW_SHOW);
-								}											
-							}	
-							if(nm->iColumn==w) {
-								char *homepage;
-								homepage=DBGetStringA(pdnce->hContact,pdnce->szProto, "Homepage");
-								if (homepage!=NULL)
-									ShellExecuteA(hwnd,"open",homepage,NULL,NULL,SW_SHOW);
-					}	}	}	
+							if (!ServiceExists("ExtraIcon/Register"))
+							{
+								int v,e,w;
+								v=ExtraToColumnNum(EXTRA_ICON_PROTO);
+								e=ExtraToColumnNum(EXTRA_ICON_EMAIL);
+								w=ExtraToColumnNum(EXTRA_ICON_ADV1);
+
+								if(nm->iColumn==v)
+									CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)nm->hItem,0);
+
+								if(nm->iColumn==e) {
+									//CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)nm->hItem,0);
+									char *email,buf[4096];
+									email=DBGetStringA(nm->hItem,"UserInfo", "Mye-mail0");
+									if (email) {
+										sprintf(buf,"mailto:%s",email);
+										ShellExecuteA(hwnd,"open",buf,NULL,NULL,SW_SHOW);
+									}											
+								}	
+								if(nm->iColumn==w) {
+									char *homepage;
+									homepage=DBGetStringA(pdnce->hContact,pdnce->szProto, "Homepage");
+									if (homepage!=NULL)
+										ShellExecuteA(hwnd,"open",homepage,NULL,NULL,SW_SHOW);
+					}	}	}	}
 
 					if(hItem) break;
 					if((hitFlags&(CLCHT_NOWHERE|CLCHT_INLEFTMARGIN|CLCHT_BELOWITEMS))==0) break;
