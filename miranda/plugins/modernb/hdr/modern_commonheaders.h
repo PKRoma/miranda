@@ -508,4 +508,8 @@ int __cdecl ModernDBFreeVariant     ( DBVARIANT *dbv );
     #define ModernGetSettingTString(a,b,c,d)   ModernGetSettingString(a,b,c,d) 
 #endif //_UNICODE
 
+
+#define EXTRACOLUMNCOUNT 10
+
+
 #endif // commonheaders_h__
