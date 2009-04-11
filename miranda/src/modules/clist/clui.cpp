@@ -897,9 +897,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	case WM_MENUSELECT:
 		if((HMENU)lParam == cli.hMenuMain) {
 			int pos = LOWORD(wParam);
-			POINT pt;
-			GetCursorPos(&pt);
-			if ((pos == 0 || pos == 1) && (HIWORD(wParam) & MF_POPUP) && MenuItemFromPoint(hwnd, cli.hMenuMain, pt) != -1) {
+			if ((pos == 0 || pos == 1) && (HIWORD(wParam) & MF_POPUP)) {
 				MENUITEMINFO mii = { 0 };
 				mii.cbSize = MENUITEMINFO_V4_SIZE;
 				mii.fMask = MIIM_SUBMENU;
