@@ -298,7 +298,7 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	CRITICAL_SECTION m_csLastResourceMap;
 	void *m_pLastResourceList;
-	DWORD m_dwResourceToDbEventMap[256]; // last 128 messages (128+128)
+	ULONG_PTR m_ulpResourceToDbEventMap[256]; // last 128 messages (128+128)
 	DWORD m_dwResourceMapPointer;
 
 	/*******************************************************************

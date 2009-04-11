@@ -921,9 +921,9 @@ int __cdecl CJabberProto::RecvMsg( HANDLE hContact, PROTORECVEVENT* evt )
 
 	EnterCriticalSection( &m_csLastResourceMap );
 	if (IsLastResourceExists( (void *)evt->lParam) ) {
-		m_dwResourceToDbEventMap[ m_dwResourceMapPointer++ ] = ( DWORD )nDbEvent;
-		m_dwResourceToDbEventMap[ m_dwResourceMapPointer++ ] = ( DWORD )evt->lParam;
-		if ( m_dwResourceMapPointer >= SIZEOF( m_dwResourceToDbEventMap ))
+		m_ulpResourceToDbEventMap[ m_dwResourceMapPointer++ ] = ( ULONG_PTR )nDbEvent;
+		m_ulpResourceToDbEventMap[ m_dwResourceMapPointer++ ] = ( ULONG_PTR )evt->lParam;
+		if ( m_dwResourceMapPointer >= SIZEOF( m_ulpResourceToDbEventMap ))
 			m_dwResourceMapPointer = 0;
 	}
 	LeaveCriticalSection( &m_csLastResourceMap );
