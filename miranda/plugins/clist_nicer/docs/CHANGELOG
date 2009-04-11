@@ -447,9 +447,6 @@
           * MS_CLIST_GETCONTACTDISPLAYNAME supports the GCDNF_UNICODE flag in lParam to get 
             the contact name as wide string (compatible with clist_classic).
             
-          * MS_CLUI_GETVERSION can be used to retrieve the version string (char *). Optionally,
-            you can pass a valid DWORD pointer in lParam to retrieve the version number.
-            
           * MS_CLIST_SYSTRAY_NOTIFY supports a NIIF_INTERN_UNICODE flag in MIRANDASYSTRAYNOTIFY.dwInfoFlags.
             If set, the service will treat all strings in the MIRANDASYSTRAYNOTIFY structure
             as wide strings (you'll probably have to cast the pointers to avoid compiler 
