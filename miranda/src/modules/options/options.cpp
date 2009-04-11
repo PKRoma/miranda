@@ -942,7 +942,9 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 							else 
 								ThemeDialogBackground(dat->opd[dat->currentPage].hwnd,FALSE);
 						}
+
 						// Resizing
+                        if (!dat->opd[dat->currentPage].simpleBottomControlId)
 						{
 							int pageWidth, pageHeight;
 
@@ -974,7 +976,6 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 							
 							if ( mcp.offset.x || mcp.offset.y )
 							{
-								
 								EnumChildWindows(dat->opd[dat->currentPage].hwnd,MoveEnumChildren,(LPARAM)(&mcp));
 
 								SetWindowPos( dat->opd[dat->currentPage].hwnd, NULL,
