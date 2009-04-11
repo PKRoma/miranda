@@ -197,7 +197,7 @@ void ExtraImage_ReloadExtraIcons()
 		
 		//calc only needed protocols
 		for(i=0;i<count;i++) {
-			if ( CallProtoService(accs[i]->szModuleName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
+            if (!accs[i]->bDynDisabled && CallProtoService(accs[i]->szModuleName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
 			ImageList_AddIcon(hExtraImageList,LoadSkinnedProtoIcon(accs[i]->szModuleName,ID_STATUS_ONLINE));
 		}
 
