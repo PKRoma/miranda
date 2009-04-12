@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -282,10 +282,7 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
         if (dbv.dVal == 0)
           unspecified = 1;
         else
-        {
-          pstr = asctime(localtime(&dbv.dVal));
-          pstr[24] = '\0'; // Remove newline
-        }
+          pstr = time2text(dbv.dVal);
       }
       else
         pstr = itoa(special == SVS_SIGNED ? dbv.lVal:dbv.dVal, str, 10);

@@ -1341,7 +1341,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
       /* finally we get a time_t of the last update time */
       unpackDWord(&buf, &dwLastUpdateTime);
       ICQWriteContactSettingDword(NULL, "SrvLastUpdate", dwLastUpdateTime);
-      NetLog_Server("Last update of server list was (%u) %s", dwLastUpdateTime, asctime(localtime(&dwLastUpdateTime)));
+      NetLog_Server("Last update of server list was (%u) %s", dwLastUpdateTime, time2text(dwLastUpdateTime));
 
       sendRosterAck();
       handleServUINSettings(wListenPort, info);

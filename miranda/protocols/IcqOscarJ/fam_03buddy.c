@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -280,7 +280,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 #ifdef _DEBUG
     if (wIdleTimer)
       NetLog_Server("Idle timer is %u.", wIdleTimer);
-    NetLog_Server("Online since %s", asctime(localtime(&dwOnlineSince)));
+    NetLog_Server("Online since %s", time2text(dwOnlineSince));
 #endif
 
     // Check client capabilities

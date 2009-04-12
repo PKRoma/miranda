@@ -1273,6 +1273,22 @@ int GetGMTOffset(void)
 
 
 
+char* time2text(time_t time)
+{
+  struct tm *local = localtime(&time);
+
+  if (local)
+  {
+    char *str = asctime(local);
+    str[24] = '\0'; // remove new line
+    return str;
+  }
+  else
+    return "<invalid>";
+}
+
+
+
 BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType)
 {
   // Privacy control

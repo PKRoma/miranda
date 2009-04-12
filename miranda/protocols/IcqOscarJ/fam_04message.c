@@ -425,13 +425,9 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
               if (pTimeTLV && wTimeTLVType == 0x16 && wTimeTLVLen == 4)
               { // found Offline timestamp
                 BYTE *pBuf = pTimeTLV;
-                char *szTime;
 
                 unpackDWord(&pBuf, &dwRecvTime);
-                // TODO: add some checking
-                szTime = asctime(localtime(&dwRecvTime));
-                szTime[24] = '\0'; // remove new line
-                NetLog_Server("Message (format %u) - Offline timestamp is %s", 1, szTime);
+                NetLog_Server("Message (format %u) - Offline timestamp is %s", 1, time2text(dwRecvTime));
               }
               SAFE_FREE(&pTimeTLV);
             }
@@ -1298,13 +1294,9 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, c
           if (pTimeTLV && wTimeTLVType == 0x16 && wTimeTLVLen == 4)
           { // found Offline timestamp
             BYTE *pBuf = pTimeTLV;
-            char *szTime;
 
             unpackDWord(&pBuf, &dwRecvTime);
-            // TODO: add some checking
-            szTime = asctime(localtime(&dwRecvTime));
-            szTime[24] = '\0'; // remove new line
-            NetLog_Server("Message (format %u) - Offline timestamp is %s", 4, szTime);
+            NetLog_Server("Message (format %u) - Offline timestamp is %s", 4, time2text(dwRecvTime));
           }
           SAFE_FREE(&pTimeTLV);
         }
