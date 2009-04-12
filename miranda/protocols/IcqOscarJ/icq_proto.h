@@ -844,7 +844,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	DWORD  requestXStatusDetails(HANDLE hContact, BOOL bAllowDelay);
 	HICON  getXStatusIcon(int bStatus, UINT flags);
 	void   setXStatusEx(BYTE bXStatus, BYTE bQuiet);
-	void   setContactExtraIcon(HANDLE hContact, HANDLE hIcon);
+	void   setContactExtraIcon(HANDLE hContact, int xstatus);
 	void   handleXStatusCaps(HANDLE hContact, BYTE *caps, int capsize, char *moods, int moodsize);
 	void   updateServerCustomStatus(int fullUpdate);
 

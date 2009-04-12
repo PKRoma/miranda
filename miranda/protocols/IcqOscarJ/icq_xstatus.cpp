@@ -35,6 +35,9 @@
 // -----------------------------------------------------------------------------
 
 #include "icqoscar.h"
+#include "m_extraicons.h"
+
+extern HANDLE hExtraXStatus;
 
 void CListShowMenuItem(HANDLE hMenuItem, BYTE bShow);
 
@@ -149,14 +152,39 @@ HICON CIcqProto::getXStatusIcon(int bStatus, UINT flags)
 }
 
 
-void CIcqProto::setContactExtraIcon(HANDLE hContact, HANDLE hIcon)
+void CIcqProto::setContactExtraIcon(HANDLE hContact, int xstatus)
 {
-	IconExtraColumn iec;
+	HANDLE hIcon;
 
-	iec.cbSize = sizeof(iec);
-	iec.hImage = hIcon;
-	iec.ColumnType = EXTRA_ICON_ADV1;
-	CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+	if (hExtraXStatus == NULL)
+	{
+		if (xstatus > 0 && bXStatusExtraIconsReady < 2)
+			CListMW_ExtraIconsRebuild(0, 0);
+
+		hIcon = (xstatus <= 0 ? (HANDLE)-1 : hXStatusExtraIcons[xstatus-1]);
+
+		IconExtraColumn iec;
+
+		iec.cbSize = sizeof(iec);
+		iec.hImage = hIcon;
+		iec.ColumnType = EXTRA_ICON_ADV1;
+		CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+	}
+	else
+	{
+		hIcon = (HANDLE) -1;
+
+		if (xstatus <= 0)
+		{
+			ExtraIcon_SetIcon(hExtraXStatus, hContact, (char *) NULL);
+		}
+		else
+		{
+			char szTemp[MAX_PATH];
+			null_snprintf(szTemp, sizeof(szTemp), "%s_xstatus%d", m_szModuleName, xstatus-1);
+			ExtraIcon_SetIcon(hExtraXStatus, hContact, szTemp);
+		}
+	}
 
 	NotifyEventHooks(hxstatusiconchanged, (WPARAM)hContact, (LPARAM)hIcon);
 }
@@ -190,15 +218,7 @@ int CIcqProto::CListMW_ExtraIconsApply(WPARAM wParam, LPARAM lParam)
 			// only apply icons to our contacts, do not mess others
 			DWORD bXStatus = getContactXStatus((HANDLE)wParam);
 
-			if (bXStatus)
-      { // prepare extra slot icons if not already added
-        if (bXStatusExtraIconsReady < 2)
-          CListMW_ExtraIconsRebuild(wParam, lParam);
-
-				setContactExtraIcon((HANDLE)wParam, hXStatusExtraIcons[bXStatus-1]);
-      }
-			else 
-				setContactExtraIcon((HANDLE)wParam, (HANDLE)-1);
+			setContactExtraIcon((HANDLE)wParam, bXStatus);
 		}
 	}
 	return 0;
@@ -310,7 +330,7 @@ const int moodXStatus[XSTATUS_COUNT] = {
 void CIcqProto::handleXStatusCaps(HANDLE hContact, BYTE *caps, int capsize, char *moods, int moodsize)
 {
 	int bChanged = FALSE;
-	HANDLE hIcon = (HANDLE)-1;
+	int xstatus = 0;
 
   ClearContactCapabilities(hContact, CAPF_STATUS_MOOD | CAPF_XSTATUS);
 
@@ -341,15 +361,13 @@ void CIcqProto::handleXStatusCaps(HANDLE hContact, BYTE *caps, int capsize, char
 				if (getSettingByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO))
 					requestXStatusDetails(hContact, TRUE);
 
-        if (bXStatusExtraIconsReady < 2)
-          CListMW_ExtraIconsRebuild(0, 0);
-				hIcon = hXStatusExtraIcons[i];
+				xstatus = bXStatusId;
 
 				break;
 			}
 		}
 	}
-	if (hIcon == (HANDLE)-1 && moods && moodsize < 32)
+	if (xstatus == 0 && moods && moodsize < 32)
 	{ // process custom statuses (moods) from ICQ6
 		int i;
 
@@ -378,15 +396,13 @@ void CIcqProto::handleXStatusCaps(HANDLE hContact, BYTE *caps, int capsize, char
 					bChanged = TRUE;
 				}
 				// cannot retrieve mood details here - need to be processed with new user details
-        if (bXStatusExtraIconsReady < 2)
-          CListMW_ExtraIconsRebuild(0, 0);
-				hIcon = hXStatusExtraIcons[i];
+				xstatus = bXStatusId;
 
 				break;
 			}
 		}
 	}
-	if (hIcon == (HANDLE)-1)
+	if (xstatus == 0)
 	{
 		if (getSettingByte(hContact, DBSETTING_XSTATUS_ID, -1) != -1)
 			bChanged = TRUE;
@@ -397,7 +413,7 @@ void CIcqProto::handleXStatusCaps(HANDLE hContact, BYTE *caps, int capsize, char
 
 	if (m_bXStatusEnabled != 10)
 	{
-		setContactExtraIcon(hContact, hIcon);
+		setContactExtraIcon(hContact, xstatus);
 
 		if (bChanged)
 			NotifyEventHooks(hxstatuschanged, (WPARAM)hContact, 0);

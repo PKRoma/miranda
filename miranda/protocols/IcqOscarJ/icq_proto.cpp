@@ -42,6 +42,7 @@
 #include <ctype.h>
 
 extern PLUGININFOEX pluginInfo;
+extern HANDLE hExtraXStatus;
 
 #pragma warning(disable:4355)
 
@@ -206,12 +207,6 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 
 	if (bStatusMenu = ServiceExists(MS_CLIST_ADDSTATUSMENUITEM))
 		HookProtoEvent(ME_CLIST_PREBUILDSTATUSMENU, &CIcqProto::OnPreBuildStatusMenu);
-
-	if (HookProtoEvent(ME_CLIST_EXTRA_LIST_REBUILD, &CIcqProto::CListMW_ExtraIconsRebuild))
-	{ // note if the Hook was successful (e.g. clist_nicer creates them too late)
-		HookProtoEvent(ME_CLIST_EXTRA_IMAGE_APPLY, &CIcqProto::CListMW_ExtraIconsApply);
-		bXStatusExtraIconsReady = 1;
-	}
 
 	NetLog_Server("%s: Protocol instance '%s' created.", ICQ_PROTOCOL_NAME, m_szModuleName);
 }
@@ -393,6 +388,28 @@ int CIcqProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 	// TODO: add beta builds support to devel builds :)
 	CallService(MS_UPDATE_REGISTERFL, 1683, (WPARAM)&pluginInfo);
+
+	if (hExtraXStatus == NULL)
+	{
+		if (HookProtoEvent(ME_CLIST_EXTRA_LIST_REBUILD, &CIcqProto::CListMW_ExtraIconsRebuild))
+		{ // note if the Hook was successful (e.g. clist_nicer creates them too late)
+			HookProtoEvent(ME_CLIST_EXTRA_IMAGE_APPLY, &CIcqProto::CListMW_ExtraIconsApply);
+			bXStatusExtraIconsReady = 1;
+		}
+	}
+	else
+	{
+		HANDLE hContact = FindFirstContact();
+		while (hContact != NULL)
+		{
+			DWORD bXStatus = getContactXStatus(hContact);
+			if (bXStatus > 0)
+				setContactExtraIcon(hContact, bXStatus);
+
+			hContact = FindNextContact(hContact);
+		}
+	}
+
 	return 0;
 }
 
