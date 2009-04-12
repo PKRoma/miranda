@@ -146,7 +146,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define CLUICAPS_FLAGS2   1			//Returns info about extra icons
 		  //HIWORD is the first extra icon number, LOWORD is the extra icons count
 
-//LPARAMS for CLUICAPS_FLAGS1 
+//LPARAMS for CLUICAPS_FLAGS2
 #define CLUIF2_PLUGININFO			1	//returns pointer to plugininfo
 #define CLUIF2_CLISTTYPE			2	// the genaration of list in chronologic 
 // modern layered return 0x07 (assuming classic, mw, meta, nicer1, modern1, nicer++, modernLayered)
