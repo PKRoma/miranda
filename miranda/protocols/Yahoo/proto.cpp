@@ -27,7 +27,7 @@
 #endif
 
 CYahooProto::CYahooProto( const char* aProtoName, const TCHAR* aUserName ) :
-	poll_loop( 1 )
+	m_bLoggedIn( FALSE ), poll_loop( 1 ) 
 {
 	m_tszUserName = mir_tstrdup( aUserName );
 	m_szModuleName = mir_strdup( aProtoName );
