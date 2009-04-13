@@ -226,12 +226,11 @@ void CYahooProto::OpenURL(const char *url, int autoLogin)
 
 	DebugLog("[YahooOpenURL] url: %s Auto Login: %d", url, autoLogin);
 	
-	if (autoLogin && GetByte( "MailAutoLogin", 0 ) && m_bLoggedIn) {
-		int   id = 1;
+	if (autoLogin && GetByte( "MailAutoLogin", 0 ) && m_bLoggedIn && m_id > 0) {
 		char  *y, *t, *u;
 		
-		y = yahoo_urlencode(yahoo_get_cookie(id, "y"));
-		t = yahoo_urlencode(yahoo_get_cookie(id, "t"));
+		y = yahoo_urlencode(yahoo_get_cookie(m_id, "y"));
+		t = yahoo_urlencode(yahoo_get_cookie(m_id, "t"));
 		u = yahoo_urlencode(url);
 		_snprintf( tUrl, sizeof( tUrl ), 
 				"http://msg.edit.yahoo.com/config/reset_cookies?&.y=Y=%s&.t=T=%s&.ver=2&.done=http%%3a//us.rd.yahoo.com/messenger/client/%%3f%s",
