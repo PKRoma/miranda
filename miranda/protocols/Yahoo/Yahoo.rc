@@ -100,7 +100,7 @@ BEGIN
     CONTROL         "Ignore anyone who is not on my Yahoo buddy list ",IDC_OPT_IGN_UNKNOWN,
                     "Button",BS_AUTORADIOBUTTON,16,20,232,10
 
-    CONTROL         "Ignore only the people bellow: ",IDC_OPT_IGN_LIST,
+    CONTROL         "Ignore only the people below: ",IDC_OPT_IGN_LIST,
                     "Button",BS_AUTORADIOBUTTON,16,36,232,10
 					
 	EDITTEXT 		IDC_YIGN_EDIT,16,53,232,13,ES_AUTOHSCROLL
