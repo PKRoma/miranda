@@ -473,8 +473,15 @@ void CYahooProto::LoadYahooServices( void )
 
 	//----| Service creation |------------------------------------------------------------
 	YCreateService( PS_CREATEACCMGRUI, &CYahooProto::SvcCreateAccMgrUI);
+	
+	YCreateService( PS_GETAVATARINFO,  &CYahooProto::GetAvatarInfo );
+	YCreateService( PS_GETMYAVATAR,    &CYahooProto::GetMyAvatar );
+	YCreateService( PS_SETMYAVATAR,    &CYahooProto::SetMyAvatar );
+	YCreateService( PS_GETAVATARCAPS,  &CYahooProto::GetAvatarCaps );
+
 	YCreateService(	PS_GETMYAWAYMSG, &CYahooProto::GetMyAwayMsg);
 	YCreateService( YAHOO_SEND_NUDGE, &CYahooProto::SendNudge );
+	
 	YCreateService( YAHOO_GETUNREAD_EMAILCOUNT, &CYahooProto::GetUnreadEmailCount);
 
 	//----| Set resident variables |------------------------------------------------------

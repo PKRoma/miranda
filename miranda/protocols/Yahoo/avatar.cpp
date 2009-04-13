@@ -16,7 +16,7 @@
 #include <sys/stat.h>
 
 #include <m_langpack.h>
-
+#include "m_folders.h"
 #include "avatar.h"
 #include "resource.h"
 
@@ -598,20 +598,50 @@ void CYahooProto::request_avatar(const char* who)
 	}
 }
 
+void CYahooProto::InitCustomFolders(void)
+{
+	if ( InitCstFldRan ) return; 
+
+	char AvatarsFolder[MAX_PATH]= "";
+	CallService(MS_DB_GETPROFILEPATH, (WPARAM) MAX_PATH, (LPARAM)AvatarsFolder);
+	strcat(AvatarsFolder, "\\");
+	strcat(AvatarsFolder, m_szModuleName);
+	hYahooAvatarsFolder = FoldersRegisterCustomPath(m_szModuleName, "Avatars", AvatarsFolder);
+
+	InitCstFldRan = true;
+}
+
 void CYahooProto::GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, int type)
 {
-	CallService(MS_DB_GETPROFILEPATH, cbLen, (LPARAM)pszDest);
+	size_t tPathLen;
 
-	lstrcatA(pszDest, "\\");
-	lstrcatA(pszDest, m_szModuleName);
-	CreateDirectoryA(pszDest, NULL);
+	InitCustomFolders();
+
+	char* path = ( char* )alloca( cbLen );
+	if ( hYahooAvatarsFolder == NULL || FoldersGetCustomPath( hYahooAvatarsFolder, path, (int)cbLen, "" ))
+	{
+        char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
+        lstrcpynA(pszDest, tmpPath, (int)cbLen-1);
+        mir_free(tmpPath);
+		
+		tPathLen = strlen( pszDest );
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen,"\\%s", m_szModuleName);
+	}
+	else {
+		strcpy( pszDest, path );
+		tPathLen = strlen( pszDest );
+	}
+
+	if (_access(pszDest, 0))
+		YAHOO_CallService(MS_UTILS_CREATEDIRTREE, 0, (LPARAM)pszDest);
 
 	if (hContact != NULL) {
 		int ck_sum = DBGetContactSettingDword(hContact, m_szModuleName,"PictCK", 0);
 		_snprintf(pszDest, cbLen, "%s\\%lX", pszDest, ck_sum);
+	} else {
+		_snprintf(pszDest, cbLen, "%s\\%s avatar", pszDest, m_szModuleName);
 	}
-	else lstrcatA(pszDest, "\\avatar");
-
+	
 	if (type == 1)
 		lstrcatA(pszDest, ".swf" );
 	else

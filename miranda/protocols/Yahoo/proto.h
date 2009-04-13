@@ -204,6 +204,12 @@ struct CYahooProto : public PROTO_INTERFACE
 	INT_PTR __cdecl  SetCustomStatCommand( WPARAM, LPARAM );
 
 	//====| util.cpp |====================================================================
+	int    getString( const char* name, DBVARIANT* );
+	int    getString( HANDLE hContact, const char* name, DBVARIANT* );
+	
+	void   setString( const char* name, const char* value );
+	void   setString( HANDLE hContact, const char* name, const char* value );
+
 	DWORD  GetByte( const char* valueName, int parDefltValue );
 	DWORD  SetByte( const char* valueName, int parValue );
 
@@ -271,12 +277,6 @@ struct CYahooProto : public PROTO_INTERFACE
 
 	void   AddBuddy( const char *who, int protocol, const char *group, const char *msg);
 
-	int    getString( const char* name, DBVARIANT* );
-	int    getString( HANDLE hContact, const char* name, DBVARIANT* );
-	
-	void   setString( const char* name, const char* value );
-	void   setString( HANDLE hContact, const char* name, const char* value );
-
 	void   YAHOO_utils_logversion();
 	
 private:
@@ -288,6 +288,11 @@ private:
 
 	HANDLE hYahooNudge;
 	HANDLE m_hNetlibUser;
+
+    HANDLE		hYahooAvatarsFolder;
+    bool		InitCstFldRan;
+	void        InitCustomFolders(void);
+
 
 	void   YCreateService( const char* szService, YServiceFunc serviceProc );
 	void   YCreateServiceParam( const char* szService, YServiceFuncParam serviceProc, LPARAM lParam );
