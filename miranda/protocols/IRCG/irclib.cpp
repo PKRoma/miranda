@@ -1176,7 +1176,7 @@ void CDccSession::DoSendFile()
 			while ( con ) {
 				// read a packet
 				size_t iRead = fread(chBuf, 1, wPacketSize, hFile);
-				if ( iRead != 0 )
+				if ( iRead == 0 )
 					break; // break out if everything has already been read
 
 				// send the package
