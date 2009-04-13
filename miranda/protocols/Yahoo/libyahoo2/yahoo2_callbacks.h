@@ -852,7 +852,7 @@ int YAHOO_CALLBACK_TYPE(ext_yahoo_connect_async)(int id, const char *host, int p
  * 	callback - function to call when connect completes
  * 	callback_data - data to pass to the callback function
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_send_http_request)(int id, const char *method, const char *url, const char *cookies, long content_length,
+void YAHOO_CALLBACK_TYPE(ext_yahoo_send_http_request)(int id, enum yahoo_connection_type type, const char *method, const char *url, const char *cookies, long content_length,
 		yahoo_get_fd_callback callback, void *callback_data);
 
 /*

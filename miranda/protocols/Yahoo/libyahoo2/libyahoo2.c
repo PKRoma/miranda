@@ -5663,7 +5663,7 @@ void yahoo_get_yab(int id)
 
 	//yahoo_http_get(yid->yd->client_id, url, buff, 
 	//		_yahoo_http_connected, yid);
-	YAHOO_CALLBACK(ext_yahoo_send_http_request)(yid->yd->client_id, "GET", url, buff, 0, 
+	YAHOO_CALLBACK(ext_yahoo_send_http_request)(yid->yd->client_id, YAHOO_CONNECTION_YAB, "GET", url, buff, 0, 
 			_yahoo_http_connected, yid);
 }
 
@@ -5749,7 +5749,7 @@ void yahoo_set_yab(int id, struct yab * yab)
 //	yahoo_http_get(yid->yd->client_id, url, buff, 
 //			_yahoo_http_connected, yid);
 
-	YAHOO_CALLBACK(ext_yahoo_send_http_request)(yid->yd->client_id, "GET", url, buff, 0, 
+	YAHOO_CALLBACK(ext_yahoo_send_http_request)(yid->yd->client_id, YAHOO_CONNECTION_YAB, "GET", url, buff, 0, 
 			_yahoo_http_connected, yid);
 }
 
@@ -6226,7 +6226,7 @@ void yahoo_get_chatrooms(int id, int chatroomid)
 	inputs = y_list_prepend(inputs, yid);
 
 	//yahoo_http_get(yid->yd->client_id, url, buff, _yahoo_http_connected, yid);
-	YAHOO_CALLBACK(ext_yahoo_send_http_request)(yid->yd->client_id, "GET", url, buff, 0, 
+	YAHOO_CALLBACK(ext_yahoo_send_http_request)(yid->yd->client_id, YAHOO_CONNECTION_CHATCAT, "GET", url, buff, 0, 
 			_yahoo_http_connected, yid);
 
 }
@@ -6465,7 +6465,7 @@ static void yahoo_search_internal(int id, int t, const char *text, int g, int ar
 
 	inputs = y_list_prepend(inputs, yid);
 //	yahoo_http_get(yid->yd->client_id, url, buff, _yahoo_http_connected, yid);
-	YAHOO_CALLBACK(ext_yahoo_send_http_request)(yid->yd->client_id, "GET", url, buff, 0, 
+	YAHOO_CALLBACK(ext_yahoo_send_http_request)(yid->yd->client_id, YAHOO_CONNECTION_SEARCH, "GET", url, buff, 0, 
 			_yahoo_http_connected, yid);
 
 }
@@ -6618,7 +6618,7 @@ void yahoo_send_file(int id, const char *who, const char *msg,
 	sfd->user_data = data;
 //	yahoo_http_post(yid->yd->client_id, url, (char *)buff, content_length+4+size,
 			//_yahoo_send_file_connected, sfd);
-	YAHOO_CALLBACK(ext_yahoo_send_http_request)(yid->yd->client_id, "POST", url, buff, content_length+4+size,
+	YAHOO_CALLBACK(ext_yahoo_send_http_request)(yid->yd->client_id, YAHOO_CONNECTION_FT, "POST", url, buff, content_length+4+size,
 			_yahoo_send_file_connected, sfd);
 }
 
@@ -6650,7 +6650,7 @@ void yahoo_send_file_y7(int id, const char *from, const char *to, const char *re
 			yd->cookie_y, yd->cookie_t, yd->cookie_b);
 	inputs = y_list_prepend(inputs, yid);
 
-	YAHOO_CALLBACK(ext_yahoo_send_http_request)(yid->yd->client_id, "POST", url, buff, size, callback, data);
+	YAHOO_CALLBACK(ext_yahoo_send_http_request)(yid->yd->client_id, YAHOO_CONNECTION_FT, "POST", url, buff, size, callback, data);
 }
 
 
@@ -6714,7 +6714,7 @@ void yahoo_send_avatar(int id, const char *name, unsigned long size,
 	sfd->user_data = data;
 //	yahoo_http_post(yid->yd->client_id, url, (char *)buff, content_length+4+size,
 //			_yahoo_send_file_connected, sfd);
-	YAHOO_CALLBACK(ext_yahoo_send_http_request)(yid->yd->client_id, "POST", url, buff, content_length+4+size,
+	YAHOO_CALLBACK(ext_yahoo_send_http_request)(yid->yd->client_id, YAHOO_CONNECTION_FT, "POST", url, buff, content_length+4+size,
 			_yahoo_send_file_connected, sfd);
 }
 

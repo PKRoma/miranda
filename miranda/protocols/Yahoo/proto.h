@@ -253,7 +253,7 @@ struct CYahooProto : public PROTO_INTERFACE
 	int    ext_connect(const char *h, int p, int type);
 	int    ext_connect_async(const char *host, int port, int type, yahoo_connect_callback callback, void *data);
 
-	void   ext_send_http_request(const char *method, const char *url, const char *cookies, long content_length, yahoo_get_fd_callback callback, void *callback_data);
+	void   ext_send_http_request(enum yahoo_connection_type type, const char *method, const char *url, const char *cookies, long content_length, yahoo_get_fd_callback callback, void *callback_data);
 	char * ext_send_https_request(struct yahoo_data *yd, const char *host, const char *path);
 
 	void   ext_status_changed(const char *who, int protocol, int stat, const char *msg, int away, int idle, int mobile, int utf8);

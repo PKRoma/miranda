@@ -88,11 +88,15 @@ void __cdecl CYahooProto::server_main(void *empty)
 				FREE(c);
 				l=n;
 			} else {
-				if(c->cond & YAHOO_INPUT_READ)
+				if(c->cond & YAHOO_INPUT_READ) {
+					//LOG(( "[YAHOO_INPUT_READ] Waiting on read. Tag: %d fd: %d", c->tag, c->fd ));
 					nls.hReadConns[ridx++] = (HANDLE)c->fd;
+				}
 
-				if(c->cond & YAHOO_INPUT_WRITE)
+				if(c->cond & YAHOO_INPUT_WRITE) {
+					//LOG(( "[YAHOO_INPUT_WRITE] Waiting on write. Tag: %d fd: %d", c->tag, c->fd ));
 					nls.hWriteConns[widx++] =(HANDLE) c->fd;
+				}
 
 				l = y_list_next(l);
 			}
@@ -163,19 +167,35 @@ void __cdecl CYahooProto::server_main(void *empty)
 			if (c->remove) 
 				continue;
 
-			for (i = 0; i  < ridx; i++) {
-				if ((HANDLE)c->fd == nls.hReadConns[i]) {
-					if (nls.hReadStatus[i]) 
-						yahoo_callback(c, YAHOO_INPUT_READ);
-				}//if c->fd=
-			}//for i = 0
+			/* are we waiting for a Read request? */
+			if(c->cond & YAHOO_INPUT_READ) {
+				
+				for (i = 0; i  < ridx; i++) {
+					if ((HANDLE)c->fd == nls.hReadConns[i]) {
+						if (nls.hReadStatus[i]) {
+							//LOG(( "[YAHOO_INPUT_READ] Read Ready. Tag: %d fd: %d", c->tag, c->fd ));
+							yahoo_callback(c, YAHOO_INPUT_READ);
+						}
+					}//if c->fd=
+				}//for i = 0
+				
+			}
 
-			for (i = 0; i  < widx; i++) {
-				if ((HANDLE)c->fd == nls.hWriteConns[i]) {
-					if (nls.hWriteStatus[i]) 
-						yahoo_callback(c, YAHOO_INPUT_WRITE);
-				} // if c->fd == nls
-			}// for i = 0
+			/* are we waiting for a Write request? */
+			if(c->cond & YAHOO_INPUT_WRITE) {
+				
+				for (i = 0; i  < widx; i++) {
+					if ((HANDLE)c->fd == nls.hWriteConns[i]) {
+						if (nls.hWriteStatus[i]) {
+							//LOG(( "[YAHOO_INPUT_WRITE] Write ready. Tag: %d fd: %d", c->tag, c->fd ));
+							yahoo_callback(c, YAHOO_INPUT_WRITE);
+						}
+					} // if c->fd == nls
+				}// for i = 0
+				
+			}
+			
+			
 		}// for l=connections
 
 	}

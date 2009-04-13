@@ -450,6 +450,6 @@ void yahoo_get_url_fd(int id, const char *url, const struct yahoo_data *yd,
 	ud->callback = callback;
 	ud->user_data = data;
 //	yahoo_http_get(id, url, buff, yahoo_got_url_fd, ud);
-	YAHOO_CALLBACK(ext_yahoo_send_http_request)(id, "GET", url, buff, 0, yahoo_got_url_fd, ud);
+	YAHOO_CALLBACK(ext_yahoo_send_http_request)(id, YAHOO_CONNECTION_FT, "GET", url, buff, 0, yahoo_got_url_fd, ud);
 }
 

@@ -1212,8 +1212,8 @@ int CYahooProto::ext_connect(const char *h, int p, int type)
 	return (int)con;
 }
 
-void CYahooProto::ext_send_http_request(const char *method, const char *url, const char *cookies, long content_length,
-		yahoo_get_fd_callback callback, void *callback_data)
+void CYahooProto::ext_send_http_request(enum yahoo_connection_type type, const char *method, const char *url, 
+		const char *cookies, long content_length, yahoo_get_fd_callback callback, void *callback_data)
 {
 /*	if (lstrcmpiA(method, "GET") == 0) 
 		yahoo_http_get(id, url, cookies, callback, callback_data);
@@ -1230,13 +1230,13 @@ void CYahooProto::ext_send_http_request(const char *method, const char *url, con
 	char 				path[255];
 	char 				z[1024];
 	
-	LOG(("[ext_yahoo_send_http_request] method: %s, url: %s, cookies: %s, content length: %ld",
-		method, url, cookies, content_length));
+	LOG(("[ext_yahoo_send_http_request] type: %d, method: %s, url: %s, cookies: %s, content length: %ld",
+		type, method, url, cookies, content_length));
 	
 	if(!url_to_host_port_path(url, host, &port, path))
 		return;
 
-	fd = ext_connect(host, port, YAHOO_CONNECTION_FT);
+	fd = ext_connect(host, port, type);
 	
 	if (fd < 0) {
 		LOG(("[ext_yahoo_send_http_request] Can't connect?? Exiting..."));
@@ -1298,7 +1298,7 @@ unsigned int ext_yahoo_add_handler(int id, int fd, yahoo_input_condition cond, v
 	c->cond = cond;
 	c->data = data;
 
-	LOG(("[ext_yahoo_add_handler] fd:%d id:%d tag %d", fd, id, c->tag));
+	LOG(("[ext_yahoo_add_handler] fd:%d, id:%d, cond: %d, tag %d", fd, id, cond, c->tag));
 	
 	connections = y_list_prepend(connections, c);
 
@@ -1729,9 +1729,9 @@ int ext_yahoo_connect_async(int id, const char *host, int port, int type, yahoo_
 	return SOCKET_ERROR;
 }
 
-void ext_yahoo_send_http_request(int id, const char *method, const char *url, const char *cookies, long content_length, yahoo_get_fd_callback callback, void *callback_data)
+void ext_yahoo_send_http_request(int id, enum yahoo_connection_type type, const char *method, const char *url, const char *cookies, long content_length, yahoo_get_fd_callback callback, void *callback_data)
 {	
-	GETPROTOBYID( id )->ext_send_http_request(method, url, cookies, content_length, callback, callback_data); 
+	GETPROTOBYID( id )->ext_send_http_request(type, method, url, cookies, content_length, callback, callback_data); 
 }
 
 char *ext_yahoo_send_https_request(struct yahoo_data *yd, const char *host, const char *path)
