@@ -278,7 +278,11 @@ INT_PTR __cdecl CYahooProto::OnEditMyProfile( WPARAM wParam, LPARAM lParam )
 INT_PTR __cdecl CYahooProto::OnShowMyProfileCommand( WPARAM wParam, LPARAM lParam )
 {
 	DBVARIANT dbv;
-	DBGetContactSettingString( NULL, m_szModuleName, YAHOO_LOGINID, &dbv );
+	
+	if ( getString( YAHOO_LOGINID, &dbv ) != 0)	{
+		ShowError(Translate("Yahoo Error"), Translate("Please enter your yahoo id in Options/Network/Yahoo"));
+		return 0;
+	}
 
 	char tUrl[ 4096 ];
 	_snprintf( tUrl, sizeof( tUrl ), "http://profiles.yahoo.com/%s", dbv.pszVal  );
