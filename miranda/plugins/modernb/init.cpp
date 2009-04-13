@@ -101,7 +101,7 @@ PLUGININTERFACE int CListInitialise(PLUGINLINK * link)
 #endif
 */
 	g_dwMainThreadID=GetCurrentThreadId();
-    DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&g_hMainThread,THREAD_SET_CONTEXT,FALSE,0);
+    DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&g_hMainThread,0,FALSE,DUPLICATE_SAME_ACCESS);
 
 	CallService( MS_SYSTEM_GET_MMI,	 0, (LPARAM)&mmi  );
 	CallService( MS_SYSTEM_GET_UTFI, 0, (LPARAM)&utfi );

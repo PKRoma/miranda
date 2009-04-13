@@ -252,7 +252,7 @@ LBL_Error:
 	if ( pcli->version < 6 )
 		goto LBL_Error;
 
-	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &hMainThread, THREAD_SET_CONTEXT, FALSE, 0 );
+	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &hMainThread, 0, FALSE, DUPLICATE_SAME_ACCESS );
 	jabberMainThreadId = GetCurrentThreadId();
 
 	// Register protocol module

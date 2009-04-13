@@ -292,12 +292,12 @@ void KillObjectThreads( void* owner )
 	HANDLE* threadPool = ( HANDLE* )alloca( threads.getCount()*sizeof( HANDLE ));
 	int threadCount = 0;
 
-	for ( int j = threads.getCount()-1; j >= 0; j-- ) {
+	for ( int j = threads.getCount(); j--; ) {
 		THREAD_WAIT_ENTRY* p = threads[j];
 		if ( p->pObject == owner )
 			threadPool[ threadCount++ ] = p->hThread;
 	}
-	ReleaseMutex(hStackMutex);
+	ReleaseMutex(hStackMutex); 
 
 	// is there anything to kill?
 	if ( threadCount > 0 ) {
@@ -366,7 +366,7 @@ INT_PTR UnwindThreadPush(WPARAM wParam,LPARAM lParam)
 		THREAD_WAIT_ENTRY* p = ( THREAD_WAIT_ENTRY* )mir_calloc( sizeof( THREAD_WAIT_ENTRY ));
 
 		HANDLE hThread=0;
-		DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&hThread,THREAD_SET_CONTEXT,FALSE,0);
+		DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&hThread,0,FALSE,DUPLICATE_SAME_ACCESS);
 		p->hThread = hThread;
 		p->dwThreadId = GetCurrentThreadId();
         p->pObject = (void*)wParam;

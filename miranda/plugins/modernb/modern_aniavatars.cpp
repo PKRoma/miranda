@@ -1062,7 +1062,7 @@ static void _AniAva_AnimationTreadProc(HANDLE hExitEvent)
 	//wait forever till hExitEvent signalled
 	DWORD rc;
 	HANDLE hThread=0;
-	DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&hThread,THREAD_SET_CONTEXT,FALSE,0);
+	DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&hThread,0,FALSE,DUPLICATE_SAME_ACCESS);
 	AniAva.AnimationThreadHandle=hThread;
 	SetThreadPriority(hThread,THREAD_PRIORITY_LOWEST);
 	for (;;)
