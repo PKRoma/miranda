@@ -38,6 +38,7 @@ Last change by : $Author$
 #include "sdk/m_folders.h"
 #include "sdk/m_wizard.h"
 #include "sdk/m_toolbar.h"
+#include "sdk/m_extraicons.h"
 
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
@@ -80,6 +81,10 @@ HANDLE hMainThread = NULL;
 DWORD  jabberMainThreadId;
 BOOL   jabberChatDllPresent = FALSE;
 HANDLE hModulesLoaded, hModulesLoadedTB;
+
+HANDLE hExtraActivity = NULL;
+HANDLE hExtraMood = NULL;
+
 
 void JabberUserInfoInit(void);
 
@@ -201,6 +206,11 @@ static int OnModulesLoaded( WPARAM, LPARAM )
 	lstrcpyA(colourid.setting, "clFrameBack");
 	colourid.defcolour = GetSysColor(COLOR_WINDOW);
 	CallService(MS_COLOUR_REGISTER, (WPARAM)&colourid, 0);
+
+	// Init extra icons
+	hExtraActivity = ExtraIcon_Register("activity", "Activity" /* No icons registered, "working" */);
+	hExtraMood = ExtraIcon_Register("xstatus", "Mood" /* No icons registered, "amazed" */);
+
 	return 0;
 }
 

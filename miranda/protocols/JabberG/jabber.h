@@ -583,6 +583,9 @@ extern HANDLE hMainThread;
 extern DWORD  jabberMainThreadId;
 extern BOOL   jabberChatDllPresent;
 
+extern HANDLE hExtraMood;
+extern HANDLE hExtraActivity;
+
 // Theme API
 extern BOOL (WINAPI *JabberAlphaBlend)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION);
 extern BOOL (WINAPI *JabberIsThemeActive)();

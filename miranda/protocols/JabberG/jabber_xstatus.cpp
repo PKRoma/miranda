@@ -37,6 +37,7 @@ Last change by : $Author$
 
 #include "sdk/m_proto_listeningto.h"
 #include "sdk/m_skin_eng.h"
+#include "sdk/m_extraicons.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Simple dialog with timer and ok/cancel buttons
@@ -679,11 +680,18 @@ void CPepMood::ResetExtraIcon(HANDLE hContact)
 
 void CPepMood::SetExtraIcon(HANDLE hContact, char *szMood)
 {
-	IconExtraColumn iec;
-	iec.cbSize = sizeof(iec);
-	iec.hImage = m_icons.GetClistHandle(szMood);
-	iec.ColumnType = EXTRA_ICON_ADV1;
-	CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+	if (hExtraMood != NULL)
+	{
+		ExtraIcon_SetIcon(hExtraMood, hContact, szMood == NULL ? NULL : m_icons.GetIcolibName(szMood));
+	}
+	else
+	{
+		IconExtraColumn iec;
+		iec.cbSize = sizeof(iec);
+		iec.hImage = m_icons.GetClistHandle(szMood);
+		iec.ColumnType = EXTRA_ICON_ADV1;
+		CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+	}
 }
 
 void CPepMood::SetMood(HANDLE hContact, const TCHAR *szMood, const TCHAR *szText)
@@ -1082,11 +1090,19 @@ void CPepActivity::ResetExtraIcon(HANDLE hContact)
 
 void CPepActivity::SetExtraIcon(HANDLE hContact, char *szActivity)
 {
-	IconExtraColumn iec;
-	iec.cbSize = sizeof(iec);
-	iec.hImage = m_icons.GetClistHandle(ActivityGetFirst(szActivity));
-	iec.ColumnType = EXTRA_ICON_ADV2;
-	CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+	if (hExtraActivity != NULL)
+	{
+		ExtraIcon_SetIcon(hExtraActivity, hContact, 
+						  szActivity == NULL ? NULL : m_icons.GetIcolibName(ActivityGetFirst(szActivity)));
+	}
+	else
+	{
+		IconExtraColumn iec;
+		iec.cbSize = sizeof(iec);
+		iec.hImage = m_icons.GetClistHandle(ActivityGetFirst(szActivity));
+		iec.ColumnType = EXTRA_ICON_ADV2;
+		CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+	}
 }
 
 void CPepActivity::SetActivity(HANDLE hContact, LPCTSTR szFirst, LPCTSTR szSecond, LPCTSTR szText)
@@ -1385,7 +1401,8 @@ void CJabberProto::InfoFrame_OnUserActivity(CJabberInfoFrame_Event*)
 
 void CJabberProto::XStatusInit()
 {
-	JHookEvent( ME_CLIST_EXTRA_IMAGE_APPLY,  &CJabberProto::CListMW_ExtraIconsApply );
+	if (hExtraMood == NULL)
+		JHookEvent( ME_CLIST_EXTRA_IMAGE_APPLY,  &CJabberProto::CListMW_ExtraIconsApply );
 
 	RegisterAdvStatusSlot( ADVSTATUS_MOOD );
 	RegisterAdvStatusSlot( ADVSTATUS_TUNE );
