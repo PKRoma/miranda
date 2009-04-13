@@ -224,6 +224,8 @@ void CYahooProto::OpenURL(const char *url, int autoLogin)
 {
 	char tUrl[ 4096 ];
 
+	DebugLog("[YahooOpenURL] url: %s Auto Login: %d", url, autoLogin);
+	
 	if (autoLogin && GetByte( "MailAutoLogin", 0 ) && m_bLoggedIn) {
 		int   id = 1;
 		char  *y, *t, *u;
@@ -366,7 +368,7 @@ void CYahooProto::MenuInit( void )
 	
 	// Show custom status menu    
 	lstrcpyA( tDest, YAHOO_SET_CUST_STAT );
-	YCreateService( servicefunction, &CYahooProto::SetCustomStatCommand );
+	YCreateService( YAHOO_SET_CUST_STAT, &CYahooProto::SetCustomStatCommand );
 
 	CLISTMENUITEM mi = { 0 };
 	mi.ptszName = m_tszUserName;
@@ -390,7 +392,7 @@ void CYahooProto::MenuInit( void )
 
 	// Edit My profile
 	lstrcpyA( tDest, YAHOO_EDIT_MY_PROFILE );
-	YCreateService( servicefunction, &CYahooProto::OnEditMyProfile );
+	YCreateService( YAHOO_EDIT_MY_PROFILE, &CYahooProto::OnEditMyProfile );
 
 	mi.position = 500090005;
 	mi.hIcon = LoadIconEx( "profile" );
@@ -400,7 +402,7 @@ void CYahooProto::MenuInit( void )
 
 	// Show My profile
 	lstrcpyA( tDest, YAHOO_SHOW_MY_PROFILE );
-	YCreateService( servicefunction, &CYahooProto::OnShowMyProfileCommand );
+	YCreateService( YAHOO_SHOW_MY_PROFILE, &CYahooProto::OnShowMyProfileCommand );
 
 	mi.position = 500090005;
 	mi.hIcon = LoadIconEx( "profile" );
@@ -410,7 +412,7 @@ void CYahooProto::MenuInit( void )
 
 	// Show Yahoo mail 
 	strcpy( tDest, YAHOO_YAHOO_MAIL );
-	YCreateService( servicefunction, &CYahooProto::OnGotoMailboxCommand );
+	YCreateService( YAHOO_YAHOO_MAIL, &CYahooProto::OnGotoMailboxCommand );
 
 	mi.position = 500090010;
 	mi.hIcon = LoadIconEx( "mail" );
@@ -420,7 +422,7 @@ void CYahooProto::MenuInit( void )
 
 	// Show Address Book    
 	strcpy( tDest, YAHOO_AB );
-	YCreateService( servicefunction, &CYahooProto::OnABCommand );
+	YCreateService( YAHOO_AB, &CYahooProto::OnABCommand );
 
 	mi.position = 500090015;
 	mi.hIcon = LoadIconEx( "yab" );
@@ -430,7 +432,7 @@ void CYahooProto::MenuInit( void )
 
 	// Show Calendar
 	strcpy( tDest, YAHOO_CALENDAR );
-	YCreateService( servicefunction, &CYahooProto::OnCalendarCommand );
+	YCreateService( YAHOO_CALENDAR, &CYahooProto::OnCalendarCommand );
 
 	mi.position = 500090015;
 	mi.hIcon = LoadIconEx( "calendar" );
@@ -440,7 +442,7 @@ void CYahooProto::MenuInit( void )
 
 	// Show Refresh     
 	strcpy( tDest, YAHOO_REFRESH );
-	YCreateService( servicefunction, &CYahooProto::OnRefreshCommand );
+	YCreateService( YAHOO_REFRESH, &CYahooProto::OnRefreshCommand );
 
 	mi.position = 500090015;
 	mi.hIcon = LoadIconEx( "refresh" );
@@ -450,7 +452,7 @@ void CYahooProto::MenuInit( void )
 	
 	// Show Profile 
 	strcpy( tDest, YAHOO_SHOW_PROFILE );
-	YCreateService( servicefunction, &CYahooProto::OnShowProfileCommand );
+	YCreateService( YAHOO_SHOW_PROFILE, &CYahooProto::OnShowProfileCommand );
 
 	mi.position = -2000006000;
 	mi.hIcon = LoadIconEx( "profile" );
