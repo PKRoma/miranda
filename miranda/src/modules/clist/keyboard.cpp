@@ -24,8 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "clc.h"
 #include <m_hotkeys.h>
 
-void SetClistGlobalStatus(int status);
-
 static INT_PTR hkHideShow(WPARAM, LPARAM)
 {
 	cli.pfnShowHide(0,0);
@@ -66,7 +64,7 @@ INT_PTR hkRestoreStatus(WPARAM wParam,LPARAM lParam)
 {
 	int nStatus = DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
 	if (nStatus != ID_STATUS_OFFLINE)
-		PostMessage(cli.hwndContactList, WM_COMMAND, nStatus, 0);
+		SetClistGlobalStatus(nStatus);
 
 	return 0;
 }

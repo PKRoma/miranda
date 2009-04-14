@@ -166,10 +166,12 @@ void GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour);
 HGENMENU fnGetProtocolMenu( const char* );
 int      fnGetProtocolVisibility( const char* accName );
 
-int    fnGetAccountIndexByPos(int Pos);
-int    fnGetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos);
-void   RebuildMenuOrder( void );
-INT_PTR    MenuProcessCommand(WPARAM wParam,LPARAM lParam);
+int      fnGetAccountIndexByPos(int Pos);
+int      fnGetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos);
+void     RebuildMenuOrder( void );
+void     SetClistGlobalStatus(int status);
+
+INT_PTR  MenuProcessCommand(WPARAM wParam, LPARAM lParam);
 
 /* clistsettings.c */
 TCHAR* fnGetContactDisplayName( HANDLE hContact, int mode );
