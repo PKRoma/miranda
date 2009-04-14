@@ -1846,10 +1846,9 @@ static int CLUIFramesLoadMainMenu()
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize=sizeof(mi);
 	// create root menu
-	mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP;
+	mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTHANDLE;
 	mi.icolibItem = LoadSkinnedIconHandle(SKINICON_OTHER_MIRANDA);
 	mi.position = 3000090000;
-	mi.pszPopupName = (char*)-1;
 	mi.pszName = LPGEN("Frames");
 	_hmiRoot = (HGENMENU)CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 	DestroyIcon_protect(mi.hIcon);
@@ -1857,7 +1856,7 @@ static int CLUIFramesLoadMainMenu()
 	int separator=3000200000;
 	for (int i=0; i < g_nFramesCount; i++) {
 		mi.hIcon = g_pfwFrames[i].TitleBar.hicon;
-		mi.flags = CMIF_CHILDPOPUP | CMIF_ROOTPOPUP | CMIF_TCHAR;
+		mi.flags = CMIF_ROOTHANDLE | CMIF_TCHAR;
 		mi.position = separator;
 		mi.hParentMenu = _hmiRoot;
 		mi.ptszName = g_pfwFrames[i].TitleBar.tbname ? g_pfwFrames[i].TitleBar.tbname : g_pfwFrames[i].Name;
@@ -1872,26 +1871,24 @@ static int CLUIFramesLoadMainMenu()
 	separator+=100000;
 
 	// create "show all frames" menu
-	mi.hIcon=NULL;
-	mi.flags=CMIF_CHILDPOPUP;
-	mi.position=separator++;
-	mi.pszPopupName=(char*)_hmiRoot;
-	mi.pszName=LPGEN("Show All Frames");
-	mi.pszService=MS_CLIST_FRAMES_SHOWALLFRAMES;
+	mi.hIcon = NULL;
+	mi.flags = CMIF_ROOTHANDLE;
+	mi.position = separator++;
+	mi.hParentMenu = _hmiRoot;
+	mi.pszName = LPGEN("Show All Frames");
+	mi.pszService = MS_CLIST_FRAMES_SHOWALLFRAMES;
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 
 	// create "show all titlebars" menu
-	mi.position=separator++;
-	mi.pszPopupName=(char*)_hmiRoot;
-	mi.pszName=LPGEN("Show All Titlebars");
-	mi.pszService=MS_CLIST_FRAMES_SHOWALLFRAMESTB;
+	mi.position = separator++;
+	mi.pszName = LPGEN("Show All Titlebars");
+	mi.pszService = MS_CLIST_FRAMES_SHOWALLFRAMESTB;
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 
 	// create "hide all titlebars" menu
-	mi.position=separator++;
-	mi.pszPopupName=(char*)_hmiRoot;
-	mi.pszName=LPGEN("Hide All Titlebars");
-	mi.pszService=MS_CLIST_FRAMES_HIDEALLFRAMESTB;
+	mi.position = separator++;
+	mi.pszName = LPGEN("Hide All Titlebars");
+	mi.pszService = MS_CLIST_FRAMES_HIDEALLFRAMESTB;
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 
 	return 0;
