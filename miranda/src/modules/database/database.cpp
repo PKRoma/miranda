@@ -117,6 +117,7 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
 {
 	unsigned int found = 0;
 
+    bool nodprof = szProfile[0] == 0;
 	bool reqfd = fileExist(szProfile) || shouldAutoCreate(szProfile);
 	bool shpm = showProfileManager();
 
@@ -132,14 +133,14 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
 				if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName(ffd.cFileName)) 
 				{
 					// copy the profile name early cos it might be the only one
-					if (++found == 1 && szProfile[0] == 0) 
+					if (++found == 1 && nodprof) 
 						mir_sntprintf(szProfile, cch, _T("%s%s"), profiledir, ffd.cFileName);
 				}
 			}
 			while (FindNextFile(hFind, &ffd));
 			FindClose(hFind);
 		}
-		reqfd = !shpm && found == 1 && szProfile[0] == 0;
+		reqfd = !shpm && found == 1 && nodprof;
 	}
 
 	if (noProfiles) 
