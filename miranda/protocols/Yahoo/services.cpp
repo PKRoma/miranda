@@ -379,7 +379,7 @@ void CYahooProto::MenuInit( void )
 	mi.cbSize = sizeof( mi );
 	mi.position = -1999901011;
 	mi.pszPopupName = (char *)-1;
-	mi.hIcon = LoadIconEx( "main" );
+	mi.hIcon = LoadIconEx( "yahoo" );
 	HGENMENU hMenuRoot = (HGENMENU)CallService( MS_CLIST_ADDMAINMENUITEM,  (WPARAM)0, (LPARAM)&mi);
 		
 	mi.flags &= ~(CMIF_ROOTPOPUP | CMIF_TCHAR);
