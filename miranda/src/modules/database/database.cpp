@@ -139,7 +139,7 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
 			while (FindNextFile(hFind, &ffd));
 			FindClose(hFind);
 		}
-		reqfd = !shpm && found == 1;
+		reqfd = !shpm && found == 1 && szProfile[0] == 0;
 	}
 
 	if (noProfiles) 
