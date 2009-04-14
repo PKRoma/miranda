@@ -280,7 +280,7 @@ int UnwindThreadPush(WPARAM wParam,LPARAM lParam)
 	if (WaitForSingleObject(hStackMutex,INFINITE)==WAIT_OBJECT_0)
 	{
 		HANDLE hThread=0;
-		DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&hThread,THREAD_SET_CONTEXT,FALSE,0);
+		DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&hThread,0,FALSE,DUPLICATE_SAME_ACCESS);
 		WaitingThreads=mir_realloc(WaitingThreads,sizeof(struct THREAD_WAIT_ENTRY)*(WaitingThreadsCount+1));
 		WaitingThreads[WaitingThreadsCount].hThread=hThread;
 		WaitingThreads[WaitingThreadsCount].dwThreadId=GetCurrentThreadId();

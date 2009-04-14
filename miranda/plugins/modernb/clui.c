@@ -916,7 +916,7 @@ void CLUI_DisconnectAll()
 static int CLUI_PreCreateCLC(HWND parent)
 {
 	g_dwMainThreadID=GetCurrentThreadId();
-	DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&g_hMainThread,THREAD_SET_CONTEXT,FALSE,0);
+	DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&g_hMainThread,0,FALSE,DUPLICATE_SAME_ACCESS);
 	pcli->hwndContactTree=CreateWindow(CLISTCONTROL_CLASS,TEXT(""),
 		WS_CHILD|WS_CLIPCHILDREN|CLS_CONTACTLIST
 		|(DBGetContactSettingByte(NULL,"CList","UseGroups",SETTING_USEGROUPS_DEFAULT)?CLS_USEGROUPS:0)

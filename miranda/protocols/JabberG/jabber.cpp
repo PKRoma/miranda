@@ -377,7 +377,7 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 
 	JabberLog( "Setting protocol/module name to '%s/%s'", jabberProtoName, jabberModuleName );
 
-	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &hMainThread, THREAD_SET_CONTEXT, FALSE, 0 );
+	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &hMainThread, 0, FALSE, DUPLICATE_SAME_ACCESS );
 	jabberMainThreadId = GetCurrentThreadId();
 
 	arHooks.insert( HookEvent( ME_OPT_INITIALISE, JabberOptInit ));
