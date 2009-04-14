@@ -492,16 +492,20 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 					lastPage = mir_tstrdup( dbv.ptszVal );
 					DBFreeVariant( &dbv );
 				}
-			}
-			else lastPage = LangPackPcharToTchar( ood->pszPage );
 
-			if ( ood->pszGroup == NULL ) {
-				if ( !DBGetContactSettingTString( NULL, "Options", "LastGroup", &dbv )) {
-					lastGroup = mir_tstrdup( dbv.ptszVal );
-					DBFreeVariant( &dbv );
+				if ( ood->pszGroup == NULL ) {
+					if ( !DBGetContactSettingTString( NULL, "Options", "LastGroup", &dbv )) {
+						lastGroup = mir_tstrdup( dbv.ptszVal );
+						DBFreeVariant( &dbv );
+					}
 				}
+				else lastGroup = LangPackPcharToTchar( ood->pszGroup );
 			}
-			else lastGroup = LangPackPcharToTchar( ood->pszGroup );
+			else
+			{
+				lastPage = LangPackPcharToTchar( ood->pszPage );
+				lastGroup = ( ood->pszGroup == NULL ) ? NULL : LangPackPcharToTchar( ood->pszGroup );
+			}
 
 			if ( ood->pszTab == NULL ) {
 				if ( !DBGetContactSettingTString( NULL, "Options", "LastTab", &dbv )) {

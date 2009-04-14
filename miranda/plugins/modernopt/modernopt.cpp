@@ -231,6 +231,8 @@ static INT_PTR CALLBACK ModernOptDlgProc(HWND hwndDlg, UINT  msg, WPARAM wParam,
 
 		ModernOptUI_SelectSection(hwndDlg, dat, 0);
 
+		Utils_RestoreWindowPositionNoSize(hwndDlg, NULL, "Options", "");
+
 		return TRUE;
 	}
 
@@ -260,7 +262,8 @@ static INT_PTR CALLBACK ModernOptDlgProc(HWND hwndDlg, UINT  msg, WPARAM wParam,
 				if (idResult == IDCANCEL) break;
 				sttNotifyPages(dat, (idResult == IDYES) ? PSN_APPLY : PSN_RESET);
 			}
-			else {
+
+			{	Utils_SaveWindowPosition(hwndDlg, NULL, "Options", "");
 				struct ModernOptionsObject *obj = (struct ModernOptionsObject *)dat->pObjectList[dat->iPage];
 				if (obj->optObject.lpzClassicGroup || obj->optObject.lpzClassicPage)
 				{
@@ -328,6 +331,7 @@ static INT_PTR CALLBACK ModernOptDlgProc(HWND hwndDlg, UINT  msg, WPARAM wParam,
 		if (!dat) return TRUE;
 		li_List_Destruct(dat->pObjectList, ModernOptionsObject_Dtor);
 		DeleteObject(dat->hfntBold);
+		Utils_SaveWindowPosition(hwndDlg, NULL, "Options", "");
 		delete dat;
 	}
 	return FALSE;
