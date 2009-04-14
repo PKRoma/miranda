@@ -102,6 +102,7 @@ enum
 	INFOLINE_PRIORITY,
 	INFOLINE_IDLE,
 	INFOLINE_CAPS,
+	INFOLINE_SOFTWARE_INFORMATION,
 	INFOLINE_SUBSCRIPTION,
 	INFOLINE_LOGOFF,
 	INFOLINE_LOGOFF_MSG,
@@ -300,6 +301,27 @@ static void sttFillResourceInfo( CJabberProto* ppro, HWND hwndTree, HTREEITEM ht
 						mir_sntprintf( szDescription, SIZEOF( szDescription ), _T("%s"), g_JabberFeatCapPairs[i].szFeature );
 					sttFillInfoLine( hwndTree, htiCaps, NULL, NULL, szDescription, sttInfoLineId(resource, INFOLINE_CAPS, i) );
 				}
+		}
+	}
+
+	{	// Software info
+		if ( res->pSoftwareInfo ) {
+			HTREEITEM htiSoftwareInfo = sttFillInfoLine( hwndTree, htiResource, ppro->LoadIconEx( "main" ), NULL, TranslateT( "Software information" ), sttInfoLineId(resource, INFOLINE_SOFTWARE_INFORMATION));
+			int nLineId = 0;
+			if ( res->pSoftwareInfo->szOs )
+				sttFillInfoLine( hwndTree, htiSoftwareInfo, NULL, TranslateT("Operating system"), res->pSoftwareInfo->szOs, sttInfoLineId(resource, INFOLINE_SOFTWARE_INFORMATION, nLineId++) );
+			if ( res->pSoftwareInfo->szOsVersion )
+				sttFillInfoLine( hwndTree, htiSoftwareInfo, NULL, TranslateT("Operating system version"), res->pSoftwareInfo->szOsVersion, sttInfoLineId(resource, INFOLINE_SOFTWARE_INFORMATION, nLineId++) );
+			if ( res->pSoftwareInfo->szSoftware )
+				sttFillInfoLine( hwndTree, htiSoftwareInfo, NULL, TranslateT("Software"), res->pSoftwareInfo->szSoftware, sttInfoLineId(resource, INFOLINE_SOFTWARE_INFORMATION, nLineId++) );
+			if ( res->pSoftwareInfo->szSoftwareVersion )
+				sttFillInfoLine( hwndTree, htiSoftwareInfo, NULL, TranslateT("Software version"), res->pSoftwareInfo->szSoftwareVersion, sttInfoLineId(resource, INFOLINE_SOFTWARE_INFORMATION, nLineId++) );
+			if ( res->pSoftwareInfo->szXMirandaCoreVersion ) {
+				sttFillInfoLine( hwndTree, htiSoftwareInfo, NULL, TranslateT("Miranda IM core version"), res->pSoftwareInfo->szXMirandaCoreVersion, sttInfoLineId(resource, INFOLINE_SOFTWARE_INFORMATION, nLineId++) );
+				sttFillInfoLine( hwndTree, htiSoftwareInfo, NULL, TranslateT("Unicode build"), res->pSoftwareInfo->bXMirandaIsUnicode ? TranslateT("Yes") : TranslateT("No"), sttInfoLineId(resource, INFOLINE_SOFTWARE_INFORMATION, nLineId++) );
+				sttFillInfoLine( hwndTree, htiSoftwareInfo, NULL, TranslateT("Alpha build"), res->pSoftwareInfo->bXMirandaIsUnicode ? TranslateT("Yes") : TranslateT("No"), sttInfoLineId(resource, INFOLINE_SOFTWARE_INFORMATION, nLineId++) );
+				sttFillInfoLine( hwndTree, htiSoftwareInfo, NULL, TranslateT("Debug build"), res->pSoftwareInfo->bXMirandaIsDebug ? TranslateT("Yes") : TranslateT("No"), sttInfoLineId(resource, INFOLINE_SOFTWARE_INFORMATION, nLineId++) );
+			}
 		}
 	}
 

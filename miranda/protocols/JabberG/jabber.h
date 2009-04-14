@@ -783,4 +783,7 @@ void  strdel( char* parBuffer, int len );
 
 void JabberUserInfoUpdate( HANDLE hContact );
 
+//---- jabber_iq_handlers.cpp
+BOOL GetOSDisplayString(LPTSTR pszOS, int BUFSIZE);
+
 #endif

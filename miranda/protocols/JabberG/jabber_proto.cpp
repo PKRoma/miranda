@@ -752,7 +752,14 @@ int __cdecl CJabberProto::GetInfo( HANDLE hContact, int /*infoType*/ )
 							XmlNodeIq iq4( m_iqManager.AddHandler( &CJabberProto::OnIqResultVersion, JABBER_IQ_TYPE_GET, jid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_HCONTACT | JABBER_IQ_PARSE_CHILD_TAG_NODE ));
 							iq4 << XQUERY( _T(JABBER_FEAT_VERSION));
 							m_ThreadInfo->send( iq4 );
-					}	}
+						}
+
+						if ( !item->resource[i].pSoftwareInfo ) {
+							XmlNodeIq iq5( m_iqManager.AddHandler( &CJabberProto::OnIqResultCapsDiscoInfo, JABBER_IQ_TYPE_GET, jid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_CHILD_TAG_NODE ));
+							iq5 << XQUERY( _T(JABBER_FEAT_DISCO_INFO ));
+							m_ThreadInfo->send( iq5 );
+						}
+					}
 				}
 				else if ( !item->itemResource.dwVersionRequestTime ) {
 					XmlNodeIq iq4( m_iqManager.AddHandler( &CJabberProto::OnIqResultVersion, JABBER_IQ_TYPE_GET, item->jid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_HCONTACT | JABBER_IQ_PARSE_CHILD_TAG_NODE ));

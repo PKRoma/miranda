@@ -71,6 +71,29 @@ typedef enum {			// initial default to RSMODE_LASTSEEN
 	RSMODE_MANUAL		// specify resource manually ( see the defaultResource field - must not be NULL )
 } JABBER_RESOURCE_MODE;
 
+
+struct JABBER_XEP0232_SOFTWARE_INFO
+{
+	TCHAR* szOs;
+	TCHAR* szOsVersion;
+	TCHAR* szSoftware;
+	TCHAR* szSoftwareVersion;
+	TCHAR* szXMirandaCoreVersion;
+	BOOL bXMirandaIsUnicode;
+	BOOL bXMirandaIsAlpha;
+	BOOL bXMirandaIsDebug;
+	JABBER_XEP0232_SOFTWARE_INFO() {
+		ZeroMemory( this, sizeof( JABBER_XEP0232_SOFTWARE_INFO ));
+	}
+	~JABBER_XEP0232_SOFTWARE_INFO() {
+		mir_free(szOs);
+		mir_free(szOsVersion);
+		mir_free(szSoftware);
+		mir_free(szSoftwareVersion);
+		mir_free(szXMirandaCoreVersion);
+	}
+};
+
 struct JABBER_RESOURCE_STATUS
 {
 	int status;
@@ -96,6 +119,7 @@ struct JABBER_RESOURCE_STATUS
 
 	// XEP-0085 gone event support
 	BOOL bMessageSessionActive;
+	JABBER_XEP0232_SOFTWARE_INFO* pSoftwareInfo;
 };
 
 struct JABBER_LIST_ITEM
