@@ -1153,7 +1153,7 @@ INT_PTR __cdecl CIrcProto::GetMyAwayMsg(WPARAM wParam,LPARAM lParam)
 
 	const TCHAR* p = m_statusMessage.c_str();
 
-	return (lParam & SGMA_UNICODE) ? (INT_PTR)mir_t2u(p) : (INT_PTR)mir_t2u(p);
+	return (lParam & SGMA_UNICODE) ? (INT_PTR)mir_t2u(p) : (INT_PTR)mir_t2a(p);
 }
 
 INT_PTR __cdecl CIrcProto::GetStatus(WPARAM, LPARAM)
