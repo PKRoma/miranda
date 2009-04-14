@@ -172,7 +172,7 @@ void CMsnProto::InitCustomFolders(void)
     mir_snprintf(AvatarsFolder, SIZEOF(AvatarsFolder), "%s\\%s", tmpPath, m_szModuleName);
 	hMSNAvatarsFolder = FoldersRegisterCustomPath(m_szModuleName, "Avatars", AvatarsFolder);
 
-    mir_snprintf(AvatarsFolder, SIZEOF(AvatarsFolder), "%s\\%s\\CustomSmiley", m_szModuleName, tmpPath);
+    mir_snprintf(AvatarsFolder, SIZEOF(AvatarsFolder), "%s\\%s\\CustomSmiley", tmpPath, m_szModuleName);
 	hCustomSmileyFolder = FoldersRegisterCustomPath(m_szModuleName, "Custom Smiley", AvatarsFolder);
 
     mir_free(tmpPath);
