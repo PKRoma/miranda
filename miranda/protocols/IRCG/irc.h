@@ -332,11 +332,12 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	virtual	int    __cdecl OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam );
 
 	// Services
-	INT_PTR  __cdecl SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam);
+	INT_PTR __cdecl SvcCreateAccMgrUI( WPARAM, LPARAM );
+	INT_PTR __cdecl GetMyAwayMsg( WPARAM, LPARAM );
 
 	INT_PTR __cdecl OnChangeNickMenuCommand( WPARAM, LPARAM );
 	INT_PTR __cdecl OnDoubleclicked( WPARAM, LPARAM );
-    INT_PTR __cdecl OnJoinChat( WPARAM, LPARAM );
+	INT_PTR __cdecl OnJoinChat( WPARAM, LPARAM );
 	INT_PTR __cdecl OnJoinMenuCommand( WPARAM, LPARAM );
 	INT_PTR __cdecl OnLeaveChat( WPARAM, LPARAM );
 	INT_PTR __cdecl OnMenuChanSettings( WPARAM, LPARAM );

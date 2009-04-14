@@ -1143,6 +1143,19 @@ void CIrcProto::DisconnectFromServer(void)
 	ircFork( &CIrcProto::DisconnectServerThread, 0 );
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// GetMyAwayMsg - obtain the current away message
+
+INT_PTR __cdecl CIrcProto::GetMyAwayMsg(WPARAM wParam,LPARAM lParam)
+{
+	if ( wParam != m_iStatus )
+		return 0;
+
+	const TCHAR* p = m_statusMessage.c_str();
+
+	return (lParam & SGMA_UNICODE) ? (INT_PTR)mir_t2u(p) : (INT_PTR)mir_t2u(p);
+}
+
 INT_PTR __cdecl CIrcProto::GetStatus(WPARAM, LPARAM)
 {
 	if (m_iDesiredStatus == ID_STATUS_CONNECTING)

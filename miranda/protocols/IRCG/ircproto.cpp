@@ -46,6 +46,8 @@ CIrcProto::CIrcProto( const char* szModuleName, const TCHAR* tszUserName ) :
 	IrcHookEvent( ME_DB_CONTACT_DELETED,   &CIrcProto::OnDeletedContact );
 
 	CreateProtoService( PS_GETSTATUS,      &CIrcProto::GetStatus );
+	CreateProtoService( PS_GETMYAWAYMSG,   &CIrcProto::GetMyAwayMsg );
+
 	CreateProtoService( PS_CREATEACCMGRUI, &CIrcProto::SvcCreateAccMgrUI );
 	CreateProtoService( PS_JOINCHAT,       &CIrcProto::OnJoinChat );
 	CreateProtoService( PS_LEAVECHAT,      &CIrcProto::OnLeaveChat );
