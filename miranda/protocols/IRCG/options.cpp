@@ -808,10 +808,11 @@ void CConnectPrefsDlg::OnApply()
 				else
 					mir_snprintf(TextLine, sizeof(TextLine), "SERVER:%s:%d-%dGROUP:%s", pData->m_address, pData->m_portStart, pData->m_portEnd, pData->m_group);
 				DBWriteContactSettingString( NULL, SERVERSMODULE, pData->m_name, TextLine );
-		}	}
 
-		RereadServers();
-	}
+				// combobox might contain new items
+				if ( g_servers.find( pData ) == NULL )
+					g_servers.insert( pData );
+	}	}	}
 
 	m_proto->WriteSettings( ConnectSettings, SIZEOF( ConnectSettings ));
 
