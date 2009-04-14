@@ -1836,65 +1836,28 @@ static int _us_DoCollapseFrame(WPARAM wParam,LPARAM lParam)
 
 static int CLUIFramesLoadMainMenu()
 {
-	CLISTMENUITEM mi;
-	//TMO_MenuItem tmi;
-	int i,separator;
+	if (_fCluiFramesModuleNotStarted)
+		return -1;
 
-	if (_fCluiFramesModuleNotStarted) return -1;
+	if(_hmiRoot!=(HANDLE)-1) {
+		CallService(MS_CLIST_REMOVEMAINMENUITEM,(WPARAM)_hmiRoot,0); 
+		_hmiRoot=(HANDLE)-1;
+	}
 
-	if (!(ServiceExists(MS_CLIST_REMOVEMAINMENUITEM)))
-	{
-		//hmm new menu system not used..so display only two items and warning message
-		ZeroMemory(&mi,sizeof(mi));
-		mi.cbSize=sizeof(mi);
-		// create "show all frames" menu
-		mi.hIcon=NULL;
-		mi.flags=CMIF_GRAYED;
-		mi.position=10000000;
-		mi.pszPopupName=("Frames");
-		mi.pszName=LPGEN("New Menu System not Found...");
-		mi.pszService="";
-		CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
-
-		// create "show all frames" menu
-		mi.hIcon=NULL;
-		mi.flags=0;
-		mi.position=10100000;
-		mi.pszPopupName=("Frames");
-		mi.pszName=LPGEN("Show All Frames");
-		mi.pszService=MS_CLIST_FRAMES_SHOWALLFRAMES;
-		CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
-
-		mi.hIcon=NULL;
-		mi.position=10100001;
-		mi.pszPopupName=("Frames");
-		mi.flags=CMIF_CHILDPOPUP;
-		mi.pszName=LPGEN("Show All Titlebars");
-		mi.pszService=MS_CLIST_FRAMES_SHOWALLFRAMESTB;
-		CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);	
-
-		return(0);
-	};
-
-
-	if(_hmiRoot!=(HANDLE)-1) { CallService(MS_CLIST_REMOVEMAINMENUITEM,(WPARAM)_hmiRoot,0); _hmiRoot=(HANDLE)-1;}
-
-	ZeroMemory(&mi,sizeof(mi));
+	CLISTMENUITEM mi = { 0 };
 	mi.cbSize=sizeof(mi);
 	// create root menu
-	mi.flags=CMIF_ICONFROMICOLIB;
-	mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_MIRANDA);
-	//	mi.hIcon=LoadSmallIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_MIRANDA));
-	mi.flags=CMIF_ROOTPOPUP;
-	mi.position=3000090000;
-	mi.pszPopupName=(char*)-1;
-	mi.pszName=LPGEN("Frames");
+	mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP;
+	mi.icolibItem = LoadSkinnedIconHandle(SKINICON_OTHER_MIRANDA);
+	mi.position = 3000090000;
+	mi.pszPopupName = (char*)-1;
+	mi.pszName = LPGEN("Frames");
 	mi.pszService=0;
 	_hmiRoot=(HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 	DestroyIcon_protect(mi.hIcon);
 	// create frames menu
-	separator=3000200000;
-	for (i=0;i<g_nFramesCount;i++) {
+	int separator=3000200000;
+	for (int i=0; i < g_nFramesCount; i++) {
 		mi.hIcon=g_pfwFrames[i].TitleBar.hicon;
 		mi.flags=CMIF_CHILDPOPUP|CMIF_ROOTPOPUP|CMIF_TCHAR;
 		mi.position=separator;
