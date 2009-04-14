@@ -264,10 +264,11 @@ void CJabberProto::InitCustomFolders( void )
 
 	bInitDone = true;
 	if ( ServiceExists( MS_FOLDERS_REGISTER_PATH )) {
-		char AvatarsFolder[MAX_PATH]; AvatarsFolder[0] = 0;
-		CallService( MS_DB_GETPROFILEPATH, ( WPARAM )MAX_PATH, ( LPARAM )AvatarsFolder );
-		strcat( AvatarsFolder, "\\Jabber" );
-		hJabberAvatarsFolder = FoldersRegisterCustomPath(m_szModuleName, "Avatars", AvatarsFolder);	// title!!!!!!!!!!!
+		char AvatarsFolder[MAX_PATH];
+        char *tmpPath = Utils_ReplaceVars( "%miranda_avatarcache%" );
+		mir_snprintf( AvatarsFolder, SIZEOF( AvatarsFolder ), "%s\\Jabber", tmpPath );
+        mir_free(tmpPath);
+		hJabberAvatarsFolder = FoldersRegisterCustomPath( m_szModuleName, "Avatars", AvatarsFolder );	// title!!!!!!!!!!!
 }	}
 
 void CJabberProto::GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
@@ -278,12 +279,9 @@ void CJabberProto::GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen 
 	InitCustomFolders();
 
 	if ( hJabberAvatarsFolder == NULL || FoldersGetCustomPath( hJabberAvatarsFolder, path, cbLen, "" )) {
-        char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
-        lstrcpynA(pszDest, tmpPath, cbLen-1);
+        char *tmpPath = Utils_ReplaceVars( "%miranda_avatarcache%" );
+		tPathLen = mir_snprintf( pszDest, cbLen, "%s\\Jabber", tmpPath );
         mir_free(tmpPath);
-		
-		tPathLen = strlen( pszDest );
-		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\Jabber" );
 	}
 	else tPathLen = mir_snprintf( pszDest, cbLen, "%s", path );
 
