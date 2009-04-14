@@ -81,6 +81,24 @@ void RegisterCListFonts()
 	fontid.flags = FIDF_ALLOWREREGISTER | FIDF_APPENDNAME | FIDF_NOAS | FIDF_SAVEPOINTSIZE | FIDF_ALLOWEFFECTS;
 
 	for (i = 0; i <= CLIST_FONTID_MAX; i++) {
+
+		switch (fontListOrder[i])
+		{
+		case FONTID_GROUPS:
+		case FONTID_GROUPCOUNTS:
+			fontid.flags &= ~FIDF_CLASSMASK;
+			fontid.flags |= FIDF_CLASSHEADER;
+			break;
+		case FONTID_DIVIDERS:
+			fontid.flags &= ~FIDF_CLASSMASK;
+			fontid.flags |= FIDF_CLASSSMALL;
+			break;
+		default:
+			fontid.flags &= ~FIDF_CLASSMASK;
+			fontid.flags |= FIDF_CLASSGENERAL;
+			break;
+		}
+
 		strncpy(fontid.dbSettingsGroup, "CLC", sizeof(fontid.dbSettingsGroup));
 		_tcsncpy(fontid.group, _T("Contact List"), SIZEOF(fontid.group));
 		_tcsncpy(fontid.name, szClistFontIdDescr[fontListOrder[i]], SIZEOF(fontid.name));
