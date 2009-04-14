@@ -52,7 +52,7 @@ typedef struct
 	COLORREF bkgColor;
 	COLORREF avatarBorderColor;
 	int avatarRoundCornerRadius;
-	char noAvatarText[128];
+	TCHAR noAvatarText[128];
 	BOOL respectHidden;
 	BOOL showingFlash;
 	BOOL resizeIfSmaller;
@@ -491,7 +491,7 @@ static void NotifyAvatarChange(HWND hwnd)
 	SendMessage(GetParent(hwnd), WM_NOTIFY, 0, (LPARAM) &pshn);
 }
 
-static void DrawText(HDC hdc, HFONT hFont, const RECT &rc, const char *text)
+static void DrawText(HDC hdc, HFONT hFont, const RECT &rc, const TCHAR *text)
 {
 	HGDIOBJ oldFont = SelectObject(hdc, hFont);
 
@@ -504,13 +504,13 @@ static void DrawText(HDC hdc, HFONT hFont, const RECT &rc, const char *text)
 
 	// Calc text size
 	RECT tr_ret = tr;
-	DrawTextA(hdc, text, -1, &tr_ret, 
+	DrawText(hdc, text, -1, &tr_ret, 
 			DT_WORDBREAK | DT_NOPREFIX | DT_CENTER | DT_CALCRECT);
 
 	// Calc needed size
 	tr.top += ((tr.bottom - tr.top) - (tr_ret.bottom - tr_ret.top)) / 2;
 	tr.bottom = tr.top + (tr_ret.bottom - tr_ret.top);
-	DrawTextA(hdc, text, -1, &tr, 
+	DrawText(hdc, text, -1, &tr, 
 			DT_WORDBREAK | DT_NOPREFIX | DT_CENTER);
 
 	SelectObject(hdc, oldFont);
@@ -627,7 +627,7 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 		}
 		case AVATAR_SETNOAVATARTEXT:
 		{
-			lstrcpynA(data->noAvatarText, Translate((char*) lParam), sizeof(data->noAvatarText));
+			lstrcpyn(data->noAvatarText, TranslateTS((TCHAR*) lParam), SIZEOF(data->noAvatarText));
 			Invalidate(hwnd);
 			return TRUE;
 		}
@@ -757,7 +757,7 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 			if (data->hContact == NULL && data->proto[0] == '\0'
 				&& DBGetContactSettingByte(NULL, AVS_MODULE, "GlobalUserAvatarNotConsistent", 1))
 			{
-				DrawText(hdc, data->hFont, rc, Translate("Protocols have different avatars"));
+				DrawText(hdc, data->hFont, rc, TranslateT("Protocols have different avatars"));
 			}
 
 			// Has a flash avatar
