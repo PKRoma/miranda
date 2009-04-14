@@ -170,6 +170,9 @@ struct MHeaderbarCtrl
 
 	int			nControlsToRedraw;
 	HWND		*controlsToRedraw;
+
+	// fonts
+	HFONT		hFont;
 };
 
 int UnloadHeaderbarModule(WPARAM wParam, LPARAM lParam) 
@@ -204,6 +207,8 @@ static void MHeaderbar_SetupColors(MHeaderbarCtrl *dat)
 	dat->rgbBkgBottom.rgbBlue	= (dat->rgbBkgTop.rgbBlue	= GetBValue(cl)) * .95;
 
 	dat->clText			= GetSysColor(COLOR_WINDOWTEXT);
+
+	if (!dat->hFont) dat->hFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
 }
 
 static void MHeaderbar_FillRect(HDC hdc, int x, int y, int width, int height, COLORREF cl)
@@ -287,7 +292,7 @@ static LRESULT MHeaderbar_OnPaint(HWND hwndDlg, MHeaderbarCtrl *mit, UINT  msg, 
 		MHeaderbar_FillRect(tempDC, 0, mit->height-1, mit->width, 1, GetSysColor(COLOR_BTNHIGHLIGHT));
 	}
 
-	HFONT hFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
+	HFONT hFont = mit->hFont;
 	SetBkMode(tempDC, TRANSPARENT);
 	SetTextColor(tempDC, mit->clText);
 
@@ -423,6 +428,10 @@ static LRESULT CALLBACK MHeaderbarWndProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 			}
 		}
 
+		break;
+
+	case WM_SETFONT:
+		itc->hFont = (HFONT)wParam;
 		break;
 
 	case WM_SIZE:

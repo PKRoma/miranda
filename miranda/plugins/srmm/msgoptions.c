@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #pragma hdrstop
 
 #include "m_fontservice.h"
+#include "m_modernopt.h"
 
 extern HINSTANCE g_hInst;
 
@@ -175,6 +176,9 @@ void RegisterSRMMFonts( void )
 		sprintf(idstr, "SRMFont%d", index);
 		strncpy(fontid.prefix, idstr, SIZEOF(fontid.prefix));
 		fontid.order = index;
+
+		fontid.flags &= ~FIDF_CLASSMASK;
+		fontid.flags |= (fontOptionsList[i].defStyle == FONTF_BOLD) ? FIDF_CLASSHEADER : FIDF_CLASSGENERAL;
 
 		fontid.deffontsettings.colour = fontOptionsList[i].defColour;
 		fontid.deffontsettings.size = fontOptionsList[i].defSize;
@@ -647,28 +651,62 @@ static int OptInitialise(WPARAM wParam, LPARAM lParam)
 	odp.position = 910000000;
 	odp.hInstance = g_hInst;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGDLG);
-	odp.pszTitle = LPGEN("Messaging");
-	odp.pszGroup = LPGEN("Message Sessions");
+	odp.pszTab = LPGEN("Messaging");
+	odp.pszTitle = LPGEN("Message Sessions");
 	odp.pfnDlgProc = DlgProcOptions;
 	odp.flags = ODPF_BOLDGROUPS;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGLOG);
-	odp.pszTitle = LPGEN("Messaging Log");
+	odp.pszTab = LPGEN("Messaging Log");
 	odp.pfnDlgProc = DlgProcLogOptions;
 	odp.nIDBottomSimpleControl = IDC_STMSGLOGGROUP;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGTYPE);
-	odp.pszTitle = LPGEN("Typing Notify");
+	odp.pszTab = LPGEN("Typing Notify");
 	odp.pfnDlgProc = DlgProcTypeOptions;
 	odp.nIDBottomSimpleControl = 0;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 	return 0;
 }
 
+static int ModernOptInitialise(WPARAM wParam, LPARAM lParam)
+{
+	static int iBoldControls[] =
+	{
+		IDC_TXT_TITLE1, IDC_TXT_TITLE2, IDC_TXT_TITLE3,
+		MODERNOPT_CTRL_LAST
+	};
+
+	MODERNOPTOBJECT obj = {0};
+
+	obj.cbSize = sizeof(obj);
+	obj.dwFlags = MODEROPT_FLG_TCHAR|MODEROPT_FLG_NORESIZE;
+	obj.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+	obj.hInstance = g_hInst;
+	obj.iSection = MODERNOPT_PAGE_MSGS;
+	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
+	obj.iBoldControls = iBoldControls;
+	obj.lpzClassicGroup = NULL;
+	obj.lpzClassicPage = "Message Sessions";
+	obj.lpzClassicTab = "Messaging";
+	obj.lpzHelpUrl = "http://wiki.miranda-im.org/";
+
+	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_MSGDLG);
+	obj.pfnDlgProc = DlgProcOptions;
+	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
+
+	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_MSGLOG);
+	obj.pfnDlgProc = DlgProcLogOptions;
+	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
+
+	return 0;
+}
+
 int InitOptions(void)
 {
 	HookEvent(ME_OPT_INITIALISE, OptInitialise);
+	HookEvent(ME_MODERNOPT_INITIALIZE, ModernOptInitialise);
 	return 0;
 }

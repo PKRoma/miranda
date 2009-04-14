@@ -304,7 +304,7 @@ static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARA
 			dtbgopts.rcClip = rc;
 
 			drawThemeBackgroundEx( hTheme, hdc, style, ETS_NORMAL, &rc, &dtbgopts );
-			HFONT hFont = (HFONT) GetStockObject( DEFAULT_GUI_FONT );
+			HFONT hFont = (HFONT) SendMessage(hWnd, WM_GETFONT, 0, 0);
 			HFONT oldFont = (HFONT) SelectObject( hdc, hFont );
 
             wchar_t *bufW = mir_t2u(buf);
@@ -312,14 +312,13 @@ static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARA
 			mir_free(bufW);
 
             SelectObject( hdc, oldFont );
-			DeleteObject( hFont );
 			closeThemeData( hTheme );
 			bDrawnByTheme = TRUE;
 		}
 	}
 
 	if ( !bDrawnByTheme ) {
-		HFONT hFont = (HFONT) GetStockObject( DEFAULT_GUI_FONT );
+		HFONT hFont = (HFONT) SendMessage(hWnd, WM_GETFONT, 0, 0);
 		HFONT oldFont = (HFONT) SelectObject( hdc, hFont );
 		SetTextColor( hdc, GetSysColor(COLOR_GRAYTEXT) );
 		FillRect( hdc, &rc, GetSysColorBrush( COLOR_WINDOW ) );
@@ -327,7 +326,6 @@ static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARA
 		DrawText( hdc, buf, -1, &rc, 0 );
         SetBkMode( hdc, oldMode );
 		SelectObject( hdc, oldFont );
-		DeleteObject( hFont );
 	}
 
 	if (message == WM_PAINT)

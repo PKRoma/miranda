@@ -1493,13 +1493,13 @@ int FontsModernOptInit(WPARAM wParam, LPARAM lParam)
 	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
 
 	obj.iSection = MODERNOPT_PAGE_MODULES;
-	obj.iType = MODERNOPT_TYPE_SUBSECTIONPAGE;
-	obj.lptzSubsection = LPGENT("Installed Plugins");
+	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
+//	obj.lptzSubsection = LPGENT("Installed Plugins");
 	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_MODULES);
 	obj.pfnDlgProc = DlgPluginOpt;
 	obj.iBoldControls = iBoldControls;
 	obj.lpzClassicGroup = NULL;
-	obj.lpzClassicPage = "Plugins";
+	obj.lpzClassicPage = NULL;
 	obj.lpzHelpUrl = "http://wiki.miranda-im.org/";
 	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
 	return 0;

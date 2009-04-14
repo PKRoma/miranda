@@ -431,8 +431,8 @@ static int IdleModernOptInit(WPARAM wParam, LPARAM)
 	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
 	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_IDLE);
 	obj.pfnDlgProc = IdleOptsDlgProc;
-	obj.lpzClassicGroup = "Status";
-	obj.lpzClassicPage = "Messages";
+//	obj.lpzClassicGroup = "Status";
+//	obj.lpzClassicPage = "Messages";
 	obj.lpzHelpUrl = "http://wiki.miranda-im.org/";
 	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
 	return 0;

@@ -437,8 +437,8 @@ static int IgnoreModernOptInit(WPARAM wParam, LPARAM)
 	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
 	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_IGNORE);
 	obj.pfnDlgProc = DlgProcIgnoreOpts;
-	obj.lpzClassicGroup = "Events";
-	obj.lpzClassicPage = "Ignore";
+//	obj.lpzClassicGroup = "Events";
+//	obj.lpzClassicPage = "Ignore";
 	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
 	return 0;
 }

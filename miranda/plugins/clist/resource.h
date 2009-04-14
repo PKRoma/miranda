@@ -15,6 +15,10 @@
 #define IDD_OPT_SBAR                    234
 #define IDD_OPT_CLCTEXTSIMPLE           239
 #define IDD_DELETECONTACT               254
+#define IDD_MODERNOPT_CLIST             288
+#define IDD_MODERNOPT_CLUI              289
+#define IDD_MODERNOPT_SBAR              290
+#define IDD_MODERNOPT_CLCBKG            291
 #define IDC_MIN2TRAY                    1073
 #define IDC_ONTOP                       1074
 #define IDC_SHOWMAINMENU                1075
@@ -126,6 +130,8 @@
 #define IDC_DROPSHADOW                  1612
 #define IDC_SHOWGRIP                    1612
 #define IDC_NOSCROLLBAR                 1613
+#define IDC_TXT_TITLE1                  1617
+#define IDC_TXT_TITLE2                  1618
 #define IDC_ONDESKTOP                   1657
 #define IDC_WINCOLOUR                   1659
 #define IDC_ICONBLINK                   1660
@@ -149,7 +155,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        269
+#define _APS_NEXT_RESOURCE_VALUE        292
 #define _APS_NEXT_COMMAND_VALUE         40018
 #define _APS_NEXT_CONTROL_VALUE         1662
 #define _APS_NEXT_SYMED_VALUE           101

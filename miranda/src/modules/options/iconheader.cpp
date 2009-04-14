@@ -182,6 +182,9 @@ struct MIcoTabCtrl
 	COLORREF	clText;
 	COLORREF	clSelText, clSelBorder;
 	COLORREF	clHotText, clHotBorder;
+
+	// fonts
+	HFONT		hFont;
 };
 
 typedef void (*ItemDestuctor)(void*);
@@ -249,6 +252,8 @@ static void MIcoTab_SetupColors(MIcoTabCtrl *dat)
 	dat->clSelText		= GetSysColor(COLOR_HIGHLIGHTTEXT);
 	dat->clSelBorder	= RGB(dat->rgbSelTop.rgbRed, dat->rgbSelTop.rgbGreen, dat->rgbSelTop.rgbBlue);
 	dat->clHotBorder	= RGB(dat->rgbHotTop.rgbRed, dat->rgbHotTop.rgbGreen, dat->rgbHotTop.rgbBlue);
+
+	if (!dat->hFont) dat->hFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
 }
 
 static void MIcoTab_FillRect(HDC hdc, int x, int y, int width, int height, COLORREF cl)
@@ -407,7 +412,7 @@ static LRESULT MIcoTab_OnPaint(HWND hwndDlg, MIcoTabCtrl *mit, UINT  msg, WPARAM
 	}	}
 
 	//Draw Items
-	hFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
+	hFont = mit->hFont;
 	SelectObject(tempDC,hFont);
 	SetBkMode(tempDC,TRANSPARENT);
 
@@ -447,6 +452,10 @@ static LRESULT CALLBACK MIcoTabWndProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 		}
 
 		return TRUE;
+
+	case WM_SETFONT:
+		itc->hFont = (HFONT)wParam;
+		break;
 
 	case WM_SIZE:
 		GetClientRect(hwndDlg,&itc->rc);

@@ -58,6 +58,9 @@ typedef struct {
 	COLORREF	clText, clBackground;
 	COLORREF	clSelText, clSelBorder;
 	COLORREF	clHotText, clHotBorder;
+
+	// fonts
+	HFONT		hFont;
 } MDescButtonCtrl;
 
 int UnloadDescButtonModule(WPARAM wParam, LPARAM lParam) 
@@ -109,6 +112,8 @@ static void MDescButton_SetupColors(MDescButtonCtrl *dat)
 	dat->clSelText		= GetSysColor(COLOR_HIGHLIGHTTEXT);
 	dat->clSelBorder	= RGB(dat->rgbSelTop.rgbRed, dat->rgbSelTop.rgbGreen, dat->rgbSelTop.rgbBlue);
 	dat->clHotBorder	= RGB(dat->rgbHotTop.rgbRed, dat->rgbHotTop.rgbGreen, dat->rgbHotTop.rgbBlue);
+
+	if (!dat->hFont) dat->hFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
 }
 
 static void MDescButton_FillRect(HDC hdc, int x, int y, int width, int height, COLORREF cl)
@@ -177,7 +182,7 @@ static LRESULT MDescButton_OnPaint(HWND hwndDlg, MDescButtonCtrl *dat, UINT  msg
 	if (dat->hIcon)
 		DrawIcon(tempDC, DBC_BORDER_SIZE, DBC_BORDER_SIZE, dat->hIcon);	  
 
-	hfntSave = (HFONT)SelectObject(tempDC, GetStockObject(DEFAULT_GUI_FONT));
+	hfntSave = (HFONT)SelectObject(tempDC, dat->hFont);
 	SetBkMode(tempDC, TRANSPARENT);
 
 	if (dat->lpzTitle) {
@@ -185,7 +190,7 @@ static LRESULT MDescButton_OnPaint(HWND hwndDlg, MDescButtonCtrl *dat, UINT  msg
 		RECT textRect;
 		HFONT hfntSave;
 
-		GetObject(GetStockObject(DEFAULT_GUI_FONT), sizeof(lf), &lf);
+		GetObject(dat->hFont, sizeof(lf), &lf);
 		lf.lfWeight = FW_BOLD;
 		lf.lfHeight *= 1.5;
 		hfntSave = (HFONT)SelectObject(tempDC, CreateFontIndirect(&lf));
@@ -235,6 +240,10 @@ static LRESULT CALLBACK MDescButtonWndProc(HWND hwndDlg, UINT  msg, WPARAM wPara
 		SetWindowLongPtr(hwndDlg, 0, (LONG_PTR)dat);
 		MDescButton_SetupColors(dat);
 		return TRUE;
+
+	case WM_SETFONT:
+		dat->hFont = (HFONT)wParam;
+		break;
 
 	case WM_SIZE:
 		GetClientRect(hwndDlg,&dat->rc);

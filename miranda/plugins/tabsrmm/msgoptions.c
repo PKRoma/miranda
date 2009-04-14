@@ -1632,7 +1632,6 @@ static int ModernOptInitialise(WPARAM wParam, LPARAM lParam)
 	obj.iSection = MODERNOPT_PAGE_MSGS;
 	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
 	obj.iBoldControls = iBoldControls;
-	obj.lptzSubsection = _T("Fonts");
 	obj.lpzClassicGroup = NULL;
 	obj.lpzClassicPage = "Message Sessions";
 	obj.lpzHelpUrl = "http://wiki.miranda-im.org/";

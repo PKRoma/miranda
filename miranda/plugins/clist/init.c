@@ -40,8 +40,11 @@ void InitCustomMenus( void );
 void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint);
 
 int ClcOptInit(WPARAM wParam, LPARAM lParam);
+int ClcModernOptInit(WPARAM wParam, LPARAM lParam);
 int CluiOptInit(WPARAM wParam, LPARAM lParam);
+int CluiModernOptInit(WPARAM wParam, LPARAM lParam);
 int CListOptInit(WPARAM wParam, LPARAM lParam);
+int CListModernOptInit(WPARAM wParam, LPARAM lParam);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // dll stub
@@ -102,8 +105,10 @@ static int OnAccountsChanged( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // called when all modules got loaded
 
+static int OnModernOptsInit(WPARAM wParam, LPARAM lParam);
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
+	HookEvent(ME_MODERNOPT_INITIALIZE, OnModernOptsInit);
 	RegisterCListFonts();
 	himlCListClc = (HIMAGELIST) CallService(MS_CLIST_GETICONSIMAGELIST, 0, 0);
 	return 0;
@@ -117,6 +122,14 @@ static int OnOptsInit(WPARAM wParam, LPARAM lParam)
 	ClcOptInit(wParam, lParam);
 	CluiOptInit(wParam, lParam);
 	CListOptInit(wParam, lParam);
+	return 0;
+}
+
+static int OnModernOptsInit(WPARAM wParam, LPARAM lParam)
+{
+	ClcModernOptInit(wParam, lParam);
+	CListModernOptInit(wParam, lParam);
+	CluiModernOptInit(wParam, lParam);
 	return 0;
 }
 

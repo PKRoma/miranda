@@ -452,3 +452,28 @@ int ClcOptInit(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+int ClcModernOptInit(WPARAM wParam, LPARAM lParam)
+{
+	static int iBoldControls[] =
+	{
+		IDC_TXT_TITLE1, IDC_TXT_TITLE2,
+		MODERNOPT_CTRL_LAST
+	};
+
+	MODERNOPTOBJECT obj = {0};
+
+	obj.cbSize = sizeof(obj);
+	obj.dwFlags = MODEROPT_FLG_TCHAR;
+	obj.hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
+	obj.hInstance = g_hInst;
+	obj.iSection = MODERNOPT_PAGE_SKINS;
+	obj.iType = MODERNOPT_TYPE_SUBSECTIONPAGE;
+	obj.lptzSubsection = LPGENT("Contact List");
+	obj.iBoldControls = iBoldControls;
+	obj.lpzHelpUrl = "http://wiki.miranda-im.org/";
+
+	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_CLCBKG);
+	obj.pfnDlgProc = DlgProcClcBkgOpts;
+	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
+	return 0;
+}
