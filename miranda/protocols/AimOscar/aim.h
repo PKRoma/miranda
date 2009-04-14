@@ -47,7 +47,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <m_clist.h>
 #include <m_clistint.h>
 #include <m_clui.h>
-#include "m_cluiframes.h"
+#include <m_cluiframes.h>
 #include <m_database.h>
 #include <m_history.h>
 #include <m_idle.h>

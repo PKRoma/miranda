@@ -19,6 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "aim.h"
 #include "avatars.h"
 
+#include "m_folders.h"
+
 void __cdecl CAimProto::avatar_request_thread( void* param )
 {
 	avatar_req_param* data = (avatar_req_param*)param;
@@ -156,18 +158,36 @@ int detect_image_type(const char* file)
        return PA_FORMAT_JPEG;
 }
 
+void CAimProto::init_custom_folders(void)
+{
+	if (init_cst_fld_ran) return; 
+
+	char AvatarsFolder[MAX_PATH];
+
+    char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
+	mir_snprintf(AvatarsFolder, SIZEOF(AvatarsFolder), "%s\\%s", tmpPath, m_szModuleName);
+    mir_free(tmpPath);
+
+    hAvatarsFolder = FoldersRegisterCustomPath(m_szModuleName, "Avatars", AvatarsFolder);
+
+	init_cst_fld_ran = true;
+}
+
 void  CAimProto::get_avatar_filename(HANDLE hContact, char* pszDest, size_t cbLen, const char *ext)
 {
 	size_t tPathLen;
 
-//	InitCustomFolders();
+	init_custom_folders();
 
-	char* path = ( char* )alloca( cbLen );
-	if ( hAvatarsFolder == NULL /*|| FoldersGetCustomPath( hAvatarsFolder, path, cbLen, "" )*/)
+	char* path = (char*)alloca( cbLen );
+	if (hAvatarsFolder == NULL || FoldersGetCustomPath(hAvatarsFolder, path, cbLen, ""))
 	{
-		tPathLen = mir_snprintf(pszDest, cbLen, "%s\\%s", CWD, m_szModuleName);
+        char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
+		tPathLen = mir_snprintf(pszDest, cbLen, "%s\\%s", tmpPath, m_szModuleName);
+        mir_free(tmpPath);
 	}
-	else {
+	else 
+    {
 		strcpy( pszDest, path );
 		tPathLen = strlen( pszDest );
 	}

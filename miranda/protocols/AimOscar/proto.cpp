@@ -29,8 +29,6 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 	m_szProtoName[0] = (char)toupper( m_szProtoName[0] );
 	LOG( "Setting protocol/module name to '%s/%s'", m_szProtoName, m_szModuleName );
 
-    CWD = Utils_ReplaceVars("%miranda_avatarcache%");
-
 	//create some events
 	hAvatarEvent  = CreateEvent(NULL, TRUE, FALSE, NULL);
 	hChatNavEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
@@ -93,7 +91,6 @@ CAimProto::~CAimProto()
 	for (int i=0; i<9; ++i)
 		mir_free(modeMsgs[i]);
 
-	mir_free(CWD);
 	mir_free(COOKIE);
 	mir_free(MAIL_COOKIE);
 	mir_free(AVATAR_COOKIE);
@@ -163,6 +160,7 @@ int CAimProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 	offline_contacts();
     chat_register();
+	init_custom_folders();
 
 	return 0;
 }

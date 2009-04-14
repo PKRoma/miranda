@@ -112,7 +112,6 @@ struct CAimProto : public PROTO_INTERFACE
 	int  __cdecl OnGCMenuHook(WPARAM wParam,LPARAM lParam);
 
 	//====| Data |========================================================================
-	char* CWD;//current working directory
 	char* FILE_TRANSFER_KEY;
 	
 	CRITICAL_SECTION SendingMutex;
@@ -168,6 +167,7 @@ struct CAimProto : public PROTO_INTERFACE
 	unsigned short mail_seqno;
 	
 	//avatar connection stuff
+    bool init_cst_fld_ran;
 	unsigned short avatar_seqno;
     unsigned short avatar_id;
 	HANDLE hAvatarConn;
@@ -220,6 +220,7 @@ struct CAimProto : public PROTO_INTERFACE
 	void   avatar_request_handler(HANDLE hContact, char* hash, int hash_size);
 	void   avatar_retrieval_handler(const char* sn, const char* hash, const char* data, int data_len);
     void   get_avatar_filename(HANDLE hContact, char* pszDest, size_t cbLen, const char *ext);
+    void   init_custom_folders(void);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// away.cpp

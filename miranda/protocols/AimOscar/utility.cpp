@@ -649,7 +649,9 @@ int CAimProto::open_contact_file(const char* sn, const char* file, const char* m
 {
 	path = (char*)mir_alloc(MAX_PATH);
 
-    int pos = mir_snprintf(path, MAX_PATH, "%s\\%s", CWD, m_szModuleName);
+    char *tmpPath = Utils_ReplaceVars("%miranda_userdata%");
+    int pos = mir_snprintf(path, MAX_PATH, "%s\\%s", tmpPath, m_szModuleName);
+    mir_free(tmpPath);
 	if  (contact_dir)
     {
         char* norm_sn = normalize_name(sn);
