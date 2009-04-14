@@ -3199,7 +3199,7 @@ LBL_FAILED:
 	
 	
 	//yahoo_packet_hash(pack, 135, "8.1.0.209");  // Yahoo 8.0
-	yahoo_packet_hash(pack, 135, "9.0.0.1912"); 
+	yahoo_packet_hash(pack, 135, "9.0.0.2152"); 
 	/////yahoo_packet_hash(pack, 148, "300");  // ???
 
 	yahoo_send_packet(yid, pack, 0);
