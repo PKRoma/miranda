@@ -75,6 +75,9 @@ static int AppendToBufferWithRTF(char **buffer, int *cbBufferEnd, int *cbBufferA
 	DWORD textCharsCount = 0;
 	char *d;
 
+	if ( line == NULL )
+		return 0;
+
 	int lineLen = (int)_tcslen(line) * 9 + 8;
 	if (*cbBufferEnd + lineLen > *cbBufferAlloced) {
 		cbBufferAlloced[0] += (lineLen + 1024 - lineLen % 1024);
