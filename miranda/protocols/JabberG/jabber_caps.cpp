@@ -85,6 +85,58 @@ JabberFeatCapPair g_JabberFeatCapPairsExt[] = {
 	{	NULL,                             0                                }
 };
 
+void CJabberProto::OnIqResultCapsDiscoInfoSI( HXML, CJabberIqInfo* pInfo )
+{
+	JABBER_RESOURCE_STATUS *r = ResourceInfoFromJID( pInfo->GetFrom() );
+	if ( !r )
+		return;
+
+	HXML query = pInfo->GetChildNode();
+	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT && query ) {
+		// XEP-0232 support
+		HXML xform;
+		for ( int i = 1; ( xform = xmlGetNthChild( query, _T("x"), i)) != NULL; i++ ) {
+			TCHAR *szFormTypeValue = XPath( xform, _T("field[@var='FORM_TYPE']/value") );
+			if ( szFormTypeValue && !_tcscmp( szFormTypeValue, _T("urn:xmpp:dataforms:softwareinfo") )) {
+				if ( r->pSoftwareInfo )
+					delete r->pSoftwareInfo;
+				r->pSoftwareInfo = new JABBER_XEP0232_SOFTWARE_INFO;
+				if ( r->pSoftwareInfo ) {
+					TCHAR *szTmp = XPath( xform, _T("field[@var='os']/value") );
+					if ( szTmp )
+						r->pSoftwareInfo->szOs = mir_tstrdup( szTmp );
+					szTmp = XPath( xform, _T("field[@var='os_version']/value") );
+					if ( szTmp )
+						r->pSoftwareInfo->szOsVersion = mir_tstrdup( szTmp );
+					szTmp = XPath( xform, _T("field[@var='software']/value") );
+					if ( szTmp )
+						r->pSoftwareInfo->szSoftware = mir_tstrdup( szTmp );
+					szTmp = XPath( xform, _T("field[@var='software_version']/value") );
+					if ( szTmp )
+						r->pSoftwareInfo->szSoftwareVersion = mir_tstrdup( szTmp );
+					szTmp = XPath( xform, _T("field[@var='x-miranda-core-version']/value") );
+					if ( szTmp )
+						r->pSoftwareInfo->szXMirandaCoreVersion = mir_tstrdup( szTmp );
+					szTmp = XPath( xform, _T("field[@var='x-miranda-core-is-unicode']/value") );
+					if ( !szTmp ) // old deprecated format
+						szTmp = XPath( xform, _T("field[@var='x-miranda-is-unicode']/value") );
+					if ( szTmp && _ttoi( szTmp ))
+						r->pSoftwareInfo->bXMirandaIsUnicode = TRUE;
+					szTmp = XPath( xform, _T("field[@var='x-miranda-core-is-alpha']/value") );
+					if ( !szTmp ) // old deprecated format
+						szTmp = XPath( xform, _T("field[@var='x-miranda-is-alpha']/value") );
+					if ( szTmp && _ttoi( szTmp ))
+						r->pSoftwareInfo->bXMirandaIsAlpha = TRUE;
+					szTmp = XPath( xform, _T("field[@var='x-miranda-jabber-is-debug']/value") );
+					if ( szTmp && _ttoi( szTmp ))
+						r->pSoftwareInfo->bXMirandaIsDebug = TRUE;
+				}
+				JabberUserInfoUpdate( pInfo->GetHContact() );
+			}
+		}
+	}
+}
+
 void CJabberProto::OnIqResultCapsDiscoInfo( HXML, CJabberIqInfo* pInfo )
 {
 	JABBER_RESOURCE_STATUS *r = ResourceInfoFromJID( pInfo->GetFrom() );
@@ -107,49 +159,6 @@ void CJabberProto::OnIqResultCapsDiscoInfo( HXML, CJabberIqInfo* pInfo )
 			r->jcbCachedCaps = jcbCaps;
 			r->dwDiscoInfoRequestTime = -1;
 			return;
-		}
-
-		// XEP-0232 support
-		if ( r ) {
-			HXML xform;
-			for ( int i = 1; ( xform = xmlGetNthChild( query, _T("x"), i)) != NULL; i++ ) {
-				TCHAR *szFormTypeValue = XPath( xform, _T("field[@var='FORM_TYPE']/value") );
-				if ( szFormTypeValue && !_tcscmp( szFormTypeValue, _T("urn:xmpp:dataforms:softwareinfo") )) {
-					if ( r->pSoftwareInfo )
-						delete r->pSoftwareInfo;
-					r->pSoftwareInfo = new JABBER_XEP0232_SOFTWARE_INFO;
-					if ( r->pSoftwareInfo ) {
-						TCHAR *szTmp = XPath( xform, _T("field[@var='os']/value") );
-						if ( szTmp )
-							r->pSoftwareInfo->szOs = mir_tstrdup( szTmp );
-						szTmp = XPath( xform, _T("field[@var='os_version']/value") );
-						if ( szTmp )
-							r->pSoftwareInfo->szOsVersion = mir_tstrdup( szTmp );
-						szTmp = XPath( xform, _T("field[@var='software']/value") );
-						if ( szTmp )
-							r->pSoftwareInfo->szSoftware = mir_tstrdup( szTmp );
-						szTmp = XPath( xform, _T("field[@var='software_version']/value") );
-						if ( szTmp )
-							r->pSoftwareInfo->szSoftwareVersion = mir_tstrdup( szTmp );
-						szTmp = XPath( xform, _T("field[@var='x-miranda-core-version']/value") );
-						if ( szTmp )
-							r->pSoftwareInfo->szXMirandaCoreVersion = mir_tstrdup( szTmp );
-						szTmp = XPath( xform, _T("field[@var='x-miranda-core-is-unicode']/value") );
-						if ( !szTmp ) // old deprecated format
-							szTmp = XPath( xform, _T("field[@var='x-miranda-is-unicode']/value") );
-						if ( szTmp && _ttoi( szTmp ))
-							r->pSoftwareInfo->bXMirandaIsUnicode = TRUE;
-						szTmp = XPath( xform, _T("field[@var='x-miranda-core-is-alpha']/value") );
-						if ( !szTmp ) // old deprecated format
-							szTmp = XPath( xform, _T("field[@var='x-miranda-is-alpha']/value") );
-						if ( szTmp && _ttoi( szTmp ))
-							r->pSoftwareInfo->bXMirandaIsAlpha = TRUE;
-						szTmp = XPath( xform, _T("field[@var='x-miranda-jabber-is-debug']/value") );
-						if ( szTmp && _ttoi( szTmp ))
-							r->pSoftwareInfo->bXMirandaIsDebug = TRUE;
-					}
-				}
-			}
 		}
 
 		m_clientCapsManager.SetClientCaps( pInfo->GetIqId(), jcbCaps );

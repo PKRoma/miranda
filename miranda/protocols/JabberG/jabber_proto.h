@@ -425,6 +425,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	int    SetupServiceDiscoveryDlg( TCHAR* jid );
 		  
 	void   OnIqResultCapsDiscoInfo( HXML iqNode, CJabberIqInfo* pInfo );
+	void   OnIqResultCapsDiscoInfoSI( HXML iqNode, CJabberIqInfo* pInfo );
 		  
 	void   RegisterAgent( HWND hwndDlg, TCHAR* jid );
 

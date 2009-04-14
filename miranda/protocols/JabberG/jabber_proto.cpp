@@ -755,7 +755,7 @@ int __cdecl CJabberProto::GetInfo( HANDLE hContact, int /*infoType*/ )
 						}
 
 						if ( !item->resource[i].pSoftwareInfo ) {
-							XmlNodeIq iq5( m_iqManager.AddHandler( &CJabberProto::OnIqResultCapsDiscoInfo, JABBER_IQ_TYPE_GET, jid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_CHILD_TAG_NODE ));
+							XmlNodeIq iq5( m_iqManager.AddHandler( &CJabberProto::OnIqResultCapsDiscoInfoSI, JABBER_IQ_TYPE_GET, jid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_CHILD_TAG_NODE | JABBER_IQ_PARSE_HCONTACT ));
 							iq5 << XQUERY( _T(JABBER_FEAT_DISCO_INFO ));
 							m_ThreadInfo->send( iq5 );
 						}
