@@ -628,7 +628,7 @@ INT_PTR StatusMenuExecService(WPARAM wParam, LPARAM)
 					if ( pimi->mi.pszName )
 						mir_free( pimi->mi.pszName );
 					if ( cli.bDisplayLocked ) {
-						_sntprintf(buf,SIZEOF(buf),TranslateT("%s (locked)"),acc->tszAccountName);
+						mir_sntprintf(buf,SIZEOF(buf),TranslateT("%s (locked)"),acc->tszAccountName);
 						pimi->mi.ptszName = mir_tstrdup( buf );
 					}
 					else pimi->mi.ptszName =  mir_tstrdup( acc->tszAccountName );
@@ -959,7 +959,7 @@ void RebuildMenuOrder( void )
 		if (( tmi.flags & CMIF_CHECKED ) && cli.bDisplayLocked )
 		{
 			TCHAR buf[256];
-			_sntprintf( buf, SIZEOF(buf), TranslateT("%s (locked)"), pa->tszAccountName );
+			mir_sntprintf( buf, SIZEOF(buf), TranslateT("%s (locked)"), pa->tszAccountName );
 			tmi.ptszName = buf;
 		} else {
 			tmi.ptszName = pa->tszAccountName;

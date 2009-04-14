@@ -167,9 +167,9 @@ static INT_PTR CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 					TCHAR dir[_MAX_DIR];
 					_tsplitpath(logOptions.szPath, drive, dir, NULL, NULL);
 					if ( path[0] == _T('\\') )
-						_sntprintf( path, MAX_PATH, _T("%s%s"), drive, newpath);
+						mir_sntprintf( path, MAX_PATH, _T("%s%s"), drive, newpath);
 					else
-						_sntprintf( path, MAX_PATH, _T("%s%s%s"), drive, dir, newpath);
+						mir_sntprintf( path, MAX_PATH, _T("%s%s%s"), drive, dir, newpath);
 					path[MAX_PATH]=0;
 					SetDlgItemText( hwndDlg, IDC_PATH, path );
 				}
