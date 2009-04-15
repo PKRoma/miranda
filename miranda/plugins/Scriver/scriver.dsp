@@ -25,8 +25,8 @@ CFG=scriver - Win32 Debug Unicode
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
-# PROP Scc_ProjName ""$/Miranda32/Plugins/scriver", DSEAAAAA"
-# PROP Scc_LocalPath "."
+# PROP Scc_ProjName ""
+# PROP Scc_LocalPath ""
 CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
@@ -160,6 +160,10 @@ SOURCE=.\globals.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\input.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\msgdialog.c
 # End Source File
 # Begin Source File
@@ -220,11 +224,7 @@ SOURCE=.\chat\IcoLib.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\chat\m_ieview.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\chat\m_smileyadd.h
+SOURCE=.\input.h
 # End Source File
 # Begin Source File
 
@@ -233,6 +233,10 @@ SOURCE=.\chat\m_uninstaller.h
 # Begin Source File
 
 SOURCE=.\msgs.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\msgwindow.h
 # End Source File
 # Begin Source File
 
@@ -325,11 +329,6 @@ SOURCE=.\res\unicodeon.ico
 # Begin Source File
 
 SOURCE=.\chat\chat.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\chat\chat.rc
-# PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 

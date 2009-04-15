@@ -385,7 +385,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
 
 static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    MButtonCtrl *bct = (MButtonCtrl *) GetWindowLong(hwndDlg, 0);
+    MButtonCtrl *bct = (MButtonCtrl *) GetWindowLongPtr(hwndDlg, 0);
     switch (msg) {
         case WM_NCCREATE:
             {
@@ -413,7 +413,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
                 bct->bSkinned = bct->bSendOnDown = 0;
                 bct->buttonItem = NULL;
                 LoadTheme(bct);
-                SetWindowLong(hwndDlg, 0, (LONG) bct);
+                SetWindowLongPtr(hwndDlg, 0, (LONG_PTR) bct);
                 if (((CREATESTRUCTA *) lParam)->lpszName)
                     SetWindowText(hwndDlg, ((CREATESTRUCT *) lParam)->lpszName);
                 return TRUE;
@@ -428,7 +428,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
                         ti.cbSize = sizeof(ti);
                         ti.uFlags = TTF_IDISHWND;
                         ti.hwnd = bct->hwnd;
-                        ti.uId = (UINT) bct->hwnd;
+                        ti.uId = (UINT_PTR) bct->hwnd;
                         if (SendMessage(hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM) &ti)) {
                             SendMessage(hwndToolTips, TTM_DELTOOL, 0, (LPARAM) &ti);
                         }
@@ -442,7 +442,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
                     DestroyTheme(bct);
                     free(bct);
                 }
-                SetWindowLong(hwndDlg, 0, (LONG) NULL);
+                SetWindowLongPtr(hwndDlg, 0, 0);
                 break;  // DONT! fall thru
             }
         case WM_SETTEXT:
@@ -639,12 +639,12 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
                 ti.cbSize = sizeof(ti);
                 ti.uFlags = TTF_IDISHWND;
                 ti.hwnd = bct->hwnd;
-                ti.uId = (UINT) bct->hwnd;
+                ti.uId = (UINT_PTR) bct->hwnd;
                 if (SendMessage(hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM) &ti)) {
                     SendMessage(hwndToolTips, TTM_DELTOOL, 0, (LPARAM) &ti);
                 }
                 ti.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
-                ti.uId = (UINT) bct->hwnd;
+                ti.uId = (UINT_PTR) bct->hwnd;
                 ti.lpszText = (TCHAR *) wParam;
                 SendMessage(hwndToolTips, TTM_ADDTOOL, 0, (LPARAM) &ti);
                 break;

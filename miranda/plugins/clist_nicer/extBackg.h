@@ -75,8 +75,6 @@ void extbk_import(char *file, HWND hwndDlg);
 
 void LoadExtBkSettingsFromDB();
 void IMG_LoadItems();
-void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc);
-void IMG_DeleteItem(ImageItem *item);
 void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc);
 void IMG_InitDecoder();
 void LoadPerContactSkins(char *file);

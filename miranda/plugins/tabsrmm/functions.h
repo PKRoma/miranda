@@ -1,8 +1,8 @@
 /*
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -22,6 +22,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 $Id$
 */
 
+#ifndef _TABSRMM_FUNCTIONS_H
+#define _TABSRMM_FUNCTIONS_H
+
 /*
  * global prototypes
  */
@@ -29,10 +32,10 @@ $Id$
 /*
  * nen / event popup stuff
  */
- 
+
 int         NEN_ReadOptions(NEN_OPTIONS *options);
 int         NEN_WriteOptions(NEN_OPTIONS *options);
-int         UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, char *szStatus, HANDLE hContact, DWORD fromEvent);
+int         UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, TCHAR *szStatus, HANDLE hContact, DWORD fromEvent);
 static int  PopupPreview(NEN_OPTIONS *pluginOptions);
 void        DeletePopupsForContact(HANDLE hContact, DWORD dwMask);
 void        RemoveBalloonTip();
@@ -47,7 +50,7 @@ void        MaximiseFromTray(HWND hWnd, BOOL bForceAnimation, RECT *rc);
 void        FlashTrayIcon(HICON hIcon);
 void        UpdateTrayMenuState(struct MessageWindowData *dat, BOOL bForced);
 void        LoadFavoritesAndRecent();
-void        AddContactToFavorites(HANDLE hContact, TCHAR *szNickname, char *szProto, char *szStatus, WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu, UINT codePage);
+void        AddContactToFavorites(HANDLE hContact, TCHAR *szNickname, char *szProto, TCHAR *szStatus, WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu, UINT codePage);
 void        CreateTrayMenus(int mode);
 void        HandleMenuEntryFromhContact(int iSelection);
 
@@ -65,14 +68,13 @@ void        LoadMsgAreaBackground();
 int         CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
 void        DeleteCachedIcon(struct MsgLogIcon *theIcon);
 int         MY_GetContactDisplayNameW(HANDLE hContact, wchar_t *szwBuf, unsigned int size, const char *szProto, UINT codePage);
-int         GetTabIndexFromHWND(HWND, HWND);
 struct      ContainerWindowData *FindMatchingContainer(const TCHAR *szName, HANDLE hContact);
 struct      ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE hContactFrom);
 int         CutContactName(TCHAR *oldname, TCHAR *newname, unsigned int size);
 struct      ContainerWindowData *FindContainerByName(const TCHAR *name);
 void        BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);
 int         GetTabIndexFromHWND(HWND hwndTab, HWND hwnd);
-int  GetTabItemFromMouse(HWND hwndTab, POINT *pt);
+int			GetTabItemFromMouse(HWND hwndTab, POINT *pt);
 int         ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
 int         GetProtoIconFromList(const char *szProto, int iStatus);
 void        AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc);
@@ -88,7 +90,6 @@ void        GetLocaleID(struct MessageWindowData *dat, char *szKLName);
 int         GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLen);
 UINT        DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
 UINT        NcCalcRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
-void        ViewReleaseNotes();
 HMENU       BuildContainerMenu();
 void        BuildCodePageList();
 void        PreTranslateDates();
@@ -98,8 +99,11 @@ void        BroadCastContainer(struct ContainerWindowData *pContainer, UINT mess
 void        GetDefaultContainerTitleFormat();
 extern const WCHAR *EncodeWithNickname(const char *string, const WCHAR *szNick, UINT codePage);
 void        UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat);
-int         MessageWindowOpened(WPARAM wParam, LPARAM lParam);
+INT_PTR         MessageWindowOpened(WPARAM wParam, LPARAM lParam);
 int         TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned int subType);
+LRESULT CALLBACK IEViewKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK IEViewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK HPPKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 /*
  * skinning engine
@@ -127,9 +131,9 @@ static int  LoadFromIconLib();
 static  int SetupIconLibConfig();
 void        RTF_CTableInit();
 
-BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 int         InitOptions(void);
-static      BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static      INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 int         DbEventIsShown(struct MessageWindowData *dat, DBEVENTINFO *dbei);
 void        StreamInEvents(HWND hwndDlg,HANDLE hDbEventFirst,int count,int fAppend, DBEVENTINFO *dbei_s);
@@ -160,7 +164,7 @@ int         UnloadTSButtonModule(WPARAM wParam, LPARAM lParam);
 
 int         _DebugTraceW(const wchar_t *fmt, ...);
 int         _DebugTraceA(const char *fmt, ...);
-int         _DebugPopup(HANDLE hContact, const char *fmt, ...);
+int         _DebugPopup(HANDLE hContact, const TCHAR *fmt, ...);
 int         _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, ...);
 
 // themes
@@ -173,5 +177,22 @@ void        ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData
 
 // compatibility
 
-typedef     BOOL ( *pfnSetMenuInfo )( HMENU hmenu, LPCMENUINFO lpcmi );
+typedef     BOOL (WINAPI *pfnSetMenuInfo )( HMENU hmenu, LPCMENUINFO lpcmi );
 extern      pfnSetMenuInfo fnSetMenuInfo;
+
+// user prefs
+
+int			LoadLocalFlags(HWND hwnd, struct MessageWindowData *dat);
+
+//TypingNotify
+int			TN_ModuleInit();
+int			TN_OptionsInitialize(WPARAM wParam, LPARAM lParam);
+int			TN_ModuleDeInit();
+int			TN_TypingMessage(WPARAM wParam, LPARAM lParam);
+
+// mod plus
+
+int			ChangeClientIconInStatusBar(WPARAM wparam, LPARAM lparam);
+char		*getMirVer(HANDLE hContact);
+
+#endif /* _TABSRMM_FUNCTIONS_H */

@@ -1,3 +1,244 @@
+2008-01-30  Andrey Kiselev  <dron@ak4719.spb.edu>
+
+	* tif_fax3.c: Make find0span() and find1span() non-inline to
+	make MSVC 6.0 compiler happy.
+
+2007-11-26  Frank Warmerdam  <warmerdam@pobox.com>
+
+	* tif_fax3.c: fix leak of FAXCS state (per bug 1603).
+
+2007-11-23  Andrey Kiselev  <dron@ak4719.spb.edu>
+
+	* configure.com, libtiff/tif_vms.c: Better OpenVMS support. Patches
+	from Alexey Chupahin.
+
+2007-11-22  Frank Warmerdam  <warmerdam@pobox.com>
+
+	* tif_write.c: Rip out the fancy logic in TIFFAppendToStrip() for 
+	establishing if an existing tile can be rewritten to the same location 
+	by comparing the current size to all the other blocks in the same 
+	directory.  This is dangerous in many situations and can easily 
+	corrupt a file.  (observed in esoteric GDAL situation that's hard to
+	document).  This change involves leaving the stripbytecount[] values 
+	unaltered till TIFFAppendToStrip().  Now we only write a block back
+	to the same location it used to be at if the new data is the same
+	size or smaller - otherwise we move it to the end of file.
+
+	* tif_dirwrite.c: Try to avoid writing out a full readbuffer of tile
+	data when writing the directory just because we have BEENWRITING at
+	some point in the past.  This was causing odd junk to be written out
+	in a tile of data when a single tile had an interleaving of reading 
+	and writing with reading last.  (highlighted by gdal 
+	autotest/gcore/tif_write.py test 7. 
+
+	* tif_predict.c: use working buffer in PredictorEncodeTile to avoid
+	modifying callers buffer. 
+	http://trac.osgeo.org/gdal/ticket/1965
+
+	* tif_predict.c/h, tif_lzw.c, tif_zip.c: Improvements so that 
+	predictor based encoding and decoding works in read-write update
+	mode properly. 
+	http://trac.osgeo.org/gdal/ticket/1948
+
+2007-10-05  Frank Warmerdam  <warmerdam@pobox.com>
+
+	* tools/tiff2pdf.c: Fixed setting of alpha value per report on list.
+
+2007-09-13  Frank Warmerdam  <warmerdam@pobox.com>
+
+	* tif_dirinfo.c:  _TIFFMergeFields() now only merges in field
+	definitions that are missing.  Existing definitions are silently
+	ignored.  (Bug #1585)
+
+2007-07-18  Andrey Kiselev  <dron@ak4719.spb.edu>
+
+	* libtiff/{Makefile.am, Makefile.v}: Do not distribute tiffconf.h, 
+	remove tif_config.h/tiffconf.h during cleaning. As per bug
+
+	http://bugzilla.remotesensing.org/show_bug.cgi?id=1573
+
+2007-07-13  Andrey Kiselev  <dron@ak4719.spb.edu>
+
+	* libtiff 3.9.0beta released.
+
+2007-07-12  Andrey Kiselev  <dron@ak4719.spb.edu>
+
+	* tools/tiff2pdf.c: Added missed extern optind as per bug
+
+	http://bugzilla.remotesensing.org/show_bug.cgi?id=1567
+
+2007-07-03  Andrey Kiselev  <dron@ak4719.spb.edu>
+
+	* tools/tiff2ps.c:  Added support 16-bit images as per bug
+	
+	http://bugzilla.remotesensing.org/show_bug.cgi?id=1566
+
+	Patch from William Bader.
+
+	* tools/tiff2pdf.c: Fix for TIFFTAG_JPEGTABLES tag fetching and
+	significant upgrade of the whole utility as per bug
+	
+	http://bugzilla.remotesensing.org/show_bug.cgi?id=1560
+
+	Now we don't need tiffiop.h in tiff2pdf anymore and will open output
+	PDF file using TIFFClientOpen() machinery as it is implemented
+	by Leon Bottou.
+
+2007-06-29  Bob Friesenhahn  <bfriesen@simple.dallas.tx.us>
+
+	* libtiff/tif_dirinfo.c (_TIFFFindFieldInfo): Don't attempt to
+	bsearch() on a NULL fieldinfo list.
+	(_TIFFFindFieldInfoByName): Don't attempt to
+	lfind() on a NULL fieldinfo list.
+
+2007-05-01  Andrey Kiselev  <dron@ak4719.spb.edu>
+
+	* libtiff/tif_dirwrite.c: Fixed problem introduced with a fix for a
+	byte swapping issue
+	
+	http://bugzilla.remotesensing.org/show_bug.cgi?id=1363
+
+	As per bug
+
+	http://bugzilla.remotesensing.org/show_bug.cgi?id=1550
+
+2007-04-27  Andrey Kiselev  <dron@ak4719.spb.edu>
+
+	* tools/tiff2pdf.c: Check the tmpfile() return status as per bug
+
+	http://bugzilla.remotesensing.org/show_bug.cgi?id=154
+
+2007-04-07  Andrey Kiselev  <dron@ak4719.spb.edu>
+
+	* libtiff/{tif_dir.h, tif_dirread.c, tif_dirinfo.c, tif_jpeg.c,
+	tif_fax3.c, tif_jbig.c, tif_luv.c, tif_ojpeg.c, tif_pixarlog.c,
+	tif_predict.c, tif_zip.c}: Finally fix bug
+	
+	http://bugzilla.remotesensing.org/show_bug.cgi?id=1274
+
+	by introducing _TIFFMergeFieldInfo() returning integer error status
+	instead of void in case of problems with field merging (e.g., if the
+	field with such a tag already registered). TIFFMergeFieldInfo() in
+	public API remains void. Use _TIFFMergeFieldInfo() everywhere and
+	check returned value.
+
+2007-04-07  Frank Warmerdam  <warmerdam@pobox.com>
+
+	* contrib/addtiffo/tif_overview.c: Fix problems with odd sized output 
+	blocks in TIFF_DownSample_Subsampled() (bug 1542).
+
+2007-04-06  Frank Warmerdam  <warmerdam@pobox.com>
+
+	* libtiff/tif_jpeg.c: Changed JPEGInitializeLibJPEG() so that it
+	will convert from decompressor to compressor or compress to decompress
+	if required by the force arguments.  This works around a problem in
+	where the JPEGFixupTestSubsampling() may cause a decompressor to 
+	be setup on a directory when later a compressor is required with the
+	force flag set.  Occurs with the addtiffo program for instance. 
+
+2007-04-06  Andrey Kiselev  <dron@ak4719.spb.edu>
+
+	* libtiff/tif_dirwrite.c: Fixed swapping of byte arrays stored
+	in-place in tag offsets as per bug
+	
+	http://bugzilla.remotesensing.org/show_bug.cgi?id=1363
+
+	* tools/tiffcrop.c, man/tiffcrop.1: Significant update in
+	functionality from Richard Nolde. As per bug
+	
+	http://bugzilla.remotesensing.org/show_bug.cgi?id=1525
+
+2007-03-28  Frank Warmerdam  <warmerdam@pobox.com>
+
+	* libtiff/tif_fax3.c: "inline static" -> "static inline" for IRIC CC.
+
+2007-03-07  Joris Van Damme  <joris.at.lebbeke@skynet.be>
+	
+	* libtiff/tif_getimage.c: workaround for 'Fractional scanline' error reading
+	OJPEG images with rowsperstrip that is not a multiple of vertical subsampling
+	factor. This bug is mentioned in:
+	http://bugzilla.remotesensing.org/show_bug.cgi?id=1390
+	http://www.asmail.be/msg0054766825.html 
+
+2007-03-07  Joris Van Damme  <joris.at.lebbeke@skynet.be>
+	
+	* libtiff/tif_win32.c: made inclusion of windows.h unconditional
+
+	* libtiff/tif_win32.c: replaced preprocessor indication for consiously
+	unused arguments by standard C indication for the same
+
+2007-02-27  Andrey Kiselev  <dron@ak4719.spb.edu>
+
+	* libtiff/tif_dirread.c: Use uint32 type instead of tsize_t in byte
+	counters in TIFFFetchData(). Should finally fix the issue
+
+	http://bugzilla.remotesensing.org/show_bug.cgi?id=890
+
+2007-02-24  Andrey Kiselev  <dron@ak4719.spb.edu>
+
+	* tools/tiffset.c: Properly handle tags with TIFF_VARIABLE writecount.
+	As per bug http://bugzilla.remotesensing.org/show_bug.cgi?id=1350
+
+	* libtiff/tif_dirread.c: Added special function to handle
+	SubjectDistance EXIF tag as per bug
+
+	http://bugzilla.remotesensing.org/show_bug.cgi?id=1362
+
+	* tools/tiff2pdf.c: Do not assume inches when the resolution units
+	do not specified. As per bug
+
+	http://bugzilla.remotesensing.org/show_bug.cgi?id=1366
+
+	* tools/{tiffcp.c, tiffcrop.c}: Do not change RowsPerStrip value if
+	it was set as infinite. As per bug
+
+	http://bugzilla.remotesensing.org/show_bug.cgi?id=1368
+
+	* tools/tiffcrop.c, man/tiffcrop.1: New tiffcrop utility contributed
+	by Richard Nolde. As per bug
+
+	http://bugzilla.remotesensing.org/show_bug.cgi?id=1383
+
+2007-02-22  Andrey Kiselev  <dron@ak4719.spb.edu>
+
+	* libtiff/tif_dir.c: Workaround for incorrect TIFFs with
+	ExtraSamples == 999 produced by Corel Draw. As per bug
+
+	http://bugzilla.remotesensing.org/show_bug.cgi?id=1490
+
+	* libtiff/{tif_dirread.c, tif_read.c}: Type of the byte counters
+	changed from tsize_t to uint32 to be able to work with data arrays
+	larger than 2GB. Fixes bug
+
+	http://bugzilla.remotesensing.org/show_bug.cgi?id=890
+	
+	Idea submitted by Matt Hancher.
+
+2007-01-31  Andrey Kiselev  <dron@ak4719.spb.edu>
+
+	* tools/tif2rgba.c: This utility does not work properly on big-endian
+	architectures. It was fixed including the bug
+	
+	http://bugzilla.remotesensing.org/show_bug.cgi?id=1149
+
+2007-01-15  Mateusz Loskot <mateusz@loskot.net>
+
+	* Submitted libtiff port for Windows CE platform
+	* libtiff/tif_config.wince.h: Added configuration header for WinCE.
+	* libtiff/tiffconf.wince.h: Ported old configuration header for WinCE.
+	* libtiff/tif_wince.c: Added WinCE-specific implementation of some
+	functons from tif_win32.c.
+	* libtiff/tif_win32.c: Disabled some functions already reimplemented in tif_wince.c.
+	* libtiff/tiffiop.h, port/lfind.c: Added conditional include of some
+	standard header files for Windows CE build.
+	* tools/tiffinfoce.c: Ported tiffinfo utility for Windows CE.
+
+2006-11-19  Frank Warmerdam  <warmerdam@pobox.com>
+
+	* libtiff/tif_write.c: TIFFAppendToStrip() - clear sorted flag if 
+	we move a strip. 
+	http://bugzilla.remotesensing.org/show_bug.cgi?id=1359	
+
 2006-10-13  Andrey Kiselev  <dron@ak4719.spb.edu>
 
 	* libtiff/tif_dir.c: More fixes for vulnerabilities, reported

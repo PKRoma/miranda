@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 
-static int EnumModuleNames(WPARAM wParam,LPARAM lParam);
+static INT_PTR EnumModuleNames(WPARAM wParam,LPARAM lParam);
 
 typedef struct {
 	char *name;
@@ -51,12 +51,12 @@ void AddToList(char *name, DWORD len, DWORD ofs)
 	mn->ofs = ofs;
 
 	if (li.List_GetIndex(&lMods,mn,&index))
-		DatabaseCorruption("%s (Module Name not unique)");
+		DatabaseCorruption( _T("%s (Module Name not unique)"));
 
 	li.List_Insert(&lMods,mn,index);
 
 	if (li.List_GetIndex(&lOfs,mn,&index))
-		DatabaseCorruption("%s (Module Offset not unique)");
+		DatabaseCorruption( _T("%s (Module Offset not unique)"));
 
 	li.List_Insert(&lOfs,mn,index);
 }
@@ -134,7 +134,7 @@ DWORD GetModuleNameOfs(const char *szName)
 	ofsExisting=FindExistingModuleNameOfs(szName);
 	if(ofsExisting) return ofsExisting;
 
-	nameLen = strlen(szName);
+	nameLen = (int)strlen(szName);
 
 	//need to create the module name
 	ofsNew=CreateNewSpace(nameLen+offsetof(struct DBModuleName,name));
@@ -178,7 +178,7 @@ char *GetModuleNameByOfs(DWORD ofs)
 	return NULL;
 }
 
-static int EnumModuleNames(WPARAM wParam,LPARAM lParam)
+static INT_PTR EnumModuleNames(WPARAM wParam,LPARAM lParam)
 {
 	int i;
 	int ret;

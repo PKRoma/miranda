@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project,
+Copyright 2000-2008 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -20,19 +20,25 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
+#pragma once
 
 #ifndef M_MOD_SKIN_SELECTOR_H_INC
 #define M_MOD_SKIN_SELECTOR_H_INC
 
 #include "newpluginapi.h"
-#include "commonheaders.h"
+#include "modern_commonheaders.h"
 
 #define MAXVALUE 20
+
+#define MPF_EQUAL		1
+#define MPF_DIFF		2
+#define MPF_NOT_EQUAL	( MPF_DIFF|MPF_EQUAL )
+#define MPF_HASHED		4
 
 typedef struct tagMASKPARAM
 {
     DWORD	dwId;
-    BYTE	bFlag;
+    BYTE	bMaskParamFlag;
     char*	szName;
     DWORD	dwValueHash;
     char*	szValue;
@@ -73,7 +79,7 @@ BOOL CompareStrWithModernMask(char * szValue,MODERNMASK * mmTemplate);
 MODERNMASK *  FindMaskByStr(char * szValue,LISTMODERNMASK * mmTemplateList);
 DWORD mod_CalcHash(const char * a);
 char * ModernMaskToString(MODERNMASK * mm, char * buf, UINT bufsize);
-BOOL __inline wildcmp(char * name, char * mask, BYTE option);
+BOOL __inline wildcmp(const char * name, const char * mask, BYTE option);
 int RegisterObjectByParce(char * ObjectName, char * Params);
 SKINOBJECTDESCRIPTOR *  skin_FindObjectByRequest(char * szValue,LISTMODERNMASK * mmTemplateList);
 SKINOBJECTDESCRIPTOR *  skin_FindObjectByMask (MODERNMASK * mm,LISTMODERNMASK * mmTemplateList);

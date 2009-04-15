@@ -53,7 +53,7 @@ typedef struct {
 static void
 _ReadProc(png_structp png_ptr, unsigned char *data, png_size_t size) {
     pfi_ioStructure pfio = (pfi_ioStructure)png_get_io_ptr(png_ptr);
-	unsigned n = pfio->s_io->read_proc(data, size, 1, pfio->s_handle);
+	unsigned n = pfio->s_io->read_proc(data, (unsigned int)size, 1, pfio->s_handle);
 	if(size && (n == 0)) {
 		throw "Read error: invalid or corrupted PNG file";
 	}
@@ -62,7 +62,7 @@ _ReadProc(png_structp png_ptr, unsigned char *data, png_size_t size) {
 static void
 _WriteProc(png_structp png_ptr, unsigned char *data, png_size_t size) {
     pfi_ioStructure pfio = (pfi_ioStructure)png_get_io_ptr(png_ptr);
-    pfio->s_io->write_proc(data, size, 1, pfio->s_handle);
+    pfio->s_io->write_proc(data, (unsigned int)size, 1, pfio->s_handle);
 }
 
 static void
@@ -101,7 +101,7 @@ ReadMetadata(png_structp png_ptr, png_infop info_ptr, FIBITMAP *dib) {
 			tag = FreeImage_CreateTag();
 			if(!tag) return FALSE;
 
-			DWORD tag_length = MAX(text_ptr[i].text_length, text_ptr[i].itxt_length);
+			DWORD tag_length = (DWORD) MAX(text_ptr[i].text_length, text_ptr[i].itxt_length);
 
 			FreeImage_SetTagLength(tag, tag_length);
 			FreeImage_SetTagCount(tag, tag_length);
@@ -260,8 +260,8 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 	png_structp png_ptr = NULL;
 	png_infop info_ptr;
 	png_uint_32 width, height;
-	png_colorp png_palette;
-	int color_type, palette_entries;
+	png_colorp png_palette = NULL;
+	int color_type, palette_entries = 0;
 	int bit_depth, pixel_depth;		// pixel_depth = bit_depth * channels
 
 	FIBITMAP *dib = NULL;
@@ -350,7 +350,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 			switch(color_type) {
 				case PNG_COLOR_TYPE_RGB:
 				case PNG_COLOR_TYPE_RGB_ALPHA:
-#ifndef FREEIMAGE_BIGENDIAN
+#if FREEIMAGE_COLORORDER == FREEIMAGE_COLORORDER_BGR
 					// flip the RGB pixels to BGR (or RGBA to BGRA)
 
 					if(image_type == FIT_BITMAP)
@@ -382,7 +382,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 					// expand 8-bit greyscale + 8-bit alpha to 32-bit
 
 					png_set_gray_to_rgb(png_ptr);
-#ifndef FREEIMAGE_BIGENDIAN
+#if FREEIMAGE_COLORORDER == FREEIMAGE_COLORORDER_BGR
 					// flip the RGBA pixels to BGRA
 
 					png_set_bgr(png_ptr);
@@ -408,13 +408,6 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 				rgbBkColor.rgbBlue     = (BYTE)image_background->blue;
 				rgbBkColor.rgbReserved = 0;
 			}
-
-			// if this image has transparency, store the trns values
-
-			png_bytep trans               = NULL;
-			int num_trans                 = 0;
-			//png_color_16p trans_values    = NULL;
-			//png_uint_32 transparent_value = png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, &trans_values);
 
 			// unlike the example in the libpng documentation, we have *no* idea where
 			// this file may have come from--so if it doesn't have a file gamma, don't
@@ -473,8 +466,12 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 
 					// store the transparency table
 
-					if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
-						FreeImage_SetTransparencyTable(dib, (BYTE *)trans, num_trans);					
+					if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
+						int num_trans = 0; 
+						png_bytep trans = NULL; 
+						png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, NULL); 
+						FreeImage_SetTransparencyTable(dib, (BYTE *)trans, num_trans);
+					}
 
 					break;
 
@@ -491,10 +488,21 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 							palette[i].rgbBlue  = (BYTE)((i * 255) / (palette_entries - 1));
 						}
 					}
+
 					// store the transparency table
 
-					if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
-						FreeImage_SetTransparencyTable(dib, (BYTE *)trans, num_trans);					
+					if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
+						png_color_16p trans_values = NULL; 
+						png_get_tRNS(png_ptr, info_ptr, NULL, NULL, &trans_values); 
+						if(trans_values) {
+							if (trans_values->gray < palette_entries) { 
+								BYTE table[256]; 
+								memset(table, 0xFF, palette_entries); 
+								table[trans_values->gray] = 0; 
+								FreeImage_SetTransparencyTable(dib, table, palette_entries); 
+							}
+						}
+					}
 
 					break;
 
@@ -739,7 +747,7 @@ Save(FreeImageIO *io, FIBITMAP *dib, fi_handle handle, int page, int flags, void
 						PNG_COLOR_TYPE_RGBA, interlace_type, 
 						PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
-#ifndef FREEIMAGE_BIGENDIAN
+#if FREEIMAGE_COLORORDER == FREEIMAGE_COLORORDER_BGR
 					// flip BGR pixels to RGB
 					if(image_type == FIT_BITMAP)
 						png_set_bgr(png_ptr);
@@ -751,7 +759,7 @@ Save(FreeImageIO *io, FIBITMAP *dib, fi_handle handle, int page, int flags, void
 						PNG_COLOR_TYPE_RGB, interlace_type, 
 						PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
-#ifndef FREEIMAGE_BIGENDIAN
+#if FREEIMAGE_COLORORDER == FREEIMAGE_COLORORDER_BGR
 					// flip BGR pixels to RGB
 					if(image_type == FIT_BITMAP)
 						png_set_bgr(png_ptr);

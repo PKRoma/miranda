@@ -4,6 +4,8 @@
 /*
  *  (C) Copyright 2007 Wojtek Kaniewski <wojtekka@irc.pl>
  *
+ *  Public domain SHA-1 implementation by Steve Reid <steve@edmweb.com>
+ *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser General Public License Version
  *  2.1 as published by the Free Software Foundation.
@@ -24,8 +26,11 @@
  *
  * \brief Funkcje wyznaczania skrĂłtu SHA1
  */
-#include "libgadu-config.h"
 #include "libgadu.h"
+#ifdef _WIN32
+#include <io.h>
+#include <fcntl.h>
+#endif
 
 /** \cond ignore */
 
@@ -57,24 +62,22 @@ A million repetitions of "a"
 
 #include <string.h>
 
-/* GG_CONFIG_MIRANDA // defined in "libgadu.h"
 typedef struct {
-    unsigned long state[5];
-    unsigned long count[2];
+    uint32_t state[5];
+    uint32_t count[2];
     unsigned char buffer[64];
 } SHA_CTX;
 
-static void SHA1_Transform(unsigned long state[5], const unsigned char buffer[64]);
+static void SHA1_Transform(uint32_t state[5], const unsigned char buffer[64]);
 static void SHA1_Init(SHA_CTX* context);
 static void SHA1_Update(SHA_CTX* context, const unsigned char* data, unsigned int len);
 static void SHA1_Final(unsigned char digest[20], SHA_CTX* context);
-*/
 
 #define rol(value, bits) (((value) << (bits)) | ((value) >> (32 - (bits))))
 
 /* blk0() and blk() perform the initial expand. */
 /* I got the idea of expanding during the round function from SSLeay */
-#ifndef WORDS_BIGENDIAN
+#ifndef GG_CONFIG_BIGENDIAN
 #define blk0(i) (block->l[i] = (rol(block->l[i],24)&0xFF00FF00) \
     |(rol(block->l[i],8)&0x00FF00FF))
 #else
@@ -93,12 +96,12 @@ static void SHA1_Final(unsigned char digest[20], SHA_CTX* context);
 
 /* Hash a single 512-bit block. This is the core of the algorithm. */
 
-static void SHA1_Transform(unsigned long state[5], const unsigned char buffer[64])
+static void SHA1_Transform(uint32_t state[5], const unsigned char buffer[64])
 {
-unsigned long a, b, c, d, e;
+uint32_t a, b, c, d, e;
 typedef union {
     unsigned char c[64];
-    unsigned long l[16];
+    uint32_t l[16];
 } CHAR64LONG16;
 CHAR64LONG16* block;
 static unsigned char workspace[64];
@@ -182,7 +185,7 @@ unsigned int i, j;
 
 static void SHA1_Final(unsigned char digest[20], SHA_CTX* context)
 {
-unsigned long i, j;
+uint32_t i, j;
 unsigned char finalcount[8];
 
     for (i = 0; i < 8; i++) {
@@ -242,43 +245,56 @@ void gg_login_hash_sha1(const char *password, uint32_t seed, uint8_t *result)
  *
  * \return 0 lub -1
  */
-#ifdef GG_CONFIG_MIRANDA
-int gg_file_hash_sha1(FILE *fd, uint8_t *result)
-#else
 int gg_file_hash_sha1(int fd, uint8_t *result)
-#endif
 {
 	unsigned char buf[4096];
 	SHA_CTX ctx;
-	off_t pos;
+	off_t pos, len;
 	int res;
 
-#ifdef GG_CONFIG_MIRANDA
-	if ((pos = fseek(fd, 0, SEEK_CUR)) == (off_t) -1)
-#else
-	if ((pos = lseek(fd, 0, SEEK_CUR)) == (off_t) -1)
-#endif
+	if ((pos = _lseek(fd, 0, SEEK_CUR)) == (off_t) -1)
+		return -1;
+
+	if ((len = _lseek(fd, 0, SEEK_END)) == (off_t) -1)
+		return -1;
+
+	if (_lseek(fd, 0, SEEK_SET) == (off_t) -1)
 		return -1;
 
 	SHA1_Init(&ctx);
 
-#ifdef GG_CONFIG_MIRANDA
-	while ((res = fread(buf, 1, sizeof(buf), fd)) > 0)
-#else
-	while ((res = read(fd, buf, sizeof(buf))) > 0)
-#endif
-		SHA1_Update(&ctx, buf, res);
+	if (len <= 10485760) {
+		while ((res = _read(fd, buf, sizeof(buf))) > 0)
+			SHA1_Update(&ctx, buf, res);
+	} else {
+		int i;
+
+		for (i = 0; i < 9; i++) {
+			int j;
+
+			if (_lseek(fd, (len - 1048576) / 9 * i, SEEK_SET) == (off_t) - 1)
+				return -1;
+
+			for (j = 0; j < 1048576 / sizeof(buf); j++) {
+				if ((res = _read(fd, buf, sizeof(buf))) != sizeof(buf)) {
+					res = -1;
+					break;
+				}
+
+				SHA1_Update(&ctx, buf, res);
+			}
+
+			if (res == -1)
+				break;
+		}
+	}
 
 	if (res == -1)
 		return -1;
 
 	SHA1_Final(result, &ctx);
 
-#ifdef GG_CONFIG_MIRANDA
-	if ((pos = fseek(fd, 0, SEEK_SET)) == (off_t) -1)
-#else
-	if ((pos = lseek(fd, 0, SEEK_SET)) == (off_t) -1)
-#endif
+	if (_lseek(fd, pos, SEEK_SET) == (off_t) -1)
 		return -1;
 
 	return 0;

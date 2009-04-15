@@ -1,10 +1,8 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2003-5 George Hazan.
-Copyright (c) 2002-3 Richard Hughes (original version).
-
-Miranda IM: the free icq client for MS Windows
-Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
+Copyright (c) 2006-2009 Boris Krasnovskiy.
+Copyright (c) 2003-2005 George Hazan.
+Copyright (c) 2002-2003 Richard Hughes (original version).
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,8 +15,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "msn_global.h"
@@ -40,11 +37,8 @@ static TCHAR* a2tf( const TCHAR* str, bool unicode )
 
 void overrideStr( TCHAR*& dest, const TCHAR* src, bool unicode, const TCHAR* def )
 {
-	if ( dest != NULL )
-	{
-		mir_free( dest );
-		dest = NULL;
-	}
+	mir_free( dest );
+	dest = NULL;
 
 	if ( src != NULL )
 		dest = a2tf( src, unicode );
@@ -189,44 +183,6 @@ void  HtmlDecode( char* str )
 	*q = '\0';
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////
-// HtmlEncode - replaces special HTML chars
-
-WCHAR*  HtmlEncodeW( const WCHAR* str )
-{
-	WCHAR* s, *p, *q;
-	int c;
-
-	if ( str == NULL )
-		return NULL;
-
-	for ( c=0,p=( WCHAR* )str; *p!=L'\0'; p++ ) {
-		switch ( *p ) {
-		case L'&': c += 5; break;
-		case L'\'': c += 6; break;
-		case L'>': c += 4; break;
-		case L'<': c += 4; break;
-		case L'"': c += 6; break;
-		default: c++; break;
-		}
-	}
-	if (( s=( WCHAR* )mir_alloc( (c+1) * sizeof(WCHAR) )) != NULL ) {
-		for ( p=( WCHAR* )str,q=s; *p!=L'\0'; p++ ) {
-			switch ( *p ) {
-			case L'&': wcscpy( q, L"&amp;" ); q += 5; break;
-			case L'\'': wcscpy( q, L"&apos;" ); q += 6; break;
-			case L'>': wcscpy( q, L"&gt;" ); q += 4; break;
-			case L'<': wcscpy( q, L"&lt;" ); q += 4; break;
-			case L'"': wcscpy( q, L"&quot;" ); q += 6; break;
-			default: *q = *p; q++; break;
-			}
-		}
-		*q = L'\0';
-	}
-
-	return s;
-}
-
 char*  HtmlEncode( const char* str )
 {
 	char* s, *p, *q;
@@ -267,30 +223,31 @@ char*  HtmlEncode( const char* str )
 
 void  UrlEncode( const char* src, char* dest, size_t cbDest )
 {
-	BYTE* d = ( BYTE* )dest;
+	unsigned char* d = (unsigned char*)dest;
 	size_t   i = 0;
 
-	for( const BYTE* s = ( const BYTE* )src; *s; s++ ) {
-		if (( *s < '0' && *s != '.' && *s != '-' ) ||
+	for (const unsigned char* s = (unsigned char*)src; *s; s++) 
+	{
+		if (( *s <= '/' && *s != '.' && *s != '-' ) ||
 			 ( *s >= ':' && *s <= '?' ) ||
 			 ( *s >= '[' && *s <= '`' && *s != '_' ))
 		{
-			if ( i + 4 >= cbDest )
-				break;
+			if ( i + 4 >= cbDest ) break;
 
 			*d++ = '%';
-			_itoa( *s, ( char* )d, 16 );
+			_itoa( *s, (char*)d, 16 );
 			d += 2;
 			i += 3;
 		}
 		else
 		{
-			if ( ++i == cbDest ) break;
+			if ( ++i >= cbDest ) break;
 			*d++ = *s;
 	}	}
 
 	*d = '\0';
 }
+
 
 void stripBBCode( char* src )
 {
@@ -304,7 +261,7 @@ void stripBBCode( char* src )
 		{
 			char ch = ps[1];
 			if (ch  == '/') ch = ps[2];
-			tag = ch == 'b' || ch == 'u' || ch == 'i' || ch == 'c' || ch == 'a' || ch == 's';
+			tag = ch == 'b' || ch == 'u' || ch == 'i' || ch == 'c' || ch == 'a' ||  ch == 's';
 		}
 		if (!tag) *(pd++) = *ps;
 		else tag = *ps != ']';
@@ -312,3 +269,4 @@ void stripBBCode( char* src )
 	}
 	*pd = 0;
 }
+

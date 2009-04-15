@@ -20,11 +20,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define WM_PROCESSINGDONE  (WM_USER+1)
 
-BOOL CALLBACK CleaningDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
-BOOL CALLBACK FinishedDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
 void __cdecl WorkerThread(void *unused);
 static HWND hwndStatus,hdlgProgress,hwndBar;
-HANDLE hEventRun,hEventAbort;
+HANDLE hEventRun = NULL, hEventAbort = NULL;
 int errorCount;
 
 int AddToStatus(DWORD flags, TCHAR* fmt,...)
@@ -55,15 +53,23 @@ void SetProgressBar(int perThou)
 
 void ProcessingDone(void)
 {
+    if (opts.pFile) {
+		UnmapViewOfFile(opts.pFile);
+		opts.pFile = NULL;
+	}
+	if (opts.hMap) {
+		CloseHandle(opts.hMap);
+		opts.hMap = NULL;
+	}
 	SendMessage(hdlgProgress,WM_PROCESSINGDONE,0,0);
 }
 
-BOOL CALLBACK ProgressDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
+INT_PTR CALLBACK ProgressDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
-	BOOL bReturn;
+	INT_PTR bReturn;
 	static int fontHeight,listWidth;
 	static int manualAbort;
-	static HFONT hBoldFont;
+	static HFONT hBoldFont = NULL;
 
 	if(DoMyControlProcessing(hdlg,message,wParam,lParam,&bReturn)) return bReturn;
 	switch(message) {
@@ -134,15 +140,25 @@ BOOL CALLBACK ProgressDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 					break;
 			}
 			if(bold) hoFont=(HFONT)SelectObject(dis->hDC,hBoldFont);
-			ExtTextOut(dis->hDC,dis->rcItem.left,dis->rcItem.top,ETO_CLIPPED|ETO_OPAQUE,&dis->rcItem,str,_tcslen(str),NULL);
+			ExtTextOut(dis->hDC,dis->rcItem.left,dis->rcItem.top,ETO_CLIPPED|ETO_OPAQUE,&dis->rcItem,str,(UINT)_tcslen(str),NULL);
 			if(bold) SelectObject(dis->hDC,hoFont);
 			return TRUE;
 		}
 		case WM_PROCESSINGDONE:
 			SetProgressBar(1000);
 			EnableWindow(GetDlgItem(GetParent(hdlg),IDOK),TRUE);
-			if(manualAbort==1) EndDialog(GetParent(hdlg),0);
-			else if(manualAbort==2) SendMessage(GetParent(hdlg),WZM_GOTOPAGE,IDD_CLEANING,(LPARAM)CleaningDlgProc);
+			if(manualAbort==1)
+				EndDialog(GetParent(hdlg),0);
+			else if(manualAbort==2) {
+				if(opts.bCheckOnly)
+					SendMessage(GetParent(hdlg),WZM_GOTOPAGE,IDD_FILEACCESS,(LPARAM)FileAccessDlgProc);
+				else {
+					SendMessage(GetParent(hdlg),WZM_GOTOPAGE,IDD_CLEANING,(LPARAM)CleaningDlgProc);
+					CloseHandle(opts.hOutFile);
+					opts.hOutFile = NULL;
+				}
+				break;
+			}
 			AddToStatus(STATUS_SUCCESS,TranslateT("Click Next to continue"));
 			break;
 		case WZN_CANCELCLICKED:
@@ -153,7 +169,7 @@ BOOL CALLBACK ProgressDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 				SetEvent(hEventAbort);
 			}
 			SetEvent(hEventRun);
-			SetWindowLong(hdlg,DWL_MSGRESULT,TRUE);
+			SetWindowLongPtr(hdlg,DWLP_MSGRESULT,TRUE);
 			return TRUE;
 		case WM_COMMAND:
 			switch(LOWORD(wParam)) {
@@ -168,7 +184,10 @@ BOOL CALLBACK ProgressDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 						break;
 					}
 					SetEvent(hEventRun);
-					SendMessage(GetParent(hdlg),WZM_GOTOPAGE,IDD_CLEANING,(LPARAM)CleaningDlgProc);
+					if(opts.bCheckOnly)
+						SendMessage(GetParent(hdlg),WZM_GOTOPAGE,IDD_FILEACCESS,(LPARAM)FileAccessDlgProc);
+					else
+						SendMessage(GetParent(hdlg),WZM_GOTOPAGE,IDD_CLEANING,(LPARAM)CleaningDlgProc);
 					break;
 				case IDOK:
 					SendMessage(GetParent(hdlg),WZM_GOTOPAGE,IDD_FINISHED,(LPARAM)FinishedDlgProc);
@@ -176,9 +195,18 @@ BOOL CALLBACK ProgressDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 			}
 			break;
 		case WM_DESTROY:
-			CloseHandle(hEventAbort);
-			CloseHandle(hEventRun);
-			DeleteObject(hBoldFont);
+			if (hEventAbort) {
+				CloseHandle(hEventAbort);
+				hEventAbort = NULL;
+			}
+			if (hEventRun) {
+				CloseHandle(hEventRun);
+				hEventRun = NULL;
+			}
+			if (hBoldFont) {
+				DeleteObject(hBoldFont);
+				hBoldFont = NULL;
+			}
 			break;
 	}
 	return FALSE;

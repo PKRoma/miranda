@@ -17,11 +17,11 @@
 #define IDD_USERINFO                    154
 #define IDD_CHANMANAGER                 155
 #define IDD_QUESTION                    156
-#define IDD_INIT                        157
 #define IDD_PREFS_CTCP                  158
 #define IDD_MESSAGEBOX                  159
 #define IDD_PREFS_IGNORE                160
 #define IDD_ADDIGNORE                   161
+#define IDD_ACCMGRUI                    162
 #define IDI_ADD                         175
 #define IDI_BLOCK                       176
 #define IDI_DELETE                      177
@@ -30,13 +30,15 @@
 #define IDI_MANAGER                     182
 #define IDI_QUICK                       184
 #define IDI_GO                          185
+#define IDI_APPLY                       185
 #define IDI_SHOW                        186
 #define IDI_LOGO                        187
 #define IDI_RENAME                      188
 #define IDI_SERVER                      189
 #define IDI_DCC                         196
-#define IDI_PART                        197
-#define IDI_JOIN                        198
+#define IDR_SERVERS                     200
+#define IDI_EDIT                        201
+#define IDI_IRCQUESTION                 202
 #define IDC_ENICK                       1000
 #define IDC_USERID                      1001
 #define IDC_INFO_NAME                   1001
@@ -46,6 +48,7 @@
 #define IDC_INFO_LISTVIEW               1002
 #define IDC_PORT                        1003
 #define IDC_INFO_CHANNELS               1003
+#define IDC_INFO_LISTVIEW2              1003
 #define IDC_NAME                        1004
 #define IDC_INFO_ADDRESS                1004
 #define IDC_PASS                        1005
@@ -58,14 +61,13 @@
 #define IDC_NICK2                       1009
 #define IDC_REPLY                       1009
 #define IDC_SSL                         1010
+#define IDC_PORT3                       1010
 #define IDC_INFO_OTHER                  1011
 #define IDC_EDIT                        1012
 #define IDC_RETRYCOUNT                  1013
 #define IDC_INFO_NICK                   1013
 #define IDC_EDIT2                       1013
 #define ID_INFO_GO                      1017
-#define IDNOK                           1019
-#define IDNCANCEL                       1020
 #define IDC_SERVERCOMBO                 1022
 #define IDC_IDENT                       1023
 #define IDC_IDENT_TIMED                 1024
@@ -103,8 +105,6 @@
 #define IDC_ADD_ADDRESS                 1102
 #define IDC_ADD_PORT                    1103
 #define IDC_ADD_PORT2                   1104
-#define IDN_ADD_OK                      1105
-#define IDN_ADD_CANCEL                  1106
 #define IDC_CLOSE                       1108
 #define IDC_JOIN                        1109
 #define ID_INFO_OK                      1110
@@ -175,6 +175,18 @@
 #define IDC_COMBO1                      1223
 #define IDC_CHECK9                      1224
 #define IDC_UTF_AUTODETECT              1225
+#define IDC_AWAYTIME                    1226
+#define IDC_SSL_ON                      1227
+#define IDC_SSL_AUTO                    1228
+#define IDC_SSL_OFF                     1229
+#define IDC_GRBOX_SSL                   1230
+#define IDC_LIST1                       1231
+#define IDC_EDIT1                       1232
+#define IDC_STATICTEXT1                 1233
+#define IDC_STATICTEXT2                 1234
+#define IDC_FILTER_STRING               1235
+#define IDC_BUTTON1                     1236
+#define IDC_FILTER_BTN                  1237
 #define ID_MENU1_OP                     40013
 #define ID_MENU1_DEOP                   40014
 #define ID_MENU1_VOICE                  40015
@@ -207,14 +219,35 @@
 #define ID_MENU1_DEADMIN                40043
 #define ID_MENU1_SENDNOTICE             40044
 #define ID_MENU1_INVITETOCHANNEL        40045
+#define ID_MENU1_SLAP                   40046
+#define ID_MENU1_NICKSERV               40047
+#define ID_NICKSERV_REGISTERNICK        40048
+#define ID_NICKSERV_AUTHNICK            40049
+#define ID_NICKSERV_DELETENICK          40050
+#define ID_NICKSERV_IDENTIFY            40051
+#define ID_NICKSERV_SENDPASSWORD        40052
+#define ID_NICKSERV_SETTINGS            40053
+#define ID_SETTINGS_LANGUAGE            40054
+#define ID_SETTINGS_E                   40055
+#define ID_SETTINGS_INFO                40056
+#define ID_SETTINGS_KILL                40057
+#define ID_NICKSERV_KILL                40058
+#define ID_KILL_OFF                     40059
+#define ID_KILL_ON                      40060
+#define ID_KILL_QUICK                   40061
+#define ID_NICKSERV_PRIVATE             40062
+#define ID_PRIVATE_ON                   40063
+#define ID_PRIVATE_OFF                  40064
+#define ID_NICKSERV_SETNEWPASSWORD      40065
+#define ID_NICKSERV_                    40066
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        199
-#define _APS_NEXT_COMMAND_VALUE         40046
-#define _APS_NEXT_CONTROL_VALUE         1226
+#define _APS_NEXT_RESOURCE_VALUE        203
+#define _APS_NEXT_COMMAND_VALUE         40067
+#define _APS_NEXT_CONTROL_VALUE         1238
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

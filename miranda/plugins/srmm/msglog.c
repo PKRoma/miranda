@@ -74,8 +74,12 @@ static int AppendToBufferWithRTF(char **buffer, int *cbBufferEnd, int *cbBufferA
 {
 	DWORD textCharsCount = 0;
 	char *d;
+	int lineLen;
 
-	int lineLen = _tcslen(line) * 9 + 8;
+	if ( line == NULL )
+		return 0;
+
+	lineLen = (int)_tcslen(line) * 9 + 8;
 	if (*cbBufferEnd + lineLen > *cbBufferAlloced) {
 		cbBufferAlloced[0] += (lineLen + 1024 - lineLen % 1024);
 		*buffer = (char *) realloc(*buffer, *cbBufferAlloced);
@@ -190,6 +194,7 @@ int DbEventIsShown(DBEVENTINFO * dbei, struct MessageWindowData *dat)
 		case EVENTTYPE_MESSAGE:
 			return 1;
 		case EVENTTYPE_JABBER_CHATSTATES:
+		case EVENTTYPE_JABBER_PRESENCE:
 		case EVENTTYPE_STATUSCHANGE:
 		case EVENTTYPE_FILE:
 			if (dbei->flags & DBEF_READ)
@@ -221,7 +226,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 		CallService(MS_DB_EVENT_MARKREAD, (WPARAM) hContact, (LPARAM) hDbEvent);
 		CallService(MS_CLIST_REMOVEEVENT, (WPARAM) hContact, (LPARAM) hDbEvent);
 	}
-	else if (dbei.eventType == EVENTTYPE_STATUSCHANGE || dbei.eventType == EVENTTYPE_JABBER_CHATSTATES) {
+	else if (dbei.eventType == EVENTTYPE_STATUSCHANGE || dbei.eventType == EVENTTYPE_JABBER_CHATSTATES || dbei.eventType == EVENTTYPE_JABBER_PRESENCE) {
 		CallService(MS_DB_EVENT_MARKREAD, (WPARAM) hContact, (LPARAM) hDbEvent);
 	}
 	bufferEnd = 0;
@@ -262,6 +267,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 				}
 				break;
 			case EVENTTYPE_JABBER_CHATSTATES:
+			case EVENTTYPE_JABBER_PRESENCE:
 			case EVENTTYPE_STATUSCHANGE:
 			case EVENTTYPE_FILE:
 				i = LOGICON_MSG_NOTICE;
@@ -289,7 +295,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 		AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, str);
 		showColon = 1;
 	}
-	if (!(g_dat->flags&SMF_HIDENAMES) && dbei.eventType != EVENTTYPE_STATUSCHANGE && dbei.eventType != EVENTTYPE_JABBER_CHATSTATES) {
+	if (!(g_dat->flags&SMF_HIDENAMES) && dbei.eventType != EVENTTYPE_STATUSCHANGE && dbei.eventType != EVENTTYPE_JABBER_CHATSTATES && dbei.eventType != EVENTTYPE_JABBER_PRESENCE) {
 		TCHAR* szName;
 		CONTACTINFO ci;
 		ZeroMemory(&ci, sizeof(ci));
@@ -331,6 +337,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 			break;
 		}
 		case EVENTTYPE_JABBER_CHATSTATES:
+		case EVENTTYPE_JABBER_PRESENCE:
 		case EVENTTYPE_STATUSCHANGE:
 		{
 			TCHAR *msg, *szName;
@@ -365,7 +372,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 			else {
 				#if defined( _UNICODE )
 				{
-					int msglen = strlen((char *) dbei.pBlob) + 1;
+					int msglen = (int)strlen((char *) dbei.pBlob) + 1;
 					msg = ( TCHAR* )alloca(sizeof(TCHAR) * msglen);
 					MultiByteToWideChar(CP_ACP, 0, (char *) dbei.pBlob, -1, msg, msglen);
 				}
@@ -459,7 +466,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 {
 	EDITSTREAM stream = { 0 };
 	struct LogStreamData streamData = { 0 };
-	struct MessageWindowData *dat = (struct MessageWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
+	struct MessageWindowData *dat = (struct MessageWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	CHARRANGE oldSel, sel;
 
 	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_HIDESELECTION, TRUE, 0);
@@ -484,7 +491,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & oldSel);
 	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_HIDESELECTION, FALSE, 0);
 	dat->hDbEventLast = streamData.hDbEventLast;
-	if (GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_STYLE) & WS_VSCROLL)
+	if (GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_LOG), GWL_STYLE) & WS_VSCROLL)
 		PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
 }
 
@@ -520,18 +527,21 @@ void LoadMsgLogIcons(void)
 	for (i = 0; i < SIZEOF(pLogIconBmpBits); i++) {
 		switch (i) {
 			case LOGICON_MSG_IN:
-				hIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_INCOMING));
+				hIcon = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_INCOMING), IMAGE_ICON, 0, 0, 0);
 				ImageList_AddIcon(g_hImageList, hIcon);
+				DestroyIcon(hIcon);
 				hIcon = ImageList_GetIcon(g_hImageList, LOGICON_MSG_IN, ILD_NORMAL);
 				break;
 			case LOGICON_MSG_OUT:
-				hIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_OUTGOING));
+				hIcon = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_OUTGOING), IMAGE_ICON, 0, 0, 0);
 				ImageList_AddIcon(g_hImageList, hIcon);
+				DestroyIcon(hIcon);
 				hIcon = ImageList_GetIcon(g_hImageList, LOGICON_MSG_OUT, ILD_NORMAL);
 				break;
 			case LOGICON_MSG_NOTICE:
-				hIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_NOTICE));
+				hIcon = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_NOTICE), IMAGE_ICON, 0, 0, 0);
 				ImageList_AddIcon(g_hImageList, hIcon);
+				DestroyIcon(hIcon);
 				hIcon = ImageList_GetIcon(g_hImageList, LOGICON_MSG_NOTICE, ILD_NORMAL);
 				break;
 		}

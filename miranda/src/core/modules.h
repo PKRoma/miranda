@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project,
+Copyright 2000-2009 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -24,6 +24,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef MODULES_H_
 #define MODULES_H_
 
+#ifdef _MSC_VER
+	#pragma warning(disable:4201)
+#endif
+
 /* MAXMODULELABELLENGTH
 The maximum allowed length of a 'name' parameter. Very likely to change with
 restructuring modules.c for performance.
@@ -31,8 +35,48 @@ restructuring modules.c for performance.
 #define MAXMODULELABELLENGTH 64
 
 typedef int (*MIRANDAHOOK)(WPARAM,LPARAM);
-typedef int (*MIRANDASERVICE)(WPARAM,LPARAM);
-typedef int (*MIRANDASERVICEPARAM)(WPARAM,LPARAM,LPARAM);
+typedef int (*MIRANDAHOOKPARAM)(WPARAM,LPARAM,LPARAM);
+typedef int (*MIRANDAHOOKOBJ)(void*,WPARAM,LPARAM);
+typedef int (*MIRANDAHOOKOBJPARAM)(void*,WPARAM,LPARAM,LPARAM);
+
+typedef INT_PTR (*MIRANDASERVICE)(WPARAM,LPARAM);
+typedef INT_PTR (*MIRANDASERVICEPARAM)(WPARAM,LPARAM,LPARAM);
+typedef INT_PTR (*MIRANDASERVICEOBJ)(void*,LPARAM,LPARAM);
+typedef INT_PTR (*MIRANDASERVICEOBJPARAM)(void*,WPARAM,LPARAM,LPARAM);
+
+typedef struct
+{
+	HINSTANCE hOwner;
+	int type;
+	union {
+		struct {
+			union {
+				MIRANDAHOOK pfnHook;
+				MIRANDAHOOKPARAM pfnHookParam;
+				MIRANDAHOOKOBJ pfnHookObj;
+				MIRANDAHOOKOBJPARAM pfnHookObjParam;
+			};
+			void* object;
+			LPARAM lParam;
+		};
+		struct {
+			HWND hwnd;
+			UINT message;
+		};
+	};
+}
+	THookSubscriber;
+
+typedef struct
+{
+	char name[ MAXMODULELABELLENGTH ];
+	int  id;
+	int  subscriberCount;
+	THookSubscriber* subscriber;
+	MIRANDAHOOK pfnHook;
+	CRITICAL_SECTION csHook;
+}
+	THook;
 
 /**************************hook functions****************************/
 /* CreateHookableEvent
@@ -74,6 +118,13 @@ to return to the message loop so it can be interrupted neatly.
 */
 int NotifyEventHooks(HANDLE hEvent,WPARAM wParam,LPARAM lParam);
 
+/* CallHookSubscribers
+Works precisely like NotifyEventHooks, but without switching to the first thread
+It guarantees that the execution time for these events is always tiny
+*/
+
+int CallHookSubscribers( HANDLE hEvent, WPARAM wParam, LPARAM lParam );
+
 /*
 	hEvent : a HANDLE which has been returned by CreateHookableEvent()
 	pfnHook: a function pointer (MIRANDAHOOK) which is called when there are no hooks.
@@ -102,6 +153,9 @@ NotifyEventHooks() and should not be -1 since that is a special return code
 for NotifyEventHooks() (see above)
 */
 HANDLE HookEvent(const char *name,MIRANDAHOOK hookProc);
+HANDLE HookEventParam(const char *name, MIRANDAHOOKPARAM hookProc, LPARAM lParam);
+HANDLE HookEventObj(const char *name,MIRANDAHOOKOBJ hookProc, void* object);
+HANDLE HookEventObjParam(const char *name, MIRANDAHOOKOBJPARAM hookProc, void* object, LPARAM lParam);
 
 /* HookEventMessage
 Works as for HookEvent(), except that when the notifier is called a message is
@@ -149,6 +203,20 @@ added during 0.7+ (2007/04/24)
 */
 HANDLE CreateServiceFunctionParam(const char *name,MIRANDASERVICEPARAM serviceProc,LPARAM lParam);
 
+/* CreateServiceFunctionObj
+   CreateServiceFunctionObjParam
+Same as CreateServiceFunction - adds new parameter, an object, to pass to service handler function.
+serviceProc is defined by the caller as
+  int ServiceProc(void* object, WPARAM wParam,LPARAM lParam[,LPARAM fnParam])
+where fnParam does not need to be publicly known. Gives the ability to handle multiple services
+with the same function.
+
+added during 0.7+ (2007/04/24) 
+*/
+
+HANDLE CreateServiceFunctionObj(const char *name,MIRANDASERVICEOBJ serviceProc,void* object);
+HANDLE CreateServiceFunctionObjParam(const char *name,MIRANDASERVICEOBJPARAM serviceProc,void* object,LPARAM lParam);
+
 /* DestroyServiceFunction
 Removes the function associated with hService from the global service function
 list. Modules calling CallService() will fail if they try to call this
@@ -163,8 +231,12 @@ lParam.
 Returns CALLSERVICE_NOTFOUND if no service function called 'name' has been
 created, or the value the service function returned otherwise.
 */
-#define CALLSERVICE_NOTFOUND      ((int)0x80000000)
-int CallService(const char *name,WPARAM wParam,LPARAM lParam);
+#ifdef _WIN64
+    #define CALLSERVICE_NOTFOUND      ((INT_PTR)0x8000000000000000)
+#else
+    #define CALLSERVICE_NOTFOUND      ((int)0x80000000)
+#endif
+INT_PTR CallService(const char *name,WPARAM wParam,LPARAM lParam);
 
 /* ServiceExists
 Finds if a service with the given name exists
@@ -176,7 +248,7 @@ int ServiceExists(const char *name);
 Calls a given service executed within the context of the main thread
 only useful to multi threaded modules calling thread unsafe services!
 */
-int CallServiceSync(const char *name, WPARAM wParam, LPARAM lParam);
+INT_PTR CallServiceSync(const char *name, WPARAM wParam, LPARAM lParam);
 
 /* CallFunctionAsync
 Calls a given function pointer, it doesn't go thru the core at all, it is

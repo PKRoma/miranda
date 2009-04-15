@@ -3,8 +3,8 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="LibJPEG"
-	SccProjectName="&quot;$/FreeImage/LibJPEG&quot;, IHAAAAAA"
-	SccLocalPath=".">
+	SccProjectName=""
+	SccLocalPath="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>

@@ -25,68 +25,62 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	#define _UNICODE
 #endif
 
-#define _USE_32BIT_TIME_T
-#define WINVER 0x0501
-
-#ifdef __GNUWIN32__
-
-#define OLERENDER_FORMAT 2
-#define CFM_BACKCOLOR 0x04000000
-#ifndef __TSR_CXX
-typedef unsigned short wchar_t;
-#endif
-#endif
-
+#define WINVER 0x0600
+#define _WIN32_WINNT 0x0501
 #define _WIN32_IE 0x0501
 
-#if defined( UNICODE ) && !defined( _UNICODE )
-#define _UNICODE
-#endif
+#define MIRANDA_VER 0x0700
 
-#include <tchar.h>
+#include <m_stdhdr.h>
 
-#define _WIN32_WINNT 0x0501
 #include <windows.h>
 #include <commctrl.h>
+#include <uxtheme.h>
 #include <stdio.h>
 #include <time.h>
 #include <stddef.h>
 #include <process.h>
 #include <shlwapi.h>
+#include <richedit.h>
+#include <limits.h>
 #include "resource.h"
 
+/* FIXME: Nasty things happening here, why we undefine WM_THEMECHANGED? */
+#ifdef _MSC_VER
 #ifdef WM_THEMECHANGED
 #undef WM_THEMECHANGED
 #endif
-
 #ifdef CDRF_NOTIFYSUBITEMDRAW
 #undef CDRF_NOTIFYSUBITEMDRAW
 #endif
+#endif
 
-#include "../../include/win2k.h"
-#include "../../include/newpluginapi.h"
-#include "../../include/m_system.h"
-#include "../../include/m_database.h"
-#include "../../include/m_langpack.h"
-#include "../../include/m_button.h"
-#include "../../include/m_clist.h"
-#include "../../include/m_options.h"
-#include "../../include/m_protosvc.h"
-#include "../../include/m_utils.h"
-#include "../../include/m_skin.h"
-#include "../../include/m_contacts.h"
-#include "../../include/m_icolib.h"
+/* State of icon with such flag will not be saved, and you must set it manually */
+#define MBF_OWNERSTATE        0x04
 
-#include "../../include/m_clc.h"
-#include "../../include/m_clui.h"
-#include "../../include/m_userinfo.h"
-#include "../../include/m_history.h"
-#include "../../include/m_addcontact.h"
-#include "../../include/m_file.h"
-#include "m_cln_skinedit.h"
+#include  <win2k.h>
+#include  <newpluginapi.h>
+#include  <m_system.h>
+#include  <m_database.h>
+#include  <m_langpack.h>
+#include  <m_button.h>
+#include  <m_clist.h>
+#include  <m_options.h>
+#include  <m_protosvc.h>
+#include  <m_utils.h>
+#include  <m_skin.h>
+#include  <m_contacts.h>
+#include  <m_icolib.h>
+#include  <m_clc.h>
+#include  <m_clui.h>
+#include  <m_userinfo.h>
+#include  <m_history.h>
+#include  <m_addcontact.h>
+#include  <m_file.h>
+#include  <m_fontservice.h>
+#include  <m_acc.h>
 
-#include "m_flash.h"
-#include "m_spellchecker.h"
+extern struct LIST_INTERFACE li;
 
 #define safe_sizeof(a) (unsigned int)((sizeof((a)) / sizeof((a)[0])))
 
@@ -102,19 +96,37 @@ typedef unsigned short wchar_t;
 
 #endif
 
-#include "m_ieview.h"
-#include "m_popup.h"
-#include "m_metacontacts.h"
-#include "m_snapping_windows.h"
-#include "m_fingerprint.h"
-#include "m_nudge.h"
+#include "API/m_ieview.h"
+#include "API/m_popup.h"
+#include "API/m_metacontacts.h"
+#include "API/m_fingerprint.h"
+#include "API/m_nudge.h"
+#include "API/m_folders.h"
+#include "API/m_msg_buttonsbar.h"
+#include "API/m_cln_skinedit.h"
+#include "API/m_flash.h"
+#include "API/m_spellchecker.h"
+#include "API/m_MathModule.h"
+#include "API/m_historyevents.h"
+#include "API/m_buttonbar.h"
 
-#ifndef __TSR_CXX
+#ifndef __cplusplus
 #include "msgs.h"
 #include "msgdlgutils.h"
 #include "nen.h"
 #include "functions.h"
+#include "typingnotify.h"
 #include "generic_msghandlers.h"
 #include "chat/chat.h"
 
+#endif
+
+#if !defined(_WIN64) && !defined(_USE_32BIT_TIME_T)
+	#define _USE_32BIT_TIME_T
+#else
+	#undef _USE_32BIT_TIME_T
+#endif
+
+#if _MSC_VER >= 1500
+	#define wEffects wReserved
 #endif

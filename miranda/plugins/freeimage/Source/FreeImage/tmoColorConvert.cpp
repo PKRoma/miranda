@@ -38,6 +38,7 @@
 /**
 nominal CRT primaries 
 */
+/*
 static const float CIE_x_r = 0.640F;
 static const float CIE_y_r = 0.330F;
 static const float CIE_x_g = 0.290F;
@@ -46,7 +47,18 @@ static const float CIE_x_b = 0.150F;
 static const float CIE_y_b = 0.060F;
 static const float CIE_x_w = 0.3333F;	// use true white
 static const float CIE_y_w = 0.3333F;
-
+*/
+/**
+sRGB primaries
+*/
+static const float CIE_x_r = 0.640F;
+static const float CIE_y_r = 0.330F;
+static const float CIE_x_g = 0.300F;
+static const float CIE_y_g = 0.600F;
+static const float CIE_x_b = 0.150F;
+static const float CIE_y_b = 0.060F;
+static const float CIE_x_w = 0.3127F;	// Illuminant D65
+static const float CIE_y_w = 0.3290F;
 
 static const float CIE_D = ( CIE_x_r*(CIE_y_g - CIE_y_b) + CIE_x_g*(CIE_y_b - CIE_y_r) + CIE_x_b*(CIE_y_r - CIE_y_g) );
 static const float CIE_C_rD = ( (1/CIE_y_w) * ( CIE_x_w*(CIE_y_g - CIE_y_b) - CIE_y_w*(CIE_x_g - CIE_x_b) + CIE_x_g*CIE_y_b - CIE_x_b*CIE_y_g) );
@@ -93,14 +105,14 @@ static const float  XYZ2RGB[3][3] = {
 This gives approximately the following matrices : 
 
 static const float RGB2XYZ[3][3] = { 
-	{ 0.514083F, 0.323889F, 0.162028F },
-	{ 0.265074F, 0.670115F, 0.0648112F },
-	{ 0.0240976F, 0.122854F, 0.853348F }
+	{ 0.41239083F, 0.35758433F, 0.18048081F },
+	{ 0.21263903F, 0.71516865F, 0.072192319F },
+	{ 0.019330820F, 0.11919473F, 0.95053220F }
 };
 static const float XYZ2RGB[3][3] = { 
-	{ 2.56562F, -1.16699F, -0.398511F },
-	{ -1.02209F, 1.97826F, 0.0438210F }, 
-	{ 0.0746980F, -0.251851F, 1.17680F } 
+	{ 3.2409699F, -1.5373832F, -0.49861079F },
+	{ -0.96924376F, 1.8759676F, 0.041555084F },
+	{ 0.055630036F, -0.20397687F, 1.0569715F }
 };
 */
 
@@ -376,4 +388,88 @@ LuminanceFromY(FIBITMAP *dib, float *maxLum, float *minLum, float *worldLum) {
 
 	return TRUE;
 }
+// --------------------------------------------------------------------------
 
+static void findMaxMinPercentile(FIBITMAP *Y, float minPrct, float *minLum, float maxPrct, float *maxLum) {
+	int x, y;
+	int width = FreeImage_GetWidth(Y);
+	int height = FreeImage_GetHeight(Y);
+	int pitch = FreeImage_GetPitch(Y);
+
+	std::vector<float> vY(width * height);
+
+	BYTE *bits = (BYTE*)FreeImage_GetBits(Y);
+	for(y = 0; y < height; y++) {
+		float *pixel = (float*)bits;
+		for(x = 0; x < width; x++) {
+			if(pixel[x] != 0) {
+				vY.push_back(pixel[x]);
+			}
+		}
+		bits += pitch;
+	}
+
+	std::sort(vY.begin(), vY.end());
+	
+	*minLum = vY.at( int(minPrct * vY.size()) );
+	*maxLum = vY.at( int(maxPrct * vY.size()) );
+}
+
+/**
+Clipping function<br>
+Remove any extremely bright and/or extremely dark pixels 
+and normalize between 0 and 1. 
+@param Y Input/Output image
+@param minPrct Minimum percentile
+@param maxPrct Maximum percentile
+*/
+void 
+NormalizeY(FIBITMAP *Y, float minPrct, float maxPrct) {
+	int x, y;
+	float maxLum, minLum;
+
+	if(minPrct > maxPrct) {
+		// swap values
+		float t = minPrct; minPrct = maxPrct; maxPrct = t;
+	}
+	if(minPrct < 0) minPrct = 0;
+	if(maxPrct > 1) maxPrct = 1;
+
+	int width = FreeImage_GetWidth(Y);
+	int height = FreeImage_GetHeight(Y);
+	int pitch = FreeImage_GetPitch(Y);
+
+	// find max & min luminance values
+	if((minPrct > 0) || (maxPrct < 1)) {
+		maxLum = 0, minLum = 0;
+		findMaxMinPercentile(Y, minPrct, &minLum, maxPrct, &maxLum);
+	} else {
+		maxLum = -1e20F, minLum = 1e20F;
+		BYTE *bits = (BYTE*)FreeImage_GetBits(Y);
+		for(y = 0; y < height; y++) {
+			const float *pixel = (float*)bits;
+			for(x = 0; x < width; x++) {
+				const float value = pixel[x];
+				maxLum = (maxLum < value) ? value : maxLum;	// max Luminance in the scene
+				minLum = (minLum < value) ? minLum : value;	// min Luminance in the scene
+			}
+			// next line
+			bits += pitch;
+		}
+	}
+	if(maxLum == minLum) return;
+
+	// normalize to range 0..1 
+	const float divider = maxLum - minLum;
+	BYTE *bits = (BYTE*)FreeImage_GetBits(Y);
+	for(y = 0; y < height; y++) {
+		float *pixel = (float*)bits;
+		for(x = 0; x < width; x++) {
+			pixel[x] = (pixel[x] - minLum) / divider;
+			if(pixel[x] <= 0) pixel[x] = EPSILON;
+			if(pixel[x] > 1) pixel[x] = 1;
+		}
+		// next line
+		bits += pitch;
+	}
+}

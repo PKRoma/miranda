@@ -24,6 +24,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef UTILS_H
 #define UTILS_H
 
+enum SEARCHENGINES {
+	SEARCHENGINE_GOOGLE = 1,
+	SEARCHENGINE_YAHOO = 2,
+	SEARCHENGINE_WIKIPEDIA = 3,
+	SEARCHENGINE_FOODNETWORK=4
+};
+
 HANDLE HookEvent_Ex(const char *name, MIRANDAHOOK hook);
 HANDLE CreateServiceFunction_Ex(const char *name, MIRANDASERVICE service);
 extern void UnhookEvents_Ex();
@@ -36,7 +43,20 @@ extern char* t2a(const TCHAR* src);
 extern char* t2acp(const TCHAR* src, int cp);
 extern char* u2a( const wchar_t* src, int codepage );
 extern wchar_t* a2u( const char* src, int codepage );
+extern wchar_t *a2w(const char *src, int len);
 extern void logInfo(const char *fmt, ...);
 extern int GetRichTextLength(HWND hwnd, int codepage, BOOL inBytes);
-extern void InputAreaContextMenu(HWND hwnd, WPARAM wOaram, LPARAM lParam, HANDLE hContact);
+extern TCHAR* GetRichText(HWND hwnd, int codepage);
+extern char* GetRichTextRTF(HWND hwnd);
+extern char* GetRichTextEncoded(HWND hwnd, int codepage);
+extern TCHAR *GetRichTextWord(HWND hwnd, POINTL *pt);
+extern int SetRichTextRTF(HWND hwnd, const char *text);
+extern int SetRichTextEncoded(HWND hwnd, const char *text, int codepage);
+extern void SearchWord(TCHAR * word, int engine);
+extern HDWP ResizeToolbar(HWND hwnd, HDWP hdwp, int width, int vPos, int height, int cControls, const UINT * controls, UINT *controlWidth, UINT *controlSpacing, char *controlAlignment, int controlVisibility);
+extern void ShowToolbarControls(HWND hwndDlg, int cControls, const UINT * controls, int controlVisibility, int state);
+extern void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const char *fmt, ...);
+extern int MeasureMenuItem(WPARAM wParam, LPARAM lParam);
+extern int DrawMenuItem(WPARAM wParam, LPARAM lParam);
+extern void SetSearchEngineIcons(HMENU hMenu, HIMAGELIST hImageList);
 #endif

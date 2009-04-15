@@ -23,17 +23,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 
-int LoadSendRecvMessageModule(void);
-int SplitmsgShutdown(void);
-extern void Chat_Load(PLUGINLINK *link);
-extern void Chat_Unload();
+int OnLoadModule(void);
+int OnUnloadModule(void);
 
-struct MM_INTERFACE memoryManagerInterface;
+struct MM_INTERFACE mmi;
 struct UTF8_INTERFACE utfi;
 
 PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
-int bNewDbApi = FALSE;
 
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
@@ -42,7 +39,7 @@ PLUGININFOEX pluginInfo = {
 #else
 	"Scriver",
 #endif
-	PLUGIN_MAKE_VERSION(2, 7, 4, 0),
+	PLUGIN_MAKE_VERSION(2, 8, 0, 27),
 	"Scriver - send and receive instant messages",
 	"Miranda IM Development Team",
 	"the_leech@users.berlios.de",
@@ -66,7 +63,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 __declspec(dllexport)
 	 PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 40))
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 0))
 		return NULL;
 	return &pluginInfo;
 }
@@ -86,16 +83,12 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	mir_getMMI( &mmi );
 	mir_getUTFI( &utfi );
 
-	if ( ServiceExists( MS_DB_EVENT_GETTEXT ))
-		bNewDbApi = TRUE;
 	InitSendQueue();
-	Chat_Load(link);
-	return LoadSendRecvMessageModule();
+	return OnLoadModule();
 }
 
 int __declspec(dllexport) Unload(void)
 {
-	Chat_Unload();
 	DestroySendQueue();
-	return SplitmsgShutdown();
+	return OnUnloadModule();
 }

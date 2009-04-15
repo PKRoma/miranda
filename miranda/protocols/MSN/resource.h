@@ -17,6 +17,9 @@
 #define IDI_LIST_AL                     121
 #define IDI_LIST_BL                     122
 #define IDI_LIST_RL                     123
+#define IDD_CARD_GEN                    133
+#define IDD_CARD_CONTACT                134
+#define IDD_ACCMGRUI                    135
 #define IDD_OPT_MSN                     185
 #define IDD_SETNICKNAME                 226
 #define IDC_STMSNGROUP                  1002
@@ -40,23 +43,41 @@
 #define IDC_MANAGEGROUPS                1034
 #define IDC_NOTIFY_ENDSESSION           1035
 #define IDC_MOBILESEND                  1035
-#define IDC_USEOPENSSL                  1036
 #define IDC_NOTIFY_CUSTOMSMILEY         1036
 #define IDC_HOSTOPT                     1038
+#define IDC_CCARD_TAB1                  1039
+#define IDC_CARD_GEN_PHONE              1043
+#define IDC_EDIT1                       1043
+#define IDC_CARD_GEN_IM2                1044
+#define IDC_EDIT2                       1044
+#define IDC_EDIT3                       1045
+#define IDC_COMBO1                      1045
 #define IDC_SENDFONTINFO                1046
+#define IDC_EDIT4                       1046
+#define IDC_EDIT5                       1047
 #define IDC_NICKNAME                    1048
+#define IDC_EDIT6                       1048
 #define IDC_DISABLEHOTJUNK              1049
+#define IDC_EDIT7                       1049
+#define IDC_EDIT8                       1050
+#define IDC_COMBO2                      1050
 #define IDC_POPUP_TIMEOUT               1051
+#define IDC_EDIT9                       1051
+#define IDC_CARD_GEN_IM3                1051
 #define IDC_POPUP_TIMEOUT2              1052
+#define IDC_EDIT10                      1052
+#define IDC_COMBO3                      1052
 #define IDC_NOTIFY_FIRSTMSG             1053
+#define IDC_COMBO4                      1053
 #define IDC_DISABLE_ANOTHER_CONTACTS    1054
+#define IDC_CARD_GEN_IM4                1054
 #define IDC_ERRORS_USING_POPUPS         1056
+#define IDC_CARD_GEN_IM5                1056
 #define IDC_MAILER_APP                  1057
 #define IDC_RUN_APP_ON_HOTMAIL          1058
 #define IDC_ENTER_MAILER_APP            1059
 #define IDC_MOBILE                      1060
 #define IDC_MSN_MOBILE                  1061
-#define IDC_WEBMESSENGER                1062
 #define IDC_LOGINSERVER                 1171
 #define IDC_YOURHOST                    1172
 #define IDC_MSNPORT                     1174
@@ -70,9 +91,10 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        133
+#define _APS_NO_MFC                     1
+#define _APS_NEXT_RESOURCE_VALUE        136
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1039
+#define _APS_NEXT_CONTROL_VALUE         1046
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

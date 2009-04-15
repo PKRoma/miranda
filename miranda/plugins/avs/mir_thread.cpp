@@ -23,6 +23,7 @@ Boston, MA 02111-1307, USA.
 
 BOOL g_shutDown = FALSE;
 static HANDLE hShutdownEvent = NULL;
+static HANDLE hOkToExit = NULL;
 
 
 static int OkToExitProc(WPARAM wParam, LPARAM lParam)
@@ -30,6 +31,7 @@ static int OkToExitProc(WPARAM wParam, LPARAM lParam)
     g_shutDown = TRUE;
 	SetEvent(hShutdownEvent);
     CloseHandle(hShutdownEvent);
+	UnhookEvent(hOkToExit);
     return 0;
 }
 
@@ -37,7 +39,7 @@ static int OkToExitProc(WPARAM wParam, LPARAM lParam)
 void init_mir_thread() 
 {
 	hShutdownEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-	HookEvent(ME_SYSTEM_OKTOEXIT, OkToExitProc);
+	hOkToExit = HookEvent(ME_SYSTEM_OKTOEXIT, OkToExitProc);
 }
 
 

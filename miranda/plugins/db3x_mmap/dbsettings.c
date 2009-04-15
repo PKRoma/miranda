@@ -225,19 +225,19 @@ static __inline int GetContactSettingWorker(HANDLE hContact,DBCONTACTGETSETTING 
 	if ((!dbcgs->szSetting) || (!dbcgs->szModule))
 		return 1;
 	// the db format can't tolerate more than 255 bytes of space (incl. null) for settings+module name
-	settingNameLen=strlen(dbcgs->szSetting);
-	moduleNameLen=strlen(dbcgs->szModule);
+	settingNameLen=(int)strlen(dbcgs->szSetting);
+	moduleNameLen=(int)strlen(dbcgs->szModule);
 	if ( settingNameLen > 0xFE )
 	{
 		#ifdef _DEBUG
-			OutputDebugString("GetContactSettingWorker() got a > 255 setting name length. \n");
+			OutputDebugStringA("GetContactSettingWorker() got a > 255 setting name length. \n");
 		#endif
 		return 1;
 	}
 	if ( moduleNameLen > 0xFE )
 	{
 		#ifdef _DEBUG
-			OutputDebugString("GetContactSettingWorker() got a > 255 module name length. \n");
+			OutputDebugStringA("GetContactSettingWorker() got a > 255 module name length. \n");
 		#endif
 		return 1;
 	}
@@ -257,7 +257,7 @@ static __inline int GetContactSettingWorker(HANDLE hContact,DBCONTACTGETSETTING 
 				if ( isStatic ) {
 					int cbLen = 0;
 					if ( pCachedValue->pszVal != NULL )
-						cbLen = strlen( pCachedValue->pszVal );
+						cbLen = (int)strlen( pCachedValue->pszVal );
 
 					cbOrigLen--;
 					dbcgs->pValue->pszVal = cbOrigPtr;
@@ -380,7 +380,7 @@ static __inline int GetContactSettingWorker(HANDLE hContact,DBCONTACTGETSETTING 
 	return 1;
 }
 
-static int GetContactSetting(WPARAM wParam,LPARAM lParam)
+static INT_PTR GetContactSetting(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTGETSETTING* dgs = ( DBCONTACTGETSETTING* )lParam;
 	dgs->pValue->type = 0;
@@ -414,7 +414,7 @@ static int GetContactSetting(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int GetContactSettingStr(WPARAM wParam,LPARAM lParam)
+static INT_PTR GetContactSettingStr(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTGETSETTING* dgs = (DBCONTACTGETSETTING*)lParam;
 	int iSaveType = dgs->pValue->type;
@@ -462,7 +462,7 @@ static int GetContactSettingStr(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int GetContactSettingStatic(WPARAM wParam,LPARAM lParam)
+INT_PTR GetContactSettingStatic(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTGETSETTING* dgs = (DBCONTACTGETSETTING*)lParam;
 	if ( GetContactSettingWorker(( HANDLE )wParam, dgs, 1 ))
@@ -476,7 +476,7 @@ int GetContactSettingStatic(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int FreeVariant(WPARAM wParam,LPARAM lParam)
+static INT_PTR FreeVariant(WPARAM wParam,LPARAM lParam)
 {
 	DBVARIANT *dbv=(DBVARIANT*)lParam;
 	if ( dbv == 0 ) return 1;
@@ -500,7 +500,7 @@ static int FreeVariant(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int SetSettingResident(WPARAM wParam,LPARAM lParam)
+static INT_PTR SetSettingResident(WPARAM wParam,LPARAM lParam)
 {
 	size_t cbSettingNameLen = strlen(( char* )lParam) + 2;
 	if (cbSettingNameLen  < 512)
@@ -531,7 +531,7 @@ static int SetSettingResident(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
+static INT_PTR WriteContactSetting(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTWRITESETTING *dbcws=(DBCONTACTWRITESETTING*)lParam;
 	struct DBContact dbc;
@@ -548,19 +548,19 @@ static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
 		return 1;
 
 	// the db format can't tolerate more than 255 bytes of space (incl. null) for settings+module name
-	settingNameLen=strlen(dbcws->szSetting);
-	moduleNameLen=strlen(dbcws->szModule);
+	settingNameLen=(int)strlen(dbcws->szSetting);
+	moduleNameLen=(int)strlen(dbcws->szModule);
 	if ( settingNameLen > 0xFE )
 	{
 		#ifdef _DEBUG
-			OutputDebugString("WriteContactSetting() got a > 255 setting name length. \n");
+			OutputDebugStringA("WriteContactSetting() got a > 255 setting name length. \n");
 		#endif
 		return 1;
 	}
 	if ( moduleNameLen > 0xFE )
 	{
 		#ifdef _DEBUG
-			OutputDebugString("WriteContactSetting() got a > 255 module name length. \n");
+			OutputDebugStringA("WriteContactSetting() got a > 255 module name length. \n");
 		#endif
 		return 1;
 	}
@@ -587,10 +587,10 @@ static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
 	// the db can not tolerate strings/blobs longer than 0xFFFF since the format writes 2 lengths
 	switch( dbcws->value.type ) {
 	case DBVT_ASCIIZ:		case DBVT_BLOB:	case DBVT_UTF8:
-		{	int len = ( dbcws->value.type != DBVT_BLOB ) ? strlen(dbcws->value.pszVal) : dbcws->value.cpbVal;
+		{	size_t len = ( dbcws->value.type != DBVT_BLOB ) ? strlen(dbcws->value.pszVal) : dbcws->value.cpbVal;
 			if ( len >= 0xFFFF ) {
 				#ifdef _DEBUG
-					OutputDebugString("WriteContactSetting() writing huge string/blob, rejecting ( >= 0xFFFF ) \n");
+					OutputDebugStringA("WriteContactSetting() writing huge string/blob, rejecting ( >= 0xFFFF ) \n");
 				#endif
 				return 1;
 			}
@@ -642,7 +642,7 @@ static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
 	ofsSettingsGroup=GetSettingsGroupOfsByModuleNameOfs(&dbc,ofsModuleName);
 	if(ofsSettingsGroup==0) {  //module group didn't exist - make it
 		if(dbcws->value.type&DBVTF_VARIABLELENGTH) {
-		  if(dbcws->value.type==DBVT_ASCIIZ || dbcws->value.type==DBVT_UTF8) bytesRequired=strlen(dbcws->value.pszVal)+2;
+		  if(dbcws->value.type==DBVT_ASCIIZ || dbcws->value.type==DBVT_UTF8) bytesRequired=(int)strlen(dbcws->value.pszVal)+2;
 		  else if(dbcws->value.type==DBVT_BLOB) bytesRequired=dbcws->value.cpbVal+2;
 		}
 		else bytesRequired=dbcws->value.type;
@@ -707,7 +707,7 @@ static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
 					case DBVT_WORD: DBWrite(ofsBlobPtr,&dbcws->value.wVal,2); break;
 					case DBVT_DWORD: DBWrite(ofsBlobPtr,&dbcws->value.dVal,4); break;
 					case DBVT_UTF8:
-					case DBVT_ASCIIZ: DBWrite(ofsBlobPtr+2,dbcws->value.pszVal,strlen(dbcws->value.pszVal)); break;
+					case DBVT_ASCIIZ: DBWrite(ofsBlobPtr+2,dbcws->value.pszVal,(int)strlen(dbcws->value.pszVal)); break;
 					case DBVT_BLOB: DBWrite(ofsBlobPtr+2,dbcws->value.pbVal,dbcws->value.cpbVal); break;
 				}
 				//quit
@@ -723,7 +723,7 @@ static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
 	//pBlob already points to end of list
 	//see if it fits
 	if(dbcws->value.type&DBVTF_VARIABLELENGTH) {
-	  if(dbcws->value.type==DBVT_ASCIIZ || dbcws->value.type==DBVT_UTF8) bytesRequired=strlen(dbcws->value.pszVal)+2;
+	  if(dbcws->value.type==DBVT_ASCIIZ || dbcws->value.type==DBVT_UTF8) bytesRequired=(int)strlen(dbcws->value.pszVal)+2;
 	  else if(dbcws->value.type==DBVT_BLOB) bytesRequired=dbcws->value.cpbVal+2;
 	}
 	else bytesRequired=dbcws->value.type;
@@ -778,7 +778,7 @@ static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
 		case DBVT_DWORD: DBWrite(ofsBlobPtr,&dbcws->value.dVal,4); MoveAlong(4); break;
 		case DBVT_UTF8:
 		case DBVT_ASCIIZ:
-			{	int len=strlen(dbcws->value.pszVal);
+			{	int len=(int)strlen(dbcws->value.pszVal);
 				DBWrite(ofsBlobPtr,&len,2);
 				DBWrite(ofsBlobPtr+2,dbcws->value.pszVal,len);
 				MoveAlong(2+len);
@@ -801,7 +801,7 @@ static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int DeleteContactSetting(WPARAM wParam,LPARAM lParam)
+static INT_PTR DeleteContactSetting(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTGETSETTING *dbcgs=(DBCONTACTGETSETTING*)lParam;
 	struct DBContact *dbc;
@@ -814,19 +814,19 @@ static int DeleteContactSetting(WPARAM wParam,LPARAM lParam)
 	if ((!dbcgs->szModule) || (!dbcgs->szSetting))
 		return 1;
 	// the db format can't tolerate more than 255 bytes of space (incl. null) for settings+module name
-	settingNameLen=strlen(dbcgs->szSetting);
-	moduleNameLen=strlen(dbcgs->szModule);
+	settingNameLen=(int)strlen(dbcgs->szSetting);
+	moduleNameLen=(int)strlen(dbcgs->szModule);
 	if ( settingNameLen > 0xFE )
 	{
 		#ifdef _DEBUG
-			OutputDebugString("DeleteContactSetting() got a > 255 setting name length. \n");
+			OutputDebugStringA("DeleteContactSetting() got a > 255 setting name length. \n");
 		#endif
 		return 1;
 	}
 	if ( moduleNameLen > 0xFE )
 	{
 		#ifdef _DEBUG
-			OutputDebugString("DeleteContactSetting() got a > 255 module name length. \n");
+			OutputDebugStringA("DeleteContactSetting() got a > 255 module name length. \n");
 		#endif
 		return 1;
 	}
@@ -898,7 +898,7 @@ static int DeleteContactSetting(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int EnumContactSettings(WPARAM wParam,LPARAM lParam)
+static INT_PTR EnumContactSettings(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTENUMSETTINGS *dbces=(DBCONTACTENUMSETTINGS*)lParam;
 	struct DBContact *dbc;
@@ -946,7 +946,7 @@ static int EnumContactSettings(WPARAM wParam,LPARAM lParam)
 	return result;
 }
 
-static int EnumResidentSettings(WPARAM wParam,LPARAM lParam)
+static INT_PTR EnumResidentSettings(WPARAM wParam,LPARAM lParam)
 {
 	int i;
 	int ret;

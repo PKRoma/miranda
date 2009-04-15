@@ -45,7 +45,7 @@ Last change by : $Author: rainwater $
 
 #include <m_imgsrvc.h>
 
-#include "..\Source\libpng\png.h"
+#include "../Source/libpng/png.h"
 
 PLUGINLINK *pluginLink = NULL;
 
@@ -56,7 +56,7 @@ PLUGININFO pluginInfo = {
 	"Generic image services for Miranda IM",
 	"Nightwish, The FreeImage project (http://freeimage.sourceforge.net/)",
 	"",
-	"Copyright 2000-2007 Miranda-IM project, uses the FreeImage distribution",
+	"Copyright 2000-2008 Miranda-IM project, uses the FreeImage distribution",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	0
@@ -69,7 +69,7 @@ PLUGININFOEX pluginInfoEx = {
 	"Generic image services for Miranda IM",
 	"Nightwish, The FreeImage project (http://freeimage.sourceforge.net/)",
 	"",
-	"Copyright 2000-2007 Miranda-IM project, uses the FreeImage distribution",
+	"Copyright 2000-2008 Miranda-IM project, uses the FreeImage distribution",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	0,
@@ -244,7 +244,7 @@ static FIBITMAP *FreeImage_CreateDIBFromHBITMAP(HBITMAP hBmp)
 // lParam = NULL
 // return NULL on error, ResizeBitmap->hBmp if don't need to resize or a new HBITMAP if resized
 
-static int serviceBmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam)
+static INT_PTR serviceBmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam)
 {
 	BITMAP bminfo;
 	int width, height;
@@ -362,7 +362,7 @@ static int serviceBmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam)
 			FreeImage_Unload(dib_tmp);
         FreeImage_Unload(dib);
 
-		return (int)bitmap_new;
+		return (INT_PTR)bitmap_new;
 	}
 }
 
@@ -565,7 +565,8 @@ extern "C" BOOL __declspec(dllexport) mempng2dib(BYTE* pSource, DWORD cbSourceSi
 	png_uint_32				ulRowBytes;
 	png_byte*				pbImageData;
 	png_byte**				ppbRowPointers = NULL;
-	int						i, j;
+	int						i;
+	png_uint_32				j;
 	int						wDIRowBytes;
 	BYTE*                pImageData;
 
@@ -669,8 +670,8 @@ extern "C" BOOL __declspec(dllexport) mempng2dib(BYTE* pSource, DWORD cbSourceSi
 	ppbRowPointers = ( png_bytepp )alloca( iHeight * sizeof( png_bytep ));
 
 	// set the individual row-pointers to point at the correct offsets
-	for ( i = 0; i < iHeight; i++ )
-		ppbRowPointers[i] = ( png_bytep )&pImageData[ i*ulRowBytes ];
+	for ( j = 0; j < iHeight; j++ )
+		ppbRowPointers[j] = ( png_bytep )&pImageData[ j*ulRowBytes ];
 
 	// now we can go ahead and just read the whole image
 	png_read_image( png_ptr, ppbRowPointers );
@@ -838,13 +839,13 @@ static HANDLE hMempng2Dib = NULL;
 ///////////////////////////////////////////////////////////////////////////////
 // Load - initializes the plugin instance
 
-static int serviceDib2Png( WPARAM wParam, LPARAM lParam )
+static INT_PTR serviceDib2Png( WPARAM wParam, LPARAM lParam )
 {
 	DIB2PNG* param = ( DIB2PNG* )lParam;
 	return dib2mempng( param->pbmi, param->pDiData, param->pResult, param->pResultLen );
 }
 
-static int servicePng2Dib( WPARAM wParam, LPARAM lParam )
+static INT_PTR servicePng2Dib( WPARAM wParam, LPARAM lParam )
 {
 	PNG2DIB* param = ( PNG2DIB* )lParam;
 	return mempng2dib( param->pSource, param->cbSourceSize, param->pResult );
@@ -857,7 +858,7 @@ FI_INTERFACE feif = {0};
 * if it doesn't match, error will be returned
 */
 
-static int serviceGetInterface(WPARAM wParam, LPARAM lParam)
+static INT_PTR serviceGetInterface(WPARAM wParam, LPARAM lParam)
 {
 	FI_INTERFACE **ppfe = (FI_INTERFACE **)lParam;
 
@@ -872,7 +873,7 @@ static int serviceGetInterface(WPARAM wParam, LPARAM lParam)
 		return CALLSERVICE_NOTFOUND;
 }
 
-static int serviceLoad(WPARAM wParam, LPARAM lParam)
+static INT_PTR serviceLoad(WPARAM wParam, LPARAM lParam)
 {
 	char *lpszFilename = (char *)wParam;
 	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
@@ -905,12 +906,12 @@ static int serviceLoad(WPARAM wParam, LPARAM lParam)
 		HBITMAP hbm = FreeImage_CreateHBITMAPFromDIB(dib);
 		FreeImage_Unload(dib);
 		FI_CorrectBitmap32Alpha(hbm, FALSE);
-		return((int)hbm);
+		return((INT_PTR)hbm);
 	}
 	return NULL;
 }
 
-static int serviceLoadFromMem(WPARAM wParam, LPARAM lParam)
+static INT_PTR serviceLoadFromMem(WPARAM wParam, LPARAM lParam)
 {
 	IMGSRVC_MEMIO *mio = (IMGSRVC_MEMIO *)wParam;
 	//fiio_mem_handle fiio;
@@ -930,15 +931,15 @@ static int serviceLoadFromMem(WPARAM wParam, LPARAM lParam)
 	//FIBITMAP *dib = FreeImage_LoadFromMem(mio->fif, &fiio, mio->flags);
 
 	if(dib == NULL || (lParam & IMGL_RETURNDIB))
-		return (int)dib;
+		return (INT_PTR)dib;
 
 	HBITMAP hbm = FreeImage_CreateHBITMAPFromDIB(dib);
 
 	FreeImage_Unload(dib);
-	return (int)hbm;
+	return (INT_PTR)hbm;
 }
 
-static int serviceUnload(WPARAM wParam, LPARAM lParam)
+static INT_PTR serviceUnload(WPARAM wParam, LPARAM lParam)
 {
 	FIBITMAP *dib = (FIBITMAP *)wParam;
 
@@ -948,7 +949,7 @@ static int serviceUnload(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int serviceSave(WPARAM wParam, LPARAM lParam)
+static INT_PTR serviceSave(WPARAM wParam, LPARAM lParam)
 {
 	IMGSRVC_INFO *isi = (IMGSRVC_INFO *)wParam;
 	FREE_IMAGE_FORMAT fif;
@@ -959,7 +960,7 @@ static int serviceSave(WPARAM wParam, LPARAM lParam)
 		if(isi->cbSize != sizeof(IMGSRVC_INFO))
 			return 0;
 
-		if(isi->szName) {
+		if(isi->szName || isi->wszName) {
 			if(isi->fif == FIF_UNKNOWN) {
 				if(lParam & IMGL_WCHAR)
 					fif = FreeImage_GetFIFFromFilenameU(isi->wszName);
@@ -1013,7 +1014,7 @@ static int serviceSave(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int serviceGetVersion(WPARAM wParam, LPARAM lParam)
+static INT_PTR serviceGetVersion(WPARAM wParam, LPARAM lParam)
 {
 	return FI_IF_VERSION;
 }
@@ -1226,6 +1227,8 @@ static HANDLE hGetIF, hLoad, hLoadFromMem, hSave, hUnload, hResize, hGetVersion;
 
 static int IMGSERVICE_Load()
 {
+	FI_Populate();
+
 	hDib2mempng = CreateServiceFunction( MS_DIB2PNG, serviceDib2Png );
 	hMempng2Dib = CreateServiceFunction( MS_PNG2DIB, servicePng2Dib );
 	hGetIF = CreateServiceFunction(MS_IMG_GETINTERFACE, serviceGetInterface);

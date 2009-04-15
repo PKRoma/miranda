@@ -5,10 +5,8 @@
 	Name="tabSRMM"
 	ProjectGUID="{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}"
 	RootNamespace="srmm"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK">
+	SccProjectName=""
+	SccLocalPath="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -95,10 +93,11 @@
 				OptimizeForProcessor="0"
 				AdditionalIncludeDirectories="..\..\include"
 				StringPooling="TRUE"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				BufferSecurityCheck="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="commonheaders.h"
+				AssemblerOutput="4"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -107,7 +106,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="comctl32.lib shlwapi.lib"
+				AdditionalDependencies="vc7to6.lib eh7.lib comctl32.lib shlwapi.lib"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				DelayLoadDLLs=""
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
@@ -162,7 +163,7 @@
 				AdditionalIncludeDirectories="..\..\include"
 				StringPooling="TRUE"
 				ExceptionHandling="FALSE"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="commonheaders.h"
@@ -176,9 +177,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="comctl32.lib shlwapi.lib"
+				AdditionalDependencies="vc7to6.lib eh7.lib comctl32.lib shlwapi.lib oldnames.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				DelayLoadDLLs=""
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -286,6 +289,9 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
+				RelativePath=".\buttonsbar.c">
+			</File>
+			<File
 				RelativePath=".\container.c">
 			</File>
 			<File
@@ -355,6 +361,9 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\tabmodplus\modplus.c">
 			</File>
 			<File
 				RelativePath="msgdialog.c">
@@ -450,6 +459,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\tabmodplus\msgoptions_plus.c">
+			</File>
+			<File
 				RelativePath="msgs.c">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -533,6 +545,9 @@
 			</File>
 			<File
 				RelativePath="TSButton.c">
+			</File>
+			<File
+				RelativePath=".\typingnotify.c">
 			</File>
 			<File
 				RelativePath="userprefs.c">
@@ -988,10 +1003,10 @@
 				RelativePath=".\res\rightarrow.ico">
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Save.ico">
+				RelativePath=".\res\save.ico">
 			</File>
 			<File
-				RelativePath=".\res\save.ico">
+				RelativePath=".\res\angeli-icons\Save.ico">
 			</File>
 			<File
 				RelativePath=".\res\angeli-icons\SaveXP.ico">

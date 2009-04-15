@@ -1,0 +1,796 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="51">
+  <logicalFolder name="root" displayName="root" projectFiles="true">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+      <itemPath>alphablend.h</itemPath>
+      <itemPath>clc.h</itemPath>
+      <itemPath>clist.h</itemPath>
+      <itemPath>CLUIFrames/cluiframes.h</itemPath>
+      <itemPath>commonheaders.h</itemPath>
+      <itemPath>coolsb/coolsb_internal.h</itemPath>
+      <itemPath>coolsb/coolsblib.h</itemPath>
+      <itemPath>coolsb/coolscroll.h</itemPath>
+      <itemPath>extBackg.h</itemPath>
+      <itemPath>forkthread.h</itemPath>
+      <itemPath>IcoLib.h</itemPath>
+      <itemPath>m_avatars.h</itemPath>
+      <itemPath>m_cln_skinedit.h</itemPath>
+      <itemPath>m_clui.h</itemPath>
+      <itemPath>m_cluiframes.h</itemPath>
+      <itemPath>m_fontservice.h</itemPath>
+      <itemPath>m_metacontacts.h</itemPath>
+      <itemPath>m_updater.h</itemPath>
+      <itemPath>m_variables.h</itemPath>
+      <itemPath>resource.h</itemPath>
+      <itemPath>rowheight_funcs.h</itemPath>
+      <itemPath>coolsb/userdefs.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+      <itemPath>cln_private.rc</itemPath>
+      <itemPath>resource.rc</itemPath>
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <logicalFolder name="f1" displayName="CLUIFrames" projectFiles="true">
+        <itemPath>CLUIFrames/cluiframes.c</itemPath>
+        <itemPath>cluiservices.c</itemPath>
+        <itemPath>CLUIFrames/framesmenu.c</itemPath>
+        <itemPath>CLUIFrames/groupmenu.c</itemPath>
+        <itemPath>CLUIFrames/movetogroup.c</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f2" displayName="Coolscroll" projectFiles="true">
+        <itemPath>coolsb/coolsblib.c</itemPath>
+        <itemPath>coolsb/coolscroll.c</itemPath>
+      </logicalFolder>
+      <itemPath>alphablend.c</itemPath>
+      <itemPath>clc.c</itemPath>
+      <itemPath>CLCButton.c</itemPath>
+      <itemPath>clcidents.c</itemPath>
+      <itemPath>clcitems.c</itemPath>
+      <itemPath>clcmsgs.c</itemPath>
+      <itemPath>clcopts.c</itemPath>
+      <itemPath>clcpaint.c</itemPath>
+      <itemPath>clcutils.c</itemPath>
+      <itemPath>clistevents.c</itemPath>
+      <itemPath>clistmenus.c</itemPath>
+      <itemPath>clistmod.c</itemPath>
+      <itemPath>clistopts.c</itemPath>
+      <itemPath>clistsettings.c</itemPath>
+      <itemPath>clisttray.c</itemPath>
+      <itemPath>clnplus.cpp</itemPath>
+      <itemPath>clui.c</itemPath>
+      <itemPath>cluiopts.c</itemPath>
+      <itemPath>commonheaders.c</itemPath>
+      <itemPath>contact.c</itemPath>
+      <itemPath>Docking.c</itemPath>
+      <itemPath>extBackg.c</itemPath>
+      <itemPath>forkthread.c</itemPath>
+      <itemPath>init.c</itemPath>
+      <itemPath>rowheight_funcs.c</itemPath>
+      <itemPath>statusbar.c</itemPath>
+      <itemPath>statusfloater.c</itemPath>
+      <itemPath>utf.c</itemPath>
+      <itemPath>viewmodes.c</itemPath>
+      <itemPath>wallpaper.c</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Debug" type="2">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <compilerSet>MinGW|MinGW</compilerSet>
+        <platform>3</platform>
+      </toolsSet>
+      <compileType>
+        <cCompilerTool>
+          <developmentMode>0</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <architecture>1</architecture>
+          <includeDirectories>
+            <directoryPath>../../include</directoryPath>
+            <directoryPath>../../include/mingw</directoryPath>
+          </includeDirectories>
+          <preprocessorList>
+            <Elem>__GNUWIN32__</Elem>
+          </preprocessorList>
+        </cCompilerTool>
+        <ccCompilerTool>
+          <stripSymbols>true</stripSymbols>
+          <includeDirectories>
+            <directoryPath>../../include</directoryPath>
+            <directoryPath>../../include/mingw</directoryPath>
+          </includeDirectories>
+          <preprocessorList>
+            <Elem>__GNUWIN32__</Elem>
+          </preprocessorList>
+        </ccCompilerTool>
+        <linkerTool>
+          <stripSymbols>true</stripSymbols>
+          <linkerKpic>false</linkerKpic>
+          <linkerLibItems>
+            <linkerLibLibItem>gdi32</linkerLibLibItem>
+            <linkerLibLibItem>comctl32</linkerLibLibItem>
+            <linkerLibLibItem>comdlg32</linkerLibLibItem>
+            <linkerLibLibItem>msvcrt</linkerLibLibItem>
+            <linkerLibLibItem>kernel32</linkerLibLibItem>
+            <linkerLibLibItem>msimg32</linkerLibLibItem>
+            <linkerLibLibItem>shlwapi</linkerLibLibItem>
+            <linkerLibLibItem>user32</linkerLibLibItem>
+            <linkerLibLibItem>shell32</linkerLibLibItem>
+            <linkerLibLibItem>shlwapi</linkerLibLibItem>
+            <linkerLibLibItem>user32</linkerLibLibItem>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="CLCButton.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="CLUIFrames/cluiframes.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="CLUIFrames/cluiframes.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="CLUIFrames/framesmenu.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="CLUIFrames/groupmenu.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="CLUIFrames/movetogroup.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="Docking.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="IcoLib.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="alphablend.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="alphablend.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="clc.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clc.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="clcidents.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clcitems.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clcmsgs.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clcopts.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clcpaint.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clcutils.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clist.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="clistevents.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clistmenus.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clistmod.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clistopts.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clistsettings.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clisttray.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="cln_private.rc">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="clnplus.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="clui.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="cluiopts.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="cluiservices.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="commonheaders.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="commonheaders.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="contact.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="coolsb/coolsb_internal.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="coolsb/coolsblib.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="coolsb/coolsblib.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="coolsb/coolscroll.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="coolsb/coolscroll.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="coolsb/userdefs.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="extBackg.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="extBackg.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="forkthread.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="forkthread.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="init.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="m_avatars.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="m_cln_skinedit.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="m_clui.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="m_cluiframes.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="m_fontservice.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="m_metacontacts.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="m_updater.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="m_variables.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="resource.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="resource.rc">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="rowheight_funcs.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="rowheight_funcs.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="statusbar.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="statusfloater.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="utf.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="viewmodes.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="wallpaper.c">
+        <itemTool>0</itemTool>
+      </item>
+    </conf>
+    <conf name="Release" type="2">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <compilerSet>MinGW|MinGW</compilerSet>
+        <platform>3</platform>
+      </toolsSet>
+      <compileType>
+        <cCompilerTool>
+          <developmentMode>5</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <architecture>1</architecture>
+          <includeDirectories>
+            <directoryPath>../../include</directoryPath>
+            <directoryPath>../../include/mingw</directoryPath>
+          </includeDirectories>
+          <preprocessorList>
+            <Elem>__GNUWIN32__</Elem>
+          </preprocessorList>
+        </cCompilerTool>
+        <ccCompilerTool>
+          <developmentMode>5</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <includeDirectories>
+            <directoryPath>../../include</directoryPath>
+            <directoryPath>../../include/mingw</directoryPath>
+          </includeDirectories>
+          <preprocessorList>
+            <Elem>__GNUWIN32__</Elem>
+          </preprocessorList>
+        </ccCompilerTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <linkerTool>
+          <output>dist/Release/${PLATFORM}/clist_nicer.dll</output>
+          <stripSymbols>true</stripSymbols>
+          <linkerKpic>false</linkerKpic>
+          <linkerLibItems>
+            <linkerOptionItem>build/resource.coff</linkerOptionItem>
+            <linkerLibLibItem>gdi32</linkerLibLibItem>
+            <linkerLibLibItem>comctl32</linkerLibLibItem>
+            <linkerLibLibItem>comdlg32</linkerLibLibItem>
+            <linkerLibLibItem>msvcrt</linkerLibLibItem>
+            <linkerLibLibItem>kernel32</linkerLibLibItem>
+            <linkerLibLibItem>msimg32</linkerLibLibItem>
+            <linkerLibLibItem>shlwapi</linkerLibLibItem>
+            <linkerLibLibItem>user32</linkerLibLibItem>
+            <linkerLibLibItem>shell32</linkerLibLibItem>
+            <linkerLibLibItem>shlwapi</linkerLibLibItem>
+            <linkerLibLibItem>user32</linkerLibLibItem>
+            <linkerLibLibItem>ole32</linkerLibLibItem>
+            <linkerLibLibItem>ole32</linkerLibLibItem>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="CLCButton.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="CLUIFrames/cluiframes.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="CLUIFrames/cluiframes.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="CLUIFrames/framesmenu.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="CLUIFrames/groupmenu.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="CLUIFrames/movetogroup.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="Docking.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="IcoLib.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="alphablend.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="alphablend.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="clc.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clc.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="clcidents.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clcitems.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clcmsgs.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clcopts.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clcpaint.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clcutils.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clist.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="clistevents.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clistmenus.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clistmod.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clistopts.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clistsettings.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clisttray.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="cln_private.rc">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="clnplus.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="clui.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="cluiopts.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="cluiservices.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="commonheaders.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="commonheaders.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="contact.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="coolsb/coolsb_internal.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="coolsb/coolsblib.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="coolsb/coolsblib.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="coolsb/coolscroll.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="coolsb/coolscroll.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="coolsb/userdefs.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="extBackg.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="extBackg.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="forkthread.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="forkthread.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="init.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="m_avatars.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="m_cln_skinedit.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="m_clui.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="m_cluiframes.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="m_fontservice.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="m_metacontacts.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="m_updater.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="m_variables.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="resource.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="resource.rc">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="rowheight_funcs.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="rowheight_funcs.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="statusbar.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="statusfloater.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="utf.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="viewmodes.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="wallpaper.c">
+        <itemTool>0</itemTool>
+      </item>
+    </conf>
+    <conf name="Release_Unicode" type="2">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <compilerSet>MinGW|MinGW</compilerSet>
+        <platform>3</platform>
+      </toolsSet>
+      <compileType>
+        <cCompilerTool>
+          <stripSymbols>true</stripSymbols>
+          <includeDirectories>
+            <directoryPath>../../include</directoryPath>
+            <directoryPath>../../include/mingw</directoryPath>
+          </includeDirectories>
+          <preprocessorList>
+            <Elem>__GNUWIN32__</Elem>
+            <Elem>UNICODE</Elem>
+            <Elem>_UNICODE</Elem>
+          </preprocessorList>
+        </cCompilerTool>
+        <ccCompilerTool>
+          <stripSymbols>true</stripSymbols>
+          <includeDirectories>
+            <directoryPath>../../include</directoryPath>
+            <directoryPath>../../include/mingw</directoryPath>
+          </includeDirectories>
+          <preprocessorList>
+            <Elem>__GNUWIN32__</Elem>
+            <Elem>UNICODE</Elem>
+            <Elem>_UNICODE</Elem>
+          </preprocessorList>
+        </ccCompilerTool>
+        <linkerTool>
+          <output>dist/Release_Unicode/${PLATFORM}/clist_nicer.dll</output>
+          <stripSymbols>true</stripSymbols>
+          <linkerKpic>false</linkerKpic>
+          <linkerLibItems>
+            <linkerOptionItem>build/resourceW.coff</linkerOptionItem>
+            <linkerLibLibItem>gdi32</linkerLibLibItem>
+            <linkerLibLibItem>comctl32</linkerLibLibItem>
+            <linkerLibLibItem>comdlg32</linkerLibLibItem>
+            <linkerLibLibItem>msvcrt</linkerLibLibItem>
+            <linkerLibLibItem>kernel32</linkerLibLibItem>
+            <linkerLibLibItem>msimg32</linkerLibLibItem>
+            <linkerLibLibItem>shlwapi</linkerLibLibItem>
+            <linkerLibLibItem>user32</linkerLibLibItem>
+            <linkerLibLibItem>shell32</linkerLibLibItem>
+            <linkerLibLibItem>shlwapi</linkerLibLibItem>
+            <linkerLibLibItem>user32</linkerLibLibItem>
+            <linkerLibLibItem>ole32</linkerLibLibItem>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="CLCButton.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="CLUIFrames/cluiframes.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="CLUIFrames/cluiframes.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="CLUIFrames/framesmenu.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="CLUIFrames/groupmenu.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="CLUIFrames/movetogroup.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="Docking.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="IcoLib.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="alphablend.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="alphablend.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="clc.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clc.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="clcidents.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clcitems.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clcmsgs.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clcopts.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clcpaint.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clcutils.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clist.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="clistevents.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clistmenus.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clistmod.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clistopts.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clistsettings.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="clisttray.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="cln_private.rc">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="clnplus.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="clui.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="cluiopts.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="cluiservices.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="commonheaders.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="commonheaders.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="contact.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="coolsb/coolsb_internal.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="coolsb/coolsblib.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="coolsb/coolsblib.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="coolsb/coolscroll.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="coolsb/coolscroll.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="coolsb/userdefs.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="extBackg.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="extBackg.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="forkthread.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="forkthread.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="init.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="m_avatars.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="m_cln_skinedit.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="m_clui.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="m_cluiframes.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="m_fontservice.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="m_metacontacts.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="m_updater.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="m_variables.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="resource.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="resource.rc">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="rowheight_funcs.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="rowheight_funcs.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="statusbar.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="statusfloater.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="utf.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="viewmodes.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="wallpaper.c">
+        <itemTool>0</itemTool>
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>

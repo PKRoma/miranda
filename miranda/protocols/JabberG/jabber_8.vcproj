@@ -19,7 +19,6 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -49,7 +48,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../../include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;JABBER_EXPORTS;_USE_32BIT_TIME_T"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;JABBER_EXPORTS"
 				ExceptionHandling="0"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -78,6 +77,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib version.lib comctl32.lib"
+				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				GenerateMapFile="false"
@@ -116,7 +116,6 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -151,7 +150,7 @@
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="../../include"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;JABBER_EXPORTS;_USE_32BIT_TIME_T"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;JABBER_EXPORTS"
 				StringPooling="true"
 				ExceptionHandling="0"
 				RuntimeLibrary="2"
@@ -223,7 +222,6 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="1"
@@ -253,12 +251,11 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="3"
-				InlineFunctionExpansion="2"
+				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="2"
-				OmitFramePointers="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="../../include"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;JABBER_EXPORTS;_USE_32BIT_TIME_T"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;JABBER_EXPORTS"
 				StringPooling="true"
 				ExceptionHandling="0"
 				RuntimeLibrary="2"
@@ -332,7 +329,6 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="1"
@@ -362,7 +358,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../../include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;JABBER_EXPORTS;_USE_32BIT_TIME_T"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;JABBER_EXPORTS"
 				StringPooling="false"
 				ExceptionHandling="0"
 				BasicRuntimeChecks="3"
@@ -393,6 +389,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib version.lib comctl32.lib"
+				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
@@ -590,6 +587,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\jabber_events.cpp"
+				>
+			</File>
+			<File
 				RelativePath="jabber_file.cpp"
 				>
 				<FileConfiguration
@@ -763,10 +764,6 @@
 			</File>
 			<File
 				RelativePath=".\jabber_icolib.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\jabber_opttree.cpp"
 				>
 			</File>
 			<File
@@ -1030,6 +1027,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\jabber_notes.cpp"
+				>
+			</File>
+			<File
 				RelativePath="jabber_opt.cpp"
 				>
 				<FileConfiguration
@@ -1070,6 +1071,10 @@
 						BasicRuntimeChecks="3"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\jabber_opttree.cpp"
+				>
 			</File>
 			<File
 				RelativePath="jabber_password.cpp"
@@ -1115,6 +1120,10 @@
 			</File>
 			<File
 				RelativePath=".\jabber_privacy.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\jabber_proto.cpp"
 				>
 			</File>
 			<File
@@ -1170,48 +1179,6 @@
 			<File
 				RelativePath=".\jabber_secur.cpp"
 				>
-			</File>
-			<File
-				RelativePath="jabber_ssl.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						BasicRuntimeChecks="3"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						BasicRuntimeChecks="3"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\jabber_std.cpp"
@@ -1523,6 +1490,14 @@
 				RelativePath=".\jabber_zstream.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\MString.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ui_utils.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -1530,10 +1505,6 @@
 			>
 			<File
 				RelativePath="jabber.h"
-				>
-			</File>
-			<File
-				RelativePath=".\jabber_opttree.h"
 				>
 			</File>
 			<File
@@ -1562,6 +1533,14 @@
 			</File>
 			<File
 				RelativePath="jabber_list.h"
+				>
+			</File>
+			<File
+				RelativePath=".\jabber_notes.h"
+				>
+			</File>
+			<File
+				RelativePath=".\jabber_opttree.h"
 				>
 			</File>
 			<File
@@ -1597,6 +1576,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ui_utils.h"
+				>
+			</File>
+			<File
 				RelativePath=".\version.h"
 				>
 			</File>
@@ -1606,7 +1589,23 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
+				RelativePath=".\icos\add2roster.ico"
+				>
+			</File>
+			<File
 				RelativePath="icos\addcontact.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\arrow_down.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\arrow_up.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\auth_revoke.ico"
 				>
 			</File>
 			<File
@@ -1614,7 +1613,35 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icos\bookmarks.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\command.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\console.ico"
+				>
+			</File>
+			<File
 				RelativePath="icos\delete.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\disco_fail.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\disco_in_progress.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\disco_ok.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\filter.ico"
 				>
 			</File>
 			<File
@@ -1634,11 +1661,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icos\go.ico"
+				>
+			</File>
+			<File
 				RelativePath="icos\grant.ico"
 				>
 			</File>
 			<File
 				RelativePath="icos\group.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\home.ico"
 				>
 			</File>
 			<File
@@ -1654,7 +1689,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icos\login.ico"
+				>
+			</File>
+			<File
 				RelativePath="icos\message.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\message_allow.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\message_deny.ico"
 				>
 			</File>
 			<File
@@ -1662,7 +1709,59 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icos\openid.ico"
+				>
+			</File>
+			<File
 				RelativePath="icos\pages.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\plist_active.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\plist_any.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\plist_default.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\presence_in_allow.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\presence_in_deny.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\presence_out_allow.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\presence_out_deny.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\privacy_lists.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\query_allow.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\query_deny.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\refresh.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\refresh_node.ico"
 				>
 			</File>
 			<File
@@ -1674,11 +1773,59 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icos\reset_filter.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\roster.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\rss.ico"
+				>
+			</File>
+			<File
 				RelativePath="icos\save.ico"
 				>
 			</File>
 			<File
+				RelativePath=".\icos\server.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\service_discovery.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\store.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\transport.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\transport_local.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\user2room.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\version.rc"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\view_as_list.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\view_as_tree.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\weather.ico"
 				>
 			</File>
 			<File

@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2008 Boris Krasnovskiy.
+Copyright (c) 2006-2009 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -18,28 +18,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// this plugin is for Miranda 0.6 only
-#define MIRANDA_VER 0x0700
+// this plugin is for Miranda 0.8 only
+#define MIRANDA_VER 0x0800
 
-#if defined(UNICODE) && !defined(_UNICODE)
-	#define _UNICODE
-#endif
+#include "m_stdhdr.h"
 
-#if _MSC_VER < 1400
-	#include <malloc.h>
-#endif
-
-#if defined(_DEBUG) && !defined(__GNUC__)
-	#define _CRTDBG_MAP_ALLOC
-	#include <stdlib.h>
-	#include <crtdbg.h>
-#endif
-
-#if _MSC_VER >= 1400
-	#include <malloc.h>
-#endif
-
-#define _WIN32_WINNT 0x0400
 #include <windows.h>
 #include <commctrl.h>
 
@@ -57,6 +40,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <m_clc.h>
 #include <m_clist.h>
+#include <m_clistint.h>
 #include <m_clui.h>
 #include <m_idle.h>
 #include <m_icolib.h>
@@ -65,6 +49,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <m_protocols.h>
 #include <m_protomod.h>
 #include <m_protosvc.h>
+#include <m_protoint.h>
 #include <m_skin.h>
 #include <m_system.h>
 #include <m_system_cpp.h>
@@ -102,12 +87,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define ERR_NOT_ONLINE                   217
 #define ERR_ALREADY_IN_THE_MODE          218
 #define ERR_ALREADY_IN_OPPOSITE_LIST     219
+#define ERR_CONTACT_LIST_FAILED          241
 #define ERR_SWITCHBOARD_FAILED           280
 #define ERR_NOTIFY_XFR_FAILED            281
 #define ERR_REQUIRED_FIELDS_MISSING      300
 #define ERR_NOT_LOGGED_IN                302
 #define ERR_INTERNAL_SERVER              500
 #define ERR_DB_SERVER                    501
+#define ERR_LIST_UNAVAILABLE             508
 #define ERR_FILE_OPERATION               510
 #define ERR_MEMORY_ALLOC                 520
 #define ERR_SERVER_BUSY                  600
@@ -148,6 +135,7 @@ const char MSN_USER_AGENT[] =           "Mozilla/4.0 (compatible; MSIE 6.0; Wind
 
 #define MS_GOTO_INBOX		"/GotoInbox"
 #define MS_EDIT_PROFILE		"/EditProfile"
+#define MS_EDIT_ALERTS		"/EditAlerts"
 #define MS_VIEW_STATUS		"/ViewMsnStatus"
 #define MS_SET_NICKNAME_UI  "/SetNicknameUI"
 
@@ -157,6 +145,8 @@ const char MSN_USER_AGENT[] =           "Mozilla/4.0 (compatible; MSIE 6.0; Wind
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN plugin functions
 
+struct CMsnProto;
+
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
 #define NEWTSTR_ALLOCA(A) (A==NULL)?NULL:_tcscpy((TCHAR*)alloca(sizeof(TCHAR)*(_tcslen(A)+1)),A)
 
@@ -165,59 +155,24 @@ const char MSN_USER_AGENT[] =           "Mozilla/4.0 (compatible; MSIE 6.0; Wind
 #define	MSN_HOTMAIL_POPUP   4
 #define MSN_SHOW_ERROR      8
 #define	MSN_ALERT_POPUP	    16
-void  MSN_ShowPopup( const TCHAR* nickname, const TCHAR* msg, int flags, const char* url );
-void  MSN_ShowPopup( const HANDLE hContact, const TCHAR* msg, int flags );
 
-LONG		MSN_SendPacket( HANDLE, const char* cmd, const char* params, ... );
-char*		MirandaStatusToMSN( int status );
-WORD		MSNStatusToMiranda( const char* status );
 void        HtmlDecode( char* str );
 char*       HtmlEncode( const char* str );
-WCHAR*      HtmlEncodeW( const WCHAR* str );
-#if defined( _UNICODE )
-	#define  HtmlEncodeT HtmlEncodeW
-#else
-	#define  HtmlEncodeT HtmlEncode
-#endif
 bool		txtParseParam (const char* szData, const char* presearch, const char* start, const char* finish, char* param, const int size);
 void		stripBBCode( char* src );
 char*		MSN_Base64Decode( const char* str );
 
-void     	UrlDecode( char*str );
-void     	UrlEncode( const char *src, char *dest, size_t cbDest );
+void     	UrlDecode( char* str );
+void     	UrlEncode( const char* src, char* dest, size_t cbDest );
 
-HANDLE      MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, int addIfNeeded, int temporary );
-HANDLE      MSN_HContactFromEmailT( const TCHAR* msnEmail );
-HANDLE      MSN_HContactById( const char* szGuid );
+void		__cdecl MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* );
 
-bool		MSN_IsMyContact( HANDLE hContact );
-bool		MSN_IsMeByContact( HANDLE hContact, char* szEmail  = NULL );
-int         MSN_AddContact( char* uhandle,char* nick ); //returns clist ID
-void        MSN_AddUser( HANDLE hContact, const char* email, int flags );
-void        MSN_AddAuthRequest( HANDLE hContact, const char *email, const char *nick );
-int         MSN_ContactFromHandle( char* uhandle ); //get cclist id from Uhandle
-void        MSN_DebugLog( const char* fmt, ... );
-void        MSN_HandleFromContact( unsigned long uin, char* uhandle );
-
-void     __cdecl     MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* );
-void        MSN_GoOffline( void );
 char*		MSN_GetAvatarHash(char* szContext);
 void        MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t cbLen );
-int			MSN_GetImageFormat(void* buf, char** ext);
-void        MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, size_t cbLen, char* SmileyName, int Type);
-LPTSTR      MSN_GetErrorText( DWORD parErrorCode );
-void        MSN_SendStatusMessage( const char* msg );
-long		MSN_SendSMS(char* tel, char* txt);
-void        MSN_SetServerStatus( int newStatus );
-void        LoadOptions( void );
+int			MSN_GetImageFormat(void* buf, const char** ext);
 
-int         MSN_SendNickname(char *nickname);
-#if defined( _UNICODE )
-	int      MSN_SendNicknameW( WCHAR* nickname);
-	#define  MSN_SendNicknameT MSN_SendNicknameW
-#else
-	#define  MSN_SendNicknameT MSN_SendNickname
-#endif
+#define		MSN_SendNicknameA(a) MSN_SendNicknameUtf(mir_utf8encode(a))
+#define		MSN_SendNicknameT(a) MSN_SendNicknameUtf(mir_utf8encodeT(a))
 
 #if defined( _DEBUG )
 #define MSN_CallService CallService
@@ -225,25 +180,9 @@ int         MSN_SendNickname(char *nickname);
 int         MSN_CallService( const char* szSvcName, WPARAM wParam, LPARAM lParam );
 #endif
 
-HANDLE      MSN_CreateProtoServiceFunction( const char*, MIRANDASERVICE );
-void        MSN_DeleteSetting( HANDLE hContact, const char* valueName );
 void        MSN_EnableMenuItems( bool );
 void		MSN_FreeVariant( DBVARIANT* dbv );
-char*       MSN_GetContactName( HANDLE hContact );
 TCHAR*      MSN_GetContactNameT( HANDLE hContact );
-DWORD       MSN_GetDword( HANDLE hContact, const char* valueName, DWORD parDefltValue );
-DWORD       MSN_GetByte( const char* valueName, int parDefltValue );
-int         MSN_GetStaticString( const char* valueName, HANDLE hContact, char* dest, unsigned dest_len );
-int         MSN_GetStringT( const char* valueName, HANDLE hContact, DBVARIANT* dbv );
-WORD        MSN_GetWord( HANDLE hContact, const char* valueName, int parDefltValue );
-int         MSN_SendBroadcast( HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam );
-DWORD       MSN_SetByte( const char* valueName, BYTE parValue );
-DWORD       MSN_SetDword( HANDLE hContact, const char* valueName, DWORD parValue );
-DWORD       MSN_SetWord( HANDLE hContact, const char* valueName, WORD parValue );
-DWORD       MSN_SetString( HANDLE hContact, const char* valueName, const char* parValue );
-DWORD       MSN_SetStringT( HANDLE hContact, const char* valueName, const TCHAR* parValue );
-DWORD       MSN_SetStringUtf( HANDLE hContact, const char* valueName, char* parValue );
-void        MSN_ShowError( const char* msgtext, ... );
 char*       MSN_Translate( const char* str );
 unsigned    MSN_GenRandom(void);
 
@@ -251,25 +190,13 @@ HANDLE      GetIconHandle( int iconId );
 HICON       LoadIconEx( const char* );
 void        ReleaseIconEx( const char* );
 
-int         addCachedMsg( const char* id, const char* msg, const size_t offset, 
-						 const size_t portion, const size_t totsz, const bool bychunk );
-bool        getCachedMsg( const int idx, char*& msg, size_t& size );
-bool        getCachedMsg( const char* id, char*& msg, size_t& size );
-void        clearCachedMsg( int idx = -1 );
-void        CachedMsg_Uninit( void );
-
 void        MsnInitIcons( void );
-void        MsnInitMenus( void );
-
-void        InitCustomFolders(void);
 
 char*       httpParseHeader(char* buf, unsigned& status);
 int         sttDivideWords( char* parBuffer, int parMinItems, char** parDest );
-void		sttNotificationMessage( char* msgBody, bool isInitial );
-int			MSN_SendOIM(const char* szEmail, const char* msg);
 void		MSN_MakeDigest(const char* chl, char* dgst);
-int			MSN_GetPassportAuth( char* authChallengeInfo );
 char*		getNewUuid(void);
+bool        SetupIeProxy(HANDLE hNetlib, bool secur);
 
 TCHAR* EscapeChatTags(const TCHAR* pszText);
 TCHAR* UnEscapeChatTags(TCHAR* str_in);
@@ -280,7 +207,15 @@ char*  rtrim( char* string );
 wchar_t* rtrim( wchar_t* string );
 char* arrayToHex(BYTE* data, size_t datasz);
 
+#if defined(_UNICODE) || defined(_WIN64)
+
+#define MyInterlockedIncrement InterlockedIncrement
+
+#else
+
 extern LONG (WINAPI *MyInterlockedIncrement)(PLONG pVal);
+
+#endif
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // PNG library interface
@@ -290,6 +225,7 @@ typedef struct _tag_PopupData
 	unsigned flags;
 	HICON hIcon;
 	char* url;
+	CMsnProto* proto;
 } PopupData;
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -344,12 +280,12 @@ struct HReadBuffer
 	HReadBuffer( ThreadData* info, int iStart = 0 );
 	~HReadBuffer();
 
-	BYTE* surelyRead( int parBytes );
+	BYTE* surelyRead( size_t parBytes );
 
 	ThreadData* owner;
 	BYTE*			buffer;
-	int			totalDataSize;
-	int			startOffset;
+	size_t			totalDataSize;
+	size_t			startOffset;
 };
 
 enum TInfoType
@@ -364,7 +300,7 @@ enum TInfoType
 
 struct filetransfer
 {
-	filetransfer();
+	filetransfer(CMsnProto* prt);
 	~filetransfer( void );
 
 	void close( void );
@@ -372,16 +308,14 @@ struct filetransfer
 	int  create( void );
 	int openNext( void );
 
+	CMsnProto* proto;
+
 	PROTOFILETRANSFERSTATUS std;
 
 	bool        bCanceled;		// flag to interrupt a transfer
 	bool        bCompleted;		// was a FT ever completed?
-	bool        inmemTransfer;	//	flag: the file being received is to be stored in memory
-
-	union {
-		int      fileId;			// handle of file being transferring (r/w)
-		char*	 fileBuffer;		// buffer of memory to handle the file
-	};
+	
+	int			fileId;			// handle of file being transferring (r/w)
 
 	HANDLE		hLockHandle;
 
@@ -391,8 +325,8 @@ struct filetransfer
 
 	unsigned    p2p_sessionid;	// session id
 	unsigned    p2p_acksessid;	// acknowledged session id
-	unsigned    p2p_sendmsgid; // send message id
-	unsigned    p2p_byemsgid;  // bye message id
+	unsigned    p2p_sendmsgid;  // send message id
+	unsigned    p2p_byemsgid;   // bye message id
 	unsigned    p2p_waitack;    // invite message id
 	unsigned    p2p_ackID;		// number of ack's state
 	unsigned    p2p_appID;		// application id: 1 = avatar, 2 = file transfer
@@ -405,7 +339,7 @@ struct filetransfer
 	//---- receiving a file
 	wchar_t*    wszFileName;	// file name in Unicode, for receiving
 	char*       szInvcookie;	// cookie for receiving
-	
+
 	unsigned __int64 lstFilePtr;
 };
 
@@ -426,17 +360,49 @@ struct directconnection
 	time_t ts;
 
 	bool useHashedNonce;
+
+	CMsnProto* proto;
 };
+
+
+#pragma pack(1)
+
+typedef struct _tag_HFileContext
+{
+	unsigned len; 
+	unsigned ver;
+	unsigned __int64 dwSize;
+	unsigned type;
+	wchar_t wszFileName[ MAX_PATH ];
+	char unknown[30];
+	unsigned id;
+	char unknown2[64];
+} HFileContext;
+
+typedef struct _tad_P2P_Header
+{
+	unsigned          mSessionID;
+	unsigned          mID;
+	unsigned __int64  mOffset;
+	unsigned __int64  mTotalSize;
+	unsigned          mPacketLen;
+	unsigned          mFlags;
+	unsigned          mAckSessionID;
+	unsigned          mAckUniqueID;
+	unsigned __int64  mAckDataSize;
+} P2P_Header;
+
+#pragma pack()
+
+bool p2p_IsDlFileOk(filetransfer* ft);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	Thread handling functions and datatypes
 
-typedef void ( __cdecl* pThreadFunc )( void* );
-
 struct TQueueItem
 {
 	TQueueItem* next;
-	int  datalen;
+	size_t  datalen;
 	char data[1];
 };
 
@@ -444,13 +410,16 @@ struct TQueueItem
 #define MSG_REQUIRE_ACK      2
 #define MSG_RTL              4
 
+struct CMsnProto;
+typedef void ( __cdecl CMsnProto::*MsnThreadFunc )( void* );
+
 struct ThreadData
 {
 	ThreadData();
 	~ThreadData();
 
 	TInfoType      mType;            // thread type
-	pThreadFunc    mFunc;            // thread entry point
+	MsnThreadFunc  mFunc;            // thread entry point
 	char           mServer[80];      // server name
 
 	HANDLE         s;	               // NetLib connection for the thread
@@ -461,15 +430,18 @@ struct ThreadData
 	bool           mIsMainThread;
 	int            mWaitPeriod;
 
+	CMsnProto*     proto;
+
 	//----| for gateways |----------------------------------------------------------------
 	char           mSessionID[ 50 ]; // Gateway session ID
 	char           mGatewayIP[ 80 ]; // Gateway IP address
 	int            mGatewayTimeout;
 	char*          mReadAheadBuffer;
 	char*          mReadAheadBufferPtr;
-	int            mEhoughData;
+	size_t         mEhoughData;
 	bool           sessionClosed;
 	bool		   termPending;
+	bool		   gatewayType;
 
 	TQueueItem*	   mFirstQueueItem;
 	unsigned       numQueueItems;
@@ -496,37 +468,23 @@ struct ThreadData
 	void           applyGatewayData( HANDLE hConn, bool isPoll );
 	void           getGatewayUrl( char* dest, int destlen, bool isPoll );
 	void           processSessionData( const char* );
-	void           startThread( pThreadFunc );
+	void           startThread( MsnThreadFunc , CMsnProto *prt );
 
-	int            send( const char data[], int datalen );
-	int            recv( char* data, long datalen );
-	int            recv_dg( char* data, long datalen );
+	int            send( const char data[], size_t datalen );
+	int            recv( char* data, size_t datalen );
+	int            recv_dg( char* data, size_t datalen );
 	bool           isTimeout( void );
 	char*          httpTransact(char* szCommand, size_t cmdsz, size_t& bdysz);
 
 	void           sendCaps( void );
-	LONG           sendMessage( int msgType, const char* msg, int parFlags );
+	LONG           sendMessage( int msgType, const char* email, int netId, const char* msg, int parFlags );
 	LONG           sendRawMessage( int msgType, const char* data, int datLen );
 	LONG           sendPacket( const char* cmd, const char* fmt, ... );
+
+	int			 contactJoined( HANDLE hContact );
+	int			 contactLeft( HANDLE hContact );
 };
 
-void		 MSN_CloseConnections( void );
-void		 MSN_CloseThreads( void );
-int			 MSN_ContactJoined( ThreadData* parInfo, HANDLE hContact );
-int			 MSN_ContactLeft( ThreadData* parInfo, HANDLE hContact );
-void		 MSN_InitThreads( void );
-int			 MSN_GetChatThreads( ThreadData** parResult );
-int          MSN_GetActiveThreads( ThreadData** );
-ThreadData*  MSN_GetThreadByConnection( HANDLE hConn );
-ThreadData*	 MSN_GetThreadByContact( HANDLE hContact, TInfoType type = SERVER_SWITCHBOARD );
-ThreadData*  MSN_GetP2PThreadByContact( HANDLE hContact );
-void         MSN_StartP2PTransferByContact( HANDLE hContact );
-ThreadData*	 MSN_GetThreadByPort( WORD wPort );
-ThreadData*  MSN_GetUnconnectedThread( HANDLE hContact );
-ThreadData*  MSN_GetOtherContactThread( ThreadData* thread );
-ThreadData*  MSN_GetThreadByTimer( UINT timerId );
-void		 MSN_StartStopTyping( ThreadData* info, bool start );
-ThreadData*	 MSN_StartSB(HANDLE hContact, bool& isOffline);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN P2P session support
@@ -549,41 +507,8 @@ ThreadData*	 MSN_StartSB(HANDLE hContact, bool& isOffline);
 
 
 
-void  p2p_clearDormantSessions( void );
-void  p2p_cancelAllSessions( void );
-void  p2p_redirectSessions( HANDLE hContact );
+inline bool IsChatHandle(HANDLE hContact) { return (INT_PTR)hContact < 0; }
 
-void  p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft = NULL );
-void  p2p_processMsg( ThreadData* info, char* msgbody );
-void  p2p_sendStatus( filetransfer* ft, long lStatus );
-void  p2p_sendBye( filetransfer* ft );
-void  p2p_sendCancel( filetransfer* ft );
-void  p2p_sendRedirect( filetransfer* ft );
-
-void  p2p_sendFeedStart( filetransfer* ft );
-
-void  p2p_registerSession( filetransfer* ft );
-void  p2p_unregisterSession( filetransfer* ft );
-void  p2p_sessionComplete( filetransfer* ft );
-
-filetransfer*  p2p_getAvatarSession( HANDLE hContact );
-filetransfer*  p2p_getThreadSession( HANDLE hContact, TInfoType mType );
-filetransfer*  p2p_getSessionByID( unsigned id );
-filetransfer*  p2p_getSessionByUniqueID( unsigned id );
-filetransfer*  p2p_getSessionByCallID( const char* CallID );
-
-bool  p2p_sessionRegistered( filetransfer* ft );
-bool  p2p_isAvatarOnly( HANDLE hContact );
-unsigned p2p_getMsgId( HANDLE hContact, int inc );
-
-void  p2p_registerDC( directconnection* ft );
-void  p2p_unregisterDC( directconnection* dc );
-directconnection*  p2p_getDCByCallID( const char* CallID );
-
-void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Invcookie );
-
-void MSN_ChatStart(ThreadData* info);
-void MSN_KillChatSession(TCHAR* id);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	Message queue
@@ -603,15 +528,31 @@ struct MsgQueueEntry
 	int				flags;
 };
 
-int		 MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int msglen, filetransfer* ft = NULL, int flags = 0 );
-HANDLE	 MsgQueue_CheckContact( HANDLE hContact, time_t tsc = 0 );
-HANDLE	 MsgQueue_GetNextRecipient( void );
-bool	 MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal );
-int		 MsgQueue_NumMsg( HANDLE hContact );
-void     MsgQueue_Clear( HANDLE hContact = NULL, bool msg = false );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	User lists
+
+struct ServerGroupItem
+{
+	char* id;
+	char* name; // in UTF8
+};
+
+struct MsnContact
+{
+	char *email;
+	int list;
+	int netId;
+
+	~MsnContact() { mir_free(email); }
+};
+
+#define NETID_UNKNOWN	0x0000
+#define NETID_MSN		0x0001
+#define NETID_LCS		0x0002
+#define NETID_MOB		0x0004
+#define NETID_YAHOO		0x0020
+#define NETID_EMAIL		0x8000
 
 #define	LIST_FL		0x0001
 #define	LIST_AL		0x0002
@@ -620,31 +561,6 @@ void     MsgQueue_Clear( HANDLE hContact = NULL, bool msg = false );
 #define LIST_PL		0x0010
 
 #define	LIST_REMOVE	0x0100
-
-#define	IsValidListCode(n)  ((n)!=0)
-
-int		 Lists_NameToCode( const char* name );
-int		 Lists_Add( int list, HANDLE hContact );
-bool	 Lists_IsInList( int list, HANDLE hContact );
-int		 Lists_GetMask( HANDLE hContact );
-void	 Lists_Remove( int list, HANDLE hContact );
-void	 Lists_Wipe( void );
-
-/////////////////////////////////////////////////////////////////////////////////////////
-//	MSN server groups
-
-bool   MSN_AddGroup( const char* pName, const char* pId );
-void   MSN_AddServerGroup( const char* pszGroupName, HANDLE hContact );
-void   MSN_DeleteGroup( const char* pId );
-void   MSN_FreeGroups( void );
-LPCSTR MSN_GetGroupById( const char* pId );
-LPCSTR MSN_GetGroupByName( const char* pName );
-void   MSN_MoveContactToGroup( HANDLE hContact, const char* grpName );
-void   MSN_RemoveEmptyGroups( void );
-void   MSN_RenameServerGroup( LPCSTR szId, const char* newName );
-void   MSN_SetGroupName( const char* pId, const char* pName );
-void   MSN_SyncContactToServerGroup( HANDLE hContact, char* userId, char* groupId );
-void   MSN_UploadServerGroups( char* group );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN plugin options
@@ -671,8 +587,6 @@ typedef struct _tag_MYOPTIONS
 }
 MYOPTIONS;
 
-extern MYOPTIONS MyOptions;
-
 /////////////////////////////////////////////////////////////////////////////////////////
 //	Windows error class
 
@@ -690,56 +604,21 @@ struct TWinErrorCode
 /////////////////////////////////////////////////////////////////////////////////////////
 //	External variables
 
-#define MSN_NUM_MODES 7
+#define MSN_NUM_MODES 8
 
-struct MSN_StatusMessage
-{
-	unsigned  m_mode;
-	char*     m_msg;
-};
+const char msnProtChallenge[] = "ILTXC!4IXB5FB*PX";
+const char msnProductID[] = "PROD0119GSJUC$18";
+const char msnProductVer[] = "8.5.1302";
+const char msnProtID[] = "MSNP15";
 
-extern  MSN_StatusMessage    msnModeMsgs[ MSN_NUM_MODES ];
 
-extern  LISTENINGTOINFO      msnCurrentMedia;
-
-extern	ThreadData*	msnNsThread;
-extern	bool        msnLoggedIn;
-
-extern	char*	    msnProtocolName;
-extern	int         msnSearchID;
-extern	char*       msnExternalIP;
-extern	unsigned	msnStatusMode,
-					msnDesiredStatus;
-
-extern	char*       msnProtChallenge;
-extern	char*       msnProductID;
-
-extern	char*		ModuleName;
-extern	char*	    mailsoundname;
-extern	char*	    alertsoundname;
-
-extern	char*       sid;
-extern	char*       passport;
-extern	char*       urlId;
-extern	char*       MSPAuth;
-extern  char*       profileURL;
-extern  char*       profileURLId;
-extern  char*       rru;
-extern  unsigned	langpref;
-
-extern char pAuthToken[];
-extern char tAuthToken[]; 
-
-extern	HANDLE		hNetlibUser;
 extern	HINSTANCE	hInst;
-extern	unsigned	msnOtherContactsBlocked;
-
 extern	bool		msnHaveChatDll;
 
 ///////////////////////////////////////////////////////////////////////////////
 // UTF8 encode helper
 
-class UTFEncoder 
+class UTFEncoder
 {
 private:
 	char* m_body;
@@ -767,6 +646,20 @@ typedef enum _tag_ConEnum
 	conISALike
 } ConEnum;
 
+#pragma pack(1)
+typedef struct _tag_UDPProbePkt
+{
+	unsigned char  version;
+	unsigned char  serviceCode;
+	unsigned short clientPort;
+	unsigned	   clientIP;
+	unsigned short discardPort;
+	unsigned short testPort;
+	unsigned	   testIP;
+	unsigned       trId;
+} UDPProbePkt;
+#pragma pack()
+
 extern const char* conStr[];
 
 typedef struct _tag_MyConnectionType
@@ -786,30 +679,17 @@ typedef struct _tag_MyConnectionType
 	void CalculateWeight(void);
 } MyConnectionType;
 
-extern MyConnectionType MyConnection;
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// Basic SSL operation class
-
-struct SSL_Base
+struct chunkedmsg
 {
-	virtual	~SSL_Base();
+	char* id;
+	char* msg;
+	size_t size;
+	size_t recvsz;
+	bool bychunk;
 
-	virtual  int init(void) = 0;
-	virtual  char* getSslResult( const char* parUrl, const char* parAuthInfo, const char* hdrs ) = 0;
+	chunkedmsg(const char* tid, const size_t totsz, const bool bychunk);
+	~chunkedmsg();
+
+	void add(const char* msg, const size_t offset, const size_t portion);
+	bool get(char*& tmsg, size_t& tsize);
 };
-
-class SSLAgent
-{
-private:
-	SSL_Base* pAgent;
-
-public:
-	SSLAgent();
-	~SSLAgent();
-
-	char* getSslResult( const char* parUrl, const char* parAuthInfo, const char* hdrs,
-		unsigned& status, MimeHeaders& httpinfo, char*& htmlbody);
-};
-
-

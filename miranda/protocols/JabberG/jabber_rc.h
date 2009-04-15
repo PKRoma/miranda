@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2005-09  George Hazan
 Copyright ( C ) 2007     Maxim Mluhov
 
 XEP-0146 support for Miranda IM
@@ -21,10 +21,10 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_privacy.cpp,v $
-Revision       : $Revision: 5337 $
-Last change on : $Date: 2007-04-28 13:26:31 +0300 (бс, 28 ря№ 2007) $
-Last change by : $Author: ghazan $
+File name      : $URL$
+Revision       : $Revision$
+Last change on : $Date$
+Last change by : $Author$
 
 */
 
@@ -33,19 +33,11 @@ Last change by : $Author: ghazan $
 
 class CJabberAdhocSession;
 
-void JabberHandleAdhocCommandRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
-int JabberAdhocSetStatusHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
-int JabberAdhocOptionsHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
-int JabberAdhocForwardHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
-int JabberAdhocLockWSHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
-int JabberAdhocQuitMirandaHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
-int JabberAdhocLeaveGroupchatsHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
-
 #define JABBER_ADHOC_HANDLER_STATUS_EXECUTING            1
 #define JABBER_ADHOC_HANDLER_STATUS_COMPLETED            2
 #define JABBER_ADHOC_HANDLER_STATUS_CANCEL               3
 #define JABBER_ADHOC_HANDLER_STATUS_REMOVE_SESSION       4
-typedef int ( *JABBER_ADHOC_HANDLER )( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
+typedef int ( CJabberProto::*JABBER_ADHOC_HANDLER )( HXML iqNode, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
 
 // 5 minutes to fill out form :)
 #define JABBER_ADHOC_SESSION_EXPIRE_TIME                 300000
@@ -53,7 +45,7 @@ typedef int ( *JABBER_ADHOC_HANDLER )( XmlNode *iqNode, void *usedata, CJabberIq
 class CJabberAdhocSession
 {
 protected:
-	TCHAR* m_szSessionId;
+	CMString m_szSessionId;
 	CJabberAdhocSession* m_pNext;
 	DWORD m_dwStartTime;
 
@@ -62,18 +54,10 @@ protected:
 
 	DWORD m_dwStage;
 public:
-	CJabberAdhocSession()
-	{
-		ZeroMemory( this, sizeof(CJabberAdhocSession) );
-		TCHAR szId[ 128 ];
-		mir_sntprintf( szId, SIZEOF(szId), _T("%u%u"), JabberSerialNext(), GetTickCount() );
-		m_szSessionId = mir_tstrdup( szId );
-		m_dwStartTime = GetTickCount();
-	}
+	CJabberProto* ppro;
+	CJabberAdhocSession( CJabberProto* global );
 	~CJabberAdhocSession()
 	{
-		if ( m_szSessionId )
-			mir_free( m_szSessionId );
 		if ( m_bAutofreeUserData && m_pUserData )
 			mir_free( m_pUserData );
 		if ( m_pNext )
@@ -93,7 +77,7 @@ public:
 	{
 		return m_dwStartTime;
 	}
-	TCHAR* GetSessionId()
+	LPCTSTR GetSessionId()
 	{
 		return m_szSessionId;
 	}
@@ -126,14 +110,16 @@ protected:
 	TCHAR* m_szName;
 	CJabberAdhocNode* m_pNext;
 	JABBER_ADHOC_HANDLER m_pHandler;
+	CJabberProto* m_pProto;
 public:
-	CJabberAdhocNode( TCHAR* szJid, TCHAR* szNode, TCHAR* szName, JABBER_ADHOC_HANDLER pHandler )
+	CJabberAdhocNode( CJabberProto* pProto, TCHAR* szJid, TCHAR* szNode, TCHAR* szName, JABBER_ADHOC_HANDLER pHandler )
 	{
 		ZeroMemory( this, sizeof( CJabberAdhocNode ));
 		replaceStr( m_szJid, szJid );
 		replaceStr( m_szNode, szNode );
 		replaceStr( m_szName, szName );
 		m_pHandler = pHandler;
+		m_pProto = pProto;
 	}
 	~CJabberAdhocNode()
 	{
@@ -168,22 +154,23 @@ public:
 	{
 		return m_szName;
 	}
-	BOOL CallHandler( XmlNode* iqNode, void* usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
+	BOOL CallHandler( HXML iqNode, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
 	{
-		if ( !m_pHandler )
+		if ( m_pHandler == NULL )
 			return FALSE;
-		return m_pHandler( iqNode, usedata, pInfo, pSession );
+		return (m_pProto->*m_pHandler)( iqNode, pInfo, pSession );
 	}
 };
 
 class CJabberAdhocManager
 {
 protected:
+	CJabberProto* m_pProto;
 	CJabberAdhocNode* m_pNodes;
 	CJabberAdhocSession* m_pSessions;
 	CRITICAL_SECTION m_cs;
 
-	CJabberAdhocSession* FindSession( TCHAR* szSession )
+	CJabberAdhocSession* FindSession( const TCHAR* szSession )
 	{
 		CJabberAdhocSession* pSession = m_pSessions;
 		while ( pSession ) {
@@ -196,7 +183,7 @@ protected:
 
 	CJabberAdhocSession* AddNewSession()
 	{
-		CJabberAdhocSession* pSession = new CJabberAdhocSession();
+		CJabberAdhocSession* pSession = new CJabberAdhocSession( m_pProto );
 		if ( !pSession )
 			return NULL;
 
@@ -206,7 +193,7 @@ protected:
 		return pSession;
 	}
 
-	CJabberAdhocNode* FindNode( TCHAR* szNode )
+	CJabberAdhocNode* FindNode( const TCHAR* szNode )
 	{
 		CJabberAdhocNode* pNode = m_pNodes;
 		while ( pNode ) {
@@ -269,9 +256,10 @@ protected:
 	}
 
 public:
-	CJabberAdhocManager()
+	CJabberAdhocManager( CJabberProto* pProto )
 	{
 		ZeroMemory( this, sizeof( CJabberAdhocManager ));
+		m_pProto = pProto;
 		InitializeCriticalSection( &m_cs );
 	}
 	~CJabberAdhocManager()
@@ -290,19 +278,10 @@ public:
 	{
 		LeaveCriticalSection( &m_cs );
 	}
-	BOOL FillDefaultNodes()
-	{
-		AddNode( NULL, _T(JABBER_FEAT_RC_SET_STATUS), _T("Set status"), JabberAdhocSetStatusHandler );
-		AddNode( NULL, _T(JABBER_FEAT_RC_SET_OPTIONS), _T("Set options"), JabberAdhocOptionsHandler );
-		AddNode( NULL, _T(JABBER_FEAT_RC_FORWARD), _T("Forward unread messages"), JabberAdhocForwardHandler );
-		AddNode( NULL, _T(JABBER_FEAT_RC_LEAVE_GROUPCHATS), _T("Leave groupchats"), JabberAdhocLeaveGroupchatsHandler );
-		AddNode( NULL, _T(JABBER_FEAT_RC_WS_LOCK), _T("Lock workstation"), JabberAdhocLockWSHandler );
-		AddNode( NULL, _T(JABBER_FEAT_RC_QUIT_MIRANDA), _T("Quit Miranda IM"), JabberAdhocQuitMirandaHandler );
-		return TRUE;
-	}
+	BOOL FillDefaultNodes();
 	BOOL AddNode( TCHAR* szJid, TCHAR* szNode, TCHAR* szName, JABBER_ADHOC_HANDLER pHandler )
 	{
-		CJabberAdhocNode* pNode = new CJabberAdhocNode( szJid, szNode, szName, pHandler );
+		CJabberAdhocNode* pNode = new CJabberAdhocNode( m_pProto, szJid, szNode, szName, pHandler );
 		if ( !pNode )
 			return FALSE;
 
@@ -323,9 +302,9 @@ public:
 	{
 		return m_pNodes;
 	}
-	BOOL HandleItemsRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo, TCHAR* szNode );
-	BOOL HandleInfoRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo, TCHAR* szNode );
-	BOOL HandleCommandRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo, TCHAR* szNode );
+	BOOL HandleItemsRequest( HXML iqNode, CJabberIqInfo* pInfo, const TCHAR* szNode );
+	BOOL HandleInfoRequest( HXML iqNode, CJabberIqInfo* pInfo, const TCHAR* szNode );
+	BOOL HandleCommandRequest( HXML iqNode, CJabberIqInfo* pInfo, const TCHAR* szNode );
 
 	BOOL ExpireSessions()
 	{
@@ -336,7 +315,5 @@ public:
 		return TRUE;
 	}
 };
-
-extern CJabberAdhocManager g_JabberAdhocManager;
 
 #endif //_JABBER_RC_H_

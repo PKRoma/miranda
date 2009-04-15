@@ -64,7 +64,7 @@ int GetProtoIconFromList(const char *szProto, int iStatus);
 int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild);
 LRESULT WarnPendingJobs(unsigned int uNrMessages);
 int AckMessage(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
-static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+static INT_PTR CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 char *MsgServiceName(HANDLE hContact, struct MessageWindowData *dat, int isUnicode);
 int RTL_Detect(WCHAR *pszwText);

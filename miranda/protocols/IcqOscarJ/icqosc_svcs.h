@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -37,58 +37,10 @@
 #ifndef __ICQOSC_SVCS_H
 #define __ICQOSC_SVCS_H
 
-/*---------* Functions *---------------*/
 
-int IcqGetCaps(WPARAM wParam, LPARAM lParam);
-int IcqGetName(WPARAM wParam, LPARAM lParam);
-int IcqLoadIcon(WPARAM wParam, LPARAM lParam);
-int IcqSetStatus(WPARAM wParam, LPARAM lParam);
-int IcqGetStatus(WPARAM wParam, LPARAM lParam);
-int IcqSetAwayMsg(WPARAM wParam, LPARAM lParam);
-int IcqGetAwayMsg(WPARAM wParam, LPARAM lParam);
-int IcqRecvAwayMsg(WPARAM wParam,LPARAM lParam);
-int IcqAuthAllow(WPARAM wParam, LPARAM lParam);
-int IcqAuthDeny(WPARAM wParam, LPARAM lParam);
-int IcqBasicSearch(WPARAM wParam, LPARAM lParam);
-int IcqSearchByEmail(WPARAM wParam, LPARAM lParam);
-int IcqSearchByDetails(WPARAM wParam, LPARAM lParam);
-int IcqCreateAdvSearchUI(WPARAM wParam, LPARAM lParam);
-int IcqSearchByAdvanced(WPARAM wParam, LPARAM lParam);
-int IcqAddToList(WPARAM wParam, LPARAM lParam);
-int IcqAddToListByEvent(WPARAM wParam, LPARAM lParam);
-int IcqSetNickName(WPARAM wParam, LPARAM lParam);
-int IcqChangeInfoEx(WPARAM wParam, LPARAM lParam);
-int IcqGetInfo(WPARAM wParam, LPARAM lParam);
-int IcqSendSms(WPARAM wParam, LPARAM lParam);
-int IcqSetApparentMode(WPARAM wParam, LPARAM lParam);
-int IcqSendMessage(WPARAM wParam, LPARAM lParam);
-int IcqSendUrl(WPARAM wParam, LPARAM lParam);
-int IcqSendContacts(WPARAM wParam, LPARAM lParam);
-int IcqSendFile(WPARAM wParam, LPARAM lParam);
-int IcqFileAllow(WPARAM wParam, LPARAM lParam);
-int IcqFileDeny(WPARAM wParam, LPARAM lParam);
-int IcqFileCancel(WPARAM wParam, LPARAM lParam);
-int IcqFileResume(WPARAM wParam, LPARAM lParam);
-int IcqGrantAuthorization(WPARAM wParam, LPARAM lParam);
-int IcqRevokeAuthorization(WPARAM wParam, LPARAM lParam);
-int IcqSendAuthRequest(WPARAM,LPARAM);
-int IcqSendYouWereAdded(WPARAM,LPARAM);
-int IcqSendUserIsTyping(WPARAM wParam, LPARAM lParam);
-int IcqAddServerContact(WPARAM wParam, LPARAM lParam);
+#define ICQ_DB_GETEVENTTEXT_MISSEDMESSAGE "ICQ/GetEventTextMissedMessage"
 
+INT_PTR icq_getEventTextMissedMessage(WPARAM wParam, LPARAM lParam);
 
-int IcqRecvMessage(WPARAM wParam, LPARAM lParam);
-int IcqRecvContacts(WPARAM wParam, LPARAM lParam);
-int IcqRecvFile(WPARAM wParam, LPARAM lParam);
-int IcqRecvAuth(WPARAM wParam, LPARAM lParam);
-
-int IcqIdleChanged(WPARAM wParam, LPARAM lParam);
-
-int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam);
-int IcqGetAvatarCaps(WPARAM wParam, LPARAM lParam);
-int IcqGetMyAvatar(WPARAM wParam, LPARAM lParam);
-int IcqSetMyAvatar(WPARAM wParam, LPARAM lParam);
-
-int IcqSetPassword(WPARAM wParam, LPARAM lParam);
 
 #endif /* __ICQOSC_SVCS_H */

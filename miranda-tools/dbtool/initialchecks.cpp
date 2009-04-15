@@ -18,11 +18,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "dbtool.h"
 
-struct DBSignature {
-  char name[15];
-  BYTE eof;
-};
-static struct DBSignature dbSignature={"Miranda ICQ DB",0x1A};
 extern DWORD sourceFileSize,spaceUsed;
 
 int WorkInitialChecks(int firstTime)
@@ -49,39 +44,7 @@ int WorkInitialChecks(int firstTime)
 		return ERROR_BAD_FORMAT;
 	}
 	_tcscpy(opts.workingFilename,opts.filename);
-	if(opts.bAggressive) {
-		HANDLE hFile;
-		BYTE buf[65536];
-		DWORD bytesRead,bytesWritten;
 
-		*_tcsrchr( opts.workingFilename, '.' ) = 0;
-		_tcscat( opts.workingFilename, TranslateT(" (Working Copy).dat"));
-		AddToStatus( STATUS_MESSAGE, TranslateT("Creating working database (aggressive mode)"));
-		SetFilePointer(opts.hFile,0,NULL,FILE_BEGIN);
-		hFile = CreateFile( opts.workingFilename,GENERIC_WRITE,FILE_SHARE_READ,NULL,CREATE_ALWAYS,FILE_FLAG_SEQUENTIAL_SCAN,NULL );
-		if ( hFile == INVALID_HANDLE_VALUE ) {
-			AddToStatus(STATUS_FATAL,TranslateT("Can't create working file (%u)"),GetLastError());
-			return ERROR_ACCESS_DENIED;
-		}
-		for(;;) {
-			ReadFile(opts.hFile,buf,sizeof(buf),&bytesRead,NULL);
-			WriteFile(hFile,buf,bytesRead,&bytesWritten,NULL);
-			if(bytesWritten<bytesRead) {
-				AddToStatus(STATUS_FATAL,TranslateT("Error writing file, probably disk full - try without aggressive mode (%u)"),GetLastError());
-				CloseHandle(hFile);
-				DeleteFile(opts.workingFilename);
-				return ERROR_HANDLE_DISK_FULL;
-			}
-			if(bytesRead<sizeof(buf)) break;
-		}
-		CloseHandle(hFile);
-		CloseHandle(opts.hFile);
-		opts.hFile = CreateFile(opts.workingFilename,GENERIC_READ|GENERIC_WRITE,FILE_SHARE_READ,NULL,OPEN_EXISTING,0,NULL);
-		if(opts.hFile==INVALID_HANDLE_VALUE) {
-			AddToStatus(STATUS_FATAL,TranslateT("Can't read from working file (%u)"),GetLastError());
-			return ERROR_ACCESS_DENIED;
-		}
-	}
 	if(opts.bCheckOnly) {
 		_tcscpy( opts.outputFilename, TranslateT("<check only>"));
 		opts.hOutFile=INVALID_HANDLE_VALUE;
@@ -95,6 +58,20 @@ int WorkInitialChecks(int firstTime)
 			AddToStatus(STATUS_FATAL,TranslateT("Can't create output file (%u)"),GetLastError());
 			return ERROR_ACCESS_DENIED;
 		}
+	}
+
+	opts.hMap = CreateFileMapping(opts.hFile, NULL, opts.bAggressive?PAGE_WRITECOPY:PAGE_READONLY, 0, 0, NULL);
+
+	if (opts.hMap)
+		opts.pFile = (BYTE*)MapViewOfFile(opts.hMap, opts.bAggressive?FILE_MAP_COPY:FILE_MAP_READ, 0, 0 ,0);
+	else {
+		AddToStatus(STATUS_FATAL,TranslateT("Can't create file mapping (%u)"),GetLastError());
+		return ERROR_ACCESS_DENIED;
+	}
+
+	if (!opts.pFile) {
+		AddToStatus(STATUS_FATAL,TranslateT("Can't create map view of file (%u)"),GetLastError());
+		return ERROR_ACCESS_DENIED;
 	}
 	if(ReadSegment(0,&dbhdr,sizeof(dbhdr))!=ERROR_SUCCESS) return ERROR_READ_FAULT;
 	if(WriteSegment(0,&dbhdr,sizeof(dbhdr))==WS_ERROR) return ERROR_HANDLE_DISK_FULL;

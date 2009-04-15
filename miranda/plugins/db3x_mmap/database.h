@@ -179,7 +179,7 @@ typedef struct
 	DBCachedContactValueList;
 
 //databasecorruption: with NULL called if any signatures are broken. very very fatal
-void DatabaseCorruption(char *text);
+void DatabaseCorruption(TCHAR *text);
 PBYTE DBRead(DWORD ofs,int bytesRequired,int *bytesAvail);	//any preview result could be invalidated by the next call
 void DBWrite(DWORD ofs,PVOID pData,int count);
 void DBFill(DWORD ofs,int bytes);

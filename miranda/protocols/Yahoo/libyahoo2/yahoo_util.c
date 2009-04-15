@@ -126,11 +126,11 @@ char ** y_strsplit(char * str, char * sep, int nelem)
 		char * s;
 		nelem=0;
 		if (*str) {
-		for(s=strstr(str, sep); s; s=strstr(s+l, sep),nelem++)
-			;
-		if(strcmp(str+strlen(str)-l, sep))
-			nelem++;
-	}
+			for(s=strstr(str, sep); s; s=strstr(s+l, sep),nelem++)
+				;
+			if(strcmp(str+strlen(str)-l, sep))
+				nelem++;
+		}
 	}
 
 	vector = y_new(char *, nelem + 1);

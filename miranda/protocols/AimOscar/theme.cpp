@@ -1,20 +1,41 @@
+/*
+Plugin of Miranda IM for communicating with users of the AIM protocol.
+Copyright (c) 2008-2009 Boris Krasnovskiy
+Copyright (C) 2005-2006 Aaron Myles Landwehr
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+#include "aim.h"
 #include "theme.h"
+
+#define MGPROC(x) GetProcAddress(themeAPIHandle,x)
+
 HMODULE  themeAPIHandle = NULL; // handle to uxtheme.dll
 HANDLE   (WINAPI *MyOpenThemeData)(HWND,LPCWSTR) = 0;
 HRESULT  (WINAPI *MyCloseThemeData)(HANDLE) = 0;
 HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT *,const RECT *) = 0;
-void ThemeSupport()
+
+void ThemeSupport(void)
 {
-	if (IsWinVerXPPlus()) {
-		if (!themeAPIHandle) {
-			themeAPIHandle = GetModuleHandleA("uxtheme");
-			if (themeAPIHandle)
-			{
-				MyOpenThemeData = (HANDLE (WINAPI *)(HWND,LPCWSTR))MGPROC("OpenThemeData");
-				MyCloseThemeData = (HRESULT (WINAPI *)(HANDLE))MGPROC("CloseThemeData");
-				MyDrawThemeBackground = (HRESULT (WINAPI *)(HANDLE,HDC,int,int,const RECT *,const RECT *))MGPROC("DrawThemeBackground");
-			}
-		}
+	if (!IsWinVerXPPlus()) return;
+
+	themeAPIHandle = GetModuleHandleA("uxtheme");
+	if (themeAPIHandle)
+	{
+		MyOpenThemeData = (HANDLE (WINAPI *)(HWND,LPCWSTR))MGPROC("OpenThemeData");
+		MyCloseThemeData = (HRESULT (WINAPI *)(HANDLE))MGPROC("CloseThemeData");
+		MyDrawThemeBackground = (HRESULT (WINAPI *)(HANDLE,HDC,int,int,const RECT *,const RECT *))MGPROC("DrawThemeBackground");
 	}
 }
 
@@ -23,16 +44,16 @@ void ThemeSupport()
 
 struct _tag_iconList
 {
-	char*  szDescr;
-	char*  szName;
-	int    defIconID;
-	char*  szSection;
-	HANDLE hIconLibItem;
+	const char*  szDescr;
+	const char*  szName;
+	int          defIconID;
+	const char*  szSection;
 }
-static iconList[] =
+static const iconList[] =
 {
 	{	"ICQ",                    "icq",         IDI_ICQ             },
 	{	"Add",                    "add",         IDI_ADD             },
+	{	"Block",                  "block",       IDI_BLOCK           },
 	{	"Profile",                "profile",     IDI_PROFILE         },
 	{	"AOL Mail",               "mail",        IDI_MAIL            },
 	{	"AIM Icon",               "aim",         IDI_AIM             },     
@@ -61,61 +82,208 @@ static iconList[] =
 	{	"Not Normal Script",      "nnorm_scrpt", IDI_NNORMALSCRIPT,   "Profile Editor" },
 };
 
-static const size_t icolstsz = sizeof(iconList)/sizeof(iconList[0]); 
+static HANDLE hIconLibItem[SIZEOF(iconList)];
 
 void InitIcons(void)
 {
-	char szFile[MAX_PATH];
-	GetModuleFileNameA(conn.hInstance, szFile, MAX_PATH);
+	TCHAR szFile[MAX_PATH];
+	GetModuleFileName(hInstance, szFile, SIZEOF(szFile));
 
 	char szSettingName[100];
+	char szSectionName[100];
 
 	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);
-	sid.pszDefaultFile = szFile;
+	sid.ptszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
 	sid.pszName = szSettingName;
+	sid.pszSection = szSectionName;
+    sid.flags = SIDF_PATH_TCHAR;
 
-	for ( int i = 0; i < icolstsz; i++ ) 
-	{
-		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", AIM_PROTOCOL_NAME, iconList[i].szName );
+	for (int i = 0; i < SIZEOF(iconList); i++) 
+    {
+		mir_snprintf(szSettingName, sizeof(szSettingName), "%s_%s", "AIM", iconList[i].szName);
 
-		char szSectionName[100];
 		if (iconList[i].szSection)
-		{
-			mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s/%s", LPGEN("Protocols"), AIM_PROTOCOL_NAME, iconList[i].szSection );
-			sid.pszSection = Translate(szSectionName);
-		}
+			mir_snprintf(szSectionName, sizeof(szSectionName), "%s/%s/%s", LPGEN("Protocols"), LPGEN("AIM"), iconList[i].szSection);
 		else
-        {
-            mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s", LPGEN("Protocols"), AIM_PROTOCOL_NAME );
-			sid.pszSection = Translate(szSectionName);
-        }
-		sid.pszDescription = Translate( iconList[i].szDescr );
+			mir_snprintf(szSectionName, sizeof(szSectionName), "%s/%s", LPGEN("Protocols"), LPGEN("AIM"));
+
+		sid.pszDescription = (char*)iconList[i].szDescr;
 		sid.iDefaultIndex = -iconList[i].defIconID;
-		iconList[i].hIconLibItem = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+		hIconLibItem[i] = (HANDLE)CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 	}	
 }
 
-HICON  LoadIconEx(const char* name)
+HICON CAimProto::LoadIconEx(const char* name)
 {
 	char szSettingName[100];
-	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", AIM_PROTOCOL_NAME, name );
-	return ( HICON )CallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
+	mir_snprintf(szSettingName, sizeof(szSettingName), "%s_%s", "AIM", name);
+	return (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)szSettingName);
 }
 
-HANDLE  GetIconHandle(const char* name)
+HANDLE CAimProto::GetIconHandle(const char* name)
 {
-	for (unsigned i=0; i < icolstsz; i++)
+	for (unsigned i=0; i < SIZEOF(iconList); i++)
 		if (strcmp(iconList[i].szName, name) == 0)
-			return iconList[i].hIconLibItem;
+			return hIconLibItem[i];
 	return NULL;
 }
 
-void  ReleaseIconEx(const char* name)
+void CAimProto::ReleaseIconEx(const char* name)
 {
 	char szSettingName[100];
-	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", AIM_PROTOCOL_NAME, name );
-	CallService( MS_SKIN2_RELEASEICON, 0, (LPARAM)szSettingName );
+	mir_snprintf(szSettingName, sizeof(szSettingName ), "%s_%s", "AIM", name);
+	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)szSettingName);
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// OnPreBuildContactMenu
+
+int CAimProto::OnPreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
+{
+    HANDLE hContact = (HANDLE)wParam;
+    bool isChatRoom = getByte(hContact, "ChatRoom", 0) != 0;
+
+	CLISTMENUITEM mi;
+	ZeroMemory(&mi,sizeof(mi));
+	mi.cbSize = sizeof(mi);
+
+    //see if we should add the html away message context menu items
+	mi.flags = CMIM_FLAGS | CMIF_NOTOFFLINE;
+	if (getWord(hContact, AIM_KEY_ST, ID_STATUS_OFFLINE) != ID_STATUS_AWAY || isChatRoom)
+		mi.flags |= CMIF_HIDDEN;
+
+	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hHTMLAwayContextMenuItem,(LPARAM)&mi);
+
+	mi.flags = CMIM_FLAGS | CMIF_NOTONLINE;
+	if (getBuddyId(hContact, 1) || state == 0 || isChatRoom)
+		mi.flags |= CMIF_HIDDEN;
+	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hAddToServerListContextMenuItem,(LPARAM)&mi);
+
+    DBVARIANT dbv;
+	if (!getString(hContact, AIM_KEY_SN, &dbv)) 
+    {
+        mi.flags = CMIM_NAME | CMIM_FLAGS;
+        switch(pd_mode)
+        {
+        case 1:
+            mi.pszName = LPGEN("&Block");
+            break;
+
+        case 2:
+            mi.pszName = LPGEN("&Unblock");
+            break;
+
+        case 3:
+            mi.pszName = (char*)(allow_list.find_id(dbv.pszVal) ? LPGEN("&Block") : LPGEN("&Unblock"));
+            break;
+
+        case 4:
+            mi.pszName = (char*)(block_list.find_id(dbv.pszVal) ? LPGEN("&Unblock") : LPGEN("&Block"));
+            break;
+
+        default:
+            mi.pszName = LPGEN("&Block");
+		    mi.flags |= CMIF_HIDDEN;
+            break;
+        }
+
+	    CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hBlockContextMenuItem, (LPARAM)&mi);
+		DBFreeVariant(&dbv);
+	}
+   
+	return 0;
+}
+
+void CAimProto::InitMenus(void)
+{
+	//Do not put any services below HTML get away message!!!
+	char service_name[200];
+
+	CLISTMENUITEM mi = {0};
+	mi.cbSize = sizeof( mi );
+	mi.pszContactOwner = m_szModuleName;
+
+	mi.popupPosition = 500090000;
+	mi.position = 500090000;
+	mi.flags = CMIF_ROOTPOPUP | CMIF_ICONFROMICOLIB | CMIF_TCHAR;
+	mi.icolibItem = GetIconHandle("aim");
+	mi.ptszName = m_tszUserName;
+	mi.pszPopupName = (char *)-1;
+	hMenuRoot = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM,  (WPARAM)0, (LPARAM)&mi);
+
+	mi.pszService = service_name;
+	mi.pszPopupName = (char *)hMenuRoot;
+	mi.flags = CMIF_ICONFROMICOLIB | CMIF_CHILDPOPUP;
+	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/ManageAccount");
+	CreateProtoService("/ManageAccount",&CAimProto::ManageAccount);
+	mi.icolibItem = GetIconHandle("aim");
+	mi.pszName = LPGEN( "Manage Account" );
+	hMainMenu[0] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+
+	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/CheckMail");
+	CreateProtoService("/CheckMail",&CAimProto::CheckMail);
+	mi.icolibItem = GetIconHandle("mail");
+	mi.pszName = LPGEN( "Check Mail" );
+	hMainMenu[1] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+
+	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/InstantIdle");
+	CreateProtoService("/InstantIdle",&CAimProto::InstantIdle);
+	mi.icolibItem = GetIconHandle("idle");
+	mi.pszName = LPGEN( "Instant Idle" );
+	hMainMenu[2] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+
+	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/JoinChatRoom");
+	CreateProtoService("/JoinChatRoom",&CAimProto::JoinChatUI);
+	mi.icolibItem = GetIconHandle("aol");
+	mi.pszName = LPGEN( "Join Chat Room" );
+	hMainMenu[3] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+
+	mi.pszPopupName=NULL;
+	mi.popupPosition=0;
+
+    mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/GetHTMLAwayMsg");
+	CreateProtoService("/GetHTMLAwayMsg",&CAimProto::GetHTMLAwayMsg);
+	mi.position=-2000006000;
+	mi.icolibItem = GetIconHandle("away");
+	mi.pszName = LPGEN("Read &HTML Away Message");
+	mi.flags=CMIF_NOTOFFLINE|CMIF_HIDDEN|CMIF_ICONFROMICOLIB;
+	hHTMLAwayContextMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
+
+	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/GetProfile");
+	CreateProtoService("/GetProfile",&CAimProto::GetProfile);
+	mi.position=-2000005090;
+	mi.icolibItem = GetIconHandle("profile");
+	mi.pszName = LPGEN("Read Profile");
+	mi.flags=CMIF_NOTOFFLINE|CMIF_ICONFROMICOLIB;
+	hReadProfileMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
+
+	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/AddToServerList");
+	CreateProtoService("/AddToServerList",&CAimProto::AddToServerList); 
+	mi.position=-2000005080;
+	mi.icolibItem = GetIconHandle("add");
+	mi.pszName = LPGEN("Add To Server List");
+	mi.flags=CMIF_NOTONLINE|CMIF_HIDDEN|CMIF_ICONFROMICOLIB;
+	hAddToServerListContextMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
+
+    mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/BlockCommand");
+	CreateProtoService("/BlockCommand",&CAimProto::BlockBuddy);
+	mi.position=-2000005060;
+	mi.icolibItem = GetIconHandle("block");
+	mi.pszName = LPGEN("&Block");
+	mi.flags=CMIF_ICONFROMICOLIB|CMIF_HIDDEN;
+	hBlockContextMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
+}
+
+void CAimProto::RemoveMenus(void)
+{
+    for (unsigned i=0; i<4; ++i)
+        CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)hMainMenu[i], 0);
+   CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)hMenuRoot, 0);
+
+    CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hHTMLAwayContextMenuItem, 0);
+    CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hReadProfileMenuItem, 0);
+    CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hAddToServerListContextMenuItem, 0);
+    CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hBlockContextMenuItem, 0);
+}

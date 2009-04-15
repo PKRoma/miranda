@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
+Copyright 2000-2008 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -77,7 +77,7 @@ typedef struct {
 #define LPTDF_NOTITLE        2     //do not translate the title of the dialog
 
 #define MS_LANGPACK_TRANSLATEDIALOG  "LangPack/TranslateDialog"
-__inline static int TranslateDialogDefault(HWND hwndDlg)
+__inline static INT_PTR TranslateDialogDefault(HWND hwndDlg)
 {
 	LANGPACKTRANSLATEDIALOG lptd;
 	lptd.cbSize=sizeof(lptd);

@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2008 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -69,21 +69,31 @@ __inline static HANDLE LoadSkinnedIconHandle(int id) {return (HANDLE)CallService
 #define SKINICON_OTHER_ANSI         227     //v0.7.0.19+
 #define SKINICON_OTHER_LOADED       228     //v0.7.0.19+
 #define SKINICON_OTHER_NOTLOADED    229     //v0.7.0.19+
+#define SKINICON_OTHER_UNDO         230     //v0.8.0.4+
+#define SKINICON_OTHER_WINDOW       231     //v0.8.0.4+
+#define SKINICON_OTHER_WINDOWS      232     //v0.8.0.4+
+#define SKINICON_OTHER_ACCMGR       233     //v0.8.0.4+
+#define SKINICON_OTHER_MAINMENU     234     //v0.8.0.12+
+#define SKINICON_OTHER_STATUS       235     //v0.8.0.12+
+#define SKINICON_CHAT_JOIN          236     //v0.8.0.27+
+#define SKINICON_CHAT_LEAVE         237     //v0.8.0.27+
+#define SKINICON_OTHER_STATUS_LOCKED 238    //v0.8.0.28+
+#define SKINICON_OTHER_GROUP        239     //v0.8.0.29+
 
 //menu icons are owned by the module that uses them so are not and should not
 //be skinnable. Except exit and show/hide
 
 //status mode icons. NOTE: These are deprecated in favour of LoadSkinnedProtoIcon()
-#define SKINICON_STATUS_OFFLINE		0
-#define SKINICON_STATUS_ONLINE		1
-#define SKINICON_STATUS_AWAY		2
-#define SKINICON_STATUS_NA			3
-#define SKINICON_STATUS_OCCUPIED	4
-#define SKINICON_STATUS_DND			5
-#define SKINICON_STATUS_FREE4CHAT	6
-#define SKINICON_STATUS_INVISIBLE	7
-#define SKINICON_STATUS_ONTHEPHONE	8
-#define SKINICON_STATUS_OUTTOLUNCH	9
+#define SKINICON_STATUS_OFFLINE     0
+#define SKINICON_STATUS_ONLINE      1
+#define SKINICON_STATUS_AWAY        2
+#define SKINICON_STATUS_NA          3
+#define SKINICON_STATUS_OCCUPIED    4
+#define SKINICON_STATUS_DND         5
+#define SKINICON_STATUS_FREE4CHAT   6
+#define SKINICON_STATUS_INVISIBLE   7
+#define SKINICON_STATUS_ONTHEPHONE  8
+#define SKINICON_STATUS_OUTTOLUNCH  9
 
 //Loads an icon representing the status mode for a particular protocol.
 //wParam=(WPARAM)(const char*)szProto
@@ -117,7 +127,7 @@ typedef struct {
 #define MS_SKIN_ADDNEWSOUND      "Skin/Sounds/AddNew"
 
 // inline only works after 0.3.4+ (2004/10/*)
-__inline static int SkinAddNewSoundEx(const char *name,const char *section,const char *description)
+__inline static INT_PTR SkinAddNewSoundEx(const char *name,const char *section,const char *description)
 {
 	SKINSOUNDDESCEX ssd;
 	ZeroMemory(&ssd,sizeof(ssd));
@@ -128,7 +138,7 @@ __inline static int SkinAddNewSoundEx(const char *name,const char *section,const
 	return CallService(MS_SKIN_ADDNEWSOUND, 0, (LPARAM)&ssd);
 }
 
-__inline static int SkinAddNewSound(const char *name,const char *description,const char *defaultFile)
+__inline static INT_PTR SkinAddNewSound(const char *name,const char *description,const char *defaultFile)
 {
 	SKINSOUNDDESC ssd;
 	ZeroMemory(&ssd,sizeof(ssd));
@@ -145,7 +155,7 @@ __inline static int SkinAddNewSound(const char *name,const char *description,con
 //pszName should have been added with Skin/Sounds/AddNew, but if not the
 //function will not fail, it will play the Windows default sound instead.
 #define MS_SKIN_PLAYSOUND        "Skin/Sounds/Play"
-__inline static int SkinPlaySound(const char *name) {return CallService(MS_SKIN_PLAYSOUND,0,(LPARAM)name);}
+__inline static INT_PTR SkinPlaySound(const char *name) {return CallService(MS_SKIN_PLAYSOUND,0,(LPARAM)name);}
 
 //sent when the icons DLL has been changed in the options dialog, and everyone
 //should re-make their image lists
@@ -167,6 +177,3 @@ __inline static int SkinPlaySound(const char *name) {return CallService(MS_SKIN_
 // Skin/LoadNetworkAnim - get some silly spinner thing when we want to be busy
 
 #endif //M_SKIN_H__
-
-
-

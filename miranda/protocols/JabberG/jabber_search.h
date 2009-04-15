@@ -1,3 +1,34 @@
+/*
+
+Jabber Protocol Plugin for Miranda IM
+Copyright ( C ) 2002-04  Santithorn Bunchua
+Copyright ( C ) 2005-09  George Hazan
+Copyright ( C ) 2007     Artem Shpynov
+
+Module implements a search according to XEP-0055: Jabber Search
+http://www.xmpp.org/extensions/xep-0055.html
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or ( at your option ) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+File name      : $URL$
+Revision       : $Revision$
+Last change on : $Date$
+Last change by : $Author$
+
+*/
+
 typedef struct _tagJabberSearchFieldsInfo
 {
 	TCHAR * szFieldName;
@@ -8,11 +39,9 @@ typedef struct _tagJabberSearchFieldsInfo
 
 typedef struct _tagJabberSearchData
 {
-	union
-	{
-		JabberSearchFieldsInfo *  pJSInf;
-		XmlNode * xNode;
-	};
+	struct CJabberProto* ppro;
+	JabberSearchFieldsInfo *  pJSInf;
+	HXML xNode;
 	int nJSInfCount;
 	int lastRequestIq;
 	int CurrentHeight;
@@ -48,13 +77,12 @@ static HWND searchHandleDlg=NULL;
 //local functions declarations
 static int JabberSearchFrameProc(HWND hwnd, int msg, WPARAM wParam, LPARAM lParam);
 static int JabberSearchAddField(HWND hwndDlg, Data* FieldDat );
-static void JabberIqResultGetSearchFields( XmlNode *iqNode, void *userdata );
+static void JabberIqResultGetSearchFields( HXML iqNode, void *userdata );
 static void JabberSearchFreeData(HWND hwndDlg, JabberSearchData * dat);
 static void JabberSearchRefreshFrameScroll(HWND hwndDlg, JabberSearchData * dat);
-static int JabbeSearchrRenewFields(HWND hwndDlg, JabberSearchData * dat);
-static BOOL CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static INT_PTR CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static void JabberSearchDeleteFromRecent(TCHAR * szAddr,BOOL deleteLastFromDB);
-void JabberSearchAddToRecent(TCHAR * szAddr, HWND hwnd);
+void SearchAddToRecent(TCHAR * szAddr, HWND hwnd);
 
 // Implementation of MAP class (the list
 template <typename _KEYTYPE , int (*COMPARATOR)(_KEYTYPE*, _KEYTYPE*) >

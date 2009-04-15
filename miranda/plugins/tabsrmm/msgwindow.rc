@@ -1,5 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
+#include <winres.h>
 #include "resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
@@ -11,7 +12,8 @@
 #include "windows.h"
 #include "richedit.h"
 #undef APSTUDIO_HIDDEN_SYMBOLS
-#include "..\..\include\statusmodes.h"
+#include "../../include/statusmodes.h"
+#include "version.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -22,7 +24,7 @@
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
 #ifdef _WIN32
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-#pragma code_page(1252)
+#pragma code_page(1251)
 #endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
@@ -34,8 +36,7 @@ IDD_MSGSPLITNEW DIALOGEX 0, 0, 188, 79
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_SPLITTER,"Static",SS_ENHMETAFILE,0,46,187,2,
-                    WS_EX_STATICEDGE
+    CONTROL         "",IDC_SPLITTER,"Static",SS_ENHMETAFILE,0,46,187,2,WS_EX_STATICEDGE
 #if defined(UNICODE)
     CONTROL         "",IDC_MESSAGE,"RichEdit20W",ES_MULTILINE | 
                     ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
@@ -46,73 +47,32 @@ BEGIN
                     ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
                     WS_VSCROLL | WS_TABSTOP,0,48,144,31,WS_EX_ACCEPTFILES | 
                     WS_EX_STATICEDGE
-#endif                    
+#endif  
     CONTROL         "",IDC_CONTACTPIC,"Button",BS_OWNERDRAW,155,48,34,31
-    CONTROL         "",IDOK,"TSButtonClass",WS_TABSTOP,146,33,34,13,
-                    0x18000000L
-    CONTROL         "",IDC_PIC,"TSButtonClass",WS_TABSTOP,92,33,14,13,
-                    0x18000000L
-    CONTROL         "",IDC_HISTORY,"TSButtonClass",WS_TABSTOP,108,33,14,13,
-                    0x18000000L
-    CONTROL         "",IDC_TIME,"TSButtonClass",WS_TABSTOP,124,33,14,13,
-                    0x18000000L
-    CONTROL         "",IDC_QUOTE,"TSButtonClass",WS_TABSTOP,140,33,14,13,
-                    0x18000000L
-    CONTROL         "",IDC_SAVE,"TSButtonClass",WS_TABSTOP,156,33,14,13,
-                    0x18000000L
     CONTROL         "",IDC_MULTISPLITTER,"Static",SS_ENHMETAFILE,186,21,2,40
-    CONTROL         "",IDC_PROTOCOL,"TSButtonClass",WS_TABSTOP,0,33,22,13,
-                    0x18000000L
-    CONTROL         "",IDC_NAME,"TSButtonClass",WS_TABSTOP,23,33,22,13,
-                    0x18000000L
-    CONTROL         "",IDC_TOGGLETOOLBAR,"TSButtonClass",WS_TABSTOP,32,32,2,
-                    2,0x18000000L
-    CONTROL         "",IDC_SMILEYBTN,"TSButtonClass",WS_TABSTOP,47,33,14,13,
-                    0x18000000L
-    CONTROL         "",IDC_FONTBOLD,"TSButtonClass",WS_TABSTOP,63,33,14,13,
-                    0x18000000L
-    CONTROL         "",IDC_FONTITALIC,"TSButtonClass",WS_TABSTOP,79,33,14,13,
-                    0x18000000L
-    CONTROL         "",IDC_FONTUNDERLINE,"TSButtonClass",WS_TABSTOP,95,33,14,
-                    13,0x18000000L
-    CONTROL         "",IDC_FONTFACE,"TSButtonClass",WS_TABSTOP,111,33,14,13,
-                    0x18000000L
+    CONTROL         "",IDC_TOGGLETOOLBAR,"TSButtonClass",WS_TABSTOP,32,32,2,2,0x18000000L
     CONTROL         "",IDC_RETRY,"TSButtonClass",WS_TABSTOP,26,10,55,12
     CONTROL         "",IDC_CANCELSEND,"TSButtonClass",WS_TABSTOP,86,10,55,12
-    CONTROL         "",IDC_MSGSENDLATER,"TSButtonClass",WS_TABSTOP,146,10,55,
-                    12
-    LTEXT           "",IDC_STATICTEXT,27,0,160,9,SS_OWNERDRAW
+    CONTROL         "",IDC_MSGSENDLATER,"TSButtonClass",WS_TABSTOP,146,10,55,12
+    CONTROL         "",IDC_STATICTEXT,"Static",SS_OWNERDRAW | WS_GROUP,27,0,160,9
     CONTROL         "",IDC_STATICERRORICON,"Static",SS_OWNERDRAW,4,3,20,20
-    CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL | 
-                    ES_NOHIDESEL | ES_READONLY | WS_VSCROLL | WS_TABSTOP,0,0,
-                    188,30,WS_EX_STATICEDGE
-    CONTROL         "Add",IDC_ADD,"TSButtonClass",WS_TABSTOP,155,64,16,14,
-                    0x18000000L
-    CONTROL         "Dont",IDC_CANCELADD,"TSButtonClass",WS_TABSTOP,171,64,
-                    16,14,0x18000000L
-    CONTROL         "",IDC_LOGFROZEN,"TSButtonClass",WS_TABSTOP,171,0,16,14,
-                    0x18000000L
-    LTEXT           "",IDC_LOGFROZENTEXT,10,3,200,10,SS_OWNERDRAW
-    CONTROL         "",IDC_PANELSTATUS,"Static",SS_OWNERDRAW | 
-                    SS_CENTERIMAGE | WS_GROUP,10,16,100,14
-    CONTROL         "",IDC_PANELNICK,"Static",SS_OWNERDRAW | SS_CENTERIMAGE | 
-                    WS_GROUP,5,1,100,14
-    CONTROL         "",IDC_PANELUIN,"Static",SS_OWNERDRAW | SS_CENTERIMAGE | 
-                    WS_GROUP,5,16,100,14
-    CONTROL         "",IDC_TOGGLENOTES,"TSButtonClass",WS_TABSTOP,0,3,4,28,
-                    0x18000000L
-    CONTROL         "",IDC_TOGGLESIDEBAR,"TSButtonClass",WS_TABSTOP,0,3,4,28,
-                    0x18000000L
-    CONTROL         "",IDC_APPARENTMODE,"TSButtonClass",WS_TABSTOP,174,1,16,
-                    14,0x18000000L
-    EDITTEXT        IDC_NOTES,5,2,141,13,ES_MULTILINE | ES_AUTOVSCROLL | 
-                    ES_WANTRETURN | WS_VSCROLL,WS_EX_RIGHT | 
-                    WS_EX_RTLREADING
-    CONTROL         "",IDC_PANELSPLITTER,"Static",SS_ENHMETAFILE,0,32,188,2,
-                    WS_EX_STATICEDGE
+    CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL | ES_NOHIDESEL | ES_READONLY | WS_VSCROLL | WS_TABSTOP,0,0,188,30,WS_EX_STATICEDGE
+    CONTROL         "Add",IDC_ADD,"TSButtonClass",WS_TABSTOP,155,64,16,14,0x18000000L
+    CONTROL         "Dont",IDC_CANCELADD,"TSButtonClass",WS_TABSTOP,171,64,16,14,0x18000000L
+    CONTROL         "",IDC_LOGFROZEN,"TSButtonClass",WS_TABSTOP,171,0,16,14,0x18000000L
+    CONTROL         "",IDC_LOGFROZENTEXT,"Static",SS_OWNERDRAW | WS_GROUP,10,3,180,10
+    CONTROL         "",IDC_PANELSTATUS,"Static",SS_OWNERDRAW | SS_CENTERIMAGE | WS_GROUP,10,16,100,14
+    CONTROL         "",IDC_PANELNICK,"Static",SS_OWNERDRAW | SS_CENTERIMAGE | WS_GROUP,5,1,100,14
+    CONTROL         "",IDC_PANELUIN,"Static",SS_OWNERDRAW | SS_CENTERIMAGE | WS_GROUP,5,16,100,14
+    CONTROL         "",IDC_TOGGLENOTES,"TSButtonClass",0x0,0,3,4,28,0x18000000L
+    CONTROL         "",IDC_TOGGLESIDEBAR,"TSButtonClass",WS_TABSTOP,0,3,4,28,0x18000000L
+    CONTROL         "",IDC_APPARENTMODE,"TSButtonClass",0x0,174,1,16,14,0x18000000L
+    EDITTEXT        IDC_NOTES,5,2,141,13,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL,WS_EX_RIGHT | WS_EX_RTLREADING
+    CONTROL         "",IDC_PANELSPLITTER,"Static",SS_ENHMETAFILE,0,32,188,2,WS_EX_STATICEDGE
     CONTROL         "",IDC_PANELPIC,"Button",BS_OWNERDRAW,154,0,34,25
-    CONTROL         "",IDC_MSGINDICATOR,"Static",SS_ENHMETAFILE,0,78,144,2                    
+    CONTROL         "",IDC_MSGINDICATOR,"Static",SS_ENHMETAFILE,0,78,144,2
 END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -120,8 +80,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,1,1,2
- PRODUCTVERSION 1,1,1,2
+ FILEVERSION VER_WORD
+ PRODUCTVERSION VER_WORD
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -136,27 +96,27 @@ BEGIN
     BEGIN
         BLOCK "000004b0"
         BEGIN
-#if defined(UNICODE)        
+#if defined(UNICODE) 
             VALUE "CompanyName", "Miranda IM project"
             VALUE "FileDescription", "tabSRMM - UNICODE"
-            VALUE "FileVersion", "1, 1, 1, 2"
-            VALUE "InternalName", "tabSRMsg (UNICODE)"
-            VALUE "LegalCopyright", "Copyright (C) 2004-2007"
-            VALUE "LegalTrademarks", "Licensed under the Gnu general public license V2 or any later version."
-            VALUE "OriginalFilename", "tabsrmm.dll"
-            VALUE "ProductName", "tabSRMM Message window plugin (UNICODE)"
-            VALUE "ProductVersion", "1, 1, 1, 2"
-#else
-            VALUE "CompanyName", "Miranda IM project"
-            VALUE "FileDescription", "tabSRMM - ANSI"
-            VALUE "FileVersion", "1, 1, 1, 2"
+            VALUE "FileVersion", VER_PLAIN
             VALUE "InternalName", "tabSRMsg"
-            VALUE "LegalCopyright", "Copyright (C) 2004-2007"
+            VALUE "LegalCopyright", "Copyright (C) 2004-2008"
             VALUE "LegalTrademarks", "Licensed under the Gnu general public license V2 or any later version."
             VALUE "OriginalFilename", "tabsrmm.dll"
             VALUE "ProductName", "tabSRMM Message window plugin"
-            VALUE "ProductVersion", "1, 1, 1, 2"
-#endif            
+            VALUE "ProductVersion", VER_PLAIN
+#else
+            VALUE "CompanyName", "Miranda IM project"
+            VALUE "FileDescription", "tabSRMM - ANSI"
+            VALUE "FileVersion", VER_PLAIN
+            VALUE "InternalName", "tabSRMsg"
+            VALUE "LegalCopyright", "Copyright (C) 2004-2008"
+            VALUE "LegalTrademarks", "Licensed under the Gnu general public license V2 or any later version."
+            VALUE "OriginalFilename", "tabsrmm.dll"
+            VALUE "ProductName", "tabSRMM Message window plugin"
+            VALUE "ProductVersion", VER_PLAIN
+#endif 
         END
     END
     BLOCK "VarFileInfo"
@@ -164,19 +124,6 @@ BEGIN
         VALUE "Translation", 0x0, 1200
     END
 END
-
-#endif    // Neutral resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// Deutsch (Österreich) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEA)
-#ifdef _WIN32
-LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
-#pragma code_page(1252)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -207,18 +154,5 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Deutsch (Österreich) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-
-#ifndef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 3 resource.
-//
-
-
-/////////////////////////////////////////////////////////////////////////////
-#endif    // not APSTUDIO_INVOKED
+#endif    // Neutral resources
 

@@ -23,6 +23,12 @@
 #define FIDF_ALLOWREREGISTER	128		// allow plugins to register this font again (i.e. override already registered settings such as flags)
 #define FIDF_ALLOWEFFECTS		256		// allow setting of font effects (i.e. underline and strikeout)
 
+// font class
+#define FIDF_CLASSMASK			0x70000000
+#define FIDF_CLASSHEADER		0x10000000
+#define FIDF_CLASSGENERAL		0x20000000
+#define FIDF_CLASSSMALL			0x30000000
+
 // settings to be used for the value of 'deffontsettings' in the FontID structure below - i.e. defaults
 typedef struct FontSettings_tag
 {
@@ -44,12 +50,15 @@ typedef struct FontSettingsW_tag
 }
 	FontSettingsW;
 
+#define FontID_SIZEOF_V2A 372
+#define FontID_SIZEOF_V2U 660
+
 #if defined( _UNICODE )
   #define FontSettingsT FontSettingsW
-  #define FontID_SIZEOF_V2 660
+  #define FontID_SIZEOF_V2 FontID_SIZEOF_V2U
 #else
   #define FontSettingsT FontSettings
-  #define FontID_SIZEOF_V2 372
+  #define FontID_SIZEOF_V2 FontID_SIZEOF_V2A
 #endif
 
 // a font identifier structure - used for registering a font, and getting one out again
@@ -188,5 +197,84 @@ typedef struct ColourIDW_tag {
 // fired when a user modifies font settings, so reget your fonts and colours
 // wparam = lparam = 0
 #define ME_COLOUR_RELOAD      "Colour/Reload"
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//  EFFECTS
+//
+typedef struct FONTEFFECT_tag
+{
+    BYTE     effectIndex;
+    DWORD    baseColour;        // ARGB
+    DWORD    secondaryColour;   // ARGB
+}
+    FONTEFFECT;
+
+typedef struct EffectID_tag
+{
+    int      cbSize;
+    char     group[64];
+    char     name[64];
+    char     dbSettingsGroup[32];
+    char     setting[32];
+    DWORD    flags;
+    FONTEFFECT defeffect;
+    int      order;
+
+    FONTEFFECT value;
+} 
+    EffectID;
+
+typedef struct EffectIDW_tag
+{
+    int      cbSize;
+    wchar_t  group[64];
+    wchar_t  name[64];
+    char     dbSettingsGroup[32];
+    char     setting[32];
+    DWORD    flags;
+    FONTEFFECT defeffect;
+    int      order;
+
+    FONTEFFECT value;
+} 
+    EffectIDW;
+
+#if defined( _UNICODE )
+    #define EffectIDT EffectIDW
+#else
+    #define EffectIDT EffectID
+#endif
+
+// register an effect
+// wparam = (EffectID *)&effect_id
+// lparam = 0
+#define MS_EFFECT_REGISTER    "Effect/Register"
+#define MS_EFFECT_REGISTERW   "Effect/RegisterW"
+
+#if defined( _UNICODE )
+    #define MS_EFFECT_REGISTERT MS_EFFECT_REGISTERW
+#else
+    #define MS_EFFECT_REGISTERT MS_EFFECT_REGISTER
+#endif
+
+// get a effect
+// wparam = (EffectID *)&effect_id (only name and group matter)
+// lparam = (FONTEFFECT *)&effect
+// rerturns 0, or -1 if not found
+#define MS_EFFECT_GET         "Effect/Get"
+#define MS_EFFECT_GETW        "Effect/GetW"
+
+#if defined( _UNICODE )
+    #define MS_EFFECT_GETT MS_EFFECT_GETW
+#else
+    #define MS_EFFECT_GETT MS_EFFECT_GET
+#endif
+
+// fired when a user modifies font settings, so reget your fonts and colours
+// wparam = lparam = 0
+#define ME_EFFECT_RELOAD      "Effect/Reload"
+
 
 #endif // _FONT_SERVICE_API_INC

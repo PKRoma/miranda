@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
+Copyright 2000-2008 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -20,16 +20,20 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#define SKINICONDESC_SIZE     sizeof(SKINICONDESC)  // v0.0.1.0+
-#define SKINICONDESC_SIZE_V1  0x18
-#define SKINICONDESC_SIZE_V2  0x1C                  // v0.0.0.2+
-#define SKINICONDESC_SIZE_V3  0x24                  // v0.0.0.3+
+
+#ifndef M_ICOLIB_H__
+#define M_ICOLIB_H__ 1
+
+#define SKINICONDESC_SIZE     sizeof(SKINICONDESC)					  // v0.0.1.0+
+#define SKINICONDESC_SIZE_V1  (offsetof(SKINICONDESC, hDefaultIcon))
+#define SKINICONDESC_SIZE_V2  (offsetof(SKINICONDESC, cx))			  // v0.0.0.2+
+#define SKINICONDESC_SIZE_V3  (offsetof(SKINICONDESC, flags))		  // v0.0.0.3+
 
 // WARNING: do not use Translate(TS) for p(t)szSection or p(t)szDescription as they
 // are translated by the core, which may lead to double translation.
 // Use LPGEN instead which are just dummy wrappers/markers for "lpgen.pl".
 typedef struct {
-  int cbSize;
+  size_t cbSize;
   union {
     char *pszSection;         // section name used to group icons
     TCHAR *ptszSection;       // [TRANSLATED-BY-CORE]
@@ -92,6 +96,13 @@ typedef struct {
 #define MS_SKIN2_GETICON "Skin2/Icons/GetIcon"
 
 //
+//  Retrieve an icolib handle for icon by name specified in lParam
+//  wParam = (WPARAM)0
+//  lParam = (LPARAM)(char*)pszName
+//
+#define MS_SKIN2_GETICONHANDLE "Skin2/Icons/GetIconHandle"
+
+//
 //  Retrieve HICON with HANDLE specified in lParam
 //  Returned HICON SHOULDN'T be destroyed, it is managed by IcoLib
 //
@@ -125,3 +136,5 @@ typedef struct {
 //  Icons change notification
 //
 #define ME_SKIN2_ICONSCHANGED "Skin2/IconsChanged"
+
+#endif /* M_ICOLIB_H__ */

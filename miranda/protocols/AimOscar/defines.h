@@ -7,25 +7,22 @@
 #pragma warning (disable : 4996)
 //System includes
 #include <windows.h>
-#include <prsht.h>
-#include <Tmschema.h>
-//#include <vssym32.h>
-#include <richedit.h>
-
 #include <ctype.h>
 #include <fcntl.h>
 #include <io.h>
 #include <malloc.h>
 #include <process.h>
+#include <prsht.h>
+#include <richedit.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <time.h>
-
+#include <vssym32.h>
+#include <winuser.h>
 //Miranda IM includes
 #pragma warning( disable: 4100 )
 #pragma warning( disable: 4244 )
 #pragma warning( disable: 4201 )
-
 #include <newpluginapi.h>
 #include <statusmodes.h>
 #include <m_button.h>
@@ -58,7 +55,6 @@
 #include "tlv.h"
 //rest o includes
 #include "avatars.h"
-#include "aim.h"
 #include "away.h"
 #include "utility.h"
 #include "client.h"
@@ -196,16 +192,10 @@ extern char* AIM_CLIENT_ID_STRING;		//Client id EXTERN
 #define CLIENT_UNKNOWN					"?"
 #define CLIENT_AIM5						"AIM 5.x"
 #define CLIENT_AIM4						"AIM 4.x"
-#define CLIENT_AIMEXPRESS5              "AIM Express 5"
-#define CLIENT_AIMEXPRESS6              "AIM Express 6"
-#define CLIENT_AIMEXPRESS7              "AIM Express 7"
+#define CLIENT_AIMEXPRESS				"AIM Express"
 #define CLIENT_AIM_TRITON				"AIM Triton"
-#define CLIENT_AIM6_5                   "AIM 6.5"
-#define CLIENT_AIM6_8                   "AIM 6.8"
 #define CLIENT_AIMTOC					"AIM TOC"
-#define CLIENT_BOT						"AIM Bot"
 #define CLIENT_GAIM						"Gaim"
-#define CLIENT_PURPLE					"Purple"
 #define CLIENT_ADIUM					"Adium X"
 #define CLIENT_GPRS						"GPRS"
 #define CLIENT_ICHAT					"iChat"

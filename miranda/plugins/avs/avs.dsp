@@ -25,8 +25,8 @@ CFG=avs - Win32 Debug Unicode
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
-# PROP Scc_ProjName ""$/Miranda/miranda/plugins/avs", WKIAAAAA"
-# PROP Scc_LocalPath "."
+# PROP Scc_ProjName ""
+# PROP Scc_LocalPath ""
 CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
@@ -174,14 +174,6 @@ SOURCE=.\main.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\mir_dblists.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\mir_memory.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\mir_thread.cpp
 # End Source File
 # Begin Source File
@@ -210,10 +202,6 @@ SOURCE=.\image_utils.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\m_acc.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\m_avatarhistory.h
 # End Source File
 # Begin Source File
@@ -239,14 +227,6 @@ SOURCE=.\m_png.h
 # Begin Source File
 
 SOURCE=.\m_updater.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\mir_dblists.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\mir_memory.h
 # End Source File
 # Begin Source File
 

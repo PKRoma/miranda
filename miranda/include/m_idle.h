@@ -48,14 +48,17 @@ for short idle.*/
 */
 #define ME_IDLE_CHANGED "Miranda/Idle/Changed"
 
+#define MIRANDA_IDLE_INFO_SIZE_1 20
 
 typedef struct {
-	int cbSize;			     // sizeof()
-	unsigned int idleTime;	 // idle in mins, if zero then disabled
-	int privacy;		     // user doesnt want other people seeing anything more than they are idle
-    int aaStatus;			 // status to go to when user is auto away
-    int aaLock;				 // the status shouldn't be unset if its set
-} MIRANDA_IDLE_INFO;
+	int cbSize;			    // sizeof()
+	int idleTime;	       // idle in mins, if zero then disabled
+	int privacy;		    // user doesnt want other people seeing anything more than they are idle
+	int aaStatus;			 // status to go to when user is auto away
+	int aaLock;				 // the status shouldn't be unset if its set
+	int idleType;
+}
+	MIRANDA_IDLE_INFO;
 
 /*
 	wParam; 0

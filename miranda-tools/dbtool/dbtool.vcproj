@@ -4,10 +4,8 @@
 	Version="7.10"
 	Name="dbtool"
 	ProjectGUID="{EEDDE5B0-C023-40C2-96A5-1D1F4B11B791}"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK">
+	SccProjectName=""
+	SccLocalPath="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -107,8 +105,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib"
+				AdditionalDependencies="vc7to6.lib comctl32.lib"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="../../miranda/lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
 				MapFileName="$(OutDir)/$(ProjectName).map"
@@ -245,7 +245,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib"
+				AdditionalDependencies="vc7to6.lib comctl32.lib"
+				AdditionalLibraryDirectories="../../miranda/lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
 				MapFileName="$(OutDir)/$(ProjectName).map"
@@ -1046,6 +1048,9 @@
 			</File>
 			<File
 				RelativePath="res\dbtool.ico">
+			</File>
+			<File
+				RelativePath=".\res\delete.ico">
 			</File>
 			<File
 				RelativePath="res\profileg.ico">

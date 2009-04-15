@@ -10,7 +10,7 @@ HANDLE hHookIconPressedEvt;
 struct StatusIconListNode *status_icon_list = 0;
 int status_icon_list_size = 0;
 
-int AddStatusIcon(WPARAM wParam, LPARAM lParam) {
+INT_PTR AddStatusIcon(WPARAM wParam, LPARAM lParam) {
 	StatusIconData *sid = (StatusIconData *)lParam;
 	struct StatusIconListNode *siln = (struct StatusIconListNode *)malloc(sizeof(struct StatusIconListNode));
 
@@ -31,7 +31,7 @@ int AddStatusIcon(WPARAM wParam, LPARAM lParam) {
 	return 0;
 }
 
-int RemoveStatusIcon(WPARAM wParam, LPARAM lParam) {
+INT_PTR RemoveStatusIcon(WPARAM wParam, LPARAM lParam) {
 	StatusIconData *sid = (StatusIconData *)lParam;
 	struct StatusIconListNode *current = status_icon_list, *prev = 0;
 
@@ -76,7 +76,7 @@ void RemoveAllStatusIcons(void) {
 	WindowList_Broadcast(g_dat->hMessageWindowList, DM_STATUSICONCHANGE, 0, 0);
 }
 
-int ModifyStatusIcon(WPARAM wParam, LPARAM lParam) {
+INT_PTR ModifyStatusIcon(WPARAM wParam, LPARAM lParam) {
 	HANDLE hContact = (HANDLE)wParam;
 
 	StatusIconData *sid = (StatusIconData *)lParam;

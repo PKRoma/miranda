@@ -5,7 +5,7 @@
 #define CALLSERVICE_NOTFOUND      ((int)0x80000000)
 #define MAXMODULELABELLENGTH 64
 typedef int (*MIRANDAHOOK)(WPARAM,LPARAM);
-typedef int (*MIRANDASERVICE)(WPARAM,LPARAM);
+typedef INT_PTR (*MIRANDASERVICE)(WPARAM,LPARAM);
 
 #define FUSE_INIT	0			// core started, Param=**FUSE_LINK
 #define FUSE_DEINIT 1			// core stopped

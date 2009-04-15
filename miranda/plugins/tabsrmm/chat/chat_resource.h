@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by chat.rc
 //
 #define IDR_MENU                        151
@@ -14,28 +14,19 @@
 #define IDC_SMILEY                      1007
 #define IDC_SPLITTERY                   1008
 #define IDC_CHAT_MESSAGE                1009
-#define IDC_CHAT_BOLD                   1010
-#define IDC_ITALICS                     1011
-#define IDC_CHAT_UNDERLINE              1012
 #define IDC_FILTER                      1013
 #define IDC_CHANMGR                     1014
-#define IDC_SHOWNICKLIST                1016
-#define IDC_COLOR                       1017
+#define IDC_SHOWNICKLIST                1015
 #define IDC_BKGCOLOR                    1019
 #define IDC_CHECKBOXES                  1021
-#define IDC_NICKLISTBKG                 1021
-#define IDC_CHAT_CLOSE                  1023
+#define IDC_NICKROW2                    1023
 #define IDC_NICKROW                     1024
 #define IDC_LOGLIMIT                    1024
-#define IDC_NICKROW2                    1025
+#define IDC_CHAT_CLOSE                  1025
 #define IDC_CHAT_SPIN1                  1028
 #define IDC_CHAT_SPIN2                  1029
 #define IDC_CHAT_SPIN3                  1030
-#define IDC_CHAT_FONTLIST               1032
-#define IDC_CHAT_CHOOSEFONT             1034
-#define IDC_CHAT_FONTCOLOR              1035
-#define IDC_MESSAGEBKG                  1036
-#define IDC_LOGBKG                      1037
+#define IDC_CHAT_SPIN4                  1031
 #define IDC_HIGHLIGHTWORDS              1040
 #define IDC_INSTAMP                     1041
 #define IDC_OUTSTAMP                    1043
@@ -76,39 +67,34 @@
 #define IDC_10                          1084
 #define IDC_STATIC112                   1085
 #define IDC_11                          1085
-#define IDC_P1                          1087
-#define IDC_P2                          1088
-#define IDC_P3                          1089
-#define IDC_P4                          1090
-#define IDC_P5                          1091
-#define IDC_P6                          1092
-#define IDC_P7                          1093
-#define IDC_P8                          1094
-#define IDC_P9                          1095
-#define IDC_P10                         1096
-#define IDC_P11                         1097
-
-#define IDC_T1                          1100
-#define IDC_T2                          1101
-#define IDC_T3                          1102
-#define IDC_T4                          1103
-#define IDC_T5                          1104
-#define IDC_T6                          1105
-#define IDC_T7                          1106
-#define IDC_T8                          1107
-#define IDC_T9                          1108
-#define IDC_T10                         1109
-#define IDC_T11                         1110
-
+#define IDC_CHAT_BOLD                   1106
+#define IDC_ITALICS                     1107
+#define IDC_CHAT_UNDERLINE              1108
+#define IDC_COLOR                       1110
 #define IDC_CHAT_HISTORY                1111
-#define IDC_INFOPANELBG                 1124
-#define IDC_BKGOUTGOING                 1125
-#define IDC_BKGINCOMING                 1126
-#define IDC_GRIDLINES                   1127
-#define IDC_NICKCOLOR                   1128
-#define IDC_FONTCATEGORY                1274
-#define IDC_NICKCOLORS                  1275
 #define IDC_CHAT_TOGGLESIDEBAR          1277
+#define IDC_P1                          1387
+#define IDC_P2                          1388
+#define IDC_P3                          1389
+#define IDC_P4                          1390
+#define IDC_P5                          1391
+#define IDC_P6                          1392
+#define IDC_P7                          1393
+#define IDC_P8                          1394
+#define IDC_P9                          1395
+#define IDC_P10                         1396
+#define IDC_P11                         1397
+#define IDC_T1                          1400
+#define IDC_T2                          1401
+#define IDC_T3                          1402
+#define IDC_T4                          1403
+#define IDC_T5                          1404
+#define IDC_T6                          1405
+#define IDC_T7                          1406
+#define IDC_T8                          1407
+#define IDC_T9                          1408
+#define IDC_T10                         1409
+#define IDC_T11                         1410
 #define ID_MESS                         40001
 #define ID_NEW                          40002
 #define ID_CURR                         40003

@@ -28,8 +28,8 @@ int InitCustomMenus(void);
 void UninitCustomMenus(void);
 int ContactSettingChanged(WPARAM wParam,LPARAM lParam);
 int CListOptInit(WPARAM wParam,LPARAM lParam);
-int ContactChangeGroup(WPARAM wParam,LPARAM lParam);
-int HotkeysProcessMessage(WPARAM wParam,LPARAM lParam);
+INT_PTR ContactChangeGroup(WPARAM wParam,LPARAM lParam);
+INT_PTR HotkeysProcessMessage(WPARAM wParam,LPARAM lParam) { return pcli->pfnHotkeysProcessMessage(wParam, lParam); }
 void InitTrayMenus(void);
 
 HIMAGELIST hCListImages;
@@ -50,7 +50,7 @@ int cli_IconFromStatusMode(const char *szProto,int nStatus, HANDLE hContact)
 		HANDLE hActContact=hContact;
 		if (!DBGetContactSettingByte(NULL,"CLC","Meta",0) && !strcmp(szActProto,"MetaContacts")) {
 			// substitute params by mostonline contact datas
-			HANDLE hMostOnlineContact=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)hActContact,0);
+			HANDLE hMostOnlineContact=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(WPARAM)hActContact,0);
 			if (hMostOnlineContact) {
 				pdisplayNameCacheEntry cacheEntry;
 				cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hMostOnlineContact);
@@ -115,7 +115,7 @@ static int ProtocolAck(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int GetStatusMode(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetStatusMode(WPARAM wParam, LPARAM lParam)
 {
 	return pcli->currentDesiredStatusMode;
 }

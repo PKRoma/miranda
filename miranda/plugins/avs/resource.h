@@ -34,8 +34,6 @@
 #define IDC_SET_MAKE_SQUARE             1010
 #define IDC_HIDEAVATAR                  1011
 #define IDC_DELETE                      1012
-#define IDC_SIZELIMIT                   1012
-#define IDC_SIZELIMITSPIN               1013
 #define IDC_MAKETRANSPBKG               1013
 #define IDC_GUESS_LEVEL                 1014
 #define IDC_BKG_NUM_POINTS              1014

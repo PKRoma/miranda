@@ -18,7 +18,6 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <sys/stat.h>
 #include "gg.h"
 
 //////////////////////////////////////////////////////////
@@ -28,6 +27,7 @@ typedef struct
 {
 	uin_t uin;
 	const char *email;
+	GGPROTO *gg;
 } GG_REMIND_PASS;
 
 static void *__stdcall gg_remindpasswordthread(void *empty)
@@ -35,10 +35,11 @@ static void *__stdcall gg_remindpasswordthread(void *empty)
 	// Connection handle
 	struct gg_http *h;
 	GG_REMIND_PASS *rp = (GG_REMIND_PASS *)empty;
+	const GGPROTO *gg = rp->gg;
 	GGTOKEN token;
 
 #ifdef DEBUGMODE
-	gg_netlog("gg_remindpasswordthread(): Starting.");
+	gg_netlog(gg, "gg_remindpasswordthread(): Starting.");
 #endif
 	if(!rp || !rp->email || !rp->uin || !strlen(rp->email))
 	{
@@ -47,7 +48,7 @@ static void *__stdcall gg_remindpasswordthread(void *empty)
 	}
 
 	// Get token
-	if(!gg_gettoken(&token)) return NULL;
+	if(!gg_gettoken(rp->gg, &token)) return NULL;
 
 	if (!(h = gg_remind_passwd3(rp->uin, rp->email, token.id, token.val, 0)))
 	{
@@ -61,14 +62,14 @@ static void *__stdcall gg_remindpasswordthread(void *empty)
 		);
 
 #ifdef DEBUGMODE
-		gg_netlog("gg_remindpasswordthread(): Password could not be reminded because of \"%s\".", strerror(errno));
+		gg_netlog(gg, "gg_remindpasswordthread(): Password could not be reminded because of \"%s\".", strerror(errno));
 #endif
 	}
 	else
 	{
 		gg_pubdir_free(h);
 #ifdef DEBUGMODE
-		gg_netlog("gg_remindpasswordthread(): Password remind successful.");
+		gg_netlog(gg, "gg_remindpasswordthread(): Password remind successful.");
 #endif
 		MessageBox(
 			NULL,
@@ -79,19 +80,20 @@ static void *__stdcall gg_remindpasswordthread(void *empty)
 	}
 
 #ifdef DEBUGMODE
-	gg_netlog("gg_remindpasswordthread(): End.");
+	gg_netlog(gg, "gg_remindpasswordthread(): End.");
 #endif
 	if(rp) free(rp);
 	return NULL;
 }
 
-void gg_remindpassword(uin_t uin, const char *email)
+void gg_remindpassword(GGPROTO *gg, uin_t uin, const char *email)
 {
 	GG_REMIND_PASS *rp = malloc(sizeof(GG_REMIND_PASS));
 	pthread_t tid;
 
 	rp->uin = uin;
 	rp->email = email;
+	rp->gg = gg;
 	pthread_create(&tid, NULL, gg_remindpasswordthread, (void *)rp);
 	pthread_detach(&tid);
 }

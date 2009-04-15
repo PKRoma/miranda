@@ -144,7 +144,7 @@ typedef struct
 typedef struct 
 {
 	int cbSize;                 //size of the structure
-	char* name;                 //smiley category name for reference
+	char* m_cacheTName;                 //smiley category name for reference
 	char* dispname;             //smiley category name for display 
 } SMADD_REGCAT;
 

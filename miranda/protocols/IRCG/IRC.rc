@@ -13,11 +13,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Neutral (Default) resources
+// Neutral resources
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEUD)
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
 #ifdef _WIN32
-LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 #pragma code_page(1251)
 #endif //_WIN32
 
@@ -29,30 +29,21 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_MAIN                ICON                    "Icons/irc.ico"
-IDI_ADD                 ICON                    "Icons\\add.ico"
-IDI_BLOCK               ICON                    "Icons\\block.ico"
-IDI_DELETE              ICON                    "Icons\\delete.ico"
-IDI_GO                  ICON                    "Icons\\go.ico"
-IDI_WHOIS               ICON                    "Icons\\help.ico"
-IDI_LIST                ICON                    "Icons\\list.ico"
-IDI_MANAGER             ICON                    "Icons\\manager.ico"
-IDI_QUICK               ICON                    "Icons\\quick.ico"
-IDI_RENAME              ICON                    "Icons\\rename.ico"
-IDI_SHOW                ICON                    "Icons\\show.ico"
-IDI_LOGO                ICON                    "Icons\\world.ico"
-IDI_DCC                 ICON                    "Icons\\dcc.ico"
-#endif    // Neutral (Default) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
-#endif //_WIN32
+IDI_ADD                 ICON                    "Icons/add.ico"
+IDI_BLOCK               ICON                    "Icons/block.ico"
+IDI_DELETE              ICON                    "Icons/delete.ico"
+IDI_APPLY               ICON                    "Icons/apply.ico"
+IDI_WHOIS               ICON                    "Icons/whois.ico"
+IDI_LIST                ICON                    "Icons/list.ico"
+IDI_MANAGER             ICON                    "Icons/manager.ico"
+IDI_QUICK               ICON                    "Icons/quick.ico"
+IDI_RENAME              ICON                    "Icons/rename.ico"
+IDI_SHOW                ICON                    "Icons/show.ico"
+IDI_LOGO                ICON                    "Icons/world.ico"
+IDI_DCC                 ICON                    "Icons/dcc.ico"
+IDI_SERVER              ICON                    "Icons/server.ico"
+IDI_EDIT                ICON                    "Icons/edit.ico"
+IDI_IRCQUESTION         ICON                    "Icons/question.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -164,54 +155,57 @@ BEGIN
                     SS_LEFTNOWORDWRAP | WS_GROUP,158,212,108,8
 END
 
-IDD_INFO DIALOGEX 0, 0, 267, 199
+IDD_INFO DIALOGEX 0, 0, 267, 214
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
     WS_CAPTION | WS_SYSMENU
 CAPTION "User information"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    COMBOBOX        IDC_INFO_NICK,6,49,60,97,CBS_DROPDOWN | CBS_AUTOHSCROLL | 
+    COMBOBOX        IDC_INFO_NICK,6,63,60,97,CBS_DROPDOWN | CBS_AUTOHSCROLL | 
                     CBS_SORT | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    PUSHBUTTON      "Ping",IDC_PING,12,128,50,14
-    PUSHBUTTON      "Version",IDC_VERSION,76,128,50,14
-    PUSHBUTTON      "Time",IDC_TIME,140,128,50,14
-    PUSHBUTTON      "Userinfo",IDC_USERINFO,204,128,50,14
-    DEFPUSHBUTTON   "&Refresh",ID_INFO_GO,93,180,50,14
-    PUSHBUTTON      "&Query",ID_INFO_QUERY,152,180,50,14,WS_GROUP
-    DEFPUSHBUTTON   "&Close",ID_INFO_OK,211,180,50,14,WS_GROUP
-    EDITTEXT        IDC_INFO_NAME,71,49,60,12,ES_AUTOHSCROLL | NOT 
-                    WS_TABSTOP
-    EDITTEXT        IDC_INFO_ADDRESS,136,49,60,12,ES_AUTOHSCROLL | NOT 
-                    WS_TABSTOP
-    EDITTEXT        IDC_INFO_ID,201,49,60,12,ES_AUTOHSCROLL | NOT WS_TABSTOP
-    EDITTEXT        IDC_INFO_AUTH,6,71,60,12,ES_AUTOHSCROLL | NOT WS_TABSTOP
-    EDITTEXT        IDC_INFO_SERVER,71,71,60,12,ES_AUTOHSCROLL | NOT 
-                    WS_TABSTOP
-    EDITTEXT        IDC_INFO_AWAY2,136,71,125,12,ES_AUTOHSCROLL | NOT 
-                    WS_TABSTOP
-    EDITTEXT        IDC_INFO_CHANNELS,136,94,125,20,ES_MULTILINE | 
-                    WS_VSCROLL | NOT WS_TABSTOP
-    EDITTEXT        IDC_INFO_OTHER,6,94,125,20,ES_MULTILINE | WS_VSCROLL | 
+    PUSHBUTTON      "Ping",IDC_PING,12,142,50,14
+    PUSHBUTTON      "Version",IDC_VERSION,76,142,50,14
+    PUSHBUTTON      "Time",IDC_TIME,140,142,50,14
+    PUSHBUTTON      "Userinfo",IDC_USERINFO,204,142,50,14
+    DEFPUSHBUTTON   "&Refresh",ID_INFO_GO,93,194,50,14
+    PUSHBUTTON      "&Query",ID_INFO_QUERY,152,194,50,14,WS_GROUP
+    DEFPUSHBUTTON   "&Close",IDOK,211,194,50,14,WS_GROUP
+    EDITTEXT        IDC_INFO_NAME,71,63,60,12,ES_AUTOHSCROLL | ES_READONLY | 
                     NOT WS_TABSTOP
-    LTEXT           "Nick",IDC_STATIC,6,41,60,8
-    LTEXT           "Name",IDC_STATIC,71,41,59,8
-    LTEXT           "Address",IDC_STATIC,136,41,59,8,SS_NOTIFY
-    LTEXT           "Channels",IDC_STATIC,136,86,119,8
-    LTEXT           "Auth",IDC_STATIC,6,63,59,8
-    LTEXT           "Server",IDC_STATIC,71,63,59,8
-    LTEXT           "User",IDC_STATIC,201,41,60,8
-    LTEXT           "Away Info",IDC_STATIC,136,63,125,8
-    LTEXT           "Other",IDC_STATIC,6,86,124,8
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,38,268,1
-    LTEXT           "",IDC_WHITERECT,0,0,267,38
-    ICON            "",IDC_LOGO,228,5,21,20,SS_REALSIZEIMAGE
+    EDITTEXT        IDC_INFO_ADDRESS,136,63,60,12,ES_AUTOHSCROLL | 
+                    ES_READONLY | NOT WS_TABSTOP
+    EDITTEXT        IDC_INFO_ID,201,63,60,12,ES_AUTOHSCROLL | ES_READONLY | 
+                    NOT WS_TABSTOP
+    EDITTEXT        IDC_INFO_AUTH,6,85,60,12,ES_AUTOHSCROLL | ES_READONLY | 
+                    NOT WS_TABSTOP
+    EDITTEXT        IDC_INFO_SERVER,71,85,60,12,ES_AUTOHSCROLL | ES_READONLY | 
+                    NOT WS_TABSTOP
+    EDITTEXT        IDC_INFO_AWAY2,136,85,125,12,ES_AUTOHSCROLL | 
+                    ES_READONLY | NOT WS_TABSTOP
+    EDITTEXT        IDC_INFO_CHANNELS,136,108,125,20,ES_MULTILINE | 
+                    ES_READONLY | WS_VSCROLL | NOT WS_TABSTOP
+    EDITTEXT        IDC_INFO_OTHER,6,108,125,20,ES_MULTILINE | ES_READONLY | 
+                    WS_VSCROLL | NOT WS_TABSTOP
+    LTEXT           "Nick",IDC_STATIC,6,55,60,8
+    LTEXT           "Name",IDC_STATIC,71,55,59,8
+    LTEXT           "Address",IDC_STATIC,136,55,59,8,SS_NOTIFY
+    LTEXT           "Channels",IDC_STATIC,136,100,119,8
+    LTEXT           "Auth",IDC_STATIC,6,77,59,8
+    LTEXT           "Server",IDC_STATIC,71,77,59,8
+    LTEXT           "User",IDC_STATIC,201,55,60,8
+    LTEXT           "Away Info",IDC_STATIC,136,77,125,8
+    LTEXT           "Other",IDC_STATIC,6,100,124,8
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,52,268,1
+    LTEXT           "",IDC_WHITERECT,0,0,267,52
+    ICON            "",IDC_LOGO,228,16,20,20,SS_REALSIZEIMAGE
     LTEXT           "The server returned the following information. Please note that this information might be misleading and/or falsified",
-                    IDC_TEXT,12,16,204,18
-    LTEXT           "",IDC_CAPTION,6,5,201,11
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,176,268,1
-    GROUPBOX        "CTCP information",IDC_STATIC,6,118,255,54
-    EDITTEXT        IDC_REPLY,12,146,243,20,ES_MULTILINE | ES_READONLY | NOT 
+                    IDC_TEXT,12,30,204,18
+    LTEXT           "",IDC_CAPTION,8,5,201,21
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,190,268,1
+    GROUPBOX        "CTCP information",IDC_STATIC,6,132,255,54
+    EDITTEXT        IDC_REPLY,12,160,243,20,ES_MULTILINE | ES_READONLY | NOT 
                     WS_TABSTOP
+    LTEXT           "-",IDC_AWAYTIME,8,19,205,8
 END
 
 IDD_NICK DIALOGEX 0, 0, 180, 90
@@ -223,8 +217,8 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     COMBOBOX        IDC_ENICK,5,47,170,71,CBS_DROPDOWN | CBS_AUTOHSCROLL | 
                     WS_VSCROLL | WS_TABSTOP
-    DEFPUSHBUTTON   "&OK",IDNOK,65,71,50,14
-    PUSHBUTTON      "&Cancel",IDNCANCEL,125,71,50,14,WS_GROUP
+    DEFPUSHBUTTON   "&OK",IDOK,65,71,50,14
+    PUSHBUTTON      "&Cancel",IDCANCEL,125,71,50,14,WS_GROUP
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,38,180,1
     LTEXT           "",IDC_WHITERECT,0,0,179,38
     ICON            "",IDC_LOGO,141,5,20,20,SS_REALSIZEIMAGE
@@ -270,8 +264,8 @@ BEGIN
 END
 
 IDD_ADDSERVER DIALOGEX 0, 0, 182, 136
-STYLE DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | 
-    WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
+    WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW | WS_EX_CONTROLPARENT
 CAPTION "Add server"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -288,8 +282,8 @@ BEGIN
                     WS_TABSTOP,143,52,25,10
     CONTROL         "Auto",IDC_AUTO,"Button",BS_AUTORADIOBUTTON,143,69,30,10
     CONTROL         "Off",IDC_OFF,"Button",BS_AUTORADIOBUTTON,143,86,25,10
-    DEFPUSHBUTTON   "&OK",IDN_ADD_OK,63,115,50,14
-    PUSHBUTTON      "&Cancel",IDN_ADD_CANCEL,125,115,50,14
+    DEFPUSHBUTTON   "&OK",IDOK,63,115,50,14
+    PUSHBUTTON      "&Cancel",IDCANCEL,125,115,50,14
     CONTROL         "Internet address",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | 
                     WS_GROUP,7,60,108,8,WS_EX_TRANSPARENT
     LTEXT           "->",IDC_STATIC,64,94,8,8
@@ -299,22 +293,27 @@ BEGIN
     GROUPBOX        "SSL",IDC_STATIC,136,38,39,67
 END
 
-IDD_LIST DIALOGEX 0, 0, 198, 172
+IDD_LIST DIALOGEX 0, 0, 360, 212
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | 
     WS_POPUP | WS_VISIBLE | WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | 
     WS_THICKFRAME
 CAPTION "Channels on server"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    PUSHBUTTON      "&Close",IDC_CLOSE,141,151,50,14
-    DEFPUSHBUTTON   "&Join",IDC_JOIN,78,151,50,14,WS_DISABLED
+    PUSHBUTTON      "&Close",IDOK,306,183,50,14
+    DEFPUSHBUTTON   "&Join",IDC_JOIN,251,183,50,14,WS_DISABLED
     CONTROL         "List1",IDC_INFO_LISTVIEW,"SysListView32",LVS_REPORT | 
-                    LVS_SINGLESEL | WS_BORDER | WS_TABSTOP,7,7,184,139
-    CONTROL         "Please wait...",IDC_TEXT,"Static",SS_LEFTNOWORDWRAP | 
-                    SS_CENTERIMAGE | WS_GROUP,7,151,63,14
+                    LVS_SINGLESEL | WS_BORDER | WS_TABSTOP,4,7,352,172
+    EDITTEXT        IDC_FILTER_STRING,68,183,143,13,ES_AUTOHSCROLL
+    CONTROL         "List1",IDC_INFO_LISTVIEW2,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | NOT WS_VISIBLE | WS_BORDER | WS_TABSTOP,
+                    4,7,352,172
+    LTEXT           "Filter by",IDC_FILTER_BTN,7,185,56,8
+    EDITTEXT        IDC_TEXT,4,200,351,10,ES_AUTOHSCROLL | WS_DISABLED | NOT 
+                    WS_BORDER,WS_EX_STATICEDGE
 END
 
-IDD_QUICKCONN DIALOGEX 0, 0, 201, 148
+IDD_QUICKCONN DIALOGEX 0, 0, 201, 165
 STYLE DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | 
     WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
@@ -322,31 +321,33 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     COMBOBOX        IDC_SERVERCOMBO,12,54,177,69,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_SERVER,12,78,132,12,ES_AUTOHSCROLL | ES_READONLY | 
-                    WS_GROUP | NOT WS_TABSTOP
-    EDITTEXT        IDC_PORT,12,102,36,12,ES_AUTOHSCROLL | ES_READONLY | 
-                    ES_NUMBER | NOT WS_TABSTOP,WS_EX_RIGHT
-    EDITTEXT        IDC_PORT2,63,102,36,12,ES_AUTOHSCROLL | ES_READONLY | 
-                    ES_NUMBER | NOT WS_TABSTOP,WS_EX_RIGHT
-    EDITTEXT        IDC_PASS,116,102,73,12,ES_PASSWORD | ES_AUTOHSCROLL
-    DEFPUSHBUTTON   "C&onnect",IDNOK,83,129,50,14
-    PUSHBUTTON      "&Cancel",IDNCANCEL,139,129,50,14
-    CONTROL         "Internet address",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | 
-                    WS_GROUP,12,70,130,8,WS_EX_TRANSPARENT
-    LTEXT           "Port range",IDC_STATIC,12,94,63,8,0,WS_EX_TRANSPARENT
-    LTEXT           "Password",IDC_STATIC,116,94,73,8,0,WS_EX_TRANSPARENT
+    EDITTEXT        IDC_SERVER,12,78,177,12,ES_AUTOHSCROLL
+    GROUPBOX        "SSL",IDC_GRBOX_SSL,12,94,177,21,WS_GROUP | WS_TABSTOP
+    CONTROL         "Off",IDC_SSL_OFF,"Button",BS_AUTORADIOBUTTON,36,102,42,
+                    10
+    CONTROL         "Auto",IDC_SSL_AUTO,"Button",BS_AUTORADIOBUTTON,87,102,
+                    42,10
+    CONTROL         "On",IDC_SSL_ON,"Button",BS_AUTORADIOBUTTON,138,102,44,
+                    10
+    EDITTEXT        IDC_PORT,12,124,36,12,ES_AUTOHSCROLL | ES_NUMBER,
+                    WS_EX_RIGHT
+    EDITTEXT        IDC_PORT2,63,124,36,12,ES_AUTOHSCROLL | ES_NUMBER,
+                    WS_EX_RIGHT
+    EDITTEXT        IDC_PASS,116,124,73,12,ES_PASSWORD | ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "C&onnect",IDOK,83,146,50,14
+    PUSHBUTTON      "&Cancel",IDCANCEL,139,146,50,14
+    CONTROL         "Internet address",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP,
+                    12,70,130,8,WS_EX_TRANSPARENT
+    LTEXT           "Port range",IDC_STATIC,12,116,63,8,0,WS_EX_TRANSPARENT
+    LTEXT           "Password",IDC_STATIC,116,116,73,8,0,WS_EX_TRANSPARENT
     LTEXT           "Server name",IDC_STATIC,12,46,177,8,0,WS_EX_TRANSPARENT
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,123,201,1
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,140,201,1
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,38,201,1
     LTEXT           "",IDC_WHITERECT,0,0,201,38
     ICON            "",IDC_LOGO,159,5,20,20,SS_REALSIZEIMAGE
     LTEXT           "",IDC_TEXT,18,16,138,18
     LTEXT           "",IDC_CAPTION,12,5,143,11
-    LTEXT           "->",IDC_STATIC,52,104,8,8,0,WS_EX_TRANSPARENT
-    EDITTEXT        IDC_SSL,154,78,35,12,ES_AUTOHSCROLL | ES_READONLY | 
-                    WS_GROUP | NOT WS_TABSTOP
-    CONTROL         "SSL",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,
-                    154,70,35,8,WS_EX_TRANSPARENT
+    LTEXT           "->",IDC_STATIC,51,126,8,8,0,WS_EX_TRANSPARENT
 END
 
 IDD_USERINFO DIALOGEX 0, 0, 222, 132
@@ -377,6 +378,7 @@ IDD_CHANMANAGER DIALOGEX 0, 0, 271, 303
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
     WS_CLIPSIBLINGS | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
+CAPTION "Channel manager"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     COMBOBOX        IDC_TOPIC,13,56,192,103,CBS_DROPDOWN | CBS_AUTOHSCROLL | 
@@ -418,18 +420,18 @@ BEGIN
                     WS_TABSTOP,134,250,80,10
     CONTROL         "&Set",IDC_APPLYMODES,"MButtonClass",WS_DISABLED | 
                     WS_TABSTOP,215,257,28,14,0x18000000L
-    DEFPUSHBUTTON   "&Close",IDCLOSE,212,284,50,14
+    DEFPUSHBUTTON   "&Close",IDOK,212,284,50,14
     GROUPBOX        "Topic",IDC_STATIC,6,45,256,28
     GROUPBOX        "User modes",IDC_STATIC,6,73,256,118
     GROUPBOX        "Channel modes",IDC_STATIC,6,197,256,82
     CONTROL         "Hidden",IDC_NOTOP,"Button",BS_AUTOCHECKBOX | NOT 
                     WS_VISIBLE,217,73,45,10
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,38,271,1
-    LTEXT           "",IDC_WHITERECT,0,0,249,38
-    ICON            "",IDC_LOGO,212,5,21,20,SS_REALSIZEIMAGE
+    LTEXT           "",IDC_WHITERECT,0,0,271,38
+    ICON            "",IDC_LOGO,236,5,21,20,SS_REALSIZEIMAGE
     LTEXT           "Use the options to set modes for this channel. You are usually required to be op. or higher to modify.",
-                    IDC_TEXT,18,16,184,18
-    LTEXT           "",IDC_CAPTION,12,5,184,11
+                    IDC_TEXT,18,16,219,18
+    LTEXT           "",IDC_CAPTION,12,5,210,11
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,279,255,1
     CONTROL         "Strip colors",IDC_CHECK9,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,15,260,108,14
@@ -443,8 +445,8 @@ CAPTION "Question"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_EDIT,5,48,220,14,ES_AUTOHSCROLL
-    DEFPUSHBUTTON   "&OK",IDNOK,116,78,50,14
-    PUSHBUTTON      "&Cancel",IDNCANCEL,175,78,50,14,WS_GROUP
+    DEFPUSHBUTTON   "&OK",IDOK,116,78,50,14
+    PUSHBUTTON      "&Cancel",IDCANCEL,175,78,50,14,WS_GROUP
     EDITTEXT        IDC_HIDDENEDIT,5,78,40,14,ES_AUTOHSCROLL | NOT 
                     WS_VISIBLE | NOT WS_BORDER | NOT WS_TABSTOP
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,38,230,1
@@ -453,28 +455,6 @@ BEGIN
     LTEXT           "",IDC_TEXT,11,16,179,18
     LTEXT           "",IDC_CAPTION,5,5,184,11
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,71,230,1
-END
-
-IDD_INIT DIALOGEX 0, 0, 211, 102
-STYLE DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | 
-    WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
-EXSTYLE WS_EX_CONTROLPARENT
-CAPTION "Miranda IRC"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    EDITTEXT        IDC_EDIT,5,52,65,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT2,88,52,118,14,ES_AUTOHSCROLL
-    DEFPUSHBUTTON   "&OK",IDNOK,96,83,50,14
-    PUSHBUTTON      "&Cancel",IDNCANCEL,156,83,50,14,WS_GROUP
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,38,212,1
-    LTEXT           "",IDC_WHITERECT,0,0,211,38
-    ICON            "",IDC_LOGO,173,5,20,20,SS_REALSIZEIMAGE
-    LTEXT           "for choosing the IRC protocol for Miranda IM. Please enter your nickname and real name",
-                    IDC_TEXT,11,16,157,18
-    LTEXT           "Thank You...",IDC_CAPTION,5,5,154,11
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,76,211,1
-    LTEXT           "Nick",IDC_STATIC,5,44,65,8
-    LTEXT           "Full name",IDC_STATIC,88,44,117,8
 END
 
 IDD_PREFS_CTCP DIALOGEX 0, 0, 304, 220
@@ -523,8 +503,8 @@ EXSTYLE WS_EX_TOOLWINDOW | WS_EX_CONTROLPARENT
 CAPTION "CTCP Chat Request"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    PUSHBUTTON      "&Accept",IDN_YES,50,47,50,14
-    DEFPUSHBUTTON   "&Deny",IDN_NO,120,47,50,14
+    PUSHBUTTON      "&Accept",IDOK,50,47,50,14
+    DEFPUSHBUTTON   "&Deny",IDCANCEL,120,47,50,14
     LTEXT           "",IDC_TEXT,43,13,170,31,0,WS_EX_TRANSPARENT
     ICON            "",IDC_LOGO,7,13,21,20
 END
@@ -579,13 +559,41 @@ BEGIN
                     64,10
     CONTROL         "DCC",IDC_D,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,150,66,
                     57,10
-    DEFPUSHBUTTON   "&Accept",IDN_YES,93,105,50,14
-    PUSHBUTTON      "&Cancel",IDN_NO,163,105,50,14
+    DEFPUSHBUTTON   "&Accept",IDOK,93,105,50,14
+    PUSHBUTTON      "&Cancel",IDCANCEL,163,105,50,14
     LTEXT           "Ignore mask ( nick!user@host )",IDC_STATIC,7,7,136,8
     LTEXT           "Network (*)",IDC_STATIC,150,7,63,8
     GROUPBOX        "Ignore events",IDC_STATIC,7,36,206,46
     CTEXT           "(*) blank to set this mask for all networks",IDC_STATIC,
                     7,90,206,8
+END
+
+IDD_ACCMGRUI DIALOGEX 0, 0, 186, 134
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    COMBOBOX        IDC_SERVERCOMBO,55,5,125,90,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_SERVER,5,21,88,12,ES_AUTOHSCROLL | ES_READONLY | 
+                    WS_GROUP | NOT WS_TABSTOP
+    EDITTEXT        IDC_PORT,96,21,27,12,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER | NOT WS_TABSTOP,WS_EX_RIGHT
+    EDITTEXT        IDC_PORT2,126,21,27,12,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER | NOT WS_TABSTOP,WS_EX_RIGHT
+    EDITTEXT        IDC_PASS,54,38,125,12,ES_PASSWORD | ES_AUTOHSCROLL
+    EDITTEXT        IDC_NICK,87,64,91,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_NICK2,87,81,91,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_NAME,87,98,91,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_USERID,87,115,91,13,ES_AUTOHSCROLL
+    LTEXT           "Server:",IDC_STATIC,5,7,45,8
+    LTEXT           "Password:",IDC_STATIC,6,41,43,8
+    LTEXT           "Nick",IDC_STATIC,8,66,77,8
+    LTEXT           "Alternate nick",IDC_STATIC,8,83,76,8
+    LTEXT           "Full name (e-mail)",IDC_STATIC,8,100,77,8
+    LTEXT           "User ID (Ident)",IDC_STATIC,8,117,74,8
+    EDITTEXT        IDC_SSL,155,21,23,12,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER | NOT WS_TABSTOP,WS_EX_RIGHT
 END
 
 
@@ -621,9 +629,9 @@ BEGIN
     IDD_INFO, DIALOG
     BEGIN
         VERTGUIDE, 6
+        VERTGUIDE, 10
         VERTGUIDE, 261
-        BOTTOMMARGIN, 194
-        HORZGUIDE, 5
+        BOTTOMMARGIN, 208
         HORZGUIDE, 38
         HORZGUIDE, 49
         HORZGUIDE, 71
@@ -633,6 +641,7 @@ BEGIN
         HORZGUIDE, 146
         HORZGUIDE, 163
         HORZGUIDE, 180
+        HORZGUIDE, 194
     END
 
     IDD_NICK, DIALOG
@@ -680,30 +689,30 @@ BEGIN
 
     IDD_LIST, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 191
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 356
         VERTGUIDE, 16
         VERTGUIDE, 70
         VERTGUIDE, 128
         VERTGUIDE, 182
         TOPMARGIN, 7
-        BOTTOMMARGIN, 165
+        BOTTOMMARGIN, 203
         HORZGUIDE, 19
         HORZGUIDE, 138
-        HORZGUIDE, 146
+        HORZGUIDE, 179
     END
 
     IDD_QUICKCONN, DIALOG
     BEGIN
         VERTGUIDE, 12
         VERTGUIDE, 189
-        BOTTOMMARGIN, 143
+        BOTTOMMARGIN, 160
         HORZGUIDE, 5
         HORZGUIDE, 38
         HORZGUIDE, 54
         HORZGUIDE, 78
-        HORZGUIDE, 102
-        HORZGUIDE, 123
+        HORZGUIDE, 124
+        HORZGUIDE, 140
     END
 
     IDD_USERINFO, DIALOG
@@ -722,7 +731,6 @@ BEGIN
 
     IDD_CHANMANAGER, DIALOG
     BEGIN
-        RIGHTMARGIN, 250
         VERTGUIDE, 6
         VERTGUIDE, 15
         VERTGUIDE, 134
@@ -743,15 +751,6 @@ BEGIN
         BOTTOMMARGIN, 92
         HORZGUIDE, 5
         HORZGUIDE, 72
-    END
-
-    IDD_INIT, DIALOG
-    BEGIN
-        VERTGUIDE, 5
-        BOTTOMMARGIN, 97
-        HORZGUIDE, 5
-        HORZGUIDE, 52
-        HORZGUIDE, 77
     END
 
     IDD_PREFS_CTCP, DIALOG
@@ -828,91 +827,22 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Menu
+// TEXT
 //
 
-IDR_MENU MENU 
-BEGIN
-    POPUP "menu1"
-    BEGIN
-        MENUITEM "&Query",                      ID_MENU1_QUERY
-        MENUITEM "Invite to channel",           ID_MENU1_INVITETOCHANNEL
-        MENUITEM "Send &notice",                ID_MENU1_SENDNOTICE
-        MENUITEM "&Whois",                      ID_MENU1_WHOIS
-        MENUITEM SEPARATOR
-        POPUP "&Control"
-        BEGIN
-            MENUITEM "Owner",                       ID_MENU1_OWNER
-            MENUITEM "Deowner",                     ID_MENU1_DEOWNER
-            MENUITEM "Admin",                       ID_MENU1_ADMIN
-            MENUITEM "Deadmin",                     ID_MENU1_DEADMIN
-            MENUITEM "&Op",                         ID_MENU1_OP
-            MENUITEM "&Deop",                       ID_MENU1_DEOP
-            MENUITEM "&Voice",                      ID_MENU1_VOICE
-            MENUITEM "D&evoice",                    ID_MENU1_DEVOICE
-            MENUITEM SEPARATOR
-            MENUITEM "&Kick",                       ID_MENU1_KICK
-            MENUITEM "Ki&ck (Reason)",              ID_MENU1_KICKREASON
-            MENUITEM "&Ban",                        ID_MENU1_BAN
-            MENUITEM "Ban'&n Kick",                 ID_MENU1_BANKICK
-            MENUITEM "Ban'n Kick (&Reason)",        ID_MENU1_BANKICKREASON
-        END
-        MENUITEM SEPARATOR
-        POPUP "&Ignore"
-        BEGIN
-            MENUITEM "On",                          ID_MENU1_IGNORE_ON
-            MENUITEM "Off",                         ID_MENU1_IGNORE_OFF
-        END
-        MENUITEM SEPARATOR
-        MENUITEM "&Add contact",                ID_MENU1_ADDCONTACT
-    END
-    POPUP "Log"
-    BEGIN
-        MENUITEM "&Copy",                       IDM_COPY
-        MENUITEM "Co&py All",                   IDM_COPYALL
-        MENUITEM "Select &All",                 IDM_SELECTALL
-        MENUITEM SEPARATOR
-        MENUITEM "Leave channel",               IDM_LEAVECHAN
-        MENUITEM SEPARATOR
-        MENUITEM "Clear log",                   IDM_CLEAR
-        MENUITEM SEPARATOR
-        MENUITEM "Join channel",                IDM_JOIN
-        MENUITEM "Change nickname",             IDM_CHANGENICK
-        MENUITEM "Show/Hide server",            IDM_SHOWSERVER
-        MENUITEM SEPARATOR
-        MENUITEM "Channel manager",             IDM_CHANMANAGER
-    END
-    POPUP "LogLink"
-    BEGIN
-        MENUITEM "Open in &new window",         IDM_OPENNEW
-        MENUITEM "&Open in existing window",    IDM_OPENEXISTING
-        MENUITEM "&Copy link",                  IDM_COPYLINK
-    END
-END
-
-#endif    // English (U.S.) resources
+IDR_SERVERS             TEXT                    "Docs\\IRC_servers.ini"
+#endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Swedish resources
+// English (U.S.) resources
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_SVE)
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
-LANGUAGE LANG_SWEDISH, SUBLANG_DEFAULT
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
 #endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDI_SERVER              ICON                    "Icons\\server.ico"
-IDI_PART                ICON                    "Icons\\part.ico"
-IDI_JOIN                ICON                    "Icons\\go.ico"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -939,7 +869,7 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Swedish resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

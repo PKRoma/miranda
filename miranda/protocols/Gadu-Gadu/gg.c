@@ -25,11 +25,11 @@
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"Gadu-Gadu Protocol",
-	PLUGIN_MAKE_VERSION(0, 0, 4, 9),
+	PLUGIN_MAKE_VERSION(0, 0, 4, 8),
 	"Provides support for Gadu-Gadu protocol",
-	"Adam Strzelecki",
+	"Adam Strzelecki, Bartosz Bia³ek",
 	"ono+miranda@java.pl",
-	"Copyright © 2003-2007 Adam Strzelecki",
+	"Copyright © 2003-2009 Adam Strzelecki, Bartosz Bia³ek",
 	"http://www.miranda-im.pl/",
 	0,
 	0,
@@ -39,27 +39,13 @@ PLUGININFOEX pluginInfo = {
 static const MUUID interfaces[] = {MIID_PROTOCOL, MIID_LAST};
 
 // Other variables
-PLUGINLINK *pluginLink;
 HINSTANCE hInstance;
-int ggStatus = ID_STATUS_OFFLINE;			// gadu-gadu status
-int ggDesiredStatus = ID_STATUS_OFFLINE;	// gadu-gadu desired status
-HANDLE hNetlib; 							// used just for logz
-char ggProto[64] = GGDEF_PROTO;				// proto id get from DLL name	(def GG from GG.dll or GGdebug.dll)
-											// (static variable because may be needed after destroy)
-char *ggProtoName = NULL;					// proto name get from DLL name (def Gadu-Gadu from GG.dll or GGdebug.dll)
-char *ggProtoError = NULL;					// proto error get from DLL name (def Gadu-Gadu from GG.dll or GGdebug.dll)
-
-// Status messages
-struct gg_status_msgs ggModeMsg;
+PLUGINLINK *pluginLink;
+struct MM_INTERFACE mmi;
 
 // Event hooks
-static HANDLE hHookOptsInit = NULL;
-static HANDLE hHookUserInfoInit = NULL;
 static HANDLE hHookModulesLoaded = NULL;
 static HANDLE hHookPreShutdown = NULL;
-static HANDLE hHookSettingDeleted = NULL;
-static HANDLE hHookSettingChanged = NULL;
-static HANDLE hHookIconsChanged = NULL;
 
 static unsigned long crc_table[256];
 
@@ -164,9 +150,16 @@ __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 {
 	return interfaces;
 }
+void CreateProtoService(const char* szService, GGPROTOFUNC serviceProc, GGPROTO *gg)
+{
+	char str[MAXMODULELABELLENGTH];
+	mir_snprintf(str, sizeof(str), "%s%s", gg->proto.m_szModuleName, szService);
+	CreateServiceFunctionObj(str, (MIRANDASERVICEOBJ)serviceProc, gg);
+}
+
 //////////////////////////////////////////////////////////
 // Cleanups from last plugin
-void gg_cleanuplastplugin(DWORD version)
+void gg_cleanuplastplugin(GGPROTO *gg, DWORD version)
 {
 	HANDLE hContact;
 	char *szProto;
@@ -175,7 +168,7 @@ void gg_cleanuplastplugin(DWORD version)
 	if(version < PLUGIN_MAKE_VERSION(0, 0, 1, 4))
 	{
 #ifdef DEBUGMODE
-		gg_netlog("gg_cleanuplastplugin(%d): Cleaning junk Phone settings from < 0.0.1.4 ...", version);
+		gg_netlog(gg, "gg_cleanuplastplugin(%d): Cleaning junk Phone settings from < 0.0.1.4 ...", version);
 #endif
 		// Look for contact in DB
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
@@ -196,7 +189,7 @@ void gg_cleanuplastplugin(DWORD version)
 	if(version < PLUGIN_MAKE_VERSION(0, 0, 3, 5))
 	{
 #ifdef DEBUGMODE
-		gg_netlog("gg_cleanuplastplugin(%d): Cleaning junk Nick settings from < 0.0.3.5 ...", version);
+		gg_netlog(gg, "gg_cleanuplastplugin(%d): Cleaning junk Nick settings from < 0.0.3.5 ...", version);
 #endif
 		// Look for contact in DB
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
@@ -220,53 +213,8 @@ void gg_cleanuplastplugin(DWORD version)
 // When miranda loaded its modules
 int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
 {
-	NETLIBUSER nlu = { 0 };
-	char *szTitle = NULL,
-		 *szError = NULL,
-		 *szConnection = NULL;
-	DWORD dwVersion = 0;
-
-	szConnection = Translate("connection");
-	szTitle = malloc(strlen(GG_PROTONAME) + strlen(szConnection) + 2);
-	strcpy(szTitle, GG_PROTONAME);
-	strcat(szTitle, " ");
-	strcat(szTitle, szConnection);
-
-	nlu.cbSize = sizeof(nlu);
-	nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_HTTPCONNS;
-	nlu.szSettingsModule = GG_PROTO;
-	nlu.szDescriptiveName = szTitle;
-	hNetlib = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) & nlu);
-	hHookOptsInit = HookEvent(ME_OPT_INITIALISE, gg_options_init);
-	hHookUserInfoInit = HookEvent(ME_USERINFO_INITIALISE, gg_details_init);
-	hHookSettingDeleted = HookEvent(ME_DB_CONTACT_DELETED, gg_userdeleted);
-	hHookSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, gg_dbsettingchanged);
-	hHookIconsChanged = HookEvent(ME_SKIN2_ICONSCHANGED, gg_iconschanged);
-
-	free(szTitle);
-
 	// Init SSL library
 	gg_ssl_init();
-
-	// Init misc thingies
-	gg_icolib_init();
-	gg_gc_init();
-	/* gg_userinfo_init(); DEPRECATED */
-	gg_keepalive_init();
-	gg_import_init();
-	/* gg_chpass_init(); DEPRECATED */
-	gg_img_init();
-
-	// Make error message
-	szError = Translate("Error");
-	ggProtoError = malloc(strlen(GG_PROTONAME) + strlen(szError) + 2);
-	strcpy(ggProtoError, GG_PROTONAME);
-	strcat(ggProtoError, " ");
-	strcat(ggProtoError, szError);
-
-	// Do last plugin cleanup if not actual version
-	if((dwVersion = DBGetContactSettingDword(NULL, GG_PROTO, GG_PLUGINVERSION, 0)) < pluginInfo.version)
-		gg_cleanuplastplugin(dwVersion);
 
 	return 0;
 }
@@ -275,47 +223,182 @@ int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
 // When Miranda starting shutdown sequence
 int gg_preshutdown(WPARAM wParam, LPARAM lParam)
 {
-#ifdef DEBUGMODE
-	gg_netlog("gg_preshutdown(): signalling shutdown...");
-#endif
-	// Shutdown some modules before unload
-	gg_img_shutdown();
-
 	return 0;
 }
 
 //////////////////////////////////////////////////////////
-// Init multiple instances proto name
-void init_protonames()
+// Menus initialization
+void gg_menus_init(GGPROTO *gg)
 {
-	char text[MAX_PATH], *p, *q;
-	WIN32_FIND_DATA ffd;
-	HANDLE hFind;
+	CLISTMENUITEM mi = {0};
+	char service[MAXMODULELABELLENGTH];
 
-	// Try to find name of the file having original letter sizes
-	GetModuleFileName(hInstance, text, sizeof(text));
-	if((hFind = FindFirstFile(text, &ffd)) != INVALID_HANDLE_VALUE)
+	strcpy(service, gg->proto.m_szModuleName);
+	mi.cbSize = sizeof(mi);
+	mi.flags = CMIF_TCHAR;
+	mi.ptszPopupName = NULL;
+	mi.position = 500090000;
+	mi.hIcon = LoadIconEx(IDI_GG);
+	mi.ptszName = gg->unicode_core ? mir_u2a((wchar_t *)gg->proto.m_tszUserName) : mir_strdup(gg->proto.m_tszUserName);
+	mi.pszService = service;
+	gg->hMainMenu[0] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+	mir_free(mi.ptszName);
+}
+
+//////////////////////////////////////////////////////////
+// Custom protocol event
+int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam)
+{
+	GGPROTO *gg = (GGPROTO *)proto;
+	switch( eventType )
 	{
-		strncpy(text, ffd.cFileName, sizeof(text));
-		FindClose(hFind);
-	}
-	// Check if we have relative or full path
-	if(p = strrchr(text, '\\'))
-		p++;
-	else
-		p = text;
-	if(q = strrchr(p, '.'))	*q = '\0';
-	if((q = strstr(p, "debug")) && strlen(q) == 5)
-		*q = '\0';
+		case EV_PROTO_ONLOAD:
+		{
+			NETLIBUSER nlu = { 0 };
 
-	// We copy to static variable
-	strncpy(ggProto, p, sizeof(ggProto));
-	strupr(ggProto);
-	// Is it default GG.dll if yes do Gadu-Gadu as a title
-	if(!strcmp(ggProto, GGDEF_PROTO))
-		ggProtoName = strdup(GGDEF_PROTONAME);
-	else
-		ggProtoName = strdup(p);
+			nlu.cbSize = sizeof(nlu);
+			nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_HTTPCONNS;
+			nlu.szSettingsModule = gg->proto.m_szModuleName;
+			if (gg->unicode_core) {
+				WCHAR name[128];
+				_snwprintf(name, sizeof(name)/sizeof(name[0]), TranslateW(L"%s connection"), gg->proto.m_tszUserName);
+				nlu.ptszDescriptiveName = (char *)name;
+				nlu.flags |= NUF_UNICODE;
+			} else {
+				char name[128];
+				mir_snprintf(name, sizeof(name)/sizeof(name[0]), Translate("%s connection"), gg->proto.m_tszUserName);
+				nlu.ptszDescriptiveName = name;
+			}
+
+			gg->netlib = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) & nlu);
+			gg->hookOptsInit = HookProtoEvent(ME_OPT_INITIALISE, gg_options_init, gg);
+			gg->hookUserInfoInit = HookProtoEvent(ME_USERINFO_INITIALISE, gg_details_init, gg);
+			gg->hookSettingDeleted = HookProtoEvent(ME_DB_CONTACT_DELETED, gg_userdeleted, gg);
+			gg->hookSettingChanged = HookProtoEvent(ME_DB_CONTACT_SETTINGCHANGED, gg_dbsettingchanged, gg);
+			gg->hookIconsChanged = HookProtoEvent(ME_SKIN2_ICONSCHANGED, gg_iconschanged, gg);
+#ifdef DEBUGMODE
+			gg_netlog(gg, "gg_event(EV_PROTO_ONLOAD): loading modules...");
+#endif
+
+			// Init misc thingies
+			gg_icolib_init(gg);
+			gg_menus_init(gg);
+			gg_gc_init(gg);
+			gg_keepalive_init(gg);
+			gg_import_init(gg);
+			gg_img_init(gg);
+
+			break;
+		}
+		case EV_PROTO_ONEXIT:
+#ifdef DEBUGMODE
+			gg_netlog(gg, "gg_event(EV_PROTO_ONEXIT)/gg_preshutdown(): signalling shutdown...");
+#endif
+			// Stop main connection session thread
+			gg_threadwait(gg, &gg->pth_sess);
+			gg_img_shutdown(gg);
+			break;
+		case EV_PROTO_ONOPTIONS:
+			return gg_options_init(gg, wParam, lParam);
+		case EV_PROTO_ONRENAME:
+		{	
+			CLISTMENUITEM mi = {0};
+
+#ifdef DEBUGMODE
+			gg_netlog(gg, "gg_event(EV_PROTO_ONRENAME): renaming account...");
+#endif
+			mi.cbSize = sizeof(mi);
+			mi.flags = CMIM_NAME | CMIF_TCHAR;
+			mi.ptszName = gg->unicode_core ? mir_u2a((wchar_t *)gg->proto.m_tszUserName) : mir_strdup(gg->proto.m_tszUserName);
+			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)gg->hMainMenu[0], (LPARAM)&mi);
+
+			break;
+		}
+	}
+	return TRUE;
+}
+
+//////////////////////////////////////////////////////////
+// Module instance initialization
+static GGPROTO *gg_proto_init(const char* pszProtoName, const TCHAR* tszUserName)
+{
+	DWORD dwVersion;
+	GGPROTO *gg = malloc(sizeof(GGPROTO));
+	char szVer[MAX_PATH];
+	ZeroMemory(gg, sizeof(GGPROTO));
+	gg->proto.vtbl = malloc(sizeof(PROTO_INTERFACE_VTBL));
+	// Are we running under unicode Miranda core ?
+	CallService(MS_SYSTEM_GETVERSIONTEXT, MAX_PATH, (LPARAM)szVer);
+	_strlwr(szVer); // make sure it is lowercase
+	gg->unicode_core = (strstr(szVer, "unicode") != NULL);
+
+	// Init mutex
+	pthread_mutex_init(&gg->sess_mutex, NULL);
+	pthread_mutex_init(&gg->ft_mutex, NULL);
+	pthread_mutex_init(&gg->img_mutex, NULL);
+
+	// Init instance names
+	gg->proto.m_szModuleName = mir_strdup(pszProtoName);
+	gg->proto.m_szProtoName = GGDEF_PROTONAME;
+
+/* Anyway we won't get Unicode in GG yet */
+#ifdef _UNICODE
+	gg->name = gg->proto.m_tszUserName = mir_tstrdup(tszUserName);
+#else
+	gg->proto.m_tszUserName = gg->unicode_core ? (TCHAR *)mir_wstrdup((wchar_t *)tszUserName) : (TCHAR *)mir_strdup((char *)tszUserName);
+	gg->name = gg->unicode_core ? mir_u2a((wchar_t *)tszUserName) : mir_strdup(tszUserName);
+#endif
+
+	// Register services
+	gg_registerservices(gg);
+	gg_setalloffline(gg);
+	gg_refreshblockedicon(gg);
+
+	if((dwVersion = DBGetContactSettingDword(NULL, GG_PROTO, GG_PLUGINVERSION, 0)) < pluginInfo.version)
+		gg_cleanuplastplugin(gg, dwVersion);
+
+	return gg;
+}
+
+static int gg_proto_uninit(PROTO_INTERFACE *proto)
+{
+	GGPROTO *gg = (GGPROTO *)proto;
+
+#ifdef DEBUGMODE
+	gg_netlog(gg, "gg_proto_uninit(): destroying protocol interface");
+#endif
+
+	// Destroy modules
+	gg_img_destroy(gg);
+	gg_keepalive_destroy(gg);
+	gg_gc_destroy(gg);
+	gg_import_shutdown(gg);
+	CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMainMenu[0], 0);
+
+	// Close handles
+	LocalEventUnhook(gg->hookOptsInit);
+	LocalEventUnhook(gg->hookSettingDeleted);
+	LocalEventUnhook(gg->hookSettingChanged);
+	LocalEventUnhook(gg->hookIconsChanged);
+	Netlib_CloseHandle(gg->netlib);
+
+	// Destroy mutex
+	pthread_mutex_destroy(&gg->sess_mutex);
+	pthread_mutex_destroy(&gg->ft_mutex);
+	pthread_mutex_destroy(&gg->img_mutex);
+
+	// Free status messages
+	if(gg->modemsg.online)    free(gg->modemsg.online);
+	if(gg->modemsg.away)      free(gg->modemsg.away);
+	if(gg->modemsg.invisible) free(gg->modemsg.invisible);
+	if(gg->modemsg.offline)   free(gg->modemsg.offline);
+
+	mir_free(gg->proto.m_szModuleName);
+	mir_free(gg->proto.m_tszUserName);
+	mir_free(gg->name);
+	free(gg->proto.vtbl);
+	free(gg);
+	return 0;
 }
 
 //////////////////////////////////////////////////////////
@@ -325,14 +408,12 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	WSADATA wsaData;
 	PROTOCOLDESCRIPTOR pd;
 
+	pluginLink = link;
+	mir_getMMI(&mmi);
+
 	// Init winsock
 	if (WSAStartup(MAKEWORD( 1, 1 ), &wsaData))
 		return 1;
-
-	// Init proto names
-	init_protonames();
-
-	pluginLink = link;
 
 	// Hook system events
 	hHookModulesLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, gg_modulesloaded);
@@ -340,22 +421,15 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 
 	// Prepare protocol name
 	ZeroMemory(&pd, sizeof(pd));
-	ZeroMemory(&ggModeMsg, sizeof(ggModeMsg));
 	pd.cbSize = sizeof(pd);
-	pd.szName = GG_PROTO;
+	pd.szName = GGDEF_PROTO;
+	pd.fnInit = (pfnInitProto)gg_proto_init;
+	pd.fnUninit = (pfnUninitProto)gg_proto_uninit;
 	pd.type = PROTOTYPE_PROTOCOL;
 
 	// Register module
-	CallService(MS_PROTO_REGISTERMODULE, 0, (LPARAM) & pd);
+	CallService(MS_PROTO_REGISTERMODULE, 0, (LPARAM) &pd);
 
-	// Init mutex
-	pthread_mutex_init(&threadMutex, NULL);
-	pthread_mutex_init(&modeMsgsMutex, NULL);
-
-	// Register services
-	gg_registerservices();
-	gg_setalloffline();
-	gg_refreshblockedicon();
 	return 0;
 }
 
@@ -363,48 +437,14 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 // when plugin is unloaded
 int __declspec(dllexport) Unload()
 {
-	// Log off
-	if(gg_isonline()) gg_disconnect();
-	// Check threads
-	gg_cleanupthreads();
-#ifdef DEBUGMODE
-	gg_netlog("Unload(): destroying plugin");
-#endif
-	/* gg_userinfo_destroy(); */
-	gg_keepalive_destroy();
-	gg_img_destroy();
-	gg_gc_destroy();
-
-	pthread_mutex_destroy(&threadMutex);
-	pthread_mutex_destroy(&modeMsgsMutex);
-
 	LocalEventUnhook(hHookModulesLoaded);
 	LocalEventUnhook(hHookPreShutdown);
-
-	LocalEventUnhook(hHookOptsInit);
-	LocalEventUnhook(hHookSettingDeleted);
-	LocalEventUnhook(hHookSettingChanged);
-	LocalEventUnhook(hHookIconsChanged);
-#ifdef DEBUGMODE
-	gg_netlog("Unload(): closing hNetlib");
-#endif
-	Netlib_CloseHandle(hNetlib);
-
-	// Free status messages
-	if(ggModeMsg.szOnline)		free(ggModeMsg.szOnline);
-	if(ggModeMsg.szAway)		free(ggModeMsg.szAway);
-	if(ggModeMsg.szInvisible)	free(ggModeMsg.szInvisible);
-	if(ggModeMsg.szOffline) 	free(ggModeMsg.szOffline);
 
 	// Uninit SSL library
 	gg_ssl_uninit();
 
 	// Cleanup WinSock
 	WSACleanup();
-
-	// Cleanup protonames
-	if(ggProtoName) free(ggProtoName);
-	if(ggProtoError) free(ggProtoError);
 
 	return 0;
 }
@@ -448,6 +488,14 @@ struct
 	{GG_EVENT_IMAGE_REQUEST,		"GG_EVENT_IMAGE_REQUEST"},
 	{GG_EVENT_IMAGE_REPLY,			"GG_EVENT_IMAGE_REPLY"},
 	{GG_EVENT_DCC_ACK,				"GG_EVENT_DCC_ACK"},
+	{GG_EVENT_DCC7_NEW,				"GG_EVENT_DCC7_NEW"},
+	{GG_EVENT_DCC7_ACCEPT,			"GG_EVENT_DCC7_ACCEPT"},
+	{GG_EVENT_DCC7_REJECT,			"GG_EVENT_DCC7_REJECT"},
+	{GG_EVENT_DCC7_CONNECTED,		"GG_EVENT_DCC7_CONNECTED"},
+	{GG_EVENT_DCC7_ERROR,			"GG_EVENT_DCC7_ERROR"},
+	{GG_EVENT_DCC7_DONE,			"GG_EVENT_DCC7_DONE"},
+	{GG_EVENT_DCC7_PENDING,			"GG_EVENT_DCC7_PENDING"},
+	{GG_EVENT_XML_EVENT,			"GG_EVENT_XML_EVENT"},
 	{-1,							"<unknown event>"}
 };
 
@@ -462,32 +510,31 @@ const char *ggdebug_eventtype(struct gg_event *e)
 
 void gg_debughandler(int level, const char *format, va_list ap)
 {
-	char szText[1024], *szFormat = strdup(format);
+	char szText[1024], *szFormat = _strdup(format);
 	// Kill end line
 	char *nl = strrchr(szFormat, '\n');
 	if(nl) *nl = 0;
 
-	strncpy(szText, GG_PROTO, sizeof(szText));
-	strncat(szText, "	   >> libgadu << \0", sizeof(szText) - strlen(szText));
+	strncpy(szText, "[libgadu] \0", sizeof(szText));
 
 	mir_vsnprintf(szText + strlen(szText), sizeof(szText) - strlen(szText), szFormat, ap);
-	CallService(MS_NETLIB_LOG, (WPARAM) hNetlib, (LPARAM) szText);
+	CallService(MS_NETLIB_LOG, (WPARAM) NULL, (LPARAM) szText);
 	free(szFormat);
 }
 
 ////////////////////////////////////////////////////////////
 // Log funcion
-int gg_netlog(const char *fmt, ...)
+int gg_netlog(const GGPROTO *gg, const char *fmt, ...)
 {
 	va_list va;
 	char szText[1024];
-	strncpy(szText, GG_PROTO, sizeof(szText));
-	strncat(szText, "::\0", sizeof(szText) - strlen(szText));
+
+	mir_snprintf(szText, sizeof(szText), "[%s] ", GG_PROTO);
 
 	va_start(va, fmt);
 	mir_vsnprintf(szText + strlen(szText), sizeof(szText) - strlen(szText), fmt, va);
 	va_end(va);
-	return CallService(MS_NETLIB_LOG, (WPARAM) hNetlib, (LPARAM) szText);
+	return CallService(MS_NETLIB_LOG, (WPARAM) gg->netlib, (LPARAM) szText);
 }
 
 #endif

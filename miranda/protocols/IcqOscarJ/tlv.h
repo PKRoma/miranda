@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/tlv.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -39,30 +39,50 @@
 
 /*---------* Structures *--------------*/
 
-typedef struct oscar_tlv_s
+struct oscar_tlv
 {
   WORD wType;
   WORD wLen;
   BYTE *pData;
-} oscar_tlv;
+};
 
-typedef struct oscar_tlv_chain_s
+
+struct oscar_tlv_chain
 {
   oscar_tlv tlv;
-  struct oscar_tlv_chain_s *next;
-} oscar_tlv_chain;
+  oscar_tlv_chain *next;
+
+  WORD getChainLength();
+
+  oscar_tlv* getTLV(WORD wType, WORD wIndex);
+  oscar_tlv* putTLV(WORD wType, WORD wLen, BYTE *pData, BOOL bReplace);
+  oscar_tlv_chain* removeTLV(oscar_tlv *tlv);
+  WORD getLength(WORD wType, WORD wIndex);
+
+  DWORD getDWord(WORD wType, WORD wIndex);
+  WORD getWord(WORD wType, WORD wIndex);
+  BYTE getByte(WORD wType, WORD wIndex);
+  int getNumber(WORD wType, WORD wIndex);
+  double getDouble(WORD wType, WORD wIndex);
+  char* getString(WORD wType, WORD wIndex);
+};
+
+
+struct oscar_tlv_record_list
+{
+  oscar_tlv_chain *item;
+  oscar_tlv_record_list *next;
+
+  oscar_tlv_chain* getRecordByTLV(WORD wType, int nValue);
+};
 
 /*---------* Functions *---------------*/
 
 oscar_tlv_chain* readIntoTLVChain(BYTE **buf, WORD wLen, int maxTlvs);
-oscar_tlv* getTLV(oscar_tlv_chain *, WORD, WORD);
-
-WORD getLenFromChain(oscar_tlv_chain* chain, WORD wType, WORD wIndex);
-DWORD getDWordFromChain(oscar_tlv_chain* chain, WORD wType, WORD wIndex);
-WORD  getWordFromChain(oscar_tlv_chain* chain, WORD wType, WORD wIndex);
-BYTE getByteFromChain(oscar_tlv_chain* chain, WORD wType, WORD wIndex);
-BYTE *getStrFromChain(oscar_tlv_chain* chain, WORD wType, WORD wIndex);
-
 void disposeChain(oscar_tlv_chain** chain);
+
+oscar_tlv_record_list* readIntoTLVRecordList(BYTE **buf, WORD wLen, int nCount);
+void disposeRecordList(oscar_tlv_record_list** list);
+
 
 #endif /* __TLV_H */

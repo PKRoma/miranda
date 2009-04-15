@@ -1,0 +1,45 @@
+
+	How to compile tabSRMM with GCC
+	-------------------------------
+
+As of January 2009, tabSRMM should cleanly compile with a recent version of the
+GCC/MingW32 compiler suite.
+
+	What you need:
+	--------------
+
+In order to compile tabSRMM, you need a recent distribution of the MingW32
+tool suite, available from http://www.mingw.org. Make sure to download a
+recent alpha/development build or else it won't compile. GCC should be at least
+version 4.2.x, currently, I'am using the 4.3.0 alpha build (don't be scared
+about using alpha/dev builds of MingW32 - they seem to be pretty stable and I
+have not run into a single problem with them).
+
+Install MingW and make sure, your $PATH environment variable is set properly
+so that the tools (gcc, make etc.) are found. Then use the make command to build
+either the ANSI or the Unicode version of tabSRMM. Open a shell, cd to the
+tabSRMM source root folder (usually $MIRANDASOURCES\plugins\tabSRMM) and
+type:
+
+> make CONF=Release_Unicode		<< use this to build the unicode version
+> make CONF=Release				<< use this to build the ansi version
+
+Append "clean" to the above commands to clean the build directories and force
+a complete rebuild.
+
+The resulting tabsrmm.dll will be placed into the dist/$CONF/MinGW-Windows folder.
+
+	Supported Targets
+	-----------------
+
+Right now, the only 2 supported build targets are Release and Release_Unicode.
+Debug targets are not working at this time.
+
+
+	Supported IDE
+	-------------
+
+You'll also find a project configuartion for the NetBeans IDE (Version 6.1 and
+later) in the ./nbproject subfolder. This project is configured to be used with
+MingW32 compiler installation, so before using it, you must setup Netbeans so
+that it can use the MingW32 compiler suite.

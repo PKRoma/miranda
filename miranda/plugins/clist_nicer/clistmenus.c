@@ -34,7 +34,7 @@ extern int      g_nextExtraCacheEntry;
 extern struct   ExtraCache *g_ExtraCache;
 extern struct   CluiData g_CluiData;
 
-int CloseAction(WPARAM wParam,LPARAM lParam)
+INT_PTR CloseAction(WPARAM wParam,LPARAM lParam)
 {
 	int k;
 	g_shutDown = 1;
@@ -55,15 +55,28 @@ static HANDLE hWindowListIGN = 0;
  * menu
  */
 
-static UINT xImgCtrlIds[] = {IDC_SHOWCLIENTICONS, IDC_SHOWEXTENDEDSTATUS,IDC_EXTRAMAIL,
-                             IDC_EXTRAWEB, IDC_EXTRAPHONE, IDC_EXTRARESERVED, IDC_EXTRARESERVED2,
-                             IDC_EXTRARESERVED3, IDC_EXTRARESERVED4, IDC_EXTRARESERVED5, 0};
+static UINT xImgCtrlIds[] = {IDC_EXTRA_ICON_CLIENT, IDC_EXTRA_ICON_ADV1,IDC_EXTRA_ICON_EMAIL,
+                             IDC_EXTRA_ICON_WEB, IDC_EXTRA_ICON_SMS, IDC_EXTRA_ICON_RES0, IDC_EXTRA_ICON_ADV2,
+                             IDC_EXTRA_ICON_RES1, IDC_EXTRA_ICON_RES2, IDC_EXTRA_ICON_ADV3, IDC_EXTRA_ICON_ADV4};
 
-static UINT xImgCtrlBits[] = {6, 4, 0, 1, 2, 3, 5, 7, 8, 9, 10};
+// static UINT xImgCtrlBits[] = {6, 4, 0, 1, 2, 3, 5, 7, 8, 9, 10};
+static UINT xImgCtrlBits[] = {
+	EXTRA_ICON_CLIENT,
+	EXTRA_ICON_ADV1,
+	EXTRA_ICON_EMAIL,
+	EXTRA_ICON_WEB,
+	EXTRA_ICON_SMS,
+	EXTRA_ICON_RES0,
+	EXTRA_ICON_ADV2,
+	EXTRA_ICON_RES1,
+	EXTRA_ICON_RES2,
+	EXTRA_ICON_ADV3,
+	EXTRA_ICON_ADV4
+};
 
-static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	HANDLE hContact = (HANDLE)GetWindowLong(hWnd, GWL_USERDATA);
+	HANDLE hContact = (HANDLE)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 
 	switch(msg) {
 	case WM_INITDIALOG:
@@ -74,7 +87,7 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 			HWND hwndAdd;
 
 			hContact = (HANDLE)lParam;
-			SetWindowLong(hWnd, GWL_USERDATA, (LONG)hContact);
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)hContact);
 			dwMask = DBGetContactSettingDword(hContact, "Ignore", "Mask1", 0);
 			SendMessage(hWnd, WM_USER + 100, (WPARAM)hContact, dwMask);
 			SendMessage(hWnd, WM_USER + 120, 0, 0);
@@ -377,7 +390,7 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 			return 0;
 		}
 	case WM_DESTROY:
-		SetWindowLong(hWnd, GWL_USERDATA, 0);
+		SetWindowLongPtr(hWnd, GWLP_USERDATA, 0);
 		WindowList_Remove(hWindowListIGN, hWnd);
 		break;
 	}
@@ -396,7 +409,7 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
  * if dialog is already open, focus it.
 */
 
-static int SetContactIgnore(WPARAM wParam, LPARAM lParam)
+static INT_PTR SetContactIgnore(WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hWnd = 0;
 
@@ -423,7 +436,7 @@ static int SetContactIgnore(WPARAM wParam, LPARAM lParam)
  * the desktop.
 */
 
-static int SetContactFloating(WPARAM wParam, LPARAM lParam)
+static INT_PTR SetContactFloating(WPARAM wParam, LPARAM lParam)
 {
 	SendMessage(pcli->hwndContactTree, CLM_TOGGLEFLOATINGCONTACT, wParam, lParam);
 	return 0;

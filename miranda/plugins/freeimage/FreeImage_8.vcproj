@@ -4,6 +4,8 @@
 	Version="8,00"
 	Name="FreeImage"
 	ProjectGUID="{D0C4EACD-F264-4CFA-9AFC-3918FEC31A9A}"
+	SccProjectName=""
+	SccLocalPath=""
 	>
 	<Platforms>
 		<Platform
@@ -18,7 +20,6 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -48,11 +49,10 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="3"
-				InlineFunctionExpansion="2"
+				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="2"
-				OmitFramePointers="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="Source,Source\ZLib,Source\DeprecationManager,..\..\include"
+				AdditionalIncludeDirectories="Source,Source\ZLib,..\..\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;FREEIMAGE_EXPORTS;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -63,6 +63,7 @@
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				CompileAs="0"
+				DisableSpecificWarnings="4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -121,7 +122,6 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -155,7 +155,7 @@
 				FavorSizeOrSpeed="2"
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="Source,Source\ZLib,Source\DeprecationManager,..\..\include"
+				AdditionalIncludeDirectories="Source,Source\ZLib,..\..\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;FREEIMAGE_EXPORTS;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -167,6 +167,7 @@
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				CompileAs="0"
+				DisableSpecificWarnings="4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -224,7 +225,6 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -253,7 +253,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="Source,Source\ZLib,Source\DeprecationManager,..\..\include"
+				AdditionalIncludeDirectories="Source,Source\ZLib,..\..\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;FREEIMAGE_EXPORTS;_CRT_SECURE_NO_WARNINGS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -264,6 +264,7 @@
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
 				CompileAs="0"
+				DisableSpecificWarnings="4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -281,6 +282,7 @@
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="msimg32.lib"
 				OutputFile="$(OutDir)/advaimg.dll"
+				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				GenerateMapFile="false"
@@ -317,7 +319,6 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -346,7 +347,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="Source,Source\ZLib,Source\DeprecationManager,..\..\include"
+				AdditionalIncludeDirectories="Source,Source\ZLib,..\..\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;FREEIMAGE_EXPORTS;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="false"
 				BasicRuntimeChecks="3"
@@ -359,6 +360,7 @@
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
 				CompileAs="0"
+				DisableSpecificWarnings="4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -376,6 +378,7 @@
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="msimg32.lib"
 				OutputFile="$(OutDir)/advaimg.dll"
+				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
@@ -531,11 +534,19 @@
 					>
 				</File>
 				<File
+					RelativePath=".\Source\FreeImageToolkit\MultigridPoissonSolver.cpp"
+					>
+				</File>
+				<File
 					RelativePath="Source\FreeImage\tmoColorConvert.cpp"
 					>
 				</File>
 				<File
 					RelativePath="Source\FreeImage\tmoDrago03.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Source\FreeImage\tmoFattal02.cpp"
 					>
 				</File>
 				<File
@@ -556,14 +567,6 @@
 				</File>
 				<File
 					RelativePath="Source\FreeImage\WuQuantizer.cpp"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="DeprecationMgr"
-				>
-				<File
-					RelativePath="Source\DeprecationManager\DeprecationMgr.cpp"
 					>
 				</File>
 			</Filter>
@@ -1022,10 +1025,6 @@
 			>
 			<File
 				RelativePath="Source\CacheFile.h"
-				>
-			</File>
-			<File
-				RelativePath="Source\DeprecationManager\DeprecationMgr.h"
 				>
 			</File>
 			<File

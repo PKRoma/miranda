@@ -54,6 +54,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "JABBER_XSTATUS"=..\protocols\JabberG\jabber_xstatus\JABBER_XSTATUS.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "Yahoo"=..\protocols\Yahoo\Yahoo.dsp - Package Owner=<4>
 
 Package=<5>
@@ -166,10 +178,6 @@ Project: "dbtool"="..\..\miranda-tools\dbtool\dbtool.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda-tools/dbtool", DIIAAAAA
-    ..\..\miranda-tools\dbtool
-    end source code control
 }}}
 
 Package=<4>
@@ -225,11 +233,26 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name zlib
+    End Project Dependency
 }}}
 
 ###############################################################################
 
 Project: "modernb"=..\plugins\modernb\modernb.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "modernopt"=..\plugins\modernopt\modernopt.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -290,18 +313,6 @@ Package=<4>
 ###############################################################################
 
 Project: "tabSRMM"=..\plugins\tabsrmm\tabsrmm.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "winssl"=..\plugins\winssl\winssl.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

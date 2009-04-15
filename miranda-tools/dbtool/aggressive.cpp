@@ -21,23 +21,25 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define BLOCKSIZE  65536
 
 extern DWORD sourceFileSize;
+extern DWORD spaceProcessed;
+extern DWORD sp;
 static DWORD ofsCurrent;
 
 int WorkAggressive(int firstTime)
 {
-	PBYTE buf;
 	int blockBytes,i;
+	BYTE *buf;
 
 	if(firstTime) {
 		if(!opts.bAggressive) return ERROR_NO_MORE_ITEMS;
 		AddToStatus(STATUS_MESSAGE,TranslateT("Performing aggressive pass"));
 		ofsCurrent=0;
+		spaceProcessed=0;
+		sp=0;
 	}
 	blockBytes=min(BLOCKSIZE+3,(int)(sourceFileSize-ofsCurrent));
 	if(blockBytes<=0) return ERROR_NO_MORE_ITEMS;
-	buf=new BYTE[blockBytes];
-	if(PeekSegment(ofsCurrent,buf,blockBytes)!=ERROR_SUCCESS)
-		return ERROR_READ_FAULT;
+	buf = opts.pFile+ofsCurrent;
 	blockBytes-=3;
 	for(i=0;i<blockBytes;i++) {
 		if(buf[i]) {
@@ -51,7 +53,7 @@ int WorkAggressive(int firstTime)
 				if(buf[i]==0) {i--; break;}
 		}
 	}
-	delete[] buf;
 	ofsCurrent+=BLOCKSIZE;
+	spaceProcessed=ofsCurrent;
 	return ERROR_SUCCESS;
 }

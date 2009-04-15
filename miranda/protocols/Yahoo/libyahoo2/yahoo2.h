@@ -79,7 +79,7 @@ int  yahoo_init(const char *username, const char *password);
 void yahoo_close(int id);
 /* login logs in to the server */
 /* initial is of type enum yahoo_status.  see yahoo2_types.h */
-void yahoo_login(int id, int initial);
+void yahoo_login(int id, enum yahoo_status initial);
 void yahoo_logoff(int id);
 /* reloads status of all buddies */
 void yahoo_refresh(int id);
@@ -92,24 +92,25 @@ void yahoo_get_yab(int id);
 /* add/modify an address book entry.  if yab->dbid is set, it will */
 /* modify that entry else it creates a new entry */
 void yahoo_set_yab(int id, struct yab * yab);
+void yahoo_send_ping(int id);
 void yahoo_keepalive(int id);
 void yahoo_chat_keepalive(int id);
 
 /* from is the identity you're sending from.  if NULL, the default is used */
 /* utf8 is whether msg is a utf8 string or not. */
-void yahoo_send_im(int id, const char *from, const char *who, const char *msg, int utf8, int buddy_icon);
+void yahoo_send_im(int id, const char *from, const char *who, int protocol, const char *msg, int utf8, int buddy_icon);
 /* if type is true, send typing notice, else send stopped typing notice */
-void yahoo_send_typing(int id, const char *from, const char *who, int typ);
+void yahoo_send_typing(int id, const char *from, const char *who, int protocol, int typ);
 
 /* used to set away/back status. */
 /* away says whether the custom message is an away message or a sig */
 void yahoo_set_away(int id, enum yahoo_status state, const char *msg, int away);
-void yahoo_set_stealth(int id, const char *buddy, int add);
+void yahoo_set_stealth(int id, const char *buddy, int protocol, int add);
 
-void yahoo_add_buddy(int id, const char *who, const char *group, const char *msg);
-void yahoo_remove_buddy(int id, const char *who, const char *group);
-void yahoo_accept_buddy(int id, const char *who);
-void yahoo_reject_buddy(int id, const char *who, const char *msg);
+void yahoo_add_buddy(int id, const char *fname, const char *lname, const char *who, int protocol, const char *group, const char *msg);
+void yahoo_remove_buddy(int id, const char *who, int protocol, const char *group);
+void yahoo_accept_buddy(int id, const char *who, int protocol);
+void yahoo_reject_buddy(int id, const char *who, int protocol, const char *msg);
 /* if unignore is true, unignore, else ignore */
 void yahoo_ignore_buddy(int id, const char *who, int unignore);
 void yahoo_change_buddy_group(int id, const char *who, const char *old_group, const char *new_group);
@@ -202,13 +203,23 @@ void yahoo_send_picture_info(int id, const char *who, int type, const char *pic_
 void yahoo_send_picture_status(int id, int buddy_icon);
 void yahoo_send_picture_update(int id, const char *who, int type);
 
-void yahoo_ftdc_cancel(int id, const char *buddy, const char *filename, const char *ft_token, int command);
+void yahoo_ftdc_deny(int id, const char *buddy, const char *filename, const char *ft_token, int command);
 void yahoo_ft7dc_accept(int id, const char *buddy, const char *ft_token);
-void yahoo_ft7dc_cancel(int id, const char *buddy, const char *ft_token);
+void yahoo_ft7dc_deny(int id, const char *buddy, const char *ft_token);
 void yahoo_ft7dc_relay(int id, const char *buddy, const char *ft_token);
-char *yahoo_webmessenger_idle_packet(int id, int* len);
+void yahoo_ft7dc_abort(int id, const char *buddy, const char *ft_token);
+void yahoo_ft7dc_nextfile(int id, const char *buddy, const char *ft_token);
+char *yahoo_ft7dc_send(int id, const char *buddy, YList *files);
+void yahoo_send_file7info(int id, const char *me, const char *who, const char *ft_token, const char* filename,
+							const char *relay_ip);
+void yahoo_send_file_y7(int id, const char *from, const char *to, const char *relay_ip, 
+				unsigned long size, const char* ft_token, yahoo_get_fd_callback callback, void *data);							
+unsigned char *yahoo_webmessenger_idle_packet(int id, int* len);
 void yahoo_send_idle_packet(int id);
+void yahoo_send_im_ack(int id, const char *buddy, const char *seqn, int sendn);
 #include "yahoo_httplib.h"
+
+char * getcookie(char *rawcookie);
 
 #ifdef __cplusplus
 }

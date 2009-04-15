@@ -46,7 +46,7 @@ static int RichUtil_CmpVal(void *p1, void *p2) {
 	TRichUtil *tp2 = (TRichUtil*)p2;
 	if (tp1->hwnd==tp2->hwnd)
 		return 0;
-	return (int)((int)tp1->hwnd-(int)tp2->hwnd);
+	return (int)((INT_PTR)tp1->hwnd-(INT_PTR)tp2->hwnd);
 }
 
 // UxTheme Stuff
@@ -113,8 +113,8 @@ int RichUtil_SubClass(HWND hwndEdit) {
 		if (!li.List_GetIndex(&sListInt, ru, &idx))
 			li.List_Insert(&sListInt, ru, idx);
 		LeaveCriticalSection(&csRich);
-		SetWindowLong(ru->hwnd, GWL_USERDATA, (LONG)ru); // Ugly hack
-		ru->origProc = (WNDPROC)SetWindowLong(ru->hwnd, GWL_WNDPROC, (LONG)&RichUtil_Proc);
+		SetWindowLongPtr(ru->hwnd, GWLP_USERDATA, (LONG_PTR)ru); // Ugly hack
+		ru->origProc = (WNDPROC)SetWindowLongPtr(ru->hwnd, GWLP_WNDPROC, (LONG_PTR)&RichUtil_Proc);
 		RichUtil_ClearUglyBorder(ru);
 		return 1;
 	}
@@ -210,8 +210,8 @@ static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			LRESULT ret = CallWindowProc(ru->origProc, hwnd, msg, wParam, lParam);
 
 			if(IsWindow(hwnd)) {
-				if((WNDPROC)GetWindowLong(hwnd, GWL_WNDPROC) == &RichUtil_Proc)
-					SetWindowLong(hwnd, GWL_WNDPROC, (LONG)ru->origProc);
+				if((WNDPROC)GetWindowLongPtr(hwnd, GWLP_WNDPROC) == &RichUtil_Proc)
+					SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)ru->origProc);
 			}
 			EnterCriticalSection(&csRich);
 			li.List_Remove(&sListInt, idx);

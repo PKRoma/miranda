@@ -2,6 +2,7 @@
 Chat module plugin for Miranda IM
 
 Copyright (C) 2003 Jörgen Persson
+Copyright 2003-2008 Miranda ICQ/IM project,
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -147,6 +148,31 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 				iRemoveChars = 4;
 				strcpy(InsertThis, "\n" );
 			}
+			else if (!memcmp(p1, "\\endash", 7)) {
+ 				bTextHasStarted = bJustRemovedRTF = TRUE;
+ 				iRemoveChars = 7;
+#if defined(_UNICODE)
+					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\x93");
+#else
+					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x96");
+#endif
+				} else if (!memcmp(p1, "\\emdash", 7)) {
+					bTextHasStarted = bJustRemovedRTF = TRUE;
+					iRemoveChars = 7;
+#if defined(_UNICODE)
+					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\x94");
+#else
+					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x97");
+#endif
+				} else if (!memcmp(p1, "\\bullet", 7)) {
+					bTextHasStarted = bJustRemovedRTF = TRUE;
+					iRemoveChars = 7;
+#if defined(_UNICODE)
+					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\xA2");
+#else
+					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x95");
+#endif
+			}
 			else if ( !memcmp(p1, "\\line", 5 )) { // newline
 				bTextHasStarted = bJustRemovedRTF = TRUE;
 				iRemoveChars = 5;
@@ -230,6 +256,12 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 			iRemoveChars = 1;
 			break;
 
+		case '\r': case '\n':
+			bTextHasStarted = TRUE;
+			bJustRemovedRTF = FALSE;
+			iRemoveChars = 1;
+			break;
+
 		case '%': // escape chat -> protocol control character
 			bTextHasStarted = TRUE;
 			bJustRemovedRTF = FALSE;
@@ -268,50 +300,3 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 	#endif
 }
 
-static DWORD CALLBACK Message_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
-{
-	static DWORD dwRead;
-	char ** ppText = (char **) dwCookie;
-
-	if (*ppText == NULL) {
-		*ppText = mir_alloc(cb + 1);
-		memcpy(*ppText, pbBuff, cb);
-		(*ppText)[cb] = 0;
-		*pcb = cb;
-		dwRead = cb;
-	}
-	else {
-		char  *p = mir_alloc(dwRead + cb + 1);
-		memcpy(p, *ppText, dwRead);
-		memcpy(p+dwRead, pbBuff, cb);
-		p[dwRead + cb] = 0;
-		mir_free(*ppText);
-		*ppText = p;
-		*pcb = cb;
-		dwRead += cb;
-	}
-
-	return 0;
-}
-
-char* Message_GetFromStream(HWND hwndDlg, SESSION_INFO* si)
-{
-	EDITSTREAM stream;
-	char* pszText = NULL;
-	DWORD dwFlags;
-
-	if (hwndDlg == 0 || si == 0)
-		return NULL;
-
-	ZeroMemory(&stream, sizeof(stream));
-	stream.pfnCallback = Message_StreamCallback;
-	stream.dwCookie = (DWORD) &pszText; // pass pointer to pointer
-
-	#if defined( _UNICODE )
-		dwFlags = SF_RTFNOOBJS | SFF_PLAINRTF | SF_USECODEPAGE | (CP_UTF8 << 16);
-	#else
-		dwFlags = SF_RTFNOOBJS | SFF_PLAINRTF;
-	#endif
-	SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), EM_STREAMOUT, dwFlags, (LPARAM) & stream);
-	return pszText; // pszText contains the text
-}

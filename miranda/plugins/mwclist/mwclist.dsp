@@ -25,8 +25,8 @@ CFG=mwclist - Win32 Debug Unicode
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
-# PROP Scc_ProjName ""$/Miranda32/Plugins/mwclist", DSEAAAAA"
-# PROP Scc_LocalPath "."
+# PROP Scc_ProjName ""
+# PROP Scc_LocalPath ""
 CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
@@ -174,10 +174,6 @@ SOURCE=.\CLUIFrames\extraimage.c
 
 SOURCE=.\CLUIFrames\framesmenu.c
 # ADD CPP /Yu"../commonheaders.h"
-# End Source File
-# Begin Source File
-
-SOURCE=.\CLUIFrames\m_cluiframes.h
 # End Source File
 # Begin Source File
 

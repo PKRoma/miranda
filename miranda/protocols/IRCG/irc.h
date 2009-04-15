@@ -1,8 +1,8 @@
 /*
 IRC plugin for Miranda IM
 
-Copyright (C) 2003-2005 Jurgen Persson
-Copyright (C) 2007 George Hazan
+Copyright (C) 2003-05 Jurgen Persson
+Copyright (C) 2007-09 George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -22,36 +22,37 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _IRCWIN_H_
 #define _IRCWIN_H_
 
-#define MIRANDA_VER 0x0700
+#define MIRANDA_VER  0x0800
+#define _WIN32_WINNT 0x0501
+#define _WIN32_IE 0x0501
 
-#if defined( UNICODE ) && !defined( _UNICODE )
-	#define _UNICODE 
-#endif
+#include "m_stdhdr.h"
 
-// disable a lot of warnings. It should comppile on VS 6 also
-#pragma warning( disable : 4076 ) 
-#pragma warning( disable : 4786 ) 
-#pragma warning( disable : 4996 ) 
+#define _CRT_SECURE_NO_WARNINGS
 
-#define WIN32_LEAN_AND_MEAN	
-#include <tchar.h>
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <shlwapi.h>
 #include <shlobj.h>
 #include <objbase.h>
 #include <shellapi.h>
-#include <malloc.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <process.h>
 #include <math.h>
 #include <winsock.h>
+#include <commctrl.h>
 #include <time.h>
+#include <ctype.h>
+#include <io.h>
 
 #include "newpluginapi.h"
 #include "m_system.h"
+#include "m_system_cpp.h"
 #include "m_protocols.h"
 #include "m_protomod.h"
 #include "m_protosvc.h"
+#include "m_protoint.h"
 #include "m_clist.h"
 #include "m_options.h"
 #include "m_database.h"
@@ -72,44 +73,44 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "win2k.h"
 
 #include "resource.h"
-#include "irclib.h"
-#include "commandmonitor.h"
-
-#ifndef NDEBUG
-#include <crtdbg.h>
-#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
-#endif
-
-#define IRC_UPDATELIST        (WM_USER+1)
-#define IRC_QUESTIONAPPLY     (WM_USER+2)
-#define IRC_QUESTIONCLOSE     (WM_USER+3)
-#define IRC_ACTIVATE          (WM_USER+4)
-#define IRC_INITMANAGER       (WM_USER+5)
-#define IRC_REBUILDIGNORELIST (WM_USER+6)
-#define IRC_UPDATEIGNORELIST  (WM_USER+7)
-#define IRC_FIXIGNOREBUTTONS  (WM_USER+8)
 
 #define IRC_QUICKCONNECT      "/QuickConnectMenu"
 #define IRC_JOINCHANNEL       "/JoinChannelMenu"
 #define IRC_CHANGENICK        "/ChangeNickMenu"
 #define IRC_SHOWLIST          "/ShowListMenu"
 #define IRC_SHOWSERVER        "/ShowServerMenu"
-#define IRC_MENU1CHANNEL      "/Menu1ChannelMenu"
-#define IRC_MENU2CHANNEL      "/Menu2ChannelMenu"
-#define IRC_MENU3CHANNEL      "/Menu3ChannelMenu"
+#define IRC_UM_CHANSETTINGS   "/UMenuChanSettings"
+#define IRC_UM_WHOIS          "/UMenuWhois"
+#define IRC_UM_DISCONNECT     "/UMenuDisconnect"
+#define IRC_UM_IGNORE         "/UMenuIgnore"
 
 #define STR_QUITMESSAGE  "\002Miranda IM!\002 Smaller, Faster, Easier. http://miranda-im.org"
 #define STR_USERINFO     "I'm a happy Miranda IM user! Get it here: http://miranda-im.org"
 #define STR_AWAYMESSAGE  "I'm away from the computer." // Default away
 #define DCCSTRING        " (DCC)"
+#define SERVERSMODULE    "IRC Servers"
+#define SERVERWINDOW	 _T("Network log")
 
 #define DCC_CHAT		1
 #define DCC_SEND		2
 
 #define FILERESUME_CANCEL	11
 
-using namespace std;
-using namespace irc;
+struct CIrcProto;
+
+#include "mstring.h"
+typedef CMStringA String;
+
+class CCallocBase
+{
+public:
+	__inline void* operator new( size_t size )
+	{	return ::calloc( 1, size );
+	}
+	__inline void operator delete( void* p )
+	{	::free( p );
+	}
+};
 
 struct _A2T
 {
@@ -122,7 +123,7 @@ struct _A2T
 		{}
 
 	_A2T( const String& s ) :
-		buf( mir_a2t( s.c_str() ))
+		buf( mir_a2t( s ))
 		{}
 
 	~_A2T()
@@ -133,8 +134,8 @@ struct _A2T
 	{	return buf;
 	}
 
-	__inline operator TString() const
-	{	return TString(buf);
+	__inline operator CMString() const
+	{	return CMString(buf);
 	}
 
 	TCHAR* buf;
@@ -150,8 +151,8 @@ struct _T2A
 		buf( mir_t2a_cp( s, cp ))
 		{}
 
-	_T2A( const TString& s ) :
-		buf( mir_t2a(s.c_str()))
+	_T2A( const CMString& s ) :
+		buf( mir_t2a( s ))
 		{}
 
 	~_T2A()
@@ -190,8 +191,8 @@ struct IPRESOLVE      // Contains info about the channels
 	~IPRESOLVE()
 	{}
 
-	String sAddr;
-	int    iType;
+	String     sAddr;
+	int        iType;
 };
 
 struct CHANNELINFO   // Contains info about the channels
@@ -200,20 +201,24 @@ struct CHANNELINFO   // Contains info about the channels
 	TCHAR* pszMode;
 	TCHAR* pszPassword;
 	TCHAR* pszLimit;
+	BYTE   OwnMode;	/* own mode on the channel. Bitmask:
+												0: voice
+												1: halfop
+												2: op
+												3: admin
+												4: owner		*/
 	int    codepage;
 };
 
 struct SERVER_INFO  // Contains info about different servers
 {
-	char* Group;
-	char* Address;
-	char* Name;
-	char* PortStart;
-	char* PortEnd;	
-	int iSSL;
+	~SERVER_INFO();
+
+	char *m_name, *m_address, *m_group;
+	int  m_portStart, m_portEnd, m_iSSL;
 };
 
-struct PERFORM_INFO  // Contains 'Perform buffer' for different networks
+struct PERFORM_INFO  // Contains 'm_perform buffer' for different networks
 {
 	PERFORM_INFO( const char* szSetting, const TCHAR* value ) :
 		mSetting( szSetting ),
@@ -224,7 +229,7 @@ struct PERFORM_INFO  // Contains 'Perform buffer' for different networks
 	{}
 
 	String mSetting;
-	TString mText;
+	CMString mText;
 };
 
 struct CONTACT // Contains info about users
@@ -237,210 +242,544 @@ struct CONTACT // Contains info about users
 	bool ExactNick;
 };
 
-struct PREFERENCES  // Preferences structure
+struct TDbSetting
 {
-	char     ServerName[100];
-	char     Password [500];
-	TCHAR    IdentSystem[10];
-	char     Network[30];
-	char     PortStart[10];
-	char     PortEnd[10];
-	int      IdentTimer;
-	int      iSSL;
-	TCHAR    IdentPort[10];
-	TCHAR    RetryWait[10];
-	TCHAR    RetryCount[10];
-			 
-	TCHAR    Nick[30];
-	TCHAR    AlternativeNick[30];
-	TCHAR    Name[200];
-	TCHAR    UserID[200];
-	TCHAR    QuitMessage[400];
-	TCHAR    UserInfo[500];
-	char     MyHost[50];
-	char     MySpecifiedHost[500];
-	char     MySpecifiedHostIP[50];
-	char     MyLocalHost[50];
-	TCHAR*   Alias;
-	int      ServerComboSelection;
-	int      QuickComboSelection;
-	int      OnlineNotificationTime;
-	int      OnlineNotificationLimit;
-	BYTE     ScriptingEnabled;
-	BYTE     IPFromServer;
-	BYTE     ShowAddresses;
-	BYTE     DisconnectDCCChats;
-	BYTE     DisableErrorPopups;
-	BYTE     RejoinChannels;
-	BYTE     RejoinIfKicked;
-	BYTE     HideServerWindow;
-	BYTE     Ident;
-	BYTE     Retry;
-	BYTE     DisableDefaultServer;
-	BYTE     AutoOnlineNotification;
-	BYTE     SendKeepAlive;
-	BYTE     JoinOnInvite;
-	BYTE     Perform;
-	BYTE     ForceVisible;
-	BYTE     Ignore;
-	BYTE     IgnoreChannelDefault;
-	BYTE     UseServer;
-	BYTE     DCCFileEnabled;
-	BYTE     DCCChatEnabled;
-	BYTE     DCCChatAccept;
-	BYTE     DCCChatIgnore;
-	BYTE     DCCPassive;
-	BYTE     ManualHost;
-	BYTE     OldStyleModes;
-	BYTE     ChannelAwayNotification;
-	BYTE     SendNotice;
-	BYTE     UtfAutodetect;
-	int      Codepage;
-	POINT    ListSize;
-	COLORREF colors[16];
-	HICON    hIcon[13];
+	int    offset;
+	char*  name;
+	int    type;
+	size_t size;
+	int    defValue;
 };
 
+#include "irclib.h"
+using namespace irc;
+
+#include "irc_dlg.h"
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+struct CIrcProto;
+typedef void    ( __cdecl CIrcProto::*IrcThreadFunc )( void* param );
+typedef int     ( __cdecl CIrcProto::*IrcEventFunc )( WPARAM, LPARAM );
+typedef INT_PTR ( __cdecl CIrcProto::*IrcServiceFunc )( WPARAM, LPARAM );
+typedef INT_PTR ( __cdecl CIrcProto::*IrcServiceFuncParam )( WPARAM, LPARAM, LPARAM );
+
+typedef bool (CIrcProto::*PfnIrcMessageHandler)(const CIrcMessage* pmsg);
+
+struct CIrcHandler
+{
+	CIrcHandler( const TCHAR* _name, PfnIrcMessageHandler _handler ) :
+		m_name( _name ),
+		m_handler( _handler )
+	{}
+
+	const TCHAR* m_name;
+	PfnIrcMessageHandler m_handler;
+};
+
+struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
+{
+				CIrcProto( const char*, const TCHAR* );
+			   ~CIrcProto();
+
+				// Protocol interface
+
+	virtual	HANDLE __cdecl AddToList( int flags, PROTOSEARCHRESULT* psr );
+	virtual	HANDLE __cdecl AddToListByEvent( int flags, int iContact, HANDLE hDbEvent );
+
+	virtual	int    __cdecl Authorize( HANDLE hContact );
+	virtual	int    __cdecl AuthDeny( HANDLE hContact, const char* szReason );
+	virtual	int    __cdecl AuthRecv( HANDLE hContact, PROTORECVEVENT* );
+	virtual	int    __cdecl AuthRequest( HANDLE hContact, const char* szMessage );
+
+	virtual	HANDLE __cdecl ChangeInfo( int iInfoType, void* pInfoData );
+
+	virtual	HANDLE __cdecl FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath );
+	virtual	int    __cdecl FileCancel( HANDLE hContact, HANDLE hTransfer );
+	virtual	int    __cdecl FileDeny( HANDLE hContact, HANDLE hTransfer, const char* szReason );
+	virtual	int    __cdecl FileResume( HANDLE hTransfer, int* action, const char** szFilename );
+
+	virtual	DWORD_PTR __cdecl GetCaps( int type, HANDLE hContact = NULL );
+	virtual	HICON  __cdecl GetIcon( int iconIndex );
+	virtual	int    __cdecl GetInfo( HANDLE hContact, int infoType );
+
+	virtual	HANDLE __cdecl SearchBasic( const char* id );
+	virtual	HANDLE __cdecl SearchByEmail( const char* email );
+	virtual	HANDLE __cdecl SearchByName( const char* nick, const char* firstName, const char* lastName );
+	virtual	HWND   __cdecl SearchAdvanced( HWND owner );
+	virtual	HWND   __cdecl CreateExtendedSearchUI( HWND owner );
+
+	virtual	int    __cdecl RecvContacts( HANDLE hContact, PROTORECVEVENT* );
+	virtual	int    __cdecl RecvFile( HANDLE hContact, PROTORECVFILE* );
+	virtual	int    __cdecl RecvMsg( HANDLE hContact, PROTORECVEVENT* );
+	virtual	int    __cdecl RecvUrl( HANDLE hContact, PROTORECVEVENT* );
+
+	virtual	int    __cdecl SendContacts( HANDLE hContact, int flags, int nContacts, HANDLE* hContactsList );
+	virtual	HANDLE __cdecl SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles );
+	virtual	int    __cdecl SendMsg( HANDLE hContact, int flags, const char* msg );
+	virtual	int    __cdecl SendUrl( HANDLE hContact, int flags, const char* url );
+
+	virtual	int    __cdecl SetApparentMode( HANDLE hContact, int mode );
+	virtual	int    __cdecl SetStatus( int iNewStatus );
+
+	virtual	HANDLE __cdecl GetAwayMsg( HANDLE hContact );
+	virtual	int    __cdecl RecvAwayMsg( HANDLE hContact, int mode, PROTORECVEVENT* evt );
+	virtual	int    __cdecl SendAwayMsg( HANDLE hContact, HANDLE hProcess, const char* msg );
+	virtual	int    __cdecl SetAwayMsg( int m_iStatus, const char* msg );
+
+	virtual	int    __cdecl UserIsTyping( HANDLE hContact, int type );
+
+	virtual	int    __cdecl OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam );
+
+	// Services
+	INT_PTR __cdecl SvcCreateAccMgrUI( WPARAM, LPARAM );
+	INT_PTR __cdecl GetMyAwayMsg( WPARAM, LPARAM );
+
+	INT_PTR __cdecl OnChangeNickMenuCommand( WPARAM, LPARAM );
+	INT_PTR __cdecl OnDoubleclicked( WPARAM, LPARAM );
+	INT_PTR __cdecl OnJoinChat( WPARAM, LPARAM );
+	INT_PTR __cdecl OnJoinMenuCommand( WPARAM, LPARAM );
+	INT_PTR __cdecl OnLeaveChat( WPARAM, LPARAM );
+	INT_PTR __cdecl OnMenuChanSettings( WPARAM, LPARAM );
+	INT_PTR __cdecl OnMenuDisconnect( WPARAM , LPARAM );
+	INT_PTR __cdecl OnMenuIgnore( WPARAM, LPARAM );
+	INT_PTR __cdecl OnMenuWhois( WPARAM, LPARAM );
+	INT_PTR __cdecl OnQuickConnectMenuCommand(WPARAM, LPARAM );
+	INT_PTR __cdecl OnShowListMenuCommand( WPARAM, LPARAM );
+	INT_PTR __cdecl OnShowServerMenuCommand( WPARAM, LPARAM );
+
+	// Events
+	int __cdecl OnDeletedContact( WPARAM, LPARAM );
+	int __cdecl OnInitOptionsPages( WPARAM, LPARAM );
+	int __cdecl OnInitUserInfo( WPARAM, LPARAM );
+	int __cdecl OnModulesLoaded( WPARAM, LPARAM );
+	int __cdecl OnMenuPreBuild( WPARAM, LPARAM );
+	int __cdecl OnPreShutdown( WPARAM, LPARAM );
+
+	int __cdecl GCEventHook( WPARAM, LPARAM );
+	int __cdecl GCMenuHook( WPARAM, LPARAM );
+
+	// Data
+
+	char     m_serverName[100];
+	char     m_password [500];
+	TCHAR    m_identSystem[10];
+	char     m_network[30];
+	char     m_portStart[10];
+	char     m_portEnd[10];
+	int      m_iSSL;
+	TCHAR    m_identPort[10];
+	TCHAR    m_retryWait[10];
+	TCHAR    m_retryCount[10];
+	TCHAR    m_nick[30], m_pNick[30];
+	TCHAR    m_alternativeNick[30];
+	TCHAR    m_name[200];
+	TCHAR    m_userID[200];
+	TCHAR    m_quitMessage[400];
+	TCHAR    m_userInfo[500];
+	char     m_myHost[50];
+	char     m_mySpecifiedHost[500];
+	char     m_mySpecifiedHostIP[50];
+	char     m_myLocalHost[50];
+	TCHAR*   m_alias;
+	int      m_serverComboSelection;
+	int      m_quickComboSelection;
+	int      m_onlineNotificationTime;
+	int      m_onlineNotificationLimit;
+	BYTE     m_scriptingEnabled;
+	BYTE     m_IPFromServer;
+	BYTE     m_showAddresses;
+	BYTE     m_disconnectDCCChats;
+	BYTE     m_disableErrorPopups;
+	BYTE     m_rejoinChannels;
+	BYTE     m_rejoinIfKicked;
+	BYTE     m_hideServerWindow;
+	BYTE     m_ident;
+	BYTE     m_identTimer;
+	BYTE     m_retry;
+	BYTE     m_disableDefaultServer;
+	BYTE     m_autoOnlineNotification;
+	BYTE     m_sendKeepAlive;
+	BYTE     m_joinOnInvite;
+	BYTE     m_perform;
+	BYTE     m_forceVisible;
+	BYTE     m_ignore;
+	BYTE     m_ignoreChannelDefault;
+	BYTE     m_useServer;
+	BYTE     m_DCCFileEnabled;
+	BYTE     m_DCCChatEnabled;
+	BYTE     m_DCCChatAccept;
+	BYTE     m_DCCChatIgnore;
+	BYTE     m_DCCPassive;
+	BYTE     m_DCCMode;
+	WORD     m_DCCPacketSize;
+	BYTE     m_manualHost;
+	BYTE     m_oldStyleModes;
+	BYTE     m_channelAwayNotification;
+	BYTE     m_sendNotice;
+	BYTE     m_utfAutodetect;
+	int      m_codepage;
+	COLORREF colors[16];
+	HICON    hIcon[13];
+
+	OBJLIST<CMString> vUserhostReasons;
+	OBJLIST<CMString> vWhoInProgress;
+
+	CRITICAL_SECTION cs;
+	CRITICAL_SECTION m_gchook;
+	CRITICAL_SECTION m_resolve;
+	HANDLE           m_evWndCreate;
+
+	CMString m_statusMessage;
+	bool    m_bMbotInstalled;
+	int     m_iTempCheckTime;
+
+	CIrcSessionInfo si;
+
+	int       m_iRetryCount;
+	int       m_portCount;
+	DWORD     m_bConnectRequested;
+	DWORD     m_bConnectThreadRunning;
+
+	HANDLE  hMenuRoot, hMenuQuick, hMenuServer, hMenuJoin, hMenuNick, hMenuList;
+	HANDLE  hNetlib, hNetlibDCC, hUMenuShowChannel, hUMenuJoinLeave, hUMenuChanSettings, hUMenuWhois;
+	HANDLE  hUMenuDisconnect, hUMenuIgnore;
+
+	bool  bTempDisableCheck, bTempForceCheck, bEcho;
+	bool	nickflag;
+
+	bool     bPerformDone;
+
+	CJoinDlg*    m_joinDlg;
+	CListDlg*    m_listDlg;
+	CManagerDlg* m_managerDlg;
+	CNickDlg*    m_nickDlg;
+	CWhoisDlg*   m_whoisDlg;
+	CQuickDlg*   m_quickDlg;
+	CIgnorePrefsDlg* m_ignoreDlg;
+	
+	int      m_noOfChannels, m_manualWhoisCount;
+	String   sChannelModes, sUserModes;
+	CMString sChannelPrefixes, sUserModePrefixes, WhoisAwayReply;
+
+	CDlgBase::CreateParam OptCreateAccount, OptCreateConn, OptCreateIgnore, OptCreateOther;
+
+	//clist.cpp
+	HANDLE CList_AddContact(struct CONTACT * user, bool InList, bool SetOnline);
+	bool   CList_SetAllOffline(BYTE ChatsToo);
+	HANDLE CList_SetOffline(struct CONTACT * user);
+
+	bool   CList_AddEvent(struct CONTACT * user, HICON Icon, HANDLE event, const char * tooltip, int type ) ;
+	HANDLE CList_FindContact (struct CONTACT * user);
+	BOOL   CList_AddDCCChat(const CMString& name, const CMString& hostmask, unsigned long adr, int port) ;
+
+	//commandmonitor.cpp
+	UINT_PTR IdentTimer, InitTimer, KeepAliveTimer, OnlineNotifTimer, OnlineNotifTimer3;	
+
+	int  AddOutgoingMessageToDB(HANDLE hContact, TCHAR* msg);
+	bool DoOnConnect(const CIrcMessage *pmsg);
+	int  DoPerform(const char* event);
+	void __cdecl ResolveIPThread( void* di );
+
+	bool AddIgnore(const TCHAR* mask, const TCHAR* mode, const TCHAR* network) ;
+	int  IsIgnored(const CMString& nick, const CMString& address, const CMString& host, char type) ;
+	int  IsIgnored(CMString user, char type);
+	bool RemoveIgnore(const TCHAR* mask) ;
+
+	//input.cpp
+	CMString DoAlias( const TCHAR *text, TCHAR *window);
+	BOOL     DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContact );
+	CMString DoIdentifiers( CMString text, const TCHAR* window );
+	void     FormatMsg(CMString& text);
+	bool     PostIrcMessageWnd(TCHAR* pszWindow, HANDLE hContact,const TCHAR* szBuf);
+	bool     PostIrcMessage( const TCHAR* fmt, ...);
+
+	// irclib.cpp
+	UINT_PTR	DCCTimer;
+	void     SendIrcMessage( const TCHAR*, bool bNotify = true, int codepage = -1 );
+
+	// ircproto.cpp
+	void __cdecl AckBasicSearch( void* param );
+	void __cdecl AckMessageFail( void* info );
+	void __cdecl AckMessageFailDcc( void* info );
+	void __cdecl AckMessageSuccess( void* info );
+
+	int  SetStatusInternal( int iNewStatus, bool bIsInternal );
+
+	//options.cpp
+	HWND m_hwndConnect;
+
+	OBJLIST<CIrcIgnoreItem> m_ignoreItems;
+
+	int      m_channelNumber;
+	CMString m_whoReply;
+	CMString sNamesList;
+	CMString sTopic;
+	CMString sTopicName;
+	CMString	sTopicTime;
+	CMString m_namesToWho;
+	CMString m_channelsToWho;
+	CMString m_namesToUserhost;
+
+	void    InitPrefs(void);
+
+	HANDLE* hIconLibItems;
+	void    AddIcons(void);
+	void    InitIgnore(void);
+	HICON   LoadIconEx(int iIndex);
+	HANDLE  GetIconHandle(int iconId);
+	void    ReadSettings( TDbSetting* sets, int count );
+	void    RewriteIgnoreSettings( void );
+	void    WriteSettings( TDbSetting* sets, int count );
+
+	//output
+	BOOL   ShowMessage (const CIrcMessage* pmsg);
+
+	//scripting.cpp
+	INT_PTR  __cdecl Scripting_InsertRawIn(WPARAM wParam,LPARAM lParam);
+	INT_PTR  __cdecl Scripting_InsertRawOut(WPARAM wParam,LPARAM lParam);
+	INT_PTR  __cdecl Scripting_InsertGuiIn(WPARAM wParam,LPARAM lParam);
+	INT_PTR  __cdecl Scripting_InsertGuiOut(WPARAM wParam,LPARAM lParam);
+	INT_PTR  __cdecl Scripting_GetIrcData(WPARAM wparam, LPARAM lparam);
+	BOOL Scripting_TriggerMSPRawIn(char ** pszRaw);
+	BOOL Scripting_TriggerMSPRawOut(char ** pszRaw);
+	BOOL Scripting_TriggerMSPGuiIn(WPARAM * wparam, GCEVENT * gce);
+	BOOL Scripting_TriggerMSPGuiOut(GCHOOK * gch);
+
+	// services.cpp
+	void   ConnectToServer(void);
+	void   DisconnectFromServer(void);
+	void   DoNetlibLog( const char* fmt, ... );
+	void   IrcHookEvent( const char*, IrcEventFunc );
+	void   InitMenus( void );
+
+	void   ircFork( IrcThreadFunc, void* arg );
+	HANDLE ircForkEx( IrcThreadFunc, void* arg );
+
+	UINT_PTR  RetryTimer;
+
+	INT_PTR __cdecl GetStatus( WPARAM, LPARAM );
+
+	void __cdecl ConnectServerThread( void* );
+	void __cdecl DisconnectServerThread( void* );
+
+	//tools.cpp
+	void     AddToJTemp(TCHAR op, CMString& sCommand);
+	bool     AddWindowItemData(CMString window, const TCHAR* pszLimit, const TCHAR* pszMode, const TCHAR* pszPassword, const TCHAR* pszTopic);
+	INT_PTR  CallChatEvent(WPARAM wParam, LPARAM lParam);
+	void     CreateProtoService( const char* serviceName, IrcServiceFunc pFunc );
+	INT_PTR  DoEvent(int iEvent, const TCHAR* pszWindow, const TCHAR* pszNick, const TCHAR* pszText, const TCHAR* pszStatus, const TCHAR* pszUserInfo, DWORD_PTR dwItemData, bool bAddToLog, bool bIsMe,time_t timestamp = 1);
+	void     FindLocalIP(HANDLE con);
+	bool     FreeWindowItemData(CMString window, CHANNELINFO* wis);
+	#if defined( _UNICODE )
+		bool  IsChannel(const char* sName);
+	#endif
+	bool     IsChannel(const TCHAR* sName);
+	void     KillChatTimer(UINT_PTR &nIDEvent);
+	CMString MakeWndID(const TCHAR* sWindow);
+	CMString ModeToStatus(int sMode);
+	CMString PrefixToStatus(int cPrefix);
+	int      SetChannelSBText(CMString sWindow, CHANNELINFO * wi);
+	void     SetChatTimer(UINT_PTR &nIDEvent,UINT uElapse, TIMERPROC lpTimerFunc);
+
+	void     ClearUserhostReasons(int type);
+	void     DoUserhostWithReason(int type, CMString reason, bool bSendCommand, CMString userhostparams, ...);
+	CMString GetNextUserhostReason(int type);
+	CMString PeekAtReasons(int type);
+
+	int      getByte( const char* name, BYTE defaultValue );
+	int      getByte( HANDLE hContact, const char* name, BYTE defaultValue );
+	int      getDword( const char* name, DWORD defaultValue );
+	int      getDword( HANDLE hContact, const char* name, DWORD defaultValue );
+	int      getString( const char* name, DBVARIANT* );
+	int      getString( HANDLE hContact, const char* name, DBVARIANT* );
+	int      getTString( const char* name, DBVARIANT* );
+	int      getTString( HANDLE hContact, const char* name, DBVARIANT* );
+	int      getWord( const char* name, WORD defaultValue );
+	int      getWord( HANDLE hContact, const char* name, WORD defaultValue );
+
+	void     setByte( const char* name, BYTE value );
+	void     setByte( HANDLE hContact, const char* name, BYTE value );
+	void     setDword( const char* name, DWORD value );
+	void     setDword( HANDLE hContact, const char* name, DWORD value );
+	void     setString( const char* name, const char* value );
+	void     setString( HANDLE hContact, const char* name, const char* value );
+	void     setTString( const char* name, const TCHAR* value );
+	void     setTString( HANDLE hContact, const char* name, const TCHAR* value );
+	void     setWord( const char* name, int value );
+	void     setWord( HANDLE hContact, const char* name, int value );
+
+	// userinfo.cpp
+	void __cdecl AckUserInfoSearch( void* hContact );
+
+	////////////////////////////////////////////////////////////////////////////////////////
+	// former CIrcSession class
+
+	void AddDCCSession(HANDLE hContact, CDccSession* dcc);
+	void AddDCCSession(DCCINFO*  pdci, CDccSession* dcc);
+	void RemoveDCCSession(HANDLE hContact);
+	void RemoveDCCSession(DCCINFO*  pdci);
+	
+	CDccSession* FindDCCSession(HANDLE hContact);
+	CDccSession* FindDCCSession(DCCINFO* pdci);
+	CDccSession* FindDCCSendByPort(int iPort);
+	CDccSession* FindDCCRecvByPortAndName(int iPort, const TCHAR* szName);
+	CDccSession* FindPassiveDCCSend(int iToken);
+	CDccSession* FindPassiveDCCRecv(CMString sName, CMString sToken);
+	
+	void DisconnectAllDCCSessions(bool Shutdown);
+	void CheckDCCTimeout(void);
+
+	bool Connect(const CIrcSessionInfo& info);
+	void Disconnect(void);
+	void KillIdent(void);
+
+	#if defined( _UNICODE )
+		int NLSend(const TCHAR* fmt, ...);
+	#endif
+	int NLSend(const char* fmt, ...);
+	int NLSend(const unsigned char* buf, int cbBuf);
+	int NLSendNoScript( const unsigned char* buf, int cbBuf);
+	int NLReceive(unsigned char* buf, int cbBuf);
+	void InsertIncomingEvent(TCHAR* pszRaw);
+
+	__inline bool IsConnected() const { return con != NULL; }
+
+	// send-to-stream operators
+	int getCodepage() const;
+	__inline void setCodepage( int aPage ) { codepage = aPage; }
+
+	CIrcSessionInfo m_info;
+
+protected :
+	int codepage;
+	HANDLE con;
+	HANDLE hBindPort;
+	void DoReceive();
+	LIST<CDccSession> m_dcc_chats;
+	LIST<CDccSession> m_dcc_xfers;
+
+private :
+	CRITICAL_SECTION    m_dcc;      // protect the dcc objects
+
+	void createMessageFromPchar( const char* p );
+	void Notify(const CIrcMessage* pmsg);
+	void __cdecl ThreadProc( void *pparam );
+
+	////////////////////////////////////////////////////////////////////////////////////////
+	// former CIrcMonitor class
+
+	bool OnIrc_PING(const CIrcMessage* pmsg);
+	bool OnIrc_WELCOME(const CIrcMessage* pmsg);
+	bool OnIrc_YOURHOST(const CIrcMessage* pmsg);
+	bool OnIrc_NICK(const CIrcMessage* pmsg);
+	bool OnIrc_PRIVMSG(const CIrcMessage* pmsg);
+	bool OnIrc_JOIN(const CIrcMessage* pmsg);
+	bool OnIrc_QUIT(const CIrcMessage* pmsg);
+	bool OnIrc_PART(const CIrcMessage* pmsg);
+	bool OnIrc_KICK(const CIrcMessage* pmsg);
+	bool OnIrc_MODE(const CIrcMessage* pmsg);
+	bool OnIrc_USERHOST_REPLY(const CIrcMessage* pmsg);
+	bool OnIrc_MODEQUERY(const CIrcMessage* pmsg);
+	bool OnIrc_NAMES(const CIrcMessage* pmsg);
+	bool OnIrc_ENDNAMES(const CIrcMessage* pmsg);
+	bool OnIrc_INITIALTOPIC(const CIrcMessage* pmsg);
+	bool OnIrc_INITIALTOPICNAME(const CIrcMessage* pmsg);
+	bool OnIrc_TOPIC(const CIrcMessage* pmsg);
+	bool OnIrc_TRYAGAIN(const CIrcMessage* pmsg);
+	bool OnIrc_NOTICE(const CIrcMessage* pmsg);
+	bool OnIrc_WHOIS_NAME(const CIrcMessage* pmsg);
+	bool OnIrc_WHOIS_CHANNELS(const CIrcMessage* pmsg);
+	bool OnIrc_WHOIS_SERVER(const CIrcMessage* pmsg);
+	bool OnIrc_WHOIS_AWAY(const CIrcMessage* pmsg);
+	bool OnIrc_WHOIS_IDLE(const CIrcMessage* pmsg);
+	bool OnIrc_WHOIS_END(const CIrcMessage* pmsg);
+	bool OnIrc_WHOIS_OTHER(const CIrcMessage* pmsg);
+	bool OnIrc_WHOIS_AUTH(const CIrcMessage* pmsg);
+	bool OnIrc_WHOIS_NO_USER(const CIrcMessage* pmsg);
+	bool OnIrc_NICK_ERR(const CIrcMessage* pmsg);
+	bool OnIrc_ENDMOTD(const CIrcMessage* pmsg);
+	bool OnIrc_LISTSTART(const CIrcMessage* pmsg);
+	bool OnIrc_LIST(const CIrcMessage* pmsg);
+	bool OnIrc_LISTEND(const CIrcMessage* pmsg);
+	bool OnIrc_BANLIST(const CIrcMessage* pmsg);
+	bool OnIrc_BANLISTEND(const CIrcMessage* pmsg);
+	bool OnIrc_SUPPORT(const CIrcMessage* pmsg);
+	bool OnIrc_BACKFROMAWAY(const CIrcMessage* pmsg);
+	bool OnIrc_SETAWAY(const CIrcMessage* pmsg);
+	bool OnIrc_JOINERROR(const CIrcMessage* pmsg);
+	bool OnIrc_UNKNOWN(const CIrcMessage* pmsg);
+	bool OnIrc_ERROR(const CIrcMessage* pmsg);
+	bool OnIrc_NOOFCHANNELS(const CIrcMessage* pmsg);
+	bool OnIrc_PINGPONG(const CIrcMessage* pmsg);
+	bool OnIrc_INVITE(const CIrcMessage* pmsg);
+	bool OnIrc_WHO_END(const CIrcMessage* pmsg);
+	bool OnIrc_WHO_REPLY(const CIrcMessage* pmsg);
+	bool OnIrc_WHOTOOLONG(const CIrcMessage* pmsg);
+
+	bool IsCTCP(const CIrcMessage* pmsg);
+
+	void OnIrcDefault(const CIrcMessage* pmsg);
+	void OnIrcDisconnected();
+
+	static OBJLIST<CIrcHandler> m_handlers;
+
+	PfnIrcMessageHandler FindMethod(const TCHAR* lpszName);
+
+	void OnIrcMessage(const CIrcMessage* pmsg);
+	CMString sNick4Perform;
+};
+
+// map actual member functions to their associated IRC command.
+// put any number of this macro in the class's constructor.
+#define	IRC_MAP_ENTRY(name, member)	\
+	m_handlers.insert( new CIrcHandler( _T(name), &CIrcProto::OnIrc_##member ));
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Functions
+
 //main.cpp
-extern char* IRCPROTONAME; 
-extern char* ALTIRCPROTONAME;
-extern char* pszServerFile;
-extern char  mirandapath[MAX_PATH];
-extern DWORD mirVersion;
+extern HINSTANCE hInst;
 
-extern CIrcSession  g_ircSession;
-
-extern CRITICAL_SECTION cs;
-extern CRITICAL_SECTION m_gchook;
-
-extern HMODULE      m_ssleay32;
-extern HINSTANCE    g_hInstance;	
-extern PREFERENCES* prefs;	
-extern PLUGININFOEX pluginInfo;
+extern char mirandapath[MAX_PATH];
+extern int mirVersion;
+extern OBJLIST<SERVER_INFO> g_servers;
 
 void   UpgradeCheck(void);
 
-//services.cpp
-extern TString StatusMessage;
-extern bool    bMbotInstalled;
-extern int     iTempCheckTime;
-extern HANDLE  hMenuQuick, hMenuServer, hMenuJoin, hMenuNick, hMenuList;
-extern HANDLE  hNetlib, hNetlibDCC;
+CIrcProto* GetTimerOwner( UINT_PTR eventId );
 
-void   HookEvents(void);
-void   UnhookEvents(void);
-void   CreateServiceFunctions(void);
-void   ConnectToServer(void);
-void   DisconnectFromServer(void);
-int    Service_GCEventHook(WPARAM wParam,LPARAM lParam);
+VOID CALLBACK IdentTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime );
+VOID CALLBACK TimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime );
+VOID CALLBACK KeepAliveTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime );
+VOID CALLBACK OnlineNotifTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime );
+VOID CALLBACK OnlineNotifTimerProc3( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime );
+VOID CALLBACK DCCTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime );
+VOID CALLBACK RetryTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime );
 
-//options.cpp
-extern UINT_PTR	OnlineNotifTimer;
-extern UINT_PTR	OnlineNotifTimer3;
+// options.cpp
 
-void    InitPrefs(void);
-void    UnInitOptions(void);
-int     InitOptionsPages(WPARAM wParam,LPARAM lParam);
-void    AddIcons(void);
-HICON   LoadIconEx(int iIndex);
-HANDLE  GetIconHandle(int iconId);
-void    RewriteIgnoreSettings( void );
-void    InitIgnore(void);
+void InitServers( void );
+void RereadServers( void );
+
+// services.cpp
+
+extern BOOL bChatInstalled, m_bMbotInstalled;
 
 //tools.cpp
-int     WCCmp(const TCHAR* wild, const TCHAR* string);
-char*   IrcLoadFile(char * szPath);
-void    AddToJTemp(TString sCommand);
-TString GetWord(const TCHAR* text, int index);
-TString ReplaceString (TString text, const TCHAR* replaceme, const TCHAR* newword);
-bool    IsChannel(TString sName); 
-TCHAR*  GetWordAddress(const TCHAR* text, int index);
-TString RemoveLinebreaks(TString Message);
-TCHAR*  my_strstri(const TCHAR *s1, const TCHAR *s2) ;
-TCHAR*  DoColorCodes (const TCHAR* text, bool bStrip, bool bReplacePercent);
-int     DoEvent(int iEvent, const TCHAR* pszWindow, const TCHAR* pszNick, const TCHAR* pszText, const TCHAR* pszStatus, const TCHAR* pszUserInfo, DWORD dwItemData, bool bAddToLog, bool bIsMe,time_t timestamp = 1);
-int     CallChatEvent(WPARAM wParam, LPARAM lParam);
-TString ModeToStatus(int sMode);
-TString PrefixToStatus(int cPrefix);
-void    SetChatTimer(UINT_PTR &nIDEvent,UINT uElapse,TIMERPROC lpTimerFunc);
-void    KillChatTimer(UINT_PTR &nIDEvent);
-int     SetChannelSBText(TString sWindow, CHANNELINFO * wi);
-TString MakeWndID(const TCHAR* sWindow);
-bool    FreeWindowItemData(TString window, CHANNELINFO* wis);
-bool    AddWindowItemData(TString window, const TCHAR* pszLimit, const TCHAR* pszMode, const TCHAR* pszPassword, const TCHAR* pszTopic);
-void    FindLocalIP(HANDLE con);
-void    DoUserhostWithReason(int type, TString reason, bool bSendCommand, TString userhostparams, ...);
-TString GetNextUserhostReason(int type);
-void    ClearUserhostReasons(int type);
-TString PeekAtReasons(int type);
-char*   rtrim( char *string );
+int          __stdcall WCCmp(const TCHAR* wild, const TCHAR* string);
+char*        __stdcall IrcLoadFile(char * szPath);
+CMString     __stdcall GetWord(const TCHAR* text, int index);
+CMString&    __stdcall ReplaceString (CMString& text, const TCHAR* replaceme, const TCHAR* newword);
+const TCHAR* __stdcall GetWordAddress(const TCHAR* text, int index);
+void         __stdcall RemoveLinebreaks( CMString& Message );
+TCHAR*       __stdcall my_strstri(const TCHAR *s1, const TCHAR *s2) ;
+TCHAR*       __stdcall DoColorCodes (const TCHAR* text, bool bStrip, bool bReplacePercent);
+char*        __stdcall rtrim( char *string );
 
 #if defined( _UNICODE )
-String  ReplaceString (String text, const char* replaceme, const char* newword);
-bool    IsChannel(String sName); 
-String  GetWord(const char* text, int index);
-char*   GetWordAddress(const char* text, int index);
-#endif
-
-//clist.cpp
-HANDLE CList_AddContact(struct CONTACT * user, bool InList, bool SetOnline);
-bool   CList_SetAllOffline(BYTE ChatsToo);
-HANDLE CList_SetOffline(struct CONTACT * user);
-
-bool   CList_AddEvent(struct CONTACT * user, HICON Icon, HANDLE event, const char * tooltip, int type ) ;
-HANDLE CList_FindContact (struct CONTACT * user);
-BOOL   CList_AddDCCChat(TString name, TString hostmask, unsigned long adr, int port) ;
-
-//input.cpp
-extern bool  bTempDisableCheck, bTempForceCheck, bEcho;
-
-bool   PostIrcMessageWnd(TCHAR* pszWindow, HANDLE hContact,const TCHAR* szBuf);
-bool   PostIrcMessage( const TCHAR* fmt, ...);
-
-//output
-BOOL   ShowMessage (const CIrcMessage* pmsg);
-
-//windows.cpp
-BOOL    CALLBACK MessageboxWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
-BOOL    CALLBACK InfoWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
-BOOL    CALLBACK NickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
-BOOL    CALLBACK JoinWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
-BOOL    CALLBACK InitWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
-BOOL    CALLBACK ListWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
-BOOL    CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
-BOOL    CALLBACK UserDetailsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-BOOL    CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
-BOOL    CALLBACK QuestionWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
-int     CALLBACK ListViewSort(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
-LRESULT CALLBACK MgrEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) ;
-
-//commandmonitor.cpp
-extern	bool     bPerformDone;
-extern	HWND     join_hWnd, list_hWnd, manager_hWnd, nick_hWnd, whois_hWnd, quickconn_hWnd;
-extern   HWND     IgnoreWndHwnd;
-extern	int      NoOfChannels, ManualWhoisCount;
-extern   UINT_PTR KeepAliveTimer;	
-extern	String   sChannelModes, sUserModes;
-extern	TString  sChannelPrefixes, sUserModePrefixes, WhoisAwayReply;
-
-VOID    CALLBACK KeepAliveTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime); 
-VOID    CALLBACK OnlineNotifTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime);
-VOID    CALLBACK OnlineNotifTimerProc3(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime);
-
-//scripting.cpp
-int  Scripting_InsertRawIn(WPARAM wParam,LPARAM lParam);
-int  Scripting_InsertRawOut(WPARAM wParam,LPARAM lParam);
-int  Scripting_InsertGuiIn(WPARAM wParam,LPARAM lParam);
-int  Scripting_InsertGuiOut(WPARAM wParam,LPARAM lParam);
-int  Scripting_GetIrcData(WPARAM wparam, LPARAM lparam);
-BOOL Scripting_TriggerMSPRawIn(char ** pszRaw);
-BOOL Scripting_TriggerMSPRawOut(char ** pszRaw);
-BOOL Scripting_TriggerMSPGuiIn(WPARAM * wparam, GCEVENT * gce);
-BOOL Scripting_TriggerMSPGuiOut(GCHOOK * gch);
-
-#ifndef NDEBUG
-#include <crtdbg.h>
-#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
+	String&  __stdcall ReplaceString (String& text, const char* replaceme, const char* newword);
+	String   __stdcall GetWord(const char* text, int index);
 #endif
 
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
@@ -449,6 +788,3 @@ BOOL Scripting_TriggerMSPGuiOut(GCHOOK * gch);
 #pragma comment(lib,"comctl32.lib")
 
 #endif
-
-
-

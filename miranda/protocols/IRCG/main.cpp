@@ -1,8 +1,8 @@
 /*
 IRC plugin for Miranda IM
 
-Copyright (C) 2003-2005 Jurgen Persson
-Copyright (C) 2007 George Hazan
+Copyright (C) 2003-05 Jurgen Persson
+Copyright (C) 2007-09 George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -22,22 +22,25 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "irc.h"
 #include "version.h"
 
-CIrcSession       g_ircSession;          // Representation of the IRC-connection
-char*             IRCPROTONAME = NULL;
-char*             ALTIRCPROTONAME = NULL;
-char*             pszServerFile = NULL;
-char              mirandapath[MAX_PATH];
-DWORD             mirVersion = NULL;
-CRITICAL_SECTION  cs;
-CRITICAL_SECTION  m_gchook;
-PLUGINLINK*       pluginLink;
-HINSTANCE         g_hInstance = NULL;
-PREFERENCES*      prefs;
+PLUGINLINK*    pluginLink;
+HINSTANCE      hInst = NULL;
 
-HMODULE				m_ssleay32 = NULL;
+char           mirandapath[MAX_PATH];
+int            mirVersion;
 
-UTF8_INTERFACE    utfi;
-MM_INTERFACE		mmi;
+UTF8_INTERFACE utfi;
+MM_INTERFACE   mmi;
+LIST_INTERFACE li;
+
+static int CompareServers( const SERVER_INFO* p1, const SERVER_INFO* p2 )
+{
+	return lstrcmpA( p1->m_name, p2->m_name );
+}
+
+OBJLIST<SERVER_INFO> g_servers( 20, CompareServers );
+
+void InitTimers( void );
+void UninitTimers( void );
 
 // Information about the plugin
 PLUGININFOEX pluginInfo =
@@ -55,18 +58,19 @@ PLUGININFOEX pluginInfo =
 	{0xb529402b, 0x53ba, 0x4c81, { 0x9e, 0x27, 0xd4, 0x31, 0xeb, 0xe8, 0xec, 0x36 }} //{B529402B-53BA-4c81-9E27-D431EBE8EC36}
 };
 
-extern "C" BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
+extern "C" BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD, LPVOID)
 {
-	g_hInstance=hinstDLL;
+	hInst = hinstDLL;
 	return TRUE;
 }
 
 extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 7, 0, 0 )) {
-		MessageBox( NULL, LPGENT("The IRC protocol plugin cannot be loaded. It requires Miranda IM 0.7.0.0 or later."), LPGENT("IRC Protocol Plugin"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 8, 0, 9 )) {
+		MessageBox( NULL, LPGENT("The IRC protocol plugin cannot be loaded. It requires Miranda IM 0.8.0.9 or later."), LPGENT("IRC Protocol Plugin"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
+
 	mirVersion = mirandaVersion;
 	return &pluginInfo;
 }
@@ -78,9 +82,33 @@ extern "C" __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 	return interfaces;
 }
 
-static void GetModuleName( void )	 // ripped from msn
+/////////////////////////////////////////////////////////////////////////////////////////
+
+static CIrcProto* ircProtoInit( const char* pszProtoName, const TCHAR* tszUserName )
 {
-	GetModuleFileNameA(g_hInstance, mirandapath, MAX_PATH);
+	return new CIrcProto( pszProtoName, tszUserName );
+}
+
+static int ircProtoUninit( CIrcProto* ppro )
+{
+	delete ppro;
+	return 0;
+}
+
+extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
+{
+	#ifndef NDEBUG
+		int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+		flag |= _CRTDBG_LEAK_CHECK_DF;
+		_CrtSetDbgFlag(flag);
+	#endif
+
+	pluginLink = link;
+	mir_getMMI( &mmi );
+	mir_getUTFI( &utfi );
+	mir_getLI( &li );
+
+	GetModuleFileNameA(hInst, mirandapath, MAX_PATH);
 	char* p = strrchr( mirandapath, '\\' );
 	if ( p ) {
 		*p++ = '\0';
@@ -91,82 +119,26 @@ static void GetModuleName( void )	 // ripped from msn
 			if ( *p2 == ' ' )
 				*p2 = '_';
 			p2++;
-		}
+	}	}
 
-		IRCPROTONAME = strdup( p );
-		ALTIRCPROTONAME = new char[lstrlenA( IRCPROTONAME ) + 7 ];
-		CharUpperA(IRCPROTONAME);
-
-		if ( lstrcmpiA( IRCPROTONAME, "IRC" ))
-			mir_snprintf( ALTIRCPROTONAME, lstrlenA( IRCPROTONAME ) + 7 , "IRC (%s)", IRCPROTONAME );
-		else
-			mir_snprintf( ALTIRCPROTONAME, lstrlenA( IRCPROTONAME ) + 7 , "%s", IRCPROTONAME );
-}	}
-
-extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
-{
-	#ifndef NDEBUG
-		int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
-		flag |= _CRTDBG_LEAK_CHECK_DF;
-		_CrtSetDbgFlag(flag);
-	#endif
-
-	pluginLink=link;
-	mir_getMMI( &mmi );
-	mir_getUTFI( &utfi );
-
-	if ( !mirVersion || mirVersion < PLUGIN_MAKE_VERSION( 0, 7, 0 ,0 )) {
-		TCHAR szVersion[] = _T("0.7"); // minimum required version
-		TCHAR szText[] = LPGENT("The IRC protocol could not be loaded as it is dependant on Miranda IM version %s or later.\n\nDo you want to download an update from the Miranda website now?");
-		TCHAR* szTemp = ( TCHAR* )alloca( sizeof( TCHAR )*( lstrlen(szVersion) + lstrlen(szText) + 10 ));
-		mir_sntprintf(szTemp, lstrlen(szVersion) + lstrlen(szText) + 10, szText, szVersion);
-		if ( IDYES == MessageBox( NULL, TranslateTS(szTemp), TranslateT( "Information" ), MB_YESNO | MB_ICONINFORMATION ))
-			CallService( MS_UTILS_OPENURL, 1, (LPARAM) "http://miranda-im.org/");
-		return 1;
-	}
-
-	GetModuleName();
-
-	InitializeCriticalSection(&cs);
-	InitializeCriticalSection(&m_gchook);
-
-	m_ssleay32 = LoadLibraryA("winssl.dll");
-	if (m_ssleay32 == NULL) 
-		m_ssleay32 = LoadLibraryA("cyassl.dll");
-	if (m_ssleay32 == NULL) 
-		m_ssleay32 = LoadLibraryA("ssleay32.dll");
-	if (m_ssleay32 == NULL) 
-		m_ssleay32 = LoadLibraryA("libssl32.DLL" );
+	InitTimers();
+	InitServers();
 
 	// register protocol
-	{	PROTOCOLDESCRIPTOR pd;
-		ZeroMemory( &pd, sizeof( pd ) );
-		pd.cbSize = sizeof( pd );
-		pd.szName = IRCPROTONAME;
-		pd.type = PROTOTYPE_PROTOCOL;
-		CallService( MS_PROTO_REGISTERMODULE, 0, (LPARAM)&pd );
-	}
-
-	HookEvents();
-	CreateServiceFunctions();
-	InitPrefs();
-	CList_SetAllOffline(true);
+	PROTOCOLDESCRIPTOR pd = { 0 };
+	pd.cbSize = sizeof( pd );
+	pd.szName = "IRC";
+	pd.type = PROTOTYPE_PROTOCOL;
+	pd.fnInit = ( pfnInitProto )ircProtoInit;
+	pd.fnUninit = ( pfnUninitProto )ircProtoUninit;
+	CallService( MS_PROTO_REGISTERMODULE, 0, (LPARAM)&pd );
 	return 0;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+
 extern "C" int __declspec(dllexport) Unload(void)
 {
-	CList_SetAllOffline( TRUE );
-
-	DeleteCriticalSection( &cs );
-	DeleteCriticalSection( &m_gchook );
-
-	if ( m_ssleay32 )
-		FreeLibrary( m_ssleay32 );
-
-	UnhookEvents();
-	UnInitOptions();
-	free( IRCPROTONAME );
-	delete [] ALTIRCPROTONAME;
+	UninitTimers();
 	return 0;
 }

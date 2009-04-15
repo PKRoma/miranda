@@ -79,7 +79,7 @@ enum yahoo_service { /* these are easier to see in hex */
 	YAHOO_SERVICE_IGNORECONTACT,	/* > 1, 7, 13 < 1, 66, 13, 0*/
 	YAHOO_SERVICE_REJECTCONTACT,
 	YAHOO_SERVICE_GROUPRENAME = 0x89, /* > 1, 65(new), 66(0), 67(old) */
-	YAHOO_SERVICE_Y7_PING = 0x8A,		  /* 0 - id and that's it?? */
+	YAHOO_SERVICE_KEEPALIVE = 0x8A,		  /* 0 - id and that's it?? */
 	YAHOO_SERVICE_CHATONLINE = 0x96, /* > 109(id), 1, 6(abcde) < 0,1*/
 	YAHOO_SERVICE_CHATGOTO,
 	YAHOO_SERVICE_CHATJOIN,	/* > 1 104-room 129-1600326591 62-2 */
@@ -100,7 +100,7 @@ enum yahoo_service { /* these are easier to see in hex */
 	YAHOO_SERVICE_YAB_UPDATE = 0xc4,
 	YAHOO_SERVICE_Y6_VISIBLE_TOGGLE = 0xc5, /* YMSG13, key 13: 2 = invisible, 1 = visible */
 	YAHOO_SERVICE_Y6_STATUS_UPDATE = 0xc6,  /* YMSG13 */
-	YAHOO_SERVICE_PICTURE_STATUS = 0xc7,	/* YMSG13, key 213: 0 = none, 1 = avatar, 2 = picture */
+	YAHOO_SERVICE_PICTURE_SHARING = 0xc7,	/* YMSG13, key 213: 0 = none, 1 = avatar, 2 = picture */
 	YAHOO_SERVICE_VERIFY_ID_EXISTS = 0xc8,
 	YAHOO_SERVICE_AUDIBLE = 0xd0,
 	YAHOO_SERVICE_Y7_PHOTO_SHARING = 0xd2,
@@ -112,10 +112,12 @@ enum yahoo_service { /* these are easier to see in hex */
 	YAHOO_SERVICE_Y7_FILETRANSFERACCEPT,	/* YMSG13 */
 	YAHOO_SERVICE_Y7_MINGLE = 0xe1, /* YMSG13 */
 	YAHOO_SERVICE_Y7_CHANGE_GROUP = 0xe7, /* YMSG13 */
-	YAHOO_SERVICE_Y8_STATUS = 0xf0,			/* YMSG15 */
+	YAHOO_SERVICE_Y8_STATUS_UPDATE = 0xf0,			/* YMSG15 */
 	YAHOO_SERVICE_Y8_LIST = 0Xf1,			/* YMSG15 */
+	YAHOO_SERVICE_Y9_MESSAGE_ACK = 0Xfb,	/* YMSG16 */
 	YAHOO_SERVICE_WEBLOGIN = 0x0226,
-	YAHOO_SERVICE_SMS_MSG = 0x02ea
+	YAHOO_SERVICE_SMS_MSG = 0x02ea,
+	YAHOO_SERVICE_Y7_DISCONNECTED = 0x07d1  /* YMSG15, saw this for Auth Failed and ping flood/ban */
 };
 
 enum yahoo_status {
@@ -159,6 +161,13 @@ enum yahoo_login_status {
 	YAHOO_LOGIN_LOCK = 14,
 	YAHOO_LOGIN_DUPL = 99,
 	YAHOO_LOGIN_SOCK = -1
+};
+
+enum yahoo_im_protocols {
+	YAHOO_IM_YAHOO = 0,
+	YAHOO_IM_LCS = 1,
+	YAHOO_IM_MSN = 2,
+	YAHOO_IM_SAMETIME = 9
 };
 
 enum yahoo_error {
@@ -218,7 +227,12 @@ Version 8.0
 YMSG15 Encrypted
 
  */
-#define YAHOO_PROTO_VER 0x000d
+//#define YAHOO_PROTO_VER 0x000d
+
+// Yahoo 8.1 uses protocol 15 (0x0F)
+// Yahoo 9.0 uses protocol 16 (0x10)
+//#define YAHOO_PROTO_VER 0x000F
+#define YAHOO_PROTO_VER 0x0010
 
 /* Yahoo style/color directives */
 #define YAHOO_COLOR_BLACK "\033[30m"
@@ -252,8 +266,8 @@ enum yahoo_connection_type {
 };
 
 enum yahoo_webcam_direction_type {
-        YAHOO_WEBCAM_DOWNLOAD=0,
-        YAHOO_WEBCAM_UPLOAD
+	YAHOO_WEBCAM_DOWNLOAD=0,
+	YAHOO_WEBCAM_UPLOAD
 };
 
 enum yahoo_stealth_visibility_type {
@@ -264,7 +278,6 @@ enum yahoo_stealth_visibility_type {
 
 /* chat member attribs */
 #define YAHOO_CHAT_MALE 0x8000
-#define YAHOO_CHAT_FEMALE 0x10000
 #define YAHOO_CHAT_FEMALE 0x10000
 #define YAHOO_CHAT_DUNNO 0x400
 #define YAHOO_CHAT_WEBCAM 0x10
@@ -284,10 +297,24 @@ struct yahoo_webcam {
 };
 
 struct yahoo_webcam_data {
-	unsigned int data_size;
-	unsigned int to_read;
+	int data_size;
+	int to_read;
 	unsigned int timestamp;
 	unsigned char packet_type;
+};
+
+struct yahoo_server_settings {
+	char *pager_host;
+	int   pager_port;
+	char *filetransfer_host;
+	int   filetransfer_port;
+	char *webcam_host;
+	int   webcam_port;
+	char *webcam_description;
+	char *local_host;
+	int   conn_type;
+	int pic_cksum;
+	int  web_messenger;
 };
 
 struct yahoo_data {
@@ -305,8 +332,8 @@ struct yahoo_data {
 	YList *identities;
 	char  *login_id;
 
-	int   current_status;
-	int   initial_status;
+	enum yahoo_status current_status;
+	enum yahoo_status initial_status;
 	int   logged_in;
 
 	int   session_id;
@@ -318,7 +345,7 @@ struct yahoo_data {
 	char  *rawstealthlist;
 	char  *ignorelist;
 
-	void  *server_settings;
+	struct yahoo_server_settings *server_settings;
 };
 
 struct yab {
@@ -337,6 +364,9 @@ struct yahoo_buddy {
 	char *group;
 	char *id;
 	char *real_name;
+	int protocol;
+	int stealth;
+	int auth;
 	struct yab *yab_entry;
 };
 
@@ -382,6 +412,11 @@ struct yahoo_chat_member {
 	int  attribs;
 	char *alias;
 	char *location;
+};
+
+struct yahoo_file_info {
+	char *filename;
+	unsigned long filesize;
 };
 
 #ifdef __cplusplus

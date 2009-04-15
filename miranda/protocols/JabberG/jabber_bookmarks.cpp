@@ -17,35 +17,39 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_groupchat.cpp,v $
-Revision       : $Revision: 4256 $
-Last change on : $Date: 2006-11-28 23:34:13 +1000 (Вт, 28 ноя 2006) $
-Last change by : $Author: ghazan $
+File name      : $URL$
+Revision       : $Revision$
+Last change on : $Date$
+Last change by : $Author$
 
 */
 
 #include "jabber.h"
-#include <commctrl.h>
-#include "resource.h"
 #include "jabber_iq.h"
 
-void JabberRegisterAgent( HWND hwndDlg, TCHAR* jid );
 /////////////////////////////////////////////////////////////////////////////////////////
 // Bookmarks editor window
 
-static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+struct JabberAddBookmarkDlgParam {
+	CJabberProto* ppro;
+	JABBER_LIST_ITEM* m_item;
+};
+
+static INT_PTR CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
+	JabberAddBookmarkDlgParam* param = (JabberAddBookmarkDlgParam*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
+
 	TCHAR text[128];
 	JABBER_LIST_ITEM *item;
-	TCHAR* roomJID=0;
-	TCHAR* currJID=0;
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
-		// lParam is the JABBER_BOOKMARK_ITEM*
-		hwndJabberAddBookmark = hwndDlg;
+		param = (JabberAddBookmarkDlgParam*)lParam;
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
+
+		param->ppro->m_hwndJabberAddBookmark = hwndDlg;
 		TranslateDialogDefault( hwndDlg );
-		if ( item = ( JABBER_LIST_ITEM* )lParam ) {
+		if ( item = param->m_item ) {
 			if ( !lstrcmp( item->type, _T("conference") )) {
 				if (!_tcschr( item->jid, _T( '@' ))) {	  //no room name - consider it is transport
 					SendDlgItemMessage(hwndDlg, IDC_AGENT_RADIO, BM_SETCHECK, BST_CHECKED, 0);
@@ -66,9 +70,6 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 			EnableWindow( GetDlgItem( hwndDlg, IDC_URL_RADIO), FALSE );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_RADIO), FALSE );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_CHECK_BM_AUTOJOIN), FALSE );
-
-			replaceStr(currJID , item->jid);
-			SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG )currJID );
 
 			if ( item->jid ) SetDlgItemText( hwndDlg, IDC_ROOM_JID, item->jid );
 			if ( item->name ) SetDlgItemText( hwndDlg, IDC_NAME, item->name );
@@ -110,40 +111,39 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 			break;
 
 		case IDOK:
-			GetDlgItemText( hwndDlg, IDC_ROOM_JID, text, SIZEOF( text ));
-			roomJID = NEWTSTR_ALLOCA( text );
-
-			currJID = ( TCHAR* )GetWindowLong( hwndDlg, GWL_USERDATA );
-			if ( currJID) {
-				JabberListRemove( LIST_BOOKMARK, currJID );
-				mir_free( currJID );
-				SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) NULL );
-			}
-			item = JabberListAdd( LIST_BOOKMARK, roomJID );
-			item->bUseResource = TRUE;
-
-			if ( SendDlgItemMessage(hwndDlg, IDC_URL_RADIO, BM_GETCHECK,0, 0) == BST_CHECKED )
-				replaceStr( item->type, _T( "url" ));
-			else
-				replaceStr( item->type, _T( "conference" ));
-
-			GetDlgItemText( hwndDlg, IDC_NICK, text, SIZEOF( text ));
-			replaceStr( item->nick, text );
-
-			GetDlgItemText( hwndDlg, IDC_PASSWORD, text, SIZEOF( text ));
-			replaceStr( item->password, text );
-
-			GetDlgItemText( hwndDlg, IDC_NAME, text, SIZEOF( text ));
-			replaceStr( item->name, ( text[0] == 0 ) ? roomJID : text );
-
-			item->bAutoJoin = (SendDlgItemMessage(hwndDlg, IDC_CHECK_BM_AUTOJOIN, BM_GETCHECK,0, 0) == BST_CHECKED );
 			{
-				int iqId = JabberSerialNext();
-				JabberIqAdd( iqId, IQ_PROC_SETBOOKMARKS, JabberIqResultSetBookmarks);
+				GetDlgItemText( hwndDlg, IDC_ROOM_JID, text, SIZEOF( text ));
+				TCHAR* roomJID = NEWTSTR_ALLOCA( text );
 
-				XmlNodeIq iq( "set", iqId);
-				JabberSetBookmarkRequest(iq);
-				jabberThreadInfo->send( iq );
+				if ( param->m_item )
+					param->ppro->ListRemove( LIST_BOOKMARK, param->m_item->jid );
+
+				item = param->ppro->ListAdd( LIST_BOOKMARK, roomJID );
+				item->bUseResource = TRUE;
+
+				if ( SendDlgItemMessage(hwndDlg, IDC_URL_RADIO, BM_GETCHECK,0, 0) == BST_CHECKED )
+					replaceStr( item->type, _T( "url" ));
+				else
+					replaceStr( item->type, _T( "conference" ));
+
+				GetDlgItemText( hwndDlg, IDC_NICK, text, SIZEOF( text ));
+				replaceStr( item->nick, text );
+
+				GetDlgItemText( hwndDlg, IDC_PASSWORD, text, SIZEOF( text ));
+				replaceStr( item->password, text );
+
+				GetDlgItemText( hwndDlg, IDC_NAME, text, SIZEOF( text ));
+				replaceStr( item->name, ( text[0] == 0 ) ? roomJID : text );
+
+				item->bAutoJoin = (SendDlgItemMessage(hwndDlg, IDC_CHECK_BM_AUTOJOIN, BM_GETCHECK,0, 0) == BST_CHECKED );
+				{
+					int iqId = param->ppro->SerialNext();
+					param->ppro->IqAdd( iqId, IQ_PROC_SETBOOKMARKS, &CJabberProto::OnIqResultSetBookmarks);
+
+					XmlNodeIq iq( _T("set"), iqId);
+					param->ppro->SetBookmarkRequest(iq);
+					param->ppro->m_ThreadInfo->send( iq );
+				}
 			}
 			// fall through
 		case IDCANCEL:
@@ -153,15 +153,12 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 		break;
 
 	case WM_JABBER_CHECK_ONLINE:
-		if ( !jabberOnline )
+		if ( !param->ppro->m_bJabberOnline )
 			EndDialog( hwndDlg, 0 );
 		break;
 
 	case WM_DESTROY:
-		char* str = ( char* )GetWindowLong( hwndDlg, GWL_USERDATA );
-		if ( str != NULL )
-			mir_free( str );
-		hwndJabberAddBookmark = NULL;
+		param->ppro->m_hwndJabberAddBookmark = NULL;
 		break;
 	}
 	return FALSE;
@@ -170,117 +167,225 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 /////////////////////////////////////////////////////////////////////////////////////////
 // Bookmarks manager window
 
-static BOOL sortAscending;
-static int sortColumn;
-
-static int CALLBACK BookmarkCompare( LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort )
+class CJabberDlgBookmarks : public CJabberDlgBase
 {
-	JABBER_LIST_ITEM *item1, *item2;
-	int res = 0;
-	item1 = JabberListGetItemPtr( LIST_BOOKMARK, ( TCHAR* )lParam1 );
-	item2 = JabberListGetItemPtr( LIST_BOOKMARK, ( TCHAR* )lParam2 );
-	if ( item1 != NULL && item2 != NULL ) {
-		switch ( lParamSort ) {
-		case 1:	// sort by JID column
-			res = lstrcmp( item1->jid, item2->jid );
-			break;
-		case 0: // sort by Name column
-			res = lstrcmp( item1->name, item2->name );
-			break;
-		case 2:
-			res = lstrcmp( item1->nick, item2->nick );
-			break;
-	}	}
+	typedef CJabberDlgBase CSuper;
 
-	if ( !sortAscending )
-		res *= -1;
+public:
+	CJabberDlgBookmarks(CJabberProto *proto);
 
-	return res;
-}
+	void UpdateData();
 
-int JabberBookmarksDlgResizer(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
-{
-	switch ( urc->wId ) {
-		case IDC_BM_LIST:
-			return RD_ANCHORX_WIDTH|RD_ANCHORY_HEIGHT;
+protected:
+	void OnInitDialog();
+	void OnClose();
+	void OnDestroy();
+	int Resizer(UTILRESIZECONTROL *urc);
 
-		case IDCLOSE:
-			return RD_ANCHORX_RIGHT|RD_ANCHORY_BOTTOM;
+	INT_PTR DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
+	void OnProtoCheckOnline(WPARAM wParam, LPARAM lParam);
+	void OnProtoRefresh(WPARAM wParam, LPARAM lParam);
+	void OpenBookmark();
 
-		case IDC_ADD:
-		case IDC_EDIT:
-		case IDC_REMOVE:
-			return RD_ANCHORX_LEFT|RD_ANCHORY_BOTTOM;
+private:
+	CCtrlMButton	m_btnAdd;
+	CCtrlMButton	m_btnEdit;
+	CCtrlMButton	m_btnRemove;
+	CCtrlFilterListView	m_lvBookmarks;
+
+	void lvBookmarks_OnDoubleClick(CCtrlFilterListView *)
+	{
+		OpenBookmark();
 	}
-	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
+
+	void btnAdd_OnClick(CCtrlFilterListView *)
+	{
+		if (!m_proto->m_bJabberOnline) return;
+
+		JabberAddBookmarkDlgParam param;
+		param.ppro = m_proto;
+		param.m_item = NULL;
+		DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_BOOKMARK_ADD ), m_hwnd, JabberAddBookmarkDlgProc, (LPARAM)&param);
+	}
+
+	void btnEdit_OnClick(CCtrlFilterListView *)
+	{
+		if (!m_proto->m_bJabberOnline) return;
+
+		int iItem = m_lvBookmarks.GetNextItem(-1, LVNI_SELECTED);
+		if (iItem < 0) return;
+
+		TCHAR *address = (TCHAR *)m_lvBookmarks.GetItemData(iItem);
+		if (!address) return;
+
+		JABBER_LIST_ITEM *item = m_proto->ListGetItemPtr(LIST_BOOKMARK, address);
+		if (!item) return;
+
+		JabberAddBookmarkDlgParam param;
+		param.ppro = m_proto;
+		param.m_item = item;
+		DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_BOOKMARK_ADD ), m_hwnd, JabberAddBookmarkDlgProc, (LPARAM)&param);
+	}
+
+	void btnRemove_OnClick(CCtrlFilterListView *)
+	{
+		if (!m_proto->m_bJabberOnline) return;
+
+		int iItem = m_lvBookmarks.GetNextItem(-1, LVNI_SELECTED);
+		if (iItem < 0) return;
+
+		TCHAR *address = (TCHAR *)m_lvBookmarks.GetItemData(iItem);
+		if (!address) return;
+
+		JABBER_LIST_ITEM *item = m_proto->ListGetItemPtr(LIST_BOOKMARK, address);
+		if (!item) return;
+
+		m_btnAdd.Disable();
+		m_btnEdit.Disable();
+		m_btnRemove.Disable();
+
+		m_proto->ListRemove(LIST_BOOKMARK, address);
+
+		m_lvBookmarks.SetItemState(iItem, 0, LVIS_SELECTED); // Unselect the item
+
+		int iqId = m_proto->SerialNext();
+		m_proto->IqAdd(iqId, IQ_PROC_SETBOOKMARKS, &CJabberProto::OnIqResultSetBookmarks);
+
+		XmlNodeIq iq( _T("set"), iqId);
+		m_proto->SetBookmarkRequest(iq);
+		m_proto->m_ThreadInfo->send(iq);
+	}
+
+};
+
+CJabberDlgBookmarks::CJabberDlgBookmarks(CJabberProto *proto) :
+	CSuper(proto, IDD_BOOKMARKS, NULL),
+	m_btnAdd(this,      IDC_ADD,    SKINICON_OTHER_ADDCONTACT, LPGEN("Add")),
+	m_btnEdit(this,     IDC_EDIT,   SKINICON_OTHER_RENAME,     LPGEN("Edit")),
+	m_btnRemove(this,   IDC_REMOVE, SKINICON_OTHER_DELETE,     LPGEN("Remove")),
+	m_lvBookmarks(this, IDC_BM_LIST, true, true)
+{
+	m_lvBookmarks.OnItemActivate = Callback(this, &CJabberDlgBookmarks::lvBookmarks_OnDoubleClick);
+	m_btnAdd.OnClick = Callback(this, &CJabberDlgBookmarks::btnAdd_OnClick);
+	m_btnEdit.OnClick = Callback(this, &CJabberDlgBookmarks::btnEdit_OnClick);
+	m_btnRemove.OnClick = Callback(this, &CJabberDlgBookmarks::btnRemove_OnClick);
 }
 
-static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+void CJabberDlgBookmarks::UpdateData()
 {
-	HWND lv;
-	LVCOLUMN lvCol;
-	LVITEM lvItem;
-	JABBER_LIST_ITEM *item;
-	HIMAGELIST hIml;    // A handle to the image list.
-	TCHAR room[ 512 ], *server, *p;
-	TCHAR text[ 512 ];
+	if (!m_proto->m_bJabberOnline) return;
 
-	switch ( msg ) {
-	case WM_INITDIALOG:
-		TranslateDialogDefault( hwndDlg );
-		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( "bookmarks" ));
-		hwndJabberBookmarks = hwndDlg;
+	int iqId = m_proto->SerialNext();
+	m_proto->IqAdd( iqId, IQ_PROC_DISCOBOOKMARKS, &CJabberProto::OnIqResultDiscoBookmarks);
+	m_proto->m_ThreadInfo->send( XmlNodeIq( _T("get"), iqId ) << XQUERY( _T(JABBER_FEAT_PRIVATE_STORAGE)) 
+		<< XCHILDNS( _T("storage"), _T("storage:bookmarks")));
+}
 
-		//EnableWindow( GetDlgItem( hwndDlg, IDC_BROWSE ), FALSE );
-		EnableWindow( GetDlgItem( hwndDlg, IDC_ADD ), FALSE );
-		EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT ), FALSE );
-		EnableWindow( GetDlgItem( hwndDlg, IDC_REMOVE ), FALSE );
-		sortColumn = -1;
+void CJabberDlgBookmarks::OnInitDialog()
+{
+	CSuper::OnInitDialog();
 
-		lv = GetDlgItem( hwndDlg, IDC_BM_LIST );
+	SendMessage(m_hwnd, WM_SETICON, ICON_BIG, (LPARAM)m_proto->LoadIconEx("bookmarks"));
+	SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)m_proto->LoadIconEx("bookmarks"));
 
-		ListView_SetExtendedListViewStyle(lv, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_HEADERDRAGDROP );
-		hIml = ImageList_Create(16, 16,	 IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR16 | ILC_MASK, 2, 1);
-		if (hIml) {
-			ImageList_AddIcon(hIml, (HICON)JCallService(MS_SKIN_LOADPROTOICON,(WPARAM)jabberProtoName,(LPARAM)ID_STATUS_ONLINE) );
-			ImageList_AddIcon(hIml, (HICON)JCallService(MS_SKIN_LOADICON, SKINICON_EVENT_URL ,0));
-			ListView_SetImageList (lv, hIml, LVSIL_SMALL);
+	m_btnAdd.Disable();
+	m_btnEdit.Disable();
+	m_btnRemove.Disable();
+
+	m_lvBookmarks.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES|LVS_EX_HEADERDRAGDROP | (IsWinVerXPPlus() ? LVS_EX_DOUBLEBUFFER : 0));
+
+	HIMAGELIST hIml = m_lvBookmarks.CreateImageList(LVSIL_SMALL);
+	ImageList_AddIcon(hIml, m_proto->LoadIconEx("group"));
+	ImageList_AddIcon(hIml, LoadSkinnedIcon(SKINICON_EVENT_URL));
+
+	m_lvBookmarks.AddColumn(0, TranslateT("Bookmark Name"),			m_proto->JGetWord(NULL, "bookmarksWnd_cx0", 120));
+	m_lvBookmarks.AddColumn(1, TranslateT("Address (JID or URL)"),	m_proto->JGetWord(NULL, "bookmarksWnd_cx1", 210));
+	m_lvBookmarks.AddColumn(2, TranslateT("Nickname"),				m_proto->JGetWord(NULL, "bookmarksWnd_cx2", 90));
+
+	m_lvBookmarks.EnableGroupView(TRUE);
+	m_lvBookmarks.AddGroup(0, TranslateT("Conferences"));
+	m_lvBookmarks.AddGroup(1, TranslateT("Links"));
+
+	Utils_RestoreWindowPosition(m_hwnd, NULL, m_proto->m_szModuleName, "bookmarksWnd_");
+}
+
+void CJabberDlgBookmarks::OnClose()
+{
+	LVCOLUMN lvc = {0};
+	lvc.mask = LVCF_WIDTH;
+	m_lvBookmarks.GetColumn(0, &lvc);
+	m_proto->JSetWord(NULL, "bookmarksWnd_cx0", lvc.cx);
+	m_lvBookmarks.GetColumn(1, &lvc);
+	m_proto->JSetWord(NULL, "bookmarksWnd_cx1", lvc.cx);
+	m_lvBookmarks.GetColumn(2, &lvc);
+	m_proto->JSetWord(NULL, "bookmarksWnd_cx2", lvc.cx);
+
+	Utils_SaveWindowPosition(m_hwnd, NULL, m_proto->m_szModuleName, "bookmarksWnd_");
+
+	CSuper::OnClose();
+}
+
+void CJabberDlgBookmarks::OnDestroy()
+{
+	m_proto->m_pDlgBookmarks = NULL;
+
+	CSuper::OnDestroy();
+}
+
+void CJabberDlgBookmarks::OpenBookmark()
+{
+	int iItem = m_lvBookmarks.GetNextItem(-1, LVNI_SELECTED);
+	if (iItem < 0) return;
+
+	TCHAR *address = (TCHAR *)m_lvBookmarks.GetItemData(iItem);
+	if (!address) return;
+
+	JABBER_LIST_ITEM *item = m_proto->ListGetItemPtr(LIST_BOOKMARK, address);
+	if (!item) return;
+
+	if (!lstrcmpi(item->type, _T("conference")))
+	{
+		if (!jabberChatDllPresent)
+		{
+			JabberChatDllError();
+			return;
 		}
 
-		// Add columns
-		lvCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
-		lvCol.pszText = TranslateT( "Bookmark Name" );
-		lvCol.cx = DBGetContactSettingWord( NULL, jabberProtoName, "bookmarksWnd_cx0", 120 );
-		lvCol.iSubItem = 0;
-		ListView_InsertColumn( lv, 0, &lvCol );
+		m_lvBookmarks.SetItemState(iItem, 0, LVIS_SELECTED); // Unselect the item
 
-		lvCol.pszText = TranslateT( "Room JID / URL" );
-		lvCol.cx = DBGetContactSettingWord( NULL, jabberProtoName, "bookmarksWnd_cx1", 210 );
-		lvCol.iSubItem = 1;
-		ListView_InsertColumn( lv, 1, &lvCol );
+		/* some hack for using bookmark to transport not under XEP-0048 */
+		if (!_tcschr(item->jid, _T('@')))
+		{	//the room name is not provided let consider that it is transport and send request to registration
+			m_proto->RegisterAgent(NULL, item->jid);
+		} else
+		{
+			TCHAR *room = NEWTSTR_ALLOCA(item->jid);
+			TCHAR *server = _tcschr(room, _T('@'));
+			*(server++) = 0;
 
-		lvCol.pszText = TranslateT( "Nick" );
-		lvCol.cx = DBGetContactSettingWord( NULL, jabberProtoName, "bookmarksWnd_cx2", 90 );
-		lvCol.iSubItem = 2;
-		ListView_InsertColumn( lv, 2, &lvCol );
-		if ( jabberOnline ) {
-			if ( !( jabberThreadInfo->bBookmarksLoaded )) {
-				int iqId = JabberSerialNext();
-				JabberIqAdd( iqId, IQ_PROC_DISCOBOOKMARKS, JabberIqResultDiscoBookmarks);
-
-				XmlNodeIq iq( "get", iqId);
-				XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVATE_STORAGE );
-				XmlNode* storage = query->addChild( "storage" );
-				storage->addAttr( "xmlns", "storage:bookmarks" );
-
-				jabberThreadInfo->send( iq );
+			if (item->nick && *item->nick)
+			{
+				m_proto->GroupchatJoinRoom(server, room, item->nick, item->password);
+			} else
+			{
+				TCHAR* nick = JabberNickFromJID(m_proto->m_szJabberJID);
+				m_proto->GroupchatJoinRoom(server, room, nick, item->password);
+				mir_free(nick);
 			}
-			else SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0);
 		}
-		Utils_RestoreWindowPosition( hwndDlg, NULL, jabberProtoName, "bookmarksWnd_" );
-		return TRUE;
+	} else
+	{
+		char *szUrl = mir_t2a(item->jid);
+		JCallService(MS_UTILS_OPENURL, 1, (LPARAM)szUrl);
+		mir_free(szUrl);
+	}
+}
 
-	case WM_GETMINMAXINFO:
+INT_PTR CJabberDlgBookmarks::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg)
+	{
+		case WM_GETMINMAXINFO:
 		{
 			LPMINMAXINFO lpmmi = (LPMINMAXINFO)lParam;
 			lpmmi->ptMinTrackSize.x = 451;
@@ -288,300 +393,97 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			return 0;
 		}
 
-	case WM_SIZE:
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
 		{
-			UTILRESIZEDIALOG urd;
-			urd.cbSize = sizeof(urd);
-			urd.hwndDlg = hwndDlg;
-			urd.hInstance = hInst;
-			urd.lpTemplate = MAKEINTRESOURCEA( IDD_BOOKMARKS );
-			urd.lParam = 0;
-			urd.pfnResizer = JabberBookmarksDlgResizer;
-			CallService( MS_UTILS_RESIZEDIALOG, 0, (LPARAM)&urd );
-			return TRUE;
-		}
-
-	case WM_JABBER_ACTIVATE:
-		ListView_DeleteAllItems( GetDlgItem( hwndDlg, IDC_BM_LIST));
-		//EnableWindow( GetDlgItem( hwndDlg, IDC_BROWSE ), FALSE );
-		EnableWindow( GetDlgItem( hwndDlg, IDC_ADD ), FALSE );
-		EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT ), FALSE );
-		EnableWindow( GetDlgItem( hwndDlg, IDC_REMOVE ), FALSE );
-		return TRUE;
-
-	case WM_JABBER_REFRESH:
-		{
-			lv = GetDlgItem( hwndDlg, IDC_BM_LIST);
-			ListView_DeleteAllItems( lv );
-
-			LVITEM lvItem;
-			lvItem.iItem = 0;
-			for ( int i=0; ( i = JabberListFindNext( LIST_BOOKMARK, i )) >= 0; i++ ) {
-				if (( item = JabberListGetItemPtrFromIndex( i )) != NULL ) {
-					TCHAR szBuffer[256];
-					lvItem.mask = LVIF_PARAM | LVIF_TEXT | LVIF_IMAGE;
-					lvItem.iSubItem = 0;
-
-					if(!lstrcmpi(item->type, _T("conference") )) lvItem.iImage = 0;
-					else lvItem.iImage = 1;
-
-					lvItem.lParam = ( LPARAM )item->jid;
-					lvItem.pszText = item->name;
-					ListView_InsertItem( lv, &lvItem );
-
-					lvItem.mask = LVIF_TEXT;
-					_tcsncpy( szBuffer, item->jid, SIZEOF(szBuffer));
-					szBuffer[ SIZEOF(szBuffer)-1 ] = 0;
-					lvItem.iSubItem = 1;
-					lvItem.pszText = szBuffer;
-					ListView_SetItem( lv, &lvItem );
-
-					if(!lstrcmpi(item->type, _T("conference") )){
-
-						if(item->nick){lvItem.mask = LVIF_TEXT;
-						lvItem.iSubItem = 2;
-						_tcsncpy( szBuffer, item->nick, SIZEOF(szBuffer));
-						szBuffer[ SIZEOF(szBuffer)-1 ] = 0;
-						lvItem.pszText = szBuffer;}
-						ListView_SetItem( lv, &lvItem );
-					}
-
-					lvItem.iItem++;
-			}	}
-
-			if ( lvItem.iItem > 0 ) {
-				EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT ), TRUE );
-				EnableWindow( GetDlgItem( hwndDlg, IDC_REMOVE ), TRUE );
-			}
-			//EnableWindow( GetDlgItem( hwndDlg, IDC_BROWSE ), TRUE );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_ADD ), TRUE );
-		}
-		return TRUE;
-
-	case WM_JABBER_CHECK_ONLINE:
-		if ( !jabberOnline ) {
-			//EnableWindow( GetDlgItem( hwndDlg, IDC_BROWSE ), FALSE );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_ADD ), FALSE );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT ), FALSE );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_REMOVE ), FALSE );
-
-			lv = GetDlgItem( hwndDlg, IDC_BM_LIST);
-			ListView_DeleteAllItems( lv );
-		}
-		else //EnableWindow( GetDlgItem( hwndDlg, IDC_BROWSE ), TRUE );
-			SendMessage (hwndDlg, WM_COMMAND, IDC_BROWSE, 0);
-		break;
-
-	case WM_NOTIFY:
-		switch ( wParam ) {
-		case IDC_BM_LIST:
-			switch (( ( LPNMHDR )lParam )->code ) {
-			case LVN_COLUMNCLICK:
-				{
-					LPNMLISTVIEW pnmlv = ( LPNMLISTVIEW ) lParam;
-
-					if ( pnmlv->iSubItem>=0 && pnmlv->iSubItem<=2 ) {
-						if ( pnmlv->iSubItem == sortColumn )
-							sortAscending = !sortAscending;
-						else {
-							sortAscending = TRUE;
-							sortColumn = pnmlv->iSubItem;
-						}
-						ListView_SortItems( GetDlgItem( hwndDlg, IDC_BM_LIST), BookmarkCompare, sortColumn );
-					}
-				}
-				break;
-			case NM_DBLCLK:
-				lv = GetDlgItem( hwndDlg, IDC_BM_LIST);
-				if (( lvItem.iItem=ListView_GetNextItem( lv, -1, LVNI_SELECTED )) >= 0 ) {
-
-					lvItem.iSubItem = 0;
-					lvItem.mask = LVIF_PARAM;
-					ListView_GetItem( lv, &lvItem );
-
-					item = JabberListGetItemPtr(LIST_BOOKMARK, ( TCHAR* )lvItem.lParam);
-
-					if(!lstrcmpi(item->type, _T("conference") )){
-						if ( jabberChatDllPresent ) {
-							_tcsncpy( text, ( TCHAR* )lvItem.lParam, SIZEOF( text ));
-							_tcsncpy( room, text, SIZEOF( room ));
-
-							p = _tcstok( room, _T( "@" ));
-							server = _tcstok( NULL, _T( "@" ));
-
-							lvItem.iSubItem = 2;
-							lvItem.mask = LVIF_TEXT;
-							lvItem.cchTextMax = SIZEOF(text);
-							lvItem.pszText = text;
-
-							ListView_GetItem( lv, &lvItem );
-
-							ListView_SetItemState( lv, lvItem.iItem, 0, LVIS_SELECTED ); // Unselect the item
-							/* some hack for using bookmark to transport not under XEP-0048 */
-							if (!server) {	//the room name is not provided let consider that it is transport and send request to registration
-								JabberRegisterAgent( NULL, room );
-							}
-							else {
-								if ( text[0] != _T('\0') )
-									JabberGroupchatJoinRoom( server, p, text, item->password );
-								else
-								{
-									TCHAR* nick = JabberNickFromJID( jabberJID );
-									JabberGroupchatJoinRoom( server, p, nick, item->password );
-									mir_free( nick );
-								}
-							}
-						}
-						else JabberChatDllError();
-					}
-					else {
-						char* szUrl = mir_t2a( (TCHAR*)lvItem.lParam );
-						JCallService( MS_UTILS_OPENURL, 1, (LPARAM)szUrl );
-						mir_free( szUrl );
-					}
-				}
+			case IDOK:
+			{
+				OpenBookmark();
 				return TRUE;
 			}
-			break;
 		}
-		break;
-	case WM_COMMAND:
-		switch ( LOWORD( wParam )) {
-		case IDC_BROWSE:
-			if ( jabberOnline) {
-				//EnableWindow( GetDlgItem( hwndDlg, IDC_BROWSE ), FALSE );
-				EnableWindow( GetDlgItem( hwndDlg, IDC_ADD ), FALSE );
-				EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT ), FALSE );
-				EnableWindow( GetDlgItem( hwndDlg, IDC_REMOVE ), FALSE );
-
-				ListView_DeleteAllItems( GetDlgItem( hwndDlg, IDC_BM_LIST));
-
-				int iqId = JabberSerialNext();
-				JabberIqAdd( iqId, IQ_PROC_DISCOBOOKMARKS, JabberIqResultDiscoBookmarks);
-
-				XmlNodeIq iq( "get", iqId);
-
-				XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVATE_STORAGE );
-				XmlNode* storage = query->addChild("storage");
-				storage->addAttr("xmlns","storage:bookmarks");
-
-				jabberThreadInfo->send( iq );
-			}
-			return TRUE;
-
-		case IDC_ADD:
-			if ( jabberOnline)
-				DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_BOOKMARK_ADD ), hwndDlg, JabberAddBookmarkDlgProc, NULL );
-			return TRUE;
-
-		case IDC_EDIT:
-			if ( jabberOnline) {
-				lv = GetDlgItem( hwndDlg, IDC_BM_LIST);
-				if (( lvItem.iItem=ListView_GetNextItem( lv, -1, LVNI_SELECTED )) >= 0 ) {
-					lvItem.iSubItem = 0;
-					lvItem.mask = LVIF_PARAM;
-					ListView_GetItem( lv, &lvItem );
-
-					item = JabberListGetItemPtr(LIST_BOOKMARK, ( TCHAR* )lvItem.lParam);
-
-					if (item) DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_BOOKMARK_ADD ), hwndDlg, JabberAddBookmarkDlgProc, (LPARAM) item);
-
-					ListView_SetItemState( lv, lvItem.iItem, 0, LVIS_SELECTED ); // Unselect the item
-			}	}
-			return TRUE;
-
-		case IDC_REMOVE:
-			if ( jabberOnline) {
-				lv = GetDlgItem( hwndDlg, IDC_BM_LIST);
-				if (( lvItem.iItem=ListView_GetNextItem( lv, -1, LVNI_SELECTED )) >= 0 ) {
-
-					//EnableWindow( GetDlgItem( hwndDlg, IDC_BROWSE ), FALSE );
-					EnableWindow( GetDlgItem( hwndDlg, IDC_ADD ), FALSE );
-					EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT ), FALSE );
-					EnableWindow( GetDlgItem( hwndDlg, IDC_REMOVE ), FALSE );
-
-					lvItem.iSubItem = 0;
-					lvItem.mask = LVIF_PARAM;
-					ListView_GetItem( lv, &lvItem );
-
-					JabberListRemove(LIST_BOOKMARK, ( TCHAR* )lvItem.lParam);
-
-					ListView_SetItemState( lv, lvItem.iItem, 0, LVIS_SELECTED ); // Unselect the item
-
-					int iqId = JabberSerialNext();
-					JabberIqAdd( iqId, IQ_PROC_SETBOOKMARKS, JabberIqResultSetBookmarks);
-
-					XmlNodeIq iq( "set", iqId );
-					JabberSetBookmarkRequest( iq );
-					jabberThreadInfo->send( iq );
-			}	}
-			return TRUE;
-
-		case IDCLOSE:
-		case IDCANCEL:
-			PostMessage( hwndDlg, WM_CLOSE, 0, 0 );
-			return TRUE;
-		}
-		break;
-
-	case WM_CLOSE:
-		{
-			HWND hwndList = GetDlgItem( hwndDlg, IDC_BM_LIST );
-			LVCOLUMN lvc = { 0 };
-			lvc.mask = LVCF_WIDTH;
-			ListView_GetColumn( hwndList, 0, &lvc );
-			DBWriteContactSettingWord( NULL, jabberProtoName, "bookmarksWnd_cx0", lvc.cx );
-			ListView_GetColumn( hwndList, 1, &lvc );
-			DBWriteContactSettingWord( NULL, jabberProtoName, "bookmarksWnd_cx1", lvc.cx );
-			ListView_GetColumn( hwndList, 2, &lvc );
-			DBWriteContactSettingWord( NULL, jabberProtoName, "bookmarksWnd_cx2", lvc.cx );
-
-			Utils_SaveWindowPosition( hwndDlg, NULL, jabberProtoName, "bookmarksWnd_" );
-			DestroyWindow( hwndDlg );
-			break;
-		}
-
-	case WM_DESTROY:
-		hwndJabberBookmarks= NULL;
 		break;
 	}
-	return FALSE;
+
+	return CSuper::DlgProc(msg, wParam, lParam);
+}
+
+void CJabberDlgBookmarks::OnProtoCheckOnline(WPARAM, LPARAM)
+{
+	if (!m_proto->m_bJabberOnline)
+	{
+		m_btnAdd.Disable();
+		m_btnEdit.Disable();
+		m_btnRemove.Disable();
+	} else
+	{
+		UpdateData();
+	}
+
+}
+
+void CJabberDlgBookmarks::OnProtoRefresh(WPARAM, LPARAM)
+{
+	m_lvBookmarks.DeleteAllItems();
+
+	JABBER_LIST_ITEM *item = NULL;
+	for (int i = 0; (i = m_proto->ListFindNext(LIST_BOOKMARK, i)) >= 0; ++i)
+	{
+		if (item = m_proto->ListGetItemPtrFromIndex(i))
+		{
+			int itemType = lstrcmpi(item->type, _T("conference")) ? 1 : 0;
+			int iItem = m_lvBookmarks.AddItem(item->name, itemType, (LPARAM)item->jid, itemType);
+			m_lvBookmarks.SetItem(iItem, 1, item->jid);
+			if (itemType == 0)
+				m_lvBookmarks.SetItem(iItem, 2, item->nick);
+		}
+	}
+
+	if (item)
+	{
+		m_btnEdit.Enable();
+		m_btnRemove.Enable();
+	}
+
+	m_btnAdd.Enable();
+}
+
+int CJabberDlgBookmarks::Resizer(UTILRESIZECONTROL *urc)
+{
+	switch ( urc->wId ) {
+		case IDC_BM_LIST:
+			return RD_ANCHORX_WIDTH|RD_ANCHORY_HEIGHT;
+
+		case IDCANCEL:
+			return RD_ANCHORX_RIGHT|RD_ANCHORY_BOTTOM;
+
+		case IDC_ADD:
+		case IDC_EDIT:
+		case IDC_REMOVE:
+			return RD_ANCHORX_LEFT|RD_ANCHORY_BOTTOM;
+	}
+	return CSuper::Resizer(urc);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Launches the Bookmarks manager window
 
-int JabberMenuHandleBookmarks( WPARAM wParam, LPARAM lParam )
+INT_PTR __cdecl CJabberProto::OnMenuHandleBookmarks( WPARAM, LPARAM)
 {
-	int iqId;
-
-	if ( IsWindow( hwndJabberBookmarks )) {
-		SetForegroundWindow( hwndJabberBookmarks );
-
-		SendMessage( hwndJabberBookmarks, WM_JABBER_ACTIVATE, 0, 0 );	// Just to clear the list
-		iqId = JabberSerialNext();
-		JabberIqAdd( iqId, IQ_PROC_DISCOBOOKMARKS, JabberIqResultDiscoBookmarks);
-
-		XmlNodeIq iq( "get", iqId);
-
-		XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVATE_STORAGE );
-		XmlNode* storage = query->addChild("storage");
-		storage->addAttr("xmlns","storage:bookmarks");
-
-		// <iq/> result will send WM_JABBER_REFRESH to update the list with real data
-		jabberThreadInfo->send( iq );
-	}
-	else CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_BOOKMARKS), NULL, JabberBookmarksDlgProc, lParam );
-
+	UI_SAFE_OPEN_EX(CJabberDlgBookmarks, m_pDlgBookmarks, pDlg);
+	pDlg->UpdateData();
 	return 0;
 }
 
-
 /////////////////////////////////////////////////////////////////////////////////////////
 // Launches the Bookmark details window, lParam is JABBER_BOOKMARK_ITEM*
-int JabberAddEditBookmark( WPARAM wParam, LPARAM lParam )
+int CJabberProto::AddEditBookmark( JABBER_LIST_ITEM* item )
 {
-	if ( jabberOnline)
-		DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_BOOKMARK_ADD ), NULL, JabberAddBookmarkDlgProc, lParam);
+	if ( m_bJabberOnline) {
+		JabberAddBookmarkDlgParam param;
+		param.ppro = this;
+		param.m_item = item;//(JABBER_LIST_ITEM*)lParam;
+		DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_BOOKMARK_ADD ), NULL, JabberAddBookmarkDlgProc, (LPARAM)&param );
+	}
 	return 0;
 }

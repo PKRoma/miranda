@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2005-09  George Hazan
 Copyright ( C ) 2007     Maxim Mluhov
 Copyright ( C ) 2007     Victor Pavlychko
 
@@ -20,34 +20,50 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $Source: $
-Revision       : $Revision: $
-Last change on : $Date: $
-Last change by : $Author: $
+File name      : $URL$
+Revision       : $Revision$
+Last change on : $Date$
+Last change by : $Author$
 
 */
 
 #ifndef __jabber_opttree_h__
 #define __jabber_opttree_h__
 
-#include <commctrl.h>
-
 #define OPTTREE_CHECK	0
 
-typedef struct {
-  int       iconIndex;
-  TCHAR    *szOptionName;
-  int       groupId;
-  DWORD     dwFlag;
-  HTREEITEM hItem;
-  char     *szSettingName;
-} OPTTREE_OPTION;
+class CCtrlTreeOpts : public CCtrlTreeView
+{
+	typedef CCtrlTreeView CSuper;
 
-BOOL OptTree_ProcessMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, BOOL *result, int idcTree, OPTTREE_OPTION *options, int optionCount);
+public:
+	CCtrlTreeOpts( CDlgBase* dlg, int ctrlId );
+	~CCtrlTreeOpts();
 
-DWORD OptTree_GetOptions(HWND hwnd, int idcTree, OPTTREE_OPTION *options, int optionCount, char *szSettingName = NULL);
-void OptTree_SetOptions(HWND hwnd, int idcTree, OPTTREE_OPTION *options, int optionCount, DWORD dwOptions, char *szSettingName = NULL);
+	void AddOption(TCHAR *szOption, CMOption<BYTE> &option);
 
-void OptTree_Translate(HWND hwndTree);
+	BOOL OnNotify(int idCtrl, NMHDR *pnmh);
+	void OnDestroy();
+	void OnInit();
+	void OnApply();
+
+protected:
+	struct COptionsItem
+	{
+		TCHAR *m_szOptionName;
+		int m_groupId;
+
+		CMOption<BYTE> *m_option;
+
+		HTREEITEM m_hItem;
+
+		COptionsItem(TCHAR *szOption, CMOption<BYTE> &option);
+		~COptionsItem();
+	};
+
+	LIST<COptionsItem> m_options;
+
+	void ProcessItemClick(HTREEITEM hti);
+};
 
 #endif // __opttree_h__

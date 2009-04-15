@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern BOOL(WINAPI * MySetLayeredWindowAttributes) (HWND, COLORREF, BYTE, DWORD);
 
-static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 	case WM_INITDIALOG:
@@ -234,7 +234,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 	return FALSE;
 }
 
-static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 	case WM_INITDIALOG:
@@ -342,5 +342,36 @@ int CluiOptInit(WPARAM wParam, LPARAM lParam)
 	odp.nExpertOnlyControls = 0;
 	odp.expertOnlyControls = NULL;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
+	return 0;
+}
+
+int CluiModernOptInit(WPARAM wParam, LPARAM lParam)
+{
+	static int iBoldControls[] =
+	{
+		IDC_TXT_TITLE1, IDC_TXT_TITLE2, IDC_SHOWSBAR,
+		MODERNOPT_CTRL_LAST
+	};
+
+	MODERNOPTOBJECT obj = {0};
+
+	obj.cbSize = sizeof(obj);
+	obj.dwFlags = MODEROPT_FLG_TCHAR|MODEROPT_FLG_NORESIZE;
+	obj.hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
+	obj.hInstance = g_hInst;
+	obj.iSection = MODERNOPT_PAGE_CLIST;
+	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
+	obj.iBoldControls = iBoldControls;
+	obj.lpzClassicGroup = "Contact List";
+	obj.lpzClassicPage = "List";
+	obj.lpzHelpUrl = "http://wiki.miranda-im.org/";
+
+	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_CLUI);
+	obj.pfnDlgProc = DlgProcCluiOpts;
+	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
+
+	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_SBAR);
+	obj.pfnDlgProc = DlgProcSBarOpts;
+	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
 	return 0;
 }

@@ -3,10 +3,50 @@
 //general menu object module
 #include "m_genmenu.h"
 
+/* genmenu structs */
+
+#define MENUITEM_SIGNATURE 0xDEADBEEF
+
 typedef struct
 {
+	struct _tagIntMenuItem *first, // first element of submenu, or NULL
+		                    *last;  // last element of submenu, or NULL
+}
+	TMO_LinkedList;
+
+typedef struct _tagIntMenuItem
+{
+	DWORD        signature;
+	int          iCommand;
+	int          iconId;          // icon index in the section's image list
+	TMO_MenuItem mi;              // user-defined data
+	BOOL         OverrideShow;
+	char*        UniqName;        // unique name
+	TCHAR*       CustomName;
+	HANDLE       hIcolibItem;     // handle of iconlib item
+	int          originalPosition;
+
+	struct _tagIntMenuItem *next; // next item in list
+	struct TIntMenuObject  *parent;
+	TMO_LinkedList         *owner;
+	TMO_LinkedList			   submenu;
+}
+	TMO_IntMenuItem,*PMO_IntMenuItem;
+
+struct TIntMenuObject
+{
+	TIntMenuObject();
+	~TIntMenuObject();
+
+	__inline void* operator new( size_t size )
+	{	return mir_calloc( size );
+	}
+	__inline void operator delete( void* p )
+	{	mir_free( p );
+	}
+
 	char* Name;
-	int id;
+	int   id;
 
 	//ExecService
 	//LPARAM lParam;//owner data
@@ -27,40 +67,48 @@ typedef struct
 	//WPARAM wParam;//menuitemhandle
 	char *onAddService;//called just before add MENUITEMINFO to hMenu
 
-	PMO_IntMenuItem MenuItems;
-	int MenuItemsCount;
-	HANDLE hMenuIcons;
-	BOOL bUseUserDefinedItems;
-}
-	TIntMenuObject,*PIntMenuObject;
+	TMO_LinkedList m_items;
+	HIMAGELIST m_hMenuIcons;
+	BOOL m_bUseUserDefinedItems;
 
+	void freeItem( TMO_IntMenuItem* );
+};
+
+extern LIST<TIntMenuObject> g_menus;
 
 #define SEPARATORPOSITIONINTERVAL	100000
 
 //internal usage
-HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param);
-int RecursiveRemoveChilds(int pos,ListParam *param);
-void UnpackGlobalId(int id,int *MenuObjectId,int *MenuItemId);
+HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem, ListParam *param);
 void GetMenuItemName( PMO_IntMenuItem pMenuItem, char* pszDest, size_t cbDestSize );
 
-PMO_IntMenuItem MO_GetIntMenuItem(int globid);
+PMO_IntMenuItem MO_GetIntMenuItem( HGENMENU );
 
-int MO_AddNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi );
-int MO_AddOldNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi );
+PMO_IntMenuItem MO_AddNewMenuItem( HANDLE menuobjecthandle, PMO_MenuItem pmi );
+PMO_IntMenuItem MO_AddOldNewMenuItem( HANDLE menuobjecthandle, PMO_MenuItem pmi );
+
 int MO_DrawMenuItem( LPDRAWITEMSTRUCT dis );
 int MO_MeasureMenuItem( LPMEASUREITEMSTRUCT mis );
-int MO_ModifyMenuItem( int menuHandle, PMO_MenuItem pmiparam );
-int MO_ProcessCommand( WPARAM wParam, LPARAM lParam );
-int MO_ProcessHotKeys( int menuHandle, int vKey );
-int MO_SetOptionsMenuItem( int menuobjecthandle, int setting, int value );
-int MO_SetOptionsMenuObject( int menuobjecthandle, int setting, int value );
+int MO_ModifyMenuItem( PMO_IntMenuItem menuHandle, PMO_MenuItem pmiparam );
+int MO_ProcessCommand( PMO_IntMenuItem pimi, LPARAM lParam );
+INT_PTR MO_ProcessHotKeys( HANDLE menuHandle, INT_PTR vKey );
+int MO_SetOptionsMenuItem( PMO_IntMenuItem menuobjecthandle, int setting, INT_PTR value );
+int MO_SetOptionsMenuObject( HANDLE menuobjecthandle, int setting, INT_PTR value );
 
-//for old processcommand
-int getGlobalId(const int MenuObjectId,const int MenuItemId);
+INT_PTR MO_ProcessCommandByMenuIdent(WPARAM wParam,LPARAM lParam);
+int MO_ProcessCommandBySubMenuIdent(int menuID, int command, LPARAM lParam);
+
+// function returns TRUE if the walk should be immediately stopped
+typedef int ( *pfnWalkFunc )( PMO_IntMenuItem, void* );
+
+// returns the item, on which pfnWalkFunc returned TRUE
+PMO_IntMenuItem MO_RecursiveWalkMenu( PMO_IntMenuItem, pfnWalkFunc, void* );
 
 //general stuff
 int InitGenMenu();
 int UnitGenMenu();
+
+int FindRoot( PMO_IntMenuItem pimi, void* param );
 
 TMO_IntMenuItem * GetMenuItemByGlobalID(int globalMenuID);
 BOOL	FindMenuHanleByGlobalID(HMENU hMenu, int globalID, struct _MenuItemHandles * dat);	//GenMenu.c
@@ -68,7 +116,7 @@ BOOL	FindMenuHanleByGlobalID(HMENU hMenu, int globalID, struct _MenuItemHandles 
 int GenMenuOptInit(WPARAM wParam, LPARAM lParam);
 int GetMenuObjbyId(const int id);
 int GetMenuItembyId(const int objpos,const int id);
-int MO_GetMenuItem(WPARAM wParam,LPARAM lParam);
+INT_PTR MO_GetMenuItem(WPARAM wParam,LPARAM lParam);
 void FreeAndNil(void **p);
 static int RemoveFromList(int pos,void **lpList,int *ListElemCount,int ElemSize);
 static int RemoveFromList(int pos,void **lpList,int *ListElemCount,int ElemSize);

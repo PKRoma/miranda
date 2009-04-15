@@ -1,6 +1,5 @@
-#include "image_utils.h"
-
 #include "commonheaders.h"
+#include "image_utils.h"
 
 #include <ocidl.h>
 #include <olectl.h>
@@ -22,8 +21,9 @@ extern int _DebugTrace(HANDLE hContact, const char *fmt, ...);
 #define GET_PIXEL(__P__, __X__, __Y__) ( __P__ + width * 4 * (__Y__) + 4 * (__X__) )
 
 
-extern int AVS_pathToRelative(const char *sPrc, char *pOut);
-extern int AVS_pathToAbsolute(const char *pSrc, char *pOut);
+extern size_t AVS_pathToRelative(const char *sPrc, char *pOut);
+extern size_t AVS_pathToAbsolute(const char *pSrc, char *pOut);
+extern int AVS_pathToAbsoluteW(const wchar_t *pSrc, wchar_t *pOut);
 extern FI_INTERFACE *fei;
 
 // Make a bitmap all transparent, but only if it is a 32bpp
@@ -55,7 +55,7 @@ void MakeBmpTransparent(HBITMAP hBitmap)
 // Returns a copy of the bitmap with the size especified
 // wParam = ResizeBitmap *
 // lParam = NULL
-int BmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam)
+INT_PTR BmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam)
 {
 	// Call freeiamge service (is here only for backward compatibility)
 	return CallService(MS_IMG_RESIZE, wParam, lParam);
@@ -225,7 +225,7 @@ void SetHIMETRICtoDP(HDC hdc, SIZE* sz)
     sz->cy = pt.y;
 }
 
-int BmpFilterLoadBitmap32(WPARAM wParam,LPARAM lParam)
+INT_PTR BmpFilterLoadBitmap32(WPARAM wParam,LPARAM lParam)
 {
     FIBITMAP *dib32 = NULL;
 
@@ -255,7 +255,7 @@ int BmpFilterLoadBitmap32(WPARAM wParam,LPARAM lParam)
 			FIBITMAP *dib_new = fei->FI_MakeThumbnail(dib32, 128, FALSE);
             fei->FI_Unload(dib32);
             if(dib_new == NULL)
-				return (int)0;
+				return 0;
             dib32 = dib_new;
         }
 
@@ -263,7 +263,7 @@ int BmpFilterLoadBitmap32(WPARAM wParam,LPARAM lParam)
 
         fei->FI_Unload(dib32);
         fei->FI_CorrectBitmap32Alpha(bitmap, FALSE);
-        return (int)bitmap;
+        return (INT_PTR)bitmap;
 	}
     return 0;
 }
@@ -287,10 +287,23 @@ int BmpFilterSaveBitmap(HBITMAP hBmp, char *szFile, int flags)
     return !CallService(MS_IMG_SAVE, (WPARAM) &i, MAKELONG(0, flags));
 }
 
+
+int BmpFilterSaveBitmapW(HBITMAP hBmp, wchar_t *wszFile, int flags)
+{
+	IMGSRVC_INFO i = {0};
+	i.cbSize = sizeof(IMGSRVC_INFO);
+	i.wszName = wszFile;
+	i.hbm = hBmp;
+	i.dwMask = IMGI_HBITMAP;
+	i.fif = FIF_UNKNOWN;
+
+    return !CallService(MS_IMG_SAVE, (WPARAM) &i, MAKELONG(IMGL_WCHAR, flags));
+}
+
 // Save an HBITMAP to an image
 // wParam = HBITMAP
 // lParam = filename
-int BmpFilterSaveBitmap(WPARAM wParam,LPARAM lParam)
+INT_PTR BmpFilterSaveBitmap(WPARAM wParam,LPARAM lParam)
 {
 	HBITMAP hBmp = (HBITMAP) wParam;
 	const char *szFile=(const char *)lParam;
@@ -311,13 +324,34 @@ int BmpFilterSaveBitmap(WPARAM wParam,LPARAM lParam)
 	return -1;
 }
 
+#if defined(_UNICODE)
+INT_PTR BmpFilterSaveBitmapW(WPARAM wParam,LPARAM lParam)
+{
+	HBITMAP hBmp = (HBITMAP) wParam;
+	const wchar_t *wszFile=(const wchar_t *)lParam;
+	wchar_t wszFilename[MAX_PATH];
+	int filenameLen;
+
+    if(fei == NULL)
+        return -1;
+
+    if (!AVS_pathToAbsoluteW(wszFile, wszFilename))
+		mir_sntprintf(wszFilename, SIZEOF(wszFilename), _T("%s"), wszFile);
+	filenameLen=lstrlenW(wszFilename);
+	if(filenameLen > 4) 
+	{
+        return BmpFilterSaveBitmapW(hBmp, wszFilename, 0);
+	}
+	return -1;
+}
+#endif
 
 // Returns != 0 if can save that type of image, = 0 if cant
 // wParam = 0
 // lParam = PA_FORMAT_*   // image format
 // kept for compatibilty - with freeimage we can save all common formats
 
-int BmpFilterCanSaveBitmap(WPARAM wParam,LPARAM lParam)
+INT_PTR BmpFilterCanSaveBitmap(WPARAM wParam,LPARAM lParam)
 {
     return 1;
 }

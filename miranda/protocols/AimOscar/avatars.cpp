@@ -1,194 +1,258 @@
+/*
+Plugin of Miranda IM for communicating with users of the AIM protocol.
+Copyright (c) 2008-2009 Boris Krasnovskiy
+Copyright (C) 2005-2006 Aaron Myles Landwehr
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+#include "aim.h"
 #include "avatars.h"
-CRITICAL_SECTION avatarMutex;
-static int avatar_module_size=0;
-static char* avatar_module_ptr=NULL;
-void avatar_request_handler(TLV &tlv, HANDLE &hContact,char* sn,int &offset)//checks to see if the avatar needs requested
+
+#include "m_folders.h"
+
+void __cdecl CAimProto::avatar_request_thread( void* param )
 {
-	if(!DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DA, 0))
-	{
-		if(char* norm_sn=normalize_name(sn))
-		{
-			int avatar_exist=1;
-			int hash_size=(int)tlv.ubyte(offset+3);
-			char* hash=tlv.part(offset+4,hash_size);
-			char* hash_string=bytes_to_string(hash,hash_size);
-			if(lstrcmp(hash_string,"0201d20472"))//gaim default icon fix- we don't want their blank icon displaying.
-			{
-				
-				if(char* photo_path=getSetting(hContact,"ContactPhoto","File"))//check for image type in db 
-				{
-					char filetype[5];
-					memcpy(&filetype,&photo_path[lstrlen(photo_path)]-4,5);
-					char* filename=strlcat(norm_sn,filetype);
-					char* path;
-					FILE* out=open_contact_file(norm_sn,filename,"rb",path,0);
-					if(out!=NULL)//make sure file exist then check hash in db
-					{
-						fclose(out);
-						if(char* hash=getSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_AH))
-						{
-							avatar_exist=lstrcmp(hash_string,hash);
-							if(!avatar_exist)//NULL means it exist
-							{
-								LOG("Avatar exist for %s. So attempting to apply it",norm_sn);
-								avatar_apply(hContact,norm_sn,path);
-							}
-							delete[] hash;
-						}
-						delete[] path;
-					}
-					delete[] photo_path;
-					delete[] filename;
-				}
-				if(avatar_exist)//NULL means it exist
-				{
-					int length=lstrlen(sn)+2+hash_size*2;
-					char* blob= new char[length];
-					mir_snprintf(blob,length,"%s;%s",sn,hash_string);
-					LOG("Starting avatar request thread for %s)",sn);
-					ForkThread((pThreadFunc)avatar_request_thread,blob);
-				}
-			}
-			delete[] hash;
-			delete[] hash_string;
-			delete[] norm_sn;
-		}
-	}
+	avatar_req_param* data = (avatar_req_param*)param;
+
+    if (wait_conn(hAvatarConn, hAvatarEvent, 0x10))
+    {
+        size_t len = strlen(data->hash) / 2;
+	    char* hash = (char*)alloca(len);
+	    string_to_bytes(data->hash, hash);
+	    LOG("Requesting an Avatar: %s (Hash: %s)", data->sn, data->hash);
+	    aim_request_avatar(hAvatarConn, avatar_seqno, data->sn, hash, (unsigned short)len);
+    }
+    delete data;
 }
-void avatar_request_thread(char* data)
+
+void __cdecl CAimProto::avatar_upload_thread( void* param )
 {
-	EnterCriticalSection(&avatarMutex);
-	if(!conn.hAvatarConn&&conn.hServerConn)
-	{
-		LOG("Starting Avatar Connection.");
-		ResetEvent(conn.hAvatarEvent);//reset incase a disconnection occured and state is now set following the removal of queued threads
-		conn.hAvatarConn=(HANDLE)1;//set so no additional service request attempts are made while aim is still processing the request
-		aim_new_service_request(conn.hServerConn,conn.seqno,0x0010);//avatar service connection!
-	}
-	LeaveCriticalSection(&avatarMutex);//not further below because the thread will become trapped if the connection dies.
-	if(WaitForSingleObject(conn.hAvatarEvent ,  INFINITE )==WAIT_OBJECT_0)
-	{
-		if (Miranda_Terminated())
-		{
-			LeaveCriticalSection(&avatarMutex);
-			delete[] data;
-			return;
-		}
-		if(conn.hServerConn)
-		{
-			char* sn=strtok(data,";");
-			char* hash_string=strtok(NULL,";");
-			char* hash= new char[lstrlen(hash_string)/2];
-			string_to_bytes(hash_string,hash);
-			LOG("Requesting an Avatar: %s(Hash: %s)",sn,hash_string);
-			aim_request_avatar(conn.hAvatarConn,conn.avatar_seqno,sn,hash,(unsigned short)lstrlen(hash_string)/2);
-		}
-		else
-		{
-			SetEvent(conn.hAvatarEvent);
-			LeaveCriticalSection(&avatarMutex);
-			return;
-		}
-	}
-	delete[] data;
+	char* file = (char*)param;
+
+    if (wait_conn(hAvatarConn, hAvatarEvent, 0x10))
+    {
+        char hash[16], *data;
+        unsigned short size;
+        if (get_avatar_hash(file, hash, &data, size))
+        {
+            aim_set_avatar_hash(hServerConn, seqno, 1, 16, (char*)hash);
+            aim_upload_avatar(hAvatarConn, avatar_seqno, data, size);
+            mir_free(data);
+        }
+    }
+	mir_free(file);
 }
-void avatar_request_limit_thread()
+
+void CAimProto::avatar_request_handler(HANDLE hContact, char* hash, int hash_size)//checks to see if the avatar needs requested
 {
-	LOG("Avatar Request Limit thread begin");
-	while(conn.AvatarLimitThread)
+	char* hash_string = bytes_to_string(hash, hash_size);
+
+    if(strcmp(hash_string,"0201d20472"))//gaim default icon fix- we don't want their blank icon displaying.
 	{
-		Sleep(1000);
-		LOG("Setting Avatar Request Event...");
-		SetEvent(conn.hAvatarEvent);
-	}
-	LOG("Avatar Request Limit Thread has ended");
+        char* saved_hash = getSetting(hContact,AIM_KEY_ASH);
+		setString(hContact, AIM_KEY_AH, hash_string);
+
+        if (saved_hash == NULL || strcmp(saved_hash, hash_string))
+			sendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0 );
+    
+        mir_free(saved_hash);
+    }
+    else
+    {
+	    deleteSetting(hContact, AIM_KEY_AH);
+	    deleteSetting(hContact, AIM_KEY_ASH);
+
+        char file[MAX_PATH];
+		get_avatar_filename(hContact, file, sizeof(file), NULL);
+		remove(file);
+
+        sendBroadcast(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0);
+    }
+
+    mir_free(hash_string);
 }
-void avatar_retrieval_handler(SNAC &snac)
+
+void CAimProto::avatar_retrieval_handler(const char* sn, const char* hash, const char* data, int data_len)
 {
-	int sn_length=(int)snac.ubyte(0);
-	char* sn=snac.part(1,sn_length);
-	if(char* norm_sn=normalize_name(sn))
+    bool res = false;
+    PROTO_AVATAR_INFORMATION AI = {0};
+	AI.cbSize = sizeof(AI);
+
+    char* norm_sn=normalize_name(sn);
+	AI.hContact=contact_from_sn(norm_sn);
+	if (data_len>0)
 	{
-		HANDLE hContact=find_contact(norm_sn);
-		int hash_size=snac.ubyte(4+sn_length);
-		unsigned short icon_length=snac.ushort(5+sn_length+hash_size);
-		if(icon_length>0)
-		{
-			char* hash=snac.part(5+sn_length,hash_size);
-			char* hash_string=bytes_to_string(hash,hash_size);
-			DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_AH,hash_string);
-			char* file_data=snac.val(7+sn_length+hash_size);
-			char type[5];
-			detect_image_type(file_data,type);
-			char* filename=strlcat(norm_sn,type);
-			char* path;
-			FILE* out=open_contact_file(norm_sn,filename,"wb",path,0);
-			LOG("Retrieving an avatar for %s(Hash: %s Length: %u)",norm_sn,hash_string,icon_length);
-			if ( out != NULL )
-			{
-				fwrite( file_data, icon_length, 1, out );
-				fclose( out );
-				avatar_apply(hContact,norm_sn,path);
-				delete[] path;
-			}
-			else
-				LOG("Error saving avatar to file for %s",norm_sn);
-			delete[] hash;
-			delete[] hash_string;
-			delete[] filename;
-		}
-		else
-			LOG("AIM sent avatar of zero length for %s.(Usually caused by repeated request for the same icon)",norm_sn);
-		delete[] norm_sn;	
+		setString(AI.hContact, AIM_KEY_ASH,hash);
+
+        get_avatar_filename(AI.hContact, AI.filename, sizeof(AI.filename), NULL);
+        remove(AI.filename);
+
+        const char *type; 
+        AI.format = detect_image_type(data, type);
+        get_avatar_filename(AI.hContact, AI.filename, sizeof(AI.filename), type);
+
+	    int fileId = _open(AI.filename, _O_CREAT | _O_TRUNC | _O_WRONLY | O_BINARY,  _S_IREAD | _S_IWRITE);
+	    if (fileId >= 0)
+        {
+	        _write(fileId, data, data_len);
+	        _close(fileId);
+            res=true;
+	    }
+//            else
+//			    ShowError("Cannot set avatar. File '%s' could not be created/overwritten", file);
 	}
-	delete[] sn;
+	else
+		LOG("AIM sent avatar of zero length for %s.(Usually caused by repeated request for the same icon)",norm_sn);
+
+    sendBroadcast( AI.hContact, ACKTYPE_AVATAR, res ? ACKRESULT_SUCCESS : ACKRESULT_FAILED, &AI, 0 );
+	mir_free(norm_sn);	
 }
-void avatar_apply(HANDLE &hContact,char* sn,char* filename)
-{
-	if(char* photo_path=getSetting(hContact,"ContactPhoto","File"))//compare filenames if different and exist then ignore icon change
-	{
-		filename[lstrlen(filename)-4]='\0';
-		/*if(lstrcmpi(filename,photo_path))
-		{
-			char* path;
-			FILE* out=open_contact_file(sn,photo_path,"rb",path);
-			if(out!=NULL)
-			{
-				fclose(out);
-				delete[] photo_path;
-				delete[] path;
-				return;
-			}
-		}*/
-		delete[] photo_path;
-		filename[lstrlen(filename)]='.';
-	}
-	PROTO_AVATAR_INFORMATION AI;
-	AI.cbSize = sizeof AI;
-	AI.hContact = hContact;
-	strlcpy(AI.filename,filename,lstrlen(filename)+1);
-	char filetype[4];
-	memcpy(&filetype,&filename[lstrlen(filename)]-3,4);
-	if(!lstrcmpi(filetype,"jpg")||!lstrcmpi(filetype,"jpeg"))
-		AI.format=PA_FORMAT_JPEG;
-	else if(!lstrcmpi(filetype,"gif"))
-		AI.format=PA_FORMAT_GIF;
-	else if(!lstrcmpi(filetype,"png"))
-		AI.format=PA_FORMAT_PNG;
-	else if(!lstrcmpi(filetype,"bmp"))
-		AI.format=PA_FORMAT_BMP;
-	DBWriteContactSettingString( hContact, "ContactPhoto", "File", AI.filename );
-	LOG("Successfully added avatar for %s(%s)",sn,AI.filename);
-	ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS,&AI,0);
-}
-void detect_image_type(char* stream,char* type_ret)
+
+int detect_image_type(const char* stream, const char* &type_ret)
 {
 	if(stream[0]=='G'&&stream[1]=='I'&&stream[2]=='F')
-		strlcpy(type_ret,".gif",5);
+    {
+		type_ret = ".gif";
+		return PA_FORMAT_GIF;
+    }
 	else if(stream[1]=='P'&&stream[2]=='N'&&stream[3]=='G')
-		strlcpy(type_ret,".png",5);
+    {
+		type_ret = ".png";
+		return PA_FORMAT_PNG;
+    }
 	else if(stream[0]=='B'&&stream[1]=='M')
-		strlcpy(type_ret,".bmp",5);
+    {
+		type_ret = ".bmp";
+		return PA_FORMAT_BMP;
+    }
 	else//assume jpg
-		strlcpy(type_ret,".jpg",5);
+    {
+		type_ret = ".jpg";
+		return PA_FORMAT_JPEG;
+    }
+}
+
+int detect_image_type(const char* file)
+{
+   const char *ext = strrchr(file, '.');
+   if (ext == NULL) 
+       return PA_FORMAT_UNKNOWN;
+   if (strcmp(ext, ".gif") == 0)
+       return PA_FORMAT_GIF;
+   else if (strcmp(ext, ".bmp") == 0)
+       return PA_FORMAT_BMP;
+   else if (strcmp(ext, ".png") == 0)
+       return PA_FORMAT_PNG;
+   else
+       return PA_FORMAT_JPEG;
+}
+
+void CAimProto::init_custom_folders(void)
+{
+	if (init_cst_fld_ran) return; 
+
+	char AvatarsFolder[MAX_PATH];
+
+    char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
+	mir_snprintf(AvatarsFolder, SIZEOF(AvatarsFolder), "%s\\%s", tmpPath, m_szModuleName);
+    mir_free(tmpPath);
+
+    hAvatarsFolder = FoldersRegisterCustomPath(m_szModuleName, "Avatars", AvatarsFolder);
+
+	init_cst_fld_ran = true;
+}
+
+void  CAimProto::get_avatar_filename(HANDLE hContact, char* pszDest, size_t cbLen, const char *ext)
+{
+	size_t tPathLen;
+
+	init_custom_folders();
+
+	char* path = (char*)alloca( cbLen );
+	if (hAvatarsFolder == NULL || FoldersGetCustomPath(hAvatarsFolder, path, (int)cbLen, ""))
+	{
+        char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
+		tPathLen = mir_snprintf(pszDest, cbLen, "%s\\%s", tmpPath, m_szModuleName);
+        mir_free(tmpPath);
+	}
+	else 
+    {
+		strcpy( pszDest, path );
+		tPathLen = strlen( pszDest );
+	}
+
+	if (_access(pszDest, 0))
+		CallService(MS_UTILS_CREATEDIRTREE, 0, (LPARAM)pszDest);
+
+    size_t tPathLen2 = tPathLen;
+	if (hContact != NULL) 
+	{
+        char* hash = getSetting(hContact, AIM_KEY_AH);
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s", hash);
+        mir_free(hash);
+    }
+	else 
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s avatar", m_szModuleName);
+
+    if (ext == NULL)
+    {
+	    mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, ".*");
+
+        bool found = false;
+        _finddata_t c_file;
+        long hFile = _findfirst(pszDest, &c_file);
+        if (hFile > -1L)
+        {
+      		do {
+			    if (strrchr(c_file.name, '.'))
+			    {
+                    mir_snprintf(pszDest + tPathLen2, cbLen - tPathLen2, "\\%s", c_file.name);
+                    found = true;
+			    }
+		    } while(_findnext(hFile, &c_file) == 0);
+	        _findclose( hFile );
+        }
+        
+        if (!found) pszDest[0] = 0;
+    }
+    else
+	    mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, ext);
+}
+
+bool get_avatar_hash(const char* file, char* hash, char** data, unsigned short &size)
+{
+	int fileId = _open(file, _O_RDONLY | _O_BINARY, _S_IREAD);
+	if (fileId == -1) return false;
+
+	long  dwAvatar = _filelength(fileId);
+	char* pResult = (char*)mir_alloc(dwAvatar);
+
+	_read(fileId, pResult, dwAvatar);
+	_close(fileId);
+
+    mir_md5_state_t state;
+    mir_md5_init(&state);
+    mir_md5_append(&state, (unsigned char*)pResult, dwAvatar);
+    mir_md5_finish(&state, (unsigned char*)hash);
+
+    if (data)
+    {
+        *data = pResult;
+        size = (unsigned short)dwAvatar;
+    }
+    else
+        mir_free(pResult);
+
+    return true;
 }

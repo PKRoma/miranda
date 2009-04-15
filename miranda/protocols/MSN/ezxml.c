@@ -199,8 +199,8 @@ char *ezxml_decode(char *s, char **ent, char t)
                  b += 2); // find entity in entity list
 
             if (ent[b++]) { // found a match
-                if ((c = strlen(ent[b])) - 1 > (e = strchr(s, ';')) - s) {
-                    l = (d = (s - r)) + c + strlen(e); // new length
+                if ((c = (long)strlen(ent[b])) - 1 > (e = strchr(s, ';')) - s) {
+                    l = (d = (long)(s - r)) + c + (long)strlen(e); // new length
                     r = (r == m) ? strcpy(malloc(l), r) : realloc(r, l);
                     e = strchr((s = r + d), ';'); // fix up pointers
                 }
@@ -216,7 +216,7 @@ char *ezxml_decode(char *s, char **ent, char t)
 
     if (t == '*') { // normalize spaces for non-cdata attributes
         for (s = r; *s; s++) {
-            if ((l = strspn(s, " "))) memmove(s, s + l, strlen(s + l) + 1);
+            if ((l = (long)strspn(s, " "))) memmove(s, s + l, strlen(s + l) + 1);
             while (*s && *s != ' ') s++;
         }
         if (--s >= r && *s == ' ') *s = '\0'; // trim any trailing space
@@ -529,8 +529,8 @@ ezxml_t ezxml_parse_str(char *s, size_t len)
                         }
 
                         for (j = 1; a && a[j] && strcmp(a[j], attr[l]); j +=3);
-                        attr[l + 1] = ezxml_decode(attr[l + 1], root->ent, (a
-                                                   && a[j]) ? *a[j + 2] : ' ');
+                        attr[l + 1] = ezxml_decode(attr[l + 1], root->ent, 
+                                        (char)((a && a[j]) ? *a[j + 2] : ' '));
                         if (attr[l + 1] < d || attr[l + 1] > s)
                             attr[l + 3][l / 2] = EZXML_TXTM; // value malloced
                     }
@@ -902,9 +902,9 @@ ezxml_t ezxml_set_attr(ezxml_t xml, const char *name, const char *value)
         xml->attr[l] = (char *)name; // set attribute name
         xml->attr[l + 2] = NULL; // null terminate attribute list
         xml->attr[l + 3] = realloc(xml->attr[l + 1],
-                                   (c = strlen(xml->attr[l + 1])) + 2);
+                                   (c = (int)strlen(xml->attr[l + 1])) + 2);
         strcpy(xml->attr[l + 3] + c, " "); // set name/value as not malloced
-        if (xml->flags & EZXML_DUP) xml->attr[l + 3][c] = EZXML_NAMEM;
+        if (xml->flags & EZXML_DUP) xml->attr[l + 3][c] = (char)EZXML_NAMEM;
     }
     else if (xml->flags & EZXML_DUP) free((char *)name); // name was strduped
 

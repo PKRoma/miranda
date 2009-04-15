@@ -230,6 +230,12 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 			iRemoveChars = 1;
 			break;
 
+		case '\r': case '\n':
+			bTextHasStarted = TRUE;
+			bJustRemovedRTF = FALSE;
+			iRemoveChars = 1;
+			break;
+
 		case '%': // escape chat -> protocol control character
 			bTextHasStarted = TRUE;
 			bJustRemovedRTF = FALSE;
@@ -268,7 +274,7 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 	#endif
 }
 
-static DWORD CALLBACK Message_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
+static DWORD CALLBACK Message_StreamCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
 {
 	static DWORD dwRead;
 	char ** ppText = (char **) dwCookie;
@@ -305,7 +311,7 @@ char* Message_GetFromStream(HWND hwndDlg, SESSION_INFO* si)
 
 	ZeroMemory(&stream, sizeof(stream));
 	stream.pfnCallback = Message_StreamCallback;
-	stream.dwCookie = (DWORD) &pszText; // pass pointer to pointer
+	stream.dwCookie = (DWORD_PTR) &pszText; // pass pointer to pointer
 
 	#if defined(_UNICODE)
 		dwFlags = SF_RTFNOOBJS | SFF_PLAINRTF | SF_USECODEPAGE | (CP_UTF8 << 16);

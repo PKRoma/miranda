@@ -59,8 +59,9 @@ void InitDisplayNameCache(SortedList *list)
 		i++;
 }	}
 
-void FreeDisplayNameCacheItem( pdisplayNameCacheEntry p )
+void FreeDisplayNameCacheItem(ClcCacheEntryBase *_p)
 {
+	pdisplayNameCacheEntry p = (pdisplayNameCacheEntry)_p;
 	if ( p->name) { mir_free(p->name); p->name = NULL; }
 	#if defined( _UNICODE )
 		if ( p->szName) { mir_free(p->szName); p->szName = NULL; }
@@ -74,15 +75,16 @@ void FreeDisplayNameCache(SortedList *list)
 	int i;
 
 	for( i=0; i < list->realCount; i++) {
-		FreeDisplayNameCacheItem(( pdisplayNameCacheEntry )list->items[i] );
+		FreeDisplayNameCacheItem(list->items[i] );
 		mir_free(list->items[i]);
 	}
 	
 	li.List_Destroy(list);
 }
 
-void CheckPDNCE(pdisplayNameCacheEntry pdnce)
+void CheckPDNCE(ClcCacheEntryBase *_pdnce)
 {
+	pdisplayNameCacheEntry pdnce = (pdisplayNameCacheEntry)_pdnce;
 	if (pdnce == NULL)
 		return;
 
@@ -91,7 +93,7 @@ void CheckPDNCE(pdisplayNameCacheEntry pdnce)
 		if (pdnce->szProto == NULL) 
 			pdnce->protoNotExists=FALSE;
 		else {
-			if (CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)pdnce->szProto) == (int)NULL)
+			if (CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)pdnce->szProto) == 0)
 				pdnce->protoNotExists=TRUE;
 			else {
 				if ( pdnce->szProto && pdnce->name ) {

@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2005-09  George Hazan
 Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
@@ -19,10 +19,10 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_caps.h,v $
-Revision       : $Revision: 5336 $
-Last change on : $Date: 2007-04-28 13:14:46 +0300 (бс, 28 ря№ 2007) $
-Last change by : $Author: ghazan $
+File name      : $URL$
+Revision       : $Revision$
+Last change on : $Date$
+Last change by : $Author$
 
 */
 
@@ -35,10 +35,17 @@ typedef unsigned __int64 JabberCapsBits;
 
 #define JABBER_RESOURCE_CAPS_QUERY_TIMEOUT	10000
 
+#ifdef __GNUC__
+#define JABBER_RESOURCE_CAPS_ERROR        0x8000000000000000ULL
+#define JABBER_RESOURCE_CAPS_IN_PROGRESS  0x8000000000000001ULL
+#define JABBER_RESOURCE_CAPS_TIMEOUT      0x8000000000000002ULL
+#define JABBER_RESOURCE_CAPS_NONE         0x0000000000000000ULL
+#else
 #define JABBER_RESOURCE_CAPS_ERROR        0x8000000000000000
 #define JABBER_RESOURCE_CAPS_IN_PROGRESS  0x8000000000000001
 #define JABBER_RESOURCE_CAPS_TIMEOUT      0x8000000000000002
 #define JABBER_RESOURCE_CAPS_NONE         0x0000000000000000
+#endif
 
 #define JABBER_FEAT_DISCO_INFO                  "http://jabber.org/protocol/disco#info"
 #define JABBER_CAPS_DISCO_INFO                  ((JabberCapsBits)1)
@@ -79,6 +86,7 @@ typedef unsigned __int64 JabberCapsBits;
 #define JABBER_FEAT_VCARD_TEMP                  "vcard-temp"
 #define JABBER_CAPS_VCARD_TEMP                  ((JabberCapsBits)1<<18)
 #define JABBER_FEAT_AVATAR                      "jabber:iq:avatar"
+#define JABBER_FEAT_SERVER_AVATAR               "storage:client:avatar"
 #define JABBER_CAPS_AVATAR                      ((JabberCapsBits)1<<19)
 #define JABBER_FEAT_XHTML                       "http://jabber.org/protocol/xhtml-im"
 #define JABBER_CAPS_XHTML                       ((JabberCapsBits)1<<20)
@@ -108,6 +116,18 @@ typedef unsigned __int64 JabberCapsBits;
 #define JABBER_CAPS_USER_TUNE_NOTIFY            ((JabberCapsBits)1<<32)
 #define JABBER_FEAT_PRIVATE_STORAGE             "jabber:iq:private"
 #define JABBER_CAPS_PRIVATE_STORAGE             ((JabberCapsBits)1<<33)
+// deferred
+#define JABBER_FEAT_ATTENTION                   "http://www.xmpp.org/extensions/xep-0224.html#ns"
+#define JABBER_CAPS_ATTENTION                   ((JabberCapsBits)1<<34)
+#define JABBER_FEAT_USER_ACTIVITY               "http://jabber.org/protocol/activity"
+#define JABBER_CAPS_USER_ACTIVITY               ((JabberCapsBits)1<<35)
+#define JABBER_FEAT_USER_ACTIVITY_NOTIFY        "http://jabber.org/protocol/activity+notify"
+#define JABBER_CAPS_USER_ACTIVITY_NOTIFY        ((JabberCapsBits)1<<36)
+#define JABBER_FEAT_ATTENTION_0                 "urn:xmpp:attention:0"
+#define JABBER_CAPS_ATTENTION_0                 ((JabberCapsBits)1<<37)
+#define JABBER_FEAT_MIRANDA_NOTES               "http://miranda-im.org/storage#notes"
+#define JABBER_CAPS_MIRANDA_NOTES               ((JabberCapsBits)1<<38)
+
 
 #define JABBER_FEAT_PUBSUB_EVENT                "http://jabber.org/protocol/pubsub#event"
 #define JABBER_FEAT_PUBSUB_NODE_CONFIG          "http://jabber.org/protocol/pubsub#node_config"
@@ -115,14 +135,16 @@ typedef unsigned __int64 JabberCapsBits;
 #define JABBER_CAPS_MESSAGE_EVENTS_NO_DELIVERY  ((JabberCapsBits)1<<60)
 
 #define JABBER_CAPS_MIRANDA_NODE                "http://miranda-im.org/caps"
-#define JABBER_CAPS_MIRANDA_ALL                 (JABBER_CAPS_DISCO_INFO|JABBER_CAPS_DISCO_ITEMS|JABBER_CAPS_ENTITY_CAPS|JABBER_CAPS_MUC|JABBER_CAPS_ENTITY_CAPS|JABBER_CAPS_SI|JABBER_CAPS_SI_FT|JABBER_CAPS_BYTESTREAMS|JABBER_CAPS_IBB|JABBER_CAPS_OOB|JABBER_CAPS_CHATSTATES|JABBER_CAPS_AGENTS|JABBER_CAPS_BROWSE|JABBER_CAPS_VERSION|JABBER_CAPS_LAST_ACTIVITY|JABBER_CAPS_DATA_FORMS|JABBER_CAPS_MESSAGE_EVENTS|JABBER_CAPS_VCARD_TEMP|JABBER_CAPS_ENTITY_TIME|JABBER_CAPS_PING|JABBER_CAPS_PRIVACY_LISTS|JABBER_CAPS_MESSAGE_RECEIPTS|JABBER_CAPS_SECUREIM|JABBER_CAPS_COMMANDS|JABBER_CAPS_USER_MOOD_NOTIFY|JABBER_CAPS_USER_TUNE_NOTIFY)
+#define JABBER_CAPS_MIRANDA_ALL                 (JABBER_CAPS_DISCO_INFO|JABBER_CAPS_DISCO_ITEMS|JABBER_CAPS_MUC|JABBER_CAPS_ENTITY_CAPS|JABBER_CAPS_SI|JABBER_CAPS_SI_FT|JABBER_CAPS_BYTESTREAMS|JABBER_CAPS_IBB|JABBER_CAPS_OOB|JABBER_CAPS_CHATSTATES|JABBER_CAPS_AGENTS|JABBER_CAPS_BROWSE|JABBER_CAPS_VERSION|JABBER_CAPS_LAST_ACTIVITY|JABBER_CAPS_DATA_FORMS|JABBER_CAPS_MESSAGE_EVENTS|JABBER_CAPS_VCARD_TEMP|JABBER_CAPS_ENTITY_TIME|JABBER_CAPS_PING|JABBER_CAPS_PRIVACY_LISTS|JABBER_CAPS_MESSAGE_RECEIPTS|JABBER_CAPS_PRIVATE_STORAGE|JABBER_CAPS_ATTENTION_0|JABBER_CAPS_SECUREIM|JABBER_CAPS_COMMANDS|JABBER_CAPS_USER_MOOD_NOTIFY|JABBER_CAPS_USER_TUNE_NOTIFY|JABBER_CAPS_USER_ACTIVITY_NOTIFY)
 
-#define JABBER_CAPS_MIRANDA_PARTIAL             (JABBER_CAPS_DISCO_INFO|JABBER_CAPS_DISCO_ITEMS|JABBER_CAPS_ENTITY_CAPS|JABBER_CAPS_MUC|JABBER_CAPS_ENTITY_CAPS|JABBER_CAPS_SI|JABBER_CAPS_SI_FT|JABBER_CAPS_BYTESTREAMS|JABBER_CAPS_IBB|JABBER_CAPS_OOB|JABBER_CAPS_CHATSTATES|JABBER_CAPS_AGENTS|JABBER_CAPS_BROWSE|JABBER_CAPS_VERSION|JABBER_CAPS_LAST_ACTIVITY|JABBER_CAPS_DATA_FORMS|JABBER_CAPS_MESSAGE_EVENTS|JABBER_CAPS_VCARD_TEMP|JABBER_CAPS_ENTITY_TIME|JABBER_CAPS_PING|JABBER_CAPS_PRIVACY_LISTS|JABBER_CAPS_MESSAGE_RECEIPTS)
+#define JABBER_CAPS_MIRANDA_PARTIAL             (JABBER_CAPS_DISCO_INFO|JABBER_CAPS_DISCO_ITEMS|JABBER_CAPS_MUC|JABBER_CAPS_ENTITY_CAPS|JABBER_CAPS_SI|JABBER_CAPS_SI_FT|JABBER_CAPS_BYTESTREAMS|JABBER_CAPS_IBB|JABBER_CAPS_OOB|JABBER_CAPS_CHATSTATES|JABBER_CAPS_AGENTS|JABBER_CAPS_BROWSE|JABBER_CAPS_VERSION|JABBER_CAPS_LAST_ACTIVITY|JABBER_CAPS_DATA_FORMS|JABBER_CAPS_MESSAGE_EVENTS|JABBER_CAPS_VCARD_TEMP|JABBER_CAPS_ENTITY_TIME|JABBER_CAPS_PING|JABBER_CAPS_PRIVACY_LISTS|JABBER_CAPS_MESSAGE_RECEIPTS|JABBER_CAPS_PRIVATE_STORAGE|JABBER_CAPS_ATTENTION_0)
 
 #define JABBER_EXT_SECUREIM                     "secureim"
 #define JABBER_EXT_COMMANDS                     "cmds"
 #define JABBER_EXT_USER_MOOD                    "mood"
 #define JABBER_EXT_USER_TUNE                    "tune"
+#define JABBER_EXT_USER_ACTIVITY                "activity"
+#define JABBER_EXT_MIR_NOTES                    "mir_notes"
 
 #define JABBER_FEAT_EXT_ADDRESSING              "http://jabber.org/protocol/address"
 #define JABBER_FEAT_NESTED_ROSTER_GROUPS        "roster:delimiter"
@@ -137,8 +159,11 @@ typedef unsigned __int64 JabberCapsBits;
 
 #define JABBER_FEAT_IQ_ROSTER                   "jabber:iq:roster"
 #define JABBER_FEAT_DELAY                       "jabber:x:delay"
+#define JABBER_FEAT_ENTITY_TIME_OLD             "jabber:iq:time"
 
 #define JABBER_FEAT_MUC_USER                    "http://jabber.org/protocol/muc#user"
+
+#define JABBER_FEAT_HTTP_AUTH                   "http://jabber.org/protocol/http-auth"
 
 
 class CJabberClientPartialCaps
@@ -208,12 +233,13 @@ class CJabberClientCapsManager
 protected:
 	CRITICAL_SECTION m_cs;
 	CJabberClientCaps *m_pClients;
+	CJabberProto* ppro;
 
 protected:
 	CJabberClientCaps *FindClient( TCHAR *szNode );
 
 public:
-	CJabberClientCapsManager();
+	CJabberClientCapsManager( CJabberProto* proto );
 	~CJabberClientCapsManager();
 
 	__inline void Lock()
@@ -229,7 +255,7 @@ public:
 	BOOL SetClientCaps( TCHAR *szNode, TCHAR *szVer, JabberCapsBits jcbCaps, int nIqId = -1 );
 	BOOL SetClientCaps( int nIqId, JabberCapsBits jcbCaps );
 
-	BOOL HandleInfoRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo, TCHAR* szNode );
+	BOOL HandleInfoRequest( HXML iqNode, CJabberIqInfo* pInfo, const TCHAR* szNode );
 };
 
 struct JabberFeatCapPair
@@ -241,10 +267,5 @@ struct JabberFeatCapPair
 
 extern JabberFeatCapPair g_JabberFeatCapPairs[];
 extern JabberFeatCapPair g_JabberFeatCapPairsExt[];
-
-extern CJabberClientCapsManager g_JabberClientCapsManager;
-
-JabberCapsBits JabberGetResourceCapabilites( TCHAR *jid, BOOL appendBestResource = TRUE );
-JabberCapsBits JabberGetTotalJidCapabilites( TCHAR *jid );
 
 #endif

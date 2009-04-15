@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2005-09  George Hazan
 Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_userinfo.cpp,v $
+File name      : $URL$
 Revision       : $Revision$
 Last change on : $Date$
 Last change by : $Author$
@@ -27,14 +27,13 @@ Last change by : $Author$
 */
 
 #include "jabber.h"
+#include "m_icolib.h"
 
 #include <fcntl.h>
 #include <io.h>
 #include <sys/stat.h>
 
-#include <commctrl.h>
 #include "jabber_list.h"
-#include "resource.h"
 
 static HANDLE hUserInfoList = NULL;
 
@@ -79,13 +78,117 @@ struct UserInfoStringBuf
 
 struct JabberUserInfoDlgData
 {
-	HANDLE				hContact;
-	JABBER_LIST_ITEM	*item;
-	int					resourceCount;
+	CJabberProto*     ppro;
+	HANDLE            hContact;
+	JABBER_LIST_ITEM* item;
+	int               resourceCount;
 };
 
-static HTREEITEM sttFillInfoLine( HWND hwndTree, HTREEITEM htiRoot, HICON hIcon, TCHAR *title, TCHAR *value )
+enum
 {
+	INFOLINE_DELETE	= 0x80000000,
+	INFOLINE_MASK	= 0x7fffffff,
+	INFOLINE_BAD_ID	= 0x7fffffff,
+
+	INFOLINE_NAME	= 1,
+	INFOLINE_MOOD,
+	INFOLINE_ACTIVITY,
+	INFOLINE_TUNE,
+	INFOLINE_OFFLINE,
+	INFOLINE_MESSAGE,
+	INFOLINE_SOFTWARE,
+	INFOLINE_VERSION,
+	INFOLINE_SYSTEM,
+	INFOLINE_PRIORITY,
+	INFOLINE_IDLE,
+	INFOLINE_CAPS,
+	INFOLINE_SOFTWARE_INFORMATION,
+	INFOLINE_SUBSCRIPTION,
+	INFOLINE_LOGOFF,
+	INFOLINE_LOGOFF_MSG,
+	INFOLINE_LASTACTIVE,
+};
+
+__forceinline DWORD sttInfoLineId(DWORD res, DWORD type, DWORD line=0)
+{
+	return
+		( type << 24 ) & 0x7f000000 |
+		( res  << 12 ) & 0x00fff000 |
+		( line       ) & 0x00000fff;
+}
+
+static HTREEITEM sttFindInfoLine( HWND hwndTree, HTREEITEM htiRoot, LPARAM id=INFOLINE_BAD_ID )
+{
+	if ( id == INFOLINE_BAD_ID ) return NULL;
+	for (HTREEITEM hti = TreeView_GetChild(hwndTree, htiRoot); hti; hti = TreeView_GetNextSibling(hwndTree, hti))
+	{
+		TVITEMEX tvi = {0};
+		tvi.mask = TVIF_HANDLE|TVIF_PARAM;
+		tvi.hItem = hti;
+		TreeView_GetItem(hwndTree, &tvi);
+		if ((tvi.lParam&INFOLINE_MASK) == (id&INFOLINE_MASK))
+			return hti;
+	}
+	return NULL;
+}
+
+void sttCleanupInfo(HWND hwndTree, int stage)
+{
+	HTREEITEM hItem = TreeView_GetRoot(hwndTree);
+	while (hItem)
+	{
+		TVITEMEX tvi = {0};
+		tvi.mask = TVIF_HANDLE|TVIF_PARAM;
+		tvi.hItem = hItem;
+		TreeView_GetItem(hwndTree, &tvi);
+
+		switch (stage)
+		{
+			case 0:
+			{
+				tvi.lParam |= INFOLINE_DELETE;
+				TreeView_SetItem(hwndTree, &tvi);
+				break;
+			}
+			case 1:
+			{
+				if (tvi.lParam & INFOLINE_DELETE)
+				{
+					hItem = TreeView_GetNextSibling(hwndTree, hItem);
+					TreeView_DeleteItem(hwndTree, tvi.hItem);
+					continue;
+				}
+				break;
+			}
+		}
+
+		HTREEITEM hItemTmp = 0;
+		if (hItemTmp = TreeView_GetChild(hwndTree, hItem))
+		{
+			hItem = hItemTmp;
+		} else
+		if (hItemTmp = TreeView_GetNextSibling(hwndTree, hItem))
+		{
+			hItem = hItemTmp;
+		} else
+		{
+			while (1)
+			{
+				if (!(hItem = TreeView_GetParent(hwndTree, hItem))) break;
+				if (hItemTmp = TreeView_GetNextSibling(hwndTree, hItem))
+				{
+					hItem = hItemTmp;
+					break;
+				}
+			}
+		}
+	}
+}
+
+static HTREEITEM sttFillInfoLine( HWND hwndTree, HTREEITEM htiRoot, HICON hIcon, TCHAR *title, TCHAR *value, LPARAM id=INFOLINE_BAD_ID, bool expand=false )
+{
+	HTREEITEM hti = sttFindInfoLine(hwndTree, htiRoot, id);
+
 	TCHAR buf[256];
 	if ( title )
 		mir_sntprintf( buf, SIZEOF(buf), _T("%s: %s"), title, value );
@@ -95,8 +198,9 @@ static HTREEITEM sttFillInfoLine( HWND hwndTree, HTREEITEM htiRoot, HICON hIcon,
 	TVINSERTSTRUCT tvis = {0};
 	tvis.hParent = htiRoot;
 	tvis.hInsertAfter = TVI_LAST;
-	tvis.itemex.mask = TVIF_TEXT;
+	tvis.itemex.mask = TVIF_TEXT|TVIF_PARAM;
 	tvis.itemex.pszText = buf;
+	tvis.itemex.lParam = id;
 
 	if ( hIcon ) {
 		HIMAGELIST himl = TreeView_GetImageList( hwndTree, TVSIL_NORMAL );
@@ -105,20 +209,36 @@ static HTREEITEM sttFillInfoLine( HWND hwndTree, HTREEITEM htiRoot, HICON hIcon,
 		tvis.itemex.iSelectedImage = ImageList_AddIcon( himl, hIcon );
 	}
 
-	return TreeView_InsertItem( hwndTree, &tvis );
+	if (hti)
+	{
+		tvis.itemex.mask |= TVIF_HANDLE;
+		tvis.itemex.hItem = hti;
+		TreeView_SetItem( hwndTree, &tvis.itemex );
+	} else
+	{
+		tvis.itemex.mask |= TVIF_STATE;
+		tvis.itemex.stateMask = TVIS_EXPANDED;
+		tvis.itemex.state = expand ? TVIS_EXPANDED : 0;
+		hti = TreeView_InsertItem( hwndTree, &tvis );
+	}
+
+	return hti;
 }
 
-static void sttFillResourceInfo( HWND hwndTree, HTREEITEM htiRoot, JABBER_LIST_ITEM *item, JABBER_RESOURCE_STATUS *res )
+static void sttFillResourceInfo( CJabberProto* ppro, HWND hwndTree, HTREEITEM htiRoot, JABBER_LIST_ITEM *item, int resource )
 {
 	TCHAR buf[256];
 	HTREEITEM htiResource = htiRoot;
+	JABBER_RESOURCE_STATUS *res = resource ? &item->resource[resource-1] : &item->itemResource;
 
 	if ( res->resourceName && *res->resourceName )
-		htiResource = sttFillInfoLine( hwndTree, htiRoot, LoadSkinnedProtoIcon( jabberProtoName, res->status ), TranslateT("Resource"), res->resourceName );
+		htiResource = sttFillInfoLine( hwndTree, htiRoot, LoadSkinnedProtoIcon( ppro->m_szModuleName, res->status ), TranslateT("Resource"), res->resourceName,
+			sttInfoLineId(resource, INFOLINE_NAME), true );
 
 	{	// StatusMsg
 		sttFillInfoLine( hwndTree, htiResource, NULL /*LoadSkinnedIcon( SKINICON_EVENT_MESSAGE )*/,
-			TranslateT( "Message" ), res->statusMessage ? res->statusMessage : TranslateT( "<not specified>" ));
+			TranslateT( "Message" ), res->statusMessage ? res->statusMessage : TranslateT( "<not specified>" ),
+			sttInfoLineId(resource, INFOLINE_MESSAGE));
 	}
 
 	{	// Software
@@ -130,82 +250,135 @@ static void sttFillResourceInfo( HWND hwndTree, HTREEITEM htiRoot, JABBER_LIST_I
 		}
 
 		sttFillInfoLine( hwndTree, htiResource, hIcon, TranslateT( "Software" ),
-			res->software ? res->software : TranslateT( "<not specified>" ));
+			res->software ? res->software : TranslateT( "<not specified>" ),
+			sttInfoLineId(resource, INFOLINE_SOFTWARE));
 	}
 
 	{	// Version
 		sttFillInfoLine( hwndTree, htiResource, NULL, TranslateT( "Version" ),
-			res->version ? res->version : TranslateT( "<not specified>" ));
+			res->version ? res->version : TranslateT( "<not specified>" ),
+			sttInfoLineId(resource, INFOLINE_VERSION));
 	}
 
 	{	// System
 		sttFillInfoLine( hwndTree, htiResource, NULL, TranslateT( "System" ),
-			res->system ? res->system : TranslateT( "<not specified>" ));
+			res->system ? res->system : TranslateT( "<not specified>" ),
+			sttInfoLineId(resource, INFOLINE_SYSTEM));
 	}
 
 	{	// Resource priority
 		TCHAR szPriority[128];
 		mir_sntprintf( szPriority, SIZEOF( szPriority ), _T("%d"), (int)res->priority );
-		sttFillInfoLine( hwndTree, htiResource, NULL, TranslateT( "Resource priority" ), szPriority );
+		sttFillInfoLine( hwndTree, htiResource, NULL, TranslateT( "Resource priority" ), szPriority, sttInfoLineId(resource, INFOLINE_PRIORITY) );
 	}
 
 	{	// Idle
-		if ( item->itemResource.idleStartTime > 0 ) {
-			lstrcpyn(buf, _tctime( &item->itemResource.idleStartTime ), SIZEOF( buf ));
+		if ( res->idleStartTime > 0 ) {
+			lstrcpyn(buf, _tctime( &res->idleStartTime ), SIZEOF( buf ));
 			int len = lstrlen(buf);
 			if (len > 0) buf[len-1] = 0;
-		} else if ( !item->itemResource.idleStartTime )
+		} else if ( !res->idleStartTime )
 			lstrcpyn(buf, TranslateT( "unknown" ), SIZEOF( buf ));
 		else
 			lstrcpyn(buf, TranslateT( "<not specified>" ), SIZEOF( buf ));
 
-		sttFillInfoLine( hwndTree, htiResource, NULL, TranslateT("Idle since"), buf );
+		sttFillInfoLine( hwndTree, htiResource, NULL, TranslateT("Idle since"), buf, sttInfoLineId(resource, INFOLINE_IDLE) );
 	}
 
 	{	// caps
 		mir_sntprintf( buf, SIZEOF(buf), _T("%s/%s"), item->jid, res->resourceName );
-		JabberCapsBits jcb = JabberGetResourceCapabilites( buf );
+		JabberCapsBits jcb = ppro->GetResourceCapabilites( buf, TRUE );
 
 		if ( !( jcb & JABBER_RESOURCE_CAPS_ERROR ))
 		{
-			HTREEITEM htiCaps = sttFillInfoLine( hwndTree, htiResource, LoadIconEx( "main" ), NULL, TranslateT( "Client capabilities" ));
+			HTREEITEM htiCaps = sttFillInfoLine( hwndTree, htiResource, ppro->LoadIconEx( "main" ), NULL, TranslateT( "Client capabilities" ), sttInfoLineId(resource, INFOLINE_CAPS));
 			for ( int i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) 
 				if ( jcb & g_JabberFeatCapPairs[i].jcbCap ) {
 					TCHAR szDescription[ 1024 ];
 					if ( g_JabberFeatCapPairs[i].szDescription )
-						mir_sntprintf( szDescription, SIZEOF( szDescription ), _T("%s (%s)"), g_JabberFeatCapPairs[i].szDescription, g_JabberFeatCapPairs[i].szFeature );
+						mir_sntprintf( szDescription, SIZEOF( szDescription ), _T("%s (%s)"), TranslateTS(g_JabberFeatCapPairs[i].szDescription), g_JabberFeatCapPairs[i].szFeature );
 					else
 						mir_sntprintf( szDescription, SIZEOF( szDescription ), _T("%s"), g_JabberFeatCapPairs[i].szFeature );
-					sttFillInfoLine( hwndTree, htiCaps, NULL, NULL, szDescription );
+					sttFillInfoLine( hwndTree, htiCaps, NULL, NULL, szDescription, sttInfoLineId(resource, INFOLINE_CAPS, i) );
 				}
 		}
 	}
 
-	TreeView_Expand( hwndTree, htiResource, TVE_EXPAND );
+	{	// Software info
+		if ( res->pSoftwareInfo ) {
+			HTREEITEM htiSoftwareInfo = sttFillInfoLine( hwndTree, htiResource, ppro->LoadIconEx( "main" ), NULL, TranslateT( "Software information" ), sttInfoLineId(resource, INFOLINE_SOFTWARE_INFORMATION));
+			int nLineId = 0;
+			if ( res->pSoftwareInfo->szOs )
+				sttFillInfoLine( hwndTree, htiSoftwareInfo, NULL, TranslateT("Operating system"), res->pSoftwareInfo->szOs, sttInfoLineId(resource, INFOLINE_SOFTWARE_INFORMATION, nLineId++) );
+			if ( res->pSoftwareInfo->szOsVersion )
+				sttFillInfoLine( hwndTree, htiSoftwareInfo, NULL, TranslateT("Operating system version"), res->pSoftwareInfo->szOsVersion, sttInfoLineId(resource, INFOLINE_SOFTWARE_INFORMATION, nLineId++) );
+			if ( res->pSoftwareInfo->szSoftware )
+				sttFillInfoLine( hwndTree, htiSoftwareInfo, NULL, TranslateT("Software"), res->pSoftwareInfo->szSoftware, sttInfoLineId(resource, INFOLINE_SOFTWARE_INFORMATION, nLineId++) );
+			if ( res->pSoftwareInfo->szSoftwareVersion )
+				sttFillInfoLine( hwndTree, htiSoftwareInfo, NULL, TranslateT("Software version"), res->pSoftwareInfo->szSoftwareVersion, sttInfoLineId(resource, INFOLINE_SOFTWARE_INFORMATION, nLineId++) );
+			if ( res->pSoftwareInfo->szXMirandaCoreVersion ) {
+				sttFillInfoLine( hwndTree, htiSoftwareInfo, NULL, TranslateT("Miranda IM core version"), res->pSoftwareInfo->szXMirandaCoreVersion, sttInfoLineId(resource, INFOLINE_SOFTWARE_INFORMATION, nLineId++) );
+				sttFillInfoLine( hwndTree, htiSoftwareInfo, NULL, TranslateT("Unicode build"), res->pSoftwareInfo->bXMirandaIsUnicode ? TranslateT("Yes") : TranslateT("No"), sttInfoLineId(resource, INFOLINE_SOFTWARE_INFORMATION, nLineId++) );
+				sttFillInfoLine( hwndTree, htiSoftwareInfo, NULL, TranslateT("Alpha build"), res->pSoftwareInfo->bXMirandaIsUnicode ? TranslateT("Yes") : TranslateT("No"), sttInfoLineId(resource, INFOLINE_SOFTWARE_INFORMATION, nLineId++) );
+				sttFillInfoLine( hwndTree, htiSoftwareInfo, NULL, TranslateT("Debug build"), res->pSoftwareInfo->bXMirandaIsDebug ? TranslateT("Yes") : TranslateT("No"), sttInfoLineId(resource, INFOLINE_SOFTWARE_INFORMATION, nLineId++) );
+			}
+		}
+	}
+
+//	TreeView_Expand( hwndTree, htiResource, TVE_EXPAND );
 }
 
-static void sttFillUserInfo( HWND hwndTree, JABBER_LIST_ITEM *item )
+static void sttFillAdvStatusInfo( CJabberProto* ppro, HWND hwndTree, HTREEITEM htiRoot, DWORD dwInfoLine, HANDLE hContact, TCHAR *szTitle, char *pszSlot )
+{
+	char *szAdvStatusIcon = ppro->ReadAdvStatusA(hContact, pszSlot, ADVSTATUS_VAL_ICON);
+	TCHAR *szAdvStatusTitle = ppro->ReadAdvStatusT(hContact, pszSlot, ADVSTATUS_VAL_TITLE);
+	TCHAR *szAdvStatusText = ppro->ReadAdvStatusT(hContact, pszSlot, ADVSTATUS_VAL_TEXT);
+
+	if (szAdvStatusIcon && szAdvStatusTitle) {
+		TCHAR szText[2048];
+		if ( szAdvStatusText && *szAdvStatusText )
+			mir_sntprintf(szText, 2047, _T("%s (%s)"), TranslateTS(szAdvStatusTitle), szAdvStatusText);
+		else
+			mir_sntprintf(szText, 2047, _T("%s"), TranslateTS(szAdvStatusTitle));
+		sttFillInfoLine( hwndTree, htiRoot, (HICON)CallService(MS_SKIN2_GETICON, 0,
+			(LPARAM)szAdvStatusIcon), szTitle, szText, dwInfoLine);
+	}
+
+	mir_free(szAdvStatusIcon);
+	mir_free(szAdvStatusTitle);
+	mir_free(szAdvStatusText);
+}
+
+static void sttFillUserInfo( CJabberProto* ppro, HWND hwndTree, JABBER_LIST_ITEM *item )
 {
 	SendMessage( hwndTree, WM_SETREDRAW, FALSE, 0 );
 
-	TreeView_DeleteAllItems( hwndTree );
+//	TreeView_DeleteAllItems( hwndTree );
+	sttCleanupInfo(hwndTree, 0);
 
-	HTREEITEM htiRoot = sttFillInfoLine( hwndTree, NULL, LoadIconEx( "main" ), _T( "JID" ), item->jid );
+	HTREEITEM htiRoot = sttFillInfoLine( hwndTree, NULL, ppro->LoadIconEx( "main" ), _T( "JID" ), item->jid, sttInfoLineId(0, INFOLINE_NAME), true );
 	TCHAR buf[256];
+
+	if (HANDLE hContact = ppro->HContactFromJID(item->jid))
+	{
+		sttFillAdvStatusInfo( ppro, hwndTree, htiRoot, sttInfoLineId(0, INFOLINE_MOOD), hContact, TranslateT("Mood"), ADVSTATUS_MOOD );
+		sttFillAdvStatusInfo( ppro, hwndTree, htiRoot, sttInfoLineId(0, INFOLINE_ACTIVITY), hContact, TranslateT("Activity"), ADVSTATUS_ACTIVITY );
+		sttFillAdvStatusInfo( ppro, hwndTree, htiRoot, sttInfoLineId(0, INFOLINE_TUNE), hContact, TranslateT("Tune"), ADVSTATUS_TUNE );
+	}
 
 	{	// subscription
 		switch ( item->subscription ) {
 			case SUB_BOTH:
-				sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "both" ));
+				sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "both" ), sttInfoLineId(0, INFOLINE_SUBSCRIPTION));
 				break;
 			case SUB_TO:
-				sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "to" ));
+				sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "to" ), sttInfoLineId(0, INFOLINE_SUBSCRIPTION));
 				break;
 			case SUB_FROM:
-				sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "from" ));
+				sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "from" ), sttInfoLineId(0, INFOLINE_SUBSCRIPTION));
 				break;
 			default:
-				sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "none" ));
+				sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "none" ), sttInfoLineId(0, INFOLINE_SUBSCRIPTION));
 				break;
 		}
 	}
@@ -221,7 +394,13 @@ static void sttFillUserInfo( HWND hwndTree, JABBER_LIST_ITEM *item )
 			lstrcpyn( buf, TranslateT( "<not specified>" ), SIZEOF( buf ));
 
 		sttFillInfoLine( hwndTree, htiRoot, NULL,
-			( item->jid && _tcschr( item->jid, _T( '@' ))) ? TranslateT( "Last logoff time" ) : TranslateT( "Uptime"), buf );
+			( item->jid && _tcschr( item->jid, _T( '@' ))) ? TranslateT( "Last logoff time" ) : TranslateT( "Uptime"), buf,
+			sttInfoLineId(0, INFOLINE_LOGOFF));
+	}
+
+	{	// logoff msg
+		sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Logoff message" ),
+			item->itemResource.statusMessage ? item->itemResource.statusMessage : TranslateT( "<not specified>" ), sttInfoLineId(0, INFOLINE_LOGOFF_MSG));
 	}
 
 	{	// activity
@@ -230,21 +409,23 @@ static void sttFillUserInfo( HWND hwndTree, JABBER_LIST_ITEM *item )
 		else
 			lstrcpyn( buf, TranslateT( "<no information available>" ), SIZEOF( buf ));
 
-		sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Last active resource" ), buf );
+		sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Last active resource" ), buf,
+			sttInfoLineId(0, INFOLINE_LASTACTIVE));
 	}
 
-	{	// resources
-		if ( item->resourceCount ) {
-			for (int i = 0; i < item->resourceCount; ++i)
-				sttFillResourceInfo( hwndTree, htiRoot, item, &item->resource[i] );
-		} else if ( item->itemResource.status != ID_STATUS_OFFLINE ) {
-			sttFillResourceInfo( hwndTree, htiRoot, item, &item->itemResource );
-		}
-	}
+	// resources
+	if ( item->resourceCount ) {
+		for (int i = 0; i < item->resourceCount; ++i)
+			sttFillResourceInfo( ppro, hwndTree, htiRoot, item, i+1 );
+	} 
+	else if ( !_tcschr(item->jid, _T('@')) || (item->itemResource.status != ID_STATUS_OFFLINE) )
+		sttFillResourceInfo( ppro, hwndTree, htiRoot, item, 0 );
 
-	TreeView_Expand( hwndTree, htiRoot, TVE_EXPAND );
+//	TreeView_Expand( hwndTree, htiRoot, TVE_EXPAND );
 
+	sttCleanupInfo(hwndTree, 1);
 	SendMessage( hwndTree, WM_SETREDRAW, TRUE, 0 );
+
 	RedrawWindow( hwndTree, NULL, NULL, RDW_INVALIDATE );
 }
 
@@ -272,60 +453,28 @@ static void sttGetNodeText( HWND hwndTree, HTREEITEM hti, UserInfoStringBuf *buf
 			sttGetNodeText( hwndTree, hti, buf, indent + 1 );
 }
 
-BOOL SetClipboardText(HWND hwndDlg, TCHAR *szText)
+static INT_PTR CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	if ( !hwndDlg || !szText)
-		return FALSE;
-
-	if (! OpenClipboard( hwndDlg ))
-		return FALSE;
-	
-	EmptyClipboard();
-	HGLOBAL hMem = GlobalAlloc( GMEM_MOVEABLE, sizeof( TCHAR ) * ( lstrlen( szText ) + 1 ));
-	TCHAR *s = ( TCHAR * )GlobalLock( hMem );
-	lstrcpy( s, szText );
-	GlobalUnlock( hMem );
-#ifdef UNICODE
-	SetClipboardData( CF_UNICODETEXT, hMem );
-#else
-	SetClipboardData( CF_TEXT, hMem );
-#endif
-	
-	CloseClipboard();
-	
-	return TRUE;
-}
-
-static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
-{
-	JabberUserInfoDlgData *dat = (JabberUserInfoDlgData *)GetWindowLong( hwndDlg, GWL_USERDATA );
+	JabberUserInfoDlgData *dat = (JabberUserInfoDlgData *)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch ( msg ) {
-		case WM_INITDIALOG:
-			{
-			// lParam is hContact
-			TranslateDialogDefault( hwndDlg );
+	case WM_INITDIALOG:
+		// lParam is hContact
+		TranslateDialogDefault( hwndDlg );
 
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_USERDETAILS));
+		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_USERDETAILS));
 
-			dat = (JabberUserInfoDlgData *)mir_alloc(sizeof(JabberUserInfoDlgData));
-			dat->resourceCount = -1;
+		dat = (JabberUserInfoDlgData *)mir_alloc(sizeof(JabberUserInfoDlgData));
+		ZeroMemory(dat, sizeof(JabberUserInfoDlgData));
+		dat->resourceCount = -1;
 
-			if ( CallService(MS_DB_CONTACT_IS, (WPARAM)lParam, 0 )) {
-				dat->hContact = (HANDLE)lParam;
-				DBVARIANT dbv = {0};
-				if (JGetStringT(dat->hContact, "jid", &dbv)) break;
-				JABBER_LIST_ITEM *item = NULL;
-				if (!(dat->item = JabberListGetItemPtr( LIST_VCARD_TEMP, dbv.ptszVal )))
-					dat->item = JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
-				JFreeVariant(&dbv);
-			} else
-			if (!IsBadReadPtr((void *)lParam, sizeof(JABBER_LIST_ITEM)))
-			{
-				dat->hContact = NULL;
-				dat->item = (JABBER_LIST_ITEM *)lParam;
-			}
-
+		if ( CallService(MS_DB_CONTACT_IS, (WPARAM)lParam, 0 ))
+			dat->hContact = (HANDLE)lParam;
+		else if (!IsBadReadPtr((void *)lParam, sizeof(JABBER_LIST_ITEM))) {
+			dat->hContact = NULL;
+			dat->item = (JABBER_LIST_ITEM *)lParam;
+		}
+		{
 			RECT rc; GetClientRect( hwndDlg, &rc );
 			MoveWindow( GetDlgItem( hwndDlg, IDC_TV_INFO ), 5, 5, rc.right-10, rc.bottom-10, TRUE );
 
@@ -333,133 +482,134 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 			ImageList_AddIcon(himl, LoadSkinnedIcon(SKINICON_OTHER_SMALLDOT));
 			TreeView_SetImageList(GetDlgItem(hwndDlg, IDC_TV_INFO), himl, TVSIL_NORMAL);
 
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 			WindowList_Add(hUserInfoList, hwndDlg, dat->hContact);
-
-			SendMessage(hwndDlg, WM_JABBER_REFRESH, 0, 0);
-			return TRUE;
 		}
+		return TRUE;
 
-		case WM_DESTROY:
-		{
-			WindowList_Remove(hUserInfoList, hwndDlg);
-			if (dat)
-			{
-				mir_free(dat);
-				SetWindowLong(hwndDlg, GWL_USERDATA, 0);
-			}
-			ImageList_Destroy(TreeView_SetImageList(GetDlgItem(hwndDlg, IDC_TV_INFO), NULL, TVSIL_NORMAL));
-			break;
-		}
+	case WM_JABBER_REFRESH:
+		if ( !dat ) break;
 
-		case WM_JABBER_REFRESH:
-		{
-			if (!dat) break;
+		if ( !dat->item ) {
+			DBVARIANT dbv = {0};
+			if ( dat->ppro->JGetStringT(dat->hContact, "jid", &dbv))
+				break;
+
+			if (!(dat->item = dat->ppro->ListGetItemPtr(LIST_VCARD_TEMP, dbv.ptszVal)))
+				dat->item = dat->ppro->ListGetItemPtr(LIST_ROSTER, dbv.ptszVal);
 
 			if (!dat->item)
 			{
-				DBVARIANT dbv = {0};
-				if (JGetStringT(dat->hContact, "jid", &dbv)) break;
-				JABBER_LIST_ITEM *item = NULL;
-				if (!(dat->item = JabberListGetItemPtr(LIST_VCARD_TEMP, dbv.ptszVal)))
-					dat->item = JabberListGetItemPtr(LIST_ROSTER, dbv.ptszVal);
+				HWND hwndTree = GetDlgItem(hwndDlg, IDC_TV_INFO);
+				TreeView_DeleteAllItems( hwndTree );
+				HTREEITEM htiRoot = sttFillInfoLine( hwndTree, NULL, dat->ppro->LoadIconEx( "main" ), _T( "JID" ), dbv.ptszVal, sttInfoLineId(0, INFOLINE_NAME), true );
+				sttFillInfoLine( hwndTree, htiRoot, dat->ppro->LoadIconEx("vcard"), NULL, 
+					TranslateT("Please switch online to see more details.") );
+
 				JFreeVariant(&dbv);
-
-				if (!dat->item) break;
-			}
-			sttFillUserInfo(GetDlgItem(hwndDlg, IDC_TV_INFO), dat->item);
-			break;
-		}
-
-		case WM_SIZE:
-		{
-			MoveWindow(GetDlgItem(hwndDlg, IDC_TV_INFO), 5, 5, LOWORD(lParam)-10, HIWORD(lParam)-10, TRUE);
-			break;
-		}
-
-		case WM_CLOSE:
-		{
-			DestroyWindow(hwndDlg);
-			break;
-		}
-
-		case WM_CONTEXTMENU:
-		{
-			switch ( GetWindowLong(( HWND )wParam, GWL_ID ))
-			{
-				case IDC_TV_INFO:
-				{
-					HWND hwndTree = GetDlgItem( hwndDlg, IDC_TV_INFO );
-					POINT pt = { (signed short)LOWORD( lParam ), (signed short)HIWORD( lParam ) };
-					HTREEITEM hItem = 0;
-
-					if (( pt.x == -1 ) && ( pt.y == -1 )) {
-						if (hItem = TreeView_GetSelection( hwndTree )) {
-							RECT rc;
-							TreeView_GetItemRect( hwndTree, hItem, &rc, TRUE );
-							pt.x = rc.left;
-							pt.y = rc.bottom;
-							ClientToScreen( hwndTree, &pt );
-						}
-					}
-					else {
-						TVHITTESTINFO tvhti = {0};
-						tvhti.pt = pt;
-						ScreenToClient( hwndTree, &tvhti.pt );
-						TreeView_HitTest( hwndTree, &tvhti );
-						if ( tvhti.flags & TVHT_ONITEM ) {
-							hItem = tvhti.hItem;
-							TreeView_Select(hwndTree, hItem, TVGN_CARET);
-						}
-					}
-
-					if ( hItem ) {
-						HMENU hMenu = CreatePopupMenu();
-						AppendMenu(hMenu, MF_STRING, (UINT_PTR)1, TranslateT("Copy"));
-						AppendMenu(hMenu, MF_STRING, (UINT_PTR)2, TranslateT("Copy only this value"));
-						AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
-						AppendMenu(hMenu, MF_STRING, (UINT_PTR)0, TranslateT("Cancel"));
-						int nReturnCmd = TrackPopupMenu( hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL );
-						if ( nReturnCmd == 1 ) {
-							UserInfoStringBuf buf;
-							sttGetNodeText( hwndTree, hItem, &buf );
-							SetClipboardText( hwndDlg, buf.buf );
-						}
-						else if ( nReturnCmd == 2 ) {
-							TCHAR szBuffer[ 1024 ];
-							TVITEMEX tvi = {0};
-							tvi.mask = TVIF_HANDLE|TVIF_TEXT|TVIF_STATE;
-							tvi.hItem = hItem;
-							tvi.cchTextMax = SIZEOF( szBuffer );
-							tvi.pszText = szBuffer;
-							if ( TreeView_GetItem( hwndTree, &tvi ))
-								SetClipboardText( hwndDlg, szBuffer );
-						}
-						DestroyMenu( hMenu );
-					}
-
-					break;
-				}
-			}
-			break;
-		}
-
-		case WM_NOTIFY:
-		{
-			switch (( ( LPNMHDR )lParam )->idFrom ) {
-			case 0:
-				switch (( ( LPNMHDR )lParam )->code ) {
-				case PSN_INFOCHANGED:
-					{
-						HANDLE hContact = ( HANDLE ) (( LPPSHNOTIFY ) lParam )->lParam;
-						SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, ( LPARAM )hContact );
-					}
-					break;
-				}
 				break;
 			}
-			break;
+
+			JFreeVariant(&dbv);
 		}
+		sttFillUserInfo( dat->ppro, GetDlgItem(hwndDlg, IDC_TV_INFO), dat->item);
+		break;
+
+	case WM_SIZE:
+		MoveWindow(GetDlgItem(hwndDlg, IDC_TV_INFO), 5, 5, LOWORD(lParam)-10, HIWORD(lParam)-10, TRUE);
+		break;
+
+	case WM_CONTEXTMENU:
+		if ( GetWindowLong(( HWND )wParam, GWL_ID ) == IDC_TV_INFO ) {
+			HWND hwndTree = GetDlgItem( hwndDlg, IDC_TV_INFO );
+			POINT pt = { (signed short)LOWORD( lParam ), (signed short)HIWORD( lParam ) };
+			HTREEITEM hItem = 0;
+
+			if (( pt.x == -1 ) && ( pt.y == -1 )) {
+				if (hItem = TreeView_GetSelection( hwndTree )) {
+					RECT rc;
+					TreeView_GetItemRect( hwndTree, hItem, &rc, TRUE );
+					pt.x = rc.left;
+					pt.y = rc.bottom;
+					ClientToScreen( hwndTree, &pt );
+				}
+			}
+			else {
+				TVHITTESTINFO tvhti = {0};
+				tvhti.pt = pt;
+				ScreenToClient( hwndTree, &tvhti.pt );
+				TreeView_HitTest( hwndTree, &tvhti );
+				if ( tvhti.flags & TVHT_ONITEM ) {
+					hItem = tvhti.hItem;
+					TreeView_Select(hwndTree, hItem, TVGN_CARET);
+			}	}
+
+			if ( hItem ) {
+				HMENU hMenu = CreatePopupMenu();
+				AppendMenu(hMenu, MF_STRING, (UINT_PTR)1, TranslateT("Copy"));
+				AppendMenu(hMenu, MF_STRING, (UINT_PTR)2, TranslateT("Copy only this value"));
+				AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
+				AppendMenu(hMenu, MF_STRING, (UINT_PTR)0, TranslateT("Cancel"));
+				int nReturnCmd = TrackPopupMenu( hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL );
+				if ( nReturnCmd == 1 ) {
+					UserInfoStringBuf buf;
+					sttGetNodeText( hwndTree, hItem, &buf );
+					JabberCopyText( hwndDlg, buf.buf );
+				}
+				else if ( nReturnCmd == 2 ) {
+					TCHAR szBuffer[ 1024 ];
+					TVITEMEX tvi = {0};
+					tvi.mask = TVIF_HANDLE|TVIF_TEXT|TVIF_STATE;
+					tvi.hItem = hItem;
+					tvi.cchTextMax = SIZEOF( szBuffer );
+					tvi.pszText = szBuffer;
+					if ( TreeView_GetItem( hwndTree, &tvi )) {
+						if (TCHAR *str = _tcsstr(szBuffer, _T(": ")))
+							JabberCopyText( hwndDlg, str+2 );
+						else
+							JabberCopyText( hwndDlg, szBuffer );
+				}	}
+				DestroyMenu( hMenu );
+		}	}
+		break;
+
+	case WM_NOTIFY:
+		if (( ( LPNMHDR )lParam )->idFrom == 0 ) {
+			switch (( ( LPNMHDR )lParam )->code ) {
+			case PSN_INFOCHANGED:
+				{
+					HANDLE hContact = ( HANDLE ) (( LPPSHNOTIFY ) lParam )->lParam;
+					SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, ( LPARAM )hContact );
+				}
+				break;
+
+			case PSN_PARAMCHANGED:
+				dat->ppro = ( CJabberProto* )( CJabberProto* )(( PSHNOTIFY* )lParam )->lParam;
+				if ( dat->hContact != NULL ) {
+					DBVARIANT dbv = {0};
+					if ( dat->ppro->JGetStringT(dat->hContact, "jid", &dbv))
+						break;
+					
+					if ( !(dat->item = dat->ppro->ListGetItemPtr( LIST_VCARD_TEMP, dbv.ptszVal )))
+						dat->item = dat->ppro->ListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
+					JFreeVariant(&dbv);
+				}
+				break;
+		}	}
+		break;
+
+	case WM_CLOSE:
+		DestroyWindow(hwndDlg);
+		break;
+
+	case WM_DESTROY:
+		WindowList_Remove(hUserInfoList, hwndDlg);
+		if ( dat ) { 
+			mir_free(dat);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
+		}
+		ImageList_Destroy(TreeView_SetImageList(GetDlgItem(hwndDlg, IDC_TV_INFO), NULL, TVSIL_NORMAL));
+		break;
 	}
 	return FALSE;
 }
@@ -467,16 +617,18 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberUserPhotoDlgProc - Jabber photo dialog
 
-typedef struct {
-	HANDLE hContact;
-	HBITMAP hBitmap;
-} USER_PHOTO_INFO;
+struct USER_PHOTO_INFO
+{
+	HANDLE        hContact;
+	HBITMAP       hBitmap;
+	CJabberProto* ppro;
+};
 
-static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	USER_PHOTO_INFO *photoInfo;
 
-	photoInfo = ( USER_PHOTO_INFO * ) GetWindowLong( hwndDlg, GWL_USERDATA );
+	photoInfo = ( USER_PHOTO_INFO * ) GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
@@ -484,24 +636,31 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		TranslateDialogDefault( hwndDlg );
 		photoInfo = ( USER_PHOTO_INFO * ) mir_alloc( sizeof( USER_PHOTO_INFO ));
 		photoInfo->hContact = ( HANDLE ) lParam;
+		photoInfo->ppro = NULL;
 		photoInfo->hBitmap = NULL;
-		SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) photoInfo );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, ( LONG_PTR ) photoInfo );
 		SendMessage( GetDlgItem( hwndDlg, IDC_SAVE ), BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadImage( hInst, MAKEINTRESOURCE( IDI_SAVE ), IMAGE_ICON, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0 ));
+		SendMessage( GetDlgItem( hwndDlg, IDC_SAVE ), BUTTONSETASFLATBTN, 0, 0);
 		ShowWindow( GetDlgItem( hwndDlg, IDC_LOAD ), SW_HIDE );
 		ShowWindow( GetDlgItem( hwndDlg, IDC_DELETE ), SW_HIDE );
-		SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
 		return TRUE;
+
 	case WM_NOTIFY:
-		switch (( ( LPNMHDR )lParam )->idFrom ) {
+		switch ((( LPNMHDR )lParam )->idFrom ) {
 		case 0:
-			switch (( ( LPNMHDR )lParam )->code ) {
+			switch ((( LPNMHDR )lParam )->code ) {
 			case PSN_INFOCHANGED:
 				SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
+				break;
+
+			case PSN_PARAMCHANGED:
+				photoInfo->ppro = ( CJabberProto* )(( PSHNOTIFY* )lParam )->lParam;
 				break;
 			}
 			break;
 		}
 		break;
+
 	case WM_JABBER_REFRESH:
 		{
 			JABBER_LIST_ITEM *item;
@@ -512,13 +671,13 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 				photoInfo->hBitmap = NULL;
 			}
 			ShowWindow( GetDlgItem( hwndDlg, IDC_SAVE ), SW_HIDE );
-			if ( !JGetStringT( photoInfo->hContact, "jid", &dbv )) {
+			if ( !photoInfo->ppro->JGetStringT( photoInfo->hContact, "jid", &dbv )) {
 				TCHAR* jid = dbv.ptszVal;
-				if (( item = JabberListGetItemPtr( LIST_VCARD_TEMP, jid )) == NULL)
-					item = JabberListGetItemPtr( LIST_ROSTER, jid );
+				if (( item = photoInfo->ppro->ListGetItemPtr( LIST_VCARD_TEMP, jid )) == NULL)
+					item = photoInfo->ppro->ListGetItemPtr( LIST_ROSTER, jid );
 				if ( item != NULL ) {
 					if ( item->photoFileName ) {
-						JabberLog( "Showing picture from %s", item->photoFileName );
+						photoInfo->ppro->Log( "Showing picture from %s", item->photoFileName );
 						photoInfo->hBitmap = ( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )item->photoFileName );
 						JabberBitmapPremultiplyChannels(photoInfo->hBitmap);
 						ShowWindow( GetDlgItem( hwndDlg, IDC_SAVE ), SW_SHOW );
@@ -530,6 +689,7 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			UpdateWindow( hwndDlg );
 		}
 		break;
+
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDC_SAVE:
@@ -543,33 +703,33 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 				char szFileName[_MAX_PATH];
 				DWORD n;
 
-				if ( JGetStringT( photoInfo->hContact, "jid", &dbv ))
+				if ( photoInfo->ppro->JGetStringT( photoInfo->hContact, "jid", &dbv ))
 					break;
 
 				TCHAR* jid = dbv.ptszVal;
-				if (( item = JabberListGetItemPtr( LIST_VCARD_TEMP, jid )) == NULL)
-					item = JabberListGetItemPtr( LIST_ROSTER, jid );
+				if (( item = photoInfo->ppro->ListGetItemPtr( LIST_VCARD_TEMP, jid )) == NULL)
+					item = photoInfo->ppro->ListGetItemPtr( LIST_ROSTER, jid );
 				if ( item != NULL ) {
 					if (( hFile=CreateFileA( item->photoFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL )) != INVALID_HANDLE_VALUE ) {
 						if ( ReadFile( hFile, buffer, 3, &n, NULL ) && n==3 ) {
 							if ( !strncmp(( char* )buffer, "BM", 2 )) {
 								mir_snprintf( szFilter, sizeof( szFilter ), "BMP %s ( *.bmp )", JTranslate( "format" ));
-								n = strlen( szFilter );
+								n = (DWORD)strlen( szFilter );
 								strncpy( szFilter+n+1, "*.BMP", sizeof( szFilter )-n-2 );
 							}
 							else if ( !strncmp(( char* )buffer, "GIF", 3 )) {
 								mir_snprintf( szFilter, sizeof( szFilter ), "GIF %s ( *.gif )", JTranslate( "format" ));
-								n = strlen( szFilter );
+								n = (DWORD)strlen( szFilter );
 								strncpy( szFilter+n+1, "*.GIF", sizeof( szFilter )-n-2 );
 							}
 							else if ( buffer[0]==0xff && buffer[1]==0xd8 && buffer[2]==0xff ) {
 								mir_snprintf( szFilter, sizeof( szFilter ), "JPEG %s ( *.jpg;*.jpeg )", JTranslate( "format" ));
-								n = strlen( szFilter );
+								n = (DWORD)strlen( szFilter );
 								strncpy( szFilter+n+1, "*.JPG;*.JPEG", sizeof( szFilter )-n-2 );
 							}
 							else {
 								mir_snprintf( szFilter, sizeof( szFilter ), "%s ( *.* )", JTranslate( "Unknown format" ));
-								n = strlen( szFilter );
+								n = (DWORD)strlen( szFilter );
 								strncpy( szFilter+n+1, "*.*", sizeof( szFilter )-n-2 );
 							}
 							szFilter[sizeof( szFilter )-1] = '\0';
@@ -596,7 +756,7 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 							ofn.lpTemplateName = NULL;
 							szFileName[0] = '\0';
 							if ( GetSaveFileNameA( &ofn )) {
-								JabberLog( "File selected is %s", szFileName );
+								photoInfo->ppro->Log( "File selected is %s", szFileName );
 								CopyFileA( item->photoFileName, szFileName, FALSE );
 							}
 						}
@@ -609,8 +769,9 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			break;
 		}
 		break;
+
 	case WM_PAINT:
-		if ( !jabberOnline )
+		if ( !photoInfo->ppro->m_bJabberOnline )
 			SetDlgItemText( hwndDlg, IDC_CANVAS, TranslateT( "<Photo not available while offline>" ));
 		else if ( !photoInfo->hBitmap )
 			SetDlgItemText( hwndDlg, IDC_CANVAS, TranslateT( "<No photo>" ));
@@ -681,9 +842,10 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			DeleteDC( hdcMem );
 		}
 		break;
+
 	case WM_DESTROY:
 		if ( photoInfo->hBitmap ) {
-			JabberLog( "Delete bitmap" );
+			photoInfo->ppro->Log( "Delete bitmap" );
 			DeleteObject( photoInfo->hBitmap );
 		}
 		if ( photoInfo ) mir_free( photoInfo );
@@ -693,25 +855,28 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// JabberUserInfoInit - initializes user info option dialogs
+// OnInfoInit - initializes user info option dialogs
 
-int JabberUserInfoInit( WPARAM wParam, LPARAM lParam )
+int CJabberProto::OnUserInfoInit( WPARAM wParam, LPARAM lParam )
 {
-	if ( !JCallService( MS_PROTO_ISPROTOCOLLOADED, 0, ( LPARAM )jabberProtoName ))
+	if ( !JCallService( MS_PROTO_ISPROTOCOLLOADED, 0, ( LPARAM )m_szModuleName ))
 		return 0;
 
 	OPTIONSDIALOGPAGE odp = {0};
 	odp.cbSize = sizeof( odp );
 	odp.hInstance = hInst;
+	odp.dwInitParam = ( LPARAM )this;
 
 	HANDLE hContact = ( HANDLE )lParam;
-	if ( hContact ) {
+	if ( hContact )
+	{
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto != NULL && !strcmp( szProto, jabberProtoName )) {
+		if ( szProto != NULL && !strcmp( szProto, m_szModuleName ))
+		{
 			odp.pfnDlgProc = JabberUserInfoDlgProc;
 			odp.position = -2000000000;
 			odp.pszTemplate = MAKEINTRESOURCEA( IDD_INFO_JABBER );
-			odp.pszTitle = jabberModuleName;
+			odp.pszTitle = LPGEN("Account");
 			JCallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
 
 			odp.pfnDlgProc = JabberUserPhotoDlgProc;
@@ -719,7 +884,13 @@ int JabberUserInfoInit( WPARAM wParam, LPARAM lParam )
 			odp.pszTemplate = MAKEINTRESOURCEA( IDD_VCARD_PHOTO );
 			odp.pszTitle = LPGEN("Photo");
 			JCallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
-	}	}
+		}
+	} else
+	{
+		// Show our vcard
+		OnUserInfoInit_VCard(wParam, lParam);
+	}
+
 	return 0;
 }
 
@@ -736,11 +907,8 @@ void JabberUserInfoInit()
 
 void JabberUserInfoUpdate( HANDLE hContact )
 {
-	if ( !hContact ) {
+	if ( !hContact )
 		WindowList_BroadcastAsync( hUserInfoList, WM_JABBER_REFRESH, 0, 0 );
-	} else
-	if ( HWND hwnd = WindowList_Find( hUserInfoList, hContact ))
-	{
+	else if ( HWND hwnd = WindowList_Find( hUserInfoList, hContact ))
 		PostMessage( hwnd, WM_JABBER_REFRESH, 0, 0 );
-	}
 }

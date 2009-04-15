@@ -395,12 +395,12 @@ BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				int flags = WS_CHILD | CCS_BOTTOM;
 				DBWriteContactSettingByte(NULL, "CLUI", "ShowGrip", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWGRIP));
 				ShowWindow(pcli->hwndStatus, SW_HIDE);
-				SetWindowLong(pcli->hwndStatus, GWL_WNDPROC, (LONG)OldStatusBarProc);
+				SetWindowLongPtr(pcli->hwndStatus, GWLP_WNDPROC, (LONG_PTR)OldStatusBarProc);
 				DestroyWindow(pcli->hwndStatus);
 				flags |= DBGetContactSettingByte(NULL, "CLUI", "ShowSBar", 1) ? WS_VISIBLE : 0;
 				flags |= DBGetContactSettingByte(NULL, "CLUI", "ShowGrip", 1) ? SBARS_SIZEGRIP : 0;
 				pcli->hwndStatus = CreateWindow(STATUSCLASSNAME, NULL, flags, 0, 0, 0, 0, parent, NULL, g_hInst, NULL);
-				OldStatusBarProc = (WNDPROC)SetWindowLong(pcli->hwndStatus, GWL_WNDPROC, (LONG)NewStatusBarWndProc);
+				OldStatusBarProc = (WNDPROC)SetWindowLongPtr(pcli->hwndStatus, GWLP_WNDPROC, (LONG_PTR)NewStatusBarWndProc);
 			}
 			if (IsDlgButtonChecked(hwndDlg, IDC_SHOWSBAR)) {
 				ShowWindow(pcli->hwndStatus, SW_SHOW);

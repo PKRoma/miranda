@@ -33,7 +33,7 @@ Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyr
 #ifndef _NEN_H_
 #define _NEN_H_
 
-#include "m_popup.h"
+//#include "m_popup.h"
 //#include "m_popupw.h"
 
 #define MODULE "tabSRMM_NEN"
@@ -138,7 +138,6 @@ typedef struct {
     int  dwStatusMask;
     BOOL bTraySupport;
     BOOL bTrayExist;
-    BOOL bMinimizeToTray;
     int  iAutoRestore;
     BOOL iNoSounds;
     BOOL iNoAutoPopup;

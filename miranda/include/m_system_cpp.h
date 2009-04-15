@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project,
+Copyright 2000-2008 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -32,35 +32,126 @@ template<class T> struct LIST
 {
 	typedef int ( *FTSortFunc )( const T* p1, const T* p2 );
 
-	inline LIST( int aincr, FTSortFunc afunc = NULL )
+	__inline LIST( int aincr, FTSortFunc afunc = NULL )
 	{	memset( this, 0, sizeof( *this ));
 		increment = aincr;
 		sortFunc = afunc;
 	}
 
-	inline T* operator[]( int idx ) const { return ( idx >= 0 && idx < count ) ? items[idx] : NULL; }
-	inline int getCount( void )     const { return count; }
+	__inline T* operator[]( int idx ) const { return ( idx >= 0 && idx < count ) ? items[idx] : NULL; }
+	__inline int getCount( void )     const { return count; }
+	__inline T** getArray( void )     const { return items; }
 
-	inline int getIndex( T* p ) const
-	{	int idx;
-		return ( !li.List_GetIndex(( SortedList* )this, p, &idx )) ? -1 : idx;
-	}
+	#if defined( _STATIC )
+	    __inline LIST( const LIST& x )
+	    {	items = NULL;
+		    List_Copy(( SortedList* )&x, ( SortedList* )this, sizeof( T ));
+	    }
 
-	inline void destroy( void )        { li.List_Destroy(( SortedList* )this ); }
+		__inline int getIndex( T* p ) const
+		{	int idx;
+			return ( !List_GetIndex(( SortedList* )this, p, &idx )) ? -1 : idx;
+		}
 
-	inline T*  find( T* p )            { return ( T* )li.List_Find(( SortedList* )this, p ); }
-	inline int indexOf( T* p )         { return li.List_IndexOf(( SortedList* )this, p ); }
-	inline int insert( T* p, int idx ) { return li.List_Insert(( SortedList* )this, p, idx ); }
-	inline int remove( int idx )       { return li.List_Remove(( SortedList* )this, idx ); }
+		__inline void destroy( void )        { List_Destroy(( SortedList* )this ); }
 
-	inline int insert( T* p )          { return li.List_InsertPtr(( SortedList* )this, p ); }
-	inline int remove( T* p )          { return li.List_RemovePtr(( SortedList* )this, p ); }
+		__inline T*  find( T* p )            { return ( T* )List_Find(( SortedList* )this, p ); }
+		__inline int indexOf( T* p )         { return List_IndexOf(( SortedList* )this, p ); }
+		__inline int insert( T* p, int idx ) { return List_Insert(( SortedList* )this, p, idx ); }
+		__inline int remove( int idx )       { return List_Remove(( SortedList* )this, idx ); }
 
-private:
+		__inline int insert( T* p )          { return List_InsertPtr(( SortedList* )this, p ); }
+		__inline int remove( T* p )          { return List_RemovePtr(( SortedList* )this, p ); }
+	#else
+		__inline int getIndex( T* p ) const
+		{	int idx;
+			return ( !li.List_GetIndex(( SortedList* )this, p, &idx )) ? -1 : idx;
+		}
+
+		__inline void destroy( void )        { li.List_Destroy(( SortedList* )this ); }
+
+		__inline T*  find( T* p )            { return ( T* )li.List_Find(( SortedList* )this, p ); }
+		__inline int indexOf( T* p )         { return li.List_IndexOf(( SortedList* )this, p ); }
+		__inline int insert( T* p, int idx ) { return li.List_Insert(( SortedList* )this, p, idx ); }
+		__inline int remove( int idx )       { return li.List_Remove(( SortedList* )this, idx ); }
+
+		__inline int insert( T* p )          { return li.List_InsertPtr(( SortedList* )this, p ); }
+		__inline int remove( T* p )          { return li.List_RemovePtr(( SortedList* )this, p ); }
+	#endif
+
+protected:
 	T**        items;
 	int        count, limit, increment;
 	FTSortFunc sortFunc;
 };
+
+template<class T> struct OBJLIST : public LIST<T>
+{
+	typedef int ( *FTSortFunc )( const T* p1, const T* p2 );
+
+	__inline OBJLIST( int aincr, FTSortFunc afunc = NULL ) :
+		LIST<T>( aincr, afunc )
+		{}
+
+	#if defined( _STATIC )
+	__inline OBJLIST( const OBJLIST& x )
+		{	items = NULL;
+			List_ObjCopy(( SortedList* )&x, ( SortedList* )this, sizeof( T ));
+		}
+
+	__inline OBJLIST& operator=( const OBJLIST& x )
+		{	destroy();
+			List_ObjCopy(( SortedList* )&x, ( SortedList* )this, sizeof( T ));
+			return *this;
+		}
+	#endif
+
+	~OBJLIST()
+	{
+		#if !defined( _STATIC )
+			if (li.cbSize != 0) 
+		#endif
+				destroy();
+	}
+
+	__inline void destroy( void )
+	{	
+		for ( int i=0; i < this->count; i++ )
+			delete this->items[i];
+
+		#if defined( _STATIC )
+			List_Destroy(( SortedList* )this );
+		#else
+			li.List_Destroy(( SortedList* )this );
+		#endif
+	}
+
+	__inline int remove( int idx ) {
+		delete this->items[idx];
+		#if defined( _STATIC )
+			return List_Remove(( SortedList* )this, idx );
+		#else
+			return li.List_Remove(( SortedList* )this, idx );
+		#endif
+	}
+
+	__inline int remove( T* p )
+	{
+		#if defined( _STATIC )
+		if ( li.List_RemovePtr(( SortedList* )this, p ) != -1 )
+		#else
+		if ( li.List_RemovePtr(( SortedList* )this, p ) != -1 )
+		#endif
+		{
+			delete p;
+			return 1;
+		}
+		return 0;
+	}
+
+	__inline T& operator[]( int idx ) const { return *this->items[idx]; }
+};
+
 #endif
 
 #endif // M_SYSTEM_CPP_H

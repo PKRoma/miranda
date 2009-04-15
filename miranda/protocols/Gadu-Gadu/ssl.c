@@ -110,15 +110,8 @@ BOOL gg_ssl_init()
 		{
 			FreeLibrary(hLibSSL);
 			hLibSSL = NULL;
-#ifdef DEBUGMODE
-			gg_netlog("gg_ssl_init(): Failed on loading function \"%s\".", failFunction);
-#endif
 		}
 	}
-#ifdef DEBUGMODE
-	else
-		gg_netlog("gg_ssl_init(): Failed on loading library SSLEAY32.DLL.");
-#endif
 
 	// Load misc functions
 	if (hLibEAY && hLibSSL)
@@ -144,15 +137,8 @@ BOOL gg_ssl_init()
 		{
 			FreeLibrary(hLibEAY);
 			hLibEAY = NULL;
-#ifdef DEBUGMODE
-			gg_netlog("gg_ssl_init(): Failed on loading function \"%s\".", failFunction);
-#endif
 		}
 	}
-#ifdef DEBUGMODE
-	else
-		gg_netlog("gg_ssl_init(): Failed on loading library LIBEAY32.DLL.");
-#endif
 
 	// Unload main library if misc not available
 	if (hLibSSL && !hLibEAY)
@@ -160,14 +146,6 @@ BOOL gg_ssl_init()
 		FreeLibrary(hLibSSL);
 		hLibSSL = NULL;
 	}
-
-
-#ifdef DEBUGMODE
-	if (hLibSSL)
-		gg_netlog("gg_ssl_init(): SSL library load was successful.");
-	else
-		gg_netlog("gg_ssl_init(): Cannot load SSL library.");
-#endif
 
 	return (hLibSSL != NULL);
 }

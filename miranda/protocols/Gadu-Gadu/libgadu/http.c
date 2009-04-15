@@ -25,25 +25,32 @@
  * \brief Obsługa połączeń HTTP
  */
 
-#include "libgadu-config.h"
-
 #include <sys/types.h>
+#ifdef _WIN32
+#include "win32.h"
+#else
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#endif /* _WIN32 */
 
 #include <ctype.h>
 #include <errno.h>
+#ifndef _WIN32
 #include <netdb.h>
+#endif
 #ifdef GG_CONFIG_HAVE_PTHREAD
 #  include <pthread.h>
 #endif
+#include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 #include "compat.h"
 #include "libgadu.h"
@@ -57,11 +64,11 @@
  *
  * Przy połączeniu asynchronicznym, funkcja rozpoczyna połączenie, a dalsze
  * etapy będą przeprowadzane po wykryciu zmian (\c watch) na obserwowanym
- * deskryptorze (\c fd) i wywołaniu funkcji \c gg_http_watch_fd.
+ * deskryptorze (\c fd) i wywołaniu funkcji \c gg_http_watch_fd().
  *
- * Po zakończeniu, należy zwolnić strukturę za pomocą funkcji \c gg_http_free.
- * Połączenie asynchroniczne można zatrzymać w każdej chwili za pomocą
- * \c gg_http_stop.
+ * Po zakończeniu, należy zwolnić strukturę za pomocą funkcji
+ * \c gg_http_free(). Połączenie asynchroniczne można zatrzymać w każdej
+ * chwili za pomocą \c gg_http_stop().
  *
  * \param hostname Adres serwera
  * \param port Port serwera
@@ -177,7 +184,7 @@ struct gg_http *gg_http_connect(const char *hostname, int port, int async, const
 #ifndef DOXYGEN
 
 #define gg_http_error(x) \
-	close(h->fd); \
+	gg_sock_close(h->fd); \
 	h->fd = -1; \
 	h->state = GG_STATE_ERROR; \
 	h->error = x; \
@@ -188,16 +195,15 @@ struct gg_http *gg_http_connect(const char *hostname, int port, int async, const
 /**
  * Funkcja wywoływana po zaobserwowaniu zmian na deskryptorze połączenia.
  *
- * Funkcja zwraca strukturę zdarzenia \c gg_event. Jeśli rodzaj zdarzenia
- * to \c GG_EVENT_NONE, nie wydarzyło się jeszcze nic wartego odnotowania.
- * Strukturę zdarzenia należy zwolnić funkcja \c gg_event_free. Połączenie
- * jest zakończone, jeśli pole \c state jest równe \c GG_STATE_PARSING.
- * W przypadku błędu połączenia, pole \c state będzie równe
- * \c GG_STATE_ERROR, a kod błędu znajdzie się w polu \c error.
+ * Operacja będzie zakończona, gdy pole \c state będzie równe
+ * \c GG_STATE_PARSING. W tym miejscu działanie przejmuje zwykle funkcja
+ * korzystająca z \c gg_http_watch_fd(). W przypadku błędu połączenia,
+ * pole \c state będzie równe \c GG_STATE_ERROR, a kod błędu znajdzie się
+ * w polu \c error.
  *
  * \param h Struktura połączenia
  *
- * \return Struktura zdarzenia lub \c NULL jeśli wystąpił błąd
+ * \return \return 0 jeśli się powiodło, -1 w przypadku błędu
  *
  * \ingroup http
  */
@@ -216,12 +222,12 @@ int gg_http_watch_fd(struct gg_http *h)
 
 		gg_debug(GG_DEBUG_MISC, "=> http, resolving done\n");
 
-		if (read(h->fd, &a, sizeof(a)) < (signed)sizeof(a) || a.s_addr == INADDR_NONE) {
+		if (gg_sock_read(h->fd, &a, sizeof(a)) < (signed)sizeof(a) || a.s_addr == INADDR_NONE) {
 			gg_debug(GG_DEBUG_MISC, "=> http, resolver thread failed\n");
 			gg_http_error(GG_ERROR_RESOLVING);
 		}
 
-		close(h->fd);
+		gg_sock_close(h->fd);
 		h->fd = -1;
 
 #ifndef GG_CONFIG_HAVE_PTHREAD
@@ -251,9 +257,9 @@ int gg_http_watch_fd(struct gg_http *h)
 		int res = 0;
 		unsigned int res_size = sizeof(res);
 
-		if (h->async && (getsockopt(h->fd, SOL_SOCKET, SO_ERROR, (char *)&res, &res_size) || res)) {
+		if (h->async && (gg_getsockopt(h->fd, SOL_SOCKET, SO_ERROR, &res, &res_size) || res)) {
 			gg_debug(GG_DEBUG_MISC, "=> http, async connection failed (errno=%d, %s)\n", (res) ? res : errno , strerror((res) ? res : errno));
-			close(h->fd);
+			gg_sock_close(h->fd);
 			h->fd = -1;
 			h->state = GG_STATE_ERROR;
 			h->error = GG_ERROR_CONNECTING;
@@ -270,7 +276,7 @@ int gg_http_watch_fd(struct gg_http *h)
 	if (h->state == GG_STATE_SENDING_QUERY) {
 		int res;
 
-		if ((res = write(h->fd, h->query, strlen(h->query))) < 1) {
+		if ((res = gg_sock_write(h->fd, h->query, strlen(h->query))) < 1) {
 			gg_debug(GG_DEBUG_MISC, "=> http, write() failed (len=%d, res=%d, errno=%d)\n", strlen(h->query), res, errno);
 			gg_http_error(GG_ERROR_WRITING);
 		}
@@ -299,7 +305,7 @@ int gg_http_watch_fd(struct gg_http *h)
 		char buf[1024], *tmp;
 		int res;
 
-		if ((res = read(h->fd, buf, sizeof(buf))) == -1) {
+		if ((res = gg_sock_read(h->fd, buf, sizeof(buf))) == -1) {
 			gg_debug(GG_DEBUG_MISC, "=> http, reading header failed (errno=%d)\n", errno);
 			if (h->header) {
 				free(h->header);
@@ -407,7 +413,7 @@ int gg_http_watch_fd(struct gg_http *h)
 		char buf[1024];
 		int res;
 
-		if ((res = read(h->fd, buf, sizeof(buf))) == -1) {
+		if ((res = gg_sock_read(h->fd, buf, sizeof(buf))) == -1) {
 			gg_debug(GG_DEBUG_MISC, "=> http, reading body failed (errno=%d)\n", errno);
 			if (h->body) {
 				free(h->body);
@@ -420,7 +426,7 @@ int gg_http_watch_fd(struct gg_http *h)
 			if (h->body_done >= h->body_size) {
 				gg_debug(GG_DEBUG_MISC, "=> http, we're done, closing socket\n");
 				h->state = GG_STATE_PARSING;
-				close(h->fd);
+				gg_sock_close(h->fd);
 				h->fd = -1;
 			} else {
 				gg_debug(GG_DEBUG_MISC, "=> http, connection closed while reading (have %d, need %d)\n", h->body_done, h->body_size);
@@ -462,7 +468,7 @@ int gg_http_watch_fd(struct gg_http *h)
 	}
 
 	if (h->fd != -1)
-		close(h->fd);
+		gg_sock_close(h->fd);
 
 	h->fd = -1;
 	h->state = GG_STATE_ERROR;
@@ -474,7 +480,7 @@ int gg_http_watch_fd(struct gg_http *h)
 /**
  * Kończy asynchroniczne połączenie HTTP.
  *
- * Po zatrzymaniu należy zwolnić zasoby funkcją \c gg_http_free.
+ * Po zatrzymaniu należy zwolnić zasoby funkcją \c gg_http_free().
  *
  * \param h Struktura połączenia
  *
@@ -489,7 +495,7 @@ void gg_http_stop(struct gg_http *h)
 		return;
 
 	if (h->fd != -1) {
-		close(h->fd);
+		gg_sock_close(h->fd);
 		h->fd = -1;
 	}
 

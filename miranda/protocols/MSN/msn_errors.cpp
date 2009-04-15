@@ -1,10 +1,8 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2003-5 George Hazan.
-Copyright (c) 2002-3 Richard Hughes (original version).
-
-Miranda IM: the free icq client for MS Windows
-Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
+Copyright (c) 2006-2009 Boris Krasnovskiy.
+Copyright (c) 2003-2005 George Hazan.
+Copyright (c) 2002-2003 Richard Hughes (original version).
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,37 +15,29 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "msn_global.h"
+#include "msn_proto.h"
 
-extern int tridUrlInbox, tridUrlEdit;
-
-int MSN_HandleErrors( ThreadData* info, char* cmdString )
+int CMsnProto::MSN_HandleErrors( ThreadData* info, char* cmdString )
 {
 	int errorCode, packetID = -1;
 	sscanf( cmdString, "%d %d", &errorCode, &packetID );
-
-	if ( packetID == msnSearchID )
-	{
-		MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)msnSearchID, 0 );
-		msnSearchID = -1;
-	}
 
 	MSN_DebugLog( "Server error:%s", cmdString );
 
 	switch( errorCode ) {
 	case ERR_INTERNAL_SERVER:
 		MSN_ShowError( "MSN Services are temporarily unavailable, please try to connect later" );
-		MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
+		SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
 		return 1;
 
 	case ERR_SERVER_BUSY:
 	case ERR_SERVER_UNAVAILABLE:
 		MSN_ShowError( "MSN Services are too busy, please try to connect later" );
-		MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
+		SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
 		return 1;
 
 	case ERR_NOT_ALLOWED_WHEN_OFFLINE:
@@ -62,8 +52,15 @@ int MSN_HandleErrors( ThreadData* info, char* cmdString )
 		MSN_ShowError( "User is already in your contact list" );
 		return 0;
 
+	case ERR_CONTACT_LIST_FAILED:
+	case ERR_LIST_UNAVAILABLE:
+			char* tWords[ 3 ];
+			if ( sttDivideWords( cmdString, 3, tWords ) == 3 )
+				HReadBuffer(info, 0).surelyRead(atol(tWords[2])); 
+			return 0;
+
 	case ERR_NOT_ONLINE:
-		MSN_SendBroadcast( info->mInitialContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, 
+		SendBroadcast( info->mInitialContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, 
 			( HANDLE )999999, ( LPARAM )MSN_Translate("User not online"));
 		return 1;
 
@@ -74,18 +71,13 @@ int MSN_HandleErrors( ThreadData* info, char* cmdString )
 	case ERR_AUTHENTICATION_FAILED:
 		if ( info->mType != SERVER_SWITCHBOARD ) {
 			MSN_ShowError( "Your username or password is incorrect" );
-			MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
+			SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 		}
 		return 1;
 
 	case ERR_INVALID_LOCALE:
 		if ( packetID == tridUrlInbox ) {
 			tridUrlInbox = -1;
-			return 0;
-		}
-
-		if ( packetID == tridUrlEdit ) {
-			tridUrlEdit  = msnNsThread->sendPacket( "URL", "PROFILE 0x0409" );
 			return 0;
 		}
 		// fall through

@@ -13,9 +13,4 @@
 #ifndef _YAHOO_IGNORE_H_
 #define _YAHOO_IGNORE_H_
 
-int YAHOO_BuddyIgnored(const char *who);
-const YList* YAHOO_GetIgnoreList(void);
-void YAHOO_IgnoreBuddy(const char *buddy, int ignore);
-void ext_yahoo_got_ignore(int id, YList * igns);
-
 #endif

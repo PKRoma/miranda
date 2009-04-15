@@ -1,79 +1,72 @@
+/*
+Plugin of Miranda IM for communicating with users of the AIM protocol.
+Copyright (c) 2008-2009 Boris Krasnovskiy
+Copyright (C) 2005-2006 Aaron Myles Landwehr
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 #ifndef UTILITY_H
 #define UTILITY_H
-#ifdef __MINGW32__
 
-#if 0
-#include <crtdbg.h>
-#else
-#define __try
-#define __except(x) if (0) /* don't execute handler */
-#define __finally
-
-#define _try __try
-#define _except __except
-#define _finally __finally
-#endif
-
-#endif
-#include "defines.h"
-void broadcast_status(int status);
-void start_connection(int initial_status);
-HANDLE find_contact(char * sn);
-HANDLE add_contact(char* buddy);
-void add_contacts_to_groups();
-void add_contact_to_group(HANDLE hContact,char* group);
-void offline_contacts();
-void offline_contact(HANDLE hContact, bool remove_settings);
 char *normalize_name(const char *s);
 char* lowercase_name(char* s);
-char* trim_name(char* s);
-void msg_ack_success(HANDLE hContact);
-void execute_cmd(char* type,char* arg);
-void create_group(char *group);
-unsigned short search_for_free_group_id(char *name);
-unsigned short search_for_free_item_id(HANDLE hbuddy);
-char* get_members_of_group(unsigned short group_id,unsigned short &size);
-void __cdecl basic_search_ack_success(char *snsearch);
-void delete_module(char* module, HANDLE hContact);
-FILE* open_contact_file(char* sn, char* file, char* mode, char* &path, bool contact_dir);
-void write_away_message(HANDLE hContact,char* sn,char* msg);
-void write_profile(char* sn,char* msg);
+char* trim_str(char* s);
+void create_group(const char *group);
+void set_extra_icon(HANDLE hContact, HANDLE hImage, int column_type);
 unsigned int aim_oft_checksum_file(char *filename);
 void long_ip_to_char_ip(unsigned long host, char* ip);
 unsigned long char_ip_to_long_ip(char* ip);
-void create_cookie(HANDLE hContact);
-void read_cookie(HANDLE hContact,char* cookie);
-void write_cookie(HANDLE hContact,char* cookie);
-int cap_cmp(char* cap,char* cap2);
-int is_oscarj_ver_cap(char* cap);
-int is_aimoscar_ver_cap(char* cap);
-int is_kopete_ver_cap(char* cap);
-int is_qip_ver_cap(char* cap);
-int is_micq_ver_cap(char* cap);
-int is_im2_ver_cap(char* cap);
-int is_sim_ver_cap(char* cap);
-int is_naim_ver_cap(char* cap);
-void add_AT_icons();
-void remove_AT_icons();
-void add_ES_icons();
-void remove_ES_icons();
-void load_extra_icons();
-void set_extra_icon(char* data);
-//char* get_default_group();
-//char* get_outer_group();
-void wcs_htons(wchar_t * ch);
-void assign_modmsg(char* msg);
-char* bytes_to_string(char* bytes, int num_bytes);
-void string_to_bytes(char* string, char* bytes);
-unsigned short string_to_bytes_count(char* string);
-char* getSetting(HANDLE &hContact,char* module,char* setting);
-template <class T>
-T* renew(T* src, int size, int size_chg)
+bool cap_cmp(const char* cap,const char* cap2);
+bool is_oscarj_ver_cap(char* cap);
+bool is_aimoscar_ver_cap(char* cap);
+bool is_kopete_ver_cap(char* cap);
+bool is_qip_ver_cap(char* cap);
+bool is_micq_ver_cap(char* cap);
+bool is_im2_ver_cap(char* cap);
+bool is_sim_ver_cap(char* cap);
+bool is_naim_ver_cap(char* cap);
+bool is_digsby_ver_cap(char* cap);
+unsigned short get_random(void);
+
+struct BdListItem
 {
-	T* dest=new T[size+size_chg];
-	memcpy(dest,src,size*sizeof(T));
-	delete[] src;
-	return dest;
-}
+    char* name;
+    unsigned short item_id;
+
+    BdListItem() { name = NULL; item_id = 0; }
+    BdListItem(const char* snt, unsigned short id) { name = mir_strdup(snt); item_id = id; }
+    ~BdListItem() { mir_free(name); }
+};
+
+struct BdList : public OBJLIST<BdListItem>
+{
+    BdList() : OBJLIST<BdListItem>(5) {}
+
+    void add(const char* snt, unsigned short id)
+    { insert(new BdListItem(snt, id)); }
+
+    unsigned short add(const char* snt)
+    { 
+        unsigned short id = get_free_id();
+        insert(new BdListItem(snt, id));
+        return id;
+    }
+
+    unsigned short get_free_id(void);
+    unsigned short find_id(const char* name);
+    char* find_name(unsigned short id);
+    void remove_by_id(unsigned short id);
+};
 
 #endif

@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project,
+Copyright 2000-2009 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -34,3 +34,6 @@ int   List_IndexOf( SortedList*, void* );
 
 int   List_InsertPtr( SortedList* list, void* p );
 int   List_RemovePtr( SortedList* list, void* p );
+
+void  List_Copy( SortedList*, SortedList*, size_t );
+void  List_ObjCopy( SortedList*, SortedList*, size_t );

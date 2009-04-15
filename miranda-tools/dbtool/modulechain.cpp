@@ -27,6 +27,7 @@ static int modChainCount;
 static DWORD ofsCurrent;
 static int phase,iCurrentModName;
 static DWORD ofsLast;
+static int last_mod = 0;
 
 int WorkModuleChain(int firstTime)
 {
@@ -35,6 +36,7 @@ int WorkModuleChain(int firstTime)
 	if(firstTime) {
 		AddToStatus(STATUS_MESSAGE,TranslateT("Processing module name chain"));
 		modChainCount=0;
+		last_mod = 0;
 		if(modChain!=NULL) free(modChain);
 		modChain = (ModChainEntry*)malloc(sizeof(ModChainEntry));
 		phase=0;
@@ -94,7 +96,17 @@ int WorkModuleChain(int firstTime)
 							modChain[i].ofsNew = modChain[iCurrentModName].ofsNew;
 							n++;
 						}
-						if (n) AddToStatus(STATUS_WARNING,TranslateT("Module name '%s' is not unique: %d duplicates found)"), modChain[iCurrentModName].name,n);
+					if (n) {
+						TCHAR *pszModuleName;
+#ifdef UNICODE
+						TCHAR szModuleName[257];
+						MultiByteToWideChar(CP_ACP, 0, modChain[iCurrentModName].name, -1, szModuleName, sizeof(szModuleName) / sizeof(TCHAR));
+						pszModuleName = szModuleName;
+#else
+						pszModuleName = modChain[iCurrentModName].name;
+#endif
+						AddToStatus(STATUS_WARNING,TranslateT("Module name '%s' is not unique: %d duplicates found)"), pszModuleName, n);
+					}
 				}
 				if(iCurrentModName==0)
 					dbhdr.ofsFirstModuleName=modChain[iCurrentModName].ofsNew;
@@ -111,16 +123,17 @@ int WorkModuleChain(int firstTime)
 
 DWORD ConvertModuleNameOfs(DWORD ofsOld)
 {
-	static int i = 0;
+	int i;
 
-	if (modChain[i].ofsOld==ofsOld)
-		return modChain[i].ofsNew;
+	if ( modChain[last_mod].ofsOld==ofsOld )
+		return modChain[last_mod].ofsNew;
 
 	for(i=0;i<modChainCount;i++)
-		if(modChain[i].ofsOld==ofsOld)
-			return modChain[i].ofsNew;
+		if(modChain[i].ofsOld==ofsOld) {
+			last_mod = i;
+			return modChain[last_mod].ofsNew;
+		}
 
-	i = 0;
 	AddToStatus(STATUS_ERROR,TranslateT("Invalid module name offset, skipping data"));
 	return 0;
 }
@@ -130,5 +143,6 @@ void FreeModuleChain()
 	if(modChain!=NULL) {
 		free(modChain);
 		modChain = NULL;
+		last_mod = 0;
 	}
 }

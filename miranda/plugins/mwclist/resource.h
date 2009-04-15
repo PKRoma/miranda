@@ -605,6 +605,7 @@
 #define IDC_CHECK1                      1761
 #define IDC_USECONNECTINGICON           1761
 #define IDC_BKGRLIST                    1762
+#define IDC_EXTRA_FRAME                 1762
 #define IDC_BC_STATIC                   1763
 #define IDC_SC_STATIC                   1764
 #define IDD_OPT_GENMENU                 11267
@@ -648,7 +649,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        347
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1762
+#define _APS_NEXT_CONTROL_VALUE         1763
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

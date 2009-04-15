@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project,
+Copyright 2000-2008 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -48,13 +48,18 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 #define IsWinVerMEPlus()   (WinVerMajor()>=5 || WinVerMinor()>10)
 #define IsWinVer2000Plus() (WinVerMajor()>=5)
 #define IsWinVerXPPlus()   (WinVerMajor()>=5 && LOWORD(GetVersion())!=5)
+#define IsWinVerVistaPlus() (WinVerMajor()>=6)
 
 // put stuff that's not apart of any SDKs but is used nonetheless
 
 #define SIZEOF(X) (sizeof(X)/sizeof(X[0]))
 
+#ifdef _WIN64
+#define MENUITEMINFO_V4_SIZE sizeof(MENUITEMINFO)
+#else
 //mii was extended for NT5/Win98, so need the old length for some stuff
 #define MENUITEMINFO_V4_SIZE (offsetof(MENUITEMINFO,cch)+sizeof((*((MENUITEMINFO*)0)).cch))
+#endif
 
 #if _MSC_VER >= 1300
 #define NOWIN2K
@@ -70,9 +75,21 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 #define BIGI(x) x##LL
 #endif
 
+// collapsible groups for Vista
+#ifndef LVGS_COLLAPSIBLE
+	#define LVGS_COLLAPSIBLE        0x00000008
+#endif
+
+#ifndef SM_SERVERR2
+	#define SM_SERVERR2              89
+	#define VER_SUITE_STORAGE_SERVER 0x00002000
+	#define VER_SUITE_COMPUTE_SERVER 0x00004000
+	#define VER_SUITE_WH_SERVER      0x00008000
+#endif
+
 #if _MSC_VER
 	// uxtheme.h defines
-	#ifndef THEMEAPI
+	#ifndef THEMEMGR_VERSION
 		#define WM_THEMECHANGED		0x031A // when windows changes themes
 		#define BP_PUSHBUTTON		1  // Push Button Type
 		#define PBS_NORMAL			1
@@ -95,6 +112,97 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 		#define SP_PANE				1	// STATUS
 		#define	SP_GRIPPERPANE		2
 		#define SP_GRIPPER			3
+		#define EP_EDITTEXT			1 // Edit
+		#define EP_CARET			2
+        #define EP_BACKGROUND       3
+		#define ETS_NORMAL			1
+		#define ETS_HOT				2
+		#define ETS_SELECTED		3
+		#define ETS_DISABLED		4
+		#define ETS_FOCUSED			5
+		#define ETS_READONLY		6
+		#define ETS_ASSIST			7
+	#endif
+	#if !defined(DTBG_CLIPRECT)
+		#define DTBG_CLIPRECT           0x00000001  // rcClip has been specified
+		#define DTBG_DRAWSOLID          0x00000002  // DEPRECATED: draw transparent/alpha images as solid
+		#define DTBG_OMITBORDER         0x00000004  // don't draw border of part
+		#define DTBG_OMITCONTENT        0x00000008  // don't draw content area of part
+		#define DTBG_COMPUTINGREGION    0x00000010  // TRUE if calling to compute region
+		#define DTBG_MIRRORDC           0x00000020  // assume the hdc is mirrorred and
+																  // flip images as appropriate (currently 
+																  // only supported for bgtype=imagefile)
+		#define DTBG_NOMIRROR           0x00000040  // don't mirror the output, overrides everything else 
+
+		typedef struct _DTBGOPTS
+		{
+			DWORD dwSize;           // size of the struct
+			DWORD dwFlags;          // which options have been specified
+			RECT rcClip;            // clipping rectangle
+		} DTBGOPTS, *PDTBGOPTS;
+	#endif
+	#if !defined( DTT_COMPOSITED )
+		#define DTT_TEXTCOLOR       (1UL << 0)      // crText has been specified
+		#define DTT_BORDERCOLOR     (1UL << 1)      // crBorder has been specified
+		#define DTT_SHADOWCOLOR     (1UL << 2)      // crShadow has been specified
+		#define DTT_SHADOWTYPE      (1UL << 3)      // iTextShadowType has been specified
+		#define DTT_SHADOWOFFSET    (1UL << 4)      // ptShadowOffset has been specified
+		#define DTT_BORDERSIZE      (1UL << 5)      // iBorderSize has been specified
+		#define DTT_FONTPROP        (1UL << 6)      // iFontPropId has been specified
+		#define DTT_COLORPROP       (1UL << 7)      // iColorPropId has been specified
+		#define DTT_STATEID         (1UL << 8)      // IStateId has been specified
+		#define DTT_CALCRECT        (1UL << 9)      // Use pRect as and in/out parameter
+		#define DTT_APPLYOVERLAY    (1UL << 10)     // fApplyOverlay has been specified
+		#define DTT_GLOWSIZE        (1UL << 11)     // iGlowSize has been specified
+		#define DTT_CALLBACK        (1UL << 12)     // pfnDrawTextCallback has been specified
+		#define DTT_COMPOSITED      (1UL << 13)     // Draws text with antialiased alpha (needs a DIB section)
+
+		typedef 
+		int
+		(WINAPI *DTT_CALLBACK_PROC)
+		(
+			HDC hdc,
+			LPWSTR pszText,
+			int cchText,
+			LPRECT prc,
+			UINT dwFlags,
+			LPARAM lParam);
+
+		typedef struct _DTTOPTS
+		{
+			DWORD             dwSize;              // size of the struct
+			DWORD             dwFlags;             // which options have been specified
+			COLORREF          crText;              // color to use for text fill
+			COLORREF          crBorder;            // color to use for text outline
+			COLORREF          crShadow;            // color to use for text shadow
+			int               iTextShadowType;     // TST_SINGLE or TST_CONTINUOUS
+			POINT             ptShadowOffset;      // where shadow is drawn (relative to text)
+			int               iBorderSize;         // Border radius around text
+			int               iFontPropId;         // Font property to use for the text instead of TMT_FONT
+			int               iColorPropId;        // Color property to use for the text instead of TMT_TEXTCOLOR
+			int               iStateId;            // Alternate state id
+			BOOL              fApplyOverlay;       // Overlay text on top of any text effect?
+			int               iGlowSize;           // Glow radious around text
+			DTT_CALLBACK_PROC pfnDrawTextCallback; // Callback for DrawText
+			LPARAM            lParam;              // Parameter for callback
+		} DTTOPTS, *PDTTOPTS; 
+
+		#define WTNCA_NODRAWCAPTION       0x00000001    // don't draw the window caption
+		#define WTNCA_NODRAWICON          0x00000002    // don't draw the system icon
+		#define WTNCA_NOSYSMENU           0x00000004    // don't expose the system menu icon functionality
+		#define WTNCA_NOMIRRORHELP        0x00000008    // don't mirror the question mark, even in RTL layout
+
+		enum WINDOWTHEMEATTRIBUTETYPE
+		{
+			WTA_NONCLIENT = 1
+		};
+
+		typedef struct _WTA_OPTIONS
+		{
+			DWORD dwFlags;          // values for each style option specified in the bitmask
+			DWORD dwMask;           // bitmask for flags that are changing
+											// valid options are: WTNCA_NODRAWCAPTION, WTNCA_NODRAWICON, WTNCA_NOSYSMENU
+		} WTA_OPTIONS, *PWTA_OPTIONS;
 	#endif
 #endif
 
@@ -102,25 +210,54 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 	#define SECURITY_ENTRYPOINTA "InitSecurityInterfaceA"
 	#define SECURITY_ENTRYPOINT SECURITY_ENTRYPOINTA
 	#define FreeCredentialsHandle FreeCredentialsHandle
+	#define FAPPCOMMAND_MASK				0xF000
+	#define GET_APPCOMMAND_LPARAM(lParam)	((short)(HIWORD(lParam) & ~FAPPCOMMAND_MASK))
+	#ifdef __cplusplus
+	extern "C" {
+	#endif
+		WINGDIAPI BOOL WINAPI AlphaBlend(HDC,int,int,int,int,HDC,int,int,int,int,BLENDFUNCTION);
+	#ifdef __cplusplus
+	}
+	#endif
+	/* FIXME: MinGW doesn't provide _snscanf, we wrap unsafe sscanf here */
+	#define _snscanf(buf, size, fmt, ...) sscanf(buf, fmt, ## __VA_ARGS__)
 	#ifndef CDSIZEOF_STRUCT
-		#define CDSIZEOF_STRUCT(structname, member)  (((int)((LPBYTE)(&((structname*)0)->member) - ((LPBYTE)((structname*)0)))) + sizeof(((structname*)0)->member))
+		#define CDSIZEOF_STRUCT(structname, member) \
+			(((int)((LPBYTE)(&((structname*)0)->member) - ((LPBYTE)((structname*)0)))) + sizeof(((structname*)0)->member))
 	#endif
 	#ifndef OPENFILENAME_SIZE_VERSION_400
-		#define OPENFILENAME_SIZE_VERSION_400 CDSIZEOF_STRUCT(OPENFILENAME,lpTemplateName)
+		#define OPENFILENAME_SIZE_VERSION_400	CDSIZEOF_STRUCT(OPENFILENAME,lpTemplateName)
 	#endif
 	#ifndef NOTIFYICONDATAA_V1_SIZE
-		#define NOTIFYICONDATAA_V1_SIZE     CDSIZEOF_STRUCT(NOTIFYICONDATAA, szTip[64])
+		#define NOTIFYICONDATAA_V1_SIZE			CDSIZEOF_STRUCT(NOTIFYICONDATAA, szTip[64])
 	#endif
 	#ifndef NOTIFYICONDATA_V1_SIZE
-		#define NOTIFYICONDATA_V1_SIZE      CDSIZEOF_STRUCT(NOTIFYICONDATA, szTip[64])
+		#define NOTIFYICONDATA_V1_SIZE			CDSIZEOF_STRUCT(NOTIFYICONDATA, szTip[64])
 	#endif
+	#ifndef OPENFILENAMEW_SIZE_VERSION_400
+		#define OPENFILENAMEW_SIZE_VERSION_400	CDSIZEOF_STRUCT(OPENFILENAMEW,lpTemplateName)
+	#endif
+	#ifndef NOTIFYICONDATAW_V1_SIZE
+		#define NOTIFYICONDATAW_V1_SIZE			CDSIZEOF_STRUCT(NOTIFYICONDATAW, szTip[64])
+	#endif
+	#ifndef TV_KEYDOWN
 	typedef struct tagNMKEY {
 		NMHDR hdr;
 		UINT nVKey;
 		UINT uFlags;
 	} NMKEY, *LPNMKEY;
+	typedef struct tagTVKEYDOWN
+	{
+		NMHDR hdr;
+		WORD wVKey;
+		UINT flags;
+	} NMTVKEYDOWN, *LPNMTVKEYDOWN;
+	#define TV_KEYDOWN			NMTVKEYDOWN
+	#endif
 	#define ODS_HOTLIGHT        0x0040
 	#define ODS_INACTIVE        0x0080
+	#define OLERENDER_FORMAT	2
+	#define SES_EXTENDBACKCOLOR	4
 	#define SPI_GETFLATMENU		0x1022
 	#define COLOR_HOTLIGHT		26
 	#define COLOR_MENUBAR		30
@@ -140,10 +277,75 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 	#define TS_DISABLED         4
 	#define TS_CHECKED          5
 	#define TS_HOTCHECKED       6
+	#ifndef TTM_SETTITLE
+	#ifndef UNICODE
+		#define TTM_SETTITLE TTM_SETTITLEA
+	#else
+		#define TTM_SETTITLE TTM_SETTITLEW
+	#endif
+	#endif
 	#define CBS_UNCHECKEDNORMAL 1
 	#define CBS_UNCHECKEDHOT    2
 	#define CBS_CHECKEDNORMAL   5
 	#define CBS_CHECKEDHOT      6
+	#define	CFM_WEIGHT			0x00400000
+	#define	CFM_UNDERLINETYPE	0x00800000	
+	#define CFM_BACKCOLOR		0x04000000
+	#define CFU_UNDERLINE		1
+	#define CFU_UNDERLINEWORD	2
+	#define EP_EDITTEXT			1 // Edit
+	#define EP_CARET			2
+	#define ETS_NORMAL			1
+	#define ETS_HOT				2
+	#define ETS_SELECTED		3
+	#define ETS_DISABLED		4
+	#define ETS_FOCUSED			5
+	#define ETS_READONLY		6
+	#define ETS_ASSIST			7
+    #ifndef PBT_APMRESUMESUSPEND
+        #define PBT_APMSUSPEND		 0x0004
+	    #define PBT_APMRESUMESUSPEND 0x0007
+    #endif
+	#define AW_HOR_POSITIVE		0x00000001
+	#define AW_VER_NEGATIVE		0x00000008
+	#define AW_HIDE				0x00010000
+	#define AW_ACTIVATE			0x00020000
+	#define AW_SLIDE			0x00040000
+	#define AW_BLEND			0x00080000
+	#define WM_UNICHAR			0x0109
+	#define LVS_EX_DOUBLEBUFFER	0x00010000
+	#define RES_ICON			1
+	#ifndef DFCS_HOT
+		#define DFCS_HOT			0x1000
+	#endif
+	#define IP_TTL				7
+	#ifndef IP_MULTICAST_IF
+		#define IP_MULTICAST_IF		32
+	#endif
+	#define IMF_AUTOKEYBOARD	0x0001
+	#define IMF_AUTOFONTSIZEADJUST 0x0010
+	#define GRADIENT_FILL_RECT_H 0x00
+	#define GRADIENT_FILL_RECT_V 0x01
+	#define LANG_INVARIANT		0x7f
+	#define LOCALE_INVARIANT	(MAKELCID(MAKELANGID(LANG_INVARIANT, SUBLANG_NEUTRAL), SORT_DEFAULT))
+	#define EN_ALIGN_RTL_EC		0x0701
+	#ifndef OBJID_MENU
+		#define OBJID_MENU			((LONG)0xFFFFFFFD)
+	#endif
+	#ifndef OBJID_VSCROLL
+		#define OBJID_VSCROLL		((LONG)0xFFFFFFFB)
+	#endif
+	#define TreeView_SetCheckState(hwndTV, hti, fCheck) \
+		TreeView_SetItemState(hwndTV, hti, INDEXTOSTATEIMAGEMASK((fCheck)?2:1), TVIS_STATEIMAGEMASK)
+	#define TreeView_GetCheckState(hwndTV, hti) \
+		((((UINT)(SNDMSG((hwndTV), TVM_GETITEMSTATE, (WPARAM)(hti), TVIS_STATEIMAGEMASK))) >> 12) -1)
+	#define ERROR_INTERNET_SEC_CERT_NO_REV 12056
+	#define ERROR_INTERNET_SEC_CERT_REV_FAILED 12057
+	#define APPCOMMAND_BROWSER_BACKWARD 1
+	#define APPCOMMAND_BROWSER_FORWARD 2
+	#define NIN_BALLOONHIDE		(WM_USER +3)
+	#define NIN_BALLOONTIMEOUT	(WM_USER + 4)
+	#define NIN_BALLOONUSERCLICK (WM_USER + 5)
 // SDK isn't present or some older VC compiler was used, include missing things.
 #elif !defined(NOWIN2K) && (!defined WS_EX_LAYERED || !defined IDC_HAND)
 
@@ -187,6 +389,7 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 		#define SPI_GETHOTTRACKING                  0x100E
 		#define BIF_NEWDIALOGSTYLE	0x0040
 		#define LVS_EX_LABELTIP     0x00004000
+		#define LVS_EX_DOUBLEBUFFER	0x00010000
 		#define DFCS_HOT 0x1000
 		#define FLASHW_TRAY 0x00000002;
 		typedef struct {

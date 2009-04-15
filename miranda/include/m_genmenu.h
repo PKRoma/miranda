@@ -217,7 +217,7 @@ typedef struct
 		TCHAR *ptszName;
 	};
 	int position;
-	int root;
+	HGENMENU root;
 	int flags;
 	union {
 		HICON hIcon;
@@ -234,7 +234,7 @@ This structure passed to CheckService.
 typedef struct
 {
 	void *MenuItemOwnerData;
-	int MenuItemHandle;
+	HGENMENU MenuItemHandle;
 	WPARAM wParam;//from  ListParam.wParam when building menu
 	LPARAM lParam;//from  ListParam.lParam when building menu
 }
@@ -269,8 +269,9 @@ typedef struct
 typedef struct tagListParam
 {
 	int rootlevel;
-	int MenuObjectHandle;
-	int wParam,lParam;
+	HANDLE MenuObjectHandle;
+	WPARAM wParam;
+	LPARAM lParam;
 }
 	ListParam,*lpListParam;
 
@@ -344,6 +345,11 @@ typedef struct
 //-1 on failure
 #define MO_GETMENUITEM						"MO/GetMenuItem"
 
+//wparam=MenuItemHandle
+//lparam=0
+//returns a menu handle on success or NULL on failure
+#define MO_GETDEFAULTMENUITEM				"MO/GetDefaultMenuItem"
+
 //wparam=MenuObjectHandle
 //lparam=vKey
 //returns TRUE if it processed the command, FALSE otherwise
@@ -370,9 +376,9 @@ typedef struct
 
 typedef struct tagOptParam
 {
-	int Handle;
+	HANDLE Handle;
 	int Setting;
-	int Value;
+	INT_PTR Value;
 }
 	OptParam,*lpOptParam;
 

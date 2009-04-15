@@ -4,10 +4,8 @@
 	Version="7.10"
 	Name="msn"
 	ProjectGUID="{5088F15E-E7EF-4037-BD9F-402E3C5A9A8B}"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK">
+	SccProjectName=""
+	SccLocalPath="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -48,8 +46,10 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/filealign:512"
-				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib"
+				AdditionalDependencies="vc7to6.lib wsock32.lib comctl32.lib Rpcrt4.lib"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
 				OptimizeReferences="2"
@@ -248,7 +248,9 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/filealign:512"
-				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib"
+				AdditionalDependencies="vc7to6.lib wsock32.lib comctl32.lib Rpcrt4.lib"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
 				OptimizeReferences="2"
@@ -293,6 +295,33 @@
 		<Filter
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
+			<File
+				RelativePath=".\des.c">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+			</File>
 			<File
 				RelativePath=".\ezxml.c">
 				<FileConfiguration
@@ -360,6 +389,9 @@
 						AdditionalIncludeDirectories=""
 						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\msn_auth.cpp">
 			</File>
 			<File
 				RelativePath=".\msn_chat.cpp">
@@ -517,6 +549,9 @@
 			</File>
 			<File
 				RelativePath=".\msn_libstr.cpp">
+			</File>
+			<File
+				RelativePath=".\msn_links.cpp">
 			</File>
 			<File
 				RelativePath="msn_lists.cpp">
@@ -754,6 +789,15 @@
 			</File>
 			<File
 				RelativePath=".\msn_p2ps.cpp">
+			</File>
+			<File
+				RelativePath=".\msn_proto.cpp">
+			</File>
+			<File
+				RelativePath=".\msn_soapab.cpp">
+			</File>
+			<File
+				RelativePath=".\msn_soapstore.cpp">
 			</File>
 			<File
 				RelativePath=".\msn_srv.cpp">
@@ -1067,6 +1111,12 @@
 		<Filter
 			Name="Header Files"
 			Filter="">
+			<File
+				RelativePath=".\des.h">
+			</File>
+			<File
+				RelativePath=".\ezxml.h">
+			</File>
 			<File
 				RelativePath="msn_global.h">
 			</File>

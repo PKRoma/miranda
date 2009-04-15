@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/IcqOscarJ/icq_packet.h $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -43,13 +43,13 @@ typedef unsigned long  DWORD;
 
 /*---------* Structures *--------------*/
 
-typedef struct icq_packet_s
+struct icq_packet
 {
   WORD wPlace;
   BYTE nChannel;
   WORD wLen;
   BYTE *pData;
-} icq_packet;
+};
 
 /*---------* Functions *---------------*/
 
@@ -70,46 +70,56 @@ void __fastcall packQWord(icq_packet *, DWORD64);
 void packTLV(icq_packet *pPacket, WORD wType, WORD wLength, const BYTE *pbyValue);
 void packTLVWord(icq_packet *pPacket, WORD wType, WORD wData);
 void packTLVDWord(icq_packet *pPacket, WORD wType, DWORD dwData);
+void packTLVUID(icq_packet *pPacket, WORD wType, DWORD dwUin, const char *szUid);
 
 void packBuffer(icq_packet* pPacket, const BYTE* pbyBuffer, WORD wLength);
 //void packLEWordSizedBuffer(icq_packet* pPacket, const BYTE* pbyBuffer, WORD wLength);
 int __fastcall getUINLen(DWORD dwUin);
-int __fastcall getUIDLen(DWORD dwUin, const char* szUid);
+int __fastcall getUIDLen(DWORD dwUin, const char *szUid);
 void __fastcall packUIN(icq_packet *pPacket, DWORD dwUin);
-void __fastcall packUID(icq_packet *pPacket, DWORD dwUin, const char* szUid);
-void packFNACHeader(icq_packet *d, WORD wFamily, WORD wSubtype);
-void packFNACHeaderFull(icq_packet *d, WORD wFamily, WORD wSubtype, WORD wFlags, DWORD wSeq);
+void __fastcall packUID(icq_packet *pPacket, DWORD dwUin, const char *szUid);
+
+void packFNACHeader(icq_packet *pPacket, WORD wFamily, WORD wSubtype);
+void packFNACHeader(icq_packet *pPacket, WORD wFamily, WORD wSubtype, WORD wFlags, DWORD dwSequence);
+void packFNACHeader(icq_packet *pPacket, WORD wFamily, WORD wSubtype, WORD wFlags, DWORD dwSequence, WORD wVersion);
 
 void __fastcall packLEWord(icq_packet *, WORD);
 void __fastcall packLEDWord(icq_packet *, DWORD);
 
-void packTLVLNTS(PBYTE *buf, int *bufpos, const char *str, WORD wType);
+void packLETLVLNTS(PBYTE *buf, int *bufpos, const char *str, WORD wType);
 
 void ppackByte(PBYTE *buf,int *buflen,BYTE b);
+void ppackWord(PBYTE *buf, int *buflen, WORD w);
 void ppackLEWord(PBYTE *buf,int *buflen,WORD w);
 void ppackLEDWord(PBYTE *buf,int *buflen,DWORD d);
 void ppackLELNTS(PBYTE *buf, int *buflen, const char *str);
-void ppackLELNTSfromDB(PBYTE *buf, int *buflen, const char *szSetting);
+void ppackBuffer(PBYTE *buf, int *buflen, WORD wLength,  const BYTE *pbyValue);
 
-void ppackTLVByte(PBYTE *buf, int *buflen, BYTE b, WORD wType, BYTE always);
-void ppackTLVWord(PBYTE *buf, int *buflen, WORD w, WORD wType, BYTE always);
-void ppackTLVDWord(PBYTE *buf, int *buflen, DWORD d, WORD wType, BYTE always);
-void ppackTLVLNTS(PBYTE *buf, int *buflen, const char *str, WORD wType, BYTE always);
-void ppackTLVWordLNTS(PBYTE *buf, int *buflen, WORD w, const char *str, WORD wType, BYTE always);
-void ppackTLVLNTSByte(PBYTE *buf, int *buflen, const char *str, BYTE b, WORD wType);
+void ppackTLV(PBYTE *buf, int *buflen, WORD wType, WORD wLength, const BYTE *pbyValue);
+void ppackTLVByte(PBYTE *buf, int *buflen, WORD wType, BYTE bValue);
+void ppackTLVWord(PBYTE *buf, int *buflen, WORD wType, WORD wValue);
+void ppackTLVDWord(PBYTE *buf, int *buflen, WORD wType, DWORD dwValue);
+void ppackTLVDouble(PBYTE *buf, int *buflen, WORD wType, double dValue);
+void ppackTLVUID(PBYTE *buf, int *buflen, WORD wType, DWORD dwUin, const char *szUid);
 
-void ppackTLVLNTSfromDB(PBYTE *buf, int *buflen, const char *szSetting, WORD wType);
-void ppackTLVWordLNTSfromDB(PBYTE *buf, int *buflen, WORD w, const char *szSetting, WORD wType);
-void ppackTLVLNTSBytefromDB(PBYTE *buf, int *buflen, const char *szSetting, BYTE b, WORD wType);
+void ppackLETLVByte(PBYTE *buf, int *buflen, BYTE b, WORD wType, BYTE always);
+void ppackLETLVWord(PBYTE *buf, int *buflen, WORD w, WORD wType, BYTE always);
+void ppackLETLVDWord(PBYTE *buf, int *buflen, DWORD d, WORD wType, BYTE always);
+void ppackLETLVLNTS(PBYTE *buf, int *buflen, const char *str, WORD wType, BYTE always);
+void ppackLETLVWordLNTS(PBYTE *buf, int *buflen, WORD w, const char *str, WORD wType, BYTE always);
+void ppackLETLVLNTSByte(PBYTE *buf, int *buflen, const char *str, BYTE b, WORD wType);
+
+void ppackTLVBlockItems(PBYTE *buf, int *buflen, WORD wType, int *nItems, PBYTE *pBlock, WORD *wLength, BOOL bSingleItem);
+void ppackTLVBlockItem(PBYTE *buf, int *buflen, WORD wType, PBYTE *pItem, WORD *wLength);
 
 void __fastcall unpackByte(unsigned char **, BYTE *);
 void __fastcall unpackWord(unsigned char **, WORD *);
 void __fastcall unpackDWord(unsigned char **, DWORD *);
 void __fastcall unpackQWord(unsigned char **, DWORD64 *);
-void unpackString(unsigned char **buf, char *string, WORD len);
-void unpackWideString(unsigned char **buf, WCHAR *string, WORD len);
-void unpackTypedTLV(unsigned char *, int, WORD, WORD *, WORD *, char **);
-BOOL unpackUID(unsigned char** ppBuf, WORD* pwLen, DWORD *pdwUIN, uid_str* ppszUID);
+void unpackString(BYTE **buf, char *string, WORD len);
+void unpackWideString(BYTE **buf, WCHAR *string, WORD len);
+void unpackTypedTLV(BYTE *buf, int buflen, WORD type, WORD *ttype, WORD *tlen, BYTE **ttlv);
+BOOL unpackUID(BYTE **ppBuf, WORD *pwLen, DWORD *pdwUIN, uid_str *ppszUID);
 
 void __fastcall unpackLEWord(unsigned char **, WORD *);
 void __fastcall unpackLEDWord(unsigned char **, DWORD *);

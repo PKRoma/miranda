@@ -7,7 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "afxres.h"
+#include "windows.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -34,7 +34,7 @@ END
 
 2 TEXTINCLUDE 
 BEGIN
-    "#include ""afxres.h""\r\n"
+    "#include ""windows.h""\r\n"
     "\0"
 END
 
@@ -52,80 +52,78 @@ END
 // Dialog
 //
 
-IDD_AIM DIALOGEX 0, 0, 324, 232
+IDD_AIM DIALOGEX 0, 0, 305, 217
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "AIM Options",IDC_OPTIONS,3,106,161,124,WS_GROUP
-    EDITTEXT        IDC_SN,63,17,93,15,ES_LOWERCASE | ES_AUTOHSCROLL
-    EDITTEXT        IDC_NK,63,37,93,15,ES_AUTOHSCROLL
-    EDITTEXT        IDC_PW,63,57,93,15,ES_PASSWORD | ES_AUTOHSCROLL
-    EDITTEXT        IDC_HN,63,77,94,15,ES_AUTOHSCROLL
-    LTEXT           "Screenname:",IDC_STATIC,12,20,45,15
-    LTEXT           "Display Name:",IDC_STATIC,9,39,48,15
-    LTEXT           "Password:",IDC_STATIC,21,59,35,15
-    LTEXT           "Login Server:",IDC_STATIC,11,80,44,12
-    CONTROL         "Message Delivery Confirmation",IDC_DC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,116,130,13
-    CONTROL         "Do Not Autoreply When Away",IDC_DM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,128,143,13
-    CONTROL         "Convert Incoming Messages to BBCode",IDC_FI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,140,143,13
-    CONTROL         "Convert Outgoing Messages to HTML",IDC_FO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,152,143,13
-    CONTROL         "Disable Avatars",IDC_DA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,164,143,13
-    CONTROL         "Disable Account Type Icons",IDC_AT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,176,133,13
-    CONTROL         "Disable Extended Status Icons",IDC_ES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,188,143,13
-    CONTROL         "Handle aim: links on websites",IDC_WEBSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,200,143,13
-    CONTROL         "Check Mail on Login",IDC_CM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,212,143,13
-    GROUPBOX        "AIM User Details",IDC_DETAILS,3,7,161,95,WS_GROUP
-    GROUPBOX        "Advanced Options",IDC_EXPERT,166,7,156,95,WS_GROUP
-    LTEXT           "*Aim must be reconnected  for some option to take effect.",IDC_MASQ,186,109,115,18,NOT WS_VISIBLE
-    CONTROL         "Send Keep Alive Packets",IDC_KA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,21,93,13
-    LTEXT           "File Transfer Grace Period:",IDC_STATIC,174,40,87,12
-    EDITTEXT        IDC_GP,261,39,20,12,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
-    LTEXT           "(seconds)",IDC_STATIC,285,41,32,12
-    CONTROL         "Instant Idle on Login",IDC_II,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,52,93,13
-    CONTROL         "Force Proxy File Transfers",IDC_FP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,65,130,11
-    CONTROL         "Masquerade as a Sidekick/Hiptop User",IDC_HF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,76,143,13
+    GROUPBOX        "AIM User Details",IDC_DETAILS,3,7,147,80,WS_GROUP
+    LTEXT           "Screen Name:",IDC_STATIC,8,20,45,11
+    EDITTEXT        IDC_SN,59,17,86,15,ES_LOWERCASE | ES_AUTOHSCROLL
+    LTEXT           "Display Name:",IDC_STATIC,5,39,48,9
+    EDITTEXT        IDC_NK,59,37,86,15,ES_AUTOHSCROLL
+    LTEXT           "Password:",IDC_STATIC,17,59,35,15
+    EDITTEXT        IDC_PW,59,57,86,15,ES_PASSWORD | ES_AUTOHSCROLL
+    LTEXT           "Login Server:",IDC_STATIC,158,104,44,12
+    EDITTEXT        IDC_HN,206,102,83,13,ES_AUTOHSCROLL
+    GROUPBOX        "AIM Options",IDC_OPTIONS,3,89,147,120,WS_GROUP
+    CONTROL         "Message Delivery Confirmation",IDC_DC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,99,130,13
+    CONTROL         "Do Not Autoreply When Away",IDC_DM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,111,134,13
+    CONTROL         "Convert Incoming Messages to BBCode",IDC_FI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,123,137,13
+    CONTROL         "Convert Outgoing Messages to HTML",IDC_FO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,135,136,13
+    CONTROL         "Disable Avatars",IDC_DA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,147,136,13
+    CONTROL         "Disable Account Type Icons",IDC_AT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,159,133,13
+    CONTROL         "Disable Extended Status Icons",IDC_ES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,171,134,13
+    CONTROL         "Check Mail on Login",IDC_CM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,183,112,13
+    GROUPBOX        "Advanced Options",IDC_EXPERT,154,7,142,80,WS_GROUP
+    LTEXT           "File Transfer Grace Period:",IDC_STATIC,158,19,87,12
+    EDITTEXT        IDC_GP,245,18,17,12,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
+    LTEXT           "sec",IDC_STATIC,266,19,18,9
+    CONTROL         "Instant Idle on Login",IDC_II,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,31,93,13
+    CONTROL         "Force Proxy File Transfers",IDC_FP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,44,130,11
+    CONTROL         "Masquerade as a Sidekick/Hiptop User",IDC_HF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,55,135,13
+    LTEXT           "*Aim must be reconnected  for some option to take effect.",IDC_MASQ,171,169,115,18,NOT WS_VISIBLE
+    GROUPBOX        "Connection",IDC_STATIC,154,89,142,71
+    EDITTEXT        IDC_PN,207,119,37,13,ES_AUTOHSCROLL
+    LTEXT           "Port:",IDC_STATIC,158,121,44,12
+    PUSHBUTTON      "Reset",IDC_SVRRESET,254,118,35,14
+    CONTROL         "Disable SSL",IDC_DSSL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,157,135,85,10
+    CONTROL         "Manage Server Groups",IDC_MG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,194,138,13
+    CONTROL         "Force Single Client",IDC_FSC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,157,146,129,10
 END
 
-IDD_INFO DIALOGEX 0, 0, 330, 190
+IDD_INFO DIALOGEX 0, 0, 227, 165
 STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
 EXSTYLE WS_EX_APPWINDOW
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    PUSHBUTTON      "Save Profile",IDC_SETPROFILE,240,176,60,12,WS_DISABLED
-    CONTROL         "",IDC_PROFILE,"RichEdit20A",WS_BORDER | WS_VSCROLL | 
-                    WS_HSCROLL | WS_TABSTOP | 0x11c4,7,45,315,125
-    CONTROL         "",IDC_BOLD,"Button",BS_OWNERDRAW,8,3,16,16
-    CONTROL         "",IDC_ITALIC,"Button",BS_OWNERDRAW,26,3,16,16
-    CONTROL         "",IDC_UNDERLINE,"Button",BS_OWNERDRAW,44,3,16,16
-    CONTROL         "",IDC_SUPERSCRIPT,"Button",BS_OWNERDRAW,62,3,16,16
-    CONTROL         "",IDC_SUBSCRIPT,"Button",BS_OWNERDRAW,98,3,16,16
-    CONTROL         "",IDC_FOREGROUNDCOLOR,"Button",BS_OWNERDRAW,116,3,16,16
-    CONTROL         "",IDC_FOREGROUNDCOLORPICKER,"Button",BS_OWNERDRAW,132,3,
-                    10,16
-    CONTROL         "",IDC_BACKGROUNDCOLOR,"Button",BS_OWNERDRAW,144,3,16,16
-    CONTROL         "",IDC_BACKGROUNDCOLORPICKER,"Button",BS_OWNERDRAW,160,3,
-                    10,16
-    COMBOBOX        IDC_TYPEFACE,7,24,80,117,CBS_DROPDOWNLIST | CBS_SORT | 
-                    WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_FONTSIZE,90,24,26,117,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
-    CONTROL         "",IDC_NORMALSCRIPT,"Button",BS_OWNERDRAW,80,3,16,16
+    PUSHBUTTON      "Save Profile",IDC_SETPROFILE,157,4,60,30,WS_DISABLED
+    CONTROL         "",IDC_PROFILE,"RichEdit20W",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP | 0x11c4,4,36,213,112
+    CONTROL         "",IDC_BOLD,"Button",BS_OWNERDRAW,4,4,16,14,WS_EX_RIGHT
+    CONTROL         "",IDC_ITALIC,"Button",BS_OWNERDRAW,20,4,16,14,WS_EX_RIGHT
+    CONTROL         "",IDC_UNDERLINE,"Button",BS_OWNERDRAW,36,4,16,14,WS_EX_RIGHT
+    CONTROL         "",IDC_SUPERSCRIPT,"Button",BS_OWNERDRAW,52,4,16,14,WS_EX_RIGHT
+    CONTROL         "",IDC_SUBSCRIPT,"Button",BS_OWNERDRAW,84,4,16,14,WS_EX_RIGHT
+    CONTROL         "",IDC_FOREGROUNDCOLOR,"Button",BS_OWNERDRAW,100,4,16,14,WS_EX_RIGHT
+    CONTROL         "",IDC_FOREGROUNDCOLORPICKER,"Button",BS_OWNERDRAW,116,4,10,14,WS_EX_RIGHT
+    CONTROL         "",IDC_BACKGROUNDCOLOR,"Button",BS_OWNERDRAW,126,4,16,14,WS_EX_RIGHT
+    CONTROL         "",IDC_BACKGROUNDCOLORPICKER,"Button",BS_OWNERDRAW,142,4,10,14,WS_EX_RIGHT
+    COMBOBOX        IDC_TYPEFACE,4,21,112,117,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FONTSIZE,126,21,26,117,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_NORMALSCRIPT,"Button",BS_OWNERDRAW,68,4,16,14,WS_EX_RIGHT
 END
 
-IDD_AIMACCOUNT DIALOGEX 0, 0, 195, 97
-STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-EXSTYLE WS_EX_TOPMOST
-CAPTION "AIM Account Setup"
+IDD_AIMACCOUNT DIALOGEX 0, 0, 186, 134
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    PUSHBUTTON      "OK",IDOK,90,74,46,14
-    PUSHBUTTON      "Cancel",IDCANCEL,140,74,33,14
-    LTEXT           "Please enter your AIM account details to continue:",IDC_STATIC,7,9,163,15
-    LTEXT           "Screenname:",IDC_STATIC,18,32,53,10
-    LTEXT           "Password:",IDC_STATIC,28,52,46,10
-    EDITTEXT        IDC_SN,80,31,87,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_PW,80,51,87,12,ES_PASSWORD | ES_AUTOHSCROLL
+    LTEXT           "Screen Name:",IDC_STATIC,0,0,53,12
+    EDITTEXT        IDC_SN,54,0,131,12,ES_AUTOHSCROLL
+    LTEXT           "Password:",IDC_STATIC,0,16,53,12
+    EDITTEXT        IDC_PW,54,16,131,12,ES_PASSWORD | ES_AUTOHSCROLL
+    CONTROL         "Create a new AIM account",IDC_NEWAIMACCOUNTLINK,
+                    "Hyperlink",WS_TABSTOP,0,40,174,12
 END
 
 IDD_IDLE DIALOGEX 0, 0, 173, 74
@@ -138,8 +136,96 @@ BEGIN
     LTEXT           "Number of Hours:",IDC_STATIC,18,13,62,12
     LTEXT           "Number of Minutes:",IDC_STATIC,12,29,64,12
     EDITTEXT        IDC_IIM,86,28,28,12,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
-    PUSHBUTTON      "Set Idle",IDOK,78,50,46,14
+    DEFPUSHBUTTON   "Set Idle",IDOK,78,50,46,14
     PUSHBUTTON      "Unset Idle",IDCANCEL,129,50,39,14
+END
+
+IDD_PRIVACY DIALOGEX 0, 0, 302, 215
+STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Users who can contact me:",IDC_STATIC,16,14,141,8
+    CONTROL         "Allow all users",IDC_ALLOWALL,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,29,145,10
+    CONTROL         "Allow only users on contact list",IDC_ALLOWCONT,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,14,40,145,10
+    CONTROL         "Allow only users below",IDC_ALLOWBELOW,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,14,51,145,10
+    CONTROL         "Block all users",IDC_BLOCKALL,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,168,40,116,10
+    CONTROL         "Block only users below",IDC_BLOCKBELOW,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,168,51,116,10
+    EDITTEXT        IDC_ALLOWEDIT,16,67,82,14,ES_AUTOHSCROLL,WS_EX_CLIENTEDGE | WS_EX_STATICEDGE
+    PUSHBUTTON      "Add",IDC_ALLOWADD,98,67,38,14
+    LISTBOX         IDC_ALLOWLIST,16,81,119,86,LBS_SORT | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP,WS_EX_STATICEDGE
+    PUSHBUTTON      "Remove",IDC_ALLOWREMOVE,16,167,119,12
+    EDITTEXT        IDC_BLOCKEDIT,165,67,82,14,ES_AUTOHSCROLL,WS_EX_STATICEDGE
+    PUSHBUTTON      "Add",IDC_BLOCKADD,247,67,37,14
+    LISTBOX         IDC_BLOCKLIST,165,81,119,86,LBS_SORT | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP,WS_EX_STATICEDGE
+    PUSHBUTTON      "Remove",IDC_BLOCKREMOVE,165,167,119,12
+END
+
+IDD_CHAT DIALOGEX 0, 0, 155, 46
+STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOPMOST
+CAPTION "Join Chat Room"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    LTEXT           "Chat Room",IDC_STATIC,7,10,86,9
+    EDITTEXT        IDC_ROOM,6,26,92,12,ES_LOWERCASE | ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "&Join",IDOK,106,6,46,14
+    PUSHBUTTON      "&Cancel",IDCANCEL,106,24,45,14
+END
+
+IDD_ADMIN DIALOGEX 0, 0, 224, 147
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    GROUPBOX        "Change Password",IDC_STATIC,2,2,101,103
+    LTEXT           "Original",IDC_STATIC,8,14,87,8
+    EDITTEXT        IDC_CPW,5,23,90,14,ES_PASSWORD | ES_AUTOHSCROLL
+    LTEXT           "New",IDC_STATIC,7,40,87,8
+    EDITTEXT        IDC_NPW1,5,49,90,14,ES_PASSWORD | ES_AUTOHSCROLL
+    LTEXT           "Repeat",IDC_STATIC,7,65,88,8
+    EDITTEXT        IDC_NPW2,5,74,90,14,ES_PASSWORD | ES_AUTOHSCROLL
+    LTEXT           "*Passwords don't match.",IDC_PINFO,7,92,82,9,NOT WS_VISIBLE
+    LTEXT           "Screen Name",IDC_STATIC,118,15,92,8
+    EDITTEXT        IDC_FNAME,117,23,93,14,ES_AUTOHSCROLL
+    LTEXT           "E-mail",IDC_STATIC,118,41,92,8
+    EDITTEXT        IDC_CEMAIL,117,49,93,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Confirm Account",IDC_CONFIRM,5,122,86,16,BS_MULTILINE
+    LTEXT           "*Applied upon reconnect",IDC_STATIC,127,109,80,8
+    PUSHBUTTON      "Save Changes",IDC_SAVECHANGES,131,122,79,16
+END
+
+IDD_CHATROOM_INVITE DIALOGEX 0, 0, 302, 125
+STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOPMOST
+CAPTION "Invite Buddy To Chat Room"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    LTEXT           "Screen Name",IDC_STATIC,154,31,43,9
+    PUSHBUTTON      "&Invite",IDOK,165,107,46,14
+    PUSHBUTTON      "&Cancel",IDCANCEL,234,107,45,14
+    LTEXT           "Invitation reason",IDC_STATIC,155,58,60,9
+    EDITTEXT        IDC_MSG,154,68,140,32,ES_MULTILINE | ES_LOWERCASE | ES_AUTOHSCROLL | ES_WANTRETURN | WS_VSCROLL
+    CONTROL         "",IDC_CCLIST,"CListControl",WS_TABSTOP | 0x16f,7,4,141,117,WS_EX_CLIENTEDGE
+    EDITTEXT        IDC_EDITSCR,154,41,93,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "Add",IDC_ADDSCR,247,40,49,14
+    CTEXT           "",IDC_ROOMNAME,154,10,140,11,0,WS_EX_STATICEDGE
+END
+
+IDD_CHATROOM_INVITE_REQ DIALOGEX 0, 0, 177, 116
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION
+EXSTYLE WS_EX_TOPMOST | WS_EX_WINDOWEDGE
+CAPTION "Chat Room Invitation Request"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "&Join",IDOK,77,97,46,14
+    PUSHBUTTON      "&Deny",IDCANCEL,125,97,45,14
+    LTEXT           "Message",IDC_STATIC,6,40,60,9
+    CTEXT           "",IDC_ROOMNAME,80,4,93,12,SS_SUNKEN
+    EDITTEXT        IDC_MSG,6,50,166,40,ES_MULTILINE | ES_LOWERCASE | ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL | WS_HSCROLL
+    LTEXT           "Room",IDC_STATIC,5,6,73,8
+    LTEXT           "Screen Name",IDC_STATIC,5,24,73,8
+    CTEXT           "",IDC_SCREENNAME,80,22,93,12,SS_SUNKEN
 END
 
 
@@ -151,21 +237,53 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO 
 BEGIN
-    IDD_INFO, DIALOG
+    IDD_AIM, DIALOG
     BEGIN
-        RIGHTMARGIN, 329
-        BOTTOMMARGIN, 175
+        RIGHTMARGIN, 296
+        BOTTOMMARGIN, 211
     END
 
     IDD_AIMACCOUNT, DIALOG
     BEGIN
-        RIGHTMARGIN, 194
+        RIGHTMARGIN, 183
+        BOTTOMMARGIN, 72
     END
 
     IDD_IDLE, DIALOG
     BEGIN
         RIGHTMARGIN, 172
         BOTTOMMARGIN, 73
+    END
+
+    IDD_PRIVACY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 295
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 208
+    END
+
+    IDD_CHAT, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 45
+    END
+
+    IDD_ADMIN, DIALOG
+    BEGIN
+        RIGHTMARGIN, 223
+        BOTTOMMARGIN, 146
+    END
+
+    IDD_CHATROOM_INVITE, DIALOG
+    BEGIN
+        RIGHTMARGIN, 300
+        TOPMARGIN, 4
+        BOTTOMMARGIN, 121
+    END
+
+    IDD_CHATROOM_INVITE_REQ, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 111
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -178,33 +296,34 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_AIM                 ICON                    "icons\\oscar.ico"
-IDI_ADD                 ICON                    "icons\\add.ico"
-IDI_ICQ                 ICON                    "icons\\icq.ico"
-IDI_AOL                 ICON                    "icons\\aol.ico"
-IDI_HIPTOP              ICON                    "icons\\hiptop.ico"
-IDI_BOT                 ICON                    "icons\\bot.ico"
-IDI_ADMIN               ICON                    "icons\\admin.ico"
-IDI_CONFIRMED           ICON                    "icons\\confirmed.ico"
-IDI_UNCONFIRMED         ICON                    "icons\\unconfirmed.ico"
-IDI_AWAY                ICON                    "icons\\away.ico"
-IDI_IDLE                ICON                    "icons\\idle.ico"
-IDI_PROFILE             ICON                    "icons\\profile.ico"
-IDI_MAIL                ICON                    "icons\\inbox.ico"
-IDI_BOLD                ICON                    "icons\\bold.ico"
-IDI_NBOLD               ICON                    "icons\\nbold.ico"
-IDI_NITALIC             ICON                    "icons\\nitalic.ico"
-IDI_ITALIC              ICON                    "icons\\italic.ico"
-IDI_NUNDERLINE          ICON                    "icons\\nunderline.ico"
-IDI_UNDERLINE           ICON                    "icons\\underline.ico"
-IDI_NSUPERSCRIPT        ICON                    "icons\\nsuperscript.ico"
-IDI_NSUBSCRIPT          ICON                    "icons\\nsubscript.ico"
-IDI_FOREGROUNDCOLOR     ICON                    "icons\\foregroundcolor.ico"
-IDI_BACKGROUNDCOLOR     ICON                    "icons\\backgroundcolor.ico"
-IDI_NNORMALSCRIPT       ICON                    "icons\\nnormalscript.ico"
-IDI_NORMALSCRIPT        ICON                    "icons\\normalscript.ico"
-IDI_SUBSCRIPT           ICON                    "icons\\subscript.ico"
-IDI_SUPERSCRIPT         ICON                    "icons\\superscript.ico"
+IDI_AIM                 ICON                    "icons/oscar.ico"
+IDI_ADD                 ICON                    "icons/add.ico"
+IDI_ICQ                 ICON                    "icons/icq.ico"
+IDI_AOL                 ICON                    "icons/aol.ico"
+IDI_HIPTOP              ICON                    "icons/hiptop.ico"
+IDI_BOT                 ICON                    "icons/bot.ico"
+IDI_ADMIN               ICON                    "icons/admin.ico"
+IDI_CONFIRMED           ICON                    "icons/confirmed.ico"
+IDI_UNCONFIRMED         ICON                    "icons/unconfirmed.ico"
+IDI_AWAY                ICON                    "icons/away.ico"
+IDI_IDLE                ICON                    "icons/idle.ico"
+IDI_PROFILE             ICON                    "icons/profile.ico"
+IDI_MAIL                ICON                    "icons/inbox.ico"
+IDI_BOLD                ICON                    "icons/bold.ico"
+IDI_NBOLD               ICON                    "icons/nbold.ico"
+IDI_NITALIC             ICON                    "icons/nitalic.ico"
+IDI_ITALIC              ICON                    "icons/italic.ico"
+IDI_NUNDERLINE          ICON                    "icons/nunderline.ico"
+IDI_UNDERLINE           ICON                    "icons/underline.ico"
+IDI_NSUPERSCRIPT        ICON                    "icons/nsuperscript.ico"
+IDI_NSUBSCRIPT          ICON                    "icons/nsubscript.ico"
+IDI_FOREGROUNDCOLOR     ICON                    "icons/foregroundcolor.ico"
+IDI_BACKGROUNDCOLOR     ICON                    "icons/backgroundcolor.ico"
+IDI_NNORMALSCRIPT       ICON                    "icons/nnormalscript.ico"
+IDI_NORMALSCRIPT        ICON                    "icons/normalscript.ico"
+IDI_SUBSCRIPT           ICON                    "icons/subscript.ico"
+IDI_SUPERSCRIPT         ICON                    "icons/superscript.ico"
+IDI_BLOCK               ICON                    "icons/block.ico"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

@@ -461,7 +461,7 @@ processExifTag(FIBITMAP *dib, FITAG *tag, char *pval, BOOL msb_order, TagLib::MD
 	@return 
 */
 static BOOL 
-jpeg_read_exif_dir(FIBITMAP *dib, const BYTE *tiffp, unsigned int offset, unsigned int length, BOOL msb_order) {
+jpeg_read_exif_dir(FIBITMAP *dib, const BYTE *tiffp, unsigned long offset, unsigned int length, BOOL msb_order) {
 	WORD de, nde;
 
 	std::stack<WORD>			destack;	// directory entries stack
@@ -472,7 +472,7 @@ jpeg_read_exif_dir(FIBITMAP *dib, const BYTE *tiffp, unsigned int offset, unsign
 	// when recursive/cyclic directory structures exist. 
 	// This kind of recursive Exif file was encountered with Kodak images coming from 
 	// KODAK PROFESSIONAL DCS Photo Desk JPEG Export v3.2 W
-	std::map<BYTE*, int> visitedIFD;
+	std::map<DWORD, int> visitedIFD;
 
     #define DIR_ENTRY_ADDR(_start, _entry) (_start + 2 + (12 * _entry))
 
@@ -495,10 +495,11 @@ jpeg_read_exif_dir(FIBITMAP *dib, const BYTE *tiffp, unsigned int offset, unsign
 		}
 
 		// remember that we've visited this directory so that we don't visit it again later
-		if(visitedIFD.find(ifdp) != visitedIFD.end()) {
+		DWORD visited = (DWORD)( (((size_t)ifdp & 0xFFFF) << 16) | (size_t)de );
+		if(visitedIFD.find(visited) != visitedIFD.end()) {
 			continue;
 		} else {
-			visitedIFD[ifdp] = 1;	// processed
+			visitedIFD[visited] = 1;	// processed
 		}
 
 		// determine how many entries there are in the current IFD
@@ -633,7 +634,7 @@ jpeg_read_exif_profile(FIBITMAP *dib, const BYTE *dataptr, unsigned int datalen)
 	BYTE lsb_first[4] = { 0x49, 0x49, 0x2A, 0x00 };		// Intel order
 	BYTE msb_first[4] = { 0x4D, 0x4D, 0x00, 0x2A };		// Motorola order
 
-	size_t length = datalen;
+	unsigned int length = datalen;
 	BYTE *profile = (BYTE*)dataptr;
 
 	// verify the identifying string
@@ -662,7 +663,7 @@ jpeg_read_exif_profile(FIBITMAP *dib, const BYTE *dataptr, unsigned int datalen)
 		}
 
 		// this is the offset to the first IFD
-		size_t first_offset = ReadUint32(bMotorolaOrder, profile + 4);
+		unsigned long first_offset = ReadUint32(bMotorolaOrder, profile + 4);
 
 		if (first_offset < 8 || first_offset > 16) {
 			// This is usually set to 8

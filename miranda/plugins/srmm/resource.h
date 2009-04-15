@@ -2,6 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by resource.rc
 //
+#define IDC_STATIC                      -1
 #define IDD_MSGSENDERROR                102
 #define IDR_CONTEXT                     180
 #define IDC_DROP                        183
@@ -14,6 +15,8 @@
 #define IDI_INCOMING                    276
 #define IDI_OUTGOING                    277
 #define IDI_NOTICE                      282
+#define IDD_MODERNOPT_MSGDLG            288
+#define IDD_MODERNOPT_MSGLOG            289
 #define IDC_LOG                         1001
 #define IDC_MESSAGE                     1002
 #define IDC_AUTOCLOSE                   1004
@@ -66,6 +69,9 @@
 #define IDC_AVATARHEIGHT                1613
 #define IDC_SHOWSECS                    1614
 #define IDC_POPLIST                     1616
+#define IDC_TXT_TITLE1                  1617
+#define IDC_TXT_TITLE2                  1618
+#define IDC_TXT_TITLE3                  1619
 #define IDM_COPY                        40001
 #define IDM_COPYALL                     40011
 #define IDM_SELECTALL                   40012
@@ -78,9 +84,9 @@
 //
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        286
+#define _APS_NEXT_RESOURCE_VALUE        290
 #define _APS_NEXT_COMMAND_VALUE         40019
-#define _APS_NEXT_CONTROL_VALUE         1617
+#define _APS_NEXT_CONTROL_VALUE         1620
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

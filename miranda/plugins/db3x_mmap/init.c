@@ -40,7 +40,7 @@ static int getCapability( int flag )
 // returns 0 if the profile is created, EMKPRF*
 static int makeDatabase(char * profile, int * error)
 {
-	HANDLE hFile=CreateFile(profile, GENERIC_READ|GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, NULL);
+	HANDLE hFile = CreateFileA(profile, GENERIC_READ|GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, NULL);
 	if ( hFile != INVALID_HANDLE_VALUE ) {
 		CreateDbHeaders(hFile);
 		CloseHandle(hFile);
@@ -59,7 +59,7 @@ static int grokHeader( char * profile, int * error )
 	HANDLE hFile = INVALID_HANDLE_VALUE;
 	DWORD dummy=0;
 
-	hFile = CreateFile(profile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	hFile = CreateFileA(profile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
 	if ( hFile == INVALID_HANDLE_VALUE ) {
 		if ( error != NULL ) *error=EGROKPRF_CANTREAD;
 		return 1;
@@ -154,13 +154,12 @@ static PLUGININFOEX pluginInfo = {
 	"Provides Miranda database support: global settings, contacts, history, settings per contact.",
 	"Miranda-IM project",
 	"bio@msx.ru; ghazan@miranda-im.org",
-	"Copyright 2000-2007 Miranda IM project",
+	"Copyright 2000-2008 Miranda IM project",
 	"",
-	0,
+	UNICODE_AWARE,
 	DEFMOD_DB,
     {0xf7a6b27c, 0x9d9c, 0x4a42, { 0xbe, 0x86, 0xa4, 0x48, 0xae, 0x10, 0x91, 0x61 }} //{F7A6B27C-9D9C-4a42-BE86-A448AE109161}
 };
-
 
 BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 {

@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project,
+Copyright 2000-2008 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -29,26 +29,32 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "statusmodes.h"
 
 //call a specific protocol service. See the PS_ constants in m_protosvc.h
-__inline static int CallProtoService(const char *szModule,const char *szService,WPARAM wParam,LPARAM lParam)
+#if MIRANDA_VER < 0x800
+__inline static INT_PTR CallProtoService(const char *szModule,const char *szService,WPARAM wParam,LPARAM lParam)
 {
 	char str[MAXMODULELABELLENGTH];
-	strcpy(str,szModule);
-	strcat(str,szService);
+	_snprintf(str, sizeof(str), "%s%s", szModule, szService);
+    str[MAXMODULELABELLENGTH-1] = 0;
 	return CallService(str,wParam,lParam);
 }
+#endif
 
 //send a general request through the protocol chain for a contact
 //wParam=0
 //lParam=(LPARAM)(CCSDATA*)&ccs
 //returns the value as documented in the PS_ definition (m_protosvc.h)
+
 typedef struct {
 	HANDLE hContact;
 	const char *szProtoService;   //a PS_ constant
 	WPARAM wParam;
 	LPARAM lParam;
 } CCSDATA;
+
 #define MS_PROTO_CALLCONTACTSERVICE    "Proto/CallContactService"
-__inline static int CallContactService(HANDLE hContact,const char *szProtoService,WPARAM wParam,LPARAM lParam)
+
+#if MIRANDA_VER < 0x800
+__inline static INT_PTR CallContactService(HANDLE hContact,const char *szProtoService,WPARAM wParam,LPARAM lParam)
 {
 	CCSDATA ccs;
 	ccs.hContact=hContact;
@@ -57,6 +63,7 @@ __inline static int CallContactService(HANDLE hContact,const char *szProtoServic
 	ccs.lParam=lParam;
 	return CallService(MS_PROTO_CALLCONTACTSERVICE,0,(LPARAM)&ccs);
 }
+#endif
 
 //a general network 'ack'
 //wParam=0
@@ -117,7 +124,7 @@ typedef struct {
 //when type==ACKTYPE_FILE && (result==ACKRESULT_DATA || result==ACKRESULT_FILERESUME),
 //lParam points to this
 typedef struct {
-	int cbSize;
+	size_t cbSize;
 	HANDLE hContact;
 	int sending;	//true if sending, false if receiving
 	char **files;
@@ -140,15 +147,44 @@ typedef struct {
 //The list returned by this service is the protocol modules currently installed
 //and running. It is not the complete list of all protocols that have ever been
 //installed.
+//IMPORTANT NOTE #1: the list returned is not static, it may be changed in the
+//program's lifetime. Do not use this list in the global context, copy protocols
+//names otherwise.
+//IMPORTANT NOTE #2: in version 0.8 this service is mapped to the MS_PROTO_ENUMACCOUNTS
+//service to provide the compatibility with old plugins (first three members of 
+//PROTOACCOUNT are equal to the old PROTOCOLDESCRIPTOR format). If you declare the
+//MIRANDA_VER macro with value greater or equal to 0x800, use MS_PROTO_ENUMPROTOS
+//service instead to obtain the list of running protocols instead of accounts.
 //Note that a protocol module need not be an interface to an Internet server,
 //they can be encryption and loads of other things, too.
 //And yes, before you ask, that is triple indirection. Deal with it.
 //Access members using ppProtocolDescriptors[index]->element
+
+#define PROTOCOLDESCRIPTOR_V3_SIZE (sizeof(size_t)+sizeof(INT_PTR)+sizeof(char*))
+
+ // initializes an empty account
+typedef struct tagPROTO_INTERFACE* ( *pfnInitProto )( const char* szModuleName, const TCHAR* szUserName );
+
+// deallocates an account instance
+typedef int ( *pfnUninitProto )( struct tagPROTO_INTERFACE* );
+
+// removes an account from the database
+typedef int ( *pfnDestroyProto )( struct tagPROTO_INTERFACE* );
+
 typedef struct {
-	int cbSize;
-	char *szName;    //unique name of the module
-	int type;      //module type, see PROTOTYPE_ constants
-} PROTOCOLDESCRIPTOR;
+	size_t cbSize;
+	char *szName;        // unique name of the module
+	int   type;          // module type, see PROTOTYPE_ constants
+
+	// 0.8.0+ additions
+	#if MIRANDA_VER >= 0x800
+		pfnInitProto fnInit; // initializes an empty account
+		pfnUninitProto fnUninit; // deallocates an account instance
+		pfnDestroyProto fnDestroy; // removes an account
+	#endif
+}
+	PROTOCOLDESCRIPTOR;
+
 // v0.3.3+:
 //
 // For recv, it will go from lower to higher, so in this case:
@@ -165,7 +201,13 @@ typedef struct {
 #define PROTOTYPE_FILTER      3000
 #define PROTOTYPE_TRANSLATION 4000
 #define PROTOTYPE_OTHER       10000   //avoid using this if at all possible
-#define MS_PROTO_ENUMPROTOCOLS     "Proto/EnumProtocols"
+
+#if MIRANDA_VER >= 0x800
+	#define MS_PROTO_ENUMPROTOS        "Proto/EnumProtos"
+	#define MS_PROTO_ENUMPROTOCOLS     "Proto/EnumAccounts"
+#else
+	#define MS_PROTO_ENUMPROTOCOLS     "Proto/EnumProtocols"
+#endif
 
 //determines if a protocol module is loaded or not
 //wParam=0
@@ -220,6 +262,62 @@ typedef struct {
 //lParam=(LPARAM)(int)typing state
 #define ME_PROTO_CONTACTISTYPING "Proto/ContactIsTypingEvent"
 
+// -------------- accounts support --------------------- 0.8.0+ 
+
+typedef struct tagACCOUNT
+{
+	int    cbSize;          // sizeof this structure
+	char*  szModuleName;    // unique physical account name (matches database module name)
+	int    type;            // always equal to PROTOTYPE_PROTOCOL
+	TCHAR* tszAccountName;  // user-defined account name
+	char*  szProtoName;     // physical protocol name
+	int    bIsEnabled;      // is account enabled?
+	int    bIsVisible;      // is account visible?
+	int    iOrder;          // account order in various menus & lists
+	BOOL   bOldProto;       // old-styled account (one instance per dll)
+	struct tagPROTO_INTERFACE* ppro;  // pointer to the underlying object
+
+	HWND   hwndAccMgrUI;
+	BOOL   bAccMgrUIChanged;
+	BOOL   bDynDisabled;    // dynamic disable flag, is never written to db
+}
+	PROTOACCOUNT;
+
+//account enumeration service
+//wParam=(WPARAM)(int*)piNumAccounts
+//lParam=(LPARAM)(PROTOACCOUNT**)paAccounts
+#define MS_PROTO_ENUMACCOUNTS "Proto/EnumAccounts"
+
+__inline static INT_PTR ProtoEnumAccounts( int* accNumber, PROTOACCOUNT*** accArray )
+{	return CallService( MS_PROTO_ENUMACCOUNTS, ( WPARAM )accNumber, (LPARAM)accArray );
+}
+
+//retrieves an account's interface by its physical name (database module)
+//wParam=0
+//lParam=(LPARAM)(char*)szAccountName
+//return value = PROTOACCOUNT* or NULL
+#define MS_PROTO_GETACCOUNT "Proto/GetAccount"
+
+__inline static PROTOACCOUNT* ProtoGetAccount( const char* accName )
+{	return (PROTOACCOUNT*)CallService( MS_PROTO_GETACCOUNT, 0, (LPARAM)accName );
+}
+
+//this event is fired when the accounts list gets changed
+//wParam = event type (1 - added, 2 - changed, 3 - deleted, 4 - upgraded, 5 - enabled/disabled)
+//lParam = (LPARAM)(PROTOACCOUNT*) - account being changed
+
+#define PRAC_ADDED    1
+#define PRAC_CHANGED  2
+#define PRAC_REMOVED  3
+#define PRAC_UPGRADED 4
+#define PRAC_CHECKED  5
+
+#define ME_PROTO_ACCLISTCHANGED "Proto/AccListChanged"
+
+//displays the Account Manager
+//wParam=0
+//lParam=0
+#define MS_PROTO_SHOWACCMGR "Protos/ShowAccountManager" 
 
 /* -------------- avatar support ---------------------
 

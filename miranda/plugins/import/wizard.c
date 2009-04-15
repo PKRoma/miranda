@@ -23,16 +23,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "import.h"
 #include "resource.h"
 
-BOOL CALLBACK WizardIntroPageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam);
-BOOL CALLBACK FinishedPageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam);
-BOOL CALLBACK MirabilisPageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam);
-BOOL CALLBACK MirandaPageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam);
-BOOL CALLBACK ICQserverPageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK WizardIntroPageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK FinishedPageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK MirabilisPageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK MirandaPageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK ICQserverPageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam);
 
 extern HINSTANCE hInst;
 BOOL IsProtocolLoaded(char* pszProtocolName);
 
-BOOL CALLBACK ImportTypePageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ImportTypePageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch( message ) {
 	case WM_INITDIALOG:
@@ -70,7 +70,7 @@ BOOL CALLBACK ImportTypePageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM 
 	return FALSE;
 }
 
-BOOL CALLBACK WizardIntroPageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK WizardIntroPageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch( message ) {
 	case WM_INITDIALOG:
@@ -92,7 +92,7 @@ BOOL CALLBACK WizardIntroPageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM
 	return FALSE;
 }
 
-BOOL CALLBACK FinishedPageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK FinishedPageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch( message ) {
 	case WM_INITDIALOG:
@@ -137,7 +137,7 @@ BOOL CALLBACK FinishedPageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lP
 	return FALSE;
 }
 
-BOOL CALLBACK WizardDlgProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK WizardDlgProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	static HWND hwndPage;
 

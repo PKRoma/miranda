@@ -7,7 +7,6 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include <windows.h>
 #include <winres.h>
 #include "statusmodes.h"
 
@@ -30,17 +29,17 @@ LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_SMS                 ICON                    "res\\sms.ico"
-IDI_ICQC1               ICON                    "res\\1.ico"
-IDI_ICQC2               ICON                    "res\\2.ico"
-IDI_ICQC3               ICON                    "res\\3.ico"
-IDI_ICQC4               ICON                    "res\\4.ico"
-IDI_ICQC5               ICON                    "res\\5.ico"
-IDI_ICQC6               ICON                    "res\\6.ico"
-IDI_ICQC7               ICON                    "res\\7.ico"
-IDI_ICQC8               ICON                    "res\\8.ico"
-IDI_EMAIL               ICON                    "res\\sendmail.ico"
-IDI_NEWGROUP2           ICON                    "res\\addgoupp.ico"
+IDI_SMS                 ICON                    "res/sms.ico"
+IDI_ICQC1               ICON                    "res/1.ico"
+IDI_ICQC2               ICON                    "res/2.ico"
+IDI_ICQC3               ICON                    "res/3.ico"
+IDI_ICQC4               ICON                    "res/4.ico"
+IDI_ICQC5               ICON                    "res/5.ico"
+IDI_ICQC6               ICON                    "res/6.ico"
+IDI_ICQC7               ICON                    "res/7.ico"
+IDI_ICQC8               ICON                    "res/8.ico"
+IDI_EMAIL               ICON                    "res/sendmail.ico"
+IDI_NEWGROUP2           ICON                    "res/addgoupp.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -116,12 +115,12 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_GLOBUS              ICON                    "res\\globus.ico"
-IDI_RENAME              ICON                    "res\\rename.ico"
-IDI_DELETE              ICON                    "res\\delete.ico"
-IDI_NOTICK              ICON                    "res\\notick.ico"
-IDI_TICK                ICON                    "res\\notick1.ico"
-IDI_BLANK               ICON                    "res\\blank.ico"
+IDI_GLOBUS              ICON                    "res/globus.ico"
+IDI_RENAME              ICON                    "res/rename.ico"
+IDI_DELETE              ICON                    "res/delete.ico"
+IDI_NOTICK              ICON                    "res/notick.ico"
+IDI_TICK                ICON                    "res/notick1.ico"
+IDI_BLANK               ICON                    "res/blank.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -170,34 +169,6 @@ BEGIN
                     SS_SIMPLE | SS_NOPREFIX | WS_GROUP,7,7,270,8
     LTEXT           "This will erase all history and settings for this contact!",
                     IDC_STATIC,7,18,239,14
-END
-
-IDD_OPT_HOTKEY DIALOGEX 0, 0, 238, 136
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    GROUPBOX        "Hotkeys",IDC_STATIC,4,4,230,126
-    CONTROL         "Show/Hide:",IDC_SHOWHIDE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,19,78,9
-    CONTROL         "HotKey1",IDC_HKSHOWHIDE,"msctls_hotkey32",WS_BORDER | 
-                    WS_TABSTOP,92,17,93,12
-    CONTROL         "Read Msg:",IDC_READMSG,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,36,78,9
-    CONTROL         "HotKey1",IDC_HKREADMSG,"msctls_hotkey32",WS_BORDER | 
-                    WS_TABSTOP,92,34,93,12
-    CONTROL         "Net Search:",IDC_NETSEARCH,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,53,78,9
-    CONTROL         "HotKey1",IDC_HKSEARCH,"msctls_hotkey32",WS_BORDER | 
-                    WS_TABSTOP,92,51,93,12
-    LTEXT           "URL:",IDC_HOTKEYURLSTR,26,71,22,8
-    EDITTEXT        IDC_SEARCHURL,92,69,136,12,ES_AUTOHSCROLL
-    CONTROL         "Open in new browser window",IDC_SEARCHNEWWND,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,92,86,136,10
-    CONTROL         "Show Options",IDC_SHOWOPTIONS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,107,71,9
-    CONTROL         "HotKey1",IDC_HKSHOWOPTIONS,"msctls_hotkey32",WS_BORDER | 
-                    WS_TABSTOP,92,105,93,12
 END
 
 IDD_OPT_CLIST DIALOGEX 0, 0, 314, 206
@@ -335,7 +306,8 @@ BEGIN
     EDITTEXT        IDC_TITLETEXT,63,104,72,12,ES_AUTOHSCROLL
     CONTROL         "Enable drop shadow (restart required)",IDC_DROPSHADOW,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,194,138,10
-    GROUPBOX        "Contact List Extra Icons",IDC_STATIC,200,130,110,91
+    GROUPBOX        "Contact List Extra Icons",IDC_EXTRA_FRAME,200,130,110,
+                    91
     CONTROL         "Protocol Type",IDC_EXTRA_PROTO,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,210,143,70,10
     CONTROL         "E-mail",IDC_EXTRA_EMAIL,"Button",BS_AUTOCHECKBOX | 
@@ -573,30 +545,6 @@ BEGIN
                     12
 END
 
-IDD_OPT_HOTKEYS DIALOGEX 0, 0, 285, 240
-STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    GROUPBOX        "HotKeys",IDC_STATIC,4,4,277,154
-    PUSHBUTTON      "&Change...",IDC_CHANGE,16,213,50,14
-    PUSHBUTTON      "&Preview",IDC_PREVIEW,70,213,50,14
-    CONTROL         "Download more sounds",IDC_GETMORE,"Hyperlink",
-                    WS_TABSTOP | 0x2,127,216,137,8
-    CONTROL         "Tree1",IDC_HOTKEYTREE,"SysTreeView32",TVS_HASBUTTONS | 
-                    TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
-                    TVS_SHOWSELALWAYS | TVS_FULLROWSELECT | WS_BORDER | 
-                    WS_TABSTOP,12,15,261,137
-    GROUPBOX        "HotKey Information",IDC_SGROUP,4,162,277,71
-    LTEXT           "Location:",IDC_SLOC,140,190,40,9
-    LTEXT           "",IDC_LOCATION,180,190,75,18
-    LTEXT           "Name:",IDC_NAME,17,174,39,9
-    LTEXT           "",IDC_NAMEVAL,64,174,209,9
-    CONTROL         "HotKey1",IDC_SETHOTKEY,"msctls_hotkey32",WS_BORDER | 
-                    WS_TABSTOP,60,190,80,14
-    LTEXT           "Hotkey",IDC_HKTITLE,15,190,40,8
-END
-
 IDD_OPT_META_CLC DIALOGEX 0, 0, 259, 97
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
@@ -632,17 +580,6 @@ BEGIN
         RIGHTMARGIN, 277
         TOPMARGIN, 7
         BOTTOMMARGIN, 85
-    END
-
-    IDD_OPT_HOTKEY, DIALOG
-    BEGIN
-        LEFTMARGIN, 4
-        RIGHTMARGIN, 234
-        TOPMARGIN, 4
-        BOTTOMMARGIN, 132
-        HORZGUIDE, 23
-        HORZGUIDE, 40
-        HORZGUIDE, 57
     END
 
     IDD_OPT_CLIST, DIALOG
@@ -751,16 +688,6 @@ BEGIN
         HORZGUIDE, 222
     END
 
-    IDD_OPT_HOTKEYS, DIALOG
-    BEGIN
-        LEFTMARGIN, 4
-        RIGHTMARGIN, 281
-        VERTGUIDE, 12
-        VERTGUIDE, 273
-        TOPMARGIN, 4
-        BOTTOMMARGIN, 236
-    END
-
     IDD_OPT_META_CLC, DIALOG
     BEGIN
         LEFTMARGIN, 2
@@ -807,9 +734,9 @@ END
 // Cursor
 //
 
-IDC_HYPERLINKHAND       CURSOR                  "res\\hyperlin.cur"
-IDC_DROP                CURSOR                  "res\\dragcopy.cur"
-IDC_DROPUSER            CURSOR                  "res\\dropuser.cur"
+IDC_HYPERLINKHAND       CURSOR                  "res/hyperlin.cur"
+IDC_DROP                CURSOR                  "res/dragcopy.cur"
+IDC_DROPUSER            CURSOR                  "res/dropuser.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -909,6 +836,7 @@ END
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
+
 
 /////////////////////////////////////////////////////////////////////////////
 // English (Canada) resources

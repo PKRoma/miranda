@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
+Copyright 2000-2008 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -68,6 +68,7 @@ created.
 All PSN_ WM_NOTIFY messages have PSHNOTIFY.lParam=(LPARAM)hContact
 */
 #define PSN_INFOCHANGED   1
+#define PSN_PARAMCHANGED   2
 #define PSM_FORCECHANGED  (WM_USER+100)   //force-send a PSN_INFOCHANGED to all pages
 #define MS_USERINFO_ADDPAGE      "UserInfo/AddPage"
 

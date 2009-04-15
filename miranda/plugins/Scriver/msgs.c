@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "statusicon.h"
 
+extern void   Chat_Load();
+extern void   Chat_Unload();
 extern int    Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam);
 extern int    Chat_FontsChanged(WPARAM wParam,LPARAM lParam);
 extern int    Chat_SmileyOptionsChanged(WPARAM wParam,LPARAM lParam);
@@ -38,8 +40,7 @@ static void InitREOleCallback(void);
 
 HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand, hDragCursor;
 
-HANDLE *hMsgMenuItem = NULL, hHookWinEvt=NULL, hHookWinPopup=NULL;;
-int hMsgMenuItemCount = 0;
+HANDLE hMsgMenuItem, hHookWinEvt=NULL, hHookWinPopup=NULL;;
 
 extern HINSTANCE g_hInst;
 extern HWND GetParentWindow(HANDLE hContact, BOOL bChat);
@@ -106,7 +107,7 @@ int IsAutoPopup(HANDLE hContact) {
 	return 0;
 }
 
-static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
+static INT_PTR ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 {
 	NewMessageWindowLParam newData = { 0 };
 	HWND hwndExisting;
@@ -175,7 +176,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 }
 
 #if defined(_UNICODE)
-static int SendMessageCommandW(WPARAM wParam, LPARAM lParam)
+static INT_PTR SendMessageCommandW(WPARAM wParam, LPARAM lParam)
 {
    HWND hwnd;
    NewMessageWindowLParam newData = { 0 };
@@ -219,15 +220,16 @@ static int SendMessageCommandW(WPARAM wParam, LPARAM lParam)
 }
 #endif
 
-static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
+static INT_PTR SendMessageCommand(WPARAM wParam, LPARAM lParam)
 {
    HWND hwnd;
    NewMessageWindowLParam newData = { 0 };
 
    {
-      /* does the HCONTACT's protocol support IM messages? */
       char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
+      //logInfo("Show message window for: %s (%s)", CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, 0), szProto);
       if (szProto) {
+	      /* does the HCONTACT's protocol support IM messages? */
          if (!CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND)
             return 1;
       }
@@ -262,7 +264,7 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
    return 0;
 }
 
-static int TypingMessageCommand(WPARAM wParam, LPARAM lParam)
+static INT_PTR TypingMessageCommand(WPARAM wParam, LPARAM lParam)
 {
    CLISTEVENT *cle = (CLISTEVENT *) lParam;
 
@@ -275,18 +277,15 @@ static int TypingMessageCommand(WPARAM wParam, LPARAM lParam)
 static int TypingMessage(WPARAM wParam, LPARAM lParam)
 {
    HWND hwnd;
-   int foundWin = 0;
 
    if (!(g_dat->flags2&SMF2_SHOWTYPING))
       return 0;
    if ((hwnd = WindowList_Find(g_dat->hMessageWindowList, (HANDLE) wParam))) {
       SendMessage(hwnd, DM_TYPING, 0, lParam);
-      foundWin = 1;
-   }
-   if ((int) lParam && !foundWin && (g_dat->flags2&SMF2_SHOWTYPINGTRAY)) {
+   } else if ((int) lParam && (g_dat->flags2&SMF2_SHOWTYPINGTRAY)) {
       TCHAR szTip[256];
 
-      mir_sntprintf(szTip, sizeof(szTip), TranslateT("%s is typing a message"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCDNF_TCHAR));
+      mir_sntprintf(szTip, SIZEOF(szTip), TranslateT("%s is typing a message"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCDNF_TCHAR));
       if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY) && !(g_dat->flags2&SMF2_SHOWTYPINGCLIST)) {
          MIRANDASYSTRAYNOTIFY tn;
          tn.szProto = NULL;
@@ -327,7 +326,7 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
    szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
    if (lstrcmpA(cws->szModule, "CList") && (szProto == NULL || lstrcmpA(cws->szModule, szProto)))
       return 0;
-   WindowList_Broadcast(g_dat->hMessageWindowList, DM_UPDATETITLEBAR, (WPARAM) cws, 0);
+   WindowList_Broadcast(g_dat->hMessageWindowList, DM_CLISTSETTINGSCHANGED, (WPARAM) cws, 0);
    return 0;
 }
 
@@ -388,12 +387,12 @@ static void RestoreUnreadMessageAlerts(void)
    }
 }
 
-static int GetWindowAPI(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetWindowAPI(WPARAM wParam, LPARAM lParam)
 {
    return PLUGIN_MAKE_VERSION(0,0,0,3);
 }
 
-static int GetWindowClass(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetWindowClass(WPARAM wParam, LPARAM lParam)
 {
    char *szBuf = (char*)wParam;
    int size = (int)lParam;
@@ -401,7 +400,7 @@ static int GetWindowClass(WPARAM wParam, LPARAM lParam)
    return 0;
 }
 
-static int GetWindowData(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetWindowData(WPARAM wParam, LPARAM lParam)
 {
    MessageWindowInputData *mwid = (MessageWindowInputData*)wParam;
    MessageWindowData *mwd = (MessageWindowData*)lParam;
@@ -412,6 +411,8 @@ static int GetWindowData(WPARAM wParam, LPARAM lParam)
    if (mwid->hContact==NULL) return 1;
    if (mwid->uFlags!=MSG_WINDOW_UFLAG_MSG_BOTH) return 1;
    hwnd = WindowList_Find(g_dat->hMessageWindowList, mwid->hContact);
+   if (hwnd == NULL)
+	   hwnd = SM_FindWindowByContact(mwid->hContact);
    mwd->uFlags = MSG_WINDOW_UFLAG_MSG_BOTH;
    mwd->hwndWindow = hwnd;
    mwd->local = 0;
@@ -421,6 +422,27 @@ static int GetWindowData(WPARAM wParam, LPARAM lParam)
 
 static int MyAvatarChanged(WPARAM wParam, LPARAM lParam) {
    return 0;
+}
+
+static int PrebuildContactMenu(WPARAM wParam, LPARAM lParam) {
+	HANDLE hContact = (HANDLE)wParam;
+	if ( hContact ) {
+		char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+
+		CLISTMENUITEM clmi = {0};
+		clmi.cbSize = sizeof( CLISTMENUITEM );
+		clmi.flags = CMIM_FLAGS | CMIF_DEFAULT | CMIF_HIDDEN;
+
+		if ( szProto ) {
+			// leave this menu item hidden for chats
+			if ( !DBGetContactSettingByte( hContact, szProto, "ChatRoom", 0 ))
+				if ( CallProtoService( szProto, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND )
+					clmi.flags &= ~CMIF_HIDDEN;
+		}
+
+		CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMsgMenuItem, ( LPARAM )&clmi );
+	}
+	return 0;
 }
 
 static int AvatarChanged(WPARAM wParam, LPARAM lParam) {
@@ -437,6 +459,14 @@ static void RegisterStatusIcons() {
 	StatusIconData sid;
 	sid.cbSize = sizeof(sid);
 	sid.szModule = SRMMMOD;
+
+	sid.dwId = 1;
+	sid.hIcon = g_dat->hIcons[SMF_ICON_TYPING];
+	sid.hIconDisabled = g_dat->hIcons[SMF_ICON_TYPINGOFF];
+	sid.flags = MBF_HIDDEN;
+	sid.szTooltip = NULL;
+	AddStickyStatusIcon((WPARAM) 0, (LPARAM) &sid);
+
 	sid.dwId = 0;
 	sid.hIcon = g_dat->hIcons[SMF_ICON_UNICODEON];
 	sid.hIconDisabled = g_dat->hIcons[SMF_ICON_UNICODEOFF];
@@ -454,7 +484,14 @@ void ChangeStatusIcons() {
 	sid.hIconDisabled = CopyIcon(g_dat->hIcons[SMF_ICON_UNICODEOFF]);
 	sid.flags = 0;
 	sid.szTooltip = NULL;
-	CallService(MS_MSG_MODIFYICON, (WPARAM)NULL, (LPARAM) &sid);
+	ModifyStatusIcon((WPARAM)NULL, (LPARAM) &sid);
+
+	sid.dwId = 1;
+	sid.hIcon = CopyIcon(g_dat->hIcons[SMF_ICON_TYPING]);
+	sid.hIconDisabled = CopyIcon(g_dat->hIcons[SMF_ICON_UNICODEOFF]);
+	sid.flags = MBF_HIDDEN;
+	sid.szTooltip = NULL;
+	ModifyStatusIcon((WPARAM)NULL, (LPARAM) &sid);
 }
 
 int StatusIconPressed(WPARAM wParam, LPARAM lParam) {
@@ -466,27 +503,31 @@ int StatusIconPressed(WPARAM wParam, LPARAM lParam) {
 
 	}
 	if (hwnd != NULL) {
-		if (sicd->dwId == 0 && !strcmp(SRMMMOD, sicd->szModule)) {
-			if (sicd->flags & MBCF_RIGHTBUTTON) {
-				int codePage = (int) SendMessage(hwnd, DM_GETCODEPAGE, 0, 0);
-				if (codePage != 1200) {
-					int i, iSel;
-					for (i = 0; i < GetMenuItemCount(g_dat->hMenuANSIEncoding); i++) {
-						CheckMenuItem (g_dat->hMenuANSIEncoding, i, MF_BYPOSITION | MF_UNCHECKED);
+		if (!strcmp(SRMMMOD, sicd->szModule)) {
+			if (sicd->dwId == 0) {
+				if (sicd->flags & MBCF_RIGHTBUTTON) {
+					int codePage = (int) SendMessage(hwnd, DM_GETCODEPAGE, 0, 0);
+					if (codePage != 1200) {
+						int i, iSel;
+						for (i = 0; i < GetMenuItemCount(g_dat->hMenuANSIEncoding); i++) {
+							CheckMenuItem (g_dat->hMenuANSIEncoding, i, MF_BYPOSITION | MF_UNCHECKED);
+						}
+						if (codePage == CP_ACP) {
+							CheckMenuItem(g_dat->hMenuANSIEncoding, 0, MF_BYPOSITION | MF_CHECKED);
+						} else {
+							CheckMenuItem(g_dat->hMenuANSIEncoding, codePage, MF_BYCOMMAND | MF_CHECKED);
+						}
+						iSel = TrackPopupMenu(g_dat->hMenuANSIEncoding, TPM_RETURNCMD, sicd->clickLocation.x, sicd->clickLocation.y, 0, GetParent(hwnd), NULL);
+						if (iSel >= 500) {
+							if (iSel == 500) iSel = CP_ACP;
+							SendMessage(hwnd, DM_SETCODEPAGE, 0, iSel);
+						}
 					}
-					if (codePage == CP_ACP) {
-						CheckMenuItem(g_dat->hMenuANSIEncoding, 0, MF_BYPOSITION | MF_CHECKED);
-					} else {
-						CheckMenuItem(g_dat->hMenuANSIEncoding, codePage, MF_BYCOMMAND | MF_CHECKED);
-					}
-					iSel = TrackPopupMenu(g_dat->hMenuANSIEncoding, TPM_RETURNCMD, sicd->clickLocation.x, sicd->clickLocation.y, 0, GetParent(hwnd), NULL);
-					if (iSel >= 500) {
-						if (iSel == 500) iSel = CP_ACP;
-						SendMessage(hwnd, DM_SETCODEPAGE, 0, iSel);
-					}
+				} else {
+					SendMessage(hwnd, DM_SWITCHUNICODE, 0, 0);
 				}
 			} else {
-				SendMessage(hwnd, DM_SWITCHUNICODE, 0, 0);
+				SendMessage(hwnd, DM_SWITCHTYPING, 0, 0);
 			}
 		}
 	}
@@ -494,43 +535,31 @@ int StatusIconPressed(WPARAM wParam, LPARAM lParam) {
 }
 
 
-static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
+static int OnModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
-   CLISTMENUITEM mi;
-   PROTOCOLDESCRIPTOR **protocol;
-   int protoCount, i;
-
-   ReloadGlobals();
-   RegisterIcoLibIcons();
-   RegisterFontServiceFonts();
-   LoadGlobalIcons();
-   LoadMsgLogIcons();
-   ZeroMemory(&mi, sizeof(mi));
-   mi.cbSize = sizeof(mi);
-   mi.position = -2000090000;
+	CLISTMENUITEM mi;
+	ReloadGlobals();
+	RegisterIcoLibIcons();
+	RegisterFontServiceFonts();
+	RegisterKeyBindings();
+	LoadGlobalIcons();
+	LoadMsgLogIcons();
+	ZeroMemory(&mi, sizeof(mi));
+	mi.cbSize = sizeof(mi);
+	mi.position = -2000090000;
 	if ( ServiceExists( MS_SKIN2_GETICONBYHANDLE )) {
-		mi.flags = CMIF_ICONFROMICOLIB;
+		mi.flags = CMIF_ICONFROMICOLIB | CMIF_DEFAULT;
 		mi.icolibItem = LoadSkinnedIconHandle( SKINICON_EVENT_MESSAGE );
 	}
 	else {
-		mi.flags = 0;
+		mi.flags = CMIF_DEFAULT;
 		mi.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
 	}
-   mi.pszName = LPGEN("&Message");
-   mi.pszService = MS_MSG_SENDMESSAGE;
-   CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & protoCount, (LPARAM) & protocol);
-   for (i = 0; i < protoCount; i++) {
-      if (protocol[i]->type != PROTOTYPE_PROTOCOL)
-         continue;
-      if (CallProtoService(protocol[i]->szName, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND) {
-         mi.pszContactOwner = protocol[i]->szName;
-         hMsgMenuItem = mir_realloc(hMsgMenuItem, (hMsgMenuItemCount + 1) * sizeof(HANDLE));
-         hMsgMenuItem[hMsgMenuItemCount++] = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
-      }
-   }
-   CallService(MS_SKIN2_RELEASEICON,(WPARAM)mi.hIcon, 0);
+	mi.pszName = LPGEN("&Message");
+	mi.pszService = MS_MSG_SENDMESSAGE;
+	hMsgMenuItem = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
+	CallService(MS_SKIN2_RELEASEICON,(WPARAM)mi.hIcon, 0);
 
-	HookEvent_Ex(ME_CLIST_DOUBLECLICKED, SendMessageCommand);
 	HookEvent_Ex(ME_SMILEYADD_OPTIONSCHANGED, SmileySettingsChanged);
 	HookEvent_Ex(ME_IEVIEW_OPTIONSCHANGED, SmileySettingsChanged);
 	HookEvent_Ex(ME_AV_MYAVATARCHANGED, MyAvatarChanged);
@@ -544,7 +573,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
+int OnSystemPreshutdown(WPARAM wParam, LPARAM lParam)
 {
 	Chat_PreShutdown(wParam, lParam);
 	WindowList_BroadcastAsync(g_dat->hMessageWindowList, WM_CLOSE, 0, 0);
@@ -552,8 +581,9 @@ int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int SplitmsgShutdown(void)
+int OnUnloadModule(void)
 {
+	Chat_Unload();
 	DestroyCursor(hCurSplitNS);
 	DestroyCursor(hCurHyperlinkHand);
 	DestroyCursor(hCurSplitWE);
@@ -565,16 +595,11 @@ int SplitmsgShutdown(void)
 	FreeMsgLogIcons();
 	FreeLibrary(GetModuleHandleA("riched20.dll"));
 	OleUninitialize();
-	if (hMsgMenuItem) {
-		mir_free(hMsgMenuItem);
-		hMsgMenuItem = NULL;
-		hMsgMenuItemCount = 0;
-	}
 	FreeGlobals();
 	return 0;
 }
 
-int LoadSendRecvMessageModule(void) {
+int OnLoadModule(void) {
 	HMODULE	hDLL = 0;
 	if (LoadLibraryA("riched20.dll") == NULL) {
 		if (IDYES !=
@@ -604,10 +629,11 @@ int LoadSendRecvMessageModule(void) {
 	HookEvent_Ex(ME_DB_EVENT_ADDED, MessageEventAdded);
 	HookEvent_Ex(ME_DB_CONTACT_SETTINGCHANGED, MessageSettingChanged);
 	HookEvent_Ex(ME_DB_CONTACT_DELETED, ContactDeleted);
-	HookEvent_Ex(ME_SYSTEM_MODULESLOADED, SplitmsgModulesLoaded);
+	HookEvent_Ex(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
 	HookEvent_Ex(ME_SKIN_ICONSCHANGED, IconsChanged);
 	HookEvent_Ex(ME_PROTO_CONTACTISTYPING, TypingMessage);
-	HookEvent_Ex(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
+	HookEvent_Ex(ME_SYSTEM_PRESHUTDOWN, OnSystemPreshutdown);
+	HookEvent_Ex(ME_CLIST_PREBUILDCONTACTMENU, PrebuildContactMenu);
 
 	CreateServiceFunction_Ex(MS_MSG_SENDMESSAGE, SendMessageCommand);
  #if defined(_UNICODE)
@@ -631,6 +657,9 @@ int LoadSendRecvMessageModule(void) {
 	if (hCurHyperlinkHand == NULL)
 		hCurHyperlinkHand = LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_HYPERLINKHAND));
 	hDragCursor = LoadCursor(g_hInst,  MAKEINTRESOURCE(IDC_DRAGCURSOR));
+
+
+	Chat_Load();
 	return 0;
 }
 

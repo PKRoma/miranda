@@ -136,7 +136,7 @@ static int ClcShutdown(WPARAM wParam, LPARAM lParam)
 
 LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {     
-	struct ClcData *dat = (struct ClcData*)GetWindowLong(hwnd,0);
+	struct ClcData *dat = (struct ClcData*)GetWindowLongPtr(hwnd,0);
 	if ( msg >= CLM_FIRST && msg < CLM_LAST )
 		return pcli->pfnProcessExternalMessages(hwnd,dat,msg,wParam,lParam);
 
@@ -224,7 +224,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 				int j;
 				if (dbv.pszVal==NULL||strlen(dbv.pszVal)==0) break;
 				lstrcpynA(contact->szStatusMsg, dbv.pszVal, SIZEOF(contact->szStatusMsg));
-				for (j=strlen(contact->szStatusMsg)-1;j>=0;j--) {
+				for (j=(int)strlen(contact->szStatusMsg)-1;j>=0;j--) {
 					if (contact->szStatusMsg[j]=='\r' || contact->szStatusMsg[j]=='\n' || contact->szStatusMsg[j]=='\t') {
 						contact->szStatusMsg[j] = ' ';
 					}

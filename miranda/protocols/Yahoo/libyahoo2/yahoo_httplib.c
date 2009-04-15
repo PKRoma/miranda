@@ -288,9 +288,11 @@ struct callback_data {
 
 static void connect_complete(int fd, int error, void *data)
 {
-	struct callback_data *ccd = data;
+	struct callback_data *ccd = (struct callback_data *) data;
+	
 	if(error == 0 && fd > 0)
 		write(fd, ccd->request, strlen(ccd->request));
+	
 	FREE(ccd->request);
 	ccd->callback(ccd->id, fd, error, ccd->user_data);
 	FREE(ccd);
@@ -382,7 +384,7 @@ static void yahoo_got_url_fd(int id, int fd, int error, void *data)
 	char *filename=NULL;
 	int n;
 
-	struct url_data *ud = data;
+	struct url_data *ud = (struct url_data *) data;
 
 	if(error || fd < 0) {
 		ud->callback(id, fd, error, filename, filesize, ud->user_data);
@@ -443,11 +445,11 @@ void yahoo_get_url_fd(int id, const char *url, const struct yahoo_data *yd,
 	struct url_data *ud = y_new0(struct url_data, 1);
 	
 	//buff[0]='\0'; /*don't send them our cookies!! */
-	snprintf(buff, sizeof(buff), "Y=%s; T=%s", yd->cookie_y, yd->cookie_t);
+	snprintf(buff, sizeof(buff), "Y=%s; T=%s; B=%s", yd->cookie_y, yd->cookie_t, yd->cookie_b);
 
 	ud->callback = callback;
 	ud->user_data = data;
 //	yahoo_http_get(id, url, buff, yahoo_got_url_fd, ud);
-	YAHOO_CALLBACK(ext_yahoo_send_http_request)(id, "GET", url, buff, 0, yahoo_got_url_fd, ud);
+	YAHOO_CALLBACK(ext_yahoo_send_http_request)(id, YAHOO_CONNECTION_FT, "GET", url, buff, 0, yahoo_got_url_fd, ud);
 }
 

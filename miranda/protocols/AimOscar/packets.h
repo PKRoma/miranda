@@ -1,6 +1,22 @@
+/*
+Plugin of Miranda IM for communicating with users of the AIM protocol.
+Copyright (C) 2005-2006 Aaron Myles Landwehr
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 #ifndef PACKETS_H
 #define PACKETS_H
-#include "defines.h"
 struct flap_header
 {
     unsigned char ast;
@@ -15,11 +31,7 @@ struct snac_header
 	unsigned short flags;
 	unsigned short request_id[2];
 };
-int aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short request_id,unsigned short &offset,char* out);
-int aim_writetlv(unsigned short type,unsigned short size ,char* value,unsigned short &offset,char* out);
-int aim_sendflap(HANDLE conn, char type,unsigned short length,char *buf, unsigned short &seqno);
-int aim_writefamily(char *buf,unsigned short &offset,char* out);
-int aim_writegeneric(unsigned short size,char *buf,unsigned short &offset,char* out);
+
 inline unsigned short _htons(unsigned short s)
 {
 	return (s&0xff00)>>8|(s&0x00ff)<<8;

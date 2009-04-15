@@ -1,4 +1,4 @@
-#include "..\commonheaders.h"
+#include "../commonheaders.h"
 
 extern HINSTANCE g_hInst;
 HANDLE hStatusBarShowToolTipEvent,hStatusBarHideToolTipEvent;
@@ -6,7 +6,7 @@ boolean canloadstatusbar=FALSE;
 HWND helperhwnd=0;
 HANDLE hFrameHelperStatusBar;
 extern	 int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
-extern int GetConnectingIconService (WPARAM wParam,LPARAM lParam);
+extern INT_PTR GetConnectingIconService (WPARAM wParam,LPARAM lParam);
 extern int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
 int RecreateStatusBar();
 
@@ -24,7 +24,7 @@ RECT OldRc={0};
 static	HBITMAP hBmpBackground;
 static int backgroundBmpUse;
 static COLORREF bkColour;
-int showOpts;
+extern BYTE showOpts;
 int extraspace;
 
 int OnStatusBarBackgroundChange()
@@ -279,7 +279,7 @@ void DrawBackGround(HWND hwnd,HDC mhdc)
 			rc.left=nPanel*sectwidth+startoffset;
 			rc.right=rc.left+sectwidth-1;
 			ds.rcItem=rc;
-			ds.itemData=(DWORD)PD;
+			ds.itemData=(ULONG_PTR)PD;
 			ds.itemID=nPanel;
 
 			DrawDataForStatusBar(&ds);
@@ -568,7 +568,7 @@ HWND CreateStatusHelper(HWND parent)
 		0,0,0,0,parent,NULL,g_hInst,NULL));
 }
 
-int CreateStatusBarFrame()
+HANDLE CreateStatusBarFrame()
 {
 	CLISTFrame Frame;
 	int h;
@@ -590,7 +590,7 @@ int CreateStatusBarFrame()
 	hFrameHelperStatusBar=(HANDLE)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&Frame,(LPARAM)0);
 
 
-	return((int)hFrameHelperStatusBar);
+	return hFrameHelperStatusBar;
 }
 
 int RecreateStatusBar(HWND parent)
@@ -610,8 +610,8 @@ int RecreateStatusBar(HWND parent)
 		( DBGetContactSettingByte(0,"CLUI","SBarUseSizeGrip",TRUE) && (!UseOwnerDrawStatusBar)?SBARS_SIZEGRIP:0)|
 		WS_CHILD | (DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1)?WS_VISIBLE:0), _T(""), helperhwnd, 0);
 
-	OldWindowProc=(WNDPROC)GetWindowLong(pcli->hwndStatus,GWL_WNDPROC);
-	SetWindowLong(pcli->hwndStatus,GWL_WNDPROC,(LONG)&StatusBarOwnerDrawProc);
+	OldWindowProc=(WNDPROC)GetWindowLongPtr(pcli->hwndStatus,GWLP_WNDPROC);
+	SetWindowLongPtr(pcli->hwndStatus,GWLP_WNDPROC,(LONG_PTR)&StatusBarOwnerDrawProc);
 	CreateStatusBarFrame();
 	{
 		SetWindowPos(helperhwnd,NULL,1,1,1,1,SWP_NOZORDER);
@@ -622,12 +622,12 @@ int RecreateStatusBar(HWND parent)
 	return 0;
 }
 
-int CreateStatusBarhWnd(HWND parent)
+HWND CreateStatusBarhWnd(HWND parent)
 {	
 	RecreateStatusBar(parent);
 	OnStatusBarBackgroundChange();
 
 	hStatusBarShowToolTipEvent=CreateHookableEvent(ME_CLIST_FRAMES_SB_SHOW_TOOLTIP);
 	hStatusBarHideToolTipEvent=CreateHookableEvent(ME_CLIST_FRAMES_SB_HIDE_TOOLTIP);
-	return((int)pcli->hwndStatus);
+	return pcli->hwndStatus;
 }

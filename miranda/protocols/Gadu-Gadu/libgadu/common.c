@@ -26,6 +26,9 @@
  * \brief Funkcje wykorzystywane przez różne moduły biblioteki
  */
 #include <sys/types.h>
+#ifdef _WIN32
+#include "win32.h"
+#else
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -33,22 +36,27 @@
 #ifdef sun
 #  include <sys/filio.h>
 #endif
+#endif /* _WIN32 */
 
 #include <errno.h>
 #include <fcntl.h>
+#ifndef _WIN32
 #include <netdb.h>
+#endif
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 #include "libgadu.h"
 
 /**
  * Plik, do którego będą przekazywane informacje odpluskwiania.
  *
- * Funkcja \c gg_debug i pochodne mogą być przechwytywane przez aplikację
+ * Funkcja \c gg_debug() i pochodne mogą być przechwytywane przez aplikację
  * korzystającą z biblioteki, by wyświetlić je na żądanie użytkownika lub
  * zapisać do późniejszej analizy. Jeśli nie określono pliku, wybrane
  * informacje będą wysyłane do standardowego wyjścia błędu (\c stderr).
@@ -62,8 +70,8 @@ FILE *gg_debug_file = NULL;
 /**
  * \internal Przekazuje informacje odpluskwiania do odpowiedniej funkcji.
  *
- * Jeśli aplikacja ustawiła odpowiednią funkcję obsługi w \c
- * gg_debug_handler_session lub \c gg_debug_handler, jest ona wywoływana.
+ * Jeśli aplikacja ustawiła odpowiednią funkcję obsługi w
+ * \c gg_debug_handler_session lub \c gg_debug_handler, jest ona wywoływana.
  * W przeciwnym wypadku wynik jest wysyłany do standardowego wyjścia błędu.
  *
  * \param sess Struktura sesji (może być \c NULL)
@@ -281,7 +289,7 @@ char *gg_read_line(int sock, char *buf, int length)
 
 	for (; length > 1; buf++, length--) {
 		do {
-			if ((ret = read(sock, buf, 1)) == -1 && errno != EINTR) {
+			if ((ret = gg_sock_read(sock, buf, 1)) == -1 && errno != EINTR) {
 				gg_debug(GG_DEBUG_MISC, "// gg_read_line() error on read (errno=%d, %s)\n", errno, strerror(errno));
 				*buf = 0;
 				return NULL;
@@ -335,7 +343,7 @@ int gg_connect(void *addr, int port, int async)
 	if (bind(sock, (struct sockaddr *) &myaddr, sizeof(myaddr)) == -1) {
 		gg_debug(GG_DEBUG_MISC, "// gg_connect() bind() failed (errno=%d, %s)\n", errno, strerror(errno));
 		errno2 = errno;
-		close(sock);
+		gg_sock_close(sock);
 		errno = errno2;
 		return -1;
 	}
@@ -352,7 +360,7 @@ int gg_connect(void *addr, int port, int async)
 #endif
 			gg_debug(GG_DEBUG_MISC, "// gg_connect() ioctl() failed (errno=%d, %s)\n", errno, strerror(errno));
 			errno2 = errno;
-			close(sock);
+			gg_sock_close(sock);
 			errno = errno2;
 			return -1;
 		}
@@ -366,7 +374,7 @@ int gg_connect(void *addr, int port, int async)
 		if (errno && (!async || errno != EINPROGRESS)) {
 			gg_debug(GG_DEBUG_MISC, "// gg_connect() connect() failed (errno=%d, %s)\n", errno, strerror(errno));
 			errno2 = errno;
-			close(sock);
+			gg_sock_close(sock);
 			errno = errno2;
 			return -1;
 		}
@@ -612,7 +620,7 @@ struct gg_win32_thread *gg_win32_threads = 0;
  */
 int gg_win32_thread_socket(int thread_id, int socket)
 {
-	char close = (thread_id == -1) || socket == -1;
+	char _close = (thread_id == -1) || socket == -1;
 	gg_win32_thread *wsk = gg_win32_threads;
 	gg_win32_thread **p_wsk = &gg_win32_threads;
 
@@ -621,7 +629,7 @@ int gg_win32_thread_socket(int thread_id, int socket)
 
 	while (wsk) {
 		if ((thread_id == -1 && wsk->socket == socket) || wsk->id == thread_id) {
-			if (close) {
+			if (_close) {
 				/* socket zostaje usuniety */
 				closesocket(wsk->socket);
 				*p_wsk = wsk->next;
@@ -640,9 +648,9 @@ int gg_win32_thread_socket(int thread_id, int socket)
 		wsk = wsk->next;
 	}
 
-	if (close && socket != -1)
+	if (_close && socket != -1)
 		closesocket(socket);
-	if (close || !socket)
+	if (_close || !socket)
 		return 0;
 
 	/* Dodaje nowy element */

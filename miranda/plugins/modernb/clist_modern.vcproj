@@ -5,10 +5,8 @@
 	Name="clist_modern"
 	ProjectGUID="{D9057E63-AAAA-4FE7-800A-20C02F4761F3}"
 	RootNamespace="clist_modern"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK">
+	SccProjectName=""
+	SccLocalPath="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -22,7 +20,7 @@
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="TRUE"
 			CharacterSet="2"
-			WholeProgramOptimization="TRUE">
+			WholeProgramOptimization="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="3"
@@ -36,8 +34,6 @@
 				StringPooling="TRUE"
 				ExceptionHandling="TRUE"
 				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="FALSE"
-				EnableEnhancedInstructionSet="0"
 				DefaultCharIsUnsigned="TRUE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
@@ -51,12 +47,13 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib"
-				OutputFile="$(OutDir)/$(ProjectName).dll"
+				AdditionalDependencies="vc7to6.lib eh7.lib MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				IgnoreAllDefaultLibraries="FALSE"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				DelayLoadDLLs="gdiplus.dll"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
@@ -127,7 +124,6 @@
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
 				ShowProgress="0"
-				OutputFile="$(OutDir)/$(ProjectName).dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories=""
@@ -176,7 +172,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../../include"
-				PreprocessorDefinitions="_DEBUG_LOG;WIN32;_DEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
+				PreprocessorDefinitions="FORCE_HOTKEY_IN_MODERN;_DEBUG_LOG;WIN32;_DEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
 				GeneratePreprocessedFile="0"
 				ExceptionHandling="TRUE"
 				BasicRuntimeChecks="3"
@@ -197,7 +193,6 @@
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
-				OutputFile="$(OutDir)/$(ProjectName).dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories=""
@@ -220,7 +215,7 @@
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
+				PreprocessorDefinitions="FORCE_HOTKEY_IN_MODERN;_DEBUG"
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -250,12 +245,11 @@
 				OmitFramePointers="FALSE"
 				OptimizeForProcessor="0"
 				AdditionalIncludeDirectories="../../include"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
+				PreprocessorDefinitions="FORCE_HOTKEY_IN_MODERN;WIN32;NDEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
 				StringPooling="TRUE"
 				ExceptionHandling="TRUE"
 				RuntimeLibrary="2"
-				BufferSecurityCheck="TRUE"
-				EnableEnhancedInstructionSet="0"
+				BufferSecurityCheck="FALSE"
 				DefaultCharIsUnsigned="TRUE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
@@ -271,9 +265,9 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib"
-				OutputFile="$(OutDir)/$(ProjectName).dll"
-				IgnoreAllDefaultLibraries="FALSE"
+				AdditionalDependencies="vc7to6.lib eh7.lib MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				IgnoreDefaultLibraryNames=""
 				DelayLoadDLLs="gdiplus.dll"
 				GenerateDebugInformation="TRUE"
@@ -299,7 +293,7 @@
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
+				PreprocessorDefinitions="NDEBUG; FORCE_HOTKEY_IN_MODERN"
 				Culture="2057"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -320,197 +314,161 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
-				RelativePath=".\button.c">
+				RelativePath=".\init.cpp">
 			</File>
 			<File
-				RelativePath=".\cache_funcs.c">
+				RelativePath=".\modern_aniavatars.cpp">
 			</File>
 			<File
-				RelativePath=".\clc.c">
+				RelativePath=".\modern_awaymsg.cpp">
 			</File>
 			<File
-				RelativePath=".\clcidents.c">
+				RelativePath=".\modern_cachefuncs.cpp">
 			</File>
 			<File
-				RelativePath=".\clcitems.c">
+				RelativePath=".\modern_clc.cpp">
 			</File>
 			<File
-				RelativePath=".\clcmsgs.c">
+				RelativePath=".\modern_clcidents.cpp">
 			</File>
 			<File
-				RelativePath=".\clcopts.c">
+				RelativePath=".\modern_clcitems.cpp">
 			</File>
 			<File
-				RelativePath=".\clcpaint.c">
+				RelativePath=".\modern_clcmsgs.cpp">
 			</File>
 			<File
-				RelativePath=".\clcutils.c">
+				RelativePath=".\modern_clcopts.cpp">
 			</File>
 			<File
-				RelativePath=".\clistevents.c">
+				RelativePath=".\modern_clcpaint.cpp">
 			</File>
 			<File
-				RelativePath=".\clistmenus.c">
+				RelativePath=".\modern_clcutils.cpp">
 			</File>
 			<File
-				RelativePath=".\clistmod.c">
+				RelativePath=".\modern_clistevents.cpp">
 			</File>
 			<File
-				RelativePath=".\clistopts.c">
+				RelativePath=".\modern_clistmenus.cpp">
 			</File>
 			<File
-				RelativePath=".\clistsettings.c">
+				RelativePath=".\modern_clistmod.cpp">
 			</File>
 			<File
-				RelativePath=".\clisttray.c">
+				RelativePath=".\modern_clistopts.cpp">
 			</File>
 			<File
-				RelativePath=".\clui.c">
+				RelativePath=".\modern_clistsettings.cpp">
 			</File>
 			<File
-				RelativePath=".\cluiframes.c">
+				RelativePath=".\modern_clisttray.cpp">
 			</File>
 			<File
-				RelativePath=".\cluiservices.c">
+				RelativePath=".\modern_clui.cpp">
 			</File>
 			<File
-				RelativePath=".\commonheaders.c">
+				RelativePath=".\modern_cluiframes.cpp">
 			</File>
 			<File
-				RelativePath=".\contact.c">
+				RelativePath=".\modern_cluiservices.cpp">
 			</File>
 			<File
-				RelativePath=".\Docking.c">
+				RelativePath=".\modern_commonheaders.cpp">
 			</File>
 			<File
-				RelativePath=".\extraimage.c">
+				RelativePath=".\modern_contact.cpp">
 			</File>
 			<File
-				RelativePath=".\framesmenu.c">
+				RelativePath=".\modern_docking.cpp">
 			</File>
 			<File
-				RelativePath=".\gdiplus.cpp">
+				RelativePath=".\modern_extraimage.cpp">
 			</File>
 			<File
-				RelativePath=".\groupmenu.c">
+				RelativePath=".\modern_framesmenu.cpp">
 			</File>
 			<File
-				RelativePath=".\image_array.c">
+				RelativePath=".\modern_gdiplus.cpp">
 			</File>
 			<File
-				RelativePath=".\init.c">
+				RelativePath=".\modern_gettextasync.cpp">
 			</File>
 			<File
-				RelativePath=".\keyboard.c">
+				RelativePath=".\modern_global.cpp">
 			</File>
 			<File
-				RelativePath=".\log.c">
+				RelativePath=".\modern_groupmenu.cpp">
 			</File>
 			<File
-				RelativePath=".\modern_animated_avatars.c">
+				RelativePath=".\modern_image_array.cpp">
 			</File>
 			<File
-				RelativePath=".\modern_awaymsg.c">
+				RelativePath=".\modern_keyboard.cpp">
 			</File>
 			<File
-				RelativePath=".\modern_button.c">
+				RelativePath=".\modern_log.cpp">
 			</File>
 			<File
-				RelativePath=".\modern_gettextasync.c">
+				RelativePath=".\modern_newrowopts.cpp">
+			</File>
+			<File
+				RelativePath=".\modern_popup.cpp">
 			</File>
 			<File
 				RelativePath=".\modern_row.cpp">
 			</File>
 			<File
-				RelativePath=".\modern_skinselector.c">
+				RelativePath=".\modern_rowheight_funcs.cpp">
 			</File>
 			<File
-				RelativePath=".\modern_statusbar.c">
+				RelativePath=".\modern_rowtemplateopt.cpp">
 			</File>
 			<File
-				RelativePath=".\modern_toolbar.c">
+				RelativePath=".\modern_skinbutton.cpp">
 			</File>
 			<File
-				RelativePath=".\newrowopts.c">
+				RelativePath=".\modern_skineditor.cpp">
 			</File>
 			<File
-				RelativePath=".\popup.c">
+				RelativePath=".\modern_skinengine.cpp">
 			</File>
 			<File
-				RelativePath=".\rowheight_funcs.c">
+				RelativePath=".\modern_skinned_profile.cpp">
 			</File>
 			<File
-				RelativePath=".\rowtemplateopt.c">
+				RelativePath=".\modern_skinopt.cpp">
 			</File>
 			<File
-				RelativePath=".\SkinEditor.c">
+				RelativePath=".\modern_skinselector.cpp">
 			</File>
 			<File
-				RelativePath=".\SkinEngine.c">
+				RelativePath=".\modern_statusbar.cpp">
 			</File>
 			<File
-				RelativePath=".\SkinOpt.c">
+				RelativePath=".\modern_statusbar_options.cpp">
 			</File>
 			<File
-				RelativePath=".\viewmodes.c">
+				RelativePath=".\modern_sync.cpp">
 			</File>
 			<File
-				RelativePath=".\xpTheme.c">
+				RelativePath=".\modern_tbbutton.cpp">
+			</File>
+			<File
+				RelativePath=".\modern_toolbar.cpp">
+			</File>
+			<File
+				RelativePath=".\modern_viewmodebar.cpp">
+			</File>
+			<File
+				RelativePath=".\modern_xptheme.cpp">
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl">
 			<File
-				RelativePath=".\cache_funcs.h">
-			</File>
-			<File
-				RelativePath=".\clc.h">
-			</File>
-			<File
-				RelativePath=".\clist.h">
-			</File>
-			<File
-				RelativePath=".\clui.h">
-			</File>
-			<File
-				RelativePath=".\commonheaders.h">
-			</File>
-			<File
-				RelativePath=".\commonprototypes.h">
-			</File>
-			<File
-				RelativePath=".\defsettings.h">
-			</File>
-			<File
-				RelativePath=".\effectenum.h">
-			</File>
-			<File
-				RelativePath=".\image_array.h">
-			</File>
-			<File
-				RelativePath=".\log.h">
-			</File>
-			<File
-				RelativePath=".\menuSubsystem.h">
-			</File>
-			<File
-				RelativePath=".\modern_row.h">
-			</File>
-			<File
-				RelativePath=".\modern_statusbar.h">
-			</File>
-			<File
-				RelativePath=".\popup.h">
-			</File>
-			<File
-				RelativePath=".\rowheight_funcs.h">
-			</File>
-			<File
-				RelativePath=".\SkinEngine.h">
-			</File>
-			<File
-				RelativePath=".\statusmodes.h">
+				RelativePath=".\hdr\resource.h">
 			</File>
 			<File
 				RelativePath=".\stdafx.h">
@@ -518,6 +476,251 @@
 			<File
 				RelativePath=".\version.h">
 			</File>
+			<Filter
+				Name="hdr"
+				Filter="">
+				<File
+					RelativePath=".\hdr\modern_awaymsg.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_cache_funcs.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_clc.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_clcpaint.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_clist.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_clui.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_cluiframes.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_commonheaders.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_commonprototypes.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_defsettings.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_effectenum.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_gettextasync.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_global_structure.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_image_array.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_log.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_popup.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_row.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_rowheight_funcs.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_skinengine.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_skinned_profile.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_skinselector.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_static_clui.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_statusbar.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_statusmodes.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_sync.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_tstring.h">
+				</File>
+			</Filter>
+			<Filter
+				Name="m_api"
+				Filter="">
+				<File
+					RelativePath="..\..\include\m_addcontact.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_avatars.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_awaymsg.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_button.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_chat.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_clc.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_clist.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_clistint.h">
+				</File>
+				<File
+					RelativePath=".\m_api\m_clui.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_clui.h">
+				</File>
+				<File
+					RelativePath=".\m_api\m_cluiframes.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_contactdir.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_contacts.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_database.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_email.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_file.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_findadd.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_fontservice.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_fuse.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_genmenu.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_history.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_icolib.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_icq.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_idle.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_ignore.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_imgsrvc.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_langpack.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_message.h">
+				</File>
+				<File
+					RelativePath=".\m_api\m_metacontacts.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_netlib.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_options.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_plugins.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_png.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_popup.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_protocols.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_protomod.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_protosvc.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_skin.h">
+				</File>
+				<File
+					RelativePath=".\m_api\m_skin_eng.h">
+				</File>
+				<File
+					RelativePath=".\m_api\m_skinbutton.h">
+				</File>
+				<File
+					RelativePath=".\m_api\m_skinned_profile.h">
+				</File>
+				<File
+					RelativePath=".\m_api\m_smileyadd.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_system.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_system_cpp.h">
+				</File>
+				<File
+					RelativePath=".\m_api\m_toolbar.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_url.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_userinfo.h">
+				</File>
+				<File
+					RelativePath="..\..\include\m_utils.h">
+				</File>
+				<File
+					RelativePath=".\m_api\m_variables.h">
+				</File>
+				<File
+					RelativePath=".\m_api\m_xpTheme.h">
+				</File>
+				<File
+					RelativePath="..\..\include\newpluginapi.h">
+				</File>
+				<File
+					RelativePath="..\..\include\statusmodes.h">
+				</File>
+				<File
+					RelativePath="..\..\include\win2k.h">
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -664,185 +867,6 @@
 					RelativePath=".\res\skin.msf">
 				</File>
 			</Filter>
-		</Filter>
-		<Filter
-			Name="m_api"
-			Filter="">
-			<File
-				RelativePath="..\..\include\m_addcontact.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_avatars.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_awaymsg.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_button.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_chat.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_clc.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_clist.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_clistint.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_clui.h">
-			</File>
-			<File
-				RelativePath=".\m_api\m_clui.h">
-			</File>
-			<File
-				RelativePath=".\m_api\m_cluiframes.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_contactdir.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_contacts.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_database.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_email.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_file.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_findadd.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_fontservice.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_fuse.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_genmenu.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_history.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_icolib.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_icq.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_idle.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_ignore.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_imgsrvc.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_langpack.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_message.h">
-			</File>
-			<File
-				RelativePath=".\m_api\m_metacontacts.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_netlib.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_options.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_plugins.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_png.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_popup.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_protocols.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_protomod.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_protosvc.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_skin.h">
-			</File>
-			<File
-				RelativePath=".\m_api\m_skin_eng.h">
-			</File>
-			<File
-				RelativePath=".\m_api\m_skinbutton.h">
-			</File>
-			<File
-				RelativePath=".\m_api\m_smileyadd.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_system.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_system_cpp.h">
-			</File>
-			<File
-				RelativePath=".\m_api\m_toolbar.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_url.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_userinfo.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_utils.h">
-			</File>
-			<File
-				RelativePath=".\m_api\m_variables.h">
-			</File>
-			<File
-				RelativePath=".\m_api\m_xpTheme.h">
-			</File>
-			<File
-				RelativePath="..\..\include\newpluginapi.h">
-			</File>
-			<File
-				RelativePath="..\..\include\statusmodes.h">
-			</File>
-			<File
-				RelativePath="..\..\include\win2k.h">
-			</File>
-		</Filter>
-		<Filter
-			Name="hdr"
-			Filter="">
-			<File
-				RelativePath=".\hdr\cluiframes.h">
-			</File>
-			<File
-				RelativePath=".\hdr\modern_awaymsg.h">
-			</File>
-			<File
-				RelativePath=".\hdr\modern_gettextasync.h">
-			</File>
-			<File
-				RelativePath=".\hdr\modern_global_structure.h">
-			</File>
-			<File
-				RelativePath=".\hdr\modern_skinselector.h">
-			</File>
 		</Filter>
 	</Files>
 	<Globals>

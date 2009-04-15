@@ -106,6 +106,13 @@ const
     PF4_FORCEAUTH	    = $00000001; // protocol has to send auth's for things to work
     PF4_FORCEADDED	    = $00000002; // protocol has to tell people that they were added (otherwise things don't work)
     PF4_NOCUSTOMAUTH    = $00000004; // protocol can't send a custom message while asking others for auth
+	PF4_SUPPORTTYPING   = $00000008; // protocol supports user is typing messages v0.3.3+
+	PF4_SUPPORTIDLE     = $00000010; // protocol understands idle, added during v0.3.4+ (2004/09/13)
+	PF4_AVATARS		    = $00000020; // protocol has avatar support, added during v0.3.4 (2004/09/13)
+	PF4_OFFLINEFILES    = $00000040; // protocols supports sending files to offline users (v0.5.2)
+	PF4_IMSENDUTF       = $00000080; // protocol is able to process messages in utf-8 (v.0.7.0+)
+	PF4_IMSENDOFFLINE   = $00000100; // protocol supports sending offline messages (v0.8.0+)
+	PF4_INFOSETTINGSVC  = $00000200; // protocol supports user info translation services (v0.8.0+)
 
     PFLAG_UNIQUEIDSETTING      = 300; // v0.3+: returns the DB setting name (e.g. szProto=ICQ, szSetting=UIN) that has the ID which makes this user unique on that system (0.3a ONLY), the string is statically allocated so no need to free()
 

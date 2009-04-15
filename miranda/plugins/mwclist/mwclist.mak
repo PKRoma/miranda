@@ -1,7 +1,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on mwclist.dsp
 !IF "$(CFG)" == ""
-CFG=mwclist - Win32 Debug Unicode
-!MESSAGE No configuration specified. Defaulting to mwclist - Win32 Debug Unicode.
+CFG=mwclist - Win32 Release Unicode
+!MESSAGE No configuration specified. Defaulting to mwclist - Win32 Release Unicode.
 !ENDIF 
 
 !IF "$(CFG)" != "mwclist - Win32 Release" && "$(CFG)" != "mwclist - Win32 Debug" && "$(CFG)" != "mwclist - Win32 Release Unicode" && "$(CFG)" != "mwclist - Win32 Debug Unicode"
@@ -158,7 +158,6 @@ CLEAN :
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(OUTDIR)\clist_mw.exp"
-	-@erase "$(OUTDIR)\clist_mw.lib"
 	-@erase "$(OUTDIR)\clist_mw.pdb"
 	-@erase "..\..\bin\debug\plugins\clist_mw.dll"
 	-@erase "..\..\bin\debug\plugins\clist_mw.ilk"

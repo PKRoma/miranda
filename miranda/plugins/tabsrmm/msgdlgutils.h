@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -26,6 +26,9 @@ $Id$
 #ifndef _MSGDLGUTILS_H
 #define _MSGDLGUTILS_H
 
+//MAD
+HWND GetLastChild(HWND hwndParent);
+//MAD_
 void        CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *bminfo);
 int         IsMetaContact(HWND hwndDlg, struct MessageWindowData *dat);
 char        *GetCurrentMetaContactProto(HWND hwndDlg, struct MessageWindowData *dat);
@@ -50,7 +53,7 @@ void        SaveInputHistory(HWND hwndDlg, struct MessageWindowData *dat, WPARAM
 void        GetContactUIN(HWND hwndDlg, struct MessageWindowData *dat);
 void        SetMessageLog(HWND hwndDlg, struct MessageWindowData *dat);
 void        SwitchMessageLog(HWND hwndDlg, struct MessageWindowData *dat, int iMode);
-unsigned int GetIEViewMode(HWND hwndDlg, struct MessageWindowData *dat);
+unsigned int GetIEViewMode(HWND hwndDlg, HANDLE hContact);
 void        FindFirstEvent(HWND hwndDlg, struct MessageWindowData *dat);
 void        SaveSplitter(HWND hwndDlg, struct MessageWindowData *dat);
 void        LoadSplitter(HWND hwndDlg, struct MessageWindowData *dat);
@@ -58,7 +61,6 @@ void        PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd)
 void        SwitchMessageLog(HWND hwndDlg, struct MessageWindowData *dat, int iMode);
 void        GetSendFormat(HWND hwndDlg, struct MessageWindowData *dat, int mode);
 void        GetLocaleID(struct MessageWindowData *dat, char *szKLName);
-BOOL        IsUnicodeAscii(const wchar_t* pBuffer, int nSize);
 void        GetDataDir();
 void        LoadOwnAvatar(HWND hwndDlg, struct MessageWindowData *dat);
 void        LoadContactAvatar(HWND hwndDlg, struct MessageWindowData *dat);
@@ -82,8 +84,8 @@ void        GetClientIcon(struct MessageWindowData *dat, HWND hwndDlg);
 void        GetMaxMessageLength(HWND hwndDlg, struct MessageWindowData *dat);
 void        RearrangeTab(HWND hwndDlg, struct MessageWindowData *dat, int iMode, BOOL fSavePos);
 void        GetCachedStatusMsg(HWND hwndDlg, struct MessageWindowData *dat);
-int         MY_pathToRelative(const char *pSrc, char *pOut);
-int         MY_pathToAbsolute(const char *pSrc, char *pOut);
+size_t      MY_pathToRelative(const char *pSrc, char *pOut);
+size_t      MY_pathToAbsolute(const char *pSrc, char *pOut);
 void        GetRealIEViewWindow(HWND hwndDlg, struct MessageWindowData *dat);
 BOOL        IsStatusEvent(int eventType);
 void        GetMyNick(HWND hwndDlg, struct MessageWindowData *dat);
@@ -95,8 +97,8 @@ HICON       MY_GetContactIcon(struct MessageWindowData *dat);
 void        MTH_updatePreview(HWND hwndDlg, struct MessageWindowData *dat);
 void        MTH_updateMathWindow(HWND hwndDlg, struct MessageWindowData *dat);
 
-extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 struct RTFColorTable {
     TCHAR szName[10];

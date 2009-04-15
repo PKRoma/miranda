@@ -1,4 +1,4 @@
-/* $Id: tif_vms.c,v 1.3 2006/10/28 19:36:44 drolon Exp $ */
+/* $Id: tif_vms.c,v 1.9 2008/04/05 17:55:40 drolon Exp $ */
 
 /*
  * Copyright (c) 1988-1997 Sam Leffler
@@ -339,15 +339,15 @@ asm("_$$PsectAttributes_NOSHR$$_TIFFerrorHandler")
 /* IEEE floting point handling */
 
 typedef	struct ieeedouble {
-	u_long	mant2;			/* fix NDR: full 8-byte swap */
-	u_long	mant	: 20,
-		exp	: 11,
-		sign	: 1;
+	unsigned long	mant2;          /* fix NDR: full 8-byte swap */
+	unsigned long	mant	: 20,
+		        exp	: 11,
+		        sign	: 1;
 } ieeedouble;
 typedef	struct ieeefloat {
-	u_long	mant	: 23,
-		exp	: 8,
-		sign	: 1;
+	unsigned long   mant	: 23,
+		        exp	: 8,
+		        sign	: 1;
 } ieeefloat;
 
 /* 
@@ -356,18 +356,18 @@ typedef	struct ieeefloat {
  */
 
 typedef	struct {
-	u_long	mant1	: 7,
-		exp	: 8,
-		sign	: 1,
-		mant2	: 16,
-		mant3   : 16,
-		mant4   : 16;
+	unsigned long	mant1	: 7,
+		        exp	: 8,
+		        sign	: 1,
+		        mant2	: 16,
+		        mant3   : 16,
+		        mant4   : 16;
 } nativedouble;
 typedef	struct {
-	u_long	mant1	: 7,
-		exp	: 8,
-		sign	: 1,
-		mant2	: 16;
+	unsigned long	mant1	: 7,
+		        exp	: 8,
+		        sign	: 1,
+		        mant2	: 16;
 } nativefloat;
 
 typedef	union {

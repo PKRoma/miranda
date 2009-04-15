@@ -136,6 +136,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define GC_TYPNOTIF        0x0040		//NOT SUPPORTED YET! Enable typing notifications.
 #define GC_CHANMGR         0x0080		//enable the 'channel settings' button
 #define GC_SINGLEFORMAT 0x0100		//the protocol supports only 1 formatting per message
+#define GC_FONTSIZE	0x0200		//enable font size selection
 
 #define GC_UNICODE        0x01000		//NOT SUPPORTED YET! Enable unicode (if chat supports it),
 													//Pass UNICODE instead of ASCII. Note that
@@ -498,7 +499,7 @@ typedef struct {
 	DWORD dwFlags;						// event flags: GCEF_ADDTOLOG, GC_UNICODE
 
                                  // FALSE any other time than when initializing the window (before sending SESSION_INITDONE)
-	DWORD		dwItemData;          // User specified data.
+	DWORD_PTR dwItemData;          // User specified data.
 	DWORD   time;                // Timestamp of the event
 }
 	GCEVENT;
@@ -552,7 +553,7 @@ typedef struct {
 	char*		pszModule;			// the module name as registered in MS_GC_REGISTER
 	TCHAR*	pszID;				// unique ID of the session
 	TCHAR*	pszName;			// display name of the session
-	DWORD    dwItemData;			// user specified data.
+	DWORD_PTR   dwItemData;			// user specified data.
 	int		iCount;				// count of users in the nicklist
 	char*		pszUsers;			// space separated string containing the UID's of the users in the user list.
 									// NOTE. Use Mirandas mmi_free() on the returned string.
@@ -596,7 +597,7 @@ typedef struct {
 		char*   pszUID;   // unique identifier, usage depends on type of event
 		TCHAR*  ptszUID;
 	};
-	DWORD   dwData;    // user defined data, usage depends on type of event
+	DWORD_PTR dwData;    // user defined data, usage depends on type of event
 }
 	GCHOOK;
 
@@ -620,6 +621,12 @@ typedef struct {
 #define MENU_POPUPSEPARATOR	3		// add separator to current submenu
 #define MENU_SEPARATOR		4		// add separator to menu
 #define MENU_ITEM			5		// add item
+
+// Added in Miranda IM 0.8.0.6+
+#define MENU_POPUPCHECK		6		// add checked item to current submenu
+#define MENU_CHECK			7		// add checked item
+#define MENU_POPUPHMENU		8		// add custom submenu to current submenu, use dwID to specify HMENU
+#define MENU_HMENU			9		// add custom submenu, use dwID to specify HMENU
 
 // type of menu that is being requested
 #define MENU_ON_LOG			1		// pop up menu on the message log

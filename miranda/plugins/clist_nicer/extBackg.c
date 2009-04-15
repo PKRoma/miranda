@@ -23,7 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 #include "coolsb/coolscroll.h"
-#include "uxtheme.h"
 
 extern int g_hottrack;
 extern struct CluiData g_CluiData;
@@ -275,99 +274,97 @@ StatusItems_t *GetProtocolStatusItem(const char *szProto)
 // fills the struct with the settings in the database
 void LoadExtBkSettingsFromDB()
 {
-    DWORD ret;
-    int n;
-    char buffer[255];
-    int protoCount = 0, i;
-    PROTOCOLDESCRIPTOR **protos = 0;
-    DBVARIANT dbv = {0};
+	DWORD ret;
+	int n;
+	char buffer[255];
+	int protoCount = 0, i;
+	PROTOACCOUNT **accs = 0;
+	DBVARIANT dbv = {0};
 
-    CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM)&protoCount, (LPARAM)&protos);
+	ProtoEnumAccounts( &protoCount, &accs );
 
-    StatusItems = (StatusItems_t *)malloc(sizeof(StatusItems_t) * ((ID_EXTBK_LAST - ID_STATUS_OFFLINE) + protoCount + 2));
-    CopyMemory(StatusItems, _StatusItems, sizeof(_StatusItems));
+	StatusItems = (StatusItems_t *)malloc(sizeof(StatusItems_t) * ((ID_EXTBK_LAST - ID_STATUS_OFFLINE) + protoCount + 2));
+	CopyMemory(StatusItems, _StatusItems, sizeof(_StatusItems));
 
-    for(i = 0; i < protoCount; i++) {
-        if(protos[i]->type != PROTOTYPE_PROTOCOL)
-            continue;
-        ID_EXTBK_LAST++;
-        CopyMemory(&StatusItems[ID_EXTBK_LAST - ID_STATUS_OFFLINE], &StatusItems[0], sizeof(StatusItems_t));
-        mir_snprintf(StatusItems[ID_EXTBK_LAST - ID_STATUS_OFFLINE].szDBname, 30, "EXBK_%s", protos[i]->szName);
-        if(i == 0) {
-            lstrcpynA(StatusItems[ID_EXTBK_LAST - ID_STATUS_OFFLINE].szName, "{-}", 30);
-            strncat(StatusItems[ID_EXTBK_LAST - ID_STATUS_OFFLINE].szName, protos[i]->szName, 30);
-        }
-        else
-            lstrcpynA(StatusItems[ID_EXTBK_LAST - ID_STATUS_OFFLINE].szName, protos[i]->szName, 30);
-        StatusItems[ID_EXTBK_LAST - ID_STATUS_OFFLINE].statusID = ID_EXTBK_LAST;
-    }
-    for (n = 0; n <= ID_EXTBK_LAST - ID_STATUS_OFFLINE; n++) {
-        if (StatusItems[n].statusID != ID_EXTBKSEPARATOR) {
-            StatusItems[n].imageItem = 0;
-            lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_IGNORE");
-            ret = DBGetContactSettingByte(NULL, "CLCExt", buffer, StatusItems[n].IGNORED);
-            StatusItems[n]. IGNORED = (BYTE) ret;
+	for(i = 0; i < protoCount; i++) {
+		ID_EXTBK_LAST++;
+		CopyMemory(&StatusItems[ID_EXTBK_LAST - ID_STATUS_OFFLINE], &StatusItems[0], sizeof(StatusItems_t));
+		mir_snprintf(StatusItems[ID_EXTBK_LAST - ID_STATUS_OFFLINE].szDBname, 30, "EXBK_%s", accs[i]->szModuleName );
+		if(i == 0) {
+			lstrcpynA(StatusItems[ID_EXTBK_LAST - ID_STATUS_OFFLINE].szName, "{-}", 30);
+			strncat(StatusItems[ID_EXTBK_LAST - ID_STATUS_OFFLINE].szName, accs[i]->szModuleName, 30);
+		}
+		else
+			lstrcpynA(StatusItems[ID_EXTBK_LAST - ID_STATUS_OFFLINE].szName, accs[i]->szModuleName, 30);
+		StatusItems[ID_EXTBK_LAST - ID_STATUS_OFFLINE].statusID = ID_EXTBK_LAST;
+	}
+	for (n = 0; n <= ID_EXTBK_LAST - ID_STATUS_OFFLINE; n++) {
+		if (StatusItems[n].statusID != ID_EXTBKSEPARATOR) {
+			StatusItems[n].imageItem = 0;
+			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_IGNORE");
+			ret = DBGetContactSettingByte(NULL, "CLCExt", buffer, StatusItems[n].IGNORED);
+			StatusItems[n]. IGNORED = (BYTE) ret;
 
-            lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_GRADIENT");
-            ret = DBGetContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].GRADIENT);            
-            StatusItems[n]. GRADIENT = (BYTE) ret;
+			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_GRADIENT");
+			ret = DBGetContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].GRADIENT);            
+			StatusItems[n]. GRADIENT = (BYTE) ret;
 
-            lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_CORNER");
-            ret = DBGetContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].CORNER);
-            StatusItems[n]. CORNER = (BYTE) ret;
+			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_CORNER");
+			ret = DBGetContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].CORNER);
+			StatusItems[n]. CORNER = (BYTE) ret;
 
-            lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_COLOR");
-            ret = DBGetContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].COLOR);
-            StatusItems[n]. COLOR = ret;
+			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_COLOR");
+			ret = DBGetContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].COLOR);
+			StatusItems[n]. COLOR = ret;
 
-            lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_COLOR2");
-            ret = DBGetContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].COLOR2);
-            StatusItems[n]. COLOR2 = ret;           
+			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_COLOR2");
+			ret = DBGetContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].COLOR2);
+			StatusItems[n]. COLOR2 = ret;           
 
-            lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_COLOR2_TRANSPARENT");
-            ret = DBGetContactSettingByte(NULL, "CLCExt", buffer, StatusItems[n].COLOR2_TRANSPARENT);
-            StatusItems[n]. COLOR2_TRANSPARENT = (BYTE) ret;
+			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_COLOR2_TRANSPARENT");
+			ret = DBGetContactSettingByte(NULL, "CLCExt", buffer, StatusItems[n].COLOR2_TRANSPARENT);
+			StatusItems[n]. COLOR2_TRANSPARENT = (BYTE) ret;
 
-            lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_TEXTCOLOR");
-            ret = DBGetContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].TEXTCOLOR);
-            StatusItems[n]. TEXTCOLOR = ret;
+			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_TEXTCOLOR");
+			ret = DBGetContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].TEXTCOLOR);
+			StatusItems[n]. TEXTCOLOR = ret;
 
-            lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_ALPHA");
-            ret = DBGetContactSettingByte(NULL, "CLCExt", buffer, StatusItems[n].ALPHA);
-            StatusItems[n]. ALPHA = ret;
+			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_ALPHA");
+			ret = DBGetContactSettingByte(NULL, "CLCExt", buffer, StatusItems[n].ALPHA);
+			StatusItems[n]. ALPHA = ret;
 
-            lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_MRGN_LEFT");
-            ret = DBGetContactSettingByte(NULL, "CLCExt", buffer, StatusItems[n].MARGIN_LEFT);
-            StatusItems[n]. MARGIN_LEFT = ret;
+			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_MRGN_LEFT");
+			ret = DBGetContactSettingByte(NULL, "CLCExt", buffer, StatusItems[n].MARGIN_LEFT);
+			StatusItems[n]. MARGIN_LEFT = ret;
 
-            lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_MRGN_TOP");
-            ret = DBGetContactSettingByte(NULL, "CLCExt", buffer, StatusItems[n].MARGIN_TOP);
-            StatusItems[n]. MARGIN_TOP = ret;
+			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_MRGN_TOP");
+			ret = DBGetContactSettingByte(NULL, "CLCExt", buffer, StatusItems[n].MARGIN_TOP);
+			StatusItems[n]. MARGIN_TOP = ret;
 
-            lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_MRGN_RIGHT");
-            ret = DBGetContactSettingByte(NULL, "CLCExt", buffer, StatusItems[n].MARGIN_RIGHT);
-            StatusItems[n]. MARGIN_RIGHT = ret;
+			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_MRGN_RIGHT");
+			ret = DBGetContactSettingByte(NULL, "CLCExt", buffer, StatusItems[n].MARGIN_RIGHT);
+			StatusItems[n]. MARGIN_RIGHT = ret;
 
-            lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_MRGN_BOTTOM");
-            ret = DBGetContactSettingByte(NULL, "CLCExt", buffer, StatusItems[n].MARGIN_BOTTOM);
-            StatusItems[n]. MARGIN_BOTTOM = ret;
+			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_MRGN_BOTTOM");
+			ret = DBGetContactSettingByte(NULL, "CLCExt", buffer, StatusItems[n].MARGIN_BOTTOM);
+			StatusItems[n]. MARGIN_BOTTOM = ret;
 
-            lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_BDRSTYLE");
-            ret = DBGetContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].BORDERSTYLE);
-            StatusItems[n]. BORDERSTYLE = ret;
-        }
-    }
-    if(g_CluiData.bFirstRun) {
-        StatusItems_t *item = &StatusItems[ID_EXTBKBUTTONBAR - ID_STATUS_OFFLINE];
+			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_BDRSTYLE");
+			ret = DBGetContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].BORDERSTYLE);
+			StatusItems[n]. BORDERSTYLE = ret;
+		}
+	}
+	if(g_CluiData.bFirstRun) {
+		StatusItems_t *item = &StatusItems[ID_EXTBKBUTTONBAR - ID_STATUS_OFFLINE];
 
-        item->COLOR = GetSysColor(COLOR_3DFACE);
-        item->COLOR2 = GetSysColor(COLOR_3DFACE);
+		item->COLOR = GetSysColor(COLOR_3DFACE);
+		item->COLOR2 = GetSysColor(COLOR_3DFACE);
 
-        item = &StatusItems[ID_EXTBKEVTAREA - ID_STATUS_OFFLINE];
-        item->COLOR = item->COLOR2 = GetSysColor(COLOR_WINDOW);
-        item->BORDERSTYLE = EDGE_ETCHED;
-        SaveCompleteStructToDB();
-    }
+		item = &StatusItems[ID_EXTBKEVTAREA - ID_STATUS_OFFLINE];
+		item->COLOR = item->COLOR2 = GetSysColor(COLOR_WINDOW);
+		item->BORDERSTYLE = EDGE_ETCHED;
+		SaveCompleteStructToDB();
+	}
 }
 
 // writes whole struct to the database
@@ -621,13 +618,152 @@ DWORD __fastcall HexStringToLong(const char *szSource)
     return(RGB(GetBValue(clr), GetGValue(clr), GetRValue(clr)));
 }
 
-static StatusItems_t default_item = 
-    {"{--Contact--}", "", 0, 
+static StatusItems_t default_item =  {
+	"{--Contact--}", "", 0,
      CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
      CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, -1, 
      CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, 
-     CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE};
+     CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+};
 
+
+static void PreMultiply(HBITMAP hBitmap, int mode)
+{
+	BYTE *p = NULL;
+	DWORD dwLen;
+    int width, height, x, y;
+    BITMAP bmp;
+    BYTE alpha;
+
+	GetObject(hBitmap, sizeof(bmp), &bmp);
+    width = bmp.bmWidth;
+	height = bmp.bmHeight;
+	dwLen = width * height * 4;
+	p = (BYTE *)malloc(dwLen);
+    if(p) {
+        GetBitmapBits(hBitmap, dwLen, p);
+        for (y = 0; y < height; ++y) {
+            BYTE *px = p + width * 4 * y;
+
+            for (x = 0; x < width; ++x) {
+                if(mode) {
+                    alpha = px[3];
+                    px[0] = px[0] * alpha/255;
+                    px[1] = px[1] * alpha/255;
+                    px[2] = px[2] * alpha/255;
+                }
+                else
+                    px[3] = 255;
+                px += 4;
+            }
+        }
+        dwLen = SetBitmapBits(hBitmap, dwLen, p);
+        free(p);
+    }
+}
+
+static void CorrectBitmap32Alpha(HBITMAP hBitmap)
+{
+	BITMAP bmp;
+	DWORD dwLen;
+	BYTE *p;
+	int x, y;
+    BOOL fixIt = TRUE;
+
+	GetObject(hBitmap, sizeof(bmp), &bmp);
+
+	if (bmp.bmBitsPixel != 32)
+		return;
+
+	dwLen = bmp.bmWidth * bmp.bmHeight * (bmp.bmBitsPixel / 8);
+	p = (BYTE *)malloc(dwLen);
+	if (p == NULL)
+		return;
+	memset(p, 0, dwLen);
+
+	GetBitmapBits(hBitmap, dwLen, p);
+
+	for (y = 0; y < bmp.bmHeight; ++y) {
+        BYTE *px = p + bmp.bmWidth * 4 * y;
+
+        for (x = 0; x < bmp.bmWidth; ++x)
+		{
+			if (px[3] != 0)
+			{
+				fixIt = FALSE;
+			}
+			else
+			{
+				px[3] = 255;
+			}
+
+			px += 4;
+		}
+	}
+
+	if (fixIt)
+	{
+		SetBitmapBits(hBitmap, bmp.bmWidth * bmp.bmHeight * 4, p);
+	}
+
+	free(p);
+}
+
+static HBITMAP LoadPNG(const char *szFilename, ImageItem *item)
+{
+    HBITMAP hBitmap = 0;
+
+    hBitmap = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM)szFilename);
+    if(hBitmap != 0)
+        CorrectBitmap32Alpha(hBitmap);
+
+    return hBitmap;
+}
+
+static void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc)
+{
+    HBITMAP hbm = LoadPNG(fileName, item);
+    BITMAP bm;
+
+    if(hbm) {
+        item->hbm = hbm;
+        item->bf.BlendFlags = 0;
+        item->bf.BlendOp = AC_SRC_OVER;
+        item->bf.AlphaFormat = 0;
+
+        GetObject(hbm, sizeof(bm), &bm);
+        if(bm.bmBitsPixel == 32) {
+            PreMultiply(hbm, 1);
+            item->dwFlags |= IMAGE_PERPIXEL_ALPHA;
+            item->bf.AlphaFormat = AC_SRC_ALPHA;
+        }
+        item->width = bm.bmWidth;
+        item->height = bm.bmHeight;
+        item->inner_height = item->height - item->bTop - item->bBottom;
+        item->inner_width = item->width - item->bLeft - item->bRight;
+        if(item->bTop && item->bBottom && item->bLeft && item->bRight) {
+            item->dwFlags |= IMAGE_FLAG_DIVIDED;
+            if(item->inner_height <= 0 || item->inner_width <= 0) {
+                DeleteObject(hbm);
+                item->hbm = 0;
+                return;
+            }
+        }
+        item->hdc = CreateCompatibleDC(hdc);
+        item->hbmOld = SelectObject(item->hdc, item->hbm);
+    }
+}
+
+static void IMG_DeleteItem(ImageItem *item)
+{
+    if(!(item->dwFlags & IMAGE_GLYPH)) {
+        SelectObject(item->hdc, item->hbmOld);
+        DeleteObject(item->hbm);
+        DeleteDC(item->hdc);
+    }
+    if(item->fillBrush)
+        DeleteObject(item->fillBrush);
+}
 
 static void ReadItem(StatusItems_t *this_item, char *szItem, char *file)
 {
@@ -864,144 +1000,6 @@ imgread_done:
     ReleaseDC(pcli->hwndContactList, hdc);
 }
 
-static void PreMultiply(HBITMAP hBitmap, int mode)
-{
-	BYTE *p = NULL;
-	DWORD dwLen;
-    int width, height, x, y;
-    BITMAP bmp;
-    BYTE alpha;
-    
-	GetObject(hBitmap, sizeof(bmp), &bmp);
-    width = bmp.bmWidth;
-	height = bmp.bmHeight;
-	dwLen = width * height * 4;
-	p = (BYTE *)malloc(dwLen);
-    if(p) {
-        GetBitmapBits(hBitmap, dwLen, p);
-        for (y = 0; y < height; ++y) {
-            BYTE *px = p + width * 4 * y;
-
-            for (x = 0; x < width; ++x) {
-                if(mode) {
-                    alpha = px[3];
-                    px[0] = px[0] * alpha/255;
-                    px[1] = px[1] * alpha/255;
-                    px[2] = px[2] * alpha/255;
-                }
-                else
-                    px[3] = 255;
-                px += 4;
-            }
-        }
-        dwLen = SetBitmapBits(hBitmap, dwLen, p);
-        free(p);
-    }
-}
-
-static void CorrectBitmap32Alpha(HBITMAP hBitmap)
-{
-	BITMAP bmp;
-	DWORD dwLen;
-	BYTE *p;
-	int x, y;
-    BOOL fixIt = TRUE;
-
-	GetObject(hBitmap, sizeof(bmp), &bmp);
-
-	if (bmp.bmBitsPixel != 32)
-		return;
-
-	dwLen = bmp.bmWidth * bmp.bmHeight * (bmp.bmBitsPixel / 8);
-	p = (BYTE *)malloc(dwLen);
-	if (p == NULL)
-		return;
-	memset(p, 0, dwLen);
-
-	GetBitmapBits(hBitmap, dwLen, p);
-
-	for (y = 0; y < bmp.bmHeight; ++y) {
-        BYTE *px = p + bmp.bmWidth * 4 * y;
-
-        for (x = 0; x < bmp.bmWidth; ++x) 
-		{
-			if (px[3] != 0) 
-			{
-				fixIt = FALSE;
-			}
-			else
-			{
-				px[3] = 255;
-			}
-
-			px += 4;
-		}
-	}
-
-	if (fixIt)
-	{
-		SetBitmapBits(hBitmap, bmp.bmWidth * bmp.bmHeight * 4, p);
-	}
-
-	free(p);
-}
-
-static HBITMAP LoadPNG(const char *szFilename, ImageItem *item)
-{
-    HBITMAP hBitmap = 0;
-
-    hBitmap = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM)szFilename);
-    if(hBitmap != 0)
-        CorrectBitmap32Alpha(hBitmap);
-
-    return hBitmap;
-}
-
-static void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc)
-{
-    HBITMAP hbm = LoadPNG(fileName, item);
-    BITMAP bm;
-
-    if(hbm) {
-        item->hbm = hbm;
-        item->bf.BlendFlags = 0;
-        item->bf.BlendOp = AC_SRC_OVER;
-        item->bf.AlphaFormat = 0;
-        
-        GetObject(hbm, sizeof(bm), &bm);
-        if(bm.bmBitsPixel == 32) {
-            PreMultiply(hbm, 1);
-            item->dwFlags |= IMAGE_PERPIXEL_ALPHA;
-            item->bf.AlphaFormat = AC_SRC_ALPHA;
-        }
-        item->width = bm.bmWidth;
-        item->height = bm.bmHeight;
-        item->inner_height = item->height - item->bTop - item->bBottom;
-        item->inner_width = item->width - item->bLeft - item->bRight;
-        if(item->bTop && item->bBottom && item->bLeft && item->bRight) {
-            item->dwFlags |= IMAGE_FLAG_DIVIDED;
-            if(item->inner_height <= 0 || item->inner_width <= 0) {
-                DeleteObject(hbm);
-                item->hbm = 0;
-                return;
-            }
-        }
-        item->hdc = CreateCompatibleDC(hdc);
-        item->hbmOld = SelectObject(item->hdc, item->hbm);
-    }
-}
-
-static void IMG_DeleteItem(ImageItem *item)
-{
-    if(!(item->dwFlags & IMAGE_GLYPH)) {
-        SelectObject(item->hdc, item->hbmOld);
-        DeleteObject(item->hbm);
-        DeleteDC(item->hdc);
-    }
-    if(item->fillBrush)
-        DeleteObject(item->fillBrush);
-}
-
 void IMG_DeleteItems()
 {
     ImageItem *pItem = g_ImageItems, *pNextItem;
@@ -1058,11 +1056,11 @@ static void BTN_ReadItem(char *itemName, char *file)
     tmpItem.dwFlags |= GetPrivateProfileIntA(itemName, "toggle", 0, file) ? BUTTON_ISTOGGLE : 0;
 
     GetPrivateProfileStringA(itemName, "Pressed", "None", szBuffer, 1000, file);
-    if(!stricmp(szBuffer, "default"))
+    if(!_stricmp(szBuffer, "default"))
         tmpItem.imgPressed = StatusItems[ID_EXTBKTBBUTTONSPRESSED - ID_STATUS_OFFLINE].imageItem;
     else {
         while(imgItem) {
-            if(!stricmp(imgItem->szName, szBuffer)) {
+            if(!_stricmp(imgItem->szName, szBuffer)) {
                 tmpItem.imgPressed = imgItem;
                 break;
             }
@@ -1072,11 +1070,11 @@ static void BTN_ReadItem(char *itemName, char *file)
 
     imgItem = g_ImageItems;
     GetPrivateProfileStringA(itemName, "Normal", "None", szBuffer, 1000, file);
-    if(!stricmp(szBuffer, "default"))
+    if(!_stricmp(szBuffer, "default"))
         tmpItem.imgNormal = StatusItems[ID_EXTBKTBBUTTONSNPRESSED - ID_STATUS_OFFLINE].imageItem;
     else {
         while(imgItem) {
-            if(!stricmp(imgItem->szName, szBuffer)) {
+            if(!_stricmp(imgItem->szName, szBuffer)) {
                 tmpItem.imgNormal = imgItem;
                 break;
             }
@@ -1086,11 +1084,11 @@ static void BTN_ReadItem(char *itemName, char *file)
 
     imgItem = g_ImageItems;
     GetPrivateProfileStringA(itemName, "Hover", "None", szBuffer, 1000, file);
-    if(!stricmp(szBuffer, "default"))
+    if(!_stricmp(szBuffer, "default"))
         tmpItem.imgHover = StatusItems[ID_EXTBKTBBUTTONMOUSEOVER - ID_STATUS_OFFLINE].imageItem;
     else {
         while(imgItem) {
-            if(!stricmp(imgItem->szName, szBuffer)) {
+            if(!_stricmp(imgItem->szName, szBuffer)) {
                 tmpItem.imgHover = imgItem;
                 break;
             }
@@ -1120,32 +1118,32 @@ static void BTN_ReadItem(char *itemName, char *file)
     tmpItem.uId = IDC_TBFIRSTUID - 1;
 
     GetPrivateProfileStringA(itemName, "Action", "Custom", szBuffer, 1000, file);
-    if(!stricmp(szBuffer, "service")) {
+    if(!_stricmp(szBuffer, "service")) {
         tmpItem.szService[0] = 0;
         GetPrivateProfileStringA(itemName, "Service", "None", szBuffer, 1000, file);
-        if(stricmp(szBuffer, "None")) {
+        if(_stricmp(szBuffer, "None")) {
             mir_snprintf(tmpItem.szService, 256, "%s", szBuffer);
             tmpItem.dwFlags |= BUTTON_ISSERVICE;
             tmpItem.uId = nextButtonID++;
         }
     }
-    else if(!stricmp(szBuffer, "protoservice")) {
+    else if(!_stricmp(szBuffer, "protoservice")) {
         tmpItem.szService[0] = 0;
         GetPrivateProfileStringA(itemName, "Service", "None", szBuffer, 1000, file);
-        if(stricmp(szBuffer, "None")) {
+        if(_stricmp(szBuffer, "None")) {
             mir_snprintf(tmpItem.szService, 256, "%s", szBuffer);
             tmpItem.dwFlags |= BUTTON_ISPROTOSERVICE;
             tmpItem.uId = nextButtonID++;
         }
     }
-    else if(!stricmp(szBuffer, "database")) {
+    else if(!_stricmp(szBuffer, "database")) {
         int n;
 
         GetPrivateProfileStringA(itemName, "Module", "None", szBuffer, 1000, file);
-        if(stricmp(szBuffer, "None"))
+        if(_stricmp(szBuffer, "None"))
             mir_snprintf(tmpItem.szModule, 256, "%s", szBuffer);
         GetPrivateProfileStringA(itemName, "Setting", "None", szBuffer, 1000, file);
-        if(stricmp(szBuffer, "None"))
+        if(_stricmp(szBuffer, "None"))
             mir_snprintf(tmpItem.szSetting, 256, "%s", szBuffer);
         if(GetPrivateProfileIntA(itemName, "contact", 0, file) != 0)
            tmpItem.dwFlags |= BUTTON_DBACTIONONCONTACT;
@@ -1195,11 +1193,11 @@ static void BTN_ReadItem(char *itemName, char *file)
             tmpItem.uId = nextButtonID++;
         }
     }
-    else if(stricmp(szBuffer, "Custom")) {
+    else if(_stricmp(szBuffer, "Custom")) {
         int i = 0;
 
         while(top_buttons[i].id) {
-            if(!stricmp(top_buttons[i].szIcoLibIcon, szBuffer)) {
+            if(!_stricmp(top_buttons[i].szIcoLibIcon, szBuffer)) {
                 tmpItem.uId = top_buttons[i].id;
                 tmpItem.dwFlags |= BUTTON_ISINTERNAL;
                 break;
@@ -1208,7 +1206,7 @@ static void BTN_ReadItem(char *itemName, char *file)
         }
     }
     GetPrivateProfileStringA(itemName, "PassContact", "None", szBuffer, 1000, file);
-    if(stricmp(szBuffer, "None")) {
+    if(_stricmp(szBuffer, "None")) {
         if(szBuffer[0] == 'w' || szBuffer[0] == 'W')
             tmpItem.dwFlags |= BUTTON_PASSHCONTACTW;
         else if(szBuffer[0] == 'l' || szBuffer[0] == 'L')
@@ -1370,7 +1368,7 @@ void LoadPerContactSkins(char *file)
             szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
             if(szProto) {
                 uid = (char *)CallProtoService(szProto, PS_GETCAPS, PFLAG_UNIQUEIDSETTING, 0);
-                if ((int) uid != CALLSERVICE_NOTFOUND && uid != NULL) {
+                if ((INT_PTR) uid != CALLSERVICE_NOTFOUND && uid != NULL) {
                     DBVARIANT dbv = {0};
 
                     DBGetContactSetting(hContact, szProto, uid, &dbv);
@@ -1578,7 +1576,7 @@ static void ApplyCLUISkin()
     }
 }
 
-static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg) {
         case WM_INITDIALOG:
@@ -1732,6 +1730,7 @@ BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          int oPage = DBGetContactSettingByte(NULL, "CLUI", "opage", 0);
          SKINDESCRIPTION sd;
 
+         TranslateDialogDefault(hwnd);
          GetClientRect(hwnd, &rcClient);
          iInit = TRUE;
          tci.mask = TCIF_PARAM|TCIF_TEXT;
@@ -1901,8 +1900,7 @@ int CoolSB_SetupScrollBar()
         !StatusItems[ID_EXTBKSCROLLBUTTONPRESSED - ID_STATUS_OFFLINE].imageItem)
 
         g_CluiData.bSkinnedScrollbar = FALSE;
-
-
+    
     if(DBGetContactSettingByte(NULL, "CLC", "NoVScrollBar", 0)) {
         UninitializeCoolSB(pcli->hwndContactTree);
         return 0;

@@ -19,7 +19,6 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			WholeProgramOptimization="1"
@@ -53,7 +52,7 @@
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="../include"
-				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_NOSDK;_USE_32BIT_TIME_T;_STATIC"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_NOSDK;_STATIC"
 				StringPooling="true"
 				ExceptionHandling="0"
 				RuntimeLibrary="2"
@@ -85,7 +84,7 @@
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="wsock32.lib comctl32.lib winmm.lib version.lib odbc32.lib odbccp32.lib"
 				SuppressStartupBanner="true"
-				AdditionalManifestDependencies="type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
+				AdditionalManifestDependencies="type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;;type=&apos;win32&apos; name=&apos;Microsoft.Windows.Gdiplus&apos; version=&apos;1.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				GenerateDebugInformation="true"
 				GenerateMapFile="false"
 				MapFileName=""
@@ -126,7 +125,6 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -155,7 +153,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../include"
-				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_NOSDK;_USE_32BIT_TIME_T;_STATIC"
+				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_NOSDK;_STATIC"
 				ExceptionHandling="0"
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
@@ -184,8 +182,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="wsock32.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib"
+				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalManifestDependencies="type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
+				AdditionalManifestDependencies="type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;;type=&apos;win32&apos; name=&apos;Microsoft.Windows.Gdiplus&apos; version=&apos;1.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				GenerateDebugInformation="true"
 				GenerateMapFile="false"
 				MapFileName=""
@@ -223,7 +222,6 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="1"
@@ -253,12 +251,11 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="3"
-				InlineFunctionExpansion="2"
+				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="2"
-				OmitFramePointers="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="../include"
-				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_NOSDK;_USE_32BIT_TIME_T;_STATIC"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_NOSDK;_STATIC"
 				StringPooling="true"
 				ExceptionHandling="0"
 				RuntimeLibrary="2"
@@ -290,7 +287,7 @@
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="wsock32.lib comctl32.lib winmm.lib version.lib odbc32.lib odbccp32.lib"
 				SuppressStartupBanner="true"
-				AdditionalManifestDependencies="type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
+				AdditionalManifestDependencies="type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;;type=&apos;win32&apos; name=&apos;Microsoft.Windows.Gdiplus&apos; version=&apos;1.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
 				GenerateMapFile="false"
@@ -332,7 +329,6 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="1"
@@ -362,7 +358,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../include"
-				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_NOSDK;_USE_32BIT_TIME_T;_STATIC"
+				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_NOSDK;_STATIC"
 				StringPooling="false"
 				ExceptionHandling="0"
 				RuntimeLibrary="3"
@@ -393,8 +389,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="wsock32.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib"
+				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalManifestDependencies="type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
+				AdditionalManifestDependencies="type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;;type=&apos;win32&apos; name=&apos;Microsoft.Windows.Gdiplus&apos; version=&apos;1.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
 				GenerateMapFile="false"
@@ -492,6 +489,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\m_hotkeys.h"
+				>
+			</File>
+			<File
 				RelativePath="..\include\m_icq.h"
 				>
 			</File>
@@ -552,6 +553,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\m_system_cpp.h"
+				>
+			</File>
+			<File
 				RelativePath="..\include\m_url.h"
 				>
 			</File>
@@ -580,7 +585,7 @@
 			Name="Core"
 			>
 			<File
-				RelativePath="core\commonheaders.c"
+				RelativePath="core\commonheaders.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -640,11 +645,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\core\memory.c"
+				RelativePath=".\core\memory.cpp"
 				>
 			</File>
 			<File
-				RelativePath="core\miranda.c"
+				RelativePath="core\miranda.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -696,7 +701,7 @@
 				>
 			</File>
 			<File
-				RelativePath="core\modules.c"
+				RelativePath="core\modules.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -755,7 +760,7 @@
 				Name="addcontact"
 				>
 				<File
-					RelativePath="modules\addcontact\addcontact.c"
+					RelativePath="modules\addcontact\addcontact.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -803,7 +808,7 @@
 				Name="autoaway"
 				>
 				<File
-					RelativePath="modules\autoaway\autoaway.c"
+					RelativePath="modules\autoaway\autoaway.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -851,7 +856,7 @@
 				Name="button"
 				>
 				<File
-					RelativePath="modules\button\button.c"
+					RelativePath="modules\button\button.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -899,7 +904,7 @@
 				Name="contacts"
 				>
 				<File
-					RelativePath="modules\contacts\contacts.c"
+					RelativePath="modules\contacts\contacts.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -947,7 +952,7 @@
 				Name="database"
 				>
 				<File
-					RelativePath="modules\database\database.c"
+					RelativePath="modules\database\database.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -991,7 +996,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\modules\database\dbini.c"
+					RelativePath=".\modules\database\dbini.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1027,7 +1032,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\database\dblists.c"
+					RelativePath="modules\database\dblists.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1075,15 +1080,15 @@
 					>
 				</File>
 				<File
-					RelativePath=".\modules\database\dbtime.c"
+					RelativePath=".\modules\database\dbtime.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\modules\database\dbutils.c"
+					RelativePath=".\modules\database\dbutils.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\modules\database\profilemanager.c"
+					RelativePath=".\modules\database\profilemanager.cpp"
 					>
 				</File>
 				<File
@@ -1095,7 +1100,7 @@
 				Name="findadd"
 				>
 				<File
-					RelativePath="modules\findadd\findadd.c"
+					RelativePath="modules\findadd\findadd.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1143,7 +1148,7 @@
 					>
 				</File>
 				<File
-					RelativePath="modules\findadd\searchresults.c"
+					RelativePath="modules\findadd\searchresults.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1191,7 +1196,7 @@
 				Name="help"
 				>
 				<File
-					RelativePath="modules\help\about.c"
+					RelativePath="modules\help\about.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1235,7 +1240,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\help\help.c"
+					RelativePath="modules\help\help.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1283,7 +1288,7 @@
 				Name="history"
 				>
 				<File
-					RelativePath="modules\history\history.c"
+					RelativePath="modules\history\history.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1331,7 +1336,7 @@
 				Name="idle"
 				>
 				<File
-					RelativePath="modules\idle\idle.c"
+					RelativePath="modules\idle\idle.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1379,7 +1384,7 @@
 				Name="ignore"
 				>
 				<File
-					RelativePath="modules\ignore\ignore.c"
+					RelativePath="modules\ignore\ignore.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1427,7 +1432,7 @@
 				Name="langpack"
 				>
 				<File
-					RelativePath="modules\langpack\langpack.c"
+					RelativePath="modules\langpack\langpack.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1471,7 +1476,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\langpack\lpservices.c"
+					RelativePath="modules\langpack\lpservices.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1519,7 +1524,7 @@
 				Name="netlib"
 				>
 				<File
-					RelativePath="modules\netlib\netlib.c"
+					RelativePath="modules\netlib\netlib.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1567,7 +1572,7 @@
 					>
 				</File>
 				<File
-					RelativePath="modules\netlib\netlibbind.c"
+					RelativePath="modules\netlib\netlibbind.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1611,7 +1616,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\netlib\netlibhttp.c"
+					RelativePath="modules\netlib\netlibhttp.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1655,7 +1660,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\netlib\netlibhttpproxy.c"
+					RelativePath="modules\netlib\netlibhttpproxy.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1699,7 +1704,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\netlib\netliblog.c"
+					RelativePath="modules\netlib\netliblog.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1743,7 +1748,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\netlib\netlibopenconn.c"
+					RelativePath="modules\netlib\netlibopenconn.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1787,7 +1792,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\netlib\netlibopts.c"
+					RelativePath="modules\netlib\netlibopts.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1831,7 +1836,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\netlib\netlibpktrecver.c"
+					RelativePath="modules\netlib\netlibpktrecver.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1875,11 +1880,11 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\modules\netlib\netlibsecurity.c"
+					RelativePath=".\modules\netlib\netlibsecurity.cpp"
 					>
 				</File>
 				<File
-					RelativePath="modules\netlib\netlibsock.c"
+					RelativePath="modules\netlib\netlibsock.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1923,7 +1928,11 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\modules\netlib\netlibupnp.c"
+					RelativePath=".\modules\netlib\netlibssl.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\netlib\netlibupnp.cpp"
 					>
 				</File>
 			</Filter>
@@ -1931,7 +1940,27 @@
 				Name="options"
 				>
 				<File
-					RelativePath="modules\options\options.c"
+					RelativePath=".\modules\options\descbutton.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\options\filter.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\options\filter.h"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\options\headerbar.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\options\iconheader.cpp"
+					>
+				</File>
+				<File
+					RelativePath="modules\options\options.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1979,7 +2008,7 @@
 				Name="plugins"
 				>
 				<File
-					RelativePath="modules\plugins\newplugins.c"
+					RelativePath="modules\plugins\newplugins.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2027,7 +2056,15 @@
 				Name="protocols"
 				>
 				<File
-					RelativePath="modules\protocols\protochains.c"
+					RelativePath="..\include\m_protoint.h"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\protocols\protoaccs.cpp"
+					>
+				</File>
+				<File
+					RelativePath="modules\protocols\protochains.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2071,7 +2108,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\protocols\protocols.c"
+					RelativePath="modules\protocols\protocols.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2115,55 +2152,23 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\protocols\protodir.c"
+					RelativePath=".\modules\protocols\protoint.cpp"
 					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="1"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="1"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug Unicode|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\modules\protocols\protoopts.cpp"
+					>
 				</File>
 			</Filter>
 			<Filter
 				Name="skin"
 				>
 				<File
-					RelativePath="modules\skin\skin.c"
+					RelativePath=".\modules\skin\hotkeys.cpp"
+					>
+				</File>
+				<File
+					RelativePath="modules\skin\skinicons.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2207,51 +2212,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\skin\skinicons.c"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="1"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="1"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug Unicode|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="modules\skin\sounds.c"
+					RelativePath="modules\skin\sounds.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2299,7 +2260,7 @@
 				Name="srauth"
 				>
 				<File
-					RelativePath="modules\srauth\auth.c"
+					RelativePath="modules\srauth\auth.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2343,7 +2304,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\srauth\authdialogs.c"
+					RelativePath="modules\srauth\authdialogs.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2391,7 +2352,7 @@
 				Name="srawaymsg"
 				>
 				<File
-					RelativePath="modules\srawaymsg\awaymsg.c"
+					RelativePath="modules\srawaymsg\awaymsg.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2435,7 +2396,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\srawaymsg\sendmsg.c"
+					RelativePath="modules\srawaymsg\sendmsg.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2483,7 +2444,7 @@
 				Name="sremail"
 				>
 				<File
-					RelativePath="modules\sremail\email.c"
+					RelativePath="modules\sremail\email.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2531,7 +2492,7 @@
 				Name="srfile"
 				>
 				<File
-					RelativePath="modules\srfile\file.c"
+					RelativePath="modules\srfile\file.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2579,7 +2540,7 @@
 					>
 				</File>
 				<File
-					RelativePath="modules\srfile\fileexistsdlg.c"
+					RelativePath="modules\srfile\fileexistsdlg.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2623,7 +2584,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\srfile\fileopts.c"
+					RelativePath="modules\srfile\fileopts.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2667,7 +2628,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\srfile\filerecvdlg.c"
+					RelativePath="modules\srfile\filerecvdlg.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2711,7 +2672,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\srfile\filesenddlg.c"
+					RelativePath="modules\srfile\filesenddlg.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2755,7 +2716,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\srfile\filexferdlg.c"
+					RelativePath="modules\srfile\filexferdlg.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2797,13 +2758,17 @@
 							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\modules\srfile\ftmanager.cpp"
+					>
 				</File>
 			</Filter>
 			<Filter
 				Name="srurl"
 				>
 				<File
-					RelativePath="modules\srurl\url.c"
+					RelativePath="modules\srurl\url.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2851,7 +2816,7 @@
 					>
 				</File>
 				<File
-					RelativePath="modules\srurl\urldialogs.c"
+					RelativePath="modules\srurl\urldialogs.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2899,7 +2864,7 @@
 				Name="updater"
 				>
 				<File
-					RelativePath=".\modules\updatenotify\updatenotify.c"
+					RelativePath=".\modules\updatenotify\updatenotify.cpp"
 					>
 				</File>
 			</Filter>
@@ -2907,7 +2872,7 @@
 				Name="userinfo"
 				>
 				<File
-					RelativePath="modules\userinfo\contactinfo.c"
+					RelativePath="modules\userinfo\contactinfo.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2951,7 +2916,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\userinfo\stdinfo.c"
+					RelativePath="modules\userinfo\stdinfo.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2995,7 +2960,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\userinfo\userinfo.c"
+					RelativePath="modules\userinfo\userinfo.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -3043,7 +3008,7 @@
 				Name="useronline"
 				>
 				<File
-					RelativePath="modules\useronline\useronline.c"
+					RelativePath="modules\useronline\useronline.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -3091,7 +3056,7 @@
 				Name="utils"
 				>
 				<File
-					RelativePath="modules\utils\bmpfilter.c"
+					RelativePath="modules\utils\bmpfilter.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -3135,7 +3100,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\utils\colourpicker.c"
+					RelativePath="modules\utils\colourpicker.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -3179,7 +3144,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\utils\hyperlink.c"
+					RelativePath="modules\utils\hyperlink.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -3223,55 +3188,11 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\modules\utils\md5.c"
+					RelativePath=".\modules\utils\md5.cpp"
 					>
 				</File>
 				<File
-					RelativePath="modules\utils\openurl.c"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="1"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="1"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug Unicode|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="modules\utils\path.c"
+					RelativePath="modules\utils\openurl.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -3315,7 +3236,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\utils\resizer.c"
+					RelativePath="modules\utils\path.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -3359,15 +3280,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\modules\utils\sha1.c"
-					>
-				</File>
-				<File
-					RelativePath=".\modules\utils\utf.c"
-					>
-				</File>
-				<File
-					RelativePath="modules\utils\utils.c"
+					RelativePath="modules\utils\resizer.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -3411,7 +3324,59 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="modules\utils\windowlist.c"
+					RelativePath=".\modules\utils\sha1.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\utils\utf.cpp"
+					>
+				</File>
+				<File
+					RelativePath="modules\utils\utils.cpp"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="modules\utils\windowlist.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -3459,7 +3424,7 @@
 				Name="visibility"
 				>
 				<File
-					RelativePath="modules\visibility\visibility.c"
+					RelativePath="modules\visibility\visibility.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -3507,7 +3472,7 @@
 				Name="clist"
 				>
 				<File
-					RelativePath=".\modules\clist\clc.c"
+					RelativePath=".\modules\clist\clc.cpp"
 					>
 				</File>
 				<File
@@ -3515,67 +3480,67 @@
 					>
 				</File>
 				<File
-					RelativePath=".\modules\clist\clcfiledrop.c"
+					RelativePath=".\modules\clist\clcfiledrop.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\modules\clist\clcidents.c"
+					RelativePath=".\modules\clist\clcidents.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\modules\clist\clcitems.c"
+					RelativePath=".\modules\clist\clcitems.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\modules\clist\clcmsgs.c"
+					RelativePath=".\modules\clist\clcmsgs.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\modules\clist\clcutils.c"
+					RelativePath=".\modules\clist\clcutils.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\modules\clist\clistcore.c"
+					RelativePath=".\modules\clist\clistcore.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\modules\clist\clistevents.c"
+					RelativePath=".\modules\clist\clistevents.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\modules\clist\clistmenus.c"
+					RelativePath=".\modules\clist\clistmenus.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\modules\clist\clistmod.c"
+					RelativePath=".\modules\clist\clistmod.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\modules\clist\clistsettings.c"
+					RelativePath=".\modules\clist\clistsettings.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\modules\clist\clisttray.c"
+					RelativePath=".\modules\clist\clisttray.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\modules\clist\clui.c"
+					RelativePath=".\modules\clist\clui.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\modules\clist\cluiservices.c"
+					RelativePath=".\modules\clist\cluiservices.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\modules\clist\contact.c"
+					RelativePath=".\modules\clist\contact.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\modules\clist\Docking.c"
+					RelativePath=".\modules\clist\Docking.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\modules\clist\genmenu.c"
+					RelativePath=".\modules\clist\genmenu.cpp"
 					>
 				</File>
 				<File
@@ -3583,23 +3548,23 @@
 					>
 				</File>
 				<File
-					RelativePath=".\modules\clist\genmenuopt.c"
+					RelativePath=".\modules\clist\genmenuopt.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\modules\clist\groups.c"
+					RelativePath=".\modules\clist\groups.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\modules\clist\keyboard.c"
+					RelativePath=".\modules\clist\keyboard.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\modules\clist\movetogroup.c"
+					RelativePath=".\modules\clist\movetogroup.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\modules\clist\protocolorder.c"
+					RelativePath=".\modules\clist\protocolorder.cpp"
 					>
 				</File>
 			</Filter>
@@ -3607,11 +3572,11 @@
 				Name="fonts"
 				>
 				<File
-					RelativePath=".\modules\fonts\FontOptions.c"
+					RelativePath=".\modules\fonts\FontOptions.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\modules\fonts\FontService.c"
+					RelativePath=".\modules\fonts\FontService.cpp"
 					>
 				</File>
 				<File
@@ -3619,15 +3584,7 @@
 					>
 				</File>
 				<File
-					RelativePath=".\modules\fonts\module_fonts.c"
-					>
-				</File>
-				<File
-					RelativePath=".\modules\fonts\module_fonts.h"
-					>
-				</File>
-				<File
-					RelativePath=".\modules\fonts\services.c"
+					RelativePath=".\modules\fonts\services.cpp"
 					>
 				</File>
 			</Filter>
@@ -3635,43 +3592,7 @@
 				Name="icolib"
 				>
 				<File
-					RelativePath=".\modules\icolib\extracticon.c"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug Unicode|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath=".\modules\icolib\IcoLib.c"
+					RelativePath=".\modules\icolib\extracticon.cpp"
 					>
 				</File>
 				<File
@@ -3679,7 +3600,23 @@
 					>
 				</File>
 				<File
-					RelativePath=".\modules\icolib\skin2icons.c"
+					RelativePath=".\modules\icolib\skin2icons.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="xml"
+				>
+				<File
+					RelativePath=".\modules\xml\xmlApi.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\xml\xmlParser.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\xml\xmlParser.h"
 					>
 				</File>
 			</Filter>
@@ -3688,44 +3625,176 @@
 			Name="Resources"
 			>
 			<File
+				RelativePath=".\res\_blank.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\arrow_sort_column_down.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\res\arrow_sort_column_up.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\res\check_off.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\check_on.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\contact_add.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\contact_delete.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\contact_rename.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\contact_view_details.ico"
+				>
+			</File>
+			<File
+				RelativePath="..\docs\contributors.txt"
+				>
+			</File>
+			<File
 				RelativePath="..\docs\credits.txt"
 				>
 			</File>
 			<File
-				RelativePath="miranda32.exe.manifest"
+				RelativePath=".\res\cursor_drag_copy.cur"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\res\cursor_drop_user.cur"
+				>
+			</File>
+			<File
+				RelativePath=".\res\cursor_hyperlink.cur"
+				>
+			</File>
+			<File
+				RelativePath=".\res\group_closed.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\group_opened.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_accmgr.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_all.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_ansi.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_auth_request.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_connecting.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_down_arrow.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_file.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_find_user.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_help.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_history.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_loaded.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_mail.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_message.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_notloaded.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_options.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_search_all.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_small_dot.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_sms.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_typing.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_undo.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_unicode.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_url.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_window.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_windows.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\miranda_home.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\miranda_logo.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\miranda_manager.ico"
+				>
 			</File>
 			<File
 				RelativePath="resource.h"
@@ -3733,6 +3802,50 @@
 			</File>
 			<File
 				RelativePath="resource.rc"
+				>
+			</File>
+			<File
+				RelativePath=".\res\status_away.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\status_DND.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\status_free4chat.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\status_invisible.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\status_NA.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\status_occupied.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\status_offline.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\status_on_the_phone.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\status_online.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\status_out2lunch.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\status_user_online.ico"
 				>
 			</File>
 			<File

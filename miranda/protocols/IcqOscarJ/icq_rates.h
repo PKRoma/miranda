@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_rates.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -37,9 +37,9 @@
 #ifndef __ICQ_RATES_H
 #define __ICQ_RATES_H
 
-extern CRITICAL_SECTION ratesMutex;
+#define MAX_RATES_GROUP_COUNT   5
 
-typedef struct rates_group_s
+struct rates_group
 {
   DWORD dwWindowSize;
   DWORD dwClearLevel;
@@ -50,28 +50,34 @@ typedef struct rates_group_s
   int rCurrentLevel;
   int tCurrentLevel;
   // links
-  WORD* pPairs;
+  WORD *pPairs;
   int nPairs;
-} rates_group;
+};
 
-typedef struct rates_s
+struct rates
 {
+private:
+  CIcqProto *ppro;
   int nGroups;
-  rates_group groups[];
-} rates;
+  rates_group groups[MAX_RATES_GROUP_COUNT];
 
-rates* gRates;
+  rates_group *getGroup(WORD wGroup);
+public:
+  rates(CIcqProto *ppro, BYTE *pBuffer, WORD wLen);
+  ~rates();
 
-rates* ratesCreate(BYTE* pBuffer, WORD wLen);
-void ratesRelease(rates** pRates);
+  WORD getGroupFromSNAC(WORD wFamily, WORD wCommand);
+	WORD getGroupFromPacket(icq_packet *pPacket);
 
-WORD ratesGroupFromSNAC(rates* pRates, WORD wFamily, WORD wCommand);
-WORD ratesGroupFromPacket(rates* pRates, icq_packet* pPacket);
+  int getLimitLevel(WORD wGroup, int nLevel);
+  int getDelayToLimitLevel(WORD wGroup, int nLevel);
+  int getNextRateLevel(WORD wGroup);
 
-int ratesNextRateLevel(rates* pRates, WORD wGroup);
-int ratesDelayToLevel(rates* pRates, WORD wGroup, int nLevel);
-void ratesPacketSent(rates* pRates, icq_packet* pPacket);
-void ratesUpdateLevel(rates* pRates, WORD wGroup, int nLevel);
+	void packetSent(icq_packet *pPacket);
+	void updateLevel(WORD wGroup, int nLevel);
+
+  void initAckPacket(icq_packet *pPacket);
+};
 
 #define RML_CLEAR   1
 #define RML_ALERT   2
@@ -81,8 +87,6 @@ void ratesUpdateLevel(rates* pRates, WORD wGroup, int nLevel);
 #define RML_IDLE_50 0x12
 #define RML_IDLE_70 0x13
 
-int ratesGetLimitLevel(rates* pRates, WORD wGroup, int nLevel);
-
 // Rates - Level 2
 
 #define RIT_AWAYMSG_RESPONSE 0x01   // response to status msg request
@@ -90,7 +94,7 @@ int ratesGetLimitLevel(rates* pRates, WORD wGroup, int nLevel);
 #define RIT_XSTATUS_REQUEST  0x10   // schedule xstatus details requests
 #define RIT_XSTATUS_RESPONSE 0x11   // response to xstatus details request
 
-typedef struct rate_record_s
+struct rate_record
 {
   BYTE bType;         // type of request
   WORD wGroup;
@@ -105,12 +109,6 @@ typedef struct rate_record_s
   BOOL bThruDC;
   char *szData;
   BYTE msgType;
-} rate_record;
-
-// Level 2 of rate management
-int handleRateItem(rate_record *item, BOOL bAllowDelay);
-
-void InitRates();
-void UninitRates();
+};
 
 #endif /* __ICQ_RATES_H */

@@ -27,10 +27,6 @@ NULL=
 NULL=nul
 !ENDIF 
 
-CPP=cl.exe
-MTL=midl.exe
-RSC=rc.exe
-
 !IF  "$(CFG)" == "zlib - Win32 Release"
 
 OUTDIR=.\Release
@@ -64,8 +60,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
+RSC=rc.exe
 RSC_PROJ=/l 0x419 /fo"$(INTDIR)\zlib.res" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\zlib.bsc" 
@@ -144,8 +174,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\zlib.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC=rc.exe
 RSC_PROJ=/l 0x419 /fo"$(INTDIR)\zlib.res" /d "_DEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\zlib.bsc" 
@@ -197,7 +261,7 @@ LINK32_OBJS= \
 OUTDIR=.\Release_Unicode
 INTDIR=.\Release_Unicode
 
-ALL : "..\..\bin\Release\zlib.dll"
+ALL : "..\..\bin\Release Unicode\zlib.dll"
 
 
 CLEAN :
@@ -220,20 +284,54 @@ CLEAN :
 	-@erase "$(OUTDIR)\zlib.lib"
 	-@erase "$(OUTDIR)\zlib.map"
 	-@erase "$(OUTDIR)\zlib.pdb"
-	-@erase "..\..\bin\Release\zlib.dll"
+	-@erase "..\..\bin\Release Unicode\zlib.dll"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
+RSC=rc.exe
 RSC_PROJ=/l 0x419 /fo"$(INTDIR)\zlib.res" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\zlib.bsc" 
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\zlib.pdb" /map:"$(INTDIR)\zlib.map" /debug /machine:I386 /def:".\zlib.def" /out:"../../bin/Release/zlib.dll" /implib:"$(OUTDIR)\zlib.lib" /filealign:512 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\zlib.pdb" /map:"$(INTDIR)\zlib.map" /debug /machine:I386 /def:".\zlib.def" /out:"../../bin/Release Unicode/zlib.dll" /implib:"$(OUTDIR)\zlib.lib" /filealign:512 
 DEF_FILE= \
 	".\zlib.def"
 LINK32_OBJS= \
@@ -251,7 +349,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\zutil.obj" \
 	"$(INTDIR)\zlib.res"
 
-"..\..\bin\Release\zlib.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+"..\..\bin\Release Unicode\zlib.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
@@ -264,7 +362,7 @@ INTDIR=.\Debug_Unicode
 OutDir=.\Debug_Unicode
 # End Custom Macros
 
-ALL : "..\..\bin\Debug\zlib.dll" "$(OUTDIR)\zlib.bsc"
+ALL : "..\..\bin\Debug Unicode\zlib.dll" "$(OUTDIR)\zlib.bsc"
 
 
 CLEAN :
@@ -299,61 +397,14 @@ CLEAN :
 	-@erase "$(OUTDIR)\zlib.exp"
 	-@erase "$(OUTDIR)\zlib.lib"
 	-@erase "$(OUTDIR)\zlib.pdb"
-	-@erase "..\..\bin\Debug\zlib.dll"
-	-@erase "..\..\bin\Debug\zlib.ilk"
+	-@erase "..\..\bin\Debug Unicode\zlib.dll"
+	-@erase "..\..\bin\Debug Unicode\zlib.ilk"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\zlib.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
-RSC_PROJ=/l 0x419 /fo"$(INTDIR)\zlib.res" /d "_DEBUG" 
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\zlib.bsc" 
-BSC32_SBRS= \
-	"$(INTDIR)\adler32.sbr" \
-	"$(INTDIR)\compress.sbr" \
-	"$(INTDIR)\crc32.sbr" \
-	"$(INTDIR)\deflate.sbr" \
-	"$(INTDIR)\gzio.sbr" \
-	"$(INTDIR)\infback.sbr" \
-	"$(INTDIR)\inffast.sbr" \
-	"$(INTDIR)\inflate.sbr" \
-	"$(INTDIR)\inftrees.sbr" \
-	"$(INTDIR)\trees.sbr" \
-	"$(INTDIR)\uncompr.sbr" \
-	"$(INTDIR)\zutil.sbr"
-
-"$(OUTDIR)\zlib.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
-    $(BSC32) @<<
-  $(BSC32_FLAGS) $(BSC32_SBRS)
-<<
-
-LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\zlib.pdb" /debug /machine:I386 /def:".\zlib.def" /out:"../../bin/Debug/zlib.dll" /implib:"$(OUTDIR)\zlib.lib" /pdbtype:sept 
-DEF_FILE= \
-	".\zlib.def"
-LINK32_OBJS= \
-	"$(INTDIR)\adler32.obj" \
-	"$(INTDIR)\compress.obj" \
-	"$(INTDIR)\crc32.obj" \
-	"$(INTDIR)\deflate.obj" \
-	"$(INTDIR)\gzio.obj" \
-	"$(INTDIR)\infback.obj" \
-	"$(INTDIR)\inffast.obj" \
-	"$(INTDIR)\inflate.obj" \
-	"$(INTDIR)\inftrees.obj" \
-	"$(INTDIR)\trees.obj" \
-	"$(INTDIR)\uncompr.obj" \
-	"$(INTDIR)\zutil.obj" \
-	"$(INTDIR)\zlib.res"
-
-"..\..\bin\Debug\zlib.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
-    $(LINK32) @<<
-  $(LINK32_FLAGS) $(LINK32_OBJS)
-<<
-
-!ENDIF 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -384,6 +435,57 @@ LINK32_OBJS= \
    $(CPP) @<<
    $(CPP_PROJ) $< 
 <<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC=rc.exe
+RSC_PROJ=/l 0x419 /fo"$(INTDIR)\zlib.res" /d "_DEBUG" 
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\zlib.bsc" 
+BSC32_SBRS= \
+	"$(INTDIR)\adler32.sbr" \
+	"$(INTDIR)\compress.sbr" \
+	"$(INTDIR)\crc32.sbr" \
+	"$(INTDIR)\deflate.sbr" \
+	"$(INTDIR)\gzio.sbr" \
+	"$(INTDIR)\infback.sbr" \
+	"$(INTDIR)\inffast.sbr" \
+	"$(INTDIR)\inflate.sbr" \
+	"$(INTDIR)\inftrees.sbr" \
+	"$(INTDIR)\trees.sbr" \
+	"$(INTDIR)\uncompr.sbr" \
+	"$(INTDIR)\zutil.sbr"
+
+"$(OUTDIR)\zlib.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
+    $(BSC32) @<<
+  $(BSC32_FLAGS) $(BSC32_SBRS)
+<<
+
+LINK32=link.exe
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\zlib.pdb" /debug /machine:I386 /def:".\zlib.def" /out:"../../bin/Debug Unicode/zlib.dll" /implib:"$(OUTDIR)\zlib.lib" /pdbtype:sept 
+DEF_FILE= \
+	".\zlib.def"
+LINK32_OBJS= \
+	"$(INTDIR)\adler32.obj" \
+	"$(INTDIR)\compress.obj" \
+	"$(INTDIR)\crc32.obj" \
+	"$(INTDIR)\deflate.obj" \
+	"$(INTDIR)\gzio.obj" \
+	"$(INTDIR)\infback.obj" \
+	"$(INTDIR)\inffast.obj" \
+	"$(INTDIR)\inflate.obj" \
+	"$(INTDIR)\inftrees.obj" \
+	"$(INTDIR)\trees.obj" \
+	"$(INTDIR)\uncompr.obj" \
+	"$(INTDIR)\zutil.obj" \
+	"$(INTDIR)\zlib.res"
+
+"..\..\bin\Debug Unicode\zlib.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+    $(LINK32) @<<
+  $(LINK32_FLAGS) $(LINK32_OBJS)
+<<
+
+!ENDIF 
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"

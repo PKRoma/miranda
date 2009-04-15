@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2005-09  George Hazan
 Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_iq.cpp,v $
+File name      : $URL$
 Revision       : $Revision$
 Last change on : $Date$
 Last change by : $Author$
@@ -29,163 +29,172 @@ Last change by : $Author$
 #include "jabber.h"
 #include "jabber_iq.h"
 #include "jabber_caps.h"
-#include "jabber_iq_handlers.h"
 #include "jabber_privacy.h"
 #include "jabber_ibb.h"
 #include "jabber_rc.h"
 
-CJabberIqManager g_JabberIqManager;
-
-typedef struct {
-	int iqId;                  // id to match IQ get/set with IQ result
-	JABBER_IQ_PROCID procId;   // must be unique in the list, except for IQ_PROC_NONE which can have multiple entries
-	JABBER_IQ_PFUNC func;      // callback function
-	time_t requestTime;        // time the request was sent, used to remove relinquent entries
-} JABBER_IQ_FUNC;
-
-static CRITICAL_SECTION csIqList;
-static JABBER_IQ_FUNC *iqList;
-static int iqCount;
-static int iqAlloced;
-
-void JabberIqInit()
+void CJabberProto::IqInit()
 {
-	InitializeCriticalSection( &csIqList );
-	iqList = NULL;
-	iqCount = 0;
-	iqAlloced = 0;
+	InitializeCriticalSection( &m_csIqList );
+	m_ppIqList = NULL;
+	m_nIqCount = 0;
+	m_nIqAlloced = 0;
 }
 
-void JabberIqUninit()
+void CJabberProto::IqUninit()
 {
-	if ( iqList ) mir_free( iqList );
-	iqList = NULL;
-	iqCount = 0;
-	iqAlloced = 0;
-	DeleteCriticalSection( &csIqList );
+	if ( m_ppIqList ) mir_free( m_ppIqList );
+	m_ppIqList = NULL;
+	m_nIqCount = 0;
+	m_nIqAlloced = 0;
+	DeleteCriticalSection( &m_csIqList );
 }
 
-static void JabberIqRemove( int index )
+void CJabberProto::IqRemove( int index )
 {
-	EnterCriticalSection( &csIqList );
-	if ( index>=0 && index<iqCount ) {
-		memmove( iqList+index, iqList+index+1, sizeof( JABBER_IQ_FUNC )*( iqCount-index-1 ));
-		iqCount--;
+	EnterCriticalSection( &m_csIqList );
+	if ( index>=0 && index<m_nIqCount ) {
+		memmove( m_ppIqList+index, m_ppIqList+index+1, sizeof( JABBER_IQ_FUNC )*( m_nIqCount-index-1 ));
+		m_nIqCount--;
 	}
-	LeaveCriticalSection( &csIqList );
+	LeaveCriticalSection( &m_csIqList );
 }
 
-static void JabberIqExpire()
+void CJabberProto::IqExpire()
 {
 	int i;
 	time_t expire;
 
-	EnterCriticalSection( &csIqList );
+	EnterCriticalSection( &m_csIqList );
 	expire = time( NULL ) - 120;	// 2 minute
 	i = 0;
-	while ( i < iqCount ) {
-		if ( iqList[i].requestTime < expire )
-			JabberIqRemove( i );
+	while ( i < m_nIqCount ) {
+		if ( m_ppIqList[i].requestTime < expire )
+			IqRemove( i );
 		else
 			i++;
 	}
-	LeaveCriticalSection( &csIqList );
+	LeaveCriticalSection( &m_csIqList );
 }
 
-JABBER_IQ_PFUNC JabberIqFetchFunc( int iqId )
+JABBER_IQ_PFUNC CJabberProto::JabberIqFetchFunc( int iqId )
 {
 	int i;
 	JABBER_IQ_PFUNC res;
 
-	EnterCriticalSection( &csIqList );
-	JabberIqExpire();
+	EnterCriticalSection( &m_csIqList );
+	IqExpire();
 #ifdef _DEBUG
-	for ( i=0; i<iqCount; i++ )
-		JabberLog( "  %04d : %02d : 0x%x", iqList[i].iqId, iqList[i].procId, iqList[i].func );
+	for ( i=0; i<m_nIqCount; i++ )
+		Log( "  %04d : %02d : 0x%x", m_ppIqList[i].iqId, m_ppIqList[i].procId, m_ppIqList[i].func );
 #endif
-	for ( i=0; i<iqCount && iqList[i].iqId!=iqId; i++ );
-	if ( i < iqCount ) {
-		res = iqList[i].func;
-		JabberIqRemove( i );
+	for ( i=0; i<m_nIqCount && m_ppIqList[i].iqId!=iqId; i++ );
+	if ( i < m_nIqCount ) {
+		res = m_ppIqList[i].func;
+		IqRemove( i );
 	}
 	else {
 		res = ( JABBER_IQ_PFUNC ) NULL;
 	}
-	LeaveCriticalSection( &csIqList );
+	LeaveCriticalSection( &m_csIqList );
 	return res;
 }
 
-void JabberIqAdd( unsigned int iqId, JABBER_IQ_PROCID procId, JABBER_IQ_PFUNC func )
+void CJabberProto::IqAdd( unsigned int iqId, JABBER_IQ_PROCID procId, JABBER_IQ_PFUNC func )
 {
 	int i;
 
-	EnterCriticalSection( &csIqList );
-	JabberLog( "IqAdd id=%d, proc=%d, func=0x%x", iqId, procId, func );
+	EnterCriticalSection( &m_csIqList );
+	Log( "IqAdd id=%d, proc=%d, func=0x%x", iqId, procId, func );
 	if ( procId == IQ_PROC_NONE )
-		i = iqCount;
+		i = m_nIqCount;
 	else
-		for ( i=0; i<iqCount && iqList[i].procId!=procId; i++ );
+		for ( i=0; i<m_nIqCount && m_ppIqList[i].procId!=procId; i++ );
 
-	if ( i>=iqCount && iqCount>=iqAlloced ) {
-		iqAlloced = iqCount + 8;
-		iqList = ( JABBER_IQ_FUNC * )mir_realloc( iqList, sizeof( JABBER_IQ_FUNC )*iqAlloced );
+	if ( i>=m_nIqCount && m_nIqCount>=m_nIqAlloced ) {
+		m_nIqAlloced = m_nIqCount + 8;
+		m_ppIqList = ( JABBER_IQ_FUNC * )mir_realloc( m_ppIqList, sizeof( JABBER_IQ_FUNC )*m_nIqAlloced );
 	}
 
-	if ( iqList != NULL ) {
-		iqList[i].iqId = iqId;
-		iqList[i].procId = procId;
-		iqList[i].func = func;
-		iqList[i].requestTime = time( NULL );
-		if ( i == iqCount ) iqCount++;
+	if ( m_ppIqList != NULL ) {
+		m_ppIqList[i].iqId = iqId;
+		m_ppIqList[i].procId = procId;
+		m_ppIqList[i].func = func;
+		m_ppIqList[i].requestTime = time( NULL );
+		if ( i == m_nIqCount ) m_nIqCount++;
 	}
-	LeaveCriticalSection( &csIqList );
+	LeaveCriticalSection( &m_csIqList );
 }
 
 BOOL CJabberIqManager::FillPermanentHandlers()
 {
 	// version requests (XEP-0092)
-	AddPermanentHandler( JabberProcessIqVersion, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR, _T(JABBER_FEAT_VERSION), FALSE, _T("query"));
+	AddPermanentHandler( &CJabberProto::OnIqRequestVersion, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR, _T(JABBER_FEAT_VERSION), FALSE, _T("query"));
 
 	// last activity (XEP-0012)
-	AddPermanentHandler( JabberProcessIqLast, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR, _T(JABBER_FEAT_LAST_ACTIVITY), FALSE, _T("query"));
+	AddPermanentHandler( &CJabberProto::OnIqRequestLastActivity, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR, _T(JABBER_FEAT_LAST_ACTIVITY), FALSE, _T("query"));
 
 	// ping requests (XEP-0199)
-	AddPermanentHandler( JabberProcessIqPing, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR, _T(JABBER_FEAT_PING), FALSE, _T("ping"));
+	AddPermanentHandler( &CJabberProto::OnIqRequestPing, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR, _T(JABBER_FEAT_PING), FALSE, _T("ping"));
 
 	// entity time (XEP-0202)
-	AddPermanentHandler( JabberProcessIqTime202, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR, _T(JABBER_FEAT_ENTITY_TIME), FALSE, _T("time"));
+	AddPermanentHandler( &CJabberProto::OnIqRequestTime, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR, _T(JABBER_FEAT_ENTITY_TIME), FALSE, _T("time"));
+
+	// entity time (XEP-0090)
+	AddPermanentHandler( &CJabberProto::OnIqProcessIqOldTime, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR, _T(JABBER_FEAT_ENTITY_TIME_OLD), FALSE, _T("query"));
 
 	// old avatars support (deprecated XEP-0008)
-	AddPermanentHandler( JabberProcessIqAvatar, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR, _T(JABBER_FEAT_AVATAR), FALSE, _T("query"));
+	AddPermanentHandler( &CJabberProto::OnIqRequestAvatar, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR, _T(JABBER_FEAT_AVATAR), FALSE, _T("query"));
 
 	// privacy lists (XEP-0016)
-	AddPermanentHandler( JabberProcessIqPrivacyLists, JABBER_IQ_TYPE_SET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR, _T(JABBER_FEAT_PRIVACY_LISTS), FALSE, _T("query"));
+	AddPermanentHandler( &CJabberProto::OnIqRequestPrivacyLists, JABBER_IQ_TYPE_SET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR, _T(JABBER_FEAT_PRIVACY_LISTS), FALSE, _T("query"));
 
 	// in band bytestreams (XEP-0047)
-	AddPermanentHandler( JabberFtHandleIbbIq, JABBER_IQ_TYPE_SET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_CHILD_TAG_NODE | JABBER_IQ_PARSE_CHILD_TAG_NAME | JABBER_IQ_PARSE_CHILD_TAG_XMLNS, _T(JABBER_FEAT_IBB), FALSE, NULL);
+	AddPermanentHandler( &CJabberProto::OnFtHandleIbbIq, JABBER_IQ_TYPE_SET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_CHILD_TAG_NODE | JABBER_IQ_PARSE_CHILD_TAG_NAME | JABBER_IQ_PARSE_CHILD_TAG_XMLNS, _T(JABBER_FEAT_IBB), FALSE, NULL);
 
 	// socks5-bytestreams (XEP-0065)
-	AddPermanentHandler( JabberFtHandleBytestreamRequest, JABBER_IQ_TYPE_SET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_BYTESTREAMS), FALSE, _T("query"));
+	AddPermanentHandler( &CJabberProto::FtHandleBytestreamRequest, JABBER_IQ_TYPE_SET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_BYTESTREAMS), FALSE, _T("query"));
 
 	// session initiation (XEP-0095)
-	AddPermanentHandler( JabberHandleSiRequest, JABBER_IQ_TYPE_SET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_SI), FALSE, _T("si"));
+	AddPermanentHandler( &CJabberProto::OnSiRequest, JABBER_IQ_TYPE_SET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_SI), FALSE, _T("si"));
 
 	// roster push requests
-	AddPermanentHandler( JabberHandleRosterPushRequest, JABBER_IQ_TYPE_SET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE | JABBER_IQ_PARSE_TO, _T(JABBER_FEAT_IQ_ROSTER), FALSE, _T("query"));
+	AddPermanentHandler( &CJabberProto::OnRosterPushRequest, JABBER_IQ_TYPE_SET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_IQ_ROSTER), FALSE, _T("query"));
 
 	// OOB file transfers
-	AddPermanentHandler( JabberHandleIqRequestOOB, JABBER_IQ_TYPE_SET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_HCONTACT | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_OOB), FALSE, _T("query"));
+	AddPermanentHandler( &CJabberProto::OnIqRequestOOB, JABBER_IQ_TYPE_SET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_HCONTACT | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_OOB), FALSE, _T("query"));
 
 	// disco#items requests (XEP-0030, XEP-0050)
-	AddPermanentHandler( JabberHandleDiscoItemsRequest, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_TO | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_DISCO_ITEMS), FALSE, _T("query"));
+	AddPermanentHandler( &CJabberProto::OnHandleDiscoItemsRequest, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_TO | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_DISCO_ITEMS), FALSE, _T("query"));
 
 	// disco#info requests (XEP-0030, XEP-0050, XEP-0115)
-	AddPermanentHandler( JabberHandleDiscoInfoRequest, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_TO | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_DISCO_INFO), FALSE, _T("query"));
+	AddPermanentHandler( &CJabberProto::OnHandleDiscoInfoRequest, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_TO | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_DISCO_INFO), FALSE, _T("query"));
 
 	// ad-hoc commands (XEP-0050) for remote controlling (XEP-0146)
-	AddPermanentHandler( JabberHandleAdhocCommandRequest, JABBER_IQ_TYPE_SET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_TO | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_COMMANDS), FALSE, _T("command"));
+	AddPermanentHandler( &CJabberProto::HandleAdhocCommandRequest, JABBER_IQ_TYPE_SET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_TO | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_COMMANDS), FALSE, _T("command"));
+
+	// http auth (XEP-0070)
+	AddPermanentHandler( &CJabberProto::OnIqHttpAuth, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_HTTP_AUTH), FALSE, _T("confirm"));
+	
+	return TRUE;
+}
+
+BOOL CJabberIqManager::Start()
+{
+	if ( m_hExpirerThread || m_bExpirerThreadShutdownRequest )
+		return FALSE;
+
+	m_hExpirerThread = ppro->JForkThreadEx( &CJabberProto::ExpirerThread, this );
+	if ( !m_hExpirerThread )
+		return FALSE;
 
 	return TRUE;
+}
+
+void __cdecl CJabberProto::ExpirerThread( void* pParam )
+{
+	CJabberIqManager *pManager = ( CJabberIqManager * )pParam;
+	pManager->ExpirerThread();
 }
 
 void CJabberIqManager::ExpirerThread()
@@ -201,11 +210,165 @@ void CJabberIqManager::ExpirerThread()
 				Sleep(50);
 
 			// -1 thread :)
-			g_JabberAdhocManager.ExpireSessions();
-
+			ppro->m_adhocManager.ExpireSessions();
 			continue;
 		}
-		ExpireInfo(pInfo);
+		ExpireInfo( pInfo );
 		delete pInfo;
 	}
+
+	if ( !m_bExpirerThreadShutdownRequest ) {
+		CloseHandle( m_hExpirerThread );
+		m_hExpirerThread = NULL;
+	}
+}
+
+void CJabberIqManager::ExpireInfo( CJabberIqInfo* pInfo, void*)
+{
+	if ( !pInfo )
+		return;
+	
+	if ( pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_FROM )
+		pInfo->m_szFrom = pInfo->m_szReceiver;
+	if (( pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_HCONTACT ) && ( pInfo->m_szFrom ))
+		pInfo->m_hContact = ppro->HContactFromJID( pInfo->m_szFrom , 3);
+
+	ppro->Log( "Expiring iq id %d, sent to " TCHAR_STR_PARAM, pInfo->m_nIqId, pInfo->m_szReceiver ? pInfo->m_szReceiver : _T("unknown") );
+
+	pInfo->m_nIqType = JABBER_IQ_TYPE_FAIL;
+	(ppro->*(pInfo->m_pHandler))( NULL, pInfo );
+}
+
+CJabberIqInfo* CJabberIqManager::AddHandler(JABBER_IQ_HANDLER pHandler, int nIqType, const TCHAR *szReceiver, DWORD dwParamsToParse, int nIqId, void *pUserData, DWORD dwGroupId, DWORD dwTimeout)
+{
+	CJabberIqInfo* pInfo = new CJabberIqInfo();
+	if (!pInfo)
+		return NULL;
+
+	pInfo->m_pHandler = pHandler;
+	if (nIqId == -1)
+		nIqId = ppro->SerialNext();
+	pInfo->m_nIqId = nIqId;
+	pInfo->m_nIqType = nIqType;
+	pInfo->m_dwParamsToParse = dwParamsToParse;
+	pInfo->m_pUserData = pUserData;
+	pInfo->m_dwGroupId = dwGroupId;
+	pInfo->m_dwRequestTime = GetTickCount();
+	pInfo->m_dwTimeout = dwTimeout;
+	pInfo->SetReceiver(szReceiver);
+
+	AppendIq(pInfo);
+
+	return pInfo;
+}
+
+BOOL CJabberIqManager::HandleIq(int nIqId, HXML pNode )
+{
+	if (nIqId == -1 || pNode == NULL)
+		return FALSE;
+
+	const TCHAR *szType = xmlGetAttrValue( pNode, _T("type"));
+	if ( !szType )
+		return FALSE;
+
+	int nIqType = JABBER_IQ_TYPE_FAIL;
+	if (!_tcsicmp(szType, _T("result")))
+		nIqType = JABBER_IQ_TYPE_RESULT;
+	else if (!_tcsicmp(szType, _T("error")))
+		nIqType = JABBER_IQ_TYPE_ERROR;
+	else
+		return FALSE;
+
+	Lock();
+	CJabberIqInfo* pInfo = DetachInfo(nIqId, 0);
+	Unlock();
+	if (pInfo)
+	{
+		pInfo->m_nIqType = nIqType;
+		if (nIqType == JABBER_IQ_TYPE_RESULT) {
+			if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_CHILD_TAG_NODE)
+				pInfo->m_pChildNode = xmlGetChild( pNode , 0 );
+			
+			if (pInfo->m_pChildNode && (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_CHILD_TAG_NAME))
+				pInfo->m_szChildTagName = ( TCHAR* )xmlGetName( pInfo->m_pChildNode );
+			if (pInfo->m_pChildNode && (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_CHILD_TAG_XMLNS))
+				pInfo->m_szChildTagXmlns = ( TCHAR* )xmlGetAttrValue( pNode, _T("xmlns"));
+		}
+
+		if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_TO)
+			pInfo->m_szTo = ( TCHAR* )xmlGetAttrValue( pNode, _T("to"));
+
+		if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_FROM)
+			pInfo->m_szFrom = ( TCHAR* )xmlGetAttrValue( pNode, _T("from"));
+		if (pInfo->m_szFrom && (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_HCONTACT))
+			pInfo->m_hContact = ppro->HContactFromJID( pInfo->m_szFrom, 3 );
+
+		if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_ID_STR)
+			pInfo->m_szId = ( TCHAR* )xmlGetAttrValue( pNode, _T("id"));
+
+		(ppro->*(pInfo->m_pHandler))(pNode, pInfo);
+		delete pInfo;
+		return TRUE;
+	}
+	return FALSE;
+}
+
+BOOL CJabberIqManager::HandleIqPermanent( HXML pNode )
+{
+	const TCHAR *szType = xmlGetAttrValue( pNode, _T("type"));
+	if ( !szType )
+		return FALSE;
+	
+	CJabberIqInfo iqInfo;
+
+	iqInfo.m_nIqType = JABBER_IQ_TYPE_FAIL;
+	if ( !_tcsicmp( szType, _T("get")))
+		iqInfo.m_nIqType = JABBER_IQ_TYPE_GET;
+	else if ( !_tcsicmp( szType, _T("set")))
+		iqInfo.m_nIqType = JABBER_IQ_TYPE_SET;
+	else
+		return FALSE;
+
+	HXML pFirstChild = xmlGetChild( pNode , 0 );
+	if ( !pFirstChild || !xmlGetName( pFirstChild ) )
+		return FALSE;
+	
+	const TCHAR *szTagName = xmlGetName( pFirstChild );
+	const TCHAR *szXmlns = xmlGetAttrValue( pFirstChild, _T("xmlns"));
+
+	BOOL bHandled = FALSE;
+	Lock();
+	CJabberIqPermanentInfo *pInfo = m_pPermanentHandlers;
+	while ( pInfo ) {
+		BOOL bAllow = TRUE;
+		if ( !(pInfo->m_nIqTypes & iqInfo.m_nIqType ))
+			bAllow = FALSE;
+		if ( bAllow && pInfo->m_szXmlns && ( !szXmlns || _tcscmp( pInfo->m_szXmlns, szXmlns )))
+			bAllow = FALSE;
+		if ( bAllow && pInfo->m_szTag && _tcscmp( pInfo->m_szTag, szTagName ))
+			bAllow = FALSE;
+		if ( bAllow ) {
+			iqInfo.m_pChildNode = pFirstChild;
+			iqInfo.m_szChildTagName = ( TCHAR* )szTagName;
+			iqInfo.m_szChildTagXmlns = ( TCHAR* )szXmlns;
+			iqInfo.m_szId = ( TCHAR* )xmlGetAttrValue( pNode, _T("id"));
+
+			if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_TO)
+				iqInfo.m_szTo = ( TCHAR* )xmlGetAttrValue( pNode, _T("to"));
+
+			if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_FROM)
+				iqInfo.m_szFrom = ( TCHAR* )xmlGetAttrValue( pNode, _T("from"));
+
+			if ((pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_HCONTACT) && (iqInfo.m_szFrom))
+				iqInfo.m_hContact = ppro->HContactFromJID( iqInfo.m_szFrom, 3 );
+
+			ppro->Log( "Handling iq id " TCHAR_STR_PARAM ", type " TCHAR_STR_PARAM ", from " TCHAR_STR_PARAM, iqInfo.m_szId, szType, iqInfo.m_szFrom );
+			(ppro->*(pInfo->m_pHandler))(pNode, &iqInfo);
+			bHandled = TRUE;
+		}
+		pInfo = pInfo->m_pNext;
+	}
+	Unlock();
+
+	return bHandled;
 }

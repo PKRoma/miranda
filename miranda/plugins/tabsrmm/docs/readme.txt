@@ -5,8 +5,8 @@ Online resources at: http://miranda.or.at
 
 ----------------------------------------------------------
 				
-Version: 1.0.0.0
-Created: July 2006
+Version: 2.0.0.0
+Created: October 2007
 
 1. Overview
 -----------
@@ -34,8 +34,7 @@ fit your needs.
 *  Works with the external IEView plugin to give you a fully customizable message log
    using HTML templates and CSS.
    
-*  Avatar support (for protocols which can do it). You can also set a local "user picture"
-   for each contact.
+*  Avatar support - both contacts and own avatars can be shown in the message dialog.
    
 *  message templates for the message history in the chat window. You can freely define
    how messages will look like by using a powerful system of variables and templates.
@@ -69,6 +68,8 @@ fit your needs.
      
 *  System tray support.
 
+*  integrated group chat module, based on chat.dll but merged into tabSRMM to give
+   users a unified user interface for both IM and group chats (i.e. IRC channels).
 
 3. FAQ and general help
 -----------------------
@@ -84,6 +85,8 @@ fit your needs.
 
 *  some features don't work under Windows 9x. Affected are most things related
    to the session list, the favorite contact and recent list.
+   
+*  Skinning is only supported on Windows 2000 or later.
 
 *  multisend doesn't work well. I suggest using it with "care" :) It will
    improve in the future. Also, multisend shouldn't be used "excessivly" -
@@ -121,5 +124,5 @@ the development phase. I cannot name you all here, because it's just too many.
 License: GPL
 
 Contact me at:         mailto: silvercircle@gmail.com
-			                 ICQ:    7769309
+		       ICQ:    7769309
                        MSN:    silvercircle@gmail.com

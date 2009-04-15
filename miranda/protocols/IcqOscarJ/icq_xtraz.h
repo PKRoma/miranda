@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/IcqOscarJ/icq_xtraz.h $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -37,40 +37,7 @@
 #ifndef __ICQ_XTRAZ_H
 #define __ICQ_XTRAZ_H
 
-void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szMsg, int nMsgLen, BOOL bThruDC);
-void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, WORD wCookie, char* szMsg, int nMsgLen);
-
-void handleXtrazInvitation(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szMsg, int nMsgLen, BOOL bThruDC);
-void handleXtrazData(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szMsg, int nMsgLen, BOOL bThruDC);
-
-DWORD SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify, int bForced);
-void SendXtrazNotifyResponse(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szResponse, int nResponseLen, BOOL bThruDC);
-
-// helper functions
-BYTE __stdcall ICQGetContactXStatus(HANDLE hContact);
-
 // custom status support
 void InitXStatusItems(BOOL bAllowStatus);
-void InitXStatusEvents();
-void UninitXStatusEvents();
-
-void InitXStatusIcons();
-void ChangedIconsXStatus();
-HICON GetXStatusIcon(int bStatus, UINT flags);
-
-void handleXStatusCaps(HANDLE hContact, char* caps, int capsize, char* moods, int moodsize);
-
-int IcqShowXStatusDetails(WPARAM wParam, LPARAM lParam);
-
-// custom status public services
-int IcqSetXStatus(WPARAM wParam, LPARAM lParam);
-int IcqGetXStatus(WPARAM wParam, LPARAM lParam);
-int IcqSetXStatusEx(WPARAM wParam, LPARAM lParam);
-int IcqGetXStatusEx(WPARAM wParam, LPARAM lParam);
-int IcqGetXStatusIcon(WPARAM wParam, LPARAM lParam);
-int IcqRequestXStatusDetails(WPARAM wParam, LPARAM lParam);
-int IcqRequestAdvStatusIconIdx(WPARAM wParam, LPARAM lParam);
-
-
 
 #endif /* __ICQ_XTRAZ_H */

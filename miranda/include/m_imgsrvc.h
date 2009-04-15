@@ -1,7 +1,7 @@
 /*
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
+Copyright 2000-2008 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -36,7 +36,7 @@ by the FreeImage project (http://freeimage.sourceforge.net)
 
 #define _FI_MIMPLUGIN 1
 
-#include "..\plugins\freeimage\Miranda\include\m_freeimage.h"
+#include "m_freeimage.h"
 
 #define FI_IF_VERSION (PLUGIN_MAKE_VERSION(0, 0, 1, 0))           // interface version - must match
 
@@ -333,11 +333,22 @@ typedef struct _tagFI_interface {
     HBITMAP  (*FI_CreateHBITMAPFromDIB)(FIBITMAP *dib);
     BOOL     (*FI_Premultiply)(HBITMAP hBmp);                               // premultiplies alpha channel for usage with AlphaBlend()
                                                                             // original HBITMAP stays valid and must be 32bit RGBA
-    int      (*FI_BmpFilterResizeBitmap)(WPARAM wParam,LPARAM lParam);      // more generic resizer for avatar images
+    INT_PTR  (*FI_BmpFilterResizeBitmap)(WPARAM wParam,LPARAM lParam);      // more generic resizer for avatar images
     void     (*FI_CorrectBitmap32Alpha)(HBITMAP hBitmap, BOOL force);       // corrects broken images (when all alpha values are 0)
 
     BYTE  reserved[200];            // future usage
 } FI_INTERFACE;
+
+
+#if defined(UNICODE) || defined(_UNICODE)
+#define FI_GetFIFFromFilenameT FI_GetFIFFromFilenameU
+#define FI_GetFileTypeT FI_GetFileTypeU
+#define FI_LoadT FI_LoadU
+#else
+#define FI_GetFIFFromFilenameT FI_GetFIFFromFilename
+#define FI_GetFileTypeT FI_GetFileType
+#define FI_LoadT FI_Load
+#endif
 
 /*
  * image services

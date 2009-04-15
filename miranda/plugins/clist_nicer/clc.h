@@ -24,11 +24,6 @@ UNICODE - done.
 
 */
 
-#define HCONTACT_ISGROUP    0x80000000
-#define HCONTACT_ISINFO     0xFFFF0000
-#define IsHContactGroup(h)  (((unsigned)(h)^HCONTACT_ISGROUP)<(HCONTACT_ISGROUP^HCONTACT_ISINFO))
-#define IsHContactInfo(h)   (((unsigned)(h)&HCONTACT_ISINFO)==HCONTACT_ISINFO)
-#define IsHContactContact(h) (((unsigned)(h)&HCONTACT_ISGROUP)==0)
 #define MAXEXTRACOLUMNS     16
 
 #define INTM_XSTATUSCHANGED  (WM_USER+26)
@@ -42,6 +37,10 @@ UNICODE - done.
 #define INTM_METACHANGED        (WM_USER+34)
 #define INTM_INVALIDATECONTACT  (WM_USER+35)
 #define INTM_FORCESORT			(WM_USER+36)
+
+#define DEFAULT_TITLEBAR_HEIGHT		18
+
+#define CLS_SKINNEDFRAME	0x0800   //this control will be the main contact list (v. 0.3.4.3+ 2004/11/02)
 
 #define TIMERID_RENAME         10
 #define TIMERID_DRAGAUTOSCROLL 11
@@ -122,8 +121,6 @@ typedef struct _OrderTreeData
 } *PORDERTREEDATA, ORDERTREEDATA;
 
 struct DisplayProfile {
-    UINT    uID;
-    TCHAR   tszName[60];
     DWORD   dwFlags;
     DWORD   dwExtraImageMask;
     int     exIconScale;
@@ -140,10 +137,20 @@ struct DisplayProfile {
     BYTE     bLeftMargin, bRightMargin, bRowSpacing, bGroupIndent, bRowHeight, bGroupRowHeight;
     BYTE     exIconOrder[EXICON_COUNT];
 };
+typedef struct DisplayProfile DISPLAYPROFILE;
+
+/*
+ * a set of 4 (online, offline, selected, hottracked) display profiles
+ */
+
+struct DisplayProfileSet {
+    UINT    uID;
+    TCHAR   tszName[60];
+    DISPLAYPROFILE dp[4];
+};
+typedef struct DisplayProfileSet DISPLAYPROFILESET;
 
 #define DSP_PROFILES_MODULE "CLN_DspProfiles"           // db module for display profiles
-
-typedef struct DisplayProfile DISPLAYPROFILE;
 
 struct ExtraCache {
 	BYTE iExtraImage[MAXEXTRACOLUMNS];
@@ -204,6 +211,14 @@ struct ClcContact {
 #define DRAGSTAGEF_MAYBERENAME  0x8000
 #define DRAGSTAGEF_OUTSIDE      0x4000
 
+#define FONTID_CONTACTS    0
+#define FONTID_INVIS       1
+#define FONTID_OFFLINE     2
+#define FONTID_NOTONLIST   3
+#define FONTID_GROUPS      4
+#define FONTID_GROUPCOUNTS 5
+#define FONTID_DIVIDERS    6
+#define FONTID_OFFINVIS    7
 #define FONTID_STATUS      8
 #define FONTID_FRAMETITLE  9
 #define FONTID_EVENTAREA   10
@@ -417,6 +432,7 @@ struct CluiData {
     int  group_padding;
     DWORD t_now;
     BYTE exIconOrder[EXICON_COUNT];
+    BOOL realTimeSaving;
 };
 
 #define SORTBY_NAME 1
@@ -572,11 +588,11 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto );
 
 // debugging support
 
-extern void __forceinline _DebugTraceW(const wchar_t *fmt, ...);
+void _DebugTraceW(const wchar_t *fmt, ...);
 #ifdef _CLN_GDIP
-extern "C" void __forceinline _DebugTraceA(const char *fmt, ...);
+extern "C" void _DebugTraceA(const char *fmt, ...);
 #else
-extern void __forceinline _DebugTraceA(const char *fmt, ...);
+void _DebugTraceA(const char *fmt, ...);
 #endif
 // Docking.c
 
@@ -636,25 +652,17 @@ int CoolSB_SetupScrollBar();
 #define BM_SETASMENUACTION (WM_USER + 9)
 #define BM_SETBTNITEM (WM_USER+10)
 
-#define EIMG_MAIL 0
-#define EIMG_URL 1
-#define EIMG_SMS 2
-#define EIMG_RESERVED 3
-#define EIMG_EXTRA 4
-#define EIMG_RESERVED2 5
-#define EIMG_CLIENT 6
-
-#define EIMG_SHOW_MAIL 1
-#define EIMG_SHOW_URL 2
+#define EIMG_SHOW_RES0 8
+#define EIMG_SHOW_EMAIL 1
+#define EIMG_SHOW_WEB 2
 #define EIMG_SHOW_SMS 4
-#define EIMG_SHOW_RESERVED 8
-#define EIMG_SHOW_EXTRA 16
-#define EIMG_SHOW_RESERVED2 32
+#define EIMG_SHOW_ADV1 16
+#define EIMG_SHOW_ADV2 32
+#define EIMG_SHOW_ADV3 512
 #define EIMG_SHOW_CLIENT 64
-#define EIMG_SHOW_RESERVED3 128
-#define EIMG_SHOW_RESERVED4 256
-#define EIMG_SHOW_RESERVED5 512
-#define EIMG_SHOW_RESERVED6 1024
+#define EIMG_SHOW_ADV4 1024
+#define EIMG_SHOW_RES1 128
+#define EIMG_SHOW_RES2 256
 
 #define CLCHT_ONITEMEXTRAEX  0x1000  //on an extra icon, HIBYTE(HIWORD()) says which
 #define CLCHT_ONAVATAR       0x2000
@@ -683,19 +691,30 @@ typedef BOOL (WINAPI *PGF)(HDC, PTRIVERTEX, ULONG, PVOID, ULONG, ULONG);
  * floating stuff
  */
 
-#define FLT_SIMPLE 1
-#define FLT_AVATARS 2
-#define FLT_DUALROW 4
-#define FLT_EXTRAICONS 8
-#define FLT_SYNCWITHCLIST 16
-#define FLT_AUTOHIDE 32
+#define FLT_SIMPLE			1
+#define FLT_AVATARS			2
+#define FLT_DUALROW			4
+#define FLT_EXTRAICONS		8
+#define FLT_SYNCWITHCLIST	16
+#define FLT_AUTOHIDE		32
+#define FLT_SNAP			64
+#define FLT_BORDER			128
+#define FLT_ROUNDED			256
+#define FLT_FILLSTDCOLOR    512
+#define FLT_SHOWTOOLTIPS	1024
 
 typedef struct _floatopts {
 	DWORD dwFlags;
-	BYTE pad_left, pad_right, pad_top, pad_bottom;
-	COLORREF bg;
-	BYTE transparency;
+	BYTE  pad_left, pad_right, pad_top, pad_bottom;
+	DWORD width;
+	COLORREF border_colour;
+	BYTE trans, act_trans;
+	BYTE radius;
+	BYTE enabled;
+    BYTE def_hover_time;
+    WORD hover_time;
 } FLOATINGOPTIONS;
 
 extern FLOATINGOPTIONS g_floatoptions;
+
 

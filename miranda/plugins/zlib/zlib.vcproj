@@ -4,10 +4,8 @@
 	Version="7.10"
 	Name="zlib"
 	ProjectGUID="{FFD8637D-909C-4586-9E42-120B66B564FE}"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK">
+	SccProjectName=""
+	SccLocalPath="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -44,7 +42,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/filealign:512"
+				AdditionalDependencies="vc7to6.lib"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				ModuleDefinitionFile=".\zlib.def"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
@@ -237,6 +238,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/filealign:512"
+				AdditionalDependencies="vc7to6.lib "
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				ModuleDefinitionFile=".\zlib.def"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"

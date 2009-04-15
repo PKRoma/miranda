@@ -22,7 +22,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 // Create New Account : Proc
-void *gg_doregister(char *newPass, char *newEmail)
+void *gg_doregister(GGPROTO *gg, char *newPass, char *newEmail)
 {
 	// Connection handles
 	struct gg_http *h = NULL;
@@ -30,12 +30,12 @@ void *gg_doregister(char *newPass, char *newEmail)
 	GGTOKEN token;
 
 #ifdef DEBUGMODE
-	gg_netlog("gg_doregister(): Starting.");
+	gg_netlog(gg, "gg_doregister(): Starting.");
 #endif
 	if(!newPass || !newEmail) return NULL;
 
 	// Load token
-	if(!gg_gettoken(&token)) return NULL;
+	if(!gg_gettoken(gg, &token)) return NULL;
 
 	if (!(h = gg_register3(newEmail, newPass, token.id, token.val, 0)) || !(s = h->data) || !s->success || !s->uin)
 	{
@@ -51,7 +51,7 @@ void *gg_doregister(char *newPass, char *newEmail)
 		);
 
 #ifdef DEBUGMODE
-		gg_netlog("gg_doregister(): Cannot register because of \"%s\".", strerror(errno));
+		gg_netlog(gg, "gg_doregister(): Cannot register because of \"%s\".", strerror(errno));
 #endif
 	}
 	else
@@ -62,7 +62,7 @@ void *gg_doregister(char *newPass, char *newEmail)
 		DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_PASSWORD, newPass);
 		DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_EMAIL, newEmail);
 #ifdef DEBUGMODE
-		gg_netlog("gg_doregister(): Account registration succesful.");
+		gg_netlog(gg, "gg_doregister(): Account registration succesful.");
 #endif
 		MessageBox(
 			NULL,
@@ -73,7 +73,7 @@ void *gg_doregister(char *newPass, char *newEmail)
 	}
 
 #ifdef DEBUGMODE
-	gg_netlog("gg_doregister(): End.");
+	gg_netlog(gg, "gg_doregister(): End.");
 #endif
 
 	return NULL;
@@ -81,7 +81,7 @@ void *gg_doregister(char *newPass, char *newEmail)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Remove Account : Proc
-void *gg_dounregister(uin_t uin, char *password)
+void *gg_dounregister(GGPROTO *gg, uin_t uin, char *password)
 {
 	// Connection handles
 	struct gg_http *h;
@@ -89,12 +89,12 @@ void *gg_dounregister(uin_t uin, char *password)
 	GGTOKEN token;
 
 #ifdef DEBUGMODE
-	gg_netlog("gg_dounregister(): Starting.");
+	gg_netlog(gg, "gg_dounregister(): Starting.");
 #endif
 	if(!uin || !password) return NULL;
 
 	// Load token
-	if(!gg_gettoken(&token)) return NULL;
+	if(!gg_gettoken(gg, &token)) return NULL;
 
 	if (!(h = gg_unregister3(uin, password, token.id, token.val, 0)) || !(s = h->data) || !s->success || s->uin != uin)
 	{
@@ -110,7 +110,7 @@ void *gg_dounregister(uin_t uin, char *password)
 		);
 
 #ifdef DEBUGMODE
-		gg_netlog("gg_dounregister(): Cannot remove account because of \"%s\".", strerror(errno));
+		gg_netlog(gg, "gg_dounregister(): Cannot remove account because of \"%s\".", strerror(errno));
 #endif
 	}
 	else
@@ -119,7 +119,7 @@ void *gg_dounregister(uin_t uin, char *password)
 		DBDeleteContactSetting(NULL, GG_PROTO, GG_KEY_PASSWORD);
 		DBDeleteContactSetting(NULL, GG_PROTO, GG_KEY_UIN);
 #ifdef DEBUGMODE
-		gg_netlog("gg_dounregister(): Account %d has been removed.", uin);
+		gg_netlog(gg, "gg_dounregister(): Account %d has been removed.", uin);
 #endif
 		MessageBox(
 			NULL,
@@ -130,7 +130,7 @@ void *gg_dounregister(uin_t uin, char *password)
 	}
 
 #ifdef DEBUGMODE
-	gg_netlog("gg_dounregister(): End.");
+	gg_netlog(gg, "gg_dounregister(): End.");
 #endif
 
 	return NULL;
@@ -138,7 +138,7 @@ void *gg_dounregister(uin_t uin, char *password)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Change Password Page : Proc
-void *gg_dochpass(uin_t uin, char *password, char *newPass)
+void *gg_dochpass(GGPROTO *gg, uin_t uin, char *password, char *newPass)
 {
 	// Readup email
 	char email[255] = "\0"; DBVARIANT dbv_email;
@@ -148,7 +148,7 @@ void *gg_dochpass(uin_t uin, char *password, char *newPass)
 	GGTOKEN token;
 
 #ifdef DEBUGMODE
-	gg_netlog("gg_dochpass(): Starting.");
+	gg_netlog(gg, "gg_dochpass(): Starting.");
 #endif
 	if(!uin || !password || !newPass) return NULL;
 
@@ -159,7 +159,7 @@ void *gg_dochpass(uin_t uin, char *password, char *newPass)
     }
     
 	// Load token
-	if(!gg_gettoken(&token)) return NULL;
+	if(!gg_gettoken(gg, &token)) return NULL;
 
 	if (!(h = gg_change_passwd4(uin, email, password, newPass, token.id, token.val, 0)) || !(s = h->data) || !s->success)
 	{
@@ -175,7 +175,7 @@ void *gg_dochpass(uin_t uin, char *password, char *newPass)
 		);
 
 #ifdef DEBUGMODE
-		gg_netlog("gg_dochpass(): Cannot change password because of \"%s\".", strerror(errno));
+		gg_netlog(gg, "gg_dochpass(): Cannot change password because of \"%s\".", strerror(errno));
 #endif
 	}
 	else
@@ -184,7 +184,7 @@ void *gg_dochpass(uin_t uin, char *password, char *newPass)
 		CallService(MS_DB_CRYPT_ENCODESTRING, strlen(newPass) + 1, (LPARAM) newPass);
 		DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_PASSWORD, newPass);
 #ifdef DEBUGMODE
-		gg_netlog("gg_dochpass(): Password change succesful.");
+		gg_netlog(gg, "gg_dochpass(): Password change succesful.");
 #endif
 		MessageBox(
 			NULL,
@@ -195,7 +195,7 @@ void *gg_dochpass(uin_t uin, char *password, char *newPass)
 	}
 
 #ifdef DEBUGMODE
-	gg_netlog("gg_dochpass(): End.");
+	gg_netlog(gg, "gg_dochpass(): End.");
 #endif
 
 	return NULL;
@@ -203,7 +203,7 @@ void *gg_dochpass(uin_t uin, char *password, char *newPass)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Change E-mail Page : Proc
-void *gg_dochemail(uin_t uin, char *password, char *email, char *newEmail)
+void *gg_dochemail(GGPROTO *gg, uin_t uin, char *password, char *email, char *newEmail)
 {
 	// Connection handles
 	struct gg_http *h;
@@ -211,12 +211,12 @@ void *gg_dochemail(uin_t uin, char *password, char *email, char *newEmail)
 	GGTOKEN token;
 
 #ifdef DEBUGMODE
-	gg_netlog("gg_doemail(): Starting.");
+	gg_netlog(gg, "gg_doemail(): Starting.");
 #endif
 	if(!uin || !email || !newEmail) return NULL;
 
 	// Load token
-	if(!gg_gettoken(&token)) return NULL;
+	if(!gg_gettoken(gg, &token)) return NULL;
 
 	if (!(h = gg_change_passwd4(uin, newEmail, password, password, token.id, token.val, 0)) || !(s = h->data) || !s->success)
 	{
@@ -227,12 +227,12 @@ void *gg_dochemail(uin_t uin, char *password, char *email, char *newEmail)
 		MessageBox(
 			NULL,
 			error,
-			GG_PROTOERROR,
+			GG_PROTONAME,
 			MB_OK | MB_ICONSTOP
 		);
 
 #ifdef DEBUGMODE
-		gg_netlog("gg_dochpass(): Cannot change e-mail because of \"%s\".", strerror(errno));
+		gg_netlog(gg, "gg_dochpass(): Cannot change e-mail because of \"%s\".", strerror(errno));
 #endif
 	}
 	else
@@ -240,7 +240,7 @@ void *gg_dochemail(uin_t uin, char *password, char *email, char *newEmail)
 		gg_pubdir_free(h);
 		DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_EMAIL, newEmail);
 #ifdef DEBUGMODE
-		gg_netlog("gg_doemail(): Password change succesful.");
+		gg_netlog(gg, "gg_doemail(): Password change succesful.");
 #endif
 		MessageBox(
 			NULL,
@@ -251,7 +251,7 @@ void *gg_dochemail(uin_t uin, char *password, char *email, char *newEmail)
 	}
 
 #ifdef DEBUGMODE
-	gg_netlog("gg_doemail(): End.");
+	gg_netlog(gg, "gg_doemail(): End.");
 #endif
 
 	return NULL;
@@ -259,17 +259,17 @@ void *gg_dochemail(uin_t uin, char *password, char *email, char *newEmail)
 
 ////////////////////////////////////////////////////////////////////////////////
 // User Util Dlg Page : Data
-BOOL CALLBACK gg_userutildlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK gg_userutildlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	GGUSERUTILDLGDATA *dat;
-	dat = (GGUSERUTILDLGDATA  *)GetWindowLong(hwndDlg, GWL_USERDATA);
+	dat = (GGUSERUTILDLGDATA *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	switch(msg)
 	{
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
 			dat = (GGUSERUTILDLGDATA  *)lParam;
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)lParam);
 			if(dat)
 			{
 				// Make bold title font
@@ -326,13 +326,13 @@ BOOL CALLBACK gg_userutildlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
 					// Check dialog box mode
 					if(dat && dat->mode == GG_USERUTIL_CREATE)
-						gg_doregister(pass, email);
+						gg_doregister(dat->gg, pass, email);
 					else if(dat && dat->mode == GG_USERUTIL_REMOVE)
-						gg_dounregister(dat->uin, pass);
+						gg_dounregister(dat->gg, dat->uin, pass);
 					else if(dat && dat->mode == GG_USERUTIL_PASS)
-						gg_dochpass(dat->uin, dat->pass, pass);
+						gg_dochpass(dat->gg, dat->uin, dat->pass, pass);
 					else if(dat && dat->mode == GG_USERUTIL_EMAIL)
-						gg_dochemail(dat->uin, dat->pass, dat->email, email);
+						gg_dochemail(dat->gg, dat->uin, dat->pass, dat->email, email);
 					break;
 				}
 				case IDCANCEL:
@@ -350,7 +350,7 @@ BOOL CALLBACK gg_userutildlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
 ////////////////////////////////////////////////////////////////////////////////
 // Change Password : Run
-static int gg_chpass(WPARAM wParam, LPARAM lParam)
+static int gg_chpass(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
 	char *password, *email;
 	uin_t uin;
@@ -383,10 +383,12 @@ static int gg_chpass(WPARAM wParam, LPARAM lParam)
 	dat.uin = uin;
 	dat.pass = password;
 	dat.email = email;
+	dat.gg = gg;
 
 	DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_CHPASS), NULL, gg_userutildlgproc, (LPARAM)&dat);
 
 	DBFreeVariant(&dbv_pass);
 	DBFreeVariant(&dbv_email);
 }
+
 

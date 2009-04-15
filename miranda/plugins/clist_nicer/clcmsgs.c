@@ -67,8 +67,8 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 			if(contact->type != CLCIT_CONTACT) // || contact->bIsMeta)
 				return 0;
 
-			if(contact->bIsMeta && LOWORD(lParam) != EIMG_EXTRA && LOWORD(lParam) != EIMG_CLIENT)
-				return 0;
+			//if(contact->bIsMeta && LOWORD(lParam) != EIMG_EXTRA && LOWORD(lParam) != EIMG_CLIENT)
+			//	return 0;
 
             /*
             if(contact->hContact == 5846286) {
@@ -90,6 +90,12 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 			if (LOWORD(lParam) >= MAXEXTRACOLUMNS)
 				return 0;
 
+            index = GetExtraCache((HANDLE)wParam, NULL);
+            if(index >= 0 && index < g_nextExtraCacheEntry) {
+                g_ExtraCache[index].iExtraImage[LOWORD(lParam)] = (BYTE)HIWORD(lParam);
+                g_ExtraCache[index].iExtraValid = g_ExtraCache[index].iExtraImage[LOWORD(lParam)] != (BYTE)0xff ? (g_ExtraCache[index].iExtraValid | (1 << LOWORD(lParam))) : (g_ExtraCache[index].iExtraValid & ~(1 << LOWORD(lParam)));
+            }
+
 			hMasterContact = (HANDLE)DBGetContactSettingDword((HANDLE)wParam, g_CluiData.szMetaName, "Handle", 0);
 
 			index = GetExtraCache(hMasterContact, NULL);
@@ -97,7 +103,8 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 				g_ExtraCache[index].iExtraImage[LOWORD(lParam)] = (BYTE)HIWORD(lParam);
 				g_ExtraCache[index].iExtraValid = g_ExtraCache[index].iExtraImage[LOWORD(lParam)] != (BYTE)0xff ? (g_ExtraCache[index].iExtraValid | (1 << LOWORD(lParam))) : (g_ExtraCache[index].iExtraValid & ~(1 << LOWORD(lParam)));
 				PostMessage(hwnd, INTM_INVALIDATE, 0, 0);
-		}	}
+            }	
+        }
 		return 0;
 
 	case CLM_GETSTATUSMSG:
@@ -113,7 +120,7 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 				return 0;
 			if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry <= g_nextExtraCacheEntry) {
 				if(g_ExtraCache[contact->extraCacheEntry].bStatusMsgValid != STATUSMSG_NOTFOUND)
-					return((int)g_ExtraCache[contact->extraCacheEntry].statusMsg);
+					return((INT_PTR)g_ExtraCache[contact->extraCacheEntry].statusMsg);
 		}	}
 		return 0;
 

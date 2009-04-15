@@ -25,8 +25,8 @@ CFG=msn - Win32 Debug Unicode
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
-# PROP Scc_ProjName ""$/Miranda32/miranda/Protocols/MSN", ABEAAAAA"
-# PROP Scc_LocalPath "."
+# PROP Scc_ProjName ""
+# PROP Scc_LocalPath ""
 CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
@@ -45,8 +45,8 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "MSN_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /Zi /O1 /Oy /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "MSN_EXPORTS" /FAcs /Yu"msn_global.h" /FD /c
-# SUBTRACT CPP /Fr
+# ADD CPP /nologo /MD /W3 /Zi /O1 /Oy /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "MSN_EXPORTS" /FAcs /FD /c
+# SUBTRACT CPP /Fr /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x809 /d "NDEBUG"
@@ -73,7 +73,8 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "MSN_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /Gi /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "MSN_EXPORTS" /FR /Yu"msn_global.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "MSN_EXPORTS" /FR /FD /GZ /c
+# SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x809 /d "_DEBUG"
@@ -159,6 +160,25 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=.\des.c
+
+!IF  "$(CFG)" == "msn - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "msn - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "msn - Win32 Release Unicode"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "msn - Win32 Debug Unicode"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=.\ezxml.c
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
@@ -166,6 +186,10 @@ SOURCE=.\ezxml.c
 
 SOURCE=.\msn.cpp
 # ADD CPP /Yc"msn_global.h"
+# End Source File
+# Begin Source File
+
+SOURCE=.\msn_auth.cpp
 # End Source File
 # Begin Source File
 
@@ -198,6 +222,10 @@ SOURCE=.\msn_http.cpp
 # Begin Source File
 
 SOURCE=.\msn_libstr.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\msn_links.cpp
 # End Source File
 # Begin Source File
 
@@ -242,6 +270,18 @@ SOURCE=.\msn_p2p.cpp
 # Begin Source File
 
 SOURCE=.\msn_p2ps.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\msn_proto.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\msn_soapab.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\msn_soapstore.cpp
 # End Source File
 # Begin Source File
 
@@ -326,10 +366,6 @@ SOURCE=..\..\SDK\headers_c\m_protosvc.h
 # Begin Source File
 
 SOURCE=..\..\SDK\headers_c\m_skin.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\SDK\m_smileyadd.h
 # End Source File
 # Begin Source File
 

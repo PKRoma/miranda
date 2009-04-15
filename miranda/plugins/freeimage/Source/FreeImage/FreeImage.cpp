@@ -38,19 +38,11 @@ static const char *s_copyright = "This program uses FreeImage, a free, open sour
 #ifdef _WIN32
 #ifndef FREEIMAGE_LIB
 
-HINSTANCE g_hInst;
-
-extern void FI_Populate();
-
 BOOL APIENTRY
 DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
-
-    g_hInst = (HINSTANCE)hModule;
-    
 	switch (ul_reason_for_call) {
 		case DLL_PROCESS_ATTACH :
 			FreeImage_Initialise(FALSE);
-            FI_Populate();                          // populate miranda interface
 			break;
 
 		case DLL_PROCESS_DETACH :
@@ -90,7 +82,6 @@ const char * DLL_CALLCONV
 FreeImage_GetVersion() {
 	static char s_version[16];
 	sprintf(s_version, "%d.%d.%d", FREEIMAGE_MAJOR_VERSION, FREEIMAGE_MINOR_VERSION, FREEIMAGE_RELEASE_SERIAL);
-
 	return s_version;
 }
 
@@ -113,18 +104,24 @@ FreeImage_IsLittleEndian() {
 
 //----------------------------------------------------------------------
 
-FreeImage_OutputMessageFunction FreeImage_OutputMessageProcProc = NULL;
+static FreeImage_OutputMessageFunction freeimage_outputmessage_proc = NULL;
+static FreeImage_OutputMessageFunctionStdCall freeimage_outputmessagestdcall_proc = NULL; 
 
 void DLL_CALLCONV
 FreeImage_SetOutputMessage(FreeImage_OutputMessageFunction omf) {
-	FreeImage_OutputMessageProcProc = omf;
+	freeimage_outputmessage_proc = omf;
+}
+
+void DLL_CALLCONV
+FreeImage_SetOutputMessageStdCall(FreeImage_OutputMessageFunctionStdCall omf) {
+	freeimage_outputmessagestdcall_proc = omf;
 }
 
 void DLL_CALLCONV
 FreeImage_OutputMessageProc(int fif, const char *fmt, ...) {
 	const int MSG_SIZE = 512; // 512 bytes should be more than enough for a short message
 
-	if ((fmt != NULL) && (FreeImage_OutputMessageProcProc != NULL)) {
+	if ((fmt != NULL) && ((freeimage_outputmessage_proc != NULL) || (freeimage_outputmessagestdcall_proc != NULL))) {
 		char message[MSG_SIZE];
 		memset(message, 0, MSG_SIZE);
 
@@ -135,7 +132,7 @@ FreeImage_OutputMessageProc(int fif, const char *fmt, ...) {
 
 		// check the length of the format string
 
-		int str_length = (strlen(fmt) > MSG_SIZE) ? MSG_SIZE : strlen(fmt);
+		int str_length = (int)( (strlen(fmt) > MSG_SIZE) ? MSG_SIZE : strlen(fmt) );
 
 		// parse the format string and put the result in 'message'
 
@@ -155,7 +152,7 @@ FreeImage_OutputMessageProc(int fif, const char *fmt, ...) {
 
 							strcat(message, tmp);
 
-							j += strlen(tmp);
+							j += (int)strlen(tmp);
 
 							++i;
 
@@ -171,7 +168,7 @@ FreeImage_OutputMessageProc(int fif, const char *fmt, ...) {
 
 							strcat(message, tmp);
 
-							j += strlen(tmp);
+							j += (int)strlen(tmp);
 
 							++i;
 
@@ -186,7 +183,7 @@ FreeImage_OutputMessageProc(int fif, const char *fmt, ...) {
 
 							strcat(message, tmp);
 
-							j += strlen(tmp);
+							j += (int)strlen(tmp);
 
 							++i;
 
@@ -199,7 +196,7 @@ FreeImage_OutputMessageProc(int fif, const char *fmt, ...) {
 
 							strcat(message, tmp);
 
-							j += strlen(tmp);
+							j += (int)strlen(tmp);
 
 							++i;
 
@@ -220,6 +217,10 @@ FreeImage_OutputMessageProc(int fif, const char *fmt, ...) {
 
 		// output the message to the user program
 
-		FreeImage_OutputMessageProcProc((FREE_IMAGE_FORMAT)fif, message);
+		if (freeimage_outputmessage_proc != NULL)
+			freeimage_outputmessage_proc((FREE_IMAGE_FORMAT)fif, message);
+
+		if (freeimage_outputmessagestdcall_proc != NULL)
+			freeimage_outputmessagestdcall_proc((FREE_IMAGE_FORMAT)fif, message); 
 	}
 }

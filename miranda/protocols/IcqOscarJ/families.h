@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -38,7 +38,7 @@
 #define __FAMILIES_H
 
 
-typedef struct snac_header_s
+struct snac_header 
 {
   BOOL  bValid;
   WORD  wFamily;
@@ -46,10 +46,10 @@ typedef struct snac_header_s
   WORD  wFlags;
   DWORD dwRef;
   WORD  wVersion;
-} snac_header;
+};
 
 
-typedef struct message_ack_params_s
+struct message_ack_params 
 {
   BYTE bType;
   DWORD dwUin;
@@ -59,23 +59,20 @@ typedef struct message_ack_params_s
   WORD wCookie;
   int msgType;
   BYTE bFlags;
-} message_ack_params;
+};
 
 #define MAT_SERVER_ADVANCED 0
 #define MAT_DIRECT          1
 
-/*---------* Functions *---------------*/
 
-void handleServiceFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info);
-void handleLocationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
-void handleBuddyFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info);
-void handleMsgFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
-void handleBosFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
-void handleLookupFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
-void handleStatusFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
-void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info);
-void handleIcqExtensionsFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
-void handleAuthorizationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info);
+struct UserInfoRecordItem 
+{
+  WORD wTLV;
+  int dbType;
+  char *szDbSetting;
+};
+
+/*---------* Functions *---------------*/
 
 void sendClientAuth(const char* szKey, WORD wKeyLen, BOOL bSecure);
 void handleLoginReply(unsigned char *buf, WORD datalen, serverthread_info *info);
@@ -91,15 +88,6 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
 #define BUL_VISIBLE       1
 #define BUL_INVISIBLE     2
 #define BUL_TEMPVISIBLE   4
-void sendEntireListServ(WORD wFamily, WORD wSubtype, int listType);
-void updateServVisibilityCode(BYTE bCode);
-void updateServAvatarHash(char* pHash, int size);
-void sendAddStart(int bImport);
-void sendAddEnd(void);
-void sendTypingNotification(HANDLE hContact, WORD wMTNCode);
-
-void makeContactTemporaryVisible(HANDLE hContact);
-void clearTemporaryVisibleList();
 
 
 #endif /* __FAMILIES_H */

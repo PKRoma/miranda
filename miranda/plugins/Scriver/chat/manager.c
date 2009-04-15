@@ -2,6 +2,7 @@
 Chat module plugin for Miranda IM
 
 Copyright (C) 2003 Jörgen Persson
+Copyright 2003-2008 Miranda ICQ/IM project,
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -24,7 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern TCHAR* pszActiveWndID ;
 extern char*  pszActiveWndModule ;
 extern HICON  hIcons[30];
-extern int overlayIcon;
 extern struct MM_INTERFACE		mmi ;
 
 extern struct GlobalMessageData *g_dat;
@@ -77,6 +77,7 @@ SESSION_INFO* SM_AddSession( const TCHAR* pszID, const char* pszModule)
 		ZeroMemory(node, sizeof(SESSION_INFO));
 		node->ptszID = mir_tstrdup( pszID );
 		node->pszModule = mir_strdup( pszModule );
+		node->windowData.flags = CWDF_RTF_INPUT;
 
 		if (m_WndList == NULL) { // list is empty
 			m_WndList = node;
@@ -102,7 +103,6 @@ int SM_RemoveSession( const TCHAR* pszID, const char* pszModule)
 	{
 		if (((!pszID && pTemp->iType != GCW_SERVER) || !lstrcmpi(pTemp->ptszID,pszID)) && !lstrcmpiA(pTemp->pszModule,pszModule)) // match
 		{
-			COMMAND_INFO *pCurComm;
 			DWORD dw = pTemp->dwItemData;
 
 			if (pTemp->hWnd )
@@ -121,15 +121,15 @@ int SM_RemoveSession( const TCHAR* pszID, const char* pszModule)
 			pTemp->iStatusCount = 0;
 			pTemp->nUsersInNicklist = 0;
 
-			if (pTemp->hContact)
+			if (pTemp->windowData.hContact)
 			{
-				CList_SetOffline(pTemp->hContact, pTemp->iType == GCW_CHATROOM?TRUE:FALSE);
-				if (pTemp->iType != GCW_SERVER)
-					DBWriteContactSettingByte(pTemp->hContact, "CList", "Hidden", 1);
+				CList_SetOffline(pTemp->windowData.hContact, pTemp->iType == GCW_CHATROOM?TRUE:FALSE);
+/*				if (pTemp->iType != GCW_SERVER)
+					DBWriteContactSettingByte(pTemp->windowData.hContact, "CList", "Hidden", 1);*/
 			}
-			DBWriteContactSettingString(pTemp->hContact, pTemp->pszModule , "Topic", "");
-			DBWriteContactSettingString(pTemp->hContact, pTemp->pszModule, "StatusBar", "");
-			DBDeleteContactSetting(pTemp->hContact, "CList", "StatusMsg");
+			DBWriteContactSettingString(pTemp->windowData.hContact, pTemp->pszModule , "Topic", "");
+			DBWriteContactSettingString(pTemp->windowData.hContact, pTemp->pszModule, "StatusBar", "");
+			DBDeleteContactSetting(pTemp->windowData.hContact, "CList", "StatusMsg");
 
 			mir_free( pTemp->pszModule );
 			mir_free( pTemp->ptszID );
@@ -143,15 +143,7 @@ int SM_RemoveSession( const TCHAR* pszID, const char* pszModule)
 			#endif
 
 			// delete commands
-			pCurComm = pTemp->lpCommands;
-			while (pCurComm != NULL)
-			{
-				COMMAND_INFO *pNext = pCurComm->next;
-				mir_free(pCurComm->lpCommand);
-				mir_free(pCurComm);
-				pCurComm = pNext;
-			}
-
+			tcmdlist_free(pTemp->windowData.cmdList);
 			mir_free(pTemp);
 			if (pszID)
 				return (int)dw;
@@ -190,7 +182,7 @@ HWND SM_FindWindowByContact(HANDLE hContact)
 	SESSION_INFO *pTemp = m_WndList;
 
 	while ( pTemp != NULL ) {
-		if ( pTemp->hContact == hContact)
+		if ( pTemp->windowData.hContact == hContact)
 			return pTemp->hWnd;
 
 		pTemp = pTemp->next;
@@ -242,6 +234,37 @@ BOOL SM_SetStatusEx( const TCHAR* pszID, const char* pszModule, const TCHAR* psz
 		pTemp = pTemp->next;
 	}
 	return TRUE;
+}
+
+char SM_GetStatusIndicator(SESSION_INFO* si, USERINFO * ui)
+{
+	STATUSINFO * ti;
+	if (!ui || !si)
+		return '\0';
+
+	ti = TM_FindStatus(si->pStatuses, TM_WordToString(si->pStatuses, ui->Status));
+	if (ti)
+	{
+		if ((int)ti->hIcon < STATUSICONCOUNT)
+		{
+			int id = si->iStatusCount - (int)ti->hIcon - 1;
+			if (id == 0)
+				return '\0';
+			if (id == 1)
+				return '+';
+			if (id == 2)
+				return '%';
+			if (id == 3)
+				return '@';
+			if (id == 4)
+				return '!';
+			if (id == 5)
+				return '*';
+		}
+		else
+			return '\0';
+	}
+	return '\0';
 }
 
 HICON SM_GetStatusIcon(SESSION_INFO* si, USERINFO * ui)
@@ -338,24 +361,11 @@ BOOL SM_AddEvent(const TCHAR* pszID, const char* pszModule, GCEVENT * gce, BOOL 
 	return TRUE;
 }
 
-USERINFO * SM_AddUser( const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID, const TCHAR* pszNick, WORD wStatus)
+USERINFO * SM_AddUser( SESSION_INFO * si, const TCHAR* pszUID, const TCHAR* pszNick, WORD wStatus)
 {
-	SESSION_INFO *pTemp = m_WndList, *pLast = NULL;
-
-	if (!pszID || !pszModule)
-		return NULL;
-
-	while ( pTemp != NULL ) {
-		if ( !lstrcmpi( pTemp->ptszID, pszID ) && !lstrcmpiA( pTemp->pszModule, pszModule )) {
-			USERINFO * p = UM_AddUser( pTemp->pStatuses, &pTemp->pUsers, pszUID, pszNick, wStatus);
-			pTemp->nUsersInNicklist++;
-			return p;
-		}
-		pLast = pTemp;
-		pTemp = pTemp->next;
-	}
-
-	return 0;
+	USERINFO * p = UM_AddUser( si->pStatuses, &si->pUsers, pszUID, pszNick, wStatus);
+	si->nUsersInNicklist++;
+	return p;
 }
 
 BOOL SM_MoveUser(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID)
@@ -589,11 +599,11 @@ BOOL SM_SetStatus(const TCHAR* pszID, const char* pszModule, int wStatus)
 		if (( !pszID || !lstrcmpi( pTemp->ptszID, pszID )) && !lstrcmpiA( pTemp->pszModule, pszModule )) {
 			pTemp->wStatus = wStatus;
 
-			if ( pTemp->hContact ) {
+			if ( pTemp->windowData.hContact ) {
 				if ( pTemp->iType != GCW_SERVER && wStatus != ID_STATUS_OFFLINE )
-						DBDeleteContactSetting(pTemp->hContact, "CList", "Hidden");
+						DBDeleteContactSetting(pTemp->windowData.hContact, "CList", "Hidden");
 
-				DBWriteContactSettingWord(pTemp->hContact, pTemp->pszModule, "Status", (WORD)wStatus);
+				DBWriteContactSettingWord(pTemp->windowData.hContact, pTemp->pszModule, "Status", (WORD)wStatus);
 			}
 
 			PostMessage(pTemp->hWnd, GC_FIXTABICONS, 0, 0);
@@ -685,11 +695,11 @@ BOOL SM_RemoveAll (void)
 		if (m_WndList->hWnd)
 			SendMessage(m_WndList->hWnd, GC_EVENT_CONTROL+WM_USER+500, SESSION_TERMINATE, 0);
 		DoEventHook(m_WndList->ptszID, m_WndList->pszModule, GC_SESSION_TERMINATE, NULL, NULL, (DWORD)m_WndList->dwItemData);
-		if (m_WndList->hContact)
-			CList_SetOffline(m_WndList->hContact, m_WndList->iType == GCW_CHATROOM?TRUE:FALSE);
-		DBWriteContactSettingString(m_WndList->hContact, m_WndList->pszModule , "Topic", "");
-		DBDeleteContactSetting(m_WndList->hContact, "CList", "StatusMsg");
-		DBWriteContactSettingString(m_WndList->hContact, m_WndList->pszModule, "StatusBar", "");
+		if (m_WndList->windowData.hContact)
+			CList_SetOffline(m_WndList->windowData.hContact, m_WndList->iType == GCW_CHATROOM?TRUE:FALSE);
+		DBWriteContactSettingString(m_WndList->windowData.hContact, m_WndList->pszModule , "Topic", "");
+		DBDeleteContactSetting(m_WndList->windowData.hContact, "CList", "StatusMsg");
+		DBWriteContactSettingString(m_WndList->windowData.hContact, m_WndList->pszModule, "StatusBar", "");
 
 		UM_RemoveAll(&m_WndList->pUsers);
 		TM_RemoveAll(&m_WndList->pStatuses);
@@ -703,88 +713,12 @@ BOOL SM_RemoveAll (void)
 		mir_free( m_WndList->ptszStatusbarText );
 		mir_free( m_WndList->ptszTopic );
 		mir_free( m_WndList->pszHeader);
-
-		while (m_WndList->lpCommands != NULL) {
-			COMMAND_INFO *pNext = m_WndList->lpCommands->next;
-			mir_free(m_WndList->lpCommands->lpCommand);
-			mir_free(m_WndList->lpCommands);
-			m_WndList->lpCommands = pNext;
-		}
-
+		tcmdlist_free(m_WndList->windowData.cmdList);
 		mir_free(m_WndList);
 		m_WndList = pLast;
 	}
 	m_WndList = NULL;
 	return TRUE;
-}
-
-void SM_AddCommand(const TCHAR* pszID, const char* pszModule, const char* lpNewCommand)
-{
-	SESSION_INFO* pTemp = m_WndList;
-	while ( pTemp != NULL ) {
-		if ( lstrcmpi( pTemp->ptszID, pszID ) == 0 && lstrcmpiA( pTemp->pszModule, pszModule ) == 0) { // match
-			COMMAND_INFO *node = mir_alloc(sizeof(COMMAND_INFO));
-			node->lpCommand = mir_strdup( lpNewCommand );
-			node->prev = NULL; // always added at beginning!
-			node->next = pTemp->lpCommands;
-			// new commands are added at start
-			if (pTemp->lpCommands != NULL) {
-				pTemp->lpCommands->prev = node;
-			}
-			pTemp->lpCommands = node;
-			pTemp->lpCurrentCommand = NULL; // current command
-			pTemp->wCommandsNum++;
-			// prune the list
-			if (pTemp->wCommandsNum > WINDOWS_COMMANDS_MAX) {
-				COMMAND_INFO *pCurComm = pTemp->lpCommands;
-				COMMAND_INFO *pLast;
-				while (pCurComm->next != NULL) { pCurComm = pCurComm->next; }
-				pLast = pCurComm->prev;
-				pLast->next = NULL;
-				mir_free(pCurComm->lpCommand);
-				mir_free(pCurComm);
-				pTemp->wCommandsNum--;
-		}	}
-		pTemp = pTemp->next;
-}	}
-
-char* SM_GetPrevCommand(const TCHAR* pszID, const char* pszModule) // get previous command. returns NULL if previous command does not exist. current command remains as it was.
-{
-	SESSION_INFO* pTemp = m_WndList;
-	while ( pTemp != NULL ) {
-		if ( lstrcmpi( pTemp->ptszID, pszID ) == 0 && lstrcmpiA( pTemp->pszModule, pszModule ) == 0) { // match
-			COMMAND_INFO *pPrevCmd = NULL;
-			if (pTemp->lpCurrentCommand != NULL) {
-				if (pTemp->lpCurrentCommand->next != NULL) // not NULL
-					pPrevCmd = pTemp->lpCurrentCommand->next; // next command (newest at beginning)
-				else
-					pPrevCmd = pTemp->lpCurrentCommand;
-			}
-			else pPrevCmd = pTemp->lpCommands;
-
-			pTemp->lpCurrentCommand = pPrevCmd; // make it the new command
-			return(((pPrevCmd) ? (pPrevCmd->lpCommand) : (NULL)));
-		}
-		pTemp = pTemp->next;
-	}
-	return(NULL);
-}
-
-char* SM_GetNextCommand(const TCHAR* pszID, const char* pszModule) // get next command. returns NULL if next command does not exist. current command becomes NULL (a prev command after this one will get you the last command)
-{
-	SESSION_INFO* pTemp = m_WndList;
-	while ( pTemp != NULL ) {
-		if ( lstrcmpi( pTemp->ptszID, pszID ) == 0 && lstrcmpiA( pTemp->pszModule, pszModule ) == 0) { // match
-			COMMAND_INFO *pNextCmd = NULL;
-			if (pTemp->lpCurrentCommand != NULL)
-				pNextCmd = pTemp->lpCurrentCommand->prev; // last command (newest at beginning)
-
-			pTemp->lpCurrentCommand = pNextCmd; // make it the new command
-			return(((pNextCmd) ? (pNextCmd->lpCommand) : (NULL)));
-		}
-		pTemp = pTemp->next;
-	}
-	return(NULL);
 }
 
 int SM_GetCount(const char* pszModule)
@@ -860,8 +794,25 @@ char* SM_GetUsers(SESSION_INFO* si)
 }
 
 
+SESSION_INFO* SM_FindSessionAutoComplete(const char* pszModule, SESSION_INFO* prevSession, const TCHAR* pszOriginal, const TCHAR* pszCurrent)
+{
+	TCHAR* pszName = NULL;
+	SESSION_INFO* pResult = NULL;
+	SESSION_INFO* pTemp = m_WndList;
+	while (pTemp != NULL) {
+		if (!lstrcmpiA(pszModule, pTemp->pszModule)) {
+			if ( my_strstri( pTemp->ptszName, pszOriginal) == pTemp->ptszName ) {
+				if ( prevSession != pTemp && lstrcmpi( pTemp->ptszName, pszCurrent ) > 0 && ( !pszName || lstrcmpi( pTemp->ptszName, pszName ) < 0) ) {
+					pResult = pTemp;
+					pszName = pTemp->ptszName;
+				}
+			}
+		}
+		pTemp = pTemp->next;
+	}
+	return pResult;
 
-
+}
 
 
 //---------------------------------------------------

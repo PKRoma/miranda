@@ -24,11 +24,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #pragma hdrstop
 #include "m_fontservice.h"
 
+/* Missing MinGW GUIDs */
+#ifdef __MINGW32__
+const CLSID IID_IRichEditOle = { 0x00020D00, 0x00, 0x00, { 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46 } };
+const CLSID IID_IRichEditOleCallback = { 0x00020D03, 0x00, 0x00, { 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46 } };
+#endif
+
 static void InitREOleCallback(void);
 
 HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
-static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted;
-HANDLE hHookWinEvt = NULL;
+HANDLE hHookWinEvt = NULL, hMsgMenuItem = NULL;
+static HANDLE hServices[7];
+static HANDLE hHooks[8];
 
 extern HINSTANCE g_hInst;
 
@@ -49,7 +56,7 @@ static int SRMMStatusToPf2(int status)
 	return 0;
 }
 
-static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
+static INT_PTR ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 {
 	struct NewMessageWindowLParam newData = { 0 };
 	HWND hwndExisting;
@@ -112,7 +119,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 }
 
 #if defined(_UNICODE)
-static int SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
+static INT_PTR SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd;
 	struct NewMessageWindowLParam newData = { 0 };
@@ -151,7 +158,7 @@ static int SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 }
 #endif
 
-static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
+static INT_PTR SendMessageCommand(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd;
 	struct NewMessageWindowLParam newData = { 0 };
@@ -189,7 +196,7 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int TypingMessageCommand(WPARAM wParam, LPARAM lParam)
+static INT_PTR TypingMessageCommand(WPARAM wParam, LPARAM lParam)
 {
 	CLISTEVENT *cle = (CLISTEVENT *) lParam;
 
@@ -327,31 +334,19 @@ static int FontsChanged(WPARAM wParam,LPARAM lParam)
 
 static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
-	CLISTMENUITEM mi;
-	PROTOCOLDESCRIPTOR **protocol;
-	int protoCount, i;
-
 	RegisterSRMMFonts();
 	LoadMsgLogIcons();
-
-	ZeroMemory(&mi, sizeof(mi));
-	mi.cbSize = sizeof(mi);
-	mi.position = -2000090000;
-	mi.flags = CMIF_ICONFROMICOLIB;
-	mi.icolibItem = LoadSkinnedIconHandle( SKINICON_EVENT_MESSAGE );
-	mi.pszName = LPGEN("&Message");
-	mi.pszService = MS_MSG_SENDMESSAGE;
-	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & protoCount, (LPARAM) & protocol);
-	for (i = 0; i < protoCount; i++) {
-		if (protocol[i]->type != PROTOTYPE_PROTOCOL)
-			continue;
-		if (CallProtoService(protocol[i]->szName, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND) {
-			mi.pszContactOwner = protocol[i]->szName;
-			CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
-	}	}
-
+	{
+		CLISTMENUITEM mi = { 0 };
+		mi.cbSize = sizeof(mi);
+		mi.position = -2000090000;
+		mi.flags = CMIF_ICONFROMICOLIB | CMIF_DEFAULT;
+		mi.icolibItem = LoadSkinnedIconHandle( SKINICON_EVENT_MESSAGE );
+		mi.pszName = LPGEN("&Message");
+		mi.pszService = MS_MSG_SENDMESSAGE;
+		hMsgMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
+	}
 	HookEvent(ME_FONT_RELOAD, FontsChanged);
-	HookEvent(ME_CLIST_DOUBLECLICKED, SendMessageCommand);
 
 	RestoreUnreadMessageAlerts();
 	return 0;
@@ -366,12 +361,20 @@ int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 
 int SplitmsgShutdown(void)
 {
+    int i;
+
 	DestroyCursor(hCurSplitNS);
 	DestroyCursor(hCurHyperlinkHand);
 	DestroyCursor(hCurSplitWE);
-	UnhookEvent(hEventDbEventAdded);
-	UnhookEvent(hEventDbSettingChange);
-	UnhookEvent(hEventContactDeleted);
+	
+	for (i=0; i < SIZEOF(hHooks); ++i) 
+		if ( hHooks[i] )
+			UnhookEvent( hHooks[i] );
+
+	for ( i=0; i < SIZEOF(hServices); ++i)
+		if ( hServices[i] )
+			DestroyServiceFunction( hServices[i] );
+
 	FreeMsgLogIcons();
 	FreeLibrary(GetModuleHandleA("riched20"));
 	OleUninitialize();
@@ -390,12 +393,34 @@ static int IconsChanged(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int GetWindowAPI(WPARAM wParam, LPARAM lParam)
+static int PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
+{
+	HANDLE hContact = (HANDLE)wParam;
+	if ( hContact ) {
+		char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+
+		CLISTMENUITEM clmi = {0};
+		clmi.cbSize = sizeof( CLISTMENUITEM );
+		clmi.flags = CMIM_FLAGS | CMIF_DEFAULT | CMIF_HIDDEN;
+
+		if ( szProto ) {
+			// leave this menu item hidden for chats
+			if ( !DBGetContactSettingByte( hContact, szProto, "ChatRoom", 0 ))
+				if ( CallProtoService( szProto, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND )
+					clmi.flags &= ~CMIF_HIDDEN;
+		}
+
+		CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMsgMenuItem, ( LPARAM )&clmi );
+	}
+	return 0;
+}
+
+static INT_PTR GetWindowAPI(WPARAM wParam, LPARAM lParam)
 {
 	return PLUGIN_MAKE_VERSION(0,0,0,4);
 }
 
-static int GetWindowClass(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetWindowClass(WPARAM wParam, LPARAM lParam)
 {
 	char *szBuf = (char*)wParam;
 	int size = (int)lParam;
@@ -403,7 +428,7 @@ static int GetWindowClass(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int GetWindowData(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetWindowData(WPARAM wParam, LPARAM lParam)
 {
 	MessageWindowInputData *mwid = (MessageWindowInputData*)wParam;
 	MessageWindowData *mwd = (MessageWindowData*)lParam;
@@ -437,22 +462,24 @@ int LoadSendRecvMessageModule(void)
 	OleInitialize(NULL);
 	InitREOleCallback();
 	InitOptions();
-	hEventDbEventAdded = HookEvent(ME_DB_EVENT_ADDED, MessageEventAdded);
-	hEventDbSettingChange = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, MessageSettingChanged);
-	hEventContactDeleted = HookEvent(ME_DB_CONTACT_DELETED, ContactDeleted);
-	HookEvent(ME_SYSTEM_MODULESLOADED, SplitmsgModulesLoaded);
-	HookEvent(ME_SKIN_ICONSCHANGED, IconsChanged);
-	HookEvent(ME_PROTO_CONTACTISTYPING, TypingMessage);
-	HookEvent(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
-	CreateServiceFunction(MS_MSG_SENDMESSAGE, SendMessageCommand);
+	hHooks[0] = HookEvent(ME_DB_EVENT_ADDED, MessageEventAdded);
+	hHooks[1] = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, MessageSettingChanged);
+	hHooks[2] = HookEvent(ME_DB_CONTACT_DELETED, ContactDeleted);
+	hHooks[3] = HookEvent(ME_SYSTEM_MODULESLOADED, SplitmsgModulesLoaded);
+	hHooks[4] = HookEvent(ME_SKIN_ICONSCHANGED, IconsChanged);
+	hHooks[5] = HookEvent(ME_PROTO_CONTACTISTYPING, TypingMessage);
+	hHooks[6] = HookEvent(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
+	hHooks[7] = HookEvent(ME_CLIST_PREBUILDCONTACTMENU, PrebuildContactMenu);
+
+	hServices[0] = CreateServiceFunction(MS_MSG_SENDMESSAGE, SendMessageCommand);
 #if defined(_UNICODE)
-	CreateServiceFunction(MS_MSG_SENDMESSAGE "W", SendMessageCommand_W);
+	hServices[1] = CreateServiceFunction(MS_MSG_SENDMESSAGE "W", SendMessageCommand_W);
 #endif
-	CreateServiceFunction(MS_MSG_GETWINDOWAPI, GetWindowAPI);
-	CreateServiceFunction(MS_MSG_GETWINDOWCLASS, GetWindowClass);
-	CreateServiceFunction(MS_MSG_GETWINDOWDATA, GetWindowData);
-	CreateServiceFunction("SRMsg/ReadMessage", ReadMessageCommand);
-	CreateServiceFunction("SRMsg/TypingMessage", TypingMessageCommand);
+	hServices[2] = CreateServiceFunction(MS_MSG_GETWINDOWAPI, GetWindowAPI);
+	hServices[3] = CreateServiceFunction(MS_MSG_GETWINDOWCLASS, GetWindowClass);
+	hServices[4] = CreateServiceFunction(MS_MSG_GETWINDOWDATA, GetWindowData);
+	hServices[5] = CreateServiceFunction("SRMsg/ReadMessage", ReadMessageCommand);
+	hServices[6] = CreateServiceFunction("SRMsg/TypingMessage", TypingMessageCommand);
 	hHookWinEvt=CreateHookableEvent(ME_MSG_WINDOWEVENT);
 	SkinAddNewSoundEx("RecvMsgActive", Translate("Messages"), Translate("Incoming (Focused Window)"));
 	SkinAddNewSoundEx("RecvMsgInactive", Translate("Messages"), Translate("Incoming (Unfocused Window)"));

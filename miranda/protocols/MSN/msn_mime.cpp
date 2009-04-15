@@ -1,11 +1,8 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-7 Boris Krasnovskiy.
-Copyright (c) 2003-5 George Hazan.
-Copyright (c) 2002-3 Richard Hughes (original version).
-
-Miranda IM: the free icq client for MS Windows
-Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
+Copyright (c) 2006-2009 Boris Krasnovskiy.
+Copyright (c) 2003-2005 George Hazan.
+Copyright (c) 2002-2003 Richard Hughes (original version).
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -18,8 +15,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "msn_global.h"
@@ -158,7 +154,6 @@ char* MimeHeaders::readFromBuffer( char* parString )
 
 		char* delim = strchr( parString, ':' );
 		if ( delim == NULL ) {
-			MSN_DebugLog( "MSG: Invalid MIME header: '%s'", parString );
 			parString = peol;
 			continue;
 		}
@@ -193,7 +188,7 @@ const char* MimeHeaders::find( const char* szFieldName )
 static const struct _tag_cpltbl
 {
 	unsigned cp;
-	char* mimecp;
+	const char* mimecp;
 } cptbl[] =
 {
 	{   037, "IBM037" },		  // IBM EBCDIC US-Canada 
@@ -414,9 +409,9 @@ wchar_t* MimeHeaders::decode(const char* val)
 			ssz -= sz; resp += sz;
 		}
 		else {
-			sz = MultiByteToWideChar(FindCP(cp), 0, fld, -1, resp, ssz);
+			int sz = MultiByteToWideChar(FindCP(cp), 0, fld, -1, resp, (int)ssz);
 			if (sz == 0)
-				sz = MultiByteToWideChar(CP_ACP, 0, fld, -1, resp, ssz);
+				sz = MultiByteToWideChar(CP_ACP, 0, fld, -1, resp, (int)ssz);
 			ssz -= --sz; resp += sz;
 		}
  		p = pe + 2;
@@ -461,13 +456,13 @@ int sttDivideWords( char* parBuffer, int parMinItems, char** parDest )
 	for ( i=0; i < parMinItems; i++ ) {
 		parDest[ i ] = parBuffer;
 
-		int tWordLen = strcspn( parBuffer, " \t" );
+		size_t tWordLen = strcspn( parBuffer, " \t" );
 		if ( tWordLen == 0 )
 			return i;
 
 		parBuffer += tWordLen;
 		if ( *parBuffer != '\0' ) {
-			int tSpaceLen = strspn( parBuffer, " \t" );
+			size_t tSpaceLen = strspn( parBuffer, " \t" );
 			memset( parBuffer, 0, tSpaceLen );
 			parBuffer += tSpaceLen;
 	}	}

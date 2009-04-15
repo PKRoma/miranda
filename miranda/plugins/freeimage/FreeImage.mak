@@ -1,7 +1,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on FreeImage.dsp
 !IF "$(CFG)" == ""
 CFG=FreeImage - Win32 Release
-!MESSAGE No configuration specified. Defaulting to FreeImage - Win32 Release.
+!MESSAGE No configuration specified. Defaulting to FreeImage - Win32 Debug.
 !ENDIF
 
 !IF "$(CFG)" != "FreeImage - Win32 Release" && "$(CFG)" != "FreeImage - Win32 Debug"
@@ -24,10 +24,6 @@ NULL=
 !ELSE
 NULL=nul
 !ENDIF
-
-CPP=cl.exe
-MTL=midl.exe
-RSC=rc.exe
 
 !IF  "$(CFG)" == "FreeImage - Win32 Release"
 
@@ -66,7 +62,6 @@ CLEAN :
 	-@erase "$(INTDIR)\ConversionRGBF.obj"
 	-@erase "$(INTDIR)\ConversionType.obj"
 	-@erase "$(INTDIR)\CopyPaste.obj"
-	-@erase "$(INTDIR)\DeprecationMgr.obj"
 	-@erase "$(INTDIR)\Display.obj"
 	-@erase "$(INTDIR)\Exif.obj"
 	-@erase "$(INTDIR)\FIRational.obj"
@@ -128,6 +123,7 @@ CLEAN :
 	-@erase "$(INTDIR)\jutils.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\MemoryIO.obj"
+	-@erase "$(INTDIR)\MultigridPoissonSolver.obj"
 	-@erase "$(INTDIR)\MultiPage.obj"
 	-@erase "$(INTDIR)\NNQuantizer.obj"
 	-@erase "$(INTDIR)\PixelAccess.obj"
@@ -161,10 +157,12 @@ CLEAN :
 	-@erase "$(INTDIR)\TagLib.obj"
 	-@erase "$(INTDIR)\tmoColorConvert.obj"
 	-@erase "$(INTDIR)\tmoDrago03.obj"
+	-@erase "$(INTDIR)\tmoFattal02.obj"
 	-@erase "$(INTDIR)\tmoReinhard05.obj"
 	-@erase "$(INTDIR)\ToneMapping.obj"
 	-@erase "$(INTDIR)\transupp.obj"
 	-@erase "$(INTDIR)\vc60.idb"
+	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\WuQuantizer.obj"
 	-@erase "$(INTDIR)\ZLibInterface.obj"
 	-@erase "$(OUTDIR)\advaimg.exp"
@@ -174,8 +172,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /O1 /I "Source" /I "Source\ZLib" /I "Source\DeprecationManager" /I "..\..\include" /I "..\zlib" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
+CPP=cl.exe
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "Source" /I "Source\ZLib" /I "..\..\include" /I "..\zlib" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
+RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\FreeImage.res" /d "NDEBUG"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\FreeImage.bsc"
@@ -201,13 +233,14 @@ LINK32_OBJS= \
 	"$(INTDIR)\ConversionRGBF.obj" \
 	"$(INTDIR)\ConversionType.obj" \
 	"$(INTDIR)\Halftoning.obj" \
+	"$(INTDIR)\MultigridPoissonSolver.obj" \
 	"$(INTDIR)\tmoColorConvert.obj" \
 	"$(INTDIR)\tmoDrago03.obj" \
+	"$(INTDIR)\tmoFattal02.obj" \
 	"$(INTDIR)\tmoReinhard05.obj" \
 	"$(INTDIR)\ToneMapping.obj" \
 	"$(INTDIR)\NNQuantizer.obj" \
 	"$(INTDIR)\WuQuantizer.obj" \
-	"$(INTDIR)\DeprecationMgr.obj" \
 	"$(INTDIR)\CacheFile.obj" \
 	"$(INTDIR)\MultiPage.obj" \
 	"$(INTDIR)\ZLibInterface.obj" \
@@ -365,8 +398,6 @@ CLEAN :
 	-@erase "$(INTDIR)\ConversionType.sbr"
 	-@erase "$(INTDIR)\CopyPaste.obj"
 	-@erase "$(INTDIR)\CopyPaste.sbr"
-	-@erase "$(INTDIR)\DeprecationMgr.obj"
-	-@erase "$(INTDIR)\DeprecationMgr.sbr"
 	-@erase "$(INTDIR)\Display.obj"
 	-@erase "$(INTDIR)\Display.sbr"
 	-@erase "$(INTDIR)\Exif.obj"
@@ -488,6 +519,8 @@ CLEAN :
 	-@erase "$(INTDIR)\main.sbr"
 	-@erase "$(INTDIR)\MemoryIO.obj"
 	-@erase "$(INTDIR)\MemoryIO.sbr"
+	-@erase "$(INTDIR)\MultigridPoissonSolver.obj"
+	-@erase "$(INTDIR)\MultigridPoissonSolver.sbr"
 	-@erase "$(INTDIR)\MultiPage.obj"
 	-@erase "$(INTDIR)\MultiPage.sbr"
 	-@erase "$(INTDIR)\NNQuantizer.obj"
@@ -554,6 +587,8 @@ CLEAN :
 	-@erase "$(INTDIR)\tmoColorConvert.sbr"
 	-@erase "$(INTDIR)\tmoDrago03.obj"
 	-@erase "$(INTDIR)\tmoDrago03.sbr"
+	-@erase "$(INTDIR)\tmoFattal02.obj"
+	-@erase "$(INTDIR)\tmoFattal02.sbr"
 	-@erase "$(INTDIR)\tmoReinhard05.obj"
 	-@erase "$(INTDIR)\tmoReinhard05.sbr"
 	-@erase "$(INTDIR)\ToneMapping.obj"
@@ -576,8 +611,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "Source" /I "Source\ZLib" /I "Source\DeprecationManager" /I "..\..\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
+CPP=cl.exe
+CPP_PROJ=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "Source" /I "Source\ZLib" /I "..\..\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
+RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\FreeImage.res" /d "_DEBUG"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\FreeImage.bsc"
@@ -599,13 +668,14 @@ BSC32_SBRS= \
 	"$(INTDIR)\ConversionRGBF.sbr" \
 	"$(INTDIR)\ConversionType.sbr" \
 	"$(INTDIR)\Halftoning.sbr" \
+	"$(INTDIR)\MultigridPoissonSolver.sbr" \
 	"$(INTDIR)\tmoColorConvert.sbr" \
 	"$(INTDIR)\tmoDrago03.sbr" \
+	"$(INTDIR)\tmoFattal02.sbr" \
 	"$(INTDIR)\tmoReinhard05.sbr" \
 	"$(INTDIR)\ToneMapping.sbr" \
 	"$(INTDIR)\NNQuantizer.sbr" \
 	"$(INTDIR)\WuQuantizer.sbr" \
-	"$(INTDIR)\DeprecationMgr.sbr" \
 	"$(INTDIR)\CacheFile.sbr" \
 	"$(INTDIR)\MultiPage.sbr" \
 	"$(INTDIR)\ZLibInterface.sbr" \
@@ -705,7 +775,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\advaimg.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/advaimg.dll" /implib:"$(OUTDIR)\advaimg.lib" /pdbtype:sept
+LINK32_FLAGS=..\zlib\Release\zlib.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\advaimg.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/advaimg.dll" /implib:"$(OUTDIR)\advaimg.lib" /pdbtype:sept
 LINK32_OBJS= \
 	"$(INTDIR)\Plugin.obj" \
 	"$(INTDIR)\PluginBMP.obj" \
@@ -724,13 +794,14 @@ LINK32_OBJS= \
 	"$(INTDIR)\ConversionRGBF.obj" \
 	"$(INTDIR)\ConversionType.obj" \
 	"$(INTDIR)\Halftoning.obj" \
+	"$(INTDIR)\MultigridPoissonSolver.obj" \
 	"$(INTDIR)\tmoColorConvert.obj" \
 	"$(INTDIR)\tmoDrago03.obj" \
+	"$(INTDIR)\tmoFattal02.obj" \
 	"$(INTDIR)\tmoReinhard05.obj" \
 	"$(INTDIR)\ToneMapping.obj" \
 	"$(INTDIR)\NNQuantizer.obj" \
 	"$(INTDIR)\WuQuantizer.obj" \
-	"$(INTDIR)\DeprecationMgr.obj" \
 	"$(INTDIR)\CacheFile.obj" \
 	"$(INTDIR)\MultiPage.obj" \
 	"$(INTDIR)\ZLibInterface.obj" \
@@ -832,36 +903,6 @@ LINK32_OBJS= \
 <<
 
 !ENDIF
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
@@ -1180,6 +1221,24 @@ SOURCE=.\Source\FreeImage\Halftoning.cpp
 
 !ENDIF
 
+SOURCE=.\Source\FreeImageToolkit\MultigridPoissonSolver.cpp
+
+!IF  "$(CFG)" == "FreeImage - Win32 Release"
+
+
+"$(INTDIR)\MultigridPoissonSolver.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "FreeImage - Win32 Debug"
+
+
+"$(INTDIR)\MultigridPoissonSolver.obj"	"$(INTDIR)\MultigridPoissonSolver.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF
+
 SOURCE=.\Source\FreeImage\tmoColorConvert.cpp
 
 !IF  "$(CFG)" == "FreeImage - Win32 Release"
@@ -1211,6 +1270,24 @@ SOURCE=.\Source\FreeImage\tmoDrago03.cpp
 
 
 "$(INTDIR)\tmoDrago03.obj"	"$(INTDIR)\tmoDrago03.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF
+
+SOURCE=.\Source\FreeImage\tmoFattal02.cpp
+
+!IF  "$(CFG)" == "FreeImage - Win32 Release"
+
+
+"$(INTDIR)\tmoFattal02.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "FreeImage - Win32 Debug"
+
+
+"$(INTDIR)\tmoFattal02.obj"	"$(INTDIR)\tmoFattal02.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -1283,24 +1360,6 @@ SOURCE=.\Source\FreeImage\WuQuantizer.cpp
 
 
 "$(INTDIR)\WuQuantizer.obj"	"$(INTDIR)\WuQuantizer.sbr" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF
-
-SOURCE=.\Source\DeprecationManager\DeprecationMgr.cpp
-
-!IF  "$(CFG)" == "FreeImage - Win32 Release"
-
-
-"$(INTDIR)\DeprecationMgr.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "FreeImage - Win32 Debug"
-
-
-"$(INTDIR)\DeprecationMgr.obj"	"$(INTDIR)\DeprecationMgr.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -2971,24 +3030,24 @@ SOURCE=.\Source\FreeImageToolkit\Resize.cpp
 !IF  "$(CFG)" == "FreeImage - Win32 Release"
 
 "zlib - Win32 Release" :
-   cd "..\zlib"
+   cd "\Miranda\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release"
    cd "..\freeimage"
 
 "zlib - Win32 ReleaseCLEAN" :
-   cd "..\zlib"
+   cd "\Miranda\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" RECURSE=1 CLEAN
    cd "..\freeimage"
 
 !ELSEIF  "$(CFG)" == "FreeImage - Win32 Debug"
 
 "zlib - Win32 Debug" :
-   cd "..\zlib"
+   cd "\Miranda\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug"
    cd "..\freeimage"
 
 "zlib - Win32 DebugCLEAN" :
-   cd "..\zlib"
+   cd "\Miranda\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" RECURSE=1 CLEAN
    cd "..\freeimage"
 

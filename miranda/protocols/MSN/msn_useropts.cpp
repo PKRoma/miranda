@@ -1,11 +1,8 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-7 Boris Krasnovskiy.
-Copyright (c) 2003-5 George Hazan.
-Copyright (c) 2002-3 Richard Hughes (original version).
-
- Miranda IM: the free icq client for MS Windows
-Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
+Copyright (c) 2006-2009 Boris Krasnovskiy.
+Copyright (c) 2003-2005 George Hazan.
+Copyright (c) 2002-2003 Richard Hughes (original version).
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -18,8 +15,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "msn_global.h"
@@ -27,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN contact option page dialog procedure.
 
-
+/*
 INT_PTR CALLBACK MsnDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch ( msg ) 
@@ -36,19 +32,13 @@ INT_PTR CALLBACK MsnDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam
 			{
 				TranslateDialogDefault( hwndDlg );
 				
-				const HANDLE hContact = ( HANDLE )lParam;
+				const HANDLE hContact = (HANDLE)lParam;
 
-				char tBuffer[ MAX_PATH ];
-				if ( MSN_GetStaticString( "OnMobile", hContact, tBuffer, sizeof( tBuffer )))
-					strcpy( tBuffer, "N" );
-				SetDlgItemTextA( hwndDlg, IDC_MOBILE, tBuffer );
+				SetDlgItemInt(hwndDlg, IDC_MOBILE, DBGetContactSettingByte(hContact, m_szModuleName, "MobileAllowed", 0), 0);
+				SetDlgItemInt(hwndDlg, IDC_MSN_MOBILE, DBGetContactSettingByte(hContact, m_szModuleName, "MobileEnabled", 0), 0);
 
-				if ( MSN_GetStaticString( "OnMsnMobile", hContact, tBuffer, sizeof( tBuffer )))
-					strcpy( tBuffer, "N" );
-				SetDlgItemTextA( hwndDlg, IDC_MSN_MOBILE, tBuffer );
-
-				DWORD dwFlagBits = MSN_GetDword( hContact, "FlagBits", 0 );
-				SetDlgItemTextA( hwndDlg, IDC_WEBMESSENGER, ( dwFlagBits & 0x200 ) ? "Y" : "N" );
+				DWORD dwFlagBits = setDword(hContact, "FlagBits", 0);
+				SetDlgItemTextA(hwndDlg, IDC_WEBMESSENGER, (dwFlagBits & 0x200) ? "Y" : "N");
 			}
 
 			return TRUE;
@@ -59,7 +49,7 @@ INT_PTR CALLBACK MsnDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam
 
 	return FALSE;
 }
-
+*/
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnOnDetailsInit - initializes user info dialog pages.
 
@@ -69,11 +59,11 @@ int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam )
 	if ( !MSN_IsMyContact( hContact ))
 		return 0;
 
-	if ( MSN_GetDword( hContact, "FlagBits", 0 )) {
+	if ( setDword( hContact, "FlagBits", 0 )) {
 		odp.pfnDlgProc = MsnDlgProc;
 		odp.position = -1900000000;
 		odp.pszTemplate = MAKEINTRESOURCEA(IDD_USEROPTS);
-		odp.pszTitle = MSN_Translate(msnProtocolName);
+		odp.pszTitle = MSN_Translate(m_szProtoName);
 		MSN_CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
 	}
 */	return 0;

@@ -59,8 +59,8 @@
 /*
 	NOTE! IRC will implement two services which also uses the same parameters:
 
-	"<Module Name>/InsertRawIn"				//used for inserting a "fake" incoming RAW event
-	"<Module Name>/InsertRawOut"			//used for inserting a "fake" outgoing RAW event
+	"<Module m_name>/InsertRawIn"				//used for inserting a "fake" incoming RAW event
+	"<Module m_name>/InsertRawOut"			//used for inserting a "fake" outgoing RAW event
 
 */
 
@@ -88,7 +88,7 @@
 /*
 	NOTE! IRC will implement a service which also uses the same parameters:
 
-	"<Module Name>/InsertGuiIn"		//used for inserting a "fake" event to the GUI
+	"<Module m_name>/InsertGuiIn"		//used for inserting a "fake" event to the GUI
 
 */
 typedef struct MBOT_GUI_WPARAM_IN_STRUCT
@@ -119,7 +119,7 @@ typedef struct MBOT_GUI_WPARAM_IN_STRUCT
 /*
 	NOTE! IRC will implement a service which also uses the same parameters:
 
-	"<Module Name>/InsertGuiOut"		//used for inserting a "fake" outgoing event to the GUI
+	"<Module m_name>/InsertGuiOut"		//used for inserting a "fake" outgoing event to the GUI
 
 */
 

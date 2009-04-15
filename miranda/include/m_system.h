@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project,
+Copyright 2000-2008 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -42,6 +42,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 		#define FORCEINLINE __inline
 	#endif
 	#define __forceinline static FORCEINLINE
+#else
+	#pragma warning(disable:4244 4245)
 #endif
 
 //miranda/system/modulesloaded
@@ -55,6 +57,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //the database is still guaranteed to be running during this hook.
 //wParam=lParam=0
 #define ME_SYSTEM_SHUTDOWN   "Miranda/System/Shutdown"
+
+//restarts miranda ( 0.8+ )
+//wParam=lParam=0
+#define MS_SYSTEM_RESTART    "Miranda/System/Restart"
 
 //miranda/system/oktoexit event
 //called before the app goes into shutdown routine to make sure everyone is
@@ -135,7 +141,7 @@ wParam=0, lParam = (LPARAM) &MM_INTERFACE
 
 struct MM_INTERFACE
 {
-	int cbSize;
+	size_t cbSize;
 	void* (*mmi_malloc) (size_t);
 	void* (*mmi_realloc) (void*, size_t);
 	void  (*mmi_free) (void*);
@@ -160,7 +166,7 @@ struct MM_INTERFACE
 
 #define MS_SYSTEM_GET_MMI  "Miranda/System/GetMMI"
 
-__forceinline int mir_getMMI( struct MM_INTERFACE* dest )
+__forceinline INT_PTR mir_getMMI( struct MM_INTERFACE* dest )
 {
 	dest->cbSize = sizeof(*dest);
 	return CallService( MS_SYSTEM_GET_MMI, 0, (LPARAM)dest );
@@ -196,6 +202,9 @@ __forceinline int mir_getMMI( struct MM_INTERFACE* dest )
 		#define mir_u2a_cp(src,cp) mmi.mir_u2a_cp(src,cp)
 		#define mir_u2a(src)       mmi.mir_u2a(src)
 	#endif
+#else
+	char* mir_strdup(const char *src);
+	WCHAR* mir_wstrdup(const WCHAR *src);
 #endif
 
 #if defined( _UNICODE )
@@ -213,8 +222,8 @@ If the sortFunc member of the list gets assigned, the list becomes sorted
 wParam=0, lParam = (LPARAM)LIST_INTERFACE*
 */
 
-#define LIST_INTERFACE_V1_SIZE  (sizeof(int)+7*sizeof(void*))
-#define LIST_INTERFACE_V2_SIZE  (sizeof(int)+9*sizeof(void*))
+#define LIST_INTERFACE_V1_SIZE  (sizeof(size_t)+7*sizeof(void*))
+#define LIST_INTERFACE_V2_SIZE  (sizeof(size_t)+9*sizeof(void*))
 
 typedef int ( *FSortFunc )( void*, void* );
 
@@ -231,13 +240,13 @@ typedef struct
 
 struct LIST_INTERFACE
 {
-	int    cbSize;
+	size_t    cbSize;
 
-   SortedList* ( *List_Create )( int, int );
+    SortedList* ( *List_Create )( int, int );
 	void        ( *List_Destroy )( SortedList* );
 
-	void*	( *List_Find )( SortedList*, void* );
-	int	( *List_GetIndex )( SortedList*, void*, int* );
+	void* ( *List_Find )( SortedList*, void* );
+	int	  ( *List_GetIndex )( SortedList*, void*, int* );
 	int   ( *List_Insert )( SortedList*, void*, int );
 	int   ( *List_Remove )( SortedList*, int );
 	int   ( *List_IndexOf )( SortedList*, void* );
@@ -250,7 +259,7 @@ struct LIST_INTERFACE
 
 #define MS_SYSTEM_GET_LI  "Miranda/System/GetLI"
 
-__forceinline int mir_getLI( struct LIST_INTERFACE* dest )
+__forceinline INT_PTR mir_getLI( struct LIST_INTERFACE* dest )
 {
 	dest->cbSize = sizeof(*dest);
 	return CallService( MS_SYSTEM_GET_LI, 0, (LPARAM)dest );
@@ -262,10 +271,10 @@ __forceinline int mir_getLI( struct LIST_INTERFACE* dest )
 	Contains functions for utf8-strings encoding & decoding
 */
 
-#define UTF8_INTERFACE_SIZEOF_V1 24
+#define UTF8_INTERFACE_SIZEOF_V1 (sizeof(size_t)+5*sizeof(void*))
 struct UTF8_INTERFACE
 {
-	int cbSize;
+	size_t cbSize;
 
 	// decodes utf8 and places the result back into the same buffer.
 	// if the second parameter is present, the additional wchar_t* string gets allocated,
@@ -290,7 +299,7 @@ struct UTF8_INTERFACE
 
 #define MS_SYSTEM_GET_UTFI  "Miranda/System/GetUTFI"
 
-__forceinline int mir_getUTFI( struct UTF8_INTERFACE* dest )
+__forceinline INT_PTR mir_getUTFI( struct UTF8_INTERFACE* dest )
 {
 	dest->cbSize = sizeof(*dest);
 	return CallService( MS_SYSTEM_GET_UTFI, 0, (LPARAM)dest );
@@ -305,9 +314,18 @@ extern struct UTF8_INTERFACE utfi;
 #define mir_utf8encodecp(A,B)   utfi.utf8_encodecp(A,B)
 #define mir_utf8encodeW(A)      utfi.utf8_encodeW(A)
 
+__forceinline char* mir_utf8decodeA(const char* src)
+{
+    char* tmp = mir_strdup(src);
+    mir_utf8decode(tmp, NULL);
+    return tmp;
+}
+
 #if defined( _UNICODE )
+	#define mir_utf8decodeT mir_utf8decodeW
 	#define mir_utf8encodeT mir_utf8encodeW
 #else
+	#define mir_utf8decodeT mir_utf8decodeA
 	#define mir_utf8encodeT mir_utf8encode
 #endif
 
@@ -410,13 +428,13 @@ typedef void (__cdecl *pThreadFunc)(void*);
 
 #define MS_SYSTEM_FORK_THREAD    "Miranda/Thread/Fork"
 
-__forceinline int mir_forkthread( pThreadFunc aFunc, void* arg )
+__forceinline INT_PTR mir_forkthread( pThreadFunc aFunc, void* arg )
 {
 	return CallService( MS_SYSTEM_FORK_THREAD, (WPARAM)aFunc, (LPARAM)arg );
 }
 
 /* 0.5.2+
-wParam=0
+wParam=void* - thread owner object
 lParam=FORK_THREADEX_PARAMS*
 
 registers a thread in the core and forks it
@@ -424,7 +442,8 @@ passes the extended parameters info and returns the thread id
 
 */
 
-typedef unsigned (__stdcall *pThreadFuncEx)(void*);
+typedef unsigned (__stdcall *pThreadFuncEx)(void* param);
+typedef unsigned (__cdecl *pThreadFuncOwner)(void *owner, void* param);
 
 typedef struct
 {
@@ -437,7 +456,7 @@ typedef struct
 
 #define MS_SYSTEM_FORK_THREAD_EX    "Miranda/Thread/ForkEx"
 
-static __inline int mir_forkthreadex( pThreadFuncEx aFunc, void* arg, int stackSize, unsigned* pThreadID )
+static __inline INT_PTR mir_forkthreadex( pThreadFuncEx aFunc, void* arg, int stackSize, unsigned* pThreadID )
 {
 	FORK_THREADEX_PARAMS params;
 	params.pFunc      = aFunc;
@@ -446,6 +465,26 @@ static __inline int mir_forkthreadex( pThreadFuncEx aFunc, void* arg, int stackS
 	params.threadID   = pThreadID;
 	return CallService( MS_SYSTEM_FORK_THREAD_EX, 0, (LPARAM)&params );
 }
+
+/* 0.8.0+
+wParam=(void*)owner
+lParam=FORK_THREADEX_PARAMS*
+
+registers a thread, owned by some object, in the core and forks it
+passes the owner info and extended parameters info and returns the thread id
+
+*/
+
+static __inline INT_PTR mir_forkthreadowner( pThreadFuncOwner aFunc, void* owner, void* arg, unsigned* pThreadID )
+{
+	FORK_THREADEX_PARAMS params;
+	params.pFunc      = ( pThreadFuncEx )aFunc;
+	params.arg        = arg;
+	params.iStackSize = 0;
+	params.threadID   = pThreadID;
+	return CallService( MS_SYSTEM_FORK_THREAD_EX, (WPARAM)owner, (LPARAM)&params );
+}
+
 
 /*
 wParam=0
@@ -527,7 +566,7 @@ of shutting down
 */
 #define MS_SYSTEM_GETBUILDSTRING "Miranda/GetBuildString"
 
-__inline static int Miranda_Terminated(void)
+__inline static INT_PTR Miranda_Terminated(void)
 {
 	return CallService(MS_SYSTEM_TERMINATED,0,0);
 }
@@ -550,5 +589,28 @@ typedef struct
 	MISSING_SERVICE_PARAMS;
 
 #define ME_SYSTEM_MISSINGSERVICE "System/MissingService"
+
+/* Unhandled exceptions filter
+Is being called inside any thread launched via mir_forkthread, including the main thread.
+If a plugin's author executes a large piece of code inside __try/__except, he should
+obtain this filter and call it inside the __except section
+
+0.8.0+ addition (2008/07/20)
+*/
+
+typedef DWORD ( __cdecl *pfnExceptionFilter )( DWORD code, EXCEPTION_POINTERS* info );
+
+#define MS_SYSTEM_GETEXCEPTFILTER "System/GetExceptFilter"
+
+__inline static pfnExceptionFilter Miranda_GetExceptFilter( void )
+{	return ( pfnExceptionFilter )CallService( MS_SYSTEM_GETEXCEPTFILTER, 0, 0 );
+}
+
+#define MS_SYSTEM_SETEXCEPTFILTER "System/SetExceptFilter"
+
+__inline static pfnExceptionFilter Miranda_SetExceptFilter( pfnExceptionFilter foo )
+{	return ( pfnExceptionFilter )CallService( MS_SYSTEM_SETEXCEPTFILTER, 0, (LPARAM)foo );
+}
+
 
 #endif // M_SYSTEM_H

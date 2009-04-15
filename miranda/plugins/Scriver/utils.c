@@ -24,9 +24,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include <ctype.h>
 #include <mbstring.h>
+#include <winsock.h>
+#include <m_netlib.h>
 
-extern HINSTANCE g_hInst;
-extern HANDLE hHookWinPopup;
 
 static unsigned hookNum = 0;
 static unsigned serviceNum = 0;
@@ -48,7 +48,7 @@ HANDLE CreateServiceFunction_Ex(const char *name, MIRANDASERVICE service) {
 }
 
 void UnhookEvents_Ex() {
-	int i;
+	unsigned i;
 	for (i=0; i<hookNum ; ++i) {
 		if (hHooks[i] != NULL) {
 			UnhookEvent(hHooks[i]);
@@ -60,7 +60,7 @@ void UnhookEvents_Ex() {
 }
 
 void DestroyServices_Ex() {
-	int i;
+	unsigned i;
 	for (i=0; i<serviceNum; ++i) {
 		if (hServices[i] != NULL) {
 			DestroyServiceFunction(hServices[i]);
@@ -145,6 +145,20 @@ char* t2acp( const TCHAR* src, int codepage ) {
 	#endif
 }
 
+wchar_t *a2w(const char *src, int len) {
+	wchar_t *wline;
+	int i;
+	if (len <0) {
+		len = (int)strlen(src);
+	}
+	wline = (wchar_t *)mir_alloc(2 * (len + 1));
+	for (i = 0; i < len; i ++) {
+		wline[i] = src[i];
+	}
+	wline[i] = 0;
+	return wline;
+}
+
 static int mimFlags = 0;
 
 enum MIMFLAGS {
@@ -198,85 +212,291 @@ int GetRichTextLength(HWND hwnd, int codepage, BOOL inBytes) {
 	return (int) SendMessage(hwnd, EM_GETTEXTLENGTHEX, (WPARAM)&gtl, 0);
 }
 
-void InputAreaContextMenu(HWND hwnd, WPARAM wParam, LPARAM lParam, HANDLE hContact) {
 
-	HMENU hMenu, hSubMenu;
-	POINT pt;
-	CHARRANGE sel, all = { 0, -1 };
-	MessageWindowPopupData mwpd;
-	int selection;
+TCHAR *GetRichText(HWND hwnd, int codepage) {
+	GETTEXTEX  gt = {0};
+	TCHAR *textBuffer = NULL;
+	int textBufferSize;
+#if defined( _UNICODE )
+	codepage = 1200;
+#endif
+	textBufferSize = GetRichTextLength(hwnd, codepage, TRUE);
+	if (textBufferSize > 0) {
+		textBufferSize += sizeof(TCHAR);
+		textBuffer = (TCHAR *) mir_alloc(textBufferSize);
+		gt.cb = textBufferSize;
+		gt.flags = GT_USECRLF;
+		gt.codepage = codepage;
+		SendMessage(hwnd, EM_GETTEXTEX, (WPARAM) &gt, (LPARAM) textBuffer);
+	}
+	return textBuffer;
+}
 
-	hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT));
-	hSubMenu = GetSubMenu(hMenu, 2);
-	CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
-	SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM) & sel);
-	if (sel.cpMin == sel.cpMax) {
-		EnableMenuItem(hSubMenu, IDM_CUT, MF_BYCOMMAND | MF_GRAYED);
-		EnableMenuItem(hSubMenu, IDM_COPY, MF_BYCOMMAND | MF_GRAYED);
-		EnableMenuItem(hSubMenu, IDM_DELETE, MF_BYCOMMAND | MF_GRAYED);
+char *GetRichTextEncoded(HWND hwnd, int codepage) {
+#if defined( _UNICODE )
+	TCHAR *textBuffer = GetRichText(hwnd, codepage);
+	char *textUtf = NULL;
+	if (textBuffer != NULL) {
+		textUtf = mir_utf8encodeW(textBuffer);
+		mir_free(textBuffer);
 	}
-	if (!SendMessage(hwnd, EM_CANUNDO, 0, 0)) {
-		EnableMenuItem(hSubMenu, IDM_UNDO, MF_BYCOMMAND | MF_GRAYED);
-	}
-	if (!SendMessage(hwnd, EM_CANREDO, 0, 0)) {
-		EnableMenuItem(hSubMenu, IDM_REDO, MF_BYCOMMAND | MF_GRAYED);
-	}
-	if (!SendMessage(hwnd, EM_CANPASTE, 0, 0)) {
-		EnableMenuItem(hSubMenu, IDM_PASTE, MF_BYCOMMAND | MF_GRAYED);
-	}
-	if (lParam == 0xFFFFFFFF) {
-		SendMessage(hwnd, EM_POSFROMCHAR, (WPARAM) & pt, (LPARAM) sel.cpMax);
-		ClientToScreen(hwnd, &pt);
+	return textUtf;
+#else
+	return GetRichText(hwnd, codepage);
+#endif
+}
+
+int SetRichTextEncoded(HWND hwnd, const char *text, int codepage) {
+	TCHAR *textToSet;
+	SETTEXTEX  st;
+	st.flags = ST_DEFAULT;
+	st.codepage = codepage;
+	#ifdef _UNICODE
+		st.codepage = 1200;
+		textToSet = mir_utf8decodeW(text);
+	#else
+		textToSet = (char *)text;
+	#endif
+	SendMessage(hwnd, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)textToSet);
+	#ifdef _UNICODE
+		mir_free(textToSet);
+	#endif
+	return GetRichTextLength(hwnd, st.codepage, FALSE);
+}
+
+int SetRichTextRTF(HWND hwnd, const char *text) {
+	SETTEXTEX  st;
+	st.flags = ST_DEFAULT;
+	st.codepage = CP_ACP;
+	SendMessage(hwnd, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)text);
+	return GetRichTextLength(hwnd, st.codepage, FALSE);
+}
+
+static DWORD CALLBACK RichTextStreamCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
+{
+	static DWORD dwRead;
+	char ** ppText = (char **) dwCookie;
+
+	if (*ppText == NULL) {
+		*ppText = mir_alloc(cb + 1);
+		memcpy(*ppText, pbBuff, cb);
+		(*ppText)[cb] = 0;
+		*pcb = cb;
+		dwRead = cb;
 	}
 	else {
-		pt.x = (short) LOWORD(lParam);
-		pt.y = (short) HIWORD(lParam);
+		char  *p = mir_alloc(dwRead + cb + 1);
+		memcpy(p, *ppText, dwRead);
+		memcpy(p+dwRead, pbBuff, cb);
+		p[dwRead + cb] = 0;
+		mir_free(*ppText);
+		*ppText = p;
+		*pcb = cb;
+		dwRead += cb;
 	}
 
-	// First notification
-	mwpd.cbSize = sizeof(mwpd);
-	mwpd.uType = MSG_WINDOWPOPUP_SHOWING;
-	mwpd.uFlags = MSG_WINDOWPOPUP_INPUT;
-	mwpd.hContact = hContact;
-	mwpd.hwnd = hwnd;
-	mwpd.hMenu = hSubMenu;
-	mwpd.selection = 0;
-	mwpd.pt = pt;
-	NotifyEventHooks(hHookWinPopup, 0, (LPARAM)&mwpd);
+	return 0;
+}
 
-	selection = TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, GetParent(hwnd), NULL);
+char* GetRichTextRTF(HWND hwnd)
+{
+	EDITSTREAM stream;
+	char* pszText = NULL;
+	DWORD dwFlags;
 
-	// Second notification
-	mwpd.selection = selection;
-	mwpd.uType = MSG_WINDOWPOPUP_SELECTED;
-	NotifyEventHooks(hHookWinPopup, 0, (LPARAM)&mwpd);
+	if (hwnd == 0)
+		return NULL;
 
-	switch (selection) {
-	case IDM_UNDO:
-		SendMessage(hwnd, WM_UNDO, 0, 0);
-		break;
-	case IDM_REDO:
-		SendMessage(hwnd, EM_REDO, 0, 0);
-		break;
-	case IDM_CUT:
-		SendMessage(hwnd, WM_CUT, 0, 0);
-		break;
-	case IDM_COPY:
-		SendMessage(hwnd, WM_COPY, 0, 0);
-		break;
-	case IDM_PASTE:
-		SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
-		break;
-	case IDM_DELETE:
-		SendMessage(hwnd, EM_REPLACESEL, TRUE, 0);
-		break;
-	case IDM_SELECTALL:
-		SendMessage(hwnd, EM_EXSETSEL, 0, (LPARAM) & all);
-		break;
-	case IDM_CLEAR:
-		SetWindowText(hwnd, _T( "" ));
-		break;
+	ZeroMemory(&stream, sizeof(stream));
+	stream.pfnCallback = RichTextStreamCallback;
+	stream.dwCookie = (DWORD_PTR) &pszText; // pass pointer to pointer
+
+	#if defined( _UNICODE )
+		dwFlags = SF_RTFNOOBJS | SFF_PLAINRTF | SF_USECODEPAGE | (CP_UTF8 << 16);
+	#else
+		dwFlags = SF_RTFNOOBJS | SFF_PLAINRTF;
+	#endif
+	SendMessage(hwnd, EM_STREAMOUT, dwFlags, (LPARAM) & stream);
+	return pszText; // pszText contains the text
+}
+
+TCHAR *GetRichTextWord(HWND hwnd, POINTL *ptl)
+{
+	TCHAR* pszWord = NULL;
+	long iCharIndex, start, end, iRes;
+	iCharIndex = SendMessage(hwnd, EM_CHARFROMPOS, 0, (LPARAM)ptl);
+	if (iCharIndex >= 0) {
+		start = SendMessage(hwnd, EM_FINDWORDBREAK, WB_LEFT, iCharIndex);//-iChars;
+		end = SendMessage(hwnd, EM_FINDWORDBREAK, WB_RIGHT, iCharIndex);//-iChars;
+		if (end - start > 0) {
+			TEXTRANGE tr;
+			CHARRANGE cr;
+			static TCHAR szTrimString[] = _T(":;,.!?\'\"><()[]- \r\n");
+			ZeroMemory(&tr, sizeof(TEXTRANGE));
+			pszWord = mir_alloc(sizeof(TCHAR) * (end - start + 1));
+			cr.cpMin = start;
+			cr.cpMax = end;
+			tr.chrg = cr;
+			tr.lpstrText = pszWord;
+			iRes = SendMessage(hwnd, EM_GETTEXTRANGE, 0, (LPARAM)&tr);
+			if (iRes > 0) {
+				int iLen = lstrlen(pszWord)-1;
+				while(iLen >= 0 && _tcschr(szTrimString, pszWord[iLen])) {
+					pszWord[iLen] = _T('\0');
+					iLen--;
+				}
+			}
+		}
 	}
-	DestroyMenu(hMenu);
-	//PostMessage(hwnd, WM_KEYUP, 0, 0 );
+	return pszWord;
+}
+
+HDWP ResizeToolbar(HWND hwnd, HDWP hdwp, int width, int vPos, int height, int cControls, const UINT * controls, UINT *controlWidth, UINT *controlSpacing, char *controlAlignment, int controlVisibility)
+{
+	int i;
+	int lPos = 0;
+	int rPos = width;
+	for (i = 0; i < cControls ; i++) {
+		if (!controlAlignment[i] && (controlVisibility & (1 << i))) {
+			lPos += controlSpacing[i];
+			hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, controls[i]), 0, lPos, vPos, controlWidth[i], height, SWP_NOZORDER);
+			lPos += controlWidth[i];
+		}
+	}
+	for (i = cControls - 1; i >=0; i--) {
+		if (controlAlignment[i] && (controlVisibility & (1 << i))) {
+			rPos -= controlSpacing[i] + controlWidth[i];
+			hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, controls[i]), 0, rPos, vPos, controlWidth[i], height, SWP_NOZORDER);
+		}
+	}
+	return hdwp;
+}
+
+void ShowToolbarControls(HWND hwndDlg, int cControls, const UINT * controls, int controlVisibility, int state)
+{
+	int i;
+	for (i = 0; i < cControls; i++)
+		ShowWindow(GetDlgItem(hwndDlg, controls[i]), (controlVisibility & (1 << i)) ? state : SW_HIDE);
+}
+
+
+void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const char *fmt, ...)
+{
+	va_list va;
+	int charsDone;
+
+	va_start(va, fmt);
+	for (;;) {
+		charsDone = _vsnprintf(*buffer + *cbBufferEnd, *cbBufferAlloced - *cbBufferEnd, fmt, va);
+		if (charsDone >= 0)
+			break;
+		*cbBufferAlloced += 1024;
+		*buffer = (char *) mir_realloc(*buffer, *cbBufferAlloced);
+	}
+	va_end(va);
+	*cbBufferEnd += charsDone;
+}
+
+
+int MeasureMenuItem(WPARAM wParam, LPARAM lParam)
+{
+	LPMEASUREITEMSTRUCT mis = (LPMEASUREITEMSTRUCT) lParam;
+	if (mis->itemData != (ULONG_PTR) g_dat->hButtonIconList && mis->itemData != (ULONG_PTR) g_dat->hSearchEngineIconList) {
+		return FALSE;
+	}
+	mis->itemWidth = max(0, GetSystemMetrics(SM_CXSMICON) - GetSystemMetrics(SM_CXMENUCHECK) + 4);
+	mis->itemHeight = GetSystemMetrics(SM_CYSMICON) + 2;
+	return TRUE;
+}
+
+int DrawMenuItem(WPARAM wParam, LPARAM lParam)
+{
+	int y;
+	int id;
+	LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
+	if (dis->itemData != (ULONG_PTR) g_dat->hButtonIconList && dis->itemData != (ULONG_PTR) g_dat->hSearchEngineIconList) {
+		return FALSE;
+	}
+	id = dis->itemID;
+	if (id >= IDM_SEARCH_GOOGLE) {
+		id -= IDM_SEARCH_GOOGLE;
+	}
+	y = (dis->rcItem.bottom - dis->rcItem.top - GetSystemMetrics(SM_CYSMICON)) / 2 + 1;
+	if (dis->itemState & ODS_SELECTED) {
+		if (dis->itemState & ODS_CHECKED) {
+			RECT rc;
+			rc.left = 2;
+			rc.right = GetSystemMetrics(SM_CXSMICON) + 2;
+			rc.top = y;
+			rc.bottom = rc.top + GetSystemMetrics(SM_CYSMICON) + 2;
+			FillRect(dis->hDC, &rc, GetSysColorBrush(COLOR_HIGHLIGHT));
+			ImageList_DrawEx((HIMAGELIST)dis->itemData, id, dis->hDC, 2, y, 0, 0, CLR_NONE, CLR_DEFAULT, ILD_SELECTED);
+		} else
+			ImageList_DrawEx((HIMAGELIST)dis->itemData, id, dis->hDC, 2, y, 0, 0, CLR_NONE, CLR_DEFAULT, ILD_FOCUS);
+	} else {
+		if (dis->itemState & ODS_CHECKED) {
+			HBRUSH hBrush;
+			RECT rc;
+			COLORREF menuCol, hiliteCol;
+			rc.left = 0;
+			rc.right = GetSystemMetrics(SM_CXSMICON) + 4;
+			rc.top = y - 2;
+			rc.bottom = rc.top + GetSystemMetrics(SM_CYSMICON) + 4;
+			DrawEdge(dis->hDC, &rc, BDR_SUNKENOUTER, BF_RECT);
+			InflateRect(&rc, -1, -1);
+			menuCol = GetSysColor(COLOR_MENU);
+			hiliteCol = GetSysColor(COLOR_3DHIGHLIGHT);
+			hBrush = CreateSolidBrush(RGB
+				((GetRValue(menuCol) + GetRValue(hiliteCol)) / 2, (GetGValue(menuCol) + GetGValue(hiliteCol)) / 2,
+				(GetBValue(menuCol) + GetBValue(hiliteCol)) / 2));
+			FillRect(dis->hDC, &rc, hBrush);
+			DeleteObject(hBrush);
+			ImageList_DrawEx((HIMAGELIST)dis->itemData, id, dis->hDC, 2, y, 0, 0, CLR_NONE, GetSysColor(COLOR_MENU), ILD_BLEND25);
+		} else
+			ImageList_DrawEx((HIMAGELIST)dis->itemData, id, dis->hDC, 2, y, 0, 0, CLR_NONE, CLR_NONE, ILD_NORMAL);
+	}
+	return TRUE;
+}
+
+void SearchWord(TCHAR * word, int engine)
+{
+	char szURL[4096];
+	if (word && word[0]) {
+		char *wordUTF = mir_utf8encodeT(word);
+		char *wordURL = (char *)CallService(MS_NETLIB_URLENCODE, 0, (LPARAM)wordUTF);
+		mir_free(wordUTF);
+		switch (engine) {
+			case SEARCHENGINE_WIKIPEDIA:
+				mir_snprintf( szURL, sizeof( szURL ), "http://en.wikipedia.org/wiki/%s", wordURL );
+				break;
+			case SEARCHENGINE_YAHOO:
+				mir_snprintf( szURL, sizeof( szURL ), "http://search.yahoo.com/search?p=%s&ei=UTF-8", wordURL );
+				break;
+			case SEARCHENGINE_FOODNETWORK:
+				mir_snprintf( szURL, sizeof( szURL ), "http://search.foodnetwork.com/search/delegate.do?fnSearchString=%s", wordURL );
+				break;
+			case SEARCHENGINE_GOOGLE:
+			default:
+				mir_snprintf( szURL, sizeof( szURL ), "http://www.google.com/search?q=%s&ie=utf-8&oe=utf-8", wordURL );
+				break;
+		}
+		HeapFree(GetProcessHeap(), 0, wordURL);
+		CallService(MS_UTILS_OPENURL, 1, (LPARAM) szURL);
+	}
+}
+
+void SetSearchEngineIcons(HMENU hMenu, HIMAGELIST hImageList) {
+	int i;
+	for (i=0; i<IDI_FOODNETWORK - IDI_GOOGLE + 1; i++) {
+		MENUITEMINFO minfo = {0};
+		minfo.cbSize = sizeof(minfo);
+//		minfo.fMask = MIIM_FTYPE | MIIM_ID;
+//		GetMenuItemInfo(hMenu, IDM_SEARCH_GOOGLE + i, FALSE, &minfo);
+		minfo.fMask = MIIM_BITMAP | MIIM_DATA;
+		minfo.hbmpItem = HBMMENU_CALLBACK;
+		//minfo.fType = MFT_STRING;
+		//minfo.wID = IDM_SEARCH_GOOGLE + i;
+		minfo.dwItemData = (ULONG_PTR) hImageList;
+		SetMenuItemInfo(hMenu, IDM_SEARCH_GOOGLE + i, FALSE, &minfo);
+	}
 }

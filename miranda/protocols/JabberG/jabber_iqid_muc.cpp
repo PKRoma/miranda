@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2005-09  George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_iqid_muc.cpp,v $
+File name      : $URL$
 Revision       : $Revision$
 Last change on : $Date$
 Last change by : $Author$
@@ -26,157 +26,63 @@ Last change by : $Author$
 */
 
 #include "jabber.h"
-#include "resource.h"
 #include "jabber_list.h"
 #include "jabber_iq.h"
-#include <commctrl.h>
 #include "jabber_caps.h"
 
-void JabberAddMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, TCHAR* str );
-void JabberDeleteMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, TCHAR* str );
-BOOL JabberEnterString( TCHAR* result, size_t resultLen );
-
-void JabberIqResultBrowseRooms( XmlNode *iqNode, void *userdata )
+void CJabberProto::SetMucConfig( HXML node, void *from )
 {
-	ThreadData* info = ( ThreadData* ) userdata;
-	XmlNode *confNode, *roomNode;
-	TCHAR* type, *category, *jid, *str;
-	JABBER_LIST_ITEM *item;
-	int i, j;
-
-	// RECVED: room list
-	// ACTION: refresh groupchat room list dialog
-	JabberLog( "<iq/> iqIdBrowseRooms" );
-	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
-
-	if ( !lstrcmp( type, _T("result"))) {
-		JabberListRemoveList( LIST_ROOM );
-		for ( i=0; i<iqNode->numChild; i++ ) {
-			if (( confNode=iqNode->child[i] )!=NULL && confNode->name!=NULL ) {
-				if ( !strcmp( confNode->name, "item" )) {
-					if (( category=JabberXmlGetAttrValue( confNode, "category" ))!=NULL && !lstrcmp( category, _T("conference"))) {
-						for ( j=0; j<confNode->numChild; j++ ) {
-							if (( roomNode=confNode->child[j] )!=NULL && !strcmp( roomNode->name, "item" )) {
-								if (( category=JabberXmlGetAttrValue( roomNode, "category" ))!=NULL && !lstrcmp( category, _T("conference"))) {
-									if (( jid=JabberXmlGetAttrValue( roomNode, "jid" )) != NULL ) {
-										item = JabberListAdd( LIST_ROOM, jid );
-										if (( str=JabberXmlGetAttrValue( roomNode, "name" )) != NULL )
-											item->name = mir_tstrdup( str );
-										if (( str=JabberXmlGetAttrValue( roomNode, "type" )) != NULL )
-											item->type = mir_tstrdup( str );
-					}	}	}	}	}
-				}
-				else if ( !strcmp( confNode->name, "conference" )) {
-					for ( j=0; j<confNode->numChild; j++ ) {
-						if (( roomNode=confNode->child[j] )!=NULL && !strcmp( roomNode->name, "conference" )) {
-							if (( jid=JabberXmlGetAttrValue( roomNode, "jid" )) != NULL ) {
-								item = JabberListAdd( LIST_ROOM, jid );
-								if (( str=JabberXmlGetAttrValue( roomNode, "name" )) != NULL )
-									item->name = mir_tstrdup( str );
-								if (( str=JabberXmlGetAttrValue( roomNode, "type" )) != NULL )
-									item->type = mir_tstrdup( str );
-		}	}	}	}	}	}
-
-		if ( hwndJabberGroupchat != NULL ) {
-			if (( jid=JabberXmlGetAttrValue( iqNode, "from" )) != NULL )
-				SendMessage( hwndJabberGroupchat, WM_JABBER_REFRESH, 0, ( LPARAM )jid );
-			else
-				SendMessage( hwndJabberGroupchat, WM_JABBER_REFRESH, 0, ( LPARAM )info->server );
-		}
-	}
-}
-
-void JabberSetMucConfig( XmlNode* node, void *from )
-{
-	if ( jabberThreadInfo && from ) {
-		XmlNodeIq iq( "set", NOID, ( TCHAR* )from );
-		XmlNode* query = iq.addQuery( xmlnsOwner );
-		query->addChild( node );
-		jabberThreadInfo->send( iq );
+	if ( m_ThreadInfo && from ) {
+		XmlNodeIq iq( _T("set"), SerialNext(), ( TCHAR* )from );
+		HXML query = iq << XQUERY( xmlnsOwner );
+		xmlAddChild( query, node );
+		m_ThreadInfo->send( iq );
 }	}
 
-void JabberIqResultGetMuc( XmlNode *iqNode, void *userdata )
+void LaunchForm(HXML node);
+
+void CJabberProto::OnIqResultGetMuc( HXML iqNode )
 {
-	XmlNode *queryNode, *xNode;
-	TCHAR *type, *from, *str;
+	HXML queryNode, xNode;
+	const TCHAR *type, *from, *str;
 
 	// RECVED: room config form
 	// ACTION: show the form
-	JabberLog( "<iq/> iqIdGetMuc" );
-	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
-	if (( from=JabberXmlGetAttrValue( iqNode, "from" )) == NULL ) return;
+	Log( "<iq/> iqIdGetMuc" );
+	if (( type = xmlGetAttrValue( iqNode, _T("type"))) == NULL ) return;
+	if (( from = xmlGetAttrValue( iqNode, _T("from"))) == NULL ) return;
 
 	if ( !_tcscmp( type, _T("result"))) {
-		if (( queryNode=JabberXmlGetChild( iqNode, "query" )) != NULL ) {
-			str = JabberXmlGetAttrValue( queryNode, "xmlns" );
+		if (( queryNode = xmlGetChild( iqNode , "query" )) != NULL ) {
+			str = xmlGetAttrValue( queryNode, _T("xmlns"));
 			if ( !lstrcmp( str, _T("http://jabber.org/protocol/muc#owner" ))) {
-				if (( xNode=JabberXmlGetChild( queryNode, "x" )) != NULL ) {
-					str = JabberXmlGetAttrValue( xNode, "xmlns" );
+				if (( xNode = xmlGetChild( queryNode , "x" )) != NULL ) {
+					str = xmlGetAttrValue( xNode, _T("xmlns"));
 					if ( !lstrcmp( str, _T(JABBER_FEAT_DATA_FORMS)))
-						JabberFormCreateDialog( xNode, _T("Jabber Conference Room Configuration"), JabberSetMucConfig, mir_tstrdup( from ));
+						//LaunchForm(xNode);
+						FormCreateDialog( xNode, _T("Jabber Conference Room Configuration"), &CJabberProto::SetMucConfig, mir_tstrdup( from ));
 }	}	}	}	}
-
-void JabberIqResultDiscoRoomItems( XmlNode *iqNode, void *userdata )
-{
-	ThreadData* info = ( ThreadData* ) userdata;
-	XmlNode *queryNode, *itemNode;
-	TCHAR* type, *jid, *from;
-	JABBER_LIST_ITEM *item;
-	int i;
-	int iqId;
-
-	// RECVED: room list
-	// ACTION: refresh groupchat room list dialog
-	JabberLog( "<iq/> iqIdDiscoRoomItems" );
-	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
-	if (( from=JabberXmlGetAttrValue( iqNode, "from" )) == NULL ) return;
-
-	if ( !lstrcmp( type, _T("result"))) {
-		if (( queryNode=JabberXmlGetChild( iqNode, "query" )) != NULL ) {
-			JabberListRemoveList( LIST_ROOM );
-			for ( i=0; i<queryNode->numChild; i++ ) {
-				if (( itemNode=queryNode->child[i] )!=NULL && itemNode->name!=NULL && !strcmp( itemNode->name, "item" )) {
-					if (( jid=JabberXmlGetAttrValue( itemNode, "jid" )) != NULL ) {
-						item = JabberListAdd( LIST_ROOM, jid );
-						item->name = mir_tstrdup( JabberXmlGetAttrValue( itemNode, "name" ));
-		}	}	}	}
-
-		if ( hwndJabberGroupchat != NULL ) {
-			if (( jid=JabberXmlGetAttrValue( iqNode, "from" )) != NULL )
-				SendMessage( hwndJabberGroupchat, WM_JABBER_REFRESH, 0, ( LPARAM )jid );
-			else
-				SendMessage( hwndJabberGroupchat, WM_JABBER_REFRESH, 0, ( LPARAM )info->server );
-		}
-	}
-	else if ( !_tcscmp( type, _T("error"))) {
-		// disco is not supported, try browse
-		iqId = JabberSerialNext();
-		JabberIqAdd( iqId, IQ_PROC_BROWSEROOMS, JabberIqResultBrowseRooms );
-
-		XmlNodeIq iq( "get", iqId, from );
-		XmlNode* query = iq.addQuery( JABBER_FEAT_BROWSE );
-		jabberThreadInfo->send( iq );
-}	}
 
 static void sttFillJidList(HWND hwndDlg)
 {
 	JABBER_MUC_JIDLIST_INFO *jidListInfo;
-	XmlNode *iqNode, *queryNode, *itemNode;
-	TCHAR* from, *jid, *reason, *nick;
+	HXML iqNode, queryNode;
+	const TCHAR* from, *jid, *reason, *nick;
 	LVITEM lvi;
 	HWND hwndList;
 	int count, i;
 
 	TCHAR *filter = NULL;
-	if (GetWindowLong(GetDlgItem(hwndDlg, IDC_FILTER), GWL_USERDATA))
+	if (GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_FILTER), GWLP_USERDATA))
 	{
 		int filterLength = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_FILTER)) + 1;
 		filter = (TCHAR *)_alloca(filterLength * sizeof(TCHAR));
 		GetDlgItemText(hwndDlg, IDC_FILTER, filter, filterLength);
 	}
 
-	jidListInfo = ( JABBER_MUC_JIDLIST_INFO * ) GetWindowLong( hwndDlg, GWL_USERDATA );
-	if (!jidListInfo) return;
+	jidListInfo = ( JABBER_MUC_JIDLIST_INFO * ) GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
+	if ( !jidListInfo )
+		return;
 
 	hwndList = GetDlgItem( hwndDlg, IDC_LIST );
 	SendMessage(hwndList, WM_SETREDRAW, FALSE, 0);
@@ -196,37 +102,40 @@ static void sttFillJidList(HWND hwndDlg)
 
 	// Populate displayed list from iqNode
 	if (( iqNode = jidListInfo->iqNode ) != NULL ) {
-		if (( from = JabberXmlGetAttrValue( iqNode, "from" )) != NULL ) {
-			if (( queryNode=JabberXmlGetChild( iqNode, "query" )) != NULL ) {
+		if (( from = xmlGetAttrValue( iqNode, _T("from"))) != NULL ) {
+			if (( queryNode = xmlGetChild( iqNode , "query" )) != NULL ) {
 				lvi.mask = LVIF_TEXT | LVIF_PARAM;
 				lvi.iSubItem = 0;
 				lvi.iItem = 0;
-				for ( i=0; i<queryNode->numChild; i++ ) {
-					if (( itemNode=queryNode->child[i] ) != NULL ) {
-						if (( jid=JabberXmlGetAttrValue( itemNode, "jid" )) != NULL ) {
-							lvi.pszText = jid;
-							if ( jidListInfo->type == MUC_BANLIST ) {										
-								if (( reason = JabberXmlGetChild( itemNode, "reason" )->text ) != NULL ) {
-									TCHAR jidreason[ 200 ];
-									mir_sntprintf( jidreason, SIZEOF( jidreason ), _T("%s (%s)") , jid, reason );
-									lvi.pszText = jidreason;
-							}	}
+				for ( i=0; ; i++ ) {
+					HXML itemNode = xmlGetChild( queryNode ,i);
+					if ( !itemNode )
+						break;
 
-							if ( jidListInfo->type == MUC_VOICELIST || jidListInfo->type == MUC_MODERATORLIST ) {										
-								if (( nick = JabberXmlGetAttrValue( itemNode, "nick" )) != NULL ) {
-									TCHAR nickjid[ 200 ];
-									mir_sntprintf( nickjid, SIZEOF( nickjid ), _T("%s (%s)") , nick, jid );
-									lvi.pszText = nickjid;
-							}	}
+					if (( jid = xmlGetAttrValue( itemNode, _T("jid"))) != NULL ) {
+						lvi.pszText = ( TCHAR* )jid;
+						if ( jidListInfo->type == MUC_BANLIST ) {										
+							if (( reason = xmlGetText(xmlGetChild( itemNode , "reason" ))) != NULL ) {
+								TCHAR jidreason[ 200 ];
+								mir_sntprintf( jidreason, SIZEOF( jidreason ), _T("%s (%s)") , jid, reason );
+								lvi.pszText = jidreason;
+						}	}
 
-							if (filter && *filter && !JabberStrIStr(lvi.pszText, filter))
-								continue;
+						if ( jidListInfo->type == MUC_VOICELIST || jidListInfo->type == MUC_MODERATORLIST ) {										
+							if (( nick = xmlGetAttrValue( itemNode, _T("nick"))) != NULL ) {
+								TCHAR nickjid[ 200 ];
+								mir_sntprintf( nickjid, SIZEOF( nickjid ), _T("%s (%s)") , nick, jid );
+								lvi.pszText = nickjid;
+						}	}
 
-							lvi.lParam = ( LPARAM )mir_tstrdup( jid );
+						if (filter && *filter && !JabberStrIStr(lvi.pszText, filter))
+							continue;
 
-							ListView_InsertItem( hwndList, &lvi );
-							lvi.iItem++;
-	}	}	}	}	}	}
+						lvi.lParam = ( LPARAM )mir_tstrdup( jid );
+
+						ListView_InsertItem( hwndList, &lvi );
+						lvi.iItem++;
+	}	}	}	}	}
 
 	lvi.mask = LVIF_PARAM;
 	lvi.lParam = ( LPARAM )( -1 );
@@ -236,7 +145,7 @@ static void sttFillJidList(HWND hwndDlg)
 	RedrawWindow(hwndList, NULL, NULL, RDW_INVALIDATE);
 }
 
-static int sttJidListResizer(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
+static int sttJidListResizer(HWND, LPARAM, UTILRESIZECONTROL *urc)
 {
 	switch (urc->wId)
 	{
@@ -251,48 +160,52 @@ static int sttJidListResizer(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc
 	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
 }
 
-static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
+	JABBER_MUC_JIDLIST_INFO* dat = (JABBER_MUC_JIDLIST_INFO*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
+
 	switch( msg ) {
 	case WM_INITDIALOG:
 		{
-			// lParam is ( JABBER_MUC_JIDLIST_INFO * )
 			LVCOLUMN lvc;
 			RECT rc;
 			HWND hwndList;
 
 			TranslateDialogDefault( hwndDlg );
+
 			hwndList = GetDlgItem( hwndDlg, IDC_LIST );
+			ListView_SetExtendedListViewStyle(hwndList, LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES);
 			GetClientRect( hwndList, &rc );
-			rc.right -= GetSystemMetrics( SM_CXVSCROLL );
+			//rc.right -= GetSystemMetrics( SM_CXVSCROLL );
 			lvc.mask = LVCF_WIDTH;
 			lvc.cx = rc.right - 20;
 			ListView_InsertColumn( hwndList, 0, &lvc );
 			lvc.cx = 20;
 			ListView_InsertColumn( hwndList, 1, &lvc );
 			SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, lParam );
+			dat = (JABBER_MUC_JIDLIST_INFO*)lParam;
 
 			static struct
 			{
 				int idc;
-				TCHAR *title;
+				char *title;
 				char *icon;
 				bool push;
 			} buttons[] =
 			{
-				{IDC_BTN_FILTERAPPLY,	_T("Apply filter"),		"sd_filter_apply",	false},
-				{IDC_BTN_FILTERRESET,	_T("Reset filter"),		"sd_filter_reset",	false},
+				{IDC_BTN_FILTERAPPLY,	"Apply filter",		"sd_filter_apply",	false},
+				{IDC_BTN_FILTERRESET,	"Reset filter",		"sd_filter_reset",	false},
 			};
 			for (int i = 0; i < SIZEOF(buttons); ++i)
 			{
-				SendDlgItemMessage(hwndDlg, buttons[i].idc, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(buttons[i].icon));
+				SendDlgItemMessage(hwndDlg, buttons[i].idc, BM_SETIMAGE, IMAGE_ICON, (LPARAM)dat->ppro->LoadIconEx(buttons[i].icon));
 				SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONSETASFLATBTN, 0, 0);
-				SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONADDTOOLTIP, (WPARAM)TranslateTS(buttons[i].title), BATF_TCHAR);
+				SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONADDTOOLTIP, (WPARAM)buttons[i].title, 0);
 				if (buttons[i].push)
 					SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONSETASPUSHBTN, 0, 0);
 			}
 
-			Utils_RestoreWindowPosition(hwndDlg, NULL, jabberProtoName, "jidListWnd_");
+			Utils_RestoreWindowPosition(hwndDlg, NULL, dat->ppro->m_szModuleName, "jidListWnd_");
 		}
 		return TRUE;
 	case WM_SIZE:
@@ -310,7 +223,7 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 			HWND hwndList = GetDlgItem( hwndDlg, IDC_LIST );
 			GetClientRect( hwndList, &listrc );
 			lvc.mask = LVCF_WIDTH;
-			listrc.right -= GetSystemMetrics( SM_CXVSCROLL );
+			//listrc.right -= GetSystemMetrics( SM_CXVSCROLL );
 			lvc.cx = listrc.right - 20;
 			SendMessage(hwndList, LVM_SETCOLUMN, 0, (LPARAM)&lvc);
 			break;
@@ -320,48 +233,40 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 	case WM_JABBER_REFRESH:
 		{
 			// lParam is ( JABBER_MUC_JIDLIST_INFO * )
-			JABBER_MUC_JIDLIST_INFO *jidListInfo;
-			XmlNode *iqNode, *queryNode;
-			TCHAR* from, *localFrom;
+			HXML iqNode, queryNode;
+			const TCHAR* from;
 			TCHAR title[256];
 
 			// Clear current GWL_USERDATA, if any
-			jidListInfo = ( JABBER_MUC_JIDLIST_INFO * ) GetWindowLong( hwndDlg, GWL_USERDATA );
-			if ( jidListInfo != NULL ) {
-				if ( jidListInfo->roomJid != NULL )
-					mir_free( jidListInfo->roomJid );
-				if ( jidListInfo->iqNode != NULL )
-					delete jidListInfo->iqNode;
-				mir_free( jidListInfo );
-			}
+			if ( dat != NULL )
+				delete dat;
 
 			// Set new GWL_USERDATA
-			jidListInfo = ( JABBER_MUC_JIDLIST_INFO * ) lParam;
-			SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) jidListInfo );
+			dat = ( JABBER_MUC_JIDLIST_INFO * ) lParam;
+			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, ( LONG_PTR ) dat );
 
 			// Populate displayed list from iqNode
 			lstrcpyn( title, TranslateT( "JID List" ), SIZEOF( title ));
-			if (( jidListInfo=( JABBER_MUC_JIDLIST_INFO * ) lParam ) != NULL ) {
-				if (( iqNode = jidListInfo->iqNode ) != NULL ) {
-					if (( from = JabberXmlGetAttrValue( iqNode, "from" )) != NULL ) {
-						jidListInfo->roomJid = mir_tstrdup( from );
+			if (( dat=( JABBER_MUC_JIDLIST_INFO * ) lParam ) != NULL ) {
+				if (( iqNode = dat->iqNode ) != NULL ) {
+					if (( from = xmlGetAttrValue( iqNode, _T("from"))) != NULL ) {
+						dat->roomJid = mir_tstrdup( from );
 						
-						if (( queryNode=JabberXmlGetChild( iqNode, "query" )) != NULL ) {
-							localFrom = mir_tstrdup( from );
+						if (( queryNode = xmlGetChild( iqNode , "query" )) != NULL ) {
+							TCHAR* localFrom = mir_tstrdup( from );
 							mir_sntprintf( title, SIZEOF( title ), _T("%s, %d items (%s)"),
-								( jidListInfo->type==MUC_VOICELIST ) ? TranslateT( "Voice List" ) :
-								( jidListInfo->type==MUC_MEMBERLIST ) ? TranslateT( "Member List" ) :
-								( jidListInfo->type==MUC_MODERATORLIST ) ? TranslateT( "Moderator List" ) :
-								( jidListInfo->type==MUC_BANLIST ) ? TranslateT( "Ban List" ) :
-								( jidListInfo->type==MUC_ADMINLIST ) ? TranslateT( "Admin List" ) :
-								( jidListInfo->type==MUC_OWNERLIST ) ? TranslateT( "Owner List" ) :
-							TranslateT( "JID List" ), queryNode->numChild,
-								localFrom );
+								( dat->type == MUC_VOICELIST ) ? TranslateT( "Voice List" ) :
+								( dat->type == MUC_MEMBERLIST ) ? TranslateT( "Member List" ) :
+								( dat->type == MUC_MODERATORLIST ) ? TranslateT( "Moderator List" ) :
+								( dat->type == MUC_BANLIST ) ? TranslateT( "Ban List" ) :
+								( dat->type == MUC_ADMINLIST ) ? TranslateT( "Admin List" ) :
+								( dat->type == MUC_OWNERLIST ) ? TranslateT( "Owner List" ) :
+								TranslateT( "JID List" ), xmlGetChildCount(queryNode), localFrom );
 							mir_free( localFrom );
 			}	}	}	}
 			SetWindowText( hwndDlg, title );
 
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_FILTER), GWL_USERDATA, 0);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_FILTER), GWLP_USERDATA, 0);
 			sttFillJidList(hwndDlg);
 		}
 		break;
@@ -375,7 +280,7 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 					switch ( nm->nmcd.dwDrawStage ) {
 					case CDDS_PREPAINT:
 					case CDDS_ITEMPREPAINT:
-						SetWindowLong( hwndDlg, DWL_MSGRESULT, CDRF_NOTIFYSUBITEMDRAW );
+						SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, CDRF_NOTIFYSUBITEMDRAW );
 						return TRUE;
 					case CDDS_SUBITEM|CDDS_ITEMPREPAINT:
 						{
@@ -390,20 +295,20 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 									hIcon = ( HICON )LoadImage( hInst, MAKEINTRESOURCE( IDI_DELETE ), IMAGE_ICON, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0 );
 								DrawIconEx( nm->nmcd.hdc, ( rc.left+rc.right-GetSystemMetrics( SM_CXSMICON ))/2, ( rc.top+rc.bottom-GetSystemMetrics( SM_CYSMICON ))/2,hIcon, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0, GetSysColorBrush(COLOR_WINDOW), DI_NORMAL );
 								DestroyIcon( hIcon );
-								SetWindowLong( hwndDlg, DWL_MSGRESULT, CDRF_SKIPDEFAULT );
+								SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, CDRF_SKIPDEFAULT );
 								return TRUE;
 				}	}	}	}
 				break;
 			case NM_CLICK:
 				{
-					JABBER_MUC_JIDLIST_INFO *jidListInfo;
 					NMLISTVIEW *nm = ( NMLISTVIEW * ) lParam;
 					LVITEM lvi;
 					LVHITTESTINFO hti;
 					TCHAR text[128];
 
-					if ( nm->iSubItem < 1 ) break;
-					jidListInfo = ( JABBER_MUC_JIDLIST_INFO * ) GetWindowLong( hwndDlg, GWL_USERDATA );
+					if ( nm->iSubItem < 1 )
+						break;
+
 					hti.pt.x = ( short ) LOWORD( GetMessagePos());
 					hti.pt.y = ( short ) HIWORD( GetMessagePos());
 					ScreenToClient( nm->hdr.hwndFrom, &hti.pt );
@@ -421,8 +326,8 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 					ListView_GetItem( nm->hdr.hwndFrom, &lvi );
 					if ( lvi.lParam == ( LPARAM )( -1 )) {
 						TCHAR szBuffer[ 1024 ];
-						_tcscpy( szBuffer, jidListInfo->type2str());
-						if ( !JabberEnterString( szBuffer, SIZEOF(szBuffer)))
+						_tcscpy( szBuffer, dat->type2str());
+						if ( !dat->ppro->EnterString(szBuffer, SIZEOF(szBuffer), NULL, JES_COMBO, "gcAddNick_"))
 							break;
 
 						// Trim leading and trailing whitespaces
@@ -433,15 +338,15 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 						if (*p == '\0')
 							break;
 
-						JabberAddMucListItem( jidListInfo, p );
+						dat->ppro->AddMucListItem( dat, p );
 					}
 					else {
 						//delete
 						TCHAR msgText[128];
 
 						mir_sntprintf( msgText, SIZEOF( msgText ), _T("%s %s?"), TranslateT( "Removing" ), text );
-						if ( MessageBox( hwndDlg, msgText, jidListInfo->type2str(), MB_YESNO|MB_SETFOREGROUND ) == IDYES ) {
-							JabberDeleteMucListItem( jidListInfo, ( TCHAR* )lvi.lParam );
+						if ( MessageBox( hwndDlg, msgText, dat->type2str(), MB_YESNO|MB_SETFOREGROUND ) == IDYES ) {
+							dat->ppro->DeleteMucListItem( dat, ( TCHAR* )lvi.lParam );
 							mir_free(( void * )lvi.lParam );
 							ListView_DeleteItem( nm->hdr.hwndFrom, hti.iItem );
 				}	}	}
@@ -454,13 +359,13 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 		if ((LOWORD(wParam) == IDC_BTN_FILTERAPPLY) ||
 			((LOWORD(wParam) == IDOK) && (GetFocus() == GetDlgItem(hwndDlg, IDC_FILTER))))
 		{
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_FILTER), GWL_USERDATA, 1);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_FILTER), GWLP_USERDATA, 1);
 			sttFillJidList(hwndDlg);
 		} else
 		if ((LOWORD(wParam) == IDC_BTN_FILTERRESET) ||
 			((LOWORD(wParam) == IDCANCEL) && (GetFocus() == GetDlgItem(hwndDlg, IDC_FILTER))))
 		{
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_FILTER), GWL_USERDATA, 0);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_FILTER), GWLP_USERDATA, 0);
 			sttFillJidList(hwndDlg);
 		}
 		break;
@@ -475,7 +380,6 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 		break;
 */	case WM_CLOSE:
 		{
-			JABBER_MUC_JIDLIST_INFO *jidListInfo;
 			HWND hwndList;
 			int count, i;
 			LVITEM lvi;
@@ -495,82 +399,73 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 			}
 			ListView_DeleteAllItems( hwndList );
 
-			jidListInfo = ( JABBER_MUC_JIDLIST_INFO * ) GetWindowLong( hwndDlg, GWL_USERDATA );
-			switch ( jidListInfo->type ) {
+			CJabberProto* ppro = dat->ppro;
+			switch ( dat->type ) {
 			case MUC_VOICELIST:
-				hwndMucVoiceList = NULL;
+				ppro->m_hwndMucVoiceList = NULL;
 				break;
 			case MUC_MEMBERLIST:
-				hwndMucMemberList = NULL;
+				ppro->m_hwndMucMemberList = NULL;
 				break;
 			case MUC_MODERATORLIST:
-				hwndMucModeratorList = NULL;
+				ppro->m_hwndMucModeratorList = NULL;
 				break;
 			case MUC_BANLIST:
-				hwndMucBanList = NULL;
+				ppro->m_hwndMucBanList = NULL;
 				break;
 			case MUC_ADMINLIST:
-				hwndMucAdminList = NULL;
+				ppro->m_hwndMucAdminList = NULL;
 				break;
 			case MUC_OWNERLIST:
-				hwndMucOwnerList = NULL;
+				ppro->m_hwndMucOwnerList = NULL;
 				break;
 			}
 
 			DestroyWindow( hwndDlg );
 		}
 		break;
+
 	case WM_DESTROY:
-		{
-			JABBER_MUC_JIDLIST_INFO *jidListInfo;
-
-			// Clear GWL_USERDATA
-			jidListInfo = ( JABBER_MUC_JIDLIST_INFO * ) GetWindowLong( hwndDlg, GWL_USERDATA );
-			if ( jidListInfo != NULL ) {
-				if ( jidListInfo->iqNode != NULL )
-					delete jidListInfo->iqNode;
-				if ( jidListInfo->roomJid != NULL )
-					mir_free( jidListInfo->roomJid );
-				mir_free( jidListInfo );
-			}
-
-			Utils_SaveWindowPosition(hwndDlg, NULL, jabberProtoName, "jidListWnd_");
+		// Clear GWL_USERDATA
+		if ( dat != NULL ) {
+			Utils_SaveWindowPosition(hwndDlg, NULL, dat->ppro->m_szModuleName, "jidListWnd_");
+			delete dat;
 		}
 		break;
 	}
 	return FALSE;
 }
 
-static VOID CALLBACK JabberMucJidListCreateDialogApcProc( DWORD param )
+static void CALLBACK JabberMucJidListCreateDialogApcProc( JABBER_MUC_JIDLIST_INFO *jidListInfo )
 {
-	XmlNode *iqNode, *queryNode;
-	TCHAR* from;
-	JABBER_MUC_JIDLIST_INFO *jidListInfo;
+	HXML iqNode, queryNode;
+	const TCHAR* from;
 	HWND *pHwndJidList;
 
-	if (( jidListInfo=( JABBER_MUC_JIDLIST_INFO * ) param ) == NULL ) return;
-	if (( iqNode=jidListInfo->iqNode ) == NULL )                      return;
-	if (( from=JabberXmlGetAttrValue( iqNode, "from" )) == NULL )     return;
-	if (( queryNode=JabberXmlGetChild( iqNode, "query" )) == NULL )   return;
+	if ( jidListInfo == NULL )                                        return;
+	if (( iqNode = jidListInfo->iqNode ) == NULL )                      return;
+	if (( from = xmlGetAttrValue( iqNode, _T("from"))) == NULL )     return;
+	if (( queryNode = xmlGetChild( iqNode , "query" )) == NULL )   return;
 
+	CJabberProto* ppro = jidListInfo->ppro;
 	switch ( jidListInfo->type ) {
 	case MUC_VOICELIST:
-		pHwndJidList = &hwndMucVoiceList;
+		pHwndJidList = &ppro->m_hwndMucVoiceList;
 		break;
 	case MUC_MEMBERLIST:
-		pHwndJidList = &hwndMucMemberList;
+		pHwndJidList = &ppro->m_hwndMucMemberList;
 		break;
 	case MUC_MODERATORLIST:
-		pHwndJidList = &hwndMucModeratorList;
+		pHwndJidList = &ppro->m_hwndMucModeratorList;
 		break;
 	case MUC_BANLIST:
-		pHwndJidList = &hwndMucBanList;
+		pHwndJidList = &ppro->m_hwndMucBanList;
 		break;
 	case MUC_ADMINLIST:
-		pHwndJidList = &hwndMucAdminList;
+		pHwndJidList = &ppro->m_hwndMucAdminList;
 		break;
 	case MUC_OWNERLIST:
-		pHwndJidList = &hwndMucOwnerList;
+		pHwndJidList = &ppro->m_hwndMucOwnerList;
 		break;
 	default:
 		mir_free( jidListInfo );
@@ -584,63 +479,70 @@ static VOID CALLBACK JabberMucJidListCreateDialogApcProc( DWORD param )
 	else *pHwndJidList = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_JIDLIST ), GetForegroundWindow(), JabberMucJidListDlgProc, ( LPARAM )jidListInfo );
 }
 
-static void JabberIqResultMucGetJidList( XmlNode *iqNode, JABBER_MUC_JIDLIST_TYPE listType )
+void CJabberProto::OnIqResultMucGetJidList( HXML iqNode, JABBER_MUC_JIDLIST_TYPE listType )
 {
-	TCHAR* type;
+	const TCHAR* type;
 	JABBER_MUC_JIDLIST_INFO *jidListInfo;
 
-	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
+	if (( type = xmlGetAttrValue( iqNode, _T("type"))) == NULL ) return;
 
 	if ( !lstrcmp( type, _T("result" ))) {
-		if (( jidListInfo=( JABBER_MUC_JIDLIST_INFO * ) mir_alloc( sizeof( JABBER_MUC_JIDLIST_INFO )) ) != NULL ) {
+		if (( jidListInfo = new JABBER_MUC_JIDLIST_INFO ) != NULL ) {
 			jidListInfo->type = listType;
+			jidListInfo->ppro = this;
 			jidListInfo->roomJid = NULL;	// Set in the dialog procedure
-			if (( ( jidListInfo->iqNode )=JabberXmlCopyNode( iqNode )) != NULL ) {
+			if (( jidListInfo->iqNode = xi.copyNode( iqNode )) != NULL ) {
 				if ( GetCurrentThreadId() != jabberMainThreadId )
-					QueueUserAPC( JabberMucJidListCreateDialogApcProc, hMainThread, ( DWORD )jidListInfo );
+					QueueUserAPC(( PAPCFUNC )JabberMucJidListCreateDialogApcProc, hMainThread, ( DWORD_PTR )jidListInfo );
 				else
-					JabberMucJidListCreateDialogApcProc(( DWORD )jidListInfo );
+					JabberMucJidListCreateDialogApcProc( jidListInfo );
 			}
 			else mir_free( jidListInfo );
 }	}	}
 
-void JabberIqResultMucGetVoiceList( XmlNode *iqNode, void *userdata )
+void CJabberProto::OnIqResultMucGetVoiceList( HXML iqNode )
 {
-	JabberLog( "<iq/> iqResultMucGetVoiceList" );
-	JabberIqResultMucGetJidList( iqNode, MUC_VOICELIST );
+	Log( "<iq/> iqResultMucGetVoiceList" );
+	OnIqResultMucGetJidList( iqNode, MUC_VOICELIST );
 }
 
-void JabberIqResultMucGetMemberList( XmlNode *iqNode, void *userdata )
+void CJabberProto::OnIqResultMucGetMemberList( HXML iqNode )
 {
-	JabberLog( "<iq/> iqResultMucGetMemberList" );
-	JabberIqResultMucGetJidList( iqNode, MUC_MEMBERLIST );
+	Log( "<iq/> iqResultMucGetMemberList" );
+	OnIqResultMucGetJidList( iqNode, MUC_MEMBERLIST );
 }
 
-void JabberIqResultMucGetModeratorList( XmlNode *iqNode, void *userdata )
+void CJabberProto::OnIqResultMucGetModeratorList( HXML iqNode )
 {
-	JabberLog( "<iq/> iqResultMucGetModeratorList" );
-	JabberIqResultMucGetJidList( iqNode, MUC_MODERATORLIST );
+	Log( "<iq/> iqResultMucGetModeratorList" );
+	OnIqResultMucGetJidList( iqNode, MUC_MODERATORLIST );
 }
 
-void JabberIqResultMucGetBanList( XmlNode *iqNode, void *userdata )
+void CJabberProto::OnIqResultMucGetBanList( HXML iqNode )
 {
-	JabberLog( "<iq/> iqResultMucGetBanList" );
-	JabberIqResultMucGetJidList( iqNode, MUC_BANLIST );
+	Log( "<iq/> iqResultMucGetBanList" );
+	OnIqResultMucGetJidList( iqNode, MUC_BANLIST );
 }
 
-void JabberIqResultMucGetAdminList( XmlNode *iqNode, void *userdata )
+void CJabberProto::OnIqResultMucGetAdminList( HXML iqNode )
 {
-	JabberLog( "<iq/> iqResultMucGetAdminList" );
-	JabberIqResultMucGetJidList( iqNode, MUC_ADMINLIST );
+	Log( "<iq/> iqResultMucGetAdminList" );
+	OnIqResultMucGetJidList( iqNode, MUC_ADMINLIST );
 }
 
-void JabberIqResultMucGetOwnerList( XmlNode *iqNode, void *userdata )
+void CJabberProto::OnIqResultMucGetOwnerList( HXML iqNode )
 {
-	JabberLog( "<iq/> iqResultMucGetOwnerList" );
-	JabberIqResultMucGetJidList( iqNode, MUC_OWNERLIST );
+	Log( "<iq/> iqResultMucGetOwnerList" );
+	OnIqResultMucGetJidList( iqNode, MUC_OWNERLIST );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+
+JABBER_MUC_JIDLIST_INFO::~JABBER_MUC_JIDLIST_INFO()
+{
+	xi.destroyNode( iqNode );
+	mir_free( roomJid );
+}
 
 TCHAR* JABBER_MUC_JIDLIST_INFO::type2str() const
 {

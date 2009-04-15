@@ -1,11 +1,8 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-7 Boris Krasnovskiy.
-Copyright (c) 2003-5 George Hazan.
-Copyright (c) 2002-3 Richard Hughes (original version).
-
-Miranda IM: the free icq client for MS Windows
-Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
+Copyright (c) 2006-2009 Boris Krasnovskiy.
+Copyright (c) 2003-2005 George Hazan.
+Copyright (c) 2002-2003 Richard Hughes (original version).
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -18,11 +15,20 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "msn_global.h"
+#include "msn_proto.h"
+
+static ThreadData* FindThreadConn(HANDLE hConn)
+{
+	ThreadData* res = NULL;
+	for (int i = 0; i < g_Instances.getCount() && res == NULL; ++i)
+		res = g_Instances[i].MSN_GetThreadByConnection( hConn );
+
+	return res;
+}
 
 //=======================================================================================
 // Fake function - it does nothing but confirms successful session initialization
@@ -45,7 +51,7 @@ int msn_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION* nloc, NETLIBHTTPREQU
 
 int msn_httpGatewayWrapSend(HANDLE hConn, PBYTE buf, int len, int flags, MIRANDASERVICE pfnNetlibSend)
 {
-	ThreadData* T = MSN_GetThreadByConnection( hConn );
+	ThreadData* T = FindThreadConn( hConn );
 	if ( T != NULL )
 		T->applyGatewayData( hConn, len == 0 );
 
@@ -62,7 +68,7 @@ PBYTE msn_httpGatewayUnwrapRecv( NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, in
 {
 	*outBufLen = len;
 
-	ThreadData* T = MSN_GetThreadByConnection( nlhr->nlc );
+	ThreadData* T = FindThreadConn( nlhr->nlc );
 	if ( T == NULL ) return buf;
 
 	bool tIsSessionClosed = true;

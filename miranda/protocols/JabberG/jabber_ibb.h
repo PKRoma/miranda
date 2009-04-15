@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2005-09  George Hazan
 Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
@@ -19,10 +19,10 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_ibb.h,v $
-Revision       : $Revision: 5336 $
-Last change on : $Date: 2007-04-28 13:14:46 +0300 (бс, 28 ря№ 2007) $
-Last change by : $Author: ghazan $
+File name      : $URL$
+Revision       : $Revision$
+Last change on : $Date$
+Last change by : $Author$
 
 */
 
@@ -41,15 +41,11 @@ typedef struct {
 	BOOL bStreamInitialized;
 	BOOL bStreamClosed;
 	WORD wPacketId;
-	BOOL ( *pfnSend )( int blocksize, void *userdata );
-	int ( *pfnRecv )( HANDLE hConn, void *userdata, char* buffer, int datalen );
-	void ( *pfnFinal )( BOOL success, void *userdata );
-	void *userdata;
-} JABBER_IBB_TRANSFER;
-
-void __cdecl JabberIbbSendThread( JABBER_IBB_TRANSFER *jibb );
-void __cdecl JabberIbbReceiveThread( JABBER_IBB_TRANSFER *jibb );
-BOOL JabberIbbProcessRecvdData( TCHAR *data, TCHAR *sid, TCHAR *seq );
-void JabberFtHandleIbbIq( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
+	BOOL ( CJabberProto::*pfnSend )( int blocksize, filetransfer* ft );
+	int ( CJabberProto::*pfnRecv )( HANDLE hConn, filetransfer* ft, char* buffer, int datalen );
+	void ( CJabberProto::*pfnFinal )( BOOL success, filetransfer* ft );
+	filetransfer* ft;
+}
+	JABBER_IBB_TRANSFER;
 
 #endif

@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -34,18 +34,23 @@
 //
 // -----------------------------------------------------------------------------
 
-struct fieldnames_t {
+struct FieldNamesItem 
+{
   int code;
   char *text;
 };
 
-extern struct fieldnames_t interestsField[];
-extern struct fieldnames_t languageField[];
-extern struct fieldnames_t pastField[];
-extern struct fieldnames_t genderField[];
-extern struct fieldnames_t agesField[];
-extern struct fieldnames_t workField[];
-extern struct fieldnames_t affiliationField[];
-extern struct fieldnames_t maritalField[];
+extern const FieldNamesItem countryField[];
+extern const FieldNamesItem interestsField[];
+extern const FieldNamesItem languageField[];
+extern const FieldNamesItem pastField[];
+extern const FieldNamesItem genderField[];
+extern const FieldNamesItem agesField[];
+extern const FieldNamesItem studyLevelField[];
+extern const FieldNamesItem industryField[];
+extern const FieldNamesItem occupationField[];
+extern const FieldNamesItem affiliationField[];
+extern const FieldNamesItem maritalField[];
 
-char *LookupFieldNameUtf(struct fieldnames_t *table, int code, char *str, size_t strsize);
+char *LookupFieldName(const FieldNamesItem *table, int code);
+char *LookupFieldNameUtf(const FieldNamesItem *table, int code, char *str, size_t strsize);

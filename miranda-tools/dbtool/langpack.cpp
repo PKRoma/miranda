@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
+Copyright 2000-2008 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -247,7 +247,7 @@ static int LoadLangPack(const TCHAR *szLangPack)
 			struct LangPackEntry* E = &langPack.entry[langPack.entryCount-1];
 
 			if(E->local==NULL) {
-				E->local = strdup(line);
+				E->local = _strdup(line);
 				{
 					int iNeeded = MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, 0, 0);
 					E->wlocal = (wchar_t *)malloc((iNeeded+1) * sizeof(wchar_t));
@@ -260,7 +260,7 @@ static int LoadLangPack(const TCHAR *szLangPack)
 				lstrcatA(E->local,line);
 				{
 					int iNeeded = MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, 0, 0);
-					int iOldLen = wcslen(E->wlocal);
+					size_t iOldLen = wcslen(E->wlocal);
 					E->wlocal = (wchar_t*)realloc(E->wlocal, ( sizeof(wchar_t) * ( iOldLen + iNeeded + 2)));
 					wcscat(E->wlocal, L"\n");
 					MultiByteToWideChar( langPack.defaultANSICp, 0, line, -1, E->wlocal + iOldLen+1, iNeeded);

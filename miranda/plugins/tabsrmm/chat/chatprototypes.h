@@ -5,7 +5,7 @@ void FreeIcons(void);
 void UpgradeCheck(void);
 
 //colorchooser.c
-BOOL CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 //log.c
 void   Log_StreamInEvent(HWND hwndDlg, LOGINFO* lin, SESSION_INFO* si, BOOL bRedraw, BOOL bPhaseTwo);
@@ -16,13 +16,14 @@ TCHAR* MakeTimeStamp(TCHAR* pszStamp, time_t time);
 char*  Log_CreateRtfHeader(MODULEINFO * mi);
 
 //window.c
-BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
+INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
 int GetTextPixelSize( TCHAR* pszText, HFONT hFont, BOOL bWidth);
 
 //options.c
+enum { FONTSECTION_AUTO, FONTSECTION_CHAT, FONTSECTION_IM, FONTSECTION_IP };
 int   OptionsInit(void);
 int   OptionsUnInit(void);
-void  LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour, char* szMod );
+void  LoadMsgDlgFont(int section, int i, LOGFONT * lf, COLORREF * colour, char* szMod );
 void  LoadGlobalSettings(void);
 void  AddIcons(void);
 HICON LoadIconEx(int iIndex, char * pszIcoLibName, int iX, int iY);
@@ -32,6 +33,7 @@ void HookEvents(void);
 void UnhookEvents(void);
 void CreateServiceFunctions(void);
 void DestroyServiceFunctions(void);
+void DestroyHookableEvents(void);
 void CreateHookableEvents(void);
 void TabsInit(void);
 int  ModulesLoaded(WPARAM wParam,LPARAM lParam);
@@ -39,15 +41,11 @@ int  SmileyOptionsChanged(WPARAM wParam,LPARAM lParam);
 int  PreShutdown(WPARAM wParam,LPARAM lParam);
 int  IconsChanged(WPARAM wParam,LPARAM lParam);
 void ShowRoom(SESSION_INFO* si, WPARAM wp, BOOL bSetForeground);
-int  Service_Register(WPARAM wParam, LPARAM lParam);
-int  Service_AddEvent(WPARAM wParam, LPARAM lParam);
-int  Service_GetAddEventPtr(WPARAM wParam, LPARAM lParam);
-int  Service_NewChat(WPARAM wParam, LPARAM lParam);
+INT_PTR  Service_AddEvent(WPARAM wParam, LPARAM lParam);
 int  Service_ItemData(WPARAM wParam, LPARAM lParam);
 int  Service_SetSBText(WPARAM wParam, LPARAM lParam);
 int  Service_SetVisibility(WPARAM wParam, LPARAM lParam);
-int  Service_GetCount(WPARAM wParam,LPARAM lParam);
-int  Service_GetInfo(WPARAM wParam,LPARAM lParam);
+INT_PTR  Service_GetCount(WPARAM wParam,LPARAM lParam);
 
 HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOOL bActivateTab, BOOL bPopupContainer, BOOL bWantPopup);
 
@@ -90,7 +88,6 @@ SESSION_INFO* SM_FindSessionByHCONTACT(HANDLE h);
 SESSION_INFO* SM_FindSessionByIndex(const char* pszModule, int iItem);
 char*         SM_GetUsers(SESSION_INFO* si);
 USERINFO*     SM_GetUserFromIndex(const TCHAR* pszID, const char* pszModule, int index);
-int           SM_IsIRC(SESSION_INFO *si);
 MODULEINFO*   MM_AddModule(const char* pszModule);
 MODULEINFO*   MM_FindModule(const char* pszModule);
 void          MM_FixColors();
@@ -122,9 +119,13 @@ BOOL          LM_RemoveAll (LOGINFO** ppLogListStart, LOGINFO** ppLogListEnd);
 //clist.c
 HANDLE        CList_AddRoom(const char* pszModule, const TCHAR* pszRoom, const TCHAR* pszDisplayName, int iType);
 BOOL          CList_SetOffline(HANDLE hContact, BOOL bHide);
-BOOL          CList_SetAllOffline(BOOL bHide);
+BOOL          CList_SetAllOffline(BOOL bHide, const char *pszModule);
 int           CList_RoomDoubleclicked(WPARAM wParam,LPARAM lParam);
-int           CList_EventDoubleclicked(WPARAM wParam,LPARAM lParam);
+INT_PTR       CList_EventDoubleclicked(WPARAM wParam,LPARAM lParam);
+INT_PTR       CList_JoinChat(WPARAM wParam, LPARAM lParam);
+INT_PTR       CList_LeaveChat(WPARAM wParam, LPARAM lParam);
+int           CList_PrebuildContactMenu(WPARAM wParam, LPARAM lParam);
+INT_PTR		  CList_PrebuildContactMenuSvc(WPARAM wParam, LPARAM lParam);
 void          CList_CreateGroup(TCHAR* group);
 BOOL          CList_AddEvent(HANDLE hContact, HICON Icon, HANDLE event, int type, TCHAR* fmt, ... ) ;
 HANDLE        CList_FindRoom (const char* pszModule, const TCHAR* pszRoom) ;

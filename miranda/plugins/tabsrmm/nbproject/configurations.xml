@@ -1,0 +1,948 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="51">
+  <logicalFolder name="root" displayName="root" projectFiles="true">
+    <logicalFolder name="f1" displayName="Docs" projectFiles="true">
+      <itemPath>docs/changelog.txt</itemPath>
+      <itemPath>docs/contributors.txt</itemPath>
+      <itemPath>docs/INSTALL</itemPath>
+      <itemPath>docs/README.GCC</itemPath>
+      <itemPath>docs/readme.txt</itemPath>
+    </logicalFolder>
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+      <itemPath>buttonsbar.h</itemPath>
+      <itemPath>chat/chat.h</itemPath>
+      <itemPath>chat/chat_resource.h</itemPath>
+      <itemPath>chat/chatprototypes.h</itemPath>
+      <itemPath>commonheaders.h</itemPath>
+      <itemPath>functions.h</itemPath>
+      <itemPath>generic_msghandlers.h</itemPath>
+      <itemPath>ImageDataObject.h</itemPath>
+      <itemPath>msgdlgutils.h</itemPath>
+      <itemPath>msgs.h</itemPath>
+      <itemPath>nen.h</itemPath>
+      <itemPath>resource.h</itemPath>
+      <itemPath>sendqueue.h</itemPath>
+      <itemPath>templates.h</itemPath>
+      <itemPath>typingnotify.h</itemPath>
+      <itemPath>version.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+      <itemPath>chat/chat.rc</itemPath>
+      <itemPath>resource.rc</itemPath>
+      <itemPath>tabsrmm_private.rc</itemPath>
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <logicalFolder name="tabsrmm_working" displayName="tabsrmm" projectFiles="true">
+        <logicalFolder name="API" displayName="API" projectFiles="true">
+          <itemPath>API/m_cln_skinedit.h</itemPath>
+          <itemPath>API/m_fingerprint.h</itemPath>
+          <itemPath>API/m_flash.h</itemPath>
+          <itemPath>API/m_folders.h</itemPath>
+          <itemPath>API/m_historyevents.h</itemPath>
+          <itemPath>API/m_ieview.h</itemPath>
+          <itemPath>API/m_mathmodule.h</itemPath>
+          <itemPath>API/m_metacontacts.h</itemPath>
+          <itemPath>API/m_msg_buttonsbar.h</itemPath>
+          <itemPath>API/m_nudge.h</itemPath>
+          <itemPath>API/m_popup.h</itemPath>
+          <itemPath>API/m_smileyadd.h</itemPath>
+          <itemPath>API/m_Snapping_windows.h</itemPath>
+          <itemPath>API/m_spellchecker.h</itemPath>
+          <itemPath>API/m_toptoolbar.h</itemPath>
+          <itemPath>API/m_updater.h</itemPath>
+        </logicalFolder>
+        <logicalFolder name="chat" displayName="chat" projectFiles="true">
+          <itemPath>chat/clist.c</itemPath>
+          <itemPath>chat/colorchooser.c</itemPath>
+          <itemPath>chat/log.c</itemPath>
+          <itemPath>chat/main.c</itemPath>
+          <itemPath>chat/manager.c</itemPath>
+          <itemPath>chat/message.c</itemPath>
+          <itemPath>chat/options.c</itemPath>
+          <itemPath>chat/services.c</itemPath>
+          <itemPath>chat/tools.c</itemPath>
+          <itemPath>chat/window.c</itemPath>
+        </logicalFolder>
+        <logicalFolder name="icons" displayName="icons" projectFiles="true">
+          <logicalFolder name="ICONS_NOVA" displayName="ICONS_NOVA" projectFiles="true">
+            <itemPath>icons/ICONS_NOVA/resource.h</itemPath>
+          </logicalFolder>
+          <logicalFolder name="ICONSXP" displayName="ICONSXP" projectFiles="true">
+            <itemPath>icons/ICONSXP/resource.h</itemPath>
+          </logicalFolder>
+        </logicalFolder>
+        <logicalFolder name="tabmodplus" displayName="tabmodplus" projectFiles="true">
+          <itemPath>tabmodplus/commonheaders.h</itemPath>
+          <itemPath>tabmodplus/modplus.c</itemPath>
+          <itemPath>tabmodplus/msgoptions_plus.c</itemPath>
+        </logicalFolder>
+        <itemPath>buttonsbar.c</itemPath>
+        <itemPath>container.c</itemPath>
+        <itemPath>containeroptions.c</itemPath>
+        <itemPath>eventpopups.c</itemPath>
+        <itemPath>formatting.cpp</itemPath>
+        <itemPath>generic_msghandlers.c</itemPath>
+        <itemPath>hotkeyhandler.c</itemPath>
+        <itemPath>ImageDataObject.cpp</itemPath>
+        <itemPath>msgdialog.c</itemPath>
+        <itemPath>msgdlgutils.c</itemPath>
+        <itemPath>msglog.c</itemPath>
+        <itemPath>msgoptions.c</itemPath>
+        <itemPath>msgs.c</itemPath>
+        <itemPath>selectcontainer.c</itemPath>
+        <itemPath>sendqueue.c</itemPath>
+        <itemPath>srmm.c</itemPath>
+        <itemPath>tabctrl.c</itemPath>
+        <itemPath>templates.c</itemPath>
+        <itemPath>themes.c</itemPath>
+        <itemPath>trayicon.c</itemPath>
+        <itemPath>TSButton.c</itemPath>
+        <itemPath>typingnotify.c</itemPath>
+        <itemPath>userprefs.c</itemPath>
+      </logicalFolder>
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Debug" type="2">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <compilerSet>MinGW|MinGW</compilerSet>
+        <platform>3</platform>
+      </toolsSet>
+      <compileType>
+        <cCompilerTool>
+          <includeDirectories>
+            <directoryPath>../../include</directoryPath>
+            <directoryPath>../../include/mingw</directoryPath>
+          </includeDirectories>
+        </cCompilerTool>
+        <ccCompilerTool>
+          <includeDirectories>
+            <directoryPath>../../include</directoryPath>
+            <directoryPath>../../include/mingw</directoryPath>
+          </includeDirectories>
+        </ccCompilerTool>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="API/m_Snapping_windows.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_cln_skinedit.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_fingerprint.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_flash.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_folders.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_historyevents.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_ieview.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_mathmodule.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_metacontacts.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_msg_buttonsbar.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_nudge.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_popup.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_smileyadd.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_spellchecker.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_toptoolbar.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_updater.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="ImageDataObject.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="ImageDataObject.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="TSButton.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="buttonsbar.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="buttonsbar.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="chat/chat.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="chat/chat.rc">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="chat/chat_resource.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="chat/chatprototypes.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="chat/clist.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/colorchooser.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/log.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/main.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/manager.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/message.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/options.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/services.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/tools.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/window.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="commonheaders.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="container.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="containeroptions.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="docs/INSTALL">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="docs/README.GCC">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="docs/changelog.txt">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="docs/contributors.txt">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="docs/readme.txt">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="eventpopups.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="formatting.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="functions.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="generic_msghandlers.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="generic_msghandlers.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="hotkeyhandler.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="icons/ICONSXP/resource.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="icons/ICONS_NOVA/resource.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="msgdialog.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="msgdlgutils.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="msgdlgutils.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="msglog.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="msgoptions.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="msgs.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="msgs.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="nen.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="resource.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="resource.rc">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="selectcontainer.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="sendqueue.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="sendqueue.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="srmm.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="tabctrl.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="tabmodplus/commonheaders.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="tabmodplus/modplus.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="tabmodplus/msgoptions_plus.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="tabsrmm_private.rc">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="templates.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="templates.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="themes.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="trayicon.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="typingnotify.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="typingnotify.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="userprefs.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="version.h">
+        <itemTool>3</itemTool>
+      </item>
+    </conf>
+    <conf name="Release" type="2">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <compilerSet>MinGW|MinGW</compilerSet>
+        <platform>3</platform>
+      </toolsSet>
+      <compileType>
+        <cCompilerTool>
+          <developmentMode>6</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <includeDirectories>
+            <directoryPath>../../include</directoryPath>
+            <directoryPath>../../include/mingw</directoryPath>
+          </includeDirectories>
+          <preprocessorList>
+            <Elem>__GNUWIN32__</Elem>
+          </preprocessorList>
+        </cCompilerTool>
+        <ccCompilerTool>
+          <developmentMode>6</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <includeDirectories>
+            <directoryPath>../../include</directoryPath>
+            <directoryPath>../../include/mingw</directoryPath>
+          </includeDirectories>
+          <preprocessorList>
+            <Elem>__GNUWIN32__</Elem>
+          </preprocessorList>
+        </ccCompilerTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <linkerTool>
+          <stripSymbols>true</stripSymbols>
+          <linkerKpic>false</linkerKpic>
+          <linkerLibItems>
+            <linkerOptionItem>build/tabsrmm_private.coff</linkerOptionItem>
+            <linkerLibLibItem>uuid</linkerLibLibItem>
+            <linkerLibLibItem>user32</linkerLibLibItem>
+            <linkerLibLibItem>shell32</linkerLibLibItem>
+            <linkerLibLibItem>ole32</linkerLibLibItem>
+            <linkerLibLibItem>shlwapi</linkerLibLibItem>
+            <linkerLibLibItem>comctl32</linkerLibLibItem>
+            <linkerLibLibItem>comdlg32</linkerLibLibItem>
+            <linkerLibLibItem>gdi32</linkerLibLibItem>
+            <linkerLibLibItem>kernel32</linkerLibLibItem>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="API/m_Snapping_windows.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_cln_skinedit.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_fingerprint.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_flash.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_folders.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_historyevents.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_ieview.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_mathmodule.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_metacontacts.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_msg_buttonsbar.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_nudge.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_popup.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_smileyadd.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_spellchecker.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_toptoolbar.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_updater.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="ImageDataObject.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="ImageDataObject.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="TSButton.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="buttonsbar.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="buttonsbar.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="chat/chat.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="chat/chat.rc">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="chat/chat_resource.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="chat/chatprototypes.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="chat/clist.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/colorchooser.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/log.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/main.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/manager.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/message.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/options.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/services.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/tools.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/window.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="commonheaders.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="container.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="containeroptions.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="docs/INSTALL">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="docs/README.GCC">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="docs/changelog.txt">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="docs/contributors.txt">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="docs/readme.txt">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="eventpopups.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="formatting.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="functions.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="generic_msghandlers.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="generic_msghandlers.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="hotkeyhandler.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="icons/ICONSXP/resource.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="icons/ICONS_NOVA/resource.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="msgdialog.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="msgdlgutils.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="msgdlgutils.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="msglog.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="msgoptions.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="msgs.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="msgs.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="nen.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="resource.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="resource.rc">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="selectcontainer.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="sendqueue.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="sendqueue.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="srmm.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="tabctrl.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="tabmodplus/commonheaders.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="tabmodplus/modplus.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="tabmodplus/msgoptions_plus.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="tabsrmm_private.rc">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="templates.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="templates.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="themes.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="trayicon.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="typingnotify.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="typingnotify.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="userprefs.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="version.h">
+        <itemTool>3</itemTool>
+      </item>
+    </conf>
+    <conf name="Release_Unicode" type="2">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <compilerSet>MinGW|MinGW</compilerSet>
+        <platform>3</platform>
+      </toolsSet>
+      <compileType>
+        <cCompilerTool>
+          <developmentMode>6</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <includeDirectories>
+            <directoryPath>../../include</directoryPath>
+            <directoryPath>../../include/mingw</directoryPath>
+          </includeDirectories>
+          <preprocessorList>
+            <Elem>UNICODE</Elem>
+            <Elem>_UNICODE</Elem>
+            <Elem>__GNUWIN32__</Elem>
+          </preprocessorList>
+        </cCompilerTool>
+        <ccCompilerTool>
+          <developmentMode>6</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <includeDirectories>
+            <directoryPath>../../include</directoryPath>
+            <directoryPath>../../include/mingw</directoryPath>
+          </includeDirectories>
+          <preprocessorList>
+            <Elem>UNICODE</Elem>
+            <Elem>_UNICODE</Elem>
+            <Elem>__GNUWIN32__</Elem>
+          </preprocessorList>
+        </ccCompilerTool>
+        <linkerTool>
+          <output>dist/Release_Unicode/${PLATFORM}/tabsrmm.dll</output>
+          <stripSymbols>true</stripSymbols>
+          <linkerKpic>false</linkerKpic>
+          <linkerLibItems>
+            <linkerOptionItem>build/tabsrmm_privateW.coff</linkerOptionItem>
+            <linkerLibLibItem>kernel32</linkerLibLibItem>
+            <linkerLibLibItem>user32</linkerLibLibItem>
+            <linkerLibLibItem>gdi32</linkerLibLibItem>
+            <linkerLibLibItem>comctl32</linkerLibLibItem>
+            <linkerLibLibItem>comdlg32</linkerLibLibItem>
+            <linkerLibLibItem>ole32</linkerLibLibItem>
+            <linkerLibLibItem>shell32</linkerLibLibItem>
+            <linkerLibLibItem>shlwapi</linkerLibLibItem>
+            <linkerLibLibItem>uuid</linkerLibLibItem>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="API/m_Snapping_windows.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_cln_skinedit.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_fingerprint.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_flash.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_folders.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_historyevents.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_ieview.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_mathmodule.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_metacontacts.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_msg_buttonsbar.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_nudge.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_popup.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_smileyadd.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_spellchecker.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_toptoolbar.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="API/m_updater.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="ImageDataObject.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="ImageDataObject.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="TSButton.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="buttonsbar.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="buttonsbar.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="chat/chat.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="chat/chat.rc">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="chat/chat_resource.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="chat/chatprototypes.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="chat/clist.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/colorchooser.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/log.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/main.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/manager.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/message.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/options.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/services.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/tools.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="chat/window.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="commonheaders.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="container.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="containeroptions.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="docs/INSTALL">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="docs/README.GCC">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="docs/changelog.txt">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="docs/contributors.txt">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="docs/readme.txt">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="eventpopups.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="formatting.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="functions.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="generic_msghandlers.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="generic_msghandlers.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="hotkeyhandler.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="icons/ICONSXP/resource.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="icons/ICONS_NOVA/resource.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="msgdialog.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="msgdlgutils.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="msgdlgutils.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="msglog.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="msgoptions.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="msgs.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="msgs.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="nen.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="resource.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="resource.rc">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="selectcontainer.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="sendqueue.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="sendqueue.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="srmm.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="tabctrl.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="tabmodplus/commonheaders.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="tabmodplus/modplus.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="tabmodplus/msgoptions_plus.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="tabsrmm_private.rc">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="templates.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="templates.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="themes.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="trayicon.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="typingnotify.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="typingnotify.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="userprefs.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="version.h">
+        <itemTool>3</itemTool>
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>

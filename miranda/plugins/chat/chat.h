@@ -17,9 +17,6 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#if defined(UNICODE) && !defined( _UNICODE)
-#define _UNICODE
-#endif
 
 #ifndef _CHAT_H_
 #define _CHAT_H_
@@ -29,10 +26,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #pragma warning( disable : 4786 ) // limitation in MSVC's debugger.
 #pragma warning( disable : 4996 ) // limitation in MSVC's debugger.
 
-#define WIN32_LEAN_AND_MEAN	
+#define WIN32_LEAN_AND_MEAN
 #define _WIN32_WINNT 0x0501
+#define _WIN32_IE 0x0501
 
-#define _USE_32BIT_TIME_T
+#include "m_stdhdr.h"
 
 #include <tchar.h>
 #include <windows.h>
@@ -60,15 +58,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../../include/m_addcontact.h"
 #include "../../include/m_clist.h"
 #include "../../include/m_clui.h"
+#include "../../include/m_message.h"
+#include "../../include/m_icolib.h"
 #include "../../include/m_popup.h"
+#include "../../include/m_chat.h"
 #include "resource.h"
-#include "m_chat.h"
 #include "m_ieview.h"
 #include "m_smileyadd.h"
-#include "IcoLib.h"
 
 #ifndef NDEBUG
-#include <crtdbg.h>
 #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #endif
 
@@ -151,7 +149,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // special service for tweaking performance
 #define MS_GC_GETEVENTPTR  "GChat/GetNewEventPtr"
-typedef int (*GETEVENTFUNC)(WPARAM wParam, LPARAM lParam);
+typedef INT_PTR (*GETEVENTFUNC)(WPARAM wParam, LPARAM lParam);
 typedef struct  {
 	GETEVENTFUNC pfnAddEvent;
 }GCPTRS;
@@ -286,7 +284,7 @@ typedef struct SESSION_INFO_TYPE
 	HWND        hwndStatus;
 	time_t      LastTime;
 
-	COMMAND_INFO*  lpCommands; 
+	COMMAND_INFO*  lpCommands;
 	COMMAND_INFO*  lpCurrentCommand;
 	LOGINFO*       pLog;
 	LOGINFO*       pLogEnd;
@@ -366,6 +364,7 @@ struct GlobalLogSettings_t {
 	COLORREF    crLogBackground;
 	COLORREF    crUserListColor;
 	COLORREF    crUserListBGColor;
+	COLORREF    crUserListSelectedBGColor;
 	COLORREF    crUserListHeadingsColor;
 	COLORREF    crPUTextColour;
 	COLORREF    crPUBkgColour;
@@ -391,7 +390,7 @@ void FreeIcons(void);
 void UpgradeCheck(void);
 
 //colorchooser.c
-BOOL CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 //log.c
 void   Log_StreamInEvent(HWND hwndDlg, LOGINFO* lin, SESSION_INFO* si, BOOL bRedraw, BOOL bPhaseTwo);
@@ -402,7 +401,7 @@ TCHAR* MakeTimeStamp(TCHAR* pszStamp, time_t time);
 char*  Log_CreateRtfHeader(MODULEINFO * mi);
 
 //window.c
-BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
+INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
 int GetTextPixelSize( TCHAR* pszText, HFONT hFont, BOOL bWidth);
 
 //options.c
@@ -420,6 +419,7 @@ void   UnhookEvents(void);
 void   CreateServiceFunctions(void);
 void   DestroyServiceFunctions(void);
 void   CreateHookableEvents(void);
+void   DestroyHookableEvents(void);
 void   TabsInit(void);
 void   ShowRoom(SESSION_INFO* si, WPARAM wp, BOOL bSetForeground);
 
@@ -491,9 +491,13 @@ BOOL          LM_RemoveAll (LOGINFO** ppLogListStart, LOGINFO** ppLogListEnd);
 //clist.c
 HANDLE        CList_AddRoom(const char* pszModule, const TCHAR* pszRoom, const TCHAR* pszDisplayName, int iType);
 BOOL          CList_SetOffline(HANDLE hContact, BOOL bHide);
-BOOL          CList_SetAllOffline(BOOL bHide);
+BOOL          CList_SetAllOffline(BOOL bHide, const char *pszModule);
 int           CList_RoomDoubleclicked(WPARAM wParam,LPARAM lParam);
-int           CList_EventDoubleclicked(WPARAM wParam,LPARAM lParam);
+INT_PTR       CList_EventDoubleclicked(WPARAM wParam,LPARAM lParam);
+INT_PTR       CList_JoinChat(WPARAM wParam, LPARAM lParam);
+INT_PTR       CList_LeaveChat(WPARAM wParam, LPARAM lParam);
+int			  CList_PrebuildContactMenu(WPARAM wParam, LPARAM lParam);
+INT_PTR		  CList_PrebuildContactMenuSvc(WPARAM wParam, LPARAM lParam);
 void          CList_CreateGroup(TCHAR* group);
 BOOL          CList_AddEvent(HANDLE hContact, HICON Icon, HANDLE event, int type, TCHAR* fmt, ... ) ;
 HANDLE        CList_FindRoom (const char* pszModule, const TCHAR* pszRoom) ;

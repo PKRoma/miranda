@@ -12,11 +12,13 @@ HRESULT		xpt_DrawThemeText(XPTHANDLE xptHandle, HDC hdc, int type, int state, LP
 BOOL		xpt_IsThemeBackgroundPartiallyTransparent(XPTHANDLE xptHandle, int type,  int state);
 HRESULT		xpt_DrawTheme(XPTHANDLE xptHandle, HWND hwnd, HDC hdc, int type, int state, const RECT *sizeRect, const RECT * clipRect);
 BOOL		xpt_IsThemed(XPTHANDLE xptHandle);
+BOOL		xpt_EnableThemeDialogTexture(HWND hwnd, DWORD flags);
 
 // next will be called only from one place
-void		xpt_InitModule();
-void		xpt_UnloadModule();
+HRESULT XPThemesLoadModule();
+void		XPThemesUnloadModule();
 void		xpt_OnWM_THEMECHANGED();
+
 
 //definitions
 

@@ -28,7 +28,7 @@ rem Protocols
 rem ---------------------------------------------------------------------------
 
 pushd ..\..\miranda\protocols\AimOscar
-call :Nmake aimoscar.mak "aim - Win32 Release"
+call :Nmake aimoscar.mak "aim - Win32 Release Unicode"
 popd
 if errorlevel 1 goto :Error
 
@@ -38,7 +38,7 @@ popd
 if errorlevel 1 goto :Error
 
 pushd ..\..\miranda\protocols\IcqOscarJ
-call :Nmake IcqOscar8.mak "icqoscar8 - Win32 Release"
+call :Nmake IcqOscar8.mak "icqoscar8 - Win32 Release Unicode"
 popd
 if errorlevel 1 goto :Error
 
@@ -58,7 +58,7 @@ popd
 if errorlevel 1 goto :Error
 
 pushd ..\..\miranda\protocols\YAHOO
-call :Nmake Yahoo.mak "Yahoo - Win32 Release"
+call :Nmake Yahoo.mak "Yahoo - Win32 Release Unicode"
 popd
 if errorlevel 1 goto :Error
 
@@ -86,8 +86,28 @@ call :Nmake clist.mak "clist_nicer - Win32 Release Unicode"
 popd
 if errorlevel 1 goto :Error
 
+pushd ..\..\miranda\plugins\db3x
+call :Nmake db3x.mak "db3x - Win32 Release Unicode"
+popd
+if errorlevel 1 goto :Error
+
+pushd ..\..\miranda\plugins\db3x_mmap
+call :Nmake db3x_mmap.mak "db3x_mmap - Win32 Release Unicode"
+popd
+if errorlevel 1 goto :Error
+
+pushd ..\..\miranda\plugins\import
+call :Nmake import.mak "import - Win32 Release Unicode"
+popd
+if errorlevel 1 goto :Error
+
 pushd ..\..\miranda\plugins\modernb
 call :Nmake modernb.mak "modernb - Win32 Release Unicode"
+popd
+if errorlevel 1 goto :Error
+
+pushd ..\..\miranda\plugins\modernopt
+call :Nmake modernopt.mak "modernopt - Win32 Release Unicode"
 popd
 if errorlevel 1 goto :Error
 
@@ -121,14 +141,8 @@ copy ..\release\zlib.dll
 
 copy ..\release\Icons\xstatus_ICQ.dll    Icons
 
-copy ..\release\Plugins\aim.dll          Plugins
-copy ..\release\Plugins\dbx_3x.dll       Plugins
-copy ..\release\Plugins\dbx_mmap.dll     Plugins
 copy ..\release\Plugins\advaimg.dll      Plugins
 copy ..\release\Plugins\GG.dll           Plugins
-copy ..\release\Plugins\ICQ.dll          Plugins
-copy ..\release\Plugins\import.dll       Plugins
-copy ..\release\Plugins\Yahoo.dll        Plugins
 
 dir /B /S *.dll | rebaser /NOCRC
 
@@ -182,7 +196,7 @@ echo             VALUE "CompanyName", " \0"                                     
 echo             VALUE "FileDescription", "Miranda IM\0"                           >>..\src\version.rc
 echo             VALUE "FileVersion", "0.%1.%2 alpha build #%3\0"                  >>..\src\version.rc
 echo             VALUE "InternalName", "miranda32\0"                               >>..\src\version.rc
-echo             VALUE "LegalCopyright", "Copyright © 2000-2007 Miranda IM Project. This software is released under the terms of the GNU General Public License.\0"    >>..\src\version.rc
+echo             VALUE "LegalCopyright", "Copyright © 2000-2009 Miranda IM Project. This software is released under the terms of the GNU General Public License.\0"    >>..\src\version.rc
 echo             VALUE "LegalTrademarks", "\0"                                     >>..\src\version.rc
 echo             VALUE "OriginalFilename", "miranda32.exe\0"                       >>..\src\version.rc
 echo             VALUE "PrivateBuild", "\0"                                        >>..\src\version.rc
@@ -237,9 +251,9 @@ goto :eof
 
 :Pack
 if %2 == 00 (
-   set FileVer=v%1a%3w.zip
+   set FileVer=v0%1a%3w.zip
 ) else (
-   set FileVer=v%1%2a%3w.zip
+   set FileVer=v0%1%2a%3w.zip
 )
 
 del /Q /F "%Temp%\miranda-%FileVer%"
@@ -252,8 +266,8 @@ md %Temp%\pdbw\plugins
 copy ..\..\src\Release_Unicode\miranda32.pdb                   %Temp%\pdbw
 copy ..\..\..\miranda-tools\dbtool\Release\dbtool.pdb          %Temp%\pdbw
 rem  Protocols
-copy ..\..\protocols\AimOscar\Release\Aim.pdb                  %Temp%\pdbw\plugins
-copy ..\..\protocols\IcqOscarJ\Release\ICQ.pdb                 %Temp%\pdbw\plugins
+copy ..\..\protocols\AimOscar\Release_Unicode\Aim.pdb          %Temp%\pdbw\plugins
+copy ..\..\protocols\IcqOscarJ\Release_Unicode\ICQ.pdb         %Temp%\pdbw\plugins
 copy ..\..\protocols\IRCG\Release_Unicode\IRC.pdb              %Temp%\pdbw\plugins
 copy ..\..\protocols\JabberG\Release_Unicode\jabber.pdb        %Temp%\pdbw\plugins
 copy ..\..\protocols\MSN\Release_Unicode\MSN.pdb               %Temp%\pdbw\plugins
@@ -266,12 +280,12 @@ copy ..\..\plugins\clist\Release_Unicode\clist_classic.pdb     %Temp%\pdbw\plugi
 copy ..\..\plugins\clist_nicer\Release_Unicode\clist_nicer.pdb %Temp%\pdbw\plugins
 copy ..\..\plugins\modernb\Release_Unicode\clist_modern.pdb    %Temp%\pdbw\plugins
 copy ..\..\plugins\mwclist\Release_Unicode\clist_mw.pdb        %Temp%\pdbw\plugins
+copy ..\..\plugins\db3x\Release_Unicode\dbx_3x.pdb             %Temp%\pdbw\plugins
+copy ..\..\plugins\db3x_mmap\Release_Unicode\dbx_mmap.pdb      %Temp%\pdbw\plugins
 copy ..\..\plugins\scriver\Release_Unicode\scriver.pdb         %Temp%\pdbw\plugins
 copy ..\..\plugins\srmm\Release_Unicode\srmm.pdb               %Temp%\pdbw\plugins
 copy ..\..\plugins\tabSRMM\Release_Unicode\tabSRMM.pdb         %Temp%\pdbw\plugins
 rem  Non-Unicode plugins
-copy ..\..\plugins\db3x\Release\dbx_3x.pdb                     %Temp%\pdbw\plugins
-copy ..\..\plugins\db3x_mmap\Release\dbx_mmap.pdb              %Temp%\pdbw\plugins
 copy ..\..\plugins\import\Release\import.pdb                   %Temp%\pdbw\plugins
 copy ..\..\plugins\freeimage\Release\freeimage.pdb             %Temp%\pdbw\plugins
 

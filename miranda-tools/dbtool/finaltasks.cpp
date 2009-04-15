@@ -27,12 +27,30 @@ int WorkFinalTasks(int firstTime)
 	dbhdr.slackSpace=0;
 	if(WriteSegment(0,&dbhdr,sizeof(dbhdr))==WS_ERROR)
 		return ERROR_WRITE_FAULT;
-	CloseHandle(opts.hFile);
-	if(!opts.bCheckOnly) CloseHandle(opts.hOutFile);
-	if(opts.bAggressive) DeleteFile(opts.workingFilename) || AddToStatus(STATUS_WARNING,TranslateT("Unable to delete aggressive working file"));
+	if (opts.hFile) {
+		CloseHandle(opts.hFile);
+		opts.hFile = NULL;
+	}
+	if ( opts.hOutFile ) {
+		CloseHandle(opts.hOutFile);
+		opts.hOutFile = NULL;
+	}
+	if (opts.pFile) {
+		UnmapViewOfFile(opts.pFile);
+		opts.pFile = NULL;
+	}
+	if (opts.hMap) {
+		CloseHandle(opts.hMap);
+		opts.hMap = NULL;
+	}
 	if(errorCount && !opts.bBackup && !opts.bCheckOnly) {
-		if(IDYES==MessageBox(NULL,TranslateT("Errors were encountered, however you selected not to backup the original database. It is strongly recommended that you do so in case important data was omitted. Do you wish to keep a backup of the original database?"),TranslateT("Miranda Database Tool"),MB_YESNO))
-			opts.bBackup=1;
+		extern time_t ts;
+		time_t dlg_ts = time(NULL);
+		if ( IDYES == MessageBox( NULL,
+							TranslateT("Errors were encountered, however you selected not to backup the original database. It is strongly recommended that you do so in case important data was omitted. Do you wish to keep a backup of the original database?"),
+							TranslateT("Miranda Database Tool"), MB_YESNO ))
+			opts.bBackup = 1;
+		ts += time(NULL) - dlg_ts;
 	}
 	if(opts.bBackup) {
 		int i;

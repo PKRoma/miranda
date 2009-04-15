@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
+Copyright 2000-2008 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "newpluginapi.h"
 #include "m_clui.h"
-#include "commonheaders.h"
+#include "../hdr/modern_commonheaders.h"
 
 
 /*defaults*/
@@ -231,7 +231,7 @@ static BOOL __inline ScreenToClientRect(HWND hWnd, LPRECT lpRect)
 //    prm.szObjectID=ObjID;
 //    return CallService(MS_SKIN_REGISTERDEFOBJECT,(WPARAM)&prm,0);
 //}  
-int ske_Service_DrawGlyph(WPARAM wParam,LPARAM lParam);
+INT_PTR ske_Service_DrawGlyph(WPARAM wParam,LPARAM lParam);
 int __inline SkinDrawGlyph(HDC hdc, RECT * rcSize, RECT * rcClip, char * objectID)
 {
   SKINDRAWREQUEST rq;
@@ -300,7 +300,7 @@ int __inline SkinEngUpdateImageFrame(HWND hwnd, RECT * rcUpdate, DWORD dwFlags, 
 int __inline SkinEngInvalidateImageFrame(HWND hwnd, CONST RECT * rcUpdate, DWORD dwFlags, void * CallBackData)
 {
   sPaintRequest sr={0};
-  if (!g_CluiData.fLayered && hwnd) return InvalidateRect(hwnd,rcUpdate,dwFlags);
+  if (hwnd && (!g_CluiData.fLayered)) return InvalidateRect(hwnd,rcUpdate,dwFlags);
   sr.dStructSize=sizeof(sPaintRequest);
   sr.hWnd=hwnd;
   if (rcUpdate)
@@ -311,7 +311,7 @@ int __inline SkinEngInvalidateImageFrame(HWND hwnd, CONST RECT * rcUpdate, DWORD
 }
 
 
-int __inline SkinInvalidateFrame(HWND hWnd, CONST RECT* lpRect,BOOL bErase)
+int __inline SkinInvalidateFrame(HWND hWnd, CONST RECT* lpRect)
 {
 	return SkinEngInvalidateImageFrame(hWnd,lpRect,0,0);
 }
@@ -343,6 +343,57 @@ int __inline AlphaText(HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UIN
   ap.ARGBcolor=ARGBcolor;
   return CallService(MS_SKINENG_ALPHATEXTOUT,(WPARAM)&ap,0);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Paints text with correct alpha channel and effect, alternative to DrawText
+// wParam - pointer to DrawTextWithEffectParam
+
+typedef struct MODERNFONTEFFECT_tag
+{
+    BYTE     effectIndex;
+    DWORD    baseColour;        // ARGB
+    DWORD    secondaryColour;   // ARGB
+}
+MODERNFONTEFFECT;
+
+typedef struct DrawTextWithEffectParam_tag
+{
+    int cbSize;   
+    HDC             hdc;                  // handle to DC
+    LPCTSTR         lpchText;             // text to draw
+    int             cchText;              // length of text to draw
+    LPRECT          lprc;                 // rectangle coordinates
+    UINT            dwDTFormat;           // formatting options
+    MODERNFONTEFFECT *    pEffect;        // effect to be drawn on
+} DrawTextWithEffectParam;
+
+#define MS_DRAW_TEXT_WITH_EFFECTA "Modern/SkinEngine/DrawTextWithEffectA"
+#define MS_DRAW_TEXT_WITH_EFFECTW "Modern/SkinEngine/DrawTextWithEffectW"
+
+#ifdef UNICODE
+    #define MS_DRAW_TEXT_WITH_EFFECT MS_DRAW_TEXT_WITH_EFFECTW 
+#else
+    #define MS_DRAW_TEXT_WITH_EFFECT MS_DRAW_TEXT_WITH_EFFECTA
+#endif
+
+// Helper 
+int __inline DrawTextWithEffect( HDC hdc, LPCTSTR lpchText, int cchText, RECT * lprc, UINT dwDTFormat, MODERNFONTEFFECT * pEffect )
+{
+    DrawTextWithEffectParam params;
+    static BYTE bIfServiceExists = ServiceExists( MS_DRAW_TEXT_WITH_EFFECT ) ? 1 : 0;
+    if ( bIfServiceExists == 0 ) return DrawText ( hdc, lpchText, cchText, lprc, dwDTFormat );
+    
+    // else    
+    params.cbSize       = sizeof( DrawTextWithEffectParam );
+    params.hdc          = hdc;
+    params.lpchText     = lpchText;
+    params.cchText      = cchText;
+    params.lprc         = lprc;
+    params.dwDTFormat   = dwDTFormat;
+    params.pEffect      = pEffect;
+    return CallService( MS_DRAW_TEXT_WITH_EFFECT, (WPARAM)&params, 0 );
+}
+
 
 typedef struct _ImageListFixParam
 {

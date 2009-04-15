@@ -1,0 +1,54 @@
+#ifndef APSTUDIO_INVOKED
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 0,8,0,4
+ PRODUCTVERSION 0,8,0,4
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x21L
+#else
+ FILEFLAGS 0x20L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+#if defined(UNICODE)    
+    BEGIN
+        BLOCK "000004b0"
+        BEGIN
+            VALUE "Comments", "Licensed under the terms of the GNU General Public License"
+            VALUE "CompanyName", "Copyright © 2000-2004 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim and others."
+            VALUE "FileDescription", "Clist Nicer+ (UNICODE)"
+            VALUE "FileVersion", "0.8.0.4"
+            VALUE "InternalName", "clist_nicer+ (UNICODE)"
+            VALUE "LegalCopyright", "Copyright © 2000-2006 The Miranda IM project members."
+            VALUE "OriginalFilename", "clist_nicer.dll"
+            VALUE "ProductName", "Miranda IM Contact List"
+            VALUE "ProductVersion", "0.8.0.4"
+            VALUE "SpecialBuild", "11"
+        END
+    END
+#else
+    BEGIN
+        BLOCK "000004b0"
+        BEGIN
+            VALUE "Comments", "Licensed under the terms of the GNU General Public License"
+            VALUE "CompanyName", "Copyright © 2000-2004 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim and others."
+            VALUE "FileDescription", "Clist Nicer+ (ANSI)"
+            VALUE "FileVersion", "0.8.0.4"
+            VALUE "InternalName", "clist_nicer+ (ANSI)"
+            VALUE "LegalCopyright", "Copyright © 2000-2006 The Miranda IM project members."
+            VALUE "OriginalFilename", "clist_nicer.dll"
+            VALUE "ProductName", "Miranda IM Contact List"
+            VALUE "ProductVersion", "0.8.0.4"
+            VALUE "SpecialBuild", "11"
+        END
+    END
+#endif    
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0, 1200
+    END
+END
+#endif

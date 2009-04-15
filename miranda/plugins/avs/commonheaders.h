@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2004 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2004 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -21,20 +21,11 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#if defined( UNICODE ) && !defined( _UNICODE )
-	#define _UNICODE
-#endif
-#include <tchar.h>
-
-#ifdef _DEBUG
-#   define _CRTDBG_MAP_ALLOC
-#   include <stdlib.h>
-#   include <crtdbg.h>
-#else
-#	include <malloc.h>
-#endif
-
+#define MIRANDA_VER  0x0800
 #define _WIN32_WINNT 0x0501
+
+#include "m_stdhdr.h"
+
 #include <windows.h>
 #include <gdiplus.h>
 #include <commctrl.h>
@@ -48,10 +39,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <math.h>
 #include <win2k.h>
 
-extern "C"
-{
-#define MIRANDA_VER 0x0600
 #include <newpluginapi.h>
+#include <m_system_cpp.h>
 #include <m_clist.h>
 #include <m_clc.h>
 #include <m_clui.h>
@@ -77,14 +66,10 @@ extern "C"
 #include "m_metacontacts.h"
 #include "m_avatarhistory.h"
 
-}
-
 #include "resource.h"
 #include "m_updater.h"
 #include "m_flash.h"
 #include "image_utils.h"
-#include "mir_dblists.h"
-#include "mir_memory.h"
 #include "mir_thread.h"
 #include "poll.h"
 #include "m_acc.h"
@@ -105,19 +90,20 @@ extern "C"
 */
 
 // The same fields as avatarCacheEntry + proto name
-struct protoPicCacheEntry {
-	DWORD cbSize;                   // set to sizeof(struct)
-    HANDLE hContact;                // contacts handle, 0, if it is a protocol avatar
-    HBITMAP hbmPic;                 // bitmap handle of the picutre itself
-    DWORD dwFlags;                  // see above for flag values
-    LONG bmHeight, bmWidth;         // bitmap dimensions
-    time_t t_lastAccess;            // last access time (currently unused, but plugins should still
-                                    // use it whenever they access the avatar. may be used in the future
-                                    // to implement cache expiration
-    LPVOID lpDIBSection;			// unused field
-    char szFilename[MAX_PATH];      // filename of the avatar (absolute path)
-    char szProtoname[100];
+struct protoPicCacheEntry : public avatarCacheEntry
+{
+	__inline void* operator new( size_t size ) { return mir_alloc( size ); }
+	__inline void operator delete( void* p ) { mir_free( p ); }
+
+    protoPicCacheEntry() { memset(this, 0, sizeof(*this)); };
+	~protoPicCacheEntry();
+
+	char*  szProtoname;
+	TCHAR* tszAccName;
 };
+
+extern OBJLIST<protoPicCacheEntry> g_ProtoPictures, g_MyAvatars;
+
 
 int SetAvatarAttribute(HANDLE hContact, DWORD attrib, int mode);
 
@@ -125,3 +111,5 @@ int SetAvatarAttribute(HANDLE hContact, DWORD attrib, int mode);
 
 
 #define GAIR_FAILED 1000
+
+#define AVS_IGNORENOTIFY 0x1000

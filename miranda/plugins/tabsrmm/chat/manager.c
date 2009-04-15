@@ -1,4 +1,7 @@
 /*
+astyle --force-indent=tab=4 --brackets=linux --indent-switches
+		--pad=oper --one-line=keep-blocks  --unpad=paren
+
 Chat module plugin for Miranda IM
 
 Copyright (C) 2003 Jörgen Persson
@@ -16,38 +19,42 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+$Id$
 */
+
 #include "../commonheaders.h"
 
-extern TCHAR* pszActiveWndID ;
-extern char*  pszActiveWndModule ;
+extern TCHAR*			pszActiveWndID ;
+extern char*			pszActiveWndModule ;
 extern SESSION_INFO	g_TabSession;
-extern HICON	hIcons[30];
+extern HICON			hIcons[30];
 
-#define WINDOWS_COMMANDS_MAX 30
+#define	WINDOWS_COMMANDS_MAX 30
 #define	STATUSICONCOUNT 6
 
-SESSION_INFO* m_WndList = 0;
-MODULEINFO *m_ModList = 0;
+SESSION_INFO	*m_WndList = 0;
+MODULEINFO		*m_ModList = 0;
 
 void SetActiveSession(const TCHAR* pszID, const char* pszModule)
 {
 	SESSION_INFO* si = SM_FindSession(pszID, pszModule);
-	if ( si )
+	if (si)
 		SetActiveSessionEx(si);
 }
 
 void SetActiveSessionEx(SESSION_INFO* si)
 {
-	if ( si ) {
-		replaceStr( &pszActiveWndID, si->ptszID );
-		replaceStrA( &pszActiveWndModule, si->pszModule );
-}	}
+	if (si) {
+		replaceStr(&pszActiveWndID, si->ptszID);
+		replaceStrA(&pszActiveWndModule, si->pszModule);
+	}
+}
 
-SESSION_INFO* GetActiveSession( void )
+SESSION_INFO* GetActiveSession(void)
 {
-	SESSION_INFO* si = SM_FindSession( pszActiveWndID, pszActiveWndModule );
-	if ( si )
+	SESSION_INFO* si = SM_FindSession(pszActiveWndID, pszActiveWndModule);
+	if (si)
 		return si;
 
 	return m_WndList;
@@ -59,22 +66,21 @@ SESSION_INFO* GetActiveSession( void )
 //		Keeps track of all sessions and its windows
 //---------------------------------------------------
 
-SESSION_INFO* SM_AddSession( const TCHAR* pszID, const char* pszModule)
+SESSION_INFO* SM_AddSession(const TCHAR* pszID, const char* pszModule)
 {
-	if ( !pszID || !pszModule )
+	if (!pszID || !pszModule)
 		return NULL;
 
-	if ( !SM_FindSession(pszID, pszModule)) {
+	if (!SM_FindSession(pszID, pszModule)) {
 		SESSION_INFO*node = (SESSION_INFO*) mir_alloc(sizeof(SESSION_INFO));
 		ZeroMemory(node, sizeof(SESSION_INFO));
-		node->ptszID = mir_tstrdup( pszID );
-		node->pszModule = mir_strdup( pszModule );
+		node->ptszID = mir_tstrdup(pszID);
+		node->pszModule = mir_strdup(pszModule);
 
 		if (m_WndList == NULL) { // list is empty
 			m_WndList = node;
 			node->next = NULL;
-		}
-		else {
+		} else {
 			node->next = m_WndList;
 			m_WndList = node;
 		}
@@ -83,29 +89,27 @@ SESSION_INFO* SM_AddSession( const TCHAR* pszID, const char* pszModule)
 	return NULL;
 }
 
-int SM_RemoveSession( const TCHAR* pszID, const char* pszModule)
+int SM_RemoveSession(const TCHAR* pszID, const char* pszModule)
 {
 	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
 
 	if (!pszModule)
 		return FALSE;
 
-	while (pTemp != NULL)
-	{
-		if ((!pszID && pTemp->iType != GCW_SERVER || !lstrcmpi(pTemp->ptszID,pszID)) && !lstrcmpiA(pTemp->pszModule,pszModule)) // match
-		{
+	while (pTemp != NULL) {
+		if ((!pszID && pTemp->iType != GCW_SERVER || !lstrcmpi(pTemp->ptszID, pszID)) && !lstrcmpiA(pTemp->pszModule, pszModule)) { // match
 			COMMAND_INFO *pCurComm;
 			DWORD dw = pTemp->dwItemData;
 
-			if(pTemp->hWnd )
-				SendMessage(pTemp->hWnd, GC_EVENT_CONTROL+WM_USER+500, SESSION_TERMINATE, 0);
+			if (pTemp->hWnd)
+				SendMessage(pTemp->hWnd, GC_EVENT_CONTROL + WM_USER + 500, SESSION_TERMINATE, 0);
 
 			if (pTemp->hWnd)
 				g_TabSession.nUsersInNicklist = 0;
 
-            DoEventHook(pTemp->ptszID, pTemp->pszModule, GC_SESSION_TERMINATE, NULL, NULL, (DWORD)pTemp->dwItemData);
+			DoEventHook(pTemp->ptszID, pTemp->pszModule, GC_SESSION_TERMINATE, NULL, NULL, (DWORD)pTemp->dwItemData);
 
-            if (pLast == NULL)
+			if (pLast == NULL)
 				m_WndList = pTemp->next;
 			else
 				pLast->next = pTemp->next;
@@ -116,30 +120,28 @@ int SM_RemoveSession( const TCHAR* pszID, const char* pszModule)
 			pTemp->iStatusCount = 0;
 			pTemp->nUsersInNicklist = 0;
 
-			if (pTemp->hContact)
-			{
-				CList_SetOffline(pTemp->hContact, pTemp->iType == GCW_CHATROOM?TRUE:FALSE);
-				if (pTemp->iType != GCW_SERVER)
-					DBWriteContactSettingByte(pTemp->hContact, "CList", "Hidden", 1);
+			if (pTemp->hContact) {
+				CList_SetOffline(pTemp->hContact, pTemp->iType == GCW_CHATROOM ? TRUE : FALSE);
+ 				//if (pTemp->iType != GCW_SERVER)
+ 					//DBWriteContactSettingByte(pTemp->hContact, "CList", "Hidden", 1);
 			}
 			DBWriteContactSettingString(pTemp->hContact, pTemp->pszModule , "Topic", "");
 			DBWriteContactSettingString(pTemp->hContact, pTemp->pszModule, "StatusBar", "");
 			DBDeleteContactSetting(pTemp->hContact, "CList", "StatusMsg");
 
-			mir_free( pTemp->pszModule );
-			mir_free( pTemp->ptszID );
-			mir_free( pTemp->ptszName );
-			mir_free( pTemp->ptszStatusbarText );
-			mir_free( pTemp->ptszTopic );
-			#if defined( _UNICODE )
-				mir_free( pTemp->pszID );
-				mir_free( pTemp->pszName );
-			#endif
+			mir_free(pTemp->pszModule);
+			mir_free(pTemp->ptszID);
+			mir_free(pTemp->ptszName);
+			mir_free(pTemp->ptszStatusbarText);
+			mir_free(pTemp->ptszTopic);
+#if defined( _UNICODE )
+			mir_free(pTemp->pszID);
+			mir_free(pTemp->pszName);
+#endif
 
 			// delete commands
 			pCurComm = pTemp->lpCommands;
-			while (pCurComm != NULL)
-			{
+			while (pCurComm != NULL) {
 				COMMAND_INFO *pNext = pCurComm->next;
 				mir_free(pCurComm->lpCommand);
 				mir_free(pCurComm);
@@ -153,9 +155,7 @@ int SM_RemoveSession( const TCHAR* pszID, const char* pszModule)
 				pTemp = pLast->next;
 			else
 				pTemp = m_WndList;
-		}
-		else
-		{
+		} else {
 			pLast = pTemp;
 			pTemp = pTemp->next;
 		}
@@ -167,11 +167,11 @@ SESSION_INFO* SM_FindSession(const TCHAR* pszID, const char* pszModule)
 {
 	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
 
-	if ( !pszID || !pszModule )
+	if (!pszID || !pszModule)
 		return NULL;
 
-	while ( pTemp != NULL ) {
-		if ( !lstrcmpi( pTemp->ptszID, pszID ) && !lstrcmpiA(pTemp->pszModule,pszModule))
+	while (pTemp != NULL) {
+		if (!lstrcmpi(pTemp->ptszID, pszID) && !lstrcmpiA(pTemp->pszModule, pszModule))
 			return pTemp;
 
 		pLast = pTemp;
@@ -187,10 +187,8 @@ BOOL SM_SetOffline(const TCHAR* pszID, const char* pszModule)
 	if (!pszModule)
 		return FALSE;
 
-	while (pTemp != NULL)
-	{
-		if (( !pszID || !lstrcmpi( pTemp->ptszID, pszID )) && !lstrcmpiA(pTemp->pszModule,pszModule))
-		{
+	while (pTemp != NULL) {
+		if ((!pszID || !lstrcmpi(pTemp->ptszID, pszID)) && !lstrcmpiA(pTemp->pszModule, pszModule)) {
 			UM_RemoveAll(&pTemp->pUsers);
 			pTemp->nUsersInNicklist = 0;
 			if (pTemp->hWnd)
@@ -209,15 +207,15 @@ BOOL SM_SetOffline(const TCHAR* pszID, const char* pszModule)
 	return TRUE;
 }
 
-BOOL SM_SetStatusEx( const TCHAR* pszID, const char* pszModule, const TCHAR* pszText, int flags )
+BOOL SM_SetStatusEx(const TCHAR* pszID, const char* pszModule, const TCHAR* pszText, int flags)
 {
 	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
 
 	if (!pszModule)
 		return FALSE;
 
-	while ( pTemp != NULL ) {
-		if (( !pszID || !lstrcmpi( pTemp->ptszID, pszID )) && !lstrcmpiA(pTemp->pszModule,pszModule)) {
+	while (pTemp != NULL) {
+		if ((!pszID || !lstrcmpi(pTemp->ptszID, pszID)) && !lstrcmpiA(pTemp->pszModule, pszModule)) {
 			UM_SetStatusEx(pTemp->pUsers, pszText, flags);
 			if (pTemp->hWnd)
 				RedrawWindow(GetDlgItem(pTemp->hWnd, IDC_LIST), NULL, NULL, RDW_INVALIDATE);
@@ -236,40 +234,37 @@ HICON SM_GetStatusIcon(SESSION_INFO* si, USERINFO* ui, char *szIndicator)
 	if (!ui || !si)
 		return NULL;
 
-    *szIndicator = 0;
-    
+	*szIndicator = 0;
+
 	ti = TM_FindStatus(si->pStatuses, TM_WordToString(si->pStatuses, ui->Status));
-	if (ti)
-	{
-		if ((int)ti->hIcon < STATUSICONCOUNT)
-		{
+	if (ti) {
+		if ((INT_PTR)ti->hIcon < STATUSICONCOUNT) {
 			int id = si->iStatusCount - (int)ti->hIcon - 1;
 			if (id == 0) {
 				*szIndicator = 0;
 				return hIcons[ICON_STATUS0];
 			}
-			if(id == 1) {
+			if (id == 1) {
 				*szIndicator = '+';
 				return hIcons[ICON_STATUS1];
 			}
-			if(id == 2) {
+			if (id == 2) {
 				*szIndicator = '%';
 				return hIcons[ICON_STATUS2];
 			}
-			if(id == 3) {
+			if (id == 3) {
 				*szIndicator = '@';
 				return hIcons[ICON_STATUS3];
 			}
-			if(id == 4) {
+			if (id == 4) {
 				*szIndicator = '!';
 				return hIcons[ICON_STATUS4];
 			}
-			if(id == 5) {
+			if (id == 5) {
 				*szIndicator = '*';
 				return hIcons[ICON_STATUS5];
 			}
-		}
-		else
+		} else
 			return ti->hIcon;
 	}
 	return hIcons[ICON_STATUS0];
@@ -281,15 +276,14 @@ BOOL SM_AddEventToAllMatchingUID(GCEVENT * gce)
 	int bManyFix = 0;
 
 	while (pTemp != NULL) {
-		if ( !lstrcmpiA( pTemp->pszModule, gce->pDest->pszModule )) {
-			if ( UM_FindUser( pTemp->pUsers, gce->ptszUID )) {
-				if ( pTemp->bInitDone ) {
-					if ( SM_AddEvent(pTemp->ptszID, pTemp->pszModule, gce, FALSE ) && pTemp->hWnd && pTemp->bInitDone) {
+		if (!lstrcmpiA(pTemp->pszModule, gce->pDest->pszModule)) {
+			if (UM_FindUser(pTemp->pUsers, gce->ptszUID)) {
+				if (pTemp->bInitDone) {
+					if (SM_AddEvent(pTemp->ptszID, pTemp->pszModule, gce, FALSE) && pTemp->hWnd && pTemp->bInitDone) {
 						g_TabSession.pLog = pTemp->pLog;
 						g_TabSession.pLogEnd = pTemp->pLogEnd;
 						SendMessage(pTemp->hWnd, GC_ADDLOG, 0, 0);
-					}
-					else if (pTemp->hWnd && pTemp->bInitDone) {
+					} else if (pTemp->hWnd && pTemp->bInitDone) {
 						g_TabSession.pLog = pTemp->pLog;
 						g_TabSession.pLogEnd = pTemp->pLogEnd;
 						SendMessage(pTemp->hWnd, GC_REDRAWLOG2, 0, 0);
@@ -298,7 +292,9 @@ BOOL SM_AddEventToAllMatchingUID(GCEVENT * gce)
 					bManyFix ++;
 					if ((gce->dwFlags & GCEF_ADDTOLOG) && g_Settings.LoggingEnabled)
 						LogToFile(pTemp, gce);
-		}	}	}
+				}
+			}
+		}
 
 		pLast = pTemp;
 		pTemp = pTemp->next;
@@ -314,16 +310,16 @@ BOOL SM_AddEvent(const TCHAR* pszID, const char* pszModule, GCEVENT * gce, BOOL 
 	if (!pszID || !pszModule)
 		return TRUE;
 
-	while ( pTemp != NULL ) {
-		if ( !lstrcmpi( pTemp->ptszID, pszID ) && !lstrcmpiA(pTemp->pszModule,pszModule)) {
+	while (pTemp != NULL) {
+		if (!lstrcmpi(pTemp->ptszID, pszID) && !lstrcmpiA(pTemp->pszModule, pszModule)) {
 			LOGINFO * li = LM_AddEvent(&pTemp->pLog, &pTemp->pLogEnd);
 			pTemp->iEventCount += 1;
 
 			li->iType = gce->pDest->iType;
-			li->ptszNick = mir_tstrdup( gce->ptszNick );
-			li->ptszText = mir_tstrdup( gce->ptszText );
-			li->ptszStatus = mir_tstrdup( gce->ptszStatus );
-			li->ptszUserInfo = mir_tstrdup( gce->ptszUserInfo );
+			li->ptszNick = mir_tstrdup(gce->ptszNick);
+			li->ptszText = mir_tstrdup(gce->ptszText);
+			li->ptszStatus = mir_tstrdup(gce->ptszStatus);
+			li->ptszUserInfo = mir_tstrdup(gce->ptszUserInfo);
 
 			li->bIsMe = gce->bIsMe;
 			li->time = gce->time;
@@ -342,16 +338,16 @@ BOOL SM_AddEvent(const TCHAR* pszID, const char* pszModule, GCEVENT * gce, BOOL 
 	return TRUE;
 }
 
-USERINFO * SM_AddUser( const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID, const TCHAR* pszNick, WORD wStatus)
+USERINFO * SM_AddUser(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID, const TCHAR* pszNick, WORD wStatus)
 {
 	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
 
 	if (!pszID || !pszModule)
 		return NULL;
 
-	while ( pTemp != NULL ) {
-		if ( !lstrcmpi( pTemp->ptszID, pszID ) && !lstrcmpiA( pTemp->pszModule, pszModule )) {
-			USERINFO * p = UM_AddUser( pTemp->pStatuses, &pTemp->pUsers, pszUID, pszNick, wStatus);
+	while (pTemp != NULL) {
+		if (!lstrcmpi(pTemp->ptszID, pszID) && !lstrcmpiA(pTemp->pszModule, pszModule)) {
+			USERINFO * p = UM_AddUser(pTemp->pStatuses, &pTemp->pUsers, pszUID, pszNick, wStatus);
 			pTemp->nUsersInNicklist++;
 			if (pTemp->hWnd)
 				g_TabSession.nUsersInNicklist ++;
@@ -371,9 +367,9 @@ BOOL SM_MoveUser(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID)
 	if (!pszID || !pszModule || !pszUID)
 		return FALSE;
 
-	while ( pTemp != NULL ) {
-		if ( !lstrcmpi( pTemp->ptszID, pszID ) && !lstrcmpiA( pTemp->pszModule, pszModule )) {
-			UM_SortUser( &pTemp->pUsers, pszUID );
+	while (pTemp != NULL) {
+		if (!lstrcmpi(pTemp->ptszID, pszID) && !lstrcmpiA(pTemp->pszModule, pszModule)) {
+			UM_SortUser(&pTemp->pUsers, pszUID);
 			return TRUE;
 		}
 		pTemp = pTemp->next;
@@ -389,11 +385,11 @@ BOOL SM_RemoveUser(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUI
 	if (!pszModule || !pszUID)
 		return FALSE;
 
-	while ( pTemp != NULL ) {
-		if (( !pszID || !lstrcmpi( pTemp->ptszID, pszID )) && !lstrcmpiA( pTemp->pszModule, pszModule )) {
+	while (pTemp != NULL) {
+		if ((!pszID || !lstrcmpi(pTemp->ptszID, pszID)) && !lstrcmpiA(pTemp->pszModule, pszModule)) {
 			DWORD dw;
 			USERINFO * ui = UM_FindUser(pTemp->pUsers, pszUID);
-			if ( ui ) {
+			if (ui) {
 				pTemp->nUsersInNicklist--;
 				if (pTemp->hWnd) {
 					g_TabSession.pUsers = pTemp->pUsers;
@@ -407,7 +403,8 @@ BOOL SM_RemoveUser(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUI
 
 				if (pszID)
 					return TRUE;
-		}	}
+			}
+		}
 
 		pLast = pTemp;
 		pTemp = pTemp->next;
@@ -423,9 +420,9 @@ USERINFO * SM_GetUserFromIndex(const TCHAR* pszID, const char* pszModule, int in
 	if (!pszModule)
 		return FALSE;
 
-	while ( pTemp != NULL ) {
-		if ( !lstrcmpi( pTemp->ptszID, pszID ) && !lstrcmpiA( pTemp->pszModule, pszModule ))
-			return UM_FindUserFromIndex( pTemp->pUsers, index );
+	while (pTemp != NULL) {
+		if (!lstrcmpi(pTemp->ptszID, pszID) && !lstrcmpiA(pTemp->pszModule, pszModule))
+			return UM_FindUserFromIndex(pTemp->pUsers, index);
 		pTemp = pTemp->next;
 	}
 
@@ -437,15 +434,15 @@ STATUSINFO * SM_AddStatus(const TCHAR* pszID, const char* pszModule, const TCHAR
 {
 	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
 
-	if (!pszID || !pszModule )
+	if (!pszID || !pszModule)
 		return NULL;
 
-	while ( pTemp != NULL ) {
-		if ( !lstrcmpi( pTemp->ptszID, pszID ) && !lstrcmpiA( pTemp->pszModule, pszModule )) {
-			STATUSINFO* ti = TM_AddStatus( &pTemp->pStatuses, pszStatus, &pTemp->iStatusCount );
-			if ( ti )
+	while (pTemp != NULL) {
+		if (!lstrcmpi(pTemp->ptszID, pszID) && !lstrcmpiA(pTemp->pszModule, pszModule)) {
+			STATUSINFO* ti = TM_AddStatus(&pTemp->pStatuses, pszStatus, &pTemp->iStatusCount);
+			if (ti)
 				pTemp->iStatusCount++;
-			if ( pTemp->hWnd )
+			if (pTemp->hWnd)
 				g_TabSession.pStatuses = pTemp->pStatuses;
 			return ti;
 		}
@@ -460,15 +457,15 @@ BOOL SM_GiveStatus(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUI
 {
 	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
 
-	if ( !pszID || !pszModule )
+	if (!pszID || !pszModule)
 		return FALSE;
 
-	while ( pTemp != NULL ) {
-		if ( !lstrcmpi( pTemp->ptszID, pszID ) && !lstrcmpiA( pTemp->pszModule, pszModule )) {
+	while (pTemp != NULL) {
+		if (!lstrcmpi(pTemp->ptszID, pszID) && !lstrcmpiA(pTemp->pszModule, pszModule)) {
 			USERINFO * ui = UM_GiveStatus(pTemp->pUsers, pszUID, TM_StringToWord(pTemp->pStatuses, pszStatus));
 			if (ui) {
-				SM_MoveUser( pTemp->ptszID, pTemp->pszModule, ui->pszUID );
-				if ( pTemp->hWnd )
+				SM_MoveUser(pTemp->ptszID, pTemp->pszModule, ui->pszUID);
+				if (pTemp->hWnd)
 					SendMessage(pTemp->hWnd, GC_UPDATENICKLIST, (WPARAM)0, (LPARAM)0);
 			}
 			return TRUE;
@@ -484,15 +481,15 @@ BOOL SM_SetContactStatus(const TCHAR* pszID, const char* pszModule, const TCHAR*
 {
 	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
 
-	if ( !pszID || !pszModule )
+	if (!pszID || !pszModule)
 		return FALSE;
 
-	while ( pTemp != NULL ) {
-		if ( !lstrcmpi( pTemp->ptszID, pszID ) && !lstrcmpiA( pTemp->pszModule, pszModule )) {
+	while (pTemp != NULL) {
+		if (!lstrcmpi(pTemp->ptszID, pszID) && !lstrcmpiA(pTemp->pszModule, pszModule)) {
 			USERINFO * ui = UM_SetContactStatus(pTemp->pUsers, pszUID, wStatus);
 			if (ui) {
-				SM_MoveUser( pTemp->ptszID, pTemp->pszModule, ui->pszUID );
-				if ( pTemp->hWnd )
+				SM_MoveUser(pTemp->ptszID, pTemp->pszModule, ui->pszUID);
+				if (pTemp->hWnd)
 					SendMessage(pTemp->hWnd, GC_UPDATENICKLIST, (WPARAM)0, (LPARAM)0);
 			}
 			return TRUE;
@@ -508,15 +505,15 @@ BOOL SM_TakeStatus(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUI
 {
 	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
 
-	if (!pszID || !pszModule )
+	if (!pszID || !pszModule)
 		return FALSE;
 
-	while ( pTemp != NULL ) {
-		if ( !lstrcmpi( pTemp->ptszID, pszID ) && !lstrcmpiA( pTemp->pszModule, pszModule )) {
+	while (pTemp != NULL) {
+		if (!lstrcmpi(pTemp->ptszID, pszID) && !lstrcmpiA(pTemp->pszModule, pszModule)) {
 			USERINFO* ui = UM_TakeStatus(pTemp->pUsers, pszUID, TM_StringToWord(pTemp->pStatuses, pszStatus));
-			if ( ui ) {
+			if (ui) {
 				SM_MoveUser(pTemp->ptszID, pTemp->pszModule, ui->pszUID);
-				if ( pTemp->hWnd )
+				if (pTemp->hWnd)
 					SendMessage(pTemp->hWnd, GC_UPDATENICKLIST, (WPARAM)0, (LPARAM)0);
 			}
 			return TRUE;
@@ -531,14 +528,14 @@ LRESULT SM_SendMessage(const TCHAR* pszID, const char* pszModule, UINT msg, WPAR
 {
 	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
 
-	while ( pTemp && pszModule ) {
-		if (( !pszID ||!lstrcmpi( pTemp->ptszID, pszID )) && !lstrcmpiA( pTemp->pszModule, pszModule )) {
-			if ( pTemp->hWnd ) {
+	while (pTemp && pszModule) {
+		if ((!pszID || !lstrcmpi(pTemp->ptszID, pszID)) && !lstrcmpiA(pTemp->pszModule, pszModule)) {
+			if (pTemp->hWnd) {
 				LRESULT i = SendMessage(pTemp->hWnd, msg, wParam, lParam);
-				if ( pszID )
+				if (pszID)
 					return i;
 			}
-			if ( pszID )
+			if (pszID)
 				return 0;
 		}
 		pLast = pTemp;
@@ -554,9 +551,9 @@ BOOL SM_PostMessage(const TCHAR* pszID, const char* pszModule, UINT msg, WPARAM 
 	if (!pszID || !pszModule)
 		return 0;
 
-	while ( pTemp != NULL ) {
-		if ( !lstrcmpi( pTemp->ptszID, pszID ) && !lstrcmpiA( pTemp->pszModule, pszModule )) {
-			if ( pTemp->hWnd )
+	while (pTemp != NULL) {
+		if (!lstrcmpi(pTemp->ptszID, pszID) && !lstrcmpiA(pTemp->pszModule, pszModule)) {
+			if (pTemp->hWnd)
 				return PostMessage(pTemp->hWnd, msg, wParam, lParam);
 
 			return FALSE;
@@ -571,12 +568,9 @@ BOOL SM_BroadcastMessage(const char* pszModule, UINT msg, WPARAM wParam, LPARAM 
 {
 	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
 
-	while (pTemp != NULL)
-	{
-		if (!pszModule || !lstrcmpiA(pTemp->pszModule, pszModule))
-		{
-			if (pTemp->hWnd)
-			{
+	while (pTemp != NULL) {
+		if (!pszModule || !lstrcmpiA(pTemp->pszModule, pszModule)) {
+			if (pTemp->hWnd) {
 				if (bAsync)
 					PostMessage(pTemp->hWnd, msg, wParam, lParam);
 				else
@@ -597,15 +591,15 @@ BOOL SM_SetStatus(const TCHAR* pszID, const char* pszModule, int wStatus)
 	if (!pszModule)
 		return FALSE;
 
-	while ( pTemp != NULL ) {
-		if (( !pszID || !lstrcmpi( pTemp->ptszID, pszID )) && !lstrcmpiA( pTemp->pszModule, pszModule )) {
+	while (pTemp != NULL) {
+		if ((!pszID || !lstrcmpi(pTemp->ptszID, pszID)) && !lstrcmpiA(pTemp->pszModule, pszModule)) {
 			pTemp->wStatus = wStatus;
 			if (pTemp->hWnd)
 				g_TabSession.wStatus = wStatus;
 
-			if ( pTemp->hContact ) {
-				if ( pTemp->iType != GCW_SERVER && wStatus != ID_STATUS_OFFLINE )
-						DBDeleteContactSetting(pTemp->hContact, "CList", "Hidden");
+			if (pTemp->hContact) {
+				if (pTemp->iType != GCW_SERVER && wStatus != ID_STATUS_OFFLINE)
+					DBDeleteContactSetting(pTemp->hContact, "CList", "Hidden");
 
 				DBWriteContactSettingWord(pTemp->hContact, pTemp->pszModule, "Status", (WORD)wStatus);
 			}
@@ -623,13 +617,13 @@ BOOL SM_SendUserMessage(const TCHAR* pszID, const char* pszModule, const TCHAR* 
 {
 	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
 
-	if ( !pszModule || !pszText )
+	if (!pszModule || !pszText)
 		return FALSE;
 
-	while ( pTemp != NULL ) {
-		if (( !pszID || !lstrcmpi( pTemp->ptszID, pszID )) && !lstrcmpiA( pTemp->pszModule, pszModule )) {
-			if ( pTemp->iType == GCW_CHATROOM )
-				DoEventHook( pTemp->ptszID, pTemp->pszModule, GC_USER_MESSAGE, NULL, pszText, (LPARAM)NULL);
+	while (pTemp != NULL) {
+		if ((!pszID || !lstrcmpi(pTemp->ptszID, pszID)) && !lstrcmpiA(pTemp->pszModule, pszModule)) {
+			if (pTemp->iType == GCW_CHATROOM)
+				DoEventHook(pTemp->ptszID, pTemp->pszModule, GC_USER_MESSAGE, NULL, pszText, (LPARAM)NULL);
 			if (pszID)
 				return TRUE;
 		}
@@ -644,19 +638,16 @@ SESSION_INFO* SM_GetPrevWindow(SESSION_INFO* si)
 	BOOL bFound = FALSE;
 	SESSION_INFO* pTemp = m_WndList;
 
-	if ( !si )
+	if (!si)
 		return NULL;
 
-	while (pTemp != NULL)
-	{
-		if (si == pTemp)
-		{
+	while (pTemp != NULL) {
+		if (si == pTemp) {
 			if (bFound)
 				return NULL;
 			else
 				bFound = TRUE;
-		}
-		else if (bFound == TRUE && pTemp->hWnd)
+		} else if (bFound == TRUE && pTemp->hWnd)
 			return pTemp;
 		pTemp = pTemp->next;
 		if (pTemp == NULL && bFound)
@@ -672,12 +663,9 @@ SESSION_INFO* SM_GetNextWindow(SESSION_INFO* si)
 	if (!si)
 		return NULL;
 
-	while (pTemp != NULL)
-	{
-		if (si == pTemp)
-		{
-			if (pLast)
-			{
+	while (pTemp != NULL) {
+		if (si == pTemp) {
+			if (pLast) {
 				if (pLast != pTemp)
 					return pLast;
 				else
@@ -700,13 +688,13 @@ BOOL SM_ChangeUID(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID
 	if (!pszModule)
 		return FALSE;
 
-	while ( pTemp != NULL ) {
-		if (( !pszID || !lstrcmpi( pTemp->ptszID, pszID )) && !lstrcmpiA( pTemp->pszModule, pszModule )) {
-			USERINFO* ui = UM_FindUser( pTemp->pUsers, pszUID );
-			if ( ui )
-				replaceStr( &ui->pszUID, pszNewUID );
+	while (pTemp != NULL) {
+		if ((!pszID || !lstrcmpi(pTemp->ptszID, pszID)) && !lstrcmpiA(pTemp->pszModule, pszModule)) {
+			USERINFO* ui = UM_FindUser(pTemp->pUsers, pszUID);
+			if (ui)
+				replaceStr(&ui->pszUID, pszNewUID);
 
-			if ( pszID )
+			if (pszID)
 				return TRUE;
 		}
 		pLast = pTemp;
@@ -720,13 +708,10 @@ BOOL SM_SetTabbedWindowHwnd(SESSION_INFO* si, HWND hwnd)
 {
 	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
 
-	while (pTemp != NULL)
-	{
-		if (si && si == pTemp)
-		{
+	while (pTemp != NULL) {
+		if (si && si == pTemp) {
 			pTemp->hWnd = hwnd;
-		}
-		else
+		} else
 			pTemp->hWnd = NULL;
 		pLast = pTemp;
 		pTemp = pTemp->next;
@@ -740,14 +725,14 @@ BOOL SM_ChangeNick(const TCHAR* pszID, const char* pszModule, GCEVENT * gce)
 	if (!pszModule)
 		return FALSE;
 
-	while ( pTemp != NULL ) {
-		if (( !pszID || !lstrcmpi( pTemp->ptszID, pszID )) && !lstrcmpiA( pTemp->pszModule, pszModule )) {
-			USERINFO* ui = UM_FindUser(pTemp->pUsers, gce->ptszUID );
-			if ( ui ) {
-				replaceStr( &ui->pszNick, gce->ptszText);
-				SM_MoveUser( pTemp->ptszID, pTemp->pszModule, ui->pszUID );
-				if ( pTemp->hWnd )
-					SendMessage( pTemp->hWnd, GC_UPDATENICKLIST, 0, 0 );
+	while (pTemp != NULL) {
+		if ((!pszID || !lstrcmpi(pTemp->ptszID, pszID)) && !lstrcmpiA(pTemp->pszModule, pszModule)) {
+			USERINFO* ui = UM_FindUser(pTemp->pUsers, gce->ptszUID);
+			if (ui) {
+				replaceStr(&ui->pszNick, gce->ptszText);
+				SM_MoveUser(pTemp->ptszID, pTemp->pszModule, ui->pszUID);
+				if (pTemp->hWnd)
+					SendMessage(pTemp->hWnd, GC_UPDATENICKLIST, 0, 0);
 			}
 
 			if (pszID)
@@ -758,17 +743,16 @@ BOOL SM_ChangeNick(const TCHAR* pszID, const char* pszModule, GCEVENT * gce)
 	}
 	return TRUE;
 }
-BOOL SM_RemoveAll (void)
+BOOL SM_RemoveAll(void)
 {
-	while (m_WndList)
-	{
+	while (m_WndList) {
 		SESSION_INFO*pLast = m_WndList->next;
 
 		if (m_WndList->hWnd)
-			SendMessage(m_WndList->hWnd, GC_EVENT_CONTROL+WM_USER+500, SESSION_TERMINATE, 0);
+			SendMessage(m_WndList->hWnd, GC_EVENT_CONTROL + WM_USER + 500, SESSION_TERMINATE, 0);
 		DoEventHook(m_WndList->ptszID, m_WndList->pszModule, GC_SESSION_TERMINATE, NULL, NULL, (DWORD)m_WndList->dwItemData);
 		if (m_WndList->hContact)
-			CList_SetOffline(m_WndList->hContact, m_WndList->iType == GCW_CHATROOM?TRUE:FALSE);
+			CList_SetOffline(m_WndList->hContact, m_WndList->iType == GCW_CHATROOM ? TRUE : FALSE);
 		DBWriteContactSettingString(m_WndList->hContact, m_WndList->pszModule , "Topic", "");
 		DBDeleteContactSetting(m_WndList->hContact, "CList", "StatusMsg");
 		DBWriteContactSettingString(m_WndList->hContact, m_WndList->pszModule, "StatusBar", "");
@@ -779,11 +763,11 @@ BOOL SM_RemoveAll (void)
 		m_WndList->iStatusCount = 0;
 		m_WndList->nUsersInNicklist = 0;
 
-		mir_free( m_WndList->pszModule );
-		mir_free( m_WndList->ptszID );
-		mir_free( m_WndList->ptszName );
-		mir_free( m_WndList->ptszStatusbarText );
-		mir_free( m_WndList->ptszTopic );
+		mir_free(m_WndList->pszModule);
+		mir_free(m_WndList->ptszID);
+		mir_free(m_WndList->ptszName);
+		mir_free(m_WndList->ptszStatusbarText);
+		mir_free(m_WndList->ptszTopic);
 
 		while (m_WndList->lpCommands != NULL) {
 			COMMAND_INFO *pNext = m_WndList->lpCommands->next;
@@ -802,17 +786,16 @@ BOOL SM_RemoveAll (void)
 void SM_AddCommand(const TCHAR* pszID, const char* pszModule, const char* lpNewCommand)
 {
 	SESSION_INFO* pTemp = m_WndList;
-	while ( pTemp != NULL ) {
-		if ( lstrcmpi( pTemp->ptszID, pszID ) == 0 && lstrcmpiA( pTemp->pszModule, pszModule ) == 0) { // match
+	while (pTemp != NULL) {
+		if (lstrcmpi(pTemp->ptszID, pszID) == 0 && lstrcmpiA(pTemp->pszModule, pszModule) == 0) {      // match
 			COMMAND_INFO *node = mir_alloc(sizeof(COMMAND_INFO));
-			node->lpCommand = mir_strdup( lpNewCommand );
+			node->lpCommand = mir_strdup(lpNewCommand);
 			node->last = NULL; // always added at beginning!
 			// new commands are added at start
 			if (pTemp->lpCommands == NULL) {
 				node->next = NULL;
 				pTemp->lpCommands = node;
-			}
-			else {
+			} else {
 				node->next = pTemp->lpCommands;
 				pTemp->lpCommands->last = node; // hmm, weird
 				pTemp->lpCommands = node;
@@ -823,30 +806,33 @@ void SM_AddCommand(const TCHAR* pszID, const char* pszModule, const char* lpNewC
 			if (pTemp->wCommandsNum > WINDOWS_COMMANDS_MAX) {
 				COMMAND_INFO *pCurComm = pTemp->lpCommands;
 				COMMAND_INFO *pLast;
-				while (pCurComm->next != NULL) { pCurComm = pCurComm->next; }
+				while (pCurComm->next != NULL) {
+					pCurComm = pCurComm->next;
+				}
 				pLast = pCurComm->last;
 				mir_free(pCurComm->lpCommand);
 				mir_free(pCurComm);
 				pLast->next = NULL;
 				// done
 				pTemp->wCommandsNum--;
-		}	}
+			}
+		}
 		pTemp = pTemp->next;
-}	}
+	}
+}
 
 char* SM_GetPrevCommand(const TCHAR* pszID, const char* pszModule) // get previous command. returns NULL if previous command does not exist. current command remains as it was.
 {
 	SESSION_INFO* pTemp = m_WndList;
-	while ( pTemp != NULL ) {
-		if ( lstrcmpi( pTemp->ptszID, pszID ) == 0 && lstrcmpiA( pTemp->pszModule, pszModule ) == 0) { // match
+	while (pTemp != NULL) {
+		if (lstrcmpi(pTemp->ptszID, pszID) == 0 && lstrcmpiA(pTemp->pszModule, pszModule) == 0) {      // match
 			COMMAND_INFO *pPrevCmd = NULL;
 			if (pTemp->lpCurrentCommand != NULL) {
 				if (pTemp->lpCurrentCommand->next != NULL) // not NULL
 					pPrevCmd = pTemp->lpCurrentCommand->next; // next command (newest at beginning)
 				else
 					pPrevCmd = pTemp->lpCurrentCommand;
-			}
-			else pPrevCmd = pTemp->lpCommands;
+			} else pPrevCmd = pTemp->lpCommands;
 
 			pTemp->lpCurrentCommand = pPrevCmd; // make it the new command
 			return(((pPrevCmd) ? (pPrevCmd->lpCommand) : (NULL)));
@@ -859,8 +845,8 @@ char* SM_GetPrevCommand(const TCHAR* pszID, const char* pszModule) // get previo
 char* SM_GetNextCommand(const TCHAR* pszID, const char* pszModule) // get next command. returns NULL if next command does not exist. current command becomes NULL (a prev command after this one will get you the last command)
 {
 	SESSION_INFO* pTemp = m_WndList;
-	while ( pTemp != NULL ) {
-		if ( lstrcmpi( pTemp->ptszID, pszID ) == 0 && lstrcmpiA( pTemp->pszModule, pszModule ) == 0) { // match
+	while (pTemp != NULL) {
+		if (lstrcmpi(pTemp->ptszID, pszID) == 0 && lstrcmpiA(pTemp->pszModule, pszModule) == 0) {      // match
 			COMMAND_INFO *pNextCmd = NULL;
 			if (pTemp->lpCurrentCommand != NULL)
 				pNextCmd = pTemp->lpCurrentCommand->last; // last command (newest at beginning)
@@ -878,8 +864,7 @@ int SM_GetCount(const char* pszModule)
 	SESSION_INFO* pTemp = m_WndList;
 	int count = 0;
 
-	while (pTemp != NULL)
-	{
+	while (pTemp != NULL) {
 		if (!lstrcmpiA(pszModule, pTemp->pszModule))
 			count++;
 
@@ -888,48 +873,37 @@ int SM_GetCount(const char* pszModule)
 	return count;
 }
 
-int SM_IsIRC(SESSION_INFO *si)
-{
-    char szServiceName[512];
-
-    mir_snprintf(szServiceName, 512, "%s/GetIrcData", si->pszModule);
-
-    return(ServiceExists(szServiceName));
-}
-
 SESSION_INFO* SM_FindSessionByHWND(HWND hWnd)
 {
-    SESSION_INFO *pTemp = m_WndList;
+	SESSION_INFO *pTemp = m_WndList;
 
-    while(pTemp) {
-        if(pTemp->hWnd == hWnd)
-            return pTemp;
-        pTemp = pTemp->next;
-    }
-    return NULL;
+	while (pTemp) {
+		if (pTemp->hWnd == hWnd)
+			return pTemp;
+		pTemp = pTemp->next;
+	}
+	return NULL;
 }
 
 SESSION_INFO *	SM_FindSessionByHCONTACT(HANDLE h)
 {
-    SESSION_INFO *pTemp = m_WndList;
+	SESSION_INFO *pTemp = m_WndList;
 
-    while(pTemp) {
-        if(pTemp->hContact == h)
-            return pTemp;
-        pTemp = pTemp->next;
-    }
-    return NULL;
+	while (pTemp) {
+		if (pTemp->hContact == h)
+			return pTemp;
+		pTemp = pTemp->next;
+	}
+	return NULL;
 }
 
 SESSION_INFO* SM_FindSessionByIndex(const char* pszModule, int iItem)
 {
 	SESSION_INFO* pTemp = m_WndList;
 	int count = 0;
-	while (pTemp != NULL)
-	{
-		if (!lstrcmpiA(pszModule, pTemp->pszModule))
-		{
-			if (iItem ==count)
+	while (pTemp != NULL) {
+		if (!lstrcmpiA(pszModule, pTemp->pszModule)) {
+			if (iItem == count)
 				return pTemp;
 			else
 				count++;
@@ -949,12 +923,12 @@ char* SM_GetUsers(SESSION_INFO* si)
 	char* p = NULL;
 	int alloced = 0;
 
-	if ( si == NULL )
+	if (si == NULL)
 		return NULL;
 
 	while (pTemp != NULL) {
-		if ( si == pTemp ) {
-			if (( utemp = pTemp->pUsers ) == NULL )
+		if (si == pTemp) {
+			if ((utemp = pTemp->pUsers) == NULL)
 				return NULL;
 
 			break;
@@ -964,18 +938,17 @@ char* SM_GetUsers(SESSION_INFO* si)
 
 	do {
 		int pLen = lstrlenA(p), nameLen = lstrlen(utemp->pszUID);
-		if ( pLen + nameLen + 2 > alloced )
-			p = mir_realloc( p, alloced += 4096 );
+		if (pLen + nameLen + 2 > alloced)
+			p = mir_realloc(p, alloced += 4096);
 
-		#if !defined( _UNICODE )
-			lstrcpy( p + pLen, utemp->pszUID );
-		#else
-			WideCharToMultiByte( CP_ACP, 0, utemp->pszUID, -1, p + pLen, nameLen+1, 0, 0 );
-		#endif
-		lstrcpyA( p + pLen + nameLen, " " );
+#if !defined( _UNICODE )
+		lstrcpy(p + pLen, utemp->pszUID);
+#else
+		WideCharToMultiByte(CP_ACP, 0, utemp->pszUID, -1, p + pLen, nameLen + 1, 0, 0);
+#endif
+		lstrcpyA(p + pLen + nameLen, " ");
 		utemp = utemp->next;
-	}
-		while ( utemp != NULL );
+	} while (utemp != NULL);
 	return p;
 }
 
@@ -995,21 +968,17 @@ MODULEINFO* MM_AddModule(const char* pszModule)
 {
 	if (!pszModule)
 		return NULL;
-	if (!MM_FindModule(pszModule))
-	{
+	if (!MM_FindModule(pszModule)) {
 		MODULEINFO *node = (MODULEINFO*) mir_alloc(sizeof(MODULEINFO));
 		ZeroMemory(node, sizeof(MODULEINFO));
 
 		node->pszModule = (char*)mir_alloc(lstrlenA(pszModule) + 1);
 		lstrcpyA(node->pszModule, pszModule);
 
-		if (m_ModList == NULL) // list is empty
-		{
+		if (m_ModList == NULL) { // list is empty
 			m_ModList = node;
 			node->next = NULL;
-		}
-		else
-		{
+		} else {
 			node->next = m_ModList;
 			m_ModList = node;
 		}
@@ -1021,8 +990,7 @@ MODULEINFO* MM_AddModule(const char* pszModule)
 void MM_IconsChanged(void)
 {
 	MODULEINFO *pTemp = m_ModList, *pLast = NULL;
-	while (pTemp != NULL)
-	{
+	while (pTemp != NULL) {
 		if (pTemp->hOfflineIcon)
 			DestroyIcon(pTemp->hOfflineIcon);
 		if (pTemp->hOnlineIcon)
@@ -1032,16 +1000,16 @@ void MM_IconsChanged(void)
 		if (pTemp->hOfflineTalkIcon)
 			DestroyIcon(pTemp->hOfflineTalkIcon);
 
-        /*
-        pTemp->hOfflineIcon = ImageList_GetIcon(hIconsList, pTemp->OfflineIconIndex, ILD_TRANSPARENT);
+		/*
+		pTemp->hOfflineIcon = ImageList_GetIcon(hIconsList, pTemp->OfflineIconIndex, ILD_TRANSPARENT);
 		pTemp->hOnlineIcon = ImageList_GetIcon(hIconsList, pTemp->OnlineIconIndex, ILD_TRANSPARENT);
 
 		pTemp->hOnlineTalkIcon = ImageList_GetIcon(hIconsList, pTemp->OnlineIconIndex, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(1));
-		ImageList_ReplaceIcon(hIconsList, pTemp->OnlineIconIndex+1, pTemp->hOnlineTalkIcon); 
+		ImageList_ReplaceIcon(hIconsList, pTemp->OnlineIconIndex+1, pTemp->hOnlineTalkIcon);
 
 		pTemp->hOfflineTalkIcon = ImageList_GetIcon(hIconsList, pTemp->OfflineIconIndex, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(1));
-		ImageList_ReplaceIcon(hIconsList, pTemp->OfflineIconIndex+1, pTemp->hOfflineTalkIcon); 
-        */
+		ImageList_ReplaceIcon(hIconsList, pTemp->OfflineIconIndex+1, pTemp->hOfflineTalkIcon);
+		*/
 		pLast = pTemp;
 		pTemp = pTemp->next;
 	}
@@ -1050,8 +1018,7 @@ void MM_IconsChanged(void)
 void MM_FontsChanged(void)
 {
 	MODULEINFO *pTemp = m_ModList;
-	while (pTemp != NULL)
-	{
+	while (pTemp != NULL) {
 		pTemp->pszHeader = Log_CreateRtfHeader(pTemp);
 		pTemp = pTemp->next;
 	}
@@ -1065,7 +1032,7 @@ MODULEINFO* MM_FindModule(const char* pszModule)
 		return NULL;
 
 	while (pTemp != NULL) {
-		if (lstrcmpiA(pTemp->pszModule,pszModule) == 0)
+		if (lstrcmpiA(pTemp->pszModule, pszModule) == 0)
 			return pTemp;
 
 		pLast = pTemp;
@@ -1079,18 +1046,16 @@ void MM_FixColors()
 {
 	MODULEINFO *pTemp = m_ModList;
 
-	while (pTemp != NULL)
-	{
+	while (pTemp != NULL) {
 		CheckColorsInModule(pTemp->pszModule);
 		pTemp = pTemp->next;
 	}
 	return;
 }
 
-BOOL MM_RemoveAll (void)
+BOOL MM_RemoveAll(void)
 {
-	while (m_ModList != NULL)
-	{
+	while (m_ModList != NULL) {
 		MODULEINFO *pLast = m_ModList->next;
 		mir_free(m_ModList->pszModule);
 		mir_free(m_ModList->pszModDispName);
@@ -1125,23 +1090,20 @@ STATUSINFO * TM_AddStatus(STATUSINFO** ppStatusList, const TCHAR* pszStatus, int
 	if (!ppStatusList || !pszStatus)
 		return NULL;
 
-	if ( !TM_FindStatus(*ppStatusList, pszStatus)) {
+	if (!TM_FindStatus(*ppStatusList, pszStatus)) {
 		STATUSINFO *node = (STATUSINFO*) mir_alloc(sizeof(STATUSINFO));
 		ZeroMemory(node, sizeof(STATUSINFO));
-		replaceStr( &node->pszGroup, pszStatus );
+		replaceStr(&node->pszGroup, pszStatus);
 		node->hIcon = (HICON)(*iCount);
 		while ((int)node->hIcon > STATUSICONCOUNT - 1)
 			node->hIcon--;
 
-		if (*ppStatusList == NULL) // list is empty
-		{
+		if (*ppStatusList == NULL) { // list is empty
 			node->Status = 1;
 			*ppStatusList = node;
 			node->next = NULL;
-		}
-		else
-		{
-			node->Status = ppStatusList[0]->Status*2;
+		} else {
+			node->Status = ppStatusList[0]->Status * 2;
 			node->next = *ppStatusList;
 			*ppStatusList = node;
 		}
@@ -1158,8 +1120,8 @@ STATUSINFO * TM_FindStatus(STATUSINFO* pStatusList, const TCHAR* pszStatus)
 	if (!pStatusList || !pszStatus)
 		return NULL;
 
-	while ( pTemp != NULL ) {
-		if ( lstrcmpi(pTemp->pszGroup, pszStatus) == 0 )
+	while (pTemp != NULL) {
+		if (lstrcmpi(pTemp->pszGroup, pszStatus) == 0)
 			return pTemp;
 
 		pLast = pTemp;
@@ -1176,10 +1138,10 @@ WORD TM_StringToWord(STATUSINFO* pStatusList, const TCHAR* pszStatus)
 		return 0;
 
 	while (pTemp != NULL) {
-		if ( lstrcmpi( pTemp->pszGroup, pszStatus ) == 0 )
+		if (lstrcmpi(pTemp->pszGroup, pszStatus) == 0)
 			return pTemp->Status;
 
-		if ( pTemp->next == NULL )
+		if (pTemp->next == NULL)
 			return pStatusList->Status;
 
 		pLast = pTemp;
@@ -1207,14 +1169,13 @@ TCHAR* TM_WordToString(STATUSINFO* pStatusList, WORD Status)
 	return 0;
 }
 
-BOOL TM_RemoveAll (STATUSINFO** ppStatusList)
+BOOL TM_RemoveAll(STATUSINFO** ppStatusList)
 {
 
 	if (!ppStatusList)
 		return FALSE;
 
-	while (*ppStatusList != NULL)
-	{
+	while (*ppStatusList != NULL) {
 		STATUSINFO *pLast = ppStatusList[0]->next;
 		mir_free(ppStatusList[0]->pszGroup);
 		if ((int)ppStatusList[0]->hIcon > 10)
@@ -1233,6 +1194,22 @@ BOOL TM_RemoveAll (STATUSINFO** ppStatusList)
 //		in a window nicklist
 //---------------------------------------------------
 
+//MAD: alternative sorting by Nullbie
+static int sttCompareNicknames(const TCHAR *s1, const TCHAR *s2)
+{
+		// skip rubbish
+		while (*s1 && !_istalpha(*s1)) ++s1;
+		while (*s2 && !_istalpha(*s2)) ++s2;
+
+		// are there ~0veRy^kEwL_n1kz?
+		if (!*s1 && !*s2) return 0;
+		if (!*s1 && *s2) return +1;
+		if (*s1 && !*s2) return -1;
+
+		// compare tails
+			return lstrcmpi(s1, s2);
+}
+ //
 
 static int UM_CompareItem(USERINFO * u1, const TCHAR* pszNick, WORD wStatus)
 {
@@ -1241,20 +1218,27 @@ static int UM_CompareItem(USERINFO * u1, const TCHAR* pszNick, WORD wStatus)
 	WORD dw1 = u1->Status;
 	WORD dw2 = wStatus;
 
-	for (i=0; i<8; i++ )
-	{
-		if (( dw1 & 1 ) && !( dw2 & 1 ))
+	for (i = 0; i < 8; i++) {
+		if ((dw1 & 1) && !(dw2 & 1))
 			return -1;
-		if (( dw2 & 1 ) && !( dw1 & 1 ))
+		if ((dw2 & 1) && !(dw1 & 1))
 			return 1;
-		if (( dw1 & 1 ) &&  ( dw2 & 1 ))
-			return lstrcmp( u1->pszNick, pszNick );
-
+		if ((dw1 & 1) && (dw2 & 1))
+			//
+			{if(g_Settings.AlternativeSorting)
+				return sttCompareNicknames( u1->pszNick, pszNick );
+			else
+				return lstrcmp(u1->pszNick, pszNick);
+			}//
 		dw1 = dw1 >> 1;
 		dw2 = dw2 >> 1;
 	}
-	return lstrcmp( u1->pszNick, pszNick );
-
+	if(g_Settings.AlternativeSorting)
+		//
+		return sttCompareNicknames( u1->pszNick, pszNick );
+	else
+		return lstrcmp(u1->pszNick, pszNick);
+	   //
 }
 
 USERINFO * UM_SortUser(USERINFO** ppUserList, const TCHAR* pszUID)
@@ -1265,12 +1249,12 @@ USERINFO * UM_SortUser(USERINFO** ppUserList, const TCHAR* pszUID)
 	if (!pTemp || !pszUID)
 		return NULL;
 
-	while(pTemp && lstrcmpi( pTemp->pszUID, pszUID)) {
+	while (pTemp && lstrcmpi(pTemp->pszUID, pszUID)) {
 		pLast = pTemp;
 		pTemp = pTemp->next;
 	}
 
-	if ( pTemp ) {
+	if (pTemp) {
 		node = pTemp;
 		if (pLast)
 			pLast->next = pTemp->next;
@@ -1280,7 +1264,7 @@ USERINFO * UM_SortUser(USERINFO** ppUserList, const TCHAR* pszUID)
 
 		pLast = NULL;
 
-		while ( pTemp && UM_CompareItem(pTemp, node->pszNick, node->Status ) <= 0) {
+		while (pTemp && UM_CompareItem(pTemp, node->pszNick, node->Status) <= 0) {
 			pLast = pTemp;
 			pTemp = pTemp->next;
 		}
@@ -1288,16 +1272,15 @@ USERINFO * UM_SortUser(USERINFO** ppUserList, const TCHAR* pszUID)
 		if (*ppUserList == NULL) { // list is empty
 			*ppUserList = node;
 			node->next = NULL;
-		}
-		else {
-			if ( pLast ) {
+		} else {
+			if (pLast) {
 				node->next = pTemp;
 				pLast->next = node;
-			}
-			else {
+			} else {
 				node->next = *ppUserList;
 				*ppUserList = node;
-		}	}
+			}
+		}
 
 		return node;
 	}
@@ -1311,8 +1294,7 @@ USERINFO* UM_AddUser(STATUSINFO* pStatusList, USERINFO** ppUserList, const TCHAR
 	if (!pStatusList || !ppUserList || !ppUserList)
 		return NULL;
 
-	while(pTemp && UM_CompareItem(pTemp, pszNick, wStatus) <= 0)
-	{
+	while (pTemp && UM_CompareItem(pTemp, pszNick, wStatus) <= 0) {
 		pLast = pTemp;
 		pTemp = pTemp->next;
 	}
@@ -1321,21 +1303,20 @@ USERINFO* UM_AddUser(STATUSINFO* pStatusList, USERINFO** ppUserList, const TCHAR
 	{
 		USERINFO *node = (USERINFO*) mir_alloc(sizeof(USERINFO));
 		ZeroMemory(node, sizeof(USERINFO));
-		replaceStr( &node->pszUID, pszUID );
+		replaceStr(&node->pszUID, pszUID);
 
 		if (*ppUserList == NULL) { // list is empty
 			*ppUserList = node;
 			node->next = NULL;
-		}
-		else {
-			if ( pLast ) {
+		} else {
+			if (pLast) {
 				node->next = pTemp;
 				pLast->next = node;
-			}
-			else {
+			} else {
 				node->next = *ppUserList;
 				*ppUserList = node;
-		}	}
+			}
+		}
 
 		return node;
 	}
@@ -1349,8 +1330,8 @@ USERINFO* UM_FindUser(USERINFO* pUserList, const TCHAR* pszUID)
 	if (!pUserList || !pszUID)
 		return NULL;
 
-	while ( pTemp != NULL ) {
-		if ( !lstrcmpi( pTemp->pszUID, pszUID ))
+	while (pTemp != NULL) {
+		if (!lstrcmpi(pTemp->pszUID, pszUID))
 			return pTemp;
 
 		pLast = pTemp;
@@ -1367,10 +1348,8 @@ USERINFO* UM_FindUserFromIndex(USERINFO* pUserList, int index)
 	if (!pUserList)
 		return NULL;
 
-	while (pTemp != NULL)
-	{
-		if (i == index)
-		{
+	while (pTemp != NULL) {
+		if (i == index) {
 			return pTemp;
 		}
 		pTemp = pTemp->next;
@@ -1386,8 +1365,8 @@ USERINFO* UM_GiveStatus(USERINFO* pUserList, const TCHAR* pszUID, WORD status)
 	if (!pUserList || !pszUID)
 		return NULL;
 
-	while ( pTemp != NULL ) {
-		if ( !lstrcmpi( pTemp->pszUID, pszUID )) {
+	while (pTemp != NULL) {
+		if (!lstrcmpi(pTemp->pszUID, pszUID)) {
 			pTemp->Status |= status;
 			return pTemp;
 		}
@@ -1404,8 +1383,8 @@ USERINFO* UM_SetContactStatus(USERINFO* pUserList, const TCHAR* pszUID, WORD sta
 	if (!pUserList || !pszUID)
 		return NULL;
 
-	while ( pTemp != NULL ) {
-		if ( !lstrcmpi( pTemp->pszUID, pszUID )) {
+	while (pTemp != NULL) {
+		if (!lstrcmpi(pTemp->pszUID, pszUID)) {
 			pTemp->ContactStatus = status;
 			return pTemp;
 		}
@@ -1415,26 +1394,27 @@ USERINFO* UM_SetContactStatus(USERINFO* pUserList, const TCHAR* pszUID, WORD sta
 	return 0;
 }
 
-BOOL UM_SetStatusEx(USERINFO* pUserList, const TCHAR* pszText, int flags )
+BOOL UM_SetStatusEx(USERINFO* pUserList, const TCHAR* pszText, int flags)
 {
 	USERINFO *pTemp = pUserList, *pLast = NULL;
-	int bOnlyMe = ( flags & GC_SSE_ONLYLISTED ) != 0, bSetStatus = ( flags & GC_SSE_ONLINE ) != 0;
-	char cDelimiter = ( flags & GC_SSE_TABDELIMITED ) ? '\t' : ' ';
+	int bOnlyMe = (flags & GC_SSE_ONLYLISTED) != 0, bSetStatus = (flags & GC_SSE_ONLINE) != 0;
+	char cDelimiter = (flags & GC_SSE_TABDELIMITED) ? '\t' : ' ';
 
-	while (pTemp != NULL)
-	{
-		if ( !bOnlyMe )
+	while (pTemp != NULL) {
+		if (!bOnlyMe)
 			pTemp->iStatusEx = 0;
 
-		if ( pszText != NULL ) {
-			TCHAR* s = _tcsstr( pszText, pTemp->pszUID );
-			if ( s ) {
+		if (pszText != NULL) {
+			TCHAR* s = _tcsstr(pszText, pTemp->pszUID);
+			if (s) {
 				pTemp->iStatusEx = 0;
-				if ( s == pszText || s[-1] == cDelimiter ) {
-					int len = lstrlen( pTemp->pszUID );
-					if ( s[len] == cDelimiter || s[len] == '\0' )
-						pTemp->iStatusEx = ( !bOnlyMe || bSetStatus ) ? 1 : 0;
-		}	}	}
+				if (s == pszText || s[-1] == cDelimiter) {
+					int len = lstrlen(pTemp->pszUID);
+					if (s[len] == cDelimiter || s[len] == '\0')
+						pTemp->iStatusEx = (!bOnlyMe || bSetStatus) ? 1 : 0;
+				}
+			}
+		}
 
 		pLast = pTemp;
 		pTemp = pTemp->next;
@@ -1449,8 +1429,8 @@ USERINFO* UM_TakeStatus(USERINFO* pUserList, const TCHAR* pszUID, WORD status)
 	if (!pUserList || !pszUID)
 		return NULL;
 
-	while ( pTemp != NULL ) {
-		if ( !lstrcmpi( pTemp->pszUID, pszUID )) {
+	while (pTemp != NULL) {
+		if (!lstrcmpi(pTemp->pszUID, pszUID)) {
 			pTemp->Status &= ~status;
 			return pTemp;
 		}
@@ -1468,9 +1448,9 @@ TCHAR* UM_FindUserAutoComplete(USERINFO* pUserList, const TCHAR* pszOriginal, co
 	if (!pUserList || !pszOriginal || !pszCurrent)
 		return NULL;
 
-	while ( pTemp != NULL ) {
-		if ( my_strstri( pTemp->pszNick, pszOriginal) == pTemp->pszNick )
-			if ( lstrcmpi( pTemp->pszNick, pszCurrent ) > 0 && ( !pszName || lstrcmpi( pTemp->pszNick, pszName ) < 0) )
+	while (pTemp != NULL) {
+		if (my_strstri(pTemp->pszNick, pszOriginal) == pTemp->pszNick)
+			if (lstrcmpi(pTemp->pszNick, pszCurrent) > 0 && (!pszName || lstrcmpi(pTemp->pszNick, pszName) < 0))
 				pszName = pTemp->pszNick;
 
 		pTemp = pTemp->next;
@@ -1486,7 +1466,7 @@ BOOL UM_RemoveUser(USERINFO** ppUserList, const TCHAR* pszUID)
 		return FALSE;
 
 	while (pTemp != NULL) {
-		if (!lstrcmpi( pTemp->pszUID, pszUID )) {
+		if (!lstrcmpi(pTemp->pszUID, pszUID)) {
 			if (pLast == NULL)
 				*ppUserList = pTemp->next;
 			else
@@ -1502,17 +1482,16 @@ BOOL UM_RemoveUser(USERINFO** ppUserList, const TCHAR* pszUID)
 	return FALSE;
 }
 
-BOOL UM_RemoveAll (USERINFO** ppUserList)
+BOOL UM_RemoveAll(USERINFO** ppUserList)
 {
 	if (!ppUserList)
 		return FALSE;
 
-	while (*ppUserList != NULL)
-	{
+	while (*ppUserList != NULL) {
 		USERINFO *pLast = ppUserList[0]->next;
-		mir_free( ppUserList[0]->pszUID );
-		mir_free( ppUserList[0]->pszNick );
-		mir_free( *ppUserList );
+		mir_free(ppUserList[0]->pszUID);
+		mir_free(ppUserList[0]->pszNick);
+		mir_free(*ppUserList);
 		*ppUserList = pLast;
 	}
 	*ppUserList = NULL;
@@ -1538,19 +1517,16 @@ LOGINFO * LM_AddEvent(LOGINFO** ppLogListStart, LOGINFO** ppLogListEnd)
 	ZeroMemory(node, sizeof(LOGINFO));
 
 
-	if (*ppLogListStart == NULL) // list is empty
-	{
+	if (*ppLogListStart == NULL) { // list is empty
 		*ppLogListStart = node;
 		*ppLogListEnd = node;
 		node->next = NULL;
 		node->prev = NULL;
-	}
-	else
-	{
+	} else {
 		ppLogListStart[0]->prev = node;
 		node->next = *ppLogListStart;
 		*ppLogListStart = node;
-		ppLogListStart[0]->prev=NULL;
+		ppLogListStart[0]->prev = NULL;
 	}
 
 	return node;
@@ -1577,15 +1553,15 @@ BOOL LM_TrimLog(LOGINFO** ppLogListStart, LOGINFO** ppLogListEnd, int iCount)
 	return TRUE;
 }
 
-BOOL LM_RemoveAll (LOGINFO** ppLogListStart, LOGINFO** ppLogListEnd)
+BOOL LM_RemoveAll(LOGINFO** ppLogListStart, LOGINFO** ppLogListEnd)
 {
-	while ( *ppLogListStart != NULL ) {
+	while (*ppLogListStart != NULL) {
 		LOGINFO *pLast = ppLogListStart[0]->next;
-		mir_free( ppLogListStart[0]->ptszText );
-		mir_free( ppLogListStart[0]->ptszNick );
-		mir_free( ppLogListStart[0]->ptszStatus );
-		mir_free( ppLogListStart[0]->ptszUserInfo );
-		mir_free( *ppLogListStart );
+		mir_free(ppLogListStart[0]->ptszText);
+		mir_free(ppLogListStart[0]->ptszNick);
+		mir_free(ppLogListStart[0]->ptszStatus);
+		mir_free(ppLogListStart[0]->ptszUserInfo);
+		mir_free(*ppLogListStart);
 		*ppLogListStart = pLast;
 	}
 	*ppLogListStart = NULL;

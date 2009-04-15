@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2005-09  George Hazan
 
 Idea & portions of code by Artem Shpynov
 
@@ -20,20 +20,19 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_misc.cpp,v $
-Revision       : $Revision: 3322 $
+File name      : $URL$
+Revision       : $Revision$
 Last change on : $Date: 2006-07-13 16:11:29 +0400
-Last change by : $Author: rainwater $
+Last change by : $Author$
 
 */
 
 #include "jabber.h"
 #include "jabber_list.h"
 
-#include <commctrl.h>
-#include "m_icolib.h"
+#include <m_icolib.h>
 
-#include "resource.h"
+#include "sdk/m_cluiframes.h"
 
 #define IDI_ONLINE                      104
 #define IDI_OFFLINE                     105
@@ -55,7 +54,7 @@ struct
 }
 static TransportProtoTable[] =
 {
-	{ _T("|icq*|jit*"),      "ICQ",           -1},
+	{ _T("|*icq*|jit*"),     "ICQ",           -1},
 	{ _T("msn*"),            "MSN",           -1},
 	{ _T("yahoo*"),          "YAHOO",         -1},
 	{ _T("mrim*"),           "MRA",           -1},
@@ -80,69 +79,161 @@ static TransportProtoTable[] =
 static int skinIconStatusToResourceId[] = {IDI_OFFLINE,IDI_ONLINE,IDI_AWAY,IDI_DND,IDI_NA,IDI_NA,/*IDI_OCCUPIED,*/IDI_FREE4CHAT,IDI_INVISIBLE,IDI_ONTHEPHONE,IDI_OUTTOLUNCH};
 static int skinStatusToJabberStatus[] = {0,1,2,3,4,4,6,7,2,2};
 
+///////////////////////////////////////////////////////////////////////////////
+// CIconPool class
+int CIconPool::CPoolItem::cmp(const CPoolItem *p1, const CPoolItem *p2)
+{
+	return lstrcmpA(p1->m_name, p2->m_name);
+}
+
+CIconPool::CPoolItem::CPoolItem():
+	m_name(NULL), m_szIcolibName(NULL), m_hIcolibItem(NULL), m_hClistItem(NULL)
+{
+}
+
+CIconPool::CPoolItem::~CPoolItem()
+{
+	if (m_hIcolibItem && m_szIcolibName)
+	{
+		CallService(MS_SKIN2_REMOVEICON, 0, (LPARAM)m_szIcolibName);
+		mir_free(m_szIcolibName);
+	}
+
+	if (m_name) mir_free(m_name);
+}
+
+CIconPool::CIconPool(CJabberProto *proto):
+	m_proto(proto),
+	m_items(10, CIconPool::CPoolItem::cmp),
+	m_hOnExtraIconsRebuild(NULL)
+{
+}
+
+CIconPool::~CIconPool()
+{
+	if (m_hOnExtraIconsRebuild)
+	{
+		UnhookEvent(m_hOnExtraIconsRebuild);
+		m_hOnExtraIconsRebuild = NULL;
+	}
+}
+
+void CIconPool::RegisterIcon(const char *name, const char *filename, int iconid, TCHAR *szSection, TCHAR *szDescription)
+{
+	char szSettingName[128];
+	mir_snprintf(szSettingName, SIZEOF(szSettingName), "%s_%s", m_proto->m_szModuleName, name);
+
+	CPoolItem *item = new CPoolItem;
+	item->m_name = mir_strdup(name);
+	item->m_szIcolibName = mir_strdup(szSettingName);
+	item->m_hClistItem = NULL;
+
+	SKINICONDESC sid = {0};
+	sid.cbSize = sizeof(SKINICONDESC);
+	sid.pszDefaultFile = (char *)filename;	// kill const flag for compiler to shut up
+	sid.cx = sid.cy = 16;
+	sid.pszName = szSettingName;
+	sid.ptszSection = szSection;
+	sid.ptszDescription = szDescription;
+	sid.flags = SIDF_TCHAR;
+	sid.iDefaultIndex = iconid;
+	item->m_hIcolibItem = (HANDLE)CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+	m_items.insert(item);
+}
+
+HANDLE CIconPool::GetIcolibHandle(const char *name)
+{
+	if (CPoolItem *item = FindItemByName(name))
+		return item->m_hIcolibItem;
+
+	return NULL;
+}
+
+char *CIconPool::GetIcolibName(const char *name)
+{
+	if (CPoolItem *item = FindItemByName(name))
+		return item->m_szIcolibName;
+
+	return NULL;
+}
+
+HICON CIconPool::GetIcon(const char *name)
+{
+	if (CPoolItem *item = FindItemByName(name))
+		return (HICON)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)item->m_hIcolibItem);
+
+	return NULL;
+}
+
+HANDLE CIconPool::GetClistHandle(const char *name)
+{
+	if (!name)
+		return (HANDLE)-1;
+
+	if (!ExtraIconsSupported())
+		return (HANDLE)-1;
+
+	if (!m_hOnExtraIconsRebuild)
+	{
+		int (__cdecl CIconPool::*hookProc)(WPARAM, LPARAM);
+		hookProc = &CIconPool::OnExtraIconsRebuild;
+		m_hOnExtraIconsRebuild = HookEventObj(ME_CLIST_EXTRA_LIST_REBUILD, (MIRANDAHOOKOBJ)*(void **)&hookProc, this);
+	}
+
+	if (CPoolItem *item = FindItemByName(name))
+	{
+		if (item->m_hClistItem)
+			return item->m_hClistItem;
+
+		HICON hIcon = (HICON)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)item->m_hIcolibItem);
+		item->m_hClistItem = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hIcon, 0);
+		return item->m_hClistItem;
+	}
+
+	return (HANDLE)-1;
+}
+
+CIconPool::CPoolItem *CIconPool::FindItemByName(const char *name)
+{
+	CPoolItem item;
+	item.m_name = mir_strdup(name);
+	return m_items.find(&item);
+}
+
+int CIconPool::OnExtraIconsRebuild(WPARAM, LPARAM)
+{
+	for (int i = 0; i < m_items.getCount(); ++i)
+		m_items[i].m_hClistItem = NULL;
+
+	return 0;
+}
+
+bool CIconPool::ExtraIconsSupported()
+{
+	static int res = -1;
+	if (res < 0) res = ServiceExists(MS_CLIST_EXTRA_ADD_ICON) ? 1 : 0;
+	return res ? true : false;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Icons init
 
-struct
+struct TIconListItem
 {
 	char*  szDescr;
 	char*  szName;
 	int    defIconID;
 	char*  szSection;
-	HANDLE hIconLibItem;
-}
-static iconList[] =
-{
-	{   LPGEN("Protocol icon"),         "main",             IDI_JABBER            },
-	{   LPGEN("Agents list"),           "Agents",           IDI_AGENTS            },
-	{   LPGEN("Change password"),       "key",              IDI_KEYS              },
-	{   LPGEN("Multi-User Conference"), "group",            IDI_GROUP             },
-	{   LPGEN("Personal vCard"),        "vcard",            IDI_VCARD             },
-	{   LPGEN("Request authorization"), "Request",          IDI_REQUEST           },
-	{   LPGEN("Grant authorization"),   "Grant",            IDI_GRANT             },
-	{   LPGEN("Revoke authorization"),  "Revoke",           IDI_AUTHREVOKE        },
-	{   LPGEN("Convert to room"),       "convert",          IDI_USER2ROOM         },
-	{   LPGEN("Add to roster"),         "addroster",        IDI_ADDROSTER         },
-	{   LPGEN("Login/logout"),          "trlogonoff",       IDI_LOGIN             },
-	{   LPGEN("Resolve nicks"),         "trresolve",        IDI_REFRESH           },
-	{   LPGEN("Bookmarks"),             "bookmarks",        IDI_BOOKMARKS         }, 
-	{   LPGEN("Privacy Lists"),         "privacylists",     IDI_PRIVACY_LISTS     },
-	{   LPGEN("Service Discovery"),     "servicediscovery", IDI_SERVICE_DISCOVERY },
-	{   LPGEN("AdHoc Command"),         "adhoc",            IDI_COMMAND           },
-	{   LPGEN("XML Console"),           "xmlconsole",       IDI_CONSOLE           },
-
-	{   LPGEN("Discovery succeeded"),   "disco_ok",         IDI_DISCO_OK,           LPGEN("Dialogs") },
-	{   LPGEN("Discovery failed"),      "disco_fail",       IDI_DISCO_FAIL,         LPGEN("Dialogs") },
-	{   LPGEN("Discovery in progress"), "disco_progress",   IDI_DISCO_PROGRESS,     LPGEN("Dialogs") },
-	{   LPGEN("View as tree"),          "sd_view_tree",     IDI_VIEW_TREE,          LPGEN("Dialogs") },
-	{   LPGEN("View as list"),          "sd_view_list",     IDI_VIEW_LIST,          LPGEN("Dialogs") },
-	{   LPGEN("Apply filter"),          "sd_filter_apply",  IDI_FILTER_APPLY,       LPGEN("Dialogs") },
-	{   LPGEN("Reset filter"),          "sd_filter_reset",  IDI_FILTER_RESET,       LPGEN("Dialogs") },
-
-	{   LPGEN("Navigate home"),         "sd_nav_home",      IDI_NAV_HOME,           LPGEN("Discovery Dialog") },
-	{   LPGEN("Refresh node"),          "sd_nav_refresh",   IDI_NAV_REFRESH,        LPGEN("Discovery Dialog") },
-	{   LPGEN("Browse node"),           "sd_browse",        IDI_BROWSE,             LPGEN("Discovery Dialog") },
-	{   LPGEN("RSS service"),           "node_rss",         IDI_NODE_RSS,           LPGEN("Discovery Dialog") },
-	{   LPGEN("Server"),                "node_server",      IDI_NODE_SERVER,        LPGEN("Discovery Dialog") },
-	{   LPGEN("Storage service"),       "node_store",       IDI_NODE_STORE,         LPGEN("Discovery Dialog") },
-	{   LPGEN("Weather service"),       "node_weather",     IDI_NODE_WEATHER,       LPGEN("Discovery Dialog") },
-
-	{   LPGEN("Generic privacy list"),  "pl_list_any",      IDI_PL_LIST_ANY,        LPGEN("Privacy Dialog") },
-	{   LPGEN("Active privacy list"),   "pl_list_active",   IDI_PL_LIST_ACTIVE,     LPGEN("Privacy Dialog") },
-	{   LPGEN("Default privacy list"),  "pl_list_default",  IDI_PL_LIST_DEFAULT,    LPGEN("Privacy Dialog") },
-	{   LPGEN("Move up"),				"arrow_up",			IDI_ARROW_UP,			LPGEN("Privacy Dialog") },
-	{   LPGEN("Move down"),				"arrow_down",		IDI_ARROW_DOWN,			LPGEN("Privacy Dialog") },
-	{   LPGEN("Allow Messages"),        "pl_msg_allow",     IDI_PL_MSG_ALLOW,       LPGEN("Privacy Dialog") },
-	{   LPGEN("Allow Presences (in)"),  "pl_prin_allow",    IDI_PL_PRIN_ALLOW,      LPGEN("Privacy Dialog") },
-	{   LPGEN("Allow Presences (out)"), "pl_prout_allow",   IDI_PL_PROUT_ALLOW,     LPGEN("Privacy Dialog") },
-	{   LPGEN("Allow Queries"),         "pl_iq_allow",      IDI_PL_QUERY_ALLOW,     LPGEN("Privacy Dialog") },
-	{   LPGEN("Deny Messages"),         "pl_msg_deny",      IDI_PL_MSG_DENY,        LPGEN("Privacy Dialog") },
-	{   LPGEN("Deny Presences (in)"),   "pl_prin_deny",     IDI_PL_PRIN_DENY,       LPGEN("Privacy Dialog") },
-	{   LPGEN("Deny Presences (out)"),  "pl_prout_deny",    IDI_PL_PROUT_DENY,      LPGEN("Privacy Dialog") },
-	{   LPGEN("Deny Queries"),          "pl_iq_deny",       IDI_PL_QUERY_DENY,      LPGEN("Privacy Dialog") },
+	HANDLE hIcon;
 };
 
-void JabberIconsInit( void )
+static TIconListItem iconList[] =
+{
+	{   LPGEN("%s"),                    "main",             IDI_JABBER,             NULL },
+};
+
+void CJabberProto::IconsInit( void )
 {
 	SKINICONDESC sid = {0};
 	char szFile[MAX_PATH];
@@ -151,41 +242,68 @@ void JabberIconsInit( void )
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.pszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
+	sid.flags = SIDF_TCHAR;
 
-	char *szRootSection = Translate( jabberProtoName );
+	char szSettingName[100];
+	TCHAR szSectionName[100];
+	TCHAR szDescription[100];
+	TCHAR szRootSection[100];
+
+	sid.pszName = szSettingName;
+	sid.ptszSection = szSectionName;
+	sid.ptszDescription = szDescription;
+
+	m_phIconLibItems = ( HANDLE* )mir_alloc( sizeof( HANDLE )*SIZEOF(iconList));
+
+	mir_sntprintf( szRootSection, SIZEOF(szRootSection), _T("%s/%s/%s"), LPGENT("Protocols"), LPGENT("Jabber"), LPGENT("Accounts") );
 
 	for ( int i = 0; i < SIZEOF(iconList); i++ ) {
-		char szSettingName[100];
-		char szSectionName[100];
-		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", jabberProtoName, iconList[i].szName );
-		if (iconList[i].szSection)
-		{
-			mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s/%s", LPGEN("Protocols"), szRootSection, iconList[i].szSection );
-			sid.pszSection = szSectionName;
-		} else
-		{
-			mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s", LPGEN("Protocols"), szRootSection );
-			sid.pszSection = szSectionName;
+		TCHAR tmp[100];
+
+		if ( iconList[i].szSection ) {
+			mir_sntprintf( szSectionName, SIZEOF(szSectionName), _T("%s/") _T(TCHAR_STR_PARAM), szRootSection, iconList[i].szSection );
+			if (_tcsstr(szSectionName, _T("%s"))) {
+				mir_sntprintf(tmp, SIZEOF(tmp), szSectionName, m_tszUserName);
+				lstrcpy(szSectionName, tmp);
+			}
 		}
-		sid.pszName = szSettingName;
-		sid.pszDescription = Translate( iconList[i].szDescr );
+		else {
+			mir_sntprintf( szSectionName, SIZEOF(szSectionName), _T("%s"), szRootSection );
+		}
+
+		if (strstr(iconList[i].szDescr, "%s")) {
+			mir_sntprintf( tmp, SIZEOF(tmp), _T(TCHAR_STR_PARAM), iconList[i].szDescr );
+			mir_sntprintf( szDescription, SIZEOF(szDescription), tmp, m_tszUserName );
+		}
+		else {
+			mir_sntprintf( szDescription, SIZEOF(szDescription), _T(TCHAR_STR_PARAM), iconList[i].szDescr );
+		}
+
+		mir_snprintf( szSettingName, SIZEOF(szSettingName), "%s_%s", m_szModuleName, iconList[i].szName );
+
 		sid.iDefaultIndex = -iconList[i].defIconID;
-		iconList[i].hIconLibItem = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+		m_phIconLibItems[i] = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 }	}
 
-HANDLE __stdcall GetIconHandle( int iconId )
+HANDLE CJabberProto::GetIconHandle( int iconId )
 {
+	if (HANDLE result = g_GetIconHandle(iconId))
+		return result;
+
 	for ( int i=0; i < SIZEOF(iconList); i++ )
 		if ( iconList[i].defIconID == iconId )
-			return iconList[i].hIconLibItem;
+			return m_phIconLibItems[i];
 
 	return NULL;
 }
 
-HICON LoadIconEx( const char* name )
+HICON CJabberProto::LoadIconEx( const char* name )
 {
+	if (HICON result = g_LoadIconEx(name))
+		return result;
+
 	char szSettingName[100];
-	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", jabberProtoName, name );
+	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", m_szModuleName, name );
 	return ( HICON )JCallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
 }
 
@@ -267,10 +385,9 @@ static HICON ExtractIconFromPath(const char *path, BOOL * needFree)
 	return hIcon;
 }
 
-static HICON LoadTransportIcon(char *filename,int i,char *IconName,char *SectName,char *Description,int internalidx, BOOL * needFree)
+static HICON LoadTransportIcon(char *filename,int i,char *IconName,TCHAR *SectName,TCHAR *Description,int internalidx, BOOL * needFree)
 {
 	char szPath[MAX_PATH],szMyPath[MAX_PATH], szFullPath[MAX_PATH],*str;
-	HICON hIcon=NULL;
 	BOOL has_proto_icon=FALSE;
 	SKINICONDESC sid={0};
 	if (needFree) *needFree=FALSE;
@@ -283,29 +400,20 @@ static HICON LoadTransportIcon(char *filename,int i,char *IconName,char *SectNam
 	HICON hi=ExtractIconFromPath(szFullPath,&nf);
 	if (hi) has_proto_icon=TRUE;
 	if (hi && nf) DestroyIcon(hi);
-	if (!ServiceExists(MS_SKIN2_ADDICON)) {
-		hIcon=ExtractIconFromPath(szFullPath,needFree);
-		if (hIcon) return hIcon;
-		_snprintf(szFullPath, sizeof(szFullPath), "%s,%d", szMyPath, internalidx);
-		hIcon=ExtractIconFromPath(szFullPath,needFree);
-		if (hIcon) return hIcon;
+	if ( IconName != NULL && SectName != NULL)  {
+		sid.cbSize = sizeof(sid);
+		sid.cx=16;
+		sid.cy=16;
+		sid.hDefaultIcon = (has_proto_icon)?NULL:(HICON)CallService(MS_SKIN_LOADPROTOICON,(WPARAM)NULL,(LPARAM)(-internalidx));
+		sid.ptszSection = SectName;
+		sid.pszName=IconName;
+		sid.ptszDescription=Description;
+		sid.pszDefaultFile=szMyPath;
+		sid.iDefaultIndex=i;
+		sid.flags = SIDF_TCHAR;
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 	}
-	else {
-		if ( IconName != NULL && SectName != NULL)  {
-			sid.cbSize = sizeof(sid);
-			sid.cx=16;
-			sid.cy=16;
-			sid.hDefaultIcon = (has_proto_icon)?NULL:(HICON)CallService(MS_SKIN_LOADPROTOICON,(WPARAM)NULL,(LPARAM)(-internalidx));
-			sid.pszSection = Translate(SectName);
-			sid.pszName=IconName;
-			sid.pszDescription=Description;
-			sid.pszDefaultFile=szMyPath;
-			sid.iDefaultIndex=i;
-			CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-		}
-		return ((HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)IconName));
-	}
-	return NULL;
+	return ((HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)IconName));
 }
 
 static HICON LoadSmallIcon(HINSTANCE hInstance, LPCTSTR lpIconName)
@@ -318,29 +426,29 @@ static HICON LoadSmallIcon(HINSTANCE hInstance, LPCTSTR lpIconName)
 	return hIcon;
 }
 
-static int LoadAdvancedIcons(int iID)
+int CJabberProto::LoadAdvancedIcons(int iID)
 {
 	int i;
-	char * proto=TransportProtoTable[iID].proto;
-	char * defFile[MAX_PATH]={0};
-	char * Group[255];
-	char * Uname[255];
+	char *proto = TransportProtoTable[iID].proto;
+	char defFile[MAX_PATH] = {0};
+	TCHAR Group[255];
+	char Uname[255];
 	int first=-1;
 	HICON empty=LoadSmallIcon(NULL,MAKEINTRESOURCE(102));
 
-	_snprintf((char *)Group, sizeof(Group),"%s/%s/%s %s",Translate("Status Icons"), jabberModuleName, proto, Translate("transport"));
-	_snprintf((char *)defFile, sizeof(defFile),"proto_%s.dll",proto);
+	mir_sntprintf(Group, SIZEOF(Group), _T("Status Icons/%s/") _T(TCHAR_STR_PARAM) _T(" transport"), m_tszUserName, proto);
+	mir_snprintf(defFile, SIZEOF(defFile), "proto_%s.dll",proto);
 	if (!hAdvancedStatusIcon)
 		hAdvancedStatusIcon=(HIMAGELIST)CallService(MS_CLIST_GETICONSIMAGELIST,0,0);
 
-	EnterCriticalSection( &modeMsgMutex );
+	EnterCriticalSection( &m_csModeMsgMutex );
 	for (i=0; i<ID_STATUS_ONTHEPHONE-ID_STATUS_OFFLINE; i++) {
 		HICON hicon;
 		BOOL needFree;
 		int n=skinStatusToJabberStatus[i];
-		char * descr=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,n+ID_STATUS_OFFLINE,0);
-		_snprintf((char *)Uname, sizeof(Uname),"%s_Transport_%s_%d",jabberProtoName,proto,n);
-		hicon=(HICON)LoadTransportIcon((char*)defFile,-skinIconStatusToResourceId[i],(char*)Uname,(char*)Group,(char*)descr,-(n+ID_STATUS_OFFLINE),&needFree);
+		TCHAR *descr = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, n+ID_STATUS_OFFLINE, GCMDF_TCHAR);
+		mir_snprintf(Uname, SIZEOF(Uname), "%s_Transport_%s_%d", m_szModuleName, proto, n);
+		hicon=(HICON)LoadTransportIcon(defFile,-skinIconStatusToResourceId[i],Uname,Group,descr,-(n+ID_STATUS_OFFLINE),&needFree);
 		int index=(TransportProtoTable[iID].startIndex == -1)?-1:TransportProtoTable[iID].startIndex+n;
 		int added=ImageList_ReplaceIcon(hAdvancedStatusIcon,index,hicon?hicon:empty);
 		if (first == -1) first=added;
@@ -349,7 +457,7 @@ static int LoadAdvancedIcons(int iID)
 
 	if ( TransportProtoTable[ iID ].startIndex == -1 )
 		TransportProtoTable[ iID ].startIndex = first;
-	LeaveCriticalSection( &modeMsgMutex );
+	LeaveCriticalSection( &m_csModeMsgMutex );
 	return 0;
 }
 
@@ -362,7 +470,7 @@ static int GetTransportProtoID( TCHAR* TransportDomain )
 	return -1;
 }
 
-static int GetTransportStatusIconIndex(int iID, int Status)
+int CJabberProto::GetTransportStatusIconIndex(int iID, int Status)
 {
 	if ( iID < 0 || iID >= SIZEOF( TransportProtoTable ))
 		return -1;
@@ -384,7 +492,7 @@ static int GetTransportStatusIconIndex(int iID, int Status)
 /////////////////////////////////////////////////////////////////////////////////////////
 // a hook for the IcoLib plugin
 
-int ReloadIconsEventHook(WPARAM wParam, LPARAM lParam)
+int CJabberProto::OnReloadIcons(WPARAM, LPARAM)
 {
 	for ( int i=0; i < SIZEOF(TransportProtoTable); i++ )
 		if ( TransportProtoTable[i].startIndex != -1 )
@@ -402,7 +510,7 @@ int ReloadIconsEventHook(WPARAM wParam, LPARAM lParam)
 // if imagelist require advanced painting status overlay(like xStatus)
 // index should be shifted to HIWORD, LOWORD should be 0
 
-int JGetAdvancedStatusIcon(WPARAM wParam, LPARAM lParam)
+INT_PTR __cdecl CJabberProto::JGetAdvancedStatusIcon(WPARAM wParam, LPARAM)
 {
 	HANDLE hContact=(HANDLE) wParam;
 	if ( !hContact )
@@ -432,15 +540,7 @@ int JGetAdvancedStatusIcon(WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 //   Transport check functions
 
-static int PushIconLibRegistration( TCHAR* TransportDomain ) //need to push Imagelist addition to
-{
-	if ( ServiceExists( MS_SKIN2_ADDICON ))
-		return GetTransportStatusIconIndex( GetTransportProtoID( TransportDomain ), ID_STATUS_OFFLINE );
-
-	return 0;
-}
-
-BOOL JabberDBCheckIsTransportedContact(const TCHAR* jid, HANDLE hContact)
+BOOL CJabberProto::DBCheckIsTransportedContact(const TCHAR* jid, HANDLE hContact)
 {
 	// check if transport is already set
 	if ( !jid || !hContact )
@@ -461,14 +561,14 @@ BOOL JabberDBCheckIsTransportedContact(const TCHAR* jid, HANDLE hContact)
 
 	for ( int i=0; i < SIZEOF(TransportProtoTable); i++ ) {
 		if ( MatchMask( domain, TransportProtoTable[i].mask )) {
-			PushIconLibRegistration( domain );
+			GetTransportStatusIconIndex( GetTransportProtoID( domain ), ID_STATUS_OFFLINE );
 			isTransported = TRUE;
 			break;
 	}	}
 
-	if ( jabberTransports.getIndex( domain ) == -1 ) {
+	if ( m_lstTransports.getIndex( domain ) == -1 ) {
 		if ( isAgent ) {
-			jabberTransports.insert( _tcsdup(domain) ); 
+			m_lstTransports.insert( _tcsdup(domain) ); 
 			JSetByte( hContact, "IsTransport", 1 );
 	}	}
 
@@ -479,17 +579,120 @@ BOOL JabberDBCheckIsTransportedContact(const TCHAR* jid, HANDLE hContact)
 	return isTransported;
 }
 
-void JabberCheckAllContactsAreTransported()
+void CJabberProto::CheckAllContactsAreTransported()
 {
 	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( !lstrcmpA( jabberProtoName, szProto )) {
+		if ( !lstrcmpA( m_szModuleName, szProto )) {
 			DBVARIANT dbv;
 			if ( !JGetStringT( hContact, "jid", &dbv )) {
-				JabberDBCheckIsTransportedContact( dbv.ptszVal, hContact );
+				DBCheckIsTransportedContact( dbv.ptszVal, hContact );
 				JFreeVariant( &dbv );
 		}	}
 
 		hContact = ( HANDLE )JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
 }	}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Cross-instance shared icons
+
+static TIconListItem sharedIconList[] =
+{
+	{   LPGEN("Agents list"),           "Agents",           IDI_AGENTS,             NULL },
+	{   LPGEN("Transports"),            "transport",        IDI_TRANSPORT,          NULL },
+	{   LPGEN("Registered transports"), "transport_loc",    IDI_TRANSPORTL,         NULL },
+	{   LPGEN("Change password"),       "key",              IDI_KEYS,               NULL },
+	{   LPGEN("Multi-User Conference"), "group",            IDI_GROUP,              NULL },
+	{   LPGEN("Personal vCard"),        "vcard",            IDI_VCARD,              NULL },
+	{   LPGEN("Request authorization"), "Request",          IDI_REQUEST,            NULL },
+	{   LPGEN("Grant authorization"),   "Grant",            IDI_GRANT,              NULL },
+	{   LPGEN("Revoke authorization"),  "Revoke",           IDI_AUTHREVOKE,         NULL },
+	{   LPGEN("Convert to room"),       "convert",          IDI_USER2ROOM,          NULL },
+	{   LPGEN("Add to roster"),         "addroster",        IDI_ADDROSTER,          NULL },
+	{   LPGEN("Login/logout"),          "trlogonoff",       IDI_LOGIN,              NULL },
+	{   LPGEN("Resolve nicks"),         "trresolve",        IDI_REFRESH,            NULL },
+	{   LPGEN("Bookmarks"),             "bookmarks",        IDI_BOOKMARKS,          NULL }, 
+	{   LPGEN("Notes"),	                "notes",            IDI_NOTES,              NULL }, 
+	{   LPGEN("Send note"),             "sendnote",         IDI_SEND_NOTE,          NULL }, 
+	{   LPGEN("Privacy Lists"),         "privacylists",     IDI_PRIVACY_LISTS,      NULL },
+	{   LPGEN("Service Discovery"),     "servicediscovery", IDI_SERVICE_DISCOVERY,  NULL },
+	{   LPGEN("AdHoc Command"),         "adhoc",            IDI_COMMAND,            NULL },
+	{   LPGEN("XML Console"),           "xmlconsole",       IDI_CONSOLE,            NULL },
+	{   LPGEN("OpenID Request"),        "openid",           IDI_HTTP_AUTH,          NULL },
+
+	{   LPGEN("Discovery succeeded"),   "disco_ok",         IDI_DISCO_OK,           LPGEN("Dialogs") },
+	{   LPGEN("Discovery failed"),      "disco_fail",       IDI_DISCO_FAIL,         LPGEN("Dialogs") },
+	{   LPGEN("Discovery in progress"), "disco_progress",   IDI_DISCO_PROGRESS,     LPGEN("Dialogs") },
+	{   LPGEN("View as tree"),          "sd_view_tree",     IDI_VIEW_TREE,          LPGEN("Dialogs") },
+	{   LPGEN("View as list"),          "sd_view_list",     IDI_VIEW_LIST,          LPGEN("Dialogs") },
+	{   LPGEN("Apply filter"),          "sd_filter_apply",  IDI_FILTER_APPLY,       LPGEN("Dialogs") },
+	{   LPGEN("Reset filter"),          "sd_filter_reset",  IDI_FILTER_RESET,       LPGEN("Dialogs") },
+
+	{   LPGEN("Navigate home"),         "sd_nav_home",      IDI_NAV_HOME,           LPGEN("Dialogs/Discovery") },
+	{   LPGEN("Refresh node"),          "sd_nav_refresh",   IDI_NAV_REFRESH,        LPGEN("Dialogs/Discovery") },
+	{   LPGEN("Browse node"),           "sd_browse",        IDI_BROWSE,             LPGEN("Dialogs/Discovery") },
+	{   LPGEN("RSS service"),           "node_rss",         IDI_NODE_RSS,           LPGEN("Dialogs/Discovery") },
+	{   LPGEN("Server"),                "node_server",      IDI_NODE_SERVER,        LPGEN("Dialogs/Discovery") },
+	{   LPGEN("Storage service"),       "node_store",       IDI_NODE_STORE,         LPGEN("Dialogs/Discovery") },
+	{   LPGEN("Weather service"),       "node_weather",     IDI_NODE_WEATHER,       LPGEN("Dialogs/Discovery") },
+
+	{   LPGEN("Generic privacy list"),  "pl_list_any",      IDI_PL_LIST_ANY,        LPGEN("Dialogs/Privacy") },
+	{   LPGEN("Active privacy list"),   "pl_list_active",   IDI_PL_LIST_ACTIVE,     LPGEN("Dialogs/Privacy") },
+	{   LPGEN("Default privacy list"),  "pl_list_default",  IDI_PL_LIST_DEFAULT,    LPGEN("Dialogs/Privacy") },
+	{   LPGEN("Move up"),               "arrow_up",         IDI_ARROW_UP,           LPGEN("Dialogs/Privacy") },
+	{   LPGEN("Move down"),             "arrow_down",       IDI_ARROW_DOWN,         LPGEN("Dialogs/Privacy") },
+	{   LPGEN("Allow Messages"),        "pl_msg_allow",     IDI_PL_MSG_ALLOW,       LPGEN("Dialogs/Privacy") },
+	{   LPGEN("Allow Presences (in)"),  "pl_prin_allow",    IDI_PL_PRIN_ALLOW,      LPGEN("Dialogs/Privacy") },
+	{   LPGEN("Allow Presences (out)"), "pl_prout_allow",   IDI_PL_PROUT_ALLOW,     LPGEN("Dialogs/Privacy") },
+	{   LPGEN("Allow Queries"),         "pl_iq_allow",      IDI_PL_QUERY_ALLOW,     LPGEN("Dialogs/Privacy") },
+	{   LPGEN("Deny Messages"),         "pl_msg_deny",      IDI_PL_MSG_DENY,        LPGEN("Dialogs/Privacy") },
+	{   LPGEN("Deny Presences (in)"),   "pl_prin_deny",     IDI_PL_PRIN_DENY,       LPGEN("Dialogs/Privacy") },
+	{   LPGEN("Deny Presences (out)"),  "pl_prout_deny",    IDI_PL_PROUT_DENY,      LPGEN("Dialogs/Privacy") },
+	{   LPGEN("Deny Queries"),          "pl_iq_deny",       IDI_PL_QUERY_DENY,      LPGEN("Dialogs/Privacy") },
+};
+
+void g_IconsInit()
+{
+	SKINICONDESC sid = {0};
+	char szFile[MAX_PATH];
+	GetModuleFileNameA(hInst, szFile, MAX_PATH);
+
+	sid.cbSize = sizeof(SKINICONDESC);
+	sid.pszDefaultFile = szFile;
+	sid.cx = sid.cy = 16;
+
+	char szRootSection[100];
+	mir_snprintf( szRootSection, SIZEOF(szRootSection), "%s/%s", LPGEN("Protocols"), LPGEN("Jabber") );
+
+	for ( int i = 0; i < SIZEOF(sharedIconList); i++ ) {
+		char szSettingName[100];
+		char szSectionName[100];
+		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", GLOBAL_SETTING_PREFIX, sharedIconList[i].szName );
+		if ( sharedIconList[i].szSection ) {
+			mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s", szRootSection, sharedIconList[i].szSection );
+			sid.pszSection = szSectionName;
+		}
+		else sid.pszSection = szRootSection;
+
+		sid.pszName = szSettingName;
+		sid.pszDescription = sharedIconList[i].szDescr;
+		sid.iDefaultIndex = -sharedIconList[i].defIconID;
+		sharedIconList[i].hIcon = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+}	}
+
+HANDLE g_GetIconHandle( int iconId )
+{
+	for ( int i=0; i < SIZEOF(sharedIconList); i++ )
+		if ( sharedIconList[i].defIconID == iconId )
+			return sharedIconList[i].hIcon;
+
+	return NULL;
+}
+
+HICON g_LoadIconEx( const char* name )
+{
+	char szSettingName[100];
+	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", GLOBAL_SETTING_PREFIX, name );
+	return ( HICON )JCallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
+}

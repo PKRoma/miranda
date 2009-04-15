@@ -58,6 +58,12 @@ Context Menu Options Overview:
   Read HTML Away Message- Opens a browser window the the specified buddy's away message.
   
 Contact:
+
+Current developer:
+  Boris Krasnovskiy
+  Email: borkra@miranda-im.org
+
+Former developer and creator:  
   Aaron Myles Landwehr
   Email: aaron@miranda-im.org
   AIM: thegermanaaron
@@ -66,8 +72,8 @@ Contact:
   JABBER: snaphat@gmail.com
   MSN: whitehata_zz@hotmail.com
   YAHOO: snapdaemon
-  
-Thanks:
+ 
+Thanks (by Aaron Myles Lendwehr):
   -To the numerous bug testers who make it possible for me to code badly and get away with it.
   -To My kitten Mew for typing on the keyboard everytime I try to do something.
   -To the Project members for making the plugin possible to code.
@@ -79,8 +85,8 @@ Thanks:
 License and Copyright
 _____________________
 
+Copyright (C) 2008-2009 Boris Krasnovskiy
 Copyright (C) 2005-2006 Aaron Myles Landwehr
-Portions Copyright (C) to Robert Rainwater & Other Miranda-IM Project Developers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

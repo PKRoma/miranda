@@ -46,8 +46,8 @@
 	".\Source\LibPNG\pngconf.h"\
 	".\Source\Metadata\FreeImageTag.h"\
 	".\Source\Utilities.h"\
-	".\source\zlib\zconf.h"\
-	".\source\zlib\zlib.h"\
+	".\Source\ZLib\zconf.h"\
+	".\Source\ZLib\zlib.h"\
 	
 
 .\Source\FreeImage\Conversion.cpp : \
@@ -101,6 +101,12 @@
 	".\Source\Utilities.h"\
 	
 
+.\Source\FreeImageToolkit\MultigridPoissonSolver.cpp : \
+	".\SOURCE\FreeImage.h"\
+	".\Source\ToneMapping.h"\
+	".\Source\Utilities.h"\
+	
+
 .\Source\FreeImage\tmoColorConvert.cpp : \
 	".\SOURCE\FreeImage.h"\
 	".\Source\ToneMapping.h"\
@@ -108,6 +114,12 @@
 	
 
 .\Source\FreeImage\tmoDrago03.cpp : \
+	".\SOURCE\FreeImage.h"\
+	".\Source\ToneMapping.h"\
+	".\Source\Utilities.h"\
+	
+
+.\Source\FreeImage\tmoFattal02.cpp : \
 	".\SOURCE\FreeImage.h"\
 	".\Source\ToneMapping.h"\
 	".\Source\Utilities.h"\
@@ -136,12 +148,6 @@
 	".\Source\Utilities.h"\
 	
 
-.\Source\DeprecationManager\DeprecationMgr.cpp : \
-	".\Source\DeprecationManager\DeprecationMgr.h"\
-	".\SOURCE\FreeImage.h"\
-	".\Source\Utilities.h"\
-	
-
 .\Source\FreeImage\CacheFile.cpp : \
 	".\Source\CacheFile.h"\
 	".\SOURCE\FreeImage.h"\
@@ -159,9 +165,9 @@
 .\Source\FreeImage\ZLibInterface.cpp : \
 	".\SOURCE\FreeImage.h"\
 	".\Source\Utilities.h"\
-	".\source\zlib\zconf.h"\
-	".\source\zlib\zlib.h"\
-	".\source\zlib\zutil.h"\
+	".\Source\ZLib\zconf.h"\
+	".\Source\ZLib\zlib.h"\
+	".\Source\ZLib\zutil.h"\
 	
 
 .\Source\Metadata\Exif.cpp : \
@@ -203,14 +209,15 @@
 
 .\Miranda\main.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_png.h"\
 	"..\..\include\newpluginapi.h"\
-	".\Miranda\include\m_freeimage.h"\
+	"..\..\include\m_freeimage.h"\
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\source\zlib\zconf.h"\
-	".\source\zlib\zlib.h"\
+	".\Source\ZLib\zconf.h"\
+	".\Source\ZLib\zlib.h"\
 	
 
 .\Source\LibJPEG\jcapimin.c : \
@@ -656,120 +663,106 @@
 .\Source\LibPNG\png.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\source\zlib\zconf.h"\
-	".\source\zlib\zlib.h"\
+	".\Source\ZLib\zconf.h"\
+	".\Source\ZLib\zlib.h"\
 	
 
 .\Source\LibPNG\pngerror.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\source\zlib\zconf.h"\
-	".\source\zlib\zlib.h"\
-	
-
-.\Source\LibPNG\pnggccrd.c : \
-	".\Source\LibPNG\png.h"\
-	".\Source\LibPNG\pngconf.h"\
-	".\source\zlib\zconf.h"\
-	".\source\zlib\zlib.h"\
+	".\Source\ZLib\zconf.h"\
+	".\Source\ZLib\zlib.h"\
 	
 
 .\Source\LibPNG\pngget.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\source\zlib\zconf.h"\
-	".\source\zlib\zlib.h"\
+	".\Source\ZLib\zconf.h"\
+	".\Source\ZLib\zlib.h"\
 	
 
 .\Source\LibPNG\pngmem.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\source\zlib\zconf.h"\
-	".\source\zlib\zlib.h"\
+	".\Source\ZLib\zconf.h"\
+	".\Source\ZLib\zlib.h"\
 	
 
 .\Source\LibPNG\pngpread.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\source\zlib\zconf.h"\
-	".\source\zlib\zlib.h"\
+	".\Source\ZLib\zconf.h"\
+	".\Source\ZLib\zlib.h"\
 	
 
 .\Source\LibPNG\pngread.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\source\zlib\zconf.h"\
-	".\source\zlib\zlib.h"\
+	".\Source\ZLib\zconf.h"\
+	".\Source\ZLib\zlib.h"\
 	
 
 .\Source\LibPNG\pngrio.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\source\zlib\zconf.h"\
-	".\source\zlib\zlib.h"\
+	".\Source\ZLib\zconf.h"\
+	".\Source\ZLib\zlib.h"\
 	
 
 .\Source\LibPNG\pngrtran.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\source\zlib\zconf.h"\
-	".\source\zlib\zlib.h"\
+	".\Source\ZLib\zconf.h"\
+	".\Source\ZLib\zlib.h"\
 	
 
 .\Source\LibPNG\pngrutil.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\source\zlib\zconf.h"\
-	".\source\zlib\zlib.h"\
+	".\Source\ZLib\zconf.h"\
+	".\Source\ZLib\zlib.h"\
 	
 
 .\Source\LibPNG\pngset.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\source\zlib\zconf.h"\
-	".\source\zlib\zlib.h"\
+	".\Source\ZLib\zconf.h"\
+	".\Source\ZLib\zlib.h"\
 	
 
 .\Source\LibPNG\pngtrans.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\source\zlib\zconf.h"\
-	".\source\zlib\zlib.h"\
-	
-
-.\Source\LibPNG\pngvcrd.c : \
-	".\Source\LibPNG\png.h"\
-	".\Source\LibPNG\pngconf.h"\
-	".\source\zlib\zconf.h"\
-	".\source\zlib\zlib.h"\
+	".\Source\ZLib\zconf.h"\
+	".\Source\ZLib\zlib.h"\
 	
 
 .\Source\LibPNG\pngwio.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\source\zlib\zconf.h"\
-	".\source\zlib\zlib.h"\
+	".\Source\ZLib\zconf.h"\
+	".\Source\ZLib\zlib.h"\
 	
 
 .\Source\LibPNG\pngwrite.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\source\zlib\zconf.h"\
-	".\source\zlib\zlib.h"\
+	".\Source\ZLib\zconf.h"\
+	".\Source\ZLib\zlib.h"\
 	
 
 .\Source\LibPNG\pngwtran.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\source\zlib\zconf.h"\
-	".\source\zlib\zlib.h"\
+	".\Source\ZLib\zconf.h"\
+	".\Source\ZLib\zlib.h"\
 	
 
 .\Source\LibPNG\pngwutil.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\source\zlib\zconf.h"\
-	".\source\zlib\zlib.h"\
+	".\Source\ZLib\zconf.h"\
+	".\Source\ZLib\zlib.h"\
 	
 
 .\Source\FreeImage\BitmapAccess.cpp : \
@@ -800,7 +793,6 @@
 	
 
 .\Source\FreeImage\GetType.cpp : \
-	".\Source\DeprecationManager\DeprecationMgr.h"\
 	".\SOURCE\FreeImage.h"\
 	".\Source\FreeImageIO.h"\
 	".\Source\Plugin.h"\
@@ -867,14 +859,14 @@
 
 .\Source\FreeImageToolkit\Rescale.cpp : \
 	".\SOURCE\FreeImage.h"\
-	".\source\freeimagetoolkit\filters.h"\
+	".\Source\FreeImageToolkit\Filters.h"\
 	".\Source\FreeImageToolkit\Resize.h"\
 	".\Source\Utilities.h"\
 	
 
 .\Source\FreeImageToolkit\Resize.cpp : \
 	".\SOURCE\FreeImage.h"\
-	".\source\freeimagetoolkit\filters.h"\
+	".\Source\FreeImageToolkit\Filters.h"\
 	".\Source\FreeImageToolkit\Resize.h"\
 	".\Source\Utilities.h"\
 	

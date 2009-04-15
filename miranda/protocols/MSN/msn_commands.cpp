@@ -1,11 +1,8 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-7 Boris Krasnovskiy.
-Copyright (c) 2003-5 George Hazan.
-Copyright (c) 2002-3 Richard Hughes (original version).
-
-Miranda IM: the free icq client for MS Windows
-Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
+Copyright (c) 2006-2009 Boris Krasnovskiy.
+Copyright (c) 2003-2005 George Hazan.
+Copyright (c) 2002-2003 Richard Hughes (original version).
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -18,43 +15,20 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "msn_global.h"
-
-void __cdecl MSNNudgeThread( ThreadData* info );
-void __cdecl MSNServerThread( ThreadData* info );
-void __cdecl MSNSendfileThread( ThreadData* info );
-
-void MSN_ChatStart(ThreadData* info);
-void MSN_KillChatSession(TCHAR* id);
-
-int tridUrlInbox = -1, tridUrlEdit = -1;
-
-char* sid = NULL;
-char* MSPAuth = NULL;
-char* passport = NULL;
-char* urlId = NULL;
-char* rru = NULL;
-char* profileURL = NULL;
-char* profileURLId = NULL;
-unsigned langpref;
-
-extern HANDLE	 hMSNNudge;
-
-extern int msnPingTimeout;
-extern HANDLE hKeepAliveThreadEvt;
-
-unsigned long sl;
+#include "msn_proto.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Starts a file sending thread
 
-void MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* )
+void MSN_ConnectionProc( HANDLE hNewConnection, DWORD /* dwRemoteIP */, void* extra)
 {
-	MSN_DebugLog( "File transfer connection accepted" );
+	CMsnProto *proto = (CMsnProto*)extra;
+	
+	proto->MSN_DebugLog( "File transfer connection accepted" );
 
 	WORD localPort = 0;
 	SOCKET s = MSN_CallService( MS_NETLIB_GETSOCKET, ( WPARAM )hNewConnection, 0 );
@@ -66,21 +40,21 @@ void MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* )
 	}
 
 	if ( localPort != 0 ) {
-		ThreadData* T = MSN_GetThreadByPort( localPort );
+		ThreadData* T = proto->MSN_GetThreadByPort( localPort );
 		if ( T != NULL && T->s == NULL ) {
 			T->s = hNewConnection;
 			ReleaseSemaphore( T->hWaitEvent, 1, NULL );
 			return;
 		}
-		MSN_DebugLog( "There's no registered file transfers for incoming port #%d, connection closed", localPort );
+		proto->MSN_DebugLog( "There's no registered file transfers for incoming port #%d, connection closed", localPort );
 	}
-	else MSN_DebugLog( "Unable to determine the local port, file server connection closed." );
+	else proto->MSN_DebugLog( "Unable to determine the local port, file server connection closed." );
 
 	Netlib_CloseHandle( hNewConnection );
 }
 
 
-void sttSetMirVer( HANDLE hContact, DWORD dwValue )
+void CMsnProto::sttSetMirVer( HANDLE hContact, DWORD dwValue, bool always )
 {
 	static const char* MirVerStr[] =
 	{
@@ -93,28 +67,38 @@ void sttSetMirVer( HANDLE hContact, DWORD dwValue )
 		"WLM 8.0",
 		"WLM 8.1",
 		"WLM 8.5",
+		"WLM 9.0 Beta",
 		"WLM 9.0",
 		"WLM Unknown",
 	};
 
 	if ( dwValue & 0x1 )
-		MSN_SetString( hContact, "MirVer", "MSN Mobile" );
+		setString( hContact, "MirVer", "MSN Mobile" );
 	else if ( dwValue & 0x200 )
-		MSN_SetString( hContact, "MirVer", "Webmessenger" );
+		setString( hContact, "MirVer", "Webmessenger" );
+	else if ( dwValue == 0x800800 )
+		setString( hContact, "MirVer", "Yahoo" );
+	else if ( dwValue == 0x800 )
+		setString( hContact, "MirVer", "LCS" );
 	else if ( dwValue == 0x50000000 )
-		MSN_SetString( hContact, "MirVer", "Miranda IM 0.5.x (MSN v.0.5.x)" );
+		setString( hContact, "MirVer", "Miranda IM 0.5.x (MSN v.0.5.x)" );
 	else if ( dwValue == 0x30000024 )
-		MSN_SetString( hContact, "MirVer", "Miranda IM 0.4.x (MSN v.0.4.x)" );
-	else {
+		setString( hContact, "MirVer", "Miranda IM 0.4.x (MSN v.0.4.x)" );
+	else if (always || getByte(hContact, "StdMirVer", 0)) 
+    {
 		unsigned wlmId = min(dwValue >> 28 & 0xff, SIZEOF(MirVerStr)-1);
-		MSN_SetString( hContact, "MirVer", MirVerStr[ wlmId ] );
+		setString( hContact, "MirVer", MirVerStr[ wlmId ] );
 	}
+    else 
+        return;
+
+    setByte(hContact, "StdMirVer", 1);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Processes various invitations
 
-static void sttInviteMessage( ThreadData* info, char* msgBody, char* email, char* nick )
+void CMsnProto::sttInviteMessage( ThreadData* info, char* msgBody, char* email, char* nick )
 {
 	MimeHeaders tFileInfo;
 	tFileInfo.readFromBuffer( msgBody );
@@ -130,7 +114,8 @@ static void sttInviteMessage( ThreadData* info, char* msgBody, char* email, char
 	const char* AuthCookie = tFileInfo[ "AuthCookie" ];
 	const char* SessionID = tFileInfo[ "Session-ID" ];
 	const char* SessionProtocol = tFileInfo[ "Session-Protocol" ];
-
+//	const char* Connectivity = tFileInfo[ "Connectivity" ];
+ 
 	if ( AppGUID != NULL ) {
 		if ( !strcmp( AppGUID, "{02D3C01F-BF30-4825-A83A-DE7AF41648AA}" )) {
 			MSN_ShowPopup( info->mJoinedContacts[0],
@@ -145,9 +130,9 @@ static void sttInviteMessage( ThreadData* info, char* msgBody, char* email, char
 	}
 
 	if ( Appname != NULL && Appfile != NULL && Appfilesize != NULL ) { // receive first
-		filetransfer* ft = info->mMsnFtp = new filetransfer();
+		filetransfer* ft = info->mMsnFtp = new filetransfer(this);
 
-		ft->std.hContact = MSN_HContactFromEmail( email, nick, 1, 1 );
+		ft->std.hContact = MSN_HContactFromEmail( email, nick, true, true );
 		replaceStr( ft->std.currentFile, Appfile );
 		mir_utf8decode( ft->std.currentFile, &ft->wszFileName );
 		ft->fileId = -1;
@@ -156,11 +141,11 @@ static void sttInviteMessage( ThreadData* info, char* msgBody, char* email, char
 		ft->std.totalFiles = 1;
 		ft->szInvcookie = mir_strdup( Invcookie );
 
-		int tFileNameLen = strlen( ft->std.currentFile );
+		size_t tFileNameLen = strlen( ft->std.currentFile );
 		char tComment[ 40 ];
 		int tCommentLen = mir_snprintf( tComment, sizeof( tComment ), "%lu bytes", ft->std.currentFileSize );
 		char* szBlob = ( char* )mir_alloc( sizeof( DWORD ) + tFileNameLen + tCommentLen + 2 );
-		*( PDWORD )szBlob = ( DWORD )ft;
+		*( PDWORD )szBlob = 0;
 		strcpy( szBlob + sizeof( DWORD ), ft->std.currentFile );
 		strcpy( szBlob + sizeof( DWORD ) + tFileNameLen + 1, tComment );
 
@@ -168,10 +153,10 @@ static void sttInviteMessage( ThreadData* info, char* msgBody, char* email, char
 		pre.flags = 0;
 		pre.timestamp = ( DWORD )time( NULL );
 		pre.szMessage = ( char* )szBlob;
-		pre.lParam = ( LPARAM )( char* )Invcookie;
+		pre.lParam = ( LPARAM )ft;
 
 		CCSDATA ccs;
-		ccs.hContact = MSN_HContactFromEmail( email, nick, 1, 1 );
+		ccs.hContact = MSN_HContactFromEmail( email, nick, true, true );
 		ccs.szProtoService = PSR_FILE;
 		ccs.wParam = 0;
 		ccs.lParam = ( LPARAM )&pre;
@@ -201,12 +186,12 @@ static void sttInviteMessage( ThreadData* info, char* msgBody, char* email, char
 		strcpy( newThread->mCookie, AuthCookie );
 
 		MSN_DebugLog( "Connecting to '%s'...", newThread->mServer );
-		newThread->startThread(( pThreadFunc )MSNServerThread );
+		newThread->startThread( &CMsnProto::MSNServerThread, this );
 		return;
 	}
 
 	if ( Invcommand != NULL && Invcookie != NULL && Port == NULL && AuthCookie == NULL && SessionID == NULL ) { // send 1
-		ft_startFileSend( info, Invcommand, Invcookie );
+		msnftp_startFileSend( info, Invcommand, Invcookie );
 		return;
 	}
 
@@ -271,9 +256,9 @@ static void sttInviteMessage( ThreadData* info, char* msgBody, char* email, char
 /////////////////////////////////////////////////////////////////////////////////////////
 // Processes custom smiley messages
 
-static void sttCustomSmiley( const char* msgBody, char* email, char* nick, int iSmileyType )
+void CMsnProto::sttCustomSmiley( const char* msgBody, char* email, char* nick, int iSmileyType )
 {
-	HANDLE hContact = MSN_HContactFromEmail( email, nick, 1, 1 );
+	HANDLE hContact = MSN_HContactFromEmail( email, nick, true, true );
 
 	char smileyList[500] = "";
 
@@ -302,7 +287,7 @@ static void sttCustomSmiley( const char* msgBody, char* email, char* nick, int i
 		}
 		else
 		{
-			filetransfer* ft = new filetransfer();
+			filetransfer* ft = new filetransfer(this);
 			ft->std.hContact = hContact;
 
 			ft->p2p_object = (char*)mir_alloc(sz + 1);
@@ -313,38 +298,28 @@ static void sttCustomSmiley( const char* msgBody, char* email, char* nick, int i
 			size_t rlen = Netlib_GetBase64EncodedBufferSize(slen);
 			char* buf = (char*)mir_alloc(rlen);
 
-			NETLIBBASE64 nlb = { buf, rlen, (PBYTE)lastsml, slen };
+			NETLIBBASE64 nlb = { buf, (int)rlen, (PBYTE)lastsml, (int)slen };
 			MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
 
-			ft->std.currentFile = (char*)mir_alloc(rlen*3);
-			UrlEncode(buf, ft->std.currentFile, rlen*3);
-
+			char* smileyName = (char*)mir_alloc(rlen*3);
+			UrlEncode(buf, smileyName, rlen*3);
 			mir_free(buf);
 
-			MSN_DebugLog( "Custom Smiley p2p invite for object : %s", ft->p2p_object );
-			p2p_invite( hContact, iSmileyType, ft );
+			ft->std.currentFile = (char*)mir_alloc(MAX_PATH);
+			MSN_GetCustomSmileyFileName(hContact, ft->std.currentFile, MAX_PATH, smileyName, iSmileyType);
+			mir_free(smileyName);
+
+			if (p2p_IsDlFileOk(ft))
+				delete ft;
+			else
+			{
+				MSN_DebugLog( "Custom Smiley p2p invite for object : %s", ft->p2p_object );
+				p2p_invite( hContact, iSmileyType, ft );
+				Sleep(3000);
+			}
 		}
 		parseSmiley = !parseSmiley;
 		tok1 = tok2 + 1;
-	}
-
-	if ( MSN_GetByte( "EnableCustomSmileyPopup", 1 ))
-	{
-		TCHAR popupMessage[500];
-
-		TCHAR* fmt = iSmileyType == MSN_APPID_CUSTOMSMILEY ?
-				TranslateT("sent you %d custom smiley(s):\n%s") :
-				TranslateT("sent you %d custom animated smiley(s):\n%s");
-
-		wchar_t* wsml;
-		mir_utf8decode(smileyList, &wsml);
-#ifdef _UNICODE
-		mir_sntprintf( popupMessage, SIZEOF( popupMessage ), fmt, iCount, wsml );
-#else
-		mir_sntprintf( popupMessage, SIZEOF( popupMessage ), fmt, iCount, smileyList );
-#endif
-		mir_free(wsml);
-		MSN_ShowPopup( hContact, popupMessage, 0 );
 	}
 }
 
@@ -353,22 +328,37 @@ static void sttCustomSmiley( const char* msgBody, char* email, char* nick, int i
 /////////////////////////////////////////////////////////////////////////////////////////
 
 
-void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
+void CMsnProto::MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 {
 	union {
-		char* tWords[ 3 ];
+		char* tWords[ 4 ];
 		struct { char *fromEmail, *fromNick, *strMsgBytes; } data;
+		struct { char *fromEmail, *netId, *typeId, *strMsgBytes; } datau;
 	};
 
-	if ( sttDivideWords( params, 3, tWords ) != 3 ) {
+	if ( sttDivideWords( params, 4, tWords ) < 3 ) {
 		MSN_DebugLog( "Invalid %.3s command, ignoring", cmdString );
 		return;
 	}
 
-	int msgBytes = atol( data.strMsgBytes );
+	int msgBytes;
+	char *nick, *email;
+	
+	if (strncmp(cmdString, "UBM", 3) == 0)
+	{
+		msgBytes = atol(datau.strMsgBytes);
+		nick = datau.fromEmail;
+		email = datau.fromEmail;
+	}
+	else
+	{
+		msgBytes = atol(data.strMsgBytes);
+		nick = data.fromNick;
+		email = data.fromEmail;
+		UrlDecode(nick);
+	}
+	stripBBCode(nick);
 
-	UrlDecode( data.fromEmail ); UrlDecode( data.fromNick );
-	stripBBCode( data.fromNick );
 
 	char* msg = ( char* )alloca( msgBytes+1 );
 
@@ -403,7 +393,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 	}
 
 	// message from the server (probably)
-	if (( strchr( data.fromEmail, '@' ) == NULL ) && _stricmp( data.fromEmail, "Hotmail" ))
+	if (( strchr(email, '@') == NULL ) && _stricmp(email, "Hotmail"))
 		return;
 
 	const char* tContentType = tHeader[ "Content-Type" ];
@@ -415,22 +405,25 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		tFileInfo.readFromBuffer( msgBody );
 		info->firstMsgRecv = true;
 
-		HANDLE hContact = MSN_HContactFromEmail( data.fromEmail, data.fromNick, 0, 0 );
+		HANDLE hContact = MSN_HContactFromEmail(email, nick, false, false );
 		const char* mirver = tFileInfo[ "Client-Name" ];
 		if ( hContact != NULL && mirver != NULL )
-			MSN_SetString( hContact, "MirVer", mirver );
+        {
+			setString( hContact, "MirVer", mirver );
+            deleteSetting(hContact, "StdMirVer");
+        }
 	}
 	else {
 		if ( !info->firstMsgRecv ) {
 			info->firstMsgRecv = true;
-			HANDLE hContact = MSN_HContactFromEmail( data.fromEmail, data.fromNick, 0, 0 );
+			HANDLE hContact = MSN_HContactFromEmail(email, nick, false, false );
 			if ( hContact != NULL )
-				sttSetMirVer( hContact, MSN_GetDword( hContact, "FlagBits", 0 ));
+				sttSetMirVer( hContact, getDword( hContact, "FlagBits", 0 ), true);
 	}	}
 
 	if ( !_strnicmp( tContentType, "text/plain", 10 )) {
 		CCSDATA ccs = {0};
-		HANDLE tContact = MSN_HContactFromEmail( data.fromEmail, data.fromNick, 1, 1 );
+		HANDLE tContact = MSN_HContactFromEmail(email, nick, true, true );
 
 		const char* p = tHeader[ "X-MMS-IM-Format" ];
 		bool isRtl =  p != NULL && strstr( p, "RL=1" ) != NULL;
@@ -446,7 +439,6 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 						break;
 				}	}
 			}
-
 		}
 		else ccs.hContact = tContact;
 
@@ -463,27 +455,22 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		}
 
 		if ( info->mChatID[0] ) {
-			GCDEST gcd = { msnProtocolName, { NULL }, GC_EVENT_MESSAGE };
+			GCDEST gcd = { m_szModuleName, { NULL }, GC_EVENT_MESSAGE };
 			gcd.ptszID = info->mChatID;
 
 			GCEVENT gce = {0};
 			gce.cbSize = sizeof(GCEVENT);
 			gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
 			gce.pDest = &gcd;
-			gce.ptszUID = mir_a2t(data.fromEmail);
+			gce.ptszUID = mir_a2t(email);
 			gce.ptszNick = MSN_GetContactNameT( tContact );
 			gce.time = time( NULL );
 			gce.bIsMe = FALSE;
 
-			#if defined( _UNICODE )
-				TCHAR* p;
-				mir_utf8decode(( char* )msgBody, &p );
-				gce.ptszText = EscapeChatTags( p );
-				mir_free( p );
-			#else
-				mir_utf8decode(( char* )msgBody, NULL );
-				gce.ptszText = EscapeChatTags( msgBody );
-			#endif
+			TCHAR* p = mir_utf8decodeT(msgBody);
+			gce.ptszText = EscapeChatTags(p);
+			mir_free(p);
+
 			CallServiceSync( MS_GC_EVENT, 0, (LPARAM)&gce );
 			mir_free(( void* )gce.pszText);
 			mir_free(( void* )gce.ptszUID );
@@ -502,41 +489,55 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		}
 	}
 	else if ( !_strnicmp( tContentType, "text/x-msmsgsprofile", 20 )) {
-		replaceStr( sid,           tHeader[ "sid" ]      );
-		replaceStr( MSPAuth,       tHeader[ "MSPAuth" ]  );
 		replaceStr( msnExternalIP, tHeader[ "ClientIP" ] );
+		replaceStr( abchMigrated, tHeader[ "ABCHMigrated" ] );
 		langpref = atol(tHeader[ "lang_preference" ]);
 	}
 	else if ( !_strnicmp( tContentType, "text/x-msmsgscontrol", 20 )) {
 		const char* tTypingUser = tHeader[ "TypingUser" ];
 
 		if ( tTypingUser != NULL && info->mChatID[0] == 0 ) {
-			HANDLE hContact = MSN_HContactFromEmail( tTypingUser, tTypingUser, 1, 1 );
+			HANDLE hContact = MSN_HContactFromEmail( tTypingUser, tTypingUser, true, true );
 			MSN_CallService( MS_PROTO_CONTACTISTYPING, ( WPARAM ) hContact, 7 );
 		}
 	}
-	else if ( !_strnicmp( tContentType, "text/x-msnmsgr-datacast", 23 )) {
-		HANDLE tContact = MSN_HContactFromEmail( data.fromEmail, data.fromNick, 1, 1 );
+	else if ( !_strnicmp( tContentType, "text/x-msnmsgr-datacast", 23 )) 
+    {
+        if (info->mJoinedCount)
+        {
+            HANDLE tContact = info->mJoinedContacts[0];
 
-		MimeHeaders tFileInfo;
-		tFileInfo.readFromBuffer( msgBody );
+		    if (IsChatHandle(tContact))
+		    {
+			    GC_INFO gci = {0};
+			    gci.Flags = HCONTACT;
+			    gci.pszModule = m_szModuleName;
+			    gci.pszID = info->mChatID;
+			    CallServiceSync( MS_GC_GETINFO, 0, (LPARAM)&gci );
+			    tContact = gci.hContact;
+		    }
 
-		const char* id = tFileInfo[ "ID" ];
-		if (id != NULL)
-		{
-			switch (atol(id))
-			{
-				case 1:  // Nudge
-					NotifyEventHooks(hMSNNudge,(WPARAM) tContact,0);
-					break;
+		    MimeHeaders tFileInfo;
+		    tFileInfo.readFromBuffer( msgBody );
 
-				case 2: // Wink
-					break;
+		    const char* id = tFileInfo[ "ID" ];
+		    if (id != NULL)
+		    {
+			    switch (atol(id))
+			    {
+				    case 1:  // Nudge
 
-				case 4: // Action Message
-					break;
-			}
-		}
+					    NotifyEventHooks(hMSNNudge,(WPARAM) tContact,0);
+					    break;
+
+				    case 2: // Wink
+					    break;
+
+				    case 4: // Action Message
+					    break;
+			    }
+		    }
+        }
 	}
 	else if ( !_strnicmp( tContentType,"text/x-msmsgsemailnotification", 30 ))
 		sttNotificationMessage( msgBody, false );
@@ -549,129 +550,164 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 	else if ( !_strnicmp( tContentType, "text/x-msmsgsoimnotification", 28 ))
 		sttNotificationMessage( msgBody, false );
 	else if ( !_strnicmp( tContentType, "text/x-msmsgsinvite", 19 ))
-		sttInviteMessage( info, msgBody, data.fromEmail, data.fromNick );
+		sttInviteMessage( info, msgBody, email, nick);
 	else if ( !_strnicmp( tContentType, "application/x-msnmsgrp2p", 24 ))
 		p2p_processMsg( info, msgBody );
 	else if ( !_strnicmp( tContentType, "text/x-mms-emoticon", 19 ))
-		sttCustomSmiley( msgBody, data.fromEmail, data.fromNick, MSN_APPID_CUSTOMSMILEY );
+		sttCustomSmiley( msgBody, email, nick, MSN_APPID_CUSTOMSMILEY );
 	else if ( !_strnicmp( tContentType, "text/x-mms-animemoticon", 23 ))
-		sttCustomSmiley( msgBody, data.fromEmail, data.fromNick, MSN_APPID_CUSTOMANIMATEDSMILEY );
+		sttCustomSmiley( msgBody, email, nick, MSN_APPID_CUSTOMANIMATEDSMILEY );
 
 	mir_free( newbody );
 }
 
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Process Yahoo Find
+
+void CMsnProto::sttProcessYFind( char* buf, size_t len )
+{
+	ezxml_t xmli = ezxml_parse_str(buf, len);
+	
+	ezxml_t dom  = ezxml_child(xmli, "d");
+	const char* szDom = ezxml_attr(dom, "n");
+
+	ezxml_t cont = ezxml_child(dom, "c");
+	const char* szCont = ezxml_attr(cont, "n");
+			
+	char szEmail[128];
+	mir_snprintf(szEmail, sizeof(szEmail), "%s@%s", szCont, szDom);
+
+	const char *szNetId = ezxml_attr(cont, "t");
+	if (msnSearchId != NULL)
+	{
+		if (szNetId != NULL )
+		{
+			PROTOSEARCHRESULT isr = {0};
+			isr.cbSize = sizeof( isr );
+			isr.nick = szEmail;
+			isr.email = szEmail;
+
+			SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, msnSearchId, ( LPARAM )&isr );
+		}
+		SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, msnSearchId, 0 );
+	
+		msnSearchId = NULL;
+	}
+	else
+	{
+		if (szNetId != NULL )
+		{
+			int netId = atol(szNetId);
+	        HANDLE hContact = MSN_HContactFromEmail(szEmail, szEmail, true, false);
+			if (MSN_AddUser( hContact, szEmail, netId, LIST_FL ))
+			{
+				MSN_AddUser( hContact, szEmail, netId, LIST_PL + LIST_REMOVE );
+				MSN_AddUser( hContact, szEmail, netId, LIST_BL + LIST_REMOVE );
+				MSN_AddUser( hContact, szEmail, netId, LIST_AL );
+				DBDeleteContactSetting( hContact, "CList", "Hidden" );
+
+		        DBVARIANT dbv;
+		        if ( !DBGetContactSettingStringUtf( hContact, "CList", "Group", &dbv )) 
+                {
+			        MSN_MoveContactToGroup( hContact, dbv.pszVal );
+			        MSN_FreeVariant( &dbv );
+	        	}
+            }
+			MSN_SetContactDb(hContact, szEmail);
+		}
+	}
+
+	ezxml_free(xmli);
+}			
+
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Process user addition
 
-HANDLE sttProcessAdd( int trid, int listId, char* userEmail, char* userNick )
+void CMsnProto::sttProcessAdd( char* buf, size_t len )
 {
-	if ( trid == msnSearchID ) {
-		msnNsThread->sendPacket( "REM", "BL %s", userEmail );
+	ezxml_t xmli = ezxml_parse_str(buf, len);
+	ezxml_t dom  = ezxml_child(xmli, "d");
+	while (dom != NULL)
+	{
+		const char* szDom = ezxml_attr(dom, "n");
+		ezxml_t cont = ezxml_child(dom, "c");
+		while (cont != NULL)
+		{
+			const char* szCont = ezxml_attr(cont, "n");
+			const char* szNick = ezxml_attr(cont, "f");
+			int listId =  atol(ezxml_attr(cont, "l"));
+			int netId =  atol(ezxml_attr(cont, "t"));
+			
+			char szEmail[128];
+			mir_snprintf(szEmail, sizeof(szEmail), "%s@%s", szCont, szDom);
 
-		PROTOSEARCHRESULT isr;
-		memset( &isr, 0, sizeof( isr ));
-		isr.cbSize = sizeof( isr );
-		isr.nick = userNick;
-		isr.email = userEmail;
-		MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE )msnSearchID, ( LPARAM )&isr );
-		MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE )msnSearchID, 0 );
+			UrlDecode((char*)szNick);
 
-		msnSearchID = -1;
-		return NULL;
+			HANDLE hContact = MSN_HContactFromEmail(szEmail, szNick, true, false);
+			if (listId == LIST_RL)
+				Lists_Add(LIST_PL, netId, szEmail);
+
+			MSN_AddUser(hContact, szEmail, netId, listId);
+			int mask = Lists_GetMask(szEmail);
+		
+			MSN_SetContactDb(hContact, szEmail);
+			
+			if ( listId == LIST_RL && ( mask & ( LIST_FL+LIST_AL+LIST_BL )) == 0 )
+				MSN_AddAuthRequest( hContact, szEmail, szNick );
+
+			cont = ezxml_next(cont);
+		}
+		dom = ezxml_next(dom);
 	}
-
-	UrlDecode( userEmail ); UrlDecode( userNick ); 	stripBBCode( userNick );
-	if ( !IsValidListCode( listId ))
-		return NULL;
-
-	HANDLE hContact = MSN_HContactFromEmail( userEmail, userNick, 1, 1 );
-	mir_utf8decode( userNick, NULL );
-	int mask = Lists_Add( listId, hContact );
-
-	if ( listId == LIST_RL && ( mask & ( LIST_FL+LIST_AL+LIST_BL )) == 0 )
-		MSN_AddAuthRequest( hContact, userEmail, userNick );
-
-	if (( mask & ( LIST_AL | LIST_BL | LIST_FL )) == LIST_BL ) {
-		DBDeleteContactSetting( hContact, "CList", "NotOnList" );
-		DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
-	}
-
-	if ( listId & LIST_AL ) {
-		DBDeleteContactSetting( hContact, "CList", "NotOnList" );
-	}
-
-	if ( listId & LIST_FL ) {
-		DBDeleteContactSetting( hContact, "CList", "NotOnList" );
-		DBDeleteContactSetting( hContact, "CList", "Hidden" );
-	}
-
-	return hContact;
+	ezxml_free(xmli);
 }
+
+
+void CMsnProto::sttProcessRemove( char* buf, size_t len )
+{
+	ezxml_t xmli = ezxml_parse_str(buf, len);
+	ezxml_t dom  = ezxml_child(xmli, "d");
+	while (dom != NULL)
+	{
+		const char* szDom = ezxml_attr(dom, "n");
+		ezxml_t cont = ezxml_child(dom, "c");
+		while (cont != NULL)
+		{
+			const char* szCont = ezxml_attr(cont, "n");
+			int listId =  atol(ezxml_attr(cont, "l"));
+			
+			char szEmail[128];
+			mir_snprintf(szEmail, sizeof(szEmail), "%s@%s", szCont, szDom);
+			Lists_Remove(listId, szEmail);
+
+			listId = Lists_GetMask(szEmail);
+
+			if ((listId & ( LIST_RL | LIST_FL )) == 0) 
+			{
+				HANDLE hContact = MSN_HContactFromEmail(szEmail, NULL, false, false);
+				if (strcmp(szEmail, MyOptions.szEmail))
+					MSN_CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+			}
+
+			cont = ezxml_next(cont);
+		}
+		dom = ezxml_next(dom);
+	}
+	ezxml_free(xmli);
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN_HandleCommands - process commands from the server
 /////////////////////////////////////////////////////////////////////////////////////////
 
-static bool		sttIsSync = false;
-static int		sttListNumber = 0;
-static HANDLE	sttListedContact = NULL;
-static long		sttListedContactMask;
-
-static void sttDeleteUnusedSetting( long mask, const char* settingName )
-{	if (( sttListedContactMask & mask ) == 0 )
-		MSN_DeleteSetting( sttListedContact, settingName );
-}
-
-static void sttProcessListedContactMask()
-{
-	if ( sttListedContact == NULL )
-		return;
-
-	sttDeleteUnusedSetting( 0x0001, "Phone" );
-	sttDeleteUnusedSetting( 0x0002, "CompanyPhone" );
-	sttDeleteUnusedSetting( 0x0004, "Cellular" );
-	sttDeleteUnusedSetting( 0x0008, "OnMobile" );
-	sttDeleteUnusedSetting( 0x0010, "OnMsnMobile" );
-}
-
-static bool sttAddGroup( char* params, bool isFromBoot )
-{
-	union {
-		char* tWords[ 2 ];
-		struct { char *grpName, *grpId; } data;
-	};
-
-	if ( sttDivideWords( params, 2, tWords ) != 2 )
-		return false;
-
-	UrlDecode( data.grpName );
-	MSN_AddGroup( data.grpName, data.grpId );
-
-	if ( !MyOptions.ManageServer ) return true; 
-
-	if ( isFromBoot )
-	{
-
-		wchar_t* szNewName;
-		mir_utf8decode(data.grpName, &szNewName);
-#ifdef _UNICODE
-		CallService(MS_CLIST_GROUPCREATE, 0, (LPARAM)szNewName);
-#else
-		CallService(MS_CLIST_GROUPCREATE, 0, (LPARAM)data.grpName);
-#endif
-		mir_free(szNewName);
-	}
-	else
-		MSN_UploadServerGroups( data.grpName );
-
-	return true;
-}
-
-static void sttProcessStatusMessage( char* buf, unsigned len, HANDLE hContact )
+void CMsnProto::sttProcessStatusMessage( char* buf, unsigned len, HANDLE hContact )
 {
 	if (hContact == NULL) return;
 
-	ezxml_t xmli = ezxml_parse_str(buf, len);
+    ezxml_t xmli = ezxml_parse_str(buf, len);
 
 	// Process status message info
 	const char* szStatMsg = ezxml_txt(ezxml_child(xmli, "PSM"));
@@ -683,13 +719,14 @@ static void sttProcessStatusMessage( char* buf, unsigned len, HANDLE hContact )
 	else
 		DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
 
-	CallContactService(hContact, PSS_GETAWAYMSG, 0, 0);
-	
+	mir_utf8decode((char*)szStatMsg, NULL);
+	SendBroadcast(hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, NULL, (LPARAM)szStatMsg);
+
 	// Process current media info
 	const char* szCrntMda = ezxml_txt(ezxml_child(xmli, "CurrentMedia"));
 	if (!*szCrntMda)
 	{
-		MSN_DeleteSetting( hContact, "ListeningTo" );
+		deleteSetting( hContact, "ListeningTo" );
 		ezxml_free(xmli);
 		return;
 	}
@@ -712,7 +749,7 @@ static void sttProcessStatusMessage( char* buf, unsigned len, HANDLE hContact )
 
 	// Now let's mount the final string
 	if ( pCount <= 4 )  {
-		MSN_DeleteSetting( hContact, "ListeningTo" );
+		deleteSetting( hContact, "ListeningTo" );
 		ezxml_free(xmli);
 		return;
 	}
@@ -726,7 +763,7 @@ static void sttProcessStatusMessage( char* buf, unsigned len, HANDLE hContact )
 		}
 	}
 	if ( !foundUsefullInfo ) {
-		MSN_DeleteSetting( hContact, "ListeningTo" );
+		deleteSetting( hContact, "ListeningTo" );
 		ezxml_free(xmli);
 		return;
 	}
@@ -757,7 +794,7 @@ static void sttProcessStatusMessage( char* buf, unsigned len, HANDLE hContact )
 				memmove(p, parts[i], lenPartsI);
 		}	}
 
-		MSN_SetStringUtf( hContact, "ListeningTo", format );
+		setStringUtf( hContact, "ListeningTo", format );
 		mir_free(unknown);
 		mir_free(format);
 	}
@@ -767,53 +804,38 @@ static void sttProcessStatusMessage( char* buf, unsigned len, HANDLE hContact )
 		LISTENINGTOINFO lti = {0};
 		lti.cbSize = sizeof(LISTENINGTOINFO);
 
-		#if defined( _UNICODE )
-			mir_utf8decode( parts[4], &lti.ptszTitle );
-			if ( pCount > 5 ) mir_utf8decode( parts[5], &lti.ptszArtist );
-			if ( pCount > 6 ) mir_utf8decode( parts[6], &lti.ptszAlbum );
-			if ( pCount > 7 ) mir_utf8decode( parts[7], &lti.ptszTrack );
-			if ( pCount > 8 ) mir_utf8decode( parts[8], &lti.ptszYear );
-			if ( pCount > 9 ) mir_utf8decode( parts[9], &lti.ptszGenre );
-			if ( pCount > 10 ) mir_utf8decode( parts[10], &lti.ptszLength );
-			if ( pCount > 11 ) mir_utf8decode( parts[11], &lti.ptszPlayer );
-			else mir_utf8decode( parts[0], &lti.ptszPlayer );
-			if ( pCount > 12 ) mir_utf8decode( parts[12], &lti.ptszType );
-			else mir_utf8decode( parts[1], &lti.ptszType );
-		#else
-			lti.ptszTitle = parts[4];
-			if ( pCount > 5 ) lti.ptszArtist = parts[5];
-			if ( pCount > 6 ) lti.ptszAlbum = parts[6];
-			if ( pCount > 7 ) lti.ptszTrack = parts[7];
-			if ( pCount > 8 ) lti.ptszYear = parts[8];
-			if ( pCount > 9 ) lti.ptszGenre = parts[9];
-			if ( pCount > 10 ) lti.ptszLength = parts[10];
-			if ( pCount > 11 ) lti.ptszPlayer = parts[11];
-			else lti.ptszPlayer = parts[0];
-			if ( pCount > 12 ) lti.ptszType = parts[12];
-			else lti.ptszType = parts[1];
-		#endif
+		lti.ptszTitle = mir_utf8decodeT( parts[4] );
+		if ( pCount > 5 )  lti.ptszArtist = mir_utf8decodeT( parts[5]  );
+		if ( pCount > 6 )  lti.ptszAlbum  = mir_utf8decodeT( parts[6]  );
+		if ( pCount > 7 )  lti.ptszTrack  = mir_utf8decodeT( parts[7]  );
+		if ( pCount > 8 )  lti.ptszYear   = mir_utf8decodeT( parts[8]  );
+		if ( pCount > 9 )  lti.ptszGenre  = mir_utf8decodeT( parts[9]  );
+		if ( pCount > 10 ) lti.ptszLength = mir_utf8decodeT( parts[10] );
+		if ( pCount > 11 ) lti.ptszPlayer = mir_utf8decodeT( parts[11] );
+		else lti.ptszPlayer = mir_utf8decodeT( parts[0] );
+		if ( pCount > 12 ) lti.ptszType = mir_utf8decodeT( parts[12] );
+		else lti.ptszType = mir_utf8decodeT( parts[1] );
 
 		TCHAR *cm = (TCHAR *) CallService(MS_LISTENINGTO_GETPARSEDTEXT, (WPARAM) _T("%title% - %artist%"), (LPARAM) &lti);
-		MSN_SetStringT( hContact, "ListeningTo", cm );
+		setTString( hContact, "ListeningTo", cm );
 
 		mir_free( cm );
-		#if defined( _UNICODE )
-			mir_free( lti.ptszArtist );
-			mir_free( lti.ptszAlbum );
-			mir_free( lti.ptszTitle );
-			mir_free( lti.ptszTrack );
-			mir_free( lti.ptszYear );
-			mir_free( lti.ptszGenre );
-			mir_free( lti.ptszLength );
-			mir_free( lti.ptszPlayer );
-			mir_free( lti.ptszType );
-		#endif
+
+        mir_free( lti.ptszArtist );
+		mir_free( lti.ptszAlbum );
+		mir_free( lti.ptszTitle );
+		mir_free( lti.ptszTrack );
+		mir_free( lti.ptszYear );
+		mir_free( lti.ptszGenre );
+		mir_free( lti.ptszLength );
+		mir_free( lti.ptszPlayer );
+		mir_free( lti.ptszType );
 	}
 	ezxml_free(xmli);
 }
 
 
-static void sttProcessPage( char* buf, unsigned len )
+void CMsnProto::sttProcessPage( char* buf, unsigned len )
 {
 	ezxml_t xmlnot = ezxml_parse_str(buf, len);
 
@@ -833,7 +855,7 @@ static void sttProcessPage( char* buf, unsigned len )
 		pre.timestamp = time(NULL);
 
 		CCSDATA ccs = {0};
-		ccs.hContact = MSN_HContactFromEmail( szEmail, szEmail, 1, 1 );
+		ccs.hContact = MSN_HContactFromEmail( szEmail, szEmail, true, true );
 		ccs.szProtoService = PSR_MESSAGE;
 		ccs.lParam = ( LPARAM )&pre;
 		MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
@@ -843,7 +865,7 @@ static void sttProcessPage( char* buf, unsigned len )
 }
 
 
-static void sttProcessNotificationMessage( char* buf, unsigned len )
+void CMsnProto::sttProcessNotificationMessage( char* buf, unsigned len )
 {
 	ezxml_t xmlnot = ezxml_parse_str(buf, len);
 
@@ -864,7 +886,7 @@ static void sttProcessNotificationMessage( char* buf, unsigned len )
 
 		const char* acturl = ezxml_attr(xmlact, "url");
 		if (acturl == NULL || strstr(acturl, "://") == NULL) 
-			sz = mir_snprintf(fullurl+sz, sizeof(fullurl)-sz, "%s", ezxml_attr(xmlnot, "siteurl"));
+			sz += mir_snprintf(fullurl+sz, sizeof(fullurl)-sz, "%s", ezxml_attr(xmlnot, "siteurl"));
 		
 		sz += mir_snprintf(fullurl+sz, sizeof(fullurl)-sz, "%s", acturl);
 		if (sz != 0 && fullurl[sz-1] != '?')
@@ -873,25 +895,19 @@ static void sttProcessNotificationMessage( char* buf, unsigned len )
 		mir_snprintf(fullurl+sz, sizeof(fullurl)-sz, "notification_id=%s&message_id=%s",
 			ezxml_attr(xmlnot, "id"), ezxml_attr(xmlmsg, "id"));
 
-		wchar_t* alrtu;
-		const char* txt = ezxml_txt(xmltxt);
-		mir_utf8decode( (char*)txt, &alrtu );
-		SkinPlaySound( alertsoundname );
-#ifdef _UNICODE
-		MSN_ShowPopup(TranslateT("MSN Alert"), alrtu, MSN_ALERT_POPUP | MSN_ALLOW_MSGBOX, fullurl);
-#else
-		MSN_ShowPopup(TranslateT("MSN Alert"), txt, MSN_ALERT_POPUP | MSN_ALLOW_MSGBOX, fullurl);
-#endif
-		mir_free(alrtu);
+		SkinPlaySound(alertsoundname);
+
+		TCHAR* alrt = mir_utf8decodeT(ezxml_txt(xmltxt));
+		MSN_ShowPopup(TranslateT("MSN Alert"), alrt, MSN_ALERT_POPUP | MSN_ALLOW_MSGBOX, fullurl);
+		mir_free(alrt);
 	}
 	ezxml_free(xmlnot);
 }
 
-int MSN_HandleCommands( ThreadData* info, char* cmdString )
+int CMsnProto::MSN_HandleCommands( ThreadData* info, char* cmdString )
 {
 	char* params = "";
 	int trid = -1;
-	sttIsSync = false;
 
 	if ( cmdString[3] ) {
 		if ( isdigit(( BYTE )cmdString[ 4 ] )) {
@@ -906,7 +922,7 @@ int MSN_HandleCommands( ThreadData* info, char* cmdString )
 		}	}
 		else params = cmdString+4;
 	}
-	MSN_DebugLog("%S", cmdString);
+//	MSN_DebugLog("%s", cmdString);
 
 	switch(( *( PDWORD )cmdString & 0x00FFFFFF ) | 0x20000000 )
 	{
@@ -914,75 +930,39 @@ int MSN_HandleCommands( ThreadData* info, char* cmdString )
 			ReleaseSemaphore( info->hWaitEvent, 1, NULL );
 
 			if ( info->mJoinedCount > 0 && MyOptions.SlowSend )
-				MSN_SendBroadcast( info->mJoinedContacts[0], ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )trid, 0 );
+				SendBroadcast( info->mJoinedContacts[0], ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )trid, 0 );
 			break;
 
-		case ' CDA':	// ADC - MSN v10 addition command
-		{
-			char* tWords[ 10 ];
-			char *userNick = NULL, *userEmail = NULL, *userId = NULL, *groupId = NULL;
-			int nTerms = sttDivideWords( params, 10, tWords );
-			if ( nTerms < 2 )
-				goto LBL_InvalidCommand;
-
-			for ( int i=1; i < nTerms; i++ ) {
-				char* p = tWords[ i ];
-				if ( *p == 'F' && p[1] == '=' )
-					userNick = p+2;
-				else if ( *p == 'N' && p[1] == '=' )
-					userEmail = p+2;
-				else if ( *p == 'C' && p[1] == '=' )
-					userId = p+2;
-				else
-					groupId = p;
+		case ' YQF':	//********* FQY: Find Yahoo User
+			char* tWords[ 1 ];
+			if ( sttDivideWords( params, 1, tWords ) != 1 )
+			{
+				MSN_DebugLog( "Invalid %.3s command, ignoring", cmdString );
 			}
-
-			HANDLE hContact;
-			if ( userEmail == NULL ) {
-				if ( userId == NULL || groupId == NULL )
-					goto LBL_InvalidCommand;
-				hContact = MSN_HContactById( userId );
+			else
+			{
+				size_t len = atol(tWords[0]);
+				sttProcessYFind((char*)HReadBuffer(info, 0).surelyRead(len), len); 
 			}
-			else {
-				if ( userNick == NULL )
-					userNick = userEmail;
-
-				int listId = Lists_NameToCode( tWords[0] );
-				hContact = sttProcessAdd( trid, listId, userEmail, userNick );
-			}
-
-			if ( hContact != NULL ) {
-				if ( userId  != NULL ) MSN_SetString( hContact, "ID", userId );
-				if ( groupId != NULL ) MSN_SetString( hContact, "GroupID", groupId );
-				else {
-					if ( MyOptions.ManageServer && strcmp( tWords[0], "FL" ) == 0 ) {
-						DBVARIANT dbv;
-						if ( !DBGetContactSettingStringUtf( hContact, "CList", "Group", &dbv )) {
-							MSN_MoveContactToGroup( hContact, dbv.pszVal );
-							MSN_FreeVariant( &dbv );
-			}	}	}	}
 			break;
-		}
-		case ' DDA':    //********* ADD: section 7.8 List Modifications
-		{
-			union {
-				char* tWords[ 4 ];
-				struct { char *list, *serial, *userEmail, *userNick; } data;
-			};
 
-			if ( sttDivideWords( params, 4, tWords ) != 4 ) {
+		case ' LDA':	//********* ADL: Add to the list
+		{
+			char* tWords[ 1 ];
+			if ( sttDivideWords( params, 1, tWords ) != 1 )
+			{
 LBL_InvalidCommand:
 				MSN_DebugLog( "Invalid %.3s command, ignoring", cmdString );
 				break;
 			}
 
-			sttProcessAdd( trid, Lists_NameToCode( data.list ), data.userEmail, data.userNick );
+			if (strcmp(tWords[0], "OK") != 0)
+			{
+				size_t len = atol(tWords[0]);
+				sttProcessAdd((char*)HReadBuffer(info, 0).surelyRead(len), len); 
+			}
 			break;
 		}
-		case ' GDA':    //********* ADG: group addition
-			if ( !sttAddGroup( params, false ))
-				goto LBL_InvalidCommand;
-			break;
 
 		case ' SBS':
 			break;
@@ -1005,8 +985,8 @@ LBL_InvalidCommand:
 							else if ( E.msgType == 2571 )
 								typing = E.flags != 0;
 							else if ( E.msgSize == 0 ) {
-								info->sendMessage( E.msgType, E.message, E.flags );
-								MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
+								info->sendMessage( E.msgType, NULL, 1, E.message, E.flags );
+								SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
 							}
 							else 
 								info->sendRawMessage( E.msgType, E.message, E.msgSize );
@@ -1023,7 +1003,7 @@ LBL_InvalidCommand:
 					if ( typing )
 						MSN_StartStopTyping( info, true );
 
-					if ( MSN_GetByte( "EnableDeliveryPopup", 0 ))
+					if ( getByte( "EnableDeliveryPopup", 0 ))
 						MSN_ShowPopup( hContact, TranslateT( "Chat session established by contact request" ), 0 );
 				}
 				else {
@@ -1034,49 +1014,12 @@ LBL_InvalidCommand:
 			}
 			break;
 
+		case ' PRP':
+			break;
+
 		case ' PLB':    //********* BLP: section 7.6 List Retrieval And Property Management
-		{
-			union {
-				char* tWords[ 2 ];
-				struct { char *junk, *listName; } data;
-			};
-
-			if ( sttDivideWords( params, 2, tWords ) == 1 )
-				data.listName = data.junk;
-
-			msnOtherContactsBlocked = _stricmp( data.listName, "BL" ) == 0;
 			break;
-		}
-		case ' RPB':	//********* BPR:
-		{
-			char* tWords[ 2 ];
-			if ( sttDivideWords( params, 2, tWords ) != 2 )
-				goto LBL_InvalidCommand;
 
-			if ( sttListedContact != NULL ) {
-				UrlDecode( tWords[1] );
-				if ( !strcmp( tWords[0], "PHH" )) {
-					MSN_SetString( sttListedContact, "Phone", tWords[1] );
-					sttListedContactMask |= 0x0001;
-				}
-				else if ( !strcmp( tWords[0], "PHW" )) {
-					MSN_SetString( sttListedContact, "CompanyPhone", tWords[1] );
-					sttListedContactMask |= 0x0002;
-				}
-				else if ( !strcmp( tWords[0], "PHM" )) {
-					MSN_SetString( sttListedContact, "Cellular", tWords[1] );
-					sttListedContactMask |= 0x0004;
-				}
-				else if ( !strcmp( tWords[0], "MOB" )) {
-					MSN_SetString( sttListedContact, "OnMobile", tWords[1] );
-					sttListedContactMask |= 0x0008;
-				}
-				else if ( !strcmp( tWords[0], "MBE" )) {
-					MSN_SetString( sttListedContact, "OnMsnMobile", tWords[1] );
-					sttListedContactMask |= 0x0010;
-			}	}
-			break;
-		}
 		case ' EYB':   //********* BYE: section 8.5 Session Participant Changes
 		{
 			union {
@@ -1089,14 +1032,14 @@ LBL_InvalidCommand:
 			sttDivideWords( params, 2, tWords );
 			UrlDecode( data.userEmail );
 
-			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, NULL, 0, 0 );
+			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, NULL, false, false );
 
-			if ( MSN_GetByte( "EnableSessionPopup", 0 ))
+			if ( getByte( "EnableSessionPopup", 0 ))
 				MSN_ShowPopup( hContact, TranslateT( "Contact left channel" ), 0 );
 
 			// modified for chat
 			if ( msnHaveChatDll ) {
-				GCDEST gcd = { msnProtocolName, { NULL }, GC_EVENT_QUIT };
+				GCDEST gcd = { m_szModuleName, { NULL }, GC_EVENT_QUIT };
 				gcd.ptszID = info->mChatID;
 
 				GCEVENT gce = {0};
@@ -1113,15 +1056,15 @@ LBL_InvalidCommand:
 
 			// in here, the first contact is the chat ID, starting from the second will be actual contact
 			// if only 1 person left in conversation
-			int personleft = MSN_ContactLeft( info, hContact );
+			int personleft = info->contactLeft( hContact );
 
-			int temp_status = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
+			int temp_status = getWord(hContact, "Status", ID_STATUS_OFFLINE);
 			if (temp_status == ID_STATUS_INVISIBLE && MSN_GetThreadByContact(hContact) == NULL)
-				MSN_SetWord( hContact, "Status", ID_STATUS_OFFLINE);
+				setWord( hContact, "Status", ID_STATUS_OFFLINE);
 
 			// see if the session is quit due to idleness
 			if ( personleft == 1 && !lstrcmpA( data.isIdle, "1" ) ) {
-				GCDEST gcd = { msnProtocolName, { NULL }, GC_EVENT_INFORMATION };
+				GCDEST gcd = { m_szModuleName, { NULL }, GC_EVENT_INFORMATION };
 				gcd.ptszID = info->mChatID;
 
 				GCEVENT gce = {0};
@@ -1155,26 +1098,26 @@ LBL_InvalidCommand:
 
 		case ' GHC':    //********* CHG: section 7.7 Client States
 		{
-			int oldMode = msnStatusMode;
-			msnStatusMode = MSNStatusToMiranda( params );
+			int oldMode = m_iStatus;
+			m_iStatus = MSNStatusToMiranda( params );
 			if (oldMode == ID_STATUS_OFFLINE || ( oldMode>=ID_STATUS_CONNECTING && oldMode<ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES ))
 			{
 				HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 				while ( hContact != NULL ) {
-					if ( MSN_IsMyContact( hContact )) {
+					if ( MSN_IsMyContact( hContact )) 
+					{
 						char tEmail[ MSN_MAX_EMAIL_LEN ];
-						if ( MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail )) == 0 && strncmp(tEmail, "tel:", 4) == 0 )
+						if ( getStaticString( hContact, "e-mail", tEmail, sizeof( tEmail )) == 0 && strncmp(tEmail, "tel:", 4) == 0 )
 						{
-							MSN_SetWord( hContact, "Status", ID_STATUS_ONTHEPHONE );
-							MSN_SetString( hContact, "MirVer", "SMS" );
+							setWord( hContact, "Status", ID_STATUS_ONTHEPHONE );
 						}
 					}
 					hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
 			}	}
 
-			if ( msnStatusMode != ID_STATUS_IDLE )
+			if ( m_iStatus != ID_STATUS_IDLE )
 			{
-				MSN_SendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,( HANDLE )oldMode, msnStatusMode );
+				SendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,( HANDLE )oldMode, m_iStatus );
 				MSN_DebugLog( "Status change acknowledged: %s", params );
 				MSN_RemoveEmptyGroups();
 			}
@@ -1192,95 +1135,98 @@ LBL_InvalidCommand:
 			break;
 		}
 		case ' RVC':    //********* CVR: MSNP8
-		{
-			info->sendPacket( "USR", "TWN I %s", MyOptions.szEmail );
 			break;
-		}
+
 		case ' NLF':    //********* FLN: section 7.9 Notification Messages
-		{	HANDLE hContact;
-			UrlDecode( params );
-			if (( hContact = MSN_HContactFromEmail( params, NULL, 0, 0 )) != NULL )
+		{	
+			union {
+				char* tWords[ 2 ];
+				struct { char *userEmail, *netId; } data;
+			};
+
+			int tArgs = sttDivideWords( params, 2, tWords );
+			if ( tArgs < 2 )
+				goto LBL_InvalidCommand;
+
+			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, NULL, false, false );
+			if ( hContact != NULL )
 			{
-				MSN_SetWord( hContact, "Status", ID_STATUS_OFFLINE );
-				MSN_SetDword( hContact, "IdleTS", 0 );
-				MsgQueue_Clear( hContact );
+				setWord( hContact, "Status", ID_STATUS_OFFLINE );
+				setDword( hContact, "IdleTS", 0 );
+	            ForkThread(&CMsnProto::MsgQueue_AllClearThread, hContact);
 			}
 			break;
 		}
-		case ' CTG':    //********* GTC: section 7.6 List Retrieval And Property Management
-			break;
-
 		case ' NLI':
 		case ' NLN':    //********* ILN/NLN: section 7.9 Notification Messages
 		{
 			union {
-				char* tWords[ 5 ];
-				struct { char *userStatus, *userEmail, *userNick, *objid, *cmdstring; } data;
+				char* tWords[ 6 ];
+				struct { char *userStatus, *userEmail, *netId, *userNick, *objid, *cmdstring; } data;
 			};
 
-			int tArgs = sttDivideWords( params, 5, tWords );
-			if ( tArgs < 3 )
+			int tArgs = sttDivideWords( params, 6, tWords );
+			if ( tArgs < 4 )
 				goto LBL_InvalidCommand;
 
-			UrlDecode( data.userEmail ); UrlDecode( data.userNick ); stripBBCode( data.userNick );
+			UrlDecode( data.userNick );
+			stripBBCode( data.userNick );
 
 			WORD lastStatus = ID_STATUS_OFFLINE;
-			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, NULL, 0, 0 );
+			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, NULL, false, false );
 			if ( hContact != NULL ) 
 			{
-				MSN_SetStringUtf( hContact, "Nick", data.userNick );
-				lastStatus = MSN_GetWord( hContact, "Status", ID_STATUS_OFFLINE );
+				setStringUtf( hContact, "Nick", data.userNick );
+				lastStatus = getWord( hContact, "Status", ID_STATUS_OFFLINE );
 				if ( lastStatus == ID_STATUS_OFFLINE || lastStatus == ID_STATUS_INVISIBLE )
 					DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
-				MSN_SetWord( hContact, "Status", MSNStatusToMiranda( data.userStatus ));
-				MSN_SetDword( hContact, "IdleTS", strcmp( data.userStatus, "IDL" ) ? 0 : time( NULL ));
+				setWord( hContact, "Status", MSNStatusToMiranda( data.userStatus ));
+				setDword( hContact, "IdleTS", strcmp( data.userStatus, "IDL" ) ? 0 : time( NULL ));
 			}
 
-
-			if ( tArgs > 3 && tArgs <= 5 ) {
+			if ( tArgs > 4 && tArgs <= 6 ) {
 				UrlDecode( data.cmdstring );
 				DWORD dwValue = strtoul( data.objid, NULL, 10 );
-				MSN_SetDword( hContact, "FlagBits", dwValue );
+				setDword( hContact, "FlagBits", dwValue );
 
 				if ( lastStatus == ID_STATUS_OFFLINE ) {
 					DBVARIANT dbv;
-					if ( MSN_GetStringT( "MirVer", hContact, &dbv ))
-						sttSetMirVer( hContact, dwValue );
-					else
-						MSN_FreeVariant( &dbv );
+                    bool always = getString( hContact, "MirVer", &dbv ) != 0;
+					if (!always) MSN_FreeVariant( &dbv );
+					sttSetMirVer( hContact, dwValue, always );
 				}
 
 				if (( dwValue & 0xf0000000 ) && data.cmdstring[0] && strcmp( data.cmdstring, "0" )) {
-					MSN_SetString( hContact, "PictContext", data.cmdstring );
+					setString( hContact, "PictContext", data.cmdstring );
 
-					char* szAvatarHash = MSN_GetAvatarHash(NEWSTR_ALLOCA(data.cmdstring));
+					char* szAvatarHash = MSN_GetAvatarHash(data.cmdstring);
 					if (szAvatarHash == NULL)
-						MSN_DeleteSetting( hContact, "AvatarHash" );
+						deleteSetting( hContact, "AvatarHash" );
 					else
-						MSN_SetString( hContact, "AvatarHash", szAvatarHash );
+						setString( hContact, "AvatarHash", szAvatarHash );
 					mir_free(szAvatarHash);
 
 					if ( hContact != NULL ) {
-						char szSavedContext[ 256 ];
-						int result = MSN_GetStaticString( "PictSavedContext", hContact, szSavedContext, sizeof( szSavedContext ));
+						char szSavedContext[ 1024 ];
+						int result = getStaticString( hContact, "PictSavedContext", szSavedContext, sizeof( szSavedContext ));
 						if ( result || strcmp( szSavedContext, data.cmdstring ))
-							MSN_SendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0 );
+							SendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0 );
 				}	}
 				else {
-					MSN_DeleteSetting( hContact, "AvatarHash" );
-					MSN_DeleteSetting( hContact, "AvatarSavedHash" );
-					MSN_DeleteSetting( hContact, "PictContext" );
-					MSN_DeleteSetting( hContact, "PictSavedContext" );
+					deleteSetting( hContact, "AvatarHash" );
+					deleteSetting( hContact, "AvatarSavedHash" );
+					deleteSetting( hContact, "PictContext" );
+					deleteSetting( hContact, "PictSavedContext" );
 
 //					char tFileName[ MAX_PATH ];
 //					MSN_GetAvatarFileName( hContact, tFileName, sizeof( tFileName ));
 //					remove( tFileName );
 
-					MSN_SendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0 );
+					SendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0 );
 			}	}
 			else {
 				if ( lastStatus == ID_STATUS_OFFLINE )
-					MSN_DeleteSetting( hContact, "MirVer" );
+					deleteSetting( hContact, "MirVer" );
 			}
 
 			break;
@@ -1298,24 +1244,19 @@ LBL_InvalidCommand:
 
 			UrlDecode( data.userEmail );
 			UrlDecode( data.userNick );
-			stripBBCode( data.userNick );
 
-			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, data.userNick, 1, 1 );
+			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, data.userNick, true, true );
 			if ( tNumTokens == 5 )
-				MSN_SetDword( hContact, "FlagBits", strtoul( data.flags, NULL, 10 ));
+				setDword( hContact, "FlagBits", strtoul( data.flags, NULL, 10 ));
 
-			MSN_ContactJoined( info, hContact );
+			info->contactJoined( hContact );
 
-			int temp_status = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
-			if (temp_status == ID_STATUS_OFFLINE && Lists_IsInList(LIST_FL, hContact))
-				MSN_SetWord( hContact, "Status", ID_STATUS_INVISIBLE);
+			int temp_status = getWord(hContact, "Status", ID_STATUS_OFFLINE);
+			if (temp_status == ID_STATUS_OFFLINE && Lists_IsInList(LIST_FL, data.userEmail))
+				setWord( hContact, "Status", ID_STATUS_INVISIBLE);
 
-			int thisContact = atol( data.strThisContact );
-			if ( thisContact != 1 )
-				mir_utf8decode( data.userNick, NULL );
-
-			// only start the chat session after all the IRO messages has been received
-			if ( msnHaveChatDll && info->mJoinedCount > 1 && !lstrcmpA(data.strThisContact, data.totalContacts) )
+			// only start the chat session after all the IRO messages has been recieved
+			if ( msnHaveChatDll && info->mJoinedCount > 1 && !strcmp(data.strThisContact, data.totalContacts) )
 				MSN_ChatStart(info);
 
 			break;
@@ -1331,31 +1272,32 @@ LBL_InvalidCommand:
 			if ( tNumTokens < 2 )
 				goto LBL_InvalidCommand;
 
-			UrlDecode( data.userEmail ); UrlDecode( data.userNick ); stripBBCode( data.userNick );
-			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, data.userNick, 1, 1 );
+			UrlDecode( data.userEmail ); UrlDecode( data.userNick );
+			stripBBCode( data.userNick );
+			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, data.userNick, true, true );
 			if ( tNumTokens == 3 )
-				MSN_SetDword( hContact, "FlagBits", strtoul( data.flags, NULL, 10 ));
+				setDword( hContact, "FlagBits", strtoul( data.flags, NULL, 10 ));
 
 
 			mir_utf8decode( data.userNick, NULL );
 			MSN_DebugLog( "New contact in channel %s %s", data.userEmail, data.userNick );
 
-			if ( MSN_ContactJoined( info, hContact ) == 1 ) {
+			if ( info->contactJoined( hContact ) == 1 ) {
 				info->sendCaps();
-				MsgQueueEntry E;
 
 				bool typing = false;
 
 				for (int i=3; --i; )
 				{
+					MsgQueueEntry E;
 					while (MsgQueue_GetNext( hContact, E ))
 					{
 						if ( E.msgType == 'X' ) ;
 						else if ( E.msgType == 2571 )
 							typing = E.flags != 0;
 						else if ( E.msgSize == 0 ) {
-							info->sendMessage( E.msgType, E.message, E.flags );
-							MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
+							info->sendMessage( E.msgType, NULL, 1, E.message, E.flags );
+							SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
 						}
 						else info->sendRawMessage( E.msgType, E.message, E.msgSize );
 
@@ -1371,8 +1313,13 @@ LBL_InvalidCommand:
 				if ( typing )
 					MSN_StartStopTyping( info, true );
 
-				if ( MSN_GetByte( "EnableDeliveryPopup", 0 ))
+				if ( getByte( "EnableDeliveryPopup", 0 ))
 					MSN_ShowPopup( hContact, TranslateT( "Chat session established by my request" ), 0 );
+
+                PROTO_AVATAR_INFORMATION ai = {0};
+                ai.cbSize = sizeof(ai);
+                ai.hContact = hContact;
+                GetAvatarInfo(GAIF_FORCE, (LPARAM)&ai);
 			}
 			else {
 				bool chatCreated = info->mChatID[0] != 0;
@@ -1381,7 +1328,7 @@ LBL_InvalidCommand:
 
 				if ( msnHaveChatDll ) {
 					if ( chatCreated ) {
-						GCDEST gcd = { msnProtocolName, { NULL }, GC_EVENT_JOIN };
+						GCDEST gcd = { m_szModuleName, { NULL }, GC_EVENT_JOIN };
 						gcd.ptszID = info->mChatID;
 
 						GCEVENT gce = {0};
@@ -1398,102 +1345,20 @@ LBL_InvalidCommand:
 					}
 					else MSN_ChatStart( info );
 			}	}
-			return 0;
-		}
-
-		case ' GSL':    //********* LSG: lists existing groups
-			if ( !sttAddGroup( params, true ))
-				goto LBL_InvalidCommand;
-			break;
-
-		case ' TSL':	//********* LST: section 7.6 List Retrieval And Property Management
-		{
-			int	listId = 0;
-			char *userEmail = NULL, *userNick = NULL, *userId = NULL, *groupId = NULL;
-			char* tWords[ 10 ];
-
-			int tNumTokens = sttDivideWords( params, 10, tWords );
-
-			if ( --sttListNumber == 0 )
-				MSN_SetServerStatus( msnDesiredStatus );
-
-			for ( int i=0; i < tNumTokens; i++ ) {
-				char* p = tWords[ i ];
-				if ( *p == 'N' && p[1] == '=' )
-					userEmail = p+2;
-				else if ( *p == 'F' && p[1] == '=' )
-					userNick = p+2;
-				else if ( *p == 'C' && p[1] == '=' )
-					userId = p+2;
-				else {
-					listId = atol( p );
-					int grOff = i + 2;
-					if ( grOff < tNumTokens )
-						groupId = tWords[grOff];
-					break;
-			}	}
-
-			if ( userEmail == NULL )
-				goto LBL_InvalidCommand;
-
-			if ( userNick == NULL )
-				userNick = userEmail;
-
-			UrlDecode( userEmail ); UrlDecode( userNick ); stripBBCode( userNick );
-
-			if ( !IsValidListCode( listId ) || !strcmp( userEmail, "messenger@microsoft.com" ))
-				break;
-
-			// add user if it wasn't included into a contact list
-			sttProcessListedContactMask();
-			sttListedContact = MSN_HContactFromEmail( userEmail, userNick, 1, 0 );
-
-			mir_utf8decode( userNick, NULL );
-			Lists_Add( listId, sttListedContact );
-
-			if (( listId & ( LIST_AL | LIST_BL | LIST_FL )) == LIST_BL ) {
-				DBDeleteContactSetting( sttListedContact, "CList", "NotOnList" );
-				DBWriteContactSettingByte( sttListedContact, "CList", "Hidden", 1 );
-			}
-
-			if ( listId == LIST_RL ) {
-				DBWriteContactSettingByte( sttListedContact, "CList", "NotOnList", 1 );
-				DBWriteContactSettingByte( sttListedContact, "CList", "Hidden", 1 );
-			}
-
-			if ( listId & LIST_PL ) {
-				if ( !Lists_IsInList( LIST_RL, sttListedContact )) {
-					MSN_AddUser( sttListedContact, userEmail, LIST_PL + LIST_REMOVE );
-					MSN_AddUser( sttListedContact, userEmail, LIST_RL );
-				}
-
-				if (( listId & ( LIST_AL +  LIST_BL + LIST_FL )) == 0 )
-					MSN_AddAuthRequest( sttListedContact, userEmail, userNick );
-			}
-
-			if ( listId & ( LIST_BL | LIST_AL )) {
-				WORD tApparentMode = MSN_GetWord( sttListedContact, "ApparentMode", 0 );
-				if (( listId & LIST_BL ) && tApparentMode == 0 )
-					MSN_SetWord( sttListedContact, "ApparentMode", ID_STATUS_OFFLINE );
-				else if (( listId & LIST_AL ) && tApparentMode != 0 )
-					MSN_SetWord( sttListedContact, "ApparentMode", 0 );
-			}
-
-			if ( sttListedContact != NULL ) {
-				if ( userId  != NULL )
-					MSN_SetString( sttListedContact, "ID", userId );
-
-				 MSN_SyncContactToServerGroup( sttListedContact, userId, groupId );
-			}
 			break;
 		}
+
 		case ' GSM':   //********* MSG: sections 8.7 Instant Messages, 8.8 Receiving an Instant Message
+			MSN_ReceiveMessage( info, cmdString, params );
+			break;
+
+		case ' MBU':
 			MSN_ReceiveMessage( info, cmdString, params );
 			break;
 
 		case ' KAN':   //********* NAK: section 8.7 Instant Messages
 			if ( info->mJoinedCount > 0 && MyOptions.SlowSend )
-				MSN_SendBroadcast( info->mJoinedContacts[0], ACKTYPE_MESSAGE, ACKRESULT_FAILED, 
+				SendBroadcast( info->mJoinedContacts[0], ACKTYPE_MESSAGE, ACKRESULT_FAILED, 
 					( HANDLE )trid, ( LPARAM )MSN_Translate( "Message delivery failed" ));
 			MSN_DebugLog( "Message send failed (trid=%d)", trid );
 			break;
@@ -1506,9 +1371,13 @@ LBL_InvalidCommand:
 			sttProcessPage((char*)HReadBuffer( info, 0 ).surelyRead( trid ), trid);
 			break;
 
+		case ' FCG':   //********* GCF: 
+			HReadBuffer( info, 0 ).surelyRead(atol(params));
+			break;
+
 		case ' TUO':   //********* OUT: sections 7.10 Connection Close, 8.6 Leaving a Switchboard Session
 			if ( !_stricmp( params, "OTH" )) {
-				MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION );
+				SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION );
 				MSN_DebugLog( "You have been disconnected from the MSN server because you logged on from another location using the same MSN passport." );
 			}
 
@@ -1517,30 +1386,7 @@ LBL_InvalidCommand:
 
 			return 1;
 
-		case ' PRP':	//********* PRP: user property
-		{
-			union {
-				char* tWords[ 2 ];
-				struct { char *name, *value; } data;
-			};
-
-			if ( sttDivideWords( params, 2, tWords ) != 2 )
-				goto LBL_InvalidCommand;
-
-			UrlDecode( data.value );
-			if (_stricmp(data.name, "MFN") == 0)
-			{
-				if ( !sttIsSync || !MSN_GetByte( "NeverUpdateNickname", 0 ))
-					MSN_SetStringUtf( NULL, "Nick", data.value );
-			}
-			else if (_stricmp(data.name, "MBE") == 0)
-					MSN_SetByte( "MobileEnabled", *data.value == 'Y');
-			else if (_stricmp(data.name, "MOB") == 0)
-					MSN_SetByte( "MobileAllowed", *data.value == 'Y');
-			break;
-		}
 		case ' YRQ':   //********* QRY:
-			sttProcessListedContactMask();
 			break;
 
 		case ' GNQ':	//********* QNG: reply to PNG
@@ -1549,67 +1395,34 @@ LBL_InvalidCommand:
 					SetEvent( hKeepAliveThreadEvt );
 			break;
 
-		case ' GER':   //********* REG: rename group
+		case ' LMR':	//********* RML: Remove from the list
 		{
-			union {
-				char* tWords[ 2 ];
-				struct { char *id, *groupName; } data;
-			};
-
-			if ( sttDivideWords( params, 2, tWords ) != 2 )
+			char* tWords[ 1 ];
+			if ( sttDivideWords( params, 1, tWords ) != 1 )
 				goto LBL_InvalidCommand;
 
-			UrlDecode( data.groupName );
-			MSN_SetGroupName( data.id, data.groupName );
-			break;
-		}
-		case ' MER':   //********* REM: section 7.8 List Modifications
-		{
-			union {
-				char* tWords[ 3 ];
-				struct { char *list, *serial, *groupId; } data;
-			};
-
-			if ( sttDivideWords( params, 3, tWords ) == 3 ) { // remove from a group
-				HANDLE hContact = MSN_HContactById( data.serial );
-				if ( hContact != NULL )
-					MSN_DeleteSetting( hContact, "GroupID" );
-				MSN_RemoveEmptyGroups();
+			if (strcmp(tWords[0], "OK") != 0)
+			{
+				size_t len = atol(tWords[0]);
+				sttProcessRemove((char*)HReadBuffer(info, 0).surelyRead(len), len); 
 			}
-			else { // remove a user from a list
-				int listId = Lists_NameToCode( data.list );
-				if ( IsValidListCode( listId )) {
-					if ( listId == LIST_FL ) {
-						HANDLE hContact = MSN_HContactById( data.serial );
-						if ( hContact != NULL )
-							Lists_Remove( listId, hContact );
-						MSN_RemoveEmptyGroups();
-					}
-					else {
-						HANDLE hContact = MSN_HContactFromEmail( data.serial, data.serial, 0, 0 );
-						if ( hContact != NULL )
-							Lists_Remove( listId, hContact );
-			}	}	}
 			break;
 		}
-		case ' GMR':    //********* RMG: remove a group
-		{
-			MSN_DeleteGroup( params );
-			break;
-		}
+
 		case ' GNR':    //********* RNG: section 8.4 Getting Invited to a Switchboard Session
 			//note: unusual message encoding: trid==sessionid
 		{
 			union {
-				char* tWords[ 5 ];
-				struct { char *newServer, *security, *authChallengeInfo, *callerEmail, *callerNick; } data;
+				char* tWords[ 8 ];
+				struct { char *newServer, *security, *authChallengeInfo, *callerEmail, *callerNick,
+							  *type, *srcUrl, *genGateway; } data;
 			};
 
-			if ( sttDivideWords( params, 5, tWords ) != 5 )
+			if ( sttDivideWords( params, 8, tWords ) != 8 )
 				goto LBL_InvalidCommand;
 
 			UrlDecode( data.newServer ); UrlDecode( data.callerEmail );
-			UrlDecode( data.callerNick ); mir_utf8decode( data.callerNick, NULL );
+			UrlDecode( data.callerNick );
 			stripBBCode( data.callerNick );
 
 			if ( strcmp( data.security, "CKI" )) {
@@ -1619,6 +1432,7 @@ LBL_InvalidCommand:
 
 			ThreadData* newThread = new ThreadData;
 			strcpy( newThread->mServer, data.newServer );
+			newThread->gatewayType = atol( data.genGateway ) != 0;
 			newThread->mType = SERVER_SWITCHBOARD;
 			newThread->mInitialContact = MSN_HContactFromEmail( data.callerEmail, data.callerNick, true, true );
 			mir_snprintf( newThread->mCookie, sizeof( newThread->mCookie ), "%s %d", data.authChallengeInfo, trid );
@@ -1626,44 +1440,21 @@ LBL_InvalidCommand:
 			ReleaseSemaphore( newThread->hWaitEvent, 5, NULL );
 
 			MSN_DebugLog( "Opening caller's switchboard server '%s'...", data.newServer );
-			newThread->startThread(( pThreadFunc )MSNServerThread );
+			newThread->startThread( &CMsnProto::MSNServerThread, this );
 			break;
 		}
-		case ' PBS':    //********* SBP: Server Property was changed
-			break;
 
-		case ' NYS':    //********* SYN: section 7.5 Client User Property Synchronization
-		{
-			char* tWords[ 4 ];
-			if ( sttDivideWords( params, 4, tWords ) != 4 )
-				goto LBL_InvalidCommand;
-
-			Lists_Wipe();
-			sttIsSync = true;
-			if (( sttListNumber = atol( tWords[ 2 ] )) == 0 )
-				MSN_SetServerStatus( msnDesiredStatus );
-
-			sttListedContact = NULL;
-			tridUrlInbox = msnNsThread->sendPacket( "URL", "INBOX" );
-			tridUrlEdit  = msnNsThread->sendPacket( "URL", "PROFILE 0x%04x", langpref );
-			break;
-		}
 		case ' XBU':   // UBX : MSNP11+ User Status Message
 		{
 			union {
-				char* tWords[ 2 ];
-				struct { char *email, *datalen; } data;
+				char* tWords[ 3 ];
+				struct { char *email, *netId, *datalen; } data;
 			};
 
-			HANDLE hContact = NULL;
-			int num = sttDivideWords( params, 2, tWords );
-
-			if ( num == 2 )
-				hContact = MSN_HContactFromEmail( data.email, data.email, 0, 0 );
-			else if ( num == 1 && trid == 0 )
-				data.datalen = data.email;
-			else
+			if ( sttDivideWords( params, 3, tWords ) != 3 )
 				goto LBL_InvalidCommand;
+
+			HANDLE hContact = MSN_HContactFromEmail( data.email, data.email, false, false );
 
 			int len = atol( data.datalen );
 			if ( len < 0 || len > 4000 )
@@ -1672,7 +1463,47 @@ LBL_InvalidCommand:
 			sttProcessStatusMessage( (char*)HReadBuffer( info, 0 ).surelyRead( len ), len, hContact );
 			break;
 		}
-		case ' LRU':
+
+		case ' NBU':	// UBN : MSNP13+ File sharing, P2P Bootstrap, TURN setup.
+		{
+			union {
+				char* tWords[ 3 ];
+				struct { char *email, *typeId, *datalen; } data;
+			};
+
+			if ( sttDivideWords( params, 3, tWords ) != 3 )
+				goto LBL_InvalidCommand;
+
+			HANDLE hContact = MSN_HContactFromEmail( data.email, data.email, false, false );
+			int len = atol( data.datalen );
+			if ( len < 0 || len > 4000 )
+				goto LBL_InvalidCommand;
+
+			HReadBuffer buf(info, 0);
+			char* msgBody = (char*)buf.surelyRead(len);
+
+			if ( hContact == NULL ) break;
+
+			switch (atol(data.typeId))
+			{
+				case 1:
+					// File sharing stuff
+					// sttProcessFileSharing(msgBody, len, hContact);
+					break;
+
+				case 3:
+					// P2P Bootstrap
+					p2p_processSIP(info, msgBody, NULL);
+					break;
+
+				case 10:
+					// TURN setup
+					break;
+			}
+            break;
+		}
+
+		case ' LRU':    // URL : Hotmail, Spaces URL 
 		{
 			union {
 				char* tWords[ 3 ];
@@ -1682,22 +1513,15 @@ LBL_InvalidCommand:
 			if ( sttDivideWords( params, 3, tWords ) != 3 )
 				goto LBL_InvalidCommand;
 
-			if ( sttListNumber )
-				MSN_SetServerStatus( msnDesiredStatus );
-
 			if ( trid == tridUrlInbox ) {
 				replaceStr( passport, data.passport );
 				replaceStr( rru, data.rru );
 				replaceStr( urlId, data.urlID );
 				tridUrlInbox = -1;
 			}
-			else if ( trid == tridUrlEdit ) {
-				replaceStr( profileURL, data.rru );
-				replaceStr( profileURLId, data.urlID );
-				tridUrlEdit = -1;
-			}
 			break;
 		}
+
 		case ' RSU':	//********* USR: sections 7.3 Authentication, 8.2 Switchboard Connections and Authentication
 			if ( info->mType == SERVER_SWITCHBOARD ) { //(section 8.2)
 				union {
@@ -1707,6 +1531,8 @@ LBL_InvalidCommand:
 
 				if ( sttDivideWords( params, 3, tWords ) != 3 )
 					goto LBL_InvalidCommand;
+
+				UrlDecode( data.userHandle ); UrlDecode( data.friendlyName );
 
 				if ( strcmp( data.status, "OK" )) {
 					MSN_DebugLog( "Unknown status to USR command (SB): '%s'", data.status );
@@ -1725,7 +1551,7 @@ LBL_InvalidCommand:
 				}
 
 				char tEmail[ MSN_MAX_EMAIL_LEN ];
-				if ( MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail ))) {
+				if ( getStaticString( hContact, "e-mail", tEmail, sizeof( tEmail ))) {
 					MSN_DebugLog( "USR (SB) internal: Contact is not MSN" );
 					return 1;
 					break;
@@ -1737,62 +1563,76 @@ LBL_InvalidCommand:
 			else 	   //dispatch or notification server (section 7.3)
 			{
 				union {
-					char* tWords[ 3 ];
-					struct { char *security, *sequence, *authChallengeInfo; } data;
+					char* tWords[ 4 ];
+					struct { char *security, *sequence, *authChallengeInfo, *nonce; } data;
 				};
 
-				if ( sttDivideWords( params, 3, tWords ) != 3 )
+				if ( sttDivideWords( params, 4, tWords ) != 4 )
 					goto LBL_InvalidCommand;
 
-				if ( !strcmp( data.security, "TWN" )) {
-					if ( MSN_GetPassportAuth( data.authChallengeInfo )) {
-						MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
-							MSN_GoOffline();
+				if ( !strcmp( data.security, "SSO" )) 
+				{
+					if ( MSN_GetPassportAuth()) 
+					{
+						SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 						return 1;
 					}
 
-					info->sendPacket( "USR", "TWN S t=%s&p=%s", tAuthToken, pAuthToken );
+					char* sec = GenerateLoginBlob(data.nonce);
+					info->sendPacket( "USR", "SSO S %s %s", authStrToken ? authStrToken : "", sec );
+					mir_free(sec);
 				}
-				else if ( !strcmp( data.security, "OK" )) {
-					UrlDecode( tWords[1] ); UrlDecode( tWords[2] );
-
-					sl = time(NULL); //for hotmail
-
-					if ( MSN_GetByte( "NeverUpdateNickname", 0 )) {
-						DBVARIANT dbv;
-						if ( !MSN_GetStringT( "Nick", NULL, &dbv )) {
-							MSN_SendNicknameT( dbv.ptszVal );
-							MSN_FreeVariant( &dbv );
-						}
+				else if ( !strcmp( data.security, "OK" )) 
+				{
+					if ( !MSN_RefreshContactList()) {
+						SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
+						return 1;
 					}
-					else MSN_SetStringUtf( NULL, "Nick", tWords[2] );
 
-					msnLoggedIn = true;
-					sttListNumber = 0;
+					DBVARIANT dbv;
+					if ( !getStringUtf("Nick", &dbv)) {
+						if (dbv.pszVal[0]) MSN_SetNicknameUtf( dbv.pszVal );
+						MSN_FreeVariant( &dbv );
+					}
+					MSN_SetServerStatus( m_iDesiredStatus );
 
-					void __cdecl msn_keepAliveThread( void* );
-					mir_forkthread(( pThreadFunc )msn_keepAliveThread, NULL );
+					ForkThread( &CMsnProto::msn_keepAliveThread, NULL );
+					ForkThread( &CMsnProto::MSNConnDetectThread, NULL );
 
-					void MSNConnDetectThread( void* );
-					mir_forkthread( MSNConnDetectThread, NULL );
-
-					info->sendPacket( "SYN", "0 0" );
+					msnNsThread->sendPacket( "BLP", msnOtherContactsBlocked ? "BL" : "AL" );
+					tridUrlInbox = msnNsThread->sendPacket( "URL", "INBOX" );
 				}
 				else {
 					MSN_DebugLog( "Unknown security package '%s'", data.security );
 
 					if ( info->mType == SERVER_NOTIFICATION || info->mType == SERVER_DISPATCH ) {
-						MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPROTOCOL );
-						MSN_GoOffline();
+						SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPROTOCOL );
 					}
-
 					return 1;
 			}	}
 			break;
 
-		case ' XUU':   // UUX: MSNP11 addition
+		case ' SFR':   // RFS: Refresh Contact List 
+			if (!MSN_RefreshContactList()) {
+				MSN_ShowError("Cannot retrieve contact list");
+				return 1;
+			}
 			break;
 
+		case ' XUU':   // UUX: MSNP11 addition
+        {
+            char* tWords[ 1 ];
+
+            if ( sttDivideWords( params, SIZEOF(tWords), tWords ) != SIZEOF(tWords))
+	            goto LBL_InvalidCommand;
+
+            int len = atol( tWords[0] );
+            if ( len < 0 || len > 4000 )
+	            goto LBL_InvalidCommand;
+
+            HReadBuffer( info, 0 ).surelyRead( len );
+            break;
+        }
 		case ' REV':	//******** VER: section 7.1 Protocol Versioning
 		{
 
@@ -1805,26 +1645,13 @@ LBL_InvalidCommand:
 				return 1;
 			}
 
-            if ( !strcmp( protocol1, "MSNP12" )) 
+            if ( strcmp( protocol1, msnProtID )) 
 			{
-				OSVERSIONINFO osvi = {0};
-				osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-			    GetVersionEx(&osvi);
-
-				info->sendPacket( "CVR","0x0409 %s %d.%d i386 MSNMSGR 7.5.0324 msmsgs %s",
-					osvi.dwPlatformId >= 2 ? "winnt" : "win", osvi.dwMajorVersion, osvi.dwMinorVersion, 
-					MyOptions.szEmail );
-				msnProtChallenge = "YMM8C_H7KCQ2S_KL";
-				msnProductID = "PROD0090YUAUV{2B";
-			}
-			else {
 				MSN_ShowError( "Server has requested an unknown protocol set (%s)", params );
 
 				if ( info->mType == SERVER_NOTIFICATION || info->mType == SERVER_DISPATCH ) {
-					MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPROTOCOL );
-					MSN_GoOffline();
+					SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPROTOCOL );
 				}
-
 				return 1;
 			}
 			break;
@@ -1832,11 +1659,12 @@ LBL_InvalidCommand:
 		case ' RFX':    //******** XFR: sections 7.4 Referral, 8.1 Referral to Switchboard
 		{
 			union {
-				char* tWords[ 4 ];
-				struct { char *type, *newServer, *security, *authChallengeInfo; } data;
+				char* tWords[ 7 ];
+				struct { char *type, *newServer, *security, *authChallengeInfo,
+							  *type2, *srcUrl, *genGateway; } data;
 			};
 
-			int numWords = sttDivideWords( params, 4, tWords );
+			int numWords = sttDivideWords( params, 7, tWords );
 			if ( numWords < 2 )
 				goto LBL_InvalidCommand;
 
@@ -1850,14 +1678,14 @@ LBL_InvalidCommand:
 				info->mIsMainThread = false;
 
 				MSN_DebugLog( "Switching to notification server '%s'...", data.newServer );
-				newThread->startThread(( pThreadFunc )MSNServerThread );
+				newThread->startThread( &CMsnProto::MSNServerThread, this );
 				return 1;  //kill the old thread
 			}
 
 			if ( !strcmp( data.type, "SB" )) { //switchboard server
 				UrlDecode( data.newServer );
 
-				if ( numWords < 4 )
+				if ( numWords < 7 )
 					goto LBL_InvalidCommand;
 
 				if ( strcmp( data.security, "CKI" )) {
@@ -1867,12 +1695,13 @@ LBL_InvalidCommand:
 
 				ThreadData* newThread = new ThreadData;
 				strcpy( newThread->mServer, data.newServer );
+				newThread->gatewayType = atol( data.genGateway ) != 0;
 				newThread->mType = SERVER_SWITCHBOARD;
 				newThread->mCaller = 1;
 				strcpy( newThread->mCookie, data.authChallengeInfo );
 
 				MSN_DebugLog( "Opening switchboard server '%s'...", data.newServer );
-				newThread->startThread(( pThreadFunc )MSNServerThread );
+				newThread->startThread( &CMsnProto::MSNServerThread, this );
 			}
 			else MSN_DebugLog( "Unknown referral server: %s", data.type );
 			break;

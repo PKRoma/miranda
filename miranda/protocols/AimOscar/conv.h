@@ -1,21 +1,35 @@
+/*
+Plugin of Miranda IM for communicating with users of the AIM protocol.
+Copyright (c) 2008-2009 Boris Krasnovskiy
+Copyright (C) 2005-2006 Aaron Myles Landwehr
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 #ifndef CONV_H
 #define CONV_H
-#include "defines.h"
-char* strip_html(char *src);
-wchar_t* strip_html(wchar_t *src);//wide char version
-char* strip_special_chars(char *src,HANDLE hContact);
-//wchar_t* plain_to_html(wchar_t *src); // wide char version (only)
-char* strip_carrots(char *src);
-wchar_t* strip_carrots(wchar_t *src);//wide char version
-char* strip_linebreaks(char *src);
-void wcs_htons(wchar_t * ch);
+
+char* process_status_msg (const char *src, const char* sn);
+void  html_decode(char* str);
+char* html_encode(const char *src);
 char* html_to_bbcodes(char *src);
-wchar_t* html_to_bbcodes(wchar_t *src);//wchar_t version
 char* bbcodes_to_html(const char *src);
-wchar_t* bbcodes_to_html(const wchar_t *src);//wchar_t version
 void strip_tag(char* begin, char* end);
 char* strip_tag_within(char* begin, char* end);
-void strip_tag(wchar_t* begin, wchar_t* end);
-wchar_t* strip_tag_within(wchar_t* begin, wchar_t* end);
 char* rtf_to_html(HWND hwndDlg,int DlgItem);
+void wcs_htons(wchar_t * ch);
+char* bytes_to_string(char* bytes, int num_bytes);
+void string_to_bytes(char* string, char* bytes);
+bool is_utf(const char* msg);
+
 #endif

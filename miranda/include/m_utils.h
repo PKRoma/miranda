@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project,
+Copyright 2000-2008 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -23,6 +23,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifndef M_UTILS_H__
 #define M_UTILS_H__ 1
+
+#ifdef _MSC_VER
+	#pragma warning(disable:4201)
+#endif
+
+#include <stdio.h>
 
 #if !defined(M_SYSTEM_H__)
 #include "m_system.h"
@@ -124,7 +130,7 @@ typedef struct {
 	HANDLE hContact;
 } WINDOWLISTENTRY;
 #define MS_UTILS_ADDTOWINDOWLIST "Utils/AddToWindowList"
-__inline static int WindowList_Add(HANDLE hList,HWND hwnd,HANDLE hContact) {
+__inline static INT_PTR WindowList_Add(HANDLE hList,HWND hwnd,HANDLE hContact) {
 	WINDOWLISTENTRY wle;
 	wle.hList=hList; wle.hwnd=hwnd; wle.hContact=hContact;
 	return CallService(MS_UTILS_ADDTOWINDOWLIST,0,(LPARAM)&wle);
@@ -134,7 +140,7 @@ __inline static int WindowList_Add(HANDLE hList,HWND hwnd,HANDLE hContact) {
 //lParam=(LPARAM)(HWND)hwnd
 //returns 0 on success, nonzero on failure
 #define MS_UTILS_REMOVEFROMWINDOWLIST "Utils/RemoveFromWindowList"
-__inline static int WindowList_Remove(HANDLE hList,HWND hwnd) {
+__inline static INT_PTR WindowList_Remove(HANDLE hList,HWND hwnd) {
 	return CallService(MS_UTILS_REMOVEFROMWINDOWLIST,(WPARAM)hList,(LPARAM)hwnd);
 }
 
@@ -153,7 +159,7 @@ __inline static HWND WindowList_Find(HANDLE hList,HANDLE hContact) {
 //returns 0 on success, nonzero on failure
 //Only msg.message, msg.wParam and msg.lParam are used
 #define MS_UTILS_BROADCASTTOWINDOWLIST "Utils/BroadcastToWindowList"
-__inline static int WindowList_Broadcast(HANDLE hList,UINT message,WPARAM wParam,LPARAM lParam) {
+__inline static INT_PTR WindowList_Broadcast(HANDLE hList,UINT message,WPARAM wParam,LPARAM lParam) {
 	MSG msg;
 	msg.message=message; msg.wParam=wParam; msg.lParam=lParam;
 	return CallService(MS_UTILS_BROADCASTTOWINDOWLIST,(WPARAM)hList,(LPARAM)&msg);
@@ -172,7 +178,7 @@ __inline static int WindowList_Broadcast(HANDLE hList,UINT message,WPARAM wParam
 */
 #define MS_UTILS_BROADCASTTOWINDOWLIST_ASYNC "Utils/BroadcastToWindowListAsync"
 
-__inline static int WindowList_BroadcastAsync(HANDLE hList,UINT message,WPARAM wParam,LPARAM lParam) {
+__inline static INT_PTR WindowList_BroadcastAsync(HANDLE hList,UINT message,WPARAM wParam,LPARAM lParam) {
 	MSG msg;
 	msg.message=message; msg.wParam=wParam; msg.lParam=lParam;
 	return CallService(MS_UTILS_BROADCASTTOWINDOWLIST_ASYNC,(WPARAM)hList,(LPARAM)&msg);
@@ -207,7 +213,7 @@ typedef struct {
 	const char *szNamePrefix;	//text to prefix on "x", "width", etc, to form setting names
 } SAVEWINDOWPOS;
 #define MS_UTILS_SAVEWINDOWPOSITION  "Utils/SaveWindowPos"
-__inline static int Utils_SaveWindowPosition(HWND hwnd,HANDLE hContact,const char *szModule,const char *szNamePrefix) {
+__inline static INT_PTR Utils_SaveWindowPosition(HWND hwnd,HANDLE hContact,const char *szModule,const char *szNamePrefix) {
 	SAVEWINDOWPOS swp;
 	swp.hwnd=hwnd; swp.hContact=hContact; swp.szModule=szModule; swp.szNamePrefix=szNamePrefix;
 	return CallService(MS_UTILS_SAVEWINDOWPOSITION,0,(LPARAM)&swp);
@@ -225,17 +231,17 @@ __inline static int Utils_SaveWindowPosition(HWND hwnd,HANDLE hContact,const cha
 #define RWPF_NOMOVE 	2  //don't use stored position
 #define RWPF_NOACTIVATE 4  //show but don't activate v0.3.3.0+
 #define MS_UTILS_RESTOREWINDOWPOSITION	"Utils/RestoreWindowPos"
-__inline static int Utils_RestoreWindowPosition(HWND hwnd,HANDLE hContact,const char *szModule,const char *szNamePrefix) {
+__inline static INT_PTR Utils_RestoreWindowPosition(HWND hwnd,HANDLE hContact,const char *szModule,const char *szNamePrefix) {
 	SAVEWINDOWPOS swp;
 	swp.hwnd=hwnd; swp.hContact=hContact; swp.szModule=szModule; swp.szNamePrefix=szNamePrefix;
 	return CallService(MS_UTILS_RESTOREWINDOWPOSITION,0,(LPARAM)&swp);
 }
-__inline static int Utils_RestoreWindowPositionNoSize(HWND hwnd,HANDLE hContact,const char *szModule,const char *szNamePrefix) {
+__inline static INT_PTR Utils_RestoreWindowPositionNoSize(HWND hwnd,HANDLE hContact,const char *szModule,const char *szNamePrefix) {
 	SAVEWINDOWPOS swp;
 	swp.hwnd=hwnd; swp.hContact=hContact; swp.szModule=szModule; swp.szNamePrefix=szNamePrefix;
 	return CallService(MS_UTILS_RESTOREWINDOWPOSITION,RWPF_NOSIZE,(LPARAM)&swp);
 }
-__inline static int Utils_RestoreWindowPositionNoMove(HWND hwnd,HANDLE hContact,const char *szModule,const char *szNamePrefix) {
+__inline static INT_PTR Utils_RestoreWindowPositionNoMove(HWND hwnd,HANDLE hContact,const char *szModule,const char *szNamePrefix) {
 	SAVEWINDOWPOS swp;
 	swp.hwnd=hwnd; swp.hContact=hContact; swp.szModule=szModule; swp.szNamePrefix=szNamePrefix;
 	return CallService(MS_UTILS_RESTOREWINDOWPOSITION,RWPF_NOMOVE,(LPARAM)&swp);
@@ -306,10 +312,58 @@ __inline static int Utils_RestoreWindowPositionNoMove(HWND hwnd,HANDLE hContact,
 //Always returns 0
 #define MS_UTILS_GETRANDOM "Utils/GetRandom"
 
+//Replace variables in text
+//wParam=(char*/TCHAR*/WCHAR*)string (depends on RVF_UNICODE/RVF_TCHAR flag)
+//lParam=(REPLACEVARSDATA *) data about variables, item with key=0 terminates the list
+//returns new string, use mir_free to destroy
+typedef struct
+{
+	union
+	{
+		TCHAR *lptzKey;
+		char *lpszKey;
+		WCHAR *lpwzKey;
+	};
+	union
+	{
+		TCHAR *lptzValue;
+		char *lpszValue;
+		WCHAR *lpwzValue;
+	};
+} REPLACEVARSARRAY;
+
+typedef struct
+{
+	int cbSize;
+	DWORD dwFlags;
+	HANDLE hContact;
+	REPLACEVARSARRAY *variables;
+} REPLACEVARSDATA;
+
+#define RVF_UNICODE	1
 #ifdef _UNICODE
-	#define MS_UTILS_PATHTORELATIVEW "Utils/PathToRelativeW"
-	#define MS_UTILS_PATHTOABSOLUTEW "Utils/PathToAbsoluteW"
-	#define MS_UTILS_CREATEDIRTREEW "Utils/CreateDirTreeW"
+	#define RVF_TCHAR	RVF_UNICODE
+#else
+	#define RVF_TCHAR	0
+#endif
+
+#define MS_UTILS_REPLACEVARS "Utils/ReplaceVars"
+
+__inline static char* Utils_ReplaceVars(char *szData) {
+	REPLACEVARSDATA dat = {0};
+	dat.cbSize = sizeof(dat);
+	return (char*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)szData, (LPARAM)&dat);
+}
+__inline static TCHAR* Utils_ReplaceVarsT(TCHAR *szData) {
+	REPLACEVARSDATA dat = {0};
+	dat.cbSize = sizeof(dat);
+    dat.dwFlags = RVF_TCHAR;
+	return (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)szData, (LPARAM)&dat);
+}
+#ifdef _UNICODE
+	#define MS_UTILS_PATHTORELATIVEW  "Utils/PathToRelativeW"
+	#define MS_UTILS_PATHTOABSOLUTEW  "Utils/PathToAbsoluteW"
+	#define MS_UTILS_CREATEDIRTREEW   "Utils/CreateDirTreeW"
 
 	#define MS_UTILS_PATHTORELATIVET MS_UTILS_PATHTORELATIVEW
 	#define MS_UTILS_PATHTOABSOLUTET MS_UTILS_PATHTOABSOLUTEW
@@ -346,7 +400,7 @@ struct MD5_INTERFACE
 
 #define MS_SYSTEM_GET_MD5I	"Miranda/System/GetMD5I"
 
-static __inline int mir_getMD5I( struct MD5_INTERFACE* dest )
+static __inline INT_PTR mir_getMD5I( struct MD5_INTERFACE* dest )
 {
 	dest->cbSize = sizeof(*dest);
 	return CallService( MS_SYSTEM_GET_MD5I, 0, (LPARAM)dest );
@@ -386,7 +440,7 @@ struct SHA1_INTERFACE
 
 #define MS_SYSTEM_GET_SHA1I  "Miranda/System/GetSHA1I"
 
-static __inline int mir_getSHA1I( struct SHA1_INTERFACE* dest )
+static __inline INT_PTR mir_getSHA1I( struct SHA1_INTERFACE* dest )
 {
 	dest->cbSize = sizeof(*dest);
 	return CallService( MS_SYSTEM_GET_SHA1I, 0, (LPARAM)dest );

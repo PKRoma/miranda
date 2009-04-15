@@ -1,6 +1,24 @@
+/*
+Plugin of Miranda IM for communicating with users of the AIM protocol.
+Copyright (c) 2008-2009 Boris Krasnovskiy
+Copyright (C) 2005-2006 Aaron Myles Landwehr
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 #ifndef FILE_H
 #define FILE_H
-#include "defines.h"
+
 class oft2//oscar file transfer 2 class- See On_Sending_Files_via_OSCAR.pdf
  {
  public:
@@ -34,19 +52,27 @@ class oft2//oscar file transfer 2 class- See On_Sending_Files_via_OSCAR.pdf
 	unsigned short sub_encoding;//192
 	unsigned char filename[64];//256
  };
+
 class file_transfer
 {
 public:
 	HANDLE hContact;
-	char cookie[8];
+    char* sn;
+	char icbm_cookie[8];
 	char* file;
 	unsigned long total_size;
+
 	//below is for when receiving only
-	unsigned long ip;
+	unsigned long local_ip;
+	unsigned long verified_ip;
+	unsigned long proxy_ip;
 	unsigned short port;
 	char* message;
-}extern *fu;
 
-void sending_file(HANDLE hContact, HANDLE hNewConnection);
-void receiving_file(HANDLE hContact, HANDLE hNewConnection);
+	bool force_proxy;
+
+	file_transfer()  { memset(this, 0, sizeof(*this)); }
+	~file_transfer() { mir_free(file); mir_free(sn); }
+};
+
 #endif

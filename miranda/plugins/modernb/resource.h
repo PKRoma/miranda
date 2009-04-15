@@ -11,6 +11,7 @@
 #define IDD_OPT_CLIST                   126
 #define IDD_OPT_SOUND                   134
 #define IDD_OPT_HOTKEYS                 134
+#define IDD_OPT_CLIST_LISTBKG           135
 #define IDI_URL                         138
 #define IDI_FINDUSER                    161
 #define IDI_OPTIONS                     163
@@ -49,6 +50,7 @@
 #define IDD_ICONINDEX                   227
 #define IDD_OPT_CLC                     228
 #define IDD_OPT_CLCTEXT                 229
+#define IDD_OPT_TRAY                    229
 #define IDD_INFO_LOCATION               231
 #define IDD_INFO_WORK                   232
 #define IDD_ADDPHONE                    233
@@ -76,6 +78,7 @@
 #define IDD_OPT_META_CLC                279
 #define IDI_NEWGROUP                    282
 #define IDI_NEWGROUP2                   283
+#define IDD_MODERNOPTS                  288
 #define IDI_ICON1                       290
 #define IDC_DEFAULTSUB                  293
 #define IDC_DROPMETA                    295
@@ -145,6 +148,7 @@
 #define IDI_FAVORITE_3                  503
 #define IDI_SETVIEW                     504
 #define IDI_RESETVIEW                   505
+#define IDI_ACCMGR                      282
 #define IDD_OPT_TOOLBAR                 507
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_SAVE                        1001
@@ -515,6 +519,7 @@
 #define IDC_ADVANCEDGROUP               1402
 #define IDC_BYADVANCED                  1403
 #define IDC_ADVANCED                    1404
+#define IDC_CHECK13                     1434
 #define IDC_STSIMPLERIGHT               1440
 #define IDC_NETLIBUSERS                 1443
 #define IDC_STOFTENPORT                 1445
@@ -617,20 +622,26 @@
 #define IDC_METADBLCLK                  1612
 #define IDC_NOSCROLLBAR                 1613
 #define IDC_METAEXPAND                  1613
+#define IDC_AEROGLASS                   1613
 #define IDC_METASUBEXTRA                1614
 #define IDC_METASUBEXTRA_IGN            1615
 #define IDC_METASUB_HIDEOFFLINE         1616
 #define IDC_MIN_ROW_HEIGHT              1616
 #define IDC_MIN_ROW_HEIGHT_SPIN         1617
+#define IDC_TXT_TITLE1                  1617
 #define IDC_ROW_BORDER                  1618
+#define IDC_TXT_TITLE2                  1618
 #define IDC_ROW_BORDER_SPIN             1619
 #define IDC_AVATAR_SIZE                 1620
+#define IDC_TXT_TITLE4                  1620
 #define IDC_AVATAR_SIZE_SPIN            1621
 #define IDC_ROW_BORDER2                 1622
 #define IDC_AVATAR_CUSTOM_CORNER_SIZE   1622
+#define IDC_TXT_TITLE5                  1622
 #define IDC_ROW_BORDER3                 1623
 #define IDC_AVATAR_SIZE_SPIN2           1623
 #define IDC_AVATAR_CUSTOM_CORNER_SIZE_SPIN 1623
+#define IDC_TXT_TITLE3                  1623
 #define IDC_ROW_BORDER_SPIN2            1624
 #define IDC_AVATAR_WIDTH                1624
 #define IDC_ROW_BORDER_SPIN3            1625
@@ -671,6 +682,7 @@
 #define IDC_HILIGHTMODE3                1661
 #define IDC_SLOC                        1661
 #define IDC_ONDESKTOP                   1662
+#define IDC_HILIGHTMODE4                1663
 #define IDC_SETHOTKEY                   1759
 #define IDC_HKTITLE                     1760
 #define IDC_CHECK1                      1761
@@ -684,6 +696,7 @@
 #define IDC_CHECK_COLOR                 1762
 #define IDC_SHOW_STATUS_IF_NOAWAY       1762
 #define IDC_CHECK6                      1762
+#define IDC_CHECK_AUTOSIZE              1762
 #define IDC_DISCOVER_AWAYMSG            1763
 #define IDC_OFFSETSPIN                  1763
 #define IDC_CHECK_IMAGE                 1763
@@ -726,6 +739,7 @@
 #define IDC_EDIT_FILENAME               1773
 #define IDC_EDIT_FILENAME2              1774
 #define IDC_EDIT_SKIN_FILENAME          1774
+#define IDC_OFFSETICON4                 1774
 #define IDC_EDIT_LEFT                   1775
 #define IDC_EDIT_RIGHT                  1776
 #define IDC_EDIT_TOP                    1777
@@ -783,6 +797,8 @@
 #define IDC_SNAPTOEDGES                 1808
 #define IDC_LAYERENGINE2                1808
 #define IDC_CHECK4                      1809
+#define IDC_SNAPTOEDGES2                1809
+#define IDC_DOCKTOSIDES                 1809
 #define IDC_CHECK5                      1810
 #define IDC_RADIO1                      1811
 #define IDC_AVATAR_OVERLAY_ICON_NORMAL  1811
@@ -906,6 +922,24 @@
 #define IDC_SPIN_W                      2014
 #define IDC_SPIN_H                      2015
 #define IDC_SPIN_S                      2016
+#define IDC_CHECK_MULTILINE             2017
+#define IDC_CHECK_ATOSIZE               2018
+#define IDC_SBAR_HORIZ_ALIGN            2019
+#define IDC_SBAR_TOP_BORDER             2020
+#define IDC_SBAR_BOTTOM_BORDER          2021
+#define IDC_STATUSBAR_PER_PROTO         2022
+#define IDC_OFFSETICON_RIGHT            2023
+#define IDC_OFFSETSPIN_RIGHT            2024
+#define IDC_OFFSETICON_LEFT             2025
+#define IDC_OFFSETSPIN_LEFT             2026
+#define IDC_STATUSBAR_PROTO_LIST        2027
+#define IDC_SBAR_USE_ACCOUNT_SETTINGS   2028
+#define IDC_SBAR_HIDE_ACCOUNT_COMPLETELY 2029
+#define IDC_SBAR_BORDER_TOP             2030
+#define IDC_SBAR_BORDER_TOP_SPIN        2031
+#define IDC_SBAR_BORDER_BOTTOM          2032
+#define IDC_SBAR_BORDER_BOTTOM_SPIN     2033
+#define IDC_SBAR_VERT_ALIGN             2034
 #define IDC_CLSORT1                     6666
 #define IDC_CLSORT2                     6667
 #define IDC_CLSORT3                     6668
@@ -928,6 +962,8 @@
 #define IDC_SHOW_ANIAVATARS             11722
 #define IDC_SHOW_STATUSMSG              11723
 #define IDC_HIDE_ICON_ON_AVATAR         11723
+#define IDC_SHOW_ANIAVATARS2            11723
+#define IDC_AVATAR_FASTDRAW             11723
 #define IDC_SHOW_STATUSMSG2             11724
 #define IDC_SHOW_STATUS_MSG             11724
 #define IDC_SUBIDENTCAPT2               11767
@@ -968,8 +1004,10 @@
 #define IDC_LASTMESSAGEUNIT             19123
 #define IDC_STATIC1                     19124
 #define IDC_RESETMODES                  19125
+#define IDC_LASTMSG2                    19125
 #define IDC_SELECTMODE                  19126
 #define IDC_CONFIGUREMODES              19127
+#define IDC_USEGROUPS                   19128
 #define IDI_SEARCHALL                   32548
 #define ID_ICQ_EXIT                     40001
 #define IDM_COPY                        40001
@@ -1002,9 +1040,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        508
+#define _APS_NEXT_RESOURCE_VALUE        509
 #define _APS_NEXT_COMMAND_VALUE         40022
-#define _APS_NEXT_CONTROL_VALUE         2017
+#define _APS_NEXT_CONTROL_VALUE         2024
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -34,17 +34,13 @@ static HANDLE hCListShutdown = 0;
 HMENU BuildGroupPopupMenu( struct ClcGroup* group );
 
 void  CalcEipPosition( struct ClcData *dat, struct ClcContact *contact, struct ClcGroup *group, POINT *result);
-void  CheckPDNCE(pdisplayNameCacheEntry);
+void  CheckPDNCE(ClcCacheEntryBase*);
 void  CluiProtocolStatusChanged( int, const char* );
 int   CompareContacts( const struct ClcContact *contact1, const struct ClcContact *contact2 );
-void  FreeDisplayNameCacheItem( pdisplayNameCacheEntry p );
+void  FreeDisplayNameCacheItem(ClcCacheEntryBase*);
 void  GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour);
-int   HotKeysProcess(HWND hwnd,WPARAM wParam,LPARAM lParam);
-int   HotkeysProcessMessage(WPARAM wParam,LPARAM lParam);
-int   HotKeysRegister(HWND hwnd);
 void  RebuildEntireList(HWND hwnd,struct ClcData *dat);
 void  RecalcScrollBar(HWND hwnd,struct ClcData *dat);
-int   UnRegistersAllHotkey(HWND hwnd);
 
 struct ClcGroup* ( *saveAddGroup )(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers);
 struct ClcGroup* ( *saveRemoveItemFromGroup )(HWND hwnd,struct ClcGroup *group,struct ClcContact *contact,int updateTotalCount);
@@ -66,8 +62,8 @@ int AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText);
 void ( *saveSortCLC )(HWND hwnd,struct ClcData *dat,int useInsertionSort);
 void SortCLC(HWND hwnd,struct ClcData *dat,int useInsertionSort);
 
-int ( *saveTrayIconProcessMessage )(WPARAM wParam,LPARAM lParam);
-int TrayIconProcessMessage(WPARAM wParam,LPARAM lParam);
+INT_PTR ( *saveTrayIconProcessMessage )(WPARAM wParam,LPARAM lParam);
+INT_PTR TrayIconProcessMessage(WPARAM wParam,LPARAM lParam);
 
 int  (*saveIconFromStatusMode)(const char *szProto,int nStatus, HANDLE hContact);
 int  cli_IconFromStatusMode(const char *szProto,int nStatus, HANDLE hContact);
@@ -84,11 +80,11 @@ PLUGININFOEX pluginInfo = {
 	#else
 		"MultiWindow Contact List",
 	#endif
-	PLUGIN_MAKE_VERSION(0,3,4,6),
+	PLUGIN_MAKE_VERSION(0,8,0,1),
 	"Display contacts, event notifications, protocol status with MW modifications",
 	"",
 	"bethoven@mailgate.ru" ,
-	"Copyright 2000-2006 Miranda-IM project ["__DATE__" "__TIME__"]",
+	"Copyright 2000-2008 Miranda-IM project ["__DATE__" "__TIME__"]",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	DEFMOD_CLISTALL,
@@ -108,7 +104,8 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 
 __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,3,4,3) ) return NULL;
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,8,0,9) )
+		return NULL;
 	return &pluginInfo;
 }
 
@@ -121,6 +118,7 @@ __declspec(dllexport) const MUUID * MirandaPluginInterfaces(void)
 int LoadContactListModule(void);
 int LoadCLCModule(void);
 int LoadCLUIModule();
+int InitSkinHotKeys();
 
 static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
@@ -134,10 +132,12 @@ static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 
+	InitSkinHotKeys();
+
 	return 0;
 }
 
-int SetDrawer(WPARAM wParam,LPARAM lParam)
+INT_PTR SetDrawer(WPARAM wParam,LPARAM lParam)
 {
 	pDrawerServiceStruct DSS=(pDrawerServiceStruct)wParam;
 	if (DSS->cbSize!=sizeof(*DSS)) return -1;
@@ -185,12 +185,12 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		CallService(MS_SYSTEM_GET_LI, 0, (LPARAM)&li);
 
 		pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
-		if ( (int)pcli == CALLSERVICE_NOTFOUND ) {
+		if ( (INT_PTR)pcli == CALLSERVICE_NOTFOUND ) {
 LBL_Error:
-			MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.7.0.8 or later", "Fatal error", MB_OK );
+			MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.8.0.9 or later", "Fatal error", MB_OK );
 			return 1;
 		}
-		if ( pcli->version < 4 )
+		if ( pcli->version < 6 )
 			goto LBL_Error;
 
 		pcli->pfnBuildGroupPopupMenu = BuildGroupPopupMenu;
@@ -206,10 +206,6 @@ LBL_Error:
 		pcli->pfnGetRowsPriorTo = GetRowsPriorTo;
 		pcli->pfnGetRowByIndex = GetRowByIndex;
 		pcli->pfnHitTest = HitTest;
-		pcli->pfnHotKeysProcess = HotKeysProcess;
-		pcli->pfnHotkeysProcessMessage = HotkeysProcessMessage;
-		pcli->pfnHotKeysRegister = HotKeysRegister;
-		pcli->pfnHotKeysUnregister = UnRegistersAllHotkey;
 		pcli->pfnPaintClc = PaintClc;
 		pcli->pfnRebuildEntireList = RebuildEntireList;
 		pcli->pfnRecalcScrollBar = RecalcScrollBar;

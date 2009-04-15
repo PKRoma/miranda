@@ -1,7 +1,7 @@
 /*
 Chat module plugin for Miranda IM
 
-Copyright (C) 2003 Jörgen Persson
+Copyright (C) 2003 Jï¿½rgen Persson
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,9 +17,6 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#if defined(UNICODE) && !defined( _UNICODE)
-#define _UNICODE
-#endif
 
 #ifndef _CHAT_H_
 #define _CHAT_H_
@@ -27,19 +24,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #pragma warning( disable : 4786 ) // limitation in MSVC's debugger.
 #pragma warning( disable : 4996 ) // limitation in MSVC's debugger.
 
-#define WIN32_LEAN_AND_MEAN	
+#define WIN32_LEAN_AND_MEAN
+
 #define _WIN32_WINNT 0x0501
 
-#define _USE_32BIT_TIME_T
+#include "m_stdhdr.h"
 
-#include <tchar.h>
 #include <windows.h>
 #include <commctrl.h>
 #include <richedit.h>
 #include <process.h>
 #include <ole2.h>
 #include <richole.h>
-#include <malloc.h>
+#include <tom.h>
 #include <commdlg.h>
 #include <time.h>
 #include <stdio.h>
@@ -58,18 +55,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../../../include/m_addcontact.h"
 #include "../../../include/m_clist.h"
 #include "../../../include/m_clui.h"
-#include "../../../include/m_popup.h"
+//#include "../../../include/m_popup.h"
 #include "chat_resource.h"
 #include "m_chat.h"
-#include "../m_ieview.h"
-#include "../m_smileyadd.h"
+#include "../API/m_ieview.h"
+#include "../API/m_smileyadd.h"
 
+#ifdef _MSC_VER
 #ifndef NDEBUG
 #include <crtdbg.h>
 #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #endif
-
-#define __MATHMOD_SUPPORT 1
+#endif
 
 //defines
 #define OPTIONS_FONTCOUNT 20
@@ -130,7 +127,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // special service for tweaking performance
 #define MS_GC_GETEVENTPTR  "GChat/GetNewEventPtr"
-typedef int (*GETEVENTFUNC)(WPARAM wParam, LPARAM lParam);
+typedef INT_PTR (*GETEVENTFUNC)(WPARAM wParam, LPARAM lParam);
 typedef struct  {
 	GETEVENTFUNC pfnAddEvent;
 }GCPTRS;
@@ -180,7 +177,7 @@ typedef struct LOG_INFO_TYPE
 {
 	TCHAR*  ptszText;
 	TCHAR*  ptszNick;
-	TCHAR*  ptszUID;	
+	TCHAR*  ptszUID;
 	TCHAR*  ptszStatus;
 	TCHAR*  ptszUserInfo;
 	BOOL    bIsMe;
@@ -206,7 +203,7 @@ typedef struct  USERINFO_TYPE
 {
 	TCHAR* pszNick;
 	TCHAR* pszUID;
-	WORD   Status;	
+	WORD   Status;
 	int    iStatusEx;
 	WORD   ContactStatus;
 	struct USERINFO_TYPE *next;
@@ -250,6 +247,7 @@ typedef struct SESSION_INFO_TYPE
 	int         iLogFilterFlags;
     int         iLogPopupFlags;
     int         iLogTrayFlags;
+	int         iDiskLogFlags;
 	int         nUsersInNicklist;
 	int         iEventCount;
 	int         iX;
@@ -266,8 +264,9 @@ typedef struct SESSION_INFO_TYPE
 	HANDLE      hContact;
 	HWND        hwndStatus;
 	time_t      LastTime;
-
-	COMMAND_INFO*  lpCommands; 
+    TCHAR          szSearch[255];
+    int            iSearchItem;
+	COMMAND_INFO*  lpCommands;
 	COMMAND_INFO*  lpCurrentCommand;
 	LOGINFO*       pLog;
 	LOGINFO*       pLogEnd;
@@ -277,8 +276,7 @@ typedef struct SESSION_INFO_TYPE
 	struct         ContainerWindowData *pContainer;
    int            wasTrimmed;
 	struct SESSION_INFO_TYPE *next;
-}
-	SESSION_INFO;
+}	SESSION_INFO;
 
 typedef struct
 {
@@ -307,13 +305,14 @@ struct GlobalLogSettings_t {
 	BOOL        StripFormat;
 	BOOL        SoundsFocus;
 	BOOL        SkipWhenNoWindow;
+	BOOL        BBCodeInPopups;
 	BOOL        TrayIconInactiveOnly;
 	BOOL        AddColonToAutoComplete;
 	BOOL        LogLimitNames;
 	BOOL        TimeStampEventColour;
 	DWORD       dwIconFlags;
 	int         LogTextIndent;
-	int         LoggingLimit;
+	long        LoggingLimit;
 	int         iEventLimit;
 	int         iPopupStyle;
 	int         iPopupTimeout;
@@ -339,14 +338,21 @@ struct GlobalLogSettings_t {
 	COLORREF    crPUTextColour;
 	COLORREF    crPUBkgColour;
 	BYTE        ClassicIndicators;
+	//MAD
+	BYTE		LogClassicIndicators;
+	BYTE		AlternativeSorting;
+	BYTE		AnnoyingHighlight;
+	BYTE		CreateWindowOnHighlight;
+	//MAD_
 	BYTE        LogSymbols;
 	BYTE        ClickableNicks;
 	BYTE        ColorizeNicks;
+	BYTE        ColorizeNicksInLog;
 	BYTE        ScaleIcons;
 	BYTE        UseDividers;
 	BYTE        DividersUsePopupConfig;
     BYTE        MathMod;
-	COLORREF    nickColors[7];
+	COLORREF    nickColors[8];
 	HBRUSH      SelectionBGBrush;
 	BOOL		DoubleClick4Privat;
 	BOOL		ShowContactStatus;
@@ -362,8 +368,7 @@ typedef struct{
 	HWND          hWndTarget;
 	BOOL          bForeground;
 	SESSION_INFO* si;
-}
-	COLORCHOOSER;
+} COLORCHOOSER;
 
 #pragma comment(lib,"comctl32.lib")
 

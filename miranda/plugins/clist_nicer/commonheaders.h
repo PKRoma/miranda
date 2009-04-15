@@ -21,27 +21,16 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#if defined( UNICODE ) && !defined( _UNICODE )
-#define _UNICODE
-#endif
-
-#define _USE_32BIT_TIME_T
 #define MIRANDA_VER 0x0700
 
-#include <tchar.h>
-
-#ifdef _DEBUG
-#   define _CRTDBG_MAP_ALLOC
-#   include <stdlib.h>
-#   include <crtdbg.h>
-#else
-#	include <malloc.h>
-#endif
-
 #define _WIN32_WINNT 0x0501
-#define _WIN32_IE 0x0500
+#define _WIN32_IE 0x0501
+
+#include <m_stdhdr.h>
+
 #include <windows.h>
 #include <commctrl.h>
+#include <uxtheme.h>
 #include <stdio.h>
 #include <time.h>
 #include <stddef.h>
@@ -83,7 +72,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_genmenu.h"
 #include "m_cluiframes.h"
 #include "m_clui.h"
-#include "icolib.h"
+#include "m_icolib.h"
 #include "m_popup.h"
 #include "m_metacontacts.h"
 #include "m_fontservice.h"
@@ -109,8 +98,12 @@ typedef  void (__cdecl *pfnDrawAlpha)(HDC hdcwnd, PRECT rc, DWORD basecolor, BYT
 
 #define safe_sizeof(a) (sizeof((a)) / sizeof((a)[0]))
 
-extern BOOL __forceinline GetItemByStatus(int status, StatusItems_t *retitem);
+BOOL __forceinline GetItemByStatus(int status, StatusItems_t *retitem);
 
 void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor2, BOOL transparent, BYTE FLG_GRADIENT, BYTE FLG_CORNER, DWORD BORDERSTYLE, ImageItem *item);
 
 void FreeAndNil( void** );
+
+#if _MSC_VER >= 1500
+	#define wEffects wReserved
+#endif

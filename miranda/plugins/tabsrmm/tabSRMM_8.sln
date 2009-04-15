@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tabsrmm_8", "tabsrmm_8.vcproj", "{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tabsrmm", "tabsrmm_8.vcproj", "{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ICONSXP", "icons\ICONSXP\iconsxp_8.vcproj", "{987C5A57-A46B-4779-BB85-077E21F7BF7F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ICONS_NOVA", "icons\ICONS_NOVA\ICONS_NOVA.vcproj", "{F553F140-B7D3-4984-90B1-00D4831B8A6E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,8 +31,19 @@ Global
 		{987C5A57-A46B-4779-BB85-077E21F7BF7F}.Release Unicode|Win32.Build.0 = Release|Win32
 		{987C5A57-A46B-4779-BB85-077E21F7BF7F}.Release|Win32.ActiveCfg = Release|Win32
 		{987C5A57-A46B-4779-BB85-077E21F7BF7F}.Release|Win32.Build.0 = Release|Win32
+		{F553F140-B7D3-4984-90B1-00D4831B8A6E}.Debug Unicode|Win32.ActiveCfg = Debug|Win32
+		{F553F140-B7D3-4984-90B1-00D4831B8A6E}.Debug Unicode|Win32.Build.0 = Debug|Win32
+		{F553F140-B7D3-4984-90B1-00D4831B8A6E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F553F140-B7D3-4984-90B1-00D4831B8A6E}.Debug|Win32.Build.0 = Debug|Win32
+		{F553F140-B7D3-4984-90B1-00D4831B8A6E}.Release Unicode|Win32.ActiveCfg = Release|Win32
+		{F553F140-B7D3-4984-90B1-00D4831B8A6E}.Release Unicode|Win32.Build.0 = Release|Win32
+		{F553F140-B7D3-4984-90B1-00D4831B8A6E}.Release|Win32.ActiveCfg = Release|Win32
+		{F553F140-B7D3-4984-90B1-00D4831B8A6E}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		VisualSVNWorkingCopyRoot = 
 	EndGlobalSection
 EndGlobal

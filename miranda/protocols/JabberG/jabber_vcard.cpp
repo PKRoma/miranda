@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2005-09  George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_vcard.cpp,v $
+File name      : $URL$
 Revision       : $Revision$
 Last change on : $Date$
 Last change by : $Author$
@@ -29,196 +29,273 @@ Last change by : $Author$
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <io.h>
-#include <commctrl.h>
 #include "jabber_iq.h"
-#include "resource.h"
 #include "jabber_caps.h"
 
-extern char* jabberVcardPhotoFileName;
-
 /////////////////////////////////////////////////////////////////////////////////////////
 
-static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
-
-int JabberMenuHandleVcard( WPARAM wParam, LPARAM lParam )
+int CJabberProto::SendGetVcard( const TCHAR* jid )
 {
-	if ( IsWindow( hwndJabberVcard ))
-		SetForegroundWindow( hwndJabberVcard );
-	else {
-		hwndJabberVcard = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_VCARD ), NULL, JabberVcardDlgProc, ( LPARAM )NULL );
-	}
+	if (!m_bJabberOnline) return 0;
 
-	return 0;
-}
+	int iqId = SerialNext();
 
-/////////////////////////////////////////////////////////////////////////////////////////
+	// FIXME: maybe _tcscmp?
+	IqAdd( iqId, ( jid == m_szJabberJID ) ? IQ_PROC_GETVCARD : IQ_PROC_NONE, &CJabberProto::OnIqResultGetVcard );
+	m_ThreadInfo->send(
+		XmlNodeIq( _T("get"), iqId, jid ) << XCHILDNS( _T("vCard"), _T(JABBER_FEAT_VCARD_TEMP))
+			<< XATTR( _T("prodid"), _T("-//HandGen//NONSGML vGen v1.0//EN")) << XATTR( _T("version"), _T("2.0")));
 
-int JabberSendGetVcard( const TCHAR* jid )
-{
-	int iqId = JabberSerialNext();
-	JabberIqAdd( iqId, ( jid == jabberJID ) ? IQ_PROC_GETVCARD : IQ_PROC_NONE, JabberIqResultGetVcard );
-
-	XmlNodeIq iq( "get", iqId, jid );
-	XmlNode* vs = iq.addChild( "vCard" ); vs->addAttr( "xmlns", JABBER_FEAT_VCARD_TEMP ); 
-	vs->addAttr( "prodid", "-//HandGen//NONSGML vGen v1.0//EN" ); vs->addAttr( "version", "2.0" );
-	jabberThreadInfo->send( iq );
 	return iqId;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-typedef struct {
-	HWND hwnd;
-	int dlgId;
-	DLGPROC dlgProc;
-} VcardPage;
-
-typedef struct {
-	int pageCount;
-	int currentPage;
-	RECT rectTab;
-	VcardPage *page;
-	BOOL changed;
-	int updateAnimFrame;
-	TCHAR* szUpdating;
-	BOOL animating;
-} VcardTab;
-
-static void SetDialogField( HWND hwndDlg, int nDlgItem, char* key )
+static void SetDialogField( CJabberProto* ppro, HWND hwndDlg, int nDlgItem, char* key )
 {
 	DBVARIANT dbv;
 
-	if ( !DBGetContactSettingTString( NULL, jabberProtoName, key, &dbv )) {
+	if ( !DBGetContactSettingTString( NULL, ppro->m_szModuleName, key, &dbv )) {
 		SetDlgItemText( hwndDlg, nDlgItem, dbv.ptszVal );
 		JFreeVariant( &dbv );
 	}
 	else SetDlgItemTextA( hwndDlg, nDlgItem, "" );
 }
 
-static BOOL CALLBACK PersonalDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK PersonalDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
+	const unsigned long iPageId = 0;
+	CJabberProto* ppro = ( CJabberProto* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
+
 	switch ( msg ) {
 	case WM_INITDIALOG:
+		if (!lParam) break; // Launched from userinfo
+		ppro = ( CJabberProto* )lParam;
 		TranslateDialogDefault( hwndDlg );
 		SendMessage( GetDlgItem( hwndDlg, IDC_GENDER ), CB_ADDSTRING, 0, ( LPARAM )TranslateT( "Male" ));
 		SendMessage( GetDlgItem( hwndDlg, IDC_GENDER ), CB_ADDSTRING, 0, ( LPARAM )TranslateT( "Female" ));
-		SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
+		SendMessage( hwndDlg, WM_JABBER_REFRESH_VCARD, 0, 0 );
+		ppro->WindowSubscribe(hwndDlg);
 		return TRUE;
-	case WM_JABBER_REFRESH:
-		SetDialogField( hwndDlg, IDC_FULLNAME, "FullName" );
-		SetDialogField( hwndDlg, IDC_NICKNAME, "Nick" );
-		SetDialogField( hwndDlg, IDC_FIRSTNAME, "FirstName" );
-		SetDialogField( hwndDlg, IDC_MIDDLE, "MiddleName" );
-		SetDialogField( hwndDlg, IDC_LASTNAME, "LastName" );
-		SetDialogField( hwndDlg, IDC_BIRTH, "BirthDate" );
-		SetDialogField( hwndDlg, IDC_GENDER, "GenderString" );
-		SetDialogField( hwndDlg, IDC_OCCUPATION, "Role" );
-		SetDialogField( hwndDlg, IDC_HOMEPAGE, "Homepage" );
+	case WM_JABBER_REFRESH_VCARD:
+	{
+		SetDialogField( ppro, hwndDlg, IDC_FULLNAME, "FullName" );
+		SetDialogField( ppro, hwndDlg, IDC_NICKNAME, "Nick" );
+		SetDialogField( ppro, hwndDlg, IDC_FIRSTNAME, "FirstName" );
+		SetDialogField( ppro, hwndDlg, IDC_MIDDLE, "MiddleName" );
+		SetDialogField( ppro, hwndDlg, IDC_LASTNAME, "LastName" );
+		SetDialogField( ppro, hwndDlg, IDC_BIRTH, "BirthDate" );
+		SetDialogField( ppro, hwndDlg, IDC_GENDER, "GenderString" );
+		SetDialogField( ppro, hwndDlg, IDC_OCCUPATION, "Role" );
+		SetDialogField( ppro, hwndDlg, IDC_HOMEPAGE, "Homepage" );
 		break;
+	}
 	case WM_COMMAND:
 		if (( ( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE ) ||
 			(( HWND )lParam==GetDlgItem( hwndDlg, IDC_GENDER ) && ( HIWORD( wParam )==CBN_EDITCHANGE||HIWORD( wParam )==CBN_SELCHANGE )) )
-			SendMessage( GetParent( hwndDlg ), WM_JABBER_CHANGED, 0, 0 );
+		{
+			ppro->m_vCardUpdates |= (1UL<<iPageId);
+			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+		}
+		break;
+	case WM_NOTIFY:
+		if (((LPNMHDR)lParam)->idFrom == 0) {
+			switch (((LPNMHDR)lParam)->code) {
+			case PSN_PARAMCHANGED:
+				SendMessage(hwndDlg, WM_INITDIALOG, 0, ((PSHNOTIFY*)lParam)->lParam);
+				break;
+			case PSN_APPLY:
+				ppro->m_vCardUpdates &= ~(1UL<<iPageId);
+				ppro->SaveVcardToDB( hwndDlg, iPageId );
+				if (!ppro->m_vCardUpdates)
+					ppro->SetServerVcard( ppro->m_bPhotoChanged, ppro->m_szPhotoFileName );
+				break;
+		}	}
+		break;
+	case WM_DESTROY:
+		ppro->WindowUnsubscribe(hwndDlg);
 		break;
 	}
 	return FALSE;
 }
 
-static BOOL CALLBACK HomeDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK HomeDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
+	const unsigned long iPageId = 1;
+	CJabberProto* ppro = ( CJabberProto* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
+
 	switch ( msg ) {
 	case WM_INITDIALOG:
+		if (!lParam) break; // Launched from userinfo
+		ppro = ( CJabberProto* )lParam;
 		TranslateDialogDefault( hwndDlg );
-		SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
+		SendMessage( hwndDlg, WM_JABBER_REFRESH_VCARD, 0, 0 );
+		ppro->WindowSubscribe(hwndDlg);
 		return TRUE;
-	case WM_JABBER_REFRESH:
-		SetDialogField( hwndDlg, IDC_ADDRESS1, "Street" );
-		SetDialogField( hwndDlg, IDC_ADDRESS2, "Street2" );
-		SetDialogField( hwndDlg, IDC_CITY, "City" );
-		SetDialogField( hwndDlg, IDC_STATE, "State" );
-		SetDialogField( hwndDlg, IDC_ZIP, "ZIP" );
-		SetDialogField( hwndDlg, IDC_COUNTRY, "CountryName" );
+	case WM_JABBER_REFRESH_VCARD:
+	{
+		SetDialogField( ppro, hwndDlg, IDC_ADDRESS1, "Street" );
+		SetDialogField( ppro, hwndDlg, IDC_ADDRESS2, "Street2" );
+		SetDialogField( ppro, hwndDlg, IDC_CITY, "City" );
+		SetDialogField( ppro, hwndDlg, IDC_STATE, "State" );
+		SetDialogField( ppro, hwndDlg, IDC_ZIP, "ZIP" );
+		SetDialogField( ppro, hwndDlg, IDC_COUNTRY, "CountryName" );
 		break;
+	}
 	case WM_COMMAND:
 		if (( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE )
-			SendMessage( GetParent( hwndDlg ), WM_JABBER_CHANGED, 0, 0 );
+		{
+			ppro->m_vCardUpdates |= (1UL<<iPageId);
+			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+		}
+		break;
+	case WM_NOTIFY:
+		if (((LPNMHDR)lParam)->idFrom == 0) {
+			switch (((LPNMHDR)lParam)->code) {
+			case PSN_PARAMCHANGED:
+				SendMessage(hwndDlg, WM_INITDIALOG, 0, ((PSHNOTIFY*)lParam)->lParam);
+				break;
+			case PSN_APPLY:
+				ppro->m_vCardUpdates &= ~(1UL<<iPageId);
+				ppro->SaveVcardToDB( hwndDlg, iPageId );
+				if (!ppro->m_vCardUpdates)
+					ppro->SetServerVcard( ppro->m_bPhotoChanged, ppro->m_szPhotoFileName );
+				break;
+		}	}
+		break;
+	case WM_DESTROY:
+		ppro->WindowUnsubscribe(hwndDlg);
 		break;
 	}
 	return FALSE;
 }
 
-static BOOL CALLBACK WorkDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK WorkDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
+	const unsigned long iPageId = 2;
+	CJabberProto* ppro = ( CJabberProto* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
+
 	switch ( msg ) {
 	case WM_INITDIALOG:
+		if (!lParam) break; // Launched from userinfo
+		ppro = ( CJabberProto* )lParam;
 		TranslateDialogDefault( hwndDlg );
-		SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
+		SendMessage( hwndDlg, WM_JABBER_REFRESH_VCARD, 0, 0 );
+		ppro->WindowSubscribe(hwndDlg);
 		return TRUE;
-	case WM_JABBER_REFRESH:
-		SetDialogField( hwndDlg, IDC_COMPANY, "Company" );
-		SetDialogField( hwndDlg, IDC_DEPARTMENT, "CompanyDepartment" );
-		SetDialogField( hwndDlg, IDC_TITLE, "CompanyPosition" );
-		SetDialogField( hwndDlg, IDC_ADDRESS1, "CompanyStreet" );
-		SetDialogField( hwndDlg, IDC_ADDRESS2, "CompanyStreet2" );
-		SetDialogField( hwndDlg, IDC_CITY, "CompanyCity" );
-		SetDialogField( hwndDlg, IDC_STATE, "CompanyState" );
-		SetDialogField( hwndDlg, IDC_ZIP, "CompanyZIP" );
-		SetDialogField( hwndDlg, IDC_COUNTRY, "CompanyCountryName" );
+	case WM_JABBER_REFRESH_VCARD:
+	{
+		SetDialogField( ppro, hwndDlg, IDC_COMPANY, "Company" );
+		SetDialogField( ppro, hwndDlg, IDC_DEPARTMENT, "CompanyDepartment" );
+		SetDialogField( ppro, hwndDlg, IDC_TITLE, "CompanyPosition" );
+		SetDialogField( ppro, hwndDlg, IDC_ADDRESS1, "CompanyStreet" );
+		SetDialogField( ppro, hwndDlg, IDC_ADDRESS2, "CompanyStreet2" );
+		SetDialogField( ppro, hwndDlg, IDC_CITY, "CompanyCity" );
+		SetDialogField( ppro, hwndDlg, IDC_STATE, "CompanyState" );
+		SetDialogField( ppro, hwndDlg, IDC_ZIP, "CompanyZIP" );
+		SetDialogField( ppro, hwndDlg, IDC_COUNTRY, "CompanyCountryName" );
 		break;
+	}
 	case WM_COMMAND:
 		if (( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE )
-			SendMessage( GetParent( hwndDlg ), WM_JABBER_CHANGED, 0, 0 );
+		{
+			ppro->m_vCardUpdates |= (1UL<<iPageId);
+			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+		}
+		break;
+	case WM_NOTIFY:
+		if (((LPNMHDR)lParam)->idFrom == 0) {
+			switch (((LPNMHDR)lParam)->code) {
+			case PSN_PARAMCHANGED:
+				SendMessage(hwndDlg, WM_INITDIALOG, 0, ((PSHNOTIFY*)lParam)->lParam);
+				break;
+			case PSN_APPLY:
+				ppro->m_vCardUpdates &= ~(1UL<<iPageId);
+				ppro->SaveVcardToDB( hwndDlg, iPageId );
+				if (!ppro->m_vCardUpdates)
+					ppro->SetServerVcard( ppro->m_bPhotoChanged, ppro->m_szPhotoFileName );
+				break;
+		}	}
+		break;
+	case WM_DESTROY:
+		ppro->WindowUnsubscribe(hwndDlg);
 		break;
 	}
 	return FALSE;
 }
 
-static char szPhotoFileName[MAX_PATH];
-static char szPhotoType[33];
-static BOOL bPhotoChanged;
+/////////////////////////////////////////////////////////////////////////////////////////
 
-static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+struct PhotoDlgProcData
 {
-	static HBITMAP hBitmap;
-	char szTempPath[MAX_PATH], szTempFileName[MAX_PATH];
+	CJabberProto* ppro;
+//	char szPhotoFileName[MAX_PATH];
+//	BOOL bPhotoChanged;
+	HBITMAP hBitmap;
+};
+
+static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+{
+	const unsigned long iPageId = 3;
+
+	char szAvatarFileName[ MAX_PATH ], szTempPath[MAX_PATH], szTempFileName[MAX_PATH];
+	PhotoDlgProcData* dat = ( PhotoDlgProcData* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
+		if (!lParam) break; // Launched from userinfo
 		TranslateDialogDefault( hwndDlg );
-		hBitmap = NULL;
 		SendMessage( GetDlgItem( hwndDlg, IDC_LOAD ), BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadImage( hInst, MAKEINTRESOURCE( IDI_OPEN ), IMAGE_ICON, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0 ));
+		SendMessage( GetDlgItem( hwndDlg, IDC_LOAD ), BUTTONSETASFLATBTN, 0, 0);
 		SendMessage( GetDlgItem( hwndDlg, IDC_DELETE ), BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadImage( hInst, MAKEINTRESOURCE( IDI_DELETE ), IMAGE_ICON, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0 ));
+		SendMessage( GetDlgItem( hwndDlg, IDC_DELETE ), BUTTONSETASFLATBTN, 0, 0);
 		ShowWindow( GetDlgItem( hwndDlg, IDC_SAVE ), SW_HIDE );
-		SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
+		{
+			dat = new PhotoDlgProcData;
+			dat->ppro = ( CJabberProto* )lParam;
+			dat->hBitmap = NULL;
+			dat->ppro->m_bPhotoChanged = FALSE;
+			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, ( LONG_PTR )dat );
+			dat->ppro->WindowSubscribe(hwndDlg);
+		}
+		SendMessage( hwndDlg, WM_JABBER_REFRESH_VCARD, 0, 0 );
 		return TRUE;
 
-	case WM_JABBER_REFRESH:
-		if ( hBitmap ) {
-			DeleteObject( hBitmap );
-			hBitmap = NULL;
-			DeleteFileA( szPhotoFileName );
-			szPhotoFileName[0] = '\0';
+	case WM_JABBER_REFRESH_VCARD:
+		if ( dat->hBitmap ) {
+			DeleteObject( dat->hBitmap );
+			dat->hBitmap = NULL;
+			DeleteFileA( dat->ppro->m_szPhotoFileName );
+			dat->ppro->m_szPhotoFileName[0] = '\0';
 		}
 		EnableWindow( GetDlgItem( hwndDlg, IDC_DELETE ), FALSE );
-		if ( jabberVcardPhotoFileName ) {
+		dat->ppro->GetAvatarFileName( NULL, szAvatarFileName, sizeof( szAvatarFileName ));
+		if ( _access( szAvatarFileName, 0 ) == 0 ) {
 			if ( GetTempPathA( sizeof( szTempPath ), szTempPath ) <= 0 )
 				strcpy( szTempPath, ".\\" );
 			if ( GetTempFileNameA( szTempPath, "jab", 0, szTempFileName ) > 0 ) {
-				JabberLog( "Temp file = %s", szTempFileName );
-				if ( CopyFileA( jabberVcardPhotoFileName, szTempFileName, FALSE ) == TRUE ) {
-					if (( hBitmap=( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )szTempFileName )) != NULL ) {
-						JabberBitmapPremultiplyChannels(hBitmap);
-						strcpy( szPhotoFileName, szTempFileName );
+				dat->ppro->Log( "Temp file = %s", szTempFileName );
+				if ( CopyFileA( szAvatarFileName, szTempFileName, FALSE ) == TRUE ) {
+					if (( dat->hBitmap=( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )szTempFileName )) != NULL ) {
+						JabberBitmapPremultiplyChannels( dat->hBitmap );
+						strcpy( dat->ppro->m_szPhotoFileName, szTempFileName );
 						EnableWindow( GetDlgItem( hwndDlg, IDC_DELETE ), TRUE );
 					}
 					else DeleteFileA( szTempFileName );
 				}
 				else DeleteFileA( szTempFileName );
-			}
-		}
-		bPhotoChanged = FALSE;
+		}	}
+
+		dat->ppro->m_bPhotoChanged = FALSE;
 		InvalidateRect( hwndDlg, NULL, TRUE );
 		UpdateWindow( hwndDlg );
+		break;
+
+	case WM_JABBER_CHANGED:
+		dat->ppro->SetServerVcard( dat->ppro->m_bPhotoChanged, dat->ppro->m_szPhotoFileName );
 		break;
 
 	case WM_COMMAND:
@@ -243,7 +320,7 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 					struct _stat st;
 					HBITMAP hNewBitmap;
 
-					JabberLog( "File selected is %s", szFileName );
+					dat->ppro->Log( "File selected is %s", szFileName );
 					if ( _stat( szFileName, &st )<0 || st.st_size>40*1024 ) {
 						MessageBox( hwndDlg, TranslateT( "Only JPG, GIF, and BMP image files smaller than 40 KB are supported." ), TranslateT( "Jabber vCard" ), MB_OK|MB_SETFOREGROUND );
 						break;
@@ -251,32 +328,22 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 					if ( GetTempPathA( sizeof( szTempPath ), szTempPath ) <= 0 )
 						strcpy( szTempPath, ".\\" );
 					if ( GetTempFileNameA( szTempPath, "jab", 0, szTempFileName ) > 0 ) {
-						JabberLog( "Temp file = %s", szTempFileName );
+						dat->ppro->Log( "Temp file = %s", szTempFileName );
 						if ( CopyFileA( szFileName, szTempFileName, FALSE ) == TRUE ) {
 							if (( hNewBitmap=( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )szTempFileName )) != NULL ) {
-								if ( hBitmap ) {
-									DeleteObject( hBitmap );
-									DeleteFileA( szPhotoFileName );
+								if ( dat->hBitmap ) {
+									DeleteObject( dat->hBitmap );
+									DeleteFileA( dat->ppro->m_szPhotoFileName );
 								}
 
-								char* p = strrchr( szFileName, '.' );
-								if ( p != NULL ) {
-									if ( !stricmp( p, ".bmp" ))
-										strcpy( szPhotoType, "image/bmp" );
-									else if ( !stricmp( p, ".gif" ))
-										strcpy( szPhotoType, "image/gif" );
-									else
-										strcpy( szPhotoType, "image/jpeg" );
-								}
-								else
-									strcpy( szPhotoType, "image/jpeg" );
-								hBitmap = hNewBitmap;
-								strcpy( szPhotoFileName, szTempFileName );
-								bPhotoChanged = TRUE;
+								dat->hBitmap = hNewBitmap;
+								strcpy( dat->ppro->m_szPhotoFileName, szTempFileName );
+								dat->ppro->m_bPhotoChanged = TRUE;
 								EnableWindow( GetDlgItem( hwndDlg, IDC_DELETE ), TRUE );
 								InvalidateRect( hwndDlg, NULL, TRUE );
 								UpdateWindow( hwndDlg );
-								SendMessage( GetParent( hwndDlg ), WM_JABBER_CHANGED, 0, 0 );
+								dat->ppro->m_vCardUpdates |= (1UL<<iPageId);
+								SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 							}
 							else DeleteFileA( szTempFileName );
 						}
@@ -286,22 +353,23 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			}
 			break;
 		case IDC_DELETE:
-			if ( hBitmap ) {
-				DeleteObject( hBitmap );
-				hBitmap = NULL;
-				DeleteFileA( szPhotoFileName );
-				szPhotoFileName[0] = '\0';
-				bPhotoChanged = TRUE;
+			if ( dat->hBitmap ) {
+				DeleteObject( dat->hBitmap );
+				dat->hBitmap = NULL;
+				DeleteFileA( dat->ppro->m_szPhotoFileName );
+				dat->ppro->m_szPhotoFileName[0] = '\0';
+				dat->ppro->m_bPhotoChanged = TRUE;
 				EnableWindow( GetDlgItem( hwndDlg, IDC_DELETE ), FALSE );
 				InvalidateRect( hwndDlg, NULL, TRUE );
 				UpdateWindow( hwndDlg );
-				SendMessage( GetParent( hwndDlg ), WM_JABBER_CHANGED, 0, 0 );
+				dat->ppro->m_vCardUpdates |= (1UL<<iPageId);
+				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 			}
 			break;
 		}
 		break;
 	case WM_PAINT:
-		if ( hBitmap ) {
+		if ( dat->hBitmap ) {
 			BITMAP bm;
 			HDC hdcMem;
 			HWND hwndCanvas;
@@ -312,9 +380,9 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			hwndCanvas = GetDlgItem( hwndDlg, IDC_CANVAS );
 			hdcCanvas = GetDC( hwndCanvas );
 			hdcMem = CreateCompatibleDC( hdcCanvas );
-			SelectObject( hdcMem, hBitmap );
+			SelectObject( hdcMem, dat->hBitmap );
 			SetMapMode( hdcMem, GetMapMode( hdcCanvas ));
-			GetObject( hBitmap, sizeof( BITMAP ), ( LPVOID ) &bm );
+			GetObject( dat->hBitmap, sizeof( BITMAP ), ( LPVOID ) &bm );
 			ptSize.x = bm.bmWidth;
 			ptSize.y = bm.bmHeight;
 			DPtoLP( hdcCanvas, &ptSize, 1 );
@@ -343,25 +411,21 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				}
 			}
 
+			RECT rc;
+			GetClientRect(hwndCanvas, &rc);
 			if (JabberIsThemeActive && JabberDrawThemeParentBackground && JabberIsThemeActive())
-			{
-				RECT rc; GetClientRect(hwndCanvas, &rc);
 				JabberDrawThemeParentBackground(hwndCanvas, hdcCanvas, &rc);
-			} else
-			{
-				RECT rc; GetClientRect(hwndCanvas, &rc);
+			else
 				FillRect(hdcCanvas, &rc, (HBRUSH)GetSysColorBrush(COLOR_BTNFACE));
-			}
 
-			if (JabberAlphaBlend && (bm.bmBitsPixel == 32))
-			{
+			if (JabberAlphaBlend && (bm.bmBitsPixel == 32)) {
 				BLENDFUNCTION bf = {0};
 				bf.AlphaFormat = AC_SRC_ALPHA;
 				bf.BlendOp = AC_SRC_OVER;
 				bf.SourceConstantAlpha = 255;
 				JabberAlphaBlend( hdcCanvas, pt.x, pt.y, ptFitSize.x, ptFitSize.y, hdcMem, ptOrg.x, ptOrg.y, ptSize.x, ptSize.y, bf );
-			} else
-			{
+			}
+			else {
 				SetStretchBltMode( hdcCanvas, COLORONCOLOR );
 				StretchBlt( hdcCanvas, pt.x, pt.y, ptFitSize.x, ptFitSize.y, hdcMem, ptOrg.x, ptOrg.y, ptSize.x, ptSize.y, SRCCOPY );
 			}
@@ -369,88 +433,149 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			DeleteDC( hdcMem );
 		}
 		break;
+
+	case WM_NOTIFY:
+		if (((LPNMHDR)lParam)->idFrom == 0) {
+			switch (((LPNMHDR)lParam)->code) {
+			case PSN_PARAMCHANGED:
+				SendMessage(hwndDlg, WM_INITDIALOG, 0, ((PSHNOTIFY*)lParam)->lParam);
+				break;
+			case PSN_APPLY:
+				dat->ppro->m_vCardUpdates &= ~(1UL<<iPageId);
+				dat->ppro->SaveVcardToDB( hwndDlg, iPageId );
+				if (!dat->ppro->m_vCardUpdates)
+					dat->ppro->SetServerVcard( dat->ppro->m_bPhotoChanged, dat->ppro->m_szPhotoFileName );
+				break;
+		}	}
+		break;
+
 	case WM_DESTROY:
-		if ( hBitmap ) {
-			JabberLog( "Delete bitmap" );
-			DeleteObject( hBitmap );
-			DeleteFileA( szPhotoFileName );
-			szPhotoFileName[0] = '\0';
+		dat->ppro->WindowUnsubscribe(hwndDlg);
+		if ( dat->hBitmap ) {
+			dat->ppro->Log( "Delete bitmap" );
+			DeleteObject( dat->hBitmap );
+			DeleteFileA( dat->ppro->m_szPhotoFileName );
 		}
+		delete dat;
 		break;
 	}
 	return FALSE;
 }
 
-static BOOL CALLBACK NoteDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+/////////////////////////////////////////////////////////////////////////////////////////
+
+static INT_PTR CALLBACK NoteDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
+	const unsigned long iPageId = 4;
+	CJabberProto* ppro = ( CJabberProto* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
+
 	switch ( msg ) {
 	case WM_INITDIALOG:
+		if (!lParam) break; // Launched from userinfo
+		ppro = ( CJabberProto* )lParam;
 		TranslateDialogDefault( hwndDlg );
-		SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
+		SendMessage( hwndDlg, WM_JABBER_REFRESH_VCARD, 0, 0 );
+		ppro->WindowSubscribe(hwndDlg);
 		return TRUE;
-	case WM_JABBER_REFRESH:
-		SetDialogField( hwndDlg, IDC_DESC, "About" );
+	case WM_JABBER_REFRESH_VCARD:
+	{
+		SetDialogField( ppro, hwndDlg, IDC_DESC, "About" );
 		break;
+	}
 	case WM_COMMAND:
 		if (( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE )
-			SendMessage( GetParent( hwndDlg ), WM_JABBER_CHANGED, 0, 0 );
+		{
+			ppro->m_vCardUpdates |= (1UL<<iPageId);
+			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+		}
+		break;
+	case WM_NOTIFY:
+		if (((LPNMHDR)lParam)->idFrom == 0) {
+			switch (((LPNMHDR)lParam)->code) {
+			case PSN_PARAMCHANGED:
+				SendMessage(hwndDlg, WM_INITDIALOG, 0, ((PSHNOTIFY*)lParam)->lParam);
+				break;
+			case PSN_APPLY:
+				ppro->m_vCardUpdates &= ~(1UL<<iPageId);
+				ppro->SaveVcardToDB( hwndDlg, iPageId );
+				if (!ppro->m_vCardUpdates)
+					ppro->SetServerVcard( ppro->m_bPhotoChanged, ppro->m_szPhotoFileName );
+				break;
+		}	}
+		break;
+	case WM_DESTROY:
+		ppro->WindowUnsubscribe(hwndDlg);
 		break;
 	}
 	return FALSE;
 }
 
-static BOOL CALLBACK EditEmailDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+/////////////////////////////////////////////////////////////////////////////////////////
+
+struct EditDlgParam
 {
+	int id;
+	CJabberProto* ppro;
+};
+
+static INT_PTR CALLBACK EditEmailDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+{
+	EditDlgParam* dat = ( EditDlgParam* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
+
 	switch ( msg ) {
 	case WM_INITDIALOG:
-		TranslateDialogDefault( hwndDlg );
-		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
-		if ( lParam >= 0 ) {
-			DBVARIANT dbv;
-			char idstr[33];
-			WORD nFlag;
+		{
+			EditDlgParam* dat = ( EditDlgParam* )lParam;
+			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 
-			SetWindowText( hwndDlg, TranslateT( "Jabber vCard: Edit Email Address" ));
-			wsprintfA( idstr, "e-mail%d", lParam );
-			if ( !DBGetContactSettingString( NULL, jabberProtoName, idstr, &dbv )) {
-				SetDlgItemTextA( hwndDlg, IDC_EMAIL, dbv.pszVal );
-				JFreeVariant( &dbv );
-				wsprintfA( idstr, "e-mailFlag%d", lParam );
-				nFlag = DBGetContactSettingWord( NULL, jabberProtoName, idstr, 0 );
-				if ( nFlag & JABBER_VCEMAIL_HOME ) CheckDlgButton( hwndDlg, IDC_HOME, TRUE );
-				if ( nFlag & JABBER_VCEMAIL_WORK ) CheckDlgButton( hwndDlg, IDC_WORK, TRUE );
-				if ( nFlag & JABBER_VCEMAIL_INTERNET ) CheckDlgButton( hwndDlg, IDC_INTERNET, TRUE );
-				if ( nFlag & JABBER_VCEMAIL_X400 ) CheckDlgButton( hwndDlg, IDC_X400, TRUE );
-			}
-		}
+			TranslateDialogDefault( hwndDlg );
+
+			if ( lParam >= 0 ) {
+				DBVARIANT dbv;
+				char idstr[33];
+				WORD nFlag;
+
+				SetWindowText( hwndDlg, TranslateT( "Jabber vCard: Edit Email Address" ));
+				wsprintfA( idstr, "e-mail%d", lParam );
+				if ( !DBGetContactSettingString( NULL, dat->ppro->m_szModuleName, idstr, &dbv )) {
+					SetDlgItemTextA( hwndDlg, IDC_EMAIL, dbv.pszVal );
+					JFreeVariant( &dbv );
+					wsprintfA( idstr, "e-mailFlag%d", lParam );
+					nFlag = DBGetContactSettingWord( NULL, dat->ppro->m_szModuleName, idstr, 0 );
+					if ( nFlag & JABBER_VCEMAIL_HOME ) CheckDlgButton( hwndDlg, IDC_HOME, TRUE );
+					if ( nFlag & JABBER_VCEMAIL_WORK ) CheckDlgButton( hwndDlg, IDC_WORK, TRUE );
+					if ( nFlag & JABBER_VCEMAIL_INTERNET ) CheckDlgButton( hwndDlg, IDC_INTERNET, TRUE );
+					if ( nFlag & JABBER_VCEMAIL_X400 ) CheckDlgButton( hwndDlg, IDC_X400, TRUE );
+		}	}	}
 		return TRUE;
+
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDOK:
 			{
 				TCHAR text[128];
 				char idstr[33];
-				int id = ( int ) GetWindowLong( hwndDlg, GWL_USERDATA );
 				DBVARIANT dbv;
 				WORD nFlag;
 
-				if ( id < 0 ) {
-					for ( id=0;;id++ ) {
-						mir_snprintf( idstr, SIZEOF(idstr), "e-mail%d", id );
-						if ( DBGetContactSettingString( NULL, jabberProtoName, idstr, &dbv )) break;
+				if ( dat->id < 0 ) {
+					for ( dat->id=0;;dat->id++ ) {
+						mir_snprintf( idstr, SIZEOF(idstr), "e-mail%d", dat->id );
+						if ( DBGetContactSettingString( NULL, dat->ppro->m_szModuleName, idstr, &dbv )) break;
 						JFreeVariant( &dbv );
 				}	}
 				GetDlgItemText( hwndDlg, IDC_EMAIL, text, SIZEOF( text ));
-				mir_snprintf( idstr, SIZEOF(idstr), "e-mail%d", id );
-				JSetStringT( NULL, idstr, text );
+				mir_snprintf( idstr, SIZEOF(idstr), "e-mail%d", dat->id );
+				dat->ppro->JSetStringT( NULL, idstr, text );
 
 				nFlag = 0;
 				if ( IsDlgButtonChecked( hwndDlg, IDC_HOME )) nFlag |= JABBER_VCEMAIL_HOME;
 				if ( IsDlgButtonChecked( hwndDlg, IDC_WORK )) nFlag |= JABBER_VCEMAIL_WORK;
 				if ( IsDlgButtonChecked( hwndDlg, IDC_INTERNET )) nFlag |= JABBER_VCEMAIL_INTERNET;
 				if ( IsDlgButtonChecked( hwndDlg, IDC_X400 )) nFlag |= JABBER_VCEMAIL_X400;
-				mir_snprintf( idstr, SIZEOF(idstr), "e-mailFlag%d", id );
-				JSetWord( NULL, idstr, nFlag );
+				mir_snprintf( idstr, SIZEOF(idstr), "e-mailFlag%d", dat->id );
+				dat->ppro->JSetWord( NULL, idstr, nFlag );
 			}
 			// fall through
 		case IDCANCEL:
@@ -461,59 +586,63 @@ static BOOL CALLBACK EditEmailDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 	return FALSE;
 }
 
-static BOOL CALLBACK EditPhoneDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK EditPhoneDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
+	EditDlgParam* dat = ( EditDlgParam* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
+
 	switch ( msg ) {
 	case WM_INITDIALOG:
-		TranslateDialogDefault( hwndDlg );
-		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
-		if ( lParam >= 0 ) {
-			DBVARIANT dbv;
-			char idstr[33];
-			WORD nFlag;
+		{
+			EditDlgParam* dat = ( EditDlgParam* )lParam;
+			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 
-			SetWindowText( hwndDlg, TranslateT( "Jabber vCard: Edit Phone Number" ));
-			wsprintfA( idstr, "Phone%d", lParam );
-			if ( !DBGetContactSettingString( NULL, jabberProtoName, idstr, &dbv )) {
-				SetDlgItemTextA( hwndDlg, IDC_PHONE, dbv.pszVal );
-				JFreeVariant( &dbv );
-				wsprintfA( idstr, "PhoneFlag%d", lParam );
-				nFlag = JGetWord( NULL, idstr, 0 );
-				if ( nFlag & JABBER_VCTEL_HOME ) CheckDlgButton( hwndDlg, IDC_HOME, TRUE );
-				if ( nFlag & JABBER_VCTEL_WORK ) CheckDlgButton( hwndDlg, IDC_WORK, TRUE );
-				if ( nFlag & JABBER_VCTEL_VOICE ) CheckDlgButton( hwndDlg, IDC_VOICE, TRUE );
-				if ( nFlag & JABBER_VCTEL_FAX ) CheckDlgButton( hwndDlg, IDC_FAX, TRUE );
-				if ( nFlag & JABBER_VCTEL_PAGER ) CheckDlgButton( hwndDlg, IDC_PAGER, TRUE );
-				if ( nFlag & JABBER_VCTEL_MSG ) CheckDlgButton( hwndDlg, IDC_MSG, TRUE );
-				if ( nFlag & JABBER_VCTEL_CELL ) CheckDlgButton( hwndDlg, IDC_CELL, TRUE );
-				if ( nFlag & JABBER_VCTEL_VIDEO ) CheckDlgButton( hwndDlg, IDC_VIDEO, TRUE );
-				if ( nFlag & JABBER_VCTEL_BBS ) CheckDlgButton( hwndDlg, IDC_BBS, TRUE );
-				if ( nFlag & JABBER_VCTEL_MODEM ) CheckDlgButton( hwndDlg, IDC_MODEM, TRUE );
-				if ( nFlag & JABBER_VCTEL_ISDN ) CheckDlgButton( hwndDlg, IDC_ISDN, TRUE );
-				if ( nFlag & JABBER_VCTEL_PCS ) CheckDlgButton( hwndDlg, IDC_PCS, TRUE );
-			}
-		}
+			TranslateDialogDefault( hwndDlg );
+			if ( dat->id >= 0 ) {
+				DBVARIANT dbv;
+				char idstr[33];
+				WORD nFlag;
+
+				SetWindowText( hwndDlg, TranslateT( "Jabber vCard: Edit Phone Number" ));
+				wsprintfA( idstr, "Phone%d", dat->id );
+				if ( !DBGetContactSettingString( NULL, dat->ppro->m_szModuleName, idstr, &dbv )) {
+					SetDlgItemTextA( hwndDlg, IDC_PHONE, dbv.pszVal );
+					JFreeVariant( &dbv );
+					wsprintfA( idstr, "PhoneFlag%d", dat->id );
+					nFlag = dat->ppro->JGetWord( NULL, idstr, 0 );
+					if ( nFlag & JABBER_VCTEL_HOME ) CheckDlgButton( hwndDlg, IDC_HOME, TRUE );
+					if ( nFlag & JABBER_VCTEL_WORK ) CheckDlgButton( hwndDlg, IDC_WORK, TRUE );
+					if ( nFlag & JABBER_VCTEL_VOICE ) CheckDlgButton( hwndDlg, IDC_VOICE, TRUE );
+					if ( nFlag & JABBER_VCTEL_FAX ) CheckDlgButton( hwndDlg, IDC_FAX, TRUE );
+					if ( nFlag & JABBER_VCTEL_PAGER ) CheckDlgButton( hwndDlg, IDC_PAGER, TRUE );
+					if ( nFlag & JABBER_VCTEL_MSG ) CheckDlgButton( hwndDlg, IDC_MSG, TRUE );
+					if ( nFlag & JABBER_VCTEL_CELL ) CheckDlgButton( hwndDlg, IDC_CELL, TRUE );
+					if ( nFlag & JABBER_VCTEL_VIDEO ) CheckDlgButton( hwndDlg, IDC_VIDEO, TRUE );
+					if ( nFlag & JABBER_VCTEL_BBS ) CheckDlgButton( hwndDlg, IDC_BBS, TRUE );
+					if ( nFlag & JABBER_VCTEL_MODEM ) CheckDlgButton( hwndDlg, IDC_MODEM, TRUE );
+					if ( nFlag & JABBER_VCTEL_ISDN ) CheckDlgButton( hwndDlg, IDC_ISDN, TRUE );
+					if ( nFlag & JABBER_VCTEL_PCS ) CheckDlgButton( hwndDlg, IDC_PCS, TRUE );
+		}	}	}
 		return TRUE;
+
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDOK:
 			{
 				char text[128];
 				char idstr[33];
-				int id = ( int ) GetWindowLong( hwndDlg, GWL_USERDATA );
 				DBVARIANT dbv;
 				WORD nFlag;
 
-				if ( id < 0 ) {
-					for ( id=0;;id++ ) {
-						wsprintfA( idstr, "Phone%d", id );
-						if ( DBGetContactSettingString( NULL, jabberProtoName, idstr, &dbv )) break;
+				if ( dat->id < 0 ) {
+					for ( dat->id=0;;dat->id++ ) {
+						wsprintfA( idstr, "Phone%d", dat->id );
+						if ( DBGetContactSettingString( NULL, dat->ppro->m_szModuleName, idstr, &dbv )) break;
 						JFreeVariant( &dbv );
 					}
 				}
 				GetDlgItemTextA( hwndDlg, IDC_PHONE, text, SIZEOF( text ));
-				wsprintfA( idstr, "Phone%d", id );
-				JSetString( NULL, idstr, text );
+				wsprintfA( idstr, "Phone%d", dat->id );
+				dat->ppro->JSetString( NULL, idstr, text );
 				nFlag = 0;
 				if ( IsDlgButtonChecked( hwndDlg, IDC_HOME )) nFlag |= JABBER_VCTEL_HOME;
 				if ( IsDlgButtonChecked( hwndDlg, IDC_WORK )) nFlag |= JABBER_VCTEL_WORK;
@@ -527,8 +656,8 @@ static BOOL CALLBACK EditPhoneDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				if ( IsDlgButtonChecked( hwndDlg, IDC_MODEM )) nFlag |= JABBER_VCTEL_MODEM;
 				if ( IsDlgButtonChecked( hwndDlg, IDC_ISDN )) nFlag |= JABBER_VCTEL_ISDN;
 				if ( IsDlgButtonChecked( hwndDlg, IDC_PCS )) nFlag |= JABBER_VCTEL_PCS;
-				wsprintfA( idstr, "PhoneFlag%d", id );
-				JSetWord( NULL, idstr, nFlag );
+				wsprintfA( idstr, "PhoneFlag%d", dat->id );
+				dat->ppro->JSetWord( NULL, idstr, nFlag );
 			}
 			// fall through
 		case IDCANCEL:
@@ -540,13 +669,20 @@ static BOOL CALLBACK EditPhoneDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 }
 
 #define M_REMAKELISTS  ( WM_USER+1 )
-static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM, LPARAM lParam )
 {
+	const unsigned long iPageId = 5;
+	CJabberProto* ppro = ( CJabberProto* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
+
 	switch( msg ) {
 	case WM_INITDIALOG:
+		if (!lParam) break; // Launched from userinfo
+		ppro = ( CJabberProto* )lParam;
 		{
 			LVCOLUMN lvc;
 			RECT rc;
+
+			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 
 			TranslateDialogDefault( hwndDlg );
 			GetClientRect( GetDlgItem( hwndDlg,IDC_EMAILS ), &rc );
@@ -564,6 +700,8 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			ListView_InsertColumn( GetDlgItem( hwndDlg,IDC_PHONES ), 2, &lvc );
 			ListView_InsertColumn( GetDlgItem( hwndDlg,IDC_PHONES ), 3, &lvc );
 			SendMessage( hwndDlg, M_REMAKELISTS, 0, 0 );
+
+			ppro->WindowSubscribe(hwndDlg);
 		}
 		return TRUE;
 	case M_REMAKELISTS:
@@ -581,7 +719,7 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			lvi.iItem = 0;
 			for ( i=0;;i++ ) {
 				wsprintfA( idstr, "e-mail%d", i );
-				if ( DBGetContactSettingTString( NULL, jabberProtoName, idstr, &dbv )) break;
+				if ( DBGetContactSettingTString( NULL, ppro->m_szModuleName, idstr, &dbv )) break;
 				wsprintf( number, _T("%d"), i+1 );
 				lvi.pszText = number;
 				lvi.lParam = ( LPARAM )i;
@@ -600,7 +738,7 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			lvi.iItem = 0;
 			for ( i=0;;i++ ) {
 				wsprintfA( idstr, "Phone%d", i );
-				if ( DBGetContactSettingTString( NULL, jabberProtoName, idstr, &dbv )) break;
+				if ( DBGetContactSettingTString( NULL, ppro->m_szModuleName, idstr, &dbv )) break;
 				wsprintf( number, _T("%d"), i+1 );
 				lvi.pszText = number;
 				lvi.lParam = ( LPARAM )i;
@@ -616,6 +754,20 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		break;
 	case WM_NOTIFY:
 		switch (( ( LPNMHDR )lParam )->idFrom ) {
+		case 0: {
+			switch (((LPNMHDR)lParam)->code) {
+			case PSN_PARAMCHANGED:
+				SendMessage(hwndDlg, WM_INITDIALOG, 0, ((PSHNOTIFY*)lParam)->lParam);
+				break;
+			case PSN_APPLY:
+				ppro->m_vCardUpdates &= ~(1UL<<iPageId);
+				ppro->SaveVcardToDB( hwndDlg, iPageId );
+				if (!ppro->m_vCardUpdates)
+					ppro->SetServerVcard( ppro->m_bPhotoChanged, ppro->m_szPhotoFileName );
+				break;
+			}	}
+			break;
+
 		case IDC_EMAILS:
 		case IDC_PHONES:
 			switch (( ( LPNMHDR )lParam )->code ) {
@@ -626,7 +778,7 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					switch ( nm->nmcd.dwDrawStage ) {
 					case CDDS_PREPAINT:
 					case CDDS_ITEMPREPAINT:
-						SetWindowLong( hwndDlg, DWL_MSGRESULT, CDRF_NOTIFYSUBITEMDRAW );
+						SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, CDRF_NOTIFYSUBITEMDRAW );
 						return TRUE;
 					case CDDS_SUBITEM|CDDS_ITEMPREPAINT:
 						{
@@ -643,7 +795,7 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 							else break;
 							DrawIconEx( nm->nmcd.hdc, ( rc.left+rc.right-GetSystemMetrics( SM_CXSMICON ))/2, ( rc.top+rc.bottom-GetSystemMetrics( SM_CYSMICON ))/2,hIcon, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0, NULL, DI_NORMAL );
 							DestroyIcon( hIcon );
-							SetWindowLong( hwndDlg, DWL_MSGRESULT, CDRF_SKIPDEFAULT );
+							SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, CDRF_SKIPDEFAULT );
 						}
 						return TRUE;
 					}
@@ -669,10 +821,17 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					if ( lvi.lParam == ( LPARAM )( -1 )) {
 						if ( hti.iSubItem == 3 ) {
 							//add
-							if ( DialogBoxParam( hInst, MAKEINTRESOURCE( nm->hdr.idFrom==IDC_PHONES?IDD_VCARD_ADDPHONE:IDD_VCARD_ADDEMAIL ), hwndDlg, nm->hdr.idFrom==IDC_PHONES?EditPhoneDlgProc:EditEmailDlgProc, ( LPARAM )( -1 )) != IDOK )
+							EditDlgParam param = { -1, ppro };
+							int res;
+							if ( nm->hdr.idFrom == IDC_PHONES )
+								res = DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_VCARD_ADDPHONE ), hwndDlg, EditPhoneDlgProc, ( LPARAM )&param );
+							else
+								res = DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_VCARD_ADDEMAIL ), hwndDlg, EditEmailDlgProc, ( LPARAM )&param );
+							if ( res != IDOK )
 								break;
 							SendMessage( hwndDlg, M_REMAKELISTS, 0, 0 );
-							SendMessage( GetParent( hwndDlg ), WM_JABBER_CHANGED, 0, 0 );
+							ppro->m_vCardUpdates |= (1UL<<iPageId);
+							SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 						}
 					}
 					else {
@@ -686,28 +845,35 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 								WORD nFlag;
 
 								wsprintfA( idstr, szIdTemplate, i+1 );
-								if ( DBGetContactSettingString( NULL, jabberProtoName, idstr, &dbv )) break;
+								if ( DBGetContactSettingString( NULL, ppro->m_szModuleName, idstr, &dbv )) break;
 								wsprintfA( idstr,szIdTemplate,i );
-								JSetString( NULL, idstr, dbv.pszVal );
+								ppro->JSetString( NULL, idstr, dbv.pszVal );
 								wsprintfA( idstr, szFlagTemplate, i+1 );
 								JFreeVariant( &dbv );
-								nFlag = JGetWord( NULL, idstr, 0 );
+								nFlag = ppro->JGetWord( NULL, idstr, 0 );
 								wsprintfA( idstr, szFlagTemplate, i );
-								JSetWord( NULL, idstr, nFlag );
+								ppro->JSetWord( NULL, idstr, nFlag );
 							}
 							wsprintfA( idstr, szIdTemplate, i );
-							JDeleteSetting( NULL, idstr );
+							ppro->JDeleteSetting( NULL, idstr );
 							wsprintfA( idstr, szFlagTemplate, i );
-							JDeleteSetting( NULL, idstr );
+							ppro->JDeleteSetting( NULL, idstr );
 							SendMessage( hwndDlg, M_REMAKELISTS, 0, 0 );
-							SendMessage( GetParent( hwndDlg ), WM_JABBER_CHANGED, 0, 0 );
+							ppro->m_vCardUpdates |= (1UL<<iPageId);
+							SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 						}
 						else if ( hti.iSubItem == 2 ) {
-							//edit
-							if ( DialogBoxParam( hInst, MAKEINTRESOURCE( nm->hdr.idFrom==IDC_PHONES?IDD_VCARD_ADDPHONE:IDD_VCARD_ADDEMAIL ), hwndDlg, nm->hdr.idFrom==IDC_PHONES?EditPhoneDlgProc:EditEmailDlgProc, lvi.lParam ) != IDOK )
+							EditDlgParam param = { lvi.lParam, ppro };
+							int res;
+							if ( nm->hdr.idFrom == IDC_PHONES )
+								res = DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_VCARD_ADDPHONE ), hwndDlg, EditPhoneDlgProc, ( LPARAM )&param );
+							else
+								res = DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_VCARD_ADDEMAIL ), hwndDlg, EditEmailDlgProc, ( LPARAM )&param );
+							if ( res != IDOK )
 								break;
 							SendMessage( hwndDlg,M_REMAKELISTS,0,0 );
-							SendMessage( GetParent( hwndDlg ), WM_JABBER_CHANGED, 0, 0 );
+							ppro->m_vCardUpdates |= (1UL<<iPageId);
+							SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 						}
 					}
 				}
@@ -725,19 +891,20 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			SetFocus( ChildWindowFromPoint( hwndDlg,pt ));	  //ugly hack because listviews ignore their first click
 		}
 		break;
+	case WM_DESTROY:
+		ppro->WindowUnsubscribe(hwndDlg);
+		break;
 	}
 	return FALSE;
 }
 
-static void SaveVcardToDB( VcardTab *dat )
+void CJabberProto::SaveVcardToDB( HWND hwndPage, int iPage )
 {
-	HWND hwndPage;
 	TCHAR text[2048];
 
-	if ( dat==NULL || dat->page==NULL ) return;
-
 	// Page 0: Personal
-	if (( hwndPage=dat->page[0].hwnd ) != NULL ) {
+	switch (iPage) {
+	case 0:
 		GetDlgItemText( hwndPage, IDC_FULLNAME, text, SIZEOF( text ));
 		JSetStringT( NULL, "FullName", text );
 		GetDlgItemText( hwndPage, IDC_NICKNAME, text, SIZEOF( text ));
@@ -756,11 +923,10 @@ static void SaveVcardToDB( VcardTab *dat )
 		JSetStringT( NULL, "Role", text );
 		GetDlgItemText( hwndPage, IDC_HOMEPAGE, text, SIZEOF( text ));
 		JSetStringT( NULL, "Homepage", text );
-	}
-	// Page 1: Contacts
-	//		no need to save, always in sync with the DB
-	// Page 2: Home
-	if (( hwndPage=dat->page[2].hwnd ) != NULL ) {
+		break;
+
+	// Page 1: Home
+	case 1:
 		GetDlgItemText( hwndPage, IDC_ADDRESS1, text, SIZEOF( text ));
 		JSetStringT( NULL, "Street", text );
 		GetDlgItemText( hwndPage, IDC_ADDRESS2, text, SIZEOF( text ));
@@ -773,9 +939,10 @@ static void SaveVcardToDB( VcardTab *dat )
 		JSetStringT( NULL, "ZIP", text );
 		GetDlgItemText( hwndPage, IDC_COUNTRY, text, SIZEOF( text ));
 		JSetStringT( NULL, "CountryName", text );
-	}
-	// Page 3: Work
-	if (( hwndPage=dat->page[3].hwnd ) != NULL ) {
+		break;
+
+	// Page 2: Work
+	case 2:
 		GetDlgItemText( hwndPage, IDC_COMPANY, text, SIZEOF( text ));
 		JSetStringT( NULL, "Company", text );
 		GetDlgItemText( hwndPage, IDC_DEPARTMENT, text, SIZEOF( text ));
@@ -794,32 +961,38 @@ static void SaveVcardToDB( VcardTab *dat )
 		JSetStringT( NULL, "CompanyZIP", text );
 		GetDlgItemText( hwndPage, IDC_COUNTRY, text, SIZEOF( text ));
 		JSetStringT( NULL, "CompanyCountryName", text );
-	}
-	// Page 4: Photo
-	//		not saved in the database
-	// Page 5: Note
-	if (( hwndPage=dat->page[5].hwnd ) != NULL ) {
+		break;
+
+	// Page 3: Photo
+	// not needed to be saved into db
+
+	// Page 4: Note
+	case 4:
 		GetDlgItemText( hwndPage, IDC_DESC, text, SIZEOF( text ));
 		JSetStringT( NULL, "About", text );
-	}
-}
+		break;
 
-static void AppendVcardFromDB( XmlNode* n, char* tag, char* key )
+	// Page 5: Contacts
+	// is always synced with db
+}	}
+
+void CJabberProto::AppendVcardFromDB( HXML n, char* tag, char* key )
 {
 	if ( n == NULL || tag == NULL || key == NULL )
 		return;
 
 	DBVARIANT dbv;
-	if ( DBGetContactSettingTString( NULL, jabberProtoName, key, &dbv ))
-		n->addChild( tag );
+	if ( DBGetContactSettingTString( NULL, m_szModuleName, key, &dbv ))
+		n << XCHILD( _A2T(tag));
 	else {
-		n->addChild( tag, dbv.ptszVal );
+		n << XCHILD( _A2T(tag), dbv.ptszVal );
 		JFreeVariant( &dbv );
 }	}
 
-
-static void SetServerVcard()
+void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 {
+	if (!m_bJabberOnline) return;
+
 	DBVARIANT dbv;
 	int  iqId;
 	char *szFileName;
@@ -827,15 +1000,15 @@ static void SetServerVcard()
 	char idstr[33];
 	WORD nFlag;
 
-	iqId = JabberSerialNext();
-	JabberIqAdd( iqId, IQ_PROC_SETVCARD, JabberIqResultSetVcard );
+	iqId = SerialNext();
+	IqAdd( iqId, IQ_PROC_SETVCARD, &CJabberProto::OnIqResultSetVcard );
 
-	XmlNodeIq iq( "set", iqId );
-	XmlNode* v = iq.addChild( "vCard" ); v->addAttr( "xmlns", JABBER_FEAT_VCARD_TEMP );
+	XmlNodeIq iq( _T("set"), iqId );
+	HXML v = iq << XCHILDNS( _T("vCard"), _T(JABBER_FEAT_VCARD_TEMP));
 
 	AppendVcardFromDB( v, "FN", "FullName" );
 
-	XmlNode* n = v->addChild( "N" );
+	HXML n = v << XCHILD( _T("N"));
 	AppendVcardFromDB( n, "GIVEN", "FirstName" );
 	AppendVcardFromDB( n, "MIDDLE", "MiddleName" );
 	AppendVcardFromDB( n, "FAMILY", "LastName" );
@@ -846,23 +1019,23 @@ static void SetServerVcard()
 
 	for ( i=0;;i++ ) {
 		wsprintfA( idstr, "e-mail%d", i );
-		if ( DBGetContactSettingTString( NULL, jabberProtoName, idstr, &dbv )) 
+		if ( DBGetContactSettingTString( NULL, m_szModuleName, idstr, &dbv )) 
 			break;
 
-		XmlNode* e = v->addChild( "EMAIL", dbv.ptszVal );
+		HXML e = v << XCHILD( _T("EMAIL"), dbv.ptszVal );
 		JFreeVariant( &dbv );
 		AppendVcardFromDB( e, "USERID", idstr );
 
 		wsprintfA( idstr, "e-mailFlag%d", i );
-		nFlag = DBGetContactSettingWord( NULL, jabberProtoName, idstr, 0 );
-		if ( nFlag & JABBER_VCEMAIL_HOME ) e->addChild( "HOME" );
-		if ( nFlag & JABBER_VCEMAIL_WORK ) e->addChild( "WORK" );
-		if ( nFlag & JABBER_VCEMAIL_INTERNET ) e->addChild( "INTERNET" );
-		if ( nFlag & JABBER_VCEMAIL_X400 ) e->addChild( "X400" );
+		nFlag = DBGetContactSettingWord( NULL, m_szModuleName, idstr, 0 );
+		if ( nFlag & JABBER_VCEMAIL_HOME )     e << XCHILD( _T("HOME"));
+		if ( nFlag & JABBER_VCEMAIL_WORK )     e << XCHILD( _T("WORK"));
+		if ( nFlag & JABBER_VCEMAIL_INTERNET ) e << XCHILD( _T("INTERNET"));
+		if ( nFlag & JABBER_VCEMAIL_X400 )     e << XCHILD( _T("X400"));
 	}
 
-	n = v->addChild( "ADR" );
-	n->addChild( "HOME" );
+	n = v << XCHILD( _T("ADR"));
+	n << XCHILD( _T("HOME"));
 	AppendVcardFromDB( n, "STREET", "Street" );
 	AppendVcardFromDB( n, "EXTADR", "Street2" );
 	AppendVcardFromDB( n, "EXTADD", "Street2" );	// for compatibility with client using old vcard format
@@ -872,8 +1045,8 @@ static void SetServerVcard()
 	AppendVcardFromDB( n, "CTRY", "CountryName" );
 	AppendVcardFromDB( n, "COUNTRY", "CountryName" );	// for compatibility with client using old vcard format
 
-	n = v->addChild( "ADR" );
-	n->addChild( "WORK" );
+	n = v << XCHILD( _T("ADR"));
+	n << XCHILD( _T("WORK"));
 	AppendVcardFromDB( n, "STREET", "CompanyStreet" );
 	AppendVcardFromDB( n, "EXTADR", "CompanyStreet2" );
 	AppendVcardFromDB( n, "EXTADD", "CompanyStreet2" );	// for compatibility with client using old vcard format
@@ -883,10 +1056,10 @@ static void SetServerVcard()
 	AppendVcardFromDB( n, "CTRY", "CompanyCountryName" );
 	AppendVcardFromDB( n, "COUNTRY", "CompanyCountryName" );	// for compatibility with client using old vcard format
 
-	n = v->addChild( "ORG" );
+	n = v << XCHILD( _T("ORG"));
 	AppendVcardFromDB( n, "ORGNAME", "Company" );
 	AppendVcardFromDB( n, "ORGUNIT", "CompanyDepartment" );
-
+	
 	AppendVcardFromDB( v, "TITLE", "CompanyPosition" );
 	AppendVcardFromDB( v, "ROLE", "Role" );
 	AppendVcardFromDB( v, "URL", "Homepage" );
@@ -894,67 +1067,67 @@ static void SetServerVcard()
 
 	for ( i=0;;i++ ) {
 		wsprintfA( idstr, "Phone%d", i );
-		if ( DBGetContactSettingTString( NULL, jabberProtoName, idstr, &dbv )) break;
+		if ( DBGetContactSettingTString( NULL, m_szModuleName, idstr, &dbv )) break;
 		JFreeVariant( &dbv );
 
-		n = v->addChild( "TEL" );
+		n = v << XCHILD( _T("TEL"));
 		AppendVcardFromDB( n, "NUMBER", idstr );
 
 		wsprintfA( idstr, "PhoneFlag%d", i );
 		nFlag = JGetWord( NULL, idstr, 0 );
-		if ( nFlag & JABBER_VCTEL_HOME )  n->addChild( "HOME" );
-		if ( nFlag & JABBER_VCTEL_WORK )  n->addChild( "WORK" );
-		if ( nFlag & JABBER_VCTEL_VOICE ) n->addChild( "VOICE" );
-		if ( nFlag & JABBER_VCTEL_FAX )   n->addChild( "FAX" );
-		if ( nFlag & JABBER_VCTEL_PAGER ) n->addChild( "PAGER" );
-		if ( nFlag & JABBER_VCTEL_MSG )   n->addChild( "MSG" );
-		if ( nFlag & JABBER_VCTEL_CELL )  n->addChild( "CELL" );
-		if ( nFlag & JABBER_VCTEL_VIDEO ) n->addChild( "VIDEO" );
-		if ( nFlag & JABBER_VCTEL_BBS )   n->addChild( "BBS" );
-		if ( nFlag & JABBER_VCTEL_MODEM ) n->addChild( "MODEM" );
-		if ( nFlag & JABBER_VCTEL_ISDN )  n->addChild( "ISDN" );
-		if ( nFlag & JABBER_VCTEL_PCS )   n->addChild( "PCS" );
+		if ( nFlag & JABBER_VCTEL_HOME )  n << XCHILD( _T("HOME"));
+		if ( nFlag & JABBER_VCTEL_WORK )  n << XCHILD( _T("WORK"));
+		if ( nFlag & JABBER_VCTEL_VOICE ) n << XCHILD( _T("VOICE"));
+		if ( nFlag & JABBER_VCTEL_FAX )   n << XCHILD( _T("FAX"));
+		if ( nFlag & JABBER_VCTEL_PAGER ) n << XCHILD( _T("PAGER"));
+		if ( nFlag & JABBER_VCTEL_MSG )   n << XCHILD( _T("MSG"));
+		if ( nFlag & JABBER_VCTEL_CELL )  n << XCHILD( _T("CELL"));
+		if ( nFlag & JABBER_VCTEL_VIDEO ) n << XCHILD( _T("VIDEO"));
+		if ( nFlag & JABBER_VCTEL_BBS )   n << XCHILD( _T("BBS"));
+		if ( nFlag & JABBER_VCTEL_MODEM ) n << XCHILD( _T("MODEM"));
+		if ( nFlag & JABBER_VCTEL_ISDN )  n << XCHILD( _T("ISDN"));
+		if ( nFlag & JABBER_VCTEL_PCS )   n << XCHILD( _T("PCS"));
 	}
 
+	char szAvatarName[ MAX_PATH ];
+	GetAvatarFileName( NULL, szAvatarName, sizeof( szAvatarName ));
 	if ( bPhotoChanged )
-		szFileName = ( szPhotoFileName[0] ) ? szPhotoFileName : NULL;
+		szFileName = szPhotoFileName;
 	else
-		szFileName = jabberVcardPhotoFileName;
+		szFileName = szAvatarName;
 
 	// Set photo element, also update the global jabberVcardPhotoFileName to reflect the update
-	JabberLog( "Before update, jabberVcardPhotoFileName = %s", jabberVcardPhotoFileName );
-	if ( szFileName == NULL ) {
-		v->addChild( "PHOTO" );
-		if ( jabberVcardPhotoFileName ) {
-			DeleteFileA( jabberVcardPhotoFileName );
-			mir_free( jabberVcardPhotoFileName );
-			jabberVcardPhotoFileName = NULL;
-	}	}
+	Log( "Before update, file name = %s", szFileName );
+	if ( szFileName == NULL || szFileName[0] == 0 ) {
+		v << XCHILD( _T("PHOTO"));
+		DeleteFileA( szAvatarName );
+		JDeleteSetting( NULL, "AvatarSaved" );
+		JDeleteSetting( NULL, "AvatarHash" );
+	}
 	else {
-		char szTempPath[MAX_PATH], szTempFileName[MAX_PATH];
 		HANDLE hFile;
 		struct _stat st;
 		char* buffer, *str;
 		DWORD nRead;
 
-		JabberLog( "Saving picture from %s", szFileName );
+		Log( "Saving picture from %s", szFileName );
 		if ( _stat( szFileName, &st ) >= 0 ) {
 			// Note the FILE_SHARE_READ attribute so that the CopyFile can succeed
 			if (( hFile=CreateFileA( szFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL )) != INVALID_HANDLE_VALUE ) {
 				if (( buffer=( char* )mir_alloc( st.st_size )) != NULL ) {
 					if ( ReadFile( hFile, buffer, st.st_size, &nRead, NULL )) {
 						if (( str=JabberBase64Encode( buffer, nRead )) != NULL ) {
-							n = v->addChild( "PHOTO" );
-							char* szFileType;
+							n = v << XCHILD( _T("PHOTO"));
+							TCHAR* szFileType;
 							switch( JabberGetPictureType( buffer )) {
-								case PA_FORMAT_PNG:  szFileType = "image/png";   break;
-								case PA_FORMAT_GIF:  szFileType = "image/gif";   break;
-								case PA_FORMAT_BMP:  szFileType = "image/bmp";   break;
-								default:             szFileType = "image/jpeg";  break;
+								case PA_FORMAT_PNG:  szFileType = _T("image/png");   break;
+								case PA_FORMAT_GIF:  szFileType = _T("image/gif");   break;
+								case PA_FORMAT_BMP:  szFileType = _T("image/bmp");   break;
+								default:             szFileType = _T("image/jpeg");  break;
 							}
-							n->addChild( "TYPE", szFileType );
+							n << XCHILD( _T("TYPE"), szFileType );
 
-							n->addChild( "BINVAL", str );
+							n << XCHILD( _T("BINVAL"), _A2T(str));
 							mir_free( str );
 
 							// NEED TO UPDATE OUR AVATAR HASH:
@@ -966,239 +1139,74 @@ static void SetServerVcard()
 							mir_sha1_finish( &sha1ctx, digest );
 
 							char buf[MIR_SHA1_HASH_SIZE*2+1];
-							for ( int i=0; i<MIR_SHA1_HASH_SIZE; i++ )
-								sprintf( buf+( i<<1 ), "%02x", digest[i] );
+							for ( int j=0; j<MIR_SHA1_HASH_SIZE; j++ )
+								sprintf( buf+( j<<1 ), "%02x", digest[j] );
 
-							JSetByte( "AvatarType", JabberGetPictureType( buffer ));	
-							JSetString( NULL, "AvatarHash", buf );
-							JSetString( NULL, "AvatarSaved", buf );
+							m_options.AvatarType = JabberGetPictureType( buffer );	
 
 							if ( bPhotoChanged ) {
-								if ( jabberVcardPhotoFileName ) {
-									DeleteFileA( jabberVcardPhotoFileName );
-									mir_free( jabberVcardPhotoFileName );
-									jabberVcardPhotoFileName = NULL;
-								}
+								DeleteFileA( szAvatarName );
 
-								if ( GetTempPathA( sizeof( szTempPath ), szTempPath ) <= 0 )
-									strcpy( szTempPath, ".\\" );
-								if ( GetTempFileNameA( szTempPath, "jab", 0, szTempFileName ) > 0 ) {
-									JabberLog( "New global file is %s", szTempFileName );
-									if ( CopyFileA( szFileName, szTempFileName, FALSE ))
-										jabberVcardPhotoFileName = mir_strdup( szTempFileName );
-									else 
-										DeleteFileA( szTempFileName );
-					}	}	}	}
+								GetAvatarFileName( NULL, szAvatarName, sizeof( szAvatarName ));
+
+								CopyFileA( szFileName, szAvatarName, FALSE );
+							}
+
+							JSetString( NULL, "AvatarHash", buf );
+							JSetString( NULL, "AvatarSaved", buf );
+					}	}
 					mir_free( buffer );
 				}
 				CloseHandle( hFile );
 	}	}	}
 
-	jabberThreadInfo->send( iq );
+	m_ThreadInfo->send( iq );
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
 
-void JabberUpdateVCardPhoto( char * szFileName )
+void CJabberProto::OnUserInfoInit_VCard( WPARAM wParam, LPARAM )
 {
-	bPhotoChanged=1;
-	strncpy( szPhotoFileName,szFileName,MAX_PATH );
-	SetServerVcard();
-}
+	m_vCardUpdates = 0;
+	m_bPhotoChanged = FALSE;
+	m_szPhotoFileName[0] = 0;
 
-static void ThemeDialogBackground( HWND hwnd ) {
-	if ( IsWinVerXPPlus()) {
-		static HMODULE hThemeAPI = NULL;
-		if ( !hThemeAPI ) hThemeAPI = GetModuleHandleA( "uxtheme" );
-		if ( hThemeAPI ) {
-			HRESULT ( STDAPICALLTYPE *MyEnableThemeDialogTexture )( HWND,DWORD ) = ( HRESULT ( STDAPICALLTYPE* )( HWND,DWORD ))GetProcAddress( hThemeAPI,"EnableThemeDialogTexture" );
-			if ( MyEnableThemeDialogTexture )
-				MyEnableThemeDialogTexture( hwnd,0x00000002|0x00000004 ); //0x00000002|0x00000004=ETDT_ENABLETAB
-}	}	}
+	OPTIONSDIALOGPAGE odp = {0};
+	odp.cbSize = sizeof(odp);
+	odp.hInstance = hInst;
+	odp.dwInitParam = (LPARAM)this;
+	odp.flags = ODPF_TCHAR|ODPF_USERINFOTAB;
+	odp.ptszTitle = m_tszUserName;
 
-static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
-{
-	VcardTab* dat = ( VcardTab* ) GetWindowLong( hwndDlg, GWL_USERDATA );
+	odp.pfnDlgProc = PersonalDlgProc;
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_VCARD_PERSONAL);
+	odp.ptszTab = LPGENT("General");
+	JCallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
 
-	switch ( msg ) {
-	case WM_INITDIALOG:
-	{
-		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( "vcard" ));
-		TranslateDialogDefault( hwndDlg );
-		EnableWindow( GetDlgItem( hwndDlg, IDC_UPDATE ), jabberOnline );
+	odp.pfnDlgProc = ContactDlgProc;
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_VCARD_CONTACT);
+	odp.ptszTab = LPGENT("Contacts");
+	JCallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
 
-		dat = ( VcardTab * ) mir_alloc( sizeof( VcardTab ));
-		memset( dat, 0, sizeof( VcardTab ));
-		dat->pageCount = 6;
-		dat->currentPage = 0;
-		dat->changed = FALSE;
-		dat->updateAnimFrame = 0;
-		dat->animating = FALSE;
-		dat->page = ( VcardPage * ) mir_alloc( dat->pageCount * sizeof( VcardPage ));
-		memset( dat->page, 0, dat->pageCount * sizeof( VcardPage ));
+	odp.pfnDlgProc = HomeDlgProc;
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_VCARD_HOME);
+	odp.ptszTab = LPGENT("Home");
+	JCallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
 
-		HWND hwndTabs = GetDlgItem( hwndDlg, IDC_TABS );
+	odp.pfnDlgProc = WorkDlgProc;
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_VCARD_WORK);
+	odp.ptszTab = LPGENT("Work");
+	JCallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
 
-		TCITEM tci = { 0 };
-		tci.mask = TCIF_TEXT;
-		// Page 0: Personal
-		dat->page[0].dlgId = IDD_VCARD_PERSONAL;
-		dat->page[0].dlgProc = PersonalDlgProc;
-		tci.pszText = TranslateT( "Personal" );
-		TabCtrl_InsertItem( hwndTabs, 0, &tci );
-		// Page 1: Contacts
-		dat->page[1].dlgId = IDD_VCARD_CONTACT;
-		dat->page[1].dlgProc = ContactDlgProc;
-		tci.pszText = TranslateT( "Contacts" );
-		TabCtrl_InsertItem( hwndTabs, 1, &tci );
-		// Page 2: Home
-		dat->page[2].dlgId = IDD_VCARD_HOME;
-		dat->page[2].dlgProc = HomeDlgProc;
-		tci.pszText = TranslateT( "Home" );
-		TabCtrl_InsertItem( hwndTabs, 2, &tci );
-		// Page 3: Work
-		dat->page[3].dlgId = IDD_VCARD_WORK;
-		dat->page[3].dlgProc = WorkDlgProc;
-		tci.pszText = TranslateT( "Work" );
-		TabCtrl_InsertItem( hwndTabs, 3, &tci );
-		// Page 4: Photo
-		dat->page[4].dlgId = IDD_VCARD_PHOTO;
-		dat->page[4].dlgProc = PhotoDlgProc;
-		tci.pszText = TranslateT( "Photo" );
-		TabCtrl_InsertItem( hwndTabs, 4, &tci );
-		// Page 5: Note
-		dat->page[5].dlgId = IDD_VCARD_NOTE;
-		dat->page[5].dlgProc = NoteDlgProc;
-		tci.pszText = TranslateT( "Note" );
-		TabCtrl_InsertItem( hwndTabs, 5, &tci );
+	odp.pfnDlgProc = PhotoDlgProc;
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_VCARD_PHOTO);
+	odp.ptszTab = LPGENT("Photo");
+	JCallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
 
-		GetWindowRect( hwndTabs, &( dat->rectTab ));
-		TabCtrl_AdjustRect( hwndTabs, FALSE, &( dat->rectTab ));
-		{	POINT pt = {0,0};
-			ClientToScreen( hwndDlg, &pt );
-			OffsetRect( &( dat->rectTab ), -pt.x, -pt.y );
-		}
+	odp.pfnDlgProc = NoteDlgProc;
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_VCARD_NOTE);
+	odp.ptszTab = LPGENT("Note");
+	JCallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
 
-		TabCtrl_SetCurSel( hwndTabs, dat->currentPage );
-		dat->page[dat->currentPage].hwnd = CreateDialogParam( hInst, MAKEINTRESOURCE( dat->page[dat->currentPage].dlgId ), hwndDlg, dat->page[dat->currentPage].dlgProc, 0 );
-		ThemeDialogBackground( dat->page[dat->currentPage].hwnd );
-		SetWindowPos( dat->page[dat->currentPage].hwnd, HWND_TOP, dat->rectTab.left, dat->rectTab.top, 0, 0, SWP_NOSIZE );
-		ShowWindow( dat->page[dat->currentPage].hwnd, SW_SHOW );
-
-		SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) dat );
-
-		bPhotoChanged = FALSE;
-		szPhotoFileName[0] = '\0';
-
-		if ( jabberOnline )
-			SendMessage( hwndDlg, WM_COMMAND, IDC_UPDATE, 0 );
-		return TRUE;
-	}
-	case WM_CTLCOLORSTATIC:
-		switch (GetDlgCtrlID((HWND)lParam)) {
-		case IDC_WHITERECT:
-		case IDC_LOGO:
-		case IDC_NAME:
-		case IDC_DESCRIPTION:
-			SetBkColor(( HDC ) wParam, RGB( 255, 255, 255 ));
-			return ( BOOL ) GetStockObject( WHITE_BRUSH );
-
-		case IDC_UPDATING:
-			SetBkColor(( HDC )wParam, GetSysColor( COLOR_3DFACE ));
-			return ( BOOL ) GetSysColorBrush( COLOR_3DFACE );
-		}
-		break;
-
-	case WM_NOTIFY:
-		switch ( wParam ) {
-		case IDC_TABS:
-			switch (( ( LPNMHDR ) lParam )->code ) {
-			case TCN_SELCHANGE:
-				if ( dat->currentPage>=0 && dat->page[dat->currentPage].hwnd!=NULL )
-					ShowWindow( dat->page[dat->currentPage].hwnd, SW_HIDE );
-				dat->currentPage = TabCtrl_GetCurSel( GetDlgItem( hwndDlg, IDC_TABS ));
-				if ( dat->currentPage >= 0 ) {
-					if ( dat->page[dat->currentPage].hwnd == NULL ) {
-						dat->page[dat->currentPage].hwnd = CreateDialogParam( hInst, MAKEINTRESOURCE( dat->page[dat->currentPage].dlgId ), hwndDlg, dat->page[dat->currentPage].dlgProc, 0 );
-						ThemeDialogBackground( dat->page[dat->currentPage].hwnd );
-						SetWindowPos( dat->page[dat->currentPage].hwnd, HWND_TOP, dat->rectTab.left, dat->rectTab.top, 0, 0, SWP_NOSIZE );
-					}
-					ShowWindow( dat->page[dat->currentPage].hwnd, SW_SHOW );
-				}
-				break;
-			}
-			break;
-		}
-		break;
-	case WM_JABBER_CHANGED:
-		dat->changed = TRUE;
-		EnableWindow( GetDlgItem( hwndDlg, IDC_SAVE ), jabberOnline );
-		break;
-	case WM_COMMAND:
-		switch ( LOWORD( wParam )) {
-		case IDC_UPDATE:
-			EnableWindow( GetDlgItem( hwndDlg,IDC_UPDATE ), FALSE );
-			EnableWindow( GetDlgItem( hwndDlg,IDC_SAVE ), FALSE );
-			dat->szUpdating = TranslateT( "Updating" );
-			SetDlgItemText( hwndDlg, IDC_UPDATING, dat->szUpdating );
-			ShowWindow( GetDlgItem( hwndDlg, IDC_UPDATING ), SW_SHOW );
-			JabberSendGetVcard( jabberJID );
-			dat->animating = TRUE;
-			SetTimer( hwndDlg, 1, 200, NULL );
-			break;
-		case IDC_SAVE:
-			EnableWindow( GetDlgItem( hwndDlg,IDC_UPDATE ), FALSE );
-			EnableWindow( GetDlgItem( hwndDlg,IDC_SAVE ), FALSE );
-			dat->szUpdating = TranslateT( "Saving" );
-			SetDlgItemText( hwndDlg, IDC_UPDATING, dat->szUpdating );
-			ShowWindow( GetDlgItem( hwndDlg, IDC_UPDATING ), SW_SHOW );
-			dat->animating = TRUE;
-			SetTimer( hwndDlg, 1, 200, NULL );
-			SaveVcardToDB( dat );
-			SetServerVcard();
-			break;
-		case IDCLOSE:
-			DestroyWindow( hwndDlg );
-			break;
-		}
-		break;
-	case WM_TIMER:
-		{	TCHAR str[128];
-			mir_sntprintf( str, SIZEOF(str), _T("%.*s%s%.*s"), dat->updateAnimFrame%5, _T("...."), dat->szUpdating, dat->updateAnimFrame%5, _T("...."));
-			SetDlgItemText( hwndDlg, IDC_UPDATING, str );
-			if (( ++dat->updateAnimFrame ) >= 5 ) dat->updateAnimFrame = 0;
-		}
-		break;
-	case WM_JABBER_CHECK_ONLINE:
-		EnableWindow( GetDlgItem( hwndDlg, IDC_UPDATE ), jabberOnline );
-		if ( dat->changed )
-			EnableWindow( GetDlgItem( hwndDlg, IDC_SAVE ), jabberOnline );
-		break;
-	case WM_JABBER_REFRESH:
-		if ( dat->animating ) {
-			KillTimer( hwndDlg, 1 );
-			dat->animating = FALSE;
-			ShowWindow( GetDlgItem( hwndDlg, IDC_UPDATING ), FALSE );
-		}
-		{	for ( int i=0; i<dat->pageCount; i++ )
-				if ( dat->page[i].hwnd != NULL )
-					SendMessage( dat->page[i].hwnd, WM_JABBER_REFRESH, 0, 0 );
-		}
-		dat->changed = FALSE;
-		EnableWindow( GetDlgItem( hwndDlg, IDC_UPDATE ), TRUE );
-		EnableWindow( GetDlgItem( hwndDlg, IDC_SAVE ), FALSE );
-		break;
-	case WM_CLOSE:
-		DestroyWindow( hwndDlg );
-		break;
-	case WM_DESTROY:
-		hwndJabberVcard = NULL;
-		for ( int i=0; i<dat->pageCount; i++ )
-			if ( dat->page[i].hwnd != NULL )
-				DestroyWindow( dat->page[i].hwnd );
-
-		if ( dat->page ) mir_free( dat->page );
-		if ( dat ) mir_free( dat );
-		break;
-	}
-	return FALSE;
+	SendGetVcard( m_szJabberJID );
 }

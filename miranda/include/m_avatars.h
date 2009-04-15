@@ -91,15 +91,17 @@ struct CacheNode {
     int   pa_format;
 };
 
-#define AVDRQ_FALLBACKPROTO 1              // use the protocol picture as fallback (currently not used)
-#define AVDRQ_FAILIFNOTCACHED 2            // don't create a cache entry if it doesn't already exist. (currently not working)
-#define AVDRQ_ROUNDEDCORNER 4              // draw with rounded corners
-#define AVDRQ_DRAWBORDER 8                 // draw a border around the picture
-#define AVDRQ_PROTOPICT  16                // draw a protocol picture (if available).
-#define AVDRQ_HIDEBORDERONTRANSPARENCY 32  // hide border if bitmap has transparency
-#define AVDRQ_OWNPIC	64				   // draw own avatar (szProto is valid - use "" for global avatar)
-#define AVDRQ_RESPECTHIDDEN 128			   // don't draw images marked as hidden
-#define AVDRQ_DONTRESIZEIFSMALLER 256	   // don't resize images that are smaller then the draw area
+#define AVDRQ_FALLBACKPROTO            0x0001        // use the protocol picture as fallback (currently not used)
+#define AVDRQ_FAILIFNOTCACHED          0x0002        // don't create a cache entry if it doesn't already exist. (currently not working)
+#define AVDRQ_ROUNDEDCORNER            0x0004        // draw with rounded corners
+#define AVDRQ_DRAWBORDER               0x0008        // draw a border around the picture
+#define AVDRQ_PROTOPICT                0x0010        // draw a protocol picture (if available).
+#define AVDRQ_HIDEBORDERONTRANSPARENCY 0x0020        // hide border if bitmap has transparency
+#define AVDRQ_OWNPIC	               0x0040        // draw own avatar (szProto is valid - use "" for global avatar)
+#define AVDRQ_RESPECTHIDDEN            0x0080        // don't draw images marked as hidden
+#define AVDRQ_DONTRESIZEIFSMALLER      0x0100        // don't resize images that are smaller then the draw area
+#define AVDRQ_FORCEFASTALPHA           0x0200        // force rendering with simple AlphaBlend (will use FI_Resample otherwise)
+#define AVDRQ_FORCEALPHA               0x0400        // force with simple AlphaBlend (may use StretchBlt otherwise)
 
 // request to draw a contacts picture. See MS_AV_DRAWAVATAR service description
 
@@ -251,8 +253,15 @@ typedef struct _contactAvatarChangedNotification {
 
 // Save an HBITMAP to an image
 // wParam = HBITMAP
-// lParam = full path of filename
-#define MS_AV_SAVEBITMAP "SV_Avatars/SaveBitmap"
+// lParam = full path of filename 
+#define MS_AV_SAVEBITMAP  "SV_Avatars/SaveBitmap"
+#define MS_AV_SAVEBITMAPW "SV_Avatars/SaveBitmapW"
+
+#if defined(UNICODE)
+	#define MS_AV_SAVEBITMAPT MS_AV_SAVEBITMAPW
+#else
+	#define MS_AV_SAVEBITMAPT MS_AV_SAVEBITMAP
+#endif
 
 // Returns != 0 if can save that type of image, = 0 if cant
 // wParam = 0

@@ -55,7 +55,7 @@ int WorkSettingsChain(DWORD ofsContact,DBContact *dbc,int firstTime)
 		return ERROR_SUCCESS;
 	}
 	if(dbcsNew->blob[0]==0) {
-		AddToStatus(STATUS_MESSAGE,TranslateT("Empty settings group at %08X: deleting"),ofsThisSettings);
+		AddToStatus(STATUS_MESSAGE,TranslateT("Empty settings group at %08X: skipping"),ofsThisSettings);
 		ofsThisSettings=dbcsOld.ofsNext;
 		return ERROR_SUCCESS;
 	}

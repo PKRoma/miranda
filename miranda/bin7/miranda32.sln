@@ -13,6 +13,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "import", "..\plugins\import
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "miranda32", "..\src\miranda32.vcproj", "{F9916510-9055-4C9F-997A-3755DEC1511B}"
 	ProjectSection(ProjectDependencies) = postProject
+		{FFD8637D-909C-4586-9E42-120B66B564FE} = {FFD8637D-909C-4586-9E42-120B66B564FE}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "msn", "..\protocols\MSN\msn.vcproj", "{7B0F213E-C15E-4219-8AE5-49DD3D3D553D}"
@@ -80,107 +81,21 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FreeImage", "..\plugins\fre
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "aim", "..\protocols\AimOscar\aim_7.vcproj", "{8FBFE966-FBD2-4E01-9DB1-88399D0FA3CA}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GG", "..\protocols\Gadu-Gadu\Gadu-Gadu.vcproj", "{9F77E06C-47DD-4F07-AD5A-AB1DF6E19060}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IRC", "..\protocols\IRCG\IRC.vcproj", "{3A12F777-56A8-42EC-BD17-8F325524241E}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(DPCodeReviewSolutionGUID) = preSolution
 		DPCodeReviewSolutionGUID = {00000000-0000-0000-0000-000000000000}
-	EndGlobalSection
-	GlobalSection(SourceCodeControl) = preSolution
-		SccNumberOfProjects = 19
-		SccProjectUniqueName0 = ..\\plugins\\clist\\clist.vcproj
-		SccProjectName0 = \u0022$/Miranda/miranda/plugins/clist\u0022,\u0020SKIAAAAA
-		SccLocalPath0 = ..\\plugins\\clist
-		SccProvider0 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		CanCheckoutShared = false
-		SccProjectUniqueName1 = ..\\..\\miranda-tools\\dbtool\\dbtool.vcproj
-		SccProjectName1 = \u0022$/Miranda/miranda-tools/dbtool\u0022,\u0020XYNAAAAA
-		SccLocalPath1 = ..\\..\\miranda-tools\\dbtool
-		SccProvider1 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		CanCheckoutShared = false
-		SccProjectUniqueName2 = ..\\plugins\\import\\import.vcproj
-		SccProjectName2 = \u0022$/Miranda/miranda/plugins/import\u0022,\u0020BLIAAAAA
-		SccLocalPath2 = ..\\plugins\\import
-		SccProvider2 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		CanCheckoutShared = false
-		SccProjectUniqueName3 = ..\\plugins\\tabsrmm\\tabsrmm.vcproj
-		SccProjectName3 = \u0022$/Miranda/miranda/plugins/tabsrmm\u0022,\u0020JLIAAAAA
-		SccLocalPath3 = ..\\plugins\\tabsrmm
-		SccProvider3 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		CanCheckoutShared = false
-		SccProjectUniqueName4 = ..\\plugins\\chat\\chat.vcproj
-		SccProjectName4 = \u0022$/Miranda/miranda/plugins/chat\u0022,\u0020DOPAAAAA
-		SccLocalPath4 = ..\\plugins\\chat
-		SccProvider4 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		CanCheckoutShared = false
-		SccProjectUniqueName5 = ..\\protocols\\IcqOscarJ\\icqoscar8.vcproj
-		SccProjectName5 = \u0022$/Miranda/miranda/protocols/IcqOscarJ\u0022,\u0020QLIAAAAA
-		SccLocalPath5 = ..\\protocols\\IcqOscarJ
-		SccProvider5 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		CanCheckoutShared = false
-		SccProjectUniqueName6 = ..\\plugins\\clist_nicer\\clist_nicer.vcproj
-		SccProjectName6 = \u0022$/Miranda/miranda/plugins/clist_nicer\u0022,\u0020EOPAAAAA
-		SccLocalPath6 = ..\\plugins\\clist_nicer
-		SccProvider6 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		CanCheckoutShared = false
-		SccProjectUniqueName7 = ..\\plugins\\mwclist\\clist_mw.vcproj
-		SccProjectName7 = \u0022$/Miranda/miranda/plugins/mwclist\u0022,\u0020VNDAAAAA
-		SccLocalPath7 = ..\\plugins\\mwclist
-		SccProvider7 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		CanCheckoutShared = false
-		SccProjectUniqueName8 = ..\\protocols\\Yahoo\\Yahoo.vcproj
-		SccProjectName8 = \u0022$/Miranda/miranda/protocols/Yahoo\u0022,\u0020NODAAAAA
-		SccLocalPath8 = ..\\protocols\\Yahoo
-		SccProvider8 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		CanCheckoutShared = false
-		SccProjectUniqueName9 = ..\\plugins\\Scriver\\scriver.vcproj
-		SccProjectName9 = \u0022$/Miranda/miranda/plugins/Scriver\u0022,\u0020GLIAAAAA
-		SccLocalPath9 = ..\\plugins\\Scriver
-		SccProvider9 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		CanCheckoutShared = false
-		SccProjectUniqueName10 = ..\\plugins\\db3x_mmap\\db3x_mmap.vcproj
-		SccProjectName10 = \u0022$/Miranda/miranda/plugins/db3x_mmap\u0022,\u0020WKIAAAAA
-		SccLocalPath10 = ..\\plugins\\db3x_mmap
-		SccProvider10 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		CanCheckoutShared = false
-		SccProjectUniqueName11 = ..\\plugins\\db3x\\db3x.vcproj
-		SccProjectName11 = \u0022$/Miranda/miranda/plugins/db3x\u0022,\u0020WKIAAAAA
-		SccLocalPath11 = ..\\plugins\\db3x
-		SccProvider11 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		CanCheckoutShared = false
-		SccProjectUniqueName12 = ..\\plugins\\zlib\\zlib.vcproj
-		SccProjectName12 = \u0022$/Miranda/miranda/plugins/zlib\u0022,\u0020FLIAAAAA
-		SccLocalPath12 = ..\\plugins\\zlib
-		SccProvider12 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		CanCheckoutShared = false
-		SccProjectUniqueName13 = ..\\src\\miranda32.vcproj
-		SccProjectName13 = \u0022$/Miranda/miranda/src\u0022,\u0020MTBAAAAA
-		SccLocalPath13 = ..\\src
-		SccProvider13 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		CanCheckoutShared = false
-		SccProjectUniqueName14 = ..\\protocols\\MSN\\msn.vcproj
-		SccProjectName14 = \u0022$/Miranda/miranda/protocols/MSN\u0022,\u0020ZYBAAAAA
-		SccLocalPath14 = ..\\protocols\\MSN
-		SccProvider14 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		CanCheckoutShared = false
-		SccProjectUniqueName15 = ..\\plugins\\srmm\\srmm.vcproj
-		SccProjectName15 = \u0022$/Miranda/miranda/plugins/srmm\u0022,\u0020XXBAAAAA
-		SccLocalPath15 = ..\\plugins\\srmm
-		SccProvider15 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		CanCheckoutShared = false
-		SccProjectUniqueName16 = ..\\plugins\\modernb\\clist_modern.vcproj
-		SccProjectName16 = \u0022$/Miranda/miranda/plugins/modernb\u0022,\u0020HXBAAAAA
-		SccLocalPath16 = ..\\plugins\\modernb
-		SccProvider16 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		CanCheckoutShared = false
-		SccProjectUniqueName17 = ..\\plugins\\avs\\avs.vcproj
-		SccProjectName17 = \u0022$/Miranda/miranda/plugins/avs\u0022,\u0020WCOAAAAA
-		SccLocalPath17 = ..\\plugins\\avs
-		SccProvider17 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		CanCheckoutShared = false
-		SccProjectUniqueName18 = ..\\plugins\\freeimage\\FreeImage.vcproj
-		SccProjectName18 = \u0022$/Miranda/miranda/plugins/freeimage\u0022,\u0020YWBAAAAA
-		SccLocalPath18 = ..\\plugins\\freeimage
-		SccProvider18 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		CanCheckoutShared = false
 	EndGlobalSection
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -350,6 +265,30 @@ Global
 		{D0C4EACD-F264-4CFA-9AFC-3918FEC31A9A}.Release.Build.0 = Release|Win32
 		{D0C4EACD-F264-4CFA-9AFC-3918FEC31A9A}.Release Unicode.ActiveCfg = Release Unicode|Win32
 		{D0C4EACD-F264-4CFA-9AFC-3918FEC31A9A}.Release Unicode.Build.0 = Release Unicode|Win32
+		{8FBFE966-FBD2-4E01-9DB1-88399D0FA3CA}.Debug.ActiveCfg = Debug|Win32
+		{8FBFE966-FBD2-4E01-9DB1-88399D0FA3CA}.Debug.Build.0 = Debug|Win32
+		{8FBFE966-FBD2-4E01-9DB1-88399D0FA3CA}.Debug Unicode.ActiveCfg = Debug Unicode|Win32
+		{8FBFE966-FBD2-4E01-9DB1-88399D0FA3CA}.Debug Unicode.Build.0 = Debug Unicode|Win32
+		{8FBFE966-FBD2-4E01-9DB1-88399D0FA3CA}.Release.ActiveCfg = Release|Win32
+		{8FBFE966-FBD2-4E01-9DB1-88399D0FA3CA}.Release.Build.0 = Release|Win32
+		{8FBFE966-FBD2-4E01-9DB1-88399D0FA3CA}.Release Unicode.ActiveCfg = Release Unicode|Win32
+		{8FBFE966-FBD2-4E01-9DB1-88399D0FA3CA}.Release Unicode.Build.0 = Release Unicode|Win32
+		{9F77E06C-47DD-4F07-AD5A-AB1DF6E19060}.Debug.ActiveCfg = Debug|Win32
+		{9F77E06C-47DD-4F07-AD5A-AB1DF6E19060}.Debug.Build.0 = Debug|Win32
+		{9F77E06C-47DD-4F07-AD5A-AB1DF6E19060}.Debug Unicode.ActiveCfg = Debug Unicode|Win32
+		{9F77E06C-47DD-4F07-AD5A-AB1DF6E19060}.Debug Unicode.Build.0 = Debug Unicode|Win32
+		{9F77E06C-47DD-4F07-AD5A-AB1DF6E19060}.Release.ActiveCfg = Release|Win32
+		{9F77E06C-47DD-4F07-AD5A-AB1DF6E19060}.Release.Build.0 = Release|Win32
+		{9F77E06C-47DD-4F07-AD5A-AB1DF6E19060}.Release Unicode.ActiveCfg = Release Unicode|Win32
+		{9F77E06C-47DD-4F07-AD5A-AB1DF6E19060}.Release Unicode.Build.0 = Release Unicode|Win32
+		{3A12F777-56A8-42EC-BD17-8F325524241E}.Debug.ActiveCfg = Debug|Win32
+		{3A12F777-56A8-42EC-BD17-8F325524241E}.Debug.Build.0 = Debug|Win32
+		{3A12F777-56A8-42EC-BD17-8F325524241E}.Debug Unicode.ActiveCfg = Debug Unicode|Win32
+		{3A12F777-56A8-42EC-BD17-8F325524241E}.Debug Unicode.Build.0 = Debug Unicode|Win32
+		{3A12F777-56A8-42EC-BD17-8F325524241E}.Release.ActiveCfg = Release|Win32
+		{3A12F777-56A8-42EC-BD17-8F325524241E}.Release.Build.0 = Release|Win32
+		{3A12F777-56A8-42EC-BD17-8F325524241E}.Release Unicode.ActiveCfg = Release Unicode|Win32
+		{3A12F777-56A8-42EC-BD17-8F325524241E}.Release Unicode.Build.0 = Release Unicode|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

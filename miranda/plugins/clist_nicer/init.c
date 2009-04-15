@@ -29,7 +29,7 @@ PLUGINLINK *pluginLink;
 CLIST_INTERFACE* pcli = NULL;
 extern CRITICAL_SECTION cs_extcache;
 
-#define DEFAULT_TB_VISIBILITY (1 | 2 | 4 | 8 | 16 | 32 | 64)
+#define DEFAULT_TB_VISIBILITY (1 | 2 | 4 | 8 | 16 | 32 | 64 | 8192)
 TCHAR *szNoevents = _T("No events...");
 //extern HICON im_clienthIcons[NR_CLIENTS];
 extern HICON overlayicons[10];
@@ -96,20 +96,20 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 int ( *saveRemoveEvent )(HANDLE hContact, HANDLE hDbEvent);
 int RemoveEvent(HANDLE hContact, HANDLE hDbEvent);
 
-int ( *saveTrayIconProcessMessage )(WPARAM wParam, LPARAM lParam);
-int TrayIconProcessMessage(WPARAM wParam, LPARAM lParam);
+INT_PTR ( *saveTrayIconProcessMessage )(WPARAM wParam, LPARAM lParam);
+INT_PTR TrayIconProcessMessage(WPARAM wParam, LPARAM lParam);
 
 void ( *saveRecalcScrollBar )(HWND hwnd, struct ClcData *dat);
 void RecalcScrollBar(HWND hwnd, struct ClcData *dat);
 
 PLUGININFOEX pluginInfo = {
 #if defined(_UNICODE)
-		sizeof(PLUGININFOEX), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 7, 2, 0),
+		sizeof(PLUGININFOEX), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 8, 0, 5),
 #else
-		sizeof(PLUGININFOEX), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 7, 2, 0),
+		sizeof(PLUGININFOEX), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 8, 0, 5),
 #endif		
 		"Display contacts, event notifications, protocol status",
-		"Pixel, egoDust, cyreve, Nightwish", "", "Copyright 2000-2006 Miranda-IM project", "http://www.miranda-im.org",
+		"Pixel, egoDust, cyreve, Nightwish", "", "Copyright 2000-2008 Miranda-IM project", "http://www.miranda-im.org",
 		UNICODE_AWARE,
 		DEFMOD_CLISTALL,
 #if defined(_UNICODE)
@@ -119,22 +119,8 @@ PLUGININFOEX pluginInfo = {
 #endif
 };
 
-/*
-PLUGININFO oldPluginInfo = {
 #if defined(_UNICODE)
-		sizeof(PLUGININFO), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 7, 2, 0),
-#else
-		sizeof(PLUGININFO), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 7, 2, 0),
-#endif
-		"Display contacts, event notifications, protocol status",
-		"Pixel, egoDust, cyreve, Nightwish", "", "Copyright 2000-2006 Miranda-IM project", "http://www.miranda-im.org",
-		UNICODE_AWARE,
-		DEFMOD_CLISTALL
-};
-*/
-
-#if defined(_UNICODE)
-void __forceinline _DebugTraceW(const wchar_t *fmt, ...)
+void _DebugTraceW(const wchar_t *fmt, ...)
 {
 #ifdef _DEBUG
     wchar_t debug[2048];
@@ -150,7 +136,7 @@ void __forceinline _DebugTraceW(const wchar_t *fmt, ...)
 }
 #endif
 
-void __forceinline _DebugTraceA(const char *fmt, ...)
+void _DebugTraceA(const char *fmt, ...)
 {
     char    debug[2048];
     int     ibsize = 2047;
@@ -187,29 +173,10 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 
 __declspec(dllexport) PLUGININFOEX * MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-#if defined(_UNICODE)
-	pluginInfo.flags |= UNICODE_AWARE;
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 2, 0))
-#else
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 1))
-#endif
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 9))
 		return NULL;
 	return &pluginInfo;
 }
-
-/*
-__declspec(dllexport) PLUGININFO * MirandaPluginInfo(DWORD mirandaVersion)
-{
-#if defined(_UNICODE)
-	pluginInfo.flags |= UNICODE_AWARE;
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 2, 0))
-#else
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 1))
-#endif
-		return NULL;
-	return &oldPluginInfo;
-}
-*/
 
 static const MUUID interfaces[] = {MIID_CLIST, MIID_LAST};
 __declspec(dllexport) const MUUID * MirandaPluginInterfaces(void)
@@ -231,6 +198,7 @@ static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 	if(ServiceExists(MS_MC_DISABLEHIDDENGROUP))
 		CallService(MS_MC_DISABLEHIDDENGROUP, 1, 0);
+	g_CluiData.bMetaEnabled = DBGetContactSettingByte(NULL, g_CluiData.szMetaName, "Enabled", 1);
 
 	g_CluiData.bAvatarServiceAvail = ServiceExists(MS_AV_GETAVATARBITMAP) ? TRUE : FALSE;
 	if(g_CluiData.bAvatarServiceAvail)
@@ -297,7 +265,6 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		InitializeCriticalSection(&cs_extcache);
 	}
 
-	g_CluiData.bMetaEnabled = DBGetContactSettingByte(NULL, "MetaContacts", "Enabled", 1);
 	g_CluiData.toolbarVisibility = DBGetContactSettingDword(NULL, "CLUI", "TBVisibility", DEFAULT_TB_VISIBILITY);
 	g_CluiData.hMenuButtons = GetSubMenu(LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT)), 3);
 	g_CluiData.hMenuNotify = CreatePopupMenu();
@@ -331,6 +298,8 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	g_CluiData.bLayeredHack = DBGetContactSettingByte(NULL, "CLUI", "layeredhack", 1);
 	g_CluiData.bFirstRun = DBGetContactSettingByte(NULL, "CLUI", "firstrun", 1);
 	g_CluiData.langPackCP = CallService(MS_LANGPACK_GETCODEPAGE, 0, 0);
+    g_CluiData.realTimeSaving = DBGetContactSettingByte(NULL, "CLUI", "save_pos_always", 0);
+
 	{
 		DWORD sortOrder = DBGetContactSettingDword(NULL, "CList", "SortOrder", SORTBY_NAME);
 		g_CluiData.sortOrder[0] = LOBYTE(LOWORD(sortOrder));
@@ -384,12 +353,12 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 	// get the clist interface
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
-	if ( (int)pcli == CALLSERVICE_NOTFOUND ) {
+	if ( (INT_PTR)pcli == CALLSERVICE_NOTFOUND ) {
 LBL_Error:
-		MessageBoxA( NULL, "This plugin requires Miranda IM 0.7.0.8 or later", "Fatal error", MB_OK );
+		MessageBoxA( NULL, "This plugin requires Miranda IM 0.8.0.9 or later", "Fatal error", MB_OK );
 		return 1;
 	}
-	if ( pcli->version < 4 ) // don't join it with the previous if()
+	if ( pcli->version < 6 ) // don't join it with the previous if()
 		goto LBL_Error;
 
 	pcli->pfnBuildGroupPopupMenu = BuildGroupPopupMenu;
@@ -453,4 +422,5 @@ int __declspec(dllexport) Unload(void)
 	UnLoadCLUIFramesModule();
 	return 0;
 }
+
 

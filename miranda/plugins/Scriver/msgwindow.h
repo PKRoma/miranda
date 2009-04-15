@@ -30,6 +30,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define CM_ACTIVATECHILD	 (WM_USER+0x182)
 #define CM_ACTIVATEPREV		 (WM_USER+0x183)
 #define CM_ACTIVATENEXT		 (WM_USER+0x184)
+#define CM_ACTIVATEBYINDEX	 (WM_USER+0x185)
+
 #define CM_GETCHILDCOUNT	 (WM_USER+0x188)
 #define CM_GETACTIVECHILD	 (WM_USER+0x189)
 #define CM_GETFLAGS			 (WM_USER+0x18A)
@@ -39,6 +41,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define CM_UPDATETABCONTROL  (WM_USER+0x192)
 #define CM_STARTFLASHING	 (WM_USER+0x1A0)
 #define CM_POPUPWINDOW		 (WM_USER+0x1A1)
+
+#define CM_GETTOOLBARSTATUS  (WM_USER+0x1A2)
+
+#define DM_DEACTIVATE		 (WM_USER+0x1B0)
+
 /* child window services */
 #define DM_UPDATETITLEBAR    (WM_USER+0x200)
 #define DM_UPDATESTATUSBAR   (WM_USER+0x201)
@@ -46,6 +53,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DM_SETPARENT	 	 (WM_USER+0x203)
 #define DM_ACTIVATE			 (WM_USER+0x206)
 #define DM_GETCONTEXTMENU    (WM_USER+0x207)
+#define DM_GETCODEPAGE		 (WM_USER+0x208)
+#define DM_SETCODEPAGE		 (WM_USER+0x209)
+#define DM_SETFOCUS			 (WM_USER+0x20A)
+#define DM_CLISTSETTINGSCHANGED   (WM_USER+0x20B)
 
 #define SBDF_TEXT  1
 #define SBDF_ICON  2

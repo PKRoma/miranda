@@ -1,11 +1,8 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-7 Boris Krasnovskiy.
-Copyright (c) 2003-5 George Hazan.
-Copyright (c) 2002-3 Richard Hughes (original version).
-
-Miranda IM: the free icq client for MS Windows
-Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
+Copyright (c) 2006-2009 Boris Krasnovskiy.
+Copyright (c) 2003-2005 George Hazan.
+Copyright (c) 2002-2003 Richard Hughes (original version).
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -18,37 +15,36 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "msn_global.h"
 
-int  MSN_ContactJoined( ThreadData* parInfo, HANDLE hContact )
+int  ThreadData::contactJoined( HANDLE hContact )
 {
-	for ( int i=0; i < parInfo->mJoinedCount; i++ )
-		if ( parInfo->mJoinedContacts[i] == hContact )
+	for ( int i=0; i < mJoinedCount; i++ )
+		if ( mJoinedContacts[i] == hContact )
 			return i+1;
 
-	int ret = ++parInfo->mJoinedCount;
-	parInfo->mJoinedContacts = ( HANDLE* )mir_realloc( parInfo->mJoinedContacts, sizeof( HANDLE )*ret );
-	parInfo->mJoinedContacts[ ret-1 ] = hContact;
+	int ret = ++mJoinedCount;
+	mJoinedContacts = ( HANDLE* )mir_realloc( mJoinedContacts, sizeof( HANDLE )*ret );
+	mJoinedContacts[ ret-1 ] = hContact;
 	return ret;
 }
 
-int  MSN_ContactLeft( ThreadData* parInfo, HANDLE hContact )
+int  ThreadData::contactLeft( HANDLE hContact )
 {
 	int i;
 
-	for ( i=0; i < parInfo->mJoinedCount; i++ )
-		if ( parInfo->mJoinedContacts[ i ] == hContact )
+	for ( i=0; i < mJoinedCount; i++ )
+		if ( mJoinedContacts[ i ] == hContact )
 			break;
 
-	if ( i == parInfo->mJoinedCount )
+	if ( i == mJoinedCount )
 		return i;
 
-	int ret = --parInfo->mJoinedCount;
-	memmove( parInfo->mJoinedContacts + i, parInfo->mJoinedContacts+i+1, sizeof( HANDLE )*( ret-i ));
-	parInfo->mJoinedContacts = ( HANDLE* )mir_realloc( parInfo->mJoinedContacts, sizeof( HANDLE )*ret );
+	int ret = --mJoinedCount;
+	memmove( mJoinedContacts + i, mJoinedContacts+i+1, sizeof( HANDLE )*( ret-i ));
+	mJoinedContacts = ( HANDLE* )mir_realloc( mJoinedContacts, sizeof( HANDLE )*ret );
 	return ret;
 }

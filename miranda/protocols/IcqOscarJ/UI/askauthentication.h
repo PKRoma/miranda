@@ -33,7 +33,3 @@
 //
 // -----------------------------------------------------------------------------
 
-
-
-int icq_RequestAuthorization(WPARAM wParam, LPARAM lParam);
-

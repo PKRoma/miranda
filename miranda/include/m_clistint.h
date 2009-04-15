@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project,
+Copyright 2000-2008 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -29,9 +29,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define HCONTACT_ISGROUP    0x80000000
 #define HCONTACT_ISINFO     0xFFFF0000
-#define IsHContactGroup(h)  (((unsigned)(h)^HCONTACT_ISGROUP)<(HCONTACT_ISGROUP^HCONTACT_ISINFO))
-#define IsHContactInfo(h)   (((unsigned)(h)&HCONTACT_ISINFO)==HCONTACT_ISINFO)
-#define IsHContactContact(h) (((unsigned)(h)&HCONTACT_ISGROUP)==0)
+#define IsHContactGroup(h)  (((UINT_PTR)(h)^HCONTACT_ISGROUP)<(HCONTACT_ISGROUP^HCONTACT_ISINFO))
+#define IsHContactInfo(h)   (((UINT_PTR)(h)&HCONTACT_ISINFO)==HCONTACT_ISINFO)
+#define IsHContactContact(h) (((UINT_PTR)(h)&HCONTACT_ISGROUP)==0)
 #define MAXEXTRACOLUMNS     16
 
 #define MAX_TIP_SIZE 2048
@@ -111,29 +111,11 @@ struct trayIconInfo_t
 	TCHAR* ptszToolTip;
 };
 
-/* genmenu structs */
-
-typedef struct
-{
-	int          id;
-	int          globalid;
-	int          iconId;          // icon index in the section's image list
-	TMO_MenuItem mi;              // user-defined data
-	BOOL         OverrideShow;
-	char*        UniqName;        // uniqie name
-	TCHAR*       CustomName;
-	HANDLE       hIcolibItem;     // handle of iconlib item
-	HMENU        hSubMenu;
-	int          originalPosition;
-}
-	TMO_IntMenuItem,*PMO_IntMenuItem;
-
 typedef struct _menuProto
 {
-	char*  szProto;             //This is DLL-based unique name
-	HANDLE menuID;
-	HANDLE hasAdded;
-	HICON  hIcon;
+	char* szProto; //This is DLL-based unique name
+	HGENMENU pMenu;
+	HICON hIcon;
 }
 	MenuProto;
 
@@ -175,7 +157,7 @@ typedef struct _menuProto
 #define CLCDEFAULT_QUICKSEARCHCOLOUR RGB(255,255,0)
 #define CLCDEFAULT_LEFTMARGIN    0
 #define CLCDEFAULT_GAMMACORRECT  1
-#define CLCDEFAULT_SHOWIDLE      1
+#define CLCDEFAULT_SHOWIDLE      0
 #define CLCDEFAULT_USEWINDOWSCOLOURS 0
 
 #define TRAYICON_ID_BASE    100
@@ -319,7 +301,7 @@ typedef struct
 	void ( *pfnTrayIconSetToBase )( char *szPreferredProto );
 	void ( *pfnTrayIconIconsChanged )( void );
 	int  ( *pfnTrayIconPauseAutoHide )( WPARAM wParam, LPARAM lParam );
-	int  ( *pfnTrayIconProcessMessage )( WPARAM wParam, LPARAM lParam );
+	INT_PTR ( *pfnTrayIconProcessMessage )( WPARAM wParam, LPARAM lParam );
 	int  ( *pfnCListTrayNotify )( MIRANDASYSTRAYNOTIFY* );
 
 	/* clui.c */
@@ -383,25 +365,26 @@ typedef struct
 	int    currentStatusMenuItem, currentDesiredStatusMode;
 	BOOL   bDisplayLocked;
 
-	PMO_IntMenuItem ( *pfnMOGetIntMenuItem )( int );
-	PMO_IntMenuItem ( *pfnMOGetMenuItemByGlobalID )( int globalMenuID );
+	HGENMENU ( *pfnGetProtocolMenu )( const char* );
+	int      ( *pfnStub2 )( int );
 
-	int   ( *pfnGetProtocolVisibility )( const char* );
-	int   ( *pfnGetProtoIndexByPos )( PROTOCOLDESCRIPTOR** proto, int protoCnt, int Pos);
-	void  ( *pfnReloadProtoMenus )( void );
+	int    ( *pfnGetProtocolVisibility )( const char* );
+	int    ( *pfnGetProtoIndexByPos )( PROTOCOLDESCRIPTOR** proto, int protoCnt, int Pos);
+	void   ( *pfnReloadProtoMenus )( void );
 
 	/*************************************************************************************
 	 * version 5 additions (0.7.0.x) - tray icons
 	 *************************************************************************************/
 
-	struct trayIconInfo_t* trayIcon;
-	int    trayIconCount;
-	int    shellVersion;
-	int    cycleTimerId, cycleStep;
-	TCHAR* szTip;
-	BOOL   bTrayMenuOnScreen;
+	struct   trayIconInfo_t* trayIcon;
+	int      trayIconCount;
+	int      shellVersion;
+	UINT_PTR cycleTimerId;
+    int      cycleStep;
+	TCHAR*   szTip;
+	BOOL     bTrayMenuOnScreen;
 
-	HICON ( *pfnGetIconFromStatusMode )( HANDLE hContact, const char *szProto, int status );
+	HICON  ( *pfnGetIconFromStatusMode )( HANDLE hContact, const char *szProto, int status );
 
 	void   ( *pfnInitTray )( void );
 	int    ( *pfnTrayIconAdd )( HWND hwnd, const char *szProto, const char *szIconProto, int status );
@@ -412,12 +395,17 @@ typedef struct
 	int    ( *pfnTrayIconSetBaseInfo )( HICON hIcon, const char *szPreferredProto );
 	void   ( *pfnTrayIconTaskbarCreated )( HWND hwnd );
 	int    ( *pfnTrayIconUpdate )( HICON hNewIcon, const TCHAR *szNewTip, const char *szPreferredProto, int isBase );
-	
+
 	void   ( *pfnUninitTray )( void );
 	void   ( *pfnLockTray )( void );
 	void   ( *pfnUnlockTray )( void );
 
-	VOID ( CALLBACK *pfnTrayCycleTimerProc )( HWND hwnd, UINT message, UINT idEvent, DWORD dwTime );
+	VOID   ( CALLBACK *pfnTrayCycleTimerProc )( HWND hwnd, UINT message, UINT_PTR idEvent, DWORD dwTime );
+
+	/*************************************************************************************
+	 * version 6 additions (0.8.0.x) - accounts
+	 *************************************************************************************/
+	int    ( *pfnGetAccountIndexByPos )( int pos );
 }
 	CLIST_INTERFACE;
 

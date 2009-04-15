@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
+Copyright 2000-2009 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -47,18 +47,17 @@ Cavets:
 	creation depends on CRT which can not be shared.
 
 */
-unsigned long forkthread (
+UINT_PTR forkthread (
 	void (__cdecl *threadcode)(void*),
 	unsigned long stacksize,
 	void *arg
 );
 
-unsigned long forkthreadex(
+UINT_PTR forkthreadex(
 	void *sec,
 	unsigned stacksize,
 	unsigned (__stdcall *threadcode)(void*),
+	void *owner,
 	void *arg,
-	unsigned cf,
 	unsigned *thraddr
 );
-

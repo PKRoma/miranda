@@ -20,14 +20,12 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#define MIRANDA_VER 0x0700
-
-#if defined(UNICODE) && !defined(_UNICODE)
-   #define _UNICODE
-#endif
-#include <tchar.h>
+#define MIRANDA_VER 0x0800
 
 #define _WIN32_WINNT 0x0501
+#define _WIN32_IE 0x0501
+
+#include <m_stdhdr.h>
 
 #include <windows.h>
 #include <commctrl.h>
@@ -60,3 +58,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "msgs.h"
 #include "globals.h"
 #include "richutil.h"
+
+#if _MSC_VER >= 1500
+	#define wEffects wReserved
+#endif

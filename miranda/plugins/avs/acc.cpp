@@ -23,14 +23,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 
-extern int g_protocount;
-extern struct protoPicCacheEntry *g_MyAvatars;
 extern FI_INTERFACE *fei;
 
 int GetImageFormat(char *filename);
-int DrawAvatarPicture(WPARAM wParam, LPARAM lParam);
-int GetAvatarBitmap(WPARAM wParam, LPARAM lParam);
-int GetMyAvatar(WPARAM wParam, LPARAM lParam);
+INT_PTR DrawAvatarPicture(WPARAM wParam, LPARAM lParam);
+INT_PTR GetAvatarBitmap(WPARAM wParam, LPARAM lParam);
+INT_PTR GetMyAvatar(WPARAM wParam, LPARAM lParam);
 void InternalDrawAvatar(AVATARDRAWREQUEST *r, HBITMAP hbm, LONG bmWidth, LONG bmHeight, DWORD dwFlags);
 
 
@@ -47,14 +45,14 @@ typedef struct
 {
 	HANDLE hContact;
 	char proto[64];
-    HANDLE hHook;
-    HANDLE hHookMy;
+	HANDLE hHook;
+	HANDLE hHookMy;
 	HFONT hFont;   // font
 	COLORREF borderColor;
 	COLORREF bkgColor;
 	COLORREF avatarBorderColor;
 	int avatarRoundCornerRadius;
-	char noAvatarText[128];
+	TCHAR noAvatarText[128];
 	BOOL respectHidden;
 	BOOL showingFlash;
 	BOOL resizeIfSmaller;
@@ -104,10 +102,10 @@ void ResizeFlash(HWND hwnd, ACCData* data)
 		}
 
 		FLASHAVATAR fa = {0}; 
-        fa.hContact = data->hContact;
+		fa.hContact = data->hContact;
 		fa.cProto = data->proto;
 		fa.hParentWindow = hwnd;
-        fa.id = 1675;
+		fa.id = 1675;
 		CallService(MS_FAVATAR_RESIZE, (WPARAM)&fa, (LPARAM)&rc);
 		CallService(MS_FAVATAR_SETPOS, (WPARAM)&fa, (LPARAM)&rc);
 	}
@@ -119,10 +117,10 @@ void SetBkgFlash(HWND hwnd, ACCData* data)
 		&& ServiceExists(MS_FAVATAR_SETBKCOLOR))
 	{
 		FLASHAVATAR fa = {0}; 
-        fa.hContact = data->hContact;
+		fa.hContact = data->hContact;
 		fa.cProto = data->proto;
 		fa.hParentWindow = hwnd;
-        fa.id = 1675;
+		fa.id = 1675;
 
 		if (data->bkgColor != -1)
 			CallService(MS_FAVATAR_SETBKCOLOR, (WPARAM)&fa, (LPARAM)data->bkgColor);
@@ -140,10 +138,10 @@ void DestroyFlash(HWND hwnd, ACCData* data)
 		&& ServiceExists(MS_FAVATAR_DESTROY))
 	{
 		FLASHAVATAR fa = {0}; 
-        fa.hContact = data->hContact;
+		fa.hContact = data->hContact;
 		fa.cProto = data->proto;
 		fa.hParentWindow = hwnd;
-        fa.id = 1675;
+		fa.id = 1675;
 		CallService(MS_FAVATAR_DESTROY, (WPARAM)&fa, 0);
 	}
 
@@ -163,9 +161,9 @@ void StartFlash(HWND hwnd, ACCData* data)
 	else if (data->proto[0] != '\0')
 	{
 		protoPicCacheEntry *ace = NULL;
-		for(int i = 0; i < g_protocount + 1; i++) 
+		for(int i = 0; i < g_MyAvatars.getCount(); i++) 
 		{
-			if (!strcmp(data->proto, g_MyAvatars[i].szProtoname))
+			if (!lstrcmpA(data->proto, g_MyAvatars[i].szProtoname))
 			{
 				ace = &g_MyAvatars[i];
 				break;
@@ -471,7 +469,7 @@ BOOL ScreenToClient(HWND hWnd, LPRECT lpRect)
 
 static void Invalidate(HWND hwnd)
 {
-	ACCData* data =  (ACCData *) GetWindowLong(hwnd, 0);
+	ACCData* data =  (ACCData *) GetWindowLongPtr(hwnd, 0);
 	if (data->bkgColor == -1)
 	{
 		HWND parent = GetParent(hwnd);
@@ -493,7 +491,7 @@ static void NotifyAvatarChange(HWND hwnd)
 	SendMessage(GetParent(hwnd), WM_NOTIFY, 0, (LPARAM) &pshn);
 }
 
-static void DrawText(HDC hdc, HFONT hFont, const RECT &rc, const char *text)
+static void DrawText(HDC hdc, HFONT hFont, const RECT &rc, const TCHAR *text)
 {
 	HGDIOBJ oldFont = SelectObject(hdc, hFont);
 
@@ -506,20 +504,20 @@ static void DrawText(HDC hdc, HFONT hFont, const RECT &rc, const char *text)
 
 	// Calc text size
 	RECT tr_ret = tr;
-	DrawTextA(hdc, text, -1, &tr_ret, 
+	DrawText(hdc, text, -1, &tr_ret, 
 			DT_WORDBREAK | DT_NOPREFIX | DT_CENTER | DT_CALCRECT);
 
 	// Calc needed size
 	tr.top += ((tr.bottom - tr.top) - (tr_ret.bottom - tr_ret.top)) / 2;
 	tr.bottom = tr.top + (tr_ret.bottom - tr_ret.top);
-	DrawTextA(hdc, text, -1, &tr, 
+	DrawText(hdc, text, -1, &tr, 
 			DT_WORDBREAK | DT_NOPREFIX | DT_CENTER);
 
 	SelectObject(hdc, oldFont);
 }
 
 static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM lParam) {
-	ACCData* data =  (ACCData *) GetWindowLong(hwnd, 0);
+	ACCData* data =  (ACCData *) GetWindowLongPtr(hwnd, 0);
 	switch(msg) 
 	{
 		case WM_NCCREATE:
@@ -530,7 +528,7 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 			data = (ACCData*) mir_alloc(sizeof(ACCData));
 			if (data == NULL) 
 				return FALSE;
-			SetWindowLong(hwnd, 0, (LONG)data);
+			SetWindowLongPtr(hwnd, 0, (LONG_PTR)data);
 
 			ZeroMemory(data, sizeof(ACCData));
             data->hHook = HookEventMessage(ME_AV_AVATARCHANGED, hwnd, DM_AVATARCHANGED);
@@ -555,7 +553,7 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
                 UnhookEvent(data->hHookMy);
 				mir_free(data);
 			}
-			SetWindowLong(hwnd, 0, (LONG)NULL);
+			SetWindowLongPtr(hwnd, 0, (LONG_PTR)NULL);
 			break;
 		}
 		case WM_SETFONT:
@@ -629,7 +627,7 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 		}
 		case AVATAR_SETNOAVATARTEXT:
 		{
-			lstrcpynA(data->noAvatarText, Translate((char*) lParam), sizeof(data->noAvatarText));
+			lstrcpyn(data->noAvatarText, TranslateTS((TCHAR*) lParam), SIZEOF(data->noAvatarText));
 			Invalidate(hwnd);
 			return TRUE;
 		}
@@ -676,7 +674,7 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 			if (data->hContact == NULL)
 				ace = (avatarCacheEntry *) CallService(MS_AV_GETMYAVATAR, 0, (LPARAM) data->proto);
 			else
-				ace = (avatarCacheEntry *) CallService(MS_AV_GETAVATARBITMAP, 0, (LPARAM) data->hContact);
+				ace = (avatarCacheEntry *) CallService(MS_AV_GETAVATARBITMAP, (WPARAM) data->hContact, 0);
 
 			if (ace == NULL || ace->bmHeight == 0 || ace->bmWidth == 0 
 				|| (data->respectHidden && (ace->dwFlags & AVS_HIDEONCLIST)))
@@ -759,7 +757,7 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 			if (data->hContact == NULL && data->proto[0] == '\0'
 				&& DBGetContactSettingByte(NULL, AVS_MODULE, "GlobalUserAvatarNotConsistent", 1))
 			{
-				DrawText(hdc, data->hFont, rc, Translate("Protocols have different avatars"));
+				DrawText(hdc, data->hFont, rc, TranslateT("Protocols have different avatars"));
 			}
 
 			// Has a flash avatar
@@ -796,7 +794,7 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 				avdrq.clrBorder = data->avatarBorderColor;
 				avdrq.radius = data->avatarRoundCornerRadius;
 
-				int ret;
+				INT_PTR ret;
 				if (data->showingAnimatedGif)
 				{
 					InternalDrawAvatar(&avdrq, data->ag.hbms[data->ag.frame.num], data->ag.logicalWidth, data->ag.logicalHeight, 0);

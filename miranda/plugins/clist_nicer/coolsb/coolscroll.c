@@ -45,6 +45,9 @@
 #define STRICT
 #define WIN32_LEAN_AND_MEAN
 
+#define _WIN32_WINNT 0x0501
+#define _WIN32_IE 0x0501
+
 #include <windows.h>
 #include <commctrl.h>
 #include <tchar.h>
@@ -80,7 +83,7 @@ static int  nThumbPos0;			//(pixels) initial thumb position
 //
 //	Temporary state used to auto-generate timer messages
 //
-static UINT uMouseOverId = 0;
+static UINT_PTR uMouseOverId = 0;
 static UINT uMouseOverScrollbar = COOLSB_NONE;
 static UINT uHitTestPortion = HTSCROLL_NONE;
 static UINT uLastHitTestPortion = HTSCROLL_NONE;
@@ -88,7 +91,7 @@ static RECT MouseOverRect;
 
 static UINT uScrollTimerMsg = 0;
 static UINT uScrollTimerPortion = HTSCROLL_NONE;
-static UINT uScrollTimerId = 0;
+static UINT_PTR uScrollTimerId = 0;
 static HWND hwndCurCoolSB = 0;
 
 extern int  CustomDrawScrollBars(NMCSBCUSTOMDRAW *nmcsbcd);
@@ -1416,7 +1419,7 @@ static LRESULT NCPaint(SCROLLWND *sw, HWND hwnd, WPARAM wParam, LPARAM lParam)
 	HRGN clip = 0;
 	BOOL fUpdateAll = ((LONG)wParam == 1);
 	BOOL fCustomDraw = FALSE;
-	UINT ret;
+	LRESULT ret;
 	DWORD dwStyle;
 
 	GetWindowRect(hwnd, &winrect);
@@ -2672,7 +2675,7 @@ static LRESULT NCCalcSize(SCROLLWND *sw, HWND hwnd, WPARAM wParam, LPARAM lParam
 	RECT oldrect;
 	BOOL fCalcValidRects = (wParam == TRUE);
 	SCROLLBAR *sb;
-	UINT ret;
+	LRESULT ret;
 	DWORD dwStyle;
 
 	//Regardless of the value of fCalcValidRects, the first rectangle 
@@ -3171,7 +3174,7 @@ LRESULT CALLBACK CoolSBWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lP
 
 	case WM_NCMOUSEMOVE: 
 		{
-			static LONG lastpos = -1;
+			static LONG_PTR lastpos = -1;
 
 			//TRACE("WM_NCMOUSEMOVE %d\n", count++);
 

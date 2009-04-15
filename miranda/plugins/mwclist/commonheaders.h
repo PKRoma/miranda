@@ -25,19 +25,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define MIRANDA_VER 0x0700
 
-#if defined( UNICODE ) && !defined( _UNICODE )
-#define _UNICODE
-#endif
-
-#include <malloc.h>
-
-#ifdef _DEBUG
-#	define _CRTDBG_MAP_ALLOC
-#	include <stdlib.h>
-#	include <crtdbg.h>
-#endif
-
 #define _WIN32_WINNT 0x0501
+#define _WIN32_IE 0x0501
+
+#include "m_stdhdr.h"
+
 #include <windows.h>
 #include <commctrl.h>
 #include <stdio.h>
@@ -70,11 +62,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_mwclc.h"
 #include "clc.h"
 #include "clist.h"
-#include "icolib.h"
+#include "m_icolib.h"
 #include <m_userinfo.h>
-#include ".\CLUIFrames\cluiframes.h"
-#include ".\CLUIFrames\m_cluiframes.h"
-#include  "m_metacontacts.h"
+#include "CLUIFrames/cluiframes.h"
+#include "m_cluiframes.h"
+#include "m_metacontacts.h"
 #include "BkgrCfg.h"
 #include <m_file.h>
 #include <m_addcontact.h>
@@ -127,6 +119,10 @@ extern int     ( *saveIconFromStatusMode )( const char *szProto,int nStatus, HAN
 //  wParam = ModuleName
 //  lParam = 0
 #define ME_BACKGROUNDCONFIG_CHANGED "BkgrCfg/Changed"
+
+
+
+#define EXTRACOLUMNCOUNT 9
 
 
 #endif

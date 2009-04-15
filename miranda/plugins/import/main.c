@@ -27,46 +27,32 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 void FreeVariant( DBVARIANT* dbv );
 void WriteVariant( HANDLE hContact, const char* module, const char* var, DBVARIANT* dbv );
 
-int GroupNameExists(const char* name);
-int CreateGroup(HWND hdlgProgress, BYTE type, const char* name);
 BOOL IsDuplicateEvent(HANDLE hContact, DBEVENTINFO dbei);
-void Utf8ToAnsi(const char *szIn, char *szOut, int cchOut);
 
-static int ModulesLoaded(WPARAM wParam, LPARAM lParam);
-static int ImportCommand(WPARAM wParam,LPARAM lParam);
-
-#define IMPORT_CONTACTS 0
-#define IMPORT_ALL      1
-#define IMPORT_CUSTOM   2
-
-struct MM_INTERFACE mmi;
 
 int nImportOption;
 int nCustomOptions;
 
-static DWORD dwPreviousTimeStamp = -1;
-static HANDLE hPreviousContact = INVALID_HANDLE_VALUE;
-static HANDLE hPreviousDbEvent = NULL;
 
-static HANDLE hHookModulesLoaded;
+static HANDLE hHookModulesLoaded = NULL;
+static HANDLE hHookOnExit = NULL;
+static HANDLE hImportService = NULL;
 
-BOOL UnicodeDB = FALSE;
 
-BOOL CALLBACK WizardDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
+INT_PTR CALLBACK WizardDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
 
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
 static HWND hwndWizard = NULL;
-char str[512];
 
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"Import contacts and messages",
-	PLUGIN_MAKE_VERSION(0,7,3,0),
+	PLUGIN_MAKE_VERSION(0,8,0,1),
 	"Imports contacts and messages from Mirabilis ICQ and Miranda IM.",
 	"Miranda team",
 	"info@miranda-im.org",
-	"© 2000-2007 Martin Öberg, Richard Hughes, Dmitry Kuzkin, George Hazan",
+	"© 2000-2009 Martin Öberg, Richard Hughes, Dmitry Kuzkin, George Hazan",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	0,	//{2D77A746-00A6-4343-BFC5-F808CDD772EA}
@@ -79,361 +65,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 	return TRUE;
 }
 
-void GetMirandaPath(char *szPath,int cbPath)
-{
-	char *str2;
-
-	GetModuleFileNameA( GetModuleHandle(NULL),szPath,cbPath);
-	str2=strrchr(szPath,'\\');
-	if(str2!=NULL) *str2=0;
-}
-
-// szIn,   pointer to source string
-// szOut,  pointer to destination buffer
-// cchOut, size of destination buffer
-
-void Utf8ToAnsi(const char *szIn, char *szOut, int cchOut)
-{
-	if (GetVersion() != 4 || !(GetVersion() & 0x80000000)) {
-		WCHAR *wszTemp;
-		int inlen;
-
-		inlen = strlen(szIn);
-		wszTemp = (WCHAR *)malloc(sizeof(WCHAR) * (inlen + 1));
-		MultiByteToWideChar(CP_UTF8, 0, szIn, -1, wszTemp, inlen + 1);
-		WideCharToMultiByte(CP_ACP, 0, wszTemp, -1, szOut, cchOut, NULL, NULL);
-		free(wszTemp);
-	}
-	else {  /* this hand-rolled version isn't as good because it doesn't do DBCS */
-		for (; *szIn && cchOut > 1; szIn++) {
-			if (*szIn >= 0) {
-				*szOut++ = *szIn;
-				cchOut--;
-			}
-			else {
-				unsigned short wideChar;
-
-				if ((unsigned char)*szIn >= 0xe0) {
-					wideChar = ((szIn[0]&0x0f) << 12)
-					         | ((szIn[1]&0x3f) << 6)
-							  | (szIn[2]&0x3f);
-					szIn += 2;
-				}
-				else {
-					wideChar = ((szIn[0]&0x1f) << 6)
-							  | (szIn[1]&0x3f);
-					szIn++;
-				}
-				if (wideChar >= 0x100) *szOut++ = '?';
-				else *szOut++ = (char)wideChar;
-				cchOut--;
-		}	}
-
-		*szOut = '\0';
-}	}
-
-// Returns TRUE if the event already exist in the database
-
-BOOL IsDuplicateEvent(HANDLE hContact, DBEVENTINFO dbei)
-{
-	HANDLE hExistingDbEvent;
-	DBEVENTINFO dbeiExisting;
-	DWORD dwFirstEventTimeStamp;
-	DWORD dwLastEventTimeStamp;
-	BOOL BadDb = FALSE;
-
-	if (!(hExistingDbEvent = (HANDLE)CallService(MS_DB_EVENT_FINDFIRST, (WPARAM)hContact, 0)))
-		return FALSE;
-
-	ZeroMemory(&dbeiExisting, sizeof(dbeiExisting));
-	dbeiExisting.cbSize = sizeof(dbeiExisting);
-	dbeiExisting.cbBlob = 0;
-	CallService(MS_DB_EVENT_GET, (WPARAM)hExistingDbEvent, (LPARAM)&dbeiExisting);
-	dwFirstEventTimeStamp = dbeiExisting.timestamp;
-
-	if (!(hExistingDbEvent = (HANDLE)CallService(MS_DB_EVENT_FINDLAST, (WPARAM)hContact, 0)))
-		return FALSE;
-
-	ZeroMemory(&dbeiExisting, sizeof(dbeiExisting));
-	dbeiExisting.cbSize = sizeof(dbeiExisting);
-	dbeiExisting.cbBlob = 0;
-	CallService(MS_DB_EVENT_GET, (WPARAM)hExistingDbEvent, (LPARAM)&dbeiExisting);
-	dwLastEventTimeStamp = dbeiExisting.timestamp;
-
-	// check for DB consistency
-	if (dbeiExisting.timestamp < dwFirstEventTimeStamp) {
-		dwLastEventTimeStamp = dwFirstEventTimeStamp;
-		dwFirstEventTimeStamp = dbeiExisting.timestamp;
-		BadDb = TRUE;
-	}
-
-	// compare with first timestamp
-	if (dbei.timestamp < dwFirstEventTimeStamp)
-		return FALSE;
-
-	// compare with last timestamp
-	if (dbei.timestamp > dwLastEventTimeStamp)
-		return FALSE;
-
-	if (hContact != hPreviousContact || BadDb) {
-		hPreviousContact = hContact;
-		// remember last event
-		dwPreviousTimeStamp = dwLastEventTimeStamp;
-		hPreviousDbEvent = hExistingDbEvent;
-	}
-	else {
-		// fix for equal timestamps
-		if (dbei.timestamp == dwPreviousTimeStamp) {
-			// use last history msg
-			//	dwPreviousTimeStamp = dwLastEventTimeStamp;
-			//	hPreviousDbEvent = hExistingDbEvent;
-
-			// last history msg timestamp & handle
-			HANDLE hLastDbEvent = hExistingDbEvent;
-
-			// find event with another timestamp
-			hExistingDbEvent = (HANDLE)CallService(MS_DB_EVENT_FINDPREV, (WPARAM)hPreviousDbEvent, 0);
-			while (hExistingDbEvent != NULL) {
-				ZeroMemory(&dbeiExisting, sizeof(dbeiExisting));
-				dbeiExisting.cbSize = sizeof(dbeiExisting);
-				dbeiExisting.cbBlob = 0;
-				CallService(MS_DB_EVENT_GET, (WPARAM)hExistingDbEvent, (LPARAM)&dbeiExisting);
-
-				if (dbeiExisting.timestamp != dwPreviousTimeStamp)
-					break;
-
-				hExistingDbEvent = (HANDLE)CallService(MS_DB_EVENT_FINDPREV, (WPARAM)hExistingDbEvent, 0);
-			}
-
-			if (hExistingDbEvent != NULL) 			{
-				// use found msg
-				dwPreviousTimeStamp = dbeiExisting.timestamp;
-				hPreviousDbEvent = hExistingDbEvent;
-			}
-			else {
-				// use last msg
-				dwPreviousTimeStamp = dwLastEventTimeStamp;
-				hPreviousDbEvent = hLastDbEvent;
-				hExistingDbEvent = hLastDbEvent;
-			}
-		}
-		else // use previous saved
-			hExistingDbEvent = hPreviousDbEvent;
-	}
-
-	if (dbei.timestamp <= dwPreviousTimeStamp) { 	// look back
-		while (hExistingDbEvent != NULL) {
-			ZeroMemory(&dbeiExisting, sizeof(dbeiExisting));
-			dbeiExisting.cbSize = sizeof(dbeiExisting);
-			dbeiExisting.cbBlob = 0;
-			CallService(MS_DB_EVENT_GET, (WPARAM)hExistingDbEvent, (LPARAM)&dbeiExisting);
-
-			if (dbei.timestamp > dbeiExisting.timestamp) {
-				hPreviousDbEvent = hExistingDbEvent;
-				dwPreviousTimeStamp = dbeiExisting.timestamp;
-				return FALSE;
-			}
-
-			// Compare event with import candidate
-			if ( dbei.timestamp == dbeiExisting.timestamp && 
-				  dbei.eventType == dbeiExisting.eventType && 
-				  dbei.cbBlob == dbeiExisting.cbBlob ) {
-				hPreviousDbEvent = hExistingDbEvent;
-				dwPreviousTimeStamp = dbeiExisting.timestamp;
-				return TRUE;
-			}
-
-			// Get previous event in chain
-			hExistingDbEvent = (HANDLE)CallService(MS_DB_EVENT_FINDPREV, (WPARAM)hExistingDbEvent, 0);
-		}
-	}
-	else { 	// look forward
-		while (hExistingDbEvent != NULL) {
-			ZeroMemory(&dbeiExisting, sizeof(dbeiExisting));
-			dbeiExisting.cbSize = sizeof(dbeiExisting);
-			dbeiExisting.cbBlob = 0;
-			CallService(MS_DB_EVENT_GET, (WPARAM)hExistingDbEvent, (LPARAM)&dbeiExisting);
-
-			if (dbei.timestamp < dbeiExisting.timestamp) {
-				hPreviousDbEvent = hExistingDbEvent;
-				dwPreviousTimeStamp = dbeiExisting.timestamp;
-				return FALSE;
-			}
-
-			// Compare event with import candidate
-			if ( dbei.timestamp == dbeiExisting.timestamp && 
-				  dbei.eventType == dbeiExisting.eventType && 
-				  dbei.cbBlob == dbeiExisting.cbBlob ) {
-				hPreviousDbEvent = hExistingDbEvent;
-				dwPreviousTimeStamp = dbeiExisting.timestamp;
-				return TRUE;
-			}
-
-			// Get next event in chain
-			hExistingDbEvent = (HANDLE)CallService(MS_DB_EVENT_FINDNEXT, (WPARAM)hExistingDbEvent, 0);
-	}	}
-
-	return FALSE;
-}
-
-HANDLE HContactFromNumericID(char* pszProtoName, char* pszSetting, DWORD dwID)
-{
-	HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	while (hContact != NULL) {
-		char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-		if (szProto != NULL && !strcmp(szProto, pszProtoName))
-			if (DBGetContactSettingDword(hContact, pszProtoName, pszSetting, 0) == dwID)
-				return hContact;
-
-		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
-	}
-
-	return INVALID_HANDLE_VALUE;
-}
-
-HANDLE HContactFromID(char* pszProtoName, char* pszSetting, char* pszID)
-{
-	HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	while (hContact != NULL) {
-		char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-		if ( !lstrcmpA(szProto, pszProtoName)) {
-			DBVARIANT dbv;
-			if (DBGetContactSettingString(hContact, pszProtoName, pszSetting, &dbv) == 0) {
-                if (strcmp(pszID, dbv.pszVal) == 0) {
-                    mir_free(dbv.pszVal);
-                    return hContact;
-                }
-				DBFreeVariant(&dbv);
-            }	
-        }
-
-		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
-	}
-
-	return INVALID_HANDLE_VALUE;
-}
-
-HANDLE AddContact(HWND hdlgProgress, char* pszProtoName, char* pszUniqueSetting, 
-						DBVARIANT* id, DBVARIANT* nick, DBVARIANT* group)
-{
-	HANDLE hContact;
-	char szid[ 40 ];
-	char* pszUserID = ( id->type == DBVT_DWORD ) ? ltoa( id->dVal, szid, 10 ) : id->pszVal;
-
-	hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD, 0, 0);
-	if ( CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)pszProtoName) != 0) {
-		CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
-		AddMessage( LPGEN("Failed to add %s contact %s"), pszProtoName, pszUserID );
-		return INVALID_HANDLE_VALUE;
-	}
-
-	WriteVariant( hContact, pszProtoName, pszUniqueSetting, id );
-
-	if ( group->type ) {
-		if ( !GroupNameExists( group->pszVal ))
-			CreateGroup( hdlgProgress, group->type, group->pszVal );
-		WriteVariant( hContact, "CList", "Group", group );
-	}
-
-	if ( nick->type && nick->pszVal[0] ) {
-		WriteVariant( hContact, "CList", "MyHandle", nick );
-		AddMessage( LPGEN("Added %s contact %s, '%s'"), pszProtoName, pszUserID, nick->pszVal );
-	}
-	AddMessage( LPGEN("Added %s contact %s"), pszProtoName, pszUserID );
-
-	FreeVariant( id );
-	FreeVariant( nick );
-	FreeVariant( group );
-	return hContact;
-}
-
-HANDLE HistoryImportFindContact(HWND hdlgProgress, DWORD uin, int addUnknown)
-{
-	HANDLE hContact = HContactFromNumericID(ICQOSCPROTONAME, "UIN", uin);
-	if (hContact == NULL) {
-		AddMessage( LPGEN("Ignored event from/to self"));
-		return INVALID_HANDLE_VALUE;
-	}
-
-	if (hContact != INVALID_HANDLE_VALUE)
-		return hContact;
-
-	if (!addUnknown)
-		return INVALID_HANDLE_VALUE;
-
-	hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD, 0, 0);
-	CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)ICQOSCPROTONAME);
-	DBWriteContactSettingDword(hContact, ICQOSCPROTONAME, "UIN", uin);
-	AddMessage( LPGEN("Added contact %u (found in history)"), uin );
-	return hContact;
-}
-
-// ------------------------------------------------
-// Checks if a group already exists in Miranda with
-// the specified name.
-// ------------------------------------------------
-// Returns 1 if a group with the name exists, returns
-// 0 otherwise.
-
-int GroupNameExists(const char* name)
-{
-	char idstr[33];
-	DBVARIANT dbv;
-	int i;
-
-	for (i = 0; ; i++) {
-		itoa(i, idstr, 10);
-		if (DBGetContactSettingString(NULL, "CListGroups", idstr, &dbv))
-			break;
-
-		if ( !lstrcmpA( dbv.pszVal + 1, name )) {
-			DBFreeVariant( &dbv );
-			return 1;
-		}
-		DBFreeVariant(&dbv);
-	}
-	return 0;
-}
-
-// ------------------------------------------------
-// Creates a group with a specified name in the
-// Miranda contact list.
-// ------------------------------------------------
-// Returns 1 if successful and 0 when it fails.
-
-int CreateGroup(HWND hdlgProgress, BYTE type, const char* name)
-{
-	// Is this a duplicate?
-	if ( !GroupNameExists( name )) {
-		DBVARIANT dbv;
-		// Find an unused id
-		int groupId;
-		char groupIdStr[11];
-		for (groupId = 0; ; groupId++) {
-			itoa(groupId, groupIdStr,10);
-			if (DBGetContactSettingString(NULL, "CListGroups", groupIdStr, &dbv))
-				break;
-			DBFreeVariant(&dbv);
-		}
-
-      dbv.type = type;
-		dbv.pszVal = ( char* )alloca( strlen( name )+2 );
-		dbv.pszVal[ 0 ] = 1;
-		strcpy( dbv.pszVal+1, name );      
-		WriteVariant( NULL, "CListGroups", groupIdStr, &dbv );
-		return 1;
-	}
-
-	AddMessage( LPGEN("Skipping duplicate group %s."), name );
-	return 0;
-}
-
-BOOL IsProtocolLoaded(char* pszProtocolName)
-{
-	return CallService(MS_PROTO_ISPROTOCOLLOADED, 0, (LPARAM)pszProtocolName) ? TRUE : FALSE;
-}
-
-static int ImportCommand(WPARAM wParam,LPARAM lParam)
+static INT_PTR ImportCommand(WPARAM wParam,LPARAM lParam)
 {
 	if (IsWindow(hwndWizard)) {
 		SetForegroundWindow(hwndWizard);
@@ -485,11 +117,13 @@ static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
 			DBWriteContactSettingByte(NULL, IMPORT_MODULE, IMP_KEY_FR, 1);
 			break;
 	}	}
+	return 0;
+}
 
-	if (hHookModulesLoaded)
-		UnhookEvent(hHookModulesLoaded);
-
-	UnicodeDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
+static int OnExit(WPARAM wParam, LPARAM lParam)
+{
+	if ( hwndWizard )
+		SendMessage(hwndWizard, WM_CLOSE, 0, 0);
 	return 0;
 }
 
@@ -497,8 +131,9 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 {
 	pluginLink = link;
 	mir_getMMI( &mmi );
+	mir_getUTFI( &utfi );
 
-	CreateServiceFunction(IMPORT_SERVICE, ImportCommand);
+	hImportService = CreateServiceFunction(IMPORT_SERVICE, ImportCommand);
 	{
 		CLISTMENUITEM mi;
 		ZeroMemory(&mi, sizeof(mi));
@@ -509,7 +144,8 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 		mi.pszService = IMPORT_SERVICE;
 		CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
 	}
-	HookEvent(ME_SYSTEM_MODULESLOADED, ModulesLoaded);
+	hHookModulesLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, ModulesLoaded);
+	hHookOnExit = HookEvent(ME_SYSTEM_OKTOEXIT, OnExit);
 	{
 		INITCOMMONCONTROLSEX icex;
 		icex.dwSize = sizeof(icex);
@@ -527,6 +163,337 @@ int __declspec(dllexport) Unload(void)
 {
 	if (hHookModulesLoaded)
 		UnhookEvent(hHookModulesLoaded);
+	if (hImportService)
+		DestroyServiceFunction(hImportService);
 
 	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+BOOL IsProtocolLoaded(char* pszProtocolName)
+{
+	return CallService(MS_PROTO_ISPROTOCOLLOADED, 0, (LPARAM)pszProtocolName) ? TRUE : FALSE;
+}
+
+HANDLE HContactFromNumericID(char* pszProtoName, char* pszSetting, DWORD dwID)
+{
+	char* szProto;
+	HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	while (hContact != NULL)
+	{
+		if (DBGetContactSettingDword(hContact, pszProtoName, pszSetting, 0) == dwID)
+		{
+			szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+			if (szProto != NULL && !strcmp(szProto, pszProtoName))
+				return hContact;
+		}
+		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+	}
+	return INVALID_HANDLE_VALUE;
+}
+
+HANDLE HContactFromID(char* pszProtoName, char* pszSetting, char* pszID)
+{
+	DBVARIANT dbv;
+	HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	while (hContact != NULL) {
+		char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+		if ( !lstrcmpA(szProto, pszProtoName)) {
+			if (DBGetContactSettingString(hContact, pszProtoName, pszSetting, &dbv) == 0) {
+				if (strcmp(pszID, dbv.pszVal) == 0) {
+					DBFreeVariant(&dbv);
+					return hContact;
+				}
+				DBFreeVariant(&dbv);
+			}
+		}
+
+		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+	}
+	return INVALID_HANDLE_VALUE;
+}
+
+HANDLE HistoryImportFindContact(HWND hdlgProgress, DWORD uin, int addUnknown)
+{
+	HANDLE hContact = HContactFromNumericID(ICQOSCPROTONAME, "UIN", uin);
+	if (hContact == NULL) {
+		AddMessage( LPGEN("Ignored event from/to self"));
+		return INVALID_HANDLE_VALUE;
+	}
+
+	if (hContact != INVALID_HANDLE_VALUE)
+		return hContact;
+
+	if (!addUnknown)
+		return INVALID_HANDLE_VALUE;
+
+	hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD, 0, 0);
+	CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)ICQOSCPROTONAME);
+	DBWriteContactSettingDword(hContact, ICQOSCPROTONAME, "UIN", uin);
+	AddMessage( LPGEN("Added contact %u (found in history)"), uin );
+	return hContact;
+}
+
+HANDLE AddContact(HWND hdlgProgress, char* pszProtoName, char* pszUniqueSetting,
+						DBVARIANT* id, DBVARIANT* nick, DBVARIANT* group)
+{
+	HANDLE hContact;
+	char szid[ 40 ];
+	char* pszUserID = ( id->type == DBVT_DWORD ) ? _ltoa( id->dVal, szid, 10 ) : id->pszVal;
+
+	hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD, 0, 0);
+	if ( CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)pszProtoName) != 0) {
+		CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+		AddMessage( LPGEN("Failed to add %s contact %s"), pszProtoName, pszUserID );
+		FreeVariant( id );
+		FreeVariant( nick );
+		FreeVariant( group );
+		return INVALID_HANDLE_VALUE;
+	}
+
+	WriteVariant( hContact, pszProtoName, pszUniqueSetting, id );
+
+	if ( group->type )
+		CreateGroup( group->type, group->pszVal, hContact );
+
+	if ( nick->type && nick->pszVal[0] ) {
+		WriteVariant( hContact, "CList", "MyHandle", nick );
+		if (nick->type == DBVT_UTF8) {
+			char *tmp = mir_utf8decodeA(nick->pszVal);
+			AddMessage( LPGEN("Added %s contact %s, '%s'"), pszProtoName, pszUserID, tmp );
+			mir_free(tmp);
+		}
+		else AddMessage( LPGEN("Added %s contact %s, '%s'"), pszProtoName, pszUserID, nick->pszVal );
+	}
+	else AddMessage( LPGEN("Added %s contact %s"), pszProtoName, pszUserID );
+
+	FreeVariant( id );
+	FreeVariant( nick );
+	FreeVariant( group );
+	return hContact;
+}
+
+// ------------------------------------------------
+// Creates a group with a specified name in the
+// Miranda contact list.
+// If contact is specified adds it to group
+// ------------------------------------------------
+// Returns 1 if successful and 0 when it fails.
+int CreateGroup(BYTE type, const char* name, HANDLE hContact)
+{
+	int groupId;
+	TCHAR *tmp, *tszGrpName;
+	char groupIdStr[11];
+	size_t cbName;
+
+	if (type == DBVT_UTF8)
+		tmp = mir_utf8decodeT( name );
+	else
+		tmp = mir_a2t( name );
+
+	if ( tmp == NULL )
+		return 0;
+
+	cbName = _tcslen(tmp);
+	tszGrpName = _alloca(( cbName+2 )*sizeof( TCHAR ));
+	tszGrpName[0] = GROUPF_EXPANDED;
+	_tcscpy( tszGrpName+1, tmp );
+	mir_free( tmp );
+
+	// Check for duplicate & find unused id
+	for (groupId = 0; ; groupId++) {
+		DBVARIANT dbv;
+		itoa(groupId, groupIdStr,10);
+		if (DBGetContactSettingTString(NULL, "CListGroups", groupIdStr, &dbv))
+			break;
+
+		if ( !lstrcmp(dbv.ptszVal + 1, tszGrpName + 1 )) {
+			if (hContact)
+				WriteVariant( hContact, "CList", "Group", &dbv );
+			else {
+				char *str = mir_t2a(tszGrpName + 1);
+				AddMessage( LPGEN("Skipping duplicate group %s."), str);
+				mir_free(str);
+			}
+
+			DBFreeVariant(&dbv);
+			return 0;
+		}
+
+		DBFreeVariant(&dbv);
+	}
+
+	DBWriteContactSettingTString( NULL, "CListGroups", groupIdStr, tszGrpName );
+
+	if (hContact) 
+		DBWriteContactSettingTString( hContact, "CList", "Group", tszGrpName );
+
+	return 1;
+}
+
+// Returns TRUE if the event already exist in the database
+BOOL IsDuplicateEvent(HANDLE hContact, DBEVENTINFO dbei)
+{
+	static DWORD dwPreviousTimeStamp = -1;
+	static HANDLE hPreviousContact = INVALID_HANDLE_VALUE;
+	static HANDLE hPreviousDbEvent = NULL;
+
+	HANDLE hExistingDbEvent;
+	DWORD dwEventTimeStamp;
+	DBEVENTINFO dbeiExisting;
+
+	// get last event
+	if (!(hExistingDbEvent = (HANDLE)CallService(MS_DB_EVENT_FINDLAST, (WPARAM)hContact, 0)))
+		return FALSE;
+
+	ZeroMemory(&dbeiExisting, sizeof(dbeiExisting));
+	dbeiExisting.cbSize = sizeof(dbeiExisting);
+	CallService(MS_DB_EVENT_GET, (WPARAM)hExistingDbEvent, (LPARAM)&dbeiExisting);
+	dwEventTimeStamp = dbeiExisting.timestamp;
+
+	// compare with last timestamp
+	if (dbei.timestamp > dwEventTimeStamp)
+	{
+		// remember event
+		hPreviousDbEvent = hExistingDbEvent;
+		dwPreviousTimeStamp = dwEventTimeStamp;
+		return FALSE;
+	}
+
+	if (hContact != hPreviousContact)
+	{
+		hPreviousContact = hContact;
+		// remember event
+		hPreviousDbEvent = hExistingDbEvent;
+		dwPreviousTimeStamp = dwEventTimeStamp;
+
+   		// get first event
+		if (!(hExistingDbEvent = (HANDLE)CallService(MS_DB_EVENT_FINDFIRST, (WPARAM)hContact, 0)))
+			return FALSE;
+
+		ZeroMemory(&dbeiExisting, sizeof(dbeiExisting));
+		dbeiExisting.cbSize = sizeof(dbeiExisting);
+		CallService(MS_DB_EVENT_GET, (WPARAM)hExistingDbEvent, (LPARAM)&dbeiExisting);
+		dwEventTimeStamp = dbeiExisting.timestamp;
+
+		// compare with first timestamp
+		if (dbei.timestamp <= dwEventTimeStamp)
+		{
+		    // remember event
+			dwPreviousTimeStamp = dwEventTimeStamp;
+			hPreviousDbEvent = hExistingDbEvent;
+
+			if ( dbei.timestamp != dwEventTimeStamp )
+				return FALSE;
+		}
+
+	}
+	// check for equal timestamps
+	if (dbei.timestamp == dwPreviousTimeStamp)
+	{
+		ZeroMemory(&dbeiExisting, sizeof(dbeiExisting));
+		dbeiExisting.cbSize = sizeof(dbeiExisting);
+		CallService(MS_DB_EVENT_GET, (WPARAM)hPreviousDbEvent, (LPARAM)&dbeiExisting);
+
+		if ((dbei.timestamp == dbeiExisting.timestamp) &&
+			(dbei.eventType == dbeiExisting.eventType) &&
+			(dbei.cbBlob == dbeiExisting.cbBlob) &&
+			((dbei.flags&DBEF_SENT) == (dbeiExisting.flags&DBEF_SENT)))
+    		return TRUE;
+
+		// find event with another timestamp
+		hExistingDbEvent = (HANDLE)CallService(MS_DB_EVENT_FINDNEXT, (WPARAM)hPreviousDbEvent, 0);
+		while (hExistingDbEvent != NULL)
+		{
+			ZeroMemory(&dbeiExisting, sizeof(dbeiExisting));
+			dbeiExisting.cbSize = sizeof(dbeiExisting);
+			CallService(MS_DB_EVENT_GET, (WPARAM)hExistingDbEvent, (LPARAM)&dbeiExisting);
+
+			if (dbeiExisting.timestamp != dwPreviousTimeStamp)
+			{
+				// use found event
+				hPreviousDbEvent = hExistingDbEvent;
+				dwPreviousTimeStamp = dbeiExisting.timestamp;
+				break;
+			}
+
+			hPreviousDbEvent = hExistingDbEvent;
+			hExistingDbEvent = (HANDLE)CallService(MS_DB_EVENT_FINDNEXT, (WPARAM)hExistingDbEvent, 0);
+		}
+	}
+
+	hExistingDbEvent = hPreviousDbEvent;
+
+	if (dbei.timestamp <= dwPreviousTimeStamp)
+	{
+		// look back
+		while (hExistingDbEvent != NULL)
+		{
+			ZeroMemory(&dbeiExisting, sizeof(dbeiExisting));
+			dbeiExisting.cbSize = sizeof(dbeiExisting);
+			CallService(MS_DB_EVENT_GET, (WPARAM)hExistingDbEvent, (LPARAM)&dbeiExisting);
+
+			if (dbei.timestamp > dbeiExisting.timestamp)
+			{
+			    // remember event
+				hPreviousDbEvent = hExistingDbEvent;
+				dwPreviousTimeStamp = dbeiExisting.timestamp;
+				return FALSE;
+			}
+
+			// Compare event with import candidate
+			if ((dbei.timestamp == dbeiExisting.timestamp) &&
+				(dbei.eventType == dbeiExisting.eventType) &&
+				(dbei.cbBlob == dbeiExisting.cbBlob) &&
+				((dbei.flags&DBEF_SENT) == (dbeiExisting.flags&DBEF_SENT)))
+			{
+				// remember event
+				hPreviousDbEvent = hExistingDbEvent;
+				dwPreviousTimeStamp = dbeiExisting.timestamp;
+				return TRUE;
+			}
+
+			// Get previous event in chain
+			hExistingDbEvent = (HANDLE)CallService(MS_DB_EVENT_FINDPREV, (WPARAM)hExistingDbEvent, 0);
+		}
+
+    }
+    else
+    {
+		// look forward
+		while (hExistingDbEvent != NULL)
+		{
+			ZeroMemory(&dbeiExisting, sizeof(dbeiExisting));
+			dbeiExisting.cbSize = sizeof(dbeiExisting);
+			CallService(MS_DB_EVENT_GET, (WPARAM)hExistingDbEvent, (LPARAM)&dbeiExisting);
+
+			if (dbei.timestamp < dbeiExisting.timestamp)
+			{
+			    // remember event
+				hPreviousDbEvent = hExistingDbEvent;
+				dwPreviousTimeStamp = dbeiExisting.timestamp;
+				return FALSE;
+			}
+
+			// Compare event with import candidate
+			if ((dbei.timestamp == dbeiExisting.timestamp) &&
+				(dbei.eventType == dbeiExisting.eventType) &&
+				(dbei.cbBlob == dbeiExisting.cbBlob) &&
+				((dbei.flags&DBEF_SENT) == (dbeiExisting.flags&DBEF_SENT)))
+			{
+				// remember event
+				hPreviousDbEvent = hExistingDbEvent;
+				dwPreviousTimeStamp = dbeiExisting.timestamp;
+				return TRUE;
+			}
+
+			// Get next event in chain
+			hExistingDbEvent = (HANDLE)CallService(MS_DB_EVENT_FINDNEXT, (WPARAM)hExistingDbEvent, 0);
+		}
+
+	}
+	// reset last event
+	hPreviousContact = INVALID_HANDLE_VALUE;
+	return FALSE;
 }

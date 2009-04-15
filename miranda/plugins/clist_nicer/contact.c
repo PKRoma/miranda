@@ -46,7 +46,7 @@ static int GetContactStatus(HANDLE hContact)
     return DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
 }
 
-static int __forceinline GetStatusModeOrdering(int statusMode)
+int __forceinline GetStatusModeOrdering(int statusMode)
 {
     int i;
     for (i = 0; i < sizeof(statusModeOrder) / sizeof(statusModeOrder[0]); i++) {
@@ -124,6 +124,7 @@ DWORD WINAPI MF_UpdateThread(LPVOID p)
             WaitForSingleObject(hEvent, 1000000);
         ResetEvent(hEvent);
     }
+	 CloseHandle(hEvent);
     return 0;
 }
 
@@ -171,32 +172,7 @@ void LoadContactTree(void)
     CallService(MS_CLUI_LISTENDREBUILD, 0, 0);
 }
 
-static int __forceinline GetProtoIndex(char * szName)
-{
-    DWORD i;
-    char buf[11];
-    char * name;
-    DWORD pc;
-    
-    if (!szName) 
-        return -1;
-    
-    pc=DBGetContactSettingDword(NULL,"Protocols","ProtoCount",-1);
-    for (i=0; i<pc; i++) {
-        _itoa(i,buf,10);
-        name=DBGetString(NULL,"Protocols",buf);
-        if (name) {
-            if (!strcmp(name,szName)) {
-                mir_free(name);
-                return i;
-            }
-            mir_free(name);
-        }
-    }
-    return -1;
-}
-
-DWORD __forceinline INTSORT_GetLastMsgTime(HANDLE hContact)
+DWORD INTSORT_GetLastMsgTime(HANDLE hContact)
 {
 	HANDLE hDbEvent;
 	DBEVENTINFO dbei = {0};
@@ -214,55 +190,66 @@ DWORD __forceinline INTSORT_GetLastMsgTime(HANDLE hContact)
 	return 0;
 }
 
-static int __forceinline INTSORT_CompareContacts(const struct ClcContact* c1, const struct ClcContact* c2, UINT bywhat)
+int __forceinline GetProtoIndex(char * szName)
 {
-    TCHAR *namea, *nameb;
-    int statusa, statusb;
-    char *szProto1, *szProto2;
-    int rc;
+	if ( !szName )
+		return -1;
+	else {
+		PROTOACCOUNT* pa = ProtoGetAccount( szName );
+		return ( pa == NULL ) ? -1 : pa->iOrder;
+	}
+}
 
-    if (c1 == 0 || c2 == 0)
-        return 0;
+int __forceinline INTSORT_CompareContacts(const struct ClcContact* c1, const struct ClcContact* c2, UINT bywhat)
+{
+	TCHAR *namea, *nameb;
+	int statusa, statusb;
+	char *szProto1, *szProto2;
+	int rc;
 
-    szProto1 = c1->proto;
-    szProto2 = c2->proto;
-    statusa = c1->wStatus;
-    statusb = c2->wStatus;
-    // make sure, sticky contacts are always at the beginning of the group/list
+	if (c1 == 0 || c2 == 0)
+		return 0;
 
-    if ((c1->flags & CONTACTF_STICKY) != (c2->flags & CONTACTF_STICKY))
-        return 2 * (c2->flags & CONTACTF_STICKY) - 1;
+	szProto1 = c1->proto;
+	szProto2 = c2->proto;
+	statusa = c1->wStatus;
+	statusb = c2->wStatus;
+	// make sure, sticky contacts are always at the beginning of the group/list
 
+	if ((c1->flags & CONTACTF_STICKY) != (c2->flags & CONTACTF_STICKY))
+		return 2 * (c2->flags & CONTACTF_STICKY) - 1;
 
-    if(bywhat == SORTBY_PRIOCONTACTS) {
-        if((g_clcData->exStyle & CLS_EX_DIVIDERONOFF) && ((c1->flags & CONTACTF_ONLINE) != (c2->flags & CONTACTF_ONLINE)))
-            return 0;
-	    if ((c1->flags & CONTACTF_PRIORITY) != (c2->flags & CONTACTF_PRIORITY))
-		    return 2 * (c2->flags & CONTACTF_PRIORITY) - 1;
+	if(bywhat == SORTBY_PRIOCONTACTS) {
+		if((g_clcData->exStyle & CLS_EX_DIVIDERONOFF) && ((c1->flags & CONTACTF_ONLINE) != (c2->flags & CONTACTF_ONLINE)))
+			return 0;
+		if ((c1->flags & CONTACTF_PRIORITY) != (c2->flags & CONTACTF_PRIORITY))
+			return 2 * (c2->flags & CONTACTF_PRIORITY) - 1;
 		else
 			return 0;
 	}
 
 	if (bywhat == SORTBY_STATUS) {
-        int ordera, orderb;
+		int ordera, orderb;
 
-        ordera = GetStatusModeOrdering(statusa);
-        orderb = GetStatusModeOrdering(statusb);
-        if (ordera != orderb)
-            return ordera - orderb;
+		ordera = GetStatusModeOrdering(statusa);
+		orderb = GetStatusModeOrdering(statusb);
+		if (ordera != orderb)
+			return ordera - orderb;
 		else
 			return 0;
-    }
+	}
 
     // separate contacts treated as "offline"
-	if(!g_CluiData.bDontSeparateOffline && ((statusa == ID_STATUS_OFFLINE) != (statusb == ID_STATUS_OFFLINE)))
-	    return 2 * (statusa == ID_STATUS_OFFLINE) - 1;
+	if ( !g_CluiData.bDontSeparateOffline && ((statusa == ID_STATUS_OFFLINE) != (statusb == ID_STATUS_OFFLINE )))
+		return 2 * (statusa == ID_STATUS_OFFLINE) - 1;
 
-	if(bywhat == SORTBY_NAME) {
+	switch( bywhat ) {
+	case SORTBY_NAME:
 		namea = (TCHAR *)c1->szText;
 		nameb = (TCHAR *)c2->szText;
 		return CompareString(LOCALE_USER_DEFAULT, NORM_IGNORECASE, namea, -1, nameb, -1) - 2;
-	} else if(bywhat == SORTBY_LASTMSG) {
+	
+	case SORTBY_LASTMSG:
 		if(c1->extraCacheEntry >= 0 && c1->extraCacheEntry < g_nextExtraCacheEntry && 
 		   c2->extraCacheEntry >= 0 && c2->extraCacheEntry < g_nextExtraCacheEntry)
 			return(g_ExtraCache[c2->extraCacheEntry].dwLastMsgTime - g_ExtraCache[c1->extraCacheEntry].dwLastMsgTime);
@@ -271,20 +258,23 @@ static int __forceinline INTSORT_CompareContacts(const struct ClcContact* c1, co
 			DWORD timestamp2 = INTSORT_GetLastMsgTime(c2->hContact);
 			return timestamp2 - timestamp1;
 		}
-    } else if(bywhat == SORTBY_FREQUENCY) {
-        if(c1->extraCacheEntry >= 0 && c1->extraCacheEntry < g_nextExtraCacheEntry && 
-           c2->extraCacheEntry >= 0 && c2->extraCacheEntry < g_nextExtraCacheEntry)
-            return(g_ExtraCache[c1->extraCacheEntry].msgFrequency - g_ExtraCache[c2->extraCacheEntry].msgFrequency);
-    }  else if(bywhat == SORTBY_PROTO) {
-        if(c1->bIsMeta)
-            szProto1 = c1->metaProto ? c1->metaProto : c1->proto;
-        if(c2->bIsMeta)
-            szProto2 = c2->metaProto ? c2->metaProto : c2->proto;
+    
+	case SORTBY_FREQUENCY:
+		if ( c1->extraCacheEntry >= 0 && c1->extraCacheEntry < g_nextExtraCacheEntry && 
+			 c2->extraCacheEntry >= 0 && c2->extraCacheEntry < g_nextExtraCacheEntry )
+			return(g_ExtraCache[c1->extraCacheEntry].msgFrequency - g_ExtraCache[c2->extraCacheEntry].msgFrequency);
+		break;
 
-        rc = GetProtoIndex(szProto1) - GetProtoIndex(szProto2);
+	case SORTBY_PROTO:
+      if(c1->bIsMeta)
+         szProto1 = c1->metaProto ? c1->metaProto : c1->proto;
+      if(c2->bIsMeta)
+         szProto2 = c2->metaProto ? c2->metaProto : c2->proto;
 
-        if (rc != 0 && (szProto1 != NULL && szProto2 != NULL))
-            return rc;
+      rc = GetProtoIndex(szProto1) - GetProtoIndex(szProto2);
+
+      if (rc != 0 && (szProto1 != NULL && szProto2 != NULL))
+         return rc;
 	}
 	return 0;
 }
@@ -317,7 +307,7 @@ static VOID CALLBACK SortContactsTimer(HWND hwnd, UINT message, UINT idEvent, DW
     CallService(MS_CLUI_SORTLIST, 0, 0);
 }
 
-int SetHideOffline(WPARAM wParam, LPARAM lParam)
+INT_PTR SetHideOffline(WPARAM wParam, LPARAM lParam)
 {
     switch ((int) wParam) {
         case 0:

@@ -4,8 +4,8 @@
 !include "LogicLib.nsh"
 
 !define MIM_NAME                "Miranda IM"
-!define MIM_VERSION             "0.7.18"
-!define MIM_PREVIEW             "0" ; 0 for final build
+!define MIM_VERSION             "0.8"
+!define MIM_PREVIEW             "1" ; 0 for final build
 
 !define MIM_BUILD_ICONS_LOW     "icons\bin\locolor"
 !define MIM_BUILD_ICONS_HI      "icons\bin\hicolor"
@@ -117,10 +117,11 @@ Section "Miranda IM"
   File "${MIM_BUILD_DIR}\miranda32.exe"
   File "${MIM_BUILD_DIR}\dbtool.exe"
   File "${MIM_BUILD_DIR}\zlib.dll"
-  File "${MIM_BUILD_DIRANSI}\winssl.dll"
   File "${MIM_BUILD_SRC}\docs\contributors.txt"
   File "${MIM_BUILD_SRC}\docs\readme.txt"
   File "${MIM_BUILD_SRC}\docs\license.txt"
+  ; winssl.dll only needed in 0.7.x
+  Delete "$INSTDIR\winssl.dll"
   
   ${If} $INST_UPGRADE = 0
     SetOverWrite off
@@ -134,9 +135,9 @@ Section "Miranda IM"
   File "${MIM_BUILD_DIR}\plugins\avs.dll"
   File "${MIM_BUILD_DIRANSI}\plugins\advaimg.dll"
   !ifdef MIM_BUILD_UNICODE
-  File "${MIM_BUILD_DIRANSI}\plugins\dbx_mmap.dll"
+  File "${MIM_BUILD_DIR}\plugins\dbx_mmap.dll"
   !else
-  File "${MIM_BUILD_DIRANSI}\plugins\dbx_3x.dll"
+  File "${MIM_BUILD_DIR}\plugins\dbx_3x.dll"
   !endif
   File "${MIM_BUILD_DIR}\plugins\chat.dll"
   
@@ -153,7 +154,7 @@ SubSection /e "Protocols"
     !insertmacro PrintInstallerDetails "Installing AIM Protocol..."
     !insertmacro WriteInstallerOption "1" "AIM"
     SetOutPath "$INSTDIR\Plugins"
-    File "${MIM_BUILD_DIRANSI}\plugins\Aim.dll"
+    File "${MIM_BUILD_DIR}\plugins\Aim.dll"
     !insertmacro InstallMirandaProtoIcon "AIM"
   SectionEnd
   
@@ -169,7 +170,7 @@ SubSection /e "Protocols"
     !insertmacro PrintInstallerDetails "Installing ICQ Protocol..."
     !insertmacro WriteInstallerOption "1" "ICQ"
     SetOutPath "$INSTDIR\Plugins"
-    File "${MIM_BUILD_DIRANSI}\plugins\icq.dll"
+    File "${MIM_BUILD_DIR}\plugins\icq.dll"
     SetOutPath "$INSTDIR\Icons"
     File "${MIM_BUILD_DIRANSI}\Icons\xstatus_ICQ.dll"
     !insertmacro InstallMirandaProtoIcon "ICQ"
@@ -272,7 +273,6 @@ Section Uninstall
   Delete "$INSTDIR\dbtool.exe"
   Delete "$INSTDIR\miranda32.exe"
   Delete "$INSTDIR\zlib.dll"
-  Delete "$INSTDIR\winssl.dll"
   Delete "$INSTDIR\mirandaboot.ini"
   Delete "$INSTDIR\license.txt"
   Delete "$INSTDIR\contributors.txt"

@@ -31,21 +31,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SMF_STAYMINIMIZED			0x00000002
 #define SMF_CLOSEONSEND				0x00000004
 #define SMF_MINIMIZEONSEND			0x00000008
-#define SMF_SAVESPLITTERPERCONTACT	0x00000010
-#define SMF_CTRLSUPPORT				0x00000020
+#define SMF_AUTORESIZE				0x00000001
 #define SMF_SAVEDRAFTS				0x00000040
 #define SMF_DELTEMP					0x00000080
 #define SMF_SENDONENTER				0x00000100
 #define SMF_SENDONDBLENTER			0x00000200
-
 #define SMF_SHOWPROGRESS			0x00000400
 #define SMF_AVATAR          		0x00000800
-#define SMF_LIMITAVATARH    		0x00001000
 #define SMF_STATUSICON				0x00002000
-
 #define SMF_RTL						0x00004000
 #define SMF_DISABLE_UNICODE			0x00008000
-
 #define SMF_USEIEVIEW				0x00010000
 #define SMF_SHOWICONS       		0x00020000
 #define SMF_HIDENAMES       		0x00040000
@@ -60,27 +55,28 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SMF_DRAWLINES				0x08000000
 #define SMF_INDENTTEXT				0x10000000
 #define SMF_ORIGINALAVATARH			0x20000000
+#define SMF_DONOTSTEALFOCUS			0x40000000
 
-#define SMF2_USETABS				0x00000001
-#define SMF2_HIDEONETAB				0x00000002
-#define SMF2_TABSATBOTTOM			0x00000004
-#define SMF2_LIMITNAMES				0x00000008
-#define SMF2_SWITCHTOACTIVE  		0x00000010
+#define SMF2_USETABS					0x00000001
+#define SMF2_HIDEONETAB					0x00000002
+#define SMF2_TABSATBOTTOM				0x00000004
+#define SMF2_LIMITNAMES					0x00000008
+#define SMF2_SWITCHTOACTIVE  			0x00000010
 #define SMF2_SEPARATECHATSCONTAINERS 	0x00000020
-#define SMF2_TABCLOSEBUTTON  		0x00000040
-#define SMF2_LIMITTABS				0x00000080
-#define SMF2_LIMITCHATSTABS			0x00000100
-#define SMF2_HIDECONTAINERS         0x00000200
-
-#define SMF2_SHOWSTATUSBAR			0x00010000
-#define SMF2_SHOWTITLEBAR			0x00020000
-#define SMF2_SHOWTOOLBAR			0x00040000
-#define SMF2_USETRANSPARENCY 		0x00080000
-
-#define SMF2_SHOWTYPING      		0x10000000
-#define SMF2_SHOWTYPINGWIN   		0x20000000
-#define SMF2_SHOWTYPINGTRAY  		0x40000000
-#define SMF2_SHOWTYPINGCLIST 		0x80000000
+#define SMF2_TABCLOSEBUTTON  			0x00000040
+#define SMF2_LIMITTABS					0x00000080
+#define SMF2_LIMITCHATSTABS				0x00000100
+#define SMF2_HIDECONTAINERS         	0x00000200
+#define SMF2_SHOWINFOBAR				0x00000400
+#define SMF2_SHOWSTATUSBAR				0x00010000
+#define SMF2_SHOWTITLEBAR				0x00020000
+#define SMF2_SHOWTOOLBAR				0x00040000
+#define SMF2_USETRANSPARENCY 			0x00080000
+#define SMF2_SHOWTYPING      			0x01000000
+#define SMF2_SHOWTYPINGWIN   			0x02000000
+#define SMF2_SHOWTYPINGTRAY  			0x04000000
+#define SMF2_SHOWTYPINGCLIST 			0x08000000
+#define SMF2_SHOWTYPINGSWITCH			0x10000000
 
 #define SMF_ICON_ADD         	0
 #define SMF_ICON_USERDETAILS 	1
@@ -101,7 +97,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SMF_ICON_CLOSEX		14
 #define SMF_ICON_OVERLAY    15
 
-#define SMF_ICON_COUNT		16
+#define SMF_ICON_TYPINGOFF  16
+
+#define SMF_ICON_MESSAGE	17
+#define SMF_ICON_COUNT		18
 
 typedef struct ImageListUsageEntry_tag
 {
@@ -121,23 +120,32 @@ struct GlobalMessageData
 	ParentWindowData *lastParent;
 	ParentWindowData *lastChatParent;
 	int		limitNamesLength;
-	int		limitAvatarMaxH;
-	int		limitAvatarMinH;
 	int		activeAlpha;
 	int		inactiveAlpha;
 	HMENU	hMenuANSIEncoding;
-	HIMAGELIST hTabIconList;
 	int     tabIconListUsageSize;
 	ImageListUsageEntry     *tabIconListUsage;
-	HIMAGELIST hButtonIconList;
-	HIMAGELIST hHelperIconList;
 	TCmdList *draftList;
-	int		avatarServiceExists;
-	int		smileyServiceExists;
+	int		avatarServiceInstalled;
+	int		smileyAddInstalled;
+	int 	popupInstalled;
+	int		ieviewInstalled;
 	int		buttonVisibility;
 	int		limitTabsNum;
 	int		limitChatsTabsNum;
 	int		indentSize;
+	HIMAGELIST hTabIconList;
+	HIMAGELIST hButtonIconList;
+	HIMAGELIST hHelperIconList;
+	HIMAGELIST hSearchEngineIconList;
+	HFONT	   hContactNameFont;
+	COLORREF   contactNameColour;
+	HFONT	   hContactStatusFont;
+	COLORREF   contactStatusColour;
+	HBRUSH	   hInfobarBrush;
+	HPEN	   hInfobarPen;
+	int		   toolbarPosition;
+	HWND       hFocusWnd;
 };
 
 int IconsChanged(WPARAM wParam, LPARAM lParam);
@@ -160,6 +168,5 @@ int ImageList_ReplaceIcon_ProtoEx(HIMAGELIST hIml, int nIndex, const char* szPro
 void ReleaseIconSmart(HICON hIcon);
 
 extern struct GlobalMessageData *g_dat;
-extern int bNewDbApi;
 
 #endif

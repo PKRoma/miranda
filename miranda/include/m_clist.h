@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project,
+Copyright 2000-2008 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -24,7 +24,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef M_CLIST_H__
 #define M_CLIST_H__ 1
 
+#ifdef _MSC_VER
+	#pragma warning(disable:4201 4204)
+#endif
+
 #include "statusmodes.h"
+
+#if defined _STATIC
+	typedef struct _tagIntMenuItem* HGENMENU;
+#else
+	DECLARE_HANDLE(HGENMENU);
+#endif
 
 //sent when the user asks to change their status
 //wParam=new status, from statusmodes.h
@@ -90,6 +100,7 @@ typedef struct {
 	union {
 		char* pszPopupName;  //[TRANSLATED-BY-CORE] name of the popup menu that this item is on. If this
 		TCHAR* ptszPopupName; //is NULL the item is on the root of the menu
+		HGENMENU hParentMenu; // valid if CMIF_ROOTHANDLE is set. NULL or (HGENMENU)-1 means the root menu
 	};
 
 	int popupPosition;      //position of the popup menu on the root menu. Ignored
@@ -102,15 +113,16 @@ typedef struct {
                            //protocols, add multiple menu items or use ME_CLIST_PREBUILDCONTACTMENU
 } CLISTMENUITEM;
 
+#define HGENMENU_ROOT      (( HGENMENU )-1)
+
 #define CMIF_GRAYED     1
 #define CMIF_CHECKED    2
-#define CMIF_HIDDEN     4     //only works on contact menus
-#define CMIF_NOTOFFLINE 8	 //item won't appear for contacts that are offline
-#define CMIF_NOTONLINE  16	 //          "      online
+#define CMIF_HIDDEN     4    //only works on contact menus
+#define CMIF_NOTOFFLINE 8	  //item won't appear for contacts that are offline
+#define CMIF_NOTONLINE  16	  //          "      online
 #define CMIF_NOTONLIST  32   //item won't appear on standard contacts
 #define CMIF_NOTOFFLIST 64   //item won't appear on contacts that have the 'NotOnList' setting
-#define CMIF_ROOTPOPUP  128   //root item for new popup(save return id for childs)
-#define CMIF_CHILDPOPUP 256   //child for rootpopup menu
+#define CMIF_ROOTHANDLE 384  //means that hParentMenu member is set
 
 #define CMIF_UNICODE        512      //will return TCHAR* instead of char*
 #if defined( _UNICODE )
@@ -121,6 +133,11 @@ typedef struct {
 
 #define CMIF_KEEPUNTRANSLATED  1024 // don't translate a menu item
 #define CMIF_ICONFROMICOLIB    2048 // use icolibName instead of hIcon
+#define CMIF_DEFAULT           4096 // this menu item is the default one
+
+// for compatibility. since 0.8.0 they both mean nothing
+#define CMIF_ROOTPOPUP  128   //root item for new popup(save return id for childs)
+#define CMIF_CHILDPOPUP 256   //child for rootpopup menu
 
 #define MS_CLIST_ADDMAINMENUITEM        "CList/AddMainMenuItem"
 

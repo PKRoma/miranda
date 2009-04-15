@@ -3,6 +3,7 @@
 .\libyahoo2\crypt.c : \
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	".\libyahoo2\config.h"\
@@ -12,10 +13,10 @@
 .\libyahoo2\libyahoo2.c : \
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	".\libyahoo2\config.h"\
-	".\libyahoo2\sha.h"\
 	".\libyahoo2\yahoo2.h"\
 	".\libyahoo2\yahoo2_callbacks.h"\
 	".\libyahoo2\yahoo2_types.h"\
@@ -26,10 +27,6 @@
 	".\libyahoo2\yahoo_util.h"\
 	
 
-.\libyahoo2\sha.c : \
-	".\libyahoo2\sha.h"\
-	
-
 .\libyahoo2\yahoo_auth.c : \
 	".\libyahoo2\yahoo_auth.h"\
 	
@@ -37,6 +34,7 @@
 .\libyahoo2\yahoo_httplib.c : \
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	".\libyahoo2\config.h"\
@@ -56,29 +54,31 @@
 .\libyahoo2\yahoo_util.c : \
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	".\libyahoo2\config.h"\
 	".\libyahoo2\yahoo_util.h"\
 	
 
-.\avatar.c : \
+.\avatar.cpp : \
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_netlib.h"\
-	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
-	"..\..\include\m_png.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protoint.h"\
 	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_system_cpp.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\avatar.h"\
-	".\file_transfer.h"\
 	".\libyahoo2\config.h"\
 	".\libyahoo2\yahoo2.h"\
 	".\libyahoo2\yahoo2_callbacks.h"\
@@ -86,11 +86,12 @@
 	".\libyahoo2\yahoo_httplib.h"\
 	".\libyahoo2\yahoo_list.h"\
 	".\libyahoo2\yahoo_util.h"\
+	".\proto.h"\
 	".\resource.h"\
 	".\yahoo.h"\
 	
 
-.\chat.c : \
+.\chat.cpp : \
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
@@ -98,8 +99,12 @@
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protoint.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -110,18 +115,23 @@
 	".\libyahoo2\yahoo_httplib.h"\
 	".\libyahoo2\yahoo_list.h"\
 	".\libyahoo2\yahoo_util.h"\
+	".\proto.h"\
 	".\yahoo.h"\
 	
 
-.\file_transfer.c : \
+.\file_transfer.cpp : \
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protoint.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -133,10 +143,38 @@
 	".\libyahoo2\yahoo_httplib.h"\
 	".\libyahoo2\yahoo_list.h"\
 	".\libyahoo2\yahoo_util.h"\
+	".\proto.h"\
 	".\yahoo.h"\
 	
 
-.\icolib.c : \
+.\http_gateway.cpp : \
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protoint.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	".\libyahoo2\config.h"\
+	".\libyahoo2\yahoo2.h"\
+	".\libyahoo2\yahoo2_callbacks.h"\
+	".\libyahoo2\yahoo2_types.h"\
+	".\libyahoo2\yahoo_httplib.h"\
+	".\libyahoo2\yahoo_list.h"\
+	".\libyahoo2\yahoo_util.h"\
+	".\proto.h"\
+	".\yahoo.h"\
+	
+
+.\icolib.cpp : \
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_icolib.h"\
@@ -144,10 +182,12 @@
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protoint.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -159,20 +199,24 @@
 	".\libyahoo2\yahoo_httplib.h"\
 	".\libyahoo2\yahoo_list.h"\
 	".\libyahoo2\yahoo_util.h"\
+	".\proto.h"\
 	".\resource.h"\
 	".\yahoo.h"\
 	
 
-.\ignore.c : \
+.\ignore.cpp : \
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protoint.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -184,19 +228,24 @@
 	".\libyahoo2\yahoo_httplib.h"\
 	".\libyahoo2\yahoo_list.h"\
 	".\libyahoo2\yahoo_util.h"\
+	".\proto.h"\
 	".\yahoo.h"\
 	
 
-.\im.c : \
+.\im.cpp : \
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protoint.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -210,22 +259,25 @@
 	".\libyahoo2\yahoo_httplib.h"\
 	".\libyahoo2\yahoo_list.h"\
 	".\libyahoo2\yahoo_util.h"\
+	".\proto.h"\
 	".\yahoo.h"\
 	
 
-.\main.c : \
+.\main.cpp : \
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_idle.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protoint.h"\
 	"..\..\include\m_protomod.h"\
-	"..\..\include\m_skin.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
@@ -238,13 +290,13 @@
 	".\libyahoo2\yahoo_httplib.h"\
 	".\libyahoo2\yahoo_list.h"\
 	".\libyahoo2\yahoo_util.h"\
-	".\options.h"\
+	".\proto.h"\
 	".\resource.h"\
 	".\version.h"\
 	".\yahoo.h"\
 	
 
-.\options.c : \
+.\options.cpp : \
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
@@ -253,7 +305,12 @@
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protoint.h"\
 	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -265,22 +322,56 @@
 	".\libyahoo2\yahoo_httplib.h"\
 	".\libyahoo2\yahoo_list.h"\
 	".\libyahoo2\yahoo_util.h"\
-	".\options.h"\
+	".\proto.h"\
 	".\resource.h"\
 	".\yahoo.h"\
 	
 
-.\search.c : \
+.\proto.cpp : \
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protoint.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	".\file_transfer.h"\
+	".\libyahoo2\config.h"\
+	".\libyahoo2\yahoo2.h"\
+	".\libyahoo2\yahoo2_callbacks.h"\
+	".\libyahoo2\yahoo2_types.h"\
+	".\libyahoo2\yahoo_httplib.h"\
+	".\libyahoo2\yahoo_list.h"\
+	".\libyahoo2\yahoo_util.h"\
+	".\proto.h"\
+	".\resource.h"\
+	".\yahoo.h"\
+	
+
+.\search.cpp : \
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protoint.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -291,17 +382,24 @@
 	".\libyahoo2\yahoo_httplib.h"\
 	".\libyahoo2\yahoo_list.h"\
 	".\libyahoo2\yahoo_util.h"\
+	".\proto.h"\
+	".\resource.h"\
 	".\yahoo.h"\
 	
 
-.\server.c : \
+.\server.cpp : \
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protoint.h"\
 	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -312,10 +410,12 @@
 	".\libyahoo2\yahoo_httplib.h"\
 	".\libyahoo2\yahoo_list.h"\
 	".\libyahoo2\yahoo_util.h"\
+	".\proto.h"\
 	".\yahoo.h"\
 	
 
-.\services.c : \
+.\services.cpp : \
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_idle.h"\
@@ -325,10 +425,13 @@
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protoint.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -342,12 +445,13 @@
 	".\libyahoo2\yahoo_httplib.h"\
 	".\libyahoo2\yahoo_list.h"\
 	".\libyahoo2\yahoo_util.h"\
+	".\proto.h"\
 	".\resource.h"\
 	".\search.h"\
 	".\yahoo.h"\
 	
 
-.\util.c : \
+.\util.cpp : \
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
@@ -356,10 +460,13 @@
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protoint.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -370,11 +477,12 @@
 	".\libyahoo2\yahoo_httplib.h"\
 	".\libyahoo2\yahoo_list.h"\
 	".\libyahoo2\yahoo_util.h"\
+	".\proto.h"\
 	".\resource.h"\
 	".\yahoo.h"\
 	
 
-.\webcam.c : \
+.\webcam.cpp : \
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
@@ -382,8 +490,12 @@
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protoint.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -394,10 +506,12 @@
 	".\libyahoo2\yahoo_httplib.h"\
 	".\libyahoo2\yahoo_list.h"\
 	".\libyahoo2\yahoo_util.h"\
+	".\proto.h"\
 	".\yahoo.h"\
 	
 
-.\yahoo.c : \
+.\yahoo.cpp : \
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
@@ -406,10 +520,13 @@
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protoint.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -425,14 +542,8 @@
 	".\libyahoo2\yahoo_httplib.h"\
 	".\libyahoo2\yahoo_list.h"\
 	".\libyahoo2\yahoo_util.h"\
+	".\proto.h"\
 	".\search.h"\
 	".\webcam.h"\
 	".\yahoo.h"\
-	
-
-.\Yahoo.rc : \
-	".\icos\calendar.ico"\
-	".\icos\profile.ico"\
-	".\icos\refresh.ico"\
-	".\icos\set_status.ico"\
 	

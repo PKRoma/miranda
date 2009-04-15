@@ -51,13 +51,13 @@ typedef struct _tagTBButton
 
 //////////////////////////////////////////////////////////////////////////
 // Remove button
-// WPARAM = (HANLDE) hButton;
+// WPARAM = (HANDLE) hButton;
 // LPARAM = 0;
 #define MS_TB_REMOVEBUTTON "ToolBar/RemoveButton"
 
 //////////////////////////////////////////////////////////////////////////
 // SetState
-// WPARAM = (char *) szButtonID;
+// WPARAM = (HANDLE) hButton;
 // LPARAM = one of below TBST_ states 
 // LRESULT= old state
 #define TBST_PUSHED			1
@@ -65,11 +65,24 @@ typedef struct _tagTBButton
 #define MS_TB_SETBUTTONSTATE "ToolBar/SetButtonState"
 
 //////////////////////////////////////////////////////////////////////////
+// SetStatebyId
+// WPARAM = (char *) szButtonID;
+// LPARAM = one of below TBST_ states 
+// LRESULT= old state
+#define MS_TB_SETBUTTONSTATEBYID "ToolBar/SetButtonStateId"
+//////////////////////////////////////////////////////////////////////////
 // GetState
 // WPARAM = (HANLDE) hButton;
 // LPARAM = 0
 // LRESULT= current state
 #define MS_TB_GETBUTTONSTATE "ToolBar/GetButtonState"
+
+//////////////////////////////////////////////////////////////////////////
+// GetState
+// WPARAM = (char *) szButtonID;;
+// LPARAM = 0
+// LRESULT= current state
+#define MS_TB_GETBUTTONSTATEBYID "ToolBar/GetButtonStateId"
 
 
 #endif

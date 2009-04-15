@@ -4,10 +4,8 @@
 	Version="7.10"
 	Name="Scriver"
 	ProjectGUID="{B8928210-546C-4AE3-956B-E2B724E6B8E5}"
-	SccProjectName="&quot;$/Miranda/miranda&quot;, SHIAAAAA"
-	SccAuxPath=""
-	SccLocalPath="..\.."
-	SccProvider="MSSCCI:Microsoft Visual SourceSafe">
+	SccProjectName=""
+	SccLocalPath="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -98,9 +96,12 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib version.lib shlwapi.lib"
+				IgnoreImportLibrary="TRUE"
+				AdditionalDependencies="vc7to6.lib comctl32.lib version.lib shlwapi.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -165,7 +166,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="comctl32.lib version.lib shlwapi.lib"
+				AdditionalDependencies="vc7to6.lib comctl32.lib version.lib shlwapi.lib"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
 				OptimizeReferences="2"
@@ -332,6 +335,9 @@
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\input.c">
 			</File>
 			<File
 				RelativePath="msgdialog.c">
@@ -938,6 +944,9 @@
 			</File>
 			<File
 				RelativePath="globals.h">
+			</File>
+			<File
+				RelativePath=".\input.h">
 			</File>
 			<File
 				RelativePath="msgs.h">

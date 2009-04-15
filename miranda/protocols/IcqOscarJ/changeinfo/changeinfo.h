@@ -2,8 +2,8 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2001,2002,2003,2004 Richard Hughes, Martin Öberg
-// Copyright © 2004,2005,2006 Joe Kucera, Bio
+// Copyright © 2001-2004 Richard Hughes, Martin Öberg
+// Copyright © 2004-2009 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -21,7 +21,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/changeinfo/changeinfo.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -58,59 +58,71 @@
 #define LIF_PASSWORD     0x20000000
 #define LIF_CHANGEONLY   0x10000000
 
-char Password[10];
-HANDLE hUpload[2];
-HWND hwndList;
-HFONT hListFont;
-int iEditItem;
-
-typedef struct {
+struct SettingItem
+{
   char *szDescription;
   unsigned displayType;    //LI_ constant
   int dbType;              //DBVT_ constant
   char *szDbSetting;
-  void *pList;
-  int listCount;
+  const void *pList;
+};
+
+struct SettingItemData
+{
   LPARAM value;
   int changed;
-} SettingItem;
-
-typedef struct {
-  int id;
-  char *szValue;
-} ListTypeDataItem;
+};
 
 // contants.c
-extern SettingItem setting[];
+extern const SettingItem setting[];
 extern const int settingCount;
 
-//main.c
-int InitChangeDetails(WPARAM wParam,LPARAM lParam);
-
 //dlgproc.c
-BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+struct ChangeInfoData
+{
+  HWND  hwndDlg;
+  CIcqProto *ppro;
+  HFONT hListFont;
+  HWND  hwndList;
+  int   editTopIndex;
+  int   iEditItem;
+  char  Password[10];
 
-//db.c
-void LoadSettingsFromDb(int keepChanged);
-void FreeStoredDbSettings(void);
-void ClearChangeFlags(void);
-int ChangesMade(void);
-int SaveSettingsToDb(HWND hwndDlg);
+  SettingItemData *settingData;
+
+  HANDLE hAckHook;
+  HANDLE hUpload[2];
+
+  ChangeInfoData() { settingData = (SettingItemData*)SAFE_MALLOC(sizeof(SettingItemData) * settingCount); hAckHook = NULL; hUpload[0] = NULL; hUpload[1] = NULL;}
+  ~ChangeInfoData() { SAFE_FREE((void**)&settingData); }
+
+  void PaintItemSetting(HDC hdc, RECT *rc, int i, UINT itemState);
+
+  //db.cpp
+  void LoadSettingsFromDb(int keepChanged);
+  void FreeStoredDbSettings(void);
+  int  ChangesMade(void);
+  void ClearChangeFlags(void);
+  int  SaveSettingsToDb(HWND hwndDlg);
+
+  //upload.cpp
+  int  UploadSettings(void);
+
+  //editstring.cpp
+  void BeginStringEdit(int iItem,RECT *rc,int i,WORD wVKey);
+  void EndStringEdit(int save);
+  //editlist.cpp
+  void BeginListEdit(int iItem, RECT *rc, int iSetting, WORD wVKey);
+  void EndListEdit(int save);
+};
+
+INT_PTR CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 //editstring.c
-void BeginStringEdit(int iItem,RECT *rc,int i,WORD wVKey);
-void EndStringEdit(int save);
-int IsStringEditWindow(HWND hwnd);
-char *BinaryToEscapes(char *str);
+int   IsStringEditWindow(HWND hwnd);
+char* BinaryToEscapes(char *str);
 
 //editlist.c
-void BeginListEdit(int iItem,RECT *rc,int i,WORD wVKey);
-void EndListEdit(int save);
 int IsListEditWindow(HWND hwnd);
-
-//upload.c
-int StringToListItemId(const char *szSetting,int def);
-int UploadSettings(HWND hwndParent);
-
 
 #endif /* __CHANGEINFO_H */

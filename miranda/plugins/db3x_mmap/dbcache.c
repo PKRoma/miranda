@@ -23,10 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 
-#pragma comment(exestr, "\r\n\r\n Bio was here 8-) \r\n")
-
 BOOL safetyMode = TRUE;
-static int flushBuffersTimerId;
+static UINT_PTR flushBuffersTimerId;
 
 static PBYTE pNull = 0;
 static PBYTE pDbCache = NULL;
@@ -42,10 +40,10 @@ void Map()
 	if (hMap)
 		pDbCache = MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS/*FILE_MAP_WRITE*/, 0, 0 ,0);
 	else
-		DatabaseCorruption("%s (CreateFileMapping failed. Code: %d)");
+		DatabaseCorruption( _T("%s (CreateFileMapping failed. Code: %d)"));
 
 	if (!pDbCache)
-		DatabaseCorruption("%s (MapViewOfFile failed. Code: %d)");
+		DatabaseCorruption( _T("%s (MapViewOfFile failed. Code: %d)"));
 }
 
 void ReMap(DWORD needed)
@@ -57,7 +55,7 @@ void ReMap(DWORD needed)
 	if (needed > ChunkSize)
 	{
 		if ((needed + dwFileSize) - dbHeader.ofsFileEnd > ChunkSize)
-			DatabaseCorruption("%s (Too large increment)");
+			DatabaseCorruption( _T("%s (Too large increment)"));
 		else
 		{
 			DWORD x = dbHeader.ofsFileEnd/ChunkSize;
@@ -125,7 +123,7 @@ void DBFill(DWORD ofs,int bytes)
 	logg();
 }
 
-static VOID CALLBACK DoBufferFlushTimerProc(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime)
+static VOID CALLBACK DoBufferFlushTimerProc(HWND hwnd, UINT message, UINT_PTR idEvent, DWORD dwTime)
 {
     if (!pDbCache) return;
 
@@ -151,7 +149,7 @@ void DBFlush(int setting)
 	flushBuffersTimerId=SetTimer(NULL,flushBuffersTimerId,50,DoBufferFlushTimerProc);
 }
 
-static int CacheSetSafetyMode(WPARAM wParam,LPARAM lParam)
+static INT_PTR CacheSetSafetyMode(WPARAM wParam,LPARAM lParam)
 {
 	EnterCriticalSection(&csDbAccess);
 	safetyMode=wParam;

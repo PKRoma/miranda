@@ -45,8 +45,8 @@ void FreeProtocolData( void )
 void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 {
 	int protoCount,i;
-	PROTOCOLDESCRIPTOR **proto;
-	PROTOCOLDESCRIPTOR *curprotocol;
+	PROTOACCOUNT **accs;
+	PROTOACCOUNT *curprotocol;
 	int *partWidths,partCount;
 	int borders[3];
 	int status;
@@ -61,7 +61,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 
 	FirstIconOffset=DBGetContactSettingDword(NULL,"CLUI","FirstIconOffset",0);
 
-	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
+	ProtoEnumAccounts( &protoCount, &accs );
 	if ( protoCount == 0 )
 		return;
 
@@ -87,7 +87,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 		toshow=0;
 		for (i=0;i<storedcount;i++)
 		{
-			itoa(OFFSET_VISIBLE+i,(char *)&buf,10);
+			_itoa(OFFSET_VISIBLE+i,(char *)&buf,10);
 			if (DBGetContactSettingDword(0,"Protocols",(char *)&buf,1)==0){continue;}
 			toshow++;
 		}
@@ -98,7 +98,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 			{
 				//DBGetContactSettingByte(0,"Protocols","ProtoCount",-1)
 
-				itoa(OFFSET_VISIBLE+i,(char *)&buf,10);
+				_itoa(OFFSET_VISIBLE+i,(char *)&buf,10);
 				if (DBGetContactSettingDword(0,"Protocols",(char *)&buf,1)==0){continue;}
 
 				partWidths[part]=((part+1)*(rc.right/toshow))-(borders[2]>>1);
@@ -124,27 +124,29 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 		for(partCount=0,i=0;i<storedcount;i++) {      //count down since built in ones tend to go at the end
 			//if(proto[i]->type!=PROTOTYPE_PROTOCOL || CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
 
-			itoa(OFFSET_VISIBLE+i,(char *)&buf,10);
+			_itoa(OFFSET_VISIBLE+i,(char *)&buf,10);
 			//show this protocol ?
 			if (DBGetContactSettingDword(0,"Protocols",(char *)&buf,1)==0){continue;}
 
-			itoa(i,(char *)&buf,10);
+			_itoa(i,(char *)&buf,10);
 			szStoredName=DBGetStringA(NULL,"Protocols",buf);
-			if (szStoredName==NULL){continue;}
-			curprotocol=(PROTOCOLDESCRIPTOR*)CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)szStoredName);
+			if (szStoredName==NULL)
+				continue;
+			curprotocol = ProtoGetAccount( szStoredName );
 			mir_free(szStoredName);
-			if (curprotocol==0){continue;}
+			if (curprotocol==0)
+				continue;
 
 			x=2;
 			if(showOpts&1) x+=GetSystemMetrics(SM_CXSMICON);
 			if(showOpts&2) {
-				CallProtoService(curprotocol->szName,PS_GETNAME,SIZEOF(szName),(LPARAM)szName);
+				CallProtoService(curprotocol->szModuleName,PS_GETNAME,SIZEOF(szName),(LPARAM)szName);
 				if(showOpts&4 && lstrlenA(szName)<SIZEOF(szName)-1) lstrcatA(szName," ");
 				GetTextExtentPoint32A(hdc,szName,lstrlenA(szName),&textSize);
 				x+=textSize.cx;
 			}
 			if(showOpts&4) {
-				modeDescr=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,CallProtoService(curprotocol->szName,PS_GETSTATUS,0,0),0);
+				modeDescr=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,CallProtoService(curprotocol->szModuleName,PS_GETSTATUS,0,0),0);
 				GetTextExtentPoint32A(hdc,modeDescr,lstrlenA(modeDescr),&textSize);
 				x+=textSize.cx;
 			}
@@ -169,22 +171,23 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 	for(partCount=0,i=0;i<storedcount;i++) {      //count down since built in ones tend to go at the end
 		ProtocolData	*PD;
 
-		itoa(OFFSET_VISIBLE+i,(char *)&buf,10);
+		_itoa(OFFSET_VISIBLE+i,(char *)&buf,10);
 		//show this protocol ?
 		if (DBGetContactSettingDword(0,"Protocols",(char *)&buf,1)==0){continue;}
 
-		itoa(i,(char *)&buf,10);
+		_itoa(i,(char *)&buf,10);
 		szStoredName=DBGetStringA(NULL,"Protocols",buf);
 		if (szStoredName==NULL){continue;}
-		curprotocol=(PROTOCOLDESCRIPTOR*)CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)szStoredName);
+		curprotocol = ProtoGetAccount(szStoredName);
 		mir_free(szStoredName);
-		if (curprotocol==0){continue;}
+		if (curprotocol==0)
+			continue;
 
-		status=CallProtoService(curprotocol->szName,PS_GETSTATUS,0,0);
+		status = CallProtoService(curprotocol->szModuleName,PS_GETSTATUS,0,0);
 		//SendMessage(pcli->hwndStatus,SB_SETTEXT,partCount|SBT_OWNERDRAW,(LPARAM)curprotocol->szName);
 		PD=(ProtocolData*)mir_alloc(sizeof(ProtocolData));
-		PD->RealName=mir_strdup(curprotocol->szName);
-		itoa(OFFSET_PROTOPOS+i,(char *)&buf,10);
+		PD->RealName=mir_strdup(curprotocol->szModuleName);
+		_itoa(OFFSET_PROTOPOS+i,(char *)&buf,10);
 		PD->protopos=DBGetContactSettingDword(NULL,"Protocols",(char *)&buf,-1);
 		{
 			int flags;

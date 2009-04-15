@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern HANDLE       g_hInst;
 extern HBRUSH       hEditBkgBrush;
 extern HBRUSH       hListBkgBrush;
+extern HBRUSH       hListSelectedBkgBrush;
 extern HICON        hIcons[30];
 extern FONTINFO     aFonts[OPTIONS_FONTCOUNT];
 extern BOOL         PopUpInstalled;
@@ -357,8 +358,8 @@ void RegisterFonts( void )
 	fontid.flags = FIDF_ALLOWREREGISTER | FIDF_DEFAULTVALID | FIDF_NEEDRESTART;
 	for (i = 0; i < msgDlgFontCount; i++, index++) {
 		strncpy(fontid.dbSettingsGroup, "ChatFonts", sizeof(fontid.dbSettingsGroup));
-		_tcsncpy(fontid.group, TranslateT("Chat Module"), SIZEOF(fontid.group));
-		_tcsncpy(fontid.name, TranslateTS(fontOptionsList[i].szDescr), SIZEOF(fontid.name));
+		_tcsncpy(fontid.group, _T("Chat Module"), SIZEOF(fontid.group));
+		_tcsncpy(fontid.name, fontOptionsList[i].szDescr, SIZEOF(fontid.name));
 		sprintf(idstr, "Font%d", index);
 		strncpy(fontid.prefix, idstr, sizeof(fontid.prefix));
 		fontid.order = index;
@@ -368,6 +369,19 @@ void RegisterFonts( void )
 		fontid.deffontsettings.size = fontOptionsList[i].defSize;
 		fontid.deffontsettings.style = fontOptionsList[i].defStyle;
 		_tcsncpy(fontid.deffontsettings.szFace, fontOptionsList[i].szDefFace, SIZEOF(fontid.deffontsettings.szFace));
+		_tcsncpy(fontid.backgroundGroup, _T("Chat Module"), SIZEOF(fontid.backgroundGroup));
+		switch (i) {
+		case 17:
+			_tcsncpy(fontid.backgroundName, _T("Message Background"), SIZEOF(fontid.backgroundName));
+			break;
+		case 18:
+		case 19:
+			_tcsncpy(fontid.backgroundName, _T("Userlist Background"), SIZEOF(fontid.backgroundName));
+			break;
+		default:
+			_tcsncpy(fontid.backgroundName, _T("Background"), SIZEOF(fontid.backgroundName));
+			break;
+		}
 		CallService(MS_FONT_REGISTERT, (WPARAM)&fontid, 0);
 	}
 
@@ -395,6 +409,11 @@ void RegisterFonts( void )
 	_tcsncpy(colourid.name, LPGENT("Userlist Lines"), SIZEOF(colourid.name));
 	colourid.defcolour = GetSysColor(COLOR_INACTIVEBORDER);
 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
+
+	strncpy(colourid.setting, "ColorNicklistSelectedBG", SIZEOF(colourid.setting));
+	_tcsncpy(colourid.name, LPGENT("Userlist Background (selected)"), SIZEOF(colourid.name));
+	colourid.defcolour = GetSysColor(COLOR_HIGHLIGHT);
+	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
 }
 
 // add icons to the skinning module
@@ -402,67 +421,67 @@ void RegisterFonts( void )
 struct
 {
 	int	size;
-	char* szSection;
-	char* szDescr;
-	char* szName;
+	const char* szSection;
+	const char* szDescr;
+	const char* szName;
 	int   defIconID;
 }
 iconList[] =
 {
-	{	16, LPGEN("Chat windows"), LPGEN("Window Icon"),           "chat_window",    IDI_CHANMGR    },
-	{	16, LPGEN("Chat windows"), LPGEN("Text colour"),           "chat_fgcol",     IDI_COLOR      },
-	{	16, LPGEN("Chat windows"), LPGEN("Background colour"),     "chat_bkgcol",    IDI_BKGCOLOR   },
-	{	16, LPGEN("Chat windows"), LPGEN("Bold"),                  "chat_bold",      IDI_BBOLD      },
-	{	16, LPGEN("Chat windows"), LPGEN("Italics"),               "chat_italics",   IDI_BITALICS   },
-	{	16, LPGEN("Chat windows"), LPGEN("Underlined"),            "chat_underline", IDI_BUNDERLINE },
-	{	16, LPGEN("Chat windows"), LPGEN("Smiley button"),         "chat_smiley",    IDI_BSMILEY    },
-	{	16, LPGEN("Chat windows"), LPGEN("Room history"),          "chat_history",   IDI_HISTORY    },
-	{	16, LPGEN("Chat windows"), LPGEN("Room settings"),         "chat_settings",  IDI_TOPICBUT   },
-	{	16, LPGEN("Chat windows"), LPGEN("Event filter disabled"), "chat_filter",    IDI_FILTER     },
-	{	16, LPGEN("Chat windows"), LPGEN("Event filter enabled"),  "chat_filter2",   IDI_FILTER2    },
-	{	16, LPGEN("Chat windows"), LPGEN("Hide userlist"),         "chat_nicklist",  IDI_NICKLIST   },
-	{	16, LPGEN("Chat windows"), LPGEN("Show userlist"),         "chat_nicklist2", IDI_NICKLIST2  },
-	{	16, LPGEN("Chat windows"), LPGEN("Icon overlay"),          "chat_overlay",   IDI_OVERLAY    },
-	{	16, LPGEN("Chat windows"), LPGEN("Close"),                 "chat_close",     IDI_CLOSE      },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Window Icon"),           "chat_window",    IDI_CHANMGR    },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Text colour"),           "chat_fgcol",     IDI_COLOR      },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Background colour"),     "chat_bkgcol",    IDI_BKGCOLOR   },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Bold"),                  "chat_bold",      IDI_BBOLD      },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Italics"),               "chat_italics",   IDI_BITALICS   },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Underlined"),            "chat_underline", IDI_BUNDERLINE },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Smiley button"),         "chat_smiley",    IDI_BSMILEY    },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Room history"),          "chat_history",   IDI_HISTORY    },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Room settings"),         "chat_settings",  IDI_TOPICBUT   },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Event filter disabled"), "chat_filter",    IDI_FILTER     },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Event filter enabled"),  "chat_filter2",   IDI_FILTER2    },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Hide userlist"),         "chat_nicklist",  IDI_NICKLIST   },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Show userlist"),         "chat_nicklist2", IDI_NICKLIST2  },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Icon overlay"),          "chat_overlay",   IDI_OVERLAY    },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Close"),                 "chat_close",     IDI_CLOSE      },
 
-	{	10, LPGEN("Chat windows"), LPGEN("Status 1 (10x10)"),      "chat_status0",   IDI_STATUS0    },
-	{	10, LPGEN("Chat windows"), LPGEN("Status 2 (10x10)"),      "chat_status1",   IDI_STATUS1    },
-	{	10, LPGEN("Chat windows"), LPGEN("Status 3 (10x10)"),      "chat_status2",   IDI_STATUS2    },
-	{	10, LPGEN("Chat windows"), LPGEN("Status 4 (10x10)"),      "chat_status3",   IDI_STATUS3    },
-	{	10, LPGEN("Chat windows"), LPGEN("Status 5 (10x10)"),      "chat_status4",   IDI_STATUS4    },
-	{	10, LPGEN("Chat windows"), LPGEN("Status 6 (10x10)"),      "chat_status5",   IDI_STATUS5    },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Status 1 (10x10)"),      "chat_status0",   IDI_STATUS0    },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Status 2 (10x10)"),      "chat_status1",   IDI_STATUS1    },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Status 3 (10x10)"),      "chat_status2",   IDI_STATUS2    },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Status 4 (10x10)"),      "chat_status3",   IDI_STATUS3    },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Status 5 (10x10)"),      "chat_status4",   IDI_STATUS4    },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Status 6 (10x10)"),      "chat_status5",   IDI_STATUS5    },
 
-	{	10, LPGEN("Chat log"), LPGEN("Message in (10x10)"),    "chat_log_message_in",   IDI_MESSAGE    },
-	{	10, LPGEN("Chat log"), LPGEN("Message out (10x10)"),   "chat_log_message_out",  IDI_MESSAGEOUT },
-	{	10, LPGEN("Chat log"), LPGEN("Action (10x10)"),        "chat_log_action",       IDI_ACTION     },
-	{	10, LPGEN("Chat log"), LPGEN("Add Status (10x10)"),    "chat_log_addstatus",    IDI_ADDSTATUS  },
-	{	10, LPGEN("Chat log"), LPGEN("Remove status (10x10)"), "chat_log_removestatus", IDI_REMSTATUS  },
-	{	10, LPGEN("Chat log"), LPGEN("Join (10x10)"),          "chat_log_join",         IDI_JOIN       },
-	{	10, LPGEN("Chat log"), LPGEN("Leave (10x10)"),         "chat_log_part",         IDI_PART       },
-	{	10, LPGEN("Chat log"), LPGEN("Quit (10x10)"),          "chat_log_quit",         IDI_QUIT       },
-	{	10, LPGEN("Chat log"), LPGEN("Kick (10x10)"),          "chat_log_kick",         IDI_KICK       },
-	{	10, LPGEN("Chat log"), LPGEN("Nickchange (10x10)"),    "chat_log_nick",         IDI_NICK       },
-	{	10, LPGEN("Chat log"), LPGEN("Notice (10x10)"),        "chat_log_notice",       IDI_NOTICE     },
-	{	10, LPGEN("Chat log"), LPGEN("Topic (10x10)"),         "chat_log_topic",        IDI_TOPIC      },
-	{	10, LPGEN("Chat log"), LPGEN("Highlight (10x10)"),     "chat_log_highlight",    IDI_HIGHLIGHT  },
-	{	10, LPGEN("Chat log"), LPGEN("Information (10x10)"),   "chat_log_info",         IDI_INFO       }
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Message in (10x10)"),    "chat_log_message_in",   IDI_MESSAGE    },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Message out (10x10)"),   "chat_log_message_out",  IDI_MESSAGEOUT },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Action (10x10)"),        "chat_log_action",       IDI_ACTION     },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Add Status (10x10)"),    "chat_log_addstatus",    IDI_ADDSTATUS  },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Remove status (10x10)"), "chat_log_removestatus", IDI_REMSTATUS  },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Join (10x10)"),          "chat_log_join",         IDI_JOIN       },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Leave (10x10)"),         "chat_log_part",         IDI_PART       },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Quit (10x10)"),          "chat_log_quit",         IDI_QUIT       },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Kick (10x10)"),          "chat_log_kick",         IDI_KICK       },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Nickchange (10x10)"),    "chat_log_nick",         IDI_NICK       },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Notice (10x10)"),        "chat_log_notice",       IDI_NOTICE     },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Topic (10x10)"),         "chat_log_topic",        IDI_TOPIC      },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Highlight (10x10)"),     "chat_log_highlight",    IDI_HIGHLIGHT  },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Information (10x10)"),   "chat_log_info",         IDI_INFO       }
 };
 
 void AddIcons(void)
 {
 	int i;
-	SKINICONDESC3 sid = {0};
+	SKINICONDESC sid = {0};
 	char szFile[MAX_PATH];
 	GetModuleFileNameA(g_hInst, szFile, MAX_PATH);
 
-	sid.cbSize = sizeof(SKINICONDESC3);
+	sid.cbSize = sizeof(SKINICONDESC);
 	sid.pszDefaultFile = szFile;
 
 	for ( i = 0; i < SIZEOF(iconList); i++ ) {
 		sid.cx = sid.cy = iconList[i].size;
-		sid.pszSection = Translate( iconList[i].szSection );
-		sid.pszDescription = Translate( iconList[i].szDescr );
-		sid.pszName = iconList[i].szName;
+		sid.pszSection = (char*)iconList[i].szSection;
+		sid.pszDescription = (char*)iconList[i].szDescr;
+		sid.pszName = (char*)iconList[i].szName;
 		sid.iDefaultIndex = -iconList[i].defIconID;
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 }	}
@@ -490,7 +509,7 @@ static void InitSetting(TCHAR** ppPointer, char* pszSetting, TCHAR* pszDefault)
 
 #define OPT_FIXHEADINGS (WM_USER+1)
 
-static BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
+static INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	static HTREEITEM hListHeading1 = 0;
 	static HTREEITEM hListHeading2= 0;
@@ -502,7 +521,7 @@ static BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 	switch (uMsg) 	{
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
-		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHECKBOXES),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_CHECKBOXES),GWL_STYLE)|TVS_NOHSCROLL|TVS_CHECKBOXES);
+		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_CHECKBOXES),GWL_STYLE,GetWindowLongPtr(GetDlgItem(hwndDlg,IDC_CHECKBOXES),GWL_STYLE)|TVS_NOHSCROLL|TVS_CHECKBOXES);
 		hListHeading0 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Options for using a tabbed interface"), DBGetContactSettingByte(NULL, "Chat", "Branch0Exp", 0)?TRUE:FALSE);
 		hListHeading1 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Appearance and functionality of chat room windows"), DBGetContactSettingByte(NULL, "Chat", "Branch1Exp", 0)?TRUE:FALSE);
 		hListHeading2 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Appearance of the message log"), DBGetContactSettingByte(NULL, "Chat", "Branch2Exp", 0)?TRUE:FALSE);
@@ -632,7 +651,7 @@ static BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 /////////////////////////////////////////////////////////////////////////////////////////
 // Log & other options
 
-static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
+static INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -831,7 +850,7 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 /////////////////////////////////////////////////////////////////////////////////////////
 // Popup options
 
-static BOOL CALLBACK DlgProcOptionsPopup(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
+static INT_PTR CALLBACK DlgProcOptionsPopup(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -904,7 +923,7 @@ static BOOL CALLBACK DlgProcOptionsPopup(HWND hwndDlg,UINT uMsg,WPARAM wParam,LP
 static int OptionsInitialize(WPARAM wParam, LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp = {0};
-    
+
 	odp.cbSize = sizeof(odp);
 	odp.position = 910000000;
 	odp.hInstance = g_hInst;
@@ -955,10 +974,11 @@ void LoadGlobalSettings(void)
 	g_Settings.LoggingEnabled = (BOOL)DBGetContactSettingByte(NULL, "Chat", "LoggingEnabled", 0);
 	g_Settings.FlashWindow = (BOOL)DBGetContactSettingByte(NULL, "Chat", "FlashWindow", 0);
 	g_Settings.HighlightEnabled = (BOOL)DBGetContactSettingByte(NULL, "Chat", "HighlightEnabled", 1);
-	g_Settings.crUserListColor = (BOOL)DBGetContactSettingDword(NULL, "ChatFonts", "Font18Col", RGB(0,0,0));
-	g_Settings.crUserListBGColor = (BOOL)DBGetContactSettingDword(NULL, "Chat", "ColorNicklistBG", GetSysColor(COLOR_WINDOW));
-	g_Settings.crUserListHeadingsColor = (BOOL)DBGetContactSettingDword(NULL, "ChatFonts", "Font19Col", RGB(170,170,170));
-	g_Settings.crLogBackground = (BOOL)DBGetContactSettingDword(NULL, "Chat", "ColorLogBG", GetSysColor(COLOR_WINDOW));
+	g_Settings.crUserListColor = DBGetContactSettingDword(NULL, "ChatFonts", "Font18Col", RGB(0,0,0));
+	g_Settings.crUserListBGColor = DBGetContactSettingDword(NULL, "Chat", "ColorNicklistBG", GetSysColor(COLOR_WINDOW));
+	g_Settings.crUserListSelectedBGColor = DBGetContactSettingDword(NULL, "Chat", "ColorNicklistSelectedBG", GetSysColor(COLOR_HIGHLIGHT));
+	g_Settings.crUserListHeadingsColor = DBGetContactSettingDword(NULL, "ChatFonts", "Font19Col", RGB(170,170,170));
+	g_Settings.crLogBackground = DBGetContactSettingDword(NULL, "Chat", "ColorLogBG", GetSysColor(COLOR_WINDOW));
 	g_Settings.StripFormat = (BOOL)DBGetContactSettingByte(NULL, "Chat", "StripFormatting", 0);
 	g_Settings.TrayIconInactiveOnly = (BOOL)DBGetContactSettingByte(NULL, "Chat", "TrayIconInactiveOnly", 1);
 	g_Settings.PopUpInactiveOnly = (BOOL)DBGetContactSettingByte(NULL, "Chat", "PopUpInactiveOnly", 1);
@@ -984,7 +1004,11 @@ void LoadGlobalSettings(void)
 			lstrcpynA(pszTemp, dbv.pszVal, MAX_PATH);
 			DBFreeVariant(&dbv);
 		}
-		else lstrcpynA(pszTemp, "Logs\\", MAX_PATH);
+		else {
+            char *tmpPath = Utils_ReplaceVars("%miranda_logpath%\\Chat");
+            lstrcpynA(pszTemp, tmpPath, SIZEOF(pszTemp)-1);
+            mir_free(tmpPath);
+        }
 
 		CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)pszTemp, (LPARAM)g_Settings.pszLogDir);
 	}
@@ -1005,6 +1029,14 @@ void LoadGlobalSettings(void)
 		DeleteObject(g_Settings.UserListHeadingsFont);
 	LoadMsgDlgFont(19, &lf, NULL);
 	g_Settings.UserListHeadingsFont = CreateFontIndirect(&lf);
+	if (hListBkgBrush != NULL) {
+		DeleteObject(hListBkgBrush);
+	}
+	hListBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, "Chat", "ColorNicklistBG", GetSysColor(COLOR_WINDOW)));
+	if (hListSelectedBkgBrush != NULL) {
+		DeleteObject(hListSelectedBkgBrush);
+	}
+	hListSelectedBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, "Chat", "ColorNicklistSelectedBG", GetSysColor(COLOR_HIGHLIGHT)));
 }
 
 static void FreeGlobalSettings(void)
@@ -1047,9 +1079,6 @@ int OptionsInit(void)
 	g_Settings.iHeight = DBGetContactSettingDword(NULL, "Chat", "roomheight", -1);
 	LoadGlobalSettings();
 
-	hEditBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, "Chat", "ColorMessageBG", GetSysColor(COLOR_WINDOW)));
-	hListBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, "Chat", "ColorNicklistBG", GetSysColor(COLOR_WINDOW)));
-
 	SkinAddNewSoundEx("ChatMessage", "Chat", Translate("Incoming message"));
 	SkinAddNewSoundEx("ChatHighlight", "Chat", Translate("Message is highlighted"));
 	SkinAddNewSoundEx("ChatAction", "Chat", Translate("User has performed an action"));
@@ -1087,6 +1116,7 @@ int OptionsUnInit(void)
 	UnhookEvent(g_hOptions);
 	DeleteObject(hEditBkgBrush);
 	DeleteObject(hListBkgBrush);
+	DeleteObject(hListSelectedBkgBrush);
 	DeleteObject(g_Settings.NameFont);
 	return 0;
 }

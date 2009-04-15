@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -24,60 +24,57 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _MSGS_H
 #define _MSGS_H
 
-#define __MATHMOD_SUPPORT 1
+#ifdef _MSC_VER
+#if _MSC_VER < 1400
+#define uintptr_t UINT_PTR
+#define _malloca alloca
+#define _localtime32 localtime
+#define __time32_t time_t
+#endif
+#endif
+/*
+ * required for MingW32 compatibility
+ */
 
 #ifdef __GNUWIN32__
 #define COLOR_HOTLIGHT 26
 #if !defined(SB_SETICON)
+	#define SB_SETICON (WM_USER+15)
+	#define SB_SETTIPTEXTA (WM_USER+16)
+	#define TCS_BOTTOM 0x0002
 
-#define SB_SETICON (WM_USER+15)
-#define SB_SETTIPTEXTA (WM_USER+16)
-#define TCS_BOTTOM 0x0002
+	#define TVS_NOHSCROLL 0x8000
+	#define TVS_CHECKBOXES          0x0100
+#endif // SB_SETICON
 
-#define TVS_NOHSCROLL 0x8000
-#define TVS_CHECKBOXES          0x0100
-#endif
-
+#define BS_TYPEMASK         0x0000000FL
 #define CFM_ALL (CFM_EFFECTS | CFM_SIZE | CFM_FACE | CFM_OFFSET | CFM_CHARSET)
 #define SES_EXTENDBACKCOLOR 4           // missing from the mingw32 headers
-#define MIM_BACKGROUND              0x00000002
 #define GT_SELECTION 2
 #define ST_SELECTION 2
 #define ST_DEFAULT 0
 #define ST_KEEPUNDO 1
-#define CFM_WEIGHT 0x0040000
 #define SBT_TOOLTIPS 0x0800
 #define DFCS_HOT 0x1000
 
-#if defined(_UNICODE)
-    #define TTM_SETTITLE (WM_USER+33)
-#else
-    #define TTM_SETTITLE (WM_USER+32)
-#endif
-
 #define FLASHW_STOP 0
-#define FLASHW_TRAY 0x00000002
-#define FLASHW_CAPTION 0x00000001
-#define FLASHW_ALL (FLASHW_TRAY | FLASHW_CAPTION)
-#define FLASHW_TIMERNOFG 0x0000000C
-#define FLASHW_TIMER 0x00000004
 #define IMF_AUTOKEYBOARD 0x0001
 #define ODS_INACTIVE        0x0080
 #define NIN_BALLOONUSERCLICK (WM_USER + 5)
-#define NIN_BALLOONHIDE (WM_USER + 3)
 #define NIN_BALLOONTIMEOUT (WM_USER + 4)
 #define IMF_AUTOFONTSIZEADJUST	0x0010
 
-#define WM_THEMECHANGED 0x031A
+#define __time32_t time_t
+#define _malloca alloca
+#define _localtime32 localtime
 
-typedef struct __gettextex
-{
-	DWORD	cb;				// Count of bytes in the string				
-	DWORD	flags;			// Flags (see the GT_XXX defines			
+typedef struct __gettextex {
+	DWORD	cb;				// Count of bytes in the string
+	DWORD	flags;			// Flags (see the GT_XXX defines
 	UINT	codepage;		// Code page for translation (CP_ACP for sys default,
-						    //  1200 for Unicode, -1 for control default)	
-	LPCSTR	lpDefaultChar;	// Replacement for unmappable chars			
-	LPBOOL	lpUsedDefChar;	// Pointer to flag set when def char used	
+	//  1200 for Unicode, -1 for control default)
+	LPCSTR	lpDefaultChar;	// Replacement for unmappable chars
+	LPBOOL	lpUsedDefChar;	// Pointer to flag set when def char used
 } _GETTEXTEX;
 
 #define WM_APPCOMMAND                   0x0319
@@ -88,19 +85,14 @@ typedef struct __gettextex
 
 #ifndef _WIN32_IE
 typedef struct tagNMMOUSE {
-    NMHDR       hdr;
-    DWORD_PTR   dwItemSpec;
-    DWORD_PTR   dwItemData;
-    POINT       pt;
-    LPARAM      dwHitInfo; // any specifics about where on the item or control the mouse is
+	NMHDR       hdr;
+	DWORD_PTR   dwItemSpec;
+	DWORD_PTR   dwItemData;
+	POINT       pt;
+	LPARAM      dwHitInfo; // any specifics about where on the item or control the mouse is
 } NMMOUSE, *LPNMMOUSE;
 #endif
 
-#define __forceinline __inline
-
-#define GRADIENT_FILL_RECT_V 1
-#define GRADIENT_FILL_RECT_H 0
-#define CS_DROPSHADOW       0x00020000
 #define CFE_LINK		0x0020
 
 #define __try
@@ -148,15 +140,26 @@ typedef struct _settextex {
 #define MWF_LOG_SHOWTIME 1024
 #define MWF_LOG_SHOWSECONDS 2048
 #define MWF_LOG_SHOWDATES 4096
-//#define MWF_LOG_NEWLINE 8192
+
 #define MWF_LOG_INDENT 16384
 #define MWF_LOG_RTL 32768
-//#define MWF_LOG_UNDERLINE 65536
-//#define MWF_LOG_SWAPNICK 131072
-#define MWF_LOG_SHOWICONS 262144
-//#define MWF_LOG_DYNAMICAVATAR 524288
 
-//#define MWF_LOG_INDENTWITHTABS 1048576
+//MAD: ieview still mistakenly uses these...
+#define MWF_LOG_NEWLINE   8192
+#define MWF_LOG_UNDERLINE 65536
+#define MWF_LOG_SWAPNICK  131072
+//
+//#define MWF_LOG_BBCODE 65536
+//#define MWF_LOG_STATUSCHANGES 131072
+//#define MWF_LOG_LOCALTIME 8192
+#define MWF_LOG_BBCODE		 1
+#define MWF_LOG_STATUSCHANGES 32
+#define MWF_LOG_LOCALTIME	 64
+//_MAD
+
+
+#define MWF_LOG_SHOWICONS 262144
+
 #define MWF_LOG_SYMBOLS 0x200000
 #define MWF_INITMODE  0x400000
 #define MWF_NEEDCHECKSIZE 0x800000
@@ -178,12 +181,10 @@ typedef struct _settextex {
 #define MWF_SHOW_FLASHCLIST 64
 #define MWF_SHOW_SPLITTEROVERRIDE 128
 #define MWF_SHOW_SCROLLINGDISABLED 256
-#define MWF_SHOW_BBCODE 512
 #define MWF_SHOW_INFOPANEL 1024
 #define MWF_SHOW_INFONOTES 2048
 #define MWF_SHOW_ISIDLE 4096
 #define MWF_SHOW_AWAYMSGTIMER 8192
-#define MWF_SHOW_USELOCALTIME 16384
 #define MWF_EX_DELAYEDSPLITTER 32768
 #define MWF_EX_AVATARCHANGED 65536
 #define MWF_EX_WARNCLOSE     0x20000
@@ -199,7 +200,6 @@ typedef struct _settextex {
 #define SENDFORMAT_NONE 0
 
 #define AVATARMODE_DYNAMIC 0
-//#define AVATARMODE_STATIC 1
 
 #define MSGDLGFONTCOUNT 22
 #define IPFONTCOUNT 6
@@ -218,9 +218,9 @@ typedef struct _settextex {
 #define CUSTOM_COLORS 5
 
 typedef struct _tagTemplateSet {
-    BOOL valid;             // all templates populated (may still contain crap.. so it's only half-assed safety :)
-    TCHAR szTemplates[TMPL_ERRMSG + 1][TEMPLATE_LENGTH];      // the template strings
-    char szSetName[20];     // everything in this world needs a name. so does this poor template set.
+	BOOL valid;             // all templates populated (may still contain crap.. so it's only half-assed safety :)
+	TCHAR szTemplates[TMPL_ERRMSG + 1][TEMPLATE_LENGTH];      // the template strings
+	char szSetName[20];     // everything in this world needs a name. so does this poor template set.
 } TemplateSet;
 
 struct TitleBtn {
@@ -233,7 +233,7 @@ struct TitleBtn {
 #define BTN_CLOSE 2
 
 #define NR_LOGICONS 8
-#define NR_BUTTONBARICONS 29
+#define NR_BUTTONBARICONS 36//MaD: 29
 #define NR_SIDEBARICONS 10
 
 struct ContainerWindowData {
@@ -243,36 +243,35 @@ struct ContainerWindowData {
 	HWND    hwnd;				// the container handle
 	int     iTabIndex;			// next tab id
 	int	    iChilds;
-    int     iContainerIndex;
+	int     iContainerIndex;
 	HMENU   hMenuContext;
 	HWND    hwndTip;			// tab - tooltips...
-    BOOL    bDontSmartClose;      // if set, do not search and select the next possible tab after closing one.
-    DWORD   dwFlags, dwPrivateFlags;
-    UINT    uChildMinHeight;
-    SIZE    oldSize, preSIZE;
+	BOOL    bDontSmartClose;      // if set, do not search and select the next possible tab after closing one.
+	DWORD   dwFlags, dwPrivateFlags;
+	UINT    uChildMinHeight;
+	SIZE    oldSize, preSIZE;
 	DWORD   dwTransparency;
-    int     tBorder;
+	int     tBorder;
 	int	    tBorder_outer_left, tBorder_outer_right, tBorder_outer_top, tBorder_outer_bottom;
-    HANDLE  hContactFrom;
-    BOOL    isCloned;
-    HMENU   hMenu;
-    HWND    hwndStatus, hwndSlist;
-    int     statusBarHeight;
-    DWORD   dwLastActivity;
-    int     hIcon;                // current window icon stick indicator
-    DWORD   dwFlashingStarted;
-    int     bInTray;              // 1 = in tray normal, 2 = in tray (was maximized)
-    RECT    restoreRect;
-    HWND    hWndOptions;
-    BOOL    bSizingLoop;
-    int     sb_NrTopButtons, sb_NrBottomButtons, sb_FirstButton;
-    int     sb_TopHeight, sb_BottomHeight;
-    TCHAR   szTitleFormat[TITLE_FORMATLEN + 2];
-    char    szThemeFile[MAX_PATH];
-    TemplateSet *ltr_templates, *rtl_templates;
-    LOGFONTA *logFonts;
-    COLORREF *fontColors;
-    char    *rtfFonts;
+	HANDLE  hContactFrom;
+	BOOL    isCloned;
+	HMENU   hMenu;
+	HWND    hwndStatus, hwndSlist;
+	int     statusBarHeight;
+	DWORD   dwLastActivity;
+	int     hIcon;                // current window icon stick indicator
+	DWORD   dwFlashingStarted;
+	RECT    restoreRect;
+	HWND    hWndOptions;
+	BOOL    bSizingLoop;
+	int     sb_NrTopButtons, sb_NrBottomButtons, sb_FirstButton;
+	int     sb_TopHeight, sb_BottomHeight;
+	TCHAR   szTitleFormat[TITLE_FORMATLEN + 2];
+	char    szThemeFile[MAX_PATH];
+	TemplateSet *ltr_templates, *rtl_templates;
+	LOGFONTA *logFonts;
+	COLORREF *fontColors;
+	char    *rtfFonts;
 	HDC     cachedDC;
 	HBITMAP cachedHBM, oldHBM;
 	SIZE    oldDCSize;
@@ -281,165 +280,167 @@ struct ContainerWindowData {
 	struct  TitleBtn buttons[3];
 	struct  TitleBtn oldbuttons[3];
 	int     ncActive;
-    HWND    hwndSaved;
-    ButtonItem *buttonItems;
-    RECT    rcSaved;
-    DWORD   exFlags;
+	HWND    hwndSaved;
+	ButtonItem *buttonItems;
+	RECT    rcSaved;
+	DWORD   exFlags;
 };
 
 #define STICK_ICON_MSG 10
 #define SENDJOBS_MAX_SENDS 20
 
 struct SendJob {
-    HANDLE  hContact[SENDJOBS_MAX_SENDS];
-    HANDLE  hSendId[SENDJOBS_MAX_SENDS];
-    char    *sendBuffer;
-    int     dwLen;        // actual buffer langth (checked for reallocs()
-    int     sendCount;
-    HANDLE  hOwner;
-    HWND    hwndOwner;
-    unsigned int iStatus;
-    char    szErrorMsg[128];
-    DWORD   dwFlags;
-    int     iAcksNeeded;
-    HANDLE  hEventSplit;
-    int     chunkSize;
-    DWORD   dwTime;
+	HANDLE  hContact[SENDJOBS_MAX_SENDS];
+	HANDLE  hSendId[SENDJOBS_MAX_SENDS];
+	char    *sendBuffer;
+	int     dwLen;        // actual buffer langth (checked for reallocs()
+	int     sendCount;
+	HANDLE  hOwner;
+	HWND    hwndOwner;
+	unsigned int iStatus;
+	char    szErrorMsg[128];
+	DWORD   dwFlags;
+	int     iAcksNeeded;
+	HANDLE  hEventSplit;
+	int     chunkSize;
+	DWORD   dwTime;
 };
 
 struct MessageSessionStats {
-    time_t started;
-    unsigned int iSent, iReceived, iSentBytes, iReceivedBytes;
-    unsigned int iFailures;
-    unsigned int lastReceivedChars;
-    BOOL bWritten;
+	time_t started;
+	unsigned int iSent, iReceived, iSentBytes, iReceivedBytes;
+	unsigned int iFailures;
+	unsigned int lastReceivedChars;
+	BOOL bWritten;
 };
 
 struct MessageWindowTheme {
-    COLORREF inbg, outbg, bg, inputbg;
-    COLORREF hgrid;
-    COLORREF custom_colors[5];
-    DWORD dwFlags;
-    DWORD left_indent, right_indent;
-    LOGFONTA *logFonts;
-    COLORREF *fontColors;
-    char *rtfFonts;
+	COLORREF inbg, outbg, bg, oldinbg, oldoutbg, statbg, inputbg;
+	COLORREF hgrid;
+	COLORREF custom_colors[5];
+	DWORD dwFlags;
+	DWORD left_indent, right_indent;
+	LOGFONTA *logFonts;
+	COLORREF *fontColors;
+	char *rtfFonts;
 };
 
 struct MessageWindowData {
 	BYTE    bType;
-    BYTE    bWasDeleted;
+	BYTE    bWasDeleted;
 	HANDLE  hContact, hSubContact;
 	HWND    hwndIEView, hwndFlash, hwndIWebBrowserControl, hwndHPP;
-    HWND    hwnd;
-	HANDLE  hDbEventFirst,hDbEventLast, hDbEventLastFeed;
+	HWND	hwndContactPic, hwndPanelPic; //Bolshevik: avatar control handlers
+	UINT    messageCount;  //MAD
+	UINT	bbLSideWidth;  //MAD
+	UINT	bbRSideWidth;    //MAD
+	struct StatusIconListNode *pSINod;
+	BOOL	bActualHistory;
+	HWND    hwnd;
+	HANDLE  hDbEventFirst, hDbEventLast, hDbEventLastFeed;
 	int     sendMode;
 	HBRUSH  hBkgBrush, hInputBkgBrush;
-	int     splitterY, originalSplitterY, dynaSplitter, savedSplitter;
+	int     splitterY, originalSplitterY, dynaSplitter, savedSplitter, savedSplitY, savedDynaSplit;
 	int     multiSplitterX;
 	char    *sendBuffer;
-    int     iSendBufferSize;
-    SIZE    minEditBoxSize;
+	int     iSendBufferSize;
+	SIZE    minEditBoxSize;
 	int     showUIElements;
 	int     nTypeSecs;
 	int     nTypeMode;
 	DWORD   nLastTyping;
 	int     showTyping;
-	int     showTypingWin;
 	DWORD   lastMessage;
 	struct  ContainerWindowData *pContainer;		// parent container description structure
 	int     iTabID;
 	BOOL    bTabFlash;
-    HICON   hTabIcon, hTabStatusIcon, hXStatusIcon, hClientIcon;
+	HICON   hTabIcon, hTabStatusIcon, hXStatusIcon, hClientIcon;
 	BOOL    mayFlashTab;
-    HKL     hkl;                                    // keyboard layout identifier
-    DWORD   dwTickLastEvent;
+	HKL     hkl;                                    // keyboard layout identifier
+	DWORD   dwTickLastEvent;
 	HBITMAP hOwnPic;
 	SIZE    pic;
 	int     showPic, showInfoPic;
-    BOOL    fMustOffset;
-    UINT    uMinHeight;
+	BOOL    fMustOffset;
+	UINT    uMinHeight;
 	BOOL    isHistory;
-    DWORD   dwFlags;
-    HICON   iFlashIcon;
-    //POINT   ptLast;
-    WORD    wOldStatus;
-    int     iOldHash;
-    struct  InputHistory *history;
-    int     iHistoryCurrent, iHistoryTop, iHistorySize;
-    int     doSmileys;
-    UINT    codePage;
-    HICON   hSmileyIcon;
-    char    *szProto;
-    char    *szMetaProto;
-    TCHAR   szNickname[130], szMyNickname[130];
-    char    szStatus[50];
-    WORD    wStatus, wMetaStatus;
-    int     iLastEventType;
-    time_t  lastEventTime;
-    DWORD   dwFlagsEx;
-    int     iRealAvatarHeight;
-    int     iButtonBarNeeds, iButtonBarReallyNeeds, controlsHidden;
-    DWORD   dwLastActivity;
-    struct  MessageSessionStats stats;
-    int     iOpenJobs;
-    int     iCurrentQueueError;
-    HANDLE  hMultiSendThread;
-    BOOL    bIsMeta;
-    HANDLE  hFlashingEvent;
-    char    uin[80], myUin[80];
-    BOOL    bNotOnList;
-    int     SendFormat;
-    DWORD   dwIsFavoritOrRecent;
-    DWORD   dwLastUpdate;
-    TemplateSet *ltr_templates, *rtl_templates;
-    HANDLE  *hQueuedEvents;
-    int     iNextQueuedEvent;
+	DWORD   dwFlags;
+	HICON   iFlashIcon;
+	//POINT   ptLast;
+	WORD    wOldStatus;
+	int     iOldHash;
+	struct  InputHistory *history;
+	int     iHistoryCurrent, iHistoryTop, iHistorySize;
+	int     doSmileys;
+	UINT    codePage;
+	HICON   hSmileyIcon;
+	char    *szProto;
+	char    *szMetaProto;
+	TCHAR   szNickname[130], szMyNickname[130];
+	TCHAR	szStatus[50];
+	WORD    wStatus, wMetaStatus;
+	int     iLastEventType;
+	time_t  lastEventTime;
+	DWORD   dwFlagsEx;
+	int     iRealAvatarHeight;
+	int     iButtonBarNeeds, iButtonBarReallyNeeds, controlsHidden;
+	DWORD   dwLastActivity;
+	struct  MessageSessionStats stats;
+	int     iOpenJobs;
+	int     iCurrentQueueError;
+	HANDLE  hMultiSendThread;
+	BOOL    bIsMeta;
+	HANDLE  hFlashingEvent;
+	char    uin[80], myUin[80];
+	BOOL    bNotOnList;
+	int     SendFormat;
+	DWORD   dwIsFavoritOrRecent;
+	DWORD   dwLastUpdate;
+	TemplateSet *ltr_templates, *rtl_templates;
+	HANDLE  *hQueuedEvents;
+	int     iNextQueuedEvent;
 #define EVENT_QUEUE_SIZE 10
-    int     iEventQueueSize;
-    TCHAR   newtitle[130];        // tab title...
-    LCID    lcid;
-    char    lcID[4];
-    int     panelHeight, panelWidth;
-    WORD    wApparentMode;
-    DWORD   idle;
-    HWND    hwndTip;
-    TOOLINFO ti;
-    DWORD   lastRetrievedStatusMsg;
-    TCHAR   statusMsg[1025];
-    HANDLE  hProcessAwayMsg;
-    DWORD   timezone, timediff;
-    DWORD   panelStatusCX;
-    BYTE    xStatus;
-    COLORREF inputbg;
-    SIZE    szLabel;
-    struct  MessageWindowTheme theme;
-    struct  avatarCacheEntry *ace, *ownAce;
-    COLORREF avatarbg;
+	int     iEventQueueSize;
+	TCHAR   newtitle[130];        // tab title...
+	LCID    lcid;
+	char    lcID[4];
+	int     panelHeight, panelWidth;
+	WORD    wApparentMode;
+	DWORD   idle;
+	HWND    hwndTip;
+	TOOLINFO ti;
+	TCHAR   statusMsg[1025];
+	DWORD   timezone, timediff;
+	DWORD   panelStatusCX;
+	BYTE    xStatus;
+	COLORREF inputbg;
+	SIZE    szLabel;
+	struct  MessageWindowTheme theme;
+	struct  avatarCacheEntry *ace, *ownAce;
+	COLORREF avatarbg;
 	HANDLE  *hHistoryEvents;
 	int     maxHistory, curHistory;
 	HANDLE  hTheme;
 	BYTE    bFlatMsgLog;
-    BYTE    isIRC;
-    PVOID   si;
-    char    szMicroLf[128];
-    DWORD   isAutoRTL;
-    int     nMax;            // max message size
-    int     textLen;         // current text len
-    LONG    ipFieldHeight;
-    WNDPROC oldIEViewProc;
-    BOOL    clr_added;
-    BOOL    fIsReattach;
-    WPARAM  wParam;          // used for "delayed" actions like moved splitters in minimized windows
-    LPARAM  lParam;
-    int     iHaveRTLLang;
-    BOOL    fInsertMode;
+	PVOID   si;
+	char    szMicroLf[128];
+	DWORD   isAutoRTL;
+	int     nMax;            // max message size
+	int     textLen;         // current text len
+	LONG    ipFieldHeight;
+	WNDPROC oldIEViewProc, oldIEViewLastChildProc;
+	BOOL    clr_added;
+	BOOL    fIsReattach;
+	WPARAM  wParam;          // used for "delayed" actions like moved splitters in minimized windows
+	LPARAM  lParam;
+	int     iHaveRTLLang;
+	BOOL    fInsertMode;
 };
 
 typedef struct _recentinfo {
-    DWORD dwFirst, dwMostRecent;        // timestamps
-    int   iFirstIndex, iMostRecent;     // tab indices
-    HWND  hwndFirst, hwndMostRecent;    // client window handles
+	DWORD dwFirst, dwMostRecent;        // timestamps
+	int   iFirstIndex, iMostRecent;     // tab indices
+	HWND  hwndFirst, hwndMostRecent;    // client window handles
 } RECENTINFO;
 
 /*
@@ -447,22 +448,22 @@ typedef struct _recentinfo {
  */
 
 struct TabControlData {
-    BOOL    m_skinning;
-    BOOL    m_moderntabs;
-    HWND    hwnd;
-    DWORD   dwStyle;
-    DWORD   cx, cy;
-    HANDLE  hTheme, hThemeButton;
-    BYTE    m_xpad;
-    struct  ContainerWindowData *pContainer;
-    BOOL    bDragging;
-    int     iBeginIndex;
-    HWND    hwndDrag;
-    struct  MessageWindowData *dragDat;
-    HIMAGELIST himlDrag;
-    BOOL    bRefreshWithoutClip;
-    BOOL    fSavePos;
-    BOOL    fTipActive;
+	BOOL    m_skinning;
+	BOOL    m_moderntabs;
+	HWND    hwnd;
+	DWORD   dwStyle;
+	DWORD   cx, cy;
+	HANDLE  hTheme, hThemeButton;
+	BYTE    m_xpad;
+	struct  ContainerWindowData *pContainer;
+	BOOL    bDragging;
+	int     iBeginIndex;
+	HWND    hwndDrag;
+	struct  MessageWindowData *dragDat;
+	HIMAGELIST himlDrag;
+	BOOL    bRefreshWithoutClip;
+	BOOL    fSavePos;
+	BOOL    fTipActive;
 };
 
 /*
@@ -470,12 +471,12 @@ struct TabControlData {
  */
 
 struct myTabCtrl {
-    HPEN    m_hPenShadow, m_hPenItemShadow, m_hPenLight, m_hPenStyledLight, m_hPenStyledDark;
-    HFONT   m_hMenuFont;
-    COLORREF colors[10];
-    HBRUSH  m_hBrushDefault, m_hBrushActive, m_hBrushUnread, m_hBrushHottrack;
-    DWORD   m_fixedwidth;
-    int     m_bottomAdjust;
+	HPEN    m_hPenShadow, m_hPenItemShadow, m_hPenLight, m_hPenStyledLight, m_hPenStyledDark;
+	HFONT   m_hMenuFont;
+	COLORREF colors[10];
+	HBRUSH  m_hBrushDefault, m_hBrushActive, m_hBrushUnread, m_hBrushHottrack;
+	DWORD   m_fixedwidth;
+	int     m_bottomAdjust;
 };
 
 /*
@@ -483,126 +484,144 @@ struct myTabCtrl {
  */
 
 struct infopanelconfig {
-    HFONT       hFonts[IPFONTCOUNT];
-    COLORREF    clrs[IPFONTCOUNT];
-    COLORREF    clrClockSymbol, clrBackground;
-    BOOL        isValid;                   // valid data exist (font service required, otherwise, defaults are used)
-    BYTE        borderStyle;
-    HBRUSH      bkgBrush;
-    UINT        edgeType, edgeFlags;
-    
+	HFONT       hFonts[IPFONTCOUNT];
+	COLORREF    clrs[IPFONTCOUNT];
+	COLORREF    clrClockSymbol, clrBackground;
+	BOOL        isValid;                   // valid data exist (font service required, otherwise, defaults are used)
+	BYTE        borderStyle;
+	HBRUSH      bkgBrush;
+	UINT        edgeType, edgeFlags;
+
 };
 
 typedef struct _globals {
-    HWND        g_hwndHotkeyHandler;
-    HICON       g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus;
-    HCURSOR     hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
-    HBITMAP     g_hbmUnknown;
-    int         g_MetaContactsAvail, g_SmileyAddAvail, g_WantIEView, g_PopupAvail, g_PopupWAvail, g_WantHPP;
-    int         g_FlashAvatarAvail;
-    HIMAGELIST  g_hImageList;
-    HICON       g_IconMsgEvent, g_IconTypingEvent, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
-    HICON       g_IconFolder, g_IconChecked, g_IconUnchecked;
+	HWND        g_hwndHotkeyHandler;
+	HICON       g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus;
+	HCURSOR     hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
+	HBITMAP     g_hbmUnknown;
+	int         g_MetaContactsAvail, g_SmileyAddAvail, g_WantIEView, g_PopupAvail, g_PopupWAvail, g_WantHPP;
+	int         g_FlashAvatarAvail;
+	HIMAGELIST  g_hImageList;
+	HICON       g_IconMsgEvent, g_IconTypingEvent, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
+	HICON       g_IconFolder, g_IconChecked, g_IconUnchecked;
 	HICON       g_closeGlyph, g_maxGlyph, g_minGlyph, g_pulldownGlyph;
-    int         g_nrProtos;
-    HMENU       g_hMenuContext, g_hMenuContainer, g_hMenuEncoding, g_hMenuTrayUnread;
-    HMENU       g_hMenuFavorites, g_hMenuRecent, g_hMenuTrayContext;
-    //int         g_wantSnapping;
-    HICON       g_buttonBarIcons[NR_BUTTONBARICONS];
-    HICON       g_sideBarIcons[NR_SIDEBARICONS];
-    int         iSendJobCurrent;
-    // dynamic options, need reload when options change
-    int         m_SendOnShiftEnter;
-    int         m_SendOnEnter;
-    int         m_SendOnDblEnter;
-    int         m_AutoLocaleSupport;
-    int         m_AutoSwitchTabs;
-    int         m_CutContactNameOnTabs;
-    int         m_CutContactNameTo;
-    int         m_StatusOnTabs;
-    int         m_LogStatusChanges;
-    int         m_UseDividers;
-    int         m_DividersUsePopupConfig;
-    int         m_MsgTimeout;
-    int         m_EscapeCloses;
-    int         m_WarnOnClose;
-    int         m_AvatarMode, m_OwnAvatarMode;
-    int         m_FlashOnClist;
-    int         m_TabAutoClose;
-    int         m_AlwaysFullToolbarWidth;
-    int         m_LimitStaticAvatarHeight;
-    int         m_SendFormat;
-    int         m_FormatWholeWordsOnly;
-    int         m_AllowSendButtonHidden;
-    int         m_ToolbarHideMode;
-    int         m_FixFutureTimestamps;
-    int         m_RTLDefault;
-    int         m_SplitterSaveOnClose;
-    int         m_MathModAvail;
-    TCHAR       m_MathModStartDelimiter[40];
-    int         m_UnreadInTray;
-    int         m_TrayFlashes;
-    int         m_TrayFlashState;
-    BOOL        m_SuperQuiet;
-    HANDLE      m_TipOwner;
-    HANDLE      m_UserMenuItem;
-    BYTE        m_WinVerMajor;
-    BYTE        m_WinVerMinor;
-    BYTE        m_bIsXP;
-    BYTE        m_SideBarEnabled;
-    HWND        m_hwndClist;
-    int         m_TabAppearance;
-    int         m_VSApiEnabled;
-    struct      myTabCtrl tabConfig;
-    //BYTE        m_ExtraRedraws;
-    char        szDataPath[MAX_PATH + 1];
-    int         m_panelHeight;
-    TCHAR       szDefaultTitleFormat[256];
-    DWORD       m_GlobalContainerFlags;
-    DWORD       m_GlobalContainerTrans;
-    WINDOWPLACEMENT m_GlobalContainerWpos;
-    HANDLE      hLastOpenedContact;
-    int         m_Send7bitStrictAnsi;
-    int         m_IdleDetect;
-    int         m_DoStatusMsg;
-    int         m_smcxicon, m_smcyicon;
-    DWORD       local_gmt_diff;
-    int         m_PasteAndSend;
-    TCHAR       *m_szNoStatus;
-    HFONT       m_hFontWebdings;
-    struct      infopanelconfig ipConfig;
-    COLORREF    crDefault, crIncoming, crOutgoing;
-    BOOL        bUnicodeBuild;
-    BYTE        bClipBorder;
-    DWORD       bRoundedCorner;
+	int         g_nrProtos;
+	HMENU       g_hMenuContext, g_hMenuContainer, g_hMenuEncoding, g_hMenuTrayUnread;
+	HMENU       g_hMenuFavorites, g_hMenuRecent, g_hMenuTrayContext;
+	//int         g_wantSnapping;
+	HICON       g_buttonBarIcons[NR_BUTTONBARICONS];
+	HICON       g_sideBarIcons[NR_SIDEBARICONS];
+	HANDLE		g_buttonBarIconHandles[23];
+	int         iSendJobCurrent;
+	// dynamic options, need reload when options change
+	int         m_SendOnShiftEnter;
+	int         m_SendOnEnter;
+	int         m_SendOnDblEnter;
+	int         m_AutoLocaleSupport;
+	int         m_AutoSwitchTabs;
+	int         m_CutContactNameOnTabs;
+	int         m_CutContactNameTo;
+	int         m_StatusOnTabs;
+	int         m_LogStatusChanges;
+	int         m_UseDividers;
+	int         m_DividersUsePopupConfig;
+	int         m_MsgTimeout;
+	int         m_EscapeCloses;
+	int         m_WarnOnClose;
+	int         m_AvatarMode, m_OwnAvatarMode;
+	int         m_FlashOnClist;
+	int         m_TabAutoClose;
+	int         m_AlwaysFullToolbarWidth;
+	int         m_LimitStaticAvatarHeight;
+	int         m_SendFormat;
+	int         m_FormatWholeWordsOnly;
+	//int         m_AllowSendButtonHidden;
+	//int         m_ToolbarHideMode;
+	int         m_FixFutureTimestamps;
+	int         m_RTLDefault;
+	int         m_SplitterSaveOnClose;
+	int         m_MathModAvail;
+	TCHAR       m_MathModStartDelimiter[40];
+	int         m_UnreadInTray;
+	int         m_TrayFlashes;
+	int         m_TrayFlashState;
+	BOOL        m_SuperQuiet;
+	HANDLE      m_TipOwner;
+	HANDLE      m_UserMenuItem;
+	//MAD
+	double		g_DPIscaleX;
+	double		g_DPIscaleY;
+	BOOL		g_NickListScrollBarFix;
+	BOOL		m_HideOnClose;
+	BOOL		g_bSoundOnTyping;
+	BOOL		m_AllowTab;
+	BOOL		m_AllowOfflineMultisend;
+	BOOL		g_bDisableAniAvatars;
+	HBITMAP     m_hbmMsgArea;
+	BYTE		g_iButtonsBarGap;
+	HANDLE		m_hDataPath;
+	HANDLE		m_hSkinsPath;
+	HANDLE		m_hAvatarsPath;
+	char       szDataPath[MAX_PATH+1];
+	char       szSkinsPath[MAX_PATH + 1];
+	char       szAvatarsPath[MAX_PATH + 1];
+	//MAD_
+	BYTE        m_WinVerMajor;
+	BYTE        m_WinVerMinor;
+	BYTE        m_bIsXP;
+	BYTE        m_SideBarEnabled;
+	HWND        m_hwndClist;
+	int         m_TabAppearance;
+	int         m_VSApiEnabled;
+	struct      myTabCtrl tabConfig;
+	int         m_panelHeight;
+	TCHAR       szDefaultTitleFormat[256];
+	DWORD       m_GlobalContainerFlags;
+	DWORD       m_GlobalContainerTrans;
+	WINDOWPLACEMENT m_GlobalContainerWpos;
+	HANDLE      hLastOpenedContact;
+	int         m_IdleDetect;
+	int         m_DoStatusMsg;
+	int         m_smcxicon, m_smcyicon;
+	DWORD       local_gmt_diff;
+	int         m_PasteAndSend;
+	TCHAR       *m_szNoStatus;
+	HFONT       m_hFontWebdings;
+	struct      infopanelconfig ipConfig;
+	COLORREF    crDefault, crIncoming, crOutgoing, crOldIncoming, crOldOutgoing, crStatus;
+	BOOL        bUnicodeBuild;
+	BYTE        bClipBorder;
+	DWORD       bRoundedCorner;
 	BYTE        bAvatarBoderType;
 	HFONT       hFontCaption;
 	COLORREF    skinDefaultFontColor;
-    DWORD       m_LangPackCP;
-    BYTE        m_SmileyButtonOverride;
+	DWORD       m_LangPackCP;
+	BYTE        m_SmileyButtonOverride;
 	char        g_SkinnedFrame_left, g_SkinnedFrame_right, g_SkinnedFrame_bottom, g_SkinnedFrame_caption;
 	char        g_realSkinnedFrame_left, g_realSkinnedFrame_right, g_realSkinnedFrame_bottom, g_realSkinnedFrame_caption;
-    HPEN        g_SkinLightShadowPen, g_SkinDarkShadowPen;
-    NONCLIENTMETRICS ncm;
-    HICON       m_AnimTrayIcons[4];
-    BOOL        g_DisableScrollbars;
-    BOOL        m_visualMessageSizeIndicator;
-    BOOL        m_autoSplit;
-    int         rtf_ctablesize;
-    DWORD       dwThreadID;
+	HPEN        g_SkinLightShadowPen, g_SkinDarkShadowPen;
+	NONCLIENTMETRICS ncm;
+	HICON       m_AnimTrayIcons[4];
+	BOOL        g_DisableScrollbars;
+	BOOL        m_visualMessageSizeIndicator;
+	BOOL        m_autoSplit;
+	BOOL		m_FlashOnMTN;
+	int         rtf_ctablesize;
+	DWORD       dwThreadID;
+	char        szMetaName[256];
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {
-    char    *szName;
-    char    *szDesc;
-    HICON   *phIcon;      // where the handle is saved...
-    int     uId;           // icon ID
-    BOOL    bForceSmall;   // true: force 16x16
+	char    *szName;
+	char    *szDesc;
+	HICON   *phIcon;       // where the handle is saved...
+	INT_PTR uId;           // icon ID
+	BOOL    bForceSmall;   // true: force 16x16
 } ICONDESC;
 
 struct InputHistory {
-    TCHAR   *szText;
-    int     lLen;
+	TCHAR   *szText;
+	int     lLen;
 };
 
 // menu IDS
@@ -643,16 +662,16 @@ struct NewMessageWindowLParam {
 	HANDLE  hContact;
 	int     isWchar;
 	const   char *szInitialText;
-	int     iTabID;				// XXX mod: tab support
-	int     iTabImage;			// XXX mod tabs...
-    int     iActivate;
-    TCITEM  item;
-	struct  ContainerWindowData *pContainer;		// parent container description
-    BOOL    bWantPopup;
-    HANDLE  hdbEvent;
+	int     iTabID;
+	int     iTabImage;
+	int     iActivate;
+	TCITEM  item;
+	struct  ContainerWindowData *pContainer;
+	BOOL    bWantPopup;
+	HANDLE  hdbEvent;
 };
 
-// flags for the container dwFlags 
+// flags for the container dwFlags
 #define CNT_MOUSEDOWN 1
 #define CNT_NOTITLE 2
 #define CNT_HIDETABS 4
@@ -681,12 +700,12 @@ struct NewMessageWindowLParam {
 #define CNT_NOMENUBAR 0x2000000
 #define CNT_TABSBOTTOM 0x4000000
 #define CNT_STATICICON 0x8000000
-// #define CNT_TITLE_SHOWUIN 0x10000000  *free*
+#define CNT_BOTTOMTOOLBAR 0x10000000
 #define CNT_HIDETOOLBAR 0x20000000
 #define CNT_UINSTATUSBAR 0x40000000
 #define CNT_VERTICALMAX 0x80000000
 
-#define CNT_FLAGS_DEFAULT (CNT_HIDETABS | CNT_GLOBALSETTINGS | CNT_NEWCONTAINERFLAGS)
+#define CNT_FLAGS_DEFAULT (CNT_DONTREPORT | CNT_DONTREPORTUNFOCUSED | CNT_ALWAYSREPORTINACTIVE | CNT_HIDETABS | CNT_GLOBALSETTINGS | CNT_NEWCONTAINERFLAGS | CNT_NOMENUBAR | CNT_INFOPANEL)
 #define CNT_TRANS_DEFAULT 0x00ff00ff
 
 #define CNT_CREATEFLAG_CLONED 1
@@ -696,15 +715,11 @@ struct NewMessageWindowLParam {
 
 #define MWF_LOG_ALL (MWF_LOG_NORMALTEMPLATES | MWF_LOG_SHOWTIME | MWF_LOG_SHOWSECONDS | \
         MWF_LOG_SHOWDATES | MWF_LOG_INDENT | MWF_LOG_TEXTFORMAT | MWF_LOG_SYMBOLS | MWF_LOG_INOUTICONS | \
-        MWF_LOG_SHOWICONS | MWF_LOG_GRID | MWF_LOG_INDIVIDUALBKG | MWF_LOG_GROUPMODE)
-        
-#define MWF_LOG_DEFAULT (MWF_LOG_SHOWTIME | MWF_LOG_NORMALTEMPLATES | MWF_LOG_SHOWDATES | MWF_LOG_SYMBOLS | MWF_LOG_INDIVIDUALBKG | MWF_LOG_GRID | MWF_LOG_GROUPMODE)
+        MWF_LOG_SHOWICONS | MWF_LOG_GRID | MWF_LOG_INDIVIDUALBKG | MWF_LOG_GROUPMODE | \
+ 		MWF_LOG_RTL | MWF_LOG_BBCODE | MWF_LOG_LOCALTIME/*MAD:*/ | \
+		MWF_LOG_STATUSCHANGES|MWF_LOG_NEWLINE|MWF_LOG_UNDERLINE|MWF_LOG_SWAPNICK /*_MAD*/)
 
-/*
-struct ProtocolData {
-    char szName[30];
-    int  iFirstIconID;
-};*/
+#define MWF_LOG_DEFAULT (MWF_LOG_SHOWTIME | MWF_LOG_NORMALTEMPLATES | MWF_LOG_SHOWDATES | MWF_LOG_SYMBOLS | MWF_LOG_INDIVIDUALBKG | MWF_LOG_GRID | MWF_LOG_STATUSCHANGES | MWF_LOG_INOUTICONS)
 
 #define EM_SUBCLASSED             (WM_USER+0x101)
 #define EM_SEARCHSCROLLER         (WM_USER+0x103)
@@ -725,7 +740,7 @@ struct ProtocolData {
 #define DM_SPLITSENDACK      (WM_USER+19)
 #define DM_TYPING            (WM_USER+20)
 #define DM_UPDATEWINICON     (WM_USER+21)
-#define DM_UPDATELASTMESSAGE (WM_USER+22) 
+#define DM_UPDATELASTMESSAGE (WM_USER+22)
 
 #define DM_SELECTTAB		 (WM_USER+23)
 #define DM_CLOSETABATMOUSE   (WM_USER+24)
@@ -755,7 +770,7 @@ struct ProtocolData {
 #define DM_REGISTERHOTKEYS   (WM_USER+48)
 #define DM_FORCEUNREGISTERHOTKEYS (WM_USER+49)
 #define DM_ADDDIVIDER        (WM_USER+50)
-#define DM_STATUSMASKSET     (WM_USER+51)       
+#define DM_STATUSMASKSET     (WM_USER+51)
 #define DM_CONTACTSETTINGCHANGED (WM_USER+52)
 #define DM_UPDATESTATUSMSG   (WM_USER+53)
 #define DM_PROTOACK          (WM_USER+54)
@@ -799,12 +814,15 @@ struct ProtocolData {
 #define DM_PLAYINCOMINGSOUND   (WM_USER+92)
 #define DM_SENDMESSAGECOMMANDW (WM_USER+93)
 #define DM_REMOVEPOPUPS        (WM_USER+94)
+#define DM_BBNEEDUPDATE        (WM_USER+96)
+#define DM_CBDESTROY	       (WM_USER+97)
+#define DM_SPLITTERMOVEDGLOBAL_NOSYNC (WM_USER+98)
 
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
 #define DM_SCROLLIEVIEW		 (WM_USER+102)
 
-#define MINSPLITTERY         52
+#define MINSPLITTERY         42
 #define MINLOGHEIGHT         30
 
 // wParam values for DM_SELECTTAB
@@ -869,11 +887,11 @@ extern const int msgDlgFontCount;
 #define SRMSGSET_SENDONENTER       "SendOnEnter"
 #define SRMSGDEFSET_SENDONENTER    0
 #define SRMSGSET_MSGTIMEOUT        "MessageTimeout"
-#define SRMSGDEFSET_MSGTIMEOUT     30000
-#define SRMSGSET_MSGTIMEOUT_MIN    4000 // minimum value (4 seconds)
+#define SRMSGDEFSET_MSGTIMEOUT     60000
+#define SRMSGSET_MSGTIMEOUT_MIN    30000 // minimum value (30 seconds)
 
 #define SRMSGSET_LOADHISTORY       "LoadHistory"
-#define SRMSGDEFSET_LOADHISTORY    LOADHISTORY_UNREAD
+#define SRMSGDEFSET_LOADHISTORY    LOADHISTORY_COUNT
 #define SRMSGSET_LOADCOUNT         "LoadCount"
 #define SRMSGDEFSET_LOADCOUNT      10
 #define SRMSGSET_LOADTIME          "LoadTime"
@@ -884,19 +902,28 @@ extern const int msgDlgFontCount;
 #define SRMSGSET_SHOWFILES         "ShowFiles"
 #define SRMSGDEFSET_SHOWFILES      1
 #define SRMSGSET_BKGCOLOUR         "BkgColour"
-#define SRMSGDEFSET_BKGCOLOUR      GetSysColor(COLOR_WINDOW)
+#define SRMSGDEFSET_BKGCOLOUR      RGB(250,250,250)
+//#define SRMSGDEFSET_BKGCOLOUR      GetSysColor(COLOR_WINDOW)
+#define SRMSGDEFSET_BKGINCOLOUR    RGB(245,255,245)
+#define SRMSGDEFSET_BKGOUTCOLOUR   RGB(245,245,255)
 
 #define SRMSGSET_TYPING             "SupportTyping"
 #define SRMSGSET_TYPINGNEW          "DefaultTyping"
 #define SRMSGDEFSET_TYPINGNEW       1
+
 #define SRMSGSET_TYPINGUNKNOWN      "UnknownTyping"
 #define SRMSGDEFSET_TYPINGUNKNOWN   0
+
 #define SRMSGSET_SHOWTYPING         "ShowTyping"
 #define SRMSGDEFSET_SHOWTYPING      1
-#define SRMSGSET_SHOWTYPINGWIN      "ShowTypingWin"
-#define SRMSGDEFSET_SHOWTYPINGWIN   1
-#define SRMSGSET_SHOWTYPINGNOWIN    "ShowTypingTray"
-#define SRMSGDEFSET_SHOWTYPINGNOWIN 0
+
+#define SRMSGSET_SHOWTYPINGWINFLASH "ShowTypingWinFlash"
+#define SRMSGDEFSET_SHOWTYPINGWINFLASH 1
+
+#define SRMSGSET_SHOWTYPINGNOWINOPEN "ShowTypingNoWinOpen"
+
+#define SRMSGSET_SHOWTYPINGWINOPEN   "ShowTypingWinOpen"
+
 #define SRMSGSET_SHOWTYPINGCLIST    "ShowTypingClist"
 #define SRMSGDEFSET_SHOWTYPINGCLIST 1
 
@@ -919,20 +946,20 @@ extern const int msgDlgFontCount;
 #define IDM_NOTITLE (WM_USER + 2)
 #define IDM_MOREOPTIONS (WM_USER +4)
 
-typedef DWORD   (WINAPI *PSLWA)(HWND, DWORD, BYTE, DWORD);
-typedef BOOL    (WINAPI *PULW)(HWND, HDC, POINT *, SIZE *, HDC, POINT *, COLORREF, BLENDFUNCTION *, DWORD);
-typedef BOOL    (WINAPI *PFWEX)(FLASHWINFO *);
-typedef BOOL    (WINAPI *PAB)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION);
-typedef BOOL    (WINAPI *PGF)(HDC, PTRIVERTEX, ULONG, PVOID, ULONG, ULONG);
+typedef DWORD (WINAPI *PSLWA)(HWND, DWORD, BYTE, DWORD);
+typedef BOOL (WINAPI *PULW)(HWND, HDC, POINT *, SIZE *, HDC, POINT *, COLORREF, BLENDFUNCTION *, DWORD);
+typedef BOOL (WINAPI *PFWEX)(FLASHWINFO *);
+typedef BOOL (WINAPI *PAB)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION);
+typedef BOOL (WINAPI *PGF)(HDC, PTRIVERTEX, ULONG, PVOID, ULONG, ULONG);
 
 typedef BOOL (WINAPI *PITA)();
-typedef HANDLE (WINAPI *POTD)(HWND, LPCWSTR);
-typedef UINT (WINAPI *PDTB)(HANDLE, HDC, int, int, RECT *, RECT *);
-typedef UINT (WINAPI *PCTD)(HANDLE);
-typedef UINT (WINAPI *PDTT)(HANDLE, HDC, int, int, LPCWSTR, int, DWORD, DWORD, RECT *);
+typedef HANDLE(WINAPI *POTD)(HWND, LPCWSTR);
+typedef UINT(WINAPI *PDTB)(HANDLE, HDC, int, int, RECT *, RECT *);
+typedef UINT(WINAPI *PCTD)(HANDLE);
+typedef UINT(WINAPI *PDTT)(HANDLE, HDC, int, int, LPCWSTR, int, DWORD, DWORD, RECT *);
 typedef BOOL (WINAPI *PITBPT)(HANDLE, int, int);
-typedef HRESULT (WINAPI *PDTPB)(HWND, HDC, RECT *);
-typedef HRESULT (WINAPI *PGTBCR)(HANDLE, HDC, int, int, const RECT *, const RECT *);
+typedef HRESULT(WINAPI *PDTPB)(HWND, HDC, RECT *);
+typedef HRESULT(WINAPI *PGTBCR)(HANDLE, HDC, int, int, const RECT *, const RECT *);
 
 // constants for the container management functions
 
@@ -953,9 +980,9 @@ typedef HRESULT (WINAPI *PGTBCR)(HANDLE, HDC, int, int, const RECT *, const RECT
 #define HOTKEY_MODIFIERS_ALTSHIFT 2
 
 struct MsgLogIcon {
-    HBITMAP hBmp, hoBmp;
-    HDC hdc, hdcMem;
-    HBRUSH hBkgBrush;
+	HBITMAP hBmp, hoBmp;
+	HDC hdc, hdcMem;
+	HBRUSH hBkgBrush;
 };
 
 #include "icons/iconsxp/resource.h"         // icon pack values
@@ -964,25 +991,25 @@ WCHAR *Utf8_Decode(const char *str);
 char *Utf8_Encode(const WCHAR *str);
 
 struct CPTABLE {
-    UINT cpId;
-    TCHAR *cpName;
+	UINT cpId;
+	TCHAR *cpName;
 };
 
 #define LOI_TYPE_FLAG 1
 #define LOI_TYPE_SETTING 2
 
 struct LISTOPTIONSGROUP {
-    LRESULT handle;
-    TCHAR *szName;
+	LRESULT handle;
+	TCHAR *szName;
 };
 
 struct LISTOPTIONSITEM {
-    LRESULT handle;
-    TCHAR *szName;
-    UINT id;
-    UINT uType;
-    UINT_PTR lParam;
-    UINT uGroup;
+	LRESULT handle;
+	TCHAR *szName;
+	UINT id;
+	UINT uType;
+	UINT_PTR lParam;
+	UINT uGroup;
 };
 
 // sidebar button flags
@@ -1005,22 +1032,23 @@ struct LISTOPTIONSITEM {
 #define IDC_SBAR_CANCEL                 1118
 
 struct SIDEBARITEM {
-    UINT    uId;
-    DWORD   dwFlags;
-    HICON   *hIcon, *hIconPressed, *hIconHover;
-    char    *szName;
-    void    (*pfnAction)(ButtonItem *item, HWND hwndDlg, struct MessageWindowData *dat, HWND hwndItem);
-    void    (*pfnCallback)(ButtonItem *item, HWND hwndDlg, struct MessageWindowData *dat, HWND hwndItem);
-    TCHAR   *tszTip;
+	UINT    uId;
+	DWORD   dwFlags;
+	HICON   *hIcon, *hIconPressed, *hIconHover;
+	char    *szName;
+	void (*pfnAction)(ButtonItem *item, HWND hwndDlg, struct MessageWindowData *dat, HWND hwndItem);
+	void (*pfnCallback)(ButtonItem *item, HWND hwndDlg, struct MessageWindowData *dat, HWND hwndItem);
+	TCHAR   *tszTip;
 };
 
 #if defined(_UNICODE)
-static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* fmt, ...) {
+static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* fmt, ...)
+{
 	va_list va;
 	int len;
 
 	va_start(va, fmt);
-	len = _vsnwprintf(buffer, count-1, fmt, va);
+	len = _vsnwprintf(buffer, count - 1, fmt, va);
 	va_end(va);
 	buffer[count-1] = 0;
 	return len;
@@ -1030,6 +1058,7 @@ static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* 
 #define FONTF_BOLD   1
 #define FONTF_ITALIC 2
 #define FONTF_UNDERLINE 4
+#define FONTF_STRIKEOUT  8
 
 #define RTFCACHELINESIZE 128
 
@@ -1075,19 +1104,19 @@ static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* 
 #include "templates.h"
 
 struct StatusIconListNode {
-    struct StatusIconListNode *next;
+	struct StatusIconListNode *next;
 	StatusIconData sid;
 };
 
 struct TABSRMM_SessionInfo {
-    unsigned int cbSize;
-    unsigned short evtCode;
-    HWND hwnd;              // handle of the message dialog (tab)
-    HWND hwndContainer;     // handle of the parent container
-    HWND hwndInput;         // handle of the input area (rich edit)
-    UINT extraFlags;
-    UINT extraFlagsEX;
-    void *local;
+	unsigned int cbSize;
+	unsigned short evtCode;
+	HWND hwnd;              // handle of the message dialog (tab)
+	HWND hwndContainer;     // handle of the parent container
+	HWND hwndInput;         // handle of the input area (rich edit)
+	UINT extraFlags;
+	UINT extraFlagsEX;
+	void *local;
 };
 
 typedef struct {
@@ -1117,7 +1146,7 @@ typedef struct {
 // wParam = 0 -> session list
 // wParam = 1 -> tray menu
 // lParam must be 0
-// 
+//
 #define MS_TABMSG_TRAYSUPPORT "SRMsg_MOD/Show_TrayMenu"
 
 #define MBF_DISABLED		0x01
@@ -1151,11 +1180,17 @@ typedef struct {
 #define MS_HPP_EG_OPTIONSCHANGED "History++/ExtGrid/OptionsChanged"
 #define MS_HPP_EG_NOTIFICATION   "History++/ExtGrid/Notification"
 
+#define DPISCALEY(argY) ((int) ((double)(argY) * myGlobals.g_DPIscaleY))
+#define DPISCALEX(argX) ((int) ((double)(argX) * myGlobals.g_DPIscaleX))
+
+#define DPISCALEY_S(argY) ((int) ((double)(argY) * myGlobals.g_DPIscaleY))
+#define DPISCALEX_S(argX) ((int) ((double)(argX) * myGlobals.g_DPIscaleX))
+
 /*
  * encryption status bar indicator
  */
 
-extern HANDLE hHookIconPressedEvt;
+// extern HANDLE hHookIconPressedEvt;
 extern int status_icon_list_size;
 
 int SI_InitStatusIcons();
@@ -1164,5 +1199,3 @@ int SI_DeinitStatusIcons();
 int  GetStatusIconsCount();
 void DrawStatusIcons(struct MessageWindowData *dat, HDC hdc, RECT r, int gap);
 void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT pt, RECT rc, int gap, int code);
-
-

@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project
+Copyright 2000-2009 Miranda ICQ/IM project
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -36,7 +36,9 @@ typedef struct TFontSettings_tag
 	TFontSettings;
 
 // a font identifier structure - used for registering a font, and getting one out again
-typedef struct TFontID_tag {
+
+struct TFontID
+{
 	int   cbSize;
 	TCHAR group[64];               // group the font belongs to - this is the 'Font Group' list in the options page
 	TCHAR name[64];                // this is the name of the font setting - e.g. 'contacts' in the 'contact list' group
@@ -49,10 +51,10 @@ typedef struct TFontID_tag {
 	TCHAR 	 backgroundGroup[64];
 	TCHAR 	 backgroundName[64];
 	TFontSettings value;
-}
-	TFontID;
+};
 
-typedef struct TColourID_tag {
+struct TColourID
+{
 	int      cbSize;
 	TCHAR    group[64];
 	TCHAR    name[64];
@@ -63,33 +65,48 @@ typedef struct TColourID_tag {
 	int      order;
 
 	COLORREF value;
+};
+
+// clist_modern related tune-up, adding clist_modern effects to FontService
+
+typedef struct TEffectSettings_tag
+{
+    BYTE     effectIndex;
+    DWORD    baseColour;        // ARGB
+    DWORD    secondaryColour;   // ARGB
 }
-	TColourID;
+TEffectSettings;
+
+
+struct TEffectID
+{
+    int      cbSize;
+    TCHAR    group[64];
+    TCHAR    name[64];
+    char     dbSettingsGroup[32];
+    char     setting[32];
+    DWORD    flags;
+    TEffectSettings defeffect;
+    int      order;
+
+    TEffectSettings value;
+};
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // global data & functions
 
 typedef struct
 {
-	TFontID**   items;
-	int count,  limit, increment;
-	FSortFunc	sortFunc;
+	char *paramName;
+	TCHAR *groupName;
 }
-	FontIdList;
+	TreeItem;
 
-typedef struct
-{
-	TColourID** items;
-	int count,  limit, increment;
-	FSortFunc	sortFunc;
-}
-	ColourIdList;
-
-extern FontIdList   font_id_list;
-extern ColourIdList colour_id_list;
+extern OBJLIST<TFontID>   font_id_list;
+extern OBJLIST<TColourID> colour_id_list;
+extern OBJLIST<TEffectID> effect_id_list;
 
 extern int code_page;
 extern HANDLE hFontReloadEvent, hColourReloadEvent;
 
-int  CreateFromFontSettings(TFontSettings *fs, LOGFONT *lf, DWORD flags);
-void DestroyList( SortedList* list );
+int  CreateFromFontSettings(TFontSettings *fs, LOGFONT *lf );

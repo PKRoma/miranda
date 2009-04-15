@@ -11,12 +11,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -27,10 +29,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -47,12 +47,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -63,10 +65,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -83,12 +83,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -99,10 +101,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -119,12 +119,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -135,10 +137,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -155,12 +155,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -171,10 +173,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -191,12 +191,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -207,10 +209,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -227,12 +227,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -243,10 +245,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -263,12 +263,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -279,10 +281,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -299,12 +299,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -315,10 +317,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -335,12 +335,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -351,10 +353,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -371,12 +371,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -387,10 +389,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -407,12 +407,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -423,10 +425,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -443,12 +443,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -459,10 +461,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -479,12 +479,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -495,10 +497,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -515,12 +515,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -531,10 +533,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -551,12 +551,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -567,10 +569,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -587,12 +587,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -603,10 +605,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -623,12 +623,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -639,10 +641,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -659,12 +659,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -675,10 +677,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -695,12 +695,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -711,10 +713,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -731,12 +731,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -747,10 +749,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -767,12 +767,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -783,10 +785,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -803,12 +803,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -819,10 +821,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -839,12 +839,14 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -855,10 +857,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\
@@ -875,12 +875,15 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_hotkeys.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -891,10 +894,8 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_fontservice.h"\
 	".\m_metacontacts.h"\
 	".\m_mwclc.h"\

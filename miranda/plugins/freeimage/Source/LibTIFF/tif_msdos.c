@@ -1,4 +1,4 @@
-/* $Header: /cvsroot/freeimage/FreeImage/Source/LibTIFF/tif_msdos.c,v 1.14 2006/10/28 19:36:43 drolon Exp $ */
+/* $Header: /cvsroot/freeimage/FreeImage/Source/LibTIFF/tif_msdos.c,v 1.20 2008/04/05 17:55:38 drolon Exp $ */
 
 /*
  * Copyright (c) 1988-1997 Sam Leffler

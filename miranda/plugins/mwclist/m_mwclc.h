@@ -23,22 +23,5 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _M_CLC_
 #define _M_CLC_
 
-//add a new hotkey so it has a default and can be changed in the options dialog
-//wParam=0
-//lParam=(LPARAM)(SKINHOTKEYDESC*)ssd;
-//returns 0 on success, nonzero otherwise
-typedef struct {
-	int cbSize;
-	const char *pszName;		   //name to refer to sound when playing and in db
-	const char *pszDescription;	   //description for options dialog
-//    const char *pszDefaultFile;    //default sound file to use
-    const char *pszSection;        //section name used to group sounds (NULL is acceptable)
-	const char *pszService;        //Service to call when HotKey Pressed
-
-	int DefHotKey; //default hot key for action
-} SKINHOTKEYDESCEX;
-
-#define MS_SKIN_ADDHOTKEY      "Skin/HotKeys/AddNew"
-#define MS_SKIN_PLAYHOTKEY		"Skin/HotKeys/Run"
 
 #endif

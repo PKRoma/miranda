@@ -20,29 +20,18 @@
 
 #include "gg.h"
 
-static HANDLE hHookGCUserEvent = NULL;
-static HANDLE hHookGCMenuBuild = NULL;
-static HANDLE hEventGGGetChat = NULL;
-
 #define GG_GC_GETCHAT "%s/GCGetChat"
 #define GGS_OPEN_CONF "%s/OpenConf"
 #define GGS_CLEAR_IGNORED "%s/ClearIgnored"
 
-int ggGCEnabled = FALSE;
-int ggGCID = 0;
-
-int gg_gc_menu(WPARAM wParam, LPARAM lParam);
-int gg_gc_event(WPARAM wParam, LPARAM lParam);
-int gg_gc_egetchat(WPARAM wParam, LPARAM lParam);
-int gg_gc_openconf(WPARAM wParam, LPARAM lParam);
-int gg_gc_clearignored(WPARAM wParam, LPARAM lParam);
-
-list_t ggGCList = NULL;
+int gg_gc_event(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
+int gg_gc_openconf(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
+int gg_gc_clearignored(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Inits Gadu-Gadu groupchat module using chat.dll
 
-int gg_gc_init()
+int gg_gc_init(GGPROTO *gg)
 {
 	// Chat.dll required Miranda version 0.4 or higher
 	if(gMirandaVersion && gMirandaVersion >= PLUGIN_MAKE_VERSION(0, 4, 0, 0) && ServiceExists(MS_GC_REGISTER))
@@ -57,52 +46,47 @@ int gg_gc_init()
 		gcr.iMaxText = 0;
 		gcr.nColors = 0;
 		gcr.pColors = 0;
-		gcr.pszModuleDispName = GG_PROTO;
-		gcr.pszModule = GG_PROTO;
+		gcr.pszModuleDispName = GG_PROTONAME;
+		gcr.pszModule = GG_PROTONAME;
 #ifdef DEBUGMODE
-		gg_netlog("gg_gc_getchat(): Trying to register groupchat plugin...");
+		gg_netlog(gg, "gg_gc_init(): Trying to register groupchat plugin...");
 #endif
 		CallService(MS_GC_REGISTER, 0, (LPARAM)&gcr);
-		hHookGCUserEvent = HookEvent(ME_GC_EVENT, gg_gc_event);
-		//hHookGCMenuBuild = HookEvent(ME_GC_BUILDMENU, gg_gc_menu);
-		ggGCEnabled = TRUE;
+		gg->hookGCUserEvent = HookProtoEvent(ME_GC_EVENT, gg_gc_event, gg);
+		gg->gc_enabled = TRUE;
 		// create & hook event
 		mir_snprintf(service, 64, GG_GC_GETCHAT, GG_PROTO);
-		if(hEventGGGetChat = CreateHookableEvent(service))
-			SetHookDefaultForHookableEvent(hEventGGGetChat, gg_gc_egetchat);
 #ifdef DEBUGMODE
-		else
-			gg_netlog("gg_gc_getchat(): Cannot create event hook for room creation.");
-		gg_netlog("gg_gc_getchat(): Registered with groupchat plugin.");
+		gg_netlog(gg, "gg_gc_init(): Registered with groupchat plugin.");
 #endif
 
 		ZeroMemory(&mi,sizeof(mi));
 		mi.cbSize = sizeof(mi);
+		mi.flags = CMIF_ROOTHANDLE;
+		mi.hParentMenu = gg->hMainMenu[0];
 
 		// Conferencing
 		mir_snprintf(service, sizeof(service), GGS_OPEN_CONF, GG_PROTO);
-		CreateServiceFunction(service, gg_gc_openconf);
-		mi.pszPopupName = GG_PROTONAME;
+		CreateProtoServiceFunction(service, gg_gc_openconf, gg);
 		mi.popupPosition = 500090000;
 		mi.position = 500090000;
 		mi.hIcon = LoadIconEx(IDI_CONFERENCE);
 		mi.pszName = LPGEN("Open &conference...");
 		mi.pszService = service;
-		CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+		gg->hMainMenu[1] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
 
 		mir_snprintf(service, sizeof(service), GGS_CLEAR_IGNORED, GG_PROTO);
-		CreateServiceFunction(service, gg_gc_clearignored);
-		mi.pszPopupName = GG_PROTONAME;
+		CreateProtoServiceFunction(service, gg_gc_clearignored, gg);
 		mi.popupPosition = 500090000;
 		mi.position = 500090000;
 		mi.hIcon = NULL;
 		mi.pszName = LPGEN("&Clear ignored conferences");
 		mi.pszService = service;
-		CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+		gg->hMainMenu[2] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
 	}
 #ifdef DEBUGMODE
 	else
-		gg_netlog("gg_gc_getchat(): Cannot register with groupchat plugin !!!");
+		gg_netlog(gg, "gg_gc_init(): Cannot register with groupchat plugin !!!");
 #endif
 
 	return 1;
@@ -110,34 +94,32 @@ int gg_gc_init()
 
 ////////////////////////////////////////////////////////////////////////////////
 // Releases Gadu-Gadu groupchat module using chat.dll
-int gg_gc_destroy()
+int gg_gc_destroy(GGPROTO *gg)
 {
 	list_t l;
-	for(l = ggGCList; l; l = l->next)
+	for(l = gg->chats; l; l = l->next)
 	{
 		GGGC *chat = (GGGC *)l->data;
 		if(chat->recipients) free(chat->recipients);
 	}
-	list_destroy(ggGCList, 1); ggGCList = NULL;
-	LocalEventUnhook(hHookGCUserEvent);
-	LocalEventUnhook(hHookGCMenuBuild);
-	if(hEventGGGetChat)
-		DestroyHookableEvent(hEventGGGetChat);
+	list_destroy(gg->chats, 1); gg->chats = NULL;
+	LocalEventUnhook(gg->hookGCUserEvent);
+	LocalEventUnhook(gg->hookGCMenuBuild);
+	if(gMirandaVersion && gMirandaVersion >= PLUGIN_MAKE_VERSION(0, 4, 0, 0) && ServiceExists(MS_GC_REGISTER))
+	{
+		CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMainMenu[1], (LPARAM) 0);
+		CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMainMenu[2], (LPARAM) 0);
+	}
 
 	return 1;
 }
 
-int gg_gc_menu(WPARAM wParam, LPARAM lParam)
-{
-	return 1;
-}
-
-GGGC *gg_gc_lookup(char *id)
+GGGC *gg_gc_lookup(GGPROTO *gg, char *id)
 {
 	GGGC *chat;
 	list_t l;
 
-	for(l = ggGCList; l; l = l->next)
+	for(l = gg->chats; l; l = l->next)
 	{
 		chat = (GGGC *)l->data;
 		if(chat && !strcmp(chat->id, id))
@@ -147,7 +129,7 @@ GGGC *gg_gc_lookup(char *id)
 	return NULL;
 }
 
-int gg_gc_event(WPARAM wParam, LPARAM lParam)
+int gg_gc_event(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
 	GCHOOK *gch = (GCHOOK *)lParam;
 	GGGC *chat = NULL;
@@ -160,7 +142,7 @@ int gg_gc_event(WPARAM wParam, LPARAM lParam)
 		|| !gch->pDest->pszModule
 		|| lstrcmpi(gch->pDest->pszModule, GG_PROTO)
 		|| !(uin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0))
-		|| !(chat = gg_gc_lookup(gch->pDest->pszID)))
+		|| !(chat = gg_gc_lookup(gg, gch->pDest->pszID)))
 		return 0;
 
 	// Window terminated
@@ -168,11 +150,11 @@ int gg_gc_event(WPARAM wParam, LPARAM lParam)
 	{
 		HANDLE hContact = NULL;
 #ifdef DEBUGMODE
-		gg_netlog("gg_gc_event(): Terminating chat %x, id %s from chat window...", chat, gch->pDest->pszID);
+		gg_netlog(gg, "gg_gc_event(): Terminating chat %x, id %s from chat window...", chat, gch->pDest->pszID);
 #endif
 		// Destroy chat entry
 		free(chat->recipients);
-		list_remove(&ggGCList, chat, 1);
+		list_remove(&gg->chats, chat, 1);
 		// Remove contact from contact list (duh!) should be done by chat.dll !!
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 		while (hContact)
@@ -189,7 +171,7 @@ int gg_gc_event(WPARAM wParam, LPARAM lParam)
 	}
 
 	// Message typed / send only if online
-	if(gg_isonline() && (gch->pDest->iType == GC_USER_MESSAGE) && gch->pszText)
+	if(gg_isonline(gg) && (gch->pDest->iType == GC_USER_MESSAGE) && gch->pszText)
 	{
 		char id[32];
 		DBVARIANT dbv;
@@ -214,11 +196,11 @@ int gg_gc_event(WPARAM wParam, LPARAM lParam)
 		gcevent.bIsMe = 1;
 		gcevent.dwFlags = GCEF_ADDTOLOG;
 #ifdef DEBUGMODE
-		gg_netlog("gg_gc_event(): Sending conference message to room %s, \"%s\".", gch->pDest->pszID, gch->pszText);
+		gg_netlog(gg, "gg_gc_event(): Sending conference message to room %s, \"%s\".", gch->pDest->pszID, gch->pszText);
 #endif
 		CallService(MS_GC_EVENT, 0, (LPARAM)&gcevent);
 		if(gcevent.pszNick == dbv.pszVal) DBFreeVariant(&dbv);
-		gg_send_message_confer(ggThread->sess, GG_CLASS_CHAT, chat->recipients_count, chat->recipients, gch->pszText);
+		gg_send_message_confer(gg->sess, GG_CLASS_CHAT, chat->recipients_count, chat->recipients, gch->pszText);
 		return 1;
 	}
 
@@ -226,12 +208,12 @@ int gg_gc_event(WPARAM wParam, LPARAM lParam)
 	if(gch->pDest->iType == GC_USER_PRIVMESS)
 	{
 		HANDLE hContact = NULL;
-		if((uin = atoi(gch->pszUID)) && (hContact = gg_getcontact(uin, 1, 0, NULL)))
+		if((uin = atoi(gch->pszUID)) && (hContact = gg_getcontact(gg, uin, 1, 0, NULL)))
 			CallService(MS_MSG_SENDMESSAGE, (WPARAM)hContact, (LPARAM)0);
 	}
 
 #ifdef DEBUGMODE
-	gg_netlog("gg_gc_event(): Unhandled event %d, chat %x, uin %d, text \"%s\".", gch->pDest->iType, chat, uin, gch->pszText);
+	gg_netlog(gg, "gg_gc_event(): Unhandled event %d, chat %x, uin %d, text \"%s\".", gch->pDest->iType, chat, uin, gch->pszText);
 #endif
 
 	return 0;
@@ -247,11 +229,8 @@ typedef struct _gg_gc_echat
 
 ////////////////////////////////////////////////////////////////////////////////
 // This is main groupchat initialization routine
-int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
+char *gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients_count)
 {
-	gg_gc_echat *gc = (gg_gc_echat *)lParam;
-	uin_t sender, *recipients;
-	int recipients_count;
 	list_t l; int i;
 	GGGC *chat;
 	char *senderName, status[256], *name, id[32];
@@ -260,25 +239,13 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
 	GCDEST gcdest = {GG_PROTO, 0, GC_EVENT_ADDGROUP};
 	GCEVENT gcevent = {sizeof(GCEVENT), &gcdest};
 
-	if(!gc)
-	{
 #ifdef DEBUGMODE
-		gg_netlog("gg_gc_egetchat(): No valid event struct found.");
+	gg_netlog(gg, "gg_gc_getchat(): Count %d.", recipients_count);
 #endif
-		return 0;
-	}
-
-	sender = gc->sender;
-	recipients = gc->recipients;
-	recipients_count = gc->recipients_count;
-
-#ifdef DEBUGMODE
-	gg_netlog("gg_gc_egetchat(): Count %d.", recipients_count);
-#endif
-	if(!recipients) return 0;
+	if(!recipients) return NULL;
 
 	// Look for existing chat
-	for(l = ggGCList; l; l = l->next)
+	for(l = gg->chats; l; l = l->next)
 	{
 		GGGC *chat = (GGGC *)l->data;
 		if(!chat) continue;
@@ -301,27 +268,26 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
 			{
 #ifdef DEBUGMODE
 				if(chat->ignore)
-					gg_netlog("gg_gc_egetchat(): Ignoring existing id %s, size %d.", chat->id, chat->recipients_count);
+					gg_netlog(gg, "gg_gc_getchat(): Ignoring existing id %s, size %d.", chat->id, chat->recipients_count);
 				else
-					gg_netlog("gg_gc_egetchat(): Returning existing id %s, size %d.", chat->id, chat->recipients_count);
+					gg_netlog(gg, "gg_gc_getchat(): Returning existing id %s, size %d.", chat->id, chat->recipients_count);
 #endif
-				gc->chat_id = chat->id;
-				return !(chat->ignore);
+				return !(chat->ignore) ? chat->id : NULL;
 			}
 		}
 	}
 
 	// Make new uin list to chat mapping
 	chat = (GGGC *)malloc(sizeof(GGGC));
-	UIN2ID(ggGCID ++, chat->id); chat->ignore = FALSE;
+	UIN2ID(gg->gc_id ++, chat->id); chat->ignore = FALSE;
 
 	// Check groupchat policy (new) / only for incoming
 	if(sender)
 	{
-		int unknown = (gg_getcontact(sender, 0, 0, NULL) == NULL),
+		int unknown = (gg_getcontact(gg, sender, 0, 0, NULL) == NULL),
 			unknownSender = unknown;
 		for(i = 0; i < recipients_count; i++)
-			if(!gg_getcontact(recipients[i], 0, 0, NULL))
+			if(!gg_getcontact(gg, recipients[i], 0, 0, NULL))
 				unknown ++;
 		if((DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_POLICY_DEFAULT, GG_KEYDEF_GC_POLICY_DEFAULT) == 2) ||
 		   (DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_POLICY_TOTAL, GG_KEYDEF_GC_POLICY_TOTAL) == 2 &&
@@ -336,7 +302,7 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
 			unknown >= DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_COUNT_UNKNOWN, GG_KEYDEF_GC_COUNT_UNKNOWN))))
 		{
 			char *senderName = unknownSender ?
-				Translate("Unknown") : ((char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) gg_getcontact(sender, 0, 0, NULL), 0));
+				Translate("Unknown") : ((char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) gg_getcontact(gg, sender, 0, 0, NULL), 0));
 			char error[256];
 			mir_snprintf(error, sizeof(error), Translate("%s has initiated conference with %d participants (%d unknowns).\nDo you want do participate ?"),
 				senderName, recipients_count + 1, unknown);
@@ -356,16 +322,15 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
 				chat->recipients[i] = recipients[i];
 			if(sender) chat->recipients[i] = sender;
 	#ifdef DEBUGMODE
-			gg_netlog("gg_gc_egetchat(): Ignoring new chat %s, count %d.", chat->id, chat->recipients_count);
+			gg_netlog(gg, "gg_gc_getchat(): Ignoring new chat %s, count %d.", chat->id, chat->recipients_count);
 	#endif
-			list_add(&ggGCList, chat, 0);
-			gc->chat_id = chat->id;
-			return 0;
+			list_add(&gg->chats, chat, 0);
+			return NULL;
 		}
 	}
 
 	// Create new chat window
-	senderName = sender ? (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) gg_getcontact(sender, 1, 0, NULL), 0) : NULL;
+	senderName = sender ? (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) gg_getcontact(gg, sender, 1, 0, NULL), 0) : NULL;
 	mir_snprintf(status, 255, sender ? Translate("%s initiated the conference.") : Translate("This is my own conference."), senderName);
 	gcwindow.cbSize		= sizeof(GCSESSION);
 	gcwindow.iType		= GCW_CHATROOM;
@@ -384,11 +349,11 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
 	if(CallService(MS_GC_NEWSESSION, 0, (LPARAM) &gcwindow))
 	{
 #ifdef DEBUGMODE
-		gg_netlog("gg_gc_egetchat(): Cannot create new chat window %s.", chat->id);
+		gg_netlog(gg, "gg_gc_getchat(): Cannot create new chat window %s.", chat->id);
 #endif
 		free(name);
 		free(chat);
-		return 0;
+		return NULL;
 	}
 	free(name);
 
@@ -413,13 +378,13 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
 		gcevent.bIsMe = 1;
 		CallService(MS_GC_EVENT, 0, (LPARAM)&gcevent);
 #ifdef DEBUGMODE
-		gg_netlog("gg_gc_egetchat(): Myself %s: %s (%s) to the list...", gcevent.pszUID, gcevent.pszNick, gcevent.pszStatus);
+		gg_netlog(gg, "gg_gc_getchat(): Myself %s: %s (%s) to the list...", gcevent.pszUID, gcevent.pszNick, gcevent.pszStatus);
 #endif
 		if(gcevent.pszNick == dbv.pszVal) DBFreeVariant(&dbv);
 	}
 #ifdef DEBUGMODE
 	else
-		gg_netlog("gg_gc_egetchat(): Myself adding failed with uin %d !!!", uin);
+		gg_netlog(gg, "gg_gc_getchat(): Myself adding failed with uin %d !!!", uin);
 #endif
 
 	// Copy recipient list
@@ -432,7 +397,7 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
 	// Add contacts
 	for(i = 0; i < chat->recipients_count; i++)
 	{
-		HANDLE hContact = gg_getcontact(chat->recipients[i], 1, 0, NULL);
+		HANDLE hContact = gg_getcontact(gg, chat->recipients[i], 1, 0, NULL);
 		UIN2ID(chat->recipients[i], id);
 		if(hContact && (name = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, 0)))
 			gcevent.pszNick = name;
@@ -440,7 +405,7 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
 			gcevent.pszNick = Translate("'Unknown'");
 		gcevent.bIsMe = 0;
 #ifdef DEBUGMODE
-		gg_netlog("gg_gc_egetchat(): Added %s: %s (%s) to the list...", gcevent.pszUID, gcevent.pszNick, gcevent.pszStatus);
+		gg_netlog(gg, "gg_gc_getchat(): Added %s: %s (%s) to the list...", gcevent.pszUID, gcevent.pszNick, gcevent.pszStatus);
 #endif
 		CallService(MS_GC_EVENT, 0, (LPARAM)&gcevent);
 	}
@@ -449,41 +414,22 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
 	CallService(MS_GC_EVENT, SESSION_ONLINE, (LPARAM)&gcevent);
 
 #ifdef DEBUGMODE
-	gg_netlog("gg_gc_egetchat(): Returning new chat window %s, count %d.", chat->id, chat->recipients_count);
+	gg_netlog(gg, "gg_gc_getchat(): Returning new chat window %s, count %d.", chat->id, chat->recipients_count);
 #endif
-	list_add(&ggGCList, chat, 0);
-	gc->chat_id = chat->id;
-	return 1;
+	list_add(&gg->chats, chat, 0);
+	return chat->id;
 }
 
-char * gg_gc_getchat(uin_t sender, uin_t *recipients, int recipients_count)
+static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
-	gg_gc_echat gc = {sender, recipients, recipients_count, NULL};
-#ifdef DEBUGMODE
-	gg_netlog("gg_gc_getchat(): Calling hooked event.");
-#endif
-	if(!NotifyEventHooks(hEventGGGetChat, 0, (LPARAM)&gc))
-	{
-#ifdef DEBUGMODE
-		gg_netlog("gg_gc_getchat(): Hooked returned zero.");
-#endif
-		return NULL;
-	}
-	return gc.chat_id;
-}
-
-static BOOL CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
-{
-	// static HANDLE hItemAll;
-
 	switch(message)
 	{
-
-	case WM_INITDIALOG:
+		case WM_INITDIALOG:
 		{
 			CLCINFOITEM cii = {0};
 			LOGFONT lf;
 			HFONT hBoldFont, hNormalFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_NAME, WM_GETFONT, 0, 0);
+			SetWindowLongPtr(hwndDlg, DWLP_USER, (LONG_PTR)lParam);
 
 			TranslateDialogDefault(hwndDlg);
 
@@ -498,12 +444,11 @@ static BOOL CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,L
 			lf.lfWeight = FW_BOLD;
 			hBoldFont = CreateFontIndirect(&lf);
 			SendDlgItemMessage(hwndDlg, IDC_NAME, WM_SETFONT, (WPARAM)hBoldFont, 0);
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)hBoldFont);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)hBoldFont);
 		}
-
 		return TRUE;
 
-	case WM_COMMAND:
+		case WM_COMMAND:
 		{
 			switch (LOWORD(wParam))
 			{
@@ -511,9 +456,10 @@ static BOOL CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,L
 			case IDOK:
 				{
 					HWND hwndList = GetDlgItem(hwndDlg, IDC_CLIST);
+					GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, DWLP_USER);
 					int count = 0, i = 0;
 					// Check if connected
-					if (!gg_isonline())
+					if (!gg_isonline(gg))
 					{
 						MessageBox(NULL,
 							Translate("You have to be connected to open new conference."),
@@ -538,7 +484,7 @@ static BOOL CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,L
 						{
 							uin_t *participants = calloc(count, sizeof(uin_t));
 #ifdef DEBUGMODE
-							gg_netlog("gg_gc_getchat(): Opening new conference for %d contacts.", count);
+							gg_netlog(gg, "gg_gc_getchat(): Opening new conference for %d contacts.", count);
 #endif
 							hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 							while (hContact && i < count)
@@ -549,7 +495,7 @@ static BOOL CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,L
 								hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 							}
 							if(count > i) i = count;
-							gg_gc_getchat(0, participants, count);
+							gg_gc_getchat(gg, 0, participants, count);
 							free(participants);
 						}
 					}
@@ -560,20 +506,18 @@ static BOOL CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,L
 				break;
 
 			}
+			break;
 		}
-		break;
 
-	case WM_NOTIFY:
+		case WM_NOTIFY:
 		{
 			switch(((NMHDR*)lParam)->idFrom)
 			{
-
-			case IDC_CLIST:
+				case IDC_CLIST:
 				{
 					switch(((NMHDR*)lParam)->code)
 					{
-
-					case CLN_OPTIONSCHANGED:
+						case CLN_OPTIONSCHANGED:
 						{
 							int i;
 
@@ -586,11 +530,12 @@ static BOOL CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,L
 						}
 						break;
 
-					case CLN_LISTREBUILT:
+						case CLN_LISTREBUILT:
 						{
 							HANDLE hContact;
 							HANDLE hItem;
 							char* szProto;
+							GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, DWLP_USER);
 
 							// Delete non-icq contacts
 							hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
@@ -608,11 +553,12 @@ static BOOL CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,L
 						}
 						break;
 
-					case CLN_CHECKCHANGED:
+						case CLN_CHECKCHANGED:
 						{
 							HANDLE hItem, hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 							HWND hwndList = GetDlgItem(hwndDlg, IDC_CLIST);
 							int count = 0;
+							GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, DWLP_USER);
 							while (hContact && hwndList)
 							{
 								hItem = (HANDLE)SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0);
@@ -622,52 +568,48 @@ static BOOL CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,L
 								hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 							}
 							EnableWindow(GetDlgItem(hwndDlg, IDOK), count >= 2);
+							break;
 						}
-						break;
-
 					}
+					break;
 				}
-				break;
-
 			}
+			break;
 		}
-		break;
 
-	case WM_CLOSE:
-		DestroyWindow(hwndDlg);
-		break;
+		case WM_CLOSE:
+			DestroyWindow(hwndDlg);
+			break;
 
-	case WM_DESTROY:
+		case WM_DESTROY:
 		{
-			HFONT hBoldFont = (HFONT)GetWindowLong(hwndDlg, GWL_USERDATA);
+			HFONT hBoldFont = (HFONT)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 			if(hBoldFont) DeleteObject(hBoldFont);
+			break;
 		}
-		break;
 
-	case WM_CTLCOLORSTATIC:
-		if((GetDlgItem(hwndDlg, IDC_WHITERECT) == (HWND)lParam) ||
-			(GetDlgItem(hwndDlg, IDC_LOGO) == (HWND)lParam))
-		{
-			SetBkColor((HDC)wParam,RGB(255,255,255));
-			return (BOOL)GetStockObject(WHITE_BRUSH);
-		}
-		else if((GetDlgItem(hwndDlg, IDC_NAME) == (HWND)lParam) ||
-			(GetDlgItem(hwndDlg, IDC_SUBNAME) == (HWND)lParam))
-		{
-			SetBkMode((HDC)wParam, TRANSPARENT);
-			return (BOOL)GetStockObject(NULL_BRUSH);
-		}
-		break;
+		case WM_CTLCOLORSTATIC:
+			if((GetDlgItem(hwndDlg, IDC_WHITERECT) == (HWND)lParam) ||
+				(GetDlgItem(hwndDlg, IDC_LOGO) == (HWND)lParam))
+			{
+				SetBkColor((HDC)wParam,RGB(255,255,255));
+				return (BOOL)GetStockObject(WHITE_BRUSH);
+			}
+			else if((GetDlgItem(hwndDlg, IDC_NAME) == (HWND)lParam) ||
+				(GetDlgItem(hwndDlg, IDC_SUBNAME) == (HWND)lParam))
+			{
+				SetBkMode((HDC)wParam, TRANSPARENT);
+				return (BOOL)GetStockObject(NULL_BRUSH);
+			}
+			break;
 	}
 
-
 	return FALSE;
-
 }
 
-int gg_gc_clearignored(WPARAM wParam, LPARAM lParam)
+int gg_gc_clearignored(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
-	list_t l = ggGCList; BOOL cleared = FALSE;
+	list_t l = gg->chats; BOOL cleared = FALSE;
 	while(l)
 	{
 		GGGC *chat = (GGGC *)l->data;
@@ -675,7 +617,7 @@ int gg_gc_clearignored(WPARAM wParam, LPARAM lParam)
 		if(chat->ignore)
 		{
 			if(chat->recipients) free(chat->recipients);
-			list_remove(&ggGCList, chat, 1);
+			list_remove(&gg->chats, chat, 1);
 			cleared = TRUE;
 		}
 	}
@@ -684,17 +626,17 @@ int gg_gc_clearignored(WPARAM wParam, LPARAM lParam)
 		cleared ?
 			Translate("All ignored conferences are now unignored and the conference policy will act again.") :
 			Translate("There are no ignored conferences."),
-		GG_PROTONAME,
+		GG_PROTO,
 		MB_OK | MB_ICONINFORMATION
 	);
 
 	return 0;
 }
 
-int gg_gc_openconf(WPARAM wParam, LPARAM lParam)
+int gg_gc_openconf(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
 	// Check if connected
-	if (!gg_isonline())
+	if (!gg_isonline(gg))
 	{
 		MessageBox(NULL,
 			Translate("You have to be connected to open new conference."),
@@ -703,22 +645,22 @@ int gg_gc_openconf(WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 
-	CreateDialog(hInstance, MAKEINTRESOURCE(IDD_CONFERENCE), NULL, gg_gc_openconfdlg);
+	CreateDialogParam(hInstance, MAKEINTRESOURCE(IDD_CONFERENCE), NULL, gg_gc_openconfdlg, (LPARAM)gg);
 	return 1;
 }
 
-int gg_gc_changenick(HANDLE hContact, char *pszNick)
+int gg_gc_changenick(GGPROTO *gg, HANDLE hContact, char *pszNick)
 {
 	list_t l;
 	uin_t uin = DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0);
 	if(!uin || !pszNick) return 0;
 
 #ifdef DEBUGMODE
-	gg_netlog("gg_gc_changenick(): Nickname for uin %d changed to %s.", uin, pszNick);
+	gg_netlog(gg, "gg_gc_changenick(): Nickname for uin %d changed to %s.", uin, pszNick);
 #endif
 
 	// Lookup for chats having this nick
-	for(l = ggGCList; l; l = l->next)
+	for(l = gg->chats; l; l = l->next)
 	{
 		int i;
 		GGGC *chat = (GGGC *)l->data;
@@ -739,7 +681,7 @@ int gg_gc_changenick(HANDLE hContact, char *pszNick)
 					gce.pszUID = id;
 					gce.pszText = pszNick;
 #ifdef DEBUGMODE
-					gg_netlog("gg_gc_changenick(): Found room %s with uin %d, sending nick change %s.", chat->id, uin, id);
+					gg_netlog(gg, "gg_gc_changenick(): Found room %s with uin %d, sending nick change %s.", chat->id, uin, id);
 #endif
 					CallService(MS_GC_EVENT, 0, (LPARAM)&gce);
 

@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2005-09  George Hazan
 Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_list.h,v $
+File name      : $URL$
 Revision       : $Revision$
 Last change on : $Date$
 Last change by : $Author$
@@ -71,6 +71,29 @@ typedef enum {			// initial default to RSMODE_LASTSEEN
 	RSMODE_MANUAL		// specify resource manually ( see the defaultResource field - must not be NULL )
 } JABBER_RESOURCE_MODE;
 
+
+struct JABBER_XEP0232_SOFTWARE_INFO
+{
+	TCHAR* szOs;
+	TCHAR* szOsVersion;
+	TCHAR* szSoftware;
+	TCHAR* szSoftwareVersion;
+	TCHAR* szXMirandaCoreVersion;
+	BOOL bXMirandaIsUnicode;
+	BOOL bXMirandaIsAlpha;
+	BOOL bXMirandaIsDebug;
+	JABBER_XEP0232_SOFTWARE_INFO() {
+		ZeroMemory( this, sizeof( JABBER_XEP0232_SOFTWARE_INFO ));
+	}
+	~JABBER_XEP0232_SOFTWARE_INFO() {
+		mir_free(szOs);
+		mir_free(szOsVersion);
+		mir_free(szSoftware);
+		mir_free(szSoftwareVersion);
+		mir_free(szXMirandaCoreVersion);
+	}
+};
+
 struct JABBER_RESOURCE_STATUS
 {
 	int status;
@@ -96,6 +119,7 @@ struct JABBER_RESOURCE_STATUS
 
 	// XEP-0085 gone event support
 	BOOL bMessageSessionActive;
+	JABBER_XEP0232_SOFTWARE_INFO* pSoftwareInfo;
 };
 
 struct JABBER_LIST_ITEM
@@ -136,6 +160,7 @@ struct JABBER_LIST_ITEM
 	HWND hwndGcListBan;
 	HWND hwndGcListAdmin;
 	HWND hwndGcListOwner;
+	// BOOL bAutoJoin; // chat sessio was started via auto-join
 
 	// LIST_FILE
 	// jid = string representation of port number
@@ -162,26 +187,5 @@ struct JABBER_LIST_ITEM
 
 	BOOL bUseResource;
 };
-
-void JabberListInit( void );
-void JabberListUninit( void );
-void JabberListWipe( void );
-int JabberListExist( JABBER_LIST list, const TCHAR* jid );
-
-BOOL JabberListLock();
-BOOL JabberListUnlock();
-
-JABBER_LIST_ITEM *JabberListAdd( JABBER_LIST list, const TCHAR* jid );
-void JabberListRemove( JABBER_LIST list, const TCHAR* jid );
-void JabberListRemoveList( JABBER_LIST list );
-void JabberListRemoveByIndex( int index );
-int JabberListFindNext( JABBER_LIST list, int fromOffset );
-JABBER_LIST_ITEM *JabberListGetItemPtr( JABBER_LIST list, const TCHAR* jid );
-JABBER_LIST_ITEM *JabberListGetItemPtrFromIndex( int index );
-
-int    JabberListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const TCHAR* statusMessage, char priority = 0 );
-void   JabberListRemoveResource( JABBER_LIST list, const TCHAR* jid );
-TCHAR* JabberListGetBestResourceNamePtr( const TCHAR* jid );
-TCHAR* JabberListGetBestClientResourceNamePtr( const TCHAR* jid );
 
 #endif

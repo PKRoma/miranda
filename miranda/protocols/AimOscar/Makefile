@@ -23,12 +23,13 @@
 # http://gnuwin32.sourceforge.net/.  Indent.exe will need to be in
 # the path or in the same directory as the source.
 ####################################################################
-SRC =	snac.cpp \
+SRC =\
+	snac.cpp \
 	flap.cpp \
 	conv.cpp \
 	aim.cpp \
+	chat.cpp \
  	connection.cpp \
-	md5.cpp \
 	packets.cpp \
 	services.cpp \
 	thread.cpp \
@@ -38,24 +39,26 @@ SRC =	snac.cpp \
 	proxy.cpp \
 	direct_connect.cpp \
 	file.cpp \
-	windows.cpp \
-	strl.cpp \
+	ui.cpp \
 	links.cpp \
 	server.cpp \
 	client.cpp \
 	error.cpp \
-	tlv.cpp 
+	tlv.cpp \
+	proto.cpp \
+	away.cpp \
+	avatars.cpp
 		
 OBJ =	$(SRC:.cpp=.o)
-RES = resource.res
+RES = aim.res version.res
 HDR = defines.h \
 	tlv.h \
 	snac.h \
 	flap.h  \
 	aim.h \
+	chat.h \
 	client.h \
  	connection.h \
-	md5.h \
 	packets.h \
 	services.h \
 	client.h \
@@ -68,15 +71,16 @@ HDR = defines.h \
 	direct_connect.ch \
 	file.h \
 	resource.h \
-	windows. h \
+	ui.h \
 	m_cluiframes.h \
-	strl.h \
 	links.h \
 	error.h \
-	conv.h
+	conv.h \
+	proto.h \
+	avatars.h
 
-LIB = -lgdi32 -lComdlg32
-CC = g++
+LIB = -lgdi32 -lComdlg32 -lwsock32 -lstdc++ 
+CC = gcc
 RC = windres
 RM = rm
 ID = indent
@@ -89,37 +93,32 @@ BIN = ../../bin/release/plugins/Aim.dll
 endif
 
 # Defines
-DEFINES = -DWIN32 -D__SEH_NOOP
+DEFINES = -DWIN32 -D__SEH_NOOP -DUNICODE
 ifdef DEBUG
 DEFINES := $(DEFINES) -D_DEBUG
 endif
 
 # Flags
-RCFLAGS = --use-temp-file -O coff
+RCFLAGS = -O coff
 ifdef DEBUG
-CFLAGS  = -g -g3 $(DEFINES) -I../../include
-LFLAGS  = -shared
+CFLAGS   = -g -g3 $(DEFINES) -I../../include
+LFLAGS   = -shared
 else
 CFLAGS  = -O1 $(DEFINES) -I../../include
-LFLAGS  = -shared -s -pedantic -W
+LFLAGS  = -shared -s
 endif
+
+CPPFLAGS = $(CFLAGS)
 
 # Targets
 all : $(OBJ) $(RES)
-	$(CC) $(LFLAGS) $(CFLAGS) -o $(BIN) $(OBJ) $(RES) $(LIB) -Wl
+	$(CC) $(LFLAGS) -o $(BIN) $(OBJ) $(RES) $(LIB) -Wl
 
-$(OBJ) :
-	$(CC) -c $(SRC) $(CFLAGS)
-
-$(RES) : aim.rc $(RES:.res=.h) Makefile
-	$(RC) $(RCFLAGS) -o $(RES) -i aim.rc
+%.res : %.rc resource.h Makefile
+	$(RC) $(RCFLAGS) $< $@ 
 
 depend : 
 	$(CC) -MM $(CFLAGS) $(SRC)>Makefile.dep
-
-format :
-	$(ID) -gnu -l150 -nce -br -npsl -nut -cbi0 -cli4 -i4 -npcs $(SRC) $(HDR)
-	$(RM) *.*~
 
 clean :
 	$(RM) -fr $(OBJ) $(RES) *.ncb *.suo *.aps Release Debug *.vcproj.* *.opt *.dat *.plg Ankh.Load

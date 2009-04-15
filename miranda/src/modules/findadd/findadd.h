@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
+Copyright 2000-2009 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -52,7 +52,7 @@ int CALLBACK SearchResultsCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lPa
 void FreeSearchResults(HWND hwndResults);
 int BeginSearch(HWND hwndDlg,struct FindAddDlgData *dat,const char *szProto,const char *szSearchService,DWORD requiredCapability,void *pvSearchParams);
 void SetStatusBarSearchInfo(HWND hwndStatus,struct FindAddDlgData *dat);
-void SetStatusBarResultInfo(HWND hwndDlg,struct FindAddDlgData *dat);
+void SetStatusBarResultInfo(HWND hwndDlg);
 void CreateResultsColumns(HWND hwndResults,struct FindAddDlgData *dat,char *szProto);
 void EnableResultButtons(HWND hwndDlg,int enable);
 void ShowMoreOptionsMenu(HWND hwndDlg,int x,int y);

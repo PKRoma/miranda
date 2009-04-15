@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -38,10 +38,21 @@
 #define __ICONLIB_H
 
 
-HANDLE IconLibDefine(const char* desc, const char* section, const char* ident, const char* def_file, int def_idx);
-HICON IconLibGetIcon(const char* ident);
-void IconLibReleaseIcon(const char* ident);
-HANDLE IconLibHookIconsChanged(MIRANDAHOOK hook);
+struct IcqIconHandle_s
+{
+  char *szName;
+  HANDLE hIcoLib;
+
+  HANDLE Handle();
+  HICON GetIcon();
+};
+
+typedef IcqIconHandle_s *IcqIconHandle;
+
+
+IcqIconHandle IconLibDefine(const char *desc, const char *section, const char *module, const char *ident, const TCHAR *def_file, int def_idx);
+void IconLibRemove(IcqIconHandle *phIcon);
+
 
 
 #endif /* __ICONLIB_H */

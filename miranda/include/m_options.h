@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project,
+Copyright 2000-2008 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -82,16 +82,26 @@ typedef struct {
 			TCHAR* ptszTab;		 //v0.6.0.0+
 		};
 	#endif
+
+	#if MIRANDA_VER >= 0x0800
+		LPARAM dwInitParam;	 //v0.8.0.0+  a value to pass to lParam of WM_INITDIALOG message
+	#endif
 }
 	OPTIONSDIALOGPAGE;
 
-#define OPTIONPAGE_OLD_SIZE  40
-#define OPTIONPAGE_OLD_SIZE2 60
+#define OPTIONPAGE_OLD_SIZE  (offsetof(OPTIONSDIALOGPAGE, flags))
+#if MIRANDA_VER >= 0x0600
+	#define OPTIONPAGE_OLD_SIZE2 (offsetof(OPTIONSDIALOGPAGE, pszTab))
+#endif
+#if MIRANDA_VER >= 0x0800
+	#define OPTIONPAGE_OLD_SIZE3 (offsetof(OPTIONSDIALOGPAGE, dwInitParam))
+#endif
 
 #define ODPF_SIMPLEONLY   1	// page is only shown when in simple mode
 #define ODPF_EXPERTONLY   2	//         "                 expert mode
 #define ODPF_BOLDGROUPS   4   // give group box titles a bold font
 #define ODPF_UNICODE      8   // string fields in OPTIONSDIALOGPAGE are WCHAR*
+#define ODPF_USERINFOTAB  16  // options page is tabbed
 
 #if defined( _UNICODE )
 	#define ODPF_TCHAR     ODPF_UNICODE
@@ -119,6 +129,9 @@ typedef struct {
 	                         //specific tab
 } OPENOPTIONSDIALOG;
 #define MS_OPT_OPENOPTIONS  "Opt/OpenOptions"
+
+//Opens the options dialog, with only specified page    v0.8.0.x+
+#define MS_OPT_OPENOPTIONSPAGE  "Opt/OpenOptionsPage"
 
 #define SETTING_SHOWEXPERT_DEFAULT  1
 

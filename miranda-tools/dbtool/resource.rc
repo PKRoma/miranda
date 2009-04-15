@@ -46,18 +46,18 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE 
+1 TEXTINCLUDE
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE 
+2 TEXTINCLUDE
 BEGIN
     "#include <windows.h>\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE 
+3 TEXTINCLUDE
 BEGIN
     "\r\n"
     "\0"
@@ -88,7 +88,7 @@ BEGIN
 END
 
 IDD_WIZARD DIALOGEX 0, 0, 262, 174
-STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | 
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK |
     DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Miranda Database Tool"
@@ -111,15 +111,15 @@ BEGIN
     LTEXT           "You can choose the Miranda profile database to compact or repair.",
                     IDC_STATIC,20,14,197,16
     LTEXT           "Select the &profile database from the list below. If the database you wish to use is not listed here then click Other to browse your computer.",
-                    IDC_STATIC,23,38,226,16
+                    IDC_STATIC,10,35,242,16
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,-1,32,264,1
-    CONTROL         "List1",IDC_DBLIST,"SysListView32",LVS_REPORT | 
-                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | 
-                    LVS_AUTOARRANGE | LVS_NOSORTHEADER | WS_BORDER | 
-                    WS_TABSTOP,23,56,226,62
-    RTEXT           "&File:",IDC_STATIC,23,123,20,8
-    EDITTEXT        IDC_FILE,46,121,165,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "&Other...",IDC_OTHER,214,121,35,12
+    CONTROL         "List1",IDC_DBLIST,"SysListView32",LVS_REPORT |
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_SORTASCENDING |
+                    LVS_AUTOARRANGE | LVS_NOSORTHEADER | WS_BORDER |
+                    WS_TABSTOP,10,53,242,72
+    LTEXT           "&File:",IDC_STATIC,10,130,12,8
+    EDITTEXT        IDC_FILE,24,128,184,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "&Other...",IDC_OTHER,212,128,40,12
 END
 
 IDD_OPENERROR DIALOGEX 0, 0, 262, 143
@@ -152,7 +152,7 @@ BEGIN
     LTEXT           "You can select low level options to determine how the database is processed.",
                     IDC_STATIC,20,14,197,16
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,-1,32,264,1
-    CONTROL         "Create backup",IDC_BACKUP,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "Create backup",IDC_BACKUP,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,23,69,226,10,WS_EX_CLIENTEDGE
     LTEXT           "Creates a backup copy of the database before any of the requested changes are made.",
                     IDC_STBACKUP,37,80,212,16
@@ -207,11 +207,11 @@ BEGIN
     LTEXT           "Please wait while the requested operations are being performed.",
                     -1,20,14,197,16
     CONTROL         "",-1,"Static",SS_ETCHEDHORZ,-1,32,264,1
-    CONTROL         "Progress1",IDC_PROGRESS,"msctls_progress32",WS_BORDER | 
+    CONTROL         "Progress1",IDC_PROGRESS,"msctls_progress32",WS_BORDER |
                     0x1,20,38,222,11
-    LISTBOX         IDC_STATUS,20,52,222,84,NOT LBS_NOTIFY | 
-                    LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | 
-                    LBS_DISABLENOSCROLL | LBS_NOSEL | WS_VSCROLL | 
+    LISTBOX         IDC_STATUS,20,52,222,84,NOT LBS_NOTIFY |
+                    LBS_OWNERDRAWFIXED | LBS_HASSTRINGS |
+                    LBS_DISABLENOSCROLL | LBS_NOSEL | WS_VSCROLL |
                     WS_TABSTOP
 END
 
@@ -244,7 +244,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_WELCOME, DIALOG
     BEGIN
@@ -336,6 +336,7 @@ IDI_DBTOOL              ICON                    "res\\dbtool.ico"
 IDI_PROFILEGREEN        ICON                    "res\\profileg.ico"
 IDI_PROFILEYELLOW       ICON                    "res\\profiley.ico"
 IDI_PROFILERED          ICON                    "res\\profiler.ico"
+IDI_BAD                 ICON                    "res\\delete.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -343,8 +344,8 @@ IDI_PROFILERED          ICON                    "res\\profiler.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,7,1,0
- PRODUCTVERSION 0,7,1,0
+ FILEVERSION 0,8,2,0
+ PRODUCTVERSION 0,8,2,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -361,12 +362,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", " "
             VALUE "FileDescription", "Miranda IM Database Tool"
-            VALUE "FileVersion", "0.7.1.0"
+            VALUE "FileVersion", "0.8.2.0"
             VALUE "InternalName", "dbtool"
-            VALUE "LegalCopyright", "Copyright © 2001-2006 Richard Hughes"
+            VALUE "LegalCopyright", "Copyright © 2001-2008 Richard Hughes, Bio"
             VALUE "OriginalFilename", "dbtool.exe"
             VALUE "ProductName", "Miranda Database Tool"
-            VALUE "ProductVersion", "0.7.1.0"
+            VALUE "ProductVersion", "0.8.2.0"
         END
     END
     BLOCK "VarFileInfo"
