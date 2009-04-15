@@ -20,6 +20,15 @@ Contents
 
 1. Changes in this version
 --------------------------
+* New in 0.7.18
+Bugfixes:
+ - Windows compatibility improvements
+ - ICQ: Improved server list processing
+ - ICQ: New contacts sometimes showed as offline
+ - ICQ: Fixed server warning on login
+ - ICQ: Possible crash processing time
+
+
 * New in 0.7.17
 Bugfixes:
  - Windows compatibility improvements
