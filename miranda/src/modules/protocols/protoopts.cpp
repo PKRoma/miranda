@@ -115,7 +115,18 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 			{
 				AccFormDlgParam* param = ( AccFormDlgParam* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 				PROTOACCOUNT* pa = param->pa;
-				switch( param->action ) {
+
+				if ( param->action == PRAC_ADDED || param->action == PRAC_UPGRADED ) {
+					char buf[200];
+					GetDlgItemTextA( hwndDlg, IDC_ACCINTERNALNAME, buf, SIZEOF( buf ));
+					rtrim( buf );
+					if ( buf[0] ) {
+                        for (int i = 0; i < accounts.getCount(); ++i)
+                            if (_stricmp(buf, accounts[i]->szModuleName) == 0)
+                                return FALSE;
+                }   }
+                
+                switch( param->action ) {
 				case PRAC_UPGRADED:
 					{
 						char szPlugin[ MAX_PATH ];
@@ -142,15 +153,15 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 				}
 				{
 					TCHAR buf[256];
-					GetDlgItemText( hwndDlg, IDC_ACCNAME, buf, sizeof( buf )); buf[SIZEOF(buf)-1] = 0;
+					GetDlgItemText( hwndDlg, IDC_ACCNAME, buf, SIZEOF( buf ));
 					mir_free(pa->tszAccountName);
 					pa->tszAccountName = mir_tstrdup( buf );
 				}
 				if ( param->action == PRAC_ADDED || param->action == PRAC_UPGRADED ) {
 					char buf[200];
-					GetDlgItemTextA( hwndDlg, IDC_PROTOTYPECOMBO, buf, sizeof( buf )); buf[sizeof(buf)-1] = 0;
+					GetDlgItemTextA( hwndDlg, IDC_PROTOTYPECOMBO, buf, SIZEOF( buf ));
 					pa->szProtoName = mir_strdup( buf );
-					GetDlgItemTextA( hwndDlg, IDC_ACCINTERNALNAME, buf, sizeof( buf )); buf[sizeof(buf)-1] = 0;
+					GetDlgItemTextA( hwndDlg, IDC_ACCINTERNALNAME, buf, SIZEOF( buf ));
 					rtrim( buf );
 					if ( buf[0] == 0 ) {
 						int count = 1;
