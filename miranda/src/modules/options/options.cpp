@@ -1205,6 +1205,8 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 		DeleteObject( dat->hBoldFont );
 		mir_free( dat );
 		hwndOptions = NULL;
+
+		CallService(MS_MODERNOPT_RESTORE, 0, 0);
 		break;
 	}
 	return FALSE;

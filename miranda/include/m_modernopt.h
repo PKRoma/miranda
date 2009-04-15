@@ -114,4 +114,7 @@ typedef struct {
 
 #define TS_SKIN_APPLY				"/Apply"
 
+// used by core options module to switch back to modernopt module
+#define MS_MODERNOPT_RESTORE		"ModernOpt/Restore"
+
 #endif // M_MODERNOPT_H__

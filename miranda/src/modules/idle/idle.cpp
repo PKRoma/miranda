@@ -423,12 +423,19 @@ static INT_PTR IdleGetInfo(WPARAM, LPARAM lParam)
 
 static int IdleModernOptInit(WPARAM wParam, LPARAM)
 {
+	static int iBoldControls[] =
+	{
+		IDC_TXT_TITLE1, IDC_TXT_TITLE2, IDC_TXT_TITLE3,
+		MODERNOPT_CTRL_LAST
+	};
+
 	MODERNOPTOBJECT obj = {0};
 	obj.cbSize = sizeof(obj);
 	obj.hInstance = hMirandaInst;
 	obj.dwFlags = MODEROPT_FLG_TCHAR | MODEROPT_FLG_NORESIZE;
 	obj.iSection = MODERNOPT_PAGE_STATUS;
 	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
+	obj.iBoldControls = iBoldControls;
 	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_IDLE);
 	obj.pfnDlgProc = IdleOptsDlgProc;
 //	obj.lpzClassicGroup = "Status";

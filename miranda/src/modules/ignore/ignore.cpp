@@ -429,12 +429,19 @@ static int IgnoreAddedNotify(WPARAM, LPARAM lParam)
 
 static int IgnoreModernOptInit(WPARAM wParam, LPARAM)
 {
+	static int iBoldControls[] =
+	{
+		IDC_TXT_TITLE1, IDC_TXT_TITLE2, IDC_TXT_TITLE3,
+		MODERNOPT_CTRL_LAST
+	};
+
 	MODERNOPTOBJECT obj = {0};
 	obj.cbSize = sizeof(obj);
 	obj.hInstance = hMirandaInst;
 	obj.dwFlags = MODEROPT_FLG_TCHAR;
 	obj.iSection = MODERNOPT_PAGE_IGNORE;
 	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
+	obj.iBoldControls = iBoldControls;
 	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_IGNORE);
 	obj.pfnDlgProc = DlgProcIgnoreOpts;
 //	obj.lpzClassicGroup = "Events";
