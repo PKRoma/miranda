@@ -180,7 +180,7 @@ void  CAimProto::get_avatar_filename(HANDLE hContact, char* pszDest, size_t cbLe
 	init_custom_folders();
 
 	char* path = (char*)alloca( cbLen );
-	if (hAvatarsFolder == NULL || FoldersGetCustomPath(hAvatarsFolder, path, cbLen, ""))
+	if (hAvatarsFolder == NULL || FoldersGetCustomPath(hAvatarsFolder, path, (int)cbLen, ""))
 	{
         char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
 		tPathLen = mir_snprintf(pszDest, cbLen, "%s\\%s", tmpPath, m_szModuleName);
