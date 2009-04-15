@@ -541,8 +541,8 @@ unsigned short* CAimProto::get_members_of_group(unsigned short group_id,unsigned
                     unsigned short buddy_id = getBuddyId(hContact, i);
 					if (buddy_id)
 					{
-						list = (unsigned short*)mir_realloc(list, size+sizeof(list[0]));
-                        list[size++] = _htons(buddy_id);
+						list = (unsigned short*)mir_realloc(list, ++size*sizeof(list[0]));
+                        list[size-1] = _htons(buddy_id);
 					}
 				}
 			}
