@@ -23,7 +23,7 @@
 HINSTANCE   hInstance;
 PLUGINLINK* pluginLink;
 
-HANDLE m_hNetlibUser;
+HANDLE g_hNetlibUser;
 
 MM_INTERFACE   mmi;
 UTF8_INTERFACE utfi;
@@ -113,8 +113,7 @@ extern "C" int __declspec(dllexport)Load(PLUGINLINK *link)
 	mir_getUTFI( &utfi );
 	mir_getMD5I( &md5i );
 	mir_getSHA1I( &sha1i );
-	
-	
+		
 	PROTOCOLDESCRIPTOR pd = { 0 };
 	pd.cbSize = sizeof(pd);
 	pd.szName = "YAHOO";
@@ -129,7 +128,7 @@ extern "C" int __declspec(dllexport)Load(PLUGINLINK *link)
 	nlu.szSettingsModule = "YAHOO/libyahoo2";
 	nlu.szDescriptiveName = "YAHOO plugin libyahoo2 logging (Instance agnostic)";
 	
-	m_hNetlibUser = ( HANDLE )YAHOO_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
+	g_hNetlibUser = ( HANDLE )YAHOO_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
 
 	/**
 	 * Register LibYahoo2 callback functions
@@ -148,7 +147,7 @@ extern "C" int __declspec(dllexport) Unload(void)
 {
 	LOG(( "Unload" ));
 	
-	Netlib_CloseHandle( m_hNetlibUser );
+	Netlib_CloseHandle( g_hNetlibUser );
 	return 0;
 }
 
