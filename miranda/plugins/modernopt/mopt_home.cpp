@@ -34,6 +34,7 @@ INT_PTR CALLBACK ModernOptHome_DlgProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 
 	switch (msg) {
 	case WM_INITDIALOG:
+		TranslateDialogDefault(hwndDlg);
 		for (i = 0; i < SIZEOF(g_ModernOptPages); ++i) {
 			if (g_ModernOptPages[i].idcButton) {
 				HWND hwndCtrl = GetDlgItem(hwndDlg, g_ModernOptPages[i].idcButton);
