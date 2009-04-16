@@ -896,7 +896,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		return FALSE;
 
 	case WM_MENUSELECT:
-		if((HMENU)lParam == cli.hMenuMain) {
+		if(lParam && (HMENU)lParam == cli.hMenuMain) {
 			int pos = LOWORD(wParam);
 			if ((pos == 0 || pos == 1) && (HIWORD(wParam) & MF_POPUP)) {
 				MENUITEMINFO mii = { 0 };
