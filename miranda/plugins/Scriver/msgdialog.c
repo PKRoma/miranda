@@ -1547,6 +1547,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		return TRUE;
 	case WM_SETFOCUS:
 		SendMessage(dat->hwndParent, CM_ACTIVATECHILD, 0, (LPARAM)hwndDlg);
+                g_dat->hFocusWnd = hwndDlg;
 		PostMessage(hwndDlg, DM_SETFOCUS, 0, 0);
 		return TRUE;
 	case DM_SETPARENT:
