@@ -22,6 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 
+extern bool prochotkey;
+
 static DWORD protoModeMsgFlags;
 
 static char *GetDefaultMessage(int status)
@@ -272,7 +274,8 @@ static int StatusModeChange(WPARAM wParam,LPARAM lParam)
 	if(DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(wParam,"Ignore"),0)) {
 		ChangeAllProtoMessages((char*)lParam,wParam,NULL);
 	}
-	else if(bScreenSaverRunning || (!GetAsyncKeyState(VK_RCONTROL) && DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(wParam,"NoDlg"),0))) {
+	else if(bScreenSaverRunning || ((!GetAsyncKeyState(VK_CONTROL) || prochotkey) 
+        && DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(wParam,"NoDlg"),0))) {
 		char *msg=(char*)GetAwayMessage(wParam, 0);
 		ChangeAllProtoMessages((char*)lParam,wParam,msg);
 		mir_free(msg);
@@ -286,7 +289,7 @@ static int StatusModeChange(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int statusModes[]={ID_STATUS_OFFLINE,ID_STATUS_ONLINE,ID_STATUS_AWAY,ID_STATUS_NA,ID_STATUS_OCCUPIED,ID_STATUS_DND,ID_STATUS_FREECHAT,ID_STATUS_INVISIBLE,ID_STATUS_OUTTOLUNCH,ID_STATUS_ONTHEPHONE, ID_STATUS_IDLE};
+static const int statusModes[]={ID_STATUS_OFFLINE,ID_STATUS_ONLINE,ID_STATUS_AWAY,ID_STATUS_NA,ID_STATUS_OCCUPIED,ID_STATUS_DND,ID_STATUS_FREECHAT,ID_STATUS_INVISIBLE,ID_STATUS_OUTTOLUNCH,ID_STATUS_ONTHEPHONE, ID_STATUS_IDLE};
 
 struct AwayMsgInfo {
 	int ignore;

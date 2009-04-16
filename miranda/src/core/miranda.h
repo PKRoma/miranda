@@ -196,9 +196,9 @@ void Window_FreeIcon_IcoLib(HWND hWnd);
 extern HANDLE hMainMenuObject, hContactMenuObject, hStatusMenuObject;
 extern HANDLE hPreBuildMainMenuEvent, hPreBuildContactMenuEvent;
 
-extern int statusModeList[ MAX_STATUS_COUNT ];
-extern int skinIconStatusList[ MAX_STATUS_COUNT ];
-extern int skinIconStatusFlags[ MAX_STATUS_COUNT ];
+extern const int statusModeList[ MAX_STATUS_COUNT ];
+extern const int skinIconStatusList[ MAX_STATUS_COUNT ];
+extern const int skinIconStatusFlags[ MAX_STATUS_COUNT ];
 
 int TryProcessDoubleClick( HANDLE hContact );
 
