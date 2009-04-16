@@ -452,7 +452,7 @@ HWND FtMgr_Show(bool bForceActivate)
 	if (DBGetContactSettingByte(NULL,"SRFile","AutoMin",0))
 	{
 		ShowWindow(hwndFtMgr, SW_HIDE);
-		ShowWindow(hwndFtMgr, SW_MINIMIZE);
+		ShowWindow(hwndFtMgr, SW_SHOWMINNOACTIVE);
 	} else
 	{
 		ShowWindow(hwndFtMgr, SW_SHOWNOACTIVATE);
@@ -479,7 +479,7 @@ HWND FtMgr_AddTransfer(struct FileDlgData *fdd)
 	struct TFtMgrData *dat = (struct TFtMgrData *)GetWindowLongPtr(FtMgr_Show(bForceActivate), GWLP_USERDATA);
 	HWND hwndBox = fdd->send ? dat->hwndOutgoing : dat->hwndIncoming;
 	HWND hwndFt = CreateDialogParam(hMirandaInst, MAKEINTRESOURCE(IDD_FILETRANSFERINFO), hwndBox, DlgProcFileTransfer, (LPARAM)fdd);
-	ShowWindow(hwndFt, SW_SHOW);
+	ShowWindow(hwndFt, SW_SHOWNA);
 	SendMessage(hwndBox, WM_FT_ADD, 0, (LPARAM)hwndFt);
 	FtMgr_ShowPage(fdd->send ? 1 : 0);
 	return hwndFt;
