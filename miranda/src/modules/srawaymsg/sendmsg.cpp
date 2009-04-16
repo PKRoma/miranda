@@ -272,7 +272,7 @@ static int StatusModeChange(WPARAM wParam,LPARAM lParam)
 	if(DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(wParam,"Ignore"),0)) {
 		ChangeAllProtoMessages((char*)lParam,wParam,NULL);
 	}
-	else if(bScreenSaverRunning || (!GetAsyncKeyState(VK_CONTROL) && DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(wParam,"NoDlg"),0))) {
+	else if(bScreenSaverRunning || (!GetAsyncKeyState(VK_RCONTROL) && DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(wParam,"NoDlg"),0))) {
 		char *msg=(char*)GetAwayMessage(wParam, 0);
 		ChangeAllProtoMessages((char*)lParam,wParam,msg);
 		mir_free(msg);
