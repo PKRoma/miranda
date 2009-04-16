@@ -47,27 +47,27 @@ HANDLE hStatusMenuObject = 0;
 int UnloadMoveToGroup(void);
 
 int statustopos(int status);
-//
-//HIMAGELIST hImlMenuIcons;
+
+bool prochotkey;
 
 HANDLE hPreBuildMainMenuEvent, hStatusModeChangeEvent, hPreBuildContactMenuEvent;
 
 static HANDLE hAckHook;
 
 static HMENU hMainMenu,hStatusMenu = 0;
-int statusModeList[ MAX_STATUS_COUNT ] =
+const int statusModeList[ MAX_STATUS_COUNT ] =
 {
 	ID_STATUS_OFFLINE, ID_STATUS_ONLINE, ID_STATUS_AWAY, ID_STATUS_NA, ID_STATUS_OCCUPIED,
 	ID_STATUS_DND, ID_STATUS_FREECHAT, ID_STATUS_INVISIBLE, ID_STATUS_ONTHEPHONE, ID_STATUS_OUTTOLUNCH
 };
 
-int skinIconStatusList[ MAX_STATUS_COUNT ] =
+const int skinIconStatusList[ MAX_STATUS_COUNT ] =
 {
 	SKINICON_STATUS_OFFLINE, SKINICON_STATUS_ONLINE, SKINICON_STATUS_AWAY, SKINICON_STATUS_NA, SKINICON_STATUS_OCCUPIED,
 	SKINICON_STATUS_DND, SKINICON_STATUS_FREE4CHAT, SKINICON_STATUS_INVISIBLE, SKINICON_STATUS_ONTHEPHONE, SKINICON_STATUS_OUTTOLUNCH
 };
 
-int statusModePf2List[ MAX_STATUS_COUNT ] =
+const int statusModePf2List[ MAX_STATUS_COUNT ] =
 {
 	0xFFFFFFFF, PF2_ONLINE, PF2_SHORTAWAY, PF2_LONGAWAY, PF2_LIGHTDND,
 	PF2_HEAVYDND, PF2_FREECHAT, PF2_INVISIBLE, PF2_ONTHEPHONE, PF2_OUTTOLUNCH
@@ -746,13 +746,15 @@ BOOL FindMenuHanleByGlobalID(HMENU hMenu, PMO_IntMenuItem id, MenuItemData* itda
 
 static INT_PTR MenuProcessHotkey(WPARAM vKey, LPARAM)
 {
-	if ( MO_ProcessHotKeys( hStatusMenuObject, vKey ))
-		return TRUE;
+    prochotkey = true;
 
-	if ( MO_ProcessHotKeys( hMainMenuObject, vKey ))
-		return TRUE;
+    bool res = 
+        MO_ProcessHotKeys( hStatusMenuObject, vKey ) ||
+        MO_ProcessHotKeys( hMainMenuObject, vKey );
 
-	return 0;
+    prochotkey = false;
+
+    return res;
 }
 
 static int MenuIconsChanged(WPARAM, LPARAM)
