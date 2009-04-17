@@ -22,6 +22,11 @@ Contents
 --------------------------
 * New in 0.7.18
 Bugfixes:
+ - ICQ: Fixed server connection thread issue
+
+
+* New in 0.7.18
+Bugfixes:
  - Windows compatibility improvements
  - ICQ: Improved server list processing
  - ICQ: New contacts sometimes showed as offline
