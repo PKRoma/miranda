@@ -1432,7 +1432,7 @@ static void handleServerCListItemUpdate(const char *szRecordName, WORD wGroupId,
 
         while (list)
         {
-          wTLVLength += list->tlv.wLen;
+          wTLVLength += list->tlv.wLen + 4;
           list = list->next;
         }
         
