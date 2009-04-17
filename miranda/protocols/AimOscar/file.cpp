@@ -81,7 +81,7 @@ void CAimProto::sending_file(HANDLE hContact, HANDLE hNewConnection)
 	int recvResult=0;
 	NETLIBPACKETRECVER packetRecv;
 	ZeroMemory(&packetRecv, sizeof(packetRecv));
-	HANDLE hServerPacketRecver=NULL;
+	HANDLE hServerPacketRecver;
 	hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hNewConnection, 2048 * 4);
 	packetRecv.cbSize = sizeof(packetRecv);
 	packetRecv.dwTimeout = 100*getWord( AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
@@ -92,6 +92,7 @@ void CAimProto::sending_file(HANDLE hContact, HANDLE hNewConnection)
 			{
 				LOG("P2P: File transfer connection Error: 0");
 				sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
+                Netlib_CloseHandle(hServerPacketRecver);
                 Netlib_CloseHandle(hNewConnection);
 				break;
             }
@@ -99,6 +100,7 @@ void CAimProto::sending_file(HANDLE hContact, HANDLE hNewConnection)
 			{
 				LOG("P2P: File transfer connection Error: -1");
 				sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
+                Netlib_CloseHandle(hServerPacketRecver);
 				Netlib_CloseHandle(hNewConnection);
                 break;
             }
@@ -152,6 +154,7 @@ void CAimProto::sending_file(HANDLE hContact, HANDLE hNewConnection)
 					}
 					sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS,hContact,0);
 					mir_free(file);
+                    Netlib_CloseHandle(hServerPacketRecver);
 					return;
 				}
 				else if(type==0x0204)
@@ -159,7 +162,8 @@ void CAimProto::sending_file(HANDLE hContact, HANDLE hNewConnection)
 					LOG("P2P: Buddy says they got the file successfully");
 					sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS,hContact,0);
 					mir_free(file);
-					return;
+                    Netlib_CloseHandle(hServerPacketRecver);
+                    return;
 				}
 				else if(type==0x0205)
 				{
@@ -171,6 +175,7 @@ void CAimProto::sending_file(HANDLE hContact, HANDLE hNewConnection)
 					if(Netlib_Send(hNewConnection,buf,sizeof(oft2),0)==SOCKET_ERROR)
 					{
 						sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
+                        Netlib_CloseHandle(hServerPacketRecver);
 						Netlib_CloseHandle(hNewConnection);
 						return;
 					}
@@ -224,6 +229,7 @@ void CAimProto::receiving_file(HANDLE hContact, HANDLE hNewConnection)
 			{
 				LOG("P2P: File transfer connection Error: 0");
 				sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
+                Netlib_CloseHandle(hServerPacketRecver);
 				Netlib_CloseHandle(hNewConnection);
                 break;
             }
@@ -231,6 +237,7 @@ void CAimProto::receiving_file(HANDLE hContact, HANDLE hNewConnection)
 			{
 				LOG("P2P: File transfer connection Error: -1");
 				sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
+                Netlib_CloseHandle(hServerPacketRecver);
 				Netlib_CloseHandle(hNewConnection);
                 break;
             }
@@ -263,6 +270,7 @@ void CAimProto::receiving_file(HANDLE hContact, HANDLE hNewConnection)
 						if(!fd)
 						{
 							mir_free(file);
+                            Netlib_CloseHandle(hServerPacketRecver);
 							return;
 						}
 						else
@@ -290,6 +298,7 @@ void CAimProto::receiving_file(HANDLE hContact, HANDLE hNewConnection)
 					LOG("P2P: We got the file successfully");
 					Netlib_Send(hNewConnection,(char*)&ft,sizeof(oft2),0);
 					sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS,hContact,0);
+                    Netlib_CloseHandle(hServerPacketRecver);
 					break;
 				}
 			}
