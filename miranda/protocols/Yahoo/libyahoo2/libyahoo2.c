@@ -388,6 +388,8 @@ static const value_string packet_keys[]={
 	{266, "FT7 # Files"},
 	{267, "FT7 Preview"},
 	{317, "Stealth"},
+	{430, "Seq #"},
+	{450, "Retry"},
 	{1002, "YIM6+"},
 	{10093, "YIM7 (sets it to 4)"},
 	{10097, "Region (SMS?)"},
@@ -3388,7 +3390,7 @@ static void yahoo_process_contact(struct yahoo_input_data *yid, struct yahoo_pac
 		yahoo_buddy_denied_our_add(yid, pkt);
 		break;
 	default:
-		LOG(("Unknown status value: '%s'", pkt->status));
+		LOG(("Unknown status value: '%d'", pkt->status));
 	}
 
 }
@@ -7052,7 +7054,7 @@ unsigned char *yahoo_webmessenger_idle_packet(int id, int *len)
 
 	yd = yid->yd;
 
-	DEBUG_MSG(("[yahoo_webmessenger_idle_packet] Session: %d", yd->session_timestamp));
+	DEBUG_MSG(("[yahoo_webmessenger_idle_packet] Session: %ld", yd->session_timestamp));
 	
 	pkt = yahoo_packet_new(YAHOO_SERVICE_IDLE, YPACKET_STATUS_DEFAULT, yd->session_id);
 	yahoo_packet_hash(pkt, 0, yd->user);
@@ -7095,7 +7097,7 @@ void yahoo_send_idle_packet(int id)
 
 	yd = yid->yd;
 
-	DEBUG_MSG(("[yahoo_send_idle_packet] Session: %d", yd->session_timestamp));
+	DEBUG_MSG(("[yahoo_send_idle_packet] Session: %ld", yd->session_timestamp));
 	
 	pkt = yahoo_packet_new(YAHOO_SERVICE_IDLE, YPACKET_STATUS_DEFAULT, yd->session_id);
 	yahoo_packet_hash(pkt, 0, yd->user);
@@ -7111,6 +7113,8 @@ void yahoo_send_im_ack(int id, const char *buddy, const char *seqn, int sendn)
 	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
 	struct yahoo_data *yd;
 	struct yahoo_packet *pkt = NULL;
+
+	DEBUG_MSG(("[yahoo_send_im_ack] Buddy: %s, Seq #: %s, Retry: %d", buddy, seqn, sendn));
 	
 	if(!yid) {
 		DEBUG_MSG(("NO Yahoo Input Data???"));
@@ -7119,8 +7123,6 @@ void yahoo_send_im_ack(int id, const char *buddy, const char *seqn, int sendn)
 
 	yd = yid->yd;
 
-	DEBUG_MSG(("[yahoo_send_idle_packet] Session: %d", yd->session_timestamp));
-	
 	pkt = yahoo_packet_new(YAHOO_SERVICE_Y9_MESSAGE_ACK, YPACKET_STATUS_DEFAULT, yd->session_id);
 	yahoo_packet_hash(pkt, 1, yd->user);
 	yahoo_packet_hash(pkt, 5, buddy);
