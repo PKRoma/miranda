@@ -488,14 +488,19 @@ HANDLE __cdecl CAimProto::SendFile( HANDLE hContact, const char* szDescription, 
 		struct _stat statbuf;
 		_stat(files[0],&statbuf);
 		unsigned long pszSize = statbuf.st_size;
+
 		DBVARIANT dbv;
 		if ( !getString(hContact, AIM_KEY_SN, &dbv )) {
-			for ( int file_amt = 0; files[file_amt]; file_amt++ )
-				if ( file_amt == 1 ) {
-					ShowPopup(LPGEN("Aim allows only one file to be sent at a time."), 0);
-					DBFreeVariant(&dbv);
-					return 0;
-				}
+            int file_amt;
+			for (file_amt = 0; files[file_amt]; file_amt++ )
+            {
+			    if (file_amt) 
+                {
+				    ShowPopup(LPGEN("Aim allows only one file to be sent at a time."), 0);
+				    DBFreeVariant(&dbv);
+				    return 0;
+			    }
+            }
 
 			char cookie[8];
 			create_cookie( hContact );
@@ -517,6 +522,8 @@ HANDLE __cdecl CAimProto::SendFile( HANDLE hContact, const char* szDescription, 
 			}
 			else aim_send_file( hServerConn, seqno, dbv.pszVal, cookie, InternalIP, LocalPort, 0, 1, pszFile, pszSize, pszDesc );
 
+            mir_free(files[0]);
+            mir_free(files);
 			DBFreeVariant( &dbv );
 			return hContact;
 		}

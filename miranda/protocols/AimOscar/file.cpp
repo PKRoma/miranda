@@ -153,6 +153,7 @@ void CAimProto::sending_file(HANDLE hContact, HANDLE hNewConnection)
 						fclose(fd);
 					}
 					sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS,hContact,0);
+                    mir_free(wd);
 					mir_free(file);
                     Netlib_CloseHandle(hServerPacketRecver);
 					return;
@@ -161,6 +162,7 @@ void CAimProto::sending_file(HANDLE hContact, HANDLE hNewConnection)
 				{
 					LOG("P2P: Buddy says they got the file successfully");
 					sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS,hContact,0);
+                    mir_free(wd);
 					mir_free(file);
                     Netlib_CloseHandle(hServerPacketRecver);
                     return;
@@ -177,6 +179,8 @@ void CAimProto::sending_file(HANDLE hContact, HANDLE hNewConnection)
 						sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
                         Netlib_CloseHandle(hServerPacketRecver);
 						Netlib_CloseHandle(hNewConnection);
+                        mir_free(wd);
+					    mir_free(file);
 						return;
 					}
 				}
@@ -197,17 +201,13 @@ void CAimProto::receiving_file(HANDLE hContact, HANDLE hNewConnection)
 	char* file=0;
 	FILE *fd=0;
 	oft2 ft;
+
 	PROTOFILETRANSFERSTATUS pfts;
 	memset(&pfts, 0, sizeof(PROTOFILETRANSFERSTATUS));
-	pfts.currentFileNumber=0;
-	pfts.currentFileProgress=0;
-	pfts.currentFileTime=0;
-	pfts.files=NULL;
 	pfts.hContact=hContact;
-	pfts.sending=0;
 	pfts.totalFiles=1;
-	pfts.totalProgress=0;
-	unsigned long size;
+
+    unsigned long size;
 	if (!getString(hContact, AIM_KEY_FN, &dbv))
 	{
 		file=mir_strdup(dbv.pszVal);
@@ -269,6 +269,7 @@ void CAimProto::receiving_file(HANDLE hContact, HANDLE hNewConnection)
 						fd = fopen(file, "wb");
 						if(!fd)
 						{
+                            mir_free(pfts.workingDir);
 							mir_free(file);
                             Netlib_CloseHandle(hServerPacketRecver);
 							return;
@@ -307,4 +308,5 @@ void CAimProto::receiving_file(HANDLE hContact, HANDLE hNewConnection)
 	if(accepted_file&&fd)
 		fclose(fd);
 	mir_free(file);
+    mir_free(pfts.workingDir);
 }
