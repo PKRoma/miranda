@@ -494,16 +494,13 @@ HANDLE __cdecl CAimProto::SendFile( HANDLE hContact, const char* szDescription, 
             int file_amt;
 			for (file_amt = 0; files[file_amt]; file_amt++ )
             {
-				if (file_amt)  mir_free(files[file_amt]);
+			    if (file_amt) 
+                {
+				    ShowPopup(LPGEN("Aim allows only one file to be sent at a time."), 0);
+				    DBFreeVariant(&dbv);
+				    return 0;
+			    }
             }
-			if (file_amt > 1) 
-            {
-				ShowPopup(LPGEN("Aim allows only one file to be sent at a time."), 0);
-				DBFreeVariant(&dbv);
-                mir_free(files[0]);
-                mir_free(files);
-				return 0;
-			}
 
 			char cookie[8];
 			create_cookie( hContact );
