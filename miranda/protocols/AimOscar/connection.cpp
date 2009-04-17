@@ -156,7 +156,7 @@ void CAimProto::aim_connection_authorization(void)
 exit:
 	mir_free(password);
 	if (m_iStatus!=ID_STATUS_OFFLINE) broadcast_status(ID_STATUS_OFFLINE);
-	if (hServerPacketRecver) Netlib_CloseHandle(hServerPacketRecver); hServerPacketRecver=NULL; 
+	if (hServerPacketRecver) Netlib_CloseHandle(hServerPacketRecver); 
 	Netlib_CloseHandle(hServerConn); hServerConn=NULL;
 	LOG("Connection Authorization Thread Ending: End of Thread");
 }

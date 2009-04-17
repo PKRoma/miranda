@@ -49,7 +49,7 @@ void __cdecl CAimProto::aim_proxy_helper( void* hContact )
 			int recvResult=0;
 			NETLIBPACKETRECVER packetRecv;
 			ZeroMemory(&packetRecv, sizeof(packetRecv));
-			HANDLE hServerPacketRecver=NULL;
+			HANDLE hServerPacketRecver;
 			hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)Connection, 2048 * 4);
 			packetRecv.cbSize = sizeof(packetRecv);
 			packetRecv.dwTimeout = INFINITE;
@@ -155,8 +155,10 @@ void __cdecl CAimProto::aim_proxy_helper( void* hContact )
 					}
 				}
 			}
+            Netlib_CloseHandle(hServerPacketRecver);
 		}
 	}
+
 	deleteSetting(hContact, AIM_KEY_FT);
 	deleteSetting(hContact, AIM_KEY_DH);
 	deleteSetting(hContact, AIM_KEY_IP);

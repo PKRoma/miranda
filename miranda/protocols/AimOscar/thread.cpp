@@ -94,6 +94,7 @@ void __cdecl CAimProto::accept_file_thread( void* param )//buddy sending file
 			}
 		}
 	}
+    mir_free(sn);
 	mir_free(param);
 }
 
