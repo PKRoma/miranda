@@ -1612,6 +1612,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
    case GC_UPDATENICKLIST:
 		{
 			int index=0;
+			SendDlgItemMessage(hwndDlg, IDC_CHAT_LIST, WM_SETREDRAW, FALSE, 0);
 			SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LIST), LB_RESETCONTENT, 0, 0);
 			for (index=0; index<si->nUsersInNicklist; index++) {
 				USERINFO * ui = SM_GetUserFromIndex(si->ptszID, si->pszModule, index);
@@ -1626,6 +1627,9 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					}
 				}
 			}
+			SendDlgItemMessage(hwndDlg, IDC_CHAT_LIST, WM_SETREDRAW, TRUE, 0);
+			InvalidateRect(GetDlgItem(hwndDlg, IDC_CHAT_LIST), NULL, FALSE) ;
+			UpdateWindow(GetDlgItem(hwndDlg, IDC_CHAT_LIST)) ; 
 			SendMessage(hwndDlg, DM_UPDATETITLEBAR, 0, 0);
 		}
 		break;
