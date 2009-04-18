@@ -1612,6 +1612,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
    case GC_UPDATENICKLIST:
 		{
 			int index=0;
+			SendDlgItemMessage(hwndDlg, IDC_CHAT_LIST, WM_SETREDRAW, FALSE, 0);
 			SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LIST), LB_RESETCONTENT, 0, 0);
 			for (index=0; index<si->nUsersInNicklist; index++) {
 				USERINFO * ui = SM_GetUserFromIndex(si->ptszID, si->pszModule, index);
@@ -1626,6 +1627,9 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					}
 				}
 			}
+			SendDlgItemMessage(hwndDlg, IDC_CHAT_LIST, WM_SETREDRAW, TRUE, 0);
+			InvalidateRect(GetDlgItem(hwndDlg, IDC_CHAT_LIST), NULL, FALSE) ;
+			UpdateWindow(GetDlgItem(hwndDlg, IDC_CHAT_LIST)) ; 
 			SendMessage(hwndDlg, DM_UPDATETITLEBAR, 0, 0);
 		}
 		break;
@@ -1789,7 +1793,7 @@ LABEL_SHOWWINDOW:
             si.nPos = si.nMax - si.nPage + 1;
             SetScrollInfo(GetDlgItem(hwndDlg, IDC_CHAT_LOG), SB_VERT, &si, TRUE);
             sel.cpMin = sel.cpMax = GetRichTextLength(GetDlgItem(hwndDlg, IDC_CHAT_LOG), CP_ACP, FALSE);
-            SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), EM_EXSETSEL, 0, (LPARAM) & sel);
+            //SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), EM_EXSETSEL, 0, (LPARAM) & sel);
             PostMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
       }   }
       break;
