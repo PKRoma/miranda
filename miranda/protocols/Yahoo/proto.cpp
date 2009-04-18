@@ -904,7 +904,12 @@ INT_PTR CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 	case WM_COMMAND:
 		if ( LOWORD( wParam ) == IDC_NEWYAHOOACCOUNTLINK ) {
-			CallService( MS_UTILS_OPENURL, 1, ( LPARAM ) "http://edit.yahoo.com/config/eval_register" );
+			CallService( MS_UTILS_OPENURL, 
+							1, 
+							(( BYTE )IsDlgButtonChecked( hwndDlg, IDC_YAHOO_JAPAN ) == 1) ?
+							( LPARAM ) "http://edit.yahoo.co.jp/config/eval_register" :
+							( LPARAM ) "http://edit.yahoo.com/config/eval_register" 
+						);
 			return TRUE;
 		}
 
@@ -929,6 +934,7 @@ INT_PTR CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			GetDlgItemTextA(hwndDlg, IDC_PASSWORD, str, sizeof(str));
 			CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
 			ppro->setString(YAHOO_PASSWORD, str);
+			ppro->SetByte("YahooJapan", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_YAHOO_JAPAN ));
 			return TRUE;
 		}
 		break;
