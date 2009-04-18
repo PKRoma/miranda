@@ -102,10 +102,10 @@ int ExtraToColumnNum(int extra)
 {
 	if (HasExtraIconsService())
 	{
-		if (extra < 0 || extra >= EXTRACOLUMNCOUNT) 
+		if (extra < 1 || extra > EXTRACOLUMNCOUNT) 
 			return -1;
 		else
-			return extra;
+			return extra-1;
 	}
 	else
 	{
@@ -122,7 +122,7 @@ int ColumnNumToExtra(int column)
 	int i;
 
 	if (HasExtraIconsService())
-		return column;
+		return column+1;
 
 	for (i=0; i<sizeof(ExtraOrder)/sizeof(ExtraOrder[0]); i++)
 		if (ExtraOrder[i]==column)
