@@ -93,6 +93,17 @@ void  html_decode( char* str )
 			else if ( !strnicmp( p, "&gt;", 4 ))   { *q = '>';  p += 3; }
 			else if ( !strnicmp( p, "&lt;", 4 ))   { *q = '<';  p += 3; }
 			else if ( !strnicmp( p, "&quot;", 6 )) { *q = '"';  p += 5; }
+            else if ( *(p+1) == '#' ) 
+            { 
+                char* s = strchr(p, ';');
+                if (s)
+                {
+                    *q = (char)atoi(p+2);
+                    p = s;
+                }
+                else
+                    *q = *p; 
+            }
 			else { *q = *p;	}
 		}
         else if ( *p == '<' )
