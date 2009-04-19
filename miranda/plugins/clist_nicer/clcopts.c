@@ -833,15 +833,15 @@ ORDERTREEDATA OrderTreeData[]=
 {
 	{EXTRA_ICON_RES0, _T("Reserved, unused"), 9, TRUE, 0},
 	{EXTRA_ICON_EMAIL, _T("E-mail"), 0, TRUE, 0},
-	{EXTRA_ICON_WEB, _T("Homepage"), 1, TRUE, 0},
+	{EXTRA_ICON_RES1, _T("Reserved #1"), 7, TRUE, 0},
 	{EXTRA_ICON_SMS, _T("Telephone"), 2, TRUE, 0},
 	{EXTRA_ICON_ADV1, _T("Advanced #1 (ICQ X-Status)"), 3, TRUE, 0},
 	{EXTRA_ICON_ADV2, _T("Advanced #2"), 4, TRUE, 0},
-    {EXTRA_ICON_ADV3, _T("Advanced #3"), 5, TRUE, 0},
+	{EXTRA_ICON_WEB, _T("Homepage"), 1, TRUE, 0},
 	{EXTRA_ICON_CLIENT, _T("Client (fingerprint required)"), 10, TRUE, 0},
-    {EXTRA_ICON_ADV4, _T("Advanced #4"), 6, TRUE, 0},
-	{EXTRA_ICON_RES1, _T("Reserved #1"), 7, TRUE, 0},
     {EXTRA_ICON_RES2, _T("Reserved #2"), 8, TRUE, 0},
+    {EXTRA_ICON_ADV3, _T("Advanced #3"), 5, TRUE, 0},
+    {EXTRA_ICON_ADV4, _T("Advanced #4"), 6, TRUE, 0},
 };
  
 static int dragging=0;

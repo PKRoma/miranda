@@ -333,7 +333,7 @@ static int CluiModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 	upd.cbSize = sizeof(upd);
 	upd.szComponentName = pluginInfo.shortName;
-	upd.pbVersion = (BYTE *)CreateVersionStringPlugin(&pluginInfo, szCurrentVersion);
+	upd.pbVersion = (BYTE *)CreateVersionStringPluginEx(&pluginInfo, szCurrentVersion);
 	upd.cpbVersion = (int)strlen((char *)upd.pbVersion);
 	upd.szVersionURL = szFLVersionUrl;
 	upd.szUpdateURL = szFLUpdateurl;
