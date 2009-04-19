@@ -868,7 +868,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			GetWindowRect(GetDlgItem(hwndDlg, IDC_MESSAGE), &dat->minEditInit);
 			dat->minEditBoxHeight = dat->minEditInit.bottom - dat->minEditInit.top;
 			dat->minLogBoxHeight = dat->minEditBoxHeight;
-			dat->splitterPos = (int) DBGetContactSettingDword(NULL, SRMMMOD, "splitterPos", (DWORD) - 1);
+			dat->splitterPos = g_dat->splitterY;
 			dat->toolbarSize.cy = TOOLBAR_HEIGHT;
 			dat->toolbarSize.cx = GetToolbarWidth(SIZEOF(buttonControls), buttonControls);
 			if (dat->splitterPos == -1) {
@@ -1037,7 +1037,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				}
 			}
 			SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_REQUESTRESIZE, 0, 0);
 			SendMessage(GetParent(hwndDlg), CM_POPUPWINDOW, (WPARAM) (newData->flags & NMWLP_INCOMING), (LPARAM) hwndDlg);
 			if (notifyUnread) {
 				if (GetForegroundWindow() != dat->hwndParent || dat->parent->hwndActive != hwndDlg) {
@@ -1383,6 +1382,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			SendMessage(hwndDlg, DM_UPDATETITLEBAR, 0, 0);
 			SendMessage(hwndDlg, DM_UPDATETABCONTROL, 0, 0);
 			SendMessage(hwndDlg, DM_UPDATESTATUSBAR, 0, 0);
+			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_REQUESTRESIZE, 0, 0);
 			break;
 		}
     case DM_USERNAMETOCLIP:
@@ -1592,6 +1592,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				ScreenToClient(hwndDlg, &pt);
 				oldSplitterY = dat->splitterPos;
 				dat->splitterPos = rc.bottom - pt.y;
+				g_dat->splitterY = dat->splitterPos;
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
 			}
 			break;
@@ -2317,7 +2318,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					}
 					break;
 				case EN_REQUESTRESIZE:
-					{
+					if (g_dat->flags & SMF_AUTORESIZE) {
 						REQRESIZE *rr = (REQRESIZE *)lParam;
 						int height = rr->rc.bottom - rr->rc.top + 1;
 						if (dat->desiredInputAreaHeight != height) {

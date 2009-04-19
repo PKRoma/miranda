@@ -145,6 +145,7 @@ struct GlobalMessageData
 	HBRUSH	   hInfobarBrush;
 	HPEN	   hInfobarPen;
 	int		   toolbarPosition;
+	int        splitterY;
 	HWND       hFocusWnd;
 };
 

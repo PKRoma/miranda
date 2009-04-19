@@ -45,6 +45,7 @@ extern struct      CREOleCallback reOleCallback;
 extern HMENU      g_hMenu;
 extern TABLIST *   g_TabList;
 extern HANDLE hHookWinPopup;
+extern HCURSOR hCurSplitNS, hCurSplitWE;
 
 static WNDPROC OldSplitterProc;
 static WNDPROC OldMessageProc;
@@ -76,12 +77,14 @@ static LRESULT CALLBACK SplitterSubclassProc(HWND hwnd,UINT msg,WPARAM wParam,LP
    case WM_NCHITTEST:
       return HTCLIENT;
 
-   case WM_SETCURSOR:
-   {   RECT rc;
-      GetClientRect(hwnd,&rc);
-      SetCursor(rc.right>rc.bottom?LoadCursor(NULL, IDC_SIZENS):LoadCursor(NULL, IDC_SIZEWE));
-      return TRUE;
-   }
+	case WM_SETCURSOR:
+		if (!(g_dat->flags & SMF_AUTORESIZE)) {
+			RECT rc;
+			GetClientRect(hwnd, &rc);
+			SetCursor(rc.right > rc.bottom ? hCurSplitNS : hCurSplitWE);
+			return TRUE;
+		}
+		return 0;
    case WM_LBUTTONDOWN:
       SetCapture(hwnd);
       return 0;
@@ -1250,7 +1253,6 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&iee);
 			}
 
-			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_REQUESTRESIZE, 0, 0);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_SMILEY), TRUE);
 
 			SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), EM_HIDESELECTION, TRUE, 0);
@@ -1307,6 +1309,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
             SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LIST), LB_SETITEMHEIGHT, 0, (LPARAM)height > font ? height : font);
             InvalidateRect(GetDlgItem(hwndDlg, IDC_CHAT_LIST), NULL, TRUE);
          }
+		 SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_REQUESTRESIZE, 0, 0);
          SendMessage(hwndDlg, WM_SIZE, 0, 0);
          SendMessage(hwndDlg, GC_REDRAWLOG2, 0, 0);
       }
@@ -1825,12 +1828,14 @@ LABEL_SHOWWINDOW:
          switch (pNmhdr->code) {
 		case EN_REQUESTRESIZE:
 			if (pNmhdr->idFrom == IDC_CHAT_MESSAGE) {
-				REQRESIZE *rr = (REQRESIZE *)lParam;
-				int height = rr->rc.bottom - rr->rc.top + 1;
-				if (si->desiredInputAreaHeight != height) {
-					si->desiredInputAreaHeight = height;
-					SendMessage(hwndDlg, WM_SIZE, 0, 0);
-					PostMessage(hwndDlg, GC_SCROLLTOBOTTOM, 0, 0);
+				if (g_dat->flags & SMF_AUTORESIZE) {
+					REQRESIZE *rr = (REQRESIZE *)lParam;
+					int height = rr->rc.bottom - rr->rc.top + 1;
+					if (si->desiredInputAreaHeight != height) {
+						si->desiredInputAreaHeight = height;
+						SendMessage(hwndDlg, WM_SIZE, 0, 0);
+						PostMessage(hwndDlg, GC_SCROLLTOBOTTOM, 0, 0);
+					}
 				}
 			}
 			break;
