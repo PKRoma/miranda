@@ -586,6 +586,7 @@ void SetClistGlobalStatus(int status)
 		if ( cli.pfnGetProtocolVisibility( accounts[i]->szModuleName ))
 			MenusProtoCount++;
 
+    bool statuschg = cli.currentDesiredStatusMode != status;
 	cli.currentDesiredStatusMode = status;
 
 	for ( int j=0; j < accounts.getCount(); j++ ) {
@@ -596,11 +597,13 @@ void SetClistGlobalStatus(int status)
 			continue;
 
 		if ( CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0 ) != cli.currentDesiredStatusMode )
-			CallProtoService( pa->szModuleName, PS_SETSTATUS, cli.currentDesiredStatusMode, 0 );
+			statuschg |= CallProtoService( pa->szModuleName, PS_SETSTATUS, cli.currentDesiredStatusMode, 0 ) == 0;
 	}
-	NotifyEventHooks( hStatusModeChangeEvent, cli.currentDesiredStatusMode, 0 );
-
-	DBWriteContactSettingWord( NULL, "CList", "Status", ( WORD )cli.currentDesiredStatusMode );
+	if (statuschg)
+    {
+        NotifyEventHooks( hStatusModeChangeEvent, cli.currentDesiredStatusMode, 0 );
+	    DBWriteContactSettingWord( NULL, "CList", "Status", ( WORD )cli.currentDesiredStatusMode );
+    }
 }
 
 INT_PTR StatusMenuExecService(WPARAM wParam, LPARAM)
@@ -643,8 +646,8 @@ INT_PTR StatusMenuExecService(WPARAM wParam, LPARAM)
 					InvalidateRect( cli.hwndStatus, NULL, TRUE );
 			}
 			else if ( smep->proto != NULL ) {
-				CallProtoService(smep->proto,PS_SETSTATUS,smep->status,0);
-				NotifyEventHooks(hStatusModeChangeEvent, smep->status, (LPARAM)smep->proto);
+				if (CallProtoService(smep->proto,PS_SETSTATUS,smep->status,0))
+				    NotifyEventHooks(hStatusModeChangeEvent, smep->status, (LPARAM)smep->proto);
 			}
 			else {
                 SetClistGlobalStatus(smep->status);
