@@ -457,6 +457,9 @@ void CYahooProto::MenuInit( void )
 	strcpy( tDest, YAHOO_SHOW_PROFILE );
 	YCreateService( YAHOO_SHOW_PROFILE, &CYahooProto::OnShowProfileCommand );
 
+	mi.flags = 0;
+	mi.pszPopupName = NULL;
+	
 	mi.position = -2000006000;
 	mi.hIcon = LoadIconEx( "profile" );
 	mi.pszName = LPGEN( "&Show Profile" );
