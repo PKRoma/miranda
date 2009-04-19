@@ -250,11 +250,15 @@ void InitGlobals() {
 	g_dat->hHelperIconList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 0, 0);
 	g_dat->hSearchEngineIconList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 0, 0);
 	g_dat->draftList = NULL;
+	g_dat->splitterY = (int) DBGetContactSettingDword(NULL, SRMMMOD, "splitterPos", (DWORD) -1);
 	LoadInfobarFonts();
 }
 
 void FreeGlobals() {
 	if (g_dat) {
+		if (!(g_dat->flags & SMF_AUTORESIZE)) {
+			DBWriteContactSettingDword(NULL, SRMMMOD, "splitterPos", g_dat->splitterY);
+		}
 		if (g_dat->hContactNameFont != NULL) {
 			DeleteObject(g_dat->hContactNameFont);
 		}

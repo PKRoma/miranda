@@ -22,7 +22,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-
+#include "chat/chat.h"
 extern HINSTANCE g_hInst;
 extern HANDLE hEventOptInitialise;
 extern void ChangeStatusIcons();
@@ -265,8 +265,8 @@ void RegisterIcoLibIcons()
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.cx = sid.cy = 16;
 	sid.flags = SIDF_ALL_TCHAR;
-        mir_sntprintf(tTemp, SIZEOF(tTemp), _T("%s/%s"), LPGENT("Messaging"), LPGENT("Single Messaging"));
-        sid.ptszSection = tTemp;
+    mir_sntprintf(tTemp, SIZEOF(tTemp), _T("%s/%s"), LPGENT("Messaging"), LPGENT("Single Messaging"));
+    sid.ptszSection = tTemp;
 	sid.ptszDefaultFile = path;
 	sid.pszName = (char *) "scriver_ADD";
 	sid.iDefaultIndex = -IDI_ADDCONTACT;
@@ -443,6 +443,7 @@ static void ApplyChanges(int i) {
 		ReloadGlobals();
 		WindowList_Broadcast(g_dat->hParentWindowList, DM_OPTIONSAPPLIED, 0, 0);
 		WindowList_Broadcast(g_dat->hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
+		SM_BroadcastMessage(NULL, GC_SETWNDPROPS, 0, 0, TRUE);
 	}
 }
 
