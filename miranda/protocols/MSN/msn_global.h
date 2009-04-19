@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // this plugin is for Miranda 0.8 only
 #define MIRANDA_VER 0x0800
 
-#include "m_stdhdr.h"
+#include <m_stdhdr.h>
 
 #include <windows.h>
 #include <commctrl.h>

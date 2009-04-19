@@ -66,7 +66,7 @@ void CMsnProto::MSN_SetContactDb(HANDLE hContact, const char *szEmail)
 
 	if (listId & LIST_FL)
 	{
-		if (isNonIm || DBGetContactSettingByte( hContact, "CList", "NotOnList", 0 ) == 1)
+		if (DBGetContactSettingByte( hContact, "CList", "NotOnList", 0 ) == 1)
 		{
 			DBDeleteContactSetting( hContact, "CList", "NotOnList" );
 			DBDeleteContactSetting( hContact, "CList", "Hidden" );

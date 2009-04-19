@@ -82,8 +82,12 @@ OBJLIST<CMsnProto> g_Instances(1, sttCompareProtocols);
 
 extern "C" BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 {
-	hInst = hinstDLL;
-	return TRUE;
+	if (fdwReason == DLL_PROCESS_ATTACH)
+	{
+        hInst = hinstDLL;
+		DisableThreadLibraryCalls(hinstDLL);
+	}
+    return TRUE;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
