@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "file.h"
 
+static HANDLE hSRFileMenuItem;
+
 static INT_PTR SendFileCommand(WPARAM wParam, LPARAM)
 {
 	struct FileSendData fsd;
@@ -229,36 +231,37 @@ static void RemoveUnreadFileEvents(void)
 	}
 }
 
-static void AddContactMenuItem( PROTOACCOUNT* pa )
+static int SRFilePreBuildMenu(WPARAM wParam, LPARAM)
 {
-	if ( CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_1, 0 ) & PF1_FILESEND ) {
-		CLISTMENUITEM mi = { 0 };
-		mi.cbSize = sizeof(mi);
-		mi.position = -2000020000;
-		mi.icolibItem = GetSkinIconHandle( SKINICON_EVENT_FILE );
-		mi.pszName = LPGEN("&File");
-		mi.pszService = MS_FILE_SENDFILE;
-		mi.flags = CMIF_ICONFROMICOLIB;
-		if ( !( CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_4, 0 ) & PF4_OFFLINEFILES ))
-			mi.flags |= CMIF_NOTOFFLINE;
-		mi.pszContactOwner = pa->szModuleName;
-		CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
-}	}
+	CLISTMENUITEM mi = { 0 };
+	mi.cbSize = sizeof(mi);
+	mi.flags = CMIM_FLAGS | CMIF_HIDDEN;
 
-static int SRFileModulesLoaded(WPARAM, LPARAM)
-{
-	for ( int i=0; i < accounts.getCount(); i++ )
-		AddContactMenuItem( accounts[i] );
+	char *szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
+	if (szProto != NULL) {
+		if ( CallProtoService(szProto, PS_GETCAPS,PFLAGNUM_1, 0 ) & PF1_FILESEND) {
+			if ( CallProtoService(szProto, PS_GETCAPS,PFLAGNUM_4, 0 ) & PF4_OFFLINEFILES )
+				mi.flags = CMIM_FLAGS;
+			else if ( DBGetContactSettingWord(( HANDLE )wParam, szProto, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE )
+				mi.flags = CMIM_FLAGS;
+	}	}
 
-	RemoveUnreadFileEvents();
+	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hSRFileMenuItem, (LPARAM)&mi);
 	return 0;
 }
 
-static int SRFileAccountsChanged( WPARAM eventCode, LPARAM lParam )
+static int SRFileModulesLoaded(WPARAM, LPARAM)
 {
-	if ( eventCode == PRAC_ADDED )
-		AddContactMenuItem(( PROTOACCOUNT* )lParam );
+	CLISTMENUITEM mi = { 0 };
+	mi.cbSize = sizeof(mi);
+	mi.position = -2000020000;
+	mi.icolibItem = GetSkinIconHandle( SKINICON_EVENT_FILE );
+	mi.pszName = LPGEN("&File");
+	mi.pszService = MS_FILE_SENDFILE;
+	mi.flags = CMIF_ICONFROMICOLIB;
+	hSRFileMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 
+	RemoveUnreadFileEvents();
 	return 0;
 }
 
@@ -276,6 +279,7 @@ INT_PTR openContRecDir(WPARAM wparam, LPARAM)
 	ShellExecuteA(0, "open", szContRecDir, 0, 0, SW_SHOW);
 	return 0;
 }
+
 INT_PTR openRecDir(WPARAM, LPARAM)
 {
 	char szContRecDir[MAX_PATH];
@@ -286,6 +290,8 @@ INT_PTR openRecDir(WPARAM, LPARAM)
 
 int LoadSendRecvFileModule(void)
 {
+	CreateServiceFunction("FtMgr/Show", FtMgrShowCommand);
+
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof(mi);
 	mi.flags = CMIF_ICONFROMICOLIB;
@@ -295,12 +301,11 @@ int LoadSendRecvFileModule(void)
 	mi.pszService = "FtMgr/Show"; //MS_PROTO_SHOWFTMGR;
 	CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 
-	CreateServiceFunction("FtMgr/Show", FtMgrShowCommand);
-
 	HookEvent(ME_SYSTEM_MODULESLOADED,SRFileModulesLoaded);
-	HookEvent(ME_PROTO_ACCLISTCHANGED,SRFileAccountsChanged);
 	HookEvent(ME_DB_EVENT_ADDED,FileEventAdded);
 	HookEvent(ME_OPT_INITIALISE,FileOptInitialise);
+	HookEvent(ME_CLIST_PREBUILDCONTACTMENU, SRFilePreBuildMenu);
+
 	CreateServiceFunction(MS_FILE_SENDFILE,SendFileCommand);
 	CreateServiceFunction(MS_FILE_SENDSPECIFICFILES,SendSpecificFiles);
 	CreateServiceFunction(MS_FILE_GETRECEIVEDFILESFOLDER,GetReceivedFilesFolder);
