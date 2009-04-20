@@ -46,6 +46,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ITCM_GETITEMDATA	(ITCM_FIRST+5)		//WPARAM is item index, result is custom data
 
 #define ITCN_SELCHANGED		1
+#define ITCN_SELCHANGEDKBD	2
 
 // structure is used for storing info about single tab
 typedef struct {

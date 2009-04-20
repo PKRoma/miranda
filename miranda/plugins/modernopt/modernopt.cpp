@@ -249,6 +249,7 @@ static INT_PTR CALLBACK ModernOptDlgProc(HWND hwndDlg, UINT  msg, WPARAM wParam,
 			{
 				int iPage = MIcoTab_GetItemData(GetDlgItem(hwndDlg, IDC_ICOTABS), lParam);
 				ModernOptUI_SelectSection(hwndDlg, dat, iPage);
+				SetFocus(GetDlgItem(hwndDlg, IDC_ICOTABS));
 			}
 			break;
 
@@ -347,10 +348,10 @@ static INT_PTR CALLBACK ModernOptDlgProc(HWND hwndDlg, UINT  msg, WPARAM wParam,
 
 ////////////////////////////////////////////////////////////////////////////////
 // UI utilities
-static void ModernOptUI_ShowPage_Impl(HWND hwndDlg, struct ModernOptionsData *dat, int iPage, int dx)
+static HWND ModernOptUI_ShowPage_Impl(HWND hwndDlg, struct ModernOptionsData *dat, int iPage, int dx, HWND hwndInsertAfter)
 {
 	if ((iPage < 0) || (iPage >= dat->pObjectList.getCount())) 
-		return;
+		return NULL;
 
 	dat->iPage = iPage;
 	struct ModernOptionsObject *obj = (struct ModernOptionsObject *)dat->pObjectList[dat->iPage];
@@ -378,9 +379,9 @@ static void ModernOptUI_ShowPage_Impl(HWND hwndDlg, struct ModernOptionsData *da
 				}
 
 			if (obj->optObject.iType == MODERNOPT_TYPE_SECTIONPAGE)
-				SetWindowPos(obj->hwnd, NULL, rc1.left, rc1.top, rc2.right-rc1.left, rc2.bottom-rc1.top, dwShowFlags);
+				SetWindowPos(obj->hwnd, hwndInsertAfter, rc1.left, rc1.top, rc2.right-rc1.left, rc2.bottom-rc1.top, dwShowFlags);
 			else
-				SetWindowPos(obj->hwnd, NULL, rc2.left, rc2.top, rc2.right-rc2.left, rc2.bottom-rc2.top, dwShowFlags);
+				SetWindowPos(obj->hwnd, hwndInsertAfter, rc2.left, rc2.top, rc2.right-rc2.left, rc2.bottom-rc2.top, dwShowFlags);
 
 			if (obj->optObject.iSection == MODERNOPT_PAGE_IGNORE) {
 				for (i = 0; i < dat->pObjectList.getCount(); ++i) {
@@ -393,6 +394,8 @@ static void ModernOptUI_ShowPage_Impl(HWND hwndDlg, struct ModernOptionsData *da
 
 	ShowWindow(GetDlgItem(hwndDlg, IDC_BTN_EXPERT), (obj->optObject.lpzClassicGroup || obj->optObject.lpzClassicPage) ? SW_SHOW : SW_HIDE);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_BTN_HELP), obj->optObject.lpzHelpUrl ? SW_SHOW : SW_HIDE);
+
+	return obj->hwnd;
 }
 
 static int lstrcmp_null(TCHAR *p1, TCHAR *p2)
@@ -405,13 +408,15 @@ static int lstrcmp_null(TCHAR *p1, TCHAR *p2)
 
 static void ModernOptUI_ShowPage(HWND hwndDlg, struct ModernOptionsData *dat, int iPage)
 {
+	HWND hwndInsertAfter = GetDlgItem(hwndDlg, IDC_TV_SUBSECTIONS);
+
 	int dx = 0;
 	for (int i = 0; i < dat->pObjectList.getCount(); ++i)
 		if ((dat->pObjectList[i]->optObject.iType == dat->pObjectList[iPage]->optObject.iType) &&
 			(dat->pObjectList[i]->optObject.iSection == dat->pObjectList[iPage]->optObject.iSection) &&
 			!lstrcmp_null(dat->pObjectList[i]->optObject.lptzSubsection, dat->pObjectList[iPage]->optObject.lptzSubsection))
 		{
-			ModernOptUI_ShowPage_Impl(hwndDlg, dat, i, dx);
+			hwndInsertAfter = ModernOptUI_ShowPage_Impl(hwndDlg, dat, i, dx, hwndInsertAfter);
 
 			if (dat->pObjectList[i]->hwnd) {
 				RECT rcWnd; GetWindowRect(dat->pObjectList[i]->hwnd, &rcWnd);
