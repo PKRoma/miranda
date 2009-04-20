@@ -731,12 +731,11 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 				HWND hwndList = GetDlgItem(hwndDlg, IDC_ACCLIST);
 				switch (HIWORD(wParam)) {
 				case LBN_SELCHANGE:
-					{
-						sttUpdateAccountInfo(hwndDlg, dat);
-						sttSelectItem(dat, hwndList, ListBox_GetCurSel(hwndList));
-						SetFocus(hwndList);
-					}
+					sttUpdateAccountInfo(hwndDlg, dat);
+					sttSelectItem(dat, hwndList, ListBox_GetCurSel(hwndList));
+					SetFocus(hwndList);
 					break;
+
 				case LBN_MY_CHECK:
 					{
 						PROTOACCOUNT *pa = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, lParam);
@@ -765,7 +764,7 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 						if (acc) {
 							mir_free(acc->tszAccountName);
 							acc->tszAccountName = (TCHAR *)lParam;
-                            WriteDbAccounts();
+							WriteDbAccounts();
 							NotifyEventHooks( hAccListChanged, PRAC_CHANGED, ( LPARAM )acc );
 
 							ListBox_DeleteString(hwndList, iItem);
