@@ -122,7 +122,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SETTING_RIGHTCLIENTMARIGN_DEFAULT       0 //! "CLUI","RightClientMargin"
 #define SETTING_TOPCLIENTMARIGN_DEFAULT         0 //! "CLUI","TopClientMargin"
 #define SETTING_BOTTOMCLIENTMARIGN_DEFAULT      0 //! "CLUI","BottomClientMargin"
-#define SETTING_USEKEYCOLOR_DEFAULT             1 //! "ModernSettings","UseKeyColor"
 #define SETTING_KEYCOLOR_DEFAULT   RGB(255,0,255) //! "ModernSettings","KeyColor"
 #define SETTING_LINEUNDERMENU_DEFAULT           0 //! "CLUI","LineUnderMenu"
 #define SETTING_SHOWONSTART_DEFAULT             0 //! "CList","ShowOnStart"

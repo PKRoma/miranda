@@ -39,7 +39,6 @@ typedef struct tagCLUIDATA
 	BOOL	fDisableSkinEngine;
 	BOOL	fOnDesktop;
 	BOOL	fSmoothAnimation;
-	BOOL	fUseKeyColor;
 	BOOL	fLayered;
 	BOOL	fDocked;
 	BOOL	fGDIPlusFail;

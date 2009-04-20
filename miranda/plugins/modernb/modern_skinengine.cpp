@@ -2412,7 +2412,6 @@ static int ske_GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin)
 void ske_LoadSkinFromDB(void) 
 { 
 	ske_GetSkinFromDB(SKIN,&g_SkinObjectList); 
-	g_CluiData.fUseKeyColor=(BOOL)ModernGetSettingByte(NULL,"ModernSettings","UseKeyColor",SETTING_USEKEYCOLOR_DEFAULT);
 	g_CluiData.dwKeyColor=ModernGetSettingDword(NULL,"ModernSettings","KeyColor",(DWORD)SETTING_KEYCOLOR_DEFAULT);
 }
 
@@ -2984,7 +2983,7 @@ static int ske_AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRec
 	if ( _tables_empty )
 	{
 		// fill tables
-		double gammaCfPw = 1000 / (double)ModernGetSettingDword(NULL,"ModernData","AlphaTextOutGamma",700);
+		double gammaCfPw = 1000 / (double)ModernGetSettingRangedWord(NULL,"ModernData","AlphaTextOutGamma", 700, 1, 5000 );
 		BYTE blueCf    = ModernGetSettingByte(NULL,"ModernData","AlphaTextOutBlueCorrection", 28 );
 		BYTE redCf     = ModernGetSettingByte(NULL,"ModernData","AlphaTextOutRed Correction", 77 );
 		BYTE greenCf   = ModernGetSettingByte(NULL,"ModernData","AlphaTextOutGreen Correction", 151 );
