@@ -63,12 +63,16 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    LTEXT           "Screen Name:",IDC_STATIC,0,0,53,12
+    LTEXT           "ID:",IDC_STATIC,0,0,53,12
     EDITTEXT        IDC_HANDLE,54,0,131,12,ES_AUTOHSCROLL
     LTEXT           "Password:",IDC_STATIC,0,16,53,12
     EDITTEXT        IDC_PASSWORD,54,16,131,12,ES_PASSWORD | ES_AUTOHSCROLL
+	
+	CONTROL         "Yahoo Japan",IDC_YAHOO_JAPAN,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,0,32,140,12
+
     CONTROL         "Create a new Yahoo account",IDC_NEWYAHOOACCOUNTLINK,
-                    "Hyperlink",WS_TABSTOP,0,40,174,12
+                    "Hyperlink",WS_TABSTOP,0,48,174,12
 END
 
 IDD_OPT_YAHOO_CONNECTION DIALOGEX 0, 0, 296, 220
