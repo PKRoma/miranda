@@ -1229,7 +1229,6 @@ static INT_PTR CALLBACK DlgProcClistWindowOpts(HWND hwndDlg, UINT msg, WPARAM wP
 			EnableWindow(GetDlgItem(hwndDlg,IDC_DROPSHADOW),fEnabled);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_AEROGLASS),!fEnabled && (g_proc_DWMEnableBlurBehindWindow != NULL));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_TITLEBAR_STATIC),fEnabled);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_CHECKKEYCOLOR),!fEnabled);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_ROUNDCORNERS),fEnabled);
 		}
 		{   // ====== Non-Layered Mode =====
@@ -1280,7 +1279,6 @@ static INT_PTR CALLBACK DlgProcClistWindowOpts(HWND hwndDlg, UINT msg, WPARAM wP
 		EnableWindow(GetDlgItem(hwndDlg,IDC_LAYERENGINE),(g_proc_UpdateLayeredWindow!=NULL && !ModernGetSettingByte(NULL,"ModernData","DisableEngine", SETTING_DISABLESKIN_DEFAULT))?TRUE:FALSE);
 		CheckDlgButton(hwndDlg, IDC_LAYERENGINE, ((ModernGetSettingByte(NULL,"ModernData","EnableLayering",SETTING_ENABLELAYERING_DEFAULT)&&g_proc_UpdateLayeredWindow!=NULL) && !ModernGetSettingByte(NULL,"ModernData","DisableEngine", SETTING_DISABLESKIN_DEFAULT)) ? BST_UNCHECKED:BST_CHECKED);   
 
-		CheckDlgButton(hwndDlg, IDC_CHECKKEYCOLOR, ModernGetSettingByte(NULL,"ModernSettings","UseKeyColor",SETTING_USEKEYCOLOR_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 		{
 			DBVARIANT dbv={0};
 			TCHAR *s=NULL;
@@ -1361,7 +1359,6 @@ static INT_PTR CALLBACK DlgProcClistWindowOpts(HWND hwndDlg, UINT msg, WPARAM wP
 			EnableWindow(GetDlgItem(hwndDlg,IDC_DROPSHADOW),fEnabled);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_AEROGLASS),!fEnabled && (g_proc_DWMEnableBlurBehindWindow != NULL));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_TITLEBAR_STATIC),fEnabled);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_CHECKKEYCOLOR),!fEnabled);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_ROUNDCORNERS),fEnabled);
 			if (LOWORD(wParam)==IDC_DISABLEENGINE)
 			{
@@ -1430,8 +1427,6 @@ static INT_PTR CALLBACK DlgProcClistWindowOpts(HWND hwndDlg, UINT msg, WPARAM wP
 				else 
 					ModernDeleteSetting(NULL,"ModernData","EnableLayering");	
 			}
-			ModernWriteSettingByte(NULL,"ModernSettings","UseKeyColor",IsDlgButtonChecked(hwndDlg,IDC_CHECKKEYCOLOR)?1:0);
-			g_CluiData.fUseKeyColor=(BOOL)ModernGetSettingByte(NULL,"ModernSettings","UseKeyColor",SETTING_USEKEYCOLOR_DEFAULT);
 			g_CluiData.dwKeyColor=ModernGetSettingDword(NULL,"ModernSettings","KeyColor",(DWORD)SETTING_KEYCOLOR_DEFAULT);
 			ModernWriteSettingByte(NULL,"CList","OnDesktop",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ONDESKTOP));
 			ModernWriteSettingByte(NULL,"CList","OnTop",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ONTOP));
