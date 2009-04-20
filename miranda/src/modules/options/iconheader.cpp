@@ -220,7 +220,7 @@ int LoadIcoTabsModule()
 	wc.hCursor        = LoadCursor(NULL, IDC_ARROW);
 	wc.cbWndExtra     = sizeof(MIcoTabCtrl*);
 	wc.hbrBackground  = 0; //GetStockObject(WHITE_BRUSH);
-	wc.style          = CS_GLOBALCLASS|CS_SAVEBITS;
+	wc.style          = CS_GLOBALCLASS/*|CS_SAVEBITS*/;
 	RegisterClassEx(&wc);	
 	HookEvent(ME_SYSTEM_SHUTDOWN, UnloadIcoTabsModule);
 	return 0;
@@ -311,7 +311,7 @@ static void MIcoTab_DrawItem(HWND hwnd, HDC hdc, MIcoTabCtrl *dat, MIcoTab *tab,
 			rc.right = itemX + dat->itemWidth;
 			rc.bottom = iTopSpace + dat->itemHeight;
 			HANDLE hTheme = openThemeData(hwnd, L"ListView");
-			if (dat->nHotIdx == i)
+			if (dat->nHotIdx == i || GetFocus() == hwnd)
 				drawThemeBackground(hTheme, hdc, LVP_LISTITEM, LISS_HOTSELECTED, &rc, NULL);
 			else
 				drawThemeBackground(hTheme, hdc, LVP_LISTITEM, LISS_SELECTED, &rc, NULL);
@@ -500,12 +500,71 @@ static LRESULT CALLBACK MIcoTabWndProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 		if ((itc->nHotIdx >= 0) && (itc->nHotIdx != itc->nSelectedIdx))
 		{
 			itc->nSelectedIdx = itc->nHotIdx;
+			SetWindowText(hwndDlg, itc->pList[itc->nSelectedIdx]->tcsName);
 			RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE);
 			SendMessage(GetParent(hwndDlg), WM_COMMAND,
 				MAKEWPARAM(GetWindowLongPtr(hwndDlg, GWL_ID), ITCN_SELCHANGED),
 				itc->nSelectedIdx);
 		}
 		return 0;
+
+	case WM_SETFOCUS:
+	case WM_KILLFOCUS:
+		RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE);
+		break;
+
+	case WM_MOUSEACTIVATE:
+		SetFocus(hwndDlg);
+		return MA_ACTIVATE;
+
+	case WM_GETDLGCODE:
+	{
+		if (lParam)
+		{
+			MSG *msg = (MSG *) lParam;
+			if (msg->message == WM_KEYDOWN)
+			{
+				if (msg->wParam == VK_TAB)
+					return 0;
+				if (msg->wParam == VK_ESCAPE)
+					return 0;
+			} else
+			if (msg->message == WM_CHAR)
+			{
+				if (msg->wParam == '\t')
+					return 0;
+				if (msg->wParam == 27)
+					return 0;
+			}
+		}
+		return DLGC_WANTMESSAGE;
+	}
+
+	case WM_KEYDOWN:
+	{
+		int newIdx = itc->nSelectedIdx;
+		switch (wParam)
+		{
+		case VK_NEXT:
+		case VK_RIGHT:
+			newIdx++;
+			break;
+		case VK_PRIOR:
+		case VK_LEFT:
+			newIdx--;
+			break;
+		}
+		if ((newIdx >= 0) && (newIdx < itc->pList.getCount()) && (newIdx != itc->nSelectedIdx))
+		{
+			itc->nSelectedIdx = newIdx;
+			SetWindowText(hwndDlg, itc->pList[itc->nSelectedIdx]->tcsName);
+			RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE);
+			SendMessage(GetParent(hwndDlg), WM_COMMAND,
+				MAKEWPARAM(GetWindowLongPtr(hwndDlg, GWL_ID), ITCN_SELCHANGEDKBD),
+				itc->nSelectedIdx);
+		}
+		return 0;
+	}
 
 	case WM_ERASEBKGND:
 		return 1;
@@ -562,6 +621,7 @@ static LRESULT CALLBACK MIcoTabWndProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 	case ITCM_SETSEL:
 		if ( wParam >= 0 && (int)wParam < itc->pList.getCount()) {
 			itc->nSelectedIdx = wParam;
+			SetWindowText(hwndDlg, itc->pList[itc->nSelectedIdx]->tcsName);
 			RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE);
 			SendMessage(GetParent(hwndDlg), WM_COMMAND,
 				MAKEWPARAM(GetWindowLongPtr(hwndDlg, GWL_ID), ITCN_SELCHANGED),

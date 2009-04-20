@@ -420,7 +420,7 @@ static void sttUpdateAccountInfo(HWND hwndDlg, struct TAccMgrData *dat)
 
 					GetWindowRect(GetDlgItem(hwndDlg, IDC_TXT_INFO), &rc);
 					MapWindowPoints(NULL, hwndDlg, (LPPOINT)&rc, 2);
-					SetWindowPos(hwnd, NULL, rc.left, rc.top, 0, 0, SWP_NOSIZE|SWP_NOZORDER|SWP_SHOWWINDOW);
+					SetWindowPos(hwnd, hwndList, rc.left, rc.top, 0, 0, SWP_NOSIZE|SWP_SHOWWINDOW);
 
 					pa->hwndAccMgrUI = hwnd;
 				}
@@ -734,6 +734,7 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 					{
 						sttUpdateAccountInfo(hwndDlg, dat);
 						sttSelectItem(dat, hwndList, ListBox_GetCurSel(hwndList));
+						SetFocus(hwndList);
 					}
 					break;
 				case LBN_MY_CHECK:

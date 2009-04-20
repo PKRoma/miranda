@@ -1166,17 +1166,18 @@ END
 
 IDD_MODERNOPT_FONTS DIALOGEX 0, 0, 260, 210
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     LTEXT           "Headers:",IDC_TXT_TITLE1,0,0,259,8
     PUSHBUTTON      "...",IDC_CHOOSEFONTHEADER,244,30,16,14
-    LTEXT           "This font will be used for each text chunk in ""caption"" context: be it group, nickname, title or anything else.",IDC_STATIC,10,11,249,16
+    LTEXT           "This font is used to display main section titles or text elements.",IDC_STATIC,10,11,249,16,SS_CENTERIMAGE
     LTEXT           "Normal text:",IDC_TXT_TITLE2,0,55,259,8
     PUSHBUTTON      "...",IDC_CHOOSEFONTGENERAL,244,84,16,14
-    LTEXT           "Pick a default font to be used for most textual messages in all Miranda dialogs. This includes contact list, messaging, notifications and other.",IDC_STATIC,10,66,249,16
+    LTEXT           "This font is used to display most text element or section bodies.",IDC_STATIC,10,66,249,16,SS_CENTERIMAGE
     LTEXT           "Minor notes:",IDC_TXT_TITLE3,0,109,259,8
     PUSHBUTTON      "...",IDC_CHOOSEFONTSMALL,244,139,16,14
-    LTEXT           "Sometimes you see less important notes, like status messages or user mood in contact list. This font will be used to display such kind of information.",IDC_STATIC,10,120,249,16
+    LTEXT           "This font is used to display various addtional notes.",IDC_STATIC,10,120,249,16,SS_CENTERIMAGE
     CONTROL         "",IDC_PREVIEWSMALL,"Static",SS_OWNERDRAW,10,139,229,15,WS_EX_STATICEDGE
     CONTROL         "",IDC_PREVIEWGENERAL,"Static",SS_OWNERDRAW,10,84,229,15,WS_EX_STATICEDGE
     CONTROL         "",IDC_PREVIEWHEADER,"Static",SS_OWNERDRAW,10,30,229,15,WS_EX_STATICEDGE
@@ -1202,6 +1203,7 @@ END
 
 IDD_MODERNOPT_MODULES DIALOGEX 0, 0, 369, 210
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     EDITTEXT        IDC_PLUGINLONGINFO,65,133,304,25,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | ES_WANTRETURN | NOT WS_BORDER
@@ -1265,6 +1267,7 @@ END
 
 IDD_MODERNOPT_IGNORE DIALOGEX 0, 0, 369, 210
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     CONTROL         "",IDC_LIST,"CListControl",WS_TABSTOP | 0x3da,10,13,358,135,WS_EX_CLIENTEDGE
@@ -1807,7 +1810,6 @@ BEGIN
     BEGIN
         VERTGUIDE, 10
         VERTGUIDE, 181
-        BOTTOMMARGIN, 59
         HORZGUIDE, 8
         HORZGUIDE, 22
         HORZGUIDE, 34
