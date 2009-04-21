@@ -541,6 +541,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	BOOL   bInfoUpdateEnabled;
 	BOOL   bInfoUpdateRunning;
 	HANDLE hInfoThread;
+  DWORD  dwInfoActiveRequest;
 	userinfo m_infoUpdateList[LISTSIZE];
 
 	void   __cdecl InfoUpdateThread(void*);

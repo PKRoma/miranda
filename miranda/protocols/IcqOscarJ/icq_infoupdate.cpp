@@ -30,7 +30,7 @@
 //
 // DESCRIPTION:
 //
-//  Describe me here please...
+//  Background thread for automatic update of user details
 //
 // -----------------------------------------------------------------------------
 
@@ -39,8 +39,6 @@
 // Retrieve users' info
 void CIcqProto::icq_InitInfoUpdate(void)
 {
-	int i;
-
 	// Create wait objects
 	hInfoQueueEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
@@ -50,7 +48,7 @@ void CIcqProto::icq_InitInfoUpdate(void)
 		InitializeCriticalSection(&infoUpdateMutex);
 
 		// Init list
-		for (i = 0; i<LISTSIZE; i++)
+		for (int i = 0; i<LISTSIZE; i++)
 		{
       m_infoUpdateList[i].dwUin = 0;
 			m_infoUpdateList[i].hContact = NULL;
@@ -61,6 +59,7 @@ void CIcqProto::icq_InitInfoUpdate(void)
 	}
 
 	bInfoPendingUsers = 0;
+  dwInfoActiveRequest = 0;
 }
 
 // Returns TRUE if user was queued
@@ -127,10 +126,10 @@ void CIcqProto::icq_DequeueUser(DWORD dwUin)
 {
 	if (nInfoUserCount > 0) 
 	{
-		int i, nChecked = 0;
+		int nChecked = 0;
 		// Check if in list
 		EnterCriticalSection(&infoUpdateMutex);
-		for (i = 0; (i<LISTSIZE && nChecked < nInfoUserCount); i++) 
+		for (int i = 0; (i < LISTSIZE && nChecked < nInfoUserCount); i++) 
 		{
 			if (m_infoUpdateList[i].dwUin) 
 			{
@@ -263,6 +262,20 @@ void __cdecl CIcqProto::InfoUpdateThread( void* )
           continue;
         }
 
+        if (FindCookie(dwInfoActiveRequest, NULL, NULL))
+        { // only send another request, when the previous is completed
+#ifdef _DEBUG
+          NetLog_Server("Info-Update: Request 0x%x still in progress.", dwInfoActiveRequest);
+#endif
+          SleepEx(1000, TRUE);
+					if (!bInfoUpdateRunning)
+					{ // need to end as fast as possible
+						NetLog_Server("%s thread ended.", "Info-Update");
+						return;
+					}
+          continue;
+        }
+
 #ifdef _DEBUG
   			NetLog_Server("Info-Update: Users %u in queue.", nInfoUserCount);
 #endif
@@ -356,7 +369,7 @@ void __cdecl CIcqProto::InfoUpdateThread( void* )
           LeaveCriticalSection(&infoUpdateMutex);
           break;
         }
-				if (!sendUserInfoMultiRequest(pRequestData, nRequestSize, nListIndex))
+				if (!(dwInfoActiveRequest = sendUserInfoMultiRequest(pRequestData, nRequestSize, nListIndex)))
         { // sending data packet failed
           SAFE_FREE((void**)&pRequestData);
           LeaveCriticalSection(&infoUpdateMutex);
