@@ -598,8 +598,8 @@ void SetClistGlobalStatus(int status)
 		if ( CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0 ) != cli.currentDesiredStatusMode )
 			CallProtoService( pa->szModuleName, PS_SETSTATUS, cli.currentDesiredStatusMode, 0 );
 	}
-    NotifyEventHooks( hStatusModeChangeEvent, cli.currentDesiredStatusMode, 0 );
-    DBWriteContactSettingWord( NULL, "CList", "Status", ( WORD )cli.currentDesiredStatusMode );
+	NotifyEventHooks( hStatusModeChangeEvent, cli.currentDesiredStatusMode, 0 );
+	DBWriteContactSettingWord( NULL, "CList", "Status", ( WORD )cli.currentDesiredStatusMode );
 }
 
 INT_PTR StatusMenuExecService(WPARAM wParam, LPARAM)
@@ -646,7 +646,7 @@ INT_PTR StatusMenuExecService(WPARAM wParam, LPARAM)
 				NotifyEventHooks(hStatusModeChangeEvent, smep->status, (LPARAM)smep->proto);
 			}
 			else {
-                SetClistGlobalStatus(smep->status);
+				SetClistGlobalStatus(smep->status);
 				return 1;
 	}	}	}
 
