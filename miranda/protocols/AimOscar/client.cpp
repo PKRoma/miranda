@@ -678,7 +678,13 @@ int CAimProto::aim_set_pd_info(HANDLE hServerConn, unsigned short &seqno)
 {
     unsigned short offset=0;
     char buf[SNAC_SIZE+TLV_HEADER_SIZE*3+20];
-    aim_writesnac(0x13,0x9,offset,buf);                             // SSI Edit
+    unsigned short req = 0x09
+    if (pd_info_id == 0)
+    {
+        pd_info_id = get_random();
+        req = 0x08;
+    }
+    aim_writesnac(0x13,req,offset,buf);                             // SSI Edit/Add
     aim_writeshort(0,offset,buf);                                   // name length
     aim_writeshort(0,offset,buf);                                   // group id
     aim_writeshort(pd_info_id,offset,buf);                          // buddy id
