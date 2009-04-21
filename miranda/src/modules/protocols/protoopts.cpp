@@ -708,10 +708,15 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 			}
 
 			if ( iItem != -1 ) {
+                PROTOACCOUNT* pa = ( PROTOACCOUNT* )ListBox_GetItemData( hwndList, iItem );
 				HMENU hMenu = CreatePopupMenu();
 				AppendMenu(hMenu, MF_STRING, (UINT_PTR)1, TranslateT("Rename"));
 				AppendMenu(hMenu, MF_STRING, (UINT_PTR)2, TranslateT("Edit"));
 				AppendMenu(hMenu, MF_STRING, (UINT_PTR)3, TranslateT("Delete"));
+
+                if ( pa->bOldProto || pa->bDynDisabled )
+				    AppendMenu(hMenu, MF_STRING, (UINT_PTR)4, TranslateT("Upgrade"));
+
 				AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
 				AppendMenu(hMenu, MF_STRING, (UINT_PTR)0, TranslateT("Cancel"));
 				switch (TrackPopupMenu( hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL )) {
@@ -723,6 +728,9 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 					break;
 				case 3:
 					sttClickButton(hwndDlg, IDC_REMOVE);
+					break;
+				case 4:
+					sttClickButton(hwndDlg, IDC_UPGRADE);
 					break;
 				}
 				DestroyMenu( hMenu );
