@@ -88,11 +88,11 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 		{
 			AccFormDlgParam* param = ( AccFormDlgParam* )lParam;
-			if ( param->action == 1 ) // new account
+			if ( param->action == PRAC_ADDED ) // new account
 				SetWindowText( hwndDlg, TranslateT( "Create new account" ));
 			else {
 				TCHAR str[200];
-				if ( param->action == 2 ) { // update
+				if ( param->action == PRAC_CHANGED ) { // update
 					EnableWindow( GetDlgItem( hwndDlg, IDC_PROTOTYPECOMBO ), FALSE );
 					mir_sntprintf( str, SIZEOF(str), _T("%s: %s"), TranslateT( "Editing account" ), param->pa->tszAccountName );
 				}
@@ -116,7 +116,7 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 				AccFormDlgParam* param = ( AccFormDlgParam* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 				PROTOACCOUNT* pa = param->pa;
 
-				if ( param->action == PRAC_ADDED || param->action == PRAC_UPGRADED ) {
+				if ( param->action == PRAC_ADDED ) {
 					char buf[200];
 					GetDlgItemTextA( hwndDlg, IDC_ACCINTERNALNAME, buf, SIZEOF( buf ));
 					rtrim( buf );
@@ -129,11 +129,14 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
                 switch( param->action ) {
 				case PRAC_UPGRADED:
 					{
+                        int idx;
+                        BOOL oldProto = pa->bOldProto;
 						char szPlugin[ MAX_PATH ];
 						mir_snprintf( szPlugin, SIZEOF(szPlugin), "%s.dll", pa->szProtoName );
-						UnloadAccount( pa, TRUE );
-						accounts.remove( pa );
-						if ( UnloadPlugin( szPlugin, SIZEOF( szPlugin ))) {
+						idx = accounts.getIndex(pa);
+                        UnloadAccount( pa, FALSE );
+						accounts.remove( idx );
+                        if ( oldProto && UnloadPlugin( szPlugin, SIZEOF( szPlugin ))) {
 							char szNewName[ MAX_PATH ];
    							mir_snprintf( szNewName, SIZEOF(szNewName), "%s~", szPlugin );
 							MoveFileA( szPlugin, szNewName );
@@ -177,15 +180,17 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 					DBWriteContactSettingString( NULL, pa->szModuleName, "AM_BaseProto", pa->szProtoName );
 					accounts.insert( pa );
 
-					if ( param->action == 1 )
-						if ( ActivateAccount( pa ))
-							pa->ppro->OnEvent( EV_PROTO_ONLOAD, 0, 0 );
+					if ( ActivateAccount( pa ))
+						pa->ppro->OnEvent( EV_PROTO_ONLOAD, 0, 0 );
 				}
 
 				NotifyEventHooks( hAccListChanged, param->action, ( LPARAM )pa );
 
 				WriteDbAccounts();
+		        
+                SendMessage( GetParent(hwndDlg), WM_MY_REFRESH, 0, 0 );
 			}
+
 			EndDialog( hwndDlg, TRUE );
 			break;
 
@@ -392,7 +397,7 @@ static void sttUpdateAccountInfo(HWND hwndDlg, struct TAccMgrData *dat)
 
 		PROTOACCOUNT *pa = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, curSel);
 		if ( pa ) {
-			EnableWindow( GetDlgItem( hwndDlg, IDC_UPGRADE ), pa->bOldProto );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_UPGRADE ), pa->bOldProto || pa->bDynDisabled );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT ), TRUE );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_REMOVE ), TRUE );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_OPTIONS ), pa->ppro ? TRUE : FALSE );
@@ -856,14 +861,9 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 				HWND hList = GetDlgItem( hwndDlg, IDC_ACCLIST );
 				int idx = ListBox_GetCurSel( hList );
 				if ( idx != -1 ) {
-					AccFormDlgParam param = { 4, ( PROTOACCOUNT* )ListBox_GetItemData( hList, idx ) };
-					if ( IDOK == DialogBoxParam( hMirandaInst, MAKEINTRESOURCE(IDD_ACCFORM), hwndDlg, AccFormDlgProc, (LPARAM)&param )) {
-						SendMessage( hwndDlg, WM_MY_REFRESH, 0, 0 );
-						if ( IDYES == MessageBox( hwndDlg, TranslateT( upgradeMsg ), TranslateT( "Restart required" ), MB_YESNO )) {
-							EndDialog( hwndDlg, 1 );
-							CallService( "CloseAction", 0, 0 );
-							CallService( MS_SYSTEM_RESTART, 0, 0 );
-			}	}	}	}
+					AccFormDlgParam param = { PRAC_UPGRADED, ( PROTOACCOUNT* )ListBox_GetItemData( hList, idx ) };
+					DialogBoxParam( hMirandaInst, MAKEINTRESOURCE(IDD_ACCFORM), hwndDlg, AccFormDlgProc, (LPARAM)&param );
+			}	}
 			break;
 
 		case IDC_LNK_NETWORK:
