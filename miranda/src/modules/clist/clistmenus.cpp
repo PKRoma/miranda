@@ -642,8 +642,8 @@ INT_PTR StatusMenuExecService(WPARAM wParam, LPARAM)
 					InvalidateRect( cli.hwndStatus, NULL, TRUE );
 			}
 			else if ( smep->proto != NULL ) {
-				if (CallProtoService(smep->proto,PS_SETSTATUS,smep->status,0))
-				    NotifyEventHooks(hStatusModeChangeEvent, smep->status, (LPARAM)smep->proto);
+				CallProtoService(smep->proto,PS_SETSTATUS,smep->status,0);
+				NotifyEventHooks(hStatusModeChangeEvent, smep->status, (LPARAM)smep->proto);
 			}
 			else {
                 SetClistGlobalStatus(smep->status);
