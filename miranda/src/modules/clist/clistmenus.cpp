@@ -590,7 +590,7 @@ void SetClistGlobalStatus(int status)
 
 	for ( int j=0; j < accounts.getCount(); j++ ) {
 		PROTOACCOUNT* pa = accounts[j];
-		if ( !cli.pfnGetProtocolVisibility( pa->szModuleName ))
+		if ( !IsAccountEnabled( pa ))
 			continue;
 		if ( MenusProtoCount > 1 && DBGetContactSettingByte( NULL, pa->szModuleName, "LockMainStatus", 0 ))
 			continue;
@@ -817,7 +817,7 @@ int fnGetProtocolVisibility(const char* accName)
 	if ( accName ) {
 		PROTOACCOUNT* pa = Proto_GetAccount( accName );
 		if ( pa )
-			return ( pa->bIsVisible && IsAccountEnabled( pa )) ? TRUE : FALSE;
+			return pa->bIsVisible && IsAccountEnabled( pa );
 	}
 
 	return FALSE;
