@@ -47,6 +47,9 @@ static int AutoAwayEvent(WPARAM, LPARAM lParam)
 
 	for ( i=0; i < accounts.getCount(); i++ ) {
 		PROTOACCOUNT* pa = accounts[i];
+
+        if (!IsAccountEnabled(pa)) continue;
+
 		int statusbits = CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0 );
 		int currentstatus = CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0 );
 		int status = mii.aaStatus;
