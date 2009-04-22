@@ -1467,8 +1467,12 @@ void ext_yahoo_login(int login_mode)
     }
     else {
         //_snprintf(host, sizeof(host), "%s", pager_host);
-       	YAHOO_ShowError(Translate("Yahoo Login Error"), Translate("Please enter Yahoo server to Connect to in Options."));
-	    
+       	//YAHOO_ShowError(Translate("Yahoo Login Error"), Translate("Please enter Yahoo server to Connect to in Options."));
+		snprintf(host, sizeof(host), "%s", 
+						YAHOO_GetByte("YahooJapan",0) != 0 ? YAHOO_DEFAULT_JAPAN_LOGIN_SERVER :
+														YAHOO_DEFAULT_LOGIN_SERVER
+					);
+
         return;
     }
 
