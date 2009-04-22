@@ -210,14 +210,17 @@ struct CYahooProto : public PROTO_INTERFACE
 	void   setString( const char* name, const char* value );
 	void   setString( HANDLE hContact, const char* name, const char* value );
 
-	DWORD  GetByte( const char* valueName, int parDefltValue );
-	DWORD  SetByte( const char* valueName, int parValue );
+	int  GetByte( const char* valueName, int parDefltValue );
+	int  SetByte( const char* valueName, int parValue );
 
 	DWORD  GetDword( const char* valueName, DWORD parDefltValue );
 	DWORD  SetDword( const char* valueName, DWORD parValue );
+	DWORD  GetDword( HANDLE hContact, const char* valueName, DWORD parDefltValue );
+	DWORD  SetDword( HANDLE hContact, const char* valueName, DWORD parValue );
+
 
 	WORD   GetWord( HANDLE hContact, const char* valueName, int parDefltValue );
-	DWORD  SetWord( HANDLE hContact, const char* valueName, int parValue );
+	WORD  SetWord( HANDLE hContact, const char* valueName, int parValue );
 
 	DWORD  SetString( HANDLE hContact, const char* valueName, const char* parValue );
 	DWORD  SetStringUtf( HANDLE hContact, const char* valueName, const char* parValue );

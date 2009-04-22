@@ -25,12 +25,12 @@
 void CYahooProto::YCreateService( const char* szService, YServiceFunc serviceProc )
 {
 	char str[ 255 ];
-	int len;
+	unsigned int len;
 	
 	len = snprintf(str, sizeof(str), "%s%s", m_szModuleName, szService);
 	
 	if (len >= sizeof(str) ) {
-		DebugLog("[YCreateService] Failed Registering Servide: %s. Reason: buffer too small?", szService);
+		DebugLog("[YCreateService] Failed Registering Service: %s. Reason: buffer too small?", szService);
 		return;
 	}
 	
@@ -86,14 +86,24 @@ int DebugLog( const char *fmt, ... )
 	return CallService( MS_NETLIB_LOG, ( WPARAM )g_hNetlibUser, ( LPARAM )str );
 }
 
-DWORD CYahooProto::GetByte( const char* valueName, int parDefltValue )
+int CYahooProto::GetByte( const char* valueName, int parDefltValue )
 {
 	return DBGetContactSettingByte( NULL, m_szModuleName, valueName, parDefltValue );
 }
 
-DWORD CYahooProto::SetByte( const char* valueName, int parValue )
+int CYahooProto::SetByte( const char* valueName, int parValue )
 {
 	return DBWriteContactSettingByte( NULL, m_szModuleName, valueName, parValue );
+}
+
+DWORD CYahooProto::GetDword( HANDLE hContact, const char* valueName, DWORD parDefltValue )
+{
+	return DBGetContactSettingDword( hContact, m_szModuleName, valueName, parDefltValue );
+}
+
+DWORD CYahooProto::SetDword( const char* valueName, DWORD parValue )
+{
+    return DBWriteContactSettingDword( NULL, m_szModuleName, valueName, parValue);
 }
 
 DWORD CYahooProto::GetDword( const char* valueName, DWORD parDefltValue )
@@ -101,12 +111,13 @@ DWORD CYahooProto::GetDword( const char* valueName, DWORD parDefltValue )
 	return DBGetContactSettingDword( NULL, m_szModuleName, valueName, parDefltValue );
 }
 
-DWORD CYahooProto::SetDword( const char* valueName, DWORD parValue )
+DWORD CYahooProto::SetDword( HANDLE hContact, const char* valueName, DWORD parValue )
 {
-    return DBWriteContactSettingDword(NULL, m_szModuleName, valueName, parValue);
+    return DBWriteContactSettingDword( hContact, m_szModuleName, valueName, parValue);
 }
 
-DWORD CYahooProto::SetWord( HANDLE hContact, const char* valueName, int parValue )
+
+WORD CYahooProto::SetWord( HANDLE hContact, const char* valueName, int parValue )
 {
 	return DBWriteContactSettingWord( hContact, m_szModuleName, valueName, parValue );
 }
