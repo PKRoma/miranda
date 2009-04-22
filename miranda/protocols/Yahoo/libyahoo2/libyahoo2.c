@@ -5306,15 +5306,13 @@ static void yahoo_connected(int fd, int error, void *data)
 	if(fd < 0)
 		return;
 
+	pkt = yahoo_packet_new(YAHOO_SERVICE_AUTH, YPACKET_STATUS_DEFAULT, yd->session_id);
+	yahoo_packet_hash(pkt, 1, yd->user);
+
 	//NOTICE(("web messenger: %d", yss->web_messenger));
 	if (yss->web_messenger) {
-		pkt = yahoo_packet_new(YAHOO_SERVICE_AUTH, YPACKET_STATUS_DEFAULT, yd->session_id);
-		yahoo_packet_hash(pkt, 1, yd->user);
 		yahoo_packet_hash(pkt, 0, yd->user);
 		yahoo_packet_hash(pkt, 24, "0");
-
-	} else {
-		pkt = yahoo_packet_new(YAHOO_SERVICE_VERIFY, YPACKET_STATUS_DEFAULT, yd->session_id);
 	}
 	//NOTICE(("Sending initial packet"));
 
@@ -6114,16 +6112,19 @@ void yahoo_conference_logon(int id, const char *from, YList *who, const char *ro
 		
 	if(!yid)
 		return;
+	
 	yd = yid->yd;
 
 	pkt = yahoo_packet_new(YAHOO_SERVICE_CONFLOGON, YPACKET_STATUS_DEFAULT, yd->session_id);
 
 	yahoo_packet_hash(pkt, 1, (from?from:yd->user));
+	
+	yahoo_packet_hash(pkt, 57, room);
+
 	for(; who; who = who->next) {
 		yahoo_packet_hash(pkt, 3, (char *)who->data);
 	}
-	yahoo_packet_hash(pkt, 57, room);
-
+	
 	yahoo_send_packet(yid, pkt, 0);
 
 	yahoo_packet_free(pkt);
