@@ -421,7 +421,7 @@ int LoadProtocolsModule(void)
 	CreateServiceFunction( MS_PROTO_RECVFILE,         Proto_RecvFile         );
 	CreateServiceFunction( MS_PROTO_RECVMSG,          Proto_RecvMessage      );
 
-	CreateServiceFunction( "Proto/EnumProtocols",     Proto_EnumAccounts     );
+	CreateServiceFunction( "Proto/EnumProtocols",     Proto_EnumProtocols    );
 	CreateServiceFunction( MS_PROTO_ENUMACCOUNTS,     Proto_EnumAccounts     );
 	CreateServiceFunction( MS_PROTO_GETACCOUNT,       srvProto_GetAccount    );
 
