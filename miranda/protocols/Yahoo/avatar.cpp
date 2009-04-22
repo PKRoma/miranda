@@ -690,7 +690,7 @@ int __cdecl CYahooProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	if (( wParam & GAIF_FORCE ) != 0 && AI->hContact != NULL ) {		
 		/* need to request it again? */
 		if (GetDword(AI->hContact, "PictLoading", 0) != 0 &&
-			(time(NULL) - GetDword(AI->hContact, "PictLastCK", 0) < 500)) {
+			(time(NULL) - GetDword(AI->hContact, "PictLastCheck", 0) < 500)) {
 				DebugLog("[YAHOO_GETAVATARINFO] Waiting for avatar to load!");
 				return GAIR_WAITFOR;
 		} else if ( m_bLoggedIn ) {
