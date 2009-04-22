@@ -36,9 +36,9 @@ void CYahooProto::logoff_buddies()
 	{
 		if ( !lstrcmpA( m_szModuleName, ( char* )YAHOO_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 ))) {
 			SetWord( hContact, "Status", ID_STATUS_OFFLINE );
-			DBWriteContactSettingDword(hContact, m_szModuleName, "IdleTS", 0);
-			DBWriteContactSettingDword(hContact, m_szModuleName, "PictLastCheck", 0);
-			DBWriteContactSettingDword(hContact, m_szModuleName, "PictLoading", 0);
+			SetDword(hContact, "IdleTS", 0);
+			SetDword(hContact, "PictLastCheck", 0);
+			SetDword(hContact, "PictLoading", 0);
 			DBDeleteContactSetting(hContact, "CList", "StatusMsg" );
 			DBDeleteContactSetting(hContact, m_szModuleName, "YMsg" );
 			DBDeleteContactSetting(hContact, m_szModuleName, "YGMsg" );

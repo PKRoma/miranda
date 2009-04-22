@@ -163,8 +163,8 @@ void __cdecl CYahooProto::recv_avatarthread(void *pavt)
 		LOG(("ERROR: Can't find buddy: %s", avt->who));
 		error = 1;
 	} else if (!error) {
-		DBWriteContactSettingDword(hContact, m_szModuleName, "PictCK", avt->cksum);
-		DBWriteContactSettingDword(hContact, m_szModuleName, "PictLoading", 1);
+		SetDword(hContact, "PictCK", avt->cksum);
+		SetDword(hContact, "PictLoading", 1);
 	}
 
 	if(!error) {
@@ -206,7 +206,7 @@ void __cdecl CYahooProto::recv_avatarthread(void *pavt)
 					WriteFile(myhFile, nlhrReply->pData, nlhrReply->dataLength, &c, NULL );
 					CloseHandle(myhFile);
 
-					DBWriteContactSettingDword(hContact, m_szModuleName, "PictLastCheck", 0);
+					SetDword(hContact, "PictLastCheck", 0);
 				} else {
 					LOG(("Can not open file for writing: %s", buf));
 					error = 1;
@@ -216,12 +216,12 @@ void __cdecl CYahooProto::recv_avatarthread(void *pavt)
 		}
 	}
 
-	if (DBGetContactSettingDword(hContact, m_szModuleName, "PictCK", 0) != avt->cksum) {
+	if (GetDword(hContact, "PictCK", 0) != avt->cksum) {
 		LOG(("WARNING: Checksum updated during download?!"));
 		error = 1; /* don't use this one? */
 	} 
 
-	DBWriteContactSettingDword(hContact, m_szModuleName, "PictLoading", 0);
+	SetDword(hContact, "PictLoading", 0);
 	LOG(("File download complete!?"));
 
 	if (error) 
@@ -237,7 +237,7 @@ void __cdecl CYahooProto::recv_avatarthread(void *pavt)
 	lstrcpyA(AI.filename,buf);
 
 	if (error) 
-		DBWriteContactSettingDword(hContact, m_szModuleName, "PictCK", 0);
+		SetDword(hContact, "PictCK", 0);
 
 	ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_AVATAR, !error ? ACKRESULT_SUCCESS:ACKRESULT_FAILED,(HANDLE) &AI, 0);
 }
@@ -689,8 +689,8 @@ int __cdecl CYahooProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 
 	if (( wParam & GAIF_FORCE ) != 0 && AI->hContact != NULL ) {		
 		/* need to request it again? */
-		if (GetWord(AI->hContact, "PictLoading", 0) != 0 &&
-			(time(NULL) - GetWord(AI->hContact, "PictLastCK", 0) < 500)) {
+		if (GetDword(AI->hContact, "PictLoading", 0) != 0 &&
+			(time(NULL) - GetDword(AI->hContact, "PictLastCK", 0) < 500)) {
 				DebugLog("[YAHOO_GETAVATARINFO] Waiting for avatar to load!");
 				return GAIR_WAITFOR;
 		} else if ( m_bLoggedIn ) {
