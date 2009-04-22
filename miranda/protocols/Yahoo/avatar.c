@@ -683,8 +683,8 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	
 	if (( wParam & GAIF_FORCE ) != 0 && AI->hContact != NULL ) {		
 		/* need to request it again? */
-		if (YAHOO_GetWord(AI->hContact, "PictLoading", 0) != 0 &&
-			(time(NULL) - YAHOO_GetWord(AI->hContact, "PictLastCK", 0) < 500)) {
+		if (DBGetContactSettingDword(AI->hContact, yahooProtocolName, "PictLoading", 0) != 0 &&
+			(time(NULL) - DBGetContactSettingDword(AI->hContact, yahooProtocolName, "PictLastCheck", 0) < 500)) {
 			YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Waiting for avatar to load!");
 			return GAIR_WAITFOR;
 		} else if ( yahooLoggedIn ) {
