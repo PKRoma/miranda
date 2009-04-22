@@ -91,6 +91,24 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 		SetButtonCheck( hwndDlg, IDC_DISABLEYAHOOMAIL, !YAHOO_GetByte( "DisableYahoomail", 0 ));
 		SetButtonCheck( hwndDlg, IDC_SHOW_ERRORS, YAHOO_GetByte( "ShowErrors", 1 )); 
 
+		/*
+		 * Creating reference lists based on: 
+		 * http://help.yahoo.com/l/us/yahoo/messenger/messenger7/messenger/messenger-02.html;_ylt=Ap9blNQBm.eRO3Jm8g4wL8KJniN4
+		 */
+		SendDlgItemMessage(hwndDlg, IDC_LOGINSERVER, CB_ADDSTRING, 0, (LPARAM) "scs.msg.yahoo.com");
+		SendDlgItemMessage(hwndDlg, IDC_LOGINSERVER, CB_ADDSTRING, 0, (LPARAM) "scsa.msg.yahoo.com");
+		SendDlgItemMessage(hwndDlg, IDC_LOGINSERVER, CB_ADDSTRING, 0, (LPARAM) "scsb.msg.yahoo.com");
+		SendDlgItemMessage(hwndDlg, IDC_LOGINSERVER, CB_ADDSTRING, 0, (LPARAM) "scsc.msg.yahoo.com");
+		
+		SendDlgItemMessage(hwndDlg, IDC_YAHOOPORT, CB_ADDSTRING, 0, (LPARAM) "5050");
+		SendDlgItemMessage(hwndDlg, IDC_YAHOOPORT, CB_ADDSTRING, 0, (LPARAM) "20");
+		SendDlgItemMessage(hwndDlg, IDC_YAHOOPORT, CB_ADDSTRING, 0, (LPARAM) "23");
+		SendDlgItemMessage(hwndDlg, IDC_YAHOOPORT, CB_ADDSTRING, 0, (LPARAM) "25");
+		SendDlgItemMessage(hwndDlg, IDC_YAHOOPORT, CB_ADDSTRING, 0, (LPARAM) "80");
+		SendDlgItemMessage(hwndDlg, IDC_YAHOOPORT, CB_ADDSTRING, 0, (LPARAM) "119");
+		SendDlgItemMessage(hwndDlg, IDC_YAHOOPORT, CB_ADDSTRING, 0, (LPARAM) "8001");
+		SendDlgItemMessage(hwndDlg, IDC_YAHOOPORT, CB_ADDSTRING, 0, (LPARAM) "8002");
+		
 		/* show our current ignore list */
 		l = (YList *)YAHOO_GetIgnoreList();
 		while (l != NULL) {
@@ -190,12 +208,16 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
   			switch( LOWORD( wParam )) {
   			case IDC_HANDLE:			
 			case IDC_PASSWORD:			
-			case IDC_LOGINSERVER:
-  			case IDC_YAHOOPORT:			
 			case IDC_NICK:
   				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
   			}
 
+			if ( HIWORD( wParam ) == CBN_EDITCHANGE || HIWORD( wParam ) == CBN_SELCHANGE)
+  			switch( LOWORD( wParam )) {
+			case IDC_LOGINSERVER:
+			case IDC_YAHOOPORT:		
+  				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+  			}
 		break;
 
 
