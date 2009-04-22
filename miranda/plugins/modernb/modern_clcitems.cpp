@@ -123,10 +123,12 @@ struct ClcGroup *cli_AddGroup(HWND hwnd,struct ClcData *dat,const TCHAR *szName,
 			return NULL;
 		}
 		result = corecli.pfnAddGroup( hwnd, dat, szName, flags, groupId, calcTotalMembers);
+		/* ToDo: fix some times valid contact with valid group are placed to root
 		if ( result == NULL )
 		{
 			result = &dat->list;
 		}
+		*/
 		ClearRowByIndexCache();
 		return result;
 }
