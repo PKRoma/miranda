@@ -458,11 +458,14 @@ LBL_FatalError:
 		Log( "Entering main recv loop" );
 		datalen = 0;
 
+		// cache values
+		DWORD dwConnectionKeepAliveTimeout = m_options.ConnectionKeepAliveTimeout;
+		DWORD dwConnectionKeepAliveInterval = m_options.ConnectionKeepAliveInterval;
 		for ( ;; ) {
 			if ( !info->useZlib || info->zRecvReady ) {
 				NETLIBSELECT nls = {0};
 				nls.cbSize = sizeof( NETLIBSELECT );
-				nls.dwTimeout = 60000; // 60 seconds
+				nls.dwTimeout = dwConnectionKeepAliveInterval;
 				nls.hReadConns[0] = info->s;
 				int nSelRes = JCallService( MS_NETLIB_SELECT, 0, ( LPARAM )&nls );
 				if ( nSelRes == -1 ) // error
@@ -470,7 +473,7 @@ LBL_FatalError:
 				else if ( nSelRes == 0 ) {
 					if ( m_options.EnableServerXMPPPing )
 						info->send( 
-							XmlNodeIq( m_iqManager.AddHandler( &CJabberProto::OnPingReply, JABBER_IQ_TYPE_GET, NULL, 0, -1, this, 0, 45000 ))
+							XmlNodeIq( m_iqManager.AddHandler( &CJabberProto::OnPingReply, JABBER_IQ_TYPE_GET, NULL, 0, -1, this, 0, dwConnectionKeepAliveTimeout ))
 								<< XQUERY( _T(JABBER_FEAT_PING)));
 					else if ( m_bSendKeepAlive )
 						info->send( " \t " );

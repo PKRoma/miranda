@@ -216,6 +216,8 @@ struct CJabberOptions
 	CMOption<BYTE> AcceptNotes;
 	CMOption<BYTE> AutosaveNotes;
 	CMOption<BYTE> RcMarkMessagesAsRead;
+	CMOption<DWORD> ConnectionKeepAliveInterval;
+	CMOption<DWORD> ConnectionKeepAliveTimeout;
 
 	CJabberOptions(PROTO_INTERFACE *proto):
 		BsDirect(proto, "BsDirect", FALSE),
@@ -263,7 +265,9 @@ struct CJabberOptions
 		UseTLS(proto, "UseTLS", TRUE),
 		AcceptNotes(proto, "AcceptNotes", TRUE),
 		AutosaveNotes(proto, "AutosaveNotes", FALSE),
-		RcMarkMessagesAsRead(proto, "RcMarkMessagesAsRead", 1)
+		RcMarkMessagesAsRead(proto, "RcMarkMessagesAsRead", 1),
+		ConnectionKeepAliveInterval(proto, "ConnectionKeepAliveInterval", 60000),
+		ConnectionKeepAliveTimeout(proto, "ConnectionKeepAliveTimeout", 50000)
 		{}
 /*
 JGetByte( hContact, "ChatRoom", 0 )
