@@ -115,6 +115,8 @@ enum yahoo_service { /* these are easier to see in hex */
 	YAHOO_SERVICE_Y8_STATUS_UPDATE = 0xf0,			/* YMSG15 */
 	YAHOO_SERVICE_Y8_LIST = 0Xf1,			/* YMSG15 */
 	YAHOO_SERVICE_Y9_MESSAGE_ACK = 0Xfb,	/* YMSG16 */
+	YAHOO_SERVICE_Y9_PINGBOX_LIST = 0Xfc,	/* YMSG16 */
+	YAHOO_SERVICE_Y9_PINGBOX_GUEST_STATUS = 0Xfd,	/* YMSG16 */
 	YAHOO_SERVICE_WEBLOGIN = 0x0226,
 	YAHOO_SERVICE_SMS_MSG = 0x02ea,
 	YAHOO_SERVICE_Y7_DISCONNECTED = 0x07d1  /* YMSG15, saw this for Auth Failed and ping flood/ban */

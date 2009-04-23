@@ -1188,10 +1188,13 @@ void CYahooProto::ext_error(const char *err, int fatal, int num)
 	ShowError(Translate("Yahoo Error"), buff);
 }
 
+extern HANDLE g_hNetlibUser;
+
 int CYahooProto::ext_connect(const char *h, int p, int type)
 {
 	LOG(("[ext_yahoo_connect] %s:%d type: %d", h, p, type));
 
+	HANDLE hUser=m_hNetlibUser;
 	NETLIBOPENCONNECTION ncon = {0};
 	ncon.cbSize = sizeof(ncon); 
 	ncon.flags = NLOCF_V2;
@@ -1199,10 +1202,12 @@ int CYahooProto::ext_connect(const char *h, int p, int type)
 	ncon.wPort = p;
 	ncon.timeout = 5;	
 
-	if (type != YAHOO_CONNECTION_PAGER)
+	if (type != YAHOO_CONNECTION_PAGER) {
 		ncon.flags |= NLOCF_HTTP;
+		hUser		= g_hNetlibUser;
+	}
 
-	HANDLE con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)m_hNetlibUser, (LPARAM)&ncon);
+	HANDLE con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)hUser, (LPARAM)&ncon);
 	if (con == NULL)  {
 		LOG(("ERROR: Connect Failed!"));
 		return -1;
