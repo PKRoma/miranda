@@ -588,34 +588,44 @@ struct SavedContactState_t
 	int checked;
 };
 
+static int CompareContactState( const SavedContactState_t* p1, const SavedContactState_t* p2 )
+{	return INT_PTR(p1->hContact) - INT_PTR(p2->hContact);
+}
+
 struct SavedGroupState_t
 {
 	int groupId, expanded;
 };
 
+static int CompareGroupState( const SavedGroupState_t* p1, const SavedGroupState_t* p2 )
+{	return p1->groupId - p2->groupId;
+}
+
 struct SavedInfoState_t
 {
 	int parentId;
-	struct ClcContact contact;
+	ClcContact contact;
 };
+
+static int CompareInfoState( const SavedInfoState_t* p1, const SavedInfoState_t* p2 )
+{	return p1->parentId - p2->parentId;
+}
 
 void fnSaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 {
 	NMCLISTCONTROL nm;
 	int i, j;
-	struct SavedGroupState_t *savedGroup = NULL;
-	int savedGroupCount = 0, savedGroupAlloced = 0;
-	struct SavedContactState_t *savedContact = NULL;
-	int savedContactCount = 0, savedContactAlloced = 0;
-	struct SavedInfoState_t *savedInfo = NULL;
-	int savedInfoCount = 0, savedInfoAlloced = 0;
-	struct ClcGroup *group;
-	struct ClcContact *contact;
+	ClcGroup *group;
+	ClcContact *contact;
 
 	cli.pfnHideInfoTip(hwnd, dat);
 	KillTimer(hwnd, TIMERID_INFOTIP);
 	KillTimer(hwnd, TIMERID_RENAME);
 	cli.pfnEndRename(hwnd, dat, 1);
+
+	OBJLIST<SavedContactState_t> saveContact( 10, CompareContactState );
+	OBJLIST<SavedGroupState_t> saveGroup( 100, CompareGroupState );
+	OBJLIST<SavedInfoState_t> saveInfo( 10, CompareInfoState );
 
 	dat->needsResort = 1;
 	group = &dat->list;
@@ -629,34 +639,25 @@ void fnSaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 		else if (group->cl.items[group->scanIndex]->type == CLCIT_GROUP) {
 			group = group->cl.items[group->scanIndex]->group;
 			group->scanIndex = 0;
-			if (++savedGroupCount > savedGroupAlloced) {
-				savedGroupAlloced += 8;
-				savedGroup = (struct SavedGroupState_t *) mir_realloc(savedGroup, sizeof(struct SavedGroupState_t) * savedGroupAlloced);
-			}
-			savedGroup[savedGroupCount - 1].groupId = group->groupId;
-			savedGroup[savedGroupCount - 1].expanded = group->expanded;
+
+			SavedGroupState_t* p = new SavedGroupState_t;
+			p->groupId = group->groupId;
+			p->expanded = group->expanded;
+			saveGroup.insert( p );
 			continue;
 		}
 		else if (group->cl.items[group->scanIndex]->type == CLCIT_CONTACT) {
-			if (++savedContactCount > savedContactAlloced) {
-				savedContactAlloced += 16;
-				savedContact = (struct SavedContactState_t *) mir_realloc(savedContact, sizeof(struct SavedContactState_t) * savedContactAlloced);
-			}
-			savedContact[savedContactCount - 1].hContact = group->cl.items[group->scanIndex]->hContact;
-			CopyMemory(savedContact[savedContactCount - 1].iExtraImage, group->cl.items[group->scanIndex]->iExtraImage,
+			SavedContactState_t* p = new SavedContactState_t;
+			p->hContact = group->cl.items[group->scanIndex]->hContact;
+			CopyMemory( p->iExtraImage, group->cl.items[group->scanIndex]->iExtraImage,
 				sizeof(group->cl.items[group->scanIndex]->iExtraImage));
-			savedContact[savedContactCount - 1].checked = group->cl.items[group->scanIndex]->flags & CONTACTF_CHECKED;
+			p->checked = group->cl.items[group->scanIndex]->flags & CONTACTF_CHECKED;
+			saveContact.insert( p );
 		}
 		else if (group->cl.items[group->scanIndex]->type == CLCIT_INFO) {
-			if (++savedInfoCount > savedInfoAlloced) {
-				savedInfoAlloced += 4;
-				savedInfo = (struct SavedInfoState_t *) mir_realloc(savedInfo, sizeof(struct SavedInfoState_t) * savedInfoAlloced);
-			}
-			if (group->parent == NULL)
-				savedInfo[savedInfoCount - 1].parentId = -1;
-			else
-				savedInfo[savedInfoCount - 1].parentId = group->groupId;
-			savedInfo[savedInfoCount - 1].contact = *group->cl.items[group->scanIndex];
+			SavedInfoState_t* p = new SavedInfoState_t;
+			p->parentId = (group->parent == NULL) ? -1 : group->groupId;
+			p->contact = *group->cl.items[group->scanIndex];
 		}
 		group->scanIndex++;
 	}
@@ -675,42 +676,38 @@ void fnSaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 		else if (group->cl.items[group->scanIndex]->type == CLCIT_GROUP) {
 			group = group->cl.items[group->scanIndex]->group;
 			group->scanIndex = 0;
-			for (i = 0; i < savedGroupCount; i++)
-				if (savedGroup[i].groupId == group->groupId) {
-					group->expanded = savedGroup[i].expanded;
-					break;
-				}
-				continue;
+
+			SavedGroupState_t tmp, *p;
+			tmp.groupId = group->groupId;
+			if (( p = saveGroup.find( &tmp )) != NULL )
+				group->expanded = p->expanded;
+			continue;
 		}
 		else if (group->cl.items[group->scanIndex]->type == CLCIT_CONTACT) {
-			for (i = 0; i < savedContactCount; i++)
-				if (savedContact[i].hContact == group->cl.items[group->scanIndex]->hContact) {
-					CopyMemory(group->cl.items[group->scanIndex]->iExtraImage, savedContact[i].iExtraImage,
+			SavedContactState_t tmp, *p;
+			tmp.hContact = group->cl.items[group->scanIndex]->hContact;
+			if (( p = saveContact.find( &tmp )) != NULL ) {
+				CopyMemory(group->cl.items[group->scanIndex]->iExtraImage, p->iExtraImage,
 						SIZEOF(group->cl.items[group->scanIndex]->iExtraImage));
-					if (savedContact[i].checked)
-						group->cl.items[group->scanIndex]->flags |= CONTACTF_CHECKED;
-					break;
-				}
-		}
+				if (p->checked)
+					group->cl.items[group->scanIndex]->flags |= CONTACTF_CHECKED;
+		}	}
+
 		group->scanIndex++;
 	}
-	if (savedGroup)
-		mir_free(savedGroup);
-	if (savedContact)
-		mir_free(savedContact);
-	for (i = 0; i < savedInfoCount; i++) {
-		if (savedInfo[i].parentId == -1)
+
+	for (i = 0; i < saveInfo.getCount(); i++) {
+		if (saveInfo[i].parentId == -1)
 			group = &dat->list;
 		else {
-			if (!cli.pfnFindItem(hwnd, dat, (HANDLE) (savedInfo[i].parentId | HCONTACT_ISGROUP), &contact, NULL, NULL))
+			if (!cli.pfnFindItem(hwnd, dat, (HANDLE) (saveInfo[i].parentId | HCONTACT_ISGROUP), &contact, NULL, NULL))
 				continue;
 			group = contact->group;
 		}
-		j = cli.pfnAddInfoItemToGroup(group, savedInfo[i].contact.flags, _T(""));
-		*group->cl.items[j] = savedInfo[i].contact;
+		j = cli.pfnAddInfoItemToGroup(group, saveInfo[i].contact.flags, _T(""));
+		*group->cl.items[j] = saveInfo[i].contact;
 	}
-	if (savedInfo)
-		mir_free(savedInfo);
+
 	cli.pfnRecalculateGroupCheckboxes(hwnd, dat);
 
 	cli.pfnRecalcScrollBar(hwnd, dat);
