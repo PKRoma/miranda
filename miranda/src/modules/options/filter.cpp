@@ -54,7 +54,11 @@ INT_PTR CALLBACK DlgProcOptSearch(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 			break;
 		}
 		break;
-	
+
+	case WM_SETFOCUS:
+		SetFocus(GetDlgItem(hWnd, IDC_ENABLE_KEYWORDFILTERING));
+		break;
+
 	case WM_NOTIFY:
 		switch(((LPNMHDR)lParam)->idFrom) {
 		case 0:
@@ -144,8 +148,7 @@ void AddFilterString(const PageHash key, TCHAR *data)
 
 void ClearFilterStrings()
 {
-	while( filterStrings.getCount() > 0 )
-		filterStrings.remove( filterStrings.getCount() - 1 );
+    filterStrings.destroy();
 }
 
 BOOL ContainsFilterString(const PageHash key, TCHAR *data)
