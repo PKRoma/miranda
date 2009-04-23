@@ -2404,7 +2404,7 @@ bool CIrcProto::DoOnConnect( const CIrcMessage* )
 		CMString S = _T("/AWAY ");
 		S += m_statusMessage;
 		ReplaceString( S, _T("\r\n"), _T(" "));
-		PostIrcMessage( S.c_str());
+		PostIrcMessageWnd( NULL, NULL, S.c_str());
 	}
 	
 	if ( m_perform ) {
