@@ -89,7 +89,9 @@ int LoadButtonModule(void)
 void UnloadButtonModule()
 {
 	if ( !bModuleInitialized ) return;
+    EnterCriticalSection(&csTips);
 	List_Destroy(&lToolTips);
+    LeaveCriticalSection(&csTips);
 	DeleteCriticalSection(&csTips);
 }
 
@@ -296,7 +298,6 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 
 	case WM_DESTROY:
 		if (bct) {
-			EnterCriticalSection(&csTips);
 			if (bct->hwndToolTips) {
 				TOOLINFO ti = {0};
 				ti.cbSize = sizeof(ti);
@@ -310,15 +311,18 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 					int idx;
 					TTooltips tt;
 					tt.ThreadId = GetCurrentThreadId();
+			        
+                    EnterCriticalSection(&csTips);
 					if ( List_GetIndex( &lToolTips, &tt, &idx ) ) {
 						mir_free( lToolTips.items[idx] );
 						List_Remove( &lToolTips, idx );
 						DestroyWindow( bct->hwndToolTips );
 					}
-					bct->hwndToolTips = NULL;
+			        LeaveCriticalSection(&csTips);
+					
+                    bct->hwndToolTips = NULL;
 				}
 			}
-			LeaveCriticalSection(&csTips);
 			if (bct->arrow) IconLib_ReleaseIcon(bct->arrow, 0);
 			DestroyTheme(bct);
 			mir_free(bct);
@@ -455,11 +459,12 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 	case BUTTONADDTOOLTIP:
 		if ( wParam ) {
 			TOOLINFO ti = {0};
-			EnterCriticalSection(&csTips);
 			if ( !bct->hwndToolTips ) {
 				int idx;
 				TTooltips tt;
 				tt.ThreadId = GetCurrentThreadId();
+			    
+                EnterCriticalSection(&csTips);
 				if ( List_GetIndex( &lToolTips, &tt, &idx )) {
 					bct->hwndToolTips = ((TTooltips*)lToolTips.items[idx])->hwnd;
 				} else {
@@ -469,6 +474,7 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 					List_Insert( &lToolTips, ptt, idx );
 					bct->hwndToolTips = ptt->hwnd;
 				}
+    			LeaveCriticalSection(&csTips);
 			}
 			ti.cbSize = sizeof(ti);
 			ti.uFlags = TTF_IDISHWND;
@@ -487,7 +493,6 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 				ti.lpszText = Translate(( char* )wParam );
 			#endif
 			SendMessage( bct->hwndToolTips, TTM_ADDTOOL, 0, (LPARAM)&ti);
-			LeaveCriticalSection(&csTips);
 			#if defined( _UNICODE )
 				mir_free( ti.lpszText );
 			#endif
