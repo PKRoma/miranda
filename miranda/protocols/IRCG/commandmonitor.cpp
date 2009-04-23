@@ -597,9 +597,9 @@ bool CIrcProto::OnIrc_NICK( const CIrcMessage* pmsg )
 	if ( pmsg->m_bIncoming && pmsg->parameters.getCount() > 0 ) {
 		bool bIsMe = pmsg->prefix.sNick.c_str() == m_info.sNick ? true : false;
 
-		if (( m_info.sNick == pmsg->prefix.sNick) && (pmsg->parameters.getCount() > 0 )) {
+		if ( m_info.sNick == pmsg->prefix.sNick && pmsg->parameters.getCount() > 0 ) {
 			m_info.sNick = pmsg->parameters[0];
-			DBWriteContactSettingTString(NULL, m_szModuleName,"Nick", m_info.sNick.c_str());
+			setTString("Nick", m_info.sNick.c_str());
 		}
 
 		CMString host = pmsg->prefix.sUser + _T("@") + pmsg->prefix.sHost;
@@ -2356,7 +2356,10 @@ void CIrcProto::OnIrcDisconnected()
 
 	if ( !Miranda_Terminated() )
 		CList_SetAllOffline( m_disconnectDCCChats );
-	setTString( "Nick", m_nick );
+	
+	// restore the original nick, cause it might be changed
+	memcpy( m_nick, m_pNick, sizeof( m_nick ));
+	setTString( "Nick", m_pNick );
 	
 	CLISTMENUITEM clmi = {0};
 	clmi.cbSize = sizeof( clmi );

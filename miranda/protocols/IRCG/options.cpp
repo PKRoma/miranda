@@ -730,7 +730,7 @@ void CConnectPrefsDlg::OnApply()
 
 	m_nick.GetText( m_proto->m_nick, SIZEOF(m_proto->m_nick));
 	removeSpaces(m_proto->m_nick);
-	mir_sntprintf(m_proto->m_pNick,30, _T("%s"), m_proto->m_nick);
+	mir_sntprintf(m_proto->m_pNick, SIZEOF(m_proto->m_pNick), _T("%s"), m_proto->m_nick);
 	m_nick2.GetText( m_proto->m_alternativeNick, SIZEOF(m_proto->m_alternativeNick));
 	removeSpaces(m_proto->m_alternativeNick);
 	m_userID.GetText( m_proto->m_userID, SIZEOF(m_proto->m_userID));
@@ -1724,10 +1724,15 @@ void CIrcProto::InitPrefs(void)
 	}
 
 	if ( m_pNick[0] == 0 ) {
-		if ( m_nick[0] != 0 )
+		if ( m_nick[0] != 0 ) {
+			memcpy( m_pNick, m_nick, sizeof( m_pNick ));
 			setTString("PNick", m_nick);
+		}
 	}
-//	else memcpy( m_nick, m_pNick, sizeof( m_nick ));
+	else {
+		memcpy( m_nick, m_pNick, sizeof( m_nick ));
+		setTString("Nick", m_nick);
+	}
 
 	m_mySpecifiedHostIP[0] = 0;
 
