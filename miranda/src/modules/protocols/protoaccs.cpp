@@ -210,11 +210,19 @@ int LoadAccountsModule( void )
 
         pa->bDynDisabled = !Proto_IsProtocolLoaded( pa->szProtoName );
 
-		if ( pa->ppro || !IsAccountEnabled( pa ))
+		if ( pa->ppro ) continue;
+        
+        if (!IsAccountEnabled( pa ))
+        {
+            pa->type = PROTOTYPE_DISPROTO;
 			continue;
+        }
 
 		if ( !ActivateAccount( pa ))
+        {
 			pa->bDynDisabled = TRUE;
+            pa->type = PROTOTYPE_DISPROTO;
+        }
 	}
 
 	HookEvent( ME_SYSTEM_MODULESLOADED, InitializeStaticAccounts );
@@ -316,6 +324,7 @@ BOOL ActivateAccount( PROTOACCOUNT* pa )
 	if ( ppi == NULL )
 		return FALSE;
 
+    pa->type = PROTOTYPE_PROTOCOL;
 	pa->ppro = ppi;
 	ppi->m_iDesiredStatus = ppi->m_iStatus = ID_STATUS_OFFLINE;
 	CreateProtoServiceEx( pa->szModuleName, PS_ADDTOLIST, (MIRANDASERVICEOBJ)stub1, pa->ppro );
@@ -386,6 +395,7 @@ void DeactivateAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
 	param->fnUninit = GetProtocolDestructor( pa->szProtoName );
 	param->bIsDynamic = bIsDynamic;
 	pa->ppro = NULL;
+    pa->type = PROTOTYPE_DISPROTO;
 	if ( bIsDynamic )
 		mir_forkthread(( pThreadFunc )DeactivationThread, param );
 	else 
