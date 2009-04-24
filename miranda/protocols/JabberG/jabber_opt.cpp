@@ -1715,10 +1715,10 @@ protected:
 			m_cbType.SetCurSel(ACC_GTALK);
 		else if (!lstrcmpA(server, "livejournal.com"))
 			m_cbType.SetCurSel(ACC_LJTALK);
-		else if (m_proto->m_options.UseTLS)
-			m_cbType.SetCurSel(ACC_TLS);
 		else if (m_proto->m_options.UseSSL)
 			m_cbType.SetCurSel(ACC_SSL);
+		else if (m_proto->m_options.UseTLS)
+			m_cbType.SetCurSel(ACC_TLS);
 		else
 			m_cbType.SetCurSel(ACC_PUBLIC);
 		cbType_OnChange(&m_cbType);
