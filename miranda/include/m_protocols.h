@@ -201,6 +201,7 @@ typedef struct {
 #define PROTOTYPE_FILTER      3000
 #define PROTOTYPE_TRANSLATION 4000
 #define PROTOTYPE_OTHER       10000   //avoid using this if at all possible
+#define PROTOTYPE_DISPROTO    20000
 
 #if MIRANDA_VER >= 0x800
 	#define MS_PROTO_ENUMPROTOS        "Proto/EnumProtos"
@@ -311,6 +312,7 @@ __inline static PROTOACCOUNT* ProtoGetAccount( const char* accName )
 #define PRAC_REMOVED  3
 #define PRAC_UPGRADED 4
 #define PRAC_CHECKED  5
+#define PRAC_CONVERT  6
 
 #define ME_PROTO_ACCLISTCHANGED "Proto/AccListChanged"
 
