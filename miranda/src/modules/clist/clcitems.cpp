@@ -658,6 +658,7 @@ void fnSaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 			SavedInfoState_t* p = new SavedInfoState_t;
 			p->parentId = (group->parent == NULL) ? -1 : group->groupId;
 			p->contact = *group->cl.items[group->scanIndex];
+			saveInfo.insert( p );
 		}
 		group->scanIndex++;
 	}
