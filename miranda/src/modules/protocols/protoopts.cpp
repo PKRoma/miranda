@@ -404,8 +404,8 @@ static void sttUpdateAccountInfo(HWND hwndDlg, struct TAccMgrData *dat)
 
 			if ( dat->iSelected >= 0 ) {
 				PROTOACCOUNT *pa_old = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, dat->iSelected);
-				if (pa_old && (pa_old != pa) && pa_old->hwndAccMgrUI)
-					ShowWindow(pa_old->hwndAccMgrUI, SW_HIDE);
+				if (pa_old && pa_old != pa)
+                    ShowWindow(pa_old->hwndAccMgrUI ? pa_old->hwndAccMgrUI : GetDlgItem(hwndDlg, IDC_TXT_INFO), SW_HIDE);
 			}
 
 			if ( pa->hwndAccMgrUI )
