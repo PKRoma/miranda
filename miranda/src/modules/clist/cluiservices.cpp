@@ -155,7 +155,6 @@ void fnCluiProtocolStatusChanged(int, const char* )
 {
 	int i, *partWidths;
 	int borders[3];
-	int status;
 	int flags = 0;
 
 	if ( cli.menuProtoCount == 0 )
@@ -214,7 +213,6 @@ void fnCluiProtocolStatusChanged(int, const char* )
 	if ( DBGetContactSettingByte( NULL, "CLUI", "SBarBevel", 1 ) == 0 )
 		flags |= SBT_NOBORDERS;
 	for ( i = 0; i < cli.menuProtoCount; i++ ) {
-		status = CallProtoService( cli.menuProtos[i].szProto, PS_GETSTATUS, 0, 0);
 		SendMessage( cli.hwndStatus, SB_SETTEXT, i | flags, ( LPARAM )cli.menuProtos[i].szProto );
 	}
 }
