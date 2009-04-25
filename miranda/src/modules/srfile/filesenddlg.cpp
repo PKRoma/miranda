@@ -218,8 +218,7 @@ INT_PTR CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 	{
 		struct FileSendData *fsd=(struct FileSendData*)lParam;
 
-		dat=(struct FileDlgData*)mir_alloc(sizeof(struct FileDlgData));
-		memset(dat,0,sizeof(struct FileDlgData));
+		dat=(struct FileDlgData*)mir_calloc(sizeof(struct FileDlgData));
 		SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)dat);
 		dat->hContact=fsd->hContact;
 		dat->send=1;
