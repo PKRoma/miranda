@@ -1032,7 +1032,6 @@ int __cdecl CIrcProto::OnMenuPreBuild(WPARAM wParam, LPARAM)
 
 void __cdecl CIrcProto::ConnectServerThread( void* )
 {
-	EnterCriticalSection(&cs);
 	InterlockedIncrement((long *) &m_bConnectThreadRunning);
 	InterlockedIncrement((long *) &m_bConnectRequested);
 	while ( !Miranda_Terminated() && m_bConnectRequested > 0 ) {
@@ -1049,7 +1048,9 @@ void __cdecl CIrcProto::ConnectServerThread( void* )
 		nickflag = false;
 		ProtoBroadcastAck(m_szModuleName,NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)Temp,ID_STATUS_CONNECTING);
 		Sleep(100);
+	    EnterCriticalSection(&cs);
 		Connect(si);
+	    LeaveCriticalSection(&cs);
 		if (IsConnected()) {
 			KillChatTimer( RetryTimer );
 
@@ -1066,8 +1067,6 @@ void __cdecl CIrcProto::ConnectServerThread( void* )
 	}	}
 
 	InterlockedDecrement((long *) &m_bConnectThreadRunning);
-	LeaveCriticalSection(&cs);
-	return;
 }
 
 void __cdecl CIrcProto::DisconnectServerThread( void* )
