@@ -209,7 +209,7 @@ static int OnModulesLoaded( WPARAM, LPARAM )
 
 	// Init extra icons
 	hExtraActivity = ExtraIcon_Register("activity", "Activity" /* No icons registered, "working" */);
-	hExtraMood = ExtraIcon_Register("xstatus", "Mood" /* No icons registered, "amazed" */);
+	hExtraMood = ExtraIcon_Register("mood", "Mood" /* No icons registered, "amazed" */);
 
 	return 0;
 }
