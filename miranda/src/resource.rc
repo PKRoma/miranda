@@ -152,8 +152,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CENTER | 
 CAPTION "Miranda IM Profile Manager"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "Miranda\nSelect or create your Miranda IM user profile",IDC_STATIC,
-                    "MHeaderbarCtrl",WS_TABSTOP,0,0,400,25
+    CONTROL         "",IDC_NAME,"MHeaderbarCtrl",WS_TABSTOP,0,0,400,25
     CONTROL         "Tab1",IDC_TABS,"SysTabControl32",TCS_HOTTRACK | WS_TABSTOP,4,31,393,160
     PUSHBUTTON      "&Run",IDOK,298,194,48,14
     PUSHBUTTON      "&Exit",IDCANCEL,348,194,48,14

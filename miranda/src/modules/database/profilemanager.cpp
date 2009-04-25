@@ -441,14 +441,14 @@ static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam,
 		prof->hwndOK = GetDlgItem( hwndDlg, IDOK );
 		EnableWindow( prof->hwndOK, FALSE );
 		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, (LONG_PTR)dat );
-		SetDlgItemText( hwndDlg, IDC_NAME, TranslateT("Miranda IM Profile Manager"));
-		{	LOGFONT lf;
-			HFONT hNormalFont = ( HFONT )SendDlgItemMessage( hwndDlg, IDC_NAME, WM_GETFONT, 0, 0 );
-			GetObject( hNormalFont, sizeof( lf ), &lf );
-			lf.lfWeight = FW_BOLD;
-			dat->hBoldFont = CreateFontIndirect(&lf);
-			SendDlgItemMessage( hwndDlg, IDC_NAME, WM_SETFONT, ( WPARAM )dat->hBoldFont, 0 );
-		}
+
+        {
+            TCHAR buf[512];
+            mir_sntprintf(buf, SIZEOF(buf), _T("%s: %s\n%s"), TranslateT("Miranda Profiles from"), prof->pd->szProfileDir, 
+                TranslateT("Select or create your Miranda IM user profile"));
+            SetDlgItemText(hwndDlg, IDC_NAME, buf);
+        }
+
 		{	OPTIONSDIALOGPAGE *odp;
 			int i;
 			TCITEM tci;
@@ -527,7 +527,6 @@ static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam,
 		switch ( GetDlgCtrlID(( HWND )lParam )) {
 		case IDC_WHITERECT:
 		case IDC_LOGO:
-		case IDC_NAME:
 		case IDC_DESCRIPTION:
 			SetBkColor(( HDC )wParam, GetSysColor( COLOR_WINDOW ));
 			return ( INT_PTR )GetSysColorBrush( COLOR_WINDOW );
@@ -654,7 +653,6 @@ static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam,
 			}
 		}
 		DestroyIcon(( HICON )SendMessage(hwndDlg, WM_SETICON, ICON_BIG, 0));
-		SendDlgItemMessage( hwndDlg, IDC_NAME, WM_SETFONT, SendDlgItemMessage( hwndDlg, IDC_WHITERECT, WM_GETFONT, 0, 0 ), 0 );
 		DeleteObject( dat->hBoldFont );
 		{	int i;
 			for ( i=0; i < dat->pageCount; i++ )
