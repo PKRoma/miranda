@@ -43,6 +43,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #		define _CRTDBG_MAP_ALLOC
 #		include <stdlib.h>
 #		include <crtdbg.h>
+#       define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #  else
 #		include <stdlib.h>
 #	endif
@@ -68,5 +69,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #if _MSC_VER >= 1400
 #	include <malloc.h>   // to avoid a warning in VS2005 & 2008
 #endif
+
 
 #endif // M_STDHDR_H__

@@ -445,18 +445,6 @@ char *normalize_name(const char *s)
     return buf;
 }
 
-char* lowercase_name(char* s)
-{   
-	if (s == NULL)
-		return NULL;
-	static char buf[64];
-	int i=0;
-	for (; s[i]; i++)
-		buf[i] = (char)tolower(s[i]);
-	buf[i] = '\0';
-	return buf;
-}
-
 char* trim_str(char* s)
 {   
 	if (s == NULL) return NULL;
