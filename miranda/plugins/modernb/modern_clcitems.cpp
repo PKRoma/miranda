@@ -44,8 +44,8 @@ void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont, BOOL showOffl
 	}
 
 	cont->isSubcontact=0;
-	cont->subcontacts=(struct ClcContact *) mir_alloc(sizeof(struct ClcContact)*subcount);
-	ZeroMemory(cont->subcontacts, sizeof(struct ClcContact)*subcount);
+    mir_free(cont->subcontacts);
+	cont->subcontacts=(struct ClcContact *) mir_calloc(sizeof(struct ClcContact)*subcount);
 	cont->SubAllocated=subcount;
 	i=0;
 	for (j=0; j<subcount; j++) {
