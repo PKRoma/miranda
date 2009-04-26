@@ -303,7 +303,7 @@ void CAimProto::offline_contact(HANDLE hContact, bool remove_settings)
 	setWord(hContact, AIM_KEY_ST, ID_STATUS_OFFLINE);
 }
 
-void CAimProto::offline_contacts()
+void CAimProto::offline_contacts(void)
 {
 	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	while (hContact)
@@ -316,112 +316,6 @@ void CAimProto::offline_contacts()
     allow_list.destroy();
     block_list.destroy();
     group_list.destroy();
-}
-
-void CAimProto::remove_AT_icons()
-{
-	if(!ServiceExists(MS_CLIST_EXTRA_ADD_ICON)) return;
-	
-	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	while (hContact)
-	{
-		if (is_my_contact(hContact))
-		{
-			DBVARIANT dbv;
-			if (!getString(hContact, AIM_KEY_SN, &dbv))
-			{
-		        set_extra_icon(hContact, (HANDLE)-1, EXTRA_ICON_ADV2);
-				DBFreeVariant(&dbv);
-			}
-		}
-		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
-	}
-}
-
-void CAimProto::remove_ES_icons()
-{
-	if(!ServiceExists(MS_CLIST_EXTRA_ADD_ICON)) return;
-
-	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	while (hContact)
-	{
-		if (is_my_contact(hContact))
-		{
-			DBVARIANT dbv;
-			if (!getString(hContact, AIM_KEY_SN, &dbv))
-			{
-		        set_extra_icon(hContact, (HANDLE)-1, EXTRA_ICON_ADV3);
-				DBFreeVariant(&dbv);
-			}
-		}
-		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
-	}
-}
-
-void CAimProto::add_AT_icons()
-{
-	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	while (hContact)
-	{
-		if (is_my_contact(hContact))
-		{
-			DBVARIANT dbv;
-			if (!getString(hContact, AIM_KEY_SN, &dbv))
-			{
-		        switch(getByte(hContact, AIM_KEY_AC, 0))
-                {
-                case ACCOUNT_TYPE_ADMIN:
-			        set_extra_icon(hContact, admin_icon, EXTRA_ICON_ADV2);
-                    break;
-
-                case ACCOUNT_TYPE_AOL:
-			        set_extra_icon(hContact, aol_icon, EXTRA_ICON_ADV2);
-                    break;
-
-                case ACCOUNT_TYPE_ICQ:
-			        set_extra_icon(hContact, icq_icon, EXTRA_ICON_ADV2);
-                    break;
-
-                case ACCOUNT_TYPE_UNCONFIRMED:
-			        set_extra_icon(hContact, unconfirmed_icon, EXTRA_ICON_ADV2);
-                    break;
-
-                case ACCOUNT_TYPE_CONFIRMED:
-			        set_extra_icon(hContact, confirmed_icon, EXTRA_ICON_ADV2);
-                    break;
-                }
-				DBFreeVariant(&dbv);
-			}
-		}
-		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
-	}
-}
-
-void CAimProto::add_ES_icons()
-{
-	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	while (hContact)
-	{
-		if (is_my_contact(hContact))
-		{
-			DBVARIANT dbv;
-			if (!getString(hContact, AIM_KEY_SN, &dbv))
-			{
-		        switch(getByte(hContact, AIM_KEY_ET, 0))
-                {
-                case EXTENDED_STATUS_BOT:
-			        set_extra_icon(hContact, bot_icon, EXTRA_ICON_ADV3);
-                    break;
-
-                case EXTENDED_STATUS_HIPTOP:
-			        set_extra_icon(hContact, hiptop_icon, EXTRA_ICON_ADV3);
-                    break;
-	            }	
-				DBFreeVariant(&dbv);
-			}
-		}
-		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
-	}
 }
 
 char *normalize_name(const char *s)
@@ -856,37 +750,6 @@ bool is_naim_ver_cap(char* cap)
 bool is_digsby_ver_cap(char* cap)
 {
     return memcmp(cap,"digsby",6) == 0;
-}
-
-void CAimProto::load_extra_icons()
-{
-	if (/*!extra_icons_loaded && */ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
-	{
-		extra_icons_loaded = true;
-		bot_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)LoadIconEx("bot"), 0);
-		ReleaseIconEx("bot");
-		icq_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)LoadIconEx("icq"), 0);
-		ReleaseIconEx("icq");
-		aol_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)LoadIconEx("aol"), 0);
-		ReleaseIconEx("aol");
-		hiptop_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)LoadIconEx("hiptop"), 0);
-		ReleaseIconEx("hiptop");
-		admin_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)LoadIconEx("admin"), 0);
-		ReleaseIconEx("admin");
-		confirmed_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)LoadIconEx("confirm"), 0);
-		ReleaseIconEx("confirm");
-		unconfirmed_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)LoadIconEx("uconfirm"), 0);
-		ReleaseIconEx("uconfirm");
-	}
-}
-
-void set_extra_icon(HANDLE hContact, HANDLE hImage, int column_type)
-{
-	IconExtraColumn iec;
-	iec.cbSize = sizeof(iec);
-	iec.hImage = hImage;
-	iec.ColumnType = column_type;
-	CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

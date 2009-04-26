@@ -93,6 +93,8 @@ extern "C" __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
 	aim_links_init();
+    InitIcons();
+    InitExtraIcons();
 
 	return 0;
 }
@@ -131,8 +133,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	pd.fnUninit = protoUninit;
 	CallService(MS_PROTO_REGISTERMODULE, 0, (LPARAM) & pd);
 
-    InitIcons();
-    ThemeSupport();
+    InitThemeSupport();
 
     return 0;
 }
@@ -144,5 +145,7 @@ extern "C" int __declspec(dllexport) Unload(void)
 {
 	aim_links_destroy();
 	UnhookEvent(hMooduleLoaded);
-	return 0;
+
+    DestroyExtraIcons();
+    return 0;
 }

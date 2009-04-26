@@ -47,7 +47,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <m_clist.h>
 #include <m_clistint.h>
 #include <m_clui.h>
-#include <m_cluiframes.h>
 #include <m_database.h>
 #include <m_history.h>
 #include <m_idle.h>
@@ -74,7 +73,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "snac.h"
 #include "tlv.h"
 
-//rest o includes
+//rest of includes
 #include "avatars.h"
 #include "utility.h"
 #include "chat.h"
@@ -315,5 +314,16 @@ extern HINSTANCE hInstance; //plugin dll instance
 
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
 #define NEWTSTR_ALLOCA(A) (A==NULL)?NULL:_tcscpy((TCHAR*)alloca(sizeof(TCHAR)*(_tcslen(A)+1)),A)
+
+HICON  LoadIconEx(const char* name);
+HANDLE GetIconHandle(const char* name);
+void   ReleaseIconEx(const char* name);
+
+void   add_AT_icons(CAimProto* ppro);
+void   remove_AT_icons(CAimProto* ppro);
+void   add_ES_icons(CAimProto* ppro);
+void   remove_ES_icons(CAimProto* ppro);
+
+void set_contact_icon(CAimProto* ppro, HANDLE hContact);
 
 #endif

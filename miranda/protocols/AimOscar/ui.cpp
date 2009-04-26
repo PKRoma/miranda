@@ -230,14 +230,14 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				if(isSuper)
 				{
 					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState|ODS_SELECTED, lpDIS->rcItem);	
-					DrawIconEx(lpDIS->hDC, 4, 5, ppro->LoadIconEx("sup_scrpt"), 16, 16, 0, 0, DI_NORMAL);
-					ppro->ReleaseIconEx("sup_scrpt");
+					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("sup_scrpt"), 16, 16, 0, 0, DI_NORMAL);
+					ReleaseIconEx("sup_scrpt");
 				}
 				else
 				{	
 					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, ppro->LoadIconEx("nsup_scrpt"), 16, 16, 0, 0, DI_NORMAL);
-					ppro->ReleaseIconEx("nsup_scrpt");
+					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("nsup_scrpt"), 16, 16, 0, 0, DI_NORMAL);
+					ReleaseIconEx("nsup_scrpt");
 				}
 			}
 			else if(lpDIS->CtlID == IDC_NORMALSCRIPT)
@@ -251,14 +251,14 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				if(!isSub&&!isSuper)
 				{
 					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState|ODS_SELECTED, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, ppro->LoadIconEx("norm_scrpt"), 16, 16, 0, 0, DI_NORMAL);
-					ppro->ReleaseIconEx("norm_scrpt");
+					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("norm_scrpt"), 16, 16, 0, 0, DI_NORMAL);
+					ReleaseIconEx("norm_scrpt");
 				}
 				else
 				{
 					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, ppro->LoadIconEx("nnorm_scrpt"), 16, 16, 0, 0, DI_NORMAL);
-					ppro->ReleaseIconEx("nnorm_scrpt");
+					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("nnorm_scrpt"), 16, 16, 0, 0, DI_NORMAL);
+					ReleaseIconEx("nnorm_scrpt");
 				}
 			}
 			else if(lpDIS->CtlID == IDC_SUBSCRIPT)
@@ -271,14 +271,14 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				if(isSub)
 				{
 					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState|ODS_SELECTED, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, ppro->LoadIconEx("sub_scrpt"), 16, 16, 0, 0, DI_NORMAL);	
-					ppro->ReleaseIconEx("sub_scrpt");
+					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("sub_scrpt"), 16, 16, 0, 0, DI_NORMAL);	
+					ReleaseIconEx("sub_scrpt");
 				}
 				else
 				{
 					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, ppro->LoadIconEx("nsub_scrpt"), 16, 16, 0, 0, DI_NORMAL);
-					ppro->ReleaseIconEx("nsub_scrpt");
+					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("nsub_scrpt"), 16, 16, 0, 0, DI_NORMAL);
+					ReleaseIconEx("nsub_scrpt");
 				}
 			}
 			else if(lpDIS->CtlID == IDC_BOLD)
@@ -291,14 +291,14 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				if(!isBold)
 				{
 					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, ppro->LoadIconEx("nbold"), 16, 16, 0, 0, DI_NORMAL);
-					ppro->ReleaseIconEx("nbold");
+					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("nbold"), 16, 16, 0, 0, DI_NORMAL);
+					ReleaseIconEx("nbold");
 				}
 				else
 				{
 					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState|ODS_SELECTED, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, ppro->LoadIconEx("bold"), 16, 16, 0, 0, DI_NORMAL);
-					ppro->ReleaseIconEx("bold");
+					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("bold"), 16, 16, 0, 0, DI_NORMAL);
+					ReleaseIconEx("bold");
 				}
 			}
 			else if(lpDIS->CtlID == IDC_ITALIC)
@@ -311,14 +311,14 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				if(!isItalic)
 				{
 					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_ITALIC),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, ppro->LoadIconEx("nitalic"), 16, 16, 0, 0, DI_NORMAL);
-					ppro->ReleaseIconEx("nitalic");
+					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("nitalic"), 16, 16, 0, 0, DI_NORMAL);
+					ReleaseIconEx("nitalic");
 				}
 				else
 				{
 					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_ITALIC),hThemeButton,lpDIS->itemState|ODS_SELECTED, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, ppro->LoadIconEx("italic"), 16, 16, 0, 0, DI_NORMAL);
-					ppro->ReleaseIconEx("italic");
+					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("italic"), 16, 16, 0, 0, DI_NORMAL);
+					ReleaseIconEx("italic");
 				}
 			}
 			else if(lpDIS->CtlID == IDC_UNDERLINE)
@@ -331,21 +331,21 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				if(!isUnderline)
 				{
 					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_UNDERLINE),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, ppro->LoadIconEx("nundrln"), 16, 16, 0, 0, DI_NORMAL);
-					ppro->ReleaseIconEx("nundrln");
+					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("nundrln"), 16, 16, 0, 0, DI_NORMAL);
+					ReleaseIconEx("nundrln");
 				}
 				else
 				{
 					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_UNDERLINE),hThemeButton,lpDIS->itemState|ODS_SELECTED, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, ppro->LoadIconEx("undrln"), 16, 16, 0, 0, DI_NORMAL);
-					ppro->ReleaseIconEx("undrln");
+					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("undrln"), 16, 16, 0, 0, DI_NORMAL);
+					ReleaseIconEx("undrln");
 				}
 			}
 			else if(lpDIS->CtlID == IDC_FOREGROUNDCOLOR)
 			{
 				DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_FOREGROUNDCOLOR),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
-				DrawIconEx(lpDIS->hDC, 4, 2, ppro->LoadIconEx("foreclr"), 16, 16, 0, 0, DI_NORMAL);
-				ppro->ReleaseIconEx("foreclr");
+				DrawIconEx(lpDIS->hDC, 4, 2, LoadIconEx("foreclr"), 16, 16, 0, 0, DI_NORMAL);
+				ReleaseIconEx("foreclr");
 				HBRUSH	hbr = CreateSolidBrush(foreground);
 				HPEN hp = CreatePen(PS_SOLID, 1, ~foreground&0x00ffffff);
 				SelectObject(lpDIS->hDC,hp);
@@ -380,8 +380,8 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			else if(lpDIS->CtlID == IDC_BACKGROUNDCOLOR)
 			{
 				DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BACKGROUNDCOLOR),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
-				DrawIconEx(lpDIS->hDC, 4, 2, ppro->LoadIconEx("backclr"), 16, 16, 0, 0, DI_NORMAL);
-				ppro->ReleaseIconEx("backclr");
+				DrawIconEx(lpDIS->hDC, 4, 2, LoadIconEx("backclr"), 16, 16, 0, 0, DI_NORMAL);
+				ReleaseIconEx("backclr");
 				HBRUSH	hbr = CreateSolidBrush(background);
 				HPEN hp = CreatePen(PS_SOLID, 1, ~background&0x00ffffff);
 				SelectObject(lpDIS->hDC,hp);
@@ -923,32 +923,31 @@ static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				{
 					int acc_disabled = ppro->getByte( AIM_KEY_AT, 0);
 					if(!acc_disabled)
-						ppro->remove_AT_icons();
+						remove_AT_icons(ppro);
 					ppro->setByte( AIM_KEY_AT, 1);
 				}
 				else
 				{
 					int acc_disabled = ppro->getByte( AIM_KEY_AT, 0);
 					if(acc_disabled)
-						ppro->add_AT_icons();
+						add_AT_icons(ppro);
 					ppro->setByte( AIM_KEY_AT, 0);
 				}
 				//END
-
 				//Disable Extra Status Icons
 				if (IsDlgButtonChecked(hwndDlg, IDC_ES))
 				{
 					int es_disabled = ppro->getByte( AIM_KEY_ES, 0);
-					if(!es_disabled)
-						ppro->remove_ES_icons();
 					ppro->setByte( AIM_KEY_ES, 1);
+					if(!es_disabled)
+						remove_ES_icons(ppro);
 				}
 				else
 				{
 					int es_disabled = ppro->getByte( AIM_KEY_ES, 0);
-					if(es_disabled)
-						ppro->add_ES_icons();
 					ppro->setByte( AIM_KEY_ES, 0);
+					if(es_disabled)
+						add_ES_icons(ppro);
 				}
 				//End
 
@@ -1226,7 +1225,7 @@ INT_PTR CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		ppro = (CAimProto*)lParam;
 		{
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)ppro->LoadIconEx("idle"));
+			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("idle"));
 			unsigned long it = ppro->getDword( AIM_KEY_IIT, 0);
 			unsigned long hours=it/60;
 			unsigned long minutes=it%60;
@@ -1239,7 +1238,7 @@ INT_PTR CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		break;
 
 	case WM_DESTROY:
-		ppro->ReleaseIconEx("idle");
+		ReleaseIconEx("idle");
 		break;
 
 	case WM_COMMAND:
@@ -1285,7 +1284,7 @@ INT_PTR CALLBACK join_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		ppro = (CAimProto*)lParam;
-		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)ppro->LoadIconEx("aol"));
+		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("aol"));
 		break;
 
 	case WM_CLOSE:
@@ -1293,7 +1292,7 @@ INT_PTR CALLBACK join_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		break;
 
 	case WM_DESTROY:
-		ppro->ReleaseIconEx("aol");
+		ReleaseIconEx("aol");
 		break;
 
 	case WM_COMMAND:
@@ -1407,7 +1406,7 @@ INT_PTR CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		param = (invite_chat_param*)lParam;
 
-		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)param->ppro->LoadIconEx("aol"));
+		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("aol"));
         SetDlgItemTextA(hwndDlg, IDC_ROOMNAME, param->id);
         SetDlgItemTextA(hwndDlg, IDC_MSG, Translate("Join me in this buddy chat!"));
         break;
@@ -1417,7 +1416,7 @@ INT_PTR CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		break;
 
 	case WM_NCDESTROY:
-		param->ppro->ReleaseIconEx("aol");
+		ReleaseIconEx("aol");
         delete param;
 		break;
 
@@ -1502,7 +1501,7 @@ INT_PTR CALLBACK chat_request_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 	    SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 	    param = (invite_chat_req_param*)lParam;
 
-	    SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)param->ppro->LoadIconEx("aol"));
+	    SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("aol"));
 
 	    SetDlgItemTextA(hwndDlg, IDC_ROOMNAME, strrchr(param->cnp->id, '-')+1);
 	    SetDlgItemTextA(hwndDlg, IDC_SCREENNAME,  param->name);
@@ -1514,7 +1513,7 @@ INT_PTR CALLBACK chat_request_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		break;
 
 	case WM_DESTROY:
-		param->ppro->ReleaseIconEx("aol");
+		ReleaseIconEx("aol");
         delete param; 
 		break;
 

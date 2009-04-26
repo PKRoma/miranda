@@ -54,7 +54,7 @@ LRESULT CALLBACK PopupWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM
 
 	case UM_FREEPLUGINDATA:
 		CAimPopupData* p = ( CAimPopupData* )PUGetPluginData( hWnd );
-		p->ppro->ReleaseIconEx("aim");
+		ReleaseIconEx("aim");
 		delete p;
 		break;
 	}

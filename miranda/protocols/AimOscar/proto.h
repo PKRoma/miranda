@@ -98,8 +98,6 @@ struct CAimProto : public PROTO_INTERFACE
     //====| Events |======================================================================
 	int  __cdecl OnContactDeleted(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnGroupChange(WPARAM wParam,LPARAM lParam);
-	int  __cdecl OnExtraIconsRebuild(WPARAM wParam, LPARAM lParam);
-	int  __cdecl OnExtraIconsApply(WPARAM wParam, LPARAM lParam);
 	int  __cdecl OnIdleChanged(WPARAM wParam, LPARAM lParam);
 	int  __cdecl OnWindowEvent(WPARAM wParam, LPARAM lParam);
 	int  __cdecl OnModulesLoaded( WPARAM wParam, LPARAM lParam );
@@ -201,15 +199,6 @@ struct CAimProto : public PROTO_INTERFACE
 
     //away message retrieval stuff
     char* modeMsgs[9];
-
-	//Some Icon handles
-	HANDLE bot_icon;
-	HANDLE icq_icon;
-	HANDLE aol_icon;
-	HANDLE hiptop_icon;
-	HANDLE admin_icon;
-	HANDLE confirmed_icon;
-	HANDLE unconfirmed_icon;
 
     //////////////////////////////////////////////////////////////////////////////////////
 	// avatars.cpp
@@ -413,10 +402,6 @@ struct CAimProto : public PROTO_INTERFACE
 	void   InitMenus(void);
     void   RemoveMenus(void);
 
-	HICON  LoadIconEx(const char* name);
-	HANDLE GetIconHandle(const char* name);
-	void   ReleaseIconEx(const char* name);
-
 	//////////////////////////////////////////////////////////////////////////////////////
 	// thread.cpp
 
@@ -439,10 +424,6 @@ struct CAimProto : public PROTO_INTERFACE
     void   update_server_group(const char* group, unsigned short group_id);
 	void   offline_contacts();
 	void   offline_contact(HANDLE hContact, bool remove_settings);
-	void   add_AT_icons();
-	void   remove_AT_icons();
-	void   add_ES_icons();
-	void   remove_ES_icons();
 	void   execute_cmd(const char* arg);
 
 	int    open_contact_file(const char* sn, const char* file, const char* mode, char* &path, bool contact_dir);
@@ -462,8 +443,6 @@ struct CAimProto : public PROTO_INTERFACE
 	void   create_cookie(HANDLE hContact);
 	void   read_cookie(HANDLE hContact,char* cookie);
 	void   write_cookie(HANDLE hContact,char* cookie);
-
-	void   load_extra_icons();
 
 	void   ShowPopup( const char* msg, int flags, char* url = 0 );
 
