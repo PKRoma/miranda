@@ -1056,7 +1056,7 @@ void RebuildMenuOrder( void )
 			}
 			{
 				TCHAR buf[ 256 ];
-				mir_sntprintf( buf, SIZEOF( buf ), _T("%s\tCtrl+%c"),
+				mir_sntprintf( buf, SIZEOF( buf ), TranslateT("%s\tCtrl+%c"),
 					cli.pfnGetStatusModeDescription( statusModeList[j], 0 ), '0'+j );
 				tmi.ptszName = buf;
 				hStatusMainMenuHandles[j] = MO_AddNewMenuItem( hStatusMenuObject, &tmi );
