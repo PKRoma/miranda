@@ -43,7 +43,6 @@
 #define IDC_MANAGEGROUPS                1034
 #define IDC_NOTIFY_ENDSESSION           1035
 #define IDC_MOBILESEND                  1035
-#define IDC_NOTIFY_CUSTOMSMILEY         1036
 #define IDC_HOSTOPT                     1038
 #define IDC_CCARD_TAB1                  1039
 #define IDC_CARD_GEN_PHONE              1043
@@ -76,8 +75,6 @@
 #define IDC_MAILER_APP                  1057
 #define IDC_RUN_APP_ON_HOTMAIL          1058
 #define IDC_ENTER_MAILER_APP            1059
-#define IDC_MOBILE                      1060
-#define IDC_MSN_MOBILE                  1061
 #define IDC_LOGINSERVER                 1171
 #define IDC_YOURHOST                    1172
 #define IDC_MSNPORT                     1174

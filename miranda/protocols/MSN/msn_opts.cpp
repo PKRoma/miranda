@@ -521,26 +521,22 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM 
 		EnableWindow( GetDlgItem( hwndDlg, IDC_BGCOLOUR), !proto->MyOptions.UseWinColors );
 		EnableWindow( GetDlgItem( hwndDlg, IDC_TEXTCOLOUR), !proto->MyOptions.UseWinColors );
 
-		if ( !ServiceExists( MS_POPUP_ADDPOPUPEX ))
-			EnableWindow( GetDlgItem( hwndDlg, IDC_POPUP_TIMEOUT ), FALSE );
-		else
-			SetDlgItemInt( hwndDlg, IDC_POPUP_TIMEOUT, proto->MyOptions.PopupTimeoutHotmail, FALSE );
+		SetDlgItemInt( hwndDlg, IDC_POPUP_TIMEOUT, proto->MyOptions.PopupTimeoutHotmail, FALSE );
 
 		CheckDlgButton( hwndDlg, IDC_DISABLEHOTMAIL,      proto->getByte( "DisableHotmail", 0 ));
 		CheckDlgButton( hwndDlg, IDC_DISABLEHOTJUNK,      proto->getByte( "DisableHotmailJunk", 0 ));
 		CheckDlgButton( hwndDlg, IDC_NOTIFY_ENDSESSION,   proto->getByte( "EnableSessionPopup", 0 ));
 		CheckDlgButton( hwndDlg, IDC_NOTIFY_FIRSTMSG,     proto->getByte( "EnableDeliveryPopup", 0 ));
-		CheckDlgButton( hwndDlg, IDC_NOTIFY_CUSTOMSMILEY, proto->getByte( "EnableCustomSmileyPopup", 1 ));
 		CheckDlgButton( hwndDlg, IDC_ERRORS_USING_POPUPS, proto->getByte( "ShowErrorsAsPopups", 0 ));
 
 		int tTimeout = proto->getDword( "PopupTimeout", 3 );
 		SetDlgItemInt( hwndDlg, IDC_POPUP_TIMEOUT, tTimeout, FALSE );
 		SetDlgItemInt( hwndDlg, IDC_POPUP_TIMEOUT2, proto->getDword( "PopupTimeoutOther", tTimeout ), FALSE );
-		if ( !ServiceExists( MS_POPUP_ADDPOPUPEX )) {
-			EnableWindow( GetDlgItem( hwndDlg, IDC_POPUP_TIMEOUT ), FALSE );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_POPUP_TIMEOUT2 ), FALSE );
-		}
-		bEnabled = true;
+
+        EnableWindow( GetDlgItem( hwndDlg, IDC_POPUP_TIMEOUT ), FALSE );
+		EnableWindow( GetDlgItem( hwndDlg, IDC_POPUP_TIMEOUT2 ), FALSE );
+
+        bEnabled = true;
 		return TRUE;
 	}
 	case WM_COMMAND:
@@ -556,7 +552,6 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM 
 			EnableWindow( GetDlgItem( hwndDlg, IDC_PREVIEW ), toSet );
 		}
 
-		case IDC_NOTIFY_CUSTOMSMILEY:
 		case IDC_DISABLEHOTJUNK:
 		case IDC_NOTIFY_ENDSESSION:
 		case IDC_POPUP_TIMEOUT:
@@ -623,19 +618,16 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM 
 				proto->MyOptions.BGColour = SendDlgItemMessage(hwndDlg,IDC_BGCOLOUR,CPM_GETCOLOUR,0,0);
 				DBWriteContactSettingDword(NULL, proto->ModuleName, "BackgroundColour", proto->MyOptions.BGColour);
 
-				if ( ServiceExists( MS_POPUP_ADDPOPUPEX )) {
-					proto->MyOptions.PopupTimeoutHotmail = GetDlgItemInt( hwndDlg, IDC_POPUP_TIMEOUT, NULL, FALSE );
-					proto->setDword( NULL, "PopupTimeout", proto->MyOptions.PopupTimeoutHotmail );
+				proto->MyOptions.PopupTimeoutHotmail = GetDlgItemInt( hwndDlg, IDC_POPUP_TIMEOUT, NULL, FALSE );
+				proto->setDword( NULL, "PopupTimeout", proto->MyOptions.PopupTimeoutHotmail );
 
-					proto->MyOptions.PopupTimeoutOther = GetDlgItemInt( hwndDlg, IDC_POPUP_TIMEOUT2, NULL, FALSE );
-					proto->setDword( NULL, "PopupTimeoutOther", proto->MyOptions.PopupTimeoutOther );
-				}
+				proto->MyOptions.PopupTimeoutOther = GetDlgItemInt( hwndDlg, IDC_POPUP_TIMEOUT2, NULL, FALSE );
+				proto->setDword( NULL, "PopupTimeoutOther", proto->MyOptions.PopupTimeoutOther );
 
 				proto->MyOptions.ShowErrorsAsPopups = IsDlgButtonChecked( hwndDlg, IDC_ERRORS_USING_POPUPS ) != 0;
 				proto->setByte( "ShowErrorsAsPopups", proto->MyOptions.ShowErrorsAsPopups );
 
 				proto->setByte( "UseWinColors",	( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEWINCOLORS ));
-				proto->setByte( "EnableCustomSmileyPopup", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_NOTIFY_CUSTOMSMILEY ));
 				proto->setByte( "DisableHotmail", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLEHOTMAIL ));
 				proto->setByte( "DisableHotmailJunk",( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLEHOTJUNK ));
 				proto->setByte( "EnableDeliveryPopup", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_NOTIFY_FIRSTMSG ));

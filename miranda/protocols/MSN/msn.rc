@@ -7,8 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include <windows.h>
-
+#include <windows.h>
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -128,8 +127,6 @@ BEGIN
     DEFPUSHBUTTON   "Previe&w",IDC_PREVIEW2,174,182,52,12
     CONTROL         "Enable 'Contact left channel' popup",IDC_NOTIFY_ENDSESSION,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,158,218,8
-    CONTROL         "Enable 'Custom Smiley' popup",IDC_NOTIFY_CUSTOMSMILEY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,171,218,8
 END
 
 IDD_SETNICKNAME DIALOGEX 0, 0, 187, 42
@@ -206,6 +203,7 @@ BEGIN
     CONTROL         "Create a new Windows Live account",IDC_NEWMSNACCOUNTLINK,
                     "Hyperlink",WS_TABSTOP,0,40,174,12
 END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
