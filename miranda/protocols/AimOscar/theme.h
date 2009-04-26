@@ -24,7 +24,10 @@ extern HANDLE  (WINAPI *MyOpenThemeData)(HWND,LPCWSTR);
 extern HRESULT (WINAPI *MyCloseThemeData)(HANDLE);
 extern HRESULT (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT *,const RECT *);
 
+void InitThemeSupport(void);
 void InitIcons(void);
-void ThemeSupport(void);
+void InitExtraIcons(void);
+
+void DestroyExtraIcons(void);
 
 #endif

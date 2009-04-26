@@ -154,8 +154,6 @@ int CAimProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	HookProtoEvent(ME_OPT_INITIALISE,           &CAimProto::OnOptionsInit);
 	HookProtoEvent(ME_USERINFO_INITIALISE,      &CAimProto::OnUserInfoInit);
 	HookProtoEvent(ME_IDLE_CHANGED,             &CAimProto::OnIdleChanged);
-	HookProtoEvent(ME_CLIST_EXTRA_LIST_REBUILD, &CAimProto::OnExtraIconsRebuild);
-	HookProtoEvent(ME_CLIST_EXTRA_IMAGE_APPLY,  &CAimProto::OnExtraIconsApply);
 	HookProtoEvent(ME_MSG_WINDOWEVENT,          &CAimProto::OnWindowEvent);
 
 	offline_contacts();

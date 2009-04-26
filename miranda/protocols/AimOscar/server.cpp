@@ -191,8 +191,6 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 		char client[100]="\0";
 		bool hiptop_user=0;
 		bool bot_user=0;
-		bool adv2_icon=0;
-		bool adv1_icon=0;
 		bool away_user=0;
 		bool caps_included=0;
 		unsigned char buddy_length=snac.ubyte();
@@ -200,8 +198,6 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 		int i=0;
 		char* buddy=snac.part(1,buddy_length);
 		unsigned short tlv_count=snac.ushort(offset);
-		int ESIconsDisabled=getByte( AIM_KEY_ES, 0);
-		int ATIconsDisabled=getByte( AIM_KEY_AT, 0);
 		HANDLE hContact=contact_from_sn(buddy, true);
 		offset+=2;
 		for(;i<tlv_count;i++)
@@ -229,35 +225,26 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 					else
 						deleteSetting(hContact, "Transport" );
 
-					adv2_icon=1;
-                    HANDLE extra_icon = NULL;
 					if(admin_aol)
 					{
 						setByte(hContact, AIM_KEY_AC, ACCOUNT_TYPE_ADMIN);
-						extra_icon = admin_icon;
 					}
 					else if(aol)
 					{
 						setByte(hContact, AIM_KEY_AC, ACCOUNT_TYPE_AOL);	
-						extra_icon = aol_icon;
 					}
 					else if(icq)
 					{
 						setByte(hContact, AIM_KEY_AC, ACCOUNT_TYPE_ICQ);	
-						extra_icon = icq_icon;
 					}
 					else if(unconfirmed)
 					{
 						setByte(hContact, AIM_KEY_AC, ACCOUNT_TYPE_UNCONFIRMED);
-						extra_icon = unconfirmed_icon;
 					}
 					else
 					{
 						setByte(hContact, AIM_KEY_AC, ACCOUNT_TYPE_CONFIRMED);
-						extra_icon = confirmed_icon;
 					}
-					if(!ATIconsDisabled)
-						set_extra_icon(hContact, extra_icon, EXTRA_ICON_ADV2);
 
                     if(bot)
 					{
@@ -507,27 +494,14 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 		if(bot_user)
 		{
 			setByte(hContact, AIM_KEY_ET, EXTENDED_STATUS_BOT);
-			if(!ESIconsDisabled)
-			{
-				adv1_icon=1;
-				set_extra_icon(hContact, bot_icon, EXTRA_ICON_ADV3);
-			}
 		}
 		else if(hiptop_user)
 		{
 			setByte(hContact, AIM_KEY_ET, EXTENDED_STATUS_HIPTOP);
-			if(!ESIconsDisabled)
-			{
-				adv1_icon=1;
-				set_extra_icon(hContact, hiptop_icon, EXTRA_ICON_ADV3);
-			}
 		}
 		if(caps_included)
 		{
-			if(!adv1_icon)
-				set_extra_icon(hContact, (HANDLE)-1, EXTRA_ICON_ADV3);
-			if(!adv2_icon)
-				set_extra_icon(hContact, (HANDLE)-1, EXTRA_ICON_ADV2);
+            set_contact_icon(this, hContact);
 		}
 		if(caps_included || client[0])
 			setString(hContact, AIM_KEY_MV, client[0] ? client : "?");
