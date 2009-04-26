@@ -93,7 +93,6 @@ extern "C" __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
 	aim_links_init();
-    InitIcons();
     InitExtraIcons();
 
 	return 0;
@@ -134,6 +133,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	CallService(MS_PROTO_REGISTERMODULE, 0, (LPARAM) & pd);
 
     InitThemeSupport();
+    InitIcons();
 
     return 0;
 }
