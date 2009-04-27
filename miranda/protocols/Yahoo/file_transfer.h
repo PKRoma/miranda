@@ -21,6 +21,7 @@ typedef struct {
 	char *who;
 	char *msg;
 	char *ftoken;
+	char *relay;
 	HANDLE hContact;
 	int  cancel;
 	char *url;

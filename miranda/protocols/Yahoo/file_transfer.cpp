@@ -17,7 +17,7 @@
 #include <m_protosvc.h>
 #include "file_transfer.h"
 
-YList *file_transfers;
+YList *file_transfers=NULL;
 
 static y_filetransfer* new_ft(CYahooProto* ppro, int id, HANDLE hContact, const char *who, const char *msg,  
 					const char *url, const char *ft_token, int y7, YList *fs, int sending)
@@ -29,7 +29,7 @@ static y_filetransfer* new_ft(CYahooProto* ppro, int id, HANDLE hContact, const 
 
 	LOG(("[new_ft]"));
 
-	y_filetransfer* ft = (y_filetransfer*) malloc(sizeof(y_filetransfer));
+	y_filetransfer* ft = (y_filetransfer*) calloc(1, sizeof(y_filetransfer));
 	ft->ppro = ppro;
 	ft->id  = id;
 	ft->who = strdup(who);
@@ -44,11 +44,9 @@ static y_filetransfer* new_ft(CYahooProto* ppro, int id, HANDLE hContact, const 
 
 	ft->cancel = 0;
 	ft->y7 = y7;
-	ft->savepath = NULL;
-
+	
 	ft->hWaitEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 
-	ZeroMemory(&ft->pfts, sizeof(PROTOFILETRANSFERSTATUS));
 	ft->pfts.cbSize = sizeof(PROTOFILETRANSFERSTATUS);
 	ft->pfts.hContact = hContact;
 	ft->pfts.sending = sending;
@@ -57,7 +55,7 @@ static y_filetransfer* new_ft(CYahooProto* ppro, int id, HANDLE hContact, const 
 
 	ft->pfts.totalFiles = y_list_length(fs);
 
-	ft->pfts.files = (char**) malloc(sizeof(char *) * ft->pfts.totalFiles);
+	ft->pfts.files = (char**) calloc(sizeof(char *) * ft->pfts.totalFiles, sizeof(char));
 	ft->pfts.totalBytes = 0;
 
 	while(l) {
@@ -77,6 +75,8 @@ static y_filetransfer* new_ft(CYahooProto* ppro, int id, HANDLE hContact, const 
 
 	file_transfers = y_list_prepend(file_transfers, ft);
 
+	LOG(("[/new_ft]"));
+	
 	return ft;
 }
 
@@ -121,6 +121,9 @@ static void free_ft(y_filetransfer* ft)
 	FREE(ft->url);
 	FREE(ft->savepath);
 	FREE(ft->ftoken);
+	FREE(ft->relay);
+	
+	LOG(("[free_ft] About to free the File List."));
 	
 	while(ft->files) {
 		YList *tmp = ft->files;
@@ -131,6 +134,8 @@ static void free_ft(y_filetransfer* ft)
 		y_list_free_1(tmp);
 	}
 	
+	LOG(("[free_ft] About to free PFTS."));
+	
 	for (i=0; i< ft->pfts.totalFiles; i++)
 		free(ft->pfts.files[i]);
 	
@@ -138,6 +143,7 @@ static void free_ft(y_filetransfer* ft)
 	FREE(ft->pfts.files);
 	FREE(ft);
 	
+	LOG(("[/free_ft]"));
 }
 
 static void upload_file(int id, int fd, int error, void *data) 
@@ -430,11 +436,11 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 			
 			l = sf->files;
 			
-			fi = ( yahoo_file_info* )sf->files->data;
+			fi = ( yahoo_file_info* )l->data;
 			FREE(fi->filename);
 			FREE(fi);
 			
-			sf->files = y_list_remove_link(sf->files, sf->files);
+			sf->files = y_list_remove_link(sf->files, l);
 			y_list_free_1(l);
 			
 			// need to move to the next file on the list and fill the file information
@@ -685,7 +691,20 @@ void ext_yahoo_send_file7info(int id, const char *me, const char *who, const cha
 		c = ft->pfts.files[0];
 	}
 	
-	yahoo_send_file7info(id, me, who, ft_token, c, /*relay_ip*/ "98.136.112.33");
+	LOG(("Resolving relay.msg.yahoo.com..."));
+	PHOSTENT he = gethostbyname("relay.msg.yahoo.com");
+	
+	if (he) {
+		ft->relay = strdup( inet_ntoa(*( PIN_ADDR )he->h_addr_list[0]) );
+		LOG(("Got Relay IP: %s", ft->relay));
+	} else {
+		ft->relay = strdup( "98.136.112.33" );
+		LOG(("DNS Lookup failed. Using Relay IP: %s", ft->relay));
+	}
+	
+	
+	
+	yahoo_send_file7info(id, me, who, ft_token, c, ft->relay );
 		
 }
 
@@ -709,7 +728,7 @@ void CYahooProto::ext_ft7_send_file(const char *me, const char *who, const char 
 	
 	LOG(("who %s, msg: %s, filename: %s filesize: %ld", sf->who, sf->msg, fi->filename, fi->filesize));
 	
-	yahoo_send_file_y7(m_id, me, who, "98.136.112.33", fi->filesize, token,  &upload_file, sf);
+	yahoo_send_file_y7(m_id, me, who, sf->relay, fi->filesize, token,  &upload_file, sf);
 	
 	if (sf->pfts.currentFileNumber >= sf->pfts.totalFiles) {
 		free_ft(sf);

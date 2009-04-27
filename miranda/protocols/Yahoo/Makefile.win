@@ -32,7 +32,7 @@ OBJ = http_gateway.o \
 
 RES = Yahoo.res
 
-LIB = -lcomdlg32 -lgdi32
+LIB = -lcomdlg32 -lgdi32 -lwsock32
 
 CC = gcc
 RC = windres
