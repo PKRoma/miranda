@@ -3,6 +3,7 @@
 .\libyahoo2\crypt.c : \
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
@@ -13,6 +14,7 @@
 .\libyahoo2\libyahoo2.c : \
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
@@ -34,6 +36,7 @@
 .\libyahoo2\yahoo_httplib.c : \
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
@@ -54,6 +57,7 @@
 .\libyahoo2\yahoo_util.c : \
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
@@ -79,13 +83,13 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\avatar.h"\
-	".\libyahoo2\config.h"\
 	".\libyahoo2\yahoo2.h"\
 	".\libyahoo2\yahoo2_callbacks.h"\
 	".\libyahoo2\yahoo2_types.h"\
 	".\libyahoo2\yahoo_httplib.h"\
 	".\libyahoo2\yahoo_list.h"\
 	".\libyahoo2\yahoo_util.h"\
+	".\m_folders.h"\
 	".\proto.h"\
 	".\resource.h"\
 	".\yahoo.h"\
@@ -108,7 +112,6 @@
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
-	".\libyahoo2\config.h"\
 	".\libyahoo2\yahoo2.h"\
 	".\libyahoo2\yahoo2_callbacks.h"\
 	".\libyahoo2\yahoo2_types.h"\
@@ -136,7 +139,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\file_transfer.h"\
-	".\libyahoo2\config.h"\
 	".\libyahoo2\yahoo2.h"\
 	".\libyahoo2\yahoo2_callbacks.h"\
 	".\libyahoo2\yahoo2_types.h"\
@@ -163,7 +165,6 @@
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
-	".\libyahoo2\config.h"\
 	".\libyahoo2\yahoo2.h"\
 	".\libyahoo2\yahoo2_callbacks.h"\
 	".\libyahoo2\yahoo2_types.h"\
@@ -192,7 +193,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\libyahoo2\config.h"\
 	".\libyahoo2\yahoo2.h"\
 	".\libyahoo2\yahoo2_callbacks.h"\
 	".\libyahoo2\yahoo2_types.h"\
@@ -221,7 +221,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\ignore.h"\
-	".\libyahoo2\config.h"\
 	".\libyahoo2\yahoo2.h"\
 	".\libyahoo2\yahoo2_callbacks.h"\
 	".\libyahoo2\yahoo2_types.h"\
@@ -252,7 +251,6 @@
 	".\avatar.h"\
 	".\ignore.h"\
 	".\im.h"\
-	".\libyahoo2\config.h"\
 	".\libyahoo2\yahoo2.h"\
 	".\libyahoo2\yahoo2_callbacks.h"\
 	".\libyahoo2\yahoo2_types.h"\
@@ -266,10 +264,8 @@
 .\main.cpp : \
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
-	"..\..\include\m_idle.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_netlib.h"\
-	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protoint.h"\
@@ -278,12 +274,10 @@
 	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\http_gateway.h"\
-	".\libyahoo2\config.h"\
 	".\libyahoo2\yahoo2.h"\
 	".\libyahoo2\yahoo2_callbacks.h"\
 	".\libyahoo2\yahoo2_types.h"\
@@ -315,7 +309,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\ignore.h"\
-	".\libyahoo2\config.h"\
 	".\libyahoo2\yahoo2.h"\
 	".\libyahoo2\yahoo2_callbacks.h"\
 	".\libyahoo2\yahoo2_types.h"\
@@ -347,7 +340,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\file_transfer.h"\
-	".\libyahoo2\config.h"\
 	".\libyahoo2\yahoo2.h"\
 	".\libyahoo2\yahoo2_callbacks.h"\
 	".\libyahoo2\yahoo2_types.h"\
@@ -375,7 +367,6 @@
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
-	".\libyahoo2\config.h"\
 	".\libyahoo2\yahoo2.h"\
 	".\libyahoo2\yahoo2_callbacks.h"\
 	".\libyahoo2\yahoo2_types.h"\
@@ -403,7 +394,6 @@
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
-	".\libyahoo2\config.h"\
 	".\libyahoo2\yahoo2.h"\
 	".\libyahoo2\yahoo2_callbacks.h"\
 	".\libyahoo2\yahoo2_types.h"\
@@ -438,7 +428,6 @@
 	".\avatar.h"\
 	".\file_transfer.h"\
 	".\im.h"\
-	".\libyahoo2\config.h"\
 	".\libyahoo2\yahoo2.h"\
 	".\libyahoo2\yahoo2_callbacks.h"\
 	".\libyahoo2\yahoo2_types.h"\
@@ -470,7 +459,6 @@
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
-	".\libyahoo2\config.h"\
 	".\libyahoo2\yahoo2.h"\
 	".\libyahoo2\yahoo2_callbacks.h"\
 	".\libyahoo2\yahoo2_types.h"\
@@ -499,7 +487,6 @@
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
-	".\libyahoo2\config.h"\
 	".\libyahoo2\yahoo2.h"\
 	".\libyahoo2\yahoo2_callbacks.h"\
 	".\libyahoo2\yahoo2_types.h"\
@@ -535,7 +522,6 @@
 	".\file_transfer.h"\
 	".\ignore.h"\
 	".\im.h"\
-	".\libyahoo2\config.h"\
 	".\libyahoo2\yahoo2.h"\
 	".\libyahoo2\yahoo2_callbacks.h"\
 	".\libyahoo2\yahoo2_types.h"\
