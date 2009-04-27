@@ -344,19 +344,19 @@ void CMsnProto::MSN_GoOffline(void)
 	{
 		int msnOldStatus = m_iStatus; m_iStatus = m_iDesiredStatus = ID_STATUS_OFFLINE; 
 		SendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)msnOldStatus, ID_STATUS_OFFLINE );
-	}
 
-    HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-	while ( hContact != NULL )
-	{
-		if ( MSN_IsMyContact( hContact ))
-			if ( ID_STATUS_OFFLINE != getWord( hContact, "Status", ID_STATUS_OFFLINE )) {
-				setWord( hContact, "Status", ID_STATUS_OFFLINE );
-				setDword( hContact, "IdleTS", 0 );
-			}
+        HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+        while ( hContact != NULL )
+        {
+	        if ( MSN_IsMyContact( hContact ))
+		        if ( ID_STATUS_OFFLINE != getWord( hContact, "Status", ID_STATUS_OFFLINE )) {
+			        setWord( hContact, "Status", ID_STATUS_OFFLINE );
+			        setDword( hContact, "IdleTS", 0 );
+		        }
 
-		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
-    }	
+	        hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
+        }
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

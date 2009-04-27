@@ -1091,21 +1091,22 @@ int __cdecl CMsnProto::SetStatus( int iNewStatus )
 
 	if ( m_iDesiredStatus == ID_STATUS_OFFLINE )
 	{
-		MSN_GoOffline();
+	    MSN_CloseConnections();
+//		MSN_GoOffline();
 	}
-	else if (!msnLoggedIn && !(m_iStatus>=ID_STATUS_CONNECTING && m_iStatus<ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES))
+	else if (!msnLoggedIn && m_iStatus == ID_STATUS_OFFLINE)
 	{
 		char szPassword[ 100 ];
 		int ps = getStaticString( NULL, "Password", szPassword, sizeof( szPassword ));
 		if (ps != 0  || *szPassword == 0) {
 			SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
-			m_iDesiredStatus = m_iStatus = ID_STATUS_OFFLINE;
+			m_iStatus = m_iDesiredStatus = ID_STATUS_OFFLINE;
 			return 0;
 		}	
 		 
 		if (*MyOptions.szEmail == 0) {
 			SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
-			m_iDesiredStatus = m_iStatus = ID_STATUS_OFFLINE;
+			m_iStatus = m_iDesiredStatus = ID_STATUS_OFFLINE;
 			return 0;
 		}	
 
@@ -1121,7 +1122,8 @@ int __cdecl CMsnProto::SetStatus( int iNewStatus )
 		}
 		newThread->startThread( &CMsnProto::MSNServerThread, this );
 	}
-	else MSN_SetServerStatus( m_iDesiredStatus );
+	else 
+        if (m_iStatus > ID_STATUS_OFFLINE) MSN_SetServerStatus( m_iDesiredStatus );
 
 	return 0;
 }
