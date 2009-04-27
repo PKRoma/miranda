@@ -28,7 +28,7 @@ optimizeLevel=0
 // linker
 libraryPath=
 outputFilename=..\..\Bin\Release\Plugins\Yahoo.dll
-libraries=comdlg32,gdi32
+libraries=comdlg32,gdi32,wsock32
 extraLinkerOptions=
 ignoreStartupFile=0
 ignoreDefaultLibs=0
@@ -66,7 +66,7 @@ optimizeLevel=2
 // linker
 libraryPath=
 outputFilename=..\..\Bin\Release\Plugins\Yahoo.dll
-libraries=comdlg32,gdi32
+libraries=comdlg32,gdi32,wsock32
 extraLinkerOptions=-Wl,-Map,Release\\yahoo.map
 ignoreStartupFile=0
 ignoreDefaultLibs=0
@@ -138,10 +138,15 @@ extraResourceOptions=
 6=libyahoo2\Docs\TODO
 7=libyahoo2\Docs\ymsg-9.txt
 [History]
-util.cpp,2047
-main.cpp,493
-server.cpp,1143
-yahoo.cpp,44844
-proto.h,0
-proto.cpp,2614
-libyahoo2\libyahoo2.c,171672
+proto.cpp,26934
+services.cpp,1114
+libyahoo2\libyahoo2.c,86504
+proto.h,9399
+server.cpp,702
+util.cpp,1973
+avatar.cpp,448
+im.cpp,4279
+file_transfer.cpp,17444
+libyahoo2\yahoo2_callbacks.h,29912
+libyahoo2\yahoo_httplib.c,9947
+yahoo.cpp,0
