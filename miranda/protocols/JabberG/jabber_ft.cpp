@@ -113,7 +113,7 @@ void CJabberProto::FtInitiate( TCHAR* jid, filetransfer* ft )
 	HXML si = iq << XCHILDNS( _T("si"), _T(JABBER_FEAT_SI)) << XATTR( _T("id"), sid ) 
 						<< XATTR( _T("mime-type"), _T("binary/octet-stream")) << XATTR( _T("profile"), _T(JABBER_FEAT_SI_FT));
 	si << XCHILDNS( _T("file"), _T(JABBER_FEAT_SI_FT)) << XATTR( _T("name"), _A2T(filename)) 
-		<< XATTRI( _T("size"), ft->fileSize[ ft->std.currentFileNumber ] ) << XATTR( _T("desc"), _A2T(ft->szDescription));
+		<< XATTRI( _T("size"), ft->fileSize[ ft->std.currentFileNumber ] ) << XCHILD( _T("desc"), _A2T(ft->szDescription));
 	
 	HXML field = si << XCHILDNS( _T("feature"), _T(JABBER_FEAT_FEATURE_NEG))
 							<< XCHILDNS( _T("x"), _T(JABBER_FEAT_DATA_FORMS)) << XATTR( _T("type"), _T("form"))
