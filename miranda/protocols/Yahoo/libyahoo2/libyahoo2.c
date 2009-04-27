@@ -382,6 +382,8 @@ static const value_string packet_keys[]={
 	{232, "weird number (md5 hash?) [audible]"},
 	{241, "protocol"},
 	{244, "client version"},
+	{249, "FT7 Op"},
+	{250, "FT7 Relay Host"},
 	{251, "File Preview?"},
 	{254, "last name"},
 	{265, "FT7 Token"},
