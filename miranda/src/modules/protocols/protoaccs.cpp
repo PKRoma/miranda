@@ -34,7 +34,30 @@ LIST<PROTOACCOUNT> accounts( 10, CompareAccounts );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void LoadDbAccounts()
+static int EnumDbModules(const char *szModuleName, DWORD ofsModuleName, LPARAM lParam)
+{
+    DBVARIANT dbv;
+	if ( !DBGetContactSettingString( NULL, szModuleName, "AM_BaseProto", &dbv )) 
+    {
+        if (!Proto_GetAccount( szModuleName))
+        {
+	        PROTOACCOUNT* pa = (PROTOACCOUNT*)mir_calloc(sizeof(PROTOACCOUNT));
+	        pa->cbSize = sizeof(*pa);
+	        pa->type = PROTOTYPE_PROTOCOL;
+	        pa->szModuleName = mir_strdup(dbv.pszVal);
+	        pa->szProtoName = mir_strdup(dbv.pszVal);
+	        pa->tszAccountName = mir_a2t(dbv.pszVal);
+			pa->bIsVisible = TRUE;
+            pa->bIsEnabled = TRUE;
+			pa->iOrder = accounts.getCount();
+			accounts.insert( pa );
+        }
+        DBFreeVariant(&dbv);
+    }
+    return 0;
+}
+
+void LoadDbAccounts(void)
 {
 	DBVARIANT dbv;
 	int ver = DBGetContactSettingDword( NULL, "Protocols", "PrVer", -1 );
@@ -89,7 +112,12 @@ void LoadDbAccounts()
 			pa->tszAccountName = mir_a2t( pa->szModuleName );
 
 		accounts.insert( pa );
-}	}
+    }
+
+    int anum = accounts.getCount();
+    CallService(MS_DB_MODULES_ENUM, 0, (LPARAM)EnumDbModules);
+    if (anum != accounts.getCount()) WriteDbAccounts();
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
