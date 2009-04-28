@@ -134,9 +134,9 @@ void CIcqProto::InitAvatars()
 		{ // check if it does make sense
 			char szPath[MAX_PATH];
 
-            char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
+			char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
 			null_snprintf(szPath, MAX_PATH, "%s\\%s\\", tmpPath, m_szModuleName);
-            mir_free(tmpPath);
+			mir_free(tmpPath);
 
 			hAvatarsFolder = FoldersRegisterCustomPath(m_szModuleName, "Avatars Cache", szPath);
 		}
