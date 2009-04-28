@@ -312,7 +312,7 @@ __inline static PROTOACCOUNT* ProtoGetAccount( const char* accName )
 #define PRAC_REMOVED  3
 #define PRAC_UPGRADED 4
 #define PRAC_CHECKED  5
-#define PRAC_CONVERT  6
+
 
 #define ME_PROTO_ACCLISTCHANGED "Proto/AccListChanged"
 
