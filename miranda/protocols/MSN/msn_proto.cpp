@@ -156,6 +156,46 @@ CMsnProto::CMsnProto( const char* aProtoName, const TCHAR* aUserName ) :
 	Lists_Init();
 	MsgQueue_Init();
 	P2pSessions_Init();
+    MsnInitMenus();
+	InitCustomFolders();
+
+	TCHAR szBuffer[MAX_PATH]; 
+    char  szDbsettings[64];
+
+	NETLIBUSER nlu1 = {0};
+	nlu1.cbSize = sizeof(nlu1);
+	nlu1.flags = NUF_OUTGOING | NUF_HTTPCONNS | NUF_TCHAR;
+	nlu1.szSettingsModule = szDbsettings;
+	nlu1.ptszDescriptiveName = szBuffer;
+
+	mir_snprintf(szDbsettings, sizeof(szDbsettings), "%s_HTTPS", m_szModuleName);
+	mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s plugin HTTPS connections"), m_tszUserName);
+	hNetlibUserHttps = (HANDLE)MSN_CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu1);
+
+	NETLIBUSER nlu = {0};
+	nlu.cbSize = sizeof(nlu);
+	nlu.flags = NUF_INCOMING | NUF_OUTGOING | NUF_HTTPCONNS | NUF_TCHAR;
+	nlu.szSettingsModule = m_szModuleName;
+	nlu.ptszDescriptiveName = szBuffer;
+
+	if ( MyOptions.UseGateway ) 
+    {
+		nlu.flags |= NUF_HTTPGATEWAY;
+		nlu.szHttpGatewayUserAgent = (char*)MSN_USER_AGENT;
+		nlu.pfnHttpGatewayInit = msn_httpGatewayInit;
+		nlu.pfnHttpGatewayWrapSend = msn_httpGatewayWrapSend;
+		nlu.pfnHttpGatewayUnwrapRecv = msn_httpGatewayUnwrapRecv;
+	}
+
+	mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s plugin connections"), m_tszUserName);
+	hNetlibUser = (HANDLE)MSN_CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
+
+   	if (getByte("UseIeProxy", 0))
+    {
+        if (MyOptions.UseGateway)
+            MyOptions.UseProxy = SetupIeProxy(hNetlibUser, false);
+        SetupIeProxy(hNetlibUserHttps, true);
+    }
 }
 
 CMsnProto::~CMsnProto()
@@ -198,44 +238,6 @@ CMsnProto::~CMsnProto()
 
 int CMsnProto::OnModulesLoaded( WPARAM, LPARAM )
 {
-	TCHAR szBuffer[MAX_PATH]; 
-    char  szDbsettings[64];
-
-	NETLIBUSER nlu1 = {0};
-	nlu1.cbSize = sizeof(nlu1);
-	nlu1.flags = NUF_OUTGOING | NUF_HTTPCONNS | NUF_TCHAR;
-	nlu1.szSettingsModule = szDbsettings;
-	nlu1.ptszDescriptiveName = szBuffer;
-
-	mir_snprintf(szDbsettings, sizeof(szDbsettings), "%s_HTTPS", m_szModuleName);
-	mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s plugin HTTPS connections"), m_tszUserName);
-	hNetlibUserHttps = (HANDLE)MSN_CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu1);
-
-	NETLIBUSER nlu = {0};
-	nlu.cbSize = sizeof(nlu);
-	nlu.flags = NUF_INCOMING | NUF_OUTGOING | NUF_HTTPCONNS | NUF_TCHAR;
-	nlu.szSettingsModule = m_szModuleName;
-	nlu.ptszDescriptiveName = szBuffer;
-
-	if ( MyOptions.UseGateway ) 
-    {
-		nlu.flags |= NUF_HTTPGATEWAY;
-		nlu.szHttpGatewayUserAgent = (char*)MSN_USER_AGENT;
-		nlu.pfnHttpGatewayInit = msn_httpGatewayInit;
-		nlu.pfnHttpGatewayWrapSend = msn_httpGatewayWrapSend;
-		nlu.pfnHttpGatewayUnwrapRecv = msn_httpGatewayUnwrapRecv;
-	}
-
-	mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s plugin connections"), m_tszUserName);
-	hNetlibUser = (HANDLE)MSN_CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
-
-   	if (getByte("UseIeProxy", 0))
-    {
-        if (MyOptions.UseGateway)
-            MyOptions.UseProxy = SetupIeProxy(hNetlibUser, false);
-        SetupIeProxy(hNetlibUserHttps, true);
-    }
-
 	if ( msnHaveChatDll ) 
 	{
 		GCREGISTER gcr = {0};
@@ -258,9 +260,6 @@ int CMsnProto::OnModulesLoaded( WPARAM, LPARAM )
 	}
 
 	HookProtoEvent( ME_IDLE_CHANGED,              &CMsnProto::OnIdleChanged );
-
-    MsnInitMenus();
-	InitCustomFolders();
 
 	return 0;
 }
