@@ -53,12 +53,57 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 	CreateProtoService(PS_JOINCHAT,       &CAimProto::OnJoinChat);
 	CreateProtoService(PS_LEAVECHAT,      &CAimProto::OnLeaveChat);
 
-	InitMenus();
-
 	HookProtoEvent(ME_DB_CONTACT_SETTINGCHANGED, &CAimProto::OnSettingChanged);
 	HookProtoEvent(ME_DB_CONTACT_DELETED,        &CAimProto::OnContactDeleted);
 	HookProtoEvent(ME_CLIST_PREBUILDCONTACTMENU, &CAimProto::OnPreBuildContactMenu);
 	HookProtoEvent(ME_CLIST_GROUPCHANGE,         &CAimProto::OnGroupChange );
+	HookProtoEvent(ME_OPT_INITIALISE,            &CAimProto::OnOptionsInit);
+
+	InitMenus();
+	init_custom_folders();
+   	offline_contacts();
+
+	TCHAR descr[MAX_PATH];
+
+    NETLIBUSER nlu = {0};
+	nlu.cbSize = sizeof(nlu);
+	nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS | NUF_TCHAR;
+	nlu.szSettingsModule = m_szModuleName;
+    mir_sntprintf(descr, SIZEOF(descr), TranslateT("%s server connection"), m_tszUserName);
+	nlu.ptszDescriptiveName = descr;
+	hNetlib = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
+
+	char szP2P[128];
+	mir_snprintf(szP2P, sizeof(szP2P), "%sP2P", m_szModuleName);
+	nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_TCHAR;
+    mir_sntprintf(descr, SIZEOF(descr), TranslateT("%s Client-to-client connection"), m_tszUserName);
+	nlu.szSettingsModule = szP2P;
+	nlu.minIncomingPorts = 1;
+	hNetlibPeer = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
+
+	if (getWord( AIM_KEY_GP, 0xFFFF)==0xFFFF)
+		setWord( AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
+
+	DBVARIANT dbv;
+	if(getString(AIM_KEY_PW, &dbv))
+	{
+		if (!getString(OLD_KEY_PW, &dbv))
+		{
+			setString(AIM_KEY_PW, dbv.pszVal);
+			deleteSetting(NULL, OLD_KEY_PW);
+			DBFreeVariant(&dbv);
+		}
+	}
+	else DBFreeVariant(&dbv);
+
+	if(getByte(AIM_KEY_DM,255)==255)
+	{
+		int i=getByte(OLD_KEY_DM,255);
+		if(i!=255)
+		{
+			setByte(AIM_KEY_DM, i!=1);
+			deleteSetting(NULL, OLD_KEY_DM);
+	}	}
 }
 
 CAimProto::~CAimProto()
@@ -109,56 +154,11 @@ CAimProto::~CAimProto()
 
 int CAimProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
-	TCHAR descr[MAX_PATH];
-
-    NETLIBUSER nlu = {0};
-	nlu.cbSize = sizeof(nlu);
-	nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS | NUF_TCHAR;
-	nlu.szSettingsModule = m_szModuleName;
-    mir_sntprintf(descr, SIZEOF(descr), TranslateT("%s server connection"), m_tszUserName);
-	nlu.ptszDescriptiveName = descr;
-	hNetlib = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
-
-	char szP2P[128];
-	mir_snprintf(szP2P, sizeof(szP2P), "%sP2P", m_szModuleName);
-	nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_TCHAR;
-    mir_sntprintf(descr, SIZEOF(descr), TranslateT("%s Client-to-client connection"), m_tszUserName);
-	nlu.szSettingsModule = szP2P;
-	nlu.minIncomingPorts = 1;
-	hNetlibPeer = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
-
-	if (getWord( AIM_KEY_GP, 0xFFFF)==0xFFFF)
-		setWord( AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
-
-	DBVARIANT dbv;
-	if(getString(AIM_KEY_PW, &dbv))
-	{
-		if (!getString(OLD_KEY_PW, &dbv))
-		{
-			setString(AIM_KEY_PW, dbv.pszVal);
-			deleteSetting(NULL, OLD_KEY_PW);
-			DBFreeVariant(&dbv);
-		}
-	}
-	else DBFreeVariant(&dbv);
-
-	if(getByte(AIM_KEY_DM,255)==255)
-	{
-		int i=getByte(OLD_KEY_DM,255);
-		if(i!=255)
-		{
-			setByte(AIM_KEY_DM, i!=1);
-			deleteSetting(NULL, OLD_KEY_DM);
-	}	}
-
-	HookProtoEvent(ME_OPT_INITIALISE,           &CAimProto::OnOptionsInit);
 	HookProtoEvent(ME_USERINFO_INITIALISE,      &CAimProto::OnUserInfoInit);
 	HookProtoEvent(ME_IDLE_CHANGED,             &CAimProto::OnIdleChanged);
 	HookProtoEvent(ME_MSG_WINDOWEVENT,          &CAimProto::OnWindowEvent);
 
-	offline_contacts();
     chat_register();
-	init_custom_folders();
 
 	return 0;
 }
