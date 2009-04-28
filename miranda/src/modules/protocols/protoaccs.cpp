@@ -37,22 +37,20 @@ LIST<PROTOACCOUNT> accounts( 10, CompareAccounts );
 static int EnumDbModules(const char *szModuleName, DWORD ofsModuleName, LPARAM lParam)
 {
     DBVARIANT dbv;
-	if ( !DBGetContactSettingString( NULL, szModuleName, "AM_BaseProto", &dbv )) 
-    {
-        if (!Proto_GetAccount( szModuleName))
-        {
-	        PROTOACCOUNT* pa = (PROTOACCOUNT*)mir_calloc(sizeof(PROTOACCOUNT));
-	        pa->cbSize = sizeof(*pa);
+	if ( !DBGetContactSettingString( NULL, szModuleName, "AM_BaseProto", &dbv )) {
+        if (!Proto_GetAccount( szModuleName )) {
+	        PROTOACCOUNT* pa = ( PROTOACCOUNT* )mir_calloc( sizeof( PROTOACCOUNT ));
+	        pa->cbSize = sizeof( *pa );
 	        pa->type = PROTOTYPE_PROTOCOL;
-	        pa->szModuleName = mir_strdup(szModuleName);
-	        pa->szProtoName = mir_strdup(dbv.pszVal);
-	        pa->tszAccountName = mir_a2t(szModuleName);
+	        pa->szModuleName = mir_strdup( szModuleName );
+	        pa->szProtoName = mir_strdup( dbv.pszVal );
+	        pa->tszAccountName = mir_a2t( szModuleName );
 			pa->bIsVisible = TRUE;
-            pa->bIsEnabled = TRUE;
+            pa->bIsEnabled = FALSE;
 			pa->iOrder = accounts.getCount();
 			accounts.insert( pa );
         }
-        DBFreeVariant(&dbv);
+        DBFreeVariant( &dbv );
     }
     return 0;
 }
@@ -235,23 +233,19 @@ int LoadAccountsModule( void )
 
 	for ( i = 0; i < accounts.getCount(); i++ ) {
 		PROTOACCOUNT* pa = accounts[i];
-
-        pa->bDynDisabled = !Proto_IsProtocolLoaded( pa->szProtoName );
-
-		if ( pa->ppro ) continue;
-        
-        if (!IsAccountEnabled( pa ))
-        {
-            pa->type = PROTOTYPE_DISPROTO;
+		pa->bDynDisabled = !Proto_IsProtocolLoaded( pa->szProtoName );
+		if ( pa->ppro )
 			continue;
-        }
 
-		if ( !ActivateAccount( pa ))
-        {
+		if (!IsAccountEnabled( pa )) {
+			pa->type = PROTOTYPE_DISPROTO;
+			continue;
+		}
+
+		if ( !ActivateAccount( pa )) {
 			pa->bDynDisabled = TRUE;
-            pa->type = PROTOTYPE_DISPROTO;
-        }
-	}
+			pa->type = PROTOTYPE_DISPROTO;
+	}	}
 
 	HookEvent( ME_SYSTEM_MODULESLOADED, InitializeStaticAccounts );
 	HookEvent( ME_SYSTEM_PRESHUTDOWN, UninitializeStaticAccounts );
@@ -352,7 +346,7 @@ BOOL ActivateAccount( PROTOACCOUNT* pa )
 	if ( ppi == NULL )
 		return FALSE;
 
-    pa->type = PROTOTYPE_PROTOCOL;
+	pa->type = PROTOTYPE_PROTOCOL;
 	pa->ppro = ppi;
 	ppi->m_iDesiredStatus = ppi->m_iStatus = ID_STATUS_OFFLINE;
 	CreateProtoServiceEx( pa->szModuleName, PS_ADDTOLIST, (MIRANDASERVICEOBJ)stub1, pa->ppro );
