@@ -432,7 +432,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				} else {
 					dat->szSearchResult = mir_tstrdup(pszName);
 					if (end !=start) {
-						if (!isRoom && !isTopic && g_Settings.AddColonToAutoComplete) {
+						if (!isRoom && !isTopic && g_Settings.AddColonToAutoComplete && start == 0) {
 							pszText = mir_alloc((_tcslen(pszName) + 4) * sizeof(TCHAR));
 							_tcscpy(pszText, pszName);
 							_tcscat(pszText, _T(": "));
