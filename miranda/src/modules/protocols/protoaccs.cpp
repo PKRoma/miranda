@@ -44,9 +44,9 @@ static int EnumDbModules(const char *szModuleName, DWORD ofsModuleName, LPARAM l
 	        PROTOACCOUNT* pa = (PROTOACCOUNT*)mir_calloc(sizeof(PROTOACCOUNT));
 	        pa->cbSize = sizeof(*pa);
 	        pa->type = PROTOTYPE_PROTOCOL;
-	        pa->szModuleName = mir_strdup(dbv.pszVal);
+	        pa->szModuleName = mir_strdup(szModuleName);
 	        pa->szProtoName = mir_strdup(dbv.pszVal);
-	        pa->tszAccountName = mir_a2t(dbv.pszVal);
+	        pa->tszAccountName = mir_a2t(szModuleName);
 			pa->bIsVisible = TRUE;
             pa->bIsEnabled = TRUE;
 			pa->iOrder = accounts.getCount();
