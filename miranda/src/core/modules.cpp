@@ -196,10 +196,11 @@ int LoadDefaultModules(void)
 	if (LoadContactListModule()) return 1;
 	if (LoadAddContactModule()) return 1;
 	if (LoadNewPluginsModule()) return 1;    // will call Load() on everything, clist will load first
-	if (LoadAccountsModule()) return 1;
 
 	if (!disableDefaultModule[DEFMOD_SSL]) if (LoadSslModule()) return 1;
     NetlibInitSsl();
+
+    if (LoadAccountsModule()) return 1;
 
     //order becomes less important below here
 	if (!disableDefaultModule[DEFMOD_FONTSERVICE]) if (LoadFontserviceModule()) return 1;
