@@ -184,10 +184,9 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 						pa->ppro->OnEvent( EV_PROTO_ONLOAD, 0, 0 );
 				}
 
+				WriteDbAccounts();
 				NotifyEventHooks( hAccListChanged, param->action, ( LPARAM )pa );
 
-				WriteDbAccounts();
-		        
                 SendMessage( GetParent(hwndDlg), WM_MY_REFRESH, 0, 0 );
 			}
 
@@ -833,12 +832,13 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 
 						ListBox_SetItemData( hList, idx, 0 );
 
+						accounts.remove( pa );
+						WriteDbAccounts();
 						NotifyEventHooks( hAccListChanged, PRAC_REMOVED, ( LPARAM )pa );
+
 						char* szSaveModule = NEWSTR_ALLOCA(pa->szModuleName);
 						UnloadAccount( pa, TRUE );
 						EraseAccount( szSaveModule );
-						accounts.remove( pa );
-						WriteDbAccounts();
 						SendMessage( hwndDlg, WM_MY_REFRESH, 0, 0 );
 
 						EnableWindow( hList, TRUE );
@@ -1022,6 +1022,7 @@ static int OnAccListChanged( WPARAM eventCode, LPARAM lParam )
 	case PRAC_ADDED:
 	case PRAC_REMOVED:
 	case PRAC_CHECKED:
+    case PRAC_UPGRADED:
 		cli.pfnReloadProtoMenus();
 		cli.pfnTrayIconIconsChanged();
 		cli.pfnClcBroadcast( INTM_RELOADOPTIONS, 0, 0 );
