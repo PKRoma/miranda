@@ -235,23 +235,19 @@ int LoadAccountsModule( void )
 
 	for ( i = 0; i < accounts.getCount(); i++ ) {
 		PROTOACCOUNT* pa = accounts[i];
-
-        pa->bDynDisabled = !Proto_IsProtocolLoaded( pa->szProtoName );
-
-		if ( pa->ppro ) continue;
-        
-        if (!IsAccountEnabled( pa ))
-        {
-            pa->type = PROTOTYPE_DISPROTO;
+		pa->bDynDisabled = !Proto_IsProtocolLoaded( pa->szProtoName );
+		if ( pa->ppro )
 			continue;
-        }
 
-		if ( !ActivateAccount( pa ))
-        {
+		if (!IsAccountEnabled( pa )) {
+			pa->type = PROTOTYPE_DISPROTO;
+			continue;
+		}
+
+		if ( !ActivateAccount( pa )) {
 			pa->bDynDisabled = TRUE;
-            pa->type = PROTOTYPE_DISPROTO;
-        }
-	}
+			pa->type = PROTOTYPE_DISPROTO;
+	}	}
 
 	HookEvent( ME_SYSTEM_MODULESLOADED, InitializeStaticAccounts );
 	HookEvent( ME_SYSTEM_PRESHUTDOWN, UninitializeStaticAccounts );
@@ -352,7 +348,7 @@ BOOL ActivateAccount( PROTOACCOUNT* pa )
 	if ( ppi == NULL )
 		return FALSE;
 
-    pa->type = PROTOTYPE_PROTOCOL;
+	pa->type = PROTOTYPE_PROTOCOL;
 	pa->ppro = ppi;
 	ppi->m_iDesiredStatus = ppi->m_iStatus = ID_STATUS_OFFLINE;
 	CreateProtoServiceEx( pa->szModuleName, PS_ADDTOLIST, (MIRANDASERVICEOBJ)stub1, pa->ppro );
