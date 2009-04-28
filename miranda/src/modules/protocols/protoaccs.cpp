@@ -456,15 +456,6 @@ void EraseAccount( const char* pszModuleName )
 	CallService( MS_DB_MODULE_DELETE, 0, ( LPARAM )pszModuleName );
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////
-
-int IsAccountEnabled( PROTOACCOUNT* pa )
-{
-	if ( !pa )
-		return FALSE;
-
-	return (( pa->bIsEnabled && !pa->bDynDisabled ) || pa->bOldProto );
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 

@@ -321,6 +321,11 @@ __inline static PROTOACCOUNT* ProtoGetAccount( const char* accName )
 //lParam=0
 #define MS_PROTO_SHOWACCMGR "Protos/ShowAccountManager" 
 
+__inline static int IsAccountEnabled( const PROTOACCOUNT* pa )
+{
+	return pa && (( pa->bIsEnabled && !pa->bDynDisabled ) || pa->bOldProto );
+}
+
 /* -------------- avatar support ---------------------
 
 First a protocol must report it supports PF4_AVATARS via PS_GETCAPS, secondly
