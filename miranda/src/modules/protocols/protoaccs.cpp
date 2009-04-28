@@ -37,22 +37,20 @@ LIST<PROTOACCOUNT> accounts( 10, CompareAccounts );
 static int EnumDbModules(const char *szModuleName, DWORD ofsModuleName, LPARAM lParam)
 {
     DBVARIANT dbv;
-	if ( !DBGetContactSettingString( NULL, szModuleName, "AM_BaseProto", &dbv )) 
-    {
-        if (!Proto_GetAccount( szModuleName))
-        {
-	        PROTOACCOUNT* pa = (PROTOACCOUNT*)mir_calloc(sizeof(PROTOACCOUNT));
-	        pa->cbSize = sizeof(*pa);
+	if ( !DBGetContactSettingString( NULL, szModuleName, "AM_BaseProto", &dbv )) {
+        if (!Proto_GetAccount( szModuleName )) {
+	        PROTOACCOUNT* pa = ( PROTOACCOUNT* )mir_calloc( sizeof( PROTOACCOUNT ));
+	        pa->cbSize = sizeof( *pa );
 	        pa->type = PROTOTYPE_PROTOCOL;
-	        pa->szModuleName = mir_strdup(szModuleName);
-	        pa->szProtoName = mir_strdup(dbv.pszVal);
-	        pa->tszAccountName = mir_a2t(szModuleName);
+	        pa->szModuleName = mir_strdup( szModuleName );
+	        pa->szProtoName = mir_strdup( dbv.pszVal );
+	        pa->tszAccountName = mir_a2t( szModuleName );
 			pa->bIsVisible = TRUE;
-            pa->bIsEnabled = TRUE;
+            pa->bIsEnabled = FALSE;
 			pa->iOrder = accounts.getCount();
 			accounts.insert( pa );
         }
-        DBFreeVariant(&dbv);
+        DBFreeVariant( &dbv );
     }
     return 0;
 }
