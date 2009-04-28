@@ -208,6 +208,44 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	if (bStatusMenu = ServiceExists(MS_CLIST_ADDSTATUSMENUITEM))
 		HookProtoEvent(ME_CLIST_PREBUILDSTATUSMENU, &CIcqProto::OnPreBuildStatusMenu);
 
+  // Register netlib users
+  NETLIBUSER nlu = {0};
+	TCHAR szBuffer[MAX_PATH + 64];
+	null_snprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s server connection"), m_tszUserName);
+	nlu.cbSize = sizeof(nlu);
+	nlu.flags = NUF_OUTGOING | NUF_HTTPGATEWAY | NUF_TCHAR;
+	nlu.ptszDescriptiveName = szBuffer;
+	nlu.szSettingsModule = m_szModuleName;
+	nlu.szHttpGatewayHello = "http://http.proxy.icq.com/hello";
+	nlu.szHttpGatewayUserAgent = "Mozilla/4.08 [en] (WinNT; U ;Nav)";
+	nlu.pfnHttpGatewayInit = icq_httpGatewayInit;
+	nlu.pfnHttpGatewayBegin = icq_httpGatewayBegin;
+	nlu.pfnHttpGatewayWrapSend = icq_httpGatewayWrapSend;
+	nlu.pfnHttpGatewayUnwrapRecv = icq_httpGatewayUnwrapRecv;
+	m_hServerNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
+
+  char szP2PModuleName[MAX_PATH + 3];
+	strcpy(szP2PModuleName, m_szModuleName);
+	strcat(szP2PModuleName, "P2P");
+	null_snprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s client-to-client connections"), m_tszUserName);
+	nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_TCHAR;
+	nlu.ptszDescriptiveName = szBuffer;
+	nlu.szSettingsModule = szP2PModuleName;
+	nlu.minIncomingPorts = 1;
+	m_hDirectNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
+
+  // Register custom database events
+	DBEVENTTYPEDESCR eventType = {0};
+	eventType.cbSize = DBEVENTTYPEDESCR_SIZE;
+	eventType.eventType = ICQEVENTTYPE_MISSEDMESSAGE;
+	eventType.module = m_szModuleName;
+	eventType.descr = "Missed message notifications";
+	eventType.textService = ICQ_DB_GETEVENTTEXT_MISSEDMESSAGE;
+	eventType.flags = DETF_HISTORY | DETF_MSGWINDOW;
+	// for now keep default "message" icon
+	CallService(MS_DB_EVENT_REGISTERTYPE, 0, (LPARAM)&eventType);
+
+  // Protocol instance is ready
 	NetLog_Server("%s: Protocol instance '%s' created.", ICQ_PROTOCOL_NAME, m_szModuleName);
 }
 
@@ -315,7 +353,6 @@ static HANDLE CListAddContactMenuItem(const char *szName, const IcqIconHandle hI
 
 int CIcqProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
-	NETLIBUSER nlu = {0};
 	char pszP2PName[MAX_PATH+3];
 	char pszGroupsName[MAX_PATH+10];
 	char pszSrvGroupsName[MAX_PATH+10];
@@ -323,7 +360,6 @@ int CIcqProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 	strcpy(pszP2PName, m_szModuleName);
 	strcat(pszP2PName, "P2P");
-
 	strcpy(pszGroupsName, m_szModuleName);
 	strcat(pszGroupsName, "Groups");
 	strcpy(pszSrvGroupsName, m_szModuleName);
@@ -334,43 +370,10 @@ int CIcqProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	modules[3] = pszSrvGroupsName;
 	CallService("DBEditorpp/RegisterModule",(WPARAM)modules,(LPARAM)4);
 
-	TCHAR szBuffer[MAX_PATH + 64];
-	null_snprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s server connection"), m_tszUserName);
-	nlu.cbSize = sizeof(nlu);
-	nlu.flags = NUF_OUTGOING | NUF_HTTPGATEWAY | NUF_TCHAR;
-	nlu.ptszDescriptiveName = szBuffer;
-	nlu.szSettingsModule = m_szModuleName;
-	nlu.szHttpGatewayHello = "http://http.proxy.icq.com/hello";
-	nlu.szHttpGatewayUserAgent = "Mozilla/4.08 [en] (WinNT; U ;Nav)";
-	nlu.pfnHttpGatewayInit = icq_httpGatewayInit;
-	nlu.pfnHttpGatewayBegin = icq_httpGatewayBegin;
-	nlu.pfnHttpGatewayWrapSend = icq_httpGatewayWrapSend;
-	nlu.pfnHttpGatewayUnwrapRecv = icq_httpGatewayUnwrapRecv;
-
-	m_hServerNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
-
-	null_snprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s client-to-client connections"), m_tszUserName);
-	nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_TCHAR;
-	nlu.ptszDescriptiveName = szBuffer;
-	nlu.szSettingsModule = pszP2PName;
-	nlu.minIncomingPorts = 1;
-	m_hDirectNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
-
 	HookProtoEvent(ME_OPT_INITIALISE, &CIcqProto::OnOptionsInit);
 	HookProtoEvent(ME_USERINFO_INITIALISE, &CIcqProto::OnUserInfoInit);
 	HookProtoEvent(ME_CLIST_PREBUILDCONTACTMENU, &CIcqProto::OnPreBuildContactMenu);
 	HookProtoEvent(ME_IDLE_CHANGED, &CIcqProto::OnIdleChanged);
-
-  // Register custom database events
-	DBEVENTTYPEDESCR eventType = {0};
-	eventType.cbSize = DBEVENTTYPEDESCR_SIZE;
-	eventType.eventType = ICQEVENTTYPE_MISSEDMESSAGE;
-	eventType.module = m_szModuleName;
-	eventType.descr = "Missed message notifications";
-	eventType.textService = ICQ_DB_GETEVENTTEXT_MISSEDMESSAGE;
-	eventType.flags = DETF_HISTORY | DETF_MSGWINDOW;
-	// for now keep default "message" icon
-	CallService(MS_DB_EVENT_REGISTERTYPE, 0, (LPARAM)&eventType);
 
 	InitAvatars();
 
