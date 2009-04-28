@@ -73,7 +73,10 @@ static void RestoreMode(HWND hwnd)
 {
 	int nStatus = DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
 	if (nStatus != ID_STATUS_OFFLINE)
-		SetClistGlobalStatus(nStatus);
+    {
+        // We need to post message here dso that reconnect occur after ME_SYSTEM_MODULESLOADED event
+		PostMessage(hwnd&&IsWindow(hwnd)?hwnd:cli.hwndContactList, WM_COMMAND, nStatus, 0);
+    }
 }
 
 // Disconnect all protocols.
