@@ -806,7 +806,9 @@ static INT_PTR BuildStatusMenu(WPARAM, LPARAM)
 
 static INT_PTR SetStatusMode(WPARAM wParam, LPARAM)
 {
+    prochotkey = true;
 	MenuProcessCommand(MAKEWPARAM(LOWORD(wParam), MPCF_MAINMENU), 0);
+    prochotkey = false;
 	return 0;
 }
 
