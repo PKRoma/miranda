@@ -1081,6 +1081,16 @@ void CYahooProto::ext_got_ping(const char *errormsg)
 
 			BroadcastStatus(m_startStatus);
 			m_bLoggedIn=TRUE;
+
+			/**
+			 * Now load the YAB.
+			 */
+			if (GetByte( "UseYAB", 1 )) {
+				LOG(("[ext_yahoo_got_ping] GET YAB"));
+				if (m_iStatus != ID_STATUS_OFFLINE)
+					mir_forkthread(yahoo_get_yab_thread, (void *)m_id);
+			}
+
 		}
 	}
 }
@@ -1095,12 +1105,6 @@ void CYahooProto::ext_login_response(int succ, const char *url)
 		m_status = yahoo_current_status(m_id);
 		LOG(("logged in status-> %d", m_status));
 		
-		if (GetByte( "UseYAB", 1 )) {
-			LOG(("GET YAB [Before final check] "));
-			if (m_iStatus != ID_STATUS_OFFLINE)
-				mir_forkthread(yahoo_get_yab_thread, (void *)m_id);
-		}
-
 		return;
 	}
 	
@@ -1754,7 +1758,19 @@ char *ext_yahoo_send_https_request(struct yahoo_data *yd, const char *host, cons
 
 void ext_yahoo_got_ignore(int id, YList * igns)
 {	
-	LOG(("ext_yahoo_got_ignore")); 
+	YList *l = igns;
+	
+	LOG(("[ext_yahoo_got_ignore] Got Ignore List")); 
+	
+	while (l != NULL) {
+		struct yahoo_buddy *b = (struct yahoo_buddy *) l->data;
+
+		LOG(("[ext_yahoo_got_ignore] Buddy: %s", b->id ))
+		
+		l = l->next;
+	}
+	
+	LOG(("[ext_yahoo_got_ignore] End Of Ignore List")); 
 }
 
 void register_callbacks()
