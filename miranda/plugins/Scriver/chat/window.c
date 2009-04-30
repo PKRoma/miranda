@@ -1,7 +1,7 @@
 /*
 Chat module plugin for Miranda IM
 
-Copyright (C) 2003 Jörgen Persson
+Copyright (C) 2003 JÃ¶rgen Persson
 Copyright 2003-2008 Miranda ICQ/IM project,
 
 This program is free software; you can redistribute it and/or
@@ -411,7 +411,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				if (isTopic) {
 					pszName = Parentsi->ptszTopic;
 				} else if (isRoom) {
-					dat->lastSession = SM_FindSessionAutoComplete(Parentsi->pszModule, dat->lastSession, dat->szSearchQuery, dat->szSearchResult);
+					dat->lastSession = SM_FindSessionAutoComplete(Parentsi->pszModule, Parentsi, dat->lastSession, dat->szSearchQuery, dat->szSearchResult);
 					if (dat->lastSession != NULL) {
 						pszName = dat->lastSession->ptszName;
 					}

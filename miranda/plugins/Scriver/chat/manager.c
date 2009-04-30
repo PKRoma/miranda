@@ -1,7 +1,7 @@
 /*
 Chat module plugin for Miranda IM
 
-Copyright (C) 2003 Jörgen Persson
+Copyright (C) 2003 JÃ¶rgen Persson
 Copyright 2003-2008 Miranda ICQ/IM project,
 
 This program is free software; you can redistribute it and/or
@@ -794,23 +794,30 @@ char* SM_GetUsers(SESSION_INFO* si)
 }
 
 
-SESSION_INFO* SM_FindSessionAutoComplete(const char* pszModule, SESSION_INFO* prevSession, const TCHAR* pszOriginal, const TCHAR* pszCurrent)
+SESSION_INFO* SM_FindSessionAutoComplete(const char* pszModule, SESSION_INFO* currSession, SESSION_INFO* prevSession, const TCHAR* pszOriginal, const TCHAR* pszCurrent)
 {
-	TCHAR* pszName = NULL;
-	SESSION_INFO* pResult = NULL;
-	SESSION_INFO* pTemp = m_WndList;
-	while (pTemp != NULL) {
-		if (!lstrcmpiA(pszModule, pTemp->pszModule)) {
-			if ( my_strstri( pTemp->ptszName, pszOriginal) == pTemp->ptszName ) {
-				if ( prevSession != pTemp && lstrcmpi( pTemp->ptszName, pszCurrent ) > 0 && ( !pszName || lstrcmpi( pTemp->ptszName, pszName ) < 0) ) {
-					pResult = pTemp;
-					pszName = pTemp->ptszName;
-				}
+        SESSION_INFO* pResult = NULL;
+        if (prevSession == NULL && my_strstri( currSession->ptszName, pszOriginal) == currSession->ptszName) {
+            pResult = currSession;
+        } else {
+            TCHAR* pszName = NULL;
+            SESSION_INFO* pTemp = m_WndList;
+			if (currSession == prevSession) {
+				pszCurrent = pszOriginal;
 			}
-		}
-		pTemp = pTemp->next;
-	}
-	return pResult;
+            while (pTemp != NULL) {
+                    if (pTemp != currSession && !lstrcmpiA(pszModule, pTemp->pszModule)) {
+                            if ( my_strstri( pTemp->ptszName, pszOriginal) == pTemp->ptszName ) {
+                                    if ( prevSession != pTemp && lstrcmpi( pTemp->ptszName, pszCurrent ) > 0 && ( !pszName || lstrcmpi( pTemp->ptszName, pszName ) < 0) ) {
+                                            pResult = pTemp;
+                                            pszName = pTemp->ptszName;
+                                    }
+                            }
+                    }
+                    pTemp = pTemp->next;
+            }
+        }
+        return pResult;
 
 }
 
