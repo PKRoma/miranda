@@ -208,8 +208,8 @@ static int OnModulesLoaded( WPARAM, LPARAM )
 	CallService(MS_COLOUR_REGISTER, (WPARAM)&colourid, 0);
 
 	// Init extra icons
-	hExtraActivity = ExtraIcon_Register("activity", "Activity" /* No icons registered, "working" */);
-	hExtraMood = ExtraIcon_Register("mood", "Mood" /* No icons registered, "amazed" */);
+	hExtraActivity = ExtraIcon_Register("activity", "Jabber Activity" /* No icons registered, "working" */);
+	hExtraMood = ExtraIcon_Register("mood", "Jabber Mood" /* No icons registered, "amazed" */);
 
 	return 0;
 }

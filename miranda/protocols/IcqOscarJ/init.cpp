@@ -109,7 +109,7 @@ static int icqProtoUninit( PROTO_INTERFACE* ppro )
 
 static int OnModulesLoaded( WPARAM, LPARAM )
 {
-	hExtraXStatus = ExtraIcon_Register("xstatus", "XStatus");
+	hExtraXStatus = ExtraIcon_Register("xstatus", "ICQ XStatus");
 	return 0;
 }
 
