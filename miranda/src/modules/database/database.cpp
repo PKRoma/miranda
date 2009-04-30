@@ -407,7 +407,7 @@ int LoadDatabaseModule(void)
 			    if (!FindMirandaForProfile(szProfile)) {
 				    TCHAR buf[256];
 				    TCHAR * p = _tcsrchr(szProfile,'\\');
-				    mir_sntprintf(buf,SIZEOF(buf),TranslateT("Miranda was unable to open '%s'\nIt's unaccessible or used by other application or Miranda instance"), p ? ++p : szProfile);
+				    mir_sntprintf(buf,SIZEOF(buf),TranslateT("Miranda was unable to open '%s'\nIt's inaccessible or used by other application or Miranda instance"), p ? ++p : szProfile);
 				    MessageBox(0,buf,TranslateT("Miranda can't open that profile"),MB_OK | MB_ICONERROR);
                 }
             }
