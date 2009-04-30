@@ -396,7 +396,6 @@ int LoadDatabaseModule(void)
 		case 1:
 			// if there were drivers but they all failed cos the file is locked, try and find the miranda which locked it
             if (fileExist(szProfile)) {
-            {
 				// file isn't locked, just no driver could open it.
 				TCHAR buf[256];
 				TCHAR * p = _tcsrchr(szProfile,'\\');
