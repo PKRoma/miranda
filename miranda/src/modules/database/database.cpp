@@ -395,13 +395,22 @@ int LoadDatabaseModule(void)
 		}
 		case 1:
 			// if there were drivers but they all failed cos the file is locked, try and find the miranda which locked it
-			if ( !FindMirandaForProfile(szProfile) ) {
+            if (fileExist(szProfile)) {
+            {
 				// file isn't locked, just no driver could open it.
 				TCHAR buf[256];
 				TCHAR * p = _tcsrchr(szProfile,'\\');
-				mir_sntprintf(buf,SIZEOF(buf),TranslateT("Miranda was unable to open '%s', its in an unknown format.\nThis profile might also be damaged, please run DB-tool which should be installed."), p ? ++p : szProfile);
+				mir_sntprintf(buf,SIZEOF(buf),TranslateT("Miranda was unable to open '%s', it's in an unknown format.\nThis profile might also be damaged, please run DB-tool which should be installed."), p ? ++p : szProfile);
 				MessageBox(0,buf,TranslateT("Miranda can't understand that profile"),MB_OK | MB_ICONERROR);
 			}
+            else {
+			    if (!FindMirandaForProfile(szProfile)) {
+				    TCHAR buf[256];
+				    TCHAR * p = _tcsrchr(szProfile,'\\');
+				    mir_sntprintf(buf,SIZEOF(buf),TranslateT("Miranda was unable to open '%s'\nIt's unaccessible or used by other application or Miranda instance"), p ? ++p : szProfile);
+				    MessageBox(0,buf,TranslateT("Miranda can't open that profile"),MB_OK | MB_ICONERROR);
+                }
+            }
 			break;
 		}
 		iReturn = (rc != 0);
