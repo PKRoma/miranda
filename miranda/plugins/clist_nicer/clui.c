@@ -446,7 +446,7 @@ static void InitIcoLib()
 	ProtoEnumAccounts( &p_count, &accs );
 	for (i = 0; i < p_count; i++) {
 		char szDescr[128];
-		if ( CallProtoService( accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0) == 0)
+		if ( !IsAccountEnabled(accs[i]) || CallProtoService(accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0) == 0)
 			continue;
 		mir_snprintf(szBuffer, 128, "%s_conn", accs[i]->szModuleName );
 		sid.pszName = szBuffer;
