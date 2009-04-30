@@ -258,7 +258,7 @@ void RegisterProtoIconsForAllProtoIconLib()
 	
 	ProtoEnumAccounts( &protoCount, &accs );
 	for ( i=0; i < protoCount; i++ )
-		if ( CallProtoService( accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0 ))
+		if ( IsAccountEnabled( accs[i] ) && CallProtoService( accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0 ))
 			RegisterProtoIcons( accs[i]->szModuleName ); 
 }
 

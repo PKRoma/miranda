@@ -217,7 +217,7 @@ void ReloadExtraIcons()
 		//calc only needed protocols
 		ProtoEnumAccounts( &count, &accs );
 		for ( i=0; i < count; i++ )
-			if ( CallProtoService( accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0 ))
+			if ( IsAccountEnabled( accs[i] ) && CallProtoService( accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0 ))
 				ImageList_AddIcon( hExtraImageList, LoadSkinnedProtoIcon( accs[i]->szModuleName, ID_STATUS_ONLINE ));
 	}
 
@@ -298,7 +298,7 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 		maxpr=0;
 		//calc only needed protocols
 		for( i=0; i < count; i++ ) {
-			if ( CallProtoService( accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0 ) == 0 )
+			if ( !IsAccountEnabled( accs[i] ) || CallProtoService( accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0 ) == 0 )
 				continue;
 			ImgIndex[maxpr] = accs[i]->szModuleName;
 			maxpr++;
