@@ -2405,13 +2405,14 @@ static void yahoo_process_y8_list(struct yahoo_input_data *yid, struct yahoo_pac
 	if (pkt->status != 0) 
 		return;
 	
+	if(yd->buddies) {
+		YAHOO_CALLBACK(ext_yahoo_got_buddies)(yd->client_id, yd->buddies);
+	}
+
 	if(yd->ignore) {
 		YAHOO_CALLBACK(ext_yahoo_got_ignore)(yd->client_id, yd->ignore);
 	}
 	
-	if(yd->buddies) {
-		YAHOO_CALLBACK(ext_yahoo_got_buddies)(yd->client_id, yd->buddies);
-	}
 
 }
 

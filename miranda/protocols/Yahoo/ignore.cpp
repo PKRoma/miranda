@@ -46,3 +46,21 @@ int CYahooProto::BuddyIgnored(const char *who)
 
 	return 0;
 }
+
+void CYahooProto::ext_got_ignore(YList * igns)
+{	
+	YList *l = igns;
+	
+	LOG(("[ext_yahoo_got_ignore] Got Ignore List")); 
+	
+	while (l != NULL) {
+		struct yahoo_buddy *b = (struct yahoo_buddy *) l->data;
+
+		YAHOO_DEBUGLOG("[ext_yahoo_got_ignore] Buddy: %s", b->id );
+		
+		l = l->next;
+	}
+	
+	YAHOO_DEBUGLOG("[ext_yahoo_got_ignore] End Of Ignore List"); 
+}
+

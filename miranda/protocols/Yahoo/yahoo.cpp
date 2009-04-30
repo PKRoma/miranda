@@ -584,16 +584,18 @@ void CYahooProto::ext_got_buddies(YList * buds)
 		return;
 	}
 
-	LOG(("Walking buddy list..."));
+	YAHOO_DEBUGLOG(("[ext_yahoo_got_buddies] Walking buddy list..."));
 	for(; buds; buds = buds->next) {
 		HANDLE hContact;
 
 		yahoo_buddy *bud = ( yahoo_buddy* )buds->data;
 		if (bud == NULL) {
-			LOG(("EMPTY BUDDY LIST??"));
+			LOG(("[ext_yahoo_got_buddies] EMPTY BUDDY LIST??"));
 			continue;
 		}
 
+		YAHOO_DEBUGLOG("[ext_yahoo_got_buddies] id = %s, group = %s, auth = %d", bud->id, bud->group, bud->auth);
+		
 		if (bud->real_name)
 			YAHOO_DEBUGLOG("id = %s name = %s", bud->id, bud->real_name);
 
@@ -620,8 +622,9 @@ void CYahooProto::ext_got_buddies(YList * buds)
 				DBDeleteContactSetting(hContact, m_szModuleName, "ApparentMode");
 		}
 
-		if (bud->auth)
-			LOG(( "Auth request waiting for: %s", bud->id ));
+		//if (bud->auth)
+		//	YAHOO_DEBUGLOG( "Auth request waiting for: %s", bud->id );
+		SetByte(hContact, "YAuth", bud->auth);
 
 		if (bud->yab_entry) {
 			//LOG(("YAB_ENTRY"));
@@ -650,6 +653,8 @@ void CYahooProto::ext_got_buddies(YList * buds)
 			SetWord( hContact, "YabID", bud->yab_entry->dbid);
 		}
 	}
+	
+	YAHOO_DEBUGLOG(("[ext_yahoo_got_buddies] buddy list Finished."));
 }
 
 void CYahooProto::ext_rejected(const char *who, const char *msg)
@@ -968,57 +973,6 @@ void __cdecl yahoo_get_yab_thread(void *psf)
 	yahoo_get_yab(id);
 }
 
-/*
-void check_for_update(void)
-{
-	NETLIBHTTPREQUEST nlhr={0},*nlhrReply;
-	NETLIBHTTPHEADER httpHeaders[3];
-
-	nlhr.cbSize=sizeof(nlhr);
-	nlhr.requestType=REQUEST_GET;
-	nlhr.flags=NLHRF_DUMPASTEXT|NLHRF_GENERATEHOST|NLHRF_SMARTAUTHHEADER|NLHRF_HTTP11;
-	nlhr.szUrl="http://update.messenger.yahoo.com/msgrcli7.html";//url.sz;
-	nlhr.headers = httpHeaders;
-	nlhr.headersCount= 3;
-	
-	httpHeaders[0].szName="Accept";
-	httpHeaders[0].szValue="*\/ *";
-	httpHeaders[1].szName="User-Agent";
-	httpHeaders[1].szValue="Mozilla Compatible/2.0 (WinNT; I; NCC/2.0)";
-	httpHeaders[2].szName="Pragma";
-	httpHeaders[2].szValue="no-cache";
-
-	nlhrReply=(NETLIBHTTPREQUEST*)CallService(MS_NETLIB_HTTPTRANSACTION,(WPARAM)hNetlibUser,(LPARAM)&nlhr);
-
-	if(nlhrReply) {
-		int i;
-		
-		if (nlhrReply->resultCode != 200) {
-			LOG(("Update server returned '%d' instead of 200. It also sent the following: %s", nlhrReply->resultCode, nlhrReply->szResultDescr));
-			return;
-		}
-		
-		LOG(("Got %d headers!", nlhrReply->headersCount));
-		
-		for (i=0; i < nlhrReply->headersCount; i++) {
-			LOG(("%s: %s", nlhrReply->headers[i].szName, nlhrReply->headers[i].szValue));
-			
-			if (lstrcmpiA(nlhrReply->headers[i].szName, "Set-Cookie") == 0) {
-				LOG(("Found Cookie... Yum yum..."));
-				
-				if (nlhrReply->headers[i].szValue[0] == 'B' && nlhrReply->headers[i].szValue[1] == '=') {
-					char *b;
-					
-					b = getcookie(nlhrReply->headers[i].szValue);
-					
-					LOG(("Got B Cookie: %s", b));
-				}
-			}
-		}
-		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT,0,(LPARAM)nlhrReply);
-	}
-}
-*/
 
 void ext_yahoo_got_cookies(int id)
 {
@@ -1048,13 +1002,6 @@ void ext_yahoo_got_cookies(int id)
 	}
 #endif
 	
-	/*if (GetByte( "UseYAB", 1 )) {
-		LOG(("GET YAB [Before final check] "));
-		if (m_iStatus != ID_STATUS_OFFLINE)
-			//yahoo_get_yab(id);
-			check_for_update();
-			mir_forkthread(yahoo_get_yab_thread, (void *)id);
-	}*/
 }
 
 void CYahooProto::ext_got_ping(const char *errormsg)
@@ -1478,7 +1425,7 @@ void CYahooProto::ext_login(enum yahoo_status login_mode)
 	NETLIBUSERSETTINGS nlus = { 0 };
 #endif
 
-	LOG(("ext_yahoo_login"));
+	LOG(("[ext_login]"));
 
 	host[0] = '\0';
 	
@@ -1758,19 +1705,7 @@ char *ext_yahoo_send_https_request(struct yahoo_data *yd, const char *host, cons
 
 void ext_yahoo_got_ignore(int id, YList * igns)
 {	
-	YList *l = igns;
-	
-	LOG(("[ext_yahoo_got_ignore] Got Ignore List")); 
-	
-	while (l != NULL) {
-		struct yahoo_buddy *b = (struct yahoo_buddy *) l->data;
-
-		LOG(("[ext_yahoo_got_ignore] Buddy: %s", b->id ))
-		
-		l = l->next;
-	}
-	
-	LOG(("[ext_yahoo_got_ignore] End Of Ignore List")); 
+	GETPROTOBYID( id )->ext_got_ignore( igns );
 }
 
 void register_callbacks()
