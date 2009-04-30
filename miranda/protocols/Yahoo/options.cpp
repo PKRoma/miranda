@@ -272,14 +272,17 @@ static BOOL CALLBACK DlgProcYahooOptsIgnore(HWND hwndDlg, UINT msg, WPARAM wPara
 		else CheckDlgButton(hwndDlg, IDC_OPT_IGN_LIST, 1);
 
 		/* show our current ignore list */
+		LOG(("[DlgProcYahooOptsIgnore] Grabbing current ignore list..."))
 		l = (YList *)ppro->GetIgnoreList();
 		while (l != NULL) {
 			struct yahoo_buddy *b = (struct yahoo_buddy *) l->data;
 
-			//MessageBoxA(NULL, b->id, "ID", MB_OK);
+			LOG(("[DlgProcYahooOptsIgnore] Buddy: %s", b->id ))
 			SendMessageA(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_ADDSTRING, 0, (LPARAM)b->id);
 			l = l->next;
 		}
+		LOG(("[DlgProcYahooOptsIgnore] End of Ignore List..."))
+		
 		return TRUE;
 
 	case WM_COMMAND:

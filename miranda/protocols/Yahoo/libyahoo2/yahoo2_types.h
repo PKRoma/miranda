@@ -346,6 +346,7 @@ struct yahoo_data {
 	char  *rawbuddylist;
 	char  *rawstealthlist;
 	char  *ignorelist;
+	char  *ygrp;
 
 	struct yahoo_server_settings *server_settings;
 };

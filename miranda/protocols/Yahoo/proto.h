@@ -174,6 +174,8 @@ struct CYahooProto : public PROTO_INTERFACE
 	void  IgnoreBuddy(const char *buddy, int ignore);
 	int   BuddyIgnored(const char *who);
 
+	void 	ext_got_ignore(YList * igns);
+	
 	//====| im.cpp |======================================================================
 	void   ext_got_im(const char *me, const char *who, int protocol, const char *msg, long tm, int stat, int utf8, int buddy_icon, const char *seqn=NULL, int sendn=0);
 
@@ -212,7 +214,10 @@ struct CYahooProto : public PROTO_INTERFACE
 
 	int  GetByte( const char* valueName, int parDefltValue );
 	int  SetByte( const char* valueName, int parValue );
+	int  GetByte( HANDLE hContact, const char* valueName, int parDefltValue );
+	int  SetByte( HANDLE hContact, const char* valueName, int parValue );
 
+	
 	DWORD  GetDword( const char* valueName, DWORD parDefltValue );
 	DWORD  SetDword( const char* valueName, DWORD parValue );
 	DWORD  GetDword( HANDLE hContact, const char* valueName, DWORD parDefltValue );

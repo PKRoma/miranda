@@ -96,6 +96,17 @@ int CYahooProto::SetByte( const char* valueName, int parValue )
 	return DBWriteContactSettingByte( NULL, m_szModuleName, valueName, parValue );
 }
 
+int CYahooProto::GetByte( HANDLE hContact, const char* valueName, int parDefltValue )
+{
+	return DBGetContactSettingByte( hContact, m_szModuleName, valueName, parDefltValue );
+}
+
+int CYahooProto::SetByte( HANDLE hContact, const char* valueName, int parValue )
+{
+	return DBWriteContactSettingByte( hContact, m_szModuleName, valueName, parValue );
+}
+
+
 DWORD CYahooProto::GetDword( HANDLE hContact, const char* valueName, DWORD parDefltValue )
 {
 	return DBGetContactSettingDword( hContact, m_szModuleName, valueName, parDefltValue );
