@@ -692,6 +692,7 @@ static void yahoo_free_data(struct yahoo_data *yd)
 	FREE(yd->login_cookie);
 	FREE(yd->login_id);
 	FREE(yd->rawstealthlist);
+	FREE(yd->ygrp);
 
 	yahoo_free_buddies(yd->buddies);
 	yahoo_free_buddies(yd->ignore);
@@ -2332,7 +2333,6 @@ static void yahoo_process_y8_list(struct yahoo_input_data *yid, struct yahoo_pac
 {
 	struct yahoo_data 	*yd = yid->yd;
 	YList 				*l;
-	char   				*ygrp=NULL;
 	struct yahoo_buddy 	*bud=NULL;
 	
 	/* we could be getting multiple packets here */
@@ -2348,8 +2348,7 @@ static void yahoo_process_y8_list(struct yahoo_input_data *yid, struct yahoo_pac
 			 */
 			if (pair->value && !strcmp(pair->value, "320")) {
 				/* No longer in any group; this indicates the start of the ignore list. */
-				FREE(ygrp);
-				ygrp=NULL;
+				FREE(yd->ygrp);
 			}
 
 			break;
@@ -2358,8 +2357,8 @@ static void yahoo_process_y8_list(struct yahoo_input_data *yid, struct yahoo_pac
 		case 300: /* This is 318 before a group, 319 before any s/n in a group, and 320 before any ignored s/n. */
 			break;
 		case 65: /* This is the group */
-			FREE(ygrp);
-			ygrp = strdup(pair->value);
+			FREE(yd->ygrp);
+			yd->ygrp = strdup(pair->value);
 			break;
 		case 7: /* buddy's s/n */
 			/**
@@ -2368,8 +2367,8 @@ static void yahoo_process_y8_list(struct yahoo_input_data *yid, struct yahoo_pac
 			bud = y_new0(struct yahoo_buddy, 1);
 			bud->id = strdup(pair->value);
 			
-			if (ygrp) {
-				bud->group = strdup(ygrp);
+			if (yd->ygrp) {
+				bud->group = strdup(yd->ygrp);
 				
 				yd->buddies = y_list_append(yd->buddies, bud);
 			} else {
@@ -2401,6 +2400,10 @@ static void yahoo_process_y8_list(struct yahoo_input_data *yid, struct yahoo_pac
 			break;
 		}
 	}
+	
+	/* we could be getting multiple packets here */
+	if (pkt->status != 0) 
+		return;
 	
 	if(yd->ignore) {
 		YAHOO_CALLBACK(ext_yahoo_got_ignore)(yd->client_id, yd->ignore);
@@ -5263,6 +5266,7 @@ int yahoo_init_with_attributes(const char *username, const char *password, ...)
 	va_end(ap);
 
 	yd->ignore = yd->buddies = NULL;
+	yd->ygrp = NULL;
 	
 	return yd->client_id;
 }
