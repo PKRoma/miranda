@@ -322,8 +322,8 @@ void add_ES_icons(CAimProto* ppro)
 
 void InitExtraIcons(void)
 {
-    hExtraAT = ExtraIcon_Register("aimaccounttype", "Account Type" /* No icons registered, "working" */);
-    hExtraES = ExtraIcon_Register("aimextrastatus", "Extra Status" /* No icons registered, "working" */);
+    hExtraAT = ExtraIcon_Register("aimaccounttype", "AIM Account Type", "AIM_aol");
+    hExtraES = ExtraIcon_Register("aimextrastatus", "AIM Extra Status", "AIM_hiptop");
 
     if (hExtraAT == NULL)
     {
