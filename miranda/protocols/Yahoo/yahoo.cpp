@@ -1154,7 +1154,7 @@ void CYahooProto::ext_error(const char *err, int fatal, int num)
 {
 	char buff[1024];
 	
-	LOG(("Yahoo Error: fatal: %d, num: %d, %s", fatal, num, err));
+	LOG(("Yahoo Error: fatal: %d, num: %d, err: %s", fatal, num, err));
         
 	switch(num) {
 	case E_UNKNOWN:
