@@ -75,7 +75,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib version.lib"
+				AdditionalDependencies="wsock32.lib version.lib"
 				OutputFile="$(OutDir)/GG.dll"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
@@ -178,7 +178,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/ALIGN:4096 /ignore:4108"
-				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib version.lib"
+				AdditionalDependencies="wsock32.lib version.lib"
 				OutputFile="$(OutDir)/GG.dll"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
@@ -281,7 +281,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib version.lib"
+				AdditionalDependencies="wsock32.lib version.lib"
 				OutputFile="$(OutDir)/GG.dll"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
@@ -385,7 +385,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/ALIGN:4096 /ignore:4108"
-				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib version.lib"
+				AdditionalDependencies="wsock32.lib version.lib"
 				OutputFile="$(OutDir)/GG.dll"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
