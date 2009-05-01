@@ -115,7 +115,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wsock32.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib"
+				AdditionalDependencies="wsock32.lib comctl32.lib winmm.lib version.lib"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
@@ -259,7 +259,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="wsock32.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib"
+				AdditionalDependencies="wsock32.lib comctl32.lib winmm.lib version.lib"
 				OutputFile="$(OutDir)/$(ProjectName).exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
