@@ -70,7 +70,6 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/ALIGN:4096 /ignore:4108"
-				AdditionalDependencies="odbc32.lib odbccp32.lib"
 				OutputFile="$(OutDir)\..\Icons\toolbar_icons.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -159,7 +158,6 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/ALIGN:4096 /ignore:4108"
-				AdditionalDependencies="odbc32.lib odbccp32.lib"
 				OutputFile="$(OutDir)\..\Icons\toolbar_icons.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -248,7 +246,6 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/ALIGN:4096 /ignore:4108"
-				AdditionalDependencies="odbc32.lib odbccp32.lib"
 				OutputFile="$(OutDir)\Icons\toolbar_icons.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
