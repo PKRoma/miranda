@@ -37,7 +37,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/DLL"
-				AdditionalDependencies="odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib"
+				AdditionalDependencies="shlwapi.lib wsock32.lib"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="../../lib"
@@ -169,7 +169,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/DLL"
-				AdditionalDependencies="odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib"
+				AdditionalDependencies="shlwapi.lib wsock32.lib"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="../../lib"

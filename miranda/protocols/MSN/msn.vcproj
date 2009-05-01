@@ -114,7 +114,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib"
+				AdditionalDependencies="wsock32.lib comctl32.lib Rpcrt4.lib"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
@@ -178,7 +178,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib"
+				AdditionalDependencies="wsock32.lib comctl32.lib Rpcrt4.lib"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
