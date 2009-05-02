@@ -96,7 +96,7 @@ extern int nCustomOptions;
 // == LOCAL VARIABLES ==
 // =====================
 
-char importFile[MAX_PATH];
+TCHAR importFile[MAX_PATH];
 HWND hdlgProgress;
 DWORD dwFileSize;
 
@@ -196,14 +196,14 @@ INT_PTR CALLBACK MirandaPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lPa
 
 		case IDOK:
 			{
-				char filename[MAX_PATH];
+				TCHAR filename[MAX_PATH];
 
-				GetDlgItemTextA(hdlg, IDC_FILENAME, filename, sizeof(filename));
-				if (_access(filename, 4)) {
+				GetDlgItemText(hdlg, IDC_FILENAME, filename, sizeof(filename) / sizeof(TCHAR));
+				if (_taccess(filename, 4)) {
 					MessageBox(hdlg, TranslateT("The given file does not exist. Please check that you have entered the name correctly."), TranslateT("Miranda Import"), MB_OK);
 					break;
 				}
-				lstrcpyA(importFile, filename);
+				lstrcpy(importFile, filename);
 				PostMessage(GetParent(hdlg),WIZM_GOTOPAGE,IDD_OPTIONS,(LPARAM)MirandaOptionsPageProc);
 			}
 			break;
@@ -1171,7 +1171,7 @@ static void ImportHistory(HANDLE hDbFile, struct DBContact Contact, PROTOCOLDESC
 				if (!skip && nImportOption == IMPORT_CUSTOM) {
 					BOOL sent = (dbei.flags&DBEF_SENT);
 
-					if (dbei.timestamp < dwSinceDate)
+					if (dbei.timestamp < (DWORD)dwSinceDate)
 						skip = 1;
 
 					if (!skip) {
@@ -1262,7 +1262,7 @@ static void MirandaImport(HWND hdlg)
 	SetProgress(0);
 
 	// Open database
-	hFile = CreateFileA(importFile,
+	hFile = CreateFile(importFile,
 		GENERIC_READ,                 // open for reading
 		0,                            // do not share
 		NULL,                         // no security

@@ -129,13 +129,13 @@ INT_PTR CALLBACK MirabilisPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM l
 			PostMessage(GetParent(hdlg),WIZM_GOTOPAGE,IDD_IMPORTTYPE,(LPARAM)ImportTypePageProc);
 			break;
 		case IDOK:
-			{	char filename[MAX_PATH];
-				GetDlgItemTextA(hdlg,IDC_FILENAME,filename,sizeof(filename));
-				if(_access(filename,4)) {
+			{	TCHAR filename[MAX_PATH];
+				GetDlgItemText(hdlg,IDC_FILENAME,filename,sizeof(filename) / sizeof(TCHAR));
+				if(_taccess(filename,4)) {
 					MessageBox(hdlg,TranslateT("The given file does not exist. Please check that you have entered the name correctly."),TranslateT("Mirabilis Import"),MB_OK);
 					break;
 				}
-				lstrcpyA(importFile,filename);
+				lstrcpy(importFile,filename);
 				PostMessage(GetParent(hdlg),WIZM_GOTOPAGE,IDD_OPTIONS,(LPARAM)MirabilisOptionsPageProc);
 				break;
 			}
@@ -1361,7 +1361,7 @@ static void MirabilisImport(HWND hdlgProgressWnd)
 {
 	HANDLE hIdx, hDat, hIdxMapping, hDatMapping;
 	DWORD i, ofs, highestIndexEntry;
-	char datFilename[MAX_PATH];
+	TCHAR datFilename[MAX_PATH];
 	MSG msg;
 	DWORD dwTimer;
 
@@ -1371,15 +1371,15 @@ static void MirabilisImport(HWND hdlgProgressWnd)
 	nDupes = nContactsCount = nMessagesCount = 0;
 
 	SetProgress(0);
-	lstrcpyA(datFilename, importFile);
+	lstrcpy(datFilename, importFile);
 	{
-		char *str2;
-		str2=strrchr(datFilename,'.');
+		TCHAR* str2;
+		str2 = _tcsrchr(datFilename,'.');
 		if ( str2 != NULL )
-			lstrcpyA(str2,".dat");
+			lstrcpy(str2, _T(".dat"));
 	}
 
-	hIdx = CreateFileA(importFile, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+	hIdx = CreateFile(importFile, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
 	if (hIdx == INVALID_HANDLE_VALUE) {
 		AddMessage( LPGEN("Failed to open index file"));
 		AddMessage( LPGEN("Import aborted"));
@@ -1387,7 +1387,7 @@ static void MirabilisImport(HWND hdlgProgressWnd)
 		return;
 	}
 
-	hDat = CreateFileA(datFilename, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+	hDat = CreateFile(datFilename, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
 	if (hDat == INVALID_HANDLE_VALUE) {
 		AddMessage( LPGEN("Failed to open database file"));
 		AddMessage( LPGEN("Import aborted"));
