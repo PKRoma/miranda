@@ -84,7 +84,7 @@ BOOL ImportURLMessage(DWORD dwOffset);
 // == GLOBAL VARIABLES ==
 // ======================
 
-extern char importFile[MAX_PATH];
+extern TCHAR importFile[MAX_PATH];
 extern void (*DoImport)(HWND);
 extern int nImportOption;
 extern int nCustomOptions;
