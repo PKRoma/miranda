@@ -289,7 +289,9 @@ int CreateGroup(BYTE type, const char* name, HANDLE hContact)
 
 	if (type == DBVT_UTF8)
 		tmp = mir_utf8decodeT( name );
-	else
+    else if (type == DBVT_WCHAR)
+        tmp = mir_u2t(( wchar_t* )name );
+    else
 		tmp = mir_a2t( name );
 
 	if ( tmp == NULL )
@@ -297,7 +299,7 @@ int CreateGroup(BYTE type, const char* name, HANDLE hContact)
 
 	cbName = _tcslen(tmp);
 	tszGrpName = _alloca(( cbName+2 )*sizeof( TCHAR ));
-	tszGrpName[0] = GROUPF_EXPANDED;
+	tszGrpName[0] = 1 | GROUPF_EXPANDED;
 	_tcscpy( tszGrpName+1, tmp );
 	mir_free( tmp );
 
