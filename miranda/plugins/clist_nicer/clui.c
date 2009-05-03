@@ -802,17 +802,6 @@ void SetButtonStates(HWND hwnd)
 		}
 	}
 }
-// Restore protocols to the last global status.
-// Used to reconnect on restore after standby.
-
-static void RestoreMode()
-{
-	int nStatus;
-
-	nStatus = DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
-	if (nStatus != ID_STATUS_OFFLINE)
-		PostMessage(pcli->hwndContactList, WM_COMMAND, nStatus, 0);
-}
 
 void BlitWallpaper(HDC hdc, RECT *rc, RECT *rcPaint, struct ClcData *dat)
 {
