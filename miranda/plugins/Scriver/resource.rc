@@ -670,8 +670,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,8,0,27
- PRODUCTVERSION 2,8,0,27
+ FILEVERSION 2,8,0,35
+ PRODUCTVERSION 2,8,0,35
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -689,14 +689,14 @@ BEGIN
             VALUE "Comments", "http://www.miranda-im.org\0"
             VALUE "CompanyName", "Miranda IM Development Team\0"
             VALUE "FileDescription", "Scriver - send and receive instant messages\0"
-            VALUE "FileVersion", "2.8.0.27\0"
+            VALUE "FileVersion", "2.8.0.35\0"
             VALUE "InternalName", "scriver\0"
-            VALUE "LegalCopyright", "Copyright (c) 2000-2008 Miranda IM Project\0"
+            VALUE "LegalCopyright", "Copyright (c) 2000-2009 Miranda IM Project\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "scriver.dll\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Scriver\0"
-            VALUE "ProductVersion", "2.8.0.27\0"
+            VALUE "ProductVersion", "2.8.0.35\0"
             VALUE "SpecialBuild", "\0"
         END
     END

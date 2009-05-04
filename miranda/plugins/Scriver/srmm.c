@@ -1,8 +1,7 @@
 /*
 Scriver
 
-Copyright 2000-2003 Miranda ICQ/IM project,
-Copyright 2005 Piotr Piastucki
+Copyright 2000-2009 Miranda ICQ/IM project,
 
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
@@ -39,11 +38,11 @@ PLUGININFOEX pluginInfo = {
 #else
 	"Scriver",
 #endif
-	PLUGIN_MAKE_VERSION(2, 8, 0, 27),
+	PLUGIN_MAKE_VERSION(2, 8, 0, 35),
 	"Scriver - send and receive instant messages",
 	"Miranda IM Development Team",
 	"the_leech@users.berlios.de",
-	"Copyright © 2000-2008 Miranda IM Project",
+	"Copyright (c) 2000-2009 Miranda IM Project",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	DEFMOD_SRMESSAGE,            // replace internal version (if any)

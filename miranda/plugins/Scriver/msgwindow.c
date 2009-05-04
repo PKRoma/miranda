@@ -786,7 +786,7 @@ INT_PTR CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
    				pSetLayeredWindowAttributes(hwndDlg, RGB(255,255,255), (BYTE)(255-g_dat->inactiveAlpha), LWA_ALPHA);
 //				RedrawWindow(hwndDlg, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
 			}
-            break;
+                    break;
 		} 
 		if (dat->hwndActive != NULL) {
 			ActivateChild(dat, dat->hwndActive);
@@ -815,22 +815,6 @@ INT_PTR CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		//	SetCapture(hwndDlg);
 
 		}
-		break;
-	case WM_LBUTTONUP:
-		//if (dat->mouseLBDown) {
-		//	dat->mouseLBDown = 0;
-		//	ReleaseCapture();
-		//}
-		break;
-	case WM_MOUSEMOVE:/*
-		if (dat->mouseLBDown) {
-			POINT pt;
-			RECT  rc;
-			GetCursorPos(&pt);
-			GetWindowRect(hwndDlg, &rc);
-			SetWindowPos(hwndDlg, 0, rc.left - (dat->mouseLBDownPos.x - pt.x), rc.top - (dat->mouseLBDownPos.y - pt.y), 0, 0, SWP_NOZORDER | SWP_NOSIZE);
-			dat->mouseLBDownPos = pt;
-		}*/
 		break;
 	case WM_MOVING:
         if ((GetAsyncKeyState(VK_CONTROL) & 0x8000)) {
@@ -1476,6 +1460,7 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 								SendMessage(GetParent(hwnd), CM_REMOVECHILD, 0, (LPARAM) hChild);
 								SendMessage(hChild, DM_SETPARENT, 0, (LPARAM) hParent);
 								SendMessage(hParent, CM_ADDCHILD, (WPARAM)hChild, (LPARAM) hContact);
+								SendMessage(hChild, DM_UPDATETABCONTROL, 0, 0);
 								SendMessage(hParent, CM_ACTIVATECHILD, 0, (LPARAM) hChild);
 								NotifyLocalWinEvent(hContact, hChild, MSG_WINDOW_EVT_CLOSING);
 								NotifyLocalWinEvent(hContact, hChild, MSG_WINDOW_EVT_CLOSE);
