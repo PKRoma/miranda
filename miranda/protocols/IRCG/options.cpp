@@ -568,7 +568,7 @@ void CConnectPrefsDlg::OnInitDialog()
 	m_identSystem.Enable( m_proto->m_ident );
 	m_identPort.Enable( m_proto->m_ident );
 	m_identTimer.Enable( m_proto->m_ident );
-	m_identTimer.SetState( m_proto->IdentTimer );
+	m_identTimer.SetState( m_proto->m_identTimer );
 	m_disableError.SetState( m_proto->m_disableErrorPopups );
 	m_forceVisible.SetState( m_proto->m_forceVisible );
 	m_rejoinChannels.SetState( m_proto->m_rejoinChannels );
