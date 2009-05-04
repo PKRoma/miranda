@@ -1853,18 +1853,19 @@ static void __stdcall sttShowNickWnd( void* param )
 
 bool CIrcProto::OnIrc_NICK_ERR( const CIrcMessage* pmsg )
 {
-	if (( nickflag || m_alternativeNick[0] == 0) && pmsg->m_bIncoming && pmsg->parameters.getCount() > 2 ) {
-		CallFunctionAsync( sttShowNickWnd, new CIrcMessage( *pmsg ));
-		WaitForSingleObject( m_evWndCreate, INFINITE );
-	}
-	else if ( pmsg->m_bIncoming ) {
-		TCHAR m[200];
-		mir_sntprintf( m, SIZEOF(m), _T("NICK %s"), m_alternativeNick );
-		if ( IsConnected() )
-			SendIrcMessage( m );
+	if ( pmsg->m_bIncoming ) {
+		if (( nickflag || m_alternativeNick[0] == 0) && pmsg->parameters.getCount() > 2  && !_tcscmp(pmsg->parameters[1].c_str(), m_alternativeNick)) {
+			CallFunctionAsync( sttShowNickWnd, new CIrcMessage( *pmsg ));
+			WaitForSingleObject( m_evWndCreate, INFINITE );
+		}
+		else {
+			TCHAR m[200];
+			mir_sntprintf( m, SIZEOF(m), _T("NICK %s"), m_alternativeNick );
+			if ( IsConnected() )
+				SendIrcMessage( m );
 
-		nickflag = true;
-	}
+			nickflag = true;
+	}	}
 
 	ShowMessage( pmsg );
  	return true;
