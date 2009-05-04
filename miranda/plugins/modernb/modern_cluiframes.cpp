@@ -1037,7 +1037,7 @@ static int CLUIFramesModifyContextMenuForFrame(WPARAM wParam,LPARAM lParam)
 		ModifyMItem((WPARAM)_hmiFloating,(LPARAM)&mi);
 
 		mi.flags=CMIM_FLAGS|CMIF_CHILDPOPUP;
-		if(g_CluiData.fLayered) mi.flags|=CMIF_GRAYED;
+		if( g_CluiData.fLayered ) mi.flags|=CMIF_GRAYED;
 		else if((g_pfwFrames[pos].UseBorder)) mi.flags|=CMIF_CHECKED;
 		ModifyMItem((WPARAM)_hmiBorder,(LPARAM)&mi);
 
@@ -1096,7 +1096,7 @@ static int CLUIFramesModifyMainMenuItems(WPARAM wParam,LPARAM lParam)
 
 		mi.flags=CMIM_FLAGS|CMIF_CHILDPOPUP;
 
-		if(g_CluiData.fLayered) mi.flags|=CMIF_GRAYED;
+		if( g_CluiData.fLayered ) mi.flags|=CMIF_GRAYED;
 		else if((g_pfwFrames[pos].UseBorder)) mi.flags|=CMIF_CHECKED;
 		CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)g_pfwFrames[pos].MenuHandles.MIBorder,(LPARAM)&mi);
 
@@ -1286,11 +1286,11 @@ static int _us_DoSetFrameOptions(WPARAM wParam,LPARAM lParam)
 
 		style=(int)GetWindowLong(g_pfwFrames[pos].hWnd,GWL_STYLE);
 		style&=(~WS_BORDER);
-		if( !(flag&F_NOBORDER ) && !g_CluiData.fLayered ) { style|=(~WS_BORDER);};
-		{
-			SetWindowLong(g_pfwFrames[pos].hWnd,GWL_STYLE,(long)style);
-			SetWindowLong(g_pfwFrames[pos].TitleBar.hwnd,GWL_STYLE,(long)style& ~(WS_VSCROLL | WS_HSCROLL));
-		}
+
+		if( !(flag&F_NOBORDER ) && !g_CluiData.fLayered ) style|=WS_BORDER;
+
+		SetWindowLong(g_pfwFrames[pos].hWnd,GWL_STYLE,(long)style);
+		SetWindowLong(g_pfwFrames[pos].TitleBar.hwnd,GWL_STYLE,(long)style& ~(WS_VSCROLL | WS_HSCROLL));
 
 		CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);
 		SetWindowPos(g_pfwFrames[pos].TitleBar.hwnd,0,0,0,0,0,SWP_NOZORDER|SWP_NOMOVE|SWP_NOSIZE|SWP_FRAMECHANGED|SWP_NOACTIVATE);
@@ -4233,5 +4233,22 @@ int CLUIFrames_SetLayeredMode( BOOL fLayeredMode, HWND hwnd )
 	}
 
 	CLUIFrames_UpdateFrame((WPARAM)-1,0);  //update all frames
+	return 0;
+}
+
+int CLUIFrames_UpdateBorders()
+{
+	for( int i = 0; i < g_nFramesCount; i++ )
+	{
+		if ( !g_pfwFrames[i].floating )
+		{
+			DWORD style = (int)GetWindowLong( g_pfwFrames[i].hWnd, GWL_STYLE ) & ( ~WS_BORDER );
+			if ( !g_CluiData.fLayered && g_pfwFrames[i].UseBorder ) style|=WS_BORDER;
+			SetWindowLong( g_pfwFrames[i].hWnd, GWL_STYLE, style );
+			CLUIFramesModifyMainMenuItems( g_pfwFrames[i].id, 0 );
+			RedrawWindow( g_pfwFrames[i].hWnd, NULL, NULL, RDW_FRAME | RDW_INVALIDATE );
+		};
+	}
+
 	return 0;
 }
