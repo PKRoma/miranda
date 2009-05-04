@@ -168,6 +168,10 @@ void __fastcall JFreeVariant( DBVARIANT* dbv )
 
 int CJabberProto::JSendBroadcast( HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam )
 {
+	// clear saved passowrd on login error. ugly hack, but at least this is centralized
+	if (type == ACKTYPE_LOGIN && (lParam == LOGINERR_WRONGPASSWORD || lParam == LOGINERR_BADUSERID))
+		*m_savedPassword = 0;
+
 	ACKDATA ack = {0};
 	ack.cbSize = sizeof( ACKDATA );
 	ack.szModule = m_szModuleName;

@@ -155,6 +155,8 @@ HANDLE CJabberProto::HContactFromJID( const TCHAR* jid , BOOL bStripResource )
 
 TCHAR* __stdcall JabberNickFromJID( const TCHAR* jid )
 {
+	if (!jid) return mir_tstrdup(_T(""));
+
 	const TCHAR* p;
 	TCHAR* nick;
 

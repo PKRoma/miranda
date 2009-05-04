@@ -46,34 +46,40 @@ Last change by : $Author$
 #define IDI_OUTTOLUNCH                  1003
 
 HIMAGELIST hAdvancedStatusIcon = NULL;
-struct
+
+struct CTransportProtoTableItem
 {
 	TCHAR* mask;
 	char*  proto;
-	int    startIndex;
-}
-static TransportProtoTable[] =
+};
+
+static CTransportProtoTableItem TransportProtoTable[] =
 {
-	{ _T("|*icq*|jit*"),     "ICQ",           -1},
-	{ _T("msn*"),            "MSN",           -1},
-	{ _T("yahoo*"),          "YAHOO",         -1},
-	{ _T("mrim*"),           "MRA",           -1},
-	{ _T("aim*"),            "AIM",           -1},
+	{ _T("|*icq*|jit*"),     "ICQ" },
+	{ _T("msn*"),            "MSN" },
+	{ _T("yahoo*"),          "YAHOO" },
+	{ _T("mrim*"),           "MRA" },
+	{ _T("aim*"),            "AIM" },
 	//request #3094
-	{ _T("|gg*|gadu*"),      "GaduGadu",      -1},
-	{ _T("tv*"),             "TV",            -1},
-	{ _T("dict*"),           "Dictionary",    -1},
-	{ _T("weather*"),        "Weather",       -1},
-	{ _T("sms*"),            "SMS",           -1},
-	{ _T("smtp*"),           "SMTP",          -1},
+	{ _T("|gg*|gadu*"),      "GaduGadu" },
+	{ _T("tv*"),             "TV" },
+	{ _T("dict*"),           "Dictionary" },
+	{ _T("weather*"),        "Weather" },
+	{ _T("sms*"),            "SMS" },
+	{ _T("smtp*"),           "SMTP" },
 	//j2j
-	{ _T("gtalk.*.*"),       "GTalk",         -1},
-	{ _T("xmpp.*.*"),        "Jabber2Jabber", -1},
+	{ _T("gtalk.*.*"),       "GTalk" },
+	{ _T("xmpp.*.*"),        "Jabber2Jabber" },
 	//jabbim.cz - services
-	{ _T("disk*"),           "Jabber Disk",   -1},
-	{ _T("irc*"),            "IRC",           -1},
-	{ _T("rss*"),            "RSS",           -1},
-	{ _T("tlen*"),           "Tlen",          -1}
+	{ _T("disk*"),           "Jabber Disk" },
+	{ _T("irc*"),            "IRC" },
+	{ _T("rss*"),            "RSS" },
+	{ _T("tlen*"),           "Tlen" },
+
+	// German social networks
+	{ _T("studivz*"),        "StudiVZ" },
+	{ _T("schuelervz*"),     "SchuelerVZ" },
+	{ _T("meinvz*"),         "MeinVZ" },
 };
 
 static int skinIconStatusToResourceId[] = {IDI_OFFLINE,IDI_ONLINE,IDI_AWAY,IDI_DND,IDI_NA,IDI_NA,/*IDI_OCCUPIED,*/IDI_FREE4CHAT,IDI_INVISIBLE,IDI_ONTHEPHONE,IDI_OUTTOLUNCH};
@@ -235,6 +241,10 @@ static TIconListItem iconList[] =
 
 void CJabberProto::IconsInit( void )
 {
+	m_transportProtoTableStartIndex = (int *)mir_alloc(sizeof(int) * SIZEOF(TransportProtoTable));
+	for (int i = 0; i < SIZEOF(TransportProtoTable); ++i)
+		m_transportProtoTableStartIndex[i] = -1;
+
 	SKINICONDESC sid = {0};
 	char szFile[MAX_PATH];
 	GetModuleFileNameA(hInst, szFile, MAX_PATH);
@@ -449,19 +459,19 @@ int CJabberProto::LoadAdvancedIcons(int iID)
 		TCHAR *descr = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, n+ID_STATUS_OFFLINE, GCMDF_TCHAR);
 		mir_snprintf(Uname, SIZEOF(Uname), "%s_Transport_%s_%d", m_szModuleName, proto, n);
 		hicon=(HICON)LoadTransportIcon(defFile,-skinIconStatusToResourceId[i],Uname,Group,descr,-(n+ID_STATUS_OFFLINE),&needFree);
-		int index=(TransportProtoTable[iID].startIndex == -1)?-1:TransportProtoTable[iID].startIndex+n;
+		int index=(m_transportProtoTableStartIndex[iID] == -1)?-1:m_transportProtoTableStartIndex[iID]+n;
 		int added=ImageList_ReplaceIcon(hAdvancedStatusIcon,index,hicon?hicon:empty);
 		if (first == -1) first=added;
 		if (hicon && needFree) DestroyIcon(hicon);
 	}
 
-	if ( TransportProtoTable[ iID ].startIndex == -1 )
-		TransportProtoTable[ iID ].startIndex = first;
+	if ( m_transportProtoTableStartIndex[iID] == -1 )
+		m_transportProtoTableStartIndex[iID] = first;
 	LeaveCriticalSection( &m_csModeMsgMutex );
 	return 0;
 }
 
-static int GetTransportProtoID( TCHAR* TransportDomain )
+int CJabberProto::GetTransportProtoID( TCHAR* TransportDomain )
 {
 	for ( int i=0; i<SIZEOF(TransportProtoTable); i++ )
 		if ( MatchMask( TransportDomain, TransportProtoTable[i].mask ))
@@ -476,17 +486,17 @@ int CJabberProto::GetTransportStatusIconIndex(int iID, int Status)
 		return -1;
 
 	//icons not loaded - loading icons
-	if ( TransportProtoTable[iID].startIndex == -1 )
+	if ( m_transportProtoTableStartIndex[iID] == -1 )
 		LoadAdvancedIcons( iID );
 
 	//some fault on loading icons
-	if ( TransportProtoTable[ iID ].startIndex == -1 )
+	if ( m_transportProtoTableStartIndex[iID] == -1 )
 		return -1;
 
 	if ( Status < ID_STATUS_OFFLINE )
 		Status = ID_STATUS_OFFLINE;
 
-	return TransportProtoTable[iID].startIndex + skinStatusToJabberStatus[ Status - ID_STATUS_OFFLINE ];
+	return m_transportProtoTableStartIndex[iID] + skinStatusToJabberStatus[ Status - ID_STATUS_OFFLINE ];
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -495,7 +505,7 @@ int CJabberProto::GetTransportStatusIconIndex(int iID, int Status)
 int CJabberProto::OnReloadIcons(WPARAM, LPARAM)
 {
 	for ( int i=0; i < SIZEOF(TransportProtoTable); i++ )
-		if ( TransportProtoTable[i].startIndex != -1 )
+		if ( m_transportProtoTableStartIndex[i] != -1 )
 			LoadAdvancedIcons(i);
 
 	return 0;
