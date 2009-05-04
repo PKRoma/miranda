@@ -602,7 +602,7 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 	HDWP hdwp;
 	ParentWindowData *pdat = dat->parent;
 	int hSplitterPos = dat->splitterPos, toolbarHeight = pdat->flags2&SMF2_SHOWTOOLBAR ? dat->toolbarSize.cy : 0;
-	int hSplitterMinTop = toolbarHeight + dat->minLogBoxHeight, hSplitterMinBottom = dat->minEditBoxHeight;
+	int hSplitterMinTop = toolbarHeight + dat->windowData.minLogBoxHeight, hSplitterMinBottom = dat->windowData.minEditBoxHeight;
 	int hInfobar = INFO_BAR_INNER_HEIGHT;
 	int logY, logH;
 	if (!(pdat->flags2 & SMF2_SHOWINFOBAR)) {
@@ -791,6 +791,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		{
 			int len = 0;
 			int notifyUnread = 0;
+			RECT minEditInit;
 			NewMessageWindowLParam *newData = (NewMessageWindowLParam *) lParam;
 			//TranslateDialogDefault(hwndDlg);
 			dat = (struct MessageWindowData *) mir_alloc(sizeof(struct MessageWindowData));
@@ -865,14 +866,14 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			}
 			dat->windowData.codePage = DBGetContactSettingWord(dat->windowData.hContact, SRMMMOD, "CodePage", (WORD) CP_ACP);
 			dat->ace = NULL;
-			GetWindowRect(GetDlgItem(hwndDlg, IDC_MESSAGE), &dat->minEditInit);
-			dat->minEditBoxHeight = dat->minEditInit.bottom - dat->minEditInit.top;
-			dat->minLogBoxHeight = dat->minEditBoxHeight;
+			GetWindowRect(GetDlgItem(hwndDlg, IDC_MESSAGE), &minEditInit);
+			dat->windowData.minEditBoxHeight = minEditInit.bottom - minEditInit.top;
+			dat->windowData.minLogBoxHeight = dat->windowData.minEditBoxHeight;
 			dat->splitterPos = g_dat->splitterY;
 			dat->toolbarSize.cy = TOOLBAR_HEIGHT;
 			dat->toolbarSize.cx = GetToolbarWidth(SIZEOF(buttonControls), buttonControls);
 			if (dat->splitterPos == -1) {
-				dat->splitterPos = dat->minEditBoxHeight;
+				dat->splitterPos = dat->windowData.minEditBoxHeight;
 			}
 			WindowList_Add(g_dat->hMessageWindowList, hwndDlg, dat->windowData.hContact);
 
@@ -1547,7 +1548,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		return TRUE;
 	case WM_SETFOCUS:
 		SendMessage(dat->hwndParent, CM_ACTIVATECHILD, 0, (LPARAM)hwndDlg);
-        g_dat->hFocusWnd = hwndDlg;
+		g_dat->hFocusWnd = hwndDlg;
 		PostMessage(hwndDlg, DM_SETFOCUS, 0, 0);
 		return TRUE;
 	case DM_SETPARENT:
@@ -1559,7 +1560,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		{
 			MINMAXINFO *mmi = (MINMAXINFO *) lParam;
 			mmi->ptMinTrackSize.x = dat->toolbarSize.cx;
-			mmi->ptMinTrackSize.y = dat->minLogBoxHeight + dat->toolbarSize.cy + dat->minEditBoxHeight + INFO_BAR_HEIGHT + 5;
+			mmi->ptMinTrackSize.y = dat->windowData.minLogBoxHeight + dat->toolbarSize.cy + dat->windowData.minEditBoxHeight + INFO_BAR_HEIGHT + 5;
 			return 0;
 		}
 	case WM_SIZE:

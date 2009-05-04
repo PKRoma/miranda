@@ -108,9 +108,11 @@ typedef struct CommonWindowDataStruct {
 	HANDLE hContact;
 	TCmdList *cmdList;
 	TCmdList *cmdListCurrent;
-	int		  codePage;
+	int	  codePage;
 	DWORD	  flags;
 	HWND 	  hwndLog;
+	int	minLogBoxHeight;
+	int	minEditBoxHeight;
 }CommonWindowData;
 
 struct MessageWindowData
@@ -122,11 +124,6 @@ struct MessageWindowData
 	HANDLE hDbEventFirst, hDbEventLast, hDbUnreadEventFirst;
 	int splitterPos;
 	int desiredInputAreaHeight;
-	SIZE minEditBoxSize;
-	SIZE minTopSize;
-	RECT minEditInit;
-	int	minLogBoxHeight;
-	int	minEditBoxHeight;
 	SIZE toolbarSize;
 	int windowWasCascaded;
 	int nTypeSecs;
