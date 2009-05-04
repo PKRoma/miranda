@@ -427,6 +427,8 @@
 #define IDC_EXTRAGROUP                  1318
 #define IDC_COMBO_VALUES                1319
 #define IDC_HEADERBAR                   1320
+#define IDC_CHECK1                      1321
+#define IDC_CHECK2                      1322
 #define IDI_BOOKMARKS                   3000
 #define IDD_BOOKMARKS                   3001
 #define IDC_BM_LIST                     3002
@@ -467,7 +469,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        235
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1321
+#define _APS_NEXT_CONTROL_VALUE         1323
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

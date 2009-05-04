@@ -164,6 +164,8 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	m_pepServices.insert(new CPepMood(this));
 	m_pepServices.insert(new CPepActivity(this));
 
+	*m_savedPassword = 0;
+
 	char text[ MAX_PATH ];
 	mir_snprintf( text, sizeof( text ), "%s/Status", m_szModuleName );
 	JCallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
@@ -217,6 +219,8 @@ CJabberProto::~CJabberProto()
 	mir_free( m_modeMsgs.szNa );
 	mir_free( m_modeMsgs.szDnd );
 	mir_free( m_modeMsgs.szFreechat );
+
+	mir_free( m_transportProtoTableStartIndex );
 
 	mir_free( m_szStreamId );
 	mir_free( m_szProtoName );
@@ -1225,9 +1229,17 @@ int __cdecl CJabberProto::SetStatus( int iNewStatus )
 
  	if ( iNewStatus == ID_STATUS_OFFLINE ) {
 		if ( m_ThreadInfo ) {
+			if ( m_bJabberOnline ) {
+				// Quit all chatrooms (will send quit message)
+				for (int i = 0; i >= 0; i = ListFindNext(LIST_CHATROOM, i+1))
+					if (JABBER_LIST_ITEM *item = ListGetItemPtrFromIndex(i))
+						GcQuit(item, 0, NULL);
+			}
+
 			m_ThreadInfo->send( "</stream:stream>" );
 			m_ThreadInfo->close();
 			m_ThreadInfo = NULL;
+
 			if ( m_bJabberConnected ) {
 				m_bJabberConnected = m_bJabberOnline = FALSE;
 				RebuildInfoFrame();

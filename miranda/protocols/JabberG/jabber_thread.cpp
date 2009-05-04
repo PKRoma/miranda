@@ -57,6 +57,7 @@ static VOID CALLBACK JabberDummyApcFunc( DWORD_PTR )
 	return;
 }
 
+static BOOL saveOnlinePassword;
 static char onlinePassword[128];
 static HANDLE hEventPasswdDlg;
 
@@ -73,6 +74,7 @@ static INT_PTR CALLBACK JabberPasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDOK:
+			saveOnlinePassword = IsDlgButtonChecked( hwndDlg, IDC_SAVEPASSWORD );
 			GetDlgItemTextA( hwndDlg, IDC_PASSWORD, onlinePassword, SIZEOF( onlinePassword ));
 			//EndDialog( hwndDlg, ( int ) onlinePassword );
 			//return TRUE;
@@ -295,25 +297,36 @@ LBL_FatalError:
 		_tcsncpy( info->fullJID, jidStr, SIZEOF( info->fullJID )-1 );
 
 		if ( m_options.SavePassword == FALSE ) {
-			mir_sntprintf( jidStr, SIZEOF( jidStr ), _T("%s@") _T(TCHAR_STR_PARAM), info->username, info->server );
+			if (*m_savedPassword)
+			{
+				strncpy( info->password, m_savedPassword, SIZEOF( info->password ));
+				info->password[ SIZEOF( info->password )-1] = '\0';
+			} else
+			{
+				mir_sntprintf( jidStr, SIZEOF( jidStr ), _T("%s@") _T(TCHAR_STR_PARAM), info->username, info->server );
 
-			// Ugly hack: continue logging on only the return value is &( onlinePassword[0] )
-			// because if WM_QUIT while dialog box is still visible, p is returned with some
-			// exit code which may not be NULL.
-			// Should be better with modeless.
-			onlinePassword[0] = ( char ) -1;
-			hEventPasswdDlg = CreateEvent( NULL, FALSE, FALSE, NULL );
-			QueueUserAPC( JabberPasswordCreateDialogApcProc, hMainThread, ( DWORD_PTR )jidStr );
-			WaitForSingleObject( hEventPasswdDlg, INFINITE );
-			CloseHandle( hEventPasswdDlg );
+				// Ugly hack: continue logging on only the return value is &( onlinePassword[0] )
+				// because if WM_QUIT while dialog box is still visible, p is returned with some
+				// exit code which may not be NULL.
+				// Should be better with modeless.
+				onlinePassword[0] = ( char ) -1;
+				hEventPasswdDlg = CreateEvent( NULL, FALSE, FALSE, NULL );
+				QueueUserAPC( JabberPasswordCreateDialogApcProc, hMainThread, ( DWORD_PTR )jidStr );
+				WaitForSingleObject( hEventPasswdDlg, INFINITE );
+				CloseHandle( hEventPasswdDlg );
 
-			if ( onlinePassword[0] == ( char ) -1 ) {
-				JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
-				Log( "Thread ended, password request dialog was canceled" );
-				goto LBL_FatalError;
+				if ( onlinePassword[0] == ( char ) -1 ) {
+					JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
+					Log( "Thread ended, password request dialog was canceled" );
+					goto LBL_FatalError;
+				}
+
+				if (saveOnlinePassword) lstrcpyA(m_savedPassword, onlinePassword);
+				else *m_savedPassword = 0;
+
+				strncpy( info->password, onlinePassword, SIZEOF( info->password ));
+				info->password[ SIZEOF( info->password )-1] = '\0';
 			}
-			strncpy( info->password, onlinePassword, SIZEOF( info->password ));
-			info->password[ SIZEOF( info->password )-1] = '\0';
 		}
 		else {
 			if ( DBGetContactSettingString( NULL, m_szModuleName, "Password", &dbv )) {
@@ -1951,6 +1964,18 @@ int ThreadData::send( HXML node )
 	proto->OnConsoleProcessXml(node, JCPF_OUT);
 
 	TCHAR* str = xi.toString( node, NULL );
+
+	// strip forbidden control characters from outgoing XML stream
+	WCHAR *q = str;
+	for (WCHAR *p = str; *p; ++p)
+	{
+		if (*p < 0x9 || *p > 0x9 && *p < 0xA || *p > 0xA && *p < 0xD || *p > 0xD && *p < 0x20 || *p > 0xD7FF && *p < 0xE000 || *p > 0xFFFD)
+			continue;
+
+		*q++ = *p;
+	}
+	*q = 0;
+
 	char* utfStr = mir_utf8encodeT( str );
 	int result = send( utfStr, (int)strlen( utfStr ));
 	mir_free( utfStr );

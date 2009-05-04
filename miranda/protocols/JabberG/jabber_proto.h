@@ -475,10 +475,13 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//---- jabber_icolib.cpp -------------------------------------------------------------
 
+	int*   m_transportProtoTableStartIndex;
+
 	void   IconsInit( void );
 	HANDLE GetIconHandle( int iconId );
 	HICON  LoadIconEx( const char* name );
 	int    LoadAdvancedIcons(int iID);
+	int    GetTransportProtoID( TCHAR* TransportDomain );
 	int    GetTransportStatusIconIndex(int iID, int Status);
 	BOOL   DBCheckIsTransportedContact(const TCHAR* jid, HANDLE hContact);
 	void   CheckAllContactsAreTransported( void );
@@ -749,6 +752,8 @@ struct CJabberProto : public PROTO_INTERFACE
 	BOOL SendHttpAuthReply( CJabberHttpAuthParams *pParams, BOOL bAuthorized );
 
 	//---- jabber_thread.c ----------------------------------------------
+
+	char   m_savedPassword[128];
 
 	void   __cdecl ServerThread( ThreadData* info );
 		  

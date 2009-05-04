@@ -514,6 +514,9 @@ protected:
 
 	void OnApply()
 	{
+		// clear saved password
+		*m_proto->m_savedPassword = 0;
+
 		if (m_chkSavePassword.GetState() == BST_CHECKED)
 		{
 			char *text = m_txtPassword.GetTextA();
@@ -1765,6 +1768,9 @@ protected:
 
 	void OnApply()
 	{
+		// clear saved password
+		*m_proto->m_savedPassword = 0;
+
 		BOOL bUseHostnameAsResource = FALSE;
 		TCHAR szCompName[MAX_COMPUTERNAME_LENGTH + 1], szResource[MAX_COMPUTERNAME_LENGTH + 1];
 		DWORD dwCompNameLength = MAX_COMPUTERNAME_LENGTH;

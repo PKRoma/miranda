@@ -400,6 +400,14 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM )
 		return 0;
 
 	sttEnableMenuItem( g_hMenuDirectPresence[0], TRUE );
+	for (int i = 0; i < SIZEOF(PresenceModeArray); ++i)
+	{
+		CLISTMENUITEM clmi = {0};
+		clmi.cbSize = sizeof( CLISTMENUITEM );
+		clmi.flags = CMIM_ICON|CMIM_FLAGS;
+		clmi.hIcon = (HICON)LoadSkinnedProtoIcon(m_szModuleName, PresenceModeArray[i].mode);
+		CallService(MS_CLIST_MODIFYMENUITEM, ( WPARAM )g_hMenuDirectPresence[i+1], ( LPARAM )&clmi );
+	}
 
 	if ( bIsChatRoom ) {
 		DBVARIANT dbv;
@@ -438,6 +446,13 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM )
 			if ( item->resourceCount >= 1 ) {
 				sttEnableMenuItem( g_hMenuResourcesRoot, TRUE );
 
+				CLISTMENUITEM mi = {0};
+				mi.cbSize = sizeof( CLISTMENUITEM );
+				mi.flags = CMIM_ICON|CMIM_FLAGS;
+				mi.icolibItem = GetIconHandle( IDI_JABBER );
+				CallService(MS_CLIST_MODIFYMENUITEM, ( WPARAM )g_hMenuResourcesRoot, ( LPARAM )&mi );
+				CallService(MS_CLIST_MODIFYMENUITEM, ( WPARAM )g_hMenuResourcesActive, ( LPARAM )&mi );
+
 				int nMenuResourceItemsNew = m_nMenuResourceItems;
 				if ( m_nMenuResourceItems < item->resourceCount ) {
 					m_phMenuResourceItems = (HANDLE *)mir_realloc( m_phMenuResourceItems, item->resourceCount * sizeof(HANDLE) );
@@ -449,7 +464,6 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM )
 				size_t nModuleNameLength = strlen( text );
 				char* tDest = text + nModuleNameLength;
 
-				CLISTMENUITEM mi = { 0 };
 				mi.cbSize = sizeof( CLISTMENUITEM );
 				mi.flags = CMIF_CHILDPOPUP;
 				mi.position = 0;
