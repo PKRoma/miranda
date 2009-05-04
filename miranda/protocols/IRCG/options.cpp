@@ -47,6 +47,23 @@ void CIrcProto::ReadSettings( TDbSetting* sets, int count )
 		case DBVT_DWORD:
 			*( DWORD* )ptr = getDword( p->name, p->defValue );
 			break;
+		case DBVT_ASCIIZ:
+			if ( !getString( p->name, &dbv )) {
+				if ( p->size != -1 ) {
+					size_t len = min( p->size-1, strlen( dbv.pszVal ));
+					memcpy( ptr, dbv.pszVal, len );
+					ptr[len] = 0;
+				}
+				else *( char** )ptr = mir_strdup( dbv.pszVal );
+				DBFreeVariant( &dbv );
+			}
+			else {
+				if ( p->size != -1 )
+					*ptr = 0;
+				else 
+					*( char** )ptr = NULL;
+			}
+			break;
 		#if defined( _UNICODE )
 			case DBVT_TCHAR:
 				if ( !getTString( p->name, &dbv )) {
@@ -66,27 +83,6 @@ void CIrcProto::ReadSettings( TDbSetting* sets, int count )
 							lstrcpyn(( TCHAR* )ptr, p->defStr, p->size );
 					}
 					else *( TCHAR** )ptr = mir_tstrdup( p->defStr );
-				}
-				break;
-		#else
-			case DBVT_ASCIIZ:
-				if ( !getString( p->name, &dbv )) {
-					if ( p->size != -1 ) {
-						size_t len = min( p->size-1, strlen( dbv.pszVal ));
-						memcpy( ptr, dbv.pszVal, len );
-						ptr[len] = 0;
-					}
-					else *( char** )ptr = mir_strdup( dbv.pszVal );
-					DBFreeVariant( &dbv );
-				}
-				else {
-					if ( p->size != -1 ) {
-						if ( p->defStr == NULL )
-							*ptr = 0;
-						else 
-							lstrcpynA( ptr, p->defStr, p->size );
-					}
-					else *( char** )ptr = mir_strdup( p->defStr );
 				}
 				break;
 		#endif
