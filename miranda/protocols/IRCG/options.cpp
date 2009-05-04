@@ -47,23 +47,6 @@ void CIrcProto::ReadSettings( TDbSetting* sets, int count )
 		case DBVT_DWORD:
 			*( DWORD* )ptr = getDword( p->name, p->defValue );
 			break;
-		case DBVT_ASCIIZ:
-			if ( !getString( p->name, &dbv )) {
-				if ( p->size != -1 ) {
-					size_t len = min( p->size-1, strlen( dbv.pszVal ));
-					memcpy( ptr, dbv.pszVal, len );
-					ptr[len] = 0;
-				}
-				else *( char** )ptr = mir_strdup( dbv.pszVal );
-				DBFreeVariant( &dbv );
-			}
-			else {
-				if ( p->size != -1 )
-					*ptr = 0;
-				else
-					*( char** )ptr = NULL;
-			}
-			break;
 		#if defined( _UNICODE )
 			case DBVT_TCHAR:
 				if ( !getTString( p->name, &dbv )) {
@@ -76,10 +59,34 @@ void CIrcProto::ReadSettings( TDbSetting* sets, int count )
 					DBFreeVariant( &dbv );
 				}
 				else {
-					if ( p->size != -1 )
-						*( TCHAR* )ptr = 0;
-					else
-						*( TCHAR** )ptr = NULL;
+					if ( p->size != -1 ) {
+						if ( p->defStr == NULL )
+							*ptr = 0;
+						else 
+							lstrcpyn(( TCHAR* )ptr, p->defStr, p->size );
+					}
+					else *( TCHAR** )ptr = mir_tstrdup( p->defStr );
+				}
+				break;
+		#else
+			case DBVT_ASCIIZ:
+				if ( !getString( p->name, &dbv )) {
+					if ( p->size != -1 ) {
+						size_t len = min( p->size-1, strlen( dbv.pszVal ));
+						memcpy( ptr, dbv.pszVal, len );
+						ptr[len] = 0;
+					}
+					else *( char** )ptr = mir_strdup( dbv.pszVal );
+					DBFreeVariant( &dbv );
+				}
+				else {
+					if ( p->size != -1 ) {
+						if ( p->defStr == NULL )
+							*ptr = 0;
+						else 
+							lstrcpynA( ptr, p->defStr, p->size );
+					}
+					else *( char** )ptr = mir_strdup( p->defStr );
 				}
 				break;
 		#endif
@@ -419,40 +426,41 @@ struct CServerDlg : public CProtoDlgBase<CIrcProto>
 
 static TDbSetting ConnectSettings[] =
 {
-	{	FIELD_OFFSET(CIrcProto, m_serverName ), "ServerName", DBVT_ASCIIZ, SIZEOF(pZero->m_serverName) },
-	{	FIELD_OFFSET(CIrcProto, m_portStart ), "PortStart", DBVT_ASCIIZ, SIZEOF(pZero->m_portStart) },
-	{	FIELD_OFFSET(CIrcProto, m_portEnd ), "PortEnd", DBVT_ASCIIZ, SIZEOF(pZero->m_portEnd ) },
-	{	FIELD_OFFSET(CIrcProto, m_password ), "Password", DBVT_ASCIIZ, SIZEOF(pZero->m_password ) },
-	{	FIELD_OFFSET(CIrcProto, m_joinOnInvite ), "JoinOnInvite", DBVT_BYTE },
-	{	FIELD_OFFSET(CIrcProto, m_network ), "Network", DBVT_ASCIIZ, SIZEOF(pZero->m_network ) },
-	{	FIELD_OFFSET(CIrcProto, m_iSSL ), "UseSSL", DBVT_BYTE },
-	{	FIELD_OFFSET(CIrcProto, m_onlineNotificationTime) , "OnlineNotificationTime", DBVT_WORD, 0, 30 },
-	{  FIELD_OFFSET(CIrcProto, m_onlineNotificationLimit) , "OnlineNotificationLimit", DBVT_WORD, 0, 50 },
-	{  FIELD_OFFSET(CIrcProto, m_channelAwayNotification), "ChannelAwayNotification", DBVT_BYTE, 0, 1 },
-	{  FIELD_OFFSET(CIrcProto, m_nick), "Nick", DBVT_TCHAR, SIZEOF(pZero->m_nick) },
-	{  FIELD_OFFSET(CIrcProto, m_pNick), "PNick", DBVT_TCHAR, SIZEOF(pZero->m_pNick) },
-	{  FIELD_OFFSET(CIrcProto, m_alternativeNick), "AlernativeNick", DBVT_TCHAR, SIZEOF(pZero->m_alternativeNick) },
-	{  FIELD_OFFSET(CIrcProto, m_userID), "UserID", DBVT_TCHAR, SIZEOF(pZero->m_userID) },
-	{  FIELD_OFFSET(CIrcProto, m_name), "Name", DBVT_TCHAR, SIZEOF(pZero->m_name) },
-	{  FIELD_OFFSET(CIrcProto, m_identSystem), "IdentSystem", DBVT_TCHAR, SIZEOF(pZero->m_identSystem) },
-	{  FIELD_OFFSET(CIrcProto, m_identPort), "IdentPort", DBVT_TCHAR, SIZEOF(pZero->m_identPort) },
-	{  FIELD_OFFSET(CIrcProto, m_retryWait), "RetryWait", DBVT_TCHAR, SIZEOF(pZero->m_retryWait) },
-	{  FIELD_OFFSET(CIrcProto, m_retryCount), "RetryCount", DBVT_TCHAR, SIZEOF(pZero->m_retryCount) },
-	{  FIELD_OFFSET(CIrcProto, m_disableDefaultServer), "DisableDefaultServer", DBVT_BYTE },
-	{  FIELD_OFFSET(CIrcProto, m_ident), "Ident", DBVT_BYTE },
-	{  FIELD_OFFSET(CIrcProto, m_identTimer), "IdentTimer", DBVT_BYTE },
-	{  FIELD_OFFSET(CIrcProto, m_forceVisible), "ForceVisible", DBVT_BYTE },
-	{  FIELD_OFFSET(CIrcProto, m_disableErrorPopups), "DisableErrorPopups", DBVT_BYTE },
-	{  FIELD_OFFSET(CIrcProto, m_rejoinChannels), "RejoinChannels", DBVT_BYTE },
-	{  FIELD_OFFSET(CIrcProto, m_rejoinIfKicked), "RejoinIfKicked", DBVT_BYTE, 0, 1 },
-	{  FIELD_OFFSET(CIrcProto, m_retry), "Retry", DBVT_BYTE },
-	{  FIELD_OFFSET(CIrcProto, m_showAddresses), "ShowAddresses", DBVT_BYTE },
-	{  FIELD_OFFSET(CIrcProto, m_oldStyleModes), "OldStyleModes", DBVT_BYTE },
-	{  FIELD_OFFSET(CIrcProto, m_useServer), "UseServer", DBVT_BYTE, 0, 1 },
-	{  FIELD_OFFSET(CIrcProto, m_hideServerWindow), "HideServerWindow", DBVT_BYTE, 0, 1 },
-	{  FIELD_OFFSET(CIrcProto, m_serverComboSelection), "ServerComboSelection", DBVT_DWORD, 0 },
-	{  FIELD_OFFSET(CIrcProto, m_sendKeepAlive), "SendKeepAlive", DBVT_BYTE, 0, 1 },
-	{  FIELD_OFFSET(CIrcProto, m_autoOnlineNotification), "AutoOnlineNotification", DBVT_BYTE },
+	{ FIELD_OFFSET(CIrcProto, m_userID), "UserID", DBVT_TCHAR, SIZEOF(pZero->m_userID) },
+	{ FIELD_OFFSET(CIrcProto, m_identSystem), "IdentSystem", DBVT_TCHAR, SIZEOF(pZero->m_identSystem) },
+	{ FIELD_OFFSET(CIrcProto, m_identPort), "IdentPort", DBVT_TCHAR, SIZEOF(pZero->m_identPort) },
+	{ FIELD_OFFSET(CIrcProto, m_retryWait), "RetryWait", DBVT_TCHAR, SIZEOF(pZero->m_retryWait) },
+	{ FIELD_OFFSET(CIrcProto, m_retryCount), "RetryCount", DBVT_TCHAR, SIZEOF(pZero->m_retryCount) },
+
+	{ FIELD_OFFSET(CIrcProto, m_serverName ), "ServerName", DBVT_ASCIIZ, SIZEOF(pZero->m_serverName) },
+	{ FIELD_OFFSET(CIrcProto, m_portStart ), "PortStart", DBVT_ASCIIZ, SIZEOF(pZero->m_portStart) },
+	{ FIELD_OFFSET(CIrcProto, m_portEnd ), "PortEnd", DBVT_ASCIIZ, SIZEOF(pZero->m_portEnd ) },
+	{ FIELD_OFFSET(CIrcProto, m_password ), "Password", DBVT_ASCIIZ, SIZEOF(pZero->m_password ) },
+	{ FIELD_OFFSET(CIrcProto, m_joinOnInvite ), "JoinOnInvite", DBVT_BYTE },
+	{ FIELD_OFFSET(CIrcProto, m_network ), "Network", DBVT_ASCIIZ, SIZEOF(pZero->m_network ) },
+	{ FIELD_OFFSET(CIrcProto, m_iSSL ), "UseSSL", DBVT_BYTE },
+	{ FIELD_OFFSET(CIrcProto, m_onlineNotificationTime) , "OnlineNotificationTime", DBVT_WORD, 0, 30 },
+	{ FIELD_OFFSET(CIrcProto, m_onlineNotificationLimit) , "OnlineNotificationLimit", DBVT_WORD, 0, 50 },
+	{ FIELD_OFFSET(CIrcProto, m_channelAwayNotification), "ChannelAwayNotification", DBVT_BYTE, 0, 1 },
+	{ FIELD_OFFSET(CIrcProto, m_nick), "Nick", DBVT_TCHAR, SIZEOF(pZero->m_nick) },
+	{ FIELD_OFFSET(CIrcProto, m_pNick), "PNick", DBVT_TCHAR, SIZEOF(pZero->m_pNick) },
+	{ FIELD_OFFSET(CIrcProto, m_alternativeNick), "AlernativeNick", DBVT_TCHAR, SIZEOF(pZero->m_alternativeNick) },
+	{ FIELD_OFFSET(CIrcProto, m_name), "Name", DBVT_TCHAR, SIZEOF(pZero->m_name) },
+	{ FIELD_OFFSET(CIrcProto, m_disableDefaultServer), "DisableDefaultServer", DBVT_BYTE },
+	{ FIELD_OFFSET(CIrcProto, m_ident), "Ident", DBVT_BYTE },
+	{ FIELD_OFFSET(CIrcProto, m_identTimer), "IdentTimer", DBVT_BYTE },
+	{ FIELD_OFFSET(CIrcProto, m_forceVisible), "ForceVisible", DBVT_BYTE },
+	{ FIELD_OFFSET(CIrcProto, m_disableErrorPopups), "DisableErrorPopups", DBVT_BYTE },
+	{ FIELD_OFFSET(CIrcProto, m_rejoinChannels), "RejoinChannels", DBVT_BYTE },
+	{ FIELD_OFFSET(CIrcProto, m_rejoinIfKicked), "RejoinIfKicked", DBVT_BYTE, 0, 1 },
+	{ FIELD_OFFSET(CIrcProto, m_retry), "Retry", DBVT_BYTE },
+	{ FIELD_OFFSET(CIrcProto, m_showAddresses), "ShowAddresses", DBVT_BYTE },
+	{ FIELD_OFFSET(CIrcProto, m_oldStyleModes), "OldStyleModes", DBVT_BYTE },
+	{ FIELD_OFFSET(CIrcProto, m_useServer), "UseServer", DBVT_BYTE, 0, 1 },
+	{ FIELD_OFFSET(CIrcProto, m_hideServerWindow), "HideServerWindow", DBVT_BYTE, 0, 1 },
+	{ FIELD_OFFSET(CIrcProto, m_serverComboSelection), "ServerComboSelection", DBVT_DWORD, 0 },
+	{ FIELD_OFFSET(CIrcProto, m_sendKeepAlive), "SendKeepAlive", DBVT_BYTE, 0, 1 },
+	{ FIELD_OFFSET(CIrcProto, m_autoOnlineNotification), "AutoOnlineNotification", DBVT_BYTE },
 };
 
 CConnectPrefsDlg::CConnectPrefsDlg( CIrcProto* _pro ) :
@@ -832,7 +840,7 @@ static TDbSetting CtcpSettings[] =
 	{	FIELD_OFFSET(CIrcProto, m_IPFromServer ), "IPFromServer", DBVT_BYTE },
 	{	FIELD_OFFSET(CIrcProto, m_disconnectDCCChats ), "DisconnectDCCChats", DBVT_BYTE },
 	{	FIELD_OFFSET(CIrcProto, m_mySpecifiedHost ), "SpecHost", DBVT_ASCIIZ, SIZEOF(pZero->m_mySpecifiedHost) },
-	{	FIELD_OFFSET(CIrcProto, m_DCCChatAccept ), "CtcpChatAccept", DBVT_BYTE },
+	{	FIELD_OFFSET(CIrcProto, m_DCCChatAccept ), "CtcpChatAccept", DBVT_BYTE, 0, 1 },
 	{	FIELD_OFFSET(CIrcProto, m_sendNotice ), "SendNotice", DBVT_BYTE, 0, 1 }
 };
 
@@ -966,8 +974,8 @@ void CCtcpPrefsDlg::OnApply()
 
 static TDbSetting OtherSettings[] =
 {
-	{	FIELD_OFFSET(CIrcProto, m_alias ), "Alias", DBVT_TCHAR, -1 },
 	{	FIELD_OFFSET(CIrcProto, m_quitMessage ), "QuitMessage", DBVT_TCHAR, SIZEOF(pZero->m_userInfo) },
+	{	FIELD_OFFSET(CIrcProto, m_alias ), "Alias", DBVT_TCHAR, -1 },
 	{	FIELD_OFFSET(CIrcProto, m_codepage ), "Codepage", DBVT_DWORD, 0, CP_ACP },
 	{	FIELD_OFFSET(CIrcProto, m_utfAutodetect ), "UtfAutodetect", DBVT_BYTE },
 	{	FIELD_OFFSET(CIrcProto, m_perform ), "Perform", DBVT_BYTE },
@@ -1706,6 +1714,16 @@ int CIrcProto::OnInitOptionsPages(WPARAM wParam, LPARAM)
 
 void CIrcProto::InitPrefs(void)
 {
+	ConnectSettings[0].defStr = _T("Miranda");
+	ConnectSettings[1].defStr = _T("UNIX");
+	ConnectSettings[2].defStr = _T("113");
+	ConnectSettings[3].defStr = _T("30");
+	ConnectSettings[4].defStr = _T("10");
+
+	CtcpSettings[0].defStr = _T(STR_USERINFO);
+
+	OtherSettings[0].defStr = _T(STR_QUITMESSAGE);
+
 	ReadSettings( ConnectSettings, SIZEOF( ConnectSettings ));
 	ReadSettings( CtcpSettings, SIZEOF( CtcpSettings ));
 	ReadSettings( OtherSettings, SIZEOF( OtherSettings ));

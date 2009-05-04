@@ -248,7 +248,11 @@ struct TDbSetting
 	char*  name;
 	int    type;
 	size_t size;
-	int    defValue;
+	union
+	{
+		int    defValue;
+		TCHAR* defStr;
+	};
 };
 
 #include "irclib.h"
