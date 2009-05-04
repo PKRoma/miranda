@@ -1460,6 +1460,7 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 								SendMessage(GetParent(hwnd), CM_REMOVECHILD, 0, (LPARAM) hChild);
 								SendMessage(hChild, DM_SETPARENT, 0, (LPARAM) hParent);
 								SendMessage(hParent, CM_ADDCHILD, (WPARAM)hChild, (LPARAM) hContact);
+								SendMessage(hChild, DM_UPDATETABCONTROL, 0, 0);
 								SendMessage(hParent, CM_ACTIVATECHILD, 0, (LPARAM) hChild);
 								NotifyLocalWinEvent(hContact, hChild, MSG_WINDOW_EVT_CLOSING);
 								NotifyLocalWinEvent(hContact, hChild, MSG_WINDOW_EVT_CLOSE);
