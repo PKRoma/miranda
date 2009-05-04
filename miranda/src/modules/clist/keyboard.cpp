@@ -60,18 +60,17 @@ static INT_PTR hkCloseMiranda(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+void RestoreMode(HWND hwnd);
+
 INT_PTR hkRestoreStatus(WPARAM wParam,LPARAM lParam)
 {
-	int nStatus = DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
-	if (nStatus != ID_STATUS_OFFLINE)
-		SetClistGlobalStatus(nStatus);
-
+    RestoreMode(NULL); 
 	return 0;
 }
 */
 static INT_PTR hkAllOffline(WPARAM, LPARAM)
 {
-    SetClistGlobalStatus(ID_STATUS_OFFLINE);
+    CallService(MS_CLIST_SETSTATUSMODE, ID_STATUS_OFFLINE, 0); 
     return 0;
 }
 

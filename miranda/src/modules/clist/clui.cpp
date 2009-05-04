@@ -69,7 +69,7 @@ static int CluiModulesLoaded(WPARAM, LPARAM)
 
 // Restore protocols to the last global status.
 // Used to reconnect on restore after standby.
-static void RestoreMode(HWND hwnd)
+void RestoreMode(HWND hwnd)
 {
 	int nStatus = DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
 	if (nStatus != ID_STATUS_OFFLINE)
