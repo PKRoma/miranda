@@ -626,7 +626,6 @@ void CLUI_UpdateLayeredMode()
 			CLUI_ChangeWindowMode();
 			Sync(CLUIFrames_OnClistResize_mod, (WPARAM)0, (LPARAM)0 );
 			if (fWasVisible) ShowWindow(pcli->hwndContactList,SW_SHOW);
-
 		}
 	}
 }
@@ -657,6 +656,8 @@ void CLUI_UpdateAeroGlass()
 		g_CluiData.fAeroGlass = tAeroGlass;
 	}
 }
+
+extern int CLUIFrames_UpdateBorders();
 
 void CLUI_ChangeWindowMode()
 {
@@ -790,6 +791,9 @@ void CLUI_ChangeWindowMode()
 		Sync(CLUIFrames_OnShowHide, pcli->hwndContactList,1);
 	}
 	mutex_bShowHideCalledFromAnimation=FALSE;
+
+	CLUIFrames_UpdateBorders();
+
 	if (!g_CluiData.fLayered)
 	{
 		HRGN hRgn1;
