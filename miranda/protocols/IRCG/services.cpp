@@ -1147,7 +1147,7 @@ void CIrcProto::DisconnectFromServer(void)
 
 INT_PTR __cdecl CIrcProto::GetMyAwayMsg(WPARAM wParam,LPARAM lParam)
 {
-	if ( wParam != m_iStatus )
+	if (( int )wParam != m_iStatus )
 		return 0;
 
 	const TCHAR* p = m_statusMessage.c_str();
