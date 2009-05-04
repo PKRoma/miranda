@@ -241,8 +241,10 @@ static TIconListItem iconList[] =
 
 void CJabberProto::IconsInit( void )
 {
+	int i;
+
 	m_transportProtoTableStartIndex = (int *)mir_alloc(sizeof(int) * SIZEOF(TransportProtoTable));
-	for (int i = 0; i < SIZEOF(TransportProtoTable); ++i)
+	for (i = 0; i < SIZEOF(TransportProtoTable); ++i)
 		m_transportProtoTableStartIndex[i] = -1;
 
 	SKINICONDESC sid = {0};
@@ -267,7 +269,7 @@ void CJabberProto::IconsInit( void )
 
 	mir_sntprintf( szRootSection, SIZEOF(szRootSection), _T("%s/%s/%s"), LPGENT("Protocols"), LPGENT("Jabber"), LPGENT("Accounts") );
 
-	for ( int i = 0; i < SIZEOF(iconList); i++ ) {
+	for (i = 0; i < SIZEOF(iconList); i++ ) {
 		TCHAR tmp[100];
 
 		if ( iconList[i].szSection ) {
