@@ -118,7 +118,7 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
 	unsigned int found = 0;
 
     bool nodprof = szProfile[0] == 0;
-	bool reqfd = fileExist(szProfile) || shouldAutoCreate(szProfile);
+	bool reqfd = !nodprof && (_taccess(szProfile, 0) == 0 || shouldAutoCreate(szProfile));
 	bool shpm = showProfileManager();
 
 	if (shpm || !reqfd) {
