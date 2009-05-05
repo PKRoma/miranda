@@ -1457,21 +1457,64 @@ void DoIncomingDcc(HANDLE hConnection, DWORD dwRemoteIP, void * p1)
 }
 
 // ident server
+
+void strdel( char* parBuffer, int len )
+{
+	char* p;
+	for ( p = parBuffer+len; *p != 0; p++ )
+		p[ -len ] = *p;
+
+	p[ -len ] = '\0';
+}
+
 void DoIdent(HANDLE hConnection, DWORD, void* extra )
 {
-	char szBuf[1024];
-	int cbRead = Netlib_Recv(hConnection, szBuf, sizeof(szBuf)-1, 0);
-	if( cbRead == SOCKET_ERROR || cbRead == 0)
-		return ;
-
-	szBuf[cbRead] = '\0';
-	rtrim( szBuf );
-
 	CIrcProto* ppro = ( CIrcProto* )extra;
 
-	char buf[1024*4];
-	mir_snprintf(buf, SIZEOF(buf), "%s : USERID : " TCHAR_STR_PARAM " : " TCHAR_STR_PARAM "\r\n", 
-		szBuf, ppro->m_info.sIdentServerType.c_str() , ppro->m_info.sUserID.c_str());
-	Netlib_Send(hConnection, (const char*)buf, (int)strlen(buf), 0);
-	Netlib_CloseHandle(hConnection);
+	char szBuf[1024];
+	int cbTotal = 0;
+
+	do {
+		int cbRead = Netlib_Recv(hConnection, szBuf+cbTotal, sizeof(szBuf)-1-cbTotal, 0);
+		if( cbRead == SOCKET_ERROR || cbRead == 0)
+			break;
+
+		cbTotal += cbRead;
+		szBuf[cbTotal] = '\0';
+		
+LBL_Parse:
+		char* EOLPos = strstr(szBuf, "\r\n");
+		if (EOLPos == NULL)
+			continue;
+
+		EOLPos[0] = EOLPos[1] = '\0';
+		rtrim( szBuf );
+		ppro->DoNetlibLog("Got Ident request: %s", szBuf);
+
+		unsigned int PeerPortNrRcvd = 0, LocalPortNrRcvd = 0;
+		sscanf( szBuf, "%d,%d", &LocalPortNrRcvd, &PeerPortNrRcvd );
+
+		int cbLen;
+		char buf[1024*4];
+
+		if ( PeerPortNrRcvd == ppro->m_info.iPort && LocalPortNrRcvd == ppro->m_myLocalPort )
+			cbLen = mir_snprintf(buf, SIZEOF(buf), "%s : USERID : " TCHAR_STR_PARAM " : " TCHAR_STR_PARAM "\r\n", 
+				szBuf, ppro->m_info.sIdentServerType.c_str() , ppro->m_info.sUserID.c_str());
+		else
+			cbLen = mir_snprintf(buf, SIZEOF(buf), "%s : ERROR : INVALID-PORT\r\n", szBuf);
+
+		if ( Netlib_Send(hConnection, (const char*)buf, cbLen, 0) > 0)
+			ppro->DoNetlibLog("Sent Ident answer: %s", buf);
+		else
+			ppro->DoNetlibLog("Sending Ident answer failed.");
+		
+		if ( ppro->m_identTimer ) {
+			Netlib_CloseHandle(hConnection);
+			break;
+		}
+
+		strdel(szBuf, int(EOLPos + 2 - szBuf));
+		goto LBL_Parse;
+	}
+		while (true);
 }
