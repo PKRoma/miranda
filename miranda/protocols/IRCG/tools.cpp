@@ -823,6 +823,7 @@ void CIrcProto::FindLocalIP(HANDLE con) // inspiration from jabber
 		int len = sizeof(saddr);
 		getsockname(socket, (struct sockaddr *) &saddr, &len);
 		lstrcpynA(m_myLocalHost, inet_ntoa(saddr.sin_addr), 49);
+		m_myLocalPort = ntohs(saddr.sin_port );
 }	} 
 
 void CIrcProto::DoUserhostWithReason(int type, CMString reason, bool bSendCommand, CMString userhostparams, ...)

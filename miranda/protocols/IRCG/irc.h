@@ -385,6 +385,7 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	char     m_mySpecifiedHost[500];
 	char     m_mySpecifiedHostIP[50];
 	char     m_myLocalHost[50];
+	WORD     m_myLocalPort;
 	TCHAR*   m_alias;
 	int      m_serverComboSelection;
 	int      m_quickComboSelection;
