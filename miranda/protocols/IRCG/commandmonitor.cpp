@@ -2413,9 +2413,12 @@ bool CIrcProto::DoOnConnect( const CIrcMessage* )
 	
 	if ( m_perform ) {
 		DoPerform( "ALL NETWORKS" );
-		if ( IsConnected() )
+		if ( IsConnected() ) {
 			DoPerform( _T2A( m_info.sNetwork.c_str()));
-	}
+			switch( m_iStatus ) {
+				case ID_STATUS_FREECHAT:   DoPerform( "Event: Free for chat" );   break;
+				case ID_STATUS_ONLINE:     DoPerform( "Event: Available" );       break;
+	}	}	}
 
 	if ( m_rejoinChannels ) {
 		int count = CallServiceSync( MS_GC_GETSESSIONCOUNT, 0, (LPARAM)m_szModuleName);
