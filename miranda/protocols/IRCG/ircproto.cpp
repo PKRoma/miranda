@@ -947,18 +947,6 @@ int CIrcProto::SetStatusInternal( int iNewStatus, bool bIsInternal )
 		return 0;
 	}
 
-	if ( m_perform && IsConnected())
-		switch( iNewStatus ) {
-			case ID_STATUS_AWAY:       DoPerform( "Event: Away" );            break;
-			case ID_STATUS_NA:         DoPerform( "Event: N/A" );             break;
-			case ID_STATUS_DND:        DoPerform( "Event: DND" );             break;
-			case ID_STATUS_OCCUPIED:   DoPerform( "Event: Occupied" );        break;
-			case ID_STATUS_FREECHAT:   DoPerform( "Event: Free for chat" );   break;
-			case ID_STATUS_ONTHEPHONE: DoPerform( "Event: On the phone" );    break;
-			case ID_STATUS_OUTTOLUNCH: DoPerform( "Event: Out for lunch" );   break;
-			case ID_STATUS_ONLINE:     DoPerform( "Event: Available" );       break;
-      }
-
 	if ( !bIsInternal )
 		m_iStatus = iNewStatus;
 
