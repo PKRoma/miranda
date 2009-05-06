@@ -335,18 +335,7 @@ struct CAimProto : public PROTO_INTERFACE
 	//////////////////////////////////////////////////////////////////////////////////////
 	// packets.cpp
 
-	int    aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short &offset,char* out, unsigned short id=0);
-	int    aim_writetlv(unsigned short type,unsigned short size, const char* value,unsigned short &offset,char* out);
-    int    aim_writetlvchar(unsigned short type, unsigned char value, unsigned short &offset, char* out);
-    int    aim_writetlvshort(unsigned short type, unsigned short value, unsigned short &offset, char* out);
-    int    aim_writetlvlong(unsigned short type, unsigned long value, unsigned short &offset, char* out);
 	int    aim_sendflap(HANDLE conn, char type,unsigned short length,const char *buf, unsigned short &seqno);
-	void   aim_writefamily(const char *buf,unsigned short &offset,char* out);
-	void   aim_writegeneric(unsigned short size,const char *buf,unsigned short &offset,char* out);
-	void   aim_writebartid(unsigned short type, unsigned char flags, unsigned short size,const char *buf,unsigned short &offset,char* out);
-    void   aim_writechar(unsigned char val, unsigned short &offset,char* out);
-    void   aim_writeshort(unsigned short val, unsigned short &offset,char* out);
-    void   aim_writelong(unsigned long val, unsigned short &offset,char* out);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// proto.cpp

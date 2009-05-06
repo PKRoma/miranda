@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "aim.h"
 #include "packets.h"
 
-int CAimProto::aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short &offset, char* out, unsigned short id)
+int aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short &offset, char* out, unsigned short id)
 {
 	snac_header *snac = (snac_header*)&out[offset];
 	snac->service=_htons(service);
@@ -31,27 +31,27 @@ int CAimProto::aim_writesnac(unsigned short service, unsigned short subgroup,uns
 	return 0;
 }
 
-int CAimProto::aim_writetlv(unsigned short type,unsigned short length, const char* value,unsigned short &offset,char* out)
+int aim_writetlv(unsigned short type,unsigned short length, const char* value,unsigned short &offset,char* out)
 {
 	TLV tlv(type,length,value);
 	offset += tlv.whole(&out[offset]);
 	return 0;
 }
 
-int CAimProto::aim_writetlvchar(unsigned short type, unsigned char value, unsigned short &offset, char* out)
+int aim_writetlvchar(unsigned short type, unsigned char value, unsigned short &offset, char* out)
 {
     return aim_writetlv(type, sizeof(value), (char*)&value, offset, out);
 }
 
 
-int CAimProto::aim_writetlvshort(unsigned short type, unsigned short value, unsigned short &offset, char* out)
+int aim_writetlvshort(unsigned short type, unsigned short value, unsigned short &offset, char* out)
 {
     value = _htons(value);
     return aim_writetlv(type, sizeof(value), (char*)&value, offset, out);
 }
 
 
-int CAimProto::aim_writetlvlong(unsigned short type, unsigned long value, unsigned short &offset, char* out)
+int aim_writetlvlong(unsigned short type, unsigned long value, unsigned short &offset, char* out)
 {
     value = _htonl(value);
     return aim_writetlv(type, sizeof(value), (char*)&value, offset, out);
@@ -75,24 +75,24 @@ int CAimProto::aim_sendflap(HANDLE hServerConn, char type,unsigned short length,
     return rlen >= 0 ? 0 : -1;
 }
 
-void CAimProto::aim_writefamily(const char *buf,unsigned short &offset,char* out)
+void aim_writefamily(const char *buf,unsigned short &offset,char* out)
 {
 	memcpy(&out[offset],buf,4);
 	offset+=4;
 }
 
-void CAimProto::aim_writechar(unsigned char val, unsigned short &offset,char* out)
+void aim_writechar(unsigned char val, unsigned short &offset,char* out)
 {
     out[offset++] = val;
 }
 
-void CAimProto::aim_writeshort(unsigned short val, unsigned short &offset,char* out)
+void aim_writeshort(unsigned short val, unsigned short &offset,char* out)
 {
     out[offset++] = (char)(val >> 8);
     out[offset++] = (char)(val & 0xFF);
 }
 
-void CAimProto::aim_writelong(unsigned long val, unsigned short &offset,char* out)
+void aim_writelong(unsigned long val, unsigned short &offset,char* out)
 {
     out[offset++] = (char)(val >> 24);
     out[offset++] = (char)((val >> 16) & 0xFF);
@@ -100,13 +100,13 @@ void CAimProto::aim_writelong(unsigned long val, unsigned short &offset,char* ou
     out[offset++] = (char)(val & 0xFF);
 }
 
-void CAimProto::aim_writegeneric(unsigned short size,const char *buf,unsigned short &offset,char* out)
+void aim_writegeneric(unsigned short size,const char *buf,unsigned short &offset,char* out)
 {
 	memcpy(&out[offset],buf,size);
 	offset+=size;
 }
 
-void CAimProto::aim_writebartid(unsigned short type, unsigned char flags, unsigned short size,const char *buf,unsigned short &offset,char* out)
+void aim_writebartid(unsigned short type, unsigned char flags, unsigned short size,const char *buf,unsigned short &offset,char* out)
 {
     out[offset++]=(unsigned char)(type >> 8);
     out[offset++]=(unsigned char)(type & 0xff);

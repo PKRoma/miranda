@@ -164,35 +164,39 @@ void __cdecl CAimProto::aim_proxy_helper( void* hContact )
 	deleteSetting(hContact, AIM_KEY_IP);
 }
 
-int proxy_initialize_send(HANDLE connection,char* sn, char* cookie)
+int proxy_initialize_send(HANDLE connection, char* sn, char* cookie)
 {
-	char sn_length=(char)lstrlenA(sn);
-	unsigned short length = _htons(39+sn_length);
-	char* msg_frag= (char*)alloca(25+sn_length+sizeof(AIM_CAP_FILE_TRANSFER));
-	memcpy(msg_frag,(char*)&length,2);
-	memcpy(&msg_frag[2],"\x04\x4a\0\x02\0\0\0\0\0\0",10);
-	memcpy(&msg_frag[12],(char*)&sn_length,1);
-	memcpy(&msg_frag[13],sn,sn_length);
-	memcpy(&msg_frag[13+sn_length],cookie,8);
-	memcpy(&msg_frag[21+sn_length],"\0\x01\0\x10",4);
-	memcpy(&msg_frag[25+sn_length],AIM_CAP_FILE_TRANSFER,sizeof(AIM_CAP_FILE_TRANSFER));
-    return Netlib_Send(connection,msg_frag,(26+sn_length+sizeof(AIM_CAP_FILE_TRANSFER)),0) >= 0 ? 0 : -1; 
+	const char sn_length = (char)lstrlenA(sn);
+    const int len = sn_length + 25 + AIM_CAPS_LENGTH;
+
+    char* buf= (char*)alloca(len);
+    unsigned short offset=0;
+
+    aim_writeshort(len-2, offset, buf);
+	aim_writegeneric(10, "\x04\x4a\0\x02\0\0\0\0\0\0", offset, buf);
+    aim_writechar((unsigned char)sn_length, offset, buf);               // screen name len
+    aim_writegeneric(sn_length, sn, offset, buf);                       // screen name
+    aim_writegeneric(8, cookie, offset, buf);                           // icbm cookie
+    aim_writetlv(1, AIM_CAPS_LENGTH, AIM_CAP_FILE_TRANSFER, offset, buf);
+
+    return Netlib_Send(connection, buf, offset, 0) >= 0 ? 0 : -1; 
 }
 
 int proxy_initialize_recv(HANDLE connection,char* sn, char* cookie,unsigned short port_check)
 {
-	char sn_length=(char)lstrlenA(sn);
-	unsigned short length = _htons(41+sn_length);
-	char* clength =(char*)&length;
-	char* msg_frag= (char*)alloca(27+sn_length+sizeof(AIM_CAP_FILE_TRANSFER));
-	memcpy(msg_frag,clength,2);
-	memcpy(&msg_frag[2],"\x04\x4a\0\x04\0\0\0\0\0\0",10);
-	memcpy(&msg_frag[12],(char*)&sn_length,1);
-	memcpy(&msg_frag[13],sn,sn_length);
-	port_check=_htons(port_check);
-	memcpy(&msg_frag[13+sn_length],(char*)&port_check,2);
-	memcpy(&msg_frag[15+sn_length],cookie,8);
-	memcpy(&msg_frag[23+sn_length],"\0\x01\0\x10",4);
-	memcpy(&msg_frag[27+sn_length],AIM_CAP_FILE_TRANSFER,sizeof(AIM_CAP_FILE_TRANSFER));
-    return Netlib_Send(connection,msg_frag,(26+sn_length+sizeof(AIM_CAP_FILE_TRANSFER)),0) >= 0 ? 0 : -1; 
+	const char sn_length = (char)lstrlenA(sn);
+    const int len = sn_length + 27 + AIM_CAPS_LENGTH;
+
+    char* buf= (char*)alloca(len);
+    unsigned short offset=0;
+
+    aim_writeshort(len-2, offset, buf);
+	aim_writegeneric(10, "\x04\x4a\0\x04\0\0\0\0\0\0", offset, buf);
+    aim_writechar((unsigned char)sn_length, offset, buf);               // screen name len
+    aim_writegeneric(sn_length, sn, offset, buf);                       // screen name
+    aim_writeshort(port_check, offset, buf);
+    aim_writegeneric(8, cookie, offset, buf);                           // icbm cookie
+    aim_writetlv(1, AIM_CAPS_LENGTH, AIM_CAP_FILE_TRANSFER, offset, buf);
+
+    return Netlib_Send(connection, buf, offset, 0) >= 0 ? 0 : -1; 
 }
