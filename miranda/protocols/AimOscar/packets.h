@@ -40,4 +40,18 @@ inline unsigned long _htonl(unsigned long s)
 {
 	return (s&0x000000ff)<<24|(s&0x0000ff00)<<8|(s&0x00ff0000)>>8|(s&0xff000000)>>24;
 }
+
+
+int    aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short &offset,char* out, unsigned short id=0);
+int    aim_writetlv(unsigned short type,unsigned short size, const char* value,unsigned short &offset,char* out);
+int    aim_writetlvchar(unsigned short type, unsigned char value, unsigned short &offset, char* out);
+int    aim_writetlvshort(unsigned short type, unsigned short value, unsigned short &offset, char* out);
+int    aim_writetlvlong(unsigned short type, unsigned long value, unsigned short &offset, char* out);
+void   aim_writefamily(const char *buf,unsigned short &offset,char* out);
+void   aim_writegeneric(unsigned short size,const char *buf,unsigned short &offset,char* out);
+void   aim_writebartid(unsigned short type, unsigned char flags, unsigned short size,const char *buf,unsigned short &offset,char* out);
+void   aim_writechar(unsigned char val, unsigned short &offset,char* out);
+void   aim_writeshort(unsigned short val, unsigned short &offset,char* out);
+void   aim_writelong(unsigned long val, unsigned short &offset,char* out);
+
 #endif

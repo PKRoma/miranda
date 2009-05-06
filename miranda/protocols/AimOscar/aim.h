@@ -315,15 +315,4 @@ extern HINSTANCE hInstance; //plugin dll instance
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
 #define NEWTSTR_ALLOCA(A) (A==NULL)?NULL:_tcscpy((TCHAR*)alloca(sizeof(TCHAR)*(_tcslen(A)+1)),A)
 
-HICON  LoadIconEx(const char* name);
-HANDLE GetIconHandle(const char* name);
-void   ReleaseIconEx(const char* name);
-
-void   add_AT_icons(CAimProto* ppro);
-void   remove_AT_icons(CAimProto* ppro);
-void   add_ES_icons(CAimProto* ppro);
-void   remove_ES_icons(CAimProto* ppro);
-
-void set_contact_icon(CAimProto* ppro, HANDLE hContact);
-
 #endif
