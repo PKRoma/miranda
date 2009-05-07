@@ -145,6 +145,8 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
 
 	if (noProfiles) 
 		*noProfiles = found == 0;
+    
+    if (nodprof && !reqfd) szProfile[0] = 0;
 
 	return reqfd;
 }
