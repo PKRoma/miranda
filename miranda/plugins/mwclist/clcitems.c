@@ -180,16 +180,16 @@ static struct ClcContact * AddContactToGroup(struct ClcData *dat,struct ClcGroup
 
 	if (dat->style&CLS_SHOWSTATUSMESSAGES)
 	{
-		if (!DBGetContactSettingString(hContact, "CList", "StatusMsg", &dbv)) {
+		if (!DBGetContactSettingTString(hContact, "CList", "StatusMsg", &dbv)) {
 			int j;
-			lstrcpynA(group->cl.items[i]->szStatusMsg, dbv.pszVal, SIZEOF(group->cl.items[i]->szStatusMsg));
-			for (j=(int)strlen(group->cl.items[i]->szStatusMsg)-1;j>=0;j--) {
+			lstrcpyn(group->cl.items[i]->szStatusMsg, dbv.ptszVal, SIZEOF(group->cl.items[i]->szStatusMsg));
+			for (j=(int)_tcslen(group->cl.items[i]->szStatusMsg)-1;j>=0;j--) {
 				if (group->cl.items[i]->szStatusMsg[j]=='\r' || group->cl.items[i]->szStatusMsg[j]=='\n' || group->cl.items[i]->szStatusMsg[j]=='\t') {
 					group->cl.items[i]->szStatusMsg[j] = ' ';
 				}
 			}
 			DBFreeVariant(&dbv);
-			if (strlen(group->cl.items[i]->szStatusMsg)>0) {
+			if (_tcslen(group->cl.items[i]->szStatusMsg)>0) {
 				group->cl.items[i]->flags |= CONTACTF_STATUSMSG;
 			}
 		}	
