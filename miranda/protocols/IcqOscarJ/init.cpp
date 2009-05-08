@@ -49,7 +49,7 @@ DWORD MIRANDA_VERSION;
 
 HANDLE hStaticServices[1];
 IcqIconHandle hStaticIcons[4];
-HANDLE hModulesLoaded = NULL;
+HANDLE hStaticHooks[1];;
 HANDLE hExtraXStatus = NULL;
 
 
@@ -172,7 +172,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
     hStaticIcons[ISI_ADD_TO_SERVLIST] = IconLibDefine(LPGEN("Add to server list"), szSectionName, NULL, "add_to_server", lib, -IDI_SERVLIST_ADD);
   }
 
-  	hModulesLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
+  hStaticHooks[0] = HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
 
 	return 0;
 }
@@ -185,12 +185,15 @@ extern "C" int __declspec(dllexport) Unload(void)
   for (i = 0; i < SIZEOF(hStaticIcons); i++)
     IconLibRemove(&hStaticIcons[i]);
 
+  // Release static event hooks
+  for (i = 0; i < SIZEOF(hStaticHooks); i++)
+    if (hStaticHooks[i])
+      UnhookEvent(hStaticHooks[i]);
+
   // Destroy static service functions
   for (i = 0; i < SIZEOF(hStaticServices); i++)
     if (hStaticServices[i])
       DestroyServiceFunction(hStaticServices[i]);
-
-	UnhookEvent(hModulesLoaded);
 
 	return 0;
 }
