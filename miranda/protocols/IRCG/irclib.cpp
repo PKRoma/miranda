@@ -1492,16 +1492,18 @@ LBL_Parse:
 		ppro->DoNetlibLog("Got Ident request: %s", szBuf);
 
 		unsigned int PeerPortNrRcvd = 0, LocalPortNrRcvd = 0;
-		sscanf( szBuf, "%d,%d", &LocalPortNrRcvd, &PeerPortNrRcvd );
+		int iParamCnt = sscanf( szBuf, "%d , %d", &LocalPortNrRcvd, &PeerPortNrRcvd );
 
 		int cbLen;
 		char buf[1024*4];
 
-		if ( PeerPortNrRcvd == ppro->m_info.iPort && LocalPortNrRcvd == ppro->m_myLocalPort )
+		if ( PeerPortNrRcvd == ppro->m_info.iPort && LocalPortNrRcvd == ppro->m_myLocalPort && iParamCnt == 2 )
 			cbLen = mir_snprintf(buf, SIZEOF(buf), "%s : USERID : " TCHAR_STR_PARAM " : " TCHAR_STR_PARAM "\r\n", 
 				szBuf, ppro->m_info.sIdentServerType.c_str() , ppro->m_info.sUserID.c_str());
-		else
+		else if( PeerPortNrRcvd != 0 && LocalPortNrRcvd != 0 && iParamCnt == 2)
 			cbLen = mir_snprintf(buf, SIZEOF(buf), "%s : ERROR : INVALID-PORT\r\n", szBuf);
+		else 
+			cbLen = mir_snprintf(buf, SIZEOF(buf), "%s : ERROR : UNKNOWN-ERROR\r\n", szBuf);
 
 		if ( Netlib_Send(hConnection, (const char*)buf, cbLen, 0) > 0)
 			ppro->DoNetlibLog("Sent Ident answer: %s", buf);
@@ -1513,6 +1515,7 @@ LBL_Parse:
 			break;
 		}
 
+		cbTotal -= EOLPos + 2 - szBuf;
 		strdel(szBuf, int(EOLPos + 2 - szBuf));
 		goto LBL_Parse;
 	}
