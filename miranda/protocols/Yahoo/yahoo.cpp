@@ -956,9 +956,9 @@ void CYahooProto::ext_system_message(const char *me, const char *who, const char
 		ShowPopup( (who != NULL) ? who : "Yahoo System Message", msg, NULL);
 }
 
-void CYahooProto::ext_got_identities(const char *fname, const char *lname, YList * ids)
+void CYahooProto::ext_got_identities(const char *nick, const char *fname, const char *lname, YList * ids)
 {
-    LOG(("[ext_yahoo_got_identities] First Name: %s, Last Name %s", fname, lname));
+    LOG(("[ext_yahoo_got_identities] First Name: %s, Last Name: %s", fname, lname));
     /* FIXME - Not implemented - Got list of Yahoo! identities */
     /* We currently only use the default identity */
     /* Also Stubbed in Sample Client */
@@ -1602,9 +1602,9 @@ void ext_yahoo_system_message(int id, const char *me, const char *who, const cha
 	GETPROTOBYID( id )->ext_system_message(me, who, msg); 
 }
 
-void ext_yahoo_got_identities(int id, const char *fname, const char *lname, YList * ids)
+void ext_yahoo_got_identities(int id, const char *nick, const char *fname, const char *lname, YList * ids)
 {	
-	GETPROTOBYID( id )->ext_got_identities(fname, lname, ids); 
+	GETPROTOBYID( id )->ext_got_identities(nick, fname, lname, ids); 
 }
 
 void ext_yahoo_got_ping(int id, const char *errormsg)

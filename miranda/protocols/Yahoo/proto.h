@@ -277,7 +277,7 @@ struct CYahooProto : public PROTO_INTERFACE
 	void   ext_game_notify(const char *me, const char *who, int stat, const char *msg);
 	void   ext_mail_notify(const char *from, const char *subj, int cnt);
 	void   ext_system_message(const char *me, const char *who, const char *msg);
-	void   ext_got_identities(const char *fname, const char *lname, YList * ids);
+	void   ext_got_identities(const char *nick, const char *fname, const char *lname, YList * ids);
 	void   ext_got_ping(const char *errormsg);
 	void   ext_error(const char *err, int fatal, int num);
 	void   ext_login_response(int succ, const char *url);
