@@ -158,9 +158,9 @@ void TrayIconUpdateBase(const char *szChangedProto)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-extern int ( *saveTrayIconProcessMessage )(WPARAM wParam, LPARAM lParam);
+extern INT_PTR ( *saveTrayIconProcessMessage )(WPARAM wParam, LPARAM lParam);
 
-int TrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
+INT_PTR TrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 {
 	MSG* msg = ( MSG* )wParam;
 	if ( msg->message == TIM_CALLBACK && msg->lParam == WM_MOUSEMOVE ) {

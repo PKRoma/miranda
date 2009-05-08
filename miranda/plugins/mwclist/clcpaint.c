@@ -567,7 +567,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 			{							
 				// status message
 				if (group->cl.items[group->scanIndex]->type==CLCIT_CONTACT && group->cl.items[group->scanIndex]->flags & CONTACTF_STATUSMSG) {
-					char * szText = group->cl.items[group->scanIndex]->szStatusMsg;
+					TCHAR * szText = group->cl.items[group->scanIndex]->szStatusMsg;
 					RECT rc;
 					rc.left=dat->leftMargin+indent*dat->groupIndent+checkboxWidth+dat->iconXSpace;
 					rc.top=y+dat->rowHeight+((dat->rowHeight-fontHeight)>>1);
@@ -575,7 +575,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 					rc.bottom=rc.top+dat->rowHeight;
 					ChangeToFont(hdcMem,dat,FONTID_STATUSMSG,&fontHeight);
 					//ExtTextOut(hdcMem,rc.left,rc.top,ETO_CLIPPED,&rc,szText,lstrlen(szText),NULL);
-					DrawTextA(hdcMem, szText, lstrlenA(szText), &rc, DT_SINGLELINE | DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS);
+					DrawText(hdcMem, szText, lstrlen(szText), &rc, DT_SINGLELINE | DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS);
 				}		
 			}
 

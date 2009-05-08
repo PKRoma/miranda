@@ -1178,18 +1178,6 @@ static int CLUI_CreateTimerForConnectingIcon(WPARAM wParam,LPARAM lParam)
 	}
 	return 0;
 }
-static void CLUI_RestoreMode(HWND hwnd)
-{
-
-	int nStatus;
-
-	nStatus = ModernGetSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
-	if (nStatus != ID_STATUS_OFFLINE)
-	{
-		PostMessage(hwnd, WM_COMMAND, nStatus, 0);
-	}
-
-}
 
 static BOOL CALLBACK BroadcastEnumChildProc(HWND hwndChild, LPARAM lParam) 
 {
@@ -2248,12 +2236,6 @@ LRESULT CLUI::OnCreate( UINT msg, WPARAM wParam, LPARAM lParam )
 	//PostMessage(m_hWnd, M_CREATECLC, 0, 0);
 	//pcli->hwndContactList=m_hWnd;
 	uMsgGetProfile=RegisterWindowMessage(TEXT("Miranda::GetProfile")); // don't localise
-#ifndef _DEBUG
-	// Miranda is starting up! Restore last status mode.
-	// This is not done in debug builds because frequent
-	// reconnections will get you banned from the servers.
-	CLUI_RestoreMode(m_hWnd);
-#endif
 	bTransparentFocus=1;
 	return FALSE;
 }

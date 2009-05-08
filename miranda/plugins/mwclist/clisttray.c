@@ -26,9 +26,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define TIM_CALLBACK   (WM_USER+1857)
 #define TIM_CREATE     (WM_USER+1858)
 
-extern int ( *saveTrayIconProcessMessage )(WPARAM wParam,LPARAM lParam);
+extern INT_PTR ( *saveTrayIconProcessMessage )(WPARAM wParam,LPARAM lParam);
 
-int TrayIconProcessMessage(WPARAM wParam,LPARAM lParam)
+INT_PTR TrayIconProcessMessage(WPARAM wParam,LPARAM lParam)
 {
 	MSG *msg=(MSG*)wParam;
 	switch(msg->message) {

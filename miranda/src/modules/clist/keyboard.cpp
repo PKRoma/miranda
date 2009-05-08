@@ -56,15 +56,14 @@ static INT_PTR hkOpts(WPARAM, LPARAM)
 /*
 static INT_PTR hkCloseMiranda(WPARAM wParam,LPARAM lParam)
 {
-	CallService("CloseAction",0,0);
+	CallService("CloseAction", 0, 0);
 	return 0;
 }
 
-void RestoreMode(HWND hwnd);
-
 INT_PTR hkRestoreStatus(WPARAM wParam,LPARAM lParam)
 {
-    RestoreMode(NULL); 
+	int nStatus = DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
+    CallService(MS_CLIST_SETSTATUSMODE, nStatus, 0);
 	return 0;
 }
 */

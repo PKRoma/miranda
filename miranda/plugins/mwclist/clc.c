@@ -220,17 +220,17 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 		if (!(dat->style&CLS_SHOWSTATUSMESSAGES)) break;
 		if(FindItem(hwnd,dat,(HANDLE)wParam,&contact,&group,NULL) && contact!=NULL) {
 			contact->flags &= ~CONTACTF_STATUSMSG;
-			if (!DBGetContactSettingString((HANDLE)wParam, "CList", "StatusMsg", &dbv)) {
+			if (!DBGetContactSettingTString((HANDLE)wParam, "CList", "StatusMsg", &dbv)) {
 				int j;
-				if (dbv.pszVal==NULL||strlen(dbv.pszVal)==0) break;
-				lstrcpynA(contact->szStatusMsg, dbv.pszVal, SIZEOF(contact->szStatusMsg));
-				for (j=(int)strlen(contact->szStatusMsg)-1;j>=0;j--) {
+				if (dbv.ptszVal==NULL||_tcslen(dbv.ptszVal)==0) break;
+				lstrcpyn(contact->szStatusMsg, dbv.ptszVal, SIZEOF(contact->szStatusMsg));
+				for (j=(int)_tcslen(contact->szStatusMsg)-1;j>=0;j--) {
 					if (contact->szStatusMsg[j]=='\r' || contact->szStatusMsg[j]=='\n' || contact->szStatusMsg[j]=='\t') {
 						contact->szStatusMsg[j] = ' ';
 					}
 				}
 				DBFreeVariant(&dbv);
-				if (strlen(contact->szStatusMsg)>0) {
+				if (_tcslen(contact->szStatusMsg)>0) {
 					contact->flags |= CONTACTF_STATUSMSG;
 					dat->NeedResort=TRUE;
 				}

@@ -32,6 +32,8 @@ static HANDLE hContactDraggingEvent, hContactDroppedEvent, hContactDragStopEvent
 static int transparentFocus = 1;
 UINT uMsgProcessProfile;
 
+#define M_RESTORESTATUS  (WM_USER+7)
+
 void LoadCluiServices();
 
 BOOL(WINAPI * MySetLayeredWindowAttributes) (HWND, COLORREF, BYTE, DWORD);
@@ -65,18 +67,6 @@ static int CluiModulesLoaded(WPARAM, LPARAM)
 	mii.hSubMenu = (HMENU) CallService(MS_CLIST_MENUGETSTATUS, 0, 0);
 	SetMenuItemInfo(cli.hMenuMain, 1, TRUE, &mii);
 	return 0;
-}
-
-// Restore protocols to the last global status.
-// Used to reconnect on restore after standby.
-void RestoreMode(HWND hwnd)
-{
-	int nStatus = DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
-	if (nStatus != ID_STATUS_OFFLINE)
-    {
-        // We need to post message here dso that reconnect occur after ME_SYSTEM_MODULESLOADED event
-		PostMessage(hwnd&&IsWindow(hwnd)?hwnd:cli.hwndContactList, WM_COMMAND, nStatus, 0);
-    }
 }
 
 // Disconnect all protocols.
@@ -342,7 +332,9 @@ int LoadCLUIModule(void)
 
 	cli.pfnOnCreateClc();
 
-	{
+	PostMessage(cli.hwndContactList, M_RESTORESTATUS, 0, 0);
+
+    {
 		int state = DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
 		cli.hMenuMain = GetMenu(cli.hwndContactList);
 		if (!DBGetContactSettingByte(NULL, "CLUI", "ShowMainMenu", SETTING_SHOWMAINMENU_DEFAULT))
@@ -513,14 +505,6 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				MySetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), (BYTE) cluiopt.alpha, LWA_ALPHA);
 		}
 		transparentFocus = 1;
-
-		#ifndef _DEBUG
-			// Miranda is starting up! Restore last status mode.
-			// This is not done in debug builds because frequent
-			// reconnections will get you banned from the servers.
-			RestoreMode(hwnd);
-		#endif
-
 		return FALSE;
 
 	case M_CREATECLC:
@@ -534,6 +518,12 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		SendMessage(hwnd, WM_SIZE, 0, 0);
 		break;
 
+	case M_RESTORESTATUS:
+//      #ifndef _DEBUG
+        CallService(MS_CLIST_SETSTATUSMODE, DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE), 0);
+//      #endif
+        break;
+
 	// Power management
 	case WM_POWERBROADCAST:
 		switch ((DWORD) wParam) {
@@ -545,7 +535,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
         case PBT_APMRESUMEAUTOMATIC:
 		case PBT_APMRESUMESUSPEND:
 			// Computer is resuming, restore all protocols
-			RestoreMode(NULL);
+            CallService(MS_CLIST_SETSTATUSMODE, DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE), 0);
 			break;
 		}
 		break;

@@ -1164,17 +1164,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			}
 			transparentFocus = 1;
 
-#ifndef _DEBUG
-			// Miranda is starting up! Restore last status mode.
-			// This is not done in debug builds because frequent
-			// reconnections will get you banned from the servers.
-			{
-				int nStatus = DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
-				if (nStatus != ID_STATUS_OFFLINE)
-					PostMessage(hwnd, WM_COMMAND, nStatus, 0);
-			}
-#endif
-			CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) GetMenu(hwnd), 0);
+            CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) GetMenu(hwnd), 0);
 			PostMessage(hwnd, M_CREATECLC, 0, 0);
 			return FALSE;
 		}

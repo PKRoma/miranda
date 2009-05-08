@@ -27,15 +27,14 @@ int InitSkinHotKeys(void);
 
 INT_PTR hkCloseMiranda(WPARAM wParam,LPARAM lParam)
 {
-	CallService("CloseAction",0,0);
+	CallService("CloseAction", 0, 0);
 	return 0;
 }
 
 INT_PTR hkRestoreStatus(WPARAM wParam,LPARAM lParam)
 {
 	int nStatus = ModernGetSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
-	if (nStatus != ID_STATUS_OFFLINE)
-		PostMessage(pcli->hwndContactList, WM_COMMAND, nStatus, 0);
+    CallService(MS_CLIST_SETSTATUSMODE, nStatus, 0);
 
 	return 0;
 }

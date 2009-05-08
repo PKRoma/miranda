@@ -82,7 +82,7 @@ struct ClcContact {
 	BYTE SubAllocated;
 	BYTE SubExpanded;
 	BYTE isSubcontact;
-	char szStatusMsg[MAXSTATUSMSGLEN];
+	TCHAR szStatusMsg[MAXSTATUSMSGLEN];
 };
 
 struct ClcData {

@@ -476,7 +476,7 @@ int CreateCLC(HWND parent)
 		Frame.TBtname=TranslateT("My Contacts");
 		hFrameContactTree=(HWND)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&Frame,(LPARAM)0);
 		//free(Frame.name);
-		CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS,MAKEWPARAM(FO_TBTIPNAME,hFrameContactTree),(LPARAM)Translate("My Contacts"));	
+		CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS,MAKEWPARAM(FO_TBTIPNAME,hFrameContactTree),(LPARAM)TranslateT("My Contacts"));	
 	}
 	
 	ReloadExtraIcons();
@@ -578,13 +578,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				MySetLayeredWindowAttributes(hwnd, RGB(0,0,0), (BYTE)DBGetContactSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT), LWA_ALPHA);
 		}
 		transparentFocus=1;
-
-		#ifndef _DEBUG
-		{	int nStatus = DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
-			if ( nStatus != ID_STATUS_OFFLINE )
-				PostMessage(hwnd, WM_COMMAND, nStatus, 0);
-		}
-		#endif
 		return FALSE;
 
 	case M_SETALLEXTRAICONS:
