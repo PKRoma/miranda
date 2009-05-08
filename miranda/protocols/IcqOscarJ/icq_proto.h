@@ -328,7 +328,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   handleRecvServMsgError(BYTE *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 	void   handleRecvMsgResponse(BYTE *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 	void   handleServerAck(BYTE *buf, WORD wLen, WORD wFlags, DWORD dwRef);
-	void   handleStatusMsgReply(const char *szPrefix, HANDLE hContact, DWORD dwUin, WORD wVersion, int bMsgType, WORD wCookie, const char *szMsg);
+	void   handleStatusMsgReply(const char *szPrefix, HANDLE hContact, DWORD dwUin, WORD wVersion, int bMsgType, WORD wCookie, const char *szMsg, int nMsgFlags);
 	void   handleTypingNotification(BYTE *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 	void   handleMissedMsg(BYTE *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 	void   handleOffineMessagesReply(BYTE *buf, WORD wLen, WORD wFlags, DWORD dwRef);
@@ -338,8 +338,8 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2, WORD wAckType, oscar_tlv* tlv);
 	void   parseServerGreeting(BYTE *pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, BYTE bFlags, WORD wStatus, WORD wCookie, WORD wAckType, DWORD dwID1, DWORD dwID2, WORD wVersion);
 
-	HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, WORD wVersion, int type, WORD wMsgLen, PBYTE buf, BYTE bFlags);
-	void   handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwMsgID2, WORD wCookie, WORD wVersion, int type, int flags, WORD wAckType, DWORD dwDataLen, WORD wMsgLen, char *pMsg, BOOL bThruDC, message_ack_params *pAckParams);
+	HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, WORD wVersion, int type, WORD wMsgLen, PBYTE buf, BYTE bFlags, int nMsgFlags);
+	void   handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwMsgID2, WORD wCookie, WORD wVersion, int type, int flags, WORD wAckType, DWORD dwDataLen, WORD wMsgLen, char *pMsg, int nMsgFlags, message_ack_params *pAckParams);
 	void   sendMessageTypesAck(HANDLE hContact, int bUnicode, message_ack_params *pArgs);
 	void   sendTypingNotification(HANDLE hContact, WORD wMTNCode);
 
