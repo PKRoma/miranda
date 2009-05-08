@@ -749,7 +749,7 @@ void gg_img_dlgcall(void *empty)
 
 ////////////////////////////////////////////////////////////////////////////
 // Open dialog receive for specified contact
-GGIMAGEDLGDATA *gg_img_recvdlg(HANDLE hContact)
+GGIMAGEDLGDATA *gg_img_recvdlg(GGPROTO *gg, HANDLE hContact)
 {
 	pthread_t dwThreadID;
 
@@ -762,6 +762,7 @@ GGIMAGEDLGDATA *gg_img_recvdlg(HANDLE hContact)
 	dat->nImgTotal = 0;
 	dat->hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	dat->bReceiving = TRUE;
+	dat->gg = gg;
 	ResetEvent(dat->hEvent);
 	pthread_create(&dwThreadID, NULL, gg_img_dlgthread, (void *)dat);
 	return dat;
@@ -805,8 +806,8 @@ gg_img_display(GGPROTO *gg, HANDLE hContact, void *img)
 
 	if(!dat)
 	{
-		dat = gg_img_recvdlg(hContact);
-		dat->uin = DBGetContactSettingDword(hContact, dat->gg->proto.m_szModuleName, GG_KEY_UIN, 0);
+		dat = gg_img_recvdlg(gg, hContact);
+		dat->uin = DBGetContactSettingDword(hContact, gg->proto.m_szModuleName, GG_KEY_UIN, 0);
 
 		while (WaitForSingleObjectEx(dat->hEvent, INFINITE, TRUE) != WAIT_OBJECT_0);
 		CloseHandle(dat->hEvent);
