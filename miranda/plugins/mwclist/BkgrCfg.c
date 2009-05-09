@@ -8,17 +8,10 @@
 
 
 extern HINSTANCE g_hInst;
-extern PLUGINLINK *pluginLink;
-extern struct MM_INTERFACE mmi;
 
 char **bkgrList = NULL;
 int bkgrCount = 0;
 HANDLE hEventBkgrChanged;
-/*
-#define mir_alloc(n) mmi.mmi_malloc(n)
-#define mir_free(ptr) mmi.mmi_free(ptr)
-#define mir_realloc(ptr,size) mmi.mmi_realloc(ptr,size)
-*/
 
 #define M_BKGR_UPDATE	(WM_USER+10)
 #define M_BKGR_SETSTATE	(WM_USER+11)
@@ -31,7 +24,7 @@ HANDLE hEventBkgrChanged;
 #define M_BKGR_TILE			0x10
 
 #define ARRAY_SIZE(arr)	(sizeof(arr)/sizeof(arr[0]))
-static int bitmapRelatedControls[] = {
+static const int bitmapRelatedControls[] = {
 	IDC_FILENAME,IDC_BROWSE,IDC_STRETCHH,IDC_STRETCHV,IDC_TILEH,IDC_TILEV,
 	IDC_SCROLL,IDC_PROPORTIONAL,IDC_TILEVROWH
 };
