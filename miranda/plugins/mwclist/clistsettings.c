@@ -159,14 +159,14 @@ void InvalidateDisplayNameCacheEntryByPDNE(HANDLE hContact,pdisplayNameCacheEntr
 
 	if ( SettingType == -1 || SettingType == DBVT_DELETED )
 	{		
-		if (pdnce->name) mir_free(pdnce->name);
+        mir_free(pdnce->name);
 		pdnce->name=NULL;
-		if (pdnce->szGroup) mir_free(pdnce->szGroup);
+		mir_free(pdnce->szGroup);
 		pdnce->szGroup=NULL;
 
 		pdnce->Hidden=-1;
 		pdnce->protoNotExists=FALSE;
-		if (pdnce->szProto) mir_free(pdnce->szProto);
+		mir_free(pdnce->szProto);
 		pdnce->szProto=NULL;
 		pdnce->status=0;
 		pdnce->IdleTS=-1;
@@ -178,13 +178,13 @@ void InvalidateDisplayNameCacheEntryByPDNE(HANDLE hContact,pdisplayNameCacheEntr
 		return;
 	}
 
-	if (SettingType == DBVT_ASCIIZ||SettingType == DBVT_BLOB)
+	if (SettingType >= DBVT_WCHAR)
 	{
-		if (pdnce->name) mir_free(pdnce->name);
+		mir_free(pdnce->name);
 		pdnce->name=NULL;
-		if (pdnce->szGroup) mir_free(pdnce->szGroup);
+		mir_free(pdnce->szGroup);
 		pdnce->szGroup=NULL;
-		if (pdnce->szProto) mir_free(pdnce->szProto);
+		mir_free(pdnce->szProto);
 		pdnce->szProto=NULL;
 		return;
 	}
@@ -275,12 +275,6 @@ int GetContactCachedStatus(HANDLE hContact)
 	pdisplayNameCacheEntry cacheEntry = (pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hContact);
 	if (cacheEntry&&cacheEntry->status!=0) return cacheEntry->status;
 	return (0);	
-}
-
-int InvalidateDisplayName(WPARAM wParam,LPARAM lParam)
-{
-	pcli->pfnInvalidateDisplayNameCacheEntry((HANDLE)wParam);
-	return 0;
 }
 
 int ContactSettingChanged(WPARAM wParam,LPARAM lParam)

@@ -142,6 +142,7 @@ void ClearRowByIndexCache();
 struct ClcGroup *AddGroup(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers);
 void FreeGroup(struct ClcGroup *group);
 int AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText);
+void FreeContact(struct ClcContact *p);
 void RebuildEntireList(HWND hwnd,struct ClcData *dat);
 struct ClcGroup *RemoveItemFromGroup(HWND hwnd,struct ClcGroup *group,struct ClcContact *contact,int updateTotalCount);
 void DeleteItemFromTree(HWND hwnd,HANDLE hItem);

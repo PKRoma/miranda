@@ -30,6 +30,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern int ( *saveAddItemToGroup )( struct ClcGroup *group, int iAboveItem );
 extern int ( *saveAddInfoItemToGroup )(struct ClcGroup *group,int flags,const TCHAR *pszText);
 extern struct ClcGroup* ( *saveAddGroup )(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers);
+extern void (*saveFreeContact)(struct ClcContact *p);
+extern void (*saveFreeGroup)(struct ClcGroup *p);
 
 //routines for managing adding/removal of items in the list, including sorting
 
@@ -45,7 +47,7 @@ void AddSubcontacts(struct ClcContact * cont)
 	subcount=(int)CallService(MS_MC_GETNUMCONTACTS,(WPARAM)cont->hContact,0);
 	cont->SubExpanded=DBGetContactSettingByte(cont->hContact,"CList","Expanded",0);
 	cont->isSubcontact=0;
-	cont->subcontacts=(struct ClcContact *) mir_alloc(sizeof(struct ClcContact)*subcount);
+	cont->subcontacts=(struct ClcContact *) mir_realloc(cont->subcontacts, sizeof(struct ClcContact)*subcount);
 	cont->SubAllocated=subcount;
 	i=0;
 	for (j=0; j<subcount; j++)
@@ -70,6 +72,14 @@ void AddSubcontacts(struct ClcContact * cont)
 	if (!i) mir_free(cont->subcontacts);
 }
 
+void FreeContact(struct ClcContact *p)
+{
+	if ( p->SubAllocated && !p->isSubcontact)
+		mir_free(p->subcontacts);
+
+	saveFreeContact( p );
+}
+
 int AddItemToGroup(struct ClcGroup *group,int iAboveItem)
 {
 	iAboveItem = saveAddItemToGroup( group, iAboveItem );
@@ -90,26 +100,7 @@ struct ClcGroup *AddGroup(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWOR
 
 void FreeGroup(struct ClcGroup *group)
 {
-	int i;
-	if (group==NULL||IsBadCodePtr((FARPROC)group)) return;
-
-	for(i=0;i<group->cl.count;i++) {
-		if(group->cl.items[i]->type==CLCIT_GROUP) {
-			FreeGroup(group->cl.items[i]->group);
-			mir_free(group->cl.items[i]->group);
-		}
-	}
-	if(group->cl.count)
-	{	
-		if (group->cl.items[0]->SubAllocated)
-			if (group->cl.items[0]->subcontacts) mir_free(group->cl.items[0]->subcontacts);
-		
-		if(group->cl.items) mir_free(group->cl.items);
-	}
-	group->cl.limit=0;
-	group->cl.items=NULL;
-	group->cl.count=0;
-	
+	saveFreeGroup( group );
 	ClearRowByIndexCache();
 }
 
@@ -628,7 +619,7 @@ void SaveStateAndRebuildList(HWND hwnd,struct ClcData *dat)
 		group->scanIndex++;
 	}
 
-	FreeGroup(&dat->list);
+	pcli->pfnFreeGroup(&dat->list);
 	RebuildEntireList(hwnd,dat);
 	
 	group=&dat->list;
