@@ -519,9 +519,12 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		break;
 
 	case M_RESTORESTATUS:
-//      #ifndef _DEBUG
-        CallService(MS_CLIST_SETSTATUSMODE, DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE), 0);
-//      #endif
+        #ifndef _DEBUG
+        {
+	        int nStatus = DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
+	        if (nStatus != ID_STATUS_OFFLINE) CallService(MS_CLIST_SETSTATUSMODE, nStatus, 0);
+        }
+        #endif
         break;
 
 	// Power management
@@ -535,7 +538,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
         case PBT_APMRESUMEAUTOMATIC:
 		case PBT_APMRESUMESUSPEND:
 			// Computer is resuming, restore all protocols
-            CallService(MS_CLIST_SETSTATUSMODE, DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE), 0);
+            PostMessage(hwnd, M_RESTORESTATUS, 0, 0);
 			break;
 		}
 		break;
