@@ -442,7 +442,7 @@ void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int Se
 			pdnce->IsExpanded=-1;
 			return;
 		}
-		if (SettingType==DBVT_ASCIIZ||SettingType==DBVT_BLOB)
+		if (SettingType>=DBVT_WCHAR)
 		{
 			if (pdnce->m_cache_tcsName && !pdnce->isUnknown) mir_free_and_nill(pdnce->m_cache_tcsName);
 			if (pdnce->m_cache_tcsGroup) mir_free_and_nill(pdnce->m_cache_tcsGroup);
