@@ -363,6 +363,7 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					szProto = dbv.ptszVal;
 				
 				for( i=0, netProtoCount=0; i < accounts.getCount(); i++ ) {
+                    if (!IsAccountEnabled(accounts[i])) continue;
 					DWORD caps = (DWORD)CallProtoService( accounts[i]->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0 );
 					if (caps & PF1_BASICSEARCH || caps & PF1_EXTSEARCH || caps & PF1_SEARCHBYEMAIL || caps & PF1_SEARCHBYNAME)
 						netProtoCount++;
@@ -384,6 +385,7 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				}
 				for( i=0; i < accounts.getCount(); i++ ) {
 					PROTOACCOUNT* pa = accounts[i];
+                    if (!IsAccountEnabled(pa)) continue;
 					DWORD caps=(DWORD)CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0 );
 					if ( !(caps&PF1_BASICSEARCH) && !(caps&PF1_EXTSEARCH) && !(caps&PF1_SEARCHBYEMAIL) && !(caps&PF1_SEARCHBYNAME))
 						continue;
@@ -467,6 +469,7 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			if ( szProto == NULL ) {
 				for ( i=0; i < accounts.getCount(); i++ ) {
 					PROTOACCOUNT* pa = accounts[i];
+                    if (!IsAccountEnabled(pa)) continue;
 					protoCaps=(DWORD)CallProtoService(pa->szModuleName,PS_GETCAPS,PFLAGNUM_1,0);
 					if(protoCaps&PF1_SEARCHBYEMAIL) dat->showEmail=1;
 					if(protoCaps&PF1_SEARCHBYNAME) dat->showName=1;
@@ -953,6 +956,7 @@ static INT_PTR FindAddCommand(WPARAM, LPARAM)
 		// that is not good either...
 		for ( i=0, netProtoCount=0; i < accounts.getCount(); i++ ) {
 			PROTOACCOUNT* pa = accounts[i];
+            if (!IsAccountEnabled(pa)) continue;
 			int protoCaps=CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0 );
 			if ( protoCaps&PF1_BASICSEARCH || protoCaps&PF1_SEARCHBYEMAIL || protoCaps&PF1_SEARCHBYNAME
 				|| protoCaps&PF1_EXTSEARCHUI ) netProtoCount++;
