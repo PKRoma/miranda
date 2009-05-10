@@ -1966,8 +1966,8 @@ int ThreadData::send( HXML node )
 	TCHAR* str = xi.toString( node, NULL );
 
 	// strip forbidden control characters from outgoing XML stream
-	WCHAR *q = str;
-	for (WCHAR *p = str; *p; ++p)
+	TCHAR *q = str;
+	for (TCHAR *p = str; *p; ++p)
 	{
 		if (*p < 0x9 || *p > 0x9 && *p < 0xA || *p > 0xA && *p < 0xD || *p > 0xD && *p < 0x20 || *p > 0xD7FF && *p < 0xE000 || *p > 0xFFFD)
 			continue;
