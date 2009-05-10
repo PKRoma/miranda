@@ -1094,12 +1094,13 @@ static int MenuProtoAck(WPARAM, LPARAM lParam)
 	networkProtoCount = 0;
 	for ( i=0; i < accounts.getCount(); i++ ) {
 		PROTOACCOUNT* pa = accounts[i];
+        if (!IsAccountEnabled(pa)) continue;
 		int flags = CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_2, 0 );
 		int flags2 = CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_5, 0 );
 		if ((flags & ~flags2) == 0)
 			continue;
 
-		thisStatus = CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0 );
+		thisStatus = ack->lParam;
 		if ( overallStatus == 0 )
 			overallStatus = thisStatus;
 		else if ( overallStatus != thisStatus )
