@@ -401,7 +401,7 @@ static void sttUpdateAccountInfo(HWND hwndDlg, struct TAccMgrData *dat)
 			EnableWindow( GetDlgItem( hwndDlg, IDC_UPGRADE ), pa->bOldProto || pa->bDynDisabled );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT ), TRUE );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_REMOVE ), TRUE );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_OPTIONS ), pa->ppro ? TRUE : FALSE );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_OPTIONS ), pa->ppro != 0 );
 
 			if ( dat->iSelected >= 0 ) {
 				PROTOACCOUNT *pa_old = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, dat->iSelected);
@@ -575,17 +575,21 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 			lps->rcItem.top += 2;
 			lps->rcItem.bottom -= 2;
 
-			if (acc->bOldProto || acc->bDynDisabled)
+			if ( acc->bOldProto )
 			{
-				DrawIconEx(lps->hDC, lps->rcItem.left, lps->rcItem.top,
-					LoadSkinnedIcon(SKINICON_OTHER_SMALLDOT),
-					cxIcon, cyIcon, 0, hbrBack, DI_NORMAL);
-			} else
+                tmp = SKINICON_OTHER_LOADED;
+			} 
+			else if ( acc->bDynDisabled )
 			{
-				DrawIconEx(lps->hDC, lps->rcItem.left, lps->rcItem.top,
-					LoadSkinnedIcon( IsAccountEnabled( acc ) ? SKINICON_OTHER_TICK : SKINICON_OTHER_NOTICK),
-					cxIcon, cyIcon, 0, hbrBack, DI_NORMAL);
+                tmp = SKINICON_OTHER_NOTLOADED;
+			} 
+            else
+			{
+                tmp = acc->bIsEnabled ? SKINICON_OTHER_TICK : SKINICON_OTHER_NOTICK;
 			}
+		    hIcon = LoadSkinnedIcon(tmp);
+			DrawIconEx(lps->hDC, lps->rcItem.left, lps->rcItem.top, hIcon, cxIcon, cyIcon, 0, hbrBack, DI_NORMAL);
+           	IconLib_ReleaseIcon(hIcon, 0);
 
 			lps->rcItem.left += cxIcon + 2;
 
