@@ -289,10 +289,6 @@ SOURCE=.\Icons\go.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\Icons\help.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\Icons\hide.ico
 # End Source File
 # Begin Source File
