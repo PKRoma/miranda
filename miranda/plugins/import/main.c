@@ -312,7 +312,7 @@ int CreateGroup(BYTE type, const char* name, HANDLE hContact)
 
 		if ( !lstrcmp(dbv.ptszVal + 1, tszGrpName + 1 )) {
 			if (hContact)
-				WriteVariant( hContact, "CList", "Group", &dbv );
+		        DBWriteContactSettingTString( hContact, "CList", "Group", tszGrpName+1 );
 			else {
 				char *str = mir_t2a(tszGrpName + 1);
 				AddMessage( LPGEN("Skipping duplicate group %s."), str);
