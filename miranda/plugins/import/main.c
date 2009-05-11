@@ -329,7 +329,7 @@ int CreateGroup(BYTE type, const char* name, HANDLE hContact)
 	DBWriteContactSettingTString( NULL, "CListGroups", groupIdStr, tszGrpName );
 
 	if (hContact) 
-		DBWriteContactSettingTString( hContact, "CList", "Group", tszGrpName );
+		DBWriteContactSettingTString( hContact, "CList", "Group", tszGrpName+1 );
 
 	return 1;
 }
