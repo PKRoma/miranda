@@ -114,7 +114,7 @@ static int ContactSettingChanged(WPARAM wParam, LPARAM lParam)
 
 static void AddContactMenuItem( PROTOACCOUNT* pa )
 {
-	if ( CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0 ) & PF1_URLSEND ) {
+    if (IsAccountEnabled(pa) && (pa->ppro->GetCaps(PFLAGNUM_1, 0) & PF1_URLSEND)) {
 		CLISTMENUITEM mi = { 0 };
 		mi.cbSize = sizeof(mi);
 		mi.position = -2000040000;
@@ -137,7 +137,7 @@ static int SRUrlModulesLoaded(WPARAM, LPARAM)
 
 static int SRUrlAccountsChanged( WPARAM eventCode, LPARAM lParam )
 {
-	if ( eventCode == PRAC_ADDED )
+	if ( eventCode == PRAC_ADDED || (eventCode == PRAC_CHECKED && IsAccountEnabled((PROTOACCOUNT*)lParam)))
 		AddContactMenuItem(( PROTOACCOUNT* )lParam );
 
 	return 0;

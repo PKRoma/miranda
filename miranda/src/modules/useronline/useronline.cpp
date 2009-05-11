@@ -86,7 +86,7 @@ static int UserOnlineModulesLoaded(WPARAM, LPARAM)
 {
 	// reset the counter
 	for ( int j = 0; j < accounts.getCount(); j++ )
-		db_dword_set( NULL, "UserOnline", accounts[j]->szModuleName, GetTickCount());
+		if ( IsAccountEnabled( accounts[j] )) db_dword_set( NULL, "UserOnline", accounts[j]->szModuleName, GetTickCount());
 
 	return 0;
 }
