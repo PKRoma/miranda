@@ -145,7 +145,7 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_ignore)(int id, YList * igns);
  *  fname - first name
  *  lname - last name
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_got_identities)(int id, const char *fname, const char *lname, YList *ids);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_got_identities)(int id, const char *nick, const char *fname, const char *lname, YList *ids);
 
 
 /*

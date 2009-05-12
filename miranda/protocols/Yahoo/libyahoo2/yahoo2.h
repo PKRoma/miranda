@@ -216,7 +216,7 @@ void yahoo_send_file_y7(int id, const char *from, const char *to, const char *re
 				unsigned long size, const char* ft_token, yahoo_get_fd_callback callback, void *data);							
 unsigned char *yahoo_webmessenger_idle_packet(int id, int* len);
 void yahoo_send_idle_packet(int id);
-void yahoo_send_im_ack(int id, const char *buddy, const char *seqn, int sendn);
+void yahoo_send_im_ack(int id, const char *me, const char *buddy, const char *seqn, int sendn);
 #include "yahoo_httplib.h"
 
 char * getcookie(char *rawcookie);

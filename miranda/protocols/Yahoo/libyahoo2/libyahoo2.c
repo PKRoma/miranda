@@ -2204,7 +2204,7 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 {
 	struct yahoo_data *yd = yid->yd;
 	YList *l;
-	char *fname = NULL, *lname = NULL;
+	char *fname = NULL, *lname = NULL, *nick = NULL;
 
 	/* we could be getting multiple packets here */
 	for (l = pkt->hash; l; l = l->next) {
@@ -2255,6 +2255,8 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 
 			break;
 		case 3: /* my id */
+			nick = pair->value;
+			break;
 		case 90: /* 1 */
 		case 100: /* 0 */
 		case 101: /* NULL */
@@ -2292,7 +2294,7 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 		}
 	}
 
-	YAHOO_CALLBACK(ext_yahoo_got_identities)(yd->client_id, fname, lname, yd->identities);
+	YAHOO_CALLBACK(ext_yahoo_got_identities)(yd->client_id, nick, fname, lname, yd->identities);
 	
 	/* we could be getting multiple packets here */
 	if (pkt->status != 0) /* Thanks for the fix GAIM */
@@ -7116,13 +7118,13 @@ void yahoo_send_idle_packet(int id)
 	yahoo_packet_free(pkt);
 }
 
-void yahoo_send_im_ack(int id, const char *buddy, const char *seqn, int sendn) 
+void yahoo_send_im_ack(int id, const char *me, const char *buddy, const char *seqn, int sendn) 
 {
 	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
 	struct yahoo_data *yd;
 	struct yahoo_packet *pkt = NULL;
 
-	DEBUG_MSG(("[yahoo_send_im_ack] Buddy: %s, Seq #: %s, Retry: %d", buddy, seqn, sendn));
+	DEBUG_MSG(("[yahoo_send_im_ack] My Id: %s, Buddy: %s, Seq #: %s, Retry: %d", me, buddy, seqn, sendn));
 	
 	if(!yid) {
 		DEBUG_MSG(("NO Yahoo Input Data???"));
@@ -7132,7 +7134,7 @@ void yahoo_send_im_ack(int id, const char *buddy, const char *seqn, int sendn)
 	yd = yid->yd;
 
 	pkt = yahoo_packet_new(YAHOO_SERVICE_Y9_MESSAGE_ACK, YPACKET_STATUS_DEFAULT, yd->session_id);
-	yahoo_packet_hash(pkt, 1, yd->user);
+	yahoo_packet_hash(pkt, 1, (me != NULL) ? me : yd->user);
 	yahoo_packet_hash(pkt, 5, buddy);
 	
 	yahoo_packet_hash(pkt, 302, "430");

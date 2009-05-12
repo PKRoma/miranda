@@ -55,7 +55,7 @@ static y_filetransfer* new_ft(CYahooProto* ppro, int id, HANDLE hContact, const 
 
 	ft->pfts.totalFiles = y_list_length(fs);
 
-	ft->pfts.files = (char**) calloc(sizeof(char *) * ft->pfts.totalFiles, sizeof(char));
+	ft->pfts.files = (char**) calloc(ft->pfts.totalFiles, sizeof(char *));
 	ft->pfts.totalBytes = 0;
 
 	while(l) {
@@ -791,7 +791,7 @@ HANDLE __cdecl CYahooProto::SendFile( HANDLE hContact, const char* szDescription
 			tFileSize = statbuf.st_size;
 
 		fi = y_new(struct yahoo_file_info,1);
-		fi->filename = ppszFiles[0];
+		fi->filename = strdup(ppszFiles[0]);
 		fi->filesize = tFileSize;
 	
 		fs = y_list_append(fs, fi);

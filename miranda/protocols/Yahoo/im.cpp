@@ -27,7 +27,9 @@ void CYahooProto::send_msg(const char *id, int protocol, const char *msg, int ut
 	yahoo_send_im(m_id, NULL, id, protocol, msg, utf8, buddy_icon);
 }
 
-void CYahooProto::ext_got_im(const char *me, const char *who, int protocol, const char *msg, long tm, int stat, int utf8, int buddy_icon, const char *seqn, int sendn)
+void CYahooProto::ext_got_im(const char *me, const char *who, int protocol, const char *msg, 
+								long tm, int stat, int utf8, int buddy_icon, 
+								const char *seqn, int sendn)
 {
 	char 		*umsg;
 	const char	*c = msg;
@@ -142,7 +144,7 @@ void CYahooProto::ext_got_im(const char *me, const char *who, int protocol, cons
 
 	// ack the message we just got
 	if (seqn)
-		yahoo_send_im_ack(m_id, who, seqn, sendn);
+		yahoo_send_im_ack(m_id, me, who, seqn, sendn);
 
 	if (buddy_icon < 0) return;
 
