@@ -3117,119 +3117,116 @@ static int ske_AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRec
 
 	if ( textSize.cx > 0 && textSize.cy > 0 )     // Ok we need to paint
 	{
-
 		// probably here are mess ofscreen and temp buff dc
 
 		//Create bitmap image for offscreen
 		BYTE * bits     = NULL;
 		HBITMAP hbmp    = ske_CreateDIB32Point( textSize.cx, textSize.cy, (void**)&bits );
-		HBITMAP holdbmp = (HBITMAP)SelectObject( hOffscreenDC, hbmp );
-
-		//Create buffer bitmap image for temp text
-		BYTE *  bufbits  = NULL;
-		HDC     bufDC     = CreateCompatibleDC( hDC );
-		HBITMAP bufbmp    = ske_CreateDIB32Point( textSize.cx, textSize.cy, (void**)&bufbits );
-		HBITMAP bufoldbmp = (HBITMAP)SelectObject( bufDC, bufbmp );
-		HFONT   hOldBufFont = (HFONT)SelectObject( bufDC, hFont );
-		SetBkColor( bufDC,  RGB( 0, 0, 0 ) );
-		SetTextColor( bufDC,RGB(255,255,255) );
-		
-		// Copy from destination to temp buffer
-		BitBlt( hOffscreenDC, 0, 0, textSize.cx, textSize.cy, hDC, workRect.left + drx - 2, workRect.top + dry - 2, SRCCOPY );
-
-		//Draw text on offscreen bitmap
-
-		TextOut( bufDC, 2, 2, lpWorkString, nCount);
-
-		MODERNEFFECT effect;
-		if (ske_GetTextEffect( hDC, &effect ) ) 
+		if ( bits != NULL ) 
 		{
-			ske_DrawTextEffect( bits, bufbits, textSize.cx, textSize.cy, &effect );	
-		}
+			HBITMAP holdbmp = (HBITMAP)SelectObject( hOffscreenDC, hbmp );
 
-		//RenderText
-		RECT drawRect;
-		drawRect.left = 0; drawRect.top = 0;
-		drawRect.right = textSize.cx;
-		drawRect.bottom = textSize.cy;
-
-		DWORD x,y;
-		DWORD width=textSize.cx;
-		DWORD heigh=textSize.cy;
-
-		BYTE * pDestScanLine;
-		BYTE * pBufScanLine;
-		BYTE * pix;
-		BYTE * bufpix;
-
-		BYTE al = 255 - ((BYTE)( ARGBcolor >> 24 ));
-		BYTE r = GetRValue( ARGBcolor );
-		BYTE g = GetGValue( ARGBcolor );
-		BYTE b = GetBValue( ARGBcolor );      
-
-		for ( y = 2; y < heigh - 2; y++ )
-		{
-			int lineBytes = y * (width<<2);
-			
-			pDestScanLine = bits + lineBytes;
-			pBufScanLine  = bufbits + lineBytes;
-			
-			for( x = 2; x < width - 2; x++)
+			//Create buffer bitmap image for temp text
+			BYTE *  bufbits  = NULL;
+			HBITMAP bufbmp   = ske_CreateDIB32Point( textSize.cx, textSize.cy, (void**)&bufbits );
+			if ( bufbits != NULL )
 			{
-				pix    = pDestScanLine + ( x<<2 );
-				bufpix = pBufScanLine  + ( x<<2 );
+				HDC     bufDC     = CreateCompatibleDC( hDC );
+				HBITMAP bufoldbmp = (HBITMAP)SelectObject( bufDC, bufbmp );
+				HFONT   hOldBufFont = (HFONT)SelectObject( bufDC, hFont );
+				SetBkColor( bufDC,  RGB( 0, 0, 0 ) );
+				SetTextColor( bufDC,RGB(255,255,255) );
+				
+				// Copy from destination to temp buffer
+				BitBlt( hOffscreenDC, 0, 0, textSize.cx, textSize.cy, hDC, workRect.left + drx - 2, workRect.top + dry - 2, SRCCOPY );
 
-				// Monochromatic
-				BYTE bx = gammaTbl[ bufpix[0] ];
-				BYTE gx = gammaTbl[ bufpix[1] ];
-				BYTE rx = gammaTbl[ bufpix[2] ];
+				//Draw text on offscreen bitmap
+				TextOut( bufDC, 2, 2, lpWorkString, nCount);
 
-				if ( al != 255 )
+				MODERNEFFECT effect;
+				if (ske_GetTextEffect( hDC, &effect ) ) 
+					ske_DrawTextEffect( bits, bufbits, textSize.cx, textSize.cy, &effect );	
+
+				//RenderText
+				RECT drawRect;
+				drawRect.left = 0; drawRect.top = 0;
+				drawRect.right = textSize.cx;
+				drawRect.bottom = textSize.cy;
+
+				DWORD x,y;
+				DWORD width=textSize.cx;
+				DWORD heigh=textSize.cy;
+
+				BYTE * pDestScanLine;
+				BYTE * pBufScanLine;
+				BYTE * pix;
+				BYTE * bufpix;
+
+				BYTE al = 255 - ((BYTE)( ARGBcolor >> 24 ));
+				BYTE r = GetRValue( ARGBcolor );
+				BYTE g = GetGValue( ARGBcolor );
+				BYTE b = GetBValue( ARGBcolor );      
+
+				for ( y = 2; y < heigh - 2; y++ )
 				{
-					bx*=al/255;
-					gx*=al/255;
-					rx*=al/255;
+					int lineBytes = y * (width<<2);
+					
+					pDestScanLine = bits + lineBytes;
+					pBufScanLine  = bufbits + lineBytes;
+					
+					for( x = 2; x < width - 2; x++)
+					{
+						pix    = pDestScanLine + ( x<<2 );
+						bufpix = pBufScanLine  + ( x<<2 );
+
+						// Monochromatic
+						BYTE bx = gammaTbl[ bufpix[0] ];
+						BYTE gx = gammaTbl[ bufpix[1] ];
+						BYTE rx = gammaTbl[ bufpix[2] ];
+
+						if ( al != 255 )
+						{
+							bx*=al/255;
+							gx*=al/255;
+							rx*=al/255;
+						}
+						BYTE ax = (BYTE)( ( (DWORD)rx*77 + (DWORD)gx * 151 + (DWORD)bx *28 + 128 ) / 256 );
+
+						if (ax)
+						{
+							//Normalize components to gray
+							BYTE axx = 255 - ( ( r + g + b ) >> 2 ) ; // Coefficient of grayance, more white font - more gray edges
+							WORD atx = ax * (255 - axx);
+							bx=( atx + bx * axx )/255;
+							gx=( atx + gx * axx )/255;
+							rx=( atx + rx * axx )/255;
+
+							short rrx, grx, brx;
+							brx=(short)((b-pix[0])*bx/255);
+							grx=(short)((g-pix[1])*gx/255);
+							rrx=(short)((r-pix[2])*rx/255);
+
+							pix[0]+=brx;
+							pix[1]+=grx;
+							pix[2]+=rrx;
+							pix[3]=(BYTE)(ax+(BYTE)(255-ax)*pix[3]/255);
+						}
+					}
 				}
-				BYTE ax = (BYTE)( ( (DWORD)rx*77 + (DWORD)gx * 151 + (DWORD)bx *28 + 128 ) / 256 );
 
-				if (ax)
-				{
+				//Blit to destination
+				BitBlt( hDC, workRect.left + drx - 2, workRect.top + dry - 2, textSize.cx, textSize.cy, hOffscreenDC, 0, 0, SRCCOPY );
 
-
-					//Normalize components to gray
-					BYTE axx = 255 - ( ( r + g + b ) >> 2 ) ; // Coefficient of grayance, more white font - more gray edges
-					WORD atx = ax * (255 - axx);
-					bx=( atx + bx * axx )/255;
-					gx=( atx + gx * axx )/255;
-					rx=( atx + rx * axx )/255;
-
-					short rrx, grx, brx;
-					brx=(short)((b-pix[0])*bx/255);
-					grx=(short)((g-pix[1])*gx/255);
-					rrx=(short)((r-pix[2])*rx/255);
-
-					pix[0]+=brx;
-					pix[1]+=grx;
-					pix[2]+=rrx;
-					pix[3]=(BYTE)(ax+(BYTE)(255-ax)*pix[3]/255);
-				}
+				//free resources
+				SelectObject(bufDC,bufoldbmp);
+				DeleteObject(bufbmp);
+				SelectObject(bufDC, hOldBufFont );
+				mod_DeleteDC(bufDC);
 			}
-		}
-
-		//Blit to destination
-		BitBlt( hDC, workRect.left + drx - 2, workRect.top + dry - 2, textSize.cx, textSize.cy, hOffscreenDC, 0, 0, SRCCOPY );
-
-		//free resources
-		{
 			SelectObject(hOffscreenDC,holdbmp);
 			DeleteObject(hbmp);
-			SelectObject(bufDC,bufoldbmp);
-			DeleteObject(bufbmp);
-			SelectObject(bufDC, hOldBufFont );
-			mod_DeleteDC(bufDC);
-		}	
+		}
 	}
-
 
 	// Final cleanup 
 	SelectObject( hOffscreenDC, hOldOffscreenFont );
