@@ -970,8 +970,13 @@ static void UndoChanges( int iconIndx, int cmd )
 {
 	IconItem *item = iconList[ iconIndx ];
 
-	SAFE_FREE(( void** )&item->temp_file );
-	SafeDestroyIcon( &item->temp_icon );
+	if ( !item->temp_file && !item->temp_icon && item->temp_reset && cmd == ID_CANCELCHANGE )
+		item->temp_reset = FALSE;
+	else
+	{
+		SAFE_FREE(( void** )&item->temp_file );
+		SafeDestroyIcon( &item->temp_icon );
+	}
 
 	if ( cmd == ID_RESET )
 		item->temp_reset = TRUE;
@@ -1085,8 +1090,6 @@ void DoOptionsChanged(HWND hwndDlg)
 
 void DoIconsChanged(HWND hwndDlg)
 {
-	int indx;
-
 	SendMessage(hwndDlg, DM_UPDATEICONSPREVIEW, 0, 0);
 
 	iconEventActive = 1; // Disable icon destroying - performance boost
@@ -1095,7 +1098,7 @@ void DoIconsChanged(HWND hwndDlg)
 	iconEventActive = 0;
 
 	EnterCriticalSection(&csIconList); // Destroy unused icons
-	for (indx = 0; indx < iconList.getCount(); indx++) {
+	for (int indx = 0; indx < iconList.getCount(); indx++) {
 		IconItem *item = iconList[indx];
 		if ( item->source && !item->source->icon_ref_count) {
 			item->source->icon_ref_count++;
