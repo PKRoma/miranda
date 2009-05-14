@@ -345,9 +345,9 @@ struct CServerDlg : public CProtoDlgBase<CIrcProto>
 			m_port.SetInt( pData->m_portStart );
 			m_port2.SetInt( pData->m_portEnd );
 
-			char* p = strchr( pData->m_name, ' ' );
+			char* p = strstr( pData->m_name, ": ");
 			if ( p )
-				m_server.SetTextA( p+1 );
+				m_server.SetTextA( p+2 );
 
 			if ( pData->m_iSSL == 0 )
 				CheckDlgButton( m_hwnd, IDC_OFF, BST_CHECKED );
@@ -400,7 +400,7 @@ struct CServerDlg : public CProtoDlgBase<CIrcProto>
 
 		pData->m_portStart = m_port.GetInt();
 		pData->m_portEnd = m_port2.GetInt();
-		pData->m_address = m_address.GetTextA();
+		pData->m_address = rtrim(m_address.GetTextA());
 		pData->m_group = m_groupCombo.GetTextA();
 		pData->m_name = m_server.GetTextA();
 
