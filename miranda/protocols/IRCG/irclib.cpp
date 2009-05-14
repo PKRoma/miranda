@@ -197,8 +197,13 @@ bool CIrcProto::Connect(const CIrcSessionInfo& info)
 	ncon.szHost = info.sServer.c_str();
 	ncon.wPort = info.iPort;
 	con = (HANDLE) CallService( MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlib, (LPARAM) & ncon);
-	if (con == NULL)
+	if (con == NULL) {
+		TCHAR szTemp[300];
+		mir_sntprintf(szTemp, SIZEOF(szTemp), _T("\0035%s \002%s\002 (") _T(TCHAR_STR_PARAM) _T(": %u)."),
+			TranslateT("Failed to connect to"), si.sNetwork.c_str(), si.sServer.c_str(), si.iPort);
+		DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, szTemp, NULL, NULL, NULL, true, false);
 		return false;
+	}
 
 	FindLocalIP(con); // get the local ip used for filetransfers etc
 
