@@ -111,21 +111,13 @@ static INT_PTR CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 
 			for( i=0; i<netlibUserCount; i++ )
 			{
-#ifdef  _UNICODE
-				wchar_t* tmp = a2u( netlibUser[i]->user.szSettingsModule );
-				tvis.item.pszText = tmp;
-#else
-				tvis.item.pszText=netlibUser[i]->user.szSettingsModule;
-#endif
+				tvis.item.pszText=netlibUser[i]->user.ptszDescriptiveName;
 				tvis.item.lParam=i;
 				tvis.item.state=INDEXTOSTATEIMAGEMASK( (netlibUser[i]->toLog) ? 2 : 1 );
 				TreeView_InsertItem(hwndFilter, &tvis);
-#ifdef  _UNICODE
-				mir_free(tmp);
-#endif
 			}
 			tvis.item.lParam=-1;
-			tvis.item.pszText=_T("(NULL)");
+			tvis.item.pszText=TranslateT("(Miranda Core Logging)");
 			tvis.item.state=INDEXTOSTATEIMAGEMASK( (logOptions.toLog) ? 2 : 1 );
 			TreeView_InsertItem(hwndFilter, &tvis);
 		}
@@ -534,7 +526,7 @@ void NetlibLogInit(void)
 	InitializeCriticalSection(&logOptions.cs);
 	logOptions.dumpRecv = DBGetContactSettingByte( NULL, "Netlib", "DumpRecv", 1 );
 	logOptions.dumpSent = DBGetContactSettingByte( NULL, "Netlib", "DumpSent", 1 );
-	logOptions.dumpProxy = DBGetContactSettingByte( NULL, "Netlib", "DumpProxy", 0 );
+	logOptions.dumpProxy = DBGetContactSettingByte( NULL, "Netlib", "DumpProxy", 1 );
 	logOptions.textDumps = DBGetContactSettingByte( NULL, "Netlib", "TextDumps", 1 );
 	logOptions.autoDetectText = DBGetContactSettingByte( NULL, "Netlib", "AutoDetectText", 1 );
 	logOptions.timeFormat = DBGetContactSettingByte( NULL, "Netlib", "TimeFormat", TIMEFORMAT_HHMMSS );
