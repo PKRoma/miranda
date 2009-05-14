@@ -369,7 +369,7 @@ INT_PTR NetlibShutdown(WPARAM wParam, LPARAM)
 	return 0;
 }
 
-static char szHexDigits[]="0123456789ABCDEF";
+static const char szHexDigits[]="0123456789ABCDEF";
 INT_PTR NetlibHttpUrlEncode(WPARAM,LPARAM lParam)
 {
 	unsigned char *szOutput,*szInput=(unsigned char*)lParam;
@@ -402,7 +402,7 @@ INT_PTR NetlibHttpUrlEncode(WPARAM,LPARAM lParam)
 	return (INT_PTR)szOutput;
 }
 
-static char base64chars[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+static const char base64chars[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 INT_PTR NetlibBase64Encode(WPARAM, LPARAM lParam)
 {
 	NETLIBBASE64 *nlb64=(NETLIBBASE64*)lParam;
