@@ -105,7 +105,7 @@ char* Utf8EncodeUcs2( const wchar_t* src )
 	return result;
 }
 
-static void ConvertOldEvent( DBEvent* dbei )
+static void ConvertOldEvent( DBEvent*& dbei )
 {
 	int msglen = (int)strlen(( char* )dbei->blob) + 1, msglenW = 0;
 	if ( msglen != (int) dbei->cbBlob ) {
@@ -128,6 +128,7 @@ static void ConvertOldEvent( DBEvent* dbei )
 		if (offsetof(DBEvent,blob)+dbei->cbBlob > memsize) {
 			memsize = offsetof(DBEvent,blob)+dbei->cbBlob;
 			memblock = (DBEvent*)realloc(memblock, memsize);
+            dbei = memblock;
 		}
 		memcpy( &dbei->blob, utf8str, dbei->cbBlob );
 		free(utf8str);
