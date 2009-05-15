@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -232,18 +232,16 @@ void CIcqProto::SafeReleaseFileTransfer(void **ft)
 		{ // release ICQ filetransfer structure and its contents
 			filetransfer *ift = (filetransfer*)(*bft);
 
-			SAFE_FREE((void**)&ift->szFilename);
-			SAFE_FREE((void**)&ift->szDescription);
-			SAFE_FREE((void**)&ift->szSavePath);
-			SAFE_FREE((void**)&ift->szThisFile);
-			SAFE_FREE((void**)&ift->szThisSubdir);
+			SAFE_FREE(&ift->szFilename);
+			SAFE_FREE(&ift->szDescription);
+			SAFE_FREE(&ift->szSavePath);
+			SAFE_FREE(&ift->szThisFile);
+			SAFE_FREE(&ift->szThisSubdir);
 			if (ift->files)
 			{
-				int i;
-
-				for (i = 0; i < (int)ift->dwFileCount; i++)
-					SAFE_FREE((void**)&ift->files[i]);
-				SAFE_FREE((void**)(char**)&ift->files);
+				for (int i = 0; i < (int)ift->dwFileCount; i++)
+					SAFE_FREE(&ift->files[i]);
+				SAFE_FREE((void**)&ift->files);
 			}
 			// Invalidate transfer
 			ReleaseFileTransfer(ift);
@@ -266,32 +264,27 @@ void CIcqProto::SafeReleaseFileTransfer(void **ft)
 			if (oft->dwCookie)
 				FreeCookie(oft->dwCookie);
 			// Release all dynamic members
-			SAFE_FREE((void**)&oft->rawFileName);
-			SAFE_FREE((void**)&oft->szSavePath);
-			SAFE_FREE((void**)&oft->szThisFile);
-			SAFE_FREE((void**)&oft->szThisPath);
+			SAFE_FREE(&oft->rawFileName);
+			SAFE_FREE(&oft->szSavePath);
+			SAFE_FREE(&oft->szThisFile);
+			SAFE_FREE(&oft->szThisPath);
+			SAFE_FREE(&oft->szDescription);
 			if (oft->files)
 			{
-				int i;
-
-				for (i = 0; i < oft->wFilesCount; i++)
-					SAFE_FREE((void**)&oft->files[i].szFile);
+				for (int i = 0; i < oft->wFilesCount; i++)
+					SAFE_FREE(&oft->files[i].szFile);
 				SAFE_FREE((void**)&oft->files);
 			}
 			if (oft->files_ansi)
 			{
-				int i;
-
-				for (i = 0; i < oft->wFilesCount; i++)
-					SAFE_FREE((void**)&oft->files_ansi[i]);
+				for (int i = 0; i < oft->wFilesCount; i++)
+					SAFE_FREE(&oft->files_ansi[i]);
 				SAFE_FREE((void**)&oft->files_ansi);
 			}
 			if (oft->file_containers)
 			{
-				int i;
-
-				for (i = 0; i < oft->containerCount; i++)
-					SAFE_FREE((void**)&oft->file_containers[i]);
+				for (int i = 0; i < oft->containerCount; i++)
+					SAFE_FREE(&oft->file_containers[i]);
 				SAFE_FREE((void**)&oft->file_containers);
 			}
 			if (oft->fileId != -1)
@@ -488,7 +481,7 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 								{
 									*eTag = '\0';
 									str = null_strdup(bTag + 6);
-									SAFE_FREE((void**)&pszDescription);
+									SAFE_FREE(&pszDescription);
 									pszDescription = str;
 								}
 							}
@@ -502,14 +495,18 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 									{
 										*eTag = '\0';
 										str = null_strdup(bTag + 4);
-										SAFE_FREE((void**)&pszDescription);
+										SAFE_FREE(&pszDescription);
 										pszDescription = str;
 									}
 								}
 							}
 						}
 					}
-					if (!strlennull(pszDescription)) pszDescription = ICQTranslateUtf(LPGEN("No description given"));
+					if (!strlennull(pszDescription))
+					{
+						SAFE_FREE(&pszDescription);
+						pszDescription = ICQTranslateUtf(LPGEN("No description given"));
+					}
 				}
 				{ // parse File Transfer Info block
 					oscar_tlv* tlv = chain->getTLV(0x2711, 1);
@@ -520,7 +517,7 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 						NetLog_Server("Error: Malformed file request");
 						// release structures
 						SafeReleaseFileTransfer((void**)&ft);
-						SAFE_FREE((void**)&pszDescription);
+						SAFE_FREE(&pszDescription);
 						return;
 					}
 
@@ -563,7 +560,7 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 					{ // Filename - use for DB event (convert to Ansi - File DB events does not support Unicode)
 						char* szAnsi = (char*)_alloca(strlennull(pszFileName) + 2);
 						utf8_decode_static(pszFileName, szAnsi, strlennull(pszFileName) + 1);
-						SAFE_FREE((void**)&pszFileName);
+						SAFE_FREE(&pszFileName);
 						pszFileName = szAnsi;
 					}
 					else
