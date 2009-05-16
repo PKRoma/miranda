@@ -96,7 +96,7 @@ BEGIN
     LTEXT           "Blocked contact",IDC_STATIC,204,208,82,8
 END
 
-IDD_HOTMAIL_OPT_POPUP DIALOGEX 0, 0, 238, 204
+IDD_OPT_NOTIFY DIALOGEX 0, 0, 238, 204
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -107,26 +107,28 @@ BEGIN
     CONTROL         "",IDC_TEXTCOLOUR,"ColourPicker",WS_TABSTOP,12,28,39,12
     LTEXT           "Text colour",IDC_STATIC,56,30,176,8,SS_CENTERIMAGE
     CONTROL         "&Use Windows colours",IDC_USEWINCOLORS,"Button",BS_AUTOCHECKBOX | BS_NOTIFY | BS_FLAT | WS_TABSTOP,12,44,220,8
-    GROUPBOX        "Hotmail",IDC_STATIC,4,61,232,59
-    CONTROL         "Disable receiving Hotmail notifications",IDC_DISABLEHOTMAIL,
+    GROUPBOX        "Hotmail",IDC_STATIC,4,61,232,71
+    CONTROL         "Disable Popup notifications",IDC_DISABLEHOTMAILPOPUP,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,72,220,10
-    CONTROL         "Ignore new messages in 'Junk Mail' folder only (at startup)",IDC_DISABLEHOTJUNK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,84,202,10
-    LTEXT           "Timeout (*)",IDC_STATIC,12,102,78,8
-    EDITTEXT        IDC_POPUP_TIMEOUT,94,100,24,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "sec.",IDC_STATIC,122,102,30,8
-    DEFPUSHBUTTON   "Previe&w",IDC_PREVIEW,176,100,52,12
-    GROUPBOX        "Other",IDC_STATIC,3,121,232,80
+    CONTROL         "Ignore new messages in not Inbox folders",IDC_DISABLEHOTJUNK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,94,151,10
+    LTEXT           "Timeout (*)",IDC_STATIC,12,115,78,8
+    EDITTEXT        IDC_POPUP_TIMEOUT,94,113,24,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "sec.",IDC_STATIC,122,115,30,8
+    DEFPUSHBUTTON   "Previe&w",IDC_PREVIEW,176,113,52,12
+    GROUPBOX        "Other",IDC_STATIC,3,134,232,67
     CONTROL         "Display errors using popups",IDC_ERRORS_USING_POPUPS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,133,216,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,146,216,10
     CONTROL         "Enable 'Chat Session Established' popup",IDC_NOTIFY_FIRSTMSG,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,145,216,10
-    LTEXT           "Timeout (*)",IDC_STATIC,10,185,84,8
-    EDITTEXT        IDC_POPUP_TIMEOUT2,94,183,24,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "sec.",IDC_STATIC,122,185,30,8
-    DEFPUSHBUTTON   "Previe&w",IDC_PREVIEW2,174,182,52,12
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,158,216,10
+    LTEXT           "Timeout (*)",IDC_STATIC,10,187,84,8
+    EDITTEXT        IDC_POPUP_TIMEOUT2,94,185,24,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "sec.",IDC_STATIC,122,187,30,8
+    DEFPUSHBUTTON   "Previe&w",IDC_PREVIEW2,174,171,52,12
     CONTROL         "Enable 'Contact left channel' popup",IDC_NOTIFY_ENDSESSION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,158,218,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,171,218,8
+    CONTROL         "Disable Tray notifications",IDC_DISABLEHOTMAILTRAY,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,83,220,10
 END
 
 IDD_SETNICKNAME DIALOGEX 0, 0, 187, 42
@@ -213,7 +215,7 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO 
 BEGIN
-    IDD_HOTMAIL_OPT_POPUP, DIALOG
+    IDD_OPT_NOTIFY, DIALOG
     BEGIN
         BOTTOMMARGIN, 201
     END

@@ -523,7 +523,8 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM 
 
 		SetDlgItemInt( hwndDlg, IDC_POPUP_TIMEOUT, proto->MyOptions.PopupTimeoutHotmail, FALSE );
 
-		CheckDlgButton( hwndDlg, IDC_DISABLEHOTMAIL,      proto->getByte( "DisableHotmail", 0 ));
+		CheckDlgButton( hwndDlg, IDC_DISABLEHOTMAILPOPUP, proto->getByte( "DisableHotmail", 1 ));
+		CheckDlgButton( hwndDlg, IDC_DISABLEHOTMAILTRAY,  proto->getByte( "DisableHotmailTray", 0 ));
 		CheckDlgButton( hwndDlg, IDC_DISABLEHOTJUNK,      proto->getByte( "DisableHotmailJunk", 0 ));
 		CheckDlgButton( hwndDlg, IDC_NOTIFY_ENDSESSION,   proto->getByte( "EnableSessionPopup", 0 ));
 		CheckDlgButton( hwndDlg, IDC_NOTIFY_FIRSTMSG,     proto->getByte( "EnableDeliveryPopup", 0 ));
@@ -536,22 +537,23 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM 
         EnableWindow( GetDlgItem( hwndDlg, IDC_POPUP_TIMEOUT ), FALSE );
 		EnableWindow( GetDlgItem( hwndDlg, IDC_POPUP_TIMEOUT2 ), FALSE );
 
+        EnableWindow( GetDlgItem( hwndDlg, IDC_DISABLEHOTMAILTRAY ), 
+            proto->emailEnabled && proto->Lists_IsInList( LIST_FL, proto->MyOptions.szEmail ));
+
         bEnabled = true;
 		return TRUE;
 	}
 	case WM_COMMAND:
-		switch( LOWORD( wParam )) {
-		case IDC_DISABLEHOTMAIL: {
-			HWND wnd = GetDlgItem( hwndDlg, IDC_DISABLEHOTJUNK );
-			bool toSet = SendMessage( HWND( lParam ), BM_GETCHECK, 0, 0 ) != BST_CHECKED;
-			if ( !toSet )
-				SendMessage( wnd, BM_GETCHECK, BST_CHECKED, 0 );
+		switch ( LOWORD( wParam )) 
+        {
+        case IDC_DISABLEHOTMAILPOPUP: 
+            {
+			    bool toSet = SendMessage( HWND( lParam ), BM_GETCHECK, 0, 0 ) != BST_CHECKED;
+			    EnableWindow( GetDlgItem( hwndDlg, IDC_POPUP_TIMEOUT ), toSet );
+			    EnableWindow( GetDlgItem( hwndDlg, IDC_PREVIEW ), toSet );
+		    }
 
-			EnableWindow( wnd, toSet );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_POPUP_TIMEOUT ), toSet );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_PREVIEW ), toSet );
-		}
-
+		case IDC_DISABLEHOTMAILTRAY: 
 		case IDC_DISABLEHOTJUNK:
 		case IDC_NOTIFY_ENDSESSION:
 		case IDC_POPUP_TIMEOUT:
@@ -628,7 +630,8 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM 
 				proto->setByte( "ShowErrorsAsPopups", proto->MyOptions.ShowErrorsAsPopups );
 
 				proto->setByte( "UseWinColors",	( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEWINCOLORS ));
-				proto->setByte( "DisableHotmail", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLEHOTMAIL ));
+				proto->setByte( "DisableHotmail", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLEHOTMAILPOPUP ));
+				proto->setByte( "DisableHotmailTray", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLEHOTMAILTRAY ));
 				proto->setByte( "DisableHotmailJunk",( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLEHOTJUNK ));
 				proto->setByte( "EnableDeliveryPopup", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_NOTIFY_FIRSTMSG ));
 				proto->setByte( "EnableSessionPopup", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_NOTIFY_ENDSESSION ));
@@ -743,7 +746,7 @@ int CMsnProto::OnOptionsInit(WPARAM wParam,LPARAM lParam)
 	MSN_CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );
 
 	odp.ptszTab      = LPGENT("Notifications");
-	odp.pszTemplate	= MAKEINTRESOURCEA( IDD_HOTMAIL_OPT_POPUP );
+	odp.pszTemplate	= MAKEINTRESOURCEA( IDD_OPT_NOTIFY );
 	odp.pfnDlgProc	= DlgProcHotmailPopUpOpts;
 	MSN_CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 

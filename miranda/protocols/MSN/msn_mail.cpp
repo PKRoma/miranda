@@ -293,18 +293,43 @@ void CMsnProto::sttNotificationMessage( char* msgBody, bool isInitial )
 	if (UnreadMessages == mUnreadMessages && UnreadJunkEmails == mUnreadJunkEmails  && !isInitial)
 		return;
 
-	SendBroadcast( NULL, ACKTYPE_EMAIL, ACKRESULT_STATUS, NULL, 0 );
+    ShowPopUp &= mUnreadMessages != 0 || (mUnreadJunkEmails != 0 && !getByte("DisableHotmailJunk", 0));
+
+    HANDLE hContact = MSN_HContactFromEmail(MyOptions.szEmail, NULL, false, false);
+    if (hContact)
+    {
+        CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM) 1);
+        displayEmailCount(hContact);
+
+        if (ShowPopUp && !getByte( "DisableHotmailTray", 1 ))
+        {
+            CLISTEVENT cle = {0};
+
+            cle.cbSize = sizeof(cle);
+            cle.hContact = hContact;
+            cle.hDbEvent = (HANDLE) 1;
+            cle.flags = CLEF_URGENT | CLEF_TCHAR;
+            cle.hIcon = LoadSkinnedIcon(SKINICON_OTHER_SENDEMAIL);
+            cle.ptszTooltip = tBuffer2;
+            char buf[64];
+            mir_snprintf(buf, SIZEOF(buf), "%s%s", m_szModuleName, MS_GOTO_INBOX);
+            cle.pszService = buf;
+
+            CallService(MS_CLIST_ADDEVENT, (WPARAM)hContact, (LPARAM)&cle);
+        }
+    }
+
+    SendBroadcast( NULL, ACKTYPE_EMAIL, ACKRESULT_STATUS, NULL, 0 );
 
 	// Disable to notify receiving hotmail
-	if ( !getByte( "DisableHotmail", 1 ) &&  ShowPopUp && 
-		(mUnreadMessages != 0 || 
-		(mUnreadJunkEmails != 0 && !getByte( "DisableHotmailJunk", 0 ))))
+	if ( ShowPopUp && !getByte( "DisableHotmail", 1 ))
 	{
 		SkinPlaySound( mailsoundname );
-		MSN_ShowPopup( tBuffer, tBuffer2, 
+
+        MSN_ShowPopup( tBuffer, tBuffer2, 
 			MSN_ALLOW_ENTER | MSN_ALLOW_MSGBOX | MSN_HOTMAIL_POPUP, 
 			tFileInfo[ "Message-URL" ]);
-	}
+    }
 
 	if ( !getByte( "RunMailerOnHotmail", 0 ) || !ShowPopUp || isInitial )
 		return;
@@ -537,4 +562,21 @@ int CMsnProto::MSN_SendOIM(const char* szEmail, const char* msg)
 	ezxml_free(xmlp);
 
 	return success ? success : oimMsgNum;
+}
+
+void CMsnProto::displayEmailCount(HANDLE hContact)
+{
+    if (!emailEnabled) return;
+
+    TCHAR* name = MSN_GetContactNameT(hContact);
+
+    TCHAR* ch = _tcschr(name, '[');  if (ch) *ch = 0;
+    rtrim(name);
+
+    TCHAR szNick[128];
+    mir_sntprintf(szNick, SIZEOF(szNick), _T("%s [%d][%d]"), name, mUnreadMessages, mUnreadJunkEmails);
+
+    nickChg = true;
+    DBWriteContactSettingTString(hContact, "CList", "MyHandle", szNick);
+    nickChg = false;
 }

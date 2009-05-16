@@ -177,6 +177,7 @@ struct CMsnProto : public PROTO_INTERFACE
     char*       urlId;
     char*       rru;
     unsigned	langpref;
+    unsigned    emailEnabled;
     char*       abchMigrated;
 
 	HANDLE		msnSearchId;
@@ -246,7 +247,8 @@ struct CMsnProto : public PROTO_INTERFACE
     // MSN menus
 
 	HANDLE mainMenuRoot;
-	HANDLE blockMenuItem;
+	HANDLE hBlockMenuItem;
+	HANDLE hOpenInboxMenuItem;
 	HANDLE menuItems[ 1 ];
 	HANDLE menuItemsAll[ 7 ];
 
@@ -473,6 +475,7 @@ struct CMsnProto : public PROTO_INTERFACE
     char oimDigest[64];
     char oimUID[64];
     unsigned oimMsgNum;
+    bool nickChg;
 
     int MSN_SendOIM(const char* szEmail, const char* msg);
 
@@ -481,8 +484,8 @@ struct CMsnProto : public PROTO_INTERFACE
     ezxml_t oimRecvHdr(const char* service, ezxml_t& tbdy, char*& httphdr);
     
     void processMailData(char* mailData);
-    void sttNotificationMessage( char* msgBody, bool isInitial );
-
+    void sttNotificationMessage(char* msgBody, bool isInitial);
+    void displayEmailCount(HANDLE hContact);
 
     /////////////////////////////////////////////////////////////////////////////////////////
     //	MSN SOAP Address Book

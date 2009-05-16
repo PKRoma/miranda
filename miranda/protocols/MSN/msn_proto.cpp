@@ -301,6 +301,8 @@ HANDLE CMsnProto::AddToListByEmail( const char *email, DWORD flags )
 				DBDeleteContactSetting( hContact, "CList", "Hidden" );
 			}
 			MSN_SetContactDb(hContact, email);
+
+            if (MSN_IsMeByContact(hContact)) displayEmailCount(hContact);
 		}
 		else hContact = NULL;
 	}

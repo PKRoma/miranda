@@ -750,46 +750,58 @@ void CMsnProto::MSN_ShowError( const char* msgtext, ... )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Popup plugin window proc
 
-LRESULT CALLBACK NullWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
+LRESULT CALLBACK NullWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch( message ) {
-		case WM_COMMAND: {
-			PopupData* tData = ( PopupData* )PUGetPluginData( hWnd );
-			if ( tData != NULL )
-			{
-				if ( tData->flags & MSN_HOTMAIL_POPUP )
-				{
-					if ( tData->flags & MSN_ALLOW_ENTER )
-						tData->proto->MsnInvokeMyURL( true, tData->url );
-				}
-				else
-				{
-					if ( tData->url != NULL )
-						MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )tData->url );
-				}
-			}
+	switch (msg) 
+    {
+	case WM_COMMAND: 
+        {
+		    PopupData* tData = (PopupData*)PUGetPluginData(hWnd);
+		    if (tData != NULL)
+		    {
+			    if (tData->flags & MSN_HOTMAIL_POPUP)
+			    {
+                    HANDLE hContact = tData->proto->MSN_HContactFromEmail(tData->proto->MyOptions.szEmail, NULL, false, false);
+                    if (hContact) CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM) 1);
+				    if (tData->flags & MSN_ALLOW_ENTER)
+					    tData->proto->MsnInvokeMyURL(true, tData->url);
+			    }
+			    else
+			    {
+				    if (tData->url != NULL)
+					    MSN_CallService(MS_UTILS_OPENURL, 1, (LPARAM)tData->url);
+			    }
+		    }
+		    PUDeletePopUp( hWnd );
+	    }
+		break;
 
-			PUDeletePopUp( hWnd );
-			break;
-		}
+	case WM_CONTEXTMENU:
+        {
+		    PopupData* tData = (PopupData*)PUGetPluginData(hWnd);
+		    if (tData != NULL && tData->flags & MSN_HOTMAIL_POPUP)
+		    {
+                HANDLE hContact = tData->proto->MSN_HContactFromEmail(tData->proto->MyOptions.szEmail, NULL, false, false);
+                if (hContact) CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM) 1);
+		    }
+		    PUDeletePopUp(hWnd);
+        }
+		break;
 
-		case WM_CONTEXTMENU:
-			PUDeletePopUp( hWnd );
-			break;
-
-		case UM_FREEPLUGINDATA:	{
-			PopupData* tData = ( PopupData* )PUGetPluginData( hWnd );
-			if ( tData != NULL && tData != (void*)CALLSERVICE_NOTFOUND)
-			{
-				CallService( MS_SKIN2_RELEASEICON, (WPARAM)tData->hIcon, 0 );
-				mir_free( tData->url );
-				mir_free( tData );
-			}
-			break;
-		}
+	case UM_FREEPLUGINDATA:	
+        {
+		    PopupData* tData = (PopupData*)PUGetPluginData(hWnd);
+		    if ( tData != NULL && tData != (PopupData*)CALLSERVICE_NOTFOUND)
+		    {
+			    CallService( MS_SKIN2_RELEASEICON, (WPARAM)tData->hIcon, 0);
+			    mir_free(tData->url);
+			    mir_free(tData);
+		    }
+	    }
+		break;
 	}
 
-	return DefWindowProc(hWnd, message, wParam, lParam);
+	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
