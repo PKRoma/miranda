@@ -301,7 +301,7 @@ void CMsnProto::sttNotificationMessage( char* msgBody, bool isInitial )
         CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM) 1);
         displayEmailCount(hContact);
 
-        if (ShowPopUp && !getByte( "DisableHotmailTray", 1 ))
+        if (ShowPopUp && !getByte( "DisableHotmailTray", 0 ))
         {
             CLISTEVENT cle = {0};
 
