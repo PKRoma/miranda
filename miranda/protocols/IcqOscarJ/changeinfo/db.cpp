@@ -41,7 +41,7 @@ void ChangeInfoData::LoadSettingsFromDb(int keepChanged)
   {
 		if (setting[i].displayType == LI_DIVIDER) continue;
 		if (keepChanged && settingData[i].changed) continue;
-		if (setting[i].dbType == DBVT_ASCIIZ) 
+		if (setting[i].dbType == DBVT_ASCIIZ || setting[i].dbType == DBVT_UTF8) 
 			SAFE_FREE((void**)(char**)&settingData[i].value);
 		else if (!keepChanged)
 			settingData[i].value = 0;
@@ -91,7 +91,7 @@ void ChangeInfoData::LoadSettingsFromDb(int keepChanged)
 void ChangeInfoData::FreeStoredDbSettings(void)
 {
 	for (int i=0; i < settingCount; i++ )
-		if (setting[i].dbType == DBVT_ASCIIZ)
+		if (setting[i].dbType == DBVT_ASCIIZ || setting[i].dbType == DBVT_UTF8)
 			SAFE_FREE((void**)&settingData[i].value);
 }
 
