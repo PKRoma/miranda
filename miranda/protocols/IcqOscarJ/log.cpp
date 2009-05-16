@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -44,8 +44,6 @@ struct LogMessageInfo {
   BYTE bLevel;
 };
 
-static BOOL bErrorVisible = FALSE;
-
 void __cdecl CIcqProto::icq_LogMessageThread(void* arg) 
 {
 	LogMessageInfo *err = (LogMessageInfo*)arg;
@@ -54,32 +52,30 @@ void __cdecl CIcqProto::icq_LogMessageThread(void* arg)
 
 	if (getSettingByte(NULL, "PopupsLogEnabled", DEFAULT_LOG_POPUPS_ENABLED))
 	{
-		if (!ShowPopUpMsg(NULL, err->szTitle, err->szMsg, err->bLevel)) 
-		{
-			SAFE_FREE((void**)&err->szMsg);
-			SAFE_FREE((void**)&err);
-		}
-		return; // Popup showed successfuly
+		ShowPopUpMsg(NULL, err->szTitle, err->szMsg, err->bLevel); 
+
+		SAFE_FREE((void**)&err->szMsg);
+		SAFE_FREE((void**)&err);
+
+		return;
 	}
 
-	bErrorVisible = TRUE;
+	bErrorBoxVisible = TRUE;
 	if (err->szMsg && err->szTitle)
 		MessageBoxUtf(NULL, err->szMsg, err->szTitle, MB_OK);
 	SAFE_FREE((void**)&err->szMsg);
 	SAFE_FREE((void**)&err);
-	bErrorVisible = FALSE;
+	bErrorBoxVisible = FALSE;
 }
 
 void CIcqProto::icq_LogMessage(int level, const char *szMsg)
 {
-	int displayLevel;
-
 	NetLog_Server("%s", szMsg);
 
-	displayLevel = getSettingByte(NULL, "ShowLogLevel", LOG_WARNING);
+	int displayLevel = getSettingByte(NULL, "ShowLogLevel", LOG_WARNING);
 	if (level >= displayLevel)
 	{
-		if (!bErrorVisible || !getSettingByte(NULL, "IgnoreMultiErrorBox", 0))
+		if (!bErrorBoxVisible || !getSettingByte(NULL, "IgnoreMultiErrorBox", 0))
 		{ 
 			// error not shown or allowed multi - show messagebox
 			LogMessageInfo *lmi = (LogMessageInfo*)SAFE_MALLOC(sizeof(LogMessageInfo));
@@ -132,11 +128,15 @@ void CIcqProto::icq_LogUsingErrorCode(int level, DWORD dwError, const char *szMs
 
 	default:
 		{
-			char err[512];
+			TCHAR err[512];
 
-			if (FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, dwError, 0, err, sizeof(err), NULL))
+			if (FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, dwError, 0, err, SIZEOF(err), NULL))
 			{
+#if defined( _UNICODE )
+        pszErrorMsg = make_utf8_string(err);
+#else
 				utf8_encode(err, &pszErrorMsg);
+#endif
 				bNeedFree = TRUE;
 			}
 			break;
@@ -145,11 +145,13 @@ void CIcqProto::icq_LogUsingErrorCode(int level, DWORD dwError, const char *szMs
 
 	null_snprintf(szBuf, sizeof(szBuf), "%s%s%s (%s %d)", 
 		szMsg ? ICQTranslateUtfStatic(szMsg, str, 1024) : "", 
-		szMsg ? "\r\n\r\n" : "", ICQTranslateUtfStatic(pszErrorMsg, szErrorMsg, 512), 
-		ICQTranslateUtfStatic(LPGEN("error"), str2, 64), dwError);
+		szMsg ? "\r\n\r\n" : "",
+		ICQTranslateUtfStatic(pszErrorMsg, szErrorMsg, 512), 
+		ICQTranslateUtfStatic(LPGEN("error"), str2, 64),
+		dwError);
 
 	if (bNeedFree)
-		SAFE_FREE((void**)&pszErrorMsg);
+		SAFE_FREE(&pszErrorMsg);
 
 	icq_LogMessage(level, szBuf);
 }
