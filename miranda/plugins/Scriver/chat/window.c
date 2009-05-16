@@ -1925,7 +1925,7 @@ LABEL_SHOWWINDOW:
 					SESSION_INFO* parentdat =(SESSION_INFO*)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 
 					GetCursorPos( &p );
-					ScreenToClient( hwndDlg, &p );
+					ScreenToClient(GetDlgItem(hwndDlg, IDC_CHAT_LIST), &p);
 					item = LOWORD(SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LIST), LB_ITEMFROMPOINT, 0, MAKELPARAM(p.x, p.y)));
 					ui = SM_GetUserFromIndex(parentdat->ptszID, parentdat->pszModule, item);
 					if ( ui != NULL ) {
