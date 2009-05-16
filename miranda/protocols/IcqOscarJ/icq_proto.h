@@ -553,7 +553,9 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   icq_InfoUpdateCleanup(void);        // Clean up on exit
 	void   icq_EnableUserLookup(BOOL bEnable); // Enable/disable user info lookups
 
-	//----| icq_log.cpp |-----------------------------------------------------------------
+	//----| log.cpp |-----------------------------------------------------------------
+  BOOL   bErrorBoxVisible;
+
 	void   __cdecl icq_LogMessageThread(void* arg);
 
 	void   icq_LogMessage(int level, const char *szMsg);
