@@ -170,10 +170,10 @@ int CMsnProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM)
 		MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hBlockMenuItem, (LPARAM)&mi);
 
 	    mi.flags = CMIM_NAME | CMIM_FLAGS | CMIF_ICONFROMICOLIB;
+        if (!emailEnabled) mi.flags |= CMIF_HIDDEN;
         if (isMe)
         {
             mi.flags |= CMIF_DEFAULT;
-            if (!emailEnabled) mi.flags |= CMIF_HIDDEN;
            	mi.pszName = LPGEN("Open Hotmail &Inbox");
         }
         else
@@ -183,7 +183,8 @@ int CMsnProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM)
         }
         MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hOpenInboxMenuItem, (LPARAM)&mi);
     }
-	return 0;
+
+    return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -426,19 +427,27 @@ void CMsnProto::MsnUninitMenus( void )
 	MSN_CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )menuItemsAll[4], 0 );
 	MSN_CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )menuItemsAll[5], 0 );
 	MSN_CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )menuItemsAll[6], 0 );
+	MSN_CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hOpenInboxMenuItem, 0 );
 }
 
-void  CMsnProto::MSN_EnableMenuItems( bool parEnable )
+void  CMsnProto::MSN_EnableMenuItems(bool parEnable)
 {
-	CLISTMENUITEM clmi = { 0 };
-	clmi.cbSize = sizeof( clmi );
-	clmi.flags = CMIM_FLAGS;
-	if ( !parEnable )
-		clmi.flags |= CMIF_GRAYED;
+	CLISTMENUITEM mi = {0};
+	mi.cbSize = sizeof( mi );
+	mi.flags = CMIM_FLAGS;
+	if (!parEnable)
+		mi.flags |= CMIF_GRAYED;
 
-	for ( unsigned i=0; i < SIZEOF(menuItems); i++ )
-		if ( menuItems[i] != NULL )
-			MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )menuItems[i], ( LPARAM )&clmi );
+	for (unsigned i=0; i < SIZEOF(menuItems); i++)
+		if (menuItems[i] != NULL)
+			MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)menuItems[i], (LPARAM)&mi);
 
-	MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hBlockMenuItem, ( LPARAM )&clmi );
+	MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hBlockMenuItem, (LPARAM)&mi);
+
+	if (parEnable)
+    {
+        mi.flags = CMIM_FLAGS;
+        if (!emailEnabled) mi.flags |= CMIF_HIDDEN;
+        MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)menuItemsAll[0], (LPARAM)&mi);
+    }
 }

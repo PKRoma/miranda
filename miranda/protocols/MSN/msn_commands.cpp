@@ -493,6 +493,8 @@ void CMsnProto::MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* par
 		replaceStr( abchMigrated, tHeader[ "ABCHMigrated" ] );
 		langpref = atol(tHeader[ "lang_preference" ]);
 		emailEnabled = atol(tHeader[ "EmailEnabled" ]);
+
+   		MSN_EnableMenuItems( true );
 	}
 	else if ( !_strnicmp( tContentType, "text/x-msmsgscontrol", 20 )) {
 		const char* tTypingUser = tHeader[ "TypingUser" ];

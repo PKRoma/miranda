@@ -537,9 +537,6 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM 
         EnableWindow( GetDlgItem( hwndDlg, IDC_POPUP_TIMEOUT ), FALSE );
 		EnableWindow( GetDlgItem( hwndDlg, IDC_POPUP_TIMEOUT2 ), FALSE );
 
-        EnableWindow( GetDlgItem( hwndDlg, IDC_DISABLEHOTMAILTRAY ), 
-            proto->emailEnabled && proto->Lists_IsInList( LIST_FL, proto->MyOptions.szEmail ));
-
         bEnabled = true;
 		return TRUE;
 	}
