@@ -882,7 +882,17 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				else nPanel = nm->dwItemSpec;
 
 				if (nParts > 1)
-					hMenu = GetSubMenu(hMenu, nPanel);
+                {
+                    int cpnl = 0;
+                    int mcnt = GetMenuItemCount(hMenu);
+                    for (int i=0; i<mcnt; ++i) {
+					    HMENU hMenus = GetSubMenu(hMenu, i);
+                        if (hMenus && cpnl++ == nPanel) { 
+                            hMenu = hMenus; 
+                            break; 
+                        }
+                    }
+                }
 				SendMessage(cli.hwndStatus, SB_GETRECT, nPanel, (LPARAM) & rc);
 				pt.x = rc.left;
 				pt.y = rc.top;
