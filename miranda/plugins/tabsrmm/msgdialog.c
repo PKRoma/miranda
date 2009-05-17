@@ -3794,7 +3794,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						free(streamOut);
 					}
 #endif  // unicode
-					if (dat->sendBuffer[0] == 0 || memRequired == 0)
+					if (memRequired == 0 || dat->sendBuffer[0] == 0)
 						break;
 
 					if (dat->sendMode & SMODE_SENDLATER) {
