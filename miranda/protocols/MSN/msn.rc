@@ -107,11 +107,11 @@ BEGIN
     CONTROL         "",IDC_TEXTCOLOUR,"ColourPicker",WS_TABSTOP,12,28,39,12
     LTEXT           "Text colour",IDC_STATIC,56,30,176,8,SS_CENTERIMAGE
     CONTROL         "&Use Windows colours",IDC_USEWINCOLORS,"Button",BS_AUTOCHECKBOX | BS_NOTIFY | BS_FLAT | WS_TABSTOP,12,44,220,8
-    GROUPBOX        "Hotmail",IDC_STATIC,4,61,232,71
+    GROUPBOX        "Hotmail",IDC_STATIC,0,60,236,71
     CONTROL         "Disable Popup notifications",IDC_DISABLEHOTMAILPOPUP,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,72,220,10
-    CONTROL         "Ignore new messages in not Inbox folders",IDC_DISABLEHOTJUNK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,94,151,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,72,219,10
+    CONTROL         "Ignore new messages not in Inbox folder",IDC_DISABLEHOTJUNK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,94,218,10
     LTEXT           "Timeout (*)",IDC_STATIC,12,115,78,8
     EDITTEXT        IDC_POPUP_TIMEOUT,94,113,24,12,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "sec.",IDC_STATIC,122,115,30,8
@@ -124,7 +124,7 @@ BEGIN
     LTEXT           "Timeout (*)",IDC_STATIC,10,187,84,8
     EDITTEXT        IDC_POPUP_TIMEOUT2,94,185,24,12,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "sec.",IDC_STATIC,122,187,30,8
-    DEFPUSHBUTTON   "Previe&w",IDC_PREVIEW2,174,171,52,12
+    DEFPUSHBUTTON   "Previe&w",IDC_PREVIEW2,173,184,52,12
     CONTROL         "Enable 'Contact left channel' popup",IDC_NOTIFY_ENDSESSION,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,171,218,8
     CONTROL         "Disable Tray notifications",IDC_DISABLEHOTMAILTRAY,

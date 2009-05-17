@@ -569,6 +569,7 @@ void CMsnProto::displayEmailCount(HANDLE hContact)
     if (!emailEnabled) return;
 
     TCHAR* name = MSN_GetContactNameT(hContact);
+    if (name == NULL) return;
 
     TCHAR* ch = _tcschr(name, '[');  if (ch) *ch = 0;
     rtrim(name);
