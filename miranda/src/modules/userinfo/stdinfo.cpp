@@ -590,7 +590,7 @@ int DetailsInit(WPARAM wParam,LPARAM lParam)
 	odp.pfnDlgProc = BackgroundDlgProc;
 	odp.position = -900000000;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_INFO_BACKGROUND);
-	odp.pszTitle = LPGEN("Background");
+	odp.pszTitle = LPGEN("Background info");
 	CallService(MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
 
 	odp.pfnDlgProc = NotesDlgProc;
