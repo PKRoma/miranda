@@ -5,7 +5,7 @@
 #define IDI_MSN                         101
 #define IDD_USEROPTS                    104
 #define IDD_OPT_MSN_CONN                106
-#define IDD_HOTMAIL_OPT_POPUP           107
+#define IDD_OPT_NOTIFY                  107
 #define IDI_MSNBLOCK                    108
 #define IDI_SERVICES                    109
 #define IDI_INBOX                       112
@@ -79,7 +79,8 @@
 #define IDC_YOURHOST                    1172
 #define IDC_MSNPORT                     1174
 #define IDC_USEGATEWAY                  1175
-#define IDC_DISABLEHOTMAIL              1301
+#define IDC_DISABLEHOTMAILPOPUP         1301
+#define IDC_DISABLEHOTMAILTRAY          1302
 #define IDC_NEWMSNACCOUNTLINK           1438
 #define IDC_RESETSERVER                 1472
 #define IDC_STATIC                      -1

@@ -506,16 +506,20 @@ int CMsnProto::OnContactDeleted( WPARAM wParam, LPARAM lParam )
 	}
 	else
 	{
-		char tEmail[ MSN_MAX_EMAIL_LEN ];
-		if ( !getStaticString( hContact, "e-mail", tEmail, sizeof( tEmail ))) {
+		char szEmail[ MSN_MAX_EMAIL_LEN ];
+        if (MSN_IsMeByContact(hContact, szEmail))
+            CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM) 1);
+        
+        if (szEmail[0]) 
+        {
 			MSN_DebugLog("Deleted Handler Email");
-			MSN_AddUser( hContact, tEmail, 0, LIST_FL | LIST_REMOVE );
-			MSN_AddUser( hContact, tEmail, 0, LIST_AL | LIST_REMOVE );
+			MSN_AddUser( hContact, szEmail, 0, LIST_FL | LIST_REMOVE );
+			MSN_AddUser( hContact, szEmail, 0, LIST_AL | LIST_REMOVE );
 
-			if ( Lists_IsInList( LIST_RL, tEmail ))
-				MSN_AddUser( hContact, tEmail, 0, LIST_BL );
+			if ( Lists_IsInList( LIST_RL, szEmail ))
+				MSN_AddUser( hContact, szEmail, 0, LIST_BL );
 			else 
-				MSN_AddUser( hContact, tEmail, 0, LIST_BL | LIST_REMOVE );
+				MSN_AddUser( hContact, szEmail, 0, LIST_BL | LIST_REMOVE );
 		}
 	}
 
@@ -607,28 +611,29 @@ int CMsnProto::OnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 		}	
 	}
 
-	if ( !strcmp( cws->szModule, "CList" )) 
+	if ( !strcmp( cws->szSetting, "MyHandle" ) && !strcmp( cws->szModule, "CList" )) 
 	{
-		if ( !strcmp( cws->szSetting, "MyHandle" )) 
-		{
-			if ( !MSN_IsMyContact( hContact ))
-				return 0;
-
-			char szContactID[ 100 ];
-			if ( !getStaticString( hContact, "ID", szContactID, sizeof( szContactID ))) 
-			{
-				if ( cws->value.type != DBVT_DELETED ) 
-				{
-					if ( cws->value.type == DBVT_UTF8 )
-						MSN_ABUpdateNick(cws->value.pszVal, szContactID);
-					else
-						MSN_ABUpdateNick(UTF8(cws->value.pszVal), szContactID);
-				}
-				else
-					MSN_ABUpdateNick(NULL, szContactID);
-			}	
+		if ( !MSN_IsMyContact( hContact ))
 			return 0;
-		}	
+
+        bool isMe = MSN_IsMeByContact(hContact);
+        if (!isMe || !nickChg)
+        {
+		    char szContactID[ 100 ];
+		    if ( !getStaticString( hContact, "ID", szContactID, sizeof( szContactID ))) 
+		    {
+			    if ( cws->value.type != DBVT_DELETED ) 
+			    {
+				    if ( cws->value.type == DBVT_UTF8 )
+					    MSN_ABUpdateNick(cws->value.pszVal, szContactID);
+				    else
+					    MSN_ABUpdateNick(UTF8(cws->value.pszVal), szContactID);
+			    }
+			    else
+				    MSN_ABUpdateNick(NULL, szContactID);
+		    }
+            if (isMe) displayEmailCount(hContact);
+        }
 	}
 	return 0;
 }

@@ -152,6 +152,7 @@ struct CMsnProto : public PROTO_INTERFACE
     OBJLIST<MsgQueueEntry> msgQueueList;
 
 	int tridUrlInbox;
+	int tridUrlCompose;
     LONG sttChatID;
 
 	int msnPingTimeout;
@@ -177,6 +178,7 @@ struct CMsnProto : public PROTO_INTERFACE
     char*       urlId;
     char*       rru;
     unsigned	langpref;
+    unsigned    emailEnabled;
     char*       abchMigrated;
 
 	HANDLE		msnSearchId;
@@ -246,7 +248,8 @@ struct CMsnProto : public PROTO_INTERFACE
     // MSN menus
 
 	HANDLE mainMenuRoot;
-	HANDLE blockMenuItem;
+	HANDLE hBlockMenuItem;
+	HANDLE hOpenInboxMenuItem;
 	HANDLE menuItems[ 1 ];
 	HANDLE menuItemsAll[ 7 ];
 
@@ -257,6 +260,7 @@ struct CMsnProto : public PROTO_INTERFACE
 
 	INT_PTR __cdecl MsnBlockCommand( WPARAM wParam, LPARAM lParam );
 	INT_PTR __cdecl MsnGotoInbox( WPARAM, LPARAM );
+    INT_PTR __cdecl MsnSendHotmail( WPARAM wParam, LPARAM );
 	INT_PTR __cdecl MsnEditProfile( WPARAM, LPARAM );
 	INT_PTR __cdecl MsnInviteCommand( WPARAM wParam, LPARAM lParam );
 	INT_PTR __cdecl MsnSendNetMeeting( WPARAM wParam, LPARAM lParam );
@@ -473,6 +477,7 @@ struct CMsnProto : public PROTO_INTERFACE
     char oimDigest[64];
     char oimUID[64];
     unsigned oimMsgNum;
+    bool nickChg;
 
     int MSN_SendOIM(const char* szEmail, const char* msg);
 
@@ -481,8 +486,8 @@ struct CMsnProto : public PROTO_INTERFACE
     ezxml_t oimRecvHdr(const char* service, ezxml_t& tbdy, char*& httphdr);
     
     void processMailData(char* mailData);
-    void sttNotificationMessage( char* msgBody, bool isInitial );
-
+    void sttNotificationMessage(char* msgBody, bool isInitial);
+    void displayEmailCount(HANDLE hContact);
 
     /////////////////////////////////////////////////////////////////////////////////////////
     //	MSN SOAP Address Book

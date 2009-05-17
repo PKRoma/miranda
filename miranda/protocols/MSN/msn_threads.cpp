@@ -172,7 +172,6 @@ void __cdecl CMsnProto::MSNServerThread( void* arg )
 	}
 
 	if ( info->mIsMainThread ) {
-		MSN_EnableMenuItems( true );
 		msnNsThread = info;
 	}
 
