@@ -1520,6 +1520,9 @@ LBL_InvalidCommand:
 				replaceStr( urlId, data.urlID );
 				tridUrlInbox = -1;
 			}
+			if ( trid == tridUrlCompose ) {
+                MsnInvokeMyURL( true, data.rru );
+            }
 			break;
 		}
 

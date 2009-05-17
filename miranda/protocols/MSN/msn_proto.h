@@ -152,6 +152,7 @@ struct CMsnProto : public PROTO_INTERFACE
     OBJLIST<MsgQueueEntry> msgQueueList;
 
 	int tridUrlInbox;
+	int tridUrlCompose;
     LONG sttChatID;
 
 	int msnPingTimeout;
@@ -259,6 +260,7 @@ struct CMsnProto : public PROTO_INTERFACE
 
 	INT_PTR __cdecl MsnBlockCommand( WPARAM wParam, LPARAM lParam );
 	INT_PTR __cdecl MsnGotoInbox( WPARAM, LPARAM );
+    INT_PTR __cdecl MsnSendHotmail( WPARAM wParam, LPARAM );
 	INT_PTR __cdecl MsnEditProfile( WPARAM, LPARAM );
 	INT_PTR __cdecl MsnInviteCommand( WPARAM wParam, LPARAM lParam );
 	INT_PTR __cdecl MsnSendNetMeeting( WPARAM wParam, LPARAM lParam );
