@@ -603,10 +603,13 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 	ParentWindowData *pdat = dat->parent;
 	int hSplitterPos = dat->splitterPos, toolbarHeight = pdat->flags2&SMF2_SHOWTOOLBAR ? dat->toolbarSize.cy : 0;
 	int hSplitterMinTop = toolbarHeight + dat->windowData.minLogBoxHeight, hSplitterMinBottom = dat->windowData.minEditBoxHeight;
-	int hInfobar = INFO_BAR_INNER_HEIGHT;
+	int infobarHeight = INFO_BAR_INNER_HEIGHT;
+	int avatarWidth = 0, avatarHeight = 0;
+	int toolbarWidth = w;
 	int logY, logH;
+
 	if (!(pdat->flags2 & SMF2_SHOWINFOBAR)) {
-		hInfobar = 0;
+		infobarHeight = 0;
 	}
 	if (g_dat->flags & SMF_AUTORESIZE) {
 		hSplitterPos = dat->desiredInputAreaHeight + SPLITTER_HEIGHT + 2;
@@ -620,20 +623,36 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 	if (h - hSplitterPos - INFO_BAR_HEIGHT< hSplitterMinTop) {
 		hSplitterPos = h - hSplitterMinTop - INFO_BAR_HEIGHT;
 	}
+	if (hSplitterPos < avatarHeight) {
+		hSplitterPos = avatarHeight;
+	}
 	if (hSplitterPos < hSplitterMinBottom) {
 		hSplitterPos = hSplitterMinBottom;
 	}
+	if (!(pdat->flags2 & SMF2_SHOWINFOBAR)) {
+		if (dat->avatarPic && (g_dat->flags&SMF_AVATAR)) {
+			avatarWidth = BOTTOM_RIGHT_AVATAR_HEIGHT + 2;
+			avatarHeight = toolbarHeight + hSplitterPos;
+			if (avatarHeight < BOTTOM_RIGHT_AVATAR_HEIGHT + 2) {
+				avatarHeight = BOTTOM_RIGHT_AVATAR_HEIGHT + 2;
+				hSplitterPos = avatarHeight - toolbarHeight;
+			}
+			toolbarWidth -= avatarWidth;
+		}
+	}
+
 	dat->splitterPos = hSplitterPos;
 
-	logY = hInfobar;
-	logH = h-hSplitterPos-toolbarHeight - hInfobar;
+	logY = infobarHeight;
+	logH = h-hSplitterPos-toolbarHeight - infobarHeight;
 	hdwp = BeginDeferWindowPos(15);
-	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_INFOBAR), 0, 0, 0, w, hInfobar, SWP_NOZORDER);
-	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_HLINE), 0, 0, hInfobar, w, 2, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_INFOBAR), 0, 0, 0, w, infobarHeight, SWP_NOZORDER);
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_LOG), 0, 0, logY, w, logH, SWP_NOZORDER);
-	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, h - hSplitterPos + SPLITTER_HEIGHT + 1, w, hSplitterPos - SPLITTER_HEIGHT, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, h - hSplitterPos + SPLITTER_HEIGHT + 1, w - avatarWidth, hSplitterPos - SPLITTER_HEIGHT, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_AVATAR), 0, w-avatarWidth + 1, h - (avatarHeight + avatarWidth) / 2 + 1, avatarWidth - 1, avatarWidth - 1, SWP_NOZORDER);
+	
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_SPLITTER), 0, 0, h - hSplitterPos-1, w, SPLITTER_HEIGHT + 1, SWP_NOZORDER);
-	hdwp = ResizeToolbar(hwndDlg, hdwp, w, h - hSplitterPos - toolbarHeight + 1, toolbarHeight, SIZEOF(buttonControls),
+	hdwp = ResizeToolbar(hwndDlg, hdwp, toolbarWidth, h - hSplitterPos - toolbarHeight + 1, toolbarHeight, SIZEOF(buttonControls),
 					buttonControls, buttonWidth, buttonSpacing, buttonAlignment, g_dat->buttonVisibility);
 
 	/*
@@ -672,6 +691,7 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 	}
 	RedrawWindow(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, NULL, RDW_INVALIDATE);
 	RedrawWindow(GetDlgItem(hwndDlg, IDC_INFOBAR), NULL, NULL, RDW_INVALIDATE);
+	RedrawWindow(GetDlgItem(hwndDlg, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
 }
 
 static void UpdateReadChars(HWND hwndDlg, struct MessageWindowData * dat)
@@ -690,7 +710,10 @@ static void UpdateReadChars(HWND hwndDlg, struct MessageWindowData * dat)
 }
 
 void ShowAvatar(HWND hwndDlg, struct MessageWindowData *dat) {
+	dat->avatarPic = (dat->ace != NULL && (dat->ace->dwFlags & AVS_HIDEONCLIST) == 0) ? dat->ace->hbmPic : NULL;
+	SendMessage(hwndDlg, WM_SIZE, 0, 0);
 	RedrawWindow(GetDlgItem(hwndDlg, IDC_INFOBAR), NULL, NULL, RDW_INVALIDATE);
+	RedrawWindow(GetDlgItem(hwndDlg, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
 }
 
 static BOOL IsTypingNotificationSupported(struct MessageWindowData *dat) {
@@ -871,7 +894,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			dat->windowData.minLogBoxHeight = dat->windowData.minEditBoxHeight;
 			dat->splitterPos = g_dat->splitterY;
 			dat->toolbarSize.cy = TOOLBAR_HEIGHT;
-			dat->toolbarSize.cx = GetToolbarWidth(SIZEOF(buttonControls), buttonControls);
+			dat->toolbarSize.cx = GetToolbarWidth(SIZEOF(buttonControls), buttonControls) + BOTTOM_RIGHT_AVATAR_HEIGHT;
 			if (dat->splitterPos == -1) {
 				dat->splitterPos = dat->windowData.minEditBoxHeight;
 			}
@@ -1146,12 +1169,14 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		break;
 	}
 	case DM_AVATARCHANGED:
-		if ((HANDLE) wParam == NULL) {
-			dat->ace = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->windowData.hContact, 0);
-			ShowAvatar(hwndDlg, dat);
-		} else if (dat->windowData.hContact == (HANDLE) wParam) {
-			dat->ace = (struct avatarCacheEntry *) lParam;
-			ShowAvatar(hwndDlg, dat);
+		if (g_dat->avatarServiceInstalled) {
+			if ((HANDLE) wParam == NULL) {
+				dat->ace = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->windowData.hContact, 0);
+				ShowAvatar(hwndDlg, dat);
+			} else if (dat->windowData.hContact == (HANDLE) wParam) {
+				dat->ace = (struct avatarCacheEntry *) lParam;
+				ShowAvatar(hwndDlg, dat);
+			}
 		}
 		break;
 	case DM_GETAVATAR:
@@ -1560,7 +1585,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		{
 			MINMAXINFO *mmi = (MINMAXINFO *) lParam;
 			mmi->ptMinTrackSize.x = dat->toolbarSize.cx;
-			mmi->ptMinTrackSize.y = dat->windowData.minLogBoxHeight + dat->toolbarSize.cy + dat->windowData.minEditBoxHeight + INFO_BAR_HEIGHT + 5;
+			mmi->ptMinTrackSize.y = dat->windowData.minLogBoxHeight + dat->toolbarSize.cy + dat->windowData.minEditBoxHeight + max(INFO_BAR_HEIGHT, BOTTOM_RIGHT_AVATAR_HEIGHT - dat->toolbarSize.cy) + 5;
 			return 0;
 		}
 	case WM_SIZE:
@@ -1732,7 +1757,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 #if defined ( _UNICODE )
 			sid.flags = (dat->flags & SMF_DISABLE_UNICODE) ? MBF_DISABLED : 0;
 #else
-			sid.flags = MBF_DISABLED;
+			sid.flags = MBF_DISABLED;0
 #endif
 			ModifyStatusIcon((WPARAM)dat->windowData.hContact, (LPARAM) &sid);
 			sid.dwId = 1;
@@ -1920,20 +1945,15 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					if (dat->statusIcon != NULL) {
 				//		DrawIconEx(hdcMem, 3, rect.top + 10, dat->statusIcon, iconWidth, iconHeight, 0, NULL, DI_NORMAL);
 					}
-					if (dat->ace != NULL) {
-						dat->avatarPic = (dat->ace->dwFlags & AVS_HIDEONCLIST) ? NULL : dat->ace->hbmPic;
-					} else {
-						dat->avatarPic = NULL;
-					}
-					if (dat->avatarPic && (g_dat->flags&SMF_AVATAR) && g_dat->avatarServiceInstalled) {
+					if (dat->avatarPic && (g_dat->flags&SMF_AVATAR)) {
 						BITMAP bminfo;
 						GetObject(dat->avatarPic, sizeof(bminfo), &bminfo);
 						if ( bminfo.bmWidth != 0 && bminfo.bmHeight != 0 ) {
 							AVATARDRAWREQUEST adr;
-							avatarHeight = INFO_BAR_INNER_HEIGHT;
+							avatarHeight = INFO_BAR_AVATAR_HEIGHT;
 							avatarWidth = bminfo.bmWidth * avatarHeight / bminfo.bmHeight;
-							if (avatarWidth > 64) {
-								avatarWidth = 64;
+							if (avatarWidth > INFO_BAR_AVATAR_HEIGHT) {
+								avatarWidth = INFO_BAR_AVATAR_HEIGHT;
 								avatarHeight = bminfo.bmHeight * avatarWidth / bminfo.bmWidth;
 							}
 							ZeroMemory(&adr, sizeof(adr));
@@ -1965,6 +1985,50 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					mir_free(szContactStatusMsg);
 					mir_free(szContactName);
 
+					BitBlt(dis->hDC, 0, 0, itemWidth, itemHeight, hdcMem, 0, 0, SRCCOPY);
+					hbmMem = (HBITMAP) SelectObject(hdcMem, hbmMem);
+					DeleteObject(hbmMem);
+					DeleteDC(hdcMem);
+					return TRUE;
+				} else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_AVATAR)) {
+					RECT rect;
+					HDC hdcMem = CreateCompatibleDC(dis->hDC);
+					int avatarWidth = 0;
+					int avatarHeight = 0;
+					int itemWidth = dis->rcItem.right - dis->rcItem.left + 1;
+					int itemHeight = dis->rcItem.bottom - dis->rcItem.top + 1;
+					HBITMAP hbmMem = CreateCompatibleBitmap(dis->hDC, itemWidth, itemHeight);
+					hbmMem = (HBITMAP) SelectObject(hdcMem, hbmMem);
+					rect.top = 0;
+					rect.left = 0;
+					rect.right = itemWidth - 1;
+					rect.bottom = itemHeight - 1;
+					FillRect(hdcMem, &rect, GetSysColorBrush(COLOR_BTNFACE));
+
+					if (dat->avatarPic && (g_dat->flags&SMF_AVATAR)) {
+						BITMAP bminfo;
+						GetObject(dat->avatarPic, sizeof(bminfo), &bminfo);
+						if ( bminfo.bmWidth != 0 && bminfo.bmHeight != 0 ) {
+							AVATARDRAWREQUEST adr;
+							avatarHeight = itemHeight;
+							avatarWidth = bminfo.bmWidth * avatarHeight / bminfo.bmHeight;
+							if (avatarWidth > itemWidth) {
+								avatarWidth = itemWidth;
+								avatarHeight = bminfo.bmHeight * avatarWidth / bminfo.bmWidth;
+							}
+							ZeroMemory(&adr, sizeof(adr));
+							adr.cbSize = sizeof (AVATARDRAWREQUEST);
+							adr.hContact = dat->windowData.hContact;
+							adr.hTargetDC = hdcMem;
+							adr.rcDraw.left = 0;
+							adr.rcDraw.top = 0;
+							adr.rcDraw.right = avatarWidth - 1;
+							adr.rcDraw.bottom = avatarHeight - 1;
+							adr.dwFlags = AVDRQ_DRAWBORDER | AVDRQ_HIDEBORDERONTRANSPARENCY;
+
+							CallService(MS_AV_DRAWAVATAR, (WPARAM)0, (LPARAM)&adr);
+						}
+					}
 					BitBlt(dis->hDC, 0, 0, itemWidth, itemHeight, hdcMem, 0, 0, SRCCOPY);
 					hbmMem = (HBITMAP) SelectObject(hdcMem, hbmMem);
 					DeleteObject(hbmMem);
