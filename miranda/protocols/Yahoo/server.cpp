@@ -13,7 +13,7 @@
 #include "yahoo.h"
 #include <time.h>
 
-extern YList *connections;
+//extern YList *connections;
 
 int PASCAL send(SOCKET s, const char FAR *buf, int len, int flags)
 {
@@ -77,13 +77,13 @@ void __cdecl CYahooProto::server_main(void *empty)
 		nls.hExceptConns[0] = NULL;
 		ridx = 0; widx = 0; 
 
-		for(l=connections; l; ) {
+		for(l=m_connections; l; ) {
 			struct _conn *c = ( _conn * )l->data;
 			//LOG(("Connection tag:%d id:%d fd:%d remove:%d", c->tag, c->id, c->fd, c->remove));
 			if(c->remove) {
 				YList *n = y_list_next(l);
 				//LOG(("Removing id:%d fd:%d tag:%d", c->id, c->fd, c->tag));
-				connections = y_list_remove_link(connections, l);
+				m_connections = y_list_remove_link(m_connections, l);
 				y_list_free_1(l);
 				FREE(c);
 				l=n;
@@ -107,7 +107,7 @@ void __cdecl CYahooProto::server_main(void *empty)
 		nls.hReadConns[ridx] = NULL;
 		nls.hWriteConns[widx] = NULL;
 
-		if (connections == NULL){
+		if (m_connections == NULL){
 			DebugLog("Last connection closed.");
 			break;
 		}
@@ -161,7 +161,7 @@ void __cdecl CYahooProto::server_main(void *empty)
 		}
 		/* do the timer check ends */
 
-		for(l = connections; l; l = y_list_next(l)) {
+		for(l = m_connections; l; l = y_list_next(l)) {
 			struct _conn *c = ( _conn * )l->data;
 
 			if (c->remove) 
@@ -202,12 +202,12 @@ void __cdecl CYahooProto::server_main(void *empty)
 	DebugLog("Exited loop");
 
 	/* cleanup the data stuff and close our connection handles */
-	while(connections) {
-		YList *tmp = connections;
-		struct _conn * c = ( _conn * )connections->data;
+	while(m_connections) {
+		YList *tmp = m_connections;
+		struct _conn * c = ( _conn * )m_connections->data;
 		Netlib_CloseHandle((HANDLE)c->fd);
 		FREE(c);
-		connections = y_list_remove_link(connections, connections);
+		m_connections = y_list_remove_link(m_connections, m_connections);
 		y_list_free_1(tmp);
 	}
 

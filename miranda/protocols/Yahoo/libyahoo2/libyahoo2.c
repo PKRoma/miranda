@@ -154,7 +154,7 @@ static const int webcam_port=5100;
 static const char webcam_description[]="";
 static char local_host[]="";
 static int conn_type=Y_WCM_DSL;
-
+static const char login_host[]="login.yahoo.com";
 static char profile_url[] = "http://profiles.yahoo.com/";
 
 typedef struct {
@@ -450,6 +450,7 @@ static struct yahoo_server_settings* _yahoo_default_server_settings()
 	yss->local_host = strdup(local_host);
 	yss->conn_type = conn_type;
 	yss->pic_cksum = -1;
+	yss->login_host = strdup(login_host);
 	
 	return yss;
 }
@@ -504,6 +505,10 @@ static struct yahoo_server_settings * _yahoo_assign_server_settings(va_list ap)
 		} else if(!strcmp(key, "web_messenger")) {
 			nvalue = va_arg(ap, int);
 			yss->web_messenger = nvalue;
+		} else if(!strcmp(key, "login_host")) {
+			svalue = va_arg(ap, char *);
+			free(yss->login_host);
+			yss->login_host = strdup(svalue);
 		} else {
 			WARNING(("Unknown key passed to yahoo_init, "
 				"perhaps you didn't terminate the list "
@@ -524,7 +529,7 @@ static void yahoo_free_server_settings(struct yahoo_server_settings *yss)
 	free(yss->webcam_host);
 	free(yss->webcam_description);
 	free(yss->local_host);
-
+	free(yss->login_host);
 	free(yss);
 }
 
@@ -996,7 +1001,9 @@ static void yahoo_send_packet(struct yahoo_input_data *yid, struct yahoo_packet 
 	
 	if( yid->type == YAHOO_CONNECTION_FT || 
 		( yid->type == YAHOO_CONNECTION_PAGER && 
-			( pkt->service == YAHOO_SERVICE_KEEPALIVE || pkt->service == YAHOO_SERVICE_PING ) )
+			( pkt->service == YAHOO_SERVICE_KEEPALIVE || 
+			  pkt->service == YAHOO_SERVICE_PING ||
+			  pkt->service == YAHOO_SERVICE_LOGOFF) )
 		) {
 		yahoo_send_data(yid->fd, (const char *)data, len);
 	} else {
@@ -3014,6 +3021,8 @@ static void yahoo_process_auth_0x0f(struct yahoo_input_data *yid, const char *se
 {
 	struct yahoo_packet 			*pack = NULL;
 	struct yahoo_data 				*yd = yid->yd;
+	struct yahoo_server_settings 	*yss;
+
 	char  							*token=NULL, *crumb=NULL;
 	char  							*response = NULL;
 	char 							url[1024];
@@ -3039,6 +3048,7 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 307 field is crumb + chal md5ed (16 bytes dont convert to hex) then base64ed
 			
 		 **/
+	yss = yd->server_settings;
 	
 	if (token == NULL ) {
 
@@ -3046,7 +3056,7 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 		
 		_snprintf(url, sizeof(url), "/config/pwtoken_get?src=ymsgr&ts=%u&login=%s&passwd=%s&chal=%s",
 					time(NULL),sn, c, seed);
-		response = YAHOO_CALLBACK(ext_yahoo_send_https_request)(yd, "login.yahoo.com", url);
+		response = YAHOO_CALLBACK(ext_yahoo_send_https_request)(yd, yss->login_host, url);
 		
 		FREE(c);
 		
@@ -3091,7 +3101,7 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 			cookievalidfor=86400
 
 	 */
-	response = YAHOO_CALLBACK(ext_yahoo_send_https_request)(yd, "login.yahoo.com", url);
+	response = YAHOO_CALLBACK(ext_yahoo_send_https_request)(yd, yss->login_host, url);
 
 	if (response == NULL) {
 			YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_SOCK, NULL);

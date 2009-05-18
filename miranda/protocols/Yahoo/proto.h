@@ -124,7 +124,9 @@ struct CYahooProto : public PROTO_INTERFACE
 
 	//====| Data |========================================================================
 	BOOL   m_bLoggedIn;
-
+	YList *m_connections;
+	unsigned int m_connection_tags;
+	
 	char*  m_startMsg;
 
 	// former ylad structure
@@ -286,6 +288,9 @@ struct CYahooProto : public PROTO_INTERFACE
 	void   AddBuddy( const char *who, int protocol, const char *group, const char *msg);
 
 	void   YAHOO_utils_logversion();
+	
+	unsigned int ext_yahoo_add_handler(int fd, yahoo_input_condition cond, void *data);
+	void 	ext_yahoo_remove_handler(unsigned int tag);
 	
 private:
 	int    m_startStatus;
