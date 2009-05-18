@@ -169,8 +169,7 @@
 #define IDC_CHAT_NICKROWTEXT2			1642
 #define IDC_CHAT_LIMITTEXT2				1643
 #define IDC_INFOBAR						1644
-#define IDC_HLINE                       1645
-
+#define IDC_AVATAR						1645
 
 #define IDM_CUT                         40000
 #define IDM_COPY                        40001
