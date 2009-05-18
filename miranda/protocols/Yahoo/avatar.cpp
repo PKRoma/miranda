@@ -602,12 +602,13 @@ void CYahooProto::InitCustomFolders(void)
 {
 	if ( InitCstFldRan ) return; 
 
-	char AvatarsFolder[MAX_PATH]= "";
-	CallService(MS_DB_GETPROFILEPATH, (WPARAM) MAX_PATH, (LPARAM)AvatarsFolder);
-	strcat(AvatarsFolder, "\\");
-	strcat(AvatarsFolder, m_szModuleName);
+	char AvatarsFolder[MAX_PATH];
+    char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
+
+    mir_snprintf(AvatarsFolder, MAX_PATH, "%s\\%s", tmpPath, m_szModuleName);
 	hYahooAvatarsFolder = FoldersRegisterCustomPath(m_szModuleName, "Avatars", AvatarsFolder);
 
+	mir_free(tmpPath);
 	InitCstFldRan = true;
 }
 
@@ -621,13 +622,9 @@ void CYahooProto::GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, i
 	if ( hYahooAvatarsFolder == NULL || FoldersGetCustomPath( hYahooAvatarsFolder, path, (int)cbLen, "" ))
 	{
         char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
-        lstrcpynA(pszDest, tmpPath, (int)cbLen-1);
+        tPathLen = mir_snprintf(pszDest, cbLen,"%s\\%s", tmpPath, m_szModuleName);
         mir_free(tmpPath);
-		
-		tPathLen = strlen( pszDest );
-		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen,"\\%s", m_szModuleName);
-	}
-	else {
+	} else {
 		strcpy( pszDest, path );
 		tPathLen = strlen( pszDest );
 	}
@@ -642,10 +639,11 @@ void CYahooProto::GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, i
 		_snprintf(pszDest, cbLen, "%s\\%s avatar", pszDest, m_szModuleName);
 	}
 	
-	if (type == 1)
+	if (type == 1) {
 		lstrcatA(pszDest, ".swf" );
-	else
+	} else {
 		lstrcatA(pszDest, ".png" );
+	}
 }
 
 int __cdecl CYahooProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
