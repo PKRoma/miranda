@@ -159,6 +159,8 @@ int CMsnProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM)
     const HANDLE hContact = (HANDLE)wParam;
 	char szEmail[MSN_MAX_EMAIL_LEN];
 
+    if (!MSN_IsMyContact(hContact)) return 0;
+
     bool isMe = MSN_IsMeByContact(hContact, szEmail);
 	if (szEmail[0]) 
     {
@@ -169,7 +171,6 @@ int CMsnProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM)
 		int netId = Lists_GetNetId(szEmail);
         
         bool noChat = !(listId & LIST_FL) || netId == NETID_EMAIL || isMe;
-
 
 		mi.flags = CMIM_NAME | CMIM_FLAGS | CMIF_ICONFROMICOLIB;
         if (noChat) mi.flags |= CMIF_HIDDEN;
