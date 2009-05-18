@@ -523,7 +523,9 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM 
 
 		SetDlgItemInt( hwndDlg, IDC_POPUP_TIMEOUT, proto->MyOptions.PopupTimeoutHotmail, FALSE );
 
-		CheckDlgButton( hwndDlg, IDC_DISABLEHOTMAILPOPUP, proto->getByte( "DisableHotmail", 1 ));
+        int disableHotmailPopup = proto->getByte( "DisableHotmail", 1 );
+
+		CheckDlgButton( hwndDlg, IDC_DISABLEHOTMAILPOPUP, disableHotmailPopup);
 		CheckDlgButton( hwndDlg, IDC_DISABLEHOTMAILTRAY,  proto->getByte( "DisableHotmailTray", 0 ));
 		CheckDlgButton( hwndDlg, IDC_DISABLEHOTJUNK,      proto->getByte( "DisableHotmailJunk", 0 ));
 		CheckDlgButton( hwndDlg, IDC_NOTIFY_ENDSESSION,   proto->getByte( "EnableSessionPopup", 0 ));
@@ -534,8 +536,8 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM 
 		SetDlgItemInt( hwndDlg, IDC_POPUP_TIMEOUT, tTimeout, FALSE );
 		SetDlgItemInt( hwndDlg, IDC_POPUP_TIMEOUT2, proto->getDword( "PopupTimeoutOther", tTimeout ), FALSE );
 
-        EnableWindow( GetDlgItem( hwndDlg, IDC_POPUP_TIMEOUT ), FALSE );
-		EnableWindow( GetDlgItem( hwndDlg, IDC_POPUP_TIMEOUT2 ), FALSE );
+        EnableWindow( GetDlgItem( hwndDlg, IDC_POPUP_TIMEOUT ),  !disableHotmailPopup );
+		EnableWindow( GetDlgItem( hwndDlg, IDC_POPUP_TIMEOUT2 ), !disableHotmailPopup );
 
         bEnabled = true;
 		return TRUE;
