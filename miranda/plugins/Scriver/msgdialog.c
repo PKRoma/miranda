@@ -1757,7 +1757,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 #if defined ( _UNICODE )
 			sid.flags = (dat->flags & SMF_DISABLE_UNICODE) ? MBF_DISABLED : 0;
 #else
-			sid.flags = MBF_DISABLED;0
+			sid.flags = MBF_DISABLED;
 #endif
 			ModifyStatusIcon((WPARAM)dat->windowData.hContact, (LPARAM) &sid);
 			sid.dwId = 1;
