@@ -110,6 +110,8 @@ BEGIN
     GROUPBOX        "Hotmail",IDC_STATIC,0,60,236,71
     CONTROL         "Disable Popup notifications",IDC_DISABLEHOTMAILPOPUP,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,72,219,10
+    CONTROL         "Disable Tray notifications",IDC_DISABLEHOTMAILTRAY,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,83,220,10
     CONTROL         "Ignore new messages not in Inbox folder",IDC_DISABLEHOTJUNK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,94,218,10
     LTEXT           "Timeout (*)",IDC_STATIC,12,115,78,8
@@ -121,14 +123,12 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,146,216,10
     CONTROL         "Enable 'Chat Session Established' popup",IDC_NOTIFY_FIRSTMSG,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,158,216,10
+    CONTROL         "Enable 'Contact left channel' popup",IDC_NOTIFY_ENDSESSION,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,171,218,8
     LTEXT           "Timeout (*)",IDC_STATIC,10,187,84,8
     EDITTEXT        IDC_POPUP_TIMEOUT2,94,185,24,12,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "sec.",IDC_STATIC,122,187,30,8
     DEFPUSHBUTTON   "Previe&w",IDC_PREVIEW2,173,184,52,12
-    CONTROL         "Enable 'Contact left channel' popup",IDC_NOTIFY_ENDSESSION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,171,218,8
-    CONTROL         "Disable Tray notifications",IDC_DISABLEHOTMAILTRAY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,83,220,10
 END
 
 IDD_SETNICKNAME DIALOGEX 0, 0, 187, 42

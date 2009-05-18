@@ -165,8 +165,15 @@ int CMsnProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM)
 		CLISTMENUITEM mi = {0};
 		mi.cbSize = sizeof(mi);
 
-		mi.flags = CMIM_NAME;
-        mi.pszName = (char*)(Lists_IsInList(LIST_BL, szEmail) ? "&Unblock" : "&Block");
+	    int listId = Lists_GetMask(szEmail);
+		int netId = Lists_GetNetId(szEmail);
+        
+        bool noChat = !(listId & LIST_FL) || netId == NETID_EMAIL || isMe;
+
+
+		mi.flags = CMIM_NAME | CMIM_FLAGS | CMIF_ICONFROMICOLIB;
+        if (noChat) mi.flags |= CMIF_HIDDEN;
+        mi.pszName = (char*)((listId & LIST_BL) ? "&Unblock" : "&Block");
 		MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hBlockMenuItem, (LPARAM)&mi);
 
 	    mi.flags = CMIM_NAME | CMIM_FLAGS | CMIF_ICONFROMICOLIB;
@@ -178,10 +185,19 @@ int CMsnProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM)
         }
         else
         {
-            if (Lists_GetNetId(szEmail) == NETID_EMAIL) mi.flags |= CMIF_DEFAULT;
+            if (netId == NETID_EMAIL) mi.flags |= CMIF_DEFAULT;
             mi.pszName = LPGEN("Send &Hotmail E-mail");
         }
         MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hOpenInboxMenuItem, (LPARAM)&mi);
+
+		mi.flags = CMIM_FLAGS | CMIF_ICONFROMICOLIB;
+        if (netId == NETID_EMAIL) mi.flags |= CMIF_HIDDEN;
+		MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)menuItemsAll[4], (LPARAM)&mi);
+
+        mi.flags = CMIM_FLAGS | CMIF_ICONFROMICOLIB | CMIF_NOTOFFLINE;
+        if (noChat) mi.flags |= CMIF_HIDDEN;
+		MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)menuItemsAll[5], (LPARAM)&mi);
+		MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)menuItemsAll[6], (LPARAM)&mi);
     }
 
     return 0;
@@ -382,23 +398,23 @@ void CMsnProto::MsnInitMenus( void )
 	mi.pszName = LPGEN("&Block");
 	hBlockMenuItem = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
-	strcpy( tDest, MSN_NETMEETING );
-	CreateProtoService( MSN_NETMEETING, &CMsnProto::MsnSendNetMeeting );
-	mi.position = -500050002;
-	mi.icolibItem = GetIconHandle( IDI_NETMEETING );
-	mi.pszName = LPGEN("&Start Netmeeting");
-	menuItemsAll[ 4 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
-
 	strcpy( tDest, MSN_VIEW_PROFILE );
 	CreateProtoService( MSN_VIEW_PROFILE, &CMsnProto::MsnViewProfile );
 	mi.position = -500050003;
 	mi.icolibItem = GetIconHandle( IDI_PROFILE );
 	mi.pszName = LPGEN("&View Profile");
+	menuItemsAll[ 4 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
+
+	strcpy( tDest, MSN_NETMEETING );
+	CreateProtoService( MSN_NETMEETING, &CMsnProto::MsnSendNetMeeting );
+	mi.flags = CMIF_ICONFROMICOLIB | CMIF_NOTOFFLINE;
+	mi.position = -500050002;
+	mi.icolibItem = GetIconHandle( IDI_NETMEETING );
+	mi.pszName = LPGEN("&Start Netmeeting");
 	menuItemsAll[ 5 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
 
 	strcpy( tDest, MSN_INVITE );
 	CreateProtoService( MSN_INVITE, &CMsnProto::MsnInviteCommand );
-	mi.flags = CMIF_ICONFROMICOLIB | CMIF_NOTOFFLINE;
 	mi.position = -500050001;
 	mi.icolibItem = GetIconHandle( IDI_INVITE );
 	mi.pszName = LPGEN("&Invite to chat");
