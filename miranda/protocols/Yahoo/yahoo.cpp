@@ -1241,9 +1241,6 @@ void CYahooProto::ext_send_http_request(enum yahoo_connection_type type, const c
 /*************************************
  * Callback handling code starts here
  */
-//YList *connections = NULL;
-//static unsigned int connection_tags=0;
-
 unsigned int CYahooProto::ext_yahoo_add_handler(int fd, yahoo_input_condition cond, void *data)
 {
 	struct _conn *c = y_new0(struct _conn, 1);
