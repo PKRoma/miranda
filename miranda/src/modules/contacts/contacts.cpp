@@ -90,7 +90,7 @@ static INT_PTR GetContactInfo(WPARAM, LPARAM lParam) {
 	CONTACTINFO *ci = (CONTACTINFO*)lParam;
 
 	if (ci==NULL) return 1;
-	if (ci->szProto==NULL) ci->szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)ci->hContact,0);
+	if (ci->szProto==NULL) ci->szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEACCOUNT,(WPARAM)ci->hContact,0);
 	if (ci->szProto==NULL) return 1;
 	ci->type = 0;
 	switch(ci->dwFlag & 0x7F) {
