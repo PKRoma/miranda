@@ -1001,7 +1001,9 @@ static void yahoo_send_packet(struct yahoo_input_data *yid, struct yahoo_packet 
 	
 	if( yid->type == YAHOO_CONNECTION_FT || 
 		( yid->type == YAHOO_CONNECTION_PAGER && 
-			( pkt->service == YAHOO_SERVICE_KEEPALIVE || pkt->service == YAHOO_SERVICE_PING ) )
+			( pkt->service == YAHOO_SERVICE_KEEPALIVE || 
+			  pkt->service == YAHOO_SERVICE_PING ||
+			  pkt->service == YAHOO_SERVICE_LOGOFF) )
 		) {
 		yahoo_send_data(yid->fd, (const char *)data, len);
 	} else {
