@@ -2020,7 +2020,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							adr.cbSize = sizeof (AVATARDRAWREQUEST);
 							adr.hContact = dat->windowData.hContact;
 							adr.hTargetDC = hdcMem;
-							adr.rcDraw.left = 0;
+							adr.rcDraw.left = (itemWidth - avatarWidth) / 2;
 							adr.rcDraw.top = 0;
 							adr.rcDraw.right = avatarWidth - 1;
 							adr.rcDraw.bottom = avatarHeight - 1;
