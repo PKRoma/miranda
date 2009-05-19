@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern HIMAGELIST hCListImages;
 extern BOOL(WINAPI * MySetProcessWorkingSetSize) (HANDLE, SIZE_T, SIZE_T);
 
-int GetAverageMode();
+int GetAverageMode(int* pNetProtoCount = NULL);
 
 static UINT WM_TASKBARCREATED;
 static BOOL mToolTipTrayTips = FALSE;
