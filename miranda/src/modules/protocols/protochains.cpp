@@ -130,7 +130,6 @@ static INT_PTR Proto_ChainRecv(WPARAM wParam,LPARAM lParam)
 static INT_PTR Proto_GetContactBaseProto(WPARAM wParam, LPARAM)
 {
 	DBVARIANT dbv;
-	PROTOCOLDESCRIPTOR *pd;
 	DBCONTACTGETSETTING dbcgs;
 	char name[32];
 
@@ -143,15 +142,8 @@ static INT_PTR Proto_GetContactBaseProto(WPARAM wParam, LPARAM)
 	if ( CallService( MS_DB_CONTACT_GETSETTINGSTATIC, wParam, (LPARAM)&dbcgs ))
 		return (INT_PTR)(char*)NULL;
 
-	pd = ( PROTOCOLDESCRIPTOR* )Proto_IsProtocolLoaded( dbv.pszVal );
-	if ( pd == NULL ) {
-		PROTOACCOUNT* pa = ProtoGetAccount(( char* )dbv.pszVal );
-		if ( pa && IsAccountEnabled( pa ))
-			return (INT_PTR)pa->szModuleName;
-
-		return (INT_PTR)(char*)NULL;
-	}
-	return (INT_PTR)pd->szName;
+	PROTOACCOUNT* pa = ProtoGetAccount(( char* )dbv.pszVal );
+    return (INT_PTR)( pa && IsAccountEnabled( pa ) ? pa->szModuleName : NULL);
 }
 
 static INT_PTR Proto_GetContactBaseAccount(WPARAM wParam, LPARAM)
