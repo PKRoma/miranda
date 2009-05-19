@@ -154,14 +154,35 @@ static INT_PTR Proto_GetContactBaseProto(WPARAM wParam, LPARAM)
 	return (INT_PTR)pd->szName;
 }
 
+static INT_PTR Proto_GetContactBaseAccount(WPARAM wParam, LPARAM)
+{
+	DBVARIANT dbv;
+	DBCONTACTGETSETTING dbcgs;
+	char name[32];
+
+	dbv.type = DBVT_ASCIIZ;
+	dbv.pszVal = name;
+	dbv.cchVal = SIZEOF(name);
+	dbcgs.pValue = &dbv;
+	dbcgs.szModule = "Protocol";
+	dbcgs.szSetting = "p";
+	if ( CallService( MS_DB_CONTACT_GETSETTINGSTATIC, wParam, (LPARAM)&dbcgs ))
+		return (INT_PTR)(char*)NULL;
+
+	PROTOACCOUNT* pa = ProtoGetAccount(( char* )dbv.pszVal );
+    return (INT_PTR)( pa ? pa->szModuleName : NULL );
+}
+
 static INT_PTR Proto_IsProtoOnContact(WPARAM wParam,LPARAM lParam)
 {
 	int i;
 	char str[10];
 	DBVARIANT dbv;
 
+    if (!lParam) return 0;
+
 	if(!DBGetContactSettingString((HANDLE)wParam,"Protocol","p",&dbv)) {
-		if(!strcmp((char*)lParam,dbv.pszVal)) {
+		if(!_stricmp((char*)lParam,dbv.pszVal)) {
 			mir_free(dbv.pszVal);
 			return -1;
 		}
@@ -261,6 +282,7 @@ int LoadProtoChains(void)
 	CreateServiceFunction(MS_PROTO_CHAINRECV,Proto_ChainRecv);
 	CreateServiceFunction(MS_PROTO_CHAINRECV "ThreadSafe",CallRecvChain);
 	CreateServiceFunction(MS_PROTO_GETCONTACTBASEPROTO,Proto_GetContactBaseProto);
+	CreateServiceFunction(MS_PROTO_GETCONTACTBASEACCOUNT,Proto_GetContactBaseAccount);
 	CreateServiceFunction(MS_PROTO_ISPROTOONCONTACT,Proto_IsProtoOnContact);
 	CreateServiceFunction(MS_PROTO_ADDTOCONTACT,Proto_AddToContact);
 	CreateServiceFunction(MS_PROTO_REMOVEFROMCONTACT,Proto_RemoveFromContact);

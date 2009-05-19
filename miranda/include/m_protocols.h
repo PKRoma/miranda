@@ -229,7 +229,7 @@ typedef struct {
 //determines whether the specified contact has the given protocol in its chain
 //wParam=(WPARAM)(HANDLE)hContact
 //lParam=(LPARAM)(const char*)szName
-//Returns nonzero if it does and 0 if it doesn't
+//Returns -1 if it is base protocol, positive number if it is filter and 0 if it doesn't
 #define MS_PROTO_ISPROTOONCONTACT  "Proto/IsProtoOnContact"
 
 #define PROTOTYPE_SELFTYPING_OFF      0
@@ -325,6 +325,15 @@ __inline static int IsAccountEnabled( const PROTOACCOUNT* pa )
 {
 	return pa && (( pa->bIsEnabled && !pa->bDynDisabled ) || pa->bOldProto );
 }
+
+//gets the account associated with a contact
+//wParam=(WPARAM)(HANDLE)hContact
+//lParam=0
+//Returns a char* pointing to the asciiz name of the protocol or NULL if the
+//contact has no protocol. There is no need to mir_free() it or anything.
+//This is the name of the module that actually accesses the network for that
+//contact.
+#define MS_PROTO_GETCONTACTBASEACCOUNT  "Proto/GetContactBaseAccount"
 
 /* -------------- avatar support ---------------------
 
