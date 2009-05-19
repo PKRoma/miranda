@@ -364,54 +364,52 @@ XCHAR *GetInternalVariable(XCHAR *key, size_t keyLength, HANDLE hContact)
 				case CNFT_DWORD:
 					theValue = _itox(key, ci.dVal);
 					break;
-		}	}	}
-	}
-	else {
-		if (!theValue) {
-			if (!_xcscmp(theKey, XSTR(key, "miranda_path")))
-				theValue = GetModulePathX(key, NULL);
-			else if (!_xcscmp(theKey, XSTR(key, "appdata")))
-				theValue = SHGetSpecialFolderPathX(CSIDL_APPDATA, theKey);
-			else if (!_xcscmp(theKey, XSTR(key, "mydocuments")))
-				theValue = SHGetSpecialFolderPathX(CSIDL_PERSONAL, theKey);
-			else if (!_xcscmp(theKey, XSTR(key, "desktop")))
-				theValue = SHGetSpecialFolderPathX(CSIDL_DESKTOPDIRECTORY, theKey);
-			else if (!_xcscmp(theKey, XSTR(key, "miranda_profile"))) {
-				char szProfilePath[MAX_PATH];
-				CallService(MS_DB_GETPROFILEPATH, SIZEOF(szProfilePath), (LPARAM) szProfilePath);
-				theValue = mir_a2x(key, szProfilePath);
-			}
-			else if (!_xcscmp(theKey, XSTR(key, "miranda_profilename"))) {
-				char szProfileName[MAX_PATH];
-				CallService(MS_DB_GETPROFILENAME, SIZEOF(szProfileName), (LPARAM) szProfileName);
-				char *pos = strrchr(szProfileName, '.');
-				if ( lstrcmpA( pos, ".dat" ) == 0 )
-					*pos = 0;
-				theValue = mir_a2x(key, szProfileName);
- 		    }	
-			else if (!_xcscmp(theKey, XSTR(key, "username")))
-				theValue = GetUserNameX(key);
-            else if (!_xcscmp(theKey, XSTR(key, "miranda_userdata")) 
-                        || !_xcscmp(theKey, XSTR(key, "miranda_avatarcache"))
-                        || !_xcscmp(theKey, XSTR(key, "miranda_logpath"))) {
-                char szFullPath[MAX_PATH], szProfilePath[MAX_PATH], szProfileName[MAX_PATH];
-				CallService(MS_DB_GETPROFILEPATH, SIZEOF(szProfilePath), (LPARAM) szProfilePath);
-				CallService(MS_DB_GETPROFILENAME, SIZEOF(szProfileName), (LPARAM) szProfileName);
-				char *pos = strrchr(szProfileName, '.');
-				if ( lstrcmpA( pos, ".dat" ) == 0 )
-					*pos = 0;
-                if (!_xcscmp(theKey, XSTR(key, "miranda_avatarcache"))) 
-                    mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Profiles\\%s\\AvatarCache", szProfilePath, szProfileName);
-                else if (!_xcscmp(theKey, XSTR(key, "miranda_logpath"))) 
-                    mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Profiles\\%s\\Logs", szProfilePath, szProfileName);
-                else mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Profiles\\%s", szProfilePath, szProfileName);
-                theValue = mir_a2x(key, szFullPath);
-            }
-        }
+	}	}	}	}
 
-		if (!theValue)
-			theValue = GetEnvironmentVariableX(theKey);
-	}
+	if (!theValue) {
+		if (!_xcscmp(theKey, XSTR(key, "miranda_path")))
+			theValue = GetModulePathX(key, NULL);
+		else if (!_xcscmp(theKey, XSTR(key, "appdata")))
+			theValue = SHGetSpecialFolderPathX(CSIDL_APPDATA, theKey);
+		else if (!_xcscmp(theKey, XSTR(key, "mydocuments")))
+			theValue = SHGetSpecialFolderPathX(CSIDL_PERSONAL, theKey);
+		else if (!_xcscmp(theKey, XSTR(key, "desktop")))
+			theValue = SHGetSpecialFolderPathX(CSIDL_DESKTOPDIRECTORY, theKey);
+		else if (!_xcscmp(theKey, XSTR(key, "miranda_profile"))) {
+			char szProfilePath[MAX_PATH];
+			CallService(MS_DB_GETPROFILEPATH, SIZEOF(szProfilePath), (LPARAM) szProfilePath);
+			theValue = mir_a2x(key, szProfilePath);
+		}
+		else if (!_xcscmp(theKey, XSTR(key, "miranda_profilename"))) {
+			char szProfileName[MAX_PATH];
+			CallService(MS_DB_GETPROFILENAME, SIZEOF(szProfileName), (LPARAM) szProfileName);
+			char *pos = strrchr(szProfileName, '.');
+			if ( lstrcmpA( pos, ".dat" ) == 0 )
+				*pos = 0;
+			theValue = mir_a2x(key, szProfileName);
+	    }	
+		else if (!_xcscmp(theKey, XSTR(key, "username")))
+			theValue = GetUserNameX(key);
+        else if (!_xcscmp(theKey, XSTR(key, "miranda_userdata")) 
+                    || !_xcscmp(theKey, XSTR(key, "miranda_avatarcache"))
+                    || !_xcscmp(theKey, XSTR(key, "miranda_logpath"))) {
+            char szFullPath[MAX_PATH], szProfilePath[MAX_PATH], szProfileName[MAX_PATH];
+			CallService(MS_DB_GETPROFILEPATH, SIZEOF(szProfilePath), (LPARAM) szProfilePath);
+			CallService(MS_DB_GETPROFILENAME, SIZEOF(szProfileName), (LPARAM) szProfileName);
+			char *pos = strrchr(szProfileName, '.');
+			if ( lstrcmpA( pos, ".dat" ) == 0 )
+				*pos = 0;
+            if (!_xcscmp(theKey, XSTR(key, "miranda_avatarcache"))) 
+                mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Profiles\\%s\\AvatarCache", szProfilePath, szProfileName);
+            else if (!_xcscmp(theKey, XSTR(key, "miranda_logpath"))) 
+                mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Profiles\\%s\\Logs", szProfilePath, szProfileName);
+            else mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Profiles\\%s", szProfilePath, szProfileName);
+            theValue = mir_a2x(key, szFullPath);
+        }
+    }
+
+	if (!theValue)
+		theValue = GetEnvironmentVariableX(theKey);
 
 	return theValue;
 }
