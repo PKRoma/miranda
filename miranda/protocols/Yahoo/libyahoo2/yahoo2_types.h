@@ -317,6 +317,7 @@ struct yahoo_server_settings {
 	int   conn_type;
 	int pic_cksum;
 	int  web_messenger;
+	char *login_host;
 };
 
 struct yahoo_data {

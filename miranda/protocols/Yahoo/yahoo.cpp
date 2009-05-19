@@ -1418,7 +1418,7 @@ char * CYahooProto::ext_send_https_request(struct yahoo_data *yd, const char *ho
 
 void CYahooProto::ext_login(enum yahoo_status login_mode)
 {
-	char host[128], fthost[128];
+	char host[128], fthost[128], login_host[128];
 	int port=0;
 	DBVARIANT dbv;
 #ifdef HTTP_GATEWAY				
@@ -1485,6 +1485,7 @@ void CYahooProto::ext_login(enum yahoo_status login_mode)
 	}
 	
 	lstrcpynA(fthost,GetByte("YahooJapan",0)?"filetransfer.msg.yahoo.co.jp":"filetransfer.msg.yahoo.com" , sizeof(fthost));
+	lstrcpynA(login_host,GetByte("YahooJapan",0)?"login.yahoo.co.jp":"login.yahoo.com" , sizeof(login_host));	
 	port = DBGetContactSettingWord(NULL, m_szModuleName, YAHOO_LOGINPORT, YAHOO_DEFAULT_PORT);
 	
 #ifdef HTTP_GATEWAY			
@@ -1506,6 +1507,7 @@ void CYahooProto::ext_login(enum yahoo_status login_mode)
 #ifdef HTTP_GATEWAY			
 		"web_messenger", iHTTPGateway,
 #endif
+		"login_host", login_host,
 		NULL);
 	
 	m_status = YAHOO_STATUS_OFFLINE;
