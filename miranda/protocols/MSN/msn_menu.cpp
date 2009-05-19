@@ -159,14 +159,19 @@ int CMsnProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM)
     const HANDLE hContact = (HANDLE)wParam;
 	char szEmail[MSN_MAX_EMAIL_LEN];
 
-    if (!MSN_IsMyContact(hContact)) return 0;
+	CLISTMENUITEM mi = {0};
+	mi.cbSize = sizeof(mi);
+
+    if (!MSN_IsMyContact(hContact)) 
+    {
+	    mi.flags = CMIM_FLAGS | CMIF_ICONFROMICOLIB;
+        MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hOpenInboxMenuItem, (LPARAM)&mi);
+        return 0;
+    }
 
     bool isMe = MSN_IsMeByContact(hContact, szEmail);
 	if (szEmail[0]) 
     {
-		CLISTMENUITEM mi = {0};
-		mi.cbSize = sizeof(mi);
-
 	    int listId = Lists_GetMask(szEmail);
 		int netId = Lists_GetNetId(szEmail);
         
