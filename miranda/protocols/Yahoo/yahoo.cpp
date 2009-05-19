@@ -1241,33 +1241,30 @@ void CYahooProto::ext_send_http_request(enum yahoo_connection_type type, const c
 /*************************************
  * Callback handling code starts here
  */
-YList *connections = NULL;
-static unsigned int connection_tags=0;
-
-unsigned int ext_yahoo_add_handler(int id, int fd, yahoo_input_condition cond, void *data)
+unsigned int CYahooProto::ext_yahoo_add_handler(int fd, yahoo_input_condition cond, void *data)
 {
 	struct _conn *c = y_new0(struct _conn, 1);
 	
-	c->tag = ++connection_tags;
-	c->id = id;
+	c->tag = ++m_connection_tags;
+	c->id = m_id;
 	c->fd = fd;
 	c->cond = cond;
 	c->data = data;
 
-	LOG(("[ext_yahoo_add_handler] fd:%d, id:%d, cond: %d, tag %d", fd, id, cond, c->tag));
+	LOG(("[ext_yahoo_add_handler] fd:%d, id:%d, cond: %d, tag %d", fd, m_id, cond, c->tag));
 	
-	connections = y_list_prepend(connections, c);
+	m_connections = y_list_prepend(m_connections, c);
 
 	return c->tag;
 }
 
-void ext_yahoo_remove_handler(int id, unsigned int tag)
+void CYahooProto::ext_yahoo_remove_handler(unsigned int tag)
 {
 	YList *l;
 	
-	LOG(("[ext_yahoo_remove_handler] id:%d tag:%d ", id, tag));
+	LOG(("[ext_yahoo_remove_handler] id:%d tag:%d ", m_id, tag));
 	
-	for(l = connections; l; l = y_list_next(l)) {
+	for(l = m_connections; l; l = y_list_next(l)) {
 		struct _conn *c = ( _conn* )l->data;
 		if(c->tag == tag) {
 			/* don't actually remove it, just mark it for removal */
@@ -1286,13 +1283,15 @@ struct connect_callback_data {
 	int tag;
 };
 
+void ext_yahoo_remove_handler(int id, unsigned int tag);
+
 static void connect_complete(void *data, int source, yahoo_input_condition condition)
 {
 	struct connect_callback_data *ccd = ( connect_callback_data* )data;
 	int error = 0;//, err_size = sizeof(error);
 	NETLIBSELECT tSelect = {0};
 
-	ext_yahoo_remove_handler(0, ccd->tag);
+	ext_yahoo_remove_handler(ccd->id, ccd->tag);
 	
 	// We Need to read the Socket error
 	//getsockopt(source, SOL_SOCKET, SO_ERROR, &error, (socklen_t *)&err_size);
@@ -1532,6 +1531,20 @@ CYahooProto* __fastcall getProtoById( int id )
 			return g_instances[i];
 
 	return NULL;
+}
+
+unsigned int ext_yahoo_add_handler(int id, int fd, yahoo_input_condition cond, void *data)
+{	
+	CYahooProto* ppro = getProtoById( id ); 
+	if ( ppro ) 
+		return ppro->ext_yahoo_add_handler(fd, cond, data);
+	
+	return 0;
+}
+
+void ext_yahoo_remove_handler(int id, unsigned int tag)
+{
+	GETPROTOBYID( id )->ext_yahoo_remove_handler(tag); 
 }
 
 void ext_yahoo_status_changed(int id, const char *who, int protocol, int stat, const char *msg, int away, int idle, int mobile, int utf8)

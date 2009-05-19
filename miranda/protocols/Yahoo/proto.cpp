@@ -33,7 +33,9 @@ CYahooProto::CYahooProto( const char* aProtoName, const TCHAR* aUserName ) :
 	m_szModuleName = mir_strdup( aProtoName );
 
 	m_startStatus = ID_STATUS_ONLINE;
-
+	m_connections = NULL;
+	m_connection_tags = 0;
+	
 	logoff_buddies();
 
 	SkinAddNewSoundEx(Translate( "mail" ), m_szModuleName, "New E-mail available in Inbox" );
@@ -595,7 +597,7 @@ int __cdecl CYahooProto::SetApparentMode( HANDLE hContact, int mode )
 
 int __cdecl CYahooProto::SetStatus( int iNewStatus )
 {
-	DebugLog("[SetStatus] New status %s", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, iNewStatus, 0));
+	LOG(("[SetStatus] New status %s", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, iNewStatus, 0)));
 	
 	if (iNewStatus == ID_STATUS_OFFLINE) {
 		
