@@ -146,7 +146,7 @@ static INT_PTR Proto_GetContactBaseProto(WPARAM wParam, LPARAM)
 	pd = ( PROTOCOLDESCRIPTOR* )Proto_IsProtocolLoaded( dbv.pszVal );
 	if ( pd == NULL ) {
 		PROTOACCOUNT* pa = ProtoGetAccount(( char* )dbv.pszVal );
-		if ( pa )
+		if ( pa && IsAccountEnabled( pa ))
 			return (INT_PTR)pa->szModuleName;
 
 		return (INT_PTR)(char*)NULL;
