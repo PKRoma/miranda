@@ -151,7 +151,7 @@ void FreeMenuProtos( void )
 
 //////////////////////////////////////////////////////////////////////////
 
-int GetAverageMode()
+int GetAverageMode(int* pNetProtoCount = NULL)
 {
 	int netProtoCount,i;
 	int averageMode=0;
@@ -175,6 +175,7 @@ int GetAverageMode()
 			break;
 	}	}
 
+    if (pNetProtoCount) *pNetProtoCount = netProtoCount;
 	return averageMode;
 }
 
@@ -1083,29 +1084,14 @@ static int MenuProtoAck(WPARAM, LPARAM lParam)
 {
 	int i,networkProtoCount;
 	ACKDATA* ack=(ACKDATA*)lParam;
-	int overallStatus = 0,thisStatus;
+	int overallStatus;
 	TMO_MenuItem tmi;
 
 	if ( ack->type != ACKTYPE_STATUS ) return 0;
 	if ( ack->result != ACKRESULT_SUCCESS ) return 0;
 	if ( hStatusMainMenuHandles == NULL ) return 0;
 
-	networkProtoCount = 0;
-	for ( i=0; i < accounts.getCount(); i++ ) {
-		PROTOACCOUNT* pa = accounts[i];
-        if (!IsAccountEnabled(pa)) continue;
-		int flags = CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_2, 0 );
-		int flags2 = CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_5, 0 );
-		if ((flags & ~flags2) == 0)
-			continue;
-
-		thisStatus = ack->lParam;
-		if ( overallStatus == 0 )
-			overallStatus = thisStatus;
-		else if ( overallStatus != thisStatus )
-			overallStatus = -1;
-		networkProtoCount++;
-	}
+    overallStatus = GetAverageMode(&networkProtoCount);
 
 	memset(&tmi,0,sizeof(tmi));
 	tmi.cbSize=sizeof(tmi);
@@ -1145,21 +1131,21 @@ static int MenuProtoAck(WPARAM, LPARAM lParam)
 
 	for ( i=0; i < accounts.getCount(); i++ ) {
 		if ( !lstrcmpA( accounts[i]->szModuleName, ack->szModule )) {
-			//hProcess is previous mode, lParam is new mode
-			if ((( int )ack->hProcess >= ID_STATUS_OFFLINE || ( int )ack->hProcess == 0 ) && ( int )ack->hProcess < ID_STATUS_OFFLINE + SIZEOF(statusModeList)) {
-				int pos = statustopos(( int )ack->hProcess);
-				if ( pos == -1 )
-					pos = 0;
-				for ( pos = 0; pos < SIZEOF(statusModeList); pos++ ) {
-					tmi.flags = CMIM_FLAGS | CMIF_ROOTHANDLE;
-					MO_ModifyMenuItem( hStatusMenuHandles[i].menuhandle[pos], &tmi );
-			}	}
+		//hProcess is previous mode, lParam is new mode
+		if ((( int )ack->hProcess >= ID_STATUS_OFFLINE || ( int )ack->hProcess == 0 ) && ( int )ack->hProcess < ID_STATUS_OFFLINE + SIZEOF(statusModeList)) {
+			int pos = statustopos(( int )ack->hProcess);
+			if ( pos == -1 )
+				pos = 0;
+			for ( pos = 0; pos < SIZEOF(statusModeList); pos++ ) {
+				tmi.flags = CMIM_FLAGS | CMIF_ROOTHANDLE;
+				MO_ModifyMenuItem( hStatusMenuHandles[i].menuhandle[pos], &tmi );
+		}	}
 
-			if ( ack->lParam >= ID_STATUS_OFFLINE && ack->lParam < ID_STATUS_OFFLINE + SIZEOF(statusModeList)) {
-				int pos = statustopos(( int )ack->lParam );
-				if ( pos >= 0 && pos < SIZEOF(statusModeList)) {
-					tmi.flags = CMIM_FLAGS | CMIF_ROOTHANDLE | CMIF_CHECKED;
-					MO_ModifyMenuItem( hStatusMenuHandles[i].menuhandle[pos], &tmi );
+		if ( ack->lParam >= ID_STATUS_OFFLINE && ack->lParam < ID_STATUS_OFFLINE + SIZEOF(statusModeList)) {
+			int pos = statustopos(( int )ack->lParam );
+			if ( pos >= 0 && pos < SIZEOF(statusModeList)) {
+				tmi.flags = CMIM_FLAGS | CMIF_ROOTHANDLE | CMIF_CHECKED;
+				MO_ModifyMenuItem( hStatusMenuHandles[i].menuhandle[pos], &tmi );
 			}	}
 			break;
 	}	}
