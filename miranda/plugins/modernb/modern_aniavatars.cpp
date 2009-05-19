@@ -732,6 +732,7 @@ static int	_AniAva_LoadAvatarFromImage(TCHAR * szFileName, int width, int height
 		SelectObject(hTempDC,hOldBitmap);
 		DeleteObject(hNewBmp);
 		DeleteDC(hTempDC);
+        DeleteObject(hBitmap);
 
 
 		//delete old
