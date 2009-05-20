@@ -4063,13 +4063,9 @@ static int ske_ValidateSingleFrameImage(FRAMEWND * Frame, BOOL SkipBkgBlitting) 
 		n=ske_CreateDIB32(w,h);
 		o=(HBITMAP)SelectObject(hdc,n);
 		{
-			HRGN rgnUpdate=0;
-
 			if (Frame->UpdateRgn && !SkipBkgBlitting)
 			{
-
-				rgnUpdate=Frame->UpdateRgn;
-				GetRgnBox(rgnUpdate,&ru);
+				GetRgnBox(Frame->UpdateRgn,&ru);
 				{
 					RECT rc;
 					GetClientRect(Frame->hWnd,&rc);
@@ -4096,10 +4092,11 @@ static int ske_ValidateSingleFrameImage(FRAMEWND * Frame, BOOL SkipBkgBlitting) 
 				{
 					BitBlt(hdc,x1,y1,w1,h1,g_pCachedWindow->hBackDC,x+x1,y+y1,SRCCOPY);  
 				}
-				Frame->PaintCallbackProc(Frame->hWnd,hdc,&ru,rgnUpdate, Frame->dwFlags,Frame->PaintData);
+				Frame->PaintCallbackProc(Frame->hWnd,hdc,&ru,Frame->UpdateRgn, Frame->dwFlags,Frame->PaintData);
 			}
 			else
 			{
+			    HRGN rgnUpdate;
 				RECT r;
 				GetClientRect(Frame->hWnd,&r);
 				rgnUpdate=CreateRectRgn(r.left,r.top,r.right,r.bottom); 
@@ -4124,8 +4121,9 @@ static int ske_ValidateSingleFrameImage(FRAMEWND * Frame, BOOL SkipBkgBlitting) 
 				}
 				Frame->PaintCallbackProc(Frame->hWnd,hdc,&r,rgnUpdate, Frame->dwFlags,Frame->PaintData);
 				ru=r;
+			    DeleteObject(rgnUpdate);
 			}
-			DeleteObject(rgnUpdate);
+			DeleteObject(Frame->UpdateRgn);
 			Frame->UpdateRgn=0;
 		}
 		if (!IsRectEmpty(&ru))
