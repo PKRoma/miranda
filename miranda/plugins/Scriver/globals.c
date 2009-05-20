@@ -281,6 +281,7 @@ void FreeGlobals() {
 			ImageList_Destroy(g_dat->hHelperIconList);
 		if (g_dat->hSearchEngineIconList)
 			ImageList_Destroy(g_dat->hSearchEngineIconList);
+        DestroyMenu(g_dat->hMenuANSIEncoding);
 		mir_free(g_dat->tabIconListUsage);
 		mir_free(g_dat);
 		g_dat = NULL;
