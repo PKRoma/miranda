@@ -150,11 +150,9 @@ void CListSettings_CopyCacheItems(pdisplayNameCacheEntry pDst, pdisplayNameCache
 
 	if ( flag & CCI_NAME )
 	{
+		pDst->isUnknown=pSrc->isUnknown;
         if (pSrc->isUnknown)
-        {
 		    pDst->m_cache_tcsName = pSrc->m_cache_tcsName;
-			pDst->isUnknown=pSrc->isUnknown;
-        }
         else
 		    pDst->m_cache_tcsName=mir_tstrdup(pSrc->m_cache_tcsName);
 		#if defined( _UNICODE )
