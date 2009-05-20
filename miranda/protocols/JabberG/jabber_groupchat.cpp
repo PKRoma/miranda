@@ -447,7 +447,7 @@ void CJabberDlgGcJoin::OnInitDialog()
 	CSuper::OnInitDialog();
 
 	SendMessage(m_hwnd, WM_SETICON, ICON_BIG, (LPARAM)m_proto->LoadIconEx("group"));
-	SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)m_proto->LoadIconEx("group"));
+	SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)g_LoadIconEx32("group"));
 
 	JabberGcRecentInfo *info = NULL;
 	if ( m_jid )
@@ -1179,7 +1179,7 @@ public:
 		mir_free( myNick );
 
 		SendMessage( m_hwnd, WM_SETICON, ICON_BIG, ( LPARAM )m_proto->LoadIconEx( "group" ));
-		SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)m_proto->LoadIconEx("group"));
+		SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)g_LoadIconEx32("group"));
 
 		SetFocus(GetDlgItem(m_hwnd, IDC_NICK));
 	}

@@ -387,26 +387,25 @@ XCHAR *GetInternalVariable(XCHAR *key, size_t keyLength, HANDLE hContact)
 			if ( lstrcmpA( pos, ".dat" ) == 0 )
 				*pos = 0;
 			theValue = mir_a2x(key, szProfileName);
-	    }	
+		}	
 		else if (!_xcscmp(theKey, XSTR(key, "username")))
 			theValue = GetUserNameX(key);
-        else if (!_xcscmp(theKey, XSTR(key, "miranda_userdata")) 
-                    || !_xcscmp(theKey, XSTR(key, "miranda_avatarcache"))
-                    || !_xcscmp(theKey, XSTR(key, "miranda_logpath"))) {
-            char szFullPath[MAX_PATH], szProfilePath[MAX_PATH], szProfileName[MAX_PATH];
-			CallService(MS_DB_GETPROFILEPATH, SIZEOF(szProfilePath), (LPARAM) szProfilePath);
-			CallService(MS_DB_GETPROFILENAME, SIZEOF(szProfileName), (LPARAM) szProfileName);
-			char *pos = strrchr(szProfileName, '.');
-			if ( lstrcmpA( pos, ".dat" ) == 0 )
-				*pos = 0;
-            if (!_xcscmp(theKey, XSTR(key, "miranda_avatarcache"))) 
-                mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Profiles\\%s\\AvatarCache", szProfilePath, szProfileName);
-            else if (!_xcscmp(theKey, XSTR(key, "miranda_logpath"))) 
-                mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Profiles\\%s\\Logs", szProfilePath, szProfileName);
-            else mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Profiles\\%s", szProfilePath, szProfileName);
-            theValue = mir_a2x(key, szFullPath);
-        }
-    }
+		else if (!_xcscmp(theKey, XSTR(key, "miranda_userdata")) 
+			|| !_xcscmp(theKey, XSTR(key, "miranda_avatarcache"))
+			|| !_xcscmp(theKey, XSTR(key, "miranda_logpath"))) {
+				char szFullPath[MAX_PATH], szProfilePath[MAX_PATH], szProfileName[MAX_PATH];
+				CallService(MS_DB_GETPROFILEPATH, SIZEOF(szProfilePath), (LPARAM) szProfilePath);
+				CallService(MS_DB_GETPROFILENAME, SIZEOF(szProfileName), (LPARAM) szProfileName);
+				char *pos = strrchr(szProfileName, '.');
+				if ( lstrcmpA( pos, ".dat" ) == 0 )
+					*pos = 0;
+				if (!_xcscmp(theKey, XSTR(key, "miranda_avatarcache"))) 
+					mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Profiles\\%s\\AvatarCache", szProfilePath, szProfileName);
+				else if (!_xcscmp(theKey, XSTR(key, "miranda_logpath"))) 
+					mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Profiles\\%s\\Logs", szProfilePath, szProfileName);
+				else mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Profiles\\%s", szProfilePath, szProfileName);
+				theValue = mir_a2x(key, szFullPath);
+	}	}
 
 	if (!theValue)
 		theValue = GetEnvironmentVariableX(theKey);

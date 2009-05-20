@@ -611,11 +611,15 @@ void CJabberProto::CheckAllContactsAreTransported()
 
 static TIconListItem sharedIconList[] =
 {
+	{   LPGEN("Privacy Lists"),         "privacylists",     IDI_PRIVACY_LISTS,      NULL },
+	{   LPGEN("Bookmarks"),             "bookmarks",        IDI_BOOKMARKS,          NULL }, 
+	{   LPGEN("Notes"),                 "notes",            IDI_NOTES,              NULL }, 
+	{   LPGEN("Multi-User Conference"), "group",            IDI_GROUP,              NULL },
 	{   LPGEN("Agents list"),           "Agents",           IDI_AGENTS,             NULL },
+
 	{   LPGEN("Transports"),            "transport",        IDI_TRANSPORT,          NULL },
 	{   LPGEN("Registered transports"), "transport_loc",    IDI_TRANSPORTL,         NULL },
 	{   LPGEN("Change password"),       "key",              IDI_KEYS,               NULL },
-	{   LPGEN("Multi-User Conference"), "group",            IDI_GROUP,              NULL },
 	{   LPGEN("Personal vCard"),        "vcard",            IDI_VCARD,              NULL },
 	{   LPGEN("Request authorization"), "Request",          IDI_REQUEST,            NULL },
 	{   LPGEN("Grant authorization"),   "Grant",            IDI_GRANT,              NULL },
@@ -624,10 +628,7 @@ static TIconListItem sharedIconList[] =
 	{   LPGEN("Add to roster"),         "addroster",        IDI_ADDROSTER,          NULL },
 	{   LPGEN("Login/logout"),          "trlogonoff",       IDI_LOGIN,              NULL },
 	{   LPGEN("Resolve nicks"),         "trresolve",        IDI_REFRESH,            NULL },
-	{   LPGEN("Bookmarks"),             "bookmarks",        IDI_BOOKMARKS,          NULL }, 
-	{   LPGEN("Notes"),	                "notes",            IDI_NOTES,              NULL }, 
 	{   LPGEN("Send note"),             "sendnote",         IDI_SEND_NOTE,          NULL }, 
-	{   LPGEN("Privacy Lists"),         "privacylists",     IDI_PRIVACY_LISTS,      NULL },
 	{   LPGEN("Service Discovery"),     "servicediscovery", IDI_SERVICE_DISCOVERY,  NULL },
 	{   LPGEN("AdHoc Command"),         "adhoc",            IDI_COMMAND,            NULL },
 	{   LPGEN("XML Console"),           "xmlconsole",       IDI_CONSOLE,            NULL },
@@ -664,23 +665,26 @@ static TIconListItem sharedIconList[] =
 	{   LPGEN("Deny Queries"),          "pl_iq_deny",       IDI_PL_QUERY_DENY,      LPGEN("Dialogs/Privacy") },
 };
 
-void g_IconsInit()
+static void sttProcessIcons( int iAmount, int iSize )
 {
-	SKINICONDESC sid = {0};
 	char szFile[MAX_PATH];
 	GetModuleFileNameA(hInst, szFile, MAX_PATH);
 
+	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.pszDefaultFile = szFile;
-	sid.cx = sid.cy = 16;
+	sid.cx = sid.cy = iSize;
 
 	char szRootSection[100];
 	mir_snprintf( szRootSection, SIZEOF(szRootSection), "%s/%s", LPGEN("Protocols"), LPGEN("Jabber") );
 
-	for ( int i = 0; i < SIZEOF(sharedIconList); i++ ) {
-		char szSettingName[100];
-		char szSectionName[100];
-		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", GLOBAL_SETTING_PREFIX, sharedIconList[i].szName );
+	for ( int i = 0; i < iAmount; i++ ) {
+		char szSettingName[100], szSectionName[100];
+
+		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s%s", 
+			GLOBAL_SETTING_PREFIX, sharedIconList[i].szName,
+			( iSize == 16 ) ? "" : "32" );
+
 		if ( sharedIconList[i].szSection ) {
 			mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s", szRootSection, sharedIconList[i].szSection );
 			sid.pszSection = szSectionName;
@@ -690,8 +694,17 @@ void g_IconsInit()
 		sid.pszName = szSettingName;
 		sid.pszDescription = sharedIconList[i].szDescr;
 		sid.iDefaultIndex = -sharedIconList[i].defIconID;
-		sharedIconList[i].hIcon = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+		if ( iSize == 16 )
+			sharedIconList[i].hIcon = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+		else
+			CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 }	}
+
+void g_IconsInit()
+{
+	sttProcessIcons( SIZEOF(sharedIconList), 16 );
+	sttProcessIcons( 5, 32 );
+}
 
 HANDLE g_GetIconHandle( int iconId )
 {
@@ -706,5 +719,12 @@ HICON g_LoadIconEx( const char* name )
 {
 	char szSettingName[100];
 	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", GLOBAL_SETTING_PREFIX, name );
+	return ( HICON )JCallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
+}
+
+HICON g_LoadIconEx32( const char* name )
+{
+	char szSettingName[100];
+	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s32", GLOBAL_SETTING_PREFIX, name );
 	return ( HICON )JCallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
 }

@@ -703,7 +703,7 @@ void CJabberDlgNotes::OnInitDialog()
 {
 	CSuper::OnInitDialog();
 	SendMessage(m_hwnd, WM_SETICON, ICON_BIG, (LPARAM)m_proto->LoadIconEx("notes"));
-	SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)m_proto->LoadIconEx("notes"));
+	SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)g_LoadIconEx32("notes"));
 
 	LOGFONT lf, lfTmp;
 	m_hfntNormal = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
