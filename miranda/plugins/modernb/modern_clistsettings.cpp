@@ -150,7 +150,13 @@ void CListSettings_CopyCacheItems(pdisplayNameCacheEntry pDst, pdisplayNameCache
 
 	if ( flag & CCI_NAME )
 	{
-		pDst->m_cache_tcsName=mir_tstrdup(pSrc->m_cache_tcsName);
+        if (pSrc->isUnknown)
+        {
+		    pDst->m_cache_tcsName = pSrc->m_cache_tcsName;
+			pDst->isUnknown=pSrc->isUnknown;
+        }
+        else
+		    pDst->m_cache_tcsName=mir_tstrdup(pSrc->m_cache_tcsName);
 		#if defined( _UNICODE )
 	        pDst->m_cache_szName=mir_strdup(pSrc->m_cache_szName);
 		#endif
@@ -200,7 +206,7 @@ void CListSettings_CopyCacheItems(pdisplayNameCacheEntry pDst, pdisplayNameCache
 //		if ( flag & CCI_EXPAND)			
 			pDst->IsExpanded=pSrc->IsExpanded;
 //		if ( flag & CCI_UNKNOWN)		
-			pDst->isUnknown=pSrc->isUnknown;
+//			pDst->isUnknown=pSrc->isUnknown;
 	}
 }
 
@@ -478,7 +484,7 @@ char *GetContactCachedProtocol(HANDLE hContact)
 
 char* GetProtoForContact(HANDLE hContact)
 {
-	return (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
+	return (char*)CallService(MS_PROTO_GETCONTACTBASEACCOUNT,(WPARAM)hContact,0);
 }
 
 int GetStatusForContact(HANDLE hContact,char *szProto)

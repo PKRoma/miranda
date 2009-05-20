@@ -114,7 +114,8 @@ void CheckPDNCE(ClcCacheEntryBase *_pdnce)
 	}
 	else {
 		if (pdnce->isUnknown&&pdnce->szProto&&pdnce->protoNotExists == TRUE&&OnModulesLoadedCalled) {
-			pdnce->protoNotExists=FALSE;						
+			pdnce->protoNotExists=FALSE;
+            mir_free(pdnce->name);
 			pdnce->name=GetNameForContact(pdnce->hContact,0,&pdnce->isUnknown);
 	}	}
 
@@ -241,7 +242,7 @@ TCHAR* GetNameForContact(HANDLE hContact,int flag,boolean *isUnknown)
 
 	if (isUnknown) {
 		if (UnknownConctactTranslatedName == NULL)
-			UnknownConctactTranslatedName = TranslateT("'(Unknown Contact)'");
+			UnknownConctactTranslatedName = TranslateT("(Unknown Contact)");
 
 		*isUnknown = lstrcmp(result ,UnknownConctactTranslatedName) == 0;
 	}
