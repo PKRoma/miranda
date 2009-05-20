@@ -533,7 +533,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 {
 	DWORD myPid=0;
 	int messageloop=1;
-	HMODULE hUser32, hThemeAPI, hDwmApi, hShFolder;
+	HMODULE hUser32, hThemeAPI, hDwmApi, hShFolder = NULL;
+    int result = 0;
 
 	hMirandaInst = hInstance;
 
@@ -592,9 +593,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 	if (LoadDefaultModules()) {
 		NotifyEventHooks(hShutdownEvent,0,0);
 		UnloadDefaultModules();
-		UnloadNewPluginsModule();
-		DestroyModularEngine();
-		return 1;
+
+        result = 1;
+        goto exit;
 	}
 	NotifyEventHooks(hModulesLoadedEvent,0,0);
 
@@ -645,13 +646,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 			}
 		} // while
 	}
+
+exit:
 	UnloadNewPluginsModule();
 	DestroyModularEngine();
 	CloseHandle(hStackMutex);
 	CloseHandle(hMirandaShutdown);
 	CloseHandle(hThreadQueueEmpty);
 	DestroyWindow(hAPCWindow);
-	return 0;
+
+    if (hDwmApi) FreeLibrary(hDwmApi);
+    if (hThemeAPI) FreeLibrary(hThemeAPI);
+    if (hShFolder) FreeLibrary(hShFolder);
+
+	return result;
 }
 
 static INT_PTR OkToExit(WPARAM, LPARAM)
