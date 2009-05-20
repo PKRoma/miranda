@@ -778,7 +778,7 @@ public:
 		mir_sntprintf(buf, SIZEOF(buf), _T("%s\n%s"), m_room, TranslateT("Send groupchat invitation.") );
 		SetDlgItemText( m_hwnd, IDC_HEADERBAR, buf );
 		SendMessage( m_hwnd, WM_SETICON, ICON_BIG, ( LPARAM )m_proto->LoadIconEx( "group" ));
-		SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)m_proto->LoadIconEx("group"));
+		SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)g_LoadIconEx32("group"));
 
 		SetWindowLong(GetDlgItem(m_hwnd, IDC_CLIST), GWL_STYLE,
 			GetWindowLong(GetDlgItem(m_hwnd, IDC_CLIST), GWL_STYLE)|CLS_HIDEOFFLINE|CLS_CHECKBOXES|CLS_HIDEEMPTYGROUPS|CLS_USEGROUPS|CLS_GREYALTERNATE|CLS_GROUPCHECKBOXES);
@@ -899,7 +899,7 @@ static LRESULT CALLBACK sttUserInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 		dat = (TUserInfoData *)lParam;
 
 		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)dat->ppro->LoadIconEx("group"));
-		SendDlgItemMessage(hwndDlg, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)dat->ppro->LoadIconEx("group"));
+		SendDlgItemMessage(hwndDlg, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)g_LoadIconEx32("group"));
 
 		LOGFONT lf;
 		GetObject((HFONT)SendDlgItemMessage(hwndDlg, IDC_TXT_NICK, WM_GETFONT, 0, 0), sizeof(lf), &lf);

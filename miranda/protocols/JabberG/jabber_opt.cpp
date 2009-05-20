@@ -1494,7 +1494,7 @@ static INT_PTR CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM w
 
 			TranslateDialogDefault( hwndDlg );
 			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )ppro->LoadIconEx( "Agents" ));
-			SendDlgItemMessage( hwndDlg, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)ppro->LoadIconEx("Agents"));
+			SendDlgItemMessage( hwndDlg, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)g_LoadIconEx32("Agents"));
 
 			Utils_RestoreWindowPosition(hwndDlg, NULL, ppro->m_szModuleName, "rosterCtrlWnd_");
 

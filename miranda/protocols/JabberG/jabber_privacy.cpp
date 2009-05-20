@@ -805,7 +805,7 @@ void CJabberDlgPrivacyLists::OnInitDialog()
 	CSuper::OnInitDialog();
 
 	SendMessage( m_hwnd, WM_SETICON, ICON_BIG, ( LPARAM )m_proto->LoadIconEx( "privacylists" ));
-	SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)m_proto->LoadIconEx("privacylists"));
+	SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)g_LoadIconEx32("privacylists"));
 
 	EnableWindow( GetDlgItem( m_hwnd, IDC_ADD_RULE ), FALSE );
 	EnableWindow( GetDlgItem( m_hwnd, IDC_EDIT_RULE ), FALSE );
