@@ -145,12 +145,15 @@ DWORD CYahooProto::Set_Protocol( HANDLE hContact, int protocol )
 	SetWord(hContact, "yprotoid", protocol);
 	
 	switch (protocol) {
-		case 0: break; /* Yahoo, nothing special here */
-		case 2: s = "MSN"; break;
-		
+		case YAHOO_IM_YAHOO: s = "Yahoo"; break; /* Yahoo, nothing special here */
+		case YAHOO_IM_MSN: s = "Windows Live (MSN)"; break;
+		case YAHOO_IM_LCS: s = "LCS"; break;
+		case YAHOO_IM_SAMETIME: s = "Lotus Sametime"; break;
 	} 
 	
-	SetString(hContact, "MirVer", s);
+	if (protocol != YAHOO_IM_YAHOO)
+		SetString(hContact, "MirVer", s);
+	
 	SetString(hContact, "Transport", s);
 	return 0;
 }
