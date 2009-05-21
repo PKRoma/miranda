@@ -38,17 +38,17 @@ static BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		ppro = (CYahooProto*)lParam;
 		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 
-		if ( !ppro->getString( YAHOO_LOGINID, &dbv )) {
+		if ( !ppro->GetString( YAHOO_LOGINID, &dbv )) {
 			SetDlgItemTextA(hwndDlg,IDC_HANDLE,dbv.pszVal);
 			DBFreeVariant(&dbv);
 		}
 
-		if ( !ppro->getString( "Nick", &dbv )) {
+		if ( !ppro->GetString( "Nick", &dbv )) {
 			SetDlgItemTextA(hwndDlg,IDC_NICK,dbv.pszVal);
 			DBFreeVariant(&dbv);
 		}
 
-		if ( !ppro->getString( YAHOO_PASSWORD, &dbv )) {
+		if ( !ppro->GetString( YAHOO_PASSWORD, &dbv )) {
 			//bit of a security hole here, since it's easy to extract a password from an edit box
 			YAHOO_CallService( MS_DB_CRYPT_DECODESTRING, strlen( dbv.pszVal )+1, ( LPARAM )dbv.pszVal );
 			SetDlgItemTextA( hwndDlg, IDC_PASSWORD, dbv.pszVal );
@@ -111,25 +111,25 @@ static BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			GetDlgItemTextA( hwndDlg, IDC_HANDLE, str, sizeof( str ));
 			dbv.pszVal = NULL;
 			
-			if ( ppro->getString( YAHOO_LOGINID, &dbv ) || lstrcmpA( str, dbv.pszVal ))
+			if ( ppro->GetString( YAHOO_LOGINID, &dbv ) || lstrcmpA( str, dbv.pszVal ))
 				reconnectRequired = TRUE;
 				
 			if ( dbv.pszVal != NULL )
 				DBFreeVariant( &dbv );
 			
-			ppro->SetString( NULL, YAHOO_LOGINID, str );
+			ppro->SetString( YAHOO_LOGINID, str );
 
 			GetDlgItemTextA( hwndDlg, IDC_PASSWORD, str, sizeof( str ));
 			YAHOO_CallService( MS_DB_CRYPT_ENCODESTRING, sizeof( str ),( LPARAM )str );
 			dbv.pszVal = NULL;
-			if ( ppro->getString( YAHOO_PASSWORD, &dbv ) || lstrcmpA( str, dbv.pszVal ))
+			if ( ppro->GetString( YAHOO_PASSWORD, &dbv ) || lstrcmpA( str, dbv.pszVal ))
 				reconnectRequired = TRUE;
 			if ( dbv.pszVal != NULL )
 				DBFreeVariant( &dbv );
 			
-			ppro->SetString( NULL, YAHOO_PASSWORD, str );
+			ppro->SetString( YAHOO_PASSWORD, str );
 			GetDlgItemTextA( hwndDlg, IDC_NICK, str, sizeof( str ));
-			ppro->SetString( NULL, "Nick", str );
+			ppro->SetString( "Nick", str );
 
 			ppro->SetByte("YahooJapan", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_YAHOO_JAPAN ));
 			ppro->SetByte("DisableUTF8", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLE_UTF8 )); 
@@ -168,7 +168,7 @@ static BOOL CALLBACK DlgProcYahooOptsConn(HWND hwndDlg, UINT msg, WPARAM wParam,
 		ppro = ( CYahooProto* )lParam;
 		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 
-		if ( !ppro->getString( YAHOO_LOGINSERVER, &dbv )){
+		if ( !ppro->GetString( YAHOO_LOGINSERVER, &dbv )){
 			SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, dbv.pszVal );
 			DBFreeVariant( &dbv );
 		}
@@ -217,13 +217,13 @@ static BOOL CALLBACK DlgProcYahooOptsConn(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 			GetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, str, sizeof( str ));
 			
-			if ( ppro->getString( YAHOO_LOGINSERVER, &dbv ) || lstrcmpA( str, dbv.pszVal ))
+			if ( ppro->GetString( YAHOO_LOGINSERVER, &dbv ) || lstrcmpA( str, dbv.pszVal ))
 				reconnectRequired = TRUE;
 				
 			if ( dbv.pszVal != NULL )
 				DBFreeVariant( &dbv );
 
-			ppro->SetString( NULL, YAHOO_LOGINSERVER, str );
+			ppro->SetString( YAHOO_LOGINSERVER, str );
 
 			port = GetDlgItemInt( hwndDlg, IDC_YAHOOPORT, NULL, FALSE );
 			if ( ppro->GetWord(NULL, YAHOO_LOGINPORT, -1) != port)

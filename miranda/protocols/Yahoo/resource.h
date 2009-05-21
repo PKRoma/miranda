@@ -78,6 +78,13 @@
 #define IDD_SEARCHUSER					400
 #define IDC_SEARCH_ID					401
 #define IDC_SEARCH_PROTOCOL				402
+
+/*
+ *
+ */
+#define	IDD_USER_INFO					500
+#define IDC_NFO_CLIENT					501
+
 /*
  *
  */

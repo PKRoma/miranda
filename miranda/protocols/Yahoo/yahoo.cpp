@@ -453,7 +453,7 @@ void CYahooProto::ext_status_logon(const char *who, int protocol, int stat, cons
 	}
 	
 	if (s != NULL) 
-		DBWriteContactSettingString( hContact, m_szModuleName, "MirVer", s);
+		SetString( hContact, "MirVer", s);
 	else
 		DBDeleteContactSetting( hContact, m_szModuleName, "MirVer");
 
@@ -1468,7 +1468,7 @@ void CYahooProto::ext_login(enum yahoo_status login_mode)
 	} 
 	
 	if 	(host[0] == '\0') {
-		if (!getString(YAHOO_LOGINSERVER, &dbv)) {
+		if (!GetString(YAHOO_LOGINSERVER, &dbv)) {
 			mir_snprintf(host, sizeof(host), "%s", dbv.pszVal);
 			DBFreeVariant(&dbv);
 		}

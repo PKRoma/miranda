@@ -103,6 +103,7 @@ extraResourceOptions=
 20=libyahoo2\yahoo_auth.c
 21=ignore.cpp
 22=proto.cpp
+23=user_info.cpp
 [Header]
 1=http_gateway.h
 2=resource.h
@@ -138,15 +139,6 @@ extraResourceOptions=
 6=libyahoo2\Docs\TODO
 7=libyahoo2\Docs\ymsg-9.txt
 [History]
-proto.cpp,26934
-services.cpp,1114
-libyahoo2\libyahoo2.c,86504
-proto.h,9399
-server.cpp,702
-util.cpp,1973
-avatar.cpp,448
-im.cpp,4279
-file_transfer.cpp,17444
-libyahoo2\yahoo2_callbacks.h,29912
-libyahoo2\yahoo_httplib.c,9947
-yahoo.cpp,0
+..\MSN\msn_misc.cpp,7296
+..\MSN\msn_proto.cpp,6304
+avatar.cpp,0

@@ -207,18 +207,21 @@ struct CYahooProto : public PROTO_INTERFACE
 
 	INT_PTR __cdecl  SetCustomStatCommand( WPARAM, LPARAM );
 
-	//====| util.cpp |====================================================================
-	int    getString( const char* name, DBVARIANT* );
-	int    getString( HANDLE hContact, const char* name, DBVARIANT* );
+	//====| user_info.cpp |===============================================================
+	int		OnUserInfoInit( WPARAM wParam, LPARAM lParam );
 	
-	void   setString( const char* name, const char* value );
-	void   setString( HANDLE hContact, const char* name, const char* value );
-
+	//====| util.cpp |====================================================================
 	int  GetByte( const char* valueName, int parDefltValue );
 	int  SetByte( const char* valueName, int parValue );
 	int  GetByte( HANDLE hContact, const char* valueName, int parDefltValue );
 	int  SetByte( HANDLE hContact, const char* valueName, int parValue );
 
+	int    GetString( const char* name, DBVARIANT* );
+	int    GetString( HANDLE hContact, const char* name, DBVARIANT* );
+	
+	void   SetString( const char* name, const char* value );
+	void   SetString( HANDLE hContact, const char* name, const char* value );
+	DWORD  SetStringUtf( HANDLE hContact, const char* valueName, const char* parValue );
 	
 	DWORD  GetDword( const char* valueName, DWORD parDefltValue );
 	DWORD  SetDword( const char* valueName, DWORD parValue );
@@ -228,9 +231,6 @@ struct CYahooProto : public PROTO_INTERFACE
 
 	WORD   GetWord( HANDLE hContact, const char* valueName, int parDefltValue );
 	WORD  SetWord( HANDLE hContact, const char* valueName, int parValue );
-
-	DWORD  SetString( HANDLE hContact, const char* valueName, const char* parValue );
-	DWORD  SetStringUtf( HANDLE hContact, const char* valueName, const char* parValue );
 
 	DWORD  Set_Protocol( HANDLE hContact, int protocol );
 

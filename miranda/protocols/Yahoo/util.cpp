@@ -145,12 +145,15 @@ DWORD CYahooProto::Set_Protocol( HANDLE hContact, int protocol )
 	SetWord(hContact, "yprotoid", protocol);
 	
 	switch (protocol) {
-		case 0: break; /* Yahoo, nothing special here */
-		case 2: s = "MSN"; break;
-		
+		case YAHOO_IM_YAHOO: s = "Yahoo"; break; /* Yahoo, nothing special here */
+		case YAHOO_IM_MSN: s = "Windows Live (MSN)"; break;
+		case YAHOO_IM_LCS: s = "LCS"; break;
+		case YAHOO_IM_SAMETIME: s = "Lotus Sametime"; break;
 	} 
 	
-	SetString(hContact, "MirVer", s);
+	if (protocol != YAHOO_IM_YAHOO)
+		SetString(hContact, "MirVer", s);
+	
 	SetString(hContact, "Transport", s);
 	return 0;
 }
@@ -171,9 +174,20 @@ int CYahooProto::SendBroadcast( HANDLE hContact, int type, int result, HANDLE hP
 	return YAHOO_CallService( MS_PROTO_BROADCASTACK, 0, ( LPARAM )&ack );
 }
 
-DWORD CYahooProto::SetString( HANDLE hContact, const char* valueName, const char* parValue )
-{
-	return DBWriteContactSettingString( hContact, m_szModuleName, valueName, parValue );
+int CYahooProto::GetString( const char* name, DBVARIANT* result )
+{	return DBGetContactSettingString( NULL, m_szModuleName, name, result );
+}
+
+int CYahooProto::GetString( HANDLE hContact, const char* name, DBVARIANT* result )
+{	return DBGetContactSettingString( hContact, m_szModuleName, name, result );
+}
+
+void CYahooProto::SetString( const char* name, const char* value )
+{	DBWriteContactSettingString(NULL, m_szModuleName, name, value );
+}
+
+void CYahooProto::SetString( HANDLE hContact, const char* name, const char* value )
+{	DBWriteContactSettingString(hContact, m_szModuleName, name, value );
 }
 
 DWORD CYahooProto::SetStringUtf( HANDLE hContact, const char* valueName, const char* parValue )

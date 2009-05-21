@@ -165,7 +165,7 @@ static BOOL CALLBACK DlgProcSetCustStat(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				GetDlgItemTextA( hwndDlg, IDC_CUSTSTAT, str, sizeof( str ));
 
 				/* Save it for later use */
-				ppro->SetString( NULL, YAHOO_CUSTSTATDB, str );
+				ppro->SetString( YAHOO_CUSTSTATDB, str );
 				ppro->SetByte("BusyCustStat", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_CUSTSTATBUSY ));
 
 				/* set for Idle/AA */
@@ -279,7 +279,7 @@ INT_PTR __cdecl CYahooProto::OnShowMyProfileCommand( WPARAM wParam, LPARAM lPara
 {
 	DBVARIANT dbv;
 	
-	if ( getString( YAHOO_LOGINID, &dbv ) != 0)	{
+	if ( GetString( YAHOO_LOGINID, &dbv ) != 0)	{
 		ShowError(Translate("Yahoo Error"), Translate("Please enter your yahoo id in Options/Network/Yahoo"));
 		return 0;
 	}
