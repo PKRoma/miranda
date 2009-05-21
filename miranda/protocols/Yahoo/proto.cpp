@@ -616,7 +616,7 @@ int __cdecl CYahooProto::SetStatus( int iNewStatus )
 		/*
 		* Load Yahoo ID from the database.
 		*/
-		if (!getString(YAHOO_LOGINID, &dbv)) {
+		if (!GetString(YAHOO_LOGINID, &dbv)) {
 			if (lstrlenA(dbv.pszVal) > 0) {
 				lstrcpynA(m_yahoo_id, dbv.pszVal, 255);
 			} else
@@ -630,7 +630,7 @@ int __cdecl CYahooProto::SetStatus( int iNewStatus )
 		if (err) {
 			lstrcpynA(errmsg, Translate("Please enter your yahoo id in Options/Network/Yahoo"), 80);
 		} else {
-			if (!getString(YAHOO_PASSWORD, &dbv)) {
+			if (!GetString(YAHOO_PASSWORD, &dbv)) {
 				CallService(MS_DB_CRYPT_DECODESTRING, lstrlenA(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
 				if (lstrlenA(dbv.pszVal) > 0) {
 					lstrcpynA(m_password, dbv.pszVal, 255);
@@ -889,13 +889,13 @@ INT_PTR CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 
 			DBVARIANT dbv;
-			if ( !ppro->getString(YAHOO_LOGINID, &dbv))
+			if ( !ppro->GetString(YAHOO_LOGINID, &dbv))
 			{
 				SetDlgItemTextA(hwndDlg, IDC_HANDLE, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
 
-			if ( !ppro->getString(YAHOO_PASSWORD, &dbv))
+			if ( !ppro->GetString(YAHOO_PASSWORD, &dbv))
 			{
 				CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
 				SetDlgItemTextA(hwndDlg, IDC_PASSWORD, dbv.pszVal);
@@ -932,10 +932,10 @@ INT_PTR CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 			char str[128];
 			GetDlgItemTextA(hwndDlg, IDC_HANDLE, str, sizeof(str));
-			ppro->setString(YAHOO_LOGINID, str);
+			ppro->SetString(YAHOO_LOGINID, str);
 			GetDlgItemTextA(hwndDlg, IDC_PASSWORD, str, sizeof(str));
 			CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
-			ppro->setString(YAHOO_PASSWORD, str);
+			ppro->SetString(YAHOO_PASSWORD, str);
 			ppro->SetByte("YahooJapan", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_YAHOO_JAPAN ));
 			return TRUE;
 		}
@@ -952,18 +952,3 @@ INT_PTR CYahooProto::SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam)
 		 (HWND)lParam, first_run_dialog, (LPARAM)this );
 }
 
-int CYahooProto::getString( const char* name, DBVARIANT* result )
-{	return DBGetContactSettingString( NULL, m_szModuleName, name, result );
-}
-
-int CYahooProto::getString( HANDLE hContact, const char* name, DBVARIANT* result )
-{	return DBGetContactSettingString( hContact, m_szModuleName, name, result );
-}
-
-void CYahooProto::setString( const char* name, const char* value )
-{	DBWriteContactSettingString(NULL, m_szModuleName, name, value );
-}
-
-void CYahooProto::setString( HANDLE hContact, const char* name, const char* value )
-{	DBWriteContactSettingString(hContact, m_szModuleName, name, value );
-}

@@ -171,9 +171,20 @@ int CYahooProto::SendBroadcast( HANDLE hContact, int type, int result, HANDLE hP
 	return YAHOO_CallService( MS_PROTO_BROADCASTACK, 0, ( LPARAM )&ack );
 }
 
-DWORD CYahooProto::SetString( HANDLE hContact, const char* valueName, const char* parValue )
-{
-	return DBWriteContactSettingString( hContact, m_szModuleName, valueName, parValue );
+int CYahooProto::GetString( const char* name, DBVARIANT* result )
+{	return DBGetContactSettingString( NULL, m_szModuleName, name, result );
+}
+
+int CYahooProto::GetString( HANDLE hContact, const char* name, DBVARIANT* result )
+{	return DBGetContactSettingString( hContact, m_szModuleName, name, result );
+}
+
+void CYahooProto::SetString( const char* name, const char* value )
+{	DBWriteContactSettingString(NULL, m_szModuleName, name, value );
+}
+
+void CYahooProto::SetString( HANDLE hContact, const char* name, const char* value )
+{	DBWriteContactSettingString(hContact, m_szModuleName, name, value );
 }
 
 DWORD CYahooProto::SetStringUtf( HANDLE hContact, const char* valueName, const char* parValue )
