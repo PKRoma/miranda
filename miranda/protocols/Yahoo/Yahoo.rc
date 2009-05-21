@@ -142,6 +142,26 @@ BEGIN
 	COMBOBOX        IDC_SEARCH_PROTOCOL,0,40,105,75,CBS_DROPDOWNLIST
 END
 
+IDD_USER_INFO DIALOGEX 0, 0, 221, 132
+STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    LTEXT           "ID:", 			IDC_STATIC, 5, 5, 71,8
+    EDITTEXT        IDC_SEARCH_ID, 74, 5, 143, 12, ES_AUTOHSCROLL | ES_READONLY | NOT 
+                    WS_BORDER
+	
+    LTEXT           "Protocol:", 	IDC_STATIC, 5, 18, 71, 8
+    EDITTEXT        IDC_SEARCH_PROTOCOL, 74, 18, 143,12, ES_AUTOHSCROLL | ES_READONLY | NOT 
+                    WS_BORDER
+					
+    LTEXT           "Client:", 	IDC_STATIC, 5, 31, 71, 8
+    EDITTEXT        IDC_NFO_CLIENT, 74, 31, 143,12, ES_AUTOHSCROLL | ES_READONLY | NOT 
+                    WS_BORDER
+					
+					
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

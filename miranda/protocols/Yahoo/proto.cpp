@@ -18,6 +18,7 @@
 #include <m_idle.h>
 #include <m_options.h>
 #include <m_skin.h>
+#include <m_userinfo.h>
 
 #include "resource.h"
 #include "file_transfer.h"
@@ -70,6 +71,7 @@ int CYahooProto::OnModulesLoadedEx( WPARAM, LPARAM )
 {
 	MenuInit();
 
+	YHookEvent(ME_USERINFO_INITIALISE, &CYahooProto::OnUserInfoInit );
 	YHookEvent(ME_DB_CONTACT_SETTINGCHANGED, &CYahooProto::OnSettingChanged);
 	YHookEvent(ME_IDLE_CHANGED, &CYahooProto::OnIdleEvent);
 

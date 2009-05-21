@@ -207,6 +207,9 @@ struct CYahooProto : public PROTO_INTERFACE
 
 	INT_PTR __cdecl  SetCustomStatCommand( WPARAM, LPARAM );
 
+	//====| user_info.cpp |===============================================================
+	int		OnUserInfoInit( WPARAM wParam, LPARAM lParam );
+	
 	//====| util.cpp |====================================================================
 	int  GetByte( const char* valueName, int parDefltValue );
 	int  SetByte( const char* valueName, int parValue );
