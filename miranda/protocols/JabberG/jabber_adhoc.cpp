@@ -234,14 +234,19 @@ int CJabberProto::AdHoc_OnJAHMProcessResult(HWND hwndDlg, HXML workNode, JabberA
 		if (( commandNode = xmlGetChild( dat->AdHocNode, _T("command"))) == NULL )
 			return TRUE;
 
+		const TCHAR * status = xmlGetAttrValue( commandNode, _T("status"));
+		if (!status) status = _T("completed");
+
 		if (( xNode = xmlGetChild( commandNode , "x" ))) {
 			// use jabber:x:data form
 			HWND hFrame = GetDlgItem( hwndDlg, IDC_FRAME );
 			ShowWindow( GetDlgItem( hwndDlg, IDC_FRAME_TEXT ), SW_HIDE );
 			if (( n = xmlGetChild( xNode , "instructions" )) != NULL && xmlGetText( n )!=NULL )
 				JabberFormSetInstruction( hwndDlg, xmlGetText( n ) );
+			else if (( n = xmlGetChild( xNode , "title" )) != NULL && xmlGetText( n )!=NULL )
+				JabberFormSetInstruction( hwndDlg, xmlGetText( n ) );
 			else
-				JabberFormSetInstruction( hwndDlg, NULL );
+				JabberFormSetInstruction(hwndDlg, TranslateTS(status) );
 			JabberFormCreateUI( hFrame, xNode, &dat->CurrentHeight );
 			ShowDlgItem(  hwndDlg, IDC_FRAME , SW_SHOW);
 		} 
@@ -254,7 +259,8 @@ int CJabberProto::AdHoc_OnJAHMProcessResult(HWND hwndDlg, HXML workNode, JabberA
 			HXML noteNode = xmlGetChild( commandNode , "note");
 			if (noteNode)
 				noteText = xmlGetText( noteNode );
-			JabberFormSetInstruction(hwndDlg, noteText?noteText:_T(""));
+
+			JabberFormSetInstruction(hwndDlg, noteText ? noteText : TranslateTS(status) );
 		}
 
 		//check actions
@@ -275,7 +281,6 @@ int CJabberProto::AdHoc_OnJAHMProcessResult(HWND hwndDlg, HXML workNode, JabberA
 			EnableDlgItem(hwndDlg,IDC_SUBMIT, TRUE);
 		}
 
-		const TCHAR * status = xmlGetAttrValue( commandNode, _T("status"));
 		if (!status || _tcscmp(status,_T("executing"))) {
 			ShowDlgItem( hwndDlg, IDC_SUBMIT, SW_HIDE);
 			SetWindowText(GetDlgItem(hwndDlg,IDCANCEL), TranslateT("Done"));
