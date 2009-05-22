@@ -2080,10 +2080,10 @@ static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
 	// Folders plugin support
 	if (ServiceExists(MS_FOLDERS_REGISTER_PATH))
 	{
-		hMyAvatarsFolder = (HANDLE) FoldersRegisterCustomPath(Translate("Avatars"), Translate("My Avatars"),
+		hMyAvatarsFolder = (HANDLE) FoldersRegisterCustomPath("Avatars", "My Avatars",
 			PROFILE_PATH "\\" CURRENT_PROFILE "\\MyAvatars");
 
-		hGlobalAvatarFolder = (HANDLE) FoldersRegisterCustomPath(Translate("Avatars"), Translate("My Global Avatar Cache"),
+		hGlobalAvatarFolder = (HANDLE) FoldersRegisterCustomPath("Avatars", "My Global Avatar Cache",
 			FOLDER_AVATARS "\\GlobalAvatar");
 	}
 
