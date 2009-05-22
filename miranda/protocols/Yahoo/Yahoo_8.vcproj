@@ -451,6 +451,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\user_info.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\search.cpp"
 				>
 			</File>
