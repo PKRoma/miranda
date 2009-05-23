@@ -696,7 +696,6 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                              DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_POPFLAGS, SRMSGDEFSET_POPFLAGS));
 			CheckDlgButton(hwndDlg, IDC_AUTOPOPUP, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP));
 			CheckDlgButton(hwndDlg, IDC_STAYMINIMIZED, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_STAYMINIMIZED, SRMSGDEFSET_STAYMINIMIZED));
-			CheckDlgButton(hwndDlg, IDC_DONOTSTEALFOCUS, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_DONOTSTEALFOCUS, SRMSGDEFSET_DONOTSTEALFOCUS));
 			CheckDlgButton(hwndDlg, IDC_AUTOMIN, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN));
 			CheckDlgButton(hwndDlg, IDC_SAVEDRAFTS, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEDRAFTS, SRMSGDEFSET_SAVEDRAFTS));
 			CheckDlgButton(hwndDlg, IDC_AUTORESIZE, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTORESIZE, SRMSGDEFSET_AUTORESIZE));
@@ -714,20 +713,15 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                         CheckDlgButton(hwndDlg, IDC_HIDECONTAINERS, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_HIDECONTAINERS, SRMSGDEFSET_HIDECONTAINERS));
 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_STAYMINIMIZED), IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
-			EnableWindow(GetDlgItem(hwndDlg, IDC_DONOTSTEALFOCUS), IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP) & !IsDlgButtonChecked(hwndDlg, IDC_STAYMINIMIZED));
 			EnableWindow(GetDlgItem(hwndDlg, IDC_POPLIST), IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
 
-                        return TRUE;
+            return TRUE;
 		}
 		case WM_COMMAND:
                     switch (LOWORD(wParam)) {
                         case IDC_AUTOPOPUP:
                                 EnableWindow(GetDlgItem(hwndDlg, IDC_STAYMINIMIZED), IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
                                 EnableWindow(GetDlgItem(hwndDlg, IDC_POPLIST), IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
-                                EnableWindow(GetDlgItem(hwndDlg, IDC_DONOTSTEALFOCUS), IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP) & !IsDlgButtonChecked(hwndDlg, IDC_STAYMINIMIZED));
-                                break;
-                        case IDC_STAYMINIMIZED:
-                                EnableWindow(GetDlgItem(hwndDlg, IDC_DONOTSTEALFOCUS), IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP) & !IsDlgButtonChecked(hwndDlg, IDC_STAYMINIMIZED));
                                 break;
                         case IDC_AUTOMIN:
                                 break;
@@ -782,7 +776,6 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							DBWriteContactSettingDword(NULL, SRMMMOD, SRMSGSET_POPFLAGS, MakeCheckBoxTreeFlags(GetDlgItem(hwndDlg, IDC_POPLIST)));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOPOPUP, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_STAYMINIMIZED, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_STAYMINIMIZED));
-							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_DONOTSTEALFOCUS, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DONOTSTEALFOCUS));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOMIN, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOMIN));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEDRAFTS, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SAVEDRAFTS));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTORESIZE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTORESIZE));

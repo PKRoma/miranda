@@ -67,7 +67,6 @@ typedef struct ParentWindowDataStruct
 	HWND	hwndActive;
 	HWND	hwndStatus;
 	HWND	hwndTabs;
-	HWND	foregroundWindow;
 	DWORD	flags2;
 	RECT	childRect;
 	POINT	mouseLBDownPos;
@@ -291,8 +290,6 @@ extern int fontOptionsListSize;
 #define SRMSGDEFSET_STAYMINIMIZED  0
 #define SRMSGSET_SWITCHTOACTIVE    "SwitchToActiveTab"
 #define SRMSGDEFSET_SWITCHTOACTIVE 0
-#define SRMSGSET_DONOTSTEALFOCUS   "DoNotStealFocus"
-#define SRMSGDEFSET_DONOTSTEALFOCUS   0
 #define SRMSGSET_AUTOMIN           "AutoMin"
 #define SRMSGDEFSET_AUTOMIN        0
 #define SRMSGSET_AUTOCLOSE         "AutoClose"
