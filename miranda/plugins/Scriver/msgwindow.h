@@ -44,8 +44,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define CM_GETTOOLBARSTATUS  (WM_USER+0x1A2)
 
-#define DM_DEACTIVATE		 (WM_USER+0x1B0)
-
 /* child window services */
 #define DM_UPDATETITLEBAR    (WM_USER+0x200)
 #define DM_UPDATESTATUSBAR   (WM_USER+0x201)

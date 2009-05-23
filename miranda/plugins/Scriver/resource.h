@@ -86,7 +86,6 @@
 #define IDC_LIMITTABSNUM				1011
 #define IDC_LIMITCHATSTABS				1012
 #define IDC_LIMITCHATSTABSNUM			1013
-#define IDC_DONOTSTEALFOCUS				1014
 #define IDC_SPLITTER                    1017
 #define IDC_SHOWNAMES                   1020
 #define IDC_SHOWSENDBTN                 1021
