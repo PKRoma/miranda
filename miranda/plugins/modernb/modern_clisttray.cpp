@@ -685,7 +685,7 @@ void InitTrayMenus(void)
 		mi.position=300000;
 		mi.flags=CMIF_ICONFROMICOLIB; // eternity #004
 		mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_MAINMENU); // eternity #004
-		mi.pszService="";
+		mi.pszService="FakeService_1";
 		mi.pszName=LPGEN("&Main Menu");
 		hTrayMainMenuItemProxy=(HANDLE)AddTrayMenuItem((WPARAM)0,(LPARAM)&mi);
 		DestroyIcon_protect(mi.hIcon); // eternity #004
@@ -693,7 +693,7 @@ void InitTrayMenus(void)
 		memset(&mi,0,sizeof(mi));
 		mi.cbSize=sizeof(mi);
 		mi.position=300100;
-		mi.pszService="";
+		mi.pszService="FakeService_2";
 		mi.flags=CMIF_ICONFROMICOLIB; // eternity #004
 		mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_STATUS); // eternity #004
 		mi.pszName=LPGEN("&Status");
