@@ -42,8 +42,6 @@ static int FilterTimerId = 0;
 
 char * GetPluginNameByInstance( HINSTANCE hInstance );
 
-static void FillFilterCombo(int enableKeywordFiltering, HWND hDlg, struct OptionsPageData * opd, int PageCount);
-
 struct OptionsPageInit
 {
 	int pageCount;
@@ -414,6 +412,88 @@ static LRESULT CALLBACK AeroPaintSubclassProc(HWND hwnd, UINT msg, WPARAM wParam
 	return CallWindowProc(OldWndProc, hwnd, msg, wParam, lParam);
 }
 
+static void CALLBACK FilterSearchTimerFunc( HWND hwnd, UINT, UINT_PTR, DWORD )
+{
+	struct OptionsDlgData* dat = (struct OptionsDlgData* )GetWindowLongPtr( hwnd, GWLP_USERDATA );
+	if ( !dat )
+		return;
+	
+	if ( hFilterSearchWnd == NULL)
+		hFilterSearchWnd = CreateWindowA( "STATIC", "Test", WS_OVERLAPPED|WS_DISABLED, CW_USEDEFAULT,CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, GetModuleHandle(NULL), 0 ); // Fake window to keep option page focused
+
+	if ( FilterPage < dat->pageCount )
+		FindFilterStrings( TRUE, dat->currentPage == FilterPage, hFilterSearchWnd, &( dat->opd[FilterPage]) );		
+
+	FilterPage++;
+	FilterLoadProgress = FilterPage*100/( (dat->pageCount) ? dat->pageCount : FilterPage );
+	if ( FilterPage >= dat->pageCount )
+	{
+		KillTimer( hwnd, FilterTimerId );
+		FilterTimerId = 0;
+		bSearchState = 2;
+		FilterLoadProgress = 100;
+		DestroyWindow( hFilterSearchWnd );
+		hFilterSearchWnd = NULL;
+	}
+	RedrawWindow( GetDlgItem(hwnd, IDC_KEYWORD_FILTER ), NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_ERASE );
+}
+
+static void ExecuteFindFilterStringsTimer( HWND hdlg )
+{
+	bSearchState = 1;
+	FilterPage = 0;
+	if (FilterTimerId) KillTimer( hdlg, FilterTimerId );
+	FilterTimerId = SetTimer( hdlg, NULL, 1, FilterSearchTimerFunc );
+}
+
+static void FillFilterCombo(int enableKeywordFiltering, HWND hDlg, struct OptionsPageData * opd, int PageCount)
+{
+	int i;
+	int index;
+	HINSTANCE* KnownInstances = ( HINSTANCE* )alloca(sizeof(HINSTANCE)*PageCount);
+	int countKnownInst = 0;
+	SendDlgItemMessage(hDlg, IDC_KEYWORD_FILTER,(UINT) CB_RESETCONTENT, 0,0);
+	index=SendDlgItemMessage(hDlg, IDC_KEYWORD_FILTER,(UINT) CB_ADDSTRING,(WPARAM)0, (LPARAM)TranslateTS(ALL_MODULES_FILTER));
+	SendDlgItemMessage(hDlg, IDC_KEYWORD_FILTER,(UINT) CB_SETITEMDATA,(WPARAM)index, (LPARAM)NULL);
+	index=SendDlgItemMessage(hDlg, IDC_KEYWORD_FILTER,(UINT) CB_ADDSTRING,(WPARAM)0, (LPARAM)TranslateTS(CORE_MODULES_FILTER));
+	SendDlgItemMessage(hDlg, IDC_KEYWORD_FILTER,(UINT) CB_SETITEMDATA,(WPARAM)index, (LPARAM)hMirandaInst);
+	TCHAR* tszModuleName = ( TCHAR* )alloca(MAX_PATH*sizeof(TCHAR));
+	for (i=0; i<PageCount; i++) {		
+		TCHAR * dllName = NULL;
+		int j;
+		HINSTANCE inst=opd[i].hInst;
+		
+		if ( !enableKeywordFiltering )
+			FindFilterStrings( enableKeywordFiltering, FALSE, hDlg, &opd[i]); // only modules name ( fast enougth )
+		
+		if (inst==hMirandaInst) continue;
+		for (j=0; j<countKnownInst; j++)
+			if (KnownInstances[j]==inst) break;
+		if (j!=countKnownInst) continue;
+		KnownInstances[countKnownInst]=inst;
+		countKnownInst++;
+		GetModuleFileName(inst, tszModuleName, MAX_PATH);
+		{
+			char * name = GetPluginNameByInstance( inst );
+			if ( name )
+				dllName = a2t( name ); 
+		}
+
+		if (!dllName) dllName = mir_tstrdup( _tcsrchr(tszModuleName,_T('\\')) );
+		if (!dllName) dllName = mir_tstrdup( tszModuleName );
+		
+		if (dllName) {
+			index=SendDlgItemMessage(hDlg, IDC_KEYWORD_FILTER,(UINT) CB_ADDSTRING,(WPARAM)0, (LPARAM)dllName);
+			SendDlgItemMessage(hDlg, IDC_KEYWORD_FILTER,(UINT) CB_SETITEMDATA,(WPARAM)index, (LPARAM)inst);
+			mir_free( dllName );
+		}	
+	}
+
+	FilterLoadProgress = 100;
+	if ( enableKeywordFiltering)
+		ExecuteFindFilterStringsTimer( hDlg );
+}
+
 static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
 	struct OptionsDlgData* dat = (struct OptionsDlgData* )GetWindowLongPtr( hdlg, GWLP_USERDATA );
@@ -458,14 +538,12 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 				getComboBoxInfo(GetDlgItem( hdlg, IDC_KEYWORD_FILTER), &cbi);
 				OptionsFilterDefaultProc = (WNDPROC)SetWindowLongPtr( cbi.hwndItem, GWLP_WNDPROC, (LONG_PTR) OptionsFilterSubclassProc );
 
-				if (IsAeroMode())
-				{
+				if (IsAeroMode()) {
 					SetWindowLongPtr(cbi.hwndCombo, GWLP_USERDATA, GetWindowLongPtr(cbi.hwndCombo, GWLP_WNDPROC));
 					SetWindowLongPtr(cbi.hwndCombo, GWLP_WNDPROC, (LONG_PTR)AeroPaintSubclassProc);
 					SetWindowLongPtr(cbi.hwndItem, GWLP_USERDATA, GetWindowLongPtr(cbi.hwndItem, GWLP_WNDPROC));
 					SetWindowLongPtr(cbi.hwndItem, GWLP_WNDPROC, (LONG_PTR)AeroPaintSubclassProc);
-				}
-			}
+			}	}
 
 			Utils_RestoreWindowPositionNoSize(hdlg, NULL, "Options", "");
 			TranslateDialogDefault(hdlg);
@@ -601,8 +679,9 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 			MapWindowPoints(NULL, hdlg, (LPPOINT)&dat->rcTab, 2);
 			TabCtrl_AdjustRect(GetDlgItem(hdlg,IDC_TAB), FALSE, &dat->rcTab);
 
-			int enableKeywordFiltering = DBGetContactSettingWord(NULL, "Options", "EnableKeywordFiltering", TRUE); 
-			FillFilterCombo(enableKeywordFiltering,  hdlg, dat->opd, dat->pageCount); 
+			//!!!!!!!!!! int enableKeywordFiltering = DBGetContactSettingWord(NULL, "Options", "EnableKeywordFiltering", TRUE); 
+			FillFilterCombo( 0, //!!!!!!!!!!  enableKeywordFiltering,
+				hdlg, dat->opd, dat->pageCount); 
 			SendMessage(hdlg,DM_REBUILDPAGETREE,0,0);
 
 			return TRUE;
@@ -1401,7 +1480,7 @@ int ShutdownOptionsModule(WPARAM, LPARAM)
 	if (IsWindow(hwndOptions)) DestroyWindow(hwndOptions);
 	hwndOptions=NULL;
 	
-	UnhookFilterEvents();
+	//!!!!!!!!!! UnhookFilterEvents();
 	
 	return 0;
 }
@@ -1417,88 +1496,6 @@ int LoadOptionsModule(void)
 	HookEvent(ME_SYSTEM_MODULESLOADED,OptModulesLoaded);
 	HookEvent(ME_SYSTEM_PRESHUTDOWN,ShutdownOptionsModule);
 	
-	HookFilterEvents();
+	//!!!!!!!!!! HookFilterEvents();
 	return 0;
-}
-
-void CALLBACK FilterSearchTimerFunc( HWND hwnd, UINT, UINT_PTR, DWORD )
-{
-	struct OptionsDlgData* dat = (struct OptionsDlgData* )GetWindowLongPtr( hwnd, GWLP_USERDATA );
-	if ( !dat )
-		return;
-	
-	if ( hFilterSearchWnd == NULL)
-		hFilterSearchWnd = CreateWindowA( "STATIC", "Test", WS_OVERLAPPED|WS_DISABLED, CW_USEDEFAULT,CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, GetModuleHandle(NULL), 0 ); // Fake window to keep option page focused
-
-	if ( FilterPage < dat->pageCount )
-		FindFilterStrings( TRUE, dat->currentPage == FilterPage, hFilterSearchWnd, &( dat->opd[FilterPage]) );		
-
-	FilterPage++;
-	FilterLoadProgress = FilterPage*100/( (dat->pageCount) ? dat->pageCount : FilterPage );
-	if ( FilterPage >= dat->pageCount )
-	{
-		KillTimer( hwnd, FilterTimerId );
-		FilterTimerId = 0;
-		bSearchState = 2;
-		FilterLoadProgress = 100;
-		DestroyWindow( hFilterSearchWnd );
-		hFilterSearchWnd = NULL;
-	}
-	RedrawWindow( GetDlgItem(hwnd, IDC_KEYWORD_FILTER ), NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_ERASE );
-}
-
-static void ExecuteFindFilterStringsTimer( HWND hdlg )
-{
-	bSearchState = 1;
-	FilterPage = 0;
-	if (FilterTimerId) KillTimer( hdlg, FilterTimerId );
-	FilterTimerId = SetTimer( hdlg, NULL, 1, FilterSearchTimerFunc );
-}
-
-static void FillFilterCombo(int enableKeywordFiltering, HWND hDlg, struct OptionsPageData * opd, int PageCount)
-{
-	int i;
-	int index;
-	HINSTANCE* KnownInstances = ( HINSTANCE* )alloca(sizeof(HINSTANCE)*PageCount);
-	int countKnownInst = 0;
-	SendDlgItemMessage(hDlg, IDC_KEYWORD_FILTER,(UINT) CB_RESETCONTENT, 0,0);
-	index=SendDlgItemMessage(hDlg, IDC_KEYWORD_FILTER,(UINT) CB_ADDSTRING,(WPARAM)0, (LPARAM)TranslateTS(ALL_MODULES_FILTER));
-	SendDlgItemMessage(hDlg, IDC_KEYWORD_FILTER,(UINT) CB_SETITEMDATA,(WPARAM)index, (LPARAM)NULL);
-	index=SendDlgItemMessage(hDlg, IDC_KEYWORD_FILTER,(UINT) CB_ADDSTRING,(WPARAM)0, (LPARAM)TranslateTS(CORE_MODULES_FILTER));
-	SendDlgItemMessage(hDlg, IDC_KEYWORD_FILTER,(UINT) CB_SETITEMDATA,(WPARAM)index, (LPARAM)hMirandaInst);
-	TCHAR* tszModuleName = ( TCHAR* )alloca(MAX_PATH*sizeof(TCHAR));
-	for (i=0; i<PageCount; i++) {		
-		TCHAR * dllName = NULL;
-		int j;
-		HINSTANCE inst=opd[i].hInst;
-		
-		if ( !enableKeywordFiltering )
-			FindFilterStrings( enableKeywordFiltering, FALSE, hDlg, &opd[i]); // only modules name ( fast enougth )
-		
-		if (inst==hMirandaInst) continue;
-		for (j=0; j<countKnownInst; j++)
-			if (KnownInstances[j]==inst) break;
-		if (j!=countKnownInst) continue;
-		KnownInstances[countKnownInst]=inst;
-		countKnownInst++;
-		GetModuleFileName(inst, tszModuleName, MAX_PATH);
-		{
-			char * name = GetPluginNameByInstance( inst );
-			if ( name )
-				dllName = a2t( name ); 
-		}
-
-		if (!dllName) dllName = mir_tstrdup( _tcsrchr(tszModuleName,_T('\\')) );
-		if (!dllName) dllName = mir_tstrdup( tszModuleName );
-		
-		if (dllName) {
-			index=SendDlgItemMessage(hDlg, IDC_KEYWORD_FILTER,(UINT) CB_ADDSTRING,(WPARAM)0, (LPARAM)dllName);
-			SendDlgItemMessage(hDlg, IDC_KEYWORD_FILTER,(UINT) CB_SETITEMDATA,(WPARAM)index, (LPARAM)inst);
-			mir_free( dllName );
-		}	
-	}
-
-	FilterLoadProgress = 100;
-	if ( enableKeywordFiltering)
-		ExecuteFindFilterStringsTimer( hDlg );
 }
