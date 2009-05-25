@@ -350,21 +350,30 @@ XCHAR *GetInternalVariable(XCHAR *key, size_t keyLength, HANDLE hContact)
 		else if (!_xcscmp(theKey, XSTR(key, "proto")))
 			theValue = mir_a2x(key, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact,0));
 		else if (!_xcscmp(theKey, XSTR(key, "userid"))) {
-			CONTACTINFO ci = {0};
-			ci.cbSize = sizeof(ci);
-			ci.hContact = hContact;
-			ci.szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-			ci.dwFlag = CNF_UNIQUEID;
-			if (sizeof(XCHAR) == sizeof(WCHAR)) ci.dwFlag |= CNF_UNICODE;
-			if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
-				switch (ci.type) {
-				case CNFT_ASCIIZ:
-					theValue = (XCHAR *)ci.pszVal;
-					break;
-				case CNFT_DWORD:
-					theValue = _itox(key, ci.dVal);
-					break;
-	}	}	}	}
+			char *szProto = ( char* )CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+			if (DBGetContactSettingByte(hContact, szProto, "ChatRoom", 0) == 1) {
+				DBVARIANT dbv;
+				if (!DBGetContactSettingTString(hContact, szProto, "ChatRoomID", &dbv)) {
+					theValue = (XCHAR *)mir_tstrdup(dbv.ptszVal);
+					DBFreeVariant(&dbv);
+				}
+			}
+			else {
+				CONTACTINFO ci = {0};
+				ci.cbSize = sizeof(ci);
+				ci.hContact = hContact;
+				ci.szProto = szProto;
+				ci.dwFlag = CNF_UNIQUEID;
+				if (sizeof(XCHAR) == sizeof(WCHAR)) ci.dwFlag |= CNF_UNICODE;
+				if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
+					switch (ci.type) {
+					case CNFT_ASCIIZ:
+						theValue = (XCHAR *)ci.pszVal;
+						break;
+					case CNFT_DWORD:
+						theValue = _itox(key, ci.dVal);
+						break;
+	}	}	}	}	}
 
 	if (!theValue) {
 		if (!_xcscmp(theKey, XSTR(key, "miranda_path")))
@@ -390,21 +399,22 @@ XCHAR *GetInternalVariable(XCHAR *key, size_t keyLength, HANDLE hContact)
 		}	
 		else if (!_xcscmp(theKey, XSTR(key, "username")))
 			theValue = GetUserNameX(key);
-		else if (!_xcscmp(theKey, XSTR(key, "miranda_userdata")) 
-			|| !_xcscmp(theKey, XSTR(key, "miranda_avatarcache"))
-			|| !_xcscmp(theKey, XSTR(key, "miranda_logpath"))) {
-				char szFullPath[MAX_PATH], szProfilePath[MAX_PATH], szProfileName[MAX_PATH];
-				CallService(MS_DB_GETPROFILEPATH, SIZEOF(szProfilePath), (LPARAM) szProfilePath);
-				CallService(MS_DB_GETPROFILENAME, SIZEOF(szProfileName), (LPARAM) szProfileName);
-				char *pos = strrchr(szProfileName, '.');
-				if ( lstrcmpA( pos, ".dat" ) == 0 )
-					*pos = 0;
-				if (!_xcscmp(theKey, XSTR(key, "miranda_avatarcache"))) 
-					mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Profiles\\%s\\AvatarCache", szProfilePath, szProfileName);
-				else if (!_xcscmp(theKey, XSTR(key, "miranda_logpath"))) 
-					mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Profiles\\%s\\Logs", szProfilePath, szProfileName);
-				else mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Profiles\\%s", szProfilePath, szProfileName);
-				theValue = mir_a2x(key, szFullPath);
+		else if (!_xcscmp(theKey, XSTR(key, "miranda_userdata")) ||
+				   !_xcscmp(theKey, XSTR(key, "miranda_avatarcache")) ||
+					!_xcscmp(theKey, XSTR(key, "miranda_logpath")))
+		{
+			char szFullPath[MAX_PATH], szProfilePath[MAX_PATH], szProfileName[MAX_PATH];
+			CallService(MS_DB_GETPROFILEPATH, SIZEOF(szProfilePath), (LPARAM) szProfilePath);
+			CallService(MS_DB_GETPROFILENAME, SIZEOF(szProfileName), (LPARAM) szProfileName);
+			char *pos = strrchr(szProfileName, '.');
+			if ( lstrcmpA( pos, ".dat" ) == 0 )
+				*pos = 0;
+			if (!_xcscmp(theKey, XSTR(key, "miranda_avatarcache"))) 
+				mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Profiles\\%s\\AvatarCache", szProfilePath, szProfileName);
+			else if (!_xcscmp(theKey, XSTR(key, "miranda_logpath"))) 
+				mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Profiles\\%s\\Logs", szProfilePath, szProfileName);
+			else mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Profiles\\%s", szProfilePath, szProfileName);
+			theValue = mir_a2x(key, szFullPath);
 	}	}
 
 	if (!theValue)
