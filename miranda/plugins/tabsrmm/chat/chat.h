@@ -327,7 +327,7 @@ struct GlobalLogSettings_t {
 	TCHAR*      pszIncomingNick;
 	TCHAR*      pszOutgoingNick;
 	TCHAR*      pszHighlightWords;
-	char*       pszLogDir;
+	TCHAR*      pszLogDir;
 	HFONT       UserListFont;
 	HFONT       UserListHeadingsFont;
 	HFONT       NameFont;
@@ -394,5 +394,7 @@ char*  replaceStrA( char** dest, const char* src );
 
 extern HINSTANCE g_hInst;
 extern char *szChatIconString;
+
+#define DEFLOGFILENAME _T("%miranda_logpath%\\%proto%\\%userid%.log")
 
 #endif

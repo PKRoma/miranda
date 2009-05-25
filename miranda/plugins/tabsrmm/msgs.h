@@ -233,7 +233,7 @@ struct TitleBtn {
 #define BTN_CLOSE 2
 
 #define NR_LOGICONS 8
-#define NR_BUTTONBARICONS 36//MaD: 29
+#define NR_BUTTONBARICONS 37//MaD: 29
 #define NR_SIDEBARICONS 10
 
 struct ContainerWindowData {
@@ -287,7 +287,7 @@ struct ContainerWindowData {
 };
 
 #define STICK_ICON_MSG 10
-#define SENDJOBS_MAX_SENDS 20
+#define SENDJOBS_MAX_SENDS 100
 
 struct SendJob {
 	HANDLE  hContact[SENDJOBS_MAX_SENDS];

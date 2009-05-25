@@ -781,7 +781,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 					{
 						int n = dat->iSavedSpaces;
 						while (start > 0) {
-							if (pszText[start-1] == '\n' && pszText[start-1] == '\t')
+							if (pszText[start-1] == '\n' || pszText[start-1] == '\t')
 								break;
 
 							if (pszText[start-1] == ' ') {
@@ -2109,9 +2109,8 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				font = ih > ih2 ? ih : ih2;
 
 				// make sure we have space for icon!
-
-				if (g_Settings.ShowContactStatus)
-					font = font > 16 ? font : 16;
+				/*if (g_Settings.ShowContactStatus)
+					font = font > 16 ? font : 16;*/
 
 
 				SendMessage(GetDlgItem(hwndDlg, IDC_LIST), LB_SETITEMHEIGHT, 0, (LPARAM)height > font ? height : font);
@@ -2321,9 +2320,8 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				mis->itemHeight = height > font ? height : font;
 
 				// make sure we have enough space for icon!
-
-				if (g_Settings.ShowContactStatus)
-					mis->itemHeight = (mis->itemHeight > 16) ? mis->itemHeight : 16;
+				/*if (g_Settings.ShowContactStatus)
+					mis->itemHeight = (mis->itemHeight > 16) ? mis->itemHeight : 16;*/
 
 			}
 			return TRUE;
@@ -3120,9 +3118,6 @@ LABEL_SHOWWINDOW:
 				break;
 
 				case IDC_CHAT_HISTORY: {
-					char szFile[MAX_PATH];
-					char szName[MAX_PATH];
-					char szFolder[MAX_PATH];
 					MODULEINFO * pInfo = MM_FindModule(si->pszModule);
 
 					if (!IsWindowEnabled(GetDlgItem(hwndDlg, IDC_CHAT_HISTORY)))
@@ -3138,24 +3133,8 @@ LABEL_SHOWWINDOW:
 #else
 						CallService("MSP/HTMLlog/ViewLog", (WPARAM)si->pszModule, (LPARAM)si->ptszName);
 #endif
-					} else if (pInfo) {
-						mir_snprintf(szName, MAX_PATH, "%s", pInfo->pszModDispName ? pInfo->pszModDispName : si->pszModule);
-						ValidateFilename(szName);
-						mir_snprintf(szFolder, MAX_PATH, "%s\\%s", g_Settings.pszLogDir, szName);
-#if defined(_UNICODE)
-						{
-							wchar_t wszName[MAX_PATH];
-							mir_sntprintf(wszName, MAX_PATH, _T("%s.log"), si->ptszID);
-							WideCharToMultiByte(CP_ACP, 0, wszName, -1, szName, MAX_PATH, 0, 0);
-							szName[MAX_PATH - 1] = 0;
-						}
-#else
-						mir_snprintf(szName, MAX_PATH, "%s.log", si->ptszID);
-#endif
-						ValidateFilename(szName);
-						mir_snprintf(szFile, MAX_PATH, "%s\\%s", szFolder, szName);
-						ShellExecuteA(hwndDlg, "open", szFile, NULL, NULL, SW_SHOW);
-					}
+					} else if (pInfo) 
+						ShellExecute(hwndDlg, NULL, GetChatLogsFilename(si->hContact, 0), NULL, NULL, SW_SHOW);
 				}
 				break;
 
