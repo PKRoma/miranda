@@ -1378,7 +1378,7 @@ char * CYahooProto::ext_send_https_request(struct yahoo_data *yd, const char *ho
 	nlhr.headers[2].szName  = "Connection";
 	nlhr.headers[2].szValue = "close"; /*"Keep-Alive";*/
 	
-	nlhrReply=(NETLIBHTTPREQUEST*)CallService(MS_NETLIB_HTTPTRANSACTION,(WPARAM)m_hNetlibUser,(LPARAM)&nlhr);
+	nlhrReply=(NETLIBHTTPREQUEST*)CallService(MS_NETLIB_HTTPTRANSACTION,(WPARAM)g_hNetlibUser,(LPARAM)&nlhr);
 	if(nlhrReply) {
 		
 		if (nlhrReply->resultCode == 200 && nlhrReply->pData != NULL) {
@@ -1441,7 +1441,7 @@ void CYahooProto::ext_login(enum yahoo_status login_mode)
 		nlhr.flags		= NLHRF_HTTP11;
 		nlhr.szUrl		= z;
 	
-		nlhrReply=(NETLIBHTTPREQUEST*)CallService(MS_NETLIB_HTTPTRANSACTION,(WPARAM)m_hNetlibUser,(LPARAM)&nlhr);
+		nlhrReply=(NETLIBHTTPREQUEST*)CallService(MS_NETLIB_HTTPTRANSACTION,(WPARAM)g_hNetlibUser,(LPARAM)&nlhr);
 		if(nlhrReply) {
 			if (nlhrReply->resultCode == 200 && nlhrReply->pData != NULL) {
 				char *c = strstr(nlhrReply->pData,"CS_IP_ADDRESS=");
