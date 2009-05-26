@@ -844,21 +844,17 @@ void CMsnProto::sttProcessPage( char* buf, unsigned len )
 
 	ezxml_t xmlbdy = ezxml_get(xmlnot, "MSG", 0, "BODY", -1);
 	const char* szMsg = ezxml_txt(ezxml_child(xmlbdy, "TEXT"));
-	const char* szTel = ezxml_txt(ezxml_child(xmlbdy, "TEL"));
+	const char* szTel = ezxml_attr(ezxml_child(xmlnot, "FROM"), "name");
 
-	if (*szTel && *szMsg)
+	if (szTel && *szMsg)
 	{
-		size_t lene = strlen(szTel) + 5;
-		char* szEmail = (char*)alloca(lene);
-		mir_snprintf(szEmail, lene, "tel:%s", szTel);
-
 		PROTORECVEVENT pre = {0};
 		pre.szMessage = (char*)szMsg;
 		pre.flags = PREF_UTF /*+ (( isRtl ) ? PREF_RTL : 0)*/;
 		pre.timestamp = time(NULL);
 
 		CCSDATA ccs = {0};
-		ccs.hContact = MSN_HContactFromEmail( szEmail, szEmail, true, true );
+		ccs.hContact = MSN_HContactFromEmail( szTel, szTel, true, true );
 		ccs.szProtoService = PSR_MESSAGE;
 		ccs.lParam = ( LPARAM )&pre;
 		MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
