@@ -27,7 +27,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifdef _MSC_VER
 #if _MSC_VER < 1400
 #define uintptr_t UINT_PTR
-#define _malloca alloca
 #define _localtime32 localtime
 #define __time32_t time_t
 #endif

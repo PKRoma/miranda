@@ -238,7 +238,7 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, BOOL simpleMode, char **buff
 {
 	va_list va;
 	int lineLen, textCharsCount = 0;
-	TCHAR* line = (TCHAR*)_malloca(8001 * sizeof(TCHAR));
+	TCHAR* line = (TCHAR*)alloca(8001 * sizeof(TCHAR));
 	char* d;
 
 	va_start(va, fmt);
