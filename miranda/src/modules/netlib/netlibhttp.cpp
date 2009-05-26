@@ -506,7 +506,7 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 	if (hConnection==NULL)
 	{
 		NETLIBOPENCONNECTION nloc={0};
-		char szHost[128];
+		char szHost[1024];
 		char *ppath,*phost,*pcolon;
 		BOOL secur;
 

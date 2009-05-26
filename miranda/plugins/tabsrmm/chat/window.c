@@ -3005,7 +3005,7 @@ LABEL_SHOWWINDOW:
 							if (g_Settings.DoubleClick4Privat ? GetKeyState(VK_SHIFT) & 0x8000 : !(GetKeyState(VK_SHIFT) & 0x8000)) {
 								LRESULT lResult = (LRESULT)SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), EM_GETSEL, (WPARAM)NULL, (LPARAM)NULL);
 								int start = LOWORD(lResult);
-								TCHAR* pszName = (TCHAR*)_malloca(sizeof(TCHAR) * (lstrlen(ui->pszUID) + 3));
+								TCHAR* pszName = (TCHAR*)alloca(sizeof(TCHAR) * (lstrlen(ui->pszUID) + 3));
 								if (start == 0)
 									mir_sntprintf(pszName, lstrlen(ui->pszUID) + 3, _T("%s: "), ui->pszUID);
 								else
