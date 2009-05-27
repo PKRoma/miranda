@@ -3053,17 +3053,22 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 	if (token == NULL ) {
 
 		c = yahoo_urlencode(yd->password);
+		t = yahoo_urlencode(seed);
 		
 		_snprintf(url, sizeof(url), "/config/pwtoken_get?src=ymsgr&ts=%u&login=%s&passwd=%s&chal=%s",
-					time(NULL),sn, c, seed);
+					time(NULL),sn, c, t);
 		response = YAHOO_CALLBACK(ext_yahoo_send_https_request)(yd, yss->login_host, url);
 		
 		FREE(c);
+		FREE(t);
 		
 		if (response == NULL) {
 			YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_SOCK, NULL);
 			return; // fail for now
 		}
+		
+		LOG(("Got response:\n%s", response));
+		
 		/*
 			0
 			ymsgr=ADH1dkULCZmeiHpbSku3CQLSOTovQfTvR_l9DXTCL0WyeX.zTpk-
@@ -3072,7 +3077,7 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 		c = strstr(response,"ymsgr=");
 		
 		if (c != NULL) {
-				char *t = c + 6;
+				t = c + 6;
 			
 				while ( (*c) != '\0' && (*c) != '\r' && (*c) != '\n') c++;
 				
@@ -3083,6 +3088,8 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 				
 				LOG(("Got Token: %s", token));
 		}
+		
+		FREE(response);
 		
 		if (token == NULL) {
 			YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_PASSWD, NULL);
@@ -3107,6 +3114,8 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 			YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_SOCK, NULL);
 			return; // fail for now
 	}
+	
+	LOG(("Got response:\n%s", response));
 	
 	c = strstr(response,"crumb=");
 	if (c != NULL) {
@@ -3153,10 +3162,14 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 		LOG(("Got T Cookie: %s", yd->cookie_t));
 	} else {
 LBL_FAILED:
+		FREE(response);
+		
 		YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_PASSWD, "At stage 2");
 		return;
 	}
 
+	FREE(response);
+		
 	/*crypt_result = yahoo_crypt(yd->password, "$1$_2S43d5f$");  
 	LOG(("Yahoo Crypt of password: %s", crypt_result));
 	free(crypt_result);*/
