@@ -504,7 +504,6 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 		{
 			case IDC_WHITERECT:
 			case IDC_LOGO:
-			case IDC_NAME:
 			case IDC_DESCRIPTION:
 			case IDC_KEYWORD_FILTER:
 				SetBkColor(( HDC )wParam, GetSysColor( COLOR_WINDOW ));
@@ -522,13 +521,7 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 			TCHAR *lastPage = NULL, *lastGroup = NULL, *lastTab = NULL;
 			DBVARIANT dbv;
 			TCITEM tie;
-
-			LOGFONT lf;
-			HFONT hNormalFont = ( HFONT )SendDlgItemMessage( hdlg, IDC_NAME, WM_GETFONT, 0, 0 );
-			GetObject( hNormalFont, sizeof( lf ), &lf );
-			lf.lfWeight = FW_BOLD;
-			HFONT hBoldFont = CreateFontIndirect(&lf);
-			SendDlgItemMessage( hdlg, IDC_NAME, WM_SETFONT, ( WPARAM )hBoldFont, 0 );
+            LOGFONT lf;
 
 			typedef BOOL (STDAPICALLTYPE *pfnGetComboBoxInfo)(HWND, PCOMBOBOXINFO);
 			pfnGetComboBoxInfo getComboBoxInfo = (pfnGetComboBoxInfo)GetProcAddress(GetModuleHandleA("user32"), "GetComboBoxInfo"); 
@@ -1247,11 +1240,6 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 		DestroyWindow ( hFilterSearchWnd );
 		ClearFilterStrings();
 		szFilterString[0]=0;
-
-		{
-			HFONT hBoldFont = ( HFONT )SendDlgItemMessage( hdlg, IDC_NAME, WM_GETFONT, 0, 0 );
-			DeleteObject( hBoldFont );
-		}
 
 		SaveOptionsTreeState( hdlg );
 		Window_FreeIcon_IcoLib( hdlg );
