@@ -2543,7 +2543,7 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 						break;
 			}
 			
-			
+			FREE(response);
 			return;
 		}
 		/*
