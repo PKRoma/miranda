@@ -25,7 +25,6 @@ OBJ = http_gateway.o \
 	proto.o \
 	libyahoo2\crypt.o \
 	libyahoo2\libyahoo2.o \
-	libyahoo2\yahoo_auth.o \
 	libyahoo2\yahoo_httplib.o \
 	libyahoo2\yahoo_list.o \
 	libyahoo2\yahoo_util.o
