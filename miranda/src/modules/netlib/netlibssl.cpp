@@ -33,6 +33,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 static HMODULE     g_hSchannel;
 static PSecurityFunctionTableA g_pSSPI;
 
+typedef enum
+{
+    sockOpen,
+    sockClosed,
+    sockError
+} SocketState;
+
+
 struct SslHandle
 {
 	SOCKET s;
@@ -47,6 +55,8 @@ struct SslHandle
 	BYTE *pbIoBuffer;
 	DWORD cbIoBuffer;
 	DWORD sbIoBuffer;
+    
+    SocketState state; 
 };
 
 static int SSL_library_init(void)
@@ -496,9 +506,14 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 
 	if (num == 0) return 0;
 
-	if (ssl->cbRecDataBuf != 0 && (!peek || ssl->cbRecDataBuf >= (DWORD)num))
+	if (ssl->state != sockOpen || (ssl->cbRecDataBuf != 0 && (!peek || ssl->cbRecDataBuf >= (DWORD)num)))
 	{
 getdata:
+        if (ssl->cbRecDataBuf == 0)
+        {
+            return (ssl->state == sockClosed ? 0: SOCKET_ERROR);
+        }
+
 		DWORD bytes = min((DWORD)num, ssl->cbRecDataBuf);
 		DWORD rbytes = ssl->cbRecDataBuf - bytes;
 
@@ -532,33 +547,35 @@ getdata:
 				FD_SET(ssl->s, &fd);
 
 				cbData = select(1, &fd, NULL, NULL, &tv);
-				if (cbData == SOCKET_ERROR) return SOCKET_ERROR;
-				
-				if (cbData == 0 && ssl->cbRecDataBuf)
+				if (cbData == SOCKET_ERROR) 
 				{
-					DWORD bytes = min((DWORD)num, ssl->cbRecDataBuf);
-					CopyMemory(buf, ssl->pbRecDataBuf, bytes);
-					return bytes;
+                    ssl->state = sockError;
+			        goto getdata;
 				}
+				
+				if (cbData == 0 && ssl->cbRecDataBuf) goto getdata;
 			}
 
 			cbData = recv(ssl->s, (char*)ssl->pbIoBuffer + ssl->cbIoBuffer, ssl->sbIoBuffer - ssl->cbIoBuffer, 0);
-			if (cbData == SOCKET_ERROR) return SOCKET_ERROR;
+			if (cbData == SOCKET_ERROR)
+			{
+                ssl->state = sockError;
+			    goto getdata;
+			}
 			
 			if (cbData == 0) 
 			{
 				if (peek && ssl->cbRecDataBuf)
 				{
-					DWORD bytes = min((DWORD)num, ssl->cbRecDataBuf);
-					CopyMemory(buf, ssl->pbRecDataBuf, bytes);
-					return bytes;
+                    ssl->state = sockClosed;
+			        goto getdata;
 				}
 
 				// Server disconnected.
 				if (ssl->cbIoBuffer) 
 				{
-					scRet = SEC_E_INTERNAL_ERROR;
-					return SOCKET_ERROR;
+                    ssl->state = sockError;
+			        goto getdata;
 				}
 				
 				return 0;
@@ -590,20 +607,11 @@ getdata:
 		if (scRet == SEC_E_INCOMPLETE_MESSAGE)
 			continue;
 
-		// Server signaled end of session
-		if (scRet == SEC_I_CONTEXT_EXPIRED) 
-		{
-			NetlibSslShutdown(ssl);
-			if (peek && ssl->cbRecDataBuf) 
-            {
-                ssl->cbIoBuffer = 0;
-                goto getdata;
-            }
-            return 0;
-		}
-
 		if ( scRet != SEC_E_OK && scRet != SEC_I_RENEGOTIATE && scRet != SEC_I_CONTEXT_EXPIRED)
-			return SOCKET_ERROR;
+		{
+            ssl->state = sockError;
+			goto getdata;
+		}
 
 		// Locate data and (optional) extra buffers.
 		pDataBuffer  = NULL;
@@ -659,13 +667,24 @@ getdata:
 		if (pDataBuffer && resNum)
 			return resNum;
 
+		// Server signaled end of session
+		if (scRet == SEC_I_CONTEXT_EXPIRED) 
+		{
+            ssl->state = sockClosed;
+			goto getdata;
+		}
+
 		if (scRet == SEC_I_RENEGOTIATE)
 		{
 			// The server wants to perform another handshake
 			// sequence.
 
 			scRet = ClientHandshakeLoop(ssl, FALSE);
-			if (scRet != SEC_E_OK) return SOCKET_ERROR;
+			if (scRet != SEC_E_OK) 
+			{
+                ssl->state = sockError;
+			    goto getdata;
+			}
 		}
 	}
 }
