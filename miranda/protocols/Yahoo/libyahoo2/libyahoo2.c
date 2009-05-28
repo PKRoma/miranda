@@ -2456,9 +2456,10 @@ static void yahoo_process_auth_0x0f(struct yahoo_input_data *yid, const char *se
 	char  							*response = NULL;
 	char 							url[1024];
 	char 							*c, *t;
-	md5_byte_t					result[16];
-	md5_state_t					ctx;
+	md5_byte_t						result[16];
+	md5_state_t						ctx;
 	unsigned char 					*magic_hash = (unsigned char*) malloc(50); /* this one is like 26 bytes? */
+	int								i;
 	
 	/**
 		 case 2: Totally Cracked... Yay.. no more crypt tables.. just need some SSL magic.
@@ -2505,7 +2506,7 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 			return; // fail for now
 		}
 		
-		int i = atoi(response);
+		i = atoi(response);
 		
 		if (i>0) {
 			/**
