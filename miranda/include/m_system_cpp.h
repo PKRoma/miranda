@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "m_system.h"
 
-#if defined( __cplusplus )
+#if defined( __cplusplus ) && MIRANDA_VER >= 0x0600
 extern LIST_INTERFACE li;
 
 template<class T> struct LIST
