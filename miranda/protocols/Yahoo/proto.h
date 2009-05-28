@@ -289,8 +289,8 @@ struct CYahooProto : public PROTO_INTERFACE
 
 	void   YAHOO_utils_logversion();
 	
-	unsigned int ext_yahoo_add_handler(int fd, yahoo_input_condition cond, void *data);
-	void 	ext_yahoo_remove_handler(unsigned int tag);
+	unsigned int 	ext_add_handler(int fd, yahoo_input_condition cond, void *data);
+	void 			ext_remove_handler(unsigned int tag);
 	
 private:
 	int    m_startStatus;
