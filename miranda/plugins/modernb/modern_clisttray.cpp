@@ -390,6 +390,21 @@ INT_PTR TrayIconPauseAutoHide(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+void DestroyTrayMenu(HMENU hMenu)
+{
+    HMENU hMainStatusMenu = (HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
+    HMENU hMainMenu = (HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
+
+    int cnt = GetMenuItemCount(hMenu);
+    for (int i=0; i<cnt; ++i)
+    {
+        HMENU hSubMenu = GetSubMenu(hMenu, i);
+        if (hSubMenu == hMainStatusMenu || hSubMenu == hMainMenu)
+            RemoveMenu(hMenu, i--, MF_BYPOSITION);
+    }
+    DestroyMenu(hMenu);
+}
+
 INT_PTR cli_TrayIconProcessMessage(WPARAM wParam,LPARAM lParam)
 {
 	MSG *msg=(MSG*)wParam;
@@ -452,6 +467,7 @@ INT_PTR cli_TrayIconProcessMessage(WPARAM wParam,LPARAM lParam)
 			GetCursorPos(&pt);
 			pcli->bTrayMenuOnScreen=TRUE;
 			TrackPopupMenu(hMenu, TPM_TOPALIGN | TPM_LEFTALIGN|TPM_LEFTBUTTON, pt.x, pt.y, 0, msg->hwnd, NULL);
+            DestroyTrayMenu(hMenu);
 			PostMessage(msg->hwnd, WM_NULL, 0, 0);
 		}
 		else break;
