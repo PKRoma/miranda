@@ -844,7 +844,19 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 						
 				if (menuid<0){break;}
 				hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
-				if(GetSubMenu(hMenu,menuid)) hMenu=GetSubMenu(hMenu,menuid); {
+                {
+                    int i;
+                    unsigned int cpnl = 0;
+                    int mcnt = GetMenuItemCount(hMenu);
+                    for (i=0; i<mcnt; ++i) {
+					    HMENU hMenus = GetSubMenu(hMenu, i);
+                        if (hMenus && cpnl++ == menuid) { 
+                            hMenu = hMenus; 
+                            break; 
+                        }
+                    }
+                }
+                {
 					char buf[256];
 					sprintf(buf,"nPanel: %d, PD->protopos: %d,PD->RealName %s\r\n",nPanel,PD->protopos,PD->RealName);
 					OutputDebugStringA(buf);
