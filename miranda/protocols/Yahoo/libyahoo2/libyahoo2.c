@@ -3015,7 +3015,7 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 
 
 /*
- * New auth protocol 
+ * New Yahoo 9.x auth protocol 
  */
 static void yahoo_process_auth_0x0f(struct yahoo_input_data *yid, const char *seed, const char *sn)
 {
@@ -3027,9 +3027,10 @@ static void yahoo_process_auth_0x0f(struct yahoo_input_data *yid, const char *se
 	char  							*response = NULL;
 	char 							url[1024];
 	char 							*c, *t;
-	md5_byte_t					result[16];
-	md5_state_t					ctx;
+	md5_byte_t						result[16];
+	md5_state_t						ctx;
 	unsigned char 					*magic_hash = (unsigned char*) malloc(50); /* this one is like 26 bytes? */
+	int								i;
 	
 	/**
 		 case 2: Totally Cracked... Yay.. no more crypt tables.. just need some SSL magic.
@@ -3069,10 +3070,58 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 		
 		LOG(("Got response:\n%s", response));
 		
+		if (!isdigit(response[0])) {
+			LOG(("Non numeric status code received."));
+			
+			YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_SOCK, NULL);
+			return; // fail for now
+		}
+		
+		i = atoi(response);
+		
+		if (i>0) {
+			/**
+			 * Some Error Code, we need to process it here
+			 */
+			
+			switch (i) {
+				case 1212: /* Invalid ID or password. Please try again. */
+						YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_PASSWD, NULL);
+						break;
+						
+				case 1213: /* As a security precaution please enter your Yahoo! ID and password and type in the code you see in the picture below. */
+						YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_PASSWD, NULL);
+						break;
+
+				case 1214: /* Invalid ID or password. Please try again and type the text you see in the picture below */
+						YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_PASSWD, NULL);
+						break;
+
+				case 1235: /* This ID is not yet taken */
+						YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_UNAME, NULL);
+						break;
+
+				case 1236: /* Invalid ID or password. Please try again. */
+						YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_PASSWD, NULL);
+						break;
+
+
+				case 100: /* Required field missing */
+						YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_PASSWD, NULL);
+						break;
+
+				default:
+						YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_SOCK, NULL);
+						break;
+			}
+			
+			FREE(response);
+			return;
+		}
 		/*
-			0
-			ymsgr=ADH1dkULCZmeiHpbSku3CQLSOTovQfTvR_l9DXTCL0WyeX.zTpk-
-			partnerid=QfTvR_l9DXTCL0WyeX.zTpk-
+			0  - status code. See: http://www.carbonize.co.uk/ymsg16.html
+			ymsgr=<YToken>
+			partnerid=<???>
 		 */
 		c = strstr(response,"ymsgr=");
 		
