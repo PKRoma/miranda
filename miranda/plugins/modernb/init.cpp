@@ -45,6 +45,7 @@ struct UTF8_INTERFACE utfi = {sizeof(struct UTF8_INTERFACE),0};
 
 static HRESULT SubclassClistInterface();
 static HRESULT CreateHookableEvents();
+int EventArea_UnloadModule();
 
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
@@ -132,8 +133,7 @@ PLUGININTERFACE int Load(PLUGINLINK * link)
 }
 PLUGININTERFACE int Unload(void)
 {
-
-	TRACE("Unloading ClistMW\r\n");
+	TRACE("Unloading Clist Modern\r\n");
 
 	if (IsWindow(pcli->hwndContactList)) DestroyWindow(pcli->hwndContactList);
 	pcli->hwndContactList=NULL;
@@ -147,8 +147,9 @@ PLUGININTERFACE int Unload(void)
 	UnloadAvatarOverlayIcon();
 	UninitSkinHotKeys();
 	FreeRowCell();
+    EventArea_UnloadModule();
 
-	TRACE("Unloading ClistMW COMPLETE\r\n");
+	TRACE("Unloading Clist Modern COMPLETE\r\n");
 	return 0;
 }
 

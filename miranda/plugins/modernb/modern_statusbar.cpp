@@ -976,9 +976,18 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
 						}
 						else
 						{
-                            //if ( _ModernStatus_OnExtraIconClick( i ) ) return TRUE;
                             hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);  
-                            hMenu = GetSubMenu( hMenu, i );
+                            unsigned int cpnl = 0;
+                            int mcnt = GetMenuItemCount(hMenu);
+                            for (int j=0; j<mcnt; ++j) {
+				                HMENU hMenus = GetSubMenu(hMenu, j);
+                                if (hMenus && cpnl++ == i) { 
+                                    hMenu = hMenus; 
+                                    break; 
+                                }
+                            }
+                            
+                            //if ( _ModernStatus_OnExtraIconClick( i ) ) return TRUE;
 						}
 					}
 					ClientToScreen(hwnd,&pt);
