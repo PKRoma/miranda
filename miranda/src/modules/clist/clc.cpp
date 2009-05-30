@@ -58,13 +58,13 @@ void fnClcOptionsChanged(void)
 
 HMENU fnBuildGroupPopupMenu( struct ClcGroup* group )
 {
-	if ( hGroupMenu == NULL ) {
+//	if ( hGroupMenu == NULL ) {
         HMENU hMenu = LoadMenu(cli.hInst, MAKEINTRESOURCE(IDR_CONTEXT));
         hGroupMenu = GetSubMenu(hMenu, 2);
         RemoveMenu(hMenu, 2, MF_BYPOSITION);
         DestroyMenu(hMenu);
         CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hGroupMenu, 0);
-	}
+//	}
 	CheckMenuItem(hGroupMenu, POPUP_GROUPHIDEOFFLINE, group->hideOffline ? MF_CHECKED : MF_UNCHECKED);
 	return hGroupMenu;
 }
@@ -1279,6 +1279,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 				hMenu = cli.pfnBuildGroupPopupMenu(contact->group);
 				ClientToScreen(hwnd, &pt);
 				TrackPopupMenu(hMenu, TPM_TOPALIGN | TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwnd, NULL);
+                DestroyMenu(hMenu);
 				return 0;
 			}
 			else if (contact->type == CLCIT_CONTACT)

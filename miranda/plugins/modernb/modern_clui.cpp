@@ -43,6 +43,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 HRESULT (WINAPI *g_proc_DWMEnableBlurBehindWindow)(HWND hWnd, DWM_BLURBEHIND *pBlurBehind);
 BOOL CALLBACK ProcessCLUIFrameInternalMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, LRESULT& result );
+void DestroyTrayMenu(HMENU hMenu);
 
 // new sources
 #ifdef _MSC_VER
@@ -240,10 +241,10 @@ HRESULT CLUI::CreateCluiFrames()
 	ZeroMemory(&mii,sizeof(mii));
 	mii.cbSize=MENUITEMINFO_V4_SIZE;
 	mii.fMask=MIIM_SUBMENU;
-	mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
-	SetMenuItemInfo(g_hMenuMain,0,TRUE,&mii);
-	mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
-	SetMenuItemInfo(g_hMenuMain,1,TRUE,&mii);
+//	mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
+//	SetMenuItemInfo(g_hMenuMain,0,TRUE,&mii);
+//	mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
+//	SetMenuItemInfo(g_hMenuMain,1,TRUE,&mii);
 
 	CreateCLCWindow(CluiWnd());
 
@@ -753,7 +754,10 @@ void CLUI_ChangeWindowMode()
 	CLUI_UpdateAeroGlass();
 
 	if(g_CluiData.fLayered || !ModernGetSettingByte(NULL,"CLUI","ShowMainMenu",SETTING_SHOWMAINMENU_DEFAULT)) 
+    {
+        HMENU m = GetMenu(pcli->hwndContactList);
 		SetMenu(pcli->hwndContactList,NULL);
+    }
 	else
 		SetMenu(pcli->hwndContactList,g_hMenuMain);
 
@@ -2858,6 +2862,7 @@ LRESULT CLUI::OnContextMenu( UINT msg, WPARAM wParam, LPARAM lParam )
 		HMENU hMenu;
 		hMenu=(HMENU)CallService(MS_CLIST_MENUBUILDGROUP,0,0);
 		TrackPopupMenu(hMenu,TPM_TOPALIGN|TPM_LEFTALIGN|TPM_LEFTBUTTON,pt.x,pt.y,0,m_hWnd,NULL);
+        DestroyTrayMenu(hMenu);
 	}
 	return FALSE;
 
@@ -2989,11 +2994,14 @@ LRESULT CLUI::OnDestroy( UINT msg, WPARAM wParam, LPARAM lParam )
 			if(CycleStartTick[i].szProto) mir_free_and_nill(CycleStartTick[i].szProto);
 	}
 
-	if (state==SETTING_STATE_NORMAL){CLUI_ShowWindowMod(m_hWnd,SW_HIDE);};
+    if (state==SETTING_STATE_NORMAL){CLUI_ShowWindowMod(m_hWnd,SW_HIDE);};
 	UnLoadContactListModule();
 	if(hSettingChangedHook!=0)	ModernUnhookEvent(hSettingChangedHook);
 	ClcUnloadModule();
 
+    RemoveMenu(g_hMenuMain, 0, MF_BYPOSITION);
+    RemoveMenu(g_hMenuMain, 0, MF_BYPOSITION);
+    DestroyMenu(g_hMenuMain);
 
 	pcli->pfnTrayIconDestroy(m_hWnd);	
 	mutex_bAnimationInProgress=0;  		
