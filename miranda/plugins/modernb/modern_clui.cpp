@@ -241,10 +241,10 @@ HRESULT CLUI::CreateCluiFrames()
 	ZeroMemory(&mii,sizeof(mii));
 	mii.cbSize=MENUITEMINFO_V4_SIZE;
 	mii.fMask=MIIM_SUBMENU;
-//	mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
-//	SetMenuItemInfo(g_hMenuMain,0,TRUE,&mii);
-//	mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
-//	SetMenuItemInfo(g_hMenuMain,1,TRUE,&mii);
+	mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
+	SetMenuItemInfo(g_hMenuMain,0,TRUE,&mii);
+	mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
+	SetMenuItemInfo(g_hMenuMain,1,TRUE,&mii);
 
 	CreateCLCWindow(CluiWnd());
 
