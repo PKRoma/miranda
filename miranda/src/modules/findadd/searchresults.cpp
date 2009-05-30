@@ -394,32 +394,28 @@ void ShowMoreOptionsMenu(HWND hwndDlg,int x,int y)
 	hPopupMenu=GetSubMenu(hMenu,4);
 	CallService(MS_LANGPACK_TRANSLATEMENU,(WPARAM)hPopupMenu,0);
 	commandId=TrackPopupMenu(hPopupMenu,TPM_RIGHTBUTTON|TPM_RETURNCMD,x,y,0,hwndDlg,NULL);
-	if(commandId) {
-		switch(commandId) {
-			case IDC_ADD:
-			{	ADDCONTACTSTRUCT acs;
+	switch(commandId) {
+		case IDC_ADD:
+		{	ADDCONTACTSTRUCT acs;
 
-				acs.handle=NULL;
-				acs.handleType=HANDLE_SEARCHRESULT;
-				acs.szProto=lsr->szProto;
-				acs.psr=&lsr->psr;
-				CallService(MS_ADDCONTACT_SHOW,(WPARAM)hwndDlg,(LPARAM)&acs);
-				break;
-			}
-			case IDC_DETAILS:
-			{	HANDLE hContact;
-				hContact=(HANDLE)CallProtoService(lsr->szProto,PS_ADDTOLIST,PALF_TEMPORARY,(LPARAM)&lsr->psr);
-				CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)hContact,0);
-				break;
-			}
-			case IDC_SENDMESSAGE:
-			{	HANDLE hContact;
-				hContact=(HANDLE)CallProtoService(lsr->szProto,PS_ADDTOLIST,PALF_TEMPORARY,(LPARAM)&lsr->psr);
-				CallService(MS_MSG_SENDMESSAGE,(WPARAM)hContact,(LPARAM)(const char*)NULL);
-				break;
-			}
-			default:
-				break;
+			acs.handle=NULL;
+			acs.handleType=HANDLE_SEARCHRESULT;
+			acs.szProto=lsr->szProto;
+			acs.psr=&lsr->psr;
+			CallService(MS_ADDCONTACT_SHOW,(WPARAM)hwndDlg,(LPARAM)&acs);
+			break;
+		}
+		case IDC_DETAILS:
+		{	HANDLE hContact;
+			hContact=(HANDLE)CallProtoService(lsr->szProto,PS_ADDTOLIST,PALF_TEMPORARY,(LPARAM)&lsr->psr);
+			CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)hContact,0);
+			break;
+		}
+		case IDC_SENDMESSAGE:
+		{	HANDLE hContact;
+			hContact=(HANDLE)CallProtoService(lsr->szProto,PS_ADDTOLIST,PALF_TEMPORARY,(LPARAM)&lsr->psr);
+			CallService(MS_MSG_SENDMESSAGE,(WPARAM)hContact,(LPARAM)(const char*)NULL);
+			break;
 		}
 	}
 	DestroyMenu(hPopupMenu);

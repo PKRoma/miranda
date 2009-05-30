@@ -1045,7 +1045,10 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			DBWriteContactSettingDword(NULL, "CList", "Width", (DWORD) (rc.right - rc.left));
 		}
 
-		if ( cli.hwndStatus ) {
+        RemoveMenu(cli.hMenuMain, 0, MF_BYPOSITION);
+        RemoveMenu(cli.hMenuMain, 0, MF_BYPOSITION);
+
+        if ( cli.hwndStatus ) {
 			DestroyWindow( cli.hwndStatus );
 			cli.hwndStatus = NULL;
 		}

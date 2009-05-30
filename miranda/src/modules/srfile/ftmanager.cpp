@@ -31,7 +31,6 @@ struct TFtMgrData
 	HWND hwndOutgoing;
 
 	HANDLE hhkPreshutdown;
-	HANDLE hhkShutdown;
 };
 
 struct TLayoutWindowInfo
@@ -264,7 +263,6 @@ static INT_PTR CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)dat);
 
 		dat->hhkPreshutdown = HookEventMessage(ME_SYSTEM_PRESHUTDOWN, hwnd, M_PRESHUTDOWN);
-		dat->hhkShutdown = HookEventMessage(ME_SYSTEM_SHUTDOWN, hwnd, WM_DESTROY);
 
 		dat->hwndIncoming = CreateDialog(hMirandaInst, MAKEINTRESOURCE(IDD_FTPAGE), hwnd, FtMgrPageDlgProc);
 		dat->hwndOutgoing = CreateDialog(hMirandaInst, MAKEINTRESOURCE(IDD_FTPAGE), hwnd, FtMgrPageDlgProc);
@@ -417,7 +415,6 @@ static INT_PTR CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 
 	case WM_DESTROY:
 		UnhookEvent(dat->hhkPreshutdown);
-		UnhookEvent(dat->hhkShutdown);
 		Window_FreeIcon_IcoLib(hwnd);
 		DestroyWindow(dat->hwndIncoming);
 		DestroyWindow(dat->hwndOutgoing);

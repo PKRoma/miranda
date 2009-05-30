@@ -63,11 +63,6 @@ typedef struct {
 	HFONT		hFont;
 } MDescButtonCtrl;
 
-int UnloadDescButtonModule(WPARAM wParam, LPARAM lParam) 
-{
-	return 0;
-}
-
 int LoadDescButtonModule()
 {
 	WNDCLASSEX wc;
@@ -81,7 +76,6 @@ int LoadDescButtonModule()
 	wc.hbrBackground  = 0; //GetStockObject(WHITE_BRUSH);
 	wc.style          = CS_GLOBALCLASS|CS_SAVEBITS;
 	RegisterClassEx(&wc);	
-	HookEvent(ME_SYSTEM_SHUTDOWN, UnloadDescButtonModule);
 	return 0;
 }
 

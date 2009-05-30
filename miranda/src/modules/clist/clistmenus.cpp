@@ -198,12 +198,11 @@ static INT_PTR BuildMainMenu(WPARAM, LPARAM)
 	ListParam param = { 0 };
 	param.MenuObjectHandle = hMainMenuObject;
 
-	HMENU hMenu = hMainMenu;
 	NotifyEventHooks(hPreBuildMainMenuEvent,(WPARAM)0,(LPARAM)0);
 
-	CallService(MO_BUILDMENU,(WPARAM)hMenu,(LPARAM)&param);
+	CallService(MO_BUILDMENU,(WPARAM)hMainMenu,(LPARAM)&param);
 	DrawMenuBar((HWND)CallService("CLUI/GetHwnd",(WPARAM)0,(LPARAM)0));
-	return (INT_PTR)hMenu;
+	return (INT_PTR)hMainMenu;
 }
 
 static INT_PTR AddMainMenuItem(WPARAM, LPARAM lParam)
@@ -769,15 +768,13 @@ static INT_PTR DrawMenuItem(WPARAM, LPARAM lParam)
 
 int RecursiveDeleteMenu(HMENU hMenu)
 {
-	do {
-		HMENU submenu=GetSubMenu(hMenu,0);
-		if (submenu)
-		{
-			RecursiveDeleteMenu(submenu);
-			DestroyMenu(submenu);
-		}
-    } 
-    while (DeleteMenu(hMenu,0,MF_BYPOSITION));
+    int cnt = GetMenuItemCount(hMenu);
+    for (int i=0; i<cnt; ++i)
+    {
+		HMENU submenu = GetSubMenu(hMenu, 0);
+		if (submenu) DestroyMenu(submenu);
+        DeleteMenu(hMenu, 0, MF_BYPOSITION);
+    }
 	return 0;
 }
 
@@ -793,10 +790,9 @@ static INT_PTR BuildStatusMenu(WPARAM, LPARAM)
 	ListParam param = { 0 };
 	param.MenuObjectHandle = hStatusMenuObject;
 
-	HMENU hMenu=hStatusMenu;
 	RecursiveDeleteMenu(hStatusMenu);
-	CallService(MO_BUILDMENU,(WPARAM)hMenu,(LPARAM)&param);
-	return (INT_PTR)hMenu;
+	CallService(MO_BUILDMENU,(WPARAM)hStatusMenu,(LPARAM)&param);
+	return (INT_PTR)hStatusMenu;
 }
 
 static INT_PTR SetStatusMode(WPARAM wParam, LPARAM)
@@ -859,8 +855,7 @@ void RebuildMenuOrder( void )
 	BYTE bHideStatusMenu = DBGetContactSettingByte( NULL, "CLUI", "DontHideStatusMenu", 0 ); // cool perversion, though
 
 	//clear statusmenu
-	while ( GetMenuItemCount(hStatusMenu) > 0 )
-		DeleteMenu(hStatusMenu,0,MF_BYPOSITION);
+    RecursiveDeleteMenu(hStatusMenu);
 
 	//status menu
 	if ( hStatusMenuObject != 0 ) {
@@ -1307,10 +1302,8 @@ void InitCustomMenus(void)
 
 	hAckHook=(HANDLE)HookEvent(ME_PROTO_ACK,MenuProtoAck);
 
-	hMainMenu=GetSubMenu(LoadMenu(hMirandaInst,MAKEINTRESOURCE(IDR_CLISTMENU)),0);
-	hStatusMenu=GetSubMenu(LoadMenu(hMirandaInst,MAKEINTRESOURCE(IDR_CLISTMENU)),1);
-	CallService(MS_LANGPACK_TRANSLATEMENU,(WPARAM)hMainMenu,0);
-	CallService(MS_LANGPACK_TRANSLATEMENU,(WPARAM)hStatusMenu,0);
+    hMainMenu = CreatePopupMenu();
+    hStatusMenu = CreatePopupMenu();
 
 	hStatusMainMenuHandles=NULL;
 	hStatusMainMenuHandlesCnt=0;
@@ -1377,15 +1370,14 @@ void UninitCustomMenus(void)
 		mir_free( hStatusMenuHandles );
 	hStatusMenuHandles = NULL;
 
-	if ( hMainMenuObject   ) CallService( MO_REMOVEMENUOBJECT, (WPARAM)hMainMenuObject, 0 );
+	DestroyMenu(hMainMenu);
+	DestroyMenu(hStatusMenu);
+
+    if ( hMainMenuObject   ) CallService( MO_REMOVEMENUOBJECT, (WPARAM)hMainMenuObject, 0 );
 	if ( hStatusMenuObject ) CallService( MO_REMOVEMENUOBJECT, (WPARAM)hMainMenuObject, 0 );
 
 	UnloadMoveToGroup();
 	FreeMenuProtos();
 
-	RecursiveDeleteMenu(hStatusMenu);
-	RecursiveDeleteMenu(hMainMenu);
-	DestroyMenu(hMainMenu);
-	DestroyMenu(hStatusMenu);
 	UnhookEvent(hAckHook);
 }

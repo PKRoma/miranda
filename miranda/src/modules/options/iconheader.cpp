@@ -203,11 +203,6 @@ void li_ListDestruct(LIST<MIcoTab> &pList, ItemDestuctor pItemDestructor)
 	pList.destroy();
 }
 
-int UnloadIcoTabsModule(WPARAM wParam, LPARAM lParam) 
-{
-	return 0;
-}
-
 int LoadIcoTabsModule()
 {
 	WNDCLASSEX wc;
@@ -222,7 +217,6 @@ int LoadIcoTabsModule()
 	wc.hbrBackground  = 0; //GetStockObject(WHITE_BRUSH);
 	wc.style          = CS_GLOBALCLASS/*|CS_SAVEBITS*/;
 	RegisterClassEx(&wc);	
-	HookEvent(ME_SYSTEM_SHUTDOWN, UnloadIcoTabsModule);
 	return 0;
 }
 

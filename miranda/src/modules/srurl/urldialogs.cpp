@@ -194,6 +194,7 @@ INT_PTR CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						break;
 					}
 				}
+                DestroyMenu(hMenu);
 			}
 			return TRUE;
 

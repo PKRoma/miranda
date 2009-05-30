@@ -40,6 +40,8 @@ HANDLE hHideInfoTipEvent;
 static HANDLE hAckHook;
 static HANDLE hClcSettingsChanged;
 
+static HMENU hGroupMenu;
+
 int g_IconWidth, g_IconHeight;
 
 void FreeDisplayNameCache(void);
@@ -56,14 +58,15 @@ void fnClcOptionsChanged(void)
 
 HMENU fnBuildGroupPopupMenu( struct ClcGroup* group )
 {
-	static HMENU result = NULL;
-
-	if ( result == NULL ) {
-      result = GetSubMenu(LoadMenu(cli.hInst, MAKEINTRESOURCE(IDR_CONTEXT)), 2);
-		CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) result, 0);
+	if ( hGroupMenu == NULL ) {
+        HMENU hMenu = LoadMenu(cli.hInst, MAKEINTRESOURCE(IDR_CONTEXT));
+        hGroupMenu = GetSubMenu(hMenu, 2);
+        RemoveMenu(hMenu, 2, MF_BYPOSITION);
+        DestroyMenu(hMenu);
+        CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hGroupMenu, 0);
 	}
-	CheckMenuItem(result, POPUP_GROUPHIDEOFFLINE, group->hideOffline ? MF_CHECKED : MF_UNCHECKED);
-	return result;
+	CheckMenuItem(hGroupMenu, POPUP_GROUPHIDEOFFLINE, group->hideOffline ? MF_CHECKED : MF_UNCHECKED);
+	return hGroupMenu;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -248,6 +251,7 @@ void UnloadClcModule()
 	FreeFileDropping();
 	FreeDisplayNameCache();
 
+    DestroyMenu(hGroupMenu);
 	UninitCustomMenus();
 	UnitGenMenu();	
 }
