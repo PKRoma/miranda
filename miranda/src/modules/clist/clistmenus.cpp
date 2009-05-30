@@ -1370,14 +1370,13 @@ void UninitCustomMenus(void)
 		mir_free( hStatusMenuHandles );
 	hStatusMenuHandles = NULL;
 
-	DestroyMenu(hMainMenu);
-	DestroyMenu(hStatusMenu);
-
     if ( hMainMenuObject   ) CallService( MO_REMOVEMENUOBJECT, (WPARAM)hMainMenuObject, 0 );
 	if ( hStatusMenuObject ) CallService( MO_REMOVEMENUOBJECT, (WPARAM)hMainMenuObject, 0 );
 
 	UnloadMoveToGroup();
 	FreeMenuProtos();
 
+	DestroyMenu(hMainMenu);
+	DestroyMenu(hStatusMenu);
 	UnhookEvent(hAckHook);
 }
