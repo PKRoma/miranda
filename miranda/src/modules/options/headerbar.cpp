@@ -175,11 +175,6 @@ struct MHeaderbarCtrl
 	HFONT		hFont;
 };
 
-int UnloadHeaderbarModule(WPARAM wParam, LPARAM lParam) 
-{
-	return 0;
-}
-
 int LoadHeaderbarModule()
 {
 	WNDCLASSEX wc;
@@ -193,7 +188,6 @@ int LoadHeaderbarModule()
 	wc.hbrBackground  = 0; //GetStockObject(WHITE_BRUSH);
 	wc.style          = CS_GLOBALCLASS|CS_SAVEBITS;
 	RegisterClassEx(&wc);	
-	HookEvent(ME_SYSTEM_SHUTDOWN, UnloadHeaderbarModule);
 	return 0;
 }
 

@@ -2096,6 +2096,7 @@ static int _us_DoRemoveFrame(WPARAM wParam,LPARAM lParam)
 	g_pfwFrames[pos].ContainerWnd=(HWND)-1;
 	if (g_pfwFrames[pos].TitleBar.hmenu) DestroyMenu(g_pfwFrames[pos].TitleBar.hmenu);
 	g_pfwFrames[pos].PaintCallbackProc = NULL;   
+    if (g_pfwFrames[pos].UpdateRgn) DeleteObject(g_pfwFrames[pos].UpdateRgn);
 
 	if (g_pfwFrames[pos].OwnerWindow!=(HWND)-1
 		&& g_pfwFrames[pos].OwnerWindow!=(HWND)-2
@@ -2838,12 +2839,10 @@ void DrawBackGround(HWND hwnd,HDC mhdc, HBITMAP hBmpBackground, COLORREF bkColou
 	oFont=(HFONT)SelectObject(hdcMem,hFont);
 	SetBkMode(hdcMem,TRANSPARENT);
 	SetStretchBltMode(hdcMem,HALFTONE);
-	{	HBRUSH hBrush,hoBrush;
+	{	HBRUSH hBrush;
 
 	hBrush=CreateSolidBrush(bkColour);
-	hoBrush=(HBRUSH)SelectObject(hdcMem,hBrush);
 	FillRect(hdcMem,rcPaint,hBrush);
-	SelectObject(hdcMem,hoBrush);
 	DeleteObject(hBrush);
 	if(hBmpBackground) {
 		BITMAP bmp;
@@ -4170,6 +4169,7 @@ int UnLoadCLUIFramesModule(void)
 		if (g_pfwFrames[i].OwnerWindow && g_pfwFrames[i].OwnerWindow!=(HWND)(-2)&& g_pfwFrames[i].OwnerWindow!=(HWND)(-1))
 			DestroyWindow(g_pfwFrames[i].OwnerWindow );
 		g_pfwFrames[i].OwnerWindow=(HWND)-2;
+        if (g_pfwFrames[i].UpdateRgn) DeleteObject(g_pfwFrames[i].UpdateRgn);
 
 		if (g_pfwFrames[i].Name!=NULL) mir_free_and_nill(g_pfwFrames[i].Name);
 		if (g_pfwFrames[i].szName!=NULL) mir_free_and_nill(g_pfwFrames[i].szName);

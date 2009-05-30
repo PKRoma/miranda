@@ -59,13 +59,16 @@ void fnLoadCluiGlobalOpts()
 
 static int CluiModulesLoaded(WPARAM, LPARAM)
 {
-	MENUITEMINFO mii = { 0 };
-	mii.cbSize = MENUITEMINFO_V4_SIZE;
-	mii.fMask = MIIM_SUBMENU;
-	mii.hSubMenu = (HMENU) CallService(MS_CLIST_MENUGETMAIN, 0, 0);
-	SetMenuItemInfo(cli.hMenuMain, 0, TRUE, &mii);
-	mii.hSubMenu = (HMENU) CallService(MS_CLIST_MENUGETSTATUS, 0, 0);
-	SetMenuItemInfo(cli.hMenuMain, 1, TRUE, &mii);
+    if (cli.hMenuMain)
+    {
+	    MENUITEMINFO mii = { 0 };
+	    mii.cbSize = MENUITEMINFO_V4_SIZE;
+	    mii.fMask = MIIM_SUBMENU;
+	    mii.hSubMenu = (HMENU) CallService(MS_CLIST_MENUGETMAIN, 0, 0);
+	    SetMenuItemInfo(cli.hMenuMain, 0, TRUE, &mii);
+	    mii.hSubMenu = (HMENU) CallService(MS_CLIST_MENUGETSTATUS, 0, 0);
+	    SetMenuItemInfo(cli.hMenuMain, 1, TRUE, &mii);
+    }
 	return 0;
 }
 
@@ -1045,7 +1048,10 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			DBWriteContactSettingDword(NULL, "CList", "Width", (DWORD) (rc.right - rc.left));
 		}
 
-		if ( cli.hwndStatus ) {
+        RemoveMenu(cli.hMenuMain, 0, MF_BYPOSITION);
+        RemoveMenu(cli.hMenuMain, 0, MF_BYPOSITION);
+
+        if ( cli.hwndStatus ) {
 			DestroyWindow( cli.hwndStatus );
 			cli.hwndStatus = NULL;
 		}
