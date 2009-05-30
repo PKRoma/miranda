@@ -197,12 +197,10 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint)
 	ChangeToFont(hdcMem, dat, FONTID_CONTACTS, &fontHeight);
 	SetBkMode(hdcMem, TRANSPARENT);
 	{
-		HBRUSH hBrush, hoBrush;
+		HBRUSH hBrush;
 
 		hBrush = CreateSolidBrush(tmpbkcolour);
-		hoBrush = (HBRUSH) SelectObject(hdcMem, hBrush);
 		FillRect(hdcMem, rcPaint, hBrush);
-		SelectObject(hdcMem, hoBrush);
 		DeleteObject(hBrush);
 		if (dat->hBmpBackground) {
 			BITMAP bmp;
@@ -530,7 +528,7 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint)
 		group->scanIndex++;
 	}
 	if (dat->iInsertionMark != -1) {    //insertion mark
-		HBRUSH hBrush, hoBrush;
+		HBRUSH hBrush;
 		POINT pts[8];
 		HRGN hRgn;
 
@@ -552,10 +550,9 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint)
 		pts[7].y = pts[4].y;
 		hRgn = CreatePolygonRgn(pts, SIZEOF(pts), ALTERNATE);
 		hBrush = CreateSolidBrush(dat->fontInfo[FONTID_CONTACTS].colour);
-		hoBrush = (HBRUSH) SelectObject(hdcMem, hBrush);
 		FillRgn(hdcMem, hRgn, hBrush);
-		SelectObject(hdcMem, hoBrush);
 		DeleteObject(hBrush);
+		DeleteObject(hRgn);
 	}
 	if (!grey)
 		BitBlt(hdc, rcPaint->left, rcPaint->top, rcPaint->right - rcPaint->left, rcPaint->bottom - rcPaint->top, hdcMem, rcPaint->left, rcPaint->top,
