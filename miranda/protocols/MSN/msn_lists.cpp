@@ -316,15 +316,16 @@ static void SetAllContactIcons(HANDLE hItem, HWND hwndList, CMsnProto* proto)
     }
 }
 
-static void SaveListItem( HANDLE hContact, const char* szEmail, int list, int iPrevValue, int iNewValue, CMsnProto* proto )
+static void SaveListItem(HANDLE hContact, const char* szEmail, int list, int iPrevValue, int iNewValue, CMsnProto* proto)
 {
-	if ( iPrevValue == iNewValue )
+	if (iPrevValue == iNewValue)
 		return;
 
-	if ( iNewValue == 0 )
-		list += LIST_REMOVE;
+	if (iNewValue == 0)
+		list |= LIST_REMOVE;
 
-	proto->MSN_AddUser( hContact, szEmail, proto->Lists_GetNetId( szEmail ), list );
+	proto->MSN_AddUser(hContact, szEmail, proto->Lists_GetNetId(szEmail), list);
+    if (list == LIST_FL) DBDeleteContactSetting(hContact, "CList", "Hidden");
 }
 
 static void SaveSettings(HANDLE hItem, HWND hwndList, CMsnProto* proto)
