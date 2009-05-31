@@ -401,6 +401,7 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		Button_FreeIcon_IcoLib(hwndDlg,IDC_HISTORY);
 		Button_FreeIcon_IcoLib(hwndDlg,IDC_USERMENU);
 		if(dat->hPreshutdownEvent) UnhookEvent(dat->hPreshutdownEvent);
+        mir_free(dat);
 		return TRUE;
 	}
 	return FALSE;
