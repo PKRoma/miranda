@@ -515,7 +515,7 @@ void CYahooProto::ext_got_file(const char *me, const char *who, const char *url,
 	}
 
 	fi = y_new(struct yahoo_file_info,1);
-	fi->filename = fn;
+	fi->filename = strdup(fn);
 	fi->filesize = fesize;
 
 	files = y_list_append(files, fi);
@@ -527,10 +527,10 @@ void CYahooProto::ext_got_file(const char *me, const char *who, const char *url,
 	}
 
 	// blob is DWORD(*ft), ASCIIZ(filenames), ASCIIZ(description)
-	szBlob = (char *) malloc(sizeof(DWORD) + lstrlenA(fn) + lstrlenA(msg) + 2);
+	szBlob = (char *) malloc(sizeof(DWORD) + lstrlenA(fn) + lstrlenA(ft->msg) + 2);
 	*((PDWORD) szBlob) = 0;
 	strcpy(szBlob + sizeof(DWORD), fn);
-	strcpy(szBlob + sizeof(DWORD) + lstrlenA(fn) + 1, msg);
+	strcpy(szBlob + sizeof(DWORD) + lstrlenA(fn) + 1, ft->msg);
 
 	PROTORECVEVENT pre;
 	pre.flags = 0;
