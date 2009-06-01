@@ -121,6 +121,7 @@ struct CMsnProto : public PROTO_INTERFACE
     int  __cdecl OnOptionsInit(WPARAM wParam,LPARAM lParam);
     int  __cdecl OnPrebuildContactMenu(WPARAM wParam,LPARAM lParam);
     int  __cdecl OnPreShutdown(WPARAM wParam,LPARAM lParam);
+    int  __cdecl OnContactDoubleClicked(WPARAM wParam,LPARAM lParam);
     int  __cdecl OnDbSettingChanged(WPARAM wParam,LPARAM lParam);
     int  __cdecl OnUserInfoInit(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnWindowEvent(WPARAM wParam, LPARAM lParam);

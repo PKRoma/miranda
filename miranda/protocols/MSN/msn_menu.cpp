@@ -162,12 +162,7 @@ int CMsnProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM)
 	CLISTMENUITEM mi = {0};
 	mi.cbSize = sizeof(mi);
 
-    if (!MSN_IsMyContact(hContact)) 
-    {
-	    mi.flags = CMIM_FLAGS | CMIF_ICONFROMICOLIB;
-        MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hOpenInboxMenuItem, (LPARAM)&mi);
-        return 0;
-    }
+    if (!MSN_IsMyContact(hContact)) return 0;
 
     bool isMe = MSN_IsMeByContact(hContact, szEmail);
 	if (szEmail[0]) 
@@ -184,16 +179,7 @@ int CMsnProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM)
 
 	    mi.flags = CMIM_NAME | CMIM_FLAGS | CMIF_ICONFROMICOLIB;
         if (!emailEnabled) mi.flags |= CMIF_HIDDEN;
-        if (isMe)
-        {
-            mi.flags |= CMIF_DEFAULT;
-           	mi.pszName = LPGEN("Open Hotmail &Inbox");
-        }
-        else
-        {
-            if (netId == NETID_EMAIL) mi.flags |= CMIF_DEFAULT;
-            mi.pszName = LPGEN("Send &Hotmail E-mail");
-        }
+        mi.pszName = isMe ? LPGEN("Open &Hotmail Inbox") : LPGEN("Send &Hotmail E-mail");
         MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hOpenInboxMenuItem, (LPARAM)&mi);
 
 		mi.flags = CMIM_FLAGS | CMIF_ICONFROMICOLIB;
@@ -206,6 +192,25 @@ int CMsnProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM)
 		MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)menuItemsAll[6], (LPARAM)&mi);
     }
 
+    return 0;
+}
+
+int CMsnProto::OnContactDoubleClicked(WPARAM wParam, LPARAM)
+{
+    const HANDLE hContact = (HANDLE)wParam;
+	char szEmail[MSN_MAX_EMAIL_LEN];
+
+    bool isMe = MSN_IsMeByContact(hContact, szEmail);
+	if (szEmail[0]) 
+    {
+		int netId = Lists_GetNetId(szEmail);
+
+        if (isMe || netId == NETID_EMAIL)
+        {
+            MsnSendHotmail(wParam, 0);
+            return 1;
+        }
+    }
     return 0;
 }
 
@@ -429,9 +434,9 @@ void CMsnProto::MsnInitMenus( void )
 	strcpy( tDest, "/SendHotmail" );
 	CreateProtoService( "/SendHotmail", &CMsnProto::MsnSendHotmail );
 	mi.position = -2000010005;
-	mi.flags = CMIF_ICONFROMICOLIB | CMIF_DEFAULT | CMIF_HIDDEN;
+	mi.flags = CMIF_ICONFROMICOLIB | CMIF_HIDDEN;
 	mi.icolibItem = LoadSkinnedIconHandle( SKINICON_OTHER_SENDEMAIL );
-	mi.pszName = LPGEN("Open Hotmail &Inbox");
+	mi.pszName = LPGEN("Open &Hotmail Inbox");
 	hOpenInboxMenuItem = ( HANDLE )CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) &mi );
 
     MSN_EnableMenuItems( false );

@@ -249,6 +249,9 @@ void CMsnProto::sttNotificationMessage( char* msgBody, bool isInitial )
 			mUnreadJunkEmails -= iDelta;
 		else if (DestFolder && strcmp(DestFolder, "HM_BuLkMail_") == 0)
 			mUnreadJunkEmails += iDelta;
+
+        if (mUnreadJunkEmails < 0) mUnreadJunkEmails = 0;
+        if (mUnreadMessages < 0) mUnreadMessages = 0;
 	}
 
 	if ( From != NULL && Subject != NULL && Fromaddr != NULL ) 
@@ -566,12 +569,18 @@ int CMsnProto::MSN_SendOIM(const char* szEmail, const char* msg)
 
 void CMsnProto::displayEmailCount(HANDLE hContact)
 {
-    if (!emailEnabled) return;
+    if (!emailEnabled || getByte( "DisableHotmailCL", 0 )) return;
 
     TCHAR* name = MSN_GetContactNameT(hContact);
     if (name == NULL) return;
 
-    TCHAR* ch = _tcschr(name, '[');  if (ch) *ch = 0;
+    TCHAR* ch = name;
+    do
+    {
+        ch = _tcschr(ch, '[');
+    }
+    while (ch && !_istdigit(ch[1]));  
+    if (ch) *ch = 0;
     rtrim(name);
 
     TCHAR szNick[128];

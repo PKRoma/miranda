@@ -109,6 +109,7 @@ CMsnProto::CMsnProto( const char* aProtoName, const TCHAR* aUserName ) :
 	HookProtoEvent( ME_CLIST_PREBUILDCONTACTMENU, &CMsnProto::OnPrebuildContactMenu );
 	HookProtoEvent( ME_CLIST_GROUPCHANGE,         &CMsnProto::OnGroupChange );
 	HookProtoEvent( ME_OPT_INITIALISE,            &CMsnProto::OnOptionsInit );
+	HookProtoEvent( ME_CLIST_DOUBLECLICKED,       &CMsnProto::OnContactDoubleClicked );
     
 	LoadOptions();
 
