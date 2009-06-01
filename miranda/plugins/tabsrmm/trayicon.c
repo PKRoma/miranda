@@ -37,7 +37,6 @@ extern  NEN_OPTIONS nen_options;
 extern  struct ContainerWindowData *pFirstContainer;
 
 BOOL    isAnimThreadRunning = TRUE;
-DWORD   dwTrayAnimThreadID = 0;
 HANDLE  hTrayAnimThread = 0;
 HANDLE  g_hEvent = 0;
 static  HICON hIconTrayCurrent = 0;
@@ -109,7 +108,7 @@ void CreateTrayMenus(int mode)
 		mir_sntprintf(g_eventName, 100, _T("tsr_evt_%d"), GetCurrentThreadId());
 		g_hEvent = CreateEvent(NULL, TRUE, FALSE, g_eventName);
 		isAnimThreadRunning = TRUE;
-		hTrayAnimThread = CreateThread(NULL, 16000, TrayAnimThread, NULL, 0, &dwTrayAnimThreadID);
+		hTrayAnimThread = (HANDLE)mir_forkthreadex(TrayAnimThread, NULL, 16000, NULL);
 		myGlobals.g_hMenuTrayUnread = CreatePopupMenu();
 		myGlobals.g_hMenuFavorites = CreatePopupMenu();
 		myGlobals.g_hMenuRecent = CreatePopupMenu();

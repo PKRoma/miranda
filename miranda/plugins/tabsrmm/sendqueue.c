@@ -221,7 +221,7 @@ static int SendChunkA(char *chunk, HANDLE hContact, char *szSvc, DWORD dwFlags)
 
 #if defined(_UNICODE)
 
-static DWORD WINAPI DoSplitSendW(LPVOID param)
+static int DoSplitSendW(LPVOID param)
 {
 	struct  SendJob *job = &sendJobs[(int)param];
 	int     id;
@@ -310,7 +310,7 @@ static DWORD WINAPI DoSplitSendW(LPVOID param)
 
 #endif
 
-static DWORD WINAPI DoSplitSendA(LPVOID param)
+static int DoSplitSendA(LPVOID param)
 {
 	struct  SendJob *job = &sendJobs[(int)param];
 	int     id;
@@ -384,8 +384,6 @@ static DWORD WINAPI DoSplitSendA(LPVOID param)
 
 static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
 {
-	DWORD dwThreadId;
-
 	if (dat->sendMode & SMODE_MULTIPLE) {            // implement multiple later...
 		HANDLE hContact, hItem;
 		sendJobs[iEntry].sendCount = 0;
@@ -410,7 +408,7 @@ static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iE
 		sendJobs[iEntry].iStatus = SQ_INPROGRESS;
 		sendJobs[iEntry].hwndOwner = hwndDlg;
 		sendJobs[iEntry].iAcksNeeded = sendJobs[iEntry].sendCount;
-		dat->hMultiSendThread = CreateThread(NULL, 0, DoMultiSend, (LPVOID)iEntry, 0, &dwThreadId);
+		dat->hMultiSendThread = (HANDLE)mir_forkthreadex(DoMultiSend, (LPVOID)iEntry, 0, NULL);
 	}
 	else {
 		if (dat->hContact == NULL)
@@ -467,11 +465,11 @@ static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iE
 
 #if defined(_UNICODE)
 			if (!(sendJobs[iEntry].dwFlags & PREF_UNICODE) || dat->sendMode & SMODE_FORCEANSI)
-				CloseHandle(CreateThread(NULL, 0, DoSplitSendA, (LPVOID)iEntry, 0, &dwThreadId));
+				mir_forkthread(DoSplitSendA, (LPVOID)iEntry);
 			else
-				CloseHandle(CreateThread(NULL, 0, DoSplitSendW, (LPVOID)iEntry, 0, &dwThreadId));
+				mir_forkthread(DoSplitSendW, (LPVOID)iEntry);
 #else
-			CloseHandle(CreateThread(NULL, 0, DoSplitSendA, (LPVOID)iEntry, 0, &dwThreadId));
+			mir_forkthread(DoSplitSendA, (LPVOID)iEntry);
 #endif
 			sendJobs[iEntry].dwFlags = dwOldFlags;
 		}
