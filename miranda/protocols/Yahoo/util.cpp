@@ -37,11 +37,11 @@ void CYahooProto::YCreateService( const char* szService, YServiceFunc servicePro
 	::CreateServiceFunctionObj( str, ( MIRANDASERVICEOBJ )*( void** )&serviceProc, this );
 }
 
-HANDLE CYahooProto::YForkThread( YThreadFunc pFunc, void *param )
+void CYahooProto::YForkThread( YThreadFunc pFunc, void *param )
 {
 	UINT lthreadID;
 	
-	return ( HANDLE )::mir_forkthreadowner(( pThreadFuncOwner ) *( void** )&pFunc, this, param, &lthreadID);
+	CloseHandle(( HANDLE )::mir_forkthreadowner(( pThreadFuncOwner ) *( void** )&pFunc, this, param, &lthreadID));
 }
 
 void CYahooProto::YHookEvent( const char* szEvent, YEventFunc handler )

@@ -310,7 +310,7 @@ private:
 	void   YCreateService( const char* szService, YServiceFunc serviceProc );
 	void   YCreateServiceParam( const char* szService, YServiceFuncParam serviceProc, LPARAM lParam );
 	HANDLE YCreateHookableEvent( const char* szService );
-	HANDLE YForkThread( YThreadFunc pFunc, void *param );
+	void   YForkThread( YThreadFunc pFunc, void *param );
 	void   YHookEvent( const char* szEvent, YEventFunc handler );
 };
 
