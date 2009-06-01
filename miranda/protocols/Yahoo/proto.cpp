@@ -363,7 +363,7 @@ HANDLE __cdecl CYahooProto::FileAllow( HANDLE /*hContact*/, HANDLE hTransfer, co
 		ft->savepath[len] = '\0';
 
 	if (ft->y7) {
-		DebugLog("[YahooFileAllow] We don't handle y7 stuff yet.");
+		DebugLog("[YahooFileAllow] Trying to relay Y7 transfer.");
 		//void yahoo_ft7dc_accept(int id, const char *buddy, const char *ft_token);
 		yahoo_ft7dc_accept(ft->id, ft->who, ft->ftoken);
 
