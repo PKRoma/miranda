@@ -51,7 +51,7 @@ typedef struct {
 static BOOL bModuleInitialized = FALSE;
 static HANDLE hNetlibUser = 0, hHookModules, hHookPreShutdown;
 static UINT updateTimerId;
-static DWORD dwUpdateThreadID = 0;
+static HANDLE dwUpdateThreadID = 0;
 static HWND hwndUpdateDlg = 0, hwndManualUpdateDlg = 0;
 
 static int UpdateNotifyOptInit(WPARAM wParam, LPARAM lParam);
