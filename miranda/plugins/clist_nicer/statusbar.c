@@ -118,10 +118,15 @@ LRESULT CALLBACK NewStatusBarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 			item = &StatusItems[ID_EXTBKSTATUSBAR - ID_STATUS_OFFLINE];
 			if(!item->IGNORED) {
 				RECT rc = rcClient;
-				rc.left += item->MARGIN_LEFT; rc.right -= item->MARGIN_RIGHT;
-				rc.top += item->MARGIN_TOP; rc.bottom -= item->MARGIN_BOTTOM;
+				rc.left += item->MARGIN_LEFT;
+				rc.right -= item->MARGIN_RIGHT;
+				rc.top += item->MARGIN_TOP;
+				rc.bottom -= item->MARGIN_BOTTOM;
 				DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
 					item->CORNER, item->BORDERSTYLE, item->imageItem);
+				SetTextColor(hdcMem, item->TEXTCOLOR);
+			}else{
+				SetTextColor(hdcMem, GetSysColor(COLOR_BTNTEXT));
 			}
 			dis.hwndItem = hwnd;
 			dis.hDC = hdcMem;
