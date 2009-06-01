@@ -574,10 +574,10 @@ void CMsnProto::displayEmailCount(HANDLE hContact)
     TCHAR* name = MSN_GetContactNameT(hContact);
     if (name == NULL) return;
 
-    TCHAR* ch = name;
+    TCHAR* ch = name-1;
     do
     {
-        ch = _tcschr(ch, '[');
+        ch = _tcschr(ch+1, '[');
     }
     while (ch && !_istdigit(ch[1]));  
     if (ch) *ch = 0;
