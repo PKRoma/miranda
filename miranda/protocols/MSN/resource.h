@@ -81,6 +81,8 @@
 #define IDC_USEGATEWAY                  1175
 #define IDC_DISABLEHOTMAILPOPUP         1301
 #define IDC_DISABLEHOTMAILTRAY          1302
+#define IDC_DISABLEHOTMAILTRAY2         1303
+#define IDC_DISABLEHOTMAILCL            1303
 #define IDC_NEWMSNACCOUNTLINK           1438
 #define IDC_RESETSERVER                 1472
 #define IDC_STATIC                      -1

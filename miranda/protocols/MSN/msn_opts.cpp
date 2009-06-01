@@ -527,6 +527,7 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM 
 
 		CheckDlgButton( hwndDlg, IDC_DISABLEHOTMAILPOPUP, disableHotmailPopup);
 		CheckDlgButton( hwndDlg, IDC_DISABLEHOTMAILTRAY,  proto->getByte( "DisableHotmailTray", 0 ));
+		CheckDlgButton( hwndDlg, IDC_DISABLEHOTMAILCL,    proto->getByte( "DisableHotmailCL", 0 ));
 		CheckDlgButton( hwndDlg, IDC_DISABLEHOTJUNK,      proto->getByte( "DisableHotmailJunk", 0 ));
 		CheckDlgButton( hwndDlg, IDC_NOTIFY_ENDSESSION,   proto->getByte( "EnableSessionPopup", 0 ));
 		CheckDlgButton( hwndDlg, IDC_NOTIFY_FIRSTMSG,     proto->getByte( "EnableDeliveryPopup", 0 ));
@@ -553,6 +554,7 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM 
 		    }
 
 		case IDC_DISABLEHOTMAILTRAY: 
+		case IDC_DISABLEHOTMAILCL: 
 		case IDC_DISABLEHOTJUNK:
 		case IDC_NOTIFY_ENDSESSION:
 		case IDC_POPUP_TIMEOUT:
@@ -630,6 +632,7 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM 
 
 				proto->setByte( "UseWinColors",	( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEWINCOLORS ));
 				proto->setByte( "DisableHotmail", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLEHOTMAILPOPUP ));
+				proto->setByte( "DisableHotmailCL", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLEHOTMAILCL ));
 				proto->setByte( "DisableHotmailTray", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLEHOTMAILTRAY ));
 				proto->setByte( "DisableHotmailJunk",( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLEHOTJUNK ));
 				proto->setByte( "EnableDeliveryPopup", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_NOTIFY_FIRSTMSG ));
