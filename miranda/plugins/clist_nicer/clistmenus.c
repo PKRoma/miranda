@@ -34,6 +34,22 @@ extern int      g_nextExtraCacheEntry;
 extern struct   ExtraCache *g_ExtraCache;
 extern struct   CluiData g_CluiData;
 
+void DestroyTrayMenu(HMENU hMenu)
+{
+    int i, cnt;
+    HMENU hMainStatusMenu = (HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
+    HMENU hMainMenu = (HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
+
+    cnt = GetMenuItemCount(hMenu);
+    for (i=0; i<cnt; ++i)
+    {
+        HMENU hSubMenu = GetSubMenu(hMenu, i);
+        if (hSubMenu == hMainStatusMenu || hSubMenu == hMainMenu)
+            RemoveMenu(hMenu, i--, MF_BYPOSITION);
+    }
+    DestroyMenu(hMenu);
+}
+
 INT_PTR CloseAction(WPARAM wParam,LPARAM lParam)
 {
 	int k;

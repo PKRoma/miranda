@@ -97,9 +97,10 @@ void ReloadExtraIcons();
 void FS_RegisterFonts();
 void LoadExtraIconModule();
 int MTG_OnmodulesLoad(WPARAM wParam, LPARAM lParam);
-extern void RemoveFromTaskBar(HWND hWnd);
-extern void FLT_ShowHideAll(int showCmd);
-extern void FLT_SnapToEdges(HWND hwnd);
+void RemoveFromTaskBar(HWND hWnd);
+void FLT_ShowHideAll(int showCmd);
+void FLT_SnapToEdges(HWND hwnd);
+void DestroyTrayMenu(HMENU hMenu);
 
 extern LONG g_cxsmIcon, g_cysmIcon;
 struct CluiData g_CluiData;
@@ -2005,6 +2006,7 @@ buttons_done:
 				HMENU hMenu;
 				hMenu = (HMENU)CallService(MS_CLIST_MENUBUILDGROUP, 0, 0);
 				TrackPopupMenu(hMenu, TPM_TOPALIGN | TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwnd, NULL);
+                DestroyTrayMenu(hMenu);
 				return 0;
 			}
 			GetWindowRect(pcli->hwndStatus, &rc);
