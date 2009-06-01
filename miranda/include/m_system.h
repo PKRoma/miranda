@@ -428,9 +428,9 @@ typedef void (__cdecl *pThreadFunc)(void*);
 
 #define MS_SYSTEM_FORK_THREAD    "Miranda/Thread/Fork"
 
-__forceinline INT_PTR mir_forkthread( pThreadFunc aFunc, void* arg )
+__forceinline HANDLE mir_forkthread( pThreadFunc aFunc, void* arg )
 {
-	return CallService( MS_SYSTEM_FORK_THREAD, (WPARAM)aFunc, (LPARAM)arg );
+	return (HANDLE)CallService( MS_SYSTEM_FORK_THREAD, (WPARAM)aFunc, (LPARAM)arg );
 }
 
 /* 0.5.2+
@@ -456,14 +456,14 @@ typedef struct
 
 #define MS_SYSTEM_FORK_THREAD_EX    "Miranda/Thread/ForkEx"
 
-static __inline INT_PTR mir_forkthreadex( pThreadFuncEx aFunc, void* arg, int stackSize, unsigned* pThreadID )
+static __inline HANDLE mir_forkthreadex( pThreadFuncEx aFunc, void* arg, int stackSize, unsigned* pThreadID )
 {
 	FORK_THREADEX_PARAMS params;
 	params.pFunc      = aFunc;
 	params.arg        = arg;
 	params.iStackSize = stackSize;
 	params.threadID   = pThreadID;
-	return CallService( MS_SYSTEM_FORK_THREAD_EX, 0, (LPARAM)&params );
+	return (HANDLE)CallService( MS_SYSTEM_FORK_THREAD_EX, 0, (LPARAM)&params );
 }
 
 /* 0.8.0+
@@ -475,14 +475,14 @@ passes the owner info and extended parameters info and returns the thread id
 
 */
 
-static __inline INT_PTR mir_forkthreadowner( pThreadFuncOwner aFunc, void* owner, void* arg, unsigned* pThreadID )
+static __inline HANDLE mir_forkthreadowner( pThreadFuncOwner aFunc, void* owner, void* arg, unsigned* pThreadID )
 {
 	FORK_THREADEX_PARAMS params;
 	params.pFunc      = ( pThreadFuncEx )aFunc;
 	params.arg        = arg;
 	params.iStackSize = 0;
 	params.threadID   = pThreadID;
-	return CallService( MS_SYSTEM_FORK_THREAD_EX, (WPARAM)owner, (LPARAM)&params );
+	return (HANDLE)CallService( MS_SYSTEM_FORK_THREAD_EX, (WPARAM)owner, (LPARAM)&params );
 }
 
 
