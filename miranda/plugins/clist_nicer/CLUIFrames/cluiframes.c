@@ -3349,11 +3349,9 @@ TCHAR g_ptszEventName[100];
 
 static int CLUIFrameOnModulesLoad(WPARAM wParam, LPARAM lParam)
 {
-	DWORD dwThreadID;
-
 	mir_sntprintf(g_ptszEventName, SIZEOF(g_ptszEventName), _T("mf_update_evt_%d"), GetCurrentThreadId());
 	g_hEventThread = CreateEvent(NULL, TRUE, FALSE, g_ptszEventName);
-	hThreadMFUpdate = CreateThread(NULL, 16000, MF_UpdateThread, 0, 0, &dwThreadID);
+	hThreadMFUpdate = (HANDLE)mir_forkthreadex(MF_UpdateThread, NULL, 0, NULL);
 	SetThreadPriority(hThreadMFUpdate, THREAD_PRIORITY_IDLE);
 	CLUIFramesLoadMainMenu(0, 0);
 	CLUIFramesCreateMenuForFrame(-1, -1, 000010000, MS_CLIST_ADDCONTEXTFRAMEMENUITEM);
@@ -3364,8 +3362,9 @@ static int CLUIFrameOnModulesUnload(WPARAM wParam, LPARAM lParam)
 {
 	mf_updatethread_running = FALSE;
 
+    SetThreadPriority(hThreadMFUpdate, THREAD_PRIORITY_NORMAL);
 	SetEvent(g_hEventThread);
-	WaitForSingleObject(hThreadMFUpdate, 10000);
+	WaitForSingleObject(hThreadMFUpdate, 2000);
 	CloseHandle(hThreadMFUpdate);
 	CloseHandle(g_hEventThread);
 

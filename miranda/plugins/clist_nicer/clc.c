@@ -236,6 +236,7 @@ int ClcShutdown(WPARAM wParam, LPARAM lParam)
 	DeleteObject(g_CluiData.hBrushColorKey);
 	DeleteObject(g_CluiData.hBrushCLCBk);
 	DeleteObject(g_CluiData.hBrushAvatarBorder);
+    DestroyMenu(g_CluiData.hMenuNotify);
 	ClearIcons(1);
 	pDrawAlpha = 0;
 	SFL_UnregisterWindowClass();
@@ -784,8 +785,9 @@ LBL_Def:
 					hMenu = (HMENU)CallService(MS_CLIST_MENUBUILDSUBGROUP, (WPARAM)contact->group, 0);
 					ClientToScreen(hwnd, &pt);
 					TrackPopupMenu(hMenu, TPM_TOPALIGN | TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, 0, pcli->hwndContactList, NULL);
-					return 0;
 					CheckMenuItem(hMenu, POPUP_GROUPHIDEOFFLINE, contact->group->hideOffline ? MF_CHECKED : MF_UNCHECKED);
+                    DestroyMenu(hMenu);
+					return 0;
 				} else if (contact->type == CLCIT_CONTACT)
 					hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) contact->hContact, 0);
 			} else {
