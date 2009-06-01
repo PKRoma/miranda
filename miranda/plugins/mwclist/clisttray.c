@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define TIM_CREATE     (WM_USER+1858)
 
 extern INT_PTR ( *saveTrayIconProcessMessage )(WPARAM wParam,LPARAM lParam);
+void DestroyTrayMenu(HMENU hMenu);
 
 INT_PTR TrayIconProcessMessage(WPARAM wParam,LPARAM lParam)
 {
@@ -48,6 +49,7 @@ INT_PTR TrayIconProcessMessage(WPARAM wParam,LPARAM lParam)
 			SetFocus(msg->hwnd);
 			GetCursorPos(&pt);
 			TrackPopupMenu(hMenu, TPM_TOPALIGN | TPM_LEFTALIGN, pt.x, pt.y, 0, msg->hwnd, NULL);
+            DestroyTrayMenu(hMenu);
 		}
 		else break;
 
