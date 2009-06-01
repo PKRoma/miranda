@@ -21,10 +21,23 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-#include "clist.h"
-#include "m_genmenu.h"
-#include "m_clui.h"
 #pragma hdrstop
+
+void DestroyTrayMenu(HMENU hMenu)
+{
+    int i, cnt;
+    HMENU hMainStatusMenu = (HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
+    HMENU hMainMenu = (HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
+
+    cnt = GetMenuItemCount(hMenu);
+    for (i=0; i<cnt; ++i)
+    {
+        HMENU hSubMenu = GetSubMenu(hMenu, i);
+        if (hSubMenu == hMainStatusMenu || hSubMenu == hMainMenu)
+            RemoveMenu(hMenu, i--, MF_BYPOSITION);
+    }
+    DestroyMenu(hMenu);
+}
 
 INT_PTR CloseAction(WPARAM wParam,LPARAM lParam)
 {
