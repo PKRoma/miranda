@@ -195,6 +195,7 @@ SubSection /e "Protocols"
     SetOutPath "$INSTDIR\Plugins"
     File "${MIM_BUILD_DIR}\plugins\jabber.dll"
     SetOutPath "$INSTDIR\Icons"
+    File "${MIM_BUILD_DIRANSI}\Icons\xstatus_jabber.dll"
     !insertmacro InstallMirandaProtoIcon "Jabber"
   SectionEnd
 
