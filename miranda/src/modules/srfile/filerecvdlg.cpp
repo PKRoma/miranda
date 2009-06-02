@@ -353,7 +353,8 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			GetDlgItemTextA(hwndDlg,IDC_FILEDIR,dat->szSavePath,SIZEOF(dat->szSavePath));
 			GetDlgItemTextA(hwndDlg,IDC_FILE,dat->szFilenames,SIZEOF(dat->szFilenames));
 			GetDlgItemTextA(hwndDlg,IDC_MSG,dat->szMsg,SIZEOF(dat->szMsg));
-			dat->hwndTransfer=FtMgr_AddTransfer(dat);
+			dat->hwndTransfer = FtMgr_AddTransfer(dat);
+			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, 0);
 			//check for auto-minimize here to fix BUG#647620
 			if(DBGetContactSettingByte(NULL,"SRFile","AutoAccept",0) && DBGetContactSettingByte(NULL,"SRFile","AutoMin",0)) {
 				ShowWindow(hwndDlg,SW_HIDE);
@@ -361,11 +362,13 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			}
 			DestroyWindow(hwndDlg);
 			return TRUE;
+
 		case IDCANCEL:
 			if (dat->fs) CallContactService(dat->hContact,PSS_FILEDENY,(WPARAM)dat->fs,(LPARAM)Translate("Cancelled"));
 			dat->fs=NULL; /* the protocol will free the handle */
 			DestroyWindow(hwndDlg);
 			return TRUE;
+
 		case IDC_ADD:
 			{	ADDCONTACTSTRUCT acs={0};
 
@@ -383,11 +386,13 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				GetWindowRect((HWND)lParam,&rc);
 				TrackPopupMenu(hMenu,0,rc.left,rc.bottom,0,hwndDlg,NULL);
 				DestroyMenu(hMenu);
-				break;
 			}
+			break;
+
 		case IDC_DETAILS:
 			CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)dat->hContact,0);
 			return TRUE;
+
 		case IDC_HISTORY:
 			CallService(MS_HISTORY_SHOWCONTACTHISTORY,(WPARAM)dat->hContact,0);
 			return TRUE;
@@ -400,8 +405,9 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		Button_FreeIcon_IcoLib(hwndDlg,IDC_DETAILS);
 		Button_FreeIcon_IcoLib(hwndDlg,IDC_HISTORY);
 		Button_FreeIcon_IcoLib(hwndDlg,IDC_USERMENU);
-		if(dat->hPreshutdownEvent) UnhookEvent(dat->hPreshutdownEvent);
-        mir_free(dat);
+
+		if ( dat )
+			FreeFileDlgData( dat );
 		return TRUE;
 	}
 	return FALSE;

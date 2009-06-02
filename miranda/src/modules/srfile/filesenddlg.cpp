@@ -331,12 +331,15 @@ INT_PTR CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				GetDlgItemTextA(hwndDlg,IDC_FILEDIR,dat->szSavePath,SIZEOF(dat->szSavePath));
 				GetDlgItemTextA(hwndDlg,IDC_FILE,dat->szFilenames,SIZEOF(dat->szFilenames));
 				GetDlgItemTextA(hwndDlg,IDC_MSG,dat->szMsg,SIZEOF(dat->szMsg));
-				dat->hwndTransfer=FtMgr_AddTransfer(dat);
+				dat->hwndTransfer = FtMgr_AddTransfer(dat);
+				SetWindowLongPtr( hwndDlg, GWLP_USERDATA, 0);
 				DestroyWindow(hwndDlg);
 				return TRUE;
+
 			case IDCANCEL:
 				DestroyWindow(hwndDlg);
 				return TRUE;
+
 			case IDC_USERMENU:
 			{	RECT rc;
 				HMENU hMenu=(HMENU)CallService(MS_CLIST_MENUBUILDCONTACT,(WPARAM)dat->hContact,0);
@@ -359,7 +362,10 @@ INT_PTR CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		Button_FreeIcon_IcoLib(hwndDlg,IDC_DETAILS);
 		Button_FreeIcon_IcoLib(hwndDlg,IDC_HISTORY);
 		Button_FreeIcon_IcoLib(hwndDlg,IDC_USERMENU);
-		if(dat->hPreshutdownEvent) UnhookEvent(dat->hPreshutdownEvent);
+
+		if ( dat )
+			FreeFileDlgData( dat );
+		
 		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MSG),GWLP_WNDPROC,(LONG_PTR)OldSendEditProc);
 		return TRUE;
 	}
