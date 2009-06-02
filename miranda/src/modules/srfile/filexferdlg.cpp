@@ -664,22 +664,34 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		}
 		case WM_DESTROY:
 			KillTimer(hwndDlg,1);
-			if(dat->fs) CallContactService(dat->hContact,PSS_FILECANCEL,(WPARAM)dat->fs,0);
-			dat->fs=NULL;
-			if(dat->hNotifyEvent) {UnhookEvent(dat->hNotifyEvent); dat->hNotifyEvent=NULL;}
-			FreeProtoFileTransferStatus(&dat->transferStatus);
-			if(!dat->send) FreeFilesMatrix(&dat->files);
-			if(dat->fileVirusScanned) mir_free(dat->fileVirusScanned);
-			{	HFONT hFont;
-				hFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_CONTACTNAME,WM_GETFONT,0,0);
-				DeleteObject(hFont);
-			}
-			if ( dat->hPreshutdownEvent ) UnhookEvent(dat->hPreshutdownEvent);
-			if (dat->send) FreeFilesMatrix(&dat->files);
-			if (dat->hIcon) DestroyIcon(dat->hIcon);
-			if (dat->hIconFolder) DestroyIcon(dat->hIconFolder);
-			mir_free(dat);
+
+			HFONT hFont = (HFONT)SendDlgItemMessage(hwndDlg,IDC_CONTACTNAME,WM_GETFONT,0,0);
+			DeleteObject(hFont);
+
+			FreeFileDlgData(dat);
 			break;
 	}
 	return FALSE;
+}
+
+void FreeFileDlgData( FileDlgData* dat )
+{
+	if(dat->fs)
+		CallContactService(dat->hContact,PSS_FILECANCEL,(WPARAM)dat->fs,0);
+	dat->fs = NULL;
+
+	if (dat->hNotifyEvent) {
+		UnhookEvent(dat->hNotifyEvent);
+		dat->hNotifyEvent=NULL;
+	}
+
+	FreeProtoFileTransferStatus(&dat->transferStatus);
+
+	if(!dat->send) FreeFilesMatrix(&dat->files);
+	if(dat->fileVirusScanned) mir_free(dat->fileVirusScanned);
+	if ( dat->hPreshutdownEvent ) UnhookEvent(dat->hPreshutdownEvent);
+	if (dat->send) FreeFilesMatrix(&dat->files);
+	if (dat->hIcon) DestroyIcon(dat->hIcon);
+	if (dat->hIconFolder) DestroyIcon(dat->hIconFolder);
+	mir_free(dat);
 }

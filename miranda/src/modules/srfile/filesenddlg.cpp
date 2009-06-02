@@ -364,8 +364,7 @@ INT_PTR CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		Button_FreeIcon_IcoLib(hwndDlg,IDC_USERMENU);
 
 		if ( dat )
-			if ( dat->hPreshutdownEvent )
-				UnhookEvent(dat->hPreshutdownEvent);
+			FreeFileDlgData( dat );
 		
 		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MSG),GWLP_WNDPROC,(LONG_PTR)OldSendEditProc);
 		return TRUE;
