@@ -4,7 +4,7 @@
 !include "LogicLib.nsh"
 
 !define MIM_NAME                "Miranda IM"
-!define MIM_VERSION             "0.8"
+!define MIM_VERSION             "0.8.0"
 !define MIM_PREVIEW             "1" ; 0 for final build
 
 !define MIM_BUILD_ICONS_LOW     "icons\bin\locolor"
@@ -25,7 +25,11 @@
 
 !if  ${MIM_PREVIEW} != 0
 Name                            "${MIM_NAME} ${MIM_VERSION} Preview Release ${MIM_PREVIEW}"
-OutFile                         "..\..\miranda\bin\miranda-im-v${MIM_VERSION}-pr${MIM_PREVIEW}-${MIM_BUILD_TYPE}.exe"
+!if ${MIM_BUILD_TYPE} = "unicode"
+OutFile                         "..\..\miranda\bin\miranda-im-v${MIM_VERSION}pr${MIM_PREVIEW}w.exe"
+!else
+OutFile                         "..\..\miranda\bin\miranda-im-v${MIM_VERSION}pr${MIM_PREVIEW}.exe"
+!endif
 !else
 Name                            "${MIM_NAME} ${MIM_VERSION}"
 OutFile                         "..\..\miranda\bin\miranda-im-v${MIM_VERSION}-${MIM_BUILD_TYPE}.exe"
