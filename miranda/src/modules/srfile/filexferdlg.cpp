@@ -185,7 +185,8 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 	{
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
-			dat = (FileDlgData*)lParam;
+			dat = (struct FileDlgData*)mir_alloc(sizeof(FileDlgData));
+			memcpy(dat, (FileDlgData*)lParam, sizeof(FileDlgData));
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 			dat->hNotifyEvent=HookEventMessage(ME_PROTO_ACK,hwndDlg,HM_RECVEVENT);
 			dat->transferStatus.currentFileNumber = -1;
