@@ -210,7 +210,7 @@ SubSection /e "Protocols"
     !insertmacro PrintInstallerDetails "Installing Yahoo Protocol..."
     !insertmacro WriteInstallerOption "1" "Yahoo"
     SetOutPath "$INSTDIR\Plugins"
-    File "${MIM_BUILD_DIRANSI}\plugins\yahoo.dll"
+    File "${MIM_BUILD_DIR}\plugins\yahoo.dll"
     !insertmacro InstallMirandaProtoIcon "Yahoo"
   SectionEnd
 SubSectionEnd
