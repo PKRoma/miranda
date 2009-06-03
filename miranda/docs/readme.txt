@@ -24,7 +24,7 @@ Contents
  - TBA
 
 
-* New in 0.7.18
+* New in 0.7.19
 Bugfixes:
  - ICQ: Fixed server connection thread issue
 
