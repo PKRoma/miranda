@@ -21,8 +21,20 @@ Contents
 1. Changes in this version
 --------------------------
 * New in 0.8.0
- - TBA
+Enhancements:
+ - Support for multiple accounts (without dll renaming) for all protocols
+ - SSL support has been added to the core
+ - Support for compressed HTTP transactions
+ - AIM: Unicode messaging & status message
+ - AIM: Set/retrive status message for any status
+ - AIM: Added ability to set your own avatar
+ - AIM: Privacy settings & lists support
+ - AIM: SSL server connection support
+ - MSN: Rewritten to support WLM 8.5 protocol (and all it features)
+ - MSN: Offline messaging
+ - MSN: Added Hotmail Notifier functionality 
 
+Bugfixes:
 
 * New in 0.7.19
 Bugfixes:
