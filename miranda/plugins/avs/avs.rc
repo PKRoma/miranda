@@ -25,17 +25,17 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 // Dialog
 //
 
-IDD_OPTIONS_PICTS DIALOGEX 0, 0, 326, 214
+IDD_OPTIONS_PICTS DIALOGEX 0, 0, 299, 214
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_CLIPSIBLINGS
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CTEXT           "The pictures you can set here are used as default avatars for contacts that don't have their own.\nUse the checkboxes to enable/disable showing avatars for the protocols.",IDC_STATIC,1,13,320,27
+    CTEXT           "The pictures you can set here are used as default avatars\nfor contacts that don't have their own.\nUse the checkboxes to enable/disable showing avatars for the protocols.",IDC_STATIC,0,13,294,27
     CONTROL         "",IDC_PROTOCOLS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_AUTOARRANGE | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,19,83,123,85
     PUSHBUTTON      "Set default picture",IDC_SETPROTOPIC,176,83,106,14
     PUSHBUTTON      "Delete default picture",IDC_REMOVEPROTOPIC,176,99,106,14
     CONTROL         "",IDC_PROTOPIC,"Button",BS_OWNERDRAW,197,118,56,50
     EDITTEXT        IDC_PROTOAVATARNAME,18,176,264,30,ES_MULTILINE | ES_READONLY,WS_EX_CLIENTEDGE
-    CTEXT           "CAUTION: These pictures are NOT your own avatars.\nTo set your own Avatar goto Main Menu | View/Change My Details | Avatars",IDC_STATIC,0,53,321,18
+    CTEXT           "CAUTION: These pictures are NOT your own avatars.\nTo set your own Avatar goto Main Menu | View/Change My Details | Avatars",IDC_STATIC,0,53,294,18
 END
 
 IDD_OPTIONS_AVATARS DIALOGEX 0, 0, 302, 189
@@ -157,7 +157,7 @@ GUIDELINES DESIGNINFO
 BEGIN
     IDD_OPTIONS_PICTS, DIALOG
     BEGIN
-        RIGHTMARGIN, 321
+        RIGHTMARGIN, 294
     END
 
     IDD_OPENSUBCLASS, DIALOG
