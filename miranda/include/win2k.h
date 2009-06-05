@@ -49,6 +49,7 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 #define IsWinVer2000Plus() (WinVerMajor()>=5)
 #define IsWinVerXPPlus()   (WinVerMajor()>=5 && LOWORD(GetVersion())!=5)
 #define IsWinVerVistaPlus() (WinVerMajor()>=6)
+#define IsWinVer7Plus()     (WinVerMajor()>=6 || WinVerMinor()>1)
 
 // put stuff that's not apart of any SDKs but is used nonetheless
 
