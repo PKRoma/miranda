@@ -43,12 +43,13 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 #define WinVerMinor()      HIBYTE(LOWORD(GetVersion()))
 #define IsWinVerNT()       ((GetVersion()&0x80000000)==0)
 // IsWinVerNT4Plus() is buggy, Windows 98 is 4.10.1998
-#define IsWinVerNT4Plus()  (WinVerMajor()>=5 || WinVerMinor()>0 || IsWinVerNT())
-#define IsWinVer98Plus()   (LOWORD(GetVersion())!=4)
-#define IsWinVerMEPlus()   (WinVerMajor()>=5 || WinVerMinor()>10)
-#define IsWinVer2000Plus() (WinVerMajor()>=5)
-#define IsWinVerXPPlus()   (WinVerMajor()>=5 && LOWORD(GetVersion())!=5)
+#define IsWinVerNT4Plus()   (WinVerMajor()>=5 || WinVerMinor()>0 || IsWinVerNT())
+#define IsWinVer98Plus()    (LOWORD(GetVersion())!=4)
+#define IsWinVerMEPlus()    (WinVerMajor()>=5 || WinVerMinor()>10)
+#define IsWinVer2000Plus()  (WinVerMajor()>=5)
+#define IsWinVerXPPlus()    (WinVerMajor()>=5 && LOWORD(GetVersion())!=5)
 #define IsWinVerVistaPlus() (WinVerMajor()>=6)
+#define IsWinVer7Plus()     (WinVerMajor()>=6 || WinVerMinor()>1)
 
 // put stuff that's not apart of any SDKs but is used nonetheless
 
