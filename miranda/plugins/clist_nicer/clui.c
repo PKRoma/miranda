@@ -1509,7 +1509,7 @@ skipbg:
 			return 0;
 		case CLUIINTM_REMOVEFROMTASKBAR: {
 			BYTE windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT);
-			if (windowStyle == SETTING_WINDOWSTYLE_DEFAULT)
+			if (windowStyle == SETTING_WINDOWSTYLE_DEFAULT && DBGetContactSettingByte(NULL, "CList", "AlwaysHideOnTaskBar", 1))
 				RemoveFromTaskBar(hwnd);
 			return 0;
 		}

@@ -167,6 +167,7 @@
 #define IDC_WHITERECT                   1225
 #define IDC_AUTOHIDE                    1235
 #define IDC_HIDETIME                    1236
+#define IDC_ALWAYSHIDEONTASKBAR         1237
 #define IDC_IMPORT                      1241
 #define IDC_MAXSIZEHEIGHT               1254
 #define IDC_MAXSIZESPIN                 1255
@@ -406,7 +407,6 @@
 #define IDC_DSP_APPLY                   40056
 #define IDC_FLT_ACTIVEOPACITY           40056
 #define POPUP_FLOATER                   40057
-#define IDC_FLT_OPACITYVALUE            40070
 #define POPUP_FLOATER_AUTOHIDE          40058
 #define IDC_FLT_WIDTH                   40058
 #define IDC_AVATARDISPMODE              40059
@@ -416,8 +416,6 @@
 #define IDC_FLT_ACTIVEOPACITYVALUE      40061
 #define IDC_FLT_BORDER                  40062
 #define IDC_FLT_ROUNDED                 40063
-#define IDC_FLT_BGCOLOUR                40071
-#define IDC_FLT_BORDERCOLOUR            40072
 #define IDC_FLT_RADIUS                  40065
 #define IDC_CHECK1                      40065
 #define IDC_SNAPTOEDGES                 40065
@@ -426,10 +424,12 @@
 #define IDC_FLT_HOVERTIME               40067
 #define IDC_FLT_SHOWTOOLTIPS            40068
 #define IDC_FLT_HOVERTIMESPIN           40069
-
+#define IDC_FLT_OPACITYVALUE            40070
+#define IDC_FLT_BGCOLOUR                40071
+#define IDC_FLT_BORDERCOLOUR            40072
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        10

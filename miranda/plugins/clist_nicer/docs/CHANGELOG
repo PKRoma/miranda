@@ -7,66 +7,91 @@
 + = new feature
 - = removed
 
+0.8.0.x  - 2009/05/03
+                * resource.rc rework for vc6 bugfix
+                + statusbar font can be changed
+                * fix for 'Contact list display and ignore options' window
+                ! fix for the valid skin extension
+                * slots numbers unification (part 2)
+
+0.8.0.5  - 2009/04/09
+                * slots numbers unification (m_cluiframes.h is now shared between all plugins)
+                + ToolbarButton support for modernopt.dll 
+                ! fix for translation issues in clist_nicer options
+                + x64 portability
+
 0.8.0.4  - 2009/03/05
 
-                * Made project GCC / MingW32 compatible. Added makefile(s) and project
-				  files.
+		* Made project GCC / MingW32 compatible. Added makefile(s) and project
+		  files.
 
+		+ option added to allow clist being shown on task bar, under the following
+		  circumstances:
+
+		  a) Window style is set to "title bar" (ordinary Window like any other,
+			 not border- or frameless).
+		  b) Option "Always hide on task bar" (Options->Contact List-> Window) is
+			 DISABLED. This option is enabled by default.
+
+		  Does not work with skinned contact list, only when using a default windows
+		  theme.
+
+		* corrected some visual glitches in various option dialogs.
 
 0.8.0.2  - 2007/10/20
 
-                * advanced option to save position while moving or resizing (old behaviour)
-                  Use DBEditor++ and set CLUI/save_pos_always (BYTE value) to 1. RESTART
-                  MIRANDA thereafter (the setting is only read at plugin startup).
-                  Deleting the value or set it to 0 to disable it (save position/size only
-                  when Miranda exits).
+		* advanced option to save position while moving or resizing (old behaviour)
+		  Use DBEditor++ and set CLUI/save_pos_always (BYTE value) to 1. RESTART
+		  MIRANDA thereafter (the setting is only read at plugin startup).
+		  Deleting the value or set it to 0 to disable it (save position/size only
+		  when Miranda exits).
 
-                * new option for floating contacts (Fill with contact list background color).
-                  If enabled, floaters will be filled with this color before drawing the skin
-                  item. This allows people who don't use a skin at all to show the floaters w/o
-                  having them fully transparent.
+		* new option for floating contacts (Fill with contact list background color).
+		  If enabled, floaters will be filled with this color before drawing the skin
+		  item. This allows people who don't use a skin at all to show the floaters w/o
+		  having them fully transparent.
 
 0.8.0.1  - 2007/10/02
 
-                * removed all hardcoded instances of the MetaContacts protocol name 
+		* removed all hardcoded instances of the MetaContacts protocol name
                                   
 0.8.0.0  - 2007/10/02
 
-                * released for Miranda 0.7. NOT compatible with 0.6 or earlier.
+		* released for Miranda 0.7. NOT compatible with 0.6 or earlier.
                                
 0.7.2.1  - 2007/09/xx
 
-                * completed floating contacts (patch by yaho, yaho@miranda-easy.net). All the
-                  options on Options->Contact List->Floating contacts are now working and a few
-                  new features (transparency, snapping) have been added.
+		* completed floating contacts (patch by yaho, yaho@miranda-easy.net). All the
+		  options on Options->Contact List->Floating contacts are now working and a few
+		  new features (transparency, snapping) have been added.
 
-                * reworked options. Display profiles is now where you can set most things for
-                  the contact layout. Right now, only one profile (<current>) is available, but
-                  in the future, there will be the possibility to configure multiple profiles for
-                  quickly changing display options.
+		* reworked options. Display profiles is now where you can set most things for
+		  the contact layout. Right now, only one profile (<current>) is available, but
+		  in the future, there will be the possibility to configure multiple profiles for
+		  quickly changing display options.
 
 0.7.1.1  - 2007/01/25
 
-                * more options for per contact display settings.
+		* more options for per contact display settings.
 
-                * the font colors for selected and hottracked skin items are no longer ignored.
+		* the font colors for selected and hottracked skin items are no longer ignored.
 
-                * removed internal font configuration dialog. Customize->Fonts is now where fonts 
-                  and colors can be configured for NON-SKINNED MODE ONLY. Otherwise, settings from
-                  Customize->Contact List skin->Skin items are used.
+		* removed internal font configuration dialog. Customize->Fonts is now where fonts
+		  and colors can be configured for NON-SKINNED MODE ONLY. Otherwise, settings from
+		  Customize->Contact List skin->Skin items are used.
 
 0.7.1.0  - 2007/01/20
                 
-                * removed old icon code. From now on, clist_nicer requires IcoLib services, either
-                  via IcoLib plugin or by using Miranda 0.7.x build.
+		* removed old icon code. From now on, clist_nicer requires IcoLib services, either
+		  via IcoLib plugin or by using Miranda 0.7.x build.
 
-                * added new option to auto-apply last active view mode when the contact list
-                  starts (Options->Contact List)
+		* added new option to auto-apply last active view mode when the contact list
+		  starts (Options->Contact List)
 
-                * Removed the "Priority Contact" menu item. This can now be found in the new 
-                  "Contact settings" dialog which is an improved version of the old "Visibility and
-                   Ignore" dialog. It allows to set various other options "per contact" (e.g. avatar
-                   display override/disable, 2nd line of text display option etc.).
+		* Removed the "Priority Contact" menu item. This can now be found in the new
+		  "Contact settings" dialog which is an improved version of the old "Visibility and
+		   Ignore" dialog. It allows to set various other options "per contact" (e.g. avatar
+		   display override/disable, 2nd line of text display option etc.).
 
 0.7.0.x  - see SVN for changes. Mostly bugfixes, no new features.
 

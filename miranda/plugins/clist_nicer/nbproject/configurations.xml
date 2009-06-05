@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configurationDescriptor version="51">
   <logicalFolder name="root" displayName="root" projectFiles="true">
+    <logicalFolder name="f1" displayName="Docs" projectFiles="true">
+      <itemPath>docs/CHANGELOG</itemPath>
+      <itemPath>docs/license.txt</itemPath>
+      <itemPath>docs/README</itemPath>
+      <itemPath>docs/Skinning.HOWTO</itemPath>
+    </logicalFolder>
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
@@ -47,36 +53,40 @@
         <itemPath>coolsb/coolsblib.c</itemPath>
         <itemPath>coolsb/coolscroll.c</itemPath>
       </logicalFolder>
-      <itemPath>alphablend.c</itemPath>
+      <logicalFolder name="f4" displayName="Option pages" projectFiles="true">
+        <itemPath>clcopts.c</itemPath>
+        <itemPath>clistopts.c</itemPath>
+        <itemPath>cluiopts.c</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f3" displayName="Skin Engine" projectFiles="true">
+        <itemPath>alphablend.c</itemPath>
+        <itemPath>CLCButton.c</itemPath>
+        <itemPath>extBackg.c</itemPath>
+        <itemPath>statusfloater.c</itemPath>
+        <itemPath>wallpaper.c</itemPath>
+      </logicalFolder>
       <itemPath>clc.c</itemPath>
-      <itemPath>CLCButton.c</itemPath>
       <itemPath>clcidents.c</itemPath>
       <itemPath>clcitems.c</itemPath>
       <itemPath>clcmsgs.c</itemPath>
-      <itemPath>clcopts.c</itemPath>
       <itemPath>clcpaint.c</itemPath>
       <itemPath>clcutils.c</itemPath>
       <itemPath>clistevents.c</itemPath>
       <itemPath>clistmenus.c</itemPath>
       <itemPath>clistmod.c</itemPath>
-      <itemPath>clistopts.c</itemPath>
       <itemPath>clistsettings.c</itemPath>
       <itemPath>clisttray.c</itemPath>
       <itemPath>clnplus.cpp</itemPath>
       <itemPath>clui.c</itemPath>
-      <itemPath>cluiopts.c</itemPath>
       <itemPath>commonheaders.c</itemPath>
       <itemPath>contact.c</itemPath>
       <itemPath>Docking.c</itemPath>
-      <itemPath>extBackg.c</itemPath>
       <itemPath>forkthread.c</itemPath>
       <itemPath>init.c</itemPath>
       <itemPath>rowheight_funcs.c</itemPath>
       <itemPath>statusbar.c</itemPath>
-      <itemPath>statusfloater.c</itemPath>
       <itemPath>utf.c</itemPath>
       <itemPath>viewmodes.c</itemPath>
-      <itemPath>wallpaper.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -248,6 +258,18 @@
         <itemTool>3</itemTool>
       </item>
       <item path="coolsb/userdefs.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="docs/CHANGELOG">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="docs/README">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="docs/Skinning.HOWTO">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="docs/license.txt">
         <itemTool>3</itemTool>
       </item>
       <item path="extBackg.c">
@@ -489,6 +511,18 @@
       <item path="coolsb/userdefs.h">
         <itemTool>3</itemTool>
       </item>
+      <item path="docs/CHANGELOG">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="docs/README">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="docs/Skinning.HOWTO">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="docs/license.txt">
+        <itemTool>3</itemTool>
+      </item>
       <item path="extBackg.c">
         <itemTool>0</itemTool>
       </item>
@@ -723,6 +757,18 @@
         <itemTool>3</itemTool>
       </item>
       <item path="coolsb/userdefs.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="docs/CHANGELOG">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="docs/README">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="docs/Skinning.HOWTO">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="docs/license.txt">
         <itemTool>3</itemTool>
       </item>
       <item path="extBackg.c">
