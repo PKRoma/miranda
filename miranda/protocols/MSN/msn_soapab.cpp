@@ -77,7 +77,7 @@ ezxml_t CMsnProto::getSoapResponse(ezxml_t bdy, const char* service)
 	return ezxml_get(bdy, "soap:Body", 0, resp, 0, res, -1); 
 }
 
-ezxml_t CMsnProto::getSoapFault (ezxml_t bdy, bool err)
+ezxml_t CMsnProto::getSoapFault(ezxml_t bdy, bool err)
 {
 	ezxml_t flt = ezxml_get(bdy, "soap:Body", 0, "soap:Fault", -1);
     return err ? ezxml_get(flt, "detail", 0, "errorcode", -1) : flt;
@@ -986,7 +986,7 @@ unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, in
 	ezxml_t contp;
 
 	const char* szEmailNP = strchr(szEmail, ':');
-	if (szEmailNP != NULL) netId = NETID_MSN;
+	if (szEmailNP != NULL) netId = NETID_MOB;
 
 	switch (netId)
 	{
@@ -1081,6 +1081,8 @@ unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, in
                 status = 1;
             else if (strcmp(szErr, "EmailDomainIsFederated") == 0)
                 status = 2;
+            else if (strcmp(szErr, "BadEmailArgument") == 0)
+                status = 4;
             else if (strcmp(szErr, "ContactAlreadyExists") == 0) 
             {
                 status = 3;
