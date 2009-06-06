@@ -545,7 +545,15 @@ int CAimProto::open_contact_file(const char* sn, const char* file, const char* m
 	    CallService(MS_UTILS_CREATEDIRTREE, 0, (LPARAM)path);
 
     mir_snprintf(path + pos, MAX_PATH - pos,"\\%s", file);
-	return _open(path, _O_CREAT | _O_RDWR | _O_BINARY, _S_IREAD);
+	int fid = _open(path, _O_CREAT | _O_RDWR | _O_BINARY, _S_IREAD);
+    if (fid < 0)
+    {
+        char errmsg[512];
+        mir_snprintf(errmsg, SIZEOF(errmsg), Translate("Failed to open file: %s "), path);
+   		char* error = _strerror(errmsg);
+		ShowPopup(error, ERROR_POPUP);
+    }
+    return fid;
 }
 
 void CAimProto::write_away_message(const char* sn, const char* msg, bool utf)
@@ -565,11 +573,6 @@ void CAimProto::write_away_message(const char* sn, const char* msg, bool utf)
 		mir_free(path);
 		mir_free(s_msg);
 	}
-	else
-	{
-		char* error=_strerror("Failed to open file: ");
-		ShowPopup(error, ERROR_POPUP);
-	}
 }
 
 void CAimProto::write_profile(const char* sn, const char* msg, bool utf)
@@ -588,11 +591,6 @@ void CAimProto::write_profile(const char* sn, const char* msg, bool utf)
 		execute_cmd(path);
 		mir_free(path);
 		mir_free(s_msg);
-	}
-	else
-	{
-		char* error=_strerror("Failed to open file: ");
-		ShowPopup(error, ERROR_POPUP);
 	}
 }
 
