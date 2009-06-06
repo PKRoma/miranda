@@ -702,14 +702,12 @@ INT_PTR CJabberDlgGcJoin::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				HMENU hMenu = CreatePopupMenu();
 
-				int i = 0;
-				while ((i = m_proto->ListFindNext(LIST_BOOKMARK, i)) >= 0)
+				LISTFOREACH(i, m_proto, LIST_BOOKMARK)
 				{
 					JABBER_LIST_ITEM *item = 0;
 					if (item = m_proto->ListGetItemPtrFromIndex(i))
 						if (!lstrcmp(item->type, _T("conference")))
 							AppendMenu(hMenu, MF_STRING, (UINT_PTR)item, item->name);
-					i++;
 				}
 				AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
 				AppendMenu(hMenu, MF_STRING, (UINT_PTR)-1, TranslateT("Bookmarks..."));

@@ -362,10 +362,10 @@ static void sttJabberConsoleRebuildStrings(CJabberProto* ppro, HWND hwndCombo)
 	for (i = 0; g_JabberFeatCapPairsExt[i].szFeature; ++i)
 		SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)g_JabberFeatCapPairsExt[i].szFeature);
 
-	for (i = 0; i >= 0; i = ppro->ListFindNext(LIST_ROSTER, i+1))
+	LISTFOREACH_NODEF(i, ppro, LIST_ROSTER)
 		if (item = ppro->ListGetItemPtrFromIndex(i))
 			SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)item->jid);
-	for (i = 0; i >= 0; i = ppro->ListFindNext(LIST_CHATROOM, i+1))
+	LISTFOREACH_NODEF(i, ppro, LIST_CHATROOM)
 		if (item = ppro->ListGetItemPtrFromIndex(i))
 			SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)item->jid);
 

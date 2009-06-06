@@ -1790,7 +1790,6 @@ void CJabberProto::OnProcessIq( HXML node )
 {
 	HXML queryNode;
 	const TCHAR *type, *xmlns;
-	int i;
 	JABBER_IQ_PFUNC pfunc;
 
 	if ( !xmlGetName( node ) || _tcscmp( xmlGetName( node ), _T("iq"))) return;
@@ -1822,8 +1821,8 @@ void CJabberProto::OnProcessIq( HXML node )
 	else if ( !_tcscmp( type, _T("error"))) {
 		Log( "XXX on entry" );
 		// Check for file transfer deny by comparing idStr with ft->iqId
-		i = 0;
-		while (( i=ListFindNext( LIST_FILE, i )) >= 0 ) {
+		LISTFOREACH(i, this, LIST_FILE)
+		{
 			JABBER_LIST_ITEM *item = ListGetItemPtrFromIndex( i );
 			if ( item->ft != NULL && item->ft->state == FT_CONNECTING && !_tcscmp( idStr, item->ft->iqId )) {
 				Log( "Denying file sending request" );
@@ -1831,7 +1830,6 @@ void CJabberProto::OnProcessIq( HXML node )
 				if ( item->ft->hFileEvent != NULL )
 					SetEvent( item->ft->hFileEvent );	// Simulate the termination of file server connection
 			}
-			i++;
 	}	}
 	else if (( !_tcscmp( type, _T("get")) || !_tcscmp( type, _T("set") ))) {
 		XmlNodeIq iq( _T("error"), idStr, xmlGetAttrValue( node, _T("from")) );

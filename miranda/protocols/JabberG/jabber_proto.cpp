@@ -1231,7 +1231,7 @@ int __cdecl CJabberProto::SetStatus( int iNewStatus )
 		if ( m_ThreadInfo ) {
 			if ( m_bJabberOnline ) {
 				// Quit all chatrooms (will send quit message)
-				for (int i = 0; i >= 0; i = ListFindNext(LIST_CHATROOM, i+1))
+				LISTFOREACH(i, this, LIST_CHATROOM)
 					if (JABBER_LIST_ITEM *item = ListGetItemPtrFromIndex(i))
 						GcQuit(item, 0, NULL);
 			}

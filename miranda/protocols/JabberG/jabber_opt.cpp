@@ -839,8 +839,8 @@ public:
 	void OnApply()
 	{
 		BOOL bChecked = m_proto->m_options.ShowTransport;
-		int index = 0;
-		while (( index = m_proto->ListFindNext( LIST_ROSTER, index )) >= 0 ) {
+		LISTFOREACH(index, m_proto, LIST_ROSTER)
+		{
 			JABBER_LIST_ITEM* item = m_proto->ListGetItemPtrFromIndex( index );
 			if ( item != NULL ) {
 				if ( _tcschr( item->jid, '@' ) == NULL ) {
@@ -853,7 +853,6 @@ public:
 						else if ( m_proto->JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE )
 							m_proto->JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
 			}	}	}
-			index++;
 		}
 
 		m_proto->SendPresence( m_proto->m_iStatus, true );

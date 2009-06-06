@@ -121,7 +121,8 @@ void CJabberProto::OnProcessLoginRq( ThreadData* info, DWORD rq )
 	{
 		if ( jabberChatDllPresent && m_options.AutoJoinBookmarks) {
 			JABBER_LIST_ITEM* item;
-			for ( int i=0; ( i = ListFindNext( LIST_BOOKMARK, i )) >= 0; i++ ) {
+			LISTFOREACH(i, this, LIST_BOOKMARK)
+			{
 				if ((( item = ListGetItemPtrFromIndex( i )) != NULL ) && !lstrcmp( item->type, _T("conference") )) {
 					if ( item->bAutoJoin ) {
 						TCHAR room[256], *server, *p;
@@ -1628,7 +1629,8 @@ void CJabberProto::SetBookmarkRequest (XmlNodeIq& iq)
 	HXML query = iq << XQUERY( _T(JABBER_FEAT_PRIVATE_STORAGE));
 	HXML storage = query << XCHILDNS( _T("storage"), _T("storage:bookmarks"));
 
-	for ( int i=0; ( i=ListFindNext( LIST_BOOKMARK, i )) >= 0; i++ ) {
+	LISTFOREACH(i, this, LIST_BOOKMARK)
+	{
 		JABBER_LIST_ITEM* item = ListGetItemPtrFromIndex( i );
 		if ( item == NULL )
 			continue;

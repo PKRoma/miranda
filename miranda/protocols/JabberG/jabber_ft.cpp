@@ -41,7 +41,6 @@ void CJabberProto::FtCancel( filetransfer* ft )
 	JABBER_LIST_ITEM *item;
 	JABBER_BYTE_TRANSFER *jbt;
 	JABBER_IBB_TRANSFER *jibb;
-	int i;
 
 	Log( "Invoking JabberFtCancel()" );
 
@@ -49,7 +48,8 @@ void CJabberProto::FtCancel( filetransfer* ft )
 	if ( m_iqManager.ExpireByUserData( ft ))
 		return;
 	// For file receiving session that is still in si negotiation phase
-	for ( i=0; ( i=ListFindNext( LIST_FTRECV, i ))>=0; i++ ) {
+	LISTFOREACH(i, this, LIST_FTRECV)
+	{
 		item = ListGetItemPtrFromIndex( i );
 		if ( item->ft == ft ) {
 			Log( "Canceling file receiving session while in si negotiation" );

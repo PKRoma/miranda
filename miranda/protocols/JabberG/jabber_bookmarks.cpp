@@ -427,7 +427,7 @@ void CJabberDlgBookmarks::OnProtoRefresh(WPARAM, LPARAM)
 	m_lvBookmarks.DeleteAllItems();
 
 	JABBER_LIST_ITEM *item = NULL;
-	for (int i = 0; (i = m_proto->ListFindNext(LIST_BOOKMARK, i)) >= 0; ++i)
+	LISTFOREACH(i, m_proto, LIST_BOOKMARK)
 	{
 		if (item = m_proto->ListGetItemPtrFromIndex(i))
 		{

@@ -615,7 +615,7 @@ int CJabberProto::JabberGcMenuHook( WPARAM, LPARAM lParam )
 			sttSetupGcMenuItem(gcmi, 0, FALSE);
 
 			idx = IDM_LINK0;
-			for (i = ListFindNext(LIST_CHATROOM, 0); i >= 0; i = ListFindNext(LIST_CHATROOM, i+1))
+			LISTFOREACH_NODEF(i, this, LIST_CHATROOM)
 				if (item = ListGetItemPtrFromIndex(i))
 				{
 					gc_item *pItem = sttFindGcMenuItem(gcmi, idx);
@@ -1198,7 +1198,7 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 
 			TCHAR *szInviteTo = 0;
 			int idx = gch->dwData - IDM_LINK0;
-			for (int i = ppro->ListFindNext(LIST_CHATROOM, 0); i >= 0; i = ppro->ListFindNext(LIST_CHATROOM, i+1))
+			LISTFOREACH(i, ppro, LIST_CHATROOM)
 				if (JABBER_LIST_ITEM *item = ppro->ListGetItemPtrFromIndex(i))
 					if (!idx--)
 					{

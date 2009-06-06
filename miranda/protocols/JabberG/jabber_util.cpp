@@ -572,7 +572,8 @@ void CJabberProto::SendVisibleInvisiblePresence( BOOL invisible )
 {
 	if ( !m_bJabberOnline ) return;
 
-	for ( int i = 0; ( i=ListFindNext( LIST_ROSTER, i )) >= 0; i++ ) {
+	LISTFOREACH(i, this, LIST_ROSTER)
+	{
 		JABBER_LIST_ITEM *item = ListGetItemPtrFromIndex( i );
 		if ( item == NULL )
 			continue;
@@ -913,7 +914,8 @@ void CJabberProto::SendPresence( int status, bool bSendToAll )
 
 	// Also update status in all chatrooms
 	if ( bSendToAll ) {
-		for ( int i = 0; ( i=ListFindNext( LIST_CHATROOM, i )) >= 0; i++ ) {
+		LISTFOREACH(i, this, LIST_CHATROOM)
+		{
 			JABBER_LIST_ITEM *item = ListGetItemPtrFromIndex( i );
 			if ( item != NULL )
 				SendPresenceTo( status == ID_STATUS_INVISIBLE ? ID_STATUS_ONLINE : status, item->jid, NULL );
@@ -1170,9 +1172,9 @@ static VOID CALLBACK sttRebuildInfoFrameApcProc( DWORD_PTR param )
 		ppro->m_pInfoFrame->CreateInfoItem("$/Transports", false);
 		ppro->m_pInfoFrame->UpdateInfoItem("$/Transports", ppro->GetIconHandle(IDI_TRANSPORT), TranslateT("Transports"));
 
-		int i = 0;
 		JABBER_LIST_ITEM *item = NULL;
-		while (( i=ppro->ListFindNext( LIST_ROSTER, i )) >= 0 ) {
+		LISTFOREACH(i, ppro, LIST_ROSTER)
+		{
 			if (( item=ppro->ListGetItemPtrFromIndex( i )) != NULL ) {
 				if ( _tcschr( item->jid, '@' )==NULL && _tcschr( item->jid, '/' )==NULL && item->subscription!=SUB_NONE ) {
 					HANDLE hContact = ppro->HContactFromJID( item->jid );
@@ -1186,7 +1188,6 @@ static VOID CALLBACK sttRebuildInfoFrameApcProc( DWORD_PTR param )
 					ppro->m_pInfoFrame->SetInfoItemCallback(name, &CJabberProto::InfoFrame_OnTransport);
 					mir_free(jid_copy);
 			}	}
-			i++;
 		}
 	}
 	ppro->m_pInfoFrame->Update();
