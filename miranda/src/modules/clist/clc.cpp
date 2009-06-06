@@ -133,7 +133,7 @@ static int ClcAccountsChanged(WPARAM, LPARAM)
 	for (i = 0, cnt = 0; i < accounts.getCount(); ++i) {
 		if (IsAccountEnabled(accounts[i])) {
 			cli.clcProto[cnt].szProto = accounts[i]->szModuleName;
-			cli.clcProto[cnt].dwStatus = ID_STATUS_OFFLINE;
+			cli.clcProto[cnt].dwStatus = CallProtoService(accounts[i]->szModuleName, PS_GETSTATUS, 0, 0);
 			++cnt;
 		}
 	}
