@@ -88,7 +88,10 @@ void CMsnProto::UpdateABHost(const char* service, const char* url)
 	char hostname[128];
 	mir_snprintf(hostname, sizeof(hostname), "ABHost-%s", service); 
 
-	setString(NULL, hostname, url);
+    if (url)
+	    setString(NULL, hostname, url);
+    else
+	    deleteSetting(NULL, hostname);
 }
 
 char* CMsnProto::GetABHost(const char* service, bool isSharing)
@@ -126,9 +129,16 @@ bool CMsnProto::MSN_ABAdd(void)
 	ezxml_free(xmlp);
 
 	unsigned status;
+	char *abUrl = NULL, *tResult;
 
-	char* abUrl = GetABHost("ABAdd", false);
-	char* tResult = getSslResult(&abUrl, szData, reqHdr, status);
+    for (int k = 4; --k;)
+    {
+        mir_free(abUrl);
+        abUrl = GetABHost("ABAdd", false);
+	    tResult = getSslResult(&abUrl, szData, reqHdr, status);
+        if (tResult == NULL) UpdateABHost("ABAdd", NULL);
+        else break;
+    }
 
 	mir_free(reqHdr);
 	free(szData);
@@ -188,9 +198,16 @@ bool CMsnProto::MSN_SharingFindMembership(void)
 	ezxml_free(xmlp);
 
 	unsigned status;
+	char *abUrl = NULL, *tResult;
 
-	char* abUrl = GetABHost("FindMembership", true);
-	char* tResult = getSslResult(&abUrl, szData, reqHdr, status);
+    for (int k = 4; --k;)
+    {
+        mir_free(abUrl);
+        abUrl = GetABHost("FindMembership", true);
+	    tResult = getSslResult(&abUrl, szData, reqHdr, status);
+        if (tResult == NULL) UpdateABHost("FindMembership", NULL);
+        else break;
+    }
 
 	mir_free(reqHdr);
 	free(szData);
@@ -365,9 +382,16 @@ bool CMsnProto::MSN_SharingAddDelMember(const char* szEmail, const int listId, c
 	ezxml_free(xmlp);
 
 	unsigned status;
+	char *abUrl = NULL, *tResult;
 
-	char* abUrl = GetABHost(szMethod, true);
-	char* tResult = getSslResult(&abUrl, szData, reqHdr, status);
+    for (int k = 4; --k;)
+    {
+        mir_free(abUrl);
+        abUrl = GetABHost(szMethod, true);
+	    tResult = getSslResult(&abUrl, szData, reqHdr, status);
+        if (tResult == NULL) UpdateABHost(szMethod, NULL);
+        else break;
+    }
 
 	mir_free(reqHdr);
 	free(szData);
@@ -425,11 +449,18 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid)
 	ezxml_free(xmlp);
 
 	unsigned status;
+	char *abUrl = NULL, *tResult;
 
-	char* abUrl = GetABHost(szMethod, false);
-	char* tResult = getSslResult(&abUrl, szData, reqHdr, status);
+    for (int k = 4; --k;)
+    {
+        mir_free(abUrl);
+        abUrl = GetABHost(szMethod, false);
+	    tResult = getSslResult(&abUrl, szData, reqHdr, status);
+        if (tResult == NULL) UpdateABHost(szMethod, NULL);
+        else break;
+    }
 
-	mir_free(reqHdr);
+    mir_free(reqHdr);
 	free(szData);
 
 	if (tResult != NULL && status == 200)
@@ -704,9 +735,16 @@ bool CMsnProto::MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpI
 	ezxml_free(xmlp);
 
 	unsigned status;
+	char *abUrl = NULL, *tResult;
 
-	char* abUrl = GetABHost(szMethod, false);
-	char* tResult = getSslResult(&abUrl, szData, reqHdr, status);
+    for (int k = 4; --k;)
+    {
+        mir_free(abUrl);
+        abUrl = GetABHost(szMethod, false);
+	    tResult = getSslResult(&abUrl, szData, reqHdr, status);
+        if (tResult == NULL) UpdateABHost(szMethod, NULL);
+        else break;
+    }
 
 	mir_free(reqHdr);
 	free(szData);
@@ -761,9 +799,16 @@ void CMsnProto::MSN_ABAddGroup(const char* szGrpName)
 	ezxml_free(xmlp);
 
 	unsigned status;
+	char *abUrl = NULL, *tResult;
 
-	char* abUrl = GetABHost("ABGroupAdd", false);
-	char* tResult = getSslResult(&abUrl, szData, reqHdr, status);
+    for (int k = 4; --k;)
+    {
+        mir_free(abUrl);
+        abUrl = GetABHost("ABGroupAdd", false);
+	    tResult = getSslResult(&abUrl, szData, reqHdr, status);
+        if (tResult == NULL) UpdateABHost("ABGroupAdd", NULL);
+        else break;
+    }
 
 	free(szData);
 	mir_free(reqHdr);
@@ -815,12 +860,19 @@ void CMsnProto::MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId)
 	ezxml_free(xmlp);
 
 	unsigned status;
+	char *abUrl = NULL, *tResult;
 
-	char* abUrl = GetABHost("ABGroupUpdate", false);
-	char* tResult = getSslResult(&abUrl, szData, reqHdr, status);
+    for (int k = 4; --k;)
+    {
+        mir_free(abUrl);
+        abUrl = GetABHost("ABGroupUpdate", false);
+	    tResult = getSslResult(&abUrl, szData, reqHdr, status);
+        if (tResult == NULL) UpdateABHost("ABGroupUpdate", NULL);
+        else break;
+    }
 
-	free(szData);
 	mir_free(reqHdr);
+	free(szData);
 
 	if (tResult != NULL)
 	{
@@ -876,9 +928,16 @@ void CMsnProto::MSN_ABUpdateProperty(const char* szCntId, const char* propName, 
 	mir_free(szPrpChg);
 
 	unsigned status;
+	char *abUrl = NULL, *tResult;
 
-	char* abUrl = GetABHost("ABContactUpdate", false);
-	char* tResult = getSslResult(&abUrl, szData, reqHdr, status);
+    for (int k = 4; --k;)
+    {
+        mir_free(abUrl);
+        abUrl = GetABHost("ABContactUpdate", false);
+	    tResult = getSslResult(&abUrl, szData, reqHdr, status);
+        if (tResult == NULL) UpdateABHost("ABContactUpdate", NULL);
+        else break;
+    }
 
 	mir_free(reqHdr);
 	free(szData);
@@ -937,9 +996,16 @@ void CMsnProto::MSN_ABUpdateAttr(const char* szCntId, const char* szAttr, const 
 	ezxml_free(xmlp);
 
 	unsigned status;
+	char *abUrl = NULL, *tResult;
 
-	char* abUrl = GetABHost("ABContactUpdate", false);
-	char* tResult = getSslResult(&abUrl, szData, reqHdr, status);
+    for (int k = 4; --k;)
+    {
+        mir_free(abUrl);
+        abUrl = GetABHost("ABContactUpdate", false);
+	    tResult = getSslResult(&abUrl, szData, reqHdr, status);
+        if (tResult == NULL) UpdateABHost("ABContactUpdate", NULL);
+        else break;
+    }
 
 	mir_free(reqHdr);
 	free(szData);
@@ -1047,9 +1113,16 @@ unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, in
 	ezxml_free(xmlp);
 
 	unsigned status;
+	char *abUrl = NULL, *tResult;
 
-	char* abUrl = GetABHost("ABContactAdd", false);
-	char* tResult = getSslResult(&abUrl, szData, reqHdr, status);
+    for (int k = 4; --k;)
+    {
+        mir_free(abUrl);
+        abUrl = GetABHost("ABContactAdd", false);
+	    tResult = getSslResult(&abUrl, szData, reqHdr, status);
+        if (tResult == NULL) UpdateABHost("ABContactAdd", NULL);
+        else break;
+    }
 
 	mir_free(reqHdr);
 	free(szData);
@@ -1189,9 +1262,16 @@ void CMsnProto::MSN_ABUpdateDynamicItem(void)
 	ezxml_free(xmlp);
 
 	unsigned status;
+	char *abUrl = NULL, *tResult;
 
-	char* abUrl = GetABHost("UpdateDynamicItem", false);
-	char* tResult = getSslResult(&abUrl, szData, reqHdr, status);
+    for (int k = 4; --k;)
+    {
+        mir_free(abUrl);
+        abUrl = GetABHost("UpdateDynamicItem", false);
+	    tResult = getSslResult(&abUrl, szData, reqHdr, status);
+        if (tResult == NULL) UpdateABHost("UpdateDynamicItem", NULL);
+        else break;
+    }
 
 	mir_free(reqHdr);
 	free(szData);
