@@ -910,13 +910,14 @@ void CJabberProto::GroupchatProcessPresence( HXML node )
 
 		roomCreated = FALSE;
 
-		// Update groupchat log window
-		GcLogUpdateMemberStatus( item, nick, str, newRes, NULL );
+		bool bAffiliationChanged = false;
+		bool bRoleChanged = false;
 
 		// Check additional MUC info for this user
+		JABBER_RESOURCE_STATUS* r = NULL;
 		if ( xNode != NULL ) {
 			if (( itemNode = xmlGetChild( xNode , "item" )) != NULL ) {
-				JABBER_RESOURCE_STATUS* r = item->resource;
+				r = item->resource;
 				for ( i=0; i<item->resourceCount && _tcscmp( r->resourceName, nick ); i++, r++ );
 				if ( i < item->resourceCount ) {
 					JABBER_GC_AFFILIATION affiliation = r->affiliation;
@@ -943,18 +944,22 @@ void CJabberProto::GroupchatProcessPresence( HXML node )
 
 					if (affiliation != r->affiliation) {
 						r->affiliation = affiliation;
-						GcLogShowInformation(item, r, INFO_AFFILIATION);
+						bAffiliationChanged = true;
 					}
 
 					if (role != r->role) {
 						r->role = role;
 						if (r->role != ROLE_NONE)
-							GcLogShowInformation(item, r, INFO_ROLE);
+							bRoleChanged = true;
 					}
 
 					if ( str = xmlGetAttrValue( itemNode, _T("jid")))
 						replaceStr( r->szRealJid, str );
-			}	}
+				} else
+				{
+					r = NULL;
+				}
+			}
 
 			if ( sttGetStatusCode( xNode ) == 201 )
 				roomCreated = TRUE;
@@ -964,6 +969,11 @@ void CJabberProto::GroupchatProcessPresence( HXML node )
 		if (bStatusChanged)
 			if (JABBER_RESOURCE_STATUS *res = ListFindResource(LIST_CHATROOM, from))
 				GcLogShowInformation(item, res, INFO_STATUS);
+
+		// Update groupchat log window
+		GcLogUpdateMemberStatus( item, nick, str, newRes, NULL );
+		if (r && bAffiliationChanged) GcLogShowInformation(item, r, INFO_AFFILIATION);
+		if (r && bRoleChanged) GcLogShowInformation(item, r, INFO_ROLE);
 
 		// update clist status
 		HANDLE hContact = HContactFromJID( from );
