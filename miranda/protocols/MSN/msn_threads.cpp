@@ -206,30 +206,30 @@ void __cdecl CMsnProto::MSNServerThread( void* arg )
 				if ( info->mBytesInData < peol-info->mData+2 )
 					break;  //wait for full line end
 
-				char msg[ sizeof(info->mData) ];
+				char msg[sizeof(info->mData)];
 				memcpy( msg, info->mData, peol-info->mData ); msg[ peol-info->mData ] = 0;
 
-				if ( *++peol != '\n' )
+				if ( *++peol != '\n')
 					MSN_DebugLog( "Dodgy line ending to command: ignoring" );
 				else
 					peol++;
 
 				info->mBytesInData -= peol - info->mData;
-				memmove( info->mData, peol, info->mBytesInData );
-				MSN_DebugLog( "RECV: %s", msg );
+				memmove(info->mData, peol, info->mBytesInData);
+				MSN_DebugLog("RECV: %s", msg);
 
-				if ( info->mType == SERVER_NOTIFICATION )
-					SetEvent( hKeepAliveThreadEvt );
+				if (info->mType == SERVER_NOTIFICATION )
+					SetEvent(hKeepAliveThreadEvt );
 
-				if ( !isalnum( msg[0] ) || !isalnum(msg[1]) || !isalnum(msg[2]) || (msg[3] && msg[3]!=' ')) {
-					MSN_DebugLog( "Invalid command name" );
+				if (!isalnum(msg[0]) || !isalnum(msg[1]) || !isalnum(msg[2]) || (msg[3] && msg[3]!=' ')) {
+					MSN_DebugLog("Invalid command name");
 					continue;
 				}
 
 				if ( info->mType != SERVER_FILETRANS ) 
 				{
 					int handlerResult;
-					if ( isdigit(msg[0]) && isdigit(msg[1]) && isdigit(msg[2]))   //all error messages
+					if (isdigit(msg[0]) && isdigit(msg[1]) && isdigit(msg[2]))   //all error messages
 						handlerResult = MSN_HandleErrors( info, msg );
 					else
 						handlerResult = MSN_HandleCommands( info, msg );
@@ -243,19 +243,24 @@ void __cdecl CMsnProto::MSNServerThread( void* arg )
 				else 
 					if ( MSN_HandleMSNFTP( info, msg ))
 						goto LBL_Exit;
-		}	}
+		    }	
+        }
 
-		if ( info->mBytesInData == sizeof( info->mData )) {
+		if ( info->mBytesInData == sizeof( info->mData )) 
+        {
 			MSN_DebugLog( "sizeof(data) is too small: the longest line won't fit" );
 			break;
-	}	}
+	    }	
+    }
 
 LBL_Exit:
-	if ( info->mIsMainThread ) {
+	if ( info->mIsMainThread ) 
+    {
 		MSN_GoOffline();
 		msnNsThread = NULL;
 
-		if ( hKeepAliveThreadEvt ) {
+		if ( hKeepAliveThreadEvt ) 
+        {
 			msnPingTimeout *= -1;
 			SetEvent( hKeepAliveThreadEvt );
 		}
