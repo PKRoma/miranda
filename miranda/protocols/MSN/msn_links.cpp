@@ -75,7 +75,7 @@ static INT_PTR ServiceParseMsnimLink(WPARAM, LPARAM lParam)
 	CMsnProto *proto = &g_Instances[0];
 	for (int i = 0; i < g_Instances.getCount(); ++i)
 	{
-		if ( g_Instances[i].m_iStatus != ID_STATUS_OFFLINE && g_Instances[i].m_iStatus != ID_STATUS_CONNECTING)
+		if ( g_Instances[i].m_iStatus > ID_STATUS_OFFLINE)
 		{
 			proto = &g_Instances[i];
 			break;
