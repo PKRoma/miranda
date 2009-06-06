@@ -1099,10 +1099,12 @@ LBL_InvalidCommand:
 		{
 			int oldMode = m_iStatus;
 			m_iStatus = MSNStatusToMiranda( params );
-			if (oldMode == ID_STATUS_OFFLINE || ( oldMode>=ID_STATUS_CONNECTING && oldMode<ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES ))
+			if ( m_iStatus == ID_STATUS_OFFLINE ) return 1;
+			if ( oldMode <= ID_STATUS_OFFLINE )
 			{
 				HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-				while ( hContact != NULL ) {
+				while ( hContact != NULL )
+                {
 					if ( MSN_IsMyContact( hContact )) 
 					{
 						char tEmail[ MSN_MAX_EMAIL_LEN ];
@@ -1112,8 +1114,8 @@ LBL_InvalidCommand:
 						}
 					}
 					hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
-			}	}
-
+			    }	
+			}			
 			if ( m_iStatus != ID_STATUS_IDLE )
 			{
 				SendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,( HANDLE )oldMode, m_iStatus );

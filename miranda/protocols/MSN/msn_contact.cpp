@@ -250,8 +250,14 @@ bool CMsnProto::MSN_RefreshContactList(void)
 {
 	Lists_Wipe();
 	if (!MSN_SharingFindMembership()) return false;
-	if (!MSN_ABFind("ABFindAll", NULL)) return false;
-	MSN_CleanupLists();
+
+    if (m_iDesiredStatus == ID_STATUS_OFFLINE) return false;
+
+    if (!MSN_ABFind("ABFindAll", NULL)) return false;
+
+	if (m_iDesiredStatus == ID_STATUS_OFFLINE) return false;
+
+    MSN_CleanupLists();
 
 	if (m_iDesiredStatus == ID_STATUS_OFFLINE) return false;
         
