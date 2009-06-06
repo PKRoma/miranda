@@ -2025,10 +2025,14 @@ static INT_PTR CALLBACK DlgProcModernOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 		{IDC_SHOW, SETTING_SHOWTIME_DEFAULT, 0, DBVT_BYTE, "CList", "ContactTimeShow"},
 	};
 
+	static bool bInit = true;
+
 	switch (msg)
 	{
 		case WM_INITDIALOG:
 		{
+			bInit = true;
+
 			int i = 0;
 			int item;
 			int s1, s2, s3;
@@ -2089,8 +2093,13 @@ static INT_PTR CALLBACK DlgProcModernOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 					SendDlgItemMessage(hwndDlg,IDC_CLSORT3,CB_SETCURSEL,i,0);		
 			}
 
+			bInit = false;
 			return TRUE;
 		}
+
+		case WM_DESTROY:
+			bInit = true;
+			break;
 
 		case WM_HSCROLL:
 		{	char str[10];
@@ -2098,7 +2107,8 @@ static INT_PTR CALLBACK DlgProcModernOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 			SetDlgItemTextA(hwndDlg,IDC_INACTIVEPERC,str);
 			sprintf(str,"%d%%",100*SendDlgItemMessage(hwndDlg,IDC_TRANSACTIVE,TBM_GETPOS,0,0)/255);
 			SetDlgItemTextA(hwndDlg,IDC_ACTIVEPERC,str);
-			if(wParam!=0x12345678) SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
+			if(wParam!=0x12345678)
+				if (!bInit) SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
 			break;
 		}
 
@@ -2117,7 +2127,7 @@ static INT_PTR CALLBACK DlgProcModernOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 				EnableWindow(GetDlgItem(hwndDlg,IDC_INACTIVEPERC),IsDlgButtonChecked(hwndDlg,IDC_TRANSPARENT));
 				break;
 			}
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			if (!bInit) SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			break;
 
 		case WM_NOTIFY:

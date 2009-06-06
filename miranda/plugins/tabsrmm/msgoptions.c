@@ -1470,6 +1470,7 @@ static INT_PTR CALLBACK DlgProcTabSrmmModernOptions(HWND hwndDlg, UINT msg, WPAR
 		//0, _T("Remove event popups for a contact when you send a reply"), PU_REMOVE_ON_SEND, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
 	};
 */
+	static BOOL bInit = TRUE;
 
 	switch (msg)
 	{
@@ -1477,6 +1478,8 @@ static INT_PTR CALLBACK DlgProcTabSrmmModernOptions(HWND hwndDlg, UINT msg, WPAR
 		{
 			int i = 0;
 			DWORD maxhist = DBGetContactSettingDword(NULL, SRMSGMOD_T, "maxhist", 0);
+
+			bInit = TRUE;
 
 			TranslateDialogDefault(hwndDlg);
 
@@ -1531,8 +1534,13 @@ static INT_PTR CALLBACK DlgProcTabSrmmModernOptions(HWND hwndDlg, UINT msg, WPAR
 				}
 			}
 
+			bInit = FALSE;
 			return TRUE;
 		}
+
+		case WM_DESTROY:
+			bInit = TRUE;
+			break;
 
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
@@ -1554,7 +1562,8 @@ static INT_PTR CALLBACK DlgProcTabSrmmModernOptions(HWND hwndDlg, UINT msg, WPAR
 						return TRUE;
 					break;
 			}
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			if (!bInit)
+				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			break;
 
 		case WM_NOTIFY:

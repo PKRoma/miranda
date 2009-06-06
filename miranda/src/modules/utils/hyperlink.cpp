@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 struct HyperlinkWndData {
 	HFONT hEnableFont,hDisableFont;
 	RECT rcText;
-	COLORREF enableColor,disableColor;
+	COLORREF enableColor, disableColor, focusColor;
 	BYTE flags; /* see HLKF_* */
 };
 
@@ -50,10 +50,54 @@ static LRESULT CALLBACK HyperlinkWndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM
 			if(!(dat->flags&HLKF_HASENABLECOLOR)) {
 				if(GetSysColorBrush(COLOR_HOTLIGHT)==NULL) dat->enableColor=RGB(0,0,255);
 				else dat->enableColor=GetSysColor(COLOR_HOTLIGHT);
+				dat->focusColor = RGB(GetRValue(dat->enableColor) / 2, GetGValue(dat->enableColor) / 2, GetBValue(dat->enableColor) / 2);
 			}
 			if(!(dat->flags&HLKF_HASDISABLECOLOR))
 				dat->disableColor=GetSysColor(COLOR_GRAYTEXT);
 			break;
+
+		case WM_SETFOCUS:
+		case WM_KILLFOCUS:
+			RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
+			break;
+		case WM_MOUSEACTIVATE:
+			SetFocus(hwnd);
+			return MA_ACTIVATE;
+		case WM_GETDLGCODE:
+		{
+			if (lParam)
+			{
+				MSG *msg = (MSG *) lParam;
+				if (msg->message == WM_KEYDOWN)
+				{
+					if (msg->wParam == VK_TAB)
+						return 0;
+					if (msg->wParam == VK_ESCAPE)
+						return 0;
+				} else
+				if (msg->message == WM_CHAR)
+				{
+					if (msg->wParam == '\t')
+						return 0;
+					if (msg->wParam == 27)
+						return 0;
+				}
+			}
+			return DLGC_WANTMESSAGE;
+		}
+
+		case WM_KEYDOWN:
+		{
+			switch (wParam)
+			{
+			case VK_SPACE:
+			case VK_RETURN:
+				SendMessage(GetParent(hwnd),WM_COMMAND,MAKEWPARAM(GetDlgCtrlID(hwnd),STN_CLICKED),(LPARAM)hwnd);
+				break;
+			}
+			return 0;
+		}
+
 		case WM_LBUTTONDOWN:
 		{	POINT pt;
 			POINTSTOPOINT(pt,MAKEPOINTS(lParam));
@@ -152,6 +196,7 @@ static LRESULT CALLBACK HyperlinkWndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM
 		case HLK_SETENABLECOLOUR:
 		{	COLORREF prevColor=dat->enableColor;
 			dat->enableColor=(COLORREF)wParam;
+			dat->focusColor = RGB(GetRValue(dat->enableColor) / 2, GetGValue(dat->enableColor) / 2, GetBValue(dat->enableColor) / 2);
 			dat->flags|=HLKF_HASENABLECOLOR;
 			return (LRESULT)prevColor;
 		}
@@ -176,14 +221,27 @@ static LRESULT CALLBACK HyperlinkWndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM
 			if(hdc!=NULL) {
 				if(IsWindowEnabled(hwnd)) {
 					hPrevFont=(HFONT)SelectObject(hdc,dat->hEnableFont);
-					textColor=dat->enableColor;
+					textColor = (GetFocus() == hwnd) ? dat->focusColor : dat->enableColor;
 				} else {
 					hPrevFont=(HFONT)SelectObject(hdc,dat->hDisableFont);
 					textColor=dat->disableColor;
 				}
 				if(GetClientRect(hwnd,&rc) && GetWindowText(hwnd,szText,SIZEOF(szText))) {
 					SetTextColor(hdc,textColor);
-					SetBkMode(hdc,TRANSPARENT);
+					if (IsWinVerXPPlus())
+					{
+						BOOL fSmoothing;
+						UINT fSmoothingType;
+						SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &fSmoothing, 0);
+						SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &fSmoothingType, 0);
+						if (!fSmoothing || fSmoothingType == FE_FONTSMOOTHINGSTANDARD)
+							SetBkMode(hdc,TRANSPARENT);
+						else
+							SetBkColor(hdc, GetSysColor(COLOR_BTNFACE));
+					} else
+					{
+						SetBkMode(hdc,TRANSPARENT);
+					}
 					alignFlag=(GetWindowLongPtr(hwnd,GWL_STYLE)&(SS_CENTER|SS_RIGHT|SS_LEFT));
 					DrawText(hdc,szText,-1,&rc,alignFlag|DT_NOPREFIX|DT_SINGLELINE|DT_TOP);
 				}
