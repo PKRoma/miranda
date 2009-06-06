@@ -1,5 +1,6 @@
 #include "..\commonheaders.h"
 
+extern int DefaultImageListColorDepth;
 
 #define EXTRACOLUMNCOUNT 5
 int EnabledColumnCount=0;
@@ -242,7 +243,7 @@ void ReloadExtraIcons()
 				if (hExtraImageList){ImageList_Destroy(hExtraImageList);};
 				//hExtraImageList=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),(IsWinVerXPPlus()?ILC_COLOR32:ILC_COLOR16)|ILC_MASK,1,256);
 				
-				hExtraImageList=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,1,256);
+				hExtraImageList=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),DefaultImageListColorDepth|ILC_MASK,1,256);
 				memset(ClientImageListIdx,0,sizeof(ClientImageListIdx));
 
 				

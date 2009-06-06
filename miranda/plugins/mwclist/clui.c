@@ -21,13 +21,12 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-#include "m_clc.h"
-#include "m_clui.h"
-#include "genmenu.h"
 
 #define TM_AUTOALPHA  1
 #define TM_STATUSBARUPDATE  200
 #define MENU_MIRANDAMENU         0xFFFF1234
+
+extern int DefaultImageListColorDepth;
 
 static HMODULE hUserDll;
 static HIMAGELIST himlMirandaIcon;
@@ -596,7 +595,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		ZeroMemory(&mii,sizeof(mii));
 		mii.cbSize=MENUITEMINFO_V4_SIZE;
 		mii.fMask=MIIM_TYPE|MIIM_DATA;
-		himlMirandaIcon=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,1,1);
+		himlMirandaIcon=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),DefaultImageListColorDepth|ILC_MASK,1,1);
 		ImageList_AddIcon(himlMirandaIcon,LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
 		mii.dwItemData=MENU_MIRANDAMENU;
 		mii.fType=MFT_OWNERDRAW;

@@ -21,11 +21,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-#include "m_clc.h"
-#include "clc.h"
-#include "clist.h"
 
 static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+int DefaultImageListColorDepth=ILC_COLOR32;
 
 HIMAGELIST himlCListClc;
 static HANDLE hClcWindowList;
@@ -433,7 +432,7 @@ static LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wP
 				ReleaseDC(hwnd,hdc);
 				if(dat->himlHighlight)
 					ImageList_Destroy(dat->himlHighlight);
-				dat->himlHighlight=ImageList_Create(rc.right,rc.bottom,ILC_COLOR32|ILC_MASK,1,1);
+				dat->himlHighlight=ImageList_Create(rc.right,rc.bottom,DefaultImageListColorDepth|ILC_MASK,1,1);
 				ImageList_Add(dat->himlHighlight,hBmp,hBmpMask);
 				DeleteObject(hBmpMask);
 				DeleteObject(hBmp);

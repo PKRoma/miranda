@@ -72,6 +72,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include ".\CLUIFrames\m_cluiframes.h"
 #include  "m_metacontacts.h"
 #include "BkgrCfg.h"
+#include <m_file.h>
+#include <m_addcontact.h>
+
 
 #define CLS_CONTACTLIST 1
 

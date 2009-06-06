@@ -2,11 +2,10 @@
 //../../bin/debug/plugins/clist_mw.dll
 //H:\lang\miranda-15-10\miranda\bin\debug\miranda32.exe
 #include "commonheaders.h"
-#include "clist.h"
-#include "m_genmenu.h"
-#include "genmenu.h"
 
 #pragma hdrstop
+
+extern int DefaultImageListColorDepth;
 
 //menu object array
 PIntMenuObject MenuObjects=NULL;
@@ -530,7 +529,7 @@ int MO_CreateNewMenuObject(WPARAM wParam,LPARAM lParam)
 	MenuObjects[MenuObjectsCount].ExecService=mir_strdup(pmp->ExecService);
 
 //	if(IsWinVerXPPlus())		//need 32-bit icons on XP for alpha channels
-		MenuObjects[MenuObjectsCount].hMenuIcons=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,15,100);
+		MenuObjects[MenuObjectsCount].hMenuIcons=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),DefaultImageListColorDepth|ILC_MASK,15,100);
 	//else	  //Win2k won't blend icons with imagelist_drawex when color-depth>16-bit. Don't know about WinME, but it certainly doesn't support alpha channels
 //		MenuObjects[MenuObjectsCount].hMenuIcons=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR16|ILC_MASK,15,100);
 	

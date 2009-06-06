@@ -21,10 +21,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-#include "m_clui.h"
-#include <m_file.h>
-#include <m_addcontact.h>
-#include "clist.h"
+
+extern int DefaultImageListColorDepth;
 
 void InitGroupMenus(void);
 LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -430,6 +428,8 @@ int LoadContactListModule(void)
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 
+	DefaultImageListColorDepth=DBGetContactSettingDword(NULL,"CList","DefaultImageListColorDepth",ILC_COLOR32);
+	
 	HookEvent(ME_SYSTEM_SHUTDOWN,ContactListShutdownProc);
 	HookEvent(ME_SYSTEM_MODULESLOADED,ContactListModulesLoaded);
 	HookEvent(ME_OPT_INITIALISE,CListOptInit);
@@ -458,7 +458,7 @@ int LoadContactListModule(void)
 	CreateServiceFunction(MS_CLIST_HOTKEYSPROCESSMESSAGE,HotkeysProcessMessage);
 	CreateServiceFunction(MS_CLIST_GETCONTACTICON,GetContactIcon);
 	MySetProcessWorkingSetSize=(BOOL (WINAPI*)(HANDLE,SIZE_T,SIZE_T))GetProcAddress(GetModuleHandle("kernel32"),"SetProcessWorkingSetSize");
-	hCListImages = ImageList_Create(16, 16, ILC_COLOR32|ILC_MASK, 32, 0);
+	hCListImages = ImageList_Create(16, 16, DefaultImageListColorDepth|ILC_MASK, 32, 0);
 
 	InitDisplayNameCache(&lContactsCache);
 	InitCListEvents();

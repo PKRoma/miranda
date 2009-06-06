@@ -1,14 +1,12 @@
 #include "commonheaders.h"
-#include "m_genmenu.h"
-#include "genmenu.h"
-#include "clist.h"
 #pragma hdrstop 
 
 
 
-
+extern int DefaultImageListColorDepth;
 extern PIntMenuObject MenuObjects;
 extern int MenuObjectsCount;
+
 int hInst;
 
 struct OrderData {
@@ -364,7 +362,7 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			//SetWindowLong(GetDlgItem(hwndDlg,IDC_BUTTONORDERTREE),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_BUTTONORDERTREE),GWL_STYLE)|TVS_NOHSCROLL);
 
 			{	HIMAGELIST himlCheckBoxes;
-				himlCheckBoxes=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,2,2);
+				himlCheckBoxes=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),DefaultImageListColorDepth|ILC_MASK,2,2);
 				ImageList_AddIcon(himlCheckBoxes,LoadIcon(g_hInst,MAKEINTRESOURCE(IDI_NOTICK)));
 				ImageList_AddIcon(himlCheckBoxes,LoadIcon(g_hInst,MAKEINTRESOURCE(IDI_TICK)));
 				//TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_MENUOBJECTS),himlCheckBoxes,TVSIL_NORMAL);
