@@ -497,6 +497,10 @@ void __cdecl CMsnProto::MsnSearchAckThread( void* arg )
 			MSN_FindYahooUser(email);
 		}
 		break;
+
+    default:
+		SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, arg, 0 );
+        break;
 	}
 	mir_free(arg);
 }
