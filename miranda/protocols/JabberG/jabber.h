@@ -41,6 +41,11 @@ Last change by : $Author$
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
 #define NEWTSTR_ALLOCA(A) (A==NULL)?NULL:_tcscpy((TCHAR*)alloca(sizeof(TCHAR)*(_tcslen(A)+1)),A)
 
+#define LISTFOREACH(var__, obj__, list__)	\
+	for (int var__ = 0; (var__ = obj__->ListFindNext(list__, var__)) >= 0; ++var__)
+#define LISTFOREACH_NODEF(var__, obj__, list__)	\
+	for (var__ = 0; (var__ = obj__->ListFindNext(list__, var__)) >= 0; ++var__)
+
 /*******************************************************************
  * Global header files
  *******************************************************************/

@@ -404,9 +404,9 @@ void CJabberProto::PerformBrowse(HWND hwndDlg)
 		m_SDManager.RemoveAll();
 		if (!lstrcmp(szJid, _T(SD_FAKEJID_MYAGENTS))) {
 			sttBrowseMode = SD_BROWSE_MYAGENTS;
-			int i = 0;
 			JABBER_LIST_ITEM *item = NULL;
-			while (( i=ListFindNext( LIST_ROSTER, i )) >= 0 ) {
+			LISTFOREACH(i, this, LIST_ROSTER)
+			{
 				if (( item=ListGetItemPtrFromIndex( i )) != NULL ) {
 					if ( _tcschr( item->jid, '@' )==NULL && _tcschr( item->jid, '/' )==NULL && item->subscription!=SUB_NONE ) {
 						HANDLE hContact = HContactFromJID( item->jid );
@@ -419,7 +419,6 @@ void CJabberProto::PerformBrowse(HWND hwndDlg)
 						CJabberSDNode* pNode = m_SDManager.AddPrimaryNode(item->jid, NULL, NULL);
 						SendBothRequests( pNode, NULL );
 				}	}
-				i++;
 		}	}
 		else if (!lstrcmp(szJid, _T(SD_FAKEJID_CONFERENCES))) {
 			sttBrowseMode = SD_BROWSE_CONFERENCES;

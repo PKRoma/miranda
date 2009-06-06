@@ -451,13 +451,11 @@ public:
 				}
 
 				// append known chatroom jids from bookmarks
-				int i = 0;
-				while (( i = m_proto->ListFindNext( LIST_BOOKMARK, i )) >= 0 )
+				LISTFOREACH(i, m_proto, LIST_BOOKMARK)
 				{
 					JABBER_LIST_ITEM *item = 0;
 					if ( item = m_proto->ListGetItemPtrFromIndex( i ))
 						SendDlgItemMessage( m_hwnd, IDC_COMBO_VALUES, CB_ADDSTRING, 0, (LPARAM)item->jid );
-					i++;
 				}
 
 				// FIXME: ugly code :)

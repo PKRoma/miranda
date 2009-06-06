@@ -766,7 +766,8 @@ int CJabberProto::AdhocLeaveGroupchatsHandler( HXML, CJabberIqInfo* pInfo, CJabb
 
 		ListLock();
 		int nChatsCount = 0;
-		for ( i = 0; ( i=ListFindNext( LIST_CHATROOM, i )) >= 0; i++ ) {
+		LISTFOREACH_NODEF(i, this, LIST_CHATROOM)
+		{
 			JABBER_LIST_ITEM *item = ListGetItemPtrFromIndex( i );
 			if ( item != NULL )
 				nChatsCount++;
@@ -804,7 +805,8 @@ int CJabberProto::AdhocLeaveGroupchatsHandler( HXML, CJabberIqInfo* pInfo, CJabb
 		fieldNode << XCHILD( _T("required"));
 
 		ListLock();
-		for ( i = 0; ( i=ListFindNext( LIST_CHATROOM, i )) >= 0; i++ ) {
+		LISTFOREACH_NODEF(i, this, LIST_CHATROOM)
+		{
 			JABBER_LIST_ITEM *item = ListGetItemPtrFromIndex( i );
 			if ( item != NULL )
 				fieldNode << XCHILD( _T("option")) << XATTR( _T("label"), item->jid ) << XCHILD( _T("value"), item->jid );
