@@ -910,6 +910,9 @@ void CJabberProto::GroupchatProcessPresence( HXML node )
 
 		roomCreated = FALSE;
 
+		// Update groupchat log window
+		GcLogUpdateMemberStatus( item, nick, str, newRes, NULL );
+
 		// Check additional MUC info for this user
 		if ( xNode != NULL ) {
 			if (( itemNode = xmlGetChild( xNode , "item" )) != NULL ) {
@@ -962,9 +965,7 @@ void CJabberProto::GroupchatProcessPresence( HXML node )
 			if (JABBER_RESOURCE_STATUS *res = ListFindResource(LIST_CHATROOM, from))
 				GcLogShowInformation(item, res, INFO_STATUS);
 
-		// Update groupchat log window
-		GcLogUpdateMemberStatus( item, nick, str, newRes, NULL );
-
+		// update clist status
 		HANDLE hContact = HContactFromJID( from );
 		if ( hContact != NULL )
 			JSetWord( hContact, "Status", status );
