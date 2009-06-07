@@ -76,18 +76,21 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 		TranslateDialogDefault(hwndDlg);
 		{
 			PROTOCOLDESCRIPTOR** proto;
-			int protoCount, i;
+			int protoCount, i, cnt = 0;
 			Proto_EnumProtocols(( WPARAM )&protoCount, ( LPARAM )&proto );
 			for ( i=0; i < protoCount; i++ ) {
 				PROTOCOLDESCRIPTOR* pd = proto[i];
-				if ( pd->type == PROTOTYPE_PROTOCOL && pd->cbSize == sizeof( *pd ))
+                if ( pd->type == PROTOTYPE_PROTOCOL && pd->cbSize == sizeof( *pd )) {
 					SendDlgItemMessageA( hwndDlg, IDC_PROTOTYPECOMBO, CB_ADDSTRING, 0, (LPARAM)proto[i]->szName );
+                    ++cnt;
+                }
 			}
 			SendDlgItemMessage( hwndDlg, IDC_PROTOTYPECOMBO, CB_SETCURSEL, 0, 0 );
-		}
-		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
-		{
+			EnableWindow( GetDlgItem( hwndDlg, IDOK ), cnt != 0 );
+
+		    SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 			AccFormDlgParam* param = ( AccFormDlgParam* )lParam;
+
 			if ( param->action == PRAC_ADDED ) // new account
 				SetWindowText( hwndDlg, TranslateT( "Create new account" ));
 			else {
@@ -317,7 +320,7 @@ static LRESULT CALLBACK AccListWndProc(HWND hwnd,UINT msg, WPARAM wParam, LPARAM
 			RECT rc;
 			struct TAccMgrData *parentDat = (struct TAccMgrData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
 			PROTOACCOUNT *acc = (PROTOACCOUNT *)ListBox_GetItemData(hwnd, ListBox_GetCurSel(hwnd));
-			if (!acc)
+			if (!acc || acc->bOldProto || acc->bDynDisabled)
 				return 0;
 
 			ListBox_GetItemRect(hwnd, ListBox_GetCurSel(hwnd), &rc);
@@ -399,7 +402,7 @@ static void sttUpdateAccountInfo(HWND hwndDlg, struct TAccMgrData *dat)
 		PROTOACCOUNT *pa = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, curSel);
 		if ( pa ) {
 			EnableWindow( GetDlgItem( hwndDlg, IDC_UPGRADE ), pa->bOldProto || pa->bDynDisabled );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT ), TRUE );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT ), !pa->bOldProto && !pa->bDynDisabled );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_REMOVE ), TRUE );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_OPTIONS ), pa->ppro != 0 );
 
@@ -715,8 +718,11 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 			if ( iItem != -1 ) {
                 PROTOACCOUNT* pa = ( PROTOACCOUNT* )ListBox_GetItemData( hwndList, iItem );
 				HMENU hMenu = CreatePopupMenu();
-				AppendMenu(hMenu, MF_STRING, (UINT_PTR)1, TranslateT("Rename"));
-				AppendMenu(hMenu, MF_STRING, (UINT_PTR)2, TranslateT("Edit"));
+                if ( !pa->bOldProto && !pa->bDynDisabled )
+                {
+				    AppendMenu(hMenu, MF_STRING, (UINT_PTR)1, TranslateT("Rename"));
+				    AppendMenu(hMenu, MF_STRING, (UINT_PTR)2, TranslateT("Edit"));
+                }
 				AppendMenu(hMenu, MF_STRING, (UINT_PTR)3, TranslateT("Delete"));
 
                 if ( pa->bOldProto || pa->bDynDisabled )
