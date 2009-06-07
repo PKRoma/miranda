@@ -175,7 +175,7 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 				// If buffer not large enough reallocate buffer
 				if (ssl->sbIoBuffer <= ssl->cbIoBuffer) 
 				{
-					ssl->sbIoBuffer += 2048;
+					ssl->sbIoBuffer += 4096;
 					ssl->pbIoBuffer = (PUCHAR)mir_realloc(ssl->pbIoBuffer, ssl->sbIoBuffer);
 				}
 
