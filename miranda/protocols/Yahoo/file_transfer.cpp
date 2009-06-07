@@ -26,8 +26,7 @@ static y_filetransfer* new_ft(CYahooProto* ppro, int id, HANDLE hContact, const 
 	int i=0;
 	YList *l=fs;
 
-
-	LOG(("[new_ft]"));
+	LOG(("[new_ft] id: %d, who: %s, msg: %s, ft_token: %s, y7: %d, sending: %d", id, who, msg, ft_token, y7, sending));
 
 	y_filetransfer* ft = (y_filetransfer*) calloc(1, sizeof(y_filetransfer));
 	ft->ppro = ppro;
@@ -103,7 +102,8 @@ static void free_ft(y_filetransfer* ft)
 	YList *l;
 	int i;
 	
-	LOG(("[free_ft]"));
+	LOG(("[free_ft] token: %s", ft->ftoken));
+	
 	for(l = file_transfers; l; l = y_list_next(l)) {
 		if (l->data == ft){
 			LOG(("[free_ft] Ft found and removed from the list"));
@@ -773,7 +773,7 @@ HANDLE __cdecl CYahooProto::SendFile( HANDLE hContact, const char* szDescription
 	DBVARIANT dbv;
 	y_filetransfer *sf;
 	
-	LOG(("[YahooSendFile]"));
+	LOG(("[YahooSendFile] msg: %s", szDescription));
 	
 	if ( !m_bLoggedIn )
 		return 0;
@@ -818,9 +818,118 @@ HANDLE __cdecl CYahooProto::SendFile( HANDLE hContact, const char* szDescription
 		sf->ftoken=yahoo_ft7dc_send(m_id, sf->who, fs);
 		
 		LOG(("Exiting SendRequest..."));
+		
 		return sf;
 	}
 	
-	LOG(("Exiting SendFile"));
+	LOG(("[/YahooSendFile]"));
+	
 	return 0;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////
+// FileAllow - starts a file transfer
+
+HANDLE __cdecl CYahooProto::FileAllow( HANDLE /*hContact*/, HANDLE hTransfer, const char* szPath )
+{
+	y_filetransfer *ft = (y_filetransfer *)hTransfer;
+	int len;
+
+	DebugLog("[YahooFileAllow]");
+
+	//LOG(LOG_INFO, "[%s] Requesting file from %s", ft->cookie, ft->user);
+	ft->savepath = strdup( szPath );
+
+	len = lstrlenA(ft->savepath) - 1;
+	if (ft->savepath[len] == '\\')
+		ft->savepath[len] = '\0';
+
+	if (ft->y7) {
+		DebugLog("[YahooFileAllow] Trying to relay Y7 transfer.");
+		//void yahoo_ft7dc_accept(int id, const char *buddy, const char *ft_token);
+		yahoo_ft7dc_accept(ft->id, ft->who, ft->ftoken);
+
+		return hTransfer;
+	}
+
+	YForkThread(&CYahooProto::recv_filethread, ft);
+	return hTransfer;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+// FileCancel - cancels a file transfer
+
+int __cdecl CYahooProto::FileCancel( HANDLE /*hContact*/, HANDLE hTransfer )
+{
+	DebugLog("[YahooFileCancel]");
+
+	y_filetransfer* ft = (y_filetransfer*)hTransfer;
+	if ( ft->hWaitEvent != INVALID_HANDLE_VALUE )
+		SetEvent( ft->hWaitEvent );
+
+	ft->action = FILERESUME_CANCEL;
+	ft->cancel = 1;
+	return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+// FileDeny - denies a file transfer
+
+int __cdecl CYahooProto::FileDeny( HANDLE /*hContact*/, HANDLE hTransfer, const char* )
+{
+	/* deny file receive request.. just ignore it! */
+	y_filetransfer *ft = (y_filetransfer *)hTransfer;
+
+	DebugLog("[YahooFileDeny]");
+
+	if ( !m_bLoggedIn || ft == NULL ) {
+		DebugLog("[YahooFileDeny] Not logged-in or some other error!");
+		return 1;
+	}
+
+	if (ft->y7) {
+		DebugLog("[YahooFileDeny] Y7 Transfer detected.");
+		//void yahoo_ft7dc_accept(int id, const char *buddy, const char *ft_token);
+		yahoo_ft7dc_deny(ft->id, ft->who, ft->ftoken);
+		return 0;
+	}
+
+	if (ft->ftoken != NULL) {
+		struct yahoo_file_info *fi = (struct yahoo_file_info *)ft->files->data;
+
+		DebugLog("[YahooFileDeny] DC Detected: Denying File Transfer!");
+		yahoo_ftdc_deny(m_id, ft->who, fi->filename, ft->ftoken, 2);	
+	}
+	return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+// FileResume - processes file renaming etc
+
+int __cdecl CYahooProto::FileResume( HANDLE hTransfer, int* action, const char** szFilename )
+{
+	y_filetransfer *ft = (y_filetransfer *)hTransfer;
+
+	DebugLog("[YahooFileResume]");
+
+	if ( !m_bLoggedIn || ft == NULL ) {
+		DebugLog("[YahooFileResume] Not loggedin or some other error!");
+		return 1;
+	}
+
+	ft->action = *action;
+
+	DebugLog("[YahooFileResume] Action: %d", *action);
+
+	if ( *action == FILERESUME_RENAME ) {
+		struct yahoo_file_info *fi = (struct yahoo_file_info *)ft->files->data;
+
+		DebugLog("[YahooFileResume] Renamed file!");
+		FREE( fi->filename );
+		fi->filename = strdup( *szFilename );
+	}	
+
+	SetEvent( ft->hWaitEvent );
+	return 0;
+}
+
