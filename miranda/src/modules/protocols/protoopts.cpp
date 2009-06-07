@@ -76,18 +76,20 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 		TranslateDialogDefault(hwndDlg);
 		{
 			PROTOCOLDESCRIPTOR** proto;
-			int protoCount, i;
+			int protoCount, i, cnt = 0;
 			Proto_EnumProtocols(( WPARAM )&protoCount, ( LPARAM )&proto );
 			for ( i=0; i < protoCount; i++ ) {
 				PROTOCOLDESCRIPTOR* pd = proto[i];
-				if ( pd->type == PROTOTYPE_PROTOCOL && pd->cbSize == sizeof( *pd ))
+                if ( pd->type == PROTOTYPE_PROTOCOL && pd->cbSize == sizeof( *pd )) {
 					SendDlgItemMessageA( hwndDlg, IDC_PROTOTYPECOMBO, CB_ADDSTRING, 0, (LPARAM)proto[i]->szName );
+                    ++cnt;
+                }
 			}
 			SendDlgItemMessage( hwndDlg, IDC_PROTOTYPECOMBO, CB_SETCURSEL, 0, 0 );
-		}
-		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
-		{
+
+		    SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 			AccFormDlgParam* param = ( AccFormDlgParam* )lParam;
+
 			if ( param->action == PRAC_ADDED ) // new account
 				SetWindowText( hwndDlg, TranslateT( "Create new account" ));
 			else {
@@ -103,6 +105,7 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 				SetDlgItemTextA( hwndDlg, IDC_ACCINTERNALNAME, param->pa->szModuleName );
 				SendDlgItemMessageA( hwndDlg, IDC_PROTOTYPECOMBO, CB_SELECTSTRING, -1, (LPARAM)param->pa->szProtoName );
 
+				EnableWindow( GetDlgItem( hwndDlg, IDOK ), cnt != 0 );
 				EnableWindow( GetDlgItem( hwndDlg, IDC_ACCINTERNALNAME ), FALSE );
 			}
 			SendDlgItemMessage( hwndDlg, IDC_ACCINTERNALNAME, EM_LIMITTEXT, 40, 0 );
