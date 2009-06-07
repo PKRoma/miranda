@@ -841,7 +841,14 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 						ListBox_SetItemData( hList, idx, 0 );
 
 						accounts.remove( pa );
-						WriteDbAccounts();
+
+	                    for (int i=0; i < accounts.getCount(); i++ ) {
+		                    PROTOACCOUNT* paa = accounts[i];
+                            if (paa->iOrder < 1000000 && paa->iOrder > pa->iOrder)
+                                --paa->iOrder;
+                        }
+                
+                        WriteDbAccounts();
 						NotifyEventHooks( hAccListChanged, PRAC_REMOVED, ( LPARAM )pa );
 
 						char* szSaveModule = NEWSTR_ALLOCA(pa->szModuleName);
@@ -1025,17 +1032,6 @@ static int OnAccListChanged( WPARAM eventCode, LPARAM lParam )
 			pa->ppro->m_tszUserName = mir_tstrdup( pa->tszAccountName );
 			pa->ppro->OnEvent( EV_PROTO_ONRENAME, 0, lParam );
 		}
-		// fall through
-
-	case PRAC_ADDED:
-	case PRAC_REMOVED:
-	case PRAC_CHECKED:
-    case PRAC_UPGRADED:
-		cli.pfnReloadProtoMenus();
-		cli.pfnTrayIconIconsChanged();
-		cli.pfnClcBroadcast( INTM_RELOADOPTIONS, 0, 0 );
-		cli.pfnClcBroadcast( INTM_INVALIDATE, 0, 0 );
-		break;
 	}
 
 	return 0;

@@ -54,9 +54,9 @@ struct ProtoIconIndex
 {
 	char *szProto;
 	int iIconBase;
-}
-static *protoIconIndex;
-static int protoIconIndexCount;
+};
+
+OBJLIST<ProtoIconIndex> protoIconIndex(5);
 
 static HANDLE hProtoAckHook;
 static HANDLE hContactSettingChanged;
@@ -185,10 +185,9 @@ int fnIconFromStatusMode(const char *szProto, int status, HANDLE )
 		index = 0;
 	if (szProto == NULL)
 		return index + 1;
-	for ( i = 0; i < protoIconIndexCount; i++ ) {
-		if (strcmp(szProto, protoIconIndex[i].szProto))
-			continue;
-		return protoIconIndex[i].iIconBase + index;
+	for ( i = 0; i < protoIconIndex.getCount(); i++ ) {
+		if (strcmp(szProto, protoIconIndex[i].szProto) == 0)
+		    return protoIconIndex[i].iIconBase + index;
 	}
 	return 1;
 }
@@ -204,14 +203,23 @@ static INT_PTR GetContactIcon(WPARAM wParam, LPARAM)
 
 static void AddProtoIconIndex( PROTOACCOUNT* pa )
 {
-	protoIconIndex = (struct ProtoIconIndex *) mir_realloc(protoIconIndex, sizeof(struct ProtoIconIndex) * (protoIconIndexCount + 1));
-	protoIconIndex[protoIconIndexCount].szProto = pa->szModuleName;
+    ProtoIconIndex *pii = new ProtoIconIndex;
+    pii->szProto = pa->szModuleName;
 	for (int i = 0; i < SIZEOF(statusModeList); i++) {
 		int iImg = ImageList_AddIcon_ProtoIconLibLoaded(hCListImages, pa->szModuleName, statusModeList[i] );
 		if (i == 0)
-			protoIconIndex[protoIconIndexCount].iIconBase = iImg;
+			pii->iIconBase = iImg;
 	}
-	protoIconIndexCount++;
+    protoIconIndex.insert(pii);
+}
+
+static void RemoveProtoIconIndex( PROTOACCOUNT* pa )
+{
+	for (int i = 0; i < protoIconIndex.getCount(); i++) 
+        if (strcmp(protoIconIndex[i].szProto, pa->szModuleName) == 0) {
+            protoIconIndex.remove(i);
+            break;
+        }
 }
 
 static int ContactListModulesLoaded(WPARAM, LPARAM)
@@ -223,9 +231,6 @@ static int ContactListModulesLoaded(WPARAM, LPARAM)
 
 	CheckProtocolOrder();
 	RebuildMenuOrder();
-
-	protoIconIndexCount = 0;
-	protoIconIndex = NULL;
 	for (int i = 0; i < accounts.getCount(); i++)
 		AddProtoIconIndex( accounts[i] );
 
@@ -240,9 +245,20 @@ static int ContactListModulesLoaded(WPARAM, LPARAM)
 
 static int ContactListAccountsChanged( WPARAM eventCode, LPARAM lParam )
 {
-	if ( eventCode == PRAC_ADDED )
-		AddProtoIconIndex(( PROTOACCOUNT* )lParam );
+    switch (eventCode) 
+    { 
+    case PRAC_ADDED:
+        AddProtoIconIndex(( PROTOACCOUNT* )lParam );
+        break;
 
+    case PRAC_REMOVED:
+        RemoveProtoIconIndex(( PROTOACCOUNT* )lParam );
+        break;
+    }
+    cli.pfnReloadProtoMenus();
+	cli.pfnTrayIconIconsChanged();
+	cli.pfnClcBroadcast( INTM_RELOADOPTIONS, 0, 0 );
+	cli.pfnClcBroadcast( INTM_INVALIDATE, 0, 0 );
 	return 0;
 }
 
@@ -280,7 +296,7 @@ static int CListIconsChanged(WPARAM, LPARAM)
 		ImageList_ReplaceIcon_IconLibLoaded(hCListImages, i + 1, LoadSkinIcon( skinIconStatusList[i] ));
 	ImageList_ReplaceIcon_IconLibLoaded(hCListImages, IMAGE_GROUPOPEN, LoadSkinIcon( SKINICON_OTHER_GROUPOPEN ));
 	ImageList_ReplaceIcon_IconLibLoaded(hCListImages, IMAGE_GROUPSHUT, LoadSkinIcon( SKINICON_OTHER_GROUPSHUT ));
-	for (i = 0; i < protoIconIndexCount; i++)
+	for (i = 0; i < protoIconIndex.getCount(); i++)
 		for (j = 0; j < SIZEOF(statusModeList); j++)
 			ImageList_ReplaceIcon_IconLibLoaded(hCListImages, protoIconIndex[i].iIconBase + j, LoadSkinProtoIcon(protoIconIndex[i].szProto, statusModeList[j] ));
 	cli.pfnTrayIconIconsChanged();
@@ -555,7 +571,7 @@ void UnloadContactListModule()
 		ImageList_Destroy(hCListImages);
 		UnhookEvent(hProtoAckHook);
 		UninitCListEvents();
-		mir_free(protoIconIndex);
+		protoIconIndex.destroy();
 		DestroyHookableEvent(hContactDoubleClicked);
 		UnhookEvent(hContactSettingChanged);
 }	}
