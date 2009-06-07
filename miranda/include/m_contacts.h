@@ -88,6 +88,12 @@ typedef struct {
 // Add this flag if you want to get the Unicode info
 #define CNF_UNICODE     0x80
 
+#if defined( _UNICODE )
+	#define CNF_TCHAR       CNF_UNICODE     // will use TCHAR* instead of char*
+#else
+	#define CNF_TCHAR       0               // will return char*, as usual
+#endif
+
 // If MS_CONTACT_GETCONTACTINFO returns 0 (valid), then one of the following
 // types is setting telling you what type of info you received
 #define CNFT_BYTE		1

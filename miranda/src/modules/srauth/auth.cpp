@@ -44,10 +44,10 @@ static int AuthEventAdded(WPARAM, LPARAM lParam)
 {
 	DBEVENTINFO dbei;
 	CLISTEVENT cli;
-	char szTooltip[256];
-	HANDLE hcontact;
+	HANDLE hContact;
     CONTACTINFO ci;
-    char szUid[128];
+    TCHAR szUid[128];
+	TCHAR szTooltip[256];
     
 	ZeroMemory(&dbei,sizeof(dbei));
 	dbei.cbSize=sizeof(dbei);
@@ -59,55 +59,58 @@ static int AuthEventAdded(WPARAM, LPARAM lParam)
 	dbei.pBlob=(PBYTE)mir_alloc(dbei.cbBlob);
 	CallService(MS_DB_EVENT_GET,(WPARAM)(HANDLE)lParam,(LPARAM)&dbei);
 
-	hcontact=*((PHANDLE)(dbei.pBlob+sizeof(DWORD)));
+	hContact=*((PHANDLE)(dbei.pBlob+sizeof(DWORD)));
 
 	ZeroMemory(&cli,sizeof(cli));
 	cli.cbSize=sizeof(cli);
-	cli.hContact=hcontact;
-	cli.pszTooltip=szTooltip;
+	cli.hContact=hContact;
+	cli.ptszTooltip=szTooltip;
+    cli.flags = CLEF_TCHAR;
 	cli.lParam=lParam;
 	cli.hDbEvent=(HANDLE)lParam;
 
     szUid[0] = 0;
     ZeroMemory(&ci, sizeof(ci));
     ci.cbSize = sizeof(ci);
-    ci.hContact = hcontact;
-    ci.szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hcontact, 0);
-    ci.dwFlag = CNF_UNIQUEID;
-    if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
+    ci.hContact = hContact;
+    ci.szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+    ci.dwFlag = CNF_UNIQUEID | CNF_TCHAR;
+    if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM)&ci)) {
         switch (ci.type) {
             case CNFT_ASCIIZ:
-                mir_snprintf(szUid, SIZEOF(szUid), "%s", ci.pszVal);
+                mir_sntprintf(szUid, SIZEOF(szUid), _T("%s"), ci.pszVal);
                 mir_free(ci.pszVal);
                 break;
             case CNFT_DWORD:
-                mir_snprintf(szUid, SIZEOF(szUid), "%u", ci.dVal);
+                mir_sntprintf(szUid, SIZEOF(szUid), _T("%u"), ci.dVal);
                 break;
         }
     }
                     
-	if(dbei.eventType==EVENTTYPE_AUTHREQUEST)
+	if (dbei.eventType == EVENTTYPE_AUTHREQUEST)
 	{
-        if (lstrlenA(szUid))
-            mir_snprintf(szTooltip,256,Translate("%s requests authorization"),szUid);
+        SkinPlaySound("AuthRequest");
+        if (szUid[0])
+            mir_sntprintf(szTooltip, SIZEOF(szTooltip), TranslateT("%s requests authorization"), szUid);
         else
-            mir_snprintf(szTooltip,256,Translate("%u requests authorization"),*((PDWORD)dbei.pBlob));
+            mir_sntprintf(szTooltip, SIZEOF(szTooltip), TranslateT("%u requests authorization"), *((PDWORD)dbei.pBlob));
 
 		cli.hIcon = LoadSkinIcon( SKINICON_OTHER_MIRANDA );
 		cli.pszService = MS_AUTH_SHOWREQUEST;
-		CallService(MS_CLIST_ADDEVENT,0,(LPARAM)&cli);
+		CallService(MS_CLIST_ADDEVENT, 0, (LPARAM)&cli);
 		mir_free(dbei.pBlob);
 	}
-	else if(dbei.eventType==EVENTTYPE_ADDED)
+	else if (dbei.eventType == EVENTTYPE_ADDED)
 	{
-        if (lstrlenA(szUid))
-            mir_snprintf(szTooltip,256,Translate("%d added you to their contact list"),szUid);
+        SkinPlaySound("AddedEvent");
+        if (szUid[0])
+            mir_sntprintf(szTooltip, SIZEOF(szTooltip), TranslateT("%s added you to their contact list"), szUid);
         else
-            mir_snprintf(szTooltip,256,Translate("%u added you to their contact list"),*((PDWORD)dbei.pBlob));
+            mir_sntprintf(szTooltip, SIZEOF(szTooltip), TranslateT("%u added you to their contact list"), *((PDWORD)dbei.pBlob));
             
 		cli.hIcon = LoadSkinIcon( SKINICON_OTHER_MIRANDA );
 		cli.pszService = MS_AUTH_SHOWADDED;
-		CallService(MS_CLIST_ADDEVENT,0,(LPARAM)&cli);
+		CallService(MS_CLIST_ADDEVENT, 0, (LPARAM)&cli);
 		mir_free(dbei.pBlob);
 	}
 	return 0;
@@ -115,8 +118,12 @@ static int AuthEventAdded(WPARAM, LPARAM lParam)
 
 int LoadSendRecvAuthModule(void)
 {
-	CreateServiceFunction(MS_AUTH_SHOWREQUEST,ShowReqWindow);
-	CreateServiceFunction(MS_AUTH_SHOWADDED,ShowAddedWindow);
-	HookEvent(ME_DB_EVENT_ADDED,AuthEventAdded);
-	return 0;
+	CreateServiceFunction(MS_AUTH_SHOWREQUEST, ShowReqWindow);
+	CreateServiceFunction(MS_AUTH_SHOWADDED, ShowAddedWindow);
+	HookEvent(ME_DB_EVENT_ADDED, AuthEventAdded);
+
+    SkinAddNewSoundEx("AuthRequest", Translate("Alerts"), Translate("Authorization request"));
+    SkinAddNewSoundEx("AddedEvent", Translate("Alerts"), Translate("Added event"));
+
+    return 0;
 } 

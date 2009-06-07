@@ -635,10 +635,7 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 					ci.cbSize = sizeof(ci);
 					ci.hContact = NULL;
 					ci.szProto = acc->szModuleName;
-					ci.dwFlag = CNF_UNIQUEID;
-					#if defined( _UNICODE )
-						ci.dwFlag |= CNF_UNICODE;
-					#endif
+					ci.dwFlag = CNF_UNIQUEID | CNF_TCHAR;
 					if ( !CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
 						switch (ci.type) {
 						case CNFT_ASCIIZ:

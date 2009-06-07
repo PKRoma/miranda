@@ -134,10 +134,7 @@ TCHAR* fnGetContactDisplayName( HANDLE hContact, int mode )
 	ci.hContact = hContact;
 	if (ci.hContact == NULL)
 		ci.szProto = "ICQ";
-	ci.dwFlag = (mode == GCDNF_NOMYHANDLE) ? CNF_DISPLAYNC : CNF_DISPLAY;
-	#if defined( _UNICODE )
-		ci.dwFlag += CNF_UNICODE;
-	#endif
+	ci.dwFlag = ((mode == GCDNF_NOMYHANDLE) ? CNF_DISPLAYNC : CNF_DISPLAY) | CNF_TCHAR;
 	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
 		if (ci.type == CNFT_ASCIIZ) {
 			if (cacheEntry == NULL)
@@ -196,10 +193,7 @@ INT_PTR GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 	ci.hContact = hContact;
 	if (ci.hContact == NULL)
 		ci.szProto = "ICQ";
-	ci.dwFlag = (int) lParam == GCDNF_NOMYHANDLE ? CNF_DISPLAYNC : CNF_DISPLAY;
-	#if defined( _UNICODE )
-		ci.dwFlag += CNF_UNICODE;
-	#endif
+	ci.dwFlag = ((lParam == GCDNF_NOMYHANDLE) ? CNF_DISPLAYNC : CNF_DISPLAY) | CNF_TCHAR;
 	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
 		if (ci.type == CNFT_ASCIIZ) {
 			if (cacheEntry == NULL) {
