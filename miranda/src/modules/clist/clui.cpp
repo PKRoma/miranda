@@ -975,6 +975,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
 			if (dis->hwndItem == cli.hwndStatus) {
 				char *szProto = (char *) dis->itemData;
+                if (szProto == NULL) return 0;
 				int status, x;
 				SIZE textSize;
 				BYTE showOpts = DBGetContactSettingByte(NULL, "CLUI", "SBarShow", 1);
