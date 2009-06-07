@@ -721,7 +721,7 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
                 if ( !pa->bOldProto && !pa->bDynDisabled )
                 {
 				    AppendMenu(hMenu, MF_STRING, (UINT_PTR)1, TranslateT("Rename"));
-				    AppendMenu(hMenu, MF_STRING, (UINT_PTR)2, TranslateT("Edit"));
+//				    AppendMenu(hMenu, MF_STRING, (UINT_PTR)2, TranslateT("Edit"));
                 }
 				AppendMenu(hMenu, MF_STRING, (UINT_PTR)3, TranslateT("Delete"));
 
