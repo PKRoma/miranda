@@ -86,6 +86,7 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
                 }
 			}
 			SendDlgItemMessage( hwndDlg, IDC_PROTOTYPECOMBO, CB_SETCURSEL, 0, 0 );
+			EnableWindow( GetDlgItem( hwndDlg, IDOK ), cnt != 0 );
 
 		    SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 			AccFormDlgParam* param = ( AccFormDlgParam* )lParam;
@@ -105,7 +106,6 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 				SetDlgItemTextA( hwndDlg, IDC_ACCINTERNALNAME, param->pa->szModuleName );
 				SendDlgItemMessageA( hwndDlg, IDC_PROTOTYPECOMBO, CB_SELECTSTRING, -1, (LPARAM)param->pa->szProtoName );
 
-				EnableWindow( GetDlgItem( hwndDlg, IDOK ), cnt != 0 );
 				EnableWindow( GetDlgItem( hwndDlg, IDC_ACCINTERNALNAME ), FALSE );
 			}
 			SendDlgItemMessage( hwndDlg, IDC_ACCINTERNALNAME, EM_LIMITTEXT, 40, 0 );
