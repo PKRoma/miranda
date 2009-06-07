@@ -161,7 +161,8 @@ struct CYahooProto : public PROTO_INTERFACE
 
 	//====| filetransfer.cpp |============================================================
 	void __cdecl recv_filethread(void *psf);
-
+	void __cdecl send_filethread(void *psf);
+	
 	void   ext_got_file(const char *me, const char *who, const char *url, long expires, const char *msg, const char *fname, unsigned long fesize, const char *ft_token, int y7);
 	void   ext_got_files(const char *me, const char *who, const char *ft_token, int y7, YList* files);
 	void   ext_got_file7info(const char *me, const char *who, const char *url, const char *fname, const char *ft_token);

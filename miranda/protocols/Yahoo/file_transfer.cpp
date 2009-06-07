@@ -515,7 +515,7 @@ void CYahooProto::ext_got_file(const char *me, const char *who, const char *url,
 	}
 
 	fi = y_new(struct yahoo_file_info,1);
-	fi->filename = fn;
+	fi->filename = strdup(fn);
 	fi->filesize = fesize;
 
 	files = y_list_append(files, fi);
@@ -527,10 +527,10 @@ void CYahooProto::ext_got_file(const char *me, const char *who, const char *url,
 	}
 
 	// blob is DWORD(*ft), ASCIIZ(filenames), ASCIIZ(description)
-	szBlob = (char *) malloc(sizeof(DWORD) + lstrlenA(fn) + lstrlenA(msg) + 2);
+	szBlob = (char *) malloc(sizeof(DWORD) + lstrlenA(fn) + lstrlenA(ft->msg) + 2);
 	*((PDWORD) szBlob) = 0;
 	strcpy(szBlob + sizeof(DWORD), fn);
-	strcpy(szBlob + sizeof(DWORD) + lstrlenA(fn) + 1, msg);
+	strcpy(szBlob + sizeof(DWORD) + lstrlenA(fn) + 1, ft->msg);
 
 	PROTORECVEVENT pre;
 	pre.flags = 0;
@@ -684,11 +684,11 @@ void ext_yahoo_send_file7info(int id, const char *me, const char *who, const cha
 		return;
 	}
 	
-	c = strrchr(ft->pfts.files[0], '\\');
+	c = strrchr(ft->pfts.currentFile, '\\');
 	if (c != NULL ) {
 		c++;
 	} else {
-		c = ft->pfts.files[0];
+		c = ft->pfts.currentFile;
 	}
 	
 	LOG(("Resolving relay.msg.yahoo.com..."));
@@ -708,10 +708,17 @@ void ext_yahoo_send_file7info(int id, const char *me, const char *who, const cha
 		
 }
 
+struct _sfs{
+	char *me;
+	char *token;
+	y_filetransfer *sf;
+};
+
 void CYahooProto::ext_ft7_send_file(const char *me, const char *who, const char *filename, const char *token, const char *ft_token)
 {
 	y_filetransfer *sf;
-	struct yahoo_file_info *fi;
+	//struct yahoo_file_info *fi;
+	struct _sfs *s;
 	
 	LOG(("[ext_yahoo_send_file7info] ident:%s, who: %s, ft_token: %s", me, who, ft_token));
 	
@@ -721,34 +728,33 @@ void CYahooProto::ext_ft7_send_file(const char *me, const char *who, const char 
 		LOG(("ERROR: Can't find the token: %s in my file transfers list...", ft_token));
 		return;
 	}
+
+	s = (struct _sfs *) malloc( sizeof( struct _sfs ));
 	
-	fi = (struct yahoo_file_info *)sf->files->data;
+	s->me = strdup(me);
+	s->token = strdup(token);
+	s->sf = sf;
 	
-	ProtoBroadcastAck(m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, sf, 0);
-	
-	LOG(("who %s, msg: %s, filename: %s filesize: %ld", sf->who, sf->msg, fi->filename, fi->filesize));
-	
-	yahoo_send_file_y7(m_id, me, who, sf->relay, fi->filesize, token,  &upload_file, sf);
-	
-	if (sf->pfts.currentFileNumber >= sf->pfts.totalFiles) {
-		free_ft(sf);
-	} else {
-		DebugLog("[yahoo_send_filethread] More files coming?");
-	}
+	YForkThread(&CYahooProto::send_filethread, s);
 }
 
 /**************** Send File ********************/
-/*
-static void __cdecl yahoo_send_filethread(void *psf) 
+
+void __cdecl CYahooProto::send_filethread(void *psf) 
 {
-	y_filetransfer *sf = ( y_filetransfer* )psf;
+	struct _sfs *s = ( struct _sfs * )psf;
+	y_filetransfer *sf = s->sf;
 	struct yahoo_file_info *fi = (struct yahoo_file_info *)sf->files->data;
 	
 	ProtoBroadcastAck(m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, sf, 0);
 	
 	LOG(("who %s, msg: %s, filename: %s filesize: %ld", sf->who, sf->msg, fi->filename, fi->filesize));
 	
-	yahoo_send_file(m_id, sf->who, sf->msg, fi->filename, fi->filesize, &upload_file, sf);
+	yahoo_send_file_y7(sf->id, s->me, sf->who, sf->relay, fi->filesize, s->token,  &upload_file, sf);
+	
+	FREE(s->me);
+	FREE(s->token);
+	FREE(s);
 	
 	if (sf->pfts.currentFileNumber >= sf->pfts.totalFiles) {
 		free_ft(sf);
@@ -757,7 +763,7 @@ static void __cdecl yahoo_send_filethread(void *psf)
 	}
 
 }
-*/
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // SendFile - sends a file
