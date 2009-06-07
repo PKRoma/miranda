@@ -103,9 +103,16 @@ bool CMsnProto::MSN_StoreCreateProfile(void)
 	ezxml_free(xmlp);
 
 	unsigned status;
+	char *storeUrl = NULL, *tResult;
 
-	char* storeUrl = GetStoreHost("CreateProfile");
-	char* tResult = getSslResult(&storeUrl, szData, reqHdr, status);
+    for (int k = 4; --k;)
+    {
+        mir_free(storeUrl);
+        storeUrl = GetStoreHost("CreateProfile");
+	    tResult = getSslResult(&storeUrl, szData, reqHdr, status);
+        if (tResult == NULL) UpdateStoreHost("CreateProfile", NULL);
+        else break;
+    }
 
 	mir_free(reqHdr);
 	free(szData);
@@ -166,40 +173,49 @@ bool CMsnProto::MSN_StoreGetProfile(void)
 	ezxml_free(xmlp);
 
 	unsigned status;
+	char *storeUrl = NULL, *tResult;
 
-	char* storeUrl = GetStoreHost("GetProfile");
-	char* tResult = getSslResult(&storeUrl, szData, reqHdr, status);
+    for (int k = 4; --k;)
+    {
+        mir_free(storeUrl);
+        storeUrl = GetStoreHost("GetProfile");
+	    tResult = getSslResult(&storeUrl, szData, reqHdr, status);
+        if (tResult == NULL) UpdateStoreHost("GetProfile", NULL);
+        else break;
+    }
 
 	mir_free(reqHdr);
 	free(szData);
 
-	if (tResult != NULL) UpdateStoreHost("GetProfile", storeUrl);
+	if (tResult != NULL) 
+    {
+        UpdateStoreHost("GetProfile", storeUrl);
 
-	if (tResult != NULL && status == 200)
-	{
-		ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
-        ezxml_t body = getSoapResponse(xmlm, "GetProfile");
+	    if (status == 200)
+	    {
+		    ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
+            ezxml_t body = getSoapResponse(xmlm, "GetProfile");
 
-		mir_snprintf(proresid, sizeof(proresid), "%s", ezxml_txt(ezxml_child(body, "ResourceID")));
+		    mir_snprintf(proresid, sizeof(proresid), "%s", ezxml_txt(ezxml_child(body, "ResourceID")));
 
-		ezxml_t expr = ezxml_child(body, "ExpressionProfile");
-		if (expr == NULL) 
-			MSN_StoreCreateProfile();
-		else
-		{
-			if (!getByte( "NeverUpdateNickname", 0 ))
-			{
-				const char* szNick = ezxml_txt(ezxml_child(expr, "DisplayName"));
-				setStringUtf(NULL, "Nick", (char*)szNick);
-			}
-		}
-		ezxml_free(xmlm);
-	}
-	else if (tResult != NULL && status == 500)
-	{
-		MSN_StoreCreateProfile();
-	}
-
+		    ezxml_t expr = ezxml_child(body, "ExpressionProfile");
+		    if (expr == NULL) 
+			    MSN_StoreCreateProfile();
+		    else
+		    {
+			    if (!getByte( "NeverUpdateNickname", 0 ))
+			    {
+				    const char* szNick = ezxml_txt(ezxml_child(expr, "DisplayName"));
+				    setStringUtf(NULL, "Nick", (char*)szNick);
+			    }
+		    }
+		    ezxml_free(xmlm);
+	    }
+	    else if (status == 500)
+	    {
+		    MSN_StoreCreateProfile();
+	    }
+    }
 	mir_free(tResult);
 	mir_free(storeUrl);
 
@@ -229,19 +245,29 @@ bool CMsnProto::MSN_StoreUpdateNick(const char* szNick)
 	ezxml_free(xmlp);
 
 	unsigned status;
+	char *storeUrl = NULL, *tResult;
 
-	char* storeUrl = GetStoreHost("UpdateProfile");
-	char* tResult = getSslResult(&storeUrl, szData, reqHdr, status);
+    for (int k = 4; --k;)
+    {
+        mir_free(storeUrl);
+        storeUrl = GetStoreHost("UpdateProfile");
+	    tResult = getSslResult(&storeUrl, szData, reqHdr, status);
+        if (tResult == NULL) UpdateStoreHost("UpdateProfile", NULL);
+        else break;
+    }
 
 	mir_free(reqHdr);
 	free(szData);
 
-	if (tResult != NULL) UpdateStoreHost("UpdateProfile", storeUrl);
+	if (tResult != NULL)
+    {
+        UpdateStoreHost("UpdateProfile", storeUrl);
 
-	if (tResult != NULL && status == 200)
-	{
-		MSN_ABUpdateDynamicItem();
-	}
+	    if (status == 200)
+	    {
+		    MSN_ABUpdateDynamicItem();
+	    }
+    }
 	mir_free(tResult);
 	mir_free(storeUrl);
 
@@ -273,9 +299,16 @@ bool CMsnProto::MSN_StoreCreateRelationships(const char *szSrcId, const char *sz
 	ezxml_free(xmlp);
 
 	unsigned status;
+	char *storeUrl = NULL, *tResult;
 
-	char* storeUrl = GetStoreHost("CreateRelationships");
-	char* tResult = getSslResult(&storeUrl, szData, reqHdr, status);
+    for (int k = 4; --k;)
+    {
+        mir_free(storeUrl);
+        storeUrl = GetStoreHost("CreateRelationships");
+	    tResult = getSslResult(&storeUrl, szData, reqHdr, status);
+        if (tResult == NULL) UpdateStoreHost("CreateRelationships", NULL);
+        else break;
+    }
 
 	mir_free(reqHdr);
 	free(szData);
@@ -315,9 +348,16 @@ bool CMsnProto::MSN_StoreDeleteRelationships(const char *szResId)
 	ezxml_free(xmlp);
 
 	unsigned status;
+	char *storeUrl = NULL, *tResult;
 
-	char* storeUrl = GetStoreHost("DeleteRelationships");
-	char* tResult = getSslResult(&storeUrl, szData, reqHdr, status);
+    for (int k = 4; --k;)
+    {
+        mir_free(storeUrl);
+        storeUrl = GetStoreHost("DeleteRelationships");
+	    tResult = getSslResult(&storeUrl, szData, reqHdr, status);
+        if (tResult == NULL) UpdateStoreHost("DeleteRelationships", NULL);
+        else break;
+    }
 
 	mir_free(reqHdr);
 	free(szData);
@@ -373,9 +413,16 @@ bool CMsnProto::MSN_StoreCreateDocument(const char *szName, const char *szMimeTy
 	ezxml_free(xmlp);
 
 	unsigned status;
+	char *storeUrl = NULL, *tResult;
 
-	char* storeUrl = GetStoreHost("CreateDocument");
-	char* tResult = getSslResult(&storeUrl, szData, reqHdr, status);
+    for (int k = 4; --k;)
+    {
+        mir_free(storeUrl);
+        storeUrl = GetStoreHost("CreateDocument");
+	    tResult = getSslResult(&storeUrl, szData, reqHdr, status);
+        if (tResult == NULL) UpdateStoreHost("CreateDocument", NULL);
+        else break;
+    }
 
 	mir_free(reqHdr);
 	free(szData);
@@ -430,9 +477,16 @@ bool CMsnProto::MSN_StoreFindDocuments(void)
 	ezxml_free(xmlp);
 
 	unsigned status;
+	char *storeUrl = NULL, *tResult;
 
-	char* storeUrl = GetStoreHost("FindDocuments");
-	char* tResult = getSslResult(&storeUrl, szData, reqHdr, status);
+    for (int k = 4; --k;)
+    {
+        mir_free(storeUrl);
+        storeUrl = GetStoreHost("FindDocuments");
+	    tResult = getSslResult(&storeUrl, szData, reqHdr, status);
+        if (tResult == NULL) UpdateStoreHost("FindDocuments", NULL);
+        else break;
+    }
 
 	mir_free(reqHdr);
 	free(szData);
