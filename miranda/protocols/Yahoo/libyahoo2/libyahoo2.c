@@ -1370,6 +1370,8 @@ static void yahoo_process_filetransfer7(struct yahoo_input_data *yid, struct yah
 	case 3: // FT7 Send Files
 		YAHOO_CALLBACK(ext_yahoo_send_file7info)(yd->client_id, to, from, ft_token);
 		break;
+	case 4: // FT7 Declined
+		break;
 	}
 }
 
@@ -1581,6 +1583,13 @@ static void yahoo_process_filetransfer7accept(struct yahoo_input_data *yid, stru
 			
 		case 265:
 			ft_token = pair->value;
+			break;
+			
+		case 66: // login status = -1  Disconnected/Failed Transfer.
+			break;
+			
+		case 271: // 271 = 1 "Next File"
+			YAHOO_CALLBACK(ext_yahoo_send_file7info)(yd->client_id, to, from, ft_token);
 			break;
 		}
 	}
@@ -6479,9 +6488,9 @@ char *yahoo_ft7dc_send(int id, const char *buddy, YList *files)
 	pkt = yahoo_packet_new(YAHOO_SERVICE_Y7_FILETRANSFER, YPACKET_STATUS_DEFAULT, yd->session_id);
 	yahoo_packet_hash(pkt, 1, yd->user);
 	yahoo_packet_hash(pkt, 5, buddy);
-	yahoo_packet_hash(pkt,265, ft_token);
 	yahoo_packet_hash(pkt,222, "1");
-	
+	yahoo_packet_hash(pkt,265, ft_token);
+		
 	yahoo_packet_hash_int(pkt,266, y_list_length(files)); // files
 	
 	yahoo_packet_hash(pkt,302, "268");

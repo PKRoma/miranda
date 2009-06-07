@@ -1163,6 +1163,7 @@ int CYahooProto::ext_connect(const char *h, int p, int type)
 	}
 
 	LOG(("[ext_connect] Got: %d", (int)con));
+	
 	return (int)con;
 }
 
