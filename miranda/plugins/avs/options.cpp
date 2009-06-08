@@ -985,14 +985,13 @@ INT_PTR CALLBACK DlgProcAvatarProtoInfo(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			lvc.fmt = LVCFMT_IMAGE | LVCFMT_LEFT;
 			ListView_InsertColumn(hwndList, 0, &lvc);
 
-			LVITEMA item = {0};
+			LVITEM item = {0};
 			item.mask = LVIF_TEXT | LVIF_PARAM | LVIF_IMAGE;
 			item.iItem = 1000;
 
 			// List protocols
 			PROTOACCOUNT **accs;
 			int i, count, num = 0;
-			char description[256];
 
 			ProtoEnumAccounts( &count, &accs );
 			for (i = 0; i < count; i++)
@@ -1003,14 +1002,12 @@ INT_PTR CALLBACK DlgProcAvatarProtoInfo(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				if ( !Proto_IsAvatarsEnabled( accs[i]->szModuleName ))
 					continue;
 
-				CallProtoService( accs[i]->szModuleName, PS_GETNAME, sizeof(description),(LPARAM) description);
-
 				ImageList_AddIcon(hIml, LoadSkinnedProtoIcon( accs[i]->szModuleName, ID_STATUS_ONLINE));
-				item.pszText = description;
+				item.pszText = accs[i]->tszAccountName;
 				item.iImage = num;
 				item.lParam = (LPARAM)accs[i]->szModuleName;
 
-				SendMessageA(hwndList, LVM_INSERTITEMA, 0, (LPARAM)&item);
+				ListView_InsertItem(hwndList, &item);
 				num++;
 			}
 
