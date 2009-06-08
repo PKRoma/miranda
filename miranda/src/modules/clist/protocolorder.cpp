@@ -71,6 +71,7 @@ int CheckProtocolOrder()
         else {
 			if ( pa->iOrder >= 1000000 ) {
 				pa->iOrder = FindNextOrder();
+				pa->bIsVisible = TRUE;
 				protochanged = TRUE;
 	        }	
         }
