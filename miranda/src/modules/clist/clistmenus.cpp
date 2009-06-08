@@ -1086,11 +1086,13 @@ static int MenuProtoAck(WPARAM, LPARAM lParam)
 	if ( ack->result != ACKRESULT_SUCCESS ) return 0;
 	if ( hStatusMainMenuHandles == NULL ) return 0;
 
+    if ( cli.pfnGetProtocolVisibility( ack->szModule ) == 0 ) return 0;
+
     overallStatus = GetAverageMode(&networkProtoCount);
 
 	memset(&tmi,0,sizeof(tmi));
 	tmi.cbSize=sizeof(tmi);
-	if (overallStatus>ID_STATUS_CONNECTING) {
+	if (overallStatus >= ID_STATUS_OFFLINE) {
 		int pos = statustopos(cli.currentStatusMenuItem);
 		if (pos==-1) pos=0;
 		{   // reset all current possible checked statuses
