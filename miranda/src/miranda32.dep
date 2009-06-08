@@ -1,7 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by miranda32.mak
 
 .\core\commonheaders.cpp : \
-	"..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\include\m_addcontact.h"\
 	"..\include\m_awaymsg.h"\
 	"..\include\m_button.h"\
@@ -325,7 +324,6 @@
 	
 
 .\modules\netlib\netlibssl.cpp : \
-	"..\..\..\program files\platform sdk\include\schannel.h"\
 	"..\include\m_clui.h"\
 	"..\include\m_genmenu.h"\
 	"..\include\m_plugins.h"\
