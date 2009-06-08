@@ -113,7 +113,6 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		switch ( GetWindowLongPtr(( HWND )lParam, GWL_ID )) {
 		case IDC_WHITERECT:
 		case IDC_BUILDTIME:
-		case IDC_LOGO:
 		case IDC_CREDITSFILE:
 		case IDC_DEVS:
 			SetTextColor((HDC)wParam,GetSysColor(COLOR_WINDOWTEXT));
@@ -127,11 +126,7 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 	case WM_DESTROY:
 		Window_FreeIcon_IcoLib( hwndDlg );
 		{	
-			HFONT hFont = (HFONT)SendDlgItemMessage(hwndDlg,IDC_MIRANDA,WM_GETFONT,0,0);
-			SendDlgItemMessage(hwndDlg,IDC_MIRANDA,WM_SETFONT,SendDlgItemMessage(hwndDlg,IDOK,WM_GETFONT,0,0),0);
-			DeleteObject(hFont);				
-
-			hFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_VERSION,WM_GETFONT,0,0);
+			HFONT hFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_VERSION,WM_GETFONT,0,0);
 			SendDlgItemMessage(hwndDlg,IDC_VERSION,WM_SETFONT,SendDlgItemMessage(hwndDlg,IDOK,WM_GETFONT,0,0),0);
 			DeleteObject(hFont);				
 		}

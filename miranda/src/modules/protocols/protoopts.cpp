@@ -31,6 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 INT_PTR  Proto_EnumProtocols( WPARAM, LPARAM );
 int isProtoSuitable( PROTO_INTERFACE* ppi );
+int FindNextOrder(void);
 
 #define errMsg \
 "WARNING! The account is going to be deleted. It means that all its \
@@ -153,7 +154,7 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 					pa->bIsEnabled = TRUE;
                     pa->bIsVisible = isProtoSuitable(pa->ppro);
                     
-					pa->iOrder = accounts.getCount();
+					pa->iOrder = FindNextOrder();
 					pa->type = PROTOTYPE_PROTOCOL;
 					break;
 				}
@@ -525,9 +526,7 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 	case WM_CTLCOLORSTATIC:
 		switch ( GetDlgCtrlID(( HWND )lParam )) {
 		case IDC_WHITERECT:
-		case IDC_LOGO:
 		case IDC_NAME:
-		case IDC_DESCRIPTION:
 			SetBkColor(( HDC )wParam, GetSysColor( COLOR_WINDOW ));
 			return ( INT_PTR )GetSysColorBrush( COLOR_WINDOW );
 		}

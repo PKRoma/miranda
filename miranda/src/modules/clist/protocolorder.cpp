@@ -34,6 +34,16 @@ int isProtoSuitable( PROTO_INTERFACE* ppi )
 	return ppi->GetCaps( PFLAGNUM_2, 0 ) & ~ppi->GetCaps( PFLAGNUM_5, 0 );
 }
 
+int FindNextOrder(void)
+{
+    int res = -1;
+	for ( int i=0; i < accounts.getCount(); i++ ) {
+		PROTOACCOUNT* pa = accounts[i];
+		if ( pa->iOrder < 1000000 && pa->iOrder > res) res = pa->iOrder;
+    }
+    return ++res;
+}
+
 int CheckProtocolOrder()
 {
 	BOOL protochanged = FALSE;
@@ -56,7 +66,15 @@ int CheckProtocolOrder()
 			if ( pa->iOrder < 1000000 ) {
 				pa->iOrder = 1000000+i;
 				protochanged = TRUE;
-	}	}	}
+	        }	
+        }
+        else {
+			if ( pa->iOrder >= 1000000 ) {
+				pa->iOrder = FindNextOrder();
+				protochanged = TRUE;
+	        }	
+        }
+    }
 
 	if ( !protochanged )
 		return 0;

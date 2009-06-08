@@ -337,7 +337,6 @@ static INT_PTR CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 	case WM_CTLCOLORSTATIC:
 		switch (GetDlgCtrlID((HWND)lParam)) {
 		case IDC_WHITERECT:
-		case IDC_LOGO:
 			SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
 			return (INT_PTR)GetSysColorBrush(COLOR_WINDOW);
 		case IDC_UPDATING:

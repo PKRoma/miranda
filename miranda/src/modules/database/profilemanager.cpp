@@ -526,8 +526,6 @@ static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam,
 	case WM_CTLCOLORSTATIC:
 		switch ( GetDlgCtrlID(( HWND )lParam )) {
 		case IDC_WHITERECT:
-		case IDC_LOGO:
-		case IDC_DESCRIPTION:
 			SetBkColor(( HDC )wParam, GetSysColor( COLOR_WINDOW ));
 			return ( INT_PTR )GetSysColorBrush( COLOR_WINDOW );
 		}
