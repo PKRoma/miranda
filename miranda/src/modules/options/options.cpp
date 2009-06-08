@@ -503,8 +503,6 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 		switch ( GetDlgCtrlID(( HWND )lParam )) 
 		{
 			case IDC_WHITERECT:
-			case IDC_LOGO:
-			case IDC_DESCRIPTION:
 			case IDC_KEYWORD_FILTER:
 				SetBkColor(( HDC )wParam, GetSysColor( COLOR_WINDOW ));
 				return ( INT_PTR )GetSysColorBrush( COLOR_WINDOW );

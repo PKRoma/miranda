@@ -656,7 +656,6 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 		sttFreeListItems(GetDlgItem(hwndDlg, IDC_FONTLIST));
 		SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_RESETCONTENT, 0, 0);
-		SendDlgItemMessage(hwndDlg, IDC_COLOURLIST, CB_RESETCONTENT, 0, 0);
 
 		if (group_buff) {
 			BOOL need_restart = FALSE;
@@ -684,7 +683,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 					need_restart |= (F.flags & FIDF_NEEDRESTART);
 			}	}
 
-			ShowWindow( GetDlgItem(hwndDlg, IDC_STAT_RESTART), (need_restart ? SW_SHOW : SW_HIDE));
+//			ShowWindow( GetDlgItem(hwndDlg, IDC_STAT_RESTART), (need_restart ? SW_SHOW : SW_HIDE));
 
 			if ( hBkgColourBrush ) {
 				DeleteObject( hBkgColourBrush );
@@ -706,9 +705,6 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 						itemId = SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_ADDSTRING, (WPARAM)-1, (LPARAM)itemData);
 					}
-
-					//itemId = SendDlgItemMessage(hwndDlg, IDC_COLOURLIST, CB_ADDSTRING, (WPARAM)-1, (LPARAM)TranslateTS( C.name ));
-					//SendDlgItemMessage(hwndDlg, IDC_COLOURLIST, CB_SETITEMDATA, itemId, colourId);
 
 					if ( _tcscmp( C.name, _T("Background") ) == 0 )
 						hBkgColourBrush = CreateSolidBrush( C.value );
