@@ -447,6 +447,7 @@ typedef struct {
 #define NLHRF_SMARTAUTHHEADER 0x00000008   //if the connection was opened through an HTTP or HTTPS proxy then send a Proxy-Authorization header if required.
 #define NLHRF_HTTP11          0x00000010   //use HTTP 1.1
 #define NLHRF_PERSISTENT      0x00000020   //preserve connection on exit
+#define NLHRF_SSL             0x00000040   //use ssl connection
 #define NLHRF_NODUMP          0x00010000   //never dump this to the log
 #define NLHRF_NODUMPHEADERS   0x00020000   //don't dump http headers (only useful for POSTs and MS_NETLIB_HTTPTRANSACTION)
 #define NLHRF_DUMPPROXY       0x00040000   //this transaction is a proxy communication. For dump filtering only.

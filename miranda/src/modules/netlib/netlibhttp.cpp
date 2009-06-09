@@ -210,7 +210,7 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	useProxyHttpAuth=nlhr->flags&NLHRF_SMARTAUTHHEADER && nlc->nlu->settings.useProxy && nlc->nlu->settings.useProxyAuth && (nlc->nlu->settings.proxyType==PROXYTYPE_HTTP || nlc->nlu->settings.proxyType==PROXYTYPE_HTTPS);
 	usingNtlmAuthentication=0;
 	if(useProxyHttpAuth) {
-		if(nlc->nlu->settings.useProxyAuthNtlm) {
+		if(nlc->nlu->settings.useProxyAuthNtlm && (nlhr->flags & NLHRF_SSL) == 0) {
 			char *pszNtlmAuth;
 			pszNtlmAuth=NtlmCreateResponseFromChallenge(nlc->hNtlmSecurity, "", 
 				nlc->nlu->settings.szProxyAuthUser, nlc->nlu->settings.szProxyAuthPassword);
@@ -279,28 +279,35 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 
 	//ntlm reply
 	if(usingNtlmAuthentication) {
-		int resultCode=0;
+retry:
+        int resultCode=0;
 
 		if(!HttpPeekFirstResponseLine(nlc,GetTickCount()+5000,MSG_PEEK|MSG_DUMPASTEXT|(nlhr->flags&(NLHRF_NODUMP|NLHRF_NODUMPHEADERS)?MSG_NODUMP:(nlhr->flags&NLHRF_DUMPPROXY?MSG_DUMPPROXY:0)),&resultCode,NULL,NULL)
-		   || ((resultCode<200 || resultCode>=300) && resultCode!=407)) {
+		   || ((resultCode<200 || resultCode>=300) && resultCode!=407 && resultCode!=100)) {
 			if(szHost) mir_free(szHost);
 			NetlibLeaveNestedCS(&nlc->ncsSend);
 			if(resultCode) NetlibHttpSetLastErrorUsingHttpResult(resultCode);
 			return SOCKET_ERROR;
 		}
-		if(resultCode==407) {	//proxy auth required
+		if (resultCode == 407 || resultCode == 100) {	//proxy auth required
 			NETLIBHTTPREQUEST *nlhrReply;
 			int i,error;
 
 			DWORD hflags = nlhr->flags&(NLHRF_NODUMP|NLHRF_NODUMPHEADERS|NLHRF_NODUMPSEND)?MSG_NODUMP:(nlhr->flags&NLHRF_DUMPPROXY?MSG_DUMPPROXY:0);
 			DWORD dflags = nlhr->flags&(NLHRF_NODUMP|NLHRF_NODUMPSEND)?MSG_NODUMP:MSG_DUMPASTEXT|MSG_DUMPPROXY;
 
-			if (nlhr->requestType == REQUEST_HEAD)
+			if (nlhr->requestType == REQUEST_HEAD || resultCode == 100)
 				nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)nlc, hflags);
 			else
 				nlhrReply = NetlibHttpRecv(nlc, hflags, dflags);
 
-			if(nlhrReply==NULL) {
+      		if (resultCode == 100) 
+            {	
+			    if (nlhrReply) NetlibHttpFreeRequestStruct(0, (LPARAM)nlhrReply);
+                goto retry;
+            }
+
+			if (nlhrReply == NULL) {
 				if(szHost) mir_free(szHost);
 				NetlibLeaveNestedCS(&nlc->ncsSend);
 				if(resultCode) NetlibHttpSetLastErrorUsingHttpResult(resultCode);
@@ -510,7 +517,7 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 		char *ppath,*phost,*pcolon;
 		BOOL secur;
 
-		secur = _strnicmp(nlhr->szUrl, "https", 5) == 0;
+		secur = _strnicmp(nlhr->szUrl, "https", 5) == 0 || (nlhr->flags & NLHRF_SSL);
 		phost=strstr(nlhr->szUrl,"://");
 		if(phost==NULL) phost=nlhr->szUrl;
 		else phost+=3;
@@ -525,6 +532,7 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 			nloc.wPort=(WORD)strtol(pcolon+1,NULL,10);
 		}
 		else nloc.wPort = secur ? 443 : 80;
+        if (secur) nlhr->flags |= NLHRF_SSL;
 		nloc.flags = NLOCF_HTTP | (secur ? NLOCF_SSL : 0);
 		hConnection=(HANDLE)NetlibOpenConnection((WPARAM)nlu,(LPARAM)&nloc);
 		if(hConnection==NULL) return (INT_PTR)(HANDLE)NULL;
@@ -535,9 +543,10 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 		int i,doneUserAgentHeader=0,doneAcceptEncoding=0;
 		char szUserAgent[64];
 
-		nlhrSend=*nlhr;
-		nlhrSend.flags&=~NLHRF_REMOVEHOST;
-		nlhrSend.flags|=NLHRF_GENERATEHOST|NLHRF_SMARTREMOVEHOST|NLHRF_SMARTAUTHHEADER;
+		nlhrSend = *nlhr;
+		nlhrSend.flags &= ~NLHRF_REMOVEHOST;
+		nlhrSend.flags |= NLHRF_GENERATEHOST | NLHRF_SMARTREMOVEHOST | NLHRF_SMARTAUTHHEADER;
+
 		for(i=0;i<nlhr->headersCount;i++) {
 			if(!lstrcmpiA(nlhr->headers[i].szName,"User-Agent"))
 				doneUserAgentHeader=1;
