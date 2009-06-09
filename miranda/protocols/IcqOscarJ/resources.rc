@@ -77,15 +77,6 @@ BEGIN
     LTEXT           "Enter a password for UIN %d:",IDC_INSTRUCTION,7,7,142,8
 END
 
-IDD_OPT_ICQMAIN DIALOGEX 0, 0, 318, 252
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    CONTROL         "",IDC_OPTIONSTAB,"SysTabControl32",WS_TABSTOP,1,1,316,
-                    250
-END
-
 IDD_OPT_ICQ DIALOGEX 0, 0, 310, 234
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
@@ -209,44 +200,44 @@ BEGIN
                     IDC_STATIC,12,217,290,10,WS_DISABLED
 END
 
-IDD_OPT_ICQPRIVACY DIALOGEX 0, 0, 314, 240
+IDD_OPT_ICQPRIVACY DIALOGEX 0, 0, 310, 234
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Direct connections",IDC_STATIC_DC1,7,7,300,78
+    GROUPBOX        "Direct connections",IDC_STATIC_DC1,4,0,302,78
     LTEXT           "Allowing direct connections will expose your IP address but may be necessary for some ICQ features to work properly.",
-                    IDC_STATIC_DC2,13,19,292,17
+                    IDC_STATIC_DC2,10,12,292,17
     CONTROL         "Allow direct connections with any user",IDC_DCALLOW_ANY,
-                    "Button",BS_AUTORADIOBUTTON,24,41,281,10
+                    "Button",BS_AUTORADIOBUTTON,21,34,281,10
     CONTROL         "Allow direct connections with users on my contact list",
-                    IDC_DCALLOW_CLIST,"Button",BS_AUTORADIOBUTTON,24,54,281,
+                    IDC_DCALLOW_CLIST,"Button",BS_AUTORADIOBUTTON,21,47,281,
                     10
     CONTROL         "Allow direct connections only when I authorize or initiate them",
                     IDC_DCALLOW_AUTH,"Button",BS_AUTORADIOBUTTON | 
-                    WS_TABSTOP,24,67,281,10
-    GROUPBOX        "Contact List Authorization",IDC_STATIC_CLIST,7,90,300,
+                    WS_TABSTOP,21,60,281,10
+    GROUPBOX        "Contact List Authorization",IDC_STATIC_CLIST,4,83,302,
                     45,WS_GROUP
     CONTROL         "All users may add me to their Contact List",IDC_ADD_ANY,
-                    "Button",BS_AUTORADIOBUTTON,24,104,281,10
+                    "Button",BS_AUTORADIOBUTTON,21,97,281,10
     CONTROL         "I want to be asked when someone wants to add me to their Contact List",
-                    IDC_ADD_AUTH,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,24,
-                    118,281,10
+                    IDC_ADD_AUTH,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,21,
+                    111,281,10
+    GROUPBOX        "Misc Settings",IDC_STATIC,4,131,302,78
     CONTROL         "Allow others to view my Online / Offline status from the web (Web Aware)",
-                    IDC_WEBAWARE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,
-                    151,281,10
+                    IDC_WEBAWARE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,
+                    144,281,10
     CONTROL         "Allow others to view my primary e-mail address",
                     IDC_PUBLISHPRIMARY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    24,167,281,10
+                    21,160,281,10
     CONTROL         "Only reply to status message requests from users on my contact list",
                     IDC_STATUSMSG_CLIST,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,24,183,281,10
+                    WS_TABSTOP,21,176,281,10
     CONTROL         "Only reply to status message request from visible contacts",
                     IDC_STATUSMSG_VISIBLE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,36,199,269,10
-    GROUPBOX        "Misc Settings",IDC_STATIC,7,138,300,78
+                    WS_TABSTOP,33,192,269,10
     CTEXT           "Some options are greyed out because they can only be changed when you are online.",
-                    IDC_STATIC_NOTONLINE,7,222,300,8
+                    IDC_STATIC_NOTONLINE,4,215,302,8
 END
 
 IDD_OPT_POPUPS DIALOGEX 0, 0, 314, 251
@@ -656,7 +647,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,5,0,6
+ FILEVERSION 0,5,0,7
  PRODUCTVERSION 0,8,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -674,7 +665,7 @@ BEGIN
         BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License"
             VALUE "FileDescription", "ICQ protocol plugin for Miranda IM, enhanced"
-            VALUE "FileVersion", "0, 5, 0, 6"
+            VALUE "FileVersion", "0, 5, 0, 7"
             VALUE "InternalName", "ICQJ protocol plugin for Miranda IM"
             VALUE "LegalCopyright", "Copyright (C) 2000-2009 Joe Kucera, Angeli-Ka, Bio, Martin Öberg, Richard Hughes, Jon Keating"
             VALUE "OriginalFilename", "ICQ.dll"

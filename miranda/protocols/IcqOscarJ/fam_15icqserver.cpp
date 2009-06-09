@@ -823,7 +823,11 @@ void CIcqProto::parseDirectoryUserDetailsData(HANDLE hContact, oscar_tlv_chain *
 #ifdef _DEBUG
 	{
 		char *szUid = cDetails->getString(0x32, 1);
-		NetLog_Server("Received user info for %s from directory", szUid);
+
+    if (!hContact)
+			NetLog_Server("Received owner user info from directory");
+		else
+			NetLog_Server("Received user info for %s from directory", szUid);
 		SAFE_FREE(&szUid);
 	}
 #endif
@@ -852,9 +856,9 @@ void CIcqProto::parseDirectoryUserDetailsData(HANDLE hContact, oscar_tlv_chain *
 
 	pTLV = cDetails->getTLV(0x50, 1);
 	if (pTLV && pTLV->wLen > 0)
-		writeDbInfoSettingTLVStringUtf(hContact, "e-mail",  cDetails, 0x50); // Verified e-mail
+		writeDbInfoSettingTLVString(hContact, "e-mail",  cDetails, 0x50); // Verified e-mail
 	else
-		writeDbInfoSettingTLVStringUtf(hContact, "e-mail",  cDetails, 0x55); // Pending e-mail
+		writeDbInfoSettingTLVString(hContact, "e-mail",  cDetails, 0x55); // Pending e-mail
 
 	writeDbInfoSettingTLVStringUtf(hContact, "FirstName", cDetails, 0x64);
 	writeDbInfoSettingTLVStringUtf(hContact, "LastName",  cDetails, 0x6E);
@@ -1001,7 +1005,8 @@ void CIcqProto::parseDirectoryUserDetailsData(HANDLE hContact, oscar_tlv_chain *
 
 	// Remove user from info update queue. Removing is fast so we always call this
 	// even if it is likely that the user is not queued at all.
-	icq_DequeueUser(getContactUin(hContact));
+	if (hContact)
+		icq_DequeueUser(getContactUin(hContact));
 }
 
 

@@ -943,13 +943,13 @@ void CIcqProto::handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, server
 					// Save group and item ID
 					setSettingWord(hContact, DBSETTING_SERVLIST_ID, wItemId);
 					setSettingWord(hContact, DBSETTING_SERVLIST_GROUP, wGroupId);
-					ReserveServerID(wItemId, SSIT_ITEM);
+					ReserveServerID(wItemId, SSIT_ITEM, 0);
 
 					if (!bAdded && getSettingByte(NULL, "LoadServerDetails", DEFAULT_SS_LOAD))
 					{ // check if the contact has been moved on the server
             if (wActiveSrvGroupId != wGroupId || !szActiveSrvGroup)
             {
-              SAFE_FREE((void**)&szActiveSrvGroup);
+              SAFE_FREE(&szActiveSrvGroup);
 						  szActiveSrvGroup = getServListGroupCListPath(wGroupId);
               wActiveSrvGroupId = wGroupId;
             }
@@ -957,7 +957,7 @@ void CIcqProto::handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, server
 
             if (!strlennull(szLocalGroup))
             { // no CListGroup
-							SAFE_FREE((void**)&szLocalGroup);
+							SAFE_FREE(&szLocalGroup);
 
 							szLocalGroup = null_strdup(DEFAULT_SS_GROUP);
 						}
@@ -971,14 +971,14 @@ void CIcqProto::handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, server
 						{ // is it the default "General" group ?
 							bRegroup = 0; // if yes, do not move to it - cause it would hide the contact
 						}
-						SAFE_FREE((void**)&szLocalGroup);
+						SAFE_FREE(&szLocalGroup);
 					}
 
 					if (bRegroup || bAdded)
 					{ // if we should load server details or contact was just added, update its group
             if (wActiveSrvGroupId != wGroupId || !szActiveSrvGroup)
             {
-              SAFE_FREE((void**)&szActiveSrvGroup);
+              SAFE_FREE(&szActiveSrvGroup);
 						  szActiveSrvGroup = getServListGroupCListPath(wGroupId);
               wActiveSrvGroupId = wGroupId;
             }
@@ -1018,7 +1018,7 @@ void CIcqProto::handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, server
 									{
 										if ((strcmpnull(szOldNick, pszNick)) && (strlennull(pszNick) > 0))
 										{ // check if the truncated nick changed, i.e. do not overwrite locally stored longer nick
-											if (strlennull(szOldNick) <= strlennull(pszNick) || strncmp((char*)szOldNick, (char*)pszNick, null_strcut(szOldNick, MAX_SSI_TLV_NAME_SIZE)))
+											if (strlennull(szOldNick) <= strlennull(pszNick) || strncmp(szOldNick, pszNick, null_strcut(szOldNick, MAX_SSI_TLV_NAME_SIZE)))
 											{
 												// Yes, we really do need to delete it first. Otherwise the CLUI nick
 												// cache isn't updated (I'll look into it)
@@ -1026,7 +1026,7 @@ void CIcqProto::handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, server
 												setSettingStringUtf(hContact, "CList", "MyHandle", pszNick);
 											}
 										}
-										SAFE_FREE((void**)&szOldNick);
+										SAFE_FREE(&szOldNick);
 									}
 									else if (strlennull(pszNick) > 0)
 									{
@@ -1034,7 +1034,7 @@ void CIcqProto::handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, server
 										setSettingStringUtf(hContact, "CList", "MyHandle", pszNick);
 									}
 								}
-								SAFE_FREE((void**)&pszNick);
+								SAFE_FREE(&pszNick);
 							}
 							else
 							{
@@ -1149,14 +1149,14 @@ void CIcqProto::handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, server
 				if (wItemId == 0)
 				{ /* no item ID: this is a group */
 					/* pszRecordName is the name of the group */
-					ReserveServerID(wGroupId, SSIT_GROUP);
+					ReserveServerID(wGroupId, SSIT_GROUP, 0);
 
-					setServListGroupName(wGroupId, (char*)szRecordName);
+					setServListGroupName(wGroupId, szRecordName);
 
 					NetLog_Server("Group %s added to known groups.", szRecordName);
 
 					/* demangle full grouppath, set it to known */
-          SAFE_FREE((void**)&szActiveSrvGroup);
+          SAFE_FREE(&szActiveSrvGroup);
           szActiveSrvGroup = getServListGroupCListPath(wGroupId);
           wActiveSrvGroupId = wGroupId;
 
@@ -1199,7 +1199,7 @@ void CIcqProto::handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, server
 
 					// Save permit ID
 					setSettingWord(hContact, DBSETTING_SERVLIST_PERMIT, wItemId);
-					ReserveServerID(wItemId, SSIT_ITEM);
+					ReserveServerID(wItemId, SSIT_ITEM, 0);
 					// Set apparent mode
 					setSettingWord(hContact, "ApparentMode", ID_STATUS_ONLINE);
 					NetLog_Server("Visible-contact (%s)", szRecordName);
@@ -1207,6 +1207,8 @@ void CIcqProto::handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, server
 				else
 				{ // failed to add or other error
 					NetLog_Server("SSI failed to handle %s Item '%s'", "Permit", szRecordName);
+
+          ReserveServerID(wItemId, SSIT_ITEM, SSIF_UNHANDLED);
 				}
 			}
 			break;
@@ -1237,7 +1239,7 @@ void CIcqProto::handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, server
 
 					// Save Deny ID
 					setSettingWord(hContact, DBSETTING_SERVLIST_DENY, wItemId);
-					ReserveServerID(wItemId, SSIT_ITEM);
+					ReserveServerID(wItemId, SSIT_ITEM, 0);
 
 					// Set apparent mode
 					setSettingWord(hContact, "ApparentMode", ID_STATUS_OFFLINE);
@@ -1246,6 +1248,8 @@ void CIcqProto::handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, server
 				else
 				{ // failed to add or other error
 					NetLog_Server("SSI failed to handle %s Item '%s'", "Deny", szRecordName);
+
+          ReserveServerID(wItemId, SSIT_ITEM, SSIF_UNHANDLED);
 				}
 			}
 			break;
@@ -1254,14 +1258,16 @@ void CIcqProto::handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, server
 			{
 				BYTE bVisibility;
 
-				ReserveServerID(wItemId, SSIT_ITEM);
-
 				// Look for visibility TLV
 				if (bVisibility = pChain->getByte(SSI_TLV_VISIBILITY, 1))
 				{ // found it, store the id, we do not need current visibility - we do not rely on it
 					setSettingWord(NULL, DBSETTING_SERVLIST_PRIVACY, wItemId);
+					ReserveServerID(wItemId, SSIT_ITEM, 0);
+
 					NetLog_Server("Visibility is %u", bVisibility);
 				}
+        else
+					ReserveServerID(wItemId, SSIT_ITEM, SSIF_UNHANDLED);
 			}
 			break;
 
@@ -1291,7 +1297,7 @@ void CIcqProto::handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, server
 
 					// Save Ignore ID
 					setSettingWord(hContact, DBSETTING_SERVLIST_IGNORE, wItemId);
-					ReserveServerID(wItemId, SSIT_ITEM);
+					ReserveServerID(wItemId, SSIT_ITEM, 0);
 
 					// Set apparent mode & ignore
 					setSettingWord(hContact, "ApparentMode", ID_STATUS_OFFLINE);
@@ -1302,12 +1308,16 @@ void CIcqProto::handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, server
 				else
 				{ // failed to add or other error
 					NetLog_Server("SSI failed to handle %s Item '%s'", "Ignore", szRecordName);
+
+          ReserveServerID(wItemId, SSIT_ITEM, SSIF_UNHANDLED);
 				}
 			}
 			break;
 
 		case SSI_ITEM_UNKNOWN2:
 			NetLog_Server("SSI unknown type 0x11");
+
+      ReserveServerID(wItemId, SSIT_ITEM, SSIF_UNHANDLED);
 			break;
 
 		case SSI_ITEM_IMPORTTIME:
@@ -1318,6 +1328,7 @@ void CIcqProto::handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, server
 				/* data is TLV(13) {TLV(D4) {time_t importTime}} */
 				setSettingDword(NULL, "ImportTS", pChain->getDWord(SSI_TLV_TIMESTAMP, 1));
 				setSettingWord(NULL, "SrvImportID", wItemId);
+        ReserveServerID(wItemId, SSIT_ITEM, 0);
 				NetLog_Server("SSI %s item recognized", "first import");
 			}
 			break;
@@ -1340,7 +1351,7 @@ void CIcqProto::handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, server
 					setSettingWord(NULL, DBSETTING_SERVLIST_AVATAR, wItemId);
 					NetLog_Server("SSI %s item recognized", "Avatar");
 				}
-				ReserveServerID(wItemId, SSIT_ITEM);
+				ReserveServerID(wItemId, SSIT_ITEM, 0);
 			}
 			break;
 
@@ -1358,9 +1369,9 @@ void CIcqProto::handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, server
           setSettingDouble(NULL, DBSETTING_METAINFO_TIME, pChain->getDouble(SSI_TLV_METAINFO_TIME, 1));
 
         setSettingWord(NULL, DBSETTING_SERVLIST_METAINFO, wItemId);
-        NetLog_Server("SSI %s item recognized", "Meta info");
+        ReserveServerID(wItemId, SSIT_ITEM, 0);
 
-        ReserveServerID(wItemId, SSIT_ITEM);
+        NetLog_Server("SSI %s item recognized", "Meta info");
       }
       break;
 
@@ -1369,10 +1380,15 @@ void CIcqProto::handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, server
 			{
 				/* ICQ2k ShortcutBar Items */
 				/* data is TLV(CD) text */
+        if (wItemId)
+          ReserveServerID(wItemId, SSIT_ITEM, SSIF_UNHANDLED);
 			}
 
 		default:
 			NetLog_Server("SSI unhandled item %2x", wTlvType);
+
+      if (wItemId)
+        ReserveServerID(wItemId, SSIT_ITEM, SSIF_UNHANDLED);
 			break;
 		}
 
@@ -1380,7 +1396,7 @@ void CIcqProto::handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, server
 	} // end for
 
   // Release Memory
-  SAFE_FREE((void**)&szActiveSrvGroup);
+  SAFE_FREE(&szActiveSrvGroup);
 
 	NetLog_Server("Bytes left: %u", wLen);
 
@@ -1390,6 +1406,8 @@ void CIcqProto::handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, server
 	{
 		// No contacts left to sync
 		bIsSyncingCL = FALSE;
+
+    StoreServerIDs();
 
 		icq_RescanInfoUpdate();
 
@@ -1442,12 +1460,15 @@ void CIcqProto::handleServerCListItemAdd(const char *szRecordName, WORD wGroupId
     {
       setSettingDword(NULL, "ImportTS", pItemData->getDWord(SSI_TLV_TIMESTAMP, 1));
       setSettingWord(NULL, "SrvImportID", wItemId);
+      ReserveServerID(wItemId, SSIT_ITEM, 0);
 
 			NetLog_Server("Server added Import timestamp to list");
+
+      return;
     }
   }
   // Reserve server-list ID
-  ReserveServerID(wItemId, wItemType == SSI_ITEM_GROUP ? SSIT_GROUP : SSIT_ITEM);
+  ReserveServerID(wItemId, wItemType == SSI_ITEM_GROUP ? SSIT_GROUP : SSIT_ITEM, SSIF_UNHANDLED);
 }
 
 
@@ -1471,7 +1492,7 @@ void CIcqProto::handleServerCListItemUpdate(const char *szRecordName, WORD wGrou
         setSettingByte(hContact, "Auth", 0);
         null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic(LPGEN("Contact \"%s\" was authorized in the server list."), msg, MAX_PATH), nick);
         icq_LogMessage(LOG_WARNING, str);
-        SAFE_FREE((void**)&nick);
+        SAFE_FREE(&nick);
       }
       else if (!bAuth && pAuth)
       { // server took away authorization of our contact
@@ -1482,7 +1503,7 @@ void CIcqProto::handleServerCListItemUpdate(const char *szRecordName, WORD wGrou
         setSettingByte(hContact, "Auth", 1);
         null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic(LPGEN("Contact \"%s\" lost its authorization in the server list."), msg, MAX_PATH), nick);
         icq_LogMessage(LOG_WARNING, str);
-        SAFE_FREE((void**)&nick);
+        SAFE_FREE(&nick);
       }
 
       { // update metainfo data
@@ -1585,7 +1606,7 @@ void CIcqProto::handleServerCListItemDelete(const char *szRecordName, WORD wGrou
 
         null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic(LPGEN("User \"%s\" was removed from server list."), msg, MAX_PATH), nick);
         icq_LogMessage(LOG_WARNING, str);
-        SAFE_FREE((void**)&nick);
+        SAFE_FREE(&nick);
       }
     }
   }
@@ -1855,7 +1876,7 @@ void CIcqProto::updateServVisibilityCode(BYTE bCode)
 		if ((wVisibilityID = getSettingWord(NULL, DBSETTING_SERVLIST_PRIVACY, 0)) == 0)
 		{
 			// No, create a new random ID
-			wVisibilityID = GenerateServerId(SSIT_ITEM);
+			wVisibilityID = GenerateServerID(SSIT_ITEM, 0);
 			setSettingWord(NULL, DBSETTING_SERVLIST_PRIVACY, wVisibilityID);
 			wCommand = ICQ_LISTS_ADDTOLIST;
 #ifdef _DEBUG
@@ -1959,7 +1980,7 @@ void CIcqProto::updateServAvatarHash(BYTE *pHash, int size)
 		if (bResetHash || (wAvatarID = getSettingWord(NULL, DBSETTING_SERVLIST_AVATAR, 0)) == 0)
 		{
 			// No, create a new random ID
-			wAvatarID = GenerateServerId(SSIT_ITEM);
+			wAvatarID = GenerateServerID(SSIT_ITEM, 0);
 			wCommand = ICQ_LISTS_ADDTOLIST;
 #ifdef _DEBUG
 			NetLog_Server("Made new srvAvatarID, id is %u", wAvatarID);

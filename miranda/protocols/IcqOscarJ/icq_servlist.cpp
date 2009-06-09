@@ -799,11 +799,9 @@ void CIcqProto::servlistPendingRemoveGroup(const char *pszGroup, WORD wGroupID, 
 // Remove All pending operations
 void CIcqProto::servlistPendingFlushOperations()
 {
-  int i;
-
   EnterCriticalSection(&servlistMutex);
 
-  for (i = servlistPendingCount; i; i--)
+  for (int i = servlistPendingCount; i; i--)
   { // purge all items
     servlistpendingitem *pItem = servlistPendingList[i - 1];
 
@@ -839,15 +837,14 @@ void CIcqProto::AddJustAddedContact(HANDLE hContact)
 	LeaveCriticalSection(&servlistMutex);
 }
 
+
 // was the contact added during this serv-list load
 BOOL CIcqProto::IsContactJustAdded(HANDLE hContact)
 {
-	int i;
-
 	EnterCriticalSection(&servlistMutex);
 	if (pdwJustAddedList)
 	{
-		for (i = 0; i<nJustAddedCount; i++)
+		for (int i = 0; i<nJustAddedCount; i++)
 		{
 			if (pdwJustAddedList[i] == hContact)
 			{
@@ -860,6 +857,7 @@ BOOL CIcqProto::IsContactJustAdded(HANDLE hContact)
 
 	return FALSE;
 }
+
 
 void CIcqProto::FlushJustAddedContacts()
 {
@@ -875,39 +873,40 @@ void CIcqProto::FlushJustAddedContacts()
 // To speed up the process, no checks is done, if
 // you try to reserve an ID twice, it will be added again.
 // You should call CheckServerID before reserving an ID.
-void CIcqProto::ReserveServerID(WORD wID, int bGroupId)
+void CIcqProto::ReserveServerID(WORD wID, int bGroupType, int bFlags)
 {
 	EnterCriticalSection(&servlistMutex);
-	if (nIDListCount >= nIDListSize)
+	if (nServerIDListCount >= nServerIDListSize)
 	{
-		nIDListSize += 100;
-		pwIDList = (DWORD*)SAFE_REALLOC(pwIDList, nIDListSize * sizeof(DWORD));
+		nServerIDListSize += 100;
+		pdwServerIDList = (DWORD*)SAFE_REALLOC(pdwServerIDList, nServerIDListSize * sizeof(DWORD));
 	}
 
-	pwIDList[nIDListCount] = wID | bGroupId << 0x18;
-	nIDListCount++;  
+	pdwServerIDList[nServerIDListCount] = wID | (bGroupType & 0x00FF0000) | (bFlags & 0xFF000000);
+	nServerIDListCount++;
 	LeaveCriticalSection(&servlistMutex);
+
+  if (!bIsSyncingCL)
+    StoreServerIDs();
 }
 
 // Remove a server ID from the list of reserved IDs.
 // Used for deleting contacts and other modifications.
-void CIcqProto::FreeServerID(WORD wID, int bGroupId)
+void CIcqProto::FreeServerID(WORD wID, int bGroupType)
 {
-	int i, j;
-	DWORD dwId = wID | bGroupId << 0x18;
+	DWORD dwId = wID | (bGroupType & 0x00FF0000);
 
 	EnterCriticalSection(&servlistMutex);
-	if (pwIDList)
+	if (pdwServerIDList)
 	{
-		for (i = 0; i<nIDListCount; i++)
+		for (int i = 0; i<nServerIDListCount; i++)
 		{
-			if (pwIDList[i] == dwId)
+			if ((pdwServerIDList[i] & 0x00FFFFFF) == dwId)
 			{ // we found it, so remove
-				for (j = i+1; j<nIDListCount; j++)
-				{
-					pwIDList[j-1] = pwIDList[j];
-				}
-				nIDListCount--;
+				for (int j = i+1; j<nServerIDListCount; j++)
+					pdwServerIDList[j-1] = pdwServerIDList[j];
+
+				nServerIDListCount--;
 			}
 		}
 	}
@@ -917,14 +916,12 @@ void CIcqProto::FreeServerID(WORD wID, int bGroupId)
 // Returns true if dwID is reserved
 BOOL CIcqProto::CheckServerID(WORD wID, unsigned int wCount)
 {
-	int i;
-
 	EnterCriticalSection(&servlistMutex);
-	if (pwIDList)
+	if (pdwServerIDList)
 	{
-		for (i = 0; i<nIDListCount; i++)
+		for (int i = 0; i<nServerIDListCount; i++)
 		{
-			if (((pwIDList[i] & 0xFFFF) >= wID) && ((pwIDList[i] & 0xFFFF) <= wID + wCount))
+			if (((pdwServerIDList[i] & 0xFFFF) >= wID) && ((pdwServerIDList[i] & 0xFFFF) <= wID + wCount))
 			{
 				LeaveCriticalSection(&servlistMutex);
 				return TRUE;
@@ -939,9 +936,9 @@ BOOL CIcqProto::CheckServerID(WORD wID, unsigned int wCount)
 void CIcqProto::FlushServerIDs()
 {
 	EnterCriticalSection(&servlistMutex);
-	SAFE_FREE((void**)&pwIDList);
-	nIDListCount = 0;
-	nIDListSize = 0;
+	SAFE_FREE((void**)&pdwServerIDList);
+	nServerIDListCount = 0;
+	nServerIDListSize = 0;
 	LeaveCriticalSection(&servlistMutex);
 }
 
@@ -982,7 +979,7 @@ static int GroupReserveIdsEnumProc(const char *szSetting,LPARAM lParam)
 		{ // it is not a cached server-group name
 			return 0;
 		}
-		param->ppro->ReserveServerID((WORD)strtoul(szSetting, NULL, 0x10), SSIT_GROUP);
+		param->ppro->ReserveServerID((WORD)strtoul(szSetting, NULL, 0x10), SSIT_GROUP, 0);
 #ifdef _DEBUG
 		param->ppro->NetLog_Server("Loaded group %u:'%s'", strtoul(szSetting, NULL, 0x10), val);
 #endif
@@ -996,20 +993,22 @@ void CIcqProto::LoadServerIDs()
 {
 	HANDLE hContact;
 	WORD wSrvID;
-	int nGroups = 0, nContacts = 0, nPermits = 0, nDenys = 0, nIgnores = 0;
+	int nGroups = 0, nContacts = 0, nPermits = 0, nDenys = 0, nIgnores = 0, nUnhandled = 0;
 
 	EnterCriticalSection(&servlistMutex);
 	if (wSrvID = getSettingWord(NULL, DBSETTING_SERVLIST_AVATAR, 0))
-		ReserveServerID(wSrvID, SSIT_ITEM);
+		ReserveServerID(wSrvID, SSIT_ITEM, 0);
 	if (wSrvID = getSettingWord(NULL, DBSETTING_SERVLIST_PHOTO, 0))
-		ReserveServerID(wSrvID, SSIT_ITEM);
+		ReserveServerID(wSrvID, SSIT_ITEM, 0);
 	if (wSrvID = getSettingWord(NULL, DBSETTING_SERVLIST_PRIVACY, 0))
-		ReserveServerID(wSrvID, SSIT_ITEM);
+		ReserveServerID(wSrvID, SSIT_ITEM, 0);
   if (wSrvID = getSettingWord(NULL, DBSETTING_SERVLIST_METAINFO, 0))
-    ReserveServerID(wSrvID, SSIT_ITEM);
+    ReserveServerID(wSrvID, SSIT_ITEM, 0);
+  if (wSrvID = getSettingWord(NULL, "SrvImportID", 0))
+    ReserveServerID(wSrvID, SSIT_ITEM, 0);
 
 	DBCONTACTENUMSETTINGS dbces;
-	int nStart = nIDListCount;
+	int nStart = nServerIDListCount;
 
 	char szModule[MAX_PATH+9];
 	null_snprintf(szModule, sizeof(szModule), "%sSrvGroups", m_szModuleName);
@@ -1020,7 +1019,7 @@ void CIcqProto::LoadServerIDs()
 	dbces.lParam = (LPARAM)&param;
 	CallService(MS_DB_CONTACT_ENUMSETTINGS, (WPARAM)NULL, (LPARAM)&dbces);
 
-	nGroups = nIDListCount - nStart;
+	nGroups = nServerIDListCount - nStart;
 
 	hContact = FindFirstContact();
 
@@ -1028,22 +1027,22 @@ void CIcqProto::LoadServerIDs()
 	{ // search all our contacts, reserve their server IDs
 		if (wSrvID = getSettingWord(hContact, DBSETTING_SERVLIST_ID, 0))
 		{
-			ReserveServerID(wSrvID, SSIT_ITEM);
+			ReserveServerID(wSrvID, SSIT_ITEM, 0);
 			nContacts++;
 		}
 		if (wSrvID = getSettingWord(hContact, DBSETTING_SERVLIST_DENY, 0))
 		{
-			ReserveServerID(wSrvID, SSIT_ITEM);
+			ReserveServerID(wSrvID, SSIT_ITEM, 0);
 			nDenys++;
 		}
 		if (wSrvID = getSettingWord(hContact, DBSETTING_SERVLIST_PERMIT, 0))
 		{
-			ReserveServerID(wSrvID, SSIT_ITEM);
+			ReserveServerID(wSrvID, SSIT_ITEM, 0);
 			nPermits++;
 		}
 		if (wSrvID = getSettingWord(hContact, DBSETTING_SERVLIST_IGNORE, 0))
 		{
-			ReserveServerID(wSrvID, SSIT_ITEM);
+			ReserveServerID(wSrvID, SSIT_ITEM, 0);
 			nIgnores++;
 		}
 
@@ -1051,31 +1050,58 @@ void CIcqProto::LoadServerIDs()
 	}
 	LeaveCriticalSection(&servlistMutex);
 
-	NetLog_Server("Loaded SSI: %d contacts, %d groups, %d permit, %d deny, %d ignore items.", nContacts, nGroups, nPermits, nDenys, nIgnores);
+  DBVARIANT dbv = {0};
+  if (!getSetting(NULL, DBSETTING_SERVLIST_UNHANDLED, &dbv))
+  {
+    int dataLen = dbv.cpbVal;
+    BYTE *pData = dbv.pbVal;
+
+    while (dataLen >= 4)
+    {
+      BYTE bGroupType;
+      BYTE bFlags;
+
+      unpackLEWord(&pData, &wSrvID);
+      unpackByte(&pData, &bGroupType);
+      unpackByte(&pData, &bFlags);
+
+      ReserveServerID(wSrvID, bGroupType, bFlags); 
+      dataLen -= 4;
+      nUnhandled++;
+    }
+
+    ICQFreeVariant(&dbv);
+  }
+
+	NetLog_Server("Loaded SSI: %d contacts, %d groups, %d permit, %d deny, %d ignore, %d unknown items.", nContacts, nGroups, nPermits, nDenys, nIgnores, nUnhandled);
 }
 
-WORD CIcqProto::GenerateServerId(int bGroupId)
+
+void CIcqProto::StoreServerIDs()
 {
-	WORD wId;
+  BYTE *pUnhandled = NULL;
+  int cbUnhandled = 0;
 
-	while (TRUE)
-	{
-		// Randomize a new ID
-		// Max value is probably 0x7FFF, lowest value is probably 0x0001 (generated by Icq2Go)
-		// We use range 0x1000-0x7FFF.
-		wId = (WORD)RandRange(0x1000, 0x7FFF);
+	EnterCriticalSection(&servlistMutex);
+	if (pdwServerIDList)
+		for (int i = 0; i<nServerIDListCount; i++)
+			if ((pdwServerIDList[i] & 0xFF000000) == SSIF_UNHANDLED)
+			{
+        ppackLEWord(&pUnhandled, &cbUnhandled, pdwServerIDList[i] & 0xFFFF);
+        ppackByte(&pUnhandled, &cbUnhandled, (pdwServerIDList[i] & 0x00FF0000) >> 0x10);
+        ppackByte(&pUnhandled, &cbUnhandled, (pdwServerIDList[i] & 0xFF000000) >> 0x18);
+			}
+	LeaveCriticalSection(&servlistMutex);
 
-		if (!CheckServerID(wId, 0))
-			break;
-	}
-
-	ReserveServerID(wId, bGroupId);
-
-	return wId;
+  if (pUnhandled)
+    setSettingBlob(NULL, DBSETTING_SERVLIST_UNHANDLED, pUnhandled, cbUnhandled);
+  else
+    deleteSetting(NULL, DBSETTING_SERVLIST_UNHANDLED);
 }
+
 
 // Generate server ID with wCount IDs free after it, for sub-groups.
-WORD CIcqProto::GenerateServerIdPair(int bGroupId, int wCount)
+WORD CIcqProto::GenerateServerID(int bGroupType, int bFlags, int wCount)
 {
 	WORD wId;
 
@@ -1090,7 +1116,7 @@ WORD CIcqProto::GenerateServerIdPair(int bGroupId, int wCount)
 			break;
 	}
 
-	ReserveServerID(wId, bGroupId);
+	ReserveServerID(wId, bGroupType, bFlags);
 
 	return wId;
 }
@@ -1953,7 +1979,7 @@ int CIcqProto::servlistCreateGroup_gotParentGroup(const char *szGroup, WORD wGro
 #ifdef _DEBUG
         NetLog_Server("Server-List: Creating sub-group \"%s\", parent group \"%s\".", szSubGroupItem, szGroup);
 #endif
-				ReserveServerID(wSubGroupID, SSIT_GROUP);
+				ReserveServerID(wSubGroupID, SSIT_GROUP, 0);
 
 				ack->wGroupId = wSubGroupID;
 				ack->szGroupName = szSubGroupItem; // we need that name
@@ -2001,7 +2027,7 @@ int CIcqProto::servlistCreateGroup_Ready(const char *szGroup, WORD groupID, LPAR
 #ifdef _DEBUG
       NetLog_Server("Server-List: Creating root group \"%s\".", szGroup);
 #endif
-      ack->wGroupId = GenerateServerId(SSIT_GROUP);
+      ack->wGroupId = GenerateServerID(SSIT_GROUP, 0);
       ack->szGroup = null_strdup(szGroup); // we need that name
       // check if the groupname is unique - just to be sure, Miranda should handle that!
       ack->szGroupName = getServListUniqueGroupName(ack->szGroup, FALSE);
@@ -2068,7 +2094,7 @@ int CIcqProto::servlistAddContact_gotGroup(const char *szGroup, WORD wGroupID, L
   cookie_servlist_action* ack = (cookie_servlist_action*)lParam;
   DWORD dwCookie;
 
-  if (ack) SAFE_FREE((void**)&ack->szGroup);
+  if (ack) SAFE_FREE(&ack->szGroup);
 
   if (nResult == PENDING_RESULT_PURGE)
   { // only cleanup
@@ -2093,7 +2119,7 @@ int CIcqProto::servlistAddContact_gotGroup(const char *szGroup, WORD wGroupID, L
     return CALLBACK_RESULT_CONTINUE;
 	}
 
-	wItemID = GenerateServerId(SSIT_ITEM);
+	wItemID = GenerateServerID(SSIT_ITEM, 0);
 
 	ack->dwAction = SSA_CONTACT_ADD;
 	ack->wGroupId = wGroupID;
@@ -2287,7 +2313,7 @@ int CIcqProto::servlistMoveContact_gotTargetGroup(const char *szGroup, WORD wNew
 	ack->dwAction = SSA_CONTACT_SET_GROUP;
 	ack->wGroupId = wGroupID;
 	ack->wContactId = wItemID;
-	ack->wNewContactId = GenerateServerId(SSIT_ITEM); // icq5 recreates also this, imitate
+	ack->wNewContactId = GenerateServerID(SSIT_ITEM, 0); // icq5 recreates also this, imitate
 	ack->wNewGroupId = wNewGroupID;
 	ack->lParam = 0; // we use this as a sign
 

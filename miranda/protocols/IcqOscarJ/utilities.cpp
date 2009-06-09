@@ -921,16 +921,15 @@ char *ApplyEncoding(const char *string, const char *pszEncoding)
 
 void CIcqProto::ResetSettingsOnListReload()
 {
-	HANDLE hContact;
-
 	// Reset a bunch of session specific settings
 	setSettingWord(NULL, DBSETTING_SERVLIST_PRIVACY, 0);
   setSettingWord(NULL, DBSETTING_SERVLIST_METAINFO, 0);
 	setSettingWord(NULL, DBSETTING_SERVLIST_AVATAR, 0);
 	setSettingWord(NULL, DBSETTING_SERVLIST_PHOTO, 0);
 	setSettingWord(NULL, "SrvRecordCount", 0);
+  deleteSetting(NULL, DBSETTING_SERVLIST_UNHANDLED);
 
-	hContact = FindFirstContact();
+	HANDLE hContact = FindFirstContact();
 
 	while (hContact)
 	{
@@ -951,13 +950,11 @@ void CIcqProto::ResetSettingsOnListReload()
 
 void CIcqProto::ResetSettingsOnConnect()
 {
-	HANDLE hContact;
-
 	// Reset a bunch of session specific settings
 	setSettingByte(NULL, "SrvVisibility", 0);
 	setSettingDword(NULL, "IdleTS", 0);
 
-	hContact = FindFirstContact();
+	HANDLE hContact = FindFirstContact();
 
 	while (hContact)
 	{
@@ -976,12 +973,10 @@ void CIcqProto::ResetSettingsOnConnect()
 
 void CIcqProto::ResetSettingsOnLoad()
 {
-	HANDLE hContact;
-
 	setSettingDword(NULL, "IdleTS", 0);
 	setSettingDword(NULL, "LogonTS", 0);
 
-	hContact = FindFirstContact();
+	HANDLE hContact = FindFirstContact();
 
 	while (hContact)
 	{

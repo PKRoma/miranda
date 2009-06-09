@@ -1373,7 +1373,7 @@ void CIcqProto::icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, char* szUID
 				return;
 
 			// Add
-			wContactId = GenerateServerId(SSIT_ITEM);
+			wContactId = GenerateServerID(SSIT_ITEM, 0);
 
 			icq_addServerPrivacyItem(hContact, dwUin, szUID, wContactId, wType);
 
