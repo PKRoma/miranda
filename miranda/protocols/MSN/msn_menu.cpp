@@ -52,7 +52,6 @@ INT_PTR CMsnProto::MsnGotoInbox( WPARAM, LPARAM )
 
 INT_PTR CMsnProto::MsnSendHotmail( WPARAM wParam, LPARAM )
 {
-
     const HANDLE hContact = (HANDLE)wParam;
 	char szEmail[MSN_MAX_EMAIL_LEN];
 
@@ -64,22 +63,49 @@ INT_PTR CMsnProto::MsnSendHotmail( WPARAM wParam, LPARAM )
 	return 0;
 }
 
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// MsnEditProfile - goes to the Profile section at the live.com
-
-INT_PTR CMsnProto::MsnEditProfile( WPARAM, LPARAM )
-{
-	MsnInvokeMyURL( false, NULL );
-	return 0;
-}
-
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnSetupAlerts - goes to the alerts section at the live.com
 
 INT_PTR CMsnProto::MsnSetupAlerts( WPARAM, LPARAM )
 {
     MsnInvokeMyURL(false, "http://alerts.live.com");
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// MsnViewProfile - view a contact's profile at http://members.msn.com
+
+INT_PTR CMsnProto::MsnViewProfile( WPARAM wParam, LPARAM )
+{
+    const HANDLE hContact = (HANDLE)wParam;
+
+    if (MSN_IsMeByContact(hContact))
+	    MsnInvokeMyURL(false, NULL);
+    else
+    {
+        char tUrl[256] = "http://spaces.live.com/Profile.aspx?partner=Messenger&cid=";
+
+	    if (!getStaticString(hContact, "CID", strchr(tUrl, 0), 30))
+            MsnInvokeMyURL(false, tUrl);
+    }
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// MsnEditProfile - goes to the Profile section at the live.com
+
+INT_PTR CMsnProto::MsnEditProfile( WPARAM, LPARAM )
+{
+	MsnInvokeMyURL(false, NULL);
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// MsnViewServiceStatus - display MSN services status
+
+INT_PTR CMsnProto::MsnViewServiceStatus( WPARAM, LPARAM )
+{
+	MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )"http://messenger.msn.com/Status.aspx" );
 	return 0;
 }
 
@@ -182,8 +208,9 @@ int CMsnProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM)
         mi.pszName = isMe ? LPGEN("Open &Hotmail Inbox") : LPGEN("Send &Hotmail E-mail");
         MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hOpenInboxMenuItem, (LPARAM)&mi);
 
-		mi.flags = CMIM_FLAGS | CMIF_ICONFROMICOLIB;
+		mi.flags = CMIM_NAME | CMIM_FLAGS | CMIF_ICONFROMICOLIB;
         if (netId == NETID_EMAIL) mi.flags |= CMIF_HIDDEN;
+        mi.pszName = isMe ? LPGEN("Edit Live &Space") : LPGEN("View Live &Space");
 		MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)menuItemsAll[4], (LPARAM)&mi);
 
         mi.flags = CMIM_FLAGS | CMIF_ICONFROMICOLIB | CMIF_NOTOFFLINE;
@@ -312,30 +339,6 @@ INT_PTR CMsnProto::SetNicknameUI( WPARAM, LPARAM )
 	return 0;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////
-// MsnViewProfile - view a contact's profile at http://members.msn.com
-
-static const char sttUrlPrefix[] = "http://spaces.live.com/Profile.aspx?partner=Messenger&cid=";
-
-INT_PTR CMsnProto::MsnViewProfile( WPARAM wParam, LPARAM )
-{
-	char tUrl[ 20 + sizeof(sttUrlPrefix) ];
-	strcpy( tUrl, sttUrlPrefix );
-
-	if ( !getStaticString(( HANDLE )wParam, "CID", tUrl + sizeof(sttUrlPrefix) - 1, 20 ))
-        MsnInvokeMyURL(false, tUrl);
-	return 0;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// MsnViewServiceStatus - display MSN services status
-
-INT_PTR CMsnProto::MsnViewServiceStatus( WPARAM, LPARAM )
-{
-	MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )"http://messenger.msn.com/Status.aspx" );
-	return 0;
-}
-
 //////////////////////////////////////////////////////////////////////////////////////
 // Menus initialization
 
@@ -370,7 +373,7 @@ void CMsnProto::MsnInitMenus( void )
 	CreateProtoService( MS_GOTO_INBOX, &CMsnProto::MsnGotoInbox );
 	mi.position = 2000060001;
 	mi.icolibItem = GetIconHandle( IDI_INBOX );
-	mi.pszName = LPGEN("Display Hotmail &Inbox");
+	mi.pszName = LPGEN("Display &Hotmail Inbox");
 	menuItemsAll[ 0 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	strcpy( tDest, MS_EDIT_PROFILE );
@@ -413,7 +416,7 @@ void CMsnProto::MsnInitMenus( void )
 	CreateProtoService( MSN_VIEW_PROFILE, &CMsnProto::MsnViewProfile );
 	mi.position = -500050003;
 	mi.icolibItem = GetIconHandle( IDI_PROFILE );
-	mi.pszName = LPGEN("&View Profile");
+	mi.pszName = LPGEN("View Live &Space");
 	menuItemsAll[ 4 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
 
 	strcpy( tDest, MSN_NETMEETING );
