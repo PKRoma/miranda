@@ -399,7 +399,10 @@
 #define IDC_TXT_TITLE2                  1593
 #define IDC_TXT_TITLE3                  1594
 #define IDC_TXT_TITLE4                  1595
+#define IDC_TXT_TITLE5                  1596
 #define IDC_TXT_TITLE6                  1597
+#define IDC_TXT_TITLE7                  1598
+#define IDC_TXT_TITLE8                  1599
 #define IDC_PREVIEWSMALL                1600
 #define IDC_PREVIEWGENERAL              1601
 #define IDC_PREVIEWHEADER               1602
