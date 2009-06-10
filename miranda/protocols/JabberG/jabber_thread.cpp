@@ -487,7 +487,7 @@ LBL_FatalError:
 					if ( m_options.EnableServerXMPPPing )
 						info->send( 
 							XmlNodeIq( m_iqManager.AddHandler( &CJabberProto::OnPingReply, JABBER_IQ_TYPE_GET, NULL, 0, -1, this, 0, dwConnectionKeepAliveTimeout ))
-								<< XQUERY( _T(JABBER_FEAT_PING)));
+								<< XCHILDNS( _T("ping"), _T(JABBER_FEAT_PING)));
 					else if ( m_bSendKeepAlive )
 						info->send( " \t " );
 					continue;
