@@ -57,6 +57,8 @@ static void SetFileListAndSizeControls(HWND hwndDlg,struct FileDlgData *dat)
 		SetDlgItemText(hwndDlg,IDC_FILE,str);
 	}
 	else SetDlgItemTextA(hwndDlg,IDC_FILE,dat->files[0]);
+
+    EnableWindow(GetDlgItem(hwndDlg, IDOK), fileCount || dirCount);
 }
 
 static void FilenameToFileList(HWND hwndDlg, struct FileDlgData* dat, const TCHAR* buf)
@@ -235,6 +237,8 @@ INT_PTR CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		Button_SetIcon_IcoLib(hwndDlg, IDC_HISTORY, SKINICON_OTHER_HISTORY, "View User's History");
 		Button_SetIcon_IcoLib(hwndDlg, IDC_USERMENU, SKINICON_OTHER_DOWNARROW, "User Menu");
 
+        EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
+
 		if(fsd->ppFiles!=NULL && fsd->ppFiles[0]!=NULL) {
 			int totalCount,i;
 			for(totalCount=0;fsd->ppFiles[totalCount];totalCount++);
@@ -280,6 +284,7 @@ INT_PTR CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		}	}
 
 		if ( fsd->ppFiles == NULL ) {
+       		EnableWindow(hwndDlg, FALSE);
 			dat->closeIfFileChooseCancelled=1;
 			PostMessage(hwndDlg,WM_COMMAND,MAKEWPARAM(IDC_CHOOSE,BN_CLICKED),(LPARAM)GetDlgItem(hwndDlg,IDC_CHOOSE));
 		}
