@@ -158,6 +158,7 @@ INT_PTR CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		if ( HIWORD( wParam ) == BN_CLICKED ) {
 			if (lParam==(LPARAM)GetDlgItem(hwndDlg,IDC_RESETPROTOCOLDATA))	{
 				DBWriteContactSettingDword( 0, "Protocols", "PrVer", -1 );
+				CheckProtocolOrder();
 				{
 					int i, order = 0;
 					for ( i=0; i < accounts.getCount(); i++ ) {
@@ -165,7 +166,6 @@ INT_PTR CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 						pa->iOrder = ( pa->iOrder > 999999 ) ? 1000000+i : order++;
 				}	}
 
-				CheckProtocolOrder();
 				FillTree(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER));
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
 				return 0;
