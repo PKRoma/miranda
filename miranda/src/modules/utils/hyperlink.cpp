@@ -227,21 +227,19 @@ static LRESULT CALLBACK HyperlinkWndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM
 					textColor=dat->disableColor;
 				}
 				if(GetClientRect(hwnd,&rc) && GetWindowText(hwnd,szText,SIZEOF(szText))) {
-					SetTextColor(hdc,textColor);
-					if (IsWinVerXPPlus())
+					if (IsWinVerXPPlus() && drawThemeParentBackground)
 					{
 						BOOL fSmoothing;
 						UINT fSmoothingType;
 						SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &fSmoothing, 0);
 						SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &fSmoothingType, 0);
-						if (!fSmoothing || fSmoothingType == FE_FONTSMOOTHINGSTANDARD)
-							SetBkMode(hdc,TRANSPARENT);
-						else
-							SetBkColor(hdc, GetSysColor(COLOR_BTNFACE));
+						if (fSmoothing && fSmoothingType == FE_FONTSMOOTHINGCLEARTYPE)
+							drawThemeParentBackground(hwnd, hdc, &rc);
 					} else
 					{
 						SetBkMode(hdc,TRANSPARENT);
 					}
+					SetTextColor(hdc,textColor);
 					alignFlag=(GetWindowLongPtr(hwnd,GWL_STYLE)&(SS_CENTER|SS_RIGHT|SS_LEFT));
 					DrawText(hdc,szText,-1,&rc,alignFlag|DT_NOPREFIX|DT_SINGLELINE|DT_TOP);
 				}
