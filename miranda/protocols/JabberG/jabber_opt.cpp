@@ -2110,7 +2110,7 @@ void CJabberDlgAccMgrUI::QueryServerListThread(void *arg)
 	request.cbSize = sizeof(request);
 	request.requestType = REQUEST_GET;
 	request.flags = NLHRF_GENERATEHOST|NLHRF_SMARTREMOVEHOST|NLHRF_SMARTAUTHHEADER|NLHRF_HTTP11;
-	request.szUrl = "http://www.jabber.org/basicservers.xml";
+	request.szUrl = "http://xmpp.org/services/services.xml";
 
 	NETLIBHTTPREQUEST *result = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)wnd->GetProto()->m_hNetlibUser, (LPARAM)&request);
 	if ( result && IsWindow( hwnd )) {
@@ -2118,9 +2118,9 @@ void CJabberDlgAccMgrUI::QueryServerListThread(void *arg)
 			TCHAR* ptszText = mir_a2t( result->pData );
 			XmlNode node( ptszText, NULL, NULL );
 			if ( node ) {
-				const TCHAR *xmlns = xmlGetAttrValue( node, _T("xmlns" ));
-				if ( xmlns && !lstrcmp(xmlns, _T(JABBER_FEAT_DISCO_ITEMS)) && !lstrcmp(xmlGetName( node ), _T("query")) && IsWindow(hwnd)) {
-					SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)&node );
+				HXML queryNode = xmlGetChild( node, _T("query") );
+				if ( queryNode && IsWindow(hwnd)) {
+					SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)queryNode);
 					bIsError = false;
 			}	}
 			mir_free( ptszText );
