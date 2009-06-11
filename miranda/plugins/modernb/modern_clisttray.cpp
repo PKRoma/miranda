@@ -32,6 +32,7 @@ int g_mutex_bOnTrayRightClick=0;
 BOOL g_bMultiConnectionMode=FALSE;
 static int RefreshTimerId=0;   /////by FYR
 static VOID CALLBACK RefreshTimerProc(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime); ///// by FYR
+static HMENU hMainMenu;
 BOOL IS_WM_MOUSE_DOWN_IN_TRAY;
 
 BOOL g_trayTooltipActive = FALSE;
@@ -393,7 +394,6 @@ INT_PTR TrayIconPauseAutoHide(WPARAM wParam,LPARAM lParam)
 void DestroyTrayMenu(HMENU hMenu)
 {
     HMENU hMainStatusMenu = (HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
-    HMENU hMainMenu = (HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
 
     int cnt = GetMenuItemCount(hMenu);
     for (int i=0; i<cnt; ++i)
@@ -735,8 +735,9 @@ void InitTrayMenus(void)
 		mi.pszName=LPGEN("&About");
 		AddTrayMenuItem((WPARAM)0,(LPARAM)&mi);
 		DestroyIcon_protect(mi.hIcon);
+	}
 
-	};
+    hMainMenu = (HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
 }
 
 void UninitTrayMenu()
