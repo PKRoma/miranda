@@ -888,6 +888,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 			UnLoadCLUIFramesModule();		
 			DBWriteContactSettingByte(NULL,"CList","State",(BYTE)state);
+       		PostQuitMessage(0);
 		}
 		break;
 	}
