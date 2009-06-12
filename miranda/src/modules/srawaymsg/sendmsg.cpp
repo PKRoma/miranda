@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern bool prochotkey;
 
 static DWORD protoModeMsgFlags;
+static HWND hwndStatusMsg;
 
 static char *GetDefaultMessage(int status)
 {
@@ -173,7 +174,7 @@ void ChangeAllProtoMessages(char *szProto, int statusMode,char *msg)
 struct SetAwayMsgData {
 	int statusMode;
 	int countdown;
-	char okButtonFormat[64];
+	TCHAR okButtonFormat[64];
 	char *szProto;
 	HANDLE hPreshutdown;
 };
@@ -204,53 +205,71 @@ static INT_PTR CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 				mir_sntprintf( str, SIZEOF(str), format, cli.pfnGetStatusModeDescription( dat->statusMode, 0 ));
 				SetWindowText( hwndDlg, str );
 			}
-			GetDlgItemTextA(hwndDlg,IDOK,dat->okButtonFormat,SIZEOF(dat->okButtonFormat));
+			GetDlgItemText(hwndDlg,IDOK,dat->okButtonFormat,SIZEOF(dat->okButtonFormat));
 			{	char *msg=(char*)GetAwayMessage((WPARAM)dat->statusMode,0);
 				SetDlgItemTextA(hwndDlg,IDC_MSG,msg);
 				mir_free(msg);
 			}
-			dat->countdown=5;
+			dat->countdown=6;
 			SendMessage(hwndDlg,WM_TIMER,0,0);
 			Window_SetProtoIcon_IcoLib(hwndDlg, dat->szProto, dat->statusMode);
-			SetTimer(hwndDlg,1,1000,0);
-			dat->hPreshutdown=HookEventMessage(ME_SYSTEM_PRESHUTDOWN,hwndDlg,DM_SRAWAY_SHUTDOWN);
+			SetTimer(hwndDlg, 1, 1000, 0);
+			dat->hPreshutdown=HookEventMessage(ME_SYSTEM_PRESHUTDOWN, hwndDlg, DM_SRAWAY_SHUTDOWN);
 		}
 		return TRUE;
 
 	case WM_TIMER:
-		if(dat->countdown==-1) {DestroyWindow(hwndDlg); break;}
-		{	char str[64];
-			mir_snprintf(str,SIZEOF(str),dat->okButtonFormat,dat->countdown);
-			SetDlgItemTextA(hwndDlg,IDOK,str);
+		if (--dat->countdown >= 0) {	
+            TCHAR str[64];
+			mir_sntprintf(str, SIZEOF(str), dat->okButtonFormat, dat->countdown);
+			SetDlgItemText(hwndDlg, IDOK, str);
 		}
-		dat->countdown--;
-		break;
+        else {
+   		    KillTimer(hwndDlg, 1);
+            PostMessage(hwndDlg, WM_CLOSE, 0, 0);
+        }
+        break;
 
-	case WM_COMMAND:
+	case WM_CLOSE:
+	    {	char *msg=(char*)GetAwayMessage((WPARAM)dat->statusMode,0);
+	        ChangeAllProtoMessages(dat->szProto,dat->statusMode,msg);
+		    mir_free(msg);
+	    }
+		DestroyWindow(hwndDlg);
+        break;
+
+    case WM_COMMAND:
 		switch(LOWORD(wParam)) {
 			case IDOK:
-			case IDCANCEL:
-				DestroyWindow(hwndDlg);
+		        if (dat->countdown >= 0) {	
+                    char str[1024];
+			        GetDlgItemTextA(hwndDlg,IDC_MSG,str,SIZEOF(str));
+			        ChangeAllProtoMessages(dat->szProto,dat->statusMode,str);
+			        DBWriteContactSettingString(NULL,"SRAway",StatusModeToDbSetting(dat->statusMode,"Msg"),str);
+				    DestroyWindow(hwndDlg);
+		        }
+                else
+                    PostMessage(hwndDlg, WM_CLOSE, 0, 0);
 				break;
-			case IDC_MSG:
-				KillTimer(hwndDlg,1);
-				SetDlgItemText(hwndDlg,IDOK,TranslateT("OK"));
+
+            case IDC_MSG:
+				KillTimer(hwndDlg, 1);
+				SetDlgItemText(hwndDlg, IDOK, TranslateT("OK"));
 				break;
 		}
 		break;
+
 	case DM_SRAWAY_SHUTDOWN:
 		DestroyWindow(hwndDlg);
 		break;
 
 	case WM_DESTROY:
-		{	char str[1024];
-			GetDlgItemTextA(hwndDlg,IDC_MSG,str,SIZEOF(str));
-			ChangeAllProtoMessages(dat->szProto,dat->statusMode,str);
-			DBWriteContactSettingString(NULL,"SRAway",StatusModeToDbSetting(dat->statusMode,"Msg"),str);
-		}
+		KillTimer(hwndDlg, 1);
+        UnhookEvent(dat->hPreshutdown); 
 		Window_FreeIcon_IcoLib(hwndDlg);
-		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MSG),GWLP_WNDPROC,(LONG_PTR)OldMessageEditProc);
+		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MSG), GWLP_WNDPROC, (LONG_PTR)OldMessageEditProc);
 		mir_free(dat);
+        hwndStatusMsg = NULL;
 		break;
 	}
 	return FALSE;
@@ -285,7 +304,8 @@ static int StatusModeChange(WPARAM wParam,LPARAM lParam)
 		struct SetAwasMsgNewData *newdat = (struct SetAwasMsgNewData*)mir_alloc(sizeof(struct SetAwasMsgNewData));
 		newdat->szProto = (char*)lParam;
 		newdat->statusMode = (int)wParam;
-		CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_SETAWAYMSG),NULL,SetAwayMsgDlgProc,(LPARAM)newdat);
+        if (hwndStatusMsg) DestroyWindow(hwndStatusMsg);
+		hwndStatusMsg = CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_SETAWAYMSG),NULL,SetAwayMsgDlgProc,(LPARAM)newdat);
 	}
 	return 0;
 }
