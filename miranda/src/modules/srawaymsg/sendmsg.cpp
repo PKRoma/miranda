@@ -241,7 +241,7 @@ static INT_PTR CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
     case WM_COMMAND:
 		switch(LOWORD(wParam)) {
 			case IDOK:
-		        if (dat->countdown >= 0) {	
+		        if (dat->countdown < 0) {	
                     char str[1024];
 			        GetDlgItemTextA(hwndDlg,IDC_MSG,str,SIZEOF(str));
 			        ChangeAllProtoMessages(dat->szProto,dat->statusMode,str);
@@ -255,6 +255,7 @@ static INT_PTR CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
             case IDC_MSG:
 				KillTimer(hwndDlg, 1);
 				SetDlgItemText(hwndDlg, IDOK, TranslateT("OK"));
+                dat->countdown = -1;
 				break;
 		}
 		break;
