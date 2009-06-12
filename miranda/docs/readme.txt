@@ -30,11 +30,19 @@ Enhancements:
  - AIM: Added ability to set your own avatar
  - AIM: Privacy settings & lists support
  - AIM: SSL server connection support
+ - IRC: IRC servers now stored in the database
+ - IRC: Filter for IRC channel list
+ - IRC: Ehanced identd processing
+ - IRC: Added menu item for nickserv commands
+ - IRC: Auto request client info on adding to contacts or private message
+ - IRC: Enhanced WhoIs request
+ - IRC: CTCP events are shown in the server window
+ - IRC: Close windows with ESC button
+ - IRC: Quick Connect now allows manual input of server parameters
  - MSN: Rewritten to support WLM 8.5 protocol (and all it features)
  - MSN: Offline messaging
  - MSN: Added Hotmail Notifier functionality 
 
-Bugfixes:
 
 * New in 0.7.19
 Bugfixes:
