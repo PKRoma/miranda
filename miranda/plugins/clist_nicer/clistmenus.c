@@ -34,11 +34,11 @@ extern int      g_nextExtraCacheEntry;
 extern struct   ExtraCache *g_ExtraCache;
 extern struct   CluiData g_CluiData;
 
+static HMENU hMainMenu, hMainStatusMenu
+
 void DestroyTrayMenu(HMENU hMenu)
 {
     int i, cnt;
-    HMENU hMainStatusMenu = (HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
-    HMENU hMainMenu = (HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
 
     cnt = GetMenuItemCount(hMenu);
     for (i=0; i<cnt; ++i)
@@ -71,7 +71,7 @@ static HANDLE hWindowListIGN = 0;
  * menu
  */
 
-static UINT xImgCtrlIds[] = {
+static const UINT xImgCtrlIds[] = {
 	IDC_EXTRA_ICON_RES0,
 	IDC_EXTRA_ICON_EMAIL,
 	IDC_EXTRA_ICON_RES1,
@@ -86,7 +86,7 @@ static UINT xImgCtrlIds[] = {
 };
 
 // static UINT xImgCtrlBits[] = {6, 4, 0, 1, 2, 3, 5, 7, 8, 9, 10};
-static UINT xImgCtrlBits[] = {
+static const UINT xImgCtrlBits[] = {
 	EXTRA_ICON_RES0,
 	EXTRA_ICON_EMAIL,
 	EXTRA_ICON_RES1,
@@ -487,6 +487,9 @@ int InitCustomMenus(void)
             hIgnoreItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
         }
     }
+    hMainStatusMenu = (HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
+    hMainMenu = (HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
+
 	return 0;
 }
 

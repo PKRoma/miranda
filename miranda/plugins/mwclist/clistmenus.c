@@ -23,11 +23,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #pragma hdrstop
 
+static HMENU hMainMenu, hMainStatusMenu;
+
 void DestroyTrayMenu(HMENU hMenu)
 {
     int i, cnt;
-    HMENU hMainStatusMenu = (HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
-    HMENU hMainMenu = (HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
 
     cnt = GetMenuItemCount(hMenu);
     for (i=0; i<cnt; ++i)
@@ -50,6 +50,9 @@ INT_PTR CloseAction(WPARAM wParam,LPARAM lParam)
 int InitCustomMenus(void)
 {
 	CreateServiceFunction("CloseAction",CloseAction);
+    hMainStatusMenu = (HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
+    hMainMenu = (HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
+
 	return 0;
 }
 
