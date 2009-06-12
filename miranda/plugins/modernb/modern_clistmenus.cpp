@@ -41,7 +41,7 @@ INT_PTR CloseAction(WPARAM wParam,LPARAM lParam)
 	while (!k);
 
 	if ( k ) {
-		PostMessage(pcli->hwndContactList,WM_DESTROY,0,0);
+		DestroyWindow(pcli->hwndContactList);
 	}
 
 	return 0;

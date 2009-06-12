@@ -42,7 +42,7 @@ void DestroyTrayMenu(HMENU hMenu)
 INT_PTR CloseAction(WPARAM wParam,LPARAM lParam)
 {
 	if (CallService(MS_SYSTEM_OKTOEXIT,(WPARAM)0,(LPARAM)0))
-		SendMessage( pcli->hwndContactList,WM_DESTROY,0,0 );
+		DestroyWindow(pcli->hwndContactList);
 
 	return(0);
 }

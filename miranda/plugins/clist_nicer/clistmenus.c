@@ -56,7 +56,7 @@ INT_PTR CloseAction(WPARAM wParam,LPARAM lParam)
 	g_shutDown = 1;
 	k=CallService(MS_SYSTEM_OKTOEXIT,(WPARAM)0,(LPARAM)0);
 	if (k) {
-		SendMessage( pcli->hwndContactList, WM_DESTROY, 0, 0 );
+		DestroyWindow(pcli->hwndContactList, WM_DESTROY);
 		PostQuitMessage(0);
 		Sleep(0);
 	}
