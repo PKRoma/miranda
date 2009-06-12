@@ -164,7 +164,8 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 					mir_free(pa->tszAccountName);
 					pa->tszAccountName = mir_tstrdup( buf );
 				}
-				if ( param->action == PRAC_ADDED || param->action == PRAC_UPGRADED ) {
+				if ( param->action == PRAC_ADDED || param->action == PRAC_UPGRADED ) 
+                {
 					char buf[200];
 					GetDlgItemTextA( hwndDlg, IDC_PROTOTYPECOMBO, buf, SIZEOF( buf ));
 					pa->szProtoName = mir_strdup( buf );
@@ -180,6 +181,12 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 							DBFreeVariant( &dbv );
 					}	}
 					pa->szModuleName = mir_strdup( buf );
+
+                    if (!pa->tszAccountName[0])
+                    {
+					    mir_free(pa->tszAccountName);
+                        pa->tszAccountName = a2t(buf);
+                    }
 
 					DBWriteContactSettingString( NULL, pa->szModuleName, "AM_BaseProto", pa->szProtoName );
 					accounts.insert( pa );
@@ -409,14 +416,15 @@ static void sttUpdateAccountInfo(HWND hwndDlg, struct TAccMgrData *dat)
 
 			if ( dat->iSelected >= 0 ) {
 				PROTOACCOUNT *pa_old = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, dat->iSelected);
-				if (pa_old && pa_old != pa)
-                    ShowWindow(pa_old->hwndAccMgrUI ? pa_old->hwndAccMgrUI : GetDlgItem(hwndDlg, IDC_TXT_INFO), SW_HIDE);
+				if (pa_old && pa_old != pa && pa_old->hwndAccMgrUI)
+                    ShowWindow(pa_old->hwndAccMgrUI, SW_HIDE);
 			}
 
-			if ( pa->hwndAccMgrUI )
+			if ( pa->hwndAccMgrUI ) {
+				ShowWindow(GetDlgItem(hwndDlg, IDC_TXT_INFO), SW_HIDE);
 				ShowWindow(pa->hwndAccMgrUI, SW_SHOW);
-			else if ( !pa->ppro )
-			{
+            }
+			else if ( !pa->ppro ) {
 				ShowWindow(GetDlgItem(hwndDlg, IDC_TXT_INFO), SW_SHOW);
 				SetWindowText(GetDlgItem(hwndDlg, IDC_TXT_INFO), TranslateT("Account is disabled. Please activate it to access options."));
 			}
@@ -692,7 +700,7 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 			int iItem = ListBox_GetCurSel( hwndList );
 
 			if (( pt.x == -1 ) && ( pt.y == -1 )) {
-				if (iItem != -1) {
+				if (iItem != LB_ERR) {
 					RECT rc;
 					ListBox_GetItemRect( hwndList, iItem, &rc );
 					pt.x = rc.left + GetSystemMetrics(SM_CXSMICON) + 4;
@@ -704,14 +712,16 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 				// menu was activated with mouse => find item under cursor & set focus to our control.
 				POINT ptItem = pt;
 				ScreenToClient( hwndList, &ptItem );
-				iItem = LOWORD(SendMessage(hwndList, LB_ITEMFROMPOINT, 0, MAKELPARAM(ptItem.x, ptItem.y)));
-				ListBox_SetCurSel(hwndList, iItem);
-                sttUpdateAccountInfo(hwndDlg, dat);
-				sttSelectItem(dat, hwndList, iItem);
-				SetFocus(hwndList);
+				iItem = (short)LOWORD(SendMessage(hwndList, LB_ITEMFROMPOINT, 0, MAKELPARAM(ptItem.x, ptItem.y)));
+				if (iItem != LB_ERR) {
+				    ListBox_SetCurSel(hwndList, iItem);
+                    sttUpdateAccountInfo(hwndDlg, dat);
+				    sttSelectItem(dat, hwndList, iItem);
+				    SetFocus(hwndList);
+                }
 			}
 
-			if ( iItem != -1 ) {
+			if ( iItem != LB_ERR ) {
                 PROTOACCOUNT* pa = ( PROTOACCOUNT* )ListBox_GetItemData( hwndList, iItem );
 				HMENU hMenu = CreatePopupMenu();
                 if ( !pa->bOldProto && !pa->bDynDisabled )
