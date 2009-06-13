@@ -25,10 +25,11 @@ Enhancements:
  - Support for multiple accounts (without dll renaming) for all protocols
  - SSL support has been added to the core
  - Support for compressed HTTP transactions
- - AIM: Unicode messaging & status message
+ - AIM: Unicode messaging & status messages
  - AIM: Set/retrive status message for any status
  - AIM: Added ability to set your own avatar
  - AIM: Privacy settings & lists support
+ - AIM: Server groups support
  - AIM: SSL server connection support
  - ICQ: Fixed receiving of multi-part messages (only first part was received)
  - ICQ: Fixed processing of UTF-8 encoded status messages from QIP
@@ -50,6 +51,8 @@ Enhancements:
  - MSN: Rewritten to support WLM 8.5 protocol (and all it features)
  - MSN: Offline messaging
  - MSN: Added Hotmail Notifier functionality 
+
+Bugfixes:
 
 
 * New in 0.7.19
