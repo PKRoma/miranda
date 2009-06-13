@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -78,9 +78,13 @@ struct cookie_servlist_action
 	cookie_servlist_action **pGroupItems;
 };
 
-// id type groups
-#define SSIT_ITEM 0
-#define SSIT_GROUP 1
+// server id type groups
+#define SSIT_ITEM             0x00000000
+#define SSIT_GROUP            0x00010000
+
+// server id flags
+#define SSIF_UNHANDLED        0x01000000
+
 
 // pending operations
 #define PENDING_RESULT_SUCCESS  0x00

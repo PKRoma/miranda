@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -385,12 +385,12 @@ void disposeRecordList(oscar_tlv_record_list** list)
 
 oscar_tlv_chain* oscar_tlv_record_list::getRecordByTLV(WORD wType, int nValue)
 {
-  oscar_tlv_chain *list = item;
+  oscar_tlv_record_list *list = this;
 
   while (list)
   {
-    if (list->getTLV(wType, 1) && list->getNumber(wType, 1) == nValue)
-      return list;
+    if (list->item && list->item->getTLV(wType, 1) && list->item->getNumber(wType, 1) == nValue)
+      return list->item;
     list = list->next;
   }
 

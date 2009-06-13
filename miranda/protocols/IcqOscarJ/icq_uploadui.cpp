@@ -624,16 +624,16 @@ static INT_PTR CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wPara
 								{ // if the group still does not exist and there was no try before, try to add group
 									AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic(LPGEN("Adding group \"%s\"..."), str, MAX_PATH), pszGroup);
 
-									wNewGroupId = ppro->GenerateServerId(SSIT_GROUP);
+									wNewGroupId = ppro->GenerateServerID(SSIT_GROUP, 0); // ???
 									szNewGroupName = pszGroup;
 									currentAction = ACTION_ADDGROUP;
 									currentSequence = sendUploadGroup(ppro, ICQ_LISTS_ADDTOLIST, wNewGroupId, pszGroup);
-									SAFE_FREE((void**)&pszNick);
+									SAFE_FREE(&pszNick);
 
 									return FALSE;
 								}
 
-								SAFE_FREE((void**)&pszGroup);
+								SAFE_FREE(&pszGroup);
 
 								AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic(LPGEN("Uploading %s..."), str, MAX_PATH), pszNick ? pszNick : strUID(dwUin, szUid));
 
@@ -641,11 +641,11 @@ static INT_PTR CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wPara
 
 								if (wNewGroupId)
 								{
-									wNewContactId = ppro->GenerateServerId(SSIT_ITEM);
+									wNewContactId = ppro->GenerateServerID(SSIT_ITEM, 0);
 
 									currentSequence = sendUploadBuddy(ppro, hCurrentContact, ICQ_LISTS_ADDTOLIST, dwUin, szUid,
 										wNewContactId, wNewGroupId, SSI_ITEM_BUDDY);
-									SAFE_FREE((void**)&pszNick);
+									SAFE_FREE(&pszNick);
 
 									return FALSE;
 								}
@@ -695,7 +695,7 @@ static INT_PTR CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wPara
 							{ // if the group still does not exist and there was no try before, try to add group
 								AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic(LPGEN("Adding group \"%s\"..."), str, MAX_PATH), pszGroup);
 
-								wNewGroupId = ppro->GenerateServerId(SSIT_GROUP);
+								wNewGroupId = ppro->GenerateServerID(SSIT_GROUP, 0);
 								szNewGroupName = pszGroup;
 								currentAction = ACTION_ADDGROUP;
 								currentSequence = sendUploadGroup(ppro, ICQ_LISTS_ADDTOLIST, wNewGroupId, pszGroup);
@@ -715,7 +715,7 @@ static INT_PTR CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wPara
 									AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic(LPGEN("Moving %s to group \"%s\"..."), str, MAX_PATH), strUID(dwUin, szUid), pszGroup);
 
 								currentAction = ACTION_MOVECONTACT;
-								wNewContactId = ppro->GenerateServerId(SSIT_ITEM);
+								wNewContactId = ppro->GenerateServerID(SSIT_ITEM, 0);
 								sendUploadBuddy(ppro, hContact, ICQ_LISTS_REMOVEFROMLIST, dwUin, szUid, wCurrentContactId, wCurrentGroupId, SSI_ITEM_BUDDY);
 								currentSequence = sendUploadBuddy(ppro, hContact, ICQ_LISTS_ADDTOLIST, dwUin, szUid, wNewContactId, wNewGroupId, SSI_ITEM_BUDDY);
 								SAFE_FREE((void**)&pszNick);
@@ -763,7 +763,7 @@ static INT_PTR CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wPara
 						if (wPermitId == 0)
 						{
 							currentAction = ACTION_ADDVISIBLE;
-							wNewContactId = ppro->GenerateServerId(SSIT_ITEM);
+							wNewContactId = ppro->GenerateServerID(SSIT_ITEM, 0);
 							AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic(LPGEN("Adding %s to visible list..."), str, MAX_PATH), strUID(dwUin, szUid));
 							currentSequence = sendUploadBuddy(ppro, hContact, ICQ_LISTS_ADDTOLIST, dwUin, szUid, wNewContactId, 0, SSI_ITEM_PERMIT);
 							break;
@@ -774,7 +774,7 @@ static INT_PTR CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wPara
 						if (wDenyId == 0 && wIgnoreId == 0)
 						{
 							currentAction = ACTION_ADDINVISIBLE;
-							wNewContactId = ppro->GenerateServerId(SSIT_ITEM);
+							wNewContactId = ppro->GenerateServerID(SSIT_ITEM, 0);
 							AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic(LPGEN("Adding %s to invisible list..."), str, MAX_PATH), strUID(dwUin, szUid));
 							currentSequence = sendUploadBuddy(ppro, hContact, ICQ_LISTS_ADDTOLIST, dwUin, szUid, wNewContactId, 0, SSI_ITEM_DENY);
 							break;

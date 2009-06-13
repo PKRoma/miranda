@@ -617,6 +617,27 @@ int CIcqProto::ppackTLVWordStringItemFromDB(PBYTE *buf, int *buflen, const char 
 }
 
 
+int CIcqProto::ppackTLVWordStringUtfItemFromDB(PBYTE *buf, int *buflen, const char *szSetting, WORD wTypeID, WORD wTypeData, WORD wID)
+{
+  char *str = getSettingStringUtf(NULL, szSetting, NULL);
+
+  if (str)
+  {
+    WORD wLen = strlennull(str);
+
+    ppackWord(buf, buflen, wLen + 0x0A);
+	  ppackTLVWord(buf, buflen, wTypeID, wID);
+    ppackTLV(buf, buflen, wTypeData, wLen, (PBYTE)str);
+
+    SAFE_FREE(&str);
+
+    return 1; // Success
+  }
+
+  return 0; // No data
+}
+
+
 void ppackTLVBlockItems(PBYTE *buf, int *buflen, WORD wType, int *nItems, PBYTE *pBlock, WORD *wLength, BOOL bSingleItem)
 {
   *buf = (PBYTE)SAFE_REALLOC(*buf, 8 + *buflen + *wLength);

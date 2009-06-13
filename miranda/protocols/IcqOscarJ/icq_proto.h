@@ -572,6 +572,7 @@ struct CIcqProto : public PROTO_INTERFACE
   void   ppackTLVDateFromDB(PBYTE *buf, int *buflen, const char *szSettingYear, const char *szSettingMonth, const char *szSettingDay, WORD wType);
 
   int    ppackTLVWordStringItemFromDB(PBYTE *buf, int *buflen, const char *szSetting, WORD wTypeID, WORD wTypeData, WORD wID);
+  int    ppackTLVWordStringUtfItemFromDB(PBYTE *buf, int *buflen, const char *szSetting, WORD wTypeID, WORD wTypeData, WORD wID);
 
 	BOOL   unpackUID(BYTE **ppBuf, WORD *pwLen, DWORD *pdwUIN, uid_str *ppszUID);
 
@@ -632,9 +633,9 @@ struct CIcqProto : public PROTO_INTERFACE
 	HANDLE hHookCListGroupChange;
 	CRITICAL_SECTION servlistMutex;
 
-	DWORD* pwIDList;
-	int    nIDListCount;
-	int    nIDListSize;
+	DWORD* pdwServerIDList;
+	int    nServerIDListCount;
+	int    nServerIDListSize;
 
 	// server-list update board
 	CRITICAL_SECTION servlistQueueMutex;
@@ -683,13 +684,13 @@ struct CIcqProto : public PROTO_INTERFACE
 	BOOL   IsContactJustAdded(HANDLE hContact);
 	void   FlushJustAddedContacts();
 
-	WORD   GenerateServerId(int bGroupId);
-	WORD   GenerateServerIdPair(int bGroupId, int wCount);
-	void   ReserveServerID(WORD wID, int bGroupId);
-	void   FreeServerID(WORD wID, int bGroupId);
+	WORD   GenerateServerID(int bGroupType, int bFlags, int wCount = 0);
+	void   ReserveServerID(WORD wID, int bGroupType, int bFlags);
+	void   FreeServerID(WORD wID, int bGroupType);
 	BOOL   CheckServerID(WORD wID, unsigned int wCount);
 	void   FlushServerIDs();
 	void   LoadServerIDs();
+  void   StoreServerIDs();
 
 	void*  collectGroups(int *count);
 	void*  collectBuddyGroup(WORD wGroupID, int *count);

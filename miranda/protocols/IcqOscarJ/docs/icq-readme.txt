@@ -58,11 +58,12 @@ _______
 
 Bugfixes:
   Fixed receiving of multi-part messages (only first part was received)
+  Fixed processing of UTF-8 encoded status messages from QIP
 
 New Features
   Account management (requires Miranda IM 0.8 and newer)
   New user details protocol support
-  Added support for status note & mood (introduced by ICQ6)
+  Added support for status notes & moods (introduced by ICQ6)
 
 Improvements:
   URL events are now received as normal messages
