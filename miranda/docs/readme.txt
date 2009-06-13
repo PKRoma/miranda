@@ -30,6 +30,14 @@ Enhancements:
  - AIM: Added ability to set your own avatar
  - AIM: Privacy settings & lists support
  - AIM: SSL server connection support
+ - ICQ: Fixed receiving of multi-part messages (only first part was received)
+ - ICQ: Fixed processing of UTF-8 encoded status messages from QIP
+ - ICQ: New offline messages protocol (supports unicode)
+ - ICQ: New user details protocol support (fully unicode aware)
+ - ICQ: Added support for status notes & moods
+ - ICQ: URL events are now received as normal messages
+ - ICQ: Ability to send/receive contacts to/from ICQ6 and AIM
+ - ICQ: Server-list support now groups requests
  - IRC: IRC servers now stored in the database
  - IRC: Filter for IRC channel list
  - IRC: Ehanced identd processing
@@ -1037,7 +1045,7 @@ d) Submit a bugreport.
 -----------------------
 
 Miranda IM supports all released versions of Windows from
-Windows 95 to Windows XP. Beta versions are not supported.
+Windows 95 to Windows Vista. Beta versions are not supported.
 
 a) Windows 95
 
