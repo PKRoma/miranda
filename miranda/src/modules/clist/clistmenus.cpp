@@ -162,11 +162,11 @@ int GetAverageMode(int* pNetProtoCount = NULL)
 		if ( cli.pfnGetProtocolVisibility( pa->szModuleName ) == 0 )
 			continue;
 
-		netProtoCount++;
-
 		flags = CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0 );
 		flags2 = CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_5, 0 );
 		if ((flags & ~flags2) == 0) continue;
+
+		netProtoCount++;
 
 		if ( averageMode == 0 )
 			averageMode = CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0 );
