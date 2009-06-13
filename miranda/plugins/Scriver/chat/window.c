@@ -1,7 +1,7 @@
 /*
 Chat module plugin for Miranda IM
 
-Copyright (C) 2003 JÃ¶rgen Persson
+Copyright (C) 2003 Jörgen Persson
 Copyright 2003-2008 Miranda ICQ/IM project,
 
 This program is free software; you can redistribute it and/or
@@ -2065,29 +2065,14 @@ LABEL_SHOWWINDOW:
 
       case IDC_CHAT_HISTORY:
          {
-            char szFile[MAX_PATH];
-            char szName[MAX_PATH];
-            char szFolder[MAX_PATH];
-			char *pszSessionName;
             MODULEINFO * pInfo = MM_FindModule(si->pszModule);
 
             if (!IsWindowEnabled(GetDlgItem(hwndDlg,IDC_CHAT_HISTORY)))
                break;
 
-            if ( pInfo ) {
-               mir_snprintf(szName, MAX_PATH, "%s", pInfo->pszModDispName);
-               ValidateFilename(szName);
-               mir_snprintf(szFolder, MAX_PATH,"%s\\%s", g_Settings.pszLogDir, szName );
-
-				pszSessionName = t2a( si->ptszID );
-				mir_snprintf( szName, MAX_PATH,"%s.log", pszSessionName );
-				ValidateFilename(szName);
-				mir_free( pszSessionName );
-
-               mir_snprintf(szFile, MAX_PATH,"%s\\%s", szFolder, szName );
-
-               ShellExecuteA(hwndDlg, "open", szFile, NULL, NULL, SW_SHOW);
-         }   }
+            if ( pInfo )
+				ShellExecute(hwndDlg, NULL, GetChatLogsFilename(si->windowData.hContact, 0), NULL, NULL, SW_SHOW);
+         }
          break;
 
       case IDC_CHAT_CHANMGR:

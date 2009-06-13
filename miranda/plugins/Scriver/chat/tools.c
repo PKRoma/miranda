@@ -454,7 +454,7 @@ BOOL IsHighlighted(SESSION_INFO* si, const TCHAR* pszText)
 				TCHAR szTemp[50];
 
 				p2[1] = 's';
-				lstrcpyn(szTemp, szWord1, 999);
+				lstrcpyn(szTemp, szWord1, SIZEOF(szTemp));
 				mir_sntprintf(szWord1, SIZEOF(szWord1), szTemp, si->pMe->pszNick);
 			}
 
@@ -505,11 +505,10 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 	TCHAR szLine[4096];
 	TCHAR szTime[100];
 	FILE *hFile = NULL;
-	char szFile[MAX_PATH];
-	char szName[MAX_PATH];
-	char szFolder[MAX_PATH];
-	char p = '\0', *pszSessionName;
-	szBuffer[0] = '\0';
+	TCHAR tszFile[MAX_PATH];
+	TCHAR tszFolder[MAX_PATH];
+	TCHAR p = '\0';
+	BOOL bFileJustCreated = TRUE;
 
 	if (!si || !gce)
 		return FALSE;
@@ -518,26 +517,25 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 	if ( !mi )
 		return FALSE;
 
- 	mir_snprintf(szName, MAX_PATH,"%s",mi->pszModDispName);
-	ValidateFilename(szName);
-	mir_snprintf(szFolder, MAX_PATH,"%s\\%s", g_Settings.pszLogDir, szName );
+	szBuffer[0] = '\0';
 
-	if (!PathIsDirectoryA(szFolder))
-		CreateDirectoryA(szFolder, NULL);
-
-	pszSessionName = t2a( si->ptszID );
-	mir_snprintf( szName, MAX_PATH,"%s.log", pszSessionName );
-	ValidateFilename(szName);
-	mir_free( pszSessionName );
-
-	mir_snprintf(szFile, MAX_PATH,"%s\\%s", szFolder, szName );
+	lstrcpyn(tszFile, GetChatLogsFilename(si->windowData.hContact, gce->time), MAX_PATH);
+	bFileJustCreated = !PathFileExists(tszFile);
+	_tcscpy(tszFolder, tszFile);
+	PathRemoveFileSpec(tszFolder);
+	if (!PathIsDirectory(tszFolder))
+		CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)tszFolder);
+	
 	lstrcpyn(szTime, MakeTimeStamp(g_Settings.pszTimeStampLog, gce->time), 99);
 
-	hFile = fopen(szFile,"at+");
-	if (hFile)
-	{
+	hFile = _tfopen(tszFile, _T("ab+"));
+	if (hFile) {
 		TCHAR szTemp[512], szTemp2[512];
 		TCHAR* pszNick = NULL;
+#ifdef _UNICODE
+		if (bFileJustCreated)
+			fputws((const wchar_t*)"\377\376", hFile);		//UTF-16 LE BOM == FF FE
+#endif
 		if ( gce->ptszNick ) {
 			if ( g_Settings.LogLimitNames && lstrlen(gce->ptszNick) > 20 ) {
 				lstrcpyn(szTemp2, gce->ptszNick, 20);
@@ -593,7 +591,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 				mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s kicked %s (%s)"), (char *)gce->pszStatus, gce->ptszNick, RemoveFormatting(gce->ptszText));
 			break;
 		case GC_EVENT_NOTICE:
-			p = '¤';
+			p = 'o';
 			mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("Notice from %s: %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 			break;
 		case GC_EVENT_TOPIC:
@@ -617,58 +615,60 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 			break;
 		}
 		if (p)
-			mir_sntprintf(szLine, SIZEOF(szLine), TranslateT("%s %c %s\n"), szTime, p, szBuffer);
+			mir_sntprintf(szLine, SIZEOF(szLine), TranslateT("%s %c %s\r\n"), szTime, p, szBuffer);
 		else
-			mir_sntprintf(szLine, SIZEOF(szLine), TranslateT("%s %s\n"), szTime, szBuffer);
+			mir_sntprintf(szLine, SIZEOF(szLine), TranslateT("%s %s\r\n"), szTime, szBuffer);
 
-		if ( szLine[0] ) {
-			char* p = t2a( szLine );
-			fputs(p, hFile);
-			mir_free( p );
+		if (szLine[0]) {
+			_fputts(szLine, hFile);
 
-			if ( g_Settings.LoggingLimit > 0 ) {
-				DWORD dwSize;
-				DWORD trimlimit;
+			if (g_Settings.LoggingLimit > 0) {
+				long  dwSize;
+				long  trimlimit;
 
-				fseek(hFile,0,SEEK_END);
+				fseek(hFile, 0, SEEK_END);
 				dwSize = ftell(hFile);
-				rewind (hFile);
-				trimlimit = g_Settings.LoggingLimit*1024+ 1024*10;
+				rewind(hFile);
+				trimlimit = g_Settings.LoggingLimit * 1024 + 1024 * 10;
 				if (dwSize > trimlimit) {
 					BYTE * pBuffer = 0;
 					BYTE * pBufferTemp = 0;
-					int read = 0;
+					size_t read = 0;
 
-					pBuffer = (BYTE *)mir_alloc(g_Settings.LoggingLimit*1024+1);
+					pBuffer = (BYTE *)mir_alloc(g_Settings.LoggingLimit * 1024 + 1);
+					pBuffer[g_Settings.LoggingLimit*1023] = '\0';
 					pBuffer[g_Settings.LoggingLimit*1024] = '\0';
-					fseek(hFile,-g_Settings.LoggingLimit*1024,SEEK_END);
-					read = (int)fread(pBuffer, 1, g_Settings.LoggingLimit*1024, hFile);
+					fseek(hFile, -g_Settings.LoggingLimit*1024, SEEK_END);
+					//read = fread(pBuffer, 1UL, g_Settings.LoggingLimit * 1024, hFile);
+					read = fread(pBuffer, sizeof(TCHAR), g_Settings.LoggingLimit * 1024, hFile);
 					fclose(hFile);
 					hFile = NULL;
 
 					// trim to whole lines, should help with broken log files I hope.
-					pBufferTemp = strchr(pBuffer, '\n');
-					if ( pBufferTemp ) {
-						pBufferTemp++;
-						read -= pBufferTemp - pBuffer;
-					}
-					else pBufferTemp = pBuffer;
+					pBufferTemp = (BYTE*)_tcschr((TCHAR*)pBuffer, _T('\n'));
+					if (pBufferTemp) {
+						pBufferTemp+= sizeof(TCHAR);
+						read = read - (pBufferTemp - pBuffer);
+					} else pBufferTemp = pBuffer;
 
 					if (read > 0) {
-						hFile = fopen(szFile,"wt");
-						if (hFile ) {
-							fwrite(pBufferTemp, 1, read, hFile);
-							fclose(hFile); hFile = NULL;
+						hFile = _tfopen(tszFile, _T("wb"));
+						if (hFile) {
+#ifdef _UNICODE
+							fputws((const wchar_t*)"\377\376", hFile);		//UTF-16 LE BOM == FF FE
+#endif
+							fwrite(pBufferTemp, sizeof(TCHAR), read, hFile);
+							fclose(hFile);
+							hFile = NULL;
 					}	}
-
 					mir_free(pBuffer);
 		}	}	}
 
 		if (hFile)
-			fclose(hFile); hFile = NULL;
+			fclose(hFile);
+		hFile = NULL;
 		return TRUE;
 	}
-
 	return FALSE;
 }
 
@@ -874,17 +874,6 @@ BOOL IsEventSupported(int eventType)
 	return FALSE;
 }
 
-void ValidateFilename (char * filename)
-{
-	char *p1 = filename;
-	char szForbidden[] = "\\/:*?\"<>|";
-	while(*p1 != '\0')
-	{
-		if (strchr(szForbidden, *p1))
-			*p1 = '_';
-		p1 +=1;
-}	}
-
 TCHAR* a2tf( const TCHAR* str, int flags )
 {
 	if ( str == NULL )
@@ -922,4 +911,68 @@ char* replaceStrA( char** dest, const char* src )
 	mir_free( *dest );
 	*dest = mir_strdup( src );
 	return *dest;
+}
+
+TCHAR* GetChatLogsFilename (HANDLE  hContact, time_t tTime)
+{	REPLACEVARSARRAY rva[11];
+	REPLACEVARSDATA dat = {0};
+	static TCHAR tszFileName[MAX_PATH];
+	TCHAR *p = {0}, *tszParsedName = {0};
+	int i;
+
+	if (g_Settings.pszLogDir[_tcslen(g_Settings.pszLogDir)-1] == '\\')
+		_tcscat(g_Settings.pszLogDir, _T("%userid%.log")); 
+	if(!tTime)
+	  time(&tTime);
+	
+	// day 1-31
+	rva[0].lptzKey = _T("d");
+	rva[0].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%#d"), tTime));
+	// day 01-31
+	rva[1].lptzKey = _T("dd");
+	rva[1].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%d"), tTime));
+	// month 1-12
+	rva[2].lptzKey = _T("m");
+	rva[2].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%#m"), tTime));
+	// month 01-12
+	rva[3].lptzKey = _T("mm");
+	rva[3].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%m"), tTime));
+	// month text short
+	rva[4].lptzKey = _T("mon");
+	rva[4].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%b"), tTime));
+	// month text
+	rva[5].lptzKey = _T("month");
+	rva[5].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%B"), tTime));
+	// year 01-99
+	rva[6].lptzKey = _T("yy");
+	rva[6].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%y"), tTime));
+	// year 1901-9999
+	rva[7].lptzKey = _T("yyyy");
+	rva[7].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%Y"), tTime));
+	// weekday short
+	rva[8].lptzKey = _T("wday");
+	rva[8].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%a"), tTime));
+	// weekday
+	rva[9].lptzKey = _T("weekday");
+	rva[9].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%A"), tTime));
+	// end of array
+	rva[10].lptzKey = NULL;
+	rva[10].lptzValue = NULL;
+
+	dat.cbSize    = sizeof(dat);
+	dat.dwFlags   = RVF_TCHAR;
+	dat.hContact  = hContact;
+	dat.variables = rva;
+	tszParsedName = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)g_Settings.pszLogDir, (LPARAM)&dat);
+	_tcsncpy(tszFileName, tszParsedName, MAX_PATH);
+	mir_free(tszParsedName);
+	for (i=0; i < SIZEOF(rva);i++)
+		mir_free(rva[i].lptzValue);
+
+	for (p = tszFileName + 2; *p; ++p) {
+		if (*p == ':' || *p == '*' || *p == '?' || *p == '"' || *p == '<' || *p == '>' || *p == '|' )
+			*p = _T('_');
+	}
+
+	return tszFileName;
 }

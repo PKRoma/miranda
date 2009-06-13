@@ -290,7 +290,7 @@ struct GlobalLogSettings_t {
 	TCHAR*      pszIncomingNick;
 	TCHAR*      pszOutgoingNick;
 	TCHAR*      pszHighlightWords;
-	char*       pszLogDir;
+	TCHAR*      pszLogDir;
 	HFONT       UserListFont;
 	HFONT       UserListHeadingsFont;
 	HFONT       MessageBoxFont;
@@ -330,7 +330,7 @@ INT_PTR CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, L
 void   Log_StreamInEvent(HWND hwndDlg, LOGINFO* lin, SESSION_INFO* si, BOOL bRedraw);
 void   LoadMsgLogBitmaps(void);
 void   FreeMsgLogBitmaps(void);
-void   ValidateFilename (char * filename);
+TCHAR* GetChatLogsFilename (HANDLE  hContact, time_t tTime);
 TCHAR* MakeTimeStamp(TCHAR* pszStamp, time_t time);
 char*  Log_CreateRtfHeader(MODULEINFO * mi, SESSION_INFO* si);
 
@@ -464,4 +464,5 @@ TCHAR* a2tf( const TCHAR* str, int flags );
 TCHAR* replaceStr( TCHAR** dest, const TCHAR* src );
 char*  replaceStrA( char** dest, const char* src );
 
+#define DEFLOGFILENAME _T("%miranda_logpath%\\%proto%\\%userid%.log")
 #endif
