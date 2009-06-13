@@ -24,7 +24,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "netlib.h"
 
 extern CRITICAL_SECTION csNetlibUser;
-extern DWORD g_LastConnectionTick; // protected by csNetlibUser
+extern HANDLE hConnectionOpenMutex;
+extern DWORD g_LastConnectionTick;
+extern int connectionTimeout;
 static int iUPnPCleanup = 0;
 
 #define RECV_DEFAULT_TIMEOUT	60000
@@ -377,14 +379,14 @@ static int my_connect(NetlibConnection *nlc, NETLIBOPENCONNECTION * nloc)
 		dwTimeout += 60;
 
     // this is for XP SP2 where there is a default connection attempt limit of 10/second
-	EnterCriticalSection(&csNetlibUser);
-	waitdiff=GetTickCount() - g_LastConnectionTick;
-	if ( waitdiff < 1000 && IsWinVerXPPlus()) {
-		// last connection was less than 1 second ago, wait 1 second
-		SleepEx(1000, TRUE);
-	}
-	g_LastConnectionTick=GetTickCount();
-	LeaveCriticalSection(&csNetlibUser);
+    if (connectionTimeout)
+    {
+	    WaitForSingleObject(hConnectionOpenMutex, 10000);
+	    waitdiff = GetTickCount() - g_LastConnectionTick;
+	    if (waitdiff < connectionTimeout) SleepEx(connectionTimeout, TRUE);
+	    g_LastConnectionTick = GetTickCount();
+	    ReleaseMutex(hConnectionOpenMutex);
+    }
 
     // might of died in between the wait
 	if ( Miranda_Terminated() )  {
