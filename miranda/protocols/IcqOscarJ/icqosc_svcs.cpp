@@ -303,7 +303,10 @@ INT_PTR CIcqProto::ChangeInfoEx(WPARAM wParam, LPARAM lParam)
 
 			ppackTLVStringFromDB(&buf, &buflen, "Homepage", 0xFA);
 
-			ppackTLVWord(&buf, &buflen, 0x17C, getSettingByte(NULL, "Timezone", 0));
+      // Timezone
+      WORD wTimezone = getSettingByte(NULL, "Timezone", 0);
+      if ((wTimezone & 0x0080) == 0x80) wTimezone |= 0xFF00; // extend signed number
+			ppackTLVWord(&buf, &buflen, 0x17C, wTimezone);
 		}
 
 		if (wParam & CIXT_BACKGROUND)
@@ -313,10 +316,10 @@ INT_PTR CIcqProto::ChangeInfoEx(WPARAM wParam, LPARAM lParam)
       int nItems = 0;
 
       // Interests
-			nItems += ppackTLVWordStringItemFromDB(&pBlock, &cbBlock, "Interest0Text", 0x6E, 0x64, getSettingWord(NULL, "Interest0Cat", 0));
-			nItems += ppackTLVWordStringItemFromDB(&pBlock, &cbBlock, "Interest1Text", 0x6E, 0x64, getSettingWord(NULL, "Interest1Cat", 0));
-			nItems += ppackTLVWordStringItemFromDB(&pBlock, &cbBlock, "Interest2Text", 0x6E, 0x64, getSettingWord(NULL, "Interest2Cat", 0));
-			nItems += ppackTLVWordStringItemFromDB(&pBlock, &cbBlock, "Interest3Text", 0x6E, 0x64, getSettingWord(NULL, "Interest3Cat", 0));
+			nItems += ppackTLVWordStringUtfItemFromDB(&pBlock, &cbBlock, "Interest0Text", 0x6E, 0x64, getSettingWord(NULL, "Interest0Cat", 0));
+			nItems += ppackTLVWordStringUtfItemFromDB(&pBlock, &cbBlock, "Interest1Text", 0x6E, 0x64, getSettingWord(NULL, "Interest1Cat", 0));
+			nItems += ppackTLVWordStringUtfItemFromDB(&pBlock, &cbBlock, "Interest2Text", 0x6E, 0x64, getSettingWord(NULL, "Interest2Cat", 0));
+			nItems += ppackTLVWordStringUtfItemFromDB(&pBlock, &cbBlock, "Interest3Text", 0x6E, 0x64, getSettingWord(NULL, "Interest3Cat", 0));
       ppackTLVBlockItems(&buf, &buflen, 0x122, &nItems, &pBlock, (WORD*)&cbBlock, FALSE);
 
       

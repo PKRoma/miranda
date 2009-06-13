@@ -512,7 +512,7 @@ void CIcqProto::sendOwnerInfoRequest(void)
   WORD wDataLen = getUINLen(m_dwLocalUIN) + 4;
 
   packServIcqDirectoryHeader(&packet, this, wDataLen + 8, META_DIRECTORY_QUERY, DIRECTORY_QUERY_INFO, (WORD)dwCookie);
-  packWord(&packet, 0x02);
+  packWord(&packet, 0x03); // with interests (ICQ6 uses 2 at login)
   packDWord(&packet, 0x01);
   packWord(&packet, wDataLen);
 

@@ -92,17 +92,21 @@ void ChangeInfoData::PaintItemSetting(HDC hdc, RECT *rc, int i, UINT itemState)
 				text = ICQTranslateUtfStatic((char*)settingData[i].value, str, MAX_PATH);
 			else 
 			{
-				int j;
-
 				text = ICQTranslateUtfStatic(LPGEN("Unknown value"), str, MAX_PATH);
 
         FieldNamesItem *list = (FieldNamesItem*)setting[i].pList;
-        for (j=0; list[j].text; j++)
+        for (int j=0; TRUE; j++)
 					if (list[j].code == settingData[i].value) 
 					{
 						text = ICQTranslateUtfStatic(list[j].text, str, MAX_PATH);
 						break;
 					}
+          else if (!list[j].text)
+          {
+            if (list[j].code == settingData[i].value)
+              text = ICQTranslateUtfStatic("Unspecified", str, MAX_PATH);
+            break;
+          }
 			}
 			break;
 		}
@@ -110,15 +114,12 @@ void ChangeInfoData::PaintItemSetting(HDC hdc, RECT *rc, int i, UINT itemState)
 	if (setting[i].displayType & LIF_PASSWORD) 
 	{
 		if (settingData[i].changed) 
-		{
-			int i;
-			for (i=0; text[i]; i++) text[i] = '*';
-		}
+			for (int j=0; text[j]; j++) text[j] = '*';
 		else 
 		{
 			if (alloced) 
 			{
-				SAFE_FREE((void**)&text); 
+				SAFE_FREE(&text); 
 				alloced=0;
 			}
 			text = "********";
@@ -136,7 +137,7 @@ void ChangeInfoData::PaintItemSetting(HDC hdc, RECT *rc, int i, UINT itemState)
 	}
 	DrawTextUtf(hdc, text, rc, DT_END_ELLIPSIS|DT_LEFT|DT_NOCLIP|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER, NULL);
 
-	if (alloced) SAFE_FREE((void**)&text);
+	if (alloced) SAFE_FREE(&text);
 }
 
 

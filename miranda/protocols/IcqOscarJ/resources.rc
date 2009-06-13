@@ -117,87 +117,87 @@ BEGIN
     LTEXT           "",IDC_LEVELDESCR,72,214,226,8,SS_NOPREFIX
 END
 
-IDD_OPT_ICQCONTACTS DIALOGEX 0, 0, 314, 236
+IDD_OPT_ICQCONTACTS DIALOGEX 0, 0, 310, 234
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "ICQ contacts stored on server",IDC_STICQGROUP,4,0,306,
-                    99
+    GROUPBOX        "ICQ contacts stored on server",IDC_STICQGROUP,4,0,302,
+                    97
     PUSHBUTTON      "Manage server's list...",IDC_UPLOADNOW,12,77,97,14
     CONTROL         "Enable server-side contact lists *",IDC_ENABLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,15,290,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,15,288,10
     CONTROL         "Add contacts to the server's list when I add them to mine",
                     IDC_ADDSERVER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
-                    33,290,10
+                    33,288,10
     CONTROL         "Update my contacts' details from the server *",
                     IDC_LOADFROMSERVER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    12,46,290,10
+                    12,46,288,10
     CONTROL         "Update contacts' details on the server's list when I change them in mine",
                     IDC_SAVETOSERVER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     12,59,290,10
-    GROUPBOX        "ICQ avatars",IDC_STATIC,4,100,306,70
+    GROUPBOX        "ICQ avatars",IDC_STATIC,4,98,302,70
     CONTROL         "Enable avatar support",IDC_ENABLEAVATARS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,112,290,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,110,288,10
     CONTROL         "Check avatar validity before saving *",
                     IDC_STRICTAVATARCHECK,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,126,290,10
+                    WS_TABSTOP,12,124,288,10
     CONTROL         "Load avatars automatically (like ICQ Lite)",
                     IDC_AUTOLOADAVATARS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,140,290,10
+                    WS_TABSTOP,12,138,288,10
     CONTROL         "Allow bigger owner avatars (up to 128x128) [experimental]",
                     IDC_BIGGERAVATARS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    12,154,290,10
+                    12,152,288,10
     LTEXT           "You will need to reconnect to the ICQ network for the changes you have made on this page to take effect.",
-                    IDC_RECONNECTREQD,12,176,290,16,NOT WS_VISIBLE
+                    IDC_RECONNECTREQD,10,172,290,16,NOT WS_VISIBLE
     LTEXT           "You cannot enable/disable the server-side contact list while you are connected to the ICQ network.",
-                    IDC_OFFLINETOENABLE,12,196,290,16,NOT WS_VISIBLE
+                    IDC_OFFLINETOENABLE,10,192,290,16,NOT WS_VISIBLE
     CTEXT           "Note: The options marked with an asterisk have important side-effects or caveats that may not be initially apparent documented in the help.",
-                    IDC_STATIC,12,216,290,16
+                    IDC_STATIC,10,212,290,16
 END
 
-IDD_OPT_ICQFEATURES DIALOGEX 0, 0, 314, 236
+IDD_OPT_ICQFEATURES DIALOGEX 0, 0, 310, 234
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Messaging",IDC_STATIC,4,0,306,94
+    GROUPBOX        "Messaging",IDC_STATIC,4,0,302,94
     CONTROL         "Enable unicode messaging support",IDC_UTFENABLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,14,290,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,14,288,10
     CONTROL         "Send all messages in unicode if possible",IDC_UTFALL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,26,290,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,26,288,10
     RTEXT           "Use this codepage for Ansi <-> Unicode translation :",
                     IDC_UTFSTATIC,12,40,174,10
     COMBOBOX        IDC_UTFCODEPAGE,190,38,107,51,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Make me temporarily visible to contacts I send message to",
                     IDC_TEMPVISIBLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
-                    53,290,10
+                    53,288,10
     CONTROL         "Notify me when a message delivery has failed (recommended)",
                     IDC_SLOWSEND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,65,
-                    290,10
+                    288,10
     CONTROL         "Use only server's acknowledgement (faster)",
                     IDC_ONLYSERVERACKS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    12,77,290,10
-    GROUPBOX        "Peer-to-peer Messaging",IDC_STATIC,4,95,306,43
+                    12,77,288,10
+    GROUPBOX        "Peer-to-peer Messaging",IDC_STATIC,4,95,302,43
     CONTROL         "Enable peer-to-peer message connections",IDC_DCENABLE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,109,290,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,109,288,10
     CONTROL         "Passive mode, i.e. do not initiate new connections",
                     IDC_DCPASSIVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
-                    121,290,10
-    GROUPBOX        "Extra Features",IDC_STATIC,4,139,306,93
+                    121,288,10
+    GROUPBOX        "Extra Features",IDC_STATIC,4,139,302,91
     CONTROL         "Enable Custom status support",IDC_XSTATUSENABLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,153,145,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,153,288,10
     CONTROL         "Reset Custom status on status change",IDC_XSTATUSRESET,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,165,290,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,165,288, 10
     CONTROL         "Auto-retrieve Custom status details",IDC_XSTATUSAUTO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,177,290,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,177,288,10
     CONTROL         "Block known Spam Bots",IDC_KILLSPAMBOTS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,191,290,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,191,288,10
     CONTROL         "Enable AIM support",IDC_AIMENABLE,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,205,290,10
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,205,288,10
     LTEXT           "Note: The support is VERY limited, only messaging and status supported.",
-                    IDC_STATIC,12,217,290,10,WS_DISABLED
+                    IDC_STATIC,12,217,288,10,WS_DISABLED
 END
 
 IDD_OPT_ICQPRIVACY DIALOGEX 0, 0, 310, 234
@@ -647,7 +647,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,5,0,7
+ FILEVERSION 0,5,1,1
  PRODUCTVERSION 0,8,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -665,7 +665,7 @@ BEGIN
         BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License"
             VALUE "FileDescription", "ICQ protocol plugin for Miranda IM, enhanced"
-            VALUE "FileVersion", "0, 5, 0, 7"
+            VALUE "FileVersion", "0, 5, 1, 1"
             VALUE "InternalName", "ICQJ protocol plugin for Miranda IM"
             VALUE "LegalCopyright", "Copyright (C) 2000-2009 Joe Kucera, Angeli-Ka, Bio, Martin Öberg, Richard Hughes, Jon Keating"
             VALUE "OriginalFilename", "ICQ.dll"

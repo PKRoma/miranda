@@ -609,7 +609,7 @@ int CIcqProto::parseUserInfoRecord(HANDLE hContact, oscar_tlv *pData, UserInfoRe
 	}
 	// remove old data from database
 	if (!nRecords || nMaxRecords > 1)
-		for (int i = nRecords + 1; i <= nMaxRecords; i++)
+		for (int i = nRecords; i <= nMaxRecords; i++)
 			for (int j = 0; j < nRecordDef; j++)
 			{
 				char szItemKey[MAX_PATH];
@@ -1024,7 +1024,7 @@ void CIcqProto::parseDirectorySearchData(oscar_tlv_chain *cDetails, DWORD dwCook
 	if (IsStringUIN(szUin))
 	{
 		isr.uin = atoi(szUin);
-		SAFE_FREE((void**)&szUin);
+		SAFE_FREE(&szUin);
 	}
 	else
 	{
