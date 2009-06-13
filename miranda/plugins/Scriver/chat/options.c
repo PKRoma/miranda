@@ -33,6 +33,7 @@ extern HICON			hIcons[30];
 extern FONTINFO			aFonts[OPTIONS_FONTCOUNT];
 
 HANDLE			g_hOptions = NULL;
+static HWND hPathTip = 0;
 
 #define FONTF_BOLD   1
 #define FONTF_ITALIC 2
@@ -155,7 +156,6 @@ static struct branch_t branch6[] = {
 	{LPGENT("Show pop-up for information messages"), "PopupFlags", GC_EVENT_INFORMATION, 0, NULL},
 	{LPGENT("Show pop-up for status changes"), "PopupFlags", GC_EVENT_ADDSTATUS, 0, NULL},
 };
-
 
 static HTREEITEM InsertBranch(HWND hwndTree, TCHAR* pszDescr, BOOL bExpanded)
 {
@@ -615,6 +615,35 @@ static void InitSetting(TCHAR** ppPointer, char* pszSetting, TCHAR* pszDefault)
 	}
 
 #define OPT_FIXHEADINGS (WM_USER+1)
+
+HWND CreateToolTip(HWND hwndParent, LPTSTR ptszText, LPTSTR ptszTitle)
+{
+	TOOLINFO ti = { 0 };
+	HWND hwndTT;
+	hwndTT = CreateWindowEx(WS_EX_TOPMOST,
+		TOOLTIPS_CLASS, NULL,
+		WS_POPUP | TTS_NOPREFIX,		
+		CW_USEDEFAULT, CW_USEDEFAULT,
+		CW_USEDEFAULT, CW_USEDEFAULT,
+		hwndParent, NULL, g_hInst, NULL);
+
+	SetWindowPos(hwndTT, HWND_TOPMOST, 0, 0, 0, 0,
+		SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+
+	ti.cbSize = sizeof(TOOLINFO);
+	ti.uFlags = TTF_SUBCLASS | TTF_CENTERTIP;
+	ti.hwnd = hwndParent;
+	ti.hinst = g_hInst;
+	ti.lpszText = ptszText;
+	GetClientRect (hwndParent, &ti.rect);
+	ti.rect.left =- 85;
+
+	SendMessage(hwndTT, TTM_ADDTOOL, 0, (LPARAM) (LPTOOLINFO) &ti);
+	SendMessage(hwndTT, TTM_SETTITLE, 1, (LPARAM)ptszTitle);
+	return hwndTT;
+} 
+
+
 INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	static HTREEITEM hListHeading1 = 0;
@@ -751,7 +780,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 	switch (uMsg) {
 	case WM_INITDIALOG:
 	{
-		char szTemp[MAX_PATH];
+		TCHAR tszTemp[MAX_PATH];
 
 		TranslateDialogDefault(hwndDlg);
 		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_CHECKBOXES),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_CHECKBOXES),GWL_STYLE)|TVS_NOHSCROLL|TVS_CHECKBOXES);
@@ -759,8 +788,46 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 		SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN2,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"Chat","LogLimit",100),0));
 		SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN3,UDM_SETRANGE,0,MAKELONG(10000,0));
 		SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN3,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"Chat","LoggingLimit",100),0));
-		CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)g_Settings.pszLogDir, (LPARAM)szTemp );
-		SetDlgItemTextA(hwndDlg, IDC_CHAT_LOGDIRECTORY, szTemp);
+		CallService(MS_UTILS_PATHTORELATIVET, (WPARAM)g_Settings.pszLogDir, (LPARAM)tszTemp );
+		SetDlgItemText(hwndDlg, IDC_CHAT_LOGDIRECTORY, tszTemp);
+
+		if (ServiceExists(MS_UTILS_REPLACEVARS)) {
+			TCHAR tszTooltipText[2048];
+
+			mir_sntprintf(tszTooltipText, SIZEOF(tszTooltipText), 
+				_T("%s - %s\n%s - %s\n%s - %s\n\n")
+				_T("%s - %s\n%s - %s\n%s - %s\n%s - %s\n%s - %s\n%s - %s\n%s - %s\n%s - %s\n%s - %s\n\n")
+				_T("%s - %s\n%s - %s\n%s - %s\n%s - %s\n%s - %s\n%s - %s\n%s - %s\n%s - %s\n%s - %s\n%s - %s"),
+				// contact vars
+				_T("%nick%"),					TranslateT("nick of current contact (if defined)"),
+				_T("%proto%"),					TranslateT("protocol name of current contact (if defined). Account name is used when protocol supports multiaccounts"),
+				_T("%userid%"),					TranslateT("UserID of current contact (if defined). It is like UIN Number for ICQ, JID for Jabber, etc."),
+				// global vars
+				_T("%miranda_path%"),			TranslateT("path to root miranda folder"),
+				_T("%miranda_profile%"),		TranslateT("path to current miranda profile"),
+				_T("%miranda_profilename%"),	TranslateT("name of current miranda profile (filename, without extension)"),
+				_T("%miranda_userdata%"),		TranslateT("will return parsed string %miranda_profile%\\Profiles\\%miranda_profilename%"),
+				_T("%appdata%"),				TranslateT("same as environment variable %APPDATA% for currently logged-on Windows user"),
+				_T("%username%"),				TranslateT("username for currently logged-on Windows user"),
+				_T("%mydocuments%"),			TranslateT("\"My Documents\" folder for currently logged-on Windows user"),
+				_T("%desktop%"),				TranslateT("\"Desktop\" folder for currently logged-on Windows user"),
+				_T("%xxxxxxx%"),				TranslateT("any environment variable defined in current Windows session (like %systemroot%, %allusersprofile%, etc.)"),
+				// date/time vars
+				_T("%d%"),			TranslateT("day of month, 1-31"),
+				_T("%dd%"),			TranslateT("day of month, 01-31"),
+				_T("%m%"),			TranslateT("month number, 1-12"),
+				_T("%mm%"),			TranslateT("month number, 01-12"),
+				_T("%mon%"),		TranslateT("abbreviated month name"),
+				_T("%month%"),		TranslateT("full month name"),
+				_T("%yy%"),			TranslateT("year without century, 01-  99"),
+				_T("%yyyy%"),		TranslateT("year with century, 1901-9999"),
+				_T("%wday%"),		TranslateT("abbreviated weekday name"),
+				_T("%weekday%"),	TranslateT("full weekday name") );
+			hPathTip = CreateToolTip(GetDlgItem(hwndDlg, IDC_CHAT_LOGDIRECTORY), tszTooltipText, TranslateT("Variables"));
+			SetTimer(hwndDlg, 0, 3000, NULL);
+		}
+
+
 		SetDlgItemText(hwndDlg, IDC_CHAT_HIGHLIGHTWORDS, g_Settings.pszHighlightWords);
 		SetDlgItemText(hwndDlg, IDC_CHAT_LOGTIMESTAMP, g_Settings.pszTimeStampLog);
 		SetDlgItemText(hwndDlg, IDC_CHAT_TIMESTAMP, g_Settings.pszTimeStamp);
@@ -806,27 +873,27 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 			break;
 		case  IDC_CHAT_FONTCHOOSE:
 		{
-			char szDirectory[MAX_PATH];
+			TCHAR tszDirectory[MAX_PATH];
 			LPITEMIDLIST idList;
 			LPMALLOC psMalloc;
-			BROWSEINFOA bi = {0};
+			BROWSEINFO bi = {0};
 
 			if(SUCCEEDED(CoGetMalloc(1,&psMalloc)))
 			{
-				char szTemp[MAX_PATH];
+				TCHAR tszTemp[MAX_PATH];
 				bi.hwndOwner=hwndDlg;
-				bi.pszDisplayName=szDirectory;
-				bi.lpszTitle=Translate("Select Folder");
+				bi.pszDisplayName=tszDirectory;
+				bi.lpszTitle=TranslateT("Select Folder");
 				bi.ulFlags=BIF_NEWDIALOGSTYLE|BIF_EDITBOX|BIF_RETURNONLYFSDIRS;
 				bi.lpfn=BrowseCallbackProc;
-				bi.lParam=(LPARAM)szDirectory;
+				bi.lParam=(LPARAM)tszDirectory;
 
-				idList=SHBrowseForFolderA(&bi);
+				idList=SHBrowseForFolder(&bi);
 				if(idList) {
-					SHGetPathFromIDListA(idList,szDirectory);
-					lstrcatA(szDirectory,"\\");
-				CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szDirectory, (LPARAM)szTemp );
-				SetWindowTextA(GetDlgItem(hwndDlg, IDC_CHAT_LOGDIRECTORY), lstrlenA(szTemp) > 1?szTemp:"Logs\\");
+					SHGetPathFromIDList(idList,tszDirectory);
+					lstrcat(tszDirectory, _T("\\"));
+				CallService(MS_UTILS_PATHTORELATIVET, (WPARAM)tszDirectory, (LPARAM)tszTemp );
+				SetWindowText(GetDlgItem(hwndDlg, IDC_CHAT_LOGDIRECTORY), lstrlen(tszTemp) > 1?tszTemp:DEFLOGFILENAME);
 				}
 				psMalloc->lpVtbl->Free(psMalloc,idList);
 				psMalloc->lpVtbl->Release(psMalloc);
@@ -879,6 +946,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 		} else if (((LPNMHDR)lParam)->idFrom == 0 && ((LPNMHDR)lParam)->code == PSN_APPLY ) {
 			int iLen;
 			char * pszText = NULL;
+			TCHAR *ptszPath = NULL;
 
 			iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_CHAT_HIGHLIGHTWORDS));
 			if ( iLen > 0 ) {
@@ -900,9 +968,11 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 
 			iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_CHAT_LOGDIRECTORY));
 			if ( iLen > 0 ) {
-			pszText = mir_realloc(pszText, iLen+1);
-				GetDlgItemTextA(hwndDlg, IDC_CHAT_LOGDIRECTORY, pszText,iLen+1);
-				DBWriteContactSettingString(NULL, "Chat", "LogDirectory", pszText);
+				TCHAR *pszText1 = malloc(iLen*sizeof(TCHAR) + 2);
+				GetDlgItemText(hwndDlg, IDC_CHAT_LOGDIRECTORY, pszText1, iLen + 1);
+				DBWriteContactSettingTString(NULL, "Chat", "LogDirectory", pszText1);
+				free(pszText1);
+				CallService(MS_UTILS_PATHTOABSOLUTET, (WPARAM)pszText, (LPARAM)g_Settings.pszLogDir);
 			}
 			else DBDeleteContactSetting(NULL, "Chat", "LogDirectory");
 
@@ -945,9 +1015,6 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 
 			g_Settings.LoggingEnabled = IsDlgButtonChecked(hwndDlg, IDC_CHAT_LOGGING) == BST_CHECKED?TRUE:FALSE;
 			DBWriteContactSettingByte(NULL, "Chat", "LoggingEnabled", (BYTE)g_Settings.LoggingEnabled);
-			if ( g_Settings.LoggingEnabled )
-				if ( !PathIsDirectoryA( g_Settings.pszLogDir ))
-					CreateDirectoryA( g_Settings.pszLogDir, NULL );
 
 			iLen = SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN2,UDM_GETPOS,0,0);
 			DBWriteContactSettingWord(NULL, "Chat", "LogLimit", (WORD)iLen);
@@ -963,8 +1030,17 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 			return TRUE;
 		}
 		break;
-
+	case WM_TIMER:
+		if(IsWindow(hPathTip))
+			KillTimer(hPathTip, 4); // It will prevent tooltip autoclosing
+		break;
 	case WM_DESTROY:
+		if (hPathTip)
+		{
+			KillTimer(hwndDlg, 0);
+			DestroyWindow(hPathTip);
+			hPathTip = 0;
+		}
 		{
 			BYTE b = TreeView_GetItemState(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading2, TVIS_EXPANDED)&TVIS_EXPANDED?1:0;
 			DBWriteContactSettingByte(NULL, "Chat", "Branch2Exp", b);
@@ -1151,17 +1227,12 @@ void LoadGlobalSettings(void)
 	InitSetting( &g_Settings.pszHighlightWords, "HighlightWords", _T("%m"));
 
 	{
-		char pszTemp[MAX_PATH];
-		DBVARIANT dbv;
-		g_Settings.pszLogDir = (char *)mir_realloc(g_Settings.pszLogDir, MAX_PATH);
-		if (!DBGetContactSettingString(NULL, "Chat", "LogDirectory", &dbv))
-		{
-			lstrcpynA(pszTemp, dbv.pszVal, MAX_PATH);
+	DBVARIANT dbv;
+		g_Settings.pszLogDir = (TCHAR *)mir_realloc(g_Settings.pszLogDir, MAX_PATH*sizeof(TCHAR));
+		if (!DBGetContactSettingTString(NULL, "Chat", "LogDirectory", &dbv)) {
+			lstrcpyn(g_Settings.pszLogDir, dbv.ptszVal, MAX_PATH);
 			DBFreeVariant(&dbv);
-		}
-		else lstrcpynA(pszTemp, "Logs\\", MAX_PATH);
-
-		CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)pszTemp, (LPARAM)g_Settings.pszLogDir);
+		} else lstrcpyn(g_Settings.pszLogDir, DEFLOGFILENAME, MAX_PATH);
 	}
 
 	g_Settings.LogIndentEnabled = (DBGetContactSettingByte(NULL, "Chat", "LogIndentEnabled", 1) != 0)?TRUE:FALSE;
@@ -1239,8 +1310,6 @@ int OptionsInit(void)
 	SkinAddNewSoundEx("ChatTopic", "Chat", Translate("The topic has been changed"));
 
 	if(g_Settings.LoggingEnabled)
-		if(!PathIsDirectoryA(g_Settings.pszLogDir))
-			CreateDirectoryA(g_Settings.pszLogDir, NULL);
 	{
 		LOGFONT lf;
 		HFONT hFont;

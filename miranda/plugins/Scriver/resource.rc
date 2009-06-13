@@ -180,6 +180,8 @@ BEGIN
                     BS_AUTORADIOBUTTON | WS_TABSTOP,8,188,138,10
     CONTROL         "Last",IDC_LOADCOUNT,"Button",
                     BS_AUTORADIOBUTTON | WS_TABSTOP,8,200,138,10
+    CONTROL         "Events in the last",IDC_LOADTIME,"Button",
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,8,212,138,10
     EDITTEXT        IDC_LOADCOUNTN,148,198,33,12,ES_RIGHT | ES_NUMBER |
                     WS_DISABLED
     CONTROL         "Spin1",IDC_LOADCOUNTSPIN,"msctls_updown32",
@@ -187,8 +189,6 @@ BEGIN
                     UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK |
                     WS_DISABLED,170,197,10,14
     LTEXT           "events",IDC_LOADCOUNTTEXT2,185,200,90,8
-    CONTROL         "Events in the last",IDC_LOADTIME,"Button",
-                    BS_AUTORADIOBUTTON | WS_TABSTOP,8,212,138,10
     EDITTEXT        IDC_LOADTIMEN,148,211,33,12,ES_RIGHT | ES_NUMBER |
                     WS_DISABLED
     CONTROL         "Spin1",IDC_LOADTIMESPIN,"msctls_updown32",
@@ -385,7 +385,7 @@ BEGIN
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,8,188,288,1
     CONTROL         "Save logs",IDC_CHAT_LOGGING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,193,211,10
     LTEXT           "Location",IDC_STATIC,8,205,211,8
-    EDITTEXT        IDC_CHAT_LOGDIRECTORY,8,212,211,12,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_CHAT_LOGDIRECTORY,8,212,211,12,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_CHAT_FONTCHOOSE,221,212,19,12
     LTEXT           "Trim to",IDC_STATIC,248,204,38,8
     EDITTEXT        IDC_CHAT_LIMIT,248,212,38,12,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
@@ -668,8 +668,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,8,0,35
- PRODUCTVERSION 2,8,0,35
+ FILEVERSION 2,8,0,42
+ PRODUCTVERSION 2,8,0,42
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -687,14 +687,14 @@ BEGIN
             VALUE "Comments", "http://www.miranda-im.org\0"
             VALUE "CompanyName", "Miranda IM Development Team\0"
             VALUE "FileDescription", "Scriver - send and receive instant messages\0"
-            VALUE "FileVersion", "2.8.0.35\0"
+            VALUE "FileVersion", "2.8.0.42\0"
             VALUE "InternalName", "scriver\0"
             VALUE "LegalCopyright", "Copyright (c) 2000-2009 Miranda IM Project\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "scriver.dll\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Scriver\0"
-            VALUE "ProductVersion", "2.8.0.35\0"
+            VALUE "ProductVersion", "2.8.0.42\0"
             VALUE "SpecialBuild", "\0"
         END
     END
