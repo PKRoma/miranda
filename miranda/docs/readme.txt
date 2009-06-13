@@ -25,11 +25,29 @@ Enhancements:
  - Support for multiple accounts (without dll renaming) for all protocols
  - SSL support has been added to the core
  - Support for compressed HTTP transactions
- - AIM: Unicode messaging & status message
+ - AIM: Unicode messaging & status messages
  - AIM: Set/retrive status message for any status
  - AIM: Added ability to set your own avatar
  - AIM: Privacy settings & lists support
+ - AIM: Server groups support
  - AIM: SSL server connection support
+ - ICQ: Fixed receiving of multi-part messages (only first part was received)
+ - ICQ: Fixed processing of UTF-8 encoded status messages from QIP
+ - ICQ: New offline messages protocol (supports unicode)
+ - ICQ: New user details protocol support (fully unicode aware)
+ - ICQ: Added support for status notes & moods
+ - ICQ: URL events are now received as normal messages
+ - ICQ: Ability to send/receive contacts to/from ICQ6 and AIM
+ - ICQ: Server-list support now groups requests
+ - IRC: IRC servers now stored in the database
+ - IRC: Filter for IRC channel list
+ - IRC: Ehanced identd processing
+ - IRC: Added menu item for nickserv commands
+ - IRC: Auto request client info on adding to contacts or private message
+ - IRC: Enhanced WhoIs request
+ - IRC: CTCP events are shown in the server window
+ - IRC: Close windows with ESC button
+ - IRC: Quick Connect now allows manual input of server parameters
  - MSN: Rewritten to support WLM 8.5 protocol (and all it features)
  - MSN: Offline messaging
  - MSN: Added Hotmail Notifier functionality 
