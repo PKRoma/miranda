@@ -2438,7 +2438,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		HFONT	hOldFont = 0;
 		BOOL	config = myGlobals.ipConfig.isValid;
 		StatusItems_t *item = &StatusItems[ID_EXTBKINFOPANEL];
-		TCHAR   *szFinalProto = a2tf((TCHAR *)szProto, 0, 0);
+		TCHAR   *szFinalProto = dat->szAccount; // a2tf((TCHAR *)szProto, 0, 0);
 
 		if (config)
 			hOldFont = SelectObject(dis->hDC, myGlobals.ipConfig.hFonts[IPFONTID_STATUS]);
@@ -2496,8 +2496,8 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		if (config && hOldFont)
 			SelectObject(dis->hDC, hOldFont);
 
-		if (szFinalProto)
-			mir_free(szFinalProto);
+		//if (szFinalProto)
+		//	mir_free(szFinalProto);
 
 		return TRUE;
 	} else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELNICK) && dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {

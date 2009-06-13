@@ -20,6 +20,18 @@ Version 2.0.x.x was released in October 2007 and is the current "stable" version
 It NEEDS Miranda 0.7.x and will not work on older versions.
 
 
+Version 2.2.1.16  - 2009/06/14
+
+	* replaced internal protocol name with user defined account name in some places
+	  (e.g. info panel). 
+	  
+	* added new variable for title bar formatting: %a will be replaced with the
+	  user defined account name for the current contact.
+
+	* various fixes and updates by core developers.
+	
+	* released for Miranda 0.8.0
+	
 Version 2.2.1.14  - 2009/03/05
 
 	* fixed untranslateable strings
