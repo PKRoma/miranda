@@ -59,6 +59,46 @@ struct SslHandle
     SocketState state; 
 };
 
+static void ReportSslError(SECURITY_STATUS scRet)
+{
+    const char *msg;
+    switch (scRet)
+    {
+    case SEC_E_WRONG_PRINCIPAL:
+        msg = "Host we connecting to is not the one certificate was issued for";
+        break;
+
+    case SEC_E_UNTRUSTED_ROOT:
+        msg = "The certificate chain was issued by an authority that is not trusted";
+        break;
+
+    case SEC_E_ILLEGAL_MESSAGE:
+        msg = "The message received was unexpected or badly formatted";
+        break;
+
+    case SEC_E_CERT_UNKNOWN:
+        msg = "An unknown error occurred while processing the certificate";
+        break;
+
+    case SEC_E_CERT_EXPIRED:
+        msg = "The received certificate has expired";
+        break;
+
+    case SEC_E_ALGORITHM_MISMATCH:
+        msg = "The client and server cannot communicate, because they do not possess a common algorithm";
+        break;
+
+    case CRYPT_E_REVOKED:
+        msg = "The certificate is revoked";
+        break;
+
+    default:
+        msg = "Unknown Error"; 
+        break;
+    }
+    Netlib_Logf(NULL, "SSL connection failure (%x): %s", scRet, msg);
+}
+
 static int SSL_library_init(void)
 {
 	INIT_SECURITY_INTERFACE_A pInitSecurityInterface;
@@ -321,8 +361,11 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 	}
 
 	// Delete the security context in the case of a fatal error.
-	if (FAILED(scRet))
+    if (FAILED(scRet)) 
+    {
+        ReportSslError(scRet);
 		g_pSSPI->DeleteSecurityContext(&ssl->hContext);
+    }
 
 	if (ssl->cbIoBuffer == 0) 
 	{
@@ -609,6 +652,7 @@ getdata:
 
 		if ( scRet != SEC_E_OK && scRet != SEC_I_RENEGOTIATE && scRet != SEC_I_CONTEXT_EXPIRED)
 		{
+            ReportSslError(scRet);
             ssl->state = sockError;
 			goto getdata;
 		}
