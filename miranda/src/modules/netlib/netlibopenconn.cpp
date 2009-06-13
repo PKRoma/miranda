@@ -390,7 +390,6 @@ static int my_connect(NetlibConnection *nlc, NETLIBOPENCONNECTION * nloc)
 	if ( Miranda_Terminated() )  {
 		rc=SOCKET_ERROR;
 		lasterr=ERROR_TIMEOUT;
-	    LeaveCriticalSection(&csNetlibUser);
 		goto unblock;
 	}
 
