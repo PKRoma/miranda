@@ -235,6 +235,8 @@ static LRESULT CALLBACK HyperlinkWndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM
 						SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &fSmoothingType, 0);
 						if (fSmoothing && fSmoothingType == FE_FONTSMOOTHINGCLEARTYPE)
 							drawThemeParentBackground(hwnd, hdc, &rc);
+                        else
+						    SetBkMode(hdc,TRANSPARENT);
 					} else
 					{
 						SetBkMode(hdc,TRANSPARENT);
