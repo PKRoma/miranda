@@ -536,7 +536,7 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					    SetFilenameControls(hwndDlg,dat,fts);
                     }
 
-                    const int nextPos = fts->totalBytes?(WPARAM)(BIGI(100)*fts->totalProgress/fts->totalBytes):0;
+                    const unsigned long nextPos = fts->totalBytes ? (BIGI(100) * fts->totalProgress / fts->totalBytes) : 0;
                     SendDlgItemMessage(hwndDlg,IDC_ALLFILESPROGRESS, PBM_SETPOS, nextPos, 0);
 
 					GetSensiblyFormattedSize(fts->totalBytes,szSizeTotal,SIZEOF(szSizeTotal),0,1,&units);
