@@ -27,9 +27,10 @@ Enhancements:
  - Support for compressed HTTP transactions
  - AIM: Unicode messaging & status messages
  - AIM: Set/retrive status message for any status
- - AIM: Added ability to set your own avatar
+ - AIM: Ability to set your own avatar
  - AIM: Privacy settings & lists support
  - AIM: Server groups support
+ - AIM: Group Chat support
  - AIM: SSL server connection support
  - ICQ: Fixed receiving of multi-part messages (only first part was received)
  - ICQ: Fixed processing of UTF-8 encoded status messages from QIP
@@ -48,11 +49,40 @@ Enhancements:
  - IRC: CTCP events are shown in the server window
  - IRC: Close windows with ESC button
  - IRC: Quick Connect now allows manual input of server parameters
+ - Jabber: Bunch of new XMPP extensions implemented (XEPs: 70, 83, 108, 147, 184, 224, 232 and other)
+ - Jabber: Massive improvements in filetransfers
+ - Jabber: Improved GnuPG messages handling (using SecureIM/GPG plugins)
+ - Jabber: Localized server messages support (xml:lang, RFC 3920 section 4.4)
+ - Jabber: Server side notes (Miranda own extension)
+ - Jabber: Ability to invite chat users to another rooms
+ - Jabber: Directed presences, ability to change connection priority
+ - Jabber: Display active resource of user in message window
+ - Jabber: Jabber VCard moved integrated with user details
+ - Jabber: Redesigned almost all dialogs (roster editor, bookmarks, privacty lists, groupchat join, user info and other)
+ - Jabber: Redesigned menus (main menu in status bar, privacy lists menu, custom status, priority menu, groupchat menus and other)
+ - Jabber: Added new and updated old icons, improvements in UI
+ - Jabber: Added hotkeys and toolbar buttons
+ - Jabber: Options to auto-accept authorization requests and auto-reject invites to conferences
+ - Jabber: CTRL key shows disabled items in most menus
+ - Jabber: Various improvements in groupchats (show online status, improved topic and nick change dialogs and other)
+ - Jabber: Improved remote controlling (resources in forwarded messages, keep last options, leave groupchats)
+ - Jabber: Added display of quit messages, ability to send quit and "slap" messages
+ - Jabber: "Use hostname as resource" option
+ - Jabber: Improvements in XML Console (filters, formatting)
+ - Jabber: Ability to show jabber presence subscription states and errors
  - MSN: Rewritten to support WLM 8.5 protocol (and all it features)
  - MSN: Offline messaging
  - MSN: Added Hotmail Notifier functionality 
 
 Bugfixes:
+ - ICQ: Fixed receiving of multi-part messages (only first part was received)
+ - ICQ: Fixed processing of UTF-8 encoded status messages from QIP
+ - Jabber: Fixed varions serious bugs (accidental account unregister, message sender spoofing, roster access by remote users)
+ - Jabber: Fixed wrong timestamps in offline and forwarded messages, fixed xmpp time answers
+ - Jabber: Various connection stability fixes (XMPP ping, ZLib keepalive and other)
+ - Jabber: Fixed chat issues with autojoin and unstable connection
+ - Jabber: Fixed displaying of active resource (including software info) in contact list
+
 
 * New in 0.7.19
 Bugfixes:
