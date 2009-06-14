@@ -96,7 +96,6 @@ static void SetFilenameControls(HWND hwndDlg, struct FileDlgData *dat, PROTOFILE
 		mir_sntprintf(msg, SIZEOF(msg), _T("%s: %s (%d %s %d)"),
 			cli.pfnGetContactDisplayName( fts->hContact, 0 ),
 			fn, fts->currentFileNumber+1, TranslateT("of"), fts->totalFiles);
-		hIcon = LoadSkinIcon(SKINICON_OTHER_DOWNARROW);
 
 		if (dat->hIcon) DestroyIcon(dat->hIcon);
 		SHGetFileInfo(fn, FILE_ATTRIBUTE_DIRECTORY, &shfi, sizeof(shfi), SHGFI_USEFILEATTRIBUTES|SHGFI_ICON|SHGFI_SMALLICON);
@@ -110,7 +109,7 @@ static void SetFilenameControls(HWND hwndDlg, struct FileDlgData *dat, PROTOFILE
 		hIcon = dat->hIcon = shfi.hIcon;
 	} 
 	else {
-		lstrcpyn( msg, cli.pfnGetContactDisplayName( fts->hContact, 0 ), SIZEOF(msg));
+		lstrcpyn(msg, cli.pfnGetContactDisplayName( fts->hContact, 0 ), SIZEOF(msg));
 		hIcon = LoadSkinIcon(SKINICON_OTHER_DOWNARROW);
 	}
 
@@ -531,10 +530,14 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					// Update local transfer status with data from protocol
 					UpdateProtoFileTransferStatus(&dat->transferStatus,fts);
 
-					SetFtStatus(hwndDlg, fts->sending?LPGENT("Sending..."):LPGENT("Receiving..."), FTS_PROGRESS);
-					SetFilenameControls(hwndDlg,dat,fts);
-					//SendDlgItemMessage(hwndDlg,IDC_CURRENTFILEPROGRESS, PBM_SETPOS, fts->currentFileSize?(WPARAM)(BIGI(100)*fts->currentFileProgress/fts->currentFileSize):0, 0);
-					SendDlgItemMessage(hwndDlg,IDC_ALLFILESPROGRESS, PBM_SETPOS, fts->totalBytes?(WPARAM)(BIGI(100)*fts->totalProgress/fts->totalBytes):0, 0);
+                    if ((GetWindowLong(GetDlgItem(hwndDlg,IDC_ALLFILESPROGRESS), GWL_STYLE) & WS_VISIBLE) == 0)
+                    {
+					    SetFtStatus(hwndDlg, fts->sending?LPGENT("Sending..."):LPGENT("Receiving..."), FTS_PROGRESS);
+					    SetFilenameControls(hwndDlg,dat,fts);
+                    }
+
+                    const int nextPos = fts->totalBytes?(WPARAM)(BIGI(100)*fts->totalProgress/fts->totalBytes):0;
+                    SendDlgItemMessage(hwndDlg,IDC_ALLFILESPROGRESS, PBM_SETPOS, nextPos, 0);
 
 					GetSensiblyFormattedSize(fts->totalBytes,szSizeTotal,SIZEOF(szSizeTotal),0,1,&units);
 					GetSensiblyFormattedSize(fts->totalProgress,szSizeDone,SIZEOF(szSizeDone),units,0,NULL);
