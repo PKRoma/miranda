@@ -27,10 +27,13 @@ Enhancements:
  - Support for compressed HTTP transactions
  - AIM: Unicode messaging & status messages
  - AIM: Set/retrive status message for any status
- - AIM: Added ability to set your own avatar
+ - AIM: Ability to set your own avatar
  - AIM: Privacy settings & lists support
  - AIM: Server groups support
+ - AIM: Group Chat support
  - AIM: SSL server connection support
+ - ICQ: Fixed receiving of multi-part messages (only first part was received)
+ - ICQ: Fixed processing of UTF-8 encoded status messages from QIP
  - ICQ: New offline messages protocol (supports unicode)
  - ICQ: New user details protocol support (fully unicode aware)
  - ICQ: Added support for status notes & moods
@@ -46,9 +49,6 @@ Enhancements:
  - IRC: CTCP events are shown in the server window
  - IRC: Close windows with ESC button
  - IRC: Quick Connect now allows manual input of server parameters
- - MSN: Rewritten to support WLM 8.5 protocol (and all it features)
- - MSN: Offline messaging
- - MSN: Added Hotmail Notifier functionality 
  - Jabber: Bunch of new XMPP extensions implemented (XEPs: 70, 83, 108, 147, 184, 224, 232 and other)
  - Jabber: Massive improvements in filetransfers
  - Jabber: Improved GnuPG messages handling (using SecureIM/GPG plugins)
@@ -70,6 +70,9 @@ Enhancements:
  - Jabber: "Use hostname as resource" option
  - Jabber: Improvements in XML Console (filters, formatting)
  - Jabber: Ability to show jabber presence subscription states and errors
+ - MSN: Rewritten to support WLM 8.5 protocol (and all it features)
+ - MSN: Offline messaging
+ - MSN: Added Hotmail Notifier functionality 
 
 Bugfixes:
  - ICQ: Fixed receiving of multi-part messages (only first part was received)
@@ -1074,7 +1077,7 @@ d) Submit a bugreport.
 -----------------------
 
 Miranda IM supports all released versions of Windows from
-Windows 95 to Windows Vista. Beta versions are not supported.
+Windows 95 to Windows XP. Beta versions are not supported.
 
 a) Windows 95
 
