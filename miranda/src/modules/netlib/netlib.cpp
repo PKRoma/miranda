@@ -28,8 +28,12 @@ static BOOL bModuleInitialized = FALSE;
 struct NetlibUser **netlibUser=NULL;
 int netlibUserCount=0;
 CRITICAL_SECTION csNetlibUser;
-HANDLE hConnectionHeaderMutex, hSendEvent=NULL, hRecvEvent=NULL;
-DWORD g_LastConnectionTick; // protected by csNetlibUser
+HANDLE hConnectionHeaderMutex, hConnectionOpenMutex; 
+DWORD g_LastConnectionTick;
+int connectionTimeout;
+HANDLE hSendEvent=NULL, hRecvEvent=NULL;
+
+typedef BOOL (WINAPI *tGetProductInfo)(DWORD, DWORD, DWORD, DWORD, PDWORD);
 
 SSL_API si;
 
@@ -512,6 +516,7 @@ void UnloadNetlibModule(void)
 		mir_free( netlibUser );
 
 		CloseHandle(hConnectionHeaderMutex);
+        if (hConnectionOpenMutex) CloseHandle(hConnectionOpenMutex);
 		DeleteCriticalSection(&csNetlibUser);
 		WSACleanup();
 }	}
@@ -528,8 +533,60 @@ int LoadNetlibModule(void)
 
 	InitializeCriticalSection(&csNetlibUser);
 	hConnectionHeaderMutex=CreateMutex(NULL,FALSE,NULL);
-	g_LastConnectionTick=GetTickCount();
 	NetlibLogInit();
+
+    connectionTimeout = 0;
+
+    OSVERSIONINFOEX osvi = {0};
+	osvi.dwOSVersionInfoSize = sizeof(osvi);
+    if (GetVersionEx((LPOSVERSIONINFO)&osvi))
+    {
+        // Connection limiting was introduced in Windows XP SP2 and later and set to 10 / sec
+        if (osvi.dwMajorVersion == 5 && ((osvi.dwMinorVersion == 1 && osvi.wServicePackMajor >= 2) || osvi.dwMinorVersion > 1)) 
+            connectionTimeout = 150;
+        // Connection limiting has limits based on addition Windows Vista pre SP2
+        else if (osvi.dwMajorVersion == 6 && osvi.wServicePackMajor < 2)
+        {
+            DWORD dwType = 0;
+			tGetProductInfo pGetProductInfo = (tGetProductInfo) GetProcAddress(GetModuleHandleA("kernel32"), "GetProductInfo");
+			if (pGetProductInfo != NULL) pGetProductInfo(6, 0, 0, 0, &dwType);
+			switch( dwType )
+			{
+			case 0x01:  // Vista Ultimate edition have connection limit of 25 / sec - plenty for Miranda
+			case 0x1c:
+			   break;
+
+			case 0x02:  // Vista Home Basic edition have connection limit of 2 / sec 
+			case 0x05:
+			   connectionTimeout = 1000;
+			   break;
+            
+            default:    // all other editions have connection limit of 10 / sec
+                connectionTimeout = 150;
+                break;
+			}
+        }
+        // Connection limiting is disabled by default and is controlled by registry setting in Windows Vista SP2 and later
+        else if (osvi.dwMajorVersion >= 6)
+        {
+            static const char keyn[] = "SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters";
+            static const char valn[] = "EnableConnectionRateLimiting";
+
+            HKEY hSettings;
+	        if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, keyn, 0, KEY_QUERY_VALUE, &hSettings) == ERROR_SUCCESS)
+            {
+                DWORD tValueLen, enabled;
+                tValueLen = sizeof(enabled);
+	            if (RegQueryValueExA(hSettings, valn, NULL, NULL, (BYTE*)&enabled, &tValueLen) == ERROR_SUCCESS && enabled)
+                    connectionTimeout = 150;  // if enabled limit is set to 10 / sec
+                RegCloseKey(hSettings);
+            }
+
+        }
+    }
+
+    hConnectionOpenMutex = connectionTimeout ? CreateMutex(NULL,FALSE,NULL) : NULL;
+	g_LastConnectionTick = GetTickCount();
 
 	CreateServiceFunction(MS_NETLIB_REGISTERUSER,NetlibRegisterUser);
 	CreateServiceFunction(MS_NETLIB_GETUSERSETTINGS,NetlibGetUserSettings);
