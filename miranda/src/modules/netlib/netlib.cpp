@@ -541,7 +541,10 @@ int LoadNetlibModule(void)
 	osvi.dwOSVersionInfoSize = sizeof(osvi);
     if (GetVersionEx((LPOSVERSIONINFO)&osvi))
     {
-        if (osvi.dwMajorVersion == 5) connectionTimeout = 150;
+        // Connection limiting was introduced in Windows XP SP2 and later and set to 10 / sec
+        if (osvi.dwMajorVersion == 5 && ((osvi.dwMinorVersion == 1 && osvi.wServicePackMajor >= 2) || osvi.dwMinorVersion > 1)) 
+            connectionTimeout = 150;
+        // Connection limiting has limits based on addition Windows Vista pre SP2
         else if (osvi.dwMajorVersion == 6 && osvi.wServicePackMajor < 2)
         {
             DWORD dwType = 0;
@@ -563,6 +566,7 @@ int LoadNetlibModule(void)
                 break;
 			}
         }
+        // Connection limiting is disabled by default and is controlled by registry setting in Windows Vista SP2 and later
         else if (osvi.dwMajorVersion >= 6)
         {
             static const char keyn[] = "SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters";
@@ -574,7 +578,7 @@ int LoadNetlibModule(void)
                 DWORD tValueLen, enabled;
                 tValueLen = sizeof(enabled);
 	            if (RegQueryValueExA(hSettings, valn, NULL, NULL, (BYTE*)&enabled, &tValueLen) == ERROR_SUCCESS && enabled)
-                    connectionTimeout = 150;
+                    connectionTimeout = 150;  // if enabled limit is set to 10 / sec
                 RegCloseKey(hSettings);
             }
 
