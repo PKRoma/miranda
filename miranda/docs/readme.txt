@@ -31,8 +31,6 @@ Enhancements:
  - AIM: Privacy settings & lists support
  - AIM: Server groups support
  - AIM: SSL server connection support
- - ICQ: Fixed receiving of multi-part messages (only first part was received)
- - ICQ: Fixed processing of UTF-8 encoded status messages from QIP
  - ICQ: New offline messages protocol (supports unicode)
  - ICQ: New user details protocol support (fully unicode aware)
  - ICQ: Added support for status notes & moods
@@ -74,6 +72,8 @@ Enhancements:
  - Jabber: Ability to show jabber presence subscription states and errors
 
 Bugfixes:
+ - ICQ: Fixed receiving of multi-part messages (only first part was received)
+ - ICQ: Fixed processing of UTF-8 encoded status messages from QIP
  - Jabber: Fixed varions serious bugs (accidental account unregister, message sender spoofing, roster access by remote users)
  - Jabber: Fixed wrong timestamps in offline and forwarded messages, fixed xmpp time answers
  - Jabber: Various connection stability fixes (XMPP ping, ZLib keepalive and other)
