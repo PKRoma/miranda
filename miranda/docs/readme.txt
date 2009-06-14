@@ -25,7 +25,8 @@ Enhancements:
  - Support for multiple accounts (without dll renaming) for all protocols
  - SSL support has been added to the core
  - Support for compressed HTTP transactions
- - AIM: Unicode messaging & status messages
+ - AIM: Unicode messaging, status messages, profiles
+ - AIM: Offline messaging
  - AIM: Set/retrive status message for any status
  - AIM: Ability to set your own avatar
  - AIM: Privacy settings & lists support
