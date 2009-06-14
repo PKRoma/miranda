@@ -1078,15 +1078,14 @@ d) Submit a bugreport.
 -----------------------
 
 Miranda IM supports all released versions of Windows from
-Windows 95 to Windows XP. Beta versions are not supported.
+Windows 95 to Windows Vista. Beta versions are not supported.
 
 a) Windows 95
 
  - If you have trouble running Miranda IM on a Windows 95, make
    sure that you have Winsock and DUN upgrades installed.
  - Menu icons are not supported in Windows 95.
- - Window transparency is only supported on Windows 2000 and
-   Windows XP.
+ - Window transparency is only supported on Windows 2000 and later.
 
 b) Plugins
  - Third party plugins may have different requirements than
@@ -1098,7 +1097,7 @@ b) Plugins
 6. Contact
 ----------
 
-The official webpage for the Miranda IM project is www.miranda-im.org.
+The official webpage for the Miranda IM project is http://www.miranda-im.org.
 
 
 
@@ -1108,7 +1107,7 @@ The official webpage for the Miranda IM project is www.miranda-im.org.
 Miranda IM is provided free of charge but without any warranty or support.
 
 If you have difficulties using Miranda IM, you can find a lot of resources in
-the Help section of the website: http://www.miranda-im.org/help/
+the Help section of the website: http://wiki.miranda-im.org/
 
 You can also ask for help in the official forums and someone will try to help.
 But remember; everyone involved in the Miranda IM project are volunteers, as
