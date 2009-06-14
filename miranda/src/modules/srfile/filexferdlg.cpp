@@ -524,28 +524,33 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					}
 
 					/* HACK: for 0.3.3, limit updates to around 1.1 ack per second */
-					if (fts->totalProgress!=fts->totalBytes && GetTickCount() - dat->dwTicks < 650) break; // the last update was less than a second ago!
-					dat->dwTicks=GetTickCount();
+					if (fts->totalProgress != fts->totalBytes && GetTickCount() < (dat->dwTicks + 650)) break; // the last update was less than a second ago!
+					dat->dwTicks = GetTickCount();
 
 					// Update local transfer status with data from protocol
-					UpdateProtoFileTransferStatus(&dat->transferStatus,fts);
+					UpdateProtoFileTransferStatus(&dat->transferStatus, fts);
 
-                    if ((GetWindowLong(GetDlgItem(hwndDlg,IDC_ALLFILESPROGRESS), GWL_STYLE) & WS_VISIBLE) == 0)
+                    bool firstTime = false;
+                    if ((GetWindowLong(GetDlgItem(hwndDlg, IDC_ALLFILESPROGRESS), GWL_STYLE) & WS_VISIBLE) == 0)
                     {
-					    SetFtStatus(hwndDlg, fts->sending?LPGENT("Sending..."):LPGENT("Receiving..."), FTS_PROGRESS);
-					    SetFilenameControls(hwndDlg,dat,fts);
+					    SetFtStatus(hwndDlg, fts->sending ? LPGENT("Sending...") : LPGENT("Receiving..."), FTS_PROGRESS);
+					    SetFilenameControls(hwndDlg, dat, fts);
+                        firstTime = true;
                     }
 
+                    const unsigned long lastPos = SendDlgItemMessage(hwndDlg, IDC_ALLFILESPROGRESS, PBM_GETPOS, 0, 0);
                     const unsigned long nextPos = fts->totalBytes ? (BIGI(100) * fts->totalProgress / fts->totalBytes) : 0;
-                    SendDlgItemMessage(hwndDlg,IDC_ALLFILESPROGRESS, PBM_SETPOS, nextPos, 0);
+                    if (lastPos != nextPos || firstTime)
+                    {
+                        SendDlgItemMessage(hwndDlg, IDC_ALLFILESPROGRESS, PBM_SETPOS, nextPos, 0);
+					    mir_sntprintf(str, SIZEOF(str), _T("%u%%"), nextPos);
+					    SetDlgItemText(hwndDlg, IDC_ALLPRECENTS, str);
+                    }
 
-					GetSensiblyFormattedSize(fts->totalBytes,szSizeTotal,SIZEOF(szSizeTotal),0,1,&units);
-					GetSensiblyFormattedSize(fts->totalProgress,szSizeDone,SIZEOF(szSizeDone),units,0,NULL);
-					mir_sntprintf(str,SIZEOF(str),_T("%s/%s"),szSizeDone,szSizeTotal);
-					SetDlgItemText(hwndDlg,IDC_ALLTRANSFERRED,str);
-
-					mir_sntprintf(str,SIZEOF(str),_T("%d%%"),fts->totalBytes?(int)(BIGI(100)*fts->totalProgress/fts->totalBytes):0);
-					SetDlgItemText(hwndDlg,IDC_ALLPRECENTS,str);
+					GetSensiblyFormattedSize(fts->totalBytes, szSizeTotal, SIZEOF(szSizeTotal), 0, 1, &units);
+					GetSensiblyFormattedSize(fts->totalProgress, szSizeDone, SIZEOF(szSizeDone), units, 0, NULL);
+					mir_sntprintf(str, SIZEOF(str), _T("%s/%s"), szSizeDone, szSizeTotal);
+					SetDlgItemText(hwndDlg, IDC_ALLTRANSFERRED, str);
 					break;
 				}
 				case ACKRESULT_SUCCESS:
