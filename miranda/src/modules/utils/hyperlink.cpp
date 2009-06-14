@@ -227,7 +227,7 @@ static LRESULT CALLBACK HyperlinkWndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM
 					textColor=dat->disableColor;
 				}
 				if(GetClientRect(hwnd,&rc) && GetWindowText(hwnd,szText,SIZEOF(szText))) {
-					if (IsWinVerXPPlus() && drawThemeParentBackground)
+					if (drawThemeParentBackground && IsWinVerXPPlus())
 					{
 						BOOL fSmoothing;
 						UINT fSmoothingType;
@@ -235,12 +235,8 @@ static LRESULT CALLBACK HyperlinkWndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM
 						SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &fSmoothingType, 0);
 						if (fSmoothing && fSmoothingType == FE_FONTSMOOTHINGCLEARTYPE)
 							drawThemeParentBackground(hwnd, hdc, &rc);
-                        else
-						    SetBkMode(hdc,TRANSPARENT);
-					} else
-					{
-						SetBkMode(hdc,TRANSPARENT);
 					}
+					SetBkMode(hdc,TRANSPARENT);
 					SetTextColor(hdc,textColor);
 					alignFlag=(GetWindowLongPtr(hwnd,GWL_STYLE)&(SS_CENTER|SS_RIGHT|SS_LEFT));
 					DrawText(hdc,szText,-1,&rc,alignFlag|DT_NOPREFIX|DT_SINGLELINE|DT_TOP);
