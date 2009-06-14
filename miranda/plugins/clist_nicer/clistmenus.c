@@ -34,7 +34,7 @@ extern int      g_nextExtraCacheEntry;
 extern struct   ExtraCache *g_ExtraCache;
 extern struct   CluiData g_CluiData;
 
-static HMENU hMainMenu, hMainStatusMenu
+static HMENU hMainMenu, hMainStatusMenu;
 
 void DestroyTrayMenu(HMENU hMenu)
 {
@@ -56,7 +56,7 @@ INT_PTR CloseAction(WPARAM wParam,LPARAM lParam)
 	g_shutDown = 1;
 	k=CallService(MS_SYSTEM_OKTOEXIT,(WPARAM)0,(LPARAM)0);
 	if (k) {
-		DestroyWindow(pcli->hwndContactList, WM_DESTROY);
+		DestroyWindow(pcli->hwndContactList);
 		PostQuitMessage(0);
 		Sleep(0);
 	}
