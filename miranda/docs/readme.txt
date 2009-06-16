@@ -91,6 +91,7 @@ Bugfixes:
  - Jabber: Fixed displaying of active resource (including software info) in contact list
  - Yahoo: Tons of bug fixes
 
+
 * New in 0.7.19
 Bugfixes:
  - ICQ: Fixed server connection thread issue
