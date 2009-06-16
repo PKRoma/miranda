@@ -637,6 +637,10 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM 
 				proto->setByte( "DisableHotmailJunk",( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLEHOTJUNK ));
 				proto->setByte( "EnableDeliveryPopup", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_NOTIFY_FIRSTMSG ));
 				proto->setByte( "EnableSessionPopup", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_NOTIFY_ENDSESSION ));
+
+                HANDLE hContact = proto->MSN_HContactFromEmail(proto->MyOptions.szEmail, NULL, false, false);
+                if (hContact) proto->displayEmailCount(hContact);
+
 				}
 				return TRUE;
 			}
