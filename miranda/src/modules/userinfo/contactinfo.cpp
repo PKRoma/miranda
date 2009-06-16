@@ -181,6 +181,7 @@ static int IsOverEmail(HWND hwndDlg,TCHAR* szEmail,int cchEmail)
 	if(hti.iSubItem!=1) return 0;
 	if(!(hti.flags&LVHT_ONITEMLABEL)) return 0;
 	ListView_GetSubItemRect(hwndEmails,hti.iItem,1,LVIR_LABEL,&rc);
+	szText[0] = 0;
 	ListView_GetItemText(hwndEmails,hti.iItem,1,szText,SIZEOF(szText));
 	hdc=GetDC(hwndEmails);
 	SelectObject(hdc,hEmailFont);
@@ -377,7 +378,7 @@ INT_PTR CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 									ListView_GetSubItemRect(nm->nmcd.hdr.hwndFrom,nm->nmcd.dwItemSpec,nm->iSubItem,LVIR_LABEL,&rc);
 									if(nm->iSubItem==1 && nm->nmcd.hdr.idFrom==IDC_EMAILS) {
 										HFONT hoFont;
-										TCHAR szText[256];
+										TCHAR szText[256] = {0};
 										ListView_GetItemText(nm->nmcd.hdr.hwndFrom,nm->nmcd.dwItemSpec,nm->iSubItem,szText,SIZEOF(szText));
 										hoFont=(HFONT)SelectObject(nm->nmcd.hdc,hEmailFont);
 										SetTextColor(nm->nmcd.hdc,RGB(0,0,255));
