@@ -87,7 +87,7 @@ static void SetFilenameControls(HWND hwndDlg, struct FileDlgData *dat, PROTOFILE
 
 	if ( fts->currentFile ) {
 		fnbuf = mir_a2t( fts->currentFile );
-		if (( fn = _tcschr( fnbuf, '\\' )) == NULL )
+		if (( fn = _tcsrchr( fnbuf, '\\' )) == NULL )
 			fn = fnbuf;
 		else fn++;
 	}
