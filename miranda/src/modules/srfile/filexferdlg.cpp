@@ -165,7 +165,7 @@ static int FileTransferDlgResizer(HWND, LPARAM, UTILRESIZECONTROL *urc)
 			return RD_ANCHORX_RIGHT|RD_ANCHORY_TOP;
 
 		case IDC_ALLTRANSFERRED:
-			urc->rcItem.right = urc->rcItem.left + (urc->rcItem.right - urc->rcItem.left) / 3;
+			urc->rcItem.right = urc->rcItem.left + (urc->rcItem.right - urc->rcItem.left - urc->dlgOriginalSize.cx + urc->dlgNewSize.cx) / 3;
 			return RD_ANCHORX_CUSTOM|RD_ANCHORY_CUSTOM;
 
 		case IDC_ALLSPEED:
@@ -509,7 +509,7 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				case ACKRESULT_DATA:
 				{
 					PROTOFILETRANSFERSTATUS *fts=(PROTOFILETRANSFERSTATUS*)ack->lParam;
-					TCHAR str[256],szSizeDone[32],szSizeTotal[32];//,*contactName;
+					TCHAR str[64], str2[64], szSizeDone[32], szSizeTotal[32];//,*contactName;
 					int units;
 
 					if ( dat->fileVirusScanned==NULL )
@@ -550,7 +550,9 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					GetSensiblyFormattedSize(fts->totalBytes, szSizeTotal, SIZEOF(szSizeTotal), 0, 1, &units);
 					GetSensiblyFormattedSize(fts->totalProgress, szSizeDone, SIZEOF(szSizeDone), units, 0, NULL);
 					mir_sntprintf(str, SIZEOF(str), _T("%s/%s"), szSizeDone, szSizeTotal);
-					SetDlgItemText(hwndDlg, IDC_ALLTRANSFERRED, str);
+                    str2[0] = 0;
+					GetDlgItemText(hwndDlg, IDC_ALLTRANSFERRED, str2, SIZEOF(str2));
+                    if (_tcscmp(str, str2)) SetDlgItemText(hwndDlg, IDC_ALLTRANSFERRED, str);
 					break;
 				}
 				case ACKRESULT_SUCCESS:
