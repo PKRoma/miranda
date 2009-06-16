@@ -107,7 +107,7 @@ Section "Miranda IM"
   !insertmacro PrintInstallerDetails "Installing Miranda IM Core Files..."
   
   !insertmacro WriteInstallerOption "0" "AIM"
-  !insertmacro WriteInstallerOption "0" "Gadu-Gadu"
+  ;!insertmacro WriteInstallerOption "0" "Gadu-Gadu"
   !insertmacro WriteInstallerOption "0" "ICQ"
   !insertmacro WriteInstallerOption "0" "IRC"
   !insertmacro WriteInstallerOption "0" "Jabber"
@@ -163,13 +163,13 @@ SubSection /e "Protocols"
     !insertmacro InstallMirandaProtoIcon "AIM"
   SectionEnd
   
-  Section "Gadu-Gadu" pProtoGaduGadu
-    !insertmacro PrintInstallerDetails "Installing Gadu-Gadu Protocol..."
-    !insertmacro WriteInstallerOption "1" "Gadu-Gadu"
-    SetOutPath "$INSTDIR\Plugins"
-    File "${MIM_BUILD_DIRANSI}\plugins\GG.dll"
-    ; GG uses embedded icons
-  SectionEnd
+  ;Section "Gadu-Gadu" pProtoGaduGadu
+  ;  !insertmacro PrintInstallerDetails "Installing Gadu-Gadu Protocol..."
+  ;  !insertmacro WriteInstallerOption "1" "Gadu-Gadu"
+  ;  SetOutPath "$INSTDIR\Plugins"
+  ;  File "${MIM_BUILD_DIRANSI}\plugins\GG.dll"
+  ;  ; GG uses embedded icons
+  ;SectionEnd
   
   Section "ICQ" pProtoICQ
     !insertmacro PrintInstallerDetails "Installing ICQ Protocol..."

@@ -74,6 +74,12 @@ Enhancements:
  - MSN: Rewritten to support WLM 8.5 protocol (and all it features)
  - MSN: Offline messaging
  - MSN: Added Hotmail Notifier functionality 
+ - Yahoo: Added Yahoo 9.x protocol support
+ - Yahoo: File transfer overhauled with support for batches of files
+ - Yahoo: Added user info dialog for Yahoo that shows more detailed information
+ - Yahoo: Improved support for HTTP proxies
+ - Yahoo: Yahoo Japan support
+ - Yahoo: Yahoo now provides a Unicode version
 
 Bugfixes:
  - ICQ: Fixed receiving of multi-part messages (only first part was received)
@@ -83,7 +89,7 @@ Bugfixes:
  - Jabber: Various connection stability fixes (XMPP ping, ZLib keepalive and other)
  - Jabber: Fixed chat issues with autojoin and unstable connection
  - Jabber: Fixed displaying of active resource (including software info) in contact list
-
+ - Yahoo: Tons of bug fixes
 
 * New in 0.7.19
 Bugfixes:
