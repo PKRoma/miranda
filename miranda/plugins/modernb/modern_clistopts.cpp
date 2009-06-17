@@ -606,6 +606,11 @@ static INT_PTR CALLBACK DlgProcItemIconOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 			{
 				EnableWindow(GetDlgItem(hwndDlg,IDC_DRAW_ON_AVATAR_SPACE),FALSE);
 			}
+			
+			if (ServiceExists("ExtraIcon/Register"))
+			{
+				ShowWindow(GetDlgItem(hwndDlg, IDC_ALWAYS_VISIBLEICON), SW_HIDE);
+			}
 
 			break;
 		}
@@ -619,7 +624,7 @@ static INT_PTR CALLBACK DlgProcItemIconOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 			else if (LOWORD(wParam)==IDC_USEXSTATUS)
 				EnableWindow(GetDlgItem(hwndDlg,IDC_DRAWSTATUSOVERLAY),IsDlgButtonChecked(hwndDlg,IDC_USEXSTATUS));
 
-			SendMessage((GetParent(hwndDlg)), PSM_CHANGED, 0, 0);
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			break;
 		}
 	case WM_NOTIFY:
