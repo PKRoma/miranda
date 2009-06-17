@@ -46,5 +46,3 @@ Special mention to Piotr Lukaszewski aka nowotny, not always smiling, but always
 Our forum residents, who discover new and exciting ways to break Miranda daily and who are the gestalt slash 'mob' that shapes how Miranda IM works and evolves.
 
 Our users,  who...er...use it, and without who...well...we love that you love Miranda.
-
-And last but not least, Christian Diaz, our server and hosting provider, offering his services in our hour of need. Thank you.
