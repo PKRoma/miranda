@@ -330,12 +330,12 @@ Function VerifyInstallDir
   ${Else}
     !insertmacro SetSectionFlag ${pProtoAim} ${SF_SELECTED}
   ${EndIf}
-  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Gadu-Gadu"
-  ${If} $0 == "0"
-    !insertmacro ClearSectionFlag ${pProtoGaduGadu} ${SF_SELECTED}
-  ${Else}
-    !insertmacro SetSectionFlag ${pProtoGaduGadu} ${SF_SELECTED}
-  ${EndIf}
+  ;ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Gadu-Gadu"
+  ;${If} $0 == "0"
+  ;  !insertmacro ClearSectionFlag ${pProtoGaduGadu} ${SF_SELECTED}
+  ;${Else}
+  ;  !insertmacro SetSectionFlag ${pProtoGaduGadu} ${SF_SELECTED}
+  ;${EndIf}
   ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "ICQ"
   ${If} $0 == "0"
     !insertmacro ClearSectionFlag ${pProtoICQ} ${SF_SELECTED}
