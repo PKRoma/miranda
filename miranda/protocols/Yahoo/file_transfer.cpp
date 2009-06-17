@@ -386,18 +386,17 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 					if (dw > 0) {
 						WriteFile(myhFile, buf, dw, &c, NULL);
 						rsize += dw;
+						sf->pfts.totalProgress += dw;
+						sf->pfts.currentFileProgress += dw;
 						
-						/*LOG(("Got %d/%d", rsize, size));*/
 						if(GetTickCount() >= lNotify + 500 || dw <= 0 || rsize == size) {
 							
-						LOG(("DOING UI Notify. Got %lu/%lu", rsize, size));
-						
-						sf->pfts.currentFileTime = (DWORD)time(NULL);//ntohl(ft->hdr.modtime);
-						sf->pfts.currentFileProgress = rsize;
-						
-						ProtoBroadcastAck(sf->ppro->m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_DATA, sf, (LPARAM) & sf->pfts);
-						lNotify = GetTickCount();
+							LOG(("DOING UI Notify. Got %lu/%lu", rsize, size));
+							
+							ProtoBroadcastAck(sf->ppro->m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_DATA, sf, (LPARAM) & sf->pfts);
+							lNotify = GetTickCount();
 						}
+						
 					} else {
 						LOG(("Recv Failed! Socket Error?"));
 						error = 1;
@@ -411,12 +410,11 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 					}
 				} while ( dw > 0 && rsize < size);
 				
-				while (dw > 0) {
+				while (dw > 0 && ! sf->cancel && ! error) {
 					dw = Netlib_Recv((HANDLE)fd, buf, 1024, MSG_NODUMP);
 					LOG(("Ack."));
 				}
 				
-				sf->pfts.totalProgress += rsize;
 				ProtoBroadcastAck(sf->ppro->m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_DATA, sf, (LPARAM) & sf->pfts);
 				
 				LOG(("[Finished DL] Got %lu/%lu", rsize, size));
@@ -896,6 +894,7 @@ int __cdecl CYahooProto::FileCancel( HANDLE /*hContact*/, HANDLE hTransfer )
 
 	ft->action = FILERESUME_CANCEL;
 	ft->cancel = 1;
+	
 	return 0;
 }
 
