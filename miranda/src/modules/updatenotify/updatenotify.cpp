@@ -241,11 +241,11 @@ static int UpdateNotifyMakeRequest(UpdateNotifyData *und) {
 					}
 				}
 				else if (strcmp(resp->headers[i].szName, "X-Miranda-Version")==0&&resp->headers[i].szValue) {
-					Netlib_Logf(hNetlibUser, "New version found (%s)", resp->headers[i].szValue);
+					Netlib_Logf(hNetlibUser, "Server version (%s)", resp->headers[i].szValue);
 					mir_snprintf(und->version, sizeof(und->version), "%s", resp->headers[i].szValue);
 				}
 				else if (strcmp(resp->headers[i].szName, "X-Miranda-Version-Complete")==0&&resp->headers[i].szValue) {
-					Netlib_Logf(hNetlibUser, "Complete version number (%s)", resp->headers[i].szValue);
+					Netlib_Logf(hNetlibUser, "Server version complete (%s)", resp->headers[i].szValue);
 					mir_snprintf(und->versionReal, sizeof(und->versionReal), "%s", resp->headers[i].szValue);
 				}
 				else if (strcmp(resp->headers[i].szName, "X-Miranda-Notes-URL")==0&&resp->headers[i].szValue) {
