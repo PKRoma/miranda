@@ -19,8 +19,8 @@
 
 struct
 {
-	char* szDescr;
-	char* szName;
+	const char* szDescr;
+	const char* szName;
 	int   defIconID;
 }
 static iconList[] = {
@@ -33,32 +33,55 @@ static iconList[] = {
 	{	LPGEN("Calendar"),     "calendar",   IDI_CALENDAR   }
 };
 
+HANDLE hIconLibItem[SIZEOF(iconList)];
+
 void CYahooProto::IconsInit( void )
 {
-	char szFile[MAX_PATH], szSection[MAX_PATH];
-	GetModuleFileNameA(hInstance, szFile, MAX_PATH);
+	TCHAR szFile[MAX_PATH];
+	char szSectionName[100];
+	
+	mir_snprintf(szSectionName, sizeof(szSectionName), "%s/%s", LPGEN("Protocols"), LPGEN("MSN"));
+	GetModuleFileName(hInstance, szFile, SIZEOF(szFile));
 
 	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);
-	sid.pszDefaultFile = szFile;
+	sid.ptszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
-	mir_snprintf( szSection, sizeof(szSection), "%s/%s", Translate("Protocols"), Translate( "YAHOO" ) );
-	sid.pszSection = szSection;
+	sid.pszSection = szSectionName;
+	sid.flags = SIDF_PATH_TCHAR;
 
 	for ( int i = 0; i < SIZEOF(iconList); i++ ) {
 		char szSettingName[100];
-		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", "YAHOO", iconList[i].szName );
+		mir_snprintf( szSettingName, sizeof( szSettingName ), "YAHOO_%s", iconList[i].szName );
+		
 		sid.pszName = szSettingName;
-		sid.pszDescription = Translate( iconList[i].szDescr );
+		sid.pszDescription = (char* )iconList[i].szDescr;
 		sid.iDefaultIndex = -iconList[i].defIconID;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-}	}
+		hIconLibItem[i] = (HANDLE)CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+	}
+}
 
 HICON CYahooProto::LoadIconEx( const char* name )
 {
 	char szSettingName[100];
 	
-	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", "YAHOO", name );
+	mir_snprintf( szSettingName, sizeof( szSettingName ), "YAHOO_%s", name );
 	
 	return ( HICON )CallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
+}
+
+HANDLE CYahooProto::GetIconHandle(int iconId)
+{
+	for (unsigned i=0; i < SIZEOF(iconList); i++)
+		if (iconList[i].defIconID == iconId)
+			return hIconLibItem[i];
+
+	return NULL;
+}
+
+void CYahooProto::ReleaseIconEx(const char* name)
+{
+	char szSettingName[100];
+	mir_snprintf(szSettingName, sizeof(szSettingName), "%MSN_%s", name);
+	YAHOO_CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)szSettingName);
 }

@@ -365,108 +365,120 @@ INT_PTR __cdecl CYahooProto::GetUnreadEmailCount(WPARAM wParam, LPARAM lParam)
 
 void CYahooProto::MenuInit( void )
 {
-	char servicefunction[ 200 ];
+	char servicefunction[ 100 ];
 	lstrcpyA( servicefunction, m_szModuleName );
 	char* tDest = servicefunction + lstrlenA( servicefunction );
+	
+	CLISTMENUITEM mi = { 0 };
+	mi.cbSize = sizeof( mi );
+	mi.pszService = servicefunction;
+		
+	mi.position = 500015000;
+	mi.pszPopupName = (char *)-1;
+	mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR;
+	mi.icolibItem = GetIconHandle( IDI_YAHOO );
+	mi.ptszName = m_tszUserName;
+	mainMenuRoot = (HANDLE)YAHOO_CallService( MS_CLIST_ADDMAINMENUITEM,  (WPARAM)0, (LPARAM)&mi);
+		
+	mi.flags = CMIF_ICONFROMICOLIB | CMIF_CHILDPOPUP;
+	mi.pszPopupName = (char *)mainMenuRoot;
 	
 	// Show custom status menu    
 	lstrcpyA( tDest, YAHOO_SET_CUST_STAT );
 	YCreateService( YAHOO_SET_CUST_STAT, &CYahooProto::SetCustomStatCommand );
-
-	CLISTMENUITEM mi = { 0 };
-	mi.ptszName = m_tszUserName;
-	mi.flags = CMIF_ROOTPOPUP | CMIF_TCHAR;
-	mi.cbSize = sizeof( mi );
-	mi.position = -1999901011;
-	mi.pszPopupName = (char *)-1;
-	mi.hIcon = LoadIconEx( "yahoo" );
-	HGENMENU hMenuRoot = (HGENMENU)CallService( MS_CLIST_ADDMAINMENUITEM,  (WPARAM)0, (LPARAM)&mi);
-		
-	mi.flags &= ~(CMIF_ROOTPOPUP | CMIF_TCHAR);
-	mi.flags |= CMIF_CHILDPOPUP;
-
-	mi.hParentMenu = hMenuRoot;
+	
 	mi.popupPosition = 500090000;
 	mi.position = 500090000;
-	mi.hIcon = LoadIconEx( "set_status" );
+	mi.icolibItem = GetIconHandle( IDI_SET_STATUS );
 	mi.pszName = LPGEN( "Set &Custom Status" );
-	mi.pszService = servicefunction;
-	CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+	
+	menuItemsAll[0] = ( HANDLE )YAHOO_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	// Edit My profile
 	lstrcpyA( tDest, YAHOO_EDIT_MY_PROFILE );
 	YCreateService( YAHOO_EDIT_MY_PROFILE, &CYahooProto::OnEditMyProfile );
 
 	mi.position = 500090005;
-	mi.hIcon = LoadIconEx( "profile" );
+	mi.icolibItem = GetIconHandle( IDI_PROFILE );
 	mi.pszName = LPGEN( "&Edit My Profile" );
-	mi.pszService = servicefunction;
-	CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	menuItemsAll[1] = ( HANDLE )YAHOO_CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 
 	// Show My profile
 	lstrcpyA( tDest, YAHOO_SHOW_MY_PROFILE );
 	YCreateService( YAHOO_SHOW_MY_PROFILE, &CYahooProto::OnShowMyProfileCommand );
 
 	mi.position = 500090005;
-	mi.hIcon = LoadIconEx( "profile" );
+	mi.icolibItem = GetIconHandle( IDI_PROFILE );
 	mi.pszName = LPGEN( "&My Profile" );
-	mi.pszService = servicefunction;
-	CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	menuItemsAll[2] = ( HANDLE ) YAHOO_CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 
 	// Show Yahoo mail 
 	strcpy( tDest, YAHOO_YAHOO_MAIL );
 	YCreateService( YAHOO_YAHOO_MAIL, &CYahooProto::OnGotoMailboxCommand );
 
 	mi.position = 500090010;
-	mi.hIcon = LoadIconEx( "mail" );
+	mi.icolibItem = GetIconHandle( IDI_INBOX );
 	mi.pszName = LPGEN( "&Yahoo Mail" );
-	mi.pszService = servicefunction;
-	CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	menuItemsAll[3] = ( HANDLE )YAHOO_CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 
 	// Show Address Book    
 	strcpy( tDest, YAHOO_AB );
 	YCreateService( YAHOO_AB, &CYahooProto::OnABCommand );
 
 	mi.position = 500090015;
-	mi.hIcon = LoadIconEx( "yab" );
+	mi.icolibItem = GetIconHandle( IDI_YAB );
 	mi.pszName = LPGEN( "&Address Book" );
-	mi.pszService = servicefunction;
-	CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	menuItemsAll[4] = ( HANDLE )YAHOO_CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 
 	// Show Calendar
 	strcpy( tDest, YAHOO_CALENDAR );
 	YCreateService( YAHOO_CALENDAR, &CYahooProto::OnCalendarCommand );
 
 	mi.position = 500090015;
-	mi.hIcon = LoadIconEx( "calendar" );
+	mi.icolibItem = GetIconHandle( IDI_CALENDAR );
 	mi.pszName = LPGEN( "&Calendar" );
-	mi.pszService = servicefunction;
-	CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	menuItemsAll[5] = ( HANDLE )YAHOO_CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 
 	// Show Refresh     
-	strcpy( tDest, YAHOO_REFRESH );
+	/*strcpy( tDest, YAHOO_REFRESH );
 	YCreateService( YAHOO_REFRESH, &CYahooProto::OnRefreshCommand );
 
 	mi.position = 500090015;
-	mi.hIcon = LoadIconEx( "refresh" );
+	mi.icolibItem = GetIconHandle( IDI_REFRESH );
 	mi.pszName = LPGEN( "&Refresh" );
-	mi.pszService = servicefunction;
-	CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	menuItemsAll[6] = ( HANDLE )YAHOO_CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	*/
 	
 	// Show Profile 
 	strcpy( tDest, YAHOO_SHOW_PROFILE );
 	YCreateService( YAHOO_SHOW_PROFILE, &CYahooProto::OnShowProfileCommand );
 
-	mi.flags = 0;
+	mi.flags = CMIF_ICONFROMICOLIB;
 	mi.pszPopupName = NULL;
+	mi.pszContactOwner = m_szModuleName;
 	
 	mi.position = -2000006000;
-	mi.hIcon = LoadIconEx( "profile" );
+	mi.icolibItem = GetIconHandle( IDI_PROFILE );
 	mi.pszName = LPGEN( "&Show Profile" );
-	mi.pszService = servicefunction;
-	mi.pszContactOwner = m_szModuleName;
-	CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
+	hShowProfileMenuItem = ( HANDLE )YAHOO_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
+	
 }
+
+void CYahooProto::MenuUninit( void )
+{
+	YAHOO_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )menuItemsAll[0], 0 );
+	YAHOO_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )menuItemsAll[1], 0 );
+	YAHOO_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )menuItemsAll[2], 0 );
+	YAHOO_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )menuItemsAll[3], 0 );
+	YAHOO_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )menuItemsAll[4], 0 );
+	YAHOO_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )menuItemsAll[5], 0 );
+	//YAHOO_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )menuItemsAll[6], 0 );
+	
+	YAHOO_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )mainMenuRoot, 0 );
+	
+	YAHOO_CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hShowProfileMenuItem, 0 );
+}
+
 
 //=======================================================================================
 // Load the yahoo service/plugin

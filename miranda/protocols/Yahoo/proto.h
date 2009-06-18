@@ -121,7 +121,8 @@ struct CYahooProto : public PROTO_INTERFACE
 	void   BroadcastStatus(int s);
 	void   LoadYahooServices( void );
 	void   MenuInit( void );
-
+	void   MenuUninit( void );
+	
 	//====| Data |========================================================================
 	BOOL   m_bLoggedIn;
 	YList *m_connections;
@@ -171,7 +172,9 @@ struct CYahooProto : public PROTO_INTERFACE
 	//====| icolib.cpp |==================================================================
 	void   IconsInit( void );
 	HICON  LoadIconEx( const char* name );
-
+	HANDLE GetIconHandle(int iconId);
+	void   ReleaseIconEx(const char* name);
+	
 	//====| ignore.cpp |==================================================================
 	const YList* GetIgnoreList(void);
 	void  IgnoreBuddy(const char *buddy, int ignore);
@@ -302,6 +305,10 @@ private:
 
 	HANDLE hYahooNudge;
 	HANDLE m_hNetlibUser;
+
+	HANDLE mainMenuRoot;
+	HANDLE hShowProfileMenuItem;
+	HANDLE menuItemsAll[ 7 ];
 
     HANDLE		hYahooAvatarsFolder;
     bool		InitCstFldRan;
