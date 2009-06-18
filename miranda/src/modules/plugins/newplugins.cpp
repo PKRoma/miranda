@@ -86,6 +86,13 @@ struct PluginUUIDList {
 };
 const int pluginBannedListCount = SIZEOF(pluginBannedList);
 
+struct InterfaceUUIDList {
+    MUUID uuid;
+} interfaceBannedList[] = {
+    {0x9d8da8bf, 0x665b, 0x4908, {0x9e, 0x61, 0x9f, 0x75, 0x98, 0xae, 0x33, 0xe}}, // old clist interface
+};
+const int interfaceBannedListCount = SIZEOF(interfaceBannedList);
+
 SortedList pluginList = { 0 }, pluginListAddr = { 0 };
 
 static BOOL bModuleInitialized = FALSE;
@@ -176,11 +183,20 @@ static MUUID miid_servicemode = MIID_SERVICEMODE;
 static int validInterfaceList(Miranda_Plugin_Interfaces ifaceProc)
 {
 	MUUID *piface = ( ifaceProc ) ? ifaceProc() : NULL;
-
+    int i = 0, j;
+    
 	if (!piface)
 		return 0;
 	if (equalUUID(miid_last, piface[0]))
 		return 0;
+    while (!equalUUID(miid_last, piface[i]) ) {
+        for (j=0; j<interfaceBannedListCount; j++) {
+            if (equalUUID(interfaceBannedList[j].uuid, piface[i]))
+                return 0;
+            i++;
+        }
+        break;
+    }
 	return 1;
 }
 
