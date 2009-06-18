@@ -495,7 +495,7 @@ nosimpletags:
 extern "C" int MY_DBGetContactSettingTString(HANDLE hContact, char *szModule, char *szSetting, DBVARIANT *dbv);
 extern "C" int MY_DBFreeVariant(DBVARIANT *dbv);
 
-extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const TCHAR *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus, WORD wStatus)
+extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const TCHAR *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus, WORD wStatus, TCHAR *tszAccname)
 {
 	TCHAR *szResult = 0;
 	INT_PTR length = 0;
@@ -524,6 +524,13 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 					title.insert(tempmark + 2, szNickname);
 				title.erase(tempmark, 2);
 				curpos = tempmark + lstrlen(szNickname);
+				break;
+			}
+			case 'a': {
+				if (tszAccname)
+					title.insert(tempmark + 2, tszAccname);
+				title.erase(tempmark, 2);
+				curpos = tempmark + lstrlen(tszAccname);
 				break;
 			}
 			case 's': {
