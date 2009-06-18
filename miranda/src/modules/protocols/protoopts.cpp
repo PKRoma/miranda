@@ -807,7 +807,8 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 					{
 						int iItem = ListBox_GetCurSel(hwndList);
 						PROTOACCOUNT *pa = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, iItem);
-						if (pa) {
+						if (pa) 
+                        {
 							mir_free(pa->tszAccountName);
 							pa->tszAccountName = (TCHAR*)lParam;
 							WriteDbAccounts();
@@ -821,7 +822,10 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 							sttSelectItem(dat, hwndList, iItem);
 
 							RedrawWindow(hwndList, NULL, NULL, RDW_INVALIDATE);
-					}	}
+					    }
+                        else
+                            mir_free((TCHAR*)lParam);
+                    }
 					break;
 			}	}
 			break;

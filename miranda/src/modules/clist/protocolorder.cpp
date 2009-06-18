@@ -36,15 +36,17 @@ int isProtoSuitable( PROTO_INTERFACE* ppi )
 
 int FindNextOrder(void)
 {
-    int res = -1;
 	for ( int i=0; i < accounts.getCount(); i++ ) {
-		PROTOACCOUNT* pa = accounts[i];
-		if ( pa->iOrder < 1000000 && pa->iOrder > res) res = pa->iOrder;
+        int res = -1;
+	    for ( int j=0; j < accounts.getCount(); j++ )
+            if (accounts[j]->iOrder == i) { res = i; break; }
+
+        if (res < 0) return i; 
     }
-    return ++res;
+    return accounts.getCount();
 }
 
-int CheckProtocolOrder()
+int CheckProtocolOrder(void)
 {
 	BOOL protochanged = FALSE;
 	int ver = DBGetContactSettingDword( 0, "Protocols", "PrVer", -1 ), i;
