@@ -244,30 +244,33 @@ static void sttClickButton(HWND hwndDlg, int idcButton)
 
 static LRESULT CALLBACK sttEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch (msg) {
+	switch (msg) 
+    {
 	case WM_KEYDOWN:
 		switch (wParam) {
 		case VK_RETURN:
-			{
-				int length = GetWindowTextLength(hwnd) + 1;
-				TCHAR *str = ( TCHAR* )mir_alloc(sizeof(TCHAR) * length);
-				GetWindowText(hwnd, str, length);
-				SendMessage(GetParent(GetParent(hwnd)), WM_COMMAND, MAKEWPARAM(GetWindowLongPtr(GetParent(hwnd), GWL_ID), LBN_MY_RENAME), (LPARAM)str);
-				DestroyWindow(hwnd);
-			}
+			DestroyWindow(hwnd);
 			return 0;
 
 		case VK_ESCAPE:
-			SetFocus(GetParent(hwnd));
+            SetWindowLongPtr(hwnd, GWLP_WNDPROC, GetWindowLongPtr(hwnd, GWLP_USERDATA));
 			DestroyWindow(hwnd);
 			return 0;
 		}
 		break;
+
 	case WM_GETDLGCODE:
-		if ((wParam == VK_RETURN) || (wParam == VK_ESCAPE))
+		if (wParam == VK_RETURN || wParam == VK_ESCAPE)
 			return DLGC_WANTMESSAGE;
 		break;
+
 	case WM_KILLFOCUS:
+		{
+			int length = GetWindowTextLength(hwnd) + 1;
+			TCHAR *str = ( TCHAR* )mir_alloc(sizeof(TCHAR) * length);
+			GetWindowText(hwnd, str, length);
+			SendMessage(GetParent(GetParent(hwnd)), WM_COMMAND, MAKEWPARAM(GetWindowLongPtr(GetParent(hwnd), GWL_ID), LBN_MY_RENAME), (LPARAM)str);
+		}
 		DestroyWindow(hwnd);
 		return 0;
 	}
@@ -327,8 +330,8 @@ static LRESULT CALLBACK AccListWndProc(HWND hwnd,UINT msg, WPARAM wParam, LPARAM
 		{
 			RECT rc;
 			struct TAccMgrData *parentDat = (struct TAccMgrData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
-			PROTOACCOUNT *acc = (PROTOACCOUNT *)ListBox_GetItemData(hwnd, ListBox_GetCurSel(hwnd));
-			if (!acc || acc->bOldProto || acc->bDynDisabled)
+			PROTOACCOUNT *pa = (PROTOACCOUNT *)ListBox_GetItemData(hwnd, ListBox_GetCurSel(hwnd));
+			if (!pa || pa->bOldProto || pa->bDynDisabled)
 				return 0;
 
 			ListBox_GetItemRect(hwnd, ListBox_GetCurSel(hwnd), &rc);
@@ -336,7 +339,7 @@ static LRESULT CALLBACK AccListWndProc(HWND hwnd,UINT msg, WPARAM wParam, LPARAM
 			rc.bottom = rc.top + max(GetSystemMetrics(SM_CXSMICON), parentDat->titleHeight) + 4 - 1;
 			++rc.top; --rc.right;
 
-			dat->hwndEdit = CreateWindow(_T("EDIT"), acc->tszAccountName, WS_CHILD|WS_BORDER|ES_AUTOHSCROLL, rc.left, rc.top, rc.right-rc.left, rc.bottom-rc.top, hwnd, NULL, hMirandaInst, NULL);
+			dat->hwndEdit = CreateWindow(_T("EDIT"), pa->tszAccountName, WS_CHILD|WS_BORDER|ES_AUTOHSCROLL, rc.left, rc.top, rc.right-rc.left, rc.bottom-rc.top, hwnd, NULL, hMirandaInst, NULL);
 			SetWindowLongPtr(dat->hwndEdit, GWLP_USERDATA, SetWindowLongPtr(dat->hwndEdit, GWLP_WNDPROC, (LONG_PTR)sttEditSubclassProc));
 			SendMessage(dat->hwndEdit, WM_SETFONT, (WPARAM)parentDat->hfntTitle, 0);
 			SendMessage(dat->hwndEdit, EM_SETMARGINS, EC_LEFTMARGIN|EC_RIGHTMARGIN|EC_USEFONTINFO, 0);
@@ -349,7 +352,7 @@ static LRESULT CALLBACK AccListWndProc(HWND hwnd,UINT msg, WPARAM wParam, LPARAM
 	case WM_KEYDOWN:
 		switch (wParam) {
 		case VK_F2:
-			SendMessage(hwnd, WM_MY_RENAME, 0, 0);
+			PostMessage(hwnd, WM_MY_RENAME, 0, 0);
 			return 0;
 
 		case VK_INSERT:
@@ -713,7 +716,8 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 				POINT ptItem = pt;
 				ScreenToClient( hwndList, &ptItem );
 				iItem = (short)LOWORD(SendMessage(hwndList, LB_ITEMFROMPOINT, 0, MAKELPARAM(ptItem.x, ptItem.y)));
-				if (iItem != LB_ERR) {
+				if (iItem != LB_ERR) 
+                {
 				    ListBox_SetCurSel(hwndList, iItem);
                     sttUpdateAccountInfo(hwndDlg, dat);
 				    sttSelectItem(dat, hwndList, iItem);
@@ -721,10 +725,11 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
                 }
 			}
 
-			if ( iItem != LB_ERR ) {
-                PROTOACCOUNT* pa = ( PROTOACCOUNT* )ListBox_GetItemData( hwndList, iItem );
+			if ( iItem != LB_ERR ) 
+            {
+                PROTOACCOUNT* pa = (PROTOACCOUNT*)ListBox_GetItemData(hwndList, iItem);
 				HMENU hMenu = CreatePopupMenu();
-                if ( !pa->bOldProto && !pa->bDynDisabled )
+                if (!pa->bOldProto && !pa->bDynDisabled)
                 {
 				    AppendMenu(hMenu, MF_STRING, (UINT_PTR)1, TranslateT("Rename"));
 //				    AppendMenu(hMenu, MF_STRING, (UINT_PTR)2, TranslateT("Edit"));
@@ -736,22 +741,27 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 
 				AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
 				AppendMenu(hMenu, MF_STRING, (UINT_PTR)0, TranslateT("Cancel"));
-				switch (TrackPopupMenu( hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL )) {
+				switch (TrackPopupMenu( hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL )) 
+                {
 				case 1:
-					SendMessage(hwndList, WM_MY_RENAME, 0, 0);
+					PostMessage(hwndList, WM_MY_RENAME, 0, 0);
 					break;
+
 				case 2:
 					sttClickButton(hwndDlg, IDC_EDIT);
 					break;
+
 				case 3:
 					sttClickButton(hwndDlg, IDC_REMOVE);
 					break;
+
 				case 4:
 					sttClickButton(hwndDlg, IDC_UPGRADE);
 					break;
 				}
 				DestroyMenu( hMenu );
-		}	}
+		    }	
+        }
 		break;
 
 	case WM_COMMAND:
@@ -765,6 +775,10 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 					sttSelectItem(dat, hwndList, ListBox_GetCurSel(hwndList));
 					SetFocus(hwndList);
 					break;
+
+                case LBN_DBLCLK:
+					PostMessage(hwndList, WM_MY_RENAME, 0, 0);
+                    break;
 
 				case LBN_MY_CHECK:
 					{
@@ -792,16 +806,16 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 				case LBN_MY_RENAME:
 					{
 						int iItem = ListBox_GetCurSel(hwndList);
-						PROTOACCOUNT *acc = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, iItem);
-						if (acc) {
-							mir_free(acc->tszAccountName);
-							acc->tszAccountName = (TCHAR *)lParam;
+						PROTOACCOUNT *pa = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, iItem);
+						if (pa) {
+							mir_free(pa->tszAccountName);
+							pa->tszAccountName = (TCHAR*)lParam;
 							WriteDbAccounts();
-							NotifyEventHooks( hAccListChanged, PRAC_CHANGED, ( LPARAM )acc );
+							NotifyEventHooks(hAccListChanged, PRAC_CHANGED, (LPARAM)pa);
 
 							ListBox_DeleteString(hwndList, iItem);
-							iItem = ListBox_AddString(hwndList, acc->tszAccountName);
-							ListBox_SetItemData(hwndList, iItem, (LPARAM)acc);
+							iItem = ListBox_AddString(hwndList, pa->tszAccountName);
+							ListBox_SetItemData(hwndList, iItem, (LPARAM)pa);
 							ListBox_SetCurSel(hwndList, iItem);
 
 							sttSelectItem(dat, hwndList, iItem);
@@ -824,9 +838,9 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 			{
 				HWND hList = GetDlgItem( hwndDlg, IDC_ACCLIST );
 				int idx = ListBox_GetCurSel( hList );
-				if ( idx != -1 ) {
-					SendMessage(hList, WM_MY_RENAME, 0, 0);
-			}	}
+				if ( idx != -1 )
+					PostMessage(hList, WM_MY_RENAME, 0, 0);
+			}
 			break;
 
 		case IDC_REMOVE:
