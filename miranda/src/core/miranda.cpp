@@ -50,7 +50,6 @@ pfnOpenThemeData openThemeData;
 pfnIsThemeBackgroundPartiallyTransparent isThemeBackgroundPartiallyTransparent;
 pfnDrawThemeParentBackground drawThemeParentBackground;
 pfnDrawThemeBackground drawThemeBackground;
-pfnDrawThemeBackgroundEx drawThemeBackgroundEx;
 pfnDrawThemeText drawThemeText;
 pfnDrawThemeTextEx drawThemeTextEx;
 pfnGetThemeFont getThemeFont;
@@ -567,7 +566,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 		isThemeBackgroundPartiallyTransparent = (pfnIsThemeBackgroundPartiallyTransparent)GetProcAddress(hThemeAPI,"IsThemeBackgroundPartiallyTransparent");
 		drawThemeParentBackground  = (pfnDrawThemeParentBackground)GetProcAddress(hThemeAPI,"DrawThemeParentBackground");
 		drawThemeBackground = (pfnDrawThemeBackground)GetProcAddress(hThemeAPI,"DrawThemeBackground");
-		drawThemeBackgroundEx = (pfnDrawThemeBackgroundEx)GetProcAddress(hThemeAPI,"DrawThemeBackgroundEx");
 		drawThemeText = (pfnDrawThemeText)GetProcAddress(hThemeAPI,"DrawThemeText");
 		drawThemeTextEx = (pfnDrawThemeTextEx)GetProcAddress(hThemeAPI,"DrawThemeTextEx");
 		getThemeFont = (pfnGetThemeFont)GetProcAddress(hThemeAPI,"GetThemeFont");

@@ -298,10 +298,9 @@ static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARA
 			if ( isThemeBackgroundPartiallyTransparent( hTheme, style, ETS_NORMAL) )
 				drawThemeParentBackground( hWnd, hdc, &rc );
 
-			DTBGOPTS dtbgopts = { sizeof(DTBGOPTS), DTBG_OMITBORDER };
-			dtbgopts.rcClip = rc;
-
-			drawThemeBackgroundEx( hTheme, hdc, style, ETS_NORMAL, &rc, &dtbgopts );
+            RECT rc2;
+            GetWindowRect(hWnd, &rc2);
+			drawThemeBackground( hTheme, hdc, style, ETS_NORMAL, &rc2, &rc );
 			HFONT hFont = (HFONT) SendMessage(hWnd, WM_GETFONT, 0, 0);
 			HFONT oldFont = (HFONT) SelectObject( hdc, hFont );
 
