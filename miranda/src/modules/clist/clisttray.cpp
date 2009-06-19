@@ -230,7 +230,8 @@ void fnTrayIconRemove(HWND hwnd, const char *szProto)
 
 int fnTrayIconInit(HWND hwnd)
 {
-	int averageMode = GetAverageMode();
+    int netProtoCount = 0;
+	int averageMode = GetAverageMode(&netProtoCount);
 	initcheck 0;
 	lock;
 	mToolTipTrayTips = ServiceExists("mToolTip/ShowTip") ? TRUE : FALSE;
@@ -241,16 +242,11 @@ int fnTrayIconInit(HWND hwnd)
 	}
 
 	if (DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI) {
-		int netProtoCount, i;
-		for (i = 0, netProtoCount = 0; i < accounts.getCount(); i++)
-			if ( cli.pfnGetProtocolVisibility( accounts[i]->szModuleName ))
-				netProtoCount++;
 		cli.trayIconCount = netProtoCount;
 	}
 	else cli.trayIconCount = 1;
 
-	cli.trayIcon = (struct trayIconInfo_t *) mir_alloc(sizeof(struct trayIconInfo_t) * (accounts.getCount() > cli.trayIconCount ? accounts.getCount() : cli.trayIconCount));
-	memset(cli.trayIcon, 0, sizeof(struct trayIconInfo_t) * (accounts.getCount() > cli.trayIconCount ? accounts.getCount() : cli.trayIconCount));
+	cli.trayIcon = (struct trayIconInfo_t *) mir_calloc(sizeof(struct trayIconInfo_t) * accounts.getCount());
 	if ( DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI
 	     && (averageMode <= 0 || DBGetContactSettingByte(NULL, "CList", "AlwaysMulti", SETTING_ALWAYSMULTI_DEFAULT ))) {
 		int i;
