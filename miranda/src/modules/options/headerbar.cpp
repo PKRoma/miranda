@@ -26,10 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "m_iconheader.h"
 
-//#include <vsstyle.h>
-//#include <uxtheme.h>
-//#include <dwmapi.h>
-
 extern HINSTANCE hMirandaInst;
 
 
