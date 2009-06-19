@@ -40,7 +40,7 @@ void CYahooProto::IconsInit( void )
 	TCHAR szFile[MAX_PATH];
 	char szSectionName[100];
 	
-	mir_snprintf(szSectionName, sizeof(szSectionName), "%s/%s", LPGEN("Protocols"), LPGEN("MSN"));
+	mir_snprintf(szSectionName, sizeof(szSectionName), "%s/%s", LPGEN("Protocols"), LPGEN("YAHOO"));
 	GetModuleFileName(hInstance, szFile, SIZEOF(szFile));
 
 	SKINICONDESC sid = {0};
@@ -82,6 +82,6 @@ HANDLE CYahooProto::GetIconHandle(int iconId)
 void CYahooProto::ReleaseIconEx(const char* name)
 {
 	char szSettingName[100];
-	mir_snprintf(szSettingName, sizeof(szSettingName), "%MSN_%s", name);
+	mir_snprintf(szSettingName, sizeof(szSettingName), "YAHOO_%s", name);
 	YAHOO_CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)szSettingName);
 }
