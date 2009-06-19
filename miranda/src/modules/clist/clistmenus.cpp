@@ -847,7 +847,6 @@ int fnGetAccountIndexByPos(int Pos)
 void RebuildMenuOrder( void )
 {
 	int i,j,s;
-	int visnetworkProtoCount=0;
 	DWORD flags,flags2;
 	TMenuParam tmp;
 	int pos=0;
@@ -860,11 +859,8 @@ void RebuildMenuOrder( void )
 	//status menu
 	if ( hStatusMenuObject != 0 ) {
 		CallService(MO_REMOVEMENUOBJECT,(WPARAM)hStatusMenuObject,0);
-		if ( hStatusMainMenuHandles != NULL)
-			mir_free( hStatusMainMenuHandles );
-
-		if ( hStatusMenuHandles != NULL )
-			mir_free( hStatusMenuHandles );
+		mir_free( hStatusMainMenuHandles );
+		mir_free( hStatusMenuHandles );
 	}
 	memset(&tmp,0,sizeof(tmp));
 	tmp.cbSize = sizeof(tmp);
@@ -875,22 +871,11 @@ void RebuildMenuOrder( void )
 	hStatusMenuObject=(HANDLE)CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 	MO_SetOptionsMenuObject( hStatusMenuObject, OPT_MENUOBJECT_SET_FREE_SERVICE, (INT_PTR)"CLISTMENUS/FreeOwnerDataStatusMenu" );
 
-	hStatusMainMenuHandles = ( PMO_IntMenuItem* )mir_alloc( SIZEOF(statusModeList) * sizeof( PMO_IntMenuItem* ));
+	hStatusMainMenuHandles = ( PMO_IntMenuItem* )mir_calloc( SIZEOF(statusModeList) * sizeof( PMO_IntMenuItem* ));
 	hStatusMainMenuHandlesCnt = SIZEOF(statusModeList);
-	memset( hStatusMainMenuHandles, 0, SIZEOF(statusModeList) * sizeof( PMO_IntMenuItem* ));
 
-	hStatusMenuHandles = ( tStatusMenuHandles* )mir_alloc(sizeof(tStatusMenuHandles)*accounts.getCount());
+	hStatusMenuHandles = ( tStatusMenuHandles* )mir_calloc(sizeof(tStatusMenuHandles)*accounts.getCount());
 	hStatusMenuHandlesCnt = accounts.getCount();
-	memset( hStatusMenuHandles, 0, sizeof(tStatusMenuHandles)*accounts.getCount() );
-
-	for ( i=0; i < accounts.getCount(); i++ ) {
-		pa = accounts[i];
-		if ( CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0 ) == 0 )
-			continue;
-
-		if ( !bHideStatusMenu && cli.pfnGetProtocolVisibility( pa->szModuleName ))
-			visnetworkProtoCount++;
-	}
 
 	FreeMenuProtos();
 
@@ -1014,6 +999,8 @@ void RebuildMenuOrder( void )
 
 	NotifyEventHooks(cli.hPreBuildStatusMenuEvent, 0, 0);
 	pos = 200000;
+
+    if (cli.menuProtoCount == 1) ((PMO_IntMenuItem)cli.menuProtos[0].pMenu)->mi.flags |= CMIF_HIDDEN;
 
 	//add to root menu
 	for ( j=0; j < SIZEOF(statusModeList); j++ ) {
@@ -1363,13 +1350,10 @@ void InitCustomMenus(void)
 
 void UninitCustomMenus(void)
 {
-	if (hStatusMainMenuHandles!=NULL)
-		mir_free(hStatusMainMenuHandles);
-
+	mir_free(hStatusMainMenuHandles);
 	hStatusMainMenuHandles = NULL;
 
-	if ( hStatusMenuHandles != NULL )
-		mir_free( hStatusMenuHandles );
+    mir_free( hStatusMenuHandles );
 	hStatusMenuHandles = NULL;
 
     if ( hMainMenuObject   ) CallService( MO_REMOVEMENUOBJECT, (WPARAM)hMainMenuObject, 0 );
