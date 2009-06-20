@@ -82,7 +82,6 @@ extern "C" PLUGININFOEX __declspec(dllexport) *MirandaPluginInfoEx(DWORD miranda
 		return NULL;
 	}
 
-	MIRANDA_VERSION = mirandaVersion;
 	return &pluginInfo;
 }
 
@@ -124,6 +123,9 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	mir_getMMI( &mmi );
 	mir_getUTFI( &utfi );
 	mir_getMD5I( &md5i );
+
+  // Get Miranda version
+  MIRANDA_VERSION = (DWORD)CallService(MS_SYSTEM_GETVERSION, 0, 0);
 
 	{ // Are we running under unicode Miranda core ?
 		char szVer[MAX_PATH];
