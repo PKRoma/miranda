@@ -79,6 +79,8 @@
 #define IDI_EXPANDSTRINGEDIT            1001
 #define IDC_SAVEPASS                    1004
 #define IDC_RETRXSTATUS                 1005
+#define IDC_XTITLE_STATIC               1006
+#define IDC_XMSG_STATIC                 1007
 #define IDC_SSL                         1008
 #define IDC_MD5LOGIN                    1009
 #define IDC_UTFENABLE                   1010

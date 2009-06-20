@@ -965,11 +965,13 @@ void CIcqProto::handleServUINSettings(int nPort, serverthread_info *info)
 
 	if (m_bAimEnabled)
 	{
-		char **szMsg = MirandaStatusToAwayMsg(m_iStatus);
+		char **szAwayMsg = NULL;
 
 		EnterCriticalSection(&m_modeMsgsMutex);
-		if (szMsg)
-			icq_sendSetAimAwayMsgServ(*szMsg);
+    if (m_iStatus != ID_STATUS_ONLINE && m_iStatus != ID_STATUS_INVISIBLE && m_iStatus != ID_STATUS_FREECHAT)
+      szAwayMsg = MirandaStatusToAwayMsg(m_iStatus);
+		if (szAwayMsg)
+			icq_sendSetAimAwayMsgServ(*szAwayMsg);
 		LeaveCriticalSection(&m_modeMsgsMutex);
 	}
 }

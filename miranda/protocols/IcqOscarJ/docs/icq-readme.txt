@@ -59,6 +59,7 @@ _______
 Bugfixes:
   Fixed receiving of multi-part messages (only first part was received)
   Fixed processing of UTF-8 encoded status messages from QIP
+  Fixed AIM away message handling (caused online status to be seen as away in some clients)
 
 New Features
   Account management (requires Miranda IM 0.8 and newer)

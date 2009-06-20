@@ -111,7 +111,7 @@ static INT_PTR CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				char buf[MAX_PATH];
 				SetDlgItemTextUtf(hwndDlg, IDC_LEVELDESCR, ICQTranslateUtfStatic(szLogLevelDescr[4-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)], buf, MAX_PATH));
 			}
-			ShowWindow(GetDlgItem(hwndDlg, IDC_RECONNECTREQD), SW_HIDE);
+			ShowDlgItem(hwndDlg, IDC_RECONNECTREQD, SW_HIDE);
 			LoadDBCheckState(ppro, hwndDlg, IDC_NOERRMULTI, "IgnoreMultiErrorBox", 0);
 		}
 		return TRUE;
@@ -151,7 +151,7 @@ static INT_PTR CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				GetClassNameA((HWND)lParam, szClass, sizeof(szClass));
 
 				if (stricmpnull(szClass, "EDIT") || HIWORD(wParam) == EN_CHANGE)
-					ShowWindow(GetDlgItem(hwndDlg, IDC_RECONNECTREQD), SW_SHOW);
+					ShowDlgItem(hwndDlg, IDC_RECONNECTREQD, SW_SHOW);
 			}
 
 			if ((LOWORD(wParam)==IDC_ICQNUM || LOWORD(wParam)==IDC_PASSWORD || LOWORD(wParam)==IDC_ICQSERVER || LOWORD(wParam)==IDC_ICQPORT) &&
@@ -213,25 +213,25 @@ static const UINT icqPrivacyControls[] = {
 
 static INT_PTR CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	CIcqProto* ppro = (CIcqProto*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
+	CIcqProto* ppro = (CIcqProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	switch (msg) {
 	case WM_INITDIALOG:
 		ICQTranslateDialog(hwndDlg);
 
 		ppro = (CIcqProto*)lParam;
-		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		{
 			int nDcType = ppro->getSettingByte(NULL, "DCType", 0);
 			int nAddAuth = ppro->getSettingByte(NULL, "Auth", 1);
 
 			if (!ppro->icqOnline())
 			{
-				icq_EnableMultipleControls(hwndDlg, icqPrivacyControls, sizeof(icqPrivacyControls)/sizeof(icqPrivacyControls[0]), FALSE);
-				ShowWindow(GetDlgItem(hwndDlg, IDC_STATIC_NOTONLINE), SW_SHOW);
+				icq_EnableMultipleControls(hwndDlg, icqPrivacyControls, SIZEOF(icqPrivacyControls), FALSE);
+				ShowDlgItem(hwndDlg, IDC_STATIC_NOTONLINE, SW_SHOW);
 			}
 			else 
-				ShowWindow(GetDlgItem(hwndDlg, IDC_STATIC_NOTONLINE), SW_HIDE);
+				ShowDlgItem(hwndDlg, IDC_STATIC_NOTONLINE, SW_HIDE);
 
 			CheckDlgButton(hwndDlg, IDC_DCALLOW_ANY, (nDcType == 0));
 			CheckDlgButton(hwndDlg, IDC_DCALLOW_CLIST, (nDcType == 1));
@@ -514,7 +514,7 @@ static INT_PTR CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wP
 
 		if (ppro->icqOnline())
 		{
-			ShowWindow(GetDlgItem(hwndDlg, IDC_OFFLINETOENABLE), SW_SHOW);
+			ShowDlgItem(hwndDlg, IDC_OFFLINETOENABLE, SW_SHOW);
 			EnableDlgItem(hwndDlg, IDC_ENABLE, FALSE);
 			EnableDlgItem(hwndDlg, IDC_ENABLEAVATARS, FALSE);
 		}
@@ -531,7 +531,7 @@ static INT_PTR CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wP
 		case IDC_ENABLE:
 			icq_EnableMultipleControls(hwndDlg, icqContactsControls, SIZEOF(icqContactsControls), IsDlgButtonChecked(hwndDlg, IDC_ENABLE));
 			if (ppro->icqOnline()) 
-				ShowWindow(GetDlgItem(hwndDlg, IDC_RECONNECTREQD), SW_SHOW);
+				ShowDlgItem(hwndDlg, IDC_RECONNECTREQD, SW_SHOW);
 			else 
 				EnableDlgItem(hwndDlg, IDC_UPLOADNOW, FALSE);
 			break;

@@ -547,17 +547,17 @@ static INT_PTR CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 			if (ack->hContact != dat->hContact) break;
 			if ((DWORD)ack->hProcess != dat->iEvent) break;
 
-			ShowWindow(GetDlgItem(hwndDlg, IDC_RETRXSTATUS), SW_HIDE);
-			ShowWindow(GetDlgItem(hwndDlg, IDC_XMSG), SW_SHOW);
-			ShowWindow(GetDlgItem(hwndDlg, IDC_XTITLE), SW_SHOW);
+			ShowDlgItem(hwndDlg, IDC_RETRXSTATUS, SW_HIDE);
+			ShowDlgItem(hwndDlg, IDC_XMSG, SW_SHOW);
+			ShowDlgItem(hwndDlg, IDC_XTITLE, SW_SHOW);
 			SetDlgItemTextUtf(hwndDlg,IDOK,ICQTranslateUtfStatic(LPGEN("Close"), str, MAX_PATH));
 			UnhookEvent(dat->hEvent); dat->hEvent = NULL;
 			char *szText = dat->ppro->getSettingStringUtf(dat->hContact, DBSETTING_XSTATUS_NAME, "");
 			SetDlgItemTextUtf(hwndDlg, IDC_XTITLE, szText);
-			SAFE_FREE((void**)&szText);
+			SAFE_FREE(&szText);
 			szText = dat->ppro->getSettingStringUtf(dat->hContact, DBSETTING_XSTATUS_MSG, "");
 			SetDlgItemTextUtf(hwndDlg, IDC_XMSG, szText);
-			SAFE_FREE((void**)&szText);
+			SAFE_FREE(&szText);
 		}
 		break;
 
@@ -599,26 +599,31 @@ static INT_PTR CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 				{
 					SetDlgItemTextUtf(hwndDlg,IDOK,ICQTranslateUtfStatic(LPGEN("Cancel"), str, MAX_PATH));
 					dat->hEvent = HookEventMessage(ME_PROTO_ACK, hwndDlg, HM_PROTOACK);
-					ShowWindow(GetDlgItem(hwndDlg, IDC_RETRXSTATUS), SW_SHOW);
-					ShowWindow(GetDlgItem(hwndDlg, IDC_XMSG), SW_HIDE);
-					ShowWindow(GetDlgItem(hwndDlg, IDC_XTITLE), SW_HIDE);
+					ShowDlgItem(hwndDlg, IDC_RETRXSTATUS, SW_SHOW);
+					ShowDlgItem(hwndDlg, IDC_XMSG, SW_HIDE);
+					ShowDlgItem(hwndDlg, IDC_XTITLE, SW_HIDE);
 					dat->iEvent = dat->ppro->requestXStatusDetails(dat->hContact, FALSE);
 				}
 				else
 				{
-					char *szText;
-
 					SetDlgItemTextUtf(hwndDlg,IDOK,ICQTranslateUtfStatic(LPGEN("Close"), str, MAX_PATH));
 					dat->hEvent = NULL;
-					szText = dat->ppro->getSettingStringUtf(dat->hContact, DBSETTING_XSTATUS_NAME, "");
+					char *szText = dat->ppro->getSettingStringUtf(dat->hContact, DBSETTING_XSTATUS_NAME, "");
 					SetDlgItemTextUtf(hwndDlg, IDC_XTITLE, szText);
-					SAFE_FREE((void**)&szText);
-          if (dat->ppro->CheckContactCapabilities(dat->hContact, CAPF_STATUS_MOOD))
+					SAFE_FREE(&szText);
+          if (dat->ppro->CheckContactCapabilities(dat->hContact, CAPF_STATUS_MOOD) && !dat->ppro->CheckContactCapabilities(dat->hContact, CAPF_XSTATUS))
+          { // only for clients supporting just moods and not custom status
             szText = dat->ppro->getSettingStringUtf(dat->hContact, DBSETTING_STATUS_NOTE, "");
+            // hide title, resize message edit control
+            ShowDlgItem(hwndDlg, IDC_XTITLE_STATIC, SW_HIDE);
+            ShowDlgItem(hwndDlg, IDC_XTITLE, SW_HIDE);
+            MoveDlgItem(hwndDlg, IDC_XMSG_STATIC, 5, 0, 179, 8);
+            MoveDlgItem(hwndDlg, IDC_XMSG, 5, 9, 179, 65);
+          }
           else
 					  szText = dat->ppro->getSettingStringUtf(dat->hContact, DBSETTING_XSTATUS_MSG, "");
 					SetDlgItemTextUtf(hwndDlg, IDC_XMSG, szText);
-					SAFE_FREE((void**)&szText);
+					SAFE_FREE(&szText);
 				}
 			}
 
@@ -998,7 +1003,7 @@ INT_PTR CIcqProto::GetXStatusEx(WPARAM wParam, LPARAM lParam)
 				WCHAR *wstr = make_unicode_string(str);
 
 				wcscpy(pData->pwszName, wstr);
-				SAFE_FREE((void**)&str);
+				SAFE_FREE(&str);
 				SAFE_FREE((void**)&wstr);
 			}
 			else
@@ -1023,7 +1028,7 @@ INT_PTR CIcqProto::GetXStatusEx(WPARAM wParam, LPARAM lParam)
 			WCHAR *wstr = make_unicode_string(str);
 
 			wcscpy(pData->pwszMessage, wstr);
-			SAFE_FREE((void**)&str);
+			SAFE_FREE(&str);
 			SAFE_FREE((void**)&wstr);
 		}
 		else
@@ -1070,7 +1075,7 @@ INT_PTR CIcqProto::GetXStatusEx(WPARAM wParam, LPARAM lParam)
 		}
 		if (pData->lParam)
 		{
-			if (!getSettingString(hContact, DBSETTING_XSTATUS_MSG, &dbv))
+			if (!getSettingString(hContact, CheckContactCapabilities(hContact, CAPF_STATUS_MOOD) ? DBSETTING_STATUS_NOTE : DBSETTING_XSTATUS_MSG, &dbv))
 			{
 				*pData->lParam = strlennull(dbv.pszVal);
 				ICQFreeVariant(&dbv);
