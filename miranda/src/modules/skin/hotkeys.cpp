@@ -212,7 +212,7 @@ static INT_PTR svcHotkeyRegister(WPARAM wParam, LPARAM lParam)
 		if (item->Enabled) {
 			BYTE mod, vk;
 			sttWordToModAndVk(item->Hotkey, &mod, &vk);
-			RegisterHotKey(g_hwndHotkeyHost, item->idHotkey, mod, vk);
+			if (vk) RegisterHotKey(g_hwndHotkeyHost, item->idHotkey, mod, vk);
 	}	}
 
 	hotkeys.insert( item );
@@ -323,8 +323,7 @@ static void sttRegisterHotkeys()
 		if (item->Enabled) {
 			BYTE mod, vk;
 			sttWordToModAndVk(item->Hotkey, &mod, &vk);
-			if (!vk) continue;
-			RegisterHotKey(g_hwndHotkeyHost, item->idHotkey, mod, vk);
+			if (vk) RegisterHotKey(g_hwndHotkeyHost, item->idHotkey, mod, vk);
 }	}	}
 
 static void sttUnregisterHotkeys()
