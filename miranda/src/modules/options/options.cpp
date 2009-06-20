@@ -291,17 +291,23 @@ static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARA
 
 	BOOL bDrawnByTheme = FALSE;
 	
-	if ( openThemeData )  {
+    int oldMode = SetBkMode( hdc, TRANSPARENT );
+
+    if ( openThemeData )  {
 		HTHEME hTheme = openThemeData( hWnd, L"EDIT");
 		if ( hTheme ) {
-			int style = IsWinVerVistaPlus() ? EP_BACKGROUND : EP_EDITTEXT;
-			if ( isThemeBackgroundPartiallyTransparent( hTheme, style, ETS_NORMAL) )
+			if ( isThemeBackgroundPartiallyTransparent( hTheme, EP_EDITTEXT, ETS_NORMAL ))
 				drawThemeParentBackground( hWnd, hdc, &rc );
 
             RECT rc2;
-            GetWindowRect(hWnd, &rc2);
-			drawThemeBackground( hTheme, hdc, style, ETS_NORMAL, &rc2, &rc );
-			HFONT hFont = (HFONT) SendMessage(hWnd, WM_GETFONT, 0, 0);
+            getThemeBackgroundContentRect( hTheme, hdc, EP_EDITTEXT, ETS_NORMAL, &rc, &rc2 );
+            rc2.top    = 2 * rc.top    - rc2.top;
+            rc2.left   = 2 * rc.left   - rc2.left;
+            rc2.bottom = 2 * rc.bottom - rc2.bottom;
+            rc2.right   = 2 * rc.right - rc2.right;
+
+            drawThemeBackground( hTheme, hdc, EP_EDITTEXT, ETS_NORMAL, &rc2, &rc );
+            HFONT hFont = (HFONT) SendMessage(hWnd, WM_GETFONT, 0, 0);
 			HFONT oldFont = (HFONT) SelectObject( hdc, hFont );
 
             wchar_t *bufW = mir_t2u(buf);
@@ -309,10 +315,12 @@ static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARA
 			mir_free(bufW);
 
             SelectObject( hdc, oldFont );
-			closeThemeData( hTheme );
+            closeThemeData( hTheme );
 			bDrawnByTheme = TRUE;
 		}
 	}
+
+    SetBkMode( hdc, oldMode );
 
 	if ( !bDrawnByTheme ) {
 		HFONT hFont = (HFONT) SendMessage(hWnd, WM_GETFONT, 0, 0);
