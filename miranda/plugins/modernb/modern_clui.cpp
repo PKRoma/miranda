@@ -315,11 +315,14 @@ HRESULT CLUI::LoadDllsRuntime()
 		g_CluiData.fLayered=(g_CluiData.fLayered*ModernGetSettingByte(NULL, "ModernData", "EnableLayering", g_CluiData.fLayered))&&!ModernGetSettingByte(NULL,"ModernData","DisableEngine", SETTING_DISABLESKIN_DEFAULT);
 	}
 
-	m_hDwmapiDll = LoadLibrary(TEXT("dwmapi.dll"));
-	if (m_hDwmapiDll)
-	{
-		g_proc_DWMEnableBlurBehindWindow = (HRESULT (WINAPI *)(HWND, DWM_BLURBEHIND *))GetProcAddress(m_hDwmapiDll, "DwmEnableBlurBehindWindow");
-	}
+    if (IsWinVerVistaPlus())
+    {
+	    m_hDwmapiDll = LoadLibrary(TEXT("dwmapi.dll"));
+	    if (m_hDwmapiDll)
+	    {
+		    g_proc_DWMEnableBlurBehindWindow = (HRESULT (WINAPI *)(HWND, DWM_BLURBEHIND *))GetProcAddress(m_hDwmapiDll, "DwmEnableBlurBehindWindow");
+	    }
+    }
 	g_CluiData.fAeroGlass = FALSE;
 
 	return S_OK;
