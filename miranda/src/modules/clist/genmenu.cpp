@@ -609,13 +609,10 @@ PMO_IntMenuItem MO_AddNewMenuItem( HANDLE menuobjecthandle, PMO_MenuItem pmi )
 		if ( pmi->flags & CMIF_UNICODE ) 
 			p->mi.ptszName = mir_tstrdup(( pmi->flags & CMIF_KEEPUNTRANSLATED ) ? pmi->ptszName : TranslateTS( pmi->ptszName ));
 		else {
-			if ( pmi->flags & CMIF_KEEPUNTRANSLATED ) {
-				int len = lstrlenA( pmi->pszName );
-				p->mi.ptszName = ( TCHAR* )mir_alloc( sizeof( TCHAR )*( len+1 ));
-				MultiByteToWideChar( CP_ACP, 0, pmi->pszName, -1, p->mi.ptszName, len+1 );
-				p->mi.ptszName[ len ] = 0;
-			}
-			else p->mi.ptszName = LangPackPcharToTchar( pmi->pszName );
+			if ( pmi->flags & CMIF_KEEPUNTRANSLATED )
+                p->mi.ptszName = mir_a2u_cp(pmi->pszName, CP_ACP);
+			else 
+                p->mi.ptszName = LangPackPcharToTchar( pmi->pszName );
 		}
 	#else
 		p->mi.ptszName = mir_strdup(( pmi->flags & CMIF_KEEPUNTRANSLATED ) ? pmi->ptszName : Translate( pmi->ptszName ));
@@ -692,11 +689,11 @@ PMO_IntMenuItem MO_AddOldNewMenuItem( HANDLE menuobjecthandle, PMO_MenuItem pmi 
 		TCHAR* tszRoot;
 #if defined( _UNICODE )
 		if ( pmi->flags & CMIF_UNICODE )
-			tszRoot = mir_tstrdup(( TCHAR* )pmi->root );
+			tszRoot = mir_tstrdup(TranslateTS(( TCHAR* )pmi->root ));
 		else
 			tszRoot = LangPackPcharToTchar(( char* )pmi->root );
 #else
-		tszRoot = mir_tstrdup(( TCHAR* )pmi->root );
+		tszRoot = mir_tstrdup(TranslateTS(( TCHAR* )pmi->root ));
 #endif
 
 		PMO_IntMenuItem oldroot = MO_RecursiveWalkMenu( g_menus[objidx]->m_items.first, FindRoot, tszRoot );
