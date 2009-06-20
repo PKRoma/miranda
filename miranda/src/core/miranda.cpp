@@ -52,6 +52,7 @@ pfnDrawThemeParentBackground drawThemeParentBackground;
 pfnDrawThemeBackground drawThemeBackground;
 pfnDrawThemeText drawThemeText;
 pfnDrawThemeTextEx drawThemeTextEx;
+pfnGetThemeBackgroundContentRect getThemeBackgroundContentRect;
 pfnGetThemeFont getThemeFont;
 pfnCloseThemeData closeThemeData;
 pfnEnableThemeDialogTexture enableThemeDialogTexture;
@@ -570,7 +571,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 		    drawThemeBackground = (pfnDrawThemeBackground)GetProcAddress(hThemeAPI,"DrawThemeBackground");
 		    drawThemeText = (pfnDrawThemeText)GetProcAddress(hThemeAPI,"DrawThemeText");
 		    drawThemeTextEx = (pfnDrawThemeTextEx)GetProcAddress(hThemeAPI,"DrawThemeTextEx");
-		    getThemeFont = (pfnGetThemeFont)GetProcAddress(hThemeAPI,"GetThemeFont");
+            getThemeBackgroundContentRect = (pfnGetThemeBackgroundContentRect)GetProcAddress(hThemeAPI,"GetThemeBackgroundContentRect");
+            getThemeFont = (pfnGetThemeFont)GetProcAddress(hThemeAPI,"GetThemeFont");
 		    closeThemeData  = (pfnCloseThemeData)GetProcAddress(hThemeAPI,"CloseThemeData");
             enableThemeDialogTexture = (pfnEnableThemeDialogTexture)GetProcAddress(hThemeAPI,"EnableThemeDialogTexture");
             setWindowTheme = (pfnSetWindowTheme)GetProcAddress(hThemeAPI,"SetWindowTheme");
