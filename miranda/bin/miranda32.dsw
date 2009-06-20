@@ -3,7 +3,7 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "FreeImage"=..\plugins\freeimage\FreeImage.dsp - Package Owner=<4>
+Project: "FreeImage"="..\plugins\freeimage\FreeImage.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -30,7 +30,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "ICONS"=..\protocols\IcqOscarJ\icons_pack\ICONS.dsp - Package Owner=<4>
+Project: "ICONS"="..\protocols\IcqOscarJ\icons_pack\ICONS.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -42,7 +42,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "IRC"=..\protocols\IRCG\IRC.dsp - Package Owner=<4>
+Project: "ICONS_MODERN"="..\plugins\modernb\icons_pack\ICONS_MODERN.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -54,7 +54,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "JABBER_XSTATUS"=..\protocols\JabberG\jabber_xstatus\JABBER_XSTATUS.dsp - Package Owner=<4>
+Project: "ICONS_NOVA"="..\plugins\tabsrmm\icons\ICONS_NOVA\ICONS_NOVA.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -66,7 +66,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "Yahoo"=..\protocols\Yahoo\Yahoo.dsp - Package Owner=<4>
+Project: "IRC"="..\protocols\IRCG\IRC.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -78,7 +78,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "aim"=..\protocols\AimOscar\aimoscar.dsp - Package Owner=<4>
+Project: "JABBER_XSTATUS"="..\protocols\JabberG\jabber_xstatus\JABBER_XSTATUS.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -90,7 +90,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "avs"=..\plugins\avs\avs.dsp - Package Owner=<4>
+Project: "Yahoo"="..\protocols\Yahoo\Yahoo.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -102,7 +102,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "chat"=..\plugins\chat\chat.dsp - Package Owner=<4>
+Project: "aim"="..\protocols\AimOscar\aimoscar.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -114,7 +114,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "clist"=..\plugins\clist\clist.dsp - Package Owner=<4>
+Project: "avs"="..\plugins\avs\avs.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -126,7 +126,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "clist_nicer"=..\plugins\clist_nicer\clist.dsp - Package Owner=<4>
+Project: "chat"="..\plugins\chat\chat.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -138,7 +138,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "db3x"=..\plugins\db3x\db3x.dsp - Package Owner=<4>
+Project: "clist"="..\plugins\clist\clist.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -150,7 +150,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "db3x_mmap"=..\plugins\db3x_mmap\db3x_mmap.dsp - Package Owner=<4>
+Project: "clist_nicer"="..\plugins\clist_nicer\clist.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -162,7 +162,31 @@ Package=<4>
 
 ###############################################################################
 
-Project: "dbrw"=..\plugins\dbrw\dbrw.dsp - Package Owner=<4>
+Project: "db3x"="..\plugins\db3x\db3x.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "db3x_mmap"="..\plugins\db3x_mmap\db3x_mmap.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "dbrw"="..\plugins\dbrw\dbrw.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -186,7 +210,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "icqoscar8"=..\protocols\IcqOscarJ\icqoscar8.dsp - Package Owner=<4>
+Project: "icqoscar8"="..\protocols\IcqOscarJ\icqoscar8.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -198,7 +222,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "import"=..\plugins\import\import.dsp - Package Owner=<4>
+Project: "import"="..\plugins\import\import.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -210,22 +234,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "jabberg"=..\protocols\JabberG\jabber.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name zlib
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "miranda32"=..\src\miranda32.dsp - Package Owner=<4>
+Project: "jabberg"="..\protocols\JabberG\jabber.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -240,7 +249,22 @@ Package=<4>
 
 ###############################################################################
 
-Project: "modernb"=..\plugins\modernb\modernb.dsp - Package Owner=<4>
+Project: "miranda32"="..\src\miranda32.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name zlib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "modernb"="..\plugins\modernb\modernb.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -252,7 +276,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "modernopt"=..\plugins\modernopt\modernopt.dsp - Package Owner=<4>
+Project: "modernopt"="..\plugins\modernopt\modernopt.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -264,7 +288,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "msn"=..\protocols\MSN\msn.dsp - Package Owner=<4>
+Project: "msn"="..\protocols\MSN\msn.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -276,7 +300,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "mwclist"=..\plugins\mwclist\mwclist.dsp - Package Owner=<4>
+Project: "mwclist"="..\plugins\mwclist\mwclist.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -288,7 +312,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "scriver"=..\plugins\Scriver\scriver.dsp - Package Owner=<4>
+Project: "scriver"="..\plugins\Scriver\scriver.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -300,7 +324,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "srmm"=..\plugins\srmm\srmm.dsp - Package Owner=<4>
+Project: "srmm"="..\plugins\srmm\srmm.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -312,7 +336,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "tabSRMM"=..\plugins\tabsrmm\tabsrmm.dsp - Package Owner=<4>
+Project: "tabSRMM"="..\plugins\tabsrmm\tabsrmm.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -324,7 +348,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "zlib"=..\plugins\zlib\zlib.dsp - Package Owner=<4>
+Project: "zlib"="..\plugins\zlib\zlib.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
