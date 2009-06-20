@@ -429,15 +429,13 @@ char* MimeHeaders::decodeMailBody(char* msgBody)
 	const char *val = find("Content-Transfer-Encoding");
 	if (val && _stricmp(val, "base64") == 0)
 	{
-		char* ch = msgBody;
-		size_t len = strlen(msgBody) + 1;
-		while (*ch != 0)
+		char *src = msgBody, *dst = msgBody;
+		while (*src != 0)
 		{
-			if ( *ch == '\n' || *ch == '\r' )
-				memmove( ch, ch+1, len-- - ( ch - msgBody ));
-			else
-				++ch;
+            if (isspace(*src)) ++src;
+            else *(dst++) = *(src++);
 		}
+        *dst = 0;
 		res = MSN_Base64Decode(msgBody);
 	}
 	else
