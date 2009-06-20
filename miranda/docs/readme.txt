@@ -21,9 +21,25 @@ Contents
 1. Changes in this version
 --------------------------
 * New in 0.8.1
+Enhancements:
+ - Improve account renaming inside of the account manager
+ 
 Bugfixes:
+ - Improved upgrade procedure when using older contact list and messaging plugins
+ - Network list in options wasn’t sorted
+ - Fixed missing icon/menu issues
+ - Fixed crash in options on XP pre SP2
+ - Fixed errors loading dlls on wrong OS
+ - Fixed drawing background in options search
+ - Fixed account removal handling
+ - Fixed hotkey issue with some MS keyboards
+ - Fixed possible crash with event data
  - ICQ: Fixed AIM away message handling (caused online status to be seen as away in some clients)
+ - MSN: Fixed renaming nickname from options
+ - Yahoo: Show download progress properly
+ - Yahoo: Cancel out in the middle of file receive.
 
+ 
 * New in 0.8.0
 Enhancements:
  - Support for multiple accounts (without dll renaming) for all protocols
