@@ -20,6 +20,10 @@ Contents
 
 1. Changes in this version
 --------------------------
+* New in 0.8.1
+Bugfixes:
+ - ICQ: Fixed AIM away message handling (caused online status to be seen as away in some clients)
+
 * New in 0.8.0
 Enhancements:
  - Support for multiple accounts (without dll renaming) for all protocols
