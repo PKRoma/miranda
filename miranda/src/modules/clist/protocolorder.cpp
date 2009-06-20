@@ -34,57 +34,65 @@ int isProtoSuitable( PROTO_INTERFACE* ppi )
 	return ppi->GetCaps( PFLAGNUM_2, 0 ) & ~ppi->GetCaps( PFLAGNUM_5, 0 );
 }
 
-int FindNextOrder(void)
+bool CheckProtocolOrder(void)
 {
-	for ( int i=0; i < accounts.getCount(); i++ ) {
-        int res = -1;
-	    for ( int j=0; j < accounts.getCount(); j++ )
-            if (accounts[j]->iOrder == i) { res = i; break; }
+    bool changed = false;
+    int i, id = 0;
 
-        if (res < 0) return i; 
-    }
-    return accounts.getCount();
-}
-
-int CheckProtocolOrder(void)
-{
-	BOOL protochanged = FALSE;
-	int ver = DBGetContactSettingDword( 0, "Protocols", "PrVer", -1 ), i;
-	if ( ver != 4 )
-		protochanged = TRUE;
-
-	if ( accounts.getCount() == 0 )
-		protochanged = TRUE;
-	else if ( accounts.getCount() != (int)DBGetContactSettingDword( 0, "Protocols", "ProtoCount", -1 ))
-		protochanged = TRUE;
-
-	for ( i=0; i < accounts.getCount(); i++ ) {
-		PROTOACCOUNT* pa = accounts[i];
-		if ( !isProtoSuitable( pa->ppro )) {
-			if ( pa->bIsVisible ) {
-				pa->bIsVisible = FALSE;
-				protochanged = TRUE;
-			}
-			if ( pa->iOrder < 1000000 ) {
-				pa->iOrder = 1000000+i;
-				protochanged = TRUE;
-	        }	
+	for (;;) 
+    {
+        // Find account with this id
+	    for (i = 0; i < accounts.getCount(); i++)
+            if (accounts[i]->iOrder == id) break; 
+        
+        // Account with id not found
+        if (i == accounts.getCount())
+        {
+            // Check if this is skipped id, if it is decrement all other ids
+	        for (i = 0; i < accounts.getCount(); i++)
+            {
+                if (accounts[i]->iOrder < 1000000 && accounts[i]->iOrder > id)
+                    --accounts[i]->iOrder;
+            }
+            if (i == accounts.getCount()) break;
+            else changed = true;
         }
-        else {
-			if ( pa->iOrder >= 1000000 ) {
-				pa->iOrder = FindNextOrder();
-				pa->bIsVisible = TRUE;
-				protochanged = TRUE;
-	        }	
-        }
+        else 
+            ++id;
     }
 
-	if ( !protochanged )
-		return 0;
+    if (id < accounts.getCount())
+    {
+        // Remove huge ids
+        for (i = 0; i < accounts.getCount(); i++)
+        {
+            if (accounts[i]->iOrder >= 1000000) 
+                accounts[i]->iOrder = id++;
+        }
+        changed = true;
+    }
 
-	WriteDbAccounts();
-	return 1;
+    if (id < accounts.getCount())
+    {
+        // Remove duplicate ids
+        for (i = 0; i < accounts.getCount(); i++)
+        {
+            bool found = false;
+            for (int j = 0; j < accounts.getCount(); j++)
+            {
+                if (accounts[j]->iOrder == i) 
+                {
+                    if (found) accounts[j]->iOrder = id++;
+                    else found = true;
+                }
+            }
+        }
+        changed = true;
+    }
+
+    return changed;
 }
+
 
 int FillTree(HWND hwnd)
 {
@@ -111,17 +119,11 @@ int FillTree(HWND hwnd)
 		PD = ( ProtocolData* )mir_alloc( sizeof( ProtocolData ));
 		PD->RealName = pa->szModuleName;
 		PD->protopos = pa->iOrder;
-		if ( IsAccountEnabled( pa ) && isProtoSuitable( pa->ppro )) {
-			PD->enabled = true;
-			PD->show = pa->bIsVisible;
-		}
-		else {
-			PD->enabled = false;
-			PD->show = 100;
-		}
+        PD->enabled = IsAccountEnabled( pa ) && isProtoSuitable( pa->ppro );
+        PD->show = PD->enabled ? pa->bIsVisible : 100;
 				
 		tvis.item.lParam = ( LPARAM )PD;
-		tvis.item.pszText = TranslateTS( pa->tszAccountName );
+		tvis.item.pszText = pa->tszAccountName;
 		tvis.item.iImage = tvis.item.iSelectedImage = PD->show;
 		TreeView_InsertItem( hwnd, &tvis );
 	}
@@ -131,47 +133,41 @@ int FillTree(HWND hwnd)
 
 INT_PTR CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct ProtocolOrderData *dat = (struct ProtocolOrderData*)GetWindowLongPtr(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),GWLP_USERDATA);
+    HWND hwndProtoOrder = GetDlgItem(hwndDlg, IDC_PROTOCOLORDER);
+	struct ProtocolOrderData *dat = (ProtocolOrderData*)GetWindowLongPtr(hwndProtoOrder, GWLP_USERDATA);
 
-	switch (msg) {
+	switch (msg) 
+    {
 	case WM_DESTROY:
 		mir_free( dat );
 		break;
 
 	case WM_INITDIALOG: 
 		TranslateDialogDefault(hwndDlg);
-		dat=(struct ProtocolOrderData*)mir_alloc(sizeof(struct ProtocolOrderData));
-		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),GWLP_USERDATA,(LONG_PTR)dat);
+		dat = (ProtocolOrderData*)mir_calloc(sizeof(ProtocolOrderData));
+		SetWindowLongPtr(hwndProtoOrder, GWLP_USERDATA, (LONG_PTR)dat);
 		dat->dragging=0;
 
-		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),GWL_STYLE,GetWindowLongPtr(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),GWL_STYLE)|TVS_NOHSCROLL);
+		SetWindowLong(hwndProtoOrder, GWL_STYLE, GetWindowLong(hwndProtoOrder, GWL_STYLE) | TVS_NOHSCROLL);
 		{
 			HIMAGELIST himlCheckBoxes = ImageList_Create( GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), ILC_COLOR32|ILC_MASK, 2, 2 );
 			ImageList_AddIcon_IconLibLoaded(himlCheckBoxes, SKINICON_OTHER_NOTICK);
 			ImageList_AddIcon_IconLibLoaded(himlCheckBoxes, SKINICON_OTHER_TICK);
-			TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),himlCheckBoxes,TVSIL_NORMAL);
+			TreeView_SetImageList(hwndProtoOrder, himlCheckBoxes, TVSIL_NORMAL);
 		}
 
-		CheckProtocolOrder();
-		FillTree( GetDlgItem( hwndDlg, IDC_PROTOCOLORDER ));
+		FillTree(hwndProtoOrder);
 		return TRUE;
 
 	case WM_COMMAND:
-		if ( HIWORD( wParam ) == BN_CLICKED ) {
-			if (lParam==(LPARAM)GetDlgItem(hwndDlg,IDC_RESETPROTOCOLDATA))	{
-				DBWriteContactSettingDword( 0, "Protocols", "PrVer", -1 );
-				CheckProtocolOrder();
-				{
-					int i, order = 0;
-					for ( i=0; i < accounts.getCount(); i++ ) {
-						PROTOACCOUNT* pa = accounts[i];
-						pa->iOrder = ( pa->iOrder > 999999 ) ? 1000000+i : order++;
-				}	}
+		if (LOWORD(wParam) == IDC_RESETPROTOCOLDATA && HIWORD(wParam) == BN_CLICKED) 
+        {
+			for ( int i = 0; i < accounts.getCount(); i++ )
+				accounts[i]->iOrder = i;
 
-				FillTree(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER));
-				SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
-				return 0;
-		}	}
+			FillTree(hwndProtoOrder);
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
+        }
 		break;
 
 	case WM_NOTIFY:
@@ -181,24 +177,24 @@ INT_PTR CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				int count = 0;
 
 				TVITEM tvi;
-				tvi.hItem = TreeView_GetRoot( GetDlgItem( hwndDlg, IDC_PROTOCOLORDER ));
+				tvi.hItem = TreeView_GetRoot(hwndProtoOrder);
 				tvi.cchTextMax = 32;
 				tvi.mask = TVIF_PARAM | TVIF_HANDLE;
 
 				while ( tvi.hItem != NULL ) {
-					TreeView_GetItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&tvi);
+					TreeView_GetItem(hwndProtoOrder, &tvi);
 
 					if (tvi.lParam!=0) {
 						ProtocolData* ppd = ( ProtocolData* )tvi.lParam;
 						PROTOACCOUNT* pa = Proto_GetAccount( ppd->RealName );
 						if ( pa != NULL ) {
-							pa->iOrder = ( isProtoSuitable( pa->ppro )) ? count++ : 1000000+count;
+							pa->iOrder = count++;
 							if ( ppd->enabled )
 								pa->bIsVisible = ppd->show;
 						}
 					}
 
-					tvi.hItem = TreeView_GetNextSibling( GetDlgItem( hwndDlg, IDC_PROTOCOLORDER ), tvi.hItem );
+					tvi.hItem = TreeView_GetNextSibling(hwndProtoOrder, tvi.hItem );
 				}
 				
 				WriteDbAccounts();
@@ -223,7 +219,7 @@ INT_PTR CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				SetCapture(hwndDlg);
 				dat->dragging=1;
 				dat->hDragItem=((LPNMTREEVIEW)lParam)->itemNew.hItem;
-				TreeView_SelectItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),dat->hDragItem);
+				TreeView_SelectItem(hwndProtoOrder, dat->hDragItem);
 				break;
 
 			case NM_CLICK:
@@ -255,22 +251,23 @@ INT_PTR CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			TVHITTESTINFO hti;
 			hti.pt.x=(short)LOWORD(lParam);
 			hti.pt.y=(short)HIWORD(lParam);
-			ClientToScreen(hwndDlg,&hti.pt);
-			ScreenToClient(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&hti.pt);
-			TreeView_HitTest(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&hti);
-			if ( hti.flags & (TVHT_ONITEM|TVHT_ONITEMRIGHT )) {
+			ClientToScreen(hwndDlg, &hti.pt);
+			ScreenToClient(hwndProtoOrder, &hti.pt);
+			TreeView_HitTest(hwndProtoOrder, &hti);
+			if ( hti.flags & (TVHT_ONITEM|TVHT_ONITEMRIGHT )) 
+            {
 				HTREEITEM it = hti.hItem;
-				hti.pt.y -= TreeView_GetItemHeight(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER))/2;
-				TreeView_HitTest(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&hti);
+				hti.pt.y -= TreeView_GetItemHeight(hwndProtoOrder) / 2;
+				TreeView_HitTest(hwndProtoOrder, &hti);
 				if ( !( hti.flags & TVHT_ABOVE ))
-					TreeView_SetInsertMark(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),hti.hItem,1);
+					TreeView_SetInsertMark(hwndProtoOrder, hti.hItem, 1);
 				else 
-					TreeView_SetInsertMark(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),it,0);
+					TreeView_SetInsertMark(hwndProtoOrder, it, 0);
 			}
 			else {
-				if(hti.flags&TVHT_ABOVE) SendDlgItemMessage(hwndDlg,IDC_PROTOCOLORDER,WM_VSCROLL,MAKEWPARAM(SB_LINEUP,0),0);
-				if(hti.flags&TVHT_BELOW) SendDlgItemMessage(hwndDlg,IDC_PROTOCOLORDER,WM_VSCROLL,MAKEWPARAM(SB_LINEDOWN,0),0);
-				TreeView_SetInsertMark(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),NULL,0);
+				if (hti.flags&TVHT_ABOVE) SendMessage(hwndProtoOrder, WM_VSCROLL, MAKEWPARAM(SB_LINEUP, 0), 0);
+				if (hti.flags&TVHT_BELOW) SendMessage(hwndProtoOrder, WM_VSCROLL, MAKEWPARAM(SB_LINEDOWN, 0), 0);
+				TreeView_SetInsertMark(hwndProtoOrder, NULL, 0);
 		}	}
 		break;
 
@@ -279,22 +276,23 @@ INT_PTR CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			TVHITTESTINFO hti;
 			TVITEM tvi;
 
-			TreeView_SetInsertMark(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),NULL,0);
-			dat->dragging=0;
+			TreeView_SetInsertMark(hwndProtoOrder, NULL, 0);
+			dat->dragging = 0;
 			ReleaseCapture();
 		
-			hti.pt.x=(short)LOWORD(lParam);
-			hti.pt.y=(short)HIWORD(lParam);
-			ClientToScreen(hwndDlg,&hti.pt);
-			ScreenToClient(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&hti.pt);
-			hti.pt.y-=TreeView_GetItemHeight(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER))/2;
-			TreeView_HitTest(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&hti);
-			if(dat->hDragItem==hti.hItem) break;
-			if (hti.flags&TVHT_ABOVE) hti.hItem=TVI_FIRST;
-			tvi.mask=TVIF_HANDLE|TVIF_PARAM;
-			tvi.hItem=dat->hDragItem;
-			TreeView_GetItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&tvi);
-			if ( hti.flags & (TVHT_ONITEM|TVHT_ONITEMRIGHT )||(hti.hItem==TVI_FIRST)) {
+			hti.pt.x = (short)LOWORD(lParam);
+			hti.pt.y = (short)HIWORD(lParam);
+			ClientToScreen(hwndDlg, &hti.pt);
+			ScreenToClient(hwndProtoOrder, &hti.pt);
+			hti.pt.y -= TreeView_GetItemHeight(hwndProtoOrder) / 2;
+			TreeView_HitTest(hwndProtoOrder, &hti);
+			if (dat->hDragItem == hti.hItem) break;
+			if (hti.flags & TVHT_ABOVE) hti.hItem = TVI_FIRST;
+			tvi.mask = TVIF_HANDLE|TVIF_PARAM;
+			tvi.hItem = dat->hDragItem;
+			TreeView_GetItem(hwndProtoOrder, &tvi);
+			if ( hti.flags & (TVHT_ONITEM | TVHT_ONITEMRIGHT) || (hti.hItem == TVI_FIRST)) 
+            {
 				TVINSERTSTRUCT tvis;
 				TCHAR name[128];
 				ProtocolData * lpOldData;
@@ -304,20 +302,20 @@ INT_PTR CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				tvis.item.cchTextMax = SIZEOF(name);
 				tvis.item.hItem = dat->hDragItem;
 				tvis.item.iImage = tvis.item.iSelectedImage = ((ProtocolData *)tvi.lParam)->show;
-				TreeView_GetItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&tvis.item);
+				TreeView_GetItem(hwndProtoOrder, &tvis.item);
 
 				//the pointed lParam will be freed inside TVN_DELETEITEM 
 				//so lets substitute it with 0
 				lpOldData=(ProtocolData *)tvis.item.lParam; 
 				tvis.item.lParam=0; 
-				TreeView_SetItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&tvis.item);               
+				TreeView_SetItem(hwndProtoOrder, &tvis.item);               
 				tvis.item.lParam=(LPARAM)lpOldData; 
 
 				//now current item contain lParam=0 we can delete it. the memory will be kept.               
-				TreeView_DeleteItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),dat->hDragItem);
+				TreeView_DeleteItem(hwndProtoOrder, dat->hDragItem);
 				tvis.hParent = NULL;
 				tvis.hInsertAfter = hti.hItem;
-				TreeView_SelectItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),TreeView_InsertItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&tvis));
+				TreeView_SelectItem(hwndProtoOrder, TreeView_InsertItem(hwndProtoOrder, &tvis));
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
 		}	}
 		break; 
