@@ -246,7 +246,7 @@ int fnTrayIconInit(HWND hwnd)
 	}
 	else cli.trayIconCount = 1;
 
-	cli.trayIcon = (struct trayIconInfo_t *) mir_calloc(sizeof(struct trayIconInfo_t) * accounts.getCount());
+	cli.trayIcon = (struct trayIconInfo_t *) mir_calloc(sizeof(struct trayIconInfo_t) * max(accounts.getCount(), 1));
 	if ( DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI
 	     && (averageMode <= 0 || DBGetContactSettingByte(NULL, "CList", "AlwaysMulti", SETTING_ALWAYSMULTI_DEFAULT ))) {
 		int i;
