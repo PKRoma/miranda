@@ -229,7 +229,6 @@ static int ContactListModulesLoaded(WPARAM, LPARAM)
 		return 1;
 	}
 
-	CheckProtocolOrder();
 	RebuildMenuOrder();
 	for (int i = 0; i < accounts.getCount(); i++)
 		AddProtoIconIndex( accounts[i] );

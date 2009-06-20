@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 
+bool CheckProtocolOrder(void);
+
 static BOOL bModuleInitialized = FALSE;
 
 static int CompareAccounts( const PROTOACCOUNT* p1, const PROTOACCOUNT* p2 )
@@ -111,6 +113,8 @@ void LoadDbAccounts(void)
 
 		accounts.insert( pa );
     }
+
+    if (CheckProtocolOrder()) WriteDbAccounts();
 
     int anum = accounts.getCount();
     CallService(MS_DB_MODULES_ENUM, 0, (LPARAM)EnumDbModules);

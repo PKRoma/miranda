@@ -256,6 +256,3 @@ int  fnHotKeysRegister ( HWND hwnd );
 void fnHotKeysUnregister ( HWND hwnd );
 int  fnHotKeysProcess ( HWND hwnd, WPARAM wParam, LPARAM lParam );
 int  fnHotkeysProcessMessage ( WPARAM wParam, LPARAM lParam );
-
-/* protocolorder.c */
-int CheckProtocolOrder( void );

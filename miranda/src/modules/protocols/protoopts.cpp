@@ -30,8 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define WM_MY_RENAME	(WM_USER+0x1001)
 
 INT_PTR  Proto_EnumProtocols( WPARAM, LPARAM );
-int isProtoSuitable( PROTO_INTERFACE* ppi );
-int FindNextOrder(void);
+bool CheckProtocolOrder(void);
 
 #define errMsg \
 "WARNING! The account is going to be deleted. It means that all its \
@@ -152,9 +151,9 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 					pa = (PROTOACCOUNT*)mir_calloc( sizeof( PROTOACCOUNT ));
 					pa->cbSize = sizeof( PROTOACCOUNT );
 					pa->bIsEnabled = TRUE;
-                    pa->bIsVisible = isProtoSuitable(pa->ppro);
+                    pa->bIsVisible = TRUE;
                     
-					pa->iOrder = FindNextOrder();
+					pa->iOrder = accounts.getCount();
 					pa->type = PROTOTYPE_PROTOCOL;
 					break;
 				}
@@ -872,11 +871,7 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 
 						accounts.remove( pa );
 
-	                    for (int i=0; i < accounts.getCount(); i++ ) {
-		                    PROTOACCOUNT* paa = accounts[i];
-                            if (paa->iOrder < 1000000 && paa->iOrder > pa->iOrder)
-                                --paa->iOrder;
-                        }
+                        CheckProtocolOrder();
                 
                         WriteDbAccounts();
 						NotifyEventHooks( hAccListChanged, PRAC_REMOVED, ( LPARAM )pa );

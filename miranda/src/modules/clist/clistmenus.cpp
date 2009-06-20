@@ -153,18 +153,13 @@ void FreeMenuProtos( void )
 
 int GetAverageMode(int* pNetProtoCount = NULL)
 {
-	int netProtoCount,i;
-	int averageMode=0;
-	int flags, flags2;
+	int netProtoCount = 0;
+	int averageMode = 0;
 
-	for ( i=0,netProtoCount = 0; i < accounts.getCount(); i++ ) {
+	for ( int i=0; i < accounts.getCount(); i++ ) {
 		PROTOACCOUNT* pa = accounts[i];
 		if ( cli.pfnGetProtocolVisibility( pa->szModuleName ) == 0 )
 			continue;
-
-		flags = CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0 );
-		flags2 = CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_5, 0 );
-		if ((flags & ~flags2) == 0) continue;
 
 		netProtoCount++;
 
@@ -173,7 +168,8 @@ int GetAverageMode(int* pNetProtoCount = NULL)
 		else if ( averageMode != CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0 )) {
 			averageMode = -1;
 			break;
-	}	}
+	    }	
+    }
 
     if (pNetProtoCount) *pNetProtoCount = netProtoCount;
 	return averageMode;
@@ -807,8 +803,8 @@ int fnGetProtocolVisibility(const char* accName)
 {
 	if ( accName ) {
 		PROTOACCOUNT* pa = Proto_GetAccount( accName );
-		if ( pa )
-			return pa->bIsVisible && IsAccountEnabled( pa );
+		return pa && pa->bIsVisible && IsAccountEnabled( pa ) && 
+            pa->ppro && pa->ppro->GetCaps( PFLAGNUM_2, 0 ) & ~pa->ppro->GetCaps( PFLAGNUM_5, 0 );
 	}
 
 	return FALSE;
@@ -847,7 +843,7 @@ int fnGetAccountIndexByPos(int Pos)
 void RebuildMenuOrder( void )
 {
 	int i,j,s;
-	DWORD flags,flags2;
+	DWORD flags;
 	TMenuParam tmp;
 	int pos=0;
 	PROTOACCOUNT* pa;
@@ -889,12 +885,7 @@ void RebuildMenuOrder( void )
 		if ( !bHideStatusMenu && !cli.pfnGetProtocolVisibility( pa->szModuleName ))
 			continue;
 
-		flags = CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_2, 0 );
-		flags2 = CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_5, 0 );
-		flags &= ~flags2;
-		if (flags == 0)
-			continue;
-
+		flags = pa->ppro->GetCaps( PFLAGNUM_2, 0 ) & ~pa->ppro->GetCaps( PFLAGNUM_5, 0 );
 		int j;
 		HICON ic;
 
@@ -945,10 +936,7 @@ void RebuildMenuOrder( void )
 		((lpStatusMenuExecParam)tmi.ownerdata)->protoindex = ( int )menuHandle;
 		MO_ModifyMenuItem( menuHandle, &tmi );
 
-		if (cli.menuProtos)
-			cli.menuProtos=(MenuProto*)mir_realloc(cli.menuProtos,sizeof(MenuProto)*(cli.menuProtoCount+1));
-		else
-			cli.menuProtos=(MenuProto*)mir_alloc(sizeof(MenuProto));
+		cli.menuProtos=(MenuProto*)mir_realloc(cli.menuProtos, sizeof(MenuProto)*(cli.menuProtoCount+1));
 		memset(&(cli.menuProtos[cli.menuProtoCount]),0,sizeof(MenuProto));
 		cli.menuProtos[cli.menuProtoCount].pMenu = rootmenu;
 		cli.menuProtos[cli.menuProtoCount].szProto = mir_strdup(pa->szModuleName);
@@ -1009,9 +997,7 @@ void RebuildMenuOrder( void )
 			if ( !bHideStatusMenu && !cli.pfnGetProtocolVisibility( pa->szModuleName ))
 				continue;
 
-			flags = CallProtoService(pa->szModuleName,PS_GETCAPS,PFLAGNUM_2,0);
-			flags2 = CallProtoService(pa->szModuleName,PS_GETCAPS,PFLAGNUM_5,0);
-			flags &= ~flags2;
+			flags = pa->ppro->GetCaps(PFLAGNUM_2, 0) & ~pa->ppro->GetCaps(PFLAGNUM_5, 0);
 			if ( !( flags & statusModePf2List[j] ))
 				continue;
 
