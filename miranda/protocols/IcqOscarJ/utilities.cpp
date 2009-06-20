@@ -52,26 +52,44 @@ static DWORD *spammerList = NULL;
 static int spammerListCount = 0;
 
 
+void MoveDlgItem(HWND hwndDlg, int iItem, int left, int top, int width, int height)
+{
+  RECT rc;
+
+  rc.left = left;
+  rc.top = top;
+  rc.right = left + width;
+  rc.bottom = top + height;
+  MapDialogRect(hwndDlg, &rc);
+  MoveWindow(GetDlgItem(hwndDlg, iItem), rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
+}
+
+
 void EnableDlgItem(HWND hwndDlg, UINT control, int state)
 {
 	EnableWindow(GetDlgItem(hwndDlg, control), state);
 }
 
+
+void ShowDlgItem(HWND hwndDlg, UINT control, int state)
+{
+  ShowWindow(GetDlgItem(hwndDlg, control), state);
+}
+
+
 void icq_EnableMultipleControls(HWND hwndDlg, const UINT *controls, int cControls, int state)
 {
-	int i;
-
-	for (i = 0; i < cControls; i++)
+	for (int i = 0; i < cControls; i++)
 		EnableDlgItem(hwndDlg, controls[i], state);
 }
 
+
 void icq_ShowMultipleControls(HWND hwndDlg, const UINT *controls, int cControls, int state)
 {
-	int i;
-
-	for(i = 0; i < cControls; i++)
-		ShowWindow(GetDlgItem(hwndDlg, controls[i]), state);
+	for (int i = 0; i < cControls; i++)
+		ShowDlgItem(hwndDlg, controls[i], state);
 }
+
 
 // Maps the ICQ status flag (as seen in the status change SNACS) and returns
 // a Miranda style status.

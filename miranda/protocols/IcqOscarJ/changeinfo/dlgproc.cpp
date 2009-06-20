@@ -439,14 +439,14 @@ INT_PTR CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				SetDlgItemTextUtf(hwndDlg, IDC_UPLOADING, ICQTranslateUtfStatic(LPGEN("Upload in progress..."), str, MAX_PATH));
 			}
 			EnableDlgItem(hwndDlg, IDC_UPLOADING, TRUE);
-			ShowWindow(GetDlgItem(hwndDlg, IDC_UPLOADING), SW_SHOW);
+			ShowDlgItem(hwndDlg, IDC_UPLOADING, SW_SHOW);
 			dat->hAckHook = HookEventMessage(ME_PROTO_ACK, hwndDlg, DM_PROTOACK);
 
 			if (!dat->UploadSettings()) 
 			{
 				EnableDlgItem(hwndDlg, IDC_SAVE, TRUE);
 				EnableDlgItem(hwndDlg, IDC_LIST, TRUE);
-				ShowWindow(GetDlgItem(hwndDlg, IDC_UPLOADING), SW_HIDE);
+				ShowDlgItem(hwndDlg, IDC_UPLOADING, SW_HIDE);
 				UnhookEvent(dat->hAckHook); 
 				dat->hAckHook = NULL;
 			}

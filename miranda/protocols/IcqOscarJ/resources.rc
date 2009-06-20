@@ -441,9 +441,9 @@ CAPTION "Custom Status ""%s"" Details"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "Closing in %d",IDOK,62,79,65,14
-    LTEXT           "Title:",IDC_STATIC,5,0,179,8
+    LTEXT           "Title:",IDC_XTITLE_STATIC,5,0,179,8
     EDITTEXT        IDC_XTITLE,5,9,179,13,ES_AUTOHSCROLL
-    LTEXT           "Message:",IDC_STATIC,5,22,179,8
+    LTEXT           "Message:",IDC_XMSG_STATIC,5,22,179,8
     EDITTEXT        IDC_XMSG,5,31,179,43,ES_MULTILINE | ES_AUTOVSCROLL | 
                     ES_WANTRETURN | WS_VSCROLL
     CTEXT           "Retrieving custom status details...",IDC_RETRXSTATUS,5,

@@ -2104,9 +2104,15 @@ int __cdecl CIcqProto::SetStatus(int iNewStatus)
         {
           EnterCriticalSection(&m_modeMsgsMutex);
 
-          char **pszStatusNote = MirandaStatusToAwayMsg(nNewStatus);
+          char **pszStatusNote = NULL;
+          // only set away message for appropriate statuses
+          if (m_iStatus != ID_STATUS_ONLINE && m_iStatus != ID_STATUS_INVISIBLE && m_iStatus != ID_STATUS_FREECHAT)
+            pszStatusNote = MirandaStatusToAwayMsg(m_iStatus);
+
           if (pszStatusNote)
         		icq_sendSetAimAwayMsgServ(*pszStatusNote);
+          else // clear the away message
+            icq_sendSetAimAwayMsgServ(NULL);
           LeaveCriticalSection(&m_modeMsgsMutex);
         }
 
@@ -2304,7 +2310,8 @@ int __cdecl CIcqProto::SetAwayMsg(int status, const char* msg)
 			else
 				SetStatusNote(szNote, 1000, FALSE);
 
-			if (m_bAimEnabled && (m_iStatus == status))
+			if (m_bAimEnabled && (m_iStatus == status) && 
+         (m_iStatus != ID_STATUS_ONLINE && m_iStatus != ID_STATUS_INVISIBLE && m_iStatus != ID_STATUS_FREECHAT))
 				icq_sendSetAimAwayMsgServ(*ppszMsg);
 		}
 	}

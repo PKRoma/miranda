@@ -56,7 +56,9 @@ struct icq_contacts_cache
 
 /*---------* Functions *---------------*/
 
+void MoveDlgItem(HWND hwndDlg, int iItem, int left, int top, int width, int height);
 void EnableDlgItem(HWND hwndDlg, UINT control, int state);
+void ShowDlgItem(HWND hwndDlg, UINT control, int state);
 void icq_EnableMultipleControls(HWND hwndDlg, const UINT* controls, int cControls, int state);
 void icq_ShowMultipleControls(HWND hwndDlg, const UINT* controls, int cControls, int state);
 int IcqStatusToMiranda(WORD wStatus);
