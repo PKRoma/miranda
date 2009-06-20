@@ -324,7 +324,7 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						return TRUE;
 					break;
 				case IDC_HELP_GENERAL:
-					CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://miranda.or.at/GeneralSettings");
+					CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://wiki.miranda.or.at/GeneralSettings");
 					break;
 			}
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -841,7 +841,7 @@ static INT_PTR CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam
 						(IsDlgButtonChecked(hwndDlg, IDC_TYPEWIN) || IsDlgButtonChecked(hwndDlg, IDC_TYPENOWIN)));
 					break;
 				case IDC_MTN_HELP:
-					CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://miranda.or.at/TypingNotifications_TabSRMM");
+					CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://wiki.miranda.or.at/TypingNotifications_TabSRMM");
 					return 0;
 			}
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -1125,7 +1125,7 @@ static INT_PTR CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM 
 					EnableWindow(GetDlgItem(hwndDlg, IDC_TABLIMIT), IsDlgButtonChecked(hwndDlg, IDC_LIMITTABS));
 					break;
 				case IDC_HELP_CONTAINERS:
-					CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://miranda.or.at/Containers");
+					CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://wiki.miranda.or.at/Containers");
 					break;
 			}
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);

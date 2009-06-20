@@ -29,29 +29,29 @@ $Id$
 
 // defs
 extern HANDLE		hMessageWindowList;
-extern HICON      hIcons[30];
-extern BOOL       IEviewInstalled;
+extern HICON		hIcons[30];
+extern BOOL			IEviewInstalled;
 extern int			g_chat_integration_enabled;
 extern int			g_chat_fully_initialized;
 
 HANDLE				hSendEvent;
 HANDLE				hBuildMenuEvent;
-HANDLE            hJoinMenuItem, hLeaveMenuItem;
+HANDLE				hJoinMenuItem, hLeaveMenuItem;
 HANDLE				g_hHookPrebuildMenu;
 SESSION_INFO		g_TabSession;
 CRITICAL_SECTION	cs;
 int					g_sessionshutdown = 0;
 
 static HANDLE		hServiceRegister = NULL,
-						hServiceNewChat = NULL,
-						hServiceAddEvent = NULL,
-						hServiceGetAddEventPtr = NULL,
-						hServiceGetInfo = NULL,
-						hServiceGetCount = NULL,
-						hEventPrebuildMenu = NULL,
-						hEventDoubleclicked = NULL,
-                  hEventJoinChat = NULL,
-						hEventLeaveChat = NULL;
+					hServiceNewChat = NULL,
+					hServiceAddEvent = NULL,
+					hServiceGetAddEventPtr = NULL,
+					hServiceGetInfo = NULL,
+					hServiceGetCount = NULL,
+					hEventPrebuildMenu = NULL,
+					hEventDoubleclicked = NULL,
+					hEventJoinChat = NULL,
+					hEventLeaveChat = NULL;
 
 #define SIZEOF_STRUCT_GCREGISTER_V1 28
 #define SIZEOF_STRUCT_GCWINDOW_V1	32

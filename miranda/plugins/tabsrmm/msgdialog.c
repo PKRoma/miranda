@@ -1859,6 +1859,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			BOOL	isThemed = !DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0);
 			HWND	hwndItem;
 			int		dwLocalSmAdd = 0;
+			PROTOACCOUNT *acc = 0;
 
 			struct NewMessageWindowLParam *newData = (struct NewMessageWindowLParam *) lParam;
 
@@ -1895,6 +1896,16 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			BroadCastContainer(m_pContainer, DM_REFRESHTABINDEX, 0, 0);
 
 			dat->szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0);
+			mir_sntprintf(dat->szAccount, 128, dat->szProto);
+			/*
+			 * 0.8+ retrieve user defined and "readable" account name
+			 * fallback: protoclol name (0.7 users)
+			 */
+			if(ServiceExists(MS_PROTO_GETACCOUNT)) {
+				acc = (PROTOACCOUNT *)CallService(MS_PROTO_GETACCOUNT, (WPARAM)0, (LPARAM)dat->szProto);
+				if(acc && acc->tszAccountName)
+					mir_sntprintf(dat->szAccount, 128, acc->tszAccountName);
+			}
 			dat->bIsMeta = IsMetaContact(hwndDlg, dat) ? TRUE : FALSE;
 			if (dat->hContact && dat->szProto != NULL) {
 				dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
