@@ -1168,7 +1168,7 @@ char* MSN_Base64Decode( const char* str )
 	}
 
 	NETLIBBASE64 nlb = { p, (int)len, ( PBYTE )res, (int)reslen };
-	MSN_CallService( MS_NETLIB_BASE64DECODE, 0, LPARAM( &nlb ));
+	if (!MSN_CallService( MS_NETLIB_BASE64DECODE, 0, LPARAM( &nlb ))) nlb.cbDecoded = 0;
 	res[nlb.cbDecoded] = 0;
 
 	return res;
