@@ -82,8 +82,8 @@ int LoadHistoryModule(void)
 static void GetMessageDescription( DBEVENTINFO *dbei, TCHAR* buf, int cbBuf )
 {
 	TCHAR* msg = DbGetEventTextT( dbei, CP_ACP );
-	_tcsncpy( buf, msg, cbBuf );
-	buf[ cbBuf-1 ] = 0;
+    _tcsncpy( buf, msg ? msg : TranslateT("Invalid Message"), cbBuf );
+    buf[ cbBuf-1 ] = 0;
 	mir_free( msg );
 }
 
