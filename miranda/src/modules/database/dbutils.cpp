@@ -120,9 +120,14 @@ static INT_PTR DbEventGetText(WPARAM wParam, LPARAM lParam)
 	egt->datatype &= ~DBVTF_DENYUNICODE;
 	if ( egt->datatype == DBVT_WCHAR )
 	{
-		WCHAR* msg;
-		if ( dbei->flags & DBEF_UTF )
-			Utf8DecodeCP( NEWSTR_ALLOCA(( char* )dbei->pBlob), egt->codepage, &msg );
+		WCHAR* msg = NULL;
+        if ( dbei->flags & DBEF_UTF ) {
+            char* str = (char*)alloca(dbei->cbBlob + 1);
+            if (str == NULL) return NULL;
+            memcpy(str, dbei->pBlob, dbei->cbBlob);
+            str[dbei->cbBlob] = 0;
+			Utf8DecodeCP( str, egt->codepage, &msg );
+        }
 		else {
 			// ушлепкам типа скотта торжественно посвящается
 			size_t msglen = strlen(( char* )dbei->pBlob) + 1, msglenW = 0;
