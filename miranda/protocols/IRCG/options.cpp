@@ -80,7 +80,7 @@ void CIrcProto::ReadSettings( TDbSetting* sets, int count )
 						if ( p->defStr == NULL )
 							*ptr = 0;
 						else 
-							lstrcpyn(( TCHAR* )ptr, p->defStr, p->size );
+							lstrcpyn(( TCHAR* )ptr, p->defStr, (int)p->size );
 					}
 					else *( TCHAR** )ptr = mir_tstrdup( p->defStr );
 				}

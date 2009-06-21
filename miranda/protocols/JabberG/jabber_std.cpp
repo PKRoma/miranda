@@ -71,7 +71,7 @@ HANDLE CJabberProto::JForkThreadEx( JThreadFunc pFunc, void *param, UINT* thread
 /////////////////////////////////////////////////////////////////////////////////////////
 
 #if !defined( _DEBUG )
-int __stdcall JCallService( const char* szSvcName, WPARAM wParam, LPARAM lParam )
+INT_PTR __stdcall JCallService( const char* szSvcName, WPARAM wParam, LPARAM lParam )
 {
 	return CallService( szSvcName, wParam, lParam );
 }
