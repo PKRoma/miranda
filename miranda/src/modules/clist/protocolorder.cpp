@@ -49,13 +49,17 @@ bool CheckProtocolOrder(void)
         if (i == accounts.getCount())
         {
             // Check if this is skipped id, if it is decrement all other ids
+            bool found = false;
 	        for (i = 0; i < accounts.getCount(); i++)
             {
                 if (accounts[i]->iOrder < 1000000 && accounts[i]->iOrder > id)
+                {
                     --accounts[i]->iOrder;
+                    found = true;
+                }
             }
-            if (i == accounts.getCount()) break;
-            else changed = true;
+            if (found) changed = true;
+            else break;
         }
         else 
             ++id;
