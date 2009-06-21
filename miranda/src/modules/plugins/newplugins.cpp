@@ -1036,7 +1036,7 @@ int LoadNewPluginsModule(void)
 					if ( pluginDefModList[rm] == NULL ) {
                         if ( bpi.Load(&pluginCoreLink) == 0 ) {
                             p->pclass |= PCLASS_LOADED;
-                            msgModule |= bpi.pluginInfo->replacesDefaultModule == DEFMOD_SRMESSAGE;
+                            msgModule |= (bpi.pluginInfo->replacesDefaultModule == DEFMOD_SRMESSAGE);
                         }
 						else {
 							Plugin_Uninit( p );
