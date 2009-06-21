@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="modernopt"
 	ProjectGUID="{153DD132-084C-4DE4-8F40-A088BCB22723}"
 	RootNamespace="modernopt"
@@ -85,6 +85,7 @@
 				GenerateDebugInformation="true"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -175,6 +176,7 @@
 				GenerateDebugInformation="true"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -274,6 +276,7 @@
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -347,7 +350,6 @@
 				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
-				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				CompileAs="0"
@@ -374,6 +376,7 @@
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -465,6 +468,7 @@
 				GenerateDebugInformation="true"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -556,6 +560,7 @@
 				GenerateDebugInformation="true"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -616,6 +621,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="3"
 				InlineFunctionExpansion="1"
+				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="2"
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL"
@@ -650,11 +656,11 @@
 				AdditionalLibraryDirectories="../../lib"
 				DelayLoadDLLs=""
 				GenerateDebugInformation="true"
-				GenerateMapFile="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -714,6 +720,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="3"
+				InlineFunctionExpansion="1"
+				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="2"
 				OmitFramePointers="false"
 				AdditionalIncludeDirectories="../../include"
@@ -726,7 +734,6 @@
 				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
-				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				CompileAs="0"
@@ -749,11 +756,11 @@
 				AdditionalLibraryDirectories="../../lib"
 				DelayLoadDLLs=""
 				GenerateDebugInformation="true"
-				GenerateMapFile="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
