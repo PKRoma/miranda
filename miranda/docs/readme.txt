@@ -36,6 +36,7 @@ Bugfixes:
  - Fixed possible crash with event data
  - ICQ: Fixed AIM away message handling (caused online status to be seen as away in some clients)
  - MSN: Fixed renaming nickname from options
+ - MSN: Fixed Offline messaging reception from Beejive client
  - Yahoo: Show download progress properly
  - Yahoo: Cancel out in the middle of file receive.
 
