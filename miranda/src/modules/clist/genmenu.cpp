@@ -956,6 +956,11 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 				mii.fMask |= MIIM_BITMAP;
 		}
 
+		mii.fMask |= MIIM_STATE;
+		mii.fState = (( pmi->mi.flags & CMIF_GRAYED ) ? MFS_GRAYED : MFS_ENABLED );
+		mii.fState |= (( pmi->mi.flags & CMIF_CHECKED) ? MFS_CHECKED : MFS_UNCHECKED );
+		if ( pmi->mi.flags & CMIF_DEFAULT ) mii.fState |= MFS_DEFAULT;
+
 		// it's a submenu
 		if ( pmi->submenu.first ) {
 			mii.fMask |= MIIM_SUBMENU;
@@ -976,11 +981,6 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 			BuildRecursiveMenu( mii.hSubMenu, pmi->submenu.first, &localparam );
 		}
 		else {
-			mii.fMask |= MIIM_STATE;
-			mii.fState = (( pmi->mi.flags & CMIF_GRAYED ) ? MFS_GRAYED : MFS_ENABLED );
-			mii.fState |= (( pmi->mi.flags & CMIF_CHECKED) ? MFS_CHECKED : MFS_UNCHECKED );
-			if ( pmi->mi.flags & CMIF_DEFAULT )
-				mii.fState |= MFS_DEFAULT;
 			mii.wID = pmi->iCommand;
 
 			mii.hbmpItem = HBMMENU_CALLBACK;

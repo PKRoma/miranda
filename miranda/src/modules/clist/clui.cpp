@@ -884,7 +884,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				}
 				else nPanel = nm->dwItemSpec;
 
-				if (nParts > 1)
+				if (nParts > 0)
                 {
                     unsigned int cpnl = 0;
                     int mcnt = GetMenuItemCount(hMenu);

@@ -988,8 +988,6 @@ void RebuildMenuOrder( void )
 	NotifyEventHooks(cli.hPreBuildStatusMenuEvent, 0, 0);
 	pos = 200000;
 
-    if (cli.menuProtoCount == 1) ((PMO_IntMenuItem)cli.menuProtos[0].pMenu)->mi.flags |= CMIF_HIDDEN;
-
 	//add to root menu
 	for ( j=0; j < SIZEOF(statusModeList); j++ ) {
 		for ( i=0; i < accounts.getCount(); i++ ) {
@@ -1096,8 +1094,6 @@ static int MenuProtoAck(WPARAM, LPARAM lParam)
 		//SetMenuDefaultItem(hStatusMenu,-1,FALSE);
 		cli.currentStatusMenuItem=0;
 	}
-	if ( networkProtoCount <= 1 )
-		return 0;
 
 	for ( i=0; i < accounts.getCount(); i++ ) {
 		if ( !lstrcmpA( accounts[i]->szModuleName, ack->szModule )) {
