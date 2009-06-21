@@ -90,7 +90,7 @@
 				BaseAddress="0x32500000"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary=".\Debug/GG.lib"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -188,7 +188,7 @@
 				BaseAddress="0x32500000"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary=".\Debug/GG.lib"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -297,7 +297,7 @@
 				BaseAddress="0x32500000"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary=".\Release/GG.lib"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -406,7 +406,7 @@
 				BaseAddress="0x32500000"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary=".\Release/GG.lib"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -507,7 +507,7 @@
 				BaseAddress="0x32500000"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary=".\Debug/GG.lib"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -608,7 +608,7 @@
 				BaseAddress="0x32500000"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary=".\Debug/GG.lib"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -718,7 +718,7 @@
 				BaseAddress="0x32500000"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary=".\Release/GG.lib"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -828,7 +828,7 @@
 				BaseAddress="0x32500000"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary=".\Release/GG.lib"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
