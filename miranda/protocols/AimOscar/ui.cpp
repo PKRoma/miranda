@@ -202,10 +202,12 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				SetWindowLongPtr(hwndDlg, GWLP_USERDATA, LPARAM( ppro ));
 
 				DBVARIANT dbv;
-				if (!ppro->getString(AIM_KEY_PR, &dbv))
+				if (!DBGetContactSettingStringUtf(NULL, ppro->m_szModuleName, AIM_KEY_PR, &dbv))
 				{
                     html_decode(dbv.pszVal);
-					SetDlgItemTextA(hwndDlg, IDC_PROFILE, dbv.pszVal);
+                    TCHAR *txt = mir_utf8decodeT(dbv.pszVal);
+					SetDlgItemText(hwndDlg, IDC_PROFILE, txt);
+                    mir_free(txt);
 					DBFreeVariant(&dbv);
 				}
 			}
@@ -425,11 +427,12 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 		case IDC_SETPROFILE:
 			{
-				char* buf=rtf_to_html(hwndDlg,IDC_PROFILE);
-				ppro->setString(AIM_KEY_PR, buf);
+				char* buf = rtf_to_html(hwndDlg, IDC_PROFILE);
+                DBWriteContactSettingStringUtf(NULL, ppro->m_szModuleName, AIM_KEY_PR, buf);
 				if (ppro->state==1)
 					ppro->aim_set_profile(ppro->hServerConn,ppro->seqno,buf);//also see set caps for profile setting
 
+                mir_free(buf);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_SETPROFILE), FALSE);
 			}
 			break;

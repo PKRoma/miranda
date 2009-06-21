@@ -180,19 +180,7 @@ int CAimProto::aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
 {
     unsigned short offset=0;
     int i=1;
-    char* buf;
-    char* profile_buf=0;
-    DBVARIANT dbv;
-    if (!getString(AIM_KEY_PR, &dbv))
-    {
-        profile_buf = NEWSTR_ALLOCA(dbv.pszVal);
-        buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*3+AIM_CAPS_LENGTH*50+sizeof(AIM_MSG_TYPE)+strlen(profile_buf));
-        DBFreeVariant(&dbv);
-    }
-    else
-    {
-        buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*3+AIM_CAPS_LENGTH*50+sizeof(AIM_MSG_TYPE));
-    }
+    char buf[SNAC_SIZE+TLV_HEADER_SIZE*3+AIM_CAPS_LENGTH*50+sizeof(AIM_MSG_TYPE)];
     char temp[AIM_CAPS_LENGTH*20];
     memcpy(temp,AIM_CAP_SHORT_CAPS,AIM_CAPS_LENGTH);
     memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_HOST_STATUS_TEXT_AWARE,AIM_CAPS_LENGTH);
@@ -208,11 +196,7 @@ int CAimProto::aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
         memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_HIPTOP,AIM_CAPS_LENGTH);
     aim_writesnac(0x02,0x04,offset,buf);
     aim_writetlv(0x05,(unsigned short)(AIM_CAPS_LENGTH*i),temp,offset,buf);
-    if (profile_buf)
-    {
-        aim_writetlv(0x01,(unsigned short)sizeof(AIM_MSG_TYPE)-1,AIM_MSG_TYPE,offset,buf);
-        aim_writetlv(0x02,(unsigned short)strlen(profile_buf),profile_buf,offset,buf);
-    }
+
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
@@ -220,9 +204,29 @@ int CAimProto::aim_set_profile(HANDLE hServerConn,unsigned short &seqno,char *ms
 {
     unsigned short offset=0;
     size_t msg_size = msg ? strlen(msg) : 0;
-    char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*2+sizeof(AIM_MSG_TYPE)+msg_size);
+
+    const char *typ;
+    unsigned short typsz;
+    if (is_utf(msg))
+    {
+        typ = AIM_MSG_TYPE_UNICODE;
+        typsz = (unsigned short)(sizeof(AIM_MSG_TYPE_UNICODE)-1);
+        wchar_t* msgu = mir_utf8decodeW(msg);
+        wcs_htons(msgu);
+        msg = (char*)msgu;
+        msg_size = wcslen(msgu) * sizeof(wchar_t);
+    }
+    else
+    {
+        typ=AIM_MSG_TYPE;
+        typsz=(unsigned short)(sizeof(AIM_MSG_TYPE)-1);
+    }
+
+    char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*3+1+sizeof(AIM_MSG_TYPE_UNICODE)+msg_size);
+
     aim_writesnac(0x02,0x04,offset,buf);
-    aim_writetlv(0x01,sizeof(AIM_MSG_TYPE),AIM_MSG_TYPE,offset,buf);
+    aim_writetlvchar(0x0c,1,offset,buf);
+    aim_writetlv(0x01,typsz,typ,offset,buf);
     aim_writetlv(0x02,(unsigned short)msg_size,msg,offset,buf);
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
@@ -247,11 +251,6 @@ int CAimProto::aim_client_ready(HANDLE hServerConn,unsigned short &seqno)
     nlb.pfnNewConnectionV2 = ( NETLIBNEWCONNECTIONPROC_V2 )aim_direct_connection_initiated;
     nlb.pExtra = this;
     hDirectBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)hNetlibPeer, (LPARAM)&nlb);
-    if (!hDirectBoundPort && (GetLastError() == 87))
-    { // this ensures old Miranda also can bind a port for a dc
-        nlb.cbSize = NETLIBBIND_SIZEOF_V1;
-    hDirectBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)hNetlibPeer, (LPARAM)&nlb);
-    }
     if (hDirectBoundPort == NULL)
     {
         ShowPopup(LPGEN("Aim was unable to bind to a port. File transfers may not succeed in some cases."), 0);

@@ -654,6 +654,14 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 		    aim_set_icbm(hServerConn,seqno);
 			aim_client_ready(hServerConn,seqno);
 		    aim_request_offline_msgs(hServerConn,seqno);
+
+            DBVARIANT dbv;
+            if (!DBGetContactSettingStringUtf(NULL, m_szModuleName, AIM_KEY_PR, &dbv))
+            {
+                aim_set_profile(hServerConn,seqno,dbv.pszVal);
+                DBFreeVariant(&dbv);
+            }
+
 			if(getByte( AIM_KEY_CM, 0))
 				aim_new_service_request(hServerConn,seqno,0x0018 );//mail
 			LOG("Connection Negotiation Finished");

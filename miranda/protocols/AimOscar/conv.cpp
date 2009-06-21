@@ -559,14 +559,18 @@ char* rtf_to_html(HWND hwndDlg,int DlgItem)
 	GETTEXTLENGTHEX tl;
 	tl.flags=GTL_DEFAULT;
 	tl.codepage=CP_ACP;
-	int length=SendDlgItemMessage(hwndDlg, DlgItem, EM_GETTEXTLENGTHEX,(WPARAM)&tl,0);
+
+    int oldstart, oldend;
+	SendDlgItemMessage(hwndDlg, DlgItem, EM_GETSEL, (WPARAM)&oldstart, (LPARAM)&oldend);
+
+    int length=SendDlgItemMessage(hwndDlg, DlgItem, EM_GETTEXTLENGTHEX,(WPARAM)&tl,0);
 	while(start<length)
 	{
 		SendDlgItemMessage(hwndDlg, DlgItem, EM_SETSEL, start, end);
 		CHARFORMAT2A cfOld;
-		cfOld.cbSize = sizeof(CHARFORMAT2);
+		cfOld.cbSize = sizeof(cfOld);
 		cfOld.dwMask = CFM_BOLD|CFM_ITALIC|CFM_UNDERLINE|CFM_SIZE|CFM_COLOR|CFM_BACKCOLOR|CFM_FACE;
-		SendDlgItemMessage(hwndDlg, DlgItem, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
+		SendDlgItemMessageA(hwndDlg, DlgItem, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
 		BOOL isBold = (cfOld.dwEffects & CFE_BOLD) && (cfOld.dwMask & CFM_BOLD);
 		BOOL isItalic = (cfOld.dwEffects & CFE_ITALIC) && (cfOld.dwMask & CFM_ITALIC);
 		BOOL isUnderline = (cfOld.dwEffects & CFE_UNDERLINE) && (cfOld.dwMask & CFM_UNDERLINE);
@@ -589,7 +593,7 @@ char* rtf_to_html(HWND hwndDlg,int DlgItem)
 			isSize=1;
 		else
 			isSize=3;
-		char text[2];
+		TCHAR text[3];
 		SendDlgItemMessage(hwndDlg, DlgItem, EM_GETSELTEXT, 0, (LPARAM)&text);
 		if(Bold!=isBold)
 		{
@@ -710,8 +714,10 @@ char* rtf_to_html(HWND hwndDlg,int DlgItem)
 		}
 		else
 		{
-			strcpy(&buf[pos],text);
-			pos++;
+            char* txt = mir_utf8encodeT(text);
+			strcpy(&buf[pos], txt);
+			pos += strlen(txt);
+            mir_free(txt);
 		}
 		start++;
 		end++;
@@ -733,6 +739,9 @@ char* rtf_to_html(HWND hwndDlg,int DlgItem)
 	}
 	strcpy(&buf[pos],"</font>");
 	pos+=7;
+
+	SendDlgItemMessage(hwndDlg, DlgItem, EM_SETSEL, oldstart, oldend);
+
 	return buf;
 }
 
