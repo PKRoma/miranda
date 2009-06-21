@@ -215,6 +215,7 @@ int CAimProto::aim_set_profile(HANDLE hServerConn,unsigned short &seqno,char *ms
         wcs_htons(msgu);
         msg = (char*)NEWTSTR_ALLOCA(msgu);
         msg_size = wcslen(msgu) * sizeof(wchar_t);
+        mir_free(msgu);
     }
     else
     {
