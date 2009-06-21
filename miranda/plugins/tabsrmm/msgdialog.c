@@ -1860,6 +1860,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			HWND	hwndItem;
 			int		dwLocalSmAdd = 0;
 			PROTOACCOUNT *acc = 0;
+            TCHAR* tmp;
+
 
 			struct NewMessageWindowLParam *newData = (struct NewMessageWindowLParam *) lParam;
 
@@ -1896,7 +1898,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			BroadCastContainer(m_pContainer, DM_REFRESHTABINDEX, 0, 0);
 
 			dat->szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0);
-			mir_sntprintf(dat->szAccount, 128, dat->szProto);
+            tmp = mir_a2t(dat->szProto);
+			mir_sntprintf(dat->szAccount, 128, tmp);
+            mir_free(tmp);
 			/*
 			 * 0.8+ retrieve user defined and "readable" account name
 			 * fallback: protoclol name (0.7 users)
