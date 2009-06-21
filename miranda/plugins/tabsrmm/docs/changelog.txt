@@ -20,6 +20,11 @@ Version 2.0.x.x was released in October 2007 and is the current "stable" version
 It NEEDS Miranda 0.7.x and will not work on older versions.
 
 
+Version 2.2.1.17  - 2009/06/21
+
+	! fixed possible crash, introduced by the new %a variable
+	! fixed some problems with global Ctrl-Shift-U hotkey
+
 Version 2.2.1.16  - 2009/06/14
 
 	* replaced internal protocol name with user defined account name in some places

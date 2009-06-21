@@ -42,6 +42,10 @@ License: GPL
 #define MWF_LOG_TEXTFORMAT 0x2000000
 #define MSGDLGFONTCOUNT 22
 
+#if defined(UNICODE)
+	#define _UNICODE 1
+#endif
+
 extern "C" RTFColorTable *rtf_ctable;
 extern "C" TCHAR *xStatusDescr[];
 extern "C" TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
