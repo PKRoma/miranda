@@ -988,8 +988,6 @@ void RebuildMenuOrder( void )
 	NotifyEventHooks(cli.hPreBuildStatusMenuEvent, 0, 0);
 	pos = 200000;
 
-    if (cli.menuProtoCount == 1) ((PMO_IntMenuItem)cli.menuProtos[0].pMenu)->mi.flags |= CMIF_GRAYED;
-
 	//add to root menu
 	for ( j=0; j < SIZEOF(statusModeList); j++ ) {
 		for ( i=0; i < accounts.getCount(); i++ ) {
