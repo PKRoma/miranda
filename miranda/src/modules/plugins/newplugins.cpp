@@ -972,6 +972,7 @@ int LoadNewPluginsModule(void)
 	pluginEntry* p;
 	pluginEntry* clist = NULL;
 	int useWhiteList, i;
+    bool msgModule = false;
 
 	// make full path to the plugin
 	GetModuleFileNameA(NULL, exe, SIZEOF(exe));
@@ -1002,9 +1003,9 @@ int LoadNewPluginsModule(void)
 	if ( clist == NULL ) {
 		// result = 0, no clist_* can be found
 		if ( pluginListUI )
-			MessageBox(0, TranslateT("Unable to start any of the installed contact list plugins, I even ignored your preferences for which contact list couldn't load any."), _T(""), MB_OK | MB_ICONINFORMATION);
+			MessageBox(NULL, TranslateT("Unable to start any of the installed contact list plugins, I even ignored your preferences for which contact list couldn't load any."), _T("Miranda IM"), MB_OK | MB_ICONINFORMATION);
 		else
-			MessageBox(0, TranslateT("Can't find a contact list plugin! you need clist_classic or any other clist plugin.") , _T(""), MB_OK | MB_ICONINFORMATION);
+			MessageBox(NULL, TranslateT("Can't find a contact list plugin! you need clist_classic or any other clist plugin.") , _T("Miranda IM"), MB_OK | MB_ICONINFORMATION);
 		return 1;
 	}
 
@@ -1033,7 +1034,10 @@ int LoadNewPluginsModule(void)
 					List_InsertPtr( &pluginListAddr, p );
 
 					if ( pluginDefModList[rm] == NULL ) {
-						if ( bpi.Load(&pluginCoreLink) == 0 ) p->pclass |= PCLASS_LOADED;
+                        if ( bpi.Load(&pluginCoreLink) == 0 ) {
+                            p->pclass |= PCLASS_LOADED;
+                            msgModule = bpi.pluginInfo->replacesDefaultModule == DEFMOD_SRMESSAGE;
+                        }
 						else {
 							Plugin_Uninit( p );
 							i--;
@@ -1056,6 +1060,8 @@ int LoadNewPluginsModule(void)
 		else if ( p->bpi.hInst != NULL )
 			List_InsertPtr( &pluginListAddr, p );
 	}
+    if (!msgModule)
+	    MessageBox(NULL, TranslateT("No messaging plugins loaded. Please install/enable one of the messaging plugins, for instance, \"srmm.dll\""), _T("Miranda IM"), MB_OK | MB_ICONINFORMATION);
 
 	HookEvent(ME_OPT_INITIALISE, PluginOptionsInit);
 	return 0;
