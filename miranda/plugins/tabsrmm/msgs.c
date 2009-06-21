@@ -35,9 +35,8 @@ $Id$
 
 static char *relnotes[] = {
 	"{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
- 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.15\\b0\\ul0\\par ",
+ 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.17\\b0\\ul0\\par ",
 	"*\tA new variable (%a), showing the user defined account name, has been added for title bar formatting.\\par ",
-	"*\tIn some places, the internal protocol name has been replaced by the user defined account name (work in progress, more changes will follow).\\par ",
 	"\t\\b View all release notes and history online:\\b0 \\par \thttp://wiki.miranda.or.at/TabSrmm:ChangeLog\\par ",
 	NULL
 };
@@ -228,7 +227,7 @@ static INT_PTR SetUserPrefs(WPARAM wParam, LPARAM lParam)
 {
 	HWND hWnd = WindowList_Find(hUserPrefsWindowList, (HANDLE)wParam);
 	if (hWnd) {
-		SetFocus(hWnd);
+		SetForegroundWindow(hWnd);			// already open, bring it to front
 		return 0;
 	}
 	CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_USERPREFS_FRAME), 0, DlgProcUserPrefsFrame, (LPARAM)wParam);

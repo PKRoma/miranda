@@ -60,6 +60,8 @@ static void ReloadGlobalContainerSettings()
 
 void ApplyContainerSetting(struct ContainerWindowData *pContainer, DWORD flags, int mode)
 {
+	DWORD dwOld = pContainer->dwFlags;
+
 	if (pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS) {
 		myGlobals.m_GlobalContainerFlags = (mode ? myGlobals.m_GlobalContainerFlags | flags : myGlobals.m_GlobalContainerFlags & ~flags);
 		pContainer->dwFlags = myGlobals.m_GlobalContainerFlags;
@@ -89,6 +91,10 @@ void ApplyContainerSetting(struct ContainerWindowData *pContainer, DWORD flags, 
 		if (flags & CNT_INFOPANEL)
 			BroadCastContainer(pContainer, DM_SETINFOPANEL, 0, 0);
 	}
+	if(!g_framelessSkinmode && ((dwOld & CNT_NOMENUBAR) != (pContainer->dwFlags & CNT_NOMENUBAR)))
+		RedrawWindow(pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
+
+	BroadCastContainer(pContainer, DM_BBNEEDUPDATE, 0, 0);
 }
 
 #define NR_O_PAGES 7

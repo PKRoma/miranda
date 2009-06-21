@@ -332,11 +332,15 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 								}
 							} while (--i >= 0);
 							if (uid == 0 && pLastActiveContainer != NULL) {                // no session found, restore last active container
-								if (IsIconic(pLastActiveContainer->hwnd)) {
+								if (IsIconic(pLastActiveContainer->hwnd) || !IsWindowVisible(pLastActiveContainer->hwnd)) {
 									SendMessage(pLastActiveContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
 									SetForegroundWindow(pLastActiveContainer->hwnd);
-								} else
-									SendMessage(pLastActiveContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+								} else {
+									if(myGlobals.m_HideOnClose)
+										ShowWindow(pLastActiveContainer->hwnd, SW_HIDE);
+									else
+										SendMessage(pLastActiveContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+								}
 							}
 						}
 						if (wParam == 100)
