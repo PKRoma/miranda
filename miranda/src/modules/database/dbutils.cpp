@@ -129,7 +129,6 @@ static INT_PTR DbEventGetText(WPARAM wParam, LPARAM lParam)
 			Utf8DecodeCP( str, egt->codepage, &msg );
         }
 		else {
-			// ушлепкам типа скотта торжественно посвящается
 			size_t msglen = strlen(( char* )dbei->pBlob) + 1, msglenW = 0;
 			if ( msglen !=  dbei->cbBlob ) {
 				size_t i, count = (( dbei->cbBlob - msglen ) / sizeof( WCHAR ));
@@ -143,7 +142,7 @@ static INT_PTR DbEventGetText(WPARAM wParam, LPARAM lParam)
 			if ( msglenW > 0 && msglenW < msglen && !bIsDenyUnicode )
 				msg = mir_wstrdup(( WCHAR* )&dbei->pBlob[ msglen ] );
 			else {
-				msg = ( WCHAR* )mir_alloc( sizeof(TCHAR) * msglen );
+				msg = ( WCHAR* )mir_alloc( sizeof(WCHAR) * msglen );
 				MultiByteToWideChar( egt->codepage, 0, (char *) dbei->pBlob, -1, msg, (int)msglen );
 		}	}
 		return ( INT_PTR )msg;
