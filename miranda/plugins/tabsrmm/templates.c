@@ -528,33 +528,45 @@ dl_done:
 			}
 		case WM_NOTIFY:
 			switch (((NMHDR *) lParam)->idFrom) {
-		case IDC_HELPTEXT:
-			switch (((NMHDR *) lParam)->code) {
-		case EN_LINK:
-			switch (((ENLINK *) lParam)->msg) {
-		case WM_SETCURSOR:
-			SetCursor(myGlobals.hCurHyperlinkHand);
-			SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
-			return TRUE;
-		case WM_LBUTTONUP: {
-			TEXTRANGEA tr;
-			CHARRANGE sel;
-			SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_EXGETSEL, 0, (LPARAM) & sel);
-			if (sel.cpMin != sel.cpMax)
+			case IDC_HELPTEXT:
+				switch (((NMHDR *) lParam)->code) {
+				case EN_LINK:
+					switch (((ENLINK *) lParam)->msg) {
+					case WM_SETCURSOR:
+						SetCursor(myGlobals.hCurHyperlinkHand);
+						SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
+						return TRUE;
+					case WM_LBUTTONUP:
+						{
+							TEXTRANGE tr;
+							CHARRANGE sel;
+							HWND hwdText = GetDlgItem(hwndDlg, IDC_HELPTEXT);
+							SendMessage(hwdText, EM_EXGETSEL, 0, (LPARAM) & sel);
+							if (sel.cpMin != sel.cpMax)
+								break;
+
+							tr.chrg = ((ENLINK *) lParam)->chrg;
+							tr.lpstrText = calloc(sizeof(TCHAR), tr.chrg.cpMax - tr.chrg.cpMin + 8);
+							SendMessage(hwdText, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
+							#ifdef _UNICODE
+							{
+								char* p = mir_t2a(tr.lpstrText);
+								CallService(MS_UTILS_OPENURL, 1, (LPARAM) p);
+								mir_free( p );
+							}
+							#else
+								CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
+							#endif
+							SetFocus(hwdText);
+							free(tr.lpstrText);
+							break;
+						}
+					}
 				break;
-			tr.chrg = ((ENLINK *) lParam)->chrg;
-			tr.lpstrText = malloc(tr.chrg.cpMax - tr.chrg.cpMin + 8);
-			SendDlgItemMessageA(hwndDlg, IDC_HELPTEXT, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
-			CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
-			SetFocus(GetDlgItem(hwndDlg, IDC_HELPTEXT));
-			free(tr.lpstrText);
-			break;
+				}
 			}
-				}
 			break;
-				}
-				}
-			break;
+
 		case WM_COMMAND:
 			if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
 				DestroyWindow(hwndDlg);
@@ -567,5 +579,3 @@ dl_done:
 		}
 	return FALSE;
 	}
-
-
