@@ -43,6 +43,8 @@ CYahooProto::CYahooProto( const char* aProtoName, const TCHAR* aUserName ) :
 	
 	LoadYahooServices();
 	IconsInit();
+	
+	MenuInit();
 }
 
 CYahooProto::~CYahooProto()
@@ -54,6 +56,8 @@ CYahooProto::~CYahooProto()
 
 	DestroyHookableEvent(hYahooNudge);
 
+	MenuUninit();
+	
 	mir_free( m_szModuleName );
 	mir_free( m_tszUserName );
 
@@ -69,8 +73,6 @@ CYahooProto::~CYahooProto()
 
 int CYahooProto::OnModulesLoadedEx( WPARAM, LPARAM )
 {
-	MenuInit();
-
 	YHookEvent(ME_USERINFO_INITIALISE, &CYahooProto::OnUserInfoInit );
 	YHookEvent(ME_DB_CONTACT_SETTINGCHANGED, &CYahooProto::OnSettingChanged);
 	YHookEvent(ME_IDLE_CHANGED, &CYahooProto::OnIdleEvent);
@@ -769,6 +771,15 @@ int __cdecl CYahooProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARA
 		case EV_PROTO_ONLOAD:    return OnModulesLoadedEx( 0, 0 );
 		//case EV_PROTO_ONEXIT:    return OnPreShutdown( 0, 0 );
 		case EV_PROTO_ONOPTIONS: return OnOptionsInit( wParam, lParam );
+		case EV_PROTO_ONRENAME:
+		{	
+			CLISTMENUITEM clmi = { 0 };
+			clmi.cbSize = sizeof( CLISTMENUITEM );
+			clmi.flags = CMIM_NAME | CMIF_TCHAR;
+			clmi.ptszName = m_tszUserName;
+			YAHOO_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )mainMenuRoot, ( LPARAM )&clmi );
+            break;
+		}
 	}	
 	return 1;
 }
