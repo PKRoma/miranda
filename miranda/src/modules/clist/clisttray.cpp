@@ -433,16 +433,19 @@ VOID CALLBACK fnTrayCycleTimerProc(HWND, UINT, UINT_PTR, DWORD)
 	initcheck;
 	lock;
 
-	for (;;) {
-		cycleStep = (cycleStep + 1) % accounts.getCount();
-		if ( cli.pfnGetProtocolVisibility( accounts[cycleStep]->szModuleName ))
-			break;
-	}
-	DestroyIcon(cli.trayIcon[0].hBaseIcon);
-	cli.trayIcon[0].hBaseIcon = cli.pfnGetIconFromStatusMode(NULL, accounts[cycleStep]->szModuleName, 
-		CallProtoService( accounts[cycleStep]->szModuleName, PS_GETSTATUS, 0, 0 ));
-	if (cli.trayIcon[0].isBase)
-		cli.pfnTrayIconUpdate(cli.trayIcon[0].hBaseIcon, NULL, NULL, 1);
+    if (accounts.getCount())
+    {
+	    for (;;) {
+		    cycleStep = (cycleStep + 1) % accounts.getCount();
+		    if ( cli.pfnGetProtocolVisibility( accounts[cycleStep]->szModuleName ))
+			    break;
+	    }
+	    DestroyIcon(cli.trayIcon[0].hBaseIcon);
+	    cli.trayIcon[0].hBaseIcon = cli.pfnGetIconFromStatusMode(NULL, accounts[cycleStep]->szModuleName, 
+		    CallProtoService( accounts[cycleStep]->szModuleName, PS_GETSTATUS, 0, 0 ));
+	    if (cli.trayIcon[0].isBase)
+		    cli.pfnTrayIconUpdate(cli.trayIcon[0].hBaseIcon, NULL, NULL, 1);
+    }
 	ulock;
 }
 
