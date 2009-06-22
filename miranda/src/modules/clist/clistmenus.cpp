@@ -151,8 +151,9 @@ void FreeMenuProtos( void )
 
 //////////////////////////////////////////////////////////////////////////
 
-int GetAverageMode()
+int GetAverageMode(int* pNetProtoCount = NULL)
 {
+	int netProtoCount = 0;
 	int averageMode = 0;
 
 	for ( int i=0; i < accounts.getCount(); i++ ) {
@@ -160,13 +161,17 @@ int GetAverageMode()
 		if ( cli.pfnGetProtocolVisibility( pa->szModuleName ) == 0 )
 			continue;
 
+		netProtoCount++;
+
 		if ( averageMode == 0 )
 			averageMode = CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0 );
 		else if ( averageMode > 0 && averageMode != CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0 )) {
 			averageMode = -1;
-			break;
-	}	}
+            if (pNetProtoCount == NULL) break;
+	    }	
+    }
 
+    if (pNetProtoCount) *pNetProtoCount = netProtoCount;
 	return averageMode;
 }
 
@@ -1045,15 +1050,18 @@ static int MenuProtoAck(WPARAM, LPARAM lParam)
 {
 	int i;
 	ACKDATA* ack=(ACKDATA*)lParam;
+	int overallStatus;
+	TMO_MenuItem tmi;
 
 	if ( ack->type != ACKTYPE_STATUS ) return 0;
 	if ( ack->result != ACKRESULT_SUCCESS ) return 0;
 	if ( hStatusMainMenuHandles == NULL ) return 0;
-	if ( cli.pfnGetProtocolVisibility( ack->szModule ) == 0 ) return 0;
 
-	int overallStatus = GetAverageMode();
+    if ( cli.pfnGetProtocolVisibility( ack->szModule ) == 0 ) return 0;
 
-	TMO_MenuItem tmi = { 0 };
+    overallStatus = GetAverageMode();
+
+	memset(&tmi,0,sizeof(tmi));
 	tmi.cbSize=sizeof(tmi);
 	if (overallStatus >= ID_STATUS_OFFLINE) {
 		int pos = statustopos(cli.currentStatusMenuItem);
