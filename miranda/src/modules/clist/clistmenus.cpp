@@ -165,9 +165,9 @@ int GetAverageMode(int* pNetProtoCount = NULL)
 
 		if ( averageMode == 0 )
 			averageMode = CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0 );
-		else if ( averageMode != CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0 )) {
+		else if ( averageMode > 0 && averageMode != CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0 )) {
 			averageMode = -1;
-			break;
+            if (pNetProtoCount == NULL) break;
 	    }	
     }
 
@@ -1048,7 +1048,7 @@ int statustopos(int status)
 
 static int MenuProtoAck(WPARAM, LPARAM lParam)
 {
-	int i,networkProtoCount;
+	int i;
 	ACKDATA* ack=(ACKDATA*)lParam;
 	int overallStatus;
 	TMO_MenuItem tmi;
@@ -1059,7 +1059,7 @@ static int MenuProtoAck(WPARAM, LPARAM lParam)
 
     if ( cli.pfnGetProtocolVisibility( ack->szModule ) == 0 ) return 0;
 
-    overallStatus = GetAverageMode(&networkProtoCount);
+    overallStatus = GetAverageMode();
 
 	memset(&tmi,0,sizeof(tmi));
 	tmi.cbSize=sizeof(tmi);

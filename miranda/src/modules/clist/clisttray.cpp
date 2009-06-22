@@ -231,10 +231,11 @@ void fnTrayIconRemove(HWND hwnd, const char *szProto)
 int fnTrayIconInit(HWND hwnd)
 {
     int netProtoCount = 0;
-	int averageMode = GetAverageMode(&netProtoCount);
 	initcheck 0;
 	lock;
-	mToolTipTrayTips = ServiceExists("mToolTip/ShowTip") ? TRUE : FALSE;
+
+    int averageMode = GetAverageMode(&netProtoCount);
+	mToolTipTrayTips = ServiceExists("mToolTip/ShowTip") != 0;
 
 	if ( cli.cycleTimerId ) {
 		KillTimer(NULL, cli.cycleTimerId);
@@ -248,15 +249,16 @@ int fnTrayIconInit(HWND hwnd)
 
 	cli.trayIcon = (struct trayIconInfo_t *) mir_calloc(sizeof(struct trayIconInfo_t) * max(accounts.getCount(), 1));
 	if ( DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI
-	     && (averageMode <= 0 || DBGetContactSettingByte(NULL, "CList", "AlwaysMulti", SETTING_ALWAYSMULTI_DEFAULT ))) {
-		int i;
-		for (i = accounts.getCount() - 1; i >= 0; i--) {
+	     && (averageMode <= 0 || DBGetContactSettingByte(NULL, "CList", "AlwaysMulti", SETTING_ALWAYSMULTI_DEFAULT ))) 
+    {
+		for (int i = accounts.getCount(); i--; ) {
 			int j = cli.pfnGetAccountIndexByPos( i );
-			if ( j > -1 ) {
+			if ( j >= 0 ) {
 				PROTOACCOUNT* pa = accounts[j];
 				if ( cli.pfnGetProtocolVisibility( pa->szModuleName ))
 					cli.pfnTrayIconAdd(hwnd, pa->szModuleName, NULL, CallProtoService(pa->szModuleName, PS_GETSTATUS, 0, 0));
-		}	}
+		    }	
+        }
 	}	
 	else if (/*averageMode <= ID_STATUS_OFFLINE ||*/ DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_SINGLE) {
 		DBVARIANT dbv = { DBVT_DELETED };
@@ -272,7 +274,7 @@ int fnTrayIconInit(HWND hwnd)
 	}
 	else
 		cli.pfnTrayIconAdd(hwnd, NULL, NULL, averageMode);
-	if (averageMode <= 0 && DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_CYCLE)
+	if (averageMode < 0 && DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_CYCLE)
 		cli.cycleTimerId = SetTimer(NULL, 0, DBGetContactSettingWord(NULL, "CList", "CycleTime", SETTING_CYCLETIME_DEFAULT) * 1000, cli.pfnTrayCycleTimerProc);
 	{ ulock; return 0; }
 }
@@ -315,9 +317,7 @@ static VOID CALLBACK RefreshTimerProc(HWND, UINT, UINT_PTR, DWORD)
 		RefreshTimerId=0;
 	}
 	for (i=0; i < accounts.getCount(); i++) {
-		PROTOACCOUNT* pa = accounts[i];
-		if ( cli.pfnGetProtocolVisibility( pa->szModuleName ) != 0 )
-			cli.pfnTrayIconUpdateBase( pa->szModuleName );
+		cli.pfnTrayIconUpdateBase( accounts[i]->szModuleName );
 	}
 }
 
@@ -433,44 +433,42 @@ VOID CALLBACK fnTrayCycleTimerProc(HWND, UINT, UINT_PTR, DWORD)
 	initcheck;
 	lock;
 
-	for (cycleStep++;; cycleStep++) {
-		if (cycleStep >= accounts.getCount())
-			cycleStep = 0;
-		if ( cli.pfnGetProtocolVisibility( accounts[cycleStep]->szModuleName ))
-			break;
-	}
-	DestroyIcon(cli.trayIcon[0].hBaseIcon);
-	cli.trayIcon[0].hBaseIcon = cli.pfnGetIconFromStatusMode(NULL, accounts[cycleStep]->szModuleName, 
-		CallProtoService( accounts[cycleStep]->szModuleName, PS_GETSTATUS, 0, 0 ));
-	if (cli.trayIcon[0].isBase)
-		cli.pfnTrayIconUpdate(cli.trayIcon[0].hBaseIcon, NULL, NULL, 1);
+    if (accounts.getCount())
+    {
+	    for (;;) {
+		    cycleStep = (cycleStep + 1) % accounts.getCount();
+		    if ( cli.pfnGetProtocolVisibility( accounts[cycleStep]->szModuleName ))
+			    break;
+	    }
+	    DestroyIcon(cli.trayIcon[0].hBaseIcon);
+	    cli.trayIcon[0].hBaseIcon = cli.pfnGetIconFromStatusMode(NULL, accounts[cycleStep]->szModuleName, 
+		    CallProtoService( accounts[cycleStep]->szModuleName, PS_GETSTATUS, 0, 0 ));
+	    if (cli.trayIcon[0].isBase)
+		    cli.pfnTrayIconUpdate(cli.trayIcon[0].hBaseIcon, NULL, NULL, 1);
+    }
 	ulock;
 }
 
 void fnTrayIconUpdateBase(const char *szChangedProto)
 {
+	if ( !cli.pfnGetProtocolVisibility( szChangedProto )) return;
+
 	int i, netProtoCount, changed = -1;
-	int averageMode = 0;
 	HWND hwnd = cli.hwndContactList;
 	initcheck;
 	lock;
-	if (cli.cycleTimerId) {
+	int averageMode = GetAverageMode(&netProtoCount);
+
+    if (cli.cycleTimerId) {
 		KillTimer(NULL, cli.cycleTimerId);
 		cli.cycleTimerId = 0;
 	}
 
-	for (i = 0, netProtoCount = 0; i < accounts.getCount(); i++) {
-		PROTOACCOUNT* pa = accounts[i];
-		netProtoCount++;
-		if (!lstrcmpA(szChangedProto, pa->szModuleName ))
-			cycleStep = i;
-		if (averageMode == 0)
-			averageMode = CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0 );
-		else if (averageMode != CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0 )) {
-			averageMode = -1;
-			break;
-		}
+	for (i = 0; i < accounts.getCount(); i++) {
+		if (!lstrcmpA(szChangedProto, accounts[i]->szModuleName ))
+			cycleStep = i - 1;
 	}
+
 	if (netProtoCount > 1) {
 		if (averageMode > 0) {
 			if (DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI) {
