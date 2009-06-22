@@ -322,6 +322,9 @@
 				RelativePath=".\util.cpp">
 			</File>
 			<File
+				RelativePath=".\user_info.cpp">
+			</File>
+			<File
 				RelativePath=".\webcam.cpp">
 			</File>
 			<File
@@ -419,36 +422,6 @@
 				</File>
 				<File
 					RelativePath=".\libyahoo2\yahoo2_types.h">
-				</File>
-				<File
-					RelativePath=".\libyahoo2\yahoo_auth.c">
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath=".\libyahoo2\yahoo_auth.h">
 				</File>
 				<File
 					RelativePath=".\libyahoo2\yahoo_debug.h">

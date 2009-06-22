@@ -177,15 +177,6 @@ SOURCE=.\libyahoo2\yahoo2_types.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\libyahoo2\yahoo_auth.c
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\libyahoo2\yahoo_auth.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\libyahoo2\yahoo_debug.h
 # End Source File
 # Begin Source File
