@@ -100,10 +100,9 @@ extraResourceOptions=
 17=im.cpp
 18=search.cpp
 19=icolib.cpp
-20=libyahoo2\yahoo_auth.c
-21=ignore.cpp
-22=proto.cpp
-23=user_info.cpp
+20=ignore.cpp
+21=proto.cpp
+22=user_info.cpp
 [Header]
 1=http_gateway.h
 2=resource.h
@@ -124,10 +123,9 @@ extraResourceOptions=
 17=im.h
 18=search.h
 19=options.h
-20=libyahoo2\yahoo_auth.h
-21=ignore.h
-22=proto.h
-23=m_folders.h
+20=ignore.h
+21=proto.h
+22=m_folders.h
 [Resource]
 1=Yahoo.rc
 [Other]
