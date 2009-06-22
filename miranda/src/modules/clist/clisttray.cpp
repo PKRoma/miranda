@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern HIMAGELIST hCListImages;
 extern BOOL(WINAPI * MySetProcessWorkingSetSize) (HANDLE, SIZE_T, SIZE_T);
 
-int GetAverageMode(int* pNetProtoCount = NULL);
+int GetAverageMode( void );
 
 static UINT WM_TASKBARCREATED;
 static BOOL mToolTipTrayTips = FALSE;
@@ -230,8 +230,7 @@ void fnTrayIconRemove(HWND hwnd, const char *szProto)
 
 int fnTrayIconInit(HWND hwnd)
 {
-    int netProtoCount = 0;
-	int averageMode = GetAverageMode(&netProtoCount);
+	int averageMode = GetAverageMode();
 	initcheck 0;
 	lock;
 	mToolTipTrayTips = ServiceExists("mToolTip/ShowTip") ? TRUE : FALSE;
@@ -242,7 +241,10 @@ int fnTrayIconInit(HWND hwnd)
 	}
 
 	if (DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI) {
-		cli.trayIconCount = netProtoCount;
+		cli.trayIconCount = 0;
+		for (int i = 0; i < accounts.getCount(); i++)
+			if ( cli.pfnGetProtocolVisibility( accounts[i]->szModuleName ))
+				cli.trayIconCount++;
 	}
 	else cli.trayIconCount = 1;
 
