@@ -637,6 +637,11 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 				avatarHeight = BOTTOM_RIGHT_AVATAR_HEIGHT + 2;
 				hSplitterPos = avatarHeight - toolbarHeight;
 			}
+			avatarWidth = avatarHeight;
+			if ((toolbarWidth - avatarWidth) < dat->toolbarSize.cx) {
+				avatarWidth = toolbarWidth - dat->toolbarSize.cx;
+			//	avatarHeight = avatarWidth;
+			}
 			toolbarWidth -= avatarWidth;
 		}
 	}
@@ -1584,7 +1589,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 	case WM_GETMINMAXINFO:
 		{
 			MINMAXINFO *mmi = (MINMAXINFO *) lParam;
-			mmi->ptMinTrackSize.x = dat->toolbarSize.cx;
+			mmi->ptMinTrackSize.x = dat->toolbarSize.cx + BOTTOM_RIGHT_AVATAR_HEIGHT;
 			mmi->ptMinTrackSize.y = dat->windowData.minLogBoxHeight + dat->toolbarSize.cy + dat->windowData.minEditBoxHeight + max(INFO_BAR_HEIGHT, BOTTOM_RIGHT_AVATAR_HEIGHT - dat->toolbarSize.cy) + 5;
 			return 0;
 		}
@@ -2010,7 +2015,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						GetObject(dat->avatarPic, sizeof(bminfo), &bminfo);
 						if ( bminfo.bmWidth != 0 && bminfo.bmHeight != 0 ) {
 							AVATARDRAWREQUEST adr;
-							avatarHeight = itemHeight;
+							avatarHeight = max(itemHeight, bminfo.bmHeight);
 							avatarWidth = bminfo.bmWidth * avatarHeight / bminfo.bmHeight;
 							if (avatarWidth > itemWidth) {
 								avatarWidth = itemWidth;
@@ -2021,7 +2026,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							adr.hContact = dat->windowData.hContact;
 							adr.hTargetDC = hdcMem;
 							adr.rcDraw.left = (itemWidth - avatarWidth) / 2;
-							adr.rcDraw.top = 0;
+							adr.rcDraw.top = (itemHeight - avatarHeight) / 2;
 							adr.rcDraw.right = avatarWidth - 1;
 							adr.rcDraw.bottom = avatarHeight - 1;
 							adr.dwFlags = AVDRQ_DRAWBORDER | AVDRQ_HIDEBORDERONTRANSPARENCY;
