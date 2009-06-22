@@ -638,6 +638,9 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 				hSplitterPos = avatarHeight - toolbarHeight;
 			}
 			avatarWidth = avatarHeight;
+			if (avatarWidth > BOTTOM_RIGHT_AVATAR_HEIGHT && avatarWidth > w/3) {
+				avatarWidth = w /3;
+			}
 			if ((toolbarWidth - avatarWidth) < dat->toolbarSize.cx) {
 				avatarWidth = toolbarWidth - dat->toolbarSize.cx;
 			//	avatarHeight = avatarWidth;
@@ -899,7 +902,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			dat->windowData.minLogBoxHeight = dat->windowData.minEditBoxHeight;
 			dat->splitterPos = g_dat->splitterY;
 			dat->toolbarSize.cy = TOOLBAR_HEIGHT;
-			dat->toolbarSize.cx = GetToolbarWidth(SIZEOF(buttonControls), buttonControls) + BOTTOM_RIGHT_AVATAR_HEIGHT;
+			dat->toolbarSize.cx = GetToolbarWidth(SIZEOF(buttonControls), buttonControls);
 			if (dat->splitterPos == -1) {
 				dat->splitterPos = dat->windowData.minEditBoxHeight;
 			}
