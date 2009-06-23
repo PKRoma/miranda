@@ -256,6 +256,13 @@ INT_PTR __cdecl CYahooProto::OnShowProfileCommand( WPARAM wParam, LPARAM lParam 
 	char tUrl[ 4096 ];
 	DBVARIANT dbv;
 
+	/**
+	 * We don't show profile for users using other IM clients through the IM server bridge
+	 */
+	if (GetWord(( HANDLE )wParam, "yprotoid", 0) != 0) {
+		return 0;
+	}
+	
 	if ( DBGetContactSettingString(( HANDLE )wParam, m_szModuleName, "yahoo_id", &dbv ))
 		return 0;
 		
