@@ -701,7 +701,8 @@ void CIcqProto::ICQAddRecvEvent(HANDLE hContact, WORD wType, PROTORECVEVENT* pre
 		DWORD dwUin;
 		uid_str szUid;
 
-		setContactHidden(hContact, 0);
+		//setContactHidden(hContact, 0);
+
 		// if the contact was hidden, add to client-list if not in server-list authed
 		if (!getSettingWord(hContact, DBSETTING_SERVLIST_ID, 0) || getSettingByte(hContact, "Auth", 0))
 		{
