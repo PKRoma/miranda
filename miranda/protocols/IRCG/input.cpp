@@ -407,12 +407,12 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 		if ( !lstrcmpi( one.c_str(), _T("on"))) {
 			bTempForceCheck = true;
 			bTempDisableCheck = false;
-			CallFunctionAsync( sttSetTimerOn, NULL );
+			CallFunctionAsync( sttSetTimerOn, this );
 		}
 		if ( !lstrcmpi( one.c_str(), _T("off"))) {
 			bTempForceCheck = false;
 			bTempDisableCheck = true;
-			CallFunctionAsync( sttSetTimerOff, NULL );
+			CallFunctionAsync( sttSetTimerOff, this );
 		}
 		if ( !lstrcmpi( one.c_str(), _T("time")) && !two.IsEmpty()) {
 			m_iTempCheckTime = StrToInt( two.c_str());
