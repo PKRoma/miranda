@@ -242,41 +242,59 @@ int fnTrayIconInit(HWND hwnd)
 		cli.cycleTimerId = 0;
 	}
 
-	if (DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI) {
-		cli.trayIconCount = netProtoCount;
-	}
-	else cli.trayIconCount = 1;
+	cli.trayIconCount = 1;
 
-	cli.trayIcon = (struct trayIconInfo_t *) mir_calloc(sizeof(struct trayIconInfo_t) * max(accounts.getCount(), 1));
-	if ( DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI
-	     && (averageMode <= 0 || DBGetContactSettingByte(NULL, "CList", "AlwaysMulti", SETTING_ALWAYSMULTI_DEFAULT ))) 
+    if (netProtoCount)
     {
-		for (int i = accounts.getCount(); i--; ) {
-			int j = cli.pfnGetAccountIndexByPos( i );
-			if ( j >= 0 ) {
-				PROTOACCOUNT* pa = accounts[j];
-				if ( cli.pfnGetProtocolVisibility( pa->szModuleName ))
-					cli.pfnTrayIconAdd(hwnd, pa->szModuleName, NULL, CallProtoService(pa->szModuleName, PS_GETSTATUS, 0, 0));
-		    }	
-        }
-	}	
-	else if (/*averageMode <= ID_STATUS_OFFLINE ||*/ DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_SINGLE) {
-		DBVARIANT dbv = { DBVT_DELETED };
-		char *szProto;
-		if (!DBGetContactSettingString(NULL, "CList", "PrimaryStatus", &dbv)
-			 && (averageMode <= 0 || DBGetContactSettingByte(NULL, "CList", "AlwaysPrimary", 0) ))
-			szProto = dbv.pszVal;
-		else
-			szProto = NULL;
+	    cli.trayIcon = (trayIconInfo_t *) mir_calloc(sizeof(trayIconInfo_t) * accounts.getCount());
 
-		cli.pfnTrayIconAdd(hwnd, NULL, szProto, szProto ? CallProtoService(szProto, PS_GETSTATUS, 0, 0) : CallService(MS_CLIST_GETSTATUSMODE, 0, 0));
-		DBFreeVariant(&dbv);
-	}
-	else
-		cli.pfnTrayIconAdd(hwnd, NULL, NULL, averageMode);
-	if (averageMode < 0 && DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_CYCLE)
-		cli.cycleTimerId = SetTimer(NULL, 0, DBGetContactSettingWord(NULL, "CList", "CycleTime", SETTING_CYCLETIME_DEFAULT) * 1000, cli.pfnTrayCycleTimerProc);
-	{ ulock; return 0; }
+        int trayIconSetting = DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT);
+
+        if (trayIconSetting == SETTING_TRAYICON_MULTI) cli.trayIconCount = netProtoCount;
+
+	    if (trayIconSetting == SETTING_TRAYICON_SINGLE) 
+        {
+		    DBVARIANT dbv = { DBVT_DELETED };
+		    char *szProto;
+		    if (!DBGetContactSettingString(NULL, "CList", "PrimaryStatus", &dbv)
+			     && (averageMode < 0 || DBGetContactSettingByte(NULL, "CList", "AlwaysPrimary", 0) ))
+			    szProto = dbv.pszVal;
+		    else
+			    szProto = NULL;
+
+		    cli.pfnTrayIconAdd(hwnd, NULL, szProto, szProto ? CallProtoService(szProto, PS_GETSTATUS, 0, 0) : CallService(MS_CLIST_GETSTATUSMODE, 0, 0));
+		    DBFreeVariant(&dbv);
+	    }
+	    else if (trayIconSetting == SETTING_TRAYICON_MULTI &&
+	         (averageMode < 0 || DBGetContactSettingByte(NULL, "CList", "AlwaysMulti", SETTING_ALWAYSMULTI_DEFAULT )))
+        {
+		    for (int i = accounts.getCount(); i--; ) 
+            {
+			    int j = cli.pfnGetAccountIndexByPos( i );
+			    if ( j >= 0 ) 
+                {
+				    PROTOACCOUNT* pa = accounts[j];
+				    if ( cli.pfnGetProtocolVisibility( pa->szModuleName ))
+					    cli.pfnTrayIconAdd(hwnd, pa->szModuleName, NULL, CallProtoService(pa->szModuleName, PS_GETSTATUS, 0, 0));
+		        }	
+            }
+	    }	
+	    else
+        {
+		    cli.pfnTrayIconAdd(hwnd, NULL, NULL, averageMode);
+	    
+            if (trayIconSetting == SETTING_TRAYICON_CYCLE && averageMode < 0)
+		        cli.cycleTimerId = SetTimer(NULL, 0, DBGetContactSettingWord(NULL, "CList", "CycleTime", SETTING_CYCLETIME_DEFAULT) * 1000, cli.pfnTrayCycleTimerProc);
+        }
+    }
+    else
+    {
+	    cli.trayIcon = (trayIconInfo_t *) mir_calloc(sizeof(trayIconInfo_t));
+	    cli.pfnTrayIconAdd(hwnd, NULL, NULL, averageMode);
+    }
+
+    ulock; 
+    return 0;
 }
 
 int fnTrayIconDestroy(HWND hwnd)
@@ -298,7 +316,9 @@ int fnTrayIconDestroy(HWND hwnd)
 	mir_free(cli.trayIcon);
 	cli.trayIcon = NULL;
 	cli.trayIconCount = 0;
-	{ ulock; return 0; }
+
+	ulock; 
+    return 0;
 }
 
 //called when Explorer crashes and the taskbar is remade
@@ -433,20 +453,23 @@ VOID CALLBACK fnTrayCycleTimerProc(HWND, UINT, UINT_PTR, DWORD)
 	initcheck;
 	lock;
 
-    if (accounts.getCount())
-    {
-	    for (;;) {
-		    cycleStep = (cycleStep + 1) % accounts.getCount();
-		    if ( cli.pfnGetProtocolVisibility( accounts[cycleStep]->szModuleName ))
-			    break;
-	    }
-	    DestroyIcon(cli.trayIcon[0].hBaseIcon);
-	    cli.trayIcon[0].hBaseIcon = cli.pfnGetIconFromStatusMode(NULL, accounts[cycleStep]->szModuleName, 
-		    CallProtoService( accounts[cycleStep]->szModuleName, PS_GETSTATUS, 0, 0 ));
-	    if (cli.trayIcon[0].isBase)
-		    cli.pfnTrayIconUpdate(cli.trayIcon[0].hBaseIcon, NULL, NULL, 1);
+    int i;
+    for (i = accounts.getCount() + 1; --i;) {
+	    cycleStep = (cycleStep + 1) % accounts.getCount();
+	    if ( cli.pfnGetProtocolVisibility( accounts[cycleStep]->szModuleName ))
+		    break;
     }
-	ulock;
+
+    if (i)
+    {
+        DestroyIcon(cli.trayIcon[0].hBaseIcon);
+        cli.trayIcon[0].hBaseIcon = cli.pfnGetIconFromStatusMode(NULL, accounts[cycleStep]->szModuleName, 
+	        CallProtoService( accounts[cycleStep]->szModuleName, PS_GETSTATUS, 0, 0 ));
+        if (cli.trayIcon[0].isBase)
+	        cli.pfnTrayIconUpdate(cli.trayIcon[0].hBaseIcon, NULL, NULL, 1);
+    }
+
+    ulock;
 }
 
 void fnTrayIconUpdateBase(const char *szChangedProto)
