@@ -608,10 +608,38 @@ int __cdecl CAimProto::SetApparentMode( HANDLE hContact, int mode )
 
 void __cdecl CAimProto::SetStatusWorker( void* arg )
 {
-    int iNewStatus = ( int )arg;
+    start_connection((int)arg);
+}
 
-    start_connection( iNewStatus );
-	if ( state == 1 ) 
+////////////////////////////////////////////////////////////////////////////////////////
+// SetStatus - sets the protocol m_iStatus
+
+int __cdecl CAimProto::SetStatus( int iNewStatus )
+{
+	if ( iNewStatus == m_iStatus )
+		return 0;
+
+    if (iNewStatus == ID_STATUS_OFFLINE)
+    {
+       	char** msgptr = getStatusMsgLoc(m_iStatus);
+        if (msgptr && *msgptr)
+        {
+            if (m_iStatus == ID_STATUS_AWAY)
+		        aim_set_away(hServerConn,seqno,NULL);//unset away message
+            else
+		        aim_set_statusmsg(hServerConn,seqno,NULL);//unset status message
+        }
+		broadcast_status(ID_STATUS_OFFLINE);
+        return 0;
+    }
+
+    m_iDesiredStatus = iNewStatus;
+    if (m_iStatus == ID_STATUS_OFFLINE)
+    {
+		broadcast_status(ID_STATUS_CONNECTING);
+	    ForkThread( &CAimProto::SetStatusWorker, ( void* )iNewStatus );
+    }
+    else if (m_iStatus > ID_STATUS_OFFLINE)
     {
 	    char** msgptr = getStatusMsgLoc(iNewStatus);
 		switch( iNewStatus ) 
@@ -644,31 +672,7 @@ void __cdecl CAimProto::SetStatusWorker( void* arg )
 			break;
 	    }	
     }
-}
 
-////////////////////////////////////////////////////////////////////////////////////////
-// SetStatus - sets the protocol m_iStatus
-
-int __cdecl CAimProto::SetStatus( int iNewStatus )
-{
-	if ( iNewStatus == m_iStatus )
-		return 0;
-
-    if (iNewStatus == ID_STATUS_OFFLINE)
-    {
-       	char** msgptr = getStatusMsgLoc(m_iStatus);
-        if (msgptr && *msgptr)
-        {
-            if (m_iStatus == ID_STATUS_AWAY)
-		        aim_set_away(hServerConn,seqno,NULL);//unset away message
-            else
-		        aim_set_statusmsg(hServerConn,seqno,NULL);//unset status message
-        }
-		broadcast_status(ID_STATUS_OFFLINE);
-        return 0;
-    }
-
-	ForkThread( &CAimProto::SetStatusWorker, ( void* )iNewStatus );
 	return 0;
 }
 

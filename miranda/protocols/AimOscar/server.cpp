@@ -665,7 +665,7 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 			if(getByte( AIM_KEY_CM, 0))
 				aim_new_service_request(hServerConn,seqno,0x0018 );//mail
 			LOG("Connection Negotiation Finished");
-			state=1;
+			state = 1;
 		}
 	}
     else if (snac.subcmp(0x0008)) // add buddy

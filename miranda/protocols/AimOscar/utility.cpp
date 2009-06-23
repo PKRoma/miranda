@@ -61,7 +61,7 @@ void CAimProto::broadcast_status(int status)
 
 void CAimProto::start_connection(int status)
 {
-	if(m_iStatus==ID_STATUS_OFFLINE)
+	if(m_iStatus<=ID_STATUS_OFFLINE)
 	{
 		offline_contacts();
 		DBVARIANT dbv;
@@ -85,8 +85,6 @@ void CAimProto::start_connection(int status)
 		int dbkey = getString(AIM_KEY_HN, &dbv);
         if (dbkey) dbv.pszVal = (char*)(getByte(AIM_KEY_DSSL, 0) ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER);
 
-		broadcast_status(ID_STATUS_CONNECTING);
-		m_iDesiredStatus = status;
 		hServerConn = NULL;
 		hServerPacketRecver = NULL;
 		unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
