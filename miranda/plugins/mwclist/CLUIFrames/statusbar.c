@@ -85,11 +85,9 @@ void DrawDataForStatusBar(LPDRAWITEMSTRUCT dis)
 	SetBkMode(dis->hDC,TRANSPARENT);
 	x=dis->rcItem.left+extraspace;
 
-	if(showOpts&1) {
-
-		//char buf [256];
-
-		if ((DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1)==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
+	if(showOpts&1) 
+    {
+		if ((DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1)==1) && status < ID_STATUS_OFFLINE)
 		{
 			hIcon=(HICON)GetConnectingIconService((WPARAM)szProto,0);
 
@@ -111,18 +109,17 @@ void DrawDataForStatusBar(LPDRAWITEMSTRUCT dis)
 	}
 	else x+=2;
 	if(showOpts&2) {
-		char szName[64];
-		szName[0]=0;
-		if (CallProtoService(szProto,PS_GETNAME,sizeof(szName),(LPARAM)szName)) {
-			strcpy(szName,szProto);
-		} //if
-		if(lstrlenA(szName)<sizeof(szName)-1) lstrcatA(szName," ");
-		GetTextExtentPoint32A(dis->hDC,szName,lstrlenA(szName),&textSize);
-		TextOutA(dis->hDC,x,(dis->rcItem.top+dis->rcItem.bottom-textSize.cy)>>1,szName,lstrlenA(szName));
+		TCHAR szName[64];
+
+        PROTOACCOUNT* pa = ProtoGetAccount(szProto);
+        mir_sntprintf(szName, SIZEOF(szName), _T("%s%s"), pa->tszAccountName, showOpts&4 ? _T(" ") : _T(""));
+		GetTextExtentPoint32(dis->hDC, szName, _tcslen(szName), &textSize);
+       
+		TextOut(dis->hDC,x,(dis->rcItem.top+dis->rcItem.bottom-textSize.cy)>>1,szName,lstrlen(szName));
 		x+=textSize.cx;
 	}
 	if(showOpts&4) {
-		TCHAR *szStatus = pcli->pfnGetStatusModeDescription(status,0);
+		TCHAR *szStatus = pcli->pfnGetStatusModeDescription(status, 0);
 		if (!szStatus) szStatus = _T("");
 		GetTextExtentPoint32(dis->hDC,szStatus,lstrlen(szStatus),&textSize);
 		TextOut(dis->hDC,x,(dis->rcItem.top+dis->rcItem.bottom-textSize.cy)>>1,szStatus,lstrlen(szStatus));
