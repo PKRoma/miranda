@@ -440,16 +440,16 @@ void EraseAccount( const char* pszModuleName )
 	dbcgs.szModule = "Protocol";
 	dbcgs.szSetting = "p";
 
-    dbv.type = DBVT_ASCIIZ;
-	dbv.pszVal = szProtoName;
-	dbv.cchVal = SIZEOF(szProtoName);
-
 	// remove protocol contacts first
 	HANDLE hContact = ( HANDLE )CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) 
     {
 		HANDLE h1 = hContact;
 		hContact = ( HANDLE )CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )h1, 0 );
+
+        dbv.type = DBVT_ASCIIZ;
+        dbv.pszVal = szProtoName;
+        dbv.cchVal = SIZEOF(szProtoName);
 
         if ( CallService( MS_DB_CONTACT_GETSETTINGSTATIC, ( WPARAM )h1, ( LPARAM )&dbcgs ))
 			continue;
