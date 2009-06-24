@@ -213,7 +213,7 @@ int CAimProto::aim_set_profile(HANDLE hServerConn,unsigned short &seqno,char *ms
         typsz = (unsigned short)(sizeof(AIM_MSG_TYPE_UNICODE)-1);
         wchar_t* msgu = mir_utf8decodeW(msg);
         wcs_htons(msgu);
-        msg = (char*)NEWTSTR_ALLOCA(msgu);
+        msg = (char*)NEWWSTR_ALLOCA(msgu);
         msg_size = wcslen(msgu) * sizeof(wchar_t);
         mir_free(msgu);
     }
