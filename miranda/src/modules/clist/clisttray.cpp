@@ -290,7 +290,7 @@ int fnTrayIconInit(HWND hwnd)
     else
     {
 	    cli.trayIcon = (trayIconInfo_t *) mir_calloc(sizeof(trayIconInfo_t));
-	    cli.pfnTrayIconAdd(hwnd, NULL, NULL, averageMode);
+	    cli.pfnTrayIconAdd(hwnd, NULL, NULL, CallService(MS_CLIST_GETSTATUSMODE, 0, 0));
     }
 
     ulock; 
@@ -492,9 +492,12 @@ void fnTrayIconUpdateBase(const char *szChangedProto)
 			cycleStep = i - 1;
 	}
 
-	if (netProtoCount > 1) {
+	if (netProtoCount > 0) 
+    {
+        int trayIconSetting = DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT);
+
 		if (averageMode > 0) {
-			if (DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI) {
+			if (trayIconSetting == SETTING_TRAYICON_MULTI) {
 				if (DBGetContactSettingByte(NULL, "CList", "AlwaysMulti", SETTING_ALWAYSMULTI_DEFAULT))
 					//changed = cli.pfnTrayIconSetBaseInfo( cli.pfnGetIconFromStatusMode((char*)szChangedProto, NULL, averageMode), (char*)szChangedProto);
 					changed = cli.pfnTrayIconSetBaseInfo( cli.pfnGetIconFromStatusMode( NULL, szChangedProto, CallProtoService(szChangedProto, PS_GETSTATUS, 0, 0)), (char*)szChangedProto );
@@ -509,7 +512,7 @@ void fnTrayIconUpdateBase(const char *szChangedProto)
 				changed = cli.pfnTrayIconSetBaseInfo( cli.pfnGetIconFromStatusMode(NULL, NULL, averageMode), NULL);
 		}
 		else {
-			switch (DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT)) {
+			switch (trayIconSetting) {
 			case SETTING_TRAYICON_SINGLE:
 				{
 					DBVARIANT dbv = { DBVT_DELETED };
@@ -546,6 +549,7 @@ void fnTrayIconUpdateBase(const char *szChangedProto)
 	}
 	else
 		changed = cli.pfnTrayIconSetBaseInfo(ImageList_GetIcon(hCListImages, cli.pfnIconFromStatusMode(NULL, averageMode, NULL), ILD_NORMAL), NULL);
+
 	if (changed != -1 && cli.trayIcon[changed].isBase)
 		cli.pfnTrayIconUpdate(cli.trayIcon[changed].hBaseIcon, NULL, cli.trayIcon[changed].szProto, 1);
 	ulock;
