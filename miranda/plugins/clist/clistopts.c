@@ -121,7 +121,6 @@ static INT_PTR CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		{
 			int i, count, item;
 			PROTOACCOUNT **accs;
-			char szName[64];
 			DBVARIANT dbv = { DBVT_DELETED };
 			DBGetContactSetting(NULL, "CList", "PrimaryStatus", &dbv);
 			CallService( MS_PROTO_ENUMACCOUNTS, (WPARAM)&count, (LPARAM)&accs);
@@ -130,8 +129,7 @@ static INT_PTR CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			for (i = 0; i < count; i++) {
                 if (!IsAccountEnabled(accs[i]) || CallProtoService( accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0) == 0)
 					continue;
-				CallProtoService(accs[i]->szModuleName, PS_GETNAME, SIZEOF(szName), (LPARAM) szName);
-				item = SendDlgItemMessageA(hwndDlg, IDC_PRIMARYSTATUS, CB_ADDSTRING, 0, (LPARAM) szName);
+                item = SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_ADDSTRING, 0, (LPARAM) accs[i]->tszAccountName);
 				SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_SETITEMDATA, item, (LPARAM) accs[i]);
 				if (dbv.type == DBVT_ASCIIZ && !lstrcmpA(dbv.pszVal, accs[i]->szModuleName))
 					SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_SETCURSEL, item, 0);
