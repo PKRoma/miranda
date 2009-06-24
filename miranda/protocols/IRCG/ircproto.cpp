@@ -332,6 +332,7 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 	IrcHookEvent( ME_USERINFO_INITIALISE, &CIrcProto::OnInitUserInfo );
 	IrcHookEvent( ME_CLIST_PREBUILDCONTACTMENU, &CIrcProto::OnMenuPreBuild );
 	IrcHookEvent( ME_OPT_INITIALISE, &CIrcProto::OnInitOptionsPages );
+	IrcHookEvent( ME_DB_CONTACT_SETTINGCHANGED, &CIrcProto::OnDbSettingChanged );
 
 	if ( m_nick[0] ) {
 		TCHAR szBuf[ 40 ];

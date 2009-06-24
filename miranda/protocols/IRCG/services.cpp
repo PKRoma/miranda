@@ -166,7 +166,7 @@ int __cdecl CIrcProto::OnDeletedContact(WPARAM wp, LPARAM)
 			gcd.ptszID = ( TCHAR* )S.c_str();
 			int i = CallChatEvent( SESSION_TERMINATE, (LPARAM)&gce);
 			if (i && type == GCW_CHATROOM)
-				PostIrcMessage( _T("/PART %s"), dbv.ptszVal);
+				PostIrcMessage( _T("/PART %s %s"), dbv.ptszVal, m_userInfo);
 		}
 		else {
 			BYTE bDCC = getByte(( HANDLE )wp, "DCC", 0) ;
@@ -203,7 +203,7 @@ INT_PTR __cdecl CIrcProto::OnLeaveChat(WPARAM wp, LPARAM)
 	DBVARIANT dbv;
 	if ( !getTString(( HANDLE )wp, "Nick", &dbv)) {
 		if ( getByte(( HANDLE )wp, "ChatRoom", 0) == GCW_CHATROOM) {
-			PostIrcMessage( _T("/PART %s"), dbv.ptszVal);
+			PostIrcMessage( _T("/PART %s %s"), dbv.ptszVal, m_userInfo);
 
 			GCEVENT gce = {0};
 			GCDEST gcd = {0};
@@ -530,7 +530,7 @@ int __cdecl CIrcProto::GCEventHook(WPARAM wParam,LPARAM lParam)
 						break;
 
 					case 3:
-						PostIrcMessage( _T("/PART %s"), p1 );
+						PostIrcMessage( _T("/PART %s %s"), p1, m_userInfo );
 						{	GCEVENT gce = {0};
 							GCDEST gcd = {0};
 							S = MakeWndID(p1);
@@ -1030,6 +1030,32 @@ int __cdecl CIrcProto::OnMenuPreBuild(WPARAM wParam, LPARAM)
 	return 0;
 }
 
+int __cdecl CIrcProto::OnDbSettingChanged(WPARAM wParam, LPARAM lParam)
+{
+	HANDLE hContact = ( HANDLE ) wParam;
+	if ( hContact == NULL || !IsConnected() )
+		return 0;
+
+	DBCONTACTWRITESETTING* cws = ( DBCONTACTWRITESETTING* )lParam;
+	if ( strcmp( cws->szModule, "CList" ))
+		return 0;
+
+	if ( cws->value.type != DBVT_DELETED && !( cws->value.type==DBVT_BYTE && cws->value.bVal==0 ))
+		return 0;
+
+	char* szProto = ( char* )CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
+	if ( szProto == NULL || strcmp( szProto, m_szModuleName ))
+		return 0;
+
+	if ( !strcmp( cws->szSetting, "NotOnList" ) ) {
+		DBVARIANT dbv;
+		if ( !getTString( hContact, "Nick", &dbv )) {
+			if ( getByte( "MirVerAutoRequest", 1) )
+				PostIrcMessage( _T("/PRIVMSG %s \001VERSION\001"), dbv.ptszVal );
+			DBFreeVariant( &dbv );
+	}	}
+	return 0;
+}
 void __cdecl CIrcProto::ConnectServerThread( void* )
 {
 	InterlockedIncrement((long *) &m_bConnectThreadRunning);

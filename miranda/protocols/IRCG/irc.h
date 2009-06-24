@@ -359,6 +359,7 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	int __cdecl OnModulesLoaded( WPARAM, LPARAM );
 	int __cdecl OnMenuPreBuild( WPARAM, LPARAM );
 	int __cdecl OnPreShutdown( WPARAM, LPARAM );
+	int __cdecl OnDbSettingChanged( WPARAM, LPARAM );
 
 	int __cdecl GCEventHook( WPARAM, LPARAM );
 	int __cdecl GCMenuHook( WPARAM, LPARAM );
