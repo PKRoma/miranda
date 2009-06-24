@@ -238,7 +238,7 @@ struct CCtcpPrefsDlg : public CProtoDlgBase<CIrcProto>
 {
 	CCtrlCombo m_combo;
 	CCtrlCheck m_slow, m_fast, m_disc, m_passive, m_sendNotice, m_enableIP, m_fromServer;
-	CCtrlEdit m_ip;
+	CCtrlEdit m_ip, m_userInfo;
 	CCtrlCheck m_radio1, m_radio2, m_radio3;
 
 	CCtcpPrefsDlg( CIrcProto* _pro );

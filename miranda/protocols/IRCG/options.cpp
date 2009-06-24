@@ -851,6 +851,7 @@ CCtcpPrefsDlg::CCtcpPrefsDlg( CIrcProto* _pro ) :
 	m_passive( this, IDC_PASSIVE ),
 	m_sendNotice( this, IDC_SENDNOTICE ),
 	m_ip( this, IDC_IP ),
+	m_userInfo( this, IDC_USERINFO),
 	m_radio1( this, IDC_RADIO1 ),
 	m_radio2( this, IDC_RADIO2 ),
 	m_radio3( this, IDC_RADIO3 )
@@ -861,7 +862,7 @@ CCtcpPrefsDlg::CCtcpPrefsDlg( CIrcProto* _pro ) :
 
 void CCtcpPrefsDlg::OnInitDialog()
 {
-	SetDlgItemText( m_hwnd, IDC_USERINFO, m_proto->m_userInfo);
+	m_userInfo.SetText(m_proto->m_userInfo);
 
 	m_slow.SetState( m_proto->m_DCCMode == 0 );
 	m_fast.SetState( m_proto->m_DCCMode == 1 );
@@ -936,7 +937,7 @@ void CCtcpPrefsDlg::OnClicked( CCtrlData* )
 
 void CCtcpPrefsDlg::OnApply()
 {
-	GetDlgItemText( m_hwnd,IDC_USERINFO, m_proto->m_userInfo, 499);
+	m_userInfo.GetText( m_proto->m_userInfo, SIZEOF( m_proto->m_userInfo ));
 
 	m_proto->m_DCCPacketSize = m_combo.GetInt();
 	m_proto->m_DCCPassive = m_passive.GetState();
