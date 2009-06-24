@@ -59,8 +59,10 @@ void CAimProto::broadcast_status(int status)
 	sendBroadcast(NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)old_status, m_iStatus);	
 }
 
-void CAimProto::start_connection(int status)
+void CAimProto::start_connection(void *arg)
 {
+    int status = (int)arg;
+
 	if(m_iStatus<=ID_STATUS_OFFLINE)
 	{
 		offline_contacts();

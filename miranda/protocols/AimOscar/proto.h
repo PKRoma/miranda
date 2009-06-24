@@ -342,7 +342,6 @@ struct CAimProto : public PROTO_INTERFACE
 
 	void   __cdecl basic_search_ack_success( void* p );
 	void   __cdecl email_search_ack_success( void* p );
-	void   __cdecl SetStatusWorker( void* arg );
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// proxy.cpp
@@ -401,10 +400,10 @@ struct CAimProto : public PROTO_INTERFACE
 	//////////////////////////////////////////////////////////////////////////////////////
 	// utilities.cpp
 
-	void   __cdecl msg_ack_success( void* );
+	void   __cdecl msg_ack_success(void*);
+	void   __cdecl start_connection(void*);
 
 	void   broadcast_status(int status);
-	void   start_connection(int initial_status);
     bool   wait_conn(HANDLE& hConn, HANDLE& hEvent, unsigned short service);
     bool   is_my_contact(HANDLE hContact);
     HANDLE find_chat_contact(const char * room);
