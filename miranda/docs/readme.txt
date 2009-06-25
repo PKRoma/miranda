@@ -23,6 +23,7 @@ Contents
 * New in 0.8.1
 Enhancements:
  - Improve account renaming inside of the account manager
+ - Notification if missing messaging plugin
  
 Bugfixes:
  - Improved upgrade procedure when using older contact list and messaging plugins
@@ -34,11 +35,15 @@ Bugfixes:
  - Fixed account removal handling
  - Fixed hotkey issue with some MS keyboards
  - Fixed possible crash with event data
+ - AIM: Fixed issue with multiple connection requests
+ - AIM: Fixed issue setting AIM profile
  - ICQ: Fixed AIM away message handling (caused online status to be seen as away in some clients)
+ - IRC: Possible crash on specific alias
  - MSN: Fixed renaming nickname from options
  - MSN: Fixed Offline messaging reception from Beejive client
  - Yahoo: Show download progress properly
  - Yahoo: Cancel out in the middle of file receive.
+ - Yahoo: Main menu fixes
 
  
 * New in 0.8.0
