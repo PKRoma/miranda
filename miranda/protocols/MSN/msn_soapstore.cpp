@@ -203,11 +203,8 @@ bool CMsnProto::MSN_StoreGetProfile(void)
 			    MSN_StoreCreateProfile();
 		    else
 		    {
-//			    if (!getByte( "NeverUpdateNickname", 0 ))
-//			    {
-				    const char* szNick = ezxml_txt(ezxml_child(expr, "DisplayName"));
-				    setStringUtf(NULL, "Nick", (char*)szNick);
-//			    }
+			    const char* szNick = ezxml_txt(ezxml_child(expr, "DisplayName"));
+			    setStringUtf(NULL, "Nick", (char*)szNick);
 		    }
 		    ezxml_free(xmlm);
 	    }
