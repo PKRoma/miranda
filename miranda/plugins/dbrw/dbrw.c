@@ -38,7 +38,7 @@ PLUGININFOEX pluginInfo = {
 	#endif
 	"Robert Rainwater",
 	"rainwater@miranda-im.org",
-	"Copyright © 2005-2007 Robert Rainwater",
+	"Copyright © 2005-2009 Robert Rainwater",
 	"http://www.miranda-im.org/",
 	0,
 	DEFMOD_DB,
