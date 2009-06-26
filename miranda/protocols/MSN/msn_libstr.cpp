@@ -174,7 +174,8 @@ void  HtmlDecode(char* str)
 	if (str == NULL)
 		return;
 
-	for (p=q=str; *p!='\0'; p++,q++) {
+	for (p=q=str; *p!='\0'; p++,q++) 
+    {
 		if (*p == '&') 
         {
 			if (!strncmp(p, "&amp;", 5)) {	*q = '&'; p += 4; }
@@ -212,9 +213,12 @@ char*  HtmlEncode(const char* str)
 		default: c++; break;
 		}
 	}
-	if ((s=(char*)mir_alloc(c+1)) != NULL) {
-		for (p=(char*)str,q=s; *p!='\0'; p++) {
-			switch (*p) {
+	if ((s=(char*)mir_alloc(c+1)) != NULL) 
+    {
+		for (p=(char*)str,q=s; *p!='\0'; p++) 
+        {
+			switch (*p) 
+            {
 			case '&': strcpy(q, "&amp;"); q += 5; break;
 			case '\'': strcpy(q, "&apos;"); q += 6; break;
 			case '>': strcpy(q, "&gt;"); q += 4; break;

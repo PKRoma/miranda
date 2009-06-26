@@ -178,7 +178,8 @@ LBL_InvalidCommand:
 				{
 					MSN_DebugLog("Another side requested the unknown protocol (%s), closing thread", params);
 					return 1;
-			}	}
+			    }	
+            }
 
 			if (info->mCaller == 0)  //receive
 			{
@@ -206,7 +207,8 @@ LBL_InvalidCommand:
 				}
 
 				BYTE* p = tBuf.surelyRead(3);
-				if (p == NULL) {
+				if (p == NULL) 
+                {
 LBL_Error:		ft->close();
 					MSN_ShowError("file transfer is canceled by remote host");
 					return 1;
@@ -233,10 +235,14 @@ LBL_Success:
 
 				SendBroadcast(ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&ft->std);
 
-				if (ft->std.currentFileProgress == ft->std.totalBytes) {
+				if (ft->std.currentFileProgress == ft->std.totalBytes) 
+                {
 					ft->complete();
 					goto LBL_Success;
-	}	}	}	}
+	            }	
+            }	
+        }	
+    }
 
 	return 0;
 }
@@ -259,7 +265,8 @@ void __cdecl CMsnProto::msnftp_sendFileThread(void* arg)
 
 	info->mBytesInData = 0;
 
-	for (;;) {
+	for (;;) 
+    {
 		int recvResult = info->recv(info->mData+info->mBytesInData, 1000 - info->mBytesInData);
 		if (recvResult == SOCKET_ERROR || !recvResult)
 			break;
@@ -267,12 +274,15 @@ void __cdecl CMsnProto::msnftp_sendFileThread(void* arg)
 		info->mBytesInData += recvResult;
 
 		//pull off each line for parsing
-		if (info->mCaller == 3 && info->mType == SERVER_FILETRANS) {
+		if (info->mCaller == 3 && info->mType == SERVER_FILETRANS) 
+        {
 			if (MSN_HandleMSNFTP(info, info->mData))
 				break;
 		}
-		else {  // info->mType!=SERVER_FILETRANS
-			for (;;) {
+		else   // info->mType!=SERVER_FILETRANS
+        {
+			for (;;) 
+            {
 				char* peol = strchr(info->mData,'\r');
 				if (peol == NULL)
 					break;
@@ -299,12 +309,15 @@ void __cdecl CMsnProto::msnftp_sendFileThread(void* arg)
 
 				if (MSN_HandleMSNFTP(info, msg))
 					break;
-		}	}
+		    }	
+        }
 
-		if (info->mBytesInData == sizeof(info->mData)) {
+		if (info->mBytesInData == sizeof(info->mData)) 
+        {
 			MSN_DebugLog("sizeof(data) is too small: the longest line won't fit");
 			break;
-	}	}
+	    }	
+    }
 
 	MSN_DebugLog("Closing file transfer thread");
 }
@@ -318,7 +331,8 @@ void CMsnProto::msnftp_startFileSend(ThreadData* info, const char* Invcommand, c
 	HANDLE sb = NULL;
 
 	filetransfer* ft = info->mMsnFtp; info->mMsnFtp = NULL;
-	if (ft != NULL) {
+	if (ft != NULL) 
+    {
 		nlb.cbSize = sizeof(nlb);
 		nlb.pfnNewConnectionV2 = MSN_ConnectionProc;
 		nlb.pExtra = this;
@@ -343,7 +357,8 @@ void CMsnProto::msnftp_startFileSend(ThreadData* info, const char* Invcommand, c
 		Invcookie, MyConnection.GetMyExtIPStr(), nlb.wExPort, MSN_GenRandom());
 	info->sendPacket("MSG", "N %d\r\n%s", nBytes, command);
 
-	if (sb) {
+	if (sb) 
+    {
 		ThreadData* newThread = new ThreadData;
 		newThread->mType = SERVER_FILETRANS;
 		newThread->mCaller = 2;

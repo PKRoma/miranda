@@ -123,7 +123,8 @@ size_t MimeHeaders::getLength()
 
 char* MimeHeaders::writeToBuffer(char* pDest)
 {
-	for (unsigned i=0; i < mCount; i++) {
+	for (unsigned i=0; i < mCount; i++) 
+    {
 		MimeHeader& H = mVals[ i ];
 		pDest += sprintf(pDest, "%s: %s\r\n", H.name, H.value);
 	}
@@ -139,7 +140,8 @@ char* MimeHeaders::readFromBuffer(char* parString)
 	clear();
 
 	while (*parString) {
-		if (parString[0] == '\r' && parString[1] == '\n') {
+		if (parString[0] == '\r' && parString[1] == '\n') 
+        {
 			parString += 2;
 			break;
 		}
@@ -176,7 +178,8 @@ char* MimeHeaders::readFromBuffer(char* parString)
 
 const char* MimeHeaders::find(const char* szFieldName)
 {
-	for (unsigned i=0; i < mCount; i++) {
+	for (unsigned i=0; i < mCount; i++) 
+    {
 		MimeHeader& MH = mVals[i];
 		if (_stricmp(MH.name, szFieldName) == 0)
 			return MH.value;
@@ -451,7 +454,8 @@ char* MimeHeaders::decodeMailBody(char* msgBody)
 int sttDivideWords(char* parBuffer, int parMinItems, char** parDest)
 {
 	int i;
-	for (i=0; i < parMinItems; i++) {
+	for (i=0; i < parMinItems; i++) 
+    {
 		parDest[ i ] = parBuffer;
 
 		size_t tWordLen = strcspn(parBuffer, " \t");

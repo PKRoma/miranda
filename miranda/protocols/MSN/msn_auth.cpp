@@ -148,16 +148,20 @@ int CMsnProto::MSN_GetPassportAuth(void)
 		unsigned status;
 
 		tResult = getSslResult(&szPassportHost, szAuthInfo, NULL, status);
-		if (tResult == NULL) {
-			if (defaultUrlAllow) {
+		if (tResult == NULL) 
+        {
+			if (defaultUrlAllow) 
+            {
 				strcpy(szPassportHost, defaultPassportUrl);
 				defaultUrlAllow = false;
 				continue;
 			}
-			else {
+			else 
+            {
 				retVal = 4;
 				break;
-		}	}
+		    }	
+        }
 
 		switch (status)
 		{
@@ -294,7 +298,8 @@ void hmac_sha1 (mir_sha1_byte_t *md, mir_sha1_byte_t *key, size_t keylen, mir_sh
 	memset(k_ipad+keylen, 0x36, SHA_BLOCKSIZE - keylen);
 	memset(k_opad+keylen, 0x5c, SHA_BLOCKSIZE - keylen);
 
-	for (unsigned i = 0; i < keylen; i++) {
+	for (unsigned i = 0; i < keylen; i++) 
+    {
 		k_ipad[i] ^= 0x36;
 		k_opad[i] ^= 0x5c;
 	}

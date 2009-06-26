@@ -442,7 +442,8 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 					break;
 
-				case IDC_USEGATEWAY: {
+				case IDC_USEGATEWAY: 
+                {
 					CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 					bool tValue = !IsDlgButtonChecked(hwndDlg, IDC_USEGATEWAY);
 
@@ -451,8 +452,10 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 						SetWindowTextA(tWindow, MSN_DEFAULT_GATEWAY);
 						SetDlgItemInt(hwndDlg, IDC_MSNPORT, MSN_DEFAULT_GATEWAY_PORT, FALSE);
 					}
-					else {
-						if (!proto->getString(NULL, "LoginServer", &dbv)) {
+					else 
+                    {
+						if (!proto->getString(NULL, "LoginServer", &dbv)) 
+                        {
 							SetWindowTextA(tWindow, dbv.pszVal);
 							MSN_FreeVariant(&dbv);
 						}
@@ -468,7 +471,8 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 		break;
 
 	case WM_NOTIFY:
-		if (((LPNMHDR)lParam)->code == (UINT)PSN_APPLY) {
+		if (((LPNMHDR)lParam)->code == (UINT)PSN_APPLY) 
+        {
 			bool restartRequired = false, reconnectRequired = false;
 			char str[MAX_PATH];
 
@@ -522,7 +526,8 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 
 			proto->LoadOptions();
 			return TRUE;
-	}	}
+	    }	
+    }
 
 	return FALSE;
 }
@@ -534,8 +539,10 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts(HWND hwndDlg, UINT msg, WPARAM w
 {
 	static bool bEnabled;
 
-	switch(msg) {
-	case WM_INITDIALOG: {
+	switch(msg) 
+    {
+	case WM_INITDIALOG: 
+    {
 		TranslateDialogDefault(hwndDlg);
 		bEnabled = false;
 
