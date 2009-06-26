@@ -24,245 +24,266 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /////////////////////////////////////////////////////////////////////////////////////////
 // add file session to a list
 
-void  CMsnProto::p2p_registerSession( filetransfer* ft )
+void  CMsnProto::p2p_registerSession(filetransfer* ft)
 {
-	EnterCriticalSection( &sessionLock );
-	sessionList.insert( ft );
-	LeaveCriticalSection( &sessionLock );
+	EnterCriticalSection(&sessionLock);
+	sessionList.insert(ft);
+	LeaveCriticalSection(&sessionLock);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // remove file session from a list
 
-void  CMsnProto::p2p_unregisterSession( filetransfer* ft )
+void  CMsnProto::p2p_unregisterSession(filetransfer* ft)
 {
-	EnterCriticalSection( &sessionLock );
-	int idx = sessionList.getIndex( ft );
-	if ( idx > -1 ) {
-		sessionList.remove( idx );
+	EnterCriticalSection(&sessionLock);
+	int idx = sessionList.getIndex(ft);
+	if (idx > -1) {
+		sessionList.remove(idx);
 	}
-	LeaveCriticalSection( &sessionLock );
+	LeaveCriticalSection(&sessionLock);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // get session by some parameter
 
-filetransfer*  CMsnProto::p2p_getSessionByID( unsigned id )
+filetransfer*  CMsnProto::p2p_getSessionByID(unsigned id)
 {
-	if ( id == 0 )
+	if (id == 0)
 		return NULL;
 
 	filetransfer* ft = NULL;
-	EnterCriticalSection( &sessionLock );
+	EnterCriticalSection(&sessionLock);
 
-	for ( int i=0; i < sessionList.getCount(); i++ ) {
+	for (int i=0; i < sessionList.getCount(); i++) 
+    {
 		filetransfer* FT = &sessionList[i];
-		if ( FT->p2p_sessionid == id ) {
+		if (FT->p2p_sessionid == id) 
+        {
 			ft = FT;
 			break;
-	}	}
+	    }	
+    }
 
-	LeaveCriticalSection( &sessionLock );
-	if ( ft == NULL )
-		MSN_DebugLog( "Ignoring unknown session id %08x", id );
+	LeaveCriticalSection(&sessionLock);
+	if (ft == NULL)
+		MSN_DebugLog("Ignoring unknown session id %08x", id);
 
 	return ft;
 }
 
-filetransfer*  CMsnProto::p2p_getSessionByUniqueID( unsigned id )
+filetransfer*  CMsnProto::p2p_getSessionByUniqueID(unsigned id)
 {
-	if ( id == 0 )
+	if (id == 0)
 		return NULL;
 
 	filetransfer* ft = NULL;
-	EnterCriticalSection( &sessionLock );
+	EnterCriticalSection(&sessionLock);
 
-	for ( int i=0; i < sessionList.getCount(); i++ ) {
+	for (int i=0; i < sessionList.getCount(); i++) 
+    {
 		filetransfer* FT = &sessionList[i];
-		if ( FT->p2p_acksessid == id ) {
+		if (FT->p2p_acksessid == id) 
+        {
 			ft = FT;
 			break;
-	}	}
+	    }	
+    }
 
-	LeaveCriticalSection( &sessionLock );
-	if ( ft == NULL )
-		MSN_DebugLog( "Ignoring unknown unique id %08x", id );
+	LeaveCriticalSection(&sessionLock);
+	if (ft == NULL)
+		MSN_DebugLog("Ignoring unknown unique id %08x", id);
 
 	return ft;
 }
 
 
-bool  CMsnProto::p2p_sessionRegistered( filetransfer* ft )
+bool  CMsnProto::p2p_sessionRegistered(filetransfer* ft)
 {
-	if ( ft != NULL && ft->p2p_appID == 0)
+	if (ft != NULL && ft->p2p_appID == 0)
 		return true;
 
-	EnterCriticalSection( &sessionLock );
-	int idx = sessionList.getIndex( ft );
-	LeaveCriticalSection( &sessionLock );
+	EnterCriticalSection(&sessionLock);
+	int idx = sessionList.getIndex(ft);
+	LeaveCriticalSection(&sessionLock);
 	return idx > -1;
 }
 
-filetransfer*  CMsnProto::p2p_getThreadSession( HANDLE hContact, TInfoType mType )
+filetransfer*  CMsnProto::p2p_getThreadSession(HANDLE hContact, TInfoType mType)
 {
-	EnterCriticalSection( &sessionLock );
+	EnterCriticalSection(&sessionLock);
 
 	filetransfer* result = NULL;
-	for ( int i=0; i < sessionList.getCount(); i++ ) {
+	for (int i=0; i < sessionList.getCount(); i++) 
+    {
 		filetransfer* FT = &sessionList[i];
-		if ( FT->std.hContact == hContact && FT->tType == mType ) {
+		if (FT->std.hContact == hContact && FT->tType == mType) 
+        {
 			result = FT;
 			break;
-	}	}
+	    }	
+    }
 
-	LeaveCriticalSection( &sessionLock );
+	LeaveCriticalSection(&sessionLock);
 	return result;
 }
 
-filetransfer*  CMsnProto::p2p_getAvatarSession( HANDLE hContact )
+filetransfer*  CMsnProto::p2p_getAvatarSession(HANDLE hContact)
 {
-	EnterCriticalSection( &sessionLock );
+	EnterCriticalSection(&sessionLock);
 
 	filetransfer* result = NULL;
-	for ( int i=0; i < sessionList.getCount(); i++ ) {
+	for (int i=0; i < sessionList.getCount(); i++) 
+    {
 		filetransfer* FT = &sessionList[i];
-		if ( FT->std.hContact == hContact && !FT->std.sending && 
-			FT->p2p_type == MSN_APPID_AVATAR ) {
+		if (FT->std.hContact == hContact && !FT->std.sending && 
+			FT->p2p_type == MSN_APPID_AVATAR) 
+        {
 			result = FT;
 			break;
-	}	}
+	    }	
+    }
 
-	LeaveCriticalSection( &sessionLock );
+	LeaveCriticalSection(&sessionLock);
 	return result;
 }
 
-bool  CMsnProto::p2p_isAvatarOnly( HANDLE hContact )
+bool  CMsnProto::p2p_isAvatarOnly(HANDLE hContact)
 {
-	EnterCriticalSection( &sessionLock );
+	EnterCriticalSection(&sessionLock);
 
 	bool result = true;
-	for ( int i=0; i < sessionList.getCount(); i++ ) {
+	for (int i=0; i < sessionList.getCount(); i++) 
+    {
 		filetransfer* FT = &sessionList[i];
 		result &= FT->std.hContact != hContact || FT->p2p_type != MSN_APPID_FILE;
 	}
 
-	LeaveCriticalSection( &sessionLock );
+	LeaveCriticalSection(&sessionLock);
 	return result;
 }
 
-void  CMsnProto::p2p_clearDormantSessions( void )
+void  CMsnProto::p2p_clearDormantSessions(void)
 {
-	EnterCriticalSection( &sessionLock );
+	EnterCriticalSection(&sessionLock);
 
-	time_t ts = time( NULL );
-	for ( int i=0; i < sessionList.getCount(); i++ ) {
+	time_t ts = time(NULL);
+	for (int i=0; i < sessionList.getCount(); i++) 
+    {
 		filetransfer* FT = &sessionList[i];
-		if ( FT->p2p_waitack && ( ts - FT->ts ) > 60 ) 
+		if (FT->p2p_waitack && (ts - FT->ts) > 60) 
 		{
-			LeaveCriticalSection( &sessionLock );
-			p2p_unregisterSession( FT );
-			EnterCriticalSection( &sessionLock );
+			LeaveCriticalSection(&sessionLock);
+			p2p_unregisterSession(FT);
+			EnterCriticalSection(&sessionLock);
 			i = 0;
 	}	}
 
-	for ( int j=0; j < dcList.getCount(); j++ ) {
+	for (int j=0; j < dcList.getCount(); j++) 
+    {
 		directconnection* DC = &dcList[j];
-		if (( ts - DC->ts ) > 120 ) {
-			LeaveCriticalSection( &sessionLock );
-			p2p_unregisterDC( DC );
-			EnterCriticalSection( &sessionLock );
+		if ((ts - DC->ts) > 120) 
+        {
+			LeaveCriticalSection(&sessionLock);
+			p2p_unregisterDC(DC);
+			EnterCriticalSection(&sessionLock);
 			j = 0;
-	}	}
+	    }	
+    }
 
-	LeaveCriticalSection( &sessionLock );
+	LeaveCriticalSection(&sessionLock);
 }
 
-void  CMsnProto::p2p_redirectSessions( HANDLE hContact )
+void  CMsnProto::p2p_redirectSessions(HANDLE hContact)
 {
-	EnterCriticalSection( &sessionLock );
+	EnterCriticalSection(&sessionLock);
 
-	ThreadData* T = MSN_GetP2PThreadByContact( hContact );
-	for ( int i=0; i < sessionList.getCount(); i++ ) {
+	ThreadData* T = MSN_GetP2PThreadByContact(hContact);
+	for (int i=0; i < sessionList.getCount(); i++) 
+    {
 		filetransfer* FT = &sessionList[i];
-		if ( FT->std.hContact == hContact && !FT->std.sending && 
+		if (FT->std.hContact == hContact && !FT->std.sending && 
 			FT->std.currentFileProgress < FT->std.currentFileSize &&
-			( T == NULL || ( FT->tType != T->mType && FT->tType != 0 ))) 
-			p2p_sendRedirect( FT );
+			(T == NULL || (FT->tType != T->mType && FT->tType != 0))) 
+			p2p_sendRedirect(FT);
 	}
 
-	LeaveCriticalSection( &sessionLock );
+	LeaveCriticalSection(&sessionLock);
 }
 
-void  CMsnProto::p2p_cancelAllSessions( void )
+void  CMsnProto::p2p_cancelAllSessions(void)
 {
-	EnterCriticalSection( &sessionLock );
+	EnterCriticalSection(&sessionLock);
 
-	for ( int i=0; i < sessionList.getCount(); i++ ) {
+	for (int i=0; i < sessionList.getCount(); i++) {
 		filetransfer* FT = &sessionList[i];
-		p2p_sendCancel( FT );
+		p2p_sendCancel(FT);
 	}
 
 	dcList.destroy();
 
-	LeaveCriticalSection( &sessionLock );
+	LeaveCriticalSection(&sessionLock);
 }
 
-filetransfer*  CMsnProto::p2p_getSessionByCallID( const char* CallID )
+filetransfer*  CMsnProto::p2p_getSessionByCallID(const char* CallID)
 {
-	if ( CallID == NULL )
+	if (CallID == NULL)
 		return NULL;
 
-	EnterCriticalSection( &sessionLock );
+	EnterCriticalSection(&sessionLock);
 
 	filetransfer* ft = NULL;
-	for ( int i=0; i < sessionList.getCount(); i++ ) {
+	for (int i=0; i < sessionList.getCount(); i++) {
 		filetransfer* FT = &sessionList[i];
-		if ( FT->p2p_callID != NULL && !strcmp( FT->p2p_callID, CallID )) {
+		if (FT->p2p_callID != NULL && !strcmp(FT->p2p_callID, CallID)) {
 			ft = FT;
 			break;
 	}	}
 
-	LeaveCriticalSection( &sessionLock );
-	if ( ft == NULL )
-		MSN_DebugLog( "Ignoring unknown session call id %s", CallID );
+	LeaveCriticalSection(&sessionLock);
+	if (ft == NULL)
+		MSN_DebugLog("Ignoring unknown session call id %s", CallID);
 
 	return ft;
 }
 
 
-void  CMsnProto::p2p_registerDC( directconnection* dc )
+void  CMsnProto::p2p_registerDC(directconnection* dc)
 {
-	EnterCriticalSection( &sessionLock );
-	dcList.insert( dc );
-	LeaveCriticalSection( &sessionLock );
+	EnterCriticalSection(&sessionLock);
+	dcList.insert(dc);
+	LeaveCriticalSection(&sessionLock);
 }
 
-void  CMsnProto::p2p_unregisterDC( directconnection* dc )
+void  CMsnProto::p2p_unregisterDC(directconnection* dc)
 {
-	EnterCriticalSection( &sessionLock );
-	int idx = dcList.getIndex( dc );
-	if ( idx > -1 ) {
-		dcList.remove( idx );
+	EnterCriticalSection(&sessionLock);
+	int idx = dcList.getIndex(dc);
+	if (idx > -1) 
+    {
+		dcList.remove(idx);
 	}
-	LeaveCriticalSection( &sessionLock );
+	LeaveCriticalSection(&sessionLock);
 }
 
-directconnection*  CMsnProto::p2p_getDCByCallID( const char* CallID )
+directconnection*  CMsnProto::p2p_getDCByCallID(const char* CallID)
 {
-	if ( CallID == NULL )
+	if (CallID == NULL)
 		return NULL;
 
-	EnterCriticalSection( &sessionLock );
+	EnterCriticalSection(&sessionLock);
 
 	directconnection* dc = NULL;
-	for ( int i=0; i < dcList.getCount(); i++ ) {
+	for (int i=0; i < dcList.getCount(); i++) {
 		directconnection* DC = &dcList[i];
-		if ( DC->callId != NULL && !strcmp( DC->callId, CallID )) {
+		if (DC->callId != NULL && !strcmp(DC->callId, CallID)) 
+        {
 			dc = DC;
 			break;
-	}	}
+	    }	
+    }
 
-	LeaveCriticalSection( &sessionLock );
+	LeaveCriticalSection(&sessionLock);
 
 	return dc;
 }
@@ -272,16 +293,16 @@ directconnection*  CMsnProto::p2p_getDCByCallID( const char* CallID )
 
 void CMsnProto::P2pSessions_Init(void)
 {
-	InitializeCriticalSection( &sessionLock );
+	InitializeCriticalSection(&sessionLock);
 }
 
 void CMsnProto::P2pSessions_Uninit(void)
 {
-	EnterCriticalSection( &sessionLock );
+	EnterCriticalSection(&sessionLock);
 
 	sessionList.destroy();
 	dcList.destroy();
 
-	LeaveCriticalSection( &sessionLock );
-	DeleteCriticalSection( &sessionLock );
+	LeaveCriticalSection(&sessionLock);
+	DeleteCriticalSection(&sessionLock);
 }
