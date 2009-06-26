@@ -24,42 +24,42 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // constructors and destructor
 
 MimeHeaders::MimeHeaders() :
-	mCount( 0 ),
+	mCount(0),
 	mAllocCount(0),
-	mVals( NULL )
+	mVals(NULL)
 {
 }
 
-MimeHeaders::MimeHeaders( unsigned iInitCount ) :
-	mCount( 0 )
+MimeHeaders::MimeHeaders(unsigned iInitCount) :
+	mCount(0)
 {
 	mAllocCount = iInitCount;
-	mVals = ( MimeHeader* )mir_alloc( iInitCount * sizeof( MimeHeader ));
+	mVals = (MimeHeader*)mir_alloc(iInitCount * sizeof(MimeHeader));
 }
 
 MimeHeaders::~MimeHeaders()
 {
 	clear();
-	mir_free( mVals );
+	mir_free(mVals);
 }
 
 void MimeHeaders::clear(void)
 {
-	for ( unsigned i=0; i < mCount; i++ ) 
+	for (unsigned i=0; i < mCount; i++) 
 	{
 		MimeHeader& H = mVals[ i ];
-		if (H.flags & 1) mir_free(( void* )H.name );
-		if (H.flags & 2) mir_free(( void* )H.value );
+		if (H.flags & 1) mir_free((void*)H.name);
+		if (H.flags & 2) mir_free((void*)H.value);
 	}
 	mCount = 0;
 }
 
 unsigned MimeHeaders::allocSlot(void)
 {
-	if ( ++mCount >= mAllocCount ) 
+	if (++mCount >= mAllocCount) 
 	{
 		mAllocCount += 10;
-		mVals = ( MimeHeader* )mir_realloc( mVals, sizeof( MimeHeader ) * mAllocCount );
+		mVals = (MimeHeader*)mir_realloc(mVals, sizeof(MimeHeader) * mAllocCount);
 	}
 	return mCount - 1; 
 }
@@ -69,7 +69,7 @@ unsigned MimeHeaders::allocSlot(void)
 /////////////////////////////////////////////////////////////////////////////////////////
 // add various values
 
-void MimeHeaders::addString( const char* name, const char* szValue, unsigned flags )
+void MimeHeaders::addString(const char* name, const char* szValue, unsigned flags)
 {
 	MimeHeader& H = mVals[ allocSlot() ];
 	H.name = name;
@@ -77,29 +77,29 @@ void MimeHeaders::addString( const char* name, const char* szValue, unsigned fla
 	H.flags = flags;
 }
 
-void MimeHeaders::addLong( const char* name, long lValue )
+void MimeHeaders::addLong(const char* name, long lValue)
 {
 	MimeHeader& H = mVals[ allocSlot() ];
 	H.name = name;
 
 	char szBuffer[ 20 ];
-	_ltoa( lValue, szBuffer, 10 );
-	H.value = mir_strdup( szBuffer ); 
+	_ltoa(lValue, szBuffer, 10);
+	H.value = mir_strdup(szBuffer); 
 	H.flags = 2;
 }
 
-void MimeHeaders::addULong( const char* name, unsigned lValue )
+void MimeHeaders::addULong(const char* name, unsigned lValue)
 {
 	MimeHeader& H = mVals[ allocSlot() ];
 	H.name = name;
 
 	char szBuffer[ 20 ];
-	_ultoa( lValue, szBuffer, 10 );
-	H.value = mir_strdup( szBuffer ); 
+	_ultoa(lValue, szBuffer, 10);
+	H.value = mir_strdup(szBuffer); 
 	H.flags = 2;
 }
 
-void MimeHeaders::addBool( const char* name, bool lValue )
+void MimeHeaders::addBool(const char* name, bool lValue)
 {
 	MimeHeader& H = mVals[ allocSlot() ];
 	H.name = name;
@@ -113,19 +113,19 @@ void MimeHeaders::addBool( const char* name, bool lValue )
 size_t MimeHeaders::getLength()
 {
 	size_t iResult = 0;
-	for ( unsigned i=0; i < mCount; i++ ) {
+	for (unsigned i=0; i < mCount; i++) {
 		MimeHeader& H = mVals[ i ];
-		iResult += strlen( H.name ) + strlen( H.value ) + 4;
+		iResult += strlen(H.name) + strlen(H.value) + 4;
 	}
 
 	return iResult;
 }
 
-char* MimeHeaders::writeToBuffer( char* pDest )
+char* MimeHeaders::writeToBuffer(char* pDest)
 {
-	for ( unsigned i=0; i < mCount; i++ ) {
+	for (unsigned i=0; i < mCount; i++) {
 		MimeHeader& H = mVals[ i ];
-		pDest += sprintf( pDest, "%s: %s\r\n", H.name, H.value );
+		pDest += sprintf(pDest, "%s: %s\r\n", H.name, H.value);
 	}
 
 	return pDest;
@@ -134,32 +134,32 @@ char* MimeHeaders::writeToBuffer( char* pDest )
 /////////////////////////////////////////////////////////////////////////////////////////
 // read set of values from buffer
 
-char* MimeHeaders::readFromBuffer( char* parString )
+char* MimeHeaders::readFromBuffer(char* parString)
 {
 	clear();
 
-	while ( *parString ) {
-		if ( parString[0] == '\r' && parString[1] == '\n' ) {
+	while (*parString) {
+		if (parString[0] == '\r' && parString[1] == '\n') {
 			parString += 2;
 			break;
 		}
 
-		char* peol = strchr( parString, '\r' );
-		if ( peol == NULL )
+		char* peol = strchr(parString, '\r');
+		if (peol == NULL)
 			peol = parString + strlen(parString);
 		*peol = '\0';
 		
-		if ( *++peol == '\n' )
+		if (*++peol == '\n')
 			peol++;
 
-		char* delim = strchr( parString, ':' );
-		if ( delim == NULL ) {
+		char* delim = strchr(parString, ':');
+		if (delim == NULL) {
 			parString = peol;
 			continue;
 		}
 		*delim++ = '\0';
 		
-		while ( *delim == ' ' || *delim == '\t' )
+		while (*delim == ' ' || *delim == '\t')
 			delim++;
 		
 		MimeHeader& H = mVals[ allocSlot() ];
@@ -174,11 +174,11 @@ char* MimeHeaders::readFromBuffer( char* parString )
 	return parString;
 }
 
-const char* MimeHeaders::find( const char* szFieldName )
+const char* MimeHeaders::find(const char* szFieldName)
 {
-	for ( unsigned i=0; i < mCount; i++ ) {
+	for (unsigned i=0; i < mCount; i++) {
 		MimeHeader& MH = mVals[i];
-		if ( _stricmp( MH.name, szFieldName ) == 0 )
+		if (_stricmp(MH.name, szFieldName) == 0)
 			return MH.value;
 	}
 
@@ -286,7 +286,7 @@ static const struct _tag_cpltbl
 };
 
 
-static unsigned FindCP( const char* mimecp )
+static unsigned FindCP(const char* mimecp)
 {
 	unsigned cp = CP_ACP;
 	for (unsigned i = 0; i < SIZEOF(cptbl); ++i)
@@ -303,30 +303,30 @@ static unsigned FindCP( const char* mimecp )
 
 static int SingleHexToDecimal(char c)
 {
-	if ( c >= '0' && c <= '9' ) return c-'0';
-	if ( c >= 'a' && c <= 'f' ) return c-'a'+10;
-	if ( c >= 'A' && c <= 'F' ) return c-'A'+10;
+	if (c >= '0' && c <= '9') return c-'0';
+	if (c >= 'a' && c <= 'f') return c-'a'+10;
+	if (c >= 'A' && c <= 'F') return c-'A'+10;
 	return -1;
 }
 
-static void  PQDecode( char* str )
+static void  PQDecode(char* str)
 {
 	char* s = str, *d = str;
 
-	while( *s )
+	while(*s)
 	{
 		switch (*s)
 		{
 			case '=': 
 			{
-				int digit1 = SingleHexToDecimal( s[1] );
-				if ( digit1 != -1 ) 
+				int digit1 = SingleHexToDecimal(s[1]);
+				if (digit1 != -1) 
 				{
-					int digit2 = SingleHexToDecimal( s[2] );
-					if ( digit2 != -1 ) 
+					int digit2 = SingleHexToDecimal(s[2]);
+					if (digit2 != -1) 
 					{
 						s += 3;
-						*d++ = (char)(( digit1 << 4 ) | digit2);
+						*d++ = (char)((digit1 << 4) | digit2);
 					}	
 				}
 				break;
@@ -448,20 +448,20 @@ char* MimeHeaders::decodeMailBody(char* msgBody)
 }
 	
 
-int sttDivideWords( char* parBuffer, int parMinItems, char** parDest )
+int sttDivideWords(char* parBuffer, int parMinItems, char** parDest)
 {
 	int i;
-	for ( i=0; i < parMinItems; i++ ) {
+	for (i=0; i < parMinItems; i++) {
 		parDest[ i ] = parBuffer;
 
-		size_t tWordLen = strcspn( parBuffer, " \t" );
-		if ( tWordLen == 0 )
+		size_t tWordLen = strcspn(parBuffer, " \t");
+		if (tWordLen == 0)
 			return i;
 
 		parBuffer += tWordLen;
-		if ( *parBuffer != '\0' ) {
-			size_t tSpaceLen = strspn( parBuffer, " \t" );
-			memset( parBuffer, 0, tSpaceLen );
+		if (*parBuffer != '\0') {
+			size_t tSpaceLen = strspn(parBuffer, " \t");
+			memset(parBuffer, 0, tSpaceLen);
 			parBuffer += tSpaceLen;
 	}	}
 
@@ -472,8 +472,8 @@ int sttDivideWords( char* parBuffer, int parMinItems, char** parDest )
 char* httpParseHeader(char* buf, unsigned& status)
 {
 	status = 0;
-	char* p = strstr( buf, "\r\n" );
-	if ( p != NULL ) 
+	char* p = strstr(buf, "\r\n");
+	if (p != NULL) 
 	{
 		*p = 0; p += 2;
 
@@ -482,7 +482,7 @@ char* httpParseHeader(char* buf, unsigned& status)
 			struct { char *method, *status; } data;
 		};
 
-		if ( sttDivideWords( buf, 2, tWords ) == 2 )
+		if (sttDivideWords(buf, 2, tWords) == 2)
 			status = strtoul(data.status, NULL, 10);
 	}
 	return p;

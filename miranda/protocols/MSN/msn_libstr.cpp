@@ -20,38 +20,40 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "msn_global.h"
 
-void replaceStr( char*& dest, const char* src )
+void replaceStr(char*& dest, const char* src)
 {
-	if ( src != NULL ) {
-		mir_free( dest );
-		dest = mir_strdup( src );
-}	}
+	if (src != NULL) 
+    {
+		mir_free(dest);
+		dest = mir_strdup(src);
+    }	
+}
 
-static TCHAR* a2tf( const TCHAR* str, bool unicode )
+static TCHAR* a2tf(const TCHAR* str, bool unicode)
 {
-	if ( str == NULL )
+	if (str == NULL)
 		return NULL;
 
-	return unicode ? mir_tstrdup( str ) : mir_a2t(( char* )str );
+	return unicode ? mir_tstrdup(str) : mir_a2t((char*)str);
 }
 
-void overrideStr( TCHAR*& dest, const TCHAR* src, bool unicode, const TCHAR* def )
+void overrideStr(TCHAR*& dest, const TCHAR* src, bool unicode, const TCHAR* def)
 {
-	mir_free( dest );
+	mir_free(dest);
 	dest = NULL;
 
-	if ( src != NULL )
-		dest = a2tf( src, unicode );
-	else if ( def != NULL )
-		dest = mir_tstrdup( def );
+	if (src != NULL)
+		dest = a2tf(src, unicode);
+	else if (def != NULL)
+		dest = mir_tstrdup(def);
 }
 
-char* rtrim( char *string )
+char* rtrim(char *string)
 {
-   char* p = string + strlen( string ) - 1;
+   char* p = string + strlen(string) - 1;
 
-   while ( p >= string )
-   {  if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
+   while (p >= string)
+   {  if (*p != ' ' && *p != '\t' && *p != '\n' && *p != '\r')
          break;
 
 		*p-- = 0;
@@ -59,12 +61,12 @@ char* rtrim( char *string )
    return string;
 }
 
-wchar_t* rtrim( wchar_t* string )
+wchar_t* rtrim(wchar_t* string)
 {
-   wchar_t* p = string + wcslen( string ) - 1;
+   wchar_t* p = string + wcslen(string) - 1;
 
-   while ( p >= string )
-   {  if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
+   while (p >= string)
+   {  if (*p != ' ' && *p != '\t' && *p != '\n' && *p != '\r')
          break;
 
 		*p-- = 0;
@@ -133,66 +135,75 @@ bool txtParseParam (const char* szData, const char* presearch, const char* start
 
 static int SingleHexToDecimal(char c)
 {
-	if ( c >= '0' && c <= '9' ) return c-'0';
-	if ( c >= 'a' && c <= 'f' ) return c-'a'+10;
-	if ( c >= 'A' && c <= 'F' ) return c-'A'+10;
+	if (c >= '0' && c <= '9') return c-'0';
+	if (c >= 'a' && c <= 'f') return c-'a'+10;
+	if (c >= 'A' && c <= 'F') return c-'A'+10;
 	return -1;
 }
 
-void  UrlDecode( char* str )
+void  UrlDecode(char* str)
 {
 	char* s = str, *d = str;
 
-	while( *s )
+	while(*s)
 	{
-		if ( *s == '%' ) {
-			int digit1 = SingleHexToDecimal( s[1] );
-			if ( digit1 != -1 ) {
-				int digit2 = SingleHexToDecimal( s[2] );
-				if ( digit2 != -1 ) {
+		if (*s == '%') 
+        {
+			int digit1 = SingleHexToDecimal(s[1]);
+			if (digit1 != -1) 
+            {
+				int digit2 = SingleHexToDecimal(s[2]);
+				if (digit2 != -1) 
+                {
 					s += 3;
-					*d++ = (char)(( digit1 << 4 ) | digit2);
+					*d++ = (char)((digit1 << 4) | digit2);
 					continue;
-		}	}	}
+		        }	
+            }	
+        }
 		*d++ = *s++;
 	}
 
 	*d = 0;
 }
 
-void  HtmlDecode( char* str )
+void  HtmlDecode(char* str)
 {
 	char* p, *q;
 
-	if ( str == NULL )
+	if (str == NULL)
 		return;
 
-	for ( p=q=str; *p!='\0'; p++,q++ ) {
-		if ( *p == '&' ) {
-			if ( !strncmp( p, "&amp;", 5 )) {	*q = '&'; p += 4; }
-			else if ( !strncmp( p, "&apos;", 6 )) { *q = '\''; p += 5; }
-			else if ( !strncmp( p, "&gt;", 4 )) { *q = '>'; p += 3; }
-			else if ( !strncmp( p, "&lt;", 4 )) { *q = '<'; p += 3; }
-			else if ( !strncmp( p, "&quot;", 6 )) { *q = '"'; p += 5; }
+	for (p=q=str; *p!='\0'; p++,q++) {
+		if (*p == '&') 
+        {
+			if (!strncmp(p, "&amp;", 5)) {	*q = '&'; p += 4; }
+			else if (!strncmp(p, "&apos;", 6)) { *q = '\''; p += 5; }
+			else if (!strncmp(p, "&gt;", 4)) { *q = '>'; p += 3; }
+			else if (!strncmp(p, "&lt;", 4)) { *q = '<'; p += 3; }
+			else if (!strncmp(p, "&quot;", 6)) { *q = '"'; p += 5; }
 			else { *q = *p;	}
 		}
-		else {
+		else 
+        {
 			*q = *p;
 		}
 	}
 	*q = '\0';
 }
 
-char*  HtmlEncode( const char* str )
+char*  HtmlEncode(const char* str)
 {
 	char* s, *p, *q;
 	int c;
 
-	if ( str == NULL )
+	if (str == NULL)
 		return NULL;
 
-	for ( c=0,p=( char* )str; *p!='\0'; p++ ) {
-		switch ( *p ) {
+	for (c=0,p=(char*)str; *p!='\0'; p++) 
+    {
+		switch (*p) 
+        {
 		case '&': c += 5; break;
 		case '\'': c += 6; break;
 		case '>': c += 4; break;
@@ -201,14 +212,14 @@ char*  HtmlEncode( const char* str )
 		default: c++; break;
 		}
 	}
-	if (( s=( char* )mir_alloc( c+1 )) != NULL ) {
-		for ( p=( char* )str,q=s; *p!='\0'; p++ ) {
-			switch ( *p ) {
-			case '&': strcpy( q, "&amp;" ); q += 5; break;
-			case '\'': strcpy( q, "&apos;" ); q += 6; break;
-			case '>': strcpy( q, "&gt;" ); q += 4; break;
-			case '<': strcpy( q, "&lt;" ); q += 4; break;
-			case '"': strcpy( q, "&quot;" ); q += 6; break;
+	if ((s=(char*)mir_alloc(c+1)) != NULL) {
+		for (p=(char*)str,q=s; *p!='\0'; p++) {
+			switch (*p) {
+			case '&': strcpy(q, "&amp;"); q += 5; break;
+			case '\'': strcpy(q, "&apos;"); q += 6; break;
+			case '>': strcpy(q, "&gt;"); q += 4; break;
+			case '<': strcpy(q, "&lt;"); q += 4; break;
+			case '"': strcpy(q, "&quot;"); q += 6; break;
 			default: *q = *p; q++; break;
 			}
 		}
@@ -221,27 +232,27 @@ char*  HtmlEncode( const char* str )
 /////////////////////////////////////////////////////////////////////////////////////////
 // UrlEncode - converts printable characters into URL chars like %20
 
-void  UrlEncode( const char* src, char* dest, size_t cbDest )
+void  UrlEncode(const char* src, char* dest, size_t cbDest)
 {
 	unsigned char* d = (unsigned char*)dest;
 	size_t   i = 0;
 
 	for (const unsigned char* s = (unsigned char*)src; *s; s++) 
 	{
-		if (( *s <= '/' && *s != '.' && *s != '-' ) ||
-			 ( *s >= ':' && *s <= '?' ) ||
-			 ( *s >= '[' && *s <= '`' && *s != '_' ))
+		if ((*s <= '/' && *s != '.' && *s != '-') ||
+			 (*s >= ':' && *s <= '?') ||
+			 (*s >= '[' && *s <= '`' && *s != '_'))
 		{
-			if ( i + 4 >= cbDest ) break;
+			if (i + 4 >= cbDest) break;
 
 			*d++ = '%';
-			_itoa( *s, (char*)d, 16 );
+			_itoa(*s, (char*)d, 16);
 			d += 2;
 			i += 3;
 		}
 		else
 		{
-			if ( ++i >= cbDest ) break;
+			if (++i >= cbDest) break;
 			*d++ = *s;
 	}	}
 
@@ -249,7 +260,7 @@ void  UrlEncode( const char* src, char* dest, size_t cbDest )
 }
 
 
-void stripBBCode( char* src )
+void stripBBCode(char* src)
 {
 	bool tag = false; 
 	char* ps = src;

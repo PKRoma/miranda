@@ -20,31 +20,31 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "msn_global.h"
 
-int  ThreadData::contactJoined( HANDLE hContact )
+int  ThreadData::contactJoined(HANDLE hContact)
 {
-	for ( int i=0; i < mJoinedCount; i++ )
-		if ( mJoinedContacts[i] == hContact )
+	for (int i=0; i < mJoinedCount; i++)
+		if (mJoinedContacts[i] == hContact)
 			return i+1;
 
 	int ret = ++mJoinedCount;
-	mJoinedContacts = ( HANDLE* )mir_realloc( mJoinedContacts, sizeof( HANDLE )*ret );
+	mJoinedContacts = (HANDLE*)mir_realloc(mJoinedContacts, sizeof(HANDLE)*ret);
 	mJoinedContacts[ ret-1 ] = hContact;
 	return ret;
 }
 
-int  ThreadData::contactLeft( HANDLE hContact )
+int  ThreadData::contactLeft(HANDLE hContact)
 {
 	int i;
 
-	for ( i=0; i < mJoinedCount; i++ )
-		if ( mJoinedContacts[ i ] == hContact )
+	for (i=0; i < mJoinedCount; i++)
+		if (mJoinedContacts[ i ] == hContact)
 			break;
 
-	if ( i == mJoinedCount )
+	if (i == mJoinedCount)
 		return i;
 
 	int ret = --mJoinedCount;
-	memmove( mJoinedContacts + i, mJoinedContacts+i+1, sizeof( HANDLE )*( ret-i ));
-	mJoinedContacts = ( HANDLE* )mir_realloc( mJoinedContacts, sizeof( HANDLE )*ret );
+	memmove(mJoinedContacts + i, mJoinedContacts+i+1, sizeof(HANDLE)*(ret-i));
+	mJoinedContacts = (HANDLE*)mir_realloc(mJoinedContacts, sizeof(HANDLE)*ret);
 	return ret;
 }

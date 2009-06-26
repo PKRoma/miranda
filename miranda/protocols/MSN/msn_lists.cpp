@@ -24,23 +24,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 void CMsnProto::Lists_Init(void)
 {
-	InitializeCriticalSection( &csLists );
+	InitializeCriticalSection(&csLists);
 }
 
 void CMsnProto::Lists_Uninit(void)
 {
 	Lists_Wipe();
-	DeleteCriticalSection( &csLists );
+	DeleteCriticalSection(&csLists);
 }
 
-void  CMsnProto::Lists_Wipe( void )
+void  CMsnProto::Lists_Wipe(void)
 {
-	EnterCriticalSection( &csLists );
+	EnterCriticalSection(&csLists);
 	contList.destroy();
-	LeaveCriticalSection( &csLists );
+	LeaveCriticalSection(&csLists);
 }
 
-bool CMsnProto::Lists_IsInList( int list, const char* email )
+bool CMsnProto::Lists_IsInList(int list, const char* email)
 {
 	EnterCriticalSection(&csLists);
 	
@@ -53,27 +53,27 @@ bool CMsnProto::Lists_IsInList( int list, const char* email )
 	return res;
 }
 
-int CMsnProto::Lists_GetMask( const char* email )
+int CMsnProto::Lists_GetMask(const char* email)
 {
-	EnterCriticalSection( &csLists );
+	EnterCriticalSection(&csLists);
 
 	MsnContact* p = contList.find((MsnContact*)&email);
 	int res = p ? p->list : 0;
 
-	LeaveCriticalSection( &csLists );
+	LeaveCriticalSection(&csLists);
 	return res;
 }
 
-int CMsnProto::Lists_GetNetId( const char* email )
+int CMsnProto::Lists_GetNetId(const char* email)
 {
 	if (email[0] == 0) return NETID_UNKNOWN;
 
-	EnterCriticalSection( &csLists );
+	EnterCriticalSection(&csLists);
 
 	MsnContact* p = contList.find((MsnContact*)&email);
 	int res = p ? p->netId : NETID_UNKNOWN;
 
-	LeaveCriticalSection( &csLists );
+	LeaveCriticalSection(&csLists);
 	return res;
 }
 
@@ -82,7 +82,7 @@ int CMsnProto::Lists_Add(int list, int netId, const char* email)
 	EnterCriticalSection(&csLists);
 
 	MsnContact* p = contList.find((MsnContact*)&email);
-	if ( p == NULL )
+	if (p == NULL)
 	{
 		p = new MsnContact;
 		p->list = list;
@@ -94,21 +94,21 @@ int CMsnProto::Lists_Add(int list, int netId, const char* email)
 		p->list |= list;
 	int result = p->list;
 
-	LeaveCriticalSection( &csLists );
+	LeaveCriticalSection(&csLists);
 	return result;
 }
 
-void  CMsnProto::Lists_Remove( int list, const char* email )
+void  CMsnProto::Lists_Remove(int list, const char* email)
 {
-	EnterCriticalSection( &csLists );
+	EnterCriticalSection(&csLists);
 	int i = contList.getIndex((MsnContact*)&email);
-	if ( i != -1 ) 
+	if (i != -1) 
 	{
 		MsnContact& p = contList[i];
 		p.list &= ~list;
 		if (p.list == 0) contList.remove(i);
 	}
-	LeaveCriticalSection( &csLists );
+	LeaveCriticalSection(&csLists);
 }
 
 
@@ -117,7 +117,7 @@ void CMsnProto::MSN_CleanupLists(void)
 	CallService(MS_CLIST_GROUPCREATE, 0, (LPARAM)TranslateT("Non IM Contacts"));
 
 //	EnterCriticalSection(&csLists);
-	for (int i=contList.getCount(); i--; )
+	for (int i=contList.getCount(); i--;)
 	{
 		MsnContact& p = contList[i];
 
@@ -138,13 +138,13 @@ void CMsnProto::MSN_CleanupLists(void)
 		if (p.list & LIST_PL)
 		{
 			if (p.list & (LIST_AL | LIST_BL))
-				MSN_AddUser( hContact, p.email, p.netId, LIST_PL + LIST_REMOVE );
+				MSN_AddUser(hContact, p.email, p.netId, LIST_PL + LIST_REMOVE);
 			else
-				MSN_AddAuthRequest( hContact, p.email, p.email );
+				MSN_AddAuthRequest(hContact, p.email, p.email);
 		}
 
 		if (p.list == LIST_RL)
-			MSN_AddAuthRequest( hContact, p.email, p.email );
+			MSN_AddAuthRequest(hContact, p.email, p.email);
 	}
 //	LeaveCriticalSection(&csLists);
 
@@ -192,14 +192,14 @@ void CMsnProto::MSN_CreateContList(void)
 		
 	EnterCriticalSection(&csLists);
 
-	for ( int i=0; i < contList.getCount(); i++ )
+	for (int i=0; i < contList.getCount(); i++)
 	{
 		if (used[i]) continue;
 
 		const char* lastds = strchr(contList[i].email, '@');
 		bool newdom = true;
 
-		for ( int j=0; j < contList.getCount(); j++ )
+		for (int j=0; j < contList.getCount(); j++)
 		{
 			if (used[j]) continue;
 			
@@ -241,19 +241,19 @@ void CMsnProto::MSN_CreateContList(void)
 
 			if (used[j] && sz > 7400)
 			{ 
-				sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "</%c></ml>", lastds ? 'd' : 't' );
+				sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "</%c></ml>", lastds ? 'd' : 't');
 				msnNsThread->sendPacket("ADL", "%d\r\n%s", sz, cxml);
 				sz = 0;
 				newdom = true;
 			}
 		}
-		if (!newdom) sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, lastds ? "</d>" : "</t>" );
+		if (!newdom) sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, lastds ? "</d>" : "</t>");
 	}
 	LeaveCriticalSection(&csLists);
 
 	if (sz) 
 	{
-		sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz,  "</ml>" );
+		sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz,  "</ml>");
 		msnNsThread->sendPacket("ADL", "%d\r\n%s", sz, cxml);
 	}
 
@@ -288,7 +288,7 @@ static void SetContactIcons(HANDLE hItem, HWND hwndList, CMsnProto* proto)
 		return;
 	}
 
-	DWORD dwMask = proto->Lists_GetMask( szEmail );
+	DWORD dwMask = proto->Lists_GetMask(szEmail);
 	SendMessage(hwndList, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(0,(dwMask & LIST_FL)?1:0));
 	SendMessage(hwndList, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(1,(dwMask & LIST_AL)?2:0));
 	SendMessage(hwndList, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(2,(dwMask & LIST_BL)?3:0));
@@ -360,37 +360,37 @@ static void SaveSettings(HANDLE hItem, HWND hwndList, CMsnProto* proto)
 
 INT_PTR CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch( msg ) {
+	switch(msg) {
 	case WM_INITDIALOG:
-		TranslateDialogDefault( hwndDlg );
+		TranslateDialogDefault(hwndDlg);
 		{
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 
 			HIMAGELIST hIml = ImageList_Create(
 				GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON),
-				ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16 ), 5, 5 );
+				ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 5, 5);
 
 			HICON hIcon = LoadSkinnedIcon(SKINICON_OTHER_SMALLDOT);
-			ImageList_AddIcon( hIml, hIcon );
-			CallService( MS_SKIN2_RELEASEICON, ( WPARAM )hIcon, 0 );
+			ImageList_AddIcon(hIml, hIcon);
+			CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
 
-			hIcon =  LoadIconEx( "list_fl" );
-			ImageList_AddIcon( hIml, hIcon );
-			SendDlgItemMessage( hwndDlg, IDC_ICON_FL, STM_SETICON, ( WPARAM )hIcon, 0 );
+			hIcon =  LoadIconEx("list_fl");
+			ImageList_AddIcon(hIml, hIcon);
+			SendDlgItemMessage(hwndDlg, IDC_ICON_FL, STM_SETICON, (WPARAM)hIcon, 0);
 
-			hIcon =  LoadIconEx( "list_al" );
-			ImageList_AddIcon( hIml, hIcon );
-			SendDlgItemMessage( hwndDlg, IDC_ICON_AL, STM_SETICON, ( WPARAM )hIcon, 0 );
+			hIcon =  LoadIconEx("list_al");
+			ImageList_AddIcon(hIml, hIcon);
+			SendDlgItemMessage(hwndDlg, IDC_ICON_AL, STM_SETICON, (WPARAM)hIcon, 0);
 
-			hIcon =  LoadIconEx( "list_bl" );
-			ImageList_AddIcon( hIml, hIcon );
-			SendDlgItemMessage( hwndDlg, IDC_ICON_BL, STM_SETICON, ( WPARAM )hIcon, 0 );
+			hIcon =  LoadIconEx("list_bl");
+			ImageList_AddIcon(hIml, hIcon);
+			SendDlgItemMessage(hwndDlg, IDC_ICON_BL, STM_SETICON, (WPARAM)hIcon, 0);
 
-			hIcon =  LoadIconEx( "list_rl" );
-			ImageList_AddIcon( hIml, hIcon );
-			SendDlgItemMessage( hwndDlg, IDC_ICON_RL, STM_SETICON, ( WPARAM )hIcon, 0 );
+			hIcon =  LoadIconEx("list_rl");
+			ImageList_AddIcon(hIml, hIcon);
+			SendDlgItemMessage(hwndDlg, IDC_ICON_RL, STM_SETICON, (WPARAM)hIcon, 0);
 
-			SendDlgItemMessage( hwndDlg, IDC_LIST, CLM_SETEXTRAIMAGELIST, 0, (LPARAM)hIml );
+			SendDlgItemMessage(hwndDlg, IDC_LIST, CLM_SETEXTRAIMAGELIST, 0, (LPARAM)hIml);
 		}
 		SendDlgItemMessage(hwndDlg,IDC_LIST,CLM_SETEXTRACOLUMNS,4,0);
 
@@ -406,7 +406,7 @@ INT_PTR CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 		NMCLISTCONTROL* nmc = (NMCLISTCONTROL*)lParam;
-		if ( nmc->hdr.idFrom == 0 && nmc->hdr.code == (unsigned)PSN_APPLY )
+		if (nmc->hdr.idFrom == 0 && nmc->hdr.code == (unsigned)PSN_APPLY)
         {
 			SaveSettings(NULL, GetDlgItem(hwndDlg,IDC_LIST), proto);
         }
@@ -433,17 +433,17 @@ INT_PTR CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			    int iImage;
 
 			    // Make sure we have an extra column, also we can't change RL list
-			    if ( nmc->iColumn == -1 || nmc->iColumn == 3 )
+			    if (nmc->iColumn == -1 || nmc->iColumn == 3)
 				    break;
 
 			    // Find clicked item
 			    hItem = (HANDLE)SendMessage(nmc->hdr.hwndFrom, CLM_HITTEST, (WPARAM)&hitFlags, MAKELPARAM(nmc->pt.x,nmc->pt.y));
 			    // Nothing was clicked
-			    if ( hItem == NULL || !IsHContactContact(hItem))
+			    if (hItem == NULL || !IsHContactContact(hItem))
 				    break;
 
 			    // It was not our extended icon
-			    if ( !( hitFlags & CLCHT_ONITEMEXTRA ))
+			    if (!(hitFlags & CLCHT_ONITEMEXTRA))
 				    break;
 
 			    // Get image in clicked column (0=none, 1=FL, 2=AL, 3=BL, 4=RL)
@@ -451,9 +451,9 @@ INT_PTR CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                 iImage = iImage ? 0 : nmc->iColumn + 1;
 
 			    SendMessage(nmc->hdr.hwndFrom, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(nmc->iColumn, iImage));
-			    if (iImage && SendMessage(nmc->hdr.hwndFrom,CLM_GETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM( 3-nmc->iColumn, 0)) != 0xFF )
-				    if ( nmc->iColumn == 1 || nmc->iColumn == 2 )
-					    SendMessage(nmc->hdr.hwndFrom, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM( 3-nmc->iColumn, 0));
+			    if (iImage && SendMessage(nmc->hdr.hwndFrom,CLM_GETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(3-nmc->iColumn, 0)) != 0xFF)
+				    if (nmc->iColumn == 1 || nmc->iColumn == 2)
+					    SendMessage(nmc->hdr.hwndFrom, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(3-nmc->iColumn, 0));
 
 			    // Activate Apply button
 			    SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -466,10 +466,10 @@ INT_PTR CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 	case WM_DESTROY:
 		HIMAGELIST hIml=(HIMAGELIST)SendDlgItemMessage(hwndDlg,IDC_LIST,CLM_GETEXTRAIMAGELIST,0,0);
 		ImageList_Destroy(hIml);
-		ReleaseIconEx( "list_fl" );
-		ReleaseIconEx( "list_al" );
-		ReleaseIconEx( "list_bl" );
-		ReleaseIconEx( "list_rl" );
+		ReleaseIconEx("list_fl");
+		ReleaseIconEx("list_al");
+		ReleaseIconEx("list_bl");
+		ReleaseIconEx("list_rl");
 		break;
 	}
 

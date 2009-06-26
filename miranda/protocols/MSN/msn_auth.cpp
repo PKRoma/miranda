@@ -119,7 +119,7 @@ static const char authPacket[] =
 /////////////////////////////////////////////////////////////////////////////////////////
 // Performs the MSN Passport login via TLS
 
-int CMsnProto::MSN_GetPassportAuth( void )
+int CMsnProto::MSN_GetPassportAuth(void)
 {
 	int retVal = -1;
 
@@ -130,15 +130,15 @@ int CMsnProto::MSN_GetPassportAuth( void )
 	char* szEncPassword = HtmlEncode(szPassword);
 
 	const size_t len = sizeof(authPacket) + 2048;
-	char* szAuthInfo = (char*)alloca( len );
-	mir_snprintf( szAuthInfo, len, authPacket, MyOptions.szEmail, szEncPassword );
+	char* szAuthInfo = (char*)alloca(len);
+	mir_snprintf(szAuthInfo, len, authPacket, MyOptions.szEmail, szEncPassword);
 
-	mir_free( szEncPassword );
+	mir_free(szEncPassword);
 
 	char* szPassportHost = (char*)mir_alloc(256);;
-	if ( getStaticString( NULL, "MsnPassportHost", szPassportHost, 256) 
-		|| strstr( szPassportHost, "/RST.srf" ) == NULL )
-		strcpy( szPassportHost, defaultPassportUrl );
+	if (getStaticString(NULL, "MsnPassportHost", szPassportHost, 256) 
+		|| strstr(szPassportHost, "/RST.srf") == NULL)
+		strcpy(szPassportHost, defaultPassportUrl);
 
 	bool defaultUrlAllow = strcmp(szPassportHost, defaultPassportUrl) != 0;
 	char *tResult = NULL;
@@ -148,9 +148,9 @@ int CMsnProto::MSN_GetPassportAuth( void )
 		unsigned status;
 
 		tResult = getSslResult(&szPassportHost, szAuthInfo, NULL, status);
-		if ( tResult == NULL ) {
-			if ( defaultUrlAllow ) {
-				strcpy( szPassportHost, defaultPassportUrl );
+		if (tResult == NULL) {
+			if (defaultUrlAllow) {
+				strcpy(szPassportHost, defaultPassportUrl);
 				defaultUrlAllow = false;
 				continue;
 			}
@@ -159,7 +159,7 @@ int CMsnProto::MSN_GetPassportAuth( void )
 				break;
 		}	}
 
-		switch ( status )
+		switch (status)
 		{
 			case 200: 
 			{
@@ -225,15 +225,15 @@ int CMsnProto::MSN_GetPassportAuth( void )
 					if (tokrdr != NULL)
 					{
 						strcpy(szPassportHost, ezxml_txt(tokrdr));
-						MSN_DebugLog( "Redirected to '%s'", szPassportHost );
+						MSN_DebugLog("Redirected to '%s'", szPassportHost);
 					}
 					else
 					{
 						const char* szFault = ezxml_txt(ezxml_get(xml, "S:Fault", 0, "faultcode", -1));
-						retVal = strcmp( szFault, "wsse:FailedAuthentication" ) == 0 ? 3 : 5;
+						retVal = strcmp(szFault, "wsse:FailedAuthentication") == 0 ? 3 : 5;
 						if (retVal == 5 && defaultUrlAllow)
 						{
-							strcpy( szPassportHost, defaultPassportUrl );
+							strcpy(szPassportHost, defaultPassportUrl);
 							defaultUrlAllow = false;
 							retVal = -1;
 						}
@@ -254,21 +254,21 @@ int CMsnProto::MSN_GetPassportAuth( void )
 		mir_free(tResult);
 	}
 
-	if ( retVal != 0 ) 
+	if (retVal != 0) 
 	{
 		if (!Miranda_Terminated())
 		{
-			MSN_ShowError( retVal == 3 ? "Your username or password is incorrect" : 
-				"Unable to contact MS Passport servers check proxy/firewall settings" );
+			MSN_ShowError(retVal == 3 ? "Your username or password is incorrect" : 
+				"Unable to contact MS Passport servers check proxy/firewall settings");
 		    
-            SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
+            SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
 		}
 	}
 	else
 		setString(NULL, "MsnPassportHost", szPassportHost);
 
 	mir_free(szPassportHost);
-	MSN_DebugLog( "MSN_CheckRedirector exited with errorCode = %d", retVal );
+	MSN_DebugLog("MSN_CheckRedirector exited with errorCode = %d", retVal);
 	return retVal;
 }
 
@@ -380,7 +380,7 @@ char* CMsnProto::GenerateLoginBlob(char* challenge)
 	unsigned char* key1 = (unsigned char*)alloca(key1len);
 
 	NETLIBBASE64 nlb = { authSecretToken, (int)keylen, key1, (int)key1len };
-	MSN_CallService( MS_NETLIB_BASE64DECODE, 0, LPARAM( &nlb ));
+	MSN_CallService(MS_NETLIB_BASE64DECODE, 0, LPARAM(&nlb));
 	key1len = nlb.cbDecoded; 
 	
 	mir_sha1_byte_t key2[MIR_SHA1_HASH_SIZE+4];
@@ -427,7 +427,7 @@ char* CMsnProto::GenerateLoginBlob(char* challenge)
 	char* buf = (char*)mir_alloc(rlen);
 
 	NETLIBBASE64 nlb1 = { buf, (int)rlen, userKey, (int)pktsz };
-	MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb1 ));
+	MSN_CallService(MS_NETLIB_BASE64ENCODE, 0, LPARAM(&nlb1));
 
 	return buf;
 }
@@ -443,7 +443,7 @@ char* CMsnProto::HotmailLogin(const char* url)
 	unsigned char* key1 = (unsigned char*)alloca(key1len);
 
 	NETLIBBASE64 nlb = { hotSecretToken, (int)hotSecretlen, key1, (int)key1len };
-	MSN_CallService( MS_NETLIB_BASE64DECODE, 0, LPARAM( &nlb ));
+	MSN_CallService(MS_NETLIB_BASE64DECODE, 0, LPARAM(&nlb));
 	key1len = nlb.cbDecoded; 
 
 	static const unsigned char encdata[] = "WS-SecureConversation";
@@ -463,7 +463,7 @@ char* CMsnProto::HotmailLogin(const char* url)
 	size_t noncenclen = Netlib_GetBase64EncodedBufferSize(sizeof(nonce));
 	char* noncenc = (char*)alloca(noncenclen);
 	NETLIBBASE64 nlb1 = { noncenc, (int)noncenclen, nonce, sizeof(nonce) };
-	MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb1 ));
+	MSN_CallService(MS_NETLIB_BASE64ENCODE, 0, LPARAM(&nlb1));
 	noncenclen = nlb1.cchEncoded - 1;
 	
 	const size_t fnpstlen = strlen(xmlenc) + strlen(url) + 3*noncenclen + 100;
@@ -478,7 +478,7 @@ char* CMsnProto::HotmailLogin(const char* url)
 	hmac_sha1(hash, key2, sizeof(key2), (mir_sha1_byte_t*)fnpst, sz);
 	
 	NETLIBBASE64 nlb2 = { noncenc, (int)noncenclen, hash, sizeof(hash) };
-	MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb2 ));
+	MSN_CallService(MS_NETLIB_BASE64ENCODE, 0, LPARAM(&nlb2));
 
     sz += mir_snprintf(fnpst + sz, fnpstlen - sz, "&hash=");
 

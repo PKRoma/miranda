@@ -156,44 +156,44 @@ struct CMsnProto;
 #define MSN_SHOW_ERROR      8
 #define	MSN_ALERT_POPUP	    16
 
-void        HtmlDecode( char* str );
-char*       HtmlEncode( const char* str );
+void        HtmlDecode(char* str);
+char*       HtmlEncode(const char* str);
 bool		txtParseParam (const char* szData, const char* presearch, const char* start, const char* finish, char* param, const int size);
-void		stripBBCode( char* src );
-char*		MSN_Base64Decode( const char* str );
+void		stripBBCode(char* src);
+char*		MSN_Base64Decode(const char* str);
 
-void     	UrlDecode( char* str );
-void     	UrlEncode( const char* src, char* dest, size_t cbDest );
+void     	UrlDecode(char* str);
+void     	UrlEncode(const char* src, char* dest, size_t cbDest);
 
-void		__cdecl MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* );
+void		__cdecl MSN_ConnectionProc(HANDLE hNewConnection, DWORD dwRemoteIP, void*);
 
 char*		MSN_GetAvatarHash(char* szContext);
-void        MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t cbLen );
+void        MSN_GetAvatarFileName(HANDLE hContact, char* pszDest, size_t cbLen);
 int			MSN_GetImageFormat(void* buf, const char** ext);
 
 #define		MSN_SendNicknameA(a) MSN_SendNicknameUtf(mir_utf8encode(a))
 #define		MSN_SendNicknameT(a) MSN_SendNicknameUtf(mir_utf8encodeT(a))
 
-#if defined( _DEBUG )
+#if defined(_DEBUG)
 #define MSN_CallService CallService
 #else
-int         MSN_CallService( const char* szSvcName, WPARAM wParam, LPARAM lParam );
+int         MSN_CallService(const char* szSvcName, WPARAM wParam, LPARAM lParam);
 #endif
 
-void        MSN_EnableMenuItems( bool );
-void		MSN_FreeVariant( DBVARIANT* dbv );
-TCHAR*      MSN_GetContactNameT( HANDLE hContact );
-char*       MSN_Translate( const char* str );
+void        MSN_EnableMenuItems(bool);
+void		MSN_FreeVariant(DBVARIANT* dbv);
+TCHAR*      MSN_GetContactNameT(HANDLE hContact);
+char*       MSN_Translate(const char* str);
 unsigned    MSN_GenRandom(void);
 
-HANDLE      GetIconHandle( int iconId );
-HICON       LoadIconEx( const char* );
-void        ReleaseIconEx( const char* );
+HANDLE      GetIconHandle(int iconId);
+HICON       LoadIconEx(const char*);
+void        ReleaseIconEx(const char*);
 
-void        MsnInitIcons( void );
+void        MsnInitIcons(void);
 
 char*       httpParseHeader(char* buf, unsigned& status);
-int         sttDivideWords( char* parBuffer, int parMinItems, char** parDest );
+int         sttDivideWords(char* parBuffer, int parMinItems, char** parDest);
 void		MSN_MakeDigest(const char* chl, char* dgst);
 char*		getNewUuid(void);
 bool        SetupIeProxy(HANDLE hNetlib, bool secur);
@@ -201,10 +201,10 @@ bool        SetupIeProxy(HANDLE hNetlib, bool secur);
 TCHAR* EscapeChatTags(const TCHAR* pszText);
 TCHAR* UnEscapeChatTags(TCHAR* str_in);
 
-void   overrideStr( TCHAR*& dest, const TCHAR* src, bool unicode, const TCHAR* def = NULL );
-void   replaceStr( char*& dest, const char* src );
-char*  rtrim( char* string );
-wchar_t* rtrim( wchar_t* string );
+void   overrideStr(TCHAR*& dest, const TCHAR* src, bool unicode, const TCHAR* def = NULL);
+void   replaceStr(char*& dest, const char* src);
+char*  rtrim(char* string);
+wchar_t* rtrim(wchar_t* string);
 char* arrayToHex(BYTE* data, size_t datasz);
 
 #if defined(_UNICODE) || defined(_WIN64)
@@ -236,24 +236,24 @@ class MimeHeaders
 public:
 
 	MimeHeaders();
-	MimeHeaders( unsigned );
+	MimeHeaders(unsigned);
 	~MimeHeaders();
 
 	void clear(void);
-	char*	readFromBuffer( char* pSrc );
-	const char* find( const char* fieldName );
-	const char* operator[]( const char* fieldName ) { return find( fieldName ); }
+	char*	readFromBuffer(char* pSrc);
+	const char* find(const char* fieldName);
+	const char* operator[](const char* fieldName) { return find(fieldName); }
 	char* decodeMailBody(char* msgBody);
 
 	static wchar_t* decode(const char* val);
 
-	void  addString( const char* name, const char* szValue, unsigned flags = 0 );
-	void    addLong( const char* name, long lValue );
-	void   addULong( const char* name, unsigned lValue );
-	void	addBool( const char* name, bool lValue );
+	void  addString(const char* name, const char* szValue, unsigned flags = 0);
+	void    addLong(const char* name, long lValue);
+	void   addULong(const char* name, unsigned lValue);
+	void	addBool(const char* name, bool lValue);
 
-	size_t  getLength( void );
-	char* writeToBuffer( char* pDest );
+	size_t  getLength(void);
+	char* writeToBuffer(char* pDest);
 
 private:
 	typedef struct tag_MimeHeader
@@ -277,10 +277,10 @@ struct ThreadData;
 
 struct HReadBuffer
 {
-	HReadBuffer( ThreadData* info, int iStart = 0 );
+	HReadBuffer(ThreadData* info, int iStart = 0);
 	~HReadBuffer();
 
-	BYTE* surelyRead( size_t parBytes );
+	BYTE* surelyRead(size_t parBytes);
 
 	ThreadData* owner;
 	BYTE*			buffer;
@@ -301,12 +301,12 @@ enum TInfoType
 struct filetransfer
 {
 	filetransfer(CMsnProto* prt);
-	~filetransfer( void );
+	~filetransfer(void);
 
-	void close( void );
-	void complete( void );
-	int  create( void );
-	int openNext( void );
+	void close(void);
+	void complete(void);
+	int  create(void);
+	int openNext(void);
 
 	CMsnProto* proto;
 
@@ -345,13 +345,13 @@ struct filetransfer
 
 struct directconnection
 {
-	directconnection( filetransfer* ft );
+	directconnection(filetransfer* ft);
 	~directconnection();
 
-	char* calcHashedNonce( UUID* nonce );
-	char* mNonceToText( void );
-	char* mNonceToHash( void ) { return calcHashedNonce( mNonce ); }
-	void  xNonceToBin( UUID* nonce );
+	char* calcHashedNonce(UUID* nonce);
+	char* mNonceToText(void);
+	char* mNonceToHash(void) { return calcHashedNonce(mNonce); }
+	void  xNonceToBin(UUID* nonce);
 
 	UUID* mNonce;
 	char* xNonce;
@@ -373,7 +373,7 @@ typedef struct _tag_HFileContext
 	unsigned ver;
 	unsigned __int64 dwSize;
 	unsigned type;
-	wchar_t wszFileName[ MAX_PATH ];
+	wchar_t wszFileName[MAX_PATH];
 	char unknown[30];
 	unsigned id;
 	char unknown2[64];
@@ -411,7 +411,7 @@ struct TQueueItem
 #define MSG_RTL              4
 
 struct CMsnProto;
-typedef void ( __cdecl CMsnProto::*MsnThreadFunc )( void* );
+typedef void (__cdecl CMsnProto::*MsnThreadFunc)(void*);
 
 struct ThreadData
 {
@@ -433,8 +433,8 @@ struct ThreadData
 	CMsnProto*     proto;
 
 	//----| for gateways |----------------------------------------------------------------
-	char           mSessionID[ 50 ]; // Gateway session ID
-	char           mGatewayIP[ 80 ]; // Gateway IP address
+	char           mSessionID[50]; // Gateway session ID
+	char           mGatewayIP[80]; // Gateway IP address
 	int            mGatewayTimeout;
 	char*          mReadAheadBuffer;
 	char*          mReadAheadBufferPtr;
@@ -465,24 +465,24 @@ struct ThreadData
 	char           mData[8192];      // data buffer for connection
 
 	//----| methods |---------------------------------------------------------------------
-	void           applyGatewayData( HANDLE hConn, bool isPoll );
-	void           getGatewayUrl( char* dest, int destlen, bool isPoll );
-	void           processSessionData( const char* );
-	void           startThread( MsnThreadFunc , CMsnProto *prt );
+	void           applyGatewayData(HANDLE hConn, bool isPoll);
+	void           getGatewayUrl(char* dest, int destlen, bool isPoll);
+	void           processSessionData(const char*);
+	void           startThread(MsnThreadFunc , CMsnProto *prt);
 
-	int            send( const char data[], size_t datalen );
-	int            recv( char* data, size_t datalen );
-	int            recv_dg( char* data, size_t datalen );
-	bool           isTimeout( void );
+	int            send(const char data[], size_t datalen);
+	int            recv(char* data, size_t datalen);
+	int            recv_dg(char* data, size_t datalen);
+	bool           isTimeout(void);
 	char*          httpTransact(char* szCommand, size_t cmdsz, size_t& bdysz);
 
-	void           sendCaps( void );
-	LONG           sendMessage( int msgType, const char* email, int netId, const char* msg, int parFlags );
-	LONG           sendRawMessage( int msgType, const char* data, int datLen );
-	LONG           sendPacket( const char* cmd, const char* fmt, ... );
+	void           sendCaps(void);
+	LONG           sendMessage(int msgType, const char* email, int netId, const char* msg, int parFlags);
+	LONG           sendRawMessage(int msgType, const char* data, int datLen);
+	LONG           sendPacket(const char* cmd, const char* fmt, ...);
 
-	int			 contactJoined( HANDLE hContact );
-	int			 contactLeft( HANDLE hContact );
+	int			 contactJoined(HANDLE hContact);
+	int			 contactLeft(HANDLE hContact);
 };
 
 
@@ -624,10 +624,10 @@ private:
 	char* m_body;
 
 public:
-	UTFEncoder( const char* pSrc ) :
-		m_body( mir_utf8encode( pSrc )) {}
+	UTFEncoder(const char* pSrc) :
+		m_body(mir_utf8encode(pSrc)) {}
 
-	~UTFEncoder() {  mir_free( m_body );	}
+	~UTFEncoder() {  mir_free(m_body);	}
 	const char* str() const { return m_body; }
 };
 

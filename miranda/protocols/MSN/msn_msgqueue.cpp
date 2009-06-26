@@ -36,9 +36,9 @@ void CMsnProto::MsgQueue_Uninit(void)
 	DeleteCriticalSection(&csMsgQueue);
 }
 
-int  CMsnProto::MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int msgSize, filetransfer* ft, int flags )
+int  CMsnProto::MsgQueue_Add(HANDLE hContact, int msgType, const char* msg, int msgSize, filetransfer* ft, int flags)
 {
-	EnterCriticalSection( &csMsgQueue );
+	EnterCriticalSection(&csMsgQueue);
 
 	MsgQueueEntry* E = new MsgQueueEntry;
 	msgQueueList.insert(E);
@@ -48,17 +48,17 @@ int  CMsnProto::MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int
 	E->hContact = hContact;
 	E->msgSize = msgSize;
 	E->msgType = msgType;
-	if ( msgSize <= 0 )
-		E->message = mir_strdup( msg );
+	if (msgSize <= 0)
+		E->message = mir_strdup(msg);
 	else
-		memcpy( E->message = ( char* )mir_alloc( msgSize ), msg, msgSize );
+		memcpy(E->message = (char*)mir_alloc(msgSize), msg, msgSize);
 	E->ft = ft;
 	E->seq = seq;
 	E->flags = flags;
 	E->allocatedToThread = 0;
 	E->ts = time(NULL);
 
-	LeaveCriticalSection( &csMsgQueue );
+	LeaveCriticalSection(&csMsgQueue);
 	return seq;
 }
 
@@ -85,75 +85,75 @@ HANDLE  CMsnProto::MsgQueue_CheckContact(HANDLE hContact, time_t tsc)
 //for threads to determine who they should connect to
 HANDLE  CMsnProto::MsgQueue_GetNextRecipient(void)
 {
-	EnterCriticalSection( &csMsgQueue );
+	EnterCriticalSection(&csMsgQueue);
 
 	HANDLE ret = NULL;
 	for (int i=0; i < msgQueueList.getCount(); i++)
 	{
 		MsgQueueEntry& E = msgQueueList[ i ];
-		if ( !E.allocatedToThread )
+		if (!E.allocatedToThread)
 		{
 			E.allocatedToThread = 1;
 			ret = E.hContact;
 
-			while( ++i < msgQueueList.getCount())
-				if ( msgQueueList[i].hContact == ret )
+			while(++i < msgQueueList.getCount())
+				if (msgQueueList[i].hContact == ret)
 					msgQueueList[i].allocatedToThread = 1;
 
 			break;
 	}	}
 
-	LeaveCriticalSection( &csMsgQueue );
+	LeaveCriticalSection(&csMsgQueue);
 	return ret;
 }
 
 //deletes from list. Must mir_free() return value
-bool  CMsnProto::MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal )
+bool  CMsnProto::MsgQueue_GetNext(HANDLE hContact, MsgQueueEntry& retVal)
 {
 	int i;
 
-	EnterCriticalSection( &csMsgQueue );
-	for( i=0; i < msgQueueList.getCount(); i++ )
-		if ( msgQueueList[ i ].hContact == hContact )
+	EnterCriticalSection(&csMsgQueue);
+	for(i=0; i < msgQueueList.getCount(); i++)
+		if (msgQueueList[ i ].hContact == hContact)
 			break;
 	
 	bool res = i != msgQueueList.getCount();
-	if ( res )
+	if (res)
 	{	
 		retVal = msgQueueList[ i ];
 		msgQueueList.remove(i);
 	}
-	LeaveCriticalSection( &csMsgQueue );
+	LeaveCriticalSection(&csMsgQueue);
 	return res;
 }
 
-int  CMsnProto::MsgQueue_NumMsg( HANDLE hContact )
+int  CMsnProto::MsgQueue_NumMsg(HANDLE hContact)
 {
 	int res = 0;
-	EnterCriticalSection( &csMsgQueue );
+	EnterCriticalSection(&csMsgQueue);
 
-	for( int i=0; i < msgQueueList.getCount(); i++ )
+	for(int i=0; i < msgQueueList.getCount(); i++)
 		res += msgQueueList[ i ].hContact == hContact;
 	
-	LeaveCriticalSection( &csMsgQueue );
+	LeaveCriticalSection(&csMsgQueue);
 	return res;
 }
 
-void  CMsnProto::MsgQueue_Clear( HANDLE hContact, bool msg )
+void  CMsnProto::MsgQueue_Clear(HANDLE hContact, bool msg)
 {
 	int i;
 
-	EnterCriticalSection( &csMsgQueue );
+	EnterCriticalSection(&csMsgQueue);
 	if (hContact == NULL)
 	{
 
-		for(i=0; i < msgQueueList.getCount(); i++ )
+		for(i=0; i < msgQueueList.getCount(); i++)
 		{
 			const MsgQueueEntry& E = msgQueueList[ i ];
-			if ( E.msgSize == 0 )
-				SendBroadcast( E.hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, 
-					( HANDLE )E.seq, ( LPARAM )MSN_Translate( "Message delivery failed" ));
-			mir_free( E.message );
+			if (E.msgSize == 0)
+				SendBroadcast(E.hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, 
+					(HANDLE)E.seq, (LPARAM)MSN_Translate("Message delivery failed"));
+			mir_free(E.message);
 		}
 		msgQueueList.destroy();
 
@@ -170,15 +170,15 @@ void  CMsnProto::MsgQueue_Clear( HANDLE hContact, bool msg )
 				bool msgfnd = E.msgSize == 0 && E.ts < ts;
 				int seq = E.seq;
 				
-				mir_free( E.message );
+				mir_free(E.message);
 				msgQueueList.remove(i);
 
-				if ( msgfnd ) {
+				if (msgfnd) {
 					LeaveCriticalSection(&csMsgQueue);
-					SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE )seq, 
-						( LPARAM )MSN_Translate( "Message delivery failed" ));
+					SendBroadcast(hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, (HANDLE)seq, 
+						(LPARAM)MSN_Translate("Message delivery failed"));
 					i = 0;
-					EnterCriticalSection( &csMsgQueue );
+					EnterCriticalSection(&csMsgQueue);
 				}
 			}
 		}
@@ -186,7 +186,7 @@ void  CMsnProto::MsgQueue_Clear( HANDLE hContact, bool msg )
 	LeaveCriticalSection(&csMsgQueue);
 }
 
-void __cdecl CMsnProto::MsgQueue_AllClearThread( void* arg )
+void __cdecl CMsnProto::MsgQueue_AllClearThread(void* arg)
 {
     MsgQueue_Clear(arg);
 }

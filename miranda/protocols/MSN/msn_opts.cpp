@@ -414,7 +414,7 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			}
 			else {
 				SetDlgItemTextA(hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_LOGIN_SERVER);
-				SetDlgItemInt( hwndDlg, IDC_MSNPORT,  1863, FALSE);
+				SetDlgItemInt(hwndDlg, IDC_MSNPORT,  1863, FALSE);
 			}
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			break;
@@ -487,7 +487,7 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				proto->deleteSetting(NULL, "LoginServer");
 
 			proto->setByte("UseIeProxy", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_USEIEPROXY));
-			proto->setByte("SlowSend",   (BYTE)IsDlgButtonChecked(hwndDlg, IDC_SLOWSEND  ));
+			proto->setByte("SlowSend",   (BYTE)IsDlgButtonChecked(hwndDlg, IDC_SLOWSEND ));
 			if (proto->getByte("SlowSend", FALSE))
 			{
 				if (DBGetContactSettingDword(NULL, "SRMsg", "MessageTimeout", 60000) < 60000 ||  

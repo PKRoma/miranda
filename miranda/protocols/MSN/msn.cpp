@@ -57,16 +57,16 @@ PLUGININFOEX pluginInfo =
 	"http://miranda-im.org",
 	UNICODE_AWARE,	
 	0,
-    #if defined( _UNICODE )
+    #if defined[_UNICODE)
     {0x97724af9, 0xf3fb, 0x47d3, {0xa3, 0xbf, 0xea, 0xa9, 0x35, 0xc7, 0x4e, 0x6d}} // {97724AF9-F3FB-47d3-A3BF-EAA935C74E6D}
     #else
     {0xf0eddc9, 0xa46a, 0x40de, {0xbe, 0x7a, 0xe5, 0xaa, 0xb9, 0xb6, 0x14, 0x59}} // {0F0EDDC9-A46A-40de-BE7A-E5AAB9B61459}
     #endif
 };
 
-int MSN_GCEventHook( WPARAM wParam, LPARAM lParam );
-int MSN_GCMenuHook( WPARAM wParam, LPARAM lParam );
-int MSN_ChatInit( WPARAM wParam, LPARAM lParam );
+int MSN_GCEventHook[WPARAM wParam, LPARAM lParam);
+int MSN_GCMenuHook[WPARAM wParam, LPARAM lParam);
+int MSN_ChatInit[WPARAM wParam, LPARAM lParam);
 
 /////////////////////////////////////////////////////////////////////////////
 // Protocol instances
@@ -93,7 +93,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvRese
 /////////////////////////////////////////////////////////////////////////////////////////
 //	OnModulesLoaded - finalizes plugin's configuration on load
 
-static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
+static int OnModulesLoaded[WPARAM wParam, LPARAM lParam)
 {
 	avsPresent = ServiceExists(MS_AV_SETMYAVATAR) != 0;
 	msnHaveChatDll = ServiceExists(MS_GC_REGISTER) != 0;
@@ -103,14 +103,14 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-static CMsnProto* msnProtoInit( const char* pszProtoName, const TCHAR* tszUserName )
+static CMsnProto* msnProtoInit[const char* pszProtoName, const TCHAR* tszUserName)
 {
-	CMsnProto *ppro = new CMsnProto( pszProtoName, tszUserName );
+	CMsnProto *ppro = new CMsnProto[pszProtoName, tszUserName);
 	g_Instances.insert(ppro);
 	return ppro;
 }
 
-static int msnProtoUninit( CMsnProto* ppro )
+static int msnProtoUninit[CMsnProto* ppro)
 {
 	g_Instances.remove(ppro);
 	return 0;
@@ -120,25 +120,25 @@ static int msnProtoUninit( CMsnProto* ppro )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Performs a primary set of actions upon plugin loading
 
-extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
+extern "C" int __declspec(dllexport) Load[PLUGINLINK* link)
 {
 	pluginLink = link;
 
-	mir_getLI( &li );
-	mir_getMMI( &mmi );
-	mir_getUTFI( &utfi );
-	mir_getMD5I( &md5i );
-    mir_getSHA1I( &sha1i );
+	mir_getLI[&li);
+	mir_getMMI[&mmi);
+	mir_getUTFI[&utfi);
+	mir_getMD5I[&md5i);
+    mir_getSHA1I[&sha1i);
 
-	hMooduleLoaded = HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded );
+	hMooduleLoaded = HookEvent[ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
 
 	PROTOCOLDESCRIPTOR pd = {0};
-	pd.cbSize = sizeof( pd );
+	pd.cbSize = sizeof[pd);
 	pd.szName = "MSN";
-	pd.fnInit = ( pfnInitProto )msnProtoInit;
-	pd.fnUninit = ( pfnUninitProto )msnProtoUninit;
+	pd.fnInit = [pfnInitProto)msnProtoInit;
+	pd.fnUninit = [pfnUninitProto)msnProtoUninit;
 	pd.type = PROTOTYPE_PROTOCOL;
-	MSN_CallService( MS_PROTO_REGISTERMODULE, 0, ( LPARAM )&pd );
+	MSN_CallService[MS_PROTO_REGISTERMODULE, 0, [LPARAM)&pd);
 
 	MsnInitIcons();
 	return 0;
@@ -147,7 +147,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Unload a plugin
 
-extern "C" int __declspec( dllexport ) Unload( void )
+extern "C" int __declspec[dllexport) Unload[void)
 {
 	MsnLinks_Destroy();
 	UnhookEvent(hMooduleLoaded);
@@ -159,8 +159,8 @@ extern "C" int __declspec( dllexport ) Unload( void )
 
 extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 8, 0, 0 )) {
-		MessageBox( NULL, _T("The MSN protocol plugin cannot be loaded. It requires Miranda IM 0.8.0.0 or later."), _T("MSN Protocol Plugin"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+	if [mirandaVersion < PLUGIN_MAKE_VERSION[0, 8, 0, 0)) {
+		MessageBox[NULL, _T("The MSN protocol plugin cannot be loaded. It requires Miranda IM 0.8.0.0 or later."), _T("MSN Protocol Plugin"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST);
 		return NULL;
 	}
 
@@ -169,7 +169,7 @@ extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD miranda
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MirandaPluginInterfaces - returns the protocol interface to the core
-static const MUUID interfaces[] = {MIID_PROTOCOL, MIID_LAST};
+static const MUUID interfaces[] = { MIID_PROTOCOL, MIID_LAST };
 extern "C" __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 {
 	return interfaces;
