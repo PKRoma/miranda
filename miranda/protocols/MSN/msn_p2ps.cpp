@@ -177,7 +177,8 @@ void  CMsnProto::p2p_clearDormantSessions(void)
 			p2p_unregisterSession(FT);
 			EnterCriticalSection(&sessionLock);
 			i = 0;
-	}	}
+	    }	
+    }
 
 	for (int j=0; j < dcList.getCount(); j++) 
     {
@@ -215,7 +216,8 @@ void  CMsnProto::p2p_cancelAllSessions(void)
 {
 	EnterCriticalSection(&sessionLock);
 
-	for (int i=0; i < sessionList.getCount(); i++) {
+	for (int i=0; i < sessionList.getCount(); i++) 
+    {
 		filetransfer* FT = &sessionList[i];
 		p2p_sendCancel(FT);
 	}
@@ -233,12 +235,15 @@ filetransfer*  CMsnProto::p2p_getSessionByCallID(const char* CallID)
 	EnterCriticalSection(&sessionLock);
 
 	filetransfer* ft = NULL;
-	for (int i=0; i < sessionList.getCount(); i++) {
+	for (int i=0; i < sessionList.getCount(); i++) 
+    {
 		filetransfer* FT = &sessionList[i];
-		if (FT->p2p_callID != NULL && !strcmp(FT->p2p_callID, CallID)) {
+		if (FT->p2p_callID != NULL && !strcmp(FT->p2p_callID, CallID)) 
+        {
 			ft = FT;
 			break;
-	}	}
+	    }	
+    }
 
 	LeaveCriticalSection(&sessionLock);
 	if (ft == NULL)
@@ -274,7 +279,8 @@ directconnection*  CMsnProto::p2p_getDCByCallID(const char* CallID)
 	EnterCriticalSection(&sessionLock);
 
 	directconnection* dc = NULL;
-	for (int i=0; i < dcList.getCount(); i++) {
+	for (int i=0; i < dcList.getCount(); i++) 
+    {
 		directconnection* DC = &dcList[i];
 		if (DC->callId != NULL && !strcmp(DC->callId, CallID)) 
         {
