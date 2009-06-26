@@ -44,8 +44,6 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,96,288,10
     CONTROL         "Disable all contacts not included into my contact list",IDC_DISABLE_ANOTHER_CONTACTS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,107,288,10
-    CONTROL         "Never update your nickname from server",IDC_USE_OWN_NICKNAME,
-                    "Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,9,146,288,10
     CONTROL         "Treat Away status as 'Be Right Back'",IDC_AWAY_AS_BRB,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,117,288,10
     CONTROL         "Manage server groups",IDC_MANAGEGROUPS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,127,288,10
