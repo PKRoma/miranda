@@ -20,9 +20,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef DBRW_H
 #define DBRW_H
 
-#define DBRW_VER_MAJOR           1
-#define DBRW_VER_MINOR           3
-#define DBRW_VER_STRING          "1.3"
+#define DBRW_VER_MAJOR           2
+#define DBRW_VER_MINOR           0
+#define DBRW_VER_STRING          "2.0"
 #define DBRW_VER_ALPHA           "1"
 #define DBRW_SCHEMA_VERSION      "2"
 #define DBRW_HEADER_STR          "SQLite format 3"

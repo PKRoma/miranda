@@ -18,7 +18,7 @@ LIB     =
 LFLAGS  = -shared -s
 RCFLAGS = --input-format rc --output-format coff -I../../include
 SQLITEDEF = -DNO_TCL
-DEFINES = -D__SEH_NOOP $(SQLITEDEF) -DDBRW_OLD_PLUGINAPI_SUPPORT
+DEFINES = -D__SEH_NOOP $(SQLITEDEF)
 ifdef DEBUG
 BIN = ../../bin/debug/plugins/dbx_rw.dll
 DEFINES += -DDBRW_LOGGING -DDBRW_DEBUG
