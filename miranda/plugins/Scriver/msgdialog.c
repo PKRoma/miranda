@@ -659,7 +659,7 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, h - hSplitterPos + SPLITTER_HEIGHT + 1, w - avatarWidth, hSplitterPos - SPLITTER_HEIGHT, SWP_NOZORDER);
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_AVATAR), 0, w-avatarWidth + 1, h - (avatarHeight + avatarWidth) / 2 + 1, avatarWidth - 1, avatarWidth - 1, SWP_NOZORDER);
 	
-	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_SPLITTER), 0, 0, h - hSplitterPos-1, w, SPLITTER_HEIGHT + 1, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_SPLITTER), 0, 0, h - hSplitterPos-1, toolbarWidth, SPLITTER_HEIGHT + 1, SWP_NOZORDER);
 	hdwp = ResizeToolbar(hwndDlg, hdwp, toolbarWidth, h - hSplitterPos - toolbarHeight + 1, toolbarHeight, SIZEOF(buttonControls),
 					buttonControls, buttonWidth, buttonSpacing, buttonAlignment, g_dat->buttonVisibility);
 
@@ -2018,7 +2018,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						GetObject(dat->avatarPic, sizeof(bminfo), &bminfo);
 						if ( bminfo.bmWidth != 0 && bminfo.bmHeight != 0 ) {
 							AVATARDRAWREQUEST adr;
-							avatarHeight = max(itemHeight, bminfo.bmHeight);
+							avatarHeight = itemHeight;
 							avatarWidth = bminfo.bmWidth * avatarHeight / bminfo.bmHeight;
 							if (avatarWidth > itemWidth) {
 								avatarWidth = itemWidth;
