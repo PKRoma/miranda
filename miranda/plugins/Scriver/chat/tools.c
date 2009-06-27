@@ -635,12 +635,11 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 					BYTE * pBufferTemp = 0;
 					size_t read = 0;
 
-					pBuffer = (BYTE *)mir_alloc(g_Settings.LoggingLimit * 1024 + 1);
-					pBuffer[g_Settings.LoggingLimit*1023] = '\0';
+					pBuffer = (BYTE *)mir_alloc(g_Settings.LoggingLimit * 1024 + 2);
 					pBuffer[g_Settings.LoggingLimit*1024] = '\0';
+					pBuffer[g_Settings.LoggingLimit*1024+1] = '\0';
 					fseek(hFile, -g_Settings.LoggingLimit*1024, SEEK_END);
-					//read = fread(pBuffer, 1UL, g_Settings.LoggingLimit * 1024, hFile);
-					read = fread(pBuffer, sizeof(TCHAR), g_Settings.LoggingLimit * 1024, hFile);
+					read = fread(pBuffer, 1, g_Settings.LoggingLimit * 1024, hFile);
 					fclose(hFile);
 					hFile = NULL;
 
@@ -657,7 +656,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 #ifdef _UNICODE
 							fputws((const wchar_t*)"\377\376", hFile);		//UTF-16 LE BOM == FF FE
 #endif
-							fwrite(pBufferTemp, sizeof(TCHAR), read, hFile);
+							fwrite(pBufferTemp, 1, read, hFile);
 							fclose(hFile);
 							hFile = NULL;
 					}	}
