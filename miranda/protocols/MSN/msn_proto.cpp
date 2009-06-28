@@ -440,17 +440,18 @@ int CMsnProto::AuthDeny(HANDLE hDbEvent, const char* szReason)
 	char* lastName = firstName + strlen(firstName) + 1;
 	char* email = lastName + strlen(lastName) + 1;
 
-	HANDLE hContact = MSN_HContactFromEmail(email, nick, true, false);
 	int netId = Lists_GetNetId(email);
 
-	MSN_AddUser(hContact, email, netId, LIST_PL + LIST_REMOVE);
-	MSN_AddUser(hContact, email, netId, LIST_BL);
-	MSN_AddUser(hContact, email, netId, LIST_RL);
+	MSN_AddUser(NULL, email, netId, LIST_PL + LIST_REMOVE);
+	MSN_AddUser(NULL, email, netId, LIST_BL);
+	MSN_AddUser(NULL, email, netId, LIST_RL);
 
-	if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0) == 0)
-		MSN_AddUser(hContact, email, netId, LIST_FL);
+    if (!(Lists_GetMask(email) & (LIST_FL | LIST_LL)))
+    {
+	    HANDLE hContact = MSN_HContactFromEmail(email, nick, false, false);
+        if (hContact) MSN_CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+    }
 
-	MSN_SetContactDb(hContact, email);
 	return 0;
 }
 
