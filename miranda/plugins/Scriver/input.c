@@ -29,7 +29,7 @@ extern HANDLE hHookWinPopup;
 
 enum KB_ACTIONS {KB_PREV_TAB = 1, KB_NEXT_TAB, KB_SWITCHTOOLBAR,
 				 KB_SWITCHSTATUSBAR, KB_SWITCHTITLEBAR, KB_SWITCHINFOBAR, KB_MINIMIZE, KB_CLOSE, KB_CLEAR_LOG,
-				 KB_TAB1, KB_TAB2, KB_TAB3, KB_TAB4, KB_TAB5, KB_TAB6, KB_TAB7, KB_TAB8, KB_TAB9, KB_SEND_ALL};
+				 KB_TAB1, KB_TAB2, KB_TAB3, KB_TAB4, KB_TAB5, KB_TAB6, KB_TAB7, KB_TAB8, KB_TAB9, KB_SEND_ALL, KB_PASTESEND, KB_QUOTE};
 
 void InputAreaContextMenu(HWND hwnd, WPARAM wParam, LPARAM lParam, HANDLE hContact) {
 
@@ -173,6 +173,15 @@ int InputAreaShortcuts(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, Common
 			return FALSE;
 		case KB_SEND_ALL:
 			PostMessage(GetParent(hwnd), WM_COMMAND, IDC_SENDALL, 0);
+			return FALSE;
+		case KB_QUOTE:
+			PostMessage(GetParent(hwnd), WM_COMMAND, IDC_QUOTE, 0);
+			return FALSE;
+		case KB_PASTESEND:
+			if (SendMessage(hwnd, EM_CANPASTE, 0, 0)) {
+				SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
+				PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
+			}
 			return FALSE;
 	}
 
@@ -360,9 +369,21 @@ void RegisterKeyBindings() {
 	desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL, 'W');
 	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
 
+	desc.pszName = "Scriver/Action/Quote";
+	desc.pszDescription = "Action: Quote";
+	desc.lParam = KB_QUOTE;
+	desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL, 'Q');
+	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
+
 	desc.pszName = "Scriver/Action/Send All";
 	desc.pszDescription = "Action: Send to All";
 	desc.lParam = KB_SEND_ALL;
 	desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL | HOTKEYF_SHIFT, VK_RETURN);
+	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
+
+	desc.pszName = "Scriver/Action/PasteSend";
+	desc.pszDescription = "Action: Paste & Send";
+	desc.lParam = KB_PASTESEND;
+	desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL | HOTKEYF_SHIFT, VK_INSERT);
 	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
 }
