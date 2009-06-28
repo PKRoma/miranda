@@ -20,18 +20,20 @@
 #define IDD_CARD_GEN                    133
 #define IDD_CARD_CONTACT                134
 #define IDD_ACCMGRUI                    135
+#define IDD_DELETECONTACT               136
+#define IDI_LIST_LC                     138
 #define IDD_OPT_MSN                     185
 #define IDD_SETNICKNAME                 226
 #define IDC_STMSNGROUP                  1002
 #define IDC_USEIEPROXY                  1005
 #define IDC_USEWINCOLORS                1007
-#define IDC_USE_OWN_NICKNAME            1010
 #define IDC_LIST                        1015
 #define IDC_ICON_FL                     1016
-#define IDC_ICON_RL                     1017
+#define IDC_ICON_LC                     1017
 #define IDC_ICON_AL                     1018
 #define IDC_ICON_BL                     1019
 #define IDC_PASSWORD                    1020
+#define IDC_ICON_RL                     1021
 #define IDC_HANDLE                      1022
 #define IDC_HANDLE2                     1023
 #define IDC_BGCOLOUR                    1026
@@ -53,7 +55,11 @@
 #define IDC_COMBO1                      1045
 #define IDC_SENDFONTINFO                1046
 #define IDC_EDIT4                       1046
+#define IDC_REMOVEHOT                   1046
 #define IDC_EDIT5                       1047
+#define IDC_REMOVEBLOCK                 1047
+#define IDC_BUTTON1                     1047
+#define IDC_LISTREFRESH                 1047
 #define IDC_NICKNAME                    1048
 #define IDC_EDIT6                       1048
 #define IDC_DISABLEHOTJUNK              1049
@@ -81,7 +87,6 @@
 #define IDC_USEGATEWAY                  1175
 #define IDC_DISABLEHOTMAILPOPUP         1301
 #define IDC_DISABLEHOTMAILTRAY          1302
-#define IDC_DISABLEHOTMAILTRAY2         1303
 #define IDC_DISABLEHOTMAILCL            1303
 #define IDC_NEWMSNACCOUNTLINK           1438
 #define IDC_RESETSERVER                 1472
@@ -92,9 +97,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        136
+#define _APS_NEXT_RESOURCE_VALUE        139
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1046
+#define _APS_NEXT_CONTROL_VALUE         1048
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

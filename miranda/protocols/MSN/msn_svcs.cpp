@@ -513,13 +513,16 @@ int CMsnProto::OnContactDeleted(WPARAM wParam, LPARAM lParam)
         if (szEmail[0]) 
         {
 			MSN_DebugLog("Deleted Handler Email");
-			MSN_AddUser(hContact, szEmail, 0, LIST_FL | LIST_REMOVE);
-			MSN_AddUser(hContact, szEmail, 0, LIST_AL | LIST_REMOVE);
 
-			if (Lists_IsInList(LIST_RL, szEmail))
-				MSN_AddUser(hContact, szEmail, 0, LIST_BL);
-			else 
-				MSN_AddUser(hContact, szEmail, 0, LIST_BL | LIST_REMOVE);
+            if (Lists_IsInList(LIST_FL, szEmail))
+            {
+                DeleteParam param = { this, hContact };
+                DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_DELETECONTACT), NULL, DlgDeleteContactUI, (LPARAM)&param);
+            }
+            if (Lists_IsInList(LIST_LL, szEmail))
+            {
+                MSN_AddUser(hContact, szEmail, 0, LIST_LL | LIST_REMOVE);
+            }
 		}
 	}
 

@@ -46,7 +46,8 @@ static const iconList[] =
 	{	"Contact list",           "list_fl",     IDI_LIST_FL    },
 	{	"Allowed list",           "list_al",     IDI_LIST_AL    },
 	{	"Blocked list",           "list_bl",     IDI_LIST_BL    },
-	{	"Relative list",          "list_rl",     IDI_LIST_RL    }
+	{	"Relative list",          "list_rl",     IDI_LIST_RL    },
+	{	"Local list",             "list_lc",     IDI_LIST_LC    },
 };
 
 HANDLE hIconLibItem[SIZEOF(iconList)];
@@ -182,7 +183,7 @@ static INT_PTR CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			switch(LOWORD(wParam)) 
             {
 			case IDC_SENDFONTINFO:
-			case IDC_DISABLE_ANOTHER_CONTACTS:	case IDC_USE_OWN_NICKNAME:
+			case IDC_DISABLE_ANOTHER_CONTACTS:
 			case IDC_AWAY_AS_BRB:
 			case IDC_MOBILESEND:
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -766,6 +767,45 @@ static INT_PTR CALLBACK DlgProcAccMgrUI(HWND hwndDlg, UINT msg, WPARAM wParam, L
 	return FALSE;
 }
 
+INT_PTR CALLBACK DlgDeleteContactUI(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch(msg) 
+	{
+	case WM_INITDIALOG: 
+		TranslateDialogDefault(hwndDlg);
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
+		return TRUE;
+
+    case WM_CLOSE:
+        EndDialog(hwndDlg, 0);
+        break;
+
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDOK) 
+        {
+            int isBlock = IsDlgButtonChecked(hwndDlg, IDC_REMOVEBLOCK);
+            int isHot = IsDlgButtonChecked(hwndDlg, IDC_REMOVEHOT);
+
+            DeleteParam *param = (DeleteParam*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+       		
+            char szEmail[ MSN_MAX_EMAIL_LEN ];
+        	if (!param->proto->getStaticString(param->hContact, "e-mail", szEmail, sizeof(szEmail))) 
+            {
+                param->proto->MSN_AddUser(param->hContact, szEmail, 0, LIST_FL | (isHot ? LIST_REMOVENH : LIST_REMOVE));
+
+                if (isBlock) 
+                {
+		            param->proto->MSN_AddUser(param->hContact, szEmail, 0, LIST_AL | LIST_REMOVE);
+                    param->proto->MSN_AddUser(param->hContact, szEmail, 0, LIST_BL);
+                }
+            }
+            EndDialog(hwndDlg, 1);
+		}
+		break;
+	}
+
+	return FALSE;
+}
 /////////////////////////////////////////////////////////////////////////////////////////
 // Initialize options pages
 

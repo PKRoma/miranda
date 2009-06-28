@@ -442,7 +442,7 @@ struct CMsnProto : public PROTO_INTERFACE
     bool	 MSN_IsMyContact(HANDLE hContact);
     bool	 MSN_IsMeByContact(HANDLE hContact, char* szEmail  = NULL);
     bool     MSN_AddUser(HANDLE hContact, const char* email, int netId, int flags);
-    void     MSN_AddAuthRequest(HANDLE hContact, const char *email, const char *nick);
+    void     MSN_AddAuthRequest(const char *email, const char *nick);
     void	 MSN_SetContactDb(HANDLE hContact, const char *szEmail);
     HANDLE	 MSN_HContactFromEmail(const char* msnEmail, const char* msnNick, bool addIfNeeded, bool temporary);
     HANDLE	 AddToListByEmail(const char *email, DWORD flags);
@@ -493,16 +493,16 @@ struct CMsnProto : public PROTO_INTERFACE
     /////////////////////////////////////////////////////////////////////////////////////////
     //	MSN SOAP Address Book
 
-    bool MSN_SharingFindMembership(void);
+    bool MSN_SharingFindMembership(bool deltas = false);
     bool MSN_SharingAddDelMember(const char* szEmail, const int listId, const int netId, const char* szMethod);
     bool MSN_ABAdd(void);
-    bool MSN_ABFind(const char* szMethod, const char* szGuid);
+    bool MSN_ABFind(const char* szMethod, const char* szGuid, bool deltas = false);
     bool MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const char* szMethod);
     void MSN_ABAddGroup(const char* szGrpName);
     void MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId);
     void MSN_ABUpdateNick(const char* szNick, const char* szCntId);
     void MSN_ABUpdateAttr(const char* szCntId, const char* szAttr, const char* szValue);
-    void MSN_ABUpdateProperty(const char* szCntId, const char* propName, const char* propValue);
+    bool MSN_ABUpdateProperty(const char* szCntId, const char* propName, const char* propValue);
     unsigned MSN_ABContactAdd(const char* szEmail, const char* szNick, int netId, const bool search, const bool retry=false);
     void MSN_ABUpdateDynamicItem(void);
 

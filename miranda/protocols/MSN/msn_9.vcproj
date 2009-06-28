@@ -2510,6 +2510,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Icos\list_ph.ico"
+				>
+			</File>
+			<File
 				RelativePath="Icos\list_rl.ico"
 				>
 			</File>

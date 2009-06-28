@@ -56,15 +56,6 @@ void CMsnProto::MSN_SetContactDb(HANDLE hContact, const char *szEmail)
 {
 	int listId = Lists_GetMask(szEmail);
 
-	TCHAR* szNonIm = TranslateT("Non IM Contacts");
-	bool isNonIm = false;
-	DBVARIANT dbv;
-	if (DBGetContactSettingTString(hContact, "CList", "Group", &dbv) == 0)
-	{ 
-		isNonIm = _tcscmp(dbv.ptszVal, szNonIm) == 0;
-		MSN_FreeVariant(&dbv);
-	}
-
 	if (listId & LIST_FL)
 	{
 		if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0) == 1)
@@ -83,33 +74,17 @@ void CMsnProto::MSN_SetContactDb(HANDLE hContact, const char *szEmail)
 		}
 
 		int netId = Lists_GetNetId(szEmail);
-		if (netId == NETID_EMAIL)
-		{
-			if (!isNonIm) DBWriteContactSettingTString(hContact, "CList", "Group", szNonIm);
-			setWord(hContact, "Status", ID_STATUS_ONLINE);
-			setString(hContact, "MirVer", "E-Mail Only");
-		}
-		else
-		{
-			if (isNonIm) DBDeleteContactSetting(hContact, "CList", "Group");
-		}
-
 		if (netId == NETID_MOB)
 		{
 			setWord(hContact, "Status", ID_STATUS_ONTHEPHONE);
 			setString(hContact, "MirVer", "SMS");
 		}
 	}
-	else
-	{
-		if (listId & (LIST_BL | LIST_AL))
-			DBDeleteContactSetting(hContact, "CList", "NotOnList");
-		else
-			DBWriteContactSettingByte(hContact, "CList", "NotOnList", 1);
+    if (listId & LIST_LL)
+        setByte(hContact, "LocalList", 1);
+    else
+        deleteSetting(hContact, "LocalList");
 
-		DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
-		if (!isNonIm) DBWriteContactSettingTString(hContact, "CList", "Group", szNonIm);
-	}
 }
 
 
@@ -117,8 +92,6 @@ void CMsnProto::AddDelUserContList(const char* email, const int list, const int 
 {
 	char buf[512];
 	size_t sz;
-
-	if (netId == NETID_EMAIL) return;
 
 	const char* dom = strchr(email, '@');
 	if (dom == NULL)
@@ -149,16 +122,19 @@ void CMsnProto::AddDelUserContList(const char* email, const int list, const int 
 
 bool CMsnProto::MSN_AddUser(HANDLE hContact, const char* email, int netId, int flags)
 {
-	bool needRemove = (flags & LIST_REMOVE) != 0;
+	bool needRemove     = (flags & LIST_REMOVE) != 0;
+	bool leaveHotmail   = (flags & LIST_REMOVENH) != 0;
 	flags &= 0xFF;
+
+	if (needRemove != Lists_IsInList(flags, email))
+		return true;
+
 
 	bool res = false;
 	if (flags == LIST_FL) 
 	{
 		if (needRemove) 
 		{
-			if (!Lists_IsInList(flags, email)) return true;
-
 			if (hContact == NULL)
 			{
 				hContact = MSN_HContactFromEmail(email, NULL, false, false);
@@ -168,15 +144,15 @@ bool CMsnProto::MSN_AddUser(HANDLE hContact, const char* email, int netId, int f
 			char id[MSN_GUID_LEN];
 			if (!getStaticString(hContact, "ID", id, sizeof(id))) 
 			{
-				res = MSN_ABAddDelContactGroup(id , NULL, "ABContactDelete");
+                if (leaveHotmail)
+                    res = MSN_ABUpdateProperty(id, "isMessengerUser", "0");
+                else
+				    res = MSN_ABAddDelContactGroup(id , NULL, "ABContactDelete");
 				if (res) AddDelUserContList(email, flags, Lists_GetNetId(email), true);
 			}
 		}
 		else 
 		{
-			if (Lists_IsInList(flags, email) && Lists_GetNetId(email) != NETID_EMAIL)
-				return true;
-
 			DBVARIANT dbv = {0};
 			if (!strcmp(email, MyOptions.szEmail))
 				getStringUtf("Nick", &dbv);
@@ -190,6 +166,7 @@ bool CMsnProto::MSN_AddUser(HANDLE hContact, const char* email, int netId, int f
 			else if (netId == NETID_MSN && res1 == 3)
 			{
 				char szContactID[100];
+			    hContact = MSN_HContactFromEmail(email, email, false, false);
 				if (getStaticString(hContact, "ID", szContactID, sizeof(szContactID)) == 0)
 				{
 					MSN_ABUpdateProperty(szContactID, "isMessengerUser", "1");
@@ -201,7 +178,15 @@ bool CMsnProto::MSN_AddUser(HANDLE hContact, const char* email, int netId, int f
 				res = (res1 == 0);
 
 			if (res)
+            {
 				AddDelUserContList(email, flags, netId, false);
+
+				char szContactID[100];
+				if (getStaticString(hContact, "ID", szContactID, sizeof(szContactID)) == 0)
+				{
+                    MSN_ABFind("ABFindByContacts", szContactID);
+                }
+            }
 			else
 			{
 				if (netId == 1 && strstr(email, "@yahoo.com") != 0)
@@ -210,11 +195,15 @@ bool CMsnProto::MSN_AddUser(HANDLE hContact, const char* email, int netId, int f
 			MSN_FreeVariant(&dbv);
 		}
 	}
+    else if (flags == LIST_LL)
+    {
+		if (needRemove) 
+            Lists_Remove(LIST_LL, email);
+        else
+            Lists_Add(LIST_LL, NETID_MSN, email);
+    }
 	else 
 	{
-		if (needRemove != Lists_IsInList(flags, email))
-			return true;
-
 		if (netId == 0) netId = Lists_GetNetId(email);
 		res = MSN_SharingAddDelMember(email, flags, netId, needRemove ? "DeleteMember" : "AddMember");
 //		if (res || (flags & LIST_RL)) 

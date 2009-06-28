@@ -167,7 +167,7 @@ bool CMsnProto::MSN_ABAdd(void)
 }
 
 
-bool CMsnProto::MSN_SharingFindMembership(void)
+bool CMsnProto::MSN_SharingFindMembership(bool deltas)
 {
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -186,12 +186,24 @@ bool CMsnProto::MSN_SharingFindMembership(void)
 //	node = ezxml_add_child(tps, "ServiceType", 0);
 //	ezxml_set_txt(node, "Profile");
 
-//	node = ezxml_add_child(tbdy, "View", 0);
-//	ezxml_set_txt(node, "Full");
-//	node = ezxml_add_child(tbdy, "deltasOnly", 0);
-//	ezxml_set_txt(node, "false");
-//	node = ezxml_add_child(tbdy, "lastChange", 0);
-//	ezxml_set_txt(node, "0001-01-01T00:00:00.0000000-08:00");
+    const char *szLastChange = NULL;
+    if (deltas)
+    {
+        DBVARIANT dbv;
+        if (!getString("SharingLastChange", &dbv) && dbv.pszVal[0])
+        {
+            szLastChange = NEWSTR_ALLOCA(dbv.pszVal);
+            MSN_FreeVariant(&dbv);
+        }
+        deltas &= szLastChange != NULL;
+    }
+
+	node = ezxml_add_child(tbdy, "View", 0);
+	ezxml_set_txt(node, "Full");
+	node = ezxml_add_child(tbdy, "deltasOnly", 0);
+    ezxml_set_txt(node, deltas ? "true" : "false");
+	node = ezxml_add_child(tbdy, "lastChange", 0);
+    ezxml_set_txt(node, deltas ? szLastChange : "0001-01-01T00:00:00.0000000-08:00");
 
 	char* szData = ezxml_toxml(xmlp, true);
 
@@ -229,6 +241,9 @@ bool CMsnProto::MSN_SharingFindMembership(void)
 				svcs = ezxml_next(svcs);
 			}
 
+			const char* szLastChange = ezxml_txt(ezxml_child(svcs, "LastChange"));
+            if (szLastChange[0]) setString("SharingLastChange", szLastChange);
+            
 			ezxml_t mems = ezxml_get(svcs, "Memberships", 0, "Membership", -1);
 			
 			while (mems != NULL)
@@ -244,18 +259,19 @@ bool CMsnProto::MSN_SharingFindMembership(void)
 				ezxml_t memb = ezxml_get(mems, "Members", 0, "Member", -1);
 				while (memb != NULL)
 				{
+					bool deleted = strcmp(ezxml_txt(ezxml_child(memb, "Deleted")), "true") == 0;
 					const char* szType = ezxml_txt(ezxml_child(memb, "Type"));
 					if (strcmp(szType, "Passport") == 0)
 					{
 						const char* szEmail = ezxml_txt(ezxml_child(memb, "PassportName"));
-						Lists_Add(lstId, 1, szEmail);
+						if (!deleted) Lists_Add(lstId, 1, szEmail); else Lists_Remove(lstId, szEmail);
 					}
 					else if (strcmp(szType, "Phone") == 0)
 					{
 						const char* szEmail = ezxml_txt(ezxml_child(memb, "PhoneNumber"));
 						char email[128];
 						mir_snprintf(email, sizeof(email), "tel:%s", szEmail);
-						Lists_Add(lstId, 4, email);
+						if (!deleted) Lists_Add(lstId, 4, email); else Lists_Remove(lstId, szEmail);
 					}
 					else if (strcmp(szType, "Email") == 0)
 					{
@@ -271,7 +287,8 @@ bool CMsnProto::MSN_SharingFindMembership(void)
 							}
 							anot = ezxml_next(anot);
 						}
-						Lists_Add(lstId, netId, szEmail);
+
+						if (!deleted) Lists_Add(lstId, netId, szEmail);  else Lists_Remove(lstId, szEmail);
 					}
 					memb = ezxml_next(memb);
 				}
@@ -424,19 +441,50 @@ void CMsnProto::SetAbParam(HANDLE hContact, const char *name, const char *par)
 //	else deleteSetting(hContact, "FirstName");
 }
 
-//		"ABFindAll"
-bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid)
+//		"ABFindAll", "ABFindByContacts", "ABFindContactsPaged"
+bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid, bool deltas)
 {
 	char* reqHdr;
 	ezxml_t tbdy;
 	ezxml_t xmlp = abSoapHdr(szMethod, "Initial", tbdy, reqHdr);
 
+
+    const char *szLastChange = NULL;
+    if (deltas)
+    {
+        DBVARIANT dbv;
+        if (!getString("ABFullLastChange", &dbv) && dbv.pszVal[0])
+        {
+            szLastChange = NEWSTR_ALLOCA(dbv.pszVal);
+            MSN_FreeVariant(&dbv);
+        }
+        deltas &= szLastChange != NULL;
+    }
+    const char *szDynLastChange = NULL;
+    if (deltas)
+    {
+        DBVARIANT dbv;
+        if (!getString("ABFullDynLastChange", &dbv) && dbv.pszVal[0])
+        {
+            szDynLastChange = NEWSTR_ALLOCA(dbv.pszVal);
+            MSN_FreeVariant(&dbv);
+        }
+        deltas &= szDynLastChange != NULL;
+    }
+
 	ezxml_t node = ezxml_add_child(tbdy, "abView", 0);
 	ezxml_set_txt(node, "Full");
 	node = ezxml_add_child(tbdy, "deltasOnly", 0);
-	ezxml_set_txt(node, "false");
+    ezxml_set_txt(node, deltas ? "true" : "false");
 	node = ezxml_add_child(tbdy, "dynamicItemView", 0);
 	ezxml_set_txt(node, "Gleam");
+    if (deltas)
+    {
+	    node = ezxml_add_child(tbdy, "lastChange", 0);
+        ezxml_set_txt(node, szLastChange);
+	    node = ezxml_add_child(tbdy, "dynamicItemLastChange", 0);
+        ezxml_set_txt(node, szDynLastChange);
+    }
     
     if (szGuid)
     {
@@ -472,7 +520,16 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid)
         {
             ezxml_t body = getSoapResponse(xmlm, szMethod);
 
-		    ezxml_t abinf = ezxml_get(body, "ab", 0, "abInfo", -1);
+		    ezxml_t ab = ezxml_child(body, "ab");
+            if (strcmp(szMethod, "ABFindByContacts"))
+            {
+			    const char* szLastChange = ezxml_txt(ezxml_child(ab, "LastChange"));
+                if (szLastChange[0]) setString("ABFullLastChange", szLastChange);
+			    szLastChange = ezxml_txt(ezxml_child(ab, "DynamicItemLastChanged"));
+                if (szLastChange[0]) setString("ABFullDynLastChange", szLastChange);
+            }
+
+		    ezxml_t abinf = ezxml_child(ab, "abInfo");
 		    mir_snprintf(mycid,  sizeof(mycid), "%s", ezxml_txt(ezxml_child(abinf, "OwnerCID")));
 		    mir_snprintf(mypuid, sizeof(mycid), "%s", ezxml_txt(ezxml_child(abinf, "ownerPuid")));
 
@@ -489,8 +546,7 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid)
 			    }
 		    }
 
-		    ezxml_t cont = ezxml_get(body, "contacts", 0, "Contact", -1); 
-		    while (cont != NULL)
+		    for (ezxml_t cont = ezxml_get(body, "contacts", 0, "Contact", -1); cont != NULL; cont = ezxml_next(cont))
 		    {
 			    const char* szContId = ezxml_txt(ezxml_child(cont, "contactId"));
     			
@@ -504,9 +560,10 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid)
 				    const char* szEmail = ezxml_txt(ezxml_child(contInf, "passportName"));
 				    const char* szMsgUsr = ezxml_txt(ezxml_child(contInf, "isMessengerUser"));
     				
-				    int netId = strcmp(szMsgUsr, "true") ? NETID_EMAIL : NETID_MSN;
+				    int netId = NETID_UNKNOWN;
+                    if (strcmp(szMsgUsr, "true") == 0) netId = NETID_MSN;
 
-				    if (*szEmail == '\0')
+				    if (szEmail[0] == '\0')
 				    {
 					    ezxml_t phn = ezxml_get(contInf, "phones", 0, "ContactPhone", -1);
 					    if (phn != NULL)
@@ -522,21 +579,23 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid)
 						    ezxml_t eml = ezxml_get(contInf, "emails", 0, "ContactEmail", -1);
 						    while (eml != NULL)
 						    {
-							    szMsgUsr = ezxml_txt(ezxml_child(eml, "isMessengerEnabled"));
-							    szEmail = ezxml_txt(ezxml_child(eml, "email"));
-							    const char* szCntType = ezxml_txt(ezxml_child(eml, "contactEmailType"));
-							    if (strcmp(szCntType, "Messenger2") == 0)
-								    netId = NETID_YAHOO;
-							    else if (strcmp(szCntType, "Messenger3") == 0)
-								    netId = NETID_LCS;
-							    if (strcmp(szMsgUsr, "true") == 0) break;
+						        szMsgUsr = ezxml_txt(ezxml_child(eml, "isMessengerEnabled"));
+						        if (strcmp(szMsgUsr, "true") == 0) 
+                                {
+							        szEmail = ezxml_txt(ezxml_child(eml, "email"));
+							        const char* szCntType = ezxml_txt(ezxml_child(eml, "contactEmailType"));
+							        if (strcmp(szCntType, "Messenger2") == 0)
+								        netId = NETID_YAHOO;
+							        else if (strcmp(szCntType, "Messenger3") == 0)
+								        netId = NETID_LCS;
+                                    break;
+                                }
 							    eml = ezxml_next(eml);
 						    }
 					    }
 				    }
 
-				    if (szEmail[0] == 0) 
-					    szEmail  = ezxml_txt(ezxml_child(contInf, "quickName"));
+                    if (netId == NETID_UNKNOWN || szEmail[0] == 0) continue;
 
 				    Lists_Add(LIST_FL, netId, szEmail);
 				    const char *szTmp;
@@ -546,6 +605,12 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid)
     //				if (*szNick == '\0') szNick = szEmail;
 				    HANDLE hContact = MSN_HContactFromEmail(szEmail, szEmail, true, false);
     //				setStringUtf(hContact, "Nick", (char*)szNick);
+
+		            if (MyOptions.ManageServer)
+		            {
+				        ezxml_t grps = ezxml_get(contInf, "groupIds", 0, "guid", -1);
+                        MSN_SyncContactToServerGroup(hContact, szContId, grps);
+                    }
     				
 				    const char* szNick = NULL;
 				    ezxml_t anot = ezxml_get(contInf, "annotations", 0, "Annotation", -1);
@@ -566,27 +631,21 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid)
 				    if (szNick == NULL)
 					    DBDeleteContactSetting(hContact, "CList", "MyHandle");
 
-				    setString( hContact, "ID", szContId );
+				    setString(hContact, "ID", szContId);
 
 				    switch (netId)
 				    {
 				    case NETID_YAHOO:
-					    setString( hContact, "Transport", "YAHOO" );
+					    setString(hContact, "Transport", "YAHOO");
 					    break;
 
 				    case NETID_LCS:
-					    setString( hContact, "Transport", "LCS" );
+					    setString(hContact, "Transport", "LCS");
 					    break;
 
 				    default:
-					    deleteSetting( hContact, "Transport" );
+					    deleteSetting(hContact, "Transport");
 				    }
-
-                    if (netId != NETID_EMAIL)
-                    {
-				        ezxml_t cgrp = ezxml_get(contInf, "groupIds", 0, "guid", -1);
-				        MSN_SyncContactToServerGroup( hContact, szContId, cgrp );
-                    }
 
 				    szTmp = ezxml_txt(ezxml_child(contInf, "CID"));
 				    SetAbParam(hContact, "CID", szTmp);
@@ -666,7 +725,7 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid)
 			    else
 			    {
     //              This depricated in WLM 8.1
-    //				if (!getByte( "NeverUpdateNickname", 0 ))
+    //				if (!getByte("NeverUpdateNickname", 0))
     //				{
     //					const char* szNick  = ezxml_txt(ezxml_child(contInf, "displayName"));
     //					setStringUtf(NULL, "Nick", (char*)szNick);
@@ -674,9 +733,9 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid)
 				    const char *szTmp;
 
 				    szTmp = ezxml_txt(ezxml_child(contInf, "isMobileIMEnabled"));
-				    setByte( "MobileEnabled", strcmp(szTmp, "true") == 0);
+				    setByte("MobileEnabled", strcmp(szTmp, "true") == 0);
 				    szTmp = ezxml_txt(ezxml_child(contInf, "IsNotMobileVisible"));
-				    setByte( "MobileAllowed", strcmp(szTmp, "true") != 0);
+				    setByte("MobileAllowed", strcmp(szTmp, "true") != 0);
 
 				    ezxml_t anot = ezxml_get(contInf, "annotations", 0, "Annotation", -1);
 				    while (anot != NULL)
@@ -687,7 +746,6 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid)
 					    anot = ezxml_next(anot);
 				    }
 			    }
-			    cont = ezxml_next(cont);
 		    }
         }
         else if (status == 500)
@@ -894,7 +952,7 @@ void CMsnProto::MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId)
 }
 
 
-void CMsnProto::MSN_ABUpdateProperty(const char* szCntId, const char* propName, const char* propValue)
+bool CMsnProto::MSN_ABUpdateProperty(const char* szCntId, const char* propName, const char* propValue)
 {
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -952,13 +1010,16 @@ void CMsnProto::MSN_ABUpdateProperty(const char* szCntId, const char* propName, 
             if (strcmp(szErr, "PassportAuthFail") == 0)
             {
                 MSN_GetPassportAuth();
-                MSN_ABUpdateProperty(szCntId, propName, propValue);
+                if (MSN_ABUpdateProperty(szCntId, propName, propValue))
+                    status = 200;
             }
 		}
 		ezxml_free(xmlm);
 	}
 	mir_free(tResult);
 	mir_free(abUrl);
+
+    return status == 200;
 }
 
 
@@ -1090,8 +1151,10 @@ unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, in
 		ezxml_set_txt(node, szEmail);
 		node = ezxml_add_child(contp, "isMessengerEnabled", 0);
 		ezxml_set_txt(node, "true");
+		node = ezxml_add_child(contp, "Capability", 0);
+        ezxml_set_txt(node,  netId == NETID_YAHOO ? "32" : "2");
 		node = ezxml_add_child(contp, "propertiesChanged", 0);
-		ezxml_set_txt(node, "Email IsMessengerEnabled");
+		ezxml_set_txt(node, "Email IsMessengerEnabled Capability");
 		break;
 	}
 
@@ -1141,7 +1204,8 @@ unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, in
 				MSN_ABAddDelContactGroup(szContId , NULL, "ABContactDelete");
 			else
 			{
-				HANDLE hContact = MSN_HContactFromEmail( szEmail, szNick ? szNick : szEmail, true, false );
+				MSN_ABUpdateProperty(szContId, "isMessengerUser", "1");
+				HANDLE hContact = MSN_HContactFromEmail(szEmail, szNick ? szNick : szEmail, true, false);
 				setString(hContact, "ID", szContId);
 			}
 			status = 0;
@@ -1174,7 +1238,7 @@ unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, in
                 }
 			    else
 			    {
-				    HANDLE hContact = MSN_HContactFromEmail( szEmail, szNick ? szNick : szEmail, true, false );
+				    HANDLE hContact = MSN_HContactFromEmail(szEmail, szNick ? szNick : szEmail, true, false);
 				    setString(hContact, "ID", szContId);
 			    }
             }

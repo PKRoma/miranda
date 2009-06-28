@@ -119,9 +119,11 @@ char**  CMsnProto::GetStatusMsgLoc(int status)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_AddAuthRequest - adds the authorization event to the database
 
-void  CMsnProto::MSN_AddAuthRequest(HANDLE hContact, const char *email, const char *nick)
+void  CMsnProto::MSN_AddAuthRequest(const char *email, const char *nick)
 {
 	//blob is: UIN=0(DWORD), hContact(DWORD), nick(ASCIIZ), ""(ASCIIZ), ""(ASCIIZ), email(ASCIIZ), ""(ASCIIZ)
+
+    HANDLE hContact = MSN_HContactFromEmail(email, nick, true, false);
 
 	CCSDATA ccs = { 0 };
 	PROTORECVEVENT pre = { 0 };

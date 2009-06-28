@@ -196,7 +196,7 @@ int CMsnProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM)
 	    int listId = Lists_GetMask(szEmail);
 		int netId = Lists_GetNetId(szEmail);
         
-        bool noChat = !(listId & LIST_FL) || netId == NETID_EMAIL || isMe;
+        bool noChat = !(listId & LIST_FL) || isMe;
 
 		mi.flags = CMIM_NAME | CMIM_FLAGS | CMIF_ICONFROMICOLIB;
         if (noChat) mi.flags |= CMIF_HIDDEN;
@@ -209,7 +209,6 @@ int CMsnProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM)
         MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hOpenInboxMenuItem, (LPARAM)&mi);
 
 		mi.flags = CMIM_NAME | CMIM_FLAGS | CMIF_ICONFROMICOLIB;
-        if (netId == NETID_EMAIL) mi.flags |= CMIF_HIDDEN;
         mi.pszName = isMe ? LPGEN("Edit Live &Space") : LPGEN("View Live &Space");
 		MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)menuItemsAll[4], (LPARAM)&mi);
 
@@ -225,18 +224,11 @@ int CMsnProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM)
 int CMsnProto::OnContactDoubleClicked(WPARAM wParam, LPARAM)
 {
     const HANDLE hContact = (HANDLE)wParam;
-	char szEmail[MSN_MAX_EMAIL_LEN];
 
-    bool isMe = MSN_IsMeByContact(hContact, szEmail);
-	if (szEmail[0]) 
+    if (emailEnabled && MSN_IsMeByContact(hContact)) 
     {
-		int netId = Lists_GetNetId(szEmail);
-
-        if (isMe || netId == NETID_EMAIL)
-        {
-            MsnSendHotmail(wParam, 0);
-            return 1;
-        }
+        MsnSendHotmail(wParam, 0);
+        return 1;
     }
     return 0;
 }

@@ -675,17 +675,19 @@ void CMsnProto::sttProcessAdd(char* buf, size_t len)
 
 			UrlDecode((char*)szNick);
 
-			HANDLE hContact = MSN_HContactFromEmail(szEmail, szNick, true, false);
-			if (listId == LIST_RL)
+            if (listId == LIST_FL)
+            {
+			    HANDLE hContact = MSN_HContactFromEmail(szEmail, szNick, true, false);
+			    MSN_SetContactDb(hContact, szEmail);
+            }
+
+            if (listId == LIST_RL)
 				Lists_Add(LIST_PL, netId, szEmail);
 
-			MSN_AddUser(hContact, szEmail, netId, listId);
-			int mask = Lists_GetMask(szEmail);
+			MSN_AddUser(NULL, szEmail, netId, listId);
 		
-			MSN_SetContactDb(hContact, szEmail);
-			
-			if (listId == LIST_RL && (mask & (LIST_FL+LIST_AL+LIST_BL)) == 0)
-				MSN_AddAuthRequest(hContact, szEmail, szNick);
+			if (listId == LIST_RL && !(Lists_GetMask(szEmail) & (LIST_FL | LIST_AL | LIST_BL)))
+				MSN_AddAuthRequest(szEmail, szNick);
 
 			cont = ezxml_next(cont);
 		}

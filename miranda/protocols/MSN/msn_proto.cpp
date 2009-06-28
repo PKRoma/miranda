@@ -292,7 +292,7 @@ HANDLE CMsnProto::AddToListByEmail(const char *email, DWORD flags)
 		if (msnLoggedIn) 
 		{
 			int netId = Lists_GetNetId(email);
-			if (netId == NETID_UNKNOWN || netId == NETID_EMAIL)
+			if (netId == NETID_UNKNOWN)
 				netId = strncmp(email, "tel:", 4) == 0 ? NETID_MOB : NETID_MSN;
 			if (MSN_AddUser(hContact, email, netId, LIST_FL))
 			{
@@ -461,7 +461,7 @@ void __cdecl CMsnProto::MsnSearchAckThread(void* arg)
 {
 	const char* email = (char*)arg;
 
-	if (Lists_IsInList(LIST_FL, email) && Lists_GetNetId(email) != NETID_EMAIL)
+	if (Lists_IsInList(LIST_FL, email))
 	{
 		TCHAR *title = mir_a2t(email);
 		MSN_ShowPopup(title, _T("Contact already in your contact list"), MSN_ALLOW_MSGBOX, NULL);
@@ -969,12 +969,6 @@ int __cdecl CMsnProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 
 	switch (netId)
 	{
-	case NETID_EMAIL:
-		seq = 999994;
-		errMsg = MSN_Translate("Cannot send messages to E-mail only contacts");
-		ForkThread(&CMsnProto::MsnFakeAck, new TFakeAckParams(hContact, seq, errMsg, this));
-		break;
-
 	case NETID_MOB:
 		if (strlen(msg) > 133) {
 			errMsg = MSN_Translate("Message is too long: SMS page limited to 133 UTF8 chars");

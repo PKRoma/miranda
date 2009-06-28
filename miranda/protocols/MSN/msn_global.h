@@ -552,15 +552,16 @@ struct MsnContact
 #define NETID_LCS		0x0002
 #define NETID_MOB		0x0004
 #define NETID_YAHOO		0x0020
-#define NETID_EMAIL		0x8000
 
-#define	LIST_FL		0x0001
-#define	LIST_AL		0x0002
-#define	LIST_BL		0x0004
-#define	LIST_RL		0x0008
-#define LIST_PL		0x0010
+#define	LIST_FL         0x0001
+#define	LIST_AL		    0x0002
+#define	LIST_BL		    0x0004
+#define	LIST_RL		    0x0008
+#define LIST_PL		    0x0010
+#define LIST_LL		    0x0080
 
-#define	LIST_REMOVE	0x0100
+#define	LIST_REMOVE     0x0100
+#define	LIST_REMOVENH   0x0300
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN plugin options
@@ -693,3 +694,11 @@ struct chunkedmsg
 	void add(const char* msg, const size_t offset, const size_t portion);
 	bool get(char*& tmsg, size_t& tsize);
 };
+
+struct DeleteParam
+{
+    CMsnProto *proto;
+    HANDLE hContact;
+};
+
+INT_PTR CALLBACK DlgDeleteContactUI(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
