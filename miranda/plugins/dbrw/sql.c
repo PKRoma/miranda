@@ -161,7 +161,10 @@ static void CALLBACK sql_server_sync_apc(DWORD dwParam) {
 
 static void sql_server_sync(TSqlMessage *msg) {
     msg->hDoneEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-    QueueUserAPC(sql_server_sync_apc, hSqlThread, (DWORD)msg);
+    if (GetCurrentThreadId()!=sqlThreadId)
+		QueueUserAPC(sql_server_sync_apc, hSqlThread, (DWORD)msg);
+	else
+		sql_server_sync_apc((DWORD)msg);
     PostMessage(hAPCWindow, WM_NULL, 0, 0);
     WaitForSingleObject(msg->hDoneEvent, INFINITE);
     CloseHandle(msg->hDoneEvent);
