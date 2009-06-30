@@ -111,7 +111,8 @@ struct CYahooProto : public PROTO_INTERFACE
 	INT_PTR __cdecl OnRefreshCommand( WPARAM, LPARAM );
 	INT_PTR __cdecl OnShowMyProfileCommand( WPARAM, LPARAM );
 	INT_PTR __cdecl OnShowProfileCommand( WPARAM, LPARAM );
-
+	INT_PTR __cdecl OnPrebuildContactMenu(WPARAM wParam,LPARAM lParam);
+	
 	//====| Services |====================================================================
 	INT_PTR  __cdecl SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam);
 	INT_PTR __cdecl  GetUnreadEmailCount( WPARAM, LPARAM );
