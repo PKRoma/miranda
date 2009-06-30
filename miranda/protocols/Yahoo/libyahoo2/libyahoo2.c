@@ -1493,6 +1493,8 @@ static void yahoo_process_filetransfer7info(struct yahoo_input_data *yid, struct
 			 */
 			struct yahoo_packet *pkt1 = NULL;
 
+			LOG(("[yahoo_process_filetransfer7info] Got File info, Denying P2P."));
+			
 			pkt1 = yahoo_packet_new(YAHOO_SERVICE_Y7_FILETRANSFERACCEPT, YPACKET_STATUS_DEFAULT, yd->session_id);
 			yahoo_packet_hash(pkt1, 1, yd->user);
 			yahoo_packet_hash(pkt1, 5, from);
@@ -1514,6 +1516,8 @@ static void yahoo_process_filetransfer7info(struct yahoo_input_data *yid, struct
 			 */
 			struct yahoo_packet *pkt1 = NULL;
 
+			LOG(("[yahoo_process_filetransfer7info] Got File info, Relaying FT."));
+			
 			pkt1 = yahoo_packet_new(YAHOO_SERVICE_Y7_FILETRANSFERACCEPT, YPACKET_STATUS_DEFAULT, yd->session_id);
 			yahoo_packet_hash(pkt1, 1, yd->user);
 			yahoo_packet_hash(pkt1, 5, from);
