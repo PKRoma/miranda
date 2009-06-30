@@ -1,7 +1,7 @@
 /*
 dbRW
 
-Copyright (c) 2005-2007 Robert Rainwater
+Copyright (c) 2005-2009 Robert Rainwater
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,9 +20,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef DBRW_H
 #define DBRW_H
 
-#define DBRW_VER_MAJOR           2
-#define DBRW_VER_MINOR           0
-#define DBRW_VER_STRING          "2.0"
+#define DBRW_VER_MAJOR           1
+#define DBRW_VER_MINOR           4
+#define DBRW_VER_STRING          "1.4"
 #define DBRW_VER_ALPHA           "1"
 #define DBRW_SCHEMA_VERSION      "2"
 #define DBRW_HEADER_STR          "SQLite format 3"

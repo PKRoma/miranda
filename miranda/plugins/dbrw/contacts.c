@@ -1,6 +1,6 @@
 /*
 dbRW
-Copyright (c) 2005-2007 Robert Rainwater
+Copyright (c) 2005-2009 Robert Rainwater
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
