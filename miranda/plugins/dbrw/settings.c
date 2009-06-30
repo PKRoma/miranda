@@ -340,7 +340,7 @@ static void settings_writeUpdatedSettings() {
 	DBCachedContactValueList *VL;
 	DBCachedContactValue *VI;
 	char *szTok, *szTokTmp1, *szTokTmp2;
-
+    
 	EnterCriticalSection(&csSettingsDb);
 	for (idx=0; idx<sGlobalSettings.realCount; idx++) {
 		V = (DBCachedGlobalValue*)sGlobalSettings.items[idx];
