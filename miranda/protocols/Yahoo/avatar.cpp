@@ -24,17 +24,26 @@
  *31 bit hash function  - this is based on g_string_hash function from glib
  */
 
-int YAHOO_avt_hash(const char *key, DWORD ksize)
+int YAHOO_avt_hash(const char *key, DWORD len)
 {
-	const char *p = key;
-	int h = *p;
-	unsigned long l = 1;
+	/* 
+		Thank you Pidgin and Kopete devs. It seems that both clients are using this code now.
+	
+	*/
 
-	if (h)
-		for (p += 1; l < ksize; p++, l++)
-			h = (h << 5) - h + *p;
+	const unsigned char *p = (const unsigned char *)key;
+	int checksum = 0, g, i = len;
 
-	return h;
+	while(i--) {
+		checksum = (checksum << 4) + *p++;
+
+		if((g = (checksum & 0xf0000000)) != 0)
+			checksum ^= g >> 23;
+
+		checksum &= ~g;
+	}
+	
+	return checksum;
 }
 
 /**************** Send Avatar ********************/
