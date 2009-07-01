@@ -141,7 +141,7 @@ typedef struct
 		hookGCUserEvent,
 		hookGCMenuBuild;
 	HANDLE hMainMenu[8];
-	HANDLE hContactMenu[1];
+	HANDLE hContactMenu;
 } GGPROTO;
 
 typedef struct
