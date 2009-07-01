@@ -427,6 +427,20 @@ char *gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients
 	return chat->id;
 }
 
+static void gg_gc_resetclistopts(HWND hwndList)
+{
+	int i;
+
+	SendMessage(hwndList, CLM_SETLEFTMARGIN, 2, 0);
+	SendMessage(hwndList, CLM_SETBKBITMAP, 0, (LPARAM)(HBITMAP)NULL);
+	SendMessage(hwndList, CLM_SETBKCOLOR, GetSysColor(COLOR_WINDOW), 0);
+	SendMessage(hwndList, CLM_SETGREYOUTFLAGS, 0, 0);
+	SendMessage(hwndList, CLM_SETINDENT, 10, 0);
+	SendMessage(hwndList, CLM_SETHIDEEMPTYGROUPS, (WPARAM)TRUE, 0);
+	for (i=0; i<=FONTID_MAX; i++)
+		SendMessage(hwndList, CLM_SETTEXTCOLOR, i, GetSysColor(COLOR_WINDOWTEXT));
+}
+
 static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
 	switch(message)
@@ -445,6 +459,7 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wPara
 			//~ cii.flags = CLCIIF_GROUPFONT | CLCIIF_CHECKBOX;
 			//~ cii.pszText = Translate("** All contacts **");
 			//~ hItemAll = (HANDLE)SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_ADDINFOITEM, 0, (LPARAM)&cii);
+			gg_gc_resetclistopts(GetDlgItem(hwndDlg, IDC_CLIST));
 
 			// Make bold title font
 			GetObject(hNormalFont, sizeof(lf), &lf);
@@ -525,18 +540,11 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wPara
 					switch(((NMHDR*)lParam)->code)
 					{
 						case CLN_OPTIONSCHANGED:
-						{
-							int i;
+							gg_gc_resetclistopts(GetDlgItem(hwndDlg, IDC_CLIST));
+							break;
 
-							SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETLEFTMARGIN, 2, 0);
-							SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETBKBITMAP, 0, (LPARAM)(HBITMAP)NULL);
-							SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETBKCOLOR, GetSysColor(COLOR_WINDOW), 0);
-							SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETGREYOUTFLAGS, 0, 0);
-							for (i=0; i<=FONTID_MAX; i++)
-								SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETTEXTCOLOR, i, GetSysColor(COLOR_WINDOWTEXT));
-						}
-						break;
-
+						case CLN_NEWCONTACT:
+						case CLN_CONTACTMOVED:
 						case CLN_LISTREBUILT:
 						{
 							HANDLE hContact;
@@ -544,7 +552,7 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wPara
 							char* szProto;
 							GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, DWLP_USER);
 
-							// Delete non-icq contacts
+							// Delete non-gg contacts
 							hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 							while (hContact)
 							{
