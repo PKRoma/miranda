@@ -133,16 +133,18 @@ const char *http_error_string(int h)
 //////////////////////////////////////////////////////////
 // Gets plugin info
 DWORD gMirandaVersion = 0;
-// For compatibility with old versions
-__declspec(dllexport) PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
-{
-	pluginInfo.cbSize = sizeof(PLUGININFO);
-	gMirandaVersion = mirandaVersion;
-	return (PLUGININFO *)&pluginInfo;
-}
 __declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	pluginInfo.cbSize = sizeof(PLUGININFOEX);
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 29))
+	{
+		MessageBox(
+			NULL,
+			"The Gadu-Gadu protocol plugin cannot be loaded. It requires Miranda IM 0.8.0.29 or later.",
+			"Gadu-Gadu Protocol Plugin",
+			MB_OK | MB_ICONWARNING | MB_SETFOREGROUND | MB_TOPMOST
+		);
+		return NULL;
+	}
 	gMirandaVersion = mirandaVersion;
 	return &pluginInfo;
 }
