@@ -239,10 +239,12 @@ void gg_menus_init(GGPROTO *gg)
 	mi.ptszPopupName = NULL;
 	mi.position = 500090000;
 	mi.hIcon = LoadIconEx(IDI_GG);
-	mi.ptszName = gg->unicode_core ? mir_u2a((wchar_t *)gg->proto.m_tszUserName) : mir_strdup(gg->proto.m_tszUserName);
+	mi.ptszName = GG_PROTONAME;
 	mi.pszService = service;
-	gg->hMainMenu[0] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
-	mir_free(mi.ptszName);
+	gg->hMenuRoot = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+
+	gg_gc_menus_init(gg);
+	gg_import_init(gg);
 }
 
 //////////////////////////////////////////////////////////
@@ -282,10 +284,9 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 
 			// Init misc thingies
 			gg_icolib_init(gg);
-			gg_menus_init(gg);
 			gg_gc_init(gg);
+			gg_menus_init(gg);
 			gg_keepalive_init(gg);
-			gg_import_init(gg);
 			gg_img_init(gg);
 
 			break;
@@ -307,10 +308,13 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 #ifdef DEBUGMODE
 			gg_netlog(gg, "gg_event(EV_PROTO_ONRENAME): renaming account...");
 #endif
+			mir_free(gg->name);
+			gg->name = gg->unicode_core ? mir_u2a((wchar_t *)gg->proto.m_tszUserName) : mir_strdup(gg->proto.m_tszUserName);
+
 			mi.cbSize = sizeof(mi);
 			mi.flags = CMIM_NAME | CMIF_TCHAR;
-			mi.ptszName = gg->unicode_core ? mir_u2a((wchar_t *)gg->proto.m_tszUserName) : mir_strdup(gg->proto.m_tszUserName);
-			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)gg->hMainMenu[0], (LPARAM)&mi);
+			mi.ptszName = GG_PROTONAME;
+			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)gg->hMenuRoot, (LPARAM)&mi);
 
 			break;
 		}
@@ -323,10 +327,10 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 static GGPROTO *gg_proto_init(const char* pszProtoName, const TCHAR* tszUserName)
 {
 	DWORD dwVersion;
-	GGPROTO *gg = malloc(sizeof(GGPROTO));
+	GGPROTO *gg = (GGPROTO *)mir_alloc(sizeof(GGPROTO));
 	char szVer[MAX_PATH];
 	ZeroMemory(gg, sizeof(GGPROTO));
-	gg->proto.vtbl = malloc(sizeof(PROTO_INTERFACE_VTBL));
+	gg->proto.vtbl = (PROTO_INTERFACE_VTBL*)mir_alloc(sizeof(PROTO_INTERFACE_VTBL));
 	// Are we running under unicode Miranda core ?
 	CallService(MS_SYSTEM_GETVERSIONTEXT, MAX_PATH, (LPARAM)szVer);
 	_strlwr(szVer); // make sure it is lowercase
@@ -373,7 +377,7 @@ static int gg_proto_uninit(PROTO_INTERFACE *proto)
 	gg_keepalive_destroy(gg);
 	gg_gc_destroy(gg);
 	gg_import_shutdown(gg);
-	CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMainMenu[0], 0);
+	CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMenuRoot, 0);
 
 	// Close handles
 	LocalEventUnhook(gg->hookOptsInit);
@@ -396,8 +400,8 @@ static int gg_proto_uninit(PROTO_INTERFACE *proto)
 	mir_free(gg->proto.m_szModuleName);
 	mir_free(gg->proto.m_tszUserName);
 	mir_free(gg->name);
-	free(gg->proto.vtbl);
-	free(gg);
+	mir_free(gg->proto.vtbl);
+	mir_free(gg);
 	return 0;
 }
 

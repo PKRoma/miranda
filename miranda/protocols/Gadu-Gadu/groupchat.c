@@ -30,7 +30,6 @@ int gg_gc_clearignored(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Inits Gadu-Gadu groupchat module using chat.dll
-
 int gg_gc_init(GGPROTO *gg)
 {
 	// Chat.dll required Miranda version 0.4 or higher
@@ -38,7 +37,6 @@ int gg_gc_init(GGPROTO *gg)
 	{
 		char service[64];
 		GCREGISTER gcr = {0};
-		CLISTMENUITEM mi;
 
 		// Register Gadu-Gadu proto
 		gcr.cbSize = sizeof(GCREGISTER);
@@ -47,7 +45,7 @@ int gg_gc_init(GGPROTO *gg)
 		gcr.nColors = 0;
 		gcr.pColors = 0;
 		gcr.pszModuleDispName = GG_PROTONAME;
-		gcr.pszModule = GG_PROTONAME;
+		gcr.pszModule = GG_PROTO;
 #ifdef DEBUGMODE
 		gg_netlog(gg, "gg_gc_init(): Trying to register groupchat plugin...");
 #endif
@@ -59,30 +57,6 @@ int gg_gc_init(GGPROTO *gg)
 #ifdef DEBUGMODE
 		gg_netlog(gg, "gg_gc_init(): Registered with groupchat plugin.");
 #endif
-
-		ZeroMemory(&mi,sizeof(mi));
-		mi.cbSize = sizeof(mi);
-		mi.flags = CMIF_ROOTHANDLE;
-		mi.hParentMenu = gg->hMainMenu[0];
-
-		// Conferencing
-		mir_snprintf(service, sizeof(service), GGS_OPEN_CONF, GG_PROTO);
-		CreateProtoServiceFunction(service, gg_gc_openconf, gg);
-		mi.popupPosition = 500090000;
-		mi.position = 500090000;
-		mi.hIcon = LoadIconEx(IDI_CONFERENCE);
-		mi.pszName = LPGEN("Open &conference...");
-		mi.pszService = service;
-		gg->hMainMenu[1] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
-
-		mir_snprintf(service, sizeof(service), GGS_CLEAR_IGNORED, GG_PROTO);
-		CreateProtoServiceFunction(service, gg_gc_clearignored, gg);
-		mi.popupPosition = 500090000;
-		mi.position = 500090000;
-		mi.hIcon = NULL;
-		mi.pszName = LPGEN("&Clear ignored conferences");
-		mi.pszService = service;
-		gg->hMainMenu[2] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
 	}
 #ifdef DEBUGMODE
 	else
@@ -90,6 +64,39 @@ int gg_gc_init(GGPROTO *gg)
 #endif
 
 	return 1;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Groupchat menus initialization
+void gg_gc_menus_init(GGPROTO *gg)
+{
+	if(gg->gc_enabled)
+	{
+		char service[64];
+		CLISTMENUITEM mi;
+
+		ZeroMemory(&mi,sizeof(mi));
+		mi.cbSize = sizeof(mi);
+		mi.flags = CMIF_ROOTHANDLE;
+		mi.hParentMenu = gg->hMenuRoot;
+
+		// Conferencing
+		mir_snprintf(service, sizeof(service), GGS_OPEN_CONF, GG_PROTO);
+		CreateProtoServiceFunction(service, gg_gc_openconf, gg);
+		mi.position = 500090000;
+		mi.hIcon = LoadIconEx(IDI_CONFERENCE);
+		mi.pszName = LPGEN("Open &conference...");
+		mi.pszService = service;
+		gg->hMainMenu[0] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+
+		mir_snprintf(service, sizeof(service), GGS_CLEAR_IGNORED, GG_PROTO);
+		CreateProtoServiceFunction(service, gg_gc_clearignored, gg);
+		mi.position = 500090001;
+		mi.hIcon = NULL;
+		mi.pszName = LPGEN("&Clear ignored conferences");
+		mi.pszService = service;
+		gg->hMainMenu[1] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -105,10 +112,10 @@ int gg_gc_destroy(GGPROTO *gg)
 	list_destroy(gg->chats, 1); gg->chats = NULL;
 	LocalEventUnhook(gg->hookGCUserEvent);
 	LocalEventUnhook(gg->hookGCMenuBuild);
-	if(gMirandaVersion && gMirandaVersion >= PLUGIN_MAKE_VERSION(0, 4, 0, 0) && ServiceExists(MS_GC_REGISTER))
+	if(gg->gc_enabled)
 	{
+		CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMainMenu[0], (LPARAM) 0);
 		CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMainMenu[1], (LPARAM) 0);
-		CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMainMenu[2], (LPARAM) 0);
 	}
 
 	return 1;

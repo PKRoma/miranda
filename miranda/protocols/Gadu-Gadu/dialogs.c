@@ -867,10 +867,9 @@ int gg_details_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		odp.pfnDlgProc = gg_detailsdlgproc;
 		odp.position = -1900000000;
 		odp.pszTemplate = ((HANDLE)lParam != NULL) ? MAKEINTRESOURCE(IDD_INFO_GG) : MAKEINTRESOURCE(IDD_CHINFO_GG);
-		odp.ptszTitle = gg->unicode_core ? mir_u2a((wchar_t *)gg->proto.m_tszUserName) : mir_strdup(gg->proto.m_tszUserName);
+		odp.ptszTitle = GG_PROTONAME;
 		odp.dwInitParam = (LPARAM)gg;
 		CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
-		mir_free(odp.ptszTitle);
 	}
 
 	// Start search for my data

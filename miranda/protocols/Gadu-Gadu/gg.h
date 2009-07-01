@@ -140,7 +140,8 @@ typedef struct
 		hookIconsChanged,
 		hookGCUserEvent,
 		hookGCMenuBuild;
-	HANDLE hMainMenu[8];
+	HANDLE hMenuRoot;
+	HANDLE hMainMenu[7];
 	HANDLE hContactMenu;
 } GGPROTO;
 
@@ -427,6 +428,7 @@ int gg_details_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 
 /* Groupchat functions */
 int gg_gc_init(GGPROTO *gg);
+void gg_gc_menus_init(GGPROTO *gg);
 int gg_gc_destroy(GGPROTO *gg);
 char * gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients_count);
 GGGC *gg_gc_lookup(GGPROTO *gg, char *id);
