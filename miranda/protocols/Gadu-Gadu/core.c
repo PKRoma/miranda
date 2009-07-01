@@ -814,20 +814,23 @@ retry:
 			// Image reply sent
 			case GG_EVENT_IMAGE_REPLY:
 				// Get rid of empty image
-				if(!e->event.image_reply.size || !e->event.image_reply.image)
-					break;
-				if(DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_IMGMETHOD, GG_KEYDEF_IMGMETHOD) || gg_img_opened(gg, e->event.image_reply.sender))
+				if(e->event.image_reply.size && e->event.image_reply.image)
 				{
 					HANDLE hContact = gg_getcontact(gg, e->event.image_reply.sender, 1, 0, NULL);
 					void *img = (void *)gg_img_loadpicture(gg, e, 0);
-					if(img)
+
+					if(!img)
+						break;
+
+					if(DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_IMGMETHOD, GG_KEYDEF_IMGMETHOD) == 1 || gg_img_opened(gg, e->event.image_reply.sender))
+					{
 						gg_img_display(gg, hContact, img);
-				}
-				else
-				{
-					HANDLE hContact = gg_getcontact(gg, e->event.image_reply.sender, 1, 0, NULL);
-					void *img = (void *)gg_img_loadpicture(gg, e, 0);
-					if(img)
+					}
+					else if(DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_IMGMETHOD, GG_KEYDEF_IMGMETHOD) == 2)
+					{
+						gg_img_displayasmsg(gg, hContact, img);
+					}
+					else
 					{
 						CLISTEVENT cle;
 						char service[128]; mir_snprintf(service, sizeof(service), GGS_RECVIMAGE, GG_PROTO);

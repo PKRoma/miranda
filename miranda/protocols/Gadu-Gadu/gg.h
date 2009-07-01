@@ -76,6 +76,7 @@ extern "C" {
 #include <m_icolib.h>
 #include <m_imgsrvc.h>
 #include <m_genmenu.h>
+#include <m_file.h>
 #ifdef DEBUGMODE
 #include <m_popup.h>
 #endif
@@ -386,7 +387,9 @@ void gg_remindpassword(GGPROTO *gg, uin_t uin, const char *email);
 void *gg_img_loadpicture(GGPROTO *gg, struct gg_event* e, char *szFileName);
 int gg_img_releasepicture(void *img);
 int gg_img_display(GGPROTO *gg, HANDLE hContact, void *img);
+int gg_img_displayasmsg(GGPROTO *gg, HANDLE hContact, void *img);
 int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam);
+int gg_recvmessage(PROTO_INTERFACE *proto, HANDLE hContact, PROTORECVEVENT *pre);
 
 /* File transfer functions */
 HANDLE gg_fileallow(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer, const char* szPath);

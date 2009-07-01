@@ -32,6 +32,8 @@ Odbieraj nadchodz¹ce obrazki za pomoc¹ metody:
 Ikona zadañ systemowych
 [Popup window]
 Wyskakuj¹ce okno
+[Message with [img] BBCode]
+Wiadomoœæ z tagiem [img]
 [Show contacts not on my list having me on their list]
 Pokazuj kontakty spoza mojej listy maj¹ce mnie na swojej liœcie
 [Gadu-Gadu Number:]

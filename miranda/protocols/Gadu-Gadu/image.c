@@ -767,6 +767,43 @@ GGIMAGEDLGDATA *gg_img_recvdlg(GGPROTO *gg, HANDLE hContact)
 	return dat;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Display received image using [img] BBCode in message
+int gg_img_displayasmsg(GGPROTO *gg, HANDLE hContact, void *img)
+{
+	GGIMAGEENTRY *dat = (GGIMAGEENTRY *)img;
+	char szFileName[MAX_PATH], szDir[MAX_PATH];
+	FILE *fp;
+
+	CallService(MS_FILE_GETRECEIVEDFILESFOLDER, (WPARAM)hContact, (LPARAM)szDir);
+	CallService(MS_UTILS_CREATEDIRTREE, 0, (LPARAM)szDir);
+	mir_snprintf(szFileName, sizeof(szFileName), "%s%s", szDir, dat->lpszFileName);
+	fp = fopen(szFileName, "w+b");
+	if(fp)
+	{
+		char imgmsg[MAX_PATH+11];
+		PROTORECVEVENT pre;
+
+		fwrite(dat->lpData, dat->nSize, 1, fp);
+		fclose(fp);
+#ifdef DEBUGMODE
+		gg_netlog(gg, "gg_img_displayasmsg: Image saved to %s.", szFileName);
+#endif
+
+		mir_snprintf(imgmsg, sizeof(imgmsg), "[img]%s[/img]", szFileName);
+		pre.flags = 0;
+		pre.timestamp = time(NULL);
+		pre.szMessage = imgmsg;
+		pre.lParam = 0;
+		gg_recvmessage((PROTO_INTERFACE *)gg, hContact, &pre);
+	}
+#ifdef DEBUGMODE
+	else
+		gg_netlog(gg, "gg_img_displayasmsg: Cannot save image to %s.", szFileName);
+#endif
+	return 0;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 // Return if uin has it's window already opened
 BOOL gg_img_opened(GGPROTO *gg, uin_t uin)
