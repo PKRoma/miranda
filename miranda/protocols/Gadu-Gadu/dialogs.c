@@ -528,9 +528,9 @@ static INT_PTR CALLBACK gg_confoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam
 						(WORD)SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_DEFAULT, CB_GETCURSEL, 0, 0));
 
 					GetDlgItemText(hwndDlg, IDC_GC_COUNT_TOTAL, str, sizeof(str));
-					DBWriteContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_COUNT_TOTAL, atoi(str));
+					DBWriteContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_COUNT_TOTAL, (WORD)atoi(str));
 					GetDlgItemText(hwndDlg, IDC_GC_COUNT_UNKNOWN, str, sizeof(str));
-					DBWriteContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_COUNT_UNKNOWN, atoi(str));
+					DBWriteContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_COUNT_UNKNOWN, (WORD)atoi(str));
 
 					break;
 				}
@@ -646,12 +646,12 @@ static INT_PTR CALLBACK gg_advoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 					// Write direct port
 					GetDlgItemText(hwndDlg, IDC_DIRECTPORT, str, sizeof(str));
-					DBWriteContactSettingWord(NULL, GG_PROTO, GG_KEY_DIRECTPORT, atoi(str));
+					DBWriteContactSettingWord(NULL, GG_PROTO, GG_KEY_DIRECTPORT, (WORD)atoi(str));
 					// Write forwarding host
 					GetDlgItemText(hwndDlg, IDC_FORWARDHOST, str, sizeof(str));
 					DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_FORWARDHOST, str);
 					GetDlgItemText(hwndDlg, IDC_FORWARDPORT, str, sizeof(str));
-					DBWriteContactSettingWord(NULL, GG_PROTO, GG_KEY_FORWARDPORT, atoi(str));
+					DBWriteContactSettingWord(NULL, GG_PROTO, GG_KEY_FORWARDPORT, (WORD)atoi(str));
 					break;
 				}
 			}

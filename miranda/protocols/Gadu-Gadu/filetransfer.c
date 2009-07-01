@@ -160,7 +160,7 @@ void *__stdcall gg_dccmainthread(void *empty)
 	}
 
 	// Create listen socket on config direct port
-	if(!(gg->dcc = gg_dcc_socket_create(uin, DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_DIRECTPORT, GG_KEYDEF_DIRECTPORT))))
+	if(!(gg->dcc = gg_dcc_socket_create(uin, (uint16_t)DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_DIRECTPORT, GG_KEYDEF_DIRECTPORT))))
 	{
 #ifdef DEBUGMODE
 		gg_netlog(gg, "gg_dccmainthread(): Cannot create DCC listen socket. Exiting.");

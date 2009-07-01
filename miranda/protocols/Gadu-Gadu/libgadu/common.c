@@ -366,7 +366,7 @@ int gg_connect(void *addr, int port, int async)
 		}
 	}
 
-	sin.sin_port = htons(port);
+	sin.sin_port = htons((uint16_t)port);
 	sin.sin_family = AF_INET;
 	sin.sin_addr.s_addr = a->s_addr;
 

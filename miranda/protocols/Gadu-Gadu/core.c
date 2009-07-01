@@ -657,8 +657,8 @@ retry:
 								int br = atoi(__birthyear);
 								if(br > 0)
 								{
-									DBWriteContactSettingWord(hContact, GG_PROTO, "Age", (lt->tm_year + 1900) - br);
-									DBWriteContactSettingWord(hContact, GG_PROTO, "BirthYear", br);
+									DBWriteContactSettingWord(hContact, GG_PROTO, "Age", (WORD)(lt->tm_year + 1900 - br));
+									DBWriteContactSettingWord(hContact, GG_PROTO, "BirthYear", (WORD)br);
 								}
 							}
 
@@ -1352,7 +1352,7 @@ HANDLE gg_getcontact(GGPROTO *gg, uin_t uin, int create, int inlist, char *szNic
 
 	// Add to notify list if new
 	if(gg_isonline(gg))
-		gg_add_notify_ex(gg->sess, uin, inlist ? GG_USER_NORMAL : GG_USER_OFFLINE);
+		gg_add_notify_ex(gg->sess, uin, (char)(inlist ? GG_USER_NORMAL : GG_USER_OFFLINE));
 
 	// TODO server side list & add buddy
 	return hContact;
