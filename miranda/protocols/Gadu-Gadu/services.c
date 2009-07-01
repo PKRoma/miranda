@@ -18,7 +18,6 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ////////////////////////////////////////////////////////////////////////////////
 
-
 #include "gg.h"
 
 //////////////////////////////////////////////////////////
@@ -724,6 +723,21 @@ HWND gg_searchbyadvanced(PROTO_INTERFACE *proto, HWND hwndDlg)
 }
 
 //////////////////////////////////////////////////////////
+// gets protocol status message
+int gg_getmyawaymsg(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
+{
+	int res = 0;
+	char *szMsg;
+
+	pthread_mutex_lock(&gg->sess_mutex);
+	szMsg = gg_getstatusmsg(gg, wParam ? gg_normalizestatus(wParam) : gg->proto.m_iStatus);
+	if(gg_isonline(gg) && szMsg)
+		res = (lParam & SGMA_UNICODE) ? (int)mir_a2u(szMsg) : (int)mir_strdup(szMsg);
+	pthread_mutex_unlock(&gg->sess_mutex);
+	return res;
+}
+
+//////////////////////////////////////////////////////////
 // gets caccount manager GUI
 extern INT_PTR CALLBACK gg_acc_mgr_guidlgproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -799,8 +813,9 @@ void gg_registerservices(GGPROTO *gg)
 	gg->proto.vtbl->SetAwayMsg             = gg_setawaymsg;
 
 	gg->proto.vtbl->UserIsTyping           = gg_dummy_useristyping;
-                                            
+
 	gg->proto.vtbl->OnEvent                = gg_event;
-	
+
+	CreateProtoService(PS_GETMYAWAYMSG, gg_getmyawaymsg, gg);
 	CreateProtoService(PS_CREATEACCMGRUI, gg_get_acc_mgr_gui, gg);
 }

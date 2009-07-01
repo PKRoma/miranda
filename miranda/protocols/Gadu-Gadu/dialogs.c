@@ -318,7 +318,7 @@ static INT_PTR CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
 							MB_OKCANCEL | MB_ICONEXCLAMATION) == IDCANCEL)
 							break;
 						else
-							gg_disconnect(FALSE);
+							gg_disconnect((GGPROTO *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA));
 					}
 				case IDC_CHPASS:
 				case IDC_CHEMAIL:
