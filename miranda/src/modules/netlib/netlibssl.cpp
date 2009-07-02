@@ -795,7 +795,6 @@ int NetlibSslWrite(SslHandle *ssl, const char *buf, int num)
 		cbData = send(ssl->s, (char*)pbDataBuffer, cbData, 0);
 		if (cbData == SOCKET_ERROR || cbData == 0)
 		{
-			g_pSSPI->DeleteSecurityContext(&ssl->hContext);
 			scRet = SEC_E_INTERNAL_ERROR;
 			break;
 		}
