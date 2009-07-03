@@ -237,7 +237,7 @@ INT_PTR CALLBACK MirandaPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lPa
 
 				GetDlgItemText(hdlg,IDC_FILENAME,str,SIZEOF(str));
 				ZeroMemory(&ofn, sizeof(ofn));
-				ofn.lStructSize = sizeof(ofn);
+				ofn.lStructSize = sizeof(OPENFILENAME_SIZE_VERSION_400);
 				ofn.hwndOwner = hdlg;
 				ofn.hInstance = NULL;
 				ofn.lpstrFilter = text;
