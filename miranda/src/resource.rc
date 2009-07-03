@@ -209,7 +209,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,319,283,50,14
     PUSHBUTTON      "Apply",IDC_APPLY,374,283,50,14
     CONTROL         "Tree1",IDC_PAGETREE,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | TVS_TRACKSELECT | TVS_NOHSCROLL | WS_BORDER | WS_TABSTOP,4,30,102,250
-    CONTROL         "",IDC_TAB,"SysTabControl32",NOT WS_VISIBLE | WS_TABSTOP,111,32,313,249
+    CONTROL         "",IDC_TAB,"SysTabControl32",NOT WS_VISIBLE | WS_TABSTOP,111,30,313,249
     CONTROL         "Show expert options",IDC_EXPERT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,284,102,10
     CTEXT           "Please select a subentry from the list",IDC_STNOPAGE,111,30,313,251,SS_CENTERIMAGE
 END
@@ -1022,7 +1022,7 @@ EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CTEXT           "Note: Miranda IM will have to be restarted for changes to take effect.",IDC_PROTOCOLORDERWARNING,5,190,289,14,NOT WS_VISIBLE
-    GROUPBOX        "Protocol Order && Visibility",IDC_STATIC,75,0,147,185
+    GROUPBOX        "Account Order && Visibility",IDC_STATIC,75,0,147,185
     CONTROL         "Tree1",IDC_PROTOCOLORDER,"SysTreeView32",TVS_NOTOOLTIPS | WS_BORDER | WS_TABSTOP,85,40,132,95
     LTEXT           "Show protocols in the following order, drag to choose another order:",IDC_STATIC,85,15,132,20
     PUSHBUTTON      "Reset",IDC_RESETPROTOCOLDATA,120,140,50,14,BS_NOTIFY
