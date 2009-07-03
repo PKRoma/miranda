@@ -171,7 +171,6 @@ struct CMsnProto : public PROTO_INTERFACE
     char*       msnExternalIP;
     char*		msnPreviousUUX;
 
-    char*		ModuleName;
     char*	    mailsoundname;
     char*	    alertsoundname;
 

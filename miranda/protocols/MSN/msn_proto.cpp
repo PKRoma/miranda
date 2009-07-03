@@ -60,9 +60,6 @@ CMsnProto::CMsnProto(const char* aProtoName, const TCHAR* aUserName) :
 	_strlwr(m_szProtoName);
 	m_szProtoName[0] = (char)toupper(m_szProtoName[0]);
 
-	mir_snprintf(path, sizeof(path), "%s:HotmailNotify", m_szModuleName);
-	ModuleName = mir_strdup(path);
-
 	mir_snprintf(path, sizeof(path), "%s/Status", m_szModuleName);
 	MSN_CallService(MS_DB_SETSETTINGRESIDENT, TRUE, (LPARAM)path);
 
@@ -116,7 +113,8 @@ CMsnProto::CMsnProto(const char* aProtoName, const TCHAR* aUserName) :
 	tridUrlInbox = -1;
 
 	HANDLE hContact = (HANDLE)MSN_CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	while (hContact != NULL) {
+	while (hContact != NULL) 
+    {
 		if (MSN_IsMyContact(hContact))
 		{
 			deleteSetting(hContact, "Status");
@@ -220,7 +218,6 @@ CMsnProto::~CMsnProto()
 	mir_free(m_tszUserName);
 	mir_free(m_szModuleName);
 	mir_free(m_szProtoName);
-	mir_free(ModuleName);
 
 	for (int i=0; i < MSN_NUM_MODES; i++)
 		mir_free(msnModeMsgs[i]);
@@ -578,12 +575,14 @@ HANDLE __cdecl CMsnProto::FileAllow(HANDLE hContact, HANDLE hTransfer, const cha
 	if (!msnLoggedIn || !p2p_sessionRegistered(ft))
 		return 0;
 
-	if ((ft->std.workingDir = mir_strdup(szPath)) == NULL) {
+	if ((ft->std.workingDir = mir_strdup(szPath)) == NULL) 
+    {
 		char szCurrDir[MAX_PATH];
 		GetCurrentDirectoryA(sizeof(szCurrDir), szCurrDir);
 		ft->std.workingDir = mir_strdup(szCurrDir);
 	}
-	else {
+	else 
+    {
 		size_t len = strlen(ft->std.workingDir)-1;
 		if (ft->std.workingDir[len] == '\\')
 			ft->std.workingDir[len] = 0;
@@ -604,13 +603,15 @@ int __cdecl CMsnProto::FileCancel(HANDLE hContact, HANDLE hTransfer)
 	if (!msnLoggedIn || !p2p_sessionRegistered(ft))
 		return 0;
 
-	if  (!ft->std.sending && ft->fileId == -1) {
+	if  (!ft->std.sending && ft->fileId == -1) 
+    {
 		if (ft->p2p_appID != 0)
 			p2p_sendStatus(ft, 603);
 		else
 			msnftp_sendAcceptReject (ft, false);
 	}
-	else {
+	else 
+    {
 		ft->bCanceled = true;
 		if (ft->p2p_appID != 0)
 			p2p_sendCancel(ft);
@@ -631,13 +632,15 @@ int __cdecl CMsnProto::FileDeny(HANDLE hContact, HANDLE hTransfer, const char* /
 	if (!msnLoggedIn || !p2p_sessionRegistered(ft))
 		return 1;
 
-	if (!ft->std.sending && ft->fileId == -1) {
+	if (!ft->std.sending && ft->fileId == -1) 
+    {
 		if (ft->p2p_appID != 0)
 			p2p_sendStatus(ft, 603);
 		else
 			msnftp_sendAcceptReject (ft, false);
 	}
-	else {
+	else 
+    {
 		if (ft->p2p_appID != 0)
 			p2p_sendCancel(ft);
 		else
@@ -657,7 +660,8 @@ int __cdecl CMsnProto::FileResume(HANDLE hTransfer, int* action, const char** sz
 	if (!msnLoggedIn || !p2p_sessionRegistered(ft))
 		return 1;
 
-	switch (*action) {
+	switch (*action) 
+    {
 	case FILERESUME_SKIP:
 		if (ft->p2p_appID != 0)
 			p2p_sendStatus(ft, 603);
@@ -704,7 +708,8 @@ void __cdecl CMsnProto::MsnGetAwayMsgThread(void* arg)
 
 	AwayMsgInfo *inf = (AwayMsgInfo*)arg;
 	DBVARIANT dbv;
-	if (!DBGetContactSettingString(inf->hContact, "CList", "StatusMsg", &dbv)) {
+	if (!DBGetContactSettingString(inf->hContact, "CList", "StatusMsg", &dbv)) 
+    {
 		SendBroadcast(inf->hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE)inf->id, (LPARAM)dbv.pszVal);
 		MSN_FreeVariant(&dbv);
 	}
@@ -1099,13 +1104,15 @@ int __cdecl CMsnProto::SetStatus(int iNewStatus)
 	{
 		char szPassword[100];
 		int ps = getStaticString(NULL, "Password", szPassword, sizeof(szPassword));
-		if (ps != 0  || *szPassword == 0) {
+		if (ps != 0  || *szPassword == 0) 
+        {
 			SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
 			m_iStatus = m_iDesiredStatus = ID_STATUS_OFFLINE;
 			return 0;
 		}	
 		 
-		if (*MyOptions.szEmail == 0) {
+		if (*MyOptions.szEmail == 0) 
+        {
 			SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID);
 			m_iStatus = m_iDesiredStatus = ID_STATUS_OFFLINE;
 			return 0;
@@ -1199,19 +1206,32 @@ int __cdecl CMsnProto::OnEvent(PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM l
 {
 	switch(eventType) 
     {
-		case EV_PROTO_ONLOAD:    return OnModulesLoaded(0, 0);
-		case EV_PROTO_ONEXIT:    return OnPreShutdown(0, 0);
-		case EV_PROTO_ONOPTIONS: return OnOptionsInit(wParam, lParam);
-		case EV_PROTO_ONRENAME:
-		{	
-			CLISTMENUITEM clmi = {0};
-			clmi.cbSize = sizeof(CLISTMENUITEM);
-			clmi.flags = CMIM_NAME | CMIF_TCHAR;
-			clmi.ptszName = m_tszUserName;
-			MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)mainMenuRoot, (LPARAM)&clmi);
+	case EV_PROTO_ONLOAD:    
+        return OnModulesLoaded(0, 0);
+
+	case EV_PROTO_ONEXIT:    
+        return OnPreShutdown(0, 0);
+
+	case EV_PROTO_ONOPTIONS: 
+        return OnOptionsInit(wParam, lParam);
+
+    case EV_PROTO_ONERASE:
+        {
+            char szDbsettings[64];
+	        mir_snprintf(szDbsettings, sizeof(szDbsettings), "%s_HTTPS", m_szModuleName);
+            MSN_CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)szDbsettings);
             break;
-		}
-        default: break;              
+        }
+
+    case EV_PROTO_ONRENAME:
+	    {	
+		    CLISTMENUITEM clmi = {0};
+		    clmi.cbSize = sizeof(CLISTMENUITEM);
+		    clmi.flags = CMIM_NAME | CMIF_TCHAR;
+		    clmi.ptszName = m_tszUserName;
+		    MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)mainMenuRoot, (LPARAM)&clmi);
+            break;
+	    }
 	}
 	return 1;
 }

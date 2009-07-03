@@ -137,7 +137,7 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 						char szPlugin[ MAX_PATH ];
 						mir_snprintf( szPlugin, SIZEOF(szPlugin), "%s.dll", pa->szProtoName );
 						idx = accounts.getIndex(pa);
-                        UnloadAccount( pa, FALSE );
+                        UnloadAccount( pa, false, false );
 						accounts.remove( idx );
                         if ( oldProto && UnloadPlugin( szPlugin, SIZEOF( szPlugin ))) {
 							char szNewName[ MAX_PATH ];
@@ -793,7 +793,7 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
                                 else
     					            pa->type = PROTOTYPE_DISPROTO;
 							}
-							else DeactivateAccount( pa, TRUE );
+							else DeactivateAccount( pa, true, false );
 
 							WriteDbAccounts();
 							NotifyEventHooks( hAccListChanged, PRAC_CHECKED, ( LPARAM )pa );
@@ -876,9 +876,7 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
                         WriteDbAccounts();
 						NotifyEventHooks( hAccListChanged, PRAC_REMOVED, ( LPARAM )pa );
 
-						char* szSaveModule = NEWSTR_ALLOCA(pa->szModuleName);
-						UnloadAccount( pa, TRUE );
-						EraseAccount( szSaveModule );
+						UnloadAccount( pa, true, true );
 						SendMessage( hwndDlg, WM_MY_REFRESH, 0, 0 );
 
 						EnableWindow( hList, TRUE );

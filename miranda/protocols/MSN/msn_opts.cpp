@@ -658,10 +658,10 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts(HWND hwndDlg, UINT msg, WPARAM w
 				CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 				
 				proto->MyOptions.TextColour = SendDlgItemMessage(hwndDlg,IDC_TEXTCOLOUR,CPM_GETCOLOUR,0,0);
-				DBWriteContactSettingDword(NULL, proto->ModuleName, "TextColour", proto->MyOptions.TextColour);
+				proto->setDword("TextColour", proto->MyOptions.TextColour);
 
 				proto->MyOptions.BGColour = SendDlgItemMessage(hwndDlg,IDC_BGCOLOUR,CPM_GETCOLOUR,0,0);
-				DBWriteContactSettingDword(NULL, proto->ModuleName, "BackgroundColour", proto->MyOptions.BGColour);
+                proto->setDword("BackgroundColour", proto->MyOptions.BGColour);
 
 				proto->MyOptions.PopupTimeoutHotmail = GetDlgItemInt(hwndDlg, IDC_POPUP_TIMEOUT, NULL, FALSE);
 				proto->setDword(NULL, "PopupTimeout", proto->MyOptions.PopupTimeoutHotmail);
@@ -857,11 +857,19 @@ void  CMsnProto::LoadOptions(void)
 {
 	memset(&MyOptions, 0, sizeof(MyOptions));
 
+    char module[128]; 
+	mir_snprintf(module, sizeof(module), "%s:HotmailNotify", m_szModuleName);
+    if (DBGetContactSettingDword(NULL, module, "TextColour", 0xabcd) != 0xabcd)
+    {
+        setDword("TextColour", DBGetContactSettingDword(NULL, module, "TextColour", GetSysColor(COLOR_WINDOWTEXT)));
+        setDword("BackgroundColour", DBGetContactSettingDword(NULL, module, "BackgroundColour", STYLE_DEFAULTBGCOLOUR));
+        MSN_CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)module);
+    }
+
+
 	//PopUp Options
-	MyOptions.BGColour =
-		DBGetContactSettingDword(NULL, ModuleName, "BackgroundColour", STYLE_DEFAULTBGCOLOUR);
-	MyOptions.TextColour =
-		DBGetContactSettingDword(NULL, ModuleName, "TextColour", GetSysColor(COLOR_WINDOWTEXT));
+	MyOptions.BGColour = getDword("BackgroundColour", STYLE_DEFAULTBGCOLOUR);
+	MyOptions.TextColour = getDword("TextColour", GetSysColor(COLOR_WINDOWTEXT));
 
 	MyOptions.AwayAsBrb = getByte("AwayAsBrb", FALSE) != 0;
 	MyOptions.ManageServer = getByte("ManageServer", TRUE) != 0;

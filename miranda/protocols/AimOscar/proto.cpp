@@ -801,10 +801,25 @@ int __cdecl CAimProto::UserIsTyping(HANDLE hContact, int type)
 
 int __cdecl CAimProto::OnEvent(PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam)
 {
-	switch(eventType) {
-		case EV_PROTO_ONLOAD:    return OnModulesLoaded(0, 0);
-		case EV_PROTO_ONEXIT:    return OnPreShutdown(0, 0);
-		case EV_PROTO_ONOPTIONS: return OnOptionsInit(wParam, lParam);
+	switch (eventType) 
+    {
+		case EV_PROTO_ONLOAD:    
+            return OnModulesLoaded(0, 0);
+
+		case EV_PROTO_ONEXIT:    
+            return OnPreShutdown(0, 0);
+
+		case EV_PROTO_ONOPTIONS: 
+            return OnOptionsInit(wParam, lParam);
+
+        case EV_PROTO_ONERASE:
+        {
+            char szDbsettings[64];
+            mir_snprintf(szDbsettings, sizeof(szDbsettings), "%sP2P", m_szModuleName);
+            CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)szDbsettings);
+            break;
+        }
+
 		case EV_PROTO_ONRENAME:
 		{	
 			CLISTMENUITEM clmi = { 0 };
