@@ -128,7 +128,8 @@ static int SendHttpRequestAndData(struct NetlibConnection *nlc,struct ResizableC
 {
 	int bytesSent;
 
-	if((nlhr->requestType==REQUEST_POST)) {
+	if (nlhr->requestType==REQUEST_POST || nlhr->requestType==REQUEST_PUT) 
+    {
 		if(sendContentLengthHeader)
 			AppendToCharBuffer(httpRequest,"Content-Length: %d\r\n\r\n",nlhr->dataLength);
 		else
@@ -163,15 +164,19 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	int i,doneHostHeader,doneContentLengthHeader,doneProxyAuthHeader,doneConnectionHeader;
 	int useProxyHttpAuth,usingNtlmAuthentication,bytesSent;
 
-	if(nlhr==NULL || nlhr->cbSize!=sizeof(NETLIBHTTPREQUEST) || nlhr->szUrl==NULL || nlhr->szUrl[0]=='\0') {
+	if(nlhr==NULL || nlhr->cbSize!=sizeof(NETLIBHTTPREQUEST) || nlhr->szUrl==NULL || nlhr->szUrl[0]=='\0') 
+    {
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return SOCKET_ERROR;
 	}
-	switch(nlhr->requestType) {
-		case REQUEST_GET: pszRequest="GET"; break;
-		case REQUEST_POST: pszRequest="POST"; break;
-		case REQUEST_CONNECT: pszRequest="CONNECT"; break;
-		case REQUEST_HEAD:pszRequest="HEAD"; break;
+	switch(nlhr->requestType) 
+    {
+		case REQUEST_GET:       pszRequest="GET";       break;
+		case REQUEST_POST:      pszRequest="POST";      break;
+		case REQUEST_CONNECT:   pszRequest="CONNECT";   break;
+		case REQUEST_HEAD:      pszRequest="HEAD";      break;
+        case REQUEST_PUT:       pszRequest="PUT";       break;
+        case REQUEST_DELETE:    pszRequest="DELETE";    break;
 		default:
 			SetLastError(ERROR_INVALID_PARAMETER);
 			return SOCKET_ERROR;
