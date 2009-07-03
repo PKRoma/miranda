@@ -57,6 +57,12 @@ int aim_writetlvlong(unsigned short type, unsigned long value, unsigned short &o
     return aim_writetlv(type, sizeof(value), (char*)&value, offset, out);
 }
 
+int aim_writetlvlong64(unsigned short type, unsigned __int64 value, unsigned short &offset, char* out)
+{
+    value = _htonl64(value);
+    return aim_writetlv(type, sizeof(value), (char*)&value, offset, out);
+}
+
 
 int CAimProto::aim_sendflap(HANDLE hServerConn, char type,unsigned short length,const char *buf, unsigned short &seqno)
 {

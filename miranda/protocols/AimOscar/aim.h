@@ -143,23 +143,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define AIM_KEY_ET						"ESType"//Extended Status type
 #define AIM_KEY_MV						"MirVer"
 #define AIM_KEY_US						"Utf8Support"
+#define AIM_KEY_O3						"OFT3"
 #define AIM_KEY_NL						"NotOnList"
 #define AIM_KEY_LM						"LastMessage"
 #define AIM_KEY_NC						"NewContact"
 #define AIM_KEY_AH						"AvatarHash"
 #define AIM_KEY_ASH						"AvatarSavedHash"
 #define AIM_KEY_EM						"Email"
-//File Transfer Keys
-#define AIM_KEY_FT						"FileTransfer"//1= sending 0=receiving
-#define AIM_KEY_CK						"Cookie"
-#define AIM_KEY_CK2						"Cookie2"
-#define AIM_KEY_FN						"FileName"
-#define AIM_KEY_FS						"FileSize"
-#define AIM_KEY_FD						"FileDesc"
-#define AIM_KEY_IP						"IP"
-#define AIM_KEY_PS						"ProxyStage"
-#define AIM_KEY_PC						"PortCheck"
-#define AIM_KEY_DH						"DCHandle"
 //Old Keys
 #define OLD_KEY_PW						"password"
 #define OLD_KEY_DM						"AutoResponse"
@@ -228,6 +218,7 @@ extern const char AIM_CLIENT_ID_STRING[];		//Client id EXTERN
 #define CLIENT_TERRAIM					"TerraIM"
 #define CLIENT_TRILLIAN_PRO				"Trillian Pro"
 #define CLIENT_TRILLIAN					"Trillian"
+#define CLIENT_TRILLIAN_ASTRA			"Trillian Astra"
 
 //Aim Caps
 #define AIM_CAPS_LENGTH					16
@@ -248,7 +239,7 @@ extern const char AIM_CLIENT_ID_STRING[];		//Client id EXTERN
 #define AIM_CAP_FILE_SHARING			"\x09\x46\x13\x48\x4C\x7F\x11\xD1\x82\x22\x44\x45\x53\x54\0\0"
 #define AIM_CAP_SUPPORT_ICQ				"\x09\x46\x13\x4D\x4C\x7F\x11\xD1\x82\x22\x44\x45\x53\x54\0\0"
 
-#define AIM_CAP_AVAILALE_FOR_CALL		"\x09\x46\x01\x05\x4c\x7f\x11\xD1\x82\x22\x44\x45\x53\x54\0\0"
+#define AIM_CAP_AVAILABLE_FOR_CALL		"\x09\x46\x01\x05\x4c\x7f\x11\xD1\x82\x22\x44\x45\x53\x54\0\0"
 #define AIM_CAP_ACA             		"\x09\x46\x01\x06\x4c\x7f\x11\xD1\x82\x22\x44\x45\x53\x54\0\0"
 #define AIM_CAP_MULTI_AUDIO				"\x09\x46\x01\x07\x4c\x7f\x11\xD1\x82\x22\x44\x45\x53\x54\0\0"
 #define AIM_CAP_MULTI_VIDEO				"\x09\x46\x01\x08\x4c\x7f\x11\xD1\x82\x22\x44\x45\x53\x54\0\0"

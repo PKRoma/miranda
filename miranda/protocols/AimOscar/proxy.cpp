@@ -19,150 +19,134 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "aim.h"
 #include "proxy.h"
 
-void __cdecl CAimProto::aim_proxy_helper( void* hContact )
+void __cdecl CAimProto::aim_proxy_helper(void* param)
 {
-	HANDLE Connection=(HANDLE)getDword( hContact, AIM_KEY_DH, 0 );//really just the proxy handle not a dc handle
-	int stage = getByte( hContact, AIM_KEY_PS, 0 );
-	int sender = getByte( hContact, AIM_KEY_FT, 0 );
-	if ( Connection ) {
-		char cookie[8];
-		read_cookie(hContact,cookie);
-		DBVARIANT dbv;//CHECK FOR FREE VARIANT!
-		if ( !getString(AIM_KEY_SN, &dbv)) {
-			if ( stage == 1 && !sender || stage == 2 && sender || stage==3 && !sender ) {
-				unsigned short port_check = (unsigned short)getWord( hContact, AIM_KEY_PC, 0 );
-				if ( proxy_initialize_recv( Connection, dbv.pszVal, cookie, port_check )) {
-					DBFreeVariant(&dbv);
-					return;//error
-				}
-			}
-			else if(stage==1&&sender||stage==2&&!sender||stage==3&&sender)
-			{
-				if(proxy_initialize_send(Connection,dbv.pszVal,cookie))
-				{
-					DBFreeVariant(&dbv);
-					return;//error
-				}
-			}
-			DBFreeVariant(&dbv);
-			//start listen for packets stuff
-			int recvResult=0;
-			NETLIBPACKETRECVER packetRecv;
-			ZeroMemory(&packetRecv, sizeof(packetRecv));
-			HANDLE hServerPacketRecver;
-			hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)Connection, 2048 * 4);
-			packetRecv.cbSize = sizeof(packetRecv);
-			packetRecv.dwTimeout = INFINITE;
-			for(;;)
-			{
-				recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
-				if ( recvResult == 0) {
-					sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,(HANDLE)hContact,0);
-					break;
-				}
-				if ( recvResult == SOCKET_ERROR) {
-					sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,(HANDLE)hContact,0);
-					break;
-				}
-				if ( recvResult > 0 ) {
-					unsigned short* length=(unsigned short*)&packetRecv.buffer[0];
-					*length=_htons(*length);
-					packetRecv.bytesUsed=*length+2;
-					unsigned short* type=(unsigned short*)&packetRecv.buffer[4];
-					*type=_htons(*type);
-					if(*type==0x0001)
-					{
-						unsigned short* error=(unsigned short*)&packetRecv.buffer[12];
-						*error=_htons(*error);
-						if(*error==0x000D)
-						{
-                            ShowPopup("Proxy Server File Transfer Error: Bad Request.", ERROR_POPUP);
-						}
-						else if(*error==0x0010)
-						{
-                            ShowPopup("Proxy Server File Transfer Error: Initial Request Timed Out.", ERROR_POPUP);
-						}
-						else if(*error==0x001A)
-						{
-                            ShowPopup("Proxy Server File Transfer Error: Accept Period Timed Out.", ERROR_POPUP);
-						}
-						else if(*error==0x000e)
-						{
-                            ShowPopup("Proxy Server File Transfer Error: Incorrect command syntax.", ERROR_POPUP);
-						}
-						else if(*error==0x0016)
-						{
-                            ShowPopup("Proxy Server File Transfer Error: Unknown command issued.", ERROR_POPUP);
-						}
-					}
-					else if(*type==0x0003)
-					{
-						unsigned short* port=(unsigned short*)&packetRecv.buffer[12];
-						unsigned long* ip=(unsigned long*)&packetRecv.buffer[14];
-						*port=_htons(*port);
-						*ip=_htonl(*ip);
-						
-                        char* sn = getSetting(hContact, AIM_KEY_SN);
-						if (sn) 
-                        {
-							if ( stage == 1 && sender ) {
-								LOG("Stage 1 Proxy ft and we are the sender.");
-								char vip[20];
-								long_ip_to_char_ip(*ip,vip);
-								setString( hContact, AIM_KEY_IP, vip );
+    file_transfer *ft = (file_transfer*)param;
 
-                                char *file = getSetting(hContact, AIM_KEY_FN);
-                                if (file)
-                                {
-                                    char *descr = getSetting(hContact, AIM_KEY_FD);
-									if (descr) 
-                                    {
-										unsigned size = getDword(hContact, AIM_KEY_FS, 0);
-                                        char* pszfile = strrchr(file, '\\');
-								        pszfile++;
-								        aim_send_file(hServerConn,seqno,sn,cookie,*ip,*port,1,1,pszfile,size,descr);
-								        mir_free(descr);
-									}
-							        mir_free(file);
-								}
-							}
-							else if(stage==2&&!sender)
-							{
-								LOG("Stage 2 Proxy ft and we are not the sender.");
-								aim_file_proxy_request(hServerConn,seqno,dbv.pszVal,cookie,0x02,*ip,*port);
-							}
-							else if(stage==3&&sender)
-							{
-								LOG("Stage 3 Proxy ft and we are the sender.");
-								aim_file_proxy_request(hServerConn,seqno,dbv.pszVal,cookie,0x03,*ip,*port);
-							}
-						}
-						mir_free(sn);
-					}
-					else if(*type==0x0005) {
-						if ( !getString(hContact, AIM_KEY_IP, &dbv )) {
-							unsigned long ip=char_ip_to_long_ip(dbv.pszVal);
-							DBWriteContactSettingDword(NULL,FILE_TRANSFER_KEY,dbv.pszVal,(DWORD)hContact);
-							DBFreeVariant(&dbv);
-							if ( stage == 1 && !sender || stage == 2 && sender || stage == 3 && !sender ) {
-								if ( !getString(hContact, AIM_KEY_SN, &dbv)) {
-									aim_file_ad(hServerConn,seqno,dbv.pszVal,cookie,false);
-									DBFreeVariant(&dbv);
-								}
-							}
-							aim_direct_connection_initiated(Connection, ip, this);
-						}
-					}
-				}
-			}
-            Netlib_CloseHandle(hServerPacketRecver);
-		}
+	if (ft->proxy_stage == 1 && !ft->sending || ft->proxy_stage == 2 && ft->sending || ft->proxy_stage == 3 && !ft->sending) 
+    {
+		if (proxy_initialize_recv(ft->hConn, ft->sn, ft->icbm_cookie, ft->port)) 
+			return;//error
+	}
+	else if (ft->proxy_stage == 1 && ft->sending || ft->proxy_stage == 2 && !ft->sending || ft->proxy_stage == 3 && ft->sending)
+	{
+        if (proxy_initialize_send(ft->hConn, ft->sn, ft->icbm_cookie))
+			return;//error
 	}
 
-	deleteSetting(hContact, AIM_KEY_FT);
-	deleteSetting(hContact, AIM_KEY_DH);
-	deleteSetting(hContact, AIM_KEY_IP);
+    //start listen for packets stuff
+    NETLIBPACKETRECVER packetRecv = {0};
+	packetRecv.cbSize = sizeof(packetRecv);
+	packetRecv.dwTimeout = INFINITE;
+
+    HANDLE hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)ft->hConn, 2048 * 4);
+	for (;;)
+	{
+		int recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM)hServerPacketRecver, (LPARAM)&packetRecv);
+		if (recvResult == 0) 
+        {
+			sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
+			break;
+		}
+		if (recvResult == SOCKET_ERROR) 
+        {
+			sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
+			break;
+		}
+		if (recvResult > 0) 
+        {
+			unsigned short length = _htons(*(unsigned short*)&packetRecv.buffer[0]);
+			packetRecv.bytesUsed = length + 2;
+			unsigned short type = _htons(*(unsigned short*)&packetRecv.buffer[4]);
+			if (type == 0x0001)
+			{
+				unsigned short error = _htons(*(unsigned short*)&packetRecv.buffer[12]);
+                switch (error)
+                {
+                case 0x000D:
+                    ShowPopup("Proxy Server File Transfer Error: Bad Request.", ERROR_POPUP);
+                    break;
+
+                case 0x0010:
+                    ShowPopup("Proxy Server File Transfer Error: Initial Request Timed Out.", ERROR_POPUP);
+                    break;
+
+                case 0x001A:
+                    ShowPopup("Proxy Server File Transfer Error: Accept Period Timed Out.", ERROR_POPUP);
+                    break;
+
+                case 0x000e:
+                    ShowPopup("Proxy Server File Transfer Error: Incorrect command syntax.", ERROR_POPUP);
+                    break;
+
+                case 0x0016:
+                    ShowPopup("Proxy Server File Transfer Error: Unknown command issued.", ERROR_POPUP);
+                    break;
+                }
+
+			}
+			else if (type == 0x0003)
+			{
+				unsigned short port = _htons(*(unsigned short*)&packetRecv.buffer[12]);
+				unsigned long  ip   = _htonl(*(unsigned long*)&packetRecv.buffer[14]);
+				
+                if (ft->proxy_stage == 1 && ft->sending) 
+                {
+					LOG("Stage 1 Proxy ft and we are the sender.");
+
+                    char* pszFile = strrchr(ft->file, '\\');
+			        if (pszFile) pszFile++; else pszFile = ft->file;
+                    aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, ip, port, true, 1, pszFile, ft->total_size, ft->message);
+				}
+				else if (ft->proxy_stage == 2 && !ft->sending)
+				{
+					LOG("Stage 2 Proxy ft and we are not the sender.");
+                    aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, ip, port, true, 2, NULL, 0, NULL);
+				}
+				else if (ft->proxy_stage == 3 && ft->sending)
+				{
+					LOG("Stage 3 Proxy ft and we are the sender.");
+                    aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, ip, port, true, 3, NULL, 0, NULL);
+				}
+			}
+			else if (type == 0x0005) 
+            {
+				if (ft->proxy_stage == 1 && !ft->sending || ft->proxy_stage == 2 && ft->sending || ft->proxy_stage == 3 && !ft->sending) 
+                {
+                    aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, false);
+                    ft->accepted = true;
+				}
+
+	            sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED, ft, 0);
+
+                int i;
+                for (i = 21; --i && !ft->accepted; )
+                {
+                    if (Miranda_Terminated()) return;
+                    Sleep(100);
+                }
+                if (i == 0) 
+                {
+                    aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true);
+	                sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
+                    break;
+                }
+
+	            packetRecv.dwTimeout = 100 * getWord(AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
+                if (ft->sending)//we are sending
+	                sending_file(ft, hServerPacketRecver, packetRecv);
+                else 
+	                receiving_file(ft, hServerPacketRecver, packetRecv);
+
+                break;
+			}
+		}
+	}
+    Netlib_CloseHandle(hServerPacketRecver);
+    Netlib_CloseHandle(ft->hConn);
+    ft_list.remove_by_ft(ft);
 }
+
 
 int proxy_initialize_send(HANDLE connection, char* sn, char* cookie)
 {

@@ -27,7 +27,7 @@ COLORREF custColours[16]={0};
 
 static int CALLBACK EnumFontsProc(ENUMLOGFONTEX *lpelfe, NEWTEXTMETRICEX* /*lpntme*/, int /*FontType*/, LPARAM lParam)
 {
-	if ( !IsWindow((HWND) lParam))
+	if (!IsWindow((HWND) lParam))
 		return FALSE;
 	if (SendMessage((HWND) lParam, CB_FINDSTRINGEXACT, 1, (LPARAM) lpelfe->elfLogFont.lfFaceName) == CB_ERR)
 		SendMessage((HWND) lParam, CB_ADDSTRING, 0, (LPARAM) lpelfe->elfLogFont.lfFaceName);
@@ -85,7 +85,8 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 {
 	CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
-	switch (msg) {
+	switch (msg) 
+    {
 	case WM_INITDIALOG:
 		{
 			SendDlgItemMessage(hwndDlg, IDC_BOLD, BUTTONSETASPUSHBTN, 0, 0);
@@ -98,14 +99,14 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			lf.lfPitchAndFamily = 0;
 			EnumFontFamiliesEx(hdc, &lf, (FONTENUMPROC) EnumFontsProc, (LPARAM) GetDlgItem(hwndDlg, IDC_TYPEFACE), 0);
 			ReleaseDC(hwndDlg, hdc);
-			SendDlgItemMessage( hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("8"));
-			SendDlgItemMessage( hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("10"));
-			SendDlgItemMessage( hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("12"));
-			SendDlgItemMessage( hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("14"));
-			SendDlgItemMessage( hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("18"));
-			SendDlgItemMessage( hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("24"));
-			SendDlgItemMessage( hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("36"));
-			SendDlgItemMessage( hwndDlg, IDC_FONTSIZE, CB_SETCURSEL, 2, 0);
+			SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("8"));
+			SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("10"));
+			SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("12"));
+			SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("14"));
+			SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("18"));
+			SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("24"));
+			SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("36"));
+			SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_SETCURSEL, 2, 0);
 			if(SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_SELECTSTRING, 1, (LPARAM)TEXT("Arial"))!=CB_ERR)
 			{
 				CHARFORMAT2 cf;
@@ -197,9 +198,9 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			break;
 
 		default:
-			if (((LPNMHDR)lParam)->code == PSN_PARAMCHANGED ) {
-				ppro = ( CAimProto* )(( PSHNOTIFY* )lParam )->lParam;
-				SetWindowLongPtr(hwndDlg, GWLP_USERDATA, LPARAM( ppro ));
+			if (((LPNMHDR)lParam)->code == PSN_PARAMCHANGED) {
+				ppro = (CAimProto*)((PSHNOTIFY*)lParam)->lParam;
+				SetWindowLongPtr(hwndDlg, GWLP_USERDATA, LPARAM(ppro));
 
 				DBVARIANT dbv;
 				if (!DBGetContactSettingStringUtf(NULL, ppro->m_szModuleName, AIM_KEY_PR, &dbv))
@@ -419,7 +420,8 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		}
 
 	case WM_COMMAND:
-		switch (LOWORD(wParam)) {
+		switch (LOWORD(wParam)) 
+        {
 		case IDC_PROFILE:
 			if (HIWORD(wParam) == EN_CHANGE)
 				EnableWindow(GetDlgItem(hwndDlg, IDC_SETPROFILE), TRUE);
@@ -438,7 +440,8 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			break;
 
 		case IDC_SUPERSCRIPT:
-			if ( HIWORD(wParam) == BN_CLICKED ) {
+			if (HIWORD(wParam) == BN_CLICKED) 
+            {
 				CHARFORMAT2 cf;
 				cf.cbSize = sizeof(CHARFORMAT2);
 				cf.dwMask=CFM_SUPERSCRIPT;
@@ -451,7 +454,8 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			break;
 
 		case IDC_NORMALSCRIPT:
-			if ( HIWORD(wParam) == BN_CLICKED ) {
+			if (HIWORD(wParam) == BN_CLICKED) 
+            {
 				CHARFORMAT2 cf;
 				cf.cbSize = sizeof(CHARFORMAT2);
 				cf.dwMask=CFM_SUPERSCRIPT;
@@ -464,7 +468,8 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			break;
 
 		case IDC_SUBSCRIPT:
-			if ( HIWORD(wParam) == BN_CLICKED ) {
+			if (HIWORD(wParam) == BN_CLICKED) 
+            {
 				CHARFORMAT2 cf;
 				cf.cbSize = sizeof(CHARFORMAT2);
 				cf.dwMask=CFM_SUBSCRIPT;
@@ -477,7 +482,8 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			break;
 
 		case IDC_BOLD:
-			if ( HIWORD(wParam) == BN_CLICKED ) {
+			if (HIWORD(wParam) == BN_CLICKED) 
+            {
 				CHARFORMAT2 cfOld;
 				cfOld.cbSize = sizeof(CHARFORMAT2);
 				cfOld.dwMask = CFM_BOLD;
@@ -494,7 +500,8 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			break;
 
 		case IDC_ITALIC:
-			if ( HIWORD(wParam) == BN_CLICKED ) {
+			if (HIWORD(wParam) == BN_CLICKED) 
+            {
 				CHARFORMAT2 cfOld;
 				cfOld.cbSize = sizeof(CHARFORMAT2);
 				cfOld.dwMask = CFM_ITALIC;
@@ -529,7 +536,8 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			break;
 
 		case IDC_FOREGROUNDCOLOR:
-			if ( HIWORD(wParam) == BN_CLICKED ) {
+			if (HIWORD(wParam) == BN_CLICKED) 
+            {
 				CHARFORMAT2 cf;
 				cf.cbSize = sizeof(CHARFORMAT2);
 				cf.dwMask=CFM_COLOR;
@@ -542,7 +550,8 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			break;
 
 		case IDC_FOREGROUNDCOLORPICKER:
-			if ( HIWORD(wParam) == BN_CLICKED ) {
+			if (HIWORD(wParam) == BN_CLICKED) 
+            {
 				CHOOSECOLOR cc={0};
 				custColours[0]=foreground;
 				custColours[1]=background;
@@ -551,7 +560,8 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				cc.hInstance=(HWND)GetModuleHandle(NULL);
 				cc.lpCustColors=custColours;
 				cc.Flags=CC_ANYCOLOR|CC_FULLOPEN|CC_RGBINIT;
-				if(ChooseColor(&cc)) {
+				if(ChooseColor(&cc)) 
+                {
 					foreground=cc.rgbResult;
 					InvalidateRect(GetDlgItem(hwndDlg, IDC_FOREGROUNDCOLOR), NULL, FALSE);
 				}
@@ -560,7 +570,8 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			break;
 
 		case IDC_BACKGROUNDCOLOR:
-			if ( HIWORD(wParam) == BN_CLICKED ) {
+			if (HIWORD(wParam) == BN_CLICKED) 
+            {
 				CHARFORMAT2 cf;
 				cf.cbSize = sizeof(CHARFORMAT2);
 				cf.dwMask=CFM_BACKCOLOR;
@@ -734,7 +745,7 @@ INT_PTR CALLBACK admin_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
 int CAimProto::OnUserInfoInit(WPARAM wParam,LPARAM lParam)
 {
-	if ( !lParam )//hContact
+	if (!lParam)//hContact
 	{
 		OPTIONSDIALOGPAGE odp = { 0 };
 		odp.cbSize = sizeof(odp);
@@ -759,7 +770,7 @@ int CAimProto::OnUserInfoInit(WPARAM wParam,LPARAM lParam)
 
 INT_PTR CAimProto::EditProfile(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
-	DialogBoxParam( hInstance, MAKEINTRESOURCE(IDD_AIM), NULL, userinfo_dialog, LPARAM( this ));
+	DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_AIM), NULL, userinfo_dialog, LPARAM(this));
 	return 0;
 }
 
@@ -770,7 +781,8 @@ static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 {
 	CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
-	switch (msg) {
+	switch (msg) 
+    {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 
@@ -778,24 +790,29 @@ static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		ppro = (CAimProto*)lParam;
 		{
 			DBVARIANT dbv;
-			if ( !ppro->getString(AIM_KEY_SN, &dbv)) {
+			if (!ppro->getString(AIM_KEY_SN, &dbv)) 
+            {
 				SetDlgItemTextA(hwndDlg, IDC_SN, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
-			if ( !ppro->getString(AIM_KEY_NK, &dbv)) {
+			if (!ppro->getString(AIM_KEY_NK, &dbv)) 
+            {
 				SetDlgItemTextA(hwndDlg, IDC_NK, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
-			else if ( !ppro->getString(AIM_KEY_SN, &dbv)) {
+			else if (!ppro->getString(AIM_KEY_SN, &dbv)) 
+            {
 				SetDlgItemTextA(hwndDlg, IDC_NK, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
-			if ( !ppro->getString(AIM_KEY_PW, &dbv)) {
+			if (!ppro->getString(AIM_KEY_PW, &dbv)) 
+            {
 				CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
 				SetDlgItemTextA(hwndDlg, IDC_PW, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
-			if ( !ppro->getString(AIM_KEY_HN, &dbv)) {
+			if (!ppro->getString(AIM_KEY_HN, &dbv)) 
+            {
 				SetDlgItemTextA(hwndDlg, IDC_HN, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
@@ -844,7 +861,8 @@ static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			break;
 
     case WM_NOTIFY:
-		switch (((LPNMHDR) lParam)->code) {
+		switch (((LPNMHDR) lParam)->code) 
+        {
 		case PSN_APPLY:
 			{
 				char str[128];
@@ -898,57 +916,57 @@ static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				if(timeout>0xffff||timeout<15)
 					ppro->deleteSetting(NULL, AIM_KEY_GP);
 				else
-					ppro->setWord( AIM_KEY_GP,(WORD)timeout);
+					ppro->setWord(AIM_KEY_GP,(WORD)timeout);
 				//END GP
 
 				//Delivery Confirmation
-				ppro->setByte( AIM_KEY_DC, IsDlgButtonChecked(hwndDlg, IDC_DC) != 0);
+				ppro->setByte(AIM_KEY_DC, IsDlgButtonChecked(hwndDlg, IDC_DC) != 0);
 				//End Delivery Confirmation
 
 				//Disable Avatar
-				ppro->setByte( AIM_KEY_DA, IsDlgButtonChecked(hwndDlg, IDC_DA) != 0);
+				ppro->setByte(AIM_KEY_DA, IsDlgButtonChecked(hwndDlg, IDC_DA) != 0);
 				//Disable Avatar
 
 				//Disable SSL
-				ppro->setByte( AIM_KEY_DSSL, IsDlgButtonChecked(hwndDlg, IDC_DSSL) != 0);
+				ppro->setByte(AIM_KEY_DSSL, IsDlgButtonChecked(hwndDlg, IDC_DSSL) != 0);
 				//Disable SSL
 
 				//Force Single Login
-				ppro->setByte( AIM_KEY_FSC, IsDlgButtonChecked(hwndDlg, IDC_FSC) != 0);
+				ppro->setByte(AIM_KEY_FSC, IsDlgButtonChecked(hwndDlg, IDC_FSC) != 0);
 				//Force Single Login
 
                 //Force Proxy Transfer
-				ppro->setByte( AIM_KEY_FP, IsDlgButtonChecked(hwndDlg, IDC_FP) != 0);
+				ppro->setByte(AIM_KEY_FP, IsDlgButtonChecked(hwndDlg, IDC_FP) != 0);
 				//End Force Proxy Transfer
 
 				//Disable Account Type Icons
 				if (IsDlgButtonChecked(hwndDlg, IDC_AT))
 				{
-					int acc_disabled = ppro->getByte( AIM_KEY_AT, 0);
+					int acc_disabled = ppro->getByte(AIM_KEY_AT, 0);
 					if(!acc_disabled)
 						remove_AT_icons(ppro);
-					ppro->setByte( AIM_KEY_AT, 1);
+					ppro->setByte(AIM_KEY_AT, 1);
 				}
 				else
 				{
-					int acc_disabled = ppro->getByte( AIM_KEY_AT, 0);
+					int acc_disabled = ppro->getByte(AIM_KEY_AT, 0);
 					if(acc_disabled)
 						add_AT_icons(ppro);
-					ppro->setByte( AIM_KEY_AT, 0);
+					ppro->setByte(AIM_KEY_AT, 0);
 				}
 				//END
 				//Disable Extra Status Icons
 				if (IsDlgButtonChecked(hwndDlg, IDC_ES))
 				{
-					int es_disabled = ppro->getByte( AIM_KEY_ES, 0);
-					ppro->setByte( AIM_KEY_ES, 1);
+					int es_disabled = ppro->getByte(AIM_KEY_ES, 0);
+					ppro->setByte(AIM_KEY_ES, 1);
 					if(!es_disabled)
 						remove_ES_icons(ppro);
 				}
 				else
 				{
-					int es_disabled = ppro->getByte( AIM_KEY_ES, 0);
-					ppro->setByte( AIM_KEY_ES, 0);
+					int es_disabled = ppro->getByte(AIM_KEY_ES, 0);
+					ppro->setByte(AIM_KEY_ES, 0);
 					if(es_disabled)
 						add_ES_icons(ppro);
 				}
@@ -957,41 +975,41 @@ static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				//Fake Hiptop
 				if (IsDlgButtonChecked(hwndDlg, IDC_HF))
 				{
-					int hf = ppro->getByte( AIM_KEY_HF, 0);
+					int hf = ppro->getByte(AIM_KEY_HF, 0);
 					if(!hf)
 						ShowWindow(GetDlgItem(hwndDlg, IDC_MASQ), SW_SHOW);
-					ppro->setByte( AIM_KEY_HF, 1);
+					ppro->setByte(AIM_KEY_HF, 1);
 				}
 				else
 				{
-					int hf = ppro->getByte( AIM_KEY_HF, 0);
+					int hf = ppro->getByte(AIM_KEY_HF, 0);
 					if(hf)
 						ShowWindow(GetDlgItem(hwndDlg, IDC_MASQ), SW_SHOW);
-					ppro->setByte( AIM_KEY_HF, 0);
+					ppro->setByte(AIM_KEY_HF, 0);
 				}
 				//End
 
 				//Disable Mode Message Sending
-				ppro->setByte( AIM_KEY_DM, IsDlgButtonChecked(hwndDlg, IDC_DM) != 0);
+				ppro->setByte(AIM_KEY_DM, IsDlgButtonChecked(hwndDlg, IDC_DM) != 0);
 				//End Disable Mode Message Sending
 
 				//Format Incoming Messages
-				ppro->setByte( AIM_KEY_FI, IsDlgButtonChecked(hwndDlg, IDC_FI) != 0);
+				ppro->setByte(AIM_KEY_FI, IsDlgButtonChecked(hwndDlg, IDC_FI) != 0);
 				//End Format Incoming Messages
 
 				//Format Outgoing Messages
-				ppro->setByte( AIM_KEY_FO, IsDlgButtonChecked(hwndDlg, IDC_FO) != 0);
+				ppro->setByte(AIM_KEY_FO, IsDlgButtonChecked(hwndDlg, IDC_FO) != 0);
 				//End Format Outgoing Messages
 
 				//Instant Idle on Login
-				ppro->setByte( AIM_KEY_II, IsDlgButtonChecked(hwndDlg, IDC_II) != 0);
+				ppro->setByte(AIM_KEY_II, IsDlgButtonChecked(hwndDlg, IDC_II) != 0);
 				//End
 				//Check Mail on Login
-				ppro->setByte( AIM_KEY_CM, IsDlgButtonChecked(hwndDlg, IDC_CM) != 0);
+				ppro->setByte(AIM_KEY_CM, IsDlgButtonChecked(hwndDlg, IDC_CM) != 0);
 				//End
 
                 //Manage Groups
-				ppro->setByte( AIM_KEY_MG, IsDlgButtonChecked(hwndDlg, IDC_MG) != 0);
+				ppro->setByte(AIM_KEY_MG, IsDlgButtonChecked(hwndDlg, IDC_MG) != 0);
 				//End
 			}
 		}
@@ -1158,13 +1176,13 @@ INT_PTR CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 
 			DBVARIANT dbv;
-			if ( !ppro->getString(AIM_KEY_SN, &dbv))
+			if (!ppro->getString(AIM_KEY_SN, &dbv))
 			{
 				SetDlgItemTextA(hwndDlg, IDC_SN, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
 
-			if ( !ppro->getString(AIM_KEY_PW, &dbv))
+			if (!ppro->getString(AIM_KEY_PW, &dbv))
 			{
 				CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
 				SetDlgItemTextA(hwndDlg, IDC_PW, dbv.pszVal);
@@ -1174,14 +1192,16 @@ INT_PTR CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		}
 
 	case WM_COMMAND:
-		if ( LOWORD( wParam ) == IDC_NEWAIMACCOUNTLINK ) {
-			CallService( MS_UTILS_OPENURL, 1, ( LPARAM )"http://www.aim.com/redirects/inclient/register.adp" );
+		if (LOWORD(wParam) == IDC_NEWAIMACCOUNTLINK) 
+        {
+			CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://www.aim.com/redirects/inclient/register.adp");
 			return TRUE;
 		}
 
-		if ( HIWORD( wParam ) == EN_CHANGE && ( HWND )lParam == GetFocus()) 
+		if (HIWORD(wParam) == EN_CHANGE && (HWND)lParam == GetFocus()) 
 		{
-			switch( LOWORD( wParam )) {
+			switch(LOWORD(wParam)) 
+            {
 			case IDC_SN:			case IDC_PW:
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			}
@@ -1189,7 +1209,7 @@ INT_PTR CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		break;
 
 	case WM_NOTIFY:
-		if (((LPNMHDR)lParam)->code == (UINT)PSN_APPLY ) 
+		if (((LPNMHDR)lParam)->code == (UINT)PSN_APPLY) 
 		{
 			CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
@@ -1209,8 +1229,8 @@ INT_PTR CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 INT_PTR CAimProto::SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam)
 {
-	return (INT_PTR)CreateDialogParam (hInstance, MAKEINTRESOURCE( IDD_AIMACCOUNT ), 
-		 (HWND)lParam, first_run_dialog, (LPARAM)this );
+	return (INT_PTR)CreateDialogParam (hInstance, MAKEINTRESOURCE(IDD_AIMACCOUNT), 
+		 (HWND)lParam, first_run_dialog, (LPARAM)this);
 }
 
 
@@ -1229,7 +1249,7 @@ INT_PTR CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		ppro = (CAimProto*)lParam;
 		{
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("idle"));
-			unsigned long it = ppro->getDword( AIM_KEY_IIT, 0);
+			unsigned long it = ppro->getDword(AIM_KEY_IIT, 0);
 			unsigned long hours=it/60;
 			unsigned long minutes=it%60;
 			SetDlgItemInt(hwndDlg, IDC_IIH, hours,0);
@@ -1248,13 +1268,15 @@ INT_PTR CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		{
 			unsigned long hours=GetDlgItemInt(hwndDlg, IDC_IIH,0,0);
 			unsigned short minutes=(unsigned short)GetDlgItemInt(hwndDlg, IDC_IIM,0,0);
-			if ( minutes > 59 )
+			if (minutes > 59)
 				minutes = 59;
-			ppro->setDword( AIM_KEY_IIT, hours*60+minutes);
-			switch (LOWORD(wParam)) {
+			ppro->setDword(AIM_KEY_IIT, hours*60+minutes);
+			switch (LOWORD(wParam)) 
+            {
 			case IDOK:
 				//Instant Idle
-				if (ppro->state==1) {
+				if (ppro->state==1) 
+                {
 					ppro->aim_set_idle(ppro->hServerConn,ppro->seqno,hours * 60 * 60 + minutes * 60);
 					ppro->instantidle=1;
 				}
@@ -1281,7 +1303,8 @@ INT_PTR CALLBACK join_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 {
 	CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
-	switch (msg) {
+	switch (msg) 
+    {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 
@@ -1300,7 +1323,8 @@ INT_PTR CALLBACK join_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 	case WM_COMMAND:
 		{
-			switch (LOWORD(wParam)) {
+			switch (LOWORD(wParam)) 
+            {
 			case IDOK:
                 char room[128];
 			    GetDlgItemTextA(hwndDlg, IDC_ROOM, room, sizeof(room));
@@ -1522,7 +1546,8 @@ INT_PTR CALLBACK chat_request_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 	case WM_COMMAND:
 		{
-			switch (LOWORD(wParam)) {
+			switch (LOWORD(wParam)) 
+            {
 			case IDOK:
 				param->ppro->ForkThread(&CAimProto::chatnav_request_thread, param->cnp);
 				EndDialog(hwndDlg, IDOK);
@@ -1544,5 +1569,5 @@ INT_PTR CALLBACK chat_request_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 void CALLBACK chat_request_cb(PVOID dwParam)
 {
 	CreateDialogParam (hInstance, MAKEINTRESOURCE(IDD_CHATROOM_INVITE_REQ), 
-		 NULL, chat_request_dialog, (LPARAM)dwParam );
+		 NULL, chat_request_dialog, (LPARAM)dwParam);
 }

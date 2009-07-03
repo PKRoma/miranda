@@ -110,8 +110,6 @@ struct CAimProto : public PROTO_INTERFACE
 	int  __cdecl OnGCMenuHook(WPARAM wParam,LPARAM lParam);
 
 	//====| Data |========================================================================
-	char* FILE_TRANSFER_KEY;
-	
 	CRITICAL_SECTION SendingMutex;
 	CRITICAL_SECTION connMutex;
 
@@ -142,7 +140,6 @@ struct CAimProto : public PROTO_INTERFACE
 
 	//Some main connection stuff
 	HANDLE hServerConn;//handle to the main connection
-	HANDLE hServerPacketRecver;//handle to the listening device
 	HANDLE hNetlib;//handle to netlib
 	unsigned long InternalIP;// our ip
 	unsigned short LocalPort;// our port
@@ -150,7 +147,6 @@ struct CAimProto : public PROTO_INTERFACE
 	//Peer connection stuff
 	HANDLE hNetlibPeer;//handle to the peer netlib
 	HANDLE hDirectBoundPort;//direct connection listening port
-	HANDLE current_rendezvous_accept_user;//hack
 
 	//Handles for the context menu items
 	HANDLE hMenuRoot;
@@ -172,7 +168,7 @@ struct CAimProto : public PROTO_INTERFACE
 	HANDLE hAvatarEvent;
     HANDLE hAvatarsFolder;
 
-    OBJLIST <file_transfer> ft_list;
+    ft_list_type ft_list;
 
 	//chatnav connection stuff
 	unsigned short chatnav_seqno;
@@ -272,8 +268,6 @@ struct CAimProto : public PROTO_INTERFACE
     int    aim_ssi_update(HANDLE hServerConn, unsigned short &seqno, bool start);
 	int    aim_keepalive(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,unsigned long ip, unsigned short port, bool force_proxy, unsigned short request_num ,char* file_name,unsigned long total_bytes,char* descr);//used when requesting a regular file transfer
-	int    aim_file_redirected_request(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie);
-	int    aim_file_proxy_request(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,char request_num,unsigned long proxy_ip, unsigned short port);
 	int    aim_file_ad(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,bool deny);
 	int    aim_typing_notification(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short type);
 	int    aim_set_idle(HANDLE hServerConn,unsigned short &seqno,unsigned long seconds);
@@ -329,8 +323,8 @@ struct CAimProto : public PROTO_INTERFACE
     //////////////////////////////////////////////////////////////////////////////////////
 	// file.cpp
 
-	void   sending_file(HANDLE hContact, HANDLE hNewConnection);
-	void   receiving_file(HANDLE hContact, HANDLE hNewConnection);
+	void   sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv);
+	void   receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// packets.cpp
@@ -427,10 +421,6 @@ struct CAimProto : public PROTO_INTERFACE
 
 	unsigned short search_for_free_item_id(HANDLE hbuddy);
 	unsigned short* get_members_of_group(unsigned short group_id, unsigned short& size);
-
-	void   create_cookie(HANDLE hContact);
-	void   read_cookie(HANDLE hContact,char* cookie);
-	void   write_cookie(HANDLE hContact,char* cookie);
 
 	void   ShowPopup( const char* msg, int flags, char* url = 0 );
 

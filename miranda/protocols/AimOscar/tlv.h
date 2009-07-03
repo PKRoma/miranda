@@ -38,6 +38,7 @@ public:
 	unsigned short whole(char* buf);
 	unsigned short ushort(int pos=0);
 	unsigned long ulong(int pos=0);
+    unsigned __int64 u64(int pos=0);
 	unsigned char ubyte(int pos=0);
 };
 #endif

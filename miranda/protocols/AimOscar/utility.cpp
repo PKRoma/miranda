@@ -88,31 +88,30 @@ void CAimProto::start_connection(void *arg)
         if (dbkey) dbv.pszVal = (char*)(getByte(AIM_KEY_DSSL, 0) ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER);
 
 		hServerConn = NULL;
-		hServerPacketRecver = NULL;
 		unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
-		hServerConn = aim_connect(dbv.pszVal, port, !getByte( AIM_KEY_DSSL, 0));
+		hServerConn = aim_connect(dbv.pszVal, port, !getByte(AIM_KEY_DSSL, 0));
 
 		if (!dbkey) DBFreeVariant(&dbv);
 
-		if ( hServerConn )
+		if (hServerConn)
 			aim_connection_authorization();
 		else 
             broadcast_status(ID_STATUS_OFFLINE);
 	}
 }
 
-bool CAimProto::wait_conn( HANDLE& hConn, HANDLE& hEvent, unsigned short service )
+bool CAimProto::wait_conn(HANDLE& hConn, HANDLE& hEvent, unsigned short service)
 {
 	if (m_iStatus == ID_STATUS_OFFLINE) 
 		return false;
 
-    EnterCriticalSection( &connMutex );
-	if ( hConn == NULL && hServerConn ) {
+    EnterCriticalSection(&connMutex);
+	if (hConn == NULL && hServerConn) {
 		LOG("Starting Connection.");
 		hConn = (HANDLE)1;    //set so no additional service request attempts are made while aim is still processing the request
-		aim_new_service_request( hServerConn, seqno, service ) ;//general service connection!
+		aim_new_service_request(hServerConn, seqno, service) ;//general service connection!
 	}
-	LeaveCriticalSection( &connMutex );
+	LeaveCriticalSection(&connMutex);
 
     if (WaitForSingleObjectEx(hEvent, 10000, TRUE) != WAIT_OBJECT_0)
         return false;
@@ -149,7 +148,7 @@ HANDLE CAimProto::find_chat_contact(const char* room)
 	return NULL;
 }
 
-HANDLE CAimProto::contact_from_sn( const char* sn, bool addIfNeeded, bool temporary )
+HANDLE CAimProto::contact_from_sn(const char* sn, bool addIfNeeded, bool temporary)
 {
 	char* norm_sn = normalize_name(sn);
 
@@ -173,7 +172,7 @@ HANDLE CAimProto::contact_from_sn( const char* sn, bool addIfNeeded, bool tempor
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 
-	if ( addIfNeeded )
+	if (addIfNeeded)
 	{
         hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD, 0, 0);
 	    if (hContact)
@@ -183,8 +182,8 @@ HANDLE CAimProto::contact_from_sn( const char* sn, bool addIfNeeded, bool tempor
 			    setString(hContact, AIM_KEY_SN, norm_sn);
 			    setString(hContact, AIM_KEY_NK, sn);
 			    LOG("Adding contact %s to client side list.",norm_sn);
-	            if ( temporary )
-		            DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
+	            if (temporary)
+		            DBWriteContactSettingByte(hContact, "CList", "NotOnList", 1);
 			    mir_free(norm_sn);
 			    return hContact;
 		    }
@@ -288,16 +287,7 @@ void CAimProto::offline_contact(HANDLE hContact, bool remove_settings)
 			if (deleteBuddyId(hContact, i)) break;
 			deleteGroupId(hContact, i);
 		}
-		deleteSetting(hContact, AIM_KEY_FT);
-		deleteSetting(hContact, AIM_KEY_FN);
-		deleteSetting(hContact, AIM_KEY_FD);
-		deleteSetting(hContact, AIM_KEY_FS);
-		deleteSetting(hContact, AIM_KEY_DH);
-		deleteSetting(hContact, AIM_KEY_IP);
-		deleteSetting(hContact, AIM_KEY_AC);
-		deleteSetting(hContact, AIM_KEY_ET);
-		deleteSetting(hContact, AIM_KEY_IT);
-		deleteSetting(hContact, AIM_KEY_OT);
+
 		DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_SM);
 	}
 	setWord(hContact, AIM_KEY_ST, ID_STATUS_OFFLINE);
@@ -312,10 +302,10 @@ void CAimProto::offline_contacts(void)
 			offline_contact(hContact,true);
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
-	CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)FILE_TRANSFER_KEY);
     allow_list.destroy();
     block_list.destroy();
     group_list.destroy();
+    ft_list.destroy();
 }
 
 char *normalize_name(const char *s)
@@ -358,7 +348,7 @@ char* trim_str(char* s)
     return s;
 }
 
-void __cdecl CAimProto::msg_ack_success( void* hContact )
+void __cdecl CAimProto::msg_ack_success(void* hContact)
 {
     Sleep(150);
 	sendBroadcast(hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
@@ -637,7 +627,7 @@ unsigned int aim_oft_checksum_file(char *filename)
 
 void long_ip_to_char_ip(unsigned long host, char* ip)
 {
-	host = _htonl(host);
+    host = _htonl(host);
 	unsigned char* bytes = (unsigned char*)&host;
 	size_t buf_loc = 0;
 	for(int i=0; i<4; i++)
@@ -657,7 +647,7 @@ unsigned long char_ip_to_long_ip(char* ip)
 {
     unsigned char chost[4] = {0}; 
     char *c = ip;
-	for(int i=4; i--; )
+	for(int i=0; i<4; ++i)
 	{
 		chost[i] = (unsigned char)atoi(c);
 	    c = strchr(c, '.');
@@ -673,31 +663,6 @@ unsigned short get_random(void)
     CallService(MS_UTILS_GETRANDOM, sizeof(id), (LPARAM)&id);
     id &= 0x7fff;
     return id;
-}
-
-void CAimProto::create_cookie(HANDLE hContact)
-{
-    setDword( hContact, AIM_KEY_CK, (unsigned long)hContact );
-
-    unsigned long i;
-    CallService(MS_UTILS_GETRANDOM, sizeof(i), (LPARAM)&i);
-    setDword( hContact, AIM_KEY_CK2, i );
-}
-
-
-void CAimProto::read_cookie(HANDLE hContact,char* cookie)
-{
-	DWORD cookie1, cookie2;
-	cookie1 = getDword(hContact, AIM_KEY_CK, 0);
-	cookie2 = getDword(hContact, AIM_KEY_CK2, 0);
-	memcpy(cookie,(void*)&cookie1,4);
-	memcpy(&cookie[4],(void*)&cookie2,4);
-}
-
-void CAimProto::write_cookie(HANDLE hContact,char* cookie)
-{
-	setDword(hContact, AIM_KEY_CK, *(DWORD*)cookie);
-	setDword(hContact, AIM_KEY_CK2, *(DWORD*)&cookie[4]);
 }
 
 bool cap_cmp(const char* cap,const char* cap2)
@@ -753,48 +718,48 @@ bool is_digsby_ver_cap(char* cap)
 /////////////////////////////////////////////////////////////////////////////////////////
 // Standard functions
 
-int CAimProto::deleteSetting( HANDLE hContact, const char* setting )
-{   return DBDeleteContactSetting( hContact, m_szModuleName, setting );
+int CAimProto::deleteSetting(HANDLE hContact, const char* setting)
+{   return DBDeleteContactSetting(hContact, m_szModuleName, setting);
 }
 
-int CAimProto::getByte( const char* name, BYTE defaultValue )
-{	return DBGetContactSettingByte( NULL, m_szModuleName, name, defaultValue );
+int CAimProto::getByte(const char* name, BYTE defaultValue)
+{	return DBGetContactSettingByte(NULL, m_szModuleName, name, defaultValue);
 }
 
-int CAimProto::getByte( HANDLE hContact, const char* name, BYTE defaultValue )
-{	return DBGetContactSettingByte(hContact, m_szModuleName, name, defaultValue );
+int CAimProto::getByte(HANDLE hContact, const char* name, BYTE defaultValue)
+{	return DBGetContactSettingByte(hContact, m_szModuleName, name, defaultValue);
 }
 
-int CAimProto::getDword( const char* name, DWORD defaultValue )
-{	return DBGetContactSettingDword( NULL, m_szModuleName, name, defaultValue );
+int CAimProto::getDword(const char* name, DWORD defaultValue)
+{	return DBGetContactSettingDword(NULL, m_szModuleName, name, defaultValue);
 }
 
-int CAimProto::getDword( HANDLE hContact, const char* name, DWORD defaultValue )
-{	return DBGetContactSettingDword(hContact, m_szModuleName, name, defaultValue );
+int CAimProto::getDword(HANDLE hContact, const char* name, DWORD defaultValue)
+{	return DBGetContactSettingDword(hContact, m_szModuleName, name, defaultValue);
 }
 
-int CAimProto::getString( const char* name, DBVARIANT* result )
-{	return DBGetContactSettingString( NULL, m_szModuleName, name, result );
+int CAimProto::getString(const char* name, DBVARIANT* result)
+{	return DBGetContactSettingString(NULL, m_szModuleName, name, result);
 }
 
-int CAimProto::getString( HANDLE hContact, const char* name, DBVARIANT* result )
-{	return DBGetContactSettingString( hContact, m_szModuleName, name, result );
+int CAimProto::getString(HANDLE hContact, const char* name, DBVARIANT* result)
+{	return DBGetContactSettingString(hContact, m_szModuleName, name, result);
 }
 
-int CAimProto::getTString( const char* name, DBVARIANT* result )
-{	return DBGetContactSettingTString( NULL, m_szModuleName, name, result );
+int CAimProto::getTString(const char* name, DBVARIANT* result)
+{	return DBGetContactSettingTString(NULL, m_szModuleName, name, result);
 }
 
-int CAimProto::getTString( HANDLE hContact, const char* name, DBVARIANT* result )
-{	return DBGetContactSettingTString( hContact, m_szModuleName, name, result );
+int CAimProto::getTString(HANDLE hContact, const char* name, DBVARIANT* result)
+{	return DBGetContactSettingTString(hContact, m_szModuleName, name, result);
 }
 
-WORD CAimProto::getWord( const char* name, WORD defaultValue )
-{	return (WORD)DBGetContactSettingWord( NULL, m_szModuleName, name, defaultValue );
+WORD CAimProto::getWord(const char* name, WORD defaultValue)
+{	return (WORD)DBGetContactSettingWord(NULL, m_szModuleName, name, defaultValue);
 }
 
-WORD CAimProto::getWord( HANDLE hContact, const char* name, WORD defaultValue )
-{	return (WORD)DBGetContactSettingWord(hContact, m_szModuleName, name, defaultValue );
+WORD CAimProto::getWord(HANDLE hContact, const char* name, WORD defaultValue)
+{	return (WORD)DBGetContactSettingWord(hContact, m_szModuleName, name, defaultValue);
 }
 
 char* CAimProto::getSetting(HANDLE hContact, const char* setting)
@@ -809,47 +774,47 @@ char* CAimProto::getSetting(HANDLE hContact, const char* setting)
 	return NULL;
 }
 
-void CAimProto::setByte( const char* name, BYTE value )
-{	DBWriteContactSettingByte(NULL, m_szModuleName, name, value );
+void CAimProto::setByte(const char* name, BYTE value)
+{	DBWriteContactSettingByte(NULL, m_szModuleName, name, value);
 }
 
-void CAimProto::setByte( HANDLE hContact, const char* name, BYTE value )
-{	DBWriteContactSettingByte(hContact, m_szModuleName, name, value );
+void CAimProto::setByte(HANDLE hContact, const char* name, BYTE value)
+{	DBWriteContactSettingByte(hContact, m_szModuleName, name, value);
 }
 
-void CAimProto::setDword( const char* name, DWORD value )
-{	DBWriteContactSettingDword(NULL, m_szModuleName, name, value );
+void CAimProto::setDword(const char* name, DWORD value)
+{	DBWriteContactSettingDword(NULL, m_szModuleName, name, value);
 }
 
-void CAimProto::setDword( HANDLE hContact, const char* name, DWORD value )
-{	DBWriteContactSettingDword(hContact, m_szModuleName, name, value );
+void CAimProto::setDword(HANDLE hContact, const char* name, DWORD value)
+{	DBWriteContactSettingDword(hContact, m_szModuleName, name, value);
 }
 
-void CAimProto::setString( const char* name, const char* value )
-{	DBWriteContactSettingString(NULL, m_szModuleName, name, value );
+void CAimProto::setString(const char* name, const char* value)
+{	DBWriteContactSettingString(NULL, m_szModuleName, name, value);
 }
 
-void CAimProto::setString( HANDLE hContact, const char* name, const char* value )
-{	DBWriteContactSettingString(hContact, m_szModuleName, name, value );
+void CAimProto::setString(HANDLE hContact, const char* name, const char* value)
+{	DBWriteContactSettingString(hContact, m_szModuleName, name, value);
 }
 
-void CAimProto::setTString( const char* name, const TCHAR* value )
-{	DBWriteContactSettingTString(NULL, m_szModuleName, name, value );
+void CAimProto::setTString(const char* name, const TCHAR* value)
+{	DBWriteContactSettingTString(NULL, m_szModuleName, name, value);
 }
 
-void CAimProto::setTString( HANDLE hContact, const char* name, const TCHAR* value )
-{	DBWriteContactSettingTString(hContact, m_szModuleName, name, value );
+void CAimProto::setTString(HANDLE hContact, const char* name, const TCHAR* value)
+{	DBWriteContactSettingTString(hContact, m_szModuleName, name, value);
 }
 
-void CAimProto::setWord( const char* name, WORD value )
-{	DBWriteContactSettingWord(NULL, m_szModuleName, name, value );
+void CAimProto::setWord(const char* name, WORD value)
+{	DBWriteContactSettingWord(NULL, m_szModuleName, name, value);
 }
 
-void CAimProto::setWord( HANDLE hContact, const char* name, WORD value )
-{	DBWriteContactSettingWord(hContact, m_szModuleName, name, value );
+void CAimProto::setWord(HANDLE hContact, const char* name, WORD value)
+{	DBWriteContactSettingWord(hContact, m_szModuleName, name, value);
 }
 
-int  CAimProto::sendBroadcast( HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam )
+int  CAimProto::sendBroadcast(HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam)
 {
     return ProtoBroadcastAck(m_szModuleName, hContact, type, result, hProcess, lParam);
 }
@@ -861,16 +826,16 @@ void CAimProto::CreateProtoService(const char* szService, AimServiceFunc service
 	char temp[MAX_PATH*2];
 
 	mir_snprintf(temp, sizeof(temp), "%s%s", m_szModuleName, szService);
-	CreateServiceFunctionObj( temp, ( MIRANDASERVICEOBJ )*( void** )&serviceProc, this );
+	CreateServiceFunctionObj(temp, (MIRANDASERVICEOBJ)*(void**)&serviceProc, this);
 }
 
 void CAimProto::HookProtoEvent(const char* szEvent, AimEventFunc pFunc)
 {
-	::HookEventObj( szEvent, ( MIRANDAHOOKOBJ )*( void** )&pFunc, this );
+	::HookEventObj(szEvent, (MIRANDAHOOKOBJ)*(void**)&pFunc, this);
 }
 
-void CAimProto::ForkThread( AimThreadFunc pFunc, void* param )
+void CAimProto::ForkThread(AimThreadFunc pFunc, void* param)
 {
 	UINT threadID;
-	CloseHandle(( HANDLE )mir_forkthreadowner(( pThreadFuncOwner )*( void** )&pFunc, this, param, &threadID ));
+	CloseHandle((HANDLE)mir_forkthreadowner((pThreadFuncOwner)*(void**)&pFunc, this, param, &threadID));
 }

@@ -68,7 +68,7 @@ int CAimProto::aim_auth_request(HANDLE hServerConn,unsigned short &seqno,const c
     aim_writetlv(0x0E,(unsigned short)strlen(country),country,offset,buf);
     aim_writetlvchar(0x4A,getByte(AIM_KEY_FSC, 0) ? 3 : 1,offset,buf);
 //    aim_writetlvchar(0x94,0,offset,buf);
-    if (!getByte( AIM_KEY_DSSL, 0))
+    if (!getByte(AIM_KEY_DSSL, 0))
         aim_writetlv(0x8c,0,NULL,offset,buf);                       // Request SSL connection
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
@@ -108,7 +108,7 @@ int CAimProto::aim_new_service_request(HANDLE hServerConn,unsigned short &seqno,
     char buf[SNAC_SIZE+2+TLV_HEADER_SIZE];
     aim_writesnac(0x01,0x04,offset,buf);
     aim_writeshort(service,offset,buf);
-    if (!getByte( AIM_KEY_DSSL, 0))
+    if (!getByte(AIM_KEY_DSSL, 0))
         aim_writetlv(0x8c,0,NULL,offset,buf);
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
@@ -192,7 +192,7 @@ int CAimProto::aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
     memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ICQ_SERVER_RELAY,AIM_CAPS_LENGTH);
     memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UTF8,AIM_CAPS_LENGTH);
     memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_MIRANDA,AIM_CAPS_LENGTH);
-    if(getByte( AIM_KEY_HF, 0))
+    if(getByte(AIM_KEY_HF, 0))
         memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_HIPTOP,AIM_CAPS_LENGTH);
     aim_writesnac(0x02,0x04,offset,buf);
     aim_writetlv(0x05,(unsigned short)(AIM_CAPS_LENGTH*i),temp,offset,buf);
@@ -249,15 +249,15 @@ int CAimProto::aim_client_ready(HANDLE hServerConn,unsigned short &seqno)
     unsigned short offset=0;
     NETLIBBIND nlb = {0};
     nlb.cbSize = sizeof(nlb);
-    nlb.pfnNewConnectionV2 = ( NETLIBNEWCONNECTIONPROC_V2 )aim_direct_connection_initiated;
+    nlb.pfnNewConnectionV2 = (NETLIBNEWCONNECTIONPROC_V2)aim_direct_connection_initiated;
     nlb.pExtra = this;
     hDirectBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)hNetlibPeer, (LPARAM)&nlb);
     if (hDirectBoundPort == NULL)
     {
         ShowPopup(LPGEN("Aim was unable to bind to a port. File transfers may not succeed in some cases."), 0);
     }
-    LocalPort=nlb.wPort;
-    InternalIP=nlb.dwInternalIP;
+    LocalPort = nlb.wPort;
+    InternalIP = nlb.dwInternalIP;
     char buf[SNAC_SIZE+TLV_HEADER_SIZE*22];
     aim_writesnac(0x01,0x02,offset,buf);
     aim_writefamily(AIM_SERVICE_GENERIC,offset,buf);
@@ -449,7 +449,7 @@ int CAimProto::aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,c
     unsigned short fnlen  = file_name ? (unsigned short)strlen(file_name) : 0;
     unsigned short dsclen = descr ? (unsigned short)strlen(descr) : 0;
 
-    char* msg_frag=(char*)alloca(TLV_HEADER_SIZE*14+65+AIM_CAPS_LENGTH+dsclen+fnlen);
+    char* msg_frag=(char*)alloca(TLV_HEADER_SIZE*15+100+AIM_CAPS_LENGTH+dsclen+fnlen);
     unsigned short frag_offset=0;
     aim_writeshort(0,frag_offset,msg_frag);                         // request type
     aim_writegeneric(8,icbm_cookie,frag_offset,msg_frag);           // icbm cookie
@@ -458,15 +458,20 @@ int CAimProto::aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,c
     aim_writetlvshort(0x0a,request_num,frag_offset,msg_frag);       // request number
     aim_writetlv(0x0f,0,0,frag_offset,msg_frag);                    // request host check
     aim_writetlvshort(0x12,2,frag_offset,msg_frag);                 // max protocol version
-//  aim_writetlv(0x0e,2,"en",frag_offset,msg_frag);                 // language used by the data
-//  aim_writetlv(0x0d,8,"us-ascii",frag_offset,msg_frag);           // charset used by the data
 
     if (descr)
+    {
+        aim_writetlv(0x0e,2,"en",frag_offset,msg_frag);             // language used by the data
+        aim_writetlv(0x0d,8,"us-ascii",frag_offset,msg_frag);       // charset used by the data
         aim_writetlv(0x0c,dsclen,descr,frag_offset,msg_frag);       // invitaion text
+    }
 
     aim_writetlvlong(0x02,ip,frag_offset,msg_frag);                 // ip
     aim_writetlvlong(0x16,~ip,frag_offset,msg_frag);                // ip check
-    aim_writetlvlong(0x03,ip,frag_offset,msg_frag);                 // ip
+
+    if (!force_proxy)
+        aim_writetlvlong(0x03,ip,frag_offset,msg_frag);             // ip
+    
     aim_writetlvshort(0x05,port,frag_offset,msg_frag);              // port
     aim_writetlvshort(0x17,~port,frag_offset,msg_frag);             // port ip check
     
@@ -481,8 +486,12 @@ int CAimProto::aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,c
         *(unsigned long*) &fblock[4] = _htonl(total_bytes);         // total bytes in files
         memcpy(&fblock[8],file_name,fnlen+1);
 
+        const char* enc = is_utf(file_name) ? "utf-8" : "us-ascii";
         aim_writetlv(0x2711,9+fnlen,fblock,frag_offset,msg_frag);   // extra data, file names, size
-//      aim_writetlv(0x2712,8,"us-ascii",frag_offset,msg_frag);     // character set used by data
+        aim_writetlv(0x2712,8,enc,frag_offset,msg_frag);            // character set used by data
+        aim_writetlvlong64(0x2713,total_bytes,frag_offset,msg_frag); // file length
+
+        LOG("Attempting to Send a file to a buddy.");
     }
 
     unsigned short offset=0;
@@ -497,81 +506,21 @@ int CAimProto::aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,c
     aim_writetlv(0x03,0,0,offset,buf);                              // request ack
 
     char cip[20];
-    long_ip_to_char_ip(ip,cip);
-    LOG("Attempting to Send a file to a buddy.");
-    LOG("IP for Buddy to connect to: %s:%u",cip,port);
+    long_ip_to_char_ip(ip, cip);
+    LOG("IP for Buddy to connect to: %x:%u",cip,port);
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
 }
 
-int CAimProto::aim_file_redirected_request(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie)//used when a direct connection failed so we request a redirected connection
-{	
-    unsigned short frag_offset=0;
-    char msg_frag[TLV_HEADER_SIZE*6+30+AIM_CAPS_LENGTH];
-
-    aim_writeshort(0,frag_offset,msg_frag);                         // icbm propose
-    aim_writegeneric(8,icbm_cookie,frag_offset,msg_frag);           // icbm cookie
-    aim_writegeneric(AIM_CAPS_LENGTH,
-        AIM_CAP_FILE_TRANSFER,frag_offset,msg_frag);                // uuid
-
-    aim_writetlvshort(0x0a,2,frag_offset,msg_frag);                 // sequence number
-
-    aim_writetlvlong(0x02,InternalIP,frag_offset,msg_frag);         // ip
-    aim_writetlvlong(0x03,InternalIP,frag_offset,msg_frag);         // ip
-    aim_writetlvlong(0x16,~InternalIP,frag_offset,msg_frag);        // xor ip
-    aim_writetlvshort(0x05,port,frag_offset,msg_frag);              // port
-    aim_writetlvshort(0x17,~port,frag_offset,msg_frag);             // xor port
-
-    unsigned short offset=0;
-    unsigned short sn_length=(unsigned short)strlen(sn);
-    char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE+20+frag_offset+sn_length);
-    aim_writesnac(0x04,0x06,offset,buf);                            // msg to host
-    aim_writegeneric(8,icbm_cookie,offset,buf);                     // icbm cookie                                 
-    aim_writeshort(2,offset,buf);                                   // icbm channel
-    aim_writechar((unsigned char)sn_length,offset,buf);             // screen name length
-    aim_writegeneric(sn_length,sn,offset,buf);                      // screen name
-    aim_writetlv(0x05,frag_offset,msg_frag,offset,buf);             // icbm tags
-    return aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
-}
-
-int CAimProto::aim_file_proxy_request(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,char request_num,unsigned long proxy_ip, unsigned short port)//used when a direct & redirected connection failed so we request a proxy connection
-{	
-    unsigned short frag_offset=0;
-    char msg_frag[TLV_HEADER_SIZE*6+30+AIM_CAPS_LENGTH];
-
-    aim_writeshort(0,frag_offset,msg_frag);                         // icbm propose
-    aim_writegeneric(8,icbm_cookie,frag_offset,msg_frag);           // icbm cookie
-    aim_writegeneric(AIM_CAPS_LENGTH,
-        AIM_CAP_FILE_TRANSFER,frag_offset,msg_frag);                // uuid
-    aim_writetlvshort(0x0a,request_num,frag_offset,msg_frag);       // sequence number
-
-    aim_writetlvlong(0x02,proxy_ip,frag_offset,msg_frag);           // ip
-    aim_writetlvlong(0x16,~proxy_ip,frag_offset,msg_frag);          // xor ip
-    aim_writetlvshort(0x05,port,frag_offset,msg_frag);              // port
-    aim_writetlvshort(0x17,~port,frag_offset,msg_frag);             // xor port
-
-    aim_writetlv(0x10,0,NULL,frag_offset,msg_frag);                 // request proxy transfer
-
-    unsigned short offset=0;
-    unsigned short sn_length=(unsigned short)strlen(sn);
-    char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE+12+frag_offset+sn_length);
-    aim_writesnac(0x04,0x06,offset,buf);                            // msg to host
-    aim_writegeneric(8,icbm_cookie,offset,buf);                     // icbm cookie                                 
-    aim_writeshort(2,offset,buf);                                   // icbm channel
-    aim_writechar((unsigned char)sn_length,offset,buf);             // screen name length
-    aim_writegeneric(sn_length,sn,offset,buf);                      // screen name
-    aim_writetlv(0x05,frag_offset,msg_frag,offset,buf);             // icbm tags
-
-    return aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
-}
 
 int CAimProto::aim_file_ad(HANDLE hServerConn,unsigned short &seqno,char* sn, char* icbm_cookie, bool deny)
 {	
     unsigned short frag_offset=0;
-    char msg_frag[10+AIM_CAPS_LENGTH];
+    char msg_frag[10+AIM_CAPS_LENGTH+TLV_HEADER_SIZE+4];
     aim_writeshort(deny ? 1 : 2,frag_offset,msg_frag);              // icbm accept / deny
     aim_writegeneric(8,icbm_cookie,frag_offset,msg_frag);           // icbm cookie
     aim_writegeneric(AIM_CAPS_LENGTH,
         AIM_CAP_FILE_TRANSFER,frag_offset,msg_frag);                // uuid
+    aim_writetlvshort(0x12,2,frag_offset,msg_frag);                 // max protocol version
 
     unsigned short sn_length=(unsigned short)strlen(sn);
     unsigned short offset=0;
@@ -755,7 +704,7 @@ int CAimProto::aim_chat_join_room(HANDLE hServerConn,unsigned short &seqno, char
     aim_writegeneric(cookie_len,chat_cookie,offset,buf);	        // Value - Cookie
     aim_writeshort(instance,offset,buf);					        // Value - Instance
 
-    if (!getByte( AIM_KEY_DSSL, 0))
+    if (!getByte(AIM_KEY_DSSL, 0))
         aim_writetlv(0x8c,0,NULL,offset,buf);                       // Request SSL connection
 
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);

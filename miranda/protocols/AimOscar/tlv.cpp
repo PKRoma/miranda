@@ -82,6 +82,10 @@ unsigned long TLV::ulong(int pos)
 {
 	return _htonl(*(unsigned long*)&value_[pos]);
 }
+unsigned __int64 TLV::u64(int pos)
+{
+	return _htonl64(*(unsigned __int64*)&value_[pos]);
+}
 unsigned char TLV::ubyte(int pos)
 {
 	return value_[pos];
