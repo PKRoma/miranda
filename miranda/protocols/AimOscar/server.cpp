@@ -188,11 +188,11 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 {
 	if (snac.subcmp(0x000b))
 	{
-		char client[100]="\0";
-		bool hiptop_user=0;
-		bool bot_user=0;
-		bool away_user=0;
-		bool caps_included=0;
+		char client[100] = "";
+		bool hiptop_user = false;
+		bool bot_user = false;
+		bool away_user = false;
+		bool caps_included = false;
 		unsigned char buddy_length=snac.ubyte();
 		int offset=buddy_length+3;
 		int i=0;
@@ -298,6 +298,7 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 						char g =cap[14];
 						char h =cap[15];
 						mir_snprintf(client,sizeof(client),CLIENT_AIMOSCAR,a,b,c,d,e,f,g,h);
+                        if (e == 0 && (f > 8 || (f == 8 && g < 3))) deleteSetting(hContact, AIM_KEY_O3);
 					}
 					else if(is_kopete_ver_cap(cap))
 					{
