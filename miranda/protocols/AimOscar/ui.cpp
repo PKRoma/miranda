@@ -107,7 +107,7 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("24"));
 			SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("36"));
 			SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_SETCURSEL, 2, 0);
-			if(SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_SELECTSTRING, 1, (LPARAM)TEXT("Arial"))!=CB_ERR)
+			if (SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_SELECTSTRING, 1, (LPARAM)TEXT("Arial"))!=CB_ERR)
 			{
 				CHARFORMAT2 cf;
 				cf.cbSize = sizeof(cf);
@@ -135,28 +135,29 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			RECT* rect=(RECT*)lParam;
 #define MIN_HEIGHT 200
 #define MIN_WIDTH 400
-			if(WMSZ_RIGHT==wParam||WMSZ_TOPRIGHT==wParam||WMSZ_BOTTOMRIGHT==wParam)
+			if (WMSZ_RIGHT==wParam||WMSZ_TOPRIGHT==wParam||WMSZ_BOTTOMRIGHT==wParam)
 			{
 				if(rect->right-rect->left<MIN_WIDTH)
 					rect->right=rect->left+MIN_WIDTH;
 			}
-			if(WMSZ_LEFT==wParam||WMSZ_TOPLEFT==wParam||WMSZ_BOTTOMLEFT==wParam)
+			if (WMSZ_LEFT==wParam||WMSZ_TOPLEFT==wParam||WMSZ_BOTTOMLEFT==wParam)
 			{
 				if(rect->right-rect->left<MIN_WIDTH)
 					rect->left=rect->right-MIN_WIDTH;
 			}
-			if(WMSZ_TOP==wParam||WMSZ_TOPRIGHT==wParam||WMSZ_TOPLEFT==wParam)
+			if (WMSZ_TOP==wParam||WMSZ_TOPRIGHT==wParam||WMSZ_TOPLEFT==wParam)
 			{
 				if(rect->bottom-rect->top<MIN_HEIGHT)
 					rect->top=rect->bottom-MIN_HEIGHT;
 			}
-			if(WMSZ_BOTTOM==wParam||WMSZ_BOTTOMLEFT==wParam||WMSZ_BOTTOMRIGHT==wParam)
+			if (WMSZ_BOTTOM==wParam||WMSZ_BOTTOMLEFT==wParam||WMSZ_BOTTOMRIGHT==wParam)
 			{
 				if(rect->bottom-rect->top<MIN_HEIGHT)
 					rect->bottom=rect->top+MIN_HEIGHT;
 			}
 			break;
 		}
+
 	case WM_SIZE:
 		{
 			int width=LOWORD(lParam);
@@ -166,15 +167,16 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			break;
 		}
 	case WM_NOTIFY:
-		switch (LOWORD(wParam)) {
+		switch (LOWORD(wParam)) 
+        {
 		case IDC_PROFILE:
-			if(((LPNMHDR)lParam)->code==EN_SELCHANGE)
+			if (((LPNMHDR)lParam)->code==EN_SELCHANGE)
 			{
 				CHARFORMAT2 cfOld;
 				cfOld.cbSize = sizeof(CHARFORMAT2);
 				cfOld.dwMask = CFM_FACE | CFM_SIZE;
 				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
-				if(SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_SELECTSTRING, 1, (LPARAM)cfOld.szFaceName)==-1)
+				if (SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_SELECTSTRING, 1, (LPARAM)cfOld.szFaceName)==-1)
 				{
 					SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_ADDSTRING, 0, (LPARAM)cfOld.szFaceName);
 					SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_SELECTSTRING, 1, (LPARAM)cfOld.szFaceName);
@@ -190,7 +192,7 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				InvalidateRect(GetDlgItem(hwndDlg, IDC_ITALIC), NULL, FALSE);
 				InvalidateRect(GetDlgItem(hwndDlg, IDC_UNDERLINE), NULL, FALSE);
 			}
-			else if(((LPNMHDR)lParam)->code==EN_REQUESTRESIZE)
+			else if (((LPNMHDR)lParam)->code==EN_REQUESTRESIZE)
 			{
 				//	REQRESIZE* rr= (REQRESIZE*)lParam;
 				//SetWindowPos(GetDlgItem(hwndDlg, IDC_PROFILE),HWND_TOP,rr->rc.left,rr->rc.top,rr->rc.right,rr->rc.bottom,0);
@@ -198,7 +200,8 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			break;
 
 		default:
-			if (((LPNMHDR)lParam)->code == PSN_PARAMCHANGED) {
+			if (((LPNMHDR)lParam)->code == PSN_PARAMCHANGED) 
+            {
 				ppro = (CAimProto*)((PSHNOTIFY*)lParam)->lParam;
 				SetWindowLongPtr(hwndDlg, GWLP_USERDATA, LPARAM(ppro));
 
@@ -217,13 +220,13 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 	case WM_DRAWITEM:
 		{
-			if(themeAPIHandle)
+			if (themeAPIHandle)
 			{
 				MyCloseThemeData (hThemeButton);
 				hThemeButton = MyOpenThemeData (GetDlgItem(hwndDlg, IDC_BOLD), L"Button");
 			}
 			LPDRAWITEMSTRUCT lpDIS = (LPDRAWITEMSTRUCT) lParam;
-			if(lpDIS->CtlID == IDC_SUPERSCRIPT)
+			if (lpDIS->CtlID == IDC_SUPERSCRIPT)
 			{
 				CHARFORMAT2 cfOld;
 				cfOld.cbSize = sizeof(CHARFORMAT2);
@@ -243,7 +246,7 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					ReleaseIconEx("nsup_scrpt");
 				}
 			}
-			else if(lpDIS->CtlID == IDC_NORMALSCRIPT)
+			else if (lpDIS->CtlID == IDC_NORMALSCRIPT)
 			{
 				CHARFORMAT2 cfOld;
 				cfOld.cbSize = sizeof(CHARFORMAT2);
@@ -264,7 +267,7 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					ReleaseIconEx("nnorm_scrpt");
 				}
 			}
-			else if(lpDIS->CtlID == IDC_SUBSCRIPT)
+			else if (lpDIS->CtlID == IDC_SUBSCRIPT)
 			{
 				CHARFORMAT2 cfOld;
 				cfOld.cbSize = sizeof(CHARFORMAT2);
@@ -284,14 +287,14 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					ReleaseIconEx("nsub_scrpt");
 				}
 			}
-			else if(lpDIS->CtlID == IDC_BOLD)
+			else if (lpDIS->CtlID == IDC_BOLD)
 			{
 				CHARFORMAT2 cfOld;
 				cfOld.cbSize = sizeof(CHARFORMAT2);
 				cfOld.dwMask = CFM_BOLD;
 				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
 				BOOL isBold = (cfOld.dwEffects & CFE_BOLD) && (cfOld.dwMask & CFM_BOLD);
-				if(!isBold)
+				if (!isBold)
 				{
 					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
 					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("nbold"), 16, 16, 0, 0, DI_NORMAL);
@@ -324,7 +327,7 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					ReleaseIconEx("italic");
 				}
 			}
-			else if(lpDIS->CtlID == IDC_UNDERLINE)
+			else if (lpDIS->CtlID == IDC_UNDERLINE)
 			{
 				CHARFORMAT2 cfOld;
 				cfOld.cbSize = sizeof(CHARFORMAT2);
@@ -344,7 +347,7 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					ReleaseIconEx("undrln");
 				}
 			}
-			else if(lpDIS->CtlID == IDC_FOREGROUNDCOLOR)
+			else if (lpDIS->CtlID == IDC_FOREGROUNDCOLOR)
 			{
 				DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_FOREGROUNDCOLOR),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
 				DrawIconEx(lpDIS->hDC, 4, 2, LoadIconEx("foreclr"), 16, 16, 0, 0, DI_NORMAL);
@@ -362,7 +365,7 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				DeleteObject(hbr);
 				DeleteObject(hp);
 			}
-			else if(lpDIS->CtlID == IDC_FOREGROUNDCOLORPICKER)
+			else if (lpDIS->CtlID == IDC_FOREGROUNDCOLORPICKER)
 			{
 				DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_FOREGROUNDCOLORPICKER),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
 				HBRUSH	hbr = CreateSolidBrush(foreground);
@@ -380,7 +383,7 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				DeleteObject(hbr);
 				DeleteObject(hp);
 			}
-			else if(lpDIS->CtlID == IDC_BACKGROUNDCOLOR)
+			else if (lpDIS->CtlID == IDC_BACKGROUNDCOLOR)
 			{
 				DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BACKGROUNDCOLOR),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
 				DrawIconEx(lpDIS->hDC, 4, 2, LoadIconEx("backclr"), 16, 16, 0, 0, DI_NORMAL);
@@ -398,7 +401,7 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				DeleteObject(hbr);
 				DeleteObject(hp);
 			}
-			else if(lpDIS->CtlID == IDC_BACKGROUNDCOLORPICKER)
+			else if (lpDIS->CtlID == IDC_BACKGROUNDCOLORPICKER)
 			{
 				DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BACKGROUNDCOLORPICKER),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
 				HBRUSH	hbr = CreateSolidBrush(background);
@@ -603,7 +606,7 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			break;
 
 		case IDC_TYPEFACE:
-			if(HIWORD(wParam)==CBN_SELENDOK)
+			if (HIWORD(wParam)==CBN_SELENDOK)
 			{
 				CHARFORMAT2A cf;
 				cf.cbSize = sizeof(cf);
@@ -617,7 +620,7 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			break;
 
 		case IDC_FONTSIZE:
-			if(HIWORD(wParam)==CBN_SELENDOK)
+			if (HIWORD(wParam)==CBN_SELENDOK)
 			{
 				CHARFORMAT2 cf;
 				cf.cbSize = sizeof(CHARFORMAT2);

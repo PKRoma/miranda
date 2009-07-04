@@ -1016,7 +1016,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
             ft->verified_ip = verified_ip;
             ft->proxy_ip = proxy_ip;
             ft->port = port;
-            ft->listen = false;
+            ft->requester = false;
 
             LOG("Local IP: %x:%u", local_ip, port);
 			LOG("Verified IP: %x:%u", verified_ip, port);

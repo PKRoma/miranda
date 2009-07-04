@@ -28,7 +28,7 @@ void __cdecl CAimProto::aim_proxy_helper(void* param)
 		if (proxy_initialize_recv(ft->hConn, ft->sn, ft->icbm_cookie, ft->port)) 
 			return;//error
 	}
-	else if (ft->proxy_stage == 1 && ft->sending || ft->proxy_stage == 2 && !ft->sending || ft->proxy_stage == 3 && ft->sending)
+	else
 	{
         if (proxy_initialize_send(ft->hConn, ft->sn, ft->icbm_cookie))
 			return;//error
@@ -127,23 +127,28 @@ void __cdecl CAimProto::aim_proxy_helper(void* param)
                 }
                 if (i == 0) 
                 {
-                    aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true);
 	                sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
                     break;
                 }
 
 	            packetRecv.dwTimeout = 100 * getWord(AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
-                if (ft->sending)//we are sending
-	                sending_file(ft, hServerPacketRecver, packetRecv);
-                else 
-	                receiving_file(ft, hServerPacketRecver, packetRecv);
 
+                bool success = false;
+                if (ft->sending)//we are sending
+	                success = sending_file(ft, hServerPacketRecver, packetRecv);
+                else 
+	                success = receiving_file(ft, hServerPacketRecver, packetRecv);
+
+                sendBroadcast(ft->hContact, ACKTYPE_FILE, success ? ACKRESULT_SUCCESS : ACKRESULT_FAILED, ft, 0);
+                if (!success)
+                    aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true);
                 break;
 			}
 		}
 	}
     Netlib_CloseHandle(hServerPacketRecver);
     Netlib_CloseHandle(ft->hConn);
+
     ft_list.remove_by_ft(ft);
 }
 

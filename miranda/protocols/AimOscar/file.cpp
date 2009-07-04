@@ -91,7 +91,7 @@ void fill_OFT3(oft3 *oft, file_transfer *ft)
 	    memcpy(oft->filename, pszFile, strlen(pszFile));
 }
 
-void CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv)
+bool CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv)
 {
 	LOG("P2P: Entered file sending thread.");
 
@@ -108,7 +108,7 @@ void CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETL
 
 
 	if (Netlib_Send(ft->hConn, (char*)&oft, sizeof(oft2), 0) == SOCKET_ERROR)
-        goto exit;
+        return false;
 
     LOG("Sent file information to buddy.");
 	//start listen for packets stuff
@@ -212,12 +212,10 @@ void CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETL
 			}
 		}
 	}
-
-exit:
-    sendBroadcast(ft->hContact, ACKTYPE_FILE, failed ? ACKRESULT_FAILED : ACKRESULT_SUCCESS, ft, 0);
+    return !failed;
 }
 
-void CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv)
+bool CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv)
 {
 	LOG("P2P: Entered file receiving thread.");
     bool failed = true;
@@ -363,10 +361,10 @@ void CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NE
 	}
 
 	if (accepted_file && fd) fclose(fd);
-    sendBroadcast(ft->hContact, ACKTYPE_FILE, failed ? ACKRESULT_FAILED : ACKRESULT_SUCCESS, ft, 0);
-    if (failed) aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true);
     mir_free(pfts.workingDir);
     mir_free(pfts.currentFile);
+
+    return !failed;
 }
 
 ft_list_type::ft_list_type() :  OBJLIST <file_transfer>(10) {};
@@ -387,7 +385,7 @@ file_transfer* ft_list_type::find_by_ip(unsigned long ip)
     for (int i = getCount(); i--; )
     {
         file_transfer *ft = items[i];
-        if (ft->accepted && ft->listen && (ft->local_ip == ip || ft->verified_ip == ip))
+        if (ft->accepted && ft->requester && (ft->local_ip == ip || ft->verified_ip == ip))
             return ft;
     }
     return NULL;
@@ -398,7 +396,7 @@ file_transfer* ft_list_type::find_suitable(void)
     for (int i = getCount(); i--; )
     {
         file_transfer *ft = items[i];
-        if (ft->accepted && ft->listen && ft->local_ip == 0 && ft->verified_ip == 0 && ft->sending)
+        if (ft->accepted && ft->requester && ft->local_ip == 0 && ft->verified_ip == 0 && ft->sending)
             return ft;
     }
     return NULL;

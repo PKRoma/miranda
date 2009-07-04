@@ -30,13 +30,41 @@ void __cdecl CAimProto::aim_dc_helper(void* param) //only called when we are ini
 
     HANDLE hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)ft->hConn, 2048 * 4);
 
+    bool success;
     if (ft->sending)//we are sending
-	    sending_file(ft, hServerPacketRecver, packetRecv);
+	    success = sending_file(ft, hServerPacketRecver, packetRecv);
     else 
-	    receiving_file(ft, hServerPacketRecver, packetRecv);
+	    success = receiving_file(ft, hServerPacketRecver, packetRecv);
 
     Netlib_CloseHandle(hServerPacketRecver);
     Netlib_CloseHandle(ft->hConn);
+    ft->hConn = NULL;
+
+    if (success)
+    {
+        sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0);
+    }
+    else if (!ft->requester)
+    {
+        ft->accepted = false;
+		unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
+		HANDLE hConn = aim_peer_connect(AIM_PROXY_SERVER, port);
+		if (hConn) 
+        {
+			LOG("Connected to proxy ip because we want to use a proxy for the file transfer.");
+            ft->proxy_stage = 2;
+            ft->hConn = hConn;
+			ForkThread(&CAimProto::aim_proxy_helper, ft);
+            return;
+		}
+    }
+
+    if (!success)
+    {
+        aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true);
+        sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
+    }
+
     ft_list.remove_by_ft(ft);
 }
 

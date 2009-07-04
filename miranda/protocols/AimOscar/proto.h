@@ -323,8 +323,8 @@ struct CAimProto : public PROTO_INTERFACE
     //////////////////////////////////////////////////////////////////////////////////////
 	// file.cpp
 
-	void   sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv);
-	void   receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv);
+	bool   sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv);
+	bool   receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// packets.cpp

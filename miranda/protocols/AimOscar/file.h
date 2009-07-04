@@ -110,7 +110,7 @@ struct file_transfer
 	bool force_proxy;
     bool sending;
     bool accepted;
-    bool listen;
+    bool requester;
     bool use_oft3;
     char proxy_stage;
 

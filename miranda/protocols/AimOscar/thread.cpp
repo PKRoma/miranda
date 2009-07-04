@@ -86,7 +86,7 @@ void __cdecl CAimProto::accept_file_thread(void* param)//buddy sending file
              {
 				LOG("Failed to connect to buddy- asking buddy to connect to us.");
 //				current_rendezvous_accept_user = ft->hContact;
-                ft->listen = true;
+                ft->requester = true;
 				aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, InternalIP, LocalPort, 0, 2, 0, 0, 0);
 			}
 		}

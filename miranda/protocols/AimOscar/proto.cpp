@@ -510,7 +510,7 @@ HANDLE __cdecl CAimProto::SendFile(HANDLE hContact, const char* szDescription, c
             ft->sending = true;
             ft->message = szDescription[0] ? mir_strdup(szDescription) : NULL;
 			ft->force_proxy = getByte(AIM_KEY_FP, 0) != 0;
-            ft->listen = true;
+            ft->requester = true;
             ft->use_oft3 = getByte(hContact, AIM_KEY_O3, 0) != 0;
 
             ft_list.insert(ft);
