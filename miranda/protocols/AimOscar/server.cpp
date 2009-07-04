@@ -298,7 +298,7 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 						char g =cap[14];
 						char h =cap[15];
 						mir_snprintf(client,sizeof(client),CLIENT_AIMOSCAR,a,b,c,d,e,f,g,h);
-                        if (e == 0 && (f > 8 || (f == 8 && g < 3))) deleteSetting(hContact, AIM_KEY_O3);
+                        if (e == 0 && (f < 8 || (f == 8 && g < 3))) deleteSetting(hContact, AIM_KEY_O3);
 					}
 					else if(is_kopete_ver_cap(cap))
 					{
