@@ -257,7 +257,7 @@ int __cdecl CAimProto::FileCancel(HANDLE hContact, HANDLE hTransfer)
 
 	LOG("We are cancelling a file transfer.");
 
-    aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true);
+    aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true, 1);
 
 	if (ft->hConn) Netlib_Shutdown(ft->hConn);
 	else ft_list.remove_by_ft(ft);
@@ -275,7 +275,7 @@ int __cdecl CAimProto::FileDeny(HANDLE hContact, HANDLE hTransfer, const char* /
 
 	LOG("We are denying a file transfer.");
 
-    aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true);
+    aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true, 1);
 	return 0;
 }
 
@@ -306,7 +306,7 @@ int __cdecl CAimProto::FileResume(HANDLE hTransfer, int* action, const char** sz
 
     default:
 //        case FILERESUME_SKIP:
-        aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true);
+        aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true, 1);
 	    break;
     }
     sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, ft, 0);

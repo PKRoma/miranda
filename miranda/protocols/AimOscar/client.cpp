@@ -512,15 +512,17 @@ int CAimProto::aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,c
 }
 
 
-int CAimProto::aim_file_ad(HANDLE hServerConn,unsigned short &seqno,char* sn, char* icbm_cookie, bool deny)
+int CAimProto::aim_file_ad(HANDLE hServerConn,unsigned short &seqno,char* sn, char* icbm_cookie, bool deny, unsigned short reason)
 {	
     unsigned short frag_offset=0;
-    char msg_frag[10+AIM_CAPS_LENGTH+TLV_HEADER_SIZE+4];
+    char msg_frag[10+AIM_CAPS_LENGTH+TLV_HEADER_SIZE*2+6];
     aim_writeshort(deny ? 1 : 2,frag_offset,msg_frag);              // icbm accept / deny
     aim_writegeneric(8,icbm_cookie,frag_offset,msg_frag);           // icbm cookie
     aim_writegeneric(AIM_CAPS_LENGTH,
         AIM_CAP_FILE_TRANSFER,frag_offset,msg_frag);                // uuid
     aim_writetlvshort(0x12,2,frag_offset,msg_frag);                 // max protocol version
+    if (deny)
+        aim_writetlvshort(0x11,reason,frag_offset,msg_frag);        // denial reason
 
     unsigned short sn_length=(unsigned short)strlen(sn);
     unsigned short offset=0;

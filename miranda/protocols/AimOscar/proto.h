@@ -268,7 +268,7 @@ struct CAimProto : public PROTO_INTERFACE
     int    aim_ssi_update(HANDLE hServerConn, unsigned short &seqno, bool start);
 	int    aim_keepalive(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,unsigned long ip, unsigned short port, bool force_proxy, unsigned short request_num ,char* file_name,unsigned long total_bytes,char* descr);//used when requesting a regular file transfer
-	int    aim_file_ad(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,bool deny);
+	int    aim_file_ad(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,bool deny, unsigned short reason = 0);
 	int    aim_typing_notification(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short type);
 	int    aim_set_idle(HANDLE hServerConn,unsigned short &seqno,unsigned long seconds);
 	int    aim_request_mail(HANDLE hServerConn,unsigned short &seqno);
