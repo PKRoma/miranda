@@ -761,7 +761,6 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 		unsigned __int64 file_size=0;
 		bool auto_response=false;
 		bool force_proxy=false;
-		bool port_tlv=false;
 		bool descr_included=false;
 		bool unicode_message=false;
 		bool utfname=false;
@@ -855,7 +854,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 						}
 						else if(tlv.cmp(0x2712))
 						{
-							char* enc=tlv.dup();
+							char* enc = tlv.dup();
 							utfname = strcmp(enc, "utf-8") == 0;
 							mir_free(enc);
 						}
@@ -866,9 +865,9 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 						}
 						else if(tlv.cmp(0x000c))
 						{
-							msg_buf=tlv.dup();
+							msg_buf = tlv.dup();
 							html_decode(msg_buf);
-							descr_included=1;
+							descr_included = strstr(msg_buf, "<ICQ_COOL_FT>") == NULL;
 						}
 						i += TLV_HEADER_SIZE + tlv.len();
 					}
@@ -1044,7 +1043,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			{
 				ft->hContact = hContact;
 
-				ft->me_force_proxy |= request_num > 2;
+				ft->me_force_proxy |= (request_num > 2);
 				ft->peer_force_proxy = force_proxy;
 				ft->local_ip = local_ip;
 				ft->verified_ip = verified_ip;
@@ -1322,7 +1321,7 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 		unsigned char use_ssl=0;
 
 		int offset=2; // skip number of bytes in family version tlv
-		while (offset<snac.len())
+		while (offset < snac.len())
 		{
 			TLV tlv(snac.val(offset));
 			if(tlv.cmp(0x000d))
@@ -1348,9 +1347,9 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 			}
 			offset+=TLV_HEADER_SIZE+tlv.len();
 		}
-		if(family==0x0018)
+		if (family == 0x0018)
 		{
-			hMailConn=aim_connect(server, getWord(AIM_KEY_PN, AIM_DEFAULT_PORT), use_ssl != 0, host);
+			hMailConn = aim_connect(server, getWord(AIM_KEY_PN, AIM_DEFAULT_PORT), use_ssl != 0, host);
 			if(hMailConn)
 			{
 				LOG("Successfully Connected to the Mail Server.");
@@ -1361,9 +1360,9 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 			else
 				LOG("Failed to connect to the Mail Server.");
 		}
-		else if(family==0x0010)
+		else if (family == 0x0010)
 		{
-			hAvatarConn=aim_connect(server, getWord(AIM_KEY_PN, AIM_DEFAULT_PORT), false/*use_ssl != 0*/);
+			hAvatarConn = aim_connect(server, getWord(AIM_KEY_PN, AIM_DEFAULT_PORT), false/*use_ssl != 0*/);
 			if(hAvatarConn)
 			{
 				LOG("Successfully Connected to the Avatar Server.");
@@ -1374,9 +1373,9 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 			else
 				LOG("Failed to connect to the Avatar Server.");
 		}
-		else if(family==0x000D)
+		else if (family == 0x000D)
 		{
-			hChatNavConn=aim_connect(server, getWord(AIM_KEY_PN, AIM_DEFAULT_PORT), use_ssl != 0, host);
+			hChatNavConn = aim_connect(server, getWord(AIM_KEY_PN, AIM_DEFAULT_PORT), use_ssl != 0, host);
 			if(hChatNavConn)
 			{
 				LOG("Successfully Connected to the Chat Navigation Server.");
@@ -1388,13 +1387,13 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 				LOG("Failed to connect to the Chat Navigation Server.");
 
 		}
-		else if(family==0x000E)
+		else if (family == 0x000E)
 		{
 			chat_list_item* item = find_chat_by_cid(snac.idh());
 			if (item)
 			{
-				item->hconn=aim_connect(server, getWord(AIM_KEY_PN, AIM_DEFAULT_PORT), use_ssl != 0, host);
-				if(item->hconn)
+				item->hconn = aim_connect(server, getWord(AIM_KEY_PN, AIM_DEFAULT_PORT), use_ssl != 0, host);
+				if (item->hconn)
 				{
 					LOG("Successfully Connected to the Chat Server.");
 					chat_start(item->id, item->exchange);
@@ -1406,9 +1405,9 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 					LOG("Failed to connect to the Chat Server.");
 			}
 		}
-		else if(family==0x0007)
+		else if (family == 0x0007)
 		{
-			hAdminConn=aim_connect(server, getWord(AIM_KEY_PN, AIM_DEFAULT_PORT), false /*use_ssl != 0*/);
+			hAdminConn = aim_connect(server, getWord(AIM_KEY_PN, AIM_DEFAULT_PORT), false /*use_ssl != 0*/);
 			if(hAdminConn)
 			{
 				LOG("Successfully Connected to the Admin Server.");
@@ -1526,6 +1525,7 @@ void CAimProto::snac_email_search_results(SNAC &snac)//family 0x000A
 	else // If no match, stop the search.
 		CAimProto::sendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 }
+
 void CAimProto::snac_chatnav_info_response(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)//family 0x000D
 {
 	if(snac.subcmp(0x0009))
@@ -1533,7 +1533,7 @@ void CAimProto::snac_chatnav_info_response(SNAC &snac,HANDLE hServerConn,unsigne
 		LOG("Chat Info Received");
 
 		unsigned short offset_info=0;
-		while (offset_info<snac.len())	// Loop through all the TLVs and pull out the buddy name
+		while (offset_info < snac.len())	// Loop through all the TLVs and pull out the buddy name
 		{
 			TLV info_tlv(snac.val(offset_info));
 			if (info_tlv.cmp(0x0001)) // Redirect
