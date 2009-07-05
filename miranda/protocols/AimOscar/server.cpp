@@ -867,7 +867,20 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 						{
 							msg_buf = tlv.dup();
 							html_decode(msg_buf);
-							descr_included = strstr(msg_buf, "<ICQ_COOL_FT>") == NULL;
+							descr_included = true;
+                            if (strstr(msg_buf, "<ICQ_COOL_FT>"))
+                            {
+                                char* beg = strstr(msg_buf, "<DESC>");
+                                char* end = strstr(msg_buf, "</DESC>");
+                                if (beg && end && beg < end)
+                                {
+                                    beg += 6;
+                                    end[0] = 0;
+                                    memmove(msg_buf, beg, end - beg + 1);
+                                }
+                                else
+							        descr_included = false;
+                            }
 						}
 						i += TLV_HEADER_SIZE + tlv.len();
 					}
@@ -1088,7 +1101,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 		mir_free(icbm_cookie);
 	}
 }
-void CAimProto::snac_busted_payload(SNAC &snac)//family 0x0004
+void CAimProto::snac_file_decline(SNAC &snac)//family 0x0004
 {
 	if (snac.subcmp(0x000b))
 	{ 
@@ -1096,23 +1109,22 @@ void CAimProto::snac_busted_payload(SNAC &snac)//family 0x0004
 		int channel = snac.ushort(8);
 		if (channel == 0x02)
 		{
-			LOG("Channel 2:");
 			int sn_len = snac.ubyte(10);
 			char* sn   = snac.part(11, sn_len);
 			int reason = snac.ushort(11 + sn_len);
 			if (reason == 0x03)
 			{
-				LOG("Something Broke:");
 				int error = snac.ushort(13 + sn_len);
-				if(error == 0x02)
+				if (error == 0x02)
 				{
-					LOG("Buddy says we have a busted payload- BS- end a potential FT");
+					LOG("File Transfer declied");
 					HANDLE hContact = contact_from_sn(sn);
 					file_transfer *ft = ft_list.find_by_cookie(icbm_cookie, hContact);
-					if (hContact && ft)
+					if (ft)
 					{
-						sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
-						ft_list.remove_by_ft(ft);
+						sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_DENIED, ft, 0);
+                        if (ft->hConn) Netlib_Shutdown(ft->hConn);
+						else ft_list.remove_by_ft(ft);
 					}
 				}
 			}

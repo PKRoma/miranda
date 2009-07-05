@@ -145,6 +145,10 @@ bool CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETL
 					{
 						if (file_start_point) fseek(fd, file_start_point, SEEK_SET);
 
+                    	NETLIBSELECT tSelect = {0};
+                        tSelect.cbSize = sizeof(tSelect);
+                        tSelect.hReadConns[0] = ft->hConn;
+
 						PROTOFILETRANSFERSTATUS pfts;
 						memset(&pfts, 0, sizeof(PROTOFILETRANSFERSTATUS));
 						pfts.currentFileNumber      = 0;
@@ -171,13 +175,14 @@ bool CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETL
 						unsigned int lNotify = GetTickCount() - 500;
 						while ((bytes = (unsigned)fread(buffer, 1, 1024*4, fd)))
 						{
-							if (Netlib_Send(ft->hConn, buffer, bytes, 0) == SOCKET_ERROR) break;
+							if (Netlib_Send(ft->hConn, buffer, bytes, MSG_NODUMP) <= 0) break;
 							pfts.currentFileProgress += bytes;
 							pfts.totalProgress += bytes;
 							if(GetTickCount()>lNotify+500)
 							{
 								sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&pfts);
 								lNotify = GetTickCount();
+                                if (CallService(MS_NETLIB_SELECT, 0, (LPARAM)&tSelect)) break;
 							}
 						}
 						sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&pfts);

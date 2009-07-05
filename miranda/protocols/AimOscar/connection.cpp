@@ -245,7 +245,7 @@ void __cdecl CAimProto::aim_protocol_negotiation( void* )
 						snac_received_message(snac,hServerConn,seqno);
 						snac_typing_notification(snac);
 						snac_error(snac);
-						snac_busted_payload(snac);
+						snac_file_decline(snac);
 					}
 					else if(snac.cmp(0x000A))
 					{

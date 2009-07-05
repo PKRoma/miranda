@@ -257,7 +257,8 @@ int __cdecl CAimProto::FileCancel(HANDLE hContact, HANDLE hTransfer)
 
 	LOG("We are cancelling a file transfer.");
 
-    aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true, 1);
+    aim_chat_deny(hServerConn, seqno, ft->sn, ft->icbm_cookie);
+//    aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true, 1);
 
 	if (ft->hConn) Netlib_Shutdown(ft->hConn);
 	else ft_list.remove_by_ft(ft);
@@ -275,7 +276,8 @@ int __cdecl CAimProto::FileDeny(HANDLE hContact, HANDLE hTransfer, const char* /
 
 	LOG("We are denying a file transfer.");
 
-    aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true, 1);
+//    aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true, 1);
+    aim_chat_deny(hServerConn, seqno, ft->sn, ft->icbm_cookie);
 	return 0;
 }
 
@@ -528,9 +530,6 @@ HANDLE __cdecl CAimProto::SendFile(HANDLE hContact, const char* szDescription, c
                 aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, internal_ip, local_port, 
                     0, ++ft->req_num, pszFile, ft->total_size, ft->message);
             }
-
-            mir_free(ppszFiles[0]);
-            mir_free(ppszFiles);
 
             DBFreeVariant(&dbv);
 
