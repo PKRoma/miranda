@@ -349,6 +349,8 @@
 #define IDC_TIMEFORMAT                  1469
 #define IDC_FILENAMEBROWSE              1470
 #define IDC_SHOWTHISDLGATSTART          1471
+#define IDC_DUMPPROXY2                  1473
+#define IDC_DUMPSSL                     1473
 #define IDC_FILEDIRBROWSE               1475
 #define IDC_SCANCMDLINEBROWSE           1476
 #define IDC_ALLTRANSFERRED              1477
