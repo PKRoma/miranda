@@ -23,14 +23,14 @@ void __cdecl CAimProto::aim_proxy_helper(void* param)
 {
     file_transfer *ft = (file_transfer*)param;
 
-	if (ft->proxy_stage == 1 && !ft->sending || ft->proxy_stage == 2 && ft->sending || ft->proxy_stage == 3 && !ft->sending) 
+	if (ft->requester) 
     {
-		if (proxy_initialize_recv(ft->hConn, ft->sn, ft->icbm_cookie, ft->port)) 
+        if (proxy_initialize_send(ft->hConn, ft->sn, ft->icbm_cookie))
 			return;//error
 	}
 	else
 	{
-        if (proxy_initialize_send(ft->hConn, ft->sn, ft->icbm_cookie))
+		if (proxy_initialize_recv(ft->hConn, ft->sn, ft->icbm_cookie, ft->port)) 
 			return;//error
 	}
 
@@ -90,28 +90,23 @@ void __cdecl CAimProto::aim_proxy_helper(void* param)
 				unsigned short port = _htons(*(unsigned short*)&packetRecv.buffer[12]);
 				unsigned long  ip   = _htonl(*(unsigned long*)&packetRecv.buffer[14]);
 				
-                if (ft->proxy_stage == 1 && ft->sending) 
+                if (ft->req_num == 0) 
                 {
-					LOG("Stage 1 Proxy ft and we are the sender.");
+				    LOG("Stage 1 Proxy ft and we are the sender.");
 
                     char* pszFile = strrchr(ft->file, '\\');
-			        if (pszFile) pszFile++; else pszFile = ft->file;
-                    aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, ip, port, true, 1, pszFile, ft->total_size, ft->message);
-				}
-				else if (ft->proxy_stage == 2 && !ft->sending)
-				{
-					LOG("Stage 2 Proxy ft and we are not the sender.");
-                    aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, ip, port, true, 2, NULL, 0, NULL);
-				}
-				else if (ft->proxy_stage == 3 && ft->sending)
-				{
-					LOG("Stage 3 Proxy ft and we are the sender.");
-                    aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, ip, port, true, 3, NULL, 0, NULL);
-				}
+		            if (pszFile) pszFile++; else pszFile = ft->file;
+                    aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, ip, port, true, ++ft->req_num, pszFile, ft->total_size, ft->message);
+			    }
+			    else 
+			    {
+                    aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, ip, port, true, ++ft->req_num, NULL, 0, NULL);
+				    LOG("Stage %d Proxy ft and we are not the sender.", ft->req_num);
+			    }
 			}
 			else if (type == 0x0005) 
             {
-				if (ft->proxy_stage == 1 && !ft->sending || ft->proxy_stage == 2 && ft->sending || ft->proxy_stage == 3 && !ft->sending) 
+				if (!ft->requester) 
                 {
                     aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, false);
                     ft->accepted = true;

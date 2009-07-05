@@ -322,7 +322,7 @@ DWORD_PTR __cdecl CAimProto::GetCaps(int type, HANDLE hContact)
 	switch (type) 
     {
 	case PFLAGNUM_1:
-		return PF1_IM | PF1_MODEMSG | PF1_BASICSEARCH | PF1_SEARCHBYEMAIL | PF1_FILE | PF1_FILERESUME;
+		return PF1_IM | PF1_MODEMSG | PF1_BASICSEARCH | PF1_SEARCHBYEMAIL | PF1_FILE;
 
 	case PFLAGNUM_2:
 		return PF2_ONLINE | PF2_INVISIBLE | PF2_SHORTAWAY | PF2_ONTHEPHONE;
@@ -509,41 +509,30 @@ HANDLE __cdecl CAimProto::SendFile(HANDLE hContact, const char* szDescription, c
 
             ft->sending = true;
             ft->message = szDescription[0] ? mir_strdup(szDescription) : NULL;
-			ft->force_proxy = getByte(AIM_KEY_FP, 0) != 0;
+			ft->me_force_proxy = getByte(AIM_KEY_FP, 0) != 0;
             ft->requester = true;
             ft->use_oft3 = getByte(hContact, AIM_KEY_O3, 0) != 0;
 
             ft_list.insert(ft);
 
-			if (ft->force_proxy) 
+			if (ft->me_force_proxy) 
             {
 				LOG("We are forcing a proxy file transfer.");
-				unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
-				HANDLE hProxy = aim_peer_connect(AIM_PROXY_SERVER, port);
-				if (hProxy) 
-                {
-                    ft->proxy_stage = 1;
-                    ft->hConn = hProxy;
-					ForkThread(&CAimProto::aim_proxy_helper, ft);
-				}
-                else
-                {
-		            ft_list.remove_by_ft(ft);
-                    ft = NULL;
-                }
+			    ForkThread(&CAimProto::accept_file_thread, ft);
 			}
 			else 
             {
 		        char* pszFile = strrchr(ppszFiles[0], '\\');
 		        if (pszFile) pszFile++; else ppszFiles[0];
 
-                aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, InternalIP, LocalPort, 
-                    0, 1, pszFile, ft->total_size, ft->message);
+                aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, internal_ip, local_port, 
+                    0, ++ft->req_num, pszFile, ft->total_size, ft->message);
             }
 
-//            mir_free(files[0]);
-//            mir_free(files);
-			DBFreeVariant(&dbv);
+            mir_free(ppszFiles[0]);
+            mir_free(ppszFiles);
+
+            DBFreeVariant(&dbv);
 
 			return ft;
 		}

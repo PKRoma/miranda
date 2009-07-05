@@ -254,10 +254,14 @@ int CAimProto::aim_client_ready(HANDLE hServerConn,unsigned short &seqno)
     hDirectBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)hNetlibPeer, (LPARAM)&nlb);
     if (hDirectBoundPort == NULL)
     {
-        ShowPopup(LPGEN("Aim was unable to bind to a port. File transfers may not succeed in some cases."), 0);
+        ShowPopup(LPGEN("Aim was unable to bind to a port. File transfers may not succeed in some cases."), ERROR_POPUP);
     }
-    LocalPort = nlb.wPort;
-    InternalIP = nlb.dwInternalIP;
+    else
+    {
+        local_port = nlb.wPort;
+        internal_ip = nlb.dwInternalIP;
+    }
+
     char buf[SNAC_SIZE+TLV_HEADER_SIZE*22];
     aim_writesnac(0x01,0x02,offset,buf);
     aim_writefamily(AIM_SERVICE_GENERIC,offset,buf);
@@ -507,7 +511,7 @@ int CAimProto::aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,c
 
     char cip[20];
     long_ip_to_char_ip(ip, cip);
-    LOG("IP for Buddy to connect to: %x:%u",cip,port);
+    LOG("IP for Buddy to connect to: %s:%u", cip, port);
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
 }
 

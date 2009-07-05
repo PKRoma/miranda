@@ -52,7 +52,7 @@ void __cdecl CAimProto::aim_dc_helper(void* param) //only called when we are ini
 		if (hConn) 
         {
 			LOG("Connected to proxy ip because we want to use a proxy for the file transfer.");
-            ft->proxy_stage = 2;
+            ft->requester = true;
             ft->hConn = hConn;
 			ForkThread(&CAimProto::aim_proxy_helper, ft);
             return;

@@ -23,16 +23,13 @@ void __cdecl CAimProto::accept_file_thread(void* param)//buddy sending file
     file_transfer *ft = (file_transfer*)param;	
 
     HANDLE hConn = NULL;
-	if (ft->force_proxy)  //peer is forcing proxy
+	if (ft->peer_force_proxy)  //peer is forcing proxy
     {
-        char ip[20];
-        long_ip_to_char_ip(ft->proxy_ip, ip);
 		unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
-		hConn = aim_peer_connect(ip, port);
+		hConn = aim_peer_connect(ft->proxy_ip, port);
 		if (hConn) 
         {
 			LOG("Connected to proxy ip that buddy specified.");
-            ft->proxy_stage = 1;
             ft->hConn = hConn;
 			ForkThread(&CAimProto::aim_proxy_helper, ft);
 		}
@@ -44,139 +41,58 @@ void __cdecl CAimProto::accept_file_thread(void* param)//buddy sending file
             ft_list.remove_by_ft(ft);
 		}
 	}
-	else if (getByte(AIM_KEY_FP, 0)) //we are forcing a proxy
+    else if (ft->me_force_proxy) //we are forcing proxy
     {
 		unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
 		hConn = aim_peer_connect(AIM_PROXY_SERVER, port);
 		if (hConn) 
         {
 			LOG("Connected to proxy ip because we want to use a proxy for the file transfer.");
-            ft->proxy_stage = 2;
+            ft->requester = true;
             ft->hConn = hConn;
 			ForkThread(&CAimProto::aim_proxy_helper, ft);
 		}
 	}
 	else 
     {
-        char ip[20];
-        long_ip_to_char_ip(ft->verified_ip, ip);
-		hConn = aim_peer_connect(ip, ft->port);
-		if (hConn) 
+        bool verif = ft->verified_ip != detected_ip;
+        hConn = aim_peer_connect(verif ? ft->verified_ip : ft->local_ip, ft->port);
+	    if (hConn) 
         {
-			LOG("Connected to buddy over P2P port via verified ip.");
+            LOG("Connected to buddy over P2P port via %s ip.", verif ? "verified": "local");
             ft->accepted = true;
+            ft->hConn = hConn;
             aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, false);
-            ft->hConn = hConn;
-			ForkThread(&CAimProto::aim_dc_helper, ft);
-		}
-		else 
+		    ForkThread(&CAimProto::aim_dc_helper, ft);
+	    }
+		else if (ft->sending)
         {
-            char ip[20];
-            long_ip_to_char_ip(ft->local_ip, ip);
-			hConn = aim_peer_connect(ip, ft->port);
+			unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
+			hConn = aim_peer_connect(AIM_PROXY_SERVER, port);
 			if (hConn) 
             {
-				LOG("Connected to buddy over P2P port via local ip.");
-                ft->accepted = true;
-				aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, false);
                 ft->hConn = hConn;
-				ForkThread(&CAimProto::aim_dc_helper, ft);
-			}
-			else 
-             {
-				LOG("Failed to connect to buddy- asking buddy to connect to us.");
-//				current_rendezvous_accept_user = ft->hContact;
                 ft->requester = true;
-				aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, InternalIP, LocalPort, 0, 2, 0, 0, 0);
+				ForkThread(&CAimProto::aim_proxy_helper, ft);
 			}
 		}
-	}
-}
-
-void __cdecl CAimProto::redirected_file_thread(void* param)//we are sending file
-{
-    file_transfer *ft = (file_transfer*)param;	
-
-    sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, ft, 0);
-
-    HANDLE hConn = NULL;
-	if (!ft->force_proxy)
-	{
-        char ip[20];
-        long_ip_to_char_ip(ft->verified_ip, ip);
-		hConn = aim_peer_connect(ip, ft->port);
-		if (hConn) 
+        else
         {
-            ft->accepted = true;
-			aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, false);
-            ft->hConn = hConn;
-			ForkThread(&CAimProto::aim_dc_helper, ft);
-		}
-		else 
-        {
-            char ip[20];
-            long_ip_to_char_ip(ft->local_ip, ip);
-			hConn = aim_peer_connect(ip, ft->port);	
-			if (hConn) 
-            {
-                ft->accepted = true;
-				aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, false);
-                ft->hConn = hConn;
-				ForkThread(&CAimProto::aim_dc_helper, ft);
-			}
-			else  //stage 3 proxy
-            {
-				unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
-				hConn = aim_peer_connect(AIM_PROXY_SERVER, port);
-				if (hConn) 
-                {
-                    ft->proxy_stage = 3;
-                    ft->hConn = hConn;
-					ForkThread(&CAimProto::aim_proxy_helper, ft);
-				}
-			}
-		}
-	}
-	else  //stage 2 proxy
-    {
-        char ip[20];
-        long_ip_to_char_ip(ft->proxy_ip, ip);
-	    unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
-		hConn = aim_peer_connect(ip, port);
-		if (hConn) 
-        {
-            ft->proxy_stage = 2;
-            ft->hConn = hConn;
-			ForkThread(&CAimProto::aim_proxy_helper, ft);
+			LOG("Failed to connect to buddy- asking buddy to connect to us.");
+//				current_rendezvous_accept_user = ft->hContact;
+            ft->requester = true;
+            aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, internal_ip, local_port, 
+                false, ++ft->req_num, NULL, 0, NULL);
+            return;
 		}
 	}
 
     if (hConn == NULL)
     {
-		aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true);
-        sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
-        ft_list.remove_by_ft(ft);
-    }
-}
-
-void __cdecl CAimProto::proxy_file_thread(void* param) //buddy sending file here
-{
-    file_transfer *ft = (file_transfer*)param;	
-
-    //stage 3 proxy
-    char ip[20];
-    long_ip_to_char_ip(ft->proxy_ip, ip);
-	unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
-	HANDLE hProxy = aim_peer_connect(ip, port);
-	if (hProxy) 
-    {
-        ft->proxy_stage = 3;
-        ft->hConn = hProxy;
-		ForkThread(&CAimProto::aim_proxy_helper, ft);
-	}
-    else
-    {
-		aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true);
+        if (ft->req_num)
+        {
+		    aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true);
+        }
         sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
         ft_list.remove_by_ft(ft);
     }

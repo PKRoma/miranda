@@ -141,8 +141,9 @@ struct CAimProto : public PROTO_INTERFACE
 	//Some main connection stuff
 	HANDLE hServerConn;//handle to the main connection
 	HANDLE hNetlib;//handle to netlib
-	unsigned long InternalIP;// our ip
-	unsigned short LocalPort;// our port
+	unsigned long internal_ip;  // our ip
+	unsigned long detected_ip;  // our ip
+	unsigned short local_port;  // our port
 	
 	//Peer connection stuff
 	HANDLE hNetlibPeer;//handle to the peer netlib
@@ -307,6 +308,7 @@ struct CAimProto : public PROTO_INTERFACE
     int    LOG(const char *fmt, ...);
 	HANDLE aim_connect(const char* server, unsigned short port, bool use_ssl, const char* host = NULL);
 	HANDLE aim_peer_connect(const char* ip, unsigned short port);
+    HANDLE aim_peer_connect(unsigned long ip, unsigned short port);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// direct_connect.cpp
@@ -356,6 +358,7 @@ struct CAimProto : public PROTO_INTERFACE
 	void   snac_chat_rate_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);// family 0x0001
     void   snac_admin_rate_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);// family 0x0001
 	void   snac_service_redirect(SNAC &snac);// family 0x0001
+    void   snac_self_info(SNAC &snac);//family 0x0001
 	void   snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);//family 0x0004
 	void   snac_user_online(SNAC &snac);
 	void   snac_user_offline(SNAC &snac);
@@ -388,8 +391,6 @@ struct CAimProto : public PROTO_INTERFACE
 	// thread.cpp
 
 	void   __cdecl accept_file_thread( void* );
-	void   __cdecl redirected_file_thread( void* );
-	void   __cdecl proxy_file_thread( void* );
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// utilities.cpp

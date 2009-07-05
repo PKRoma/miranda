@@ -24,7 +24,7 @@ char* trim_str(char* s);
 void create_group(const char *group);
 void set_extra_icon(HANDLE hContact, HANDLE hImage, int column_type);
 unsigned int aim_oft_checksum_file(char *filename);
-void long_ip_to_char_ip(unsigned long host, char* ip);
+char* long_ip_to_char_ip(unsigned long host, char* ip);
 unsigned long char_ip_to_long_ip(char* ip);
 bool cap_cmp(const char* cap,const char* cap2);
 bool is_oscarj_ver_cap(char* cap);

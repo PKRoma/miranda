@@ -89,13 +89,17 @@ struct oft3
 struct file_transfer
 {
 	HANDLE hContact;
-	char icbm_cookie[8];
-
     char* sn;
-	char* file;
+
+    char icbm_cookie[8];
+
 	unsigned __int64 total_size;
 	unsigned __int64 start_offset;
-    
+
+    HANDLE hConn;
+
+	char* file;
+	char* message;
     time_t ctime;
 
 	//below is for when receiving only
@@ -103,16 +107,15 @@ struct file_transfer
 	unsigned long verified_ip;
 	unsigned long proxy_ip;
 	unsigned short port;
-	char* message;
 
-    HANDLE hConn;
+    unsigned short req_num;
 
-	bool force_proxy;
+	bool peer_force_proxy;
+	bool me_force_proxy;
     bool sending;
     bool accepted;
     bool requester;
     bool use_oft3;
-    char proxy_stage;
 
 	file_transfer()  { memset(this, 0, sizeof(*this)); }
 	~file_transfer() { mir_free(file); mir_free(message); mir_free(sn); }

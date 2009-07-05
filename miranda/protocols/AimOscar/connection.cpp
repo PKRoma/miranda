@@ -57,9 +57,17 @@ HANDLE CAimProto::aim_peer_connect(const char* ip, unsigned short port)
 	ncon.flags = NLOCF_V2;
 	ncon.szHost = ip;
 	ncon.wPort = port;
-	ncon.timeout = 1;
+	ncon.timeout = 3;
 	HANDLE con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlibPeer, (LPARAM) & ncon);
 	return con;
+}
+
+HANDLE CAimProto::aim_peer_connect(unsigned long ip, unsigned short port)
+{
+    char ips[20];
+    long_ip_to_char_ip(ip, ips);
+
+    return aim_peer_connect(ips, port);
 }
 
 void CAimProto::aim_connection_authorization(void)
@@ -216,6 +224,7 @@ void __cdecl CAimProto::aim_protocol_negotiation( void* )
 						snac_supported_family_versions(snac,hServerConn,seqno);
 						snac_rate_limitations(snac,hServerConn,seqno);
 						snac_service_redirect(snac);
+                        snac_self_info(snac);
 						snac_error(snac);
 					}
 					else if(snac.cmp(0x0002))
