@@ -64,6 +64,13 @@ static void ReportSslError(SECURITY_STATUS scRet)
     const char *msg;
     switch (scRet)
     {
+    case 0:
+        return;
+
+    case SEC_E_INVALID_TOKEN:
+        msg = "Proper security package not installed. To resolve this error install IE5 or later"
+        break;
+
     case SEC_E_WRONG_PRINCIPAL:
         msg = "Host we connecting to is not the one certificate was issued for";
         break;
@@ -151,6 +158,7 @@ static BOOL AcquireCredentials(SslHandle *ssl, BOOL verify, BOOL chkname)
 		&ssl->hCreds,			// (out) Cred Handle
 		&tsExpiry);             // (out) Lifetime (optional)
 
+    ReportSslError(scRet);
 	return scRet == SEC_E_OK;
 }
 
@@ -358,10 +366,7 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 	}
 
 	// Delete the security context in the case of a fatal error.
-    if (FAILED(scRet)) 
-    {
-        ReportSslError(scRet);
-    }
+    ReportSslError(scRet);
 
 	if (ssl->cbIoBuffer == 0) 
 	{
