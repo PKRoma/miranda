@@ -910,7 +910,7 @@ void CDccSession::SetupPassive(DWORD adress, DWORD port)
 
 int CDccSession::SetupConnection()
 {
-	// if it is a dcc chat connection make sure it is "offline" to begoin with, since no connection exists still
+	// if it is a dcc chat connection make sure it is "offline" to begin with, since no connection exists still
 	if ( di->iType == DCC_CHAT )
 		m_proto->setWord(di->hContact, "Status", ID_STATUS_OFFLINE);
 
