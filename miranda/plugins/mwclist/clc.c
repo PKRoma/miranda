@@ -273,7 +273,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 	{	LRESULT res = saveContactListControlWndProc(hwnd, msg, wParam, lParam);
 		switch (msg) {
 			case WM_CREATE:
-				forkthread(StatusUpdaterThread,0,0);
+				mir_forkthread(StatusUpdaterThread,0);
 				break;
 		}
 		return res;

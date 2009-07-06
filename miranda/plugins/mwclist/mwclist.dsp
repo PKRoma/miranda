@@ -492,26 +492,6 @@ SOURCE=.\contact.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\forkthread.c
-
-!IF  "$(CFG)" == "mwclist - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "mwclist - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug Unicode"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=.\groupmenu.c
 # End Source File
 # Begin Source File

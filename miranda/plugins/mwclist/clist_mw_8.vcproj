@@ -1590,10 +1590,6 @@
 				>
 			</File>
 			<File
-				RelativePath="forkthread.h"
-				>
-			</File>
-			<File
 				RelativePath="m_clist.h"
 				>
 			</File>
