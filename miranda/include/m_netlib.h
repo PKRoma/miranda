@@ -547,6 +547,7 @@ struct NETLIBHTTPREQUEST_tag {
 #define MSG_DUMPPROXY          0x040000	 //this is proxy communiciation. For dump filtering only.
 #define MSG_DUMPASTEXT         0x080000  //this is textual data, don't dump as hex
 #define MSG_RAW                0x100000	 //send as raw data, bypass any HTTP proxy stuff
+#define MSG_DUMPSSL            0x200000	 //this is SSL traffic. For dump filtering only.
 typedef struct {
 	char *buf;
 	int len;
