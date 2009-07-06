@@ -68,7 +68,7 @@ static void ReportSslError(SECURITY_STATUS scRet)
         return;
 
     case SEC_E_INVALID_TOKEN:
-        msg = "Proper security package not installed. To resolve this error install IE5 or later"
+        msg = "Proper security package not installed. To resolve this error install IE5 or later";
         break;
 
     case SEC_E_WRONG_PRINCIPAL:
