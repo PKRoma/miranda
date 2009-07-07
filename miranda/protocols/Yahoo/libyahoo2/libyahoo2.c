@@ -1588,6 +1588,13 @@ static void yahoo_process_filetransfer7accept(struct yahoo_input_data *yid, stru
 		case 265:
 			ft_token = pair->value;
 			break;
+			
+		case 66: // login status = -1  Disconnected/Failed Transfer.
+			break;
+			
+		case 271: // 271 = 1 "Next File"
+			YAHOO_CALLBACK(ext_yahoo_send_file7info)(yd->client_id, to, from, ft_token);
+			break;
 		}
 	}
 

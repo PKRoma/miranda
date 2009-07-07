@@ -257,6 +257,28 @@ static void upload_file(int id, int fd, int error, void *data)
 		if (sf->pfts.currentFileNumber >= sf->pfts.totalFiles) {
 			ProtoBroadcastAck(sf->ppro->m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, sf, 0);
 		} else {
+			YList *l;
+			struct yahoo_file_info * fi;
+			
+			// Do Next file
+			free(sf->pfts.currentFile);
+			
+			l = sf->files;
+			
+			fi = ( yahoo_file_info* )l->data;
+			FREE(fi->filename);
+			FREE(fi);
+			
+			sf->files = y_list_remove_link(sf->files, l);
+			y_list_free_1(l);
+			
+			// need to move to the next file on the list and fill the file information
+			fi = ( yahoo_file_info* )sf->files->data; 
+			sf->pfts.currentFile = strdup(fi->filename);
+			sf->pfts.currentFileSize = fi->filesize; 
+			sf->pfts.currentFileProgress = 0;
+			
+			ProtoBroadcastAck(sf->ppro->m_szModuleName, sf->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, sf, 0);
 			LOG(("Waiting for next file request packet..."));
 		}
 
@@ -776,7 +798,7 @@ HANDLE __cdecl CYahooProto::SendFile( HANDLE hContact, const char* szDescription
 	if ( !m_bLoggedIn )
 		return 0;
 
-	DebugLog("Getting Files");
+	/*DebugLog("Getting Files");
 	
 	if ( ppszFiles[1] != NULL ){
 		MessageBoxA(NULL, "YAHOO protocol allows only one file to be sent at a time", "Yahoo", MB_OK | MB_ICONINFORMATION);
@@ -784,21 +806,26 @@ HANDLE __cdecl CYahooProto::SendFile( HANDLE hContact, const char* szDescription
  	}
 	
 	DebugLog("Getting Yahoo ID");
+	*/
 	
 	if (!DBGetContactSettingString(hContact, m_szModuleName, YAHOO_LOGINID, &dbv)) {
 		long tFileSize = 0;
 		struct _stat statbuf;
 		struct yahoo_file_info *fi;
 		YList *fs=NULL;
+		int i=0;
 	
-		if ( _stat( ppszFiles[0], &statbuf ) == 0 )
-			tFileSize = statbuf.st_size;
-
-		fi = y_new(struct yahoo_file_info,1);
-		fi->filename = strdup(ppszFiles[0]);
-		fi->filesize = tFileSize;
+		while (ppszFiles[i] != NULL) {
+			if ( _stat( ppszFiles[i], &statbuf ) == 0 )
+				tFileSize = statbuf.st_size;
 	
-		fs = y_list_append(fs, fi);
+			fi = y_new(struct yahoo_file_info,1);
+			fi->filename = strdup(ppszFiles[i]);
+			fi->filesize = tFileSize;
+		
+			fs = y_list_append(fs, fi);
+			i++;
+		}
 	
 		sf = new_ft(this, m_id, hContact, dbv.pszVal, ( char* )szDescription,
 					NULL, NULL, 0, fs, 1 /* sending */);
@@ -810,7 +837,7 @@ HANDLE __cdecl CYahooProto::SendFile( HANDLE hContact, const char* szDescription
 			return 0;
 		}
 
-		LOG(("who: %s, msg: %s, filename: %s", sf->who, sf->msg, fi->filename));
+		LOG(("who: %s, msg: %s, # files: %d", sf->who, sf->msg, i));
 		//mir_forkthread(yahoo_send_filethread, sf);
 		
 		sf->ftoken=yahoo_ft7dc_send(m_id, sf->who, fs);
@@ -867,6 +894,7 @@ int __cdecl CYahooProto::FileCancel( HANDLE /*hContact*/, HANDLE hTransfer )
 
 	ft->action = FILERESUME_CANCEL;
 	ft->cancel = 1;
+	
 	return 0;
 }
 
