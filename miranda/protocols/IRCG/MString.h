@@ -715,7 +715,7 @@ public:
 		#if _MSC_VER >= 1400
 			_mbslwr_s( reinterpret_cast< unsigned char* >( psz ), size );
 		#else
-			_mbsupr(reinterpret_cast< unsigned char* >( psz ));
+			_mbslwr(reinterpret_cast< unsigned char* >( psz ));
 		#endif
 		return psz;
 	}
