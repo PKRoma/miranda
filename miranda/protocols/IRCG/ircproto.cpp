@@ -923,6 +923,7 @@ int CIrcProto::SetStatusInternal( int iNewStatus, bool bIsInternal )
 	if ( iNewStatus != ID_STATUS_OFFLINE && lstrlenA(m_network) < 1 ) {
 		if (lstrlen(m_nick) > 0 && !m_disableDefaultServer) {
 			CQuickDlg* dlg = new CQuickDlg( this );
+			dlg->GetProto()->m_quickComboSelection = dlg->GetProto()->m_serverComboSelection + 1;
 			dlg->Show();
 			HWND hwnd = dlg->GetHwnd();
 			SetWindowTextA(hwnd, "Miranda IRC");

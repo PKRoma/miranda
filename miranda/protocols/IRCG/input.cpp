@@ -515,7 +515,7 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 			return true;
 		
 		TCHAR szTemp[4000];
-		mir_sntprintf(szTemp, SIZEOF(szTemp), _T("\1ACTION %s\1"), GetWordAddress(text.c_str(), 1));
+		mir_sntprintf(szTemp, SIZEOF(szTemp), _T("\001ACTION %s\001"), GetWordAddress(text.c_str(), 1));
 		PostIrcMessageWnd( window, hContact, szTemp );
 		return true;
 	}

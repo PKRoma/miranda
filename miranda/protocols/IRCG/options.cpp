@@ -1754,7 +1754,7 @@ void CIrcProto::InitPrefs(void)
 	if ( m_alias == NULL )
 		m_alias = mir_tstrdup( _T("/op /mode ## +ooo $1 $2 $3\r\n/dop /mode ## -ooo $1 $2 $3\r\n/voice /mode ## +vvv $1 $2 $3\r\n/dvoice /mode ## -vvv $1 $2 $3\r\n/j /join #$1 $2-\r\n/p /part ## $1-\r\n/w /whois $1\r\n/k /kick ## $1 $2-\r\n/q /query $1\r\n/logon /log on ##\r\n/logoff /log off ##\r\n/save /log buffer $1\r\n/slap /me slaps $1 around a bit with a large trout" ));
 
-	m_quickComboSelection = getDword( "QuickComboSelection", m_serverComboSelection);
+	m_quickComboSelection = getDword( "QuickComboSelection", m_serverComboSelection + 1);
 	m_myHost[0] = '\0';
 
 	colors[0] = RGB(255,255,255);
@@ -1830,17 +1830,17 @@ struct CDlgAccMgrUI : public CProtoDlgBase<CIrcProto>
 		m_port2.GetTextA( m_proto->m_portEnd, SIZEOF(m_proto->m_portEnd));
 		m_pass.GetTextA( m_proto->m_password, SIZEOF(m_proto->m_password));
 		CallService( MS_DB_CRYPT_ENCODESTRING, SIZEOF(m_proto->m_password), (LPARAM)m_proto->m_password);
-		mir_sntprintf(m_proto->m_pNick, 30, _T("%s"), m_proto->m_nick);
-		m_proto->WriteSettings( ConnectSettings, SIZEOF( ConnectSettings ));
-		CallService( MS_DB_CRYPT_DECODESTRING, SIZEOF(m_proto->m_password), (LPARAM)m_proto->m_password);
 
 		m_nick.GetText( m_proto->m_nick, SIZEOF(m_proto->m_nick));
 		removeSpaces(m_proto->m_nick);
+		mir_sntprintf(m_proto->m_pNick, 30, _T("%s"), m_proto->m_nick);
 		m_nick2.GetText( m_proto->m_alternativeNick, SIZEOF(m_proto->m_alternativeNick));
 		removeSpaces(m_proto->m_alternativeNick);
 		m_userID.GetText( m_proto->m_userID, SIZEOF(m_proto->m_userID));
 		removeSpaces(m_proto->m_userID);
 		m_name.GetText( m_proto->m_name, SIZEOF(m_proto->m_name));
+		m_proto->WriteSettings( ConnectSettings, SIZEOF( ConnectSettings ));
+		CallService( MS_DB_CRYPT_DECODESTRING, SIZEOF(m_proto->m_password), (LPARAM)m_proto->m_password);
 	}
 
 	void OnChangeCombo( CCtrlCombo* )

@@ -642,7 +642,7 @@ void CQuickDlg::OnOk( CCtrlButton* )
 	TCHAR windowname[20];
 	GetWindowText( m_hwnd, windowname, 20);
 	if ( lstrcmpi(windowname, _T("Miranda IRC")) == 0 ) {
-		m_proto->m_serverComboSelection = m_serverCombo.GetCurSel();
+		m_proto->m_serverComboSelection = m_serverCombo.GetCurSel() - 1;
 		m_proto->setDword("ServerComboSelection",m_proto->m_serverComboSelection);
 		m_proto->setString("ServerName",m_proto->m_serverName);
 		m_proto->setString("PortStart",m_proto->m_portStart);
