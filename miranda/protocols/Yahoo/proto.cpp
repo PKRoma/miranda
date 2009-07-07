@@ -73,9 +73,10 @@ CYahooProto::~CYahooProto()
 
 int CYahooProto::OnModulesLoadedEx( WPARAM, LPARAM )
 {
-	YHookEvent(ME_USERINFO_INITIALISE, &CYahooProto::OnUserInfoInit );
-	YHookEvent(ME_DB_CONTACT_SETTINGCHANGED, &CYahooProto::OnSettingChanged);
-	YHookEvent(ME_IDLE_CHANGED, &CYahooProto::OnIdleEvent);
+	YHookEvent( ME_USERINFO_INITIALISE, 		&CYahooProto::OnUserInfoInit );
+	YHookEvent( ME_DB_CONTACT_SETTINGCHANGED, 	&CYahooProto::OnSettingChanged);
+	YHookEvent( ME_IDLE_CHANGED, 				&CYahooProto::OnIdleEvent);
+	YHookEvent( ME_CLIST_PREBUILDCONTACTMENU, 	&CYahooProto::OnPrebuildContactMenu );
 
 	char tModuleDescr[ 100 ];
 	snprintf(tModuleDescr, sizeof(tModuleDescr), Translate( "%s plugin connections" ), m_szModuleName);

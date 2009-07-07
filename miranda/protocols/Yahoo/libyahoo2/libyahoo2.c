@@ -1493,6 +1493,8 @@ static void yahoo_process_filetransfer7info(struct yahoo_input_data *yid, struct
 			 */
 			struct yahoo_packet *pkt1 = NULL;
 
+			LOG(("[yahoo_process_filetransfer7info] Got File info, Denying P2P."));
+			
 			pkt1 = yahoo_packet_new(YAHOO_SERVICE_Y7_FILETRANSFERACCEPT, YPACKET_STATUS_DEFAULT, yd->session_id);
 			yahoo_packet_hash(pkt1, 1, yd->user);
 			yahoo_packet_hash(pkt1, 5, from);
@@ -1514,6 +1516,8 @@ static void yahoo_process_filetransfer7info(struct yahoo_input_data *yid, struct
 			 */
 			struct yahoo_packet *pkt1 = NULL;
 
+			LOG(("[yahoo_process_filetransfer7info] Got File info, Relaying FT."));
+			
 			pkt1 = yahoo_packet_new(YAHOO_SERVICE_Y7_FILETRANSFERACCEPT, YPACKET_STATUS_DEFAULT, yd->session_id);
 			yahoo_packet_hash(pkt1, 1, yd->user);
 			yahoo_packet_hash(pkt1, 5, from);
@@ -3448,7 +3452,8 @@ static void yahoo_process_picture_upload(struct yahoo_input_data *yid, struct ya
 				break;
 		}
 	}
-	NOTICE(("got picture_upload packet"));
+	NOTICE(("[yahoo_process_picture_upload]"));
+	
 	YAHOO_CALLBACK(ext_yahoo_got_picture_upload)(yid->yd->client_id, me, url, ts);
 }
 
@@ -3516,7 +3521,7 @@ static void yahoo_process_audible(struct yahoo_input_data *yid, struct yahoo_pac
 				break;
 		}
 	}
-	NOTICE(("got picture_upload packet"));
+	NOTICE(("[yahoo_process_audible]"));
 	if (who) // sometimes we just get a confirmation without the WHO.(ack on our send/update)
 		YAHOO_CALLBACK(ext_yahoo_got_audible)(yid->yd->client_id, me, who, aud, msg, aud_hash);
 }

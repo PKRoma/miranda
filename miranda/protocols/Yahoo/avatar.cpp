@@ -24,17 +24,26 @@
  *31 bit hash function  - this is based on g_string_hash function from glib
  */
 
-int YAHOO_avt_hash(const char *key, DWORD ksize)
+int YAHOO_avt_hash(const char *key, DWORD len)
 {
-	const char *p = key;
-	int h = *p;
-	unsigned long l = 1;
+	/* 
+		Thank you Pidgin and Kopete devs. It seems that both clients are using this code now.
+	
+	*/
 
-	if (h)
-		for (p += 1; l < ksize; p++, l++)
-			h = (h << 5) - h + *p;
+	const unsigned char *p = (const unsigned char *)key;
+	int checksum = 0, g, i = len;
 
-	return h;
+	while(i--) {
+		checksum = (checksum << 4) + *p++;
+
+		if((g = (checksum & 0xf0000000)) != 0)
+			checksum ^= g >> 23;
+
+		checksum &= ~g;
+	}
+	
+	return checksum;
 }
 
 /**************** Send Avatar ********************/
@@ -472,7 +481,7 @@ void CYahooProto::ext_got_picture_update(const char *me, const char *who, int bu
 {
 	HANDLE 	hContact = 0;
 
-	LOG(("ext_yahoo_got_picture_update for %s buddy_icon: %d", who, buddy_icon));
+	LOG(("ext_got_picture_update for %s buddy_icon: %d", who, buddy_icon));
 
 	hContact = getbuddyH(who);
 	if (hContact == NULL) {
@@ -832,7 +841,7 @@ INT_PTR __cdecl CYahooProto::SetMyAvatar(WPARAM wParam, LPARAM lParam)
 	} else {
 		DWORD  dwPngSize, dw;
 		BYTE* pResult;
-		unsigned int hash;
+		int hash;
 		HANDLE  hFile;
 
 		hFile = CreateFileA(szFile, 
@@ -867,26 +876,30 @@ INT_PTR __cdecl CYahooProto::SetMyAvatar(WPARAM wParam, LPARAM lParam)
 		CloseHandle( hFile );
 
 		hash = YAHOO_avt_hash(( const char* )pResult, dwPngSize);
+		
+		if (hash < 0)
+			hash = -hash;
+		
 		free( pResult );
 
-		if ( hash ) {
-			LOG(("[YAHOO_SetAvatar] File: '%s' CK: %d", szMyFile, hash));	
+		LOG(("[YAHOO_SetAvatar] File: '%s' CK: %d", szMyFile, hash));	
 
-			/* now check and make sure we don't reupload same thing over again */
-			if (hash != GetDword("AvatarHash", 0)) {
-				SetString(NULL, "AvatarFile", szMyFile);
-				DBWriteContactSettingDword(NULL, m_szModuleName, "TMPAvatarHash", hash);
+		/* now check and make sure we don't reupload same thing over again */
+		if (hash != GetDword("AvatarHash", 0)) {
+			SetString(NULL, "AvatarFile", szMyFile);
+			DBWriteContactSettingDword(NULL, m_szModuleName, "TMPAvatarHash", hash);
 
-				/*	Set Sharing to ON if it's OFF */
-				if (GetByte( "ShareAvatar", 0 ) != 2) {
-					SetByte( "ShareAvatar", 2 );
-					yahoo_send_picture_status(m_id, 2);
-				}
+			/*	Set Sharing to ON if it's OFF */
+			if (GetByte( "ShareAvatar", 0 ) != 2) {
+				SetByte( "ShareAvatar", 2 );
+				yahoo_send_picture_status(m_id, 2);
+			}
 
-				SendAvatar(szMyFile);
-			} 
-			else LOG(("[YAHOO_SetAvatar] Same checksum and avatar on YahooFT. Not Reuploading."));	  
-	}	}
+			SendAvatar(szMyFile);
+		} else {
+			LOG(("[YAHOO_SetAvatar] Same checksum and avatar on YahooFT. Not Reuploading."));	  
+		}
+	}	
 
 	return 0;
 }

@@ -347,7 +347,15 @@ void CYahooProto::ext_status_changed(const char *who, int protocol, int stat, co
 	HANDLE 	hContact = 0;
 	time_t  idlets = 0;
 	
-	YAHOO_DEBUGLOG("[ext_status_changed] %s (prot: %d) with msg %s utf8: %d, (stat: %d, away: %d, idle: %d seconds)", who, protocol, msg, utf8, stat, away, idle);
+	YAHOO_DEBUGLOG("[ext_status_changed] %s (prot: %d) with msg %s utf8: %d, stat: %s (%d), away: %d, idle: %d seconds", 
+						who, 
+						protocol, 
+						msg, 
+						utf8, 
+						(stat == 0) ? "Online" : yahoo_status_code( (yahoo_status)stat ),
+						stat, 
+						away, 
+						idle);
 	
 	hContact = getbuddyH(who);
 	if (hContact == NULL) {

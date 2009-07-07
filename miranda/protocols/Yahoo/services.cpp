@@ -256,7 +256,14 @@ INT_PTR __cdecl CYahooProto::OnShowProfileCommand( WPARAM wParam, LPARAM lParam 
 	char tUrl[ 4096 ];
 	DBVARIANT dbv;
 
-	if ( DBGetContactSettingString(( HANDLE )wParam, m_szModuleName, "yahoo_id", &dbv ))
+	/**
+	 * We don't show profile for users using other IM clients through the IM server bridge
+	 */
+	if (GetWord(( HANDLE )wParam, "yprotoid", 0) != 0) {
+		return 0;
+	}
+	
+	if ( DBGetContactSettingString(( HANDLE )wParam, m_szModuleName, YAHOO_LOGINID, &dbv ))
 		return 0;
 		
 	_snprintf( tUrl, sizeof( tUrl ), "http://profiles.yahoo.com/%s", dbv.pszVal  );
@@ -477,6 +484,30 @@ void CYahooProto::MenuUninit( void )
 	YAHOO_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )mainMenuRoot, 0 );
 	
 	YAHOO_CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hShowProfileMenuItem, 0 );
+}
+
+int CYahooProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM)
+{
+    const HANDLE hContact = (HANDLE)wParam;
+	char *szProto;
+	
+	CLISTMENUITEM mi = {0};
+	mi.cbSize = sizeof(mi);
+
+    szProto = ( char* )YAHOO_CallService( MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0 );
+	if ( szProto == NULL || lstrcmpA( szProto, m_szModuleName ))  {
+		DebugLog("[OnPrebuildContactMenu] Not a Yahoo Contact!!!");
+		return 0;
+	}
+
+	mi.flags = CMIM_FLAGS;
+	
+    if (GetWord( hContact, "yprotoid", 0) != 0) 
+		mi.flags |= CMIF_HIDDEN;
+	
+	YAHOO_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hShowProfileMenuItem, (LPARAM)&mi);
+
+    return 0;
 }
 
 
