@@ -49,7 +49,7 @@ static void SetControlToUnixTime(HWND hwndDlg, UINT idCtrl, time_t unixTime)
 #ifndef CMF_EXTENDEDVERBS
 #define CMF_EXTENDEDVERBS 0x00000100
 #endif
-static void DoAnnoyingShellCommand(HWND hwnd,const char *szFilename,int cmd,POINT *ptCursor)
+static void DoAnnoyingShellCommand(HWND hwnd,const TCHAR *szFilename,int cmd,POINT *ptCursor)
 {
 	IMalloc *pShellMalloc;
 
@@ -57,10 +57,8 @@ static void DoAnnoyingShellCommand(HWND hwnd,const char *szFilename,int cmd,POIN
 	if(SHGetMalloc(&pShellMalloc)==NOERROR) {
 		IShellFolder *pDesktopFolder;
 		if(SHGetDesktopFolder(&pDesktopFolder)==NOERROR) {
-			WCHAR wszFilename[MAX_PATH];
 			ITEMIDLIST *pCurrentIdl;
-			MultiByteToWideChar(CP_ACP,0,szFilename,-1,wszFilename,SIZEOF(wszFilename));
-			if(pDesktopFolder->lpVtbl->ParseDisplayName(pDesktopFolder,NULL,NULL,wszFilename,NULL,&pCurrentIdl,NULL)==NOERROR) {
+			if(pDesktopFolder->lpVtbl->ParseDisplayName(pDesktopFolder,NULL,NULL,(LPTSTR)szFilename,NULL,&pCurrentIdl,NULL)==NOERROR) {
 				if(pCurrentIdl->mkid.cb) {
 					ITEMIDLIST *pidl,*pidlNext,*pidlFilename;
 					IShellFolder *pFileFolder;
@@ -125,15 +123,17 @@ static void DoAnnoyingShellCommand(HWND hwnd,const char *szFilename,int cmd,POIN
 static WNDPROC pfnIconWindowProc;
 static LRESULT CALLBACK IconCtrlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	PROTOFILETRANSFERSTATUS* pft = (PROTOFILETRANSFERSTATUS*)GetWindowLongPtr(GetParent(hwnd),GWLP_USERDATA);
+
 	switch(msg) {
 		case WM_LBUTTONDBLCLK:
-			ShellExecuteA(hwnd,NULL,((PROTOFILETRANSFERSTATUS*)GetWindowLongPtr(GetParent(hwnd),GWLP_USERDATA))->currentFile,NULL,NULL,SW_SHOW);
+			ShellExecute(hwnd,NULL,pft->currentFile,NULL,NULL,SW_SHOW);
 			break;
 		case WM_RBUTTONUP:
 		{	POINT pt;
 			pt.x=(short)LOWORD(lParam); pt.y=(short)HIWORD(lParam);
-			ClientToScreen(hwnd,&pt);
-			DoAnnoyingShellCommand(hwnd,((PROTOFILETRANSFERSTATUS*)GetWindowLongPtr(GetParent(hwnd),GWLP_USERDATA))->currentFile,C_CONTEXTMENU,&pt);
+			ClientToScreen( hwnd, &pt );
+			DoAnnoyingShellCommand( hwnd, pft->currentFile, C_CONTEXTMENU, &pt );
 			return 0;
 		}
 	}
@@ -142,53 +142,62 @@ static LRESULT CALLBACK IconCtrlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 struct loadiconsstartinfo {
 	HWND hwndDlg;
-	char *szFilename;
+	TCHAR *szFilename;
 };
 void __cdecl LoadIconsAndTypesThread(void* param)
 {
 	loadiconsstartinfo *info = ( loadiconsstartinfo* )param;
-	SHFILEINFOA fileInfo;
+	SHFILEINFO fileInfo;
 
 	OleInitialize(NULL);
-	if(SHGetFileInfoA(info->szFilename,0,&fileInfo,sizeof(fileInfo),SHGFI_TYPENAME|SHGFI_ICON|SHGFI_LARGEICON)) {
-		char *pszExtension,*pszFilename;
-		char szExtension[64];
-		char szIconFile[MAX_PATH];
+	if ( SHGetFileInfo( info->szFilename, 0, &fileInfo, sizeof(fileInfo),SHGFI_TYPENAME|SHGFI_ICON|SHGFI_LARGEICON)) {
+		TCHAR *pszExtension,*pszFilename;
+		TCHAR szExtension[64];
+		TCHAR szIconFile[MAX_PATH];
 
-		pszFilename=strrchr(info->szFilename,'\\');
-		if(pszFilename==NULL) pszFilename=info->szFilename;
-		pszExtension=strrchr(pszFilename,'.');
-		if(pszExtension) lstrcpynA(szExtension,pszExtension+1,SIZEOF(szExtension));
-		else {pszExtension="."; szExtension[0]='\0';}
-		CharUpperA(szExtension);
-		if(fileInfo.szTypeName[0]=='\0')
-			mir_snprintf(fileInfo.szTypeName, SIZEOF(fileInfo.szTypeName), Translate("%s File"),szExtension);
-		SetDlgItemTextA(info->hwndDlg,IDC_EXISTINGTYPE,fileInfo.szTypeName);
-		SetDlgItemTextA(info->hwndDlg,IDC_NEWTYPE,fileInfo.szTypeName);
+		pszFilename = _tcsrchr(info->szFilename,'\\');
+		if ( pszFilename == NULL )
+			pszFilename = info->szFilename;
+
+		pszExtension = _tcsrchr( pszFilename, '.' );
+		if ( pszExtension )
+			lstrcpyn( szExtension, pszExtension+1, SIZEOF( szExtension ));
+		else {
+			pszExtension = _T(".");
+			szExtension[0]='\0';
+		}
+		CharUpper(szExtension);
+		if ( fileInfo.szTypeName[0]=='\0' )
+			mir_sntprintf( fileInfo.szTypeName, SIZEOF(fileInfo.szTypeName), TranslateT("%s File"),szExtension);
+		SetDlgItemText(info->hwndDlg,IDC_EXISTINGTYPE,fileInfo.szTypeName);
+		SetDlgItemText(info->hwndDlg,IDC_NEWTYPE,fileInfo.szTypeName);
 		SendDlgItemMessage(info->hwndDlg,IDC_EXISTINGICON,STM_SETICON,(WPARAM)fileInfo.hIcon,0);
 		szIconFile[0]='\0';
-		if(!lstrcmpA(szExtension,"EXE")) {
-			SRFile_GetRegValue(HKEY_LOCAL_MACHINE,"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Icons","2",szIconFile,SIZEOF(szIconFile));
+		if ( !lstrcmp( szExtension, _T("EXE"))) {
+			SRFile_GetRegValue(HKEY_LOCAL_MACHINE,_T("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Icons"),_T("2"),szIconFile,SIZEOF(szIconFile));
 		}
 		else {
-			char szTypeName[MAX_PATH];
+			TCHAR szTypeName[MAX_PATH];
 			if(SRFile_GetRegValue(HKEY_CLASSES_ROOT,pszExtension,NULL,szTypeName,SIZEOF(szTypeName))) {
-				lstrcatA(szTypeName,"\\DefaultIcon");
+				lstrcat(szTypeName,_T("\\DefaultIcon"));
 				if(SRFile_GetRegValue(HKEY_CLASSES_ROOT,szTypeName,NULL,szIconFile,SIZEOF(szIconFile))) {
-					if(strstr(szIconFile,"%1"))
-						SRFile_GetRegValue(HKEY_LOCAL_MACHINE,"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Icons","0",szIconFile,SIZEOF(szIconFile));
+					if ( _tcsstr( szIconFile, _T("%1")))
+						SRFile_GetRegValue(HKEY_LOCAL_MACHINE,_T("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Icons"),_T("0"),szIconFile,SIZEOF(szIconFile));
 					else szIconFile[0]='\0';
-				}
-			}
-		}
-		if(szIconFile[0]) {
+		}	}	}
+
+		if ( szIconFile[0]) {
 			int iconIndex;
 			HICON hIcon;
-			char *pszComma=strrchr(szIconFile,',');
-			if(pszComma==NULL) iconIndex=0;
-			else {iconIndex=atoi(pszComma+1); *pszComma='\0';}
-			hIcon=ExtractIconA(hMirandaInst,szIconFile,iconIndex);
-			if(hIcon) fileInfo.hIcon=hIcon;
+			TCHAR *pszComma = _tcsrchr(szIconFile,',');
+			if ( pszComma == NULL )
+				iconIndex=0;
+			else {
+				iconIndex = _ttoi(pszComma+1); *pszComma='\0';
+			}
+			hIcon = ExtractIcon( hMirandaInst, szIconFile, iconIndex );
+			if ( hIcon )
+				fileInfo.hIcon = hIcon;
 		}
 		SendDlgItemMessage(info->hwndDlg,IDC_NEWICON,STM_SETICON,(WPARAM)fileInfo.hIcon,0);
 	}
@@ -203,132 +212,140 @@ INT_PTR CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
 	fts=(PROTOFILETRANSFERSTATUS*)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 	switch(msg) {
-		case WM_INITDIALOG:
-		{	TCHAR szSize[64];
-			struct _stat statbuf;
-			struct loadiconsstartinfo *lisi;
-			HWND hwndFocus;
-			struct TDlgProcFileExistsParam *dat = (struct TDlgProcFileExistsParam *)lParam;
+	case WM_INITDIALOG:
+	{
+		TCHAR szSize[64];
+		struct _stat statbuf;
+		HWND hwndFocus;
+		struct TDlgProcFileExistsParam *dat = (struct TDlgProcFileExistsParam *)lParam;
 
-			SetPropA(hwndDlg,"Miranda.Preshutdown",HookEventMessage(ME_SYSTEM_PRESHUTDOWN,hwndDlg,M_PRESHUTDOWN));
-			SetPropA(hwndDlg,"Miranda.ParentWnd",dat->hwndParent);
+		SetPropA(hwndDlg,"Miranda.Preshutdown",HookEventMessage(ME_SYSTEM_PRESHUTDOWN,hwndDlg,M_PRESHUTDOWN));
+		SetPropA(hwndDlg,"Miranda.ParentWnd",dat->hwndParent);
 
-			TranslateDialogDefault(hwndDlg);
-			fts=(PROTOFILETRANSFERSTATUS*)mir_alloc(sizeof(PROTOFILETRANSFERSTATUS));
-			CopyProtoFileTransferStatus(fts,dat->fts);
-			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)fts);
-			SetDlgItemTextA(hwndDlg,IDC_FILENAME,fts->currentFile);
-			SetControlToUnixTime(hwndDlg,IDC_NEWDATE,fts->currentFileTime);
-			GetSensiblyFormattedSize(fts->currentFileSize,szSize,SIZEOF(szSize),0,1,NULL);
-			SetDlgItemText(hwndDlg,IDC_NEWSIZE,szSize);
+		TranslateDialogDefault(hwndDlg);
+		fts=(PROTOFILETRANSFERSTATUS*)mir_alloc(sizeof(PROTOFILETRANSFERSTATUS));
+		CopyProtoFileTransferStatus(fts,dat->fts);
+		SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)fts);
+		SetDlgItemText(hwndDlg,IDC_FILENAME,fts->currentFile);
+		SetControlToUnixTime(hwndDlg,IDC_NEWDATE,fts->currentFileTime);
+		GetSensiblyFormattedSize(fts->currentFileSize,szSize,SIZEOF(szSize),0,1,NULL);
+		SetDlgItemText(hwndDlg,IDC_NEWSIZE,szSize);
 
-			pfnIconWindowProc=(WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_EXISTINGICON),GWLP_WNDPROC,(LONG_PTR)IconCtrlSubclassProc);
+		pfnIconWindowProc=(WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_EXISTINGICON),GWLP_WNDPROC,(LONG_PTR)IconCtrlSubclassProc);
 
-			hwndFocus=GetDlgItem(hwndDlg,IDC_RESUME);
-			if(_stat(fts->currentFile,&statbuf)==0) {
-				SetControlToUnixTime(hwndDlg,IDC_EXISTINGDATE,statbuf.st_mtime);
-				GetSensiblyFormattedSize(statbuf.st_size,szSize,SIZEOF(szSize),0,1,NULL);
-				SetDlgItemText(hwndDlg,IDC_EXISTINGSIZE,szSize);
-				if(statbuf.st_size>(int)fts->currentFileSize) {
-					EnableWindow(GetDlgItem(hwndDlg,IDC_RESUME),FALSE);
-					hwndFocus=GetDlgItem(hwndDlg,IDC_OVERWRITE);
-				}
-			}
-			lisi=(struct loadiconsstartinfo*)mir_alloc(sizeof(struct loadiconsstartinfo));
-			lisi->hwndDlg=hwndDlg;
-			lisi->szFilename=mir_strdup(fts->currentFile);
-			//can be a little slow, so why not?
-			forkthread(LoadIconsAndTypesThread,0,lisi);			
-			SetFocus(hwndFocus);
-			SetWindowLongPtr(hwndFocus,GWL_STYLE,GetWindowLongPtr(hwndFocus,GWL_STYLE)|BS_DEFPUSHBUTTON);
+		hwndFocus=GetDlgItem(hwndDlg,IDC_RESUME);
+		if ( _tstat(fts->currentFile,&statbuf)==0) {
+			SetControlToUnixTime(hwndDlg,IDC_EXISTINGDATE,statbuf.st_mtime);
+			GetSensiblyFormattedSize(statbuf.st_size,szSize,SIZEOF(szSize),0,1,NULL);
+			SetDlgItemText(hwndDlg,IDC_EXISTINGSIZE,szSize);
+			if(statbuf.st_size>(int)fts->currentFileSize) {
+				EnableWindow(GetDlgItem(hwndDlg,IDC_RESUME),FALSE);
+				hwndFocus=GetDlgItem(hwndDlg,IDC_OVERWRITE);
+		}	}
+
+		loadiconsstartinfo *lisi = ( loadiconsstartinfo* )mir_alloc(sizeof(loadiconsstartinfo));
+		lisi->hwndDlg=hwndDlg;
+		lisi->szFilename = mir_tstrdup(fts->currentFile);
+		//can be a little slow, so why not?
+		forkthread(LoadIconsAndTypesThread,0,lisi);			
+		SetFocus(hwndFocus);
+		SetWindowLongPtr(hwndFocus,GWL_STYLE,GetWindowLongPtr(hwndFocus,GWL_STYLE)|BS_DEFPUSHBUTTON);
+		return FALSE;
+	}
+	case WM_COMMAND:
+	{	
+		PROTOFILERESUME pfr={0};
+		switch(LOWORD(wParam)) {
+		case IDC_OPENFILE:
+			ShellExecute( hwndDlg, NULL, fts->currentFile, NULL, NULL, SW_SHOW );
+			return FALSE;
+
+		case IDC_OPENFOLDER:
+		{	
+			TCHAR szFile[MAX_PATH];
+			lstrcpyn( szFile, fts->currentFile, SIZEOF(szFile));
+			TCHAR* pszLastBackslash = _tcsrchr( szFile, '\\' );
+			if ( pszLastBackslash )
+				*pszLastBackslash = '\0';
+			ShellExecute(hwndDlg,NULL,szFile,NULL,NULL,SW_SHOW);
 			return FALSE;
 		}
-		case WM_COMMAND:
-		{	PROTOFILERESUME pfr={0};
-			switch(LOWORD(wParam)) {
-				case IDC_OPENFILE:
-					ShellExecuteA(hwndDlg,NULL,fts->currentFile,NULL,NULL,SW_SHOW);
-					return FALSE;
-				case IDC_OPENFOLDER:
-				{	char szFile[MAX_PATH];
-					char *pszLastBackslash;
-					lstrcpynA(szFile,fts->currentFile,SIZEOF(szFile));
-					pszLastBackslash=strrchr(szFile,'\\');
-					if(pszLastBackslash) *pszLastBackslash='\0';
-					ShellExecuteA(hwndDlg,NULL,szFile,NULL,NULL,SW_SHOW);
-					return FALSE;
-				}
-				case IDC_PROPERTIES:
-					DoAnnoyingShellCommand(hwndDlg,fts->currentFile,C_PROPERTIES,NULL);
-					return FALSE;
-				case IDC_RESUME:
-					pfr.action=FILERESUME_RESUME;
-					break;
-				case IDC_RESUMEALL:
-					pfr.action=FILERESUME_RESUMEALL;
-					break;
-				case IDC_OVERWRITE:
-					pfr.action=FILERESUME_OVERWRITE;
-					break;
-				case IDC_OVERWRITEALL:
-					pfr.action=FILERESUME_OVERWRITEALL;
-					break;
-				case IDC_SAVEAS:
-				{	OPENFILENAMEA ofn={0};
-					char filter[512],*pfilter;
-					char str[MAX_PATH];
+		case IDC_PROPERTIES:
+			DoAnnoyingShellCommand(hwndDlg,fts->currentFile,C_PROPERTIES,NULL);
+			return FALSE;
+		case IDC_RESUME:
+			pfr.action=FILERESUME_RESUME;
+			break;
+		case IDC_RESUMEALL:
+			pfr.action=FILERESUME_RESUMEALL;
+			break;
+		case IDC_OVERWRITE:
+			pfr.action=FILERESUME_OVERWRITE;
+			break;
+		case IDC_OVERWRITEALL:
+			pfr.action=FILERESUME_OVERWRITEALL;
+			break;
 
-					lstrcpynA(str,fts->currentFile,SIZEOF(str));
-					ofn.lStructSize=OPENFILENAME_SIZE_VERSION_400;
-					ofn.hwndOwner=hwndDlg;
-					ofn.Flags=OFN_PATHMUSTEXIST|OFN_OVERWRITEPROMPT|OFN_HIDEREADONLY;
-					strcpy(filter,Translate("All Files"));
-					strcat(filter," (*)");
-					pfilter=filter+strlen(filter)+1;
-					strcpy(pfilter,"*");
-					pfilter=pfilter+strlen(pfilter)+1;
-					*pfilter='\0';
-					ofn.lpstrFilter=filter;
-					ofn.lpstrFile=str;
-					ofn.nMaxFile=SIZEOF(str);
-					ofn.nMaxFileTitle=MAX_PATH;
-					if(!GetSaveFileNameA(&ofn)) break;
-					pfr.szFilename=mir_strdup(str);
-					pfr.action=FILERESUME_RENAME;
-					break;
-				}
-				case IDC_SKIP:
-					pfr.action=FILERESUME_SKIP;
-					break;
-				case IDCANCEL:
-					pfr.action=FILERESUME_CANCEL;
-					break;
-				default:
-					return FALSE;
-			}
-			{	PROTOFILERESUME *pfrCopy;
-				pfrCopy=(PROTOFILERESUME*)mir_alloc(sizeof(pfr));
-				CopyMemory(pfrCopy,&pfr,sizeof(pfr));
-				PostMessage((HWND)GetPropA(hwndDlg,"Miranda.ParentWnd"),M_FILEEXISTSDLGREPLY,(WPARAM)mir_strdup(fts->currentFile),(LPARAM)pfrCopy);
-				DestroyWindow(hwndDlg);
-			}
+		case IDC_SAVEAS:
+		{	
+			OPENFILENAME ofn={0};
+			TCHAR filter[512],*pfilter;
+			TCHAR str[MAX_PATH];
+
+			lstrcpyn( str, fts->currentFile, SIZEOF(str));
+			ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+			ofn.hwndOwner = hwndDlg;
+			ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
+			_tcscpy( filter, TranslateT("All Files"));
+			_tcscat( filter, _T(" (*)"));
+			pfilter = filter + _tcslen(filter) + 1;
+			_tcscpy( pfilter, _T("*"));
+			pfilter = pfilter + _tcslen(pfilter) + 1;
+			*pfilter='\0';
+			ofn.lpstrFilter = filter;
+			ofn.lpstrFile = str;
+			ofn.nMaxFile = SIZEOF(str);
+			ofn.nMaxFileTitle = MAX_PATH;
+			if(!GetSaveFileName(&ofn))
+				break;
+
+			pfr.szFilename = mir_t2a(str);
+			pfr.action = FILERESUME_RENAME;
 			break;
 		}
-		case WM_CLOSE:
-			PostMessage(hwndDlg,WM_COMMAND,MAKEWPARAM(IDCANCEL,BN_CLICKED),(LPARAM)GetDlgItem(hwndDlg,IDCANCEL));
+		case IDC_SKIP:
+			pfr.action=FILERESUME_SKIP;
 			break;
-		case M_PRESHUTDOWN:
-		{
-			PostMessage(hwndDlg,WM_CLOSE,0,0);
+		case IDCANCEL:
+			pfr.action=FILERESUME_CANCEL;
 			break;
+		default:
+			return FALSE;
 		}
-		case WM_DESTROY:
-			UnhookEvent(GetPropA(hwndDlg,"Miranda.Preshutdown")); // GetProp() will return NULL if it couldnt find anything
-			DestroyIcon((HICON)SendDlgItemMessage(hwndDlg,IDC_EXISTINGICON,STM_GETICON,0,0));
-			DestroyIcon((HICON)SendDlgItemMessage(hwndDlg,IDC_NEWICON,STM_GETICON,0,0));
-			FreeProtoFileTransferStatus(fts);
-			mir_free(fts);
-			break;
+		{	PROTOFILERESUME *pfrCopy;
+			pfrCopy=(PROTOFILERESUME*)mir_alloc(sizeof(pfr));
+			CopyMemory(pfrCopy,&pfr,sizeof(pfr));
+			PostMessage((HWND)GetPropA(hwndDlg,"Miranda.ParentWnd"),M_FILEEXISTSDLGREPLY,(WPARAM)mir_t2a(fts->currentFile),(LPARAM)pfrCopy);
+			DestroyWindow(hwndDlg);
+		}
+		break;
+	}
+
+	case WM_CLOSE:
+		PostMessage(hwndDlg,WM_COMMAND,MAKEWPARAM(IDCANCEL,BN_CLICKED),(LPARAM)GetDlgItem(hwndDlg,IDCANCEL));
+		break;
+
+	case M_PRESHUTDOWN:
+		PostMessage(hwndDlg,WM_CLOSE,0,0);
+		break;
+
+	case WM_DESTROY:
+		UnhookEvent(GetPropA(hwndDlg,"Miranda.Preshutdown")); // GetProp() will return NULL if it couldnt find anything
+		DestroyIcon((HICON)SendDlgItemMessage(hwndDlg,IDC_EXISTINGICON,STM_GETICON,0,0));
+		DestroyIcon((HICON)SendDlgItemMessage(hwndDlg,IDC_NEWICON,STM_GETICON,0,0));
+		FreeProtoFileTransferStatus(fts);
+		mir_free(fts);
+		break;
 	}
 	return FALSE;
 }

@@ -123,17 +123,38 @@ typedef struct {
 
 //when type==ACKTYPE_FILE && (result==ACKRESULT_DATA || result==ACKRESULT_FILERESUME),
 //lParam points to this
+
+#if MIRANDA_VER >= 0x0900
+	#define FNAMECHAR TCHAR
+#else
+	#define FNAMECHAR char
+#endif
+
+#define PFTS_RECEIVING 0
+#define PFTS_SENDING   1
+#define PFTS_UNICODE   2
+
+#if defined( _UNICODE )
+	#define PFTS_TCHAR  PFTS_UNICODE
+#else
+	#define PFTS_TCHAR  0
+#endif
+
 typedef struct {
 	size_t cbSize;
 	HANDLE hContact;
-	int sending;	//true if sending, false if receiving
-	char **files;
+	#if MIRANDA_VER >= 0x0900
+		DWORD  flags;      // one of PFTS_* constants
+	#else
+		int    sending;
+	#endif	
+	FNAMECHAR **files;
 	int totalFiles;
 	int currentFileNumber;
 	unsigned long totalBytes;
 	unsigned long totalProgress;
-	char *workingDir;
-	char *currentFile;
+	FNAMECHAR *workingDir;
+	FNAMECHAR *currentFile;
 	unsigned long currentFileSize;
 	unsigned long currentFileProgress;
 	unsigned long currentFileTime;  //as seconds since 1970

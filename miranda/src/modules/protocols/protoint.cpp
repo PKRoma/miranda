@@ -64,7 +64,7 @@ struct DEFAULT_PROTO_INTERFACE : public PROTO_INTERFACE
 	{	return ( HANDLE )MyCallProtoService( m_szModuleName, PS_CHANGEINFO, iInfoType, ( LPARAM )pInfoData );
 	}
 
-	HANDLE __cdecl FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath )
+	HANDLE __cdecl FileAllow( HANDLE hContact, HANDLE hTransfer, const PROTOCHAR* szPath )
 	{	CCSDATA ccs = { hContact, PSS_FILEALLOW, (WPARAM)hTransfer, (LPARAM)szPath };
 		return ( HANDLE )Proto_CallContactService( 0, (LPARAM)&ccs );
 	}
@@ -74,15 +74,15 @@ struct DEFAULT_PROTO_INTERFACE : public PROTO_INTERFACE
 		return ( int )Proto_CallContactService( 0, (LPARAM)&ccs );
 	}
 
-	int __cdecl FileDeny( HANDLE hContact, HANDLE hTransfer, const char* szReason )
+	int __cdecl FileDeny( HANDLE hContact, HANDLE hTransfer, const PROTOCHAR* szReason )
 	{	CCSDATA ccs = { hContact, PSS_FILEDENY, (WPARAM)hTransfer, (LPARAM)szReason };
 		return ( int )Proto_CallContactService( 0, (LPARAM)&ccs );
 	}
 
-	int __cdecl FileResume( HANDLE hTransfer, int* action, const char** szFilename )
-	{	PROTOFILERESUME pfr = { *action, *szFilename };
+	int __cdecl FileResume( HANDLE hTransfer, int* action, const PROTOCHAR** szFilename )
+	{	PROTOFILERESUME pfr = { *action, (char*)*szFilename };
 		int res = ( int )MyCallProtoService( m_szModuleName, PS_FILERESUME, ( WPARAM )hTransfer, ( LPARAM )&pfr );
-		*action = pfr.action; *szFilename = pfr.szFilename;
+		*action = pfr.action; *szFilename = (PROTOCHAR*)pfr.szFilename;
 		return res;
 	}
 
@@ -128,7 +128,7 @@ struct DEFAULT_PROTO_INTERFACE : public PROTO_INTERFACE
 		return ( int )Proto_CallContactService( 0, (LPARAM)&ccs );
 	}
 
-	int __cdecl RecvFile( HANDLE hContact, PROTORECVFILE* evt )
+	int __cdecl RecvFile( HANDLE hContact, PROTOFILEEVENT* evt )
 	{	CCSDATA ccs = { hContact, PSR_FILE, 0, (LPARAM)evt };
 		return Proto_CallContactService( 0, (LPARAM)&ccs );
 	}
@@ -148,7 +148,7 @@ struct DEFAULT_PROTO_INTERFACE : public PROTO_INTERFACE
 		return ( int )Proto_CallContactService( 0, (LPARAM)&ccs );
 	}
 
-	HANDLE __cdecl SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles )
+	HANDLE __cdecl SendFile( HANDLE hContact, const PROTOCHAR* szDescription, PROTOCHAR** ppszFiles )
 	{	CCSDATA ccs = { hContact, PSS_FILE, (WPARAM)szDescription, (LPARAM)ppszFiles };
 		return ( HANDLE )Proto_CallContactService( 0, (LPARAM)&ccs );
 	}

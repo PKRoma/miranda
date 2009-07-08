@@ -448,32 +448,32 @@ WCHAR* __stdcall JabberUnixToDosW( const WCHAR* str )
 	return res;
 }
 
-char* __stdcall JabberHttpUrlEncode( const char* str )
+TCHAR* __stdcall JabberHttpUrlEncode( const TCHAR* str )
 {
-	unsigned char* p, *q, *res;
+	TCHAR* p, *q, *res;
 
 	if ( str == NULL ) return NULL;
-	res = ( BYTE* ) mir_alloc( 3*strlen( str ) + 1 );
-	for ( p=( BYTE* )str,q=res; *p!='\0'; p++,q++ ) {
+	res = ( TCHAR* ) mir_alloc( 3*_tcslen( str ) + 1 );
+	for ( p = ( TCHAR* )str, q = res; *p!='\0'; p++,q++ ) {
 		if (( *p>='A' && *p<='Z' ) || ( *p>='a' && *p<='z' ) || ( *p>='0' && *p<='9' ) || strchr( "$-_.+!*'(),", *p )!=NULL ) {
 			*q = *p;
 		}
 		else {
-			sprintf(( char* )q, "%%%02X", *p );
+			wsprintf( q, _T("%%%02X"), *p );
 			q += 2;
 		}
 	}
 	*q = '\0';
-	return ( char* )res;
+	return res;
 }
 
-void __stdcall JabberHttpUrlDecode( char* str )
+void __stdcall JabberHttpUrlDecode( TCHAR* str )
 {
-	unsigned char* p, *q;
+	TCHAR* p, *q;
 	unsigned int code;
 
 	if ( str == NULL ) return;
-	for ( p=q=( BYTE* )str; *p!='\0'; p++,q++ ) {
+	for ( p = q = ( TCHAR* )str; *p!='\0'; p++,q++ ) {
 		if ( *p=='%' && *( p+1 )!='\0' && isxdigit( *( p+1 )) && *( p+2 )!='\0' && isxdigit( *( p+2 )) ) {
 			sscanf(( char* )p+1, "%2x", &code );
 			*q = ( unsigned char ) code;

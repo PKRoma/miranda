@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "file.h"
 
+TCHAR* PFTS_StringToTchar( PROTOFILETRANSFERSTATUS* ft, const PROTOCHAR* s );
+
 static HANDLE hSRFileMenuItem;
 
 static INT_PTR SendFileCommand(WPARAM wParam, LPARAM)
@@ -38,7 +40,7 @@ static INT_PTR SendSpecificFiles(WPARAM wParam,LPARAM lParam)
 {
 	struct FileSendData fsd;
 	fsd.hContact=(HANDLE)wParam;
-	fsd.ppFiles=(const char**)lParam;
+	fsd.ppFiles=(const TCHAR**)lParam;
 	CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_FILESEND),NULL,DlgProcSendFile,(LPARAM)&fsd);
 	return 0;
 }
@@ -94,13 +96,19 @@ static int FileEventAdded(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int SRFile_GetRegValue(HKEY hKeyBase,const char *szSubKey,const char *szValue,char *szOutput,int cbOutput)
+int SRFile_GetRegValue(HKEY hKeyBase,const TCHAR *szSubKey,const TCHAR *szValue,TCHAR *szOutput,int cbOutput)
 {
 	HKEY hKey;
 	DWORD cbOut=cbOutput;
 
-	if(RegOpenKeyExA(hKeyBase,szSubKey,0,KEY_QUERY_VALUE,&hKey)!=ERROR_SUCCESS) return 0;
-	if(RegQueryValueExA(hKey,szValue,NULL,NULL,(PBYTE)szOutput,&cbOut)!=ERROR_SUCCESS) {RegCloseKey(hKey); return 0;}
+	if ( RegOpenKeyEx( hKeyBase,szSubKey,0,KEY_QUERY_VALUE,&hKey ) != ERROR_SUCCESS)
+		return 0;
+	
+	if ( RegQueryValueEx( hKey,szValue,NULL,NULL,(PBYTE)szOutput, &cbOut ) != ERROR_SUCCESS ) {
+		RegCloseKey(hKey);
+		return 0;
+	}
+
 	RegCloseKey(hKey);
 	return 1;
 }
@@ -123,16 +131,13 @@ void GetSensiblyFormattedSize(DWORD size,TCHAR *szOut,int cchOut,int unitsOverri
 }
 
 // Tripple redirection sucks but is needed to nullify the array pointer
-void FreeFilesMatrix(char ***files)
+void FreeFilesMatrix(TCHAR ***files)
 {
-
-	char **pFile;
-
 	if (*files == NULL)
 		return;
 
 	// Free each filename in the pointer array
-	pFile = *files;
+	TCHAR **pFile = *files;
 	while (*pFile != NULL)
 	{
 		mir_free(*pFile);
@@ -143,7 +148,6 @@ void FreeFilesMatrix(char ***files)
 	// Free the array itself
 	mir_free(*files);
 	*files = NULL;
-
 }
 
 void FreeProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *fts)
@@ -160,52 +164,63 @@ void FreeProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *fts)
 void CopyProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest,PROTOFILETRANSFERSTATUS *src)
 {
 	*dest=*src;
-	if(src->currentFile) dest->currentFile=mir_strdup(src->currentFile);
-	if(src->files) {
-		int i;
-		dest->files=(char**)mir_alloc(sizeof(char*)*src->totalFiles);
-		for(i=0;i<src->totalFiles;i++)
-			dest->files[i]=mir_strdup(src->files[i]);
+	if ( src->currentFile ) dest->currentFile = PFTS_StringToTchar(src, src->currentFile);
+	if ( src->files ) {
+		dest->files = (TCHAR**)mir_alloc(sizeof(TCHAR*)*src->totalFiles);
+		for( int i=0; i < src->totalFiles; i++ )
+			dest->files[i] = PFTS_StringToTchar(src, src->files[i] );
 	}
-	if(src->workingDir) dest->workingDir=mir_strdup(src->workingDir);
+	if ( src->workingDir ) dest->workingDir = PFTS_StringToTchar(src, src->workingDir );
 }
 
 void UpdateProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest,PROTOFILETRANSFERSTATUS *src)
 {
-  dest->hContact = src->hContact;
-  dest->sending = src->sending;
-  if (dest->totalFiles != src->totalFiles) {
-    int i;
-    for(i=0;i<dest->totalFiles;i++) mir_free(dest->files[i]);
-    mir_free(dest->files);
-    dest->files = NULL;
-	  dest->totalFiles = src->totalFiles;
-  }
-  if (src->files) {
-    int i;
-    if (!dest->files) dest->files = (char**)mir_calloc(sizeof(char*)*src->totalFiles);
-    for(i=0;i<src->totalFiles;i++)
-      if(!dest->files[i] || !src->files[i] || strcmp(dest->files[i],src->files[i])) {
-        mir_free(dest->files[i]);
-        if(src->files[i]) dest->files[i]=mir_strdup(src->files[i]); else dest->files[i]=NULL;
-      }
-  } else if (dest->files) {
-    int i;
-    for(i=0;i<dest->totalFiles;i++) mir_free(dest->files[i]);
-    mir_free(dest->files);
-    dest->files = NULL;
-  }
+	dest->hContact = src->hContact;
+	dest->flags = src->flags;
+	if (dest->totalFiles != src->totalFiles) {
+		int i;
+		for(i=0;i<dest->totalFiles;i++) mir_free(dest->files[i]);
+		mir_free(dest->files);
+		dest->files = NULL;
+		dest->totalFiles = src->totalFiles;
+	}
+	if (src->files) {
+		if ( !dest->files )
+			dest->files = ( TCHAR** )mir_calloc( sizeof(TCHAR*)*src->totalFiles);
+		for ( int i=0; i < src->totalFiles; i++ )
+			if ( !dest->files[i] || !src->files[i] || _tcscmp( dest->files[i], src->files[i] )) {
+				mir_free( dest->files[i] );
+				if ( src->files[i] )
+					dest->files[i] = PFTS_StringToTchar( src, src->files[i] );
+				else
+					dest->files[i] = NULL;
+			}
+	}
+	else if (dest->files) {
+		for( int i=0; i < dest->totalFiles; i++ )
+			mir_free(dest->files[i]);
+		mir_free( dest->files );
+		dest->files = NULL;
+	}
+
 	dest->currentFileNumber = src->currentFileNumber;
 	dest->totalBytes = src->totalBytes;
 	dest->totalProgress = src->totalProgress;
-  if (src->workingDir && (!dest->workingDir || strcmp(dest->workingDir, src->workingDir))) {
-    mir_free(dest->workingDir);
-    if(src->workingDir) dest->workingDir=mir_strdup(src->workingDir); else dest->workingDir = NULL;
-  }
-  if (!dest->currentFile || !src->currentFile || strcmp(dest->currentFile, src->currentFile)) {
-    mir_free(dest->currentFile);
-    if(src->currentFile) dest->currentFile=mir_strdup(src->currentFile); else dest->currentFile = NULL;
-  }
+	if (src->workingDir && (!dest->workingDir || lstrcmp(dest->workingDir, src->workingDir))) {
+		mir_free( dest->workingDir );
+		if ( src->workingDir )
+			dest->workingDir = PFTS_StringToTchar( src, src->workingDir );
+		else
+			dest->workingDir = NULL;
+	}
+
+	if ( !dest->currentFile || !src->currentFile || lstrcmp( dest->currentFile, src->currentFile )) {
+		mir_free( dest->currentFile );
+		if ( src->currentFile )
+			dest->currentFile = PFTS_StringToTchar( src, src->currentFile );
+		else
+			dest->currentFile = NULL;
+	}
 	dest->currentFileSize = src->currentFileSize;
 	dest->currentFileProgress = src->currentFileProgress;
 	dest->currentFileTime = src->currentFileTime;

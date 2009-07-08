@@ -350,9 +350,9 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			EnableWindow(GetDlgItem(hwndDlg,IDC_FILEDIR),FALSE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_FILEDIRBROWSE),FALSE);
 
-			GetDlgItemTextA(hwndDlg,IDC_FILEDIR,dat->szSavePath,SIZEOF(dat->szSavePath));
-			GetDlgItemTextA(hwndDlg,IDC_FILE,dat->szFilenames,SIZEOF(dat->szFilenames));
-			GetDlgItemTextA(hwndDlg,IDC_MSG,dat->szMsg,SIZEOF(dat->szMsg));
+			GetDlgItemText(hwndDlg,IDC_FILEDIR,dat->szSavePath,SIZEOF(dat->szSavePath));
+			GetDlgItemText(hwndDlg,IDC_FILE,dat->szFilenames,SIZEOF(dat->szFilenames));
+			GetDlgItemText(hwndDlg,IDC_MSG,dat->szMsg,SIZEOF(dat->szMsg));
 			dat->hwndTransfer = FtMgr_AddTransfer(dat);
 			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, 0);
 			//check for auto-minimize here to fix BUG#647620

@@ -158,6 +158,68 @@ static INT_PTR Proto_RecvFile(WPARAM,LPARAM lParam)
 	return 0;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+
+static void sttRecvCreateBlob( DBEVENTINFO& dbei, int fileCount, char** pszFiles, char* szDescr )
+{
+	dbei.cbBlob = sizeof( DWORD );
+	{
+		for ( int i=0; i < fileCount; i++ )
+			dbei.cbBlob += lstrlenA( pszFiles[i] ) + 1;
+	}
+	
+	dbei.cbBlob += lstrlenA( szDescr ) + 1;
+
+	if (( dbei.pBlob = ( BYTE* )mir_alloc( dbei.cbBlob )) == 0 )
+		return;
+
+	*( DWORD* )dbei.pBlob = 0;
+	BYTE* p = dbei.pBlob + sizeof( DWORD );
+	for ( int i=0; i < fileCount; i++ ) {
+		strcpy(( char* )p, pszFiles[i] );
+		p += lstrlenA( pszFiles[i] ) + 1;
+	}
+	strcpy(( char* )p, ( szDescr == NULL ) ? "" : szDescr );
+}
+
+static INT_PTR Proto_RecvFileT(WPARAM,LPARAM lParam)
+{
+	CCSDATA* ccs = ( CCSDATA* )lParam;
+	PROTORECVFILET* pre = ( PROTORECVFILET* )ccs->lParam;
+	if ( pre->fileCount == 0 )
+		return 0;
+
+	DBEVENTINFO dbei = { 0 };
+	dbei.cbSize = sizeof( dbei );
+	dbei.szModule = ( char* )CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)ccs->hContact, 0);
+	dbei.timestamp = pre->timestamp;
+	dbei.flags = ( pre->flags & PREF_CREATEREAD ) ? DBEF_READ : 0;
+	dbei.eventType = EVENTTYPE_FILE;
+
+	#if defined( _UNICODE )
+		char** pszFiles = ( char** )alloca( pre->fileCount * sizeof(char*));
+		{
+			for ( int i=0; i < pre->fileCount; i++ )
+				pszFiles[i] = Utf8EncodeT( pre->ptszFiles[i] );
+		}
+		char* szDescr = Utf8EncodeT( pre->tszDescription );
+		dbei.flags |= DBEF_UTF;
+		sttRecvCreateBlob( dbei, pre->fileCount, pszFiles, szDescr );
+		{
+			for ( int i=0; i < pre->fileCount; i++ )
+				mir_free( pszFiles[i] );
+		}
+	#else
+		sttRecvCreateBlob( dbei, pre->fileCount, pre->ptszFiles, pre->tszDescr );
+	#endif
+
+	HANDLE hdbe = ( HANDLE )CallService( MS_DB_EVENT_ADD, ( WPARAM )ccs->hContact, ( LPARAM )&dbei );
+
+	PushFileEvent( ccs->hContact, hdbe, pre->lParam );
+	mir_free( dbei.pBlob );
+	return 0;
+}
+
 static INT_PTR Proto_RecvMessage(WPARAM,LPARAM lParam)
 {
 	CCSDATA *ccs = ( CCSDATA* )lParam;
@@ -273,12 +335,12 @@ INT_PTR CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *
 					case  5: return ( INT_PTR )ppi->AuthRecv( hContact, ( PROTORECVEVENT* )lParam ); break;
 					case  6: return ( INT_PTR )ppi->AuthRequest( hContact, ( char* )lParam ); break;
 					case  7: return ( INT_PTR )ppi->ChangeInfo( wParam, ( void* )lParam ); break;
-					case  8: return ( INT_PTR )ppi->FileAllow( hContact, ( HANDLE )wParam, ( char* )lParam ); break;
+					case  8: return ( INT_PTR )ppi->FileAllow( hContact, ( HANDLE )wParam, ( PROTOCHAR* )lParam ); break;
 					case  9: return ( INT_PTR )ppi->FileCancel( hContact, ( HANDLE )wParam ); break;
-					case 10: return ( INT_PTR )ppi->FileDeny( hContact, ( HANDLE )wParam, ( char* )lParam ); break;
+					case 10: return ( INT_PTR )ppi->FileDeny( hContact, ( HANDLE )wParam, ( PROTOCHAR* )lParam ); break;
 					case 11: {
 						PROTOFILERESUME* pfr = ( PROTOFILERESUME* )lParam;
-						return ( INT_PTR )ppi->FileResume( ( HANDLE )wParam, &pfr->action, &pfr->szFilename ); break;
+						return ( INT_PTR )ppi->FileResume( ( HANDLE )wParam, &pfr->action, (const PROTOCHAR**)&pfr->szFilename ); break;
 					}
 					case 12: return ( INT_PTR )ppi->GetCaps( wParam, (HANDLE)lParam ); break;
 					case 13: return ( INT_PTR )ppi->GetIcon( wParam ); break;
@@ -292,11 +354,11 @@ INT_PTR CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *
 					case 18: return ( INT_PTR )ppi->SearchAdvanced( ( HWND )lParam ); break;
 					case 19: return ( INT_PTR )ppi->CreateExtendedSearchUI ( ( HWND )lParam ); break;
 					case 20: return ( INT_PTR )ppi->RecvContacts( hContact, ( PROTORECVEVENT* )lParam ); break;
-					case 21: return ( INT_PTR )ppi->RecvFile( hContact, ( PROTORECVFILE* )lParam ); break;
+					case 21: return ( INT_PTR )ppi->RecvFile( hContact, ( PROTOFILEEVENT* )lParam ); break;
 					case 22: return ( INT_PTR )ppi->RecvMsg( hContact, ( PROTORECVEVENT* )lParam ); break;
 					case 23: return ( INT_PTR )ppi->RecvUrl( hContact, ( PROTORECVEVENT* )lParam ); break;
 					case 24: return ( INT_PTR )ppi->SendContacts( hContact, LOWORD(wParam), HIWORD(wParam), ( HANDLE* )lParam ); break;
-					case 25: return ( INT_PTR )ppi->SendFile( hContact, ( const char* )wParam, ( char** )lParam ); break;
+					case 25: return ( INT_PTR )ppi->SendFile( hContact, ( const PROTOCHAR* )wParam, ( PROTOCHAR** )lParam ); break;
 					case 26: return ( INT_PTR )ppi->SendMsg( hContact, wParam, ( const char* )lParam ); break;
 					case 27: return ( INT_PTR )ppi->SendUrl( hContact, wParam, ( const char* )lParam ); break;
 					case 28: return ( INT_PTR )ppi->SetApparentMode( hContact, wParam ); break;
@@ -418,6 +480,7 @@ int LoadProtocolsModule(void)
 	CreateServiceFunction( MS_PROTO_CONTACTISTYPING,  Proto_ContactIsTyping  );
 
 	CreateServiceFunction( MS_PROTO_RECVFILE,         Proto_RecvFile         );
+	CreateServiceFunction( MS_PROTO_RECVFILET,        Proto_RecvFileT        );
 	CreateServiceFunction( MS_PROTO_RECVMSG,          Proto_RecvMessage      );
 
 	CreateServiceFunction( "Proto/EnumProtocols",     Proto_EnumAccounts     );

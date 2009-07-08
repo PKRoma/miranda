@@ -224,6 +224,9 @@ char* Utf8Encode( const char* src )
 
 char* Utf8EncodeUcs2( const wchar_t* src )
 {
+	if ( src == NULL )
+		return NULL;
+
 	size_t len = wcslen( src );
 	char* result = ( char* )mir_alloc( len*3 + 1 );
 	if ( result == NULL )

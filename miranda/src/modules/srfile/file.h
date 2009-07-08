@@ -38,7 +38,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 struct FileSendData {
 	HANDLE hContact;
-	const char **ppFiles;
+	const TCHAR **ppFiles;
 };
 
 #define BYTESRECVEDHISTORYCOUNT  10   //the number of bytes recved is sampled once a second and the last 10 are used to get the transfer speed
@@ -48,7 +48,7 @@ struct FileDlgData {
 	HANDLE hContact;
 	HANDLE hDbEvent;
 	HANDLE hNotifyEvent;
-	char **files;
+	TCHAR **files;
 	int send;
 	int closeIfFileChooseCancelled;
 	int resumeBehaviour;
@@ -60,8 +60,8 @@ struct FileDlgData {
 	HANDLE hPreshutdownEvent;
 	DWORD dwTicks;
 
-	char szSavePath[MAX_PATH];
-	char szMsg[450], szFilenames[1024];
+	TCHAR szSavePath[MAX_PATH];
+	TCHAR szMsg[450], szFilenames[1024];
 	HICON hIcon, hIconFolder;
 };
 
@@ -72,11 +72,11 @@ struct FileDlgData {
 #define UNITS_MBPOINT2  4   // 1024*1024<=size: "%.2f MB"
 
 void GetSensiblyFormattedSize(DWORD size,TCHAR *szOut,int cchOut,int unitsOverride,int appendUnits,int *unitsUsed);
-void FreeFilesMatrix(char ***files);	  //loving that triple indirection
+void FreeFilesMatrix(TCHAR ***files);	  //loving that triple indirection
 void FreeProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *fts);
 void CopyProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest,PROTOFILETRANSFERSTATUS *src);
 void UpdateProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest,PROTOFILETRANSFERSTATUS *src);
-int SRFile_GetRegValue(HKEY hKeyBase,const char *szSubKey,const char *szValue,char *szOutput,int cbOutput);
+int SRFile_GetRegValue(HKEY hKeyBase,const TCHAR *szSubKey,const TCHAR *szValue,TCHAR *szOutput,int cbOutput);
 //filesenddlg.c
 INT_PTR CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 //filerecv.c

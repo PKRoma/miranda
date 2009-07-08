@@ -35,6 +35,14 @@ typedef enum
 }
 	PROTOEVENTTYPE;
 
+#if MIRANDA_VER >= 0x0900
+	#define PROTOCHAR TCHAR
+	#define PROTOFILEEVENT PROTORECVFILET
+#else
+	#define PROTOCHAR char
+	#define PROTOFILEEVENT PROTORECVFILE
+#endif
+
 #ifndef __cplusplus
 typedef struct tagPROTO_INTERFACE_VTBL
 {
@@ -48,10 +56,10 @@ typedef struct tagPROTO_INTERFACE_VTBL
 
 	HANDLE    ( *ChangeInfo )( struct tagPROTO_INTERFACE*, int iInfoType, void* pInfoData );
 
-	HANDLE    ( *FileAllow )( struct tagPROTO_INTERFACE*, HANDLE hContact, HANDLE hTransfer, const char* szPath );
+	HANDLE    ( *FileAllow )( struct tagPROTO_INTERFACE*, HANDLE hContact, HANDLE hTransfer, const PROTOCHAR* szPath );
 	int       ( *FileCancel )( struct tagPROTO_INTERFACE*, HANDLE hContact, HANDLE hTransfer );
-	int       ( *FileDeny )( struct tagPROTO_INTERFACE*, HANDLE hContact, HANDLE hTransfer, const char* szReason );
-	int       ( *FileResume )( struct tagPROTO_INTERFACE*, HANDLE hTransfer, int* action, const char** szFilename );
+	int       ( *FileDeny )( struct tagPROTO_INTERFACE*, HANDLE hContact, HANDLE hTransfer, const PROTOCHAR* szReason );
+	int       ( *FileResume )( struct tagPROTO_INTERFACE*, HANDLE hTransfer, int* action, const PROTOCHAR** szFilename );
 
 	DWORD_PTR ( *GetCaps )( struct tagPROTO_INTERFACE*, int type, HANDLE hContact );
 	HICON     ( *GetIcon )( struct tagPROTO_INTERFACE*, int iconIndex );
@@ -64,12 +72,12 @@ typedef struct tagPROTO_INTERFACE_VTBL
 	HWND      ( *CreateExtendedSearchUI )( struct tagPROTO_INTERFACE*, HWND owner );
 
 	int       ( *RecvContacts )( struct tagPROTO_INTERFACE*, HANDLE hContact, PROTORECVEVENT* );
-	int       ( *RecvFile )( struct tagPROTO_INTERFACE*, HANDLE hContact, PROTORECVFILE* );
+	int       ( *RecvFile )( struct tagPROTO_INTERFACE*, HANDLE hContact, PROTOFILEEVENT* );
 	int       ( *RecvMsg )( struct tagPROTO_INTERFACE*, HANDLE hContact, PROTORECVEVENT* );
 	int       ( *RecvUrl )( struct tagPROTO_INTERFACE*, HANDLE hContact, PROTORECVEVENT* );
 
 	int       ( *SendContacts )( struct tagPROTO_INTERFACE*, HANDLE hContact, int flags, int nContacts, HANDLE* hContactsList );
-	HANDLE    ( *SendFile )( struct tagPROTO_INTERFACE*, HANDLE hContact, const char* szDescription, char** ppszFiles );
+	HANDLE    ( *SendFile )( struct tagPROTO_INTERFACE*, HANDLE hContact, const PROTOCHAR* szDescription, PROTOCHAR** ppszFiles );
 	int       ( *SendMsg )( struct tagPROTO_INTERFACE*, HANDLE hContact, int flags, const char* msg );
 	int       ( *SendUrl )( struct tagPROTO_INTERFACE*, HANDLE hContact, int flags, const char* url );
 
@@ -115,10 +123,10 @@ typedef struct tagPROTO_INTERFACE
 
 	virtual	HANDLE   __cdecl ChangeInfo( int iInfoType, void* pInfoData ) = 0;
 
-	virtual	HANDLE   __cdecl FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath ) = 0;
+	virtual	HANDLE   __cdecl FileAllow( HANDLE hContact, HANDLE hTransfer, const PROTOCHAR* szPath ) = 0;
 	virtual	int      __cdecl FileCancel( HANDLE hContact, HANDLE hTransfer ) = 0;
-	virtual	int      __cdecl FileDeny( HANDLE hContact, HANDLE hTransfer, const char* szReason ) = 0;
-	virtual	int      __cdecl FileResume( HANDLE hTransfer, int* action, const char** szFilename ) = 0;
+	virtual	int      __cdecl FileDeny( HANDLE hContact, HANDLE hTransfer, const PROTOCHAR* szReason ) = 0;
+	virtual	int      __cdecl FileResume( HANDLE hTransfer, int* action, const PROTOCHAR** szFilename ) = 0;
 
 	virtual	DWORD_PTR __cdecl GetCaps( int type, HANDLE hContact = NULL ) = 0;
 	virtual	HICON     __cdecl GetIcon( int iconIndex ) = 0;
@@ -131,12 +139,12 @@ typedef struct tagPROTO_INTERFACE
 	virtual	HWND      __cdecl CreateExtendedSearchUI( HWND owner ) = 0;
 
 	virtual	int       __cdecl RecvContacts( HANDLE hContact, PROTORECVEVENT* ) = 0;
-	virtual	int       __cdecl RecvFile( HANDLE hContact, PROTORECVFILE* ) = 0;
+	virtual	int       __cdecl RecvFile( HANDLE hContact, PROTOFILEEVENT* ) = 0;
 	virtual	int       __cdecl RecvMsg( HANDLE hContact, PROTORECVEVENT* ) = 0;
 	virtual	int       __cdecl RecvUrl( HANDLE hContact, PROTORECVEVENT* ) = 0;
 
 	virtual	int       __cdecl SendContacts( HANDLE hContact, int flags, int nContacts, HANDLE* hContactsList ) = 0;
-	virtual	HANDLE    __cdecl SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles ) = 0;
+	virtual	HANDLE    __cdecl SendFile( HANDLE hContact, const PROTOCHAR* szDescription, PROTOCHAR** ppszFiles ) = 0;
 	virtual	int       __cdecl SendMsg( HANDLE hContact, int flags, const char* msg ) = 0;
 	virtual	int       __cdecl SendUrl( HANDLE hContact, int flags, const char* url ) = 0;
 

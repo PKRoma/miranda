@@ -547,14 +547,14 @@ HANDLE __cdecl CJabberProto::ChangeInfo( int /*iInfoType*/, void* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberFileAllow - starts a file transfer
 
-HANDLE __cdecl CJabberProto::FileAllow( HANDLE /*hContact*/, HANDLE hTransfer, const char* szPath )
+HANDLE __cdecl CJabberProto::FileAllow( HANDLE /*hContact*/, HANDLE hTransfer, const TCHAR* szPath )
 {
 	if ( !m_bJabberOnline )
 		return 0;
 
 	filetransfer* ft = ( filetransfer* )hTransfer;
-	ft->std.workingDir = mir_strdup( szPath );
-	size_t len = strlen( ft->std.workingDir )-1;
+	ft->std.workingDir = mir_tstrdup( szPath );
+	size_t len = _tcslen( ft->std.workingDir )-1;
 	if ( ft->std.workingDir[len] == '/' || ft->std.workingDir[len] == '\\' )
 		ft->std.workingDir[len] = 0;
 
@@ -603,7 +603,7 @@ int __cdecl CJabberProto::FileCancel( HANDLE /*hContact*/, HANDLE hTransfer )
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberFileDeny - denies a file transfer
 
-int __cdecl CJabberProto::FileDeny( HANDLE /*hContact*/, HANDLE hTransfer, const char* )
+int __cdecl CJabberProto::FileDeny( HANDLE /*hContact*/, HANDLE hTransfer, const TCHAR* /*reason*/ )
 {
 	if ( !m_bJabberOnline )
 		return 1;
@@ -631,20 +631,14 @@ int __cdecl CJabberProto::FileDeny( HANDLE /*hContact*/, HANDLE hTransfer, const
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberFileResume - processes file renaming etc
 
-int __cdecl CJabberProto::FileResume( HANDLE hTransfer, int* action, const char** szFilename )
+int __cdecl CJabberProto::FileResume( HANDLE hTransfer, int* action, const TCHAR** szFilename )
 {
 	filetransfer* ft = ( filetransfer* )hTransfer;
 	if ( !m_bJabberOnline || ft == NULL )
 		return 1;
 
-	if ( *action == FILERESUME_RENAME ) {
-		if ( ft->wszFileName != NULL ) {
-			mir_free( ft->wszFileName );
-			ft->wszFileName = NULL;
-		}
-
+	if ( *action == FILERESUME_RENAME )
 		replaceStr( ft->std.currentFile, *szFilename );
-	}
 
 	SetEvent( ft->hWaitEvent );
 	return 0;
@@ -917,10 +911,10 @@ int __cdecl CJabberProto::RecvContacts( HANDLE /*hContact*/, PROTORECVEVENT* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // RecvFile
 
-int __cdecl CJabberProto::RecvFile( HANDLE hContact, PROTORECVFILE* evt )
+int __cdecl CJabberProto::RecvFile( HANDLE hContact, PROTORECVFILET* evt )
 {
 	CCSDATA ccs = { hContact, PSR_FILE, 0, ( LPARAM )evt };
-	return JCallService( MS_PROTO_RECVFILE, 0, ( LPARAM )&ccs );
+	return JCallService( MS_PROTO_RECVFILET, 0, ( LPARAM )&ccs );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -962,7 +956,7 @@ int __cdecl CJabberProto::SendContacts( HANDLE /*hContact*/, int /*flags*/, int 
 ////////////////////////////////////////////////////////////////////////////////////////
 // SendFile - sends a file
 
-HANDLE __cdecl CJabberProto::SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles )
+HANDLE __cdecl CJabberProto::SendFile( HANDLE hContact, const TCHAR* szDescription, TCHAR** ppszFiles )
 {
 	if ( !m_bJabberOnline ) return 0;
 
@@ -1016,20 +1010,20 @@ HANDLE __cdecl CJabberProto::SendFile( HANDLE hContact, const char* szDescriptio
 	while( ppszFiles[ ft->std.totalFiles ] != NULL )
 		ft->std.totalFiles++;
 
-	ft->std.files = ( char** ) mir_alloc( sizeof( char* )* ft->std.totalFiles );
+	ft->std.files = ( TCHAR** ) mir_alloc( sizeof( TCHAR* )* ft->std.totalFiles );
 	ft->fileSize = ( long* ) mir_alloc( sizeof( long ) * ft->std.totalFiles );
 	for( i=j=0; i < ft->std.totalFiles; i++ ) {
-		if ( _stat( ppszFiles[i], &statbuf ))
+		if ( _tstat( ppszFiles[i], &statbuf ))
 			Log( "'%s' is an invalid filename", ppszFiles[i] );
 		else {
-			ft->std.files[j] = mir_strdup( ppszFiles[i] );
+			ft->std.files[j] = mir_tstrdup( ppszFiles[i] );
 			ft->fileSize[j] = statbuf.st_size;
 			j++;
 			ft->std.totalBytes += statbuf.st_size;
 	}	}
 
-	ft->std.currentFile = mir_strdup( ppszFiles[0] );
-	ft->szDescription = mir_strdup( szDescription );
+	ft->std.currentFile = mir_tstrdup( ppszFiles[0] );
+	ft->szDescription = mir_tstrdup( szDescription );
 	ft->jid = mir_tstrdup( dbv.ptszVal );
 	JFreeVariant( &dbv );
 
