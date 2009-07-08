@@ -61,7 +61,7 @@ void __cdecl CAimProto::aim_dc_helper(void* param) //only called when we are ini
 
     if (!success)
     {
-        aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true);
+        aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true, false);
         sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
     }
 
@@ -71,7 +71,9 @@ void __cdecl CAimProto::aim_dc_helper(void* param) //only called when we are ini
 void aim_direct_connection_initiated(HANDLE hNewConnection, DWORD dwRemoteIP, CAimProto* ppro)//for receiving stuff via dc
 {
      file_transfer *ft;
-//	Sleep(1000);
+
+	char cip[20];
+	ppro->LOG("Buddy connected from IP: %s", long_ip_to_char_ip(dwRemoteIP, cip));
 
     //okay someone connected to us or we initiated the connection- we need to figure out who they are and if they belong
     for (int i=21; --i; )

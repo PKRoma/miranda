@@ -143,7 +143,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define AIM_KEY_ET						"ESType"//Extended Status type
 #define AIM_KEY_MV						"MirVer"
 #define AIM_KEY_US						"Utf8Support"
-#define AIM_KEY_O3						"OFT3"
 #define AIM_KEY_NL						"NotOnList"
 #define AIM_KEY_LM						"LastMessage"
 #define AIM_KEY_NC						"NewContact"
@@ -196,6 +195,7 @@ extern const char AIM_CLIENT_ID_STRING[];		//Client id EXTERN
 #define CLIENT_AIM6_1					"AIM 6.1"
 #define CLIENT_AIM6_5					"AIM 6.5"
 #define CLIENT_AIM6_8					"AIM 6.8"
+#define CLIENT_AIM6_9					"AIM 6.9"
 #define CLIENT_AIMTOC					"AIM TOC"
 #define CLIENT_BOT						"AIM Bot"
 #define CLIENT_GAIM						"Gaim"

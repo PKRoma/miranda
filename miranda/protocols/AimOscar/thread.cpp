@@ -33,13 +33,6 @@ void __cdecl CAimProto::accept_file_thread(void* param)//buddy sending file
             ft->hConn = hConn;
 			ForkThread(&CAimProto::aim_proxy_helper, ft);
 		}
-		else 
-        {
-			LOG("We failed to connect to the buddy over the proxy transfer.");
-			sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
-			aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true);
-            ft_list.remove_by_ft(ft);
-		}
 	}
     else if (ft->me_force_proxy) //we are forcing proxy
     {
@@ -62,7 +55,7 @@ void __cdecl CAimProto::accept_file_thread(void* param)//buddy sending file
             LOG("Connected to buddy over P2P port via %s ip.", verif ? "verified": "local");
             ft->accepted = true;
             ft->hConn = hConn;
-            aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, false);
+            aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, false, ft->max_ver);
 		    ForkThread(&CAimProto::aim_dc_helper, ft);
 	    }
 		else if (ft->sending)
@@ -79,7 +72,6 @@ void __cdecl CAimProto::accept_file_thread(void* param)//buddy sending file
         else
         {
 			LOG("Failed to connect to buddy- asking buddy to connect to us.");
-//				current_rendezvous_accept_user = ft->hContact;
             ft->requester = true;
             aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, internal_ip, local_port, 
                 false, ++ft->req_num, NULL, 0, NULL);
@@ -91,7 +83,7 @@ void __cdecl CAimProto::accept_file_thread(void* param)//buddy sending file
     {
         if (ft->req_num)
         {
-		    aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true);
+		    aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true, false);
         }
         sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
         ft_list.remove_by_ft(ft);

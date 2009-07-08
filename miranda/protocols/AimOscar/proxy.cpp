@@ -23,44 +23,44 @@ void __cdecl CAimProto::aim_proxy_helper(void* param)
 {
     file_transfer *ft = (file_transfer*)param;
 
-	if (ft->requester) 
+    if (ft->requester) 
     {
         if (proxy_initialize_send(ft->hConn, ft->sn, ft->icbm_cookie))
-			return;//error
-	}
-	else
-	{
-		if (proxy_initialize_recv(ft->hConn, ft->sn, ft->icbm_cookie, ft->port)) 
-			return;//error
-	}
+            return;//error
+    }
+    else
+    {
+        if (proxy_initialize_recv(ft->hConn, ft->sn, ft->icbm_cookie, ft->port)) 
+            return;//error
+    }
 
     //start listen for packets stuff
     NETLIBPACKETRECVER packetRecv = {0};
-	packetRecv.cbSize = sizeof(packetRecv);
-	packetRecv.dwTimeout = INFINITE;
+    packetRecv.cbSize = sizeof(packetRecv);
+    packetRecv.dwTimeout = INFINITE;
 
     HANDLE hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)ft->hConn, 2048 * 4);
-	for (;;)
-	{
-		int recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM)hServerPacketRecver, (LPARAM)&packetRecv);
-		if (recvResult == 0) 
+    for (;;)
+    {
+        int recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM)hServerPacketRecver, (LPARAM)&packetRecv);
+        if (recvResult == 0) 
         {
-			sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
-			break;
-		}
-		if (recvResult == SOCKET_ERROR) 
+            sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
+            break;
+        }
+        if (recvResult == SOCKET_ERROR) 
         {
-			sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
-			break;
-		}
-		if (recvResult > 0) 
+            sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
+            break;
+        }
+        if (recvResult > 0) 
         {
-			unsigned short length = _htons(*(unsigned short*)&packetRecv.buffer[0]);
-			packetRecv.bytesUsed = length + 2;
-			unsigned short type = _htons(*(unsigned short*)&packetRecv.buffer[4]);
-			if (type == 0x0001)
-			{
-				unsigned short error = _htons(*(unsigned short*)&packetRecv.buffer[12]);
+            unsigned short length = _htons(*(unsigned short*)&packetRecv.buffer[0]);
+            packetRecv.bytesUsed = length + 2;
+            unsigned short type = _htons(*(unsigned short*)&packetRecv.buffer[4]);
+            if (type == 0x0001)
+            {
+                unsigned short error = _htons(*(unsigned short*)&packetRecv.buffer[12]);
                 switch (error)
                 {
                 case 0x000D:
@@ -84,36 +84,36 @@ void __cdecl CAimProto::aim_proxy_helper(void* param)
                     break;
                 }
 
-			}
-			else if (type == 0x0003)
-			{
-				unsigned short port = _htons(*(unsigned short*)&packetRecv.buffer[12]);
-				unsigned long  ip   = _htonl(*(unsigned long*)&packetRecv.buffer[14]);
-				
+            }
+            else if (type == 0x0003)
+            {
+                unsigned short port = _htons(*(unsigned short*)&packetRecv.buffer[12]);
+                unsigned long  ip   = _htonl(*(unsigned long*)&packetRecv.buffer[14]);
+                
                 if (ft->req_num == 0) 
                 {
-				    LOG("Stage 1 Proxy ft and we are the sender.");
+                    LOG("Stage 1 Proxy ft and we are the sender.");
 
                     char* pszFile = strrchr(ft->file, '\\');
-		            if (pszFile) pszFile++; else pszFile = ft->file;
+                    if (pszFile) pszFile++; else pszFile = ft->file;
                     aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, ip, port, true, ++ft->req_num, pszFile, ft->total_size, ft->message);
-			    }
-			    else 
-			    {
-                    aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, ip, port, true, ++ft->req_num, NULL, 0, NULL);
-				    LOG("Stage %d Proxy ft and we are not the sender.", ft->req_num);
-			    }
-			}
-			else if (type == 0x0005) 
-            {
-				if (!ft->requester) 
+                }
+                else 
                 {
-                    aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, false);
+                    aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, ip, port, true, ++ft->req_num, NULL, 0, NULL);
+                    LOG("Stage %d Proxy ft and we are not the sender.", ft->req_num);
+                }
+            }
+            else if (type == 0x0005) 
+            {
+                if (!ft->requester) 
+                {
+                    aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, false, ft->max_ver);
                     ft->accepted = true;
-				}
+                }
 
-	            sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED, ft, 0);
-
+                sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED, ft, 0);
+/*
                 int i;
                 for (i = 21; --i && !ft->accepted; )
                 {
@@ -122,25 +122,25 @@ void __cdecl CAimProto::aim_proxy_helper(void* param)
                 }
                 if (i == 0) 
                 {
-	                sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
+                    sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
                     break;
                 }
-
-	            packetRecv.dwTimeout = 100 * getWord(AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
+*/
+                packetRecv.dwTimeout = 100 * getWord(AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
 
                 bool success = false;
                 if (ft->sending)//we are sending
-	                success = sending_file(ft, hServerPacketRecver, packetRecv);
+                    success = sending_file(ft, hServerPacketRecver, packetRecv);
                 else 
-	                success = receiving_file(ft, hServerPacketRecver, packetRecv);
+                    success = receiving_file(ft, hServerPacketRecver, packetRecv);
 
                 sendBroadcast(ft->hContact, ACKTYPE_FILE, success ? ACKRESULT_SUCCESS : ACKRESULT_FAILED, ft, 0);
                 if (!success)
-                    aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true);
+                    aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true, ft->max_ver);
                 break;
-			}
-		}
-	}
+            }
+        }
+    }
     Netlib_CloseHandle(hServerPacketRecver);
     Netlib_CloseHandle(ft->hConn);
 
@@ -150,14 +150,14 @@ void __cdecl CAimProto::aim_proxy_helper(void* param)
 
 int proxy_initialize_send(HANDLE connection, char* sn, char* cookie)
 {
-	const char sn_length = (char)lstrlenA(sn);
+    const char sn_length = (char)strlen(sn);
     const int len = sn_length + 25 + AIM_CAPS_LENGTH;
 
     char* buf= (char*)alloca(len);
     unsigned short offset=0;
 
     aim_writeshort(len-2, offset, buf);
-	aim_writegeneric(10, "\x04\x4a\0\x02\0\0\0\0\0\0", offset, buf);
+    aim_writegeneric(10, "\x04\x4a\0\x02\0\0\0\0\0\0", offset, buf);
     aim_writechar((unsigned char)sn_length, offset, buf);               // screen name len
     aim_writegeneric(sn_length, sn, offset, buf);                       // screen name
     aim_writegeneric(8, cookie, offset, buf);                           // icbm cookie
@@ -168,14 +168,14 @@ int proxy_initialize_send(HANDLE connection, char* sn, char* cookie)
 
 int proxy_initialize_recv(HANDLE connection,char* sn, char* cookie,unsigned short port_check)
 {
-	const char sn_length = (char)lstrlenA(sn);
+    const char sn_length = (char)strlen(sn);
     const int len = sn_length + 27 + AIM_CAPS_LENGTH;
 
     char* buf= (char*)alloca(len);
     unsigned short offset=0;
 
     aim_writeshort(len-2, offset, buf);
-	aim_writegeneric(10, "\x04\x4a\0\x04\0\0\0\0\0\0", offset, buf);
+    aim_writegeneric(10, "\x04\x4a\0\x04\0\0\0\0\0\0", offset, buf);
     aim_writechar((unsigned char)sn_length, offset, buf);               // screen name len
     aim_writegeneric(sn_length, sn, offset, buf);                       // screen name
     aim_writeshort(port_check, offset, buf);

@@ -144,6 +144,7 @@ int CAimProto::aim_set_icbm(HANDLE hServerConn,unsigned short &seqno)
     char buf[SNAC_SIZE+16];
     aim_writesnac(0x04,0x02,offset,buf);
     aim_writeshort(0,offset,buf);           //channel
+//    aim_writelong(0x3db,offset,buf);        //flags
     aim_writelong(0x11b,offset,buf);        //flags
     aim_writeshort(0x0fa0,offset,buf);      //max snac size
     aim_writeshort(0x03e7,offset,buf);      //max sender warning level
@@ -435,6 +436,20 @@ int CAimProto::aim_mod_group(HANDLE hServerConn, unsigned short &seqno, const ch
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
+int CAimProto::aim_ssi_update_preferences(HANDLE hServerConn, unsigned short &seqno)
+{
+    unsigned short offset = 0;
+    char buf[SNAC_SIZE+TLV_HEADER_SIZE*2+18];
+    aim_writesnac(0x13,0x09,offset,buf);                            // SSI Edit
+    aim_writeshort(0,offset,buf);									// group name length
+    aim_writeshort(0,offset,buf);									// group id (root)
+    aim_writeshort(1,offset,buf);                                   // buddy id
+    aim_writeshort(5,offset,buf);                                   // buddy type: Presence
+    aim_writeshort(TLV_HEADER_SIZE*2+8,offset,buf);					// length of extra data
+    aim_writetlvlong(0xc9,pref1_flags,offset,buf);					// Update Buddy preferences 1
+    return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
+}
+
 int CAimProto::aim_ssi_update(HANDLE hServerConn, unsigned short &seqno, bool start)
 {
     unsigned short offset=0;
@@ -448,7 +463,11 @@ int CAimProto::aim_keepalive(HANDLE hServerConn,unsigned short &seqno)
     return aim_sendflap(hServerConn,0x05,4,"\x0\x0\x0\xEE",seqno);
 }
 
-int CAimProto::aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,unsigned long ip, unsigned short port, bool force_proxy, unsigned short request_num ,char* file_name,unsigned long total_bytes,char* descr)//used when requesting a regular file transfer
+// used when requesting a regular file transfer
+int CAimProto::aim_send_file(HANDLE hServerConn, unsigned short &seqno, char* sn, char* icbm_cookie,
+                             unsigned long ip, unsigned short port, 
+                             bool force_proxy, unsigned short request_num, 
+                             char* file_name, unsigned long total_bytes, char* descr)
 {	
     unsigned short fnlen  = file_name ? (unsigned short)strlen(file_name) : 0;
     unsigned short dsclen = descr ? (unsigned short)strlen(descr) : 0;
@@ -460,8 +479,7 @@ int CAimProto::aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,c
     aim_writegeneric(AIM_CAPS_LENGTH, AIM_CAP_FILE_TRANSFER,
         frag_offset, msg_frag);                                     // uuid
     aim_writetlvshort(0x0a,request_num,frag_offset,msg_frag);       // request number
-    aim_writetlv(0x0f,0,0,frag_offset,msg_frag);                    // request host check
-    aim_writetlvshort(0x12,2,frag_offset,msg_frag);                 // max protocol version
+//    aim_writetlvshort(0x12,2,frag_offset,msg_frag);                 // max protocol version
 
     if (descr)
     {
@@ -473,22 +491,23 @@ int CAimProto::aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,c
     aim_writetlvlong(0x02,ip,frag_offset,msg_frag);                 // ip
     aim_writetlvlong(0x16,~ip,frag_offset,msg_frag);                // ip check
 
-    if (!force_proxy)
-        aim_writetlvlong(0x03,ip,frag_offset,msg_frag);             // ip
-    
     aim_writetlvshort(0x05,port,frag_offset,msg_frag);              // port
     aim_writetlvshort(0x17,~port,frag_offset,msg_frag);             // port ip check
     
     if (force_proxy)
         aim_writetlv(0x10,0,0,frag_offset,msg_frag);                // request proxy transfer
+    else
+        aim_writetlvlong(0x03,internal_ip,frag_offset,msg_frag);    // ip
 
     if (request_num == 1)
     {
+        aim_writetlv(0x0f,0,0,frag_offset,msg_frag);                // request host check
+
         char* fblock = (char*)alloca(9+fnlen);
         *(unsigned short*)&fblock[0] = _htons(1);                   // single file transfer
         *(unsigned short*)&fblock[2] = _htons(1);                   // number of files
         *(unsigned long*) &fblock[4] = _htonl(total_bytes);         // total bytes in files
-        memcpy(&fblock[8],file_name,fnlen+1);
+        memcpy(&fblock[8], file_name, fnlen+1);
 
         const char* enc = is_utf(file_name) ? "utf-8" : "us-ascii";
         aim_writetlv(0x2711,9+fnlen,fblock,frag_offset,msg_frag);   // extra data, file names, size
@@ -496,6 +515,10 @@ int CAimProto::aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,c
         aim_writetlvlong64(0x2713,total_bytes,frag_offset,msg_frag); // file length
 
         LOG("Attempting to Send a file to a buddy.");
+    }
+    else
+    {
+        aim_writetlvshort(0x14,0x0a,frag_offset,msg_frag);          // Counter proposal reason
     }
 
     unsigned short offset=0;
@@ -516,7 +539,7 @@ int CAimProto::aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,c
 }
 
 
-int CAimProto::aim_file_ad(HANDLE hServerConn,unsigned short &seqno,char* sn, char* icbm_cookie, bool deny, unsigned short reason)
+int CAimProto::aim_file_ad(HANDLE hServerConn,unsigned short &seqno,char* sn, char* icbm_cookie, bool deny, unsigned short max_ver)
 {	
     unsigned short frag_offset=0;
     char msg_frag[10+AIM_CAPS_LENGTH+TLV_HEADER_SIZE*2+6];
@@ -524,9 +547,9 @@ int CAimProto::aim_file_ad(HANDLE hServerConn,unsigned short &seqno,char* sn, ch
     aim_writegeneric(8,icbm_cookie,frag_offset,msg_frag);           // icbm cookie
     aim_writegeneric(AIM_CAPS_LENGTH,
         AIM_CAP_FILE_TRANSFER,frag_offset,msg_frag);                // uuid
-    aim_writetlvshort(0x12,2,frag_offset,msg_frag);                 // max protocol version
-    if (deny)
-        aim_writetlvshort(0x11,reason,frag_offset,msg_frag);        // denial reason
+
+//    if (max_ver > 1)
+//        aim_writetlvshort(0x12,2,frag_offset,msg_frag);             // max protocol version
 
     unsigned short sn_length=(unsigned short)strlen(sn);
     unsigned short offset=0;

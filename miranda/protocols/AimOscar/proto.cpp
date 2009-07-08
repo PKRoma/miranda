@@ -308,7 +308,7 @@ int __cdecl CAimProto::FileResume(HANDLE hTransfer, int* action, const char** sz
 
     default:
 //        case FILERESUME_SKIP:
-        aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true, 1);
+        aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true, ft->max_ver);
 	    break;
     }
     sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, ft, 0);
@@ -513,7 +513,6 @@ HANDLE __cdecl CAimProto::SendFile(HANDLE hContact, const char* szDescription, c
             ft->message = szDescription[0] ? mir_strdup(szDescription) : NULL;
 			ft->me_force_proxy = getByte(AIM_KEY_FP, 0) != 0;
             ft->requester = true;
-            ft->use_oft3 = getByte(hContact, AIM_KEY_O3, 0) != 0;
 
             ft_list.insert(ft);
 

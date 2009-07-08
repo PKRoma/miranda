@@ -326,7 +326,6 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 						char g =cap[14];
 						char h =cap[15];
 						mir_snprintf(client,sizeof(client),CLIENT_AIMOSCAR,a,b,c,d,e,f,g,h);
-						if (e == 0 && (f < 8 || (f == 8 && g < 3))) deleteSetting(hContact, AIM_KEY_O3);
 					}
 					else if(is_kopete_ver_cap(cap))
 					{
@@ -364,7 +363,7 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 				caps_included=1;
 				bool f002=0, f003=0, f004=0, f005=0, f007=0, f008=0, 
 					O101=0, O102=0, O103=0, O104=0, O105=0, O107=0, O1ff=0, 
-					O10a = 0, O10c=0,
+					O10a=0, O10c=0, O10d=0,
 					l341=0, l343=0, l345=0, l346=0, l347=0, l348=0, l34b=0, l34e=0;
 					//utf8=0;//O actually means 0 in this case
 				for(int i=0;i<tlv.len();i=i+2)
@@ -400,6 +399,8 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 						O10a=1;
 					if(cap==0x010c)
 						O10c=1;
+					if(cap==0x010d)
+						O10d=1;
 					if(cap==0x01ff)
 						O1ff=1;
 					if(cap==0x1323)
@@ -452,7 +453,9 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 					strcpy(client,CLIENT_AIM4);
 				else if(O1ff&&l343&&O107&&l341&&O104&&O105&&O101&&l346)
 				{
-					if (O10c)
+					if (O10d)
+						strcpy(client,CLIENT_AIM6_9);
+					else if (O10c)
 						strcpy(client,CLIENT_AIM6_8);
 					else if (O10a)
 						strcpy(client,CLIENT_AIM6_5);
@@ -467,8 +470,6 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 					strcpy(client,CLIENT_BEEJIVE);
 
 				//	setByte(hContact, AIM_KEY_US, utf8);
-				if (O10a) setByte(hContact, AIM_KEY_O3, 1);
-				else deleteSetting(hContact, AIM_KEY_O3);
 			}
 			else if (tlv.cmp(0x001d))//avatar
 			{
@@ -640,11 +641,11 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
 				pd_info_id = item_id;
 
 				const int tlv_base = offset + name_length + 10; 
-				int tlv_offset = 0;
-				while (tlv_offset<tlv_size)
+				for (int tlv_offset = 0; tlv_offset < tlv_size; )
 				{
 					TLV tlv(snac.val(tlv_base + tlv_offset));
-					if(tlv.cmp(0x00ca))
+
+                    if(tlv.cmp(0x00ca))
 						pd_mode = tlv.ubyte();
 					else if(tlv.cmp(0x00cc))
 						pd_flags = tlv.ulong();
@@ -654,7 +655,23 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
 			}
 			break;
 
-		case 0x0014: //avatar record
+		case 0x0005: //prefernces record
+			if (group_id == 0)
+			{
+				const int tlv_base = offset + name_length + 10; 
+				for (int tlv_offset = 0; tlv_offset < tlv_size; )
+				{
+					TLV tlv(snac.val(tlv_base + tlv_offset));
+
+                    if(tlv.cmp(0x00c9))
+						pref1_flags = tlv.ubyte();
+
+					tlv_offset += TLV_HEADER_SIZE + tlv.len();
+				}
+			}
+            break;
+
+        case 0x0014: //avatar record
 			if (group_id == 0 && name_length == 1 && name[0] == '1')
 				avatar_id = item_id;
 			break;
@@ -764,11 +781,11 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 		bool descr_included=false;
 		bool unicode_message=false;
 		bool utfname=false;
-		bool oft3 = false;
 		short recv_file_type=-1;
 		unsigned short request_num=0;
 		unsigned long local_ip=0, verified_ip=0, proxy_ip=0;
 		unsigned short port = 0;
+		unsigned short max_ver = 0;
 		//end file transfer stuff
 
 		unsigned short tlv_head_num=snac.ushort(offset-2);
@@ -847,6 +864,10 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 						{
 							force_proxy=1;
 						}
+						else if(tlv.cmp(0x0012))
+						{
+							max_ver=tlv.ushort();
+						}
 						else if(tlv.cmp(0x2711))
 						{
 							file_size=tlv.ulong(4);
@@ -861,7 +882,6 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 						else if(tlv.cmp(0x2713))
 						{
 							file_size=tlv.u64();
-							oft3 = true;
 						}
 						else if(tlv.cmp(0x000c))
 						{
@@ -1014,7 +1034,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			ft->verified_ip = verified_ip;
 			ft->proxy_ip = proxy_ip;
 			ft->port = port;
-			ft->use_oft3 = oft3;
+			ft->max_ver = max_ver;
 			ft->req_num = request_num;
 
 			ft->file = mir_strdup(filename);
@@ -1064,6 +1084,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 				ft->port = port;
 				ft->requester = false;
 				ft->req_num = request_num;
+			    ft->max_ver = max_ver;
 
 				char cip[20];
 				LOG("Local IP: %s:%u", long_ip_to_char_ip(local_ip, cip), port);
@@ -1075,7 +1096,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			else
 			{
 				LOG("Unknown File transfer, thus denied.");
-				aim_file_ad(hServerConn, seqno, sn, icbm_cookie, true);
+				aim_file_ad(hServerConn, seqno, sn, icbm_cookie, true, false);
 			}
 		}
 		else if (recv_file_type == 1)//buddy cancelled or denied file transfer
@@ -1091,9 +1112,12 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			LOG("File transfer accepted");
 			file_transfer* ft = ft_list.find_by_cookie(icbm_cookie, hContact);
 			if (ft) 
+            {
 				ft->accepted  = true;
+                ft->max_ver = max_ver;
+            }
 			else
-				aim_file_ad(hServerConn, seqno, sn, icbm_cookie, true);
+				aim_file_ad(hServerConn, seqno, sn, icbm_cookie, true, false);
 		}
 		mir_free(sn);
 		mir_free(msg_buf);

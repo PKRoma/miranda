@@ -19,6 +19,42 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "aim.h"
 #include "file.h"
 
+#pragma pack(push, 1)
+struct oft2//oscar file transfer 2 class- See On_Sending_Files_via_OSCAR.pdf
+{
+	char protocol_version[4];//4
+	unsigned short length;//6
+	unsigned short type;//8
+	unsigned char icbm_cookie[8];//16
+	unsigned short encryption;//18
+	unsigned short compression;//20
+	unsigned short total_files;//22
+	unsigned short num_files_left;//24
+	unsigned short total_parts;//26
+	unsigned short parts_left;//28
+	unsigned long total_size;//32
+	unsigned long size;//36
+	unsigned long mod_time;//40
+	unsigned long checksum;//44
+	unsigned long recv_RFchecksum;//48
+	unsigned long RFsize;//52
+	unsigned long creation_time;//56
+	unsigned long RFchecksum;//60
+	unsigned long recv_bytes;//64
+	unsigned long recv_checksum;//68
+	unsigned char idstring[32];//100
+	unsigned char flags;//101
+	unsigned char list_name_offset;//102
+	unsigned char list_size_offset;//103
+	unsigned char dummy[69];//172
+	unsigned char mac_info[16];//188
+	unsigned short encoding;//190
+	unsigned short sub_encoding;//192
+	unsigned char filename[64];//256
+ };
+
+#pragma pack(pop)
+
 void fill_OFT2(oft2 *oft, file_transfer *ft)
 {
     memset(oft, 0, sizeof(oft2));
@@ -57,40 +93,6 @@ void fill_OFT2(oft2 *oft, file_transfer *ft)
 	    memcpy(oft->filename, pszFile, strlen(pszFile));
 }
 
-void fill_OFT3(oft3 *oft, file_transfer *ft)
-{
-    memset(oft, 0, sizeof(oft3));
-    memcpy(oft->protocol_version, "OFT3", 4);
-	oft->length           = _htons(sizeof(oft2));
-	oft->type             = 0x0101;
-    memcpy(oft->icbm_cookie, ft->icbm_cookie, 8);
-	oft->total_files      = _htons(1);
-	oft->num_files_left   = _htons(1);
-	oft->total_parts      = _htons(1);
-	oft->parts_left       = _htons(1);
-	oft->total_size       = _htonl64(ft->total_size);
-	oft->size             = _htonl64(ft->total_size);
-	oft->mod_time         = _htonl(ft->ctime);
-	memcpy(oft->idstring, "Cool FileXfer", 13);
-	oft->flags            = 0x20;
-	oft->list_name_offset = 0x1c;
-	oft->list_size_offset = 0x11;
-
-	char* pszFile = strrchr(ft->file, '\\');
-	if (pszFile) pszFile++; else pszFile = ft->file;
-
-    if (is_utf(pszFile))
-    {
-        wchar_t *fn = mir_utf8decodeW(pszFile);
-        size_t len = wcslen(fn);
-        wcs_htons(fn);
-	    memcpy(oft->filename, fn, len*sizeof(wchar_t));
-        oft->encoding = 2;
-    }
-    else
-	    memcpy(oft->filename, pszFile, strlen(pszFile));
-}
-
 bool CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv)
 {
 	LOG("P2P: Entered file sending thread.");
@@ -101,10 +103,7 @@ bool CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETL
 
     oft2 oft;
 
-    if (ft->use_oft3)
-        fill_OFT3((oft3*)&oft, ft);
-    else
-        fill_OFT2(&oft, ft);
+    fill_OFT2(&oft, ft);
 
 
 	if (Netlib_Send(ft->hConn, (char*)&oft, sizeof(oft2), 0) == SOCKET_ERROR)
@@ -206,10 +205,7 @@ bool CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETL
 					oft2* recv_ft = (oft2*)packetRecv.buffer;
 					recv_ft->type = _htons(0x0106);
                     
-                    if (memcmp(recv_ft->protocol_version, "OFT2", 4) == 0)
-					    file_start_point = _htonl(recv_ft->recv_bytes);
-                    else
-					    file_start_point = _htonl64(((oft3*)recv_ft)->recv_bytes);
+				    file_start_point = _htonl(recv_ft->recv_bytes);
 
 					if (Netlib_Send(ft->hConn, (char*)recv_ft, sizeof(oft2), 0) == SOCKET_ERROR)
 						break;
@@ -269,25 +265,12 @@ bool CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NE
                         char *buf = (char*)mir_calloc(70);
                         unsigned short enc;
 
-                        if (memcmp(oft.protocol_version, "OFT2", 4) == 0)
-                        {
-						    const unsigned long size = _htonl(recv_ft->size);
-						    pfts.currentFileSize = size;
-						    pfts.totalBytes = size;
-                            pfts.currentFileTime = recv_ft->mod_time;
-                            memcpy(buf, recv_ft->filename, 64);
-                            enc = _htons(recv_ft->encoding);
-                        }
-                        else
-                        { 
-                            oft3* nft = (oft3*)recv_ft;
-						    const unsigned long size = (unsigned long)_htonl64(nft->size);
-						    pfts.currentFileSize = size;
-						    pfts.totalBytes = size;
-                            pfts.currentFileTime = nft->mod_time;
-                            memcpy(buf, nft->filename, 56);
-                            enc = _htons(nft->encoding);
-                        }
+					    const unsigned long size = _htonl(recv_ft->size);
+					    pfts.currentFileSize = size;
+					    pfts.totalBytes = size;
+                        pfts.currentFileTime = recv_ft->mod_time;
+                        memcpy(buf, recv_ft->filename, 64);
+                        enc = _htons(recv_ft->encoding);
 
                         if (enc == 2)
                         {
@@ -314,17 +297,8 @@ bool CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NE
 
                         if (ft->start_offset)
                         {
-                            if (memcmp(oft.protocol_version, "OFT2", 4) == 0)
-                            {
-                                oft.recv_bytes = _htonl(ft->start_offset);
-					            oft.checksum = _htonl(aim_oft_checksum_file(pfts.currentFile));
-                            }
-                            else
-                            {
-
-                                ((oft3*)&oft)->recv_bytes = _htonl(ft->start_offset);
-					            ((oft3*)&oft)->checksum = _htonl(aim_oft_checksum_file(pfts.currentFile));
-                            }
+                            oft.recv_bytes = _htonl(ft->start_offset);
+				            oft.checksum = _htonl(aim_oft_checksum_file(pfts.currentFile));
                         }
 
                         if (Netlib_Send(ft->hConn, (char*)&oft, sizeof(oft2), 0) == SOCKET_ERROR)
@@ -344,17 +318,10 @@ bool CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NE
 				if (pfts.totalBytes == pfts.currentFileProgress)
 				{
 					oft.type = _htons(0x0204);
-                    if (memcmp(oft.protocol_version, "OFT2", 4) == 0)
-                    {
-					    oft.recv_bytes = _htonl(pfts.totalBytes);
-					    oft.recv_checksum = _htonl(aim_oft_checksum_file(pfts.currentFile));
-                    }
-                    else
-                    {
-                        oft3* nft = (oft3*)&oft;
-					    nft->recv_bytes = _htonl(pfts.totalBytes);
-                    }
-					LOG("P2P: We got the file successfully");
+				    oft.recv_bytes = _htonl(pfts.totalBytes);
+				    oft.recv_checksum = _htonl(aim_oft_checksum_file(pfts.currentFile));
+
+                    LOG("P2P: We got the file successfully");
 					Netlib_Send(ft->hConn, (char*)&oft, sizeof(oft2), 0);
 					fclose(fd);
 					fd = 0;
@@ -401,7 +368,7 @@ file_transfer* ft_list_type::find_suitable(void)
     for (int i = getCount(); i--; )
     {
         file_transfer *ft = items[i];
-        if (ft->accepted && ft->requester && ft->local_ip == 0 && ft->verified_ip == 0 && ft->sending)
+        if (ft->accepted && ft->requester)
             return ft;
     }
     return NULL;

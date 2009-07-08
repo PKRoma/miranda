@@ -189,6 +189,8 @@ struct CAimProto : public PROTO_INTERFACE
     unsigned short pd_info_id;
     char pd_mode;
 
+	unsigned long pref1_flags;
+
     BdList allow_list;
     BdList block_list;
 
@@ -267,9 +269,10 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_add_contact(HANDLE hServerConn,unsigned short &seqno,const char* sn,unsigned short item_id,unsigned short group_id,unsigned short list);
 	int    aim_mod_group(HANDLE hServerConn,unsigned short &seqno,const char* name,unsigned short group_id,char* members,unsigned short members_length);
     int    aim_ssi_update(HANDLE hServerConn, unsigned short &seqno, bool start);
+    int    aim_ssi_update_preferences(HANDLE hServerConn, unsigned short &seqno);
 	int    aim_keepalive(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,unsigned long ip, unsigned short port, bool force_proxy, unsigned short request_num ,char* file_name,unsigned long total_bytes,char* descr);//used when requesting a regular file transfer
-	int    aim_file_ad(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,bool deny, unsigned short reason = 0);
+	int    aim_file_ad(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,bool deny,unsigned short max_ver);
 	int    aim_typing_notification(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short type);
 	int    aim_set_idle(HANDLE hServerConn,unsigned short &seqno,unsigned long seconds);
 	int    aim_request_mail(HANDLE hServerConn,unsigned short &seqno);

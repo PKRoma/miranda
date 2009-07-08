@@ -1044,6 +1044,7 @@ static INT_PTR CALLBACK privacy_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
         for (i=0; i<ppro->block_list.getCount(); ++i)
             SendDlgItemMessageA(hwndDlg, IDC_BLOCKLIST, LB_ADDSTRING, 0, (LPARAM)ppro->block_list[i].name);
 
+        CheckDlgButton (hwndDlg, IDC_SIS, (ppro->pref1_flags & 0x400) ? BST_CHECKED : BST_CHECKED);
         break;
     
 	case WM_COMMAND:
@@ -1127,6 +1128,13 @@ static INT_PTR CALLBACK privacy_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                     unsigned short id = ppro->allow_list.add(nick);
                     ppro->aim_add_contact(ppro->hServerConn, ppro->seqno, nick, id, 0, 2);
                 }
+            }
+
+            unsigned mask = (IsDlgButtonChecked(hwndDlg, IDC_SIS) == BST_CHECKED) << 10;
+            if ((ppro->pref1_flags & 0x400) ^ mask)
+            {
+                ppro->pref1_flags = (ppro->pref1_flags & ~0x400) | mask;
+                ppro->aim_ssi_update_preferences(ppro->hServerConn, ppro->seqno);
             }
 
             ppro->aim_ssi_update(ppro->hServerConn, ppro->seqno, false);
