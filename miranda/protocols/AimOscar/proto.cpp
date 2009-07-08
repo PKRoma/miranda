@@ -526,7 +526,7 @@ HANDLE __cdecl CAimProto::SendFile(HANDLE hContact, const char* szDescription, c
 		        char* pszFile = strrchr(ppszFiles[0], '\\');
 		        if (pszFile) pszFile++; else ppszFiles[0];
 
-                aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, internal_ip, local_port, 
+                aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, detected_ip, local_port, 
                     0, ++ft->req_num, pszFile, ft->total_size, ft->message);
             }
 

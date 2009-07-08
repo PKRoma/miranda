@@ -113,7 +113,7 @@ void __cdecl CAimProto::aim_proxy_helper(void* param)
                 }
 
                 sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED, ft, 0);
-/*
+
                 int i;
                 for (i = 21; --i && !ft->accepted; )
                 {
@@ -125,7 +125,7 @@ void __cdecl CAimProto::aim_proxy_helper(void* param)
                     sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
                     break;
                 }
-*/
+
                 packetRecv.dwTimeout = 100 * getWord(AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
 
                 bool success = false;
@@ -135,8 +135,6 @@ void __cdecl CAimProto::aim_proxy_helper(void* param)
                     success = receiving_file(ft, hServerPacketRecver, packetRecv);
 
                 sendBroadcast(ft->hContact, ACKTYPE_FILE, success ? ACKRESULT_SUCCESS : ACKRESULT_FAILED, ft, 0);
-                if (!success)
-                    aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true, ft->max_ver);
                 break;
             }
         }
