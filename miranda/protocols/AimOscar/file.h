@@ -21,37 +21,37 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 struct file_transfer
 {
-	HANDLE hContact;
+    HANDLE hContact;
     char* sn;
 
     char icbm_cookie[8];
 
-	unsigned __int64 total_size;
-	unsigned __int64 start_offset;
+    unsigned __int64 total_size;
+    unsigned __int64 start_offset;
 
     HANDLE hConn;
 
-	char* file;
-	char* message;
+    char* file;
+    char* message;
     time_t ctime;
 
-	//below is for when receiving only
-	unsigned long local_ip;
-	unsigned long verified_ip;
-	unsigned long proxy_ip;
-	unsigned short port;
+    //below is for when receiving only
+    unsigned long local_ip;
+    unsigned long verified_ip;
+    unsigned long proxy_ip;
+    unsigned short port;
     unsigned short max_ver;
 
     unsigned short req_num;
 
-	bool peer_force_proxy;
-	bool me_force_proxy;
+    bool peer_force_proxy;
+    bool me_force_proxy;
     bool sending;
     bool accepted;
     bool requester;
 
-	file_transfer()  { memset(this, 0, sizeof(*this)); }
-	~file_transfer() { mir_free(file); mir_free(message); mir_free(sn); }
+    file_transfer()  { memset(this, 0, sizeof(*this)); }
+    ~file_transfer() { mir_free(file); mir_free(message); mir_free(sn); }
 };
 
 struct ft_list_type : OBJLIST <file_transfer> 

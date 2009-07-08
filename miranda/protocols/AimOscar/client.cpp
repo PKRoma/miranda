@@ -512,7 +512,7 @@ int CAimProto::aim_send_file(HANDLE hServerConn, unsigned short &seqno, char* sn
         const char* enc = is_utf(file_name) ? "utf-8" : "us-ascii";
         aim_writetlv(0x2711,9+fnlen,fblock,frag_offset,msg_frag);   // extra data, file names, size
         aim_writetlv(0x2712,8,enc,frag_offset,msg_frag);            // character set used by data
-        aim_writetlvlong64(0x2713,total_bytes,frag_offset,msg_frag); // file length
+//        aim_writetlvlong64(0x2713,total_bytes,frag_offset,msg_frag); // file length
 
         LOG("Attempting to Send a file to a buddy.");
     }

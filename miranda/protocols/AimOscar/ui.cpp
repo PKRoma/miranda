@@ -27,55 +27,55 @@ COLORREF custColours[16]={0};
 
 static int CALLBACK EnumFontsProc(ENUMLOGFONTEX *lpelfe, NEWTEXTMETRICEX* /*lpntme*/, int /*FontType*/, LPARAM lParam)
 {
-	if (!IsWindow((HWND) lParam))
-		return FALSE;
-	if (SendMessage((HWND) lParam, CB_FINDSTRINGEXACT, 1, (LPARAM) lpelfe->elfLogFont.lfFaceName) == CB_ERR)
-		SendMessage((HWND) lParam, CB_ADDSTRING, 0, (LPARAM) lpelfe->elfLogFont.lfFaceName);
-	return TRUE;
+    if (!IsWindow((HWND) lParam))
+        return FALSE;
+    if (SendMessage((HWND) lParam, CB_FINDSTRINGEXACT, 1, (LPARAM) lpelfe->elfLogFont.lfFaceName) == CB_ERR)
+        SendMessage((HWND) lParam, CB_ADDSTRING, 0, (LPARAM) lpelfe->elfLogFont.lfFaceName);
+    return TRUE;
 }
 
 void DrawMyControl(HDC hDC, HWND /*hwndButton*/, HANDLE hTheme, UINT iState, RECT rect)
 {
-	BOOL bIsPressed = (iState & ODS_SELECTED);
-	BOOL bIsFocused  = (iState & ODS_FOCUS);
-	if (hTheme)
-	{
-		DWORD state = (bIsPressed)?PBS_PRESSED:PBS_NORMAL;
-		if(state == PBS_NORMAL)
-		{
-			if(bIsFocused)
-				state = PBS_DEFAULTED;
-		}
-		rect.top-=1;
-		rect.left-=1;
-		MyDrawThemeBackground(hTheme, hDC, BP_PUSHBUTTON,state, &rect, NULL);
-	}
-	else
-	{
-		if (bIsFocused)
-		{
-			HBRUSH br = CreateSolidBrush(RGB(0,0,0));  
-			FrameRect(hDC, &rect, br);
-			InflateRect(&rect, -1, -1);
-			DeleteObject(br);
-		} // if		
-		COLORREF crColor = GetSysColor(COLOR_BTNFACE);
-		HBRUSH	brBackground = CreateSolidBrush(crColor);
-		FillRect(hDC,&rect, brBackground);
-		DeleteObject(brBackground);
-		// Draw pressed button
-		if (bIsPressed)
-		{
-			HBRUSH brBtnShadow = CreateSolidBrush(GetSysColor(COLOR_BTNSHADOW));
-			FrameRect(hDC, &rect, brBtnShadow);
-			DeleteObject(brBtnShadow);
-		}
-		else // ...else draw non pressed button
-		{
-			UINT uState = DFCS_BUTTONPUSH|(bIsPressed? DFCS_PUSHED : 0);
-			DrawFrameControl(hDC, &rect, DFC_BUTTON, uState);
-		}
-	}
+    BOOL bIsPressed = (iState & ODS_SELECTED);
+    BOOL bIsFocused  = (iState & ODS_FOCUS);
+    if (hTheme)
+    {
+        DWORD state = (bIsPressed)?PBS_PRESSED:PBS_NORMAL;
+        if(state == PBS_NORMAL)
+        {
+            if(bIsFocused)
+                state = PBS_DEFAULTED;
+        }
+        rect.top-=1;
+        rect.left-=1;
+        MyDrawThemeBackground(hTheme, hDC, BP_PUSHBUTTON,state, &rect, NULL);
+    }
+    else
+    {
+        if (bIsFocused)
+        {
+            HBRUSH br = CreateSolidBrush(RGB(0,0,0));  
+            FrameRect(hDC, &rect, br);
+            InflateRect(&rect, -1, -1);
+            DeleteObject(br);
+        } // if		
+        COLORREF crColor = GetSysColor(COLOR_BTNFACE);
+        HBRUSH	brBackground = CreateSolidBrush(crColor);
+        FillRect(hDC,&rect, brBackground);
+        DeleteObject(brBackground);
+        // Draw pressed button
+        if (bIsPressed)
+        {
+            HBRUSH brBtnShadow = CreateSolidBrush(GetSysColor(COLOR_BTNSHADOW));
+            FrameRect(hDC, &rect, brBtnShadow);
+            DeleteObject(brBtnShadow);
+        }
+        else // ...else draw non pressed button
+        {
+            UINT uState = DFCS_BUTTONPUSH|(bIsPressed? DFCS_PUSHED : 0);
+            DrawFrameControl(hDC, &rect, DFC_BUTTON, uState);
+        }
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -83,562 +83,562 @@ void DrawMyControl(HDC hDC, HWND /*hwndButton*/, HANDLE hTheme, UINT iState, REC
 
 static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+    CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
-	switch (msg) 
+    switch (msg) 
     {
-	case WM_INITDIALOG:
-		{
-			SendDlgItemMessage(hwndDlg, IDC_BOLD, BUTTONSETASPUSHBTN, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETEVENTMASK, 0, ENM_CHANGE|ENM_SELCHANGE|ENM_REQUESTRESIZE);
-			SendDlgItemMessage(hwndDlg, IDC_BACKGROUNDCOLORPICKER, CPM_SETCOLOUR, 0, 0x00ffffff);
-			LOGFONT lf ={0};
-			HDC hdc = GetDC(hwndDlg);
-			lf.lfCharSet = DEFAULT_CHARSET;
-			lf.lfFaceName[0] = 0;
-			lf.lfPitchAndFamily = 0;
-			EnumFontFamiliesEx(hdc, &lf, (FONTENUMPROC) EnumFontsProc, (LPARAM) GetDlgItem(hwndDlg, IDC_TYPEFACE), 0);
-			ReleaseDC(hwndDlg, hdc);
-			SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("8"));
-			SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("10"));
-			SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("12"));
-			SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("14"));
-			SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("18"));
-			SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("24"));
-			SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("36"));
-			SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_SETCURSEL, 2, 0);
-			if (SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_SELECTSTRING, 1, (LPARAM)TEXT("Arial"))!=CB_ERR)
-			{
-				CHARFORMAT2 cf;
-				cf.cbSize = sizeof(cf);
-				cf.yHeight=12*20;
-				cf.dwMask=CFM_SIZE|CFM_FACE;
-				_tcscpy(cf.szFaceName, TEXT("Arial"));
-				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
-			}
-			else
-			{
-				CHARFORMAT2 cf;
-				cf.cbSize = sizeof(cf);
-				cf.yHeight=12*20;
-				cf.dwMask=CFM_SIZE;
-				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
-			}
-			break;
-		}
-	case WM_CLOSE:
-		EndDialog(hwndDlg, 0);
-		break;
+    case WM_INITDIALOG:
+        {
+            SendDlgItemMessage(hwndDlg, IDC_BOLD, BUTTONSETASPUSHBTN, 0, 0);
+            SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETEVENTMASK, 0, ENM_CHANGE|ENM_SELCHANGE|ENM_REQUESTRESIZE);
+            SendDlgItemMessage(hwndDlg, IDC_BACKGROUNDCOLORPICKER, CPM_SETCOLOUR, 0, 0x00ffffff);
+            LOGFONT lf ={0};
+            HDC hdc = GetDC(hwndDlg);
+            lf.lfCharSet = DEFAULT_CHARSET;
+            lf.lfFaceName[0] = 0;
+            lf.lfPitchAndFamily = 0;
+            EnumFontFamiliesEx(hdc, &lf, (FONTENUMPROC) EnumFontsProc, (LPARAM) GetDlgItem(hwndDlg, IDC_TYPEFACE), 0);
+            ReleaseDC(hwndDlg, hdc);
+            SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("8"));
+            SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("10"));
+            SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("12"));
+            SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("14"));
+            SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("18"));
+            SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("24"));
+            SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("36"));
+            SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_SETCURSEL, 2, 0);
+            if (SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_SELECTSTRING, 1, (LPARAM)TEXT("Arial"))!=CB_ERR)
+            {
+                CHARFORMAT2 cf;
+                cf.cbSize = sizeof(cf);
+                cf.yHeight=12*20;
+                cf.dwMask=CFM_SIZE|CFM_FACE;
+                _tcscpy(cf.szFaceName, TEXT("Arial"));
+                SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+            }
+            else
+            {
+                CHARFORMAT2 cf;
+                cf.cbSize = sizeof(cf);
+                cf.yHeight=12*20;
+                cf.dwMask=CFM_SIZE;
+                SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+            }
+            break;
+        }
+    case WM_CLOSE:
+        EndDialog(hwndDlg, 0);
+        break;
 
-	case WM_SIZING:
-		{
-			RECT* rect=(RECT*)lParam;
+    case WM_SIZING:
+        {
+            RECT* rect=(RECT*)lParam;
 #define MIN_HEIGHT 200
 #define MIN_WIDTH 400
-			if (WMSZ_RIGHT==wParam||WMSZ_TOPRIGHT==wParam||WMSZ_BOTTOMRIGHT==wParam)
-			{
-				if(rect->right-rect->left<MIN_WIDTH)
-					rect->right=rect->left+MIN_WIDTH;
-			}
-			if (WMSZ_LEFT==wParam||WMSZ_TOPLEFT==wParam||WMSZ_BOTTOMLEFT==wParam)
-			{
-				if(rect->right-rect->left<MIN_WIDTH)
-					rect->left=rect->right-MIN_WIDTH;
-			}
-			if (WMSZ_TOP==wParam||WMSZ_TOPRIGHT==wParam||WMSZ_TOPLEFT==wParam)
-			{
-				if(rect->bottom-rect->top<MIN_HEIGHT)
-					rect->top=rect->bottom-MIN_HEIGHT;
-			}
-			if (WMSZ_BOTTOM==wParam||WMSZ_BOTTOMLEFT==wParam||WMSZ_BOTTOMRIGHT==wParam)
-			{
-				if(rect->bottom-rect->top<MIN_HEIGHT)
-					rect->bottom=rect->top+MIN_HEIGHT;
-			}
-			break;
-		}
-
-	case WM_SIZE:
-		{
-			int width=LOWORD(lParam);
-			int height=HIWORD(lParam);
-			SetWindowPos(GetDlgItem(hwndDlg, IDC_PROFILE),HWND_TOP,6,60,width-12,height-67,0);	// this 'case' should go away
-			SetWindowPos(GetDlgItem(hwndDlg, IDC_SETPROFILE),HWND_TOP,width-97,height-224,0,0,SWP_NOSIZE);	// since there's no profile window resize anymore
-			break;
-		}
-	case WM_NOTIFY:
-		switch (LOWORD(wParam)) 
-        {
-		case IDC_PROFILE:
-			if (((LPNMHDR)lParam)->code==EN_SELCHANGE)
-			{
-				CHARFORMAT2 cfOld;
-				cfOld.cbSize = sizeof(CHARFORMAT2);
-				cfOld.dwMask = CFM_FACE | CFM_SIZE;
-				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
-				if (SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_SELECTSTRING, 1, (LPARAM)cfOld.szFaceName)==-1)
-				{
-					SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_ADDSTRING, 0, (LPARAM)cfOld.szFaceName);
-					SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_SELECTSTRING, 1, (LPARAM)cfOld.szFaceName);
-				}
-				char size[10];
-				_itoa(cfOld.yHeight/20,size,sizeof(size));
-				//SetDlgItemText(hwndDlg, IDC_FONTSIZE, size);
-				SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_SELECTSTRING, 1, (LPARAM)size);
-				InvalidateRect(GetDlgItem(hwndDlg, IDC_SUPERSCRIPT), NULL, FALSE);
-				InvalidateRect(GetDlgItem(hwndDlg, IDC_NORMALSCRIPT), NULL, FALSE);
-				InvalidateRect(GetDlgItem(hwndDlg, IDC_SUBSCRIPT), NULL, FALSE);
-				InvalidateRect(GetDlgItem(hwndDlg, IDC_BOLD), NULL, FALSE);
-				InvalidateRect(GetDlgItem(hwndDlg, IDC_ITALIC), NULL, FALSE);
-				InvalidateRect(GetDlgItem(hwndDlg, IDC_UNDERLINE), NULL, FALSE);
-			}
-			else if (((LPNMHDR)lParam)->code==EN_REQUESTRESIZE)
-			{
-				//	REQRESIZE* rr= (REQRESIZE*)lParam;
-				//SetWindowPos(GetDlgItem(hwndDlg, IDC_PROFILE),HWND_TOP,rr->rc.left,rr->rc.top,rr->rc.right,rr->rc.bottom,0);
-			}
-			break;
-
-		default:
-			if (((LPNMHDR)lParam)->code == PSN_PARAMCHANGED) 
+            if (WMSZ_RIGHT==wParam||WMSZ_TOPRIGHT==wParam||WMSZ_BOTTOMRIGHT==wParam)
             {
-				ppro = (CAimProto*)((PSHNOTIFY*)lParam)->lParam;
-				SetWindowLongPtr(hwndDlg, GWLP_USERDATA, LPARAM(ppro));
+                if(rect->right-rect->left<MIN_WIDTH)
+                    rect->right=rect->left+MIN_WIDTH;
+            }
+            if (WMSZ_LEFT==wParam||WMSZ_TOPLEFT==wParam||WMSZ_BOTTOMLEFT==wParam)
+            {
+                if(rect->right-rect->left<MIN_WIDTH)
+                    rect->left=rect->right-MIN_WIDTH;
+            }
+            if (WMSZ_TOP==wParam||WMSZ_TOPRIGHT==wParam||WMSZ_TOPLEFT==wParam)
+            {
+                if(rect->bottom-rect->top<MIN_HEIGHT)
+                    rect->top=rect->bottom-MIN_HEIGHT;
+            }
+            if (WMSZ_BOTTOM==wParam||WMSZ_BOTTOMLEFT==wParam||WMSZ_BOTTOMRIGHT==wParam)
+            {
+                if(rect->bottom-rect->top<MIN_HEIGHT)
+                    rect->bottom=rect->top+MIN_HEIGHT;
+            }
+            break;
+        }
 
-				DBVARIANT dbv;
-				if (!DBGetContactSettingStringUtf(NULL, ppro->m_szModuleName, AIM_KEY_PR, &dbv))
-				{
+    case WM_SIZE:
+        {
+            int width=LOWORD(lParam);
+            int height=HIWORD(lParam);
+            SetWindowPos(GetDlgItem(hwndDlg, IDC_PROFILE),HWND_TOP,6,60,width-12,height-67,0);	// this 'case' should go away
+            SetWindowPos(GetDlgItem(hwndDlg, IDC_SETPROFILE),HWND_TOP,width-97,height-224,0,0,SWP_NOSIZE);	// since there's no profile window resize anymore
+            break;
+        }
+    case WM_NOTIFY:
+        switch (LOWORD(wParam)) 
+        {
+        case IDC_PROFILE:
+            if (((LPNMHDR)lParam)->code==EN_SELCHANGE)
+            {
+                CHARFORMAT2 cfOld;
+                cfOld.cbSize = sizeof(CHARFORMAT2);
+                cfOld.dwMask = CFM_FACE | CFM_SIZE;
+                SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
+                if (SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_SELECTSTRING, 1, (LPARAM)cfOld.szFaceName)==-1)
+                {
+                    SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_ADDSTRING, 0, (LPARAM)cfOld.szFaceName);
+                    SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_SELECTSTRING, 1, (LPARAM)cfOld.szFaceName);
+                }
+                char size[10];
+                _itoa(cfOld.yHeight/20,size,sizeof(size));
+                //SetDlgItemText(hwndDlg, IDC_FONTSIZE, size);
+                SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_SELECTSTRING, 1, (LPARAM)size);
+                InvalidateRect(GetDlgItem(hwndDlg, IDC_SUPERSCRIPT), NULL, FALSE);
+                InvalidateRect(GetDlgItem(hwndDlg, IDC_NORMALSCRIPT), NULL, FALSE);
+                InvalidateRect(GetDlgItem(hwndDlg, IDC_SUBSCRIPT), NULL, FALSE);
+                InvalidateRect(GetDlgItem(hwndDlg, IDC_BOLD), NULL, FALSE);
+                InvalidateRect(GetDlgItem(hwndDlg, IDC_ITALIC), NULL, FALSE);
+                InvalidateRect(GetDlgItem(hwndDlg, IDC_UNDERLINE), NULL, FALSE);
+            }
+            else if (((LPNMHDR)lParam)->code==EN_REQUESTRESIZE)
+            {
+                //	REQRESIZE* rr= (REQRESIZE*)lParam;
+                //SetWindowPos(GetDlgItem(hwndDlg, IDC_PROFILE),HWND_TOP,rr->rc.left,rr->rc.top,rr->rc.right,rr->rc.bottom,0);
+            }
+            break;
+
+        default:
+            if (((LPNMHDR)lParam)->code == PSN_PARAMCHANGED) 
+            {
+                ppro = (CAimProto*)((PSHNOTIFY*)lParam)->lParam;
+                SetWindowLongPtr(hwndDlg, GWLP_USERDATA, LPARAM(ppro));
+
+                DBVARIANT dbv;
+                if (!DBGetContactSettingStringUtf(NULL, ppro->m_szModuleName, AIM_KEY_PR, &dbv))
+                {
                     html_decode(dbv.pszVal);
                     TCHAR *txt = mir_utf8decodeT(dbv.pszVal);
-					SetDlgItemText(hwndDlg, IDC_PROFILE, txt);
+                    SetDlgItemText(hwndDlg, IDC_PROFILE, txt);
                     mir_free(txt);
-					DBFreeVariant(&dbv);
-				}
-			}
-		}
-		break;
+                    DBFreeVariant(&dbv);
+                }
+            }
+        }
+        break;
 
-	case WM_DRAWITEM:
-		{
-			if (themeAPIHandle)
-			{
-				MyCloseThemeData (hThemeButton);
-				hThemeButton = MyOpenThemeData (GetDlgItem(hwndDlg, IDC_BOLD), L"Button");
-			}
-			LPDRAWITEMSTRUCT lpDIS = (LPDRAWITEMSTRUCT) lParam;
-			if (lpDIS->CtlID == IDC_SUPERSCRIPT)
-			{
-				CHARFORMAT2 cfOld;
-				cfOld.cbSize = sizeof(CHARFORMAT2);
-				cfOld.dwMask = CFM_SUPERSCRIPT;
-				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
-				BOOL isSuper = (cfOld.dwEffects & CFE_SUPERSCRIPT) && (cfOld.dwMask & CFM_SUPERSCRIPT);
-				if(isSuper)
-				{
-					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState|ODS_SELECTED, lpDIS->rcItem);	
-					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("sup_scrpt"), 16, 16, 0, 0, DI_NORMAL);
-					ReleaseIconEx("sup_scrpt");
-				}
-				else
-				{	
-					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("nsup_scrpt"), 16, 16, 0, 0, DI_NORMAL);
-					ReleaseIconEx("nsup_scrpt");
-				}
-			}
-			else if (lpDIS->CtlID == IDC_NORMALSCRIPT)
-			{
-				CHARFORMAT2 cfOld;
-				cfOld.cbSize = sizeof(CHARFORMAT2);
-				cfOld.dwMask = CFM_SUBSCRIPT|CFM_SUPERSCRIPT;
-				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
-				BOOL isSub = (cfOld.dwEffects & CFE_SUBSCRIPT) && (cfOld.dwMask & CFM_SUBSCRIPT);
-				BOOL isSuper = (cfOld.dwEffects & CFE_SUPERSCRIPT) && (cfOld.dwMask & CFM_SUPERSCRIPT);
-				if(!isSub&&!isSuper)
-				{
-					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState|ODS_SELECTED, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("norm_scrpt"), 16, 16, 0, 0, DI_NORMAL);
-					ReleaseIconEx("norm_scrpt");
-				}
-				else
-				{
-					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("nnorm_scrpt"), 16, 16, 0, 0, DI_NORMAL);
-					ReleaseIconEx("nnorm_scrpt");
-				}
-			}
-			else if (lpDIS->CtlID == IDC_SUBSCRIPT)
-			{
-				CHARFORMAT2 cfOld;
-				cfOld.cbSize = sizeof(CHARFORMAT2);
-				cfOld.dwMask = CFM_SUBSCRIPT;
-				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
-				BOOL isSub = (cfOld.dwEffects & CFE_SUBSCRIPT) && (cfOld.dwMask & CFM_SUBSCRIPT);
-				if(isSub)
-				{
-					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState|ODS_SELECTED, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("sub_scrpt"), 16, 16, 0, 0, DI_NORMAL);	
-					ReleaseIconEx("sub_scrpt");
-				}
-				else
-				{
-					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("nsub_scrpt"), 16, 16, 0, 0, DI_NORMAL);
-					ReleaseIconEx("nsub_scrpt");
-				}
-			}
-			else if (lpDIS->CtlID == IDC_BOLD)
-			{
-				CHARFORMAT2 cfOld;
-				cfOld.cbSize = sizeof(CHARFORMAT2);
-				cfOld.dwMask = CFM_BOLD;
-				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
-				BOOL isBold = (cfOld.dwEffects & CFE_BOLD) && (cfOld.dwMask & CFM_BOLD);
-				if (!isBold)
-				{
-					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("nbold"), 16, 16, 0, 0, DI_NORMAL);
-					ReleaseIconEx("nbold");
-				}
-				else
-				{
-					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState|ODS_SELECTED, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("bold"), 16, 16, 0, 0, DI_NORMAL);
-					ReleaseIconEx("bold");
-				}
-			}
-			else if(lpDIS->CtlID == IDC_ITALIC)
-			{
-				CHARFORMAT2 cfOld;
-				cfOld.cbSize = sizeof(CHARFORMAT2);
-				cfOld.dwMask = CFM_ITALIC;
-				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
-				BOOL isItalic = (cfOld.dwEffects & CFE_ITALIC) && (cfOld.dwMask & CFM_ITALIC);
-				if(!isItalic)
-				{
-					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_ITALIC),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("nitalic"), 16, 16, 0, 0, DI_NORMAL);
-					ReleaseIconEx("nitalic");
-				}
-				else
-				{
-					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_ITALIC),hThemeButton,lpDIS->itemState|ODS_SELECTED, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("italic"), 16, 16, 0, 0, DI_NORMAL);
-					ReleaseIconEx("italic");
-				}
-			}
-			else if (lpDIS->CtlID == IDC_UNDERLINE)
-			{
-				CHARFORMAT2 cfOld;
-				cfOld.cbSize = sizeof(CHARFORMAT2);
-				cfOld.dwMask = CFM_UNDERLINE;
-				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
-				BOOL isUnderline = (cfOld.dwEffects & CFE_UNDERLINE) && (cfOld.dwMask & CFM_UNDERLINE);
-				if(!isUnderline)
-				{
-					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_UNDERLINE),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("nundrln"), 16, 16, 0, 0, DI_NORMAL);
-					ReleaseIconEx("nundrln");
-				}
-				else
-				{
-					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_UNDERLINE),hThemeButton,lpDIS->itemState|ODS_SELECTED, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("undrln"), 16, 16, 0, 0, DI_NORMAL);
-					ReleaseIconEx("undrln");
-				}
-			}
-			else if (lpDIS->CtlID == IDC_FOREGROUNDCOLOR)
-			{
-				DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_FOREGROUNDCOLOR),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
-				DrawIconEx(lpDIS->hDC, 4, 2, LoadIconEx("foreclr"), 16, 16, 0, 0, DI_NORMAL);
-				ReleaseIconEx("foreclr");
-				HBRUSH	hbr = CreateSolidBrush(foreground);
-				HPEN hp = CreatePen(PS_SOLID, 1, ~foreground&0x00ffffff);
-				SelectObject(lpDIS->hDC,hp);
-				RECT rect=lpDIS->rcItem;
-				rect.top+=18;
-				rect.bottom-=4;
-				rect.left+=5;
-				rect.right-=5;
-				Rectangle(lpDIS->hDC,rect.left-1,rect.top-1,rect.right+1,rect.bottom+1);
-				FillRect(lpDIS->hDC,&rect, hbr);
-				DeleteObject(hbr);
-				DeleteObject(hp);
-			}
-			else if (lpDIS->CtlID == IDC_FOREGROUNDCOLORPICKER)
-			{
-				DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_FOREGROUNDCOLORPICKER),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
-				HBRUSH	hbr = CreateSolidBrush(foreground);
-				HPEN hp = CreatePen(PS_SOLID, 1,~foreground&0x00ffffff);
-				SelectObject(lpDIS->hDC,hbr);
-				SelectObject(lpDIS->hDC,hp);
-				POINT tri[3];
-				tri[0].x=3;
-				tri[0].y=10;
-				tri[1].x=9;
-				tri[1].y=10;
-				tri[2].x=6;
-				tri[2].y=15;
-				Polygon(lpDIS->hDC,tri,3);
-				DeleteObject(hbr);
-				DeleteObject(hp);
-			}
-			else if (lpDIS->CtlID == IDC_BACKGROUNDCOLOR)
-			{
-				DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BACKGROUNDCOLOR),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
-				DrawIconEx(lpDIS->hDC, 4, 2, LoadIconEx("backclr"), 16, 16, 0, 0, DI_NORMAL);
-				ReleaseIconEx("backclr");
-				HBRUSH	hbr = CreateSolidBrush(background);
-				HPEN hp = CreatePen(PS_SOLID, 1, ~background&0x00ffffff);
-				SelectObject(lpDIS->hDC,hp);
-				RECT rect=lpDIS->rcItem;
-				rect.top+=18;
-				rect.bottom-=4;
-				rect.left+=5;
-				rect.right-=5;
-				Rectangle(lpDIS->hDC,rect.left-1,rect.top-1,rect.right+1,rect.bottom+1);
-				FillRect(lpDIS->hDC,&rect, hbr);
-				DeleteObject(hbr);
-				DeleteObject(hp);
-			}
-			else if (lpDIS->CtlID == IDC_BACKGROUNDCOLORPICKER)
-			{
-				DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BACKGROUNDCOLORPICKER),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
-				HBRUSH	hbr = CreateSolidBrush(background);
-				HPEN hp = CreatePen(PS_SOLID, 1,~background&0x00ffffff);
-				SelectObject(lpDIS->hDC,hbr);
-				SelectObject(lpDIS->hDC,hp);
-				POINT tri[3];
-				tri[0].x=3;
-				tri[0].y=10;
-				tri[1].x=9;
-				tri[1].y=10;
-				tri[2].x=6;
-				tri[2].y=15;
-				Polygon(lpDIS->hDC,tri,3);
-				DeleteObject(hbr);
-				DeleteObject(hp);
-			}
-			break;
-		}
-
-	case WM_COMMAND:
-		switch (LOWORD(wParam)) 
+    case WM_DRAWITEM:
         {
-		case IDC_PROFILE:
-			if (HIWORD(wParam) == EN_CHANGE)
-				EnableWindow(GetDlgItem(hwndDlg, IDC_SETPROFILE), TRUE);
-			break;
+            if (themeAPIHandle)
+            {
+                MyCloseThemeData (hThemeButton);
+                hThemeButton = MyOpenThemeData (GetDlgItem(hwndDlg, IDC_BOLD), L"Button");
+            }
+            LPDRAWITEMSTRUCT lpDIS = (LPDRAWITEMSTRUCT) lParam;
+            if (lpDIS->CtlID == IDC_SUPERSCRIPT)
+            {
+                CHARFORMAT2 cfOld;
+                cfOld.cbSize = sizeof(CHARFORMAT2);
+                cfOld.dwMask = CFM_SUPERSCRIPT;
+                SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
+                BOOL isSuper = (cfOld.dwEffects & CFE_SUPERSCRIPT) && (cfOld.dwMask & CFM_SUPERSCRIPT);
+                if(isSuper)
+                {
+                    DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState|ODS_SELECTED, lpDIS->rcItem);	
+                    DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("sup_scrpt"), 16, 16, 0, 0, DI_NORMAL);
+                    ReleaseIconEx("sup_scrpt");
+                }
+                else
+                {	
+                    DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
+                    DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("nsup_scrpt"), 16, 16, 0, 0, DI_NORMAL);
+                    ReleaseIconEx("nsup_scrpt");
+                }
+            }
+            else if (lpDIS->CtlID == IDC_NORMALSCRIPT)
+            {
+                CHARFORMAT2 cfOld;
+                cfOld.cbSize = sizeof(CHARFORMAT2);
+                cfOld.dwMask = CFM_SUBSCRIPT|CFM_SUPERSCRIPT;
+                SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
+                BOOL isSub = (cfOld.dwEffects & CFE_SUBSCRIPT) && (cfOld.dwMask & CFM_SUBSCRIPT);
+                BOOL isSuper = (cfOld.dwEffects & CFE_SUPERSCRIPT) && (cfOld.dwMask & CFM_SUPERSCRIPT);
+                if(!isSub&&!isSuper)
+                {
+                    DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState|ODS_SELECTED, lpDIS->rcItem);
+                    DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("norm_scrpt"), 16, 16, 0, 0, DI_NORMAL);
+                    ReleaseIconEx("norm_scrpt");
+                }
+                else
+                {
+                    DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
+                    DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("nnorm_scrpt"), 16, 16, 0, 0, DI_NORMAL);
+                    ReleaseIconEx("nnorm_scrpt");
+                }
+            }
+            else if (lpDIS->CtlID == IDC_SUBSCRIPT)
+            {
+                CHARFORMAT2 cfOld;
+                cfOld.cbSize = sizeof(CHARFORMAT2);
+                cfOld.dwMask = CFM_SUBSCRIPT;
+                SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
+                BOOL isSub = (cfOld.dwEffects & CFE_SUBSCRIPT) && (cfOld.dwMask & CFM_SUBSCRIPT);
+                if(isSub)
+                {
+                    DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState|ODS_SELECTED, lpDIS->rcItem);
+                    DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("sub_scrpt"), 16, 16, 0, 0, DI_NORMAL);	
+                    ReleaseIconEx("sub_scrpt");
+                }
+                else
+                {
+                    DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
+                    DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("nsub_scrpt"), 16, 16, 0, 0, DI_NORMAL);
+                    ReleaseIconEx("nsub_scrpt");
+                }
+            }
+            else if (lpDIS->CtlID == IDC_BOLD)
+            {
+                CHARFORMAT2 cfOld;
+                cfOld.cbSize = sizeof(CHARFORMAT2);
+                cfOld.dwMask = CFM_BOLD;
+                SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
+                BOOL isBold = (cfOld.dwEffects & CFE_BOLD) && (cfOld.dwMask & CFM_BOLD);
+                if (!isBold)
+                {
+                    DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
+                    DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("nbold"), 16, 16, 0, 0, DI_NORMAL);
+                    ReleaseIconEx("nbold");
+                }
+                else
+                {
+                    DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState|ODS_SELECTED, lpDIS->rcItem);
+                    DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("bold"), 16, 16, 0, 0, DI_NORMAL);
+                    ReleaseIconEx("bold");
+                }
+            }
+            else if(lpDIS->CtlID == IDC_ITALIC)
+            {
+                CHARFORMAT2 cfOld;
+                cfOld.cbSize = sizeof(CHARFORMAT2);
+                cfOld.dwMask = CFM_ITALIC;
+                SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
+                BOOL isItalic = (cfOld.dwEffects & CFE_ITALIC) && (cfOld.dwMask & CFM_ITALIC);
+                if(!isItalic)
+                {
+                    DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_ITALIC),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
+                    DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("nitalic"), 16, 16, 0, 0, DI_NORMAL);
+                    ReleaseIconEx("nitalic");
+                }
+                else
+                {
+                    DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_ITALIC),hThemeButton,lpDIS->itemState|ODS_SELECTED, lpDIS->rcItem);
+                    DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("italic"), 16, 16, 0, 0, DI_NORMAL);
+                    ReleaseIconEx("italic");
+                }
+            }
+            else if (lpDIS->CtlID == IDC_UNDERLINE)
+            {
+                CHARFORMAT2 cfOld;
+                cfOld.cbSize = sizeof(CHARFORMAT2);
+                cfOld.dwMask = CFM_UNDERLINE;
+                SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
+                BOOL isUnderline = (cfOld.dwEffects & CFE_UNDERLINE) && (cfOld.dwMask & CFM_UNDERLINE);
+                if(!isUnderline)
+                {
+                    DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_UNDERLINE),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
+                    DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("nundrln"), 16, 16, 0, 0, DI_NORMAL);
+                    ReleaseIconEx("nundrln");
+                }
+                else
+                {
+                    DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_UNDERLINE),hThemeButton,lpDIS->itemState|ODS_SELECTED, lpDIS->rcItem);
+                    DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("undrln"), 16, 16, 0, 0, DI_NORMAL);
+                    ReleaseIconEx("undrln");
+                }
+            }
+            else if (lpDIS->CtlID == IDC_FOREGROUNDCOLOR)
+            {
+                DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_FOREGROUNDCOLOR),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
+                DrawIconEx(lpDIS->hDC, 4, 2, LoadIconEx("foreclr"), 16, 16, 0, 0, DI_NORMAL);
+                ReleaseIconEx("foreclr");
+                HBRUSH	hbr = CreateSolidBrush(foreground);
+                HPEN hp = CreatePen(PS_SOLID, 1, ~foreground&0x00ffffff);
+                SelectObject(lpDIS->hDC,hp);
+                RECT rect=lpDIS->rcItem;
+                rect.top+=18;
+                rect.bottom-=4;
+                rect.left+=5;
+                rect.right-=5;
+                Rectangle(lpDIS->hDC,rect.left-1,rect.top-1,rect.right+1,rect.bottom+1);
+                FillRect(lpDIS->hDC,&rect, hbr);
+                DeleteObject(hbr);
+                DeleteObject(hp);
+            }
+            else if (lpDIS->CtlID == IDC_FOREGROUNDCOLORPICKER)
+            {
+                DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_FOREGROUNDCOLORPICKER),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
+                HBRUSH	hbr = CreateSolidBrush(foreground);
+                HPEN hp = CreatePen(PS_SOLID, 1,~foreground&0x00ffffff);
+                SelectObject(lpDIS->hDC,hbr);
+                SelectObject(lpDIS->hDC,hp);
+                POINT tri[3];
+                tri[0].x=3;
+                tri[0].y=10;
+                tri[1].x=9;
+                tri[1].y=10;
+                tri[2].x=6;
+                tri[2].y=15;
+                Polygon(lpDIS->hDC,tri,3);
+                DeleteObject(hbr);
+                DeleteObject(hp);
+            }
+            else if (lpDIS->CtlID == IDC_BACKGROUNDCOLOR)
+            {
+                DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BACKGROUNDCOLOR),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
+                DrawIconEx(lpDIS->hDC, 4, 2, LoadIconEx("backclr"), 16, 16, 0, 0, DI_NORMAL);
+                ReleaseIconEx("backclr");
+                HBRUSH	hbr = CreateSolidBrush(background);
+                HPEN hp = CreatePen(PS_SOLID, 1, ~background&0x00ffffff);
+                SelectObject(lpDIS->hDC,hp);
+                RECT rect=lpDIS->rcItem;
+                rect.top+=18;
+                rect.bottom-=4;
+                rect.left+=5;
+                rect.right-=5;
+                Rectangle(lpDIS->hDC,rect.left-1,rect.top-1,rect.right+1,rect.bottom+1);
+                FillRect(lpDIS->hDC,&rect, hbr);
+                DeleteObject(hbr);
+                DeleteObject(hp);
+            }
+            else if (lpDIS->CtlID == IDC_BACKGROUNDCOLORPICKER)
+            {
+                DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BACKGROUNDCOLORPICKER),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
+                HBRUSH	hbr = CreateSolidBrush(background);
+                HPEN hp = CreatePen(PS_SOLID, 1,~background&0x00ffffff);
+                SelectObject(lpDIS->hDC,hbr);
+                SelectObject(lpDIS->hDC,hp);
+                POINT tri[3];
+                tri[0].x=3;
+                tri[0].y=10;
+                tri[1].x=9;
+                tri[1].y=10;
+                tri[2].x=6;
+                tri[2].y=15;
+                Polygon(lpDIS->hDC,tri,3);
+                DeleteObject(hbr);
+                DeleteObject(hp);
+            }
+            break;
+        }
 
-		case IDC_SETPROFILE:
-			{
-				char* buf = rtf_to_html(hwndDlg, IDC_PROFILE);
+    case WM_COMMAND:
+        switch (LOWORD(wParam)) 
+        {
+        case IDC_PROFILE:
+            if (HIWORD(wParam) == EN_CHANGE)
+                EnableWindow(GetDlgItem(hwndDlg, IDC_SETPROFILE), TRUE);
+            break;
+
+        case IDC_SETPROFILE:
+            {
+                char* buf = rtf_to_html(hwndDlg, IDC_PROFILE);
                 DBWriteContactSettingStringUtf(NULL, ppro->m_szModuleName, AIM_KEY_PR, buf);
-				if (ppro->state==1)
-					ppro->aim_set_profile(ppro->hServerConn,ppro->seqno,buf);//also see set caps for profile setting
+                if (ppro->state==1)
+                    ppro->aim_set_profile(ppro->hServerConn,ppro->seqno,buf);//also see set caps for profile setting
 
                 mir_free(buf);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_SETPROFILE), FALSE);
-			}
-			break;
+                EnableWindow(GetDlgItem(hwndDlg, IDC_SETPROFILE), FALSE);
+            }
+            break;
 
-		case IDC_SUPERSCRIPT:
-			if (HIWORD(wParam) == BN_CLICKED) 
+        case IDC_SUPERSCRIPT:
+            if (HIWORD(wParam) == BN_CLICKED) 
             {
-				CHARFORMAT2 cf;
-				cf.cbSize = sizeof(CHARFORMAT2);
-				cf.dwMask=CFM_SUPERSCRIPT;
-				cf.dwEffects=CFE_SUPERSCRIPT;
-				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
-				SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
-				InvalidateRect(GetDlgItem(hwndDlg, IDC_NORMALSCRIPT), NULL, FALSE);
-				InvalidateRect(GetDlgItem(hwndDlg, IDC_SUBSCRIPT), NULL, FALSE);
-			}
-			break;
+                CHARFORMAT2 cf;
+                cf.cbSize = sizeof(CHARFORMAT2);
+                cf.dwMask=CFM_SUPERSCRIPT;
+                cf.dwEffects=CFE_SUPERSCRIPT;
+                SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+                SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
+                InvalidateRect(GetDlgItem(hwndDlg, IDC_NORMALSCRIPT), NULL, FALSE);
+                InvalidateRect(GetDlgItem(hwndDlg, IDC_SUBSCRIPT), NULL, FALSE);
+            }
+            break;
 
-		case IDC_NORMALSCRIPT:
-			if (HIWORD(wParam) == BN_CLICKED) 
+        case IDC_NORMALSCRIPT:
+            if (HIWORD(wParam) == BN_CLICKED) 
             {
-				CHARFORMAT2 cf;
-				cf.cbSize = sizeof(CHARFORMAT2);
-				cf.dwMask=CFM_SUPERSCRIPT;
-				cf.dwEffects &= ~CFE_SUPERSCRIPT;
-				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
-				SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
-				InvalidateRect(GetDlgItem(hwndDlg, IDC_SUPERSCRIPT), NULL, FALSE);
-				InvalidateRect(GetDlgItem(hwndDlg, IDC_SUBSCRIPT), NULL, FALSE);
-			}
-			break;
+                CHARFORMAT2 cf;
+                cf.cbSize = sizeof(CHARFORMAT2);
+                cf.dwMask=CFM_SUPERSCRIPT;
+                cf.dwEffects &= ~CFE_SUPERSCRIPT;
+                SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+                SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
+                InvalidateRect(GetDlgItem(hwndDlg, IDC_SUPERSCRIPT), NULL, FALSE);
+                InvalidateRect(GetDlgItem(hwndDlg, IDC_SUBSCRIPT), NULL, FALSE);
+            }
+            break;
 
-		case IDC_SUBSCRIPT:
-			if (HIWORD(wParam) == BN_CLICKED) 
+        case IDC_SUBSCRIPT:
+            if (HIWORD(wParam) == BN_CLICKED) 
             {
-				CHARFORMAT2 cf;
-				cf.cbSize = sizeof(CHARFORMAT2);
-				cf.dwMask=CFM_SUBSCRIPT;
-				cf.dwEffects=CFE_SUBSCRIPT;
-				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
-				SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
-				InvalidateRect(GetDlgItem(hwndDlg, IDC_SUPERSCRIPT), NULL, FALSE);
-				InvalidateRect(GetDlgItem(hwndDlg, IDC_NORMALSCRIPT), NULL, FALSE);
-			}
-			break;
+                CHARFORMAT2 cf;
+                cf.cbSize = sizeof(CHARFORMAT2);
+                cf.dwMask=CFM_SUBSCRIPT;
+                cf.dwEffects=CFE_SUBSCRIPT;
+                SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+                SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
+                InvalidateRect(GetDlgItem(hwndDlg, IDC_SUPERSCRIPT), NULL, FALSE);
+                InvalidateRect(GetDlgItem(hwndDlg, IDC_NORMALSCRIPT), NULL, FALSE);
+            }
+            break;
 
-		case IDC_BOLD:
-			if (HIWORD(wParam) == BN_CLICKED) 
+        case IDC_BOLD:
+            if (HIWORD(wParam) == BN_CLICKED) 
             {
-				CHARFORMAT2 cfOld;
-				cfOld.cbSize = sizeof(CHARFORMAT2);
-				cfOld.dwMask = CFM_BOLD;
-				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
-				BOOL isBold = (cfOld.dwEffects & CFE_BOLD) && (cfOld.dwMask & CFM_BOLD);
-				CHARFORMAT2 cf;
-				cf.cbSize = sizeof(CHARFORMAT2);
-				cf.dwEffects = isBold ? 0 : CFE_BOLD;
-				cf.dwMask = CFM_BOLD;
-				CheckDlgButton(hwndDlg, IDC_BOLD, !isBold);
-				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
-				SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
-			}
-			break;
+                CHARFORMAT2 cfOld;
+                cfOld.cbSize = sizeof(CHARFORMAT2);
+                cfOld.dwMask = CFM_BOLD;
+                SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
+                BOOL isBold = (cfOld.dwEffects & CFE_BOLD) && (cfOld.dwMask & CFM_BOLD);
+                CHARFORMAT2 cf;
+                cf.cbSize = sizeof(CHARFORMAT2);
+                cf.dwEffects = isBold ? 0 : CFE_BOLD;
+                cf.dwMask = CFM_BOLD;
+                CheckDlgButton(hwndDlg, IDC_BOLD, !isBold);
+                SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+                SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
+            }
+            break;
 
-		case IDC_ITALIC:
-			if (HIWORD(wParam) == BN_CLICKED) 
+        case IDC_ITALIC:
+            if (HIWORD(wParam) == BN_CLICKED) 
             {
-				CHARFORMAT2 cfOld;
-				cfOld.cbSize = sizeof(CHARFORMAT2);
-				cfOld.dwMask = CFM_ITALIC;
-				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
-				BOOL isItalic = (cfOld.dwEffects & CFE_ITALIC) && (cfOld.dwMask & CFM_ITALIC);
-				CHARFORMAT2 cf;
-				cf.cbSize = sizeof(CHARFORMAT2);
-				cf.dwEffects = isItalic ? 0 : CFE_ITALIC;
-				cf.dwMask = CFM_ITALIC;
-				CheckDlgButton(hwndDlg, IDC_ITALIC, !isItalic);
-				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
-				SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
-			}
-			break;
+                CHARFORMAT2 cfOld;
+                cfOld.cbSize = sizeof(CHARFORMAT2);
+                cfOld.dwMask = CFM_ITALIC;
+                SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
+                BOOL isItalic = (cfOld.dwEffects & CFE_ITALIC) && (cfOld.dwMask & CFM_ITALIC);
+                CHARFORMAT2 cf;
+                cf.cbSize = sizeof(CHARFORMAT2);
+                cf.dwEffects = isItalic ? 0 : CFE_ITALIC;
+                cf.dwMask = CFM_ITALIC;
+                CheckDlgButton(hwndDlg, IDC_ITALIC, !isItalic);
+                SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+                SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
+            }
+            break;
 
-		case IDC_UNDERLINE:
-			if(HIWORD(wParam)==BN_CLICKED)
-			{
-				CHARFORMAT2 cfOld;
-				cfOld.cbSize = sizeof(CHARFORMAT2);
-				cfOld.dwMask = CFM_UNDERLINE;
-				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
-				BOOL isUnderline = (cfOld.dwEffects & CFE_UNDERLINE) && (cfOld.dwMask & CFM_UNDERLINE);
-				CHARFORMAT2 cf;
-				cf.cbSize = sizeof(CHARFORMAT2);
-				cf.dwEffects = isUnderline ? 0 : CFE_UNDERLINE;
-				cf.dwMask = CFM_UNDERLINE;
-				CheckDlgButton(hwndDlg, IDC_UNDERLINE, !isUnderline);
-				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
-				SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
-			}
-			break;
-
-		case IDC_FOREGROUNDCOLOR:
-			if (HIWORD(wParam) == BN_CLICKED) 
+        case IDC_UNDERLINE:
+            if(HIWORD(wParam)==BN_CLICKED)
             {
-				CHARFORMAT2 cf;
-				cf.cbSize = sizeof(CHARFORMAT2);
-				cf.dwMask=CFM_COLOR;
-				cf.dwEffects=0;
-				cf.crTextColor=foreground;
-				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
-				SetWindowPos(GetDlgItem(hwndDlg, IDC_FOREGROUNDCOLORPICKER),GetDlgItem(hwndDlg, IDC_FOREGROUNDCOLOR),0,0,0,0,SWP_NOMOVE|SWP_NOSIZE);
-				SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
-			}
-			break;
+                CHARFORMAT2 cfOld;
+                cfOld.cbSize = sizeof(CHARFORMAT2);
+                cfOld.dwMask = CFM_UNDERLINE;
+                SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
+                BOOL isUnderline = (cfOld.dwEffects & CFE_UNDERLINE) && (cfOld.dwMask & CFM_UNDERLINE);
+                CHARFORMAT2 cf;
+                cf.cbSize = sizeof(CHARFORMAT2);
+                cf.dwEffects = isUnderline ? 0 : CFE_UNDERLINE;
+                cf.dwMask = CFM_UNDERLINE;
+                CheckDlgButton(hwndDlg, IDC_UNDERLINE, !isUnderline);
+                SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+                SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
+            }
+            break;
 
-		case IDC_FOREGROUNDCOLORPICKER:
-			if (HIWORD(wParam) == BN_CLICKED) 
+        case IDC_FOREGROUNDCOLOR:
+            if (HIWORD(wParam) == BN_CLICKED) 
             {
-				CHOOSECOLOR cc={0};
-				custColours[0]=foreground;
-				custColours[1]=background;
-				cc.lStructSize=sizeof(CHOOSECOLOR);
-				cc.hwndOwner=hwndDlg;
-				cc.hInstance=(HWND)GetModuleHandle(NULL);
-				cc.lpCustColors=custColours;
-				cc.Flags=CC_ANYCOLOR|CC_FULLOPEN|CC_RGBINIT;
-				if(ChooseColor(&cc)) 
+                CHARFORMAT2 cf;
+                cf.cbSize = sizeof(CHARFORMAT2);
+                cf.dwMask=CFM_COLOR;
+                cf.dwEffects=0;
+                cf.crTextColor=foreground;
+                SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+                SetWindowPos(GetDlgItem(hwndDlg, IDC_FOREGROUNDCOLORPICKER),GetDlgItem(hwndDlg, IDC_FOREGROUNDCOLOR),0,0,0,0,SWP_NOMOVE|SWP_NOSIZE);
+                SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
+            }
+            break;
+
+        case IDC_FOREGROUNDCOLORPICKER:
+            if (HIWORD(wParam) == BN_CLICKED) 
+            {
+                CHOOSECOLOR cc={0};
+                custColours[0]=foreground;
+                custColours[1]=background;
+                cc.lStructSize=sizeof(CHOOSECOLOR);
+                cc.hwndOwner=hwndDlg;
+                cc.hInstance=(HWND)GetModuleHandle(NULL);
+                cc.lpCustColors=custColours;
+                cc.Flags=CC_ANYCOLOR|CC_FULLOPEN|CC_RGBINIT;
+                if(ChooseColor(&cc)) 
                 {
-					foreground=cc.rgbResult;
-					InvalidateRect(GetDlgItem(hwndDlg, IDC_FOREGROUNDCOLOR), NULL, FALSE);
-				}
-				SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
-			}
-			break;
+                    foreground=cc.rgbResult;
+                    InvalidateRect(GetDlgItem(hwndDlg, IDC_FOREGROUNDCOLOR), NULL, FALSE);
+                }
+                SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
+            }
+            break;
 
-		case IDC_BACKGROUNDCOLOR:
-			if (HIWORD(wParam) == BN_CLICKED) 
+        case IDC_BACKGROUNDCOLOR:
+            if (HIWORD(wParam) == BN_CLICKED) 
             {
-				CHARFORMAT2 cf;
-				cf.cbSize = sizeof(CHARFORMAT2);
-				cf.dwMask=CFM_BACKCOLOR;
-				cf.dwEffects=0;
-				cf.crBackColor=background;
-				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
-				SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
-			}
-			break;
+                CHARFORMAT2 cf;
+                cf.cbSize = sizeof(CHARFORMAT2);
+                cf.dwMask=CFM_BACKCOLOR;
+                cf.dwEffects=0;
+                cf.crBackColor=background;
+                SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+                SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
+            }
+            break;
 
-		case IDC_BACKGROUNDCOLORPICKER:
-			if(HIWORD(wParam)==BN_CLICKED)
-			{
-				CHOOSECOLOR cc={0};
-				custColours[0]=foreground;
-				custColours[1]=background;
-				cc.lStructSize=sizeof(CHOOSECOLOR);
-				cc.hwndOwner=hwndDlg;
-				cc.hInstance=(HWND)GetModuleHandle(NULL);
-				cc.lpCustColors=custColours;
-				cc.Flags=CC_ANYCOLOR|CC_FULLOPEN|CC_RGBINIT;
-				if(ChooseColor(&cc))
-				{
-					background=cc.rgbResult;
-					InvalidateRect(GetDlgItem(hwndDlg, IDC_BACKGROUNDCOLOR), NULL, FALSE);
-				}
-				SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
-			}
-			break;
+        case IDC_BACKGROUNDCOLORPICKER:
+            if(HIWORD(wParam)==BN_CLICKED)
+            {
+                CHOOSECOLOR cc={0};
+                custColours[0]=foreground;
+                custColours[1]=background;
+                cc.lStructSize=sizeof(CHOOSECOLOR);
+                cc.hwndOwner=hwndDlg;
+                cc.hInstance=(HWND)GetModuleHandle(NULL);
+                cc.lpCustColors=custColours;
+                cc.Flags=CC_ANYCOLOR|CC_FULLOPEN|CC_RGBINIT;
+                if(ChooseColor(&cc))
+                {
+                    background=cc.rgbResult;
+                    InvalidateRect(GetDlgItem(hwndDlg, IDC_BACKGROUNDCOLOR), NULL, FALSE);
+                }
+                SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
+            }
+            break;
 
-		case IDC_TYPEFACE:
-			if (HIWORD(wParam)==CBN_SELENDOK)
-			{
-				CHARFORMAT2A cf;
-				cf.cbSize = sizeof(cf);
-				cf.dwMask=CFM_FACE;
-				cf.dwEffects=0;
-				SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_GETLBTEXT, SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_GETCURSEL, 0, 0),(LPARAM)cf.szFaceName);
-				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
-				SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
-				break;
-			}
-			break;
+        case IDC_TYPEFACE:
+            if (HIWORD(wParam)==CBN_SELENDOK)
+            {
+                CHARFORMAT2A cf;
+                cf.cbSize = sizeof(cf);
+                cf.dwMask=CFM_FACE;
+                cf.dwEffects=0;
+                SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_GETLBTEXT, SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_GETCURSEL, 0, 0),(LPARAM)cf.szFaceName);
+                SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+                SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
+                break;
+            }
+            break;
 
-		case IDC_FONTSIZE:
-			if (HIWORD(wParam)==CBN_SELENDOK)
-			{
-				CHARFORMAT2 cf;
-				cf.cbSize = sizeof(CHARFORMAT2);
-				cf.dwMask=CFM_SIZE;
-				cf.dwEffects=0;
-				char chsize[5];
-				SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_GETLBTEXT, SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_GETCURSEL, 0, 0),(LPARAM)chsize);
-				//strlcpy(cf.szFaceName,size,strlen(size)+1);
-				cf.yHeight=atoi(chsize)*20;
-				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
-				SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
-				break;
-			}
-			break;
-		}
-		break;
-	}
-	return FALSE;
+        case IDC_FONTSIZE:
+            if (HIWORD(wParam)==CBN_SELENDOK)
+            {
+                CHARFORMAT2 cf;
+                cf.cbSize = sizeof(CHARFORMAT2);
+                cf.dwMask=CFM_SIZE;
+                cf.dwEffects=0;
+                char chsize[5];
+                SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_GETLBTEXT, SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_GETCURSEL, 0, 0),(LPARAM)chsize);
+                //strlcpy(cf.szFaceName,size,strlen(size)+1);
+                cf.yHeight=atoi(chsize)*20;
+                SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+                SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
+                break;
+            }
+            break;
+        }
+        break;
+    }
+    return FALSE;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -646,50 +646,50 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 INT_PTR CALLBACK admin_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+    CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
     DBVARIANT dbv;
 
-	switch (msg) 
+    switch (msg) 
     {
-	case WM_INITDIALOG:
-		TranslateDialogDefault(hwndDlg);
+    case WM_INITDIALOG:
+        TranslateDialogDefault(hwndDlg);
         SendDlgItemMessage(hwndDlg, IDC_FNAME, EM_LIMITTEXT, 63, 0);
         SendDlgItemMessage(hwndDlg, IDC_CEMAIL, EM_LIMITTEXT, 253, 0);
         SendDlgItemMessage(hwndDlg, IDC_CPW, EM_LIMITTEXT, 253, 0);
         SendDlgItemMessage(hwndDlg, IDC_NPW1, EM_LIMITTEXT, 253, 0);
         SendDlgItemMessage(hwndDlg, IDC_NPW2, EM_LIMITTEXT, 253, 0);
-		break;
+        break;
 
     case WM_NOTIFY:
-		switch (((LPNMHDR)lParam)->code) 
+        switch (((LPNMHDR)lParam)->code) 
         {
-		case PSN_PARAMCHANGED:
-		    ppro = (CAimProto*)((LPPSHNOTIFY)lParam)->lParam;
+        case PSN_PARAMCHANGED:
+            ppro = (CAimProto*)((LPPSHNOTIFY)lParam)->lParam;
             SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)ppro);
 
             if (ppro->wait_conn(ppro->hAdminConn, ppro->hAdminEvent, 0x07))             // Make a connection
             {
-		        ppro->aim_admin_request_info(ppro->hAdminConn,ppro->admin_seqno,0x01);	// Get our screenname
-		        ppro->aim_admin_request_info(ppro->hAdminConn,ppro->admin_seqno,0x11);	// Get our email
+                ppro->aim_admin_request_info(ppro->hAdminConn,ppro->admin_seqno,0x01);	// Get our screenname
+                ppro->aim_admin_request_info(ppro->hAdminConn,ppro->admin_seqno,0x11);	// Get our email
             }
 
         case PSN_INFOCHANGED:
-		    if (!ppro->getString(AIM_KEY_SN, &dbv))
+            if (!ppro->getString(AIM_KEY_SN, &dbv))
             {
-		        SetDlgItemTextA(hwndDlg, IDC_FNAME, dbv.pszVal);
+                SetDlgItemTextA(hwndDlg, IDC_FNAME, dbv.pszVal);
                 DBFreeVariant(&dbv);
             }
-		    if (!ppro->getString(AIM_KEY_EM, &dbv))
+            if (!ppro->getString(AIM_KEY_EM, &dbv))
             {
-		        SetDlgItemTextA(hwndDlg, IDC_CEMAIL, dbv.pszVal);
+                SetDlgItemTextA(hwndDlg, IDC_CEMAIL, dbv.pszVal);
                 DBFreeVariant(&dbv);
             }
             break;
         }
         break;
 
-	case WM_COMMAND:
-	    if  (LOWORD(wParam) == IDC_SAVECHANGES) 
+    case WM_COMMAND:
+        if  (LOWORD(wParam) == IDC_SAVECHANGES) 
         {
             if (!ppro->wait_conn(ppro->hAdminConn, ppro->hAdminEvent, 0x07))             // Make a connection
                 break;
@@ -697,20 +697,20 @@ INT_PTR CALLBACK admin_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
             char name[64];
             GetDlgItemTextA(hwndDlg, IDC_FNAME, name, sizeof(name));
             if (strlen(trim_str(name)) > 0 && !ppro->getString(AIM_KEY_SN, &dbv))
-	        {
+            {
                 if (strcmp(name, dbv.pszVal))
-		            ppro->aim_admin_format_name(ppro->hAdminConn,ppro->admin_seqno,name);
+                    ppro->aim_admin_format_name(ppro->hAdminConn,ppro->admin_seqno,name);
                 DBFreeVariant(&dbv);
-	        }
+            }
 
             char email[254];
-	        GetDlgItemTextA(hwndDlg, IDC_CEMAIL, email, sizeof(email));
+            GetDlgItemTextA(hwndDlg, IDC_CEMAIL, email, sizeof(email));
             if (strlen(trim_str(email)) > 1 && !ppro->getString(AIM_KEY_EM, &dbv)) // Must be greater than 1 or a SNAC error is thrown.
-	        {
+            {
                 if (strcmp(email, dbv.pszVal))
-		            ppro->aim_admin_change_email(ppro->hAdminConn,ppro->admin_seqno,email);
+                    ppro->aim_admin_change_email(ppro->hAdminConn,ppro->admin_seqno,email);
                 DBFreeVariant(&dbv);
-	        }
+            }
 
             ShowWindow(GetDlgItem(hwndDlg, IDC_PINFO), SW_HIDE);
 
@@ -720,61 +720,61 @@ INT_PTR CALLBACK admin_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
             GetDlgItemTextA(hwndDlg, IDC_NPW2, npw2, sizeof(npw2));
             if (strlen(cpw) > 0 && strlen(npw1) > 0 && strlen(npw2) > 0)
             {
-	            // AOL only requires that you send the current password and a (single) new password.
-	            // Let's allow the client to type (two) new passwords incase they make a mistake so we
-	            // can handle any input error locally.
-	            if (strcmp(npw1,npw2) == 0)
-	            {
-		            ppro->aim_admin_change_password(ppro->hAdminConn,ppro->admin_seqno,cpw,npw1);
-	            }
-	            else
-	            {
-		            SetDlgItemTextA(hwndDlg, IDC_CPW, "");
-		            SetDlgItemTextA(hwndDlg, IDC_NPW1, "");
-		            SetDlgItemTextA(hwndDlg, IDC_NPW2, "");
-		            ShowWindow(GetDlgItem(hwndDlg, IDC_PINFO), SW_SHOW);
-	            }
+                // AOL only requires that you send the current password and a (single) new password.
+                // Let's allow the client to type (two) new passwords incase they make a mistake so we
+                // can handle any input error locally.
+                if (strcmp(npw1,npw2) == 0)
+                {
+                    ppro->aim_admin_change_password(ppro->hAdminConn,ppro->admin_seqno,cpw,npw1);
+                }
+                else
+                {
+                    SetDlgItemTextA(hwndDlg, IDC_CPW, "");
+                    SetDlgItemTextA(hwndDlg, IDC_NPW1, "");
+                    SetDlgItemTextA(hwndDlg, IDC_NPW2, "");
+                    ShowWindow(GetDlgItem(hwndDlg, IDC_PINFO), SW_SHOW);
+                }
             }
         }
         else if (LOWORD(wParam) == IDC_CONFIRM)	// Confirmation
         {
             if (ppro->wait_conn(ppro->hAdminConn, ppro->hAdminEvent, 0x07))             // Make a connection
-			    ppro->aim_admin_account_confirm(ppro->hAdminConn,ppro->admin_seqno);
-		}
-		break;
-	}
-	return FALSE;
+                ppro->aim_admin_account_confirm(ppro->hAdminConn,ppro->admin_seqno);
+        }
+        break;
+    }
+    return FALSE;
 }
 
 int CAimProto::OnUserInfoInit(WPARAM wParam,LPARAM lParam)
 {
-	if (!lParam)//hContact
-	{
-		OPTIONSDIALOGPAGE odp = { 0 };
-		odp.cbSize = sizeof(odp);
-		odp.position = -1900000000;
-	    odp.flags = ODPF_USERINFOTAB | ODPF_TCHAR;
-		odp.hInstance = hInstance;
-		odp.ptszTitle = m_tszUserName;
-		odp.dwInitParam = LPARAM(this);
+    if (!lParam)//hContact
+    {
+        OPTIONSDIALOGPAGE odp = { 0 };
+        odp.cbSize = sizeof(odp);
+        odp.position = -1900000000;
+        odp.flags = ODPF_USERINFOTAB | ODPF_TCHAR;
+        odp.hInstance = hInstance;
+        odp.ptszTitle = m_tszUserName;
+        odp.dwInitParam = LPARAM(this);
 
         odp.ptszTab = LPGENT("Profile");
         odp.pszTemplate = MAKEINTRESOURCEA(IDD_INFO);
-		odp.pfnDlgProc = userinfo_dialog;
-		CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
+        odp.pfnDlgProc = userinfo_dialog;
+        CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
 
         odp.ptszTab = LPGENT("Admin");
         odp.pszTemplate = MAKEINTRESOURCEA(IDD_ADMIN);
-		odp.pfnDlgProc = admin_dialog;
-		CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
-	}
-	return 0;
+        odp.pfnDlgProc = admin_dialog;
+        CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
+    }
+    return 0;
 }
 
 INT_PTR CAimProto::EditProfile(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
-	DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_AIM), NULL, userinfo_dialog, LPARAM(this));
-	return 0;
+    DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_AIM), NULL, userinfo_dialog, LPARAM(this));
+    return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -782,243 +782,243 @@ INT_PTR CAimProto::EditProfile(WPARAM /*wParam*/, LPARAM /*lParam*/)
 
 static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+    CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
-	switch (msg) 
+    switch (msg) 
     {
-	case WM_INITDIALOG:
-		TranslateDialogDefault(hwndDlg);
+    case WM_INITDIALOG:
+        TranslateDialogDefault(hwndDlg);
 
-		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
-		ppro = (CAimProto*)lParam;
-		{
-			DBVARIANT dbv;
-			if (!ppro->getString(AIM_KEY_SN, &dbv)) 
+        SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
+        ppro = (CAimProto*)lParam;
+        {
+            DBVARIANT dbv;
+            if (!ppro->getString(AIM_KEY_SN, &dbv)) 
             {
-				SetDlgItemTextA(hwndDlg, IDC_SN, dbv.pszVal);
-				DBFreeVariant(&dbv);
-			}
-			if (!ppro->getString(AIM_KEY_NK, &dbv)) 
+                SetDlgItemTextA(hwndDlg, IDC_SN, dbv.pszVal);
+                DBFreeVariant(&dbv);
+            }
+            if (!ppro->getString(AIM_KEY_NK, &dbv)) 
             {
-				SetDlgItemTextA(hwndDlg, IDC_NK, dbv.pszVal);
-				DBFreeVariant(&dbv);
-			}
-			else if (!ppro->getString(AIM_KEY_SN, &dbv)) 
+                SetDlgItemTextA(hwndDlg, IDC_NK, dbv.pszVal);
+                DBFreeVariant(&dbv);
+            }
+            else if (!ppro->getString(AIM_KEY_SN, &dbv)) 
             {
-				SetDlgItemTextA(hwndDlg, IDC_NK, dbv.pszVal);
-				DBFreeVariant(&dbv);
-			}
-			if (!ppro->getString(AIM_KEY_PW, &dbv)) 
+                SetDlgItemTextA(hwndDlg, IDC_NK, dbv.pszVal);
+                DBFreeVariant(&dbv);
+            }
+            if (!ppro->getString(AIM_KEY_PW, &dbv)) 
             {
-				CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
-				SetDlgItemTextA(hwndDlg, IDC_PW, dbv.pszVal);
-				DBFreeVariant(&dbv);
-			}
-			if (!ppro->getString(AIM_KEY_HN, &dbv)) 
+                CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
+                SetDlgItemTextA(hwndDlg, IDC_PW, dbv.pszVal);
+                DBFreeVariant(&dbv);
+            }
+            if (!ppro->getString(AIM_KEY_HN, &dbv)) 
             {
-				SetDlgItemTextA(hwndDlg, IDC_HN, dbv.pszVal);
-				DBFreeVariant(&dbv);
-			}
-			else
+                SetDlgItemTextA(hwndDlg, IDC_HN, dbv.pszVal);
+                DBFreeVariant(&dbv);
+            }
+            else
                 SetDlgItemTextA(hwndDlg, IDC_HN, ppro->getByte(AIM_KEY_DSSL, 0) ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER);
 
-			SetDlgItemInt(hwndDlg, IDC_PN, ppro->getWord(AIM_KEY_PN, AIM_DEFAULT_PORT), FALSE);
+            SetDlgItemInt(hwndDlg, IDC_PN, ppro->getWord(AIM_KEY_PN, AIM_DEFAULT_PORT), FALSE);
 
-			WORD timeout = (WORD)ppro->getWord(AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
-			SetDlgItemInt(hwndDlg, IDC_GP, timeout,0);
+            WORD timeout = (WORD)ppro->getWord(AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
+            SetDlgItemInt(hwndDlg, IDC_GP, timeout,0);
 
-			CheckDlgButton(hwndDlg, IDC_DC, ppro->getByte(AIM_KEY_DC, 0));//Message Delivery Confirmation
-			CheckDlgButton(hwndDlg, IDC_FP, ppro->getByte(AIM_KEY_FP, 0));//force proxy
-			CheckDlgButton(hwndDlg, IDC_AT, ppro->getByte(AIM_KEY_AT, 0));//Account Type Icons
-			CheckDlgButton(hwndDlg, IDC_ES, ppro->getByte(AIM_KEY_ES, 0));//Extended Status Type Icons
-			CheckDlgButton(hwndDlg, IDC_HF, ppro->getByte(AIM_KEY_HF, 0));//Fake hiptopness
-			CheckDlgButton(hwndDlg, IDC_DM, ppro->getByte(AIM_KEY_DM, 0));//Disable Sending Mode Message
-			CheckDlgButton(hwndDlg, IDC_FI, ppro->getByte(AIM_KEY_FI, 0));//Format imcoming messages
-			CheckDlgButton(hwndDlg, IDC_FO, ppro->getByte(AIM_KEY_FO, 0));//Format outgoing messages
-			CheckDlgButton(hwndDlg, IDC_II, ppro->getByte(AIM_KEY_II, 0));//Instant Idle
-			CheckDlgButton(hwndDlg, IDC_CM, ppro->getByte(AIM_KEY_CM, 0));//Check Mail
-			CheckDlgButton(hwndDlg, IDC_MG, ppro->getByte(AIM_KEY_MG, 1));//Manage Groups
-			CheckDlgButton(hwndDlg, IDC_DA, ppro->getByte(AIM_KEY_DA, 0));//Disable Avatars
-			CheckDlgButton(hwndDlg, IDC_DSSL, ppro->getByte(AIM_KEY_DSSL, 0));//Disable SSL
-			CheckDlgButton(hwndDlg, IDC_FSC, ppro->getByte(AIM_KEY_FSC, 0));//Force Single Client
-		}
-		break;
+            CheckDlgButton(hwndDlg, IDC_DC, ppro->getByte(AIM_KEY_DC, 0));//Message Delivery Confirmation
+            CheckDlgButton(hwndDlg, IDC_FP, ppro->getByte(AIM_KEY_FP, 0));//force proxy
+            CheckDlgButton(hwndDlg, IDC_AT, ppro->getByte(AIM_KEY_AT, 0));//Account Type Icons
+            CheckDlgButton(hwndDlg, IDC_ES, ppro->getByte(AIM_KEY_ES, 0));//Extended Status Type Icons
+            CheckDlgButton(hwndDlg, IDC_HF, ppro->getByte(AIM_KEY_HF, 0));//Fake hiptopness
+            CheckDlgButton(hwndDlg, IDC_DM, ppro->getByte(AIM_KEY_DM, 0));//Disable Sending Mode Message
+            CheckDlgButton(hwndDlg, IDC_FI, ppro->getByte(AIM_KEY_FI, 0));//Format imcoming messages
+            CheckDlgButton(hwndDlg, IDC_FO, ppro->getByte(AIM_KEY_FO, 0));//Format outgoing messages
+            CheckDlgButton(hwndDlg, IDC_II, ppro->getByte(AIM_KEY_II, 0));//Instant Idle
+            CheckDlgButton(hwndDlg, IDC_CM, ppro->getByte(AIM_KEY_CM, 0));//Check Mail
+            CheckDlgButton(hwndDlg, IDC_MG, ppro->getByte(AIM_KEY_MG, 1));//Manage Groups
+            CheckDlgButton(hwndDlg, IDC_DA, ppro->getByte(AIM_KEY_DA, 0));//Disable Avatars
+            CheckDlgButton(hwndDlg, IDC_DSSL, ppro->getByte(AIM_KEY_DSSL, 0));//Disable SSL
+            CheckDlgButton(hwndDlg, IDC_FSC, ppro->getByte(AIM_KEY_FSC, 0));//Force Single Client
+        }
+        break;
 
-	case WM_COMMAND:
-			if (LOWORD(wParam) == IDC_DSSL) 
-			{
+    case WM_COMMAND:
+            if (LOWORD(wParam) == IDC_DSSL) 
+            {
                 SetDlgItemTextA(hwndDlg, IDC_HN, 
                     IsDlgButtonChecked(hwndDlg, IDC_DSSL) ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER);
-			}
-			else if (LOWORD(wParam) == IDC_SVRRESET) 
-			{
+            }
+            else if (LOWORD(wParam) == IDC_SVRRESET) 
+            {
                 SetDlgItemTextA(hwndDlg, IDC_HN, 
                     IsDlgButtonChecked(hwndDlg, IDC_DSSL) ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER);
-				SetDlgItemInt(hwndDlg, IDC_PN, AIM_DEFAULT_PORT, FALSE);
-			}
+                SetDlgItemInt(hwndDlg, IDC_PN, AIM_DEFAULT_PORT, FALSE);
+            }
 
-			if ((LOWORD(wParam) == IDC_SN || LOWORD(wParam) == IDC_NK || LOWORD(wParam) == IDC_PW || LOWORD(wParam) == IDC_HN
-				|| LOWORD(wParam) == IDC_GP) && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
-				return 0;
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-			break;
+            if ((LOWORD(wParam) == IDC_SN || LOWORD(wParam) == IDC_NK || LOWORD(wParam) == IDC_PW || LOWORD(wParam) == IDC_HN
+                || LOWORD(wParam) == IDC_GP) && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
+                return 0;
+            SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+            break;
 
     case WM_NOTIFY:
-		switch (((LPNMHDR) lParam)->code) 
+        switch (((LPNMHDR) lParam)->code) 
         {
-		case PSN_APPLY:
-			{
-				char str[128];
-				//SN
-				GetDlgItemTextA(hwndDlg, IDC_SN, str, sizeof(str));
-				if(strlen(str)>0)
-					ppro->setString(AIM_KEY_SN, str);
-				else
-					ppro->deleteSetting(NULL, AIM_KEY_SN);
-				//END SN
+        case PSN_APPLY:
+            {
+                char str[128];
+                //SN
+                GetDlgItemTextA(hwndDlg, IDC_SN, str, sizeof(str));
+                if(strlen(str)>0)
+                    ppro->setString(AIM_KEY_SN, str);
+                else
+                    ppro->deleteSetting(NULL, AIM_KEY_SN);
+                //END SN
 
-				//NK
-				if(GetDlgItemTextA(hwndDlg, IDC_NK, str, sizeof(str)))
-					ppro->setString(AIM_KEY_NK, str);
-				else
-				{
-					GetDlgItemTextA(hwndDlg, IDC_SN, str, sizeof(str));
-					ppro->setString(AIM_KEY_NK, str);
-				}
-				//END NK
+                //NK
+                if(GetDlgItemTextA(hwndDlg, IDC_NK, str, sizeof(str)))
+                    ppro->setString(AIM_KEY_NK, str);
+                else
+                {
+                    GetDlgItemTextA(hwndDlg, IDC_SN, str, sizeof(str));
+                    ppro->setString(AIM_KEY_NK, str);
+                }
+                //END NK
 
-				//PW
-				GetDlgItemTextA(hwndDlg, IDC_PW, str, sizeof(str));
-				if(strlen(str)>0)
-				{
-					CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
-					ppro->setString(AIM_KEY_PW, str);
-				}
-				else
-					ppro->deleteSetting(NULL, AIM_KEY_PW);
-				//END PW
+                //PW
+                GetDlgItemTextA(hwndDlg, IDC_PW, str, sizeof(str));
+                if(strlen(str)>0)
+                {
+                    CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
+                    ppro->setString(AIM_KEY_PW, str);
+                }
+                else
+                    ppro->deleteSetting(NULL, AIM_KEY_PW);
+                //END PW
 
-				//HN
-				GetDlgItemTextA(hwndDlg, IDC_HN, str, sizeof(str));
-				if(strlen(str)>0 && strcmp(str, AIM_DEFAULT_SERVER))
-					ppro->setString(AIM_KEY_HN, str);
-				else
-					ppro->deleteSetting(NULL, AIM_KEY_HN);
-				//END HN
+                //HN
+                GetDlgItemTextA(hwndDlg, IDC_HN, str, sizeof(str));
+                if(strlen(str)>0 && strcmp(str, AIM_DEFAULT_SERVER))
+                    ppro->setString(AIM_KEY_HN, str);
+                else
+                    ppro->deleteSetting(NULL, AIM_KEY_HN);
+                //END HN
 
-				//PN
-				int port = GetDlgItemInt(hwndDlg, IDC_PN, NULL, FALSE);
-				if(port>0 && port != AIM_DEFAULT_PORT)
-					ppro->setWord(AIM_KEY_PN, (WORD)port);
-				else
-					ppro->deleteSetting(NULL, AIM_KEY_PN);
-				//END PN
+                //PN
+                int port = GetDlgItemInt(hwndDlg, IDC_PN, NULL, FALSE);
+                if(port>0 && port != AIM_DEFAULT_PORT)
+                    ppro->setWord(AIM_KEY_PN, (WORD)port);
+                else
+                    ppro->deleteSetting(NULL, AIM_KEY_PN);
+                //END PN
 
-				//GP
-				unsigned long timeout=GetDlgItemInt(hwndDlg, IDC_GP,0,0);
-				if(timeout>0xffff||timeout<15)
-					ppro->deleteSetting(NULL, AIM_KEY_GP);
-				else
-					ppro->setWord(AIM_KEY_GP,(WORD)timeout);
-				//END GP
+                //GP
+                unsigned long timeout=GetDlgItemInt(hwndDlg, IDC_GP,0,0);
+                if(timeout>0xffff||timeout<15)
+                    ppro->deleteSetting(NULL, AIM_KEY_GP);
+                else
+                    ppro->setWord(AIM_KEY_GP,(WORD)timeout);
+                //END GP
 
-				//Delivery Confirmation
-				ppro->setByte(AIM_KEY_DC, IsDlgButtonChecked(hwndDlg, IDC_DC) != 0);
-				//End Delivery Confirmation
+                //Delivery Confirmation
+                ppro->setByte(AIM_KEY_DC, IsDlgButtonChecked(hwndDlg, IDC_DC) != 0);
+                //End Delivery Confirmation
 
-				//Disable Avatar
-				ppro->setByte(AIM_KEY_DA, IsDlgButtonChecked(hwndDlg, IDC_DA) != 0);
-				//Disable Avatar
+                //Disable Avatar
+                ppro->setByte(AIM_KEY_DA, IsDlgButtonChecked(hwndDlg, IDC_DA) != 0);
+                //Disable Avatar
 
-				//Disable SSL
-				ppro->setByte(AIM_KEY_DSSL, IsDlgButtonChecked(hwndDlg, IDC_DSSL) != 0);
-				//Disable SSL
+                //Disable SSL
+                ppro->setByte(AIM_KEY_DSSL, IsDlgButtonChecked(hwndDlg, IDC_DSSL) != 0);
+                //Disable SSL
 
-				//Force Single Login
-				ppro->setByte(AIM_KEY_FSC, IsDlgButtonChecked(hwndDlg, IDC_FSC) != 0);
-				//Force Single Login
+                //Force Single Login
+                ppro->setByte(AIM_KEY_FSC, IsDlgButtonChecked(hwndDlg, IDC_FSC) != 0);
+                //Force Single Login
 
                 //Force Proxy Transfer
-				ppro->setByte(AIM_KEY_FP, IsDlgButtonChecked(hwndDlg, IDC_FP) != 0);
-				//End Force Proxy Transfer
+                ppro->setByte(AIM_KEY_FP, IsDlgButtonChecked(hwndDlg, IDC_FP) != 0);
+                //End Force Proxy Transfer
 
-				//Disable Account Type Icons
-				if (IsDlgButtonChecked(hwndDlg, IDC_AT))
-				{
-					int acc_disabled = ppro->getByte(AIM_KEY_AT, 0);
-					if(!acc_disabled)
-						remove_AT_icons(ppro);
-					ppro->setByte(AIM_KEY_AT, 1);
-				}
-				else
-				{
-					int acc_disabled = ppro->getByte(AIM_KEY_AT, 0);
-					if(acc_disabled)
-						add_AT_icons(ppro);
-					ppro->setByte(AIM_KEY_AT, 0);
-				}
-				//END
-				//Disable Extra Status Icons
-				if (IsDlgButtonChecked(hwndDlg, IDC_ES))
-				{
-					int es_disabled = ppro->getByte(AIM_KEY_ES, 0);
-					ppro->setByte(AIM_KEY_ES, 1);
-					if(!es_disabled)
-						remove_ES_icons(ppro);
-				}
-				else
-				{
-					int es_disabled = ppro->getByte(AIM_KEY_ES, 0);
-					ppro->setByte(AIM_KEY_ES, 0);
-					if(es_disabled)
-						add_ES_icons(ppro);
-				}
-				//End
+                //Disable Account Type Icons
+                if (IsDlgButtonChecked(hwndDlg, IDC_AT))
+                {
+                    int acc_disabled = ppro->getByte(AIM_KEY_AT, 0);
+                    if(!acc_disabled)
+                        remove_AT_icons(ppro);
+                    ppro->setByte(AIM_KEY_AT, 1);
+                }
+                else
+                {
+                    int acc_disabled = ppro->getByte(AIM_KEY_AT, 0);
+                    if(acc_disabled)
+                        add_AT_icons(ppro);
+                    ppro->setByte(AIM_KEY_AT, 0);
+                }
+                //END
+                //Disable Extra Status Icons
+                if (IsDlgButtonChecked(hwndDlg, IDC_ES))
+                {
+                    int es_disabled = ppro->getByte(AIM_KEY_ES, 0);
+                    ppro->setByte(AIM_KEY_ES, 1);
+                    if(!es_disabled)
+                        remove_ES_icons(ppro);
+                }
+                else
+                {
+                    int es_disabled = ppro->getByte(AIM_KEY_ES, 0);
+                    ppro->setByte(AIM_KEY_ES, 0);
+                    if(es_disabled)
+                        add_ES_icons(ppro);
+                }
+                //End
 
-				//Fake Hiptop
-				if (IsDlgButtonChecked(hwndDlg, IDC_HF))
-				{
-					int hf = ppro->getByte(AIM_KEY_HF, 0);
-					if(!hf)
-						ShowWindow(GetDlgItem(hwndDlg, IDC_MASQ), SW_SHOW);
-					ppro->setByte(AIM_KEY_HF, 1);
-				}
-				else
-				{
-					int hf = ppro->getByte(AIM_KEY_HF, 0);
-					if(hf)
-						ShowWindow(GetDlgItem(hwndDlg, IDC_MASQ), SW_SHOW);
-					ppro->setByte(AIM_KEY_HF, 0);
-				}
-				//End
+                //Fake Hiptop
+                if (IsDlgButtonChecked(hwndDlg, IDC_HF))
+                {
+                    int hf = ppro->getByte(AIM_KEY_HF, 0);
+                    if(!hf)
+                        ShowWindow(GetDlgItem(hwndDlg, IDC_MASQ), SW_SHOW);
+                    ppro->setByte(AIM_KEY_HF, 1);
+                }
+                else
+                {
+                    int hf = ppro->getByte(AIM_KEY_HF, 0);
+                    if(hf)
+                        ShowWindow(GetDlgItem(hwndDlg, IDC_MASQ), SW_SHOW);
+                    ppro->setByte(AIM_KEY_HF, 0);
+                }
+                //End
 
-				//Disable Mode Message Sending
-				ppro->setByte(AIM_KEY_DM, IsDlgButtonChecked(hwndDlg, IDC_DM) != 0);
-				//End Disable Mode Message Sending
+                //Disable Mode Message Sending
+                ppro->setByte(AIM_KEY_DM, IsDlgButtonChecked(hwndDlg, IDC_DM) != 0);
+                //End Disable Mode Message Sending
 
-				//Format Incoming Messages
-				ppro->setByte(AIM_KEY_FI, IsDlgButtonChecked(hwndDlg, IDC_FI) != 0);
-				//End Format Incoming Messages
+                //Format Incoming Messages
+                ppro->setByte(AIM_KEY_FI, IsDlgButtonChecked(hwndDlg, IDC_FI) != 0);
+                //End Format Incoming Messages
 
-				//Format Outgoing Messages
-				ppro->setByte(AIM_KEY_FO, IsDlgButtonChecked(hwndDlg, IDC_FO) != 0);
-				//End Format Outgoing Messages
+                //Format Outgoing Messages
+                ppro->setByte(AIM_KEY_FO, IsDlgButtonChecked(hwndDlg, IDC_FO) != 0);
+                //End Format Outgoing Messages
 
-				//Instant Idle on Login
-				ppro->setByte(AIM_KEY_II, IsDlgButtonChecked(hwndDlg, IDC_II) != 0);
-				//End
-				//Check Mail on Login
-				ppro->setByte(AIM_KEY_CM, IsDlgButtonChecked(hwndDlg, IDC_CM) != 0);
-				//End
+                //Instant Idle on Login
+                ppro->setByte(AIM_KEY_II, IsDlgButtonChecked(hwndDlg, IDC_II) != 0);
+                //End
+                //Check Mail on Login
+                ppro->setByte(AIM_KEY_CM, IsDlgButtonChecked(hwndDlg, IDC_CM) != 0);
+                //End
 
                 //Manage Groups
-				ppro->setByte(AIM_KEY_MG, IsDlgButtonChecked(hwndDlg, IDC_MG) != 0);
-				//End
-			}
-		}
-		break;
-	}
-	return FALSE;
+                ppro->setByte(AIM_KEY_MG, IsDlgButtonChecked(hwndDlg, IDC_MG) != 0);
+                //End
+            }
+        }
+        break;
+    }
+    return FALSE;
 }
 
 
@@ -1028,13 +1028,13 @@ static INT_PTR CALLBACK privacy_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
     CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
     int i;
 
-	switch (msg) 
+    switch (msg) 
     {
-	case WM_INITDIALOG:
-		TranslateDialogDefault(hwndDlg);
+    case WM_INITDIALOG:
+        TranslateDialogDefault(hwndDlg);
 
-		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
-		ppro = (CAimProto*)lParam;
+        SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
+        ppro = (CAimProto*)lParam;
 
         CheckRadioButton(hwndDlg, IDC_ALLOWALL, IDC_BLOCKBELOW, btns[ppro->pd_mode-1]);
 
@@ -1047,7 +1047,7 @@ static INT_PTR CALLBACK privacy_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
         CheckDlgButton (hwndDlg, IDC_SIS, (ppro->pref1_flags & 0x400) ? BST_CHECKED : BST_CHECKED);
         break;
     
-	case WM_COMMAND:
+    case WM_COMMAND:
         if (LOWORD(wParam) == IDC_ALLOWADD)
         {
             char nick[80];
@@ -1071,11 +1071,11 @@ static INT_PTR CALLBACK privacy_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             SendDlgItemMessage(hwndDlg, IDC_BLOCKLIST, LB_DELETESTRING, i, 0);
         }
 
-		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-		break;
+        SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+        break;
 
     case WM_NOTIFY:
-		if (((LPNMHDR) lParam)->code == PSN_APPLY) 
+        if (((LPNMHDR) lParam)->code == PSN_APPLY) 
         {
             ppro->aim_ssi_update(ppro->hServerConn, ppro->seqno, true);
             for (i=0; i<5; ++i)
@@ -1141,32 +1141,32 @@ static INT_PTR CALLBACK privacy_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
         }
         break;
     }
-	return FALSE;
+    return FALSE;
 }		
  
 
 int CAimProto::OnOptionsInit(WPARAM wParam,LPARAM lParam)
 {
-	OPTIONSDIALOGPAGE odp = { 0 };
-	odp.cbSize = sizeof(odp);
-	odp.position = 1003000;
-	odp.hInstance = hInstance;
-	odp.ptszGroup = LPGENT("Network");
-	odp.ptszTitle = m_tszUserName;
-	odp.dwInitParam = LPARAM(this);
-	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
+    OPTIONSDIALOGPAGE odp = { 0 };
+    odp.cbSize = sizeof(odp);
+    odp.position = 1003000;
+    odp.hInstance = hInstance;
+    odp.ptszGroup = LPGENT("Network");
+    odp.ptszTitle = m_tszUserName;
+    odp.dwInitParam = LPARAM(this);
+    odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
 
-	odp.ptszTab   = LPGENT("Basic");
+    odp.ptszTab   = LPGENT("Basic");
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_AIM);
-	odp.pfnDlgProc = options_dialog;
-	odp.nIDBottomSimpleControl = IDC_OPTIONS;
-	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
-	
-	odp.ptszTab     = LPGENT("Privacy");
-	odp.pszTemplate = MAKEINTRESOURCEA(IDD_PRIVACY);
-	odp.pfnDlgProc  = privacy_dialog;
-	odp.nIDBottomSimpleControl = 0;
-	CallService(MS_OPT_ADDPAGE, wParam,(LPARAM)&odp);
+    odp.pfnDlgProc = options_dialog;
+    odp.nIDBottomSimpleControl = IDC_OPTIONS;
+    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
+    
+    odp.ptszTab     = LPGENT("Privacy");
+    odp.pszTemplate = MAKEINTRESOURCEA(IDD_PRIVACY);
+    odp.pfnDlgProc  = privacy_dialog;
+    odp.nIDBottomSimpleControl = 0;
+    CallService(MS_OPT_ADDPAGE, wParam,(LPARAM)&odp);
 
     return 0;
 }
@@ -1177,71 +1177,71 @@ int CAimProto::OnOptionsInit(WPARAM wParam,LPARAM lParam)
 
 INT_PTR CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch (msg) 
-	{
-	case WM_INITDIALOG:
-		{
-			TranslateDialogDefault(hwndDlg);
-
-			CAimProto* ppro = (CAimProto*)lParam;
-			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
-
-			DBVARIANT dbv;
-			if (!ppro->getString(AIM_KEY_SN, &dbv))
-			{
-				SetDlgItemTextA(hwndDlg, IDC_SN, dbv.pszVal);
-				DBFreeVariant(&dbv);
-			}
-
-			if (!ppro->getString(AIM_KEY_PW, &dbv))
-			{
-				CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
-				SetDlgItemTextA(hwndDlg, IDC_PW, dbv.pszVal);
-				DBFreeVariant(&dbv);
-			}
-			return TRUE;
-		}
-
-	case WM_COMMAND:
-		if (LOWORD(wParam) == IDC_NEWAIMACCOUNTLINK) 
+    switch (msg) 
+    {
+    case WM_INITDIALOG:
         {
-			CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://www.aim.com/redirects/inclient/register.adp");
-			return TRUE;
-		}
+            TranslateDialogDefault(hwndDlg);
 
-		if (HIWORD(wParam) == EN_CHANGE && (HWND)lParam == GetFocus()) 
-		{
-			switch(LOWORD(wParam)) 
+            CAimProto* ppro = (CAimProto*)lParam;
+            SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
+
+            DBVARIANT dbv;
+            if (!ppro->getString(AIM_KEY_SN, &dbv))
             {
-			case IDC_SN:			case IDC_PW:
-				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-			}
-		}
-		break;
+                SetDlgItemTextA(hwndDlg, IDC_SN, dbv.pszVal);
+                DBFreeVariant(&dbv);
+            }
 
-	case WM_NOTIFY:
-		if (((LPNMHDR)lParam)->code == (UINT)PSN_APPLY) 
-		{
-			CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+            if (!ppro->getString(AIM_KEY_PW, &dbv))
+            {
+                CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
+                SetDlgItemTextA(hwndDlg, IDC_PW, dbv.pszVal);
+                DBFreeVariant(&dbv);
+            }
+            return TRUE;
+        }
 
-			char str[128];
-			GetDlgItemTextA(hwndDlg, IDC_SN, str, sizeof(str));
-			ppro->setString(AIM_KEY_SN, str);
-			GetDlgItemTextA(hwndDlg, IDC_PW, str, sizeof(str));
-			CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
-			ppro->setString(AIM_KEY_PW, str);
-			return TRUE;
-		}
-		break;
-	}
+    case WM_COMMAND:
+        if (LOWORD(wParam) == IDC_NEWAIMACCOUNTLINK) 
+        {
+            CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://www.aim.com/redirects/inclient/register.adp");
+            return TRUE;
+        }
 
-	return FALSE;
+        if (HIWORD(wParam) == EN_CHANGE && (HWND)lParam == GetFocus()) 
+        {
+            switch(LOWORD(wParam)) 
+            {
+            case IDC_SN:			case IDC_PW:
+                SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+            }
+        }
+        break;
+
+    case WM_NOTIFY:
+        if (((LPNMHDR)lParam)->code == (UINT)PSN_APPLY) 
+        {
+            CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+
+            char str[128];
+            GetDlgItemTextA(hwndDlg, IDC_SN, str, sizeof(str));
+            ppro->setString(AIM_KEY_SN, str);
+            GetDlgItemTextA(hwndDlg, IDC_PW, str, sizeof(str));
+            CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
+            ppro->setString(AIM_KEY_PW, str);
+            return TRUE;
+        }
+        break;
+    }
+
+    return FALSE;
 }
 
 INT_PTR CAimProto::SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam)
 {
-	return (INT_PTR)CreateDialogParam (hInstance, MAKEINTRESOURCE(IDD_AIMACCOUNT), 
-		 (HWND)lParam, first_run_dialog, (LPARAM)this);
+    return (INT_PTR)CreateDialogParam (hInstance, MAKEINTRESOURCE(IDD_AIMACCOUNT), 
+         (HWND)lParam, first_run_dialog, (LPARAM)this);
 }
 
 
@@ -1250,60 +1250,60 @@ INT_PTR CAimProto::SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam)
 
 INT_PTR CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+    CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
-	switch (msg) {
-	case WM_INITDIALOG:
-		TranslateDialogDefault(hwndDlg);
+    switch (msg) {
+    case WM_INITDIALOG:
+        TranslateDialogDefault(hwndDlg);
 
         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
-		ppro = (CAimProto*)lParam;
-		{
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("idle"));
-			unsigned long it = ppro->getDword(AIM_KEY_IIT, 0);
-			unsigned long hours=it/60;
-			unsigned long minutes=it%60;
-			SetDlgItemInt(hwndDlg, IDC_IIH, hours,0);
-			SetDlgItemInt(hwndDlg, IDC_IIM, minutes,0);
-		}
-		break;
-	case WM_CLOSE:
-		EndDialog(hwndDlg, 0);
-		break;
+        ppro = (CAimProto*)lParam;
+        {
+            SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("idle"));
+            unsigned long it = ppro->getDword(AIM_KEY_IIT, 0);
+            unsigned long hours=it/60;
+            unsigned long minutes=it%60;
+            SetDlgItemInt(hwndDlg, IDC_IIH, hours,0);
+            SetDlgItemInt(hwndDlg, IDC_IIM, minutes,0);
+        }
+        break;
+    case WM_CLOSE:
+        EndDialog(hwndDlg, 0);
+        break;
 
-	case WM_DESTROY:
-		ReleaseIconEx("idle");
-		break;
+    case WM_DESTROY:
+        ReleaseIconEx("idle");
+        break;
 
-	case WM_COMMAND:
-		{
-			unsigned long hours=GetDlgItemInt(hwndDlg, IDC_IIH,0,0);
-			unsigned short minutes=(unsigned short)GetDlgItemInt(hwndDlg, IDC_IIM,0,0);
-			if (minutes > 59)
-				minutes = 59;
-			ppro->setDword(AIM_KEY_IIT, hours*60+minutes);
-			switch (LOWORD(wParam)) 
+    case WM_COMMAND:
+        {
+            unsigned long hours=GetDlgItemInt(hwndDlg, IDC_IIH,0,0);
+            unsigned short minutes=(unsigned short)GetDlgItemInt(hwndDlg, IDC_IIM,0,0);
+            if (minutes > 59)
+                minutes = 59;
+            ppro->setDword(AIM_KEY_IIT, hours*60+minutes);
+            switch (LOWORD(wParam)) 
             {
-			case IDOK:
-				//Instant Idle
-				if (ppro->state==1) 
+            case IDOK:
+                //Instant Idle
+                if (ppro->state==1) 
                 {
-					ppro->aim_set_idle(ppro->hServerConn,ppro->seqno,hours * 60 * 60 + minutes * 60);
-					ppro->instantidle=1;
-				}
-				EndDialog(hwndDlg, IDOK);
-				break;
+                    ppro->aim_set_idle(ppro->hServerConn,ppro->seqno,hours * 60 * 60 + minutes * 60);
+                    ppro->instantidle=1;
+                }
+                EndDialog(hwndDlg, IDOK);
+                break;
 
-			case IDCANCEL:
-				ppro->aim_set_idle(ppro->hServerConn,ppro->seqno,0);
-				ppro->instantidle=0;
-				EndDialog(hwndDlg, IDCANCEL);
-				break;
-			}
-		}
-		break;
-	}
-	return FALSE;
+            case IDCANCEL:
+                ppro->aim_set_idle(ppro->hServerConn,ppro->seqno,0);
+                ppro->instantidle=0;
+                EndDialog(hwndDlg, IDCANCEL);
+                break;
+            }
+        }
+        break;
+    }
+    return FALSE;
 }
 
 
@@ -1312,50 +1312,50 @@ INT_PTR CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 INT_PTR CALLBACK join_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+    CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
-	switch (msg) 
+    switch (msg) 
     {
-	case WM_INITDIALOG:
-		TranslateDialogDefault(hwndDlg);
+    case WM_INITDIALOG:
+        TranslateDialogDefault(hwndDlg);
 
-		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
-		ppro = (CAimProto*)lParam;
-		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("aol"));
-		break;
+        SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
+        ppro = (CAimProto*)lParam;
+        SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("aol"));
+        break;
 
-	case WM_CLOSE:
-		EndDialog(hwndDlg, 0);
-		break;
+    case WM_CLOSE:
+        EndDialog(hwndDlg, 0);
+        break;
 
-	case WM_DESTROY:
-		ReleaseIconEx("aol");
-		break;
+    case WM_DESTROY:
+        ReleaseIconEx("aol");
+        break;
 
-	case WM_COMMAND:
-		{
-			switch (LOWORD(wParam)) 
+    case WM_COMMAND:
+        {
+            switch (LOWORD(wParam)) 
             {
-			case IDOK:
+            case IDOK:
                 char room[128];
-			    GetDlgItemTextA(hwndDlg, IDC_ROOM, room, sizeof(room));
-			    if (ppro->state==1 && strlen(room) > 0)
+                GetDlgItemTextA(hwndDlg, IDC_ROOM, room, sizeof(room));
+                if (ppro->state==1 && strlen(room) > 0)
                 {
                     chatnav_param* par = new chatnav_param(room, 4);
                     ppro->ForkThread(&CAimProto::chatnav_request_thread, par);
                 }
-				EndDialog(hwndDlg, IDOK);
-				break;
+                EndDialog(hwndDlg, IDOK);
+                break;
 
-			case IDCANCEL:
-				EndDialog(hwndDlg, IDCANCEL);
-				break;
-			}
-		}
-		break;
-	}
+            case IDCANCEL:
+                EndDialog(hwndDlg, IDCANCEL);
+                break;
+            }
+        }
+        break;
+    }
 
-	return FALSE;
+    return FALSE;
 }
 /////////////////////////////////////////////////////////////////////////////////////////
 // Invite to chat dialog
@@ -1392,7 +1392,7 @@ static void clist_chat_invite_send(HANDLE hItem, HWND hwndList, chat_list_item* 
                     DBVARIANT dbv;
                     if (!ppro->getString(hItem, AIM_KEY_SN, &dbv))
                     {
-		                ppro->aim_chat_invite(ppro->hServerConn, ppro->seqno, 
+                        ppro->aim_chat_invite(ppro->hServerConn, ppro->seqno, 
                             item->cookie, item->exchange, item->instance, dbv.pszVal, msg);
                         DBFreeVariant(&dbv);
                     }
@@ -1434,43 +1434,43 @@ static void clist_chat_prepare(HANDLE hItem, HWND hwndList, CAimProto* ppro)
 
 INT_PTR CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	invite_chat_param* param = (invite_chat_param*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+    invite_chat_param* param = (invite_chat_param*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
-	switch (msg) 
+    switch (msg) 
     {
-	case WM_INITDIALOG:
-		TranslateDialogDefault(hwndDlg);
+    case WM_INITDIALOG:
+        TranslateDialogDefault(hwndDlg);
 
-		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
-		param = (invite_chat_param*)lParam;
+        SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
+        param = (invite_chat_param*)lParam;
 
-		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("aol"));
+        SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("aol"));
         SetDlgItemTextA(hwndDlg, IDC_ROOMNAME, param->id);
         SetDlgItemTextA(hwndDlg, IDC_MSG, Translate("Join me in this buddy chat!"));
         break;
 
-	case WM_CLOSE:
-		EndDialog(hwndDlg, 0);
-		break;
+    case WM_CLOSE:
+        EndDialog(hwndDlg, 0);
+        break;
 
-	case WM_NCDESTROY:
-		ReleaseIconEx("aol");
+    case WM_NCDESTROY:
+        ReleaseIconEx("aol");
         delete param;
-		break;
+        break;
 
-	case WM_NOTIFY:
-	{
-		NMCLISTCONTROL* nmc = (NMCLISTCONTROL*)lParam;
+    case WM_NOTIFY:
+    {
+        NMCLISTCONTROL* nmc = (NMCLISTCONTROL*)lParam;
         if (nmc->hdr.idFrom == IDC_CCLIST)
         {
-		    switch (nmc->hdr.code) 
+            switch (nmc->hdr.code) 
             {
-		    case CLN_NEWCONTACT:
+            case CLN_NEWCONTACT:
                 if (param && (nmc->flags & (CLNF_ISGROUP | CLNF_ISINFO)) == 0) 
                     clist_validate_contact(nmc->hItem, nmc->hdr.hwndFrom, param->ppro);
                 break;
 
-		    case CLN_LISTREBUILT:
+            case CLN_LISTREBUILT:
                 if (param) 
                     clist_chat_prepare(NULL, nmc->hdr.hwndFrom, param->ppro);
                 break; 
@@ -1480,48 +1480,48 @@ INT_PTR CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
     break;
 
     case WM_COMMAND:
-		{
-			switch (LOWORD(wParam)) 
+        {
+            switch (LOWORD(wParam)) 
             {
-			case IDC_ADDSCR:
+            case IDC_ADDSCR:
                 if (param->ppro->state == 1)
                 {
                     TCHAR sn[64];
-				    GetDlgItemText(hwndDlg, IDC_EDITSCR, sn, sizeof(sn));
+                    GetDlgItemText(hwndDlg, IDC_EDITSCR, sn, sizeof(sn));
 
                     CLCINFOITEM cii = {0};
-		            cii.cbSize = sizeof(cii);
-		            cii.flags = CLCIIF_CHECKBOX | CLCIIF_BELOWCONTACTS;
-		            cii.pszText = sn;
+                    cii.cbSize = sizeof(cii);
+                    cii.flags = CLCIIF_CHECKBOX | CLCIIF_BELOWCONTACTS;
+                    cii.pszText = sn;
 
                     HANDLE hItem = (HANDLE)SendDlgItemMessage(hwndDlg, IDC_CCLIST, CLM_ADDINFOITEM, 0, (LPARAM)&cii);
-		            SendDlgItemMessage(hwndDlg, IDC_CCLIST, CLM_SETCHECKMARK, (LPARAM)hItem, 1);
+                    SendDlgItemMessage(hwndDlg, IDC_CCLIST, CLM_SETCHECKMARK, (LPARAM)hItem, 1);
                 }
                 break;
 
-			case IDOK:
+            case IDOK:
                 {
                     chat_list_item* item = param->ppro->find_chat_by_id(param->id);
                     if (item)
                     {
                         char msg[1024];
-				        GetDlgItemTextA(hwndDlg, IDC_MSG, msg, sizeof(msg));
+                        GetDlgItemTextA(hwndDlg, IDC_MSG, msg, sizeof(msg));
 
                         HWND hwndList = GetDlgItem(hwndDlg, IDC_CCLIST);
                         clist_chat_invite_send(NULL, hwndList, item, param->ppro, msg);
                     }
                     EndDialog(hwndDlg, IDOK);
                 }
-				break;
+                break;
 
-			case IDCANCEL:
-				EndDialog(hwndDlg, IDCANCEL);
-				break;
-			}
-		}
-		break;
-	}
-	return FALSE;
+            case IDCANCEL:
+                EndDialog(hwndDlg, IDCANCEL);
+                break;
+            }
+        }
+        break;
+    }
+    return FALSE;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -1529,56 +1529,56 @@ INT_PTR CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 INT_PTR CALLBACK chat_request_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	invite_chat_req_param* param = (invite_chat_req_param*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+    invite_chat_req_param* param = (invite_chat_req_param*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
-	switch (msg) 
+    switch (msg) 
     {
-	case WM_INITDIALOG:
-	    TranslateDialogDefault(hwndDlg);
+    case WM_INITDIALOG:
+        TranslateDialogDefault(hwndDlg);
 
-	    SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
-	    param = (invite_chat_req_param*)lParam;
+        SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
+        param = (invite_chat_req_param*)lParam;
 
-	    SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("aol"));
+        SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("aol"));
 
-	    SetDlgItemTextA(hwndDlg, IDC_ROOMNAME, strrchr(param->cnp->id, '-')+1);
-	    SetDlgItemTextA(hwndDlg, IDC_SCREENNAME,  param->name);
+        SetDlgItemTextA(hwndDlg, IDC_ROOMNAME, strrchr(param->cnp->id, '-')+1);
+        SetDlgItemTextA(hwndDlg, IDC_SCREENNAME,  param->name);
         SetDlgItemTextA(hwndDlg, IDC_MSG, param->message);
-		break;
+        break;
 
-	case WM_CLOSE:
-		EndDialog(hwndDlg, 0);
-		break;
+    case WM_CLOSE:
+        EndDialog(hwndDlg, 0);
+        break;
 
-	case WM_DESTROY:
-		ReleaseIconEx("aol");
+    case WM_DESTROY:
+        ReleaseIconEx("aol");
         delete param; 
-		break;
+        break;
 
-	case WM_COMMAND:
-		{
-			switch (LOWORD(wParam)) 
+    case WM_COMMAND:
+        {
+            switch (LOWORD(wParam)) 
             {
-			case IDOK:
-				param->ppro->ForkThread(&CAimProto::chatnav_request_thread, param->cnp);
-				EndDialog(hwndDlg, IDOK);
-				break;
+            case IDOK:
+                param->ppro->ForkThread(&CAimProto::chatnav_request_thread, param->cnp);
+                EndDialog(hwndDlg, IDOK);
+                break;
 
-			case IDCANCEL:
-				param->ppro->aim_chat_deny(param->ppro->hServerConn,param->ppro->seqno,param->name,param->icbm_cookie);
+            case IDCANCEL:
+                param->ppro->aim_chat_deny(param->ppro->hServerConn,param->ppro->seqno,param->name,param->icbm_cookie);
                 delete param->cnp;
-				EndDialog(hwndDlg, IDCANCEL);
-				break;
-			}
-		}
-		break;
-	}
-	return FALSE;
+                EndDialog(hwndDlg, IDCANCEL);
+                break;
+            }
+        }
+        break;
+    }
+    return FALSE;
 }
 
 
 void CALLBACK chat_request_cb(PVOID dwParam)
 {
-	CreateDialogParam (hInstance, MAKEINTRESOURCE(IDD_CHATROOM_INVITE_REQ), 
-		 NULL, chat_request_dialog, (LPARAM)dwParam);
+    CreateDialogParam (hInstance, MAKEINTRESOURCE(IDD_CHATROOM_INVITE_REQ), 
+         NULL, chat_request_dialog, (LPARAM)dwParam);
 }

@@ -22,19 +22,19 @@ void __cdecl CAimProto::aim_dc_helper(void* param) //only called when we are ini
 {
     file_transfer *ft = (file_transfer*)param;	
 
-	sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED, ft, 0);
+    sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED, ft, 0);
 
     NETLIBPACKETRECVER packetRecv = {0};
-	packetRecv.cbSize = sizeof(packetRecv);
-	packetRecv.dwTimeout = 100 * getWord(AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
+    packetRecv.cbSize = sizeof(packetRecv);
+    packetRecv.dwTimeout = 100 * getWord(AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
 
     HANDLE hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)ft->hConn, 2048 * 4);
 
     bool success;
     if (ft->sending)//we are sending
-	    success = sending_file(ft, hServerPacketRecver, packetRecv);
+        success = sending_file(ft, hServerPacketRecver, packetRecv);
     else 
-	    success = receiving_file(ft, hServerPacketRecver, packetRecv);
+        success = receiving_file(ft, hServerPacketRecver, packetRecv);
 
     Netlib_CloseHandle(hServerPacketRecver);
     Netlib_CloseHandle(ft->hConn);
@@ -47,16 +47,16 @@ void __cdecl CAimProto::aim_dc_helper(void* param) //only called when we are ini
     else if (!ft->requester)
     {
         ft->accepted = false;
-		unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
-		HANDLE hConn = aim_peer_connect(AIM_PROXY_SERVER, port);
-		if (hConn) 
+        unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
+        HANDLE hConn = aim_peer_connect(AIM_PROXY_SERVER, port);
+        if (hConn) 
         {
-			LOG("Connected to proxy ip because we want to use a proxy for the file transfer.");
+            LOG("Connected to proxy ip because we want to use a proxy for the file transfer.");
             ft->requester = true;
             ft->hConn = hConn;
-			ForkThread(&CAimProto::aim_proxy_helper, ft);
+            ForkThread(&CAimProto::aim_proxy_helper, ft);
             return;
-		}
+        }
     }
 
     if (!success)
@@ -72,8 +72,8 @@ void aim_direct_connection_initiated(HANDLE hNewConnection, DWORD dwRemoteIP, CA
 {
      file_transfer *ft;
 
-	char cip[20];
-	ppro->LOG("Buddy connected from IP: %s", long_ip_to_char_ip(dwRemoteIP, cip));
+    char cip[20];
+    ppro->LOG("Buddy connected from IP: %s", long_ip_to_char_ip(dwRemoteIP, cip));
 
     //okay someone connected to us or we initiated the connection- we need to figure out who they are and if they belong
     for (int i=21; --i; )
@@ -86,11 +86,11 @@ void aim_direct_connection_initiated(HANDLE hNewConnection, DWORD dwRemoteIP, CA
         Sleep(100);
     }
 
-	if (ft)
+    if (ft)
     {
         ft->hConn = hNewConnection;
         ppro->aim_dc_helper(ft);
     }
-	else 
+    else 
         Netlib_CloseHandle(hNewConnection);
 }
