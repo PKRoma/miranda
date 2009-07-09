@@ -470,15 +470,6 @@ int __stdcall utf8_decode_static(const char *from, char *to, int to_size)
 	return nResult;
 }
 
-char* __stdcall tchar_to_utf8(const TCHAR *szTxt)
-{
-#if defined( _UNICODE )
-	return make_utf8_string((WCHAR*)szTxt);
-#else
-	return ansi_to_utf8((char*)szTxt);
-#endif
-}
-
 char* __stdcall mtchar_to_utf8(const TCHAR *szTxt)
 {
 	if (gbUnicodeCore)

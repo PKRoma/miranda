@@ -50,12 +50,17 @@ char*  __stdcall make_utf8_string_static(const WCHAR *unicode, char *utf8, size_
 
 char*  __stdcall ansi_to_utf8(const char *szAnsi);
 char*  __stdcall ansi_to_utf8_codepage(const char *szAnsi, WORD wCp);
-char*  __stdcall tchar_to_utf8(const TCHAR *szTxt);
 char*  __stdcall mtchar_to_utf8(const TCHAR *szTxt);
 
 int   __stdcall utf8_encode(const char *from, char **to);
 int   __stdcall utf8_decode(const char *from, char **to);
 int   __stdcall utf8_decode_codepage(const char *from, char **to, WORD wCp);
 int   __stdcall utf8_decode_static(const char *from, char *to, int to_size);
+
+#ifdef _UNICODE
+	#define tchar_to_utf8 make_utf8_string
+#else
+	#define tchar_to_utf8 ansi_to_utf8
+#endif
 
 void InitI18N(void);

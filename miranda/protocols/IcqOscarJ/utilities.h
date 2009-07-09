@@ -127,7 +127,7 @@ WORD GetMyStatusFlags();
 
 int IsValidRelativePath(const char *filename);
 char *ExtractFileName(const char *fullname);
-char *FileNameToUtf(const char *filename);
+char *FileNameToUtf(const TCHAR *filename);
 
 int FileStatUtf(const char *path, struct _stati64 *buffer);
 int MakeDirUtf(const char *dir);

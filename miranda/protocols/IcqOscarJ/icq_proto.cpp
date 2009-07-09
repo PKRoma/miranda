@@ -607,7 +607,7 @@ HANDLE __cdecl CIcqProto::ChangeInfo( int iInfoType, void* pInfoData )
 ////////////////////////////////////////////////////////////////////////////////////////
 // PS_FileAllow - starts a file transfer
 
-HANDLE __cdecl CIcqProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath )
+HANDLE __cdecl CIcqProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const TCHAR* szPath )
 {
 	DWORD dwUin;
 	uid_str szUid;
@@ -625,8 +625,7 @@ HANDLE __cdecl CIcqProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const ch
 		if (dwUin && ft->ft_magic == FT_MAGIC_ICQ)
 		{
 			filetransfer* ft = (filetransfer *)hTransfer;
-
-			ft->szSavePath = null_strdup(szPath);
+			ft->szSavePath = tchar_to_utf8(szPath);
 
 			EnterCriticalSection(&expectedFileRecvMutex);
 			expectedFileRecvs.insert( ft );
@@ -684,7 +683,7 @@ int __cdecl CIcqProto::FileCancel( HANDLE hContact, HANDLE hTransfer )
 ////////////////////////////////////////////////////////////////////////////////////////
 // PS_FileDeny - denies a file transfer
 
-int __cdecl CIcqProto::FileDeny( HANDLE hContact, HANDLE hTransfer, const char* szReason )
+int __cdecl CIcqProto::FileDeny( HANDLE hContact, HANDLE hTransfer, const TCHAR* szReason )
 {
 	int nReturnValue = 1;
 	DWORD dwUin;
@@ -724,7 +723,7 @@ int __cdecl CIcqProto::FileDeny( HANDLE hContact, HANDLE hTransfer, const char* 
 ////////////////////////////////////////////////////////////////////////////////////////
 // PS_FileResume - processes file renaming etc
 
-int __cdecl CIcqProto::FileResume( HANDLE hTransfer, int* action, const char** szFilename )
+int __cdecl CIcqProto::FileResume( HANDLE hTransfer, int* action, const TCHAR** szFilename )
 {
 	if (icqOnline() && hTransfer)
 	{
@@ -1098,10 +1097,10 @@ int __cdecl CIcqProto::RecvContacts( HANDLE hContact, PROTORECVEVENT* pre )
 ////////////////////////////////////////////////////////////////////////////////////////
 // RecvFile
 
-int __cdecl CIcqProto::RecvFile( HANDLE hContact, PROTORECVFILE* evt )
+int __cdecl CIcqProto::RecvFile( HANDLE hContact, PROTORECVFILET* evt )
 {
 	CCSDATA ccs = { hContact, PSR_FILE, 0, ( LPARAM )evt };
-	return CallService( MS_PROTO_RECVFILE, 0, ( LPARAM )&ccs );
+	return CallService( MS_PROTO_RECVFILET, 0, ( LPARAM )&ccs );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -1434,7 +1433,7 @@ int __cdecl CIcqProto::SendContacts( HANDLE hContact, int flags, int nContacts, 
 ////////////////////////////////////////////////////////////////////////////////////////
 // SendFile - sends a file
 
-HANDLE __cdecl CIcqProto::SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles )
+HANDLE __cdecl CIcqProto::SendFile( HANDLE hContact, const TCHAR* szDescription, TCHAR** ppszFiles )
 {
 	if ( !icqOnline())
 		return 0;
@@ -1469,18 +1468,18 @@ HANDLE __cdecl CIcqProto::SendFile( HANDLE hContact, const char* szDescription, 
 					ft = CreateFileTransfer(hContact, dwUin, (wClientVersion == 7) ? 7: 8);
 
 					for (ft->dwFileCount = 0; ppszFiles[ft->dwFileCount]; ft->dwFileCount++);
-					ft->files = (char **)SAFE_MALLOC(sizeof(char *) * ft->dwFileCount);
+					ft->files = (TCHAR **)SAFE_MALLOC(sizeof(TCHAR *) * ft->dwFileCount);
 					ft->dwTotalSize = 0;
 					for (i = 0; i < (int)ft->dwFileCount; i++)
 					{
-						ft->files[i] = null_strdup(ppszFiles[i]);
+						ft->files[i] = ( ppszFiles[i] ) ? _tcsdup( ppszFiles[i] ) : NULL;
 
-						if (_stat(ppszFiles[i], &statbuf))
+						if (_tstat(ppszFiles[i], &statbuf))
 							NetLog_Server("IcqSendFile() was passed invalid filename(s)");
 						else
 							ft->dwTotalSize += statbuf.st_size;
 					}
-					ft->szDescription = null_strdup(szDescription);
+					ft->szDescription = tchar_to_utf8(szDescription);
 					ft->dwTransferSpeed = 100;
 					ft->sending = 1;
 					ft->fileId = -1;
@@ -1490,15 +1489,15 @@ HANDLE __cdecl CIcqProto::SendFile( HANDLE hContact, const char* szDescription, 
 
 					// Send file transfer request
 					{
-						char szFiles[64];
-						char* pszFiles;
+						TCHAR szFiles[64];
+						TCHAR* pszFiles;
 
 
 						NetLog_Server("Init file send");
 
 						if (ft->dwFileCount == 1)
 						{
-							pszFiles = strrchr(ft->files[0], '\\');
+							pszFiles = _tcsrchr(ft->files[0], '\\');
 							if (pszFiles)
 								pszFiles++;
 							else
@@ -1506,7 +1505,7 @@ HANDLE __cdecl CIcqProto::SendFile( HANDLE hContact, const char* szDescription, 
 						}
 						else
 						{
-							null_snprintf(szFiles, 64, ICQTranslate("%d Files"), ft->dwFileCount);
+							mir_sntprintf(szFiles, SIZEOF(szFiles), TranslateT("%d Files"), ft->dwFileCount);
 							pszFiles = szFiles;
 						}
 

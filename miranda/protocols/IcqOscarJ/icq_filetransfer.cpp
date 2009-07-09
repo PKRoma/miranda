@@ -41,7 +41,7 @@ static void file_buildProtoFileTransferStatus(filetransfer* ft, PROTOFILETRANSFE
 	ZeroMemory(pfts, sizeof(PROTOFILETRANSFERSTATUS));
 	pfts->cbSize = sizeof(PROTOFILETRANSFERSTATUS);
 	pfts->hContact = ft->hContact;
-	pfts->sending = ft->sending;
+	pfts->flags = PFTS_TCHAR + (( ft->sending ) ? PFTS_SENDING : PFTS_RECEIVING );
 	if (ft->sending)
 		pfts->files = ft->files;
 	else
@@ -50,8 +50,8 @@ static void file_buildProtoFileTransferStatus(filetransfer* ft, PROTOFILETRANSFE
 	pfts->currentFileNumber = ft->iCurrentFile;
 	pfts->totalBytes = ft->dwTotalSize;
 	pfts->totalProgress = ft->dwBytesDone;
-	pfts->workingDir = ft->szSavePath;
-	pfts->currentFile = ft->szThisFile;
+	pfts->workingDir = mir_utf8decodeT(ft->szSavePath);
+	pfts->currentFile = mir_utf8decodeT(ft->szThisFile);
 	pfts->currentFileSize = ft->dwThisFileSize;
 	pfts->currentFileTime = ft->dwThisFileDate;
 	pfts->currentFileProgress = ft->dwFileBytesDone;
@@ -108,7 +108,7 @@ static void file_sendNextFile(CIcqProto* ppro, directconnect* dc)
 		return;
 	}
 
-	dc->ft->szThisFile = null_strdup(dc->ft->files[dc->ft->iCurrentFile]);
+	dc->ft->szThisFile = tchar_to_utf8(dc->ft->files[dc->ft->iCurrentFile]);
 	if (_stat(dc->ft->szThisFile, &statbuf))
 	{
 		ppro->icq_LogMessage(LOG_ERROR, LPGEN("Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it."));
@@ -201,6 +201,9 @@ static void file_sendData(CIcqProto* ppro, directconnect* dc)
 
 		file_buildProtoFileTransferStatus(dc->ft, &pfts);
 		ppro->BroadcastAck(dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, dc->ft, (LPARAM)&pfts);
+		mir_free(pfts.workingDir);
+		mir_free(pfts.currentFile);
+
 		dc->ft->dwLastNotify = GetTickCount();
 	}
 
@@ -219,11 +222,10 @@ void CIcqProto::handleFileTransferIdle(directconnect* dc)
 	file_sendData(this, dc);
 }
 
-void CIcqProto::icq_sendFileResume(filetransfer* ft, int action, const char* szFilename)
+void CIcqProto::icq_sendFileResume(filetransfer* ft, int action, const TCHAR* szFilename)
 {
 	int openFlags;
 	directconnect *dc;
-
 
 	if (ft->hConnection == NULL)
 		return;
@@ -250,7 +252,7 @@ void CIcqProto::icq_sendFileResume(filetransfer* ft, int action, const char* szF
 	case FILERESUME_RENAME:
 		openFlags = _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY;
 		SAFE_FREE((void**)&ft->szThisFile);
-		ft->szThisFile = null_strdup(szFilename);
+		ft->szThisFile = tchar_to_utf8(szFilename);
 		ft->dwFileBytesDone = 0;
 		break;
 	}
@@ -418,7 +420,10 @@ void CIcqProto::handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen
 				PROTOFILETRANSFERSTATUS pfts = {0};
 
 				file_buildProtoFileTransferStatus(dc->ft, &pfts);
-				if (BroadcastAck(dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, dc->ft, (LPARAM)&pfts))
+				int res = BroadcastAck(dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, dc->ft, (LPARAM)&pfts);
+				mir_free(pfts.workingDir);
+				mir_free(pfts.currentFile);
+				if ( res )
 					break;   /* UI supports resume: it will call PS_FILERESUME */
 
 				dc->ft->fileId = _open(dc->ft->szThisFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
@@ -486,6 +491,8 @@ void CIcqProto::handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen
 
 			file_buildProtoFileTransferStatus(dc->ft, &pfts);
 			BroadcastAck(dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, dc->ft, (LPARAM)&pfts);
+			mir_free(pfts.workingDir);
+			mir_free(pfts.currentFile);
 			dc->ft->dwLastNotify = GetTickCount();
 		}
 		if (wLen < 2048)

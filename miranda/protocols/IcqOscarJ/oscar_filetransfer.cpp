@@ -240,7 +240,7 @@ void CIcqProto::SafeReleaseFileTransfer(void **ft)
 			if (ift->files)
 			{
 				for (int i = 0; i < (int)ift->dwFileCount; i++)
-					SAFE_FREE(&ift->files[i]);
+					SAFE_FREE((void**)&ift->files[i]);
 				SAFE_FREE((void**)&ift->files);
 			}
 			// Invalidate transfer
@@ -278,7 +278,7 @@ void CIcqProto::SafeReleaseFileTransfer(void **ft)
 			if (oft->files_ansi)
 			{
 				for (int i = 0; i < oft->wFilesCount; i++)
-					SAFE_FREE(&oft->files_ansi[i]);
+					SAFE_FREE((void**)&oft->files_ansi[i]);
 				SAFE_FREE((void**)&oft->files_ansi);
 			}
 			if (oft->file_containers)
@@ -583,28 +583,21 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 					}
 				}
 				{
-					char* szBlob;
 					int bAdded;
 					HANDLE hContact = HContactFromUID(dwUin, szUID, &bAdded);
-					char* szAnsi;
 
 					ft->hContact = hContact;
 					ft->szDescription = pszDescription;
 					ft->fileId = -1;
 
-					szAnsi = (char*)_alloca(strlennull(pszDescription)+2);
-					utf8_decode_static(pszDescription, szAnsi, strlennull(pszDescription)+1);
+					TCHAR *tszFileName = mir_utf8decodeT( pszFileName ), *tszDescr = mir_utf8decodeT( pszDescription );
 
-					// Send chain event
-					szBlob = (char*)_alloca(sizeof(DWORD) + strlennull(pszFileName) + strlennull(szAnsi) + 2);
-					*(PDWORD)szBlob = 0;
-					strcpy(szBlob + sizeof(DWORD), pszFileName);
-					strcpy(szBlob + sizeof(DWORD) + strlennull(pszFileName) + 1, szAnsi); // DB event is ansi only!
-
-					PROTORECVEVENT pre;
-					pre.flags = 0;
+					PROTORECVFILET pre;
+					pre.flags = PREF_TCHAR;
 					pre.timestamp = time(NULL);
-					pre.szMessage = szBlob;
+					pre.fileCount = 1;
+					pre.ptszFiles = &tszFileName;
+					pre.tszDescription = tszDescr;
 					pre.lParam = (LPARAM)ft;
 
 					CCSDATA ccs;
@@ -613,6 +606,9 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 					ccs.wParam = 0;
 					ccs.lParam = (LPARAM)&pre;
 					CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
+
+					mir_free( tszFileName );
+					mir_free( tszDescr );
 				}
 			}
 			else if (wAckType == 2)
@@ -859,7 +855,7 @@ static char *oftGetFileContainer(oscar_filetransfer* oft, const char** files, in
 		return oft->file_containers[i];
 }
 
-HANDLE CIcqProto::oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, const char* pszDesc)
+HANDLE CIcqProto::oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, TCHAR** files, const TCHAR* pszDesc)
 {
 	oscar_filetransfer *ft;
 	int i, filesCount;
@@ -875,12 +871,12 @@ HANDLE CIcqProto::oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, cha
 
 	for (filesCount = 0; files[filesCount]; filesCount++);
 	ft->files = (oft_file_record *)SAFE_MALLOC(sizeof(oft_file_record) * filesCount);
-	ft->files_ansi = (char **)SAFE_MALLOC(sizeof(char *) * filesCount);
+	ft->files_ansi = ( TCHAR** )SAFE_MALLOC(sizeof(TCHAR *) * filesCount);
 	ft->qwTotalSize = 0;
 	// Prepare files arrays
 	for (i = 0; i < filesCount; i++)
 	{
-		if (_stati64(files[i], &statbuf))
+		if (_tstati64(files[i], &statbuf))
 			NetLog_Server("IcqSendFile() was passed invalid filename \"%s\"", files[i]);
 		else
 		{
@@ -888,7 +884,7 @@ HANDLE CIcqProto::oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, cha
 			{ // take only files
 				ft->files[ft->wFilesCount].szFile = FileNameToUtf(files[i]);
 				ft->files[ft->wFilesCount].szContainer = oftGetFileContainer(ft, (LPCSTR*)files, i);
-				ft->files_ansi[ft->wFilesCount] = null_strdup(files[i]);
+				ft->files_ansi[ft->wFilesCount] = ( files[i] ) ? _tcsdup( files[i] ) : NULL;
 
 				ft->wFilesCount++;
 				ft->qwTotalSize += statbuf.st_size;
@@ -923,7 +919,7 @@ HANDLE CIcqProto::oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, cha
 
 	NetLog_Server("OFT: Found %d files.", ft->wFilesCount);
 
-	ft->szDescription = ansi_to_utf8(pszDesc);
+	ft->szDescription = tchar_to_utf8(pszDesc);
 	ft->sending = 1;
 	ft->fileId = -1;
 	ft->iCurrentFile = 0;
@@ -1005,7 +1001,7 @@ HANDLE CIcqProto::oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, cha
 	return ft; // Success
 }
 
-HANDLE CIcqProto::oftFileAllow(HANDLE hContact, HANDLE hTransfer, const char* szPath)
+HANDLE CIcqProto::oftFileAllow(HANDLE hContact, HANDLE hTransfer, const TCHAR* szPath)
 {
 	oscar_filetransfer* ft = (oscar_filetransfer*)hTransfer;
 	DWORD dwUin;
@@ -1014,7 +1010,12 @@ HANDLE CIcqProto::oftFileAllow(HANDLE hContact, HANDLE hTransfer, const char* sz
 	if (getContactUid(hContact, &dwUin, &szUid))
 		return 0; // Invalid contact
 
+#ifdef _UNICODE
+	ft->szSavePath = make_utf8_string(szPath);
+#else
 	ft->szSavePath = ansi_to_utf8(szPath);
+#endif
+	
 	if (ft->szThisPath)
 	{ // Append Directory name to the save path, when transfering a directory
 		ft->szSavePath = (char*)SAFE_REALLOC(ft->szSavePath, strlennull(ft->szSavePath) + strlennull(ft->szThisPath) + 4);
@@ -1033,7 +1034,7 @@ HANDLE CIcqProto::oftFileAllow(HANDLE hContact, HANDLE hTransfer, const char* sz
 	return hTransfer; // Success
 }
 
-DWORD CIcqProto::oftFileDeny(HANDLE hContact, HANDLE hTransfer, const char* reazon)
+DWORD CIcqProto::oftFileDeny(HANDLE hContact, HANDLE hTransfer, const TCHAR* reazon)
 {
 	oscar_filetransfer* ft = (oscar_filetransfer*)hTransfer;
 	DWORD dwUin;
@@ -1088,7 +1089,7 @@ DWORD CIcqProto::oftFileCancel(HANDLE hContact, HANDLE hTransfer)
 	return 1; // Invalid transfer
 }
 
-void CIcqProto::oftFileResume(oscar_filetransfer *ft, int action, const char *szFilename)
+void CIcqProto::oftFileResume(oscar_filetransfer *ft, int action, const TCHAR *szFilename)
 {
 	oscar_connection *oc;
 	int openFlags;
@@ -1121,7 +1122,7 @@ void CIcqProto::oftFileResume(oscar_filetransfer *ft, int action, const char *sz
 	case FILERESUME_RENAME:
 		openFlags = _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY;
 		SAFE_FREE((void**)&ft->szThisFile);
-		ft->szThisFile = ansi_to_utf8(szFilename);
+		ft->szThisFile = tchar_to_utf8(szFilename);
 		ft->qwFileBytesDone = 0;
 		break;
 
@@ -1200,7 +1201,7 @@ static void oft_buildProtoFileTransferStatus(oscar_filetransfer* ft, PROTOFILETR
 	ZeroMemory(pfts, sizeof(PROTOFILETRANSFERSTATUS));
 	pfts->cbSize = sizeof(PROTOFILETRANSFERSTATUS);
 	pfts->hContact = ft->hContact;
-	pfts->sending = ft->sending;
+	pfts->flags = PFTS_TCHAR + ((ft->sending) ? PFTS_SENDING : PFTS_RECEIVING);
 	if (ft->sending)
 		pfts->files = ft->files_ansi;
 	else
@@ -1210,7 +1211,7 @@ static void oft_buildProtoFileTransferStatus(oscar_filetransfer* ft, PROTOFILETR
 	pfts->totalBytes = (DWORD)ft->qwTotalSize; // FIXME
 	pfts->totalProgress = (DWORD)ft->qwBytesDone; // FIXME
 	//  utf8_decode(ft->szPath, &pfts->workingDir); // not used by the UI anyway
-	utf8_decode(ft->szThisFile, &pfts->currentFile); 
+	pfts->currentFile = mir_utf8decodeT(ft->szThisFile); 
 	pfts->currentFileSize = (DWORD)ft->qwThisFileSize; // FIXME
 	pfts->currentFileTime = ft->dwThisFileDate;
 	pfts->currentFileProgress = (DWORD)ft->qwFileBytesDone; // FIXME
@@ -1804,7 +1805,7 @@ int CIcqProto::oft_handleFileData(oscar_connection *oc, unsigned char *buf, int 
 
 		oft_buildProtoFileTransferStatus(ft, &pfts);
 		BroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&pfts);
-		SAFE_FREE((void**)&pfts.currentFile);
+		mir_free(pfts.currentFile);
 		SAFE_FREE((void**)&pfts.workingDir);
 		oc->ft->dwLastNotify = GetTickCount();
 	}
@@ -2048,7 +2049,7 @@ void CIcqProto::handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE 
 					SAFE_FREE((void**)&pfts.workingDir);
 					break; /* UI supports resume: it will call PS_FILERESUME */
 				}
-				SAFE_FREE((void**)&pfts.currentFile);
+				mir_free(pfts.currentFile);
 				SAFE_FREE((void**)&pfts.workingDir);
 
 				ft->fileId = OpenFileUtf(ft->szThisFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
@@ -2290,7 +2291,7 @@ void CIcqProto::oft_sendFileData(oscar_connection *oc)
 
 		oft_buildProtoFileTransferStatus(ft, &pfts);
 		BroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&pfts);
-		SAFE_FREE((void**)&pfts.currentFile);
+		mir_free(pfts.currentFile);
 		SAFE_FREE((void**)&pfts.workingDir);
 		ft->dwLastNotify = GetTickCount();
 	}

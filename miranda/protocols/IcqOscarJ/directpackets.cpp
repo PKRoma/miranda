@@ -150,7 +150,7 @@ void CIcqProto::icq_sendFileAcceptDirect(HANDLE hContact, filetransfer* ft)
 	NetLog_Direct("Sent file accept direct, port %u", wListenPort);
 }
 
-void CIcqProto::icq_sendFileDenyDirect(HANDLE hContact, filetransfer* ft, const char *szReason)
+void CIcqProto::icq_sendFileDenyDirect(HANDLE hContact, filetransfer* ft, const TCHAR *szReason)
 {
 	// v7 packet
 	icq_packet packet;
@@ -171,29 +171,32 @@ void CIcqProto::icq_sendFileDenyDirect(HANDLE hContact, filetransfer* ft, const 
 	NetLog_Direct("Sent file deny direct.");
 }
 
-int CIcqProto::icq_sendFileSendDirectv7(filetransfer *ft, const char* pszFiles)
+int CIcqProto::icq_sendFileSendDirectv7(filetransfer *ft, const TCHAR* pszFiles)
 {
 	icq_packet packet;
-	WORD wDescrLen = strlennull(ft->szDescription), wFilesLen = strlennull(pszFiles);
+	char* tmpFiles = tchar_to_utf8(pszFiles);
+	WORD wDescrLen = strlennull(ft->szDescription), wFilesLen = strlennull(tmpFiles);
 
 	packDirectMsgHeader(&packet, (WORD)(18 + wDescrLen + wFilesLen), DIRECT_MESSAGE, (WORD)ft->dwCookie, MTYPE_FILEREQ, 0, 0, 0);
 	packLEWord(&packet, (WORD)(wDescrLen + 1));
 	packBuffer(&packet, (LPBYTE)ft->szDescription, (WORD)(wDescrLen + 1));
 	packLEDWord(&packet, 0);   // listen port
 	packLEWord(&packet, (WORD)(wFilesLen + 1));
-	packBuffer(&packet, (LPBYTE)pszFiles, (WORD)(wFilesLen + 1));
+	packBuffer(&packet, (LPBYTE)tmpFiles, (WORD)(wFilesLen + 1));
 	packLEDWord(&packet, ft->dwTotalSize);
 	packLEDWord(&packet, 0);    // listen port (again)
 
 	NetLog_Direct("Sending v%u file transfer request direct", 7);
+	SAFE_FREE(&tmpFiles);
 
 	return SendDirectMessage(ft->hContact, &packet);
 }
 
-int CIcqProto::icq_sendFileSendDirectv8(filetransfer *ft, const char *pszFiles)
+int CIcqProto::icq_sendFileSendDirectv8(filetransfer *ft, const TCHAR *pszFiles)
 {
 	icq_packet packet;
-	WORD wDescrLen = strlennull(ft->szDescription), wFilesLen = strlennull(pszFiles);
+	char* tmpFiles = tchar_to_utf8(pszFiles);
+	WORD wDescrLen = strlennull(ft->szDescription), wFilesLen = strlennull(tmpFiles);
 
 	packDirectMsgHeader(&packet, (WORD)(0x2E + 22 + wDescrLen + wFilesLen + 1), DIRECT_MESSAGE, (WORD)ft->dwCookie, MTYPE_PLUGIN, 0, 0, 0);
 	packEmptyMsg(&packet);  // message
@@ -205,11 +208,12 @@ int CIcqProto::icq_sendFileSendDirectv8(filetransfer *ft, const char *pszFiles)
 	packWord(&packet, 0x8c82); // Unknown (port?), seen 0x80F6
 	packWord(&packet, 0x0222); // Unknown, seen 0x2e01
 	packLEWord(&packet, (WORD)(wFilesLen + 1));
-	packBuffer(&packet, (LPBYTE)pszFiles, (WORD)(wFilesLen + 1));
+	packBuffer(&packet, (LPBYTE)tmpFiles, (WORD)(wFilesLen + 1));
 	packLEDWord(&packet, ft->dwTotalSize);
 	packLEDWord(&packet, 0x0008c82); // Unknown, (seen 0xf680 ~33000)
 
 	NetLog_Direct("Sending v%u file transfer request direct", 8);
+	SAFE_FREE(&tmpFiles);
 
 	return SendDirectMessage(ft->hContact, &packet);
 }

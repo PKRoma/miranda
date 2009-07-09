@@ -65,7 +65,7 @@ struct oscar_filetransfer: public basic_filetransfer
 	int containerCount;
 	char **file_containers;
 	oft_file_record* files;
-	char **files_ansi; // sending only 
+	TCHAR **files_ansi; // sending only 
 	int iCurrentFile;
 	int currentIsDir;
 	int bUseProxy;

@@ -166,41 +166,40 @@ void CIcqProto::handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCoo
 	unpackLEDWord(&buf, &dwFileSize);
 	wLen -= 4;
 
-	{
-		int bAdded;
-		HANDLE hContact = HContactFromUIN(dwUin, &bAdded);
+	int bAdded;
+	HANDLE hContact = HContactFromUIN(dwUin, &bAdded);
 
-		// Initialize a filetransfer struct
-		filetransfer* ft = CreateFileTransfer(hContact, dwUin, nVersion);
-		ft->dwCookie = dwCookie;
-		ft->szFilename = null_strdup(pszFileName);
-		ft->szDescription = null_strdup(pszDescription);
-		ft->fileId = -1;
-		ft->dwTotalSize = dwFileSize;
-		ft->pMessage.dwMsgID1 = dwID1;
-		ft->pMessage.dwMsgID2 = dwID2;
-		ft->bDC = bDC;
-		ft->bEmptyDesc = bEmptyDesc;
+	// Initialize a filetransfer struct
+	filetransfer* ft = CreateFileTransfer(hContact, dwUin, nVersion);
+	ft->dwCookie = dwCookie;
+	ft->szFilename = null_strdup(pszFileName);
+	ft->szDescription = null_strdup(pszDescription);
+	ft->fileId = -1;
+	ft->dwTotalSize = dwFileSize;
+	ft->pMessage.dwMsgID1 = dwID1;
+	ft->pMessage.dwMsgID2 = dwID2;
+	ft->bDC = bDC;
+	ft->bEmptyDesc = bEmptyDesc;
 
-		// Send chain event
-		char* szBlob = (char*)_alloca(sizeof(DWORD) + strlennull(pszFileName) + strlennull(pszDescription) + 2);
-		*(PDWORD)szBlob = 0;
-		strcpy(szBlob + sizeof(DWORD), pszFileName);
-		strcpy(szBlob + sizeof(DWORD) + strlennull(pszFileName) + 1, pszDescription);
+	TCHAR *tszFileName = mir_utf8decodeT( pszFileName ), *tszDescr = mir_utf8decodeT( pszDescription );
 
-		PROTORECVEVENT pre;
-		pre.flags = 0;
-		pre.timestamp = time(NULL);
-		pre.szMessage = szBlob;
-		pre.lParam = (LPARAM)ft;
+	PROTORECVFILET pre;
+	pre.flags = PREF_TCHAR;
+	pre.timestamp = time(NULL);
+	pre.fileCount = 1;
+	pre.ptszFiles = &tszFileName;
+	pre.tszDescription = tszDescr;
+	pre.lParam = (LPARAM)ft;
 
-		CCSDATA ccs;
-		ccs.szProtoService = PSR_FILE;
-		ccs.hContact = hContact;
-		ccs.wParam = 0;
-		ccs.lParam = (LPARAM)&pre;
-		CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
-	}
+	CCSDATA ccs;
+	ccs.szProtoService = PSR_FILE;
+	ccs.hContact = hContact;
+	ccs.wParam = 0;
+	ccs.lParam = (LPARAM)&pre;
+	CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
+
+	mir_free( tszFileName );
+	mir_free( tszDescr );
 }
 
 void CIcqProto::handleDirectCancel(directconnect *dc, PBYTE buf, WORD wLen, WORD wCommand, DWORD dwCookie, WORD wMessageType, WORD wStatus, WORD wFlags, char* pszText)

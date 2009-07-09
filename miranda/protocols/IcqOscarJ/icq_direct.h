@@ -54,7 +54,7 @@ struct filetransfer
   char *szSavePath;
   char *szThisFile;
   char *szThisSubdir;
-  char **files;
+  TCHAR **files;
   DWORD dwThisFileSize;
   DWORD dwThisFileDate;
   DWORD dwTotalSize;

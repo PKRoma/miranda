@@ -1969,7 +1969,7 @@ char *ExtractFileName(const char *fullname)
 	return szFileName+1;  // skip backslash
 }
 
-char *FileNameToUtf(const char *filename)
+char *FileNameToUtf(const TCHAR *filename)
 {
 	#if defined( _UNICODE )
 		// reasonable only on NT systems
@@ -1981,27 +1981,17 @@ char *FileNameToUtf(const char *filename)
 
 		if (RealGetLongPathName)
 		{ // the function is available (it is not on old NT systems)
-			WCHAR *unicode, *usFileName = NULL;
-			int wchars;
-
-			wchars = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, filename,
-				strlennull(filename), NULL, 0);
-
-			unicode = (WCHAR*)_alloca((wchars + 1) * sizeof(WCHAR));
-			unicode[wchars] = 0;
-
-			MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, filename,
-				strlennull(filename), unicode, wchars);
-
-			wchars = RealGetLongPathName(unicode, usFileName, 0);
+			WCHAR *usFileName = NULL;
+			int wchars = RealGetLongPathName(filename, usFileName, 0);
 			usFileName = (WCHAR*)_alloca((wchars + 1) * sizeof(WCHAR));
-			RealGetLongPathName(unicode, usFileName, wchars);
+			RealGetLongPathName(filename, usFileName, wchars);
 
 			return make_utf8_string(usFileName);
 		}
+		return make_utf8_string(filename);
+	#else
+		return ansi_to_utf8(filename);
 	#endif
-
-	return ansi_to_utf8(filename);
 }
 
 int FileStatUtf(const char *path, struct _stati64 *buffer)
