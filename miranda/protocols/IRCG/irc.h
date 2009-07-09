@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _IRCWIN_H_
 #define _IRCWIN_H_
 
-#define MIRANDA_VER  0x0800
+#define MIRANDA_VER  0x0900
 #define _WIN32_WINNT 0x0501
 #define _WIN32_IE 0x0501
 
@@ -298,10 +298,10 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 
 	virtual	HANDLE __cdecl ChangeInfo( int iInfoType, void* pInfoData );
 
-	virtual	HANDLE __cdecl FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath );
+	virtual	HANDLE __cdecl FileAllow( HANDLE hContact, HANDLE hTransfer, const TCHAR* szPath );
 	virtual	int    __cdecl FileCancel( HANDLE hContact, HANDLE hTransfer );
-	virtual	int    __cdecl FileDeny( HANDLE hContact, HANDLE hTransfer, const char* szReason );
-	virtual	int    __cdecl FileResume( HANDLE hTransfer, int* action, const char** szFilename );
+	virtual	int    __cdecl FileDeny( HANDLE hContact, HANDLE hTransfer, const TCHAR* szReason );
+	virtual	int    __cdecl FileResume( HANDLE hTransfer, int* action, const TCHAR** szFilename );
 
 	virtual	DWORD_PTR __cdecl GetCaps( int type, HANDLE hContact = NULL );
 	virtual	HICON  __cdecl GetIcon( int iconIndex );
@@ -314,12 +314,12 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	virtual	HWND   __cdecl CreateExtendedSearchUI( HWND owner );
 
 	virtual	int    __cdecl RecvContacts( HANDLE hContact, PROTORECVEVENT* );
-	virtual	int    __cdecl RecvFile( HANDLE hContact, PROTORECVFILE* );
+	virtual	int    __cdecl RecvFile( HANDLE hContact, PROTORECVFILET* );
 	virtual	int    __cdecl RecvMsg( HANDLE hContact, PROTORECVEVENT* );
 	virtual	int    __cdecl RecvUrl( HANDLE hContact, PROTORECVEVENT* );
 
 	virtual	int    __cdecl SendContacts( HANDLE hContact, int flags, int nContacts, HANDLE* hContactsList );
-	virtual	HANDLE __cdecl SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles );
+	virtual	HANDLE __cdecl SendFile( HANDLE hContact, const TCHAR* szDescription, TCHAR** ppszFiles );
 	virtual	int    __cdecl SendMsg( HANDLE hContact, int flags, const char* msg );
 	virtual	int    __cdecl SendUrl( HANDLE hContact, int flags, const char* url );
 

@@ -440,7 +440,7 @@ HANDLE __cdecl CIrcProto::ChangeInfo( int, void* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // FileAllow - starts a file transfer
 
-HANDLE __cdecl CIrcProto::FileAllow( HANDLE, HANDLE hTransfer, const char* szPath )
+HANDLE __cdecl CIrcProto::FileAllow( HANDLE, HANDLE hTransfer, const TCHAR* szPath )
 {
 	DCCINFO* di = ( DCCINFO* )hTransfer;
 
@@ -449,10 +449,8 @@ HANDLE __cdecl CIrcProto::FileAllow( HANDLE, HANDLE hTransfer, const char* szPat
 		return (HANDLE)szPath;
 	}
 
-	TCHAR* ptszFileName = mir_a2t_cp( szPath, getCodepage());
-	di->sPath = ptszFileName;
+	di->sPath = szPath;
 	di->sFileAndPath = di->sPath + di->sFile;
-	mir_free( ptszFileName );
 
 	CDccSession* dcc = new CDccSession( this, di );
 	AddDCCSession( di, dcc );
@@ -479,7 +477,7 @@ int __cdecl CIrcProto::FileCancel( HANDLE, HANDLE hTransfer )
 ////////////////////////////////////////////////////////////////////////////////////////
 // FileDeny - denies a file transfer
 
-int __cdecl CIrcProto::FileDeny( HANDLE, HANDLE hTransfer, const char* )
+int __cdecl CIrcProto::FileDeny( HANDLE, HANDLE hTransfer, const TCHAR* )
 {
 	DCCINFO* di = ( DCCINFO* )hTransfer;
 	delete di;
@@ -489,7 +487,7 @@ int __cdecl CIrcProto::FileDeny( HANDLE, HANDLE hTransfer, const char* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // FileResume - processes file renaming etc
 
-int __cdecl CIrcProto::FileResume( HANDLE hTransfer, int* action, const char** szFilename )
+int __cdecl CIrcProto::FileResume( HANDLE hTransfer, int* action, const TCHAR** szFilename )
 {
 	DCCINFO* di = ( DCCINFO* )hTransfer;
 
@@ -499,7 +497,7 @@ int __cdecl CIrcProto::FileResume( HANDLE hTransfer, int* action, const char** s
 	if (dcc) {
 		InterlockedExchange(&dcc->dwWhatNeedsDoing, i);
 		if (*action == FILERESUME_RENAME) {
-			char * szTemp = _strdup(*szFilename);
+			TCHAR* szTemp = _tcsdup(*szFilename);
 			InterlockedExchangePointer((PVOID*)&dcc->NewFileName, szTemp);
 		}
 
@@ -656,10 +654,10 @@ int __cdecl CIrcProto::RecvContacts( HANDLE, PROTORECVEVENT* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // RecvFile
 
-int __cdecl CIrcProto::RecvFile( HANDLE hContact, PROTORECVFILE* evt )
+int __cdecl CIrcProto::RecvFile( HANDLE hContact, PROTORECVFILET* evt )
 {
 	CCSDATA ccs = { hContact, PSR_FILE, 0, ( LPARAM )evt };
-	return CallService( MS_PROTO_RECVFILE, 0, ( LPARAM )&ccs );
+	return CallService( MS_PROTO_RECVFILET, 0, ( LPARAM )&ccs );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -690,7 +688,7 @@ int __cdecl CIrcProto::SendContacts( HANDLE, int, int, HANDLE* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // SendFile - sends a file
 
-HANDLE __cdecl CIrcProto::SendFile( HANDLE hContact, const char*, char** ppszFiles )
+HANDLE __cdecl CIrcProto::SendFile( HANDLE hContact, const TCHAR*, TCHAR** ppszFiles )
 {
 	DCCINFO* dci = NULL;
 	int iPort = 0;
@@ -718,7 +716,7 @@ HANDLE __cdecl CIrcProto::SendFile( HANDLE hContact, const char*, char** ppszFil
 		//get file size
 		FILE * hFile = NULL;
 		while (ppszFiles[index] && hFile == 0) {
-			hFile = fopen ( ppszFiles[index] , "rb" );
+			hFile = _tfopen ( ppszFiles[index] , _T("rb"));
 			if (hFile) {
 				fseek (hFile , 0 , SEEK_END);
 				size = ftell (hFile);
@@ -738,7 +736,7 @@ HANDLE __cdecl CIrcProto::SendFile( HANDLE hContact, const char*, char** ppszFil
 		if ( !getTString( hContact, "Nick", &dbv )) {
 			// set up a basic DCCINFO struct and pass it to a DCC object
 			dci = new DCCINFO;
-			dci->sFileAndPath = (TCHAR *)_A2T( ppszFiles[index], getCodepage());
+			dci->sFileAndPath = ppszFiles[index];
 
 			int i = dci->sFileAndPath.ReverseFind( '\\' );
 			if (i != -1) {
@@ -816,7 +814,7 @@ HANDLE __cdecl CIrcProto::SendFile( HANDLE hContact, const char*, char** ppszFil
 			index++;
 			while( ppszFiles[index] ) {
 				hFile = NULL;
-				hFile = fopen( ppszFiles[index] , "rb" );
+				hFile = _tfopen( ppszFiles[index] , _T("rb"));
 				if ( hFile ) {
 					fclose(hFile);
 					PostIrcMessage( _T("/DCC SEND %s ") _T(TCHAR_STR_PARAM), dci->sContactName.c_str(), ppszFiles[index]);
