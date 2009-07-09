@@ -103,11 +103,12 @@ static INT_PTR DbEventGetText(WPARAM wParam, LPARAM lParam)
 	if ( dbei->eventType == EVENTTYPE_FILE ) {
 		char* filename = ((char *)dbei->pBlob) + sizeof(DWORD);
 		char* descr = filename + lstrlenA( filename ) + 1;
+		char* str = (*descr == 0) ? filename : descr;
 		switch ( egt->datatype ) {
 		case DBVT_WCHAR:
-			return ( INT_PTR )a2t( *descr == 0 ? filename : descr );
+			return ( INT_PTR )(( dbei->flags & DBEF_UTF ) ? Utf8DecodeUcs2( str ) : a2t( str ));
 		case DBVT_ASCIIZ:
-			return ( INT_PTR )mir_strdup( *descr == 0 ? filename : descr );
+			return ( INT_PTR )(( dbei->flags & DBEF_UTF ) ? Utf8Decode( mir_strdup( str ), NULL ) : mir_strdup( str ));
 		}
 		return 0;
 	}
