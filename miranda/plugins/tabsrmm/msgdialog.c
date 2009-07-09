@@ -556,28 +556,11 @@ static void ShowHideInfoPanel(HWND hwndDlg, struct MessageWindowData *dat)
 }
 // drop files onto message input area...
 
-static void AddToFileList(char ***pppFiles, int *totalCount, const TCHAR* szFilename)
+static void AddToFileList(TCHAR ***pppFiles, int *totalCount, const TCHAR* szFilename)
 {
-	*pppFiles = (char**)realloc(*pppFiles, (++*totalCount + 1) * sizeof(char*));
+	*pppFiles = (TCHAR**)realloc(*pppFiles, (++*totalCount + 1) * sizeof(TCHAR*));
 	(*pppFiles)[*totalCount] = NULL;
-
-#if defined( _UNICODE )
-{
-	TCHAR tszShortName[ MAX_PATH ];
-	char  szShortName[ MAX_PATH ];
-	BOOL  bIsDefaultCharUsed = FALSE;
-	WideCharToMultiByte(CP_ACP, 0, szFilename, -1, szShortName, sizeof(szShortName), NULL, &bIsDefaultCharUsed);
-	if (bIsDefaultCharUsed) {
-		if (GetShortPathName(szFilename, tszShortName, SIZEOF(tszShortName)) == 0)
-			WideCharToMultiByte(CP_ACP, 0, szFilename, -1, szShortName, sizeof(szShortName), NULL, NULL);
-		else
-			WideCharToMultiByte(CP_ACP, 0, tszShortName, -1, szShortName, sizeof(szShortName), NULL, NULL);
-	}
-	(*pppFiles)[*totalCount-1] = _strdup(szShortName);
-}
-#else
-	(*pppFiles)[*totalCount-1] = _strdup(szFilename);
-#endif
+	(*pppFiles)[*totalCount-1] = _tcsdup(szFilename);
 
 	if (GetFileAttributes(szFilename) & FILE_ATTRIBUTE_DIRECTORY) {
 		WIN32_FIND_DATA fd;
@@ -1860,8 +1843,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			HWND	hwndItem;
 			int		dwLocalSmAdd = 0;
 			PROTOACCOUNT *acc = 0;
-            TCHAR* tmp;
-
 
 			struct NewMessageWindowLParam *newData = (struct NewMessageWindowLParam *) lParam;
 
@@ -5418,14 +5399,14 @@ quote_from_last:
 				TCHAR szFilename[MAX_PATH];
 				HDROP hDrop = (HDROP)wParam;
 				int fileCount = DragQueryFile(hDrop, -1, NULL, 0), totalCount = 0, i;
-				char** ppFiles = NULL;
+				TCHAR** ppFiles = NULL;
 				for (i = 0; i < fileCount; i++) {
 					DragQueryFile(hDrop, i, szFilename, SIZEOF(szFilename));
 					AddToFileList(&ppFiles, &totalCount, szFilename);
 				}
 
 				if (!not_sending) {
-					CallService(MS_FILE_SENDSPECIFICFILES, (WPARAM)dat->hContact, (LPARAM)ppFiles);
+					CallService(MS_FILE_SENDSPECIFICFILEST, (WPARAM)dat->hContact, (LPARAM)ppFiles);
 				} else {
 #define MS_HTTPSERVER_ADDFILENAME "HTTPServer/AddFileName"
 
@@ -5434,8 +5415,9 @@ quote_from_last:
 						int i;
 
 						for (i = 0;i < totalCount;i++) {
-							char *szTemp;
-							szTemp = (char*)CallService(MS_HTTPSERVER_ADDFILENAME, (WPARAM)ppFiles[i], 0);
+							char* szFileName = mir_t2a( ppFiles[i] );
+							char *szTemp = (char*)CallService(MS_HTTPSERVER_ADDFILENAME, (WPARAM)szFileName, 0);
+							mir_free( szFileName );
 						}
 						szHTTPText = "DEBUG";
 						SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_REPLACESEL, TRUE, (LPARAM)szHTTPText);

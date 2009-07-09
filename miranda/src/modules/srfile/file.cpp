@@ -38,7 +38,32 @@ static INT_PTR SendFileCommand(WPARAM wParam, LPARAM)
 
 static INT_PTR SendSpecificFiles(WPARAM wParam,LPARAM lParam)
 {
-	struct FileSendData fsd;
+	FileSendData fsd;
+	fsd.hContact=(HANDLE)wParam;
+	#if defined( _UNICODE )
+		char** ppFiles = ( char** )lParam;
+		int count = 0;
+		while ( ppFiles[count] != NULL )
+			count++;
+
+		fsd.ppFiles = (const TCHAR**)alloca(( count+1 ) * sizeof( void* ));
+		for ( int i=0; i < count; i++ )
+			fsd.ppFiles[i] = ( const TCHAR* )mir_a2t( ppFiles[i] );
+		fsd.ppFiles[ count ] = NULL;
+	#else
+		fsd.ppFiles=(const char**)lParam;
+	#endif
+	CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_FILESEND),NULL,DlgProcSendFile,(LPARAM)&fsd);
+	#if defined( _UNICODE )
+		for ( int j=0; j < count; j++ )
+			mir_free(( void* )fsd.ppFiles[j] );
+	#endif
+	return 0;
+}
+
+static INT_PTR SendSpecificFilesT(WPARAM wParam,LPARAM lParam)
+{
+	FileSendData fsd;
 	fsd.hContact=(HANDLE)wParam;
 	fsd.ppFiles=(const TCHAR**)lParam;
 	CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_FILESEND),NULL,DlgProcSendFile,(LPARAM)&fsd);
@@ -323,6 +348,7 @@ int LoadSendRecvFileModule(void)
 
 	CreateServiceFunction(MS_FILE_SENDFILE,SendFileCommand);
 	CreateServiceFunction(MS_FILE_SENDSPECIFICFILES,SendSpecificFiles);
+	CreateServiceFunction(MS_FILE_SENDSPECIFICFILEST,SendSpecificFilesT);
 	CreateServiceFunction(MS_FILE_GETRECEIVEDFILESFOLDER,GetReceivedFilesFolder);
 	CreateServiceFunction("SRFile/RecvFile",RecvFileCommand);
 
