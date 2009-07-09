@@ -139,6 +139,7 @@ bool CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETL
                     LOG("P2P: Buddy Accepts our file transfer.");
                     TCHAR *fn = mir_utf8decodeT(ft->file);
                     FILE *fd = _tfopen(fn, _T("rb"));
+                    mir_free(fn);
                     if (fd)
                     {
                         if (file_start_point) fseek(fd, file_start_point, SEEK_SET);
@@ -155,15 +156,16 @@ bool CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETL
                         pfts.currentFileTime        = 0;
                         pfts.files                  = NULL;
                         pfts.hContact               = ft->hContact;
-                        pfts.flags                  = PFTS_SENDING | PFTS_TCHAR;
+                        pfts.sending                = 1;
                         pfts.totalBytes             = ft->total_size;
                         pfts.totalFiles             = 1;
                         pfts.totalProgress          = 0;
-                        pfts.workingDir             = fn;
+
+                        pfts.workingDir             = mir_strdup(ft->file);
                         
-                        TCHAR* swd = _tcsrchr(pfts.workingDir, '\\'); 
+                        char* swd = strrchr(pfts.workingDir, '\\'); 
                         if (swd) *swd = '\0'; else pfts.workingDir[0] = 0;
-                        pfts.currentFile = swd ? swd+1 : fn;
+                        pfts.currentFile = mir_utf8decodeA(swd ? swd+1 : ft->file);
 
                         sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&pfts);
 
@@ -185,8 +187,11 @@ bool CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETL
                         sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&pfts);
                         LOG("P2P: Finished sending file bytes.");
                         fclose(fd);
+                        mir_free(pfts.workingDir);
+                        mir_free(pfts.currentFile);
                     }
-                    mir_free(fn);
+                    else
+                        break;
                 }
                 else if (type == 0x0204)
                 {
@@ -222,9 +227,8 @@ bool CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NE
     PROTOFILETRANSFERSTATUS pfts;
     memset(&pfts, 0, sizeof(PROTOFILETRANSFERSTATUS));
     pfts.hContact   = ft->hContact;
-	 pfts.flags      = PFTS_TCHAR;
     pfts.totalFiles = 1;
-    pfts.workingDir = mir_utf8decodeT(ft->file);
+    pfts.workingDir = mir_strdup(ft->file);
 
     //start listen for packets stuff
     for (;;)
@@ -270,20 +274,21 @@ bool CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NE
 
                         if (enc == 2)
                         {
-                            TCHAR *path = pfts.workingDir;
+                            TCHAR *path = mir_a2t(pfts.workingDir);
                             wcs_htons((wchar_t*)buf);
                             TCHAR *name = mir_u2t((wchar_t*)buf);
                             TCHAR fname[256];
                             mir_sntprintf(fname, SIZEOF(fname), _T("%s%s"), path, name);
                             mir_free(name);
-                            pfts.currentFile = mir_tstrdup(fname);
+                            mir_free(path);
+                            pfts.currentFile = mir_t2a(fname);
                             fd = _tfopen(fname, _T("wb"));
                         }
                         else
                         {
                             char fname[256];
-                            mir_snprintf(fname, SIZEOF(fname), "%S%s", pfts.workingDir, buf);
-                            pfts.currentFile = mir_a2t(fname);
+                            mir_snprintf(fname, SIZEOF(fname), "%s%s", pfts.workingDir, buf);
+                            pfts.currentFile = mir_strdup(fname);
                             fd = fopen(fname, "wb");
                         }
                         mir_free(buf);

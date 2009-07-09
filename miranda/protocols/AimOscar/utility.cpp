@@ -625,26 +625,6 @@ unsigned int aim_oft_checksum_file(char *filename)
 	return checksum;
 }
 
-#ifdef _UNICODE
-unsigned int aim_oft_checksum_file(TCHAR *filename) 
-{
-	unsigned long checksum = 0xffff0000;
-	int fid = _topen(filename, _O_RDONLY | _O_BINARY, _S_IREAD);
-	if (fid >= 0)  
-    {
-        for(;;)
-        {
-		    unsigned char buffer[1024];
-		    int bytes = _read(fid, buffer, 1024);
-            if (bytes <= 0) break;
-			checksum = aim_oft_checksum_chunk(buffer, bytes, checksum);
-        }
-		_close(fid);
-	}
-	return checksum;
-}
-#endif
-
 char* long_ip_to_char_ip(unsigned long host, char* ip)
 {
     host = _htonl(host);

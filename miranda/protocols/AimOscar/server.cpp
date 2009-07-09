@@ -767,6 +767,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
         int offset=15+sn_length;
 
         CCSDATA ccs={0};
+        PROTORECVEVENT pre;
         
         char* msg_buf=NULL;
         unsigned long offline_timestamp = 0;
@@ -951,9 +952,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
                 mir_free(msg_buf);
                 msg_buf = buf;
             }
-
-				//Okay we are setting up the structure to give the message back to miranda's core
-				PROTORECVEVENT pre;
+            //Okay we are setting up the structure to give the message back to miranda's core
             if(unicode_message)
                 pre.flags = PREF_UTF;
             else
@@ -1045,14 +1044,15 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 
             if (!descr_included) msg_buf = (char*)mir_calloc(1);
 
-				TCHAR* fileName = mir_utf8decodeT( filename );
+            long size=sizeof(DWORD) + lstrlenA(filename) + lstrlenA(msg_buf)+4;
+            char* szBlob = (char*)alloca(size);
+            *((PDWORD) szBlob) = 0;
+            strcpy(szBlob + sizeof(DWORD), filename);
+            strcpy(szBlob + sizeof(DWORD) + lstrlenA(filename) + 1, msg_buf);
 
-				PROTORECVFILET pre;
-            pre.flags = PREF_UTF;
+            pre.flags = 0;
             pre.timestamp =(DWORD)time(NULL);
-				pre.fileCount = 1;
-				pre.ptszFiles = &fileName;
-				pre.tszDescription = mir_utf8decodeT( msg_buf );
+            pre.szMessage = szBlob;
             pre.lParam = (LPARAM)ft;
 
             ccs.szProtoService = PSR_FILE;
@@ -1060,9 +1060,6 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
             ccs.wParam = 0;
             ccs.lParam = (LPARAM) & pre;
             CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
-
-				mir_free( fileName );
-				mir_free( pre.tszDescription );
 
             char cip[20];
             LOG("Local IP: %s:%u", long_ip_to_char_ip(local_ip, cip), port);
