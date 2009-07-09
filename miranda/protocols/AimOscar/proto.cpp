@@ -234,13 +234,13 @@ HANDLE __cdecl CAimProto::ChangeInfo(int iInfoType, void* pInfoData)
 ////////////////////////////////////////////////////////////////////////////////////////
 // FileAllow - starts a file transfer
 
-HANDLE __cdecl CAimProto::FileAllow(HANDLE hContact, HANDLE hTransfer, const char* szPath)
+HANDLE __cdecl CAimProto::FileAllow(HANDLE hContact, HANDLE hTransfer, const TCHAR* szPath)
 {
-    file_transfer *ft = (file_transfer*)hTransfer;
+	file_transfer *ft = (file_transfer*)hTransfer;
 	if (ft) 
-    {
-        mir_free(ft->file);
-        ft->file = mir_strdup(szPath);
+	{
+		mir_free(ft->file);
+		ft->file = mir_utf8encodeT(szPath);
 		ForkThread(&CAimProto::accept_file_thread, ft);
 		return ft;
 	}
@@ -269,7 +269,7 @@ int __cdecl CAimProto::FileCancel(HANDLE hContact, HANDLE hTransfer)
 ////////////////////////////////////////////////////////////////////////////////////////
 // FileDeny - denies a file transfer
 
-int __cdecl CAimProto::FileDeny(HANDLE hContact, HANDLE hTransfer, const char* /*szReason*/)
+int __cdecl CAimProto::FileDeny(HANDLE hContact, HANDLE hTransfer, const TCHAR* /*szReason*/)
 {
     file_transfer *ft = (file_transfer*)hTransfer;
     if (!ft_list.find_by_ft(ft)) return 0;
@@ -284,36 +284,35 @@ int __cdecl CAimProto::FileDeny(HANDLE hContact, HANDLE hTransfer, const char* /
 ////////////////////////////////////////////////////////////////////////////////////////
 // FileResume - processes file renaming etc
 
-int __cdecl CAimProto::FileResume(HANDLE hTransfer, int* action, const char** szFilename)
+int __cdecl CAimProto::FileResume(HANDLE hTransfer, int* action, const TCHAR** szFilename)
 {
-    file_transfer *ft = (file_transfer*)hTransfer;
-    if (!ft_list.find_by_ft(ft)) return 0;
+	file_transfer *ft = (file_transfer*)hTransfer;
+	if (!ft_list.find_by_ft(ft)) return 0;
 
-    switch (*action) 
-    {
-    case FILERESUME_RESUME:
-        {
-	        struct _stat statbuf;
-            _stat(*szFilename, &statbuf);
-            ft->start_offset = statbuf.st_size;
-        }
+	switch (*action) {
+	case FILERESUME_RESUME:
+		{
+			struct _stat statbuf;
+			_tstat(*szFilename, &statbuf);
+			ft->start_offset = statbuf.st_size;
+		}
 
-    case FILERESUME_RENAME:
-        mir_free(ft->file);
-        ft->file = mir_utf8encode(*szFilename);
+	case FILERESUME_RENAME:
+		mir_free(ft->file);
+		ft->file = mir_utf8encodeT(*szFilename);
 
-    case FILERESUME_OVERWRITE:
-	    ForkThread(&CAimProto::accept_file_thread, ft);
-        break;
+	case FILERESUME_OVERWRITE:
+		ForkThread(&CAimProto::accept_file_thread, ft);
+		break;
 
-    default:
-//        case FILERESUME_SKIP:
-        aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true, ft->max_ver);
-	    break;
-    }
-    sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, ft, 0);
+	default:
+		//        case FILERESUME_SKIP:
+		aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true, ft->max_ver);
+		break;
+	}
+	sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, ft, 0);
 
-    return 0;
+	return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -441,10 +440,10 @@ int __cdecl CAimProto::RecvContacts(HANDLE hContact, PROTORECVEVENT*)
 ////////////////////////////////////////////////////////////////////////////////////////
 // RecvFile
 
-int __cdecl CAimProto::RecvFile(HANDLE hContact, PROTORECVFILE* evt)
+int __cdecl CAimProto::RecvFile(HANDLE hContact, PROTORECVFILET* evt)
 {
 	CCSDATA ccs = { hContact, PSR_FILE, 0, (LPARAM)evt };
-	return CallService(MS_PROTO_RECVFILE, 0, (LPARAM)&ccs);
+	return CallService(MS_PROTO_RECVFILET, 0, (LPARAM)&ccs);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -475,62 +474,64 @@ int __cdecl CAimProto::SendContacts(HANDLE hContact, int flags, int nContacts, H
 ////////////////////////////////////////////////////////////////////////////////////////
 // SendFile - sends a file
 
-HANDLE __cdecl CAimProto::SendFile(HANDLE hContact, const char* szDescription, char** ppszFiles)
+HANDLE __cdecl CAimProto::SendFile(HANDLE hContact, const TCHAR* szDescription, TCHAR** ppszFiles)
 {
 	if (state != 1)
 		return 0;
 
 	if (hContact && szDescription && ppszFiles) 
-    {
+	{
 		DBVARIANT dbv;
 		if (!getString(hContact, AIM_KEY_SN, &dbv)) 
-        {
-            int file_amt;
+		{
+			int file_amt;
 			for (file_amt = 0; ppszFiles[file_amt]; file_amt++)
-            {
-			    if (file_amt) 
-                {
-				    ShowPopup(LPGEN("Aim allows only one file to be sent at a time."), 0);
-				    DBFreeVariant(&dbv);
-				    return 0;
-			    }
-            }
+			{
+				if (file_amt) 
+				{
+					ShowPopup(LPGEN("Aim allows only one file to be sent at a time."), 0);
+					DBFreeVariant(&dbv);
+					return 0;
+				}
+			}
 
-            file_transfer *ft = new file_transfer;
-            
-            ft->hContact = hContact;
-            ft->sn = mir_strdup(dbv.pszVal);
-            CallService(MS_UTILS_GETRANDOM, 8, (LPARAM)ft->icbm_cookie);
- 
-            ft->file = mir_utf8encode(ppszFiles[0]);
+			file_transfer *ft = new file_transfer;
 
-		    struct _stat statbuf;
-		    _stat(ft->file, &statbuf);
-            ft->total_size = statbuf.st_size;
-            ft->ctime = statbuf.st_mtime;
+			ft->hContact = hContact;
+			ft->sn = mir_strdup(dbv.pszVal);
+			CallService(MS_UTILS_GETRANDOM, 8, (LPARAM)ft->icbm_cookie);
 
-            ft->sending = true;
-            ft->message = szDescription[0] ? mir_strdup(szDescription) : NULL;
+			ft->file = mir_utf8encodeT(ppszFiles[0]);
+
+			struct _stat statbuf;
+			_stat(ft->file, &statbuf);
+			ft->total_size = statbuf.st_size;
+			ft->ctime = statbuf.st_mtime;
+
+			ft->sending = true;
+			ft->message = szDescription[0] ? mir_utf8encodeT(szDescription) : NULL;
 			ft->me_force_proxy = getByte(AIM_KEY_FP, 0) != 0;
-            ft->requester = true;
+			ft->requester = true;
 
-            ft_list.insert(ft);
+			ft_list.insert(ft);
 
 			if (ft->me_force_proxy) 
-            {
+			{
 				LOG("We are forcing a proxy file transfer.");
-			    ForkThread(&CAimProto::accept_file_thread, ft);
+				ForkThread(&CAimProto::accept_file_thread, ft);
 			}
 			else 
-            {
-		        char* pszFile = strrchr(ppszFiles[0], '\\');
-		        if (pszFile) pszFile++; else ppszFiles[0];
+			{
+				TCHAR* pszFile = _tcsrchr(ppszFiles[0], '\\');
+				if (pszFile) pszFile++; else pszFile = ppszFiles[0];
 
-                aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, detected_ip, local_port, 
-                    0, ++ft->req_num, pszFile, ft->total_size, ft->message);
-            }
+				char* tmpFileName = mir_utf8encodeT( pszFile );
+				aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, detected_ip, local_port, 
+					0, ++ft->req_num, tmpFileName, ft->total_size, ft->message);
+				mir_free( tmpFileName );
+			}
 
-            DBFreeVariant(&dbv);
+			DBFreeVariant(&dbv);
 
 			return ft;
 		}
