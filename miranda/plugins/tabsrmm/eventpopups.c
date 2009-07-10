@@ -862,7 +862,7 @@ static char *GetPreviewW(UINT eventType, DBEVENTINFO* dbe, BOOL *isWstring)
 		case EVENTTYPE_FILE:
 			if (pBlob && ServiceExists(MS_DB_EVENT_GETTEXT)) {
 				WCHAR* buf = DbGetEventTextW(dbe, CP_ACP);
-				wcsncpy((WCHAR*)szPreviewHelp, buf, SIZEOF(szPreviewHelp));
+				wcsncpy((WCHAR*)szPreviewHelp, buf, sizeof(szPreviewHelp)/sizeof(WCHAR));
 				szPreviewHelp[2047] = 0;
 				mir_free(buf);
 				*isWstring = 1;
