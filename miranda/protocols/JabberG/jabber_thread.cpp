@@ -472,13 +472,16 @@ LBL_FatalError:
 		datalen = 0;
 
 		// cache values
-		DWORD dwConnectionKeepAliveTimeout = m_options.ConnectionKeepAliveTimeout;
 		DWORD dwConnectionKeepAliveInterval = m_options.ConnectionKeepAliveInterval;
 		for ( ;; ) {
 			if ( !info->useZlib || info->zRecvReady ) {
+				DWORD dwIdle = GetTickCount() - m_lastTicks;
+				if ( dwIdle >= dwConnectionKeepAliveInterval )
+					dwIdle = dwConnectionKeepAliveInterval - 10; // now!
+
 				NETLIBSELECT nls = {0};
 				nls.cbSize = sizeof( NETLIBSELECT );
-				nls.dwTimeout = dwConnectionKeepAliveInterval;
+				nls.dwTimeout = dwConnectionKeepAliveInterval - dwIdle;
 				nls.hReadConns[0] = info->s;
 				int nSelRes = JCallService( MS_NETLIB_SELECT, 0, ( LPARAM )&nls );
 				if ( nSelRes == -1 ) // error
@@ -486,7 +489,7 @@ LBL_FatalError:
 				else if ( nSelRes == 0 ) {
 					if ( m_options.EnableServerXMPPPing )
 						info->send( 
-							XmlNodeIq( m_iqManager.AddHandler( &CJabberProto::OnPingReply, JABBER_IQ_TYPE_GET, NULL, 0, -1, this, 0, dwConnectionKeepAliveTimeout ))
+							XmlNodeIq( m_iqManager.AddHandler( &CJabberProto::OnPingReply, JABBER_IQ_TYPE_GET, NULL, 0, -1, this, 0, m_options.ConnectionKeepAliveTimeout ))
 								<< XCHILDNS( _T("ping"), _T(JABBER_FEAT_PING)));
 					else if ( m_bSendKeepAlive )
 						info->send( " \t " );

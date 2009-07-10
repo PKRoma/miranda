@@ -874,6 +874,8 @@ struct CJabberProto : public PROTO_INTERFACE
 private:
 	char*   m_szXmlStreamToBeInitialized;
 
+	DWORD   m_lastTicks;
+
 	CRITICAL_SECTION m_csSerial;
 	unsigned int m_nSerial;
 
