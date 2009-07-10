@@ -213,9 +213,9 @@ struct EventData *getEventFromDB(struct MessageWindowData *dat, HANDLE hContact,
 	if (event->eventType == EVENTTYPE_FILE) {
 		char* filename = ((char *)dbei.pBlob) + sizeof(DWORD);
 		char* descr = filename + lstrlenA( filename ) + 1;
-		event->pszTextT = a2tcp(filename, dat->windowData.codePage);
+		event->pszTextT = DbGetEventStringT(&dbei, filename);
 		if ( *descr != 0 ) {
-			event->pszText2T = a2tcp(descr, dat->windowData.codePage);
+			event->pszText2T = DbGetEventStringT(&dbei, descr);
 		}
 	} else {
 		event->pszTextT = DbGetEventTextT( &dbei, dat->windowData.codePage );

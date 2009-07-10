@@ -692,35 +692,6 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 		formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added, isSent);
 		mir_free(msg);
 	}
-	/*
-	else
-	{
-#if defined( _UNICODE )
-		int wlen;
-		int msglen = lstrlenA((char *) dbei.pBlob) + 1;
-
-		if ((dbei.cbBlob >= (DWORD)(2 * msglen)) && !(dat->sendMode & SMODE_FORCEANSI)) {
-			msg = (wchar_t *) & dbei.pBlob[msglen];
-			wlen = safe_wcslen(msg, (dbei.cbBlob - msglen) / 2);
-			if (wlen <= (msglen - 1) && wlen > 0) {
-				TrimMessage(msg);
-				formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added, isSent);
-			} else
-				goto nounicode;
-		} else {
-	nounicode:
-			msg = (TCHAR *) alloca(sizeof(TCHAR) * msglen);
-			MultiByteToWideChar(dat->codePage, 0, (char *) dbei.pBlob, -1, msg, msglen);
-			TrimMessage(msg);
-			formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added, isSent);
-		}
-#else   // non-unicode
-		msg = (char *) dbei.pBlob;
-		TrimMessage(msg);
-		formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added, isSent);
-#endif
-	}
-	*/
 
 	dat->stats.lastReceivedChars = 0;
 	fIsStatusChangeEvent = (heFlags != -1 || IsStatusEvent(dbei.eventType));
@@ -1167,10 +1138,30 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 						case EVENTTYPE_FILE:
 							if (!skipFont)
 								AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", GetRTFFont(isSent ? MSGFONTID_MYMISC + iFontIDOffset : MSGFONTID_YOURMISC + iFontIDOffset));
-							if ((dbei.pBlob + sizeof(DWORD) + lstrlenA((char *)(dbei.pBlob + sizeof(DWORD))) + 1) != NULL && lstrlenA((char *)(dbei.pBlob + sizeof(DWORD) + lstrlenA((char *)(dbei.pBlob + sizeof(DWORD))) + 1)))
-								AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s (%s)", dbei.pBlob + sizeof(DWORD), dbei.pBlob + sizeof(DWORD) + lstrlenA((char *)(dbei.pBlob + sizeof(DWORD))) + 1);
-							else
-								AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", dbei.pBlob + sizeof(DWORD));
+							{
+								char* szFileName = (char *)dbei.pBlob + sizeof(DWORD);
+								char* szDescr = szFileName + lstrlenA(szFileName) + 1;
+								TCHAR* tszFileName = DbGetEventStringT( &dbei, szFileName );
+								if ( *szDescr != 0 ) {
+									TCHAR* tszDescr = DbGetEventStringT( &dbei, szDescr );
+#if defined( _UNICODE )
+									TCHAR buf[1000];
+									mir_sntprintf( buf, SIZEOF(buf), _T("%s (%s)"), tszFileName, tszDescr );
+									AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, buf, 0 );
+#else   // unicode
+									AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s (%s)", tszFileName, tszDescr );
+#endif      // unicode
+									mir_free( tszDescr );
+								}
+								else {
+#if defined( _UNICODE )
+									AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, tszFileName, 0 );
+#else   // unicode
+									AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", tszFileName );
+#endif      // unicode
+								}
+								mir_free( tszFileName );
+							}
 							break;
 					}
 					break;

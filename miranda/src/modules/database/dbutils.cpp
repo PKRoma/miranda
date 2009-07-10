@@ -200,6 +200,24 @@ static INT_PTR DbEventGetIcon( WPARAM wParam, LPARAM lParam )
     return ( INT_PTR )CopyIcon( icon );
 }
 
+static INT_PTR DbEventGetStringT( WPARAM wParam, LPARAM lParam )
+{
+	DBEVENTINFO* dbei = ( DBEVENTINFO* )wParam;
+	char* string = ( char* )lParam;
+
+	#if defined( _UNICODE )
+		if ( dbei->flags & DBEF_UTF )
+			return ( INT_PTR )Utf8DecodeUcs2( string );
+
+		return ( INT_PTR )mir_a2t( string );
+	#else
+		char* res = mir_strdup( string );
+		if ( dbei->flags & DBEF_UTF )
+			Utf8Decode( res );
+		return ( INT_PTR )res;
+	#endif
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 
 static int sttEnumVars( const char* szVarName, LPARAM lParam )
@@ -237,6 +255,7 @@ int InitUtils()
 	CreateServiceFunction(MS_DB_EVENT_GETTYPE, DbEventTypeGet);
 	CreateServiceFunction(MS_DB_EVENT_GETTEXT, DbEventGetText);
 	CreateServiceFunction(MS_DB_EVENT_GETICON, DbEventGetIcon);
+	CreateServiceFunction(MS_DB_EVENT_GETSTRINGT, DbEventGetStringT);
 
 	CreateServiceFunction(MS_DB_MODULE_DELETE, DbDeleteModule);
 	return 0;

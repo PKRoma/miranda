@@ -859,35 +859,16 @@ static char *GetPreviewW(UINT eventType, DBEVENTINFO* dbe, BOOL *isWstring)
 	//now get text
 	switch (eventType) {
 		case EVENTTYPE_MESSAGE:
+		case EVENTTYPE_FILE:
 			if (pBlob && ServiceExists(MS_DB_EVENT_GETTEXT)) {
 				WCHAR* buf = DbGetEventTextW(dbe, CP_ACP);
-				wcsncpy((WCHAR*)szPreviewHelp, buf, sizeof(szPreviewHelp) / sizeof(WCHAR));
+				wcsncpy((WCHAR*)szPreviewHelp, buf, SIZEOF(szPreviewHelp));
 				szPreviewHelp[2047] = 0;
 				mir_free(buf);
 				*isWstring = 1;
 				return (char *)szPreviewHelp;
 			}
-			 /*
-			if (pBlob) {
-				int msglen = lstrlenA((char *) pBlob) + 1;
-				wchar_t *msg;
-				int wlen;
-
-				if ((dbe->cbBlob >= (DWORD)(2 * msglen))) {
-					msg = (wchar_t *) & pBlob[msglen];
-					wlen = safe_wcslen(msg, (dbe->cbBlob - msglen) / 2);
-					if (wlen <= (msglen - 1) && wlen > 0) {
-						*isWstring = 1;
-						return (char *)msg;
-					} else
-						goto nounicode;
-				} else {
-nounicode:
-					*isWstring = 0;
-					return (char *)pBlob;
-				}
-			}*/
-			commentFix = Translate(POPUP_COMMENT_MESSAGE);
+			commentFix = ( eventType == EVENTTYPE_MESSAGE ) ? Translate(POPUP_COMMENT_MESSAGE) : Translate(POPUP_COMMENT_FILE);
 			break;
 		case EVENTTYPE_AUTHREQUEST:
 			if (pBlob) {
@@ -907,12 +888,6 @@ nounicode:
 			if (pBlob) comment2 = pBlob;
 			if (pBlob) comment1 = pBlob + strlen(comment2) + 1;
 			commentFix = Translate(POPUP_COMMENT_URL);
-			break;
-
-		case EVENTTYPE_FILE:
-			if (pBlob) comment2 = pBlob + 4;
-			if (pBlob) comment1 = pBlob + strlen(comment2) + 5;
-			commentFix = Translate(POPUP_COMMENT_FILE);
 			break;
 
 		case EVENTTYPE_CONTACTS:
