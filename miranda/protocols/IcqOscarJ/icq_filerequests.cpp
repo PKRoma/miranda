@@ -181,7 +181,7 @@ void CIcqProto::handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCoo
 	ft->bDC = bDC;
 	ft->bEmptyDesc = bEmptyDesc;
 
-	TCHAR *tszFileName = mir_utf8decodeT( pszFileName ), *tszDescr = mir_utf8decodeT( pszDescription );
+	TCHAR *tszFileName = mir_a2t( pszFileName ), *tszDescr = mir_a2t( pszDescription );
 
 	PROTORECVFILET pre;
 	pre.flags = PREF_TCHAR;

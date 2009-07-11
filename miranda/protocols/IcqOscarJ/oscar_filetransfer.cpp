@@ -508,6 +508,7 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 						pszDescription = ICQTranslateUtf(LPGEN("No description given"));
 					}
 				}
+				TCHAR *tszFileName, *tszDescr = mir_a2t( pszDescription );
 				{ // parse File Transfer Info block
 					oscar_tlv* tlv = chain->getTLV(0x2711, 1);
 
@@ -557,22 +558,21 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 							pszFileName = ansi_to_utf8(pszFileName);
 					}
 					if (ft->wFilesCount == 1)
-					{ // Filename - use for DB event (convert to Ansi - File DB events does not support Unicode)
-						char* szAnsi = (char*)_alloca(strlennull(pszFileName) + 2);
-						utf8_decode_static(pszFileName, szAnsi, strlennull(pszFileName) + 1);
-						SAFE_FREE(&pszFileName);
-						pszFileName = szAnsi;
+					{  // Filename - use for DB event
+						tszFileName = mir_utf8decodeT( pszFileName );
 					}
 					else
-					{ // Save Directory name for future use
+					{  // Save Directory name for future use
 						ft->szThisPath = pszFileName;
 						// for multi-file transfer we do not display "folder" name, but create only a simple notice
 						pszFileName = (char*)_alloca(64);
 
 						null_snprintf(pszFileName, 64, ICQTranslate("%d Files"), ft->wFilesCount);
+						tszFileName = mir_a2t(pszFileName);
 					}
 				}
-				{ // Total Size TLV (ICQ 6 and AIM 6)
+				// Total Size TLV (ICQ 6 and AIM 6)
+				{ 
 					oscar_tlv *tlv = chain->getTLV(0x2713, 1);
 
 					if (tlv && tlv->wLen >= 8)
@@ -582,34 +582,31 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 						unpackQWord(&tBuf, &ft->qwTotalSize);
 					}
 				}
-				{
-					int bAdded;
-					HANDLE hContact = HContactFromUID(dwUin, szUID, &bAdded);
+				
+				int bAdded;
+				HANDLE hContact = HContactFromUID(dwUin, szUID, &bAdded);
 
-					ft->hContact = hContact;
-					ft->szDescription = pszDescription;
-					ft->fileId = -1;
+				ft->hContact = hContact;
+				ft->szDescription = pszDescription;
+				ft->fileId = -1;
 
-					TCHAR *tszFileName = mir_utf8decodeT( pszFileName ), *tszDescr = mir_utf8decodeT( pszDescription );
+				PROTORECVFILET pre;
+				pre.flags = PREF_TCHAR;
+				pre.timestamp = time(NULL);
+				pre.fileCount = 1;
+				pre.ptszFiles = &tszFileName;
+				pre.tszDescription = tszDescr;
+				pre.lParam = (LPARAM)ft;
 
-					PROTORECVFILET pre;
-					pre.flags = PREF_TCHAR;
-					pre.timestamp = time(NULL);
-					pre.fileCount = 1;
-					pre.ptszFiles = &tszFileName;
-					pre.tszDescription = tszDescr;
-					pre.lParam = (LPARAM)ft;
+				CCSDATA ccs;
+				ccs.szProtoService = PSR_FILE;
+				ccs.hContact = hContact;
+				ccs.wParam = 0;
+				ccs.lParam = (LPARAM)&pre;
+				CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
 
-					CCSDATA ccs;
-					ccs.szProtoService = PSR_FILE;
-					ccs.hContact = hContact;
-					ccs.wParam = 0;
-					ccs.lParam = (LPARAM)&pre;
-					CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
-
-					mir_free( tszFileName );
-					mir_free( tszDescr );
-				}
+				mir_free( tszFileName );
+				mir_free( tszDescr );
 			}
 			else if (wAckType == 2)
 			{ // First attempt failed, reverse requested
