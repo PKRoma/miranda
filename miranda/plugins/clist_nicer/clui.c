@@ -1,5 +1,5 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches 
+astyle --force-indent=tab=4 --brackets=linux --indent-switches
 		--pad=oper --one-line=keep-blocks  --unpad=paren
 
 Miranda IM: the free IM client for Microsoft* Windows*
@@ -315,19 +315,19 @@ static int CluiModulesLoaded(WPARAM wParam, LPARAM lParam)
 #if defined(_UNICODE)
 	static char *component = "CList Nicer+ (Unicode)";
 	static char szCurrentVersion[30];
-	static char *szVersionUrl = "http://miranda.or.at/files/clist_nicer/0.8(versionW.txt";
-	static char *szUpdateUrl = "http://miranda.or.at/files/clist_nicer/0.8/clist_nicer_plusW.zip";
-	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3703";
-	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3703";
-	upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">Clist Nicer for MIranda 0.7 (UNICODE) ";
+	static char *szVersionUrl = "http://download.miranda.or.at/clist_nicer/0.8/versionW.txt";
+	static char *szUpdateUrl = "http://download.miranda.or.at/clist_nicer/0.8/clist_nicer_plusW.zip";
+	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=4071";
+	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=4071";
+	upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">Clist Nicer+ UNICODE ";
 #else
 	static char *component = "CList Nicer+";
 	static char szCurrentVersion[30];
-	static char *szVersionUrl = "http://miranda.or.at/files/clist_nicer/0.8/version.txt";
-	static char *szUpdateUrl = "http://miranda.or.at/files/clist_nicer/0.8/clist_nicer_plus.zip";
-	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3702";
-	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3702";
-	upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">Clist Nicer for Miranda 0.7 (ANSI) ";
+	static char *szVersionUrl = "http://download.miranda.or.at/clist_nicer/0.8/version.txt";
+	static char *szUpdateUrl = "http://download.miranda.or.at/clist_nicer/0.8/clist_nicer_plus.zip";
+	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=4073";
+	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=4073";
+	upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">Clist Nicer+ ANSI ";
 #endif
 
 	// updater plugin support

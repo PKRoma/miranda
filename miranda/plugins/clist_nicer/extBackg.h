@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -77,7 +77,7 @@ void LoadExtBkSettingsFromDB();
 void IMG_LoadItems();
 void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc);
 void IMG_InitDecoder();
-void LoadPerContactSkins(char *file);
+void LoadPerContactSkins(TCHAR *file);
 
 static void SaveCompleteStructToDB();
 StatusItems_t *GetProtocolStatusItem(const char *szProto);

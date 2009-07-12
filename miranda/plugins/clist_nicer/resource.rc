@@ -10,6 +10,7 @@
 #include <windows.h>
 #include <winres.h>
 #include <statusmodes.h>
+#include <VERSION>
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS

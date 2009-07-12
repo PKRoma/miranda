@@ -104,10 +104,10 @@ void RecalcScrollBar(HWND hwnd, struct ClcData *dat);
 
 PLUGININFOEX pluginInfo = {
 #if defined(_UNICODE)
-		sizeof(PLUGININFOEX), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 8, 0, 5),
+		sizeof(PLUGININFOEX), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 8, 1, 2),
 #else
-		sizeof(PLUGININFOEX), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 8, 0, 5),
-#endif		
+		sizeof(PLUGININFOEX), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 8, 1, 2),
+#endif
 		"Display contacts, event notifications, protocol status",
 		"Pixel, egoDust, cyreve, Nightwish", "", "Copyright 2000-2008 Miranda-IM project", "http://www.miranda-im.org",
 		UNICODE_AWARE,
@@ -132,7 +132,7 @@ void _DebugTraceW(const wchar_t *fmt, ...)
 
     _vsnwprintf(&debug[5], ibsize - 10, fmt, va);
     OutputDebugStringW(debug);
-#endif    
+#endif
 }
 #endif
 
@@ -206,7 +206,6 @@ static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 	g_CluiData.tabSRMM_Avail = ServiceExists("SRMsg_MOD/GetWindowFlags") ? TRUE : FALSE;
 	g_CluiData.IcoLib_Avail = ServiceExists(MS_SKIN2_ADDICON) ? TRUE : FALSE;
 
-	//ZeroMemory((void *)im_clienthIcons, sizeof(HICON) * NR_CLIENTS);
 	ZeroMemory((void *)overlayicons, sizeof(HICON) * 10);
 
 	CLN_LoadAllIcons(1);
@@ -224,6 +223,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	HMODULE hUserDll;
     DBVARIANT dbv;
 	int       i;
+	char	  szProfilePath[MAX_PATH];
 
 	pluginLink = link;
 #ifdef _DEBUG
@@ -253,7 +253,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	ZeroMemory((void*) &g_CluiData, sizeof(g_CluiData));
 	{
 		int iCount = CallService(MS_DB_CONTACT_GETCOUNT, 0, 0);
-		
+
 		iCount += 20;
         if(iCount < 300)
             iCount = 300;
@@ -339,10 +339,21 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	himlExtraImages = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 30, 2);
 	ImageList_SetIconSize(himlExtraImages, g_CluiData.exIconScale, g_CluiData.exIconScale);
 
-	g_CluiData.dwFlags = DBGetContactSettingDword(NULL, "CLUI", "Frameflags", CLUI_FRAME_SHOWTOPBUTTONS | CLUI_FRAME_STATUSICONS | 
+	g_CluiData.dwFlags = DBGetContactSettingDword(NULL, "CLUI", "Frameflags", CLUI_FRAME_SHOWTOPBUTTONS | CLUI_FRAME_STATUSICONS |
                                                   CLUI_FRAME_SHOWBOTTOMBUTTONS | CLUI_FRAME_BUTTONSFLAT | CLUI_FRAME_CLISTSUNKEN);
 	g_CluiData.dwFlags |= (DBGetContactSettingByte(NULL, "CLUI", "ShowSBar", 1) ? CLUI_FRAME_SBARSHOW : 0);
 	g_CluiData.soundsOff = DBGetContactSettingByte(NULL, "CLUI", "NoSounds", 0);
+
+	CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)szProfilePath);
+
+#if defined(_UNICODE)
+	MultiByteToWideChar(CP_ACP, 0, szProfilePath, MAX_PATH, g_CluiData.tszProfilePath, MAX_PATH);
+	g_CluiData.tszProfilePath[MAX_PATH - 1] = 0;
+#else
+	mir_sntprintf(g_CluiData.tszProfilePath, MAX_PATH, "%s", szProfilePath);
+#endif
+
+	_tcslwr(g_CluiData.tszProfilePath);
 
 	pDrawAlpha = NULL;
 	if(!pDrawAlpha)
