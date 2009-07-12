@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -40,6 +40,49 @@ extern int /*g_isConnecting,*/ during_sizing;
 
 extern void ( *saveRecalcScrollBar )(HWND hwnd, struct ClcData *dat);
 
+static int MY_pathIsAbsolute(const TCHAR *path)
+{
+	if (!path || !(lstrlen(path) > 2))
+		return 0;
+	if ((path[1] == ':' && path[2] == '\\') || (path[0] == '\\' && path[1] == '\\'))
+        return 1;
+	return 0;
+}
+
+size_t MY_pathToRelative(const TCHAR *pSrc, TCHAR *pOut)
+{
+	if (!pSrc || !lstrlen(pSrc) || lstrlen(pSrc) > MAX_PATH)
+        return 0;
+	if (!MY_pathIsAbsolute(pSrc)) {
+		mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
+		return lstrlen(pOut);
+	} else {
+		TCHAR szTmp[MAX_PATH];
+		mir_sntprintf(szTmp, SIZEOF(szTmp), _T("%s"), pSrc);
+		_tcslwr(szTmp);
+		if (_tcsstr(szTmp, g_CluiData.tszProfilePath)) {
+			mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc + lstrlen(g_CluiData.tszProfilePath) - 1);
+			pOut[0]='.';
+			return lstrlen(pOut);
+		} else {
+			mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
+			return lstrlen(pOut);
+		}
+	}
+}
+
+size_t MY_pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut)
+{
+	if (!pSrc || !lstrlen(pSrc) || lstrlen(pSrc) > MAX_PATH)
+        return 0;
+	if (MY_pathIsAbsolute(pSrc)&&pSrc[0]!='.')
+		mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
+	else if (pSrc[0]=='.')
+		mir_sntprintf(pOut, MAX_PATH, _T("%s\\%s"), g_CluiData.tszProfilePath, pSrc);
+
+	return lstrlen(pOut);
+}
+
 /*
  * performs hit-testing for reversed (mirrored) contact rows when using RTL
  * shares all the init stuff with HitTest()
@@ -53,10 +96,10 @@ int RTL_HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct Clc
     SIZE textSize;
     HDC hdc;
     HFONT hFont;
-    
+
     GetClientRect(hwnd, &clRect);
     right = clRect.right;
-    
+
     // avatar check
     if(hitcontact->type == CLCIT_CONTACT && g_CluiData.dwFlags & CLUI_FRAME_AVATARS && hitcontact->ace != NULL && hitcontact->avatarLeft != -1) {
         if(testx < right - hitcontact->avatarLeft && testx > right - hitcontact->avatarLeft - g_CluiData.avatarSize) {
@@ -184,7 +227,7 @@ int HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCont
         return -1;
     }
    	hit = RowHeights_HitTest(dat, dat->yScroll + testy);
-	if (hit != -1) 
+	if (hit != -1)
 		hit = pcli->pfnGetRowByIndex(dat, hit, &hitcontact, &hitgroup);
 
     if (hit == -1) {
@@ -517,9 +560,9 @@ void BeginRenameSelection(HWND hwnd, struct ClcData *dat)
             SetWindowText(dat->hwndRenameEdit, contact->szText);
         }
     }
-#else    
+#else
     dat->hwndRenameEdit = CreateWindow(_T("EDIT"),contact->szText,WS_CHILD|WS_BORDER|ES_MULTILINE|ES_AUTOHSCROLL,x,y,clRect.right-x,h,hwnd,NULL,g_hInst,NULL);
-#endif    
+#endif
     //dat->hwndRenameEdit = CreateWindow(_T("EDIT"), contact->szText, WS_CHILD | WS_BORDER | ES_AUTOHSCROLL, x, y, clRect.right - x, dat->rowHeight, hwnd, NULL, g_hInst, NULL);
     OldRenameEditWndProc = (WNDPROC) SetWindowLongPtr(dat->hwndRenameEdit, GWLP_WNDPROC, (LONG_PTR) RenameEditSubclassProc);
     SendMessage(dat->hwndRenameEdit, WM_SETFONT, (WPARAM) (contact->type == CLCIT_GROUP ? dat->fontInfo[FONTID_GROUPS].hFont : dat->fontInfo[FONTID_CONTACTS].hFont), 0);
@@ -541,7 +584,7 @@ void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 	dat->group_row_height = (int)DBGetContactSettingByte(NULL,"CLC","GRowHeight",CLCDEFAULT_ROWHEIGHT);
 	dat->row_border = 0;
 	dat->rightMargin = DBGetContactSettingByte(NULL, "CLC", "RightMargin", CLCDEFAULT_LEFTMARGIN);
-	dat->bkColour =  DBGetContactSettingByte(NULL, "CLC", "UseWinColours", CLCDEFAULT_USEWINDOWSCOLOURS) ? 
+	dat->bkColour =  DBGetContactSettingByte(NULL, "CLC", "UseWinColours", CLCDEFAULT_USEWINDOWSCOLOURS) ?
                      GetSysColor(COLOR_3DFACE) : DBGetContactSettingDword(NULL, "CLC", "BkColour", CLCDEFAULT_BKCOLOUR);
 	if (!dat->bkChanged) {
 		if(g_CluiData.hBrushCLCBk)
