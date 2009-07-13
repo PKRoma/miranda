@@ -368,7 +368,8 @@ int CAimProto::aim_send_message(HANDLE hServerConn,unsigned short &seqno,const c
     aim_writetlv(0x02,tlv_offset,tlv_buf,offset,buf);
     if(auto_response)
         aim_writetlv(0x04,0,0,offset,buf);                           // auto-response message
-    else{
+    else
+    {
         aim_writetlv(0x03,0,0,offset,buf);                           // message ack request
         aim_writetlv(0x06,0,0,offset,buf);                           // offline message storage
     }

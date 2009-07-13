@@ -294,7 +294,7 @@ int __cdecl CAimProto::FileResume(HANDLE hTransfer, int* action, const char** sz
     case FILERESUME_RESUME:
         {
 	        struct _stat statbuf;
-            _stat(*szFilename, &statbuf);
+            _stat(ft->pfts->currentFile, &statbuf);
             ft->start_offset = statbuf.st_size;
         }
 
@@ -303,7 +303,6 @@ int __cdecl CAimProto::FileResume(HANDLE hTransfer, int* action, const char** sz
         ft->file = mir_utf8encode(*szFilename);
 
     case FILERESUME_OVERWRITE:
-	    ForkThread(&CAimProto::accept_file_thread, ft);
         break;
 
     default:

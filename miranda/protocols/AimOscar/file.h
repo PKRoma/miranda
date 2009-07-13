@@ -30,6 +30,7 @@ struct file_transfer
     unsigned __int64 start_offset;
 
     HANDLE hConn;
+    PROTOFILETRANSFERSTATUS *pfts;
 
     char* file;
     char* message;

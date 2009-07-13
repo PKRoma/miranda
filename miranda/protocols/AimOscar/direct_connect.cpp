@@ -80,7 +80,6 @@ void aim_direct_connection_initiated(HANDLE hNewConnection, DWORD dwRemoteIP, CA
     {
         ft = ppro->ft_list.find_by_ip(dwRemoteIP);
 
-        // Pidgin hack
         if (ft == NULL) ft = ppro->ft_list.find_suitable();
         if (ft || Miranda_Terminated()) break;
         Sleep(100);

@@ -25,12 +25,12 @@ void __cdecl CAimProto::aim_proxy_helper(void* param)
 
     if (ft->requester) 
     {
-        if (proxy_initialize_send(ft->hConn, ft->sn, ft->icbm_cookie))
+        if (proxy_initialize_send(ft->hConn, username, ft->icbm_cookie))
             return;//error
     }
     else
     {
-        if (proxy_initialize_recv(ft->hConn, ft->sn, ft->icbm_cookie, ft->port)) 
+        if (proxy_initialize_recv(ft->hConn, username, ft->icbm_cookie, ft->port)) 
             return;//error
     }
 
@@ -149,7 +149,7 @@ void __cdecl CAimProto::aim_proxy_helper(void* param)
 int proxy_initialize_send(HANDLE connection, char* sn, char* cookie)
 {
     const char sn_length = (char)strlen(sn);
-    const int len = sn_length + 25 + AIM_CAPS_LENGTH;
+    const int len = sn_length + 21 + TLV_HEADER_SIZE + AIM_CAPS_LENGTH;
 
     char* buf= (char*)alloca(len);
     unsigned short offset=0;
@@ -167,7 +167,7 @@ int proxy_initialize_send(HANDLE connection, char* sn, char* cookie)
 int proxy_initialize_recv(HANDLE connection,char* sn, char* cookie,unsigned short port_check)
 {
     const char sn_length = (char)strlen(sn);
-    const int len = sn_length + 27 + AIM_CAPS_LENGTH;
+    const int len = sn_length + 23 + TLV_HEADER_SIZE + AIM_CAPS_LENGTH;
 
     char* buf= (char*)alloca(len);
     unsigned short offset=0;
