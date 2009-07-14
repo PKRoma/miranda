@@ -458,7 +458,7 @@ INT_PTR CAimProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 		char* tFileName = (char*)mir_alloc(MAX_PATH);
         char *ext = strrchr(szFileName, '.');
 		get_avatar_filename(NULL, tFileName, MAX_PATH, ext);
-		int fileId = _open(tFileName, _O_CREAT | _O_TRUNC | _O_WRONLY | O_BINARY,  _S_IREAD | _S_IWRITE);
+		int fileId = _open(tFileName, _O_CREAT | _O_TRUNC | _O_WRONLY | O_BINARY, _S_IREAD | _S_IWRITE);
 		if (fileId < 0)
         {
 //			ShowError("Cannot set avatar. File '%s' could not be created/overwritten", tFileName);

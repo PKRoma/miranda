@@ -104,6 +104,9 @@
 #define IDC_FORCESNGLCLNT               1163
 #define IDC_FSC                         1163
 #define IDC_HF                          1170
+#define IDC_SIT                         1171
+#define IDC_SIS                         1171
+#define IDC_SIS2                        1172
 #define IDC_MASQ                        1180
 #define IDC_CM                          1191
 #define IDC_MG                          1192

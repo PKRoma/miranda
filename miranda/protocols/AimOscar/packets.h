@@ -34,11 +34,17 @@ struct snac_header
 
 inline unsigned short _htons(unsigned short s)
 {
-	return (s&0xff00)>>8|(s&0x00ff)<<8;
+	return s>>8|s<<8;
 }
+
 inline unsigned long _htonl(unsigned long s)
 {
-	return (s&0x000000ff)<<24|(s&0x0000ff00)<<8|(s&0x00ff0000)>>8|(s&0xff000000)>>24;
+	return s<<24|(s&0xff00)<<8|((s>>8)&0xff00)|s>>24;
+}
+
+inline unsigned __int64 _htonl64(unsigned __int64 s)
+{
+    return (unsigned __int64)_htonl(s & 0xffffffff) << 32 | _htonl(s >> 32);
 }
 
 
@@ -47,6 +53,7 @@ int    aim_writetlv(unsigned short type,unsigned short size, const char* value,u
 int    aim_writetlvchar(unsigned short type, unsigned char value, unsigned short &offset, char* out);
 int    aim_writetlvshort(unsigned short type, unsigned short value, unsigned short &offset, char* out);
 int    aim_writetlvlong(unsigned short type, unsigned long value, unsigned short &offset, char* out);
+int     aim_writetlvlong64(unsigned short type, unsigned __int64 value, unsigned short &offset, char* out);
 void   aim_writefamily(const char *buf,unsigned short &offset,char* out);
 void   aim_writegeneric(unsigned short size,const char *buf,unsigned short &offset,char* out);
 void   aim_writebartid(unsigned short type, unsigned char flags, unsigned short size,const char *buf,unsigned short &offset,char* out);
