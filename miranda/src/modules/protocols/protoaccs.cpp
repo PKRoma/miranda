@@ -379,7 +379,8 @@ struct DeactivationThreadParam
 {
 	tagPROTO_INTERFACE* ppro;
 	pfnUninitProto      fnUninit;
-	BOOL                bIsDynamic;
+	bool                bIsDynamic;
+	bool                bErase;
 };
 
 pfnUninitProto GetProtocolDestructor( char* szProto );
@@ -389,6 +390,8 @@ static int DeactivationThread( DeactivationThreadParam* param )
 	tagPROTO_INTERFACE* p = ( tagPROTO_INTERFACE* )param->ppro;
 	p->SetStatus(ID_STATUS_OFFLINE);
 
+    char * szModuleName = NEWSTR_ALLOCA(p->m_szModuleName);
+
 	if ( param->bIsDynamic ) {
 		p->OnEvent( EV_PROTO_ONREADYTOEXIT, 0, 0 );
 		p->OnEvent( EV_PROTO_ONEXIT, 0, 0 );
@@ -397,15 +400,22 @@ static int DeactivationThread( DeactivationThreadParam* param )
 	KillObjectThreads( p ); // waits for them before terminating
 	KillObjectEventHooks( p ); // untie an object from the outside world
 
-	if ( param->fnUninit )
+    if ( param->bErase )
+	    p->OnEvent( EV_PROTO_ONERASE, 0, 0 );
+
+    if ( param->fnUninit )
 		param->fnUninit( p );
 
 	KillObjectServices( p );
-	delete param;
+
+    if ( param->bErase )
+        EraseAccount( szModuleName );
+
+    delete param;
 	return 0;
 }
 
-void DeactivateAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
+void DeactivateAccount( PROTOACCOUNT* pa, bool bIsDynamic, bool bErase )
 {
 	if ( !pa->ppro )
 		return;
@@ -420,6 +430,7 @@ void DeactivateAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
 	param->ppro = pa->ppro;
 	param->fnUninit = GetProtocolDestructor( pa->szProtoName );
 	param->bIsDynamic = bIsDynamic;
+    param->bErase = bErase;
 	pa->ppro = NULL;
     pa->type = PROTOTYPE_DISPROTO;
 	if ( bIsDynamic )
@@ -465,9 +476,9 @@ void EraseAccount( const char* pszModuleName )
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void UnloadAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
+void UnloadAccount( PROTOACCOUNT* pa, bool bIsDynamic, bool bErase )
 {
-	DeactivateAccount( pa, bIsDynamic );
+	DeactivateAccount( pa, bIsDynamic, bErase );
 
 	mir_free( pa->tszAccountName );
 	mir_free( pa->szProtoName );
@@ -488,7 +499,7 @@ void UnloadAccountsModule()
 
 	for( i=accounts.getCount()-1; i >= 0; i-- ) {
 		PROTOACCOUNT* pa = accounts[ i ];
-		UnloadAccount( pa, FALSE );
+		UnloadAccount( pa, false, false );
 		accounts.remove(i);
 	}
 

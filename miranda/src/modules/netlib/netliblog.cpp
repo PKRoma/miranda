@@ -45,7 +45,7 @@ struct {
 	TCHAR* szUserFile;
 	int    timeFormat;
 	int    showUser;
-	int    dumpSent,dumpRecv,dumpProxy;
+	int    dumpSent,dumpRecv,dumpProxy,dumpSsl;
 	int    textDumps,autoDetectText;
 	CRITICAL_SECTION cs;
 	int    save;
@@ -77,6 +77,7 @@ static INT_PTR CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 		CheckDlgButton(hwndDlg,IDC_DUMPRECV,logOptions.dumpRecv?BST_CHECKED:BST_UNCHECKED);
 		CheckDlgButton(hwndDlg,IDC_DUMPSENT,logOptions.dumpSent?BST_CHECKED:BST_UNCHECKED);
 		CheckDlgButton(hwndDlg,IDC_DUMPPROXY,logOptions.dumpProxy?BST_CHECKED:BST_UNCHECKED);
+		CheckDlgButton(hwndDlg,IDC_DUMPSSL,logOptions.dumpSsl?BST_CHECKED:BST_UNCHECKED);
 		CheckDlgButton(hwndDlg,IDC_TEXTDUMPS,logOptions.textDumps?BST_CHECKED:BST_UNCHECKED);
 		CheckDlgButton(hwndDlg,IDC_AUTODETECTTEXT,logOptions.autoDetectText?BST_CHECKED:BST_UNCHECKED);
 		{	int i;
@@ -239,6 +240,7 @@ static INT_PTR CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 				logOptions.dumpRecv=IsDlgButtonChecked(hwndDlg,IDC_DUMPRECV);
 				logOptions.dumpSent=IsDlgButtonChecked(hwndDlg,IDC_DUMPSENT);
 				logOptions.dumpProxy=IsDlgButtonChecked(hwndDlg,IDC_DUMPPROXY);
+				logOptions.dumpSsl=IsDlgButtonChecked(hwndDlg,IDC_DUMPSSL);
 				logOptions.textDumps=IsDlgButtonChecked(hwndDlg,IDC_TEXTDUMPS);
 				logOptions.autoDetectText=IsDlgButtonChecked(hwndDlg,IDC_AUTODETECTTEXT);
 				logOptions.timeFormat=SendDlgItemMessage(hwndDlg,IDC_TIMEFORMAT,CB_GETCURSEL,0,0);
@@ -281,6 +283,7 @@ static INT_PTR CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 				DBWriteContactSettingByte(NULL, "Netlib", "DumpRecv",(BYTE)logOptions.dumpRecv);
 				DBWriteContactSettingByte(NULL, "Netlib", "DumpSent",(BYTE)logOptions.dumpSent);
 				DBWriteContactSettingByte(NULL, "Netlib", "DumpProxy",(BYTE)logOptions.dumpProxy);
+				DBWriteContactSettingByte(NULL, "Netlib", "DumpSsl",(BYTE)logOptions.dumpSsl);
 				DBWriteContactSettingByte(NULL, "Netlib", "TextDumps",(BYTE)logOptions.textDumps);
 				DBWriteContactSettingByte(NULL, "Netlib", "AutoDetectText",(BYTE)logOptions.autoDetectText);
 				DBWriteContactSettingByte(NULL, "Netlib", "TimeFormat",(BYTE)logOptions.timeFormat);
@@ -426,6 +429,8 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 		return;
 	if ((flags&MSG_DUMPPROXY) && !logOptions.dumpProxy)
 		return;
+	if ((flags&MSG_DUMPSSL) && !logOptions.dumpSsl)
+		return;
 
 	WaitForSingleObject(hConnectionHeaderMutex, INFINITE);
 	nlu = nlc ? nlc->nlu : NULL;
@@ -527,6 +532,7 @@ void NetlibLogInit(void)
 	logOptions.dumpRecv = DBGetContactSettingByte( NULL, "Netlib", "DumpRecv", 1 );
 	logOptions.dumpSent = DBGetContactSettingByte( NULL, "Netlib", "DumpSent", 1 );
 	logOptions.dumpProxy = DBGetContactSettingByte( NULL, "Netlib", "DumpProxy", 1 );
+	logOptions.dumpSsl = DBGetContactSettingByte( NULL, "Netlib", "DumpSsl", 0 );
 	logOptions.textDumps = DBGetContactSettingByte( NULL, "Netlib", "TextDumps", 1 );
 	logOptions.autoDetectText = DBGetContactSettingByte( NULL, "Netlib", "AutoDetectText", 1 );
 	logOptions.timeFormat = DBGetContactSettingByte( NULL, "Netlib", "TimeFormat", TIMEFORMAT_HHMMSS );

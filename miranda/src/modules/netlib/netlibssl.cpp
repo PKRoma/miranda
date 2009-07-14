@@ -64,6 +64,13 @@ static void ReportSslError(SECURITY_STATUS scRet)
     const char *msg;
     switch (scRet)
     {
+    case 0:
+        return;
+
+    case SEC_E_INVALID_TOKEN:
+        msg = "Proper security package not installed. To resolve this error install IE5 or later";
+        break;
+
     case SEC_E_WRONG_PRINCIPAL:
         msg = "Host we connecting to is not the one certificate was issued for";
         break;
@@ -151,6 +158,7 @@ static BOOL AcquireCredentials(SslHandle *ssl, BOOL verify, BOOL chkname)
 		&ssl->hCreds,			// (out) Cred Handle
 		&tsExpiry);             // (out) Lifetime (optional)
 
+    ReportSslError(scRet);
 	return scRet == SEC_E_OK;
 }
 
@@ -227,21 +235,21 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 					break;
 				}
 
-				cbData = recv(ssl->s, 
-					(char*)ssl->pbIoBuffer + ssl->cbIoBuffer, 
-					ssl->sbIoBuffer - ssl->cbIoBuffer, 
-					0);
+				cbData = recv(ssl->s, (char*)ssl->pbIoBuffer + ssl->cbIoBuffer, ssl->sbIoBuffer - ssl->cbIoBuffer, 0);
 				if (cbData == SOCKET_ERROR) 
 				{
+                    Netlib_Logf(NULL, "SSL Negotiation failure recieving data (%d)", WSAGetLastError());
 					scRet = SEC_E_INTERNAL_ERROR;
 					break;
 				}
 				if (cbData == 0) 
 				{
+                    Netlib_Logf(NULL, "SSL Negotiation connection gracefully closed");
 					scRet = SEC_E_INTERNAL_ERROR;
 					break;
 				}
 
+                NetlibDumpData(NULL, ssl->pbIoBuffer + ssl->cbIoBuffer, cbData, 0, MSG_DUMPSSL);
 				ssl->cbIoBuffer += cbData;
 			}
 			else fDoRead = TRUE;
@@ -297,14 +305,11 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 		{
 			if (OutBuffers[0].cbBuffer != 0 && OutBuffers[0].pvBuffer != NULL) 
 			{
-				cbData = send(ssl->s,
-					(char*)OutBuffers[0].pvBuffer,
-					OutBuffers[0].cbBuffer,
-					0);
+				cbData = send(ssl->s, (char*)OutBuffers[0].pvBuffer, OutBuffers[0].cbBuffer, 0);
 				if (cbData == SOCKET_ERROR || cbData == 0) 
 				{
+                    Netlib_Logf(NULL, "SSL Negotiation failure sending data (%d)", WSAGetLastError());
 					g_pSSPI->FreeContextBuffer(OutBuffers[0].pvBuffer);
-					g_pSSPI->DeleteSecurityContext(&ssl->hContext);
 					return SEC_E_INTERNAL_ERROR;
 				}
 
@@ -361,11 +366,7 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 	}
 
 	// Delete the security context in the case of a fatal error.
-    if (FAILED(scRet)) 
-    {
-        ReportSslError(scRet);
-		g_pSSPI->DeleteSecurityContext(&ssl->hContext);
-    }
+    ReportSslError(scRet);
 
 	if (ssl->cbIoBuffer == 0) 
 	{
@@ -386,6 +387,12 @@ static int ClientConnect(SslHandle *ssl, const char *host)
 	TimeStamp       tsExpiry;
 	SECURITY_STATUS scRet;
 	DWORD           cbData;
+
+    if (SecIsValidHandle(&ssl->hContext)) 
+    {
+        g_pSSPI->DeleteSecurityContext(&ssl->hContext);
+        SecInvalidateHandle(&ssl->hContext);
+    }
 
 	dwSSPIFlags = ISC_REQ_SEQUENCE_DETECT   |
 		ISC_REQ_REPLAY_DETECT     |
@@ -427,8 +434,8 @@ static int ClientConnect(SslHandle *ssl, const char *host)
 		cbData = send(ssl->s, (char*)OutBuffers[0].pvBuffer, OutBuffers[0].cbBuffer, 0);
 		if (cbData == SOCKET_ERROR || cbData == 0) 
 		{
+            Netlib_Logf(NULL, "SSL failure sending connection data (%d)", WSAGetLastError());
 			g_pSSPI->FreeContextBuffer(OutBuffers[0].pvBuffer);
-			g_pSSPI->DeleteSecurityContext(&ssl->hContext);
 			return 0;
 		}
 
@@ -447,6 +454,9 @@ SslHandle *NetlibSslConnect(SOCKET s, const char* host, int verify)
 
 	SslHandle *ssl = (SslHandle*)mir_calloc(sizeof(SslHandle));
 	ssl->s = s;
+
+    SecInvalidateHandle(&ssl->hCreds);
+    SecInvalidateHandle(&ssl->hContext);
 
 	res = SSL_library_init();
 
@@ -602,12 +612,14 @@ getdata:
 			cbData = recv(ssl->s, (char*)ssl->pbIoBuffer + ssl->cbIoBuffer, ssl->sbIoBuffer - ssl->cbIoBuffer, 0);
 			if (cbData == SOCKET_ERROR)
 			{
+                Netlib_Logf(NULL, "SSL failure recieving data (%d)", WSAGetLastError());
                 ssl->state = sockError;
 			    goto getdata;
 			}
 			
 			if (cbData == 0) 
 			{
+                Netlib_Logf(NULL, "SSL connection gracefully closed");
 				if (peek && ssl->cbRecDataBuf)
 				{
                     ssl->state = sockClosed;
@@ -623,7 +635,11 @@ getdata:
 				
 				return 0;
 			}
-			else ssl->cbIoBuffer += cbData;
+			else
+            {
+                NetlibDumpData(NULL, ssl->pbIoBuffer + ssl->cbIoBuffer, cbData, 0, MSG_DUMPSSL);
+                ssl->cbIoBuffer += cbData;
+            }
 		}
 
 		// Attempt to decrypt the received data.
@@ -677,7 +693,9 @@ getdata:
 			bytes = peek ? 0 : min((DWORD)num, pDataBuffer->cbBuffer);
 			rbytes = pDataBuffer->cbBuffer - bytes;
 
-			if (rbytes > 0) 
+            NetlibDumpData(NULL, (PBYTE)pDataBuffer->pvBuffer, pDataBuffer->cbBuffer, 0, MSG_DUMPSSL);
+			
+            if (rbytes > 0) 
 			{
 				DWORD nbytes = ssl->cbRecDataBuf + rbytes;
 				if (ssl->sbRecDataBuf < nbytes) 
@@ -702,7 +720,8 @@ getdata:
 		}
 
 		// Move any "extra" data to the input buffer.
-		if (pExtraBuffer) {
+		if (pExtraBuffer) 
+        {
 			MoveMemory(ssl->pbIoBuffer, pExtraBuffer->pvBuffer, pExtraBuffer->cbBuffer);
 			ssl->cbIoBuffer = pExtraBuffer->cbBuffer;
 		}
@@ -714,6 +733,7 @@ getdata:
 		// Server signaled end of session
 		if (scRet == SEC_I_CONTEXT_EXPIRED) 
 		{
+            Netlib_Logf(NULL, "SSL Server signaled SSL Shutdown");
             ssl->state = sockClosed;
 			goto getdata;
 		}
@@ -795,6 +815,7 @@ int NetlibSslWrite(SslHandle *ssl, const char *buf, int num)
 		cbData = send(ssl->s, (char*)pbDataBuffer, cbData, 0);
 		if (cbData == SOCKET_ERROR || cbData == 0)
 		{
+            Netlib_Logf(NULL, "SSL failure sending data (%d)", WSAGetLastError());
 			scRet = SEC_E_INTERNAL_ERROR;
 			break;
 		}

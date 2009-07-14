@@ -826,7 +826,7 @@ int GenMenuOptInit(WPARAM wParam, LPARAM)
 	odp.position = -10000000;
 	odp.groupPosition = 1000000;
 	odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPT_PROTOCOLORDER );
-	odp.pszTitle = LPGEN("Protocols");
+	odp.pszTitle = LPGEN("Accounts");
 	odp.pfnDlgProc = ProtocolOrderOpts;
 	odp.flags = ODPF_BOLDGROUPS|ODPF_EXPERTONLY;
 	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
