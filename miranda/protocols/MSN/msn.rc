@@ -83,15 +83,18 @@ EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Server List Manager",IDC_STATIC,4,0,298,224
-    CONTROL         "",IDC_LIST,"CListControl",WS_TABSTOP | 0x1f3,9,12,287,180,WS_EX_CLIENTEDGE
-    ICON            "",IDC_ICON_FL,10,196,20,20,SS_REALSIZEIMAGE
-    LTEXT           "Contact is included into your server list",IDC_STATIC,28,196,144,8
-    ICON            "",IDC_ICON_AL,187,196,20,20,SS_REALSIZEIMAGE
-    LTEXT           "Allowed (active) contact",IDC_STATIC,204,196,82,8
-    ICON            "",IDC_ICON_RL,10,208,20,20,SS_REALSIZEIMAGE
-    LTEXT           "Somebody included you in his/her server list",IDC_STATIC,28,208,144,8
-    ICON            "",IDC_ICON_BL,187,208,20,20,SS_REALSIZEIMAGE
-    LTEXT           "Blocked contact",IDC_STATIC,204,208,82,8
+    CONTROL         "",IDC_LIST,"CListControl",WS_TABSTOP | 0x1f3,9,12,287,169,WS_EX_CLIENTEDGE
+    ICON            "",IDC_ICON_LC,10,184,20,20,SS_REALSIZEIMAGE
+    LTEXT           "Contact  is on your local list",IDC_STATIC,28,184,144,8
+    ICON            "",IDC_ICON_FL,10,197,20,20,SS_REALSIZEIMAGE
+    LTEXT           "Contact is included into your server list",IDC_STATIC,28,197,144,8
+    ICON            "",IDC_ICON_AL,187,184,20,20,SS_REALSIZEIMAGE
+    LTEXT           "Allowed (active) contact",IDC_STATIC,204,184,82,8
+    ICON            "",IDC_ICON_BL,187,196,20,20,SS_REALSIZEIMAGE
+    LTEXT           "Blocked contact",IDC_STATIC,204,196,82,8
+    ICON            "",IDC_ICON_RL,10,209,21,20,SS_REALSIZEIMAGE
+    LTEXT           "Somebody included you in his/her server list",IDC_STATIC,28,209,144,8
+    PUSHBUTTON      "Refresh",IDC_LISTREFRESH,218,209,80,13
 END
 
 IDD_OPT_NOTIFY DIALOGEX 0, 0, 238, 215
@@ -206,6 +209,16 @@ BEGIN
                     "Hyperlink",WS_TABSTOP,0,40,174,12
 END
 
+IDD_DELETECONTACT DIALOGEX 0, 0, 213, 76
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION
+CAPTION "MSN Delete Contact"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,82,55,50,14
+    CONTROL         "Remove from Hotmail Address book",IDC_REMOVEHOT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,32,199,10
+    CONTROL         "Block Contact",IDC_REMOVEBLOCK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,18,199,10
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -243,6 +256,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 106
     END
+
+    IDD_DELETECONTACT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 206
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 69
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -265,6 +286,7 @@ IDI_LIST_FL             ICON                    "Icos\\list_fl.ico"
 IDI_LIST_AL             ICON                    "Icos\\list_al.ico"
 IDI_LIST_BL             ICON                    "Icos\\list_bl.ico"
 IDI_LIST_RL             ICON                    "Icos\\list_rl.ico"
+IDI_LIST_LC             ICON                    "Icos\\list_ph.ico"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////

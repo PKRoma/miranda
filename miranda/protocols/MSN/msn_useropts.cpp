@@ -26,11 +26,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /*
 INT_PTR CALLBACK MsnDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch ( msg ) 
+	switch (msg) 
 	{
 		case WM_INITDIALOG:
 			{
-				TranslateDialogDefault( hwndDlg );
+				TranslateDialogDefault(hwndDlg);
 				
 				const HANDLE hContact = (HANDLE)lParam;
 
@@ -53,13 +53,13 @@ INT_PTR CALLBACK MsnDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnOnDetailsInit - initializes user info dialog pages.
 
-int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam )
+int MsnOnDetailsInit(WPARAM wParam, LPARAM lParam)
 {
 /*
-	if ( !MSN_IsMyContact( hContact ))
+	if (!MSN_IsMyContact(hContact))
 		return 0;
 
-	if ( setDword( hContact, "FlagBits", 0 )) {
+	if (setDword(hContact, "FlagBits", 0)) {
 		odp.pfnDlgProc = MsnDlgProc;
 		odp.position = -1900000000;
 		odp.pszTemplate = MAKEINTRESOURCEA(IDD_USEROPTS);

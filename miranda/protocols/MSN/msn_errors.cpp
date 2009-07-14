@@ -21,71 +21,73 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "msn_global.h"
 #include "msn_proto.h"
 
-int CMsnProto::MSN_HandleErrors( ThreadData* info, char* cmdString )
+int CMsnProto::MSN_HandleErrors(ThreadData* info, char* cmdString)
 {
 	int errorCode, packetID = -1;
-	sscanf( cmdString, "%d %d", &errorCode, &packetID );
+	sscanf(cmdString, "%d %d", &errorCode, &packetID);
 
-	MSN_DebugLog( "Server error:%s", cmdString );
+	MSN_DebugLog("Server error:%s", cmdString);
 
-	switch( errorCode ) {
+	switch(errorCode) {
 	case ERR_INTERNAL_SERVER:
-		MSN_ShowError( "MSN Services are temporarily unavailable, please try to connect later" );
-		SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
+		MSN_ShowError("MSN Services are temporarily unavailable, please try to connect later");
+		SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER);
 		return 1;
 
 	case ERR_SERVER_BUSY:
 	case ERR_SERVER_UNAVAILABLE:
-		MSN_ShowError( "MSN Services are too busy, please try to connect later" );
-		SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
+		MSN_ShowError("MSN Services are too busy, please try to connect later");
+		SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER);
 		return 1;
 
 	case ERR_NOT_ALLOWED_WHEN_OFFLINE:
-		MSN_ShowError( "MSN protocol does not allow you to communicate with others when you are invisible" );
+		MSN_ShowError("MSN protocol does not allow you to communicate with others when you are invisible");
 		return 0;
 
 	case ERR_LIST_FULL:
-		MSN_ShowError( "MSN plugin cannot add a new contact because the contact list is full" );
+		MSN_ShowError("MSN plugin cannot add a new contact because the contact list is full");
 		return 0;
 
 	case ERR_ALREADY_THERE:
-		MSN_ShowError( "User is already in your contact list" );
+		MSN_ShowError("User is already in your contact list");
 		return 0;
 
 	case ERR_CONTACT_LIST_FAILED:
 	case ERR_LIST_UNAVAILABLE:
-			char* tWords[ 3 ];
-			if ( sttDivideWords( cmdString, 3, tWords ) == 3 )
+			char* tWords[3];
+			if (sttDivideWords(cmdString, 3, tWords) == 3)
 				HReadBuffer(info, 0).surelyRead(atol(tWords[2])); 
 			return 0;
 
 	case ERR_NOT_ONLINE:
-		SendBroadcast( info->mInitialContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, 
-			( HANDLE )999999, ( LPARAM )MSN_Translate("User not online"));
+		SendBroadcast(info->mInitialContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, 
+			(HANDLE)999999, (LPARAM)MSN_Translate("User not online"));
 		return 1;
 
 	case ERR_NOT_EXPECTED:
-		MSN_ShowError( "Your MSN account e-mail is unverified. Goto http://www.passport.com and verify the primary e-mail first" );
+		MSN_ShowError("Your MSN account e-mail is unverified. Goto http://www.passport.com and verify the primary e-mail first");
 		return 0;
 
 	case ERR_AUTHENTICATION_FAILED:
-		if ( info->mType != SERVER_SWITCHBOARD ) {
-			MSN_ShowError( "Your username or password is incorrect" );
-			SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
+		if (info->mType != SERVER_SWITCHBOARD) 
+        {
+			MSN_ShowError("Your username or password is incorrect");
+			SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
 		}
 		return 1;
 
 	case ERR_INVALID_LOCALE:
-		if ( packetID == tridUrlInbox ) {
+		if (packetID == tridUrlInbox) 
+        {
 			tridUrlInbox = -1;
 			return 0;
 		}
 		// fall through
 
 	default:
-		MSN_DebugLog( "Unprocessed error: %s", cmdString );
-		if ( errorCode >= 500 ) //all these errors look fatal-ish
-			MSN_ShowError( "Unrecognised error %d. The server has closed our connection", errorCode );
+		MSN_DebugLog("Unprocessed error: %s", cmdString);
+		if (errorCode >= 500) //all these errors look fatal-ish
+			MSN_ShowError("Unrecognised error %d. The server has closed our connection", errorCode);
 
 		break;
 	}

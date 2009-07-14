@@ -94,16 +94,16 @@ void CMsnProto::getOIMs(ezxml_t xmli)
 			MimeHeaders mailInfo;
 			const char* mailbody = mailInfo.readFromBuffer((char*)ezxml_txt(body));
 
-			time_t evtm = time( NULL );
+			time_t evtm = time(NULL);
 			const char* arrTime = mailInfo["X-OriginalArrivalTime"];
 			if (arrTime != NULL)
 			{
 				char szTime[32], *p;
-				txtParseParam( arrTime, "FILETIME", "[", "]", szTime, sizeof( szTime ));
+				txtParseParam(arrTime, "FILETIME", "[", "]", szTime, sizeof(szTime));
 
-				unsigned filetimeLo = strtoul( szTime, &p, 16 );
-				if ( *p == ':' ) { 
-					unsigned __int64 filetime = strtoul( p+1, &p, 16 );
+				unsigned filetimeLo = strtoul(szTime, &p, 16);
+				if (*p == ':') { 
+					unsigned __int64 filetime = strtoul(p+1, &p, 16);
 					filetime <<= 32;
 					filetime |= filetimeLo;
 					filetime /= 10000000;
@@ -112,20 +112,20 @@ void CMsnProto::getOIMs(ezxml_t xmli)
 #else
 					filetime -= 11644473600ull;
 #endif
-					evtm = ( time_t )filetime;
+					evtm = (time_t)filetime;
 				}
 			}
 
 			PROTORECVEVENT pre = {0};
 			pre.szMessage = mailInfo.decodeMailBody((char*)mailbody);
-			pre.flags = PREF_UTF /*+ (( isRtl ) ? PREF_RTL : 0)*/;
+			pre.flags = PREF_UTF /*+ ((isRtl) ? PREF_RTL : 0)*/;
 			pre.timestamp = evtm;
 
 			CCSDATA ccs = {0};
-			ccs.hContact = MSN_HContactFromEmail( szEmail, szEmail, false, false );
+			ccs.hContact = MSN_HContactFromEmail(szEmail, szEmail, false, false);
 			ccs.szProtoService = PSR_MESSAGE;
-			ccs.lParam = ( LPARAM )&pre;
-			MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
+			ccs.lParam = (LPARAM)&pre;
+			MSN_CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
 			mir_free(pre.szMessage);
 
 			ezxml_t delmid = ezxml_add_child(delmids, "messageId", 0);
@@ -133,7 +133,7 @@ void CMsnProto::getOIMs(ezxml_t xmli)
 			
 			ezxml_free(xmlm);
 		}
-		mir_free( tResult );
+		mir_free(tResult);
 		toki = ezxml_next(toki);
 	}
 	ezxml_free(xmlreq);
@@ -213,7 +213,7 @@ void CMsnProto::processMailData(char* mailData)
 /////////////////////////////////////////////////////////////////////////////////////////
 // Processes e-mail notification
 
-void CMsnProto::sttNotificationMessage( char* msgBody, bool isInitial )
+void CMsnProto::sttNotificationMessage(char* msgBody, bool isInitial)
 {
 	TCHAR tBuffer[512];
 	TCHAR tBuffer2[512];
@@ -222,7 +222,7 @@ void CMsnProto::sttNotificationMessage( char* msgBody, bool isInitial )
 	bool ShowPopUp = isInitial;
 
 	MimeHeaders tFileInfo;
-	tFileInfo.readFromBuffer( msgBody );
+	tFileInfo.readFromBuffer(msgBody);
 
 	const char* From = tFileInfo[ "From" ];
 	const char* Subject = tFileInfo[ "Subject" ];
@@ -233,10 +233,10 @@ void CMsnProto::sttNotificationMessage( char* msgBody, bool isInitial )
 	const char* InboxUnread = tFileInfo[ "Inbox-Unread" ];
 	const char* FoldersUnread = tFileInfo[ "Folders-Unread" ];
 	
-	if ( InboxUnread != NULL )
-		mUnreadMessages = atol( InboxUnread );
-	if ( FoldersUnread != NULL )
-		mUnreadJunkEmails = atol( FoldersUnread );
+	if (InboxUnread != NULL)
+		mUnreadMessages = atol(InboxUnread);
+	if (FoldersUnread != NULL)
+		mUnreadJunkEmails = atol(FoldersUnread);
 
 	if (MsgDelta != NULL)
 	{
@@ -254,31 +254,31 @@ void CMsnProto::sttNotificationMessage( char* msgBody, bool isInitial )
         if (mUnreadMessages < 0) mUnreadMessages = 0;
 	}
 
-	if ( From != NULL && Subject != NULL && Fromaddr != NULL ) 
+	if (From != NULL && Subject != NULL && Fromaddr != NULL) 
 	{
-		if ( DestFolder != NULL && SrcFolder == NULL ) 
+		if (DestFolder != NULL && SrcFolder == NULL) 
 		{
-			mUnreadMessages += strcmp( DestFolder, "ACTIVE" ) == 0;
-			mUnreadJunkEmails += strcmp( DestFolder, "HM_BuLkMail_" ) == 0;
+			mUnreadMessages += strcmp(DestFolder, "ACTIVE") == 0;
+			mUnreadJunkEmails += strcmp(DestFolder, "HM_BuLkMail_") == 0;
 		}
 
 		wchar_t* mimeFromW = tFileInfo.decode(From);
 		wchar_t* mimeSubjectW = tFileInfo.decode(Subject);
 
 #ifdef _UNICODE
-		mir_sntprintf( tBuffer2, SIZEOF( tBuffer2 ), TranslateT("Subject: %s"), mimeSubjectW );
+		mir_sntprintf(tBuffer2, SIZEOF(tBuffer2), TranslateT("Subject: %s"), mimeSubjectW);
 #else
-		mir_sntprintf( tBuffer2, SIZEOF( tBuffer2 ), TranslateT("Subject: %S"), mimeSubjectW );
+		mir_sntprintf(tBuffer2, SIZEOF(tBuffer2), TranslateT("Subject: %S"), mimeSubjectW);
 #endif
 
 #ifdef _UNICODE
-		TCHAR* msgtxt = _stricmp( From, Fromaddr ) ?
-			TranslateT("Hotmail from %s (%S)") : TranslateT( "Hotmail from %s" );
+		TCHAR* msgtxt = _stricmp(From, Fromaddr) ?
+			TranslateT("Hotmail from %s (%S)") : TranslateT("Hotmail from %s");
 #else
-		TCHAR* msgtxt = _strcmpi( From, Fromaddr ) ?
-			TranslateT("Hotmail from %S (%s)") : TranslateT( "Hotmail from %S" );
+		TCHAR* msgtxt = _strcmpi(From, Fromaddr) ?
+			TranslateT("Hotmail from %S (%s)") : TranslateT("Hotmail from %S");
 #endif
-		mir_sntprintf( tBuffer, SIZEOF( tBuffer ), msgtxt, mimeFromW, Fromaddr );
+		mir_sntprintf(tBuffer, SIZEOF(tBuffer), msgtxt, mimeFromW, Fromaddr);
 		mir_free(mimeFromW);
 		mir_free(mimeSubjectW);
 		ShowPopUp = true;
@@ -286,11 +286,11 @@ void CMsnProto::sttNotificationMessage( char* msgBody, bool isInitial )
 	else 
 	{
 		const char* MailData = tFileInfo[ "Mail-Data" ];
-		if ( MailData != NULL ) processMailData((char*)MailData);
+		if (MailData != NULL) processMailData((char*)MailData);
 
-		mir_sntprintf( tBuffer, SIZEOF( tBuffer ), m_tszUserName);
-		mir_sntprintf( tBuffer2, SIZEOF( tBuffer2 ), TranslateT( "Unread mail is available: %d in Inbox and %d in other folders)." ),
-			mUnreadMessages, mUnreadJunkEmails );
+		mir_sntprintf(tBuffer, SIZEOF(tBuffer), m_tszUserName);
+		mir_sntprintf(tBuffer2, SIZEOF(tBuffer2), TranslateT("Unread mail is available: %d in Inbox and %d in other folders)."),
+			mUnreadMessages, mUnreadJunkEmails);
 	}
 
 	if (UnreadMessages == mUnreadMessages && UnreadJunkEmails == mUnreadJunkEmails  && !isInitial)
@@ -304,7 +304,7 @@ void CMsnProto::sttNotificationMessage( char* msgBody, bool isInitial )
         CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM) 1);
         displayEmailCount(hContact);
 
-        if (ShowPopUp && !getByte( "DisableHotmailTray", 0 ))
+        if (ShowPopUp && !getByte("DisableHotmailTray", 0))
         {
             CLISTEVENT cle = {0};
 
@@ -322,34 +322,34 @@ void CMsnProto::sttNotificationMessage( char* msgBody, bool isInitial )
         }
     }
 
-    SendBroadcast( NULL, ACKTYPE_EMAIL, ACKRESULT_STATUS, NULL, 0 );
+    SendBroadcast(NULL, ACKTYPE_EMAIL, ACKRESULT_STATUS, NULL, 0);
 
 	// Disable to notify receiving hotmail
-	if ( ShowPopUp && !getByte( "DisableHotmail", 1 ))
+	if (ShowPopUp && !getByte("DisableHotmail", 1))
 	{
-		SkinPlaySound( mailsoundname );
+		SkinPlaySound(mailsoundname);
 
-        MSN_ShowPopup( tBuffer, tBuffer2, 
+        MSN_ShowPopup(tBuffer, tBuffer2, 
 			MSN_ALLOW_ENTER | MSN_ALLOW_MSGBOX | MSN_HOTMAIL_POPUP, 
 			tFileInfo[ "Message-URL" ]);
     }
 
-	if ( !getByte( "RunMailerOnHotmail", 0 ) || !ShowPopUp || isInitial )
+	if (!getByte("RunMailerOnHotmail", 0) || !ShowPopUp || isInitial)
 		return;
 
 	char mailerpath[MAX_PATH];
-	if ( !getStaticString( NULL, "MailerPath", mailerpath, sizeof( mailerpath ))) 
+	if (!getStaticString(NULL, "MailerPath", mailerpath, sizeof(mailerpath))) 
 	{
-		if ( mailerpath[0] ) 
+		if (mailerpath[0]) 
 		{
 			char* tParams = NULL;
 			char* tCmd = mailerpath;
 
-			if ( *tCmd == '\"' ) 
+			if (*tCmd == '\"') 
 			{
 				++tCmd; 
-				char* tEndPtr = strchr( tCmd, '\"' );
-				if ( tEndPtr != NULL ) 
+				char* tEndPtr = strchr(tCmd, '\"');
+				if (tEndPtr != NULL) 
 				{
 					*tEndPtr = 0;
 					tParams = tEndPtr+1;
@@ -364,8 +364,8 @@ void CMsnProto::sttNotificationMessage( char* msgBody, bool isInitial )
 
 			while (*tParams == ' ') ++tParams;
 
-			MSN_DebugLog( "Running mailer \"%s\" with params \"%s\"", tCmd, tParams );
-			ShellExecuteA( NULL, "open", tCmd, tParams, NULL, TRUE );
+			MSN_DebugLog("Running mailer \"%s\" with params \"%s\"", tCmd, tParams);
+			ShellExecuteA(NULL, "open", tCmd, tParams, NULL, TRUE);
 		}
 	}	
 }
@@ -429,8 +429,8 @@ int CMsnProto::MSN_SendOIM(const char* szEmail, const char* msg)
 		mynickenc =(char*)alloca(emlen + 20);
 		strcpy(mynickenc, "=?utf-8?B?");
 		NETLIBBASE64 nlb = { mynickenc+10, (int)emlen, (PBYTE)mynick, (int)omlen };
-		MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
-		if (dbv.pszVal != NULL) MSN_FreeVariant( &dbv );
+		MSN_CallService(MS_NETLIB_BASE64ENCODE, 0, LPARAM(&nlb));
+		if (dbv.pszVal != NULL) MSN_FreeVariant(&dbv);
 		strcat(mynickenc, "?=");
 
 		ezxml_set_attr(from, "friendlyName", mynickenc);
@@ -492,7 +492,7 @@ int CMsnProto::MSN_SendOIM(const char* szEmail, const char* msg)
 		strcpy(msgenc2, "\r\n"); msgenc2 += 2;
 
 		NETLIBBASE64 nlb = { msgenc2, (int)emlen, (PBYTE)msg, (int)omlen };
-		MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
+		MSN_CallService(MS_NETLIB_BASE64ENCODE, 0, LPARAM(&nlb));
 
 		char *pos = msgenc2;
 		for (int i=0; i<nlb.cchEncoded; i+=76)
@@ -569,7 +569,7 @@ int CMsnProto::MSN_SendOIM(const char* szEmail, const char* msg)
 
 void CMsnProto::displayEmailCount(HANDLE hContact)
 {
-    if (!emailEnabled || getByte( "DisableHotmailCL", 0 )) return;
+    if (!emailEnabled || getByte("DisableHotmailCL", 0)) return;
 
     TCHAR* name = MSN_GetContactNameT(hContact);
     if (name == NULL) return;
