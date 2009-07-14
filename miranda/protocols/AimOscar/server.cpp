@@ -958,15 +958,6 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
             else
                 pre.flags = 0;
 
-            if(getByte( AIM_KEY_FI, 0)) 		
-            {
-                LOG("Converting from html to bbcodes then stripping leftover html.");
-                char* bbuf = html_to_bbcodes(msg_buf);
-                mir_free(msg_buf);
-                msg_buf = bbuf;
-            }
-            LOG("Stripping html.");
-            html_decode(msg_buf);
             if (is_offline)
                 pre.timestamp = offline_timestamp;
             else
