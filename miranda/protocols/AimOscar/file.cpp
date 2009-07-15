@@ -80,7 +80,7 @@ bool send_init_oft2(file_transfer *ft, char* buf, int buflen, bool uni)
     oft->flags            = 0x20;
     oft->list_name_offset = 0x1c;
     oft->list_size_offset = 0x11;
-    oft->encoding = uni ? 2 : 0;
+    oft->encoding = _htons(uni ? 2 : 0);
     memcpy(oft->filename, buf, buflen);
 
     return Netlib_Send(ft->hConn, (char*)oft, len, 0) > 0;
