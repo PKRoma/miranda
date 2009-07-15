@@ -43,8 +43,7 @@ struct aimString
     size_t size;
     bool unicode;
 
-    aimString(char* str, bool utf = false);
-    aimString(wchar_t* str);
+    aimString(char* str);
     ~aimString() { mir_free(szString); }
 
     bool isUnicode(void) { return unicode; }

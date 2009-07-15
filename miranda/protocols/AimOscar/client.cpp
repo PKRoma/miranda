@@ -203,7 +203,7 @@ int CAimProto::aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
 
 int CAimProto::aim_set_profile(HANDLE hServerConn,unsigned short &seqno, char* amsg)//user info
 {
-    aimString str(amsg, true);
+    aimString str(amsg);
     const char *charset = str.isUnicode() ? AIM_MSG_TYPE_UNICODE : AIM_MSG_TYPE;
     const unsigned short charset_len = (unsigned short)strlen(charset);
 
@@ -328,7 +328,7 @@ int CAimProto::aim_chat_ready(HANDLE hServerConn,unsigned short &seqno)
 
 int CAimProto::aim_send_message(HANDLE hServerConn,unsigned short &seqno,const char* sn,char* amsg,bool auto_response)
 {	
-    aimString str(amsg, true);
+    aimString str(amsg);
 
     const char* msg = str.getBuf();
     const unsigned short msg_len = str.getSize();
@@ -459,7 +459,7 @@ int CAimProto::aim_send_file(HANDLE hServerConn, unsigned short &seqno, char* sn
                              bool force_proxy, unsigned short request_num, 
                              char* file_name, unsigned long total_bytes, char* descr)
 {	
-    aimString dstr(descr, true);
+    aimString dstr(descr);
 
     const char* charset = dstr.isUnicode() ? "unicode-2-0" : "us-ascii";
     const unsigned short charset_len = (unsigned short)strlen(charset);
@@ -736,7 +736,7 @@ int CAimProto::aim_chat_join_room(HANDLE hServerConn,unsigned short &seqno, char
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
-int CAimProto::aim_chat_send_message(HANDLE hServerConn,unsigned short &seqno, TCHAR *amsg)
+int CAimProto::aim_chat_send_message(HANDLE hServerConn, unsigned short &seqno, char *amsg)
 {
     aimString str(amsg);
 

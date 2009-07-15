@@ -57,7 +57,7 @@ struct oft2//oscar file transfer 2 class- See On_Sending_Files_via_OSCAR.pdf
 
 bool send_init_oft2(file_transfer *ft)
 {
-    aimString astr(get_fname(ft->file), true);
+    aimString astr(get_fname(ft->file));
     TCHAR *name = mir_utf8decodeT(ft->file);
 
     size_t len = max(0x100, 0xc0 + astr.getTermSize());

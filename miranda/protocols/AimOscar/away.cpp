@@ -51,7 +51,7 @@ int CAimProto::aim_set_away(HANDLE hServerConn,unsigned short &seqno,const char 
 		msg_size = strlen(html_msg);
 	}
 
-    aimString str(html_msg, true);
+    aimString str(html_msg);
     const char *charset = str.isUnicode() ? AIM_MSG_TYPE_UNICODE : AIM_MSG_TYPE;
     const unsigned short charset_len = (unsigned short)strlen(charset);
 

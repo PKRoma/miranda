@@ -286,7 +286,7 @@ struct CAimProto : public PROTO_INTERFACE
     int	   aim_chatnav_create(HANDLE hServerConn,unsigned short &seqno, char* room, unsigned short exchage);
     int    aim_chatnav_room_info(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance);  
     int	   aim_chat_join_room(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance,unsigned short id);
-    int	   aim_chat_send_message(HANDLE hServerConn,unsigned short &seqno, TCHAR *amsg);
+    int	   aim_chat_send_message(HANDLE hServerConn,unsigned short &seqno, char *amsg);
     int	   aim_chat_invite(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance, char* sn, char* msg);
     int    aim_chat_deny(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie);
     int    aim_admin_ready(HANDLE hServerConn,unsigned short &seqno);
