@@ -83,7 +83,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define CLM_GETFONT           (CLM_FIRST+18)   //wParam=fontId, see clm_setfont. returns hFont.
 #define CLM_GETINDENT         (CLM_FIRST+19)   //wParam=new group indent
 #define CLM_GETISEARCHSTRING  (CLM_FIRST+20)   //lParam=(char*)pszStr, max 120 bytes, returns number of chars in string
-#define CLM_GETITEMTEXT       (CLM_FIRST+21)   //wParam=hItem, lParam=(char*)pszStr, max 120 bytes
+#define CLM_GETITEMTEXT       (CLM_FIRST+21)   //wParam=hItem, lParam=(TCHAR*)pszStr, max 120 bytes
 #define CLM_GETSCROLLTIME     (CLM_FIRST+22)   //returns time in ms
 #define CLM_GETSELECTION      (CLM_FIRST+23)   //returns hItem
 #define CLCHT_ABOVE        0x0001  //above client area

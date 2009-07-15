@@ -441,6 +441,9 @@ typedef struct {
 #define REQUEST_POST     2
 #define REQUEST_CONNECT  3
 #define REQUEST_HEAD  	 4	// new in 0.5.1
+#define REQUEST_PUT      5
+#define REQUEST_DELETE   6
+
 #define NLHRF_GENERATEHOST    0x00000001   //auto-generate a "Host" header from szUrl
 #define NLHRF_REMOVEHOST      0x00000002   //remove any host and/or protocol portion of szUrl before sending it
 #define NLHRF_SMARTREMOVEHOST 0x00000004   //removes host and/or protocol from szUrl unless the connection was opened through an HTTP or HTTPS proxy.
@@ -544,6 +547,7 @@ struct NETLIBHTTPREQUEST_tag {
 #define MSG_DUMPPROXY          0x040000	 //this is proxy communiciation. For dump filtering only.
 #define MSG_DUMPASTEXT         0x080000  //this is textual data, don't dump as hex
 #define MSG_RAW                0x100000	 //send as raw data, bypass any HTTP proxy stuff
+#define MSG_DUMPSSL            0x200000	 //this is SSL traffic. For dump filtering only.
 typedef struct {
 	char *buf;
 	int len;
