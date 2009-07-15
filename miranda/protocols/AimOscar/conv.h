@@ -31,5 +31,26 @@ void wcs_htons(wchar_t * ch);
 char* bytes_to_string(char* bytes, int num_bytes);
 void string_to_bytes(char* string, char* bytes);
 bool is_utf(const char* msg);
+char* get_fname(char* path);
+
+struct aimString
+{
+    union
+    {
+        char* szString;
+        wchar_t* wszString;
+    };
+    size_t size;
+    bool unicode;
+
+    aimString(char* str, bool utf = false);
+    aimString(wchar_t* str);
+    ~aimString() { mir_free(szString); }
+
+    bool isUnicode(void) { return unicode; }
+    size_t getSize(void) { return size; }
+    size_t getTermSize(void) { return size + (unicode ? sizeof(wchar_t) : sizeof(char)); }
+    char* getBuf(void) { return szString; }  
+};
 
 #endif

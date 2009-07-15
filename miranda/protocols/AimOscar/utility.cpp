@@ -607,10 +607,10 @@ unsigned int aim_oft_checksum_chunk(const unsigned char *buffer, int bufferlen, 
 	return check << 16;
 }
 
-unsigned int aim_oft_checksum_file(char *filename) 
+unsigned int aim_oft_checksum_file(TCHAR *filename) 
 {
 	unsigned long checksum = 0xffff0000;
-	int fid = _open(filename, _O_RDONLY | _O_BINARY, _S_IREAD);
+	int fid = _topen(filename, _O_RDONLY | _O_BINARY, _S_IREAD);
 	if (fid >= 0)  
     {
         for(;;)

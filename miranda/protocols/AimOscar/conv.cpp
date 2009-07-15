@@ -781,6 +781,21 @@ void string_to_bytes(char* string, char* bytes)
 	}
 }
 
+bool is_unicode(const wchar_t* msg)
+{
+    bool res = false;
+    if (msg)
+    {
+   	    for (unsigned i=0; !res; ++i)
+	    {
+		    char c = msg[i];
+		    if (c == 0) break;
+		    res = c > 0x7f;
+	    }
+    }
+    return res;
+}
+
 bool is_utf(const char* msg)
 {
     bool res = false;
@@ -794,6 +809,62 @@ bool is_utf(const char* msg)
 	    }
     }
     return res;
+}
+
+char* get_fname(char* path)
+{
+    char* pszFile = strrchr(path, '\\');
+    if (pszFile) pszFile++; else path;
+
+    return pszFile;
+}
+
+aimString::aimString(char* str, bool utf)
+{
+    if (str == NULL)
+    {
+        szString = NULL;
+        size = 0;
+        unicode = false;
+    }
+    else
+    {
+        unicode = is_utf(str);
+        if (unicode)
+        {
+            wszString = utf ? mir_utf8decodeW(str) : mir_a2t(str);
+            wcs_htons(wszString);
+            size = wcslen(wszString) * sizeof(wchar_t);
+        }
+        else
+        {
+            szString = utf ? mir_utf8decodeA(str) : mir_strdup(str);
+            size = strlen(szString);
+        }
+    }
+}
+
+aimString::aimString(wchar_t* str)
+{
+    if (str == NULL)
+    {
+        szString = NULL;
+        size = 0;
+        unicode = false;
+    }
+    else
+    {
+        size = wcslen(str);
+        unicode = is_unicode(str);
+        if (unicode)
+        {
+            wszString = mir_wstrdup(str);
+            wcs_htons(wszString);
+            size *= sizeof(wchar_t);
+        }
+        else
+            szString = mir_u2a(str);
+    }
 }
 
 #ifdef _MSC_VER

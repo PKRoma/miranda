@@ -435,7 +435,7 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
                 char* buf = rtf_to_html(hwndDlg, IDC_PROFILE);
                 DBWriteContactSettingStringUtf(NULL, ppro->m_szModuleName, AIM_KEY_PR, buf);
                 if (ppro->state==1)
-                    ppro->aim_set_profile(ppro->hServerConn,ppro->seqno,buf);//also see set caps for profile setting
+                    ppro->aim_set_profile(ppro->hServerConn, ppro->seqno, buf);//also see set caps for profile setting
 
                 mir_free(buf);
                 EnableWindow(GetDlgItem(hwndDlg, IDC_SETPROFILE), FALSE);

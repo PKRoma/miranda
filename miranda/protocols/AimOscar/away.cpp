@@ -39,41 +39,30 @@ char**  CAimProto::getStatusMsgLoc( int status )
 }
 
 
-int CAimProto::aim_set_away(HANDLE hServerConn,unsigned short &seqno,const char *msg)//user info
+int CAimProto::aim_set_away(HANDLE hServerConn,unsigned short &seqno,const char *amsg)//user info
 {
 	unsigned short offset=0;
 	char* html_msg = NULL;
 	size_t msg_size = 0;
-	if (msg != NULL)
+	if (amsg != NULL)
 	{
 		setDword( AIM_KEY_LA, (DWORD)time(NULL));
-		html_msg = html_encode(msg);
+		html_msg = html_encode(amsg);
 		msg_size = strlen(html_msg);
 	}
 
-    const char *typ;
-    unsigned short typsz;
-    if (is_utf(msg))
-    {
-        typ = AIM_MSG_TYPE_UNICODE;
-        typsz = (unsigned short)(sizeof(AIM_MSG_TYPE_UNICODE)-1);
-        wchar_t* msgu = mir_utf8decodeW(html_msg);
-		mir_free(html_msg);
-        wcs_htons(msgu);
-        html_msg = (char*)msgu;
-        msg_size = wcslen(msgu) * sizeof(wchar_t);
-    }
-    else
-    {
-        typ=AIM_MSG_TYPE;
-        typsz=(unsigned short)(sizeof(AIM_MSG_TYPE)-1);
-    }
+    aimString str(html_msg, true);
+    const char *charset = str.isUnicode() ? AIM_MSG_TYPE_UNICODE : AIM_MSG_TYPE;
+    const unsigned short charset_len = (unsigned short)strlen(charset);
 
-	char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*2+typsz+msg_size);
+    const char* msg = str.getBuf();
+    const unsigned short msg_len = str.getSize();
+
+	char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*2+charset_len+msg_len);
 
     aim_writesnac(0x02,0x04,offset,buf);
-    aim_writetlv(0x03,typsz,typ,offset,buf);
-    aim_writetlv(0x04,(unsigned short)msg_size,html_msg,offset,buf);
+    aim_writetlv(0x03,charset_len,charset,offset,buf);
+    aim_writetlv(0x04,(unsigned short)msg_len,msg,offset,buf);
     
     mir_free(html_msg);
 

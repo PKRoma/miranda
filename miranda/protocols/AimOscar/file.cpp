@@ -55,9 +55,12 @@ struct oft2//oscar file transfer 2 class- See On_Sending_Files_via_OSCAR.pdf
 
 #pragma pack(pop)
 
-bool send_init_oft2(file_transfer *ft, char* buf, int buflen, bool uni)
+bool send_init_oft2(file_transfer *ft)
 {
-    size_t len = max(0x100, 0xc0 + buflen);
+    aimString astr(get_fname(ft->file), true);
+    TCHAR *name = mir_utf8decodeT(ft->file);
+
+    size_t len = max(0x100, 0xc0 + astr.getTermSize());
 
     oft2 *oft = (oft2*)alloca(len);
     memset(oft, 0, len);
@@ -72,7 +75,7 @@ bool send_init_oft2(file_transfer *ft, char* buf, int buflen, bool uni)
     oft->total_size       = _htonl(ft->total_size);
     oft->size             = _htonl(ft->total_size);
     oft->mod_time         = _htonl(ft->ctime);
-    oft->checksum         = _htonl(aim_oft_checksum_file(ft->file));
+    oft->checksum         = _htonl(aim_oft_checksum_file(name));
     oft->recv_RFchecksum  = 0x0000FFFF;
     oft->RFchecksum       = 0x0000FFFF;
     oft->recv_checksum    = 0x0000FFFF;
@@ -80,8 +83,10 @@ bool send_init_oft2(file_transfer *ft, char* buf, int buflen, bool uni)
     oft->flags            = 0x20;
     oft->list_name_offset = 0x1c;
     oft->list_size_offset = 0x11;
-    oft->encoding = uni ? 2 : 0;
-    memcpy(oft->filename, buf, buflen);
+    oft->encoding = _htons(astr.isUnicode() ? 2 : 0);
+    memcpy(oft->filename, astr.getBuf(), astr.getTermSize());
+
+    mir_free(name);
 
     return Netlib_Send(ft->hConn, (char*)oft, len, 0) > 0;
 }
@@ -94,22 +99,7 @@ bool CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETL
 
     unsigned __int64 file_start_point = 0;
 
-    char* pszFile = strrchr(ft->file, '\\');
-    if (pszFile) pszFile++; else pszFile = ft->file;
-
-    if (is_utf(pszFile))
-    {
-        wchar_t *fn = mir_utf8decodeW(pszFile);
-        const size_t len = (wcslen(fn) + 1) * sizeof(wchar_t);
-        wcs_htons(fn);
-        send_init_oft2(ft, (char*)fn, len, true);
-        mir_free(fn);
-    }
-    else
-    {
-        const size_t  len = strlen(pszFile) + 1;
-        send_init_oft2(ft, pszFile, len, false);
-    }
+    send_init_oft2(ft);
 
     LOG("Sent file information to buddy.");
     //start listen for packets stuff
@@ -163,16 +153,16 @@ bool CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETL
                 pfts.currentFileTime        = 0;
                 pfts.files                  = NULL;
                 pfts.hContact               = ft->hContact;
-                pfts.sending                = 1;
+                pfts.flags                  = PFTS_SENDING | PFTS_UNICODE;
                 pfts.totalBytes             = ft->total_size;
                 pfts.totalFiles             = 1;
                 pfts.totalProgress          = 0;
 
-                pfts.workingDir             = mir_strdup(ft->file);
-                
-                char* swd = strrchr(pfts.workingDir, '\\'); 
+                pfts.currentFile            = mir_utf8decodeT(get_fname(ft->file));
+                pfts.workingDir             = mir_utf8decodeT(ft->file);
+
+                TCHAR* swd = _tcsrchr(pfts.workingDir, '\\'); 
                 if (swd) *swd = '\0'; else pfts.workingDir[0] = 0;
-                pfts.currentFile = mir_utf8decodeA(swd ? swd+1 : ft->file);
 
                 sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&pfts);
 
@@ -231,8 +221,9 @@ bool CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NE
     PROTOFILETRANSFERSTATUS pfts;
     memset(&pfts, 0, sizeof(PROTOFILETRANSFERSTATUS));
     pfts.hContact   = ft->hContact;
+    pfts.flags      = PFTS_UNICODE;
     pfts.totalFiles = 1;
-    pfts.workingDir = mir_strdup(ft->file);
+    pfts.workingDir = mir_utf8decodeT(ft->file);
 
     //start listen for packets stuff
     for (;;)
@@ -282,28 +273,23 @@ bool CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NE
                     memcpy(buf, recv_ft->filename, buflen);
                     enc = _htons(recv_ft->encoding);
 
+                    TCHAR *name;
                     if (enc == 2)
                     {
-                        TCHAR *path = mir_a2t(pfts.workingDir);
                         wcs_htons((wchar_t*)buf);
-                        TCHAR *name = mir_u2t((wchar_t*)buf);
-                        TCHAR fname[256];
-                        mir_sntprintf(fname, SIZEOF(fname), _T("%s%s"), path, name);
-                        mir_free(name);
-                        mir_free(path);
-                        pfts.currentFile = mir_t2a(fname);
-                        ft->pfts = &pfts;
-//                        sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, ft, (LPARAM)&pfts);
-                        fd = _tfopen(fname, _T("wb"));
+                        name = mir_u2t((wchar_t*)buf);
                     }
                     else
-                    {
-                        char fname[256];
-                        mir_snprintf(fname, SIZEOF(fname), "%s%s", pfts.workingDir, buf);
-                        pfts.currentFile = mir_strdup(fname);
-//                        sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, ft, (LPARAM)&pfts);
-                        fd = fopen(fname, "wb");
-                    }
+                        name = mir_a2t(buf);
+
+                    TCHAR fname[256];
+                    mir_sntprintf(fname, SIZEOF(fname), _T("%s%s"), pfts.workingDir, name);
+                    mir_free(name);
+                    pfts.currentFile = mir_tstrdup(fname);
+                    ft->pfts = &pfts;
+//                  sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, ft, (LPARAM)&pfts);
+                    fd = _tfopen(fname, _T("wb"));
+
                     mir_free(buf);
                     accepted_file = fd != NULL;
                     if (!accepted_file)	break;

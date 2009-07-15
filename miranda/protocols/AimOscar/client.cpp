@@ -201,35 +201,22 @@ int CAimProto::aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
-int CAimProto::aim_set_profile(HANDLE hServerConn,unsigned short &seqno,char *msg)//user info
+int CAimProto::aim_set_profile(HANDLE hServerConn,unsigned short &seqno, char* amsg)//user info
 {
+    aimString str(amsg, true);
+    const char *charset = str.isUnicode() ? AIM_MSG_TYPE_UNICODE : AIM_MSG_TYPE;
+    const unsigned short charset_len = (unsigned short)strlen(charset);
+
+    const char* msg = str.getBuf();
+    const unsigned short msg_len = str.getSize();
+
+    char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*3+1+charset_len+msg_len);
     unsigned short offset=0;
-    size_t msg_size = msg ? strlen(msg) : 0;
-
-    const char *typ;
-    unsigned short typsz;
-    if (is_utf(msg))
-    {
-        typ = AIM_MSG_TYPE_UNICODE;
-        typsz = (unsigned short)(sizeof(AIM_MSG_TYPE_UNICODE)-1);
-        wchar_t* msgu = mir_utf8decodeW(msg);
-        wcs_htons(msgu);
-        msg = (char*)NEWWSTR_ALLOCA(msgu);
-        msg_size = wcslen(msgu) * sizeof(wchar_t);
-        mir_free(msgu);
-    }
-    else
-    {
-        typ=AIM_MSG_TYPE;
-        typsz=(unsigned short)(sizeof(AIM_MSG_TYPE)-1);
-    }
-
-    char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*3+1+sizeof(AIM_MSG_TYPE_UNICODE)+msg_size);
 
     aim_writesnac(0x02,0x04,offset,buf);
     aim_writetlvchar(0x0c,1,offset,buf);
-    aim_writetlv(0x01,typsz,typ,offset,buf);
-    aim_writetlv(0x02,(unsigned short)msg_size,msg,offset,buf);
+    aim_writetlv(0x01,charset_len,charset,offset,buf);
+    aim_writetlv(0x02,msg_len,msg,offset,buf);
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
@@ -339,9 +326,12 @@ int CAimProto::aim_chat_ready(HANDLE hServerConn,unsigned short &seqno)
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
-int CAimProto::aim_send_message(HANDLE hServerConn,unsigned short &seqno,const char* sn,char* msg,bool uni,bool auto_response)
+int CAimProto::aim_send_message(HANDLE hServerConn,unsigned short &seqno,const char* sn,char* amsg,bool auto_response)
 {	
-    unsigned short msg_len=(unsigned short)(uni ? wcslen((wchar_t*)msg)*sizeof(wchar_t) : strlen(msg));
+    aimString str(amsg, true);
+
+    const char* msg = str.getBuf();
+    const unsigned short msg_len = str.getSize();
 
     unsigned short tlv_offset=0;
     char* tlv_buf=(char*)alloca(5+msg_len+8);
@@ -349,10 +339,9 @@ int CAimProto::aim_send_message(HANDLE hServerConn,unsigned short &seqno,const c
     aim_writegeneric(5,"\x05\x01\x00\x01\x01",tlv_offset,tlv_buf);   // icbm im capabilities
     aim_writeshort(0x0101,tlv_offset,tlv_buf);                       // icbm im text tag
     aim_writeshort(msg_len+4,tlv_offset,tlv_buf);                    // icbm im text tag length
-    aim_writeshort(uni?2:0,tlv_offset,tlv_buf);                      // character set
+    aim_writeshort(str.isUnicode()?2:0,tlv_offset,tlv_buf);          // character set
     aim_writeshort(0,tlv_offset,tlv_buf);                            // language
 
-    if (uni) wcs_htons((wchar_t*)msg);
     aim_writegeneric(msg_len,msg,tlv_offset,tlv_buf);                // message text
     
     unsigned short offset=0;
@@ -470,10 +459,17 @@ int CAimProto::aim_send_file(HANDLE hServerConn, unsigned short &seqno, char* sn
                              bool force_proxy, unsigned short request_num, 
                              char* file_name, unsigned long total_bytes, char* descr)
 {	
-    unsigned short fnlen  = file_name ? (unsigned short)strlen(file_name) : 0;
-    unsigned short dsclen = descr ? (unsigned short)strlen(descr) : 0;
+    aimString dstr(descr, true);
 
-    char* msg_frag=(char*)alloca(TLV_HEADER_SIZE*15+100+AIM_CAPS_LENGTH+dsclen+fnlen);
+    const char* charset = dstr.isUnicode() ? "unicode-2-0" : "us-ascii";
+    const unsigned short charset_len = (unsigned short)strlen(charset);
+
+    const char* desc_msg = dstr.getBuf();
+    const unsigned short desc_len = dstr.getSize();
+
+    unsigned short fnlen  = file_name ? (unsigned short)strlen(file_name) : 0;
+
+    char* msg_frag=(char*)alloca(TLV_HEADER_SIZE*15+100+AIM_CAPS_LENGTH+desc_len+fnlen);
     unsigned short frag_offset=0;
     aim_writeshort(0,frag_offset,msg_frag);                         // request type
     aim_writegeneric(8,icbm_cookie,frag_offset,msg_frag);           // icbm cookie
@@ -485,8 +481,8 @@ int CAimProto::aim_send_file(HANDLE hServerConn, unsigned short &seqno, char* sn
     if (descr)
     {
         aim_writetlv(0x0e,2,"en",frag_offset,msg_frag);             // language used by the data
-        aim_writetlv(0x0d,8,"us-ascii",frag_offset,msg_frag);       // charset used by the data
-        aim_writetlv(0x0c,dsclen,descr,frag_offset,msg_frag);       // invitaion text
+        aim_writetlv(0x0d,charset_len,charset,frag_offset,msg_frag);// charset used by the data
+        aim_writetlv(0x0c,desc_len,desc_msg,frag_offset,msg_frag);  // invitaion text
     }
 
     aim_writetlvlong(0x02,ip,frag_offset,msg_frag);                 // ip
@@ -740,23 +736,15 @@ int CAimProto::aim_chat_join_room(HANDLE hServerConn,unsigned short &seqno, char
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
-int CAimProto::aim_chat_send_message(HANDLE hServerConn,unsigned short &seqno, char* msg, bool uni)
+int CAimProto::aim_chat_send_message(HANDLE hServerConn,unsigned short &seqno, TCHAR *amsg)
 {
-    unsigned short msg_len;
-    const char* charset;
+    aimString str(amsg);
 
-    if (uni)
-    {
-        msg_len = (unsigned short)(wcslen((wchar_t*)msg) * sizeof(wchar_t));
-        wcs_htons((wchar_t*)msg);
-        charset = "unicode-2-0";
-    }
-    else
-    {
-        msg_len = (unsigned short)strlen(msg);
-        charset = "us-ascii";
-    }
-    unsigned short chrset_len = (unsigned short)strlen(charset);
+    const char* charset = str.isUnicode() ? "unicode-2-0" : "us-ascii";
+    const unsigned short chrset_len = (unsigned short)strlen(charset);
+
+    const char* msg = str.getBuf();
+    const unsigned short msg_len = str.getSize();
 
     unsigned short tlv_offset=0;
     char* tlv_buf=(char*)alloca(TLV_HEADER_SIZE*4+chrset_len+msg_len+20);

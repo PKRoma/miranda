@@ -136,17 +136,7 @@ int CAimProto::OnGCEvent(WPARAM wParam,LPARAM lParam)
         case GC_USER_MESSAGE:
 			if (gch->ptszText && _tcslen(gch->ptszText)) 
 			{
-                char* msg = mir_utf8encodeT(gch->ptszText);
-                if (is_utf(msg))
-                {
-                    wchar_t* msgw = mir_utf8decodeW(msg);
-                    aim_chat_send_message(item->hconn, item->seqno, (char*)msgw, true);
-                    mir_free(msgw);
-                }
-                else
-                    aim_chat_send_message(item->hconn, item->seqno, msg, false);
-
-                mir_free(msg);
+                aim_chat_send_message(item->hconn, item->seqno, gch->ptszText);
 			}
 			break;
 		case GC_USER_CHANMGR: 

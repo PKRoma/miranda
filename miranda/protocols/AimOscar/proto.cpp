@@ -234,13 +234,13 @@ HANDLE __cdecl CAimProto::ChangeInfo(int iInfoType, void* pInfoData)
 ////////////////////////////////////////////////////////////////////////////////////////
 // FileAllow - starts a file transfer
 
-HANDLE __cdecl CAimProto::FileAllow(HANDLE hContact, HANDLE hTransfer, const char* szPath)
+HANDLE __cdecl CAimProto::FileAllow(HANDLE hContact, HANDLE hTransfer, const PROTOCHAR* szPath)
 {
     file_transfer *ft = (file_transfer*)hTransfer;
 	if (ft) 
     {
         mir_free(ft->file);
-        ft->file = mir_strdup(szPath);
+        ft->file = mir_utf8encodeT(szPath);
 		ForkThread(&CAimProto::accept_file_thread, ft);
 		return ft;
 	}
@@ -269,7 +269,7 @@ int __cdecl CAimProto::FileCancel(HANDLE hContact, HANDLE hTransfer)
 ////////////////////////////////////////////////////////////////////////////////////////
 // FileDeny - denies a file transfer
 
-int __cdecl CAimProto::FileDeny(HANDLE hContact, HANDLE hTransfer, const char* /*szReason*/)
+int __cdecl CAimProto::FileDeny(HANDLE hContact, HANDLE hTransfer, const PROTOCHAR* /*szReason*/)
 {
     file_transfer *ft = (file_transfer*)hTransfer;
     if (!ft_list.find_by_ft(ft)) return 0;
@@ -284,7 +284,7 @@ int __cdecl CAimProto::FileDeny(HANDLE hContact, HANDLE hTransfer, const char* /
 ////////////////////////////////////////////////////////////////////////////////////////
 // FileResume - processes file renaming etc
 
-int __cdecl CAimProto::FileResume(HANDLE hTransfer, int* action, const char** szFilename)
+int __cdecl CAimProto::FileResume(HANDLE hTransfer, int* action, const PROTOCHAR** szFilename)
 {
     file_transfer *ft = (file_transfer*)hTransfer;
     if (!ft_list.find_by_ft(ft)) return 0;
@@ -294,13 +294,13 @@ int __cdecl CAimProto::FileResume(HANDLE hTransfer, int* action, const char** sz
     case FILERESUME_RESUME:
         {
 	        struct _stat statbuf;
-            _stat(ft->pfts->currentFile, &statbuf);
+            _tstat(ft->pfts->currentFile, &statbuf);
             ft->start_offset = statbuf.st_size;
         }
 
     case FILERESUME_RENAME:
         mir_free(ft->file);
-        ft->file = mir_utf8encode(*szFilename);
+        ft->file = mir_utf8encodeT(*szFilename);
 
     case FILERESUME_OVERWRITE:
         break;
@@ -440,7 +440,7 @@ int __cdecl CAimProto::RecvContacts(HANDLE hContact, PROTORECVEVENT*)
 ////////////////////////////////////////////////////////////////////////////////////////
 // RecvFile
 
-int __cdecl CAimProto::RecvFile(HANDLE hContact, PROTORECVFILE* evt)
+int __cdecl CAimProto::RecvFile(HANDLE hContact, PROTOFILEEVENT* evt)
 {
 	CCSDATA ccs = { hContact, PSR_FILE, 0, (LPARAM)evt };
 	return CallService(MS_PROTO_RECVFILE, 0, (LPARAM)&ccs);
@@ -487,7 +487,7 @@ int __cdecl CAimProto::SendContacts(HANDLE hContact, int flags, int nContacts, H
 ////////////////////////////////////////////////////////////////////////////////////////
 // SendFile - sends a file
 
-HANDLE __cdecl CAimProto::SendFile(HANDLE hContact, const char* szDescription, char** ppszFiles)
+HANDLE __cdecl CAimProto::SendFile(HANDLE hContact, const PROTOCHAR* szDescription, PROTOCHAR** ppszFiles)
 {
 	if (state != 1)
 		return 0;
@@ -514,15 +514,15 @@ HANDLE __cdecl CAimProto::SendFile(HANDLE hContact, const char* szDescription, c
             ft->sn = mir_strdup(dbv.pszVal);
             CallService(MS_UTILS_GETRANDOM, 8, (LPARAM)ft->icbm_cookie);
  
-            ft->file = mir_utf8encode(ppszFiles[0]);
+            ft->file = mir_utf8encodeT(ppszFiles[0]);
 
 		    struct _stat statbuf;
-		    _stat(ft->file, &statbuf);
+		    _tstat(ppszFiles[0], &statbuf);
             ft->total_size = statbuf.st_size;
             ft->ctime = statbuf.st_mtime;
 
             ft->sending = true;
-            ft->message = szDescription[0] ? mir_strdup(szDescription) : NULL;
+            ft->message = szDescription[0] ? mir_utf8encodeT(szDescription) : NULL;
 			ft->me_force_proxy = getByte(AIM_KEY_FP, 0) != 0;
             ft->requester = true;
 
@@ -535,11 +535,8 @@ HANDLE __cdecl CAimProto::SendFile(HANDLE hContact, const char* szDescription, c
 			}
 			else 
             {
-		        char* pszFile = strrchr(ppszFiles[0], '\\');
-		        if (pszFile) pszFile++; else ppszFiles[0];
-
                 aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, detected_ip, local_port, 
-                    0, ++ft->req_num, pszFile, ft->total_size, ft->message);
+                    0, ++ft->req_num, get_fname(ft->file), ft->total_size, ft->message);
             }
 
             DBFreeVariant(&dbv);
@@ -556,26 +553,28 @@ HANDLE __cdecl CAimProto::SendFile(HANDLE hContact, const char* szDescription, c
 
 int __cdecl CAimProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 {
-	char *msg = (char*)pszSrc;
-	if (msg == NULL) return 0;
+	if (pszSrc == NULL) return 0;
 
 	DBVARIANT dbv;
 	if (getString(hContact, AIM_KEY_SN, &dbv))  return 0;
 
-	bool fl = false;
+    char* msg;
 	if (flags & PREF_UNICODE) 
 	{
-		char* p = strchr(msg, '\0');
-		if (p != msg) 
+		const char* p = strchr(pszSrc, '\0');
+		if (p != pszSrc) 
 		{
 			while (*(++p) == '\0');
-			msg = mir_utf8encodeW((wchar_t*)p);
-			fl = true;
 		}
+		msg = mir_utf8encodeW((wchar_t*)p);
 	}
+	else if (flags & PREF_UTF)
+        msg = mir_strdup(pszSrc);
+    else
+		msg = mir_utf8encode(pszSrc);
 
 	char* smsg = html_encode(msg);
-	if (fl) mir_free(msg);
+    mir_free(msg);
 
 	if (getByte(AIM_KEY_FO, 0)) 
 	{
@@ -586,17 +585,7 @@ int __cdecl CAimProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 		msg = smsg;
 
 	// Figure out is this message is actually ANSI
-	fl = (flags & (PREF_UNICODE | PREF_UTF)) == 0 || !is_utf(msg);
-
-	int res;
-	if (fl)
-		res = aim_send_message(hServerConn, seqno, dbv.pszVal, msg, false, false);
-	else
-	{
-		wchar_t *wmsg = mir_utf8decodeW(msg);
-		res = aim_send_message(hServerConn, seqno, dbv.pszVal, (char*)wmsg, true, false);
-		mir_free(wmsg);
-	}
+	int res = aim_send_message(hServerConn, seqno, dbv.pszVal, msg, false);
 
 	mir_free(msg);
 	DBFreeVariant(&dbv);

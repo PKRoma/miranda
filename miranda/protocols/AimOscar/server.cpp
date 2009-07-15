@@ -705,7 +705,7 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
             DBVARIANT dbv;
             if (!DBGetContactSettingStringUtf(NULL, m_szModuleName, AIM_KEY_PR, &dbv))
             {
-                aim_set_profile(hServerConn,seqno,dbv.pszVal);
+                aim_set_profile(hServerConn, seqno, dbv.pszVal);
                 DBFreeVariant(&dbv);
             }
 
@@ -902,6 +902,9 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
                                     descr_included = false;
                             }
                         }
+                        else if(tlv.cmp(0x000d))
+                        {
+                        }
                         i += TLV_HEADER_SIZE + tlv.len();
                     }
                 }
@@ -995,14 +998,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
                     dbei.pBlob = (PBYTE)buf;
                     CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei);
 
-                    if (!is_utf(s_msg))
-                        aim_send_message(hServerConn, seqno, sn, s_msg, false, true);
-                    else
-                    {
-                        wchar_t *wmsg = mir_utf8decodeW(s_msg);
-                        aim_send_message(hServerConn, seqno, sn, (char*)wmsg, true, true);
-                        mir_free(wmsg);
-                    }
+                    aim_send_message(hServerConn, seqno, sn, s_msg, true);
                     mir_free(s_msg);
                 }
                 setDword(hContact, AIM_KEY_LM, (DWORD)time(NULL));
@@ -1041,7 +1037,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
             strcpy(szBlob + sizeof(DWORD), filename);
             strcpy(szBlob + sizeof(DWORD) + lstrlenA(filename) + 1, msg_buf);
 
-            pre.flags = 0;
+            pre.flags = PREF_UTF;
             pre.timestamp =(DWORD)time(NULL);
             pre.szMessage = szBlob;
             pre.lParam = (LPARAM)ft;
