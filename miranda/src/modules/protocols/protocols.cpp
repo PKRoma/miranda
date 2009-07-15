@@ -148,6 +148,7 @@ static INT_PTR Proto_RecvFile(WPARAM,LPARAM lParam)
 	dbei.szModule = ( char* )CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)ccs->hContact, 0);
 	dbei.timestamp = pre->timestamp;
 	dbei.flags = ( pre->flags & PREF_CREATEREAD ) ? DBEF_READ : 0;
+	dbei.flags |= ( pre->flags & PREF_UTF ) ? DBEF_UTF : 0;
 	dbei.eventType = EVENTTYPE_FILE;
 	dbei.cbBlob = (DWORD)(sizeof( DWORD ) + strlen( szFile ) + strlen( szDescr ) + 2);
 	dbei.pBlob = ( PBYTE )pre->szMessage;
