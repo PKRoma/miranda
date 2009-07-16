@@ -80,7 +80,7 @@ struct DEFAULT_PROTO_INTERFACE : public PROTO_INTERFACE
 	}
 
 	int __cdecl FileResume( HANDLE hTransfer, int* action, const PROTOCHAR** szFilename )
-	{	PROTOFILERESUME pfr = { *action, (char*)*szFilename };
+	{	PROTOFILERESUME pfr = { *action, *szFilename };
 		int res = ( int )MyCallProtoService( m_szModuleName, PS_FILERESUME, ( WPARAM )hTransfer, ( LPARAM )&pfr );
 		*action = pfr.action; *szFilename = (PROTOCHAR*)pfr.szFilename;
 		return res;

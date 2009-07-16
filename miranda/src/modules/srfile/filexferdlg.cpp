@@ -435,7 +435,7 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			break;
 		case M_FILEEXISTSDLGREPLY:
 		{	PROTOFILERESUME *pfr=(PROTOFILERESUME*)lParam;
-			char *szOriginalFilename=(char*)wParam;
+			TCHAR *szOriginalFilename=(TCHAR*)wParam;
 			char *szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)dat->hContact,0);
 
 			EnableWindow(hwndDlg,TRUE);
@@ -454,15 +454,16 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					break;
 				case FILERESUME_RENAMEALL:
 					pfr->action=FILERESUME_RENAME;
-					{	char *pszExtension,*pszFilename;
+					{	TCHAR *pszExtension,*pszFilename;
 						int i;
-						if((pszFilename=strrchr(szOriginalFilename,'\\'))==NULL) pszFilename=szOriginalFilename;
-						if((pszExtension=strrchr(pszFilename+1,'.'))==NULL) pszExtension=pszFilename+lstrlenA(pszFilename);
-						if(pfr->szFilename) mir_free((char*)pfr->szFilename);
-						pfr->szFilename=(char*)mir_alloc((pszExtension-szOriginalFilename)+21+lstrlenA(pszExtension));
+						if((pszFilename = _tcsrchr(szOriginalFilename,'\\'))==NULL) pszFilename=szOriginalFilename;
+						if((pszExtension = _tcsrchr(pszFilename+1,'.'))==NULL) pszExtension=pszFilename+lstrlen(pszFilename);
+						if(pfr->szFilename) mir_free((TCHAR*)pfr->szFilename);
+						pfr->szFilename = (TCHAR*)mir_alloc(sizeof(TCHAR)*((pszExtension-szOriginalFilename)+21+lstrlen(pszExtension)));
 						for(i=1;;i++) {
-							sprintf((char*)pfr->szFilename,"%.*s (%u)%s",pszExtension-szOriginalFilename,szOriginalFilename,i,pszExtension);
-							if(_access(pfr->szFilename,0)!=0) break;
+							_stprintf((TCHAR*)pfr->szFilename,_T("%.*s (%u)%s"),pszExtension-szOriginalFilename,szOriginalFilename,i,pszExtension);
+							if(_taccess(pfr->szFilename,0)!=0)
+								break;
 						}
 					}
 					break;

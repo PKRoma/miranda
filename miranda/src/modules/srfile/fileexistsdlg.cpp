@@ -309,7 +309,7 @@ INT_PTR CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			if(!GetSaveFileName(&ofn))
 				break;
 
-			pfr.szFilename = mir_t2a(str);
+			pfr.szFilename = mir_tstrdup(str);
 			pfr.action = FILERESUME_RENAME;
 			break;
 		}

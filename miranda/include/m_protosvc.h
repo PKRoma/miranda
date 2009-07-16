@@ -430,7 +430,7 @@ typedef struct {
 #define FILERESUME_SKIP       4
 typedef struct {
 	int action;    //a FILERESUME_ flag
-	const char *szFilename;  //full path. Only valid if action==FILERESUME_RENAME
+	const FNAMECHAR *szFilename;  //full path. Only valid if action==FILERESUME_RENAME
 } PROTOFILERESUME;
 #define PS_FILERESUME     "/FileResume"
 

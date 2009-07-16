@@ -601,7 +601,7 @@ static int hookModernOpt_Initialize(WPARAM wParam, LPARAM lParam)
 	static int iBoldControls[] =
 	{
 		IDC_TXT_TITLE1, IDC_TXT_TITLE2, IDC_TXT_TITLE3, IDC_TXT_TITLE4,
-		IDC_TXT_TITLE5, IDC_TXT_TITLE6, IDC_TXT_TITLE7, IDC_TXT_TITLE8,
+//		IDC_TXT_TITLE5, IDC_TXT_TITLE6, IDC_TXT_TITLE7, IDC_TXT_TITLE8,
 		MODERNOPT_CTRL_LAST
 	};
 
@@ -611,7 +611,7 @@ static int hookModernOpt_Initialize(WPARAM wParam, LPARAM lParam)
 	obj.dwFlags = MODEROPT_FLG_TCHAR;
 
 	obj.hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
-	obj.hInstance = hInst;
+	obj.	hInstance = hInst;
 
 	obj.iSection = MODERNOPT_PAGE_HOME;
 	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
