@@ -113,7 +113,7 @@ typedef struct
 {
 	PROTO_INTERFACE proto;
 	LPTSTR name;
-	pthread_mutex_t ft_mutex, sess_mutex, img_mutex;
+	pthread_mutex_t ft_mutex, sess_mutex, img_mutex, modemsg_mutex;
 	list_t watches, transfers, requests, chats, imagedlgs;
 	int gc_enabled, gc_id, list_remove, unicode_core;
 	uin_t next_uin;
@@ -361,7 +361,6 @@ void gg_refreshblockedicon();
 void gg_notifyuser(GGPROTO *gg, HANDLE hContact, int refresh);
 void gg_setalloffline(GGPROTO *gg);
 void gg_disconnect(GGPROTO *gg);
-int gg_refreshstatus(GGPROTO *gg, int status);
 HANDLE gg_getcontact(GGPROTO *gg, uin_t uin, int create, int inlist, char *nick);
 void gg_registerservices(GGPROTO *gg);
 void gg_threadwait(GGPROTO *gg, pthread_t *thread);
@@ -372,7 +371,7 @@ int gg_isonline(GGPROTO *gg);
 int gg_netlog(const GGPROTO *gg, const char *fmt, ...);
 #endif
 
-void gg_broadcastnewstatus(GGPROTO *gg, int s);
+void gg_broadcastnewstatus(GGPROTO *gg, int newStatus);
 int gg_userdeleted(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 void gg_notifyall(GGPROTO *gg);

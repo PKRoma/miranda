@@ -636,10 +636,11 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					{
 						unsigned char format[20];
 						char *msg = "\0"; // empty message
+						GGPROTO *gg = dat->gg;
 
-						if (dat->lpImages && gg_isonline(dat->gg))
+						if (dat->lpImages && gg_isonline(gg))
 						{
-							uin_t uin = (uin_t)DBGetContactSettingDword(dat->hContact, dat->gg->proto.m_szModuleName, GG_KEY_UIN, 0);
+							uin_t uin = (uin_t)DBGetContactSettingDword(dat->hContact, gg->proto.m_szModuleName, GG_KEY_UIN, 0);
 							struct gg_msg_richtext_format *r = NULL;
 							struct gg_msg_richtext_image *p = NULL;
 							LPVOID pvData = NULL;
@@ -660,7 +661,9 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							len = sizeof(struct gg_msg_richtext_format) + sizeof(struct gg_msg_richtext_image);
 							((struct gg_msg_richtext*)format)->length = len;
 
-							gg_send_message_richtext(dat->gg->sess, GG_CLASS_CHAT, (uin_t)uin,(unsigned char*)msg,format,len+sizeof(struct gg_msg_richtext));
+							pthread_mutex_lock(&gg->sess_mutex);
+							gg_send_message_richtext(gg->sess, GG_CLASS_CHAT, (uin_t)uin,(unsigned char*)msg,format,len+sizeof(struct gg_msg_richtext));
+							pthread_mutex_unlock(&gg->sess_mutex);
 
 							// Protect dat from releasing
 							SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)0);
@@ -1098,7 +1101,9 @@ BOOL gg_img_sendonrequest(GGPROTO *gg, struct gg_event* e)
 
 	if(!gg || !dat || !gg_isonline(gg)) return FALSE;
 
+	pthread_mutex_lock(&gg->sess_mutex);
 	gg_image_reply(gg->sess, e->event.image_request.sender, dat->lpImages->lpszFileName, dat->lpImages->lpData, dat->lpImages->nSize);
+	pthread_mutex_unlock(&gg->sess_mutex);
 
 	gg_img_remove(dat);
 

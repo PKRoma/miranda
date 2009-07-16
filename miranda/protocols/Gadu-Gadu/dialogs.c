@@ -782,6 +782,7 @@ static INT_PTR CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
 				// Save user data
 				char text[256];
 				gg_pubdir50_t req;
+				GGPROTO *gg = dat->gg;
 
 				EnableWindow(GetDlgItem(hwndDlg, IDC_SAVE), FALSE);
 
@@ -823,7 +824,9 @@ static INT_PTR CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 				// Run update
 				gg_pubdir50_seq_set(req, GG_SEQ_CHINFO);
-				gg_pubdir50(dat->gg->sess, req);
+				pthread_mutex_lock(&gg->sess_mutex);
+				gg_pubdir50(gg->sess, req);
+				pthread_mutex_unlock(&gg->sess_mutex);
 				dat->updating = TRUE;
 
 				gg_pubdir50_free(req);

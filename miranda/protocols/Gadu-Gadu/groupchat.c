@@ -207,7 +207,9 @@ int gg_gc_event(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 #endif
 		CallService(MS_GC_EVENT, 0, (LPARAM)&gcevent);
 		if(gcevent.pszNick == dbv.pszVal) DBFreeVariant(&dbv);
+		pthread_mutex_lock(&gg->sess_mutex);
 		gg_send_message_confer(gg->sess, GG_CLASS_CHAT, chat->recipients_count, chat->recipients, gch->pszText);
+		pthread_mutex_unlock(&gg->sess_mutex);
 		return 1;
 	}
 

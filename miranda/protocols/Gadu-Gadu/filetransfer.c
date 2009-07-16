@@ -712,12 +712,15 @@ HANDLE gg_sendfile(PROTO_INTERFACE *proto, HANDLE hContact, const char* szDescri
 	if ((ver & 0x00ffffff) >= 0x29) {
 		struct gg_dcc7 *dcc7;
 
+		pthread_mutex_lock(&gg->sess_mutex);
 		if (!(dcc7 = gg_dcc7_send_file(gg->sess, uin, files[0], NULL, NULL))) {
+			pthread_mutex_unlock(&gg->sess_mutex);
 #ifdef DEBUGMODE
 			gg_netlog(gg, "gg_sendfile(): Failed to send file \"%s\".", files[0]);
 #endif
 			return ftfail(gg, hContact);
 		}
+		pthread_mutex_unlock(&gg->sess_mutex);
 
 #ifdef DEBUGMODE
 		gg_netlog(gg, "gg_sendfile(): Sending file \"%s\" to %d.", files[0], uin);
@@ -763,7 +766,9 @@ HANDLE gg_sendfile(PROTO_INTERFACE *proto, HANDLE hContact, const char* szDescri
 #ifdef DEBUGMODE
 		gg_netlog(gg, "gg_sendfile(): Requesting user to connect us and scheduling gg_dcc struct for a later use.");
 #endif
+		pthread_mutex_lock(&gg->sess_mutex);
 		gg_dcc_request(gg->sess, uin);
+		pthread_mutex_unlock(&gg->sess_mutex);
 		list_add(&gg->requests, dcc, 0);
 	}
 

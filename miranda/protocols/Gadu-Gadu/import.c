@@ -339,9 +339,11 @@ static INT_PTR gg_import_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		return 0;
 
 	// Making contacts list
+	pthread_mutex_lock(&gg->sess_mutex);
 	if (gg_userlist_request(gg->sess, GG_USERLIST_GET, NULL) == -1)
 	{
 		char error[128];
+		pthread_mutex_unlock(&gg->sess_mutex);
 		mir_snprintf(error, sizeof(error), Translate("List cannot be imported because of error:\n\t%s"), strerror(errno));
 		MessageBox(
 			NULL,
@@ -353,6 +355,7 @@ static INT_PTR gg_import_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		gg_netlog(gg, "gg_import_serverthread(): Cannot import list because of \"%s\".", strerror(errno));
 #endif
 	}
+	pthread_mutex_unlock(&gg->sess_mutex);
 	free(password);
 
 	return 0;
@@ -367,7 +370,7 @@ static INT_PTR gg_remove_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	DBVARIANT dbv;
 
 	// Check if connected
-	if (!gg->sess)
+	if (!gg_isonline(gg))
 	{
 		MessageBox(NULL,
 			Translate("You have to be connected before you can import/export contacts from/to server."),
@@ -389,9 +392,11 @@ static INT_PTR gg_remove_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		return 0;
 
 	// Making contacts list
+	pthread_mutex_lock(&gg->sess_mutex);
 	if (gg_userlist_request(gg->sess, GG_USERLIST_PUT, NULL) == -1)
 	{
 		char error[128];
+		pthread_mutex_unlock(&gg->sess_mutex);
 		mir_snprintf(error, sizeof(error), Translate("List cannot be removeed because of error:\n\t%s"), strerror(errno));
 		MessageBox(
 			NULL,
@@ -404,6 +409,7 @@ static INT_PTR gg_remove_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		gg_netlog(gg, "gg_remove_serverthread(): Cannot remove list because of \"%s\".", strerror(errno));
 #endif
 	}
+	pthread_mutex_unlock(&gg->sess_mutex);
 
 	// Set list removal
 	gg->list_remove = TRUE;
@@ -577,7 +583,7 @@ static INT_PTR gg_export_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	DBVARIANT dbv;
 
 	// Check if connected
-	if (!gg->sess)
+	if (!gg_isonline(gg))
 	{
 		MessageBox(NULL,
 			Translate("You have to be connected before you can import/export contacts from/to server."),
@@ -605,9 +611,11 @@ static INT_PTR gg_export_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		gg_netlog(gg, "gg_userlist_request(%s).", contacts);
 #endif
 
+	pthread_mutex_lock(&gg->sess_mutex);
 	if (gg_userlist_request(gg->sess, GG_USERLIST_PUT, contacts) == -1)
 	{
 		char error[128];
+		pthread_mutex_unlock(&gg->sess_mutex);
 		mir_snprintf(error, sizeof(error), Translate("List cannot be exported because of error:\n\t%s"), strerror(errno));
 		MessageBox(
 			NULL,
@@ -619,6 +627,7 @@ static INT_PTR gg_export_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		gg_netlog(gg, "gg_export_serverthread(): Cannot export list because of \"%s\".", strerror(errno));
 #endif
 	}
+	pthread_mutex_unlock(&gg->sess_mutex);
 
 	// Set list removal
 	gg->list_remove = FALSE;

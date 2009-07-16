@@ -342,6 +342,7 @@ static GGPROTO *gg_proto_init(const char* pszProtoName, const TCHAR* tszUserName
 	pthread_mutex_init(&gg->sess_mutex, NULL);
 	pthread_mutex_init(&gg->ft_mutex, NULL);
 	pthread_mutex_init(&gg->img_mutex, NULL);
+	pthread_mutex_init(&gg->modemsg_mutex, NULL);
 
 	// Init instance names
 	gg->proto.m_szModuleName = mir_strdup(pszProtoName);
@@ -392,6 +393,7 @@ static int gg_proto_uninit(PROTO_INTERFACE *proto)
 	pthread_mutex_destroy(&gg->sess_mutex);
 	pthread_mutex_destroy(&gg->ft_mutex);
 	pthread_mutex_destroy(&gg->img_mutex);
+	pthread_mutex_destroy(&gg->modemsg_mutex);
 
 	// Free status messages
 	if(gg->modemsg.online)    free(gg->modemsg.online);
