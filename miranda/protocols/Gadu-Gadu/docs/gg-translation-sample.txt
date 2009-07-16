@@ -135,6 +135,8 @@ Nie mo¿na nawi¹zaæ bezpiecznego po³¹czenia.
 Serwer roz³¹czy³ siê prosz¹c o zmianê Twojego adresu e-mail.
 [Too many login attempts with invalid password.]
 Za du¿o prób po³¹czeñ z podaniem b³êdnego has³a.
+[Gadu-Gadu servers are now down. Try again later.]
+Serwery Gadu-Gadu s¹ teraz wy³¹czone. Spróbuj póŸniej.
 [Your Gadu-Gadu number and password combination was rejected by the Gadu-Gadu server. Please check login details at M->Options->Network->Gadu-Gadu and try again.]
 Twój numer i has³o zosta³y odrzucone przez serwer Gadu-Gadu. SprawdŸ dane logowania M->Opcje->Sieæ->Gadu-Gadu i spróbuj ponownie.
 [Connecting to Gadu-Gadu hub failed.]

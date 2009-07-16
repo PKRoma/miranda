@@ -1091,6 +1091,9 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 
 			if (e->type == GG_EVENT_CONN_FAILED) {
 				errno = EACCES;
+#ifdef GG_CONFIG_MIRANDA
+				gg_failno = e->event.failure;
+#endif
 				gg_debug(GG_DEBUG_MISC, "// gg_login() could not login\n");
 				gg_event_free(e);
 				goto fail;

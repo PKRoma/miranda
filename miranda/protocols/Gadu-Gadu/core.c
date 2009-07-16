@@ -228,6 +228,7 @@ void *__stdcall gg_mainthread(void *empty)
 		{ GG_FAILURE_TLS,			"Cannot establish secure connection." },
 		{ GG_FAILURE_NEED_EMAIL,	"Server disconnected asking you for changing your e-mail." },
 		{ GG_FAILURE_INTRUDER,		"Too many login attempts with invalid password." },
+		{ GG_FAILURE_UNAVAILABLE,	"Gadu-Gadu servers are now down. Try again later." },
 		{ 0,						"Unknown" }
 	};
 	GGPROTO *gg = empty;
@@ -432,6 +433,9 @@ retry:
 		{
 			char error[128], *perror = NULL;
 			int i;
+
+			gg_broadcastnewstatus(gg, ID_STATUS_OFFLINE);
+
 			// Lookup for error desciption
 			if(errno == EACCES)
 			{
@@ -468,6 +472,7 @@ retry:
 				|| (hostnum < hostcount - 1)))
 		{
 			if(hostnum < hostcount - 1) hostnum ++;
+			gg_broadcastnewstatus(gg, ID_STATUS_CONNECTING);
 			goto retry;
 		}
 		// We cannot do more about this
