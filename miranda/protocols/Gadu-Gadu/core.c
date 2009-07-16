@@ -796,7 +796,7 @@ retry:
 #ifdef DEBUGMODE
 							gg_netlog(gg, "gg_mainthread(%x): Conference message to room %s & id %s.", gg, chat, id);
 #endif
-							CallService(MS_GC_EVENT, 0, (LPARAM)&gcevent);
+							CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gcevent);
 						}
 					}
 					// Check if not empty message ( who needs it? )
@@ -1087,8 +1087,8 @@ int gg_userdeleted(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 			free(chat->recipients);
 			list_remove(&gg->chats, chat, 1);
 			// Terminate chat window / shouldn't cascade entry is deleted
-			CallService(MS_GC_EVENT, SESSION_OFFLINE, (LPARAM)&gcevent);
-			CallService(MS_GC_EVENT, SESSION_TERMINATE, (LPARAM)&gcevent);
+			CallServiceSync(MS_GC_EVENT, SESSION_OFFLINE, (LPARAM)&gcevent);
+			CallServiceSync(MS_GC_EVENT, SESSION_TERMINATE, (LPARAM)&gcevent);
 		}
 
 		DBFreeVariant(&dbv);
@@ -1149,7 +1149,7 @@ int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 #endif
 				// Mark cascading
 				/* FIXME */ cascade = 1;
-				CallService(MS_GC_EVENT, 0, (LPARAM)&gcevent);
+				CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gcevent);
 				/* FIXME */ cascade = 0;
 			}
 			DBFreeVariant(&dbv);

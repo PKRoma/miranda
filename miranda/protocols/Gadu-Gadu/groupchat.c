@@ -49,7 +49,7 @@ int gg_gc_init(GGPROTO *gg)
 #ifdef DEBUGMODE
 		gg_netlog(gg, "gg_gc_init(): Trying to register groupchat plugin...");
 #endif
-		CallService(MS_GC_REGISTER, 0, (LPARAM)&gcr);
+		CallServiceSync(MS_GC_REGISTER, 0, (LPARAM)&gcr);
 		gg->hookGCUserEvent = HookProtoEvent(ME_GC_EVENT, gg_gc_event, gg);
 		gg->gc_enabled = TRUE;
 		// create & hook event
@@ -205,7 +205,7 @@ int gg_gc_event(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 #ifdef DEBUGMODE
 		gg_netlog(gg, "gg_gc_event(): Sending conference message to room %s, \"%s\".", gch->pDest->pszID, gch->pszText);
 #endif
-		CallService(MS_GC_EVENT, 0, (LPARAM)&gcevent);
+		CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gcevent);
 		if(gcevent.pszNick == dbv.pszVal) DBFreeVariant(&dbv);
 		pthread_mutex_lock(&gg->sess_mutex);
 		gg_send_message_confer(gg->sess, GG_CLASS_CHAT, chat->recipients_count, chat->recipients, gch->pszText);
@@ -355,7 +355,7 @@ char *gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients
 	*name = '#'; strcpy(name + 1, gcwindow.pszName);
 	gcwindow.pszName = name;
 	// Create new room
-	if(CallService(MS_GC_NEWSESSION, 0, (LPARAM) &gcwindow))
+	if(CallServiceSync(MS_GC_NEWSESSION, 0, (LPARAM) &gcwindow))
 	{
 #ifdef DEBUGMODE
 		gg_netlog(gg, "gg_gc_getchat(): Cannot create new chat window %s.", chat->id);
@@ -373,7 +373,7 @@ char *gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients
 
 	// Add normal group
 	gcevent.pszStatus = Translate("Participants");
-	CallService(MS_GC_EVENT, 0, (LPARAM)&gcevent);
+	CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gcevent);
 	gcdest.iType = GC_EVENT_JOIN;
 
 	// Add myself
@@ -385,7 +385,7 @@ char *gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients
 		else
 			gcevent.pszNick = Translate("Me");
 		gcevent.bIsMe = 1;
-		CallService(MS_GC_EVENT, 0, (LPARAM)&gcevent);
+		CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gcevent);
 #ifdef DEBUGMODE
 		gg_netlog(gg, "gg_gc_getchat(): Myself %s: %s (%s) to the list...", gcevent.pszUID, gcevent.pszNick, gcevent.pszStatus);
 #endif
@@ -416,11 +416,11 @@ char *gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients
 #ifdef DEBUGMODE
 		gg_netlog(gg, "gg_gc_getchat(): Added %s: %s (%s) to the list...", gcevent.pszUID, gcevent.pszNick, gcevent.pszStatus);
 #endif
-		CallService(MS_GC_EVENT, 0, (LPARAM)&gcevent);
+		CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gcevent);
 	}
 	gcdest.iType = GC_EVENT_CONTROL;
-	CallService(MS_GC_EVENT, SESSION_INITDONE, (LPARAM)&gcevent);
-	CallService(MS_GC_EVENT, SESSION_ONLINE, (LPARAM)&gcevent);
+	CallServiceSync(MS_GC_EVENT, SESSION_INITDONE, (LPARAM)&gcevent);
+	CallServiceSync(MS_GC_EVENT, SESSION_ONLINE, (LPARAM)&gcevent);
 
 #ifdef DEBUGMODE
 	gg_netlog(gg, "gg_gc_getchat(): Returning new chat window %s, count %d.", chat->id, chat->recipients_count);
@@ -700,7 +700,7 @@ int gg_gc_changenick(GGPROTO *gg, HANDLE hContact, char *pszNick)
 #ifdef DEBUGMODE
 					gg_netlog(gg, "gg_gc_changenick(): Found room %s with uin %d, sending nick change %s.", chat->id, uin, id);
 #endif
-					CallService(MS_GC_EVENT, 0, (LPARAM)&gce);
+					CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gce);
 
 					break;
 				}
