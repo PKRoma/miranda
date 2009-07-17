@@ -30,7 +30,7 @@
 //
 // DESCRIPTION:
 //
-//  Describe me here please...
+//  OSCAR File Transfers implementation
 //
 // -----------------------------------------------------------------------------
 
@@ -306,17 +306,16 @@ void CIcqProto::SafeReleaseFileTransfer(void **ft)
 	LeaveCriticalSection(&oftMutex);
 }
 
+
 // Calculate oft checksum of buffer
 // --------------------------------
 // Information was gathered from Gaim's sources, thanks
 //
 DWORD oft_calc_checksum(int offset, const BYTE *buffer, int len, DWORD dwChecksum)
 {
-	DWORD checksum;
-	int i;
-
-	checksum = (dwChecksum >> 16) & 0xffff;
-	for (i = 0; i < len; i++)
+	DWORD checksum = (dwChecksum >> 16) & 0xffff;
+	
+	for (int i = 0; i < len; i++)
 	{
 		WORD val = buffer[i];
 		DWORD oldchecksum = checksum;
@@ -334,6 +333,7 @@ DWORD oft_calc_checksum(int offset, const BYTE *buffer, int len, DWORD dwChecksu
 	return checksum << 16;
 }
 
+
 DWORD oft_calc_file_checksum(int hFile, __int64 maxSize)
 {
 	BYTE buf[OFT_BUFFER_SIZE];
@@ -342,7 +342,7 @@ DWORD oft_calc_file_checksum(int hFile, __int64 maxSize)
 	DWORD dwCheck = 0xFFFF0000;
 
 	_lseek(hFile, 0, SEEK_SET);
-	bytesRead = _read(hFile, buf, sizeof(buf));
+	bytesRead = _read(hFile, buf, (maxSize < sizeof(buf)) ? maxSize : sizeof(buf));
 	if (bytesRead == -1)
 		return dwCheck;
 

@@ -1010,8 +1010,8 @@ void CIcqProto::LoadServerIDs()
 	DBCONTACTENUMSETTINGS dbces;
 	int nStart = nServerIDListCount;
 
-	char szModule[MAX_PATH+9];
-	null_snprintf(szModule, sizeof(szModule), "%sSrvGroups", m_szModuleName);
+	char szModule[MAX_PATH];
+	null_snprintf(szModule, SIZEOF(szModule), "%sSrvGroups", m_szModuleName);
 
 	GroupReserveIdsEnumParam param = { this, szModule };
 	dbces.pfnEnumProc = &GroupReserveIdsEnumProc;
@@ -1375,10 +1375,10 @@ int CIcqProto::IsServerGroupsDefined()
 
 	if (getSettingDword(NULL, "Version", 0) < 0x00030608)
 	{ // group cache & linking data too old, flush, reload from server
-		char szModule[MAX_PATH+9];
+		char szModule[MAX_PATH];
 
-		strcpy(szModule, m_szModuleName);
-		strcat(szModule, "Groups"); // flush obsolete linking data
+    // flush obsolete linking data
+		null_snprintf(szModule, SIZEOF(szModule), "%sGroups", m_szModuleName);
 		CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)szModule);
 
 		iRes = 0; // no groups defined, or older version
@@ -1392,10 +1392,9 @@ int CIcqProto::IsServerGroupsDefined()
 
 void CIcqProto::FlushSrvGroupsCache()
 {
-	char szModule[MAX_PATH+9];
+	char szModule[MAX_PATH];
 
-	strcpy(szModule, m_szModuleName);
-	strcat(szModule, "SrvGroups");
+	null_snprintf(szModule, SIZEOF(szModule), "%sSrvGroups", m_szModuleName);
 	CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)szModule);
 }
 
@@ -1486,11 +1485,10 @@ static int GroupLinksEnumProc(const char *szSetting,LPARAM lParam)
 void CIcqProto::removeGroupPathLinks(WORD wGroupID)
 { // remove miranda grouppath links targeting to this groupid
 	DBCONTACTENUMSETTINGS dbces;
-	char szModule[MAX_PATH+6];
+	char szModule[MAX_PATH];
 	char* pars[3];
 
-	strcpy(szModule, m_szModuleName);
-	strcat(szModule, "Groups");
+	null_snprintf(szModule, SIZEOF(szModule), "%sGroups", m_szModuleName);
 
 	pars[0] = NULL;
 	pars[1] = (char*)wGroupID;
@@ -1519,7 +1517,7 @@ void CIcqProto::removeGroupPathLinks(WORD wGroupID)
 
 char *CIcqProto::getServListGroupName(WORD wGroupID)
 {
-	char szModule[MAX_PATH+9];
+	char szModule[MAX_PATH];
 	char szGroup[16];
 
 	if (!wGroupID)
@@ -1528,8 +1526,7 @@ char *CIcqProto::getServListGroupName(WORD wGroupID)
 		return NULL;
 	}
 
-	strcpy(szModule, m_szModuleName);
-	strcat(szModule, "SrvGroups");
+	null_snprintf(szModule, SIZEOF(szModule), "%sSrvGroups", m_szModuleName);
 	_itoa(wGroupID, szGroup, 0x10);
 
 	if (!CheckServerID(wGroupID, 0))
@@ -1545,7 +1542,7 @@ char *CIcqProto::getServListGroupName(WORD wGroupID)
 
 void CIcqProto::setServListGroupName(WORD wGroupID, const char *szGroupName)
 {
-	char szModule[MAX_PATH+9];
+	char szModule[MAX_PATH];
 	char szGroup[16];
 
 	if (!wGroupID)
@@ -1554,8 +1551,7 @@ void CIcqProto::setServListGroupName(WORD wGroupID, const char *szGroupName)
 		return;
 	}
 
-	strcpy(szModule, m_szModuleName);
-	strcat(szModule, "SrvGroups");
+	null_snprintf(szModule, SIZEOF(szModule), "%sSrvGroups", m_szModuleName);
 	_itoa(wGroupID, szGroup, 0x10);
 
 	if (szGroupName)
@@ -1571,11 +1567,10 @@ void CIcqProto::setServListGroupName(WORD wGroupID, const char *szGroupName)
 
 WORD CIcqProto::getServListGroupLinkID(const char *szPath)
 {
-	char szModule[MAX_PATH+6];
+	char szModule[MAX_PATH];
 	WORD wGroupId;
 
-	strcpy(szModule, m_szModuleName);
-	strcat(szModule, "Groups");
+	null_snprintf(szModule, SIZEOF(szModule), "%sGroups", m_szModuleName);
 
 	wGroupId = DBGetContactSettingWord(NULL, szModule, szPath, 0);
 
@@ -1592,10 +1587,9 @@ WORD CIcqProto::getServListGroupLinkID(const char *szPath)
 
 void CIcqProto::setServListGroupLinkID(const char *szPath, WORD wGroupID)
 {
-	char szModule[MAX_PATH+6];
+	char szModule[MAX_PATH];
 
-	strcpy(szModule, m_szModuleName);
-	strcat(szModule, "Groups");
+	null_snprintf(szModule, SIZEOF(szModule), "%sGroups", m_szModuleName);
 
 	if (wGroupID)
 		DBWriteContactSettingWord(NULL, szModule, szPath, wGroupID);
@@ -1837,7 +1831,6 @@ char *CIcqProto::getServListGroupCListPath(WORD wGroupId)
 }
 
 
-
 static int SrvGroupNamesEnumProc(const char *szSetting, LPARAM lParam)
 { // check server-group cache item
   const char **params = (const char**)lParam;
@@ -1847,14 +1840,14 @@ static int SrvGroupNamesEnumProc(const char *szSetting, LPARAM lParam)
   if (!strcmpnull(szGroupName, params[2]))
     params[1] = szSetting; // do not need the real value, just arbitrary non-NULL
 
-  SAFE_FREE((void**)&szGroupName);
+  SAFE_FREE(&szGroupName);
   return 0;
 }
 
 char* CIcqProto::getServListUniqueGroupName(const char *szGroupName, int bAlloced)
 { // enum ICQSrvGroups and create unique name if neccessary
   DBCONTACTENUMSETTINGS dbces;
-  char szModule[MAX_PATH+9];
+  char szModule[MAX_PATH];
   char *pars[4];
   int uniqueID = 1;
   char *szGroupNameBase = (char*)szGroupName;
@@ -1864,8 +1857,7 @@ char* CIcqProto::getServListUniqueGroupName(const char *szGroupName, int bAlloce
     szGroupNameBase = null_strdup(szGroupName);
   null_strcut(szGroupNameBase, m_wServerListRecordNameMaxLength);
 
-  strcpy(szModule, m_szModuleName);
-  strcat(szModule, "SrvGroups");
+	null_snprintf(szModule, SIZEOF(szModule), "%sSrvGroups", m_szModuleName);
 
   do {
     pars[0] = (char*)this;
@@ -1898,12 +1890,12 @@ char* CIcqProto::getServListUniqueGroupName(const char *szGroupName, int bAlloce
 
   if (szNewGroupName)
   {
-    SAFE_FREE((void**)&szGroupNameBase);
+    SAFE_FREE(&szGroupNameBase);
     return szNewGroupName;
   }
   if (szGroupName != szGroupNameBase)
   {
-    SAFE_FREE((void**)&szGroupNameBase);
+    SAFE_FREE(&szGroupNameBase);
     return (char*)szGroupName;
   }
   else

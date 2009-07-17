@@ -56,7 +56,7 @@ HANDLE hExtraXStatus = NULL;
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"IcqOscarJ Protocol",
-	PLUGIN_MAKE_VERSION(0,5,0,8),
+	PLUGIN_MAKE_VERSION(0,5,0,9),
 	"Support for ICQ network, enhanced.",
 	"Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
 	"jokusoftware@miranda-im.org",

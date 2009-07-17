@@ -224,9 +224,8 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	nlu.pfnHttpGatewayUnwrapRecv = icq_httpGatewayUnwrapRecv;
 	m_hServerNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
-  char szP2PModuleName[MAX_PATH + 3];
-	strcpy(szP2PModuleName, m_szModuleName);
-	strcat(szP2PModuleName, "P2P");
+  char szP2PModuleName[MAX_PATH];
+  null_snprintf(szP2PModuleName, SIZEOF(szP2PModuleName), "%sP2P", m_szModuleName);
 	null_snprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s client-to-client connections"), m_tszUserName);
 	nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_TCHAR;
 	nlu.ptszDescriptiveName = szBuffer;
@@ -353,17 +352,14 @@ static HANDLE CListAddContactMenuItem(const char *szName, const IcqIconHandle hI
 
 int CIcqProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
-	char pszP2PName[MAX_PATH+3];
-	char pszGroupsName[MAX_PATH+10];
-	char pszSrvGroupsName[MAX_PATH+10];
+	char pszP2PName[MAX_PATH];
+	char pszGroupsName[MAX_PATH];
+	char pszSrvGroupsName[MAX_PATH];
 	char* modules[5] = {0,0,0,0,0};
 
-	strcpy(pszP2PName, m_szModuleName);
-	strcat(pszP2PName, "P2P");
-	strcpy(pszGroupsName, m_szModuleName);
-	strcat(pszGroupsName, "Groups");
-	strcpy(pszSrvGroupsName, m_szModuleName);
-	strcat(pszSrvGroupsName, "SrvGroups");
+	null_snprintf(pszP2PName, SIZEOF(pszP2PName), "%sP2P", m_szModuleName);
+	null_snprintf(pszGroupsName, SIZEOF(pszGroupsName), "%sGroups", m_szModuleName);
+	null_snprintf(pszSrvGroupsName, SIZEOF(pszSrvGroupsName), "%sSrvGroups", m_szModuleName);
 	modules[0] = m_szModuleName;
 	modules[1] = pszP2PName;
 	modules[2] = pszGroupsName;
@@ -2382,15 +2378,34 @@ int __cdecl CIcqProto::UserIsTyping( HANDLE hContact, int type )
 	return 1;
 }
 
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // OnEvent - maintain protocol events
 
-int __cdecl CIcqProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam )
+int __cdecl CIcqProto::OnEvent(PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam)
 {
 	switch( eventType ) {
-		case EV_PROTO_ONLOAD:    return OnModulesLoaded( 0, 0 );
-		case EV_PROTO_ONEXIT:    return OnPreShutdown( 0, 0 );
-		case EV_PROTO_ONOPTIONS: return OnOptionsInit( wParam, lParam );
+		case EV_PROTO_ONLOAD:    
+			return OnModulesLoaded(0, 0);
+
+		case EV_PROTO_ONEXIT:    
+			return OnPreShutdown(0, 0);
+
+		case EV_PROTO_ONOPTIONS: 
+			return OnOptionsInit(wParam, lParam);
+
+		case EV_PROTO_ONERASE:
+		{
+			char szDbSetting[MAX_PATH];
+
+			null_snprintf(szDbSetting, sizeof(szDbSetting), "%sP2P", m_szModuleName);
+			CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)szDbSetting);
+			null_snprintf(szDbSetting, sizeof(szDbSetting), "%sSrvGroups", m_szModuleName);
+			CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)szDbSetting);
+			null_snprintf(szDbSetting, sizeof(szDbSetting), "%sGroups", m_szModuleName);
+			CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)szDbSetting);
+			break;
+		}
 	}
 	return 1;
 }
