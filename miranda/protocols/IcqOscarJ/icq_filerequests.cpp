@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -181,15 +181,17 @@ void CIcqProto::handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCoo
 	ft->bDC = bDC;
 	ft->bEmptyDesc = bEmptyDesc;
 
-	TCHAR *tszFileName = mir_a2t( pszFileName ), *tszDescr = mir_a2t( pszDescription );
+  // Send chain event
+  char *szBlob = (char*)_alloca(sizeof(DWORD) + strlennull(pszFileName) + strlennull(pszDescription) + 2);
+  *(PDWORD)szBlob = 0;
+  strcpy(szBlob + sizeof(DWORD), pszFileName);
+  strcpy(szBlob + sizeof(DWORD) + strlennull(pszFileName) + 1, pszDescription);
 
-	PROTORECVFILET pre;
-	pre.flags = PREF_TCHAR;
-	pre.timestamp = time(NULL);
-	pre.fileCount = 1;
-	pre.ptszFiles = &tszFileName;
-	pre.tszDescription = tszDescr;
-	pre.lParam = (LPARAM)ft;
+  PROTORECVEVENT pre;
+  pre.flags = 0;
+  pre.timestamp = time(NULL);
+  pre.szMessage = szBlob;
+  pre.lParam = (LPARAM)ft;
 
 	CCSDATA ccs;
 	ccs.szProtoService = PSR_FILE;
@@ -197,10 +199,8 @@ void CIcqProto::handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCoo
 	ccs.wParam = 0;
 	ccs.lParam = (LPARAM)&pre;
 	CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
-
-	mir_free( tszFileName );
-	mir_free( tszDescr );
 }
+
 
 void CIcqProto::handleDirectCancel(directconnect *dc, PBYTE buf, WORD wLen, WORD wCommand, DWORD dwCookie, WORD wMessageType, WORD wStatus, WORD wFlags, char* pszText)
 {
