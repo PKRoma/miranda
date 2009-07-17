@@ -20,6 +20,18 @@ Contents
 
 1. Changes in this version
 --------------------------
+* New in 0.8.2
+Enhancements:
+ - Improved account deletion support
+ - MSN: Non IM contacts removed from the contact list and database
+ - Yahoo: Removed "Show Profile" for non Yahoo contacts
+ 
+Bugfixes:
+ - Fix for ssl errors when client tries to send on closed connection
+ - AIM: File transfer fixes
+ - IRC: Own actions were not always shown
+ - Jabber: Random disconnect issue caused by timeouts
+
 * New in 0.8.1
 Enhancements:
  - Improve account renaming inside of the account manager
