@@ -30,7 +30,7 @@
 //
 // DESCRIPTION:
 //
-//  Describe me here please...
+//  OSCAR File Transfers implementation
 //
 // -----------------------------------------------------------------------------
 
@@ -57,7 +57,6 @@ extern void NormalizeBackslash(char* path);
 
 char *FindFilePathContainer(const char **files, int iFile, char *szContainer)
 {
-	int i;
 	const char *szThisFile = files[iFile];
 	char *szFileName = (char*)ExtractFileName(szThisFile);
 
@@ -65,7 +64,7 @@ char *FindFilePathContainer(const char **files, int iFile, char *szContainer)
 
 	if (szThisFile != szFileName)
 	{ // find an earlier subdirectory to be used as a container
-		for (i = iFile - 1; i >= 0; i--)
+		for (int i = iFile - 1; i >= 0; i--)
 		{
 			int len = strlennull(files[i]);
 
@@ -116,6 +115,7 @@ oscar_filetransfer* CIcqProto::CreateOscarTransfer()
 	return ft;
 }
 
+
 filetransfer *CIcqProto::CreateIcqFileTransfer()
 {
 	filetransfer *ft = (filetransfer*)SAFE_MALLOC(sizeof(filetransfer));
@@ -135,17 +135,17 @@ filetransfer *CIcqProto::CreateIcqFileTransfer()
 	return ft;
 }
 
+
 int CIcqProto::getFileTransferIndex(void *ft)
 {
-	int i;
-
-	for (i = 0; i < fileTransferCount; i++)
+	for (int i = 0; i < fileTransferCount; i++)
 	{
 		if (fileTransferList[i] == ft)
 			return i;
 	}
 	return -1;
 }
+
 
 void CIcqProto::ReleaseFileTransfer(void *ft)
 {
@@ -159,6 +159,7 @@ void CIcqProto::ReleaseFileTransfer(void *ft)
 	}
 }
 
+
 int CIcqProto::IsValidFileTransfer(void *ft)
 {
 	int res = 0;
@@ -171,6 +172,7 @@ int CIcqProto::IsValidFileTransfer(void *ft)
 
 	return res;
 }
+
 
 int CIcqProto::IsValidOscarTransfer(void *ft)
 {
@@ -186,13 +188,12 @@ int CIcqProto::IsValidOscarTransfer(void *ft)
 	return res;
 }
 
+
 oscar_filetransfer* CIcqProto::FindOscarTransfer(HANDLE hContact, DWORD dwID1, DWORD dwID2)
 {
-	int i;
-
 	EnterCriticalSection(&oftMutex);
 
-	for (i = 0; i < fileTransferCount; i++)
+	for (int i = 0; i < fileTransferCount; i++)
 	{
 		if (fileTransferList[i]->ft_magic == FT_MAGIC_OSCAR)
 		{
@@ -211,6 +212,7 @@ oscar_filetransfer* CIcqProto::FindOscarTransfer(HANDLE hContact, DWORD dwID1, D
 
 	return NULL;
 }
+
 
 // Release file transfer structure
 void CIcqProto::SafeReleaseFileTransfer(void **ft)
@@ -237,11 +239,11 @@ void CIcqProto::SafeReleaseFileTransfer(void **ft)
 			SAFE_FREE(&ift->szSavePath);
 			SAFE_FREE(&ift->szThisFile);
 			SAFE_FREE(&ift->szThisSubdir);
-			if (ift->files)
+			if (ift->pszFiles)
 			{
 				for (int i = 0; i < (int)ift->dwFileCount; i++)
-					SAFE_FREE((void**)&ift->files[i]);
-				SAFE_FREE((void**)&ift->files);
+					SAFE_FREE(&ift->pszFiles[i]);
+				SAFE_FREE((void**)&ift->pszFiles);
 			}
 			// Invalidate transfer
 			ReleaseFileTransfer(ift);
@@ -275,11 +277,11 @@ void CIcqProto::SafeReleaseFileTransfer(void **ft)
 					SAFE_FREE(&oft->files[i].szFile);
 				SAFE_FREE((void**)&oft->files);
 			}
-			if (oft->files_ansi)
+			if (oft->files_list)
 			{
-				for (int i = 0; i < oft->wFilesCount; i++)
-					SAFE_FREE((void**)&oft->files_ansi[i]);
-				SAFE_FREE((void**)&oft->files_ansi);
+/*				for (int i = 0; i < oft->wFilesCount; i++)
+					SAFE_FREE(&oft->files_list[i]);*/
+				SAFE_FREE((void**)&oft->files_list);
 			}
 			if (oft->file_containers)
 			{
@@ -306,17 +308,16 @@ void CIcqProto::SafeReleaseFileTransfer(void **ft)
 	LeaveCriticalSection(&oftMutex);
 }
 
+
 // Calculate oft checksum of buffer
 // --------------------------------
 // Information was gathered from Gaim's sources, thanks
 //
 DWORD oft_calc_checksum(int offset, const BYTE *buffer, int len, DWORD dwChecksum)
 {
-	DWORD checksum;
-	int i;
+	DWORD checksum = (dwChecksum >> 16) & 0xffff;
 
-	checksum = (dwChecksum >> 16) & 0xffff;
-	for (i = 0; i < len; i++)
+	for (int i = 0; i < len; i++)
 	{
 		WORD val = buffer[i];
 		DWORD oldchecksum = checksum;
@@ -334,6 +335,7 @@ DWORD oft_calc_checksum(int offset, const BYTE *buffer, int len, DWORD dwChecksu
 	return checksum << 16;
 }
 
+
 DWORD oft_calc_file_checksum(int hFile, __int64 maxSize)
 {
 	BYTE buf[OFT_BUFFER_SIZE];
@@ -342,7 +344,7 @@ DWORD oft_calc_file_checksum(int hFile, __int64 maxSize)
 	DWORD dwCheck = 0xFFFF0000;
 
 	_lseek(hFile, 0, SEEK_SET);
-	bytesRead = _read(hFile, buf, sizeof(buf));
+  bytesRead = _read(hFile, buf, (maxSize < sizeof(buf)) ? maxSize : sizeof(buf));
 	if (bytesRead == -1)
 		return dwCheck;
 
@@ -508,7 +510,6 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 						pszDescription = ICQTranslateUtf(LPGEN("No description given"));
 					}
 				}
-				TCHAR *tszFileName, *tszDescr = mir_a2t( pszDescription );
 				{ // parse File Transfer Info block
 					oscar_tlv* tlv = chain->getTLV(0x2711, 1);
 
@@ -559,7 +560,11 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 					}
 					if (ft->wFilesCount == 1)
 					{  // Filename - use for DB event
-						tszFileName = mir_utf8decodeT( pszFileName );
+            char *szFileName = (char*)_alloca(strlennull(pszFileName) + 1);
+
+            strcpy(szFileName, pszFileName);
+            SAFE_FREE(&pszFileName);
+            pszFileName = szFileName;
 					}
 					else
 					{  // Save Directory name for future use
@@ -567,8 +572,8 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 						// for multi-file transfer we do not display "folder" name, but create only a simple notice
 						pszFileName = (char*)_alloca(64);
 
-						null_snprintf(pszFileName, 64, ICQTranslate("%d Files"), ft->wFilesCount);
-						tszFileName = mir_a2t(pszFileName);
+            char tmp[64];
+						null_snprintf(pszFileName, 64, ICQTranslateUtfStatic(LPGEN("%d Files"), tmp, SIZEOF(tmp)), ft->wFilesCount);
 					}
 				}
 				// Total Size TLV (ICQ 6 and AIM 6)
@@ -582,7 +587,6 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 						unpackQWord(&tBuf, &ft->qwTotalSize);
 					}
 				}
-				
 				int bAdded;
 				HANDLE hContact = HContactFromUID(dwUin, szUID, &bAdded);
 
@@ -590,12 +594,16 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 				ft->szDescription = pszDescription;
 				ft->fileId = -1;
 
-				PROTORECVFILET pre;
-				pre.flags = PREF_TCHAR;
+        // Send chain event
+				char *szBlob = (char*)_alloca(sizeof(DWORD) + strlennull(pszFileName) + strlennull(pszDescription) + 2);
+				*(PDWORD)szBlob = 0;
+				strcpy(szBlob + sizeof(DWORD), pszFileName);
+				strcpy(szBlob + sizeof(DWORD) + strlennull(pszFileName) + 1, pszDescription);
+
+				PROTORECVEVENT pre;
+				pre.flags = PREF_UTF;
 				pre.timestamp = time(NULL);
-				pre.fileCount = 1;
-				pre.ptszFiles = &tszFileName;
-				pre.tszDescription = tszDescr;
+				pre.szMessage = szBlob;
 				pre.lParam = (LPARAM)ft;
 
 				CCSDATA ccs;
@@ -604,9 +612,6 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 				ccs.wParam = 0;
 				ccs.lParam = (LPARAM)&pre;
 				CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
-
-				mir_free( tszFileName );
-				mir_free( tszDescr );
 			}
 			else if (wAckType == 2)
 			{ // First attempt failed, reverse requested
@@ -743,6 +748,7 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 	}
 }
 
+
 void CIcqProto::handleRecvServResponseOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *szUID, void* ft)
 {
 	WORD wDataLen;
@@ -812,6 +818,7 @@ void CIcqProto::handleRecvServResponseOFT(BYTE *buf, WORD wLen, DWORD dwUin, cha
 	}
 }
 
+
 // This function is called from the Netlib when someone is connecting to our oscar_listener
 static void oft_newConnectionReceived(HANDLE hNewConnection, DWORD dwRemoteIP, void *pExtra)
 {
@@ -827,6 +834,7 @@ static void oft_newConnectionReceived(HANDLE hNewConnection, DWORD dwRemoteIP, v
 	// Start a new thread for the incomming connection
 	listener->ppro->ForkThread(( IcqThreadFunc )&CIcqProto::oft_connectionThread, otsi );
 }
+
 
 static char *oftGetFileContainer(oscar_filetransfer* oft, const char** files, int iFile)
 {
@@ -844,15 +852,16 @@ static char *oftGetFileContainer(oscar_filetransfer* oft, const char** files, in
 			return oft->file_containers[i];
 		}
 
-		// create new container
-		i = oft->containerCount++;
-		oft->file_containers = (char**)SAFE_REALLOC(oft->file_containers, (sizeof(char*) * oft->containerCount));
-		oft->file_containers[i] = szPathUtf;
+	// create new container
+	i = oft->containerCount++;
+	oft->file_containers = (char**)SAFE_REALLOC(oft->file_containers, (sizeof(char*) * oft->containerCount));
+	oft->file_containers[i] = szPathUtf;
 
-		return oft->file_containers[i];
+	return oft->file_containers[i];
 }
 
-HANDLE CIcqProto::oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, TCHAR** files, const TCHAR* pszDesc)
+
+HANDLE CIcqProto::oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, const TCHAR** files, const TCHAR* pszDesc)
 {
 	oscar_filetransfer *ft;
 	int i, filesCount;
@@ -868,7 +877,7 @@ HANDLE CIcqProto::oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, TCH
 
 	for (filesCount = 0; files[filesCount]; filesCount++);
 	ft->files = (oft_file_record *)SAFE_MALLOC(sizeof(oft_file_record) * filesCount);
-	ft->files_ansi = ( TCHAR** )SAFE_MALLOC(sizeof(TCHAR *) * filesCount);
+	ft->files_list = (char**)SAFE_MALLOC(sizeof(TCHAR *) * filesCount);
 	ft->qwTotalSize = 0;
 	// Prepare files arrays
 	for (i = 0; i < filesCount; i++)
@@ -879,9 +888,8 @@ HANDLE CIcqProto::oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, TCH
 		{
 			if (!(statbuf.st_mode&_S_IFDIR))
 			{ // take only files
-				ft->files[ft->wFilesCount].szFile = FileNameToUtf(files[i]);
-				ft->files[ft->wFilesCount].szContainer = oftGetFileContainer(ft, (LPCSTR*)files, i);
-				ft->files_ansi[ft->wFilesCount] = ( files[i] ) ? _tcsdup( files[i] ) : NULL;
+				ft->files[ft->wFilesCount].szFile = ft->files_list[ft->wFilesCount] = FileNameToUtf(files[i]);
+				ft->files[ft->wFilesCount].szContainer = oftGetFileContainer(ft, (LPCSTR*)ft->files_list, ft->wFilesCount);
 
 				ft->wFilesCount++;
 				ft->qwTotalSize += statbuf.st_size;
@@ -998,20 +1006,20 @@ HANDLE CIcqProto::oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, TCH
 	return ft; // Success
 }
 
-HANDLE CIcqProto::oftFileAllow(HANDLE hContact, HANDLE hTransfer, const TCHAR* szPath)
+
+HANDLE CIcqProto::oftFileAllow(HANDLE hContact, HANDLE hTransfer, const TCHAR *szPath)
 {
-	oscar_filetransfer* ft = (oscar_filetransfer*)hTransfer;
+	oscar_filetransfer *ft = (oscar_filetransfer*)hTransfer;
 	DWORD dwUin;
 	uid_str szUid;
 
 	if (getContactUid(hContact, &dwUin, &szUid))
 		return 0; // Invalid contact
 
-#ifdef _UNICODE
-	ft->szSavePath = make_utf8_string(szPath);
-#else
-	ft->szSavePath = ansi_to_utf8(szPath);
-#endif
+  if (!IsValidOscarTransfer(ft))
+    return 0; // Invalid transfer
+
+	ft->szSavePath = tchar_to_utf8(szPath);
 	
 	if (ft->szThisPath)
 	{ // Append Directory name to the save path, when transfering a directory
@@ -1031,16 +1039,20 @@ HANDLE CIcqProto::oftFileAllow(HANDLE hContact, HANDLE hTransfer, const TCHAR* s
 	return hTransfer; // Success
 }
 
-DWORD CIcqProto::oftFileDeny(HANDLE hContact, HANDLE hTransfer, const TCHAR* reazon)
+
+DWORD CIcqProto::oftFileDeny(HANDLE hContact, HANDLE hTransfer, const TCHAR *szReason)
 {
-	oscar_filetransfer* ft = (oscar_filetransfer*)hTransfer;
+	oscar_filetransfer *ft = (oscar_filetransfer*)hTransfer;
 	DWORD dwUin;
 	uid_str szUid;
 
+	if (getContactUid(hContact, &dwUin, &szUid))
+		return 1; // Invalid contact
+
 	if (IsValidOscarTransfer(ft))
 	{
-		if (getContactUid(hContact, &dwUin, &szUid))
-			return 1; // Invalid contact
+		if (ft->hContact != hContact)
+			return 1; // Bad contact or hTransfer
 
 #ifdef _DEBUG
 		NetLog_Direct("OFT: Request denied.");
@@ -1056,19 +1068,20 @@ DWORD CIcqProto::oftFileDeny(HANDLE hContact, HANDLE hTransfer, const TCHAR* rea
 	return 1; // Invalid transfer
 }
 
+
 DWORD CIcqProto::oftFileCancel(HANDLE hContact, HANDLE hTransfer)
 {
 	oscar_filetransfer* ft = (oscar_filetransfer*)hTransfer;
 	DWORD dwUin;
 	uid_str szUid;
 
+	if (getContactUid(hContact, &dwUin, &szUid))
+		return 1; // Invalid contact
+
 	if (IsValidOscarTransfer(ft))
 	{
 		if (ft->hContact != hContact)
 			return 1; // Bad contact or hTransfer
-
-		if (getContactUid(hContact, &dwUin, &szUid))
-			return 1; // Invalid contact
 
 #ifdef _DEBUG
 		NetLog_Direct("OFT: Transfer cancelled.");
@@ -1086,15 +1099,15 @@ DWORD CIcqProto::oftFileCancel(HANDLE hContact, HANDLE hTransfer)
 	return 1; // Invalid transfer
 }
 
+
 void CIcqProto::oftFileResume(oscar_filetransfer *ft, int action, const TCHAR *szFilename)
 {
-	oscar_connection *oc;
 	int openFlags;
 
 	if (ft->connection == NULL)
 		return;
 
-	oc = (oscar_connection*)ft->connection;
+	oscar_connection *oc = (oscar_connection*)ft->connection;
 
 #ifdef _DEBUG
 	NetLog_Direct("OFT: Resume Transfer, Action: %d, FileName: '%s'", action, szFilename);
@@ -1192,27 +1205,27 @@ void CIcqProto::oftFileResume(oscar_filetransfer *ft, int action, const TCHAR *s
 }
 
 
-
 static void oft_buildProtoFileTransferStatus(oscar_filetransfer* ft, PROTOFILETRANSFERSTATUS* pfts)
 {
 	ZeroMemory(pfts, sizeof(PROTOFILETRANSFERSTATUS));
 	pfts->cbSize = sizeof(PROTOFILETRANSFERSTATUS);
 	pfts->hContact = ft->hContact;
-	pfts->flags = PFTS_TCHAR + ((ft->sending) ? PFTS_SENDING : PFTS_RECEIVING);
+	pfts->flags = PFTS_UTF + ((ft->sending) ? PFTS_SENDING : PFTS_RECEIVING);
 	if (ft->sending)
-		pfts->files = ft->files_ansi;
+		pfts->pszFiles = ft->files_list;
 	else
-		pfts->files = NULL;  /* FIXME */
+		pfts->pszFiles = NULL;  /* FIXME */
 	pfts->totalFiles = ft->wFilesCount;
 	pfts->currentFileNumber = ft->iCurrentFile;
-	pfts->totalBytes = (DWORD)ft->qwTotalSize; // FIXME
-	pfts->totalProgress = (DWORD)ft->qwBytesDone; // FIXME
-	//  utf8_decode(ft->szPath, &pfts->workingDir); // not used by the UI anyway
-	pfts->currentFile = mir_utf8decodeT(ft->szThisFile); 
-	pfts->currentFileSize = (DWORD)ft->qwThisFileSize; // FIXME
+	pfts->totalBytes = ft->qwTotalSize;
+	pfts->totalProgress = ft->qwBytesDone;
+	pfts->szWorkingDir = ft->szThisPath;
+	pfts->szCurrentFile = ft->szThisFile; 
+	pfts->currentFileSize = ft->qwThisFileSize;
 	pfts->currentFileTime = ft->dwThisFileDate;
-	pfts->currentFileProgress = (DWORD)ft->qwFileBytesDone; // FIXME
+	pfts->currentFileProgress = ft->qwFileBytesDone;
 }
+
 
 void CIcqProto::CloseOscarConnection(oscar_connection *oc)
 {
@@ -1230,6 +1243,7 @@ void CIcqProto::CloseOscarConnection(oscar_connection *oc)
 	LeaveCriticalSection(&oftMutex);
 }
 
+
 /////////////////////////////////////////////////////////////////////////////////////////
 
 void CIcqProto::OpenOscarConnection(HANDLE hContact, oscar_filetransfer *ft, int type)
@@ -1242,6 +1256,7 @@ void CIcqProto::OpenOscarConnection(HANDLE hContact, oscar_filetransfer *ft, int
 
 	ForkThread(( IcqThreadFunc )&CIcqProto::oft_connectionThread, otsi );
 }
+
 
 int CIcqProto::CreateOscarProxyConnection(oscar_connection *oc)
 {
@@ -1268,6 +1283,7 @@ int CIcqProto::CreateOscarProxyConnection(oscar_connection *oc)
 
 	return 1; // Success
 }
+
 
 void __cdecl CIcqProto::oft_connectionThread( oscarthreadstartinfo *otsi )
 {
@@ -1576,6 +1592,7 @@ void __cdecl CIcqProto::oft_connectionThread( oscarthreadstartinfo *otsi )
 	}
 }
 
+
 void CIcqProto::sendOscarPacket(oscar_connection *oc, icq_packet *packet)
 {
 	if (oc->hConnection)
@@ -1594,9 +1611,9 @@ void CIcqProto::sendOscarPacket(oscar_connection *oc, icq_packet *packet)
 	SAFE_FREE((void**)&packet->pData);
 }
 
-int CIcqProto::oft_handlePackets(oscar_connection *oc, unsigned char *buf, int len)
+
+int CIcqProto::oft_handlePackets(oscar_connection *oc, BYTE *buf, int len)
 {
-	BYTE *pBuf;
 	DWORD dwHead;
 	WORD datalen;
 	WORD datatype;
@@ -1615,7 +1632,7 @@ int CIcqProto::oft_handlePackets(oscar_connection *oc, unsigned char *buf, int l
 		if (len < 6)
 			break;
 
-		pBuf = buf;
+		BYTE *pBuf = buf;
 		unpackDWord(&pBuf, &dwHead);
 		if (dwHead != 0x4F465432)
 		{ // bad packet
@@ -1645,7 +1662,8 @@ int CIcqProto::oft_handlePackets(oscar_connection *oc, unsigned char *buf, int l
 	return bytesUsed;
 }
 
-int CIcqProto::oft_handleProxyData(oscar_connection *oc, unsigned char *buf, int len)
+
+int CIcqProto::oft_handleProxyData(oscar_connection *oc, BYTE *buf, int len)
 {
 	oscar_filetransfer *ft = oc->ft;
 	BYTE *pBuf; 
@@ -1770,8 +1788,7 @@ int CIcqProto::oft_handleProxyData(oscar_connection *oc, unsigned char *buf, int
 }
 
 
-
-int CIcqProto::oft_handleFileData(oscar_connection *oc, unsigned char *buf, int len)
+int CIcqProto::oft_handleFileData(oscar_connection *oc, BYTE *buf, int len)
 {
 	oscar_filetransfer *ft = oc->ft;
 	DWORD dwLen = len;
@@ -1802,8 +1819,6 @@ int CIcqProto::oft_handleFileData(oscar_connection *oc, unsigned char *buf, int 
 
 		oft_buildProtoFileTransferStatus(ft, &pfts);
 		BroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&pfts);
-		mir_free(pfts.currentFile);
-		SAFE_FREE((void**)&pfts.workingDir);
 		oc->ft->dwLastNotify = GetTickCount();
 	}
 	if (ft->qwFileBytesDone == ft->qwThisFileSize)
@@ -1825,7 +1840,7 @@ int CIcqProto::oft_handleFileData(oscar_connection *oc, unsigned char *buf, int 
 				null_snprintf(szBuf, MAX_PATH, pszMsg, ExtractFileName(ft->szThisFile));
 				icq_LogMessage(LOG_ERROR, szBuf);
 
-				SAFE_FREE((void**)&pszMsg);
+				SAFE_FREE(&pszMsg);
 			}
 		} // keep transfer going (icq6 ignores checksums completely)
 		else if (ft->resumeAction == FILERESUME_SKIP)
@@ -1853,7 +1868,6 @@ int CIcqProto::oft_handleFileData(oscar_connection *oc, unsigned char *buf, int 
 	}
 	return bytesUsed;
 }
-
 
 
 void CIcqProto::handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBuffer, WORD wLen)
@@ -1891,7 +1905,6 @@ void CIcqProto::handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE 
 	case OFT_TYPE_REQUEST:
 		{ // Sender ready
 			oscar_filetransfer *ft = oc->ft;
-			char *szFullPath;
 
 			if (ft->sending)
 			{ // just sanity check - this is only for receiving client
@@ -2017,7 +2030,7 @@ void CIcqProto::handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE 
 				NetLog_Direct("Invalid path information");
 				break;
 			}
-			szFullPath = (char*)SAFE_MALLOC(strlennull(ft->szSavePath)+strlennull(ft->szThisPath)+strlennull(ft->szThisFile)+3);
+			char *szFullPath = (char*)SAFE_MALLOC(strlennull(ft->szSavePath)+strlennull(ft->szThisPath)+strlennull(ft->szThisFile)+3);
 			strcpy(szFullPath, ft->szSavePath);
 			NormalizeBackslash(szFullPath);
 			strcat(szFullPath, ft->szThisPath);
@@ -2041,13 +2054,8 @@ void CIcqProto::handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE 
 				if (BroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, ft, (LPARAM)&pfts))
 				{
 					oc->status = OCS_WAITING;
-
-					SAFE_FREE((void**)&pfts.currentFile);
-					SAFE_FREE((void**)&pfts.workingDir);
 					break; /* UI supports resume: it will call PS_FILERESUME */
 				}
-				mir_free(pfts.currentFile);
-				SAFE_FREE((void**)&pfts.workingDir);
 
 				ft->fileId = OpenFileUtf(ft->szThisFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
 #ifdef _DEBUG
@@ -2147,7 +2155,10 @@ void CIcqProto::handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE 
 			{
 				ft->qwBytesDone -= (ft->qwFileBytesDone - dwResumeOffset);
 				ft->qwFileBytesDone = dwResumeOffset;
-				ft->dwRecvFileCheck = dwResumeCheck;
+        if (dwResumeOffset)
+				  ft->dwRecvFileCheck = dwResumeCheck;
+        else // Restarted resume (data mismatch)
+          ft->dwRecvFileCheck = 0xFFFF0000;
 			}
 			_lseek(ft->fileId, dwResumeOffset, SEEK_SET);
 
@@ -2288,8 +2299,6 @@ void CIcqProto::oft_sendFileData(oscar_connection *oc)
 
 		oft_buildProtoFileTransferStatus(ft, &pfts);
 		BroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&pfts);
-		mir_free(pfts.currentFile);
-		SAFE_FREE((void**)&pfts.workingDir);
 		ft->dwLastNotify = GetTickCount();
 	}
 }

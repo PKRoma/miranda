@@ -39,7 +39,7 @@
 #include "m_icolib.h"
 #include "m_updater.h"
 
-#include <ctype.h>
+//#include <ctype.h>
 
 extern PLUGININFOEX pluginInfo;
 extern HANDLE hExtraXStatus;
@@ -224,9 +224,8 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	nlu.pfnHttpGatewayUnwrapRecv = icq_httpGatewayUnwrapRecv;
 	m_hServerNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
-  char szP2PModuleName[MAX_PATH + 3];
-	strcpy(szP2PModuleName, m_szModuleName);
-	strcat(szP2PModuleName, "P2P");
+  char szP2PModuleName[MAX_PATH];
+  null_snprintf(szP2PModuleName, SIZEOF(szP2PModuleName), "%sP2P", m_szModuleName);
 	null_snprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s client-to-client connections"), m_tszUserName);
 	nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_TCHAR;
 	nlu.ptszDescriptiveName = szBuffer;
@@ -353,17 +352,14 @@ static HANDLE CListAddContactMenuItem(const char *szName, const IcqIconHandle hI
 
 int CIcqProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
-	char pszP2PName[MAX_PATH+3];
-	char pszGroupsName[MAX_PATH+10];
-	char pszSrvGroupsName[MAX_PATH+10];
+	char pszP2PName[MAX_PATH];
+	char pszGroupsName[MAX_PATH];
+	char pszSrvGroupsName[MAX_PATH];
 	char* modules[5] = {0,0,0,0,0};
 
-	strcpy(pszP2PName, m_szModuleName);
-	strcat(pszP2PName, "P2P");
-	strcpy(pszGroupsName, m_szModuleName);
-	strcat(pszGroupsName, "Groups");
-	strcpy(pszSrvGroupsName, m_szModuleName);
-	strcat(pszSrvGroupsName, "SrvGroups");
+	null_snprintf(pszP2PName, SIZEOF(pszP2PName), "%sP2P", m_szModuleName);
+	null_snprintf(pszGroupsName, SIZEOF(pszGroupsName), "%sGroups", m_szModuleName);
+	null_snprintf(pszSrvGroupsName, SIZEOF(pszSrvGroupsName), "%sSrvGroups", m_szModuleName);
 	modules[0] = m_szModuleName;
 	modules[1] = pszP2PName;
 	modules[2] = pszGroupsName;
@@ -469,8 +465,8 @@ HANDLE __cdecl CIcqProto::AddToListByEvent( int flags, int iContact, HANDLE hDbE
 
 	if (dbei.eventType == EVENTTYPE_CONTACTS)
 	{
-		int i;
-		char* pbOffset, *pbEnd;
+    int i;
+		char *pbOffset, *pbEnd;
 
 		for (i = 0, pbOffset = (char*)dbei.pBlob, pbEnd = pbOffset + dbei.cbBlob; i <= iContact; i++)
 		{
@@ -604,6 +600,7 @@ HANDLE __cdecl CIcqProto::ChangeInfo( int iInfoType, void* pInfoData )
 	return NULL;
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // PS_FileAllow - starts a file transfer
 
@@ -612,23 +609,23 @@ HANDLE __cdecl CIcqProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const TC
 	DWORD dwUin;
 	uid_str szUid;
 
-	if ( getContactUid(hContact, &dwUin, &szUid))
+	if (getContactUid(hContact, &dwUin, &szUid))
 		return 0; // Invalid contact
 
 	if (icqOnline() && hContact && szPath && hTransfer)
 	{ // approve old fashioned file transfer
-		basic_filetransfer* ft = (basic_filetransfer *)hTransfer;
+		basic_filetransfer *ft = (basic_filetransfer *)hTransfer;
 
     if (!IsValidFileTransfer(ft))
       return 0; // Invalid transfer
 
 		if (dwUin && ft->ft_magic == FT_MAGIC_ICQ)
 		{
-			filetransfer* ft = (filetransfer *)hTransfer;
+			filetransfer *ft = (filetransfer *)hTransfer;
 			ft->szSavePath = tchar_to_utf8(szPath);
 
 			EnterCriticalSection(&expectedFileRecvMutex);
-			expectedFileRecvs.insert( ft );
+			expectedFileRecvs.insert(ft);
 			LeaveCriticalSection(&expectedFileRecvMutex);
 
 			// Was request received thru DC and have we a open DC, send through that
@@ -647,6 +644,7 @@ HANDLE __cdecl CIcqProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const TC
 
 	return 0; // Failure
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // PS_FileCancel - cancels a file transfer
@@ -701,11 +699,13 @@ int __cdecl CIcqProto::FileDeny( HANDLE hContact, HANDLE hTransfer, const TCHAR*
 		if (dwUin && ft->ft_magic == FT_MAGIC_ICQ)
 		{ // deny old fashioned file transfer
 			filetransfer *ft = (filetransfer*)hTransfer;
+      char *szReasonUtf = tchar_to_utf8(szReason);
 			// Was request received thru DC and have we a open DC, send through that
 			if (ft->bDC && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD, 0))
-				icq_sendFileDenyDirect(hContact, ft, szReason);
+				icq_sendFileDenyDirect(hContact, ft, szReasonUtf);
 			else
-				icq_sendFileDenyServ(dwUin, ft, szReason, 0);
+				icq_sendFileDenyServ(dwUin, ft, szReasonUtf, 0);
+      SAFE_FREE(&szReasonUtf);
 
 			nReturnValue = 0; // Success
 		}
@@ -719,6 +719,7 @@ int __cdecl CIcqProto::FileDeny( HANDLE hContact, HANDLE hTransfer, const TCHAR*
 
 	return nReturnValue;
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // PS_FileResume - processes file renaming etc
@@ -734,7 +735,9 @@ int __cdecl CIcqProto::FileResume( HANDLE hTransfer, int* action, const TCHAR** 
 
 		if (ft->ft_magic == FT_MAGIC_ICQ)
 		{
-			icq_sendFileResume((filetransfer *)hTransfer, *action, *szFilename);
+      char *szFileNameUtf = tchar_to_utf8(*szFilename);
+			icq_sendFileResume((filetransfer *)hTransfer, *action, szFileNameUtf);
+      SAFE_FREE(&szFileNameUtf);
 		}
 		else if (ft->ft_magic == FT_MAGIC_OSCAR)
 		{
@@ -748,6 +751,7 @@ int __cdecl CIcqProto::FileResume( HANDLE hTransfer, int* action, const TCHAR** 
 
 	return 1; // Failure
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // GetCaps - return protocol capabilities bits
@@ -1100,7 +1104,7 @@ int __cdecl CIcqProto::RecvContacts( HANDLE hContact, PROTORECVEVENT* pre )
 int __cdecl CIcqProto::RecvFile( HANDLE hContact, PROTORECVFILET* evt )
 {
 	CCSDATA ccs = { hContact, PSR_FILE, 0, ( LPARAM )evt };
-	return CallService( MS_PROTO_RECVFILET, 0, ( LPARAM )&ccs );
+	return CallService( MS_PROTO_RECVFILE, 0, ( LPARAM )&ccs );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -1128,6 +1132,7 @@ int __cdecl CIcqProto::RecvMsg( HANDLE hContact, PROTORECVEVENT* pre )
 	return 0;
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // RecvUrl
 
@@ -1135,6 +1140,7 @@ int __cdecl CIcqProto::RecvUrl( HANDLE hContact, PROTORECVEVENT* )
 {
 	return 1;
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // SendContacts
@@ -1430,6 +1436,7 @@ int __cdecl CIcqProto::SendContacts( HANDLE hContact, int flags, int nContacts, 
 	return 0;
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // SendFile - sends a file
 
@@ -1449,13 +1456,12 @@ HANDLE __cdecl CIcqProto::SendFile( HANDLE hContact, const TCHAR* szDescription,
 		if (getContactStatus(hContact) != ID_STATUS_OFFLINE)
 		{
 			if (CheckContactCapabilities(hContact, CAPF_OSCAR_FILE))
-				return oftInitTransfer(hContact, dwUin, szUid, ppszFiles, szDescription);
+				return oftInitTransfer(hContact, dwUin, szUid, (LPCTSTR*)ppszFiles, szDescription);
 
 			if (dwUin)
 			{
-				WORD wClientVersion;
+				WORD wClientVersion = getSettingWord(hContact, "Version", 7);
 
-				wClientVersion = getSettingWord(hContact, "Version", 7);
 				if (wClientVersion < 7)
 					NetLog_Server("IcqSendFile() can't send to version %u", wClientVersion);
 				else
@@ -1468,11 +1474,11 @@ HANDLE __cdecl CIcqProto::SendFile( HANDLE hContact, const TCHAR* szDescription,
 					ft = CreateFileTransfer(hContact, dwUin, (wClientVersion == 7) ? 7: 8);
 
 					for (ft->dwFileCount = 0; ppszFiles[ft->dwFileCount]; ft->dwFileCount++);
-					ft->files = (TCHAR **)SAFE_MALLOC(sizeof(TCHAR *) * ft->dwFileCount);
+					ft->pszFiles = (char **)SAFE_MALLOC(sizeof(char *) * ft->dwFileCount);
 					ft->dwTotalSize = 0;
 					for (i = 0; i < (int)ft->dwFileCount; i++)
 					{
-						ft->files[i] = ( ppszFiles[i] ) ? _tcsdup( ppszFiles[i] ) : NULL;
+						ft->pszFiles[i] = (ppszFiles[i]) ? tchar_to_utf8(ppszFiles[i]) : NULL;
 
 						if (_tstat(ppszFiles[i], &statbuf))
 							NetLog_Server("IcqSendFile() was passed invalid filename(s)");
@@ -1489,23 +1495,23 @@ HANDLE __cdecl CIcqProto::SendFile( HANDLE hContact, const TCHAR* szDescription,
 
 					// Send file transfer request
 					{
-						TCHAR szFiles[64];
-						TCHAR* pszFiles;
+						char szFiles[64], tmp[64];
+						char *pszFiles;
 
 
 						NetLog_Server("Init file send");
 
 						if (ft->dwFileCount == 1)
 						{
-							pszFiles = _tcsrchr(ft->files[0], '\\');
+							pszFiles = strchr(ft->pszFiles[0], '\\');
 							if (pszFiles)
 								pszFiles++;
 							else
-								pszFiles = ft->files[0];
+								pszFiles = ft->pszFiles[0];
 						}
 						else
 						{
-							mir_sntprintf(szFiles, SIZEOF(szFiles), TranslateT("%d Files"), ft->dwFileCount);
+							null_snprintf(szFiles, SIZEOF(szFiles), ICQTranslateUtfStatic("%d Files", tmp, SIZEOF(tmp)), ft->dwFileCount);
 							pszFiles = szFiles;
 						}
 
@@ -1542,6 +1548,7 @@ HANDLE __cdecl CIcqProto::SendFile( HANDLE hContact, const TCHAR* szDescription,
 
 	return 0; // Failure
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // PS_SendMessage - sends a message
@@ -2381,15 +2388,34 @@ int __cdecl CIcqProto::UserIsTyping( HANDLE hContact, int type )
 	return 1;
 }
 
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // OnEvent - maintain protocol events
 
-int __cdecl CIcqProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam )
+int __cdecl CIcqProto::OnEvent(PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam)
 {
 	switch( eventType ) {
-		case EV_PROTO_ONLOAD:    return OnModulesLoaded( 0, 0 );
-		case EV_PROTO_ONEXIT:    return OnPreShutdown( 0, 0 );
-		case EV_PROTO_ONOPTIONS: return OnOptionsInit( wParam, lParam );
+		case EV_PROTO_ONLOAD:    
+      return OnModulesLoaded(0, 0);
+
+		case EV_PROTO_ONEXIT:    
+      return OnPreShutdown(0, 0);
+
+		case EV_PROTO_ONOPTIONS: 
+      return OnOptionsInit(wParam, lParam);
+
+    case EV_PROTO_ONERASE:
+    {
+      char szDbSetting[MAX_PATH];
+
+      null_snprintf(szDbSetting, sizeof(szDbSetting), "%sP2P", m_szModuleName);
+      CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)szDbSetting);
+      null_snprintf(szDbSetting, sizeof(szDbSetting), "%sSrvGroups", m_szModuleName);
+      CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)szDbSetting);
+      null_snprintf(szDbSetting, sizeof(szDbSetting), "%sGroups", m_szModuleName);
+      CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)szDbSetting);
+      break;
+    }
 	}
 	return 1;
 }

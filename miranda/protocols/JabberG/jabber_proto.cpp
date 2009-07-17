@@ -553,10 +553,10 @@ HANDLE __cdecl CJabberProto::FileAllow( HANDLE /*hContact*/, HANDLE hTransfer, c
 		return 0;
 
 	filetransfer* ft = ( filetransfer* )hTransfer;
-	ft->std.workingDir = mir_tstrdup( szPath );
-	size_t len = _tcslen( ft->std.workingDir )-1;
-	if ( ft->std.workingDir[len] == '/' || ft->std.workingDir[len] == '\\' )
-		ft->std.workingDir[len] = 0;
+	ft->std.tszWorkingDir = mir_tstrdup( szPath );
+	size_t len = _tcslen( ft->std.tszWorkingDir )-1;
+	if ( ft->std.tszWorkingDir[len] == '/' || ft->std.tszWorkingDir[len] == '\\' )
+		ft->std.tszWorkingDir[len] = 0;
 
 	switch ( ft->type ) {
 	case FT_OOB:
@@ -638,7 +638,7 @@ int __cdecl CJabberProto::FileResume( HANDLE hTransfer, int* action, const TCHAR
 		return 1;
 
 	if ( *action == FILERESUME_RENAME )
-		replaceStr( ft->std.currentFile, *szFilename );
+		replaceStr( ft->std.tszCurrentFile, *szFilename );
 
 	SetEvent( ft->hWaitEvent );
 	return 0;
@@ -1010,19 +1010,19 @@ HANDLE __cdecl CJabberProto::SendFile( HANDLE hContact, const TCHAR* szDescripti
 	while( ppszFiles[ ft->std.totalFiles ] != NULL )
 		ft->std.totalFiles++;
 
-	ft->std.files = ( TCHAR** ) mir_alloc( sizeof( TCHAR* )* ft->std.totalFiles );
+	ft->std.ptszFiles = ( TCHAR** ) mir_alloc( sizeof( TCHAR* )* ft->std.totalFiles );
 	ft->fileSize = ( long* ) mir_alloc( sizeof( long ) * ft->std.totalFiles );
 	for( i=j=0; i < ft->std.totalFiles; i++ ) {
 		if ( _tstat( ppszFiles[i], &statbuf ))
 			Log( "'%s' is an invalid filename", ppszFiles[i] );
 		else {
-			ft->std.files[j] = mir_tstrdup( ppszFiles[i] );
+			ft->std.ptszFiles[j] = mir_tstrdup( ppszFiles[i] );
 			ft->fileSize[j] = statbuf.st_size;
 			j++;
 			ft->std.totalBytes += statbuf.st_size;
 	}	}
 
-	ft->std.currentFile = mir_tstrdup( ppszFiles[0] );
+	ft->std.tszCurrentFile = mir_tstrdup( ppszFiles[0] );
 	ft->szDescription = mir_tstrdup( szDescription );
 	ft->jid = mir_tstrdup( dbv.ptszVal );
 	JFreeVariant( &dbv );

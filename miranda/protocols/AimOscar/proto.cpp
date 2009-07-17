@@ -294,7 +294,7 @@ int __cdecl CAimProto::FileResume(HANDLE hTransfer, int* action, const PROTOCHAR
     case FILERESUME_RESUME:
         {
 	        struct _stat statbuf;
-            _tstat(ft->pfts->currentFile, &statbuf);
+            _tstat(ft->pfts->tszCurrentFile, &statbuf);
             ft->start_offset = statbuf.st_size;
         }
 

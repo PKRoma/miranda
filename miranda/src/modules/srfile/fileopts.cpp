@@ -57,9 +57,9 @@ static INT_PTR CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		{
 			TranslateDialogDefault(hwndDlg);
 			{
-				char str[MAX_PATH];
+				TCHAR str[MAX_PATH];
 				GetContactReceivedFilesDir(NULL,str,SIZEOF(str),FALSE);
-				SetDlgItemTextA(hwndDlg,IDC_FILEDIR,str);
+				SetDlgItemText(hwndDlg,IDC_FILEDIR,str);
 			}
 
 			if (shAutoComplete) shAutoComplete(GetWindow(GetDlgItem(hwndDlg,IDC_FILEDIR),GW_CHILD),1);
@@ -135,10 +135,10 @@ static INT_PTR CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					if((HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus())) return 0;
 					break;
 				case IDC_FILEDIRBROWSE:
-				{	char str[MAX_PATH];
-					GetDlgItemTextA(hwndDlg,IDC_FILEDIR,str,SIZEOF(str));
+				{	TCHAR str[MAX_PATH];
+					GetDlgItemText(hwndDlg,IDC_FILEDIR,str,SIZEOF(str));
 					if(BrowseForFolder(hwndDlg,str))
-						SetDlgItemTextA(hwndDlg,IDC_FILEDIR,str);
+						SetDlgItemText(hwndDlg,IDC_FILEDIR,str);
 					break;
 				}
 				case IDC_AUTOACCEPT:
@@ -201,8 +201,9 @@ static INT_PTR CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			{
 				case PSN_APPLY:
 				{	char str[512];
-					GetDlgItemTextA(hwndDlg,IDC_FILEDIR,str,SIZEOF(str));
-					DBWriteContactSettingString(NULL,"SRFile","RecvFilesDirAdv",str);
+					TCHAR tstr[512];
+					GetDlgItemText(hwndDlg,IDC_FILEDIR,tstr,SIZEOF(tstr));
+					DBWriteContactSettingTString(NULL,"SRFile","RecvFilesDirAdv",tstr);
 					DBWriteContactSettingByte(NULL,"SRFile","AutoAccept",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOACCEPT));
 					DBWriteContactSettingByte(NULL,"SRFile","AutoMin",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOMIN));
 					DBWriteContactSettingByte(NULL,"SRFile","AutoClose",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOCLOSE));

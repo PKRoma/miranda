@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -36,26 +36,28 @@
 
 #include "icqoscar.h"
 
+
 static void file_buildProtoFileTransferStatus(filetransfer* ft, PROTOFILETRANSFERSTATUS* pfts)
 {
 	ZeroMemory(pfts, sizeof(PROTOFILETRANSFERSTATUS));
 	pfts->cbSize = sizeof(PROTOFILETRANSFERSTATUS);
 	pfts->hContact = ft->hContact;
-	pfts->flags = PFTS_TCHAR + (( ft->sending ) ? PFTS_SENDING : PFTS_RECEIVING );
+	pfts->flags = PFTS_UTF | (ft->sending ? PFTS_SENDING : PFTS_RECEIVING); /* Standard FT is Ansi only */
 	if (ft->sending)
-		pfts->files = ft->files;
+		pfts->pszFiles = ft->pszFiles;
 	else
-		pfts->files = NULL;  /* FIXME */
+		pfts->pszFiles = NULL;  /* FIXME */
 	pfts->totalFiles = ft->dwFileCount;
 	pfts->currentFileNumber = ft->iCurrentFile;
 	pfts->totalBytes = ft->dwTotalSize;
 	pfts->totalProgress = ft->dwBytesDone;
-	pfts->workingDir = mir_utf8decodeT(ft->szSavePath);
-	pfts->currentFile = mir_utf8decodeT(ft->szThisFile);
+	pfts->szWorkingDir = ft->szSavePath;
+	pfts->szCurrentFile = ft->szThisFile;
 	pfts->currentFileSize = ft->dwThisFileSize;
 	pfts->currentFileTime = ft->dwThisFileDate;
 	pfts->currentFileProgress = ft->dwFileBytesDone;
 }
+
 
 static void file_sendTransferSpeed(CIcqProto* ppro, directconnect* dc)
 {
@@ -67,15 +69,14 @@ static void file_sendTransferSpeed(CIcqProto* ppro, directconnect* dc)
 	ppro->sendDirectPacket(dc, &packet);
 }
 
+
 static void file_sendNick(CIcqProto* ppro, directconnect* dc)
 {
 	icq_packet packet;
 	char* szNick;
 	WORD wNickLen;
-	DBVARIANT dbv;
+  DBVARIANT dbv = {DBVT_DELETED};
 
-
-	dbv.type = DBVT_DELETED;
 	if (ppro->getSettingString(NULL, "Nick", &dbv))
 		szNick = "";
 	else
@@ -92,13 +93,12 @@ static void file_sendNick(CIcqProto* ppro, directconnect* dc)
 	ICQFreeVariant(&dbv);
 }
 
+
 static void file_sendNextFile(CIcqProto* ppro, directconnect* dc)
 {
 	icq_packet packet;
-	struct _stat statbuf;
-	char *pszThisFileName;
+	struct _stati64 statbuf;
 	char szThisSubDir[MAX_PATH];
-	WORD wThisFileNameLen, wThisSubDirLen;
 
 	if (dc->ft->iCurrentFile >= (int)dc->ft->dwFileCount)
 	{
@@ -108,8 +108,8 @@ static void file_sendNextFile(CIcqProto* ppro, directconnect* dc)
 		return;
 	}
 
-	dc->ft->szThisFile = tchar_to_utf8(dc->ft->files[dc->ft->iCurrentFile]);
-	if (_stat(dc->ft->szThisFile, &statbuf))
+	dc->ft->szThisFile = dc->ft->pszFiles[dc->ft->iCurrentFile];
+	if (FileStatUtf(dc->ft->szThisFile, &statbuf))
 	{
 		ppro->icq_LogMessage(LOG_ERROR, LPGEN("Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it."));
 		ppro->CloseDirectConnection(dc);
@@ -117,7 +117,7 @@ static void file_sendNextFile(CIcqProto* ppro, directconnect* dc)
 		return;
 	}
 
-	pszThisFileName = FindFilePathContainer((LPCSTR*)dc->ft->files, dc->ft->iCurrentFile, szThisSubDir);
+	char *pszThisFileName = FindFilePathContainer((LPCSTR*)dc->ft->pszFiles, dc->ft->iCurrentFile, szThisSubDir);
 
 	if (statbuf.st_mode&_S_IFDIR)
 	{
@@ -126,7 +126,7 @@ static void file_sendNextFile(CIcqProto* ppro, directconnect* dc)
 	else
 	{
 		dc->ft->currentIsDir = 0;
-		dc->ft->fileId = _open(dc->ft->szThisFile, _O_BINARY | _O_RDONLY);
+		dc->ft->fileId = OpenFileUtf(dc->ft->szThisFile, _O_BINARY | _O_RDONLY, _S_IREAD);
 		if (dc->ft->fileId == -1)
 		{
 			ppro->icq_LogMessage(LOG_ERROR, LPGEN("Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it."));
@@ -140,23 +140,31 @@ static void file_sendNextFile(CIcqProto* ppro, directconnect* dc)
 	dc->ft->dwThisFileDate = statbuf.st_mtime;
 	dc->ft->dwFileBytesDone = 0;
 
-	wThisFileNameLen = strlennull(pszThisFileName);
-	wThisSubDirLen = strlennull(szThisSubDir);
+  char *szThisFileNameAnsi = NULL, *szThisSubDirAnsi = NULL;
+  if (!utf8_decode(pszThisFileName, &szThisFileNameAnsi))
+    szThisFileNameAnsi = NULL;
+  if (!utf8_decode(szThisSubDir, &szThisSubDirAnsi))
+    szThisSubDirAnsi = NULL;
+  WORD wThisFileNameLen = strlennull(szThisFileNameAnsi);
+	WORD wThisSubDirLen = strlennull(szThisSubDirAnsi);
 
 	directPacketInit(&packet, (WORD)(20 + wThisFileNameLen + wThisSubDirLen));
 	packByte(&packet, PEER_FILE_NEXTFILE); /* Ident */
 	packByte(&packet, (BYTE)((statbuf.st_mode & _S_IFDIR) != 0)); // Is subdir
 	packLEWord(&packet, (WORD)(wThisFileNameLen + 1));
-	packBuffer(&packet, (LPBYTE)pszThisFileName, (WORD)(wThisFileNameLen + 1));
+	packBuffer(&packet, (LPBYTE)szThisFileNameAnsi, (WORD)(wThisFileNameLen + 1));
 	packLEWord(&packet, (WORD)(wThisSubDirLen + 1));
-	packBuffer(&packet, (LPBYTE)szThisSubDir, (WORD)(wThisSubDirLen + 1));
+	packBuffer(&packet, (LPBYTE)szThisSubDirAnsi, (WORD)(wThisSubDirLen + 1));
 	packLEDWord(&packet, dc->ft->dwThisFileSize);
 	packLEDWord(&packet, statbuf.st_mtime);
 	packLEDWord(&packet, dc->ft->dwTransferSpeed);
+  SAFE_FREE(&szThisFileNameAnsi);
+  SAFE_FREE(&szThisSubDirAnsi);
 	ppro->sendDirectPacket(dc, &packet);
 
 	ppro->BroadcastAck(dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, dc->ft, 0);
 }
+
 
 static void file_sendResume(CIcqProto* ppro, directconnect* dc)
 {
@@ -170,6 +178,7 @@ static void file_sendResume(CIcqProto* ppro, directconnect* dc)
 	packLEDWord(&packet, dc->ft->iCurrentFile + 1); /* file number */
 	ppro->sendDirectPacket(dc, &packet);
 }
+
 
 static void file_sendData(CIcqProto* ppro, directconnect* dc)
 {
@@ -201,8 +210,6 @@ static void file_sendData(CIcqProto* ppro, directconnect* dc)
 
 		file_buildProtoFileTransferStatus(dc->ft, &pfts);
 		ppro->BroadcastAck(dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, dc->ft, (LPARAM)&pfts);
-		mir_free(pfts.workingDir);
-		mir_free(pfts.currentFile);
 
 		dc->ft->dwLastNotify = GetTickCount();
 	}
@@ -217,21 +224,22 @@ static void file_sendData(CIcqProto* ppro, directconnect* dc)
 	}
 }
 
+
 void CIcqProto::handleFileTransferIdle(directconnect* dc)
 {
 	file_sendData(this, dc);
 }
 
-void CIcqProto::icq_sendFileResume(filetransfer* ft, int action, const TCHAR* szFilename)
-{
-	int openFlags;
-	directconnect *dc;
 
+void CIcqProto::icq_sendFileResume(filetransfer *ft, int action, const char *szFilename)
+{
 	if (ft->hConnection == NULL)
 		return;
 
-	dc = FindFileTransferDC(ft);
+	directconnect *dc = FindFileTransferDC(ft);
 	if (!dc) return; // something is broken...
+
+	int openFlags;
 
 	switch (action)
 	{
@@ -251,13 +259,13 @@ void CIcqProto::icq_sendFileResume(filetransfer* ft, int action, const TCHAR* sz
 
 	case FILERESUME_RENAME:
 		openFlags = _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY;
-		SAFE_FREE((void**)&ft->szThisFile);
-		ft->szThisFile = tchar_to_utf8(szFilename);
+		SAFE_FREE(&ft->szThisFile);
+		ft->szThisFile = null_strdup(szFilename);
 		ft->dwFileBytesDone = 0;
 		break;
 	}
 
-	ft->fileId = _open(ft->szThisFile, openFlags, _S_IREAD | _S_IWRITE);
+	ft->fileId = OpenFileUtf(ft->szThisFile, openFlags, _S_IREAD | _S_IWRITE);
 	if (ft->fileId == -1)
 	{
 		icq_LogMessage(LOG_ERROR, LPGEN("Your file receive has been aborted because Miranda could not open the destination file in order to write to it. You may be trying to save to a read-only folder."));
@@ -276,6 +284,7 @@ void CIcqProto::icq_sendFileResume(filetransfer* ft, int action, const TCHAR* sz
 
 	BroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0);
 }
+
 
 // small utility function
 void NormalizeBackslash(char* path)
@@ -361,27 +370,29 @@ void CIcqProto::handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen
 			return;
 		buf++;  /* id */
 		{
+      char *szAnsi;
 			WORD wThisFilenameLen, wSubdirLen;
 			BYTE isDirectory;
-			char *szFullPath;
 
 			unpackByte(&buf, &isDirectory);
 			unpackLEWord(&buf, &wThisFilenameLen);
 			if (wLen < 19 + wThisFilenameLen)
 				return;
-			SAFE_FREE((void**)&dc->ft->szThisFile);
-			dc->ft->szThisFile = (char *)SAFE_MALLOC(wThisFilenameLen + 1);
-			memcpy(dc->ft->szThisFile, buf, wThisFilenameLen);
-			dc->ft->szThisFile[wThisFilenameLen] = '\0';
+			SAFE_FREE(&dc->ft->szThisFile);
+      szAnsi = (char *)_alloca(wThisFilenameLen + 1);
+			memcpy(szAnsi, buf, wThisFilenameLen);
+			szAnsi[wThisFilenameLen] = '\0';
+      dc->ft->szThisFile = ansi_to_utf8(szAnsi);
 			buf += wThisFilenameLen;
 
 			unpackLEWord(&buf, &wSubdirLen);
 			if (wLen < 18 + wThisFilenameLen + wSubdirLen)
 				return;
-			SAFE_FREE((void**)&dc->ft->szThisSubdir);
-			dc->ft->szThisSubdir = (char *)SAFE_MALLOC(wSubdirLen + 1);
-			memcpy(dc->ft->szThisSubdir, buf, wSubdirLen);
-			dc->ft->szThisSubdir[wSubdirLen] = '\0';
+			SAFE_FREE(&dc->ft->szThisSubdir);
+      szAnsi = (char *)_alloca(wSubdirLen + 1);
+			memcpy(szAnsi, buf, wSubdirLen);
+			szAnsi[wSubdirLen] = '\0';
+			dc->ft->szThisSubdir = ansi_to_utf8(szAnsi);
 			buf += wSubdirLen;
 
 			unpackLEDWord(&buf, &dc->ft->dwThisFileSize);
@@ -395,15 +406,15 @@ void CIcqProto::handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen
 				break;
 			}
 
-			szFullPath = (char*)SAFE_MALLOC(strlennull(dc->ft->szSavePath)+strlennull(dc->ft->szThisSubdir)+strlennull(dc->ft->szThisFile)+3);
+			char *szFullPath = (char*)SAFE_MALLOC(strlennull(dc->ft->szSavePath)+strlennull(dc->ft->szThisSubdir)+strlennull(dc->ft->szThisFile)+3);
 			strcpy(szFullPath, dc->ft->szSavePath);
 			NormalizeBackslash(szFullPath);
 			strcat(szFullPath, dc->ft->szThisSubdir);
 			NormalizeBackslash(szFullPath);
-			_chdir(szFullPath); // set current dir - not very useful
+//			_chdir(szFullPath); // set current dir - not very useful
 			strcat(szFullPath, dc->ft->szThisFile);
 			// we joined the full path to dest file
-			SAFE_FREE((void**)&dc->ft->szThisFile);
+			SAFE_FREE(&dc->ft->szThisFile);
 			dc->ft->szThisFile = szFullPath;
 
 			dc->ft->dwFileBytesDone = 0;
@@ -411,7 +422,7 @@ void CIcqProto::handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen
 
 			if (isDirectory)
 			{
-				_mkdir(dc->ft->szThisFile);
+				MakeDirUtf(dc->ft->szThisFile);
 				dc->ft->fileId = -1;
 			}
 			else
@@ -420,13 +431,10 @@ void CIcqProto::handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen
 				PROTOFILETRANSFERSTATUS pfts = {0};
 
 				file_buildProtoFileTransferStatus(dc->ft, &pfts);
-				int res = BroadcastAck(dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, dc->ft, (LPARAM)&pfts);
-				mir_free(pfts.workingDir);
-				mir_free(pfts.currentFile);
-				if ( res )
+				if (BroadcastAck(dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, dc->ft, (LPARAM)&pfts))
 					break;   /* UI supports resume: it will call PS_FILERESUME */
 
-				dc->ft->fileId = _open(dc->ft->szThisFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
+				dc->ft->fileId = OpenFileUtf(dc->ft->szThisFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
 				if (dc->ft->fileId == -1)
 				{
 					icq_LogMessage(LOG_ERROR, LPGEN("Your file receive has been aborted because Miranda could not open the destination file in order to write to it. You may be trying to save to a read-only folder."));
@@ -491,8 +499,6 @@ void CIcqProto::handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen
 
 			file_buildProtoFileTransferStatus(dc->ft, &pfts);
 			BroadcastAck(dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, dc->ft, (LPARAM)&pfts);
-			mir_free(pfts.workingDir);
-			mir_free(pfts.currentFile);
 			dc->ft->dwLastNotify = GetTickCount();
 		}
 		if (wLen < 2048)

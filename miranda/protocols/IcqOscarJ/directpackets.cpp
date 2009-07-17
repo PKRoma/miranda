@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -57,6 +57,7 @@ void packDirectMsgHeader(icq_packet* packet, WORD wDataLen, WORD wCommand, DWORD
 	packLEWord(packet, wX2); // this is probably priority
 }
 
+
 void CIcqProto::icq_sendDirectMsgAck(directconnect* dc, WORD wCookie, BYTE bMsgType, BYTE bMsgFlags, char* szCap)
 {
 	icq_packet packet;
@@ -80,6 +81,7 @@ void CIcqProto::icq_sendDirectMsgAck(directconnect* dc, WORD wCookie, BYTE bMsgT
 	NetLog_Direct("Sent acknowledgement thru direct connection");
 }
 
+
 DWORD CIcqProto::icq_sendGetAwayMsgDirect(HANDLE hContact, int type)
 {
 	icq_packet packet;
@@ -98,10 +100,10 @@ DWORD CIcqProto::icq_sendGetAwayMsgDirect(HANDLE hContact, int type)
 	return (SendDirectMessage(hContact, &packet)) ? dwCookie : 0;
 }
 
+
 void CIcqProto::icq_sendAwayMsgReplyDirect(directconnect* dc, WORD wCookie, BYTE msgType, const char** szMsg)
 {
 	icq_packet packet;
-	WORD wMsgLen;
 
 	if (validateStatusMessageRequest(dc->hContact, msgType))
 	{
@@ -111,11 +113,10 @@ void CIcqProto::icq_sendAwayMsgReplyDirect(directconnect* dc, WORD wCookie, BYTE
 
 		if (szMsg && *szMsg)
 		{
-			char* szAnsiMsg;
-
 			// prepare Ansi message - only Ansi supported
-			wMsgLen = strlennull(*szMsg) + 1;
-			szAnsiMsg = (char*)_alloca(wMsgLen);
+			WORD wMsgLen = strlennull(*szMsg) + 1;
+			char *szAnsiMsg = (char*)_alloca(wMsgLen);
+
 			utf8_decode_static(*szMsg, szAnsiMsg, wMsgLen);
 			wMsgLen = strlennull(szAnsiMsg);
 			packDirectMsgHeader(&packet, (WORD)(3 + wMsgLen), DIRECT_ACK, wCookie, msgType, 3, 0, 0);
@@ -129,6 +130,7 @@ void CIcqProto::icq_sendAwayMsgReplyDirect(directconnect* dc, WORD wCookie, BYTE
 		LeaveCriticalSection(&m_modeMsgsMutex);
 	}
 }
+
 
 void CIcqProto::icq_sendFileAcceptDirect(HANDLE hContact, filetransfer* ft)
 {
@@ -150,14 +152,22 @@ void CIcqProto::icq_sendFileAcceptDirect(HANDLE hContact, filetransfer* ft)
 	NetLog_Direct("Sent file accept direct, port %u", wListenPort);
 }
 
-void CIcqProto::icq_sendFileDenyDirect(HANDLE hContact, filetransfer* ft, const TCHAR *szReason)
+
+void CIcqProto::icq_sendFileDenyDirect(HANDLE hContact, filetransfer *ft, const char *szReason)
 {
 	// v7 packet
 	icq_packet packet;
+  char *szReasonAnsi = NULL;
+  int cbReasonAnsi = 0;
 
-	packDirectMsgHeader(&packet, (WORD)(18+strlennull(szReason)), DIRECT_ACK, ft->dwCookie, MTYPE_FILEREQ, 0, 1, 0);
-	packLEWord(&packet, (WORD)(1+strlennull(szReason)));  // description
-	if (szReason) packBuffer(&packet, (LPBYTE)szReason, (WORD)strlennull(szReason));
+  if (!utf8_decode(szReason, &szReasonAnsi))
+    szReasonAnsi = NULL;
+  else
+    cbReasonAnsi = strlennull(szReasonAnsi);
+
+	packDirectMsgHeader(&packet, (WORD)(18 + cbReasonAnsi), DIRECT_ACK, ft->dwCookie, MTYPE_FILEREQ, 0, 1, 0);
+	packLEWord(&packet, (WORD)(1 + cbReasonAnsi));  // description
+	if (szReasonAnsi) packBuffer(&packet, (LPBYTE)szReasonAnsi, (WORD)cbReasonAnsi);
 	packByte(&packet, 0);
 	packWord(&packet, 0);
 	packLEWord(&packet, 0);
@@ -166,37 +176,52 @@ void CIcqProto::icq_sendFileDenyDirect(HANDLE hContact, filetransfer* ft, const 
 	packLEDWord(&packet, 0);  // file size 
 	packLEDWord(&packet, 0);  
 
+  SAFE_FREE(&szReasonAnsi);
+
 	SendDirectMessage(hContact, &packet);
 
 	NetLog_Direct("Sent file deny direct.");
 }
 
-int CIcqProto::icq_sendFileSendDirectv7(filetransfer *ft, const TCHAR* pszFiles)
+
+int CIcqProto::icq_sendFileSendDirectv7(filetransfer *ft, const char *pszFiles)
 {
 	icq_packet packet;
-	char* tmpFiles = tchar_to_utf8(pszFiles);
-	WORD wDescrLen = strlennull(ft->szDescription), wFilesLen = strlennull(tmpFiles);
+	char *szFilesAnsi = NULL;
+	WORD wDescrLen = strlennull(ft->szDescription), wFilesLen = 0;
+
+  if (!utf8_decode(pszFiles, &szFilesAnsi))
+    szFilesAnsi = NULL;
+  else
+    wFilesLen = strlennull(szFilesAnsi);
 
 	packDirectMsgHeader(&packet, (WORD)(18 + wDescrLen + wFilesLen), DIRECT_MESSAGE, (WORD)ft->dwCookie, MTYPE_FILEREQ, 0, 0, 0);
 	packLEWord(&packet, (WORD)(wDescrLen + 1));
 	packBuffer(&packet, (LPBYTE)ft->szDescription, (WORD)(wDescrLen + 1));
 	packLEDWord(&packet, 0);   // listen port
 	packLEWord(&packet, (WORD)(wFilesLen + 1));
-	packBuffer(&packet, (LPBYTE)tmpFiles, (WORD)(wFilesLen + 1));
+	packBuffer(&packet, (LPBYTE)szFilesAnsi, (WORD)(wFilesLen + 1));
 	packLEDWord(&packet, ft->dwTotalSize);
 	packLEDWord(&packet, 0);    // listen port (again)
 
+	SAFE_FREE(&szFilesAnsi);
+
 	NetLog_Direct("Sending v%u file transfer request direct", 7);
-	SAFE_FREE(&tmpFiles);
 
 	return SendDirectMessage(ft->hContact, &packet);
 }
 
-int CIcqProto::icq_sendFileSendDirectv8(filetransfer *ft, const TCHAR *pszFiles)
+
+int CIcqProto::icq_sendFileSendDirectv8(filetransfer *ft, const char *pszFiles)
 {
 	icq_packet packet;
-	char* tmpFiles = tchar_to_utf8(pszFiles);
-	WORD wDescrLen = strlennull(ft->szDescription), wFilesLen = strlennull(tmpFiles);
+	char *szFilesAnsi = NULL;
+	WORD wDescrLen = strlennull(ft->szDescription), wFilesLen = 0;
+
+  if (!utf8_decode(pszFiles, &szFilesAnsi))
+    szFilesAnsi = NULL;
+  else
+    wFilesLen = strlennull(szFilesAnsi);
 
 	packDirectMsgHeader(&packet, (WORD)(0x2E + 22 + wDescrLen + wFilesLen + 1), DIRECT_MESSAGE, (WORD)ft->dwCookie, MTYPE_PLUGIN, 0, 0, 0);
 	packEmptyMsg(&packet);  // message
@@ -208,15 +233,17 @@ int CIcqProto::icq_sendFileSendDirectv8(filetransfer *ft, const TCHAR *pszFiles)
 	packWord(&packet, 0x8c82); // Unknown (port?), seen 0x80F6
 	packWord(&packet, 0x0222); // Unknown, seen 0x2e01
 	packLEWord(&packet, (WORD)(wFilesLen + 1));
-	packBuffer(&packet, (LPBYTE)tmpFiles, (WORD)(wFilesLen + 1));
+	packBuffer(&packet, (LPBYTE)szFilesAnsi, (WORD)(wFilesLen + 1));
 	packLEDWord(&packet, ft->dwTotalSize);
 	packLEDWord(&packet, 0x0008c82); // Unknown, (seen 0xf680 ~33000)
 
+	SAFE_FREE(&szFilesAnsi);
+
 	NetLog_Direct("Sending v%u file transfer request direct", 8);
-	SAFE_FREE(&tmpFiles);
 
 	return SendDirectMessage(ft->hContact, &packet);
 }
+
 
 DWORD CIcqProto::icq_SendDirectMessage(HANDLE hContact, const char *szMessage, int nBodyLength, WORD wPriority, cookie_message_data *pCookieData, char *szCap)
 {

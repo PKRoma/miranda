@@ -911,15 +911,15 @@ int CDccSession::SetupConnection()
 		file[0] = ( TCHAR* )di->sFileAndPath.c_str();
 		file[1] = 0;
 
-		pfts.currentFile = ( TCHAR* )di->sFileAndPath.c_str();
-		pfts.workingDir =	( TCHAR* )di->sPath.c_str();
+		pfts.tszCurrentFile = ( TCHAR* )di->sFileAndPath.c_str();
+		pfts.tszWorkingDir =	( TCHAR* )di->sPath.c_str();
 		pfts.hContact = di->hContact;
 		pfts.flags = PFTS_TCHAR + ((di->bSender) ? PFTS_SENDING : PFTS_RECEIVING);
 		pfts.totalFiles =	1;
 		pfts.currentFileNumber = 0;
 		pfts.totalBytes =	di->dwSize;
 		pfts.currentFileSize = pfts.totalBytes;
-		pfts.files = file;
+		pfts.ptszFiles = file;
 		pfts.totalProgress = 0;
 		pfts.currentFileProgress =	0;
 		pfts.currentFileTime = (unsigned long)time(0);
@@ -980,8 +980,8 @@ int CDccSession::SetupConnection()
 						di->sFile = di->sFileAndPath.Mid(i+1, di->sFileAndPath.GetLength());
 					}
 
-					pfts.currentFile = ( TCHAR* )di->sFileAndPath.c_str();
-					pfts.workingDir =	( TCHAR* )di->sPath.c_str();
+					pfts.tszCurrentFile = ( TCHAR* )di->sFileAndPath.c_str();
+					pfts.tszWorkingDir =	( TCHAR* )di->sPath.c_str();
 					pfts.totalBytes = di->dwSize;
 					pfts.currentFileSize = pfts.totalBytes;
 					

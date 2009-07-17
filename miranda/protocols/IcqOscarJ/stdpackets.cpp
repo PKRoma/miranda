@@ -675,6 +675,7 @@ DWORD CIcqProto::icq_sendGetAimAwayMsgServ(HANDLE hContact, char *szUID, int typ
 	return dwCookie;
 }
 
+
 void CIcqProto::icq_sendSetAimAwayMsgServ(const char *szMsg)
 {
 	icq_packet packet;
@@ -691,6 +692,7 @@ void CIcqProto::icq_sendSetAimAwayMsgServ(const char *szMsg)
 
 	sendServPacket(&packet);
 }
+
 
 DWORD CIcqProto::icq_sendCheckSpamBot(HANDLE hContact, DWORD dwUIN, const char *szUID)
 {
@@ -710,42 +712,59 @@ DWORD CIcqProto::icq_sendCheckSpamBot(HANDLE hContact, DWORD dwUIN, const char *
 	return dwCookie;
 }
 
-void CIcqProto::icq_sendFileSendServv7(filetransfer* ft, const TCHAR *szFiles)
+
+void CIcqProto::icq_sendFileSendServv7(filetransfer* ft, const char *szFiles)
 {
 	icq_packet packet;
-	WORD wDescrLen,wFilesLen;
-	char* tmpFiles = tchar_to_utf8( szFiles );
+	WORD wDescrLen = 0, wFilesLen = 0;
+	char *szFilesAnsi = NULL, *szDescrAnsi = NULL;
 
-	wDescrLen = strlennull(ft->szDescription);
-	wFilesLen = strlennull(tmpFiles);
+  if (!utf8_decode(szFiles, &szFilesAnsi))
+    szFilesAnsi = NULL;
+  else
+  	wFilesLen = strlennull(szFilesAnsi);
+
+  if (!utf8_decode(ft->szDescription, &szDescrAnsi))
+    szDescrAnsi = NULL;
+  else
+	  wDescrLen = strlennull(szDescrAnsi);
 
 	packServChannel2Header(&packet, this, ft->dwUin, (WORD)(18 + wDescrLen + wFilesLen), ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, ft->dwCookie, ICQ_VERSION, MTYPE_FILEREQ, 0, 1, 0, 1, 1);
 
 	packLEWord(&packet, (WORD)(wDescrLen + 1));
-	packBuffer(&packet, (LPBYTE)ft->szDescription, (WORD)(wDescrLen + 1));
+	packBuffer(&packet, (LPBYTE)szDescrAnsi, (WORD)(wDescrLen + 1));
 	packLEDWord(&packet, 0);   // unknown
 	packLEWord(&packet, (WORD)(wFilesLen + 1));
-	packBuffer(&packet, (LPBYTE)tmpFiles, (WORD)(wFilesLen + 1));
+	packBuffer(&packet, (LPBYTE)szFilesAnsi, (WORD)(wFilesLen + 1));
 	packLEDWord(&packet, ft->dwTotalSize);
 	packLEDWord(&packet, 0);   // unknown
 
+  SAFE_FREE(&szFilesAnsi);
+  SAFE_FREE(&szDescrAnsi);
+
 	sendServPacket(&packet);
-	SAFE_FREE(&tmpFiles);
 }
 
-void CIcqProto::icq_sendFileSendServv8(filetransfer* ft, const TCHAR *szFiles, int nAckType)
+
+void CIcqProto::icq_sendFileSendServv8(filetransfer* ft, const char *szFiles, int nAckType)
 {
 	icq_packet packet;
-	WORD wFlapLen;
-	WORD wDescrLen,wFilesLen;
-	char* tmpFiles = tchar_to_utf8( szFiles );
+	WORD wDescrLen = 0, wFilesLen = 0;
+	char *szFilesAnsi = NULL, *szDescrAnsi = NULL;
 
-	wDescrLen = strlennull(ft->szDescription);
-	wFilesLen = strlennull(tmpFiles);
+  if (!utf8_decode(szFiles, &szFilesAnsi))
+    szFilesAnsi = NULL;
+  else
+  	wFilesLen = strlennull(szFilesAnsi);
+
+  if (!utf8_decode(ft->szDescription, &szDescrAnsi))
+    szDescrAnsi = NULL;
+  else
+	  wDescrLen = strlennull(szDescrAnsi);
 
 	// 202 + UIN len + file description (no null) + file name (null included)
 	// Packet size = Flap length + 4
-	wFlapLen = 178 + wDescrLen + wFilesLen + (nAckType == ACKTYPE_SERVER?4:0);
+	WORD wFlapLen = 178 + wDescrLen + wFilesLen + (nAckType == ACKTYPE_SERVER?4:0);
 	packServMsgSendHeader(&packet, ft->dwCookie, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, ft->dwUin, NULL, 2, wFlapLen);
 
 	// TLV(5) header
@@ -763,13 +782,16 @@ void CIcqProto::icq_sendFileSendServv8(filetransfer* ft, const TCHAR *szFiles, i
 
 	packLEDWord(&packet, (WORD)(18 + wDescrLen + wFilesLen + 1)); // Remaining length
 	packLEDWord(&packet, wDescrLen);          // Description
-	packBuffer(&packet, (LPBYTE)ft->szDescription, wDescrLen);
+	packBuffer(&packet, (LPBYTE)szDescrAnsi, wDescrLen);
 	packWord(&packet, 0x8c82); // Unknown (port?), seen 0x80F6
 	packWord(&packet, 0x0222); // Unknown, seen 0x2e01
 	packLEWord(&packet, (WORD)(wFilesLen + 1));
-	packBuffer(&packet, (LPBYTE)tmpFiles, (WORD)(wFilesLen + 1));
+	packBuffer(&packet, (LPBYTE)szFilesAnsi, (WORD)(wFilesLen + 1));
 	packLEDWord(&packet, ft->dwTotalSize);
 	packLEDWord(&packet, 0x0008c82); // Unknown, (seen 0xf680 ~33000)
+
+	SAFE_FREE(&szFilesAnsi);
+  SAFE_FREE(&szDescrAnsi);
 
 	// Pack request server ack TLV
 	if (nAckType == ACKTYPE_SERVER)
@@ -777,26 +799,32 @@ void CIcqProto::icq_sendFileSendServv8(filetransfer* ft, const TCHAR *szFiles, i
 
 	// Send the monster
 	sendServPacket(&packet);
-	SAFE_FREE(&tmpFiles);
 }
+
 
 /* also sends rejections */
 void CIcqProto::icq_sendFileAcceptServv8(DWORD dwUin, DWORD TS1, DWORD TS2, DWORD dwCookie, const char *szFiles, const char *szDescr, DWORD dwTotalSize, WORD wPort, BOOL accepted, int nAckType)
 {
 	icq_packet packet;
-	WORD wFlapLen;
-	WORD wDescrLen,wFilesLen;
+	WORD wDescrLen, wFilesLen;
+	char *szFilesAnsi = NULL, *szDescrAnsi = NULL;
 
 	/* if !accepted, szDescr == szReason, szFiles = "" */
 
 	if (!accepted) szFiles = "";
 
-	wDescrLen = strlennull(szDescr);
-	wFilesLen = strlennull(szFiles);
+  if (!utf8_decode(szFiles, &szFilesAnsi))
+    szFilesAnsi = NULL;
+
+  if (!utf8_decode(szDescr, &szDescrAnsi))
+    szDescrAnsi = NULL;
+
+	wDescrLen = strlennull(szDescrAnsi);
+	wFilesLen = strlennull(szFilesAnsi);
 
 	// 202 + UIN len + file description (no null) + file name (null included)
 	// Packet size = Flap length + 4
-	wFlapLen = 178 + wDescrLen + wFilesLen + (nAckType == ACKTYPE_SERVER?4:0);
+	WORD wFlapLen = 178 + wDescrLen + wFilesLen + (nAckType == ACKTYPE_SERVER?4:0);
 	packServMsgSendHeader(&packet, dwCookie, TS1, TS2, dwUin, NULL, 2, wFlapLen);
 
 	// TLV(5) header
@@ -814,13 +842,16 @@ void CIcqProto::icq_sendFileAcceptServv8(DWORD dwUin, DWORD TS1, DWORD TS2, DWOR
 
 	packLEDWord(&packet, (WORD)(18 + wDescrLen + wFilesLen + 1)); // Remaining length
 	packLEDWord(&packet, wDescrLen);          // Description
-	packBuffer(&packet, (LPBYTE)szDescr, wDescrLen);
+	packBuffer(&packet, (LPBYTE)szDescrAnsi, wDescrLen);
 	packWord(&packet, wPort); // Port
 	packWord(&packet, 0x00);  // Unknown
 	packLEWord(&packet, (WORD)(wFilesLen + 1));
-	packBuffer(&packet, (LPBYTE)szFiles, (WORD)(wFilesLen + 1));
+	packBuffer(&packet, (LPBYTE)szFilesAnsi, (WORD)(wFilesLen + 1));
 	packLEDWord(&packet, dwTotalSize);
 	packLEDWord(&packet, (DWORD)wPort); // Unknown
+
+	SAFE_FREE(&szFilesAnsi);
+  SAFE_FREE(&szDescrAnsi);
 
 	// Pack request server ack TLV
 	if (nAckType == ACKTYPE_SERVER)
@@ -832,22 +863,29 @@ void CIcqProto::icq_sendFileAcceptServv8(DWORD dwUin, DWORD TS1, DWORD TS2, DWOR
 	sendServPacket(&packet);
 }
 
+
 void CIcqProto::icq_sendFileAcceptServv7(DWORD dwUin, DWORD TS1, DWORD TS2, DWORD dwCookie, const char* szFiles, const char* szDescr, DWORD dwTotalSize, WORD wPort, BOOL accepted, int nAckType)
 {
 	icq_packet packet;
-	WORD wFlapLen;
-	WORD wDescrLen,wFilesLen;
+	WORD wDescrLen, wFilesLen;
+	char *szFilesAnsi = NULL, *szDescrAnsi = NULL;
 
 	/* if !accepted, szDescr == szReason, szFiles = "" */
 
 	if (!accepted) szFiles = "";
 
-	wDescrLen = strlennull(szDescr);
-	wFilesLen = strlennull(szFiles);
+  if (!utf8_decode(szFiles, &szFilesAnsi))
+    szFilesAnsi = NULL;
+
+  if (!utf8_decode(szDescr, &szDescrAnsi))
+    szDescrAnsi = NULL;
+
+	wDescrLen = strlennull(szDescrAnsi);
+	wFilesLen = strlennull(szFilesAnsi);
 
 	// 150 + UIN len + file description (with null) + file name (2 nulls)
 	// Packet size = Flap length + 4
-	wFlapLen = 127 + wDescrLen + 1 + wFilesLen + (nAckType == ACKTYPE_SERVER?4:0);
+	WORD wFlapLen = 127 + wDescrLen + 1 + wFilesLen + (nAckType == ACKTYPE_SERVER?4:0);
 	packServMsgSendHeader(&packet, dwCookie, TS1, TS2, dwUin, NULL, 2, wFlapLen);
 
 	// TLV(5) header
@@ -860,14 +898,17 @@ void CIcqProto::icq_sendFileAcceptServv7(DWORD dwUin, DWORD TS1, DWORD TS2, DWOR
 	packServTLV2711Header(&packet, (WORD)dwCookie, ICQ_VERSION, MTYPE_FILEREQ, 0, (WORD)(accepted ? 0:1), 0, 19 + wDescrLen + wFilesLen);
 	//
 	packLEWord(&packet, (WORD)(wDescrLen + 1));     // Description
-	packBuffer(&packet, (LPBYTE)szDescr, (WORD)(wDescrLen + 1));
+	packBuffer(&packet, (LPBYTE)szDescrAnsi, (WORD)(wDescrLen + 1));
 	packWord(&packet, wPort);   // Port
 	packWord(&packet, 0x00);    // Unknown
 	packLEWord(&packet, (WORD)(wFilesLen + 2));
-	packBuffer(&packet, (LPBYTE)szFiles, (WORD)(wFilesLen + 1));
+	packBuffer(&packet, (LPBYTE)szFilesAnsi, (WORD)(wFilesLen + 1));
 	packByte(&packet, 0);
 	packLEDWord(&packet, dwTotalSize);
 	packLEDWord(&packet, (DWORD)wPort); // Unknown
+
+	SAFE_FREE(&szFilesAnsi);
+  SAFE_FREE(&szDescrAnsi);
 
 	// Pack request server ack TLV
 	if (nAckType == ACKTYPE_SERVER)
@@ -879,7 +920,8 @@ void CIcqProto::icq_sendFileAcceptServv7(DWORD dwUin, DWORD TS1, DWORD TS2, DWOR
 	sendServPacket(&packet);
 }
 
-void CIcqProto::icq_sendFileAcceptServ(DWORD dwUin, filetransfer* ft, int nAckType)
+
+void CIcqProto::icq_sendFileAcceptServ(DWORD dwUin, filetransfer *ft, int nAckType)
 {
 	char *szDesc = ft->szDescription;
 
@@ -897,23 +939,21 @@ void CIcqProto::icq_sendFileAcceptServ(DWORD dwUin, filetransfer* ft, int nAckTy
 	}
 }
 
-void CIcqProto::icq_sendFileDenyServ(DWORD dwUin, filetransfer* ft, const TCHAR *szReason, int nAckType)
-{
-	char* tmpReason = tchar_to_utf8( szReason );
 
+void CIcqProto::icq_sendFileDenyServ(DWORD dwUin, filetransfer *ft, const char *szReason, int nAckType)
+{
 	if (ft->nVersion >= 8)
 	{
-		icq_sendFileAcceptServv8(dwUin, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, ft->dwCookie, ft->szFilename, tmpReason, ft->dwTotalSize, wListenPort, FALSE, nAckType);
+		icq_sendFileAcceptServv8(dwUin, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, ft->dwCookie, ft->szFilename, szReason, ft->dwTotalSize, wListenPort, FALSE, nAckType);
 		NetLog_Server("Sent file deny v%u through server", 8);
 	}
 	else
 	{
-		icq_sendFileAcceptServv7(dwUin, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, ft->dwCookie, ft->szFilename, tmpReason, ft->dwTotalSize, wListenPort, FALSE, nAckType);
+		icq_sendFileAcceptServv7(dwUin, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, ft->dwCookie, ft->szFilename, szReason, ft->dwTotalSize, wListenPort, FALSE, nAckType);
 		NetLog_Server("Sent file deny v%u through server", 7);
 	}
-
-	SAFE_FREE( &tmpReason );
 }
+
 
 void CIcqProto::icq_sendAwayMsgReplyServ(DWORD dwUin, DWORD dwMsgID1, DWORD dwMsgID2, WORD wCookie, WORD wVersion, BYTE msgType, char** szMsg)
 {
@@ -966,6 +1006,7 @@ void CIcqProto::icq_sendAwayMsgReplyServ(DWORD dwUin, DWORD dwMsgID1, DWORD dwMs
 	}
 }
 
+
 void CIcqProto::icq_sendAdvancedMsgAck(DWORD dwUin, DWORD dwTimestamp, DWORD dwTimestamp2, WORD wCookie, BYTE bMsgType, BYTE bMsgFlags)
 {
 	icq_packet packet;
@@ -976,6 +1017,7 @@ void CIcqProto::icq_sendAdvancedMsgAck(DWORD dwUin, DWORD dwTimestamp, DWORD dwT
 
 	sendServPacket(&packet);
 }
+
 
 void CIcqProto::icq_sendContactsAck(DWORD dwUin, char *szUid, DWORD dwMsgID1, DWORD dwMsgID2)
 {
@@ -1166,6 +1208,7 @@ DWORD CIcqProto::sendTLVSearchPacket(BYTE bType, char* pSearchDataBuf, WORD wSea
 	return dwCookie;
 }
 
+
 DWORD CIcqProto::icq_sendAdvancedSearchServ(BYTE* fieldsBuffer,int bufferLen)
 {
 	icq_packet packet;
@@ -1187,6 +1230,7 @@ DWORD CIcqProto::icq_sendAdvancedSearchServ(BYTE* fieldsBuffer,int bufferLen)
 
 	return dwCookie;
 }
+
 
 DWORD CIcqProto::icq_searchAimByEmail(const char* pszEmail, DWORD dwSearchId)
 {

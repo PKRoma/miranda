@@ -127,13 +127,13 @@ static LRESULT CALLBACK IconCtrlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 	switch(msg) {
 		case WM_LBUTTONDBLCLK:
-			ShellExecute(hwnd,NULL,pft->currentFile,NULL,NULL,SW_SHOW);
+			ShellExecute(hwnd,NULL,pft->tszCurrentFile,NULL,NULL,SW_SHOW);
 			break;
 		case WM_RBUTTONUP:
 		{	POINT pt;
 			pt.x=(short)LOWORD(lParam); pt.y=(short)HIWORD(lParam);
 			ClientToScreen( hwnd, &pt );
-			DoAnnoyingShellCommand( hwnd, pft->currentFile, C_CONTEXTMENU, &pt );
+			DoAnnoyingShellCommand( hwnd, pft->tszCurrentFile, C_CONTEXTMENU, &pt );
 			return 0;
 		}
 	}
@@ -215,7 +215,7 @@ INT_PTR CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 	case WM_INITDIALOG:
 	{
 		TCHAR szSize[64];
-		struct _stat statbuf;
+		struct _stati64 statbuf;
 		HWND hwndFocus;
 		struct TDlgProcFileExistsParam *dat = (struct TDlgProcFileExistsParam *)lParam;
 
@@ -226,7 +226,7 @@ INT_PTR CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		fts=(PROTOFILETRANSFERSTATUS*)mir_alloc(sizeof(PROTOFILETRANSFERSTATUS));
 		CopyProtoFileTransferStatus(fts,dat->fts);
 		SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)fts);
-		SetDlgItemText(hwndDlg,IDC_FILENAME,fts->currentFile);
+		SetDlgItemText(hwndDlg,IDC_FILENAME,fts->tszCurrentFile);
 		SetControlToUnixTime(hwndDlg,IDC_NEWDATE,fts->currentFileTime);
 		GetSensiblyFormattedSize(fts->currentFileSize,szSize,SIZEOF(szSize),0,1,NULL);
 		SetDlgItemText(hwndDlg,IDC_NEWSIZE,szSize);
@@ -234,7 +234,7 @@ INT_PTR CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		pfnIconWindowProc=(WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_EXISTINGICON),GWLP_WNDPROC,(LONG_PTR)IconCtrlSubclassProc);
 
 		hwndFocus=GetDlgItem(hwndDlg,IDC_RESUME);
-		if ( _tstat(fts->currentFile,&statbuf)==0) {
+		if ( _tstati64(fts->tszCurrentFile,&statbuf)==0) {
 			SetControlToUnixTime(hwndDlg,IDC_EXISTINGDATE,statbuf.st_mtime);
 			GetSensiblyFormattedSize(statbuf.st_size,szSize,SIZEOF(szSize),0,1,NULL);
 			SetDlgItemText(hwndDlg,IDC_EXISTINGSIZE,szSize);
@@ -245,7 +245,7 @@ INT_PTR CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
 		loadiconsstartinfo *lisi = ( loadiconsstartinfo* )mir_alloc(sizeof(loadiconsstartinfo));
 		lisi->hwndDlg=hwndDlg;
-		lisi->szFilename = mir_tstrdup(fts->currentFile);
+		lisi->szFilename = mir_tstrdup(fts->tszCurrentFile);
 		//can be a little slow, so why not?
 		forkthread(LoadIconsAndTypesThread,0,lisi);			
 		SetFocus(hwndFocus);
@@ -257,13 +257,13 @@ INT_PTR CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		PROTOFILERESUME pfr={0};
 		switch(LOWORD(wParam)) {
 		case IDC_OPENFILE:
-			ShellExecute( hwndDlg, NULL, fts->currentFile, NULL, NULL, SW_SHOW );
+			ShellExecute( hwndDlg, NULL, fts->tszCurrentFile, NULL, NULL, SW_SHOW );
 			return FALSE;
 
 		case IDC_OPENFOLDER:
 		{	
 			TCHAR szFile[MAX_PATH];
-			lstrcpyn( szFile, fts->currentFile, SIZEOF(szFile));
+			lstrcpyn( szFile, fts->tszCurrentFile, SIZEOF(szFile));
 			TCHAR* pszLastBackslash = _tcsrchr( szFile, '\\' );
 			if ( pszLastBackslash )
 				*pszLastBackslash = '\0';
@@ -271,7 +271,7 @@ INT_PTR CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			return FALSE;
 		}
 		case IDC_PROPERTIES:
-			DoAnnoyingShellCommand(hwndDlg,fts->currentFile,C_PROPERTIES,NULL);
+			DoAnnoyingShellCommand(hwndDlg,fts->tszCurrentFile,C_PROPERTIES,NULL);
 			return FALSE;
 		case IDC_RESUME:
 			pfr.action=FILERESUME_RESUME;
@@ -292,7 +292,7 @@ INT_PTR CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			TCHAR filter[512],*pfilter;
 			TCHAR str[MAX_PATH];
 
-			lstrcpyn( str, fts->currentFile, SIZEOF(str));
+			lstrcpyn( str, fts->tszCurrentFile, SIZEOF(str));
 			ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 			ofn.hwndOwner = hwndDlg;
 			ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
@@ -325,7 +325,7 @@ INT_PTR CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		{	PROTOFILERESUME *pfrCopy;
 			pfrCopy=(PROTOFILERESUME*)mir_alloc(sizeof(pfr));
 			CopyMemory(pfrCopy,&pfr,sizeof(pfr));
-			PostMessage((HWND)GetPropA(hwndDlg,"Miranda.ParentWnd"),M_FILEEXISTSDLGREPLY,(WPARAM)mir_t2a(fts->currentFile),(LPARAM)pfrCopy);
+			PostMessage((HWND)GetPropA(hwndDlg,"Miranda.ParentWnd"),M_FILEEXISTSDLGREPLY,(WPARAM)fts->tszCurrentFile,(LPARAM)pfrCopy);
 			DestroyWindow(hwndDlg);
 		}
 		break;

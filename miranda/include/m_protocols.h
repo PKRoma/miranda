@@ -133,6 +133,7 @@ typedef struct {
 #define PFTS_RECEIVING 0
 #define PFTS_SENDING   1
 #define PFTS_UNICODE   2
+#define PFTS_UTF       4
 
 #if defined( _UNICODE )
 	#define PFTS_TCHAR  PFTS_UNICODE
@@ -140,23 +141,54 @@ typedef struct {
 	#define PFTS_TCHAR  0
 #endif
 
-typedef struct {
+typedef struct tagPROTOFILETRANSFERSTATUS {
 	size_t cbSize;
 	HANDLE hContact;
 	#if MIRANDA_VER >= 0x0900
 		DWORD  flags;      // one of PFTS_* constants
 	#else
 		int    sending;
-	#endif	
-	FNAMECHAR **files;
+	#endif
+  #if MIRANDA_VER >= 0x0900
+    union {
+  	  char **pszFiles;
+      TCHAR **ptszFiles;
+      WCHAR **pwszFiles;
+    };
+  #else
+    char **files;
+  #endif
 	int totalFiles;
 	int currentFileNumber;
-	unsigned long totalBytes;
-	unsigned long totalProgress;
-	FNAMECHAR *workingDir;
-	FNAMECHAR *currentFile;
-	unsigned long currentFileSize;
-	unsigned long currentFileProgress;
+  #if MIRANDA_VER >= 0x0900
+		unsigned __int64 totalBytes;
+		unsigned __int64 totalProgress;
+  #else
+		unsigned long totalBytes;
+		unsigned long totalProgress;
+  #endif
+  #if MIRANDA_VER >= 0x0900
+    union {
+	    char *szWorkingDir;
+      TCHAR *tszWorkingDir;
+      WCHAR *wszWorkingDir;
+    };
+    union {
+  	  char *szCurrentFile;
+      TCHAR *tszCurrentFile;
+      WCHAR *wszCurrentFile;
+    };
+  #else
+    char *workingDir;
+    char *currentFile;
+  #endif
+  #if MIRANDA_VER >= 0x0900
+		unsigned __int64 currentFileSize;
+		unsigned __int64 currentFileProgress;
+  #else
+		unsigned long currentFileSize;
+		unsigned long currentFileProgress;
+  #endif
 	unsigned long currentFileTime;  //as seconds since 1970
 } PROTOFILETRANSFERSTATUS;
 
