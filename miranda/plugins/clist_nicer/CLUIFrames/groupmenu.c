@@ -168,6 +168,24 @@ INT_PTR GroupMenuonAddService(WPARAM wParam,LPARAM lParam) {
 		mii->hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
 	}
 	if (hAppearanceMenuItemProxy==(HANDLE)lParam) {
+		hMenuOldContext = GetSubMenu(LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT)), 4);
+		CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hMenuOldContext, 0);
+
+		CheckMenuItem(hMenuOldContext, POPUP_VISIBILITY, MF_BYCOMMAND | (g_CluiData.dwFlags & CLUI_SHOWVISI ? MF_CHECKED : MF_UNCHECKED));
+		CheckMenuItem(hMenuOldContext, POPUP_FRAME, MF_BYCOMMAND | (g_CluiData.dwFlags & CLUI_FRAME_CLISTSUNKEN ? MF_CHECKED : MF_UNCHECKED));
+		CheckMenuItem(hMenuOldContext, POPUP_TOOLBAR, MF_BYCOMMAND | (g_CluiData.dwFlags & CLUI_FRAME_SHOWTOPBUTTONS ? MF_CHECKED : MF_UNCHECKED));
+		CheckMenuItem(hMenuOldContext, POPUP_BUTTONS, MF_BYCOMMAND | (g_CluiData.dwFlags & CLUI_FRAME_SHOWBOTTOMBUTTONS ? MF_CHECKED : MF_UNCHECKED));
+		CheckMenuItem(hMenuOldContext, POPUP_SHOWMETAICONS, MF_BYCOMMAND | (g_CluiData.dwFlags & CLUI_USEMETAICONS ? MF_CHECKED : MF_UNCHECKED));
+		CheckMenuItem(hMenuOldContext, POPUP_SHOWSTATUSICONS, MF_BYCOMMAND | (g_CluiData.dwFlags & CLUI_FRAME_STATUSICONS ? MF_CHECKED : MF_UNCHECKED));
+
+		// floater menu items
+
+		EnableMenuItem(hMenuOldContext, POPUP_FLOATER_AUTOHIDE, MF_BYCOMMAND | (g_CluiData.bUseFloater & CLUI_USE_FLOATER ? MF_ENABLED : MF_GRAYED));
+		EnableMenuItem(hMenuOldContext, POPUP_FLOATER_EVENTS, MF_BYCOMMAND | (g_CluiData.bUseFloater & CLUI_USE_FLOATER ? MF_ENABLED : MF_GRAYED));
+		CheckMenuItem(hMenuOldContext, POPUP_FLOATER, MF_BYCOMMAND | (g_CluiData.bUseFloater & CLUI_USE_FLOATER ? MF_CHECKED : MF_UNCHECKED));
+		CheckMenuItem(hMenuOldContext, POPUP_FLOATER_AUTOHIDE, MF_BYCOMMAND | (g_CluiData.bUseFloater & CLUI_FLOATER_AUTOHIDE ? MF_CHECKED : MF_UNCHECKED));
+		CheckMenuItem(hMenuOldContext, POPUP_FLOATER_EVENTS, MF_BYCOMMAND | (g_CluiData.bUseFloater & CLUI_FLOATER_EVENTS ? MF_CHECKED : MF_UNCHECKED));
+
 		mii->fMask|=MIIM_SUBMENU;
 		//mi.fType=MFT_STRING;
 		mii->hSubMenu=(HMENU)hMenuOldContext;
@@ -263,20 +281,10 @@ static int OnBuildGroupMenu(WPARAM wParam,LPARAM lParam)
 	mi.flags = CMIM_FLAGS;
 	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hGroupMainMenuItemProxy, (LPARAM)&mi);
 
-	CheckMenuItem(hMenuOldContext, POPUP_VISIBILITY, MF_BYCOMMAND | (g_CluiData.dwFlags & CLUI_SHOWVISI ? MF_CHECKED : MF_UNCHECKED));
-	CheckMenuItem(hMenuOldContext, POPUP_FRAME, MF_BYCOMMAND | (g_CluiData.dwFlags & CLUI_FRAME_CLISTSUNKEN ? MF_CHECKED : MF_UNCHECKED));
-	CheckMenuItem(hMenuOldContext, POPUP_TOOLBAR, MF_BYCOMMAND | (g_CluiData.dwFlags & CLUI_FRAME_SHOWTOPBUTTONS ? MF_CHECKED : MF_UNCHECKED));
-	CheckMenuItem(hMenuOldContext, POPUP_BUTTONS, MF_BYCOMMAND | (g_CluiData.dwFlags & CLUI_FRAME_SHOWBOTTOMBUTTONS ? MF_CHECKED : MF_UNCHECKED));
-	CheckMenuItem(hMenuOldContext, POPUP_SHOWMETAICONS, MF_BYCOMMAND | (g_CluiData.dwFlags & CLUI_USEMETAICONS ? MF_CHECKED : MF_UNCHECKED));
-	CheckMenuItem(hMenuOldContext, POPUP_SHOWSTATUSICONS, MF_BYCOMMAND | (g_CluiData.dwFlags & CLUI_FRAME_STATUSICONS ? MF_CHECKED : MF_UNCHECKED));
-
-	// floater menu items
-
-	EnableMenuItem(hMenuOldContext, POPUP_FLOATER_AUTOHIDE, MF_BYCOMMAND | (g_CluiData.bUseFloater & CLUI_USE_FLOATER ? MF_ENABLED : MF_GRAYED));
-	EnableMenuItem(hMenuOldContext, POPUP_FLOATER_EVENTS, MF_BYCOMMAND | (g_CluiData.bUseFloater & CLUI_USE_FLOATER ? MF_ENABLED : MF_GRAYED));
-	CheckMenuItem(hMenuOldContext, POPUP_FLOATER, MF_BYCOMMAND | (g_CluiData.bUseFloater & CLUI_USE_FLOATER ? MF_CHECKED : MF_UNCHECKED));
-	CheckMenuItem(hMenuOldContext, POPUP_FLOATER_AUTOHIDE, MF_BYCOMMAND | (g_CluiData.bUseFloater & CLUI_FLOATER_AUTOHIDE ? MF_CHECKED : MF_UNCHECKED));
-	CheckMenuItem(hMenuOldContext, POPUP_FLOATER_EVENTS, MF_BYCOMMAND | (g_CluiData.bUseFloater & CLUI_FLOATER_EVENTS ? MF_CHECKED : MF_UNCHECKED));
+	ZeroMemory(&mi,sizeof(mi));
+	mi.cbSize = sizeof(mi);
+	mi.flags = CMIM_FLAGS;
+	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hAppearanceMenuItemProxy, (LPARAM)&mi);
 
 	return 0;
 };
@@ -306,9 +314,6 @@ void InitGroupMenus(void)
 	OptParam op;
 	//hicon=LoadIconFromExternalFile("clisticons.dll",2,TRUE,TRUE,"NewGroup","Contact List","New Group",-IDI_NEWGROUP2);
 	//NewGroupIconidx=ImageList_AddIcon(hCListImages,hicon );
-
-	hMenuOldContext = GetSubMenu(LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT)), 4);
-	CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hMenuOldContext, 0);
 
 	CreateServiceFunction("CLISTMENUSGroup/ExecService",GroupMenuExecService);
 	CreateServiceFunction("CLISTMENUSGroup/FreeOwnerDataGroupMenu",FreeOwnerDataGroupMenu);
@@ -393,7 +398,7 @@ void InitGroupMenus(void)
 
 		memset(&mi,0,sizeof(mi));
 		mi.cbSize=sizeof(mi);
-		mi.position=300200;
+		mi.position=390100;
 		mi.pszService="";
 		mi.pszName=LPGEN("Appearance");
 		hAppearanceMenuItemProxy=(HANDLE)AddGroupMenuItem((WPARAM)0,(LPARAM)&mi);

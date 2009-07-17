@@ -1,5 +1,5 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches 
+astyle --force-indent=tab=4 --brackets=linux --indent-switches
 		--pad=oper --one-line=keep-blocks  --unpad=paren
 
 Miranda IM: the free IM client for Microsoft* Windows*
@@ -262,7 +262,7 @@ static void PositionThumb(wndFrame *pThumb, short nX, short nY)
 	BOOL        bLeading;
 	int         frmidx = 0;
 
-	if (pThumb == NULL) 
+	if (pThumb == NULL)
 		return;
 
 	sizeScreen.cx = GetSystemMetrics(SM_CXSCREEN);
@@ -3088,7 +3088,7 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 int CLUIFrameResizeFloatingFrame(int framepos)
 {
 
-	int width, height;
+	int width, height, floatingHeight;
 	RECT rect;
 
 	if (!Frames[framepos].floating)
@@ -3099,25 +3099,31 @@ int CLUIFrameResizeFloatingFrame(int framepos)
 
 	width = rect.right - rect.left;
 	height = rect.bottom - rect.top;
+	floatingHeight = g_CluiData.titleBarHeight;
 
 	Frames[framepos].visible ? ShowWindow(Frames[framepos].ContainerWnd, SW_SHOWNOACTIVATE) : ShowWindow(Frames[framepos].ContainerWnd, SW_HIDE);
 
 	if (Frames[framepos].TitleBar.ShowTitleBar) {
 		ShowWindow(Frames[framepos].TitleBar.hwnd, SW_SHOWNOACTIVATE);
-		Frames[framepos].height = height - DEFAULT_TITLEBAR_HEIGHT;
-		SetWindowPos(Frames[framepos].TitleBar.hwnd, HWND_TOP, 0, 0, width, DEFAULT_TITLEBAR_HEIGHT, SWP_SHOWWINDOW | SWP_DRAWFRAME | SWP_NOACTIVATE);
+		Frames[framepos].height = height - floatingHeight;
+		SetWindowPos(Frames[framepos].TitleBar.hwnd, HWND_TOP, 0, 0, width, floatingHeight, SWP_SHOWWINDOW | SWP_DRAWFRAME | SWP_NOACTIVATE);
 		InvalidateRect(Frames[framepos].TitleBar.hwnd, NULL, FALSE);
-		SetWindowPos(Frames[framepos].hWnd, HWND_TOP, 0, DEFAULT_TITLEBAR_HEIGHT, width, height - DEFAULT_TITLEBAR_HEIGHT, SWP_SHOWWINDOW | SWP_NOACTIVATE);
+		SetWindowPos(Frames[framepos].hWnd, HWND_TOP, 0, floatingHeight, width, height - floatingHeight, SWP_SHOWWINDOW | SWP_NOACTIVATE);
 
 	} else {
 		Frames[framepos].height = height;
 		ShowWindow(Frames[framepos].TitleBar.hwnd, SW_HIDE);
 		SetWindowPos(Frames[framepos].hWnd, HWND_TOP, 0, 0, width, height, SWP_SHOWWINDOW | SWP_NOACTIVATE);
-
 	}
 
-	if (Frames[framepos].ContainerWnd != 0) UpdateWindow(Frames[framepos].ContainerWnd);
+	if (Frames[framepos].ContainerWnd != 0)
+		UpdateWindow(Frames[framepos].ContainerWnd);
 	GetWindowRect(Frames[framepos].hWnd, &Frames[framepos].wndSize);
+
+	if (Frames[framepos].TitleBar.ShowTitleBar)
+		RedrawWindow(Frames[framepos].TitleBar.hwnd, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW);
+	RedrawWindow(Frames[framepos].hWnd, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW);
+
 	return(0);
 }
 
