@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "CLUIFrames/cluiframes.h"
 
 WNDPROC OldStatusBarProc = 0;
-
+    
 static POINT ptMouse = {0};
 static RECT rcMouse = {0};
 static int timer_set = 0, tooltip_active = 0;

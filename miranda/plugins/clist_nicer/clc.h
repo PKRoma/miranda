@@ -111,8 +111,8 @@ typedef struct ContactFloater CONTACTFLOATER;
 #define EXICON_COUNT 11
 
 /* Extra icons settings */
-typedef struct _OrderTreeData 
-{ 
+typedef struct _OrderTreeData
+{
 	BYTE	ID;
 	TCHAR *	Name;
 	BYTE	Position;
@@ -433,6 +433,7 @@ struct CluiData {
     DWORD t_now;
     BYTE exIconOrder[EXICON_COUNT];
     BOOL realTimeSaving;
+	TCHAR tszProfilePath[MAX_PATH];
 };
 
 #define SORTBY_NAME 1
@@ -499,13 +500,15 @@ DWORD INTSORT_GetLastMsgTime(HANDLE hContact);
 LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM wParam, LPARAM lParam);
 
 //clcutils.c
-void SetGroupExpand(HWND hwnd, struct ClcData *dat, struct ClcGroup *group, int newState);
-void DoSelectionDefaultAction(HWND hwnd, struct ClcData *dat);
-int FindRowByText(HWND hwnd, struct ClcData *dat, const TCHAR *text, int prefixOk);
-void BeginRenameSelection(HWND hwnd, struct ClcData *dat);
-int HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcContact **contact, struct ClcGroup **group, DWORD *flags);
-void ScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth);
-void RecalcScrollBar(HWND hwnd, struct ClcData *dat);
+void 	SetGroupExpand(HWND hwnd, struct ClcData *dat, struct ClcGroup *group, int newState);
+void 	DoSelectionDefaultAction(HWND hwnd, struct ClcData *dat);
+int 	FindRowByText(HWND hwnd, struct ClcData *dat, const TCHAR *text, int prefixOk);
+void 	BeginRenameSelection(HWND hwnd, struct ClcData *dat);
+int 	HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcContact **contact, struct ClcGroup **group, DWORD *flags);
+void 	ScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth);
+void 	RecalcScrollBar(HWND hwnd, struct ClcData *dat);
+size_t 	MY_pathToRelative(const TCHAR *pSrc, TCHAR *pOut);
+size_t 	MY_pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut);
 
 #define DROPTARGET_OUTSIDE    0
 #define DROPTARGET_ONSELF     1
