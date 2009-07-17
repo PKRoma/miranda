@@ -29,11 +29,12 @@ Last change by : $Author$
 
 BOOL CJabberProto::WsInit( void )
 {
-	NETLIBUSER nlu = {0};
-	TCHAR name[128];
+	m_lastTicks = ::GetTickCount();
 
+	TCHAR name[128];
 	mir_sntprintf( name, SIZEOF(name), TranslateT("%s connection"), m_tszUserName);
 
+	NETLIBUSER nlu = {0};
 	nlu.cbSize = sizeof( nlu );
 	nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_HTTPCONNS | NUF_TCHAR;	// | NUF_HTTPGATEWAY;
 	nlu.ptszDescriptiveName = name;
@@ -66,6 +67,7 @@ JABBER_SOCKET CJabberProto::WsConnect( char* host, WORD port )
 
 int CJabberProto::WsSend( JABBER_SOCKET hConn, char* data, int datalen, int flags )
 {
+	m_lastTicks = ::GetTickCount();
 	int len;
 
 	if (( len = Netlib_Send( hConn, data, datalen, flags )) == SOCKET_ERROR || len != datalen ) {
