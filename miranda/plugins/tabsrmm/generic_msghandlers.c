@@ -284,7 +284,7 @@ LRESULT DM_ScrollToBottom(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wP
 	}
 
 LRESULT DM_LoadLocale(HWND hwndDlg, struct MessageWindowData *dat)
-	{
+{
 	/*
 	* set locale if saved to contact
 	*/
@@ -301,22 +301,21 @@ LRESULT DM_LoadLocale(HWND hwndDlg, struct MessageWindowData *dat)
 
 			res = DBGetContactSettingString(dat->hContact, SRMSGMOD_T, "locale", &dbv);
 			if (res == 0) {
-
 				dat->hkl = LoadKeyboardLayoutA(dbv.pszVal, KLF_ACTIVATE);
-				PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
 				GetLocaleID(dat, dbv.pszVal);
+				PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
 				DBFreeVariant(&dbv);
-				} else {
-					GetKeyboardLayoutNameA(szKLName);
-					dat->hkl = LoadKeyboardLayoutA(szKLName, 0);
-					DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
-					GetLocaleID(dat, szKLName);
-				}
-			UpdateReadChars(hwndDlg, dat);
+			} else {
+		   		GetKeyboardLayoutNameA(szKLName);
+		   		dat->hkl = LoadKeyboardLayoutA(szKLName, 0);
+		   		DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
+		   		GetLocaleID(dat, szKLName);
 			}
+			UpdateReadChars(hwndDlg, dat);
 		}
-	return 0;
 	}
+	return 0;
+}
 
 LRESULT DM_RecalcPictureSize(HWND hwndDlg, struct MessageWindowData *dat)
 	{
@@ -332,19 +331,6 @@ LRESULT DM_RecalcPictureSize(HWND hwndDlg, struct MessageWindowData *dat)
 			}
 		GetObject(hbm, sizeof(bminfo), &bminfo);
 		CalcDynamicAvatarSize(hwndDlg, dat, &bminfo);
-		/*
-		if (myGlobals.g_FlashAvatarAvail) {
-		RECT rc = { 0, 0, dat->pic.cx, dat->pic.cy };
-		if(!(dat->dwFlagsEx & MWF_SHOW_INFOPANEL)) {
-		FLASHAVATAR fa = {0};
-
-		fa.hContact = !(dat->dwFlagsEx & MWF_SHOW_INFOPANEL) ? dat->hContact : NULL;
-		fa.cProto = dat->szProto;
-		fa.hWindow = 0;
-		fa.id = 25367;
-		CallService(MS_FAVATAR_RESIZE, (WPARAM)&fa, (LPARAM)&rc);				}
-		}
-		*/
 		SendMessage(hwndDlg, WM_SIZE, 0, 0);
 		}
 	return 0;
@@ -412,11 +398,10 @@ LRESULT DM_UpdateLastMessage(HWND hwndDlg, struct MessageWindowData *dat)
 */
 
 LRESULT DM_SaveLocale(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
-	{
+{
 	if (dat) {
 		if (myGlobals.m_AutoLocaleSupport && dat->hContact && dat->pContainer->hwndActive == hwndDlg) {
 			char szKLName[KL_NAMELENGTH + 1];
-
 			if ((HKL)lParam != dat->hkl) {
 				dat->hkl = (HKL)lParam;
 				ActivateKeyboardLayout(dat->hkl, 0);
@@ -424,11 +409,11 @@ LRESULT DM_SaveLocale(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam
 				DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
 				GetLocaleID(dat, szKLName);
 				UpdateReadChars(hwndDlg, dat);
-				}
 			}
 		}
-	return 0;
 	}
+	return 0;
+}
 
 /*
 * generic handler for the WM_COPY message in message log/chat history richedit control(s).

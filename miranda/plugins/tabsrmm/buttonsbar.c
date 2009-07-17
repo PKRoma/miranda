@@ -529,14 +529,14 @@ void BB_UpdateIcons(HWND hdlg,struct MessageWindowData *dat)
 	qsort(LButtonsList->items,LButtonsList->realCount,sizeof(CustomButtonData *),sstSortButtons);
 	for (i=0; i<LButtonsList->realCount; i++) {
 		CustomButtonData* cbd=(CustomButtonData *)LButtonsList->items[i];
-		if(cbd){
+		if(cbd) {
 			if(!cbd->bDummy)
 				hwndBtn=GetDlgItem(hdlg,cbd->dwButtonCID);
 
 			if(hwndBtn&&cbd->hIcon)
 				SendMessage(hwndBtn, BM_SETIMAGE, IMAGE_ICON, (LPARAM)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)cbd->hIcon));
-			}
 		}
+	}
 
 	hwndBtn=NULL;
 	qsort(RButtonsList->items,RButtonsList->realCount,sizeof(CustomButtonData *),sstSortButtons);

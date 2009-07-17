@@ -110,7 +110,7 @@ void HandleQueueError(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
 
 	dat->iCurrentQueueError = iEntry;
 	_snprintf(szErrorMsg, 500, "%s", sendJobs[iEntry].szErrorMsg);
-#if defined(_UNICODE) 
+#if defined(_UNICODE)
 {
 	wchar_t wszErrorMsg[512];
 	MultiByteToWideChar(myGlobals.m_LangPackCP, 0, szErrorMsg, -1, wszErrorMsg, 512);
@@ -863,7 +863,7 @@ int AckMessage(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARA
 			if (sendJobs[iFound].sendCount > 1) {        // multisend is different...
 				char szErrMsg[256];
 				mir_snprintf(szErrMsg, sizeof(szErrMsg), Translate("Multisend: failed sending to: %s"), dat->szProto);
-#if defined(_UNICODE) 
+#if defined(_UNICODE)
 			{
 				wchar_t wszErrMsg[256];
 				MultiByteToWideChar(myGlobals.m_LangPackCP, 0, szErrMsg, -1, wszErrMsg, 256);

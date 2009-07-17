@@ -692,35 +692,6 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 		formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added, isSent);
 		mir_free(msg);
 	}
-	/*
-	else
-	{
-#if defined( _UNICODE )
-		int wlen;
-		int msglen = lstrlenA((char *) dbei.pBlob) + 1;
-
-		if ((dbei.cbBlob >= (DWORD)(2 * msglen)) && !(dat->sendMode & SMODE_FORCEANSI)) {
-			msg = (wchar_t *) & dbei.pBlob[msglen];
-			wlen = safe_wcslen(msg, (dbei.cbBlob - msglen) / 2);
-			if (wlen <= (msglen - 1) && wlen > 0) {
-				TrimMessage(msg);
-				formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added, isSent);
-			} else
-				goto nounicode;
-		} else {
-	nounicode:
-			msg = (TCHAR *) alloca(sizeof(TCHAR) * msglen);
-			MultiByteToWideChar(dat->codePage, 0, (char *) dbei.pBlob, -1, msg, msglen);
-			TrimMessage(msg);
-			formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added, isSent);
-		}
-#else   // non-unicode
-		msg = (char *) dbei.pBlob;
-		TrimMessage(msg);
-		formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added, isSent);
-#endif
-	}
-	*/
 
 	dat->stats.lastReceivedChars = 0;
 	fIsStatusChangeEvent = (heFlags != -1 || IsStatusEvent(dbei.eventType));

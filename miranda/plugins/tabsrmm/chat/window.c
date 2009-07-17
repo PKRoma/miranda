@@ -233,7 +233,8 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct MessageWindowData *dat, 
 
 		if (myGlobals.m_AutoLocaleSupport && dat->hContact != 0) {
 			if (dat->hkl == 0)
-				DM_LoadLocale(hwndDlg, dat);
+				//DM_LoadLocale(hwndDlg, dat);
+				PostMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
 			PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
 		}
 		SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
@@ -3133,7 +3134,7 @@ LABEL_SHOWWINDOW:
 #else
 						CallService("MSP/HTMLlog/ViewLog", (WPARAM)si->pszModule, (LPARAM)si->ptszName);
 #endif
-					} else if (pInfo) 
+					} else if (pInfo)
 						ShellExecute(hwndDlg, NULL, GetChatLogsFilename(si->hContact, 0), NULL, NULL, SW_SHOW);
 				}
 				break;
@@ -3457,6 +3458,11 @@ LABEL_SHOWWINDOW:
 			return 0;
 		}
 
+		case DM_LOADLOCALE: {
+			DM_LoadLocale(hwndDlg, dat);
+			return 0;
+		}
+
 		case DM_SETLOCALE:
 			if (dat->dwFlags & MWF_WASBACKGROUNDCREATE)
 				break;
@@ -3491,8 +3497,9 @@ LABEL_SHOWWINDOW:
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
 				//LoadSplitter(hwndDlg, dat);
 				SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETSCROLLPOS, 0, (LPARAM)&pt);
-				DM_LoadLocale(hwndDlg, dat);
-				SendMessage(hwndDlg, DM_SETLOCALE, 0, 0);
+				//DM_LoadLocale(hwndDlg, dat);
+				PostMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
+				PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
 			} else {
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
 				if (lParam == 0)

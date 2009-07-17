@@ -669,6 +669,7 @@ struct NewMessageWindowLParam {
 	struct  ContainerWindowData *pContainer;
 	BOOL    bWantPopup;
 	HANDLE  hdbEvent;
+	HKL		hkl;
 };
 
 // flags for the container dwFlags
@@ -821,6 +822,7 @@ struct NewMessageWindowLParam {
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
 #define DM_SCROLLIEVIEW		 (WM_USER+102)
+#define DM_LOADLOCALE	 	 (WM_USER+200)
 
 #define MINSPLITTERY         42
 #define MINLOGHEIGHT         30
