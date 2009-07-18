@@ -293,8 +293,8 @@ int __cdecl CAimProto::FileResume(HANDLE hTransfer, int* action, const PROTOCHAR
     {
     case FILERESUME_RESUME:
         {
-	        struct _stat statbuf;
-            _tstat(ft->pfts->tszCurrentFile, &statbuf);
+	        struct _stati64 statbuf;
+            _tstati64(ft->pfts->tszCurrentFile, &statbuf);
             ft->start_offset = statbuf.st_size;
         }
 
@@ -516,8 +516,8 @@ HANDLE __cdecl CAimProto::SendFile(HANDLE hContact, const PROTOCHAR* szDescripti
  
             ft->file = mir_utf8encodeT(ppszFiles[0]);
 
-		    struct _stat statbuf;
-		    _tstat(ppszFiles[0], &statbuf);
+		    struct _stati64 statbuf;
+		    _tstati64(ppszFiles[0], &statbuf);
             ft->total_size = statbuf.st_size;
             ft->ctime = statbuf.st_mtime;
 

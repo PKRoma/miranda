@@ -780,7 +780,8 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
         bool force_proxy=false;
         bool descr_included=false;
         bool unicode_message=false;
-        bool utfname=false;
+        bool utf_fname=false;
+        bool unicode_descr=false;
         short recv_file_type=-1;
         unsigned short request_num=0;
         unsigned long local_ip=0, verified_ip=0, proxy_ip=0;
@@ -864,28 +865,28 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
                         {
                             force_proxy=1;
                         }
-                        else if(tlv.cmp(0x0012))
+                        else if (tlv.cmp(0x0012))
                         {
-                            max_ver=tlv.ushort();
+                            max_ver = tlv.ushort();
                         }
-                        else if(tlv.cmp(0x2711))
+                        else if (tlv.cmp(0x2711))
                         {
-                            file_size=tlv.ulong(4);
-                            filename=tlv.part(8,tlv.len()-8);
+                            file_size = tlv.ulong(4);
+                            filename  = tlv.part(8, tlv.len()-8);
                         }
-                        else if(tlv.cmp(0x2712))
+                        else if (tlv.cmp(0x2712))
                         {
                             char* enc = tlv.dup();
-                            utfname = strcmp(enc, "utf-8") == 0;
+                            utf_fname = strcmp(enc, "utf-8") == 0;
                             mir_free(enc);
                         }
-                        else if(tlv.cmp(0x2713))
+                        else if (tlv.cmp(0x2713))
                         {
-                            file_size=tlv.u64();
+                            file_size = tlv.u64();
                         }
-                        else if(tlv.cmp(0x000c))
+                        else if (tlv.cmp(0x000c))
                         {
-                            msg_buf = tlv.dup();
+                            msg_buf = unicode_descr ? tlv.dupw() : tlv.dup();
                             html_decode(msg_buf);
                             descr_included = true;
                             if (strstr(msg_buf, "<ICQ_COOL_FT>"))
@@ -904,6 +905,9 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
                         }
                         else if(tlv.cmp(0x000d))
                         {
+                            char* enc = tlv.dup();
+                            unicode_descr = strcmp(enc, "unicode-2-0") == 0;
+                            mir_free(enc);
                         }
                         i += TLV_HEADER_SIZE + tlv.len();
                     }
@@ -1159,64 +1163,49 @@ void CAimProto::snac_received_info(SNAC &snac)//family 0x0002
         unsigned short tlv_count=snac.ushort(3+sn_length);
         offset=5+sn_length;
         HANDLE hContact=contact_from_sn(sn, true, true);
-        while(offset<snac.len())
+        
+        while (offset < snac.len())
         {
             TLV tlv(snac.val(offset));
-            offset+=TLV_HEADER_SIZE;
-            if(tlv.cmp(0x0001)&&i>=tlv_count)//profile encoding
-            {
-                char* enc = tlv.dup();
-                profile_unicode = strstr(enc,"unicode-2-0") != NULL;
-                mir_free(enc);
-            }
-            else if(tlv.cmp(0x0002)&&i>=tlv_count)//profile message string
-            {
-                char* msg;
-                if (profile_unicode) {
-                    wchar_t* msgw = tlv.dupw();
-                    wcs_htons(msgw);
-                    msg = mir_utf8encodeW(msgw);
-                    mir_free(msgw);
-                }
-                else
-                    msg = tlv.dup();
 
-                profile_received=1;
-                HANDLE hContact=contact_from_sn(sn);
-                if(hContact) write_profile(sn,msg,profile_unicode);
-                mir_free(msg);
-            }
-            else if(tlv.cmp(0x0003)&&i>=tlv_count)//away message encoding
+            if (++i > tlv_count)
             {
-                char* enc = tlv.dup();
-                away_message_unicode = strstr(enc,"unicode-2-0") != NULL;
-                mir_free(enc);
-            }
-            else if(tlv.cmp(0x0004)&&i>=tlv_count)//away message string
-            {
-                char* msg;
-                if (away_message_unicode) {
-                    wchar_t* msgw = tlv.dupw();
-                    wcs_htons(msgw);
-                    msg = mir_utf8encodeW(msgw);
-                    mir_free(msgw);
+                if(tlv.cmp(0x0001))//profile encoding
+                {
+                    char* enc = tlv.dup();
+                    profile_unicode = strstr(enc,"unicode-2-0") != NULL;
+                    mir_free(enc);
                 }
-                else
-                    msg = tlv.dup();
+                else if(tlv.cmp(0x0002))//profile message string
+                {
+                    char* msg = profile_unicode ? tlv.dupw() : tlv.dup();
 
-                away_message_received=1;
-                HANDLE hContact = contact_from_sn( sn );
-                if (hContact) write_away_message(sn, msg, away_message_unicode);
-                mir_free(msg);
+                    profile_received = true;
+                    write_profile(sn, msg, profile_unicode);
+                    mir_free(msg);
+                }
+                else if(tlv.cmp(0x0003))//away message encoding
+                {
+                    char* enc = tlv.dup();
+                    away_message_unicode = strstr(enc,"unicode-2-0") != NULL;
+                    mir_free(enc);
+                }
+                else if(tlv.cmp(0x0004))//away message string
+                {
+                    char* msg = away_message_unicode ? tlv.dupw() : tlv.dup();
+
+                    away_message_received=1;
+                    write_away_message(sn, msg, away_message_unicode);
+                    mir_free(msg);
+                }
             }
-            i++;
-            offset+=tlv.len();
+            offset += TLV_HEADER_SIZE + tlv.len();
         }
-        if(hContact)
+        if (hContact)
         {
-            if(getWord(hContact,AIM_KEY_ST,ID_STATUS_OFFLINE)==ID_STATUS_AWAY)
+            if (getWord(hContact,AIM_KEY_ST,ID_STATUS_OFFLINE) == ID_STATUS_AWAY)
             {
-                if(!away_message_received&&request_away_message)
+                if (!away_message_received && request_away_message)
                     write_away_message(sn,Translate("No information has been provided by the server."),false);
                 request_away_message = 0;
             }
@@ -1677,7 +1666,7 @@ void CAimProto::snac_chat_joined_left_users(SNAC &snac,chat_list_item* item)//fa
                 else if (tlv.cmp(0x000F))
                     idle_time = tlv.ulong();
 */
-                offset+=TLV_HEADER_SIZE+tlv.len();
+                offset += TLV_HEADER_SIZE + tlv.len();
             }
         }
     }		
@@ -1718,40 +1707,37 @@ void CAimProto::snac_chat_received_message(SNAC &snac,chat_list_item* item)//fam
             else if (tlv.cmp(0x000F))
                 idle_time = tlv.ulong();
 */
-            offset+=TLV_HEADER_SIZE+tlv.len();
+            offset += TLV_HEADER_SIZE + tlv.len();
         }
         
         tlv_offset+=offset;
         TLV pub_whisp_tlv(snac.val(tlv_offset));	// Public/Whisper flag
-        tlv_offset+=TLV_HEADER_SIZE;
+        tlv_offset += TLV_HEADER_SIZE;
 
         offset = 0;
         bool uni = false;
 //		char* language = NULL;
         TCHAR* message = NULL;
         TLV msg_tlv(snac.val(tlv_offset));			// Message information
-        tlv_offset+=TLV_HEADER_SIZE;
+        tlv_offset += TLV_HEADER_SIZE;
+
         while (offset < msg_tlv.len())
         {
             TLV tlv(snac.val(tlv_offset+offset));
-            offset+=TLV_HEADER_SIZE;
             
             // TLV List
             if (tlv.cmp(0x0001))
             {
                 if (uni) 
                 {
-                    wchar_t* msgw=tlv.dupw();
-                    wcs_htons(msgw);
-                    char* msgu=mir_utf8encodeW(msgw);
-                    mir_free(msgw);
+                    char* msgu = tlv.dupw();
                     html_decode(msgu);
-                    message=mir_utf8decodeT(msgu);                    
+                    message = mir_utf8decodeT(msgu);                    
                     mir_free(msgu);
                 }
                 else
                 {
-                    char* msg=tlv.dup();
+                    char* msg = tlv.dup();
                     html_decode(msg);
                     message = mir_a2t(msg);
                     mir_free(msg);
@@ -1759,14 +1745,14 @@ void CAimProto::snac_chat_received_message(SNAC &snac,chat_list_item* item)//fam
             }
             else if (tlv.cmp(0x0002))
             {
-                char* enc=tlv.dup();
-                uni = strstr(enc,"unicode-2-0") != NULL;
+                char* enc = tlv.dup();
+                uni = strstr(enc, "unicode-2-0") != NULL;
                 mir_free(enc);
             }
 //			if (tlv.cmp(0x0003))
 //				language = tlv.dup();
 
-            offset+=tlv.len();
+            offset += TLV_HEADER_SIZE + tlv.len();
         }
 
         chat_event(item->id, sn, GC_EVENT_MESSAGE, message);
@@ -1806,7 +1792,6 @@ void CAimProto::snac_admin_account_infomod(SNAC &snac)//family 0x0007
         for (int i = 0; i < num_tlv; i++)	// Loop through all the TLVs
         {
             TLV tlv(snac.val(4+offset));
-            offset+=TLV_HEADER_SIZE;
             
             // TLV List
             if (tlv.cmp(0x0001))
@@ -1826,7 +1811,7 @@ void CAimProto::snac_admin_account_infomod(SNAC &snac)//family 0x0007
             //if (tlv.cmp(0x0004))
                 //error description
 
-            offset+=tlv.len();
+            offset += TLV_HEADER_SIZE + tlv.len();
         }
 
         if (snac.subcmp(0x0003) && !err)	// Requested info
