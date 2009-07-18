@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/JabberG/jabber_svc.cpp $
 Revision       : $Revision: 7044 $
-Last change on : $Date: 2008-01-04 22:42:50 +0300 (Пт, 04 янв 2008) $
+Last change on : $Date: 2008-01-04 22:42:50 +0300 (Пт, 04 �?нв 2008) $
 Last change by : $Author: m_mluhov $
 
 */
@@ -1106,7 +1106,7 @@ int __cdecl CJabberProto::SendMsg( HANDLE hContact, int flags, const char* pszSr
 			m << XCHILD( _T("body"), msg );
 		else {
 			m << XCHILD( _T("body"), _T("[This message is encrypted.]" ));
-			m << XCHILDNS( _T("x"), _T("jabber:x:encrypted"));
+			m << XCHILD( _T("x"), msg) << XATTR(_T("xmlns"), _T("jabber:x:encrypted"));
 		}
 		mir_free( msg );
 
