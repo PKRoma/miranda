@@ -91,6 +91,15 @@ bool send_init_oft2(file_transfer *ft)
     return Netlib_Send(ft->hConn, (char*)oft, len, 0) > 0;
 }
 
+void CAimProto::report_file_error(TCHAR *fname)
+{
+    TCHAR errmsg[512];
+    TCHAR* error = mir_a2t(_strerror(NULL));
+    mir_sntprintf(errmsg, SIZEOF(errmsg), TranslateT("Failed to open file: %s : %s"), fname, error);
+    mir_free(error);
+    ShowPopup((char*)errmsg, ERROR_POPUP | TCHAR_POPUP);
+}
+
 bool CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv)
 {
     LOG("P2P: Entered file sending thread.");
@@ -137,11 +146,8 @@ bool CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETL
                 int fid = _topen(fname, _O_RDONLY | _O_BINARY, _S_IREAD);
                 if (fid < 0)
                 {
-                    char errmsg[512];
-                    mir_snprintf(errmsg, SIZEOF(errmsg), Translate("Failed to open file: %s "), fname);
+                    report_file_error(fname);
                     mir_free(fname);
-	                char* error = _strerror(errmsg);
-	                ShowPopup(error, ERROR_POPUP);
                     break;
                 }
                 mir_free(fname);
@@ -169,7 +175,7 @@ bool CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETL
                 pfts.workingDir          	= mir_utf8decodeA(ft->file);
                 
                 char* swd = strrchr(pfts.workingDir, '\\'); 
-                if (swd) *swd = '\0'; else pfts.workingDir[0] = 0;
+                if (swd) *(swd + 1) = '\0'; else pfts.workingDir[0] = 0;
 
                 sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&pfts);
 
@@ -302,15 +308,12 @@ bool CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NE
                     ft->pfts = &pfts;
 //                  sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, ft, (LPARAM)&pfts);
 
-                    fid = _topen(fname, _O_BINARY | _O_CREAT | _O_WRONLY, _S_IREAD | _S_IWRITE);
+                    fid = _topen(fname, _O_CREAT | _O_WRONLY | _O_BINARY, _S_IREAD | _S_IWRITE);
 
                     accepted_file = fid >= 0;
                     if (!accepted_file)	
                     {
-                        char errmsg[512];
-                        mir_snprintf(errmsg, SIZEOF(errmsg), Translate("Failed to open file: %s "), fname);
-   		                char* error = _strerror(errmsg);
-		                ShowPopup(error, ERROR_POPUP);
+                        report_file_error(fname);
                         break;
                     }
 

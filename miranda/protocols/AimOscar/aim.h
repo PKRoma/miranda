@@ -98,8 +98,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #define EXTENDED_STATUS_HIPTOP 2
 
 //Popup flags
-#define MAIL_POPUP 4
-#define ERROR_POPUP 8
+#define MAIL_POPUP  0x04
+#define ERROR_POPUP 0x08
+#define TCHAR_POPUP 0x10
 
 //Main Option Window Keys
 #define AIM_KEY_SN "SN"
