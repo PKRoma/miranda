@@ -153,16 +153,16 @@ bool CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETL
                 pfts.currentFileTime        = 0;
                 pfts.ptszFiles              = NULL;
                 pfts.hContact               = ft->hContact;
-                pfts.flags                  = PFTS_SENDING | PFTS_UTF;
+                pfts.flags                  = PFTS_SENDING | PFTS_TCHAR;
                 pfts.totalBytes             = ft->total_size;
                 pfts.totalFiles             = 1;
                 pfts.totalProgress          = 0;
 
-                pfts.szCurrentFile          = get_fname(ft->file);
-                pfts.szWorkingDir           = ft->file;
+                pfts.tszCurrentFile         = mir_utf8decodeT(get_fname(ft->file));
+                pfts.tszWorkingDir          = mir_utf8decodeT(ft->file);
 
-                char* swd = strrchr(pfts.szWorkingDir, '\\'); 
-                if (swd) *swd = '\0'; else pfts.szWorkingDir[0] = 0;
+                TCHAR* swd = _tcsrchr(pfts.tszWorkingDir, '\\'); 
+                if (swd) *swd = '\0'; else pfts.tszWorkingDir[0] = 0;
 
                 sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&pfts);
 
@@ -184,6 +184,8 @@ bool CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETL
                 sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&pfts);
                 LOG("P2P: Finished sending file bytes.");
                 fclose(fd);
+                mir_free(pfts.tszWorkingDir);
+                mir_free(pfts.tszCurrentFile);
             }
             else if (type == 0x0204)
             {
