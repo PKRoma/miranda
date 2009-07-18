@@ -67,9 +67,19 @@ void CAimProto::ShowPopup(const char* msg, int flags, char* url)
 
     mir_sntprintf(ppd.lptzContactName, SIZEOF(ppd.lptzContactName), TranslateT("%s Protocol"), m_tszUserName);
 
-	if (flags & ERROR_POPUP) LOG(msg);
+	if (flags & ERROR_POPUP) 
+    {
+        if (flags & TCHAR_POPUP)
+        {
+            char* errmsg = mir_t2a((TCHAR*)msg);
+            LOG(errmsg);
+            mir_free(errmsg);
+        }
+        else
+            LOG(msg);
+    }
 
-    TCHAR *msgt = mir_a2t(msg);
+    TCHAR *msgt = (flags & TCHAR_POPUP) ? mir_tstrdup((TCHAR*)msg) : mir_a2t(msg);
     mir_sntprintf(ppd.lptzText, SIZEOF(ppd.lptzText), _T("%s"), TranslateTS(msgt));
     mir_free(msgt);
 
