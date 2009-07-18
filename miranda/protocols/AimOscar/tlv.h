@@ -30,12 +30,15 @@ public:
 	TLV(char* buf);
 	TLV(unsigned short type, unsigned short length, const char* value);
 	~TLV();
-	int cmp(unsigned short type);
-	char* dup();
-    wchar_t* dupw();
-	unsigned short len();
+
+    int cmp(unsigned short type) { return type_ == type; }
+    unsigned short len(void) { return length_; }
+
 	char* part(int pos, int length);
-	unsigned short whole(char* buf);
+    char* dup(void) { return part(0, length_); };
+    char* dupw(void);
+
+    unsigned short whole(char* buf);
 	unsigned short ushort(int pos=0);
 	unsigned long ulong(int pos=0);
     unsigned __int64 u64(int pos=0);

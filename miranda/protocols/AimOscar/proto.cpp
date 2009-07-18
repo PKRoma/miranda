@@ -240,7 +240,7 @@ HANDLE __cdecl CAimProto::FileAllow(HANDLE hContact, HANDLE hTransfer, const cha
 	if (ft) 
     {
         mir_free(ft->file);
-        ft->file = mir_strdup(szPath);
+        ft->file = mir_utf8encode(szPath);
 		ForkThread(&CAimProto::accept_file_thread, ft);
 		return ft;
 	}
@@ -516,8 +516,8 @@ HANDLE __cdecl CAimProto::SendFile(HANDLE hContact, const char* szDescription, c
  
             ft->file = mir_utf8encode(ppszFiles[0]);
 
-		    struct _stat statbuf;
-		    _stat(ft->file, &statbuf);
+		    struct _stati64 statbuf;
+		    _stati64(ppszFiles[0], &statbuf);
             ft->total_size = statbuf.st_size;
             ft->ctime = statbuf.st_mtime;
 
@@ -535,11 +535,8 @@ HANDLE __cdecl CAimProto::SendFile(HANDLE hContact, const char* szDescription, c
 			}
 			else 
             {
-		        char* pszFile = strrchr(ppszFiles[0], '\\');
-		        if (pszFile) pszFile++; else ppszFiles[0];
-
                 aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, detected_ip, local_port, 
-                    0, ++ft->req_num, pszFile, ft->total_size, ft->message);
+                    0, ++ft->req_num, get_fname(ft->file), ft->total_size, ft->message);
             }
 
             DBFreeVariant(&dbv);
@@ -556,26 +553,28 @@ HANDLE __cdecl CAimProto::SendFile(HANDLE hContact, const char* szDescription, c
 
 int __cdecl CAimProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 {
-	char *msg = (char*)pszSrc;
-	if (msg == NULL) return 0;
+	if (pszSrc == NULL) return 0;
 
 	DBVARIANT dbv;
 	if (getString(hContact, AIM_KEY_SN, &dbv))  return 0;
 
-	bool fl = false;
+    char* msg;
 	if (flags & PREF_UNICODE) 
 	{
-		char* p = strchr(msg, '\0');
-		if (p != msg) 
+		const char* p = strchr(pszSrc, '\0');
+		if (p != pszSrc) 
 		{
 			while (*(++p) == '\0');
-			msg = mir_utf8encodeW((wchar_t*)p);
-			fl = true;
 		}
+		msg = mir_utf8encodeW((wchar_t*)p);
 	}
+	else if (flags & PREF_UTF)
+        msg = mir_strdup(pszSrc);
+    else
+		msg = mir_utf8encode(pszSrc);
 
 	char* smsg = html_encode(msg);
-	if (fl) mir_free(msg);
+    mir_free(msg);
 
 	if (getByte(AIM_KEY_FO, 0)) 
 	{
@@ -586,17 +585,7 @@ int __cdecl CAimProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 		msg = smsg;
 
 	// Figure out is this message is actually ANSI
-	fl = (flags & (PREF_UNICODE | PREF_UTF)) == 0 || !is_utf(msg);
-
-	int res;
-	if (fl)
-		res = aim_send_message(hServerConn, seqno, dbv.pszVal, msg, false, false);
-	else
-	{
-		wchar_t *wmsg = mir_utf8decodeW(msg);
-		res = aim_send_message(hServerConn, seqno, dbv.pszVal, (char*)wmsg, true, false);
-		mir_free(wmsg);
-	}
+	int res = aim_send_message(hServerConn, seqno, dbv.pszVal, msg, false);
 
 	mir_free(msg);
 	DBFreeVariant(&dbv);

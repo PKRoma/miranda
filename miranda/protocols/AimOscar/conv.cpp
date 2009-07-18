@@ -796,6 +796,39 @@ bool is_utf(const char* msg)
     return res;
 }
 
+char* get_fname(char* path)
+{
+    char* pszFile = strrchr(path, '\\');
+    if (pszFile) pszFile++; else path;
+
+    return pszFile;
+}
+
+aimString::aimString(char* str)
+{
+    if (str == NULL)
+    {
+        szString = NULL;
+        size = 0;
+        unicode = false;
+    }
+    else
+    {
+        unicode = is_utf(str);
+        if (unicode)
+        {
+            wszString = mir_utf8decodeW(str);
+            wcs_htons(wszString);
+            size = wcslen(wszString) * sizeof(wchar_t);
+        }
+        else
+        {
+            szString = mir_utf8decodeA(str);
+            size = strlen(szString);
+        }
+    }
+}
+
 #ifdef _MSC_VER
 	#pragma warning( default: 4706 )
 #endif

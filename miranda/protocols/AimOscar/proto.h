@@ -252,7 +252,7 @@ struct CAimProto : public PROTO_INTERFACE
     int    aim_request_icbm(HANDLE hServerConn,unsigned short &seqno);
     int    aim_request_offline_msgs(HANDLE hServerConn,unsigned short &seqno);
     int    aim_set_icbm(HANDLE hServerConn,unsigned short &seqno);
-    int    aim_set_profile(HANDLE hServerConn,unsigned short &seqno,char *msg);//user info
+    int    aim_set_profile(HANDLE hServerConn,unsigned short &seqno,char* amsg);//user info
     int    aim_set_invis(HANDLE hServerConn,unsigned short &seqno,const char* m_iStatus,const char* status_flag);
     int    aim_request_list(HANDLE hServerConn,unsigned short &seqno);
     int    aim_activate_list(HANDLE hServerConn,unsigned short &seqno);
@@ -263,7 +263,7 @@ struct CAimProto : public PROTO_INTERFACE
     int    aim_avatar_ready(HANDLE hServerConn,unsigned short &seqno);
     int    aim_chatnav_ready(HANDLE hServerConn,unsigned short &seqno);
     int    aim_chat_ready(HANDLE hServerConn,unsigned short &seqno);
-    int    aim_send_message(HANDLE hServerConn,unsigned short &seqno,const char* sn,char* msg,bool uni,bool auto_response);
+    int    aim_send_message(HANDLE hServerConn,unsigned short &seqno,const char* sn,char* amsg,bool auto_response);
     int    aim_query_profile(HANDLE hServerConn,unsigned short &seqno,char* sn);
     int    aim_delete_contact(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short item_id,unsigned short group_id,unsigned short list);
     int    aim_add_contact(HANDLE hServerConn,unsigned short &seqno,const char* sn,unsigned short item_id,unsigned short group_id,unsigned short list);
@@ -286,7 +286,7 @@ struct CAimProto : public PROTO_INTERFACE
     int	   aim_chatnav_create(HANDLE hServerConn,unsigned short &seqno, char* room, unsigned short exchage);
     int    aim_chatnav_room_info(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance);  
     int	   aim_chat_join_room(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance,unsigned short id);
-    int	   aim_chat_send_message(HANDLE hServerConn,unsigned short &seqno, char* msg, bool uni);
+    int	   aim_chat_send_message(HANDLE hServerConn,unsigned short &seqno, char *amsg);
     int	   aim_chat_invite(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance, char* sn, char* msg);
     int    aim_chat_deny(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie);
     int    aim_admin_ready(HANDLE hServerConn,unsigned short &seqno);
