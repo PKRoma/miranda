@@ -128,8 +128,8 @@ bool CMsnProto::MSN_ABAdd(void)
 	char* szData = ezxml_toxml(xmlp, true);
 	ezxml_free(xmlp);
 
-	unsigned status;
-	char *abUrl = NULL, *tResult;
+	unsigned status = 0;
+	char *abUrl = NULL, *tResult = NULL;
 
     for (int k = 4; --k;)
     {
@@ -195,7 +195,7 @@ bool CMsnProto::MSN_SharingFindMembership(bool deltas)
             szLastChange = NEWSTR_ALLOCA(dbv.pszVal);
             MSN_FreeVariant(&dbv);
         }
-        deltas &= szLastChange != NULL;
+        deltas &= (szLastChange != NULL);
     }
 
 	node = ezxml_add_child(tbdy, "View", 0);
@@ -209,8 +209,8 @@ bool CMsnProto::MSN_SharingFindMembership(bool deltas)
 
 	ezxml_free(xmlp);
 
-	unsigned status;
-	char *abUrl = NULL, *tResult;
+	unsigned status = 0;
+	char *abUrl = NULL, *tResult = NULL;
 
     for (int k = 4; --k;)
     {
@@ -458,7 +458,7 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid, bool deltas
             szLastChange = NEWSTR_ALLOCA(dbv.pszVal);
             MSN_FreeVariant(&dbv);
         }
-        deltas &= szLastChange != NULL;
+        deltas &= (szLastChange != NULL);
     }
     const char *szDynLastChange = NULL;
     if (deltas)
@@ -469,7 +469,7 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid, bool deltas
             szDynLastChange = NEWSTR_ALLOCA(dbv.pszVal);
             MSN_FreeVariant(&dbv);
         }
-        deltas &= szDynLastChange != NULL;
+        deltas &= (szDynLastChange != NULL);
     }
 
 	ezxml_t node = ezxml_add_child(tbdy, "abView", 0);
@@ -496,8 +496,8 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid, bool deltas
 	char* szData = ezxml_toxml(xmlp, true);
 	ezxml_free(xmlp);
 
-	unsigned status;
-	char *abUrl = NULL, *tResult;
+	unsigned status = 0;
+	char *abUrl = NULL, *tResult = NULL;
 
     for (int k = 4; --k;)
     {
@@ -792,8 +792,8 @@ bool CMsnProto::MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpI
 	char* szData = ezxml_toxml(xmlp, true);
 	ezxml_free(xmlp);
 
-	unsigned status;
-	char *abUrl = NULL, *tResult;
+	unsigned status = 0;
+	char *abUrl = NULL, *tResult = NULL;
 
     for (int k = 4; --k;)
     {
@@ -856,8 +856,8 @@ void CMsnProto::MSN_ABAddGroup(const char* szGrpName)
 	char* szData = ezxml_toxml(xmlp, true);
 	ezxml_free(xmlp);
 
-	unsigned status;
-	char *abUrl = NULL, *tResult;
+	unsigned status = 0;
+	char *abUrl = NULL, *tResult = NULL;
 
     for (int k = 4; --k;)
     {
@@ -917,8 +917,8 @@ void CMsnProto::MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId)
 	char* szData = ezxml_toxml(xmlp, true);
 	ezxml_free(xmlp);
 
-	unsigned status;
-	char *abUrl = NULL, *tResult;
+	unsigned status = 0;
+	char *abUrl = NULL, *tResult = NULL;
 
     for (int k = 4; --k;)
     {
@@ -985,8 +985,8 @@ bool CMsnProto::MSN_ABUpdateProperty(const char* szCntId, const char* propName, 
 	ezxml_free(xmlp);
 	mir_free(szPrpChg);
 
-	unsigned status;
-	char *abUrl = NULL, *tResult;
+	unsigned status = 0;
+	char *abUrl = NULL, *tResult = NULL;
 
     for (int k = 4; --k;)
     {
@@ -1056,8 +1056,8 @@ void CMsnProto::MSN_ABUpdateAttr(const char* szCntId, const char* szAttr, const 
 	char* szData = ezxml_toxml(xmlp, true);
 	ezxml_free(xmlp);
 
-	unsigned status;
-	char *abUrl = NULL, *tResult;
+	unsigned status = 0;
+	char *abUrl = NULL, *tResult = NULL;
 
     for (int k = 4; --k;)
     {
@@ -1175,8 +1175,8 @@ unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, in
 	char* szData = ezxml_toxml(xmlp, true);
 	ezxml_free(xmlp);
 
-	unsigned status;
-	char *abUrl = NULL, *tResult;
+	unsigned status = 0;
+	char *abUrl = NULL, *tResult = NULL;
 
     for (int k = 4; --k;)
     {

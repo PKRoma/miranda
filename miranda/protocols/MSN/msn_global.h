@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 // this plugin is for Miranda 0.8 only
-#define MIRANDA_VER 0x0800
+#define MIRANDA_VER 0x0900
 
 #include <m_stdhdr.h>
 
@@ -202,10 +202,12 @@ TCHAR* EscapeChatTags(const TCHAR* pszText);
 TCHAR* UnEscapeChatTags(TCHAR* str_in);
 
 void   overrideStr(TCHAR*& dest, const TCHAR* src, bool unicode, const TCHAR* def = NULL);
-void   replaceStr(char*& dest, const char* src);
 char*  rtrim(char* string);
 wchar_t* rtrim(wchar_t* string);
 char* arrayToHex(BYTE* data, size_t datasz);
+
+void   replaceStr(char*& dest, const char* src);
+void   replaceStr(wchar_t*& dest, const wchar_t* src);
 
 #if defined(_UNICODE) || defined(_WIN64)
 
@@ -337,7 +339,6 @@ struct filetransfer
 	char*       p2p_object;     // MSN object for a transfer
 
 	//---- receiving a file
-	wchar_t*    wszFileName;	// file name in Unicode, for receiving
 	char*       szInvcookie;	// cookie for receiving
 
 	unsigned __int64 lstFilePtr;
@@ -418,8 +419,8 @@ struct ThreadData
 	ThreadData();
 	~ThreadData();
 
-	TInfoType      mType;            // thread type
 	MsnThreadFunc  mFunc;            // thread entry point
+	TInfoType      mType;            // thread type
 	char           mServer[80];      // server name
 
 	HANDLE         s;	               // NetLib connection for the thread
@@ -628,7 +629,10 @@ public:
 	UTFEncoder(const char* pSrc) :
 		m_body(mir_utf8encode(pSrc)) {}
 
-	~UTFEncoder() {  mir_free(m_body);	}
+	UTFEncoder(const wchar_t* pSrc) :
+		m_body(mir_utf8encodeW(pSrc)) {}
+
+    ~UTFEncoder() {  mir_free(m_body);	}
 	const char* str() const { return m_body; }
 };
 

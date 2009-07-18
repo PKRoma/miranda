@@ -194,7 +194,6 @@ int CMsnProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM)
 	if (szEmail[0]) 
     {
 	    int listId = Lists_GetMask(szEmail);
-		int netId = Lists_GetNetId(szEmail);
         
         bool noChat = !(listId & LIST_FL) || isMe;
 

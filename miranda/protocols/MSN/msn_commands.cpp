@@ -140,24 +140,24 @@ void CMsnProto::sttInviteMessage(ThreadData* info, char* msgBody, char* email, c
 		filetransfer* ft = info->mMsnFtp = new filetransfer(this);
 
 		ft->std.hContact = MSN_HContactFromEmail(email, nick, true, true);
-		replaceStr(ft->std.currentFile, Appfile);
-		mir_utf8decode(ft->std.currentFile, &ft->wszFileName);
+        mir_free(ft->std.tszCurrentFile);
+		ft->std.tszCurrentFile = mir_utf8decodeT(Appfile);
 		ft->fileId = -1;
 		ft->std.currentFileSize = atol(Appfilesize);
 		ft->std.totalBytes = atol(Appfilesize);
 		ft->std.totalFiles = 1;
 		ft->szInvcookie = mir_strdup(Invcookie);
 
-		size_t tFileNameLen = strlen(ft->std.currentFile);
+		size_t tFileNameLen = strlen(Appfile);
 		char tComment[40];
 		int tCommentLen = mir_snprintf(tComment, sizeof(tComment), "%lu bytes", ft->std.currentFileSize);
 		char* szBlob = (char*)mir_alloc(sizeof(DWORD) + tFileNameLen + tCommentLen + 2);
 		*(PDWORD)szBlob = 0;
-		strcpy(szBlob + sizeof(DWORD), ft->std.currentFile);
+		strcpy(szBlob + sizeof(DWORD), Appfile);
 		strcpy(szBlob + sizeof(DWORD) + tFileNameLen + 1, tComment);
 
 		PROTORECVEVENT pre;
-		pre.flags = 0;
+		pre.flags = PREF_UTF;
 		pre.timestamp = (DWORD)time(NULL);
 		pre.szMessage = (char*)szBlob;
 		pre.lParam = (LPARAM)ft;
@@ -318,8 +318,8 @@ void CMsnProto::sttCustomSmiley(const char* msgBody, char* email, char* nick, in
 			UrlEncode(buf, smileyName, rlen*3);
 			mir_free(buf);
 
-			ft->std.currentFile = (char*)mir_alloc(MAX_PATH);
-			MSN_GetCustomSmileyFileName(hContact, ft->std.currentFile, MAX_PATH, smileyName, iSmileyType);
+			ft->std.tszCurrentFile = (TCHAR*)mir_alloc(MAX_PATH * sizeof(TCHAR));
+			MSN_GetCustomSmileyFileName(hContact, ft->std.tszCurrentFile, MAX_PATH, smileyName, iSmileyType);
 			mir_free(smileyName);
 
 			if (p2p_IsDlFileOk(ft))
@@ -1717,7 +1717,7 @@ LBL_InvalidCommand:
 				MSN_ShowError("You must specify your e-mail in Options/Network/MSN");
 				return 1;
 			}
-
+/*
             if (strcmp(protocol1, msnProtID)) 
 			{
 				MSN_ShowError("Server has requested an unknown protocol set (%s)", params);
@@ -1728,6 +1728,7 @@ LBL_InvalidCommand:
 				}
 				return 1;
 			}
+*/
 			break;
 		}
 		case ' RFX':    //******** XFR: sections 7.4 Referral, 8.1 Referral to Switchboard

@@ -170,17 +170,24 @@ void CMsnProto::InitCustomFolders(void)
 {
 	if (InitCstFldRan) return; 
 
-	char AvatarsFolder[MAX_PATH];
+    {
+	    char folder[MAX_PATH];
 
-    char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
+        char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
+        mir_snprintf(folder, SIZEOF(folder), "%s\\%s", tmpPath, m_szModuleName);
+	    hMSNAvatarsFolder = FoldersRegisterCustomPath(m_szModuleName, "Avatars", folder);
+        mir_free(tmpPath);
+    }
 
-    mir_snprintf(AvatarsFolder, SIZEOF(AvatarsFolder), "%s\\%s", tmpPath, m_szModuleName);
-	hMSNAvatarsFolder = FoldersRegisterCustomPath(m_szModuleName, "Avatars", AvatarsFolder);
+    {
+	    TCHAR folder[MAX_PATH];
 
-    mir_snprintf(AvatarsFolder, SIZEOF(AvatarsFolder), "%s\\%s\\CustomSmiley", tmpPath, m_szModuleName);
-	hCustomSmileyFolder = FoldersRegisterCustomPath(m_szModuleName, "Custom Smiley", AvatarsFolder);
+        TCHAR *tmpPath = Utils_ReplaceVarsT(_T("%miranda_userdata%"));
+        mir_sntprintf(folder, SIZEOF(folder), _T("%s\\%s\\CustomSmiley"), tmpPath, m_tszUserName);
+	    hCustomSmileyFolder = FoldersRegisterCustomPathT(m_szModuleName, "Custom Smiley", folder);
+        mir_free(tmpPath);
+    }
 
-    mir_free(tmpPath);
 	InitCstFldRan = true;
 }
 
@@ -274,7 +281,7 @@ int MSN_GetImageFormat(void* buf, const char** ext)
 	else 
 	{
 		res = PA_FORMAT_UNKNOWN;
-		*ext = "unk"; 
+		*ext = "unk";
 	}
 	return res;
 }
@@ -282,35 +289,37 @@ int MSN_GetImageFormat(void* buf, const char** ext)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_GetCustomSmileyFileName - gets a file name for an contact's custom smiley
 
-void  CMsnProto::MSN_GetCustomSmileyFileName(HANDLE hContact, char* pszDest, size_t cbLen, const char* SmileyName, int type)
+void  CMsnProto::MSN_GetCustomSmileyFileName(HANDLE hContact, TCHAR* pszDest, size_t cbLen, const char* SmileyName, int type)
 {
 	size_t tPathLen;
 
 	InitCustomFolders();
 
-	char* path = (char*)alloca(cbLen);
-	if (hCustomSmileyFolder == NULL || FoldersGetCustomPath(hCustomSmileyFolder, path, (int)cbLen, "")) 
+	TCHAR* path = (TCHAR*)alloca(cbLen * sizeof(TCHAR));
+	if (hCustomSmileyFolder == NULL || FoldersGetCustomPathT(hCustomSmileyFolder, path, (int)cbLen, _T(""))) 
 	{
-		CallService(MS_DB_GETPROFILEPATH, (WPARAM) cbLen, (LPARAM)pszDest);
-		tPathLen = strlen(pszDest);
-		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s\\CustomSmiley", m_szModuleName);
+        TCHAR *tmpPath = Utils_ReplaceVarsT(_T("%miranda_userdata%"));
+		tPathLen = mir_sntprintf(pszDest, cbLen, _T("%s\\%s\\CustomSmiley"), tmpPath, m_tszUserName);
+        mir_free(tmpPath);
 	}
-	else {
-		strcpy(pszDest, path);
-		tPathLen = strlen(pszDest);
+	else 
+    {
+		_tcscpy(pszDest, path);
+		tPathLen = _tcslen(pszDest);
 	}
 
-	if (hContact != NULL) {
+	if (hContact != NULL) 
+    {
 		char szEmail[MSN_MAX_EMAIL_LEN];
 		if (getStaticString(hContact, "e-mail", szEmail, sizeof(szEmail)))
 			_ltoa((long)hContact, szEmail, 10);
 		
-		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s", szEmail);
+		tPathLen += mir_sntprintf(pszDest + tPathLen, cbLen - tPathLen, _T("\\%s"), szEmail);
 	}
 	else 
-		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s", m_szModuleName);
+		tPathLen += mir_sntprintf(pszDest + tPathLen, cbLen - tPathLen, _T("\\%s"), m_szModuleName);
 		
-	bool exist = _access(pszDest, 0) == 0;
+	bool exist = _taccess(pszDest, 0) == 0;
 	
 	if (type == 0)
 	{
@@ -319,10 +328,10 @@ void  CMsnProto::MSN_GetCustomSmileyFileName(HANDLE hContact, char* pszDest, siz
 	}
 
 	if (!exist)
-		MSN_CallService(MS_UTILS_CREATEDIRTREE, 0, (LPARAM)pszDest);
+		MSN_CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)pszDest);
 
-	mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s.%s", SmileyName,
-		type == MSN_APPID_CUSTOMSMILEY ? "png" : "gif");
+	mir_sntprintf(pszDest + tPathLen, cbLen - tPathLen, _T("\\%s.%s"), SmileyName,
+		type == MSN_APPID_CUSTOMSMILEY ? _T("png") : _T("gif"));
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -738,20 +747,18 @@ void CMsnProto::MsnInvokeMyURL(bool ismail, const char* url)
 
 void CMsnProto::MSN_ShowError(const char* msgtext, ...)
 {
-	char    tBuffer[4096];
+	TCHAR   tBuffer[4096];
 	va_list tArgs;
 
+    TCHAR *buf = (TCHAR*)MSN_CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)msgtext);
+
 	va_start(tArgs, msgtext);
-	mir_vsnprintf(tBuffer, sizeof(tBuffer), MSN_Translate(msgtext), tArgs);
+	mir_vsntprintf(tBuffer, SIZEOF(tBuffer), buf, tArgs);
 	va_end(tArgs);
 
-	TCHAR* buf1 = mir_a2t(m_szModuleName);
-	TCHAR* buf2 = mir_a2t(tBuffer);
+	mir_free(buf);
 
-	MSN_ShowPopup(buf1, buf2, MSN_ALLOW_MSGBOX | MSN_SHOW_ERROR, NULL);
-
-	mir_free(buf1);
-	mir_free(buf2);
+	MSN_ShowPopup(m_tszUserName, tBuffer, MSN_ALLOW_MSGBOX | MSN_SHOW_ERROR, NULL);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -888,6 +895,7 @@ filetransfer::filetransfer(CMsnProto* prt)
 	memset(this, 0, sizeof(filetransfer));
 	fileId = -1;
 	std.cbSize = sizeof(std);
+    std.flags = PFTS_TCHAR;
 	proto = prt;
 
 	hLockHandle = CreateMutex(NULL, FALSE, NULL);
@@ -901,7 +909,7 @@ filetransfer::~filetransfer(void)
 	CloseHandle(hLockHandle);
 
 	if (!bCompleted) {
-		std.files = NULL;
+		std.ptszFiles = NULL;
 		std.totalFiles = 0;
 		proto->SendBroadcast(std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, this, 0);
 	}
@@ -914,15 +922,14 @@ filetransfer::~filetransfer(void)
 	mir_free(p2p_dest);
 	mir_free(p2p_object);
 
-	mir_free(std.currentFile);
-	mir_free(std.workingDir);
-	if (std.files != NULL) {
+	mir_free(std.tszCurrentFile);
+	mir_free(std.tszWorkingDir);
+	if (std.ptszFiles != NULL) {
 		for (int i=0; i < std.totalFiles; i++)
-			mir_free(std.files[i]);
-		mir_free(std.files);
+			mir_free(std.ptszFiles[i]);
+		mir_free(std.ptszFiles);
 	}
 
-	mir_free(wszFileName);
 	mir_free(szInvcookie);
 }
 
@@ -942,38 +949,10 @@ void filetransfer::complete(void)
 
 int filetransfer::create(void)
 {
-	#if defined(_UNICODE)	
-		if (wszFileName != NULL) 
-        {
-			wchar_t wszTemp[MAX_PATH];
-			_snwprintf(wszTemp, SIZEOF(wszTemp), L"%S\\%s", std.workingDir, wszFileName);
-			wszTemp[MAX_PATH-1] = 0;
-			fileId = _wopen(wszTemp, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
-			if (fileId != -1) {
-				WIN32_FIND_DATAW data;
-				HANDLE hFind = FindFirstFileW(wszFileName, &data);
-				if (hFind != INVALID_HANDLE_VALUE) 
-                {
-					mir_free(std.currentFile);
-
-					char tShortName[20];
-					WideCharToMultiByte(CP_ACP, 0, 
-						(data.cAlternateFileName[0] != 0) ? data.cAlternateFileName : data.cFileName, 
-						-1, tShortName, sizeof tShortName, 0, 0);
-					char filefull[MAX_PATH];
-					mir_snprintf(filefull, sizeof(filefull), "%s\\%s", std.workingDir, tShortName);
-					std.currentFile = mir_strdup(filefull);
-					FindClose(hFind);
-			    }	
-            }
-		}
-		else fileId = _open(std.currentFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
-	#else
-		fileId = _open(std.currentFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
-	#endif
+	fileId = _topen(std.tszCurrentFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
 
 	if (fileId == -1)
-		proto->MSN_ShowError("Cannot create file '%s' during a file transfer", std.currentFile);
+		proto->MSN_ShowError("Cannot create file '%s' during a file transfer", std.tszCurrentFile);
 //	else if (std.currentFileSize != 0)
 //		_chsize(fileId, std.currentFileSize);
 
@@ -991,11 +970,11 @@ int filetransfer::openNext(void)
 	if (std.currentFileNumber < std.totalFiles) 
     {
 		bCompleted = false;
-		replaceStr(std.currentFile, std.files[std.currentFileNumber]);
-		fileId = _open(std.currentFile, _O_BINARY | _O_RDONLY, _S_IREAD);
+		replaceStr(std.tszCurrentFile, std.ptszFiles[std.currentFileNumber]);
+		fileId = _topen(std.tszCurrentFile, _O_BINARY | _O_RDONLY, _S_IREAD);
 		if (fileId != -1) 
         {
-			std.currentFileSize = _filelength(fileId);
+			std.currentFileSize = _filelengthi64(fileId);
 			std.currentFileProgress = 0;
 			
 			p2p_sendmsgid = 0;
@@ -1006,7 +985,7 @@ int filetransfer::openNext(void)
 			mir_free(p2p_callID); p2p_callID = NULL;
 		}
 		else
-			proto->MSN_ShowError("Unable to open file '%s' for the file transfer, error %d", std.currentFile, errno);
+			proto->MSN_ShowError("Unable to open file '%s' for the file transfer, error %d", std.tszCurrentFile, errno);
 	}
 
 	return fileId;

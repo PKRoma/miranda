@@ -542,18 +542,12 @@ void __cdecl CMsnProto::MsnFileAckThread(void* arg)
 {
 	filetransfer* ft = (filetransfer*)arg;
 	
-	char filefull[MAX_PATH];
-	mir_snprintf(filefull, sizeof(filefull), "%s\\%s", ft->std.workingDir, ft->std.currentFile);
-	replaceStr(ft->std.currentFile, filefull);
+	TCHAR filefull[MAX_PATH];
+	mir_sntprintf(filefull, SIZEOF(filefull), _T("%s\\%s"), ft->std.tszWorkingDir, ft->std.tszCurrentFile);
+	replaceStr(ft->std.tszCurrentFile, filefull);
 
 	if (SendBroadcast(ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, ft, (LPARAM)&ft->std))
 		return;
-
-	if (ft->wszFileName != NULL) 
-	{
-		mir_free(ft->wszFileName);
-		ft->wszFileName = NULL;
-	}	
 
 	bool fcrt = ft->create() != -1;
 
@@ -568,24 +562,24 @@ void __cdecl CMsnProto::MsnFileAckThread(void* arg)
 	SendBroadcast(ft->std.hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, ft, 0);
 }
 
-HANDLE __cdecl CMsnProto::FileAllow(HANDLE hContact, HANDLE hTransfer, const char* szPath)
+HANDLE __cdecl CMsnProto::FileAllow(HANDLE hContact, HANDLE hTransfer, const PROTOCHAR* szPath)
 {
 	filetransfer* ft = (filetransfer*)hTransfer;
 
 	if (!msnLoggedIn || !p2p_sessionRegistered(ft))
 		return 0;
 
-	if ((ft->std.workingDir = mir_strdup(szPath)) == NULL) 
+	if ((ft->std.tszWorkingDir = mir_tstrdup(szPath)) == NULL) 
     {
-		char szCurrDir[MAX_PATH];
-		GetCurrentDirectoryA(sizeof(szCurrDir), szCurrDir);
-		ft->std.workingDir = mir_strdup(szCurrDir);
+		TCHAR szCurrDir[MAX_PATH];
+		GetCurrentDirectory(SIZEOF(szCurrDir), szCurrDir);
+		ft->std.tszWorkingDir = mir_tstrdup(szCurrDir);
 	}
 	else 
     {
-		size_t len = strlen(ft->std.workingDir)-1;
-		if (ft->std.workingDir[len] == '\\')
-			ft->std.workingDir[len] = 0;
+		size_t len = _tcslen(ft->std.tszWorkingDir) - 1;
+		if (ft->std.tszWorkingDir[len] == '\\')
+			ft->std.tszWorkingDir[len] = 0;
 	}
 
 	ForkThread(&CMsnProto::MsnFileAckThread, ft);
@@ -603,7 +597,7 @@ int __cdecl CMsnProto::FileCancel(HANDLE hContact, HANDLE hTransfer)
 	if (!msnLoggedIn || !p2p_sessionRegistered(ft))
 		return 0;
 
-	if  (!ft->std.sending && ft->fileId == -1) 
+	if  (!(ft->std.flags & PFTS_SENDING) && ft->fileId == -1) 
     {
 		if (ft->p2p_appID != 0)
 			p2p_sendStatus(ft, 603);
@@ -617,7 +611,7 @@ int __cdecl CMsnProto::FileCancel(HANDLE hContact, HANDLE hTransfer)
 			p2p_sendCancel(ft);
 	}
 
-	ft->std.files = NULL;
+	ft->std.ptszFiles = NULL;
 	ft->std.totalFiles = 0;
 	return 0;
 }
@@ -625,14 +619,14 @@ int __cdecl CMsnProto::FileCancel(HANDLE hContact, HANDLE hTransfer)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnFileDeny - rejects the file transfer request
 
-int __cdecl CMsnProto::FileDeny(HANDLE hContact, HANDLE hTransfer, const char* /*szReason*/)
+int __cdecl CMsnProto::FileDeny(HANDLE hContact, HANDLE hTransfer, const PROTOCHAR* /*szReason*/)
 {
 	filetransfer* ft = (filetransfer*)hTransfer;
 
 	if (!msnLoggedIn || !p2p_sessionRegistered(ft))
 		return 1;
 
-	if (!ft->std.sending && ft->fileId == -1) 
+	if (!(ft->std.flags & PFTS_SENDING) && ft->fileId == -1) 
     {
 		if (ft->p2p_appID != 0)
 			p2p_sendStatus(ft, 603);
@@ -653,7 +647,7 @@ int __cdecl CMsnProto::FileDeny(HANDLE hContact, HANDLE hTransfer, const char* /
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnFileResume - renames a file
 
-int __cdecl CMsnProto::FileResume(HANDLE hTransfer, int* action, const char** szFilename)
+int __cdecl CMsnProto::FileResume(HANDLE hTransfer, int* action, const PROTOCHAR** szFilename)
 {
 	filetransfer* ft = (filetransfer*)hTransfer;
 
@@ -670,15 +664,12 @@ int __cdecl CMsnProto::FileResume(HANDLE hTransfer, int* action, const char** sz
 		break;
 
 	case FILERESUME_RENAME:
-		if (ft->wszFileName != NULL) {
-			mir_free(ft->wszFileName);
-			ft->wszFileName = NULL;
-		}
-		replaceStr(ft->std.currentFile, *szFilename);
+		replaceStr(ft->std.tszCurrentFile, *szFilename);
 
 	default:
 		bool fcrt = ft->create() != -1;
-		if (ft->p2p_appID != 0) {
+		if (ft->p2p_appID != 0) 
+        {
 			p2p_sendStatus(ft, fcrt ? 200 : 603);
 			if (fcrt)
 				p2p_sendFeedStart(ft);
@@ -733,7 +724,8 @@ HANDLE __cdecl CMsnProto::GetAwayMsg(HANDLE hContact)
 
 DWORD_PTR __cdecl CMsnProto::GetCaps(int type, HANDLE hContact)
 {
-	switch(type) {
+	switch(type) 
+    {
 	case PFLAGNUM_1:
 	{	int result = PF1_IM | PF1_SERVERCLIST | PF1_AUTHREQ | PF1_BASICSEARCH |
 				 PF1_ADDSEARCHRES | PF1_SEARCHBYEMAIL | PF1_USERIDISEMAIL | PF1_CHAT |
@@ -795,7 +787,7 @@ int __cdecl CMsnProto::RecvContacts(HANDLE hContact, PROTORECVEVENT*)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnRecvFile - creates a database event from the file request been received
 
-int __cdecl CMsnProto::RecvFile(HANDLE hContact, PROTORECVFILE* evt)
+int __cdecl CMsnProto::RecvFile(HANDLE hContact, PROTOFILEEVENT* evt)
 {
 	CCSDATA ccs = { hContact, PSR_FILE, 0, (LPARAM)evt };
 	return MSN_CallService(MS_PROTO_RECVFILE, 0, (LPARAM)&ccs);
@@ -835,7 +827,7 @@ int __cdecl CMsnProto::SendContacts(HANDLE hContact, int flags, int nContacts, H
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnSendFile - initiates a file transfer
 
-HANDLE __cdecl CMsnProto::SendFile(HANDLE hContact, const char* szDescription, char** ppszFiles)
+HANDLE __cdecl CMsnProto::SendFile(HANDLE hContact, const PROTOCHAR* szDescription, PROTOCHAR** ppszFiles)
 {
 	if (!msnLoggedIn)
 		return 0;
@@ -852,19 +844,21 @@ HANDLE __cdecl CMsnProto::SendFile(HANDLE hContact, const char* szDescription, c
 	if ((dwFlags & 0xf0000000) == 0 && netId != NETID_MSN) return 0;
 
 	filetransfer* sft = new filetransfer(this);
-	sft->std.files = ppszFiles;
+	sft->std.ptszFiles = ppszFiles;
 	sft->std.hContact = hContact;
-	sft->std.sending = true;
+	sft->std.flags |= PFTS_SENDING;
 
-	while (ppszFiles[sft->std.totalFiles] != NULL) {
-		struct _stat statbuf;
-		if (_stat(ppszFiles[sft->std.totalFiles], &statbuf) == 0)
+	while (ppszFiles[sft->std.totalFiles] != NULL) 
+    {
+		struct _stati64 statbuf;
+		if (_tstati64(ppszFiles[sft->std.totalFiles], &statbuf) == 0)
 			sft->std.totalBytes += statbuf.st_size;
 
 		++sft->std.totalFiles;
 	}
 
-	if (sft->openNext() == -1) {
+	if (sft->openNext() == -1) 
+    {
 		delete sft;
 		return 0;
 	}

@@ -165,18 +165,17 @@ void CMsnProto::MSN_CleanupLists(void)
             int mask = Lists_GetMask(szEmail);
 			if (localList || (mask & LIST_FL))
 			{
-				char path[MAX_PATH];
-				MSN_GetCustomSmileyFileName(hContact, path, sizeof(path), "", 0);
+				TCHAR path[MAX_PATH];
+				MSN_GetCustomSmileyFileName(hContact, path, SIZEOF(path), "", 0);
 				if (path[0])
 				{
 					SMADD_CONT cont;
 					cont.cbSize = sizeof(SMADD_CONT);
 					cont.hContact = hContact;
 					cont.type = 0;
-					cont.path = mir_a2t(path);
+					cont.path = path;
 
 					MSN_CallService(MS_SMILEYADD_LOADCONTACTSMILEYS, 0, (LPARAM)&cont);
-					mir_free(cont.path);
 				}
 			    continue;
 			}

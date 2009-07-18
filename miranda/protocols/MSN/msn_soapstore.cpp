@@ -102,8 +102,8 @@ bool CMsnProto::MSN_StoreCreateProfile(void)
 
 	ezxml_free(xmlp);
 
-	unsigned status;
-	char *storeUrl = NULL, *tResult;
+	unsigned status = 0;
+	char *storeUrl = NULL, *tResult = NULL;
 
     for (int k = 4; --k;)
     {
@@ -172,8 +172,8 @@ bool CMsnProto::MSN_StoreGetProfile(void)
 
 	ezxml_free(xmlp);
 
-	unsigned status;
-	char *storeUrl = NULL, *tResult;
+	unsigned status = 0;
+	char *storeUrl = NULL, *tResult = NULL;
 
     for (int k = 4; --k;)
     {
@@ -241,8 +241,8 @@ bool CMsnProto::MSN_StoreUpdateNick(const char* szNick)
 
 	ezxml_free(xmlp);
 
-	unsigned status;
-	char *storeUrl = NULL, *tResult;
+	unsigned status = 0;
+	char *storeUrl = NULL, *tResult = NULL;
 
     for (int k = 4; --k;)
     {
@@ -295,8 +295,8 @@ bool CMsnProto::MSN_StoreCreateRelationships(const char *szSrcId, const char *sz
 
 	ezxml_free(xmlp);
 
-	unsigned status;
-	char *storeUrl = NULL, *tResult;
+	unsigned status = 0;
+	char *storeUrl = NULL, *tResult = NULL;
 
     for (int k = 4; --k;)
     {
@@ -344,8 +344,8 @@ bool CMsnProto::MSN_StoreDeleteRelationships(const char *szResId)
 
 	ezxml_free(xmlp);
 
-	unsigned status;
-	char *storeUrl = NULL, *tResult;
+	unsigned status = 0;
+	char *storeUrl = NULL, *tResult = NULL;
 
     for (int k = 4; --k;)
     {
@@ -409,8 +409,8 @@ bool CMsnProto::MSN_StoreCreateDocument(const char *szName, const char *szMimeTy
 
 	ezxml_free(xmlp);
 
-	unsigned status;
-	char *storeUrl = NULL, *tResult;
+	unsigned status = 0;
+	char *storeUrl = NULL, *tResult = NULL;
 
     for (int k = 4; --k;)
     {
@@ -473,8 +473,8 @@ bool CMsnProto::MSN_StoreFindDocuments(void)
 
 	ezxml_free(xmlp);
 
-	unsigned status;
-	char *storeUrl = NULL, *tResult;
+	unsigned status = 0;
+	char *storeUrl = NULL, *tResult = NULL;
 
     for (int k = 4; --k;)
     {

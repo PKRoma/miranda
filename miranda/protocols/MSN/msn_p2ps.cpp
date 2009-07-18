@@ -136,7 +136,7 @@ filetransfer*  CMsnProto::p2p_getAvatarSession(HANDLE hContact)
 	for (int i=0; i < sessionList.getCount(); i++) 
     {
 		filetransfer* FT = &sessionList[i];
-		if (FT->std.hContact == hContact && !FT->std.sending && 
+		if (FT->std.hContact == hContact && !(FT->std.flags & PFTS_SENDING) && 
 			FT->p2p_type == MSN_APPID_AVATAR) 
         {
 			result = FT;
@@ -203,7 +203,7 @@ void  CMsnProto::p2p_redirectSessions(HANDLE hContact)
 	for (int i=0; i < sessionList.getCount(); i++) 
     {
 		filetransfer* FT = &sessionList[i];
-		if (FT->std.hContact == hContact && !FT->std.sending && 
+		if (FT->std.hContact == hContact && !(FT->std.flags & PFTS_SENDING) && 
 			FT->std.currentFileProgress < FT->std.currentFileSize &&
 			(T == NULL || (FT->tType != T->mType && FT->tType != 0))) 
 			p2p_sendRedirect(FT);

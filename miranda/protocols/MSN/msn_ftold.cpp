@@ -57,13 +57,14 @@ void CMsnProto::msnftp_invite(filetransfer *ft)
 	if (isOffline) return; 
 	if (thread != NULL) thread->mMsnFtp = ft;
 
-	char* pszFiles = strrchr(*ft->std.files, '\\'), msg[1024];
+	TCHAR* pszFiles = _tcsrchr(ft->std.ptszFiles[0], '\\');
 	if (pszFiles)
 		pszFiles++;
 	else
-		pszFiles = *ft->std.files;
+		pszFiles = *ft->std.ptszFiles;
 
-    mir_snprintf(msg, sizeof(msg),
+    char msg[1024];
+    mir_snprintf(msg, SIZEOF(msg),
 		"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
 		"Application-Name: File Transfer\r\n"
 		"Application-GUID: {5D3E02AB-6190-11d3-BBBB-00C04F795683}\r\n"
@@ -127,7 +128,7 @@ int CMsnProto::MSN_HandleMSNFTP(ThreadData *info, char *cmdString)
 
 				int wPlace = 0;
 				sendpacket[wPlace++] = 0x00;
-				int packetLen = ft->std.currentFileSize - ft->std.currentFileProgress;
+				__int64 packetLen = ft->std.currentFileSize - ft->std.currentFileProgress;
 				if (packetLen > 2045)
 					packetLen = 2045;
 
