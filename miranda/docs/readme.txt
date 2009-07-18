@@ -32,6 +32,7 @@ Bugfixes:
  - IRC: Own actions were not always shown
  - Jabber: Random disconnect issue caused by timeouts
 
+ 
 * New in 0.8.1
 Enhancements:
  - Improve account renaming inside of the account manager

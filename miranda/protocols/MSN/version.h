@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define __FILEVERSION_STRING        0,8,3,0
-#define __VERSION_STRING            "0.8.3.0"
-#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 8, 3, 0)
+#define __FILEVERSION_STRING        0,8,4,0
+#define __VERSION_STRING            "0.8.4.0"
+#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 8, 4, 0)
 
