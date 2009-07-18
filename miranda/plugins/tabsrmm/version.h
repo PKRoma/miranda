@@ -1,2 +1,2 @@
-#define VER_PLAIN	"2,2,1,17"
-#define VER_WORD	2,2,1,17
+#define VER_PLAIN	"3,0,0,0"
+#define VER_WORD	3,0,0,0

@@ -266,7 +266,7 @@ struct ContainerWindowData {
 	int     sb_NrTopButtons, sb_NrBottomButtons, sb_FirstButton;
 	int     sb_TopHeight, sb_BottomHeight;
 	TCHAR   szTitleFormat[TITLE_FORMATLEN + 2];
-	char    szThemeFile[MAX_PATH];
+	char    szRelThemeFile[MAX_PATH], szAbsThemeFile[MAX_PATH];
 	TemplateSet *ltr_templates, *rtl_templates;
 	LOGFONTA *logFonts;
 	COLORREF *fontColors;
@@ -283,6 +283,7 @@ struct ContainerWindowData {
 	ButtonItem *buttonItems;
 	RECT    rcSaved;
 	DWORD   exFlags;
+	BOOL	fPrivateThemeChanged;
 };
 
 #define STICK_ICON_MSG 10
@@ -435,6 +436,11 @@ struct MessageWindowData {
 	LPARAM  lParam;
 	int     iHaveRTLLang;
 	BOOL    fInsertMode;
+
+	// debug
+
+	DWORD   tick_now, tick_last;
+	UINT	last_message;
 };
 
 typedef struct _recentinfo {
@@ -669,6 +675,7 @@ struct NewMessageWindowLParam {
 	struct  ContainerWindowData *pContainer;
 	BOOL    bWantPopup;
 	HANDLE  hdbEvent;
+	HKL		hkl;
 };
 
 // flags for the container dwFlags
@@ -821,6 +828,7 @@ struct NewMessageWindowLParam {
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
 #define DM_SCROLLIEVIEW		 (WM_USER+102)
+#define DM_LOADLOCALE	 	 (WM_USER+200)
 
 #define MINSPLITTERY         42
 #define MINLOGHEIGHT         30

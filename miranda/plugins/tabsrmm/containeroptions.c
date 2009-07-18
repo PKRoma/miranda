@@ -110,7 +110,7 @@ static struct _tagPages {
 	{ _T("Notifications"), _T("Select, in which cases you want to see event notifications for this message container. These options are disabled when you are using one of the \"simple\" notifications modes"), IDC_O_DONTREPORT, IDC_DONTREPORTUNFOCUSED2, IDC_ALWAYSPOPUPSINACTIVE, IDC_SYNCSOUNDS, 0, 0, 0, 0},
 	{ _T("Flashing"), NULL, IDC_O_FLASHDEFAULT, IDC_O_FLASHALWAYS, IDC_O_FLASHNEVER, 0, 0, 0, 0},
 	{ _T("Title bar"), NULL, IDC_O_HIDETITLE, IDC_STATICICON, IDC_USEPRIVATETITLE, IDC_TITLEFORMAT, 0, 0, 0},
-	{ _T("Window size and theme"), _T("You can select a private theme (.tabsrmm file) for this container which will then override the default message log theme."), IDC_THEME, IDC_SELECTTHEME, IDC_USEGLOBALSIZE, IDC_SAVESIZEASGLOBAL, IDC_LABEL_PRIVATETHEME, 0,0, 0},
+	{ _T("Window size and theme"), _T("You can select a private theme (.tabsrmm file) for this container which will then override the default message log theme. You will have to close and re-open all message windows after changing this option."), IDC_THEME, IDC_SELECTTHEME, IDC_USEGLOBALSIZE, IDC_SAVESIZEASGLOBAL, IDC_LABEL_PRIVATETHEME, 0,0, 0},
 	{ _T("Transparency"), _T("This feature requires Windows 2000 or later and is not available when custom container skins are in use"), IDC_TRANSPARENCY, IDC_TRANSPARENCY_ACTIVE, IDC_TRANSPARENCY_INACTIVE, IDC_TLABEL_ACTIVE, IDC_TLABEL_INACTIVE, IDC_TSLABEL_ACTIVE, IDC_TSLABEL_INACTIVE,0},
 	{ NULL, NULL, 0, 0, 0, 0, 0, 0, 0}
 };
@@ -175,7 +175,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_TITLEFORMAT), IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE));
 			SendDlgItemMessage(hwndDlg, IDC_TITLEFORMAT, EM_LIMITTEXT, TITLE_FORMATLEN - 1, 0);
 			SetDlgItemText(hwndDlg, IDC_TITLEFORMAT, pContainer->szTitleFormat);
-			SetDlgItemTextA(hwndDlg, IDC_THEME, pContainer->szThemeFile);
+			SetDlgItemTextA(hwndDlg, IDC_THEME, pContainer->szRelThemeFile);
 			SetDlgItemText(hwndDlg, IDC_CURRENTNAME, TranslateT("\tConfigure container options"));
 			SetDlgItemText(hwndDlg, IDC_WHITERECT, szNewTitle);
 			SetWindowPos(GetDlgItem(hwndDlg, IDC_LOGO), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
@@ -290,7 +290,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				}
 				case IDOK:
 				case IDC_APPLY: {
-					DWORD dwNewFlags = 0, dwNewTrans = 0;
+					DWORD 	dwNewFlags = 0, dwNewTrans = 0;
 
 					SendMessage(hwndDlg, DM_SC_BUILDLIST, 0, (LPARAM)&dwNewFlags);
 					dwNewFlags = (pContainer->dwFlags & CNT_SIDEBAR) | dwNewFlags;
@@ -319,22 +319,41 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					else
 						_tcsncpy(pContainer->szTitleFormat, myGlobals.szDefaultTitleFormat, TITLE_FORMATLEN);
 
-					pContainer->szThemeFile[0] = 0;
+					pContainer->szRelThemeFile[0] = pContainer->szAbsThemeFile[0] = 0;
 
 					if (GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_THEME)) > 0) {
-						char szFilename[MAX_PATH];
+						char	szFinalThemeFile[MAX_PATH], szFilename[MAX_PATH];
 
 						GetDlgItemTextA(hwndDlg, IDC_THEME, szFilename, MAX_PATH);
 						szFilename[MAX_PATH - 1] = 0;
-						if (PathFileExistsA(szFilename))
-							mir_snprintf(pContainer->szThemeFile, MAX_PATH, "%s", szFilename);
+						MY_pathToAbsolute(szFilename, szFinalThemeFile);
+
+						if(strcmp(szFilename, pContainer->szRelThemeFile))
+						   pContainer->fPrivateThemeChanged = TRUE;
+
+						if (PathFileExistsA(szFinalThemeFile))
+							mir_snprintf(pContainer->szRelThemeFile, MAX_PATH, "%s", szFilename);
+						else
+							pContainer->szRelThemeFile[0] = 0;
+					}
+					else {
+						pContainer->szRelThemeFile[0] = 0;
+						pContainer->fPrivateThemeChanged = TRUE;
 					}
 
 					if (!IsDlgButtonChecked(hwndDlg, IDC_CNTPRIVATE))
 						ReloadGlobalContainerSettings();
-					else {
-						SendMessage(pContainer->hwnd, DM_CONFIGURECONTAINER, 0, 0);
-						BroadCastContainer(pContainer, DM_SETINFOPANEL, 0, 0);
+
+					SendMessage(pContainer->hwnd, DM_CONFIGURECONTAINER, 0, 0);
+					BroadCastContainer(pContainer, DM_SETINFOPANEL, 0, 0);
+
+					ShowWindow(pContainer->hwnd, SW_HIDE);
+					{
+						RECT	rc;
+
+						GetWindowRect(pContainer->hwnd, &rc);
+						SetWindowPos(pContainer->hwnd, 0, rc.left, rc.top, (rc.right - rc.left) - 1, (rc.bottom - rc.top) - 1, SWP_NOZORDER | SWP_DRAWFRAME | SWP_FRAMECHANGED);
+						SetWindowPos(pContainer->hwnd, 0, rc.left, rc.top, (rc.right - rc.left), (rc.bottom - rc.top), SWP_NOZORDER | SWP_DRAWFRAME | SWP_SHOWWINDOW);
 					}
 
 					if (LOWORD(wParam) == IDOK)

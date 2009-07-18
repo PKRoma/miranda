@@ -3,10 +3,9 @@
 
 Name: tabsrmm
 Homepage: http://miranda.or.at
+Download: http://code.google.com/p/silvercircle/downloads/list
+Source:   http://code.google.com/p/miranda     (tabSRMM code is in Miranda SVN)
 
-
-				    Version History:
-				    ================
 + : new feature
 * : changed
 ! : bugfix
@@ -16,9 +15,38 @@ View CHANGELOG.OLD to see pre-1.0 relevant changes. Version 1.0.0.0 was declared
 splitted from trunk and declared as "stable" branch 2006/07/30. Released to
 the file listing the same day.
 
+			Global version information:
+			===========================
+-----------------
 Version 2.0.x.x was released in October 2007 and is the current "stable" version.
 It NEEDS Miranda 0.7.x and will not work on older versions.
 
+Version 2.2.1.x is for Miranda 0.8 and was released in June 2009
+
+Version 3.x is for Miranda 0.9 and incompatible with older Miranda cores. There
+are currently no downloads for it, you'll have to compile it from source.
+
+-----------------
+
+			Detailed change log
+			===================
+
+Version 3.0.0.0  - 2009/07/20
+
+	! various visual glitches fixed.
+	! fixed problem with private container theme (using relative pathnames)
+	! plugin version updated and restricted to Miranda 0.9.x development
+	  branch.
+
+Version 2.2.1.19  - 2009/07/08
+
+	! fixed some slowdowns when opening new tabs
+	* branched to Miranda - stable (0.8.x).
+
+Version 2.2.1.18  - 2009/06/28
+
+	! bug fixes
+	! Hotkeys rearranged (Ctrl-y and Ctrl-l disabled, Ctrl-r moved to Alt-r)
 
 Version 2.2.1.17  - 2009/06/21
 
@@ -28,19 +56,19 @@ Version 2.2.1.17  - 2009/06/21
 Version 2.2.1.16  - 2009/06/14
 
 	* replaced internal protocol name with user defined account name in some places
-	  (e.g. info panel). 
-	  
+	  (e.g. info panel).
+
 	* added new variable for title bar formatting: %a will be replaced with the
 	  user defined account name for the current contact.
 
 	* various fixes and updates by core developers.
-	
+
 	* released for Miranda 0.8.0
-	
+
 Version 2.2.1.14  - 2009/03/05
 
 	* fixed untranslateable strings
-	
+
 
 Version 2.2.1.13  - 2009/01/02
 ------------------------------
@@ -58,11 +86,11 @@ Version 2.2.1.12  - 2008/12/30
 ------------------------------
 
 	* Windows Vista only: re-enabled transparency settings when using skins for the
-	  message container. Experimental, but it seems to work and none of the 
+	  message container. Experimental, but it seems to work and none of the
 	  problems I've seen under XP (very slow redraw, CPU hogging while typing)
 	  does occur. NOTE: When not using the Aero desktop (e.g. Vista Home Basic),
 	  transparency combined with skins may still result in slow window redrawing.
-	  
+
 	* resolved some translation disambiguities in the user preferences dialog.
 
 	* added some missing translations

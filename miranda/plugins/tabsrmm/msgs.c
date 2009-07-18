@@ -35,8 +35,8 @@ $Id$
 
 static char *relnotes[] = {
 	"{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
- 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.17\\b0\\ul0\\par ",
-	"*\tA new variable (%a), showing the user defined account name, has been added for title bar formatting.\\par ",
+ 	"\\par\t\\b\\ul1 Release notes for version 3.0.0.0\\b0\\ul0\\par ",
+	"*\tDevel branch for Miranda 0.9. Does NOT work in Miranda 0.8 or earlier.\\par ",
 	"\t\\b View all release notes and history online:\\b0 \\par \thttp://wiki.miranda.or.at/TabSrmm:ChangeLog\\par ",
 	NULL
 };
@@ -920,8 +920,18 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
 					fShow = TRUE;
 				break;
 			case 2:
-				if(foundWin == 0)
+				if(hwnd == 0)
 					fShow = TRUE;
+				else {
+					if(myGlobals.m_HideOnClose) {
+						struct	ContainerWindowData *pContainer = 0;
+						SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
+						if(pContainer) {
+							if(!IsWindowVisible(pContainer->hwnd) && !IsIconic(pContainer->hwnd))
+								fShow = TRUE;
+						}
+					}
+				}
 				break;
 		}
 		if(fShow)
@@ -1834,15 +1844,14 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
 
 HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hContact, int isSend, const char *pszInitialText, BOOL bActivateTab, BOOL bPopupContainer, BOOL bWantPopup, HANDLE hdbEvent)
 {
-	TCHAR *contactName = NULL, newcontactname[128], *szStatus, tabtitle[128];
-	char *szProto = NULL;
-	WORD wStatus;
-	int	newItem;
-	HWND hwndNew = 0;
-	HWND hwndTab;
-	struct NewMessageWindowLParam newData = {
-		0
-	};
+	TCHAR 	*contactName = NULL, newcontactname[128], *szStatus, tabtitle[128];
+	char 	*szProto = NULL;
+	WORD 	wStatus;
+	int		newItem;
+	HWND 	hwndNew = 0;
+	HWND 	hwndTab;
+	struct 	NewMessageWindowLParam newData = {0};
+	DBVARIANT dbv = {0};
 
 	if (WindowList_Find(hMessageWindowList, hContact) != 0) {
 		_DebugPopup(hContact, _T("Warning: trying to create duplicate window"));
@@ -1954,6 +1963,7 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 		}
 	}
 	if (bActivateTab) {
+		ActivateExistingTab(pContainer, hwndNew);
 		SetFocus(hwndNew);
 		RedrawWindow(pContainer->hwnd, NULL, NULL, RDW_INVALIDATE);
 		UpdateWindow(pContainer->hwnd);

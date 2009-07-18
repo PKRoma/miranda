@@ -2744,9 +2744,9 @@ void LoadOverrideTheme(HWND hwndDlg, struct MessageWindowData *dat)
 	BOOL bReadTemplates = ((dat->pContainer->ltr_templates == NULL) || (dat->pContainer->rtl_templates == NULL) ||
 						   (dat->pContainer->logFonts == NULL) || (dat->pContainer->fontColors == NULL));
 
-	if (lstrlenA(dat->pContainer->szThemeFile) > 1) {
-		if (PathFileExistsA(dat->pContainer->szThemeFile)) {
-			if (CheckThemeVersion(dat->pContainer->szThemeFile) == 0) {
+	if (lstrlenA(dat->pContainer->szAbsThemeFile) > 1) {
+		if (PathFileExistsA(dat->pContainer->szAbsThemeFile)) {
+			if (CheckThemeVersion(dat->pContainer->szAbsThemeFile) == 0) {
 				LoadThemeDefaults(hwndDlg, dat);
 				return;
 			}
@@ -2771,7 +2771,7 @@ void LoadOverrideTheme(HWND hwndDlg, struct MessageWindowData *dat)
 			dat->theme.logFonts = dat->pContainer->logFonts;
 			dat->theme.fontColors = dat->pContainer->fontColors;
 			dat->theme.rtfFonts = dat->pContainer->rtfFonts;
-			ReadThemeFromINI(dat->pContainer->szThemeFile, dat, bReadTemplates ? 0 : 1, THEME_READ_ALL);
+			ReadThemeFromINI(dat->pContainer->szAbsThemeFile, dat, bReadTemplates ? 0 : 1, THEME_READ_ALL);
 			dat->dwFlags = dat->theme.dwFlags;
 			dat->theme.left_indent *= 15;
 			dat->theme.right_indent *= 15;

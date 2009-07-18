@@ -1202,6 +1202,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			dwCreateFlags = pContainer->dwFlags;
 
 			pContainer->isCloned = (pContainer->dwFlags & CNT_CREATE_CLONED);
+			pContainer->fPrivateThemeChanged = FALSE;
 
 			SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);          // set options...
 			pContainer->dwFlags |= dwCreateFlags;
@@ -2391,7 +2392,7 @@ panel_found:
 				dwLocalTrans = DBGetContactSettingDword(pContainer->hContactFrom, SRMSGMOD_T, szCname, 0xffffffff);
 				mir_snprintf(szCname, 40, "%s_titleformat", szSetting);
 				szTitleFormat = MY_DBGetContactSettingString(pContainer->hContactFrom, SRMSGMOD_T, szCname);
-				pContainer->szThemeFile[0] = 0;
+				pContainer->szRelThemeFile[0] = pContainer->szAbsThemeFile[0] = 0;
 				mir_snprintf(szCname, 40, "%s_theme", szSetting);
 				if (!DBGetContactSettingString(pContainer->hContactFrom, SRMSGMOD_T, szCname, &dbv))
 					szThemeName = dbv.pszVal;
@@ -2452,12 +2453,12 @@ panel_found:
 			if (szThemeName != NULL) {
 				char szNewPath[MAX_PATH];
 
-				MY_pathToAbsolute(szThemeName, szNewPath);
-				mir_snprintf(pContainer->szThemeFile, MAX_PATH, "%s", szNewPath);
+				MY_pathToAbsolute(szThemeName, pContainer->szAbsThemeFile);
+				mir_snprintf(pContainer->szRelThemeFile, MAX_PATH, "%s", szThemeName);
 				DBFreeVariant(&dbv);
 			}
 			else
-				pContainer->szThemeFile[0] = 0;
+				pContainer->szAbsThemeFile[0] = pContainer->szRelThemeFile[0] = 0;
 
 			pContainer->ltr_templates = pContainer->rtl_templates = 0;
 			pContainer->logFonts = 0;
@@ -2728,7 +2729,7 @@ panel_found:
 			DRAWITEMSTRUCT *dis = (DRAWITEMSTRUCT *)lParam;
 			int id = LOWORD(dis->itemID);
 
-			if (dis->hwndItem == pContainer->hwndStatus) {
+			if (dis->hwndItem == pContainer->hwndStatus && !(pContainer->dwFlags & CNT_NOSTATUSBAR)) {
 				struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 				if (dat)
 					DrawStatusIcons(dat, dis->hDC, dis->rcItem, 2);
@@ -2997,14 +2998,17 @@ panel_found:
 						DBWriteContactSettingDword(hContact, SRMSGMOD_T, szCName, pContainer->dwTransparency);
 
 						mir_snprintf(szCName, 40, "%s_theme", szSetting);
-						if (lstrlenA(pContainer->szThemeFile) > 1) {
-							char szNewPath[MAX_PATH];
-
-							MY_pathToRelative(pContainer->szThemeFile, szNewPath);
-							DBWriteContactSettingString(hContact, SRMSGMOD_T, szCName, szNewPath);
+						if (lstrlenA(pContainer->szRelThemeFile) > 1) {
+							if(pContainer->fPrivateThemeChanged == TRUE) {
+								MY_pathToRelative(pContainer->szRelThemeFile, pContainer->szAbsThemeFile);
+								DBWriteContactSettingString(hContact, SRMSGMOD_T, szCName, pContainer->szRelThemeFile);
+								pContainer->fPrivateThemeChanged = FALSE;
+							}
 						}
-						else
+						else {
 							DBDeleteContactSetting(hContact, SRMSGMOD_T, szCName);
+							pContainer->fPrivateThemeChanged = FALSE;
+						}
 
 						if (pContainer->dwFlags & CNT_TITLE_PRIVATE) {
 							char *szTitleFormat = NULL;
@@ -3040,14 +3044,17 @@ panel_found:
 #endif
 				}
 				mir_snprintf(szCName, 40, "%s%d_theme", szSetting, pContainer->iContainerIndex);
-				if (lstrlenA(pContainer->szThemeFile) > 1) {
-					char szNewPath[MAX_PATH];
-
-					MY_pathToRelative(pContainer->szThemeFile, szNewPath);
-					DBWriteContactSettingString(NULL, SRMSGMOD_T, szCName, szNewPath);
+				if (lstrlenA(pContainer->szRelThemeFile) > 1) {
+					if(pContainer->fPrivateThemeChanged == TRUE) {
+						MY_pathToRelative(pContainer->szRelThemeFile, pContainer->szAbsThemeFile);
+						DBWriteContactSettingString(NULL, SRMSGMOD_T, szCName, pContainer->szAbsThemeFile);
+						pContainer->fPrivateThemeChanged = FALSE;
+					}
 				}
-				else
+				else {
 					DBDeleteContactSetting(NULL, SRMSGMOD_T, szCName);
+					pContainer->fPrivateThemeChanged = FALSE;
+				}
 			}
 			DestroyWindow(hwndDlg);
 		}//mad_
