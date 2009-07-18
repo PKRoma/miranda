@@ -87,7 +87,8 @@ bool CMsnProto::p2p_createListener(filetransfer* ft, directconnection *dc, MimeH
 	nlb.pfnNewConnectionV2 = MSN_ConnectionProc;
 	nlb.pExtra = this;
 	HANDLE sb = (HANDLE) MSN_CallService(MS_NETLIB_BINDPORT, (WPARAM) hNetlibUser, (LPARAM)&nlb);
-	if (sb == NULL) {
+	if (sb == NULL) 
+    {
 		MSN_DebugLog("Unable to bind the port for incoming transfers");
 		return false;
 	}
@@ -1585,7 +1586,8 @@ void  CMsnProto::p2p_processMsg(ThreadData* info,  char* msgbody)
     }
 
 	//---- receiving ack -----------
-	if (hdrdata->mFlags == 0x02) {
+	if (hdrdata->mFlags == 0x02) 
+    {
 		ft->p2p_waitack = false;
 
 		if (hdrdata->mAckSessionID == ft->p2p_sendmsgid) 
@@ -1604,7 +1606,8 @@ void  CMsnProto::p2p_processMsg(ThreadData* info,  char* msgbody)
 			return;
 		}
 
-		switch(ft->p2p_ackID) {
+		switch(ft->p2p_ackID) 
+        {
 		case 1000:
 			{
 				//---- send Data Preparation Message
@@ -1710,13 +1713,13 @@ void  CMsnProto::p2p_processMsg(ThreadData* info,  char* msgbody)
 void  CMsnProto::p2p_invite(HANDLE hContact, int iAppID, filetransfer* ft)
 {
 	const char* szAppID;
-	switch(iAppID) {
-	case MSN_APPID_FILE:			szAppID = "{5D3E02AB-6190-11D3-BBBB-00C04F795683}";	break;
-	case MSN_APPID_AVATAR:			szAppID = "{A4268EEC-FEC5-49E5-95C3-F126696BDBF6}";	break;
-	case MSN_APPID_CUSTOMSMILEY:	szAppID = "{A4268EEC-FEC5-49E5-95C3-F126696BDBF6}";	break;
+	switch(iAppID) 
+    {
+	case MSN_APPID_FILE:			        szAppID = "{5D3E02AB-6190-11D3-BBBB-00C04F795683}";	break;
+	case MSN_APPID_AVATAR:			        szAppID = "{A4268EEC-FEC5-49E5-95C3-F126696BDBF6}";	break;
+	case MSN_APPID_CUSTOMSMILEY:	        szAppID = "{A4268EEC-FEC5-49E5-95C3-F126696BDBF6}";	break;
 	case MSN_APPID_CUSTOMANIMATEDSMILEY:	szAppID = "{A4268EEC-FEC5-49E5-95C3-F126696BDBF6}";	break;
-	default:
-		return;
+	default: return;
 	}
 
 	char szEmail[MSN_MAX_EMAIL_LEN];
