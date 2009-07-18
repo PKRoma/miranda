@@ -159,7 +159,7 @@ bool CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETL
                 memset(&pfts, 0, sizeof(PROTOFILETRANSFERSTATUS));
                 pfts.currentFileNumber      = 0;
                 pfts.currentFileProgress    = 0;
-                pfts.currentFileSize        = _htonl(recv_ft->size);
+                pfts.currentFileSize        = ft->total_size;
                 pfts.currentFileTime        = 0;
                 pfts.files                  = NULL;
                 pfts.hContact               = ft->hContact;
@@ -275,10 +275,9 @@ bool CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NE
                     char *buf = (char*)mir_calloc(buflen+2);
                     unsigned short enc;
 
-                    const unsigned long size = _htonl(recv_ft->size);
-                    pfts.currentFileSize = size;
-                    pfts.totalBytes = size;
-                    pfts.currentFileTime = recv_ft->mod_time;
+                    pfts.currentFileSize = _htonl(recv_ft->size);
+                    pfts.totalBytes = _htonl(recv_ft->total_size);
+                    pfts.currentFileTime = _htonl(recv_ft->mod_time);
                     memcpy(buf, recv_ft->filename, buflen);
                     enc = _htons(recv_ft->encoding);
 
