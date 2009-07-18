@@ -7,7 +7,10 @@
 + = new feature
 - = removed
 
-0.8.1.2  - 2009/05/03
+0.8.1.3  - 2009/07/18
+		* remove separator from view mode menu when not needed
+
+0.8.1.2  - 2009/07/03
 		* support relative path for skin filenames.
 		* fixed some redrawing problems for floating frames
 		* fixed issue with disappearing "Appearance" context menu item.

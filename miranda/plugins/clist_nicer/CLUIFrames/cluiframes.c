@@ -3101,6 +3101,9 @@ int CLUIFrameResizeFloatingFrame(int framepos)
 	height = rect.bottom - rect.top;
 	floatingHeight = g_CluiData.titleBarHeight;
 
+	if(floatingHeight <= 0 || floatingHeight > 50)
+		floatingHeight = 18;
+
 	Frames[framepos].visible ? ShowWindow(Frames[framepos].ContainerWnd, SW_SHOWNOACTIVATE) : ShowWindow(Frames[framepos].ContainerWnd, SW_HIDE);
 
 	if (Frames[framepos].TitleBar.ShowTitleBar) {
