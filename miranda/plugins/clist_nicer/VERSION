@@ -1,7 +1,11 @@
 #ifndef APSTUDIO_INVOKED
+#define VERSION_STRING "0.9.0.2"
+#define VERSION_RAW 0,9,0,2
+#define VERSION_BUILD "1"
+
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,8,1,2
- PRODUCTVERSION 0,8,1,2
+ FILEVERSION VERSION_RAW
+ PRODUCTVERSION VERSION_RAW
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x21L
@@ -20,13 +24,13 @@ BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License"
             VALUE "CompanyName", "Copyright © 2000-2004 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim and others."
             VALUE "FileDescription", "Clist Nicer+ (UNICODE)"
-            VALUE "FileVersion", "0.8.1.2"
+            VALUE "FileVersion", VERSION_STRING
             VALUE "InternalName", "clist_nicer+ (UNICODE)"
             VALUE "LegalCopyright", "Copyright © 2000-2006 The Miranda IM project members."
             VALUE "OriginalFilename", "clist_nicer.dll"
             VALUE "ProductName", "Miranda IM Contact List"
-            VALUE "ProductVersion", "0.8.1.2"
-            VALUE "SpecialBuild", "11"
+            VALUE "ProductVersion", VERSION_STRING
+            VALUE "SpecialBuild", VERSION_BUILD
         END
     END
 #else
@@ -36,13 +40,13 @@ BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License"
             VALUE "CompanyName", "Copyright © 2000-2004 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim and others."
             VALUE "FileDescription", "Clist Nicer+ (ANSI)"
-            VALUE "FileVersion", "0.8.1.2"
+            VALUE "FileVersion", VERSION_STRING
             VALUE "InternalName", "clist_nicer+ (ANSI)"
             VALUE "LegalCopyright", "Copyright © 2000-2006 The Miranda IM project members."
             VALUE "OriginalFilename", "clist_nicer.dll"
             VALUE "ProductName", "Miranda IM Contact List"
-            VALUE "ProductVersion", "0.8.1.2"
-            VALUE "SpecialBuild", "11"
+            VALUE "ProductVersion", VERSION_STRING
+            VALUE "SpecialBuild", VERSION_BUILD
         END
     END
 #endif    

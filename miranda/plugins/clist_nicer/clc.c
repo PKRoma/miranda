@@ -129,7 +129,7 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 		} else if (!__strcmp(cws->szModule, "UserInfo")) {
 			if (!__strcmp(cws->szSetting, "ANSIcodepage"))
 				pcli->pfnClcBroadcast(INTM_CODEPAGECHANGED, wParam, lParam);
-			else if (!__strcmp(cws->szSetting, "Timezone"))
+			else if (!__strcmp(cws->szSetting, "Timezone") || !__strcmp(cws->szSetting, "TzName"))
 				ReloadExtraInfo((HANDLE)wParam);
 		} else if (wParam != 0 && (szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0)) != NULL) {
 			char *id = NULL;
@@ -165,7 +165,7 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 					SendMessage(pcli->hwndContactTree, INTM_STATUSMSGCHANGED, wParam, lParam);
 				else if (strstr(cws->szSetting, "XStatus"))
 					SendMessage(pcli->hwndContactTree, INTM_XSTATUSCHANGED, wParam, lParam);
-				else if (!__strcmp(cws->szSetting, "Timezone"))
+				else if (!__strcmp(cws->szSetting, "Timezone") || !__strcmp(cws->szSetting, "TzName"))
 					ReloadExtraInfo((HANDLE)wParam);
 				else if (!__strcmp(cws->szSetting, "MirVer"))
 					NotifyEventHooks(hExtraImageApplying, wParam, 0);

@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -39,6 +39,8 @@ extern int ( *saveAddInfoItemToGroup )(struct ClcGroup *group, int flags, const 
 extern struct ClcGroup* ( *saveRemoveItemFromGroup )(HWND hwnd, struct ClcGroup *group, struct ClcContact *contact, int updateTotalCount);
 
 extern struct ClcGroup* ( *saveAddGroup )(HWND hwnd, struct ClcData *dat, const TCHAR *szName, DWORD flags, int groupId, int calcTotalMembers);
+
+static void TZ_LoadTimeZone(HANDLE hContact, struct ExtraCache *c, const char *szProto);
 
 //routines for managing adding/removal of items in the list, including sorting
 
@@ -78,7 +80,7 @@ struct ClcGroup *AddGroup(HWND hwnd, struct ClcData *dat, const TCHAR *szName, D
 		if ( p && p->parent )
 			RTL_DetectGroupName( p->parent->cl.items[ p->parent->cl.count-1] );
 	#else
-		if ( p && p->parent ) 
+		if ( p && p->parent )
 			p->parent->cl.items[ p->parent->cl.count -1]->isRtl = 0;
 	#endif
 	return p;
@@ -166,7 +168,7 @@ int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hConta
 	}
 #if defined(_UNICODE)
 	RTL_DetectAndSet( p, p->hContact);
-#endif    
+#endif
 	p->avatarLeft = p->extraIconRightBegin = -1;
 	p->flags |= DBGetContactSettingByte(p->hContact, "CList", "Priority", 0) ? CONTACTF_PRIORITY : 0;
 
@@ -316,7 +318,7 @@ BYTE GetCachedStatusMsg(int iExtraCacheEntry, char *szProto)
 			if(ServiceExists(szServiceName) && !CallService(szServiceName, (WPARAM)hContact, (LPARAM)&cst) && xStatus > 0) {
 				cst.flags = CSSF_MASK_NAME | CSSF_DEFAULT_NAME | CSSF_TCHAR;
  				cst.wParam = &xStatus2;
-				cst.ptszName = xStatusName; 
+				cst.ptszName = xStatusName;
 				if(!CallService(szServiceName, (WPARAM)hContact, (LPARAM)&cst)) {
 					TCHAR *szwXstatusName = TranslateTS(xStatusName);
 					cEntry->statusMsg = (TCHAR *)realloc(cEntry->statusMsg, (lstrlen(szwXstatusName) + 2) * sizeof(TCHAR));
@@ -356,8 +358,176 @@ BYTE GetCachedStatusMsg(int iExtraCacheEntry, char *szProto)
 			}
 		}
 	}
-#endif    
+#endif
+	if(cEntry->timediff == -1)
+		TZ_LoadTimeZone(hContact, cEntry, szProto);
 	return cEntry->bStatusMsgValid;;
+}
+
+/*
+ * this is how time zone information is stored in the registry
+ */
+
+typedef struct _REG_TZI_FORMAT
+{
+    LONG Bias;
+    LONG StandardBias;
+    LONG DaylightBias;
+    SYSTEMTIME StandardDate;
+    SYSTEMTIME DaylightDate;
+} REG_TZI_FORMAT;
+
+/*
+ * figure out whether DST is active for the target timezone
+ * target: SYSTEMTIME *  __IN
+ *
+ * uses g_CLuiData.st for the current date and time, which is kept current
+ * in other places.
+ */
+
+#if defined(_UNICODE)
+static LONG TZ_TimeCompare(SYSTEMTIME *target)
+{
+	if(target->wYear == 0 ) {
+		SYSTEMTIME	stTemp = {0};
+		FILETIME	ft;
+
+		/*
+		 * the following covers most cases, only the actual switching months need a more
+		 * deeply investigation later.
+		 */
+
+		if(g_CluiData.st.wMonth < target->wMonth )
+			return -1;
+		if(g_CluiData.st.wMonth > target->wMonth )
+			return 1;
+
+		/*
+		 * 1) figure out day of week for the 1st day of the given month
+		 * 2) calculate the actual date
+		 * 3) convert to file times for comparison
+		 */
+
+		CopyMemory(&stTemp, target, sizeof(SYSTEMTIME));
+		stTemp.wDay = 1;
+		stTemp.wYear = g_CluiData.st.wYear;
+		SystemTimeToFileTime(&stTemp, &ft);
+		FileTimeToSystemTime(&ft, &stTemp);
+
+		stTemp.wDay = (1 + (7 + target->wDayOfWeek - stTemp.wDayOfWeek) % 7);
+
+		if(target->wDay == 5 ) {
+			stTemp.wDay = stTemp.wDay + 21;
+			if((stTemp.wDay + 7) <= 30)  // XXXX FIXME!! need a method to get the # of days in the month before. 30 probably works, but not always
+				stTemp.wDay += 7;
+		}
+		else
+			stTemp.wDay = (target->wDay - 1) * 7;
+
+		SystemTimeToFileTime(&stTemp, &ft);
+
+		if(CompareFileTime(&g_CluiData.ft, &ft) < 0)
+		   return -1;
+		else
+			return 1;
+	}
+	return 0;
+}
+
+static LONG TZ_GetTimeZoneOffset(REG_TZI_FORMAT *tzi)
+{
+	if(tzi->StandardDate.wMonth == 0)
+		return 0;
+
+		// standard
+	if(tzi->DaylightDate.wMonth < tzi->StandardDate.wMonth ) {
+		if(TZ_TimeCompare(&tzi->DaylightDate) < 0 || TZ_TimeCompare(&tzi->StandardDate) > 0 )
+			return 0;
+		else
+			return tzi->DaylightBias;
+	}
+	else {
+		// e.g. brazil or nz (only a few, still important)
+		if(TZ_TimeCompare(&tzi->StandardDate) < 0 || TZ_TimeCompare(&tzi->DaylightDate) > 0)
+			return tzi->DaylightBias;
+		else
+			return 0;
+	}
+	return tzi->DaylightBias;
+}
+
+#endif
+
+/*
+ * load time zone information for the contact
+ * if TzName is set, use it. It has to be a standard windows time zone name
+ * Currently, it can only be set by using UserInfoEx plugin
+ *
+ * Fallback: use ordinary GMT offsets (incorrect, in some cases due to DST
+ * differences.
+ */
+
+static void TZ_LoadTimeZone(HANDLE hContact, struct ExtraCache *c, const char *szProto)
+{
+#if defined(_UNICODE)						// real time zone stuff only for Win 2000 or later
+	DBVARIANT	dbv;
+
+	if(DBGetContactSettingTString(hContact, "UserInfo", "TzName", &dbv) == 0) {
+		TIME_ZONE_INFORMATION tzi1 = {0};
+		REG_TZI_FORMAT		  tzi;
+		TCHAR	tszKeyname[250];
+		HKEY	hkey;
+		DWORD	dwType = 0, dwLength = sizeof(tzi);
+		LONG	targetDL, myDL, result;
+
+		mir_sntprintf(tszKeyname, 250, _T("Software\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones\\%s"), dbv.ptszVal);
+		DBFreeVariant(&dbv);
+
+		if(RegOpenKeyEx(HKEY_LOCAL_MACHINE, tszKeyname, 0, KEY_READ, &hkey) == ERROR_SUCCESS) {
+			result = RegQueryValueEx(hkey, _T("TZI"), 0, &dwType, (char *)&tzi, &dwLength);
+			RegCloseKey(hkey);
+			if(result == ERROR_SUCCESS) {
+				result = GetTimeZoneInformation(&tzi1);
+				c->timediff = tzi.Bias - tzi1.Bias;
+
+				if(tzi.DaylightDate.wMonth) {
+					/*
+					 * DST exists, check whether it applies
+					 */
+					targetDL = TZ_GetTimeZoneOffset(&tzi);
+				}
+				else
+					targetDL = 0;
+
+				myDL = (result == TIME_ZONE_ID_DAYLIGHT ? (tzi1.DaylightDate.wMonth ? tzi1.DaylightBias : 0) : 0);
+				c->timediff += (targetDL - myDL);
+				c->timediff *= 60;					   	// return it in seconds
+				c->dwCFlags |= ECF_HASREALTIMEZONE;		// not really needed, because format is the same as with GMT offsets
+			}
+		}
+	}
+	/*
+	 * the fallback method uses standard GMT offsets
+	 */
+
+	if(!(c->dwCFlags & ECF_HASREALTIMEZONE)) {
+		c->timezone = (DWORD)DBGetContactSettingByte(hContact,"UserInfo","Timezone", DBGetContactSettingByte(hContact, szProto,"Timezone",-1));
+		if(c->timezone != -1) {
+			DWORD contact_gmt_diff;
+			contact_gmt_diff = c->timezone > 128 ? 256 - c->timezone : 0 - c->timezone;
+			c->timediff = (int)g_CluiData.local_gmt_diff - (int)contact_gmt_diff*60*60/2;
+		}
+		c->dwCFlags &= ~ECF_HASREALTIMEZONE;
+	}
+#else
+	g_ExtraCache[index].timezone = (DWORD)DBGetContactSettingByte(contact->hContact,"UserInfo","Timezone", DBGetContactSettingByte(contact->hContact, szProto,"Timezone",-1));
+	if(g_ExtraCache[index].timezone != -1) {
+		DWORD contact_gmt_diff;
+		contact_gmt_diff = g_ExtraCache[index].timezone > 128 ? 256 - g_ExtraCache[index].timezone : 0 - g_ExtraCache[index].timezone;
+		g_ExtraCache[index].timediff = (int)g_CluiData.local_gmt_diff - (int)contact_gmt_diff*60*60/2;
+	}
+	c->dwCFlags &= ECF_HASREALTIMEZONE;
+#endif
 }
 
 void ReloadExtraInfo(HANDLE hContact)
@@ -366,12 +536,8 @@ void ReloadExtraInfo(HANDLE hContact)
 		int index = GetExtraCache(hContact, NULL);
 		if(index >= 0 && index < g_nextExtraCacheEntry) {
 			char *szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-			g_ExtraCache[index].timezone = (DWORD)DBGetContactSettingByte(hContact,"UserInfo","Timezone", DBGetContactSettingByte(hContact, szProto,"Timezone",-1));
-			if(g_ExtraCache[index].timezone != -1) {
-				DWORD contact_gmt_diff;
-				contact_gmt_diff = g_ExtraCache[index].timezone > 128 ? 256 - g_ExtraCache[index].timezone : 0 - g_ExtraCache[index].timezone;
-				g_ExtraCache[index].timediff = (int)g_CluiData.local_gmt_diff - (int)contact_gmt_diff*60*60/2;
-			}
+
+			TZ_LoadTimeZone(hContact, &g_ExtraCache[index], szProto);
 			InvalidateRect(pcli->hwndContactTree, NULL, FALSE);
 		}
 	}
@@ -388,9 +554,9 @@ void RTL_DetectAndSet(struct ClcContact *contact, HANDLE hContact)
     int i, index;
     TCHAR *szText = NULL;
     DWORD iLen;
-    
+
     ZeroMemory(infoTypeC2, sizeof(WORD) * 12);
-    
+
     if(contact == NULL) {
         szText = pcli->pfnGetContactDisplayName(hContact, 0);
         index = GetExtraCache(hContact, NULL);
@@ -419,7 +585,7 @@ void RTL_DetectGroupName(struct ClcContact *group)
     DWORD iLen;
 
     group->isRtl = 0;
-    
+
     if(group->szText) {
         iLen = min(lstrlenW(group->szText), 10);
         GetStringTypeW(CT_CTYPE2, group->szText, iLen, infoTypeC2);
@@ -445,10 +611,10 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
 
     if(dat->bisEmbedded || contact == NULL)
         return;
-    
+
     if(contact->proto == NULL || contact->hContact == 0)
         return;
-    
+
     index = contact->extraCacheEntry;
 
     //firstTime = DBGetContactSettingDword(contact->hContact, "CList", "mf_firstEvent", 0);
@@ -465,7 +631,7 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
     }
     else
         return;
-    
+
     g_ExtraCache[index].isChatRoom = DBGetContactSettingByte(contact->hContact, contact->proto, "ChatRoom", 0);
 
     g_ExtraCache[index].iExtraValid &= ~(EIMG_SHOW_EMAIL | EIMG_SHOW_SMS | EIMG_SHOW_WEB);
@@ -485,7 +651,7 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
         g_ExtraCache[index].iExtraImage[EXTRA_ICON_WEB] = 1;
     else if(!DBGetContactSettingString(contact->hContact, "UserInfo", "Homepage", &dbv) && lstrlenA(dbv.pszVal) > 1)
         g_ExtraCache[index].iExtraImage[EXTRA_ICON_WEB] = 1;
-    
+
     if(dbv.pszVal) {
         mir_free(dbv.pszVal);
         dbv.pszVal = NULL;
@@ -497,31 +663,25 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
         g_ExtraCache[index].iExtraImage[EXTRA_ICON_SMS] = 2;
     else if(!DBGetContactSettingString(contact->hContact, "UserInfo", "MyPhone0", &dbv) && lstrlenA(dbv.pszVal) > 1)
         g_ExtraCache[index].iExtraImage[EXTRA_ICON_SMS] = 2;
-    
+
     if(dbv.pszVal) {
         mir_free(dbv.pszVal);
         dbv.pszVal = NULL;
     }
 
     // set the mask for valid extra images...
-    
-    g_ExtraCache[index].iExtraValid |= ((g_ExtraCache[index].iExtraImage[EXTRA_ICON_EMAIL] != 0xff ? EIMG_SHOW_EMAIL : 0) | 
+
+    g_ExtraCache[index].iExtraValid |= ((g_ExtraCache[index].iExtraImage[EXTRA_ICON_EMAIL] != 0xff ? EIMG_SHOW_EMAIL : 0) |
         (g_ExtraCache[index].iExtraImage[EXTRA_ICON_WEB] != 0xff ? EIMG_SHOW_WEB : 0) |
         (g_ExtraCache[index].iExtraImage[EXTRA_ICON_SMS] != 0xff ? EIMG_SHOW_SMS : 0));
 
 
-    g_ExtraCache[index].timezone = (DWORD)DBGetContactSettingByte(contact->hContact,"UserInfo","Timezone", DBGetContactSettingByte(contact->hContact, contact->proto,"Timezone",-1));
-    if(g_ExtraCache[index].timezone != -1) {
-        DWORD contact_gmt_diff;
-        contact_gmt_diff = g_ExtraCache[index].timezone > 128 ? 256 - g_ExtraCache[index].timezone : 0 - g_ExtraCache[index].timezone;
-        g_ExtraCache[index].timediff = (int)g_CluiData.local_gmt_diff - (int)contact_gmt_diff*60*60/2;
-    }
 }
 
 static void LoadSkinItemToCache(struct ExtraCache *cEntry, char *szProto)
 {
     HANDLE hContact = cEntry->hContact;
-    
+
     if(DBGetContactSettingByte(hContact, "EXTBK", "VALID", 0)) {
         if(cEntry->status_item == NULL)
             cEntry->status_item = malloc(sizeof(StatusItems_t));
@@ -555,7 +715,7 @@ void ReloadSkinItemsToCache()
 {
     int i;
     char *szProto;
-    
+
     for(i = 0; i < g_nextExtraCacheEntry; i++) {
         szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)g_ExtraCache[i].hContact, 0);
         if(szProto)
@@ -601,6 +761,7 @@ int GetExtraCache(HANDLE hContact, char *szProto)
 		g_ExtraCache[g_nextExtraCacheEntry].hContact = hContact;
         memset(g_ExtraCache[g_nextExtraCacheEntry].iExtraImage, 0xff, MAXEXTRACOLUMNS);
         g_ExtraCache[g_nextExtraCacheEntry].iExtraValid = 0;
+		g_ExtraCache[g_nextExtraCacheEntry].timediff = -1;
         g_ExtraCache[g_nextExtraCacheEntry].valid = FALSE;
         g_ExtraCache[g_nextExtraCacheEntry].bStatusMsgValid = 0;
         g_ExtraCache[g_nextExtraCacheEntry].statusMsg = NULL;
@@ -631,9 +792,9 @@ int __fastcall CLVM_GetContactHiddenStatus(HANDLE hContact, char *szProto, struc
     char szTemp[64];
     TCHAR szGroupMask[256];
     DWORD dwLocalMask;
-    
+
     // always hide subcontacts (but show them on embedded contact lists)
-    
+
     if(g_CluiData.bMetaAvail && dat != NULL && dat->bHideSubcontacts && g_CluiData.bMetaEnabled && DBGetContactSettingByte(hContact, g_CluiData.szMetaName, "IsSubcontact", 0))
         return 1;
 
