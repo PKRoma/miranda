@@ -31,6 +31,7 @@ Bugfixes:
  - AIM: File transfer fixes
  - IRC: Own actions were not always shown
  - Jabber: Random disconnect issue caused by timeouts
+ - Jabber: Fixed encrypted messages being empty (XEP-0027)
 
  
 * New in 0.8.1
