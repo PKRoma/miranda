@@ -141,56 +141,63 @@ typedef struct {
 	#define PFTS_TCHAR  0
 #endif
 
-typedef struct tagPROTOFILETRANSFERSTATUS {
+#if MIRANDA_VER < 0x0900
+
+typedef struct tagPROTOFILETRANSFERSTATUS 
+{
 	size_t cbSize;
 	HANDLE hContact;
-	#if MIRANDA_VER >= 0x0900
-		DWORD  flags;      // one of PFTS_* constants
-	#else
-		int    sending;
-	#endif
-  #if MIRANDA_VER >= 0x0900
+	int    sending;
+    char **files;
+	int totalFiles;
+	int currentFileNumber;
+	unsigned long totalBytes;
+	unsigned long totalProgress;
+    char *workingDir;
+    char *currentFile;
+	unsigned long currentFileSize;
+	unsigned long currentFileProgress;
+	unsigned long currentFileTime;  //as seconds since 1970
+} 
+PROTOFILETRANSFERSTATUS;
+
+#else
+
+typedef struct tagPROTOFILETRANSFERSTATUS 
+{
+	size_t cbSize;
+	HANDLE hContact;
+	DWORD  flags;      // one of PFTS_* constants
+
     union {
   	  char **pszFiles;
       TCHAR **ptszFiles;
       WCHAR **pwszFiles;
     };
-  #else
-    char **files;
-  #endif
-	int totalFiles;
+
+    int totalFiles;
 	int currentFileNumber;
-  #if MIRANDA_VER >= 0x0900
-		unsigned __int64 totalBytes;
-		unsigned __int64 totalProgress;
-  #else
-		unsigned long totalBytes;
-		unsigned long totalProgress;
-  #endif
-  #if MIRANDA_VER >= 0x0900
+	unsigned __int64 totalBytes;
+	unsigned __int64 totalProgress;
+
     union {
 	    char *szWorkingDir;
       TCHAR *tszWorkingDir;
       WCHAR *wszWorkingDir;
     };
+
     union {
   	  char *szCurrentFile;
       TCHAR *tszCurrentFile;
       WCHAR *wszCurrentFile;
     };
-  #else
-    char *workingDir;
-    char *currentFile;
-  #endif
-  #if MIRANDA_VER >= 0x0900
-		unsigned __int64 currentFileSize;
-		unsigned __int64 currentFileProgress;
-  #else
-		unsigned long currentFileSize;
-		unsigned long currentFileProgress;
-  #endif
+
+	unsigned __int64 currentFileSize;
+	unsigned __int64 currentFileProgress;
 	unsigned long currentFileTime;  //as seconds since 1970
 } PROTOFILETRANSFERSTATUS;
+
+#endif
 
 //Enumerate the currently running protocols
 //wParam=(WPARAM)(int*)&numberOfProtocols
