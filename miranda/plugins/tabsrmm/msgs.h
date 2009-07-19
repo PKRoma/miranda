@@ -266,7 +266,7 @@ struct ContainerWindowData {
 	int     sb_NrTopButtons, sb_NrBottomButtons, sb_FirstButton;
 	int     sb_TopHeight, sb_BottomHeight;
 	TCHAR   szTitleFormat[TITLE_FORMATLEN + 2];
-	char    szThemeFile[MAX_PATH];
+	char    szRelThemeFile[MAX_PATH], szAbsThemeFile[MAX_PATH];
 	TemplateSet *ltr_templates, *rtl_templates;
 	LOGFONTA *logFonts;
 	COLORREF *fontColors;
@@ -283,6 +283,7 @@ struct ContainerWindowData {
 	ButtonItem *buttonItems;
 	RECT    rcSaved;
 	DWORD   exFlags;
+	BOOL	fPrivateThemeChanged;
 };
 
 #define STICK_ICON_MSG 10

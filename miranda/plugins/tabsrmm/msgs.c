@@ -35,8 +35,8 @@ $Id$
 
 static char *relnotes[] = {
 	"{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
- 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.17\\b0\\ul0\\par ",
-	"*\tA new variable (%a), showing the user defined account name, has been added for title bar formatting.\\par ",
+ 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.21\\b0\\ul0\\par ",
+	"*\tBug fixes only.\\par ",
 	"\t\\b View all release notes and history online:\\b0 \\par \thttp://wiki.miranda.or.at/TabSrmm:ChangeLog\\par ",
 	NULL
 };
