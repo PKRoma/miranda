@@ -407,6 +407,7 @@ static INT_PTR CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 	case M_PRESHUTDOWN:
 		SendMessage(dat->hwndIncoming, M_PRESHUTDOWN, 0, 0);
 		SendMessage(dat->hwndOutgoing, M_PRESHUTDOWN, 0, 0);
+        DestroyWindow(hwnd);
 		break;
 
 	case WM_CLOSE:
