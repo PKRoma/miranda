@@ -947,9 +947,9 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
             }
             offset+=(tlv.len());
         }
-        if(recv_file_type==-1)//Message not file
+        if (recv_file_type == -1)//Message not file
         {
-            if(auto_response)//this message must be an autoresponse
+            if (auto_response)//this message must be an autoresponse
             {
                 char* away = mir_utf8encodeT(TranslateT("[Auto-Response]:"));
                 size_t len = strlen(msg_buf) + strlen(away) + 2;
@@ -959,11 +959,19 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
                 mir_free(msg_buf);
                 msg_buf = buf;
             }
-            //Okay we are setting up the structure to give the message back to miranda's core
-            if(unicode_message)
-                pre.flags = PREF_UTF;
-            else
-                pre.flags = 0;
+
+            // Okay we are setting up the structure to give the message back to miranda's core
+            pre.flags = unicode_message ? PREF_UTF : 0;
+
+            if(getByte( AIM_KEY_FI, 0)) 		
+            {
+                LOG("Converting from html to bbcodes then stripping leftover html.");
+                char* bbuf = html_to_bbcodes(msg_buf);
+                mir_free(msg_buf);
+                msg_buf = bbuf;
+            }
+            LOG("Stripping html.");
+            html_decode(msg_buf);
 
             if (is_offline)
                 pre.timestamp = offline_timestamp;
@@ -972,10 +980,10 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
             pre.szMessage = msg_buf;
             pre.lParam = 0;
             ccs.szProtoService = PSR_MESSAGE;	
-            CallService(MS_PROTO_CONTACTISTYPING,(WPARAM)ccs.hContact,0);
+            CallService(MS_PROTO_CONTACTISTYPING, (WPARAM)ccs.hContact, 0);
             ccs.wParam = 0;
-            ccs.lParam = (LPARAM) & pre;
-            CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
+            ccs.lParam = (LPARAM)&pre;
+            CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
             if(m_iStatus==ID_STATUS_AWAY && !auto_response && !getByte(AIM_KEY_DM,0))
             {
                 unsigned long msg_time = getDword(hContact, AIM_KEY_LM, 0);
@@ -1042,14 +1050,14 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
             strcpy(szBlob + sizeof(DWORD) + lstrlenA(filename) + 1, msg_buf);
 
             pre.flags = PREF_UTF;
-            pre.timestamp =(DWORD)time(NULL);
+            pre.timestamp = (DWORD)time(NULL);
             pre.szMessage = szBlob;
             pre.lParam = (LPARAM)ft;
 
             ccs.szProtoService = PSR_FILE;
             ccs.hContact = hContact;
             ccs.wParam = 0;
-            ccs.lParam = (LPARAM) & pre;
+            ccs.lParam = (LPARAM)&pre;
             CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
 
             char cip[20];
