@@ -194,8 +194,9 @@ typedef struct tagPROTOFILETRANSFERSTATUS
 
 	unsigned __int64 currentFileSize;
 	unsigned __int64 currentFileProgress;
-	unsigned long currentFileTime;  //as seconds since 1970
-} PROTOFILETRANSFERSTATUS;
+	unsigned __int64 currentFileTime;  //as seconds since 1970
+} 
+PROTOFILETRANSFERSTATUS;
 
 #endif
 
