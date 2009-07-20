@@ -325,7 +325,7 @@ INT_PTR CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		{	PROTOFILERESUME *pfrCopy;
 			pfrCopy=(PROTOFILERESUME*)mir_alloc(sizeof(pfr));
 			CopyMemory(pfrCopy,&pfr,sizeof(pfr));
-			PostMessage((HWND)GetPropA(hwndDlg,"Miranda.ParentWnd"),M_FILEEXISTSDLGREPLY,(WPARAM)fts->tszCurrentFile,(LPARAM)pfrCopy);
+			PostMessage((HWND)GetPropA(hwndDlg,"Miranda.ParentWnd"),M_FILEEXISTSDLGREPLY,(WPARAM)mir_tstrdup(fts->tszCurrentFile),(LPARAM)pfrCopy);
 			DestroyWindow(hwndDlg);
 		}
 		break;
