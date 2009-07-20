@@ -2451,8 +2451,6 @@ panel_found:
 				free(szTitleFormat);
 
 			if (szThemeName != NULL) {
-				char szNewPath[MAX_PATH];
-
 				MY_pathToAbsolute(szThemeName, pContainer->szAbsThemeFile);
 				mir_snprintf(pContainer->szRelThemeFile, MAX_PATH, "%s", szThemeName);
 				DBFreeVariant(&dbv);

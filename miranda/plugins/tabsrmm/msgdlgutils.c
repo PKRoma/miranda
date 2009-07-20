@@ -2113,11 +2113,17 @@ TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSet
 
 void LoadTimeZone(HWND hwndDlg, struct MessageWindowData *dat)
 {
-	dat->timezone = (DWORD)(DBGetContactSettingByte(dat->hContact, "UserInfo", "Timezone", DBGetContactSettingByte(dat->hContact, dat->szProto, "Timezone", -1)));
-	if (dat->timezone != -1) {
-		DWORD contact_gmt_diff;
-		contact_gmt_diff = dat->timezone > 128 ? 256 - dat->timezone : 0 - dat->timezone;
-		dat->timediff = (int)myGlobals.local_gmt_diff - (int)contact_gmt_diff * 60 * 60 / 2;
+	if(ServiceExists("CLN/GetTimeOffset")) {
+		dat->timezone = 1;
+		dat->timediff = (DWORD)CallService("CLN/GetTimeOffset", (WPARAM)dat->hContact, 0);
+	}
+	else {
+		dat->timezone = (DWORD)(DBGetContactSettingByte(dat->hContact, "UserInfo", "Timezone", DBGetContactSettingByte(dat->hContact, dat->szProto, "Timezone", -1)));
+		if (dat->timezone != -1) {
+			DWORD contact_gmt_diff;
+			contact_gmt_diff = dat->timezone > 128 ? 256 - dat->timezone : 0 - dat->timezone;
+			dat->timediff = (int)myGlobals.local_gmt_diff - (int)contact_gmt_diff * 60 * 60 / 2;
+		}
 	}
 }
 

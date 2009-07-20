@@ -61,7 +61,7 @@ PLUGININFOEX pluginInfo = {
 	"Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
 	"The Miranda developers team and contributors",
 	"silvercircle@gmail.com",
-	"? 2000-2008 Miranda Project",
+	"? 2000-2009 Miranda Project",
 	"http://miranda.or.at",
 	UNICODE_AWARE,
 	DEFMOD_SRMESSAGE,            // replace internal version (if any)
