@@ -48,12 +48,13 @@ static void GetLowestExistingDirName(const TCHAR *szTestDir,TCHAR *szExistingDir
 	if(szExistingDir[0]=='\0') GetCurrentDirectory(cchExistingDir,szExistingDir);
 }
 
-static const char validFilenameChars[]="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_!&{}-=#@~,. ";
-static void RemoveInvalidFilenameChars(char *szString)
+static const TCHAR InvalidFilenameChars[] = _T("*?\"<>|"); // "\/:" are excluded as they are allowed in file path
+void RemoveInvalidFilenameChars(TCHAR *tszString)
 {
 	size_t i;
-	for(i=strspn(szString,validFilenameChars);szString[i];i+=strspn(szString+i+1,validFilenameChars)+1)
-		if(szString[i]>=0) szString[i]='%';
+	for(i=_tcscspn(tszString,InvalidFilenameChars); tszString[i]; i+=_tcscspn(tszString+i+1,InvalidFilenameChars)+1)
+		if(tszString[i] >= 0) 
+			tszString[i]='_';
 }
 
 static INT CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM pData)
@@ -155,6 +156,7 @@ void GetContactReceivedFilesDir(HANDLE hContact,TCHAR *szDir,int cchDir, BOOL pa
 
 	if (patchVars)
 		patchDir( szTemp, SIZEOF(szTemp));
+	RemoveInvalidFilenameChars(szTemp);
 	lstrcpyn( szDir, szTemp, cchDir );
 }
 
@@ -174,6 +176,7 @@ void GetReceivedFilesDir(TCHAR *szDir,int cchDir)
 		mir_sntprintf( szTemp, SIZEOF(szTemp), _T("%%miranda_path%%\\%s"), TranslateT("Received Files"));
 
 	patchDir( szTemp, SIZEOF(szTemp));
+	RemoveInvalidFilenameChars(szTemp);
 	lstrcpyn( szDir, szTemp, cchDir );
 }
 
@@ -337,6 +340,7 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			{	//most recently used directories
 				TCHAR szRecvDir[MAX_PATH],szDefaultRecvDir[MAX_PATH];
 				GetDlgItemText(hwndDlg,IDC_FILEDIR,szRecvDir,SIZEOF(szRecvDir));
+				RemoveInvalidFilenameChars(szRecvDir);
 				GetContactReceivedFilesDir(NULL,szDefaultRecvDir,SIZEOF(szDefaultRecvDir),TRUE);
 				if(_tcsnicmp(szRecvDir,szDefaultRecvDir,lstrlen(szDefaultRecvDir))) {
 					char idstr[32];

@@ -82,6 +82,7 @@ int SRFile_GetRegValue(HKEY hKeyBase,const TCHAR *szSubKey,const TCHAR *szValue,
 INT_PTR CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 //filerecv.c
 INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+void RemoveInvalidFilenameChars(TCHAR *tszString);
 void GetContactReceivedFilesDir(HANDLE hContact,TCHAR *szDir,int cchDir,BOOL substVars);
 void GetReceivedFilesDir(TCHAR *szDir,int cchDir);
 int BrowseForFolder(HWND hwnd,TCHAR *szPath);
