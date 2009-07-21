@@ -108,7 +108,7 @@ static void FilenameToFileList(HWND hwndDlg, struct FileDlgData* dat, const TCHA
 		{
 			// Allocate space for path+filename
 			int cbFileNameLen = lstrlen( pBuf );
-			dat->files[nTemp] = ( TCHAR* )mir_alloc(fileOffset + cbFileNameLen + 1);
+			dat->files[nTemp] = ( TCHAR* )mir_alloc( sizeof(TCHAR)*(fileOffset + cbFileNameLen + 1));
 
 			// Add path to filename and copy into array
 			#if defined( _UNICODE )
