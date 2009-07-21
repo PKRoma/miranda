@@ -54,7 +54,7 @@ static char* getMirVer(HANDLE hContact)
 	if ( !szProto )
 		return (NULL);
 
-	if ( !DBGetContactSetting(hContact, szProto, "MirVer", &dbv) ) {
+	if ( !DBGetContactSettingString(hContact, szProto, "MirVer", &dbv) ) {
 		msg=mir_strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
