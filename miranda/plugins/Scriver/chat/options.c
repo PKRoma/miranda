@@ -1,7 +1,7 @@
 /*
 Chat module plugin for Miranda IM
 
-Copyright (C) 2003 Jörgen Persson
+Copyright (C) 2003 Jï¿½rgen Persson
 Copyright 2003-2008 Miranda ICQ/IM project,
 
 This program is free software; you can redistribute it and/or
@@ -890,10 +890,10 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 
 				idList=SHBrowseForFolder(&bi);
 				if(idList) {
-					SHGetPathFromIDList(idList,tszDirectory);
-					lstrcat(tszDirectory, _T("\\"));
-				CallService(MS_UTILS_PATHTORELATIVET, (WPARAM)tszDirectory, (LPARAM)tszTemp );
-				SetWindowText(GetDlgItem(hwndDlg, IDC_CHAT_LOGDIRECTORY), lstrlen(tszTemp) > 1?tszTemp:DEFLOGFILENAME);
+                                    SHGetPathFromIDList(idList,tszDirectory);
+                                    lstrcat(tszDirectory, _T("\\"));
+                                    CallService(MS_UTILS_PATHTORELATIVET, (WPARAM)tszDirectory, (LPARAM)tszTemp );
+                                    SetWindowText(GetDlgItem(hwndDlg, IDC_CHAT_LOGDIRECTORY), lstrlen(tszTemp) > 1?tszTemp:DEFLOGFILENAME);
 				}
 				psMalloc->lpVtbl->Free(psMalloc,idList);
 				psMalloc->lpVtbl->Release(psMalloc);
@@ -945,8 +945,6 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 			}
 		} else if (((LPNMHDR)lParam)->idFrom == 0 && ((LPNMHDR)lParam)->code == PSN_APPLY ) {
 			int iLen;
-			char * pszText = NULL;
-			TCHAR *ptszPath = NULL;
 
 			iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_CHAT_HIGHLIGHTWORDS));
 			if ( iLen > 0 ) {
@@ -971,16 +969,18 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 				TCHAR *pszText1 = malloc(iLen*sizeof(TCHAR) + 2);
 				GetDlgItemText(hwndDlg, IDC_CHAT_LOGDIRECTORY, pszText1, iLen + 1);
 				DBWriteContactSettingTString(NULL, "Chat", "LogDirectory", pszText1);
+				CallService(MS_UTILS_PATHTOABSOLUTET, (WPARAM)pszText1, (LPARAM)g_Settings.pszLogDir);
 				free(pszText1);
-				CallService(MS_UTILS_PATHTOABSOLUTET, (WPARAM)pszText, (LPARAM)g_Settings.pszLogDir);
 			}
-			else DBDeleteContactSetting(NULL, "Chat", "LogDirectory");
+			else {
+                lstrcpyn(g_Settings.pszLogDir, DEFLOGFILENAME, MAX_PATH);
+                DBDeleteContactSetting(NULL, "Chat", "LogDirectory");
+            }
 
-			CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)pszText, (LPARAM)g_Settings.pszLogDir);
-
+            char *pszText = NULL;
 			iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_CHAT_LOGTIMESTAMP));
 			if ( iLen > 0 ) {
-			pszText = mir_realloc(pszText, iLen+1);
+                pszText = mir_realloc(pszText, iLen+1);
 				GetDlgItemTextA(hwndDlg, IDC_CHAT_LOGTIMESTAMP, pszText,iLen+1);
 				DBWriteContactSettingString(NULL, "Chat", "LogTimestamp", pszText);
 			}
@@ -988,7 +988,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 
 			iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_CHAT_TIMESTAMP));
 			if( iLen > 0 ) {
-			pszText = mir_realloc(pszText, iLen+1);
+                pszText = mir_realloc(pszText, iLen+1);
 				GetDlgItemTextA(hwndDlg, IDC_CHAT_TIMESTAMP, pszText,iLen+1);
 				DBWriteContactSettingString(NULL, "Chat", "HeaderTime", pszText);
 			}
@@ -996,7 +996,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 
 			iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_CHAT_INSTAMP));
 			if ( iLen > 0 ) {
-			pszText = mir_realloc(pszText, iLen+1);
+                pszText = mir_realloc(pszText, iLen+1);
 				GetDlgItemTextA(hwndDlg, IDC_CHAT_INSTAMP, pszText,iLen+1);
 				DBWriteContactSettingString(NULL, "Chat", "HeaderIncoming", pszText);
 			}
@@ -1054,7 +1054,6 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 
 static INT_PTR CALLBACK DlgProcOptionsPopup(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
-	static HTREEITEM hListHeading6= 0;
 	switch (uMsg)
 	{
 	case WM_INITDIALOG:
