@@ -1055,7 +1055,8 @@ int __cdecl CMsnProto::SetAwayMsg(int status, const char* msg)
 	if (msgptr == NULL)
 		return 1;
 
-	replaceStr(*msgptr, msg);
+    mir_free(*msgptr);
+	*msgptr = mir_utf8encode(msg);
 
 	if (status == m_iDesiredStatus)
 		MSN_SendStatusMessage(msg);

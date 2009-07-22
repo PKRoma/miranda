@@ -551,9 +551,7 @@ void  CMsnProto::MSN_SendStatusMessage(const char* msg)
 	if (!msnLoggedIn)
 		return;
 
-	char *tmp = mir_utf8encode(msg);
-	char* msgEnc = HtmlEncode((tmp == NULL) ? "" : tmp);
-	mir_free(tmp);
+    char* msgEnc = HtmlEncode(msg ? msg : "");
 
 	size_t sz;
 	char  szMsg[2048];
