@@ -1154,7 +1154,7 @@ The official webpage for the Miranda IM project is http://www.miranda-im.org.
 Miranda IM is provided free of charge but without any warranty or support.
 
 If you have difficulties using Miranda IM, you can find a lot of resources in
-the Help section of the website: http://wiki.miranda-im.org/
+the Support section of the website: http://wiki.miranda-im.org/
 
 You can also ask for help in the official forums and someone will try to help.
 But remember; everyone involved in the Miranda IM project are volunteers, as
@@ -1171,7 +1171,7 @@ Source code is available at: http://www.miranda-im.org/download/
 Miranda IM is released under the terms of the GNU General Public License. See
 "License.txt" for more details.
 
-Miranda IM is copyright 2000-2003 by Richard Hughes, Roland Rabien,
+Miranda IM is copyright 2000-2009 by Richard Hughes, Roland Rabien,
 Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari, and Lyon Lim.
 
 The plugins included with this release is copyrighted by their authors. See the
