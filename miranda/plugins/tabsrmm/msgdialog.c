@@ -88,7 +88,7 @@ static const UINT controlsToHide2[] = { IDOK, IDC_PIC, IDC_PROTOCOL, -1};
 static const UINT addControls[] = { IDC_ADD, IDC_CANCELADD };
 
 const UINT infoPanelControls[] = {IDC_PANELPIC, IDC_PANELNICK, IDC_PANELUIN,
-								  IDC_PANELSTATUS, IDC_APPARENTMODE, IDC_TOGGLENOTES, IDC_NOTES, IDC_PANELSPLITTER
+								  IDC_PANELSTATUS, IDC_TOGGLENOTES, IDC_NOTES, IDC_PANELSPLITTER
 								 };
 const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER};
 const UINT errorButtons[] = { IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER};
@@ -100,7 +100,6 @@ static struct _tooltips {
 	IDC_ADD, _T("Add this contact permanently to your contact list"),
 	IDC_CANCELADD, _T("Do not add this contact permanently"),
 	IDC_TOGGLENOTES, _T("Toggle notes display"),
-	IDC_APPARENTMODE, _T("Set your visibility for this contact"),
 	-1, NULL
 };
 
@@ -520,10 +519,11 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UI
 
 static void ConfigurePanel(HWND hwndDlg, struct MessageWindowData *dat)
 {
-	const UINT cntrls[] = {IDC_PANELNICK, IDC_PANELUIN, IDC_PANELSTATUS, IDC_APPARENTMODE};
+	const UINT cntrls[] = {IDC_PANELNICK, IDC_PANELUIN, IDC_PANELSTATUS};
 
-	ShowMultipleControls(hwndDlg, cntrls, 4, dat->dwFlagsEx & MWF_SHOW_INFONOTES ? SW_HIDE : SW_SHOW);
+	ShowMultipleControls(hwndDlg, cntrls, 3, dat->dwFlagsEx & MWF_SHOW_INFONOTES ? SW_HIDE : SW_SHOW);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_NOTES), dat->dwFlagsEx & MWF_SHOW_INFONOTES ? SW_SHOW : SW_HIDE);
+	ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLENOTES), dat->dwFlagsEx & MWF_SHOW_INFONOTES ? SW_SHOW : SW_HIDE);
 }
 static void ShowHideInfoPanel(HWND hwndDlg, struct MessageWindowData *dat)
 {
@@ -542,7 +542,7 @@ static void ShowHideInfoPanel(HWND hwndDlg, struct MessageWindowData *dat)
 	AdjustBottomAvatarDisplay(hwndDlg, dat);
 	GetObject(hbm, sizeof(bm), &bm);
 	CalcDynamicAvatarSize(hwndDlg, dat, &bm);
-	ShowMultipleControls(hwndDlg, infoPanelControls, 8, dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
+	ShowMultipleControls(hwndDlg, infoPanelControls, 7, dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
 
 	if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
 		//MAD
@@ -553,7 +553,6 @@ static void ShowHideInfoPanel(HWND hwndDlg, struct MessageWindowData *dat)
 		//
 		GetAvatarVisibility(hwndDlg, dat);
 		ConfigurePanel(hwndDlg, dat);
-		UpdateApparentModeDisplay(hwndDlg, dat);
 		InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELNICK), NULL, FALSE);
 		InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
 		InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), NULL, FALSE);
@@ -670,7 +669,7 @@ void SetDialogToType(HWND hwndDlg)
 
 	// info panel stuff
 	if (!(dat->dwFlags & MWF_ERRORSTATE)) {
-		ShowMultipleControls(hwndDlg, infoPanelControls, 8, dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
+		ShowMultipleControls(hwndDlg, infoPanelControls, 7, dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
 		if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL)
 			ConfigurePanel(hwndDlg, dat);
 	}
@@ -1645,14 +1644,9 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
 		}
 		case IDC_PANELNICK: {
-			urc->rcItem.right = urc->dlgNewSize.cx - panelWidth - 27;
+			urc->rcItem.right = urc->dlgNewSize.cx - panelWidth;
 			urc->rcItem.bottom = panelHeight - 3 - dat->ipFieldHeight - 2;;
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
-		}
-		case IDC_APPARENTMODE: {
-			urc->rcItem.right -= (panelWidth + 3);
-			urc->rcItem.left -= (panelWidth + 3);
-			return RD_ANCHORX_CUSTOM | RD_ANCHORX_RIGHT;
 		}
 		case IDC_PANELUIN: {
 			urc->rcItem.right = urc->dlgNewSize.cx - (panelWidth + 2) - dat->panelStatusCX;
@@ -2057,8 +2051,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			//
 			SendMessage(hwndDlg, DM_LOADBUTTONBARICONS, 0, 0);
 
-			SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BUTTONSETASPUSHBTN, 0, 0);
-
 			if (m_pContainer->bSkinned && !StatusItems[ID_EXTBKBUTTONSNPRESSED].IGNORED &&
 					!StatusItems[ID_EXTBKBUTTONSPRESSED].IGNORED && !StatusItems[ID_EXTBKBUTTONSMOUSEOVER].IGNORED) {
 				isFlat = TRUE;
@@ -2079,9 +2071,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			SendMessage(GetDlgItem(hwndDlg, IDC_CANCELADD), BUTTONSETASFLATBTN, 0, 0);
 			SendMessage(GetDlgItem(hwndDlg, IDC_LOGFROZEN), BUTTONSETASFLATBTN, 0, 0);
 
-			SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BUTTONSETASFLATBTN, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BUTTONSETASFLATBTN + 10, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BUTTONSETASFLATBTN + 12, 0, (LPARAM)m_pContainer);
 			SendDlgItemMessage(hwndDlg, IDC_TOGGLENOTES, BUTTONSETASFLATBTN + 10, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_TOGGLENOTES, BUTTONSETASFLATBTN + 12, 0, (LPARAM)m_pContainer);
 
@@ -2691,7 +2680,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), NULL, FALSE);
 					InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELNICK), NULL, FALSE);
 					InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
-					UpdateApparentModeDisplay(hwndDlg, dat);
 				}
 
 				if (myGlobals.g_FlashAvatarAvail) {
@@ -3559,6 +3547,19 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				SendMessage(hwndContainer, WM_SYSCOMMAND, IDM_NOTITLE, 0);
 				break;
 			}
+			if(dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
+				POINT	pt;
+				RECT	rc;
+
+				GetClientRect(hwndDlg, &rc);
+				rc.bottom = dat->panelHeight;
+				GetCursorPos(&pt);
+				ScreenToClient(hwndDlg, &pt);
+				if(PtInRect(&rc, pt)) {
+					SendMessage(hwndDlg, WM_COMMAND, IDC_TOGGLENOTES, 0);
+					break;
+				}
+			}
 			SendMessage(hwndContainer, WM_SYSCOMMAND, SC_MINIMIZE, 0);
 			break;
 
@@ -4318,9 +4319,10 @@ quote_from_last:
 					if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
 						dat->dwFlagsEx ^= MWF_SHOW_INFONOTES;
 						ConfigurePanel(hwndDlg, dat);
+						RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_ERASE);
 					}
 					break;
-				case IDC_APPARENTMODE: {
+				case IDC_APPARENTMODE1: {
 					HMENU subMenu = GetSubMenu(m_pContainer->hMenuContext, 10);
 					int iSelection;
 					RECT rc;
@@ -4334,7 +4336,6 @@ quote_from_last:
 					EnableMenuItem(subMenu, ID_APPARENTMENU_YOUAPPEARALWAYSOFFLINEORHAVETHISCONTACTBLOCKED, MF_BYCOMMAND | (pCaps & PF1_VISLIST ? MF_ENABLED : MF_GRAYED));
 					EnableMenuItem(subMenu, ID_APPARENTMENU_YOUAREALWAYSVISIBLETOTHISCONTACT, MF_BYCOMMAND | (pCaps & PF1_INVISLIST ? MF_ENABLED : MF_GRAYED));
 
-					GetWindowRect(GetDlgItem(hwndDlg, IDC_APPARENTMODE), &rc);
 					iSelection = TrackPopupMenu(subMenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
 					switch (iSelection) {
 						case ID_APPARENTMENU_YOUAPPEARALWAYSOFFLINEORHAVETHISCONTACTBLOCKED:
@@ -4349,7 +4350,6 @@ quote_from_last:
 					}
 					if (dat->wApparentMode != wOldApparentMode)
 						CallContactService(dat->bIsMeta ? dat->hSubContact : dat->hContact, PSS_SETAPPARENTMODE, (WPARAM)dat->wApparentMode, 0);
-					UpdateApparentModeDisplay(hwndDlg, dat);
 					break;
 				}
 				case IDC_INFOPANELMENU: {
@@ -5576,24 +5576,36 @@ quote_from_last:
 			if (m_pContainer->bSkinned)
 				return 0;
 			break;
-		case WM_PAINT:
+		case WM_PAINT: {
 			/*
 			 * in skinned mode only, draw the background elements for the 2 richedit controls
 			 * this allows border-less textboxes to appear "skinned" and blended with the
 			 * background
 			 */
+			PAINTSTRUCT ps;
+			HDC 	hdc = BeginPaint(hwndDlg, &ps);
+			RECT 	rcClient, rcWindow, rc;
+			HDC	 	hdcMem = CreateCompatibleDC(hdc);
+			DWORD 	cx, cy;
+			HBITMAP hbm, hbmOld;
+			StatusItems_t t_item;
+
+			GetClientRect(hwndDlg, &rcClient);
+			cx = rcClient.right - rcClient.left;
+			cy = rcClient.bottom - rcClient.top;
+			hbm =  CreateCompatibleBitmap(hdc, cx, cy);
+
+			hbmOld = SelectObject(hdcMem, hbm);
+
 			if (m_pContainer->bSkinned) {
-				PAINTSTRUCT ps;
-				RECT rcClient, rcWindow, rc;
 				StatusItems_t *item;
 				POINT pt;
 				UINT item_ids[2] = {ID_EXTBKHISTORY, ID_EXTBKINPUTAREA};
 				UINT ctl_ids[2] = {IDC_LOG, IDC_MESSAGE};
 				int  i;
 
-				HDC hdc = BeginPaint(hwndDlg, &ps);
-				GetClientRect(hwndDlg, &rcClient);
-				SkinDrawBG(hwndDlg, hwndContainer, m_pContainer, &rcClient, hdc);
+				SkinDrawBG(hwndDlg, hwndContainer, m_pContainer, &rcClient, hdcMem);
+
 
 				for (i = 0; i < 2; i++) {
 					item = &StatusItems[item_ids[i]];
@@ -5607,14 +5619,52 @@ quote_from_last:
 						rc.top = pt.y - item->MARGIN_TOP;
 						rc.right = rc.left + item->MARGIN_RIGHT + (rcWindow.right - rcWindow.left) + item->MARGIN_LEFT;
 						rc.bottom = rc.top + item->MARGIN_BOTTOM + (rcWindow.bottom - rcWindow.top) + item->MARGIN_TOP;
-						DrawAlpha(hdc, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+						DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
 								  item->CORNER, item->BORDERSTYLE, item->imageItem);
 					}
 				}
-				EndPaint(hwndDlg, &ps);
-				return 0;
 			}
-			break;
+			else
+				FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
+
+			t_item = StatusItems[ID_EXTBKINFOPANELBG];
+			if(!t_item.IGNORED && (dat->dwFlags & MWF_SHOW_INFOPANEL)) {
+				StatusItems_t *item = &t_item;
+
+				GetClientRect(hwndDlg, &rc);
+				rc.bottom = dat->panelHeight;
+				if(dat->hdcCached == 0)
+					dat->hdcCached = CreateCompatibleDC(hdc);
+				if(dat->hbmCachedOld) {
+					SelectObject(dat->hdcCached, dat->hbmCachedOld);
+					DeleteObject(dat->hbmCached);
+				}
+				dat->hbmCached = CreateCompatibleBitmap(hdc, rc.right - rc.left, rc.bottom - rc.top);
+				dat->hbmCachedOld = SelectObject(dat->hdcCached, dat->hbmCached);
+
+				DrawAlpha(dat->hdcCached, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+						  item->CORNER, item->BORDERSTYLE, item->imageItem);
+				DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+						  item->CORNER, item->BORDERSTYLE, item->imageItem);
+			}
+			if(dat->dwFlagsEx & MWF_SHOW_INFOPANEL && !(dat->dwFlagsEx & MWF_SHOW_INFONOTES)) {
+				BITMAP 	bm;
+				HDC		hdcImage = CreateCompatibleDC(hdc);
+				HBITMAP hbmOld;
+
+				GetObject(myGlobals.hbmLogo, sizeof(bm), &bm);
+				hbmOld = SelectObject(hdcImage, myGlobals.hbmLogo);
+				MY_AlphaBlend(hdcMem, 4, 2, bm.bmWidth, bm.bmHeight, bm.bmWidth, bm.bmHeight, hdcImage);
+				SelectObject(hdcImage, hbmOld);
+				DeleteDC(hdcImage);
+			}
+			BitBlt(hdc, 0, 0, cx, cy, hdcMem, 0, 0, SRCCOPY);
+			SelectObject(hdcMem, hbmOld);
+			DeleteObject(hbm);
+			DeleteDC(hdcMem);
+			EndPaint(hwndDlg, &ps);
+			return 0;
+		}
 		case WM_DESTROY:
 			if (myGlobals.g_FlashAvatarAvail) {
 				FLASHAVATAR fa = {0};
@@ -5807,6 +5857,13 @@ quote_from_last:
 					dat->oldIEViewProc = 0;
 				}
 				CallService(MS_HPP_EG_WINDOW, 0, (LPARAM)&ieWindow);
+			}
+			if(dat->hdcCached) {
+				if(dat->hbmCachedOld) {
+					SelectObject(dat->hdcCached, dat->hbmCachedOld);
+					DeleteObject(dat->hbmCached);
+				}
+				DeleteDC(dat->hdcCached);
 			}
 			break;
 		case WM_NCDESTROY:

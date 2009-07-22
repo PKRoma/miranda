@@ -2309,7 +2309,7 @@ void ReloadGlobals()
 	myGlobals.m_smcyicon = GetSystemMetrics(SM_CYSMICON);
 	myGlobals.m_PasteAndSend = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "pasteandsend", 1);
 	myGlobals.m_szNoStatus = TranslateTS(tszNoStatus);
-	myGlobals.ipConfig.borderStyle = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ipfieldborder", IPFIELD_FLAT);
+	myGlobals.ipConfig.borderStyle = IPFIELD_FLAT; // (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ipfieldborder", IPFIELD_FLAT);
 	myGlobals.bAvatarBoderType = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avbordertype", 0);
 	myGlobals.m_LangPackCP = ServiceExists(MS_LANGPACK_GETCODEPAGE) ? CallService(MS_LANGPACK_GETCODEPAGE, 0, 0) : CP_ACP;
 	myGlobals.m_SmileyButtonOverride = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "smbutton_override", 1);

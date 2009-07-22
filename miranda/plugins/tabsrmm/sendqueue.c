@@ -36,7 +36,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern      MYGLOBALS myGlobals;
 extern      TCHAR *pszIDCSAVE_save, *pszIDCSAVE_close;
-extern      const UINT errorControls[5], infoPanelControls[8];
+extern      const UINT errorControls[5], infoPanelControls[7];
 extern      struct SendJob *sendJobs;
 extern      NEN_OPTIONS nen_options;
 
@@ -110,7 +110,7 @@ void HandleQueueError(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
 
 	dat->iCurrentQueueError = iEntry;
 	_snprintf(szErrorMsg, 500, "%s", sendJobs[iEntry].szErrorMsg);
-#if defined(_UNICODE) 
+#if defined(_UNICODE)
 {
 	wchar_t wszErrorMsg[512];
 	MultiByteToWideChar(myGlobals.m_LangPackCP, 0, szErrorMsg, -1, wszErrorMsg, 512);
@@ -621,7 +621,7 @@ void ShowErrorControls(HWND hwndDlg, struct MessageWindowData *dat, int showCmd)
 	}
 	if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
 		if (showCmd)
-			ShowMultipleControls(hwndDlg, infoPanelControls, 8, SW_HIDE);
+			ShowMultipleControls(hwndDlg, infoPanelControls, 7, SW_HIDE);
 		else
 			SendMessage(hwndDlg, DM_SETINFOPANEL, 0, 0);
 	}
@@ -863,7 +863,7 @@ int AckMessage(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARA
 			if (sendJobs[iFound].sendCount > 1) {        // multisend is different...
 				char szErrMsg[256];
 				mir_snprintf(szErrMsg, sizeof(szErrMsg), Translate("Multisend: failed sending to: %s"), dat->szProto);
-#if defined(_UNICODE) 
+#if defined(_UNICODE)
 			{
 				wchar_t wszErrMsg[256];
 				MultiByteToWideChar(myGlobals.m_LangPackCP, 0, szErrMsg, -1, wszErrMsg, 256);

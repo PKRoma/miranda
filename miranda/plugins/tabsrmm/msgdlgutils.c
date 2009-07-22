@@ -300,7 +300,7 @@ void FlashTab(struct MessageWindowData *dat, HWND hwndTab, int iTabindex, BOOL *
  * rendering in AlphaBlend().
  */
 
-static void MY_AlphaBlend(HDC hdcDraw, DWORD left, DWORD top,  int width, int height, int bmWidth, int bmHeight, HDC hdcMem)
+void MY_AlphaBlend(HDC hdcDraw, DWORD left, DWORD top,  int width, int height, int bmWidth, int bmHeight, HDC hdcMem)
 {
 	HDC hdcTemp = CreateCompatibleDC(hdcDraw);
 	HBITMAP hbmTemp = CreateCompatibleBitmap(hdcMem, bmWidth, bmHeight);
@@ -2066,20 +2066,6 @@ void LoadOwnAvatar(HWND hwndDlg, struct MessageWindowData *dat)
 	}
 }
 
-void UpdateApparentModeDisplay(HWND hwndDlg, struct MessageWindowData *dat)
-{
-	if (dat->wApparentMode == ID_STATUS_OFFLINE) {
-		CheckDlgButton(hwndDlg, IDC_APPARENTMODE, BST_CHECKED);
-		SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadSkinnedIcon(SKINICON_STATUS_OFFLINE));
-	} else if (dat->wApparentMode == ID_STATUS_ONLINE || dat->wApparentMode == 0) {
-		CheckDlgButton(hwndDlg, IDC_APPARENTMODE, BST_UNCHECKED);
-		SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BM_SETIMAGE, IMAGE_ICON, (LPARAM)(dat->wApparentMode == ID_STATUS_ONLINE ? LoadSkinnedIcon(SKINICON_STATUS_INVISIBLE) : LoadSkinnedIcon(SKINICON_STATUS_ONLINE)));
-		if (!dat->pContainer->bSkinned)
-			SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BUTTONSETASFLATBTN, 0, (LPARAM)(dat->wApparentMode == ID_STATUS_ONLINE ? 1 : 0));
-	}
-}
-
-
 int MY_DBFreeVariant(DBVARIANT *dbv)
 {
 	return DBFreeVariant(dbv);
@@ -2343,11 +2329,12 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		rcFrame = rcClient;
 
 
-//   		if (bPanelPic)
-//   			rcFrame.left = rcClient.right - dat->panelWidth;
-		if (dat->pContainer->bSkinned)
-			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &rcFrame, hdcDraw);
-		else
+		if (dat->pContainer->bSkinned) {
+			if(bPanelPic)
+				SkinDrawBGFromDC(dis->hwndItem, hwndDlg, dat->hdcCached, &rcFrame, hdcDraw);
+			else
+				SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &rcFrame, hdcDraw);
+		} else
 			FillRect(hdcDraw, &rcFrame, bgBrush);
 		if (borderType == 1)
 			borderType = aceFlags & AVS_PREMULTIPLIED ? 2 : 3;
@@ -2457,14 +2444,14 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 			GetTextExtentPoint32(dis->hDC, szFinalProto, lstrlen(szFinalProto), &sProto);
 		}
 
-		dat->panelStatusCX = sStatus.cx + sProto.cx + 14 + (dat->hClientIcon ? 20 : 0);
+		dat->panelStatusCX = 3 + sStatus.cx + sProto.cx + 14 + (dat->hClientIcon ? 20 : 0);
 
 		if (dat->panelStatusCX != oldPanelStatusCX)
 			SendMessage(hwndDlg, WM_SIZE, 0, 0);
 
 		GetClientRect(dis->hwndItem, &rc);
 		if (dat->pContainer->bSkinned) {
-			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &rc, dis->hDC);
+			SkinDrawBGFromDC(dis->hwndItem, hwndDlg, dat->hdcCached, &dis->rcItem, dis->hDC);
 			rc.left += item->MARGIN_LEFT;
 			rc.right -= item->MARGIN_RIGHT;
 			rc.top += item->MARGIN_TOP;
@@ -2478,7 +2465,8 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		if (myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
 			DrawEdge(dis->hDC, &rc, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
 
-		rc.left += 3;
+		rc.left += 2;
+		rc.right -=3;
 		if (dat->szStatus[0]) {
 			if (config) {
 				SelectObject(dis->hDC, myGlobals.ipConfig.hFonts[IPFONTID_STATUS]);
@@ -2509,32 +2497,20 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 	} else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELNICK) && dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
 		RECT rc = dis->rcItem;
 		TCHAR *szStatusMsg = NULL;
-		TCHAR *szLabel = TranslateT("Name:");
-		int   iNameLen = lstrlen(szLabel);
-		TCHAR *szLabelUIN = TranslateT("User Id:");
-		int   iNameLenUIN = lstrlen(szLabelUIN);
-		SIZE  szUIN;
 		StatusItems_t *item = &StatusItems[ID_EXTBKINFOPANEL];
 
 		szStatusMsg = dat->statusMsg;
 
-		GetTextExtentPoint32(dis->hDC, szLabel, iNameLen, &dat->szLabel);
-		GetTextExtentPoint32(dis->hDC, szLabelUIN, iNameLenUIN, &szUIN);
-
-		if (szUIN.cx > dat->szLabel.cx)
-			dat->szLabel = szUIN;
-
-		rc.right = rc.left + dat->szLabel.cx + 3;
+		dat->szLabel.cx = 0;
+		rc.right = rc.left;
 		SetBkMode(dis->hDC, TRANSPARENT);
-		if (dat->pContainer->bSkinned) {
-			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
+		if (dat->pContainer->bSkinned && dat->hdcCached != NULL) {
+			SkinDrawBGFromDC(dis->hwndItem, hwndDlg, dat->hdcCached, &dis->rcItem, dis->hDC);
 			SetTextColor(dis->hDC, myGlobals.skinDefaultFontColor);
 		} else {
 			FillRect(dis->hDC, &rc, GetSysColorBrush(COLOR_3DFACE));
 			SetTextColor(dis->hDC, GetSysColor(COLOR_BTNTEXT));
 		}
-		DrawText(dis->hDC, szLabel, iNameLen, &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
-		dis->rcItem.left += (dat->szLabel.cx + 3);
 		if (dat->pContainer->bSkinned) {
 			RECT rc = dis->rcItem;
 			rc.left += item->MARGIN_LEFT;
@@ -2546,6 +2522,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 						  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 		} else
 			FillRect(dis->hDC, &dis->rcItem, myGlobals.ipConfig.bkgBrush);
+
 		if (myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
 			DrawEdge(dis->hDC, &dis->rcItem, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
 		dis->rcItem.left += 2;
@@ -2606,24 +2583,21 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		char szBuf[256];
 		BOOL config = myGlobals.ipConfig.isValid;
 		HFONT hOldFont = 0;
-		RECT rc = dis->rcItem;
-		TCHAR *szLabel = TranslateT("User Id:");
-		int   iNameLen = lstrlen(szLabel);
 		StatusItems_t *item = &StatusItems[ID_EXTBKINFOPANEL];
+		HDC	  hdc = CreateCompatibleDC(dis->hDC);
+		HBITMAP hbm = CreateCompatibleBitmap(dis->hDC, dis->rcItem.right - dis->rcItem.left, dis->rcItem.bottom - dis->rcItem.top);
+		HBITMAP hbmOld = SelectObject(hdc, hbm);
+		RECT	rcOrig = dis->rcItem;
 
-		if (dat->pContainer->bSkinned) {
-			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
-			SetTextColor(dis->hDC, myGlobals.skinDefaultFontColor);
+		if (dat->pContainer->bSkinned && dat->hdcCached != NULL) {
+			SkinDrawBGFromDC(dis->hwndItem, hwndDlg, dat->hdcCached, &dis->rcItem, hdc);
+			SetTextColor(hdc, myGlobals.skinDefaultFontColor);
 		} else {
-			FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_3DFACE));
-			SetTextColor(dis->hDC, GetSysColor(COLOR_BTNTEXT));
+			FillRect(hdc, &dis->rcItem, GetSysColorBrush(COLOR_3DFACE));
+			SetTextColor(hdc, GetSysColor(COLOR_BTNTEXT));
 		}
 
-		SetBkMode(dis->hDC, TRANSPARENT);
-		DrawText(dis->hDC, szLabel, iNameLen, &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
-
-		rc.right = rc.left + dat->szLabel.cx + 3;
-		dis->rcItem.left += (dat->szLabel.cx + 3);
+		SetBkMode(hdc, TRANSPARENT);
 		if (dat->pContainer->bSkinned) {
 			RECT rc = dis->rcItem;
 			rc.left += item->MARGIN_LEFT;
@@ -2631,16 +2605,16 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 			rc.top += item->MARGIN_TOP;
 			rc.bottom -= item->MARGIN_BOTTOM;
 			if (!item->IGNORED)
-				DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
+				DrawAlpha(hdc, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
 						  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 		} else
-			FillRect(dis->hDC, &dis->rcItem, myGlobals.ipConfig.bkgBrush);
+			FillRect(hdc, &dis->rcItem, myGlobals.ipConfig.bkgBrush);
 		if (myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
-			DrawEdge(dis->hDC, &dis->rcItem, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
+			DrawEdge(hdc, &dis->rcItem, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
 		dis->rcItem.left += 2;
 		if (config) {
-			hOldFont = SelectObject(dis->hDC, myGlobals.ipConfig.hFonts[IPFONTID_UIN]);
-			SetTextColor(dis->hDC, myGlobals.ipConfig.clrs[IPFONTID_UIN]);
+			hOldFont = SelectObject(hdc, myGlobals.ipConfig.hFonts[IPFONTID_UIN]);
+			SetTextColor(hdc, myGlobals.ipConfig.clrs[IPFONTID_UIN]);
 		}
 		if (dat->uin[0]) {
 			SIZE sUIN, sTime;
@@ -2649,11 +2623,11 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 				int i_hrs = diff / 3600;
 				int i_mins = (diff - i_hrs * 3600) / 60;
 				mir_snprintf(szBuf, sizeof(szBuf), "%s    Idle: %dh,%02dm", dat->uin, i_hrs, i_mins);
-				GetTextExtentPoint32A(dis->hDC, szBuf, lstrlenA(szBuf), &sUIN);
-				DrawTextA(dis->hDC, szBuf, lstrlenA(szBuf), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
+				GetTextExtentPoint32A(hdc, szBuf, lstrlenA(szBuf), &sUIN);
+				DrawTextA(hdc, szBuf, lstrlenA(szBuf), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
 			} else {
-				GetTextExtentPoint32A(dis->hDC, dat->uin, lstrlenA(dat->uin), &sUIN);
-				DrawTextA(dis->hDC, dat->uin, lstrlenA(dat->uin), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
+				GetTextExtentPoint32A(hdc, dat->uin, lstrlenA(dat->uin), &sUIN);
+				DrawTextA(hdc, dat->uin, lstrlenA(dat->uin), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
 			}
 			if (dat->timezone != -1) {
 				DBTIMETOSTRING dbtts;
@@ -2670,26 +2644,31 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 				dbtts.szFormat = "t";
 				CallService(MS_DB_TIME_TIMESTAMPTOSTRING, final_time, (LPARAM) & dbtts);
 				if (config) {
-					SelectObject(dis->hDC, myGlobals.ipConfig.hFonts[IPFONTID_TIME]);
-					SetTextColor(dis->hDC, myGlobals.ipConfig.clrs[IPFONTID_TIME]);
+					SelectObject(hdc, myGlobals.ipConfig.hFonts[IPFONTID_TIME]);
+					SetTextColor(hdc, myGlobals.ipConfig.clrs[IPFONTID_TIME]);
 				}
-				GetTextExtentPoint32A(dis->hDC, szResult, lstrlenA(szResult), &sTime);
+				GetTextExtentPoint32A(hdc, szResult, lstrlenA(szResult), &sTime);
 				if (sUIN.cx + sTime.cx + 23 < dis->rcItem.right - dis->rcItem.left) {
 					dis->rcItem.left = dis->rcItem.right - sTime.cx - 3 - 16;
-					oldFont = SelectObject(dis->hDC, myGlobals.m_hFontWebdings);
+					oldFont = SelectObject(hdc, myGlobals.m_hFontWebdings);
 					base_hour = atoi(szResult);
 					base_hour = base_hour > 11 ? base_hour - 12 : base_hour;
 					symbolic_time[0] = (char)(0xB7 + base_hour);
 					symbolic_time[1] = 0;
-					DrawTextA(dis->hDC, symbolic_time, 1, &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
-					SelectObject(dis->hDC, oldFont);
+					DrawTextA(hdc, symbolic_time, 1, &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
+					SelectObject(hdc, oldFont);
 					dis->rcItem.left += 16;
-					DrawTextA(dis->hDC, szResult, lstrlenA(szResult), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
+					DrawTextA(hdc, szResult, lstrlenA(szResult), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
 				}
 			}
 		}
 		if (hOldFont)
-			SelectObject(dis->hDC, hOldFont);
+			SelectObject(hdc, hOldFont);
+
+		BitBlt(dis->hDC, 0, 0, rcOrig.right - rcOrig.left, rcOrig.bottom - rcOrig.top, hdc, 0, 0, SRCCOPY);
+		SelectObject(hdc, hbmOld);
+		DeleteObject(hbm);
+		DeleteDC(hdc);
 		return TRUE;
 	} else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_STATICTEXT) || dis->hwndItem == GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT)) {
 		TCHAR szWindowText[256];
@@ -2893,50 +2872,6 @@ void GetClientIcon(struct MessageWindowData *dat, HWND hwndDlg)
 		}
 	}
 }
-/* buffer size in TCHARs
- * szwBuf must be large enough to hold at least size wchar_t's
- * proto may be NULL
- * per contact codepage only used with non-unicode cores (to get "faked" unicode nicknames...)
- */
-
-/*
-#if defined(_UNICODE)
-int MY_GetContactDisplayNameW(HANDLE hContact, wchar_t *szwBuf, unsigned int size, const char *szProto, UINT codePage)
-{
-	CONTACTINFO ci;
-	char *szBasenick = NULL;
-
-	if (szProto == NULL)
-		szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-
-	if (myGlobals.bUnicodeBuild) {
-		ZeroMemory(&ci, sizeof(ci));
-		ci.cbSize = sizeof(ci);
-		ci.hContact = hContact;
-		ci.szProto = (char *)szProto;
-		ci.dwFlag = CNF_DISPLAY | CNF_UNICODE;
-		if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
-			if (ci.type == CNFT_ASCIIZ) {
-				size_t len = lstrlenW(ci.pszVal);
-				wcsncpy(szwBuf, ci.pszVal, size);
-				szwBuf[size - 1] = 0;
-				mir_free(ci.pszVal);
-				return 0;
-			}
-			if (ci.type == CNFT_DWORD) {
-				_ltow(ci.dVal, szwBuf, 10);
-				szwBuf[size - 1] = 0;
-				return 0;
-			}
-		}
-	}
-	szBasenick = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0);
-	MultiByteToWideChar(codePage, 0, szBasenick, -1, szwBuf, size);
-	szwBuf[size - 1] = 0;
-	return 0;
-}
-#endif
-*/
 
 INT_PTR MY_CallService(const char *svc, WPARAM wParam, LPARAM lParam)
 {

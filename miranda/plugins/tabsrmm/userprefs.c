@@ -51,6 +51,7 @@ extern		struct CPTABLE cpTable[];
 extern		BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
 
 static HWND hCpCombo;
+REG_TIMEZONE *reg_timezones = NULL;
 
 static BOOL CALLBACK FillCpCombo(LPCTSTR str)
 {
@@ -74,12 +75,11 @@ INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 	switch (msg) {
 		case WM_INITDIALOG: {
-			TCHAR szBuffer[180];
 #if defined(_UNICODE)
 			DWORD sCodePage;
 #endif
-			DWORD contact_gmt_diff;
-			int i, offset;
+			DWORD contact_gmt_diff, timediff;
+			int i;
 			BYTE timezone;
 			DWORD maxhist = DBGetContactSettingDword((HANDLE)lParam, SRMSGMOD_T, "maxhist", 0);
 			BYTE bIEView = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "ieview", 0);
@@ -92,6 +92,10 @@ INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			BYTE bAvatarVisible = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "hideavatar", -1);
 			char *szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)lParam, 0);
 			int  def_log_index = 1, hpp_log_index = 1, ieview_log_index = 1;
+			HKEY  	hKey;
+			TCHAR 	tszKey[256], *tszCurrentTzName = NULL, tszSelectedItem[256], tszSelectedItemBackup[256];
+
+			tszSelectedItem[0] = tszSelectedItemBackup[0] = 0;
 
 			have_ieview = ServiceExists(MS_IEVIEW_WINDOW);
 			have_hpp = ServiceExists("History++/ExtGrid/NewWindow");
@@ -168,18 +172,108 @@ INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_FORCEANSI), FALSE);
 #endif
 			CheckDlgButton(hwndDlg, IDC_IGNORETIMEOUTS, DBGetContactSettingByte(hContact, SRMSGMOD_T, "no_ack", 0));
-			SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("<default, no change>"));
 			timezone = DBGetContactSettingByte(hContact, "UserInfo", "Timezone", DBGetContactSettingByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone", -1));
-			for (i = -12; i <= 12; i++) {
-				_sntprintf(szBuffer, 20, TranslateT("GMT %c %d"), i < 0 ? '-' : '+', abs(i));
-				SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_INSERTSTRING, -1, (LPARAM)szBuffer);
+
+			contact_gmt_diff = timezone > 128 ? 256 - timezone : 0 - timezone;
+			timediff = /* (int)myGlobals.local_gmt_diff - */ - (int)contact_gmt_diff * 60 * 60 / 2;
+
+			/*
+			 * time zone stuff
+			 */
+
+			if(reg_timezones == NULL) {
+				REG_TZI_FORMAT	tzi;
+
+				if(myGlobals.m_WinVerMajor > 4)
+					mir_sntprintf(tszKey, 256, _T("%s"), _T("Software\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones"));
+				else
+					mir_sntprintf(tszKey, 256, _T("%s"), _T("Software\\Microsoft\\Windows\\CurrentVersion\\Time Zones"));
+
+				if(ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, tszKey, 0, KEY_READ, &hKey)) {
+					TCHAR	tszTzKey[256];
+					DWORD	dwIndex = 0;
+					DWORD	dwSize = 64, dwLength = 128, dwType, dwNrZones = 0;
+					HKEY	hSubKey;
+					REG_TIMEZONE rtTmp;
+					unsigned     i, j;
+
+					RegQueryInfoKey(hKey, NULL, NULL, NULL, &dwNrZones, NULL, NULL, NULL, NULL, NULL, NULL, NULL);		// nr of subkeys
+					reg_timezones = malloc(sizeof(REG_TIMEZONE) * (dwNrZones + 1));
+					ZeroMemory(reg_timezones, (dwNrZones + 1) * sizeof(REG_TIMEZONE));
+
+					if(reg_timezones) {
+						while(ERROR_NO_MORE_ITEMS != RegEnumKeyEx(hKey, dwIndex, reg_timezones[dwIndex].tszName, &dwSize, NULL, NULL, 0, NULL)) {
+							mir_sntprintf(tszTzKey, 256, _T("%s\\%s"), tszKey, reg_timezones[dwIndex].tszName);
+							if(ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, tszTzKey, 0, KEY_READ, &hSubKey)) {
+								dwLength = 128;
+								if(ERROR_SUCCESS == RegQueryValueEx(hSubKey, _T("Display"), 0, &dwType, (char *)reg_timezones[dwIndex].tszDisplay, &dwLength)) {
+									dwLength = sizeof(tzi);
+									if(ERROR_SUCCESS == RegQueryValueEx(hSubKey, _T("TZI"), 0, &dwType, (char *)&tzi, &dwLength))
+										reg_timezones[dwIndex].Bias = tzi.Bias * 60;			// calculate in seconds
+								}
+								RegCloseKey(hSubKey);
+							}
+							dwIndex++;
+							dwSize = 64;
+						}
+						/*
+						 * sort timezones by BIAS
+						 */
+						for(i = 0; i < dwIndex - 1; i++) {
+							for(j = 0; j < dwIndex - 1; j++) {
+								if(reg_timezones[j].Bias < reg_timezones[j + 1].Bias) {
+									rtTmp = reg_timezones[j];
+									reg_timezones[j] = reg_timezones[j + 1];
+									reg_timezones[j + 1] = rtTmp;
+								}
+							}
+						}
+					}
+					RegCloseKey(hKey);
+				}
 			}
-			if (timezone != -1) {
-				contact_gmt_diff = timezone > 128 ? 256 - timezone : 0 - timezone;
-				offset = 13 + ((int)contact_gmt_diff / 2);
-				SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_SETCURSEL, (WPARAM)offset, 0);
+			/*
+			 * already populated and prepared
+			 */
+			if(reg_timezones) {
+				unsigned i = 0;
+				DBVARIANT dbv;
+				TCHAR	  *tszCurrentTzName = NULL;
+
+				if(DBGetContactSettingTString(hContact, "UserInfo", "TzName", &dbv) == 0)
+					tszCurrentTzName = dbv.ptszVal;
+
+				while(reg_timezones[i].tszDisplay[0]) {
+					SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_ADDSTRING, 0, (LPARAM)reg_timezones[i].tszDisplay);
+					if(tszCurrentTzName && !_tcscmp(tszCurrentTzName, reg_timezones[i].tszName))			// remember the display name to later select it in the listbox
+						mir_sntprintf(tszSelectedItem, 256, _T("%s"), reg_timezones[i].tszDisplay);
+					/*
+					 * if ONLY a GMT offset is known, use it anyway. Works in most cases, but not when DST
+					 * is different at the target time zone
+					 */
+					if(timezone != -1 && (LONG)timediff == reg_timezones[i].Bias)
+						mir_sntprintf(tszSelectedItemBackup, 256, _T("%s"), reg_timezones[i].tszDisplay);
+					i++;
+				}
+				if(tszCurrentTzName)
+					DBFreeVariant(&dbv);
+			}
+
+			SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_INSERTSTRING, 0, (LPARAM)TranslateT("<unspecified>"));
+
+			if(tszSelectedItem[0]) {
+				LRESULT item = SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_FINDSTRING, (WPARAM)-1, (LPARAM)tszSelectedItem);
+				SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_SETCURSEL, (WPARAM)item, 0);
+			/*
+			 * no real time zone information is stored in the db. Use the GMT based timezone offset to figure
+			 * out a matching zone. If not even this information is found, set it to unspecified.
+			*/
+			} else if(tszSelectedItemBackup[0]) {
+				LRESULT item = SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_FINDSTRING, (WPARAM)-1, (LPARAM)tszSelectedItemBackup);
+				SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_SETCURSEL, (WPARAM)item, 0);
 			} else
-				SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_SETCURSEL, 0, 0);
+				SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_SETCURSEL, (WPARAM)0, 0);
+
 			ShowWindow(hwndDlg, SW_SHOW);
 			CheckDlgButton(hwndDlg, IDC_NOAUTOCLOSE, DBGetContactSettingByte(hContact, SRMSGMOD_T, "NoAutoClose", 0));
 			return TRUE;
@@ -277,11 +371,15 @@ INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 					offset = SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_GETCURSEL, 0, 0);
 					if (offset > 0) {
-						BYTE timezone = (13 - offset) * 2;
-						if (timezone != (BYTE)oldTZ)
-							DBWriteContactSettingByte(hContact, "UserInfo", "Timezone", (BYTE)timezone);
-					} else
+						char	*szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+						DBWriteContactSettingTString(hContact, "UserInfo", "TzName", reg_timezones[offset - 1].tszName);
+						DBWriteContactSettingByte(hContact, "UserInfo", "Timezone", (char)(reg_timezones[offset - 1].Bias / 3600));
+						if(szProto)
+							DBWriteContactSettingByte(hContact, szProto, "Timezone", (char)(reg_timezones[offset - 1].Bias / 1800));
+					} else {
 						DBDeleteContactSetting(hContact, "UserInfo", "Timezone");
+						DBDeleteContactSetting(hContact, "UserInfo", "TzName");
+					}
 
 					if (hWnd && dat) {
 						LoadTimeZone(hWnd, dat);

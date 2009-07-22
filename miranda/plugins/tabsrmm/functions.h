@@ -117,8 +117,9 @@ static      void IMG_LoadItems(char *szFileName);
 void        IMG_DeleteItems();
 void        DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor2, BYTE transparent, BYTE FLG_GRADIENT, BYTE FLG_CORNER, DWORD BORDERSTYLE, ImageItem *imageItem);
 void        SkinDrawBG(HWND hwndClient, HWND hwnd, struct ContainerWindowData *pContainer, RECT *rcClient, HDC hdcTarget);
+void 		SkinDrawBGFromDC(HWND hwndClient, HWND hwnd, HDC hdcSrc, RECT *rcClient, HDC hdcTarget);
 void        ReloadContainerSkin(int doLoad, int onStartup);
-
+void 		MY_AlphaBlend(HDC hdcDraw, DWORD left, DWORD top,  int width, int height, int bmWidth, int bmHeight, HDC hdcMem);
 // the cached message log icons
 
 void        CacheMsgLogIcons();

@@ -33,6 +33,15 @@ $Id$
 #include "chat/chat.h"
 #include "sendqueue.h"
 
+SKINDESC my_default_skin[] = {
+	IDR_SKIN_GLYPH, ("glyphs.png"),
+	IDR_SKIN_TSK, ("default.tsk"),
+	IDR_SKIN_TABSRMM, ("default.tabsrmm"),
+	IDR_SKIN_ICO_CLOSE, ("close.ico"),
+	IDR_SKIN_ICO_MAX, ("maximize.ico"),
+	IDR_SKIN_ICO_MIN, ("minimize.ico")
+};
+
 static char *relnotes[] = {
 	"{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
  	"\\par\t\\b\\ul1 Release notes for version 3.0.0.0\\b0\\ul0\\par ",
@@ -86,11 +95,11 @@ static HANDLE hSVC[14];
 #define H_MSG_MOD_GETWINDOWFLAGS 11
 
 HMODULE hDLL;
-PSLWA pSetLayeredWindowAttributes = 0;
-PULW pUpdateLayeredWindow = 0;
-PFWEX MyFlashWindowEx = 0;
-PAB MyAlphaBlend = 0;
-PGF MyGradientFill = 0;
+PSLWA 		pSetLayeredWindowAttributes = 0;
+PULW 		pUpdateLayeredWindow = 0;
+PFWEX 		MyFlashWindowEx = 0;
+PAB 		MyAlphaBlend = 0;
+PGF 		MyGradientFill = 0;
 
 extern      struct ContainerWindowData *pFirstContainer;
 extern      INT_PTR CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -109,6 +118,8 @@ extern      void RegisterFontServiceFonts();
 extern      int FontServiceFontsChanged(WPARAM wParam, LPARAM lParam);
 extern		int ModPlus_PreShutdown(WPARAM wparam, LPARAM lparam);
 extern		int ModPlus_Init(WPARAM wparam, LPARAM lparam);
+extern		REG_TIMEZONE *reg_timezones;
+extern		HBITMAP IMG_LoadLogo(const char *szName);
 
 HANDLE g_hEvent_MsgWin;
 HANDLE g_hEvent_MsgPopup;
@@ -1461,6 +1472,12 @@ int SplitmsgShutdown(void)
 	if (g_skinIcons)
 		free(g_skinIcons);
 
+	if (reg_timezones)
+		free(reg_timezones);
+
+	if(myGlobals.hbmLogo)
+		DeleteObject(myGlobals.hbmLogo);
+
 	return 0;
 }
 
@@ -1548,8 +1565,9 @@ int IconsChanged(WPARAM wParam, LPARAM lParam)
 
 int LoadSendRecvMessageModule(void)
 {
-	int nOffset = 0;
-	HDC hScrnDC;
+	int 	nOffset = 0, i;
+	HDC 	hScrnDC;
+	char	szFilename[MAX_PATH];
 
 	INITCOMMONCONTROLSEX icex;
 
@@ -1639,6 +1657,67 @@ tzdone:
 	ReloadGlobals();
 	myGlobals.dwThreadID = GetCurrentThreadId();
 	GetDataDir();
+
+	/*
+	 * extract the default skin
+	 */
+
+	if(myGlobals.m_WinVerMajor >=5 && DBGetContactSettingDword(NULL, SRMSGMOD_T, "def_skin_installed", -1) != SKIN_VERSION) {
+		DBWriteContactSettingDword(NULL, SRMSGMOD_T, "def_skin_installed", SKIN_VERSION);
+
+		for(i = 0; i < SKIN_NR_ELEMENTS; i++) {
+			HRSRC 	hRes;
+			HGLOBAL	hResource;
+
+			hRes = FindResource(g_hInst, MAKEINTRESOURCE(my_default_skin[i].ulID), _T("SKIN_GLYPH"));
+
+			if(hRes) {
+				hResource = LoadResource(g_hInst, hRes);
+				if(hResource) {
+					char	szFilename[MAX_PATH];
+					HANDLE  hFile;
+					char 	*pData = (char *)LockResource(hResource);
+					DWORD	dwSize = SizeofResource(g_hInst, hRes), written = 0;
+					mir_snprintf(szFilename, MAX_PATH, "%sdefault", myGlobals.szSkinsPath);
+					if(!PathFileExistsA(szFilename))
+						CreateDirectoryA(szFilename, NULL);
+					mir_snprintf(szFilename, MAX_PATH, "%sdefault\\%s", myGlobals.szSkinsPath, my_default_skin[i].tszName);
+					if((hFile = CreateFileA(szFilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)) != INVALID_HANDLE_VALUE) {
+						WriteFile(hFile, (void *)pData, dwSize, &written, NULL);
+						CloseHandle(hFile);
+					}
+				}
+			}
+		}
+	}
+
+	/*
+	 * load the logo
+	 */
+	mir_snprintf(szFilename, MAX_PATH, "%slogo.png", myGlobals.szDataPath);
+	if(!PathFileExistsA(szFilename)) {
+		HRSRC	hRes;
+		HGLOBAL hResource;
+		char	*pData = NULL;
+
+		hRes = FindResource(g_hInst, MAKEINTRESOURCE(IDR_SKIN_LOGO), _T("SKIN_GLYPH"));
+		if(hRes) {
+			hResource = LoadResource(g_hInst, hRes);
+			if(hResource) {
+				DWORD written = 0, dwSize;
+				HANDLE hFile;
+
+				pData = (char *)LockResource(hResource);
+				dwSize = SizeofResource(g_hInst, hRes);
+				if((hFile = CreateFileA(szFilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)) != INVALID_HANDLE_VALUE) {
+					WriteFile(hFile, (void *)pData, dwSize, &written, NULL);
+					CloseHandle(hFile);
+				}
+			}
+		}
+	}
+	myGlobals.hbmLogo = IMG_LoadLogo(szFilename);
+
 	ReloadTabConfig();
 	NEN_ReadOptions(&nen_options);
 

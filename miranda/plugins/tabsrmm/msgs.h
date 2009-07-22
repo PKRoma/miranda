@@ -436,11 +436,8 @@ struct MessageWindowData {
 	LPARAM  lParam;
 	int     iHaveRTLLang;
 	BOOL    fInsertMode;
-
-	// debug
-
-	DWORD   tick_now, tick_last;
-	UINT	last_message;
+	HDC		hdcCached;
+	HBITMAP hbmCached, hbmCachedOld;
 };
 
 typedef struct _recentinfo {
@@ -615,6 +612,7 @@ typedef struct _globals {
 	int         rtf_ctablesize;
 	DWORD       dwThreadID;
 	char        szMetaName[256];
+	HBITMAP		hbmLogo;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {
@@ -1093,7 +1091,8 @@ static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* 
 #define ID_EXTBKSTATUSBARPANEL 20
 #define ID_EXTBKSTATUSBAR      21
 #define ID_EXTBKUSERLIST       22
-#define ID_EXTBK_LAST 22
+#define ID_EXTBKINFOPANELBG	   23
+#define ID_EXTBK_LAST 23
 
 #define SESSIONTYPE_IM 1
 #define SESSIONTYPE_CHAT 2
@@ -1136,8 +1135,21 @@ typedef struct {
 	void *local; // used to store pointer to custom data
 } MessageWindowOutputData;
 
+typedef struct _tagTimeZone {
+	TCHAR	tszName[64];
+	TCHAR	tszDisplay[128];
+	LONG	Bias;
+	//char	GMT_Offset;
+} REG_TIMEZONE;
 
-#endif
+typedef struct _REG_TZI_FORMAT
+{
+    LONG Bias;
+    LONG StandardBias;
+    LONG DaylightBias;
+    SYSTEMTIME StandardDate;
+    SYSTEMTIME DaylightDate;
+} REG_TZI_FORMAT;
 
 #define MS_MSG_FORWARDMESSAGE  "SRMsg/ForwardMessage"
 
@@ -1207,3 +1219,14 @@ int SI_DeinitStatusIcons();
 int  GetStatusIconsCount();
 void DrawStatusIcons(struct MessageWindowData *dat, HDC hdc, RECT r, int gap);
 void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT pt, RECT rc, int gap, int code);
+
+typedef struct _tagSKINDesc {
+	ULONG	ulID;				// resource id
+	char	tszName[20];
+} SKINDESC;
+
+#define SKIN_NR_ELEMENTS 6
+#define SKIN_VERSION	 2
+
+#endif
+

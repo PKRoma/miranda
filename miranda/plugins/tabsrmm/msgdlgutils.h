@@ -65,7 +65,6 @@ void        GetDataDir();
 void        LoadOwnAvatar(HWND hwndDlg, struct MessageWindowData *dat);
 void        LoadContactAvatar(HWND hwndDlg, struct MessageWindowData *dat);
 BYTE        GetInfoPanelSetting(HWND hwndDlg, struct MessageWindowData *dat);
-void        UpdateApparentModeDisplay(HWND hwndDlg, struct MessageWindowData *dat);
 void        LoadPanelHeight(HWND hwndDlg, struct MessageWindowData *dat);
 void        LoadTimeZone(HWND hwndDlg, struct MessageWindowData *dat);
 void        HandlePasteAndSend(HWND hwndDlg, struct MessageWindowData *dat);

@@ -176,6 +176,10 @@ StatusItems_t StatusItems[] = {
 		CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
 		CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 		CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+	}, {"InfoPanelBackground", "TSKIN_INFOPANELBG", ID_EXTBKINFOPANELBG,
+		CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
+		CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
+		CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 	}
 };
 
@@ -1529,11 +1533,7 @@ static void PreMultiply(HBITMAP hBitmap, int mode)
 
 static HBITMAP LoadPNG(const char *szFilename, ImageItem *item)
 {
-	LPVOID imgDecoder = NULL;
-	LPVOID pImg = NULL;
 	HBITMAP hBitmap = 0;
-	LPVOID pBitmapBits = NULL;
-	LPVOID m_pImgDecoder = NULL;
 
 	hBitmap = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM)szFilename);
 	if (hBitmap != 0)
@@ -1941,6 +1941,20 @@ void SkinDrawBG(HWND hwndClient, HWND hwnd, struct ContainerWindowData *pContain
 		ReleaseDC(hwnd, dc);
 }
 
+void SkinDrawBGFromDC(HWND hwndClient, HWND hwnd, HDC hdcSrc, RECT *rcClient, HDC hdcTarget)
+{
+	RECT rcWindow;
+	POINT pt;
+	LONG width = rcClient->right - rcClient->left;
+	LONG height = rcClient->bottom - rcClient->top;
+
+	GetWindowRect(hwndClient, &rcWindow);
+	pt.x = rcWindow.left + rcClient->left;
+	pt.y = rcWindow.top + rcClient->top;
+	ScreenToClient(hwnd, &pt);
+	BitBlt(hdcTarget, rcClient->left, rcClient->top, width, height, hdcSrc, pt.x, pt.y, SRCCOPY);
+}
+
 /*
  * reload the skin
  * 1) delete all image items and other skin objects
@@ -2019,3 +2033,12 @@ void DrawDimmedIcon(HDC hdc, LONG left, LONG top, LONG dx, LONG dy, HICON hIcon,
 	DeleteDC(dcMem);
 }
 
+HBITMAP IMG_LoadLogo(const char *szFilename)
+{
+	ImageItem item;
+
+	HBITMAP	hbm = LoadPNG(szFilename, &item);
+
+	PreMultiply(hbm, 1);
+	return(hbm);
+}

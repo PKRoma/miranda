@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
+// Microsoft Developer Studio generated include file.
 // Used by resource.rc
 //
 #define IDD_TEMPLATEEDIT                1
@@ -14,6 +14,14 @@
 #define IDB_LOGO                        10
 #define IDD_USERPREFS_FRAME             11
 #define IDD_DIALOG1                     12
+#define IDR_SKIN1                       13
+#define IDR_SKIN_GLYPH                  14
+#define	IDR_SKIN_TSK					15
+#define	IDR_SKIN_TABSRMM				16
+#define	IDR_SKIN_ICO_CLOSE				17
+#define	IDR_SKIN_ICO_MAX				18
+#define	IDR_SKIN_ICO_MIN				19
+#define IDR_SKIN_LOGO					20
 #define IDI_IMGOPEN                     102
 #define IDI_IMGCLOSE                    103
 #define IDR_CONTEXT                     180
@@ -277,7 +285,7 @@
 #define IDC_FLASHDEFAULT                1209
 #define IDC_DEFAULTCONTAINERMODE        1210
 #define IDC_ALWAYS                      1211
-#define IDC_APPARENTMODE                1212
+#define IDC_APPARENTMODE1               1212
 #define IDC_TOGGLENOTES                 1214
 #define IDC_NOTES                       1215
 #define IDC_TRANSPARENCY                1215
@@ -778,7 +786,7 @@
 //
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        13
+#define _APS_NEXT_RESOURCE_VALUE        15
 #define _APS_NEXT_COMMAND_VALUE         40256
 #define _APS_NEXT_CONTROL_VALUE         1424
 #define _APS_NEXT_SYMED_VALUE           40283

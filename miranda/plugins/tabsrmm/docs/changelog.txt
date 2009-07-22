@@ -31,6 +31,12 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
+Version 3.0.0.1  - 2009/07/20
+
+	* MAJOR changes in some areas. Info panel overhaul and more. Expect
+	  tabSRMM to be unstable for a while. 2.2.1.x will continue to exist for user
+	  of a stable Miranda. 3.0.0.x is currently for TESTING ONLY.
+
 Version 3.0.0.0  - 2009/07/20
 
 	! various visual glitches fixed.
