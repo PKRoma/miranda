@@ -76,12 +76,9 @@ BEGIN
     CONTROL         "Disable Extended Status Icons",IDC_ES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,171,134,13
     CONTROL         "Check Mail on Login",IDC_CM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,183,112,13
     GROUPBOX        "Advanced Options",IDC_EXPERT,154,7,142,80,WS_GROUP
-    LTEXT           "File Transfer Grace Period:",IDC_STATIC,158,19,87,12
-    EDITTEXT        IDC_GP,245,18,17,12,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
-    LTEXT           "sec",IDC_STATIC,266,19,18,9
-    CONTROL         "Instant Idle on Login",IDC_II,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,31,93,13
-    CONTROL         "Force Proxy File Transfers",IDC_FP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,44,130,11
-    CONTROL         "Masquerade as a Sidekick/Hiptop User",IDC_HF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,55,135,13
+    CONTROL         "Instant Idle on Login",IDC_II,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,18,131,15
+    CONTROL         "Force Proxy File Transfers",IDC_FP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,31,130,11
+    CONTROL         "Masquerade as a Sidekick/Hiptop User",IDC_HF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,42,135,13
     LTEXT           "*Aim must be reconnected  for some option to take effect.",IDC_MASQ,171,169,115,18,NOT WS_VISIBLE
     GROUPBOX        "Connection",IDC_STATIC,154,89,142,71
     EDITTEXT        IDC_PN,207,119,37,13,ES_AUTOHSCROLL

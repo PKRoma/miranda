@@ -73,8 +73,7 @@ void __cdecl CAimProto::accept_file_thread(void* param)//buddy sending file
         {
 			LOG("Failed to connect to buddy- asking buddy to connect to us.");
             ft->requester = true;
-            aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, detected_ip, local_port, 
-                false, ++ft->req_num, NULL, 0, NULL);
+            aim_send_file(hServerConn, seqno, detected_ip, local_port, false, ft);
             return;
 		}
 	}

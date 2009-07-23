@@ -454,80 +454,81 @@ int CAimProto::aim_keepalive(HANDLE hServerConn,unsigned short &seqno)
 }
 
 // used when requesting a regular file transfer
-int CAimProto::aim_send_file(HANDLE hServerConn, unsigned short &seqno, char* sn, char* icbm_cookie,
+int CAimProto::aim_send_file(HANDLE hServerConn, unsigned short &seqno,
                              unsigned long ip, unsigned short port, 
-                             bool force_proxy, unsigned short request_num, 
-                             char* file_name, unsigned long total_bytes, char* descr)
+                             bool force_proxy, file_transfer *ft)
 {	
-    aimString dstr(descr);
-
-    const char* charset = dstr.isUnicode() ? "unicode-2-0" : "us-ascii";
-    const unsigned short charset_len = (unsigned short)strlen(charset);
-
-    const char* desc_msg = dstr.getBuf();
-    const unsigned short desc_len = dstr.getSize();
-
-    unsigned short fnlen  = file_name ? (unsigned short)strlen(file_name) : 0;
-
-    char* msg_frag=(char*)alloca(TLV_HEADER_SIZE*15+100+AIM_CAPS_LENGTH+desc_len+fnlen);
+    char msg_frag[2048];
     unsigned short frag_offset=0;
-    aim_writeshort(0,frag_offset,msg_frag);                         // request type
-    aim_writegeneric(8,icbm_cookie,frag_offset,msg_frag);           // icbm cookie
+
+    aim_writeshort(0,frag_offset,msg_frag);                             // request type
+    aim_writegeneric(8,ft->icbm_cookie,frag_offset,msg_frag);           // icbm cookie
     aim_writegeneric(AIM_CAPS_LENGTH, AIM_CAP_FILE_TRANSFER,
-        frag_offset, msg_frag);                                     // uuid
-    aim_writetlvshort(0x0a,request_num,frag_offset,msg_frag);       // request number
-//    aim_writetlvshort(0x12,2,frag_offset,msg_frag);                 // max protocol version
+        frag_offset, msg_frag);                                         // uuid
+    aim_writetlvshort(0x0a,++ft->req_num,frag_offset,msg_frag);         // request number
+//    aim_writetlvshort(0x12,2,frag_offset,msg_frag);                     // max protocol version
 
-    if (descr)
-    {
-        aim_writetlv(0x0e,2,"en",frag_offset,msg_frag);             // language used by the data
-        aim_writetlv(0x0d,charset_len,charset,frag_offset,msg_frag);// charset used by the data
-        aim_writetlv(0x0c,desc_len,desc_msg,frag_offset,msg_frag);  // invitaion text
-    }
+    aim_writetlvlong(0x02,ip,frag_offset,msg_frag);                     // ip
+    aim_writetlvlong(0x16,~ip,frag_offset,msg_frag);                    // ip check
 
-    aim_writetlvlong(0x02,ip,frag_offset,msg_frag);                 // ip
-    aim_writetlvlong(0x16,~ip,frag_offset,msg_frag);                // ip check
-
-    aim_writetlvshort(0x05,port,frag_offset,msg_frag);              // port
-    aim_writetlvshort(0x17,~port,frag_offset,msg_frag);             // port ip check
+    aim_writetlvshort(0x05,port,frag_offset,msg_frag);                  // port
+    aim_writetlvshort(0x17,~port,frag_offset,msg_frag);                 // port ip check
     
     if (force_proxy)
-        aim_writetlv(0x10,0,0,frag_offset,msg_frag);                // request proxy transfer
+        aim_writetlv(0x10,0,0,frag_offset,msg_frag);                    // request proxy transfer
     else
-        aim_writetlvlong(0x03,internal_ip,frag_offset,msg_frag);    // ip
+        aim_writetlvlong(0x03,internal_ip,frag_offset,msg_frag);        // ip
 
-    if (request_num == 1)
+    if (ft->req_num == 1)
     {
-        aim_writetlv(0x0f,0,0,frag_offset,msg_frag);                // request host check
+        if (ft->message)
+        {
+            aimString dscr(ft->message);
 
-        char* fblock = (char*)alloca(9+fnlen);
-        *(unsigned short*)&fblock[0] = _htons(1);                   // single file transfer
-        *(unsigned short*)&fblock[2] = _htons(1);                   // number of files
-        *(unsigned long*) &fblock[4] = _htonl(total_bytes);         // total bytes in files
-        memcpy(&fblock[8], file_name, fnlen+1);
+            const char* charset = dscr.isUnicode() ? "unicode-2-0" : "us-ascii";
+            const unsigned short charset_len = (unsigned short)strlen(charset);
 
-        const char* enc = is_utf(file_name) ? "utf-8" : "us-ascii";
-        aim_writetlv(0x2711,9+fnlen,fblock,frag_offset,msg_frag);   // extra data, file names, size
-        aim_writetlv(0x2712,8,enc,frag_offset,msg_frag);            // character set used by data
-//        aim_writetlvlong64(0x2713,total_bytes,frag_offset,msg_frag); // file length
+            const char* desc_msg = dscr.getBuf();
+            const unsigned short desc_len = dscr.getSize();
+
+            aim_writetlv(0x0e,2,"en",frag_offset,msg_frag);             // language used by the data
+            aim_writetlv(0x0d,charset_len,charset,frag_offset,msg_frag);// charset used by the data
+            aim_writetlv(0x0c,desc_len,desc_msg,frag_offset,msg_frag);  // invitaion text
+        }
+
+        aim_writetlv(0x0f,0,0,frag_offset,msg_frag);                    // request host check
+
+        const char* fname = get_fname(ft->file);
+        const unsigned short fnlen = (unsigned short)strlen(fname);
+
+        char* fblock = (char*)alloca(9 + fnlen);
+        *(unsigned short*)&fblock[0] = _htons(ft->pfts.totalFiles);     // single file transfer
+        *(unsigned short*)&fblock[2] = _htons(ft->pfts.totalFiles);     // number of files
+        *(unsigned long*) &fblock[4] = _htonl(ft->pfts.totalBytes);     // total bytes in files
+        memcpy(&fblock[8], fname, fnlen + 1);
+
+        const char* enc = is_utf(fname) ? "utf-8" : "us-ascii";
+        aim_writetlv(0x2711,9+fnlen,fblock,frag_offset,msg_frag);               // extra data, file names, size
+        aim_writetlv(0x2712,8,enc,frag_offset,msg_frag);                        // character set used by data
+//        aim_writetlvlong64(0x2713,ft->pfts.totalBytes,frag_offset,msg_frag);    // file length
 
         LOG("Attempting to Send a file to a buddy.");
     }
     else
     {
-        aim_writetlvshort(0x14,0x0a,frag_offset,msg_frag);          // Counter proposal reason
+        aim_writetlvshort(0x14,0x0a,frag_offset,msg_frag);              // Counter proposal reason
     }
 
     unsigned short offset=0;
-    unsigned short sn_length=(unsigned short)strlen(sn);
+    unsigned short sn_length=(unsigned short)strlen(ft->sn);
     char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*2+12+frag_offset+sn_length);
-    aim_writesnac(0x04,0x06,offset,buf);                            // msg to host
-    aim_writegeneric(8,icbm_cookie,offset,buf);                     // icbm cookie
-    aim_writeshort(2,offset,buf);                                   // icbm channel
-    aim_writechar((unsigned char)sn_length,offset,buf);             // screen name length
-    aim_writegeneric(sn_length,sn,offset,buf);                      // screen name
-    aim_writetlv(0x05,frag_offset,msg_frag,offset,buf);             // icbm tags
-    aim_writetlv(0x03,0,0,offset,buf);                              // request ack
+    aim_writesnac(0x04,0x06,offset,buf);                                // msg to host
+    aim_writegeneric(8,ft->icbm_cookie,offset,buf);                     // icbm cookie
+    aim_writeshort(2,offset,buf);                                       // icbm channel
+    aim_writechar((unsigned char)sn_length,offset,buf);                 // screen name length
+    aim_writegeneric(sn_length,ft->sn,offset,buf);                      // screen name
+    aim_writetlv(0x05,frag_offset,msg_frag,offset,buf);                 // icbm tags
+    aim_writetlv(0x03,0,0,offset,buf);                                  // request ack
 
     char cip[20];
     long_ip_to_char_ip(ip, cip);

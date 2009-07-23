@@ -32,6 +32,7 @@ char* bytes_to_string(char* bytes, int num_bytes);
 void string_to_bytes(char* string, char* bytes);
 bool is_utf(const char* msg);
 char* get_fname(char* path);
+TCHAR* get_dir(TCHAR* path);
 
 struct aimString
 {
@@ -47,8 +48,8 @@ struct aimString
     ~aimString() { mir_free(szString); }
 
     bool isUnicode(void) { return unicode; }
-    size_t getSize(void) { return size; }
-    size_t getTermSize(void) { return size + (unicode ? sizeof(wchar_t) : sizeof(char)); }
+    unsigned short getSize(void) { return (unsigned short)size; }
+    unsigned short getTermSize(void) { return (unsigned short)(size + (unicode ? sizeof(wchar_t) : sizeof(char))); }
     char* getBuf(void) { return szString; }  
 };
 

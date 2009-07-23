@@ -26,41 +26,40 @@ void __cdecl CAimProto::aim_dc_helper(void* param) //only called when we are ini
 
     NETLIBPACKETRECVER packetRecv = {0};
     packetRecv.cbSize = sizeof(packetRecv);
-    packetRecv.dwTimeout = 100 * getWord(AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
+    packetRecv.dwTimeout = 6000;
 
     HANDLE hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)ft->hConn, 2048 * 4);
 
-    bool success;
+    int result;
     if (ft->sending)//we are sending
-        success = sending_file(ft, hServerPacketRecver, packetRecv);
+        result = sending_file(ft, hServerPacketRecver, packetRecv);
     else 
-        success = receiving_file(ft, hServerPacketRecver, packetRecv);
+        result = receiving_file(ft, hServerPacketRecver, packetRecv);
 
     Netlib_CloseHandle(hServerPacketRecver);
     Netlib_CloseHandle(ft->hConn);
     ft->hConn = NULL;
 
-    if (success)
+    if (result == 0)
     {
         sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0);
     }
-    else if (!ft->requester)
+    else
     {
-        ft->accepted = false;
-        unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
-        HANDLE hConn = aim_peer_connect(AIM_PROXY_SERVER, port);
-        if (hConn) 
+        if (!ft->requester && result == 1)
         {
-            LOG("Connected to proxy ip because we want to use a proxy for the file transfer.");
-            ft->requester = true;
-            ft->hConn = hConn;
-            ForkThread(&CAimProto::aim_proxy_helper, ft);
-            return;
+            ft->accepted = false;
+            unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
+            HANDLE hConn = aim_peer_connect(AIM_PROXY_SERVER, port);
+            if (hConn) 
+            {
+                LOG("Connected to proxy ip because we want to use a proxy for the file transfer.");
+                ft->requester = true;
+                ft->hConn = hConn;
+                ForkThread(&CAimProto::aim_proxy_helper, ft);
+                return;
+            }
         }
-    }
-
-    if (!success)
-    {
         aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true, false);
         sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
     }

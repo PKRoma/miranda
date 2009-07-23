@@ -110,8 +110,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #define AIM_KEY_PN "loginport"
 #define AIM_KEY_DC "DelConf"//delivery confirmation
 #define AIM_KEY_FP "ForceProxyTransfer"
-#define AIM_KEY_GP "FileTransferGracePeriod"//in seconds default 60
-#define AIM_KEY_KA "KeepAlive"//in seconds default 60
 #define AIM_KEY_HF "HiptopFake"
 #define AIM_KEY_AT "DisableATIcons"
 #define AIM_KEY_ES "DisableESIcons"
@@ -181,7 +179,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #define AIM_COUNTRY "us"
 #define AIM_MSG_TYPE "text/x-aolrtf; charset=\"us-ascii\""
 #define AIM_MSG_TYPE_UNICODE "text/x-aolrtf; charset=\"unicode-2-0\""
-#define AIM_TOOL_VERSION "\x01\x10\x08\xf1"
+#define AIM_TOOL_VERSION "\x01\x10\x18\xf1"
 
 extern const char AIM_CLIENT_ID_STRING[]; //Client id EXTERN
 

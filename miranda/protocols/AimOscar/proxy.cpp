@@ -90,19 +90,8 @@ void __cdecl CAimProto::aim_proxy_helper(void* param)
                 unsigned short port = _htons(*(unsigned short*)&packetRecv.buffer[12]);
                 unsigned long  ip   = _htonl(*(unsigned long*)&packetRecv.buffer[14]);
                 
-                if (ft->req_num == 0) 
-                {
-                    LOG("Stage 1 Proxy ft and we are the sender.");
-
-                    char* pszFile = strrchr(ft->file, '\\');
-                    if (pszFile) pszFile++; else pszFile = ft->file;
-                    aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, ip, port, true, ++ft->req_num, pszFile, ft->total_size, ft->message);
-                }
-                else 
-                {
-                    aim_send_file(hServerConn, seqno, ft->sn, ft->icbm_cookie, ip, port, true, ++ft->req_num, NULL, 0, NULL);
-                    LOG("Stage %d Proxy ft and we are not the sender.", ft->req_num);
-                }
+                aim_send_file(hServerConn, seqno, ip, port, true, ft);
+                LOG("Stage %d Proxy ft and we are not the sender.", ft->req_num);
             }
             else if (type == 0x0005) 
             {
@@ -126,15 +115,15 @@ void __cdecl CAimProto::aim_proxy_helper(void* param)
                     break;
                 }
 
-                packetRecv.dwTimeout = 100 * getWord(AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
+                packetRecv.dwTimeout = 6000;
 
-                bool success = false;
+                int result;
                 if (ft->sending)//we are sending
-                    success = sending_file(ft, hServerPacketRecver, packetRecv);
+                    result = sending_file(ft, hServerPacketRecver, packetRecv);
                 else 
-                    success = receiving_file(ft, hServerPacketRecver, packetRecv);
+                    result = receiving_file(ft, hServerPacketRecver, packetRecv);
 
-                sendBroadcast(ft->hContact, ACKTYPE_FILE, success ? ACKRESULT_SUCCESS : ACKRESULT_FAILED, ft, 0);
+                sendBroadcast(ft->hContact, ACKTYPE_FILE, result ? ACKRESULT_FAILED : ACKRESULT_SUCCESS, ft, 0);
                 break;
             }
         }

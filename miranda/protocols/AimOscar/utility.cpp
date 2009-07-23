@@ -563,7 +563,7 @@ void CAimProto::write_away_message(const char* sn, const char* msg, bool utf)
 		mir_free(path);
 		mir_free(s_msg);
 	}
-}
+} 
 
 void CAimProto::write_profile(const char* sn, const char* msg, bool utf)
 {
@@ -584,41 +584,40 @@ void CAimProto::write_profile(const char* sn, const char* msg, bool utf)
 	}
 }
 
-unsigned int aim_oft_checksum_chunk(const unsigned char *buffer, int bufferlen, unsigned long prevcheck)
+unsigned long aim_oft_checksum_chunk(unsigned long dwChecksum, const unsigned char *buffer, int len)
 {
-	unsigned long check = (prevcheck >> 16) & 0xffff, oldcheck;
-	unsigned short val;
-	for (int i=0; i<bufferlen; i++) {
-		oldcheck = check;
-		if (i&1)
-			val = buffer[i];
-		else
-			val = buffer[i] << 8;
-		check -= val;
-		/*
-		 * The following appears to be necessary.... It happens 
-		 * every once in a while and the checksum doesn't fail.
-		 */
-		if (check > oldcheck)
-			check--;
+	unsigned long checksum = (dwChecksum >> 16) & 0xffff;
+
+	for (int i = 0; i < len; i++)
+	{
+		unsigned val = buffer[i];
+
+		if ((i & 1) == 0)
+			val <<= 8;
+
+		if (checksum < val) ++val;
+		checksum -= val;
 	}
-	check = ((check & 0x0000ffff) + (check >> 16));
-	check = ((check & 0x0000ffff) + (check >> 16));
-	return check << 16;
+	checksum = ((checksum & 0x0000ffff) + (checksum >> 16));
+	checksum = ((checksum & 0x0000ffff) + (checksum >> 16));
+	return checksum << 16;
 }
 
-unsigned int aim_oft_checksum_file(TCHAR *filename) 
+unsigned int aim_oft_checksum_file(TCHAR *filename, unsigned __int64 size) 
 {
-	unsigned long checksum = 0xffff0000;
+    unsigned long checksum = 0xffff0000;
 	int fid = _topen(filename, _O_RDONLY | _O_BINARY, _S_IREAD);
 	if (fid >= 0)  
     {
-        for(;;)
+        unsigned __int64 sz = _filelengthi64(fid);
+        if (size > sz) size = sz; 
+        while (size)
         {
-		    unsigned char buffer[1024];
-		    int bytes = _read(fid, buffer, 1024);
-            if (bytes <= 0) break;
-			checksum = aim_oft_checksum_chunk(buffer, bytes, checksum);
+		    unsigned char buffer[8912];
+            int bytes = (int)min(size, sizeof(buffer));
+		    bytes = _read(fid, buffer, bytes);
+            size -= bytes;
+            checksum = aim_oft_checksum_chunk(checksum, buffer, bytes);
         }
 		_close(fid);
 	}

@@ -773,8 +773,8 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
         unsigned long offline_timestamp = 0;
         bool is_offline = false;
         //file transfer stuff
-        char* icbm_cookie=NULL;
-        char* filename=NULL;
+        char* icbm_cookie = NULL;
+        char* filename = NULL;
         unsigned __int64 file_size=0;
         bool auto_response=false;
         bool force_proxy=false;
@@ -787,6 +787,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
         unsigned long local_ip=0, verified_ip=0, proxy_ip=0;
         unsigned short port = 0;
         unsigned short max_ver = 0;
+        unsigned short num_files = 0;
         //end file transfer stuff
 
         unsigned short tlv_head_num=snac.ushort(offset-2);
@@ -871,6 +872,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
                         }
                         else if (tlv.cmp(0x2711))
                         {
+                            num_files = tlv.ushort(2);
                             file_size = tlv.ulong(4);
                             filename  = tlv.part(8, tlv.len()-8);
                         }
@@ -1021,11 +1023,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
             LOG("Buddy Wants to Send us a file. Request 1");
             LOG(force_proxy ? "Forcing a Proxy File transfer." : "Not forcing Proxy File transfer.");
 
-            file_transfer* ft = new file_transfer;
-
-            ft->hContact = hContact;
-            ft->sn = mir_strdup(sn);
-            memcpy(ft->icbm_cookie, icbm_cookie, 8);
+            file_transfer* ft = new file_transfer(hContact, sn, icbm_cookie);
 
             ft->me_force_proxy = getByte(AIM_KEY_FP, 0) != 0;
             ft->peer_force_proxy = force_proxy;
@@ -1037,13 +1035,15 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
             ft->req_num = request_num;
 
             ft->file = mir_strdup(filename);
-            ft->total_size = file_size;
+            
+            ft->pfts.totalBytes = file_size;
+            ft->pfts.totalFiles = num_files;
 
             ft_list.insert(ft);
 
             if (!descr_included) msg_buf = (char*)mir_calloc(1);
 
-            long size=sizeof(DWORD) + lstrlenA(filename) + lstrlenA(msg_buf)+4;
+            size_t size = sizeof(DWORD) + lstrlenA(filename) + strlen(msg_buf) + 4;
             char* szBlob = (char*)alloca(size);
             *((PDWORD) szBlob) = 0;
             strcpy(szBlob + sizeof(DWORD), filename);
@@ -1058,7 +1058,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
             ccs.hContact = hContact;
             ccs.wParam = 0;
             ccs.lParam = (LPARAM)&pre;
-            CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
+            CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
 
             char cip[20];
             LOG("Local IP: %s:%u", long_ip_to_char_ip(local_ip, cip), port);
@@ -1124,6 +1124,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
         mir_free(icbm_cookie);
     }
 }
+
 void CAimProto::snac_file_decline(SNAC &snac)//family 0x0004
 {
     if (snac.subcmp(0x000b))

@@ -271,7 +271,7 @@ struct CAimProto : public PROTO_INTERFACE
     int    aim_ssi_update(HANDLE hServerConn, unsigned short &seqno, bool start);
     int    aim_ssi_update_preferences(HANDLE hServerConn, unsigned short &seqno);
     int    aim_keepalive(HANDLE hServerConn,unsigned short &seqno);
-    int    aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,unsigned long ip, unsigned short port, bool force_proxy, unsigned short request_num ,char* file_name,unsigned long total_bytes,char* descr);//used when requesting a regular file transfer
+    int    aim_send_file(HANDLE hServerConn,unsigned short &seqno,unsigned long ip, unsigned short port, bool force_proxy, file_transfer *ft);//used when requesting a regular file transfer
     int    aim_file_ad(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,bool deny,unsigned short max_ver);
     int    aim_typing_notification(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short type);
     int    aim_set_idle(HANDLE hServerConn,unsigned short &seqno,unsigned long seconds);
@@ -328,8 +328,8 @@ struct CAimProto : public PROTO_INTERFACE
     //////////////////////////////////////////////////////////////////////////////////////
     // file.cpp
 
-    bool   sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv);
-    bool   receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv);
+    int    sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv);
+    int    receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv);
     void   report_file_error(TCHAR* fname);
 
     //////////////////////////////////////////////////////////////////////////////////////

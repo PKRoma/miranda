@@ -55,12 +55,13 @@ struct oft2//oscar file transfer 2 class- See On_Sending_Files_via_OSCAR.pdf
 
 #pragma pack(pop)
 
-bool send_init_oft2(file_transfer *ft)
+bool send_init_oft2(file_transfer *ft, TCHAR* file)
 {
-    aimString astr(get_fname(ft->file));
-    TCHAR *name = mir_utf8decodeT(ft->file);
+    char* fname = mir_utf8encodeT(file);
+    aimString astr(get_fname(fname));
+    mir_free(fname);
 
-    size_t len = max(0x100, 0xc0 + astr.getTermSize());
+    unsigned short len = max(0x100, 0xc0 + astr.getTermSize());
 
     oft2 *oft = (oft2*)alloca(len);
     memset(oft, 0, len);
@@ -68,14 +69,14 @@ bool send_init_oft2(file_transfer *ft)
     memcpy(oft->protocol_version, "OFT2", 4);
     oft->length           = _htons(len);
     oft->type             = 0x0101;
-    oft->total_files      = _htons(1);
-    oft->num_files_left   = _htons(1);
+    oft->total_files      = _htons(ft->pfts.totalFiles);
+    oft->num_files_left   = _htons(ft->pfts.totalFiles - ft->pfts.currentFileNumber);
     oft->total_parts      = _htons(1);
     oft->parts_left       = _htons(1);
-    oft->total_size       = _htonl(ft->total_size);
-    oft->size             = _htonl(ft->total_size);
-    oft->mod_time         = _htonl(ft->ctime);
-    oft->checksum         = _htonl(aim_oft_checksum_file(name));
+    oft->total_size       = _htonl(ft->pfts.totalBytes);
+    oft->size             = _htonl(ft->pfts.currentFileSize);
+    oft->mod_time         = _htonl(ft->pfts.currentFileTime);
+    oft->checksum         = ft->pfts.totalFiles > 1 ? 0 : _htonl(aim_oft_checksum_file(file));
     oft->recv_RFchecksum  = 0x0000FFFF;
     oft->RFchecksum       = 0x0000FFFF;
     oft->recv_checksum    = 0x0000FFFF;
@@ -85,8 +86,6 @@ bool send_init_oft2(file_transfer *ft)
     oft->list_size_offset = 0x11;
     oft->encoding = _htons(astr.isUnicode() ? 2 : 0);
     memcpy(oft->filename, astr.getBuf(), astr.getTermSize());
-
-    mir_free(name);
 
     return Netlib_Send(ft->hConn, (char*)oft, len, 0) > 0;
 }
@@ -100,15 +99,32 @@ void CAimProto::report_file_error(TCHAR *fname)
     ShowPopup((char*)errmsg, ERROR_POPUP | TCHAR_POPUP);
 }
 
-bool CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv)
+bool setup_next_file_send(file_transfer *ft)
+{
+    ft->pfts.currentFileProgress = 0;
+    ft->pfts.tszCurrentFile = ft->pfts.ptszFiles[ft->pfts.currentFileNumber];
+
+    struct _stati64 statbuf;
+    if (_tstati64(ft->pfts.tszCurrentFile, &statbuf))
+    {
+        return false;
+    }
+
+    ft->pfts.currentFileSize = statbuf.st_size;
+    ft->pfts.currentFileTime = statbuf.st_mtime;
+
+    send_init_oft2(ft, ft->pfts.tszCurrentFile);
+
+    return true;
+}
+
+int CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv)
 {
     LOG("P2P: Entered file sending thread.");
 
     bool failed = true;
 
-    unsigned __int64 file_start_point = 0;
-
-    send_init_oft2(ft);
+    if (!setup_next_file_send(ft)) return 2;
 
     LOG("Sent file information to buddy.");
     //start listen for packets stuff
@@ -142,42 +158,21 @@ bool CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETL
             if (type == 0x0202 || type == 0x0207)
             {
                 LOG("P2P: Buddy Accepts our file transfer.");
-                TCHAR *fname = mir_utf8decodeT(ft->file);
-                int fid = _topen(fname, _O_RDONLY | _O_BINARY, _S_IREAD);
+
+                int fid = _topen(ft->pfts.tszCurrentFile, _O_RDONLY | _O_BINARY, _S_IREAD);
                 if (fid < 0)
                 {
-                    report_file_error(fname);
-                    mir_free(fname);
-                    break;
+                    report_file_error(ft->pfts.tszCurrentFile);
+                    return 2;
                 }
-                mir_free(fname);
 
-                if (file_start_point) _lseeki64(fid, file_start_point, SEEK_SET);
+                if (ft->pfts.currentFileProgress) _lseeki64(fid, ft->pfts.currentFileProgress, SEEK_SET);
 
                 NETLIBSELECT tSelect = {0};
                 tSelect.cbSize = sizeof(tSelect);
                 tSelect.hReadConns[0] = ft->hConn;
 
-                PROTOFILETRANSFERSTATUS pfts;
-                memset(&pfts, 0, sizeof(PROTOFILETRANSFERSTATUS));
-                pfts.currentFileNumber      = 0;
-                pfts.currentFileProgress    = file_start_point;
-                pfts.currentFileSize        = ft->total_size;
-                pfts.currentFileTime        = 0;
-                pfts.ptszFiles              = NULL;
-                pfts.hContact               = ft->hContact;
-                pfts.flags                  = PFTS_SENDING | PFTS_TCHAR;
-                pfts.totalBytes             = ft->total_size;
-                pfts.totalFiles             = 1;
-                pfts.totalProgress          = file_start_point;
-
-                pfts.tszCurrentFile         = mir_utf8decodeT(get_fname(ft->file));
-                pfts.tszWorkingDir          = mir_utf8decodeT(ft->file);
-
-                TCHAR* swd = _tcsrchr(pfts.tszWorkingDir, '\\'); 
-                if (swd) *(swd + 1) = '\0'; else pfts.tszWorkingDir[0] = 0;
-
-                sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&pfts);
+                sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&ft->pfts);
 
                 clock_t lNotify = clock();
                 for (;;)
@@ -187,46 +182,67 @@ bool CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETL
                     if (bytes <= 0) break;
 
                     if (Netlib_Send(ft->hConn, buffer, bytes, MSG_NODUMP) <= 0) break;
-                    pfts.currentFileProgress += bytes;
-                    pfts.totalProgress += bytes;
+                    ft->pfts.currentFileProgress += bytes;
+                    ft->pfts.totalProgress += bytes;
                     
                     if (clock() >= lNotify)
                     {
-                        sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&pfts);
+                        sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&ft->pfts);
                         if (CallService(MS_NETLIB_SELECT, 0, (LPARAM)&tSelect)) break;
 
                         lNotify = clock() + 500;
                     }
                 }
-                sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&pfts);
+                sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&ft->pfts);
                 LOG("P2P: Finished sending file bytes.");
                 _close(fid);
-                mir_free(pfts.tszWorkingDir);
-                mir_free(pfts.tszCurrentFile);
             }
             else if (type == 0x0204)
             {
                 LOG("P2P: Buddy says they got the file successfully");
-                failed = false;
-                break;
+                if ((ft->pfts.currentFileNumber + 1) < ft->pfts.totalFiles)
+                {
+                    sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0);
+                    ++ft->pfts.currentFileNumber;
+
+		            if (!setup_next_file_send(ft))
+                    {
+                        report_file_error(ft->pfts.tszCurrentFile);
+                        return 2;
+                    }
+                }
+                else
+                {
+                    failed = _htonl(recv_ft->recv_bytes) != ft->pfts.currentFileSize;
+                    break;
+                }
             }
             else if (type == 0x0205)
             {
                 oft2* recv_ft = (oft2*)packetRecv.buffer;
                 recv_ft->type = _htons(0x0106);
                 
-                file_start_point = _htonl(recv_ft->recv_bytes);
-                LOG("P2P: Buddy wants us to start sending at a specified file point. (%I64u)", file_start_point);
+                ft->pfts.currentFileProgress = _htonl(recv_ft->recv_bytes);
+                if (aim_oft_checksum_file(ft->pfts.tszCurrentFile, ft->pfts.currentFileProgress) != _htonl(recv_ft->recv_checksum))
+                {
+                    ft->pfts.currentFileProgress = 0;
+                    recv_ft->recv_bytes = 0;
+                }
 
-                if (Netlib_Send(ft->hConn, (char*)recv_ft, _htons(recv_ft->length), 0) == SOCKET_ERROR)
-                    break;
+                LOG("P2P: Buddy wants us to start sending at a specified file point. (%I64u)", ft->pfts.currentFileProgress);
+                if (Netlib_Send(ft->hConn, (char*)recv_ft, _htons(recv_ft->length), 0) <= 0) break;
+
+                ft->pfts.totalProgress += ft->pfts.currentFileProgress;
+                sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&ft->pfts);
             }
         }
     }
-    return !failed;
+
+    ft->success = !failed;
+    return failed;
 }
 
-bool CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv)
+int CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv)
 {
     LOG("P2P: Entered file receiving thread.");
     bool failed = true;
@@ -235,12 +251,7 @@ bool CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NE
 
     oft2 *oft = NULL;
 
-    PROTOFILETRANSFERSTATUS pfts;
-    memset(&pfts, 0, sizeof(PROTOFILETRANSFERSTATUS));
-    pfts.hContact   = ft->hContact;
-    pfts.flags      = PFTS_TCHAR;
-    pfts.totalFiles = 1;
-    pfts.tszWorkingDir = mir_utf8decodeT(ft->file);
+    ft->pfts.tszWorkingDir = mir_utf8decodeT(ft->file);
 
     //start listen for packets stuff
     for (;;)
@@ -277,55 +288,92 @@ bool CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NE
                     oft = (oft2*)mir_realloc(oft, pkt_len);
                     memcpy(oft, recv_ft, pkt_len);
                     memcpy(oft->icbm_cookie, ft->icbm_cookie, 8);
-                    oft->type = _htons(ft->start_offset ? 0x0205 : 0x0202);
 
                     int buflen = pkt_len - 0x100 + 64;
                     char *buf = (char*)mir_calloc(buflen + 2);
                     unsigned short enc;
 
-                    pfts.currentFileSize = _htonl(recv_ft->size);
-                    pfts.totalBytes = _htonl(recv_ft->total_size);
-                    pfts.currentFileTime = _htonl(recv_ft->mod_time);
+                    ft->pfts.currentFileSize = _htonl(recv_ft->size);
+                    ft->pfts.totalBytes = _htonl(recv_ft->total_size);
+                    ft->pfts.currentFileTime = _htonl(recv_ft->mod_time);
                     memcpy(buf, recv_ft->filename, buflen);
                     enc = _htons(recv_ft->encoding);
 
                     TCHAR *name;
                     if (enc == 2)
                     {
-                        wcs_htons((wchar_t*)buf);
-                        name = mir_u2t((wchar_t*)buf);
+                        wchar_t* wbuf = (wchar_t*)buf;
+                        wcs_htons(wbuf);
+                        for (wchar_t *p = wbuf; *p; ++p) { if (*p == 1) *p = '\\'; }
+                        name = mir_u2t(wbuf);
                     }
                     else
+                    {
+                        for (char *p = buf; *p; ++p) { if (*p == 1) *p = '\\'; }
                         name = mir_a2t(buf);
+                    }
 
                     mir_free(buf);
 
                     TCHAR fname[256];
-                    mir_sntprintf(fname, SIZEOF(fname), _T("%s%s"), pfts.tszWorkingDir, name);
+                    mir_sntprintf(fname, SIZEOF(fname), _T("%s%s"), ft->pfts.tszWorkingDir, name);
                     mir_free(name);
-                    pfts.tszCurrentFile = mir_tstrdup(fname);
-                    ft->pfts = &pfts;
-//                  sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, ft, (LPARAM)&pfts);
+                    mir_free(ft->pfts.tszCurrentFile);
+                    ft->pfts.tszCurrentFile = mir_tstrdup(fname);
 
-                    fid = _topen(fname, _O_CREAT | _O_WRONLY | _O_BINARY, _S_IREAD | _S_IWRITE);
+                    ResetEvent(ft->hResumeEvent);
+                    if (sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, ft, (LPARAM)&ft->pfts))
+                        WaitForSingleObject(ft->hResumeEvent, INFINITE);
 
-                    accepted_file = fid >= 0;
-                    if (!accepted_file)	
+                    if (ft->pfts.tszCurrentFile)
                     {
-                        report_file_error(fname);
+                        TCHAR* dir = get_dir(ft->pfts.tszCurrentFile);
+                        CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)dir);
+                        mir_free(dir);
+
+                        oft->type = _htons(ft->pfts.currentFileProgress ? 0x0205 : 0x0202);
+
+                        const int flag = ft->pfts.currentFileProgress ? 0 : _O_TRUNC;
+					    fid = _topen(ft->pfts.tszCurrentFile, _O_CREAT | _O_WRONLY | _O_BINARY | flag, _S_IREAD | _S_IWRITE);
+
+                        if (fid < 0)	
+                        {
+                            report_file_error(fname);
+                            break;
+                        }
+
+                        accepted_file = ft->pfts.currentFileProgress == 0;
+
+                        if (ft->pfts.currentFileProgress)
+                        {
+                            oft->recv_bytes = _htonl(ft->pfts.currentFileProgress);
+                            oft->recv_checksum = _htonl(aim_oft_checksum_file(ft->pfts.tszCurrentFile));
+                        }
+                    }
+                    else
+                    {
+                        oft->type = _htons(0x0204);
+
+                        sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0);
+                        ++ft->pfts.currentFileNumber;
+                        ft->pfts.currentFileProgress = 0;
+                    }
+
+                    if (Netlib_Send(ft->hConn, (char*)oft, pkt_len, 0) == SOCKET_ERROR)
                         break;
-                    }
+                }
+                else if (type == 0x0106)
+                {
+                    oft = (oft2*)mir_realloc(oft, pkt_len);
+                    memcpy(oft, recv_ft, pkt_len);
 
-                    if (ft->start_offset)
-                    {
-                        _lseeki64(fid, ft->start_offset, SEEK_SET);
-                        pfts.currentFileProgress = ft->start_offset;
-                        pfts.totalBytes = ft->start_offset;
+                    ft->pfts.currentFileProgress = _htonl(oft->recv_bytes);
+                    ft->pfts.totalProgress += ft->pfts.currentFileProgress;
 
-                        oft->recv_bytes = _htonl(ft->start_offset);
-                        oft->checksum = _htonl(aim_oft_checksum_file(fname));
-                    }
+                    _lseeki64(fid, ft->pfts.currentFileProgress, SEEK_SET);
+                    accepted_file = true;
 
+                    oft->type = _htons(0x0207);
                     if (Netlib_Send(ft->hConn, (char*)oft, pkt_len, 0) == SOCKET_ERROR)
                         break;
                 }
@@ -336,31 +384,41 @@ bool CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NE
             {
                 packetRecv.bytesUsed = packetRecv.bytesAvailable;
                 _write(fid, packetRecv.buffer, packetRecv.bytesAvailable);
-                pfts.currentFileProgress += packetRecv.bytesAvailable;
-                pfts.totalProgress       += packetRecv.bytesAvailable;
-                sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&pfts);
-                if (pfts.totalBytes == pfts.currentFileProgress)
+                ft->pfts.currentFileProgress += packetRecv.bytesAvailable;
+                ft->pfts.totalProgress       += packetRecv.bytesAvailable;
+                sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&ft->pfts);
+                if (ft->pfts.currentFileSize == ft->pfts.currentFileProgress)
                 {
                     oft->type = _htons(0x0204);
-                    oft->recv_bytes = _htonl(pfts.totalBytes);
-                    oft->recv_checksum = _htonl(aim_oft_checksum_file(pfts.tszCurrentFile));
-                    oft->flags = 0x24;
+                    oft->recv_bytes = _htonl(ft->pfts.totalBytes);
+                    oft->recv_checksum = _htonl(aim_oft_checksum_file(ft->pfts.tszCurrentFile));
 
                     LOG("P2P: We got the file successfully");
                     Netlib_Send(ft->hConn, (char*)oft, _htons(oft->length), 0);
-                    failed = false;
-                    break;
+                    if (_htons(oft->num_files_left) == 1)
+                    {
+                    	failed = false;
+                    	break;
+                    }
+                    else
+                    {
+                        accepted_file = false;
+                        _close(fid);
+
+                        sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0);
+                        ++ft->pfts.currentFileNumber;
+                        ft->pfts.currentFileProgress = 0;
+                    }
                 }
             }
         }
     }
 
     if (accepted_file) _close(fid);
-    mir_free(pfts.tszWorkingDir);
-    mir_free(pfts.tszCurrentFile);
     mir_free(oft);
 
-    return !failed;
+    ft->success = !failed;
+    return accepted_file ? failed : 2;
 }
 
 ft_list_type::ft_list_type() :  OBJLIST <file_transfer>(10) {};
@@ -418,4 +476,42 @@ void ft_list_type::remove_by_ft(file_transfer *ft)
             break;
         }
     }
+}
+
+file_transfer::file_transfer(HANDLE hCont, char* nick, char* cookie)  
+{ 
+    memset(this, 0, sizeof(*this)); 
+
+    pfts.cbSize = sizeof(pfts);
+    pfts.flags = PFTS_TCHAR;
+    pfts.hContact = hCont;
+
+    hContact = hCont;
+    sn = mir_strdup(nick);
+
+    if (cookie)
+        memcpy(icbm_cookie, cookie, 8);
+    else
+        CallService(MS_UTILS_GETRANDOM, 8, (LPARAM)icbm_cookie);
+    
+    hResumeEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+}
+
+file_transfer::~file_transfer() 
+{ 
+    mir_free(file); 
+    mir_free(message); 
+    mir_free(sn); 
+
+    mir_free(pfts.tszWorkingDir);
+    if (!sending) mir_free(pfts.tszCurrentFile);
+
+    if (success && pfts.ptszFiles)
+    {
+        for (int i = 0; i < pfts.totalFiles; i++)
+            mir_free(pfts.ptszFiles[i]);
+
+        mir_free(pfts.ptszFiles);
+    }
+    CloseHandle(hResumeEvent);
 }
