@@ -2449,6 +2449,14 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		if (dat->panelStatusCX != oldPanelStatusCX)
 			SendMessage(hwndDlg, WM_SIZE, 0, 0);
 
+		if (dat->hdcCached != NULL) {
+			SkinDrawBGFromDC(dis->hwndItem, hwndDlg, dat->hdcCached, &dis->rcItem, dis->hDC);
+			SetTextColor(dis->hDC, myGlobals.skinDefaultFontColor);
+		} else {
+			FillRect(dis->hDC, &rc, GetSysColorBrush(COLOR_3DFACE));
+			SetTextColor(dis->hDC, GetSysColor(COLOR_BTNTEXT));
+		}
+
 		GetClientRect(dis->hwndItem, &rc);
 		if (dat->pContainer->bSkinned) {
 			SkinDrawBGFromDC(dis->hwndItem, hwndDlg, dat->hdcCached, &dis->rcItem, dis->hDC);
@@ -2459,8 +2467,8 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 			if (!item->IGNORED)
 				DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
 						  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
-		} else
-			FillRect(dis->hDC, &rc, myGlobals.ipConfig.bkgBrush);
+		}
+
 		SetBkMode(dis->hDC, TRANSPARENT);
 		if (myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
 			DrawEdge(dis->hDC, &rc, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
@@ -2504,7 +2512,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		dat->szLabel.cx = 0;
 		rc.right = rc.left;
 		SetBkMode(dis->hDC, TRANSPARENT);
-		if (dat->pContainer->bSkinned && dat->hdcCached != NULL) {
+		if (dat->hdcCached != NULL) {
 			SkinDrawBGFromDC(dis->hwndItem, hwndDlg, dat->hdcCached, &dis->rcItem, dis->hDC);
 			SetTextColor(dis->hDC, myGlobals.skinDefaultFontColor);
 		} else {
@@ -2520,8 +2528,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 			if (!item->IGNORED)
 				DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
 						  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
-		} else
-			FillRect(dis->hDC, &dis->rcItem, myGlobals.ipConfig.bkgBrush);
+		}
 
 		if (myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
 			DrawEdge(dis->hDC, &dis->rcItem, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
@@ -2589,7 +2596,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		HBITMAP hbmOld = SelectObject(hdc, hbm);
 		RECT	rcOrig = dis->rcItem;
 
-		if (dat->pContainer->bSkinned && dat->hdcCached != NULL) {
+		if (dat->hdcCached != NULL) {
 			SkinDrawBGFromDC(dis->hwndItem, hwndDlg, dat->hdcCached, &dis->rcItem, hdc);
 			SetTextColor(hdc, myGlobals.skinDefaultFontColor);
 		} else {
@@ -2607,8 +2614,8 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 			if (!item->IGNORED)
 				DrawAlpha(hdc, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
 						  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
-		} else
-			FillRect(hdc, &dis->rcItem, myGlobals.ipConfig.bkgBrush);
+		}
+
 		if (myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
 			DrawEdge(hdc, &dis->rcItem, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
 		dis->rcItem.left += 2;

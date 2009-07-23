@@ -2697,10 +2697,6 @@ panel_found:
 		case DM_REPORTMINHEIGHT:
 			pContainer->uChildMinHeight = ((UINT) lParam > pContainer->uChildMinHeight) ? (UINT) lParam : pContainer->uChildMinHeight;
 			return 0;
-		case WM_LBUTTONDBLCLK:
-			if (!g_framelessSkinmode)
-				SendMessage(hwndDlg, WM_SYSCOMMAND, IDM_NOTITLE, 0);
-			break;
 		case WM_CONTEXTMENU: {
 			break;
 		}

@@ -2940,7 +2940,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					DM_RecalcPictureSize(hwndDlg, dat);
 				}
 				else {
-					dat->dynaSplitter = (rc.bottom - pt.y) - DPISCALEY(12);
+					dat->dynaSplitter = (rc.bottom - pt.y) - DPISCALEY(11);
 					DM_RecalcPictureSize(hwndDlg, dat);
 				}
 			} else if ((HWND) lParam == GetDlgItem(hwndDlg, IDC_PANELSPLITTER)) {
@@ -3539,14 +3539,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			return 0;
 
 		case WM_LBUTTONDBLCLK:
-			if (GetKeyState(VK_CONTROL) & 0x8000) {
-				SendMessage(hwndContainer, WM_CLOSE, 1, 0);
-				break;
-			}
-			if (GetKeyState(VK_SHIFT) & 0x8000 && !g_framelessSkinmode) {
-				SendMessage(hwndContainer, WM_SYSCOMMAND, IDM_NOTITLE, 0);
-				break;
-			}
 			if(dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
 				POINT	pt;
 				RECT	rc;
@@ -5627,6 +5619,10 @@ quote_from_last:
 			else
 				FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
 
+			/*
+			 * draw the (new) infopanel. Use the gradient from the statusitem.
+			 */
+
 			t_item = StatusItems[ID_EXTBKINFOPANELBG];
 			if(!t_item.IGNORED && (dat->dwFlags & MWF_SHOW_INFOPANEL)) {
 				StatusItems_t *item = &t_item;
@@ -5647,6 +5643,9 @@ quote_from_last:
 				DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
 						  item->CORNER, item->BORDERSTYLE, item->imageItem);
 			}
+			/*
+			 * draw the logo
+			 */
 			if(dat->dwFlagsEx & MWF_SHOW_INFOPANEL && !(dat->dwFlagsEx & MWF_SHOW_INFONOTES)) {
 				BITMAP 	bm;
 				HDC		hdcImage = CreateCompatibleDC(hdc);

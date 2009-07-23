@@ -178,61 +178,6 @@ INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			timediff = /* (int)myGlobals.local_gmt_diff - */ - (int)contact_gmt_diff * 60 * 60 / 2;
 
 			/*
-			 * time zone stuff
-			 */
-
-			if(reg_timezones == NULL) {
-				REG_TZI_FORMAT	tzi;
-
-				if(myGlobals.m_WinVerMajor > 4)
-					mir_sntprintf(tszKey, 256, _T("%s"), _T("Software\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones"));
-				else
-					mir_sntprintf(tszKey, 256, _T("%s"), _T("Software\\Microsoft\\Windows\\CurrentVersion\\Time Zones"));
-
-				if(ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, tszKey, 0, KEY_READ, &hKey)) {
-					TCHAR	tszTzKey[256];
-					DWORD	dwIndex = 0;
-					DWORD	dwSize = 64, dwLength = 128, dwType, dwNrZones = 0;
-					HKEY	hSubKey;
-					REG_TIMEZONE rtTmp;
-					unsigned     i, j;
-
-					RegQueryInfoKey(hKey, NULL, NULL, NULL, &dwNrZones, NULL, NULL, NULL, NULL, NULL, NULL, NULL);		// nr of subkeys
-					reg_timezones = malloc(sizeof(REG_TIMEZONE) * (dwNrZones + 1));
-					ZeroMemory(reg_timezones, (dwNrZones + 1) * sizeof(REG_TIMEZONE));
-
-					if(reg_timezones) {
-						while(ERROR_NO_MORE_ITEMS != RegEnumKeyEx(hKey, dwIndex, reg_timezones[dwIndex].tszName, &dwSize, NULL, NULL, 0, NULL)) {
-							mir_sntprintf(tszTzKey, 256, _T("%s\\%s"), tszKey, reg_timezones[dwIndex].tszName);
-							if(ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, tszTzKey, 0, KEY_READ, &hSubKey)) {
-								dwLength = 128;
-								if(ERROR_SUCCESS == RegQueryValueEx(hSubKey, _T("Display"), 0, &dwType, (char *)reg_timezones[dwIndex].tszDisplay, &dwLength)) {
-									dwLength = sizeof(tzi);
-									if(ERROR_SUCCESS == RegQueryValueEx(hSubKey, _T("TZI"), 0, &dwType, (char *)&tzi, &dwLength))
-										reg_timezones[dwIndex].Bias = tzi.Bias * 60;			// calculate in seconds
-								}
-								RegCloseKey(hSubKey);
-							}
-							dwIndex++;
-							dwSize = 64;
-						}
-						/*
-						 * sort timezones by BIAS
-						 */
-						for(i = 0; i < dwIndex - 1; i++) {
-							for(j = 0; j < dwIndex - 1; j++) {
-								if(reg_timezones[j].Bias < reg_timezones[j + 1].Bias) {
-									rtTmp = reg_timezones[j];
-									reg_timezones[j] = reg_timezones[j + 1];
-									reg_timezones[j + 1] = rtTmp;
-								}
-							}
-						}
-					}
-					RegCloseKey(hKey);
-				}
-			}
-			/*
 			 * already populated and prepared
 			 */
 			if(reg_timezones) {

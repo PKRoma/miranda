@@ -34,7 +34,7 @@ $Id$
 #include "sendqueue.h"
 
 SKINDESC my_default_skin[] = {
-	IDR_SKIN_GLYPH, ("glyphs.png"),
+	IDR_SKIN_GLYPH, ("glyph.png"),
 	IDR_SKIN_TSK, ("default.tsk"),
 	IDR_SKIN_TABSRMM, ("default.tabsrmm"),
 	IDR_SKIN_ICO_CLOSE, ("close.ico"),
