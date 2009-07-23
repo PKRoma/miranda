@@ -733,7 +733,8 @@ HANDLE __cdecl CMsnProto::GetAwayMsg(HANDLE hContact)
 
 DWORD_PTR __cdecl CMsnProto::GetCaps(int type, HANDLE hContact)
 {
-	switch(type) {
+	switch(type) 
+    {
 	case PFLAGNUM_1:
 	{	int result = PF1_IM | PF1_SERVERCLIST | PF1_AUTHREQ | PF1_BASICSEARCH |
 				 PF1_ADDSEARCHRES | PF1_SEARCHBYEMAIL | PF1_USERIDISEMAIL | PF1_CHAT |
@@ -1061,7 +1062,8 @@ int __cdecl CMsnProto::SetAwayMsg(int status, const char* msg)
 	if (msgptr == NULL)
 		return 1;
 
-	replaceStr(*msgptr, msg);
+    mir_free(*msgptr);
+	*msgptr = mir_utf8encode(msg);
 
 	if (status == m_iDesiredStatus)
 		MSN_SendStatusMessage(msg);
