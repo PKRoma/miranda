@@ -1154,7 +1154,7 @@ The official webpage for the Miranda IM project is http://www.miranda-im.org.
 Miranda IM is provided free of charge but without any warranty or support.
 
 If you have difficulties using Miranda IM, you can find a lot of resources in
-the Support section of the website: http://wiki.miranda-im.org/
+the Support section of the website.
 
 You can also ask for help in the official forums and someone will try to help.
 But remember; everyone involved in the Miranda IM project are volunteers, as
