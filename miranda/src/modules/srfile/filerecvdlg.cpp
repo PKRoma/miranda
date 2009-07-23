@@ -158,7 +158,6 @@ void GetContactReceivedFilesDir(HANDLE hContact,TCHAR *szDir,int cchDir, BOOL pa
 
 	if ( hContact ) {
 		REPLACEVARSDATA dat = { 0 };
-		TCHAR* Str;
 		REPLACEVARSARRAY rvaVarsToReplace[4];
 		rvaVarsToReplace[0].lptzKey   = _T("nick");
 		rvaVarsToReplace[0].lptzValue = mir_tstrdup((TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
