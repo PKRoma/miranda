@@ -48,13 +48,26 @@ static void GetLowestExistingDirName(const TCHAR *szTestDir,TCHAR *szExistingDir
 	if(szExistingDir[0]=='\0') GetCurrentDirectory(cchExistingDir,szExistingDir);
 }
 
-static const TCHAR InvalidFilenameChars[] = _T("*?\"<>|"); // "\/:" are excluded as they are allowed in file path
+static const TCHAR InvalidFilenameChars[] = _T("\\/:*?\"<>|"); 
 void RemoveInvalidFilenameChars(TCHAR *tszString)
 {
 	size_t i;
-	for(i=_tcscspn(tszString,InvalidFilenameChars); tszString[i]; i+=_tcscspn(tszString+i+1,InvalidFilenameChars)+1)
-		if(tszString[i] >= 0) 
-			tszString[i]='_';
+	if (tszString) {
+		for(i=_tcscspn(tszString,InvalidFilenameChars); tszString[i]; i+=_tcscspn(tszString+i+1,InvalidFilenameChars)+1)
+			if(tszString[i] >= 0) 
+				tszString[i] = _T('_');
+	}
+}
+
+static const TCHAR InvalidPathChars[] = _T("*?\"<>|"); // "\/:" are excluded as they are allowed in file path
+void RemoveInvalidPathChars(TCHAR *tszString)
+{
+	size_t i;
+	if (tszString) {
+		for(i=_tcscspn(tszString,InvalidPathChars); tszString[i]; i+=_tcscspn(tszString+i+1,InvalidPathChars)+1)
+			if(tszString[i] >= 0) 
+				tszString[i] = _T('_');
+	}
 }
 
 static INT CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM pData)
@@ -145,18 +158,34 @@ void GetContactReceivedFilesDir(HANDLE hContact,TCHAR *szDir,int cchDir, BOOL pa
 
 	if ( hContact ) {
 		REPLACEVARSDATA dat = { 0 };
+		TCHAR* Str;
+		REPLACEVARSARRAY rvaVarsToReplace[4];
+		rvaVarsToReplace[0].lptzKey   = _T("nick");
+		rvaVarsToReplace[0].lptzValue = mir_tstrdup((TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
+		rvaVarsToReplace[1].lptzKey   = _T("userid");
+		rvaVarsToReplace[1].lptzValue = mir_tstrdup(( TCHAR* )GetContactID(hContact));
+		rvaVarsToReplace[2].lptzKey   = _T("proto");
+		rvaVarsToReplace[2].lptzValue = mir_a2t((char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact,0));
+		rvaVarsToReplace[3].lptzKey   = NULL;
+		rvaVarsToReplace[3].lptzValue = NULL;
+		for (int i=0; i < (SIZEOF(rvaVarsToReplace)-1);i++)
+			RemoveInvalidFilenameChars(rvaVarsToReplace[i].lptzValue);
+
 		dat.cbSize = sizeof( dat );
 		dat.dwFlags = RVF_TCHAR;
+		dat.variables = rvaVarsToReplace;
 		dat.hContact = hContact;
 		TCHAR* result = ( TCHAR* )CallService( MS_UTILS_REPLACEVARS, (WPARAM)szTemp, (LPARAM)&dat );
 		if ( result ) {
 			_tcsncpy( szTemp, result, SIZEOF(szTemp));
 			mir_free( result );
+			for (int i=0; i < (SIZEOF(rvaVarsToReplace)-1);i++)
+				mir_free(rvaVarsToReplace[i].lptzValue);
 	}	}
 
 	if (patchVars)
 		patchDir( szTemp, SIZEOF(szTemp));
-	RemoveInvalidFilenameChars(szTemp);
+	RemoveInvalidPathChars(szTemp);
 	lstrcpyn( szDir, szTemp, cchDir );
 }
 
@@ -340,7 +369,7 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			{	//most recently used directories
 				TCHAR szRecvDir[MAX_PATH],szDefaultRecvDir[MAX_PATH];
 				GetDlgItemText(hwndDlg,IDC_FILEDIR,szRecvDir,SIZEOF(szRecvDir));
-				RemoveInvalidFilenameChars(szRecvDir);
+				RemoveInvalidPathChars(szRecvDir);
 				GetContactReceivedFilesDir(NULL,szDefaultRecvDir,SIZEOF(szDefaultRecvDir),TRUE);
 				if(_tcsnicmp(szRecvDir,szDefaultRecvDir,lstrlen(szDefaultRecvDir))) {
 					char idstr[32];

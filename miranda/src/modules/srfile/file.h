@@ -83,6 +83,7 @@ INT_PTR CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 //filerecv.c
 INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 void RemoveInvalidFilenameChars(TCHAR *tszString);
+void RemoveInvalidPathChars(TCHAR *tszString);
 void GetContactReceivedFilesDir(HANDLE hContact,TCHAR *szDir,int cchDir,BOOL substVars);
 void GetReceivedFilesDir(TCHAR *szDir,int cchDir);
 int BrowseForFolder(HWND hwnd,TCHAR *szPath);
@@ -110,3 +111,5 @@ void FtMgr_Destroy();
 HWND FtMgr_AddTransfer(struct FileDlgData *dat);
 
 void FreeFileDlgData( FileDlgData* dat );
+
+TCHAR *GetContactID(HANDLE hContact);

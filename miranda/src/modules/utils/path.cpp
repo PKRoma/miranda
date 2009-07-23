@@ -245,6 +245,35 @@ int InitPathUtilsW(void)
 }
 #endif
 
+TCHAR *GetContactID(HANDLE hContact)
+{
+	TCHAR *theValue = {0};
+	char *szProto = ( char* )CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+	if (DBGetContactSettingByte(hContact, szProto, "ChatRoom", 0) == 1) {
+		DBVARIANT dbv;
+		if (!DBGetContactSettingTString(hContact, szProto, "ChatRoomID", &dbv)) {
+			theValue = (TCHAR *)mir_tstrdup(dbv.ptszVal);
+			DBFreeVariant(&dbv);
+			return theValue;
+		}	}
+	else {
+		CONTACTINFO ci = {0};
+		ci.cbSize = sizeof(ci);
+		ci.hContact = hContact;
+		ci.szProto = szProto;
+		ci.dwFlag = CNF_UNIQUEID | CNF_TCHAR;
+		if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
+			switch (ci.type) {
+			case CNFT_ASCIIZ:
+				return (TCHAR *)ci.pszVal;
+				break;
+			case CNFT_DWORD:
+				return _itot(ci.dVal, (TCHAR *)mir_alloc(sizeof(TCHAR)*32), 10);
+				break;
+			}	}	}
+	return NULL;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Variables parser
 
@@ -261,6 +290,10 @@ static __forceinline char *mir_a2x(char *, char *s) { return mir_strdup(s); }
 static __forceinline char *GetContactNickX(char *, HANDLE hContact)
 {
 	return mir_strdup((char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0));
+}
+static __forceinline char *GetContactIDX(char *, HANDLE hContact)
+{
+	return mir_t2a(GetContactID(hContact));
 }
 static __forceinline char *GetEnvironmentVariableX(char *variable)
 {
@@ -304,6 +337,10 @@ static __forceinline TCHAR *mir_a2x(TCHAR *, char *s) { return mir_a2t(s); }
 static __forceinline TCHAR *GetContactNickX(TCHAR *, HANDLE hContact)
 {
 	return mir_tstrdup((TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
+}
+static __forceinline TCHAR *GetContactIDX(TCHAR *, HANDLE hContact)
+{
+	return mir_tstrdup(GetContactID(hContact));
 }
 static __forceinline TCHAR *GetEnvironmentVariableX(TCHAR *variable)
 {
@@ -349,31 +386,9 @@ XCHAR *GetInternalVariable(XCHAR *key, size_t keyLength, HANDLE hContact)
 			theValue = GetContactNickX(key, hContact);
 		else if (!_xcscmp(theKey, XSTR(key, "proto")))
 			theValue = mir_a2x(key, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact,0));
-		else if (!_xcscmp(theKey, XSTR(key, "userid"))) {
-			char *szProto = ( char* )CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-			if (DBGetContactSettingByte(hContact, szProto, "ChatRoom", 0) == 1) {
-				DBVARIANT dbv;
-				if (!DBGetContactSettingTString(hContact, szProto, "ChatRoomID", &dbv)) {
-					theValue = (XCHAR *)mir_tstrdup(dbv.ptszVal);
-					DBFreeVariant(&dbv);
-				}
-			}
-			else {
-				CONTACTINFO ci = {0};
-				ci.cbSize = sizeof(ci);
-				ci.hContact = hContact;
-				ci.szProto = szProto;
-				ci.dwFlag = CNF_UNIQUEID;
-				if (sizeof(XCHAR) == sizeof(WCHAR)) ci.dwFlag |= CNF_UNICODE;
-				if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
-					switch (ci.type) {
-					case CNFT_ASCIIZ:
-						theValue = (XCHAR *)ci.pszVal;
-						break;
-					case CNFT_DWORD:
-						theValue = _itox(key, ci.dVal);
-						break;
-	}	}	}	}	}
+		else if (!_xcscmp(theKey, XSTR(key, "userid"))) 
+			theValue = GetContactNickX(key, hContact);
+	}
 
 	if (!theValue) {
 		if (!_xcscmp(theKey, XSTR(key, "miranda_path")))

@@ -203,7 +203,7 @@ static INT_PTR CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				{	char str[512];
 					TCHAR tstr[512];
 					GetDlgItemText(hwndDlg,IDC_FILEDIR,tstr,SIZEOF(tstr));
-					RemoveInvalidFilenameChars(tstr);
+					RemoveInvalidPathChars(tstr);
 					DBWriteContactSettingTString(NULL,"SRFile","RecvFilesDirAdv",tstr);
 					DBWriteContactSettingByte(NULL,"SRFile","AutoAccept",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOACCEPT));
 					DBWriteContactSettingByte(NULL,"SRFile","AutoMin",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOMIN));
