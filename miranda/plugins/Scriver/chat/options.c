@@ -944,6 +944,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 				}
 			}
 		} else if (((LPNMHDR)lParam)->idFrom == 0 && ((LPNMHDR)lParam)->code == PSN_APPLY ) {
+			char *pszText = NULL;
 			int iLen;
 
 			iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_CHAT_HIGHLIGHTWORDS));
@@ -973,11 +974,10 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 				free(pszText1);
 			}
 			else {
-                lstrcpyn(g_Settings.pszLogDir, DEFLOGFILENAME, MAX_PATH);
-                DBDeleteContactSetting(NULL, "Chat", "LogDirectory");
-            }
+				lstrcpyn(g_Settings.pszLogDir, DEFLOGFILENAME, MAX_PATH);
+				DBDeleteContactSetting(NULL, "Chat", "LogDirectory");
+			}
 
-            char *pszText = NULL;
 			iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_CHAT_LOGTIMESTAMP));
 			if ( iLen > 0 ) {
                 pszText = mir_realloc(pszText, iLen+1);
