@@ -92,9 +92,6 @@ TEXTCOLOR=787878
 GRADIENT=none
 RADIUS=6
 
-; this is the background of the message container window
-; most of this is invisible and covered by the message dialog
-
 [%Container]
 ALPHA=100
 COLOR1=F5F5F5
@@ -104,11 +101,6 @@ TEXTCOLOR=202020
 CORNER=0
 GRADIENT=none
 RADIUS=0
-
-; the following items are not using gradients but are skinned by
-; image items (definition of those follows later).
-; the section name (%Itemname) must be present, otherwise, the skin engine
-; would simply ignore them.
 
 [%Buttonnotpressed]
 ;ALPHA=50
@@ -130,10 +122,6 @@ RADIUS=0
 
 [%Statusbarpanel]
 ;TEXTCOLOR=ffffff
-
-; %InputArea and %MessageLog allow to draw a frame around the text areas.
-; the textares themselves are _NOT_ skinable - the richedit control doesn't allow 
-; this.
 
 [%InputArea]
 ALPHA=100
@@ -157,9 +145,6 @@ top=4
 bottom=4
 radius=13
 
-; this is the same as for InputArea and MessageLog. It can draw a frame around
-; the group chat user list.
-
 [%Userlist]
 ALPHA=100
 COLOR1=f5f5f5
@@ -170,9 +155,6 @@ Right=4
 top=4
 bottom=4
 radius=13
-
-; this is the _entire_ background of the info panel. Not only the fields
-; but the entire panel.
 
 [%InfoPanelBackground]
 ALPHA=100
@@ -186,20 +168,11 @@ bottom=1
 radius=0
 Gradient=down
 
-; image items
-
-; the glyphs hold all images within a single file. Skin loads faster this way
-; and consumes less resources
-
 [$glyphs]
 Image=glyph.png
 Alpha=100
 Perpixel=1
 
-; window frame in active state
-; use fill color, because only the frame is relevant. Interior can be filled
-; with solid color (= much faster)
-	
 [$Frame]
 ALPHA=100
 Glyph=26, 0, 75, 56
@@ -212,8 +185,6 @@ Top=28
 Bottom=28
 Left=24
 Item0=Frame
-
-; window frame in inactive state
 
 [$FrameInactive]
 ALPHA=100
@@ -228,8 +199,6 @@ Bottom=28
 Left=24
 Item0=FrameInactive
 
-; this item is used for the status bar
-
 [$Statuspanel]
 Glyph=80,0,99,20
 Left=4
@@ -238,9 +207,6 @@ Right=4
 Bottom=4
 Item0=Statusbarpanel
 PERPIXEL=1
-
-; the actual tabs. geometry might be different for top/bottom tabs, so
-; we need different image items here.
 
 [$Tabactive]
 Glyph=102,1,125,20
@@ -284,9 +250,6 @@ Item0=Tabitem_bottom
 Item1=Tabitem_hottrack_bottom
 PERPIXEL=1
 
-; the tab page itself. usually, only the frame is relevant, interior can
-; be filled solid, because it is covered by the actual message dialog
-
 [$Tabpage]
 Glyph=180,0,199,20
 fillColor=ffffff
@@ -299,8 +262,6 @@ Item1=InputArea
 Item2=MessageLog
 Item3=Userlist
 PERPIXEL=1
-
-; button skins
 
 [$Button]
 Glyph=80,0,99,20
@@ -341,9 +302,6 @@ MenuBarBG=f5f5f5
 NoScrollbars=1
 SbarHeight=15
 
-; the metrics for the window frame (thickness, caption text
-; position and more)
-	
 [WindowFrame]
 Left=7
 Right=7
@@ -360,14 +318,6 @@ TitleButtonHeight = 16
 TitleButtonTopOffset = 6
 CaptionOffset = 6
 
-; client area metrics
-; left, right, top, bottom are the margins between the window frame and the child
-; windows. All children are layed out on a tab control, so these margins specify the
-; space between this tab control and the window border.
-
-; the "Inner" value is the padding on the tab page itself. If set to 0, the tab page will
-; be _fully_ covered by the message dialog. Otherwise, its border might be visible.
-
 [ClientArea]
 Left=2
 Right=2
@@ -378,8 +328,6 @@ Inner=2
 [Avatars]
 BorderType=4
 BorderColor=787878
-
-; include the theme to set the message log layout, colors and templates.
 
 [Theme]
 File=default.tabsrmm
