@@ -243,6 +243,8 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	mir_getSHA1I( &sha1i );
 	mir_getXI( &xi );
 
+	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)hInst);
+
 	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &hMainThread, 0, FALSE, DUPLICATE_SAME_ACCESS );
 	jabberMainThreadId = GetCurrentThreadId();
 
