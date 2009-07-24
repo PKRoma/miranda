@@ -57,31 +57,48 @@ static VOID CALLBACK JabberDummyApcFunc( DWORD_PTR )
 	return;
 }
 
-static BOOL saveOnlinePassword;
-static char onlinePassword[128];
-static HANDLE hEventPasswdDlg;
+struct JabberPasswordDlgParam
+{
+	CJabberProto* pro;
+
+	BOOL   saveOnlinePassword;
+	WORD   dlgResult;
+	char   onlinePassword[128];
+	HANDLE hEventPasswdDlg;
+	TCHAR* ptszJid;
+};
 
 static INT_PTR CALLBACK JabberPasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
+	JabberPasswordDlgParam* param = (JabberPasswordDlgParam*)GetWindowLong( hwndDlg, GWL_USERDATA );
+
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
-		{	TCHAR text[128];
-			mir_sntprintf( text, SIZEOF(text), _T("%s %s"), TranslateT( "Enter password for" ), ( TCHAR* )lParam );
+		{	
+			param = (JabberPasswordDlgParam*)lParam;
+			SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+
+			TCHAR text[128];
+			mir_sntprintf( text, SIZEOF(text), _T("%s %s"), TranslateT( "Enter password for" ), ( TCHAR* )param->ptszJid );
 			SetDlgItemText( hwndDlg, IDC_JID, text );
+
+			int bSavePassword = param->pro->JGetByte( NULL, "SaveSessionPassword", 0 );
+			CheckDlgButton( hwndDlg, IDC_SAVEPASSWORD, ( bSavePassword ) ? BST_CHECKED : BST_UNCHECKED );
 		}
 		return TRUE;
+
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDOK:
-			saveOnlinePassword = IsDlgButtonChecked( hwndDlg, IDC_SAVEPASSWORD );
-			GetDlgItemTextA( hwndDlg, IDC_PASSWORD, onlinePassword, SIZEOF( onlinePassword ));
-			//EndDialog( hwndDlg, ( int ) onlinePassword );
-			//return TRUE;
+			param->saveOnlinePassword = IsDlgButtonChecked( hwndDlg, IDC_SAVEPASSWORD );
+			param->pro->JSetByte( NULL, "SaveSessionPassword", param->saveOnlinePassword );
+
+			GetDlgItemTextA( hwndDlg, IDC_PASSWORD, param->onlinePassword, SIZEOF( param->onlinePassword ));
 			// Fall through
 		case IDCANCEL:
-			//EndDialog( hwndDlg, 0 );
-			SetEvent( hEventPasswdDlg );
+			param->dlgResult = LOWORD( wParam );
+			SetEvent( param->hEventPasswdDlg );
 			DestroyWindow( hwndDlg );
 			return TRUE;
 		}
@@ -280,12 +297,13 @@ LBL_FatalError:
 			goto LBL_FatalError;
 		}
 
-		if ( m_options.HostNameAsResource == FALSE )
+		if ( m_options.HostNameAsResource == FALSE ) {
 			if ( !JGetStringT( NULL, "Resource", &dbv )) {
 				_tcsncpy( info->resource, dbv.ptszVal, SIZEOF( info->resource ) - 1 );
 				JFreeVariant( &dbv );
 			}
 			else _tcscpy( info->resource, _T("Miranda"));
+		}
 		else {
 			DWORD dwCompNameLen = SIZEOF( info->resource ) - 1;
 			if ( !GetComputerName( info->resource, &dwCompNameLen ))
@@ -297,34 +315,31 @@ LBL_FatalError:
 		_tcsncpy( info->fullJID, jidStr, SIZEOF( info->fullJID )-1 );
 
 		if ( m_options.SavePassword == FALSE ) {
-			if (*m_savedPassword)
-			{
+			if (*m_savedPassword) {
 				strncpy( info->password, m_savedPassword, SIZEOF( info->password ));
 				info->password[ SIZEOF( info->password )-1] = '\0';
-			} else
-			{
+			} 
+			else {
 				mir_sntprintf( jidStr, SIZEOF( jidStr ), _T("%s@") _T(TCHAR_STR_PARAM), info->username, info->server );
 
-				// Ugly hack: continue logging on only the return value is &( onlinePassword[0] )
-				// because if WM_QUIT while dialog box is still visible, p is returned with some
-				// exit code which may not be NULL.
-				// Should be better with modeless.
-				onlinePassword[0] = ( char ) -1;
-				hEventPasswdDlg = CreateEvent( NULL, FALSE, FALSE, NULL );
-				QueueUserAPC( JabberPasswordCreateDialogApcProc, hMainThread, ( DWORD_PTR )jidStr );
-				WaitForSingleObject( hEventPasswdDlg, INFINITE );
-				CloseHandle( hEventPasswdDlg );
+				JabberPasswordDlgParam param;
+				param.pro = this;
+				param.ptszJid = jidStr;
+				param.hEventPasswdDlg = CreateEvent( NULL, FALSE, FALSE, NULL );
+				QueueUserAPC( JabberPasswordCreateDialogApcProc, hMainThread, ( LPARAM )&param );
+				WaitForSingleObject( param.hEventPasswdDlg, INFINITE );
+				CloseHandle( param.hEventPasswdDlg );
 
-				if ( onlinePassword[0] == ( char ) -1 ) {
+				if ( param.dlgResult == IDCANCEL ) {
 					JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
 					Log( "Thread ended, password request dialog was canceled" );
 					goto LBL_FatalError;
 				}
 
-				if (saveOnlinePassword) lstrcpyA(m_savedPassword, onlinePassword);
+				if ( param.saveOnlinePassword ) lstrcpyA(m_savedPassword, param.onlinePassword);
 				else *m_savedPassword = 0;
 
-				strncpy( info->password, onlinePassword, SIZEOF( info->password ));
+				strncpy( info->password, param.onlinePassword, SIZEOF( info->password ));
 				info->password[ SIZEOF( info->password )-1] = '\0';
 			}
 		}
