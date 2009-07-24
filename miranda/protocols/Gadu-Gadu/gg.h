@@ -130,6 +130,8 @@ typedef struct
 	{
 		char *online;
 		char *away;
+		char *dnd;
+		char *freechat;
 		char *invisible;
 		char *offline;
 	} modemsg;
@@ -138,7 +140,6 @@ typedef struct
 		hookUserInfoInit,
 		hookSettingDeleted,
 		hookSettingChanged,
-		hookIconsChanged,
 		hookGCUserEvent,
 		hookGCMenuBuild;
 	HANDLE hMenuRoot;
@@ -357,7 +358,6 @@ uint32_t swap32(uint32_t x);
 const char *gg_version2string(int v);
 
 /* Global GG functions */
-void gg_refreshblockedicon();
 void gg_notifyuser(GGPROTO *gg, HANDLE hContact, int refresh);
 void gg_setalloffline(GGPROTO *gg);
 void gg_disconnect(GGPROTO *gg);
@@ -420,7 +420,6 @@ void *__stdcall gg_img_dlgthread(void *empty);
 
 /* IcoLib functions */
 void gg_icolib_init(GGPROTO *gg);
-int gg_iconschanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 HICON LoadIconEx(int iconId);
 HANDLE GetIconHandle(int iconId);
 

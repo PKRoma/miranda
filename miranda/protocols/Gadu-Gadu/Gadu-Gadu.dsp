@@ -135,6 +135,10 @@ SOURCE=.\libgadu\libgadu.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\libgadu\protocol.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\libgadu\pubdir.c
 # SUBTRACT CPP /YX
 # End Source File
@@ -142,6 +146,15 @@ SOURCE=.\libgadu\pubdir.c
 
 SOURCE=.\libgadu\pubdir50.c
 # SUBTRACT CPP /YX
+# End Source File
+# Begin Source File
+
+SOURCE=.\libgadu\resolver.c
+# SUBTRACT CPP /YX
+# End Source File
+# Begin Source File
+
+SOURCE=.\libgadu\resolver.h
 # End Source File
 # Begin Source File
 

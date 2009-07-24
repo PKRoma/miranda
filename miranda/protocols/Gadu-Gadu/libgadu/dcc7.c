@@ -2,7 +2,7 @@
 /* $Id: dcc7.c,v 1.2 2007-07-20 23:00:49 wojtekka Exp $ */
 
 /*
- *  (C) Copyright 2001-2007 Wojtek Kaniewski <wojtekka@irc.pl>
+ *  (C) Copyright 2001-2008 Wojtek Kaniewski <wojtekka@irc.pl>
  *                          Tomasz Chiliński <chilek@chilan.com>
  *                          Adam Wysocki <gophi@ekg.chmurka.net>
  *  
@@ -356,7 +356,7 @@ static int gg_dcc7_request_id(struct gg_session *sess, uint32_t type)
  * \param size Rozmiar pliku
  * \param filename1250 Nazwa pliku w kodowaniu CP-1250
  * \param hash Skrót SHA-1 pliku
- * \param seek Flaga mówiąca, czy można używać _lseek()
+ * \param seek Flaga mówiąca, czy można używać lseek()
  *
  * \return Struktura \c gg_dcc7 lub \c NULL w przypadku błędu
  *
@@ -404,9 +404,7 @@ static struct gg_dcc7 *gg_dcc7_send_file_common(struct gg_session *sess, uin_t r
 	return dcc;
 
 fail:
-	if (dcc)
-		free(dcc);
-
+	free(dcc);
 	return NULL;
 }
 
@@ -453,7 +451,7 @@ struct gg_dcc7 *gg_dcc7_send_file(struct gg_session *sess, uin_t rcpt, const cha
 		goto fail;
 	}
 
-	if ((fd = _open(filename, O_RDONLY | O_BINARY)) == -1) {
+	if ((fd = open(filename, O_RDONLY | O_BINARY)) == -1) {
 		gg_debug_session(sess, GG_DEBUG_MISC, "// gg_dcc7_send_file() open() failed (%s)\n", strerror(errno));
 		goto fail;
 	}
@@ -480,13 +478,11 @@ struct gg_dcc7 *gg_dcc7_send_file(struct gg_session *sess, uin_t rcpt, const cha
 fail:
 	if (fd != -1) {
 		int errsv = errno;
-		_close(fd);
+		close(fd);
 		errno = errsv;
 	}
 
-	if (dcc)
-		free(dcc);
-
+	free(dcc);
 	return NULL;
 }
 
@@ -522,7 +518,7 @@ struct gg_dcc7 *gg_dcc7_send_file_fd(struct gg_session *sess, uin_t rcpt, int fd
  * \param offset Początkowy offset przy wznawianiu przesyłania pliku
  *
  * \note Biblioteka nie zmienia położenia w odbieranych plikach. Jeśli offset
- * początkowy jest różny od zera, należy ustawić go funkcją \c _lseek() lub
+ * początkowy jest różny od zera, należy ustawić go funkcją \c lseek() lub
  * podobną.
  *
  * \return 0 jeśli się powiodło, -1 w przypadku błędu
@@ -1104,8 +1100,8 @@ struct gg_event *gg_dcc7_watch_fd(struct gg_dcc7 *dcc)
 				return e;
 			}
 
-			if (dcc->seek && _lseek(dcc->file_fd, dcc->offset, SEEK_SET) == (off_t) -1) {
-				gg_debug_session((dcc) ? (dcc)->sess : NULL, GG_DEBUG_MISC, "// gg_dcc7_watch_fd() _lseek() failed (%s)\n", strerror(errno));
+			if (dcc->seek && lseek(dcc->file_fd, dcc->offset, SEEK_SET) == (off_t) -1) {
+				gg_debug_session((dcc) ? (dcc)->sess : NULL, GG_DEBUG_MISC, "// gg_dcc7_watch_fd() lseek() failed (%s)\n", strerror(errno));
 				e->type = GG_EVENT_DCC7_ERROR;
 				e->event.dcc_error = GG_ERROR_DCC7_FILE;
 				return e;
@@ -1114,7 +1110,7 @@ struct gg_event *gg_dcc7_watch_fd(struct gg_dcc7 *dcc)
 			if ((chunk = dcc->size - dcc->offset) > sizeof(buf))
 				chunk = sizeof(buf);
 
-			if ((res = _read(dcc->file_fd, buf, chunk)) < 1) {
+			if ((res = read(dcc->file_fd, buf, chunk)) < 1) {
 				gg_debug_session((dcc) ? (dcc)->sess : NULL, GG_DEBUG_MISC, "// gg_dcc7_watch_fd() read() failed (res=%d, %s)\n", res, strerror(errno));
 				e->type = GG_EVENT_DCC7_ERROR;
 				e->event.dcc_error = (res == -1) ? GG_ERROR_DCC7_FILE : GG_ERROR_DCC7_EOF;
@@ -1165,7 +1161,7 @@ struct gg_event *gg_dcc7_watch_fd(struct gg_dcc7 *dcc)
 
 			// XXX zapisywać do skutku?
 
-			if ((wres = _write(dcc->file_fd, buf, res)) < res) {
+			if ((wres = write(dcc->file_fd, buf, res)) < res) {
 				gg_debug_session((dcc) ? (dcc)->sess : NULL, GG_DEBUG_MISC, "// gg_dcc7_watch_fd() write() failed (fd=%d, res=%d, %s)\n", dcc->file_fd, wres, strerror(errno));
 				e->type = GG_EVENT_DCC7_ERROR;
 				e->event.dcc_error = GG_ERROR_DCC7_FILE;
@@ -1218,7 +1214,7 @@ void gg_dcc7_free(struct gg_dcc7 *dcc)
 		gg_sock_close(dcc->fd);
 
 	if (dcc->file_fd != -1)
-		_close(dcc->file_fd);
+		close(dcc->file_fd);
 
 	if (dcc->sess)
 		gg_dcc7_session_remove(dcc->sess, dcc);

@@ -191,7 +191,7 @@ int gg_dcc_fill_file_info2(struct gg_dcc *d, const char *filename, const char *l
 		return -1;
 	}
 
-	if ((d->file_fd = _open(local_filename, O_RDONLY | O_BINARY)) == -1) {
+	if ((d->file_fd = open(local_filename, O_RDONLY | O_BINARY)) == -1) {
 		gg_debug(GG_DEBUG_MISC, "// gg_dcc_fill_file_info2() open() failed (%s)\n", strerror(errno));
 		return -1;
 	}
@@ -1171,9 +1171,9 @@ struct gg_event *gg_dcc_watch_fd(struct gg_dcc *h)
 					return e;
 				}
 
-				_lseek(h->file_fd, h->offset, SEEK_SET);
+				lseek(h->file_fd, h->offset, SEEK_SET);
 
-				size = _read(h->file_fd, buf, utmp);
+				size = read(h->file_fd, buf, utmp);
 
 				/* błąd */
 				if (size == -1) {
@@ -1279,7 +1279,7 @@ struct gg_event *gg_dcc_watch_fd(struct gg_dcc *h)
 					return e;
 				}
 
-				tmp = _write(h->file_fd, buf, size);
+				tmp = write(h->file_fd, buf, size);
 
 				if (tmp == -1 || tmp < size) {
 					gg_debug(GG_DEBUG_MISC, "// gg_dcc_watch_fd() write() failed (%d:fd=%d:res=%d:%s)\n", tmp, h->file_fd, size, strerror(errno));
@@ -1346,11 +1346,7 @@ void gg_dcc_free(struct gg_dcc *d)
 	if (d->fd != -1)
 		gg_sock_close(d->fd);
 
-	if (d->chunk_buf) {
-		free(d->chunk_buf);
-		d->chunk_buf = NULL;
-	}
-
+	free(d->chunk_buf);
 	free(d);
 }
 

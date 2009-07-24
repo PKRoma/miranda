@@ -92,7 +92,7 @@ void gg_gc_menus_init(GGPROTO *gg)
 		mir_snprintf(service, sizeof(service), GGS_CLEAR_IGNORED, GG_PROTO);
 		CreateProtoServiceFunction(service, gg_gc_clearignored, gg);
 		mi.position = 500090001;
-		mi.hIcon = NULL;
+		mi.hIcon = LoadIconEx(IDI_CLEAR_CONFERENCE);
 		mi.pszName = LPGEN("&Clear ignored conferences");
 		mi.pszService = service;
 		gg->hMainMenu[1] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);

@@ -1161,6 +1161,9 @@
 					RelativePath="libgadu\libgadu.h">
 				</File>
 				<File
+					RelativePath="libgadu\protocol.h">
+				</File>
+				<File
 					RelativePath="libgadu\pubdir.c">
 					<FileConfiguration
 						Name="Debug|Win32">
@@ -1241,6 +1244,50 @@
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;GG_EXPORTS;$(NoInherit)"
 							UsePrecompiledHeader="0"/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="libgadu\resolver.c">
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;GG_EXPORTS;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;GG_EXPORTS;$(NoInherit)"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;GG_EXPORTS;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;GG_EXPORTS;$(NoInherit)"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="libgadu\resolver.h">
 				</File>
 				<File
 					RelativePath="libgadu\sha1.c">

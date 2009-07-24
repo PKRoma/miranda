@@ -29,24 +29,21 @@ struct
 }
 static iconList[] =
 {
-	{ LPGEN("Protocol icon"),				"main",			IDI_GG				},
-	{ LPGEN("Import list from server"),		"importserver",	IDI_IMPORT_SERVER	},
-	{ LPGEN("Import list from text file"),	"importtext",	IDI_IMPORT_TEXT 	},
-	{ LPGEN("Remove list from server"),		"removeserver",	IDI_REMOVE_SERVER	},
-	{ LPGEN("Export list to server"),		"exportserver",	IDI_EXPORT_SERVER	},
-	{ LPGEN("Export list to text file"),	"exporttext",	IDI_EXPORT_TEXT 	},
-	{ LPGEN("Account settings"),			"settings",		IDI_SETTINGS		},
-	{ LPGEN("Blocked to this contact"),		"blocked",		IDI_STOP			},
-	{ LPGEN("Previous image"),				"previous",		IDI_PREV			},
-	{ LPGEN("Next image"),					"next",			IDI_NEXT			},
-	{ LPGEN("Send image"), 					"image",		IDI_IMAGE			},
-	{ LPGEN("Save image"),					"save",			IDI_SAVE			},
-	{ LPGEN("Delete image"),				"delete",		IDI_DELETE			},
-	{ LPGEN("Open new conference"),			"conference",	IDI_CONFERENCE		}
+	{ LPGEN("Protocol icon"),				"main",			IDI_GG					},
+	{ LPGEN("Import list from server"),		"importserver",	IDI_IMPORT_SERVER		},
+	{ LPGEN("Import list from text file"),	"importtext",	IDI_IMPORT_TEXT			},
+	{ LPGEN("Remove list from server"),		"removeserver",	IDI_REMOVE_SERVER		},
+	{ LPGEN("Export list to server"),		"exportserver",	IDI_EXPORT_SERVER		},
+	{ LPGEN("Export list to text file"),	"exporttext",	IDI_EXPORT_TEXT			},
+	{ LPGEN("Account settings"),			"settings",		IDI_SETTINGS			},
+	{ LPGEN("Previous image"),				"previous",		IDI_PREV				},
+	{ LPGEN("Next image"),					"next",			IDI_NEXT				},
+	{ LPGEN("Send image"), 					"image",		IDI_IMAGE				},
+	{ LPGEN("Save image"),					"save",			IDI_SAVE				},
+	{ LPGEN("Delete image"),				"delete",		IDI_DELETE				},
+	{ LPGEN("Open new conference"),			"conference",	IDI_CONFERENCE			},
+	{ LPGEN("Clear ignored conferences"),	"clearignored",	IDI_CLEAR_CONFERENCE	}
 };
-
-static int skinIconStatusToResourceId[] = 	{IDI_OFFLINE,	IDI_ONLINE,	IDI_AWAY,	IDI_INVISIBLE};
-static int skinStatusToGGStatus[] = 		{0,				1,			2,			3};
 
 void gg_icolib_init(GGPROTO *gg)
 {
@@ -91,31 +88,4 @@ HANDLE GetIconHandle(int iconId)
 		if (iconList[i].defIconID == iconId)
 			return iconList[i].hIconLibItem;
 	return NULL;
-}
-
-void gg_refreshblockedicon(GGPROTO *gg)
-{
-	// Store blocked icon
-	char strFmt1[MAX_PATH];
-	DBVARIANT dbv;
-	GetModuleFileName(hInstance, strFmt1, sizeof(strFmt1));
-	mir_snprintf(strFmt1, sizeof(strFmt1), "%s_blocked", GG_PROTO, ID_STATUS_DND);
-	if(!DBGetContactSettingString(NULL, "SkinIcons", strFmt1, &dbv))
-	{
-		DBWriteContactSettingString(NULL, "Icons", strFmt1, dbv.pszVal);
-		DBFreeVariant(&dbv);
-	}
-	else 
-	{
-		char strFmt2[MAX_PATH];
-		mir_snprintf(strFmt2, sizeof(strFmt2), "%s,-%d", strFmt1, IDI_STOP);
-		DBWriteContactSettingString(NULL, "Icons", strFmt1, strFmt2);
-	}
-}
-
-int gg_iconschanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
-{
-	gg_refreshblockedicon(gg);
-
-	return 0;
 }

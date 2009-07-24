@@ -53,13 +53,16 @@ DWORD_PTR gg_getcaps(PROTO_INTERFACE *proto, int type, HANDLE hContact)
 	switch (type) {
 		case PFLAGNUM_1:
 			return PF1_IM | PF1_BASICSEARCH | PF1_EXTSEARCH | PF1_EXTSEARCHUI | PF1_SEARCHBYNAME |
-			       PF1_SEARCHBYNAME | PF1_MODEMSG | PF1_NUMERICUSERID | PF1_VISLIST | PF1_FILE;
+				   PF1_SEARCHBYNAME | PF1_MODEMSG | PF1_NUMERICUSERID | PF1_VISLIST | PF1_FILE;
 		case PFLAGNUM_2:
-			return PF2_ONLINE | PF2_SHORTAWAY | PF2_INVISIBLE;
+			return PF2_ONLINE | PF2_SHORTAWAY | PF2_HEAVYDND | PF2_FREECHAT | PF2_INVISIBLE |
+				   PF2_LONGAWAY;
 		case PFLAGNUM_3:
-			return PF2_ONLINE | PF2_SHORTAWAY | PF2_INVISIBLE;
+			return PF2_ONLINE | PF2_SHORTAWAY | PF2_HEAVYDND | PF2_FREECHAT | PF2_INVISIBLE;
 		case PFLAGNUM_4:
 			return PF4_NOCUSTOMAUTH;
+		case PFLAGNUM_5:
+			return PF2_LONGAWAY;
 		case PFLAG_UNIQUEIDTEXT:
 			return (DWORD_PTR) Translate("Gadu-Gadu Number");
 		case PFLAG_UNIQUEIDSETTING:
@@ -86,8 +89,13 @@ GGINLINE char *gg_getstatusmsg(GGPROTO *gg, int status)
 	switch(status)
 	{
 		case ID_STATUS_ONLINE:
-		case ID_STATUS_FREECHAT:
 			return gg->modemsg.online;
+			break;
+		case ID_STATUS_DND:
+			return gg->modemsg.dnd;
+			break;
+		case ID_STATUS_FREECHAT:
+			return gg->modemsg.freechat;
 			break;
 		case ID_STATUS_INVISIBLE:
 			return gg->modemsg.invisible;
@@ -152,8 +160,11 @@ int gg_normalizestatus(int status)
 	switch(status)
 	{
 		case ID_STATUS_ONLINE:
-		case ID_STATUS_FREECHAT:
 			return ID_STATUS_ONLINE;
+		case ID_STATUS_DND:
+			return ID_STATUS_DND;
+		case ID_STATUS_FREECHAT:
+			return ID_STATUS_FREECHAT;
 		case ID_STATUS_OFFLINE:
 			return ID_STATUS_OFFLINE;
 		case ID_STATUS_INVISIBLE:
@@ -531,6 +542,12 @@ int gg_setawaymsg(PROTO_INTERFACE *proto, int iStatus, const char *msg)
 			break;
 		case ID_STATUS_AWAY:
 			szMsg = &gg->modemsg.away;
+			break;
+		case ID_STATUS_DND:
+			szMsg = &gg->modemsg.dnd;
+			break;
+		case ID_STATUS_FREECHAT:
+			szMsg = &gg->modemsg.freechat;
 			break;
 		case ID_STATUS_INVISIBLE:
 			szMsg = &gg->modemsg.invisible;

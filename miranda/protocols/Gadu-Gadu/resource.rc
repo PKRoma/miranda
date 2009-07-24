@@ -24,7 +24,10 @@
 IDI_OFFLINE			ICON DISCARDABLE "icons/status/offline.ico"
 IDI_ONLINE			ICON DISCARDABLE "icons/status/online.ico"
 IDI_AWAY			ICON DISCARDABLE "icons/status/away.ico"
+IDI_FREECHAT		ICON DISCARDABLE "icons/status/freechat.ico"
 IDI_INVISIBLE		ICON DISCARDABLE "icons/status/invisible.ico"
+IDI_BLOCKED			ICON DISCARDABLE "icons/stop.ico"
+IDI_DND				ICON DISCARDABLE "icons/status/dnd.ico"
 
 IDI_GG				ICON DISCARDABLE "icons/gg.ico"
 IDI_IMPORT_SERVER	ICON DISCARDABLE "icons/import_list_from_server.ico"
@@ -33,13 +36,13 @@ IDI_REMOVE_SERVER	ICON DISCARDABLE "icons/remove_list_from_server.ico"
 IDI_EXPORT_SERVER	ICON DISCARDABLE "icons/export_list_to_server.ico"
 IDI_EXPORT_TEXT 	ICON DISCARDABLE "icons/export_list_to_txt_file.ico"
 IDI_SETTINGS		ICON DISCARDABLE "icons/settings.ico"
-IDI_STOP			ICON DISCARDABLE "icons/stop.ico"
 IDI_PREV			ICON DISCARDABLE "icons/previous.ico"
 IDI_NEXT			ICON DISCARDABLE "icons/next.ico"
 IDI_IMAGE			ICON DISCARDABLE "icons/image.ico"
 IDI_SAVE			ICON DISCARDABLE "icons/save.ico"
 IDI_DELETE			ICON DISCARDABLE "icons/delete.ico"
 IDI_CONFERENCE		ICON DISCARDABLE "icons/conference.ico"
+IDI_CLEAR_CONFERENCE	ICON DISCARDABLE "icons/clear_ignored_conference.ico"
 
 IDD_OPT_GG_GENERAL DIALOGEX 0,0,304,207
 STYLE DS_FIXEDSYS|WS_CHILD
@@ -62,7 +65,7 @@ BEGIN
 		CONTROL 		"Friends only",IDC_FRIENDSONLY,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,90,255,10
 		CONTROL 		"Show offline users with status message as invisible in contact list",IDC_SHOWINVISIBLE,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,105,255,10
 		CONTROL 		"After disconnection leave away message of status:",IDC_LEAVESTATUSMSG,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,120,195,10
-		COMBOBOX		IDC_LEAVESTATUS,210,118,82,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+		COMBOBOX		IDC_LEAVESTATUS,210,118,82,90,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 //		CONTROL 		"Ignore incoming conference messages",IDC_IGNORECONF,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,145,255,10
 		CONTROL 		"Receive image and after image is received use:",IDC_IMGRECEIVE,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,135,175,10
 		COMBOBOX		IDC_IMGMETHOD,190,133,102,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP

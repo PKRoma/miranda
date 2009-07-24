@@ -61,7 +61,7 @@ Bezpiecznie zmieniaj stan
 Pokazuj b³êdy po³¹czenia
 [Automatically reconnect after unintentional disconnection]
 Po³¹cz ponownie automatycznie po niezamierzonym roz³¹czeniu
-;[Leave last status message after disconnected]  << depreciated in 0.0.1.2
+;[Leave last status message after disconnected]  << deprecated in 0.0.1.2
 [After disconnection leave away message of status:]
 Po roz³¹czeniu siê zostaw opis nastêpuj¹cego stanu:
 [Manually specify connection host]
@@ -107,8 +107,7 @@ Eksport listy do serwera
 Eksport listy do pliku tekstowego
 [Account settings]
 Ustawienia konta
-[Blocked to this contact}
-Ten kontakt mnie zablokowa³
+;[Blocked to this contact} @ deprecated 0.0.5.2
 [Previous image]
 Poprzedni obrazek
 [Next image]
@@ -121,7 +120,7 @@ Zapisz obrazek
 Usuñ obrazek
 
 ; Errors
-;[Gadu-Gadu Error] << depreciated in 0.0.1.4
+;[Gadu-Gadu Error] << deprecated in 0.0.1.4
 [Connection cannot be established because of error:\n\t%s]
 Po³¹czenie nie mo¿e byæ nawi¹zane z powodu b³êdu:\n\t%s
 ;Connection specific errors
@@ -209,10 +208,10 @@ Wprowadzono z³e dane
 [Your account has been removed.]
 Twoje konto zosta³o usuniête.
 ;User utils messages
-;[Passwords do not match.] << depreciated in 0.0.1.3
+;[Passwords do not match.] << deprecated in 0.0.1.3
 [Password too short.]
 Has³o za krótkie.
-;[You should disconnect before making any permanent changes with your account.\nDo you want disconnect now ?] << depreciated in 0.0.1.4
+;[You should disconnect before making any permanent changes with your account.\nDo you want disconnect now ?] << deprecated in 0.0.1.4
 [You should disconnect before making any permanent changes with your account.\nDo you want to disconnect now ?]
 Powinieneœ siê roz³¹czyæ przed wszelkimi trwa³ymi zmianami Twojego konta.\nCzy chcesz siê roz³¹czyæ ?
 [Server hostname %s is invalid. Using default hostname provided by the network.]
@@ -221,7 +220,7 @@ Adres serwera %s jest nieprawid³owy. U¿yty zostanie adres podany przez sieæ.
 Adres zewnêtrzny dla po³¹czeñ bezpoœrednich %s jest nieprawid³owy. Forwardowanie zostanie wy³¹czone.
 
 ; Password dialog
-;[Change Gadu-Gadu Password] << depreciated in 0.0.1.3
+;[Change Gadu-Gadu Password] << deprecated in 0.0.1.3
 [Change Gadu-Gadu password]
 Zmieñ has³o Gadu-Gadu
 [Changes current Gadu-Gadu user password.]
@@ -292,6 +291,8 @@ Wybierz uczestników konferencji.
 Otwórz &konferencjê...
 [&Clear ignored conferences]
 &Wyczyœæ ignorowane konferencje
+[Clear ignored conferences]
+Wyczyœæ ignorowane konferencje
 [Me]
 Ja
 [%s initiated the conference.]

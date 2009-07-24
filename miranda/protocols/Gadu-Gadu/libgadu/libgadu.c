@@ -37,7 +37,6 @@
 #ifdef _WIN32
 #include "win32.h"
 #else
-#include <sys/wait.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -49,9 +48,6 @@
 #include <errno.h>
 #ifndef _WIN32
 #include <netdb.h>
-#endif
-#ifdef GG_CONFIG_HAVE_PTHREAD
-#  include <pthread.h>
 #endif
 #include <stdarg.h>
 #include <stdio.h>
@@ -69,6 +65,8 @@
 
 #include "compat.h"
 #include "libgadu.h"
+#include "protocol.h"
+#include "resolver.h"
 
 /**
  * Poziom rejestracji informacji odpluskwiających. Zmienna jest maską bitową
@@ -279,227 +277,6 @@ unsigned int gg_login_hash(const unsigned char *password, unsigned int seed)
 
 	return y;
 }
-
-/**
- * \internal Rozwiązuje nazwę serwera w osobnym procesie.
- *
- * Połączenia asynchroniczne nie mogą blokować procesu w trakcie rozwiązywania
- * nazwy serwera. W tym celu tworzony jest potok, nowy proces i dopiero w nim
- * przeprowadzane jest rozwiązywanie nazwy. Deskryptor strony do odczytu 
- * zapisuje się w strukturze sieci i czeka na dane w postaci struktury
- * \c in_addr. Jeśli nie znaleziono nazwy, zwracana jest \c INADDR_NONE.
- *
- * Podczas kompilacji mógł zostać wybrany alternatywny sposób rozwiązanywania
- * nazwy, za pomocą wątków. W takim wypadku będzie zdefiniowana dyrektywa
- * preprocesora \c GG_CONFIG_HAVE_PTHREAD.
- *
- * \param fd Wskaźnik na zmienną, gdzie zostanie umieszczony deskryptor
- *           potoku
- * \param pid Wskaźnik na zmienną, gdzie zostanie umieszczony identyfikator
- *            procesu potomnego
- * \param hostname Nazwa serwera do rozwiązania
- *
- * \return 0 jeśli się powiodło, -1 w przypadku błędu
- */
-int gg_resolve(int *fd, int *pid, const char *hostname)
-{
-	int pipes[2], res;
-	struct in_addr a;
-	int errno2;
-
-	gg_debug(GG_DEBUG_FUNCTION, "** gg_resolve(%p, %p, \"%s\");\n", fd, pid, hostname);
-
-	if (!fd || !pid) {
-		errno = EFAULT;
-		return -1;
-	}
-
-	if (pipe(pipes) == -1)
-		return -1;
-
-	if ((res = fork()) == -1) {
-		errno2 = errno;
-		_close(pipes[0]);
-		_close(pipes[1]);
-		errno = errno2;
-		return -1;
-	}
-
-	if (!res) {
-		_close(pipes[0]);
-
-		if ((a.s_addr = inet_addr(hostname)) == INADDR_NONE) {
-			struct in_addr *hn;
-
-			if (!(hn = gg_gethostbyname(hostname)))
-				a.s_addr = INADDR_NONE;
-			else {
-				a.s_addr = hn->s_addr;
-				free(hn);
-			}
-		}
-
-		write(pipes[1], &a, sizeof(a));
-
-		exit(0);
-	}
-
-	_close(pipes[1]);
-
-	*fd = pipes[0];
-	*pid = res;
-
-	return 0;
-}
-
-#ifdef GG_CONFIG_HAVE_PTHREAD
-
-/**
- * \internal Struktura przekazywana do wątku rozwiązującego nazwę.
- */
-struct gg_resolve_pthread_data {
-	pthread_t thread;	/*< Identyfikator wątku */
-	char *hostname;		/*< Nazwa serwera */
-	int rfd;		/*< Deskryptor do odczytu */
-	int wfd;		/*< Deskryptor do zapisu */
-};
-
-/**
- * \internal Usuwanie zasobów po rozwiązywaniu nazwy.
- *
- * Funkcja wywoływana po zakończeniu rozwiązanywania nazwy lub przy zwalnianiu
- * zasobów sesji podczas rozwiązywania nazwy.
- *
- * \param arg Wskaźnik na strukturę \c gg_resolve_pthread_data
- * \param kill Flaga zabicja wątku rozwiązującego i posprzątania zasobów
- */
-void gg_resolve_pthread_cleanup(void *arg, int kill)
-{
-	struct gg_resolve_pthread_data *data = arg;
-
-	if (kill) {
-		pthread_cancel(data->thread);
-		pthread_join(data->thread, NULL);
-	}
-
-	free(data->hostname);
-	data->hostname = NULL;
-
-	if (data->wfd != -1) {
-		_close(data->wfd);
-		data->wfd = -1;
-	}
-
-	free(data);
-}
-
-/**
- * \internal Wątek rozwiązujący nazwę.
- *
- * \param arg Wskaźnik na strukturę \c gg_resolve_pthread_data
- */
-static void *gg_resolve_pthread_thread(void *arg)
-{
-	struct gg_resolve_pthread_data *d = arg;
-	struct in_addr a;
-
-	pthread_detach(pthread_self());
-
-	if ((a.s_addr = inet_addr(d->hostname)) == INADDR_NONE) {
-		struct in_addr *hn;
-
-		if (!(hn = gg_gethostbyname(d->hostname)))
-			a.s_addr = INADDR_NONE;
-		else {
-			a.s_addr = hn->s_addr;
-			free(hn);
-		}
-	}
-
-	write(d->wfd, &a, sizeof(a));
-
-	pthread_exit(NULL);
-
-	return NULL;	/* żeby kompilator nie marudził */
-}
-
-/**
- * \internal Rozwiązuje nazwę serwera w osobnym wątku.
- *
- * Funkcja działa analogicznie do \c gg_resolve(), z tą różnicą, że działa
- * na wątkach, nie procesach. Jest używana wyłącznie gdy podczas kompilacji
- * włączono odpowiednią opcję.
- *
- * \param fd Wskaźnik na zmienną, gdzie zostanie umieszczony deskryptor
- *           potoku
- * \param resolver Wskaźnik na zmienną, gdzie zostanie umieszczony wskaźnik
- *                 do prywatnych danych wątku rozwiązującego nazwę
- * \param hostname Nazwa serwera do rozwiązania
- *
- * \return 0 jeśli się powiodło, -1 w przypadku błędu
- */
-int gg_resolve_pthread(int *fd, void **resolver, const char *hostname)
-{
-	struct gg_resolve_pthread_data *data = NULL;
-	int pipes[2], new_errno;
-
-	gg_debug(GG_DEBUG_FUNCTION, "** gg_resolve_pthread(%p, %p, \"%s\");\n", fd, resolver, hostname);
-
-	if (!resolver || !fd || !hostname) {
-		gg_debug(GG_DEBUG_MISC, "// gg_resolve_pthread() invalid arguments\n");
-		errno = EFAULT;
-		return -1;
-	}
-
-	if (!(data = malloc(sizeof(struct gg_resolve_pthread_data)))) {
-		gg_debug(GG_DEBUG_MISC, "// gg_resolve_pthread() out of memory for resolver data\n");
-		return -1;
-	}
-
-	if (pipe(pipes) == -1) {
-		gg_debug(GG_DEBUG_MISC, "// gg_resolve_pthread() unable to create pipes (errno=%d, %s)\n", errno, strerror(errno));
-		free(data);
-		return -1;
-	}
-
-	if (!(data->hostname = strdup(hostname))) {
-		gg_debug(GG_DEBUG_MISC, "// gg_resolve_pthread() out of memory\n");
-		new_errno = errno;
-		goto cleanup;
-	}
-
-	data->rfd = pipes[0];
-	data->wfd = pipes[1];
-
-	if (pthread_create(&data->thread, NULL, gg_resolve_pthread_thread, data)) {
-		gg_debug(GG_DEBUG_MISC, "// gg_resolve_phread() unable to create thread\n");
-		new_errno = errno;
-		goto cleanup;
-	}
-
-	gg_debug(GG_DEBUG_MISC, "// gg_resolve_pthread() %p\n", data);
-
-	*resolver = data;
-
-	*fd = pipes[0];
-
-	return 0;
-
-cleanup:
-	if (data) {
-		free(data->hostname);
-		free(data);
-	}
-
-	_close(pipes[0]);
-	_close(pipes[1]);
-
-	errno = new_errno;
-
-	return -1;
-}
-
-#endif
 
 /**
  * \internal Odbiera od serwera dane binarne.
@@ -944,11 +721,28 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 		goto fail;
 	}
 
-	if (p->status_descr && !(sess->initial_descr = strdup(p->status_descr))) {
-		gg_debug(GG_DEBUG_MISC, "// gg_login() not enough memory for status\n");
-		goto fail;
-	}
+	if (p->status_descr) {
+		int max_length;
 
+		if (p->protocol_version >= 0x2d && p->encoding != GG_ENCODING_UTF8) {
+			sess->initial_descr = gg_cp_to_utf8(p->status_descr);
+			max_length = GG_STATUS_DESCR_MAXSIZE;
+		} else {
+			sess->initial_descr = strdup(p->status_descr);
+			max_length = GG_STATUS_DESCR_MAXSIZE_PRE_8_0;
+		}
+
+		if (!sess->initial_descr) {
+			gg_debug(GG_DEBUG_MISC, "// gg_login() not enough memory for status\n");
+			goto fail;
+		}
+		
+		// XXX pamiętać, żeby nie ciąć w środku znaku utf-8
+		
+		if ((signed)strlen(sess->initial_descr) > max_length)
+			sess->initial_descr[max_length] = 0;
+	}
+	
 	if (p->hash_type < 0 || p->hash_type > GG_LOGIN_HASH_SHA1) {
 		gg_debug(GG_DEBUG_MISC, "// gg_login() invalid arguments. unknown hash type (%d)\n", p->hash_type);
 		errno = EFAULT;
@@ -968,15 +762,23 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 	sess->server_addr = p->server_addr;
 	sess->external_port = p->external_port;
 	sess->external_addr = p->external_addr;
+	sess->protocol_features = p->protocol_features;
 	sess->protocol_version = (p->protocol_version) ? p->protocol_version : GG_DEFAULT_PROTOCOL_VERSION;
 	if (p->era_omnix)
-		sess->protocol_version |= GG_ERA_OMNIX_MASK;
+		sess->protocol_flags |= GG_ERA_OMNIX_MASK;
 	if (p->has_audio)
-		sess->protocol_version |= GG_HAS_AUDIO_MASK;
+		sess->protocol_flags |= GG_HAS_AUDIO_MASK;
 	sess->client_version = (p->client_version) ? strdup(p->client_version) : NULL;
 	sess->last_sysmsg = p->last_sysmsg;
 	sess->image_size = p->image_size;
 	sess->pid = -1;
+	sess->encoding = p->encoding;
+
+	if (gg_session_set_resolver(sess, p->resolver) == -1) {
+		gg_debug(GG_DEBUG_MISC, "// gg_login() invalid arguments. unsupported resolver type (%d)\n", p->resolver);
+		errno = EFAULT;
+		goto fail;
+	}
 
 	if (p->tls == 1) {
 #ifdef GG_CONFIG_HAVE_OPENSSL
@@ -1034,38 +836,33 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 		sess->hash_type = GG_LOGIN_HASH_SHA1;
 
 	if (!p->async) {
-		struct in_addr a;
+		struct in_addr addr;
 
 		if (!sess->server_addr) {
-			if ((a.s_addr = inet_addr(hostname)) == INADDR_NONE) {
-				struct in_addr *hn;
-
-				if (!(hn = gg_gethostbyname(hostname))) {
+			if ((addr.s_addr = inet_addr(hostname)) == INADDR_NONE) {
+				if (gg_gethostbyname(hostname, &addr, 0) == -1) {
 					gg_debug(GG_DEBUG_MISC, "// gg_login() host \"%s\" not found\n", hostname);
 					goto fail;
-				} else {
-					a.s_addr = hn->s_addr;
-					free(hn);
 				}
 			}
 		} else {
-			a.s_addr = sess->server_addr;
+			addr.s_addr = sess->server_addr;
 			port = sess->port;
 		}
 
-		sess->hub_addr = a.s_addr;
+		sess->hub_addr = addr.s_addr;
 
 		if (gg_proxy_enabled)
-			sess->proxy_addr = a.s_addr;
+			sess->proxy_addr = addr.s_addr;
 
-		if ((sess->fd = gg_connect(&a, port, 0)) == -1) {
+		if ((sess->fd = gg_connect(&addr, port, 0)) == -1) {
 			gg_debug(GG_DEBUG_MISC, "// gg_login() connection failed (errno=%d, %s)\n", errno, strerror(errno));
 
 			/* nie wyszło? próbujemy portu 443. */
 			if (sess->server_addr) {
 				sess->port = GG_HTTPS_PORT;
 
-				if ((sess->fd = gg_connect(&a, GG_HTTPS_PORT, 0)) == -1) {
+				if ((sess->fd = gg_connect(&addr, GG_HTTPS_PORT, 0)) == -1) {
 					/* ostatnia deska ratunku zawiodła?
 					 * w takim razie zwijamy manatki. */
 					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_login() connection failed (errno=%d, %s)\n", errno, strerror(errno));
@@ -1106,11 +903,7 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 	}
 
 	if (!sess->server_addr || gg_proxy_enabled) {
-#ifndef GG_CONFIG_HAVE_PTHREAD
-		if (gg_resolve(&sess->fd, &sess->pid, hostname)) {
-#else
-		if (gg_resolve_pthread(&sess->fd, &sess->resolver, hostname)) {
-#endif
+		if (sess->resolver_start(&sess->fd, &sess->resolver, hostname) == -1) {
 			gg_debug(GG_DEBUG_MISC, "// gg_login() resolving failed (errno=%d, %s)\n", errno, strerror(errno));
 			goto fail;
 		}
@@ -1128,10 +921,8 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 
 fail:
 	if (sess) {
-		if (sess->password)
-			free(sess->password);
-		if (sess->initial_descr)
-			free(sess->initial_descr);
+		free(sess->password);
+		free(sess->initial_descr);
 		free(sess);
 	}
 
@@ -1191,7 +982,7 @@ void gg_logoff(struct gg_session *sess)
 
 	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_logoff(%p);\n", sess);
 
-	if (GG_S_NA(sess->status & ~GG_STATUS_FRIENDS_MASK))
+	if (GG_S_NA(sess->status))
 		gg_change_status(sess, GG_STATUS_NOT_AVAIL);
 
 #ifdef GG_CONFIG_HAVE_OPENSSL
@@ -1199,18 +990,7 @@ void gg_logoff(struct gg_session *sess)
 		SSL_shutdown(sess->ssl);
 #endif
 
-#ifdef GG_CONFIG_HAVE_PTHREAD
-	if (sess->resolver) {
-		gg_resolve_pthread_cleanup(sess->resolver, 1);
-		sess->resolver = NULL;
-	}
-#else
-	if (sess->pid != -1) {
-		kill(sess->pid, SIGKILL);
-		waitpid(sess->pid, NULL, WNOHANG);
-		sess->pid = -1;
-	}
-#endif
+	sess->resolver_cleanup(&sess->resolver, 1);
 
 	if (sess->fd != -1) {
 		shutdown(sess->fd, SHUT_RDWR);
@@ -1243,17 +1023,10 @@ void gg_free_session(struct gg_session *sess)
 
 	/* XXX dopisać zwalnianie i zamykanie wszystkiego, co mogło zostać */
 
-	if (sess->password)
-		free(sess->password);
-
-	if (sess->initial_descr)
-		free(sess->initial_descr);
-
-	if (sess->client_version)
-		free(sess->client_version);
-
-	if (sess->header_buf)
-		free(sess->header_buf);
+	free(sess->password);
+	free(sess->initial_descr);
+	free(sess->client_version);
+	free(sess->header_buf);
 
 #ifdef GG_CONFIG_HAVE_OPENSSL
 	if (sess->ssl)
@@ -1263,17 +1036,7 @@ void gg_free_session(struct gg_session *sess)
 		SSL_CTX_free(sess->ssl_ctx);
 #endif
 
-#ifdef GG_CONFIG_HAVE_PTHREAD
-	if (sess->resolver) {
-		gg_resolve_pthread_cleanup(sess->resolver, 1);
-		sess->resolver = NULL;
-	}
-#else
-	if (sess->pid != -1) {
-		kill(sess->pid, SIGKILL);
-		waitpid(sess->pid, NULL, WNOHANG);
-	}
-#endif
+	sess->resolver_cleanup(&sess->resolver, 1);
 
 	if (sess->fd != -1)
 		gg_sock_close(sess->fd);
@@ -1281,13 +1044,122 @@ void gg_free_session(struct gg_session *sess)
 	while (sess->images)
 		gg_image_queue_remove(sess, sess->images, 1);
 
-	if (sess->send_buf)
-		free(sess->send_buf);
+	free(sess->send_buf);
 
 	for (dcc = sess->dcc7_list; dcc; dcc = dcc->next)
 		dcc->sess = NULL;
 
 	free(sess);
+}
+
+/**
+ * \internal Funkcja wysyłająca pakiet zmiany statusu użytkownika.
+ *
+ * \param sess Struktura sesji
+ * \param status Nowy status użytkownika
+ * \param descr Opis statusu użytkownika (lub \c NULL)
+ * \param time Czas powrotu w postaci uniksowego znacznika czasu (lub 0)
+ *
+ * \return 0 jeśli się powiodło, -1 w przypadku błędu
+ *
+ * \ingroup status
+ */
+static int gg_change_status_common(struct gg_session *sess, int status, const char *descr, int time)
+{
+	char *new_descr = NULL;
+	uint32_t new_time;
+	int descr_len = 0;
+	int descr_len_max;
+	int packet_type;
+	int append_null = 0;
+	int res;
+
+	if (!sess) {
+		errno = EFAULT;
+		return -1;
+	}
+
+	if (sess->state != GG_STATE_CONNECTED) {
+		errno = ENOTCONN;
+		return -1;
+	}
+
+	/* XXX, obcinać stany których stary protokół niezna (czyt. dnd->aw; ffc->av) */
+
+	/* dodaj flagę obsługi połączeń głosowych zgodną z GG 7.x */
+	if ((sess->protocol_version >= 0x2a) && (sess->protocol_version < 0x2d /* ? */ ) && (sess->protocol_flags & GG_HAS_AUDIO_MASK) && !GG_S_I(status))
+		status |= GG_STATUS_VOICE_MASK;
+
+	sess->status = status;
+
+	if (sess->protocol_version >= 0x2d) {
+		if (descr != NULL && sess->encoding != GG_ENCODING_UTF8) {
+			new_descr = gg_cp_to_utf8(descr);
+
+			if (!new_descr)
+				return -1;
+		}
+
+		if (sess->protocol_version >= 0x2e)
+			packet_type = GG_NEW_STATUS80;
+		else /* sess->protocol_version == 0x2d */
+			packet_type = GG_NEW_STATUS80BETA;
+		descr_len_max = GG_STATUS_DESCR_MAXSIZE;
+		append_null = 1;
+
+	} else {
+		packet_type = GG_NEW_STATUS;
+		descr_len_max = GG_STATUS_DESCR_MAXSIZE_PRE_8_0;
+
+		if (time != 0)
+			append_null = 1;
+	}
+
+	if (descr) {
+		descr_len = strlen((new_descr) ? new_descr : descr);
+
+		if (descr_len > descr_len_max)
+			descr_len = descr_len_max;
+
+		// XXX pamiętać o tym, żeby nie ucinać w środku znaku utf-8
+	}
+
+	if (time)
+		new_time = gg_fix32(time);
+
+	if (packet_type == GG_NEW_STATUS80) {
+		struct gg_new_status80 p;
+
+		p.status		= gg_fix32(status);
+		p.flags			= gg_fix32(0x01);
+		p.description_size	= gg_fix32(descr_len);
+		res = gg_send_packet(sess,
+				packet_type,
+				&p,
+				sizeof(p),
+				(new_descr) ? new_descr : descr,
+				descr_len,
+				NULL);
+
+	} else {
+		struct gg_new_status p;
+
+		p.status = gg_fix32(status);
+		res = gg_send_packet(sess,
+				packet_type,
+				&p,
+				sizeof(p),
+				(new_descr) ? new_descr : descr,
+				descr_len,
+				(append_null) ? "\0" : NULL,
+				(append_null) ? 1 : 0,
+				(time) ? &new_time : NULL,
+				(time) ? sizeof(new_time) : 0,
+				NULL);
+	}
+
+	free(new_descr);
+	return res;
 }
 
 /**
@@ -1302,30 +1174,9 @@ void gg_free_session(struct gg_session *sess)
  */
 int gg_change_status(struct gg_session *sess, int status)
 {
-	struct gg_new_status p;
-
 	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_change_status(%p, %d);\n", sess, status);
 
-	if (!sess) {
-		errno = EFAULT;
-		return -1;
-	}
-
-	if (sess->state != GG_STATE_CONNECTED) {
-		errno = ENOTCONN;
-		return -1;
-	}
-
-	// dodaj flagę obsługi połączeń głosowych zgodną z GG 7.x
-	
-	if ((sess->protocol_version & 0xff) >= 0x2a && (sess->protocol_version & GG_HAS_AUDIO_MASK) && !GG_S_I(status))
-		status |= 0x20000;
-
-	p.status = gg_fix32(status);
-
-	sess->status = status;
-
-	return gg_send_packet(sess, GG_NEW_STATUS, &p, sizeof(p), NULL);
+	return gg_change_status_common(sess, status, NULL, 0);
 }
 
 /**
@@ -1341,25 +1192,9 @@ int gg_change_status(struct gg_session *sess, int status)
  */
 int gg_change_status_descr(struct gg_session *sess, int status, const char *descr)
 {
-	struct gg_new_status p;
-
 	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_change_status_descr(%p, %d, \"%s\");\n", sess, status, descr);
 
-	if (!sess || !descr) {
-		errno = EFAULT;
-		return -1;
-	}
-
-	if (sess->state != GG_STATE_CONNECTED) {
-		errno = ENOTCONN;
-		return -1;
-	}
-
-	p.status = gg_fix32(status);
-
-	sess->status = status;
-
-	return gg_send_packet(sess, GG_NEW_STATUS, &p, sizeof(p), descr, (strlen(descr) > GG_STATUS_DESCR_MAXSIZE) ? GG_STATUS_DESCR_MAXSIZE : strlen(descr), NULL);
+	return gg_change_status_common(sess, status, descr, 0);
 }
 
 /**
@@ -1376,28 +1211,9 @@ int gg_change_status_descr(struct gg_session *sess, int status, const char *desc
  */
 int gg_change_status_descr_time(struct gg_session *sess, int status, const char *descr, int time)
 {
-	struct gg_new_status p;
-	uint32_t newtime;
-
 	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_change_status_descr_time(%p, %d, \"%s\", %d);\n", sess, status, descr, time);
 
-	if (!sess || !descr || !time) {
-		errno = EFAULT;
-		return -1;
-	}
-
-	if (sess->state != GG_STATE_CONNECTED) {
-		errno = ENOTCONN;
-		return -1;
-	}
-
-	p.status = gg_fix32(status);
-
-	sess->status = status;
-
-	newtime = gg_fix32(time);
-
-	return gg_send_packet(sess, GG_NEW_STATUS, &p, sizeof(p), descr, (strlen(descr) > GG_STATUS_DESCR_MAXSIZE) ? GG_STATUS_DESCR_MAXSIZE : strlen(descr), "\0", 1, &newtime, sizeof(newtime), NULL);
+	return gg_change_status_common(sess, status, descr, time);
 }
 
 /**

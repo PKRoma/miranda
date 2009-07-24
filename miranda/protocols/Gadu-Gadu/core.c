@@ -86,6 +86,30 @@ void gg_disconnect(GGPROTO *gg)
 						DBFreeVariant(&dbv);
 					}
 					break;
+				case ID_STATUS_DND:
+					pthread_mutex_lock(&gg->modemsg_mutex);
+					szMsg = _strdup(gg->modemsg.dnd);
+					pthread_mutex_unlock(&gg->modemsg_mutex);
+					if(!szMsg &&
+						!DBGetContactSettingString(NULL, "SRAway", gg_status2db(ID_STATUS_DND, "Default"), &dbv))
+					{
+						if(*(dbv.pszVal))
+							szMsg = _strdup(dbv.pszVal);
+						DBFreeVariant(&dbv);
+					}
+					break;
+				case ID_STATUS_FREECHAT:
+					pthread_mutex_lock(&gg->modemsg_mutex);
+					szMsg = _strdup(gg->modemsg.freechat);
+					pthread_mutex_unlock(&gg->modemsg_mutex);
+					if(!szMsg &&
+						!DBGetContactSettingString(NULL, "SRAway", gg_status2db(ID_STATUS_FREECHAT, "Default"), &dbv))
+					{
+						if(*(dbv.pszVal))
+							szMsg = _strdup(dbv.pszVal);
+						DBFreeVariant(&dbv);
+					}
+					break;
 				case ID_STATUS_INVISIBLE:
 					pthread_mutex_lock(&gg->modemsg_mutex);
 					szMsg = _strdup(gg->modemsg.invisible);
@@ -116,10 +140,6 @@ void gg_disconnect(GGPROTO *gg)
 		}
 		else
 			gg_change_status(gg->sess, GG_STATUS_NOT_AVAIL);
-
-		// Send logoff
-		gg_logoff(gg->sess);
-
 		pthread_mutex_unlock(&gg->sess_mutex);
 	}
 }
@@ -270,7 +290,9 @@ void *__stdcall gg_mainthread(void *empty)
 	gg_broadcastnewstatus(gg, ID_STATUS_CONNECTING);
 
 	// Client version and misc settings
-	p.client_version = GG_DEFAULT_CLIENT_VERSION;
+	p.client_version = "8.0.0.8731";
+	p.protocol_version = 0x2e;
+	p.protocol_features = GG_FEATURE_STATUS80BETA | GG_FEATURE_DND_FFC;
 
 	// Use audio
 	/* p.has_audio = 1; */
@@ -555,6 +577,12 @@ retry:
 				pthread_mutex_unlock(&gg->sess_mutex);
 				break;
 
+			// Client allowed to disconnect
+			case GG_EVENT_DISCONNECT_ACK:
+				// Send logoff
+				gg_logoff(gg->sess);
+				break;
+
 			// Received ackowledge
 			case GG_EVENT_ACK:
 				if(e->event.ack.seq && e->event.ack.recipient)
@@ -800,7 +828,7 @@ retry:
 						}
 					}
 					// Check if not empty message ( who needs it? )
-					else if(!e->event.msg.recipients_count && strlen(e->event.msg.message))
+					else if(!e->event.msg.recipients_count && strlen(e->event.msg.message) && strcmp(e->event.msg.message, "\xA0\0"))
 					{
 						time_t t = time(NULL);
 						ccs.szProtoService = PSR_MESSAGE;
@@ -1159,15 +1187,6 @@ int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 			gg_gc_changenick(gg, hContact, cws->value.pszVal);
 	}
 
-	// Blocked icon
-	if(!strcmp(cws->szModule, "Icons"))
-	{
-		char strFmt[16];
-		mir_snprintf(strFmt, sizeof(strFmt), "%s%d", GG_PROTO, ID_STATUS_DND);
-		if(!strcmp(cws->szSetting, strFmt) && cws->value.type == DBVT_DELETED)
-			gg_refreshblockedicon(gg);
-	}
-
 	// Contact list changes
 	if(!strcmp(cws->szModule, "CList"))
 	{
@@ -1457,6 +1476,12 @@ int status_m2gg(GGPROTO *gg, int status, int descr)
 			case ID_STATUS_AWAY:
 				return GG_STATUS_BUSY_DESCR | mask;
 
+			case ID_STATUS_DND:
+				return GG_STATUS_DND_DESCR | mask;
+
+			case ID_STATUS_FREECHAT:
+				return GG_STATUS_FFC_DESCR | mask;
+
 			case ID_STATUS_INVISIBLE:
 				return GG_STATUS_INVISIBLE_DESCR | mask;
 
@@ -1476,6 +1501,12 @@ int status_m2gg(GGPROTO *gg, int status, int descr)
 
 			case ID_STATUS_AWAY:
 				return GG_STATUS_BUSY | mask;
+
+			case ID_STATUS_DND:
+				return GG_STATUS_DND | mask;
+
+			case ID_STATUS_FREECHAT:
+				return GG_STATUS_FFC | mask;
 
 			case ID_STATUS_INVISIBLE:
 				return GG_STATUS_INVISIBLE | mask;
@@ -1505,11 +1536,21 @@ int status_gg2m(GGPROTO *gg, int status)
 		case GG_STATUS_BUSY:
 		case GG_STATUS_BUSY_DESCR:
 			return ID_STATUS_AWAY;
+
+		case GG_STATUS_DND:
+		case GG_STATUS_DND_DESCR:
+			return ID_STATUS_DND;
+
+		case GG_STATUS_FFC:
+		case GG_STATUS_FFC_DESCR:
+			return ID_STATUS_FREECHAT;
+
 		case GG_STATUS_INVISIBLE:
 		case GG_STATUS_INVISIBLE_DESCR:
 			return ID_STATUS_INVISIBLE;
+
 		case GG_STATUS_BLOCKED:
-			return ID_STATUS_DND;
+			return ID_STATUS_NA;
 
 		default:
 			return ID_STATUS_OFFLINE;
@@ -1526,7 +1567,7 @@ void gg_changecontactstatus(GGPROTO *gg, uin_t uin, int status, const char *ides
 	if(!hContact) return;
 
 	// Write contact status
-	DBWriteContactSettingWord(hContact, GG_PROTO, GG_KEY_STATUS, (WORD)status_gg2m(gg, status));
+	DBWriteContactSettingWord(hContact, GG_PROTO, GG_KEY_STATUS, (WORD)status_gg2m(gg, GG_S(status)));
 
 	// Check if there's description and if it's not empty
 	if(idescr && *idescr)
@@ -1547,7 +1588,7 @@ void gg_changecontactstatus(GGPROTO *gg, uin_t uin, int status, const char *ides
 	{
 		char sversion[48];
 		DBWriteContactSettingDword(hContact, GG_PROTO, GG_KEY_CLIENTVERSION, (DWORD) version);
-		mir_snprintf(sversion, sizeof(sversion), "Gadu-Gadu %s", gg_version2string(version));
+		mir_snprintf(sversion, sizeof(sversion), "%sGadu-Gadu %s", (version & 0x00ffffff) > 0x2b ? "Nowe " : "", gg_version2string(version));
 		DBWriteContactSettingString(hContact, GG_PROTO, "MirVer", sversion);
 	}
 }
@@ -1560,8 +1601,12 @@ const char *gg_version2string(int v)
 	v &= 0x00ffffff;
 	switch(v)
 	{
+		case 0x2e:
+			pstr = "8.0 build 8283"; break;
 		case 0x2d:
-			pstr = "8.0 build 7669"; break;
+			pstr = "8.0 build 4881"; break;
+		case 0x2b:
+			pstr = "< 8.0"; break;
 		case 0x2a:
 			pstr = "7.7 build 3315"; break;
 		case 0x29:
@@ -1611,7 +1656,7 @@ const char *gg_version2string(int v)
 		default:
 			if (v < 0x0b)
 				pstr = "< 4.0.25";
-			else if (v > 0x2d)
+			else if (v > 0x2e)
 				pstr = ">= 8.0";
 			break;
 	}

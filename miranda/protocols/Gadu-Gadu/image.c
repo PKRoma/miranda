@@ -635,7 +635,7 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				case IDC_IMG_SEND:
 					{
 						unsigned char format[20];
-						char *msg = "\0"; // empty message
+						char *msg = "\xA0\0";
 						GGPROTO *gg = dat->gg;
 
 						if (dat->lpImages && gg_isonline(gg))

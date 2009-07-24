@@ -241,6 +241,8 @@ static INT_PTR CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
 			SendDlgItemMessage(hwndDlg, IDC_LEAVESTATUS, CB_ADDSTRING, 0, (LPARAM)Translate("<Last Status>"));	// 0
 			SendDlgItemMessage(hwndDlg, IDC_LEAVESTATUS, CB_ADDSTRING, 0, (LPARAM)Translate("Online")); 		// ID_STATUS_ONLINE
 			SendDlgItemMessage(hwndDlg, IDC_LEAVESTATUS, CB_ADDSTRING, 0, (LPARAM)Translate("Away"));			// ID_STATUS_AWAY
+			SendDlgItemMessage(hwndDlg, IDC_LEAVESTATUS, CB_ADDSTRING, 0, (LPARAM)Translate("DND"));			// ID_STATUS_DND
+			SendDlgItemMessage(hwndDlg, IDC_LEAVESTATUS, CB_ADDSTRING, 0, (LPARAM)Translate("Free for chat"));	// ID_STATUS_FREECHAT
 			SendDlgItemMessage(hwndDlg, IDC_LEAVESTATUS, CB_ADDSTRING, 0, (LPARAM)Translate("Invisible"));		// ID_STATUS_INVISIBLE
 			switch(DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_LEAVESTATUS, GG_KEYDEF_LEAVESTATUS))
 			{
@@ -250,8 +252,14 @@ static INT_PTR CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
 				case ID_STATUS_AWAY:
 					SendDlgItemMessage(hwndDlg, IDC_LEAVESTATUS, CB_SETCURSEL, 2, 0);
 					break;
-				case ID_STATUS_INVISIBLE:
+				case ID_STATUS_DND:
 					SendDlgItemMessage(hwndDlg, IDC_LEAVESTATUS, CB_SETCURSEL, 3, 0);
+					break;
+				case ID_STATUS_FREECHAT:
+					SendDlgItemMessage(hwndDlg, IDC_LEAVESTATUS, CB_SETCURSEL, 4, 0);
+					break;
+				case ID_STATUS_INVISIBLE:
+					SendDlgItemMessage(hwndDlg, IDC_LEAVESTATUS, CB_SETCURSEL, 5, 0);
 					break;
 				default:
 					SendDlgItemMessage(hwndDlg, IDC_LEAVESTATUS, CB_SETCURSEL, 0, 0);
@@ -453,6 +461,12 @@ static INT_PTR CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
 							DBWriteContactSettingWord(NULL, GG_PROTO, GG_KEY_LEAVESTATUS, ID_STATUS_AWAY);
 							break;
 						case 3:
+							DBWriteContactSettingWord(NULL, GG_PROTO, GG_KEY_LEAVESTATUS, ID_STATUS_DND);
+							break;
+						case 4:
+							DBWriteContactSettingWord(NULL, GG_PROTO, GG_KEY_LEAVESTATUS, ID_STATUS_FREECHAT);
+							break;
+						case 5:
 							DBWriteContactSettingWord(NULL, GG_PROTO, GG_KEY_LEAVESTATUS, ID_STATUS_INVISIBLE);
 							break;
 						default:

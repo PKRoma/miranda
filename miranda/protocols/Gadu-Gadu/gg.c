@@ -279,7 +279,6 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 			gg->hookUserInfoInit = HookProtoEvent(ME_USERINFO_INITIALISE, gg_details_init, gg);
 			gg->hookSettingDeleted = HookProtoEvent(ME_DB_CONTACT_DELETED, gg_userdeleted, gg);
 			gg->hookSettingChanged = HookProtoEvent(ME_DB_CONTACT_SETTINGCHANGED, gg_dbsettingchanged, gg);
-			gg->hookIconsChanged = HookProtoEvent(ME_SKIN2_ICONSCHANGED, gg_iconschanged, gg);
 #ifdef DEBUGMODE
 			gg_netlog(gg, "gg_event(EV_PROTO_ONLOAD): loading modules...");
 #endif
@@ -359,7 +358,6 @@ static GGPROTO *gg_proto_init(const char* pszProtoName, const TCHAR* tszUserName
 	// Register services
 	gg_registerservices(gg);
 	gg_setalloffline(gg);
-	gg_refreshblockedicon(gg);
 
 	if((dwVersion = DBGetContactSettingDword(NULL, GG_PROTO, GG_PLUGINVERSION, 0)) < pluginInfo.version)
 		gg_cleanuplastplugin(gg, dwVersion);
@@ -386,7 +384,6 @@ static int gg_proto_uninit(PROTO_INTERFACE *proto)
 	LocalEventUnhook(gg->hookOptsInit);
 	LocalEventUnhook(gg->hookSettingDeleted);
 	LocalEventUnhook(gg->hookSettingChanged);
-	LocalEventUnhook(gg->hookIconsChanged);
 	Netlib_CloseHandle(gg->netlib);
 
 	// Destroy mutex
@@ -398,6 +395,8 @@ static int gg_proto_uninit(PROTO_INTERFACE *proto)
 	// Free status messages
 	if(gg->modemsg.online)    free(gg->modemsg.online);
 	if(gg->modemsg.away)      free(gg->modemsg.away);
+	if(gg->modemsg.dnd)       free(gg->modemsg.dnd);
+	if(gg->modemsg.freechat)  free(gg->modemsg.freechat);
 	if(gg->modemsg.invisible) free(gg->modemsg.invisible);
 	if(gg->modemsg.offline)   free(gg->modemsg.offline);
 
@@ -504,6 +503,7 @@ struct
 	{GG_EVENT_DCC7_DONE,			"GG_EVENT_DCC7_DONE"},
 	{GG_EVENT_DCC7_PENDING,			"GG_EVENT_DCC7_PENDING"},
 	{GG_EVENT_XML_EVENT,			"GG_EVENT_XML_EVENT"},
+	{GG_EVENT_DISCONNECT_ACK,		"GG_EVENT_DISCONNECT_ACK"},
 	{-1,							"<unknown event>"}
 };
 

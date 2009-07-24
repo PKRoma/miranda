@@ -31,7 +31,10 @@
 #define IDI_ONLINE				104
 #define IDI_OFFLINE				105
 #define IDI_AWAY				128
+#define IDI_FREECHAT			129
 #define IDI_INVISIBLE			130
+#define IDI_BLOCKED				131
+#define IDI_DND					158
 
 #define IDI_GG					251
 #define IDI_IMPORT_TEXT			252
@@ -40,7 +43,6 @@
 #define IDI_EXPORT_SERVER		255
 #define IDI_REMOVE_SERVER		256
 #define IDI_SETTINGS			257
-#define IDI_STOP				258
 #define IDI_NEXT				259
 #define IDI_PREV				260
 #define IDI_SCALE				261
@@ -48,6 +50,7 @@
 #define IDI_DELETE				263
 #define IDI_SAVE				264
 #define IDI_CONFERENCE			265
+#define IDI_CLEAR_CONFERENCE	266
 
 #define IDD_INFO_GG 			301
 #define IDD_CHPASS				302
