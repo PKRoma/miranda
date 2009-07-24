@@ -29,7 +29,16 @@ $Id: options.c 10402 2009-07-24 00:35:21Z silvercircle $
 
 #include "../src/commonheaders.h"
 #undef Translate
+
 #define TranslateA(s)   ((char*)CallService(MS_LANGPACK_TRANSLATESTRING,0,(LPARAM)(s)))
+
+#if !defined(_UNICODE)
+	#undef TranslateT
+	#undef TranslateTS
+	#define TranslateT(s)	((char*)CallService(MS_LANGPACK_TRANSLATESTRING,0,(LPARAM)(s)))
+	#define TranslateTS(s)	((char*)CallService(MS_LANGPACK_TRANSLATESTRING,0,(LPARAM)(s)))
+#endif
+
 #include <shlobj.h>
 #include <shlwapi.h>
 

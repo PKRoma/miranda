@@ -874,6 +874,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
+					Name="Release Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
@@ -918,6 +926,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
+					Name="Release Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
@@ -947,6 +963,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PrecompiledHeaderThrough="../src/commonheaders.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1006,6 +1030,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
+					Name="Release Unicode|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PrecompiledHeaderThrough="../src/commonheaders.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
@@ -1047,6 +1079,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|x64"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1149,7 +1189,7 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"
+							PrecompiledHeaderThrough="../src/commonheaders.h"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1217,7 +1257,7 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"
+							PrecompiledHeaderThrough="../src/commonheaders.h"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1285,7 +1325,7 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"
+							PrecompiledHeaderThrough="../src/commonheaders.h"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1353,7 +1393,7 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"
+							PrecompiledHeaderThrough="../src/commonheaders.h"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1421,7 +1461,7 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"
+							PrecompiledHeaderThrough="../src/commonheaders.h"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1489,7 +1529,7 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"
+							PrecompiledHeaderThrough="../src/commonheaders.h"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1557,7 +1597,7 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"
+							PrecompiledHeaderThrough="../src/commonheaders.h"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1625,7 +1665,7 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"
+							PrecompiledHeaderThrough="../src/commonheaders.h"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1693,7 +1733,7 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"
+							PrecompiledHeaderThrough="../src/commonheaders.h"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1761,7 +1801,7 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"
+							PrecompiledHeaderThrough="../src/commonheaders.h"
 						/>
 					</FileConfiguration>
 					<FileConfiguration

@@ -39,7 +39,7 @@ extern NEN_OPTIONS nen_options;
 extern TemplateSet RTL_Active, LTR_Active;
 extern HANDLE hMessageWindowList;
 extern HINSTANCE g_hInst;
-extern char *szWarnClose;
+extern TCHAR *szWarnClose;
 extern struct RTFColorTable *rtf_ctable;
 extern PSLWA pSetLayeredWindowAttributes;
 extern COLORREF g_ContainerColorKey;

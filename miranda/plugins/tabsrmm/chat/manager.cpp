@@ -25,7 +25,7 @@ $Id: manager.c 10402 2009-07-24 00:35:21Z silvercircle $
 
 #include "../src/commonheaders.h"
 
-TCHAR	*pszActiveWndID ;
+extern  TCHAR	*pszActiveWndID ;
 extern  char	*pszActiveWndModule ;
 SESSION_INFO	g_TabSession;
 extern  HICON	hIcons[30];

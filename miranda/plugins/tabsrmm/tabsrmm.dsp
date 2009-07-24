@@ -227,7 +227,6 @@ DEP_CPP_CLIST=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
@@ -291,7 +290,6 @@ DEP_CPP_COLOR=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
@@ -355,7 +353,6 @@ DEP_CPP_LOG_C=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
@@ -419,7 +416,6 @@ DEP_CPP_MAIN_=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
@@ -483,7 +479,6 @@ DEP_CPP_MANAG=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
@@ -547,7 +542,6 @@ DEP_CPP_MESSA=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
@@ -611,7 +605,6 @@ DEP_CPP_OPTIO=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
@@ -675,7 +668,6 @@ DEP_CPP_SERVI=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
@@ -739,7 +731,6 @@ DEP_CPP_TOOLS=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
@@ -936,7 +927,6 @@ DEP_CPP_BUTTO=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
@@ -1000,7 +990,6 @@ DEP_CPP_CONTA=\
 	".\src\sendqueue.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
@@ -1063,7 +1052,6 @@ DEP_CPP_CONTAI=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
@@ -1127,7 +1115,6 @@ DEP_CPP_EVENT=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
@@ -1190,7 +1177,6 @@ DEP_CPP_FORMA=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # SUBTRACT CPP /YX /Yc /Yu
@@ -1254,7 +1240,6 @@ DEP_CPP_GENER=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
@@ -1318,7 +1303,6 @@ DEP_CPP_HOTKE=\
 	".\src\sendqueue.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
@@ -1382,7 +1366,6 @@ DEP_CPP_IMAGE=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # SUBTRACT CPP /YX /Yc /Yu
@@ -1390,19 +1373,65 @@ DEP_CPP_IMAGE=\
 # Begin Source File
 
 SOURCE=.\tabmodplus\modplus.cpp
-
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
+DEP_CPP_MODPL=\
+	"..\..\include\m_acc.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\API\m_buttonbar.h"\
+	".\API\m_cln_skinedit.h"\
+	".\API\m_fingerprint.h"\
+	".\API\m_flash.h"\
+	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
+	".\API\m_ieview.h"\
+	".\API\m_mathmodule.h"\
+	".\API\m_metacontacts.h"\
+	".\API\m_msg_buttonsbar.h"\
+	".\API\m_nudge.h"\
+	".\API\m_popup.h"\
+	".\API\m_smileyadd.h"\
+	".\API\m_spellchecker.h"\
+	".\API\m_toptoolbar.h"\
+	".\API\m_updater.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\src\commonheaders.h"\
+	".\src\functions.h"\
+	".\src\generic_msghandlers.h"\
+	".\src\msgdlgutils.h"\
+	".\src\msgs.h"\
+	".\src\nen.h"\
+	".\src\templates.h"\
+	".\src\typingnotify.h"\
+	{$(INCLUDE)}"uxtheme.h"\
+	
 # ADD CPP /Yu"../src/commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -1464,7 +1493,6 @@ DEP_CPP_MSGDI=\
 	".\src\sendqueue.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
@@ -1527,7 +1555,6 @@ DEP_CPP_MSGDL=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
@@ -1590,7 +1617,6 @@ DEP_CPP_MSGLO=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
@@ -1654,26 +1680,71 @@ DEP_CPP_MSGOP=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
 SOURCE=.\tabmodplus\msgoptions_plus.cpp
-
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
+DEP_CPP_MSGOPT=\
+	"..\..\include\m_acc.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\API\m_buttonbar.h"\
+	".\API\m_cln_skinedit.h"\
+	".\API\m_fingerprint.h"\
+	".\API\m_flash.h"\
+	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
+	".\API\m_ieview.h"\
+	".\API\m_mathmodule.h"\
+	".\API\m_metacontacts.h"\
+	".\API\m_msg_buttonsbar.h"\
+	".\API\m_nudge.h"\
+	".\API\m_popup.h"\
+	".\API\m_smileyadd.h"\
+	".\API\m_spellchecker.h"\
+	".\API\m_toptoolbar.h"\
+	".\API\m_updater.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\src\commonheaders.h"\
+	".\src\functions.h"\
+	".\src\generic_msghandlers.h"\
+	".\src\msgdlgutils.h"\
+	".\src\msgs.h"\
+	".\src\nen.h"\
+	".\src\templates.h"\
+	".\src\typingnotify.h"\
+	{$(INCLUDE)}"uxtheme.h"\
+	
 # ADD CPP /Yu"../src/commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -1735,7 +1806,6 @@ DEP_CPP_MSGS_=\
 	".\src\sendqueue.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
@@ -1798,7 +1868,6 @@ DEP_CPP_SELEC=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
@@ -1862,7 +1931,6 @@ DEP_CPP_SENDQ=\
 	".\src\sendqueue.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
@@ -1925,7 +1993,6 @@ DEP_CPP_SRMM_=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yc"commonheaders.h"
@@ -1989,7 +2056,6 @@ DEP_CPP_TABCT=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
@@ -2052,7 +2118,6 @@ DEP_CPP_TEMPL=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
@@ -2115,7 +2180,6 @@ DEP_CPP_THEME=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
@@ -2178,7 +2242,6 @@ DEP_CPP_TRAYI=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
@@ -2241,7 +2304,6 @@ DEP_CPP_TSBUT=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
@@ -2304,7 +2366,6 @@ DEP_CPP_TYPIN=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
@@ -2367,7 +2428,6 @@ DEP_CPP_USERP=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File

@@ -56,8 +56,8 @@ extern HANDLE		hSendEvent;
 extern HICON		hIcons[30];
 extern HMENU		g_hMenu;
 extern int        g_sessionshutdown;
-char*      szWarnClose;
 extern WNDPROC OldSplitterProc;
+extern TCHAR		*szWarnClose;
 
 static WNDPROC OldMessageProc;
 static WNDPROC OldNicklistProc;

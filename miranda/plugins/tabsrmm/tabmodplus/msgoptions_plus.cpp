@@ -60,7 +60,7 @@ static struct LISTOPTIONSITEM lvItems[] = {
 	0, NULL, 0, 0, 0, 0
 };
 
-BOOL CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
+INT_PTR CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
 {
 	switch(msg)	{
 
