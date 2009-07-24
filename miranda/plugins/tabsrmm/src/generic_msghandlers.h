@@ -1,8 +1,8 @@
 /*
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -30,22 +30,22 @@ $Id$
  * prototypes from generic_msghandlers.c
 */
 
-void DM_SetDBButtonStates(HWND hwndChild, struct MessageWindowData *dat);
+void DM_SetDBButtonStates(HWND hwndChild, struct _MessageWindowData *dat);
 int BTN_GetStockItem(ButtonItem *item, const char *szName);
-HWND DM_CreateClist(HWND hwndParent, struct MessageWindowData *dat);
+HWND DM_CreateClist(HWND hwndParent, struct _MessageWindowData *dat);
 
-LRESULT DM_ScrollToBottom(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
-LRESULT DM_LoadLocale(HWND hwndDlg, struct MessageWindowData *dat);
-LRESULT DM_SaveLocale(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
-LRESULT DM_UpdateLastMessage(HWND hwndDlg, struct MessageWindowData *dat);
-LRESULT DM_RecalcPictureSize(HWND hwndDlg, struct MessageWindowData *dat);
+LRESULT DM_ScrollToBottom(HWND hwndDlg, struct _MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
+LRESULT DM_LoadLocale(HWND hwndDlg, struct _MessageWindowData *dat);
+LRESULT DM_SaveLocale(HWND hwndDlg, struct _MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
+LRESULT DM_UpdateLastMessage(HWND hwndDlg, struct _MessageWindowData *dat);
+LRESULT DM_RecalcPictureSize(HWND hwndDlg, struct _MessageWindowData *dat);
 LRESULT DM_WMCopyHandler(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lParam);
-LRESULT DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct MessageWindowData *mwdat, WPARAM wParam, LPARAM lParam);
-LRESULT DM_ThemeChanged(HWND hwnd, struct MessageWindowData *dat);
+LRESULT DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct _MessageWindowData *mwdat, WPARAM wParam, LPARAM lParam);
+LRESULT DM_ThemeChanged(HWND hwnd, struct _MessageWindowData *dat);
 
-void BB_InitDlgButtons(HWND hdlg,struct MessageWindowData *dat);
+void BB_InitDlgButtons(HWND hdlg,struct _MessageWindowData *dat);
 
-BOOL BB_SetButtonsPos(HWND hwnd,struct MessageWindowData *dat);
+BOOL BB_SetButtonsPos(HWND hwnd,struct _MessageWindowData *dat);
  void  InitButtonsBarModule();
- void BB_CustomButtonClick(struct MessageWindowData *dat,DWORD idFrom ,HWND hwndFrom, BOOL code) ;
+ void BB_CustomButtonClick(struct _MessageWindowData *dat,DWORD idFrom ,HWND hwndFrom, BOOL code) ;
 

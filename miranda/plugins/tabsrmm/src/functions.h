@@ -35,7 +35,7 @@ $Id: functions.h 10390 2009-07-22 19:43:01Z silvercircle $
 
 int         NEN_ReadOptions(NEN_OPTIONS *options);
 int         NEN_WriteOptions(NEN_OPTIONS *options);
-int         UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, TCHAR *szStatus, HANDLE hContact, DWORD fromEvent);
+int         UpdateTrayMenu(struct _MessageWindowData *dat, WORD wStatus, char *szProto, TCHAR *szStatus, HANDLE hContact, DWORD fromEvent);
 static int  PopupPreview(NEN_OPTIONS *pluginOptions);
 void        DeletePopupsForContact(HANDLE hContact, DWORD dwMask);
 void        RemoveBalloonTip();
@@ -48,7 +48,7 @@ void        CreateSystrayIcon(int create);
 void        MinimiseToTray(HWND hWnd, BOOL bForceAnimation);
 void        MaximiseFromTray(HWND hWnd, BOOL bForceAnimation, RECT *rc);
 void        FlashTrayIcon(HICON hIcon);
-void        UpdateTrayMenuState(struct MessageWindowData *dat, BOOL bForced);
+void        UpdateTrayMenuState(struct _MessageWindowData *dat, BOOL bForced);
 void        LoadFavoritesAndRecent();
 void        AddContactToFavorites(HANDLE hContact, TCHAR *szNickname, char *szProto, TCHAR *szStatus, WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu, UINT codePage);
 void        CreateTrayMenus(int mode);
@@ -65,8 +65,6 @@ static void CreateImageList(BOOL bInitial);
 int         ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
 void        FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iNum);
 void        LoadMsgAreaBackground();
-int         CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
-void        DeleteCachedIcon(struct MsgLogIcon *theIcon);
 int         MY_GetContactDisplayNameW(HANDLE hContact, wchar_t *szwBuf, unsigned int size, const char *szProto, UINT codePage);
 struct      ContainerWindowData *FindMatchingContainer(const TCHAR *szName, HANDLE hContact);
 struct      ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE hContactFrom);
@@ -86,10 +84,10 @@ static struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindo
 void        DeleteContainer(int iIndex);
 void        RenameContainer(int iIndex, const TCHAR *newName);
 int         EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const TCHAR *szNew, DWORD dwExtinfo, DWORD dwExtinfoEx);
-void        GetLocaleID(struct MessageWindowData *dat, char *szKLName);
+void        GetLocaleID(struct _MessageWindowData *dat, char *szKLName);
 int         GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLen);
-UINT        DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
-UINT        NcCalcRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
+UINT        DrawRichEditFrame(HWND hwnd, struct _MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
+UINT        NcCalcRichEditFrame(HWND hwnd, struct _MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
 HMENU       BuildContainerMenu();
 void        BuildCodePageList();
 void        PreTranslateDates();
@@ -98,7 +96,7 @@ void        ApplyContainerSetting(struct ContainerWindowData *pContainer, DWORD 
 void        BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);
 void        GetDefaultContainerTitleFormat();
 extern const WCHAR *EncodeWithNickname(const char *string, const WCHAR *szNick, UINT codePage);
-void        UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat);
+void        UpdateContainerMenu(HWND hwndDlg, struct _MessageWindowData *dat);
 INT_PTR         MessageWindowOpened(WPARAM wParam, LPARAM lParam);
 int         TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned int subType);
 LRESULT CALLBACK IEViewKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -136,7 +134,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 int         InitOptions(void);
 static      INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-int         DbEventIsShown(struct MessageWindowData *dat, DBEVENTINFO *dbei);
+int         DbEventIsShown(struct _MessageWindowData *dat, DBEVENTINFO *dbei);
 void        StreamInEvents(HWND hwndDlg,HANDLE hDbEventFirst,int count,int fAppend, DBEVENTINFO *dbei_s);
 void        LoadLogfont(int i,LOGFONTA *lf,COLORREF *colour, char *szModule);
 
@@ -166,15 +164,15 @@ int         UnloadTSButtonModule(WPARAM wParam, LPARAM lParam);
 int         _DebugTraceW(const wchar_t *fmt, ...);
 int         _DebugTraceA(const char *fmt, ...);
 int         _DebugPopup(HANDLE hContact, const TCHAR *fmt, ...);
-int         _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, ...);
+int         _DebugMessage(HWND hwndDlg, struct _MessageWindowData *dat, const char *fmt, ...);
 
 // themes
 
 char        *GetThemeFileName(int iMode);
 static void LoadLogfontFromINI(int i, char *szKey, LOGFONTA *lf, COLORREF *colour, const char *szIniFilename);
 int         CheckThemeVersion(const char *szIniFilename);
-void        WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat);
-void        ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, int noAdvanced, DWORD dwFlags);
+void        WriteThemeToINI(const char *szIniFilename, struct _MessageWindowData *dat);
+void        ReadThemeFromINI(const char *szIniFilename, struct _MessageWindowData *dat, int noAdvanced, DWORD dwFlags);
 
 // compatibility
 
@@ -183,7 +181,7 @@ extern      pfnSetMenuInfo fnSetMenuInfo;
 
 // user prefs
 
-int			LoadLocalFlags(HWND hwnd, struct MessageWindowData *dat);
+int			LoadLocalFlags(HWND hwnd, struct _MessageWindowData *dat);
 
 //TypingNotify
 int			TN_ModuleInit();

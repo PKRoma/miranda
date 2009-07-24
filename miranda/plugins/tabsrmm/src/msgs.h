@@ -325,7 +325,7 @@ struct MessageWindowTheme {
 	char *rtfFonts;
 };
 
-struct MessageWindowData {
+struct _MessageWindowData {
 	BYTE    bType;
 	BYTE    bWasDeleted;
 	HANDLE  hContact, hSubContact;
@@ -462,7 +462,7 @@ struct TabControlData {
 	BOOL    bDragging;
 	int     iBeginIndex;
 	HWND    hwndDrag;
-	struct  MessageWindowData *dragDat;
+	struct  _MessageWindowData *dragDat;
 	HIMAGELIST himlDrag;
 	BOOL    bRefreshWithoutClip;
 	BOOL    fSavePos;
@@ -842,14 +842,45 @@ struct NewMessageWindowLParam {
 #define DM_QUERY_NEXT 1
 #define DM_QUERY_MOSTRECENT 2
 
-#ifndef CPLUSPLUS
-struct CREOleCallback {
-	IRichEditOleCallbackVtbl *lpVtbl;
-	unsigned refCount;
-	IStorage *pictStg;
-	int nextStgId;
+class REOLECallback : IRichEditOleCallback
+{
+
+public:
+
+	REOLECallback()
+	{   mRefCounter = 0;}
+
+	~REOLECallback()
+	{}
+
+	STDMETHOD_(ULONG, AddRef)       (void)                                  {   mRefCounter++;                              return (mRefCounter);}
+
+	STDMETHOD_(ULONG, Release)      (void)                                  {   if ( --mRefCounter == 0 )	delete this;return (mRefCounter);}
+
+	STDMETHOD(QueryInterface)       (REFIID iid, void** ppvObject)
+
+	{
+		if ( iid == IID_IUnknown || iid == IID_IRichEditOleCallback ) {
+			*ppvObject = this;  AddRef();   return (S_OK);
+		}
+		else
+			return (E_NOINTERFACE);
+	}
+
+
+	STDMETHOD(ContextSensitiveHelp) (BOOL fEnterMode)                                                                                           {   return (E_NOTIMPL);}
+	STDMETHOD(DeleteObject)         (LPOLEOBJECT lpoleobj)                                                                                      {   return (E_NOTIMPL);}
+	STDMETHOD(GetClipboardData)     (CHARRANGE FAR *lpchrg, DWORD reco, LPDATAOBJECT FAR *lplpdataobj)                                          {   return (E_NOTIMPL);}
+	STDMETHOD(GetContextMenu)       (WORD seltype, LPOLEOBJECT lpoleobj, CHARRANGE FAR *lpchrg, HMENU FAR *lphmenu)                             {   return (E_NOTIMPL);}
+	STDMETHOD(GetDragDropEffect)    (BOOL fDrag, DWORD grfKeyState, LPDWORD pdwEffect)                                                          {   return (E_NOTIMPL);}
+	STDMETHOD(GetInPlaceContext)    (LPOLEINPLACEFRAME FAR *lplpFrame, LPOLEINPLACEUIWINDOW FAR *lplpDoc, LPOLEINPLACEFRAMEINFO lpFrameInfo)    {   return (E_NOTIMPL);}
+	STDMETHOD(GetNewStorage)        (LPSTORAGE FAR *lplpstg);
+	STDMETHOD(QueryAcceptData)      (LPDATAOBJECT lpdataobj, CLIPFORMAT FAR *lpcfFormat, DWORD reco, BOOL fReally, HGLOBAL hMetaPict)           {   return (E_NOTIMPL);}
+	STDMETHOD(QueryInsertObject)    (LPCLSID lpclsid, LPSTORAGE lpstg, LONG cp)                                                                 {   return (S_OK);}
+	STDMETHOD(ShowContainerUI)      (BOOL fShow)                                                                                                {   return (E_NOTIMPL);}
+private:
+	UINT  mRefCounter;
 };
-#endif
 
 #define MSGFONTID_MYMSG		  0
 #define MSGFONTID_MYMISC	  1
@@ -1042,8 +1073,8 @@ struct SIDEBARITEM {
 	DWORD   dwFlags;
 	HICON   *hIcon, *hIconPressed, *hIconHover;
 	char    *szName;
-	void (*pfnAction)(ButtonItem *item, HWND hwndDlg, struct MessageWindowData *dat, HWND hwndItem);
-	void (*pfnCallback)(ButtonItem *item, HWND hwndDlg, struct MessageWindowData *dat, HWND hwndItem);
+	void (*pfnAction)(ButtonItem *item, HWND hwndDlg, struct _MessageWindowData *dat, HWND hwndItem);
+	void (*pfnCallback)(ButtonItem *item, HWND hwndDlg, struct _MessageWindowData *dat, HWND hwndItem);
 	TCHAR   *tszTip;
 };
 
@@ -1217,8 +1248,8 @@ int SI_InitStatusIcons();
 int SI_DeinitStatusIcons();
 
 int  GetStatusIconsCount();
-void DrawStatusIcons(struct MessageWindowData *dat, HDC hdc, RECT r, int gap);
-void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT pt, RECT rc, int gap, int code);
+void DrawStatusIcons(struct _MessageWindowData *dat, HDC hdc, RECT r, int gap);
+void SI_CheckStatusIconClick(struct _MessageWindowData *dat, HWND hwndFrom, POINT pt, RECT rc, int gap, int code);
 
 typedef struct _tagSKINDesc {
 	ULONG	ulID;				// resource id

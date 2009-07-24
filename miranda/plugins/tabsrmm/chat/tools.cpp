@@ -33,7 +33,7 @@ extern SESSION_INFO	g_TabSession;
 extern MYGLOBALS		myGlobals;
 extern NEN_OPTIONS	nen_options;
 
-static void Chat_PlaySound(const char *szSound, HWND hWnd, struct MessageWindowData *dat)
+static void Chat_PlaySound(const char *szSound, HWND hWnd, struct _MessageWindowData *dat)
 {
 	BOOL fPlay = TRUE;
 
@@ -237,7 +237,7 @@ static BOOL DoTrayIcon(SESSION_INFO* si, GCEVENT * gce)
 	return TRUE;
 }
 
-static BOOL DoPopup(SESSION_INFO* si, GCEVENT* gce, struct MessageWindowData* dat)
+static BOOL DoPopup(SESSION_INFO* si, GCEVENT* gce, struct _MessageWindowData* dat)
 {
 	int iEvent = gce->pDest->iType;
 	struct ContainerWindowData *pContainer = dat ? dat->pContainer : NULL;
@@ -372,7 +372,7 @@ passed:
 }
 
 typedef struct {
-	struct MessageWindowData *dat;
+	struct _MessageWindowData *dat;
 	SESSION_INFO* si;
 	const char* sound;
 	int   iEvent;
@@ -459,7 +459,7 @@ static void DoFlashAndSoundThread(FLASH_PARAMS* p)
 BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighlight, int bManyFix)
 {
 	FLASH_PARAMS* params;
-	struct MessageWindowData *dat = 0;
+	struct _MessageWindowData *dat = 0;
 	HWND hwndContainer = 0;
 
 	if (!gce || si == NULL || gce->bIsMe || si->iType == GCW_SERVER)
@@ -471,7 +471,7 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 	params->bActiveTab = params->bMustFlash = params->bMustAutoswitch = FALSE;
 
 	if (si->hWnd) {
-		params->dat = dat = (struct MessageWindowData *)GetWindowLongPtr(si->hWnd, GWLP_USERDATA);
+		params->dat = dat = (struct _MessageWindowData *)GetWindowLongPtr(si->hWnd, GWLP_USERDATA);
 		if (dat) {
 			hwndContainer = dat->pContainer->hwnd;
 			params->bInactive = hwndContainer != GetForegroundWindow();
@@ -730,9 +730,9 @@ BOOL IsHighlighted(SESSION_INFO* si, const TCHAR* pszText)
 					p3 += 1;
 
 				//find the end of the word
-				p2 = _tcschr(p3, ' ');
+				p2 = (TCHAR *)_tcschr(p3, ' ');
 				if (!p2)
-					p2 = _tcschr(p3, '\0');
+					p2 = (TCHAR *)_tcschr(p3, '\0');
 
 
 				if (p3 != p2) {
@@ -799,7 +799,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 	PathRemoveFileSpec(tszFolder);
 	if (!PathIsDirectory(tszFolder))
 		CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)tszFolder);
-	
+
 	lstrcpyn(szTime, MakeTimeStamp(g_Settings.pszTimeStampLog, gce->time), 99);
 
 	hFile = _tfopen(tszFile, _T("ab+"));
@@ -1293,10 +1293,10 @@ TCHAR* GetChatLogsFilename (HANDLE  hContact, time_t tTime)
 	int i;
 
 	if (g_Settings.pszLogDir[_tcslen(g_Settings.pszLogDir)-1] == '\\')
-		_tcscat(g_Settings.pszLogDir, _T("%userid%.log")); 
+		_tcscat(g_Settings.pszLogDir, _T("%userid%.log"));
 	if(!tTime)
 	  time(&tTime);
-	
+
 	// day 1-31
 	rva[0].lptzKey = _T("d");
 	rva[0].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%#d"), tTime));

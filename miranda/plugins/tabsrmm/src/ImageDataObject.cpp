@@ -25,17 +25,17 @@ originally part of the smileyadd plugin for Miranda IM
 #include "commonheaders.h"
 #include "ImageDataObject.h"
 
-extern "C" void ReleaseRichEditOle(IRichEditOle *ole)
+extern void ReleaseRichEditOle(IRichEditOle *ole)
 {
 	ole->Release();
 }
 
-extern "C" void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hBm)
+extern void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hBm)
 {
 	CImageDataObject::InsertBitmap(ole, hBm);
 }
 
-extern "C" void GetIconSize(HICON hIcon, int* sizeX, int* sizeY)
+extern void GetIconSize(HICON hIcon, int* sizeX, int* sizeY)
 {
 	ICONINFO ii;
 	BITMAP bm;
@@ -47,7 +47,7 @@ extern "C" void GetIconSize(HICON hIcon, int* sizeX, int* sizeY)
 	DeleteObject(ii.hbmColor);
 }
 
-extern "C" int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY)
+int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY)
 {
 	bool succeeded = false;
 
@@ -84,7 +84,7 @@ extern "C" int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF 
 	return TRUE;
 }
 
-extern "C" void DeleteCachedIcon(struct MsgLogIcon *theIcon)
+void DeleteCachedIcon(struct MsgLogIcon *theIcon)
 {
 	DeleteDC(theIcon->hdcMem);
 	DeleteObject(theIcon->hBmp);

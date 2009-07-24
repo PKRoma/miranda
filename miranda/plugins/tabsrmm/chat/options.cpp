@@ -23,14 +23,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 Option and settings handling for the group chat module. Implements
 the option pages and various support functions.
 
-$Id$
+$Id: options.c 10402 2009-07-24 00:35:21Z silvercircle $
 
 */
 
 #include "../src/commonheaders.h"
+#undef Translate
+#define TranslateA(s)   ((char*)CallService(MS_LANGPACK_TRANSLATESTRING,0,(LPARAM)(s)))
 #include <shlobj.h>
 #include <shlwapi.h>
-//#include "../m_MathModule.h"
 
 extern HBRUSH 			hListBkgBrush;
 extern HICON			hIcons[30];
@@ -486,7 +487,7 @@ void Chat_AddIcons(void)
 
 		// 16x16 icons
 		sid.cbSize = sizeof(SKINICONDESC);
-		sid.pszSection = Translate("TabSRMM/Group chat windows");
+		sid.pszSection = TranslateA("TabSRMM/Group chat windows");
 		GetModuleFileNameA(g_hIconDLL, szFile, MAX_PATH);
 		sid.pszDefaultFile = szFile;
 
@@ -499,7 +500,7 @@ void Chat_AddIcons(void)
 			i++;
 		}
 		i = 0;
-		sid.pszSection = Translate("TabSRMM/Group chat log");
+		sid.pszSection = TranslateA("TabSRMM/Group chat log");
 		while (_logicons[i].szDesc != NULL) {
 			sid.cx = sid.cy = _logicons[i].size;
 			sid.pszDescription = _logicons[i].szDesc;
@@ -543,7 +544,7 @@ HWND CreateToolTip(HWND hwndParent, LPTSTR ptszText, LPTSTR ptszTitle)
 	HWND hwndTT;
 	hwndTT = CreateWindowEx(WS_EX_TOPMOST,
 		TOOLTIPS_CLASS, NULL,
-		WS_POPUP | TTS_NOPREFIX,		
+		WS_POPUP | TTS_NOPREFIX,
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		hwndParent, NULL, g_hInst, NULL);
@@ -562,7 +563,7 @@ HWND CreateToolTip(HWND hwndParent, LPTSTR ptszText, LPTSTR ptszTitle)
 	SendMessage(hwndTT, TTM_ADDTOOL, 0, (LPARAM) (LPTOOLINFO) &ti);
 	SendMessage(hwndTT, TTM_SETTITLE, 1, (LPARAM)ptszTitle);
 	return hwndTT;
-} 
+}
 
 INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -709,7 +710,7 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 								iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_GROUP));
 								if (iLen > 0) {
-									pszText = realloc(pszText, (iLen + 2) * sizeof(TCHAR));
+									pszText = (TCHAR *)realloc(pszText, (iLen + 2) * sizeof(TCHAR));
 									GetDlgItemText(hwndDlg, IDC_GROUP, pszText, iLen + 1);
 									DBWriteContactSettingTString(NULL, "Chat", "AddToGroup", pszText);
 								} else
@@ -1053,7 +1054,7 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				if (ServiceExists(MS_UTILS_REPLACEVARS)) {
 					TCHAR tszTooltipText[2048];
 
-					mir_sntprintf(tszTooltipText, SIZEOF(tszTooltipText), 
+					mir_sntprintf(tszTooltipText, SIZEOF(tszTooltipText),
 						_T("%s - %s\n%s - %s\n%s - %s\n\n")
 						_T("%s - %s\n%s - %s\n%s - %s\n%s - %s\n%s - %s\n%s - %s\n%s - %s\n%s - %s\n%s - %s\n\n")
 						_T("%s - %s\n%s - %s\n%s - %s\n%s - %s\n%s - %s\n%s - %s\n%s - %s\n%s - %s\n%s - %s\n%s - %s"),
@@ -1130,8 +1131,8 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 							CallService(MS_UTILS_PATHTORELATIVET, (WPARAM)tszDirectory, (LPARAM)tszTemp);
 							SetWindowText(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), lstrlen(tszTemp) > 1 ? tszTemp : DEFLOGFILENAME);
 						}
-						psMalloc->lpVtbl->Free(psMalloc, idList);
-						psMalloc->lpVtbl->Release(psMalloc);
+						psMalloc->Free(idList);
+						psMalloc->Release();
 					}
 					break;
 				}
@@ -1163,7 +1164,7 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 					iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY));
 					if (iLen > 0) {
-						TCHAR *pszText1 = malloc(iLen*sizeof(TCHAR) + 2);
+						TCHAR *pszText1 = (TCHAR *)malloc(iLen*sizeof(TCHAR) + 2);
 						GetDlgItemText(hwndDlg, IDC_LOGDIRECTORY, pszText1, iLen + 1);
 						DBWriteContactSettingTString(NULL, "Chat", "LogDirectory", pszText1);
 						free(pszText1);
@@ -1179,7 +1180,7 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 					iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_HIGHLIGHTWORDS));
 					if (iLen > 0) {
-						TCHAR *ptszText = malloc((iLen + 2) * sizeof(TCHAR));
+						TCHAR *ptszText = (TCHAR *)malloc((iLen + 2) * sizeof(TCHAR));
 						if (ptszText) {
 							GetDlgItemText(hwndDlg, IDC_HIGHLIGHTWORDS, ptszText, iLen + 1);
 							p2 = _tcschr(ptszText, (TCHAR)',');
@@ -1201,28 +1202,28 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 					iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOGTIMESTAMP));
 					if (iLen > 0) {
-						pszText = realloc(pszText, iLen + 1);
+						pszText = (char *)realloc(pszText, iLen + 1);
 						GetDlgItemTextA(hwndDlg, IDC_LOGTIMESTAMP, pszText, iLen + 1);
 						DBWriteContactSettingString(NULL, "Chat", "LogTimestamp", pszText);
 					} else DBDeleteContactSetting(NULL, "Chat", "LogTimestamp");
 
 					iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_TIMESTAMP));
 					if (iLen > 0) {
-						pszText = realloc(pszText, iLen + 1);
+						pszText = (char *)realloc(pszText, iLen + 1);
 						GetDlgItemTextA(hwndDlg, IDC_TIMESTAMP, pszText, iLen + 1);
 						DBWriteContactSettingString(NULL, "Chat", "HeaderTime", pszText);
 					} else DBDeleteContactSetting(NULL, "Chat", "HeaderTime");
 
 					iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_INSTAMP));
 					if (iLen > 0) {
-						pszText = realloc(pszText, iLen + 1);
+						pszText = (char *)realloc(pszText, iLen + 1);
 						GetDlgItemTextA(hwndDlg, IDC_INSTAMP, pszText, iLen + 1);
 						DBWriteContactSettingString(NULL, "Chat", "HeaderIncoming", pszText);
 					} else DBDeleteContactSetting(NULL, "Chat", "HeaderIncoming");
 
 					iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_OUTSTAMP));
 					if (iLen > 0) {
-						pszText = realloc(pszText, iLen + 1);
+						pszText = (char *)realloc(pszText, iLen + 1);
 						GetDlgItemTextA(hwndDlg, IDC_OUTSTAMP, pszText, iLen + 1);
 						DBWriteContactSettingString(NULL, "Chat", "HeaderOutgoing", pszText);
 					} else DBDeleteContactSetting(NULL, "Chat", "HeaderOutgoing");
@@ -1522,17 +1523,17 @@ int OptionsInit(void)
 	g_Settings.iWidth = DBGetContactSettingDword(NULL, "Chat", "roomwidth", -1);
 	g_Settings.iHeight = DBGetContactSettingDword(NULL, "Chat", "roomheight", -1);
 	LoadGlobalSettings();
-	SkinAddNewSoundEx("ChatMessage", "Chat", Translate("Incoming message"));
-	SkinAddNewSoundEx("ChatHighlight", "Chat", Translate("Message is highlighted"));
-	SkinAddNewSoundEx("ChatAction", "Chat", Translate("User has performed an action"));
-	SkinAddNewSoundEx("ChatJoin", "Chat", Translate("User has joined"));
-	SkinAddNewSoundEx("ChatPart", "Chat", Translate("User has left"));
-	SkinAddNewSoundEx("ChatKick", "Chat", Translate("User has kicked some other user"));
-	SkinAddNewSoundEx("ChatMode", "Chat", Translate("User's status was changed"));
-	SkinAddNewSoundEx("ChatNick", "Chat", Translate("User has changed name"));
-	SkinAddNewSoundEx("ChatNotice", "Chat", Translate("User has sent a notice"));
-	SkinAddNewSoundEx("ChatQuit", "Chat", Translate("User has disconnected"));
-	SkinAddNewSoundEx("ChatTopic", "Chat", Translate("The topic has been changed"));
+	SkinAddNewSoundEx("ChatMessage", "Chat", TranslateA("Incoming message"));
+	SkinAddNewSoundEx("ChatHighlight", "Chat", TranslateA("Message is highlighted"));
+	SkinAddNewSoundEx("ChatAction", "Chat", TranslateA("User has performed an action"));
+	SkinAddNewSoundEx("ChatJoin", "Chat", TranslateA("User has joined"));
+	SkinAddNewSoundEx("ChatPart", "Chat", TranslateA("User has left"));
+	SkinAddNewSoundEx("ChatKick", "Chat", TranslateA("User has kicked some other user"));
+	SkinAddNewSoundEx("ChatMode", "Chat", TranslateA("User's status was changed"));
+	SkinAddNewSoundEx("ChatNick", "Chat", TranslateA("User has changed name"));
+	SkinAddNewSoundEx("ChatNotice", "Chat", TranslateA("User has sent a notice"));
+	SkinAddNewSoundEx("ChatQuit", "Chat", TranslateA("User has disconnected"));
+	SkinAddNewSoundEx("ChatTopic", "Chat", TranslateA("The topic has been changed"));
 
 	LoadMsgDlgFont(FONTSECTION_CHAT, 0, &lf, NULL, CHAT_FONTMODULE);
 	hFont = CreateFontIndirect(&lf);

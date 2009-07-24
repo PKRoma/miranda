@@ -31,7 +31,7 @@ $Id$
  * Mad Cluster in May 2008
  */
 
-#include "commonheaders.h"
+#include "../src/commonheaders.h"
 
 extern  HINSTANCE g_hInst;
 
@@ -175,7 +175,7 @@ static int CustomButtonPressed(WPARAM wParam,LPARAM lParam)
 	SendDlgItemMessage(cbcd->hwndFrom,IDC_MESSAGE, EM_EXGETSEL, 0, (LPARAM)&cr);
 	textlenght=cr.cpMax-cr.cpMin;
 	if ( textlenght ) {
-		pszText=mir_alloc((textlenght+1)*sizeof(TCHAR));
+		pszText = (TCHAR *)mir_alloc((textlenght+1)*sizeof(TCHAR));
 		ZeroMemory(pszText,(textlenght+1)*sizeof(TCHAR));
 		SendDlgItemMessage(cbcd->hwndFrom, IDC_MESSAGE,EM_GETSELTEXT, 0, (LPARAM)pszText);
 	}
@@ -209,7 +209,7 @@ static int CustomButtonPressed(WPARAM wParam,LPARAM lParam)
 				res = TrackPopupMenu(hMenu, TPM_RETURNCMD, cbcd->pt.x, cbcd->pt.y, 0, cbcd->hwndFrom, NULL);
 				if ( res==0 ) break;
 
-				pszFormatedText=mir_alloc((textlenght+_tcslen(pszMenu[res-1])+2)*sizeof(TCHAR));
+				pszFormatedText = (TCHAR *)mir_alloc((textlenght+_tcslen(pszMenu[res-1])+2)*sizeof(TCHAR));
 				ZeroMemory(pszFormatedText,(textlenght+_tcslen(pszMenu[res-1])+2)*sizeof(TCHAR));
 
 				mir_sntprintf(pszFormatedText,(textlenght+_tcslen(pszMenu[res-1])+2)*sizeof(TCHAR),pszMenu[res-1],pszText);
@@ -217,7 +217,7 @@ static int CustomButtonPressed(WPARAM wParam,LPARAM lParam)
 			}break;
 		case 2:
 			{
-				pszFormatedText=mir_alloc((textlenght+12)*sizeof(TCHAR));
+				pszFormatedText = (TCHAR *)mir_alloc((textlenght+12)*sizeof(TCHAR));
 				ZeroMemory(pszFormatedText,(textlenght+12)*sizeof(TCHAR));
 
 				SendDlgItemMessage(cbcd->hwndFrom, IDC_MESSAGE,EM_GETSELTEXT, 0, (LPARAM)pszText);
@@ -231,7 +231,7 @@ static int CustomButtonPressed(WPARAM wParam,LPARAM lParam)
 
 		case 3:
 			{
-				pszFormatedText=mir_alloc(6*sizeof(TCHAR));
+				pszFormatedText = (TCHAR *)mir_alloc(6*sizeof(TCHAR));
 				ZeroMemory(pszFormatedText,6*sizeof(TCHAR));
 
 				_sntprintf(pszFormatedText,6*sizeof(TCHAR),_T("%s"),_T("[img]"));
@@ -244,7 +244,7 @@ static int CustomButtonPressed(WPARAM wParam,LPARAM lParam)
 		case 4:
 			{
 
-				pszFormatedText=mir_alloc(7*sizeof(TCHAR));
+				pszFormatedText = (TCHAR *)mir_alloc(7*sizeof(TCHAR));
 				ZeroMemory(pszFormatedText,7*sizeof(TCHAR));
 				_sntprintf(pszFormatedText,7*sizeof(TCHAR),_T("%s"),_T("[/img]"));
 
@@ -311,8 +311,8 @@ int ModPlus_Init(WPARAM wparam,LPARAM lparam)
 
 	hIcon1     = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_IMGCLOSE));
 	hIcon0     = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_IMGOPEN));
-	hib1        =(HANDLE)AddIcon(hIcon1, "tabmodplus1", "[/img]");
-	hib0        =(HANDLE)AddIcon(hIcon0, "tabmodplus0", "[img]");
+	hib1        =(HANDLE)AddIcon((HICON)hIcon1, "tabmodplus1", "[/img]");
+	hib0        =(HANDLE)AddIcon((HICON)hIcon0, "tabmodplus0", "[img]");
 	g_bStartup=0;
 	return (0);
 }

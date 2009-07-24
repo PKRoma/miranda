@@ -1,6 +1,6 @@
 //Microsoft Developer Studio generated resource script.
 //
-#include "resource.h"
+#include "src/resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -8,9 +8,11 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include <winres.h>
-#include "../../include/statusmodes.h"
-#include <version.h>
-
+#include "../../include/statusmodes.h"
+
+#include "src/version.h"
+
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 

@@ -60,14 +60,14 @@ static HANDLE hntfStarted = 0;
 static HANDLE hntfStopped = 0;
 
 
-typedef struct colors_s
+struct colors_s
 {
         int res;
-        const char desc[10];
+        char desc[10];
         COLORREF color;
-} colors;
+};
 
-static colors colorPicker[] =
+static struct colors_s colorPicker[4] =
 {
         {IDC_TYPEON_BG,  "ON_BG",  RGB(255,255,255)},
         {IDC_TYPEON_TX,  "ON_TX",  RGB(0,0,0)},

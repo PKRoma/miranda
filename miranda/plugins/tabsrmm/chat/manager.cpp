@@ -20,15 +20,15 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id$
+$Id: manager.c 10402 2009-07-24 00:35:21Z silvercircle $
 */
 
 #include "../src/commonheaders.h"
 
-extern TCHAR*			pszActiveWndID ;
-extern char*			pszActiveWndModule ;
-extern SESSION_INFO	g_TabSession;
-extern HICON			hIcons[30];
+TCHAR	*pszActiveWndID ;
+extern  char	*pszActiveWndModule ;
+SESSION_INFO	g_TabSession;
+extern  HICON	hIcons[30];
 
 #define	WINDOWS_COMMANDS_MAX 30
 #define	STATUSICONCOUNT 6
@@ -788,7 +788,7 @@ void SM_AddCommand(const TCHAR* pszID, const char* pszModule, const char* lpNewC
 	SESSION_INFO* pTemp = m_WndList;
 	while (pTemp != NULL) {
 		if (lstrcmpi(pTemp->ptszID, pszID) == 0 && lstrcmpiA(pTemp->pszModule, pszModule) == 0) {      // match
-			COMMAND_INFO *node = mir_alloc(sizeof(COMMAND_INFO));
+			COMMAND_INFO *node = (COMMAND_INFO *)mir_alloc(sizeof(COMMAND_INFO));
 			node->lpCommand = mir_strdup(lpNewCommand);
 			node->last = NULL; // always added at beginning!
 			// new commands are added at start
@@ -939,7 +939,7 @@ char* SM_GetUsers(SESSION_INFO* si)
 	do {
 		int pLen = lstrlenA(p), nameLen = lstrlen(utemp->pszUID);
 		if (pLen + nameLen + 2 > alloced)
-			p = mir_realloc(p, alloced += 4096);
+			p = (char *)mir_realloc(p, alloced += 4096);
 
 #if !defined( _UNICODE )
 		lstrcpy(p + pLen, utemp->pszUID);
@@ -1405,7 +1405,7 @@ BOOL UM_SetStatusEx(USERINFO* pUserList, const TCHAR* pszText, int flags)
 			pTemp->iStatusEx = 0;
 
 		if (pszText != NULL) {
-			TCHAR* s = _tcsstr(pszText, pTemp->pszUID);
+			TCHAR* s = (TCHAR *)_tcsstr(pszText, pTemp->pszUID);
 			if (s) {
 				pTemp->iStatusEx = 0;
 				if (s == pszText || s[-1] == cDelimiter) {

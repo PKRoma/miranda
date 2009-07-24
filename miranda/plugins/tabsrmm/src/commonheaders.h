@@ -79,6 +79,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include  <m_file.h>
 #include  <m_fontservice.h>
 #include  <m_acc.h>
+#include  <m_chat.h>
+#include  <m_protomod.h>
 
 extern struct LIST_INTERFACE li;
 
@@ -111,16 +113,17 @@ extern struct LIST_INTERFACE li;
 #include "../API/m_buttonbar.h"
 #include "../API/m_toptoolbar.h"
 #include "../API/m_updater.h"
+#include "../API/m_smileyadd.h"
 
-#ifndef __cplusplus
-#include "msgs.h"
 #include "msgdlgutils.h"
+
+#ifndef __CPP_LEAN
+#include "msgs.h"
 #include "nen.h"
 #include "functions.h"
 #include "typingnotify.h"
 #include "generic_msghandlers.h"
 #include "../chat/chat.h"
-
 #endif
 
 #if !defined(_WIN64) && !defined(_USE_32BIT_TIME_T)
@@ -132,3 +135,32 @@ extern struct LIST_INTERFACE li;
 #if _MSC_VER >= 1500
 	#define wEffects wReserved
 #endif
+
+typedef struct _paraformat2
+{
+	UINT	cbSize;
+	DWORD	dwMask;
+	WORD	wNumbering;
+	WORD	wReserved;
+	LONG	dxStartIndent;
+	LONG	dxRightIndent;
+	LONG	dxOffset;
+	WORD	wAlignment;
+	SHORT	cTabCount;
+	LONG	rgxTabs[MAX_TAB_STOPS];
+ 	LONG	dySpaceBefore;			// Vertical spacing before para
+	LONG	dySpaceAfter;			// Vertical spacing after para
+	LONG	dyLineSpacing;			// Line spacing depending on Rule
+	SHORT	sStyle;					// Style handle
+	BYTE	bLineSpacingRule;		// Rule for line spacing (see tom.doc)
+	BYTE	bOutlineLevel;			// Outline Level
+	WORD	wShadingWeight;			// Shading in hundredths of a per cent
+	WORD	wShadingStyle;			// Byte 0: style, nib 2: cfpat, 3: cbpat
+	WORD	wNumberingStart;		// Starting value for numbering
+	WORD	wNumberingStyle;		// Alignment, Roman/Arabic, (), ), ., etc.
+	WORD	wNumberingTab;			// Space bet 1st indent and 1st-line text
+	WORD	wBorderSpace;			// Border-text spaces (nbl/bdr in pts)
+	WORD	wBorderWidth;			// Pen widths (nbl/bdr in half twips)
+	WORD	wBorders;				// Border styles (nibble/border)
+} _PARAFORMAT2;
+

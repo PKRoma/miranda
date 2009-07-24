@@ -28,30 +28,23 @@ $Id: formatting.cpp 10366 2009-07-18 22:15:04Z silvercircle $
 License: GPL
 */
 
+#define __CPP_LEAN
+
 #include "commonheaders.h"
 
-#include <tchar.h>
-#include <windows.h>
-#include <richedit.h>
-
 #include <string>
-#include "msgdlgutils.h"
-#include "../API/m_smileyadd.h"
 
 #define MWF_LOG_BBCODE 1
 #define MWF_LOG_TEXTFORMAT 0x2000000
 #define MSGDLGFONTCOUNT 22
 
-extern "C" RTFColorTable *rtf_ctable;
-extern "C" TCHAR *xStatusDescr[];
-extern "C" TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
-extern "C" DWORD m_LangPackCP;
-extern "C" INT_PTR MY_CallService(const char *svc, WPARAM wParam, LPARAM lParam);
-extern "C" int MY_ServiceExists(const char *svc);
-extern "C" void RTF_ColorAdd(const TCHAR *tszColname, size_t length);
-extern "C" int  haveMathMod;
-extern "C" TCHAR *mathModDelimiter;
-extern "C" unsigned int g_ctable_size;
+extern RTFColorTable *rtf_ctable;
+extern TCHAR *xStatusDescr[];
+extern DWORD m_LangPackCP;
+extern void RTF_ColorAdd(const TCHAR *tszColname, size_t length);
+extern int  haveMathMod;
+extern TCHAR *mathModDelimiter;
+extern unsigned int g_ctable_size;
 
 static int iHaveSmileyadd = -1;
 
@@ -75,7 +68,7 @@ static WCHAR *formatting_strings_end[] = { L"b0 ", L"i0 ", L"u0 ", L"s0 ", L
  *        hiword = bbcode support (strip bbcodes if 0)
  */
 
-extern "C" const WCHAR *FilterEventMarkers(WCHAR *wszText)
+WCHAR *FilterEventMarkers(WCHAR *wszText)
 {
 	std::wstring text(wszText);
 	INT_PTR beginmark = 0, endmark = 0;
@@ -109,7 +102,8 @@ extern "C" const WCHAR *FilterEventMarkers(WCHAR *wszText)
 	lstrcpyW(wszText, text.c_str());
 	return wszText;
 }
-extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags, const char *szProto, HANDLE hContact, BOOL *clr_added, BOOL isSent)
+
+const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags, const char *szProto, HANDLE hContact, BOOL *clr_added, BOOL isSent)
 {
 	bool clr_was_added = false, was_added;
 	static std::wstring message(msg);
@@ -126,7 +120,7 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags, co
 		goto nobbcode;
 
 	if (iHaveSmileyadd == -1)
-		iHaveSmileyadd = MY_ServiceExists(MS_SMILEYADD_BATCHPARSE);
+		iHaveSmileyadd = ServiceExists(MS_SMILEYADD_BATCHPARSE);
 
 	if (haveMathMod && mathModDelimiter) {
 		INT_PTR mark = 0;
@@ -221,6 +215,7 @@ nobbcode:
 	if (!(dwFlags & MWF_LOG_TEXTFORMAT))
 		goto nosimpletags;
 
+
 	while ((beginmark = message.find_first_of(L"*/_", beginmark)) != message.npos) {
 		endmarker = message[beginmark];
 		if (LOWORD(flags)) {
@@ -259,9 +254,9 @@ ok:
 		}
 
 		/*
-		 * check if the code enclosed by simple formatting tags is a valid smiley code and skip formatting if
-		 * it really is one.
-		 */
+		* check if the code enclosed by simple formatting tags is a valid smiley code and skip formatting if
+		* it really is one.
+		*/
 
 		if (iHaveSmileyadd && endmark > beginmark + 1) {
 			std::wstring smcode;
@@ -274,9 +269,9 @@ ok:
 			smbp.flag = SAFL_TCHAR | SAFL_PATH | (isSent ? SAFL_OUTGOING : 0);
 			smbp.str = (TCHAR *)smcode.c_str();
 			smbp.hContact = hContact;
-			smbpr = (SMADD_BATCHPARSERES *)MY_CallService(MS_SMILEYADD_BATCHPARSE, 0, (LPARAM) & smbp);
+			smbpr = (SMADD_BATCHPARSERES *)CallService(MS_SMILEYADD_BATCHPARSE, 0, (LPARAM) & smbp);
 			if (smbpr) {
-				MY_CallService(MS_SMILEYADD_BATCHFREE, 0, (LPARAM)smbpr);
+				CallService(MS_SMILEYADD_BATCHFREE, 0, (LPARAM)smbpr);
 				beginmark = endmark + 1;
 				continue;
 			}
@@ -291,6 +286,7 @@ nosimpletags:
 		*clr_added = TRUE;
 	return(message.c_str());
 }
+
 
 #else   // unicode
 
@@ -307,7 +303,7 @@ static char *formatting_strings_end[] = { "b0 ", "i0 ", "u0 ", "s0 ", "c0 "
 * this translates formatting tags into rtf sequences...
 */
 
-extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags, const char *szProto, HANDLE hContact, BOOL *clr_added, BOOL isSent)
+const char *FormatRaw(DWORD dwFlags, const char *msg, int flags, const char *szProto, HANDLE hContact, BOOL *clr_added, BOOL isSent)
 {
 	bool clr_was_added = false, was_added;
 	static std::string message(msg);
@@ -323,7 +319,7 @@ extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags, cons
 		goto nobbcode;
 
 	if (iHaveSmileyadd == -1)
-		iHaveSmileyadd = MY_ServiceExists(MS_SMILEYADD_BATCHPARSE);
+		iHaveSmileyadd = ServiceExists(MS_SMILEYADD_BATCHPARSE);
 
 	if (haveMathMod && mathModDelimiter) {
 		unsigned mark = 0;
@@ -467,9 +463,9 @@ ok:
 			smbp.flag = SAFL_TCHAR | SAFL_PATH | (isSent ? SAFL_OUTGOING : 0);
 			smbp.str = (TCHAR *)smcode.c_str();
 			smbp.hContact = hContact;
-			smbpr = (SMADD_BATCHPARSERES *)MY_CallService(MS_SMILEYADD_BATCHPARSE, 0, (LPARAM) & smbp);
+			smbpr = (SMADD_BATCHPARSERES *)CallService(MS_SMILEYADD_BATCHPARSE, 0, (LPARAM) & smbp);
 			if (smbpr) {
-				MY_CallService(MS_SMILEYADD_BATCHFREE, 0, (LPARAM)smbpr);
+				CallService(MS_SMILEYADD_BATCHFREE, 0, (LPARAM)smbpr);
 				beginmark = endmark + 1;
 				continue;
 			}
@@ -492,10 +488,7 @@ nosimpletags:
  * the caller must free() the returned string
  */
 
-extern "C" int MY_DBGetContactSettingTString(HANDLE hContact, char *szModule, char *szSetting, DBVARIANT *dbv);
-extern "C" int MY_DBFreeVariant(DBVARIANT *dbv);
-
-extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const TCHAR *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus, WORD wStatus, TCHAR *tszAccname)
+extern TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const TCHAR *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus, WORD wStatus, TCHAR *tszAccname)
 {
 	TCHAR *szResult = 0;
 	INT_PTR length = 0;
@@ -525,21 +518,21 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 				title.erase(tempmark, 2);
 				curpos = tempmark + lstrlen(szNickname);
 				break;
-			}
+					  }
 			case 'a': {
 				if (tszAccname)
 					title.insert(tempmark + 2, tszAccname);
 				title.erase(tempmark, 2);
 				curpos = tempmark + lstrlen(tszAccname);
 				break;
-			}
+					  }
 			case 's': {
 				if (szStatus && szStatus[0])
 					title.insert(tempmark + 2, szStatus);
 				title.erase(tempmark, 2);
 				curpos = tempmark + lstrlen(szStatus);
 				break;
-			}
+					  }
 			case 'u': {
 				if (szUin) {
 #if defined(_UNICODE)
@@ -554,13 +547,13 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 				title.erase(tempmark, 2);
 				curpos = tempmark + lstrlen(szTemp);
 				break;
-			}
+					  }
 			case 'c': {
 				title.insert(tempmark + 2, szContainer);
 				title.erase(tempmark, 2);
 				curpos = tempmark + lstrlen(szContainer);
 				break;
-			}
+					  }
 			case 'p': {
 				if (szProto) {
 #if defined(_UNICODE)
@@ -575,17 +568,17 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 				title.erase(tempmark, 2);
 				curpos = tempmark + lstrlen(szTemp);
 				break;
-			}
+					  }
 			case 'x': {
 				TCHAR *szFinalStatus = NULL;
 
 				if (wStatus != ID_STATUS_OFFLINE && xStatus > 0 && xStatus <= 31) {
 					DBVARIANT dbv = {0};
 
-					if (!MY_DBGetContactSettingTString(hContact, (char *)szProto, "XStatusName", &dbv)) {
+					if (!DBGetContactSettingTString(hContact, (char *)szProto, "XStatusName", &dbv)) {
 						_tcsncpy(szTemp, dbv.ptszVal, 500);
 						szTemp[500] = 0;
-						MY_DBFreeVariant(&dbv);
+						DBFreeVariant(&dbv);
 						title.insert(tempmark + 2, szTemp);
 						curpos = tempmark + lstrlen(szTemp);
 					}
@@ -596,17 +589,17 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 				}
 				title.erase(tempmark, 2);
 				break;
-			}
+					  }
 			case 'm': {
 				TCHAR *szFinalStatus = NULL;
 
 				if (wStatus != ID_STATUS_OFFLINE && xStatus > 0 && xStatus <= 31) {
 					DBVARIANT dbv = {0};
 
-					if (!MY_DBGetContactSettingTString(hContact, (char *)szProto, "XStatusName", &dbv)) {
+					if (!DBGetContactSettingTString(hContact, (char *)szProto, "XStatusName", &dbv)) {
 						_tcsncpy(szTemp, dbv.ptszVal, 500);
 						szTemp[500] = 0;
-						MY_DBFreeVariant(&dbv);
+						DBFreeVariant(&dbv);
 						title.insert(tempmark + 2, szTemp);
 					} else
 						szFinalStatus = xStatusDescr[xStatus - 1];
@@ -620,7 +613,7 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 
 				title.erase(tempmark, 2);
 				break;
-			}
+					  }
 			default:
 				title.erase(tempmark, 1);
 				break;
@@ -636,7 +629,7 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 	return szResult;
 }
 
-extern "C" const char *FilterEventMarkersA(char *szText)
+char *FilterEventMarkersA(char *szText)
 {
 	std::string text(szText);
 	INT_PTR beginmark = 0, endmark = 0;
@@ -683,7 +676,7 @@ typedef std::basic_string<TCHAR,std::char_traits<TCHAR> > tstring;
 	#endif
 #endif
 
-extern "C" const TCHAR *DoubleAmpersands(TCHAR *pszText)
+const TCHAR *DoubleAmpersands(TCHAR *pszText)
 {
 #if defined(UNICODE)
 	std::wstring text(pszText);

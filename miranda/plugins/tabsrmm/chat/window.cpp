@@ -20,12 +20,14 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id$
+$Id: window.c 10402 2009-07-24 00:35:21Z silvercircle $
 
 */
 
 #include "../src/commonheaders.h"
 #include "../src/resource.h"
+
+#include <tom.h>
 
 //#include "../m_MathModule.h"
 
@@ -39,6 +41,7 @@ extern HRESULT(WINAPI *MyCloseThemeData)(HANDLE);
 extern BOOL g_framelessSkinmode;
 extern SESSION_INFO g_TabSession;
 extern HANDLE g_hEvent_MsgPopup;
+extern REOLECallback *mREOLECallback;
 
 //MAD
 extern HANDLE hMessageWindowList;
@@ -51,10 +54,9 @@ extern MYGLOBALS	myGlobals;
 extern HBRUSH		hListBkgBrush;
 extern HANDLE		hSendEvent;
 extern HICON		hIcons[30];
-extern struct		CREOleCallback reOleCallback;
 extern HMENU		g_hMenu;
 extern int        g_sessionshutdown;
-extern char*      szWarnClose;
+char*      szWarnClose;
 extern WNDPROC OldSplitterProc;
 
 static WNDPROC OldMessageProc;
@@ -103,44 +105,48 @@ static BOOL CheckCustomLink(HWND hwndDlg, POINT* ptClient, UINT uMsg, WPARAM wPa
 
 	do  {
 		if (!SendMessage(hwndDlg, EM_GETOLEINTERFACE, 0, (LPARAM)&RichEditOle)) break;
-		if (RichEditOle->lpVtbl->QueryInterface(RichEditOle, &IID_ITextDocument, (void**)&TextDocument) != S_OK) break;
-		if (TextDocument->lpVtbl->RangeFromPoint(TextDocument, pt.x, pt.y, &TextRange) != S_OK) break;
+		if (RichEditOle->QueryInterface(IID_ITextDocument, (void**)&TextDocument) != S_OK) break;
+		if (TextDocument->RangeFromPoint(pt.x, pt.y, &TextRange) != S_OK) break;
 
-		TextRange->lpVtbl->GetStart(TextRange,&cpMin);
+		TextRange->GetStart(&cpMin);
 		cpMax = cpMin+1;
-		TextRange->lpVtbl->SetEnd(TextRange,cpMax);
+		TextRange->SetEnd(cpMax);
 
-		if (TextRange->lpVtbl->GetFont(TextRange, &TextFont) != S_OK) break;
+		if (TextRange->GetFont(&TextFont) != S_OK)
+			break;
 
-		TextFont->lpVtbl->GetProtected(TextFont, &res);
-		if (res != tomTrue) break;
+		TextFont->GetProtected(&res);
+		if (res != tomTrue)
+			break;
 
-		TextRange->lpVtbl->GetPoint(TextRange, tomEnd+TA_BOTTOM+TA_RIGHT, &ptEnd.x, &ptEnd.y);
-		if (pt.x > ptEnd.x || pt.y > ptEnd.y) break;
+		TextRange->GetPoint(tomEnd+TA_BOTTOM+TA_RIGHT, &ptEnd.x, &ptEnd.y);
+		if (pt.x > ptEnd.x || pt.y > ptEnd.y)
+			break;
 
 		if (bUrlNeeded) {
-			TextRange->lpVtbl->GetStoryLength(TextRange, &cnt);
+			TextRange->GetStoryLength(&cnt);
 			for (; cpMin > 0; cpMin--) {
 				res = tomTrue;
-				TextRange->lpVtbl->SetIndex(TextRange, tomCharacter, cpMin+1, tomTrue);
-				TextFont->lpVtbl->GetProtected(TextFont, &res);
+				TextRange->SetIndex(tomCharacter, cpMin+1, tomTrue);
+				TextFont->GetProtected(&res);
 				if (res != tomTrue) { cpMin++; break; }
 			}
 			for (cpMax--; cpMax < cnt; cpMax++) {
 				res = tomTrue;
-				TextRange->lpVtbl->SetIndex(TextRange, tomCharacter, cpMax+1, tomTrue);
-				TextFont->lpVtbl->GetProtected(TextFont, &res);
-				if (res != tomTrue) break;
+				TextRange->SetIndex(tomCharacter, cpMax+1, tomTrue);
+				TextFont->GetProtected(&res);
+				if (res != tomTrue)
+					break;
 			}
 		}
 
 		bIsCustomLink = (cpMin < cpMax);
 		} while(FALSE);
 
-	if (TextFont) TextFont->lpVtbl->Release(TextFont);
-	if (TextRange) TextRange->lpVtbl->Release(TextRange);
-	if (TextDocument) TextDocument->lpVtbl->Release(TextDocument);
-	if (RichEditOle) RichEditOle->lpVtbl->Release(RichEditOle);
+	if (TextFont) TextFont->Release();
+	if (TextRange) TextRange->Release();
+	if (TextDocument) TextDocument->Release();
+	if (RichEditOle) RichEditOle->Release();
 
 	if (bIsCustomLink) {
 		ENLINK enlink = {0};
@@ -185,10 +191,10 @@ static BOOL IsStringValidLink(TCHAR* pszText)
  * container window
  */
 
-static void Chat_UpdateWindowState(HWND hwndDlg, struct MessageWindowData *dat, UINT msg)
+static void Chat_UpdateWindowState(HWND hwndDlg, struct _MessageWindowData *dat, UINT msg)
 {
 	HWND hwndTab = GetParent(hwndDlg);
-	SESSION_INFO *si = dat->si;
+	SESSION_INFO *si = (SESSION_INFO *)dat->si;
 
 	if (dat == NULL)
 		return;
@@ -308,7 +314,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 {
 	RECT rc, rcTabs;
 	SESSION_INFO* si = (SESSION_INFO*)lParam;
-	struct      MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	struct      _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	int			TabHeight;
 	BOOL		bToolbar = !(dat->pContainer->dwFlags & CNT_HIDETOOLBAR);
 	BOOL		bBottomToolbar = dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR ? 1 : 0;
@@ -444,11 +450,11 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 {
 	MESSAGESUBDATA *dat;
 	SESSION_INFO* Parentsi;
-	struct MessageWindowData *mwdat;
+	struct _MessageWindowData *mwdat;
 	HWND hwndParent = GetParent(hwnd);
 
-	mwdat = (struct MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
-	Parentsi = mwdat->si;
+	mwdat = (struct _MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
+	Parentsi = (SESSION_INFO *)mwdat->si;
 
 	dat = (MESSAGESUBDATA *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	switch (msg) {
@@ -1389,7 +1395,7 @@ static LRESULT CALLBACK ButtonSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, L
 static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndParent = GetParent(hwnd);
-	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
+	struct _MessageWindowData *mwdat = (struct _MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 
 	switch (msg) {
 		case WM_NCCALCSIZE:
@@ -1545,7 +1551,7 @@ static void ProcessNickListHovering(HWND hwnd, int hoveredItem, POINT * pt, SESS
 static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndParent = GetParent(hwnd);
-	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
+	struct _MessageWindowData *mwdat = (struct _MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 
 	switch (msg) {
 		//MAD: attemp to fix weird bug, when combobox with hidden vscroll
@@ -1567,8 +1573,8 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 		case WM_ERASEBKGND: {
 			HDC dc = (HDC)wParam;
-			struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
-			SESSION_INFO * parentdat = dat->si;
+			struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
+			SESSION_INFO *parentdat = (SESSION_INFO *)dat->si;
 			if (dc) {
 				int height, index, items = 0;
 
@@ -1742,8 +1748,8 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 			int item;
 			int height;
 			USERINFO * ui;
-			struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
-			SESSION_INFO * parentdat = dat->si;
+			struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
+			SESSION_INFO *parentdat = (SESSION_INFO *)dat->si;
 
 
 			hti.pt.x = (short) LOWORD(lParam);
@@ -1834,8 +1840,8 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
   */
 			if (bInClient) {
 				//hit test item under mouse
-				struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
-				SESSION_INFO * parentdat = dat->si;
+				struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
+				SESSION_INFO *parentdat = (SESSION_INFO *)dat->si;
 
 				DWORD nItemUnderMouse = (DWORD)SendMessage(hwnd, LB_ITEMFROMPOINT, 0, lParam);
 				if (HIWORD(nItemUnderMouse) == 1)
@@ -1868,7 +1874,7 @@ int GetTextPixelSize(TCHAR* pszText, HFONT hFont, BOOL bWidth)
 		return 0;
 
 	hdc = GetDC(NULL);
-	hOldFont = SelectObject(hdc, hFont);
+	hOldFont = (HFONT)SelectObject(hdc, hFont);
 	i = DrawText(hdc, pszText , -1, &rc, DT_CALCRECT);
 	SelectObject(hdc, hOldFont);
 	ReleaseDC(NULL, hdc);
@@ -1944,7 +1950,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 {
 	SESSION_INFO * si = NULL;
 	HWND hwndTab = GetParent(hwndDlg);
-	struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	if (dat)
 		si = (SESSION_INFO *)dat->si;
 
@@ -1955,12 +1961,12 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 		case WM_INITDIALOG: {
 			int mask;
 			struct NewMessageWindowLParam *newData = (struct NewMessageWindowLParam *) lParam;
-			struct MessageWindowData *dat;
+			struct _MessageWindowData *dat;
 			SESSION_INFO * psi = (SESSION_INFO*)newData->hdbEvent;
 			RECT rc;
 
-			dat = (struct MessageWindowData *)malloc(sizeof(struct MessageWindowData));
-			ZeroMemory(dat, sizeof(struct MessageWindowData));
+			dat = (struct _MessageWindowData *)malloc(sizeof(struct _MessageWindowData));
+			ZeroMemory(dat, sizeof(struct _MessageWindowData));
 			si = psi;
 			dat->si = (void *)psi;
 			dat->hContact = psi->hContact;
@@ -1984,7 +1990,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			//
 			BroadCastContainer(dat->pContainer, DM_REFRESHTABINDEX, 0, 0);
 
-			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
+			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETOLECALLBACK, 0, (LPARAM) mREOLECallback);
 			//MAD
 			myGlobals.g_NickListScrollBarFix = DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_ScrollBarFix", 1);
 
@@ -2078,9 +2084,10 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			{ //messagebox
 				COLORREF	    crFore;
 				LOGFONTA        lf;
-				CHARFORMAT2A    cf2 = {0};
+				CHARFORMAT2A    cf2;
 				COLORREF crB = DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR);
 
+				ZeroMemory(&cf2, sizeof(CHARFORMAT2A));
 				LoadLogfont(MSGFONTID_MESSAGEAREA, &lf, &crFore, FONTMODULE);
 				cf2.dwMask = CFM_COLOR | CFM_FACE | CFM_CHARSET | CFM_SIZE | CFM_WEIGHT | CFM_ITALIC | CFM_BACKCOLOR;
 				cf2.cbSize = sizeof(cf2);
@@ -2609,7 +2616,7 @@ LABEL_SHOWWINDOW:
 			HWND ColorWindow;
 			RECT rc;
 			BOOL bFG = lParam == IDC_COLOR ? TRUE : FALSE;
-			COLORCHOOSER * pCC = mir_alloc(sizeof(COLORCHOOSER));
+			COLORCHOOSER *pCC = (COLORCHOOSER *)mir_alloc(sizeof(COLORCHOOSER));
 
 			GetWindowRect(GetDlgItem(hwndDlg, bFG ? IDC_COLOR : IDC_BKGCOLOR), &rc);
 			pCC->hWndTarget = GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE);
@@ -2799,7 +2806,7 @@ LABEL_SHOWWINDOW:
 								if (sel.cpMin != sel.cpMax)
 									break;
 								tr.chrg = ((ENLINK *) lParam)->chrg;
-								tr.lpstrText = mir_alloc(sizeof(TCHAR) * (tr.chrg.cpMax - tr.chrg.cpMin + 2));
+								tr.lpstrText = (TCHAR *)mir_alloc(sizeof(TCHAR) * (tr.chrg.cpMax - tr.chrg.cpMin + 2));
 								SendMessage(pNmhdr->hwndFrom, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
 
 								isLink = IsStringValidLink(tr.lpstrText);

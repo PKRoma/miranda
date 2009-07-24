@@ -24,19 +24,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <richole.h>
 #include <ole2.h>
 
-struct MsgLogIcon {
-    HBITMAP hBmp, hoBmp;
-    HDC hdc, hdcMem;
-    HBRUSH hBkgBrush;
-};
-
 class CImageDataObject : IDataObject
 {
 public:
   // returns true on success, false on failure
 	static bool InsertBitmap(IRichEditOle* pRichEditOle, HBITMAP hBitmap);
   // returns true on success, false on failure
-    //static bool InsertIcon(IRichEditOle* pRichEditOle, HICON hIcon, 
+    //static bool InsertIcon(IRichEditOle* pRichEditOle, HICON hIcon,
     //COLORREF backgroundColor, int sizeX = 0, int sizeY = 0);
 
 private:

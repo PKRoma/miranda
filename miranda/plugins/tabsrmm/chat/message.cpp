@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id$
+$Id: message.c 10402 2009-07-24 00:35:21Z silvercircle $
 */
 
 #include "../src/commonheaders.h"
@@ -100,7 +100,7 @@ TCHAR* Chat_DoRtfToTags(char* pszText, SESSION_INFO* si)
 
 	// create an index of colors in the module and map them to
 	// corresponding colors in the RTF color table
-	pIndex = mir_alloc(sizeof(int) * MM_FindModule(si->pszModule)->nColorCount);
+	pIndex = (int *)mir_alloc(sizeof(int) * MM_FindModule(si->pszModule)->nColorCount);
 	for (i = 0; i < MM_FindModule(si->pszModule)->nColorCount ; i++)
 		pIndex[i] = -1;
 
@@ -324,13 +324,13 @@ static DWORD CALLBACK Chat_Message_StreamCallback(DWORD_PTR dwCookie, LPBYTE pbB
 	char ** ppText = (char **) dwCookie;
 
 	if (*ppText == NULL) {
-		*ppText = mir_alloc(cb + 1);
+		*ppText = (char *)mir_alloc(cb + 1);
 		memcpy(*ppText, pbBuff, cb);
 		(*ppText)[cb] = 0;
 		*pcb = cb;
 		dwRead = cb;
 	} else {
-		char  *p = mir_alloc(dwRead + cb + 1);
+		char  *p = (char *)mir_alloc(dwRead + cb + 1);
 		memcpy(p, *ppText, dwRead);
 		memcpy(p + dwRead, pbBuff, cb);
 		p[dwRead + cb] = 0;

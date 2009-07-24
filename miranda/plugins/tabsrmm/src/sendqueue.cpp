@@ -36,14 +36,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern      MYGLOBALS myGlobals;
 extern      TCHAR *pszIDCSAVE_save, *pszIDCSAVE_close;
-extern      const UINT errorControls[5], infoPanelControls[7];
+extern 		UINT infoPanelControls[];
 extern      struct SendJob *sendJobs;
 extern      NEN_OPTIONS nen_options;
 
 static char *pss_msg = "/SendMsg";
 static char *pss_msgw = "/SendMsgW";
 
-char *MsgServiceName(HANDLE hContact, struct MessageWindowData *dat, int dwFlags)
+char *MsgServiceName(HANDLE hContact, struct _MessageWindowData *dat, int dwFlags)
 {
 #ifdef _UNICODE
 	char	szServiceName[100];
@@ -64,13 +64,13 @@ char *MsgServiceName(HANDLE hContact, struct MessageWindowData *dat, int dwFlags
 
 #define MS_INITIAL_DELAY 500
 
-static DWORD WINAPI DoMultiSend(LPVOID param)
+static unsigned __stdcall WINAPI DoMultiSend(LPVOID param)
 {
 	int		iIndex = (int)param;
 	HWND	hwndOwner = sendJobs[iIndex].hwndOwner;
 	DWORD	dwDelay = MS_INITIAL_DELAY;               // start with 1sec delay...
 	DWORD	dwDelayAdd = 0;
-	struct	MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(hwndOwner, GWLP_USERDATA);
+	struct	_MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndOwner, GWLP_USERDATA);
 	int		i;
 
 	for (i = 0; i < sendJobs[iIndex].sendCount; i++) {
@@ -94,7 +94,7 @@ static DWORD WINAPI DoMultiSend(LPVOID param)
  * returns: zero-based queue index or -1 if none was found
  */
 
-int FindNextFailedMsg(HWND hwndDlg, struct MessageWindowData *dat)
+int FindNextFailedMsg(HWND hwndDlg, struct _MessageWindowData *dat)
 {
 	int i;
 
@@ -104,7 +104,7 @@ int FindNextFailedMsg(HWND hwndDlg, struct MessageWindowData *dat)
 	}
 	return -1;
 }
-void HandleQueueError(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
+void HandleQueueError(HWND hwndDlg, struct _MessageWindowData *dat, int iEntry)
 {
 	char szErrorMsg[512];
 
@@ -128,7 +128,7 @@ void HandleQueueError(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
  * add a message to the sending queue.
  * iLen = required size of the memory block to hold the message
  */
-int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen, int dwFlags)
+int AddToSendQueue(HWND hwndDlg, struct _MessageWindowData *dat, int iLen, int dwFlags)
 {
 	int iLength = 0, i;
 	int iFound = NR_SENDJOBS;
@@ -202,11 +202,11 @@ static int SendChunkW(WCHAR *chunk, HANDLE hContact, char *szSvc, DWORD dwFlags)
 	int		wLen = lstrlenW(chunk), id;
 	DWORD	memRequired = (wLen + 1) * sizeof(WCHAR);
 	DWORD	codePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", CP_ACP);
-	int		mbcsSize = WideCharToMultiByte(codePage, 0, chunk, -1, pBuf, 0, 0, 0);
+	int		mbcsSize = WideCharToMultiByte(codePage, 0, chunk, -1, (char *)pBuf, 0, 0, 0);
 
 	memRequired += mbcsSize;
 	pBuf = (BYTE *)mir_alloc(memRequired);
-	WideCharToMultiByte(codePage, 0, chunk, -1, pBuf, mbcsSize, 0, 0);
+	WideCharToMultiByte(codePage, 0, chunk, -1, (char *)pBuf, mbcsSize, 0, 0);
 	CopyMemory(&pBuf[mbcsSize], chunk, (wLen + 1) * sizeof(WCHAR));
 	id = CallContactService(hContact, szSvc, dwFlags, (LPARAM)pBuf);
 	mir_free(pBuf);
@@ -221,7 +221,7 @@ static int SendChunkA(char *chunk, HANDLE hContact, char *szSvc, DWORD dwFlags)
 
 #if defined(_UNICODE)
 
-static int DoSplitSendW(LPVOID param)
+static void DoSplitSendW(LPVOID param)
 {
 	struct  SendJob *job = &sendJobs[(int)param];
 	int     id;
@@ -305,12 +305,11 @@ static int DoSplitSendW(LPVOID param)
 	}
 	while (fSplitting);
 	mir_free(wszBegin);
-	return 0;
 }
 
 #endif
 
-static int DoSplitSendA(LPVOID param)
+static void DoSplitSendA(LPVOID param)
 {
 	struct  SendJob *job = &sendJobs[(int)param];
 	int     id;
@@ -379,10 +378,9 @@ static int DoSplitSendA(LPVOID param)
 	}
 	while (fSplitting);
 	mir_free(szBegin);
-	return 0;
 }
 
-static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
+static int SendQueuedMessage(HWND hwndDlg, struct _MessageWindowData *dat, int iEntry)
 {
 	if (dat->sendMode & SMODE_MULTIPLE) {            // implement multiple later...
 		HANDLE hContact, hItem;
@@ -535,7 +533,7 @@ void ClearSendJob(int iIndex)
  * it removes the completed / canceled send job from the queue and schedules the next job to send (if any)
  */
 
-void CheckSendQueue(HWND hwndDlg, struct MessageWindowData *dat)
+void CheckSendQueue(HWND hwndDlg, struct _MessageWindowData *dat)
 {
 	if (dat->iOpenJobs == 0) {
 		HandleIconFeedback(hwndDlg, dat, (HICON) - 1);
@@ -552,7 +550,7 @@ void CheckSendQueue(HWND hwndDlg, struct MessageWindowData *dat)
  * from the given sendJob (queue index)
  */
 
-void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSendJobIndex, TCHAR *szErrMsg)
+void LogErrorMessage(HWND hwndDlg, struct _MessageWindowData *dat, int iSendJobIndex, TCHAR *szErrMsg)
 {
 	DBEVENTINFO	dbei = {0};
 	int				iMsgLen;
@@ -589,7 +587,7 @@ void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSendJobIn
  * ) send button
  */
 
-void EnableSending(HWND hwndDlg, struct MessageWindowData *dat, int iMode)
+void EnableSending(HWND hwndDlg, struct _MessageWindowData *dat, int iMode)
 {
 	SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETREADONLY, (WPARAM) iMode ? FALSE : TRUE, 0);
 	EnableWindow(GetDlgItem(hwndDlg, IDC_CLIST), iMode ? TRUE : FALSE);
@@ -600,7 +598,7 @@ void EnableSending(HWND hwndDlg, struct MessageWindowData *dat, int iMode)
  * show or hide the error control button bar on top of the window
  */
 
-void ShowErrorControls(HWND hwndDlg, struct MessageWindowData *dat, int showCmd)
+void ShowErrorControls(HWND hwndDlg, struct _MessageWindowData *dat, int showCmd)
 {
 	UINT	myerrorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER};
 	int		i;
@@ -639,7 +637,7 @@ void ShowErrorControls(HWND hwndDlg, struct MessageWindowData *dat, int showCmd)
 		EnableSending(hwndDlg, dat, TRUE);
 }
 
-void RecallFailedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
+void RecallFailedMessage(HWND hwndDlg, struct _MessageWindowData *dat, int iEntry)
 {
 	int		iLen = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE));
 
@@ -661,7 +659,7 @@ void RecallFailedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry
 	}
 }
 
-void UpdateSaveAndSendButton(HWND hwndDlg, struct MessageWindowData *dat)
+void UpdateSaveAndSendButton(HWND hwndDlg, struct _MessageWindowData *dat)
 {
 	int					len;
 #if defined(_UNICODE)
@@ -718,7 +716,7 @@ static BOOL CALLBACK PopupDlgProcError(HWND hWnd, UINT message, WPARAM wParam, L
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-void NotifyDeliveryFailure(HWND hwndDlg, struct MessageWindowData *dat)
+void NotifyDeliveryFailure(HWND hwndDlg, struct _MessageWindowData *dat)
 {
 #if defined _UNICODE
 	POPUPDATAW		ppd;
@@ -771,11 +769,11 @@ static INT_PTR CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 		case WM_COMMAND:
 			if (HIWORD(wParam) == STN_CLICKED) {
 				HWND hwnd;
-				struct MessageWindowData *dat;
+				struct _MessageWindowData *dat;
 
 
 				hwnd = (HWND)CallService(MS_POPUP_GETPLUGINDATA, (WPARAM)hWnd, (LPARAM) & hwnd);
-				dat = (struct MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+				dat = (struct _MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 				if (dat) {
 					ActivateExistingTab(dat->pContainer, hwnd);
 				}
@@ -821,7 +819,7 @@ int RTL_Detect(WCHAR *pszwText)
 }
 #endif
 
-int AckMessage(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
+int AckMessage(HWND hwndDlg, struct _MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
 	ACKDATA		*ack = (ACKDATA *) lParam;
 	DBEVENTINFO	dbei = { 0};

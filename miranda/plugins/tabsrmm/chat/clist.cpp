@@ -26,7 +26,7 @@ contacts and handle default action for such contacts.
 This code was taken in almost unmodified from from the chat.dll
 plugin, originally written by Jörgen Persson
 
-$Id$
+$Id: clist.c 10402 2009-07-24 00:35:21Z silvercircle $
 
 */
 

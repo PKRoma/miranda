@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id$
+$Id: services.c 10402 2009-07-24 00:35:21Z silvercircle $
 
 */
 
@@ -38,7 +38,7 @@ HANDLE				hSendEvent;
 HANDLE				hBuildMenuEvent;
 HANDLE				hJoinMenuItem, hLeaveMenuItem;
 HANDLE				g_hHookPrebuildMenu;
-SESSION_INFO		g_TabSession;
+extern SESSION_INFO	g_TabSession;
 CRITICAL_SECTION	cs;
 int					g_sessionshutdown = 0;
 
@@ -206,7 +206,7 @@ INT_PTR Service_Register(WPARAM wParam, LPARAM lParam)
 		mi->iMaxText = gcr->iMaxText;
 		mi->nColorCount = gcr->nColors;
 		if (gcr->nColors > 0) {
-			mi->crColors = mir_alloc(sizeof(COLORREF) * gcr->nColors);
+			mi->crColors = (COLORREF *)mir_alloc(sizeof(COLORREF) * gcr->nColors);
 			memcpy(mi->crColors, gcr->pColors, sizeof(COLORREF) * gcr->nColors);
 		}
 		mi->pszHeader = Log_CreateRtfHeader(mi);
@@ -522,7 +522,7 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
 		int iCount = TabCtrl_GetItemCount(hwndTab);
 		TCITEM item = {0};
 		HWND hwnd;
-		struct MessageWindowData *dat;
+		struct _MessageWindowData *dat;
 		int relPos;
 		int i;
 
@@ -532,7 +532,7 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
 				item.mask = TCIF_PARAM;
 				TabCtrl_GetItem(hwndTab, i, &item);
 				hwnd = (HWND)item.lParam;
-				dat = (struct MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+				dat = (struct _MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 				if (dat) {
 					relPos = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "tabindex", i * 100);
 					if (iTabIndex_wanted <= relPos)

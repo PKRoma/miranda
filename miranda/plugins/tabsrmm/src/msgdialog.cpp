@@ -59,9 +59,9 @@ extern PITBPT pfnIsThemeBackgroundPartiallyTransparent;
 extern PDTPB  pfnDrawThemeParentBackground;
 extern PGTBCR pfnGetThemeBackgroundContentRect;
 
-extern	char  *FilterEventMarkersA(char *szText);
-extern	WCHAR *FilterEventMarkers(WCHAR *wszText);
-extern  TCHAR *DoubleAmpersands(TCHAR *pszText);
+char  *FilterEventMarkersA(char *szText);
+WCHAR *FilterEventMarkers(WCHAR *wszText);
+extern const TCHAR *DoubleAmpersands(TCHAR *pszText);
 
 TCHAR *xStatusDescr[] = {	_T("Angry"), _T("Duck"), _T("Tired"), _T("Party"), _T("Beer"), _T("Thinking"), _T("Eating"),
 								_T("TV"), _T("Friends"), _T("Coffee"),	_T("Music"), _T("Business"), _T("Camera"), _T("Funny"),
@@ -87,7 +87,7 @@ static const UINT controlsToHide1[] = { IDOK, IDC_FONTFACE,IDC_FONTSTRIKEOUT, ID
 static const UINT controlsToHide2[] = { IDOK, IDC_PIC, IDC_PROTOCOL, -1};
 static const UINT addControls[] = { IDC_ADD, IDC_CANCELADD };
 
-const UINT infoPanelControls[] = {IDC_PANELPIC, IDC_PANELNICK, IDC_PANELUIN,
+UINT infoPanelControls[] = {IDC_PANELPIC, IDC_PANELNICK, IDC_PANELUIN,
 								  IDC_PANELSTATUS, IDC_TOGGLENOTES, IDC_NOTES, IDC_PANELSPLITTER
 								 };
 const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER};
@@ -149,7 +149,7 @@ static BOOL IsUtfSendAvailable(HANDLE hContact)
 
 // pt in screen coords
 
-static void ShowPopupMenu(HWND hwndDlg, struct MessageWindowData *dat, int idFrom, HWND hwndFrom, POINT pt)
+static void ShowPopupMenu(HWND hwndDlg, struct _MessageWindowData *dat, int idFrom, HWND hwndFrom, POINT pt)
 {
 	HMENU hMenu, hSubMenu;
 	CHARRANGE sel, all = { 0, -1};
@@ -277,7 +277,7 @@ static void ShowPopupMenu(HWND hwndDlg, struct MessageWindowData *dat, int idFro
 	}
 }
 
-static void ResizeIeView(HWND hwndDlg, struct MessageWindowData *dat, DWORD px, DWORD py, DWORD cx, DWORD cy)
+static void ResizeIeView(HWND hwndDlg, struct _MessageWindowData *dat, DWORD px, DWORD py, DWORD cx, DWORD cy)
 {
 	RECT rcRichEdit, rcIeView;
 	POINT pt;
@@ -311,7 +311,7 @@ static void ResizeIeView(HWND hwndDlg, struct MessageWindowData *dat, DWORD px, 
 
 LRESULT CALLBACK IEViewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
+	struct _MessageWindowData *mwdat = (struct _MessageWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
 
 	switch (msg) {
 		case WM_NCCALCSIZE:
@@ -330,7 +330,7 @@ LRESULT CALLBACK IEViewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 LRESULT CALLBACK IEViewKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLongPtr(GetParent(GetParent(GetParent(hwnd))), GWLP_USERDATA);
+	struct _MessageWindowData *mwdat = (struct _MessageWindowData *)GetWindowLongPtr(GetParent(GetParent(GetParent(hwnd))), GWLP_USERDATA);
 
 	BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 	BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
@@ -361,7 +361,7 @@ LRESULT CALLBACK IEViewKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 LRESULT CALLBACK HPPKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 
-	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
+	struct _MessageWindowData *mwdat = (struct _MessageWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
 	BOOL isCtrl	 = GetKeyState(VK_CONTROL) & 0x8000;
 	BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
 	BOOL isAlt 	 = GetKeyState(VK_MENU) & 0x8000;
@@ -396,7 +396,7 @@ LRESULT CALLBACK HPPKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
  * normal IM sessions *only*. Group chat sessions have their own activation handler (see chat/window.c)
 */
 
-static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UINT msg)
+static void MsgWindowUpdateState(HWND hwndDlg, struct _MessageWindowData *dat, UINT msg)
 {
 	HWND hwndTab = GetParent(hwndDlg);
 
@@ -517,7 +517,7 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UI
 //
 }
 
-static void ConfigurePanel(HWND hwndDlg, struct MessageWindowData *dat)
+static void ConfigurePanel(HWND hwndDlg, struct _MessageWindowData *dat)
 {
 	const UINT cntrls[] = {IDC_PANELNICK, IDC_PANELUIN, IDC_PANELSTATUS};
 
@@ -525,7 +525,7 @@ static void ConfigurePanel(HWND hwndDlg, struct MessageWindowData *dat)
 	ShowWindow(GetDlgItem(hwndDlg, IDC_NOTES), dat->dwFlagsEx & MWF_SHOW_INFONOTES ? SW_SHOW : SW_HIDE);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLENOTES), dat->dwFlagsEx & MWF_SHOW_INFONOTES ? SW_SHOW : SW_HIDE);
 }
-static void ShowHideInfoPanel(HWND hwndDlg, struct MessageWindowData *dat)
+static void ShowHideInfoPanel(HWND hwndDlg, struct _MessageWindowData *dat)
 {
 	HBITMAP hbm = dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown);
 	BITMAP bm;
@@ -598,10 +598,10 @@ void ShowMultipleControls(HWND hwndDlg, const UINT *controls, int cControls, int
 
 void SetDialogToType(HWND hwndDlg)
 {
-	struct MessageWindowData *dat;
+	struct _MessageWindowData *dat;
 	int showToolbar = 0;
 
-	dat = (struct MessageWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	dat = (struct _MessageWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
 
 	if (dat->hContact) {
@@ -675,7 +675,7 @@ void SetDialogToType(HWND hwndDlg)
 	}
 }
 
-UINT NcCalcRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc)
+UINT NcCalcRichEditFrame(HWND hwnd, struct _MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc)
 {
 	LRESULT orig;
 	NCCALCSIZE_PARAMS *nccp = (NCCALCSIZE_PARAMS *)lParam;
@@ -728,7 +728,7 @@ UINT NcCalcRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID
  * may also draw a skin item around the rich edit control.
  */
 
-UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc)
+UINT DrawRichEditFrame(HWND hwnd, struct _MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc)
 {
 	StatusItems_t *item = &StatusItems[skinID];
 	LRESULT result = 0;
@@ -789,7 +789,7 @@ UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, 
 static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndParent = GetParent(hwnd);
-	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
+	struct _MessageWindowData *mwdat = (struct _MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 	//MAD
 	BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 	BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
@@ -868,7 +868,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 {
 	LONG lastEnterTime = GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	HWND hwndParent = GetParent(hwnd);
-	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
+	struct _MessageWindowData *mwdat = (struct _MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 
 	switch (msg) {
 		case WM_NCCALCSIZE:
@@ -1275,7 +1275,7 @@ static LRESULT CALLBACK AvatarSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, L
 
 static LRESULT CALLBACK MsgIndicatorSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
+	struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
 
 	switch (msg) {
 		case WM_PAINT: {
@@ -1286,7 +1286,7 @@ static LRESULT CALLBACK MsgIndicatorSubclassProc(HWND hwnd, UINT msg, WPARAM wPa
 			GetClientRect(hwnd, &rc);
 
 			if (dat && dat->pContainer->bSkinned) {
-				HPEN hPenOld = SelectObject(dc, myGlobals.g_SkinLightShadowPen);
+				HPEN hPenOld = (HPEN)SelectObject(dc, myGlobals.g_SkinLightShadowPen);
 				Rectangle(dc, 0, 0, rc.right, 2);
 				//SkinDrawBG(hwnd, dat->pContainer->hwnd, dat->pContainer, &rc, dc);
 				SelectObject(dc, hPenOld);
@@ -1295,7 +1295,7 @@ static LRESULT CALLBACK MsgIndicatorSubclassProc(HWND hwnd, UINT msg, WPARAM wPa
 
 			if (myGlobals.m_visualMessageSizeIndicator) {
 				HBRUSH br = CreateSolidBrush(RGB(0, 255, 0));
-				HBRUSH brOld = SelectObject(dc, br);
+				HBRUSH brOld = (HBRUSH)SelectObject(dc, br);
 				if (!myGlobals.m_autoSplit) {
 					float fMax = (float)dat->nMax;
 					float uPercent = (float)dat->textLen / ((fMax / (float)100.0) ? (fMax / (float)100.0) : (float)75.0);
@@ -1318,7 +1318,7 @@ static LRESULT CALLBACK MsgIndicatorSubclassProc(HWND hwnd, UINT msg, WPARAM wPa
 						SelectObject(dc, brOld);
 						DeleteObject(br);
 						br = CreateSolidBrush(RGB(255, 0, 0));
-						brOld = SelectObject(dc, br);
+						brOld = (HBRUSH)SelectObject(dc, br);
 						rc.left = width / 3;
 						rc.right = width;
 						uPercent = (float)dat->textLen / (float)200.0;
@@ -1340,7 +1340,7 @@ static LRESULT CALLBACK MsgIndicatorSubclassProc(HWND hwnd, UINT msg, WPARAM wPa
 LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndParent = GetParent(hwnd);
-	struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
+	struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 
 	switch (msg) {
 		case WM_NCHITTEST:
@@ -1355,7 +1355,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			if (hwnd == GetDlgItem(hwndParent, IDC_SPLITTER) || hwnd == GetDlgItem(hwndParent, IDC_SPLITTERY)) {
 				RECT rc;
 
-				struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
+				struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 				if (dat) {
 					GetClientRect(hwnd, &rc);
 					dat->savedSplitter = rc.right > rc.bottom ? (short) HIWORD(GetMessagePos()) + rc.bottom / 2 : (short) LOWORD(GetMessagePos()) + rc.right / 2;
@@ -1381,7 +1381,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			}
 			return 0;
 		case WM_PAINT: {
-			struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
+			struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
 			RECT rc;
 			PAINTSTRUCT ps;
 			HDC dc = BeginPaint(hwnd, &ps);
@@ -1409,7 +1409,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				GetWindowRect(hwnd, &rc);
 				if (rc.right - rc.left > rc.bottom - rc.top) {
 					MoveToEx(dc, 0, 0, &pt);
-					hPenOld = SelectObject(dc, myGlobals.g_SkinDarkShadowPen);
+					hPenOld = (HPEN)SelectObject(dc, myGlobals.g_SkinDarkShadowPen);
 					LineTo(dc, rc.right - rc.left, 0);
 					MoveToEx(dc, rc.right - rc.left, 1, &pt);
 					SelectObject(dc, myGlobals.g_SkinLightShadowPen);
@@ -1418,7 +1418,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 					ReleaseDC(hwnd, dc);
 				} else {
 					MoveToEx(dc, 0, 0, &pt);
-					hPenOld = SelectObject(dc, myGlobals.g_SkinDarkShadowPen);
+					hPenOld = (HPEN)SelectObject(dc, myGlobals.g_SkinDarkShadowPen);
 					LineTo(dc, 0, rc.bottom - rc.top);
 					MoveToEx(dc, 1, rc.bottom - rc.top, &pt);
 					SelectObject(dc, myGlobals.g_SkinLightShadowPen);
@@ -1535,7 +1535,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * urc)
 {
-	struct MessageWindowData *dat = (struct MessageWindowData *) lParam;
+	struct _MessageWindowData *dat = (struct _MessageWindowData *) lParam;
 	int iClistOffset = 0;
 	RECT rc, rcButton;
 	static int uinWidth, msgTop = 0, msgBottom = 0, not_on_list = 0;
@@ -1777,7 +1777,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
  * send out typing notifications
  */
 
-static void NotifyTyping(struct MessageWindowData *dat, int mode)
+static void NotifyTyping(struct _MessageWindowData *dat, int mode)
 {
 	DWORD protoStatus;
 	DWORD protoCaps;
@@ -1820,11 +1820,11 @@ static void NotifyTyping(struct MessageWindowData *dat, int mode)
 
 INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct MessageWindowData *dat = 0;
+	struct _MessageWindowData *dat = 0;
 	HWND   hwndTab, hwndContainer;
 	struct ContainerWindowData *m_pContainer = 0;
 
-	dat = (struct MessageWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	dat = (struct _MessageWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	hwndTab = GetParent(hwndDlg);
 
@@ -1860,8 +1860,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			struct NewMessageWindowLParam *newData = (struct NewMessageWindowLParam *) lParam;
 
-			dat = (struct MessageWindowData *) malloc(sizeof(struct MessageWindowData));
-			ZeroMemory((void *) dat, sizeof(struct MessageWindowData));
+			dat = (struct _MessageWindowData *) malloc(sizeof(struct _MessageWindowData));
+			ZeroMemory((void *) dat, sizeof(struct _MessageWindowData));
 			if (newData->iTabID >= 0) {
 				dat->pContainer = newData->pContainer;
 				m_pContainer = dat->pContainer;
@@ -1927,7 +1927,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			dat->iHistorySize = DBGetContactSettingByte(NULL, SRMSGMOD_T, "historysize", 15);
 			if (dat->iHistorySize < 10)
 				dat->iHistorySize = 10;
-			dat->history = malloc(sizeof(struct InputHistory) * (dat->iHistorySize + 1));
+			dat->history = (struct InputHistory *)malloc(sizeof(struct InputHistory) * (dat->iHistorySize + 1));
 			dat->iHistoryCurrent = 0;
 			dat->iHistoryTop = 0;
 			if (dat->history) {
@@ -1936,7 +1936,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					dat->history[i].lLen = 0;
 				}
 			}
-			dat->hQueuedEvents = malloc(sizeof(HANDLE) * EVENT_QUEUE_SIZE);
+			dat->hQueuedEvents = (HANDLE *)malloc(sizeof(HANDLE) * EVENT_QUEUE_SIZE);
 			dat->iEventQueueSize = EVENT_QUEUE_SIZE;
 			dat->iCurrentQueueError = -1;
 			dat->history[dat->iHistorySize].szText = (TCHAR *)malloc((HISTORY_INITIAL_ALLOCSIZE + 1) * sizeof(TCHAR));
@@ -2421,10 +2421,11 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				SETTEXTEX stx = {ST_DEFAULT, CP_UTF8};
 				COLORREF colour = DBGetContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
 				COLORREF inputcharcolor;
-				CHARFORMAT2A cf2 = {0};
+				CHARFORMAT2A cf2;
 				LOGFONTA lf;
 				int i = 0;
 
+				ZeroMemory(&cf2, sizeof(CHARFORMAT2A));
 				dat->inputbg = dat->theme.inputbg;
 				if (GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) > 0)
 					szStreamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, (CP_UTF8 << 16) | (SF_RTFNOOBJS | SFF_PLAINRTF | SF_USECODEPAGE));
@@ -2460,7 +2461,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				 * and textflow formatting commands to the
 				 */
 				{
-					PARAFORMAT2 pf2;
+					_PARAFORMAT2 pf2;
 					ZeroMemory((void *)&pf2, sizeof(pf2));
 					pf2.cbSize = sizeof(pf2);
 
@@ -3116,7 +3117,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 								TCHAR szBuf[40];
 
 								if (dat->iNextQueuedEvent >= dat->iEventQueueSize) {
-									dat->hQueuedEvents = realloc(dat->hQueuedEvents, (dat->iEventQueueSize + 10) * sizeof(HANDLE));
+									dat->hQueuedEvents = (HANDLE *)realloc(dat->hQueuedEvents, (dat->iEventQueueSize + 10) * sizeof(HANDLE));
 									dat->iEventQueueSize += 10;
 								}
 								dat->hQueuedEvents[dat->iNextQueuedEvent++] = (HANDLE)lParam;
@@ -3264,13 +3265,13 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						if (GetForegroundWindow() == hwndContainer)
 							SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
 					} else {
-						struct MessageWindowData *dat_active = NULL;
+						struct _MessageWindowData *dat_active = NULL;
 						dat->showTyping = 0;
 
 						DM_UpdateLastMessage(hwndDlg, dat);
 						SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
 						HandleIconFeedback(hwndDlg, dat, (HICON) - 1);
-						dat_active = (struct MessageWindowData *)GetWindowLongPtr(m_pContainer->hwndActive, GWLP_USERDATA);
+						dat_active = (struct _MessageWindowData *)GetWindowLongPtr(m_pContainer->hwndActive, GWLP_USERDATA);
 						if (dat_active && dat_active->bType == SESSIONTYPE_IM)
 							SendMessage(hwndContainer, DM_UPDATETITLE, 0, 0);
 						else
@@ -3716,11 +3717,12 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					FINDTEXTEXA fi = {0};
 					int final_sendformat = dat->SendFormat;
 					HWND hwndEdit = GetDlgItem(hwndDlg, IDC_MESSAGE);
-					PARAFORMAT2 pf2 = {0};
+					_PARAFORMAT2 pf2;
 
 					// don't parse text formatting when the message contains curly braces - these are used by the rtf syntax
 					// and the parser currently cannot handle them properly in the text - XXX needs to be fixed later.
 
+					ZeroMemory(&pf2, sizeof(_PARAFORMAT2));
 					fi.chrg.cpMin = 0;
 					fi.chrg.cpMax = -1;
 					fi.lpstrText = "{";
@@ -4018,7 +4020,7 @@ quote_from_last:
 				case IDC_FONTITALIC:
 				case IDC_FONTUNDERLINE:
 				case IDC_FONTSTRIKEOUT:	{
-					CHARFORMAT2 cf = {0}, cfOld = {0};
+					CHARFORMAT2 cf, cfOld;
 					int cmd = LOWORD(wParam);
 					BOOL isBold, isItalic, isUnderline, isStrikeout;
 					cf.cbSize = sizeof(CHARFORMAT2);
@@ -4026,6 +4028,8 @@ quote_from_last:
 					if (dat->SendFormat == 0)           // dont use formatting if disabled
 						break;
 
+					ZeroMemory(&cf, sizeof(CHARFORMAT2));
+					ZeroMemory(&cfOld, sizeof(CHARFORMAT2));
 					cfOld.cbSize = sizeof(CHARFORMAT2);
 					cfOld.dwMask = CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE | CFM_STRIKEOUT;
 					SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
@@ -4066,7 +4070,9 @@ quote_from_last:
 					HMENU submenu = GetSubMenu(m_pContainer->hMenuContext, 7);
 					RECT rc;
 					int iSelection, i;
-					CHARFORMAT2 cf = {0};
+					CHARFORMAT2 cf;
+
+					ZeroMemory(&cf, sizeof(CHARFORMAT2));
 					cf.cbSize = sizeof(CHARFORMAT2);
 					cf.dwMask = CFM_COLOR;
 					cf.dwEffects = 0;
@@ -4884,7 +4890,7 @@ quote_from_last:
 									if (sel.cpMin != sel.cpMax)
 										break;
 									tr.chrg = ((ENLINK *) lParam)->chrg;
-									tr.lpstrText = mir_alloc(tr.chrg.cpMax - tr.chrg.cpMin + 8);
+									tr.lpstrText = (char *)mir_alloc(tr.chrg.cpMax - tr.chrg.cpMin + 8);
 									SendDlgItemMessageA(hwndDlg, IDC_LOG, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
 									if (strchr(tr.lpstrText, '@') != NULL && strchr(tr.lpstrText, ':') == NULL && strchr(tr.lpstrText, '/') == NULL) {
 										MoveMemory(tr.lpstrText + 7, tr.lpstrText, tr.chrg.cpMax - tr.chrg.cpMin + 1);
@@ -4914,7 +4920,7 @@ quote_from_last:
 														break;
 													EmptyClipboard();
 													hData = GlobalAlloc(GMEM_MOVEABLE, lstrlenA(tr.lpstrText) + 1);
-													lstrcpyA(GlobalLock(hData), tr.lpstrText);
+													lstrcpyA((char *)GlobalLock(hData), tr.lpstrText);
 													GlobalUnlock(hData);
 													SetClipboardData(CF_TEXT, hData);
 													CloseClipboard();
@@ -5051,7 +5057,7 @@ quote_from_last:
 					break;
 				EmptyClipboard();
 				hData = GlobalAlloc(GMEM_MOVEABLE, lstrlenA(dat->uin) + 1);
-				lstrcpyA(GlobalLock(hData), dat->uin);
+				lstrcpyA((char *)GlobalLock(hData), dat->uin);
 				GlobalUnlock(hData);
 				SetClipboardData(CF_TEXT, hData);
 				CloseClipboard();
@@ -5586,7 +5592,7 @@ quote_from_last:
 			cy = rcClient.bottom - rcClient.top;
 			hbm =  CreateCompatibleBitmap(hdc, cx, cy);
 
-			hbmOld = SelectObject(hdcMem, hbm);
+			hbmOld = (HBITMAP)SelectObject(hdcMem, hbm);
 
 			if (m_pContainer->bSkinned) {
 				StatusItems_t *item;
@@ -5635,7 +5641,7 @@ quote_from_last:
 					DeleteObject(dat->hbmCached);
 				}
 				dat->hbmCached = CreateCompatibleBitmap(hdc, rc.right - rc.left, rc.bottom - rc.top);
-				dat->hbmCachedOld = SelectObject(dat->hdcCached, dat->hbmCached);
+				dat->hbmCachedOld = (HBITMAP)SelectObject(dat->hdcCached, dat->hbmCached);
 
 				DrawAlpha(dat->hdcCached, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
 						  item->CORNER, item->BORDERSTYLE, item->imageItem);
@@ -5651,7 +5657,7 @@ quote_from_last:
 				HBITMAP hbmOld;
 
 				GetObject(myGlobals.hbmLogo, sizeof(bm), &bm);
-				hbmOld = SelectObject(hdcImage, myGlobals.hbmLogo);
+				hbmOld = (HBITMAP)SelectObject(hdcImage, myGlobals.hbmLogo);
 				MY_AlphaBlend(hdcMem, 4, 1, bm.bmWidth, bm.bmHeight, bm.bmWidth, bm.bmHeight, hdcImage);
 				SelectObject(hdcImage, hbmOld);
 				DeleteDC(hdcImage);
@@ -5696,7 +5702,7 @@ quote_from_last:
 						DBWriteContactSettingString(dat->hContact, SRMSGMOD, "SavedMsg", "");
 					len = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_NOTES));
 					if (len > 0) {
-						msg = malloc(len + 1);
+						msg = (char *)malloc(len + 1);
 						GetDlgItemTextA(hwndDlg, IDC_NOTES, msg, len + 1);
 						DBWriteContactSettingString(dat->hContact, "UserInfo", "MyNotes", msg);
 						free(msg);

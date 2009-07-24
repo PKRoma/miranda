@@ -31,7 +31,7 @@ $Id$
  * originally developed by Mad Cluster for the tabSRMM "MADMOD" patch in May 2008
  */
 
-#include "commonheaders.h"
+#include "../src/commonheaders.h"
 
 extern HINSTANCE	hinstance;
 extern BOOL			g_bIMGtagButton, g_bClientInStatusBar;

@@ -839,19 +839,19 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath=".\src\buttonsbar.c"
+				RelativePath=".\src\buttonsbar.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\container.c"
+				RelativePath=".\src\container.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\containeroptions.c"
+				RelativePath=".\src\containeroptions.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\eventpopups.c"
+				RelativePath=".\src\eventpopups.cpp"
 				>
 			</File>
 			<File
@@ -891,11 +891,11 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\generic_msghandlers.c"
+				RelativePath=".\src\generic_msghandlers.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\hotkeyhandler.c"
+				RelativePath=".\src\hotkeyhandler.cpp"
 				>
 			</File>
 			<File
@@ -935,43 +935,107 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\tabmodplus\modplus.c"
+				RelativePath=".\tabmodplus\modplus.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PrecompiledHeaderThrough="../src/commonheaders.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PrecompiledHeaderThrough="../src/commonheaders.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PrecompiledHeaderThrough="../src/commonheaders.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PrecompiledHeaderThrough="../src/commonheaders.h"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\msgdialog.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\msgdialog.c"
+				RelativePath=".\src\msgdlgutils.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\msgdlgutils.c"
+				RelativePath=".\src\msglog.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\msglog.c"
+				RelativePath=".\src\msgoptions.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\msgoptions.c"
+				RelativePath=".\tabmodplus\msgoptions_plus.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PrecompiledHeaderThrough="../src/commonheaders.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PrecompiledHeaderThrough="../src/commonheaders.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PrecompiledHeaderThrough="../src/commonheaders.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PrecompiledHeaderThrough="../src/commonheaders.h"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\msgs.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\tabmodplus\msgoptions_plus.c"
+				RelativePath=".\src\selectcontainer.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\msgs.c"
+				RelativePath=".\src\sendqueue.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\selectcontainer.c"
-				>
-			</File>
-			<File
-				RelativePath=".\src\sendqueue.c"
-				>
-			</File>
-			<File
-				RelativePath=".\src\srmm.c"
+				RelativePath=".\src\srmm.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1007,31 +1071,31 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\tabctrl.c"
+				RelativePath=".\src\tabctrl.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\templates.c"
+				RelativePath=".\src\templates.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\themes.c"
+				RelativePath=".\src\themes.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\trayicon.c"
+				RelativePath=".\src\trayicon.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\TSButton.c"
+				RelativePath=".\src\TSButton.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\typingnotify.c"
+				RelativePath=".\src\typingnotify.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\userprefs.c"
+				RelativePath=".\src\userprefs.cpp"
 				>
 			</File>
 			<Filter
@@ -1054,7 +1118,7 @@
 					>
 				</File>
 				<File
-					RelativePath=".\chat\clist.c"
+					RelativePath=".\chat\clist.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -1122,7 +1186,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\chat\colorchooser.c"
+					RelativePath=".\chat\colorchooser.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -1190,7 +1254,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\chat\log.c"
+					RelativePath=".\chat\log.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -1258,7 +1322,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\chat\main.c"
+					RelativePath=".\chat\main.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -1326,7 +1390,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\chat\manager.c"
+					RelativePath=".\chat\manager.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -1394,7 +1458,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\chat\message.c"
+					RelativePath=".\chat\message.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -1462,7 +1526,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\chat\options.c"
+					RelativePath=".\chat\options.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -1530,7 +1594,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\chat\services.c"
+					RelativePath=".\chat\services.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -1598,7 +1662,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\chat\tools.c"
+					RelativePath=".\chat\tools.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -1666,7 +1730,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\chat\window.c"
+					RelativePath=".\chat\window.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -1981,11 +2045,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\dropuser.cur"
+				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
+				RelativePath="..\..\src\res\dropuser.cur"
 				>
 			</File>
 			<File
@@ -2009,11 +2073,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico"
+				RelativePath=".\res\angeli-icons\History.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\History.ico"
+				RelativePath="..\..\Miranda-IM\res\history.ico"
 				>
 			</File>
 			<File
@@ -2037,11 +2101,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\icon1.ico"
+				RelativePath=".\res\icon1.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\icon1.ico"
+				RelativePath="..\..\src\res\icon1.ico"
 				>
 			</File>
 			<File
@@ -2061,11 +2125,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Info.ico"
+				RelativePath=".\chat\Icons\info.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\chat\Icons\info.ico"
+				RelativePath=".\res\angeli-icons\Info.ico"
 				>
 			</File>
 			<File
@@ -2233,11 +2297,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Save.ico"
+				RelativePath=".\res\save.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\save.ico"
+				RelativePath=".\res\angeli-icons\Save.ico"
 				>
 			</File>
 			<File

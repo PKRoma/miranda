@@ -10,7 +10,7 @@
  * data structs
  */
 
-struct MessageWindowData;
+struct _MessageWindowData;
 
 typedef struct _tagImageItem {
     char    szName[40];
@@ -45,8 +45,8 @@ typedef struct _tagButtonItem {
     char    szModule[256], szSetting[256];
     BYTE    bValuePush[256], bValueRelease[256];
     DWORD   type;
-    void    (*pfnAction)(struct _tagButtonItem *item, HWND hwndDlg, struct MessageWindowData *dat, HWND hwndItem);
-    void    (*pfnCallback)(struct _tagButtonItem *item, HWND hwndDlg, struct MessageWindowData *dat, HWND hwndItem);
+    void    (*pfnAction)(struct _tagButtonItem *item, HWND hwndDlg, struct _MessageWindowData *dat, HWND hwndItem);
+    void    (*pfnCallback)(struct _tagButtonItem *item, HWND hwndDlg, struct _MessageWindowData *dat, HWND hwndItem);
     TCHAR   tszLabel[40];
     struct  _tagButtonItem *nextItem;
 } ButtonItem;

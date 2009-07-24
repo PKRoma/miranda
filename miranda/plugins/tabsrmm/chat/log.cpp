@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 log.c implements the group chat message history display using a
 rich edit text control.
 
-$Id$
+$Id: log.c 10402 2009-07-24 00:35:21Z silvercircle $
 */
 
 #include "../src/commonheaders.h"
@@ -564,7 +564,7 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 			if (lin->ptszNick && lin->iType == GC_EVENT_MESSAGE) {
 				TCHAR pszTemp[300], *p1;
 				STATUSINFO *ti;
-				char pszIndicator[2] = "\0\0";
+				char pszIndicator[3] = "\0\0";
 				int  crNickIndex = 0;
 													//mad
 				if (g_Settings.LogClassicIndicators/*g_Settings.ClassicIndicators */||g_Settings.ColorizeNicksInLog) {
@@ -684,7 +684,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 	SCROLLINFO scroll;
 	WPARAM wp;
 	HWND hwndRich;
-	struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	if (hwndDlg == 0 || lin == 0 || si == 0 || dat == 0)
 		return;
@@ -785,9 +785,10 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 		 */
 
 		if (g_Settings.ClickableNicks) {
-			CHARFORMAT2 cf2 = {0};
+			CHARFORMAT2 cf2;
 			FINDTEXTEX fi, fi2;
 
+			ZeroMemory(&cf2, sizeof(CHARFORMAT2));
 			fi2.lpstrText = _T("#++~~");
 			fi.chrg.cpMin = bRedraw ? 0 : sel.cpMin;
 			fi.chrg.cpMax = -1;
@@ -1015,7 +1016,7 @@ void LoadMsgLogBitmaps(void)
 	for (i = 0; i < SIZEOF(pLogIconBmpBits); i++) {
 		hIcon = hIcons[i];
 		pLogIconBmpBits[i] = (PBYTE) mir_alloc(RTFPICTHEADERMAXSIZE + (bih.biSize + widthBytes * bih.biHeight) * 2);
-		rtfHeaderSize = sprintf(pLogIconBmpBits[i], "{\\pict\\dibitmap0\\wbmbitspixel%u\\wbmplanes1\\wbmwidthbytes%u\\picw%u\\pich%u ", bih.biBitCount, widthBytes, bih.biWidth, bih.biHeight);
+		rtfHeaderSize = sprintf((char *)pLogIconBmpBits[i], "{\\pict\\dibitmap0\\wbmbitspixel%u\\wbmplanes1\\wbmwidthbytes%u\\picw%u\\pich%u ", bih.biBitCount, widthBytes, bih.biWidth, bih.biHeight);
 		hoBmp = (HBITMAP) SelectObject(hdcMem, hBmp);
 		FillRect(hdcMem, &rc, hBkgBrush);
 		DrawIconEx(hdcMem, 0, 1, hIcon, iIconSize, iIconSize, 0, NULL, DI_NORMAL);
@@ -1025,9 +1026,9 @@ void LoadMsgLogBitmaps(void)
 		{
 			int n;
 			for (n = 0; n < sizeof(BITMAPINFOHEADER); n++)
-				sprintf(pLogIconBmpBits[i] + rtfHeaderSize + n * 2, "%02X", ((PBYTE) & bih)[n]);
+				sprintf((char *)pLogIconBmpBits[i] + rtfHeaderSize + n * 2, "%02X", ((PBYTE) & bih)[n]);
 			for (n = 0; n < widthBytes * bih.biHeight; n += 4)
-				sprintf(pLogIconBmpBits[i] + rtfHeaderSize + (bih.biSize + n) * 2, "%02X%02X%02X%02X", pBmpBits[n], pBmpBits[n + 1], pBmpBits[n + 2], pBmpBits[n + 3]);
+				sprintf((char *)pLogIconBmpBits[i] + rtfHeaderSize + (bih.biSize + n) * 2, "%02X%02X%02X%02X", pBmpBits[n], pBmpBits[n + 1], pBmpBits[n + 2], pBmpBits[n + 3]);
 		}
 		logIconBmpSize[i] = rtfHeaderSize + (bih.biSize + widthBytes * bih.biHeight) * 2 + 1;
 		pLogIconBmpBits[i][logIconBmpSize[i] - 1] = '}';

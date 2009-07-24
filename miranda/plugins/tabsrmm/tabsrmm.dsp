@@ -170,7 +170,7 @@ SOURCE=.\chat\chatprototypes.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\chat\clist.c
+SOURCE=.\chat\clist.cpp
 DEP_CPP_CLIST=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -219,10 +219,6 @@ DEP_CPP_CLIST=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -231,7 +227,6 @@ DEP_CPP_CLIST=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
@@ -239,7 +234,7 @@ DEP_CPP_CLIST=\
 # End Source File
 # Begin Source File
 
-SOURCE=.\chat\colorchooser.c
+SOURCE=.\chat\colorchooser.cpp
 DEP_CPP_COLOR=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -288,10 +283,6 @@ DEP_CPP_COLOR=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -300,7 +291,6 @@ DEP_CPP_COLOR=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
@@ -308,7 +298,7 @@ DEP_CPP_COLOR=\
 # End Source File
 # Begin Source File
 
-SOURCE=.\chat\log.c
+SOURCE=.\chat\log.cpp
 DEP_CPP_LOG_C=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -357,10 +347,6 @@ DEP_CPP_LOG_C=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -369,7 +355,6 @@ DEP_CPP_LOG_C=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
@@ -377,7 +362,7 @@ DEP_CPP_LOG_C=\
 # End Source File
 # Begin Source File
 
-SOURCE=.\chat\main.c
+SOURCE=.\chat\main.cpp
 DEP_CPP_MAIN_=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -426,10 +411,6 @@ DEP_CPP_MAIN_=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -438,7 +419,6 @@ DEP_CPP_MAIN_=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
@@ -446,7 +426,7 @@ DEP_CPP_MAIN_=\
 # End Source File
 # Begin Source File
 
-SOURCE=.\chat\manager.c
+SOURCE=.\chat\manager.cpp
 DEP_CPP_MANAG=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -495,10 +475,6 @@ DEP_CPP_MANAG=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -507,7 +483,6 @@ DEP_CPP_MANAG=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
@@ -515,7 +490,7 @@ DEP_CPP_MANAG=\
 # End Source File
 # Begin Source File
 
-SOURCE=.\chat\message.c
+SOURCE=.\chat\message.cpp
 DEP_CPP_MESSA=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -564,10 +539,6 @@ DEP_CPP_MESSA=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -576,7 +547,6 @@ DEP_CPP_MESSA=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
@@ -584,7 +554,7 @@ DEP_CPP_MESSA=\
 # End Source File
 # Begin Source File
 
-SOURCE=.\chat\options.c
+SOURCE=.\chat\options.cpp
 DEP_CPP_OPTIO=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -633,10 +603,6 @@ DEP_CPP_OPTIO=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -645,7 +611,6 @@ DEP_CPP_OPTIO=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
@@ -653,7 +618,7 @@ DEP_CPP_OPTIO=\
 # End Source File
 # Begin Source File
 
-SOURCE=.\chat\services.c
+SOURCE=.\chat\services.cpp
 DEP_CPP_SERVI=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -702,10 +667,6 @@ DEP_CPP_SERVI=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -714,7 +675,6 @@ DEP_CPP_SERVI=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
@@ -722,7 +682,7 @@ DEP_CPP_SERVI=\
 # End Source File
 # Begin Source File
 
-SOURCE=.\chat\tools.c
+SOURCE=.\chat\tools.cpp
 DEP_CPP_TOOLS=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -771,10 +731,6 @@ DEP_CPP_TOOLS=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -783,7 +739,6 @@ DEP_CPP_TOOLS=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
@@ -791,7 +746,7 @@ DEP_CPP_TOOLS=\
 # End Source File
 # Begin Source File
 
-SOURCE=.\chat\window.c
+SOURCE=.\chat\window.cpp
 DEP_CPP_WINDO=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -840,10 +795,6 @@ DEP_CPP_WINDO=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -852,7 +803,6 @@ DEP_CPP_WINDO=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
@@ -929,7 +879,7 @@ SOURCE=.\API\m_updater.h
 # End Group
 # Begin Source File
 
-SOURCE=.\src\buttonsbar.c
+SOURCE=.\src\buttonsbar.cpp
 DEP_CPP_BUTTO=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -978,10 +928,6 @@ DEP_CPP_BUTTO=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -990,14 +936,13 @@ DEP_CPP_BUTTO=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\container.c
+SOURCE=.\src\container.cpp
 DEP_CPP_CONTA=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -1046,10 +991,6 @@ DEP_CPP_CONTA=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -1059,14 +1000,13 @@ DEP_CPP_CONTA=\
 	".\src\sendqueue.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\containeroptions.c
+SOURCE=.\src\containeroptions.cpp
 DEP_CPP_CONTAI=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -1115,10 +1055,6 @@ DEP_CPP_CONTAI=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -1127,14 +1063,13 @@ DEP_CPP_CONTAI=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\eventpopups.c
+SOURCE=.\src\eventpopups.cpp
 DEP_CPP_EVENT=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -1184,10 +1119,6 @@ DEP_CPP_EVENT=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -1196,7 +1127,6 @@ DEP_CPP_EVENT=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
@@ -1252,10 +1182,6 @@ DEP_CPP_FORMA=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -1264,7 +1190,6 @@ DEP_CPP_FORMA=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
@@ -1272,7 +1197,7 @@ DEP_CPP_FORMA=\
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\generic_msghandlers.c
+SOURCE=.\src\generic_msghandlers.cpp
 DEP_CPP_GENER=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -1321,10 +1246,6 @@ DEP_CPP_GENER=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -1333,14 +1254,13 @@ DEP_CPP_GENER=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\hotkeyhandler.c
+SOURCE=.\src\hotkeyhandler.cpp
 DEP_CPP_HOTKE=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -1389,10 +1309,6 @@ DEP_CPP_HOTKE=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -1402,7 +1318,6 @@ DEP_CPP_HOTKE=\
 	".\src\sendqueue.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
@@ -1458,10 +1373,6 @@ DEP_CPP_IMAGE=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -1471,7 +1382,6 @@ DEP_CPP_IMAGE=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
@@ -1479,76 +1389,24 @@ DEP_CPP_IMAGE=\
 # End Source File
 # Begin Source File
 
-SOURCE=.\tabmodplus\modplus.c
-DEP_CPP_MODPL=\
-	"..\..\include\m_acc.h"\
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
-	"..\..\include\m_history.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\API\m_buttonbar.h"\
-	".\API\m_cln_skinedit.h"\
-	".\API\m_fingerprint.h"\
-	".\API\m_flash.h"\
-	".\API\m_folders.h"\
-	".\API\m_historyevents.h"\
-	".\API\m_ieview.h"\
-	".\API\m_mathmodule.h"\
-	".\API\m_metacontacts.h"\
-	".\API\m_msg_buttonsbar.h"\
-	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
-	".\API\m_smileyadd.h"\
-	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
-	".\API\m_updater.h"\
-	".\chat\chat.h"\
-	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
-	".\src\commonheaders.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\templates.h"\
-	".\src\typingnotify.h"\
-	".\tabmodplus\commonheaders.h"\
-	".\templates.h"\
-	{$(INCLUDE)}"tom.h"\
-	{$(INCLUDE)}"uxtheme.h"\
-	
+SOURCE=.\tabmodplus\modplus.cpp
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Yu"../src/commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\msgdialog.c
+SOURCE=.\src\msgdialog.cpp
 DEP_CPP_MSGDI=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -1597,10 +1455,6 @@ DEP_CPP_MSGDI=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -1610,14 +1464,13 @@ DEP_CPP_MSGDI=\
 	".\src\sendqueue.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\msgdlgutils.c
+SOURCE=.\src\msgdlgutils.cpp
 DEP_CPP_MSGDL=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -1666,10 +1519,6 @@ DEP_CPP_MSGDL=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -1678,14 +1527,13 @@ DEP_CPP_MSGDL=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\msglog.c
+SOURCE=.\src\msglog.cpp
 DEP_CPP_MSGLO=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -1734,10 +1582,6 @@ DEP_CPP_MSGLO=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -1746,14 +1590,13 @@ DEP_CPP_MSGLO=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\msgoptions.c
+SOURCE=.\src\msgoptions.cpp
 DEP_CPP_MSGOP=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -1803,10 +1646,6 @@ DEP_CPP_MSGOP=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -1815,83 +1654,30 @@ DEP_CPP_MSGOP=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=.\tabmodplus\msgoptions_plus.c
-DEP_CPP_MSGOPT=\
-	"..\..\include\m_acc.h"\
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
-	"..\..\include\m_history.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\API\m_buttonbar.h"\
-	".\API\m_cln_skinedit.h"\
-	".\API\m_fingerprint.h"\
-	".\API\m_flash.h"\
-	".\API\m_folders.h"\
-	".\API\m_historyevents.h"\
-	".\API\m_ieview.h"\
-	".\API\m_mathmodule.h"\
-	".\API\m_metacontacts.h"\
-	".\API\m_msg_buttonsbar.h"\
-	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
-	".\API\m_smileyadd.h"\
-	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
-	".\API\m_updater.h"\
-	".\chat\chat.h"\
-	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
-	".\src\commonheaders.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\templates.h"\
-	".\src\typingnotify.h"\
-	".\tabmodplus\commonheaders.h"\
-	".\templates.h"\
-	{$(INCLUDE)}"tom.h"\
-	{$(INCLUDE)}"uxtheme.h"\
-	
+SOURCE=.\tabmodplus\msgoptions_plus.cpp
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Yu"../src/commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\msgs.c
+SOURCE=.\src\msgs.cpp
 DEP_CPP_MSGS_=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -1940,10 +1726,6 @@ DEP_CPP_MSGS_=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -1953,14 +1735,13 @@ DEP_CPP_MSGS_=\
 	".\src\sendqueue.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\selectcontainer.c
+SOURCE=.\src\selectcontainer.cpp
 DEP_CPP_SELEC=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -2009,10 +1790,6 @@ DEP_CPP_SELEC=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -2021,14 +1798,13 @@ DEP_CPP_SELEC=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sendqueue.c
+SOURCE=.\src\sendqueue.cpp
 DEP_CPP_SENDQ=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -2077,10 +1853,6 @@ DEP_CPP_SENDQ=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -2090,14 +1862,13 @@ DEP_CPP_SENDQ=\
 	".\src\sendqueue.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\srmm.c
+SOURCE=.\src\srmm.cpp
 DEP_CPP_SRMM_=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -2146,10 +1917,6 @@ DEP_CPP_SRMM_=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -2158,7 +1925,6 @@ DEP_CPP_SRMM_=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
@@ -2166,7 +1932,7 @@ DEP_CPP_SRMM_=\
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\tabctrl.c
+SOURCE=.\src\tabctrl.cpp
 DEP_CPP_TABCT=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -2215,10 +1981,6 @@ DEP_CPP_TABCT=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -2227,14 +1989,13 @@ DEP_CPP_TABCT=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\templates.c
+SOURCE=.\src\templates.cpp
 DEP_CPP_TEMPL=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -2283,10 +2044,6 @@ DEP_CPP_TEMPL=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -2295,14 +2052,13 @@ DEP_CPP_TEMPL=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\themes.c
+SOURCE=.\src\themes.cpp
 DEP_CPP_THEME=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -2351,10 +2107,6 @@ DEP_CPP_THEME=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -2363,14 +2115,13 @@ DEP_CPP_THEME=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\trayicon.c
+SOURCE=.\src\trayicon.cpp
 DEP_CPP_TRAYI=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -2419,10 +2170,6 @@ DEP_CPP_TRAYI=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -2431,14 +2178,13 @@ DEP_CPP_TRAYI=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\TSButton.c
+SOURCE=.\src\TSButton.cpp
 DEP_CPP_TSBUT=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -2487,10 +2233,6 @@ DEP_CPP_TSBUT=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -2499,14 +2241,13 @@ DEP_CPP_TSBUT=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\typingnotify.c
+SOURCE=.\src\typingnotify.cpp
 DEP_CPP_TYPIN=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -2555,10 +2296,6 @@ DEP_CPP_TYPIN=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -2567,14 +2304,13 @@ DEP_CPP_TYPIN=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\userprefs.c
+SOURCE=.\src\userprefs.cpp
 DEP_CPP_USERP=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -2623,10 +2359,6 @@ DEP_CPP_USERP=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\functions.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
@@ -2635,7 +2367,6 @@ DEP_CPP_USERP=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	".\templates.h"\
 	{$(INCLUDE)}"tom.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	

@@ -30,37 +30,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "m_stdhdr.h"
 
-#include <windows.h>
-#include <commctrl.h>
-#include <richedit.h>
-#include <process.h>
-#include <ole2.h>
-#include <richole.h>
-#include <tom.h>
-#include <commdlg.h>
-#include <time.h>
-#include <stdio.h>
-#include <shellapi.h>
-#include "../../../include/win2k.h"
-#include "../../../include/newpluginapi.h"
-#include "../../../include/m_system.h"
-#include "../../../include/m_options.h"
-#include "../../../include/m_database.h"
-#include "../../../include/m_utils.h"
-#include "../../../include/m_langpack.h"
-#include "../../../include/m_skin.h"
-#include "../../../include/m_button.h"
-#include "../../../include/m_protomod.h"
-#include "../../../include/m_protosvc.h"
-#include "../../../include/m_addcontact.h"
-#include "../../../include/m_clist.h"
-#include "../../../include/m_clui.h"
-//#include "../../../include/m_popup.h"
-#include "chat_resource.h"
-#include "m_chat.h"
-#include "../API/m_ieview.h"
-#include "../API/m_smileyadd.h"
-
 #ifdef _MSC_VER
 #ifndef NDEBUG
 #include <crtdbg.h>
@@ -288,7 +257,7 @@ typedef struct
 	BOOL          bRedraw;
 	SESSION_INFO* si;
 	int           crCount;
-	struct MessageWindowData *dat;
+	struct _MessageWindowData *dat;
 }
 	LOGSTREAMDATA;
 
@@ -375,10 +344,7 @@ typedef struct{
 //////////////////////////////////////////////////////////////////////////////////
 
 #include "chatprototypes.h"
-#include "../msgs.h"
-#include "../nen.h"
-#include "../functions.h"
-#include "../msgdlgutils.h"
+#include "chat_resource.h"
 
 #if defined( _UNICODE )
 	#define mir_tstrdup mir_wstrdup
