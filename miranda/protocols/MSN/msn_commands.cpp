@@ -318,8 +318,9 @@ void CMsnProto::sttCustomSmiley(const char* msgBody, char* email, char* nick, in
 			UrlEncode(buf, smileyName, rlen*3);
 			mir_free(buf);
 
-			ft->std.tszCurrentFile = (TCHAR*)mir_alloc(MAX_PATH * sizeof(TCHAR));
-			MSN_GetCustomSmileyFileName(hContact, ft->std.tszCurrentFile, MAX_PATH, smileyName, iSmileyType);
+            char path[MAX_PATH];
+			MSN_GetCustomSmileyFileName(hContact, path, SIZEOF(path), smileyName, iSmileyType);
+            ft->std.tszCurrentFile = mir_a2t(path);
 			mir_free(smileyName);
 
 			if (p2p_IsDlFileOk(ft))
