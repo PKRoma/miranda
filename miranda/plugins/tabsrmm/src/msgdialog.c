@@ -29,7 +29,7 @@ $Id: msgdialog.c 10399 2009-07-23 20:11:21Z silvercircle $
 #include "commonheaders.h"
 #pragma hdrstop
 #include "sendqueue.h"
-#include "chat/chat.h"
+#include "../chat/chat.h"
 
 #define TOOLBAR_PROTO_HIDDEN 1
 #define TOOLBAR_SEND_HIDDEN 2

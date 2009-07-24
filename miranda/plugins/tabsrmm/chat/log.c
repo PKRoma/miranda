@@ -26,7 +26,7 @@ rich edit text control.
 $Id$
 */
 
-#include "../commonheaders.h"
+#include "../src/commonheaders.h"
 #include <math.h>
 #include <mbstring.h>
 #include <shlwapi.h>

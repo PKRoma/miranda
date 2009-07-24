@@ -991,7 +991,7 @@ struct MsgLogIcon {
 	HBRUSH hBkgBrush;
 };
 
-#include "icons/iconsxp/resource.h"         // icon pack values
+#include "../icons/iconsxp/resource.h"         // icon pack values
 
 WCHAR *Utf8_Decode(const char *str);
 char *Utf8_Encode(const WCHAR *str);

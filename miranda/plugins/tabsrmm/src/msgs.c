@@ -27,10 +27,8 @@ $Id: msgs.c 10399 2009-07-23 20:11:21Z silvercircle $
 */
 #include "commonheaders.h"
 #pragma hdrstop
-#include "API/m_toptoolbar.h"
-#include "API/m_updater.h"
-#include "m_avatars.h"
-#include "chat/chat.h"
+#include <m_avatars.h>
+#include "../chat/chat.h"
 #include "sendqueue.h"
 
 SKINDESC my_default_skin[] = {

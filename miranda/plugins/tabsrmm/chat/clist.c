@@ -34,7 +34,7 @@ $Id$
  * handles interaction of the group chat implementation with the contact list plugin
  */
 
-#include "../commonheaders.h"
+#include "../src/commonheaders.h"
 
 char *szChatIconString = "chaticon";
 

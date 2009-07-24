@@ -26,7 +26,7 @@ $Id$
 
 // this color chooser window is inspired by PeaCow's smiley chooser window for the Smileyadd plugin
 
-#include "../commonheaders.h"
+#include "../src/commonheaders.h"
 #include <math.h>
 
 static int CalculateCoordinatesToButton(COLORCHOOSER * pCC, POINT pt)

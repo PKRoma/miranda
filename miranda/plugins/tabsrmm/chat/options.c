@@ -27,7 +27,7 @@ $Id$
 
 */
 
-#include "../commonheaders.h"
+#include "../src/commonheaders.h"
 #include <shlobj.h>
 #include <shlwapi.h>
 //#include "../m_MathModule.h"

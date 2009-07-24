@@ -24,8 +24,8 @@ $Id$
 
 */
 
-#include "../commonheaders.h"
-#include "../resource.h"
+#include "../src/commonheaders.h"
+#include "../src/resource.h"
 
 //#include "../m_MathModule.h"
 

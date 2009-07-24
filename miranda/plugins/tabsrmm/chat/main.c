@@ -24,7 +24,7 @@ $Id$
 
 */
 
-#include "../commonheaders.h"
+#include "../src/commonheaders.h"
 
 //globals
 HANDLE		g_hWindowList;

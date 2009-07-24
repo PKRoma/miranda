@@ -36,7 +36,7 @@ License: GPL
 
 #include <string>
 #include "msgdlgutils.h"
-#include "API\m_smileyadd.h"
+#include "../API/m_smileyadd.h"
 
 #define MWF_LOG_BBCODE 1
 #define MWF_LOG_TEXTFORMAT 0x2000000

@@ -96,19 +96,21 @@ extern struct LIST_INTERFACE li;
 
 #endif
 
-#include "API/m_ieview.h"
-#include "API/m_popup.h"
-#include "API/m_metacontacts.h"
-#include "API/m_fingerprint.h"
-#include "API/m_nudge.h"
-#include "API/m_folders.h"
-#include "API/m_msg_buttonsbar.h"
-#include "API/m_cln_skinedit.h"
-#include "API/m_flash.h"
-#include "API/m_spellchecker.h"
-#include "API/m_MathModule.h"
-#include "API/m_historyevents.h"
-#include "API/m_buttonbar.h"
+#include "../API/m_ieview.h"
+#include "../API/m_popup.h"
+#include "../API/m_metacontacts.h"
+#include "../API/m_fingerprint.h"
+#include "../API/m_nudge.h"
+#include "../API/m_folders.h"
+#include "../API/m_msg_buttonsbar.h"
+#include "../API/m_cln_skinedit.h"
+#include "../API/m_flash.h"
+#include "../API/m_spellchecker.h"
+#include "../API/m_MathModule.h"
+#include "../API/m_historyevents.h"
+#include "../API/m_buttonbar.h"
+#include "../API/m_toptoolbar.h"
+#include "../API/m_updater.h"
 
 #ifndef __cplusplus
 #include "msgs.h"
@@ -117,7 +119,7 @@ extern struct LIST_INTERFACE li;
 #include "functions.h"
 #include "typingnotify.h"
 #include "generic_msghandlers.h"
-#include "chat/chat.h"
+#include "../chat/chat.h"
 
 #endif
 

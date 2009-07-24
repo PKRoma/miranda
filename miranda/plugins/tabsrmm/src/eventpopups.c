@@ -36,7 +36,7 @@ astyle --force-indent=tab=4 --brackets=linux --indent-switches
 #pragma hdrstop
 #include <malloc.h>
 
-#include "../../include/m_icq.h"
+#include <m_icq.h>
 
 extern      HINSTANCE g_hInst;
 extern      NEN_OPTIONS nen_options;

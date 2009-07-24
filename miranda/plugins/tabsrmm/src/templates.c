@@ -32,7 +32,6 @@ $Id: templates.c 10216 2009-06-22 18:49:50Z george.hazan $
 
 #include "commonheaders.h"
 #pragma hdrstop
-#include "../../include/m_database.h"
 
 /*
 * hardcoded default set of templates for both LTR and RTL.
