@@ -34,7 +34,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #pragma hdrstop
 #include "sendqueue.h"
 
-extern      MYGLOBALS myGlobals;
 extern      TCHAR *pszIDCSAVE_save, *pszIDCSAVE_close;
 extern 		UINT infoPanelControls[];
 extern      struct SendJob *sendJobs;
@@ -75,7 +74,7 @@ static unsigned __stdcall WINAPI DoMultiSend(LPVOID param)
 
 	for (i = 0; i < sendJobs[iIndex].sendCount; i++) {
 		sendJobs[iIndex].hSendId[i] = (HANDLE) CallContactService(sendJobs[iIndex].hContact[i], MsgServiceName(sendJobs[iIndex].hContact[i], dat, sendJobs[iIndex].dwFlags), (dat->sendMode & SMODE_FORCEANSI) ? (sendJobs[iIndex].dwFlags & ~PREF_UNICODE) : sendJobs[iIndex].dwFlags, (LPARAM) sendJobs[iIndex].sendBuffer);
-		SetTimer(sendJobs[iIndex].hwndOwner, TIMERID_MULTISEND_BASE + (iIndex * SENDJOBS_MAX_SENDS) + i, myGlobals.m_MsgTimeout, NULL);
+		SetTimer(sendJobs[iIndex].hwndOwner, TIMERID_MULTISEND_BASE + (iIndex * SENDJOBS_MAX_SENDS) + i, Globals.m_MsgTimeout, NULL);
 		Sleep((50 * i) + dwDelay + dwDelayAdd);
 		if (i > 2)
 			dwDelayAdd = 500;
@@ -113,7 +112,7 @@ void HandleQueueError(HWND hwndDlg, struct _MessageWindowData *dat, int iEntry)
 #if defined(_UNICODE)
 {
 	wchar_t wszErrorMsg[512];
-	MultiByteToWideChar(myGlobals.m_LangPackCP, 0, szErrorMsg, -1, wszErrorMsg, 512);
+	MultiByteToWideChar(Globals.m_LangPackCP, 0, szErrorMsg, -1, wszErrorMsg, 512);
 	wszErrorMsg[511] = 0;
 	LogErrorMessage(hwndDlg, dat, iEntry, wszErrorMsg);
 }
@@ -122,7 +121,7 @@ void HandleQueueError(HWND hwndDlg, struct _MessageWindowData *dat, int iEntry)
 #endif
 	RecallFailedMessage(hwndDlg, dat, iEntry);
 	ShowErrorControls(hwndDlg, dat, TRUE);
-	HandleIconFeedback(hwndDlg, dat, myGlobals.g_iconErr);
+	HandleIconFeedback(hwndDlg, dat, Globals.g_iconErr);
 }
 /*
  * add a message to the sending queue.
@@ -133,7 +132,7 @@ int AddToSendQueue(HWND hwndDlg, struct _MessageWindowData *dat, int iLen, int d
 	int iLength = 0, i;
 	int iFound = NR_SENDJOBS;
 
-	if (myGlobals.iSendJobCurrent >= NR_SENDJOBS) {
+	if (Globals.iSendJobCurrent >= NR_SENDJOBS) {
 		_DebugMessage(hwndDlg, dat, "Send queue full");
 		return 0;
 	}
@@ -284,7 +283,7 @@ static void DoSplitSendW(LPVOID param)
 			if (!fFirstSend) {
 				job->hSendId[0] = (HANDLE)id;
 				fFirstSend = TRUE;
-				PostMessage(myGlobals.g_hwndHotkeyHandler, DM_SPLITSENDACK, (WPARAM)param, 0);
+				PostMessage(Globals.g_hwndHotkeyHandler, DM_SPLITSENDACK, (WPARAM)param, 0);
 			}
 			*wszSaved = savedChar;
 			wszTemp = wszSaved;
@@ -298,7 +297,7 @@ static void DoSplitSendW(LPVOID param)
 			if (!fFirstSend) {
 				job->hSendId[0] = (HANDLE)id;
 				fFirstSend = TRUE;
-				PostMessage(myGlobals.g_hwndHotkeyHandler, DM_SPLITSENDACK, (WPARAM)param, 0);
+				PostMessage(Globals.g_hwndHotkeyHandler, DM_SPLITSENDACK, (WPARAM)param, 0);
 			}
 		}
 		Sleep(500L);
@@ -357,7 +356,7 @@ static void DoSplitSendA(LPVOID param)
 			if (!fFirstSend) {
 				job->hSendId[0] = (HANDLE)id;
 				fFirstSend = TRUE;
-				PostMessage(myGlobals.g_hwndHotkeyHandler, DM_SPLITSENDACK, (WPARAM)param, 0);
+				PostMessage(Globals.g_hwndHotkeyHandler, DM_SPLITSENDACK, (WPARAM)param, 0);
 			}
 			*szSaved = savedChar;
 			szTemp = szSaved;
@@ -371,7 +370,7 @@ static void DoSplitSendA(LPVOID param)
 			if (!fFirstSend) {
 				job->hSendId[0] = (HANDLE)id;
 				fFirstSend = TRUE;
-				PostMessage(myGlobals.g_hwndHotkeyHandler, DM_SPLITSENDACK, (WPARAM)param, 0);
+				PostMessage(Globals.g_hwndHotkeyHandler, DM_SPLITSENDACK, (WPARAM)param, 0);
 			}
 		}
 		Sleep(500L);
@@ -412,12 +411,12 @@ static int SendQueuedMessage(HWND hwndDlg, struct _MessageWindowData *dat, int i
 		if (dat->hContact == NULL)
 			return 0;  //never happens
 
-		if (dat->sendMode & SMODE_FORCEANSI && DBGetContactSettingByte(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "UnicodeSend", 1))
-			DBWriteContactSettingByte(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "UnicodeSend", 0);
-		else if (!(dat->sendMode & SMODE_FORCEANSI) && !DBGetContactSettingByte(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "UnicodeSend", 0))
-			DBWriteContactSettingByte(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "UnicodeSend", 1);
+		if (dat->sendMode & SMODE_FORCEANSI && pMim->GetByte(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "UnicodeSend", 1))
+			pMim->WriteByte(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "UnicodeSend", 0);
+		else if (!(dat->sendMode & SMODE_FORCEANSI) && !pMim->GetByte(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "UnicodeSend", 0))
+			pMim->WriteByte(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "UnicodeSend", 1);
 
-		if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "autosplit", 0)) {
+		if (pMim->GetByte("autosplit", 0)) {
 			BOOL    fSplit = FALSE;
 			DWORD   dwOldFlags;
 
@@ -492,11 +491,11 @@ send_unsplitted:
 				SendMessage(hwndDlg, HM_EVENTSENT, (WPARAM)MAKELONG(iEntry, 0), (LPARAM)&ack);
 			}
 			else
-				SetTimer(hwndDlg, TIMERID_MSGSEND + iEntry, myGlobals.m_MsgTimeout, NULL);
+				SetTimer(hwndDlg, TIMERID_MSGSEND + iEntry, Globals.m_MsgTimeout, NULL);
 		}
 	}
 	dat->iOpenJobs++;
-	myGlobals.iSendJobCurrent++;
+	Globals.iSendJobCurrent++;
 
 	// give icon feedback...
 
@@ -504,9 +503,9 @@ send_unsplitted:
 		UpdateReadChars(hwndDlg, dat);
 
 	if (!(dat->sendMode & SMODE_NOACK))
-		HandleIconFeedback(hwndDlg, dat, myGlobals.g_IconSend);
+		HandleIconFeedback(hwndDlg, dat, Globals.g_IconSend);
 
-	if (DBGetContactSettingByte(NULL, SRMSGMOD_T, SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN))
+	if (pMim->GetByte(SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN))
 		SendMessage(dat->pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
 	return 0;
 }
@@ -539,7 +538,7 @@ void CheckSendQueue(HWND hwndDlg, struct _MessageWindowData *dat)
 		HandleIconFeedback(hwndDlg, dat, (HICON) - 1);
 	}
 	else if (!(dat->sendMode & SMODE_NOACK))
-		HandleIconFeedback(hwndDlg, dat, myGlobals.g_IconSend);
+		HandleIconFeedback(hwndDlg, dat, Globals.g_IconSend);
 
 	if (dat->pContainer->hwndActive == hwndDlg)
 		UpdateReadChars(hwndDlg, dat);
@@ -607,7 +606,7 @@ void ShowErrorControls(HWND hwndDlg, struct _MessageWindowData *dat, int showCmd
 
 	if (showCmd) {
 		TCITEM item = {0};
-		dat->hTabIcon = myGlobals.g_iconErr;
+		dat->hTabIcon = Globals.g_iconErr;
 		item.mask = TCIF_IMAGE;
 		item.iImage = 0;
 		TabCtrl_SetItem(GetDlgItem(dat->pContainer->hwnd, IDC_MSGTABS), dat->iTabID, &item);
@@ -678,18 +677,18 @@ void UpdateSaveAndSendButton(HWND hwndDlg, struct _MessageWindowData *dat)
 
 	if (len) {          // looks complex but avoids flickering on the button while typing.
 		if (!(dat->dwFlags & MWF_SAVEBTN_SAV)) {
-			SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[7]);
+			SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) Globals.g_buttonBarIcons[7]);
 			SendDlgItemMessage(hwndDlg, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM) pszIDCSAVE_save, 0);
 			dat->dwFlags |= MWF_SAVEBTN_SAV;
 		}
 	}
 	else {
-		SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[6]);
+		SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) Globals.g_buttonBarIcons[6]);
 		SendDlgItemMessage(hwndDlg, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM) pszIDCSAVE_close, 0);
 		dat->dwFlags &= ~MWF_SAVEBTN_SAV;
 	}
 	dat->textLen = len;
-	if (myGlobals.m_visualMessageSizeIndicator)
+	if (Globals.m_visualMessageSizeIndicator)
 		InvalidateRect(GetDlgItem(hwndDlg, IDC_MSGINDICATOR), NULL, FALSE);
 }
 
@@ -699,11 +698,11 @@ static BOOL CALLBACK PopupDlgProcError(HWND hWnd, UINT message, WPARAM wParam, L
 
 	switch (message) {
 		case WM_COMMAND:
-			PostMessage(myGlobals.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)hContact, 0);
+			PostMessage(Globals.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)hContact, 0);
 			PUDeletePopUp(hWnd);
 			break;
 		case WM_CONTEXTMENU:
-			PostMessage(myGlobals.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)hContact, 0);
+			PostMessage(Globals.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)hContact, 0);
 			PUDeletePopUp(hWnd);
 			break;
 		case WM_MOUSEWHEEL:
@@ -722,7 +721,7 @@ void NotifyDeliveryFailure(HWND hwndDlg, struct _MessageWindowData *dat)
 	POPUPDATAW		ppd;
 	int				ibsize = 1023;
 
-	if(DBGetContactSettingByte(0, SRMSGMOD_T, "adv_noErrorPopups", 0))
+	if(pMim->GetByte("adv_noErrorPopups", 0))
 		return;
 
 	if (CallService(MS_POPUP_QUERY, PUQS_GETSTATUS, 0) == 1) {
@@ -734,7 +733,7 @@ void NotifyDeliveryFailure(HWND hwndDlg, struct _MessageWindowData *dat)
 		ppd.colorBack = RGB(191, 0, 0);
 		ppd.PluginData = hwndDlg;
 		ppd.PluginWindowProc = (WNDPROC)PopupDlgProcError;
-		ppd.lchIcon = myGlobals.g_iconErr;
+		ppd.lchIcon = Globals.g_iconErr;
 		ppd.PluginData = (void *)dat->hContact;
 		ppd.iSeconds = -1;
 		CallService(MS_POPUP_ADDPOPUPW, (WPARAM)&ppd, 0);
@@ -743,7 +742,7 @@ void NotifyDeliveryFailure(HWND hwndDlg, struct _MessageWindowData *dat)
 	POPUPDATAEX	ppd;
 	int			ibsize = 1023;
 
-	if(DBGetContactSettingByte(0, SRMSGMOD_T, "adv_noErrorPopups", 0))
+	if(pMim->GetByte("adv_noErrorPopups", 0))
 		return;
 
 	if (CallService(MS_POPUP_QUERY, PUQS_GETSTATUS, 0) == 1) {
@@ -755,7 +754,7 @@ void NotifyDeliveryFailure(HWND hwndDlg, struct _MessageWindowData *dat)
 		ppd.colorBack = RGB(191, 0, 0);
 		ppd.PluginData = hwndDlg;
 		ppd.PluginWindowProc = (WNDPROC)PopupDlgProcError;
-		ppd.lchIcon = myGlobals.g_iconErr;
+		ppd.lchIcon = Globals.g_iconErr;
 		ppd.PluginData = (void *)dat->hContact;
 		ppd.iSeconds = -1;
 		CallService(MS_POPUP_ADDPOPUP, (WPARAM)&ppd, 0);
@@ -864,7 +863,7 @@ int AckMessage(HWND hwndDlg, struct _MessageWindowData *dat, WPARAM wParam, LPAR
 #if defined(_UNICODE)
 			{
 				wchar_t wszErrMsg[256];
-				MultiByteToWideChar(myGlobals.m_LangPackCP, 0, szErrMsg, -1, wszErrMsg, 256);
+				MultiByteToWideChar(Globals.m_LangPackCP, 0, szErrMsg, -1, wszErrMsg, 256);
 				wszErrMsg[255] = 0;
 				LogErrorMessage(hwndDlg, dat, -1, wszErrMsg);
 			}
@@ -951,7 +950,7 @@ verify:
 			KillTimer(hwndDlg, TIMERID_MSGSEND + iFound);
 			dat->iOpenJobs--;
 		}
-		myGlobals.iSendJobCurrent--;
+		Globals.iSendJobCurrent--;
 	}
 	if (hwndDlg && dat) {
 		CheckSendQueue(hwndDlg, dat);
@@ -959,8 +958,8 @@ verify:
 			HandleQueueError(hwndDlg, dat, iNextFailed);
 		//MAD: close on send mode
 		else {
-			if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "AutoClose", 0)) {
-				if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_AutoClose_2", 0))
+			if (pMim->GetByte("AutoClose", 0)) {
+				if(pMim->GetByte("adv_AutoClose_2", 0))
 					SendMessage(dat->hwnd, WM_CLOSE, 0, 1);
 				else
 					SendMessage(dat->pContainer->hwnd, WM_CLOSE, 0, 0);

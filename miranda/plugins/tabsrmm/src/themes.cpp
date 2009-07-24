@@ -46,7 +46,6 @@ extern PAB MyAlphaBlend;
 
 extern char *TemplateNames[];
 extern TemplateSet LTR_Active, RTL_Active;
-extern MYGLOBALS myGlobals;
 extern struct ContainerWindowData *pFirstContainer;
 extern int          g_chat_integration_enabled;
 
@@ -184,6 +183,11 @@ StatusItems_t StatusItems[] = {
 	}
 };
 
+void StatusItem::Init(const int id)
+{
+	m_item = &StatusItems[id];
+	//MessageBoxA(0, m_item.szName, "foo", MB_OK);
+}
 /*
  * this loads a font definition from an INI file.
  * i = font number
@@ -282,37 +286,37 @@ void WriteThemeToINI(const char *szIniFilename, struct _MessageWindowData *dat)
 				DBFreeVariant(&dbv);
 			}
 			sprintf(szTemp, "Font%dCol", firstIndex + i);
-			WritePrivateProfileStringA(szAppname, "Color", _itoa(DBGetContactSettingDword(NULL, szModule, szTemp, 0), szBuf, 10), szIniFilename);
+			WritePrivateProfileStringA(szAppname, "Color", _itoa(pMim->GetDword(szModule, szTemp, 0), szBuf, 10), szIniFilename);
 			sprintf(szTemp, "Font%dSty", firstIndex + i);
-			WritePrivateProfileStringA(szAppname, "Style", _itoa(DBGetContactSettingByte(NULL, szModule, szTemp, 0), szBuf, 10), szIniFilename);
+			WritePrivateProfileStringA(szAppname, "Style", _itoa(pMim->GetByte(szModule, szTemp, 0), szBuf, 10), szIniFilename);
 			sprintf(szTemp, "Font%dSize", firstIndex + i);
-			WritePrivateProfileStringA(szAppname, "Size", _itoa(DBGetContactSettingByte(NULL, szModule, szTemp, 0), szBuf, 10), szIniFilename);
+			WritePrivateProfileStringA(szAppname, "Size", _itoa(pMim->GetByte(szModule, szTemp, 0), szBuf, 10), szIniFilename);
 			sprintf(szTemp, "Font%dSet", firstIndex + i);
-			WritePrivateProfileStringA(szAppname, "Set", _itoa(DBGetContactSettingByte(NULL, szModule, szTemp, 0), szBuf, 10), szIniFilename);
+			WritePrivateProfileStringA(szAppname, "Set", _itoa(pMim->GetByte(szModule, szTemp, 0), szBuf, 10), szIniFilename);
 		}
 		n++;
 	}
 	def = SRMSGDEFSET_BKGCOLOUR;
 
-	WritePrivateProfileStringA("Message Log", "BackgroundColor", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, def), szBuf, 10), szIniFilename);
-	WritePrivateProfileStringA("Message Log", "IncomingBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "inbg", SRMSGDEFSET_BKGINCOLOUR), szBuf, 10), szIniFilename);
-	WritePrivateProfileStringA("Message Log", "OutgoingBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "outbg", SRMSGDEFSET_BKGOUTCOLOUR), szBuf, 10), szIniFilename);
+	WritePrivateProfileStringA("Message Log", "BackgroundColor", _itoa(pMim->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, def), szBuf, 10), szIniFilename);
+	WritePrivateProfileStringA("Message Log", "IncomingBG", _itoa(pMim->GetDword(FONTMODULE, "inbg", SRMSGDEFSET_BKGINCOLOUR), szBuf, 10), szIniFilename);
+	WritePrivateProfileStringA("Message Log", "OutgoingBG", _itoa(pMim->GetDword(FONTMODULE, "outbg", SRMSGDEFSET_BKGOUTCOLOUR), szBuf, 10), szIniFilename);
 
-	WritePrivateProfileStringA("Message Log", "OldIncomingBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "oldinbg", SRMSGDEFSET_BKGINCOLOUR), szBuf, 10), szIniFilename);
-	WritePrivateProfileStringA("Message Log", "OldOutgoingBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "oldoutbg", SRMSGDEFSET_BKGOUTCOLOUR), szBuf, 10), szIniFilename);
-	WritePrivateProfileStringA("Message Log", "StatusBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "statbg", def), szBuf, 10), szIniFilename);
+	WritePrivateProfileStringA("Message Log", "OldIncomingBG", _itoa(pMim->GetDword(FONTMODULE, "oldinbg", SRMSGDEFSET_BKGINCOLOUR), szBuf, 10), szIniFilename);
+	WritePrivateProfileStringA("Message Log", "OldOutgoingBG", _itoa(pMim->GetDword(FONTMODULE, "oldoutbg", SRMSGDEFSET_BKGOUTCOLOUR), szBuf, 10), szIniFilename);
+	WritePrivateProfileStringA("Message Log", "StatusBG", _itoa(pMim->GetDword(FONTMODULE, "statbg", def), szBuf, 10), szIniFilename);
 
-	WritePrivateProfileStringA("Message Log", "InputBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", def), szBuf, 10), szIniFilename);
-	WritePrivateProfileStringA("Message Log", "HgridColor", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "hgrid", def), szBuf, 10), szIniFilename);
-	WritePrivateProfileStringA("Message Log", "DWFlags", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT), szBuf, 10), szIniFilename);
-	WritePrivateProfileStringA("Message Log", "VGrid", _itoa(DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", 0), szBuf, 10), szIniFilename);
-	WritePrivateProfileStringA("Message Log", "ExtraMicroLF", _itoa(DBGetContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", 0), szBuf, 10), szIniFilename);
-	WritePrivateProfileStringA("Chat", "UserListBG", _itoa(DBGetContactSettingDword(NULL, "Chat", "ColorNicklistBG", def), szBuf, 10), szIniFilename);
+	WritePrivateProfileStringA("Message Log", "InputBG", _itoa(pMim->GetDword(FONTMODULE, "inputbg", def), szBuf, 10), szIniFilename);
+	WritePrivateProfileStringA("Message Log", "HgridColor", _itoa(pMim->GetDword(FONTMODULE, "hgrid", def), szBuf, 10), szIniFilename);
+	WritePrivateProfileStringA("Message Log", "DWFlags", _itoa(pMim->GetDword("mwflags", MWF_LOG_DEFAULT), szBuf, 10), szIniFilename);
+	WritePrivateProfileStringA("Message Log", "VGrid", _itoa(pMim->GetByte("wantvgrid", 0), szBuf, 10), szIniFilename);
+	WritePrivateProfileStringA("Message Log", "ExtraMicroLF", _itoa(pMim->GetByte("extramicrolf", 0), szBuf, 10), szIniFilename);
+	WritePrivateProfileStringA("Chat", "UserListBG", _itoa(pMim->GetDword("Chat", "ColorNicklistBG", def), szBuf, 10), szIniFilename);
 
-	WritePrivateProfileStringA("Message Log", "LeftIndent", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", 20), szBuf, 10), szIniFilename);
-	WritePrivateProfileStringA("Message Log", "RightIndent", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", 20), szBuf, 10), szIniFilename);
+	WritePrivateProfileStringA("Message Log", "LeftIndent", _itoa(pMim->GetDword("IndentAmount", 20), szBuf, 10), szIniFilename);
+	WritePrivateProfileStringA("Message Log", "RightIndent", _itoa(pMim->GetDword("RightIndent", 20), szBuf, 10), szIniFilename);
 
-	WritePrivateProfileStringA("Custom Colors", "InfopanelBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "ipfieldsbg", GetSysColor(COLOR_3DFACE)), szBuf, 10), szIniFilename);
+	WritePrivateProfileStringA("Custom Colors", "InfopanelBG", _itoa(pMim->GetDword(FONTMODULE, "ipfieldsbg", GetSysColor(COLOR_3DFACE)), szBuf, 10), szIniFilename);
 
 	for (i = 0; i <= TMPL_ERRMSG; i++) {
 #if defined(_UNICODE)
@@ -342,7 +346,7 @@ void WriteThemeToINI(const char *szIniFilename, struct _MessageWindowData *dat)
 	for (i = 0; i < CUSTOM_COLORS; i++) {
 		sprintf(szTemp, "cc%d", i + 1);
 		if (dat == 0)
-			WritePrivateProfileStringA("Custom Colors", szTemp, _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, szTemp, 0), szBuf, 10), szIniFilename);
+			WritePrivateProfileStringA("Custom Colors", szTemp, _itoa(pMim->GetDword(szTemp, 0), szBuf, 10), szIniFilename);
 		else
 			WritePrivateProfileStringA("Custom Colors", szTemp, _itoa(dat->theme.custom_colors[i], szBuf, 10), szIniFilename);
 	}
@@ -391,56 +395,56 @@ void ReadThemeFromINI(const char *szIniFilename, struct _MessageWindowData *dat,
 				}
 
 				sprintf(szTemp, "Font%dCol", firstIndex + i);
-				DBWriteContactSettingDword(NULL, szModule, szTemp, GetPrivateProfileIntA(szAppname, "Color", GetSysColor(COLOR_WINDOWTEXT), szIniFilename));
+				pMim->WriteDword(szModule, szTemp, GetPrivateProfileIntA(szAppname, "Color", GetSysColor(COLOR_WINDOWTEXT), szIniFilename));
 
 				sprintf(szTemp, "Font%dSty", firstIndex + i);
-				DBWriteContactSettingByte(NULL, szModule, szTemp, (BYTE)(GetPrivateProfileIntA(szAppname, "Style", 0, szIniFilename)));
+				pMim->WriteByte(szModule, szTemp, (BYTE)(GetPrivateProfileIntA(szAppname, "Style", 0, szIniFilename)));
 
 				sprintf(szTemp, "Font%dSize", firstIndex + i);
 				bSize = (char)GetPrivateProfileIntA(szAppname, "Size", -10, szIniFilename);
 				if (bSize > 0)
 					bSize = -MulDiv(bSize, GetDeviceCaps(hdc, LOGPIXELSY), 72);
-				DBWriteContactSettingByte(NULL, szModule, szTemp, bSize);
+				pMim->WriteByte(szModule, szTemp, bSize);
 
 				sprintf(szTemp, "Font%dSet", firstIndex + i);
 				charset = GetPrivateProfileIntA(szAppname, "Set", 0, szIniFilename);
 				if (i == MSGFONTID_SYMBOLS_IN || i == MSGFONTID_SYMBOLS_OUT)
 					charset = 0;
-				DBWriteContactSettingByte(NULL, szModule, szTemp, (BYTE)charset);
+				pMim->WriteByte(szModule, szTemp, (BYTE)charset);
 			}
 			n++;
 		}
 		def = SRMSGDEFSET_BKGCOLOUR;
 		ReleaseDC(NULL, hdc);
-		DBWriteContactSettingDword(NULL, FONTMODULE, "ipfieldsbg",
+		pMim->WriteDword(FONTMODULE, "ipfieldsbg",
 								   GetPrivateProfileIntA("Custom Colors", "InfopanelBG", GetSysColor(COLOR_3DFACE), szIniFilename));
 		if (dwFlags & THEME_READ_FONTS) {
 			COLORREF defclr;
 
-			DBWriteContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, GetPrivateProfileIntA("Message Log", "BackgroundColor", def, szIniFilename));
-			DBWriteContactSettingDword(NULL, "Chat", "ColorLogBG", GetPrivateProfileIntA("Message Log", "BackgroundColor", def, szIniFilename));
-			DBWriteContactSettingDword(NULL, FONTMODULE, "inbg", GetPrivateProfileIntA("Message Log", "IncomingBG", def, szIniFilename));
-			DBWriteContactSettingDword(NULL, FONTMODULE, "outbg", GetPrivateProfileIntA("Message Log", "OutgoingBG", def, szIniFilename));
-			DBWriteContactSettingDword(NULL, FONTMODULE, "inputbg", GetPrivateProfileIntA("Message Log", "InputBG", def, szIniFilename));
+			pMim->WriteDword(FONTMODULE, SRMSGSET_BKGCOLOUR, GetPrivateProfileIntA("Message Log", "BackgroundColor", def, szIniFilename));
+			pMim->WriteDword("Chat", "ColorLogBG", GetPrivateProfileIntA("Message Log", "BackgroundColor", def, szIniFilename));
+			pMim->WriteDword(FONTMODULE, "inbg", GetPrivateProfileIntA("Message Log", "IncomingBG", def, szIniFilename));
+			pMim->WriteDword(FONTMODULE, "outbg", GetPrivateProfileIntA("Message Log", "OutgoingBG", def, szIniFilename));
+			pMim->WriteDword(FONTMODULE, "inputbg", GetPrivateProfileIntA("Message Log", "InputBG", def, szIniFilename));
 
-			DBWriteContactSettingDword(NULL, FONTMODULE, "oldinbg", GetPrivateProfileIntA("Message Log", "OldIncomingBG", def, szIniFilename));
-			DBWriteContactSettingDword(NULL, FONTMODULE, "oldoutbg", GetPrivateProfileIntA("Message Log", "OldOutgoingBG", def, szIniFilename));
-			DBWriteContactSettingDword(NULL, FONTMODULE, "statbg", GetPrivateProfileIntA("Message Log", "StatusBG", def, szIniFilename));
+			pMim->WriteDword(FONTMODULE, "oldinbg", GetPrivateProfileIntA("Message Log", "OldIncomingBG", def, szIniFilename));
+			pMim->WriteDword(FONTMODULE, "oldoutbg", GetPrivateProfileIntA("Message Log", "OldOutgoingBG", def, szIniFilename));
+			pMim->WriteDword(FONTMODULE, "statbg", GetPrivateProfileIntA("Message Log", "StatusBG", def, szIniFilename));
 
-			DBWriteContactSettingDword(NULL, FONTMODULE, "hgrid", GetPrivateProfileIntA("Message Log", "HgridColor", def, szIniFilename));
-			DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", GetPrivateProfileIntA("Message Log", "DWFlags", MWF_LOG_DEFAULT, szIniFilename));
-			DBWriteContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", (BYTE)(GetPrivateProfileIntA("Message Log", "VGrid", 0, szIniFilename)));
-			DBWriteContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", (BYTE)(GetPrivateProfileIntA("Message Log", "ExtraMicroLF", 0, szIniFilename)));
+			pMim->WriteDword(FONTMODULE, "hgrid", GetPrivateProfileIntA("Message Log", "HgridColor", def, szIniFilename));
+			pMim->WriteDword(SRMSGMOD_T, "mwflags", GetPrivateProfileIntA("Message Log", "DWFlags", MWF_LOG_DEFAULT, szIniFilename));
+			pMim->WriteByte(SRMSGMOD_T, "wantvgrid", (BYTE)(GetPrivateProfileIntA("Message Log", "VGrid", 0, szIniFilename)));
+			pMim->WriteByte(SRMSGMOD_T, "extramicrolf", (BYTE)(GetPrivateProfileIntA("Message Log", "ExtraMicroLF", 0, szIniFilename)));
 
-			DBWriteContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", GetPrivateProfileIntA("Message Log", "LeftIndent", 0, szIniFilename));
-			DBWriteContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", GetPrivateProfileIntA("Message Log", "RightIndent", 0, szIniFilename));
+			pMim->WriteDword(SRMSGMOD_T, "IndentAmount", GetPrivateProfileIntA("Message Log", "LeftIndent", 0, szIniFilename));
+			pMim->WriteDword(SRMSGMOD_T, "RightIndent", GetPrivateProfileIntA("Message Log", "RightIndent", 0, szIniFilename));
 
-			DBWriteContactSettingDword(NULL, "Chat", "ColorNicklistBG", GetPrivateProfileIntA("Chat", "UserListBG", def, szIniFilename));
+			pMim->WriteDword("Chat", "ColorNicklistBG", GetPrivateProfileIntA("Chat", "UserListBG", def, szIniFilename));
 
 			for (i = 0; i < CUSTOM_COLORS; i++) {
 				sprintf(szTemp, "cc%d", i + 1);
 				if (dat == 0)
-					DBWriteContactSettingDword(NULL, SRMSGMOD_T, szTemp, GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename));
+					pMim->WriteDword(SRMSGMOD_T, szTemp, GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename));
 				else
 					dat->theme.custom_colors[i] = GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename);
 			}
@@ -453,7 +457,7 @@ void ReadThemeFromINI(const char *szIniFilename, struct _MessageWindowData *dat,
 					defclr = g_Settings.crUserListColor;
 				g_Settings.nickColors[i] = GetPrivateProfileIntA("Nick Colors", _itoa(i, szTemp, 10), defclr, szIniFilename);
 				sprintf(szTemp, "NickColor%d", i);
-				DBWriteContactSettingDword(NULL, "Chat", szTemp, g_Settings.nickColors[i]);
+				pMim->WriteDword("Chat", szTemp, g_Settings.nickColors[i]);
 			}
 		}
 	} else {
@@ -479,8 +483,8 @@ void ReadThemeFromINI(const char *szIniFilename, struct _MessageWindowData *dat,
 		dat->theme.inputbg = GetPrivateProfileIntA("Message Log", "InputBG", RGB(224, 224, 224), szIniFilename);
 		dat->theme.hgrid = GetPrivateProfileIntA("Message Log", "HgridColor", RGB(224, 224, 224), szIniFilename);
 		dat->theme.dwFlags = GetPrivateProfileIntA("Message Log", "DWFlags", MWF_LOG_DEFAULT, szIniFilename);
-		DBWriteContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", (BYTE)(GetPrivateProfileIntA("Message Log", "VGrid", 0, szIniFilename)));
-		DBWriteContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", (BYTE)(GetPrivateProfileIntA("Message Log", "ExtraMicroLF", 0, szIniFilename)));
+		pMim->WriteByte(SRMSGMOD_T, "wantvgrid", (BYTE)(GetPrivateProfileIntA("Message Log", "VGrid", 0, szIniFilename)));
+		pMim->WriteByte(SRMSGMOD_T, "extramicrolf", (BYTE)(GetPrivateProfileIntA("Message Log", "ExtraMicroLF", 0, szIniFilename)));
 
 		dat->theme.left_indent = GetPrivateProfileIntA("Message Log", "LeftIndent", 0, szIniFilename);
 		dat->theme.right_indent = GetPrivateProfileIntA("Message Log", "RightIndent", 0, szIniFilename);
@@ -488,7 +492,7 @@ void ReadThemeFromINI(const char *szIniFilename, struct _MessageWindowData *dat,
 		for (i = 0; i < CUSTOM_COLORS; i++) {
 			sprintf(szTemp, "cc%d", i + 1);
 			if (dat == 0)
-				DBWriteContactSettingDword(NULL, SRMSGMOD_T, szTemp, GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename));
+				pMim->WriteDword(SRMSGMOD_T, szTemp, GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename));
 			else
 				dat->theme.custom_colors[i] = GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename);
 		}
@@ -553,10 +557,10 @@ char *GetThemeFileName(int iMode)
 	OPENFILENAMEA ofn = {0};
 	char szInitialDir[MAX_PATH];
 
-	if(!myGlobals.szSkinsPath && myGlobals.szDataPath)
-		mir_snprintf(szInitialDir, MAX_PATH, "%sskins\\", myGlobals.szDataPath);
+	if(!Globals.szSkinsPath && Globals.szDataPath)
+		mir_snprintf(szInitialDir, MAX_PATH, "%sskins\\", Globals.szDataPath);
 	else
-		mir_snprintf(szInitialDir, MAX_PATH,"%s",myGlobals.szSkinsPath);
+		mir_snprintf(szInitialDir, MAX_PATH,"%s",Globals.szSkinsPath);
 
 
 	szFilename[0] = 0;
@@ -583,17 +587,17 @@ char *GetThemeFileName(int iMode)
 	}
 }
 
-BYTE __forceinline percent_to_byte(UINT32 percent)
+static BYTE __forceinline percent_to_byte(UINT32 percent)
 {
 	return(BYTE)((FLOAT)(((FLOAT) percent) / 100) * 255);
 }
 
-COLORREF __forceinline revcolref(COLORREF colref)
+static COLORREF __forceinline revcolref(COLORREF colref)
 {
 	return RGB(GetBValue(colref), GetGValue(colref), GetRValue(colref));
 }
 
-DWORD __forceinline argb_from_cola(COLORREF col, UINT32 alpha)
+static DWORD __forceinline argb_from_cola(COLORREF col, UINT32 alpha)
 {
 	return((BYTE) percent_to_byte(alpha) << 24 | col);
 }
@@ -1105,7 +1109,7 @@ static void BTN_ReadItem(char *itemName, char *file)
 
 	if (GetPrivateProfileIntA(itemName, "Sidebar", 0, file)) {
 		tmpItem.dwFlags |= BUTTON_ISSIDEBAR;
-		myGlobals.m_SideBarEnabled = TRUE;
+		Globals.m_SideBarEnabled = TRUE;
 		SIDEBARWIDTH = max(tmpItem.width + 2, SIDEBARWIDTH);
 	}
 
@@ -1193,7 +1197,7 @@ static void BTN_ReadItem(char *itemName, char *file)
 	GetPrivateProfileStringA(itemName, "Tip", "None", szBuffer, 1000, file);
 	if (strcmp(szBuffer, "None")) {
 #if defined(_UNICODE)
-		MultiByteToWideChar(myGlobals.m_LangPackCP, 0, szBuffer, -1, tmpItem.szTip, 256);
+		MultiByteToWideChar(Globals.m_LangPackCP, 0, szBuffer, -1, tmpItem.szTip, 256);
 		tmpItem.szTip[255] = 0;
 #else
 		mir_snprintf(tmpItem.szTip, 256, "%s", szBuffer);
@@ -1206,7 +1210,7 @@ create_it:
 	GetPrivateProfileStringA(itemName, "Label", "None", szBuffer, 40, file);
 	if (strcmp(szBuffer, "None")) {
 #if defined(_UNICODE)
-		MultiByteToWideChar(myGlobals.m_LangPackCP, 0, szBuffer, -1, tmpItem.tszLabel, 40);
+		MultiByteToWideChar(Globals.m_LangPackCP, 0, szBuffer, -1, tmpItem.tszLabel, 40);
 		tmpItem.tszLabel[39] = 0;
 #else
 		mir_snprintf(tmpItem.tszLabel, 40, "%s", szBuffer);
@@ -1627,22 +1631,22 @@ void IMG_DeleteItems()
 		pbItem = pbNextItem;
 	}
 	ZeroMemory(&g_ButtonSet, sizeof(ButtonSet));
-	myGlobals.m_SideBarEnabled = FALSE;
+	Globals.m_SideBarEnabled = FALSE;
 
-	if (myGlobals.g_closeGlyph)
-		DestroyIcon(myGlobals.g_closeGlyph);
-	if (myGlobals.g_minGlyph)
-		DestroyIcon(myGlobals.g_minGlyph);
-	if (myGlobals.g_maxGlyph)
-		DestroyIcon(myGlobals.g_maxGlyph);
+	if (Globals.g_closeGlyph)
+		DestroyIcon(Globals.g_closeGlyph);
+	if (Globals.g_minGlyph)
+		DestroyIcon(Globals.g_minGlyph);
+	if (Globals.g_maxGlyph)
+		DestroyIcon(Globals.g_maxGlyph);
 	if (g_ContainerColorKeyBrush)
 		DeleteObject(g_ContainerColorKeyBrush);
-	if (myGlobals.g_pulldownGlyph)
-		DeleteObject(myGlobals.g_pulldownGlyph);
+	if (Globals.g_pulldownGlyph)
+		DeleteObject(Globals.g_pulldownGlyph);
 
-	myGlobals.g_minGlyph = myGlobals.g_maxGlyph = myGlobals.g_closeGlyph = myGlobals.g_pulldownGlyph = 0;
+	Globals.g_minGlyph = Globals.g_maxGlyph = Globals.g_closeGlyph = Globals.g_pulldownGlyph = 0;
 	g_ContainerColorKeyBrush = 0;
-	myGlobals.g_DisableScrollbars = FALSE;
+	Globals.g_DisableScrollbars = FALSE;
 }
 
 static void SkinLoadIcon(char *file, char *szSection, char *name, HICON *hIcon)
@@ -1753,13 +1757,13 @@ static void SkinCalcFrameWidth()
 #ifdef _DEBUG
 	_DebugTraceA("SPI: %d, %d, %d", xBorder, yBorder, yCaption);
 #endif
-	myGlobals.g_realSkinnedFrame_left = myGlobals.g_SkinnedFrame_left - xBorder;
-	myGlobals.g_realSkinnedFrame_right = myGlobals.g_SkinnedFrame_right - xBorder;
-	myGlobals.g_realSkinnedFrame_bottom = myGlobals.g_SkinnedFrame_bottom - yBorder;
-	myGlobals.g_realSkinnedFrame_caption = myGlobals.g_SkinnedFrame_caption - yCaption;
+	Globals.g_realSkinnedFrame_left = Globals.g_SkinnedFrame_left - xBorder;
+	Globals.g_realSkinnedFrame_right = Globals.g_SkinnedFrame_right - xBorder;
+	Globals.g_realSkinnedFrame_bottom = Globals.g_SkinnedFrame_bottom - yBorder;
+	Globals.g_realSkinnedFrame_caption = Globals.g_SkinnedFrame_caption - yCaption;
 #ifdef _DEBUG
-	_DebugTraceA("Real frame metrics: %d, %d, %d, %d", myGlobals.g_realSkinnedFrame_left, myGlobals.g_realSkinnedFrame_right,
-				 myGlobals.g_realSkinnedFrame_caption, myGlobals.g_realSkinnedFrame_bottom);
+	_DebugTraceA("Real frame metrics: %d, %d, %d, %d", Globals.g_realSkinnedFrame_left, Globals.g_realSkinnedFrame_right,
+				 Globals.g_realSkinnedFrame_caption, Globals.g_realSkinnedFrame_bottom);
 #endif
 }
 
@@ -1797,17 +1801,17 @@ static void LoadSkinItems(char *file, int onStartup)
 		data = GetPrivateProfileIntA(_tagSettings[i].szIniKey, _tagSettings[i].szIniName, _tagSettings[i].defaultval, file);
 		switch (_tagSettings[i].size) {
 			case 1:
-				DBWriteContactSettingByte(NULL, SRMSGMOD_T, _tagSettings[i].szSetting, (BYTE)data);
+				pMim->WriteByte(SRMSGMOD_T, _tagSettings[i].szSetting, (BYTE)data);
 				break;
 			case 4:
-				DBWriteContactSettingDword(NULL, SRMSGMOD_T, _tagSettings[i].szSetting, data);
+				pMim->WriteDword(SRMSGMOD_T, _tagSettings[i].szSetting, data);
 				break;
 			case 2:
 				DBWriteContactSettingWord(NULL, SRMSGMOD_T, _tagSettings[i].szSetting, (WORD)data);
 				break;
 			case 5:
 				GetPrivateProfileStringA(_tagSettings[i].szIniKey, _tagSettings[i].szIniName, "000000", buffer, 10, file);
-				DBWriteContactSettingDword(NULL, SRMSGMOD_T, _tagSettings[i].szSetting, HexStringToLong(buffer));
+				pMim->WriteDword(SRMSGMOD_T, _tagSettings[i].szSetting, HexStringToLong(buffer));
 				break;
 		}
 		i++;
@@ -1816,7 +1820,7 @@ static void LoadSkinItems(char *file, int onStartup)
 	if (!(GetPrivateProfileIntA("Global", "Version", 0, file) >= 1 && GetPrivateProfileIntA("Global", "Signature", 0, file) == 101))
 		return;
 
-	myGlobals.g_DisableScrollbars = FALSE;
+	Globals.g_DisableScrollbars = FALSE;
 
 	ZeroMemory(szSections, 3000);
 	p = szSections;
@@ -1841,25 +1845,25 @@ static void LoadSkinItems(char *file, int onStartup)
 	if (j > 0)
 		g_skinnedContainers = TRUE;
 
-	myGlobals.bAvatarBoderType = GetPrivateProfileIntA("Avatars", "BorderType", 0, file);
+	Globals.bAvatarBoderType = GetPrivateProfileIntA("Avatars", "BorderType", 0, file);
 	GetPrivateProfileStringA("Avatars", "BorderColor", "000000", buffer, 20, file);
-	DBWriteContactSettingDword(NULL, SRMSGMOD_T, "avborderclr", HexStringToLong(buffer));
+	pMim->WriteDword(SRMSGMOD_T, "avborderclr", HexStringToLong(buffer));
 
-	SkinLoadIcon(file, "Global", "CloseGlyph", &myGlobals.g_closeGlyph);
-	SkinLoadIcon(file, "Global", "MaximizeGlyph", &myGlobals.g_maxGlyph);
-	SkinLoadIcon(file, "Global", "MinimizeGlyph", &myGlobals.g_minGlyph);
+	SkinLoadIcon(file, "Global", "CloseGlyph", &Globals.g_closeGlyph);
+	SkinLoadIcon(file, "Global", "MaximizeGlyph", &Globals.g_maxGlyph);
+	SkinLoadIcon(file, "Global", "MinimizeGlyph", &Globals.g_minGlyph);
 
 	g_framelessSkinmode = GetPrivateProfileIntA("Global", "framelessmode", 0, file);
-	myGlobals.g_DisableScrollbars = GetPrivateProfileIntA("Global", "NoScrollbars", 0, file);
+	Globals.g_DisableScrollbars = GetPrivateProfileIntA("Global", "NoScrollbars", 0, file);
 
 	data = GetPrivateProfileIntA("Global", "SkinnedTabs", 1, file);
-	myGlobals.m_TabAppearance = data ? myGlobals.m_TabAppearance | TCF_NOSKINNING : myGlobals.m_TabAppearance & ~TCF_NOSKINNING;
-	DBWriteContactSettingDword(NULL, SRMSGMOD_T, "tabconfig", myGlobals.m_TabAppearance);
+	Globals.m_TabAppearance = data ? Globals.m_TabAppearance | TCF_NOSKINNING : Globals.m_TabAppearance & ~TCF_NOSKINNING;
+	pMim->WriteDword(SRMSGMOD_T, "tabconfig", Globals.m_TabAppearance);
 
-	myGlobals.g_SkinnedFrame_left = GetPrivateProfileIntA("WindowFrame", "left", 4, file);
-	myGlobals.g_SkinnedFrame_right = GetPrivateProfileIntA("WindowFrame", "right", 4, file);
-	myGlobals.g_SkinnedFrame_caption = GetPrivateProfileIntA("WindowFrame", "Caption", 24, file);
-	myGlobals.g_SkinnedFrame_bottom = GetPrivateProfileIntA("WindowFrame", "bottom", 4, file);
+	Globals.g_SkinnedFrame_left = GetPrivateProfileIntA("WindowFrame", "left", 4, file);
+	Globals.g_SkinnedFrame_right = GetPrivateProfileIntA("WindowFrame", "right", 4, file);
+	Globals.g_SkinnedFrame_caption = GetPrivateProfileIntA("WindowFrame", "Caption", 24, file);
+	Globals.g_SkinnedFrame_bottom = GetPrivateProfileIntA("WindowFrame", "bottom", 4, file);
 
 	g_titleBarButtonSize.cx = GetPrivateProfileIntA("WindowFrame", "TitleButtonWidth", 24, file);
 	g_titleBarButtonSize.cy = GetPrivateProfileIntA("WindowFrame", "TitleButtonHeight", 12, file);
@@ -1873,7 +1877,7 @@ static void LoadSkinItems(char *file, int onStartup)
 	g_sidebarTopOffset = GetPrivateProfileIntA("ClientArea", "SidebarTop", -1, file);
 	g_sidebarBottomOffset = GetPrivateProfileIntA("ClientArea", "SidebarBottom", -1, file);
 
-	myGlobals.bClipBorder = GetPrivateProfileIntA("WindowFrame", "ClipFrame", 0, file);
+	Globals.bClipBorder = GetPrivateProfileIntA("WindowFrame", "ClipFrame", 0, file);
 	{
 		BYTE radius_tl, radius_tr, radius_bl, radius_br;
 		char szFinalName[MAX_PATH];
@@ -1884,14 +1888,14 @@ static void LoadSkinItems(char *file, int onStartup)
 		radius_bl = GetPrivateProfileIntA("WindowFrame", "RadiusBL", 0, file);
 		radius_br = GetPrivateProfileIntA("WindowFrame", "RadiusBR", 0, file);
 
-		myGlobals.bRoundedCorner = radius_tl;
+		Globals.bRoundedCorner = radius_tl;
 
 		GetPrivateProfileStringA("Theme", "File", "None", buffer, MAX_PATH, file);
 
 		_splitpath(file, szDrive, szPath, NULL, NULL);
 		mir_snprintf(szFinalName, MAX_PATH, "%s\\%s\\%s", szDrive, szPath, buffer);
 		if (PathFileExistsA(szFinalName)) {
-			ReadThemeFromINI(szFinalName, 0, FALSE, onStartup ? 0 : DBGetContactSettingByte(NULL, SRMSGMOD_T, "skin_loadmode", 0));
+			ReadThemeFromINI(szFinalName, 0, FALSE, onStartup ? 0 : pMim->GetByte("skin_loadmode", 0));
 			CacheLogFonts();
 			CacheMsgLogIcons();
 		}
@@ -1907,18 +1911,18 @@ static void LoadSkinItems(char *file, int onStartup)
 
 	GetPrivateProfileStringA("Global", "LightShadow", "000000", buffer, 20, file);
 	data = HexStringToLong(buffer);
-	myGlobals.g_SkinLightShadowPen = CreatePen(PS_SOLID, 1, RGB(GetRValue(data), GetGValue(data), GetBValue(data)));
+	Globals.g_SkinLightShadowPen = CreatePen(PS_SOLID, 1, RGB(GetRValue(data), GetGValue(data), GetBValue(data)));
 	GetPrivateProfileStringA("Global", "DarkShadow", "000000", buffer, 20, file);
 	data = HexStringToLong(buffer);
-	myGlobals.g_SkinDarkShadowPen = CreatePen(PS_SOLID, 1, RGB(GetRValue(data), GetGValue(data), GetBValue(data)));
+	Globals.g_SkinDarkShadowPen = CreatePen(PS_SOLID, 1, RGB(GetRValue(data), GetGValue(data), GetBValue(data)));
 
 	SkinCalcFrameWidth();
 
 	GetPrivateProfileStringA("Global", "FontColor", "None", buffer, 20, file);
 	if (strcmp(buffer, "None"))
-		myGlobals.skinDefaultFontColor = HexStringToLong(buffer);
+		Globals.skinDefaultFontColor = HexStringToLong(buffer);
 	else
-		myGlobals.skinDefaultFontColor = GetSysColor(COLOR_BTNTEXT);
+		Globals.skinDefaultFontColor = GetSysColor(COLOR_BTNTEXT);
 	buffer[499] = 0;
 	FreeTabConfig();
 	ReloadTabConfig();
@@ -1975,8 +1979,8 @@ void ReloadContainerSkin(int doLoad, int onStartup)
 	int i;
 
 	g_skinnedContainers = g_framelessSkinmode = FALSE;
-	myGlobals.bClipBorder = 0;
-	myGlobals.bRoundedCorner = 0;
+	Globals.bClipBorder = 0;
+	Globals.bRoundedCorner = 0;
 	if (g_MenuBGBrush) {
 		DeleteObject(g_MenuBGBrush);
 		g_MenuBGBrush = 0;
@@ -1993,10 +1997,10 @@ void ReloadContainerSkin(int doLoad, int onStartup)
 	for (i = 0; i <= ID_EXTBK_LAST; i++)
 		StatusItems[i].IGNORED = 1;
 
-	if (myGlobals.g_SkinLightShadowPen)
-		DeleteObject(myGlobals.g_SkinLightShadowPen);
-	if (myGlobals.g_SkinDarkShadowPen)
-		DeleteObject(myGlobals.g_SkinDarkShadowPen);
+	if (Globals.g_SkinLightShadowPen)
+		DeleteObject(Globals.g_SkinLightShadowPen);
+	if (Globals.g_SkinDarkShadowPen)
+		DeleteObject(Globals.g_SkinDarkShadowPen);
 
 	IMG_DeleteItems();
 

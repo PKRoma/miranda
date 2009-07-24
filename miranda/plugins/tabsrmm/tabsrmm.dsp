@@ -227,7 +227,9 @@ DEP_CPP_CLIST=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_CLIST=\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -290,7 +292,9 @@ DEP_CPP_COLOR=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_COLOR=\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -353,7 +357,9 @@ DEP_CPP_LOG_C=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_LOG_C=\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -416,7 +422,9 @@ DEP_CPP_MAIN_=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MAIN_=\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -479,7 +487,9 @@ DEP_CPP_MANAG=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MANAG=\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -542,7 +552,9 @@ DEP_CPP_MESSA=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MESSA=\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -605,7 +617,9 @@ DEP_CPP_OPTIO=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_OPTIO=\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -668,7 +682,9 @@ DEP_CPP_SERVI=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_SERVI=\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -731,7 +747,9 @@ DEP_CPP_TOOLS=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_TOOLS=\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -794,8 +812,10 @@ DEP_CPP_WINDO=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_WINDO=\
+	".\om.h"\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -927,7 +947,9 @@ DEP_CPP_BUTTO=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_BUTTO=\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -990,7 +1012,9 @@ DEP_CPP_CONTA=\
 	".\src\sendqueue.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_CONTA=\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1052,7 +1076,9 @@ DEP_CPP_CONTAI=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_CONTAI=\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1115,7 +1141,9 @@ DEP_CPP_EVENT=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_EVENT=\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1177,7 +1205,9 @@ DEP_CPP_FORMA=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_FORMA=\
+	".\xtheme.h"\
 	
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
@@ -1240,8 +1270,14 @@ DEP_CPP_GENER=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
 	
+NODEP_CPP_GENER=\
+	".\xtheme.h"\
+	
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\globals.cpp
 # End Source File
 # Begin Source File
 
@@ -1303,7 +1339,9 @@ DEP_CPP_HOTKE=\
 	".\src\sendqueue.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_HOTKE=\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1366,7 +1404,9 @@ DEP_CPP_IMAGE=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_IMAGE=\
+	".\xtheme.h"\
 	
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
@@ -1429,7 +1469,9 @@ DEP_CPP_MODPL=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MODPL=\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -1493,7 +1535,9 @@ DEP_CPP_MSGDI=\
 	".\src\sendqueue.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MSGDI=\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1555,7 +1599,9 @@ DEP_CPP_MSGDL=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MSGDL=\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1617,7 +1663,9 @@ DEP_CPP_MSGLO=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MSGLO=\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1680,7 +1728,9 @@ DEP_CPP_MSGOP=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MSGOP=\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1742,7 +1792,9 @@ DEP_CPP_MSGOPT=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MSGOPT=\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -1806,7 +1858,9 @@ DEP_CPP_MSGS_=\
 	".\src\sendqueue.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MSGS_=\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1868,7 +1922,9 @@ DEP_CPP_SELEC=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_SELEC=\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1931,7 +1987,9 @@ DEP_CPP_SENDQ=\
 	".\src\sendqueue.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_SENDQ=\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1993,7 +2051,9 @@ DEP_CPP_SRMM_=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_SRMM_=\
+	".\xtheme.h"\
 	
 # ADD CPP /Yc"commonheaders.h"
 # End Source File
@@ -2056,7 +2116,9 @@ DEP_CPP_TABCT=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_TABCT=\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2118,7 +2180,9 @@ DEP_CPP_TEMPL=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_TEMPL=\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2180,7 +2244,9 @@ DEP_CPP_THEME=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_THEME=\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2242,7 +2308,9 @@ DEP_CPP_TRAYI=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_TRAYI=\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2304,7 +2372,9 @@ DEP_CPP_TSBUT=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_TSBUT=\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2366,7 +2436,9 @@ DEP_CPP_TYPIN=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_TYPIN=\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2428,7 +2500,9 @@ DEP_CPP_USERP=\
 	".\src\nen.h"\
 	".\src\templates.h"\
 	".\src\typingnotify.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_USERP=\
+	".\xtheme.h"\
 	
 # End Source File
 # End Group
@@ -2446,6 +2520,10 @@ SOURCE=.\src\functions.h
 # Begin Source File
 
 SOURCE=.\src\generic_msghandlers.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\globals.h
 # End Source File
 # Begin Source File
 

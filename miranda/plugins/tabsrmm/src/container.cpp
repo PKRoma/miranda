@@ -58,10 +58,8 @@ $Id: container.c 10399 2009-07-23 20:11:21Z silvercircle $
 static HMONITOR(WINAPI * MyMonitorFromWindow)(HWND, DWORD) = 0;
 static BOOL(WINAPI * MyGetMonitorInfoA)(HMONITOR, LPMONITORINFO) = 0;
 
-extern MYGLOBALS myGlobals;
 extern NEN_OPTIONS nen_options;
 extern HWND floaterOwner;
-extern HANDLE hMessageWindowList;
 extern HINSTANCE g_hInst;
 extern SESSION_INFO *m_WndList;
 extern BOOL (WINAPI *pfnIsThemeActive)();
@@ -129,9 +127,9 @@ static int MY_RestoreWindowPosition(WPARAM wParam, LPARAM lParam)
 	wp.length = sizeof(wp);
 	GetWindowPlacement(swp->hwnd, &wp);
 	wsprintfA(szSettingName, "%sx", swp->szNamePrefix);
-	x = DBGetContactSettingDword(swp->hContact, swp->szModule, szSettingName, -1);
+	x = pMim->GetDword(swp->hContact, swp->szModule, szSettingName, -1);
 	wsprintfA(szSettingName, "%sy", swp->szNamePrefix);
-	y = (int)DBGetContactSettingDword(swp->hContact, swp->szModule, szSettingName, -1);
+	y = (int)pMim->GetDword(swp->hContact, swp->szModule, szSettingName, -1);
 	if (x == -1)
 		return 1;
 	if (wParam&RWPF_NOSIZE) {
@@ -141,14 +139,14 @@ static int MY_RestoreWindowPosition(WPARAM wParam, LPARAM lParam)
 		wp.rcNormalPosition.left = x;
 		wp.rcNormalPosition.top = y;
 		wsprintfA(szSettingName, "%swidth", swp->szNamePrefix);
-		wp.rcNormalPosition.right = wp.rcNormalPosition.left + DBGetContactSettingDword(swp->hContact, swp->szModule, szSettingName, -1);
+		wp.rcNormalPosition.right = wp.rcNormalPosition.left + pMim->GetDword(swp->hContact, swp->szModule, szSettingName, -1);
 		wsprintfA(szSettingName, "%sheight", swp->szNamePrefix);
-		wp.rcNormalPosition.bottom = wp.rcNormalPosition.top + DBGetContactSettingDword(swp->hContact, swp->szModule, szSettingName, -1);
+		wp.rcNormalPosition.bottom = wp.rcNormalPosition.top + pMim->GetDword(swp->hContact, swp->szModule, szSettingName, -1);
 	}
 	wp.flags = 0;
 	if (wParam&RWPF_NOACTIVATE)
 		wp.showCmd = SW_SHOWNOACTIVATE;
-	if(DBGetContactSettingByte(swp->hContact, swp->szModule, "splitmax", 0))
+	if(pMim->GetByte(swp->hContact, swp->szModule, "splitmax", 0))
 		wp.showCmd = SW_SHOWMAXIMIZED;
 	if (wParam & RWPF_HIDE)
 		wp.showCmd = SW_HIDE;
@@ -229,13 +227,13 @@ struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE
 		_tcsncpy(pContainer->szName, name, CONTAINER_NAMELEN + 1);
 		AppendToContainerList(pContainer);
 
-		if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "limittabs", 0) && !_tcscmp(name, _T("default")))
+		if (pMim->GetByte("limittabs", 0) && !_tcscmp(name, _T("default")))
 			iTemp |= CNT_CREATEFLAG_CLONED;
 		/*
 		 * save container name to the db
 		 */
 		i = 0;
-		if (!DBGetContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", 0)) {
+		if (!pMim->GetByte("singlewinmode", 0)) {
 			do {
 				_snprintf(szCounter, 8, "%d", i);
 				if (DBGetContactSettingTString(NULL, szKey, szCounter, &dbv)) {
@@ -316,7 +314,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 			RECT r;
 			POINT pt;
 			LRESULT lr = SendMessage(GetParent(hWnd), WM_NCHITTEST, wParam, lParam);
-			int clip = myGlobals.bClipBorder;
+			int clip = Globals.bClipBorder;
 
 			GetWindowRect(hWnd, &r);
 			GetCursorPos(&pt);
@@ -365,7 +363,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				hbm = CreateCompatibleBitmap(hdc, rcClient.right, rcClient.bottom);
 				hbmOld = (HBITMAP)SelectObject(hdcMem, hbm);
 				SetBkMode(hdcMem, TRANSPARENT);
-				SetTextColor(hdcMem, myGlobals.skinDefaultFontColor);
+				SetTextColor(hdcMem, Globals.skinDefaultFontColor);
 				hFontOld = (HFONT)SelectObject(hdcMem, GetStockObject(DEFAULT_GUI_FONT));
 
 				if (pContainer && pContainer->bSkinned)
@@ -423,7 +421,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 			GetCursorPos(&pt);
 			GetWindowRect(GetDlgItem(hWnd, 1001), &rc);
 			if (PtInRect(&rc, pt)) {
-				SendMessage(myGlobals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 100, WM_RBUTTONUP);
+				SendMessage(Globals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 100, WM_RBUTTONUP);
 				return 0;
 			}
 			break;
@@ -453,7 +451,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				}
 				else {
 					sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
-					flags = DBGetContactSettingByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
+					flags = pMim->GetByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
 				}
 				if (!(flags & MBF_HIDDEN))
 					list_icons++;
@@ -463,8 +461,8 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 			SendMessage(hWnd, WM_SIZE, 0, 0);
 			GetWindowRect(hWnd, &rcs);
 
-			statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH + 20) - (35 + ((list_icons) * (myGlobals.m_smcxicon + 2)));
-			statwidths[1] = (rcs.right - rcs.left) - (45 + ((list_icons) * (myGlobals.m_smcxicon + 2)));
+			statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH + 20) - (35 + ((list_icons) * (Globals.m_smcxicon + 2)));
+			statwidths[1] = (rcs.right - rcs.left) - (45 + ((list_icons) * (Globals.m_smcxicon + 2)));
 			statwidths[2] = -1;
 			SendMessage(hWnd, SB_SETPARTS, 3, (LPARAM) statwidths);
 			return 0;
@@ -529,7 +527,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 						struct StatusIconListNode *clicked = NULL;
 						struct StatusIconListNode *currentSIN = NULL;
 
-						unsigned int iconNum = (pt.x - rc.left) / (myGlobals.m_smcxicon + gap);
+						unsigned int iconNum = (pt.x - rc.left) / (Globals.m_smcxicon + gap);
 						unsigned int list_icons = 0;
 						char         buff[100];
 						DWORD        flags;
@@ -549,7 +547,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 								}
 							else  {
 							sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
-							flags = DBGetContactSettingByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
+							flags = pMim->GetByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
 							}
 							if (!(flags & MBF_HIDDEN)) {
 								if (list_icons++ == iconNum)
@@ -592,7 +590,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 							tooltip_active = TRUE;
 						}
 						else if ((int)iconNum == list_icons + 1 && dat && dat->bType == SESSIONTYPE_IM) {
-							int mtnStatus = (int)DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW));
+							int mtnStatus = (int)pMim->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, pMim->GetByte(SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW));
 #if defined(_UNICODE)
 
 							if (fHaveUCTip) {
@@ -839,15 +837,15 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 							switch (i) {
 								case 0:
 									rc = &pContainer->rcMin;
-									hIcon = myGlobals.g_minGlyph;
+									hIcon = Globals.g_minGlyph;
 									break;
 								case 1:
 									rc = &pContainer->rcMax;
-									hIcon = myGlobals.g_maxGlyph;
+									hIcon = Globals.g_maxGlyph;
 									break;
 								case 2:
 									rc = &pContainer->rcClose;
-									hIcon = myGlobals.g_closeGlyph;
+									hIcon = Globals.g_closeGlyph;
 									break;
 							}
 							if (rc) {
@@ -887,10 +885,10 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				DefWindowProc(hwndDlg, msg, wParam, lParam);
 				rc = &ncsp->rgrc[0];
 
-				rc->left += myGlobals.g_realSkinnedFrame_left;
-				rc->right -= myGlobals.g_realSkinnedFrame_right;
-				rc->bottom -= myGlobals.g_realSkinnedFrame_bottom;
-				rc->top += myGlobals.g_realSkinnedFrame_caption;
+				rc->left += Globals.g_realSkinnedFrame_left;
+				rc->right -= Globals.g_realSkinnedFrame_right;
+				rc->bottom -= Globals.g_realSkinnedFrame_bottom;
+				rc->top += Globals.g_realSkinnedFrame_caption;
 				return TRUE;
 			}
 			else {
@@ -961,13 +959,13 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
 				GetWindowText(hwndDlg, szWindowText, 512);
 				szWindowText[511] = 0;
-				hOldFont = (HFONT)SelectObject(dcMem, myGlobals.hFontCaption);
+				hOldFont = (HFONT)SelectObject(dcMem, Globals.hFontCaption);
 				GetTextMetrics(dcMem, &tm);
-				SetTextColor(dcMem, myGlobals.ipConfig.isValid ? myGlobals.ipConfig.clrs[IPFONTCOUNT - 1] : GetSysColor(COLOR_CAPTIONTEXT));
+				SetTextColor(dcMem, Globals.ipConfig.isValid ? Globals.ipConfig.clrs[IPFONTCOUNT - 1] : GetSysColor(COLOR_CAPTIONTEXT));
 				SetBkMode(dcMem, TRANSPARENT);
-				rcText.left =20 + myGlobals.g_SkinnedFrame_left + myGlobals.bClipBorder + g_titleBarLeftOff;//26;
+				rcText.left =20 + Globals.g_SkinnedFrame_left + Globals.bClipBorder + g_titleBarLeftOff;//26;
 				rcText.right = rcWindow.right - 3 * g_titleBarButtonSize.cx - 11 - g_titleBarRightOff;
-				rcText.top = g_captionOffset + myGlobals.bClipBorder;
+				rcText.top = g_captionOffset + Globals.bClipBorder;
 				rcText.bottom = rcText.top + tm.tmHeight;
 				rcText.left += g_captionPadding;
 				DrawText(dcMem, szWindowText, -1, &rcText, DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS | DT_NOPREFIX);
@@ -977,7 +975,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				 */
 
 				hIcon = (HICON)SendMessage(hwndDlg, WM_GETICON, ICON_BIG, 0);
- 				DrawIconEx(dcMem, 4 + myGlobals.g_SkinnedFrame_left + myGlobals.bClipBorder+g_titleBarLeftOff, rcText.top + (rcText.bottom - rcText.top) / 2 - 8, hIcon, 16, 16, 0, 0, DI_NORMAL);
+ 				DrawIconEx(dcMem, 4 + Globals.g_SkinnedFrame_left + Globals.bClipBorder+g_titleBarLeftOff, rcText.top + (rcText.bottom - rcText.top) / 2 - 8, hIcon, 16, 16, 0, 0, DI_NORMAL);
 
 				// title buttons;
 
@@ -1004,15 +1002,15 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					switch (i) {
 						case 0:
 							rc = &pContainer->rcMin;
-							hIcon = myGlobals.g_minGlyph;
+							hIcon = Globals.g_minGlyph;
 							break;
 						case 1:
 							rc = &pContainer->rcMax;
-							hIcon = myGlobals.g_maxGlyph;
+							hIcon = Globals.g_maxGlyph;
 							break;
 						case 2:
 							rc = &pContainer->rcClose;
-							hIcon = myGlobals.g_closeGlyph;
+							hIcon = Globals.g_closeGlyph;
 							break;
 					}
 					if (rc) {
@@ -1104,7 +1102,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			RECT r;
 			POINT pt;
 			int k = 0;
-			int clip = myGlobals.bClipBorder;
+			int clip = Globals.bClipBorder;
 
 			if (!pContainer)
 				break;
@@ -1173,8 +1171,8 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			int i = 0;
 			ButtonItem *pbItem;
 			HWND  hwndButton = 0;
-			BOOL isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbflat", 1);
-			BOOL isThemed = !DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0);
+			BOOL isFlat = pMim->GetByte("tbflat", 1);
+			BOOL isThemed = !pMim->GetByte("nlflat", 0);
 
 			fHaveTipper = ServiceExists("mToolTip/ShowTip");
 
@@ -1193,7 +1191,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 			OldContainerWndProc = (WNDPROC)SetWindowLongPtr(hwndDlg, GWLP_WNDPROC, (LONG_PTR)ContainerWndProc);
 
-			if (myGlobals.m_TabAppearance & TCF_FLAT)
+			if (Globals.m_TabAppearance & TCF_FLAT)
 				SetWindowLongPtr(hwndTab, GWL_STYLE, GetWindowLongPtr(hwndTab, GWL_STYLE) | TCS_BUTTONS);
 			pContainer = (struct ContainerWindowData *) lParam;
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR) pContainer);
@@ -1263,7 +1261,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			InsertMenu(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_SEPARATOR, 0, _T(""));
 			InsertMenu(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_MOREOPTIONS, TranslateT("Container options..."));
 			SetWindowText(hwndDlg, TranslateT("Message Session..."));
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)myGlobals.g_iconContainer);
+			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)Globals.g_iconContainer);
 
 			/*
 			 * make the tab control the controlling parent window for all message dialogs
@@ -1273,7 +1271,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_EXSTYLE, ws | WS_EX_CONTROLPARENT);
 
 			ws = GetWindowLongPtr(hwndTab, GWL_STYLE);
-			if (myGlobals.m_TabAppearance & TCF_SINGLEROWTABCONTROL) {
+			if (Globals.m_TabAppearance & TCF_SINGLEROWTABCONTROL) {
 				ws &= ~TCS_MULTILINE;
 				ws |= TCS_SINGLELINE;
 				ws |= TCS_FIXEDWIDTH;
@@ -1285,19 +1283,19 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					ws |= TCS_FIXEDWIDTH;
 			}
 			SetWindowLongPtr(hwndTab, GWL_STYLE, ws);
-			TabCtrl_SetImageList(GetDlgItem(hwndDlg, IDC_MSGTABS), myGlobals.g_hImageList);
-			TabCtrl_SetPadding(GetDlgItem(hwndDlg, IDC_MSGTABS), DBGetContactSettingByte(NULL, SRMSGMOD_T, "x-pad", 3), DBGetContactSettingByte(NULL, SRMSGMOD_T, "y-pad", 3));
+			TabCtrl_SetImageList(GetDlgItem(hwndDlg, IDC_MSGTABS), Globals.g_hImageList);
+			TabCtrl_SetPadding(GetDlgItem(hwndDlg, IDC_MSGTABS), pMim->GetByte("x-pad", 3), pMim->GetByte("y-pad", 3));
 
 			SendMessage(hwndDlg, DM_CONFIGURECONTAINER, 0, 10);
 
 			/*
 			 * context menu
 			 */
-			pContainer->hMenuContext = myGlobals.g_hMenuContext;
+			pContainer->hMenuContext = Globals.g_hMenuContext;
 			/*
 			 * tab tooltips...
 			 */
-			if (!fHaveTipper || DBGetContactSettingByte(NULL, SRMSGMOD_T, "d_tooltips", 0) == 0) {
+			if (!fHaveTipper || pMim->GetByte("d_tooltips", 0) == 0) {
 				pContainer->hwndTip = CreateWindowEx(0, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP, CW_USEDEFAULT, CW_USEDEFAULT,
 													 CW_USEDEFAULT, CW_USEDEFAULT, hwndDlg, NULL, g_hInst, (LPVOID) NULL);
 
@@ -1438,13 +1436,13 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 								else {
 									switch (item->type) {
 										case DBVT_BYTE:
-											DBWriteContactSettingByte(finalhContact, szModule, szSetting, pValue[0]);
+											pMim->WriteByte(finalhContact, szModule, szSetting, pValue[0]);
 											break;
 										case DBVT_WORD:
 											DBWriteContactSettingWord(finalhContact, szModule, szSetting, *((WORD *)&pValue[0]));
 											break;
 										case DBVT_DWORD:
-											DBWriteContactSettingDword(finalhContact, szModule, szSetting, *((DWORD *)&pValue[0]));
+											pMim->WriteDword(finalhContact, szModule, szSetting, *((DWORD *)&pValue[0]));
 											break;
 										case DBVT_ASCIIZ:
 											DBWriteContactSettingString(finalhContact, szModule, szSetting, (char *)pValue);
@@ -1559,11 +1557,11 @@ buttons_done:
 					break;
 				case ID_VIEW_BOTTOMTOOLBAR:
 					ApplyContainerSetting(pContainer, CNT_BOTTOMTOOLBAR, pContainer->dwFlags & CNT_BOTTOMTOOLBAR ? 0 : 1);
-					WindowList_Broadcast(hMessageWindowList, DM_CONFIGURETOOLBAR, 0, 1);
+					Globals.BroadcastMessage(DM_CONFIGURETOOLBAR, 0, 1);
 					return 0;
 				case ID_VIEW_SHOWTOOLBAR:
 					ApplyContainerSetting(pContainer, CNT_HIDETOOLBAR, pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1);
-					WindowList_Broadcast(hMessageWindowList, DM_CONFIGURETOOLBAR, 0, 1);
+					Globals.BroadcastMessage(DM_CONFIGURETOOLBAR, 0, 1);
 					return 0;
 				case ID_VIEW_SHOWMENUBAR:
 					ApplyContainerSetting(pContainer, CNT_NOMENUBAR, pContainer->dwFlags & CNT_NOMENUBAR ? 0 : 1);
@@ -1614,10 +1612,10 @@ buttons_done:
 
 					wp.length = sizeof(wp);
 					if (GetWindowPlacement(hwndDlg, &wp)) {
-						DBWriteContactSettingDword(NULL, SRMSGMOD_T, "splitx", wp.rcNormalPosition.left);
-						DBWriteContactSettingDword(NULL, SRMSGMOD_T, "splity", wp.rcNormalPosition.top);
-						DBWriteContactSettingDword(NULL, SRMSGMOD_T, "splitwidth", wp.rcNormalPosition.right - wp.rcNormalPosition.left);
-						DBWriteContactSettingDword(NULL, SRMSGMOD_T, "splitheight", wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
+						pMim->WriteDword(SRMSGMOD_T, "splitx", wp.rcNormalPosition.left);
+						pMim->WriteDword(SRMSGMOD_T, "splity", wp.rcNormalPosition.top);
+						pMim->WriteDword(SRMSGMOD_T, "splitwidth", wp.rcNormalPosition.right - wp.rcNormalPosition.left);
+						pMim->WriteDword(SRMSGMOD_T, "splitheight", wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
 					}
 					return 0;
 				}
@@ -1710,7 +1708,7 @@ buttons_done:
 					mmi->ptMaxPosition.x += rcDesktop.left;
 					mmi->ptMaxPosition.y += rcDesktop.top;
 				}
-				if (myGlobals.m_MathModAvail) {
+				if (Globals.m_MathModAvail) {
 					if (CallService(MTH_GET_PREVIEW_SHOWN, 0, 0)) {
 						RECT rc;
 						HWND hwndMath = FindWindowA("TfrmPreview", "Preview");
@@ -1722,7 +1720,7 @@ buttons_done:
 			return 0;
 		}
 		case WM_MOVE:
-			if (myGlobals.m_MathModAvail) {
+			if (Globals.m_MathModAvail) {
 				TMathWindowInfo mathWndInfo;
 				RECT windRect;
 				GetWindowRect(hwndDlg, &windRect);
@@ -1803,7 +1801,7 @@ buttons_done:
 
 			if (pContainer->buttonItems && sizeChanged)
 				DrawSideBar(hwndDlg, pContainer, &rcUnadjusted);
-			if (myGlobals.m_MathModAvail) {
+			if (Globals.m_MathModAvail) {
 				TMathWindowInfo mathWndInfo;
 
 				RECT windRect;
@@ -1814,17 +1812,17 @@ buttons_done:
 				mathWndInfo.bottom = windRect.bottom;
 				CallService(MTH_RESIZE, 0, (LPARAM) &mathWndInfo);
 			}
-			if ((myGlobals.bClipBorder != 0 || myGlobals.bRoundedCorner) && g_framelessSkinmode) {
+			if ((Globals.bClipBorder != 0 || Globals.bRoundedCorner) && g_framelessSkinmode) {
 				HRGN rgn;
 				RECT rcWindow;
-				int clip = myGlobals.bClipBorder;
+				int clip = Globals.bClipBorder;
 
 				GetWindowRect(hwndDlg, &rcWindow);
 
 
-				if (myGlobals.bRoundedCorner)
+				if (Globals.bRoundedCorner)
 					rgn = CreateRoundRectRgn(clip, clip, (rcWindow.right - rcWindow.left) - clip + 1,
-											 (rcWindow.bottom - rcWindow.top) - clip + 1, myGlobals.bRoundedCorner + clip, myGlobals.bRoundedCorner + clip);
+											 (rcWindow.bottom - rcWindow.top) - clip + 1, Globals.bRoundedCorner + clip, Globals.bRoundedCorner + clip);
 				else
 					rgn = CreateRectRgn(clip, clip, (rcWindow.right - rcWindow.left) - clip, (rcWindow.bottom - rcWindow.top) - clip);
 				SetWindowRgn(hwndDlg, rgn, TRUE);
@@ -1859,7 +1857,7 @@ buttons_done:
 				dat = (struct _MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 			}
 			else {
-				HWND hwnd = WindowList_Find(hMessageWindowList, (HANDLE)wParam);
+				HWND hwnd = Globals.FindWindow((HANDLE)wParam);
 				if (hwnd == 0) {
 					SESSION_INFO *si = SM_FindSessionByHCONTACT((HANDLE)wParam);
 					if (si) {
@@ -1873,7 +1871,7 @@ buttons_done:
 			}
 			if (dat) {
 				SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM)(dat->hXStatusIcon ? dat->hXStatusIcon : dat->hTabStatusIcon));
-				m_LangPackCP = myGlobals.m_LangPackCP;
+				m_LangPackCP = Globals.m_LangPackCP;
 				szNewTitle = NewTitle(dat->hContact, pContainer->szTitleFormat, dat->szNickname, dat->szStatus, pContainer->szName, dat->uin, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->idle, dat->codePage, dat->xStatus, dat->wStatus, dat->szAccount);
 				if (szNewTitle) {
 					SetWindowText(hwndDlg, szNewTitle);
@@ -1890,7 +1888,7 @@ buttons_done:
 				struct _MessageWindowData *dat = 0;
 
 				item.mask = TCIF_PARAM;
-				if ((dwTimeout = myGlobals.m_TabAutoClose) > 0) {
+				if ((dwTimeout = Globals.m_TabAutoClose) > 0) {
 					int clients = TabCtrl_GetItemCount(GetDlgItem(hwndDlg, IDC_MSGTABS));
 					HWND *hwndClients = (HWND *)mir_alloc(sizeof(HWND) * (clients + 1));
 					for (i = 0; i < clients; i++) {
@@ -2161,7 +2159,7 @@ panel_found:
 							SendMessage(hwndDlg, DM_CLOSETABATMOUSE, 0, (LPARAM)&pt1);
 							break;
 						case ID_TABMENU_SAVETABPOSITION:
-							DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "tabindex", dat->iTabID * 100);
+							pMim->WriteDword(dat->hContact, SRMSGMOD_T, "tabindex", dat->iTabID * 100);
 							break;
 						case ID_TABMENU_CLEARSAVEDTABPOSITION:
 							DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "tabindex");
@@ -2216,11 +2214,11 @@ panel_found:
 			if (pContainer == NULL)
 				break;
 
-			if (myGlobals.m_MathModAvail && LOWORD(wParam == WA_INACTIVE))
+			if (Globals.m_MathModAvail && LOWORD(wParam == WA_INACTIVE))
 				CallService(MTH_HIDE, 0, 0);
 
-			if (LOWORD(wParam == WA_INACTIVE) && (HWND)lParam != myGlobals.g_hwndHotkeyHandler && GetParent((HWND)lParam) != hwndDlg) {
-				BOOL fTransAllowed = !bSkinned || myGlobals.m_WinVerMajor >= 6;
+			if (LOWORD(wParam == WA_INACTIVE) && (HWND)lParam != Globals.g_hwndHotkeyHandler && GetParent((HWND)lParam) != hwndDlg) {
+				BOOL fTransAllowed = !bSkinned || Globals.m_WinVerMajor >= 6;
 
 				if (pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL && fTransAllowed)
 					pSetLayeredWindowAttributes(hwndDlg, g_ContainerColorKey, (BYTE)HIWORD(pContainer->dwTransparency), (/* pContainer->bSkinned ? LWA_COLORKEY :  */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
@@ -2232,7 +2230,7 @@ panel_found:
 		case WM_MOUSEACTIVATE: {
 			TCITEM item;
 			int curItem = 0;
-			BOOL  fTransAllowed = !bSkinned || myGlobals.m_WinVerMajor >= 6;
+			BOOL  fTransAllowed = !bSkinned || Globals.m_WinVerMajor >= 6;
 
 			if (pContainer == NULL)
 				break;
@@ -2335,7 +2333,7 @@ panel_found:
 			int iItem;
 			TCITEM item = {0};
 
-			if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "warnonexit", 0)) {
+			if (pMim->GetByte("warnonexit", 0)) {
 				if (MessageBox(pContainer->hwnd, TranslateTS(szWarnClose), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO)
 					break;
 			}
@@ -2387,9 +2385,9 @@ panel_found:
 #endif
 			if (pContainer->isCloned && pContainer->hContactFrom != 0) {
 				mir_snprintf(szCname, 40, "%s_Flags", szSetting);
-				dwLocalFlags = DBGetContactSettingDword(pContainer->hContactFrom, SRMSGMOD_T, szCname, 0xffffffff);
+				dwLocalFlags = pMim->GetDword(pContainer->hContactFrom, szCname, 0xffffffff);
 				mir_snprintf(szCname, 40, "%s_Trans", szSetting);
-				dwLocalTrans = DBGetContactSettingDword(pContainer->hContactFrom, SRMSGMOD_T, szCname, 0xffffffff);
+				dwLocalTrans = pMim->GetDword(pContainer->hContactFrom, szCname, 0xffffffff);
 				mir_snprintf(szCname, 40, "%s_titleformat", szSetting);
 				szTitleFormat = MY_DBGetContactSettingString(pContainer->hContactFrom, SRMSGMOD_T, szCname);
 				pContainer->szRelThemeFile[0] = pContainer->szAbsThemeFile[0] = 0;
@@ -2403,9 +2401,9 @@ panel_found:
 			}
 			if (overridePerContact) {
 				mir_snprintf(szCname, 40, "%s%d_Flags", szSetting, pContainer->iContainerIndex);
-				dwLocalFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, szCname, 0xffffffff);
+				dwLocalFlags = pMim->GetDword(szCname, 0xffffffff);
 				mir_snprintf(szCname, 40, "%s%d_Trans", szSetting, pContainer->iContainerIndex);
-				dwLocalTrans = DBGetContactSettingDword(NULL, SRMSGMOD_T, szCname, 0xffffffff);
+				dwLocalTrans = pMim->GetDword(szCname, 0xffffffff);
 				if (szTitleFormat == NULL) {
 					mir_snprintf(szCname, 40, "%s%d_titleformat", szSetting, pContainer->iContainerIndex);
 					szTitleFormat = MY_DBGetContactSettingString(pContainer->hContactFrom, SRMSGMOD_T, szCname);
@@ -2417,20 +2415,20 @@ panel_found:
 				}
 			}
 			if (dwLocalFlags == 0xffffffff) {
-				pContainer->dwFlags = pContainer->dwPrivateFlags = myGlobals.m_GlobalContainerFlags;
+				pContainer->dwFlags = pContainer->dwPrivateFlags = Globals.m_GlobalContainerFlags;
 				pContainer->dwPrivateFlags |= (CNT_GLOBALSETTINGS);
 			}
 			else {
 				if (!(dwLocalFlags & CNT_NEWCONTAINERFLAGS))
 					dwLocalFlags = CNT_FLAGS_DEFAULT;
 				pContainer->dwPrivateFlags = dwLocalFlags;
-				pContainer->dwFlags = dwLocalFlags & CNT_GLOBALSETTINGS ? myGlobals.m_GlobalContainerFlags : dwLocalFlags;
+				pContainer->dwFlags = dwLocalFlags & CNT_GLOBALSETTINGS ? Globals.m_GlobalContainerFlags : dwLocalFlags;
 			}
 
 			if (dwLocalTrans == 0xffffffff)
-				pContainer->dwTransparency = myGlobals.m_GlobalContainerTrans;
+				pContainer->dwTransparency = Globals.m_GlobalContainerTrans;
 			else
-				pContainer->dwTransparency = pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS ? myGlobals.m_GlobalContainerTrans : dwLocalTrans;
+				pContainer->dwTransparency = pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS ? Globals.m_GlobalContainerTrans : dwLocalTrans;
 
 			if (LOWORD(pContainer->dwTransparency) < 50)
 				pContainer->dwTransparency = MAKELONG(50, (WORD)HIWORD(pContainer->dwTransparency));
@@ -2441,10 +2439,10 @@ panel_found:
 				if (szTitleFormat != NULL)
 					_tcsncpy(pContainer->szTitleFormat, szTitleFormat, TITLE_FORMATLEN);
 				else
-					_tcsncpy(pContainer->szTitleFormat, myGlobals.szDefaultTitleFormat, TITLE_FORMATLEN);
+					_tcsncpy(pContainer->szTitleFormat, Globals.szDefaultTitleFormat, TITLE_FORMATLEN);
 			}
 			else
-				_tcsncpy(pContainer->szTitleFormat, myGlobals.szDefaultTitleFormat, TITLE_FORMATLEN);
+				_tcsncpy(pContainer->szTitleFormat, Globals.szDefaultTitleFormat, TITLE_FORMATLEN);
 
 			pContainer->szTitleFormat[TITLE_FORMATLEN - 1] = 0;
 			if (szTitleFormat != NULL)
@@ -2483,7 +2481,7 @@ panel_found:
 			int i = 0;
 			UINT sBarHeight;
 
-			if (!myGlobals.m_SideBarEnabled)
+			if (!Globals.m_SideBarEnabled)
 				pContainer->dwFlags &= ~CNT_SIDEBAR;
 
 			ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBARUP), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
@@ -2492,12 +2490,12 @@ panel_found:
 			SendDlgItemMessage(hwndDlg, IDC_SIDEBARUP, BUTTONSETASFLATBTN + 10, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_SIDEBARUP, BUTTONSETASFLATBTN + 12, 0, (LPARAM)pContainer);
 			SendDlgItemMessage(hwndDlg, IDC_SIDEBARUP, BUTTONSETASFLATBTN, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_SIDEBARUP, BM_SETIMAGE, IMAGE_ICON, (LPARAM)myGlobals.g_buttonBarIcons[26]);
+			SendDlgItemMessage(hwndDlg, IDC_SIDEBARUP, BM_SETIMAGE, IMAGE_ICON, (LPARAM)Globals.g_buttonBarIcons[26]);
 
 			SendDlgItemMessage(hwndDlg, IDC_SIDEBARDOWN, BUTTONSETASFLATBTN + 10, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_SIDEBARDOWN, BUTTONSETASFLATBTN + 12, 0, (LPARAM)pContainer);
 			SendDlgItemMessage(hwndDlg, IDC_SIDEBARDOWN, BUTTONSETASFLATBTN, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_SIDEBARDOWN, BM_SETIMAGE, IMAGE_ICON, (LPARAM)myGlobals.g_buttonBarIcons[16]);
+			SendDlgItemMessage(hwndDlg, IDC_SIDEBARDOWN, BM_SETIMAGE, IMAGE_ICON, (LPARAM)Globals.g_buttonBarIcons[16]);
 
 			ws = wsold = GetWindowLongPtr(hwndDlg, GWL_STYLE);
 			if (!g_framelessSkinmode) {
@@ -2508,15 +2506,15 @@ panel_found:
 
 			SetWindowLongPtr(hwndDlg, GWL_STYLE, ws);
 
-			pContainer->tBorder = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder", 2);
-			pContainer->tBorder_outer_left = g_ButtonSet.left + DBGetContactSettingByte(NULL, SRMSGMOD_T, (bSkinned ? "S_tborder_outer_left" : "tborder_outer_left"), 2);
-			pContainer->tBorder_outer_right = g_ButtonSet.right + DBGetContactSettingByte(NULL, SRMSGMOD_T, (bSkinned ? "S_tborder_outer_right" : "tborder_outer_right"), 2);
-			pContainer->tBorder_outer_top = g_ButtonSet.top + DBGetContactSettingByte(NULL, SRMSGMOD_T, (bSkinned ? "S_tborder_outer_top" : "tborder_outer_top"), 2);
-			pContainer->tBorder_outer_bottom = g_ButtonSet.bottom + DBGetContactSettingByte(NULL, SRMSGMOD_T, (bSkinned ? "S_tborder_outer_bottom" : "tborder_outer_bottom"), 2);
-			sBarHeight = (UINT)DBGetContactSettingByte(NULL, SRMSGMOD_T, (bSkinned ? "S_sbarheight" : "sbarheight"), 0);
+			pContainer->tBorder = pMim->GetByte("tborder", 2);
+			pContainer->tBorder_outer_left = g_ButtonSet.left + pMim->GetByte((bSkinned ? "S_tborder_outer_left" : "tborder_outer_left"), 2);
+			pContainer->tBorder_outer_right = g_ButtonSet.right + pMim->GetByte((bSkinned ? "S_tborder_outer_right" : "tborder_outer_right"), 2);
+			pContainer->tBorder_outer_top = g_ButtonSet.top + pMim->GetByte((bSkinned ? "S_tborder_outer_top" : "tborder_outer_top"), 2);
+			pContainer->tBorder_outer_bottom = g_ButtonSet.bottom + pMim->GetByte((bSkinned ? "S_tborder_outer_bottom" : "tborder_outer_bottom"), 2);
+			sBarHeight = (UINT)pMim->GetByte((bSkinned ? "S_sbarheight" : "sbarheight"), 0);
 
 			if (LOBYTE(LOWORD(GetVersion())) >= 5  && pSetLayeredWindowAttributes != NULL) {
-				BOOL  fTransAllowed = !bSkinned || myGlobals.m_WinVerMajor >= 6;
+				BOOL  fTransAllowed = !bSkinned || Globals.m_WinVerMajor >= 6;
 				DWORD exold;
 
 				ex = exold = GetWindowLongPtr(hwndDlg, GWL_EXSTYLE);
@@ -2583,7 +2581,7 @@ panel_found:
 				SendMessage(pContainer->hwndSlist, BUTTONSETASFLATBTN, 0, 0);
 				SendMessage(pContainer->hwndSlist, BUTTONSETASFLATBTN + 10, 0, 0);
 				SendMessage(pContainer->hwndSlist, BUTTONSETASFLATBTN + 12, 0, (LPARAM)pContainer);
-				SendMessage(pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)myGlobals.g_buttonBarIcons[16]);
+				SendMessage(pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)Globals.g_buttonBarIcons[16]);
 				SendMessage(pContainer->hwndSlist, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Show session list (right click to show quick menu)"), 0);
 			}
 			if (pContainer->dwFlags & CNT_NOMENUBAR) {
@@ -2701,14 +2699,14 @@ panel_found:
 			break;
 		}
 		case DM_SETICON: {
-			HICON hIconMsg = myGlobals.g_IconMsgEvent;
-			if ((HICON)lParam == myGlobals.g_buttonBarIcons[5]) {              // always set typing icon, but don't save it...
+			HICON hIconMsg = Globals.g_IconMsgEvent;
+			if ((HICON)lParam == Globals.g_buttonBarIcons[5]) {              // always set typing icon, but don't save it...
 				SendMessage(hwndDlg, WM_SETICON, wParam, lParam);
 				break;
 			}
 
-			if ((HICON)lParam != hIconMsg && pContainer->dwFlags & CNT_STATICICON && myGlobals.g_iconContainer != 0)
-				lParam = (LPARAM)myGlobals.g_iconContainer;
+			if ((HICON)lParam != hIconMsg && pContainer->dwFlags & CNT_STATICICON && Globals.g_iconContainer != 0)
+				lParam = (LPARAM)Globals.g_iconContainer;
 
 			if (pContainer->hIcon == STICK_ICON_MSG && (HICON)lParam != hIconMsg && pContainer->dwFlags & CNT_NEED_UPDATETITLE)
 				lParam = (LPARAM)hIconMsg;
@@ -2718,8 +2716,8 @@ panel_found:
 			break;
 		}
 		case WM_DRAWITEM: {
-			int cx = myGlobals.m_smcxicon;
-			int cy = myGlobals.m_smcyicon;
+			int cx = Globals.m_smcxicon;
+			int cy = Globals.m_smcyicon;
 			DRAWITEMSTRUCT *dis = (DRAWITEMSTRUCT *)lParam;
 			int id = LOWORD(dis->itemID);
 
@@ -2737,11 +2735,11 @@ panel_found:
 
 				hOldFont = (HFONT)SelectObject(dis->hDC, GetStockObject(DEFAULT_GUI_FONT));
 				if (bSkinned && g_framelessSkinmode)
-					OffsetRect(&dis->rcItem, myGlobals.g_realSkinnedFrame_left, myGlobals.g_realSkinnedFrame_caption);
+					OffsetRect(&dis->rcItem, Globals.g_realSkinnedFrame_left, Globals.g_realSkinnedFrame_caption);
 				GetTextExtentPoint32(dis->hDC, menuName, lstrlen(menuName), &sz);
 				SetBkMode(dis->hDC, TRANSPARENT);
 
-				if (myGlobals.m_bIsXP) {
+				if (Globals.m_bIsXP) {
 					if (pfnIsThemeActive && pfnIsThemeActive())
 						clrBack = COLOR_MENUBAR;
 					else
@@ -2758,10 +2756,10 @@ panel_found:
 						HPEN  hPenOld;
 
 						MoveToEx(dis->hDC, dis->rcItem.left, dis->rcItem.bottom - 1, &pt);
-						hPenOld = (HPEN)SelectObject(dis->hDC, myGlobals.g_SkinDarkShadowPen);
+						hPenOld = (HPEN)SelectObject(dis->hDC, Globals.g_SkinDarkShadowPen);
 						LineTo(dis->hDC, dis->rcItem.left, dis->rcItem.top);
 						LineTo(dis->hDC, dis->rcItem.right, dis->rcItem.top);
-						SelectObject(dis->hDC, myGlobals.g_SkinLightShadowPen);
+						SelectObject(dis->hDC, Globals.g_SkinLightShadowPen);
 						MoveToEx(dis->hDC, dis->rcItem.right - 1, dis->rcItem.top + 1, &pt);
 						LineTo(dis->hDC, dis->rcItem.right - 1, dis->rcItem.bottom - 1);
 						LineTo(dis->hDC, dis->rcItem.left, dis->rcItem.bottom - 1);
@@ -2770,7 +2768,7 @@ panel_found:
 					else
 						DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENINNER, BF_RECT);
 				}
-				SetTextColor(dis->hDC, !(dis->itemState & ODS_DISABLED) ? (bSkinned ? myGlobals.skinDefaultFontColor : GetSysColor(COLOR_MENUTEXT)) : GetSysColor(COLOR_GRAYTEXT)); ;
+				SetTextColor(dis->hDC, !(dis->itemState & ODS_DISABLED) ? (bSkinned ? Globals.skinDefaultFontColor : GetSysColor(COLOR_MENUTEXT)) : GetSysColor(COLOR_GRAYTEXT)); ;
 				DrawText(dis->hDC, menuName, lstrlen(menuName), &dis->rcItem,
 						 DT_VCENTER | DT_SINGLELINE | DT_CENTER);
 				SelectObject(dis->hDC, hOldFont);
@@ -2806,7 +2804,7 @@ panel_found:
 			return 0;
 		}
 		case DM_SESSIONLIST: {
-			SendMessage(myGlobals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, WM_LBUTTONUP);
+			SendMessage(Globals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, WM_LBUTTONUP);
 			break;
 		}
 		case WM_DESTROY: {
@@ -2814,7 +2812,7 @@ panel_found:
 			TCITEM item;
 			SESSION_INFO *node = m_WndList;
 
-			if (myGlobals.g_FlashAvatarAvail) { // destroy own flash avatar
+			if (Globals.g_FlashAvatarAvail) { // destroy own flash avatar
 				FLASHAVATAR fa = {0};
 				struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 
@@ -2832,7 +2830,7 @@ panel_found:
 
 					struct _MessageWindowData *mwdat = (struct _MessageWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
 					if (mwdat->bActualHistory)
-						DBWriteContactSettingDword(mwdat->hContact, SRMSGMOD_T, "messagecount", g_sessionshutdown?0:(DWORD)mwdat->messageCount);
+						pMim->WriteDword(mwdat->hContact, SRMSGMOD_T, "messagecount", g_sessionshutdown?0:(DWORD)mwdat->messageCount);
 					//
 					DestroyWindow((HWND) item.lParam);
 					}
@@ -2864,7 +2862,7 @@ panel_found:
 			if (pContainer->hwndTip)
 				DestroyWindow(pContainer->hwndTip);
 			RemoveContainerFromList(pContainer);
-			if (myGlobals.m_MathModAvail)
+			if (Globals.m_MathModAvail)
 				CallService(MTH_HIDE, 0, 0);
 			while (node) {
 				if (node->pContainer == pContainer) {
@@ -2887,7 +2885,7 @@ panel_found:
 			break;
 		case WM_CLOSE: {
 			//mad
-			if (myGlobals.m_HideOnClose&&!lParam)
+			if (Globals.m_HideOnClose&&!lParam)
 				ShowWindow(hwndDlg,0);
 			else{
 			//
@@ -2906,7 +2904,7 @@ panel_found:
 				TCITEM item = {0};
 				int    iOpenJobs = 0;
 
-				if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "warnonexit", 0)) {
+				if (pMim->GetByte("warnonexit", 0)) {
 					if (MessageBox(hwndDlg, TranslateTS(szWarnClose), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO)
 						return TRUE;
 				}
@@ -2946,29 +2944,29 @@ panel_found:
 						item.mask = TCIF_PARAM;
 						TabCtrl_GetItem(hwndTab, TabCtrl_GetCurSel(hwndTab), &item);
 						SendMessage((HWND)item.lParam, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
-						DBWriteContactSettingByte(hContact, SRMSGMOD_T, "splitmax", (BYTE)((wp.showCmd==SW_SHOWMAXIMIZED)?1:0));
+						pMim->WriteByte(hContact, SRMSGMOD_T, "splitmax", (BYTE)((wp.showCmd==SW_SHOWMAXIMIZED)?1:0));
 
 						for (i = 0; i < TabCtrl_GetItemCount(hwndTab); i++) {
 							if (TabCtrl_GetItem(hwndTab, i, &item)) {
 								SendMessage((HWND)item.lParam, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
-								DBWriteContactSettingDword(hContact, SRMSGMOD_T, "splitx", wp.rcNormalPosition.left);
-								DBWriteContactSettingDword(hContact, SRMSGMOD_T, "splity", wp.rcNormalPosition.top);
-								DBWriteContactSettingDword(hContact, SRMSGMOD_T, "splitwidth", wp.rcNormalPosition.right - wp.rcNormalPosition.left);
-								DBWriteContactSettingDword(hContact, SRMSGMOD_T, "splitheight", wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
-								}
+								pMim->WriteDword(hContact, SRMSGMOD_T, "splitx", wp.rcNormalPosition.left);
+								pMim->WriteDword(hContact, SRMSGMOD_T, "splity", wp.rcNormalPosition.top);
+								pMim->WriteDword(hContact, SRMSGMOD_T, "splitwidth", wp.rcNormalPosition.right - wp.rcNormalPosition.left);
+								pMim->WriteDword(hContact, SRMSGMOD_T, "splitheight", wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
+							}
 						}
 					}
 					else {
 						_snprintf(szCName, 40, "%s%dx", szSetting, pContainer->iContainerIndex);
-						DBWriteContactSettingDword(NULL, SRMSGMOD_T, szCName, wp.rcNormalPosition.left);
+						pMim->WriteDword(SRMSGMOD_T, szCName, wp.rcNormalPosition.left);
 						_snprintf(szCName, 40, "%s%dy", szSetting, pContainer->iContainerIndex);
-						DBWriteContactSettingDword(NULL, SRMSGMOD_T, szCName, wp.rcNormalPosition.top);
+						pMim->WriteDword(SRMSGMOD_T, szCName, wp.rcNormalPosition.top);
 						_snprintf(szCName, 40, "%s%dwidth", szSetting, pContainer->iContainerIndex);
-						DBWriteContactSettingDword(NULL, SRMSGMOD_T, szCName, wp.rcNormalPosition.right - wp.rcNormalPosition.left);
+						pMim->WriteDword(SRMSGMOD_T, szCName, wp.rcNormalPosition.right - wp.rcNormalPosition.left);
 						_snprintf(szCName, 40, "%s%dheight", szSetting, pContainer->iContainerIndex);
-						DBWriteContactSettingDword(NULL, SRMSGMOD_T, szCName, wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
+						pMim->WriteDword(SRMSGMOD_T, szCName, wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
 
-						DBWriteContactSettingByte(NULL, SRMSGMOD_T, "splitmax", (BYTE)((wp.showCmd==SW_SHOWMAXIMIZED)?1:0));
+						pMim->WriteByte(SRMSGMOD_T, "splitmax", (BYTE)((wp.showCmd==SW_SHOWMAXIMIZED)?1:0));
 					}
 				}
 				else
@@ -2987,9 +2985,9 @@ panel_found:
 					if (TabCtrl_GetItem(hwndTab, i, &item)) {
 						SendMessage((HWND)item.lParam, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
 						_snprintf(szCName, 40, "%s_Flags", szSetting);
-						DBWriteContactSettingDword(hContact, SRMSGMOD_T, szCName, pContainer->dwPrivateFlags);
+						pMim->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->dwPrivateFlags);
 						_snprintf(szCName, 40, "%s_Trans", szSetting);
-						DBWriteContactSettingDword(hContact, SRMSGMOD_T, szCName, pContainer->dwTransparency);
+						pMim->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->dwTransparency);
 
 						mir_snprintf(szCName, 40, "%s_theme", szSetting);
 						if (lstrlenA(pContainer->szRelThemeFile) > 1) {
@@ -3022,9 +3020,9 @@ panel_found:
 			else {
 				pContainer->dwFlags &= ~(CNT_DEFERREDCONFIGURE | CNT_CREATE_MINIMIZED | CNT_DEFERREDSIZEREQUEST | CNT_CREATE_CLONED);
 				_snprintf(szCName, 40, "%s%d_Flags", szSetting, pContainer->iContainerIndex);
-				DBWriteContactSettingDword(NULL, SRMSGMOD_T, szCName, pContainer->dwPrivateFlags);
+				pMim->WriteDword(SRMSGMOD_T, szCName, pContainer->dwPrivateFlags);
 				_snprintf(szCName, 40, "%s%d_Trans", szSetting, pContainer->iContainerIndex);
-				DBWriteContactSettingDword(NULL, SRMSGMOD_T, szCName, pContainer->dwTransparency);
+				pMim->WriteDword(SRMSGMOD_T, szCName, pContainer->dwTransparency);
 				if (pContainer->dwFlags & CNT_TITLE_PRIVATE) {
 					char *szTitleFormat = NULL;
 					mir_snprintf(szCName, 40, "%s%d_titleformat", szSetting, pContainer->iContainerIndex);
@@ -3140,7 +3138,7 @@ int GetTabItemFromMouse(HWND hwndTab, POINT *pt)
 
 int CutContactName(TCHAR *oldname, TCHAR *newname, unsigned int size)
 {
-	int cutMax = myGlobals.m_CutContactNameTo;
+	int cutMax = Globals.m_CutContactNameTo;
 
 	if ((int)lstrlen(oldname) <= cutMax) {
 		lstrcpyn(newname, oldname, size);
@@ -3182,7 +3180,7 @@ struct ContainerWindowData *FindContainerByName(const TCHAR *name) {
 	if (name == NULL || _tcslen(name) == 0)
 		return 0;
 
-	if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", 0)) {            // single window mode - always return 0 and force a new container
+	if (pMim->GetByte("singlewinmode", 0)) {            // single window mode - always return 0 and force a new container
 		return NULL;
 	}
 
@@ -3296,12 +3294,12 @@ int GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLen)
 {
 	DBVARIANT dbv;
 
-	if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", 0)) {           // single window mode using cloned (temporary) containers
+	if (pMim->GetByte("singlewinmode", 0)) {           // single window mode using cloned (temporary) containers
 		_tcsncpy(szName, _T("Message Session"), iNameLen);
 		return 0;
 	}
 
-	if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "useclistgroups", 0)) {       // use clist group names for containers...
+	if (pMim->GetByte("useclistgroups", 0)) {       // use clist group names for containers...
 		if (DBGetContactSettingTString(hContact, "CList", "Group", &dbv)) {
 			_tcsncpy(szName, _T("default"), iNameLen);
 			return 0;
@@ -3433,15 +3431,15 @@ HMENU BuildContainerMenu()
 	HMENU hMenu;
 	MENUITEMINFO mii = {0};
 
-	if (myGlobals.g_hMenuContainer != 0) {
-		HMENU submenu = GetSubMenu(myGlobals.g_hMenuContext, 0);
+	if (Globals.g_hMenuContainer != 0) {
+		HMENU submenu = GetSubMenu(Globals.g_hMenuContext, 0);
 		RemoveMenu(submenu, 6, MF_BYPOSITION);
-		DestroyMenu(myGlobals.g_hMenuContainer);
-		myGlobals.g_hMenuContainer = 0;
+		DestroyMenu(Globals.g_hMenuContainer);
+		Globals.g_hMenuContainer = 0;
 	}
 
 	// no container attach menu, if we are using the "clist group mode"
-	if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "useclistgroups", 0) || DBGetContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", 0))
+	if (pMim->GetByte("useclistgroups", 0) || pMim->GetByte("singlewinmode", 0))
 		return NULL;
 
 	hMenu = CreateMenu();
@@ -3460,8 +3458,8 @@ HMENU BuildContainerMenu()
 	}
 	while (TRUE);
 
-	InsertMenu(myGlobals.g_hMenuContext, ID_TABMENU_ATTACHTOCONTAINER, MF_BYCOMMAND | MF_POPUP, (UINT_PTR) hMenu, TranslateT("Attach to"));
-	myGlobals.g_hMenuContainer = hMenu;
+	InsertMenu(Globals.g_hMenuContext, ID_TABMENU_ATTACHTOCONTAINER, MF_BYCOMMAND | MF_POPUP, (UINT_PTR) hMenu, TranslateT("Attach to"));
+	Globals.g_hMenuContainer = hMenu;
 	return hMenu;
 }
 
@@ -3494,11 +3492,11 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg) {
 	iDefaultProtoByNum = (int)CallService(MS_MC_GETDEFAULTCONTACTNUM, (WPARAM)dat->hContact, 0);
 	hContactMostOnline = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)dat->hContact, 0);
 	szProtoMostOnline = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContactMostOnline, 0);
-	isForced = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "tabSRMM_forced", -1);
+	isForced = pMim->GetDword(dat->hContact, "tabSRMM_forced", -1);
 
 	for (i = 0; i < iNumProtos; i++) {
 		mir_snprintf(szTemp, sizeof(szTemp), "Protocol%d", i);
-		if (DBGetContactSettingString(dat->hContact, myGlobals.szMetaName, szTemp, &dbv))
+		if (DBGetContactSettingString(dat->hContact, Globals.szMetaName, szTemp, &dbv))
 			continue;
 #if defined(_UNICODE)
 		tzProtoName = (TCHAR *)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)dbv.pszVal);
@@ -3506,10 +3504,10 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg) {
 		tzProtoName = dbv.pszVal;
 #endif
 		mir_snprintf(szTemp, sizeof(szTemp), "Handle%d", i);
-		if ((handle = (HANDLE)DBGetContactSettingDword(dat->hContact, myGlobals.szMetaName, szTemp, 0)) != 0) {
+		if ((handle = (HANDLE)pMim->GetDword(dat->hContact, Globals.szMetaName, szTemp, 0)) != 0) {
 			nick = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)handle, GCDNF_TCHAR);
 			mir_snprintf(szTemp, sizeof(szTemp), "Status%d", i);
-			wStatus = (WORD)DBGetContactSettingWord(dat->hContact, myGlobals.szMetaName, szTemp, 0);
+			wStatus = (WORD)DBGetContactSettingWord(dat->hContact, Globals.szMetaName, szTemp, 0);
 			szStatusText = (TCHAR *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, wStatus, GCMDF_TCHAR);
 		}
 		mir_sntprintf(szMenuLine, safe_sizeof(szMenuLine), _T("%s: %s [%s] %s"), tzProtoName, nick, szStatusText, i == isForced ? TranslateT("(Forced)") : _T(""));
@@ -3555,8 +3553,8 @@ void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iCoun
 		if (pContainer->dwFlags & CNT_FLASHALWAYS)
 			fwi.dwFlags |= FLASHW_TIMER;
 		else
-			fwi.uCount = (iCount == 0) ? DBGetContactSettingByte(NULL, SRMSGMOD_T, "nrflash", 4) : iCount;
-		fwi.dwTimeout = DBGetContactSettingDword(NULL, SRMSGMOD_T, "flashinterval", 1000);
+			fwi.uCount = (iCount == 0) ? pMim->GetByte("nrflash", 4) : iCount;
+		fwi.dwTimeout = pMim->GetDword("flashinterval", 1000);
 
 	}
 	else
@@ -3580,9 +3578,9 @@ void ReflashContainer(struct ContainerWindowData *pContainer) {
 		FlashContainer(pContainer, 1, 0);
 	else {
 		// recalc the remaining flashes
-		DWORD dwInterval = DBGetContactSettingDword(NULL, SRMSGMOD_T, "flashinterval", 1000);
+		DWORD dwInterval = pMim->GetDword("flashinterval", 1000);
 		int iFlashesElapsed = (GetTickCount() - dwStartTime) / dwInterval;
-		DWORD dwFlashesDesired = DBGetContactSettingByte(NULL, SRMSGMOD_T, "nrflash", 4);
+		DWORD dwFlashesDesired = pMim->GetByte("nrflash", 4);
 		if (iFlashesElapsed < (int)dwFlashesDesired)
 			FlashContainer(pContainer, 1, dwFlashesDesired - iFlashesElapsed);
 		else {
@@ -3631,12 +3629,12 @@ void UpdateContainerMenu(HWND hwndDlg, struct _MessageWindowData *dat) {
 	else {
 		if (dat->hwndIEView != 0) {
 			mir_snprintf(szTemp, 100, "%s.SRMMEnable", dat->bIsMeta ? dat->szMetaProto : dat->szProto);
-			if (DBGetContactSettingByte(NULL, "IEVIEW", szTemp, 0)) {
+			if (pMim->GetByte("IEVIEW", szTemp, 0)) {
 				mir_snprintf(szTemp, 100, "%s.SRMMMode", dat->bIsMeta ? dat->szMetaProto : dat->szProto);
-				IEViewMode = DBGetContactSettingByte(NULL, "IEVIEW", szTemp, 0);
+				IEViewMode = pMim->GetByte("IEVIEW", szTemp, 0);
 			}
 			else
-				IEViewMode = DBGetContactSettingByte(NULL, "IEVIEW", "_default_.SRMMMode", 0);
+				IEViewMode = pMim->GetByte("IEVIEW", "_default_.SRMMMode", 0);
 			fDisable = (IEViewMode == 2);
 		}
 		else if (dat->hwndHPP)

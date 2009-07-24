@@ -197,7 +197,7 @@ static int CustomButtonPressed(WPARAM wParam,LPARAM lParam)
 				int menulimit;
 				HMENU hMenu=NULL;
 
-				menulimit=DBGetContactSettingByte(NULL, "tabmodplus","MenuCount", 0);
+				menulimit = pMim->GetByte("tabmodplus","MenuCount", 0);
 				if ( menulimit ) {
 					hMenu = CreatePopupMenu();
 					//pszMenu=malloc(menulimit*sizeof(TCHAR*));
@@ -287,8 +287,8 @@ int ModPlus_Init(WPARAM wparam,LPARAM lparam)
 {
 	g_bStartup=1;
 
-	g_bIMGtagButton = DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_IMGtagButton", 0);
-	g_bClientInStatusBar = DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_ClientIconInStatusBar", 0);
+	g_bIMGtagButton = pMim->GetByte("adv_IMGtagButton", 0);
+	g_bClientInStatusBar = pMim->GetByte("adv_ClientIconInStatusBar", 0);
 
 	hEventDbWindowEvent = HookEvent(ME_MSG_WINDOWEVENT, GetContactHandle);
 

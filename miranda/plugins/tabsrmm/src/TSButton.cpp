@@ -26,7 +26,6 @@ skinable button class for tabSRMM
 #include <ctype.h>
 
 extern HINSTANCE g_hInst;
-extern MYGLOBALS myGlobals;
 extern BOOL g_skinnedContainers;
 extern StatusItems_t StatusItems[];
 extern PAB MyAlphaBlend;
@@ -111,7 +110,7 @@ int LoadTSButtonModule(void)
 
 static void DestroyTheme(MButtonCtrl *ctl)
 {
-	if (myGlobals.m_VSApiEnabled) {
+	if (Globals.m_VSApiEnabled) {
 		if (ctl->hThemeButton) {
 			pfnCloseThemeData(ctl->hThemeButton);
 			ctl->hThemeButton = NULL;
@@ -125,7 +124,7 @@ static void DestroyTheme(MButtonCtrl *ctl)
 
 static void LoadTheme(MButtonCtrl *ctl)
 {
-	if (myGlobals.m_VSApiEnabled) {
+	if (Globals.m_VSApiEnabled) {
 		DestroyTheme(ctl);
 		ctl->hThemeButton = pfnOpenThemeData(ctl->hwnd, L"BUTTON");
 		ctl->hThemeToolbar = pfnOpenThemeData(ctl->hwnd, L"TOOLBAR");
@@ -361,17 +360,17 @@ bg_done:
 			rcContent.left = rcClient.right - 12;
 			rcContent.right = rcContent.left;
 
-			DrawIconEx(hdcMem, rcClient.right - 13, (rcClient.bottom - rcClient.top) / 2 - (myGlobals.m_smcyicon / 2),
-					   myGlobals.g_buttonBarIcons[16], 16, 16, 0, 0, DI_NORMAL);
+			DrawIconEx(hdcMem, rcClient.right - 13, (rcClient.bottom - rcClient.top) / 2 - (Globals.m_smcyicon / 2),
+					   Globals.g_buttonBarIcons[16], 16, 16, 0, 0, DI_NORMAL);
 			if (!ctl->flatBtn)
 				DrawEdge(hdcMem, &rcContent, EDGE_BUMP, BF_LEFT);
 			else if (ctl->pContainer && ctl->pContainer->bSkinned) {
-				HPEN hPenOld = (HPEN)SelectObject(hdcMem, myGlobals.g_SkinLightShadowPen);
+				HPEN hPenOld = (HPEN)SelectObject(hdcMem, Globals.g_SkinLightShadowPen);
 				POINT pt;
 
 				MoveToEx(hdcMem, rcContent.left, rcContent.top, &pt);
 				LineTo(hdcMem, rcContent.left, rcContent.bottom);
-				SelectObject(hdcMem, myGlobals.g_SkinDarkShadowPen);
+				SelectObject(hdcMem, Globals.g_SkinDarkShadowPen);
 				MoveToEx(hdcMem, rcContent.left + 1, rcContent.bottom - 1, &pt);
 				LineTo(hdcMem, rcContent.left + 1, rcContent.top - 1);
 				SelectObject(hdcMem, hPenOld);
@@ -421,7 +420,7 @@ bg_done:
 				RECT rc = rcClient;
 
 				if (ctl->pContainer && ctl->pContainer->bSkinned)
-					SetTextColor(hdcMem, ctl->stateId != PBS_DISABLED ? myGlobals.skinDefaultFontColor : GetSysColor(COLOR_GRAYTEXT));
+					SetTextColor(hdcMem, ctl->stateId != PBS_DISABLED ? Globals.skinDefaultFontColor : GetSysColor(COLOR_GRAYTEXT));
 				else
 					SetTextColor(hdcMem, ctl->stateId != PBS_DISABLED ? GetSysColor(COLOR_BTNTEXT) : GetSysColor(COLOR_GRAYTEXT));
 				SetBkMode(hdcMem, TRANSPARENT);
@@ -430,8 +429,8 @@ bg_done:
 				SelectObject(hdcMem, hOldFont);
 			}
 		} else if (ctl->hIcon || ctl->hIconPrivate) {
-			int ix = (rcClient.right - rcClient.left) / 2 - (myGlobals.m_smcxicon / 2);
-			int iy = (rcClient.bottom - rcClient.top) / 2 - (myGlobals.m_smcyicon / 2);
+			int ix = (rcClient.right - rcClient.left) / 2 - (Globals.m_smcxicon / 2);
+			int iy = (rcClient.bottom - rcClient.top) / 2 - (Globals.m_smcyicon / 2);
 			HICON hIconNew = ctl->hIconPrivate != 0 ? ctl->hIconPrivate : ctl->hIcon;
 
 			if (ctl->stateId == PBS_PRESSED) {
@@ -442,15 +441,15 @@ bg_done:
 			if (ctl->arrow)
 				ix -= 4;
 
-			if (ctl->dimmed && myGlobals.m_IdleDetect)
-				DrawDimmedIcon(hdcMem, ix, iy, myGlobals.m_smcxicon, myGlobals.m_smcyicon, hIconNew, 180);
+			if (ctl->dimmed && Globals.m_IdleDetect)
+				DrawDimmedIcon(hdcMem, ix, iy, Globals.m_smcxicon, Globals.m_smcyicon, hIconNew, 180);
 			else {
 				if (ctl->stateId != PBS_DISABLED || MyAlphaBlend == 0)
-					DrawIconEx(hdcMem, ix, iy, hIconNew, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL);
+					DrawIconEx(hdcMem, ix, iy, hIconNew, Globals.m_smcxicon, Globals.m_smcyicon, 0, 0, DI_NORMAL);
 				else {
 					BitBlt(hdc_buttonglyph, 0, 0, 16, 16, hdcMem, ix, iy, SRCCOPY);
 					DrawIconEx(hdc_buttonglyph, 0, 0, hIconNew, 16, 16, 0, 0, DI_NORMAL);
- 					MyAlphaBlend(hdcMem, ix, iy, myGlobals.m_smcxicon, myGlobals.m_smcyicon, hdc_buttonglyph, 0, 0, 16, 16, bf_buttonglyph);
+ 					MyAlphaBlend(hdcMem, ix, iy, Globals.m_smcxicon, Globals.m_smcyicon, hdc_buttonglyph, 0, 0, 16, 16, bf_buttonglyph);
 				}
 			}
 		} else if (GetWindowTextLength(ctl->hwnd)) {
@@ -466,7 +465,7 @@ bg_done:
 			hOldFont = (HFONT)SelectObject(hdcMem, ctl->hFont);
 			// XP w/themes doesn't used the glossy disabled text.  Is it always using COLOR_GRAYTEXT?  Seems so.
 			if (ctl->pContainer && ctl->pContainer->bSkinned)
-				SetTextColor(hdcMem, IsWindowEnabled(ctl->hwnd) ? myGlobals.skinDefaultFontColor : GetSysColor(COLOR_GRAYTEXT));
+				SetTextColor(hdcMem, IsWindowEnabled(ctl->hwnd) ? Globals.skinDefaultFontColor : GetSysColor(COLOR_GRAYTEXT));
 			else
 				SetTextColor(hdcMem, IsWindowEnabled(ctl->hwnd) || !ctl->hThemeButton ? GetSysColor(COLOR_BTNTEXT) : GetSysColor(COLOR_GRAYTEXT));
 			GetTextExtentPoint32(hdcMem, szText, lstrlen(szText), &sz);
@@ -477,7 +476,7 @@ bg_done:
 				sz.cx -= szHot.cx;
 			}
 			if (ctl->arrow)
-				DrawState(hdcMem, NULL, NULL, (LPARAM)ctl->arrow, 0, rcClient.right - rcClient.left - 5 - myGlobals.m_smcxicon + (!ctl->hThemeButton && ctl->stateId == PBS_PRESSED ? 1 : 0), (rcClient.bottom - rcClient.top) / 2 - myGlobals.m_smcyicon / 2 + (!ctl->hThemeButton && ctl->stateId == PBS_PRESSED ? 1 : 0), myGlobals.m_smcxicon, myGlobals.m_smcyicon, IsWindowEnabled(ctl->hwnd) ? DST_ICON : DST_ICON | DSS_DISABLED);
+				DrawState(hdcMem, NULL, NULL, (LPARAM)ctl->arrow, 0, rcClient.right - rcClient.left - 5 - Globals.m_smcxicon + (!ctl->hThemeButton && ctl->stateId == PBS_PRESSED ? 1 : 0), (rcClient.bottom - rcClient.top) / 2 - Globals.m_smcyicon / 2 + (!ctl->hThemeButton && ctl->stateId == PBS_PRESSED ? 1 : 0), Globals.m_smcxicon, Globals.m_smcyicon, IsWindowEnabled(ctl->hwnd) ? DST_ICON : DST_ICON | DSS_DISABLED);
 			SelectObject(hdcMem, ctl->hFont);
 			DrawState(hdcMem, NULL, NULL, (LPARAM)szText, lstrlen(szText), (rcText.right - rcText.left - sz.cx) / 2 + (!ctl->hThemeButton && ctl->stateId == PBS_PRESSED ? 1 : 0), ctl->hThemeButton ? (rcText.bottom - rcText.top - sz.cy) / 2 : (rcText.bottom - rcText.top - sz.cy) / 2 - (ctl->stateId == PBS_PRESSED ? 0 : 1), sz.cx, sz.cy, IsWindowEnabled(ctl->hwnd) || ctl->hThemeButton ? DST_PREFIXTEXT | DSS_NORMAL : DST_PREFIXTEXT | DSS_DISABLED);
 			SelectObject(hdcMem, hOldFont);
@@ -619,9 +618,9 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 
 				GetIconInfo((HICON)lParam, &ii);
 				GetObject(ii.hbmColor, sizeof(bm), &bm);
-				if (bm.bmWidth != myGlobals.m_smcxicon || bm.bmHeight != myGlobals.m_smcyicon) {
+				if (bm.bmWidth != Globals.m_smcxicon || bm.bmHeight != Globals.m_smcyicon) {
 					HIMAGELIST hImageList;
-					hImageList = ImageList_Create(myGlobals.m_smcxicon, myGlobals.m_smcyicon, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR16 | ILC_MASK, 1, 0);
+					hImageList = ImageList_Create(Globals.m_smcxicon, Globals.m_smcyicon, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR16 | ILC_MASK, 1, 0);
 					ImageList_AddIcon(hImageList, (HICON)lParam);
 					bct->hIconPrivate = ImageList_GetIcon(hImageList, 0, ILD_NORMAL);
 					ImageList_RemoveAll(hImageList);

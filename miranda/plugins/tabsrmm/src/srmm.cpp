@@ -38,7 +38,6 @@ DWORD g_mirandaVersion = 0;
 PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
 LOGFONT lfDefault = {0};
-extern MYGLOBALS myGlobals;
 
 /*
  * miranda interfaces
@@ -283,7 +282,7 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				mir_snprintf(str, sizeof(str), Translate("Built %s %s"), __DATE__, __TIME__);
 				SetDlgItemTextA(hwndDlg, IDC_BUILDTIME, str);
 			}
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)myGlobals.g_iconContainer);
+			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)Globals.g_iconContainer);
 			return TRUE;
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {

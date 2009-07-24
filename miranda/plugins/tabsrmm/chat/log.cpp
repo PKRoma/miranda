@@ -41,7 +41,6 @@ $Id: log.c 10402 2009-07-24 00:35:21Z silvercircle $
 
 extern FONTINFO	aFonts[OPTIONS_FONTCOUNT];
 extern HICON		hIcons[30];
-extern MYGLOBALS	myGlobals;
 
 static PBYTE		pLogIconBmpBits[14];
 static int			logIconBmpSize[ SIZEOF(pLogIconBmpBits)];
@@ -833,7 +832,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 		/*
 		* run smileyadd
 		*/
-		if (myGlobals.g_SmileyAddAvail && fDoReplace) {
+		if (Globals.g_SmileyAddAvail && fDoReplace) {
 			SMADD_RICHEDIT3 sm = {0};
 
 			newsel.cpMax = -1;
@@ -998,7 +997,7 @@ void LoadMsgLogBitmaps(void)
 	else
 		iIconSize = sizeX;
 
-	hBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, "Chat", "ColorLogBG", SRMSGDEFSET_BKGCOLOUR));
+	hBkgBrush = CreateSolidBrush(pMim->GetDword("Chat", "ColorLogBG", SRMSGDEFSET_BKGCOLOUR));
 	bih.biSize = sizeof(bih);
 	bih.biBitCount = 24;
 	bih.biCompression = BI_RGB;

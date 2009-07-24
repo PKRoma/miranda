@@ -50,7 +50,7 @@ int Chat_Load(PLUGINLINK *link)
 {
 	BOOL bFlag = FALSE;
 
-	if (!DBGetContactSettingByte(NULL, SRMSGMOD_T, "enable_chat", 1))
+	if (!pMim->GetByte("enable_chat", 1))
 		return 0;
 
 	g_chat_integration_enabled = 1;
@@ -75,10 +75,10 @@ int Chat_Unload(void)
 
 	DBWriteContactSettingWord(NULL, "Chat", "SplitterX", (WORD)g_Settings.iSplitterX);
 	DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
-	DBWriteContactSettingDword(NULL, "Chat", "roomx", g_Settings.iX);
-	DBWriteContactSettingDword(NULL, "Chat", "roomy", g_Settings.iY);
-	DBWriteContactSettingDword(NULL, "Chat", "roomwidth" , g_Settings.iWidth);
-	DBWriteContactSettingDword(NULL, "Chat", "roomheight", g_Settings.iHeight);
+	pMim->WriteDword("Chat", "roomx", g_Settings.iX);
+	pMim->WriteDword("Chat", "roomy", g_Settings.iY);
+	pMim->WriteDword("Chat", "roomwidth" , g_Settings.iWidth);
+	pMim->WriteDword("Chat", "roomheight", g_Settings.iHeight);
 
 	CList_SetAllOffline(TRUE, NULL);
 

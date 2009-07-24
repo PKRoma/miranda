@@ -1,20 +1,19 @@
 #include "commonheaders.h"
 #pragma hdrstop
 
-extern MYGLOBALS myGlobals;
-extern HANDLE hMessageWindowList;
 extern StatusItems_t StatusItems[];
 
-HANDLE hButtonsBarAddButton;
-HANDLE hButtonsBarRemoveButton;
-HANDLE hButtonsBarGetButtonState;
-HANDLE hButtonsBarSetButtonState;
-HANDLE hButtonsBarModifyButton;
+static HANDLE hButtonsBarAddButton;
+static HANDLE hButtonsBarRemoveButton;
+static HANDLE hButtonsBarGetButtonState;
+static HANDLE hButtonsBarSetButtonState;
+static HANDLE hButtonsBarModifyButton;
+
 HANDLE hHookButtonPressedEvt;
 HANDLE hHookToolBarLoadedEvt;
 
-SortedList * RButtonsList;
-SortedList * LButtonsList;
+static SortedList * RButtonsList;
+static SortedList * LButtonsList;
 
 DWORD LastCID = 4000;
 DWORD dwSepCount = 0;
@@ -30,7 +29,7 @@ typedef void (*ItemDestuctor)(void*);
 //some code parts from ClistModern toolbar by FYR
 //
 /////////////////////////////////////////////////////////////////////////////////
-int sstSortButtons(const void * vmtbi1, const void * vmtbi2)
+static int sstSortButtons(const void * vmtbi1, const void * vmtbi2)
 {
 	CustomButtonData * mtbi1 = (CustomButtonData *) * ((CustomButtonData **)vmtbi1);
 	CustomButtonData * mtbi2 = (CustomButtonData *) * ((CustomButtonData **)vmtbi2);
@@ -39,7 +38,7 @@ int sstSortButtons(const void * vmtbi1, const void * vmtbi2)
 }
 
 
-void li_ListDestruct(SortedList *pList, ItemDestuctor pItemDestructor)
+static void li_ListDestruct(SortedList *pList, ItemDestuctor pItemDestructor)
 {
 	int i = 0;
 	if (!pList) return;
@@ -48,7 +47,7 @@ void li_ListDestruct(SortedList *pList, ItemDestuctor pItemDestructor)
 	mir_free(pList);
 }
 
-void li_RemoveDestruct(SortedList *pList, int index, ItemDestuctor pItemDestructor)
+static void li_RemoveDestruct(SortedList *pList, int index, ItemDestuctor pItemDestructor)
 {
 	if (index >= 0 && index < pList->realCount) {
 		pItemDestructor(pList->items[index]);
@@ -56,13 +55,13 @@ void li_RemoveDestruct(SortedList *pList, int index, ItemDestuctor pItemDestruct
 	}
 }
 
-void li_RemovePtrDestruct(SortedList *pList, void * ptr, ItemDestuctor pItemDestructor)
+static void li_RemovePtrDestruct(SortedList *pList, void * ptr, ItemDestuctor pItemDestructor)
 {
 	if (li.List_RemovePtr(pList, ptr))
 		pItemDestructor(ptr);
 }
 
-void li_SortList(SortedList *pList, FSortFunc pSortFunct)
+static void li_SortList(SortedList *pList, FSortFunc pSortFunct)
 {
 	FSortFunc pOldSort = pList->sortFunc;
 	int i;
@@ -106,7 +105,7 @@ static int DBRemoveEnumProc(const char *szSetting, LPARAM lParam)
 	return 0;
 }
 
-int Hlp_RemoveDatabaseSettings(HANDLE hContact, char *szModule, char *szPrefix)
+static int Hlp_RemoveDatabaseSettings(HANDLE hContact, char *szModule, char *szPrefix)
 {
 	DBCONTACTENUMSETTINGS dbces;
 	struct RemoveSettings rs;
@@ -145,7 +144,9 @@ void CB_InitCustomButtons()
 	LButtonsList = li.List_Create(0, 1);
 	RButtonsList = li.List_Create(0, 1);
 	InitializeCriticalSection(&ToolBarCS);
-	dwSepCount = DBGetContactSettingDword(NULL, "TabSRMM_Toolbar", "SeparatorsCount", 0);
+	dwSepCount = Mim.GetDword("TabSRMM_Toolbar", "SeparatorsCount", 0);
+
+	//dwSepCount = DBGetContactSettingDword(NULL, "TabSRMM_Toolbar", "SeparatorsCount", 0);
 
 	hButtonsBarAddButton = CreateServiceFunction(MS_BB_ADDBUTTON, CB_AddButton);
 	hButtonsBarRemoveButton = CreateServiceFunction(MS_BB_REMOVEBUTTON, CB_RemoveButton);
@@ -246,14 +247,13 @@ void CB_ReInitCustomButtons()
 			i--;
 		}
 	}
-	WindowList_Broadcast(hMessageWindowList, DM_BBNEEDUPDATE, 0, 0);
-	WindowList_Broadcast(hMessageWindowList, DM_LOADBUTTONBARICONS, 0, 0);
+	Globals.BroadcastMessage(DM_BBNEEDUPDATE, 0, 0);
+	Globals.BroadcastMessage(DM_LOADBUTTONBARICONS, 0, 0);
 }
 
 void CB_HardReInit()
 {
-	WindowList_Broadcast(hMessageWindowList, DM_CBDESTROY, 0, 0);
-
+	Globals.BroadcastMessage(DM_CBDESTROY, 0, 0);
 	EnterCriticalSection(&ToolBarCS);
 	li_ListDestruct(LButtonsList, listdestructor);
 	li_ListDestruct(RButtonsList, listdestructor);
@@ -326,7 +326,7 @@ static INT_PTR CB_AddButton(WPARAM wParam, LPARAM lParam)
 		if (cbd->dwArrowCID == LastCID)
 			LastCID++;
 
-		WindowList_Broadcast(hMessageWindowList, DM_BBNEEDUPDATE, 0, 0);
+		Globals.BroadcastMessage(DM_BBNEEDUPDATE, 0, 0);
 	}
 	return 0;
 }
@@ -356,7 +356,7 @@ static INT_PTR CB_GetButtonState(WPARAM wParam, LPARAM lParam)
 		}
 
 	if (!realbutton) return 1;
-	hwndDlg = WindowList_Find(hMessageWindowList, (HANDLE)wParam);
+	hwndDlg = Globals.FindWindow((HANDLE)wParam);
 	bbdi->bbbFlags = (IsDlgButtonChecked(hwndDlg, tempCID) ? BBSF_PUSHED : BBSF_RELEASED) | (IsWindowVisible(GetDlgItem(hwndDlg, tempCID)) ? 0 : BBSF_HIDDEN) | (IsWindowEnabled(GetDlgItem(hwndDlg, tempCID)) ? 0 : BBSF_DISABLED);
 	return 0;
 }
@@ -387,7 +387,7 @@ static INT_PTR CB_SetButtonState(WPARAM wParam, LPARAM lParam)
 	if (!realbutton || !wParam) return 1;
 
 
-	hwndDlg = WindowList_Find(hMessageWindowList, (HANDLE)wParam);
+	hwndDlg = Globals.FindWindow((HANDLE)wParam);
 	if (hwndDlg && realbutton && bbdi->hIcon)
 		SendMessage(GetDlgItem(hwndDlg, tempCID), BM_SETIMAGE, IMAGE_ICON, (LPARAM)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)bbdi->hIcon));
 	if (hwndDlg && realbutton && bbdi->pszTooltip) {
@@ -441,7 +441,8 @@ static INT_PTR CB_RemoveButton(WPARAM wParam, LPARAM lParam)
 	}
 
 	LeaveCriticalSection(&ToolBarCS);
-	if (tempCID) WindowList_Broadcast(hMessageWindowList, DM_CBDESTROY, (WPARAM)tempCID, (LPARAM)dwFlags);
+	if (tempCID)
+		Globals.BroadcastMessage(DM_CBDESTROY, (WPARAM)tempCID, (LPARAM)dwFlags);
 	return 0;
 }
 
@@ -495,7 +496,8 @@ static INT_PTR CB_ModifyButton(WPARAM wParam, LPARAM lParam)
 		}
 	}
 	LeaveCriticalSection(&ToolBarCS);
-	if (bFound) WindowList_Broadcast(hMessageWindowList, DM_BBNEEDUPDATE, 0, (LPARAM)cbd);
+	if (bFound)
+		Globals.BroadcastMessage(DM_BBNEEDUPDATE, 0, (LPARAM)cbd);
 	return 0;
 }
 
@@ -541,9 +543,9 @@ void BB_InitDlgButtons(HWND hdlg, struct _MessageWindowData *dat)
 	RECT rcSplitter;
 	POINT ptSplitter;
 	int splitterY;
-	BYTE gap = DPISCALEX(myGlobals.g_iButtonsBarGap);
-	BOOL isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbflat", 1);
-	BOOL isThemed = !DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0);
+	BYTE gap = DPISCALEX(Globals.g_iButtonsBarGap);
+	BOOL isFlat = pMim->GetByte("tbflat", 1);
+	BOOL isThemed = !pMim->GetByte("nlflat", 0);
 	int cx = 0, cy = 0;
 	int lcount = LButtonsList->realCount;
 	int rcount = RButtonsList->realCount;
@@ -642,7 +644,7 @@ BOOL BB_SetButtonsPos(HWND hwnd, struct _MessageWindowData *dat)
 	RECT rcSplitter;
 	POINT ptSplitter;
 	int splitterY, iOff;
-	BYTE gap = DPISCALEX(myGlobals.g_iButtonsBarGap);
+	BYTE gap = DPISCALEX(Globals.g_iButtonsBarGap);
 	int foravatar = 0;
 	BOOL showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
 	BOOL bBottomToolbar = dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR ? 1 : 0;
@@ -659,7 +661,7 @@ BOOL BB_SetButtonsPos(HWND hwnd, struct _MessageWindowData *dat)
 	ptSplitter.x = 0;
 	ptSplitter.y = rcSplitter.top;
 	ScreenToClient(hwnd, &ptSplitter);
-	if (myGlobals.g_DPIscaleY > 1.0)
+	if (Globals.g_DPIscaleY > 1.0)
 		iOff = dat->bType == SESSIONTYPE_IM ? DPISCALEY(22) : DPISCALEY(23);
 	else
 		iOff = DPISCALEY(22);
@@ -669,7 +671,7 @@ BOOL BB_SetButtonsPos(HWND hwnd, struct _MessageWindowData *dat)
 	if (!bBottomToolbar) splitterY = ptSplitter.y - DPISCALEY(1);
 	else splitterY = rect.bottom;
 
-	if ((rect.bottom - ptSplitter.y - (rcSplitter.bottom - rcSplitter.top) /*- DPISCALEY(2)*/ - (bBottomToolbar ? DPISCALEY(24) : 0) < dat->pic.cy - DPISCALEY(2)) && dat->showPic && !myGlobals.m_AlwaysFullToolbarWidth)
+	if ((rect.bottom - ptSplitter.y - (rcSplitter.bottom - rcSplitter.top) /*- DPISCALEY(2)*/ - (bBottomToolbar ? DPISCALEY(24) : 0) < dat->pic.cy - DPISCALEY(2)) && dat->showPic && !Globals.m_AlwaysFullToolbarWidth)
 		foravatar = dat->pic.cx + gap;
 
 	if (bNeedResort)
@@ -887,17 +889,17 @@ void CB_InitDefaultButtons()
 	bbd.bbbFlags = BBBF_ISIMBUTTON | BBBF_ISLSIDEBUTTON | BBBF_ISARROWBUTTON | BBBF_CREATEBYID;
 	bbd.dwButtonID = IDC_NAME;
 	bbd.dwDefPos = 20;
-	bbd.hIcon = myGlobals.g_buttonBarIconHandles[9];
+	bbd.hIcon = Globals.g_buttonBarIconHandles[9];
 	bbd.ptszTooltip = _T("Info button");
 
 	CB_AddButton(0, (LPARAM)&bbd);
 
-	if (myGlobals.g_SmileyAddAvail) {
+	if (Globals.g_SmileyAddAvail) {
 		bbd.bbbFlags = BBBF_ISIMBUTTON | BBBF_ISCHATBUTTON | BBBF_ISLSIDEBUTTON | BBBF_CREATEBYID;
 		bbd.dwButtonID = IDC_SMILEYBTN;
 		bbd.iButtonWidth = 0;
 		bbd.dwDefPos = 30;
-		bbd.hIcon = myGlobals.g_buttonBarIconHandles[10];
+		bbd.hIcon = Globals.g_buttonBarIconHandles[10];
 		bbd.ptszTooltip = _T("Insert Emoticon");
 		CB_AddButton(0, (LPARAM)&bbd);
 	}
@@ -905,7 +907,7 @@ void CB_InitDefaultButtons()
 	bbd.bbbFlags = BBBF_ISIMBUTTON | BBBF_ISCHATBUTTON | BBBF_ISLSIDEBUTTON | BBBF_ISPUSHBUTTON | BBBF_CANBEHIDDEN | BBBF_CREATEBYID;
 	bbd.dwButtonID = IDC_FONTBOLD;
 	bbd.dwDefPos = 40;
-	bbd.hIcon = myGlobals.g_buttonBarIconHandles[11];
+	bbd.hIcon = Globals.g_buttonBarIconHandles[11];
 	bbd.ptszTooltip = _T("Bold text");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -913,7 +915,7 @@ void CB_InitDefaultButtons()
 	bbd.bbbFlags = BBBF_ISIMBUTTON | BBBF_ISCHATBUTTON | BBBF_ISLSIDEBUTTON | BBBF_ISPUSHBUTTON | BBBF_CANBEHIDDEN | BBBF_CREATEBYID;
 	bbd.dwButtonID = IDC_FONTITALIC;
 	bbd.dwDefPos = 50;
-	bbd.hIcon = myGlobals.g_buttonBarIconHandles[12];
+	bbd.hIcon = Globals.g_buttonBarIconHandles[12];
 	bbd.ptszTooltip = _T("Italic text");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -921,7 +923,7 @@ void CB_InitDefaultButtons()
 	bbd.bbbFlags = BBBF_ISIMBUTTON | BBBF_ISCHATBUTTON | BBBF_ISLSIDEBUTTON | BBBF_ISPUSHBUTTON | BBBF_CANBEHIDDEN | BBBF_CREATEBYID;
 	bbd.dwButtonID = IDC_FONTUNDERLINE;
 	bbd.dwDefPos = 60;
-	bbd.hIcon = myGlobals.g_buttonBarIconHandles[13];
+	bbd.hIcon = Globals.g_buttonBarIconHandles[13];
 	bbd.ptszTooltip = _T("Underlined text");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -929,7 +931,7 @@ void CB_InitDefaultButtons()
 	bbd.bbbFlags = BBBF_ISIMBUTTON | BBBF_ISLSIDEBUTTON | BBBF_ISPUSHBUTTON | BBBF_CANBEHIDDEN | BBBF_CREATEBYID;
 	bbd.dwButtonID = IDC_FONTSTRIKEOUT;
 	bbd.dwDefPos = 70;
-	bbd.hIcon = myGlobals.g_buttonBarIconHandles[16];
+	bbd.hIcon = Globals.g_buttonBarIconHandles[16];
 	bbd.ptszTooltip = _T("Strike-through text");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -937,7 +939,7 @@ void CB_InitDefaultButtons()
 	bbd.bbbFlags = BBBF_ISIMBUTTON | BBBF_ISCHATBUTTON | BBBF_ISLSIDEBUTTON | BBBF_CANBEHIDDEN | BBBF_CREATEBYID;
 	bbd.dwButtonID = IDC_FONTFACE;
 	bbd.dwDefPos = 80;
-	bbd.hIcon = myGlobals.g_buttonBarIconHandles[15];
+	bbd.hIcon = Globals.g_buttonBarIconHandles[15];
 	bbd.ptszTooltip = _T("Select font color");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -947,7 +949,7 @@ void CB_InitDefaultButtons()
 	bbd.dwButtonID = IDOK;
 	bbd.dwDefPos = 10;
 	bbd.iButtonWidth = 51;
-	bbd.hIcon = myGlobals.g_buttonBarIconHandles[6];
+	bbd.hIcon = Globals.g_buttonBarIconHandles[6];
 	bbd.ptszTooltip = _T("Send message\nClick dropdown arrow for sending options");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -956,7 +958,7 @@ void CB_InitDefaultButtons()
 	bbd.dwButtonID = IDC_SAVE;
 	bbd.dwDefPos = 20;
 	bbd.iButtonWidth = 0;
-	bbd.hIcon = myGlobals.g_buttonBarIconHandles[8];
+	bbd.hIcon = Globals.g_buttonBarIconHandles[8];
 	bbd.ptszTooltip = _T("Close session");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -965,7 +967,7 @@ void CB_InitDefaultButtons()
 	bbd.dwButtonID = IDC_QUOTE;
 	bbd.dwDefPos = 30;
 	bbd.iButtonWidth = 0;
-	bbd.hIcon = myGlobals.g_buttonBarIconHandles[4];
+	bbd.hIcon = Globals.g_buttonBarIconHandles[4];
 	bbd.ptszTooltip = _T("Quote last message OR selected text");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -974,7 +976,7 @@ void CB_InitDefaultButtons()
 	bbd.dwButtonID = IDC_TIME;
 	bbd.dwDefPos = 40;
 	bbd.iButtonWidth = 0;
-	bbd.hIcon = myGlobals.g_buttonBarIconHandles[1];
+	bbd.hIcon = Globals.g_buttonBarIconHandles[1];
 	bbd.ptszTooltip = _T("Message Log Options");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -983,7 +985,7 @@ void CB_InitDefaultButtons()
 	bbd.dwButtonID = IDC_HISTORY;
 	bbd.dwDefPos = 50;
 	bbd.iButtonWidth = 0;
-	bbd.hIcon = myGlobals.g_buttonBarIconHandles[0];
+	bbd.hIcon = Globals.g_buttonBarIconHandles[0];
 	bbd.ptszTooltip = _T("View User's History");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -992,7 +994,7 @@ void CB_InitDefaultButtons()
 	bbd.dwButtonID = IDC_PIC;
 	bbd.dwDefPos = 60;
 	bbd.iButtonWidth = 0;
-	bbd.hIcon = myGlobals.g_buttonBarIconHandles[7];
+	bbd.hIcon = Globals.g_buttonBarIconHandles[7];
 	bbd.ptszTooltip = _T("Avatar Options");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -1033,7 +1035,7 @@ void CB_InitDefaultButtons()
 	bbd.pszModuleName = "Tabsrmm";
 	bbd.dwDefPos = 81;
 	bbd.iButtonWidth = 22;
-	bbd.hIcon = myGlobals.g_buttonBarIconHandles[17];
+	bbd.hIcon = Globals.g_buttonBarIconHandles[17];
 	bbd.ptszTooltip = _T("Change background color");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -1043,7 +1045,7 @@ void CB_InitDefaultButtons()
 	bbd.dwButtonID = IDC_SHOWNICKLIST;
 	bbd.dwDefPos = 22;
 	bbd.iButtonWidth = 22;
-	bbd.hIcon = myGlobals.g_buttonBarIconHandles[21];
+	bbd.hIcon = Globals.g_buttonBarIconHandles[21];
 	bbd.ptszTooltip = _T("Toggle nick list");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -1052,7 +1054,7 @@ void CB_InitDefaultButtons()
 	bbd.dwButtonID = IDC_FILTER;
 	bbd.dwDefPos = 24;
 	bbd.iButtonWidth = 22;
-	bbd.hIcon = myGlobals.g_buttonBarIconHandles[19];
+	bbd.hIcon = Globals.g_buttonBarIconHandles[19];
 	bbd.ptszTooltip = _T("Event filter - right click to setup, left click to activate/deactivate");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -1061,7 +1063,7 @@ void CB_InitDefaultButtons()
 	bbd.dwButtonID = IDC_CHANMGR;
 	bbd.dwDefPos = 33;
 	bbd.iButtonWidth = 22;
-	bbd.hIcon = myGlobals.g_buttonBarIconHandles[18];
+	bbd.hIcon = Globals.g_buttonBarIconHandles[18];
 	bbd.ptszTooltip = _T("Channel manager");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -1141,7 +1143,7 @@ static int SaveTree(HWND hToolBarTree)
 		tvi.hItem = hItem;
 	}
 	LeaveCriticalSection(&ToolBarCS);
-	DBWriteContactSettingDword(NULL, "TabSRMM_Toolbar", "SeparatorsCount", loc_sepcout);
+	pMim->WriteDword("TabSRMM_Toolbar", "SeparatorsCount", loc_sepcout);
 	dwSepCount = loc_sepcout;
 	bNeedResort = TRUE;
 	return 1;
@@ -1252,7 +1254,7 @@ INT_PTR CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CANBEHIDDEN), FALSE);
 
 			SendDlgItemMessage(hwndDlg, IDC_SPIN1, UDM_SETRANGE, 0, MAKELONG(10, 0));
-			SendDlgItemMessage(hwndDlg, IDC_SPIN1, UDM_SETPOS, 0, MAKELONG(myGlobals.g_iButtonsBarGap, 0));
+			SendDlgItemMessage(hwndDlg, IDC_SPIN1, UDM_SETPOS, 0, MAKELONG(Globals.g_iButtonsBarGap, 0));
 			TranslateDialogDefault(hwndDlg);
 			bOptionsInit = FALSE;
 		}
@@ -1405,12 +1407,12 @@ INT_PTR CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 
 							SaveTree(hToolBarTree);
 							CB_ReInitCustomButtons();
-							myGlobals.g_iButtonsBarGap = (BYTE)SendDlgItemMessage(hwndDlg, IDC_SPIN1, UDM_GETPOS, 0, 0);
+							Globals.g_iButtonsBarGap = (BYTE)SendDlgItemMessage(hwndDlg, IDC_SPIN1, UDM_GETPOS, 0, 0);
 
-							if (myGlobals.g_iButtonsBarGap != DBGetContactSettingByte(NULL, SRMSGMOD_T, "ButtonsBarGap", 1))
-								WindowList_BroadcastAsync(hMessageWindowList, WM_SIZE, 0, 0);
+							if (Globals.g_iButtonsBarGap != pMim->GetByte("ButtonsBarGap", 1))
+								Globals.BroadcastMessageAsync(WM_SIZE, 0, 0);
 
-							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "ButtonsBarGap", myGlobals.g_iButtonsBarGap);
+							pMim->WriteByte(SRMSGMOD_T, "ButtonsBarGap", Globals.g_iButtonsBarGap);
 
 							EnableWindow(GetDlgItem(hwndDlg, IDC_IMCHECK), FALSE);
 							EnableWindow(GetDlgItem(hwndDlg, IDC_CHATCHECK), FALSE);
@@ -1420,7 +1422,7 @@ INT_PTR CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 
 						case PSN_RESET: {
 							CB_ReInitCustomButtons();
-							dwSepCount = DBGetContactSettingDword(NULL, "TabSRMM_Toolbar", "SeparatorsCount", 0);
+							dwSepCount = pMim->GetDword("TabSRMM_Toolbar", "SeparatorsCount", 0);
 							return 1;
 						}
 					}

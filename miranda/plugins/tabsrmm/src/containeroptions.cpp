@@ -31,7 +31,6 @@ $Id: containeroptions.c 10366 2009-07-18 22:15:04Z silvercircle $
 #pragma hdrstop
 
 extern      struct ContainerWindowData *pFirstContainer;
-extern      MYGLOBALS myGlobals;
 extern      NEN_OPTIONS nen_options;
 extern      BOOL g_skinnedContainers;
 extern      BOOL g_framelessSkinmode;
@@ -49,7 +48,7 @@ static void ReloadGlobalContainerSettings()
 	while (pC) {
 		if (pC->dwPrivateFlags & CNT_GLOBALSETTINGS) {
 			DWORD dwOld = pC->dwFlags;
-			pC->dwFlags = myGlobals.m_GlobalContainerFlags;
+			pC->dwFlags = Globals.m_GlobalContainerFlags;
 			SendMessage(pC->hwnd, DM_CONFIGURECONTAINER, 0, 0);
 			if ((dwOld & CNT_INFOPANEL) != (pC->dwFlags & CNT_INFOPANEL))
 				BroadCastContainer(pC, DM_SETINFOPANEL, 0, 0);
@@ -63,16 +62,16 @@ void ApplyContainerSetting(struct ContainerWindowData *pContainer, DWORD flags, 
 	DWORD dwOld = pContainer->dwFlags;
 
 	if (pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS) {
-		myGlobals.m_GlobalContainerFlags = (mode ? myGlobals.m_GlobalContainerFlags | flags : myGlobals.m_GlobalContainerFlags & ~flags);
-		pContainer->dwFlags = myGlobals.m_GlobalContainerFlags;
-		DBWriteContactSettingDword(NULL, SRMSGMOD_T, "containerflags", myGlobals.m_GlobalContainerFlags);
+		Globals.m_GlobalContainerFlags = (mode ? Globals.m_GlobalContainerFlags | flags : Globals.m_GlobalContainerFlags & ~flags);
+		pContainer->dwFlags = Globals.m_GlobalContainerFlags;
+		pMim->WriteDword(SRMSGMOD_T, "containerflags", Globals.m_GlobalContainerFlags);
 		if (flags & CNT_INFOPANEL)
 			BroadCastContainer(pContainer, DM_SETINFOPANEL, 0, 0);
 		if (flags & CNT_SIDEBAR) {
 			struct ContainerWindowData *pC = pFirstContainer;
 			while (pC) {
 				if (pC->dwPrivateFlags & CNT_GLOBALSETTINGS) {
-					pC->dwFlags = myGlobals.m_GlobalContainerFlags;
+					pC->dwFlags = Globals.m_GlobalContainerFlags;
 					SendMessage(pC->hwnd, WM_COMMAND, IDC_TOGGLESIDEBAR, 0);
 				}
 				pC = pC->pNextContainer;
@@ -167,7 +166,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			CheckDlgButton(hwndDlg, IDC_CNTPRIVATE, !(pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS));
 			EnableWindow(GetDlgItem(hwndDlg, IDC_TITLEFORMAT), IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE));
 
-			dwTemp[0] = (pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS ? myGlobals.m_GlobalContainerFlags : pContainer->dwPrivateFlags);
+			dwTemp[0] = (pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS ? Globals.m_GlobalContainerFlags : pContainer->dwPrivateFlags);
 			dwTemp[1] = pContainer->dwTransparency;
 
 			SendMessage(hwndDlg, DM_SC_INITDIALOG, (WPARAM)0, (LPARAM)dwTemp);
@@ -191,7 +190,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				for (j = 0; j < NR_O_OPTIONSPERPAGE && o_pages[i].uIds[j] != 0; j++)
 					ShowWindow(GetDlgItem(hwndDlg, o_pages[i].uIds[j]), SW_HIDE);
 			}
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)myGlobals.g_iconContainer);
+			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)Globals.g_iconContainer);
 			ShowPage(hwndDlg, 0, TRUE);
 			SetFocus(hwndTree);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), FALSE);
@@ -244,7 +243,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 						SendMessage(hwndDlg, DM_SC_INITDIALOG, 0, (LPARAM)dwTemp);
 					}
 					else {
-						dwTemp[0] = myGlobals.m_GlobalContainerFlags;;
+						dwTemp[0] = Globals.m_GlobalContainerFlags;;
 						dwTemp[1] = pContainer->dwTransparency;
 						SendMessage(hwndDlg, DM_SC_INITDIALOG, 0, (LPARAM)dwTemp);
 					}
@@ -265,10 +264,10 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 					wp.length = sizeof(wp);
 					if (GetWindowPlacement(pContainer->hwnd, &wp)) {
-						DBWriteContactSettingDword(NULL, SRMSGMOD_T, "splitx", wp.rcNormalPosition.left);
-						DBWriteContactSettingDword(NULL, SRMSGMOD_T, "splity", wp.rcNormalPosition.top);
-						DBWriteContactSettingDword(NULL, SRMSGMOD_T, "splitwidth", wp.rcNormalPosition.right - wp.rcNormalPosition.left);
-						DBWriteContactSettingDword(NULL, SRMSGMOD_T, "splitheight", wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
+						pMim->WriteDword(SRMSGMOD_T, "splitx", wp.rcNormalPosition.left);
+						pMim->WriteDword(SRMSGMOD_T, "splity", wp.rcNormalPosition.top);
+						pMim->WriteDword(SRMSGMOD_T, "splitwidth", wp.rcNormalPosition.right - wp.rcNormalPosition.left);
+						pMim->WriteDword(SRMSGMOD_T, "splitheight", wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
 					}
 					break;
 				}
@@ -301,12 +300,12 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 						pContainer->dwPrivateFlags = pContainer->dwFlags = (dwNewFlags & ~CNT_GLOBALSETTINGS);
 					}
 					else {
-						myGlobals.m_GlobalContainerFlags = dwNewFlags;
+						Globals.m_GlobalContainerFlags = dwNewFlags;
 						pContainer->dwPrivateFlags |= CNT_GLOBALSETTINGS;
-						DBWriteContactSettingDword(NULL, SRMSGMOD_T, "containerflags", dwNewFlags);
+						pMim->WriteDword(SRMSGMOD_T, "containerflags", dwNewFlags);
 						if (IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENCY)) {
-							myGlobals.m_GlobalContainerTrans = dwNewTrans;
-							DBWriteContactSettingDword(NULL, SRMSGMOD_T, "containertrans", dwNewTrans);
+							Globals.m_GlobalContainerTrans = dwNewTrans;
+							pMim->WriteDword(SRMSGMOD_T, "containertrans", dwNewTrans);
 						}
 					}
 					if (IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENCY))
@@ -317,7 +316,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 						pContainer->szTitleFormat[TITLE_FORMATLEN - 1] = 0;
 					}
 					else
-						_tcsncpy(pContainer->szTitleFormat, myGlobals.szDefaultTitleFormat, TITLE_FORMATLEN);
+						_tcsncpy(pContainer->szTitleFormat, Globals.szDefaultTitleFormat, TITLE_FORMATLEN);
 
 					pContainer->szRelThemeFile[0] = pContainer->szAbsThemeFile[0] = 0;
 
@@ -381,7 +380,7 @@ do_apply:
 			int  isTrans;
 			BOOL fAllowTrans = FALSE;
 
-			if(myGlobals.m_WinVerMajor >= 6)
+			if(Globals.m_WinVerMajor >= 6)
 				fAllowTrans = TRUE;
 			else
 				fAllowTrans = (!g_skinnedContainers);
@@ -414,7 +413,7 @@ do_apply:
 			else
 				CheckDlgButton(hwndDlg, IDC_TRANSPARENCY, FALSE);
 
-			EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCY), myGlobals.m_WinVerMajor >= 5 && fAllowTrans ? TRUE : FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCY), Globals.m_WinVerMajor >= 5 && fAllowTrans ? TRUE : FALSE);
 
 			isTrans = IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENCY);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCY_ACTIVE), isTrans ? TRUE : FALSE);

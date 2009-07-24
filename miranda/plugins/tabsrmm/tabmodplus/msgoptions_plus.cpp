@@ -36,7 +36,6 @@ $Id$
 extern HINSTANCE	hinstance;
 extern BOOL			g_bIMGtagButton, g_bClientInStatusBar;
 extern HIMAGELIST	g_himlOptions, CreateStateImageList();
-extern MYGLOBALS	myGlobals;
 
 static BOOL bOptionsInit;
 
@@ -132,15 +131,15 @@ INT_PTR CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lPar
 								//if (lvItems[i].uType == LOI_TYPE_FLAG)
 								//	dwFlags |= (item.state >> 12) == 3/*2*/ ? lvItems[i].lParam : 0;
 								if (lvItems[i].uType == LOI_TYPE_SETTING)
-									DBWriteContactSettingByte(NULL, SRMSGMOD_T, (char *)lvItems[i].lParam, (BYTE)((item.state >> 12) == 3/*2*/ ? 1 : 0));  // NOTE: state image masks changed
+									pMim->WriteByte(SRMSGMOD_T, (char *)lvItems[i].lParam, (BYTE)((item.state >> 12) == 3/*2*/ ? 1 : 0));  // NOTE: state image masks changed
 								i++;
 							}
 
 							msgTimeout = 1000 * GetDlgItemInt(hwndDlg, IDC_SECONDS, NULL, FALSE);
-							myGlobals.m_MsgTimeout = msgTimeout >= SRMSGSET_MSGTIMEOUT_MIN ? msgTimeout : SRMSGSET_MSGTIMEOUT_MIN;
-							DBWriteContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, myGlobals.m_MsgTimeout);
+							Globals.m_MsgTimeout = msgTimeout >= SRMSGSET_MSGTIMEOUT_MIN ? msgTimeout : SRMSGSET_MSGTIMEOUT_MIN;
+							pMim->WriteDword(SRMSGMOD, SRMSGSET_MSGTIMEOUT, Globals.m_MsgTimeout);
 
-							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "historysize", (BYTE)SendDlgItemMessage(hwndDlg, IDC_HISTORYSIZESPIN, UDM_GETPOS, 0, 0));
+							pMim->WriteByte(SRMSGMOD_T, "historysize", (BYTE)SendDlgItemMessage(hwndDlg, IDC_HISTORYSIZESPIN, UDM_GETPOS, 0, 0));
 							return TRUE;
 						}
 					}
@@ -157,7 +156,7 @@ INT_PTR CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lPar
 
 				while(lvItems[i].szName) {
 					if(lvItems[i].uType == LOI_TYPE_SETTING)
-						DBWriteContactSettingByte(NULL, SRMSGMOD_T, (char *)lvItems[i].lParam, (BYTE)lvItems[i].id);
+						pMim->WriteByte(SRMSGMOD_T, (char *)lvItems[i].lParam, (BYTE)lvItems[i].id);
 					i++;
 				}
 				TreeView_DeleteAllItems(GetDlgItem(hwndDlg, IDC_PLUS_CHECKTREE));
@@ -198,18 +197,18 @@ INT_PTR CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lPar
 				//if (lvItems[i].uType == LOI_TYPE_FLAG)
 				//	tvi.item.state = INDEXTOSTATEIMAGEMASK((dwFlags & (UINT)lvItems[i].lParam) ? 3 : 2);
 				if (lvItems[i].uType == LOI_TYPE_SETTING)
-					tvi.item.state = INDEXTOSTATEIMAGEMASK(DBGetContactSettingByte(NULL, SRMSGMOD_T, (char *)lvItems[i].lParam, lvItems[i].id) ? 3 : 2);  // NOTE: was 2 : 1 without state image mask
+					tvi.item.state = INDEXTOSTATEIMAGEMASK(pMim->GetByte((char *)lvItems[i].lParam, lvItems[i].id) ? 3 : 2);  // NOTE: was 2 : 1 without state image mask
 				lvItems[i].handle = (LRESULT)TreeView_InsertItem(GetDlgItem(hwndDlg, IDC_PLUS_CHECKTREE), &tvi);
 				i++;
 			}
-			g_bIMGtagButton = DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_IMGtagButton",0 );
-			g_bClientInStatusBar = DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_ClientIconInStatusBar", 0);
+			g_bIMGtagButton = pMim->GetByte("adv_IMGtagButton",0 );
+			g_bClientInStatusBar = pMim->GetByte("adv_ClientIconInStatusBar", 0);
 
 			SendDlgItemMessage(hwndDlg, IDC_TIMEOUTSPIN, UDM_SETRANGE, 0, MAKELONG(300, SRMSGSET_MSGTIMEOUT_MIN / 1000));
-			SendDlgItemMessage(hwndDlg, IDC_TIMEOUTSPIN, UDM_SETPOS, 0, myGlobals.m_MsgTimeout / 1000);
+			SendDlgItemMessage(hwndDlg, IDC_TIMEOUTSPIN, UDM_SETPOS, 0, Globals.m_MsgTimeout / 1000);
 
 			SendDlgItemMessage(hwndDlg, IDC_HISTORYSIZESPIN, UDM_SETRANGE, 0, MAKELONG(255, 15));
-			SendDlgItemMessage(hwndDlg, IDC_HISTORYSIZESPIN, UDM_SETPOS, 0, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "historysize", 0));
+			SendDlgItemMessage(hwndDlg, IDC_HISTORYSIZESPIN, UDM_SETPOS, 0, (int)pMim->GetByte("historysize", 0));
 
 			return 0;
 		}

@@ -82,47 +82,28 @@ struct StatusItems_t {
     ImageItem *imageItem;
 };
 
-/*class StatusItems_t {
+class StatusItem {
 
 public:
-	StatusItems_t(const char *szName, const char *szDBName, const int id, const BYTE gradient, const BYTE corner, const DWORD color, const DWORD color2,
-				  const BYTE color2_trans, const DWORD textcolor, const int alpha, const int margin_left, const int margin_top, const int margin_right,
-				  const int margin_bottom, const BYTE ignored, const DWORD borderstyle, const ImageItem *imageItem)
+	StatusItem()
 	{}
 
-	StatusItems_t(const char *name, const char *name_neu, unsigned int id);
+	StatusItem(const unsigned id);
 
-	~StatusItems_t()
+	~StatusItem()
 	{}
+
+	void Init(const int id);
 
 	void Render()
-	{}
+	{
+		MessageBoxA(0, m_item->szName, "foo", MB_OK);
+	}
 
-	static char szName[40];
-    static char szDBname[40];
-    static int statusID;
-
-    BYTE GRADIENT;
-    BYTE CORNER;
-
-    DWORD COLOR;
-    DWORD COLOR2;
-
-    BYTE COLOR2_TRANSPARENT;
-
-    DWORD TEXTCOLOR;
-
-    int ALPHA;
-
-    int MARGIN_LEFT;
-    int MARGIN_TOP;
-    int MARGIN_RIGHT;
-    int MARGIN_BOTTOM;
-    BYTE IGNORED;
-    DWORD BORDERSTYLE;
-    ImageItem *imageItem;
+private:
+	StatusItems_t *m_item;
 };
-*/
+
 typedef struct {
     BOOL bGRADIENT;
     BOOL bCORNER;

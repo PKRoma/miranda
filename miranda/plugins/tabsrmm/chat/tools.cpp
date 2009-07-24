@@ -30,7 +30,6 @@ extern HMENU			g_hMenu;
 extern HANDLE			hBuildMenuEvent ;
 extern HANDLE			hSendEvent;
 extern SESSION_INFO		g_TabSession;
-extern MYGLOBALS		myGlobals;
 extern NEN_OPTIONS		nen_options;
 
 static void Chat_PlaySound(const char *szSound, HWND hWnd, struct _MessageWindowData *dat)
@@ -194,7 +193,7 @@ static BOOL DoTrayIcon(SESSION_INFO* si, GCEVENT * gce)
 		switch (iEvent) {
 			case GC_EVENT_MESSAGE | GC_EVENT_HIGHLIGHT :
 			case GC_EVENT_ACTION | GC_EVENT_HIGHLIGHT :
-				CList_AddEvent(si->hContact, myGlobals.g_IconMsgEvent, szChatIconString, 0, TranslateT("%s wants your attention in %s"), gce->ptszNick, si->ptszName);
+				CList_AddEvent(si->hContact, Globals.g_IconMsgEvent, szChatIconString, 0, TranslateT("%s wants your attention in %s"), gce->ptszNick, si->ptszName);
 				break;
 			case GC_EVENT_MESSAGE :
 				CList_AddEvent(si->hContact, hIcons[ICON_MESSAGE], szChatIconString, CLEF_ONLYAFEW, TranslateT("%s speaks in %s"), gce->ptszNick, si->ptszName);
@@ -410,7 +409,7 @@ static void DoFlashAndSoundThread(FLASH_PARAMS* p)
 
 		// autoswitch tab..
 		if (p->bMustAutoswitch) {
-			if ((IsIconic(p->dat->pContainer->hwnd)) && !IsZoomed(p->dat->pContainer->hwnd) && myGlobals.m_AutoSwitchTabs && p->dat->pContainer->hwndActive != p->si->hWnd) {
+			if ((IsIconic(p->dat->pContainer->hwnd)) && !IsZoomed(p->dat->pContainer->hwnd) && Globals.m_AutoSwitchTabs && p->dat->pContainer->hwndActive != p->si->hWnd) {
 				int iItem = GetTabIndexFromHWND(hwndTab, p->si->hWnd);
 				if (iItem >= 0) {
 					TabCtrl_SetCurSel(hwndTab, iItem);
@@ -484,7 +483,7 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 		gce->pDest->iType |= GC_EVENT_HIGHLIGHT;
 		if (params->bInactive || !g_Settings.SoundsFocus)
 			params->sound = "ChatHighlight";
-		if (DBGetContactSettingByte(si->hContact, "CList", "Hidden", 0) != 0)
+		if (pMim->GetByte(si->hContact, "CList", "Hidden", 0) != 0)
 			DBDeleteContactSetting(si->hContact, "CList", "Hidden");
 		if (params->bInactive)
 			DoTrayIcon(si, gce);
@@ -653,7 +652,7 @@ void CheckColorsInModule(const char* pszModule)
 	MODULEINFO * pMod = MM_FindModule(pszModule);
 	int i = 0;
 	COLORREF crFG;
-	COLORREF crBG = (COLORREF)DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR);
+	COLORREF crBG = (COLORREF)pMim->GetDword(FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR);
 
 	LoadLogfont(MSGFONTID_MESSAGEAREA, NULL, &crFG, FONTMODULE);
 
@@ -949,7 +948,7 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 	GCMENUITEMS gcmi = {0};
 	int i;
 	HMENU hSubMenu = 0;
-	DWORD codepage = DBGetContactSettingDword(si->hContact, SRMSGMOD_T, "ANSIcodepage", 0);
+	DWORD codepage = pMim->GetDword(si->hContact, "ANSIcodepage", 0);
 	int pos;
 
 	*hMenu = GetSubMenu(g_hMenu, iIndex);
@@ -1025,15 +1024,15 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 
 	if (iIndex == 1 && si->iType != GCW_SERVER && !(si->dwFlags && GC_UNICODE)) {
 		AppendMenu(*hMenu, MF_SEPARATOR, 0, 0);
-		InsertMenu(myGlobals.g_hMenuEncoding, 1, MF_BYPOSITION | MF_STRING, (UINT_PTR)CP_UTF8, TranslateT("UTF-8"));
+		InsertMenu(Globals.g_hMenuEncoding, 1, MF_BYPOSITION | MF_STRING, (UINT_PTR)CP_UTF8, TranslateT("UTF-8"));
 		pos = GetMenuItemCount(*hMenu);
-		InsertMenu(*hMenu, pos, MF_BYPOSITION | MF_POPUP, (UINT_PTR) myGlobals.g_hMenuEncoding, TranslateT("Character Encoding"));
-		for (i = 0; i < GetMenuItemCount(myGlobals.g_hMenuEncoding); i++)
-			CheckMenuItem(myGlobals.g_hMenuEncoding, i, MF_BYPOSITION | MF_UNCHECKED);
+		InsertMenu(*hMenu, pos, MF_BYPOSITION | MF_POPUP, (UINT_PTR) Globals.g_hMenuEncoding, TranslateT("Character Encoding"));
+		for (i = 0; i < GetMenuItemCount(Globals.g_hMenuEncoding); i++)
+			CheckMenuItem(Globals.g_hMenuEncoding, i, MF_BYPOSITION | MF_UNCHECKED);
 		if (codepage == CP_ACP)
-			CheckMenuItem(myGlobals.g_hMenuEncoding, 0, MF_BYPOSITION | MF_CHECKED);
+			CheckMenuItem(Globals.g_hMenuEncoding, 0, MF_BYPOSITION | MF_CHECKED);
 		else
-			CheckMenuItem(myGlobals.g_hMenuEncoding, codepage, MF_BYCOMMAND | MF_CHECKED);
+			CheckMenuItem(Globals.g_hMenuEncoding, codepage, MF_BYCOMMAND | MF_CHECKED);
 
 	}
 
@@ -1069,7 +1068,7 @@ BOOL DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int 
 		return FALSE;
 
 	if (!(si->dwFlags & GC_UNICODE)) {
-		DWORD dwCP = DBGetContactSettingDword(si->hContact, SRMSGMOD_T, "ANSIcodepage", 0);
+		DWORD dwCP = pMim->GetDword(si->hContact, "ANSIcodepage", 0);
 		gcd->pszID = t2a(pszID, 0);
 		gch->pszUID = t2a(pszUID, 0);
 		gch->pszText = t2a(pszText, dwCP);
@@ -1102,7 +1101,7 @@ BOOL DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, const TCH
 		return FALSE;
 
 	if (!(si->dwFlags & GC_UNICODE)) {
-		DWORD dwCP = DBGetContactSettingDword(si->hContact, SRMSGMOD_T, "ANSIcodepage", 0);
+		DWORD dwCP = pMim->GetDword(si->hContact, "ANSIcodepage", 0);
 		gcd.pszID = t2a(pszID, 0);
 		gch.pszUID = t2a(pszUID, 0);
 		gch.pszText = t2a(pszText, dwCP);
@@ -1176,7 +1175,7 @@ TCHAR* a2tf(const TCHAR* str, int flags, DWORD cp)
 			return(Utf8_Decode((char *)str));
 
 		if (cp == 0)
-			cp = myGlobals.m_LangPackCP; // CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
+			cp = Globals.m_LangPackCP; // CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
 		cbLen = MultiByteToWideChar(cp, 0, (char*)str, -1, 0, 0);
 		result = (TCHAR*)mir_alloc(sizeof(TCHAR) * (cbLen + 1));
 		if (result == NULL)
@@ -1197,7 +1196,7 @@ static char* u2a(const wchar_t* src, DWORD cp)
 	char *result;
 
 	if (cp == 0)
-		cp = myGlobals.m_LangPackCP;
+		cp = Globals.m_LangPackCP;
 	else if (cp == CP_UTF8)
 		return(Utf8_Encode(src));
 
@@ -1247,9 +1246,9 @@ void Chat_SetFilters(SESSION_INFO *si)
 	if (si == NULL)
 		return;
 
-	dwFlags_default = DBGetContactSettingDword(NULL, "Chat", "FilterFlags", 0x03E0);
-	dwFlags_local = DBGetContactSettingDword(si->hContact, "Chat", "FilterFlags", 0x03E0);
-	dwMask = DBGetContactSettingDword(si->hContact, "Chat", "FilterMask", 0);
+	dwFlags_default = pMim->GetDword("Chat", "FilterFlags", 0x03E0);
+	dwFlags_local = pMim->GetDword(si->hContact, "Chat", "FilterFlags", 0x03E0);
+	dwMask = pMim->GetDword(si->hContact, "Chat", "FilterMask", 0);
 
 	si->iLogFilterFlags = dwFlags_default;
 	for (i = 0; i < 32; i++) {
@@ -1257,9 +1256,9 @@ void Chat_SetFilters(SESSION_INFO *si)
 			si->iLogFilterFlags = (dwFlags_local & (1 << i) ? si->iLogFilterFlags | (1 << i) : si->iLogFilterFlags & ~(1 << i));
 	}
 
-	dwFlags_default = DBGetContactSettingDword(NULL, "Chat", "PopupFlags", 0x03E0);
-	dwFlags_local = DBGetContactSettingDword(si->hContact, "Chat", "PopupFlags", 0x03E0);
-	dwMask = DBGetContactSettingDword(si->hContact, "Chat", "PopupMask", 0);
+	dwFlags_default = pMim->GetDword("Chat", "PopupFlags", 0x03E0);
+	dwFlags_local = pMim->GetDword(si->hContact, "Chat", "PopupFlags", 0x03E0);
+	dwMask = pMim->GetDword(si->hContact, "Chat", "PopupMask", 0);
 
 	si->iLogPopupFlags = dwFlags_default;
 	for (i = 0; i < 32; i++) {
@@ -1267,9 +1266,9 @@ void Chat_SetFilters(SESSION_INFO *si)
 			si->iLogPopupFlags = (dwFlags_local & (1 << i) ? si->iLogPopupFlags | (1 << i) : si->iLogPopupFlags & ~(1 << i));
 	}
 
-	dwFlags_default = DBGetContactSettingDword(NULL, "Chat", "TrayIconFlags", 0x03E0);
-	dwFlags_local = DBGetContactSettingDword(si->hContact, "Chat", "TrayIconFlags", 0x03E0);
-	dwMask = DBGetContactSettingDword(si->hContact, "Chat", "TrayIconMask", 0);
+	dwFlags_default = pMim->GetDword("Chat", "TrayIconFlags", 0x03E0);
+	dwFlags_local = pMim->GetDword(si->hContact, "Chat", "TrayIconFlags", 0x03E0);
+	dwMask = pMim->GetDword(si->hContact, "Chat", "TrayIconMask", 0);
 
 	si->iLogTrayFlags = dwFlags_default;
 	for (i = 0; i < 32; i++) {
@@ -1277,7 +1276,7 @@ void Chat_SetFilters(SESSION_INFO *si)
 			si->iLogTrayFlags = (dwFlags_local & (1 << i) ? si->iLogTrayFlags | (1 << i) : si->iLogTrayFlags & ~(1 << i));
 	}
 
-	dwFlags_default = DBGetContactSettingDword(NULL, "Chat", "DiskLogFlags", 0xFFFF);
+	dwFlags_default = pMim->GetDword("Chat", "DiskLogFlags", 0xFFFF);
     si->iDiskLogFlags = dwFlags_default;
 
 

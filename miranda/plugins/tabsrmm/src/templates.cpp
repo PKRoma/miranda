@@ -76,7 +76,6 @@ TemplateSet RTL_Default = { TRUE,
 TemplateSet LTR_Active, RTL_Active;
 
 extern BOOL                     cntHelpActive;
-extern MYGLOBALS                myGlobals;
 extern BOOL                     show_relnotes;
 
 extern HINSTANCE                g_hInst;
@@ -110,15 +109,15 @@ void LoadDefaultTemplates()
 	LTR_Active = LTR_Default;
 	RTL_Active = RTL_Default;
 
-	if (DBGetContactSettingByte(NULL, RTLTEMPLATES_MODULE, "setup", 0) < 2) {
+	if (pMim->GetByte(RTLTEMPLATES_MODULE, "setup", 0) < 2) {
 		for (i = 0; i <= TMPL_ERRMSG; i++)
 			DBWriteContactSettingTString(NULL, RTLTEMPLATES_MODULE, TemplateNames[i], RTL_Default.szTemplates[i]);
-		DBWriteContactSettingByte(NULL, RTLTEMPLATES_MODULE, "setup", 2);
+		pMim->WriteByte(RTLTEMPLATES_MODULE, "setup", 2);
 	}
-	if (DBGetContactSettingByte(NULL, TEMPLATES_MODULE, "setup", 0) < 2) {
+	if (pMim->GetByte(TEMPLATES_MODULE, "setup", 0) < 2) {
 		for (i = 0; i <= TMPL_ERRMSG; i++)
 			DBWriteContactSettingTString(NULL, TEMPLATES_MODULE, TemplateNames[i], LTR_Default.szTemplates[i]);
-		DBWriteContactSettingByte(NULL, TEMPLATES_MODULE, "setup", 2);
+		pMim->WriteByte(TEMPLATES_MODULE, "setup", 2);
 	}
 	LoadTemplatesFrom(&LTR_Active, (HANDLE)0, 0);
 	LoadTemplatesFrom(&RTL_Active, (HANDLE)0, 1);
@@ -171,7 +170,7 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SendDlgItemMessage(hwndDlg, IDC_PREVIEW, EM_EXLIMITTEXT, 0, 0x80000000);
 
 			dat->hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-			dat->dwFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
+			dat->dwFlags = pMim->GetDword("mwflags", MWF_LOG_DEFAULT);
 			dat->szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0);
 			/*
 			#if defined(_UNICODE)
@@ -197,11 +196,11 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_MODIFY), FALSE);
 			EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_RTLMODIFY), FALSE);
 
-			SendDlgItemMessage(hwndDlg, IDC_COLOR1, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc1", SRMSGDEFSET_BKGCOLOUR));
-			SendDlgItemMessage(hwndDlg, IDC_COLOR2, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc2", SRMSGDEFSET_BKGCOLOUR));
-			SendDlgItemMessage(hwndDlg, IDC_COLOR3, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc3", SRMSGDEFSET_BKGCOLOUR));
-			SendDlgItemMessage(hwndDlg, IDC_COLOR4, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc4", SRMSGDEFSET_BKGCOLOUR));
-			SendDlgItemMessage(hwndDlg, IDC_COLOR5, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc5", SRMSGDEFSET_BKGCOLOUR));
+			SendDlgItemMessage(hwndDlg, IDC_COLOR1, CPM_SETCOLOUR, 0, pMim->GetDword("cc1", SRMSGDEFSET_BKGCOLOUR));
+			SendDlgItemMessage(hwndDlg, IDC_COLOR2, CPM_SETCOLOUR, 0, pMim->GetDword("cc2", SRMSGDEFSET_BKGCOLOUR));
+			SendDlgItemMessage(hwndDlg, IDC_COLOR3, CPM_SETCOLOUR, 0, pMim->GetDword("cc3", SRMSGDEFSET_BKGCOLOUR));
+			SendDlgItemMessage(hwndDlg, IDC_COLOR4, CPM_SETCOLOUR, 0, pMim->GetDword("cc4", SRMSGDEFSET_BKGCOLOUR));
+			SendDlgItemMessage(hwndDlg, IDC_COLOR5, CPM_SETCOLOUR, 0, pMim->GetDword("cc5", SRMSGDEFSET_BKGCOLOUR));
 			SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
 			return(TRUE);
 		}
@@ -213,7 +212,7 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				case IDC_RESETALLTEMPLATES:
 					if (MessageBox(0, TranslateT("This will reset the template set to the default built-in templates. Are you sure you want to do this?"),
 								   TranslateT("Template editor"), MB_YESNO | MB_ICONQUESTION) == IDYES) {
-						DBWriteContactSettingByte(NULL, teInfo->rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, "setup", 0);
+						pMim->WriteByte(teInfo->rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, "setup", 0);
 						LoadDefaultTemplates();
 						MessageBox(0, TranslateT("Template set was successfully reset, please close and reopen all message windows. This template editor window will now close."),
 								   TranslateT("Template editor"), MB_OK);
@@ -389,11 +388,11 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			if (dat)
 				free(dat);
 
-			DBWriteContactSettingDword(NULL, SRMSGMOD_T, "cc1", SendDlgItemMessage(hwndDlg, IDC_COLOR1, CPM_GETCOLOUR, 0, 0));
-			DBWriteContactSettingDword(NULL, SRMSGMOD_T, "cc2", SendDlgItemMessage(hwndDlg, IDC_COLOR2, CPM_GETCOLOUR, 0, 0));
-			DBWriteContactSettingDword(NULL, SRMSGMOD_T, "cc3", SendDlgItemMessage(hwndDlg, IDC_COLOR3, CPM_GETCOLOUR, 0, 0));
-			DBWriteContactSettingDword(NULL, SRMSGMOD_T, "cc4", SendDlgItemMessage(hwndDlg, IDC_COLOR4, CPM_GETCOLOUR, 0, 0));
-			DBWriteContactSettingDword(NULL, SRMSGMOD_T, "cc5", SendDlgItemMessage(hwndDlg, IDC_COLOR5, CPM_GETCOLOUR, 0, 0));
+			pMim->WriteDword(SRMSGMOD_T, "cc1", SendDlgItemMessage(hwndDlg, IDC_COLOR1, CPM_GETCOLOUR, 0, 0));
+			pMim->WriteDword(SRMSGMOD_T, "cc2", SendDlgItemMessage(hwndDlg, IDC_COLOR2, CPM_GETCOLOUR, 0, 0));
+			pMim->WriteDword(SRMSGMOD_T, "cc3", SendDlgItemMessage(hwndDlg, IDC_COLOR3, CPM_GETCOLOUR, 0, 0));
+			pMim->WriteDword(SRMSGMOD_T, "cc4", SendDlgItemMessage(hwndDlg, IDC_COLOR4, CPM_GETCOLOUR, 0, 0));
+			pMim->WriteDword(SRMSGMOD_T, "cc5", SendDlgItemMessage(hwndDlg, IDC_COLOR5, CPM_GETCOLOUR, 0, 0));
 
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 			break;
@@ -453,7 +452,7 @@ INT_PTR CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		case WM_INITDIALOG: {
 			int i = 1;
 			char szHeader[2048];
-			SETTEXTEX stx = {ST_SELECTION, myGlobals.m_LangPackCP};
+			SETTEXTEX stx = {ST_SELECTION, Globals.m_LangPackCP};
 			RECT rc;
 			char szBasename[_MAX_FNAME], szExt[_MAX_EXT];
 
@@ -517,7 +516,7 @@ dl_done:
 						case EN_LINK:
 							switch (((ENLINK *) lParam)->msg) {
 								case WM_SETCURSOR:
-									SetCursor(myGlobals.hCurHyperlinkHand);
+									SetCursor(Globals.hCurHyperlinkHand);
 									SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
 									return(TRUE);
 								case WM_LBUTTONUP: {

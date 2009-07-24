@@ -32,7 +32,6 @@ Functions, concerning tabSRMMs system tray support. There is more in eventpopups
 #pragma hdrstop
 //#include "m_toptoolbar.h"
 
-extern  MYGLOBALS myGlobals;
 extern  NEN_OPTIONS nen_options;
 extern  struct ContainerWindowData *pFirstContainer;
 
@@ -45,18 +44,18 @@ static TCHAR g_eventName[100];
 
 static unsigned __stdcall TrayAnimThread(LPVOID vParam)
 {
-	int     iAnimMode = (myGlobals.m_AnimTrayIcons[0] && myGlobals.m_AnimTrayIcons[1] && myGlobals.m_AnimTrayIcons[2] &&
-						 myGlobals.m_AnimTrayIcons[3]);
+	int     iAnimMode = (Globals.m_AnimTrayIcons[0] && Globals.m_AnimTrayIcons[1] && Globals.m_AnimTrayIcons[2] &&
+						 Globals.m_AnimTrayIcons[3]);
 	DWORD   dwElapsed = 0, dwAnimStep = 0;
-	HICON   hIconDefault = iAnimMode ? myGlobals.m_AnimTrayIcons[0] : myGlobals.g_iconContainer;
+	HICON   hIconDefault = iAnimMode ? Globals.m_AnimTrayIcons[0] : Globals.g_iconContainer;
 	DWORD   idleTimer = 0;
 	HANDLE  hEvent = OpenEvent(EVENT_ALL_ACCESS, FALSE, g_eventName);
 
 	do {
-		if (isAnimThreadRunning && myGlobals.m_UnreadInTray == 0) {
+		if (isAnimThreadRunning && Globals.m_UnreadInTray == 0) {
 			if (hIconTrayCurrent != hIconDefault)
 				FlashTrayIcon(hIconDefault);                        // restore default icon
-			myGlobals.m_TrayFlashState = 0;
+			Globals.m_TrayFlashState = 0;
 			dwElapsed = 0;
 			dwAnimStep = 0;
 			WaitForSingleObject(hEvent, (nen_options.bFloaterOnlyMin && nen_options.floaterMode) ? 2000 : INFINITE);
@@ -66,22 +65,22 @@ static unsigned __stdcall TrayAnimThread(LPVOID vParam)
 		if (!isAnimThreadRunning) {
 			if (hIconTrayCurrent != hIconDefault)
 				FlashTrayIcon(hIconDefault);                        // restore default icon
-			myGlobals.m_TrayFlashState = 0;
+			Globals.m_TrayFlashState = 0;
 			break;
 		}
-		if (myGlobals.m_UnreadInTray) {
+		if (Globals.m_UnreadInTray) {
 			if (iAnimMode) {
 				dwAnimStep++;
 				if (dwAnimStep > 3)
 					dwAnimStep = 0;
-				FlashTrayIcon(myGlobals.m_AnimTrayIcons[dwAnimStep]);                        // restore default icon
+				FlashTrayIcon(Globals.m_AnimTrayIcons[dwAnimStep]);                        // restore default icon
 			}
 			else {                                 // simple flashing
 				dwElapsed += 200;
 				if (dwElapsed >= 600) {
-					myGlobals.m_TrayFlashState = !myGlobals.m_TrayFlashState;
+					Globals.m_TrayFlashState = !Globals.m_TrayFlashState;
 					dwElapsed = 0;
-					FlashTrayIcon(myGlobals.m_TrayFlashState ? 0 : hIconDefault);                        // restore default icon
+					FlashTrayIcon(Globals.m_TrayFlashState ? 0 : hIconDefault);                        // restore default icon
 				}
 			}
 			Sleep(200);
@@ -90,10 +89,10 @@ static unsigned __stdcall TrayAnimThread(LPVOID vParam)
 		if (idleTimer >= 2000) {
 			idleTimer = 0;
 			if (nen_options.bFloaterOnlyMin && nen_options.floaterMode) {
-				if (IsWindowVisible(myGlobals.m_hwndClist) && IsWindowVisible(myGlobals.g_hwndHotkeyHandler))
-					ShowWindow(myGlobals.g_hwndHotkeyHandler, SW_HIDE);
-				else if (!IsWindowVisible(myGlobals.m_hwndClist) && !IsWindowVisible(myGlobals.g_hwndHotkeyHandler))
-					ShowWindow(myGlobals.g_hwndHotkeyHandler, SW_SHOW);
+				if (IsWindowVisible(Globals.m_hwndClist) && IsWindowVisible(Globals.g_hwndHotkeyHandler))
+					ShowWindow(Globals.g_hwndHotkeyHandler, SW_HIDE);
+				else if (!IsWindowVisible(Globals.m_hwndClist) && !IsWindowVisible(Globals.g_hwndHotkeyHandler))
+					ShowWindow(Globals.g_hwndHotkeyHandler, SW_SHOW);
 			}
 		}
 	}
@@ -109,20 +108,20 @@ void CreateTrayMenus(int mode)
 		g_hEvent = CreateEvent(NULL, TRUE, FALSE, g_eventName);
 		isAnimThreadRunning = TRUE;
 		hTrayAnimThread = (HANDLE)mir_forkthreadex(TrayAnimThread, NULL, 16000, NULL);
-		myGlobals.g_hMenuTrayUnread = CreatePopupMenu();
-		myGlobals.g_hMenuFavorites = CreatePopupMenu();
-		myGlobals.g_hMenuRecent = CreatePopupMenu();
-		myGlobals.g_hMenuTrayContext = GetSubMenu(myGlobals.g_hMenuContext, 6);
-		if (myGlobals.m_WinVerMajor >= 5) {
-			ModifyMenu(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION | MF_POPUP, (UINT_PTR)myGlobals.g_hMenuFavorites, TranslateT("Favorites"));
-			ModifyMenu(myGlobals.g_hMenuTrayContext, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR)myGlobals.g_hMenuRecent, TranslateT("Recent Sessions"));
+		Globals.g_hMenuTrayUnread = CreatePopupMenu();
+		Globals.g_hMenuFavorites = CreatePopupMenu();
+		Globals.g_hMenuRecent = CreatePopupMenu();
+		Globals.g_hMenuTrayContext = GetSubMenu(Globals.g_hMenuContext, 6);
+		if (Globals.m_WinVerMajor >= 5) {
+			ModifyMenu(Globals.g_hMenuTrayContext, 0, MF_BYPOSITION | MF_POPUP, (UINT_PTR)Globals.g_hMenuFavorites, TranslateT("Favorites"));
+			ModifyMenu(Globals.g_hMenuTrayContext, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR)Globals.g_hMenuRecent, TranslateT("Recent Sessions"));
 			LoadFavoritesAndRecent();
 		}
 		else {
-			DeleteMenu(myGlobals.g_hMenuTrayContext, 2, MF_BYPOSITION);
-			DeleteMenu(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION);
-			DeleteMenu(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION);
-			DeleteMenu(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION);
+			DeleteMenu(Globals.g_hMenuTrayContext, 2, MF_BYPOSITION);
+			DeleteMenu(Globals.g_hMenuTrayContext, 0, MF_BYPOSITION);
+			DeleteMenu(Globals.g_hMenuTrayContext, 0, MF_BYPOSITION);
+			DeleteMenu(Globals.g_hMenuTrayContext, 0, MF_BYPOSITION);
 		}
 	}
 	else {
@@ -133,17 +132,17 @@ void CreateTrayMenus(int mode)
 		CloseHandle(g_hEvent);
 		g_hEvent = 0;
 		hTrayAnimThread = 0;
-		if (myGlobals.g_hMenuTrayUnread != 0) {
-			DestroyMenu(myGlobals.g_hMenuTrayUnread);
-			myGlobals.g_hMenuTrayUnread = 0;
+		if (Globals.g_hMenuTrayUnread != 0) {
+			DestroyMenu(Globals.g_hMenuTrayUnread);
+			Globals.g_hMenuTrayUnread = 0;
 		}
-		if (myGlobals.g_hMenuFavorites != 0) {
-			DestroyMenu(myGlobals.g_hMenuFavorites);
-			myGlobals.g_hMenuFavorites = 0;
+		if (Globals.g_hMenuFavorites != 0) {
+			DestroyMenu(Globals.g_hMenuFavorites);
+			Globals.g_hMenuFavorites = 0;
 		}
-		if (myGlobals.g_hMenuRecent != 0) {
-			DestroyMenu(myGlobals.g_hMenuRecent);
-			myGlobals.g_hMenuRecent = 0;
+		if (Globals.g_hMenuRecent != 0) {
+			DestroyMenu(Globals.g_hMenuRecent);
+			Globals.g_hMenuRecent = 0;
 		}
 	}
 }
@@ -156,10 +155,10 @@ void CreateSystrayIcon(int create)
 	NOTIFYICONDATA nim;
 
 	nim.cbSize = sizeof(nim);
-	nim.hWnd = myGlobals.g_hwndHotkeyHandler;
+	nim.hWnd = Globals.g_hwndHotkeyHandler;
 	nim.uID = 100;
 	nim.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
-	nim.hIcon = myGlobals.g_iconContainer;
+	nim.hIcon = Globals.g_iconContainer;
 	nim.uCallbackMessage = DM_TRAYICONNOTIFY;
 	mir_sntprintf(nim.szTip, 64, _T("%s"), _T("tabSRMM"));
 	if (create && !nen_options.bTrayExist) {
@@ -172,7 +171,7 @@ void CreateSystrayIcon(int create)
 		Shell_NotifyIcon(NIM_DELETE, &nim);
 		nen_options.bTrayExist = FALSE;
 	}
-	ShowWindow(myGlobals.g_hwndHotkeyHandler, nen_options.floaterMode ? SW_SHOW : SW_HIDE);
+	ShowWindow(Globals.g_hwndHotkeyHandler, nen_options.floaterMode ? SW_SHOW : SW_HIDE);
 }
 
 static BOOL CALLBACK FindTrayWnd(HWND hwnd, LPARAM lParam)
@@ -215,7 +214,7 @@ static void GetTrayWindowRect(LPRECT lprect)
 
 static BOOL RemoveTaskbarIcon(HWND hWnd)
 {
-	SetParent(hWnd, GetDlgItem(myGlobals.g_hwndHotkeyHandler, IDC_TRAYCONTAINER));
+	SetParent(hWnd, GetDlgItem(Globals.g_hwndHotkeyHandler, IDC_TRAYCONTAINER));
 	return TRUE;
 }
 
@@ -230,8 +229,8 @@ void MinimiseToTray(HWND hWnd, BOOL bForceAnimation)
 
 		GetWindowRect(hWnd, &rectFrom);
 		GetTrayWindowRect(&rectTo);
-		if (nen_options.floaterMode && IsWindowVisible(myGlobals.g_hwndHotkeyHandler))
-			GetWindowRect(myGlobals.g_hwndHotkeyHandler, &rectTo);
+		if (nen_options.floaterMode && IsWindowVisible(Globals.g_hwndHotkeyHandler))
+			GetWindowRect(Globals.g_hwndHotkeyHandler, &rectTo);
 		DrawAnimatedRects(hWnd, IDANI_CAPTION, &rectFrom, &rectTo);
 	}
 	RemoveTaskbarIcon(hWnd);
@@ -245,8 +244,8 @@ void MaximiseFromTray(HWND hWnd, BOOL bForceAnimation, RECT *rectTo)
 		RECT rectFrom;
 
 		GetTrayWindowRect(&rectFrom);
-		if (nen_options.floaterMode && IsWindowVisible(myGlobals.g_hwndHotkeyHandler))
-			GetWindowRect(myGlobals.g_hwndHotkeyHandler, &rectFrom);
+		if (nen_options.floaterMode && IsWindowVisible(Globals.g_hwndHotkeyHandler))
+			GetWindowRect(Globals.g_hwndHotkeyHandler, &rectFrom);
 		SetParent(hWnd, NULL);
 		DrawAnimatedRects(hWnd, IDANI_CAPTION, &rectFrom, rectTo);
 	}
@@ -258,7 +257,7 @@ void MaximiseFromTray(HWND hWnd, BOOL bForceAnimation, RECT *rectTo)
 	RedrawWindow(hWnd, NULL, NULL, RDW_UPDATENOW | RDW_ALLCHILDREN | RDW_FRAME |
 				 RDW_INVALIDATE | RDW_ERASE);
 
-	SetActiveWindow(myGlobals.g_hwndHotkeyHandler);
+	SetActiveWindow(Globals.g_hwndHotkeyHandler);
 	SetActiveWindow(hWnd);
 	SetForegroundWindow(hWnd);
 }
@@ -273,21 +272,21 @@ void FlashTrayIcon(HICON hIcon)
 {
 	NOTIFYICONDATA nim;
 
-	if (myGlobals.m_WinVerMajor < 5)
+	if (Globals.m_WinVerMajor < 5)
 		return;
 
 	hIconTrayCurrent = hIcon;
 
 	if (nen_options.bTraySupport) {
 		nim.cbSize = sizeof(nim);
-		nim.hWnd = myGlobals.g_hwndHotkeyHandler;
+		nim.hWnd = Globals.g_hwndHotkeyHandler;
 		nim.uID = 100;
 		nim.uFlags = NIF_ICON;
 		nim.hIcon = hIcon;
 		Shell_NotifyIcon(NIM_MODIFY, &nim);
 	}
-	else if (IsWindowVisible(myGlobals.g_hwndHotkeyHandler) && !nen_options.bTraySupport) {
-		SendDlgItemMessage(myGlobals.g_hwndHotkeyHandler, IDC_TRAYICON, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hIcon);
+	else if (IsWindowVisible(Globals.g_hwndHotkeyHandler) && !nen_options.bTraySupport) {
+		SendDlgItemMessage(Globals.g_hwndHotkeyHandler, IDC_TRAYICON, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hIcon);
 	}
 }
 
@@ -296,12 +295,12 @@ void RemoveBalloonTip()
 	NOTIFYICONDATA nim;
 
 	nim.cbSize = sizeof(nim);
-	nim.hWnd = myGlobals.g_hwndHotkeyHandler;
+	nim.hWnd = Globals.g_hwndHotkeyHandler;
 	nim.uID = 100;
 	nim.uFlags = NIF_INFO;
 	nim.szInfo[0] = 0;
 	Shell_NotifyIcon(NIM_MODIFY, &nim);
-	myGlobals.m_TipOwner = (HANDLE)0;
+	Globals.m_TipOwner = (HANDLE)0;
 }
 
 /*
@@ -358,40 +357,40 @@ void AddContactToFavorites(HANDLE hContact, TCHAR *szNickname, char *szProto, TC
 	mii.cbSize = sizeof(mii);
 	mir_sntprintf(szMenuEntry, safe_sizeof(szMenuEntry), _T("%s: %s (%s)"), szFinalProto, szFinalNick, szStatus);
 	if (mode) {
-		if (hMenu == myGlobals.g_hMenuRecent) {
+		if (hMenu == Globals.g_hMenuRecent) {
 			if (CheckMenuItem(hMenu, (UINT_PTR)hContact, MF_BYCOMMAND | MF_UNCHECKED) == 0) {
 				DeleteMenu(hMenu, (UINT_PTR)hContact, MF_BYCOMMAND);
 				goto addnew;                                            // move to the end of the menu...
 			}
-			if (GetMenuItemCount(myGlobals.g_hMenuRecent) > nen_options.wMaxRecent) {           // throw out oldest entry in the recent menu...
+			if (GetMenuItemCount(Globals.g_hMenuRecent) > nen_options.wMaxRecent) {           // throw out oldest entry in the recent menu...
 				UINT uid = GetMenuItemID(hMenu, 0);
 				if (uid) {
 					DeleteMenu(hMenu, (UINT_PTR)0, MF_BYPOSITION);
-					DBWriteContactSettingDword((HANDLE)uid, SRMSGMOD_T, "isRecent", 0);
+					pMim->WriteDword((HANDLE)uid, SRMSGMOD_T, "isRecent", 0);
 				}
 			}
 addnew:
-			DBWriteContactSettingDword(hContact, SRMSGMOD_T, "isRecent", time(NULL));
+			pMim->WriteDword(hContact, SRMSGMOD_T, "isRecent", time(NULL));
 			AppendMenu(hMenu, MF_BYCOMMAND, (UINT_PTR)hContact, szMenuEntry);
 		}
-		else if (hMenu == myGlobals.g_hMenuFavorites) {            // insert the item sorted...
+		else if (hMenu == Globals.g_hMenuFavorites) {            // insert the item sorted...
 			MENUITEMINFO mii2 = {0};
 			TCHAR szBuffer[142];
-			int i, c = GetMenuItemCount(myGlobals.g_hMenuFavorites);
+			int i, c = GetMenuItemCount(Globals.g_hMenuFavorites);
 			mii2.fMask = MIIM_STRING;
 			mii2.cbSize = sizeof(mii2);
 			if (c == 0)
-				InsertMenu(myGlobals.g_hMenuFavorites, 0, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntry);
+				InsertMenu(Globals.g_hMenuFavorites, 0, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntry);
 			else {
 				for (i = 0; i <= c; i++) {
 					mii2.cch = 0;
 					mii2.dwTypeData = NULL;
-					GetMenuItemInfo(myGlobals.g_hMenuFavorites, i, TRUE, &mii2);
+					GetMenuItemInfo(Globals.g_hMenuFavorites, i, TRUE, &mii2);
 					mii2.cch++;
 					mii2.dwTypeData = szBuffer;
-					GetMenuItemInfo(myGlobals.g_hMenuFavorites, i, TRUE, &mii2);
+					GetMenuItemInfo(Globals.g_hMenuFavorites, i, TRUE, &mii2);
 					if (_tcsncmp((TCHAR *)mii2.dwTypeData, szMenuEntry, 140) > 0 || i == c) {
-						InsertMenu(myGlobals.g_hMenuFavorites, i, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntry);
+						InsertMenu(Globals.g_hMenuFavorites, i, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntry);
 						break;
 					}
 				}
@@ -433,8 +432,8 @@ void LoadFavoritesAndRecent()
 	if (recentEntries != NULL) {
 		while (hContact != 0) {
 			if (DBGetContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", 0))
-				AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuFavorites, DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", myGlobals.m_LangPackCP));
-			if ((dwRecent = DBGetContactSettingDword(hContact, SRMSGMOD_T, "isRecent", 0)) != 0 && iIndex < nen_options.wMaxRecent) {
+				AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, Globals.g_hMenuFavorites, pMim->GetDword(hContact, "ANSIcodepage", Globals.m_LangPackCP));
+			if ((dwRecent = pMim->GetDword(hContact, "isRecent", 0)) != 0 && iIndex < nen_options.wMaxRecent) {
 				recentEntries[iIndex].dwTimestamp = dwRecent;
 				recentEntries[iIndex++].hContact = hContact;
 			}
@@ -455,7 +454,7 @@ void LoadFavoritesAndRecent()
 			}
 		}
 		for (i = 0; i < iIndex; i++)
-			AddContactToFavorites(recentEntries[i].hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuRecent, DBGetContactSettingDword(recentEntries[i].hContact, SRMSGMOD_T, "ANSIcodepage", myGlobals.m_LangPackCP));
+			AddContactToFavorites(recentEntries[i].hContact, NULL, NULL, NULL, 0, 0, 1, Globals.g_hMenuRecent, pMim->GetDword(recentEntries[i].hContact, "ANSIcodepage", Globals.m_LangPackCP));
 
 		free(recentEntries);
 	}

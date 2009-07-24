@@ -40,8 +40,6 @@ astyle --force-indent=tab=4 --brackets=linux --indent-switches
 
 extern      HINSTANCE g_hInst;
 extern      NEN_OPTIONS nen_options;
-extern      HANDLE hMessageWindowList;
-extern      MYGLOBALS myGlobals;
 extern      struct ContainerWindowData *pFirstContainer;
 extern      INT_PTR CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern      HIMAGELIST CreateStateImageList();
@@ -55,110 +53,110 @@ extern int  safe_wcslen(wchar_t *msg, int chars);
 
 static void CheckForRemoveMask()
 {
-	if (!DBGetContactSettingByte(NULL, MODULE, "firsttime", 0) && (nen_options.maskActL & MASK_REMOVE || nen_options.maskActR & MASK_REMOVE || nen_options.maskActTE & MASK_REMOVE)) {
+	if (!pMim->GetByte(MODULE, "firsttime", 0) && (nen_options.maskActL & MASK_REMOVE || nen_options.maskActR & MASK_REMOVE || nen_options.maskActTE & MASK_REMOVE)) {
 		MessageBoxA(0, Translate("One of your popup actions is set to DISMISS EVENT.\nNote that this options may have unwanted side effects as it REMOVES the event from the unread queue.\nThis may lead to events not showing up as \"new\". If you don't want this behaviour, please review the Event Notifications settings page."), "tabSRMM Warning Message", MB_OK | MB_ICONSTOP);
-		DBWriteContactSettingByte(NULL, MODULE, "firsttime", 1);
+		pMim->WriteByte(MODULE, "firsttime", 1);
 	}
 }
 
 
 int NEN_ReadOptions(NEN_OPTIONS *options)
 {
-	options->bPreview = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_PREVIEW, TRUE);
-	options->bDefaultColorMsg = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_MESSAGE, FALSE);
-	options->bDefaultColorUrl = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_URL, FALSE);
-	options->bDefaultColorFile = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_FILE, FALSE);
-	options->bDefaultColorOthers = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_OTHERS, FALSE);
-	options->colBackMsg = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLBACK_MESSAGE, DEFAULT_COLBACK);
-	options->colTextMsg = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLTEXT_MESSAGE, DEFAULT_COLTEXT);
-	options->colBackUrl = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLBACK_URL, DEFAULT_COLBACK);
-	options->colTextUrl = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLTEXT_URL, DEFAULT_COLTEXT);
-	options->colBackFile = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLBACK_FILE, DEFAULT_COLBACK);
-	options->colTextFile = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLTEXT_FILE, DEFAULT_COLTEXT);
-	options->colBackOthers = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLBACK_OTHERS, DEFAULT_COLBACK);
-	options->colTextOthers = (COLORREF)DBGetContactSettingDword(NULL, MODULE, OPT_COLTEXT_OTHERS, DEFAULT_COLTEXT);
-	options->maskNotify = (UINT)DBGetContactSettingByte(NULL, MODULE, OPT_MASKNOTIFY, DEFAULT_MASKNOTIFY);
-	options->maskActL = (UINT)DBGetContactSettingByte(NULL, MODULE, OPT_MASKACTL, DEFAULT_MASKACTL);
-	options->maskActR = (UINT)DBGetContactSettingByte(NULL, MODULE, OPT_MASKACTR, DEFAULT_MASKACTR);
-	options->maskActTE = (UINT)DBGetContactSettingByte(NULL, MODULE, OPT_MASKACTTE, DEFAULT_MASKACTR) & (MASK_OPEN | MASK_DISMISS);
-	options->bMergePopup = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_MERGEPOPUP, FALSE);
-	options->iDelayMsg = (int)DBGetContactSettingDword(NULL, MODULE, OPT_DELAY_MESSAGE, (DWORD)DEFAULT_DELAY);
-	options->iDelayUrl = (int)DBGetContactSettingDword(NULL, MODULE, OPT_DELAY_URL, (DWORD)DEFAULT_DELAY);
-	options->iDelayFile = (int)DBGetContactSettingDword(NULL, MODULE, OPT_DELAY_FILE, (DWORD)DEFAULT_DELAY);
-	options->iDelayOthers = (int)DBGetContactSettingDword(NULL, MODULE, OPT_DELAY_OTHERS, (DWORD)DEFAULT_DELAY);
+	options->bPreview = (BOOL)pMim->GetByte(MODULE, OPT_PREVIEW, TRUE);
+	options->bDefaultColorMsg = (BOOL)pMim->GetByte(MODULE, OPT_COLDEFAULT_MESSAGE, FALSE);
+	options->bDefaultColorUrl = (BOOL)pMim->GetByte(MODULE, OPT_COLDEFAULT_URL, FALSE);
+	options->bDefaultColorFile = (BOOL)pMim->GetByte(MODULE, OPT_COLDEFAULT_FILE, FALSE);
+	options->bDefaultColorOthers = (BOOL)pMim->GetByte(MODULE, OPT_COLDEFAULT_OTHERS, FALSE);
+	options->colBackMsg = (COLORREF)pMim->GetDword(MODULE, OPT_COLBACK_MESSAGE, DEFAULT_COLBACK);
+	options->colTextMsg = (COLORREF)pMim->GetDword(MODULE, OPT_COLTEXT_MESSAGE, DEFAULT_COLTEXT);
+	options->colBackUrl = (COLORREF)pMim->GetDword(MODULE, OPT_COLBACK_URL, DEFAULT_COLBACK);
+	options->colTextUrl = (COLORREF)pMim->GetDword(MODULE, OPT_COLTEXT_URL, DEFAULT_COLTEXT);
+	options->colBackFile = (COLORREF)pMim->GetDword(MODULE, OPT_COLBACK_FILE, DEFAULT_COLBACK);
+	options->colTextFile = (COLORREF)pMim->GetDword(MODULE, OPT_COLTEXT_FILE, DEFAULT_COLTEXT);
+	options->colBackOthers = (COLORREF)pMim->GetDword(MODULE, OPT_COLBACK_OTHERS, DEFAULT_COLBACK);
+	options->colTextOthers = (COLORREF)pMim->GetDword(MODULE, OPT_COLTEXT_OTHERS, DEFAULT_COLTEXT);
+	options->maskNotify = (UINT)pMim->GetByte(MODULE, OPT_MASKNOTIFY, DEFAULT_MASKNOTIFY);
+	options->maskActL = (UINT)pMim->GetByte(MODULE, OPT_MASKACTL, DEFAULT_MASKACTL);
+	options->maskActR = (UINT)pMim->GetByte(MODULE, OPT_MASKACTR, DEFAULT_MASKACTR);
+	options->maskActTE = (UINT)pMim->GetByte(MODULE, OPT_MASKACTTE, DEFAULT_MASKACTR) & (MASK_OPEN | MASK_DISMISS);
+	options->bMergePopup = (BOOL)pMim->GetByte(MODULE, OPT_MERGEPOPUP, FALSE);
+	options->iDelayMsg = (int)pMim->GetDword(MODULE, OPT_DELAY_MESSAGE, (DWORD)DEFAULT_DELAY);
+	options->iDelayUrl = (int)pMim->GetDword(MODULE, OPT_DELAY_URL, (DWORD)DEFAULT_DELAY);
+	options->iDelayFile = (int)pMim->GetDword(MODULE, OPT_DELAY_FILE, (DWORD)DEFAULT_DELAY);
+	options->iDelayOthers = (int)pMim->GetDword(MODULE, OPT_DELAY_OTHERS, (DWORD)DEFAULT_DELAY);
 	options->iDelayDefault = (int)DBGetContactSettingRangedWord(NULL, "PopUp", "Seconds", SETTING_LIFETIME_DEFAULT, SETTING_LIFETIME_MIN, SETTING_LIFETIME_MAX);
-	options->bShowDate = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_SHOW_DATE, FALSE);
-	options->bShowTime = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_SHOW_TIME, FALSE);
-	options->bShowHeaders = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_SHOW_HEADERS, FALSE);
-	options->iNumberMsg = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_NUMBER_MSG, TRUE);
-	options->bShowON = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_SHOW_ON, TRUE);
-	options->bNoRSS = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_NORSS, FALSE);
-	options->iDisable = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_DISABLE, 0);
-	options->dwStatusMask = (DWORD)DBGetContactSettingDword(NULL, MODULE, "statusmask", (DWORD) - 1);
-	options->bTraySupport = (BOOL)DBGetContactSettingByte(NULL, MODULE, "traysupport", 0);
+	options->bShowDate = (BYTE)pMim->GetByte(MODULE, OPT_SHOW_DATE, FALSE);
+	options->bShowTime = (BYTE)pMim->GetByte(MODULE, OPT_SHOW_TIME, FALSE);
+	options->bShowHeaders = (BYTE)pMim->GetByte(MODULE, OPT_SHOW_HEADERS, FALSE);
+	options->iNumberMsg = (BYTE)pMim->GetByte(MODULE, OPT_NUMBER_MSG, TRUE);
+	options->bShowON = (BYTE)pMim->GetByte(MODULE, OPT_SHOW_ON, TRUE);
+	options->bNoRSS = (BOOL)pMim->GetByte(MODULE, OPT_NORSS, FALSE);
+	options->iDisable = (BYTE)pMim->GetByte(MODULE, OPT_DISABLE, 0);
+	options->dwStatusMask = (DWORD)pMim->GetDword(MODULE, "statusmask", (DWORD) - 1);
+	options->bTraySupport = (BOOL)pMim->GetByte(MODULE, "traysupport", 0);
 	options->iAutoRestore = 0;
-	options->bWindowCheck = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_WINDOWCHECK, 0);
-	options->bNoRSS = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_NORSS, 0);
-	options->iLimitPreview = (int)DBGetContactSettingDword(NULL, MODULE, OPT_LIMITPREVIEW, 0);
-	options->bAnimated = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_MINIMIZEANIMATED, 1);
+	options->bWindowCheck = (BOOL)pMim->GetByte(MODULE, OPT_WINDOWCHECK, 0);
+	options->bNoRSS = (BOOL)pMim->GetByte(MODULE, OPT_NORSS, 0);
+	options->iLimitPreview = (int)pMim->GetDword(MODULE, OPT_LIMITPREVIEW, 0);
+	options->bAnimated = (BOOL)pMim->GetByte(MODULE, OPT_MINIMIZEANIMATED, 1);
 	options->wMaxFavorites = 15;
 	options->wMaxRecent = 15;
-	options->iAnnounceMethod = (int)DBGetContactSettingByte(NULL, MODULE, OPT_ANNOUNCEMETHOD, 0);
-	options->floaterMode = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATER, 0);
-	options->bFloaterInWin = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATERINWIN, 1);
-	options->bFloaterOnlyMin = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_FLOATERONLYMIN, 0);
-	options->dwRemoveMask = DBGetContactSettingDword(NULL, MODULE, OPT_REMOVEMASK, 0);
-	options->bSimpleMode = DBGetContactSettingByte(NULL, MODULE, OPT_SIMPLEOPT, 0);
+	options->iAnnounceMethod = (int)pMim->GetByte(MODULE, OPT_ANNOUNCEMETHOD, 0);
+	options->floaterMode = (BOOL)pMim->GetByte(MODULE, OPT_FLOATER, 0);
+	options->bFloaterInWin = (BOOL)pMim->GetByte(MODULE, OPT_FLOATERINWIN, 1);
+	options->bFloaterOnlyMin = (BOOL)pMim->GetByte(MODULE, OPT_FLOATERONLYMIN, 0);
+	options->dwRemoveMask = pMim->GetDword(MODULE, OPT_REMOVEMASK, 0);
+	options->bSimpleMode = pMim->GetByte(MODULE, OPT_SIMPLEOPT, 0);
 	CheckForRemoveMask();
 	return 0;
 }
 
 int NEN_WriteOptions(NEN_OPTIONS *options)
 {
-	DBWriteContactSettingByte(NULL, MODULE, OPT_PREVIEW, (BYTE)options->bPreview);
-	DBWriteContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_MESSAGE, (BYTE)options->bDefaultColorMsg);
-	DBWriteContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_URL, (BYTE)options->bDefaultColorUrl);
-	DBWriteContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_FILE, (BYTE)options->bDefaultColorFile);
-	DBWriteContactSettingByte(NULL, MODULE, OPT_COLDEFAULT_OTHERS, (BYTE)options->bDefaultColorOthers);
-	DBWriteContactSettingDword(NULL, MODULE, OPT_COLBACK_MESSAGE, (DWORD)options->colBackMsg);
-	DBWriteContactSettingDword(NULL, MODULE, OPT_COLTEXT_MESSAGE, (DWORD)options->colTextMsg);
-	DBWriteContactSettingDword(NULL, MODULE, OPT_COLBACK_URL, (DWORD)options->colBackUrl);
-	DBWriteContactSettingDword(NULL, MODULE, OPT_COLTEXT_URL, (DWORD)options->colTextUrl);
-	DBWriteContactSettingDword(NULL, MODULE, OPT_COLBACK_FILE, (DWORD)options->colBackFile);
-	DBWriteContactSettingDword(NULL, MODULE, OPT_COLTEXT_FILE, (DWORD)options->colTextFile);
-	DBWriteContactSettingDword(NULL, MODULE, OPT_COLBACK_OTHERS, (DWORD)options->colBackOthers);
-	DBWriteContactSettingDword(NULL, MODULE, OPT_COLTEXT_OTHERS, (DWORD)options->colTextOthers);
-	DBWriteContactSettingByte(NULL, MODULE, OPT_MASKNOTIFY, (BYTE)options->maskNotify);
-	DBWriteContactSettingByte(NULL, MODULE, OPT_MASKACTL, (BYTE)options->maskActL);
-	DBWriteContactSettingByte(NULL, MODULE, OPT_MASKACTR, (BYTE)options->maskActR);
-	DBWriteContactSettingByte(NULL, MODULE, OPT_MASKACTTE, (BYTE)options->maskActTE);
-	DBWriteContactSettingByte(NULL, MODULE, OPT_MERGEPOPUP, (BYTE)options->bMergePopup);
-	DBWriteContactSettingDword(NULL, MODULE, OPT_DELAY_MESSAGE, (DWORD)options->iDelayMsg);
-	DBWriteContactSettingDword(NULL, MODULE, OPT_DELAY_URL, (DWORD)options->iDelayUrl);
-	DBWriteContactSettingDword(NULL, MODULE, OPT_DELAY_FILE, (DWORD)options->iDelayFile);
-	DBWriteContactSettingDword(NULL, MODULE, OPT_DELAY_OTHERS, (DWORD)options->iDelayOthers);
-	DBWriteContactSettingByte(NULL, MODULE, OPT_SHOW_DATE, (BYTE)options->bShowDate);
-	DBWriteContactSettingByte(NULL, MODULE, OPT_SHOW_TIME, (BYTE)options->bShowTime);
-	DBWriteContactSettingByte(NULL, MODULE, OPT_SHOW_HEADERS, (BYTE)options->bShowHeaders);
-	DBWriteContactSettingByte(NULL, MODULE, OPT_NUMBER_MSG, (BYTE)options->iNumberMsg);
-	DBWriteContactSettingByte(NULL, MODULE, OPT_SHOW_ON, (BYTE)options->bShowON);
-	DBWriteContactSettingByte(NULL, MODULE, OPT_DISABLE, (BYTE)options->iDisable);
-	DBWriteContactSettingByte(NULL, MODULE, "traysupport", (BYTE)options->bTraySupport);
-	DBWriteContactSettingByte(NULL, MODULE, OPT_WINDOWCHECK, (BYTE)options->bWindowCheck);
-	DBWriteContactSettingByte(NULL, MODULE, OPT_NORSS, (BYTE)options->bNoRSS);
-	DBWriteContactSettingDword(NULL, MODULE, OPT_LIMITPREVIEW, options->iLimitPreview);
-	DBWriteContactSettingByte(NULL, MODULE, OPT_MINIMIZEANIMATED, (BYTE)options->bAnimated);
-	DBWriteContactSettingByte(NULL, MODULE, OPT_ANNOUNCEMETHOD, (BYTE)options->iAnnounceMethod);
-	DBWriteContactSettingByte(NULL, MODULE, OPT_FLOATER, (BYTE)options->floaterMode);
-	DBWriteContactSettingByte(NULL, MODULE, OPT_FLOATERINWIN, (BYTE)options->bFloaterInWin);
-	DBWriteContactSettingByte(NULL, MODULE, OPT_FLOATERONLYMIN, (BYTE)options->bFloaterOnlyMin);
-	DBWriteContactSettingDword(NULL, MODULE, OPT_REMOVEMASK, options->dwRemoveMask);
-	DBWriteContactSettingByte(NULL, MODULE, OPT_SIMPLEOPT, (BYTE)options->bSimpleMode);
+	pMim->WriteByte(MODULE, OPT_PREVIEW, (BYTE)options->bPreview);
+	pMim->WriteByte(MODULE, OPT_COLDEFAULT_MESSAGE, (BYTE)options->bDefaultColorMsg);
+	pMim->WriteByte(MODULE, OPT_COLDEFAULT_URL, (BYTE)options->bDefaultColorUrl);
+	pMim->WriteByte(MODULE, OPT_COLDEFAULT_FILE, (BYTE)options->bDefaultColorFile);
+	pMim->WriteByte(MODULE, OPT_COLDEFAULT_OTHERS, (BYTE)options->bDefaultColorOthers);
+	pMim->WriteDword(MODULE, OPT_COLBACK_MESSAGE, (DWORD)options->colBackMsg);
+	pMim->WriteDword(MODULE, OPT_COLTEXT_MESSAGE, (DWORD)options->colTextMsg);
+	pMim->WriteDword(MODULE, OPT_COLBACK_URL, (DWORD)options->colBackUrl);
+	pMim->WriteDword(MODULE, OPT_COLTEXT_URL, (DWORD)options->colTextUrl);
+	pMim->WriteDword(MODULE, OPT_COLBACK_FILE, (DWORD)options->colBackFile);
+	pMim->WriteDword(MODULE, OPT_COLTEXT_FILE, (DWORD)options->colTextFile);
+	pMim->WriteDword(MODULE, OPT_COLBACK_OTHERS, (DWORD)options->colBackOthers);
+	pMim->WriteDword(MODULE, OPT_COLTEXT_OTHERS, (DWORD)options->colTextOthers);
+	pMim->WriteByte(MODULE, OPT_MASKNOTIFY, (BYTE)options->maskNotify);
+	pMim->WriteByte(MODULE, OPT_MASKACTL, (BYTE)options->maskActL);
+	pMim->WriteByte(MODULE, OPT_MASKACTR, (BYTE)options->maskActR);
+	pMim->WriteByte(MODULE, OPT_MASKACTTE, (BYTE)options->maskActTE);
+	pMim->WriteByte(MODULE, OPT_MERGEPOPUP, (BYTE)options->bMergePopup);
+	pMim->WriteDword(MODULE, OPT_DELAY_MESSAGE, (DWORD)options->iDelayMsg);
+	pMim->WriteDword(MODULE, OPT_DELAY_URL, (DWORD)options->iDelayUrl);
+	pMim->WriteDword(MODULE, OPT_DELAY_FILE, (DWORD)options->iDelayFile);
+	pMim->WriteDword(MODULE, OPT_DELAY_OTHERS, (DWORD)options->iDelayOthers);
+	pMim->WriteByte(MODULE, OPT_SHOW_DATE, (BYTE)options->bShowDate);
+	pMim->WriteByte(MODULE, OPT_SHOW_TIME, (BYTE)options->bShowTime);
+	pMim->WriteByte(MODULE, OPT_SHOW_HEADERS, (BYTE)options->bShowHeaders);
+	pMim->WriteByte(MODULE, OPT_NUMBER_MSG, (BYTE)options->iNumberMsg);
+	pMim->WriteByte(MODULE, OPT_SHOW_ON, (BYTE)options->bShowON);
+	pMim->WriteByte(MODULE, OPT_DISABLE, (BYTE)options->iDisable);
+	pMim->WriteByte(MODULE, "traysupport", (BYTE)options->bTraySupport);
+	pMim->WriteByte(MODULE, OPT_WINDOWCHECK, (BYTE)options->bWindowCheck);
+	pMim->WriteByte(MODULE, OPT_NORSS, (BYTE)options->bNoRSS);
+	pMim->WriteDword(MODULE, OPT_LIMITPREVIEW, options->iLimitPreview);
+	pMim->WriteByte(MODULE, OPT_MINIMIZEANIMATED, (BYTE)options->bAnimated);
+	pMim->WriteByte(MODULE, OPT_ANNOUNCEMETHOD, (BYTE)options->iAnnounceMethod);
+	pMim->WriteByte(MODULE, OPT_FLOATER, (BYTE)options->floaterMode);
+	pMim->WriteByte(MODULE, OPT_FLOATERINWIN, (BYTE)options->bFloaterInWin);
+	pMim->WriteByte(MODULE, OPT_FLOATERONLYMIN, (BYTE)options->bFloaterOnlyMin);
+	pMim->WriteDword(MODULE, OPT_REMOVEMASK, options->dwRemoveMask);
+	pMim->WriteByte(MODULE, OPT_SIMPLEOPT, (BYTE)options->bSimpleMode);
 	return 0;
 }
 
 static struct LISTOPTIONSGROUP lGroups[] = {
-	0, _T("Announce events of type..."),
+	0, _T("Announce events of t4ype..."),
 	0, _T("General options"),
 	0, _T("System tray and floater options"),
 	0, _T("Left click actions (popups only)"),
@@ -327,7 +325,7 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 			return TRUE;
 		}
 		case DM_STATUSMASKSET:
-			DBWriteContactSettingDword(0, MODULE, "statusmask", (DWORD)lParam);
+			pMim->WriteDword(MODULE, "statusmask", (DWORD)lParam);
 			options->dwStatusMask = (int)lParam;
 			break;
 		case WM_COMMAND:
@@ -341,7 +339,7 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 						EnableWindow(GetDlgItem(hWnd, IDC_EVENTOPTIONS), options->bSimpleMode == 0);
 						break;
 					case IDC_POPUPSTATUSMODES: {
-						HWND hwndNew = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHOOSESTATUSMODES), hWnd, DlgProcSetupStatusModes, DBGetContactSettingDword(0, MODULE, "statusmask", (DWORD) - 1));
+						HWND hwndNew = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHOOSESTATUSMODES), hWnd, DlgProcSetupStatusModes, pMim->GetDword(MODULE, "statusmask", (DWORD) - 1));
 						SendMessage(hwndNew, DM_SETPARENTDIALOG, 0, (LPARAM)hWnd);
 						break;
 					}
@@ -460,7 +458,7 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 					CreateSystrayIcon(nen_options.bTraySupport);
 					SetEvent(g_hEvent);                                 // wake up the thread which cares about the floater and tray
 
-					ShowWindow(myGlobals.g_hwndHotkeyHandler, nen_options.floaterMode ? SW_SHOW : SW_HIDE);
+					ShowWindow(Globals.g_hwndHotkeyHandler, nen_options.floaterMode ? SW_SHOW : SW_HIDE);
 					break;
 				}
 				case PSN_RESET:
@@ -641,7 +639,7 @@ static int PopupAct(HWND hWnd, UINT mask, PLUGIN_DATA* pdata)
 
 		for (i = 0; i < pdata->nrMerged; i++) {
 			if (pdata->eventData[i].hEvent != 0) {
-				PostMessage(myGlobals.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
+				PostMessage(Globals.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
 				pdata->eventData[i].hEvent = 0;
 			}
 		}
@@ -651,7 +649,7 @@ static int PopupAct(HWND hWnd, UINT mask, PLUGIN_DATA* pdata)
 
 		for (i = 0; i < pdata->nrMerged; i++) {
 			if (pdata->eventData[i].hEvent != 0) {
-				PostMessage(myGlobals.g_hwndHotkeyHandler, DM_REMOVECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
+				PostMessage(Globals.g_hwndHotkeyHandler, DM_REMOVECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
 				pdata->eventData[i].hEvent = 0;
 			}
 		}
@@ -731,7 +729,7 @@ static int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent,
 	if (PopupCount >= MAX_POPUPS)
 		return 2;
 
-	if (!myGlobals.g_PopupAvail)
+	if (!Globals.g_PopupAvail)
 		return 0;
 
 	//check if we should report this kind of event
@@ -929,7 +927,7 @@ static int PopupUpdateW(HANDLE hContact, HANDLE hEvent)
 	int  available = 0, i;
 	char szHeader[256], *szPreview = NULL;
 	BOOL isUnicode = 0;
-	DWORD codePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", myGlobals.m_LangPackCP);
+	DWORD codePage = pMim->GetDword(hContact, "ANSIcodepage", Globals.m_LangPackCP);
 
 	pdata = (PLUGIN_DATAW *)PopUpList[NumberPopupData(hContact)];
 
@@ -938,7 +936,7 @@ static int PopupUpdateW(HANDLE hContact, HANDLE hEvent)
 	if (hEvent) {
 		if (pdata->pluginOptions->bShowHeaders) {
 			mir_snprintf(szHeader, sizeof(szHeader), "[b]%s %d[/b]\n", Translate("New messages: "), pdata->nrMerged + 1);
-			MultiByteToWideChar(myGlobals.m_LangPackCP, 0, szHeader, -1, pdata->szHeader, 256);
+			MultiByteToWideChar(Globals.m_LangPackCP, 0, szHeader, -1, pdata->szHeader, 256);
 			pdata->szHeader[255] = 0;
 		}
 		ZeroMemory(&dbe, sizeof(dbe));
@@ -1016,13 +1014,13 @@ static int PopupActW(HWND hWnd, UINT mask, PLUGIN_DATAW* pdata)
 		int i;
 
 		for (i = 0; i < pdata->nrMerged; i++)
-			PostMessage(myGlobals.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
+			PostMessage(Globals.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
 	}
 	if (mask & MASK_REMOVE) {
 		int i;
 
 		for (i = 0; i < pdata->nrMerged; i++)
-			PostMessage(myGlobals.g_hwndHotkeyHandler, DM_REMOVECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
+			PostMessage(Globals.g_hwndHotkeyHandler, DM_REMOVECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
 		PopUpList[NumberPopupData(pdata->hContact)] = NULL;
 	}
 	if (mask & MASK_DISMISS) {
@@ -1100,7 +1098,7 @@ static int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
 	if (PopupCount >= MAX_POPUPS)
 		return 2;
 
-	if (!myGlobals.g_PopupAvail)
+	if (!Globals.g_PopupAvail)
 		return 0;
 
 	//check if we should report this kind of event
@@ -1167,7 +1165,7 @@ static int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
 	pud.PluginWindowProc = (WNDPROC)PopupDlgProcW;
 	pud.PluginData = pdata;
 
-	codePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", myGlobals.m_LangPackCP);
+	codePage = pMim->GetDword(hContact, "ANSIcodepage", Globals.m_LangPackCP);
 
 	if (hContact) {
 		mir_sntprintf(pud.lpwzContactName, MAX_CONTACTNAME, _T("%s"), (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
@@ -1175,7 +1173,7 @@ static int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
 		//pud.lpwzContactName[MAX_CONTACTNAME - 1] = 0;
 	}
 	else {
-		MultiByteToWideChar(myGlobals.m_LangPackCP, 0, dbe.szModule, -1, pud.lpwzContactName, MAX_CONTACTNAME);
+		MultiByteToWideChar(Globals.m_LangPackCP, 0, dbe.szModule, -1, pud.lpwzContactName, MAX_CONTACTNAME);
 		pud.lpwzContactName[MAX_CONTACTNAME - 1] = 0;
 	}
 
@@ -1257,10 +1255,10 @@ static int tabSRMM_ShowBalloon(WPARAM wParam, LPARAM lParam, UINT eventType)
 	ZeroMemory((void *)&nim, sizeof(nim));
 	nim.cbSize = sizeof(nim);
 
-	nim.hWnd = myGlobals.g_hwndHotkeyHandler;
+	nim.hWnd = Globals.g_hwndHotkeyHandler;
 	nim.uID = 100;
 	nim.uFlags = NIF_ICON | NIF_INFO;
-	nim.hIcon = myGlobals.g_iconContainer;
+	nim.hIcon = Globals.g_iconContainer;
 	nim.uCallbackMessage = DM_TRAYICONNOTIFY;
 	nim.uTimeout = 10000;
 	nim.dwInfoFlags = NIIF_INFO;
@@ -1282,7 +1280,7 @@ static int tabSRMM_ShowBalloon(WPARAM wParam, LPARAM lParam, UINT eventType)
 		mir_snprintf(szTitle, 64, "No Nickname");
 
 #if defined(_UNICODE)
-	MultiByteToWideChar(myGlobals.m_LangPackCP, 0, szTitle, -1, nim.szInfoTitle, 64);
+	MultiByteToWideChar(Globals.m_LangPackCP, 0, szTitle, -1, nim.szInfoTitle, 64);
 #else
 	strcpy(nim.szInfoTitle, szTitle);
 #endif
@@ -1306,7 +1304,7 @@ static int tabSRMM_ShowBalloon(WPARAM wParam, LPARAM lParam, UINT eventType)
 		} else {
 nounicode:
 			msg = (wchar_t *)alloca(2 * (msglen + 1));
-			MultiByteToWideChar(myGlobals.m_LangPackCP, 0, (char *)dbei.pBlob, -1, msg, msglen);
+			MultiByteToWideChar(Globals.m_LangPackCP, 0, (char *)dbei.pBlob, -1, msg, msglen);
 			if (lstrlenW(msg) >= iPreviewLimit) {
 				wcsncpy(&msg[iPreviewLimit - 3], L"...", 3);
 				msg[iPreviewLimit] = 0;
@@ -1324,7 +1322,7 @@ nounicode:
 #endif
 	} else {
 #if defined(_UNICODE)
-		MultiByteToWideChar(myGlobals.m_LangPackCP, 0, (char *)szPreview, -1, nim.szInfo, 250);
+		MultiByteToWideChar(Globals.m_LangPackCP, 0, (char *)szPreview, -1, nim.szInfo, 250);
 #else
 		strncpy(nim.szInfo, (char *)dbei.pBlob, 250);
 #endif
@@ -1338,7 +1336,7 @@ nounicode:
 		CallService("OSD/Announce", (WPARAM)finalOSDString, 0);
 		free(finalOSDString);
 	} else {
-		myGlobals.m_TipOwner = (HANDLE)wParam;
+		Globals.m_TipOwner = (HANDLE)wParam;
 		Shell_NotifyIcon(NIM_MODIFY, (NOTIFYICONDATA *)&nim);
 	}
 	if (dbei.pBlob)
@@ -1355,7 +1353,7 @@ void UpdateTrayMenuState(struct _MessageWindowData *dat, BOOL bForced)
 	MENUITEMINFO	mii = {0};
 	TCHAR			szMenuEntry[80];
 
-	if (myGlobals.g_hMenuTrayUnread == 0)
+	if (Globals.g_hMenuTrayUnread == 0)
 		return;
 
 	mii.cbSize = sizeof(mii);
@@ -1364,9 +1362,9 @@ void UpdateTrayMenuState(struct _MessageWindowData *dat, BOOL bForced)
 	if (dat->hContact != 0) {
 		TCHAR  *tszProto = a2tf((TCHAR *)(dat->bIsMeta ? dat->szMetaProto : dat->szProto), 0, 0);
 
-		GetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, FALSE, &mii);
+		GetMenuItemInfo(Globals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, FALSE, &mii);
 		if (!bForced)
-			myGlobals.m_UnreadInTray -= (mii.dwItemData & 0x0000ffff);
+			Globals.m_UnreadInTray -= (mii.dwItemData & 0x0000ffff);
 		if (mii.dwItemData > 0 || bForced) {
 			if (!bForced)
 				mii.dwItemData = 0;
@@ -1376,7 +1374,7 @@ void UpdateTrayMenuState(struct _MessageWindowData *dat, BOOL bForced)
 			mii.cch = lstrlen(szMenuEntry) + 1;
 		}
 		mii.hbmpItem = HBMMENU_CALLBACK;
-		SetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, FALSE, &mii);
+		SetMenuItemInfo(Globals.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, FALSE, &mii);
 		if (tszProto)
 			mir_free(tszProto);
 	}
@@ -1387,7 +1385,7 @@ void UpdateTrayMenuState(struct _MessageWindowData *dat, BOOL bForced)
 
 int UpdateTrayMenu(struct _MessageWindowData *dat, WORD wStatus, char *szProto, TCHAR *szStatus, HANDLE hContact, DWORD fromEvent)
 {
-	if (myGlobals.g_hMenuTrayUnread != 0 && hContact != 0 && szProto != NULL) {
+	if (Globals.g_hMenuTrayUnread != 0 && hContact != 0 && szProto != NULL) {
 		TCHAR			szMenuEntry[80], *tszFinalProto = NULL;
 		MENUITEMINFO	mii = {0};
 		WORD			wMyStatus;
@@ -1408,19 +1406,19 @@ int UpdateTrayMenu(struct _MessageWindowData *dat, WORD wStatus, char *szProto, 
 
 		if (dat != 0) {
 			szNick = dat->szNickname;
-			GetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
+			GetMenuItemInfo(Globals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
 			mii.dwItemData++;
 			if (fromEvent == 2)                         // from chat...
 				mii.dwItemData |= 0x10000000;
-			DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, MF_BYCOMMAND);
+			DeleteMenu(Globals.g_hMenuTrayUnread, (UINT_PTR)hContact, MF_BYCOMMAND);
 			mir_sntprintf(szMenuEntry, safe_sizeof(szMenuEntry), _T("%s: %s (%s) [%d]"), tszFinalProto, szNick, szMyStatus, mii.dwItemData & 0x0000ffff);
-			AppendMenu(myGlobals.g_hMenuTrayUnread, MF_BYCOMMAND | MF_STRING, (UINT_PTR)hContact, szMenuEntry);
-			myGlobals.m_UnreadInTray++;
-			if (myGlobals.m_UnreadInTray)
+			AppendMenu(Globals.g_hMenuTrayUnread, MF_BYCOMMAND | MF_STRING, (UINT_PTR)hContact, szMenuEntry);
+			Globals.m_UnreadInTray++;
+			if (Globals.m_UnreadInTray)
 				SetEvent(g_hEvent);
-			SetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
+			SetMenuItemInfo(Globals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
 		} else {
-			UINT codePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", myGlobals.m_LangPackCP);
+			UINT codePage = pMim->GetDword(hContact, "ANSIcodepage", Globals.m_LangPackCP);
 /*
 #if defined(_UNICODE)
 			TCHAR szWNick[101];
@@ -1431,20 +1429,20 @@ int UpdateTrayMenu(struct _MessageWindowData *dat, WORD wStatus, char *szProto, 
 #endif
 */
 			szNick = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR);
-			if (CheckMenuItem(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, MF_BYCOMMAND | MF_UNCHECKED) == -1) {
+			if (CheckMenuItem(Globals.g_hMenuTrayUnread, (UINT_PTR)hContact, MF_BYCOMMAND | MF_UNCHECKED) == -1) {
 				mir_sntprintf(szMenuEntry, safe_sizeof(szMenuEntry), _T("%s: %s (%s) [%d]"), tszFinalProto, szNick, szMyStatus, fromEvent ? 1 : 0);
-				AppendMenu(myGlobals.g_hMenuTrayUnread, MF_BYCOMMAND | MF_STRING, (UINT_PTR)hContact, szMenuEntry);
+				AppendMenu(Globals.g_hMenuTrayUnread, MF_BYCOMMAND | MF_STRING, (UINT_PTR)hContact, szMenuEntry);
 				mii.dwItemData = fromEvent ? 1 : 0;
-				myGlobals.m_UnreadInTray += (mii.dwItemData & 0x0000ffff);
-				if (myGlobals.m_UnreadInTray)
+				Globals.m_UnreadInTray += (mii.dwItemData & 0x0000ffff);
+				if (Globals.m_UnreadInTray)
 					SetEvent(g_hEvent);
 				if (fromEvent == 2)
 					mii.dwItemData |= 0x10000000;
 			} else {
-				GetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
+				GetMenuItemInfo(Globals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
 				mii.dwItemData += (fromEvent ? 1 : 0);
-				myGlobals.m_UnreadInTray += (fromEvent ? 1 : 0);
-				if (myGlobals.m_UnreadInTray)
+				Globals.m_UnreadInTray += (fromEvent ? 1 : 0);
+				if (Globals.m_UnreadInTray)
 					SetEvent(g_hEvent);
 				mii.fMask |= MIIM_STRING;
 				if (fromEvent == 2)
@@ -1453,7 +1451,7 @@ int UpdateTrayMenu(struct _MessageWindowData *dat, WORD wStatus, char *szProto, 
 				mii.cch = lstrlen(szMenuEntry) + 1;
 				mii.dwTypeData = (LPTSTR)szMenuEntry;
 			}
-			SetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
+			SetMenuItemInfo(Globals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
 		}
 		if (tszFinalProto)
 			mir_free(tszFinalProto);
@@ -1536,7 +1534,7 @@ passed:
 	}
 	if (NumberPopupData((HANDLE)wParam) != -1 && nen_options.bMergePopup && eventType == EVENTTYPE_MESSAGE) {
 #if defined(_UNICODE)
-		if (myGlobals.g_PopupWAvail)
+		if (Globals.g_PopupWAvail)
 			PopupUpdateW((HANDLE)wParam, (HANDLE)lParam);
 		else
 			PopupUpdate((HANDLE)wParam, (HANDLE)lParam);
@@ -1545,7 +1543,7 @@ passed:
 #endif
 	} else {
 #if defined(_UNICODE)
-		if (myGlobals.g_PopupWAvail)
+		if (Globals.g_PopupWAvail)
 			PopupShowW(&nen_options, (HANDLE)wParam, (HANDLE)lParam, (UINT)eventType);
 		else
 			PopupShow(&nen_options, (HANDLE)wParam, (HANDLE)lParam, (UINT)eventType);
@@ -1564,7 +1562,7 @@ void DeletePopupsForContact(HANDLE hContact, DWORD dwMask)
 {
 	int i = 0;
 
-	if (!(dwMask & nen_options.dwRemoveMask) || nen_options.iDisable || !myGlobals.g_PopupAvail)
+	if (!(dwMask & nen_options.dwRemoveMask) || nen_options.iDisable || !Globals.g_PopupAvail)
 		return;
 
 	while ((i = NumberPopupData(hContact)) != -1) {

@@ -125,6 +125,7 @@ extern struct LIST_INTERFACE li;
 #include "typingnotify.h"
 #include "generic_msghandlers.h"
 #include "../chat/chat.h"
+#include "globals.h"
 #endif
 
 #if !defined(_WIN64) && !defined(_USE_32BIT_TIME_T)

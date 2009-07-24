@@ -2,7 +2,6 @@
 #pragma hdrstop
 
 extern HINSTANCE g_hInst;
-extern MYGLOBALS myGlobals;
 
 static INT_PTR EnableDisableMenuCommand(WPARAM wParam,LPARAM lParam)
 {
@@ -72,7 +71,7 @@ int TN_TypingMessage(WPARAM wParam, LPARAM lParam)
 	int notyping;
 
 	// hidden & ignored contacts check
-	if (DBGetContactSettingByte((HANDLE)wParam, "CList", "Hidden", 0) || (DBGetContactSettingDword((HANDLE)wParam, "Ignore","Mask1",0) & 1)) // 9 - online notification
+	if (pMim->GetByte((HANDLE)wParam, "CList", "Hidden", 0) || (pMim->GetDword((HANDLE)wParam, "Ignore", "Mask1",0) & 1)) // 9 - online notification
 		return 0;
 
 	szContactName = (TCHAR*) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCMDF_TCHAR);
@@ -150,7 +149,7 @@ int TN_TypingMessage(WPARAM wParam, LPARAM lParam)
 					break;
 			}
 
-		ppd.lchIcon = notyping ? myGlobals.g_buttonBarIcons[13] : myGlobals.g_buttonBarIcons[5];
+		ppd.lchIcon = notyping ? Globals.g_buttonBarIcons[13] : Globals.g_buttonBarIcons[5];
 		ppd.lchContact = (HANDLE) wParam;
 		ppd.PluginWindowProc = (WNDPROC) PopupDlgProc;
 		ppd.PluginData = NULL;
@@ -386,7 +385,7 @@ static INT_PTR CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 									break;
 							}
 
-						ppd.lchIcon = notyping ? myGlobals.g_buttonBarIcons[13] : myGlobals.g_buttonBarIcons[5];
+						ppd.lchIcon = notyping ? Globals.g_buttonBarIcons[13] : Globals.g_buttonBarIcons[5];
 						ppd.lchContact = (HANDLE) wParam;
 						ppd.PluginWindowProc = NULL;
 						ppd.PluginData = NULL;
@@ -488,7 +487,7 @@ static INT_PTR CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						case PSN_APPLY:
 							for (i = 0; i < sizeof(colorPicker) / sizeof(colorPicker[0]); i++) {
 								colorPicker[i].color = SendDlgItemMessage(hwndDlg, colorPicker[i].res, CPM_GETCOLOUR, 0, 0);
-								DBWriteContactSettingDword(NULL, Module, colorPicker[i].desc, colorPicker[i].color);
+								pMim->WriteDword(Module, colorPicker[i].desc, colorPicker[i].color);
 							}
 
 							Timeout = newTimeout;
@@ -505,14 +504,14 @@ static INT_PTR CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 							OnePopUp = IsDlgButtonChecked(hwndDlg, IDC_ONEPOPUP);
 							ShowMenu = IsDlgButtonChecked(hwndDlg, IDC_SHOWMENU);
 
-							DBWriteContactSettingByte(NULL, Module, SET_ONEPOPUP, OnePopUp);
-							DBWriteContactSettingByte(NULL, Module, SET_SHOWDISABLEMENU, ShowMenu);
-							DBWriteContactSettingByte(NULL, Module, SET_DISABLED, (BYTE) (StartDisabled | StopDisabled));
-							DBWriteContactSettingByte(NULL, Module, SET_COLOR_MODE, ColorMode);
-							DBWriteContactSettingByte(NULL, Module, SET_TIMEOUT_MODE, TimeoutMode);
-							DBWriteContactSettingByte(NULL, Module, SET_TIMEOUT, (BYTE) Timeout);
-							DBWriteContactSettingByte(NULL, Module, SET_TIMEOUT_MODE2, TimeoutMode2);
-							DBWriteContactSettingByte(NULL, Module, SET_TIMEOUT2, (BYTE) Timeout2);
+							pMim->WriteByte(Module, SET_ONEPOPUP, OnePopUp);
+							pMim->WriteByte(Module, SET_SHOWDISABLEMENU, ShowMenu);
+							pMim->WriteByte(Module, SET_DISABLED, (BYTE) (StartDisabled | StopDisabled));
+							pMim->WriteByte(Module, SET_COLOR_MODE, ColorMode);
+							pMim->WriteByte(Module, SET_TIMEOUT_MODE, TimeoutMode);
+							pMim->WriteByte(Module, SET_TIMEOUT, (BYTE) Timeout);
+							pMim->WriteByte(Module, SET_TIMEOUT_MODE2, TimeoutMode2);
+							pMim->WriteByte(Module, SET_TIMEOUT2, (BYTE) Timeout2);
 
 							return TRUE;
 					}
@@ -529,7 +528,7 @@ int TN_OptionsInitialize(WPARAM wParam, LPARAM lParam)
 
 	OPTIONSDIALOGPAGE odp = { 0 };
 
-	if (myGlobals.g_PopupAvail) {
+	if (Globals.g_PopupAvail) {
 		odp.cbSize = sizeof(odp);
 		odp.position = 100000000;
 		odp.hInstance = g_hInst;
@@ -549,27 +548,27 @@ int TN_ModuleInit()
 {
 	WORD i;
 
-	PopupService = (myGlobals.g_PopupWAvail || myGlobals.g_PopupAvail);
+	PopupService = (Globals.g_PopupWAvail || Globals.g_PopupAvail);
 
 	hPopUpsList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST,0,0);
 
-	OnePopUp = DBGetContactSettingByte(NULL,Module,SET_ONEPOPUP,DEF_ONEPOPUP);
-	ShowMenu = DBGetContactSettingByte(NULL,Module,SET_SHOWDISABLEMENU,DEF_SHOWDISABLEMENU);
+	OnePopUp = pMim->GetByte(Module,SET_ONEPOPUP,DEF_ONEPOPUP);
+	ShowMenu = pMim->GetByte(Module,SET_SHOWDISABLEMENU,DEF_SHOWDISABLEMENU);
 
-	i = DBGetContactSettingByte(NULL,Module,SET_DISABLED,DEF_DISABLED);
+	i = pMim->GetByte(Module,SET_DISABLED,DEF_DISABLED);
 	Disabled = i & 1;
 	StartDisabled = i & 2;
 	StopDisabled = i & 4;
 
-	ColorMode = DBGetContactSettingByte(NULL,Module,SET_COLOR_MODE,DEF_COLOR_MODE);
-	TimeoutMode = DBGetContactSettingByte(NULL,Module,SET_TIMEOUT_MODE,DEF_TIMEOUT_MODE);
-	Timeout = DBGetContactSettingByte(NULL,Module,SET_TIMEOUT,DEF_TIMEOUT);
-	TimeoutMode2 = DBGetContactSettingByte(NULL,Module,SET_TIMEOUT_MODE2,DEF_TIMEOUT_MODE2);
-	Timeout2 = DBGetContactSettingByte(NULL,Module,SET_TIMEOUT2,DEF_TIMEOUT2);
+	ColorMode = pMim->GetByte(Module,SET_COLOR_MODE,DEF_COLOR_MODE);
+	TimeoutMode = pMim->GetByte(Module,SET_TIMEOUT_MODE,DEF_TIMEOUT_MODE);
+	Timeout = pMim->GetByte(Module,SET_TIMEOUT,DEF_TIMEOUT);
+	TimeoutMode2 = pMim->GetByte(Module,SET_TIMEOUT_MODE2,DEF_TIMEOUT_MODE2);
+	Timeout2 = pMim->GetByte(Module,SET_TIMEOUT2,DEF_TIMEOUT2);
 
-	if (!(DBGetContactSettingDword(NULL,Module,colorPicker[0].desc,1) && !DBGetContactSettingDword(NULL,Module,colorPicker[0].desc,0)))
+	if (!(pMim->GetDword(Module, colorPicker[0].desc, 1) && !pMim->GetDword(Module, colorPicker[0].desc, 0)))
 		for (i = 0; i < sizeof(colorPicker) / sizeof(colorPicker[0]); i++)
-			colorPicker[i].color = DBGetContactSettingDword(NULL,Module,colorPicker[i].desc,0);
+			colorPicker[i].color = pMim->GetDword(Module,colorPicker[i].desc,0);
 
 	mir_sntprintf(szStart, sizeof(szStart), TranslateT("...is typing a message."));
 	mir_sntprintf(szStop, sizeof(szStop), TranslateT("...has stopped typing."));
@@ -624,6 +623,6 @@ int TN_ModuleInit()
 
 int TN_ModuleDeInit()
 {
-	DBWriteContactSettingByte(NULL, Module, SET_DISABLED, (BYTE) (Disabled | StartDisabled | StopDisabled));
+	pMim->WriteByte(Module, SET_DISABLED, (BYTE) (Disabled | StartDisabled | StopDisabled));
 	return 0;
 }
