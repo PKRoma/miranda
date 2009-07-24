@@ -25,13 +25,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // externs
 extern HICON			hIcons[30];
-extern FONTINFO		aFonts[OPTIONS_FONTCOUNT];
+extern FONTINFO			aFonts[OPTIONS_FONTCOUNT];
 extern HMENU			g_hMenu;
 extern HANDLE			hBuildMenuEvent ;
 extern HANDLE			hSendEvent;
-extern SESSION_INFO	g_TabSession;
+extern SESSION_INFO		g_TabSession;
 extern MYGLOBALS		myGlobals;
-extern NEN_OPTIONS	nen_options;
+extern NEN_OPTIONS		nen_options;
 
 static void Chat_PlaySound(const char *szSound, HWND hWnd, struct _MessageWindowData *dat)
 {

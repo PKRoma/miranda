@@ -55,8 +55,8 @@ extern HBRUSH		hListBkgBrush;
 extern HANDLE		hSendEvent;
 extern HICON		hIcons[30];
 extern HMENU		g_hMenu;
-extern int        g_sessionshutdown;
-extern WNDPROC OldSplitterProc;
+extern int        	g_sessionshutdown;
+extern WNDPROC 		OldSplitterProc;
 extern TCHAR		*szWarnClose;
 
 static WNDPROC OldMessageProc;
@@ -82,7 +82,7 @@ typedef struct {
 } MESSAGESUBDATA;
 
 
-const CLSID IID_ITextDocument= { 0x8CC497C0,0xA1DF,0x11CE, { 0x80,0x98, 0x00,0xAA, 0x00,0x47,0xBE,0x5D} };
+static const CLSID IID_ITextDocument= { 0x8CC497C0,0xA1DF,0x11CE, { 0x80,0x98, 0x00,0xAA, 0x00,0x47,0xBE,0x5D} };
 
 
 /*
@@ -162,9 +162,6 @@ static BOOL CheckCustomLink(HWND hwndDlg, POINT* ptClient, UINT uMsg, WPARAM wPa
 	}
 	return bIsCustomLink;
 }
-
-
-
 
 static BOOL IsStringValidLink(TCHAR* pszText)
 {
@@ -296,7 +293,6 @@ static void	InitButtons(HWND hwndDlg, SESSION_INFO* si)
 		if (si->iType == GCW_CHATROOM)
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CHANMGR), pInfo->bChanMgr);
 	}
-
 }
 
 static int splitterEdges = FALSE;
@@ -2124,7 +2120,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				SendMessage(GetDlgItem(hwndDlg, IDC_LIST), LB_SETITEMHEIGHT, 0, (LPARAM)height > font ? height : font);
 				InvalidateRect(GetDlgItem(hwndDlg, IDC_LIST), NULL, TRUE);
 			}
-			SendDlgItemMessage(hwndDlg, IDC_FILTER, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(si->bFilterEnabled ? IDI_FILTER : IDI_FILTER2, si->bFilterEnabled ? "filter" : "filter2", 0, 0));
+			SendDlgItemMessage(hwndDlg, IDC_FILTER, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(si->bFilterEnabled ? IDI_FILTER : IDI_FILTER2, si->bFilterEnabled ? (char *)"filter" : (char *)"filter2", 0, 0));
 			SendMessage(hwndDlg, WM_SIZE, 0, 0);
 			SendMessage(hwndDlg, GC_REDRAWLOG2, 0, 0);
 		}
@@ -3080,7 +3076,7 @@ LABEL_SHOWWINDOW:
 
 					si->bNicklistEnabled = !si->bNicklistEnabled;
 
-					SendDlgItemMessage(hwndDlg, IDC_SHOWNICKLIST, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(si->bNicklistEnabled ? IDI_HIDENICKLIST : IDI_SHOWNICKLIST, si->bNicklistEnabled ? "hidenicklist" : "shownicklist", 0, 0));
+					SendDlgItemMessage(hwndDlg, IDC_SHOWNICKLIST, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(si->bNicklistEnabled ? IDI_HIDENICKLIST : IDI_SHOWNICKLIST, si->bNicklistEnabled ? (char *)"hidenicklist" : (char *)"shownicklist", 0, 0));
 					SendMessage(hwndDlg, WM_SIZE, 0, 0);
 					if (dat->pContainer->bSkinned)
 						InvalidateRect(hwndDlg, NULL, TRUE);
@@ -3165,7 +3161,7 @@ LABEL_SHOWWINDOW:
 						si->bFilterEnabled = 0;
 					} else
 						si->bFilterEnabled = !si->bFilterEnabled;
-					SendDlgItemMessage(hwndDlg, IDC_FILTER, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(si->bFilterEnabled ? IDI_FILTER : IDI_FILTER2, si->bFilterEnabled ? "filter" : "filter2", 0, 0));
+					SendDlgItemMessage(hwndDlg, IDC_FILTER, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(si->bFilterEnabled ? IDI_FILTER : IDI_FILTER2, si->bFilterEnabled ? (char *)"filter" : (char *)"filter2", 0, 0));
 					if (si->bFilterEnabled && DBGetContactSettingByte(NULL, "Chat", "RightClickFilter", 0) == 0) {
 						SendMessage(hwndDlg, GC_SHOWFILTERMENU, 0, 0);
 						break;

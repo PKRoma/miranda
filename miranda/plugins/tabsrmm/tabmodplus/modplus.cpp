@@ -93,7 +93,7 @@ int ChangeClientIconInStatusBar(WPARAM wparam,LPARAM lparam)
 	if ( ServiceExists(MS_MSG_MODIFYICON) ) {
 		StatusIconData sid = {0};
 		sid.cbSize = sizeof(sid);
-		sid.szModule = "tabmodplus";
+		sid.szModule = (char *)"tabmodplus";
 		sid.hIcon=sid.hIconDisabled=hIcon;
 		sid.dwId = 1;
 		sid.szTooltip=msg;
@@ -142,8 +142,8 @@ static int RegisterCustomButton(WPARAM wParam,LPARAM lParam)
 		bbd.dwButtonID=1;
 		bbd.dwDefPos=200;
 		bbd.hIcon=hib0;
-		bbd.pszModuleName="Tabmodplus";
-		bbd.ptszTooltip=_T("Insert [img] tag / surround selected text with [img][/img]");
+		bbd.pszModuleName = (char *)"Tabmodplus";
+		bbd.ptszTooltip = (TCHAR *)_T("Insert [img] tag / surround selected text with [img][/img]");
 
 		return (CallService(MS_BB_ADDBUTTON, 0, (LPARAM)&bbd));
 	}
@@ -157,7 +157,7 @@ static int CustomButtonPressed(WPARAM wParam,LPARAM lParam)
 	CHARRANGE cr;
 	TCHAR* pszMenu[256]={0};//=NULL;
 	int i=0;
-	TCHAR* pszText=_T("");
+	TCHAR* pszText = (TCHAR *)_T("");
 	TCHAR* pszFormatedText=NULL;
 	UINT textlenght=0;
 	BBButton bbd={0};
@@ -168,7 +168,7 @@ static int CustomButtonPressed(WPARAM wParam,LPARAM lParam)
 
 	bbd.cbSize=sizeof(BBButton);
 	bbd.dwButtonID=1;
-	bbd.pszModuleName="Tabmodplus";
+	bbd.pszModuleName = (char *)"Tabmodplus";
 	CallService(MS_BB_GETBUTTONSTATE, wParam, (LPARAM)&bbd);
 
 	cr.cpMin = cr.cpMax = 0;
@@ -236,7 +236,7 @@ static int CustomButtonPressed(WPARAM wParam,LPARAM lParam)
 
 				_sntprintf(pszFormatedText,6*sizeof(TCHAR),_T("%s"),_T("[img]"));
 
-				bbd.ptszTooltip=_T("Insert [/img] tag");
+				bbd.ptszTooltip = (TCHAR *)_T("Insert [/img] tag");
 				bbd.hIcon=hib1;
 				CallService(MS_BB_SETBUTTONSTATE, wParam, (LPARAM)&bbd);
 
@@ -248,7 +248,7 @@ static int CustomButtonPressed(WPARAM wParam,LPARAM lParam)
 				ZeroMemory(pszFormatedText,7*sizeof(TCHAR));
 				_sntprintf(pszFormatedText,7*sizeof(TCHAR),_T("%s"),_T("[/img]"));
 
-				bbd.ptszTooltip=_T("Insert [img] tag / surround selected text with [img][/img]");
+				bbd.ptszTooltip = (TCHAR *)_T("Insert [img] tag / surround selected text with [img][/img]");
 				bbd.hIcon=hib0;
 				CallService(MS_BB_SETBUTTONSTATE, wParam, (LPARAM)&bbd);
 
@@ -301,7 +301,7 @@ int ModPlus_Init(WPARAM wparam,LPARAM lparam)
 	if ( g_bClientInStatusBar&&ServiceExists(MS_MSG_ADDICON) ) {
 		StatusIconData sid = {0};
 		sid.cbSize = sizeof(sid);
-		sid.szModule = "tabmodplus";
+		sid.szModule = (char *)"tabmodplus";
 		sid.flags = MBF_OWNERSTATE|MBF_HIDDEN;
 		sid.dwId = 1;
 		sid.szTooltip = 0;
@@ -311,8 +311,8 @@ int ModPlus_Init(WPARAM wparam,LPARAM lparam)
 
 	hIcon1     = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_IMGCLOSE));
 	hIcon0     = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_IMGOPEN));
-	hib1        =(HANDLE)AddIcon((HICON)hIcon1, "tabmodplus1", "[/img]");
-	hib0        =(HANDLE)AddIcon((HICON)hIcon0, "tabmodplus0", "[img]");
+	hib1        =(HANDLE)AddIcon((HICON)hIcon1, (char *)"tabmodplus1", (char *)"[/img]");
+	hib0        =(HANDLE)AddIcon((HICON)hIcon0, (char *)"tabmodplus0", (char *)"[img]");
 	g_bStartup=0;
 	return (0);
 }

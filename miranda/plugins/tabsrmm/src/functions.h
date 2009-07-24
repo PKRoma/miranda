@@ -192,6 +192,5 @@ int			TN_TypingMessage(WPARAM wParam, LPARAM lParam);
 // mod plus
 
 int			ChangeClientIconInStatusBar(WPARAM wparam, LPARAM lparam);
-char		*getMirVer(HANDLE hContact);
 
 #endif /* _TABSRMM_FUNCTIONS_H */

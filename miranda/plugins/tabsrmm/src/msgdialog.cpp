@@ -76,6 +76,7 @@ static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG
 TCHAR *pszIDCSAVE_close = 0, *pszIDCSAVE_save = 0;
 
 static WNDPROC OldMessageEditProc=0, OldAvatarWndProc=0, OldMessageLogProc=0, OldIEViewProc = 0, OldHppProc = 0;
+
 WNDPROC OldSplitterProc = 0;
 
 static const UINT infoLineControls[] = { IDC_PROTOCOL, /* IDC_PROTOMENU, */ IDC_NAME, /* IDC_INFOPANELMENU */};
@@ -88,10 +89,10 @@ static const UINT controlsToHide2[] = { IDOK, IDC_PIC, IDC_PROTOCOL, -1};
 static const UINT addControls[] = { IDC_ADD, IDC_CANCELADD };
 
 UINT infoPanelControls[] = {IDC_PANELPIC, IDC_PANELNICK, IDC_PANELUIN,
-								  IDC_PANELSTATUS, IDC_TOGGLENOTES, IDC_NOTES, IDC_PANELSPLITTER
-								 };
-const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER};
-const UINT errorButtons[] = { IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER};
+								  IDC_PANELSTATUS, IDC_TOGGLENOTES, IDC_NOTES, IDC_PANELSPLITTER };
+
+static const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER};
+static const UINT errorButtons[] = { IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER};
 
 static struct _tooltips {
 	int id;

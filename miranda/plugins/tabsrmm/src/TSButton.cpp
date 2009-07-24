@@ -23,6 +23,7 @@ skinable button class for tabSRMM
 */
 
 #include "commonheaders.h"
+#include <ctype.h>
 
 extern HINSTANCE g_hInst;
 extern MYGLOBALS myGlobals;
@@ -782,8 +783,10 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			if (bct->arrow) {
 				GetClientRect(bct->hwnd, &rc);
 				if (LOWORD(lParam) > rc.right - 12) {
-					if(showClick)
-					   SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(bct->arrow, BN_CLICKED), (LPARAM)hwndDlg);
+					if(showClick) {
+						WORD w = (WORD)((int)bct->arrow & 0x0000ffff);
+						SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(w, BN_CLICKED), (LPARAM)hwndDlg);
+					}
 					break;
 				}
 			}

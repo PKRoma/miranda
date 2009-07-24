@@ -842,23 +842,39 @@ struct NewMessageWindowLParam {
 #define DM_QUERY_NEXT 1
 #define DM_QUERY_MOSTRECENT 2
 
+/*
+ * implement a callback for the rich edit. Without it, no bitmaps
+ * can be added to the richedit control.
+ * this class has to implement the GetNewStorage() method
+ */
+
 class REOLECallback : IRichEditOleCallback
 {
 
 public:
 
 	REOLECallback()
-	{   mRefCounter = 0;}
+	{
+		mRefCounter = 0;
+	}
 
 	~REOLECallback()
 	{}
 
-	STDMETHOD_(ULONG, AddRef)       (void)                                  {   mRefCounter++;                              return (mRefCounter);}
+	STDMETHOD_(ULONG, AddRef)(void)
+	{
+		mRefCounter++;
+		return (mRefCounter);
+	}
 
-	STDMETHOD_(ULONG, Release)      (void)                                  {   if ( --mRefCounter == 0 )	delete this;return (mRefCounter);}
+	STDMETHOD_(ULONG, Release)(void)
+	{
+		if(--mRefCounter == 0)
+			delete this;
+		return (mRefCounter);
+	}
 
-	STDMETHOD(QueryInterface)       (REFIID iid, void** ppvObject)
-
+	STDMETHOD(QueryInterface)(REFIID iid, void** ppvObject)
 	{
 		if ( iid == IID_IUnknown || iid == IID_IRichEditOleCallback ) {
 			*ppvObject = this;  AddRef();   return (S_OK);
@@ -866,7 +882,6 @@ public:
 		else
 			return (E_NOINTERFACE);
 	}
-
 
 	STDMETHOD(ContextSensitiveHelp) (BOOL fEnterMode)                                                                                           {   return (E_NOTIMPL);}
 	STDMETHOD(DeleteObject)         (LPOLEOBJECT lpoleobj)                                                                                      {   return (E_NOTIMPL);}

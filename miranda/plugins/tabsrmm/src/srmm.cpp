@@ -27,22 +27,24 @@ $Id: srmm.c 10384 2009-07-20 19:02:32Z silvercircle $
 
 #include "commonheaders.h"
 
-int LoadSendRecvMessageModule(void);
-int SplitmsgShutdown(void);
-void LogErrorMessage(HWND hwndDlg, struct _MessageWindowData *dat, int i, TCHAR *szMsg);
-int  Chat_Load(PLUGINLINK *link), Chat_Unload();
-void FreeLogFonts();
+extern int 	LoadSendRecvMessageModule(void);
+extern int 	SplitmsgShutdown(void);
+extern void LogErrorMessage(HWND hwndDlg, struct _MessageWindowData *dat, int i, TCHAR *szMsg);
+extern int  Chat_Load(PLUGINLINK *link), Chat_Unload();
+extern void FreeLogFonts();
 
 DWORD g_mirandaVersion = 0;
 
 PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
 LOGFONT lfDefault = {0};
-// LOGFONTA lfDefaultA = {0};
 extern MYGLOBALS myGlobals;
-//MAD
+
+/*
+ * miranda interfaces
+ */
+
 struct LIST_INTERFACE li;
-//
 struct MM_INTERFACE mmi;
 struct UTF8_INTERFACE utfi;
 

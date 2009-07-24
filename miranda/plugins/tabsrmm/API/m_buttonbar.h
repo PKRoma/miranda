@@ -45,11 +45,9 @@ void CB_InitDefaultButtons();
 void CB_ReInitCustomButtons();
 
 /* MinGW doesn't like this struct declatations below */
-#ifndef __GNUC__
 void BB_UpdateIcons(HWND hdlg,struct _MessageWindowData *dat);
 void CB_DestroyAllButtons(HWND hwndDlg,struct _MessageWindowData *dat);
 void CB_DestroyButton(HWND hwndDlg,struct _MessageWindowData *dat,DWORD dwButtonCID,DWORD dwFlags);
 void CB_ChangeButton(HWND hwndDlg,struct _MessageWindowData *dat,CustomButtonData* cbd);
-#endif
 
 #endif

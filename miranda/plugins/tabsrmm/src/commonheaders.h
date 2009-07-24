@@ -43,9 +43,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <shlwapi.h>
 #include <richedit.h>
 #include <limits.h>
+#include <ctype.h>
+
 #include "resource.h"
 
-/* FIXME: Nasty things happening here, why we undefine WM_THEMECHANGED? */
 #ifdef _MSC_VER
 #ifdef WM_THEMECHANGED
 #undef WM_THEMECHANGED
@@ -132,11 +133,11 @@ extern struct LIST_INTERFACE li;
 	#undef _USE_32BIT_TIME_T
 #endif
 
-#if _MSC_VER >= 1500
+#if _MSC_VER >= 1500 || defined(__GNUWIN32__)
 	#define wEffects wReserved
 #endif
 
-typedef struct _paraformat2
+typedef struct __paraformat2
 {
 	UINT	cbSize;
 	DWORD	dwMask;

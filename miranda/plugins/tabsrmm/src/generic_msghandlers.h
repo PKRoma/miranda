@@ -46,6 +46,6 @@ LRESULT DM_ThemeChanged(HWND hwnd, struct _MessageWindowData *dat);
 void BB_InitDlgButtons(HWND hdlg,struct _MessageWindowData *dat);
 
 BOOL BB_SetButtonsPos(HWND hwnd,struct _MessageWindowData *dat);
- void  InitButtonsBarModule();
- void BB_CustomButtonClick(struct _MessageWindowData *dat,DWORD idFrom ,HWND hwndFrom, BOOL code) ;
+void  InitButtonsBarModule();
+void BB_CustomButtonClick(struct _MessageWindowData *dat,DWORD idFrom ,HWND hwndFrom, BOOL code) ;
 

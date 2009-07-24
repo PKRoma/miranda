@@ -27,11 +27,9 @@ $Id: msgs.c 10399 2009-07-23 20:11:21Z silvercircle $
 */
 #include "commonheaders.h"
 #pragma hdrstop
-#include <m_avatars.h>
-#include "../chat/chat.h"
 #include "sendqueue.h"
 
-SKINDESC my_default_skin[] = {
+static SKINDESC my_default_skin[] = {
 	IDR_SKIN_GLYPH, ("glyph.png"),
 	IDR_SKIN_TSK, ("default.tsk"),
 	IDR_SKIN_TABSRMM, ("default.tabsrmm"),
@@ -47,14 +45,6 @@ static char *relnotes[] = {
 	"\t\\b View all release notes and history online:\\b0 \\par \thttp://wiki.miranda.or.at/TabSrmm:ChangeLog\\par ",
 	NULL
 };
-
-/* definitions */
-
-/* Missing MinGW GUIDs */
-#ifdef __MINGW32__
-const CLSID IID_IRichEditOle = { 0x00020D00, 0x00, 0x00, { 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46 } };
-const CLSID IID_IRichEditOleCallback = { 0x00020D03, 0x00, 0x00, { 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46 } };
-#endif
 
 BOOL show_relnotes = FALSE;
 REOLECallback *mREOLECallback;
@@ -92,13 +82,14 @@ static HANDLE hSVC[14];
 #define H_MS_TABMSG_TRAYSUPPORT 10
 #define H_MSG_MOD_GETWINDOWFLAGS 11
 
-HMODULE hDLL;
+HMODULE 	hDLL;
 PSLWA 		pSetLayeredWindowAttributes = 0;
 PULW 		pUpdateLayeredWindow = 0;
 PFWEX 		MyFlashWindowEx = 0;
 PAB 		MyAlphaBlend = 0;
 PGF 		MyGradientFill = 0;
 
+extern		INT_PTR CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern      struct ContainerWindowData *pFirstContainer;
 extern      INT_PTR CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern      int g_chat_integration_enabled;
@@ -107,7 +98,6 @@ extern      struct MsgLogIcon msgLogIcons[NR_LOGICONS * 3];
 extern      HINSTANCE g_hInst;
 extern      INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern      int g_sessionshutdown;
-extern      INT_PTR CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern      ICONDESC *g_skinIcons;
 extern      int g_nrSkinIcons;
 extern      struct RTFColorTable *rtf_ctable;

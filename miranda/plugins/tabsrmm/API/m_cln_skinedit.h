@@ -56,7 +56,7 @@ typedef struct _tagButtonSet {
     LONG        left, top, right, bottom;               // client area offsets, calculated from button layout
 } ButtonSet;
 
-typedef struct {
+struct StatusItems_t {
     char szName[40];
     char szDBname[40];
     int statusID;
@@ -80,8 +80,49 @@ typedef struct {
     BYTE IGNORED;
     DWORD BORDERSTYLE;
     ImageItem *imageItem;
-} StatusItems_t;
+};
 
+/*class StatusItems_t {
+
+public:
+	StatusItems_t(const char *szName, const char *szDBName, const int id, const BYTE gradient, const BYTE corner, const DWORD color, const DWORD color2,
+				  const BYTE color2_trans, const DWORD textcolor, const int alpha, const int margin_left, const int margin_top, const int margin_right,
+				  const int margin_bottom, const BYTE ignored, const DWORD borderstyle, const ImageItem *imageItem)
+	{}
+
+	StatusItems_t(const char *name, const char *name_neu, unsigned int id);
+
+	~StatusItems_t()
+	{}
+
+	void Render()
+	{}
+
+	static char szName[40];
+    static char szDBname[40];
+    static int statusID;
+
+    BYTE GRADIENT;
+    BYTE CORNER;
+
+    DWORD COLOR;
+    DWORD COLOR2;
+
+    BYTE COLOR2_TRANSPARENT;
+
+    DWORD TEXTCOLOR;
+
+    int ALPHA;
+
+    int MARGIN_LEFT;
+    int MARGIN_TOP;
+    int MARGIN_RIGHT;
+    int MARGIN_BOTTOM;
+    BYTE IGNORED;
+    DWORD BORDERSTYLE;
+    ImageItem *imageItem;
+};
+*/
 typedef struct {
     BOOL bGRADIENT;
     BOOL bCORNER;

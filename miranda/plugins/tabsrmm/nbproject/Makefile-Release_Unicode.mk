@@ -28,41 +28,41 @@ OBJECTDIR=build/Release_Unicode/${PLATFORM}
 
 # Object Files
 OBJECTFILES= \
-	${OBJECTDIR}/formatting.o \
+	${OBJECTDIR}/src/formatting.o \
 	${OBJECTDIR}/tabmodplus/modplus.o \
-	${OBJECTDIR}/containeroptions.o \
-	${OBJECTDIR}/sendqueue.o \
-	${OBJECTDIR}/themes.o \
-	${OBJECTDIR}/ImageDataObject.o \
-	${OBJECTDIR}/userprefs.o \
-	${OBJECTDIR}/msgs.o \
-	${OBJECTDIR}/buttonsbar.o \
-	${OBJECTDIR}/typingnotify.o \
-	${OBJECTDIR}/container.o \
-	${OBJECTDIR}/tabctrl.o \
+	${OBJECTDIR}/src/containeroptions.o \
+	${OBJECTDIR}/src/sendqueue.o \
+	${OBJECTDIR}/src/themes.o \
+	${OBJECTDIR}/src/ImageDataObject.o \
+	${OBJECTDIR}/src/userprefs.o \
+	${OBJECTDIR}/src/msgs.o \
+	${OBJECTDIR}/src/buttonsbar.o \
+	${OBJECTDIR}/src/typingnotify.o \
+	${OBJECTDIR}/src/container.o \
+	${OBJECTDIR}/src/tabctrl.o \
 	${OBJECTDIR}/chat/window.o \
 	${OBJECTDIR}/chat/options.o \
-	${OBJECTDIR}/TSButton.o \
-	${OBJECTDIR}/hotkeyhandler.o \
+	${OBJECTDIR}/src/TSButton.o \
+	${OBJECTDIR}/src/hotkeyhandler.o \
 	${OBJECTDIR}/chat/clist.o \
 	${OBJECTDIR}/chat/tools.o \
 	${OBJECTDIR}/tabmodplus/msgoptions_plus.o \
-	${OBJECTDIR}/trayicon.o \
-	${OBJECTDIR}/templates.o \
-	${OBJECTDIR}/eventpopups.o \
+	${OBJECTDIR}/src/trayicon.o \
+	${OBJECTDIR}/src/templates.o \
+	${OBJECTDIR}/src/eventpopups.o \
 	${OBJECTDIR}/chat/message.o \
-	${OBJECTDIR}/srmm.o \
+	${OBJECTDIR}/src/srmm.o \
 	${OBJECTDIR}/chat/main.o \
 	${OBJECTDIR}/chat/log.o \
-	${OBJECTDIR}/msgoptions.o \
+	${OBJECTDIR}/src/msgoptions.o \
 	${OBJECTDIR}/chat/manager.o \
-	${OBJECTDIR}/generic_msghandlers.o \
-	${OBJECTDIR}/msglog.o \
-	${OBJECTDIR}/selectcontainer.o \
+	${OBJECTDIR}/src/generic_msghandlers.o \
+	${OBJECTDIR}/src/msglog.o \
+	${OBJECTDIR}/src/selectcontainer.o \
 	${OBJECTDIR}/chat/services.o \
 	${OBJECTDIR}/chat/colorchooser.o \
-	${OBJECTDIR}/msgdialog.o \
-	${OBJECTDIR}/msgdlgutils.o
+	${OBJECTDIR}/src/msgdialog.o \
+	${OBJECTDIR}/src/msgdlgutils.o
 
 # C Compiler Flags
 CFLAGS=
@@ -85,180 +85,180 @@ dist/Release_Unicode/${PLATFORM}/tabsrmm.dll: ${OBJECTFILES}
 	${MKDIR} -p dist/Release_Unicode/${PLATFORM}
 	${LINK.cc} -shared -o dist/Release_Unicode/${PLATFORM}/tabsrmm.dll -s ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
-${OBJECTDIR}/formatting.o: formatting.cpp 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/src/formatting.o: src/formatting.cpp 
+	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.cc) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/formatting.o formatting.cpp
+	$(COMPILE.cc) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/formatting.o src/formatting.cpp
 
-${OBJECTDIR}/tabmodplus/modplus.o: tabmodplus/modplus.c 
+${OBJECTDIR}/tabmodplus/modplus.o: tabmodplus/modplus.cpp
 	${MKDIR} -p ${OBJECTDIR}/tabmodplus
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/tabmodplus/modplus.o tabmodplus/modplus.c
+	$(COMPILE.cc) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/tabmodplus/modplus.o tabmodplus/modplus.cpp
 
-${OBJECTDIR}/containeroptions.o: containeroptions.c 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/src/containeroptions.o: src/containeroptions.cpp
+	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/containeroptions.o containeroptions.c
+	$(COMPILE.cc) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/containeroptions.o src/containeroptions.cpp
 
-${OBJECTDIR}/sendqueue.o: sendqueue.c 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/src/sendqueue.o: src/sendqueue.cpp
+	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/sendqueue.o sendqueue.c
+	$(COMPILE.cc) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/sendqueue.o src/sendqueue.cpp
 
-${OBJECTDIR}/themes.o: themes.c 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/src/themes.o: src/themes.cpp
+	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/themes.o themes.c
+	$(COMPILE.cc) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/themes.o src/themes.cpp
 
-${OBJECTDIR}/ImageDataObject.o: ImageDataObject.cpp 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/src/ImageDataObject.o: src/ImageDataObject.cpp 
+	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.cc) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/ImageDataObject.o ImageDataObject.cpp
+	$(COMPILE.cc) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/ImageDataObject.o src/ImageDataObject.cpp
 
-${OBJECTDIR}/userprefs.o: userprefs.c 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/src/userprefs.o: src/userprefs.cpp
+	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/userprefs.o userprefs.c
+	$(COMPILE.cc) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/userprefs.o src/userprefs.cpp
 
-${OBJECTDIR}/msgs.o: msgs.c 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/src/msgs.o: src/msgs.cpp
+	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/msgs.o msgs.c
+	$(COMPILE.cc) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/msgs.o src/msgs.cpp
 
-${OBJECTDIR}/buttonsbar.o: buttonsbar.c 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/src/buttonsbar.o: src/buttonsbar.cpp
+	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/buttonsbar.o buttonsbar.c
+	$(COMPILE.cc) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/buttonsbar.o src/buttonsbar.cpp
 
-${OBJECTDIR}/typingnotify.o: typingnotify.c 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/src/typingnotify.o: src/typingnotify.cpp
+	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/typingnotify.o typingnotify.c
+	$(COMPILE.cc) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/typingnotify.o src/typingnotify.cpp
 
-${OBJECTDIR}/container.o: container.c 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/src/container.o: src/container.cpp
+	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/container.o container.c
+	$(COMPILE.cc) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/container.o src/container.cpp
 
-${OBJECTDIR}/tabctrl.o: tabctrl.c 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/src/tabctrl.o: src/tabctrl.cpp
+	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/tabctrl.o tabctrl.c
+	$(COMPILE.cc) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/tabctrl.o src/tabctrl.cpp
 
-${OBJECTDIR}/chat/window.o: chat/window.c 
+${OBJECTDIR}/chat/window.o: chat/window.cpp
 	${MKDIR} -p ${OBJECTDIR}/chat
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/window.o chat/window.c
+	$(COMPILE.c) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/window.o chat/window.cpp
 
-${OBJECTDIR}/chat/options.o: chat/options.c 
+${OBJECTDIR}/chat/options.o: chat/options.cpp
 	${MKDIR} -p ${OBJECTDIR}/chat
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/options.o chat/options.c
+	$(COMPILE.c) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/options.o chat/options.cpp
 
-${OBJECTDIR}/TSButton.o: TSButton.c 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/src/TSButton.o: src/TSButton.cpp
+	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/TSButton.o TSButton.c
+	$(COMPILE.c) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/TSButton.o src/TSButton.cpp
 
-${OBJECTDIR}/hotkeyhandler.o: hotkeyhandler.c 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/src/hotkeyhandler.o: src/hotkeyhandler.cpp
+	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/hotkeyhandler.o hotkeyhandler.c
+	$(COMPILE.c) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/hotkeyhandler.o src/hotkeyhandler.cpp
 
-${OBJECTDIR}/chat/clist.o: chat/clist.c 
+${OBJECTDIR}/chat/clist.o: chat/clist.cpp
 	${MKDIR} -p ${OBJECTDIR}/chat
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/clist.o chat/clist.c
+	$(COMPILE.c) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/clist.o chat/clist.cpp
 
-${OBJECTDIR}/chat/tools.o: chat/tools.c 
+${OBJECTDIR}/chat/tools.o: chat/tools.cpp
 	${MKDIR} -p ${OBJECTDIR}/chat
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/tools.o chat/tools.c
+	$(COMPILE.c) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/tools.o chat/tools.cpp
 
-${OBJECTDIR}/tabmodplus/msgoptions_plus.o: tabmodplus/msgoptions_plus.c 
+${OBJECTDIR}/tabmodplus/msgoptions_plus.o: tabmodplus/msgoptions_plus.cpp
 	${MKDIR} -p ${OBJECTDIR}/tabmodplus
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/tabmodplus/msgoptions_plus.o tabmodplus/msgoptions_plus.c
+	$(COMPILE.c) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/tabmodplus/msgoptions_plus.o tabmodplus/msgoptions_plus.cpp
 
-${OBJECTDIR}/trayicon.o: trayicon.c 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/src/trayicon.o: src/trayicon.cpp
+	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/trayicon.o trayicon.c
+	$(COMPILE.c) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/trayicon.o src/trayicon.cpp
 
-${OBJECTDIR}/templates.o: templates.c 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/src/templates.o: src/templates.cpp
+	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/templates.o templates.c
+	$(COMPILE.c) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/templates.o src/templates.cpp
 
-${OBJECTDIR}/eventpopups.o: eventpopups.c 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/src/eventpopups.o: src/eventpopups.cpp
+	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/eventpopups.o eventpopups.c
+	$(COMPILE.c) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/eventpopups.o src/eventpopups.cpp
 
-${OBJECTDIR}/chat/message.o: chat/message.c 
+${OBJECTDIR}/chat/message.o: chat/message.cpp
 	${MKDIR} -p ${OBJECTDIR}/chat
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/message.o chat/message.c
+	$(COMPILE.c) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/message.o chat/message.cpp
 
-${OBJECTDIR}/srmm.o: srmm.c 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/src/srmm.o: src/srmm.cpp 
+	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/srmm.o srmm.c
+	$(COMPILE.c) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/srmm.o src/srmm.cpp
 
-${OBJECTDIR}/chat/main.o: chat/main.c 
+${OBJECTDIR}/chat/main.o: chat/main.cpp
 	${MKDIR} -p ${OBJECTDIR}/chat
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/main.o chat/main.c
+	$(COMPILE.c) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/main.o chat/main.cpp
 
-${OBJECTDIR}/chat/log.o: chat/log.c 
+${OBJECTDIR}/chat/log.o: chat/log.cpp
 	${MKDIR} -p ${OBJECTDIR}/chat
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/log.o chat/log.c
+	$(COMPILE.c) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/log.o chat/log.cpp
 
-${OBJECTDIR}/msgoptions.o: msgoptions.c 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/src/msgoptions.o: src/msgoptions.cpp
+	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/msgoptions.o msgoptions.c
+	$(COMPILE.cc) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/msgoptions.o src/msgoptions.cpp
 
-${OBJECTDIR}/chat/manager.o: chat/manager.c 
+${OBJECTDIR}/chat/manager.o: chat/manager.cpp
 	${MKDIR} -p ${OBJECTDIR}/chat
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/manager.o chat/manager.c
+	$(COMPILE.cc) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/manager.o chat/manager.cpp
 
-${OBJECTDIR}/generic_msghandlers.o: generic_msghandlers.c 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/src/generic_msghandlers.o: src/generic_msghandlers.cpp
+	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/generic_msghandlers.o generic_msghandlers.c
+	$(COMPILE.cc) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/generic_msghandlers.o src/generic_msghandlers.cpp
 
-${OBJECTDIR}/msglog.o: msglog.c 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/src/msglog.o: src/msglog.cpp
+	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/msglog.o msglog.c
+	$(COMPILE.cc) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/msglog.o src/msglog.cpp
 
-${OBJECTDIR}/selectcontainer.o: selectcontainer.c 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/src/selectcontainer.o: src/selectcontainer.cpp
+	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/selectcontainer.o selectcontainer.c
+	$(COMPILE.cc) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/selectcontainer.o src/selectcontainer.cpp
 
-${OBJECTDIR}/chat/services.o: chat/services.c 
+${OBJECTDIR}/chat/services.o: chat/services.cpp
 	${MKDIR} -p ${OBJECTDIR}/chat
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/services.o chat/services.c
+	$(COMPILE.cc) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/services.o chat/services.cpp
 
-${OBJECTDIR}/chat/colorchooser.o: chat/colorchooser.c 
+${OBJECTDIR}/chat/colorchooser.o: chat/colorchooser.cpp
 	${MKDIR} -p ${OBJECTDIR}/chat
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/colorchooser.o chat/colorchooser.c
+	$(COMPILE.cc) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/colorchooser.o chat/colorchooser.cpp
 
-${OBJECTDIR}/msgdialog.o: msgdialog.c 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/src/msgdialog.o: src/msgdialog.cpp
+	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/msgdialog.o msgdialog.c
+	$(COMPILE.cc) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/msgdialog.o src/msgdialog.cpp
 
-${OBJECTDIR}/msgdlgutils.o: msgdlgutils.c 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/src/msgdlgutils.o: src/msgdlgutils.cpp
+	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/msgdlgutils.o msgdlgutils.c
+	$(COMPILE.cc) -Wno-write-strings -O3 -s -DUNICODE -D_UNICODE -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/msgdlgutils.o src/msgdlgutils.cpp
 
 # Subprojects
 .build-subprojects:

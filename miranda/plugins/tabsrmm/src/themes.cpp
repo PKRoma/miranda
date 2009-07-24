@@ -83,6 +83,7 @@ int       g_nrSkinIcons = 0;
 /*
  * definition of the availbale skin items
  */
+
 StatusItems_t StatusItems[] = {
 	{"Container", "TSKIN_Container", ID_EXTBKCONTAINER,
 		CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
