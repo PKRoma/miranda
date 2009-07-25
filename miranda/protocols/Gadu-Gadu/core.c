@@ -273,7 +273,6 @@ void *__stdcall gg_mainthread(void *empty)
 #if 1 // GG_CONFIG_MIRANDA
 	NETLIBUSERSETTINGS nlus;
 #endif
-	char *szMsg;
 
 	// Time deviation (300s)
 	time_t timeDeviation = DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_TIMEDEVIATION, GG_KEYDEF_TIMEDEVIATION);
@@ -428,13 +427,12 @@ void *__stdcall gg_mainthread(void *empty)
 
 	// Loadup startup status & description
 	pthread_mutex_lock(&gg->modemsg_mutex);
-	szMsg = _strdup(gg_getstatusmsg(gg, gg->proto.m_iDesiredStatus));
-	p.status = status_m2gg(gg, gg->proto.m_iDesiredStatus, szMsg != NULL);
-	p.status_descr = szMsg;
+	p.status_descr = _strdup(gg_getstatusmsg(gg, gg->proto.m_iDesiredStatus));
+	p.status = status_m2gg(gg, gg->proto.m_iDesiredStatus, p.status_descr != NULL);
 
 #ifdef DEBUGMODE
 	gg_netlog(gg, "gg_mainthread(%x): Connecting with number %d, status %d and description \"%s\".", gg, p.uin, gg->proto.m_iDesiredStatus,
-				szMsg ? szMsg : "<none>");
+				p.status_descr ? p.status_descr : "<none>");
 #endif
 	pthread_mutex_unlock(&gg->modemsg_mutex);
 
@@ -525,9 +523,6 @@ retry:
 	else
 	{
 		// Successfully connected
-		if (szMsg)
-			free(szMsg);
-
 		pthread_mutex_lock(&gg->sess_mutex);
 		gg->sess = sess;
 		pthread_mutex_unlock(&gg->sess_mutex);
@@ -539,6 +534,8 @@ retry:
 		else
 			gg_broadcastnewstatus(gg, gg->proto.m_iDesiredStatus);
 	}
+	free(p.password);
+	free(p.status_descr);
 
 	//////////////////////////////////////////////////////////////////////////////////
 	// Main loop
