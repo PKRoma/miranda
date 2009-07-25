@@ -730,8 +730,8 @@ retry:
 							// Gadu-Gadu Male <-> Female
 							if(__gender)
 								DBWriteContactSettingByte(hContact, GG_PROTO, "Gender",
-								(BYTE)(!strcmp(__gender, GG_PUBDIR50_GENDER_MALE) ? 'F' :
-									  (!strcmp(__gender, GG_PUBDIR50_GENDER_FEMALE) ? 'M' : '?')));
+								(BYTE)(!strcmp(__gender, GG_PUBDIR50_GENDER_MALE) ? 'M' :
+									  (!strcmp(__gender, GG_PUBDIR50_GENDER_FEMALE) ? 'F' : '?')));
 
 #ifdef DEBUGMODE
 							gg_netlog(gg, "gg_mainthread(%x): Setting user info for uin %d.", gg, uin);

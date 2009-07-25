@@ -406,6 +406,7 @@ static void *__stdcall gg_cmdgetinfothread(void *empty)
 	gg_netlog(ctx->gg, "gg_cmdgetinfothread(): Failed info retreival.");
 #endif
 	ProtoBroadcastAck(ctx->gg->proto.m_szModuleName, ctx->hContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE) 1, 0);
+	free(ctx);
 	return NULL;
 }
 int gg_getinfo(PROTO_INTERFACE *proto, HANDLE hContact, int infoType)
@@ -453,7 +454,9 @@ int gg_getinfo(PROTO_INTERFACE *proto, HANDLE hContact, int infoType)
 	{
 		if (!(req = gg_pubdir50_new(GG_PUBDIR50_READ)))
 		{
-			pthread_create(&tid, NULL, gg_cmdgetinfothread, hContact);
+			GGCONTEXT *ctx = (GGCONTEXT *)malloc(sizeof(GGCONTEXT));
+			ctx->hContact = hContact; ctx->gg = gg;
+			pthread_create(&tid, NULL, gg_cmdgetinfothread, ctx);
 			pthread_detach(&tid);
 			return 1;
 		}
