@@ -137,9 +137,14 @@ void gg_disconnect(GGPROTO *gg)
 		{
 			gg_change_status_descr(gg->sess, GG_STATUS_NOT_AVAIL_DESCR, szMsg);
 			free(szMsg);
+			// Wait for disconnection acknowledge
 		}
 		else
+		{
 			gg_change_status(gg->sess, GG_STATUS_NOT_AVAIL);
+			// Send logoff immediately
+			gg_logoff(gg->sess);
+		}
 		pthread_mutex_unlock(&gg->sess_mutex);
 	}
 }
