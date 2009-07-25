@@ -402,8 +402,8 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UI
 	HWND hwndTab = GetParent(hwndDlg);
 
 	if (dat && dat->iTabID >= 0) {
-		if (msg == WM_ACTIVATE) {
-			if (dat->pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL && !dat->pContainer->bSkinned) {
+		if (msg == WM_ACTIVATE || msg == WM_SETFOCUS) {
+			if (dat->pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL) {
 				DWORD trans = LOWORD(dat->pContainer->dwTransparency);
 				pSetLayeredWindowAttributes(dat->pContainer->hwnd, 0, (BYTE)trans, (dat->pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 			}
@@ -2954,7 +2954,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					DM_RecalcPictureSize(hwndDlg, dat);
 				}
 				else {
-					dat->dynaSplitter = (rc.bottom - pt.y) - DPISCALEY(12);
+					dat->dynaSplitter = (rc.bottom - pt.y) - DPISCALEY(11);
 					DM_RecalcPictureSize(hwndDlg, dat);
 				}
 			} else if ((HWND) lParam == GetDlgItem(hwndDlg, IDC_PANELSPLITTER)) {

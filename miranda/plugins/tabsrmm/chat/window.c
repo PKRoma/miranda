@@ -330,8 +330,11 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 
 		EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWNICKLIST), TRUE);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_FILTER), TRUE);
-		if (si->iType == GCW_CHATROOM)
-			EnableWindow(GetDlgItem(hwndDlg, IDC_CHANMGR), MM_FindModule(si->pszModule)->bChanMgr);
+		if (si->iType == GCW_CHATROOM)	{
+			MODULEINFO* tmp = MM_FindModule(si->pszModule);
+			if (tmp)
+				EnableWindow(GetDlgItem(hwndDlg, IDC_CHANMGR), tmp->bChanMgr);
+		}
 	} else {
 		ShowWindow(GetDlgItem(hwndDlg, IDC_LIST), SW_HIDE);
 		ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTERX), SW_HIDE);

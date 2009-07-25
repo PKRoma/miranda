@@ -1598,7 +1598,7 @@ unsigned int GetIEViewMode(HWND hwndDlg, HANDLE hContact)
 		g_HPPAvail = ServiceExists("History++/ExtGrid/NewWindow");
 
 	myGlobals.g_WantIEView = g_IEViewAvail && DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_ieview", 0);
-	myGlobals.g_WantHPP = g_HPPAvail && DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 1);
+	myGlobals.g_WantHPP = g_HPPAvail && DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 0);
 
 	iWantIEView = (myGlobals.g_WantIEView) || (DBGetContactSettingByte(hContact, SRMSGMOD_T, "ieview", 0) == 1 && g_IEViewAvail);
 	iWantIEView = (DBGetContactSettingByte(hContact, SRMSGMOD_T, "ieview", 0) == (BYTE) - 1) ? 0 : iWantIEView;
@@ -2113,11 +2113,17 @@ TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSet
 
 void LoadTimeZone(HWND hwndDlg, struct MessageWindowData *dat)
 {
-	dat->timezone = (DWORD)(DBGetContactSettingByte(dat->hContact, "UserInfo", "Timezone", DBGetContactSettingByte(dat->hContact, dat->szProto, "Timezone", -1)));
-	if (dat->timezone != -1) {
-		DWORD contact_gmt_diff;
-		contact_gmt_diff = dat->timezone > 128 ? 256 - dat->timezone : 0 - dat->timezone;
-		dat->timediff = (int)myGlobals.local_gmt_diff - (int)contact_gmt_diff * 60 * 60 / 2;
+	if(ServiceExists("CLN/GetTimeOffset")) {
+		dat->timezone = 1;
+		dat->timediff = (DWORD)CallService("CLN/GetTimeOffset", (WPARAM)dat->hContact, 0);
+	}
+	else {
+		dat->timezone = (DWORD)(DBGetContactSettingByte(dat->hContact, "UserInfo", "Timezone", DBGetContactSettingByte(dat->hContact, dat->szProto, "Timezone", -1)));
+		if (dat->timezone != -1) {
+			DWORD contact_gmt_diff;
+			contact_gmt_diff = dat->timezone > 128 ? 256 - dat->timezone : 0 - dat->timezone;
+			dat->timediff = (int)myGlobals.local_gmt_diff - (int)contact_gmt_diff * 60 * 60 / 2;
+		}
 	}
 }
 

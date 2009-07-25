@@ -563,7 +563,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 				SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_INSERTSTRING, -1, (LPARAM)TranslateT("History++ plugin"));
 				if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_ieview", 0))
 					SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_SETCURSEL, 1, 0);
-				else if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 1))
+				else if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 0))
 					SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_SETCURSEL, have_ieview ? 2 : 1, 0);
 			}
 			return TRUE;
@@ -660,23 +660,20 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 							DBWriteContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", (DWORD) GetDlgItemInt(hwndDlg, IDC_RIGHTINDENT, &translated, FALSE));
 
 							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_ieview", 0);
+							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 0);
 							switch(msglogmode) {
 							case 0:
-								DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 0);
 								break;
-
 							case 1:
 								if (have_ieview)
 									DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_ieview", 1);
 								else
 									DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 1);
 								break;
-
 							case 2:
 								DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 1);
 								break;
 							}
-
 							/*
 							* scan the tree view and obtain the options...
 							*/
