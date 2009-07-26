@@ -1450,6 +1450,7 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
             switch (code)
             {
             case 0x0000:
+            case 0x000e:
 //				ShowPopup(LPGEN("Successfully modified group."), ERROR_POPUP);
                 break;
 
@@ -1459,7 +1460,7 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 
             default:
                 char msg[64];
-                mir_snprintf(msg, sizeof(msg), Translate("Unknown error when attempting to modify a group. Error code %#x"), code);
+                mir_snprintf(msg, sizeof(msg), Translate("Unknown error when attempting to modify a group/buddy. Error code %#x"), code);
                 ShowPopup(msg, ERROR_POPUP);
                 break;
             }
