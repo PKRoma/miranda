@@ -371,6 +371,7 @@ void *__stdcall gg_mainthread(void *empty)
 		gg_netlog(gg, "gg_mainthread(%x): No Gadu-Gadu number specified. Exiting.", gg);
 #endif
 		gg_broadcastnewstatus(gg, ID_STATUS_OFFLINE);
+		free(p.password);
 		pthread_mutex_lock(&gg->sess_mutex);
 		ZeroMemory(&gg->pth_sess, sizeof(gg->pth_sess));
 		pthread_mutex_unlock(&gg->sess_mutex);
@@ -539,8 +540,6 @@ retry:
 		else
 			gg_broadcastnewstatus(gg, gg->proto.m_iDesiredStatus);
 	}
-	free(p.password);
-	free(p.status_descr);
 
 	//////////////////////////////////////////////////////////////////////////////////
 	// Main loop
@@ -1046,6 +1045,9 @@ retry:
 		gg_broadcastnewstatus(gg, ID_STATUS_CONNECTING);
 		goto retry;
 	}
+
+	free(p.password);
+	free(p.status_descr);
 
 	pthread_mutex_lock(&gg->sess_mutex);
 	gg->pth_sess.dwThreadId = 0;
