@@ -93,7 +93,7 @@ int Chat_ModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 	g_chat_fully_initialized = TRUE;
 
-	g_Settings.MathMod = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && pMim->GetByte("Chat", "MathModSupport", 0);
+	g_Settings.MathMod = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && M->GetByte("Chat", "MathModSupport", 0);
 	return 0;
 }
 
@@ -250,8 +250,8 @@ INT_PTR Service_NewChat(WPARAM wParam, LPARAM lParam)
 			si->ptszStatusbarText = a2tf(gcw->ptszStatusbarText, gcw->dwFlags, 0);
 			si->iSplitterX = g_Settings.iSplitterX;
 			si->iSplitterY = g_Settings.iSplitterY;
-			si->bFilterEnabled = pMim->GetByte(si->hContact, "Chat", "FilterEnabled", pMim->GetByte("Chat", "FilterEnabled", 0));
-			si->bNicklistEnabled = pMim->GetByte("Chat", "ShowNicklist", 1);
+			si->bFilterEnabled = M->GetByte(si->hContact, "Chat", "FilterEnabled", M->GetByte("Chat", "FilterEnabled", 0));
+			si->bNicklistEnabled = M->GetByte("Chat", "ShowNicklist", 1);
 #if defined( _UNICODE )
 			if (!(gcw->dwFlags & GC_UNICODE)) {
 				si->pszID = mir_strdup(gcw->pszID);
@@ -275,7 +275,7 @@ INT_PTR Service_NewChat(WPARAM wParam, LPARAM lParam)
 			DBWriteContactSettingString(si->hContact, si->pszModule , "Topic", "");
 			DBDeleteContactSetting(si->hContact, "CList", "StatusMsg");
 			if (si->ptszStatusbarText)
-				DBWriteContactSettingTString(si->hContact, si->pszModule, "StatusBar", si->ptszStatusbarText);
+				M->WriteTString(si->hContact, si->pszModule, "StatusBar", si->ptszStatusbarText);
 			else
 				DBWriteContactSettingString(si->hContact, si->pszModule, "StatusBar", "");
 			if (si->hContact)
@@ -332,7 +332,7 @@ static int DoControl(GCEVENT * gce, WPARAM wp)
 				SESSION_INFO* si = SM_FindSession(gce->pDest->ptszID, gce->pDest->pszModule);
 				if (si) {
 					si->bInitDone = TRUE;
-					if (wp != SESSION_INITDONE || pMim->GetByte("Chat", "PopupOnJoin", 0) == 0)
+					if (wp != SESSION_INITDONE || M->GetByte("Chat", "PopupOnJoin", 0) == 0)
 						ShowRoom(si, wp, TRUE);
 					return 0;
 			}	}
@@ -401,7 +401,7 @@ static int DoControl(GCEVENT * gce, WPARAM wp)
 		if (si) {
 			replaceStr(&si->ptszStatusbarText, gce->ptszText);
 			if (si->ptszStatusbarText)
-				DBWriteContactSettingTString(si->hContact, si->pszModule, "StatusBar", si->ptszStatusbarText);
+				M->WriteTString(si->hContact, si->pszModule, "StatusBar", si->ptszStatusbarText);
 			else
 				DBWriteContactSettingString(si->hContact, si->pszModule, "StatusBar", "");
 			if (si->hWnd) {
@@ -460,9 +460,9 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
 	HANDLE hContact = si->hContact;
 	HWND hwndTab;
 
-	if (Globals.FindWindow(hContact) != 0)
+	if (M->FindWindow(hContact) != 0)
 		return 0;
-	if (hContact != 0 && pMim->GetByte("limittabs", 0) &&  !_tcsncmp(pContainer->szName, _T("default"), 6)) {
+	if (hContact != 0 && M->GetByte("limittabs", 0) &&  !_tcsncmp(pContainer->szName, _T("default"), 6)) {
 		if ((pContainer = FindMatchingContainer(_T("default"), hContact)) == NULL) {
 			TCHAR szName[CONTAINER_NAMELEN + 1];
 
@@ -493,7 +493,7 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
 	 */
 
 	if (contactName && lstrlen(contactName) > 0) {
-		if (pMim->GetByte("cuttitle", 0))
+		if (M->GetByte("cuttitle", 0))
 			CutContactName(contactName, newcontactname, safe_sizeof(newcontactname));
 		else {
 			lstrcpyn(newcontactname, contactName, safe_sizeof(newcontactname));
@@ -517,7 +517,7 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
 		ShowWindow(pContainer->hwndActive, SW_HIDE);
 
 	{
-		int iTabIndex_wanted = pMim->GetDword(hContact, "tabindex", pContainer->iChilds * 100);
+		int iTabIndex_wanted = M->GetDword(hContact, "tabindex", pContainer->iChilds * 100);
 		int iCount = TabCtrl_GetItemCount(hwndTab);
 		TCITEM item = {0};
 		HWND hwnd;
@@ -533,7 +533,7 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
 				hwnd = (HWND)item.lParam;
 				dat = (struct _MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 				if (dat) {
-					relPos = pMim->GetDword(dat->hContact, "tabindex", i * 100);
+					relPos = M->GetDword(dat->hContact, "tabindex", i * 100);
 					if (iTabIndex_wanted <= relPos)
 						pContainer->iTabIndex = i;
 				}
@@ -683,9 +683,9 @@ INT_PTR Service_AddEvent(WPARAM wParam, LPARAM lParam)
 					replaceStr(&si->ptszTopic, gce->ptszText);
 					if (si->hWnd)
 						g_TabSession.ptszTopic = si->ptszTopic;
-					DBWriteContactSettingTString(si->hContact, si->pszModule , "Topic", RemoveFormatting(si->ptszTopic));
-					if (pMim->GetByte("Chat", "TopicOnClist", 1))
-						DBWriteContactSettingTString(si->hContact, "CList" , "StatusMsg", RemoveFormatting(si->ptszTopic));
+					M->WriteTString(si->hContact, si->pszModule , "Topic", RemoveFormatting(si->ptszTopic));
+					if (M->GetByte("Chat", "TopicOnClist", 1))
+						M->WriteTString(si->hContact, "CList" , "StatusMsg", RemoveFormatting(si->ptszTopic));
 				}
 			}
 			break;
@@ -705,7 +705,7 @@ INT_PTR Service_AddEvent(WPARAM wParam, LPARAM lParam)
 			if (!(gce->dwFlags & GC_UNICODE)) {
 				fFreeText = TRUE;
 				if (si)
-					gce->ptszText = a2tf(gce->ptszText, gce->dwFlags, pMim->GetDword(si->hContact, "ANSIcodepage", 0));
+					gce->ptszText = a2tf(gce->ptszText, gce->dwFlags, M->GetDword(si->hContact, "ANSIcodepage", 0));
 				else
 					gce->ptszText = a2tf(gce->ptszText, gce->dwFlags, 0);
 			}
@@ -887,9 +887,9 @@ void TabsInit(void)
 
 	g_TabSession.iSplitterX = g_Settings.iSplitterX;
 	g_TabSession.iSplitterY = g_Settings.iSplitterY;
-	g_TabSession.iLogFilterFlags = (int)pMim->GetDword("Chat", "FilterFlags", 0x03E0);
-	g_TabSession.bFilterEnabled = pMim->GetByte("Chat", "FilterEnabled", 0);
-	g_TabSession.bNicklistEnabled = pMim->GetByte("Chat", "ShowNicklist", 1);
+	g_TabSession.iLogFilterFlags = (int)M->GetDword("Chat", "FilterFlags", 0x03E0);
+	g_TabSession.bFilterEnabled = M->GetByte("Chat", "FilterEnabled", 0);
+	g_TabSession.bNicklistEnabled = M->GetByte("Chat", "ShowNicklist", 1);
 	g_TabSession.iFG = 4;
 	g_TabSession.bFGSet = TRUE;
 	g_TabSession.iBG = 2;

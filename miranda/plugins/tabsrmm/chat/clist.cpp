@@ -47,7 +47,7 @@ HANDLE CList_AddRoom(const char* pszModule, const TCHAR* pszRoom, const TCHAR* p
 	TCHAR pszGroup[50];
 
 	*pszGroup = '\0';
-	if (!DBGetContactSettingTString(NULL, "Chat", "AddToGroup", &dbv)) {
+	if (!M->GetTString(NULL, "Chat", "AddToGroup", &dbv)) {
 		if (lstrlen(dbv.ptszVal) > 0)
 			lstrcpyn(pszGroup, dbv.ptszVal, 50);
 		DBFreeVariant(&dbv);
@@ -65,12 +65,12 @@ HANDLE CList_AddRoom(const char* pszModule, const TCHAR* pszRoom, const TCHAR* p
 		if (pszGroup[0]) {
 			for (i = 0;; i++) {
 				_itoa(i, str, 10);
-				if (DBGetContactSettingTString(NULL, "CListGroups", str, &dbv)) {
-					DBWriteContactSettingTString(hContact, "CList", "Group", pszGroup);
+				if (M->GetTString(NULL, "CListGroups", str, &dbv)) {
+					M->WriteTString(hContact, "CList", "Group", pszGroup);
 					goto END_GROUPLOOP;
 				}
 
-				if (!DBGetContactSettingTString(hContact, "CList", "Group", &dbv2)) {
+				if (!M->GetTString(hContact, "CList", "Group", &dbv2)) {
 					if (dbv.ptszVal[0] != '\0' && dbv2.ptszVal[0] != '\0' && !lstrcmpi(dbv.ptszVal + 1, dbv2.ptszVal)) {
 						DBFreeVariant(&dbv);
 						DBFreeVariant(&dbv2);
@@ -84,7 +84,7 @@ HANDLE CList_AddRoom(const char* pszModule, const TCHAR* pszRoom, const TCHAR* p
 
 END_GROUPLOOP:
 		DBWriteContactSettingWord(hContact, pszModule, "Status", ID_STATUS_OFFLINE);
-		DBWriteContactSettingTString(hContact, pszModule, "Nick", pszDisplayName);
+		M->WriteTString(hContact, pszModule, "Nick", pszDisplayName);
 		//if (iType != GCW_SERVER)
 		//	DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
 		return hContact;
@@ -97,12 +97,12 @@ END_GROUPLOOP:
 
 	CallService(MS_PROTO_ADDTOCONTACT, (WPARAM) hContact, (LPARAM) pszModule);
 	if (pszGroup && lstrlen(pszGroup) > 0)
-		DBWriteContactSettingTString(hContact, "CList", "Group", pszGroup);
+		M->WriteTString(hContact, "CList", "Group", pszGroup);
 	else
 		DBDeleteContactSetting(hContact, "CList", "Group");
-	DBWriteContactSettingTString(hContact, pszModule, "Nick", pszDisplayName);
-	DBWriteContactSettingTString(hContact, pszModule, "ChatRoomID", pszRoom);
-	pMim->WriteByte(hContact, pszModule, "ChatRoom", (BYTE)iType);
+	M->WriteTString(hContact, pszModule, "Nick", pszDisplayName);
+	M->WriteTString(hContact, pszModule, "ChatRoomID", pszRoom);
+	M->WriteByte(hContact, pszModule, "ChatRoom", (BYTE)iType);
 	DBWriteContactSettingWord(hContact, pszModule, "Status", ID_STATUS_OFFLINE);
 	return hContact;
 }
@@ -111,7 +111,7 @@ BOOL CList_SetOffline(HANDLE hContact, BOOL bHide)
 {
 	if (hContact) {
 		char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		int i = pMim->GetByte(hContact, szProto, "ChatRoom", 0);
+		int i = M->GetByte(hContact, szProto, "ChatRoom", 0);
 		DBWriteContactSettingWord(hContact, szProto, "ApparentMode", (LPARAM) 0);
 		DBWriteContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
 		return TRUE;
@@ -129,7 +129,7 @@ BOOL CList_SetAllOffline(BOOL bHide, const char *pszModule)
 		szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 		if (MM_FindModule(szProto)) {
 			if (!pszModule || (pszModule && !strcmp(pszModule, szProto))) {
-				int i = pMim->GetByte(hContact, szProto, "ChatRoom", 0);
+				int i = M->GetByte(hContact, szProto, "ChatRoom", 0);
 				if (i != 0) {
 					DBWriteContactSettingWord(hContact, szProto, "ApparentMode", (LPARAM)(WORD) 0);
 					DBWriteContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
@@ -154,15 +154,15 @@ int CList_RoomDoubleclicked(WPARAM wParam, LPARAM lParam)
 
 	szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 	if (MM_FindModule(szProto)) {
-		if (pMim->GetByte(hContact, szProto, "ChatRoom", 0) == 0)
+		if (M->GetByte(hContact, szProto, "ChatRoom", 0) == 0)
 			return 0;
 
-		if (!DBGetContactSettingTString(hContact, szProto, "ChatRoomID", &dbv)) {
+		if (!M->GetTString(hContact, szProto, "ChatRoomID", &dbv)) {
 			SESSION_INFO* si = SM_FindSession(dbv.ptszVal, szProto);
 			if (si) {
 				// is the "toggle visibility option set, so we need to close the window?
 				if (si->hWnd != NULL
-						&& pMim->GetByte("Chat", "ToggleVisibility", 0) == 1
+						&& M->GetByte("Chat", "ToggleVisibility", 0) == 1
 						&& !CallService(MS_CLIST_GETEVENT, (WPARAM)hContact, 0)
 						&& IsWindowVisible(si->hWnd)
 						&& !IsIconic(si->pContainer->hwnd)) {
@@ -223,7 +223,7 @@ int CList_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 
 		if ( szProto ) {
 			// display this menu item only for chats
-			if ( pMim->GetByte(hContact, szProto, "ChatRoom", 0 )) {
+			if ( M->GetByte(hContact, szProto, "ChatRoom", 0 )) {
 				// still hide it for offline protos
 				if ( CallProtoService( szProto, PS_GETSTATUS, 0, 0 ) != ID_STATUS_OFFLINE ) {
 					clmi.flags &= ~CMIF_HIDDEN;
@@ -261,7 +261,7 @@ void CList_CreateGroup(TCHAR* group)
 
 	for (i = 0;; i++) {
 		_itoa(i, str, 10);
-		if (DBGetContactSettingTString(NULL, "CListGroups", str, &dbv))
+		if (M->GetTString(NULL, "CListGroups", str, &dbv))
 			break;
 
 		if (dbv.pszVal[0] != '\0' && !lstrcmpi(dbv.ptszVal + 1, group)) {
@@ -275,7 +275,7 @@ void CList_CreateGroup(TCHAR* group)
 	name[0] = 1 | GROUPF_EXPANDED;
 	_tcsncpy(name + 1, group, SIZEOF(name) - 1);
 	name[ lstrlen(group) + 1] = '\0';
-	DBWriteContactSettingTString(NULL, "CListGroups", str, name);
+	M->WriteTString(NULL, "CListGroups", str, name);
 	CallService(MS_CLUI_GROUPADDED, i + 1, 0);
 }
 
@@ -316,9 +316,9 @@ HANDLE CList_FindRoom(const char* pszModule, const TCHAR* pszRoom)
 	while (hContact) {
 		char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 		if (szProto && !lstrcmpiA(szProto, pszModule)) {
-			if (pMim->GetByte(hContact, szProto, "ChatRoom", 0) != 0) {
+			if (M->GetByte(hContact, szProto, "ChatRoom", 0) != 0) {
 				DBVARIANT dbv;
-				if (!DBGetContactSettingTString(hContact, szProto, "ChatRoomID", &dbv)) {
+				if (!M->GetTString(hContact, szProto, "ChatRoomID", &dbv)) {
 					if (!lstrcmpi(dbv.ptszVal, pszRoom)) {
 						DBFreeVariant(&dbv);
 						return hContact;

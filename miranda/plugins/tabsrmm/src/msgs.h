@@ -921,9 +921,6 @@ struct MsgLogIcon {
 
 #include "../icons/iconsxp/resource.h"         // icon pack values
 
-WCHAR *Utf8_Decode(const char *str);
-char *Utf8_Encode(const WCHAR *str);
-
 struct CPTABLE {
 	UINT cpId;
 	TCHAR *cpName;
@@ -1063,22 +1060,6 @@ typedef struct {
 	void *local; // used to store pointer to custom data
 } MessageWindowOutputData;
 
-typedef struct _tagTimeZone {
-	TCHAR	tszName[64];
-	TCHAR	tszDisplay[128];
-	LONG	Bias;
-	//char	GMT_Offset;
-} REG_TIMEZONE;
-
-typedef struct _REG_TZI_FORMAT
-{
-    LONG Bias;
-    LONG StandardBias;
-    LONG DaylightBias;
-    SYSTEMTIME StandardDate;
-    SYSTEMTIME DaylightDate;
-} REG_TZI_FORMAT;
-
 #define MS_MSG_FORWARDMESSAGE  "SRMsg/ForwardMessage"
 
 #define MS_MSG_GETWINDOWDATA "MessageAPI/GetWindowData"
@@ -1144,7 +1125,7 @@ void SI_CheckStatusIconClick(struct _MessageWindowData *dat, HWND hwndFrom, POIN
 
 typedef struct _tagSKINDesc {
 	ULONG	ulID;				// resource id
-	char	tszName[20];
+	TCHAR	tszName[20];
 } SKINDESC;
 
 #define SKIN_NR_ELEMENTS 6

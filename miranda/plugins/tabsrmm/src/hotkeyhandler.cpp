@@ -45,8 +45,6 @@ The hotkeyhandler is a small, invisible window which cares about a few things:
 
 extern struct       ContainerWindowData *pFirstContainer;
 extern struct SendJob *sendJobs;
-extern NEN_OPTIONS  nen_options;
-extern PSLWA        pSetLayeredWindowAttributes;
 extern struct       ContainerWindowData *pLastActiveContainer;
 extern HICON		hIcons[];
 INT_PTR					SendMessageCommand(WPARAM wParam, LPARAM lParam);
@@ -59,7 +57,7 @@ HWND floaterOwner;
 
 void HandleMenuEntryFromhContact(int iSelection)
 {
-	HWND hWnd = Globals.FindWindow((HANDLE)iSelection);
+	HWND hWnd = M->FindWindow((HANDLE)iSelection);
 	SESSION_INFO *si = NULL;
 
 	if (iSelection == 0)
@@ -96,8 +94,8 @@ nothing_open:
 
 static void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle)
 {
-	int cx = Globals.m_smcxicon;
-	int cy = Globals.m_smcyicon;
+	int cx = _Plugin.m_smcxicon;
+	int cy = _Plugin.m_smcyicon;
 
 	if (!IsWinVerXPPlus()) {
 		FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENU));
@@ -165,10 +163,10 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			SendMessage(GetDlgItem(hwndDlg, IDC_TRAYICON), BUTTONSETASFLATBTN, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_SLIST, BUTTONADDTOOLTIP, (WPARAM) Translate("tabSRMM Quick Menu"), 0);
 			SendDlgItemMessage(hwndDlg, IDC_TRAYICON, BUTTONADDTOOLTIP, (WPARAM) Translate("Session List"), 0);
-			SendDlgItemMessage(hwndDlg, IDC_SLIST, BM_SETIMAGE, IMAGE_ICON, (LPARAM) Globals.g_buttonBarIcons[16]);
-			SendDlgItemMessage(hwndDlg, IDC_TRAYICON, BM_SETIMAGE, IMAGE_ICON, (LPARAM) Globals.m_AnimTrayIcons[0]);
+			SendDlgItemMessage(hwndDlg, IDC_SLIST, BM_SETIMAGE, IMAGE_ICON, (LPARAM) _Plugin.g_buttonBarIcons[16]);
+			SendDlgItemMessage(hwndDlg, IDC_TRAYICON, BM_SETIMAGE, IMAGE_ICON, (LPARAM) _Plugin.m_AnimTrayIcons[0]);
 			ShowWindow(GetDlgItem(hwndDlg, IDC_TRAYCONTAINER), SW_HIDE);
-			if (pSetLayeredWindowAttributes != NULL)
+			if (M->m_pSetLayeredWindowAttributes != NULL)
 				SetWindowLongPtr(hwndDlg, GWL_EXSTYLE, GetWindowLongPtr(hwndDlg, GWL_EXSTYLE) | WS_EX_LAYERED);
 
 			if (Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, "hkh")) {
@@ -242,13 +240,13 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		case WM_DRAWITEM: {
 			LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
 			struct _MessageWindowData *dat = 0;
-			if (dis->CtlType == ODT_MENU && (dis->hwndItem == (HWND)Globals.g_hMenuFavorites || dis->hwndItem == (HWND)Globals.g_hMenuRecent)) {
+			if (dis->CtlType == ODT_MENU && (dis->hwndItem == (HWND)_Plugin.g_hMenuFavorites || dis->hwndItem == (HWND)_Plugin.g_hMenuRecent)) {
 				HICON hIcon = (HICON)dis->itemData;
 
 				DrawMenuItem(dis, hIcon, 0);
 				return TRUE;
 			} else if (dis->CtlType == ODT_MENU) {
-				HWND hWnd = Globals.FindWindow((HANDLE)dis->itemID);
+				HWND hWnd = M->FindWindow((HANDLE)dis->itemID);
 				DWORD idle = 0;
 
 				if (hWnd == NULL) {
@@ -265,14 +263,14 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					BOOL fNeedFree = FALSE;
 
 					if (dis->itemData > 0)
-						hIcon = dis->itemData & 0x10000000 ? hIcons[ICON_HIGHLIGHT] : Globals.g_IconMsgEvent;
+						hIcon = dis->itemData & 0x10000000 ? hIcons[ICON_HIGHLIGHT] : _Plugin.g_IconMsgEvent;
 					else if (dat != NULL) {
 						//hIcon = LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus);
 						hIcon = MY_GetContactIcon(dat);
 						fNeedFree = TRUE;
 						idle = dat->idle;
 					} else
-						hIcon = Globals.g_iconContainer;
+						hIcon = _Plugin.g_iconContainer;
 
 					DrawMenuItem(dis, hIcon, idle);
 					if (fNeedFree)
@@ -291,29 +289,29 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					case WM_LBUTTONUP: {
 						POINT pt;
 						GetCursorPos(&pt);
-						if (Globals.m_WinVerMajor < 5)
+						if (_Plugin.m_WinVerMajor < 5)
 							break;
-						if (Globals.m_TipOwner != 0)
+						if (_Plugin.m_TipOwner != 0)
 							break;
 						if (wParam == 100)
 							SetForegroundWindow(hwndDlg);
-						if (GetMenuItemCount(Globals.g_hMenuTrayUnread) > 0) {
-							iSelection = TrackPopupMenu(Globals.g_hMenuTrayUnread, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
+						if (GetMenuItemCount(_Plugin.g_hMenuTrayUnread) > 0) {
+							iSelection = TrackPopupMenu(_Plugin.g_hMenuTrayUnread, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
 							HandleMenuEntryFromhContact(iSelection);
 						} else
-							TrackPopupMenu(GetSubMenu(Globals.g_hMenuContext, 8), TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
+							TrackPopupMenu(GetSubMenu(_Plugin.g_hMenuContext, 8), TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
 						if (wParam == 100)
 							PostMessage(hwndDlg, WM_NULL, 0, 0);
 						break;
 					}
 					case WM_MBUTTONDOWN: {
 						MENUITEMINFOA mii = {0};
-						int i, iCount = GetMenuItemCount(Globals.g_hMenuTrayUnread);
+						int i, iCount = GetMenuItemCount(_Plugin.g_hMenuTrayUnread);
 
 						if (wParam == 100)
 							SetForegroundWindow(hwndDlg);
 
-						if (Globals.m_WinVerMajor < 5)
+						if (_Plugin.m_WinVerMajor < 5)
 							break;
 
 						if (iCount > 0) {
@@ -322,9 +320,9 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 							mii.cbSize = sizeof(mii);
 							i = iCount - 1;
 							do {
-								GetMenuItemInfoA(Globals.g_hMenuTrayUnread, i, TRUE, &mii);
+								GetMenuItemInfoA(_Plugin.g_hMenuTrayUnread, i, TRUE, &mii);
 								if (mii.dwItemData > 0) {
-									uid = GetMenuItemID(Globals.g_hMenuTrayUnread, i);
+									uid = GetMenuItemID(_Plugin.g_hMenuTrayUnread, i);
 									HandleMenuEntryFromhContact(uid);
 									break;
 								}
@@ -334,7 +332,7 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 									SendMessage(pLastActiveContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
 									SetForegroundWindow(pLastActiveContainer->hwnd);
 								} else {
-									if(Globals.m_HideOnClose)
+									if(_Plugin.m_HideOnClose)
 										ShowWindow(pLastActiveContainer->hwnd, SW_HIDE);
 									else
 										SendMessage(pLastActiveContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
@@ -346,7 +344,7 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 						break;
 					}
 					case WM_RBUTTONUP: {
-						HMENU submenu = Globals.g_hMenuTrayContext;
+						HMENU submenu = _Plugin.g_hMenuTrayContext;
 						POINT pt;
 
 						if (wParam == 100)
@@ -435,12 +433,12 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 						break;
 					}
 					case NIN_BALLOONUSERCLICK: {
-						HandleMenuEntryFromhContact((int)Globals.m_TipOwner);
+						HandleMenuEntryFromhContact((int)_Plugin.m_TipOwner);
 						break;
 					}
 					case NIN_BALLOONHIDE:
 					case NIN_BALLOONTIMEOUT:
-						Globals.m_TipOwner = 0;
+						_Plugin.m_TipOwner = 0;
 						break;
 					default:
 						break;
@@ -480,7 +478,7 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			break;
 		}
 		case DM_DOCREATETAB: {
-			HWND hWnd = Globals.FindWindow((HANDLE)lParam);
+			HWND hWnd = M->FindWindow((HANDLE)lParam);
 			if (hWnd && IsWindow(hWnd)) {
 				struct ContainerWindowData *pContainer = 0;
 
@@ -536,12 +534,12 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			CallService(MS_DB_EVENT_MARKREAD, wParam, lParam);
 			break;
 		case DM_REGISTERHOTKEYS: {
-			int iWantHotkeys = pMim->GetByte("globalhotkeys", 0);
+			int iWantHotkeys = M->GetByte("globalhotkeys", 0);
 
 			if (iWantHotkeys && !g_hotkeysEnabled) {
 				int mod = MOD_CONTROL | MOD_SHIFT;
 
-				switch (pMim->GetByte("hotkeymodifier", 0)) {
+				switch (M->GetByte("hotkeymodifier", 0)) {
 					case HOTKEY_MODIFIERS_CTRLSHIFT:
 						mod = MOD_CONTROL | MOD_SHIFT;
 						break;
@@ -569,8 +567,8 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			break;
 		case DM_HKDETACH:
 			SetWindowPos(hwndDlg, HWND_TOPMOST, rcLast.left, rcLast.top, rcLast.right - rcLast.left, rcLast.bottom - rcLast.top, SWP_NOACTIVATE);
-			if (pSetLayeredWindowAttributes != NULL)
-				pSetLayeredWindowAttributes(hwndDlg, RGB(50, 250, 250), (BYTE)220, LWA_ALPHA);
+			if (M->m_pSetLayeredWindowAttributes != NULL)
+				M->m_pSetLayeredWindowAttributes(hwndDlg, RGB(50, 250, 250), (BYTE)220, LWA_ALPHA);
 			break;
 		case DM_HKSAVESIZE: {
 			WINDOWPLACEMENT wp = {0};
@@ -583,8 +581,8 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		case WM_THEMECHANGED: {
 			struct ContainerWindowData *pContainer = pFirstContainer;
 
-			Globals.ncm.cbSize = sizeof(NONCLIENTMETRICS);
-			SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &Globals.ncm, 0);
+			_Plugin.ncm.cbSize = sizeof(NONCLIENTMETRICS);
+			SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &_Plugin.ncm, 0);
 			FreeTabConfig();
 			ReloadTabConfig();
 			while (pContainer) {
@@ -635,10 +633,10 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		case WM_CLOSE:
 			return 0;
 		case WM_DESTROY: {
-			pMim->WriteDword(SRMSGMOD_T, "hkhx", rcLast.left);
-			pMim->WriteDword(SRMSGMOD_T, "hkhy", rcLast.top);
-			pMim->WriteDword(SRMSGMOD_T, "hkhwidth", rcLast.right - rcLast.left);
-			pMim->WriteDword(SRMSGMOD_T, "hkhheight", rcLast.bottom - rcLast.top);
+			M->WriteDword(SRMSGMOD_T, "hkhx", rcLast.left);
+			M->WriteDword(SRMSGMOD_T, "hkhy", rcLast.top);
+			M->WriteDword(SRMSGMOD_T, "hkhwidth", rcLast.right - rcLast.left);
+			M->WriteDword(SRMSGMOD_T, "hkhheight", rcLast.bottom - rcLast.top);
 			if (g_hotkeysEnabled)
 				SendMessage(hwndDlg, DM_FORCEUNREGISTERHOTKEYS, 0, 0);
 			break;

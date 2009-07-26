@@ -190,7 +190,7 @@ INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			struct ContainerWindowData *pContainer = 0;
 			do {
 				_snprintf(szValue, 8, "%d", iCounter);
-				if (DBGetContactSettingTString(NULL, szKey, szValue, &dbv))
+				if (M->GetTString(NULL, szKey, szValue, &dbv))
 					break;          // end of list
 				if (dbv.type == DBVT_ASCIIZ || dbv.type == DBVT_WCHAR) {
 					if (_tcsncmp(dbv.ptszVal, _T("**free**"), CONTAINER_NAMELEN)) {

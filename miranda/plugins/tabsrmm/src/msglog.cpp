@@ -167,37 +167,37 @@ void CacheLogFonts()
 	 * cache/create the info panel fonts
 	 */
 
-	Globals.ipConfig.isValid = 1;
+	_Plugin.ipConfig.isValid = 1;
 
-	if (Globals.ipConfig.isValid) {
+	if (_Plugin.ipConfig.isValid) {
 		COLORREF clr;
 		LOGFONTA lf;
 
 		for (i = 0; i < IPFONTCOUNT; i++) {
-			if (Globals.ipConfig.hFonts[i])
-				DeleteObject(Globals.ipConfig.hFonts[i]);
+			if (_Plugin.ipConfig.hFonts[i])
+				DeleteObject(_Plugin.ipConfig.hFonts[i]);
 			LoadLogfont(i + 100, &lf, &clr, FONTMODULE);
 			lf.lfHeight =-MulDiv(lf.lfHeight, logPixelSY, 72);
-			Globals.ipConfig.hFonts[i] = CreateFontIndirectA(&lf);
-			Globals.ipConfig.clrs[i] = clr;
+			_Plugin.ipConfig.hFonts[i] = CreateFontIndirectA(&lf);
+			_Plugin.ipConfig.clrs[i] = clr;
 		}
-		Globals.hFontCaption = Globals.ipConfig.hFonts[IPFONTCOUNT - 1];
+		_Plugin.hFontCaption = _Plugin.ipConfig.hFonts[IPFONTCOUNT - 1];
 	}
 
-	if (Globals.ipConfig.bkgBrush)
-		DeleteObject(Globals.ipConfig.bkgBrush);
+	if (_Plugin.ipConfig.bkgBrush)
+		DeleteObject(_Plugin.ipConfig.bkgBrush);
 
-	Globals.ipConfig.clrBackground = pMim->GetDword(FONTMODULE, "ipfieldsbg", GetSysColor(COLOR_3DFACE));
-	Globals.ipConfig.clrClockSymbol = pMim->GetDword(FONTMODULE, "col_clock", GetSysColor(COLOR_WINDOWTEXT));
+	_Plugin.ipConfig.clrBackground = M->GetDword(FONTMODULE, "ipfieldsbg", GetSysColor(COLOR_3DFACE));
+	_Plugin.ipConfig.clrClockSymbol = M->GetDword(FONTMODULE, "col_clock", GetSysColor(COLOR_WINDOWTEXT));
 
-	Globals.ipConfig.bkgBrush = CreateSolidBrush(Globals.ipConfig.clrBackground);
+	_Plugin.ipConfig.bkgBrush = CreateSolidBrush(_Plugin.ipConfig.clrBackground);
 
-	Globals.crDefault = pMim->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
-	Globals.crIncoming = pMim->GetDword(FONTMODULE, "inbg", SRMSGDEFSET_BKGINCOLOUR);
-	Globals.crOutgoing = pMim->GetDword(FONTMODULE, "outbg", SRMSGDEFSET_BKGOUTCOLOUR);
-	Globals.crStatus = pMim->GetDword(FONTMODULE, "statbg", SRMSGDEFSET_BKGCOLOUR);
-	Globals.crOldIncoming = pMim->GetDword(FONTMODULE, "oldinbg", SRMSGDEFSET_BKGINCOLOUR);
-	Globals.crOldOutgoing = pMim->GetDword(FONTMODULE, "oldoutbg", SRMSGDEFSET_BKGOUTCOLOUR);
+	_Plugin.crDefault = M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
+	_Plugin.crIncoming = M->GetDword(FONTMODULE, "inbg", SRMSGDEFSET_BKGINCOLOUR);
+	_Plugin.crOutgoing = M->GetDword(FONTMODULE, "outbg", SRMSGDEFSET_BKGOUTCOLOUR);
+	_Plugin.crStatus = M->GetDword(FONTMODULE, "statbg", SRMSGDEFSET_BKGCOLOUR);
+	_Plugin.crOldIncoming = M->GetDword(FONTMODULE, "oldinbg", SRMSGDEFSET_BKGINCOLOUR);
+	_Plugin.crOldOutgoing = M->GetDword(FONTMODULE, "oldoutbg", SRMSGDEFSET_BKGOUTCOLOUR);
 }
 
 void FreeLogFonts()
@@ -205,11 +205,11 @@ void FreeLogFonts()
 	int i;
 
 	for (i = 0; i < IPFONTCOUNT; i++)
-		if (Globals.ipConfig.hFonts[i])
-			DeleteObject(Globals.ipConfig.hFonts[i]);
+		if (_Plugin.ipConfig.hFonts[i])
+			DeleteObject(_Plugin.ipConfig.hFonts[i]);
 
-	if (Globals.ipConfig.bkgBrush)
-		DeleteObject(Globals.ipConfig.bkgBrush);
+	if (_Plugin.ipConfig.bkgBrush)
+		DeleteObject(_Plugin.ipConfig.bkgBrush);
 }
 
 /*
@@ -226,10 +226,10 @@ void CacheMsgLogIcons()
 	Logicons[0] = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
 	Logicons[1] = LoadSkinnedIcon(SKINICON_EVENT_URL);
 	Logicons[2] = LoadSkinnedIcon(SKINICON_EVENT_FILE);
-	Logicons[3] = Globals.g_iconOut;
-	Logicons[4] = Globals.g_iconIn;
-	Logicons[5] = Globals.g_iconStatus;
-	Logicons[6] = Globals.g_iconErr;
+	Logicons[3] = _Plugin.g_iconOut;
+	Logicons[4] = _Plugin.g_iconIn;
+	Logicons[5] = _Plugin.g_iconStatus;
+	Logicons[6] = _Plugin.g_iconErr;
 }
 
 /*
@@ -532,7 +532,7 @@ static void Build_RTF_Header(char **buffer, int *bufferEnd, int *bufferAlloced, 
 
 	// bbcode colors...
 
-	for (i = 0; i < Globals.rtf_ctablesize; i++)
+	for (i = 0; i < _Plugin.rtf_ctablesize; i++)
 		AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(rtf_ctable[i].clr), GetGValue(rtf_ctable[i].clr), GetBValue(rtf_ctable[i].clr));
 
 	/*
@@ -640,7 +640,7 @@ static char *Template_CreateRTFFromDbEvent(struct _MessageWindowData *dat, HANDL
 	TemplateSet *this_templateset;
 	BOOL isBold = FALSE, isItalic = FALSE, isUnderline = FALSE;
 	DWORD dwEffectiveFlags;
-	DWORD dwFormattingParams = MAKELONG(Globals.m_FormatWholeWordsOnly, 0);
+	DWORD dwFormattingParams = MAKELONG(_Plugin.m_FormatWholeWordsOnly, 0);
 	char  *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 	BOOL  fIsStatusChangeEvent = FALSE;
 	TCHAR *msg, *formatted = NULL;
@@ -1571,7 +1571,7 @@ static void ReplaceIcons(HWND hwndDlg, struct _MessageWindowData *dat, LONG star
 	COLORREF crDefault;
 	struct MsgLogIcon theIcon;
 	char trbuffer[40];
-	DWORD dwScale = pMim->GetDword("iconscale", 0);
+	DWORD dwScale = M->GetDword("iconscale", 0);
 	tr.lpstrText = trbuffer;
 
 	hwndrtf = GetDlgItem(hwndDlg, IDC_LOG);
@@ -1597,7 +1597,7 @@ static void ReplaceIcons(HWND hwndDlg, struct _MessageWindowData *dat, LONG star
 			SendMessageA(hwndrtf, EM_REPLACESEL, FALSE, (LPARAM)"");
 			length = (unsigned int)atol(&trbuffer[7]);
 			index = atol(&trbuffer[14]);
-			if (length > 0 && length < 20000 && index >= RTF_CTABLE_DEFSIZE && index < Globals.rtf_ctablesize) {
+			if (length > 0 && length < 20000 && index >= RTF_CTABLE_DEFSIZE && index < _Plugin.rtf_ctablesize) {
 				cf2.crTextColor = rtf_ctable[index].clr;
 				cr.cpMin = fi.chrgText.cpMin;
 				cr.cpMax = cr.cpMin + length;
@@ -1645,7 +1645,7 @@ static void ReplaceIcons(HWND hwndDlg, struct _MessageWindowData *dat, LONG star
 	 * do smiley replacing, using the service
 	 */
 
-	if (Globals.g_SmileyAddAvail) {
+	if (_Plugin.g_SmileyAddAvail) {
 		CHARRANGE sel;
 		SMADD_RICHEDIT3 smadd;
 
@@ -1669,7 +1669,7 @@ static void ReplaceIcons(HWND hwndDlg, struct _MessageWindowData *dat, LONG star
 			CallService(MS_SMILEYADD_REPLACESMILEYS, TABSRMM_SMILEYADD_BKGCOLORMODE, (LPARAM)&smadd);
 	}
 
-	if (Globals.m_MathModAvail) {
+	if (_Plugin.m_MathModAvail) {
 		TMathRicheditInfo mathReplaceInfo;
 		CHARRANGE mathNewSel;
 		mathNewSel.cpMin = startAt;
@@ -1712,16 +1712,16 @@ static BOOL CALLBACK LangAddCallback(LPTSTR str)
 	count = sizeof(cpTable) / sizeof(cpTable[0]);
 	for (i = 0; i < count && cpTable[i].cpId != cp; i++);
 	if (i < count) {
-		AppendMenu(Globals.g_hMenuEncoding, MF_STRING, cp, TranslateTS(cpTable[i].cpName));
+		AppendMenu(_Plugin.g_hMenuEncoding, MF_STRING, cp, TranslateTS(cpTable[i].cpName));
 	}
 	return TRUE;
 }
 
 void BuildCodePageList()
 {
-	Globals.g_hMenuEncoding = CreateMenu();
-	AppendMenu(Globals.g_hMenuEncoding, MF_STRING, 500, TranslateT("Use default codepage"));
-	AppendMenuA(Globals.g_hMenuEncoding, MF_SEPARATOR, 0, 0);
+	_Plugin.g_hMenuEncoding = CreateMenu();
+	AppendMenu(_Plugin.g_hMenuEncoding, MF_STRING, 500, TranslateT("Use default codepage"));
+	AppendMenuA(_Plugin.g_hMenuEncoding, MF_SEPARATOR, 0, 0);
 	EnumSystemCodePages(LangAddCallback, CP_INSTALLED);
 }
 
@@ -1751,87 +1751,3 @@ static TCHAR *Template_MakeRelativeDate(struct _MessageWindowData *dat, time_t c
 	return szResult;
 }
 
-/*
- * decodes UTF-8 to unicode
- * taken from jabber protocol implementation and slightly modified
- * free() the return value
- */
-
-#if defined(_UNICODE)
-
-WCHAR *Utf8_Decode(const char *str)
-{
-	size_t i, len;
-	char *p;
-	WCHAR *wszTemp = NULL;
-
-	if (str == NULL)
-		return NULL;
-
-	len = strlen(str);
-
-	if ((wszTemp = (WCHAR *) malloc(sizeof(TCHAR) * (len + 2))) == NULL)
-		return NULL;
-	p = (char *) str;
-	i = 0;
-	while (*p) {
-		if ((*p & 0x80) == 0)
-			wszTemp[i++] = *(p++);
-		else if ((*p & 0xe0) == 0xe0) {
-			wszTemp[i] = (*(p++) & 0x1f) << 12;
-			wszTemp[i] |= (*(p++) & 0x3f) << 6;
-			wszTemp[i++] |= (*(p++) & 0x3f);
-		} else {
-			wszTemp[i] = (*(p++) & 0x3f) << 6;
-			wszTemp[i++] |= (*(p++) & 0x3f);
-		}
-	}
-	wszTemp[i] = (TCHAR)'\0';
-	return wszTemp;
-}
-
-/*
- * convert unicode to UTF-8
- * code taken from jabber protocol implementation and slightly modified.
- * free() the return value
- */
-
-char *Utf8_Encode(const WCHAR *str)
-{
-	unsigned char *szOut = NULL;
-	size_t len, i;
-	const WCHAR *wszTemp, *w;
-
-	if (str == NULL)
-		return NULL;
-
-	wszTemp = str;
-
-	// Convert unicode to utf8
-	len = 0;
-	for (w = wszTemp; *w; w++) {
-		if (*w < 0x0080) len++;
-		else if (*w < 0x0800) len += 2;
-		else len += 3;
-	}
-
-	if ((szOut = (unsigned char *) malloc(len + 2)) == NULL)
-		return NULL;
-
-	i = 0;
-	for (w = wszTemp; *w; w++) {
-		if (*w < 0x0080)
-			szOut[i++] = (unsigned char) * w;
-		else if (*w < 0x0800) {
-			szOut[i++] = 0xc0 | ((*w) >> 6);
-			szOut[i++] = 0x80 | ((*w) & 0x3f);
-		} else {
-			szOut[i++] = 0xe0 | ((*w) >> 12);
-			szOut[i++] = 0x80 | (((*w) >> 6) & 0x3f);
-			szOut[i++] = 0x80 | ((*w) & 0x3f);
-		}
-	}
-	szOut[i] = '\0';
-	return (char *) szOut;
-}
-#endif

@@ -20,131 +20,46 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$id$
+$Id:$
 
 */
 
 #include "commonheaders.h"
+extern PLUGININFOEX pluginInfo;
+static char *relnotes[] = {
+	"{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
+	"\\par\t\\b\\ul1 Release notes for version 3.0.0.0\\b0\\ul0\\par ",
+	"*\tDevel branch for Miranda 0.9. Does NOT work in Miranda 0.8 or earlier.\\par ",
+	"\t\\b View all release notes and history online:\\b0 \\par \thttp://wiki.miranda.or.at/TabSrmm:ChangeLog\\par ",
+	NULL
+};
 
 /*
- * read a setting for a contact
+ * display release notes dialog
  */
 
-DWORD _Mim::GetDword(const HANDLE hContact = 0, const char *szModule = 0, const char *szSetting = 0, DWORD uDefault = 0) const
+void _Globals::ViewReleaseNotes(bool fForced = 0, bool fTerminated = false)
 {
-	return((DWORD)DBGetContactSettingDword(hContact, szModule, szSetting, uDefault));
+	if(fTerminated) {
+		m_showRelnotes = false;
+		return;
+	}
+
+	if(!fForced) {
+		if(m_showRelnotes)
+			return;
+		if (M->GetDword("last_relnotes", 0) < pluginInfo.version)
+			M->WriteDword(SRMSGMOD_T, "last_relnotes", pluginInfo.version);
+		else
+			return;
+	}
+	else if(m_showRelnotes)
+		return;
+
+	m_showRelnotes = true;
+	::CreateDialogParam(::g_hInst, MAKEINTRESOURCE(IDD_VARIABLEHELP), 0, ::DlgProcTemplateHelp, (LPARAM)relnotes);
 }
 
-/*
- * read a setting from our default module (Tab_SRMSG)
- */
-
-DWORD _Mim::GetDword(const char *szSetting = 0, DWORD uDefault = 0) const
-{
-	return((DWORD)DBGetContactSettingDword(0, SRMSGMOD_T, szSetting, uDefault));
-}
-
-/*
- * read a contact setting with our default module name (Tab_SRMSG)
- */
-
-DWORD _Mim::GetDword(const HANDLE hContact = 0, const char *szSetting = 0, DWORD uDefault = 0) const
-{
-	return((DWORD)DBGetContactSettingDword(hContact, SRMSGMOD_T, szSetting, uDefault));
-}
-
-/*
- * read a setting from module only
- */
-
-DWORD _Mim::GetDword(const char *szModule, const char *szSetting, DWORD uDefault) const
-{
-	return((DWORD)DBGetContactSettingDword(0, szModule, szSetting, uDefault));
-}
-
-/*
- * same for bytes now
- */
-int _Mim::GetByte(const HANDLE hContact = 0, const char *szModule = 0, const char *szSetting = 0, int uDefault = 0) const
-{
-	return(DBGetContactSettingByte(hContact, szModule, szSetting, uDefault));
-}
-
-int _Mim::GetByte(const char *szSetting = 0, int uDefault = 0) const
-{
-	return(DBGetContactSettingByte(0, SRMSGMOD_T, szSetting, uDefault));
-}
-
-int _Mim::GetByte(const HANDLE hContact = 0, const char *szSetting = 0, int uDefault = 0) const
-{
-	return(DBGetContactSettingByte(hContact, SRMSGMOD_T, szSetting, uDefault));
-}
-
-int _Mim::GetByte(const char *szModule, const char *szSetting, int uDefault) const
-{
-	return(DBGetContactSettingByte(0, szModule, szSetting, uDefault));
-}
-
-/*
- * writer functions
- */
-
-INT_PTR _Mim::WriteDword(const HANDLE hContact = 0, const char *szModule = 0, const char *szSetting = 0, DWORD value = 0) const
-{
-	return(DBWriteContactSettingDword(hContact, szModule, szSetting, value));
-}
-
-/*
- * write non-contact setting
-*/
-
-INT_PTR _Mim::WriteDword(const char *szModule = 0, const char *szSetting = 0, DWORD value = 0) const
-{
-	return(DBWriteContactSettingDword(0, szModule, szSetting, value));
-}
-
-INT_PTR _Mim::WriteByte(const HANDLE hContact = 0, const char *szModule = 0, const char *szSetting = 0, BYTE value = 0) const
-{
-	return(DBWriteContactSettingByte(hContact, szModule, szSetting, value));
-}
-
-INT_PTR _Mim::WriteByte(const char *szModule = 0, const char *szSetting = 0, BYTE value = 0) const
-{
-	return(DBWriteContactSettingByte(0, szModule, szSetting, value));
-}
-
-/*
- * window list functions
- */
-
-void _Globals::BroadcastMessage(UINT msg = 0, WPARAM wParam = 0, LPARAM lParam = 0)
-{
-	WindowList_Broadcast(m_hMessageWindowList, msg, wParam, lParam);
-}
-
-void _Globals::BroadcastMessageAsync(UINT msg = 0, WPARAM wParam = 0, LPARAM lParam = 0)
-{
-	WindowList_BroadcastAsync(m_hMessageWindowList, msg, wParam, lParam);
-}
-
-HWND _Globals::FindWindow(HANDLE h = 0) const
-{
-	return(WindowList_Find(m_hMessageWindowList, h));
-}
-
-INT_PTR _Globals::AddWindow(HWND hWnd = 0, HANDLE h = 0)
-{
-	return(WindowList_Add(m_hMessageWindowList, hWnd, h));
-}
-
-INT_PTR _Globals::RemoveWindow(HWND hWnd = 0)
-{
-	return(WindowList_Remove(m_hMessageWindowList, hWnd));
-}
-
-_Globals Globals;
-_Globals *pGlobals = &Globals;
-
-_Mim Mim;
-_Mim *pMim = &Mim;
+_Globals _Plugin;
+_Globals *pConfig = &_Plugin;
 

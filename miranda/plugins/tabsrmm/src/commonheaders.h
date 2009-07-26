@@ -82,22 +82,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include  <m_acc.h>
 #include  <m_chat.h>
 #include  <m_protomod.h>
+#include <m_imgsrvc.h>
 
 extern struct LIST_INTERFACE li;
 
 #define safe_sizeof(a) (unsigned int)((sizeof((a)) / sizeof((a)[0])))
-
-#if !defined(_UNICODE)
-
-#define ptszVal pszVal
-
-#undef DBGetContactSettingTString
-#undef DBGetContactSettingWString
-
-#define DBGetContactSettingTString(a,b,c,d) DBGetContactSetting(a,b,c,d)
-#define DBGetContactSettingWString(a,b,c,d) DBGetContactSetting(a,b,c,d)
-
-#endif
 
 #include "../API/m_ieview.h"
 #include "../API/m_popup.h"
@@ -118,15 +107,18 @@ extern struct LIST_INTERFACE li;
 
 #include "msgdlgutils.h"
 
-#ifndef __CPP_LEAN
 #include "msgs.h"
+#ifndef __CPP_LEAN
 #include "nen.h"
 #include "functions.h"
 #include "typingnotify.h"
 #include "generic_msghandlers.h"
 #include "../chat/chat.h"
-#include "globals.h"
+extern 	NEN_OPTIONS	nen_options;
 #endif
+
+#include "globals.h"
+#include "mim.h"
 
 #if !defined(_WIN64) && !defined(_USE_32BIT_TIME_T)
 	#define _USE_32BIT_TIME_T
@@ -165,4 +157,9 @@ typedef struct __paraformat2
 	WORD	wBorderWidth;			// Pen widths (nbl/bdr in half twips)
 	WORD	wBorders;				// Border styles (nibble/border)
 } _PARAFORMAT2;
+
+extern	HINSTANCE g_hInst;
+extern 	bool g_skinnedContainers;
+extern 	bool g_framelessSkinmode;
+extern StatusItems_t StatusItems[];
 

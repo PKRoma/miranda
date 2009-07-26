@@ -38,6 +38,8 @@ Sets things like:
 */
 
 #include "commonheaders.h"
+#include <m_timezones.h>
+
 #pragma hdrstop
 #include <uxtheme.h>
 
@@ -47,10 +49,8 @@ Sets things like:
 
 extern		HANDLE hUserPrefsWindowList;
 extern		struct CPTABLE cpTable[];
-extern		BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
 
 static HWND hCpCombo;
-REG_TIMEZONE *reg_timezones = NULL;
 
 static BOOL CALLBACK FillCpCombo(LPCTSTR str)
 {
@@ -80,20 +80,17 @@ INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			DWORD contact_gmt_diff, timediff;
 			int i;
 			BYTE timezone;
-			DWORD maxhist = pMim->GetDword((HANDLE)lParam, "maxhist", 0);
-			BYTE bIEView = pMim->GetByte((HANDLE)lParam, "ieview", 0);
-			BYTE bHPP = pMim->GetByte((HANDLE)lParam, "hpplog", 0);
-			int iLocalFormat = pMim->GetDword((HANDLE)lParam, "sendformat", 0);
-			BYTE bRTL = pMim->GetByte((HANDLE)lParam, "RTL", 0);
-			BYTE bLTR = pMim->GetByte((HANDLE)lParam, "RTL", 1);
-			BYTE bSplit = pMim->GetByte((HANDLE)lParam, "splitoverride", 0);
-			BYTE bInfoPanel = pMim->GetByte((HANDLE)lParam, "infopanel", 0);
-			BYTE bAvatarVisible = pMim->GetByte((HANDLE)lParam, "hideavatar", -1);
+			DWORD maxhist = M->GetDword((HANDLE)lParam, "maxhist", 0);
+			BYTE bIEView = M->GetByte((HANDLE)lParam, "ieview", 0);
+			BYTE bHPP = M->GetByte((HANDLE)lParam, "hpplog", 0);
+			int iLocalFormat = M->GetDword((HANDLE)lParam, "sendformat", 0);
+			BYTE bRTL = M->GetByte((HANDLE)lParam, "RTL", 0);
+			BYTE bLTR = M->GetByte((HANDLE)lParam, "RTL", 1);
+			BYTE bSplit = M->GetByte((HANDLE)lParam, "splitoverride", 0);
+			BYTE bInfoPanel = M->GetByte((HANDLE)lParam, "infopanel", 0);
+			BYTE bAvatarVisible = M->GetByte((HANDLE)lParam, "hideavatar", -1);
 			char *szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)lParam, 0);
 			int  def_log_index = 1, hpp_log_index = 1, ieview_log_index = 1;
-			TCHAR 	*tszCurrentTzName = NULL, tszSelectedItem[256], tszSelectedItemBackup[256];
-
-			tszSelectedItem[0] = tszSelectedItemBackup[0] = 0;
 
 			have_ieview = ServiceExists(MS_IEVIEW_WINDOW);
 			have_hpp = ServiceExists("History++/ExtGrid/NewWindow");
@@ -133,17 +130,17 @@ INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			SendDlgItemMessage(hwndDlg, IDC_TEXTFORMATTING, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Force Off"));
 			SendDlgItemMessage(hwndDlg, IDC_TEXTFORMATTING, CB_SETCURSEL, iLocalFormat == 0 ? 0 : (iLocalFormat == -1 ? 3 : (iLocalFormat == SENDFORMAT_BBCODE ? 1 : 2)), 0);
 
-			if (CheckMenuItem(Globals.g_hMenuFavorites, (UINT_PTR)lParam, MF_BYCOMMAND | MF_UNCHECKED) == -1)
+			if (CheckMenuItem(_Plugin.g_hMenuFavorites, (UINT_PTR)lParam, MF_BYCOMMAND | MF_UNCHECKED) == -1)
 				CheckDlgButton(hwndDlg, IDC_ISFAVORITE, FALSE);
 			else
 				CheckDlgButton(hwndDlg, IDC_ISFAVORITE, TRUE);
 
 			CheckDlgButton(hwndDlg, IDC_PRIVATESPLITTER, bSplit);
-			CheckDlgButton(hwndDlg, IDC_TEMPLOVERRIDE, pMim->GetByte(hContact, TEMPLATES_MODULE, "enabled", 0));
-			CheckDlgButton(hwndDlg, IDC_RTLTEMPLOVERRIDE, pMim->GetByte(hContact, RTLTEMPLATES_MODULE, "enabled", 0));
+			CheckDlgButton(hwndDlg, IDC_TEMPLOVERRIDE, M->GetByte(hContact, TEMPLATES_MODULE, "enabled", 0));
+			CheckDlgButton(hwndDlg, IDC_RTLTEMPLOVERRIDE, M->GetByte(hContact, RTLTEMPLATES_MODULE, "enabled", 0));
 
 			//MAD
-			CheckDlgButton(hwndDlg, IDC_LOADONLYACTUAL, pMim->GetByte(hContact, "ActualHistory", 0));
+			CheckDlgButton(hwndDlg, IDC_LOADONLYACTUAL, M->GetByte(hContact, "ActualHistory", 0));
 			//
 			SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_SETRANGE, 0, MAKELONG(1000, 5));
 			SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_SETPOS, 0, maxhist);
@@ -153,7 +150,7 @@ INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 #if defined(_UNICODE)
 			hCpCombo = GetDlgItem(hwndDlg, IDC_CODEPAGES);
-			sCodePage = pMim->GetDword(hContact, "ANSIcodepage", 0);
+			sCodePage = M->GetDword(hContact, "ANSIcodepage", 0);
 			EnumSystemCodePages((CODEPAGE_ENUMPROC)FillCpCombo, CP_INSTALLED);
 			SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_INSERTSTRING, 0, (LPARAM)TranslateT("Use default codepage"));
 			if (sCodePage == 0)
@@ -164,13 +161,13 @@ INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 						SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_SETCURSEL, (WPARAM)i, 0);
 				}
 			}
-			CheckDlgButton(hwndDlg, IDC_FORCEANSI, pMim->GetByte(hContact, "forceansi", 0) ? 1 : 0);
+			CheckDlgButton(hwndDlg, IDC_FORCEANSI, M->GetByte(hContact, "forceansi", 0) ? 1 : 0);
 #else
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CODEPAGES), FALSE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_FORCEANSI), FALSE);
 #endif
-			CheckDlgButton(hwndDlg, IDC_IGNORETIMEOUTS, pMim->GetByte(hContact, "no_ack", 0));
-			timezone = pMim->GetByte(hContact, "UserInfo", "Timezone", pMim->GetByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone", -1));
+			CheckDlgButton(hwndDlg, IDC_IGNORETIMEOUTS, M->GetByte(hContact, "no_ack", 0));
+			timezone = M->GetByte(hContact, "UserInfo", "Timezone", M->GetByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone", -1));
 
 			contact_gmt_diff = timezone > 128 ? 256 - timezone : 0 - timezone;
 			timediff = /* (int)myGlobals.local_gmt_diff - */ - (int)contact_gmt_diff * 60 * 60 / 2;
@@ -178,47 +175,27 @@ INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			/*
 			 * already populated and prepared
 			 */
-			if(reg_timezones) {
-				unsigned i = 0;
-				DBVARIANT dbv;
-				TCHAR	  *tszCurrentTzName = NULL;
 
-				if(DBGetContactSettingTString(hContact, "UserInfo", "TzName", &dbv) == 0)
-					tszCurrentTzName = dbv.ptszVal;
+			if(ServiceExists(MS_TZ_PREPARELIST)) {
+				MIM_TZ_PREPARELIST mtzp;
 
-				while(reg_timezones[i].tszDisplay[0]) {
-					SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_ADDSTRING, 0, (LPARAM)reg_timezones[i].tszDisplay);
-					if(tszCurrentTzName && !_tcscmp(tszCurrentTzName, reg_timezones[i].tszName))			// remember the display name to later select it in the listbox
-						mir_sntprintf(tszSelectedItem, 256, _T("%s"), reg_timezones[i].tszDisplay);
-					/*
-					 * if ONLY a GMT offset is known, use it anyway. Works in most cases, but not when DST
-					 * is different at the target time zone
-					 */
-					if(timezone != -1 && (LONG)timediff == reg_timezones[i].Bias)
-						mir_sntprintf(tszSelectedItemBackup, 256, _T("%s"), reg_timezones[i].tszDisplay);
-					i++;
-				}
-				if(tszCurrentTzName)
-					DBFreeVariant(&dbv);
+				ZeroMemory(&mtzp, sizeof(MS_TZ_PREPARELIST));
+				mtzp.cbSize = sizeof(MIM_TZ_PREPARELIST);
+				mtzp.hContact = hContact;
+				mtzp.hWnd = GetDlgItem(hwndDlg, IDC_TIMEZONE);
+				mtzp.dwFlags = MIM_TZ_PLF_CB;
+				CallService(MS_TZ_PREPARELIST, (WPARAM)0, (LPARAM)&mtzp);
 			}
+			else
+				SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_ADDSTRING, 0, (LPARAM)_T("time zone service is missing"));
 
-			SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_INSERTSTRING, 0, (LPARAM)TranslateT("<unspecified>"));
-
-			if(tszSelectedItem[0]) {
-				LRESULT item = SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_FINDSTRING, (WPARAM)-1, (LPARAM)tszSelectedItem);
-				SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_SETCURSEL, (WPARAM)item, 0);
 			/*
 			 * no real time zone information is stored in the db. Use the GMT based timezone offset to figure
 			 * out a matching zone. If not even this information is found, set it to unspecified.
 			*/
-			} else if(tszSelectedItemBackup[0]) {
-				LRESULT item = SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_FINDSTRING, (WPARAM)-1, (LPARAM)tszSelectedItemBackup);
-				SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_SETCURSEL, (WPARAM)item, 0);
-			} else
-				SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_SETCURSEL, (WPARAM)0, 0);
 
 			ShowWindow(hwndDlg, SW_SHOW);
-			CheckDlgButton(hwndDlg, IDC_NOAUTOCLOSE, pMim->GetByte(hContact, "NoAutoClose", 0));
+			CheckDlgButton(hwndDlg, IDC_NOAUTOCLOSE, M->GetByte(hContact, "NoAutoClose", 0));
 			return TRUE;
 		}
 		case WM_COMMAND:
@@ -232,12 +209,11 @@ INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					DWORD	*pdwActionToTake = (DWORD *)lParam;
 					int		iIndex = CB_ERR;
 					DWORD	newCodePage;
-					int		offset;
 					unsigned int iOldIEView;
-					HWND	hWnd = Globals.FindWindow(hContact);
-					DWORD	sCodePage = pMim->GetDword(hContact, "ANSIcodepage", 0);
-					DWORD	oldTZ = (DWORD)pMim->GetByte(hContact, "UserInfo", "Timezone", pMim->GetByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone", -1));
-					BYTE	bInfoPanel, bOldInfoPanel = pMim->GetByte(hContact, "infopanel", 0);
+					HWND	hWnd = M->FindWindow(hContact);
+					DWORD	sCodePage = M->GetDword(hContact, "ANSIcodepage", 0);
+					DWORD	oldTZ = (DWORD)M->GetByte(hContact, "UserInfo", "Timezone", M->GetByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone", -1));
+					BYTE	bInfoPanel, bOldInfoPanel = M->GetByte(hContact, "infopanel", 0);
 					BYTE	bAvatarVisible = 0;
 
 					if (hWnd) {
@@ -251,20 +227,20 @@ INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 						switch (iIndex) {
 							case 0:
-								pMim->WriteByte(hContact, SRMSGMOD_T, "ieview", 0);
-								pMim->WriteByte(hContact, SRMSGMOD_T, "hpplog", 0);
+								M->WriteByte(hContact, SRMSGMOD_T, "ieview", 0);
+								M->WriteByte(hContact, SRMSGMOD_T, "hpplog", 0);
 								break;
 							case 1:
-								pMim->WriteByte(hContact, SRMSGMOD_T, "ieview", -1);
-								pMim->WriteByte(hContact, SRMSGMOD_T, "hpplog", 1);
+								M->WriteByte(hContact, SRMSGMOD_T, "ieview", -1);
+								M->WriteByte(hContact, SRMSGMOD_T, "hpplog", 1);
 								break;
 							case 2:
-								pMim->WriteByte(hContact, SRMSGMOD_T, "ieview", 1);
-								pMim->WriteByte(hContact, SRMSGMOD_T, "hpplog", -1);
+								M->WriteByte(hContact, SRMSGMOD_T, "ieview", 1);
+								M->WriteByte(hContact, SRMSGMOD_T, "hpplog", -1);
 								break;
 							case 3:
-								pMim->WriteByte(hContact, SRMSGMOD_T, "ieview", -1);
-								pMim->WriteByte(hContact, SRMSGMOD_T, "hpplog", -1);
+								M->WriteByte(hContact, SRMSGMOD_T, "ieview", -1);
+								M->WriteByte(hContact, SRMSGMOD_T, "hpplog", -1);
 								break;
 							default:
 								break;
@@ -278,22 +254,22 @@ INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 						}
 					}
 					if ((iIndex = SendDlgItemMessage(hwndDlg, IDC_TEXTFORMATTING, CB_GETCURSEL, 0, 0)) != CB_ERR) {
-						pMim->WriteDword(hContact, SRMSGMOD_T, "sendformat", iIndex == 3 ? -1 : iIndex);
+						M->WriteDword(hContact, SRMSGMOD_T, "sendformat", iIndex == 3 ? -1 : iIndex);
 						if (iIndex == 0)
 							DBDeleteContactSetting(hContact, SRMSGMOD_T, "sendformat");
 					}
 #if defined(_UNICODE)
 					iIndex = SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_GETCURSEL, 0, 0);
 					if ((newCodePage = (DWORD)SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_GETITEMDATA, (WPARAM)iIndex, 0)) != sCodePage) {
-						pMim->WriteDword(hContact, SRMSGMOD_T, "ANSIcodepage", (DWORD)newCodePage);
+						M->WriteDword(hContact, SRMSGMOD_T, "ANSIcodepage", (DWORD)newCodePage);
 						if (hWnd && dat) {
 							dat->codePage = newCodePage;
 							dat->wOldStatus = 0;
 							SendMessage(hWnd, DM_UPDATETITLE, 0, 0);
 						}
 					}
-					if ((IsDlgButtonChecked(hwndDlg, IDC_FORCEANSI) ? 1 : 0) != pMim->GetByte(hContact, "forceansi", 0)) {
-						pMim->WriteByte(hContact, SRMSGMOD_T, "forceansi", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_FORCEANSI) ? 1 : 0));
+					if ((IsDlgButtonChecked(hwndDlg, IDC_FORCEANSI) ? 1 : 0) != M->GetByte(hContact, "forceansi", 0)) {
+						M->WriteByte(hContact, SRMSGMOD_T, "forceansi", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_FORCEANSI) ? 1 : 0));
 						if (hWnd && dat)
 							dat->sendMode = IsDlgButtonChecked(hwndDlg, IDC_FORCEANSI) ? dat->sendMode | SMODE_FORCEANSI : dat->sendMode & ~SMODE_FORCEANSI;
 					}
@@ -302,23 +278,26 @@ INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 #endif
 					if (IsDlgButtonChecked(hwndDlg, IDC_ISFAVORITE)) {
 						if (!DBGetContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", 0))
-							AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, Globals.g_hMenuFavorites, newCodePage);
+							AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, _Plugin.g_hMenuFavorites, newCodePage);
 					} else
-						DeleteMenu(Globals.g_hMenuFavorites, (UINT_PTR)hContact, MF_BYCOMMAND);
+						DeleteMenu(_Plugin.g_hMenuFavorites, (UINT_PTR)hContact, MF_BYCOMMAND);
 
 					DBWriteContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", (WORD)(IsDlgButtonChecked(hwndDlg, IDC_ISFAVORITE) ? 1 : 0));
-					pMim->WriteByte(hContact, SRMSGMOD_T, "splitoverride", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_PRIVATESPLITTER) ? 1 : 0));
+					M->WriteByte(hContact, SRMSGMOD_T, "splitoverride", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_PRIVATESPLITTER) ? 1 : 0));
 
-					pMim->WriteByte(hContact, TEMPLATES_MODULE, "enabled", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_TEMPLOVERRIDE)));
-					pMim->WriteByte(hContact, RTLTEMPLATES_MODULE, "enabled", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_RTLTEMPLOVERRIDE)));
+					M->WriteByte(hContact, TEMPLATES_MODULE, "enabled", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_TEMPLOVERRIDE)));
+					M->WriteByte(hContact, RTLTEMPLATES_MODULE, "enabled", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_RTLTEMPLOVERRIDE)));
 
-					offset = SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_GETCURSEL, 0, 0);
+					INT_PTR offset = SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_GETCURSEL, 0, 0);
 					if (offset > 0) {
-						char	*szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-						DBWriteContactSettingTString(hContact, "UserInfo", "TzName", reg_timezones[offset - 1].tszName);
-						pMim->WriteByte(hContact, "UserInfo", "Timezone", (char)(reg_timezones[offset - 1].Bias / 3600));
-						if(szProto)
-							pMim->WriteByte(hContact, szProto, "Timezone", (char)(reg_timezones[offset - 1].Bias / 1800));
+						MIM_TIMEZONE *ptz = (MIM_TIMEZONE *)SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_GETITEMDATA, (WPARAM)offset, 0);
+						if(reinterpret_cast<INT_PTR>(ptz) != CB_ERR && ptz != 0) {
+							char	*szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+							M->WriteTString(hContact, "UserInfo", "TzName", ptz->tszName);
+							M->WriteByte(hContact, "UserInfo", "Timezone", (char)(ptz->GMT_Offset));
+							if(szProto)
+								M->WriteByte(hContact, szProto, "Timezone", (char)(ptz->GMT_Offset));
+						}
 					} else {
 						DBDeleteContactSetting(hContact, "UserInfo", "Timezone");
 						DBDeleteContactSetting(hContact, "UserInfo", "TzName");
@@ -333,31 +312,31 @@ INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					if(bAvatarVisible == 0)
 						DBDeleteContactSetting(hContact, SRMSGMOD_T, "hideavatar");
 					else
-						pMim->WriteByte(hContact, SRMSGMOD_T, "hideavatar", (BYTE)(bAvatarVisible == 1 ? 1 : 0));
+						M->WriteByte(hContact, SRMSGMOD_T, "hideavatar", (BYTE)(bAvatarVisible == 1 ? 1 : 0));
 
 					bInfoPanel = (BYTE)SendDlgItemMessage(hwndDlg, IDC_INFOPANEL, CB_GETCURSEL, 0, 0);
 					if (bInfoPanel != bOldInfoPanel) {
-						pMim->WriteByte(hContact, SRMSGMOD_T, "infopanel", (BYTE)(bInfoPanel == 0 ? 0 : (bInfoPanel == 1 ? 1 : -1)));
+						M->WriteByte(hContact, SRMSGMOD_T, "infopanel", (BYTE)(bInfoPanel == 0 ? 0 : (bInfoPanel == 1 ? 1 : -1)));
 						if (hWnd && dat)
 							SendMessage(hWnd, DM_SETINFOPANEL, 0, 0);
 					}
 					if (IsDlgButtonChecked(hwndDlg, IDC_ALWAYSTRIM2))
-						pMim->WriteDword(hContact, SRMSGMOD_T, "maxhist", (DWORD)SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_GETPOS, 0, 0));
+						M->WriteDword(hContact, SRMSGMOD_T, "maxhist", (DWORD)SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_GETPOS, 0, 0));
 					else
-						pMim->WriteDword(hContact, SRMSGMOD_T, "maxhist", 0);
+						M->WriteDword(hContact, SRMSGMOD_T, "maxhist", 0);
 
 					//MAD
 					if (IsDlgButtonChecked(hwndDlg, IDC_LOADONLYACTUAL)){
-						pMim->WriteByte(hContact, SRMSGMOD_T, "ActualHistory", 1);
+						M->WriteByte(hContact, SRMSGMOD_T, "ActualHistory", 1);
 						if (hWnd && dat) dat->bActualHistory=TRUE;
 						}else{
-							pMim->WriteByte(hContact, SRMSGMOD_T, "ActualHistory", 0);
+							M->WriteByte(hContact, SRMSGMOD_T, "ActualHistory", 0);
 						if (hWnd && dat) dat->bActualHistory=FALSE;
 						}
 					//
 
 					if (IsDlgButtonChecked(hwndDlg, IDC_IGNORETIMEOUTS)) {
-						pMim->WriteByte(hContact, SRMSGMOD_T, "no_ack", 1);
+						M->WriteByte(hContact, SRMSGMOD_T, "no_ack", 1);
 						if (hWnd && dat)
 							dat->sendMode |= SMODE_NOACK;
 					} else {
@@ -374,7 +353,7 @@ INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					}
 
 					if (IsDlgButtonChecked(hwndDlg, IDC_NOAUTOCLOSE))
-						pMim->WriteByte(hContact, SRMSGMOD_T, "NoAutoClose", 1);
+						M->WriteByte(hContact, SRMSGMOD_T, "NoAutoClose", 1);
 					else
 						DBDeleteContactSetting(hContact, SRMSGMOD_T, "NoAutoClose");
 
@@ -423,9 +402,9 @@ static struct _checkboxes {
 int LoadLocalFlags(HWND hwnd, struct _MessageWindowData *dat)
 {
 	int		i = 0;
-	DWORD	dwMask = pMim->GetDword(dat->hContact, "mwmask", 0);
-	DWORD	dwLocal = pMim->GetDword(dat->hContact, "mwflags", 0);
-	DWORD	dwGlobal = pMim->GetDword("mwflags", 0);
+	DWORD	dwMask = M->GetDword(dat->hContact, "mwmask", 0);
+	DWORD	dwLocal = M->GetDword(dat->hContact, "mwflags", 0);
+	DWORD	dwGlobal = M->GetDword("mwflags", 0);
 	DWORD	maskval;
 
 	if(dat) {
@@ -457,8 +436,8 @@ static INT_PTR CALLBACK DlgProcUserPrefs1(HWND hwndDlg, UINT msg, WPARAM wParam,
 			TranslateDialogDefault(hwndDlg);
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)hContact);
 
-			dwLocalFlags = pMim->GetDword(hContact, "mwflags", 0);
-			dwLocalMask = pMim->GetDword(hContact, "mwmask", 0);
+			dwLocalFlags = M->GetDword(hContact, "mwflags", 0);
+			dwLocalMask = M->GetDword(hContact, "mwmask", 0);
 
 			while(checkboxes[i].uId) {
 				maskval = checkboxes[i].uFlag;
@@ -476,7 +455,7 @@ static INT_PTR CALLBACK DlgProcUserPrefs1(HWND hwndDlg, UINT msg, WPARAM wParam,
 				case WM_USER + 100: {
 					int i = 0;
 					LRESULT state;
-					HWND	hwnd = Globals.FindWindow(hContact);
+					HWND	hwnd = M->FindWindow(hContact);
 					struct	_MessageWindowData *dat = NULL;
 					DWORD	*dwActionToTake = (DWORD *)lParam, dwMask = 0, dwFlags = 0, maskval;
 
@@ -494,8 +473,8 @@ static INT_PTR CALLBACK DlgProcUserPrefs1(HWND hwndDlg, UINT msg, WPARAM wParam,
 						i++;
 					}
 					if(dwMask) {
-						pMim->WriteDword(hContact, SRMSGMOD_T, "mwmask", dwMask);
-						pMim->WriteDword(hContact, SRMSGMOD_T, "mwflags", dwFlags);
+						M->WriteDword(hContact, SRMSGMOD_T, "mwmask", dwMask);
+						M->WriteDword(hContact, SRMSGMOD_T, "mwflags", dwFlags);
 					}
 					else {
 						DBDeleteContactSetting(hContact, SRMSGMOD_T, "mwmask");
@@ -542,8 +521,8 @@ INT_PTR CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			TabCtrl_InsertItem(GetDlgItem(hwndDlg, IDC_OPTIONSTAB), 0, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 32, rcClient.right - 10, rcClient.bottom - 80, 1);
 			ShowWindow((HWND)tci.lParam, SW_SHOW);
-			if (MyEnableThemeDialogTexture)
-				MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+			if (M->m_pfnEnableThemeDialogTexture)
+				M->m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
 
 			tci.lParam = (LPARAM)CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_USERPREFS1), hwndDlg, DlgProcUserPrefs1, (LPARAM)hContact);
@@ -551,8 +530,8 @@ INT_PTR CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			TabCtrl_InsertItem(GetDlgItem(hwndDlg, IDC_OPTIONSTAB), 1, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 32, rcClient.right - 10, rcClient.bottom - 80, 1);
 			ShowWindow((HWND)tci.lParam, SW_HIDE);
-			if (MyEnableThemeDialogTexture)
-				MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+			if (M->m_pfnEnableThemeDialogTexture)
+				M->m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 			TabCtrl_SetCurSel(GetDlgItem(hwndDlg, IDC_OPTIONSTAB), 0);
 			ShowWindow(hwndDlg, SW_SHOW);
 			return TRUE;
@@ -587,7 +566,7 @@ INT_PTR CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					TCITEM	tci;
 					int		i, count;
 					DWORD	dwActionToTake = 0;			// child pages request which action to take
-					HWND	hwnd = Globals.FindWindow(hContact);
+					HWND	hwnd = M->FindWindow(hContact);
 
 					tci.mask = TCIF_PARAM;
 

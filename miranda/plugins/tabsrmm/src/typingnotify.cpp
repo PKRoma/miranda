@@ -1,8 +1,6 @@
 #include "commonheaders.h"
 #pragma hdrstop
 
-extern HINSTANCE g_hInst;
-
 static INT_PTR EnableDisableMenuCommand(WPARAM wParam,LPARAM lParam)
 {
 	Disabled = !(Disabled);
@@ -71,7 +69,7 @@ int TN_TypingMessage(WPARAM wParam, LPARAM lParam)
 	int notyping;
 
 	// hidden & ignored contacts check
-	if (pMim->GetByte((HANDLE)wParam, "CList", "Hidden", 0) || (pMim->GetDword((HANDLE)wParam, "Ignore", "Mask1",0) & 1)) // 9 - online notification
+	if (M->GetByte((HANDLE)wParam, "CList", "Hidden", 0) || (M->GetDword((HANDLE)wParam, "Ignore", "Mask1",0) & 1)) // 9 - online notification
 		return 0;
 
 	szContactName = (TCHAR*) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCMDF_TCHAR);
@@ -149,7 +147,7 @@ int TN_TypingMessage(WPARAM wParam, LPARAM lParam)
 					break;
 			}
 
-		ppd.lchIcon = notyping ? Globals.g_buttonBarIcons[13] : Globals.g_buttonBarIcons[5];
+		ppd.lchIcon = notyping ? _Plugin.g_buttonBarIcons[13] : _Plugin.g_buttonBarIcons[5];
 		ppd.lchContact = (HANDLE) wParam;
 		ppd.PluginWindowProc = (WNDPROC) PopupDlgProc;
 		ppd.PluginData = NULL;
@@ -173,29 +171,6 @@ static INT_PTR CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				SetDlgItemText(hwndDlg, IDC_INFO, TranslateT("Warning: Popup plugin not found!"));
 			else if (!PopupService)
 				SetDlgItemText(hwndDlg, IDC_INFO, TranslateT("Warning: Current Popup plugin version is not supported! Update it!"));
-			//
-			// 					if(ServiceExists(MS_POPUP_REGISTERNOTIFICATION)){
-			// 						EnableWindow(GetDlgItem(hwndDlg, IDC_PREVIEW), 0);
-			// 						EnableWindow(GetDlgItem(hwndDlg, IDC_TIMEOUT_PERMANENT), 0);
-			// 						EnableWindow(GetDlgItem(hwndDlg, IDC_TIMEOUT_POPUP), 0);
-			// 						EnableWindow(GetDlgItem(hwndDlg, IDC_TIMEOUT_PROTO), 0);
-			// 						EnableWindow(GetDlgItem(hwndDlg, IDC_TIMEOUT_CUSTOM), 0);
-			// 						EnableWindow(GetDlgItem(hwndDlg, IDC_TIMEOUT_VALUE), 0);
-			//
-			// 						EnableWindow(GetDlgItem(hwndDlg, IDC_TIMEOUT_PERMANENT2), 0);
-			// 						EnableWindow(GetDlgItem(hwndDlg, IDC_TIMEOUT_POPUP2), 0);
-			// 						EnableWindow(GetDlgItem(hwndDlg, IDC_TIMEOUT_CUSTOM2), 0);
-			// 						EnableWindow(GetDlgItem(hwndDlg, IDC_TIMEOUT_VALUE2), 0);
-			//
-			// 						EnableWindow(GetDlgItem(hwndDlg, IDC_USEWINCOLORS), 0);
-			// 						EnableWindow(GetDlgItem(hwndDlg, IDC_USEPOPUPCOLORS), 0);
-			//
-			// 						for(i=0;i<sizeof(colorPicker)/sizeof(colorPicker[0]);i++)
-			// 							EnableWindow(GetDlgItem(hwndDlg,colorPicker[i].res), 0);
-			//
-			// 						}
-			//
-			// 					else{
 			if (ColorMode == COLOR_WINDOWS) {
 				CheckDlgButton(hwndDlg, IDC_USEWINCOLORS, BST_CHECKED);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_USEPOPUPCOLORS), FALSE);
@@ -212,8 +187,6 @@ static INT_PTR CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				SendDlgItemMessage(hwndDlg, colorPicker[i].res, CPM_SETCOLOUR, 0, colorPicker[i].color);
 				EnableWindow(GetDlgItem(hwndDlg, colorPicker[i].res), (ColorMode == COLOR_OWN));
 			}
-			//}
-
 
 			CheckDlgButton(hwndDlg, IDC_TIMEOUT_PERMANENT, (TimeoutMode == TIMEOUT_PERMANENT) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_TIMEOUT_POPUP, (TimeoutMode == TIMEOUT_POPUP) ? BST_CHECKED : BST_UNCHECKED);
@@ -385,7 +358,7 @@ static INT_PTR CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 									break;
 							}
 
-						ppd.lchIcon = notyping ? Globals.g_buttonBarIcons[13] : Globals.g_buttonBarIcons[5];
+						ppd.lchIcon = notyping ? _Plugin.g_buttonBarIcons[13] : _Plugin.g_buttonBarIcons[5];
 						ppd.lchContact = (HANDLE) wParam;
 						ppd.PluginWindowProc = NULL;
 						ppd.PluginData = NULL;
@@ -487,7 +460,7 @@ static INT_PTR CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						case PSN_APPLY:
 							for (i = 0; i < sizeof(colorPicker) / sizeof(colorPicker[0]); i++) {
 								colorPicker[i].color = SendDlgItemMessage(hwndDlg, colorPicker[i].res, CPM_GETCOLOUR, 0, 0);
-								pMim->WriteDword(Module, colorPicker[i].desc, colorPicker[i].color);
+								M->WriteDword(Module, colorPicker[i].desc, colorPicker[i].color);
 							}
 
 							Timeout = newTimeout;
@@ -504,14 +477,14 @@ static INT_PTR CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 							OnePopUp = IsDlgButtonChecked(hwndDlg, IDC_ONEPOPUP);
 							ShowMenu = IsDlgButtonChecked(hwndDlg, IDC_SHOWMENU);
 
-							pMim->WriteByte(Module, SET_ONEPOPUP, OnePopUp);
-							pMim->WriteByte(Module, SET_SHOWDISABLEMENU, ShowMenu);
-							pMim->WriteByte(Module, SET_DISABLED, (BYTE) (StartDisabled | StopDisabled));
-							pMim->WriteByte(Module, SET_COLOR_MODE, ColorMode);
-							pMim->WriteByte(Module, SET_TIMEOUT_MODE, TimeoutMode);
-							pMim->WriteByte(Module, SET_TIMEOUT, (BYTE) Timeout);
-							pMim->WriteByte(Module, SET_TIMEOUT_MODE2, TimeoutMode2);
-							pMim->WriteByte(Module, SET_TIMEOUT2, (BYTE) Timeout2);
+							M->WriteByte(Module, SET_ONEPOPUP, OnePopUp);
+							M->WriteByte(Module, SET_SHOWDISABLEMENU, ShowMenu);
+							M->WriteByte(Module, SET_DISABLED, (BYTE) (StartDisabled | StopDisabled));
+							M->WriteByte(Module, SET_COLOR_MODE, ColorMode);
+							M->WriteByte(Module, SET_TIMEOUT_MODE, TimeoutMode);
+							M->WriteByte(Module, SET_TIMEOUT, (BYTE) Timeout);
+							M->WriteByte(Module, SET_TIMEOUT_MODE2, TimeoutMode2);
+							M->WriteByte(Module, SET_TIMEOUT2, (BYTE) Timeout2);
 
 							return TRUE;
 					}
@@ -528,7 +501,7 @@ int TN_OptionsInitialize(WPARAM wParam, LPARAM lParam)
 
 	OPTIONSDIALOGPAGE odp = { 0 };
 
-	if (Globals.g_PopupAvail) {
+	if (_Plugin.g_PopupAvail) {
 		odp.cbSize = sizeof(odp);
 		odp.position = 100000000;
 		odp.hInstance = g_hInst;
@@ -540,7 +513,6 @@ int TN_OptionsInitialize(WPARAM wParam, LPARAM lParam)
 		odp.pfnDlgProc = DlgProcOpts;
 		CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 	}
-
 	return 0;
 }
 
@@ -548,27 +520,27 @@ int TN_ModuleInit()
 {
 	WORD i;
 
-	PopupService = (Globals.g_PopupWAvail || Globals.g_PopupAvail);
+	PopupService = (_Plugin.g_PopupWAvail || _Plugin.g_PopupAvail);
 
 	hPopUpsList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST,0,0);
 
-	OnePopUp = pMim->GetByte(Module,SET_ONEPOPUP,DEF_ONEPOPUP);
-	ShowMenu = pMim->GetByte(Module,SET_SHOWDISABLEMENU,DEF_SHOWDISABLEMENU);
+	OnePopUp = M->GetByte(Module,SET_ONEPOPUP,DEF_ONEPOPUP);
+	ShowMenu = M->GetByte(Module,SET_SHOWDISABLEMENU,DEF_SHOWDISABLEMENU);
 
-	i = pMim->GetByte(Module,SET_DISABLED,DEF_DISABLED);
+	i = M->GetByte(Module,SET_DISABLED,DEF_DISABLED);
 	Disabled = i & 1;
 	StartDisabled = i & 2;
 	StopDisabled = i & 4;
 
-	ColorMode = pMim->GetByte(Module,SET_COLOR_MODE,DEF_COLOR_MODE);
-	TimeoutMode = pMim->GetByte(Module,SET_TIMEOUT_MODE,DEF_TIMEOUT_MODE);
-	Timeout = pMim->GetByte(Module,SET_TIMEOUT,DEF_TIMEOUT);
-	TimeoutMode2 = pMim->GetByte(Module,SET_TIMEOUT_MODE2,DEF_TIMEOUT_MODE2);
-	Timeout2 = pMim->GetByte(Module,SET_TIMEOUT2,DEF_TIMEOUT2);
+	ColorMode = M->GetByte(Module,SET_COLOR_MODE,DEF_COLOR_MODE);
+	TimeoutMode = M->GetByte(Module,SET_TIMEOUT_MODE,DEF_TIMEOUT_MODE);
+	Timeout = M->GetByte(Module,SET_TIMEOUT,DEF_TIMEOUT);
+	TimeoutMode2 = M->GetByte(Module,SET_TIMEOUT_MODE2,DEF_TIMEOUT_MODE2);
+	Timeout2 = M->GetByte(Module,SET_TIMEOUT2,DEF_TIMEOUT2);
 
-	if (!(pMim->GetDword(Module, colorPicker[0].desc, 1) && !pMim->GetDword(Module, colorPicker[0].desc, 0)))
+	if (!(M->GetDword(Module, colorPicker[0].desc, 1) && !M->GetDword(Module, colorPicker[0].desc, 0)))
 		for (i = 0; i < sizeof(colorPicker) / sizeof(colorPicker[0]); i++)
-			colorPicker[i].color = pMim->GetDword(Module,colorPicker[i].desc,0);
+			colorPicker[i].color = M->GetDword(Module,colorPicker[i].desc,0);
 
 	mir_sntprintf(szStart, sizeof(szStart), TranslateT("...is typing a message."));
 	mir_sntprintf(szStop, sizeof(szStop), TranslateT("...has stopped typing."));
@@ -591,38 +563,14 @@ int TN_ModuleInit()
 		mi.pszPopupName = LPGEN("PopUps");
 		hDisableMenu = (HANDLE) CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 	}
+	SkinAddNewSoundEx("TNStart", Translate("Messages"), Translate("Typing Notify: is typing"));
+	SkinAddNewSoundEx("TNStop", Translate("Messages"), Translate("Typing Notify: stopped typing"));
 
-	SkinAddNewSound("TNStart", Translate("Typing Notify: is typing"), "IsTyping.wav");
-	SkinAddNewSound("TNStop", Translate("Typing Notify: stopped typing"), "StoppedTyping.wav");
-
-	// 	if (ServiceExists(MS_POPUP_REGISTERNOTIFICATION))
-	// 		{
-	// 		POPUPNOTIFICATION pnf = {0};
-	//
-	// 		pnf.cbSize = sizeof(pnf);
-	// 		pnf.dwFlags = PNF_CONTACT;
-	// 		lstrcpyA(pnf.lpzGroup, "Events");
-	//
-	// 		lstrcpyA(pnf.lpzName, "Typing...");
-	// 		pnf.lchIcon = myGlobals.g_buttonBarIcons[5];
-	// 		pnf.colorBack = colorPicker[0].color;
-	// 		pnf.colorText = colorPicker[1].color;
-	// 		pnf.iSeconds = Timeout;
-	// 		hntfStarted = PURegisterNotification(&pnf);
-	//
-	// 		lstrcpyA(pnf.lpzName, "Typing stopped");
-	// 		pnf.lchIcon = myGlobals.g_buttonBarIcons[13];
-	// 		pnf.colorBack = colorPicker[2].color;
-	// 		pnf.colorText = colorPicker[3].color;
-	// 		pnf.iSeconds = Timeout2;
-	//
-	// 		hntfStopped = PURegisterNotification(&pnf);
-	// 		}
 	return 0;
 }
 
 int TN_ModuleDeInit()
 {
-	pMim->WriteByte(Module, SET_DISABLED, (BYTE) (Disabled | StartDisabled | StopDisabled));
+	M->WriteByte(Module, SET_DISABLED, (BYTE) (Disabled | StartDisabled | StopDisabled));
 	return 0;
 }

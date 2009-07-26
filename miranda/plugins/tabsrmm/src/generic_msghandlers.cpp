@@ -33,9 +33,6 @@ $Id:$
 
 #include "commonheaders.h"
 
-extern NEN_OPTIONS nen_options;
-extern StatusItems_t StatusItems[];
-
 WCHAR    *FilterEventMarkers(WCHAR *wszText);
 char     *FilterEventMarkersA(char *szText);
 
@@ -64,13 +61,13 @@ static void BTN_StockAction(ButtonItem *item, HWND hwndDlg, struct _MessageWindo
 				PostMessage(hwndDlg, WM_COMMAND, MAKELONG(IDC_SAVE, BN_CLICKED), (LPARAM)hwndBtn);
 				break;
 			case IDC_SBAR_SLIST:
-				SendMessage(Globals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, WM_LBUTTONUP);
+				SendMessage(_Plugin.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, WM_LBUTTONUP);
 				break;
 			case IDC_SBAR_FAVORITES: {
 				POINT pt;
 				int iSelection;
 				GetCursorPos(&pt);
-				iSelection = TrackPopupMenu(Globals.g_hMenuFavorites, TPM_RETURNCMD, pt.x, pt.y, 0, Globals.g_hwndHotkeyHandler, NULL);
+				iSelection = TrackPopupMenu(_Plugin.g_hMenuFavorites, TPM_RETURNCMD, pt.x, pt.y, 0, _Plugin.g_hwndHotkeyHandler, NULL);
 				HandleMenuEntryFromhContact(iSelection);
 				break;
 			}
@@ -78,7 +75,7 @@ static void BTN_StockAction(ButtonItem *item, HWND hwndDlg, struct _MessageWindo
 				POINT pt;
 				int iSelection;
 				GetCursorPos(&pt);
-				iSelection = TrackPopupMenu(Globals.g_hMenuRecent, TPM_RETURNCMD, pt.x, pt.y, 0, Globals.g_hwndHotkeyHandler, NULL);
+				iSelection = TrackPopupMenu(_Plugin.g_hMenuRecent, TPM_RETURNCMD, pt.x, pt.y, 0, _Plugin.g_hwndHotkeyHandler, NULL);
 				HandleMenuEntryFromhContact(iSelection);
 				break;
 			}
@@ -114,17 +111,17 @@ static void BTN_StockCallback(ButtonItem *item, HWND hwndDlg, struct _MessageWin
 */
 
 static struct SIDEBARITEM sbarItems[] = {
-	IDC_SBAR_SLIST, SBI_TOP, &Globals.g_sideBarIcons[0], &Globals.g_sideBarIcons[0], &Globals.g_sideBarIcons[0], "t_slist", BTN_StockAction, BTN_StockCallback, _T("Open session list"),
-	IDC_SBAR_FAVORITES, SBI_TOP, &Globals.g_sideBarIcons[1], &Globals.g_sideBarIcons[1], &Globals.g_sideBarIcons[1], "t_fav", BTN_StockAction, BTN_StockCallback, _T("Open favorites"),
-	IDC_SBAR_RECENT, SBI_TOP, &Globals.g_sideBarIcons[2],  &Globals.g_sideBarIcons[2], &Globals.g_sideBarIcons[2], "t_recent", BTN_StockAction, BTN_StockCallback, _T("Open recent contacts"),
-	IDC_SBAR_USERPREFS, SBI_TOP, &Globals.g_sideBarIcons[4], &Globals.g_sideBarIcons[4], &Globals.g_sideBarIcons[4], "t_prefs", BTN_StockAction, BTN_StockCallback, _T("Contact preferences"),
-	IDC_SBAR_TOGGLEFORMAT, SBI_TOP | SBI_TOGGLE, &Globals.g_buttonBarIcons[20], &Globals.g_buttonBarIcons[20], &Globals.g_buttonBarIcons[20], "t_tformat", BTN_StockAction, BTN_StockCallback, _T("Formatting"),
-	IDC_SBAR_SETUP, SBI_BOTTOM, &Globals.g_sideBarIcons[3], &Globals.g_sideBarIcons[3], &Globals.g_sideBarIcons[3], "t_setup", BTN_StockAction, BTN_StockCallback, _T("Miranda options"),
-	IDOK, SBI_TOP | SBI_HANDLEBYCLIENT, &Globals.g_buttonBarIcons[9], &Globals.g_buttonBarIcons[9], &Globals.g_buttonBarIcons[9], "t_send", BTN_StockAction, BTN_StockCallback, _T("Send message"),
-	IDC_SBAR_CANCEL, SBI_TOP, &Globals.g_buttonBarIcons[6], &Globals.g_buttonBarIcons[6], &Globals.g_buttonBarIcons[6], "t_close", BTN_StockAction, BTN_StockCallback, _T("Close session"),
-	IDC_SMILEYBTN, SBI_TOP | SBI_HANDLEBYCLIENT, &Globals.g_buttonBarIcons[11], &Globals.g_buttonBarIcons[11], &Globals.g_buttonBarIcons[11], "t_emoticon", BTN_StockAction, BTN_StockCallback, _T("Emoticon"),
-	IDC_NAME, SBI_TOP | SBI_HANDLEBYCLIENT, &Globals.g_buttonBarIcons[16], &Globals.g_buttonBarIcons[16], &Globals.g_buttonBarIcons[16], "t_menu", BTN_StockAction, BTN_StockCallback, _T("User menu"),
-	IDC_PROTOCOL, SBI_TOP | SBI_HANDLEBYCLIENT, &Globals.g_buttonBarIcons[4], &Globals.g_buttonBarIcons[4], &Globals.g_buttonBarIcons[4], "t_details", BTN_StockAction, BTN_StockCallback, _T("User details"),
+	IDC_SBAR_SLIST, SBI_TOP, &_Plugin.g_sideBarIcons[0], &_Plugin.g_sideBarIcons[0], &_Plugin.g_sideBarIcons[0], "t_slist", BTN_StockAction, BTN_StockCallback, _T("Open session list"),
+	IDC_SBAR_FAVORITES, SBI_TOP, &_Plugin.g_sideBarIcons[1], &_Plugin.g_sideBarIcons[1], &_Plugin.g_sideBarIcons[1], "t_fav", BTN_StockAction, BTN_StockCallback, _T("Open favorites"),
+	IDC_SBAR_RECENT, SBI_TOP, &_Plugin.g_sideBarIcons[2],  &_Plugin.g_sideBarIcons[2], &_Plugin.g_sideBarIcons[2], "t_recent", BTN_StockAction, BTN_StockCallback, _T("Open recent contacts"),
+	IDC_SBAR_USERPREFS, SBI_TOP, &_Plugin.g_sideBarIcons[4], &_Plugin.g_sideBarIcons[4], &_Plugin.g_sideBarIcons[4], "t_prefs", BTN_StockAction, BTN_StockCallback, _T("Contact preferences"),
+	IDC_SBAR_TOGGLEFORMAT, SBI_TOP | SBI_TOGGLE, &_Plugin.g_buttonBarIcons[20], &_Plugin.g_buttonBarIcons[20], &_Plugin.g_buttonBarIcons[20], "t_tformat", BTN_StockAction, BTN_StockCallback, _T("Formatting"),
+	IDC_SBAR_SETUP, SBI_BOTTOM, &_Plugin.g_sideBarIcons[3], &_Plugin.g_sideBarIcons[3], &_Plugin.g_sideBarIcons[3], "t_setup", BTN_StockAction, BTN_StockCallback, _T("Miranda options"),
+	IDOK, SBI_TOP | SBI_HANDLEBYCLIENT, &_Plugin.g_buttonBarIcons[9], &_Plugin.g_buttonBarIcons[9], &_Plugin.g_buttonBarIcons[9], "t_send", BTN_StockAction, BTN_StockCallback, _T("Send message"),
+	IDC_SBAR_CANCEL, SBI_TOP, &_Plugin.g_buttonBarIcons[6], &_Plugin.g_buttonBarIcons[6], &_Plugin.g_buttonBarIcons[6], "t_close", BTN_StockAction, BTN_StockCallback, _T("Close session"),
+	IDC_SMILEYBTN, SBI_TOP | SBI_HANDLEBYCLIENT, &_Plugin.g_buttonBarIcons[11], &_Plugin.g_buttonBarIcons[11], &_Plugin.g_buttonBarIcons[11], "t_emoticon", BTN_StockAction, BTN_StockCallback, _T("Emoticon"),
+	IDC_NAME, SBI_TOP | SBI_HANDLEBYCLIENT, &_Plugin.g_buttonBarIcons[16], &_Plugin.g_buttonBarIcons[16], &_Plugin.g_buttonBarIcons[16], "t_menu", BTN_StockAction, BTN_StockCallback, _T("User menu"),
+	IDC_PROTOCOL, SBI_TOP | SBI_HANDLEBYCLIENT, &_Plugin.g_buttonBarIcons[4], &_Plugin.g_buttonBarIcons[4], &_Plugin.g_buttonBarIcons[4], "t_details", BTN_StockAction, BTN_StockCallback, _T("User details"),
 	0, 0, 0, 0, 0, "", NULL, NULL, _T("")
 };
 
@@ -214,7 +211,7 @@ void DM_SetDBButtonStates(HWND hwndChild, struct _MessageWindowData *dat)
 		} else {
 			switch (buttonItem->type) {
 				case DBVT_BYTE: {
-					BYTE val = pMim->GetByte(hFinalContact, szModule, szSetting, 0);
+					BYTE val = M->GetByte(hFinalContact, szModule, szSetting, 0);
 					result = (val == buttonItem->bValuePush[0]);
 					break;
 				}
@@ -224,7 +221,7 @@ void DM_SetDBButtonStates(HWND hwndChild, struct _MessageWindowData *dat)
 					break;
 				}
 				case DBVT_DWORD: {
-					DWORD val = pMim->GetDword(hFinalContact, szModule, szSetting, 0);
+					DWORD val = M->GetDword(hFinalContact, szModule, szSetting, 0);
 					result = (val == *((DWORD *) & buttonItem->bValuePush));
 					break;
 				}
@@ -291,7 +288,7 @@ LRESULT DM_LoadLocale(HWND hwndDlg, struct _MessageWindowData *dat)
 		if (dat->dwFlags & MWF_WASBACKGROUNDCREATE)
 			return 0;
 
-		if (Globals.m_AutoLocaleSupport && dat->hContact != 0) {
+		if (_Plugin.m_AutoLocaleSupport && dat->hContact != 0) {
 			DBVARIANT dbv;
 			int res;
 			char szKLName[KL_NAMELENGTH+1];
@@ -321,7 +318,7 @@ LRESULT DM_RecalcPictureSize(HWND hwndDlg, struct _MessageWindowData *dat)
 	HBITMAP hbm;
 
 	if (dat) {
-		hbm = dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : Globals.g_hbmUnknown);
+		hbm = dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : _Plugin.g_hbmUnknown);
 
 		if (hbm == 0) {
 			dat->pic.cy = dat->pic.cx = 60;
@@ -346,9 +343,9 @@ LRESULT DM_UpdateLastMessage(HWND hwndDlg, struct _MessageWindowData *dat)
 
 			mir_sntprintf(szBuf, safe_sizeof(szBuf), TranslateT("%s is typing..."), dat->szNickname);
 			SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM) szBuf);
-			SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) Globals.g_buttonBarIcons[5]);
+			SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) _Plugin.g_buttonBarIcons[5]);
 			if (dat->pContainer->hwndSlist)
-				SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)Globals.g_buttonBarIcons[5]);
+				SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)_Plugin.g_buttonBarIcons[5]);
 			return 0;
 		}
 		if (dat->lastMessage || dat->pContainer->dwFlags & CNT_UINSTATUSBAR) {
@@ -378,14 +375,14 @@ LRESULT DM_UpdateLastMessage(HWND hwndDlg, struct _MessageWindowData *dat)
 				mir_sntprintf(fmt, safe_sizeof(fmt), TranslateT("Last received: %s at %s"), date, time);
 				SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM) fmt);
 			}
-			SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? Globals.g_buttonBarIcons[16] : 0));
+			SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? _Plugin.g_buttonBarIcons[16] : 0));
 			if (dat->pContainer->hwndSlist)
-				SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)Globals.g_buttonBarIcons[16]);
+				SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)_Plugin.g_buttonBarIcons[16]);
 		} else {
 			SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) "");
-			SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? Globals.g_buttonBarIcons[16] : 0));
+			SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? _Plugin.g_buttonBarIcons[16] : 0));
 			if (dat->pContainer->hwndSlist)
-				SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)Globals.g_buttonBarIcons[16]);
+				SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)_Plugin.g_buttonBarIcons[16]);
 		}
 	}
 	return 0;
@@ -398,7 +395,7 @@ LRESULT DM_UpdateLastMessage(HWND hwndDlg, struct _MessageWindowData *dat)
 LRESULT DM_SaveLocale(HWND hwndDlg, struct _MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
 	if (dat) {
-		if (Globals.m_AutoLocaleSupport && dat->hContact && dat->pContainer->hwndActive == hwndDlg) {
+		if (_Plugin.m_AutoLocaleSupport && dat->hContact && dat->pContainer->hwndActive == hwndDlg) {
 			char szKLName[KL_NAMELENGTH + 1];
 			if ((HKL)lParam != dat->hkl) {
 				dat->hkl = (HKL)lParam;
@@ -475,17 +472,17 @@ HWND DM_CreateClist(HWND hwndParent, struct _MessageWindowData *dat)
 	SetWindowLongPtr(hwndClist, GWL_EXSTYLE, GetWindowLongPtr(hwndClist, GWL_EXSTYLE) & ~CLS_EX_TRACKSELECT);
 	SetWindowLongPtr(hwndClist, GWL_EXSTYLE, GetWindowLongPtr(hwndClist, GWL_EXSTYLE) | (CLS_EX_NOSMOOTHSCROLLING | CLS_EX_NOTRANSLUCENTSEL));
 	//MAD: show offline contacts in multi-send
-	if (!Globals.m_AllowOfflineMultisend)
+	if (!_Plugin.m_AllowOfflineMultisend)
 		SetWindowLongPtr(hwndClist, GWL_STYLE, GetWindowLongPtr(hwndClist, GWL_STYLE) | CLS_HIDEOFFLINE);
 	//
 	if (hItem)
 		SendMessage(hwndClist, CLM_SETCHECKMARK, (WPARAM) hItem, 1);
 
-	if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_DISABLEGROUPS && !pMim->GetByte("CList", "UseGroups", SETTING_USEGROUPS_DEFAULT))
+	if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_DISABLEGROUPS && !M->GetByte("CList", "UseGroups", SETTING_USEGROUPS_DEFAULT))
 		SendMessage(hwndClist, CLM_SETUSEGROUPS, (WPARAM) FALSE, 0);
 	else
 		SendMessage(hwndClist, CLM_SETUSEGROUPS, (WPARAM) TRUE, 0);
-	if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_HIDEEMPTYGROUPS && pMim->GetByte("CList", "HideEmptyGroups", SETTING_USEGROUPS_DEFAULT))
+	if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_HIDEEMPTYGROUPS && M->GetByte("CList", "HideEmptyGroups", SETTING_USEGROUPS_DEFAULT))
 		SendMessage(hwndClist, CLM_SETHIDEEMPTYGROUPS, (WPARAM) TRUE, 0);
 	else
 		SendMessage(hwndClist, CLM_SETHIDEEMPTYGROUPS, (WPARAM) FALSE, 0);
@@ -530,7 +527,7 @@ LRESULT DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct _MessageWindowDa
 		if (hwnd == 0)
 			hwnd = WindowFromPoint(pt);
 
-		if (LOWORD(wParam) & MK_SHIFT || pMim->GetByte("fastscroll", 0)) {
+		if (LOWORD(wParam) & MK_SHIFT || M->GetByte("fastscroll", 0)) {
 			if (wDirection < 0)
 				SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_PAGEDOWN, 0), 0);
 			else if (wDirection > 0)
@@ -555,10 +552,10 @@ LRESULT DM_ThemeChanged(HWND hwnd, struct _MessageWindowData *dat)
 	StatusItems_t *item_log = &StatusItems[ID_EXTBKHISTORY];
 	StatusItems_t *item_msg = &StatusItems[ID_EXTBKINPUTAREA];
 
-	dat->bFlatMsgLog = pMim->GetByte("flatlog", 1);
+	dat->bFlatMsgLog = M->GetByte("flatlog", 1);
 
 	if (!dat->bFlatMsgLog)
-		dat->hTheme = (Globals.m_VSApiEnabled && pfnOpenThemeData) ? pfnOpenThemeData(hwnd, L"EDIT") : 0;
+		dat->hTheme = (M->isVSAPIState() && M->m_pfnOpenThemeData) ? M->m_pfnOpenThemeData(hwnd, L"EDIT") : 0;
 	else
 		dat->hTheme = 0;
 
@@ -605,7 +602,7 @@ static INT_PTR SI_AddStatusIcon(WPARAM wParam, LPARAM lParam)
 	status_icon_list = siln;
 	status_icon_list_size++;
 
-	Globals.BroadcastMessage(DM_STATUSICONCHANGE, 0, 0);
+	M->BroadcastMessage(DM_STATUSICONCHANGE, 0, 0);
 	return 0;
 }
 
@@ -626,7 +623,7 @@ static INT_PTR SI_RemoveStatusIcon(WPARAM wParam, LPARAM lParam)
 			if (current->sid.hIconDisabled) DestroyIcon(current->sid.hIconDisabled);
 			if (current->sid.szTooltip) mir_free(current->sid.szTooltip);
 			mir_free(current);
-			Globals.BroadcastMessage(DM_STATUSICONCHANGE, 0, 0);
+			M->BroadcastMessage(DM_STATUSICONCHANGE, 0, 0);
 			return 0;
 		}
 
@@ -651,7 +648,7 @@ static void SI_RemoveAllStatusIcons(void)
 		if (current->sid.szTooltip) mir_free(current->sid.szTooltip);
 		mir_free(current);
 	}
-	Globals.BroadcastMessage(DM_STATUSICONCHANGE, 0, 0);
+	M->BroadcastMessage(DM_STATUSICONCHANGE, 0, 0);
 }
 
 static INT_PTR SI_ModifyStatusIcon(WPARAM wParam, LPARAM lParam)
@@ -678,15 +675,15 @@ static INT_PTR SI_ModifyStatusIcon(WPARAM wParam, LPARAM lParam)
 					current->sid.szTooltip = mir_strdup(sid->szTooltip);
 				}
 
-				Globals.BroadcastMessage(DM_STATUSICONCHANGE, 0, 0);
+				M->BroadcastMessage(DM_STATUSICONCHANGE, 0, 0);
 			} else {
 				char buff[256];
 				HWND hwnd;
 				if (!(sid->flags&MBF_OWNERSTATE)) {
 					sprintf(buff, "SRMMStatusIconFlags%d", (int)sid->dwId);
-					pMim->WriteByte(hContact, sid->szModule, buff, (BYTE)sid->flags);
+					M->WriteByte(hContact, sid->szModule, buff, (BYTE)sid->flags);
 				}
-				if ((hwnd = Globals.FindWindow(hContact))) {
+				if ((hwnd = M->FindWindow(hContact))) {
 					if (sid->flags&MBF_OWNERSTATE) {
 
 						struct StatusIconListNode *siln = NULL;
@@ -760,7 +757,7 @@ void DrawStatusIcons(struct _MessageWindowData *dat, HDC hDC, RECT r, int gap)
 			}
 		} else {
 			sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
-			flags = pMim->GetByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
+			flags = M->GetByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
 		}
 
 		if (!(flags & MBF_HIDDEN)) {
@@ -770,21 +767,21 @@ void DrawStatusIcons(struct _MessageWindowData *dat, HDC hDC, RECT r, int gap)
 				hIcon = current->sid.hIcon;
 
 			if (flags & MBF_DISABLED && current->sid.hIconDisabled == (HICON)0)
-				DrawDimmedIcon(hDC, x, (r.top + r.bottom - Globals.m_smcxicon) >> 1, Globals.m_smcxicon, Globals.m_smcyicon, hIcon, 50);
+				DrawDimmedIcon(hDC, x, (r.top + r.bottom - _Plugin.m_smcxicon) >> 1, _Plugin.m_smcxicon, _Plugin.m_smcyicon, hIcon, 50);
 			else
-				DrawIconEx(hDC, x, (r.top + r.bottom - Globals.m_smcxicon) >> 1, hIcon, Globals.m_smcxicon, Globals.m_smcyicon, 0, NULL, DI_NORMAL);
+				DrawIconEx(hDC, x, (r.top + r.bottom - _Plugin.m_smcxicon) >> 1, hIcon, _Plugin.m_smcxicon, _Plugin.m_smcyicon, 0, NULL, DI_NORMAL);
 
-			x += Globals.m_smcxicon + gap;
+			x += _Plugin.m_smcxicon + gap;
 		}
 		current = current->next;
 	}
-	DrawIconEx(hDC, x, (r.top + r.bottom - Globals.m_smcxicon) >> 1, dat->pContainer->dwFlags & CNT_NOSOUND ? Globals.g_buttonBarIcons[23] : Globals.g_buttonBarIcons[22], Globals.m_smcxicon, Globals.m_smcyicon, 0, NULL, DI_NORMAL);
-	x += Globals.m_smcxicon + gap;
+	DrawIconEx(hDC, x, (r.top + r.bottom - _Plugin.m_smcxicon) >> 1, dat->pContainer->dwFlags & CNT_NOSOUND ? _Plugin.g_buttonBarIcons[23] : _Plugin.g_buttonBarIcons[22], _Plugin.m_smcxicon, _Plugin.m_smcyicon, 0, NULL, DI_NORMAL);
+	x += _Plugin.m_smcxicon + gap;
 	if (dat->bType == SESSIONTYPE_IM)
-		DrawIconEx(hDC, x, (r.top + r.bottom - Globals.m_smcxicon) >> 1, pMim->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, pMim->GetByte(SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)) ? Globals.g_buttonBarIcons[12] : Globals.g_buttonBarIcons[13], Globals.m_smcxicon, Globals.m_smcyicon, 0, NULL, DI_NORMAL);
+		DrawIconEx(hDC, x, (r.top + r.bottom - _Plugin.m_smcxicon) >> 1, M->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, M->GetByte(SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)) ? _Plugin.g_buttonBarIcons[12] : _Plugin.g_buttonBarIcons[13], _Plugin.m_smcxicon, _Plugin.m_smcyicon, 0, NULL, DI_NORMAL);
 	else
-		DrawDimmedIcon(hDC, x, (r.top + r.bottom - Globals.m_smcxicon) >> 1, Globals.m_smcxicon, Globals.m_smcyicon,
-					   pMim->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, pMim->GetByte(SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)) ? Globals.g_buttonBarIcons[12] : Globals.g_buttonBarIcons[13], 50);
+		DrawDimmedIcon(hDC, x, (r.top + r.bottom - _Plugin.m_smcxicon) >> 1, _Plugin.m_smcxicon, _Plugin.m_smcyicon,
+					   M->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, M->GetByte(SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)) ? _Plugin.g_buttonBarIcons[12] : _Plugin.g_buttonBarIcons[13], 50);
 }
 
 void SI_CheckStatusIconClick(struct _MessageWindowData *dat, HWND hwndFrom, POINT pt, RECT r, int gap, int code)
@@ -793,7 +790,7 @@ void SI_CheckStatusIconClick(struct _MessageWindowData *dat, HWND hwndFrom, POIN
 	struct StatusIconListNode *current = status_icon_list;
 	struct StatusIconListNode *clicked = NULL;
 
-	unsigned int iconNum = (pt.x - (r.left + 0)) / (Globals.m_smcxicon + gap);
+	unsigned int iconNum = (pt.x - (r.left + 0)) / (_Plugin.m_smcxicon + gap);
 	unsigned int list_icons = 0;
 	char         buff[100];
 	DWORD		 flags;
@@ -818,7 +815,7 @@ void SI_CheckStatusIconClick(struct _MessageWindowData *dat, HWND hwndFrom, POIN
 			}
 		} else  {
 			sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
-			flags = pMim->GetByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
+			flags = M->GetByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
 		}
 		if (!(flags & MBF_HIDDEN)) {
 			if (list_icons++ == iconNum)

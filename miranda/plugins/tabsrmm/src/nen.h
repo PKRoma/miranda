@@ -104,7 +104,7 @@ int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOp
 #define OPT_REMOVEMASK "removemask"
 #define OPT_SIMPLEOPT "simplemode"
 
-typedef struct {
+typedef struct _nen {
     BOOL bPreview;
     BOOL bDefaultColorMsg;
 	BOOL bDefaultColorUrl;

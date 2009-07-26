@@ -33,8 +33,6 @@ $Id$
 
 #include "../src/commonheaders.h"
 
-extern  HINSTANCE g_hInst;
-
 static  HANDLE  hEventCBButtonPressed,hEventCBInit, hEventDbWindowEvent, hEventDbOptionsInit, hEventDbPluginsLoaded,
 hIcon1,hIcon0,hib1,hib0 ;
 
@@ -67,7 +65,7 @@ static TCHAR* getMenuEntry(int i)  {
 	DBVARIANT 	dbv = {0};
 
 	mir_snprintf(MEntry, 255, "MenuEntry_%u", i);
-	if ( !DBGetContactSettingTString(NULL, "tabmodplus",MEntry, &dbv) ) {
+	if ( !M->GetTString(NULL, "tabmodplus",MEntry, &dbv) ) {
 		msg = mir_tstrdup(dbv.ptszVal);
 		DBFreeVariant(&dbv);
 	}
@@ -197,7 +195,7 @@ static int CustomButtonPressed(WPARAM wParam,LPARAM lParam)
 				int menulimit;
 				HMENU hMenu=NULL;
 
-				menulimit = pMim->GetByte("tabmodplus","MenuCount", 0);
+				menulimit = M->GetByte("tabmodplus","MenuCount", 0);
 				if ( menulimit ) {
 					hMenu = CreatePopupMenu();
 					//pszMenu=malloc(menulimit*sizeof(TCHAR*));
@@ -287,8 +285,8 @@ int ModPlus_Init(WPARAM wparam,LPARAM lparam)
 {
 	g_bStartup=1;
 
-	g_bIMGtagButton = pMim->GetByte("adv_IMGtagButton", 0);
-	g_bClientInStatusBar = pMim->GetByte("adv_ClientIconInStatusBar", 0);
+	g_bIMGtagButton = M->GetByte("adv_IMGtagButton", 0);
+	g_bClientInStatusBar = M->GetByte("adv_ClientIconInStatusBar", 0);
 
 	hEventDbWindowEvent = HookEvent(ME_MSG_WINDOWEVENT, GetContactHandle);
 

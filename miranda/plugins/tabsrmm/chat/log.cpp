@@ -832,7 +832,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 		/*
 		* run smileyadd
 		*/
-		if (Globals.g_SmileyAddAvail && fDoReplace) {
+		if (_Plugin.g_SmileyAddAvail && fDoReplace) {
 			SMADD_RICHEDIT3 sm = {0};
 
 			newsel.cpMax = -1;
@@ -997,7 +997,7 @@ void LoadMsgLogBitmaps(void)
 	else
 		iIconSize = sizeX;
 
-	hBkgBrush = CreateSolidBrush(pMim->GetDword("Chat", "ColorLogBG", SRMSGDEFSET_BKGCOLOUR));
+	hBkgBrush = CreateSolidBrush(M->GetDword("Chat", "ColorLogBG", SRMSGDEFSET_BKGCOLOUR));
 	bih.biSize = sizeof(bih);
 	bih.biBitCount = 24;
 	bih.biCompression = BI_RGB;

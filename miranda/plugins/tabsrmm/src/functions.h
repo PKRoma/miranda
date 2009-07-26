@@ -130,10 +130,12 @@ static int  LoadFromIconLib();
 static  int SetupIconLibConfig();
 void        RTF_CTableInit();
 
+INT_PTR CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+
 int         InitOptions(void);
 static      INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-BOOL CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 int         DbEventIsShown(struct _MessageWindowData *dat, DBEVENTINFO *dbei);
 void        StreamInEvents(HWND hwndDlg,HANDLE hDbEventFirst,int count,int fAppend, DBEVENTINFO *dbei_s);
 void        LoadLogfont(int i,LOGFONTA *lf,COLORREF *colour, char *szModule);
@@ -141,7 +143,6 @@ void        LoadLogfont(int i,LOGFONTA *lf,COLORREF *colour, char *szModule);
 
 // custom tab control
 
-int         InitVSApi(), FreeVSApi();
 void        ReloadTabConfig(), FreeTabConfig();
 int         RegisterTabCtrlClass(void);
 void        FreeTabConfig();
@@ -175,9 +176,6 @@ void        WriteThemeToINI(const char *szIniFilename, struct _MessageWindowData
 void        ReadThemeFromINI(const char *szIniFilename, struct _MessageWindowData *dat, int noAdvanced, DWORD dwFlags);
 
 // compatibility
-
-typedef     BOOL (WINAPI *pfnSetMenuInfo )( HMENU hmenu, LPCMENUINFO lpcmi );
-extern      pfnSetMenuInfo fnSetMenuInfo;
 
 // user prefs
 

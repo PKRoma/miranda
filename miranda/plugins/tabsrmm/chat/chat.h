@@ -358,7 +358,6 @@ TCHAR* a2tf( const TCHAR* str, int flags, DWORD cp );
 TCHAR* replaceStr( TCHAR** dest, const TCHAR* src );
 char*  replaceStrA( char** dest, const char* src );
 
-extern HINSTANCE g_hInst;
 extern char *szChatIconString;
 
 #define DEFLOGFILENAME _T("%miranda_logpath%\\%proto%\\%userid%.log")

@@ -45,10 +45,6 @@ LOGFONT lfDefault = {0};
 
 struct LIST_INTERFACE li;
 struct MM_INTERFACE mmi;
-struct UTF8_INTERFACE utfi;
-
-
-pfnSetMenuInfo fnSetMenuInfo = NULL;
 
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
@@ -99,28 +95,17 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK * link)
 {
 	pluginLink = link;
 
-#ifdef _DEBUG //mem leak detector :-) Thanks Tornado!
-	{
-		int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG); // Get current flag
-		flag |= (_CRTDBG_LEAK_CHECK_DF | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_CHECK_CRT_DF); // Turn on leak-checking bit
-		_CrtSetDbgFlag(flag); // Set flag to the new value
-	}
-#endif
-
 	mir_getMMI(&mmi);
-	mir_getUTFI(&utfi);
-	//MaD
 	mir_getLI(&li);
-	//
+
+	M = new _Mim();
 
 	SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(lfDefault), &lfDefault, FALSE);
-	// SystemParametersInfoA(SPI_GETICONTITLELOGFONT, sizeof(lfDefaultA), &lfDefaultA, FALSE);
+
 	if (!ServiceExists(MS_DB_EVENT_GETTEXT)) {
 		MessageBox(0, _T("Critical error. Unsupported database driver found. tabSRMM will be disabled"), _T("tabSRMM"), MB_OK | MB_ICONERROR);
 		return 1;
 	}
-	fnSetMenuInfo = (pfnSetMenuInfo)GetProcAddress(GetModuleHandleA("USER32.DLL"), "SetMenuInfo");
-
 	Chat_Load(pluginLink);
 	return LoadSendRecvMessageModule();
 }
@@ -154,7 +139,7 @@ int _DebugTraceW(const wchar_t *fmt, ...)
 		mir_snprintf(szLogFileName, MAX_PATH, "%s\\%s", szDataPath, "tabsrmm_debug.log");
 		f = fopen(szLogFileName, "a+");
 		if (f) {
-			char *szDebug = Utf8_Encode(debug);
+			char *szDebug = M->utf8_encodeW(debug);
 			fputs(szDebug, f);
 			fputs("\n", f);
 			fclose(f);
@@ -282,7 +267,7 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				mir_snprintf(str, sizeof(str), Translate("Built %s %s"), __DATE__, __TIME__);
 				SetDlgItemTextA(hwndDlg, IDC_BUILDTIME, str);
 			}
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)Globals.g_iconContainer);
+			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)_Plugin.g_iconContainer);
 			return TRUE;
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {

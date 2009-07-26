@@ -313,7 +313,7 @@ TCHAR* Chat_DoRtfToTags(char* pszText, SESSION_INFO* si)
 #if !defined( _UNICODE )
 	return pszText;
 #else
-	ptszResult = Utf8_Decode(pszText);
+	ptszResult = M->utf8_decodeW(pszText);
 	return ptszResult;
 #endif
 }

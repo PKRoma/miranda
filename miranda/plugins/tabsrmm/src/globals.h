@@ -20,25 +20,23 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id$
+$Id:$
 
 */
 
+typedef     BOOL (WINAPI *pfnSetMenuInfo )( HMENU hmenu, LPCMENUINFO lpcmi );
 
-class _Globals {
+class _Globals
+{
 public:
-	_Globals()
-	{}
+	_Globals() {
+		m_showRelnotes = false;
+	}
 
-	~_Globals()
-	{}
+	~_Globals() {}
 
-	void		BroadcastMessage(UINT msg, WPARAM wParam, LPARAM lParam);
-	void		BroadcastMessageAsync(UINT msg, WPARAM wParam, LPARAM lParam);
-	INT_PTR		AddWindow(HWND hWnd, HANDLE h);
-	INT_PTR		RemoveWindow(HWND hWnd);
-
-	HWND		FindWindow(HANDLE h) const;
+	void		ViewReleaseNotes(bool fForced, bool fTerminated);
+	bool		RelNotesActive() { return m_showRelnotes; }
 
 	HWND        g_hwndHotkeyHandler;
 	HICON       g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus;
@@ -103,16 +101,12 @@ public:
 	HANDLE		m_hDataPath;
 	HANDLE		m_hSkinsPath;
 	HANDLE		m_hAvatarsPath;
-	char       	szDataPath[MAX_PATH+1];
-	char       	szSkinsPath[MAX_PATH + 1];
-	char       	szAvatarsPath[MAX_PATH + 1];
 	BYTE        m_WinVerMajor;
 	BYTE        m_WinVerMinor;
 	BYTE        m_bIsXP;
 	BYTE        m_SideBarEnabled;
 	HWND        m_hwndClist;
 	int         m_TabAppearance;
-	int         m_VSApiEnabled;
 	struct      myTabCtrl tabConfig;
 	int         m_panelHeight;
 	TCHAR       szDefaultTitleFormat[256];
@@ -151,40 +145,16 @@ public:
 	char        szMetaName[256];
 	HBITMAP		hbmLogo;
 	HANDLE 		m_hMessageWindowList;
+private:
+	bool		m_showRelnotes;
 };
 
-class _Mim {
-public:
-	_Mim()
-	{}
-	~_Mim()
-	{}
+extern	_Globals	_Plugin;
+extern	_Globals	*Plugin;
 
-	DWORD GetDword(const HANDLE hContact, const char *szModule, const char *szSetting, DWORD uDefault) const;
-	DWORD GetDword(const char *szModule, const char *szSetting, DWORD uDefault) const;
-	DWORD GetDword(const char *szSetting, DWORD uDefault) const;
-	DWORD GetDword(const HANDLE hContact, const char *szSetting, DWORD uDefault) const;
+#define DPISCALEY(argY) ((int) ((double)(argY) * _Plugin.g_DPIscaleY))
+#define DPISCALEX(argX) ((int) ((double)(argX) * _Plugin.g_DPIscaleX))
 
-	int GetByte(const HANDLE hContact, const char *szModule, const char *szSetting, int uDefault) const;
-	int GetByte(const char *szModule, const char *szSetting, int uDefault) const;
-	int GetByte(const char *szSetting, int uDefault) const;
-	int GetByte(const HANDLE hContact, const char *szSetting, int uDefault) const;
-
-	INT_PTR WriteDword(const HANDLE hContact, const char *szModule, const char *szSetting, DWORD value) const;
-	INT_PTR WriteDword(const char *szModule, const char *szSetting, DWORD value) const;
-
-	INT_PTR WriteByte(const HANDLE hContact, const char *szModule, const char *szSetting, BYTE value) const;
-	INT_PTR WriteByte(const char *szModule, const char *szSetting, BYTE value) const;
-};
-
-extern	_Globals	Globals;
-extern	_Globals	*pGlobals;
-extern	_Mim		Mim;
-extern  _Mim		*pMim;
-
-#define DPISCALEY(argY) ((int) ((double)(argY) * Globals.g_DPIscaleY))
-#define DPISCALEX(argX) ((int) ((double)(argX) * Globals.g_DPIscaleX))
-
-#define DPISCALEY_S(argY) ((int) ((double)(argY) * Globals.g_DPIscaleY))
-#define DPISCALEX_S(argX) ((int) ((double)(argX) * Globals.g_DPIscaleX))
+#define DPISCALEY_S(argY) ((int) ((double)(argY) * _Plugin.g_DPIscaleY))
+#define DPISCALEX_S(argX) ((int) ((double)(argX) * _Plugin.g_DPIscaleX))
 

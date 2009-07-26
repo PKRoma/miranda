@@ -575,7 +575,7 @@ extern TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNi
 				if (wStatus != ID_STATUS_OFFLINE && xStatus > 0 && xStatus <= 31) {
 					DBVARIANT dbv = {0};
 
-					if (!DBGetContactSettingTString(hContact, (char *)szProto, "XStatusName", &dbv)) {
+					if (!M->GetTString(hContact, (char *)szProto, "XStatusName", &dbv)) {
 						_tcsncpy(szTemp, dbv.ptszVal, 500);
 						szTemp[500] = 0;
 						DBFreeVariant(&dbv);
@@ -596,7 +596,7 @@ extern TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNi
 				if (wStatus != ID_STATUS_OFFLINE && xStatus > 0 && xStatus <= 31) {
 					DBVARIANT dbv = {0};
 
-					if (!DBGetContactSettingTString(hContact, (char *)szProto, "XStatusName", &dbv)) {
+					if (!M->GetTString(hContact, (char *)szProto, "XStatusName", &dbv)) {
 						_tcsncpy(szTemp, dbv.ptszVal, 500);
 						szTemp[500] = 0;
 						DBFreeVariant(&dbv);
