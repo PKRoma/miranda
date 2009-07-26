@@ -1135,6 +1135,18 @@ __inline static INT_PTR DBWriteContactSettingUTF8String(HANDLE hContact,const ch
 	return CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)hContact,(LPARAM)&cws);
 }
 
+__inline static INT_PTR DBWriteContactSettingBlob(HANDLE hContact,const char *szModule,const char *szSetting,void *val,unsigned len)
+{
+	DBCONTACTWRITESETTING cws;
+
+	cws.szModule=szModule;
+	cws.szSetting=szSetting;
+	cws.value.type=DBVT_BLOB;
+    cws.value.cpbVal = (WORD)len;
+	cws.value.pbVal=(unsigned char*)val;
+	return CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)hContact,(LPARAM)&cws);
+}
+
 /* inlined range tolerate versions */
 
 __inline static BYTE DBGetContactSettingRangedByte(HANDLE hContact, const char *szModule, const char *szSetting, BYTE errorValue, BYTE minValue, BYTE maxValue) {
