@@ -158,7 +158,7 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint)
 	HBRUSH hBrushAlternateGrey = NULL;
 	// yes I know about GetSysColorBrush()
 	COLORREF tmpbkcolour = style & CLS_CONTACTLIST ? (dat->useWindowsColours ? GetSysColor(COLOR_3DFACE) : dat->bkColour) : dat->bkColour;
-	int minHeight = GetSystemMetrics(SM_CYSMICON);
+	int minHeight = 16;
 	for (i = 0; i < FONTID_LAST; i++) {
 		if (minHeight < dat->fontInfo[i].fontHeight) {
 			minHeight = dat->fontInfo[i].fontHeight;
