@@ -29,8 +29,8 @@ unsigned long char_ip_to_long_ip(char* ip);
 unsigned short get_random(void);
 
 inline int cap_cmp(const char* cap, const char* cap2) { return memcmp(cap, cap2, 16); }
-inline const char* alphaCapStr(char ver) { return (ver & 0x80) ? " Alpha" : ""; }
-inline const char* SecureCapStr(char* ver) { return (*(int*)ver == 0xDEC0FE5A) ? " + SecureIM" : ""; }
+inline const char* alpha_cap_str(char ver) { return (ver & 0x80) ? " Alpha" : ""; }
+inline const char* secure_cap_str(char* ver) { return (*(int*)ver == 0xDEC0FE5A) ? " + SecureIM" : ""; }
 
 
 struct BdListItem

@@ -314,7 +314,7 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
                         char f =cap[13];
                         char g =cap[14];
                         char h =cap[15];
-                        mir_snprintf(client,sizeof(client),CLIENT_OSCARJ,a&0x7f,b,c,d,alphaCapStr(a),e&0x7f,f,g,h,alphaCapStr(e));
+                        mir_snprintf(client,sizeof(client),CLIENT_OSCARJ,a&0x7f,b,c,d,alpha_cap_str(a),e&0x7f,f,g,h,alpha_cap_str(e));
                     }
                     else if (memcmp(cap, "MirandaA", 8) == 0)
                     {
@@ -338,7 +338,7 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
                         char f =cap[9];
                         char g =cap[10];
                         char h =cap[11];
-                        mir_snprintf(client,sizeof(client),CLIENT_OSCARSN,a&0x7f,b,c,d,alphaCapStr(a),e&0x7f,f,g,h,alphaCapStr(e),SecureCapStr(&cap[12]));
+                        mir_snprintf(client,sizeof(client),CLIENT_OSCARSN,a&0x7f,b,c,d,alpha_cap_str(a),e&0x7f,f,g,h,alpha_cap_str(e),secure_cap_str(&cap[12]));
                     }
                     if (memcmp(cap, "icqp", 4) == 0)
                     {
@@ -350,7 +350,7 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
                         char f =cap[9];
                         char g =cap[10];
                         char h =cap[11];
-                        mir_snprintf(client,sizeof(client),CLIENT_OSCARPL,a&0x7f,b,c,d,alphaCapStr(a),e&0x7f,f,g,h,alphaCapStr(e),SecureCapStr(&cap[12]));
+                        mir_snprintf(client,sizeof(client),CLIENT_OSCARPL,a&0x7f,b,c,d,alpha_cap_str(a),e&0x7f,f,g,h,alpha_cap_str(e),secure_cap_str(&cap[12]));
                     }
                     else if (memcmp(cap, "Kopete ICQ", 10) == 0)
                     {
@@ -657,7 +657,7 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
 
                     tlv_offset += TLV_HEADER_SIZE + tlv.len();
                 }
-                if (!nickfound && getDword(AIM_KEY_LV, 0) >= 0x900) 
+                if (!nickfound && getDword(AIM_KEY_LV, 0) >= 0x80500) 
                     DBDeleteContactSetting(hContact, MOD_KEY_CL, "MyHandle");
             }
             break;
@@ -836,7 +836,7 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
                 DBFreeVariant(&dbv);
             }
 
-            if (getDword(AIM_KEY_LV, 0) < 0x900)
+            if (getDword(AIM_KEY_LV, 0) < 0x80500)
             {
                 upload_nicks();
                 setDword(AIM_KEY_LV, __VERSION_DWORD);
@@ -1450,6 +1450,7 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
             switch (code)
             {
             case 0x0000:
+            case 0x000e:
 //				ShowPopup(LPGEN("Successfully modified group."), ERROR_POPUP);
                 break;
 
