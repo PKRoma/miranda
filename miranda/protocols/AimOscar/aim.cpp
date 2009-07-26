@@ -19,6 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "aim.h"
 #include "version.h"
 
+char AIM_CAP_MIRANDA[16] = "MirandaA";
+
 PLUGINLINK *pluginLink;
 MD5_INTERFACE md5i;
 MM_INTERFACE mmi;
@@ -71,14 +73,14 @@ PLUGININFOEX pluginInfo={
 
 extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 8, 0, 0 )) {
-		MessageBox( NULL, _T("The AIM protocol plugin cannot be loaded. It requires Miranda IM 0.8.0.0 or later."), _T("Miranda"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 9, 0, 0 )) 
+    {
+		MessageBox( NULL, _T("The AIM protocol plugin cannot be loaded. It requires Miranda IM 0.9.0.0 or later."), _T("Miranda"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
 
-	unsigned long mv=_htonl(mirandaVersion);
-	memcpy(&AIM_CAP_MIRANDA[8],&mv,sizeof(DWORD));
-	memcpy(&AIM_CAP_MIRANDA[12],AIM_OSCAR_VERSION,sizeof(DWORD));
+	*(unsigned long*)(&AIM_CAP_MIRANDA[8]) = _htonl(mirandaVersion);
+	*(unsigned long*)(&AIM_CAP_MIRANDA[12]) = _htonl(__VERSION_DWORD);
 	return &pluginInfo;
 }
 

@@ -393,7 +393,8 @@ retry:
 	return id;
 }
 
-unsigned short* CAimProto::get_members_of_group(unsigned short group_id,unsigned short &size)//returns the size of the list array aquired with data
+//returns the size of the list array aquired with data
+unsigned short* CAimProto::get_members_of_group(unsigned short group_id, unsigned short &size)
 {
 	unsigned short* list = NULL;
 	size = 0;
@@ -422,6 +423,39 @@ unsigned short* CAimProto::get_members_of_group(unsigned short group_id,unsigned
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 	}
 	return list;
+}
+
+void CAimProto::upload_nicks(void)
+{
+	HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	while (hContact)
+	{
+        DBVARIANT dbv;
+        if (is_my_contact(hContact) && !DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, "MyHandle", &dbv))
+        {
+            set_local_nick(hContact, dbv.pszVal, NULL);
+            DBFreeVariant(&dbv);
+        }
+		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+    }
+}
+
+void CAimProto::set_local_nick(HANDLE hContact, char* nick, char* note)
+{
+    DBVARIANT dbv;
+    if (getString(hContact, AIM_KEY_SN, &dbv)) return;
+
+	for(int i=1; ;++i)
+	{
+        unsigned short group_id = getGroupId(hContact, i);
+		if (group_id == 0) break;
+
+        unsigned short buddy_id = getBuddyId(hContact, i);
+		if (buddy_id == 0) break;
+
+        aim_mod_buddy(hServerConn, seqno, dbv.pszVal, group_id, buddy_id, nick, note);
+    }
+    DBFreeVariant(&dbv);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

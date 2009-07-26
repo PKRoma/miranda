@@ -72,7 +72,7 @@ unsigned char TLV::ubyte(int pos)
 
 char* TLV::part(int pos, int length)//returns part of the tlv value
 {
-    if ((pos + length) > length_) return 0;
+    if ((pos + length) > length_) return NULL;
 
     char* value = (char*)mir_alloc(length + 2);
     memcpy(value, &value_[pos], length);

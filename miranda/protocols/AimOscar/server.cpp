@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "aim.h"
+#include "version.h"
 
 void CAimProto::snac_md5_authkey(SNAC &snac,HANDLE hServerConn,unsigned short &seqno, const char* username, const char* password)//family 0x0017
 {
@@ -313,7 +314,7 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
                         char f =cap[13];
                         char g =cap[14];
                         char h =cap[15];
-                        mir_snprintf(client,sizeof(client),CLIENT_OSCARJ,a,b,c,d,f,g,h);
+                        mir_snprintf(client,sizeof(client),CLIENT_OSCARJ,(a&0x80)?"Alpha":"", a&0x7f,b,c,d,f,g,h);
                     }
                     else if(is_aimoscar_ver_cap(cap))
                     {
@@ -564,23 +565,24 @@ void CAimProto::snac_error(SNAC &snac)//family 0x0003 or 0x0004
 
 void CAimProto::process_ssi_list(SNAC &snac, int &offset)
 {
-    unsigned short name_length=snac.ushort(offset);
-    char* name=snac.part(offset+2,name_length);
-    unsigned short group_id=snac.ushort(offset+2+name_length);
-    unsigned short item_id=snac.ushort(offset+4+name_length);
-    unsigned short type=snac.ushort(offset+6+name_length);
-    unsigned short tlv_size=snac.ushort(offset+8+name_length);
+    unsigned short name_length = snac.ushort(offset);
+    char* name = snac.part(offset+2, name_length);
+    unsigned short group_id = snac.ushort(offset+ 2 +name_length);
+    unsigned short item_id = snac.ushort(offset+4+name_length);
+    unsigned short type = snac.ushort(offset+6+name_length);
+    unsigned short tlv_size = snac.ushort(offset+8+name_length);
+
     switch (type)
     {
         case 0x0000: //buddy record
         {
-            HANDLE hContact=contact_from_sn(name, true);
-            if(hContact)
+            HANDLE hContact = contact_from_sn(name, true);
+            if (hContact)
             {
                 int i;
-                for(i=1; ;i++)
+                for (i=1; ; i++)
                 {
-                    if(!getBuddyId(hContact, i))
+                    if (!getBuddyId(hContact, i))
                     {
                         setBuddyId(hContact, i, item_id);	
                         setGroupId(hContact, i, group_id);
@@ -614,9 +616,28 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
                     }
                 }
                 setWord(hContact, AIM_KEY_ST, ID_STATUS_OFFLINE);
+
+                bool nickfound = false;
+                const int tlv_base = offset + name_length + 10; 
+                for (int tlv_offset = 0; tlv_offset < tlv_size; )
+                {
+                    TLV tlv(snac.val(tlv_base + tlv_offset));
+
+                    if (tlv.cmp(0x0131) && tlv.len())
+                    {
+                        char* nick = tlv.dup();
+                        DBWriteContactSettingStringUtf(hContact, MOD_KEY_CL, "MyHandle", nick);
+                        mir_free(nick);
+                        nickfound = true;
+                    }
+
+                    tlv_offset += TLV_HEADER_SIZE + tlv.len();
+                }
+                if (!nickfound && getDword(AIM_KEY_LV, 0) >= 0x900) 
+                    DBDeleteContactSetting(hContact, MOD_KEY_CL, "MyHandle");
             }
+            break;
         }
-        break;
 
         case 0x0001: //group record
             if (group_id)
@@ -681,6 +702,88 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
     mir_free(name);
 }
 
+void CAimProto::modify_ssi_list(SNAC &snac, int &offset)
+{
+    unsigned short name_length = snac.ushort(offset);
+    char* name = snac.part(offset+2, name_length);
+    unsigned short group_id = snac.ushort(offset+ 2 +name_length);
+    unsigned short item_id = snac.ushort(offset+4+name_length);
+    unsigned short type = snac.ushort(offset+6+name_length);
+    unsigned short tlv_size = snac.ushort(offset+8+name_length);
+
+    switch (type)
+    {
+        case 0x0000: //buddy record
+        {
+            HANDLE hContact = contact_from_sn(name, true);
+            if (hContact)
+            {
+                const int tlv_base = offset + name_length + 10; 
+                for (int tlv_offset = 0; tlv_offset < tlv_size; )
+                {
+                    TLV tlv(snac.val(tlv_base + tlv_offset));
+
+                    if (tlv.cmp(0x0131) && tlv.len())
+                    {
+                        char* nick = tlv.dup();
+                        if (nick)
+                            DBWriteContactSettingStringUtf(hContact, MOD_KEY_CL, "MyHandle", nick);
+                        else
+                            DBDeleteContactSetting(hContact, MOD_KEY_CL, "MyHandle");
+                        mir_free(nick);
+                    }
+
+                    tlv_offset += TLV_HEADER_SIZE + tlv.len();
+                }
+            }
+            break;
+        }
+
+        case 0x0004: //privacy record
+            if (group_id == 0)
+            {
+                pd_info_id = item_id;
+
+                const int tlv_base = offset + name_length + 10; 
+                for (int tlv_offset = 0; tlv_offset < tlv_size; )
+                {
+                    TLV tlv(snac.val(tlv_base + tlv_offset));
+
+                    if(tlv.cmp(0x00ca))
+                        pd_mode = tlv.ubyte();
+                    else if(tlv.cmp(0x00cc))
+                        pd_flags = tlv.ulong();
+
+                    tlv_offset += TLV_HEADER_SIZE + tlv.len();
+                }
+            }
+            break;
+
+        case 0x0005: //prefernces record
+            if (group_id == 0)
+            {
+                const int tlv_base = offset + name_length + 10; 
+                for (int tlv_offset = 0; tlv_offset < tlv_size; )
+                {
+                    TLV tlv(snac.val(tlv_base + tlv_offset));
+
+                    if(tlv.cmp(0x00c9))
+                        pref1_flags = tlv.ubyte();
+
+                    tlv_offset += TLV_HEADER_SIZE + tlv.len();
+                }
+            }
+            break;
+
+        case 0x0014: //avatar record
+            if (group_id == 0 && name_length == 1 && name[0] == '1')
+                avatar_id = item_id;
+            break;
+    }
+
+    mir_free(name);
+}
+
 void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)//family 0x0013
 {
     if (snac.subcmp(0x0006))  //contact list
@@ -709,6 +812,12 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
                 DBFreeVariant(&dbv);
             }
 
+            if (getDword(AIM_KEY_LV, 0) < 0x900)
+            {
+                upload_nicks();
+                setDword(AIM_KEY_LV, __VERSION_DWORD);
+            }
+
             if(getByte( AIM_KEY_CM, 0))
                 aim_new_service_request(hServerConn,seqno,0x0018 );//mail
             LOG("Connection Negotiation Finished");
@@ -719,6 +828,11 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
     {
         int offset=8;
         process_ssi_list(snac, offset);
+    }
+    else if (snac.subcmp(0x0009)) // modify buddy
+    {
+        int offset=8;
+        modify_ssi_list(snac, offset);
     }
     else if (snac.subcmp(0x000a)) // delete buddy
     {
@@ -991,7 +1105,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
                 unsigned long msg_time = getDword(hContact, AIM_KEY_LM, 0);
                 unsigned long away_time = getDword(AIM_KEY_LA, 0);
                 char** msgptr = getStatusMsgLoc(m_iStatus);
-                if(away_time>msg_time && *msgptr)
+                if (away_time > msg_time && *msgptr)
                 {
                     char* s_msg = process_status_msg(*msgptr, sn);
 
@@ -1043,11 +1157,11 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 
             if (!descr_included) msg_buf = (char*)mir_calloc(1);
 
-            size_t size = sizeof(DWORD) + lstrlenA(filename) + strlen(msg_buf) + 4;
+            size_t size = sizeof(DWORD) + _strlens(filename) + strlen(msg_buf) + 4;
             char* szBlob = (char*)alloca(size);
             *((PDWORD) szBlob) = 0;
             strcpy(szBlob + sizeof(DWORD), filename);
-            strcpy(szBlob + sizeof(DWORD) + lstrlenA(filename) + 1, msg_buf);
+            strcpy(szBlob + sizeof(DWORD) + _strlens(filename) + 1, msg_buf);
 
             pre.flags = PREF_UTF;
             pre.timestamp = (DWORD)time(NULL);
@@ -1448,47 +1562,48 @@ void CAimProto::snac_mail_response(SNAC &snac)//family 0x0018
 {
     if (snac.subcmp(0x0007))
     {
-        unsigned short num_tlvs=snac.ushort(24);
-        char* sn=0;
-        time_t time;
-        unsigned short num_msgs=0;
-        char new_mail=0;
-        int position=26;
-        char* url=0;
-        char* address=0;
+        char* sn = NULL;
+        time_t time = 0;
+        unsigned short num_msgs = 0;
+        char new_mail = 0;
+        char* url = NULL;
+        char* address = NULL;
+
+        int position = 26;
+        int num_tlvs = snac.ushort(24);
         for (int i = 0; i < num_tlvs; i++)
         {
             TLV tlv(snac.val(position));
-            if(tlv.cmp(0x0009))
+            if (tlv.cmp(0x0009))
             {
-                sn=tlv.dup();
+                sn = tlv.dup();
             }
-            else if(tlv.cmp(0x001d))
+            else if (tlv.cmp(0x001d))
             {
-                time=tlv.ulong();
+                time = tlv.ulong();
             }
-            else if(tlv.cmp(0x0080))
+            else if (tlv.cmp(0x0080))
             {
                 num_msgs=tlv.ushort();
             }
-            else if(tlv.cmp(0x0081))
+            else if (tlv.cmp(0x0081))
             {
-                new_mail=tlv.ubyte();
+                new_mail = tlv.ubyte();
             }
-            else if(tlv.cmp(0x0007))
+            else if (tlv.cmp(0x0007))
             {
-                url=tlv.dup();
+                url = tlv.dup();
             }
-            else if(tlv.cmp(0x0082))
+            else if (tlv.cmp(0x0082))
             {
-                address=tlv.dup();
+                address = tlv.dup();
             }
-            position+=(TLV_HEADER_SIZE+tlv.len());
+            position += TLV_HEADER_SIZE + tlv.len();
         }
         if (new_mail || checking_mail)
         {
             char msg[1024];
-            int len = mir_snprintf(msg, SIZEOF(msg), "%s@%s(%d)\r\n%s", sn, address, num_msgs,
+            int len = mir_snprintf(msg, SIZEOF(msg), "%s@%s (%d)\r\n%s", sn, address, num_msgs,
                 Translate(new_mail ? "You've got mail! Checked at " : "No new mail!!!!! Checked at "));
 
             SYSTEMTIME stLocal;
@@ -1499,6 +1614,7 @@ void CAimProto::snac_mail_response(SNAC &snac)//family 0x0018
         }
         mir_free(sn);
         mir_free(address);
+        mir_free(url);
     }
 }
 void CAimProto::snac_retrieve_avatar(SNAC &snac)//family 0x0010

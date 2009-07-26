@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "aim.h"
+#include "version.h"
 
 int CAimProto::aim_send_connection_packet(HANDLE hServerConn,unsigned short &seqno,char *buf)
 {
@@ -51,13 +52,16 @@ int CAimProto::aim_auth_request(HANDLE hServerConn,unsigned short &seqno,const c
     mir_md5_append(&state,(mir_md5_byte_t*)AIM_MD5_STRING, sizeof(AIM_MD5_STRING)-1);
     mir_md5_finish(&state,auth_hash);
 
-    char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*14+MD5_HASH_LENGTH+strlen(username)+strlen(AIM_CLIENT_ID_STRING)+15+strlen(language)+strlen(country));
+    char client_id[64];
+    int client_id_len = mir_snprintf(client_id, sizeof(client_id), "Miranda Oscar Plugin, version %s", __VERSION_STRING);
+
+    char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*14+MD5_HASH_LENGTH+strlen(username)+client_id_len+15+strlen(language)+strlen(country));
 
     aim_writesnac(0x17,0x02,offset,buf);
     aim_writetlv(0x01,(unsigned short)strlen(username),username,offset,buf);
     aim_writetlv(0x25,MD5_HASH_LENGTH,(char*)auth_hash,offset,buf);
     aim_writetlv(0x4C,0,0,offset,buf);//signifies new password hash instead of old method
-    aim_writetlv(0x03,(unsigned short)strlen(AIM_CLIENT_ID_STRING),AIM_CLIENT_ID_STRING,offset,buf);
+    aim_writetlv(0x03,(unsigned short)client_id_len,client_id,offset,buf);
     aim_writetlvshort(0x17,AIM_CLIENT_MAJOR_VERSION,offset,buf);
     aim_writetlvshort(0x18,AIM_CLIENT_MINOR_VERSION,offset,buf);
     aim_writetlvshort(0x19,AIM_CLIENT_LESSER_VERSION,offset,buf);
@@ -423,6 +427,30 @@ int CAimProto::aim_mod_group(HANDLE hServerConn, unsigned short &seqno, const ch
     aim_writeshort(1,offset,buf);                                   // buddy type: Group
     aim_writeshort(TLV_HEADER_SIZE+members_length,offset,buf);      // length of extra data 
     aim_writetlv(0xc8,members_length,members,offset,buf);
+    return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
+}
+
+int CAimProto::aim_mod_buddy(HANDLE hServerConn, unsigned short &seqno, const char* sn, 
+                             unsigned short buddy_id, unsigned short group_id,
+                             char* nick, char* note)
+{
+    unsigned short offset=0;
+    unsigned short sn_length = (unsigned short)strlen(sn);
+    unsigned short nick_length = (unsigned short)_strlens(nick);
+    unsigned short note_length = (unsigned short)_strlens(note);
+    unsigned short tlv_len = TLV_HEADER_SIZE * 2 + nick_length + note_length;
+    
+    char* buf=(char*)alloca(SNAC_SIZE+sn_length+10+tlv_len);
+    aim_writesnac(0x13,0x09,offset,buf);                            // SSI Edit
+    aim_writeshort(sn_length,offset,buf);                           // screen name length
+    aim_writegeneric(sn_length,sn,offset,buf);                      // screen name 
+    aim_writeshort(buddy_id,offset,buf);                            // buddy id
+    aim_writeshort(group_id,offset,buf);                            // group id
+    aim_writeshort(0,offset,buf);                                   // buddy type: Buddy
+    aim_writeshort(tlv_len,offset,buf);                             // length of extra data 
+
+    aim_writetlv(0x13c,note_length,note,offset,buf);
+    aim_writetlv(0x131,nick_length,nick,offset,buf);
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 

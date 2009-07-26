@@ -76,27 +76,6 @@ CAimProto::CAimProto(const char* aProtoName, const TCHAR* aUserName)
 	nlu.szSettingsModule = szP2P;
 	nlu.minIncomingPorts = 1;
 	hNetlibPeer = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
-
-	DBVARIANT dbv;
-	if(getString(AIM_KEY_PW, &dbv))
-	{
-		if (!getString(OLD_KEY_PW, &dbv))
-		{
-			setString(AIM_KEY_PW, dbv.pszVal);
-			deleteSetting(NULL, OLD_KEY_PW);
-			DBFreeVariant(&dbv);
-		}
-	}
-	else DBFreeVariant(&dbv);
-
-	if(getByte(AIM_KEY_DM,255)==255)
-	{
-		int i=getByte(OLD_KEY_DM,255);
-		if(i!=255)
-		{
-			setByte(AIM_KEY_DM, i!=1);
-			deleteSetting(NULL, OLD_KEY_DM);
-	}	}
 }
 
 CAimProto::~CAimProto()

@@ -147,10 +147,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #define AIM_KEY_NC "NewContact"
 #define AIM_KEY_AH "AvatarHash"
 #define AIM_KEY_ASH "AvatarSavedHash"
-#define AIM_KEY_EM "Email"
-//Old Keys
-#define OLD_KEY_PW "password"
-#define OLD_KEY_DM "AutoResponse"
+#define AIM_KEY_EM "e-mail"
+#define AIM_KEY_LV "LastVer"
 
 #define AIM_DEFAULT_SERVER "slogin.oscar.aol.com"
 #define AIM_DEFAULT_SERVER_NS "login.oscar.aol.com"
@@ -181,8 +179,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #define AIM_MSG_TYPE_UNICODE "text/x-aolrtf; charset=\"unicode-2-0\""
 #define AIM_TOOL_VERSION "\x01\x10\x18\xf1"
 
-extern const char AIM_CLIENT_ID_STRING[]; //Client id EXTERN
-
 //Supported Clients
 #define CLIENT_UNKNOWN "?"
 #define CLIENT_AIM5 "AIM 5.x"
@@ -209,7 +205,7 @@ extern const char AIM_CLIENT_ID_STRING[]; //Client id EXTERN
 #define CLIENT_BEEJIVE "beejive"
 #define CLIENT_MICQ "mICQ"
 #define CLIENT_AIMOSCAR "Miranda IM %d.%d.%d.%d(AimOSCAR v%d.%d.%d.%d)"
-#define CLIENT_OSCARJ "Miranda IM %d.%d.%d.%d(ICQ v0.%d.%d.%d)"
+#define CLIENT_OSCARJ "Miranda IM %s %d.%d.%d.%d(ICQ v0.%d.%d.%d)"
 #define CLIENT_NAIM "naim"
 #define CLIENT_QIP "qip"
 #define CLIENT_SIM "SIM"
@@ -305,5 +301,7 @@ extern HINSTANCE hInstance; //plugin dll instance
 #define NEWSTR_ALLOCA(A) ((A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A))
 #define NEWWSTR_ALLOCA(A) ((A==NULL)?NULL:wcscpy((wchar_t*)alloca(sizeof(wchar_t)*(wcslen(A)+1)),A))
 #define NEWTSTR_ALLOCA(A) ((A==NULL)?NULL:_tcscpy((TCHAR*)alloca(sizeof(TCHAR)*(_tcslen(A)+1)),A))
+
+#define _strlens(a) (a ? strlen(a) : 0)
 
 #endif

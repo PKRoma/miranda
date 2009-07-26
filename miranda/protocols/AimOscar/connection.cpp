@@ -285,7 +285,7 @@ exit:
 
 void __cdecl CAimProto::aim_mail_negotiation( void* )
 {
-    HANDLE hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hAvatarConn, 2048 * 8);
+    HANDLE hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hMailConn, 2048 * 8);
 
     NETLIBPACKETRECVER packetRecv = {0};
     packetRecv.cbSize = sizeof(packetRecv);
