@@ -799,9 +799,19 @@ bool is_utf(const char* msg)
 char* get_fname(char* path)
 {
     char* pszFile = strrchr(path, '\\');
-    if (pszFile) pszFile++; else path;
+    if (pszFile) pszFile++; else pszFile = path;
 
     return pszFile;
+}
+
+char* get_dir(char* path)
+{
+    char *cpath = mir_strdup(path);
+
+    char* swd = strrchr(cpath, '\\'); 
+    if (swd) swd[1] = 0; else cpath[0] = 0;
+
+    return cpath;
 }
 
 aimString::aimString(char* str)

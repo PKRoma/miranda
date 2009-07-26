@@ -33,6 +33,7 @@ public:
 
     int cmp(unsigned short type) { return type_ == type; }
     unsigned short len(void) { return length_; }
+    char* val(void) { return value_; }
 
 	char* part(int pos, int length);
     char* dup(void) { return part(0, length_); };

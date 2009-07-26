@@ -393,7 +393,8 @@ retry:
 	return id;
 }
 
-unsigned short* CAimProto::get_members_of_group(unsigned short group_id,unsigned short &size)//returns the size of the list array aquired with data
+//returns the size of the list array aquired with data
+unsigned short* CAimProto::get_members_of_group(unsigned short group_id, unsigned short &size)
 {
 	unsigned short* list = NULL;
 	size = 0;
@@ -422,6 +423,39 @@ unsigned short* CAimProto::get_members_of_group(unsigned short group_id,unsigned
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 	}
 	return list;
+}
+
+void CAimProto::upload_nicks(void)
+{
+	HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	while (hContact)
+	{
+        DBVARIANT dbv;
+        if (is_my_contact(hContact) && !DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, "MyHandle", &dbv))
+        {
+            set_local_nick(hContact, dbv.pszVal, NULL);
+            DBFreeVariant(&dbv);
+        }
+		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+    }
+}
+
+void CAimProto::set_local_nick(HANDLE hContact, char* nick, char* note)
+{
+    DBVARIANT dbv;
+    if (getString(hContact, AIM_KEY_SN, &dbv)) return;
+
+	for(int i=1; ;++i)
+	{
+        unsigned short group_id = getGroupId(hContact, i);
+		if (group_id == 0) break;
+
+        unsigned short buddy_id = getBuddyId(hContact, i);
+		if (buddy_id == 0) break;
+
+        aim_mod_buddy(hServerConn, seqno, dbv.pszVal, group_id, buddy_id, nick, note);
+    }
+    DBFreeVariant(&dbv);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -563,7 +597,7 @@ void CAimProto::write_away_message(const char* sn, const char* msg, bool utf)
 		mir_free(path);
 		mir_free(s_msg);
 	}
-}
+} 
 
 void CAimProto::write_profile(const char* sn, const char* msg, bool utf)
 {
@@ -584,41 +618,40 @@ void CAimProto::write_profile(const char* sn, const char* msg, bool utf)
 	}
 }
 
-unsigned int aim_oft_checksum_chunk(const unsigned char *buffer, int bufferlen, unsigned long prevcheck)
+unsigned long aim_oft_checksum_chunk(unsigned long dwChecksum, const unsigned char *buffer, int len)
 {
-	unsigned long check = (prevcheck >> 16) & 0xffff, oldcheck;
-	unsigned short val;
-	for (int i=0; i<bufferlen; i++) {
-		oldcheck = check;
-		if (i&1)
-			val = buffer[i];
-		else
-			val = buffer[i] << 8;
-		check -= val;
-		/*
-		 * The following appears to be necessary.... It happens 
-		 * every once in a while and the checksum doesn't fail.
-		 */
-		if (check > oldcheck)
-			check--;
+	unsigned long checksum = (dwChecksum >> 16) & 0xffff;
+
+	for (int i = 0; i < len; i++)
+	{
+		unsigned val = buffer[i];
+
+		if ((i & 1) == 0)
+			val <<= 8;
+
+		if (checksum < val) ++val;
+		checksum -= val;
 	}
-	check = ((check & 0x0000ffff) + (check >> 16));
-	check = ((check & 0x0000ffff) + (check >> 16));
-	return check << 16;
+	checksum = ((checksum & 0x0000ffff) + (checksum >> 16));
+	checksum = ((checksum & 0x0000ffff) + (checksum >> 16));
+	return checksum << 16;
 }
 
-unsigned int aim_oft_checksum_file(TCHAR *filename) 
+unsigned aim_oft_checksum_file(char *filename, unsigned size) 
 {
-	unsigned long checksum = 0xffff0000;
-	int fid = _topen(filename, _O_RDONLY | _O_BINARY, _S_IREAD);
+    unsigned long checksum = 0xffff0000;
+	int fid = _open(filename, _O_RDONLY | _O_BINARY, _S_IREAD);
 	if (fid >= 0)  
     {
-        for(;;)
+        unsigned sz = _filelength(fid);
+        if (size > sz) size = sz; 
+        while (size)
         {
-		    unsigned char buffer[1024];
-		    int bytes = _read(fid, buffer, 1024);
-            if (bytes <= 0) break;
-			checksum = aim_oft_checksum_chunk(buffer, bytes, checksum);
+		    unsigned char buffer[8912];
+            int bytes = (int)min(size, sizeof(buffer));
+		    bytes = _read(fid, buffer, bytes);
+            size -= bytes;
+            checksum = aim_oft_checksum_chunk(checksum, buffer, bytes);
         }
 		_close(fid);
 	}
@@ -665,56 +698,6 @@ unsigned short get_random(void)
     CallService(MS_UTILS_GETRANDOM, sizeof(id), (LPARAM)&id);
     id &= 0x7fff;
     return id;
-}
-
-bool cap_cmp(const char* cap,const char* cap2)
-{
-	return memcmp(cap,cap2,16) != 0;
-}
-
-bool is_oscarj_ver_cap(char* cap)
-{
-	return memcmp(cap,"MirandaM",8) == 0;
-}
-
-bool is_aimoscar_ver_cap(char* cap)
-{
-	return memcmp(cap,"MirandaA",8) == 0;
-}
-
-bool is_kopete_ver_cap(char* cap)
-{
-	return memcmp(cap,"Kopete ICQ",10) == 0;
-}
-
-bool is_qip_ver_cap(char* cap)
-{
-	return memcmp(&cap[7],"QIP",3) == 0;
-}
-
-bool is_micq_ver_cap(char* cap)
-{
-	return memcmp(cap,"mICQ",4) == 0;
-}
-
-bool is_im2_ver_cap(char* cap)
-{
-	return cap_cmp(cap,AIM_CAP_IM2) == 0;
-}
-
-bool is_sim_ver_cap(char* cap)
-{
-	return memcmp(cap,"SIM client",10) == 0;
-}
-
-bool is_naim_ver_cap(char* cap)
-{
-	return memcmp(cap+4,"naim",4) == 0;
-}
-
-bool is_digsby_ver_cap(char* cap)
-{
-    return memcmp(cap,"digsby",6) == 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

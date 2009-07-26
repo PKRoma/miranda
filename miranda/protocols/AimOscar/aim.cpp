@@ -19,6 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "aim.h"
 #include "version.h"
 
+char AIM_CAP_MIRANDA[16] = "MirandaA";
+
 PLUGINLINK *pluginLink;
 MD5_INTERFACE md5i;
 MM_INTERFACE mmi;
@@ -76,9 +78,8 @@ extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD miranda
 		return NULL;
 	}
 
-	unsigned long mv=_htonl(mirandaVersion);
-	memcpy(&AIM_CAP_MIRANDA[8],&mv,sizeof(DWORD));
-	memcpy(&AIM_CAP_MIRANDA[12],AIM_OSCAR_VERSION,sizeof(DWORD));
+	*(unsigned long*)(&AIM_CAP_MIRANDA[8]) = _htonl(mirandaVersion);
+	*(unsigned long*)(&AIM_CAP_MIRANDA[12]) = _htonl(__VERSION_DWORD);
 	return &pluginInfo;
 }
 

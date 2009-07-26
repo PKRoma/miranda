@@ -79,10 +79,8 @@
 #define IDC_NPW2                        162
 #define IDC_CPW                         164
 #define IDC_PINFO                       165
-#define IDC_NAME                        168
 #define IDC_SCREENNAME                  169
 #define IDC_CCLIST                      173
-#define IDC_EDIT1                       174
 #define IDC_EDITSCR                     174
 #define IDC_ADDSCR                      175
 #define IDC_ROOMNAME                    176
@@ -91,7 +89,6 @@
 #define IDC_PW                          1050
 #define IDC_HN                          1060
 #define IDC_PN                          1061
-#define IDC_GP                          1070
 #define IDC_DM                          1100
 #define IDC_DC                          1110
 #define IDC_FP                          1120
@@ -101,12 +98,9 @@
 #define IDC_FO                          1160
 #define IDC_DA                          1161
 #define IDC_DSSL                        1162
-#define IDC_FORCESNGLCLNT               1163
 #define IDC_FSC                         1163
 #define IDC_HF                          1170
-#define IDC_SIT                         1171
 #define IDC_SIS                         1171
-#define IDC_SIS2                        1172
 #define IDC_MASQ                        1180
 #define IDC_CM                          1191
 #define IDC_MG                          1192

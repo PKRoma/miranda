@@ -20,9 +20,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 struct CAimPopupData
 {
-	CAimPopupData( CAimProto* _ppro, char* _url ) :
-		ppro( _ppro ),
-		url( _url )
+	CAimPopupData(CAimProto* _ppro, char* _url) :
+		ppro(_ppro),
+		url(mir_strdup(_url))
 	{}
 
 	~CAimPopupData()
@@ -32,28 +32,28 @@ struct CAimPopupData
 	char* url;
 };
 
-LRESULT CALLBACK PopupWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
+LRESULT CALLBACK PopupWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	switch( message ) 
+	switch(message) 
     {
 	case WM_COMMAND:
-		if ( HIWORD( wParam ) == STN_CLICKED)
+		if (HIWORD(wParam) == STN_CLICKED)
 		{
-			CAimPopupData* p = ( CAimPopupData* )PUGetPluginData( hWnd );
-			if ( p->url != NULL )
-				p->ppro->execute_cmd( p->url );
+			CAimPopupData* p = (CAimPopupData*)PUGetPluginData(hWnd);
+			if (p->url != NULL)
+				p->ppro->execute_cmd(p->url);
 
-			PUDeletePopUp( hWnd );
+			PUDeletePopUp(hWnd);
 			return 0;
 		}
 		break;
 
 	case WM_CONTEXTMENU:
-		PUDeletePopUp( hWnd );
+		PUDeletePopUp(hWnd);
 		break;
 
 	case UM_FREEPLUGINDATA:
-		CAimPopupData* p = ( CAimPopupData* )PUGetPluginData( hWnd );
+		CAimPopupData* p = (CAimPopupData*)PUGetPluginData(hWnd);
 		ReleaseIconEx("aim");
 		delete p;
 		break;
@@ -83,13 +83,13 @@ void CAimProto::ShowPopup(const char* msg, int flags, char* url)
     mir_sntprintf(ppd.lptzText, SIZEOF(ppd.lptzText), _T("%s"), TranslateTS(msgt));
     mir_free(msgt);
 
-    if (!ServiceExists( MS_POPUP_ADDPOPUPT))
+    if (!ServiceExists(MS_POPUP_ADDPOPUPT))
 	{	
 		if (flags & MAIL_POPUP)
 		{
             size_t len = _tcslen(ppd.lptzText);
             mir_sntprintf(&ppd.lptzText[len], SIZEOF(ppd.lptzText) - len, _T(" %s"), TranslateT("Open mail account?"));
-			if (MessageBox( NULL, ppd.lptzText, ppd.lptzContactName, MB_YESNO | MB_ICONINFORMATION ) == IDYES)
+			if (MessageBox(NULL, ppd.lptzText, ppd.lptzContactName, MB_YESNO | MB_ICONINFORMATION) == IDYES)
 				execute_cmd(url);
 		}
 		else

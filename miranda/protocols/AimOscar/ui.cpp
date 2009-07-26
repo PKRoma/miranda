@@ -824,9 +824,6 @@ static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
             SetDlgItemInt(hwndDlg, IDC_PN, ppro->getWord(AIM_KEY_PN, AIM_DEFAULT_PORT), FALSE);
 
-            WORD timeout = (WORD)ppro->getWord(AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
-            SetDlgItemInt(hwndDlg, IDC_GP, timeout,0);
-
             CheckDlgButton(hwndDlg, IDC_DC, ppro->getByte(AIM_KEY_DC, 0));//Message Delivery Confirmation
             CheckDlgButton(hwndDlg, IDC_FP, ppro->getByte(AIM_KEY_FP, 0));//force proxy
             CheckDlgButton(hwndDlg, IDC_AT, ppro->getByte(AIM_KEY_AT, 0));//Account Type Icons
@@ -857,8 +854,8 @@ static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                 SetDlgItemInt(hwndDlg, IDC_PN, AIM_DEFAULT_PORT, FALSE);
             }
 
-            if ((LOWORD(wParam) == IDC_SN || LOWORD(wParam) == IDC_NK || LOWORD(wParam) == IDC_PW || LOWORD(wParam) == IDC_HN
-                || LOWORD(wParam) == IDC_GP) && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
+            if ((LOWORD(wParam) == IDC_SN || LOWORD(wParam) == IDC_NK || LOWORD(wParam) == IDC_PW || LOWORD(wParam) == IDC_HN)
+                && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
                 return 0;
             SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
             break;
@@ -913,14 +910,6 @@ static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                 else
                     ppro->deleteSetting(NULL, AIM_KEY_PN);
                 //END PN
-
-                //GP
-                unsigned long timeout=GetDlgItemInt(hwndDlg, IDC_GP,0,0);
-                if(timeout>0xffff||timeout<15)
-                    ppro->deleteSetting(NULL, AIM_KEY_GP);
-                else
-                    ppro->setWord(AIM_KEY_GP,(WORD)timeout);
-                //END GP
 
                 //Delivery Confirmation
                 ppro->setByte(AIM_KEY_DC, IsDlgButtonChecked(hwndDlg, IDC_DC) != 0);

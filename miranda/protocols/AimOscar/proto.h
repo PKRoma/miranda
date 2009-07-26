@@ -268,10 +268,11 @@ struct CAimProto : public PROTO_INTERFACE
     int    aim_delete_contact(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short item_id,unsigned short group_id,unsigned short list);
     int    aim_add_contact(HANDLE hServerConn,unsigned short &seqno,const char* sn,unsigned short item_id,unsigned short group_id,unsigned short list);
     int    aim_mod_group(HANDLE hServerConn,unsigned short &seqno,const char* name,unsigned short group_id,char* members,unsigned short members_length);
+    int    aim_mod_buddy(HANDLE hServerConn,unsigned short &seqno,const char* sn,unsigned short buddy_id,unsigned short group_id,char* nick,char* note);
     int    aim_ssi_update(HANDLE hServerConn, unsigned short &seqno, bool start);
     int    aim_ssi_update_preferences(HANDLE hServerConn, unsigned short &seqno);
     int    aim_keepalive(HANDLE hServerConn,unsigned short &seqno);
-    int    aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,unsigned long ip, unsigned short port, bool force_proxy, unsigned short request_num ,char* file_name,unsigned long total_bytes,char* descr);//used when requesting a regular file transfer
+    int    aim_send_file(HANDLE hServerConn,unsigned short &seqno,unsigned long ip, unsigned short port, bool force_proxy, file_transfer *ft);//used when requesting a regular file transfer
     int    aim_file_ad(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,bool deny,unsigned short max_ver);
     int    aim_typing_notification(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short type);
     int    aim_set_idle(HANDLE hServerConn,unsigned short &seqno,unsigned long seconds);
@@ -328,9 +329,9 @@ struct CAimProto : public PROTO_INTERFACE
     //////////////////////////////////////////////////////////////////////////////////////
     // file.cpp
 
-    bool   sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv);
-    bool   receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv);
-    void   report_file_error(TCHAR* fname);
+    int    sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv);
+    int    receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv);
+    void   report_file_error(char* fname);
 
     //////////////////////////////////////////////////////////////////////////////////////
     // packets.cpp
@@ -384,6 +385,7 @@ struct CAimProto : public PROTO_INTERFACE
     void   snac_admin_account_confirm(SNAC &snac);//family 0x0007
 
     void process_ssi_list(SNAC &snac, int &offset);
+    void modify_ssi_list(SNAC &snac, int &offset);
 
     //////////////////////////////////////////////////////////////////////////////////////
     // themes.cpp
@@ -408,8 +410,10 @@ struct CAimProto : public PROTO_INTERFACE
     HANDLE find_chat_contact(const char * room);
     HANDLE contact_from_sn(const char* sn, bool addIfNeeded = false, bool temporary = false);
     void   add_contact_to_group(HANDLE hContact, const char* group);
+    void   set_local_nick(HANDLE hContact, char* nick, char* note);
+    void   upload_nicks(void);
     void   update_server_group(const char* group, unsigned short group_id);
-    void   offline_contacts();
+    void   offline_contacts(void);
     void   offline_contact(HANDLE hContact, bool remove_settings);
     void   execute_cmd(const char* arg);
 

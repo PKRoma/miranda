@@ -26,15 +26,13 @@ struct file_transfer
 
     char icbm_cookie[8];
 
-    unsigned __int64 total_size;
-    unsigned __int64 start_offset;
-
     HANDLE hConn;
-    PROTOFILETRANSFERSTATUS *pfts;
+    HANDLE hResumeEvent;
 
     char* file;
     char* message;
-    time_t ctime;
+
+    PROTOFILETRANSFERSTATUS pfts;
 
     //below is for when receiving only
     unsigned long local_ip;
@@ -50,9 +48,10 @@ struct file_transfer
     bool sending;
     bool accepted;
     bool requester;
+    bool success;
 
-    file_transfer()  { memset(this, 0, sizeof(*this)); }
-    ~file_transfer() { mir_free(file); mir_free(message); mir_free(sn); }
+    file_transfer(HANDLE hCont, char* nick, char* cookie);
+    ~file_transfer();
 };
 
 struct ft_list_type : OBJLIST <file_transfer> 

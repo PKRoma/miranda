@@ -71,7 +71,7 @@ int CAimProto::aim_set_away(HANDLE hServerConn,unsigned short &seqno,const char 
 
 int CAimProto::aim_set_statusmsg(HANDLE hServerConn,unsigned short &seqno,const char *msg)//user info
 {
-    size_t msg_size = msg ? strlen(msg) : 0;
+    size_t msg_size =_strlens(msg);
 
     unsigned short msgoffset=0;
     char* msgbuf=(char*)alloca(10+msg_size);
