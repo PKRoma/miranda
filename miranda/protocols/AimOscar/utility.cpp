@@ -700,56 +700,6 @@ unsigned short get_random(void)
     return id;
 }
 
-bool cap_cmp(const char* cap,const char* cap2)
-{
-	return memcmp(cap,cap2,16) != 0;
-}
-
-bool is_oscarj_ver_cap(char* cap)
-{
-	return memcmp(cap,"MirandaM",8) == 0;
-}
-
-bool is_aimoscar_ver_cap(char* cap)
-{
-	return memcmp(cap,"MirandaA",8) == 0;
-}
-
-bool is_kopete_ver_cap(char* cap)
-{
-	return memcmp(cap,"Kopete ICQ",10) == 0;
-}
-
-bool is_qip_ver_cap(char* cap)
-{
-	return memcmp(&cap[7],"QIP",3) == 0;
-}
-
-bool is_micq_ver_cap(char* cap)
-{
-	return memcmp(cap,"mICQ",4) == 0;
-}
-
-bool is_im2_ver_cap(char* cap)
-{
-	return cap_cmp(cap,AIM_CAP_IM2) == 0;
-}
-
-bool is_sim_ver_cap(char* cap)
-{
-	return memcmp(cap,"SIM client",10) == 0;
-}
-
-bool is_naim_ver_cap(char* cap)
-{
-	return memcmp(cap+4,"naim",4) == 0;
-}
-
-bool is_digsby_ver_cap(char* cap)
-{
-    return memcmp(cap,"digsby",6) == 0;
-}
-
 /////////////////////////////////////////////////////////////////////////////////////////
 // Standard functions
 

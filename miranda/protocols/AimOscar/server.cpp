@@ -303,20 +303,20 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 
                 for(int i = 0; i<tlv.len(); i += 16)
                 {
-                    char* cap=tlv.part(i,16);
-                    if(is_oscarj_ver_cap(cap))
+                    char* cap = tlv.part(i,16);
+                    if (memcmp(cap, "MirandaM", 8) == 0)
                     {
                         char a =cap[8];
                         char b =cap[9];
                         char c =cap[10];
                         char d =cap[11];
-                        //char e =buf[offset+i+12];
+                        char e =cap[12];
                         char f =cap[13];
                         char g =cap[14];
                         char h =cap[15];
-                        mir_snprintf(client,sizeof(client),CLIENT_OSCARJ,(a&0x80)?"Alpha":"", a&0x7f,b,c,d,f,g,h);
+                        mir_snprintf(client,sizeof(client),CLIENT_OSCARJ,a&0x7f,b,c,d,alphaCapStr(a),e&0x7f,f,g,h,alphaCapStr(e));
                     }
-                    else if(is_aimoscar_ver_cap(cap))
+                    else if (memcmp(cap, "MirandaA", 8) == 0)
                     {
                         char a =cap[8];
                         char b =cap[9];
@@ -328,31 +328,55 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
                         char h =cap[15];
                         mir_snprintf(client,sizeof(client),CLIENT_AIMOSCAR,a,b,c,d,e,f,g,h);
                     }
-                    else if(is_kopete_ver_cap(cap))
+                    if (memcmp(cap, "sinj", 4) == 0)
+                    {
+                        char a =cap[4];
+                        char b =cap[5];
+                        char c =cap[6];
+                        char d =cap[7];
+                        char e =cap[8];
+                        char f =cap[9];
+                        char g =cap[10];
+                        char h =cap[11];
+                        mir_snprintf(client,sizeof(client),CLIENT_OSCARSN,a&0x7f,b,c,d,alphaCapStr(a),e&0x7f,f,g,h,alphaCapStr(e),SecureCapStr(&cap[12]));
+                    }
+                    if (memcmp(cap, "icqp", 4) == 0)
+                    {
+                        char a =cap[4];
+                        char b =cap[5];
+                        char c =cap[6];
+                        char d =cap[7];
+                        char e =cap[8];
+                        char f =cap[9];
+                        char g =cap[10];
+                        char h =cap[11];
+                        mir_snprintf(client,sizeof(client),CLIENT_OSCARPL,a&0x7f,b,c,d,alphaCapStr(a),e&0x7f,f,g,h,alphaCapStr(e),SecureCapStr(&cap[12]));
+                    }
+                    else if (memcmp(cap, "Kopete ICQ", 10) == 0)
                     {
                         strcpy(client,CLIENT_KOPETE);
                     }
-                    else if(is_qip_ver_cap(cap))
+                    else if (memcmp(&cap[7], "QIP", 3) == 0)
                     {
                         strcpy(client,CLIENT_QIP);
                     }
-                    else if(is_micq_ver_cap(cap))
+                    else if (memcmp(cap, "mICQ", 4) == 0)
                     {
                         strcpy(client,CLIENT_MICQ);
                     }
-                    else if(is_im2_ver_cap(cap))
+                    else if (cap_cmp(cap, AIM_CAP_IM2) == 0)
                     {
                         strcpy(client,CLIENT_IM2);
                     }
-                    else if(is_sim_ver_cap(cap))
+                    else if (memcmp(cap, "SIM client", 10) == 0)
                     {
                         strcpy(client,CLIENT_SIM);
                     }
-                    else if(is_naim_ver_cap(cap))
+                    else if (memcmp(cap+4, "naim", 4) == 0)
                     {
                         strcpy(client,CLIENT_NAIM);
                     }
-                    else if(is_digsby_ver_cap(cap))
+                    else if (memcmp(cap, "digsby", 6) == 0)
                     {
                         strcpy(client,CLIENT_DIGSBY);
                     }

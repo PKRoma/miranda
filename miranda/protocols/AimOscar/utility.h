@@ -26,17 +26,12 @@ void set_extra_icon(HANDLE hContact, HANDLE hImage, int column_type);
 unsigned int aim_oft_checksum_file(TCHAR *filename, unsigned __int64 size = -1);
 char* long_ip_to_char_ip(unsigned long host, char* ip);
 unsigned long char_ip_to_long_ip(char* ip);
-bool cap_cmp(const char* cap,const char* cap2);
-bool is_oscarj_ver_cap(char* cap);
-bool is_aimoscar_ver_cap(char* cap);
-bool is_kopete_ver_cap(char* cap);
-bool is_qip_ver_cap(char* cap);
-bool is_micq_ver_cap(char* cap);
-bool is_im2_ver_cap(char* cap);
-bool is_sim_ver_cap(char* cap);
-bool is_naim_ver_cap(char* cap);
-bool is_digsby_ver_cap(char* cap);
 unsigned short get_random(void);
+
+inline int cap_cmp(const char* cap, const char* cap2) { return memcmp(cap, cap2, 16); }
+inline const char* alphaCapStr(char ver) { return (ver & 0x80) ? " Alpha" : ""; }
+inline const char* SecureCapStr(char* ver) { return (*(int*)ver == 0xDEC0FE5A) ? " + SecureIM" : ""; }
+
 
 struct BdListItem
 {
