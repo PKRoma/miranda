@@ -657,7 +657,7 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
 
                     tlv_offset += TLV_HEADER_SIZE + tlv.len();
                 }
-                if (!nickfound && getDword(AIM_KEY_LV, 0) >= 0x900) 
+                if (!nickfound && getDword(AIM_KEY_LV, 0) >= 0x80500) 
                     DBDeleteContactSetting(hContact, MOD_KEY_CL, "MyHandle");
             }
             break;
@@ -836,7 +836,7 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
                 DBFreeVariant(&dbv);
             }
 
-            if (getDword(AIM_KEY_LV, 0) < 0x900)
+            if (getDword(AIM_KEY_LV, 0) < 0x80500)
             {
                 upload_nicks();
                 setDword(AIM_KEY_LV, __VERSION_DWORD);
