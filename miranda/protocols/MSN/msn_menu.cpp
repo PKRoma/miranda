@@ -300,7 +300,7 @@ static INT_PTR CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam
                     {
 						TCHAR str[130];
 						GetDlgItemText(hwndDlg, IDC_NICKNAME, str, SIZEOF(str));
-						proto->MSN_SendNicknameT(str);
+						proto->MSN_SendNickname(str);
 					}
 				}
 

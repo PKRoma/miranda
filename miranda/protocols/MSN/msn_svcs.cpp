@@ -344,7 +344,7 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 
 INT_PTR CMsnProto::SetNickName(WPARAM wParam, LPARAM lParam)
 {
-	MSN_SendNicknameA((char*)lParam);
+	MSN_SendNickname((char*)lParam);
 	return 0;
 }
 
@@ -546,19 +546,13 @@ int CMsnProto::OnGroupChange(WPARAM wParam,LPARAM lParam)
 	{
 		if (grpchg->pszNewName == NULL && grpchg->pszOldName != NULL)
 		{
-			char* szOldName = mir_utf8encodeT(grpchg->pszOldName);
-			LPCSTR szId = MSN_GetGroupByName(szOldName);
+			LPCSTR szId = MSN_GetGroupByName(UTF8(grpchg->pszOldName));
 			if (szId != NULL) MSN_DeleteServerGroup(szId);	
-			mir_free(szOldName);
 		}
 		else if (grpchg->pszNewName != NULL && grpchg->pszOldName != NULL)
 		{
-			char* szNewName = mir_utf8encodeT(grpchg->pszNewName);
-			char* szOldName = mir_utf8encodeT(grpchg->pszOldName);
-			LPCSTR szId = MSN_GetGroupByName(szOldName);
-			if (szId != NULL) MSN_RenameServerGroup(szId, szNewName);
-			mir_free(szOldName);
-			mir_free(szNewName);
+			LPCSTR szId = MSN_GetGroupByName(UTF8(grpchg->pszOldName));
+			if (szId != NULL) MSN_RenameServerGroup(szId, UTF8(grpchg->pszNewName));
 		}
 	}
 	else

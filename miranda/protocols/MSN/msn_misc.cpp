@@ -540,10 +540,7 @@ static char * HtmlEncodeUTF8T(const TCHAR *src)
 	if (src == NULL)
 		return mir_strdup("");
 
-	char *tmp = mir_utf8encodeT(src);
-	char *ret = HtmlEncode(tmp);
-	mir_free(tmp);
-	return ret;
+	return HtmlEncode(UTF8(src));
 }
 
 void  CMsnProto::MSN_SendStatusMessage(const char* msg)

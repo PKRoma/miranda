@@ -235,11 +235,7 @@ int CMsnProto::MSN_GCEventHook(WPARAM, LPARAM lParam)
 				{
 					rtrim(gch->ptszText); // remove the ending linebreak
 					TCHAR* pszMsg = UnEscapeChatTags(NEWTSTR_ALLOCA(gch->ptszText));
-					char* msg = mir_utf8encodeT(pszMsg);
-
-					thread->sendMessage('N', NULL, NETID_MSN, msg, 0);
-
-					mir_free(msg);
+					thread->sendMessage('N', NULL, NETID_MSN, UTF8(pszMsg), 0);
 
 					DBVARIANT dbv;
 					int bError = getTString("Nick", &dbv);
