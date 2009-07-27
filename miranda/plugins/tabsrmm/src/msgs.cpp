@@ -73,7 +73,6 @@ static HANDLE hSVC[14];
 extern      struct ContainerWindowData *pFirstContainer;
 extern      INT_PTR CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern      int g_chat_integration_enabled;
-extern      struct SendJob *sendJobs;
 extern      struct MsgLogIcon msgLogIcons[NR_LOGICONS * 3];
 extern      INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern      int g_sessionshutdown;
@@ -91,10 +90,6 @@ extern		void DeleteCachedIcon(struct MsgLogIcon *theIcon);
 
 HANDLE g_hEvent_MsgWin;
 HANDLE g_hEvent_MsgPopup;
-
-static struct MsgLogIcon ttb_Slist = {
-	0
-}, ttb_Traymenu = {0};
 
 HMODULE g_hIconDLL = 0;
 
@@ -303,36 +298,38 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
 {
 	ACKDATA *pAck = (ACKDATA *) lParam;
 	HWND hwndDlg = 0;
-	int i, j, iFound = NR_SENDJOBS;
+	int i, j, iFound = SendQueue::NR_SENDJOBS;
 
 	if (lParam == 0)
 		return 0;
 
+	SendJob *jobs = sendQueue->getJobByIndex(0);
+
 	if (pAck->type == ACKTYPE_MESSAGE) {
-		for (j = 0; j < NR_SENDJOBS; j++) {
-			for (i = 0; i < sendJobs[j].sendCount; i++) {
-				if (pAck->hProcess == sendJobs[j].hSendId[i] && pAck->hContact == sendJobs[j].hContact[i]) {
-					struct _MessageWindowData *dat = sendJobs[j].hwndOwner ? (struct _MessageWindowData *)GetWindowLongPtr(sendJobs[j].hwndOwner, GWLP_USERDATA) : NULL;
+		for (j = 0; j < SendQueue::NR_SENDJOBS; j++) {
+			for (i = 0; i < jobs[j].sendCount; i++) {
+				if (pAck->hProcess == jobs[j].hSendId[i] && pAck->hContact == jobs[j].hContact[i]) {
+					_MessageWindowData *dat = jobs[j].hwndOwner ? (_MessageWindowData *)GetWindowLongPtr(jobs[j].hwndOwner, GWLP_USERDATA) : NULL;
 					if (dat) {
-						if (dat->hContact == sendJobs[j].hOwner) {
+						if (dat->hContact == jobs[j].hOwner) {
 							iFound = j;
 							break;
 						}
 					} else {      // ack message w/o an open window...
-						AckMessage(0, NULL, (WPARAM)MAKELONG(j, i), lParam);
+						sendQueue->ackMessage(NULL, (WPARAM)MAKELONG(j, i), lParam);
 						return 0;
 					}
 				}
 			}
-			if (iFound == NR_SENDJOBS)          // no mathing entry found in this queue entry.. continue
+			if (iFound == SendQueue::NR_SENDJOBS)          // no mathing entry found in this queue entry.. continue
 				continue;
 			else
 				break;
 		}
-		if (iFound == NR_SENDJOBS)              // no matching send info found in the queue
+		if (iFound == SendQueue::NR_SENDJOBS)              // no matching send info found in the queue
 			return 0;
 		else {                                  // the job was found
-			SendMessage(sendJobs[iFound].hwndOwner, HM_EVENTSENT, (WPARAM)MAKELONG(iFound, i), lParam);
+			SendMessage(jobs[iFound].hwndOwner, HM_EVENTSENT, (WPARAM)MAKELONG(iFound, i), lParam);
 			return 0;
 		}
 	}
@@ -1337,8 +1334,6 @@ static int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 
 int SplitmsgShutdown(void)
 {
-	int i;
-
 	DestroyCursor(_Plugin.hCurSplitNS);
 	DestroyCursor(_Plugin.hCurHyperlinkHand);
 	DestroyCursor(_Plugin.hCurSplitWE);
@@ -1365,18 +1360,6 @@ int SplitmsgShutdown(void)
 		free(rtf_ctable);
 
 	UnloadTSButtonModule(0, 0);
-	if (sendJobs) {
-		for (i = 0; i < NR_SENDJOBS; i++) {
-			if (sendJobs[i].sendBuffer != NULL)
-				mir_free(sendJobs[i].sendBuffer);
-		}
-		free(sendJobs);
-	}
-
-	if (ttb_Slist.hBmp)
-		DeleteCachedIcon(&ttb_Slist);
-	if (ttb_Traymenu.hBmp)
-		DeleteCachedIcon(&ttb_Traymenu);
 
 	IMG_DeleteItems();
 	if (g_hIconDLL) {
@@ -1525,8 +1508,7 @@ tzdone:
 	M->m_hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
 	hUserPrefsWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
 
-	sendJobs = (struct SendJob *)malloc(NR_SENDJOBS * sizeof(struct SendJob));
-	ZeroMemory(sendJobs, NR_SENDJOBS * sizeof(struct SendJob));
+	sendQueue = new SendQueue;
 
 	InitOptions();
 	hModulesLoadedEvent = HookEvent(ME_SYSTEM_MODULESLOADED, SplitmsgModulesLoaded);

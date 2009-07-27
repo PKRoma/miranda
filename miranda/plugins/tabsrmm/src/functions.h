@@ -97,7 +97,8 @@ void        BroadCastContainer(struct ContainerWindowData *pContainer, UINT mess
 void        GetDefaultContainerTitleFormat();
 extern const WCHAR *EncodeWithNickname(const char *string, const WCHAR *szNick, UINT codePage);
 void        UpdateContainerMenu(HWND hwndDlg, struct _MessageWindowData *dat);
-INT_PTR         MessageWindowOpened(WPARAM wParam, LPARAM lParam);
+INT_PTR     MessageWindowOpened(WPARAM wParam, LPARAM lParam);
+void 		SetAeroMargins(ContainerWindowData *pContainer);
 int         TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned int subType);
 LRESULT CALLBACK IEViewKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK IEViewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);

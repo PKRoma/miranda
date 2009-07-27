@@ -122,8 +122,8 @@ int SM_RemoveSession(const TCHAR* pszID, const char* pszModule)
 
 			if (pTemp->hContact) {
 				CList_SetOffline(pTemp->hContact, pTemp->iType == GCW_CHATROOM ? TRUE : FALSE);
- 				//if (pTemp->iType != GCW_SERVER)
- 					//DBWriteContactSettingByte(pTemp->hContact, "CList", "Hidden", 1);
+				//if (pTemp->iType != GCW_SERVER)
+				//DBWriteContactSettingByte(pTemp->hContact, "CList", "Hidden", 1);
 			}
 			DBWriteContactSettingString(pTemp->hContact, pTemp->pszModule , "Topic", "");
 			DBWriteContactSettingString(pTemp->hContact, pTemp->pszModule, "StatusBar", "");
@@ -915,6 +915,33 @@ SESSION_INFO* SM_FindSessionByIndex(const char* pszModule, int iItem)
 
 }
 
+SESSION_INFO* SM_FindSessionAutoComplete(const char* pszModule, SESSION_INFO* currSession, SESSION_INFO* prevSession, const TCHAR* pszOriginal, const TCHAR* pszCurrent)
+{
+	SESSION_INFO* pResult = NULL;
+	if (prevSession == NULL && my_strstri(currSession->ptszName, pszOriginal) == currSession->ptszName) {
+		pResult = currSession;
+	} else {
+		TCHAR* pszName = NULL;
+		SESSION_INFO* pTemp = m_WndList;
+		if (currSession == prevSession) {
+			pszCurrent = pszOriginal;
+		}
+		while (pTemp != NULL) {
+			if (pTemp != currSession && !lstrcmpiA(pszModule, pTemp->pszModule)) {
+				if (my_strstri(pTemp->ptszName, pszOriginal) == pTemp->ptszName) {
+					if (prevSession != pTemp && lstrcmpi(pTemp->ptszName, pszCurrent) > 0 && (!pszName || lstrcmpi(pTemp->ptszName, pszName) < 0)) {
+						pResult = pTemp;
+						pszName = pTemp->ptszName;
+					}
+				}
+			}
+			pTemp = pTemp->next;
+		}
+	}
+	return pResult;
+
+}
+
 char* SM_GetUsers(SESSION_INFO* si)
 {
 	SESSION_INFO* pTemp = m_WndList;
@@ -1197,19 +1224,19 @@ BOOL TM_RemoveAll(STATUSINFO** ppStatusList)
 //MAD: alternative sorting by Nullbie
 static int sttCompareNicknames(const TCHAR *s1, const TCHAR *s2)
 {
-		// skip rubbish
-		while (*s1 && !_istalpha(*s1)) ++s1;
-		while (*s2 && !_istalpha(*s2)) ++s2;
+	// skip rubbish
+	while (*s1 && !_istalpha(*s1)) ++s1;
+	while (*s2 && !_istalpha(*s2)) ++s2;
 
-		// are there ~0veRy^kEwL_n1kz?
-		if (!*s1 && !*s2) return 0;
-		if (!*s1 && *s2) return +1;
-		if (*s1 && !*s2) return -1;
+	// are there ~0veRy^kEwL_n1kz?
+	if (!*s1 && !*s2) return 0;
+	if (!*s1 && *s2) return +1;
+	if (*s1 && !*s2) return -1;
 
-		// compare tails
-			return lstrcmpi(s1, s2);
+	// compare tails
+	return lstrcmpi(s1, s2);
 }
- //
+//
 
 static int UM_CompareItem(USERINFO * u1, const TCHAR* pszNick, WORD wStatus)
 {
@@ -1225,20 +1252,21 @@ static int UM_CompareItem(USERINFO * u1, const TCHAR* pszNick, WORD wStatus)
 			return 1;
 		if ((dw1 & 1) && (dw2 & 1))
 			//
-			{if(g_Settings.AlternativeSorting)
-				return sttCompareNicknames( u1->pszNick, pszNick );
+		{
+			if (g_Settings.AlternativeSorting)
+				return sttCompareNicknames(u1->pszNick, pszNick);
 			else
 				return lstrcmp(u1->pszNick, pszNick);
-			}//
+		}//
 		dw1 = dw1 >> 1;
 		dw2 = dw2 >> 1;
 	}
-	if(g_Settings.AlternativeSorting)
+	if (g_Settings.AlternativeSorting)
 		//
-		return sttCompareNicknames( u1->pszNick, pszNick );
+		return sttCompareNicknames(u1->pszNick, pszNick);
 	else
 		return lstrcmp(u1->pszNick, pszNick);
-	   //
+	//
 }
 
 USERINFO * UM_SortUser(USERINFO** ppUserList, const TCHAR* pszUID)

@@ -24,20 +24,14 @@ $Id: sendqueue.h 9205 2009-03-24 05:00:43Z nightwish2004 $
 
 */
 
+#ifndef __SENDQUEUE_H
+#define __SENDQUEUE_H
+
 #define TIMERID_MSGSEND      100
-#define TIMERID_MULTISEND_BASE (TIMERID_MSGSEND + NR_SENDJOBS)
 #define TIMERID_TYPE         3
 #define TIMERID_AWAYMSG      4
 #define TIMEOUT_TYPEOFF      10000      // send type off after 10 seconds of inactivity
 #define SB_CHAR_WIDTH        45
-
-#define SQ_INPROGRESS 1
-#define SQ_ERROR 2
-#define SQ_UNDEFINED 0
-
-/*
- * send flags
- */
 
 #if defined(_UNICODE)
     #define SEND_FLAGS PREF_UNICODE
@@ -45,27 +39,95 @@ $Id: sendqueue.h 9205 2009-03-24 05:00:43Z nightwish2004 $
     #define SEND_FLAGS 0
 #endif
 
-void ClearSendJob(int iIndex);
-int FindNextFailedMsg(HWND hwndDlg, struct _MessageWindowData *dat);
-void HandleQueueError(HWND hwndDlg, struct _MessageWindowData *dat, int iEntry);
-int AddToSendQueue(HWND hwndDlg, struct _MessageWindowData *dat, int iLen, int dwFlags);
-static int SendQueuedMessage(HWND hwndDlg, struct _MessageWindowData *dat, int iEntry);
-void CheckSendQueue(HWND hwndDlg, struct _MessageWindowData *dat);
-void LogErrorMessage(HWND hwndDlg, struct _MessageWindowData *dat, int iSendJobIndex, TCHAR *szErrMsg);
-void RecallFailedMessage(HWND hwndDlg, struct _MessageWindowData *dat, int iEntry);
-void UpdateSaveAndSendButton(HWND hwndDlg, struct _MessageWindowData *dat);
-void NotifyDeliveryFailure(HWND hwndDlg, struct _MessageWindowData *dat);
-void ShowErrorControls(HWND hwndDlg, struct _MessageWindowData *dat, int showCmd);
-void EnableSending(HWND hwndDlg, struct _MessageWindowData *dat, int iMode);
-void UpdateReadChars(HWND hwndDlg, struct _MessageWindowData *dat);
-void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, int state);
-void HandleIconFeedback(HWND hwndDlg, struct _MessageWindowData *dat, HICON iIcon);
-int GetProtoIconFromList(const char *szProto, int iStatus);
+/*
+ * send flags
+ */
+
+#define	SENDJOBS_MAX_SENDS 100
+
+struct SendJob {
+	HANDLE  hContact[SENDJOBS_MAX_SENDS];
+	HANDLE  hSendId[SENDJOBS_MAX_SENDS];
+	char    *sendBuffer;
+	int     dwLen;        // actual buffer langth (checked for reallocs()
+	int     sendCount;
+	HANDLE  hOwner;
+	HWND    hwndOwner;
+	unsigned int iStatus;
+	char    szErrorMsg[128];
+	DWORD   dwFlags;
+	int     iAcksNeeded;
+	HANDLE  hEventSplit;
+	int     chunkSize;
+	DWORD   dwTime;
+};
+
+
+class SendQueue {
+public:
+	enum {
+			NR_SENDJOBS = 30,
+			SQ_ERROR = 2,
+			SQ_INPROGRESS = 1,
+			SQ_UNDEFINED = 0
+		 };
+
+	SendQueue()
+	{
+		ZeroMemory(m_jobs, (sizeof(SendJob) * NR_SENDJOBS));
+		m_currentIndex = 0;
+	}
+
+	void	inc() { m_currentIndex++; }
+	void	dec() { m_currentIndex--; }
+
+	~SendQueue()
+	{
+		for(int i = 0; i < NR_SENDJOBS; i++) {
+			if(m_jobs[i].sendBuffer)
+				free(m_jobs[i].sendBuffer);
+		}
+	}
+
+	SendJob *getJobByIndex(const int index) { return(&m_jobs[index]); }
+
+	void 	clearJob				(const int index);
+	int 	findNextFailed			(const _MessageWindowData *dat) const;
+	void 	handleError				(_MessageWindowData *dat, const int iEntry) const;
+	int 	addTo					(_MessageWindowData *dat, const int iLen, int dwFlags);
+	int 	sendQueued				(_MessageWindowData *dat, const int iEntry);
+	void 	checkQueue 		 		(const _MessageWindowData *dat) const;
+	void 	logError				(const _MessageWindowData *dat, int iSendJobIndex,
+									 const TCHAR *szErrMsg) const;
+	void 	recallFailed			(const _MessageWindowData *dat, int iEntry) const;
+	void 	showErrorControls		(_MessageWindowData *dat, const int showCmd) const;
+	int 	ackMessage				(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
+
+	/*
+	 * static members
+	 */
+#if defined(_UNICODE)
+	static	int RTL_Detect				(const wchar_t *pszwText);
+#endif
+	static	char *MsgServiceName		(const HANDLE hContact, const _MessageWindowData *dat, int isUnicode);
+	static  int  GetProtoIconFromList	(const char *szProto, int iStatus);
+	static  LRESULT WarnPendingJobs		(unsigned int uNrMessages);
+	static	void NotifyDeliveryFailure	(const _MessageWindowData *dat);
+	static	void UpdateSaveAndSendButton(_MessageWindowData *dat);
+	static	void EnableSending			(const _MessageWindowData *dat, const int iMode);
+	static	void SendLater				(void) {};
+private:
+	SendJob		m_jobs[NR_SENDJOBS];
+	int			m_currentIndex;
+};
+
+extern SendQueue *sendQueue;
+
 int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild);
-LRESULT WarnPendingJobs(unsigned int uNrMessages);
-int AckMessage(HWND hwndDlg, struct _MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
-static INT_PTR CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+void ShowMultipleControls	(const HWND hwndDlg, const UINT * controls, int cControls, int state);
+void UpdateReadChars		(const HWND hwndDlg, const _MessageWindowData *dat);
+void HandleIconFeedback(HWND hwndDlg, _MessageWindowData *dat, HICON iIcon);
 
-char *MsgServiceName(HANDLE hContact, struct _MessageWindowData *dat, int isUnicode);
-int RTL_Detect(WCHAR *pszwText);
+#define TIMERID_MULTISEND_BASE (TIMERID_MSGSEND + SendQueue::NR_SENDJOBS)
 
+#endif /* __SENDQUEUE_H */

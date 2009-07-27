@@ -182,6 +182,27 @@ static int ServiceParamsOK(ButtonItem *item, WPARAM *wParam, LPARAM *lParam, HAN
 }
 
 /*
+ * Windows Vista+
+ * extend the glassy area to get aero look for the status bar and info panel
+ */
+
+void SetAeroMargins(ContainerWindowData *pContainer)
+{
+	if(M->isAero() && pContainer && !pContainer->bSkinned) {
+		MARGINS	m;
+		_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWL_USERDATA);
+
+		if(dat) {
+			m.cxLeftWidth = 0;
+			m.cxRightWidth = 0;
+			m.cyTopHeight = (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) ? dat->panelHeight + 1 : 0;
+			m.cyBottomHeight = pContainer->statusBarHeight;
+			M->m_dwmExtendFrameIntoClientArea(pContainer->hwnd, &m);
+		}
+	}
+}
+
+/*
  * CreateContainer MUST malloc() a struct ContainerWindowData and pass its address
  * to CreateDialogParam() via the LPARAM. It also adds the struct to the linked list
  * of containers.
@@ -308,18 +329,23 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 		}
 		case WM_ERASEBKGND: {
 			RECT rcClient;
+
 			if (pContainer && pContainer->bSkinned)
 				return 1;
 			if (M->m_pfnIsThemeActive != 0) {
-				if (M->m_pfnIsThemeActive())
+				if (M->m_pfnIsThemeActive() && !M->isAero())
 					break;
 			}
 			GetClientRect(hWnd, &rcClient);
-			FillRect((HDC)wParam, &rcClient, GetSysColorBrush(COLOR_3DFACE));
+			if(M->isAero()) {
+				FillRect((HDC)wParam, &rcClient, (HBRUSH)GetStockObject(BLACK_BRUSH));
+				return 1;
+			} else
+				FillRect((HDC)wParam, &rcClient, GetSysColorBrush(COLOR_3DFACE));
 			return 1;
 		}
 		case WM_PAINT:
-			if (!g_skinnedContainers)
+			if (!g_skinnedContainers && !M->isAero())
 				break;
 			else {
 				PAINTSTRUCT ps;
@@ -337,12 +363,17 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				HBITMAP hbm, hbmOld;
 				StatusItems_t *item = &StatusItems[ID_EXTBKSTATUSBARPANEL];
 
+				BOOL	fAero = M->isAero();
+
 				GetClientRect(hWnd, &rcClient);
 
 				hbm = CreateCompatibleBitmap(hdc, rcClient.right, rcClient.bottom);
 				hbmOld = (HBITMAP)SelectObject(hdcMem, hbm);
 				SetBkMode(hdcMem, TRANSPARENT);
-				SetTextColor(hdcMem, _Plugin.skinDefaultFontColor);
+				if(!fAero)
+					SetTextColor(hdcMem, _Plugin.skinDefaultFontColor);
+				else
+					SetTextColor(hdcMem, RGB(250, 250, 250));
 				hFontOld = (HFONT)SelectObject(hdcMem, GetStockObject(DEFAULT_GUI_FONT));
 
 				if (pContainer && pContainer->bSkinned)
@@ -350,7 +381,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 
 				for (i = 0; i < (int)nParts; i++) {
 					SendMessage(hWnd, SB_GETRECT, (WPARAM)i, (LPARAM)&itemRect);
-					if (!item->IGNORED)
+					if (!item->IGNORED && !fAero)
 						DrawAlpha(hdcMem, &itemRect, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
 								  item->CORNER, item->BORDERSTYLE, item->imageItem);
 
@@ -363,7 +394,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 					szText[0] = 0;
 					result = SendMessage(hWnd, SB_GETTEXT, i, (LPARAM)szText);
 					if (i == 2 && pContainer) {
-						struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+						_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 
 						if (dat)
 							DrawStatusIcons(dat, hdcMem, itemRect, 2);
@@ -1335,15 +1366,6 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					}
 				}
 			}
-			/*
-			if(M->isAero()) {
-				MARGINS margins = {0, 0, 55, 20};
-				HRESULT hr = S_OK;
-
-// Extend frame across entire window.
-				hr = M->m_dwmExtendFrameIntoClientArea(hwndDlg, &margins);
-			}
-			*/
 			break;
 		}
 		case WM_COMMAND: {
@@ -1746,6 +1768,8 @@ buttons_done:
 			}
 			else
 				pContainer->statusBarHeight = 0;
+
+			SetAeroMargins(pContainer);
 
 			GetClientRect(hwndDlg, &rcClient);
 			CopyRect(&pContainer->rcSaved, &rcClient);
@@ -2918,7 +2942,7 @@ panel_found:
 						return TRUE;
 
 					pContainer->exFlags |= CNT_EX_CLOSEWARN;
-					result = WarnPendingJobs(iOpenJobs);
+					result = SendQueue::WarnPendingJobs(iOpenJobs);
 					pContainer->exFlags &= ~CNT_EX_CLOSEWARN;
 					if (result == IDNO)
 						return TRUE;

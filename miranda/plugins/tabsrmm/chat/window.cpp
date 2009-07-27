@@ -58,12 +58,15 @@ static WNDPROC OldLogProc;
 static HKL hkl = NULL;
 static HCURSOR hCurHyperlinkHand;
 
-typedef struct {
+typedef struct
+{
 	time_t lastEnterTime;
+	TCHAR*  szSearchQuery;
+	TCHAR*  szSearchResult;
+	SESSION_INFO *lastSession;
 	TCHAR  szTabSave[20];
 	BOOL   iSavedSpaces;
 } MESSAGESUBDATA;
-
 
 static const CLSID IID_ITextDocument= { 0x8CC497C0,0xA1DF,0x11CE, { 0x80,0x98, 0x00,0xAA, 0x00,0x47,0xBE,0x5D} };
 
@@ -737,11 +740,11 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				SendMessage(mwdat->pContainer->hwnd, DM_SELECTTAB, DM_SELECT_PREV, 0);
 				return TRUE;
 			}
-
 			if (wParam == VK_TAB && !isCtrl && !isShift) {    //tab-autocomplete
+				int iLen, end, topicStart;
+				BOOL isTopic = FALSE;
+				BOOL isRoom = FALSE;
 				TCHAR* pszText = NULL;
-				size_t iLen;
-				GETTEXTLENGTHEX gtl = {0};
 				GETTEXTEX gt = {0};
 				LRESULT lResult = (LRESULT)SendMessage(hwnd, EM_GETSEL, (WPARAM)NULL, (LPARAM)NULL);
 
@@ -749,85 +752,88 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				start = LOWORD(lResult);
 				end = HIWORD(lResult);
 				SendMessage(hwnd, EM_SETSEL, end, end);
-				gtl.flags = GTL_PRECISE;
-				gtl.codepage = CP_ACP;
-				iLen = SendMessage(hwnd, EM_GETTEXTLENGTHEX, (WPARAM) & gtl, (LPARAM)NULL);
-				if (iLen > 0) {
-					TCHAR *pszName = NULL;
-					TCHAR *pszSelName = NULL;
-					size_t cbLen;
-					pszText = ( TCHAR* )alloca(sizeof(TCHAR) * (iLen + 100));
 
-					gt.cb = (DWORD)(iLen + 99);
-					gt.flags = GT_DEFAULT;
-#if defined( _UNICODE )
+				#if defined( _UNICODE )
 					gt.codepage = 1200;
-#else
+				#else
 					gt.codepage = CP_ACP;
-#endif
+				#endif
+				iLen = SendMessage(hwnd, EM_GETTEXTLENGTHEX, (WPARAM)&gt, (LPARAM)NULL);
+				if (iLen >0) {
+					TCHAR *pszName = NULL;
+					pszText = (TCHAR *)mir_alloc(iLen + 100 * sizeof(TCHAR));
+					gt.cb = iLen + 99 * sizeof(TCHAR);
+					gt.flags = GT_DEFAULT;
 
 					SendMessage(hwnd, EM_GETTEXTEX, (WPARAM)&gt, (LPARAM)pszText);
-					{
-						int n = dat->iSavedSpaces;
-						while (start > 0) {
-							if (pszText[start-1] == '\n' || pszText[start-1] == '\t')
-								break;
-
-							if (pszText[start-1] == ' ') {
-								if (n == 0)
-									break;
-								n--;
-							}
-
-							start--;
-						}
+					if(start > 1 && pszText[start-1] == ' ' && pszText[start-2] == ':') {
+						start--;
 					}
+					while ( start >0 && pszText[start-1] != ' ' && pszText[start-1] != 13 && pszText[start-1] != VK_TAB)
+						start--;
 					while (end < iLen && pszText[end] != ' ' && pszText[end] != 13 && pszText[end-1] != VK_TAB)
 						end ++;
-
-					cbLen = end - start + 1;
-					if (dat->szTabSave[0] == '\0') {
-						size_t cbRealLen = min( SIZEOF(dat->szTabSave)-1, cbLen );
-						lstrcpyn(dat->szTabSave, pszText + start, (int)cbRealLen);
-						dat->szTabSave[ cbRealLen ] = 0;
+					if (pszText[start] == '#') {
+						isRoom = TRUE;
+					} else {
+						topicStart = start;
+						while ( topicStart >0 && (pszText[topicStart-1] == ' ' || pszText[topicStart-1] == 13 || pszText[topicStart-1] == VK_TAB))
+							topicStart--;
+						if (topicStart > 5 && _tcsstr(&pszText[topicStart-6], _T("/topic")) == &pszText[topicStart-6]) {
+							isTopic = TRUE;
+						}
 					}
-
-					pszSelName = ( TCHAR* )alloca(sizeof(TCHAR) * (cbLen));
-					lstrcpyn(pszSelName, pszText + start, (int)cbLen);
-					pszName = UM_FindUserAutoComplete(Parentsi->pUsers, dat->szTabSave, pszSelName);
-					dat->iSavedSpaces = 0;
+					if (dat->szSearchQuery == NULL) {
+						dat->szSearchQuery = (TCHAR *)mir_alloc( sizeof(TCHAR)*( end-start+1 ));
+						lstrcpyn( dat->szSearchQuery, pszText+start, end-start+1);
+						dat->szSearchResult = mir_tstrdup(dat->szSearchQuery);
+						dat->lastSession = NULL;
+					}
+					if (isTopic) {
+						pszName = Parentsi->ptszTopic;
+					} else if (isRoom) {
+						dat->lastSession = SM_FindSessionAutoComplete(Parentsi->pszModule, Parentsi, dat->lastSession, dat->szSearchQuery, dat->szSearchResult);
+						if (dat->lastSession != NULL) {
+							pszName = dat->lastSession->ptszName;
+						}
+					} else {
+						pszName = UM_FindUserAutoComplete(Parentsi->pUsers, dat->szSearchQuery, dat->szSearchResult);
+					}
+					mir_free(pszText);
+					pszText = NULL;
+					mir_free(dat->szSearchResult);
+					dat->szSearchResult = NULL;
 					if (pszName == NULL) {
-						pszName = dat->szTabSave;
-						SendMessage(hwnd, EM_SETSEL, start, end);
-						if (end != start)
+						if ((int)end != (int)start) {
+							SendMessage(hwnd, EM_SETSEL, start, end);
+							SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM) dat->szSearchQuery);
+						}
+						mir_free(dat->szSearchQuery);
+						dat->szSearchQuery = NULL;
+					} else {
+						dat->szSearchResult = mir_tstrdup(pszName);
+						if ((int)end != (int)start) {
+							if (!isRoom && !isTopic && g_Settings.AddColonToAutoComplete && start == 0) {
+								pszText = (TCHAR *)mir_alloc((_tcslen(pszName) + 4) * sizeof(TCHAR));
+								_tcscpy(pszText, pszName);
+								_tcscat(pszText, _T(": "));
+								pszName = pszText;
+							}
+							SendMessage(hwnd, EM_SETSEL, start, end);
 							SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM) pszName);
-						dat->szTabSave[0] = '\0';
+						}
+						mir_free(pszText);
 					}
-					else {
-						TCHAR* p = pszName;
-						while ( *p )
-							if ( *p++ == ' ' )
-								dat->iSavedSpaces++;
-
-						SendMessage(hwnd, EM_SETSEL, start, end);
-						if (end != start)
-							SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM) pszName);
-				}	}
-
+				}
 				SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 				RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
 				return 0;
-			} else {
-				if (dat->szTabSave[0] != '\0' && wParam != VK_RIGHT && wParam != VK_LEFT
-						&& wParam != VK_SPACE && wParam != VK_RETURN && wParam != VK_BACK
-						&& wParam != VK_DELETE) {
-					if (g_Settings.AddColonToAutoComplete && start == 0)
-						SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM) _T(": "));
-				}
-				dat->szTabSave[0] = '\0';
-				dat->iSavedSpaces = 0;
-			}
-
+			} else if (wParam != VK_RIGHT && wParam != VK_LEFT) {
+				mir_free(dat->szSearchQuery);
+				dat->szSearchQuery = NULL;
+				mir_free(dat->szSearchResult);
+				dat->szSearchResult = NULL;
+			 }
 			if (wParam == VK_F4 && isCtrl && !isAlt) { // ctrl-F4 (close tab)
 				SendMessage(hwndParent, WM_COMMAND, MAKEWPARAM(IDC_CHAT_CLOSE, BN_CLICKED), 0);
 				return TRUE;

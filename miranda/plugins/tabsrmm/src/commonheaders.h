@@ -119,6 +119,7 @@ extern 	NEN_OPTIONS	nen_options;
 
 #include "globals.h"
 #include "mim.h"
+#include "sendqueue.h"
 
 #if !defined(_WIN64) && !defined(_USE_32BIT_TIME_T)
 	#define _USE_32BIT_TIME_T

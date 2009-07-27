@@ -24,6 +24,9 @@ $Id:$
 
 */
 
+#ifndef __GLOBALS_H
+#define __GLOBALS_H
+
 typedef     BOOL (WINAPI *pfnSetMenuInfo )( HMENU hmenu, LPCMENUINFO lpcmi );
 
 class _Globals
@@ -54,7 +57,6 @@ public:
 	HICON       g_buttonBarIcons[NR_BUTTONBARICONS];
 	HICON       g_sideBarIcons[NR_SIDEBARICONS];
 	HANDLE		g_buttonBarIconHandles[23];
-	int         iSendJobCurrent;
 	// dynamic options, need reload when options change
 	int         m_SendOnShiftEnter;
 	int         m_SendOnEnter;
@@ -158,3 +160,4 @@ extern	_Globals	*Plugin;
 #define DPISCALEY_S(argY) ((int) ((double)(argY) * _Plugin.g_DPIscaleY))
 #define DPISCALEX_S(argX) ((int) ((double)(argX) * _Plugin.g_DPIscaleX))
 
+#endif /* __GLOBALS_H */

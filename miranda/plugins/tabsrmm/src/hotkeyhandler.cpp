@@ -44,7 +44,6 @@ The hotkeyhandler is a small, invisible window which cares about a few things:
 #include "sendqueue.h"
 
 extern struct       ContainerWindowData *pFirstContainer;
-extern struct SendJob *sendJobs;
 extern struct       ContainerWindowData *pLastActiveContainer;
 extern HICON		hIcons[];
 INT_PTR					SendMessageCommand(WPARAM wParam, LPARAM lParam);
@@ -594,18 +593,18 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		}
 		case DM_SPLITSENDACK: {
 			ACKDATA ack = {0};
-			struct SendJob *job = &sendJobs[wParam];
+			struct SendJob *job = sendQueue->getJobByIndex((int)wParam);
 
-			ack.hContact = sendJobs[wParam].hContact[0];
-			ack.hProcess = sendJobs[wParam].hSendId[0];
+			ack.hContact = job->hContact[0];
+			ack.hProcess = job->hSendId[0];
 			ack.type = ACKTYPE_MESSAGE;
 			ack.result = ACKRESULT_SUCCESS;
 
-			if (job->hOwner && job->iAcksNeeded && job->hContact[0] && job->iStatus == SQ_INPROGRESS) {
+			if (job->hOwner && job->iAcksNeeded && job->hContact[0] && job->iStatus == SendQueue::SQ_INPROGRESS) {
 				if (IsWindow(job->hwndOwner))
-					SendMessage(job->hwndOwner, HM_EVENTSENT, (WPARAM)MAKELONG(wParam, 0), (LPARAM)&ack);
+					::SendMessage(job->hwndOwner, HM_EVENTSENT, (WPARAM)MAKELONG(wParam, 0), (LPARAM)&ack);
 				else
-					AckMessage(0, NULL, (WPARAM)MAKELONG(wParam, 0), (LPARAM)&ack);
+					sendQueue->ackMessage(0, (WPARAM)MAKELONG(wParam, 0), (LPARAM)&ack);
 			}
 			return 0;
 		}

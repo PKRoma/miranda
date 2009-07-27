@@ -4,7 +4,7 @@ astyle --force-indent=tab=4 --brackets=linux --indent-switches
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project,
+Copyright 2000-2009 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -37,11 +37,9 @@ $Id: msgdialog.c 10399 2009-07-23 20:11:21Z silvercircle $
 extern TemplateSet RTL_Active, LTR_Active;
 extern TCHAR *szWarnClose;
 extern struct RTFColorTable *rtf_ctable;
-extern COLORREF g_ContainerColorKey;
 extern struct GlobalLogSettings_t g_Settings;
 extern HANDLE g_hEvent_MsgPopup;
 extern int    g_chat_integration_enabled;
-extern int g_sessionshutdown;
 
 char  *FilterEventMarkersA(char *szText);
 WCHAR *FilterEventMarkers(WCHAR *wszText);
@@ -100,7 +98,6 @@ static struct _buttonicons {
 	-1, NULL
 };
 
-struct SendJob *sendJobs = NULL;
 static int splitterEdges = -1;
 
 static BOOL IsStringValidLinkA(char* pszText)
@@ -495,9 +492,8 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct _MessageWindowData *dat, U
 			dat->dwFlagsEx &= ~MWF_EX_AVATARCHANGED;
 			PostMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
 		}
-		//_DebugTraceW(_T("completed update hwnd = %d"), hwndDlg);
+		SetAeroMargins(dat->pContainer);
 	}
-	//mad
 	BB_SetButtonsPos(hwndDlg,dat);
 //
 }
@@ -544,6 +540,7 @@ static void ShowHideInfoPanel(HWND hwndDlg, struct _MessageWindowData *dat)
 	}
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
 	InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
+	SetAeroMargins(dat->pContainer);
 	DM_ScrollToBottom(hwndDlg, dat, 0, 1);
 }
 // drop files onto message input area...
@@ -1376,7 +1373,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				SkinDrawBG(hwnd, dat->pContainer->hwnd, dat->pContainer, &rc, dc);
 			} else {
 				GetClientRect(hwnd, &rc);
-				FillRect(dc, &rc, GetSysColorBrush(COLOR_3DFACE));
+				FillRect(dc, &rc, (M->isAero() && hwnd == GetDlgItem(hwndParent, IDC_PANELSPLITTER)) ? (HBRUSH)GetStockObject(BLACK_BRUSH) : GetSysColorBrush(COLOR_3DFACE));
 			}
 			EndPaint(hwnd, &ps);
 			return 0;
@@ -1819,16 +1816,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		hwndContainer = m_pContainer->hwnd;
 	}
 
-	/*
-	if(dat) {
-		dat->tick_now = GetTickCount();
-		if((dat->tick_now - dat->tick_last > 500) && msg != 275)
-			_DebugTraceW(_T("enter message loop with %d (last: %d elapsed: %d"), msg, dat->lastMessage, dat->tick_now - dat->tick_last);
-		dat->lastMessage = msg;
-		dat->tick_last = dat->tick_now;
-	}
-	*/
-
 	switch (msg) {
 		case WM_INITDIALOG: {
 			RECT rc;
@@ -1880,13 +1867,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			if (dat->hContact && dat->szProto != NULL) {
 				dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
-/*
-#if defined(_UNICODE)
-				MY_GetContactDisplayNameW(dat->hContact, dat->szNickname, 84, dat->szProto, dat->codePage);
-#else
-				mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0));
-#endif
-*/
 				mir_sntprintf(dat->szNickname, 80, _T("%s"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, GCDNF_TCHAR));
 				mir_sntprintf(dat->szStatus, safe_sizeof(dat->szStatus), _T("%s"), (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, GCMDF_TCHAR));
 				dat->avatarbg = M->GetDword(dat->hContact, "avbg", GetSysColor(COLOR_3DFACE));
@@ -2072,10 +2052,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			SetDlgItemText(hwndDlg, IDC_LOGFROZENTEXT, TranslateT("Message Log is frozen"));
 
 			SendMessage(GetDlgItem(hwndDlg, IDC_SAVE), BUTTONADDTOOLTIP, (WPARAM)pszIDCSAVE_close, 0);
-			//if (dat->bIsMeta)
-				SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONADDTOOLTIP, (WPARAM) TranslateT("Click for contact menu\nClick dropdown for window settings"), 0);
-			//else
-				//SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONADDTOOLTIP, (WPARAM) TranslateT("Click for contact menu\nClick dropdown for window settings"), 0);
+			SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONADDTOOLTIP, (WPARAM) TranslateT("Click for contact menu\nClick dropdown for window settings"), 0);
 
 			SetWindowText(GetDlgItem(hwndDlg, IDC_RETRY), TranslateT("Retry"));
 			SetWindowText(GetDlgItem(hwndDlg, IDC_CANCELSEND), TranslateT("Cancel"));
@@ -2146,7 +2123,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)dbv.pszVal);
 					DBFreeVariant(&dbv);
 					len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
-					UpdateSaveAndSendButton(hwndDlg, dat);
+					SendQueue::UpdateSaveAndSendButton(dat);
 					if (m_pContainer->hwndActive == hwndDlg)
 						UpdateReadChars(hwndDlg, dat);
 				}
@@ -2338,10 +2315,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				SetDialogToType(hwndDlg);
 			}
 			dat->iButtonBarNeeds = dat->showUIElements ? dat->bbLSideWidth+dat->bbRSideWidth : 0;
-//
-//			dat->iButtonBarReallyNeeds = dat->iButtonBarNeeds + (dat->showUIElements ? (myGlobals.m_AllowSendButtonHidden ? 110 : 70) : 0);
-// 			if (!dat->SendFormat)
-// 				dat->iButtonBarReallyNeeds -= 96;
+
 			if (lParam == 1) {
 				DM_RecalcPictureSize(hwndDlg, dat);
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
@@ -2537,13 +2511,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					}
 					szActProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 					hActContact = /* dat->bIsMeta ? dat->hSubContact :*/ dat->hContact;
-/*
-#if defined(_UNICODE)
-					MY_GetContactDisplayNameW(dat->hContact, dat->szNickname, 84, dat->szProto, dat->codePage);
-#else
-					mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hActContact, 0));
-#endif
-*/
+
 					mir_sntprintf(dat->szNickname, 80, _T("%s"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hActContact, GCDNF_TCHAR));
 					iHasName = (int)dat->uin[0];        // dat->uin[0] == 0 if there is no valid UIN
 					dat->idle = M->GetDword(dat->hContact, dat->szProto, "IdleTS", 0);
@@ -2803,22 +2771,11 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				else
 					dat->fMustOffset = FALSE;
 			}
-
-
 			dat->controlsHidden = FALSE;
-
-
-// 			if (dat->hContact != 0 && dat->showUIElements != 0) {
-// 				const UINT *hideThisControls = myGlobals.m_ToolbarHideMode ? controlsToHide : controlsToHide1;
-// 				if (!dat->SendFormat)
-// 					hideThisControls = controlsToHide2;
-//
-//  			}
 			CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM) & urd);
 //mad
 			BB_SetButtonsPos(hwndDlg,dat);
 //
-
 			if (GetDlgItem(hwndDlg, IDC_CLIST) != 0) {
 				RECT rc, rcClient, rcLog;
 				GetClientRect(hwndDlg, &rcClient);
@@ -2936,6 +2893,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				if (pt.y + 2 >= 51 && pt.y + 2 < 100)
 					dat->panelHeight = pt.y + 2;
 				SendMessage(hwndDlg, WM_SIZE, DM_SPLITTERMOVED, 0);
+				SetAeroMargins(dat->pContainer);
 				InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
 				InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELNICK), NULL, FALSE);
 				break;
@@ -3218,14 +3176,15 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			if (wParam >= TIMERID_MSGSEND) {
 				int iIndex = wParam - TIMERID_MSGSEND;
 
-				if (iIndex < NR_SENDJOBS) {     // single sendjob timer
+				if (iIndex < SendQueue::NR_SENDJOBS) {     // single sendjob timer
+					SendJob *job = sendQueue->getJobByIndex(iIndex);
 					KillTimer(hwndDlg, wParam);
-					mir_snprintf(sendJobs[iIndex].szErrorMsg, sizeof(sendJobs[iIndex].szErrorMsg), Translate("Delivery failure: %s"), Translate("The message send timed out"));
-					sendJobs[iIndex].iStatus = SQ_ERROR;
+					mir_snprintf(job->szErrorMsg, sizeof(job->szErrorMsg), Translate("Delivery failure: %s"), Translate("The message send timed out"));
+					job->iStatus = SendQueue::SQ_ERROR;
 					if (!nen_options.iNoSounds && !(m_pContainer->dwFlags & CNT_NOSOUND))
 						SkinPlaySound("SendError");
 					if (!(dat->dwFlags & MWF_ERRORSTATE))
-						HandleQueueError(hwndDlg, dat, iIndex);
+						sendQueue->handleError(dat, iIndex);
 					break;
 				} else if (wParam >= TIMERID_MULTISEND_BASE) {
 					int iJobIndex = (wParam - TIMERID_MULTISEND_BASE) / SENDJOBS_MAX_SENDS;
@@ -3309,52 +3268,42 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						break;
 
 					if (wParam == MSGERROR_SENDLATER) {
-						if (ServiceExists(BUDDYPOUNCE_SERVICENAME)) {
-							int iLen = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE));
-							int iOffset = 0;
-							char *szMessage = (char *)malloc(iLen + 10);
-							if (szMessage) {
-								char *szNote = "The message has been successfully queued for later delivery.";
-								DBEVENTINFO dbei;
-								GetDlgItemTextA(hwndDlg, IDC_MESSAGE, szMessage + iOffset, iLen + 1);
-								CallService(BUDDYPOUNCE_SERVICENAME, (WPARAM)dat->hContact, (LPARAM)szMessage);
-								dbei.cbSize = sizeof(dbei);
-								dbei.eventType = EVENTTYPE_MESSAGE;
-								dbei.flags = DBEF_SENT;
-								dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
-								dbei.timestamp = time(NULL);
-								dbei.cbBlob = lstrlenA(szNote) + 1;
-								dbei.pBlob = (PBYTE) szNote;
-								StreamInEvents(hwndDlg,  0, 1, 1, &dbei);
-								if (!nen_options.iNoSounds && !(m_pContainer->dwFlags & CNT_NOSOUND))
-									SkinPlaySound("SendMsg");
-								if (dat->hDbEventFirst == NULL)
-									SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
-								SaveInputHistory(hwndDlg, dat, 0, 0);
-								EnableSendButton(hwndDlg, FALSE);
-
-								if (m_pContainer->hwndActive == hwndDlg)
-									UpdateReadChars(hwndDlg, dat);
-								SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) _Plugin.g_buttonBarIcons[6]);
-								SendDlgItemMessage(hwndDlg, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM)pszIDCSAVE_close, 0);
-								dat->dwFlags &= ~MWF_SAVEBTN_SAV;
-								free(szMessage);
-							}
+						if (1) {
+							char *szNote = "Send later currently not implemented (work in progress.";
+							DBEVENTINFO dbei;
+							dbei.cbSize = sizeof(dbei);
+							dbei.eventType = EVENTTYPE_MESSAGE;
+							dbei.flags = DBEF_SENT;
+							dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
+							dbei.timestamp = time(NULL);
+							dbei.cbBlob = lstrlenA(szNote) + 1;
+							dbei.pBlob = (PBYTE) szNote;
+							StreamInEvents(hwndDlg,  0, 1, 1, &dbei);
+							if (dat->hDbEventFirst == NULL)
+								SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
+							SaveInputHistory(hwndDlg, dat, 0, 0);
+							EnableSendButton(hwndDlg, FALSE);
+							if (m_pContainer->hwndActive == hwndDlg)
+								UpdateReadChars(hwndDlg, dat);
+							SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) _Plugin.g_buttonBarIcons[6]);
+							SendDlgItemMessage(hwndDlg, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM)pszIDCSAVE_close, 0);
+							dat->dwFlags &= ~MWF_SAVEBTN_SAV;
+							SendQueue::SendLater();							// to be implemented at a later time
 						}
 					}
 					dat->iOpenJobs--;
-					_Plugin.iSendJobCurrent--;
-					if (dat->iCurrentQueueError >= 0 && dat->iCurrentQueueError < NR_SENDJOBS)
-						ClearSendJob(dat->iCurrentQueueError);
+					sendQueue->dec();
+					if (dat->iCurrentQueueError >= 0 && dat->iCurrentQueueError < SendQueue::NR_SENDJOBS)
+						sendQueue->clearJob(dat->iCurrentQueueError);
 					else
 						_DebugPopup(dat->hContact, _T("iCurrentQueueError out of bounds (%d)"), dat->iCurrentQueueError);
 					dat->iCurrentQueueError = -1;
-					ShowErrorControls(hwndDlg, dat, FALSE);
+					sendQueue->showErrorControls(dat, FALSE);
 					if (wParam != MSGERROR_CANCEL || (wParam == MSGERROR_CANCEL && lParam == 0))
 						SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
-					CheckSendQueue(hwndDlg, dat);
-					if ((iNextFailed = FindNextFailedMsg(hwndDlg, dat)) >= 0)
-						HandleQueueError(hwndDlg, dat, iNextFailed);
+					sendQueue->checkQueue(dat);
+					if ((iNextFailed = sendQueue->findNextFailed(dat)) >= 0)
+						sendQueue->handleError(dat, iNextFailed);
 					break;
 				}
 				case MSGERROR_RETRY: {
@@ -3363,26 +3312,30 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					if (!(dat->dwFlags & MWF_ERRORSTATE))
 						break;
 
-					if (dat->iCurrentQueueError >= 0 && dat->iCurrentQueueError < NR_SENDJOBS) {
-						for (i = 0; i < sendJobs[dat->iCurrentQueueError].sendCount; i++) {
-							if (sendJobs[dat->iCurrentQueueError].hSendId[i] == NULL && sendJobs[dat->iCurrentQueueError].hContact[i] == NULL)
+					if (dat->iCurrentQueueError >= 0 && dat->iCurrentQueueError < SendQueue::NR_SENDJOBS) {
+						SendJob *job = sendQueue->getJobByIndex(dat->iCurrentQueueError);
+
+						for (i = 0; i < job->sendCount; i++) {
+							if (job->hSendId[i] == 0 && job->hContact[i] == 0)
 								continue;
-							sendJobs[dat->iCurrentQueueError].hSendId[i] = (HANDLE) CallContactService(sendJobs[dat->iCurrentQueueError].hContact[i],
-									MsgServiceName(sendJobs[dat->iCurrentQueueError].hContact[i], dat, sendJobs[dat->iCurrentQueueError].dwFlags), (dat->sendMode & SMODE_FORCEANSI) ? (sendJobs[dat->iCurrentQueueError].dwFlags & ~PREF_UNICODE) : sendJobs[dat->iCurrentQueueError].dwFlags, (LPARAM) sendJobs[dat->iCurrentQueueError].sendBuffer);
+							job->hSendId[i] = (HANDLE) CallContactService(job->hContact[i],
+									SendQueue::MsgServiceName(job->hContact[i], dat, job->dwFlags),	(dat->sendMode & SMODE_FORCEANSI) ? (job->dwFlags & ~PREF_UNICODE) : job->dwFlags, (LPARAM) job->sendBuffer);
 							resent++;
 						}
 					} else
 						_DebugPopup(dat->hContact, _T("iCurrentQueueError out of bounds (%d)"), dat->iCurrentQueueError);
 					if (resent) {
 						int iNextFailed;
+						SendJob *job = sendQueue->getJobByIndex(dat->iCurrentQueueError);
+
 						SetTimer(hwndDlg, TIMERID_MSGSEND + dat->iCurrentQueueError, _Plugin.m_MsgTimeout, NULL);
-						sendJobs[dat->iCurrentQueueError].iStatus = SQ_INPROGRESS;
+						job->iStatus = SendQueue::SQ_INPROGRESS;
 						dat->iCurrentQueueError = -1;
-						ShowErrorControls(hwndDlg, dat, FALSE);
+						sendQueue->showErrorControls(dat, FALSE);
 						SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
-						CheckSendQueue(hwndDlg, dat);
-						if ((iNextFailed = FindNextFailedMsg(hwndDlg, dat)) >= 0)
-							HandleQueueError(hwndDlg, dat, iNextFailed);
+						sendQueue->checkQueue(dat);
+						if ((iNextFailed = sendQueue->findNextFailed(dat)) >= 0)
+							sendQueue->handleError(dat, iNextFailed);
 					}
 				}
 				break;
@@ -3746,7 +3699,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							SendMessage(hwndEdit, EM_SETSEL, 0, -1);
 							SendMessage(hwndEdit, EM_GETPARAFORMAT, 0, (LPARAM)&pf2);
 							if (pf2.wEffects & PFE_RTLPARA)
-								if (RTL_Detect(decoded))
+								if (SendQueue::RTL_Detect(decoded))
 									flags |= PREF_RTL;
 
 							SendMessage(hwndEdit, WM_SETREDRAW, TRUE, 0);
@@ -3804,7 +3757,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						if (dat->hwndIEView != 0 && m_pContainer->hwndStatus) {
 							SendMessage(m_pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM)Translate("Message saved for later delivery"));
 						} else
-							LogErrorMessage(hwndDlg, dat, -1, TranslateT("Message saved for later delivery"));
+							sendQueue->logError(dat, -1, TranslateT("Message saved for later delivery"));
 
 						SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
 						break;
@@ -3861,7 +3814,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						if (result)
 							return TRUE;
 					}
-					AddToSendQueue(hwndDlg, dat, memRequired, flags);
+					sendQueue->addTo(dat, memRequired, flags);
 					return TRUE;
 				}
 				case IDC_QUOTE: {
@@ -4562,7 +4515,7 @@ quote_from_last:
 						dat->dwFlags |= MWF_NEEDHISTORYSAVE;
 						dat->dwLastActivity = GetTickCount();
 						m_pContainer->dwLastActivity = dat->dwLastActivity;
-						UpdateSaveAndSendButton(hwndDlg, dat);
+						SendQueue::UpdateSaveAndSendButton(dat);
 						if (!(GetKeyState(VK_CONTROL) & 0x8000)) {
 							dat->nLastTyping = GetTickCount();
 							if (GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE))) {
@@ -4980,7 +4933,7 @@ quote_from_last:
 			 * *_MESSAGE and *_AVATAR and dispatches them to the owner windows).
 			 */
 		case HM_EVENTSENT:
-			AckMessage(hwndDlg, dat, wParam, lParam);
+			sendQueue->ackMessage(dat, wParam, lParam);
 			return 0;
 
 		case DM_SAVEPERCONTACT:
@@ -5469,7 +5422,7 @@ quote_from_last:
 						return TRUE;
 
 					dat->dwFlagsEx |= MWF_EX_WARNCLOSE;
-					result = WarnPendingJobs(0);
+					result = SendQueue::WarnPendingJobs(0);
 					dat->dwFlagsEx &= ~MWF_EX_WARNCLOSE;
 					if (result == IDNO)
 						return TRUE;
@@ -5606,18 +5559,17 @@ quote_from_last:
 			}
 			else
 				FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
-				//FillRect(hdcMem, &rcClient, (HBRUSH)GetStockObject(BLACK_BRUSH));
 
 			/*
 			 * draw the (new) infopanel. Use the gradient from the statusitem.
 			 */
 
 			t_item = StatusItems[ID_EXTBKINFOPANELBG];
-			if(!t_item.IGNORED && (dat->dwFlags & MWF_SHOW_INFOPANEL) && !(dat->dwFlags & MWF_ERRORSTATE)) {
+			if((!t_item.IGNORED && (dat->dwFlags & MWF_SHOW_INFOPANEL) && !(dat->dwFlags & MWF_ERRORSTATE)) || (M->isAero() && !m_pContainer->bSkinned)) {
 				StatusItems_t *item = &t_item;
 
 				GetClientRect(hwndDlg, &rc);
-				rc.bottom = dat->panelHeight;
+				rc.bottom = dat->panelHeight + 2;
 				if(dat->hdcCached == 0)
 					dat->hdcCached = CreateCompatibleDC(hdc);
 				if(dat->hbmCachedOld) {
@@ -5626,14 +5578,21 @@ quote_from_last:
 				}
 				dat->hbmCached = CreateCompatibleBitmap(hdc, rc.right - rc.left, rc.bottom - rc.top);
 				dat->hbmCachedOld = (HBITMAP)SelectObject(dat->hdcCached, dat->hbmCached);
-				DrawAlpha(dat->hdcCached, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
-						  item->CORNER, item->BORDERSTYLE, item->imageItem);
-				DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
-						  item->CORNER, item->BORDERSTYLE, item->imageItem);
+
+				if(M->isAero() && !m_pContainer->bSkinned) {
+					FillRect(dat->hdcCached, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+					FillRect(hdcMem, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+				}
+				else {
+					DrawAlpha(dat->hdcCached, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+							  item->CORNER, item->BORDERSTYLE, item->imageItem);
+					DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+							  item->CORNER, item->BORDERSTYLE, item->imageItem);
+				}
+				/*
+				 * draw the logo
+				 */
 			}
-			/*
-			 * draw the logo
-			 */
 			if(dat->dwFlagsEx & MWF_SHOW_INFOPANEL && !(dat->dwFlagsEx & MWF_SHOW_INFONOTES) && !(dat->dwFlags & MWF_ERRORSTATE)) {
 				BITMAP 	bm;
 				HDC		hdcImage = CreateCompatibleDC(hdc);
@@ -5723,10 +5682,12 @@ quote_from_last:
 				 * search the sendqueue for unfinished send jobs and free them. Leave unsent
 				 * messages in the queue as they can be acked later
 				 */
-				for (i = 0; i < NR_SENDJOBS; i++) {
-					if (sendJobs[i].hOwner == dat->hContact) {
-						if (sendJobs[i].iStatus > SQ_INPROGRESS)
-							ClearSendJob(i);
+				SendJob *jobs = sendQueue->getJobByIndex(0);
+
+				for (i = 0; i < SendQueue::NR_SENDJOBS; i++) {
+					if (jobs[i].hOwner == dat->hContact) {
+						if (jobs[i].iStatus > (unsigned)SendQueue::SQ_INPROGRESS)
+							sendQueue->clearJob(i);
 						/*
 						 * unfinished jobs which did not yet return anything are kept in the queue.
 						 * the hwndOwner is set to 0 because the window handle is now no longer valid.
@@ -5736,8 +5697,8 @@ quote_from_last:
 						 * User may receive NO feedback for sending errors after the session window
 						 * had been closed, since such jobs will be silently discarded.
 						 */
-						if (sendJobs[i].iStatus == SQ_INPROGRESS)
-							sendJobs[i].hwndOwner = 0;
+						if (jobs[i].iStatus == (unsigned)SendQueue::SQ_INPROGRESS)
+							jobs[i].hwndOwner = 0;
 					}
 				}
 				if (dat->hQueuedEvents)

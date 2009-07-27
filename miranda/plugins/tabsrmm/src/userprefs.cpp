@@ -4,7 +4,7 @@ astyle --force-indent=tab=4 --brackets=linux --indent-switches
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project,
+Copyright 2000-2009 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -34,14 +34,47 @@ Sets things like:
 * local (per user) template overrides
 * view mode (ieview/default)
 * text formatting
-
 */
 
 #include "commonheaders.h"
-#include <m_timezones.h>
 
 #pragma hdrstop
 #include <uxtheme.h>
+
+/*
+ * FIXME (tz stuff needed to compile (taken from m_timezones.h)
+ */
+
+#define MIM_TZ_PLF_CB		1				// UI element is assumed to be a combo box
+#define MIM_TZ_PLF_LB		2				// UI element is assumed to be a list box
+#define MIM_TZ_NAMELEN 64
+#define MIM_TZ_DISPLAYLEN 128
+
+typedef struct _tagTimeZone {
+	DWORD	cbSize;						// caller must supply this
+	TCHAR	tszName[MIM_TZ_NAMELEN];				// windows name for the time zone
+	TCHAR	tszDisplay[MIM_TZ_DISPLAYLEN];			// more descriptive display name (that's what usually appears in dialogs)
+	LONG	Bias;						// Standardbias (gmt offset)
+	LONG	DaylightBias;				// daylight Bias (dst offset, relative to standard bias, -60 for most time zones)
+	SYSTEMTIME StandardTime;			// when DST ends (month/dayofweek/time)
+	SYSTEMTIME DaylightTime;			// when DST begins (month/dayofweek/time)
+	char	GMT_Offset;					// simple GMT offset (+/-, measured in half-hours, may be incorrect for DST timezones)
+	LONG	Offset;						// time offset to local time, in seconds. It is relativ to the current local time, NOT GMT
+										// the sign is inverted, so you have to subtract it from the current time.
+	SYSTEMTIME CurrentTime;				// current system time. only updated when forced by the caller
+	time_t	   now;						// same in unix time format (seconds since 1970).
+} MIM_TIMEZONE;
+
+typedef struct _tagPrepareList {
+	DWORD	cbSize;									// caller must supply this
+	HWND	hWnd;									// window handle of the combo or list box
+	TCHAR	tszName[MIM_TZ_NAMELEN];				// tz name (for preselecting)
+	DWORD	dwFlags;								// flags - if neither PLF_CB or PLF_LB is set, the window class name will be used
+													// to figure out the type of control.
+	HANDLE	hContact;								// contact handle (for preselecting)
+} MIM_TZ_PREPARELIST;
+#define MS_TZ_PREPARELIST "TZ/PrepareList"
+
 
 #define UPREF_ACTION_APPLYOPTIONS 1
 #define UPREF_ACTION_REMAKELOG 2
@@ -188,11 +221,6 @@ INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			}
 			else
 				SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_ADDSTRING, 0, (LPARAM)_T("time zone service is missing"));
-
-			/*
-			 * no real time zone information is stored in the db. Use the GMT based timezone offset to figure
-			 * out a matching zone. If not even this information is found, set it to unspecified.
-			*/
 
 			ShowWindow(hwndDlg, SW_SHOW);
 			CheckDlgButton(hwndDlg, IDC_NOAUTOCLOSE, M->GetByte(hContact, "NoAutoClose", 0));

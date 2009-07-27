@@ -2279,14 +2279,20 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		hOldBrush = (HBRUSH)SelectObject(hdcDraw, bgBrush);
 		rcFrame = rcClient;
 
+		bool	fAero = M->isAero();
 
 		if (dat->pContainer->bSkinned) {
 			if(bPanelPic)
 				SkinDrawBGFromDC(dis->hwndItem, hwndDlg, dat->hdcCached, &rcFrame, hdcDraw);
 			else
 				SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &rcFrame, hdcDraw);
-		} else
-			FillRect(hdcDraw, &rcFrame, bgBrush);
+		} else {
+			if(bPanelPic) {
+				FillRect(hdcDraw, &rcFrame, fAero ? (HBRUSH)GetStockObject(BLACK_BRUSH) : bgBrush);
+				hOldBrush = (HBRUSH)SelectObject(hdcDraw, (HBRUSH)GetStockObject(BLACK_BRUSH));
+			} else
+				FillRect(hdcDraw, &rcFrame, bgBrush);
+		}
 		if (borderType == 1)
 			borderType = aceFlags & AVS_PREMULTIPLIED ? 2 : 3;
 
@@ -2320,7 +2326,8 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 					rcFrame.top += height_off;
 					rcFrame.bottom += height_off;
 				}
-				SetStretchBltMode(hdcDraw, HALFTONE);
+				if(fAero == false)
+					SetStretchBltMode(hdcDraw, HALFTONE);
 				if (borderType == 2)
 					DrawEdge(hdcDraw, &rcFrame, BDR_SUNKENINNER, BF_RECT);
 				else if (borderType == 3)
@@ -2329,27 +2336,20 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 					clipRgn = CreateRoundRectRgn(rcFrame.left, rcFrame.top, rcFrame.right + 1, rcFrame.bottom + 1, iRad, iRad);
 					SelectClipRgn(hdcDraw, clipRgn);
 				}
-				//mad
-//   				if(!dat->hwndPanelPic)
-//    				{
 				if (aceFlags & AVS_PREMULTIPLIED)
 					MY_AlphaBlend(hdcDraw, rcFrame.left + (borderType ? 1 : 0), height_off + (borderType ? 1 : 0), (int)dNewWidth + width_off, (int)dNewHeight + width_off, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
 				else
 					StretchBlt(hdcDraw, rcFrame.left + (borderType ? 1 : 0), height_off + (borderType ? 1 : 0), (int)dNewWidth + width_off, (int)dNewHeight + width_off, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-// 				}
 
 			} else {
 				LONG xy_off = borderType ? 1 : 0;
 				LONG width_off = borderType ? 0 : 2;
 
 				SetStretchBltMode(hdcDraw, HALFTONE);
-// 				if(!dat->hwndContactPic)
-//  				{
 				if (aceFlags & AVS_PREMULTIPLIED)
 					MY_AlphaBlend(hdcDraw, xy_off, top + xy_off, (int)dNewWidth + width_off, iMaxHeight + width_off, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
 				else
 					StretchBlt(hdcDraw, xy_off, top + xy_off, (int)dNewWidth + width_off, iMaxHeight + width_off, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-// 				}
 			}
 			if (clipRgn) {
 				HBRUSH hbr = CreateSolidBrush((COLORREF)M->GetDword("avborderclr", RGB(0, 0, 0)));

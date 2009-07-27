@@ -24,9 +24,30 @@ $Id:$
 
 */
 
+/*
+ * various Win32 API definitions which we use via function pointers
+ */
+
+#ifndef __MIM_H
+#define __MIM_H
+
 typedef BOOL 	(WINAPI *pfnSetMenuInfo )( HMENU hmenu, LPCMENUINFO lpcmi );
 typedef HRESULT (STDAPICALLTYPE *DEFICA)(HWND hwnd, const MARGINS *margins);
 typedef HRESULT (STDAPICALLTYPE *DICE)(BOOL *);
+typedef DWORD (WINAPI *PSLWA)(HWND, DWORD, BYTE, DWORD);
+typedef BOOL (WINAPI *PULW)(HWND, HDC, POINT *, SIZE *, HDC, POINT *, COLORREF, BLENDFUNCTION *, DWORD);
+typedef BOOL (WINAPI *PFWEX)(FLASHWINFO *);
+typedef BOOL (WINAPI *PAB)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION);
+typedef BOOL (WINAPI *PGF)(HDC, PTRIVERTEX, ULONG, PVOID, ULONG, ULONG);
+
+typedef BOOL (WINAPI *PITA)();
+typedef HANDLE(WINAPI *POTD)(HWND, LPCWSTR);
+typedef UINT(WINAPI *PDTB)(HANDLE, HDC, int, int, RECT *, RECT *);
+typedef UINT(WINAPI *PCTD)(HANDLE);
+typedef UINT(WINAPI *PDTT)(HANDLE, HDC, int, int, LPCWSTR, int, DWORD, DWORD, RECT *);
+typedef BOOL (WINAPI *PITBPT)(HANDLE, int, int);
+typedef HRESULT(WINAPI *PDTPB)(HWND, HDC, RECT *);
+typedef HRESULT(WINAPI *PGTBCR)(HANDLE, HDC, int, int, const RECT *, const RECT *);
 
 
 /*
@@ -160,3 +181,5 @@ private:
 };
 
 extern  _Mim		*M;
+
+#endif /* __MIM_H */

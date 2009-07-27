@@ -124,8 +124,6 @@ typedef struct _settextex {
 #define CONTAINER_NAMELEN 25
 #define TITLE_FORMATLEN 50
 
-#define NR_SENDJOBS 30
-
 #define MWF_SAVEBTN_SAV 2
 
 #define MWF_DEFERREDSCROLL 4
@@ -287,25 +285,6 @@ struct ContainerWindowData {
 };
 
 #define STICK_ICON_MSG 10
-#define SENDJOBS_MAX_SENDS 100
-
-struct SendJob {
-	HANDLE  hContact[SENDJOBS_MAX_SENDS];
-	HANDLE  hSendId[SENDJOBS_MAX_SENDS];
-	char    *sendBuffer;
-	int     dwLen;        // actual buffer langth (checked for reallocs()
-	int     sendCount;
-	HANDLE  hOwner;
-	HWND    hwndOwner;
-	unsigned int iStatus;
-	char    szErrorMsg[128];
-	DWORD   dwFlags;
-	int     iAcksNeeded;
-	HANDLE  hEventSplit;
-	int     chunkSize;
-	DWORD   dwTime;
-};
-
 struct MessageSessionStats {
 	time_t started;
 	unsigned int iSent, iReceived, iSentBytes, iReceivedBytes;
@@ -879,21 +858,6 @@ extern const int msgDlgFontCount;
 #define IDM_STAYONTOP (WM_USER + 1)
 #define IDM_NOTITLE (WM_USER + 2)
 #define IDM_MOREOPTIONS (WM_USER +4)
-
-typedef DWORD (WINAPI *PSLWA)(HWND, DWORD, BYTE, DWORD);
-typedef BOOL (WINAPI *PULW)(HWND, HDC, POINT *, SIZE *, HDC, POINT *, COLORREF, BLENDFUNCTION *, DWORD);
-typedef BOOL (WINAPI *PFWEX)(FLASHWINFO *);
-typedef BOOL (WINAPI *PAB)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION);
-typedef BOOL (WINAPI *PGF)(HDC, PTRIVERTEX, ULONG, PVOID, ULONG, ULONG);
-
-typedef BOOL (WINAPI *PITA)();
-typedef HANDLE(WINAPI *POTD)(HWND, LPCWSTR);
-typedef UINT(WINAPI *PDTB)(HANDLE, HDC, int, int, RECT *, RECT *);
-typedef UINT(WINAPI *PCTD)(HANDLE);
-typedef UINT(WINAPI *PDTT)(HANDLE, HDC, int, int, LPCWSTR, int, DWORD, DWORD, RECT *);
-typedef BOOL (WINAPI *PITBPT)(HANDLE, int, int);
-typedef HRESULT(WINAPI *PDTPB)(HWND, HDC, RECT *);
-typedef HRESULT(WINAPI *PGTBCR)(HANDLE, HDC, int, int, const RECT *, const RECT *);
 
 // constants for the container management functions
 
