@@ -226,6 +226,8 @@ static INT_PTR Proto_RecvMessage(WPARAM,LPARAM lParam)
 	CCSDATA *ccs = ( CCSDATA* )lParam;
 	PROTORECVEVENT *pre = ( PROTORECVEVENT* )ccs->lParam;
 
+    if (pre->szMessage == NULL) return NULL;
+
 	DBEVENTINFO dbei = { 0 };
 	dbei.cbSize = sizeof( dbei );
 	dbei.szModule = ( char* )CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)ccs->hContact, 0);
