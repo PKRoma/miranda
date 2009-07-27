@@ -4262,6 +4262,7 @@ quote_from_last:
 					WORD wOldApparentMode = dat->wApparentMode;
 					int pCaps = CallProtoService(dat->bIsMeta ? dat->szMetaProto : dat->szProto, PS_GETCAPS, PFLAGNUM_1, 0);
 
+					GetWindowRect(GetDlgItem(hwndDlg, IDC_NAME), &rc);
 					CheckMenuItem(subMenu, ID_APPARENTMENU_YOUAPPEARALWAYSOFFLINEORHAVETHISCONTACTBLOCKED, MF_BYCOMMAND | (dat->wApparentMode == ID_STATUS_OFFLINE ? MF_CHECKED : MF_UNCHECKED));
 					CheckMenuItem(subMenu, ID_APPARENTMENU_YOUAREALWAYSVISIBLETOTHISCONTACT, MF_BYCOMMAND | (dat->wApparentMode == ID_STATUS_ONLINE ? MF_CHECKED : MF_UNCHECKED));
 					CheckMenuItem(subMenu, ID_APPARENTMENU_YOURSTATUSDETERMINESVISIBLITYTOTHISCONTACT, MF_BYCOMMAND | (dat->wApparentMode == 0 ? MF_CHECKED : MF_UNCHECKED));
