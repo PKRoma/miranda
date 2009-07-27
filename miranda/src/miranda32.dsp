@@ -207,6 +207,10 @@ SOURCE=..\include\m_fuse.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\m_help.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\m_history.h
 # End Source File
 # Begin Source File
