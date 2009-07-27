@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 HWND hAboutDlg=NULL;
+static HANDLE hBugEvent = NULL;
 
 static INT_PTR AboutCommand(WPARAM wParam,LPARAM)
 {
@@ -49,9 +50,18 @@ static INT_PTR WebsiteCommand(WPARAM, LPARAM)
 	return 0;
 }
 
+static int BugCommandEvent(WPARAM wParam, LPARAM lParam) {
+    char *szUrl = (char*)lParam;
+    
+    if (szUrl) {
+        CallService(MS_UTILS_OPENURL,1,(LPARAM)szUrl);
+    }
+    return 0;
+}
+
 static INT_PTR BugCommand(WPARAM, LPARAM)
 {
-	CallService(MS_UTILS_OPENURL,1,(LPARAM)"http://bugs.miranda-im.org/");
+    NotifyEventHooks(hBugEvent, 0, (LPARAM)"http://bugs.miranda-im.org/");
 	return 0;
 }
 
@@ -73,7 +83,9 @@ int LoadHelpModule(void)
 	CreateServiceFunction("Help/IndexCommand",IndexCommand);
 	CreateServiceFunction("Help/WebsiteCommand",WebsiteCommand);
 	CreateServiceFunction("Help/BugCommand",BugCommand);
-
+    hBugEvent = CreateHookableEvent(ME_HELP_BUGREPORT);
+    SetHookDefaultForHookableEvent(hBugEvent, BugCommandEvent);
+    
 	mi.cbSize = sizeof(mi);
 	mi.flags = CMIF_ICONFROMICOLIB;
 	mi.icolibItem = GetSkinIconHandle(SKINICON_OTHER_MIRANDA);

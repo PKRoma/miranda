@@ -346,6 +346,9 @@
 				RelativePath="..\include\m_genmenu.h">
 			</File>
 			<File
+				RelativePath="..\include\m_help.h">
+			</File>
+			<File
 				RelativePath="..\include\m_history.h">
 			</File>
 			<File
