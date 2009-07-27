@@ -33,7 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // == GLOBAL FUNCTIONS ==
 // ======================
 
-HANDLE HistoryImportFindContact(HWND hdlgProgress,DWORD uin,int addUnknown);
+HANDLE HistoryImportFindContact(HWND hdlgProgress, char* szModuleName, DWORD uin,int addUnknown);
 
 // =====================
 // == LOCAL FUNCTIONS ==
@@ -88,6 +88,12 @@ extern TCHAR importFile[MAX_PATH];
 extern void (*DoImport)(HWND);
 extern int nImportOption;
 extern int nCustomOptions;
+
+
+extern int      cICQAccounts;
+extern char  ** szICQModuleName;
+extern TCHAR ** tszICQAccountName;
+extern int      iICQAccount;
 
 // =====================
 // == LOCAL VARIABLES ==

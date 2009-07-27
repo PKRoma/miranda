@@ -63,12 +63,12 @@ BOOL CALLBACK ICQserverPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lPar
 static void ICQserverImport()
 {
 	// Clear last update stamp
-	DBDeleteContactSetting(NULL, ICQOSCPROTONAME, "SrvLastUpdate");
-	DBDeleteContactSetting(NULL, ICQOSCPROTONAME, "SrvRecordCount");
+	DBDeleteContactSetting(NULL, szICQModuleName[ iICQAccount ], "SrvLastUpdate");
+	DBDeleteContactSetting(NULL, szICQModuleName[ iICQAccount ], "SrvRecordCount");
 
 	// Enable contacts downloading
-	DBWriteContactSettingByte(NULL, ICQOSCPROTONAME, "UseServerCList", 1);
-	DBWriteContactSettingByte(NULL, ICQOSCPROTONAME, "AddServerNew", 1);
-	DBWriteContactSettingByte(NULL, ICQOSCPROTONAME, "UseServerNicks", 1);
-	DBWriteContactSettingByte(NULL, ICQOSCPROTONAME, "ServerAddRemove", 1);
+	DBWriteContactSettingByte(NULL, szICQModuleName[ iICQAccount ], "UseServerCList", 1);
+	DBWriteContactSettingByte(NULL, szICQModuleName[ iICQAccount ], "AddServerNew", 1);
+	DBWriteContactSettingByte(NULL, szICQModuleName[ iICQAccount ], "UseServerNicks", 1);
+	DBWriteContactSettingByte(NULL, szICQModuleName[ iICQAccount ], "ServerAddRemove", 1);
 }
