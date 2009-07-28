@@ -58,7 +58,13 @@ static void DoAnnoyingShellCommand(HWND hwnd,const TCHAR *szFilename,int cmd,POI
 		IShellFolder *pDesktopFolder;
 		if(SHGetDesktopFolder(&pDesktopFolder)==NOERROR) {
 			ITEMIDLIST *pCurrentIdl;
-			if(pDesktopFolder->lpVtbl->ParseDisplayName(pDesktopFolder,NULL,NULL,(LPTSTR)szFilename,NULL,&pCurrentIdl,NULL)==NOERROR) {
+			#if defined( _UNICODE )
+				WCHAR* wszFileName = szFileName;
+			#else
+				WCHAR wszFilename[MAX_PATH];
+				MultiByteToWideChar(CP_ACP,0,szFilename,-1,wszFilename,SIZEOF(wszFilename));
+			#endif
+			if(pDesktopFolder->lpVtbl->ParseDisplayName(pDesktopFolder,NULL,NULL,wszFilename,NULL,&pCurrentIdl,NULL)==NOERROR) {
 				if(pCurrentIdl->mkid.cb) {
 					ITEMIDLIST *pidl,*pidlNext,*pidlFilename;
 					IShellFolder *pFileFolder;
