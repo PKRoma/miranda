@@ -59,7 +59,7 @@ static void DoAnnoyingShellCommand(HWND hwnd,const TCHAR *szFilename,int cmd,POI
 		if(SHGetDesktopFolder(&pDesktopFolder)==NOERROR) {
 			ITEMIDLIST *pCurrentIdl;
 			#if defined( _UNICODE )
-				WCHAR* wszFileName = szFileName;
+				WCHAR* wszFilename = ( LPWSTR )szFilename;
 			#else
 				WCHAR wszFilename[MAX_PATH];
 				MultiByteToWideChar(CP_ACP,0,szFilename,-1,wszFilename,SIZEOF(wszFilename));
