@@ -106,7 +106,13 @@ static INT_PTR DbEventGetText(WPARAM wParam, LPARAM lParam)
 		char* str = (*descr == 0) ? filename : descr;
 		switch ( egt->datatype ) {
 		case DBVT_WCHAR:
-			return ( INT_PTR )(( dbei->flags & DBEF_UTF ) ? Utf8DecodeUcs2( str ) : a2t( str ));
+			return ( INT_PTR )(( dbei->flags & DBEF_UTF ) ? 
+				#if defined( _UNICODE )
+					Utf8DecodeUcs2( str ) 
+				#else
+					Utf8Decode( mir_strdup( str ), NULL )
+				#endif
+					: a2t( str ));
 		case DBVT_ASCIIZ:
 			return ( INT_PTR )(( dbei->flags & DBEF_UTF ) ? Utf8Decode( mir_strdup( str ), NULL ) : mir_strdup( str ));
 		}
@@ -213,7 +219,7 @@ static INT_PTR DbEventGetStringT( WPARAM wParam, LPARAM lParam )
 	#else
 		char* res = mir_strdup( string );
 		if ( dbei->flags & DBEF_UTF )
-			Utf8Decode( res );
+			Utf8Decode( res, NULL );
 		return ( INT_PTR )res;
 	#endif
 }

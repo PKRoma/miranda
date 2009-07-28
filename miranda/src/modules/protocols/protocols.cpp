@@ -211,7 +211,7 @@ static INT_PTR Proto_RecvFileT(WPARAM,LPARAM lParam)
 				mir_free( pszFiles[i] );
 		}
 	#else
-		sttRecvCreateBlob( dbei, pre->fileCount, pre->ptszFiles, pre->tszDescr );
+		sttRecvCreateBlob( dbei, pre->fileCount, pre->ptszFiles, pre->tszDescription );
 	#endif
 
 	HANDLE hdbe = ( HANDLE )CallService( MS_DB_EVENT_ADD, ( WPARAM )ccs->hContact, ( LPARAM )&dbei );
