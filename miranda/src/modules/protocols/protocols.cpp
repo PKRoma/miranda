@@ -197,22 +197,18 @@ static INT_PTR Proto_RecvFileT(WPARAM,LPARAM lParam)
 	dbei.flags = ( pre->flags & PREF_CREATEREAD ) ? DBEF_READ : 0;
 	dbei.eventType = EVENTTYPE_FILE;
 
-	#if defined( _UNICODE )
-		char** pszFiles = ( char** )alloca( pre->fileCount * sizeof(char*));
-		{
-			for ( int i=0; i < pre->fileCount; i++ )
-				pszFiles[i] = Utf8EncodeT( pre->ptszFiles[i] );
-		}
-		char* szDescr = Utf8EncodeT( pre->tszDescription );
-		dbei.flags |= DBEF_UTF;
-		sttRecvCreateBlob( dbei, pre->fileCount, pszFiles, szDescr );
-		{
-			for ( int i=0; i < pre->fileCount; i++ )
-				mir_free( pszFiles[i] );
-		}
-	#else
-		sttRecvCreateBlob( dbei, pre->fileCount, pre->ptszFiles, pre->tszDescription );
-	#endif
+	char** pszFiles = ( char** )alloca( pre->fileCount * sizeof(char*));
+	{
+		for ( int i=0; i < pre->fileCount; i++ )
+			pszFiles[i] = Utf8EncodeT( pre->ptszFiles[i] );
+	}
+	char* szDescr = Utf8EncodeT( pre->tszDescription );
+	dbei.flags |= DBEF_UTF;
+	sttRecvCreateBlob( dbei, pre->fileCount, pszFiles, szDescr );
+	{
+		for ( int i=0; i < pre->fileCount; i++ )
+			mir_free( pszFiles[i] );
+	}
 
 	HANDLE hdbe = ( HANDLE )CallService( MS_DB_EVENT_ADD, ( WPARAM )ccs->hContact, ( LPARAM )&dbei );
 
