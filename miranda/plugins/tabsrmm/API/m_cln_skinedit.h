@@ -11,30 +11,14 @@
  */
 
 struct _MessageWindowData;
-
-typedef struct _tagImageItem {
-    char    szName[40];
-    HBITMAP hbm;
-    BYTE    bLeft, bRight, bTop, bBottom;      // sizing margins
-    BYTE    alpha;
-    DWORD   dwFlags;
-    HDC     hdc;
-    HBITMAP hbmOld;
-    LONG    inner_height, inner_width;
-    LONG    width, height;
-    BLENDFUNCTION bf;
-    BYTE    bStretch;
-    HBRUSH  fillBrush;
-    LONG    glyphMetrics[4];
-    struct  _tagImageItem *nextItem;
-} ImageItem;
+class CImageItem;
 
 typedef struct _tagButtonItem {
     char    szName[40];
     HWND    hWnd;
     LONG    xOff, yOff;
     LONG    width, height;
-    ImageItem *imgNormal, *imgPressed, *imgHover;
+    CImageItem *imgNormal, *imgPressed, *imgHover;
     LONG_PTR normalGlyphMetrics[4];
     LONG_PTR hoverGlyphMetrics[4];
     LONG_PTR pressedGlyphMetrics[4];
@@ -56,7 +40,7 @@ typedef struct _tagButtonSet {
     LONG        left, top, right, bottom;               // client area offsets, calculated from button layout
 } ButtonSet;
 
-struct StatusItems_t {
+struct CSkinItem {
     char szName[40];
     char szDBname[40];
     int statusID;
@@ -79,50 +63,12 @@ struct StatusItems_t {
     int MARGIN_BOTTOM;
     BYTE IGNORED;
     DWORD BORDERSTYLE;
-    ImageItem *imageItem;
+    CImageItem *imageItem;
 };
-
-class StatusItem {
-
-public:
-	StatusItem()
-	{}
-
-	StatusItem(const unsigned id);
-
-	~StatusItem()
-	{}
-
-	void Init(const int id);
-
-	void Render()
-	{
-		MessageBoxA(0, m_item->szName, "foo", MB_OK);
-	}
-
-private:
-	StatusItems_t *m_item;
-};
-
-typedef struct {
-    BOOL bGRADIENT;
-    BOOL bCORNER;
-    BOOL bCOLOR;
-    BOOL bCOLOR2;
-    BOOL bCOLOR2_TRANSPARENT;
-    BOOL bTEXTCOLOR;
-    BOOL bALPHA;
-    BOOL bMARGIN_LEFT;
-    BOOL bMARGIN_TOP;
-    BOOL bMARGIN_RIGHT;
-    BOOL bMARGIN_BOTTOM;
-    BOOL bIGNORED;
-    BOOL bBORDERSTYLE;
-} ChangedSItems_t;
 
 typedef struct _tagSkinDescription {
     DWORD           cbSize;
-    StatusItems_t   *StatusItems;
+    CSkinItem   *StatusItems;
     int             lastItem;
     int             firstItem;
     char            szModule[100];

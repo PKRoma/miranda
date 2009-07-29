@@ -44,6 +44,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <richedit.h>
 #include <limits.h>
 #include <ctype.h>
+#include <string>
 
 #include "resource.h"
 
@@ -82,7 +83,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include  <m_acc.h>
 #include  <m_chat.h>
 #include  <m_protomod.h>
-#include <m_imgsrvc.h>
 
 extern struct LIST_INTERFACE li;
 
@@ -120,6 +120,7 @@ extern 	NEN_OPTIONS	nen_options;
 #include "globals.h"
 #include "mim.h"
 #include "sendqueue.h"
+#include "themes.h"
 
 #if !defined(_WIN64) && !defined(_USE_32BIT_TIME_T)
 	#define _USE_32BIT_TIME_T
@@ -129,6 +130,10 @@ extern 	NEN_OPTIONS	nen_options;
 
 #if _MSC_VER >= 1500 || defined(__GNUWIN32__)
 	#define wEffects wReserved
+#endif
+
+#if _MSC_VER <= 1600 || defined(__GNUWIN32__)
+	#define WM_DWMCOMPOSITIONCHANGED        0x031E
 #endif
 
 typedef struct __paraformat2
@@ -159,8 +164,14 @@ typedef struct __paraformat2
 	WORD	wBorders;				// Border styles (nibble/border)
 } _PARAFORMAT2;
 
+/*
+ * tchar-like std::string
+ */
+
+typedef std::basic_string<TCHAR> tstring;
+
 extern	HINSTANCE g_hInst;
 extern 	bool g_skinnedContainers;
 extern 	bool g_framelessSkinmode;
-extern StatusItems_t StatusItems[];
+extern CSkinItem SkinItems[];
 

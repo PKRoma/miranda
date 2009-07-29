@@ -4,7 +4,7 @@ astyle --force-indent=tab=4 --brackets=linux --indent-switches
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project,
+Copyright 2000-2009 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -22,7 +22,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id:$
+$Id$
 */
 
 /*
@@ -549,8 +549,8 @@ LRESULT DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct _MessageWindowDa
 
 LRESULT DM_ThemeChanged(HWND hwnd, struct _MessageWindowData *dat)
 {
-	StatusItems_t *item_log = &StatusItems[ID_EXTBKHISTORY];
-	StatusItems_t *item_msg = &StatusItems[ID_EXTBKINPUTAREA];
+	CSkinItem *item_log = &SkinItems[ID_EXTBKHISTORY];
+	CSkinItem *item_msg = &SkinItems[ID_EXTBKINPUTAREA];
 
 	dat->bFlatMsgLog = M->GetByte("flatlog", 1);
 
@@ -767,7 +767,7 @@ void DrawStatusIcons(struct _MessageWindowData *dat, HDC hDC, RECT r, int gap)
 				hIcon = current->sid.hIcon;
 
 			if (flags & MBF_DISABLED && current->sid.hIconDisabled == (HICON)0)
-				DrawDimmedIcon(hDC, x, (r.top + r.bottom - _Plugin.m_smcxicon) >> 1, _Plugin.m_smcxicon, _Plugin.m_smcyicon, hIcon, 50);
+				CSkin::DrawDimmedIcon(hDC, x, (r.top + r.bottom - _Plugin.m_smcxicon) >> 1, _Plugin.m_smcxicon, _Plugin.m_smcyicon, hIcon, 50);
 			else
 				DrawIconEx(hDC, x, (r.top + r.bottom - _Plugin.m_smcxicon) >> 1, hIcon, _Plugin.m_smcxicon, _Plugin.m_smcyicon, 0, NULL, DI_NORMAL);
 
@@ -780,7 +780,7 @@ void DrawStatusIcons(struct _MessageWindowData *dat, HDC hDC, RECT r, int gap)
 	if (dat->bType == SESSIONTYPE_IM)
 		DrawIconEx(hDC, x, (r.top + r.bottom - _Plugin.m_smcxicon) >> 1, M->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, M->GetByte(SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)) ? _Plugin.g_buttonBarIcons[12] : _Plugin.g_buttonBarIcons[13], _Plugin.m_smcxicon, _Plugin.m_smcyicon, 0, NULL, DI_NORMAL);
 	else
-		DrawDimmedIcon(hDC, x, (r.top + r.bottom - _Plugin.m_smcxicon) >> 1, _Plugin.m_smcxicon, _Plugin.m_smcyicon,
+		CSkin::DrawDimmedIcon(hDC, x, (r.top + r.bottom - _Plugin.m_smcxicon) >> 1, _Plugin.m_smcxicon, _Plugin.m_smcyicon,
 					   M->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, M->GetByte(SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)) ? _Plugin.g_buttonBarIcons[12] : _Plugin.g_buttonBarIcons[13], 50);
 }
 

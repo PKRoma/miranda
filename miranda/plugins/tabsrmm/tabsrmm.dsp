@@ -2563,6 +2563,10 @@ SOURCE=.\src\templates.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\themes.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\typingnotify.h
 # End Source File
 # Begin Source File

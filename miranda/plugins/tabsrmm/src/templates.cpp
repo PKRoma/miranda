@@ -470,18 +470,6 @@ INT_PTR CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				BYTE *buffer = 0;
 				char final_path[MAX_PATH];
 
-				if (_Plugin.RelNotesActive()) {
-					char **txt = (char **)lParam;
-					char buf[2048];
-
-					i = 1;
-					while (txt[i] != NULL) {
-						mir_snprintf(buf, 2048, "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u %s\\par}", 30*15, 30*15, 5*15, 30*15, txt[i++]);
-						SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)buf);
-					}
-					SetWindowText(hwndDlg, _T("tabSRMM release notes"));
-					goto dl_done;
-				}
 				M->pathToAbsolute((char *)lParam, final_path);
 				_splitpath(final_path, NULL, NULL, szBasename, szExt);
 				if ((hFile = CreateFileA(final_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE) {
@@ -495,7 +483,6 @@ INT_PTR CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				CloseHandle(hFile);
 				free(buffer);
 			}
-dl_done:
 			GetWindowRect(hwndDlg, &rc);
 			if (lParam == 0)
 				MoveWindow(hwndDlg, 0, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
@@ -549,7 +536,6 @@ dl_done:
 			break;
 		case WM_DESTROY:
 			helpActive = 0;
-			_Plugin.ViewReleaseNotes(false, true);
 			break;
 	}
 	return(FALSE);

@@ -42,7 +42,6 @@ extern ButtonSet	g_ButtonSet;
 static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern LRESULT CALLBACK StatusBarSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern void GetIconSize(HICON hIcon, int* sizeX, int* sizeY);
-extern void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc);
 
 #define FIXED_TAB_SIZE 100
 
@@ -401,7 +400,7 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 			DWORD ix = rcItem->left + tabdat->m_xpad - 1;
 			DWORD iy = (rcItem->bottom + rcItem->top - iSize) / 2;
 			if (dat->dwFlagsEx & MWF_SHOW_ISIDLE && _Plugin.m_IdleDetect)
-				DrawDimmedIcon(dc, ix, iy, iSize, iSize, hIcon, 180);
+				CSkin::DrawDimmedIcon(dc, ix, iy, iSize, iSize, hIcon, 180);
 			else
 				DrawIconEx(dc, ix, iy, hIcon, iSize, iSize, 0, NULL, DI_NORMAL | DI_COMPAT);
 		}
@@ -460,10 +459,10 @@ static void DrawItemRect(struct TabControlData *tabdat, HDC dc, RECT *rcItem, in
 			rcItem->right += 6;
 			if (bClassicDraw) {
 				if (tabdat->pContainer->bSkinned) {
-					StatusItems_t *item = nHint & HINT_ACTIVE_ITEM ? &StatusItems[ID_EXTBKBUTTONSPRESSED] : (nHint & HINT_HOTTRACK ? &StatusItems[ID_EXTBKBUTTONSMOUSEOVER] : &StatusItems[ID_EXTBKBUTTONSNPRESSED]);
+					CSkinItem *item = nHint & HINT_ACTIVE_ITEM ? &SkinItems[ID_EXTBKBUTTONSPRESSED] : (nHint & HINT_HOTTRACK ? &SkinItems[ID_EXTBKBUTTONSMOUSEOVER] : &SkinItems[ID_EXTBKBUTTONSNPRESSED]);
 
 					if (!item->IGNORED) {
-						SkinDrawBG(tabdat->hwnd, tabdat->pContainer->hwnd, tabdat->pContainer, rcItem, dc);
+						CSkin::SkinDrawBG(tabdat->hwnd, tabdat->pContainer->hwnd, tabdat->pContainer, rcItem, dc);
 						DrawAlpha(dc, rcItem, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
 								  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 					} else
@@ -514,7 +513,7 @@ b_nonskinned:
 				rcItem->top -= 2;
 			}
 			if (tabdat->pContainer->bSkinned && !tabdat->m_moderntabs) {
-				StatusItems_t *item = &StatusItems[dwStyle & TCS_BOTTOM ? ID_EXTBKTABITEMACTIVEBOTTOM : ID_EXTBKTABITEMACTIVE];
+				CSkinItem *item = &SkinItems[dwStyle & TCS_BOTTOM ? ID_EXTBKTABITEMACTIVEBOTTOM : ID_EXTBKTABITEMACTIVE];
 				if (!item->IGNORED) {
 					rcItem->left += item->MARGIN_LEFT;
 					rcItem->right -= item->MARGIN_RIGHT;
@@ -527,7 +526,7 @@ b_nonskinned:
 			}
 		}
 		if (tabdat->pContainer->bSkinned && !tabdat->m_moderntabs) {
-			StatusItems_t *item = &StatusItems[dwStyle & TCS_BOTTOM ? (nHint & HINT_HOTTRACK ? ID_EXTBKTABITEMHOTTRACKBOTTOM : ID_EXTBKTABITEMBOTTOM) :
+			CSkinItem *item = &SkinItems[dwStyle & TCS_BOTTOM ? (nHint & HINT_HOTTRACK ? ID_EXTBKTABITEMHOTTRACKBOTTOM : ID_EXTBKTABITEMBOTTOM) :
 													   (nHint & HINT_HOTTRACK ? ID_EXTBKTABITEMHOTTRACK : ID_EXTBKTABITEM)];
 			if (!item->IGNORED) {
 				if (dwStyle & TCS_BOTTOM)
@@ -552,7 +551,7 @@ b_nonskinned:
 				TCITEM item = {0};
 				struct _MessageWindowData *dat = 0;
 				HBRUSH bg;
-				StatusItems_t *s_item;
+				CSkinItem *s_item;
 				int item_id;
 
 				item.mask = TCIF_PARAM;
@@ -575,7 +574,7 @@ b_nonskinned:
 				rc.right--;
 
 				item_id = active ? ID_EXTBKTABITEMACTIVEBOTTOM : (nHint & HINT_HOTTRACK ? ID_EXTBKTABITEMHOTTRACKBOTTOM : ID_EXTBKTABITEMBOTTOM);
-				s_item = &StatusItems[item_id];
+				s_item = &SkinItems[item_id];
 
 				pt[0].x = rc.left;
 				pt[0].y = rc.top - (active ? 1 : 0);
@@ -683,7 +682,7 @@ b_nonskinned:
 				struct _MessageWindowData *dat = 0;
 				HBRUSH bg;
 				LONG bendPoint;
-				StatusItems_t *s_item;
+				CSkinItem *s_item;
 				int item_id;
 
 				item.mask = TCIF_PARAM;
@@ -699,7 +698,7 @@ b_nonskinned:
 					rc.top++;
 
 				item_id = active ? ID_EXTBKTABITEMACTIVE : (nHint & HINT_HOTTRACK ? ID_EXTBKTABITEMHOTTRACK : ID_EXTBKTABITEM);
-				s_item = &StatusItems[item_id];
+				s_item = &SkinItems[item_id];
 
 				rc.right--;
 
@@ -917,7 +916,6 @@ static void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, 
 		HBITMAP hbmTemp = CreateCompatibleBitmap(pDC, 100, 50);
 		HBITMAP hbmTempOld = (HBITMAP)SelectObject(hdcTemp, hbmTemp);
 		RECT rcTemp = {0};
-		ImageItem tempItem = {0};
 
 		rcTemp.right = 100;
 		rcTemp.bottom = 50;
@@ -937,17 +935,11 @@ static void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, 
 			SetDIBits(hdcTemp, hbmTemp, nStart, 50 - nLenSub, pcImg, &biOut, DIB_RGB_COLORS);
 			mir_free(pcImg);
 		}
-		tempItem.bBottom = tempItem.bLeft = tempItem.bTop = tempItem.bRight = 10;
-		tempItem.hdc = hdcTemp;
-		tempItem.hbm = hbmTemp;
-		tempItem.dwFlags = IMAGE_FLAG_DIVIDED | IMAGE_FILLSOLID;
-		tempItem.fillBrush = GetSysColorBrush(COLOR_3DFACE);
-		tempItem.bf.SourceConstantAlpha = 255;
-		tempItem.inner_height = 30;
-		tempItem.inner_width = 80;
-		tempItem.height = 50;
-		tempItem.width = 100;
-		IMG_RenderImageItem(pDC, &tempItem, rcItem);
+		CImageItem tempItem(10, 10, 10, 10, hdcTemp, hbmTemp, IMAGE_FLAG_DIVIDED | IMAGE_FILLSOLID,
+							GetSysColorBrush(COLOR_3DFACE), 255, 30, 80, 50, 100);
+
+		tempItem.Render(pDC, rcItem);
+		tempItem.Clear();
 		SelectObject(hdcTemp, hbmTempOld);
 		DeleteObject(hbmTemp);
 		DeleteDC(hdcTemp);
@@ -1344,7 +1336,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 				rctClip = rctPage;
 
 			if (tabdat->pContainer->bSkinned)
-				SkinDrawBG(hwnd, tabdat->pContainer->hwnd, tabdat->pContainer, &rctPage, hdc);
+				CSkin::SkinDrawBG(hwnd, tabdat->pContainer->hwnd, tabdat->pContainer, &rctPage, hdc);
 			else
 				FillRect(hdc, &ps.rcPaint, GetSysColorBrush(COLOR_3DFACE));
 
@@ -1394,7 +1386,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			} else {
 				if (IntersectRect(&rectTemp, &rctPage, &ps.rcPaint)) {
 					if (tabdat->pContainer->bSkinned) {
-						StatusItems_t *item = &StatusItems[ID_EXTBKTABPAGE];
+						CSkinItem *item = &SkinItems[ID_EXTBKTABPAGE];
 
 						if (!item->IGNORED) {
 							DrawAlpha(hdc, &rctPage, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
@@ -1632,12 +1624,11 @@ void ReloadTabConfig()
 
 	while (tabcolors[i].szKey != NULL) {
 		if (i < 4)
-			_Plugin.tabConfig.colors[i] = iLabelDefault ? GetSysColor(tabcolors[i].defclr) : M->GetDword(g_skinnedContainers ? tabcolors[i].szSkinnedKey : tabcolors[i].szKey, GetSysColor(tabcolors[i].defclr));
+			_Plugin.tabConfig.colors[i] = iLabelDefault ? GetSysColor(tabcolors[i].defclr) : M->GetDword(CSkin::m_skinEnabled ? tabcolors[i].szSkinnedKey : tabcolors[i].szKey, GetSysColor(tabcolors[i].defclr));
 		else
-			_Plugin.tabConfig.colors[i] = iBkgDefault ? GetSysColor(tabcolors[i].defclr) :  M->GetDword(g_skinnedContainers ? tabcolors[i].szSkinnedKey : tabcolors[i].szKey, GetSysColor(tabcolors[i].defclr));
+			_Plugin.tabConfig.colors[i] = iBkgDefault ? GetSysColor(tabcolors[i].defclr) :  M->GetDword(CSkin::m_skinEnabled ? tabcolors[i].szSkinnedKey : tabcolors[i].szKey, GetSysColor(tabcolors[i].defclr));
 		i++;
 	}
-
 	_Plugin.tabConfig.m_hBrushDefault = CreateSolidBrush(_Plugin.tabConfig.colors[4]);
 	_Plugin.tabConfig.m_hBrushActive = CreateSolidBrush(_Plugin.tabConfig.colors[5]);
 	_Plugin.tabConfig.m_hBrushUnread = CreateSolidBrush(_Plugin.tabConfig.colors[6]);
@@ -1688,8 +1679,8 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			CheckDlgButton(hwndDlg, IDC_FLASHLABEL, dwFlags & TCF_FLASHLABEL);
 			CheckDlgButton(hwndDlg, IDC_NOSKINNING, dwFlags & TCF_NOSKINNING);
 			CheckDlgButton(hwndDlg, IDC_SINGLEROWTAB, dwFlags & TCF_SINGLEROWTABCONTROL);
-			CheckDlgButton(hwndDlg, IDC_LABELUSEWINCOLORS, !g_skinnedContainers && dwFlags & TCF_LABELUSEWINCOLORS);
-			CheckDlgButton(hwndDlg, IDC_BKGUSEWINCOLORS2, !g_skinnedContainers && dwFlags & TCF_BKGUSEWINCOLORS);
+			CheckDlgButton(hwndDlg, IDC_LABELUSEWINCOLORS, !CSkin::m_skinEnabled && dwFlags & TCF_LABELUSEWINCOLORS);
+			CheckDlgButton(hwndDlg, IDC_BKGUSEWINCOLORS2, !CSkin::m_skinEnabled && dwFlags & TCF_BKGUSEWINCOLORS);
 
 			CheckDlgButton(hwndDlg, IDC_STYLEDTABS, M->GetByte("moderntabs", 0));
 
@@ -1701,14 +1692,14 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			}
 			EnableWindow(GetDlgItem(hwndDlg, IDC_NOSKINNING), IsDlgButtonChecked(hwndDlg, IDC_STYLEDTABS) ? FALSE : TRUE);
 			while (tabcolors[i].szKey != NULL) {
-				clr = (COLORREF)M->GetDword(g_skinnedContainers ? tabcolors[i].szSkinnedKey : tabcolors[i].szKey, GetSysColor(tabcolors[i].defclr));
+				clr = (COLORREF)M->GetDword(CSkin::m_skinEnabled ? tabcolors[i].szSkinnedKey : tabcolors[i].szKey, GetSysColor(tabcolors[i].defclr));
 				SendDlgItemMessage(hwndDlg, tabcolors[i].id, CPM_SETCOLOUR, 0, (LPARAM)clr);
 				SendDlgItemMessage(hwndDlg, tabcolors[i].id, CPM_SETDEFAULTCOLOUR, 0, GetSysColor(tabcolors[i].defclr));
 				i++;
 			}
 			SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPIN, UDM_SETRANGE, 0, MAKELONG(10, 0));
-			SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPIN, UDM_SETPOS, 0, (int)M->GetByte(g_skinnedContainers ? "S_tborder" : "tborder", 2));
-			SetDlgItemInt(hwndDlg, IDC_TABBORDER, (int)M->GetByte(g_skinnedContainers ? "S_tborder" : "tborder", 2), FALSE);;
+			SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPIN, UDM_SETPOS, 0, (int)M->GetByte(CSkin::m_skinEnabled ? "S_tborder" : "tborder", 2));
+			SetDlgItemInt(hwndDlg, IDC_TABBORDER, (int)M->GetByte(CSkin::m_skinEnabled ? "S_tborder" : "tborder", 2), FALSE);;
 
 			SendDlgItemMessage(hwndDlg, IDC_BOTTOMTABADJUSTSPIN, UDM_SETRANGE, 0, MAKELONG(3, -3));
 			SendDlgItemMessage(hwndDlg, IDC_BOTTOMTABADJUSTSPIN, UDM_SETPOS, 0, _Plugin.tabConfig.m_bottomAdjust);
@@ -1723,10 +1714,10 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTERTOP, UDM_SETRANGE, 0, MAKELONG(40, 0));
 			SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTERBOTTOM, UDM_SETRANGE, 0, MAKELONG(40, 0));
 
-			SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTER, UDM_SETPOS, 0, (int)M->GetByte(g_skinnedContainers ? "S_tborder_outer_left" : "tborder_outer_left", 2));
-			SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTERRIGHT, UDM_SETPOS, 0, (int)M->GetByte(g_skinnedContainers ? "S_tborder_outer_right" : "tborder_outer_right", 2));
-			SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTERTOP, UDM_SETPOS, 0, (int)M->GetByte(g_skinnedContainers ? "S_tborder_outer_top" : "tborder_outer_top", 2));
-			SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTERBOTTOM, UDM_SETPOS, 0, (int)M->GetByte(g_skinnedContainers ? "S_tborder_outer_bottom" : "tborder_outer_bottom", 2));
+			SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTER, UDM_SETPOS, 0, (int)M->GetByte(CSkin::m_skinEnabled ? "S_tborder_outer_left" : "tborder_outer_left", 2));
+			SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTERRIGHT, UDM_SETPOS, 0, (int)M->GetByte(CSkin::m_skinEnabled ? "S_tborder_outer_right" : "tborder_outer_right", 2));
+			SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTERTOP, UDM_SETPOS, 0, (int)M->GetByte(CSkin::m_skinEnabled ? "S_tborder_outer_top" : "tborder_outer_top", 2));
+			SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTERBOTTOM, UDM_SETPOS, 0, (int)M->GetByte(CSkin::m_skinEnabled ? "S_tborder_outer_bottom" : "tborder_outer_bottom", 2));
 
 			SendDlgItemMessage(hwndDlg, IDC_SPIN1, UDM_SETRANGE, 0, MAKELONG(10, 1));
 			SendDlgItemMessage(hwndDlg, IDC_SPIN3, UDM_SETRANGE, 0, MAKELONG(10, 1));
@@ -1734,9 +1725,9 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			SendDlgItemMessage(hwndDlg, IDC_SPIN3, UDM_SETPOS, 0, (LPARAM)M->GetByte("x-pad", 4));
 			SetDlgItemInt(hwndDlg, IDC_TABPADDING, (int)M->GetByte("y-pad", 3), FALSE);;
 			SetDlgItemInt(hwndDlg, IDC_HTABPADDING, (int)M->GetByte("x-pad", 4), FALSE);;
-			EnableWindow(GetDlgItem(hwndDlg, IDC_NOSKINNING), g_skinnedContainers ? FALSE : TRUE);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_LABELUSEWINCOLORS), g_skinnedContainers ? FALSE : TRUE);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_BKGUSEWINCOLORS2), g_skinnedContainers ? FALSE : TRUE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_NOSKINNING), CSkin::m_skinEnabled ? FALSE : TRUE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_LABELUSEWINCOLORS), CSkin::m_skinEnabled ? FALSE : TRUE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_BKGUSEWINCOLORS2), CSkin::m_skinEnabled ? FALSE : TRUE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_NOSKINNING), IsDlgButtonChecked(hwndDlg, IDC_STYLEDTABS) ? FALSE : TRUE);
 			return 0;
 		}
@@ -1764,16 +1755,16 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 							_Plugin.m_TabAppearance = dwFlags;
 							while (tabcolors[i].szKey != NULL) {
 								clr = SendDlgItemMessage(hwndDlg, tabcolors[i].id, CPM_GETCOLOUR, 0, 0);
-								M->WriteDword(SRMSGMOD_T, g_skinnedContainers ? tabcolors[i].szSkinnedKey : tabcolors[i].szKey, clr);
+								M->WriteDword(SRMSGMOD_T, CSkin::m_skinEnabled ? tabcolors[i].szSkinnedKey : tabcolors[i].szKey, clr);
 								i++;
 							}
 							M->WriteByte(SRMSGMOD_T, "y-pad", (BYTE)(GetDlgItemInt(hwndDlg, IDC_TABPADDING, NULL, FALSE)));
 							M->WriteByte(SRMSGMOD_T, "x-pad", (BYTE)(GetDlgItemInt(hwndDlg, IDC_HTABPADDING, NULL, FALSE)));
 							M->WriteByte(SRMSGMOD_T, "tborder", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABBORDER, &translated, FALSE));
-							M->WriteByte(SRMSGMOD_T, g_skinnedContainers ? "S_tborder_outer_left" : "tborder_outer_left", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABBORDEROUTER, &translated, FALSE));
-							M->WriteByte(SRMSGMOD_T, g_skinnedContainers ? "S_tborder_outer_right" : "tborder_outer_right", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABBORDEROUTERRIGHT, &translated, FALSE));
-							M->WriteByte(SRMSGMOD_T, g_skinnedContainers ? "S_tborder_outer_top" : "tborder_outer_top", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABBORDEROUTERTOP, &translated, FALSE));
-							M->WriteByte(SRMSGMOD_T, g_skinnedContainers ? "S_tborder_outer_bottom" : "tborder_outer_bottom", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABBORDEROUTERBOTTOM, &translated, FALSE));
+							M->WriteByte(SRMSGMOD_T, CSkin::m_skinEnabled ? "S_tborder_outer_left" : "tborder_outer_left", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABBORDEROUTER, &translated, FALSE));
+							M->WriteByte(SRMSGMOD_T, CSkin::m_skinEnabled ? "S_tborder_outer_right" : "tborder_outer_right", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABBORDEROUTERRIGHT, &translated, FALSE));
+							M->WriteByte(SRMSGMOD_T, CSkin::m_skinEnabled ? "S_tborder_outer_top" : "tborder_outer_top", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABBORDEROUTERTOP, &translated, FALSE));
+							M->WriteByte(SRMSGMOD_T, CSkin::m_skinEnabled ? "S_tborder_outer_bottom" : "tborder_outer_bottom", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABBORDEROUTERBOTTOM, &translated, FALSE));
 							M->WriteDword(SRMSGMOD_T, "bottomadjust", GetDlgItemInt(hwndDlg, IDC_BOTTOMTABADJUST, &translated, TRUE));
 
 							fixedWidth = GetDlgItemInt(hwndDlg, IDC_TABWIDTH, &translated, FALSE);

@@ -1312,8 +1312,6 @@ BEGIN
     END
     POPUP "Help"
     BEGIN
-        MENUITEM "View Release Notes...",       ID_HELP_VIEWRELEASENOTES
-        MENUITEM SEPARATOR
         MENUITEM "About tabSRMM...",            ID_HELP_ABOUTTABSRMM
     END
 END

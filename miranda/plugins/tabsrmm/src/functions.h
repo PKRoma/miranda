@@ -91,7 +91,6 @@ UINT        NcCalcRichEditFrame(HWND hwnd, struct _MessageWindowData *mwdat, UIN
 HMENU       BuildContainerMenu();
 void        BuildCodePageList();
 void        PreTranslateDates();
-void        DrawDimmedIcon(HDC hdc, LONG left, LONG top, LONG dx, LONG dy, HICON hIcon, BYTE alpha);
 void        ApplyContainerSetting(struct ContainerWindowData *pContainer, DWORD flags, int mode);
 void        BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);
 void        GetDefaultContainerTitleFormat();
@@ -108,17 +107,7 @@ LRESULT CALLBACK HPPKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
  * skinning engine
  */
 HICON       *BTN_GetIcon(char *szIconName);
-void        IMG_RefreshItems();
-void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc);
-static      void LoadSkinItems(char *file, int onStartup);
-static      void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc);
-static      void IMG_LoadItems(char *szFileName);
-void        IMG_DeleteItems();
-void        DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor2, BYTE transparent, BYTE FLG_GRADIENT, BYTE FLG_CORNER, DWORD BORDERSTYLE, ImageItem *imageItem);
-void        SkinDrawBG(HWND hwndClient, HWND hwnd, struct ContainerWindowData *pContainer, RECT *rcClient, HDC hdcTarget);
-void 		SkinDrawBGFromDC(HWND hwndClient, HWND hwnd, HDC hdcSrc, RECT *rcClient, HDC hdcTarget);
-void        ReloadContainerSkin(int doLoad, int onStartup);
-void 		MY_AlphaBlend(HDC hdcDraw, DWORD left, DWORD top,  int width, int height, int bmWidth, int bmHeight, HDC hdcMem);
+void        DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor2, BYTE transparent, BYTE FLG_GRADIENT, BYTE FLG_CORNER, DWORD BORDERSTYLE, CImageItem *imageItem);
 // the cached message log icons
 
 void        CacheMsgLogIcons();
@@ -146,8 +135,6 @@ void        LoadLogfont(int i,LOGFONTA *lf,COLORREF *colour, char *szModule);
 
 void        ReloadTabConfig(), FreeTabConfig();
 int         RegisterTabCtrlClass(void);
-void        FreeTabConfig();
-void        ReloadTabConfig();
 
 void        ReloadGlobals(), LoadIconTheme(), UnloadIconTheme();
 int         Chat_OptionsInitialize(WPARAM wParam, LPARAM lParam);

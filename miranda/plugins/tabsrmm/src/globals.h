@@ -32,14 +32,9 @@ typedef     BOOL (WINAPI *pfnSetMenuInfo )( HMENU hmenu, LPCMENUINFO lpcmi );
 class _Globals
 {
 public:
-	_Globals() {
-		m_showRelnotes = false;
-	}
+	_Globals() {}
 
 	~_Globals() {}
-
-	void		ViewReleaseNotes(bool fForced, bool fTerminated);
-	bool		RelNotesActive() { return m_showRelnotes; }
 
 	HWND        g_hwndHotkeyHandler;
 	HICON       g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus;
@@ -126,19 +121,12 @@ public:
 	struct      infopanelconfig ipConfig;
 	COLORREF    crDefault, crIncoming, crOutgoing, crOldIncoming, crOldOutgoing, crStatus;
 	BOOL        bUnicodeBuild;
-	BYTE        bClipBorder;
-	DWORD       bRoundedCorner;
-	BYTE        bAvatarBoderType;
 	HFONT       hFontCaption;
 	COLORREF    skinDefaultFontColor;
 	DWORD       m_LangPackCP;
 	BYTE        m_SmileyButtonOverride;
-	char        g_SkinnedFrame_left, g_SkinnedFrame_right, g_SkinnedFrame_bottom, g_SkinnedFrame_caption;
-	char        g_realSkinnedFrame_left, g_realSkinnedFrame_right, g_realSkinnedFrame_bottom, g_realSkinnedFrame_caption;
-	HPEN        g_SkinLightShadowPen, g_SkinDarkShadowPen;
 	NONCLIENTMETRICS ncm;
 	HICON       m_AnimTrayIcons[4];
-	BOOL        g_DisableScrollbars;
 	BOOL        m_visualMessageSizeIndicator;
 	BOOL        m_autoSplit;
 	BOOL		m_FlashOnMTN;
@@ -147,8 +135,6 @@ public:
 	char        szMetaName[256];
 	HBITMAP		hbmLogo;
 	HANDLE 		m_hMessageWindowList;
-private:
-	bool		m_showRelnotes;
 };
 
 extern	_Globals	_Plugin;

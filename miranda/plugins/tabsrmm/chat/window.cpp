@@ -32,7 +32,6 @@ $Id: window.c 10402 2009-07-24 00:35:21Z silvercircle $
 //#include "../m_MathModule.h"
 
 // externs...
-extern COLORREF g_ContainerColorKey;
 extern LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern HRESULT(WINAPI *MyCloseThemeData)(HANDLE);
 extern SESSION_INFO g_TabSession;
@@ -185,7 +184,7 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct _MessageWindowData *dat,
 	if (msg == WM_ACTIVATE) {
 		if (dat->pContainer->dwFlags & CNT_TRANSPARENCY && M->m_pSetLayeredWindowAttributes != NULL && !dat->pContainer->bSkinned) {
 			DWORD trans = LOWORD(dat->pContainer->dwTransparency);
-			M->m_pSetLayeredWindowAttributes(dat->pContainer->hwnd, g_ContainerColorKey, (BYTE)trans, (dat->pContainer->bSkinned ? LWA_COLORKEY : 0) | (dat->pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
+			M->m_pSetLayeredWindowAttributes(dat->pContainer->hwnd, CSkin::m_ContainerColorKey, (BYTE)trans, (dat->pContainer->bSkinned ? LWA_COLORKEY : 0) | (dat->pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 		}
 	}
 
@@ -344,7 +343,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 			//if (!splitterEdges)
 			//	urc->rcItem.bottom += 2;
 			if (dat->pContainer->bSkinned) {
-				StatusItems_t *item = &StatusItems[ID_EXTBKHISTORY];
+				CSkinItem *item = &SkinItems[ID_EXTBKHISTORY];
 				if (!item->IGNORED) {
 					urc->rcItem.left += item->MARGIN_LEFT;
 					urc->rcItem.right -= item->MARGIN_RIGHT;
@@ -362,7 +361,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 			//if (!splitterEdges)
 			//	urc->rcItem.bottom += 2;
 			if (dat->pContainer->bSkinned) {
-				StatusItems_t *item = &StatusItems[ID_EXTBKUSERLIST];
+				CSkinItem *item = &SkinItems[ID_EXTBKUSERLIST];
 				if (!item->IGNORED) {
 					urc->rcItem.left += item->MARGIN_LEFT;
 					urc->rcItem.right -= item->MARGIN_RIGHT;
@@ -404,7 +403,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 				urc->rcItem.bottom -= DPISCALEY(24);
 			//
 			if (dat->pContainer->bSkinned) {
-				StatusItems_t *item = &StatusItems[ID_EXTBKINPUTAREA];
+				CSkinItem *item = &SkinItems[ID_EXTBKINPUTAREA];
 				if (!item->IGNORED) {
 					urc->rcItem.left += item->MARGIN_LEFT;
 					urc->rcItem.right -= item->MARGIN_RIGHT;
@@ -1545,7 +1544,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 		//MAD: attemp to fix weird bug, when combobox with hidden vscroll
 		//can't be scrolled with mouse-wheel.
 		case WM_NCCALCSIZE: {
-		   if (_Plugin.g_DisableScrollbars && _Plugin.g_NickListScrollBarFix) {
+		   if (CSkin::m_DisableScrollbars && _Plugin.g_NickListScrollBarFix) {
 			RECT lpRect;
 			LONG itemHeight;
 
@@ -1588,7 +1587,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 		//MAD
 		case WM_MOUSEWHEEL: {
-			if (_Plugin.g_DisableScrollbars && _Plugin.g_NickListScrollBarFix)
+			if (CSkin::m_DisableScrollbars && _Plugin.g_NickListScrollBarFix)
 				{
 				UINT uScroll;
 				int dLines;
@@ -3261,7 +3260,7 @@ LABEL_SHOWWINDOW:
 			if (dat->pContainer->bSkinned) {
 				PAINTSTRUCT ps;
 				RECT rcClient, rcWindow, rc;
-				StatusItems_t *item;
+				CSkinItem *item;
 				POINT pt;
 				UINT item_ids[3] = {ID_EXTBKUSERLIST, ID_EXTBKHISTORY, ID_EXTBKINPUTAREA};
 				UINT ctl_ids[3] = {IDC_LIST, IDC_CHAT_LOG, IDC_CHAT_MESSAGE};
@@ -3269,10 +3268,10 @@ LABEL_SHOWWINDOW:
 
 				HDC hdc = BeginPaint(hwndDlg, &ps);
 				GetClientRect(hwndDlg, &rcClient);
-				SkinDrawBG(hwndDlg, dat->pContainer->hwnd, dat->pContainer, &rcClient, hdc);
+				CSkin::SkinDrawBG(hwndDlg, dat->pContainer->hwnd, dat->pContainer, &rcClient, hdc);
 
 				for (i = 0; i < 3; i++) {
-					item = &StatusItems[item_ids[i]];
+					item = &SkinItems[item_ids[i]];
 					if (!item->IGNORED) {
 
 						GetWindowRect(GetDlgItem(hwndDlg, ctl_ids[i]), &rcWindow);
@@ -3345,7 +3344,7 @@ LABEL_SHOWWINDOW:
 				SendMessage(dat->pContainer->hwnd, WM_CLOSE, 1, 0);
 				break;
 			}
-			if (GetKeyState(VK_SHIFT) & 0x8000 && !g_framelessSkinmode) {
+			if (GetKeyState(VK_SHIFT) & 0x8000 && !CSkin::m_frameSkins) {
 				SendMessage(dat->pContainer->hwnd, WM_SYSCOMMAND, IDM_NOTITLE, 0);
 				break;
 			}

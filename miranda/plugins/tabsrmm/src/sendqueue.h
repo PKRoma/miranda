@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project,
+Copyright 2000-2009 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -80,6 +80,8 @@ public:
 
 	void	inc() { m_currentIndex++; }
 	void	dec() { m_currentIndex--; }
+	void	operator++() { m_currentIndex++; }
+	void	operator--() { m_currentIndex--; }
 
 	~SendQueue()
 	{

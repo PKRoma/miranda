@@ -91,6 +91,11 @@ INT_PTR _Mim::GetTString(const HANDLE hContact, const char *szModule, const char
 	return(DBGetContactSettingTString(hContact, szModule, szSetting, dbv));
 }
 
+INT_PTR _Mim::GetString(const HANDLE hContact, const char *szModule, const char *szSetting, DBVARIANT *dbv) const
+{
+	return(DBGetContactSettingString(hContact, szModule, szSetting, dbv));
+}
+
 /*
  * writer functions
  */
@@ -351,6 +356,10 @@ void _Mim::InitPaths()
 	_tcslwr(m_szSavedAvatarsPath);
 }
 
+/**
+ * Initialize various Win32 API functions which are not common to all versions of Windows.
+ * We have to work with functions pointers here.
+ */
 void _Mim::InitAPI()
 {
 	m_hUxTheme = 0;
@@ -366,6 +375,8 @@ void _Mim::InitAPI()
 
 	m_dwmExtendFrameIntoClientArea = 0;
 	m_dwmIsCompositionEnabled = 0;
+	m_pfnMonitorFromWindow = 0;
+	m_pfnGetMonitorInfoA = 0;
 
 	m_VsAPI = false;
 
@@ -376,6 +387,9 @@ void _Mim::InitAPI()
 	m_MyAlphaBlend = (PAB) GetProcAddress(GetModuleHandleA("msimg32"), "AlphaBlend");
 	m_MyGradientFill = (PGF) GetProcAddress(GetModuleHandleA("msimg32"), "GradientFill");
 	m_fnSetMenuInfo = (pfnSetMenuInfo)GetProcAddress(GetModuleHandleA("USER32.DLL"), "SetMenuInfo");
+
+	m_pfnMonitorFromWindow = (MMFW)GetProcAddress(GetModuleHandleA("USER32"), "MonitorFromWindow");
+	m_pfnGetMonitorInfoA = (GMIA)GetProcAddress(GetModuleHandleA("USER32"), "GetMonitorInfoA");
 
 	if (IsWinVerXPPlus()) {
 		if ((m_hUxTheme = LoadLibraryA("uxtheme.dll")) != 0) {
@@ -404,7 +418,6 @@ void _Mim::InitAPI()
             m_dwmIsCompositionEnabled = (DICE)GetProcAddress(m_hDwmApi,"DwmIsCompositionEnabled");
 	    }
     }
-
 }
 
 _Mim *M = 0;

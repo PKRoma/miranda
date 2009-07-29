@@ -1994,7 +1994,7 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					break;
 				}
 				case IDC_UNLOAD:
-					ReloadContainerSkin(0, 0);
+					Skin->Unload();
 					SendMessage(hwndTabConfig, WM_USER + 100, 0, 0);
 					break;
 				case IDC_SELECTSKINFILE: {
@@ -2034,7 +2034,8 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					break;
 				}
 				case IDC_RELOADSKIN:
-					ReloadContainerSkin(1, 0);
+					Skin->setFileName();
+					Skin->Load();
 					SendMessage(hwndTabConfig, WM_USER + 100, 0, 0);
 					break;
 			}
@@ -2098,7 +2099,7 @@ static INT_PTR CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, L
 
 					ZeroMemory(&sd, sizeof(sd));
 					sd.cbSize = sizeof(sd);
-					sd.StatusItems = &StatusItems[0];
+					sd.StatusItems = &SkinItems[0];
 					sd.hWndParent = hwnd;
 					sd.hWndTab = GetDlgItem(hwnd, IDC_OPTIONSTAB);
 					sd.pfnSaveCompleteStruct = 0;
@@ -2296,7 +2297,6 @@ void ReloadGlobals()
 	_Plugin.m_PasteAndSend = (int)M->GetByte("pasteandsend", 1);
 	_Plugin.m_szNoStatus = TranslateTS(tszNoStatus);
 	_Plugin.ipConfig.borderStyle = IPFIELD_FLAT; // (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ipfieldborder", IPFIELD_FLAT);
-	_Plugin.bAvatarBoderType = (BYTE)M->GetByte("avbordertype", 0);
 	_Plugin.m_LangPackCP = ServiceExists(MS_LANGPACK_GETCODEPAGE) ? CallService(MS_LANGPACK_GETCODEPAGE, 0, 0) : CP_ACP;
 	_Plugin.m_SmileyButtonOverride = (BYTE)M->GetByte("smbutton_override", 1);
 	_Plugin.m_visualMessageSizeIndicator = M->GetByte("msgsizebar", 0);

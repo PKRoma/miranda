@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id:$
+$Id$
 
 */
 
@@ -49,6 +49,9 @@ typedef BOOL (WINAPI *PITBPT)(HANDLE, int, int);
 typedef HRESULT(WINAPI *PDTPB)(HWND, HDC, RECT *);
 typedef HRESULT(WINAPI *PGTBCR)(HANDLE, HDC, int, int, const RECT *, const RECT *);
 
+typedef HMONITOR(WINAPI *MMFW)(HWND, DWORD);
+typedef BOOL(WINAPI *GMIA)(HMONITOR, LPMONITORINFO);
+
 
 /*
  * used to encapsulate some parts of the Miranda API
@@ -67,6 +70,7 @@ public:
 		GetUTFI();
 		InitPaths();
 		InitAPI();
+		getAeroState();
 	}
 
 	~_Mim() {
@@ -91,6 +95,7 @@ public:
 	int GetByte(const HANDLE hContact, const char *szSetting, int uDefault) const;
 
 	INT_PTR GetTString(const HANDLE hContact, const char *szModule, const char *szSetting, DBVARIANT *dbv) const;
+	INT_PTR GetString(const HANDLE hContact, const char *szModule, const char *szSetting, DBVARIANT *dbv) const;
 
 	INT_PTR WriteDword(const HANDLE hContact, const char *szModule, const char *szSetting, DWORD value) const;
 	INT_PTR WriteDword(const char *szModule, const char *szSetting, DWORD value) const;
@@ -133,8 +138,27 @@ public:
 	const char  *getSavedAvatarPathA() const { return(m_szSavedAvatarsPathA); }
 
 	const bool  isVSAPIState() const { return m_VsAPI; }
-	const bool  isAero() const { BOOL result; return m_dwmIsCompositionEnabled && (m_dwmIsCompositionEnabled(&result) == S_OK) && result; }
+	/**
+	 * return status of Vista Aero
+	 *
+	 * @return bool: true if aero active, false otherwise
+	 */
+	const bool  isAero() const { return(m_isAero); }
 
+	/**
+	 * Refresh Aero status.
+	 * Called on:
+	 * * plugin init
+	 * * WM_DWMCOMPOSITIONCHANGED message received
+	 *
+	 * @return
+	 */
+	bool		getAeroState()
+	{
+		BOOL result = FALSE;
+		m_isAero = GetByte("useAero", 0) && ((m_dwmIsCompositionEnabled && (m_dwmIsCompositionEnabled(&result) == S_OK) && result) ? true : false);
+		return(m_isAero);
+	}
 	/*
 	 * window lists
 	 */
@@ -168,13 +192,15 @@ public:
 	pfnSetMenuInfo m_fnSetMenuInfo;
 	DEFICA	m_dwmExtendFrameIntoClientArea;
 	DICE	m_dwmIsCompositionEnabled;
-
+	MMFW	m_pfnMonitorFromWindow;
+	GMIA	m_pfnGetMonitorInfoA;
 private:
 	UTF8_INTERFACE 	m_utfi;
 	TCHAR 		m_szProfilePath[MAX_PATH], m_szSkinsPath[MAX_PATH], m_szSavedAvatarsPath[MAX_PATH];
 	char		m_szProfilePathA[MAX_PATH], m_szSkinsPathA[MAX_PATH], m_szSavedAvatarsPathA[MAX_PATH];
 	HMODULE		m_hUxTheme, m_hDwmApi;
 	bool		m_VsAPI;
+	bool		m_isAero;
 
 	void	InitAPI();
 	void	GetUTFI();

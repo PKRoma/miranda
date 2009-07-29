@@ -25,8 +25,6 @@ skinable button class for tabSRMM
 #include "commonheaders.h"
 #include <ctype.h>
 
-extern ImageItem *g_glyphItem;
-
 #define PBS_PUSHDOWNPRESSED 6
 
 static LRESULT CALLBACK TSButtonWndProc(HWND hwnd, UINT  msg, WPARAM wParam, LPARAM lParam);
@@ -177,7 +175,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
 			RECT rcParent;
 			POINT pt;
 			HWND hwndParent = ctl->pContainer->hwnd;
-			ImageItem *imgItem = ctl->stateId == PBS_HOT ? ctl->item->imgHover : (ctl->stateId == PBS_PRESSED ? ctl->item->imgPressed : ctl->item->imgNormal);
+			CImageItem *imgItem = ctl->stateId == PBS_HOT ? ctl->item->imgHover : (ctl->stateId == PBS_PRESSED ? ctl->item->imgPressed : ctl->item->imgNormal);
 
 			if (imgItem == NULL)
 				goto default_draw_bg;
@@ -190,8 +188,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
 				ScreenToClient(hwndParent, &pt);
 
 				BitBlt(hdcMem, 0, 0, rcClient.right, rcClient.bottom, ctl->pContainer->cachedDC, pt.x, pt.y, SRCCOPY);
-				if (imgItem)
-					DrawAlpha(hdcMem, &rcClient, 0, 0, 0, 0, 0, 0, 0, imgItem);
+				DrawAlpha(hdcMem, &rcClient, 0, 0, 0, 0, 0, 0, 0, imgItem);
 			}
 			goto bg_done;
 		}
@@ -200,16 +197,16 @@ default_draw_bg:
 
 		if (ctl->flatBtn) {
 			if (ctl->pContainer && ctl->pContainer->bSkinned) {
-				StatusItems_t *item, *realItem = 0;
+				CSkinItem *item, *realItem = 0;
 				if (ctl->bTitleButton)
-					item = &StatusItems[ctl->stateId == PBS_NORMAL ? ID_EXTBKTITLEBUTTON : (ctl->stateId == PBS_HOT ? ID_EXTBKTITLEBUTTONMOUSEOVER : ID_EXTBKTITLEBUTTONPRESSED)];
+					item = &SkinItems[ctl->stateId == PBS_NORMAL ? ID_EXTBKTITLEBUTTON : (ctl->stateId == PBS_HOT ? ID_EXTBKTITLEBUTTONMOUSEOVER : ID_EXTBKTITLEBUTTONPRESSED)];
 				else {
-					item = &StatusItems[(ctl->stateId == PBS_NORMAL || ctl->stateId == PBS_DISABLED) ? ID_EXTBKBUTTONSNPRESSED : (ctl->stateId == PBS_HOT ? ID_EXTBKBUTTONSMOUSEOVER : ID_EXTBKBUTTONSPRESSED)];
+					item = &SkinItems[(ctl->stateId == PBS_NORMAL || ctl->stateId == PBS_DISABLED) ? ID_EXTBKBUTTONSNPRESSED : (ctl->stateId == PBS_HOT ? ID_EXTBKBUTTONSMOUSEOVER : ID_EXTBKBUTTONSPRESSED)];
 					realItem = item;
 					if (clip)
-						item = &StatusItems[ID_EXTBKBUTTONSNPRESSED];
+						item = &SkinItems[ID_EXTBKBUTTONSNPRESSED];
 				}
-				SkinDrawBG(ctl->hwnd, ctl->pContainer->hwnd,  ctl->pContainer, &rcClient, hdcMem);
+				CSkin::SkinDrawBG(ctl->hwnd, ctl->pContainer->hwnd,  ctl->pContainer, &rcClient, hdcMem);
 				if (!item->IGNORED) {
 					RECT rc1 = rcClient;
 					rc1.left += item->MARGIN_LEFT;
@@ -276,16 +273,16 @@ flat_themed:
 			}
 		} else {
 			if (ctl->pContainer && ctl->pContainer->bSkinned) {
-				StatusItems_t *item, *realItem = 0;
+				CSkinItem *item, *realItem = 0;
 				if (ctl->bTitleButton)
-					item = &StatusItems[ctl->stateId == PBS_NORMAL ? ID_EXTBKTITLEBUTTON : (ctl->stateId == PBS_HOT ? ID_EXTBKTITLEBUTTONMOUSEOVER : ID_EXTBKTITLEBUTTONPRESSED)];
+					item = &SkinItems[ctl->stateId == PBS_NORMAL ? ID_EXTBKTITLEBUTTON : (ctl->stateId == PBS_HOT ? ID_EXTBKTITLEBUTTONMOUSEOVER : ID_EXTBKTITLEBUTTONPRESSED)];
 				else {
-					item = &StatusItems[(ctl->stateId == PBS_NORMAL || ctl->stateId == PBS_DISABLED) ? ID_EXTBKBUTTONSNPRESSED : (ctl->stateId == PBS_HOT ? ID_EXTBKBUTTONSMOUSEOVER : ID_EXTBKBUTTONSPRESSED)];
+					item = &SkinItems[(ctl->stateId == PBS_NORMAL || ctl->stateId == PBS_DISABLED) ? ID_EXTBKBUTTONSNPRESSED : (ctl->stateId == PBS_HOT ? ID_EXTBKBUTTONSMOUSEOVER : ID_EXTBKBUTTONSPRESSED)];
 					realItem = item;
 					if (clip)
-						item = &StatusItems[ID_EXTBKBUTTONSNPRESSED];
+						item = &SkinItems[ID_EXTBKBUTTONSNPRESSED];
 				}
-				SkinDrawBG(ctl->hwnd, ctl->pContainer->hwnd,  ctl->pContainer, &rcClient, hdcMem);
+				CSkin::SkinDrawBG(ctl->hwnd, ctl->pContainer->hwnd,  ctl->pContainer, &rcClient, hdcMem);
 				if (!item->IGNORED) {
 					RECT rc1 = rcClient;
 					rc1.left += item->MARGIN_LEFT;
@@ -352,12 +349,12 @@ bg_done:
 			if (!ctl->flatBtn)
 				DrawEdge(hdcMem, &rcContent, EDGE_BUMP, BF_LEFT);
 			else if (ctl->pContainer && ctl->pContainer->bSkinned) {
-				HPEN hPenOld = (HPEN)SelectObject(hdcMem, _Plugin.g_SkinLightShadowPen);
+				HPEN hPenOld = (HPEN)SelectObject(hdcMem, CSkin::m_SkinLightShadowPen);
 				POINT pt;
 
 				MoveToEx(hdcMem, rcContent.left, rcContent.top, &pt);
 				LineTo(hdcMem, rcContent.left, rcContent.bottom);
-				SelectObject(hdcMem, _Plugin.g_SkinDarkShadowPen);
+				SelectObject(hdcMem, CSkin::m_SkinDarkShadowPen);
 				MoveToEx(hdcMem, rcContent.left + 1, rcContent.bottom - 1, &pt);
 				LineTo(hdcMem, rcContent.left + 1, rcContent.top - 1);
 				SelectObject(hdcMem, hPenOld);
@@ -394,12 +391,13 @@ bg_done:
 				}
 				xOff = 18;
 			} else {
+				const CImageItem	*glyphItem = Skin->getGlyphItem();
 				szText.cx += glyphMetrics[2];
-				if (g_glyphItem) {
+				if (glyphItem) {
 					M->m_MyAlphaBlend(hdcMem, (rcClient.right - szText.cx / 2), (rcClient.bottom - glyphMetrics[3]) / 2,
-								 glyphMetrics[2], glyphMetrics[3], g_glyphItem->hdc,
+								 glyphMetrics[2], glyphMetrics[3], glyphItem->getDC(),
 								 glyphMetrics[0], glyphMetrics[1], glyphMetrics[2],
-								 glyphMetrics[3], g_glyphItem->bf);
+								 glyphMetrics[3], glyphItem->getBF());
 				}
 				xOff = glyphMetrics[2] + 2;
 			}
@@ -429,7 +427,7 @@ bg_done:
 				ix -= 4;
 
 			if (ctl->dimmed && _Plugin.m_IdleDetect)
-				DrawDimmedIcon(hdcMem, ix, iy, _Plugin.m_smcxicon, _Plugin.m_smcyicon, hIconNew, 180);
+				CSkin::DrawDimmedIcon(hdcMem, ix, iy, _Plugin.m_smcxicon, _Plugin.m_smcyicon, hIconNew, 180);
 			else {
 				if (ctl->stateId != PBS_DISABLED || M->m_MyAlphaBlend == 0)
 					DrawIconEx(hdcMem, ix, iy, hIconNew, _Plugin.m_smcxicon, _Plugin.m_smcyicon, 0, 0, DI_NORMAL);

@@ -53,7 +53,7 @@ PLUGININFOEX pluginInfo = {
 #else
 	"TabSRMM",
 #endif
-	PLUGIN_MAKE_VERSION(3, 0, 0, 0),
+	PLUGIN_MAKE_VERSION(3, 0, 0, 2),
 	"Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
 	"The Miranda developers team and contributors",
 	"silvercircle@gmail.com",
@@ -114,7 +114,10 @@ extern "C" int __declspec(dllexport) Unload(void)
 {
 	FreeLogFonts();
 	Chat_Unload();
-	return SplitmsgShutdown();
+	int iRet = SplitmsgShutdown();
+	delete Skin;
+	delete sendQueue;
+	return iRet;
 }
 
 #if defined(_UNICODE)

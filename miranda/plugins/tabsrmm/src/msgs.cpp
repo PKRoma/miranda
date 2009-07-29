@@ -84,7 +84,7 @@ extern      void RegisterFontServiceFonts();
 extern      int FontServiceFontsChanged(WPARAM wParam, LPARAM lParam);
 extern		int ModPlus_PreShutdown(WPARAM wparam, LPARAM lparam);
 extern		int ModPlus_Init(WPARAM wparam, LPARAM lparam);
-extern		HBITMAP IMG_LoadLogo(const TCHAR *szName);
+extern		HBITMAP IMG_LoadLogo(const char *szName);
 extern 		int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
 extern		void DeleteCachedIcon(struct MsgLogIcon *theIcon);
 
@@ -1244,8 +1244,8 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
  	if (ServiceExists(MS_UPDATE_REGISTER))
  		CallService(MS_UPDATE_REGISTER, 0, (LPARAM)&upd);
 
-	if (M->GetByte("useskin", 0))
-		ReloadContainerSkin(1, 1);
+	//if (M->GetByte("useskin", 0))
+	//	ReloadContainerSkin(1, 1);
 
 	RegisterFontServiceFonts();
 	CacheLogFonts();
@@ -1253,7 +1253,6 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	if(_Plugin.g_PopupWAvail||_Plugin.g_PopupAvail)
 		TN_ModuleInit();
 
-	_Plugin.ViewReleaseNotes(false, false);
 	return 0;
 }
 
@@ -1361,7 +1360,6 @@ int SplitmsgShutdown(void)
 
 	UnloadTSButtonModule(0, 0);
 
-	IMG_DeleteItems();
 	if (g_hIconDLL) {
 		FreeLibrary(g_hIconDLL);
 		g_hIconDLL = 0;
@@ -1372,6 +1370,7 @@ int SplitmsgShutdown(void)
 	if(_Plugin.hbmLogo)
 		DeleteObject(_Plugin.hbmLogo);
 
+	delete Skin;
 	delete M;
 	return 0;
 }
@@ -1462,7 +1461,6 @@ int LoadSendRecvMessageModule(void)
 {
 	int 	nOffset = 0, i;
 	HDC 	hScrnDC;
-	TCHAR	szFilename[MAX_PATH];
 
 	INITCOMMONCONTROLSEX icex;
 
@@ -1509,6 +1507,7 @@ tzdone:
 	hUserPrefsWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
 
 	sendQueue = new SendQueue;
+	Skin = new CSkin();
 
 	InitOptions();
 	hModulesLoadedEvent = HookEvent(ME_SYSTEM_MODULESLOADED, SplitmsgModulesLoaded);
@@ -1579,8 +1578,10 @@ tzdone:
 	/*
 	 * load the logo
 	 */
-	mir_sntprintf(szFilename, MAX_PATH, _T("%s\\logo.png"), M->getDataPath());
-	if(!PathFileExists(szFilename)) {
+	char	szFilenameA[MAX_PATH];
+
+	mir_snprintf(szFilenameA, MAX_PATH, "%s\\logo.png", M->getDataPathA());
+	if(!PathFileExistsA(szFilenameA)) {
 		HRSRC	hRes;
 		HGLOBAL hResource;
 		char	*pData = NULL;
@@ -1594,14 +1595,14 @@ tzdone:
 
 				pData = (char *)LockResource(hResource);
 				dwSize = SizeofResource(g_hInst, hRes);
-				if((hFile = CreateFile(szFilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)) != INVALID_HANDLE_VALUE) {
+				if((hFile = CreateFileA(szFilenameA, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)) != INVALID_HANDLE_VALUE) {
 					WriteFile(hFile, (void *)pData, dwSize, &written, NULL);
 					CloseHandle(hFile);
 				}
 			}
 		}
 	}
-	_Plugin.hbmLogo = IMG_LoadLogo(szFilename);
+	_Plugin.hbmLogo = IMG_LoadLogo(szFilenameA);
 
 	ReloadTabConfig();
 	NEN_ReadOptions(&nen_options);

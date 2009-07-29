@@ -86,7 +86,7 @@ void ApplyContainerSetting(struct ContainerWindowData *pContainer, DWORD flags, 
 		if (flags & CNT_INFOPANEL)
 			BroadCastContainer(pContainer, DM_SETINFOPANEL, 0, 0);
 	}
-	if(!g_framelessSkinmode && ((dwOld & CNT_NOMENUBAR) != (pContainer->dwFlags & CNT_NOMENUBAR)))
+	if(!CSkin::m_frameSkins && ((dwOld & CNT_NOMENUBAR) != (pContainer->dwFlags & CNT_NOMENUBAR)))
 		RedrawWindow(pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
 
 	BroadCastContainer(pContainer, DM_BBNEEDUPDATE, 0, 0);
@@ -158,7 +158,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			mir_sntprintf(szNewTitle, SIZEOF(szNewTitle), _T("\t%s"), pContainer->szName);
 			SetWindowText(hwndDlg, TranslateT("Container options"));
 
-			EnableWindow(GetDlgItem(hwndDlg, IDC_O_HIDETITLE), g_framelessSkinmode ? FALSE : TRUE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_O_HIDETITLE), CSkin::m_frameSkins ? FALSE : TRUE);
 			CheckDlgButton(hwndDlg, IDC_CNTPRIVATE, !(pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS));
 			EnableWindow(GetDlgItem(hwndDlg, IDC_TITLEFORMAT), IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE));
 
@@ -379,7 +379,7 @@ do_apply:
 			if(_Plugin.m_WinVerMajor >= 6)
 				fAllowTrans = TRUE;
 			else
-				fAllowTrans = (!g_skinnedContainers);
+				fAllowTrans = (!CSkin::m_skinEnabled);
 
 			MY_CheckDlgButton(hwndDlg, IDC_O_HIDETITLE, dwFlags & CNT_NOTITLE);
 			MY_CheckDlgButton(hwndDlg, IDC_O_DONTREPORT, dwFlags & CNT_DONTREPORT);

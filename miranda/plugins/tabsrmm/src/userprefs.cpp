@@ -101,7 +101,7 @@ static BOOL CALLBACK FillCpCombo(LPCTSTR str)
 
 static int have_ieview = 0, have_hpp = 0;
 
-INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hContact = (HANDLE)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 

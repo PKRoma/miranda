@@ -663,7 +663,7 @@ UINT NcCalcRichEditFrame(HWND hwnd, struct _MessageWindowData *mwdat, UINT skinI
 	NCCALCSIZE_PARAMS *nccp = (NCCALCSIZE_PARAMS *)lParam;
 	BOOL bReturn = FALSE;
 
-	if (_Plugin.g_DisableScrollbars) {
+	if (CSkin::m_DisableScrollbars) {
 		SetWindowLongPtr(hwnd, GWL_STYLE, GetWindowLongPtr(hwnd, GWL_STYLE) & ~WS_VSCROLL);
 		EnableScrollBar(hwnd, SB_VERT, ESB_DISABLE_BOTH);
 		ShowScrollBar(hwnd, SB_VERT, FALSE);
@@ -671,7 +671,7 @@ UINT NcCalcRichEditFrame(HWND hwnd, struct _MessageWindowData *mwdat, UINT skinI
 	orig = CallWindowProc(OldWndProc, hwnd, msg, wParam, lParam);
 
 	if (mwdat && mwdat->pContainer->bSkinned && !mwdat->bFlatMsgLog) {
-		StatusItems_t *item = &StatusItems[skinID];
+		CSkinItem *item = &SkinItems[skinID];
 		if (!item->IGNORED) {
 			/*
 				nccp->rgrc[0].left += item->MARGIN_LEFT;
@@ -712,7 +712,7 @@ UINT NcCalcRichEditFrame(HWND hwnd, struct _MessageWindowData *mwdat, UINT skinI
 
 UINT DrawRichEditFrame(HWND hwnd, struct _MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc)
 {
-	StatusItems_t *item = &StatusItems[skinID];
+	CSkinItem *item = &SkinItems[skinID];
 	LRESULT result = 0;
 	BOOL isMultipleReason;
 
@@ -1268,7 +1268,7 @@ static LRESULT CALLBACK MsgIndicatorSubclassProc(HWND hwnd, UINT msg, WPARAM wPa
 			GetClientRect(hwnd, &rc);
 
 			if (dat && dat->pContainer->bSkinned) {
-				HPEN hPenOld = (HPEN)SelectObject(dc, _Plugin.g_SkinLightShadowPen);
+				HPEN hPenOld = (HPEN)SelectObject(dc, CSkin::m_SkinLightShadowPen);
 				Rectangle(dc, 0, 0, rc.right, 2);
 				//SkinDrawBG(hwnd, dat->pContainer->hwnd, dat->pContainer, &rc, dc);
 				SelectObject(dc, hPenOld);
@@ -1370,7 +1370,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 			if (dat && dat->pContainer->bSkinned) {
 				GetClientRect(hwnd, &rc);
-				SkinDrawBG(hwnd, dat->pContainer->hwnd, dat->pContainer, &rc, dc);
+				CSkin::SkinDrawBG(hwnd, dat->pContainer->hwnd, dat->pContainer, &rc, dc);
 			} else {
 				GetClientRect(hwnd, &rc);
 				FillRect(dc, &rc, (M->isAero() && hwnd == GetDlgItem(hwndParent, IDC_PANELSPLITTER)) ? (HBRUSH)GetStockObject(BLACK_BRUSH) : GetSysColorBrush(COLOR_3DFACE));
@@ -1391,19 +1391,19 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				GetWindowRect(hwnd, &rc);
 				if (rc.right - rc.left > rc.bottom - rc.top) {
 					MoveToEx(dc, 0, 0, &pt);
-					hPenOld = (HPEN)SelectObject(dc, _Plugin.g_SkinDarkShadowPen);
+					hPenOld = (HPEN)SelectObject(dc, CSkin::m_SkinDarkShadowPen);
 					LineTo(dc, rc.right - rc.left, 0);
 					MoveToEx(dc, rc.right - rc.left, 1, &pt);
-					SelectObject(dc, _Plugin.g_SkinLightShadowPen);
+					SelectObject(dc, CSkin::m_SkinLightShadowPen);
 					LineTo(dc, -1, 1);
 					SelectObject(dc, hPenOld);
 					ReleaseDC(hwnd, dc);
 				} else {
 					MoveToEx(dc, 0, 0, &pt);
-					hPenOld = (HPEN)SelectObject(dc, _Plugin.g_SkinDarkShadowPen);
+					hPenOld = (HPEN)SelectObject(dc, CSkin::m_SkinDarkShadowPen);
 					LineTo(dc, 0, rc.bottom - rc.top);
 					MoveToEx(dc, 1, rc.bottom - rc.top, &pt);
-					SelectObject(dc, _Plugin.g_SkinLightShadowPen);
+					SelectObject(dc, CSkin::m_SkinLightShadowPen);
 					LineTo(dc, 1, -1);
 					SelectObject(dc, hPenOld);
 					ReleaseDC(hwnd, dc);
@@ -1585,7 +1585,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 				urc->rcItem.top += panelHeight;
 			urc->rcItem.bottom += 3;
 			if (dat->pContainer->bSkinned) {
-				StatusItems_t *item = &StatusItems[ID_EXTBKHISTORY];
+				CSkinItem *item = &SkinItems[ID_EXTBKHISTORY];
 				if (!item->IGNORED) {
 					urc->rcItem.left += item->MARGIN_LEFT;
 					urc->rcItem.right -= item->MARGIN_RIGHT;
@@ -1703,7 +1703,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			msgTop = urc->rcItem.top;
 			msgBottom = urc->rcItem.bottom;
 			if (dat->pContainer->bSkinned) {
-				StatusItems_t *item = &StatusItems[ID_EXTBKINPUTAREA];
+				CSkinItem *item = &SkinItems[ID_EXTBKINPUTAREA];
 				if (!item->IGNORED) {
 					urc->rcItem.left += item->MARGIN_LEFT;
 					urc->rcItem.right -= item->MARGIN_RIGHT;
@@ -2013,8 +2013,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			//
 			SendMessage(hwndDlg, DM_LOADBUTTONBARICONS, 0, 0);
 
-			if (m_pContainer->bSkinned && !StatusItems[ID_EXTBKBUTTONSNPRESSED].IGNORED &&
-					!StatusItems[ID_EXTBKBUTTONSPRESSED].IGNORED && !StatusItems[ID_EXTBKBUTTONSMOUSEOVER].IGNORED) {
+			if (m_pContainer->bSkinned && !SkinItems[ID_EXTBKBUTTONSNPRESSED].IGNORED &&
+					!SkinItems[ID_EXTBKBUTTONSPRESSED].IGNORED && !SkinItems[ID_EXTBKBUTTONSMOUSEOVER].IGNORED) {
 				isFlat = TRUE;
 				isThemed = FALSE;
 			}
@@ -5522,7 +5522,7 @@ quote_from_last:
 			HDC	 	hdcMem = CreateCompatibleDC(hdc);
 			DWORD 	cx, cy;
 			HBITMAP hbm, hbmOld;
-			StatusItems_t t_item;
+			CSkinItem t_item;
 
 			GetClientRect(hwndDlg, &rcClient);
 			cx = rcClient.right - rcClient.left;
@@ -5532,17 +5532,17 @@ quote_from_last:
 			hbmOld = (HBITMAP)SelectObject(hdcMem, hbm);
 
 			if (m_pContainer->bSkinned) {
-				StatusItems_t *item;
+				CSkinItem *item;
 				POINT pt;
 				UINT item_ids[2] = {ID_EXTBKHISTORY, ID_EXTBKINPUTAREA};
 				UINT ctl_ids[2] = {IDC_LOG, IDC_MESSAGE};
 				int  i;
 
-				SkinDrawBG(hwndDlg, hwndContainer, m_pContainer, &rcClient, hdcMem);
+				CSkin::SkinDrawBG(hwndDlg, hwndContainer, m_pContainer, &rcClient, hdcMem);
 
 
 				for (i = 0; i < 2; i++) {
-					item = &StatusItems[item_ids[i]];
+					item = &SkinItems[item_ids[i]];
 					if (!item->IGNORED) {
 
 						GetWindowRect(GetDlgItem(hwndDlg, ctl_ids[i]), &rcWindow);
@@ -5565,9 +5565,9 @@ quote_from_last:
 			 * draw the (new) infopanel. Use the gradient from the statusitem.
 			 */
 
-			t_item = StatusItems[ID_EXTBKINFOPANELBG];
+			t_item = SkinItems[ID_EXTBKINFOPANELBG];
 			if((!t_item.IGNORED && (dat->dwFlags & MWF_SHOW_INFOPANEL) && !(dat->dwFlags & MWF_ERRORSTATE)) || (M->isAero() && !m_pContainer->bSkinned)) {
-				StatusItems_t *item = &t_item;
+				CSkinItem *item = &t_item;
 
 				GetClientRect(hwndDlg, &rc);
 				rc.bottom = dat->panelHeight + 2;
@@ -5601,7 +5601,7 @@ quote_from_last:
 
 				GetObject(_Plugin.hbmLogo, sizeof(bm), &bm);
 				hbmOld = (HBITMAP)SelectObject(hdcImage, _Plugin.hbmLogo);
-				MY_AlphaBlend(hdcMem, 4, 1, bm.bmWidth, bm.bmHeight, bm.bmWidth, bm.bmHeight, hdcImage);
+				CSkin::MY_AlphaBlend(hdcMem, 4, 1, bm.bmWidth, bm.bmHeight, bm.bmWidth, bm.bmHeight, hdcImage);
 				SelectObject(hdcImage, hbmOld);
 				DeleteDC(hdcImage);
 			}
