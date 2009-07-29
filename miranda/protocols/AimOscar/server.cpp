@@ -1825,84 +1825,95 @@ void CAimProto::snac_chat_received_message(SNAC &snac,chat_list_item* item)//fam
 {
     if (snac.subcmp(0x0006))
     {
+        TCHAR* message = NULL;
+        char* sn = NULL;
+
 //		unsigned long cookie = snac.ulong(0);
 //		unsigned short channel = snac.ushort(8);
 
-        TLV info_tlv(snac.val(10));					// Sender information
-        int sn_len = info_tlv.ubyte(0);
-        char* sn = info_tlv.part(1,sn_len);
-//		unsigned short warning = info_tlv.ushort(1+sn_len);
-        int num_tlv = info_tlv.ushort(3+sn_len);
-        
-        int tlv_offset = 19+sn_len;
-
-        int offset = 0;
-/*		
-        unsigned short user_class = 0;
-        unsigned long  idle_time = 0;
-        unsigned long  signon_time = 0;
-        unsigned long  creation_time = 0;					//Server uptime?
-*/
-        for (int i = 0; i < num_tlv; i++)			// Loop through all the TLVs
+        int tlv_offset = 10;
+        while (tlv_offset < snac.len())
         {
-            TLV tlv(snac.val(tlv_offset+offset));
-/*			
-            // TLV List
-            if (tlv.cmp(0x0001))
-                user_class = tlv.ushort();
-            else if (tlv.cmp(0x0003))
-                signon_time = tlv.ulong();
-            else if (tlv.cmp(0x0005))
-                creation_time = tlv.ulong();
-            else if (tlv.cmp(0x000F))
-                idle_time = tlv.ulong();
-*/
-            offset += TLV_HEADER_SIZE + tlv.len();
-        }
+            TLV tlv(snac.val(tlv_offset));
+
+            if (tlv.cmp(0x0003))    // Sender information
+            {
+                int sn_len = tlv.ubyte(0);
+                sn = tlv.part(1, sn_len);
+        /*		
+        		unsigned short warning = tlv.ushort(1+sn_len);
+                int num_tlv = tlv.ushort(3+sn_len);
+                
+                int offset = 19 + sn_len;
+
+                unsigned short user_class = 0;
+                unsigned long  idle_time = 0;
+                unsigned long  signon_time = 0;
+                unsigned long  creation_time = 0;					//Server uptime?
         
-        tlv_offset+=offset;
-        TLV pub_whisp_tlv(snac.val(tlv_offset));	// Public/Whisper flag
-        tlv_offset += TLV_HEADER_SIZE;
+                for (int i = 0; i < num_tlv; i++)			// Loop through all the TLVs
+                {
+                    TLV info_tlv(tlv.val() + offset);
+        			
+                    // TLV List
+                    if (info_tlv.cmp(0x0001))
+                        user_class = info_tlv.ushort();
+                    else if (info_tlv.cmp(0x0003))
+                        signon_time = info_tlv.ulong();
+                    else if (info_tlv.cmp(0x0005))
+                        creation_time = info_tlv.ulong();
+                    else if (info_tlv.cmp(0x000F))
+                        idle_time = info_tlv.ulong();
 
-        offset = 0;
-        bool uni = false;
-//		char* language = NULL;
-        TCHAR* message = NULL;
-        TLV msg_tlv(snac.val(tlv_offset));			// Message information
-        tlv_offset += TLV_HEADER_SIZE;
+                     offset += TLV_HEADER_SIZE + info_tlv.len();
+                }
+        */
+            }
+            else if (tlv.cmp(0x0001))  // Public/Whisper flag
+            {
+            }
+            else if (tlv.cmp(0x0005))  // Message information
+            {
+                int offset = 0;
+                while (offset < tlv.len())
+                {
+                    bool uni = false;
+            //		char* language = NULL;
 
-        while (offset < msg_tlv.len())
-        {
-            TLV tlv(snac.val(tlv_offset+offset));
+                    TLV msg_tlv(tlv.val() + offset);
+                    
+                    // TLV List
+                    if (msg_tlv.cmp(0x0001))
+                    {
+                        if (uni) 
+                        {
+                            char* msgu = msg_tlv.dupw();
+                            html_decode(msgu);
+                            message = mir_utf8decodeT(msgu);                    
+                            mir_free(msgu);
+                        }
+                        else
+                        {
+                            char* msg = msg_tlv.dup();
+                            html_decode(msg);
+                            message = mir_a2t(msg);
+                            mir_free(msg);
+                        }
+                    }
+                    else if (msg_tlv.cmp(0x0002))
+                    {
+                        char* enc = msg_tlv.dup();
+                        uni = strstr(enc, "unicode-2-0") != NULL;
+                        mir_free(enc);
+                    }
+        //			else if (msg_tlv.cmp(0x0003))
+        //				language = msg_tlv.dup();
+
+                    offset += TLV_HEADER_SIZE + msg_tlv.len();
+                }
+            }
             
-            // TLV List
-            if (tlv.cmp(0x0001))
-            {
-                if (uni) 
-                {
-                    char* msgu = tlv.dupw();
-                    html_decode(msgu);
-                    message = mir_utf8decodeT(msgu);                    
-                    mir_free(msgu);
-                }
-                else
-                {
-                    char* msg = tlv.dup();
-                    html_decode(msg);
-                    message = mir_a2t(msg);
-                    mir_free(msg);
-                }
-            }
-            else if (tlv.cmp(0x0002))
-            {
-                char* enc = tlv.dup();
-                uni = strstr(enc, "unicode-2-0") != NULL;
-                mir_free(enc);
-            }
-//			if (tlv.cmp(0x0003))
-//				language = tlv.dup();
-
-            offset += TLV_HEADER_SIZE + tlv.len();
+            tlv_offset += TLV_HEADER_SIZE + tlv.len();
         }
 
         chat_event(item->id, sn, GC_EVENT_MESSAGE, message);
