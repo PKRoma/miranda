@@ -45,7 +45,7 @@ static iconList[] =
 	{ LPGEN("Clear ignored conferences"),	"clearignored",	IDI_CLEAR_CONFERENCE	}
 };
 
-void gg_icolib_init(GGPROTO *gg)
+void gg_icolib_init()
 {
 	SKINICONDESC sid = {0};
 	char szFile[MAX_PATH];

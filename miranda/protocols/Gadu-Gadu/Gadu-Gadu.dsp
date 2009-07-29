@@ -209,6 +209,10 @@ SOURCE=.\keepalive.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\links.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\ownerinfo.c
 # End Source File
 # Begin Source File

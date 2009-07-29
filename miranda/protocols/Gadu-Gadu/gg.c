@@ -42,6 +42,7 @@ static const MUUID interfaces[] = {MIID_PROTOCOL, MIID_LAST};
 HINSTANCE hInstance;
 PLUGINLINK *pluginLink;
 struct MM_INTERFACE mmi;
+CLIST_INTERFACE *pcli;
 
 // Event hooks
 static HANDLE hHookModulesLoaded = NULL;
@@ -218,6 +219,9 @@ int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
 	// Init SSL library
 	gg_ssl_init();
 
+	// File Association Manager support
+	gg_links_init();
+
 	return 0;
 }
 
@@ -225,6 +229,8 @@ int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
 // When Miranda starting shutdown sequence
 int gg_preshutdown(WPARAM wParam, LPARAM lParam)
 {
+	gg_links_destroy();
+
 	return 0;
 }
 
@@ -284,7 +290,7 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 #endif
 
 			// Init misc thingies
-			gg_icolib_init(gg);
+			gg_icolib_init();
 			gg_gc_init(gg);
 			gg_menus_init(gg);
 			gg_keepalive_init(gg);
@@ -362,6 +368,8 @@ static GGPROTO *gg_proto_init(const char* pszProtoName, const TCHAR* tszUserName
 	if((dwVersion = DBGetContactSettingDword(NULL, GG_PROTO, GG_PLUGINVERSION, 0)) < pluginInfo.version)
 		gg_cleanuplastplugin(gg, dwVersion);
 
+	gg_links_instance_init(gg);
+
 	return gg;
 }
 
@@ -378,6 +386,7 @@ static int gg_proto_uninit(PROTO_INTERFACE *proto)
 	gg_keepalive_destroy(gg);
 	gg_gc_destroy(gg);
 	gg_import_shutdown(gg);
+	gg_links_instance_destroy(gg);
 	CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMenuRoot, 0);
 
 	// Close handles
@@ -405,6 +414,7 @@ static int gg_proto_uninit(PROTO_INTERFACE *proto)
 	mir_free(gg->name);
 	mir_free(gg->proto.vtbl);
 	mir_free(gg);
+
 	return 0;
 }
 
@@ -422,6 +432,8 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	if (WSAStartup(MAKEWORD( 1, 1 ), &wsaData))
 		return 1;
 
+	pcli = (CLIST_INTERFACE*)CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)hInstance);
+
 	// Hook system events
 	hHookModulesLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, gg_modulesloaded);
 	hHookPreShutdown = HookEvent(ME_SYSTEM_PRESHUTDOWN, gg_preshutdown);
@@ -436,6 +448,7 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 
 	// Register module
 	CallService(MS_PROTO_REGISTERMODULE, 0, (LPARAM) &pd);
+	gg_links_instancemenu_init();
 
 	return 0;
 }

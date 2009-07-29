@@ -58,6 +58,7 @@ CLEAN :
 	-@erase "$(INTDIR)\import.obj"
 	-@erase "$(INTDIR)\keepalive.obj"
 	-@erase "$(INTDIR)\libgadu.obj"
+	-@erase "$(INTDIR)\links.obj"
 	-@erase "$(INTDIR)\ownerinfo.obj"
 	-@erase "$(INTDIR)\pthread.obj"
 	-@erase "$(INTDIR)\pubdir.obj"
@@ -110,6 +111,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\image.obj" \
 	"$(INTDIR)\import.obj" \
 	"$(INTDIR)\keepalive.obj" \
+	"$(INTDIR)\links.obj" \
 	"$(INTDIR)\ownerinfo.obj" \
 	"$(INTDIR)\pthread.obj" \
 	"$(INTDIR)\services.obj" \
@@ -152,6 +154,7 @@ CLEAN :
 	-@erase "$(INTDIR)\import.obj"
 	-@erase "$(INTDIR)\keepalive.obj"
 	-@erase "$(INTDIR)\libgadu.obj"
+	-@erase "$(INTDIR)\links.obj"
 	-@erase "$(INTDIR)\ownerinfo.obj"
 	-@erase "$(INTDIR)\pthread.obj"
 	-@erase "$(INTDIR)\pubdir.obj"
@@ -205,6 +208,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\image.obj" \
 	"$(INTDIR)\import.obj" \
 	"$(INTDIR)\keepalive.obj" \
+	"$(INTDIR)\links.obj" \
 	"$(INTDIR)\ownerinfo.obj" \
 	"$(INTDIR)\pthread.obj" \
 	"$(INTDIR)\services.obj" \
@@ -568,6 +572,11 @@ SOURCE=.\import.c
 SOURCE=.\keepalive.c
 
 "$(INTDIR)\keepalive.obj" : $(SOURCE) "$(INTDIR)"
+
+
+SOURCE=.\links.c
+
+"$(INTDIR)\links.obj" : $(SOURCE) "$(INTDIR)"
 
 
 SOURCE=.\ownerinfo.c

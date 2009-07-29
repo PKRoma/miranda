@@ -67,6 +67,7 @@ extern "C" {
 #include <m_utils.h>
 #include <m_ignore.h>
 #include <m_clist.h>
+#include <m_clistint.h>
 #include <m_options.h>
 #include <m_userinfo.h>
 #include <m_clui.h>
@@ -145,6 +146,7 @@ typedef struct
 	HANDLE hMenuRoot;
 	HANDLE hMainMenu[7];
 	HANDLE hContactMenu;
+	HANDLE hInstanceMenuItem;
 } GGPROTO;
 
 typedef struct
@@ -200,7 +202,6 @@ typedef struct
 #define GGS_IMPORT_TEXT 		"%s/ImportFromText"
 #define GGS_EXPORT_SERVER		"%s/ExportFromServer"
 #define GGS_EXPORT_TEXT 		"%s/ExportFromText"
-#define GGS_CHPASS				"%s/ChangePassword"
 
 #define GGS_SENDIMAGE			"%s/SendImage"
 #define GGS_RECVIMAGE			"%s/RecvImage"
@@ -329,6 +330,7 @@ typedef struct
 
 extern HINSTANCE hInstance;
 extern PLUGINLINK *pluginLink;
+extern CLIST_INTERFACE *pcli;
 extern DWORD gMirandaVersion;
 extern HANDLE hNetlib;
 #ifdef GG_CONFIG_HAVE_OPENSSL
@@ -419,9 +421,16 @@ BOOL gg_img_opened(GGPROTO *gg, uin_t uin);
 void *__stdcall gg_img_dlgthread(void *empty);
 
 /* IcoLib functions */
-void gg_icolib_init(GGPROTO *gg);
+void gg_icolib_init();
 HICON LoadIconEx(int iconId);
 HANDLE GetIconHandle(int iconId);
+
+/* URI parser functions */
+void gg_links_instancemenu_init();
+void gg_links_init();
+void gg_links_destroy();
+void gg_links_instance_init(GGPROTO* gg);
+void gg_links_instance_destroy(GGPROTO* gg);
 
 /* UI page initializers */
 int gg_options_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam);

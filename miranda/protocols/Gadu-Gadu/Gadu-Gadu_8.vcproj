@@ -506,6 +506,10 @@
 				>
 			</File>
 			<File
+				RelativePath="links.c"
+				>
+			</File>
+			<File
 				RelativePath="ownerinfo.c"
 				>
 			</File>
