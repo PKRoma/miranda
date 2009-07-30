@@ -1728,7 +1728,7 @@ void CAimProto::snac_chatnav_info_response(SNAC &snac,HANDLE hServerConn,unsigne
                 cookie = info_tlv.part(3,cookie_len);		// Cookie String
                 instance = info_tlv.ushort(3+cookie_len);	// Instance
                 num_tlv = info_tlv.ushort(6+cookie_len);	// Number of TLVs
-                tlv_offset = 12+cookie_len;					// We're looking at any remaining TLVs
+                tlv_offset = 8+cookie_len;					// We're looking at any remaining TLVs
 
                 char* name = 0;
 /*
@@ -1741,7 +1741,7 @@ void CAimProto::snac_chatnav_info_response(SNAC &snac,HANDLE hServerConn,unsigne
 */
                 for (int i = 0; i < num_tlv; i++)	// Loop through all the TLVs
                 {
-                    TLV tlv(snac.val(tlv_offset));
+                    TLV tlv(info_tlv.val() + tlv_offset);
                     
                     // TLV List
                     if (tlv.cmp(0x00d3))
@@ -1874,12 +1874,12 @@ void CAimProto::snac_chat_received_message(SNAC &snac,chat_list_item* item)//fam
             }
             else if (tlv.cmp(0x0005))  // Message information
             {
+                bool uni = false;
+//		        char* language = NULL;
+
                 int offset = 0;
                 while (offset < tlv.len())
                 {
-                    bool uni = false;
-            //		char* language = NULL;
-
                     TLV msg_tlv(tlv.val() + offset);
                     
                     // TLV List
@@ -1906,8 +1906,8 @@ void CAimProto::snac_chat_received_message(SNAC &snac,chat_list_item* item)//fam
                         uni = strstr(enc, "unicode-2-0") != NULL;
                         mir_free(enc);
                     }
-        //			else if (msg_tlv.cmp(0x0003))
-        //				language = msg_tlv.dup();
+//			        else if (msg_tlv.cmp(0x0003))
+//				        language = msg_tlv.dup();
 
                     offset += TLV_HEADER_SIZE + msg_tlv.len();
                 }
