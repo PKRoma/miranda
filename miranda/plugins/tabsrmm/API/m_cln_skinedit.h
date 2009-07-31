@@ -41,7 +41,7 @@ typedef struct _tagButtonSet {
 } ButtonSet;
 
 struct CSkinItem {
-    char szName[40];
+    TCHAR szName[40];
     char szDBname[40];
     int statusID;
 

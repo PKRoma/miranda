@@ -45,7 +45,7 @@ public:
 	HIMAGELIST  g_hImageList;
 	HICON       g_IconMsgEvent, g_IconTypingEvent, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
 	HICON       g_IconFolder, g_IconChecked, g_IconUnchecked;
-	HICON       g_closeGlyph, g_maxGlyph, g_minGlyph, g_pulldownGlyph;
+	HICON       g_pulldownGlyph;
 	int         g_nrProtos;
 	HMENU       g_hMenuContext, g_hMenuContainer, g_hMenuEncoding, g_hMenuTrayUnread;
 	HMENU       g_hMenuFavorites, g_hMenuRecent, g_hMenuTrayContext;

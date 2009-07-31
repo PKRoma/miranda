@@ -117,10 +117,10 @@ extern struct LIST_INTERFACE li;
 extern 	NEN_OPTIONS	nen_options;
 #endif
 
+#include "themes.h"
 #include "globals.h"
 #include "mim.h"
 #include "sendqueue.h"
-#include "themes.h"
 
 #if !defined(_WIN64) && !defined(_USE_32BIT_TIME_T)
 	#define _USE_32BIT_TIME_T
@@ -171,7 +171,5 @@ typedef struct __paraformat2
 typedef std::basic_string<TCHAR> tstring;
 
 extern	HINSTANCE g_hInst;
-extern 	bool g_skinnedContainers;
-extern 	bool g_framelessSkinmode;
 extern CSkinItem SkinItems[];
 

@@ -102,10 +102,6 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK * link)
 
 	SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(lfDefault), &lfDefault, FALSE);
 
-	if (!ServiceExists(MS_DB_EVENT_GETTEXT)) {
-		MessageBox(0, _T("Critical error. Unsupported database driver found. tabSRMM will be disabled"), _T("tabSRMM"), MB_OK | MB_ICONERROR);
-		return 1;
-	}
 	Chat_Load(pluginLink);
 	return LoadSendRecvMessageModule();
 }
@@ -117,6 +113,7 @@ extern "C" int __declspec(dllexport) Unload(void)
 	int iRet = SplitmsgShutdown();
 	delete Skin;
 	delete sendQueue;
+	delete M;
 	return iRet;
 }
 

@@ -31,7 +31,7 @@ $Id$
 */
 
 void DM_SetDBButtonStates(HWND hwndChild, struct _MessageWindowData *dat);
-int BTN_GetStockItem(ButtonItem *item, const char *szName);
+int BTN_GetStockItem(ButtonItem *item, const TCHAR *szName);
 HWND DM_CreateClist(HWND hwndParent, struct _MessageWindowData *dat);
 
 LRESULT DM_ScrollToBottom(HWND hwndDlg, struct _MessageWindowData *dat, WPARAM wParam, LPARAM lParam);

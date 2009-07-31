@@ -219,6 +219,8 @@ size_t _Mim::pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut)
  * they will go away at some point...
  */
 
+#if defined(UNICODE)
+
 int _Mim::pathIsAbsolute(const char *path) const
 {
 	if (!path || !(lstrlenA(path) > 2))
@@ -274,6 +276,7 @@ size_t _Mim::pathToAbsolute(const char *pSrc, char *pOut)
 	return lstrlenA(pOut);
 }
 
+#endif /* UNICODE */
 /*
  * window list functions
  */
@@ -316,8 +319,7 @@ void _Mim::InitPaths()
 #if defined(_UNICODE)
 	MultiByteToWideChar(CP_ACP, 0, szProfilePath, MAX_PATH - 1, szTmp, MAX_PATH - 1);
 #else
-	_sntprintf(szTmp, MAX_PATH "%s", szProfilePath);
-	szTemp[MAX_PATH - 1] = 0;
+	_snprintf(szTmp, MAX_PATH, "%s", szProfilePath);
 #endif
 	szTmp[MAX_PATH - 1] = 0;
 
@@ -410,6 +412,11 @@ void _Mim::InitAPI()
 			}
 		}
 	}
+
+	/*
+	 * vista+ DWM API
+	 */
+
 	m_hDwmApi = 0;
 	if (IsWinVerVistaPlus())  {
 	    m_hDwmApi = LoadLibraryA("dwmapi.dll");

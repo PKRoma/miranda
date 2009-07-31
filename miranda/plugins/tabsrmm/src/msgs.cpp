@@ -76,8 +76,6 @@ extern      int g_chat_integration_enabled;
 extern      struct MsgLogIcon msgLogIcons[NR_LOGICONS * 3];
 extern      INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern      int g_sessionshutdown;
-extern      ICONDESC *g_skinIcons;
-extern      int g_nrSkinIcons;
 extern      struct RTFColorTable *rtf_ctable;
 extern		const TCHAR *DoubleAmpersands(TCHAR *pszText);
 extern      void RegisterFontServiceFonts();
@@ -1291,7 +1289,7 @@ static int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 	while (hContact) {
 		M->WriteDword(hContact, SRMSGMOD_T, "messagecount", 0);
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
-		}
+	}
 	//
 	DestroyServiceFunction(hSVC[H_MS_MSG_SENDMESSAGE]);
 #if defined(_UNICODE)
@@ -1364,14 +1362,10 @@ int SplitmsgShutdown(void)
 		FreeLibrary(g_hIconDLL);
 		g_hIconDLL = 0;
 	}
-	if (g_skinIcons)
-		free(g_skinIcons);
 
 	if(_Plugin.hbmLogo)
 		DeleteObject(_Plugin.hbmLogo);
 
-	delete Skin;
-	delete M;
 	return 0;
 }
 
@@ -1631,7 +1625,7 @@ tzdone:
 
 STDMETHODIMP REOLECallback::GetNewStorage(LPSTORAGE FAR *lplpstg)
 {
-    LPLOCKBYTES lpLockBytes = NULL;
+	LPLOCKBYTES lpLockBytes = NULL;
     SCODE sc  = ::CreateILockBytesOnHGlobal(NULL, TRUE, &lpLockBytes);
     if (sc != S_OK)
 		return sc;
@@ -2228,23 +2222,38 @@ static void UnloadIcons()
  * search a (named) icon from the default icon configuration and return a pointer
  * to its stored handle
  */
-HICON *BTN_GetIcon(char *szIconName)
+HICON *BTN_GetIcon(const TCHAR *szIconName)
 {
+#if defined(_UNICODE)
+	char *szIconNameA = mir_u2a(szIconName);
+#else
+	char *szIconNameA = szIconName;
+#endif
 	int n = 0, i;
 	while (ICONBLOCKS[n].szSection) {
 		i = 0;
 		while (ICONBLOCKS[n].idesc[i].szDesc) {
-			if (!_stricmp(ICONBLOCKS[n].idesc[i].szName, szIconName)) {
+			if (!_stricmp(ICONBLOCKS[n].idesc[i].szName, szIconNameA)) {
+#if defined(_UNICODE)
+				mir_free(szIconNameA);
+#endif
 				return(ICONBLOCKS[n].idesc[i].phIcon);
 			}
 			i++;
 		}
 		n++;
 	}
-	for (i = 0; i < g_nrSkinIcons; i++) {
-		if (!_stricmp(g_skinIcons[i].szName, szIconName)) {
-			return(g_skinIcons[i].phIcon);
+	for (i = 0; i < Skin->getNrIcons(); i++) {
+		const ICONDESCW *idesc = Skin->getIconDesc(i);
+		if (!_tcsicmp(idesc->szName, szIconName)) {
+#if defined(_UNICODE)
+			mir_free(szIconNameA);
+#endif
+			return(idesc->phIcon);
 		}
 	}
+#if defined(_UNICODE)
+	mir_free(szIconNameA);
+#endif
 	return NULL;
 }

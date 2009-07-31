@@ -84,8 +84,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /machine:IX86 /out:"..\..\Bin\Release\Plugins\tabsrmm_unicode.dll" /implib:".\Release_Unicode/srmm.lib" /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /map /debug /machine:IX86 /out:"..\..\Bin\Release Unicode\Plugins\tabsrmm.dll" /implib:".\Release_Unicode/srmm.lib" /opt:NOWIN98
-# SUBTRACT LINK32 /pdb:none
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /map /machine:IX86 /out:"..\..\Bin\Release Unicode\Plugins\tabsrmm.dll" /implib:".\Release_Unicode/srmm.lib" /opt:NOWIN98
+# SUBTRACT LINK32 /pdb:none /incremental:yes /debug
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
@@ -111,8 +111,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /machine:IX86 /out:"..\..\Bin\Release\Plugins\tabsrmm.dll" /implib:".\Release/srmm.lib" /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /map /debug /machine:IX86 /out:"..\..\Bin\Release\Plugins\tabsrmm.dll" /implib:".\Release/srmm.lib" /opt:NOWIN98
-# SUBTRACT LINK32 /pdb:none
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /map /machine:IX86 /out:"..\..\Bin\Release\Plugins\tabsrmm.dll" /implib:".\Release/srmm.lib" /opt:NOWIN98
+# SUBTRACT LINK32 /pdb:none /debug
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
@@ -222,14 +222,16 @@ DEP_CPP_CLIST=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_CLIST=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -287,14 +289,16 @@ DEP_CPP_COLOR=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_COLOR=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -352,14 +356,16 @@ DEP_CPP_LOG_C=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_LOG_C=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -417,14 +423,16 @@ DEP_CPP_MAIN_=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MAIN_=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -482,14 +490,16 @@ DEP_CPP_MANAG=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MANAG=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -547,14 +557,16 @@ DEP_CPP_MESSA=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MESSA=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -612,14 +624,16 @@ DEP_CPP_OPTIO=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_OPTIO=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -677,14 +691,16 @@ DEP_CPP_SERVI=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_SERVI=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -742,14 +758,16 @@ DEP_CPP_TOOLS=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_TOOLS=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -807,15 +825,17 @@ DEP_CPP_WINDO=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_WINDO=\
-	".\om.h"\
-	".\xtheme.h"\
+	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -942,14 +962,16 @@ DEP_CPP_BUTTO=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_BUTTO=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1006,15 +1028,16 @@ DEP_CPP_CONTA=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
 	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_CONTA=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1071,14 +1094,16 @@ DEP_CPP_CONTAI=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_CONTAI=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1136,14 +1161,16 @@ DEP_CPP_EVENT=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_EVENT=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1200,14 +1227,16 @@ DEP_CPP_FORMA=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_FORMA=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
@@ -1265,19 +1294,83 @@ DEP_CPP_GENER=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_GENER=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\globals.cpp
+DEP_CPP_GLOBA=\
+	"..\..\include\m_acc.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\API\m_buttonbar.h"\
+	".\API\m_cln_skinedit.h"\
+	".\API\m_fingerprint.h"\
+	".\API\m_flash.h"\
+	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
+	".\API\m_ieview.h"\
+	".\API\m_mathmodule.h"\
+	".\API\m_metacontacts.h"\
+	".\API\m_msg_buttonsbar.h"\
+	".\API\m_nudge.h"\
+	".\API\m_popup.h"\
+	".\API\m_smileyadd.h"\
+	".\API\m_spellchecker.h"\
+	".\API\m_toptoolbar.h"\
+	".\API\m_updater.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\src\commonheaders.h"\
+	".\src\functions.h"\
+	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
+	".\src\msgdlgutils.h"\
+	".\src\msgs.h"\
+	".\src\nen.h"\
+	".\src\sendqueue.h"\
+	".\src\templates.h"\
+	".\src\themes.h"\
+	".\src\typingnotify.h"\
+	{$(INCLUDE)}"uxtheme.h"\
+	
 # End Source File
 # Begin Source File
 
@@ -1333,15 +1426,16 @@ DEP_CPP_HOTKE=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
 	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_HOTKE=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1398,21 +1492,85 @@ DEP_CPP_IMAGE=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
 	".\src\ImageDataObject.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_IMAGE=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\mim.cpp
+DEP_CPP_MIM_C=\
+	"..\..\include\m_acc.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\API\m_buttonbar.h"\
+	".\API\m_cln_skinedit.h"\
+	".\API\m_fingerprint.h"\
+	".\API\m_flash.h"\
+	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
+	".\API\m_ieview.h"\
+	".\API\m_mathmodule.h"\
+	".\API\m_metacontacts.h"\
+	".\API\m_msg_buttonsbar.h"\
+	".\API\m_nudge.h"\
+	".\API\m_popup.h"\
+	".\API\m_smileyadd.h"\
+	".\API\m_spellchecker.h"\
+	".\API\m_toptoolbar.h"\
+	".\API\m_updater.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\src\commonheaders.h"\
+	".\src\functions.h"\
+	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
+	".\src\msgdlgutils.h"\
+	".\src\msgs.h"\
+	".\src\nen.h"\
+	".\src\sendqueue.h"\
+	".\src\templates.h"\
+	".\src\themes.h"\
+	".\src\typingnotify.h"\
+	{$(INCLUDE)}"uxtheme.h"\
+	
 # End Source File
 # Begin Source File
 
@@ -1472,14 +1630,16 @@ DEP_CPP_MODPL=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MODPL=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -1537,15 +1697,16 @@ DEP_CPP_MSGDI=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
 	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MSGDI=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1602,14 +1763,16 @@ DEP_CPP_MSGDL=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MSGDL=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1666,14 +1829,16 @@ DEP_CPP_MSGLO=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MSGLO=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1731,14 +1896,16 @@ DEP_CPP_MSGOP=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MSGOP=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1795,14 +1962,16 @@ DEP_CPP_MSGOPT=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MSGOPT=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -1860,15 +2029,16 @@ DEP_CPP_MSGS_=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
 	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MSGS_=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1925,14 +2095,16 @@ DEP_CPP_SELEC=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_SELEC=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1989,15 +2161,16 @@ DEP_CPP_SENDQ=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
 	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_SENDQ=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2054,14 +2227,16 @@ DEP_CPP_SRMM_=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_SRMM_=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yc"commonheaders.h"
 # End Source File
@@ -2119,14 +2294,16 @@ DEP_CPP_TABCT=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_TABCT=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2183,14 +2360,16 @@ DEP_CPP_TEMPL=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_TEMPL=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2247,14 +2426,16 @@ DEP_CPP_THEME=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_THEME=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2311,14 +2492,16 @@ DEP_CPP_TRAYI=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_TRAYI=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2375,14 +2558,16 @@ DEP_CPP_TSBUT=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_TSBUT=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2439,14 +2624,16 @@ DEP_CPP_TYPIN=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_TYPIN=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2503,14 +2690,16 @@ DEP_CPP_USERP=\
 	".\src\commonheaders.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\sendqueue.h"\
 	".\src\templates.h"\
+	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_USERP=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # End Group

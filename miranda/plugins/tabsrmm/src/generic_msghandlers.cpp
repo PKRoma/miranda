@@ -33,17 +33,7 @@ $Id$
 
 #include "commonheaders.h"
 
-WCHAR    *FilterEventMarkers(WCHAR *wszText);
-char     *FilterEventMarkersA(char *szText);
-
-extern PITA pfnIsThemeActive;
-extern POTD pfnOpenThemeData;
-extern PDTB pfnDrawThemeBackground;
-extern PCTD pfnCloseThemeData;
-extern PDTT pfnDrawThemeText;
-extern PITBPT pfnIsThemeBackgroundPartiallyTransparent;
-extern PDTPB  pfnDrawThemeParentBackground;
-extern PGTBCR pfnGetThemeBackgroundContentRect;
+TCHAR    *FilterEventMarkers(TCHAR *wszText);
 extern struct ContainerWindowData *pFirstContainer;
 extern RECT	  rcLastStatusBarClick;
 
@@ -111,26 +101,26 @@ static void BTN_StockCallback(ButtonItem *item, HWND hwndDlg, struct _MessageWin
 */
 
 static struct SIDEBARITEM sbarItems[] = {
-	IDC_SBAR_SLIST, SBI_TOP, &_Plugin.g_sideBarIcons[0], &_Plugin.g_sideBarIcons[0], &_Plugin.g_sideBarIcons[0], "t_slist", BTN_StockAction, BTN_StockCallback, _T("Open session list"),
-	IDC_SBAR_FAVORITES, SBI_TOP, &_Plugin.g_sideBarIcons[1], &_Plugin.g_sideBarIcons[1], &_Plugin.g_sideBarIcons[1], "t_fav", BTN_StockAction, BTN_StockCallback, _T("Open favorites"),
-	IDC_SBAR_RECENT, SBI_TOP, &_Plugin.g_sideBarIcons[2],  &_Plugin.g_sideBarIcons[2], &_Plugin.g_sideBarIcons[2], "t_recent", BTN_StockAction, BTN_StockCallback, _T("Open recent contacts"),
-	IDC_SBAR_USERPREFS, SBI_TOP, &_Plugin.g_sideBarIcons[4], &_Plugin.g_sideBarIcons[4], &_Plugin.g_sideBarIcons[4], "t_prefs", BTN_StockAction, BTN_StockCallback, _T("Contact preferences"),
-	IDC_SBAR_TOGGLEFORMAT, SBI_TOP | SBI_TOGGLE, &_Plugin.g_buttonBarIcons[20], &_Plugin.g_buttonBarIcons[20], &_Plugin.g_buttonBarIcons[20], "t_tformat", BTN_StockAction, BTN_StockCallback, _T("Formatting"),
-	IDC_SBAR_SETUP, SBI_BOTTOM, &_Plugin.g_sideBarIcons[3], &_Plugin.g_sideBarIcons[3], &_Plugin.g_sideBarIcons[3], "t_setup", BTN_StockAction, BTN_StockCallback, _T("Miranda options"),
-	IDOK, SBI_TOP | SBI_HANDLEBYCLIENT, &_Plugin.g_buttonBarIcons[9], &_Plugin.g_buttonBarIcons[9], &_Plugin.g_buttonBarIcons[9], "t_send", BTN_StockAction, BTN_StockCallback, _T("Send message"),
-	IDC_SBAR_CANCEL, SBI_TOP, &_Plugin.g_buttonBarIcons[6], &_Plugin.g_buttonBarIcons[6], &_Plugin.g_buttonBarIcons[6], "t_close", BTN_StockAction, BTN_StockCallback, _T("Close session"),
-	IDC_SMILEYBTN, SBI_TOP | SBI_HANDLEBYCLIENT, &_Plugin.g_buttonBarIcons[11], &_Plugin.g_buttonBarIcons[11], &_Plugin.g_buttonBarIcons[11], "t_emoticon", BTN_StockAction, BTN_StockCallback, _T("Emoticon"),
-	IDC_NAME, SBI_TOP | SBI_HANDLEBYCLIENT, &_Plugin.g_buttonBarIcons[16], &_Plugin.g_buttonBarIcons[16], &_Plugin.g_buttonBarIcons[16], "t_menu", BTN_StockAction, BTN_StockCallback, _T("User menu"),
-	IDC_PROTOCOL, SBI_TOP | SBI_HANDLEBYCLIENT, &_Plugin.g_buttonBarIcons[4], &_Plugin.g_buttonBarIcons[4], &_Plugin.g_buttonBarIcons[4], "t_details", BTN_StockAction, BTN_StockCallback, _T("User details"),
-	0, 0, 0, 0, 0, "", NULL, NULL, _T("")
+	IDC_SBAR_SLIST, SBI_TOP, &_Plugin.g_sideBarIcons[0], &_Plugin.g_sideBarIcons[0], &_Plugin.g_sideBarIcons[0], _T("t_slist"), BTN_StockAction, BTN_StockCallback, _T("Open session list"),
+	IDC_SBAR_FAVORITES, SBI_TOP, &_Plugin.g_sideBarIcons[1], &_Plugin.g_sideBarIcons[1], &_Plugin.g_sideBarIcons[1], _T("t_fav"), BTN_StockAction, BTN_StockCallback, _T("Open favorites"),
+	IDC_SBAR_RECENT, SBI_TOP, &_Plugin.g_sideBarIcons[2],  &_Plugin.g_sideBarIcons[2], &_Plugin.g_sideBarIcons[2], _T("t_recent"), BTN_StockAction, BTN_StockCallback, _T("Open recent contacts"),
+	IDC_SBAR_USERPREFS, SBI_TOP, &_Plugin.g_sideBarIcons[4], &_Plugin.g_sideBarIcons[4], &_Plugin.g_sideBarIcons[4], _T("t_prefs"), BTN_StockAction, BTN_StockCallback, _T("Contact preferences"),
+	IDC_SBAR_TOGGLEFORMAT, SBI_TOP | SBI_TOGGLE, &_Plugin.g_buttonBarIcons[20], &_Plugin.g_buttonBarIcons[20], &_Plugin.g_buttonBarIcons[20], _T("t_tformat"), BTN_StockAction, BTN_StockCallback, _T("Formatting"),
+	IDC_SBAR_SETUP, SBI_BOTTOM, &_Plugin.g_sideBarIcons[3], &_Plugin.g_sideBarIcons[3], &_Plugin.g_sideBarIcons[3], _T("t_setup"), BTN_StockAction, BTN_StockCallback, _T("Miranda options"),
+	IDOK, SBI_TOP | SBI_HANDLEBYCLIENT, &_Plugin.g_buttonBarIcons[9], &_Plugin.g_buttonBarIcons[9], &_Plugin.g_buttonBarIcons[9], _T("t_send"), BTN_StockAction, BTN_StockCallback, _T("Send message"),
+	IDC_SBAR_CANCEL, SBI_TOP, &_Plugin.g_buttonBarIcons[6], &_Plugin.g_buttonBarIcons[6], &_Plugin.g_buttonBarIcons[6], _T("t_close"), BTN_StockAction, BTN_StockCallback, _T("Close session"),
+	IDC_SMILEYBTN, SBI_TOP | SBI_HANDLEBYCLIENT, &_Plugin.g_buttonBarIcons[11], &_Plugin.g_buttonBarIcons[11], &_Plugin.g_buttonBarIcons[11], _T("t_emoticon"), BTN_StockAction, BTN_StockCallback, _T("Emoticon"),
+	IDC_NAME, SBI_TOP | SBI_HANDLEBYCLIENT, &_Plugin.g_buttonBarIcons[16], &_Plugin.g_buttonBarIcons[16], &_Plugin.g_buttonBarIcons[16], _T("t_menu"), BTN_StockAction, BTN_StockCallback, _T("User menu"),
+	IDC_PROTOCOL, SBI_TOP | SBI_HANDLEBYCLIENT, &_Plugin.g_buttonBarIcons[4], &_Plugin.g_buttonBarIcons[4], &_Plugin.g_buttonBarIcons[4], _T("t_details"), BTN_StockAction, BTN_StockCallback, _T("User details"),
+	0, 0, 0, 0, 0, _T(""), NULL, NULL, _T("")
 };
 
-int BTN_GetStockItem(ButtonItem *item, const char *szName)
+int BTN_GetStockItem(ButtonItem *item, const TCHAR *szName)
 {
 	int i = 0;
 
 	while (sbarItems[i].uId) {
-		if (!_stricmp(sbarItems[i].szName, szName)) {
+		if (!_tcsicmp(sbarItems[i].szName, szName)) {
 			item->uId = sbarItems[i].uId;
 			//item->dwFlags |= BUTTON_ISSIDEBAR;
 			//myGlobals.m_SideBarEnabled = TRUE;
@@ -431,11 +421,7 @@ LRESULT DM_WMCopyHandler(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lP
 			TCHAR *tszText = (TCHAR *)malloc((lstrlen((TCHAR *)hClip) + 2) * sizeof(TCHAR));
 
 			lstrcpy(tszText, (TCHAR *)hClip);
-#if defined(_UNICODE)
 			FilterEventMarkers(tszText);
-#else
-			FilterEventMarkersA(tszText);
-#endif
 			EmptyClipboard();
 
 			hgbl = GlobalAlloc(GMEM_MOVEABLE, (lstrlen(tszText) + 1) * sizeof(TCHAR));

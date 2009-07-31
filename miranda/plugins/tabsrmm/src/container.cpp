@@ -179,7 +179,7 @@ void SetAeroMargins(ContainerWindowData *pContainer)
 {
 	if(M->isAero() && pContainer && !pContainer->bSkinned) {
 		MARGINS	m;
-		_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWL_USERDATA);
+		_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 
 		if(dat) {
 			m.cxLeftWidth = 0;
@@ -836,15 +836,15 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 							switch (i) {
 								case 0:
 									rc = &pContainer->rcMin;
-									hIcon = _Plugin.g_minGlyph;
+									hIcon = CSkin::m_minIcon;
 									break;
 								case 1:
 									rc = &pContainer->rcMax;
-									hIcon = _Plugin.g_maxGlyph;
+									hIcon = CSkin::m_maxIcon;
 									break;
 								case 2:
 									rc = &pContainer->rcClose;
-									hIcon = _Plugin.g_closeGlyph;
+									hIcon = CSkin::m_closeIcon;
 									break;
 							}
 							if (rc) {
@@ -1001,15 +1001,15 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					switch (i) {
 						case 0:
 							rc = &pContainer->rcMin;
-							hIcon = _Plugin.g_minGlyph;
+							hIcon = CSkin::m_minIcon;
 							break;
 						case 1:
 							rc = &pContainer->rcMax;
-							hIcon = _Plugin.g_maxGlyph;
+							hIcon = CSkin::m_maxIcon;
 							break;
 						case 2:
 							rc = &pContainer->rcClose;
-							hIcon = _Plugin.g_closeGlyph;
+							hIcon = CSkin::m_closeIcon;
 							break;
 					}
 					if (rc) {

@@ -789,7 +789,6 @@ void SendQueue::NotifyDeliveryFailure(const _MessageWindowData *dat)
 		mir_sntprintf(ppd.lpzText, MAX_SECONDLINE, "%s", Translate("A message delivery has failed.\nClick to open the message window."));
 		ppd.colorText = RGB(255, 245, 225);
 		ppd.colorBack = RGB(191, 0, 0);
-		ppd.PluginData = hwndDlg;
 		ppd.PluginWindowProc = (WNDPROC)PopupDlgProcError;
 		ppd.lchIcon = _Plugin.g_iconErr;
 		ppd.PluginData = (void *)dat->hContact;

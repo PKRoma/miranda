@@ -775,7 +775,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 					if (pszText[start] == '#') {
 						isRoom = TRUE;
 					} else {
-						topicStart = start;
+						topicStart = (int)start;
 						while ( topicStart >0 && (pszText[topicStart-1] == ' ' || pszText[topicStart-1] == 13 || pszText[topicStart-1] == VK_TAB))
 							topicStart--;
 						if (topicStart > 5 && _tcsstr(&pszText[topicStart-6], _T("/topic")) == &pszText[topicStart-6]) {
@@ -784,7 +784,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 					}
 					if (dat->szSearchQuery == NULL) {
 						dat->szSearchQuery = (TCHAR *)mir_alloc( sizeof(TCHAR)*( end-start+1 ));
-						lstrcpyn( dat->szSearchQuery, pszText+start, end-start+1);
+						lstrcpyn( dat->szSearchQuery, pszText + start, (int)(end - start + 1L));
 						dat->szSearchResult = mir_tstrdup(dat->szSearchQuery);
 						dat->lastSession = NULL;
 					}
@@ -1977,7 +1977,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			//
 			BroadCastContainer(dat->pContainer, DM_REFRESHTABINDEX, 0, 0);
 
-			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETOLECALLBACK, 0, (LPARAM) mREOLECallback);
+			//SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETOLECALLBACK, 0, (LPARAM) mREOLECallback);
 			//MAD
 			_Plugin.g_NickListScrollBarFix = M->GetByte("adv_ScrollBarFix", 1);
 

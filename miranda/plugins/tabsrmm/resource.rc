@@ -1235,6 +1235,9 @@ BEGIN
         MENUITEM "Set and Save for all Sessions", 
                                                 ID_SPLITTERCONTEXT_SAVEGLOBALFORALLSESSIONS
 
+        MENUITEM "Set and save for this container", 
+                                                ID_SPLITTERCONTEXT_SAVEFORCONTAINER
+
         MENUITEM "Set and Save for this Contact only", 
                                                 ID_SPLITTERCONTEXT_SAVEFORTHISCONTACTONLY
 

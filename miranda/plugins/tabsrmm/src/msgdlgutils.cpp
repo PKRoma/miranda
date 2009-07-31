@@ -1984,7 +1984,6 @@ void LoadOwnAvatar(HWND hwndDlg, struct _MessageWindowData *dat)
 		dat->hOwnPic = _Plugin.g_hbmUnknown;
 		dat->ownAce = NULL;
 	}
-
 	if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
 		BITMAP bm;
 
@@ -2273,8 +2272,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 					rcFrame.top += height_off;
 					rcFrame.bottom += height_off;
 				}
-				if(fAero == false || dat->pContainer->bSkinned)
-					SetStretchBltMode(hdcDraw, HALFTONE);
+				SetStretchBltMode(hdcDraw, HALFTONE);
 				if (borderType == 2)
 					DrawEdge(hdcDraw, &rcFrame, BDR_SUNKENINNER, BF_RECT);
 				else if (borderType == 3)

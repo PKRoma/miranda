@@ -484,6 +484,14 @@ typedef struct _tag_ICONDESC {
 	BOOL    bForceSmall;   // true: force 16x16
 } ICONDESC;
 
+typedef struct _tag_ICONDESCW {
+	TCHAR    *szName;
+	TCHAR    *szDesc;
+	HICON   *phIcon;       // where the handle is saved...
+	INT_PTR uId;           // icon ID
+	BOOL    bForceSmall;   // true: force 16x16
+} ICONDESCW;
+
 struct InputHistory {
 	TCHAR   *szText;
 	int     lLen;
@@ -730,8 +738,9 @@ public:
 
 	STDMETHOD_(ULONG, Release)(void)
 	{
-		if(--mRefCounter == 0)
-			delete this;
+		--mRefCounter;
+		//if(--mRefCounter == 0)
+		//	delete this;
 		return (mRefCounter);
 	}
 
@@ -930,7 +939,7 @@ struct SIDEBARITEM {
 	UINT    uId;
 	DWORD   dwFlags;
 	HICON   *hIcon, *hIconPressed, *hIconHover;
-	char    *szName;
+	TCHAR   *szName;
 	void (*pfnAction)(ButtonItem *item, HWND hwndDlg, struct _MessageWindowData *dat, HWND hwndItem);
 	void (*pfnCallback)(ButtonItem *item, HWND hwndDlg, struct _MessageWindowData *dat, HWND hwndItem);
 	TCHAR   *tszTip;

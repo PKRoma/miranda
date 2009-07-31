@@ -48,18 +48,16 @@ extern unsigned int g_ctable_size;
 
 static int iHaveSmileyadd = -1;
 
-#if defined(UNICODE)
-
 /*
  * old code (textformat plugin dealing directly in the edit control - not the best solution, but the author
  * had no other choice as srmm never had an api for this...
  */
 
-static WCHAR *w_bbcodes_begin[] = { L"[b]", L"[i]", L"[u]", L"[s]", L"[color=" };
-static WCHAR *w_bbcodes_end[] = { L"[/b]", L"[/i]", L"[/u]", L"[/s]", L"[/color]" };
+static TCHAR *w_bbcodes_begin[] = { _T("[b]"), _T("[i]"), _T("[u]"), _T("[s]"), _T("[color=") };
+static TCHAR *w_bbcodes_end[] = { _T("[/b]"), _T("[/i]"), _T("[/u]"), _T("[/s]"), _T("[/color]") };
 
-static WCHAR *formatting_strings_begin[] = { L"b1 ", L"i1 ", L"u1 ", L"s1 ", L"c1 " };
-static WCHAR *formatting_strings_end[] = { L"b0 ", L"i0 ", L"u0 ", L"s0 ", L"c0 " };
+static TCHAR *formatting_strings_begin[] = { _T("b1 "), _T("i1 "), _T("u1 "), _T("s1 "), _T("c1 ") };
+static TCHAR *formatting_strings_end[] = { _T("b0 "), _T("i0 "), _T("u0 "), _T("s0 "), _T("c0 ") };
 
 #define NR_CODES 5
 /*
@@ -68,9 +66,9 @@ static WCHAR *formatting_strings_end[] = { L"b0 ", L"i0 ", L"u0 ", L"s0 ", L
  *        hiword = bbcode support (strip bbcodes if 0)
  */
 
-WCHAR *FilterEventMarkers(WCHAR *wszText)
+TCHAR *FilterEventMarkers(TCHAR *wszText)
 {
-	std::wstring text(wszText);
+	tstring text(wszText);
 	INT_PTR beginmark = 0, endmark = 0;
 
 	while (TRUE) {
@@ -87,7 +85,7 @@ WCHAR *FilterEventMarkers(WCHAR *wszText)
 	//mad
 
 	while (TRUE) {
-		if ((beginmark = text.find( L"\xAA")) != text.npos) {
+		if ((beginmark = text.find( _T("\xAA"))) != text.npos) {
 			endmark = beginmark+2;
 			if (endmark != text.npos && (endmark - beginmark) > 1) {
 				text.erase(beginmark, endmark - beginmark);
@@ -99,17 +97,17 @@ WCHAR *FilterEventMarkers(WCHAR *wszText)
 	}
 	//
 
-	lstrcpyW(wszText, text.c_str());
+	lstrcpy(wszText, text.c_str());
 	return wszText;
 }
 
-const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags, const char *szProto, HANDLE hContact, BOOL *clr_added, BOOL isSent)
+const TCHAR *FormatRaw(DWORD dwFlags, const TCHAR *msg, int flags, const char *szProto, HANDLE hContact, BOOL *clr_added, BOOL isSent)
 {
 	bool clr_was_added = false, was_added;
-	static std::wstring message(msg);
+	static tstring message(msg);
 	INT_PTR beginmark = 0, endmark = 0, tempmark = 0, index;
 	int i, endindex;
-	WCHAR endmarker;
+	TCHAR endmarker;
 	message.assign(msg);
 
 
@@ -144,34 +142,34 @@ const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags, const char *s
 		endindex = i;
 		endmark = message.find(w_bbcodes_end[i], beginmark);
 		if (endindex == 4) {                                 // color
-			size_t closing = message.find_first_of(L"]", beginmark);
+			size_t closing = message.find_first_of(_T("]"), beginmark);
 			was_added = false;
 
 			if (closing == message.npos) {                      // must be an invalid [color=] tag w/o closing bracket
 				message[beginmark] = ' ';
 				continue;
 			} else {
-				std::wstring colorname = message.substr(beginmark + 7, 8);
+				tstring colorname = message.substr(beginmark + 7, 8);
 search_again:
 				bool  clr_found = false;
 				unsigned int ii = 0;
-				wchar_t szTemp[5];
+				TCHAR szTemp[5];
 				for (ii = 0; ii < g_ctable_size; ii++) {
-					if (!_wcsnicmp((wchar_t *)colorname.c_str(), rtf_ctable[ii].szName, lstrlen(rtf_ctable[ii].szName))) {
-						closing = beginmark + 7 + wcslen(rtf_ctable[ii].szName);
+					if (!_tcsnicmp((TCHAR *)colorname.c_str(), rtf_ctable[ii].szName, lstrlen(rtf_ctable[ii].szName))) {
+						closing = beginmark + 7 + _tcslen(rtf_ctable[ii].szName);
 						if (endmark != message.npos) {
 							message.erase(endmark, 4);
-							message.replace(endmark, 4, L"c0 ");
+							message.replace(endmark, 4, _T("c0 "));
 						}
 						message.erase(beginmark, (closing - beginmark));
-						message.insert(beginmark, L"cxxx ");
-						_snwprintf(szTemp, 4, L"%02d", MSGDLGFONTCOUNT + 13 + ii);
+						message.insert(beginmark, _T("cxxx "));
+						_sntprintf(szTemp, 4, _T("%02d"), MSGDLGFONTCOUNT + 13 + ii);
 						message[beginmark + 3] = szTemp[0];
 						message[beginmark + 4] = szTemp[1];
 						clr_found = true;
 						if (was_added) {
-							wchar_t wszTemp[100];
-							_snwprintf(wszTemp, 100, L"##col##%06u:%04u", endmark - closing, ii);
+							TCHAR wszTemp[100];
+							_sntprintf(wszTemp, 100, _T("##col##%06u:%04u"), endmark - closing, ii);
 							wszTemp[99] = 0;
 							message.insert(beginmark, wszTemp);
 						}
@@ -179,10 +177,10 @@ search_again:
 					}
 				}
 				if (!clr_found) {
-					size_t  c_closing = colorname.find_first_of(L"]", 0);
+					size_t  c_closing = colorname.find_first_of(_T("]"), 0);
 					if (c_closing == colorname.npos)
 						c_closing = colorname.length();
-					const wchar_t *wszColname = colorname.c_str();
+					const TCHAR *wszColname = colorname.c_str();
 					if (endmark != message.npos && c_closing > 2 && c_closing <= 6 && iswalnum(colorname[0]) && iswalnum(colorname[c_closing -1])) {
 						RTF_ColorAdd(wszColname, c_closing);
 						if (!was_added) {
@@ -205,28 +203,28 @@ invalid_code:
 		}
 		if (endmark != message.npos)
 			message.replace(endmark, 4, formatting_strings_end[i]);
-		message.insert(beginmark, L" ");
+		message.insert(beginmark, _T(" "));
 		message.replace(beginmark, 4, formatting_strings_begin[i]);
 	}
 nobbcode:
-	if (message.find(L"://") != message.npos)
+	if (message.find(_T("://")) != message.npos)
 		goto nosimpletags;
 
 	if (!(dwFlags & MWF_LOG_TEXTFORMAT))
 		goto nosimpletags;
 
 
-	while ((beginmark = message.find_first_of(L"*/_", beginmark)) != message.npos) {
+	while ((beginmark = message.find_first_of(_T("*/_"), beginmark)) != message.npos) {
 		endmarker = message[beginmark];
 		if (LOWORD(flags)) {
-			if (beginmark > 0 && !iswspace(message[beginmark - 1]) && !iswpunct(message[beginmark - 1])) {
+			if (beginmark > 0 && !_istspace(message[beginmark - 1]) && !_istpunct(message[beginmark - 1])) {
 				beginmark++;
 				continue;
 			}
 			// search a corresponding endmarker which fulfills the criteria
 			INT_PTR tempmark = beginmark + 1;
 			while ((endmark = message.find(endmarker, tempmark)) != message.npos) {
-				if (iswpunct(message[endmark + 1]) || iswspace(message[endmark + 1]) || message[endmark + 1] == 0 || wcschr(L"*/_", message[endmark + 1]) != NULL)
+				if (_istpunct(message[endmark + 1]) || _istspace(message[endmark + 1]) || message[endmark + 1] == 0 || _tcschr(_T("*/_"), message[endmark + 1]) != NULL)
 					goto ok;
 				tempmark = endmark + 1;
 			}
@@ -259,7 +257,7 @@ ok:
 		*/
 
 		if (iHaveSmileyadd && endmark > beginmark + 1) {
-			std::wstring smcode;
+			tstring smcode;
 			smcode.assign(message, beginmark, (endmark - beginmark) + 1);
 			SMADD_BATCHPARSE2 smbp = {0};
 			SMADD_BATCHPARSERES *smbpr;
@@ -276,9 +274,9 @@ ok:
 				continue;
 			}
 		}
-		message.insert(endmark, L"%%%");
+		message.insert(endmark, _T("%%%"));
 		message.replace(endmark, 4, formatting_strings_end[index]);
-		message.insert(beginmark, L"%%%");
+		message.insert(beginmark, _T("%%%"));
 		message.replace(beginmark, 4, formatting_strings_begin[index]);
 	}
 nosimpletags:
@@ -286,202 +284,6 @@ nosimpletags:
 		*clr_added = TRUE;
 	return(message.c_str());
 }
-
-
-#else   // unicode
-
-/* this is the ansi version */
-static char *bbcodes_begin[] = { "[b]", "[i]", "[u]", "[s]", "[color=" };
-static char *bbcodes_end[] = { "[/b]", "[/i]", "[/u]", "[/s]", "[/color]" };
-
-#define NR_CODES 5
-
-static char *formatting_strings_begin[] = { "b1 ", "i1 ", "u1 ", "s1 ", "c1 " };
-static char *formatting_strings_end[] = { "b0 ", "i0 ", "u0 ", "s0 ", "c0 " };
-
-/*
-* this translates formatting tags into rtf sequences...
-*/
-
-const char *FormatRaw(DWORD dwFlags, const char *msg, int flags, const char *szProto, HANDLE hContact, BOOL *clr_added, BOOL isSent)
-{
-	bool clr_was_added = false, was_added;
-	static std::string message(msg);
-	unsigned beginmark = 0, endmark = 0, tempmark = 0, index;
-	char endmarker;
-	int i, endindex;
-	message.assign(msg);
-
-	if (haveMathMod && mathModDelimiter && message.find(mathModDelimiter) != message.npos)
-		return(message.c_str());
-
-	if(!(dwFlags & MWF_LOG_BBCODE))
-		goto nobbcode;
-
-	if (iHaveSmileyadd == -1)
-		iHaveSmileyadd = ServiceExists(MS_SMILEYADD_BATCHPARSE);
-
-	if (haveMathMod && mathModDelimiter) {
-		unsigned mark = 0;
-		int      nrDelims = 0;
-		while ((mark = message.find(mathModDelimiter, mark)) != message.npos) {
-			nrDelims++;
-			mark += lstrlen(mathModDelimiter);
-		}
-		if (nrDelims > 0 && (nrDelims % 2) != 0)
-			message.append(mathModDelimiter);
-	}
-
-	while (TRUE) {
-		for (i = 0; i < NR_CODES; i++) {
-			if ((tempmark = message.find(bbcodes_begin[i], 0)) != message.npos)
-				break;
-		}
-		if (i >= NR_CODES)
-			break;
-
-		beginmark = tempmark;
-		endindex = i;
-		endmark = message.find(bbcodes_end[i], beginmark);
-		if (endindex == 4) {                                 // color
-			size_t closing = message.find_first_of("]", beginmark);
-			was_added = false;
-
-			if (closing == message.npos) {                      // must be an invalid [color=] tag w/o closing bracket
-				message[beginmark] = ' ';
-				continue;
-			} else {
-				std::string colorname = message.substr(beginmark + 7, 8);
-search_again:
-				bool  clr_found = false;
-				unsigned int ii = 0;
-				char szTemp[5];
-				for (ii = 0; ii < g_ctable_size; ii++) {
-					if (!_strnicmp((char *)colorname.c_str(), rtf_ctable[ii].szName, lstrlenA(rtf_ctable[ii].szName))) {
-						closing = beginmark + 7 + lstrlenA(rtf_ctable[ii].szName);
-						if (endmark != message.npos) {
-							message.erase(endmark, 8);
-							message.insert(endmark, "c0xx ");
-						}
-						message.erase(beginmark, (closing - beginmark) + 1);
-						message.insert(beginmark, "cxxx ");
-						_snprintf(szTemp, 4, "%02d", MSGDLGFONTCOUNT + 10 + ii);
-						message[beginmark + 3] = szTemp[0];
-						message[beginmark + 4] = szTemp[1];
-						clr_found = true;
-						if (was_added) {
-							char wszTemp[100];
-							_snprintf(wszTemp, 100, "##col##%06u:%04u", endmark - closing, ii);
-							wszTemp[99] = 0;
-							message.insert(beginmark, wszTemp);
-						}
-						break;
-					}
-				}
-				if (!clr_found) {
-					size_t  c_closing = colorname.find_first_of("]", 0);
-					if (c_closing == colorname.npos)
-						c_closing = colorname.length();
-					const char *wszColname = colorname.c_str();
-					if (endmark != message.npos && c_closing > 2 && c_closing <= 6 && isalnum(colorname[0]) && isalnum(colorname[c_closing -1])) {
-						RTF_ColorAdd(wszColname, c_closing);
-						if (!was_added) {
-							clr_was_added = was_added = true;
-							goto search_again;
-						} else
-							goto invalid_code;
-					} else {
-invalid_code:
-						if (endmark != message.npos)
-							message.erase(endmark, 8);
-						if (closing != message.npos && closing < endmark)
-							message.erase(beginmark, (closing - beginmark) + 1);
-						else
-							message[beginmark] = ' ';
-					}
-				}
-				continue;
-			}
-		}
-		if (endmark != message.npos)
-			message.replace(endmark, 4, formatting_strings_end[i]);
-		message.insert(beginmark, " ");
-		message.replace(beginmark, 4, formatting_strings_begin[i]);
-	}
-
-nobbcode:
-	if (message.find("://") != message.npos)
-		goto nosimpletags;
-
-	if (!(dwFlags & MWF_LOG_TEXTFORMAT))           // skip */_ stuff if not enabled
-		goto nosimpletags;
-
-	while ((beginmark = message.find_first_of("*/_", beginmark)) != message.npos) {
-		endmarker = message[beginmark];
-		if (LOWORD(flags)) {
-			if (beginmark > 0 && !isspace(message[beginmark - 1]) && !ispunct(message[beginmark - 1])) {
-				beginmark++;
-				continue;
-			}
-			// search a corresponding endmarker which fulfills the criteria
-			unsigned tempmark = beginmark + 1;
-			while ((endmark = message.find(endmarker, tempmark)) != message.npos) {
-				if (ispunct(message[endmark + 1]) || isspace(message[endmark + 1]) || message[endmark + 1] == 0 || strchr("*/_", message[endmark + 1]) != NULL)
-					goto ok;
-				tempmark = endmark + 1;
-			}
-			break;
-		} else {
-			if ((endmark = message.find(endmarker, beginmark + 1)) == message.npos)
-				break;
-		}
-ok:
-		if ((endmark - beginmark) < 2) {
-			beginmark++;
-			continue;
-		}
-		index = 0;
-		switch (endmarker) {
-			case '*':
-				index = 0;
-				break;
-			case '/':
-				index = 1;
-				break;
-			case '_':
-				index = 2;
-				break;
-		}
-		if (iHaveSmileyadd && endmark > beginmark + 1) {
-			std::string smcode;
-			smcode.assign(message, beginmark, (endmark - beginmark) + 1);
-			SMADD_BATCHPARSE2 smbp = {0};
-			SMADD_BATCHPARSERES *smbpr;
-
-			smbp.cbSize = sizeof(smbp);
-			smbp.Protocolname = szProto;
-			smbp.flag = SAFL_TCHAR | SAFL_PATH | (isSent ? SAFL_OUTGOING : 0);
-			smbp.str = (TCHAR *)smcode.c_str();
-			smbp.hContact = hContact;
-			smbpr = (SMADD_BATCHPARSERES *)CallService(MS_SMILEYADD_BATCHPARSE, 0, (LPARAM) & smbp);
-			if (smbpr) {
-				CallService(MS_SMILEYADD_BATCHFREE, 0, (LPARAM)smbpr);
-				beginmark = endmark + 1;
-				continue;
-			}
-		}
-		message.insert(endmark, "%%%");
-		message.replace(endmark, 4, formatting_strings_end[index]);
-		message.insert(beginmark, "%%%");
-		message.replace(beginmark, 4, formatting_strings_begin[index]);
-	}
-nosimpletags:
-	if (clr_added && clr_was_added)
-		*clr_added = TRUE;
-	return(message.c_str());
-}
-
-#endif
 
 /*
  * format the title bar string for IM chat sessions using placeholders.
@@ -495,11 +297,7 @@ extern TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNi
 	INT_PTR tempmark = 0;
 	TCHAR szTemp[512];
 
-#if defined(_UNICODE)
-	std::wstring title(szFormat);
-#else
-	std::string title(szFormat);
-#endif
+	tstring title(szFormat);
 
 	for ( size_t curpos = 0; curpos < title.length(); ) {
 		if(title[curpos] != '%') {
@@ -662,10 +460,6 @@ char *FilterEventMarkersA(char *szText)
 	return szText;
 }
 
-// nightwish: doesn't compile under Visual C++ 6.0 (aka 98, yeah, that c++ compiler is crap)
-
-typedef std::basic_string<TCHAR,std::char_traits<TCHAR> > tstring;
-
 // __T() not defined by MingW32
 
 #ifdef __GNUC__
@@ -678,12 +472,8 @@ typedef std::basic_string<TCHAR,std::char_traits<TCHAR> > tstring;
 
 const TCHAR *DoubleAmpersands(TCHAR *pszText)
 {
-#if defined(UNICODE)
-	std::wstring text(pszText);
-#else
-	std::string text(pszText);
-#endif
-	//tstring text(pszText);
+	tstring text(pszText);
+
 	INT_PTR textPos = 0;
 
 	while (TRUE) {

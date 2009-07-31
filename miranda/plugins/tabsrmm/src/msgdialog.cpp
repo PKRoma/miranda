@@ -41,8 +41,8 @@ extern struct GlobalLogSettings_t g_Settings;
 extern HANDLE g_hEvent_MsgPopup;
 extern int    g_chat_integration_enabled;
 
-char  *FilterEventMarkersA(char *szText);
-WCHAR *FilterEventMarkers(WCHAR *wszText);
+TCHAR *FilterEventMarkers(TCHAR *wszText);
+char  *FilterEventMarkersA(char *wszText);
 extern const TCHAR *DoubleAmpersands(TCHAR *pszText);
 
 TCHAR *xStatusDescr[] = {	_T("Angry"), _T("Duck"), _T("Tired"), _T("Party"), _T("Beer"), _T("Thinking"), _T("Eating"),
@@ -1446,7 +1446,9 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 					}
 					case ID_SPLITTERCONTEXT_SETPOSITIONFORTHISSESSION:
 						break;
+					case ID_SPLITTERCONTEXT_SAVEFORCONTAINER:
 					case ID_SPLITTERCONTEXT_SAVEGLOBALFORALLSESSIONS: {
+
 						RECT rcWin;
 						BYTE bSync = M->GetByte("Chat", "SyncSplitter", 0);
 						DWORD dwOff_IM = 0, dwOff_CHAT = 0;
@@ -3942,7 +3944,7 @@ quote_from_last:
 						free(szFromStream);
 #else
 						szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_LOG), dat, SF_TEXT | SFF_SELECTION);
-						FilterEventMarkersA(szFromStream);
+						FilterEventMarkers(szFromStream);
 						szQuoted = QuoteText(szFromStream, 64, 0);
 						SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_REPLACESEL, TRUE, (LPARAM)szQuoted);
 						free(szQuoted);
@@ -5566,7 +5568,7 @@ quote_from_last:
 			 */
 
 			t_item = SkinItems[ID_EXTBKINFOPANELBG];
-			if((!t_item.IGNORED && (dat->dwFlags & MWF_SHOW_INFOPANEL) && !(dat->dwFlags & MWF_ERRORSTATE)) || (M->isAero() && !m_pContainer->bSkinned)) {
+			if(((dat->dwFlags & MWF_SHOW_INFOPANEL) && !(dat->dwFlags & MWF_ERRORSTATE)) || (M->isAero() && !m_pContainer->bSkinned)) {
 				CSkinItem *item = &t_item;
 
 				GetClientRect(hwndDlg, &rc);
@@ -5585,15 +5587,26 @@ quote_from_last:
 					FillRect(hdcMem, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
 				}
 				else {
-					DrawAlpha(dat->hdcCached, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
-							  item->CORNER, item->BORDERSTYLE, item->imageItem);
-					DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
-							  item->CORNER, item->BORDERSTYLE, item->imageItem);
+					if(m_pContainer->bSkinned) {
+						CSkin::SkinDrawBG(hwndDlg, m_pContainer->hwnd, m_pContainer, &rc, dat->hdcCached);
+						CSkin::SkinDrawBG(hwndDlg, m_pContainer->hwnd, m_pContainer, &rc, hdcMem);
+					}
+					else {
+						FillRect(dat->hdcCached, &rcClient, GetSysColorBrush(COLOR_3DFACE));
+						FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
+					}
+					if(!item->IGNORED) {
+						DrawAlpha(dat->hdcCached, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+								  item->CORNER, item->BORDERSTYLE, item->imageItem);
+						DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+								  item->CORNER, item->BORDERSTYLE, item->imageItem);
+					}
 				}
-				/*
-				 * draw the logo
-				 */
 			}
+			/*
+			 * draw the logo
+			 */
+
 			if(dat->dwFlagsEx & MWF_SHOW_INFOPANEL && !(dat->dwFlagsEx & MWF_SHOW_INFONOTES) && !(dat->dwFlags & MWF_ERRORSTATE)) {
 				BITMAP 	bm;
 				HDC		hdcImage = CreateCompatibleDC(hdc);

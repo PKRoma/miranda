@@ -48,10 +48,10 @@ public:
 		*this = From;
 		m_nextItem = 0;
 	}
-	CImageItem(const char *szName)
+	CImageItem(const TCHAR *szName)
 	{
 		ZeroMemory(this, sizeof(CImageItem));
-		_snprintf(m_szName, 40, szName);
+		_sntprintf(m_szName, 40, szName);
 		m_szName[39] = 0;
 	}
 
@@ -92,9 +92,9 @@ public:
 		const BLENDFUNCTION &bf = m_bf;
 		return(bf);
 	}
-	const char*		getName() const { return (m_szName); }
-	char*			Read(const char *szFilename);
-	void 			Create(const char *szImageFile);
+	const TCHAR*	getName() const { return (m_szName); }
+	TCHAR*			Read(const TCHAR *szFilename);
+	void 			Create(const TCHAR *szImageFile);
 	void __fastcall	Render(const HDC hdc, const RECT *rc) const;
 	static void 	PreMultiply(HBITMAP hBitmap, int mode);
 	static void 	CorrectBitmap32Alpha(HBITMAP hBitmap);		// TODO: make this a real member function later
@@ -102,7 +102,7 @@ public:
 public:
 	bool			m_fValid;
 private:
-	char 		 	m_szName[40];
+	TCHAR 		 	m_szName[40];
 	HBITMAP 		m_hbm;
 	BYTE    		m_bLeft, m_bRight, m_bTop, m_bBottom;      // sizing margins
 	BYTE    		m_alpha;
@@ -130,17 +130,23 @@ public:
 		if(m_fLoadOnStartup)
 			Load();								// load skin on init if this is checked
 	}
-	~CSkin() { }
+	~CSkin()
+	{
+		Unload();
+	}
 
 	void			Init();
 	void			Load();
 	void			Unload();
 	void			setFileName();
-	void			ReadItem(const int id, const char *section);
+	void			ReadItem(const int id, const TCHAR *section);
 	void			LoadItems();
-	void			ReadImageItem(const char *szItemName);
-	void 			ReadButtonItem(const char *itemName) const;
+	void 			LoadIcon(const TCHAR *szSection, const TCHAR *name, HICON *hIcon);
+	void			ReadImageItem(const TCHAR *szItemName);
+	void 			ReadButtonItem(const TCHAR *itemName) const;
 	bool			haveGlyphItem() const { return(m_fHaveGlyph); }
+	int				getNrIcons() const { return(m_nrSkinIcons); }
+	const ICONDESCW* getIconDesc(const int id) const { return(&m_skinIcons[id]); }
 	/**
 	 * get the glyph image item (a single PNG image, containing a number of textures
 	 * for the skin.
@@ -162,7 +168,8 @@ public:
 	static void SkinDrawBG(HWND hwndClient, HWND hwnd, struct ContainerWindowData *pContainer, RECT *rcClient, HDC hdcTarget);
 	static void MY_AlphaBlend(HDC hdcDraw, DWORD left, DWORD top,  int width, int height, int bmWidth, int bmHeight, HDC hdcMem);
 	static void DrawDimmedIcon(HDC hdc, LONG left, LONG top, LONG dx, LONG dy, HICON hIcon, BYTE alpha);
-	static DWORD __fastcall HexStringToLong(const char *szSource);
+	static DWORD __fastcall HexStringToLong(const TCHAR *szSource);
+	static int	RenderText();
 
 public:
 	static bool		m_DisableScrollbars, m_bClipBorder;
@@ -177,9 +184,10 @@ public:
 	static HBRUSH 	m_ContainerColorKeyBrush, m_MenuBGBrush;
 	static bool		m_skinEnabled;
 	static bool		m_frameSkins;
+	static HICON	m_closeIcon, m_minIcon, m_maxIcon;
 
 private:
-	char			m_tszFileName[MAX_PATH];				// full path and filename of the currently loaded skin
+	TCHAR			m_tszFileName[MAX_PATH];				// full path and filename of the currently loaded skin
 	CSkinItem*		m_SkinItems;
 	CImageItem*		m_ImageItems;							// the list of image item objects
 	CImageItem		m_glyphItem;
@@ -187,6 +195,8 @@ private:
 	bool			m_fLoadOnStartup;						// load the skin on plugin initialization.
 	bool			m_fHaveGlyph;
 	void 			SkinCalcFrameWidth();
+	ICONDESCW		*m_skinIcons;
+	int				m_nrSkinIcons;
 };
 
 extern CSkin *Skin;

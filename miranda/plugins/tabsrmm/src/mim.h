@@ -125,9 +125,11 @@ public:
 	 * for backwards compatiblity still needed (not everything path-related is unicode
 	*/
 
+#if defined(UNICODE)
 	int pathIsAbsolute(const char *path) const;
 	size_t pathToRelative(const char *pSrc, char *pOut);
 	size_t pathToAbsolute(const char *pSrc, char *pOut);
+#endif
 
 	const TCHAR  *getDataPath() const { return(m_szProfilePath); }
 	const TCHAR  *getSkinPath() const { return(m_szSkinsPath); }
@@ -156,7 +158,8 @@ public:
 	bool		getAeroState()
 	{
 		BOOL result = FALSE;
-		m_isAero = GetByte("useAero", 0) && ((m_dwmIsCompositionEnabled && (m_dwmIsCompositionEnabled(&result) == S_OK) && result) ? true : false);
+		m_isAero = (CSkin::m_skinEnabled == false) && GetByte("useAero", 0) &&
+			((m_dwmIsCompositionEnabled && (m_dwmIsCompositionEnabled(&result) == S_OK) && result) ? true : false);
 		return(m_isAero);
 	}
 	/*
