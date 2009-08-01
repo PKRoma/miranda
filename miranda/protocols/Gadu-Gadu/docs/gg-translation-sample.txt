@@ -1,4 +1,4 @@
-; ** Gadu-Gadu 0.0.4.5
+; ** Gadu-Gadu 0.0.5.2
 
 ; Info page
 [Public Info]

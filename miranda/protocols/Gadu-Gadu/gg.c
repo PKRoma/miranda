@@ -25,10 +25,10 @@
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"Gadu-Gadu Protocol",
-	PLUGIN_MAKE_VERSION(0, 0, 4, 8),
+	PLUGIN_MAKE_VERSION(0, 0, 5, 2),
 	"Provides support for Gadu-Gadu protocol",
 	"Adam Strzelecki, Bartosz Bia³ek",
-	"ono+miranda@java.pl",
+	"dezred"/*antispam*/"@"/*antispam*/"gmail"/*antispam*/"."/*antispam*/"com",
 	"Copyright © 2003-2009 Adam Strzelecki, Bartosz Bia³ek",
 	"http://www.miranda-im.pl/",
 	0,
