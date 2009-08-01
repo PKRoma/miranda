@@ -20,6 +20,16 @@ Contents
 
 1. Changes in this version
 --------------------------
+* New in 0.8.3
+Bugfixes:
+ - Fixed contast minimum row height determination
+ - AIM: Chat message processing improvements
+ - AIM: Fixed error messages during nickname upload
+ - AIM: File transfer improvements
+ - Jabber: Fix for saving the checkbox value in password dialog
+ - MSN: Away message api compatibility improvement
+
+
 * New in 0.8.2
 Enhancements:
  - Improved account deletion support
