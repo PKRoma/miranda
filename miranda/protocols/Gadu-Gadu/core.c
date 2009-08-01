@@ -20,6 +20,7 @@
 
 #include "gg.h"
 #include <errno.h>
+#include <io.h>
 
 extern int gg_failno;
 
@@ -1003,26 +1004,42 @@ retry:
 			// Direct connection error
 			case GG_EVENT_DCC7_ERROR:
 				{
+					struct gg_dcc7 *dcc7 = e->event.dcc7_error_ex.dcc7;
+
 					switch (e->event.dcc7_error)
 					{
 						case GG_ERROR_DCC7_HANDSHAKE:
-							gg_netlog(gg, "gg_mainthread(%x): Handshake error.", gg);
+							gg_netlog(gg, "gg_mainthread(%x): Client: %d, Handshake error.", gg, dcc7 ? dcc7->peer_uin : 0);
 							break;
 						case GG_ERROR_DCC7_NET:
-							gg_netlog(gg, "gg_mainthread(%x): Network error.", gg);
+							gg_netlog(gg, "gg_mainthread(%x): Client: %d, Network error.", gg, dcc7 ? dcc7->peer_uin : 0);
 							break;
 						case GG_ERROR_DCC7_FILE:
-							gg_netlog(gg, "gg_mainthread(%x): File read/write error.", gg);
+							gg_netlog(gg, "gg_mainthread(%x): Client: %d, File read/write error.", gg, dcc7 ? dcc7->peer_uin : 0);
 							break;
 						case GG_ERROR_DCC7_EOF:
-							gg_netlog(gg, "gg_mainthread(%x): End of file/connection error.", gg);
+							gg_netlog(gg, "gg_mainthread(%x): Client: %d, End of file/connection error.", gg, dcc7 ? dcc7->peer_uin : 0);
 							break;
 						case GG_ERROR_DCC7_REFUSED:
-							gg_netlog(gg, "gg_mainthread(%x): Connection refused error.", gg);
+							gg_netlog(gg, "gg_mainthread(%x): Client: %d, Connection refused error.", gg, dcc7 ? dcc7->peer_uin : 0);
 							break;
 						default:
-							gg_netlog(gg, "gg_mainthread(%x): Unknown error.", gg);
+							gg_netlog(gg, "gg_mainthread(%x): Client: %d, Unknown error.", gg, dcc7 ? dcc7->peer_uin : 0);
 					}
+
+					if (!dcc7) break;
+
+					// Remove from watches
+					list_remove(&gg->watches, dcc7, 0);
+
+					// Close file & fail
+					if(dcc7->contact)
+					{
+						_close(dcc7->file_fd); dcc7->file_fd = -1;
+						ProtoBroadcastAck(GG_PROTO, dcc7->contact, ACKTYPE_FILE, ACKRESULT_FAILED, dcc7, 0);
+					}
+					// Free dcc
+					gg_dcc7_free(dcc7);
 				}
 				break;
 #endif

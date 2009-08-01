@@ -917,6 +917,16 @@ struct gg_event_dcc7_accept {
 };
 
 /**
+ * Opis zdarzenia \c GG_EVENT_DCC7_ERROR.
+ *
+ * \note Odwrotna kolejność pól ma na celu zachowanie ABI.
+ */
+struct gg_event_dcc7_error {
+	enum gg_error_t error;	/**< Kod błędu */
+	struct gg_dcc7 *dcc7;	/**< Struktura połączenia */
+};
+
+/**
  * Unia wszystkich zdarzeń zwracanych przez funkcje \c gg_watch_fd(), 
  * \c gg_dcc_watch_fd() i \c gg_dcc7_watch_fd().
  *
@@ -941,6 +951,7 @@ union gg_event_union {
 	struct gg_event_dcc_voice_data dcc_voice_data;	/**< Dane połączenia głosowego (\c GG_EVENT_DCC_VOICE_DATA) */
 	struct gg_dcc7 *dcc7_new;	/**< Nowe połączenie bezpośrednie (\c GG_EVENT_DCC7_NEW) */
 	enum gg_error_t dcc7_error;	/**< Błąd połączenia bezpośredniego (\c GG_EVENT_DCC7_ERROR) */
+	struct gg_event_dcc7_error dcc7_error_ex;	/**< Błąd połączenia bezpośredniego ze wskaźnikiem na strukturę połączenia (\c GG_EVENT_DCC7_ERROR) */
 	struct gg_event_dcc7_connected dcc7_connected;	/**< Informacja o zestawieniu połączenia bezpośredniego (\c GG_EVENT_DCC7_CONNECTED) */
 	struct gg_event_dcc7_reject dcc7_reject;	/**< Odrzucono połączenia bezpośredniego (\c GG_EVENT_DCC7_REJECT) */
 	struct gg_event_dcc7_accept dcc7_accept;	/**< Zaakceptowano połączenie bezpośrednie (\c GG_EVENT_DCC7_ACCEPT) */
