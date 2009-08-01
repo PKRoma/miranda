@@ -135,6 +135,10 @@ SOURCE=.\libgadu\libgadu.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\libgadu\protocol.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\libgadu\pubdir.c
 # SUBTRACT CPP /YX
 # End Source File
@@ -142,6 +146,15 @@ SOURCE=.\libgadu\pubdir.c
 
 SOURCE=.\libgadu\pubdir50.c
 # SUBTRACT CPP /YX
+# End Source File
+# Begin Source File
+
+SOURCE=.\libgadu\resolver.c
+# SUBTRACT CPP /YX
+# End Source File
+# Begin Source File
+
+SOURCE=.\libgadu\resolver.h
 # End Source File
 # Begin Source File
 
@@ -193,6 +206,10 @@ SOURCE=.\import.c
 # Begin Source File
 
 SOURCE=.\keepalive.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\links.c
 # End Source File
 # Begin Source File
 
@@ -277,10 +294,6 @@ SOURCE=.\resource.rc
 # Begin Source File
 
 SOURCE=.\icos\save.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\icos\stop.ico
 # End Source File
 # End Group
 # Begin Source File

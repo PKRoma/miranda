@@ -67,6 +67,7 @@ extern "C" {
 #include <m_utils.h>
 #include <m_ignore.h>
 #include <m_clist.h>
+#include <m_clistint.h>
 #include <m_options.h>
 #include <m_userinfo.h>
 #include <m_clui.h>
@@ -76,6 +77,7 @@ extern "C" {
 #include <m_icolib.h>
 #include <m_imgsrvc.h>
 #include <m_genmenu.h>
+#include <m_file.h>
 #ifdef DEBUGMODE
 #include <m_popup.h>
 #endif
@@ -112,7 +114,7 @@ typedef struct
 {
 	PROTO_INTERFACE proto;
 	LPTSTR name;
-	pthread_mutex_t ft_mutex, sess_mutex, img_mutex;
+	pthread_mutex_t ft_mutex, sess_mutex, img_mutex, modemsg_mutex;
 	list_t watches, transfers, requests, chats, imagedlgs;
 	int gc_enabled, gc_id, list_remove, unicode_core;
 	uin_t next_uin;
@@ -129,6 +131,8 @@ typedef struct
 	{
 		char *online;
 		char *away;
+		char *dnd;
+		char *freechat;
 		char *invisible;
 		char *offline;
 	} modemsg;
@@ -137,11 +141,12 @@ typedef struct
 		hookUserInfoInit,
 		hookSettingDeleted,
 		hookSettingChanged,
-		hookIconsChanged,
 		hookGCUserEvent,
 		hookGCMenuBuild;
-	HANDLE hMainMenu[8];
-	HANDLE hContactMenu[1];
+	HANDLE hMenuRoot;
+	HANDLE hMainMenu[7];
+	HANDLE hContactMenu;
+	HANDLE hInstanceMenuItem;
 } GGPROTO;
 
 typedef struct
@@ -197,7 +202,6 @@ typedef struct
 #define GGS_IMPORT_TEXT 		"%s/ImportFromText"
 #define GGS_EXPORT_SERVER		"%s/ExportFromServer"
 #define GGS_EXPORT_TEXT 		"%s/ExportFromText"
-#define GGS_CHPASS				"%s/ChangePassword"
 
 #define GGS_SENDIMAGE			"%s/SendImage"
 #define GGS_RECVIMAGE			"%s/RecvImage"
@@ -326,6 +330,7 @@ typedef struct
 
 extern HINSTANCE hInstance;
 extern PLUGINLINK *pluginLink;
+extern CLIST_INTERFACE *pcli;
 extern DWORD gMirandaVersion;
 extern HANDLE hNetlib;
 #ifdef GG_CONFIG_HAVE_OPENSSL
@@ -355,11 +360,9 @@ uint32_t swap32(uint32_t x);
 const char *gg_version2string(int v);
 
 /* Global GG functions */
-void gg_refreshblockedicon();
 void gg_notifyuser(GGPROTO *gg, HANDLE hContact, int refresh);
 void gg_setalloffline(GGPROTO *gg);
 void gg_disconnect(GGPROTO *gg);
-int gg_refreshstatus(GGPROTO *gg, int status);
 HANDLE gg_getcontact(GGPROTO *gg, uin_t uin, int create, int inlist, char *nick);
 void gg_registerservices(GGPROTO *gg);
 void gg_threadwait(GGPROTO *gg, pthread_t *thread);
@@ -370,7 +373,7 @@ int gg_isonline(GGPROTO *gg);
 int gg_netlog(const GGPROTO *gg, const char *fmt, ...);
 #endif
 
-void gg_broadcastnewstatus(GGPROTO *gg, int s);
+void gg_broadcastnewstatus(GGPROTO *gg, int newStatus);
 int gg_userdeleted(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 void gg_notifyall(GGPROTO *gg);
@@ -385,7 +388,9 @@ void gg_remindpassword(GGPROTO *gg, uin_t uin, const char *email);
 void *gg_img_loadpicture(GGPROTO *gg, struct gg_event* e, char *szFileName);
 int gg_img_releasepicture(void *img);
 int gg_img_display(GGPROTO *gg, HANDLE hContact, void *img);
+int gg_img_displayasmsg(GGPROTO *gg, HANDLE hContact, void *img);
 int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam);
+int gg_recvmessage(PROTO_INTERFACE *proto, HANDLE hContact, PROTORECVEVENT *pre);
 
 /* File transfer functions */
 HANDLE gg_fileallow(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer, const char* szPath);
@@ -416,10 +421,16 @@ BOOL gg_img_opened(GGPROTO *gg, uin_t uin);
 void *__stdcall gg_img_dlgthread(void *empty);
 
 /* IcoLib functions */
-void gg_icolib_init(GGPROTO *gg);
-int gg_iconschanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
+void gg_icolib_init();
 HICON LoadIconEx(int iconId);
 HANDLE GetIconHandle(int iconId);
+
+/* URI parser functions */
+void gg_links_instancemenu_init();
+void gg_links_init();
+void gg_links_destroy();
+void gg_links_instance_init(GGPROTO* gg);
+void gg_links_instance_destroy(GGPROTO* gg);
 
 /* UI page initializers */
 int gg_options_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
@@ -427,6 +438,7 @@ int gg_details_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 
 /* Groupchat functions */
 int gg_gc_init(GGPROTO *gg);
+void gg_gc_menus_init(GGPROTO *gg);
 int gg_gc_destroy(GGPROTO *gg);
 char * gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients_count);
 GGGC *gg_gc_lookup(GGPROTO *gg, char *id);

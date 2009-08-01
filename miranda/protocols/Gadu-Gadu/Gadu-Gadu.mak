@@ -58,10 +58,12 @@ CLEAN :
 	-@erase "$(INTDIR)\import.obj"
 	-@erase "$(INTDIR)\keepalive.obj"
 	-@erase "$(INTDIR)\libgadu.obj"
+	-@erase "$(INTDIR)\links.obj"
 	-@erase "$(INTDIR)\ownerinfo.obj"
 	-@erase "$(INTDIR)\pthread.obj"
 	-@erase "$(INTDIR)\pubdir.obj"
 	-@erase "$(INTDIR)\pubdir50.obj"
+	-@erase "$(INTDIR)\resolver.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\sha1.obj"
@@ -97,6 +99,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\libgadu.obj" \
 	"$(INTDIR)\pubdir.obj" \
 	"$(INTDIR)\pubdir50.obj" \
+	"$(INTDIR)\resolver.obj" \
 	"$(INTDIR)\sha1.obj" \
 	"$(INTDIR)\core.obj" \
 	"$(INTDIR)\dialogs.obj" \
@@ -108,6 +111,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\image.obj" \
 	"$(INTDIR)\import.obj" \
 	"$(INTDIR)\keepalive.obj" \
+	"$(INTDIR)\links.obj" \
 	"$(INTDIR)\ownerinfo.obj" \
 	"$(INTDIR)\pthread.obj" \
 	"$(INTDIR)\services.obj" \
@@ -150,10 +154,12 @@ CLEAN :
 	-@erase "$(INTDIR)\import.obj"
 	-@erase "$(INTDIR)\keepalive.obj"
 	-@erase "$(INTDIR)\libgadu.obj"
+	-@erase "$(INTDIR)\links.obj"
 	-@erase "$(INTDIR)\ownerinfo.obj"
 	-@erase "$(INTDIR)\pthread.obj"
 	-@erase "$(INTDIR)\pubdir.obj"
 	-@erase "$(INTDIR)\pubdir50.obj"
+	-@erase "$(INTDIR)\resolver.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\sha1.obj"
@@ -190,6 +196,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\libgadu.obj" \
 	"$(INTDIR)\pubdir.obj" \
 	"$(INTDIR)\pubdir50.obj" \
+	"$(INTDIR)\resolver.obj" \
 	"$(INTDIR)\sha1.obj" \
 	"$(INTDIR)\core.obj" \
 	"$(INTDIR)\dialogs.obj" \
@@ -201,6 +208,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\image.obj" \
 	"$(INTDIR)\import.obj" \
 	"$(INTDIR)\keepalive.obj" \
+	"$(INTDIR)\links.obj" \
 	"$(INTDIR)\ownerinfo.obj" \
 	"$(INTDIR)\pthread.obj" \
 	"$(INTDIR)\services.obj" \
@@ -449,6 +457,30 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /I "libgadu" /I
 
 !ENDIF 
 
+SOURCE=.\libgadu\resolver.c
+
+!IF  "$(CFG)" == "GG - Win32 Release"
+
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /I "libgadu" /I "libgadu/win32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "GG_EXPORTS" /FAcs /Fa"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\resolver.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "GG - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /I "libgadu" /I "libgadu/win32" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "GG_EXPORTS" /FAcs /Fa"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+"$(INTDIR)\resolver.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
+
 SOURCE=.\libgadu\sha1.c
 
 !IF  "$(CFG)" == "GG - Win32 Release"
@@ -540,6 +572,11 @@ SOURCE=.\import.c
 SOURCE=.\keepalive.c
 
 "$(INTDIR)\keepalive.obj" : $(SOURCE) "$(INTDIR)"
+
+
+SOURCE=.\links.c
+
+"$(INTDIR)\links.obj" : $(SOURCE) "$(INTDIR)"
 
 
 SOURCE=.\ownerinfo.c

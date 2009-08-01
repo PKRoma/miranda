@@ -78,13 +78,12 @@ int gg_img_init(GGPROTO *gg)
 	// Send image contact menu item
 	mir_snprintf(service, sizeof(service), GGS_SENDIMAGE, GG_PROTO);
 	CreateProtoServiceFunction(service, gg_img_sendimg, gg);
-	mi.pszPopupName = GG_PROTONAME;
 	mi.position = -2000010000;
 	mi.hIcon = LoadIconEx(IDI_IMAGE);
 	mi.pszName = LPGEN("&Image");
 	mi.pszService = service;
-	mi.pszContactOwner = GG_PROTONAME;
-	gg->hContactMenu[0] = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) &mi);
+	mi.pszContactOwner = GG_PROTO;
+	gg->hContactMenu = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) &mi);
 
 	// Receive image
 	mir_snprintf(service, sizeof(service), GGS_RECVIMAGE, GG_PROTO);
@@ -138,7 +137,7 @@ int gg_img_destroy(GGPROTO *gg)
 
 	// Destroy list
 	list_destroy(gg->imagedlgs, 1);
-	CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)gg->hContactMenu[0], (LPARAM) 0);
+	CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)gg->hContactMenu, (LPARAM) 0);
 
 	return FALSE;
 }
@@ -261,15 +260,15 @@ int gg_img_saveimage(HWND hwnd, GGIMAGEENTRY *dat)
 			fwrite(dat->lpData, dat->nSize, 1, fp);
 			fclose(fp);
 #ifdef DEBUGMODE
-			gg_netlog(((GGIMAGEDLGDATA *)GetWindowLongPtr(hwnd, DWLP_USER))->gg, "gg_img_saveimage(): Image saved to %s.", szFileName);
+			gg_netlog(((GGIMAGEDLGDATA *)GetWindowLongPtr(hwnd, GWLP_USERDATA))->gg, "gg_img_saveimage(): Image saved to %s.", szFileName);
 #endif
 		}
 		else
 		{
 #ifdef DEBUGMODE
-			gg_netlog(((GGIMAGEDLGDATA *)GetWindowLongPtr(hwnd, DWLP_USER))->gg, "gg_img_saveimage(): Cannot save image to %s.", szFileName);
+			gg_netlog(((GGIMAGEDLGDATA *)GetWindowLongPtr(hwnd, GWLP_USERDATA))->gg, "gg_img_saveimage(): Cannot save image to %s.", szFileName);
 #endif
-			MessageBox(hwnd, Translate("Image cannot be written to disk."), ((GGIMAGEDLGDATA *)GetWindowLongPtr(hwnd, DWLP_USER))->gg->proto.m_szProtoName, MB_OK | MB_ICONERROR);
+			MessageBox(hwnd, Translate("Image cannot be written to disk."), ((GGIMAGEDLGDATA *)GetWindowLongPtr(hwnd, GWLP_USERDATA))->gg->proto.m_szProtoName, MB_OK | MB_ICONERROR);
 		}
 	}
 
@@ -382,7 +381,7 @@ BOOL gg_img_fit(HWND hwndDlg)
 // Send / Recv main dialog proc
 static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	GGIMAGEDLGDATA *dat = (GGIMAGEDLGDATA *)GetWindowLongPtr(hwndDlg, DWLP_USER);
+	GGIMAGEDLGDATA *dat = (GGIMAGEDLGDATA *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	switch(msg)
 	{
@@ -397,7 +396,7 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 				// Get dialog data
 				dat = (GGIMAGEDLGDATA *)lParam;
-				SetWindowLongPtr(hwndDlg, DWLP_USER, (LONG_PTR)dat);
+				SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 
 				// Save dialog handle
 				dat->hWnd = hwndDlg;
@@ -636,11 +635,12 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				case IDC_IMG_SEND:
 					{
 						unsigned char format[20];
-						char *msg = "\0"; // empty message
+						char *msg = "\xA0\0";
+						GGPROTO *gg = dat->gg;
 
-						if (dat->lpImages && gg_isonline(dat->gg))
+						if (dat->lpImages && gg_isonline(gg))
 						{
-							uin_t uin = (uin_t)DBGetContactSettingDword(dat->hContact, dat->gg->proto.m_szModuleName, GG_KEY_UIN, 0);
+							uin_t uin = (uin_t)DBGetContactSettingDword(dat->hContact, gg->proto.m_szModuleName, GG_KEY_UIN, 0);
 							struct gg_msg_richtext_format *r = NULL;
 							struct gg_msg_richtext_image *p = NULL;
 							LPVOID pvData = NULL;
@@ -650,7 +650,7 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 							r = (struct gg_msg_richtext_format *)(format + sizeof(struct gg_msg_richtext));
 							r->position = 0;
-							r->font = 0x80;
+							r->font = GG_FONT_IMAGE;
 
 							p = (struct gg_msg_richtext_image *)(format + sizeof(struct gg_msg_richtext) + sizeof(struct gg_msg_richtext_format));
 							p->unknown1 = 0x109;
@@ -661,10 +661,12 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							len = sizeof(struct gg_msg_richtext_format) + sizeof(struct gg_msg_richtext_image);
 							((struct gg_msg_richtext*)format)->length = len;
 
-							gg_send_message_richtext(dat->gg->sess, GG_CLASS_CHAT, (uin_t)uin,(unsigned char*)msg,format,len+sizeof(struct gg_msg_richtext));
+							pthread_mutex_lock(&gg->sess_mutex);
+							gg_send_message_richtext(gg->sess, GG_CLASS_CHAT, (uin_t)uin,(unsigned char*)msg,format,len+sizeof(struct gg_msg_richtext));
+							pthread_mutex_unlock(&gg->sess_mutex);
 
 							// Protect dat from releasing
-							SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
+							SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)0);
 
 							EndDialog(hwndDlg, 0);
 						}
@@ -766,6 +768,43 @@ GGIMAGEDLGDATA *gg_img_recvdlg(GGPROTO *gg, HANDLE hContact)
 	ResetEvent(dat->hEvent);
 	pthread_create(&dwThreadID, NULL, gg_img_dlgthread, (void *)dat);
 	return dat;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Display received image using [img] BBCode in message
+int gg_img_displayasmsg(GGPROTO *gg, HANDLE hContact, void *img)
+{
+	GGIMAGEENTRY *dat = (GGIMAGEENTRY *)img;
+	char szFileName[MAX_PATH], szDir[MAX_PATH];
+	FILE *fp;
+
+	CallService(MS_FILE_GETRECEIVEDFILESFOLDER, (WPARAM)hContact, (LPARAM)szDir);
+	CallService(MS_UTILS_CREATEDIRTREE, 0, (LPARAM)szDir);
+	mir_snprintf(szFileName, sizeof(szFileName), "%s%s", szDir, dat->lpszFileName);
+	fp = fopen(szFileName, "w+b");
+	if(fp)
+	{
+		char imgmsg[MAX_PATH+11];
+		PROTORECVEVENT pre;
+
+		fwrite(dat->lpData, dat->nSize, 1, fp);
+		fclose(fp);
+#ifdef DEBUGMODE
+		gg_netlog(gg, "gg_img_displayasmsg: Image saved to %s.", szFileName);
+#endif
+
+		mir_snprintf(imgmsg, sizeof(imgmsg), "[img]%s[/img]", szFileName);
+		pre.flags = 0;
+		pre.timestamp = time(NULL);
+		pre.szMessage = imgmsg;
+		pre.lParam = 0;
+		gg_recvmessage((PROTO_INTERFACE *)gg, hContact, &pre);
+	}
+#ifdef DEBUGMODE
+	else
+		gg_netlog(gg, "gg_img_displayasmsg: Cannot save image to %s.", szFileName);
+#endif
+	return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1013,8 +1052,8 @@ int gg_img_remove(GGIMAGEDLGDATA *dat)
 	}
 
 	// Remove from list
-	list_remove(&dat->gg->imagedlgs, dat, 1);
-	pthread_mutex_unlock(&dat->gg->img_mutex);
+	list_remove(&gg->imagedlgs, dat, 1);
+	pthread_mutex_unlock(&gg->img_mutex);
 
 	return TRUE;
 }
@@ -1060,9 +1099,11 @@ BOOL gg_img_sendonrequest(GGPROTO *gg, struct gg_event* e)
 {
 	GGIMAGEDLGDATA *dat = gg_img_find(gg, e->event.image_request.sender, e->event.image_request.crc32);
 
-	if(!gg || !gg_isonline(gg)) return FALSE;
+	if(!gg || !dat || !gg_isonline(gg)) return FALSE;
 
+	pthread_mutex_lock(&gg->sess_mutex);
 	gg_image_reply(gg->sess, e->event.image_request.sender, dat->lpImages->lpszFileName, dat->lpImages->lpData, dat->lpImages->nSize);
+	pthread_mutex_unlock(&gg->sess_mutex);
 
 	gg_img_remove(dat);
 
@@ -1077,7 +1118,7 @@ INT_PTR gg_img_sendimg(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	HANDLE hContact = (HANDLE)wParam;
 	GGIMAGEDLGDATA *dat = NULL;
 
-	pthread_mutex_unlock(&gg->img_mutex);
+	pthread_mutex_lock(&gg->img_mutex);
 	if(!dat)
 	{
 		dat = (GGIMAGEDLGDATA *)malloc(sizeof(GGIMAGEDLGDATA));
@@ -1087,6 +1128,7 @@ INT_PTR gg_img_sendimg(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		dat->nImgTotal = 0;
 		dat->bReceiving = FALSE;
 		dat->hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+		dat->gg = gg;
 		ResetEvent(dat->hEvent);
 
 		// Create new dialog

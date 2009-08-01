@@ -30,7 +30,6 @@ int gg_gc_clearignored(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Inits Gadu-Gadu groupchat module using chat.dll
-
 int gg_gc_init(GGPROTO *gg)
 {
 	// Chat.dll required Miranda version 0.4 or higher
@@ -38,7 +37,6 @@ int gg_gc_init(GGPROTO *gg)
 	{
 		char service[64];
 		GCREGISTER gcr = {0};
-		CLISTMENUITEM mi;
 
 		// Register Gadu-Gadu proto
 		gcr.cbSize = sizeof(GCREGISTER);
@@ -47,11 +45,11 @@ int gg_gc_init(GGPROTO *gg)
 		gcr.nColors = 0;
 		gcr.pColors = 0;
 		gcr.pszModuleDispName = GG_PROTONAME;
-		gcr.pszModule = GG_PROTONAME;
+		gcr.pszModule = GG_PROTO;
 #ifdef DEBUGMODE
 		gg_netlog(gg, "gg_gc_init(): Trying to register groupchat plugin...");
 #endif
-		CallService(MS_GC_REGISTER, 0, (LPARAM)&gcr);
+		CallServiceSync(MS_GC_REGISTER, 0, (LPARAM)&gcr);
 		gg->hookGCUserEvent = HookProtoEvent(ME_GC_EVENT, gg_gc_event, gg);
 		gg->gc_enabled = TRUE;
 		// create & hook event
@@ -59,30 +57,6 @@ int gg_gc_init(GGPROTO *gg)
 #ifdef DEBUGMODE
 		gg_netlog(gg, "gg_gc_init(): Registered with groupchat plugin.");
 #endif
-
-		ZeroMemory(&mi,sizeof(mi));
-		mi.cbSize = sizeof(mi);
-		mi.flags = CMIF_ROOTHANDLE;
-		mi.hParentMenu = gg->hMainMenu[0];
-
-		// Conferencing
-		mir_snprintf(service, sizeof(service), GGS_OPEN_CONF, GG_PROTO);
-		CreateProtoServiceFunction(service, gg_gc_openconf, gg);
-		mi.popupPosition = 500090000;
-		mi.position = 500090000;
-		mi.hIcon = LoadIconEx(IDI_CONFERENCE);
-		mi.pszName = LPGEN("Open &conference...");
-		mi.pszService = service;
-		gg->hMainMenu[1] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
-
-		mir_snprintf(service, sizeof(service), GGS_CLEAR_IGNORED, GG_PROTO);
-		CreateProtoServiceFunction(service, gg_gc_clearignored, gg);
-		mi.popupPosition = 500090000;
-		mi.position = 500090000;
-		mi.hIcon = NULL;
-		mi.pszName = LPGEN("&Clear ignored conferences");
-		mi.pszService = service;
-		gg->hMainMenu[2] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
 	}
 #ifdef DEBUGMODE
 	else
@@ -90,6 +64,39 @@ int gg_gc_init(GGPROTO *gg)
 #endif
 
 	return 1;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Groupchat menus initialization
+void gg_gc_menus_init(GGPROTO *gg)
+{
+	if(gg->gc_enabled)
+	{
+		char service[64];
+		CLISTMENUITEM mi;
+
+		ZeroMemory(&mi,sizeof(mi));
+		mi.cbSize = sizeof(mi);
+		mi.flags = CMIF_ROOTHANDLE;
+		mi.hParentMenu = gg->hMenuRoot;
+
+		// Conferencing
+		mir_snprintf(service, sizeof(service), GGS_OPEN_CONF, GG_PROTO);
+		CreateProtoServiceFunction(service, gg_gc_openconf, gg);
+		mi.position = 500090000;
+		mi.hIcon = LoadIconEx(IDI_CONFERENCE);
+		mi.pszName = LPGEN("Open &conference...");
+		mi.pszService = service;
+		gg->hMainMenu[0] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+
+		mir_snprintf(service, sizeof(service), GGS_CLEAR_IGNORED, GG_PROTO);
+		CreateProtoServiceFunction(service, gg_gc_clearignored, gg);
+		mi.position = 500090001;
+		mi.hIcon = LoadIconEx(IDI_CLEAR_CONFERENCE);
+		mi.pszName = LPGEN("&Clear ignored conferences");
+		mi.pszService = service;
+		gg->hMainMenu[1] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -105,10 +112,10 @@ int gg_gc_destroy(GGPROTO *gg)
 	list_destroy(gg->chats, 1); gg->chats = NULL;
 	LocalEventUnhook(gg->hookGCUserEvent);
 	LocalEventUnhook(gg->hookGCMenuBuild);
-	if(gMirandaVersion && gMirandaVersion >= PLUGIN_MAKE_VERSION(0, 4, 0, 0) && ServiceExists(MS_GC_REGISTER))
+	if(gg->gc_enabled)
 	{
+		CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMainMenu[0], (LPARAM) 0);
 		CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMainMenu[1], (LPARAM) 0);
-		CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMainMenu[2], (LPARAM) 0);
 	}
 
 	return 1;
@@ -198,9 +205,11 @@ int gg_gc_event(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 #ifdef DEBUGMODE
 		gg_netlog(gg, "gg_gc_event(): Sending conference message to room %s, \"%s\".", gch->pDest->pszID, gch->pszText);
 #endif
-		CallService(MS_GC_EVENT, 0, (LPARAM)&gcevent);
+		CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gcevent);
 		if(gcevent.pszNick == dbv.pszVal) DBFreeVariant(&dbv);
+		pthread_mutex_lock(&gg->sess_mutex);
 		gg_send_message_confer(gg->sess, GG_CLASS_CHAT, chat->recipients_count, chat->recipients, gch->pszText);
+		pthread_mutex_unlock(&gg->sess_mutex);
 		return 1;
 	}
 
@@ -346,7 +355,7 @@ char *gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients
 	*name = '#'; strcpy(name + 1, gcwindow.pszName);
 	gcwindow.pszName = name;
 	// Create new room
-	if(CallService(MS_GC_NEWSESSION, 0, (LPARAM) &gcwindow))
+	if(CallServiceSync(MS_GC_NEWSESSION, 0, (LPARAM) &gcwindow))
 	{
 #ifdef DEBUGMODE
 		gg_netlog(gg, "gg_gc_getchat(): Cannot create new chat window %s.", chat->id);
@@ -364,7 +373,7 @@ char *gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients
 
 	// Add normal group
 	gcevent.pszStatus = Translate("Participants");
-	CallService(MS_GC_EVENT, 0, (LPARAM)&gcevent);
+	CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gcevent);
 	gcdest.iType = GC_EVENT_JOIN;
 
 	// Add myself
@@ -376,7 +385,7 @@ char *gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients
 		else
 			gcevent.pszNick = Translate("Me");
 		gcevent.bIsMe = 1;
-		CallService(MS_GC_EVENT, 0, (LPARAM)&gcevent);
+		CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gcevent);
 #ifdef DEBUGMODE
 		gg_netlog(gg, "gg_gc_getchat(): Myself %s: %s (%s) to the list...", gcevent.pszUID, gcevent.pszNick, gcevent.pszStatus);
 #endif
@@ -407,17 +416,31 @@ char *gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients
 #ifdef DEBUGMODE
 		gg_netlog(gg, "gg_gc_getchat(): Added %s: %s (%s) to the list...", gcevent.pszUID, gcevent.pszNick, gcevent.pszStatus);
 #endif
-		CallService(MS_GC_EVENT, 0, (LPARAM)&gcevent);
+		CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gcevent);
 	}
 	gcdest.iType = GC_EVENT_CONTROL;
-	CallService(MS_GC_EVENT, SESSION_INITDONE, (LPARAM)&gcevent);
-	CallService(MS_GC_EVENT, SESSION_ONLINE, (LPARAM)&gcevent);
+	CallServiceSync(MS_GC_EVENT, SESSION_INITDONE, (LPARAM)&gcevent);
+	CallServiceSync(MS_GC_EVENT, SESSION_ONLINE, (LPARAM)&gcevent);
 
 #ifdef DEBUGMODE
 	gg_netlog(gg, "gg_gc_getchat(): Returning new chat window %s, count %d.", chat->id, chat->recipients_count);
 #endif
 	list_add(&gg->chats, chat, 0);
 	return chat->id;
+}
+
+static void gg_gc_resetclistopts(HWND hwndList)
+{
+	int i;
+
+	SendMessage(hwndList, CLM_SETLEFTMARGIN, 2, 0);
+	SendMessage(hwndList, CLM_SETBKBITMAP, 0, (LPARAM)(HBITMAP)NULL);
+	SendMessage(hwndList, CLM_SETBKCOLOR, GetSysColor(COLOR_WINDOW), 0);
+	SendMessage(hwndList, CLM_SETGREYOUTFLAGS, 0, 0);
+	SendMessage(hwndList, CLM_SETINDENT, 10, 0);
+	SendMessage(hwndList, CLM_SETHIDEEMPTYGROUPS, (WPARAM)TRUE, 0);
+	for (i=0; i<=FONTID_MAX; i++)
+		SendMessage(hwndList, CLM_SETTEXTCOLOR, i, GetSysColor(COLOR_WINDOWTEXT));
 }
 
 static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
@@ -438,6 +461,7 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wPara
 			//~ cii.flags = CLCIIF_GROUPFONT | CLCIIF_CHECKBOX;
 			//~ cii.pszText = Translate("** All contacts **");
 			//~ hItemAll = (HANDLE)SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_ADDINFOITEM, 0, (LPARAM)&cii);
+			gg_gc_resetclistopts(GetDlgItem(hwndDlg, IDC_CLIST));
 
 			// Make bold title font
 			GetObject(hNormalFont, sizeof(lf), &lf);
@@ -518,18 +542,11 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wPara
 					switch(((NMHDR*)lParam)->code)
 					{
 						case CLN_OPTIONSCHANGED:
-						{
-							int i;
+							gg_gc_resetclistopts(GetDlgItem(hwndDlg, IDC_CLIST));
+							break;
 
-							SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETLEFTMARGIN, 2, 0);
-							SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETBKBITMAP, 0, (LPARAM)(HBITMAP)NULL);
-							SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETBKCOLOR, GetSysColor(COLOR_WINDOW), 0);
-							SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETGREYOUTFLAGS, 0, 0);
-							for (i=0; i<=FONTID_MAX; i++)
-								SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETTEXTCOLOR, i, GetSysColor(COLOR_WINDOWTEXT));
-						}
-						break;
-
+						case CLN_NEWCONTACT:
+						case CLN_CONTACTMOVED:
 						case CLN_LISTREBUILT:
 						{
 							HANDLE hContact;
@@ -537,7 +554,7 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wPara
 							char* szProto;
 							GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, DWLP_USER);
 
-							// Delete non-icq contacts
+							// Delete non-gg contacts
 							hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 							while (hContact)
 							{
@@ -683,7 +700,7 @@ int gg_gc_changenick(GGPROTO *gg, HANDLE hContact, char *pszNick)
 #ifdef DEBUGMODE
 					gg_netlog(gg, "gg_gc_changenick(): Found room %s with uin %d, sending nick change %s.", chat->id, uin, id);
 #endif
-					CallService(MS_GC_EVENT, 0, (LPARAM)&gce);
+					CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gce);
 
 					break;
 				}

@@ -26,7 +26,7 @@
 #define MAX_TIMERS 8
 GGPROTO *g_timers[MAX_TIMERS] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
-static void CALLBACK gg_keepalive(HWND hwnd, UINT message, UINT_PTR idEvent, DWORD dwTime)
+static VOID CALLBACK gg_keepalive(HWND hwnd, UINT message, UINT_PTR idEvent, DWORD dwTime)
 {
 	int i;
 	
@@ -43,7 +43,9 @@ static void CALLBACK gg_keepalive(HWND hwnd, UINT message, UINT_PTR idEvent, DWO
 	#ifdef DEBUGMODE
 			gg_netlog(gg, "Sending keep-alive");
 	#endif
+			pthread_mutex_lock(&gg->sess_mutex);
 			gg_ping(gg->sess);
+			pthread_mutex_unlock(&gg->sess_mutex);
 		}
 	}
 }

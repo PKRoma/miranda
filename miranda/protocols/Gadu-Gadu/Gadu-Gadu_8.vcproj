@@ -506,6 +506,10 @@
 				>
 			</File>
 			<File
+				RelativePath="links.c"
+				>
+			</File>
+			<File
 				RelativePath="ownerinfo.c"
 				>
 			</File>
@@ -609,7 +613,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\libgadu\dcc7.c"
+					RelativePath="libgadu\dcc7.c"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -761,6 +765,10 @@
 					>
 				</File>
 				<File
+					RelativePath="libgadu\protocol.h"
+					>
+				</File>
+				<File
 					RelativePath="libgadu\pubdir.c"
 					>
 					<FileConfiguration
@@ -831,6 +839,46 @@
 							UsePrecompiledHeader="0"
 						/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="libgadu\resolver.c"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="libgadu\resolver.h"
+					>
 				</File>
 				<File
 					RelativePath="libgadu\sha1.c"
@@ -949,10 +997,6 @@
 			</File>
 			<File
 				RelativePath="icos\save.ico"
-				>
-			</File>
-			<File
-				RelativePath="icos\stop.ico"
 				>
 			</File>
 			<File
