@@ -21,14 +21,6 @@
 #include <windows.h>
 #include "resource.h"
 
-IDI_OFFLINE			ICON DISCARDABLE "icons/status/offline.ico"
-IDI_ONLINE			ICON DISCARDABLE "icons/status/online.ico"
-IDI_AWAY			ICON DISCARDABLE "icons/status/away.ico"
-IDI_FREECHAT		ICON DISCARDABLE "icons/status/freechat.ico"
-IDI_INVISIBLE		ICON DISCARDABLE "icons/status/invisible.ico"
-IDI_BLOCKED			ICON DISCARDABLE "icons/stop.ico"
-IDI_DND				ICON DISCARDABLE "icons/status/dnd.ico"
-
 IDI_GG				ICON DISCARDABLE "icons/gg.ico"
 IDI_IMPORT_SERVER	ICON DISCARDABLE "icons/import_list_from_server.ico"
 IDI_IMPORT_TEXT 	ICON DISCARDABLE "icons/import_list_from_txt_file.ico"

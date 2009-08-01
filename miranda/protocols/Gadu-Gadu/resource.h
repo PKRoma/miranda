@@ -28,14 +28,6 @@
 #define IDCANCEL 2
 #endif
 
-#define IDI_ONLINE				104
-#define IDI_OFFLINE				105
-#define IDI_AWAY				128
-#define IDI_FREECHAT			129
-#define IDI_INVISIBLE			130
-#define IDI_BLOCKED				131
-#define IDI_DND					158
-
 #define IDI_GG					251
 #define IDI_IMPORT_TEXT			252
 #define IDI_IMPORT_SERVER		253

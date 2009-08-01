@@ -295,10 +295,6 @@ SOURCE=.\resource.rc
 
 SOURCE=.\icos\save.ico
 # End Source File
-# Begin Source File
-
-SOURCE=.\icos\stop.ico
-# End Source File
 # End Group
 # Begin Source File
 

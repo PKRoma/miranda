@@ -1464,9 +1464,6 @@
 			<File
 				RelativePath="icos\save.ico">
 			</File>
-			<File
-				RelativePath="icos\stop.ico">
-			</File>
 		</Filter>
 		<File
 			RelativePath="docs\build-howto.txt">
