@@ -192,7 +192,7 @@ static int UpdateNotifyMakeRequest(UpdateNotifyData *und) {
 	NETLIBHTTPHEADER headers[1];
 	DWORD dwVersion;
 	char szVersion[32], szUrl[256], szVersionText[128];
-	int isUnicode, isAlpha, isAlphaBuild;
+	int isUnicode, isAlpha, isAlphaBuild, isX64 = 0;
 	DBVARIANT dbv;
 	
 	if (!und) 
@@ -209,14 +209,17 @@ static int UpdateNotifyMakeRequest(UpdateNotifyData *und) {
 	isAlpha = DBGetContactSettingByte(NULL, UN_MOD, UN_NOTIFYALPHA, UN_NOTIFYALPHA_DEF);
 	isAlphaBuild = strstr(szVersionText, "alpha") != NULL ? 1 : 0;
 	dwVersion = CallService(MS_SYSTEM_GETVERSION, 0, 0);
+    #ifdef _WIN64
+    isX64 = 1;
+    #endif
 	mir_snprintf(szVersion, sizeof(szVersion), "%d.%d.%d.%d",
 		HIBYTE(HIWORD(dwVersion)), LOBYTE(HIWORD(dwVersion)),
 		HIBYTE(LOWORD(dwVersion)), LOBYTE(LOWORD(dwVersion)));
 	if (!DBGetContactSettingString(NULL, UN_MOD, UN_CUSTOMURL, &dbv)) {
-		mir_snprintf(szUrl, sizeof(szUrl), "%s?version=%s&unicode=%d&alpha=%d&alphaBuild=%d", dbv.pszVal?dbv.pszVal:UN_URL, szVersion, isUnicode, isAlpha, isAlphaBuild);
+		mir_snprintf(szUrl, sizeof(szUrl), "%s?version=%s&unicode=%d&alpha=%d&alphaBuild=%d&x64=%d", dbv.pszVal?dbv.pszVal:UN_URL, szVersion, isUnicode, isAlpha, isAlphaBuild, isX64);
 		DBFreeVariant(&dbv);
 	}
-	else mir_snprintf(szUrl, sizeof(szUrl), "%s?version=%s&unicode=%d&alpha=%d&alphaBuild=%d", UN_URL, szVersion, isUnicode, isAlpha, isAlphaBuild);
+	else mir_snprintf(szUrl, sizeof(szUrl), "%s?version=%s&unicode=%d&alpha=%d&alphaBuild=%d&x64=%d", UN_URL, szVersion, isUnicode, isAlpha, isAlphaBuild, isX64);
 
 	ZeroMemory(&req, sizeof(req));
 	req.cbSize = sizeof(req);
