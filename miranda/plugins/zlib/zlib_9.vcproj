@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="zlib"
 	ProjectGUID="{E2A369CD-EDA3-414F-8AD0-E732CD7EE68C}"
 	RootNamespace="zlib"
@@ -118,7 +118,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)64/Plugins"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)64"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)64/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -305,7 +305,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)64/Plugins"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)64"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)64/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -485,7 +485,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug Unicode|x64"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)64/Plugins"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)64"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)64/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -671,7 +671,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release Unicode|x64"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)64/Plugins"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)64"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)64/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
