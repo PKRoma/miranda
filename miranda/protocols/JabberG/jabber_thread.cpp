@@ -70,14 +70,14 @@ struct JabberPasswordDlgParam
 
 static INT_PTR CALLBACK JabberPasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	JabberPasswordDlgParam* param = (JabberPasswordDlgParam*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
+	JabberPasswordDlgParam* param = (JabberPasswordDlgParam*)GetWindowLong( hwndDlg, GWL_USERDATA );
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
 		{	
 			param = (JabberPasswordDlgParam*)lParam;
-			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
+			SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
 
 			TCHAR text[128];
 			mir_sntprintf( text, SIZEOF(text), _T("%s %s"), TranslateT( "Enter password for" ), ( TCHAR* )param->ptszJid );
@@ -686,7 +686,7 @@ void CJabberProto::OnProcessStreamClosing( HXML node, ThreadData *info )
 {
 	Netlib_CloseHandle( info->s );
 	if ( !lstrcmp( xmlGetName( node ), _T("stream:error")) && xmlGetText( node ) )
-		mir_ReportError(NULL, m_tszUserName, MERR_TYPE_NETWORK, TranslateTS(xmlGetText(node)));
+		MessageBox( NULL, TranslateTS( xmlGetText( node ) ), TranslateT( "Jabber Connection Error" ), MB_OK|MB_ICONERROR|MB_SETFOREGROUND );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -771,7 +771,7 @@ void CJabberProto::OnProcessFeatures( HXML node, ThreadData* info )
 				return;
 			}
 
-			mir_ReportError(NULL, m_tszUserName, MERR_TYPE_LOGIN, TranslateT("No known auth methods available. Giving up."));
+			MessageBox( NULL, TranslateT("No known auth methods available. Giving up."), TranslateT( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 			info->send( "</stream:stream>" );
 			JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 			return;
@@ -819,7 +819,7 @@ void CJabberProto::OnProcessFailure( HXML node, ThreadData* info )
 
 		TCHAR text[128];
 		mir_sntprintf( text, SIZEOF( text ), _T("%s %s@")_T(TCHAR_STR_PARAM)_T("."), TranslateT( "Authentication failed for" ), info->username, info->server );
-		mir_ReportError(NULL, m_tszUserName, MERR_TYPE_LOGIN, text);
+		MessageBox( NULL, text, TranslateT( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 		JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 		m_ThreadInfo = NULL;	// To disallow auto reconnect
 }	}
@@ -845,7 +845,7 @@ void CJabberProto::OnProcessError( HXML node, ThreadData* info )
 		if ( !_tcscmp( xmlGetName( n ), _T("conflict")))
 			JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION);
 	}
-	mir_ReportError(NULL, m_tszUserName, MERR_TYPE_SRV_WARNING, buff);
+	MessageBox( NULL, buff, TranslateT( "Jabber Error" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 	mir_free(buff);
 	info->send( "</stream:stream>" );
 }

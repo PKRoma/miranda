@@ -252,7 +252,7 @@ void CJabberProto::OnIqResultGetAuth( HXML iqNode )
 
 		TCHAR text[128];
 		mir_sntprintf( text, SIZEOF( text ), _T("%s %s."), TranslateT( "Authentication failed for" ), m_ThreadInfo->username );
-		mir_ReportError(NULL, m_tszUserName, MERR_TYPE_LOGIN, text);
+		MessageBox( NULL, text, TranslateT( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 		JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 		m_ThreadInfo = NULL;	// To disallow auto reconnect
 }	}
@@ -281,7 +281,7 @@ void CJabberProto::OnIqResultSetAuth( HXML iqNode )
 
 		m_ThreadInfo->send( "</stream:stream>" );
 		mir_sntprintf( text, SIZEOF( text ), _T("%s %s."), TranslateT( "Authentication failed for" ), m_ThreadInfo->username );
-		mir_ReportError(NULL, m_tszUserName, MERR_TYPE_LOGIN, text);
+		MessageBox( NULL, text, TranslateT( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 		JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 		m_ThreadInfo = NULL;	// To disallow auto reconnect
 }	}
@@ -1356,10 +1356,10 @@ void CJabberProto::OnIqResultSetPassword( HXML iqNode )
 
 	if ( !lstrcmp( type, _T("result"))) {
 		strncpy( m_ThreadInfo->password, m_ThreadInfo->newPassword, SIZEOF( m_ThreadInfo->password ));
-		mir_ReportError(NULL, m_tszUserName, MERR_TYPE_INFO, TranslateT("Password was successfully changed. Don't forget to update your password in the Jabber protocol options."));
+		MessageBox( NULL, TranslateT( "Password is successfully changed. Don't forget to update your password in the Jabber protocol option." ), TranslateT( "Change Password" ), MB_OK|MB_ICONINFORMATION|MB_SETFOREGROUND );
 	}
 	else if ( !lstrcmp( type, _T("error")))
-		mir_ReportError(NULL, m_tszUserName, MERR_TYPE_INFO, TranslateT("Password cannot be changed."));
+		MessageBox( NULL, TranslateT( "Password cannot be changed." ), TranslateT( "Change Password" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 }
 /*
 void CJabberProto::OnIqResultDiscoAgentItems( HXML iqNode, void *userdata )
@@ -1673,8 +1673,8 @@ void CJabberProto::OnIqResultSetBookmarks( HXML iqNode )
 	else if ( !lstrcmp( type, _T("error"))) {
 		HXML errorNode = xmlGetChild( iqNode , "error" );
 		TCHAR* str = JabberErrorMsg( errorNode );
-		mir_ReportError(NULL, m_tszUserName, MERR_TYPE_SRV_WARNING, str);
-		mir_free(str);
+		MessageBox( NULL, str, TranslateT( "Jabber Bookmarks Error" ), MB_OK|MB_SETFOREGROUND );
+		mir_free( str );
 		UI_SAFE_NOTIFY(m_pDlgBookmarks, WM_JABBER_ACTIVATE);
 }	}
 
