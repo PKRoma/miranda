@@ -821,7 +821,7 @@ extern "C" BOOL __declspec(dllexport) dib2mempng( BITMAPINFO* pbmi, png_byte* pD
 		png_write_end(png_ptr, info_ptr);
 
 		if ( pResultLen != NULL )
-			*pResultLen = sBuffer.mBufPtr;
+			*pResultLen = (long)sBuffer.mBufPtr;
 
 		free( pTempBuffer );
 	}

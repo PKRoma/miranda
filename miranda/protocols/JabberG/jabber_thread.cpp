@@ -70,14 +70,14 @@ struct JabberPasswordDlgParam
 
 static INT_PTR CALLBACK JabberPasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	JabberPasswordDlgParam* param = (JabberPasswordDlgParam*)GetWindowLong( hwndDlg, GWL_USERDATA );
+	JabberPasswordDlgParam* param = (JabberPasswordDlgParam*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
 		{	
 			param = (JabberPasswordDlgParam*)lParam;
-			SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 
 			TCHAR text[128];
 			mir_sntprintf( text, SIZEOF(text), _T("%s %s"), TranslateT( "Enter password for" ), ( TCHAR* )param->ptszJid );

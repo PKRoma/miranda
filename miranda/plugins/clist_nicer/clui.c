@@ -173,7 +173,7 @@ static struct IconDesc myIcons[] = {
  */
 
 #if defined(_UNICODE)
-static int CLN_GetTimeOffset(WPARAM wParam, LPARAM lParam)
+static INT_PTR CLN_GetTimeOffset(WPARAM wParam, LPARAM lParam)
 {
 	HANDLE 	hContact = (HANDLE)wParam;
 	char	*szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
