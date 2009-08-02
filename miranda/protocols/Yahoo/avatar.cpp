@@ -655,7 +655,7 @@ void CYahooProto::GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, i
 	}
 }
 
-int __cdecl CYahooProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
+INT_PTR __cdecl CYahooProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 {
 	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
 	DBVARIANT dbv;
@@ -723,7 +723,7 @@ int __cdecl CYahooProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 /*
  * --=[ AVS / LoadAvatars API/Services ]=--
  */
-int __cdecl CYahooProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
+INT_PTR __cdecl CYahooProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
 {
 	int res = 0;
 
@@ -778,7 +778,7 @@ wParam=(char *)Buffer to file name
 lParam=(int)Buffer size
 return=0 on success, else on error
 */
-int __cdecl CYahooProto::GetMyAvatar(WPARAM wParam, LPARAM lParam)
+INT_PTR __cdecl CYahooProto::GetMyAvatar(WPARAM wParam, LPARAM lParam)
 {
 	char *buffer = (char *)wParam;
 	int size = (int)lParam;

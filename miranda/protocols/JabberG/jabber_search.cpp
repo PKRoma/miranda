@@ -381,7 +381,7 @@ void CJabberProto::OnIqResultAdvancedSearch( HXML iqNode )
 		if (searchHandleDlg )
 			SetDlgItemText(searchHandleDlg,IDC_INSTRUCTIONS,buff);
 		else
-			MessageBox(NULL, buff, TranslateT("Search error"), MB_OK|MB_ICONSTOP);
+			mir_ReportError(NULL, m_tszUserName, MERR_TYPE_SRV_WARNING, buff);
 		return;
 	}
 

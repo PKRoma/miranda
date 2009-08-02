@@ -83,6 +83,7 @@ Last change by : $Author$
 #include <m_button.h>
 #include <m_avatars.h>
 #include <m_idle.h>
+#include <m_errors.h>
 #include <win2k.h>
 
 #include "../../plugins/zlib/zlib.h"

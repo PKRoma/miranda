@@ -291,7 +291,7 @@ void CYahooProto::ShowError(const char *title, const char *buff)
 			ShowNotification(title, buff, NIIF_ERROR);
 }
 
-int __cdecl CYahooProto::OnSettingChanged(WPARAM wParam, LPARAM lParam)
+INT_PTR __cdecl CYahooProto::OnSettingChanged(WPARAM wParam, LPARAM lParam)
 {
 	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;
 

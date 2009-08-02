@@ -87,7 +87,7 @@ void CYahooProto::BroadcastStatus(int s)
 //=======================================================
 //Contact deletion event
 //=======================================================
-int __cdecl CYahooProto::OnContactDeleted( WPARAM wParam, LPARAM lParam )
+INT_PTR __cdecl CYahooProto::OnContactDeleted( WPARAM wParam, LPARAM lParam )
 {
 	char* szProto;
 	DBVARIANT dbv;
@@ -126,7 +126,7 @@ int __cdecl CYahooProto::OnContactDeleted( WPARAM wParam, LPARAM lParam )
 //=======================================================
 //Custom status message windows handling
 //=======================================================
-static BOOL CALLBACK DlgProcSetCustStat(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcSetCustStat(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	DBVARIANT dbv;
 
@@ -338,7 +338,7 @@ INT_PTR __cdecl CYahooProto::OnRefreshCommand( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-int __cdecl CYahooProto::OnIdleEvent(WPARAM wParam, LPARAM lParam)
+INT_PTR __cdecl CYahooProto::OnIdleEvent(WPARAM wParam, LPARAM lParam)
 {
 	BOOL bIdle = (lParam & IDF_ISIDLE);
 
@@ -486,7 +486,7 @@ void CYahooProto::MenuUninit( void )
 	YAHOO_CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hShowProfileMenuItem, 0 );
 }
 
-int CYahooProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM)
+INT_PTR __cdecl CYahooProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM)
 {
     const HANDLE hContact = (HANDLE)wParam;
 	char *szProto;

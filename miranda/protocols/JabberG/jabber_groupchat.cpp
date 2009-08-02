@@ -1053,7 +1053,7 @@ void CJabberProto::GroupchatProcessPresence( HXML node )
 	else if ( !lstrcmp( type, _T("error"))) {
 		errorNode = xmlGetChild( node , "error" );
 		TCHAR* str = JabberErrorMsg( errorNode );
-		MessageBox( NULL, str, TranslateT( "Jabber Error Message" ), MB_OK|MB_SETFOREGROUND );
+		mir_ReportError(NULL, m_tszUserName, MERR_TYPE_SRV_WARNING, str);
 		//JabberListRemoveResource( LIST_CHATROOM, from );
 		JABBER_LIST_ITEM* item = ListGetItemPtr (LIST_CHATROOM, from );
 		if ( item != NULL)
