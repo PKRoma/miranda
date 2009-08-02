@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="clist_modern"
 	ProjectGUID="{D9057E63-AAAA-4FE7-800A-20C02F4761F3}"
 	RootNamespace="clist_modern"
@@ -815,6 +815,7 @@
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
 				OutputFile="$(OutDir)/$(ProjectName).dll"
+				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				IgnoreDefaultLibraryNames=""
 				DelayLoadDLLs="gdiplus.dll"
 				GenerateDebugInformation="true"
@@ -1473,11 +1474,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\m_clui.h"
+				RelativePath=".\m_api\m_clui.h"
 				>
 			</File>
 			<File
-				RelativePath=".\m_api\m_clui.h"
+				RelativePath="..\..\include\m_clui.h"
 				>
 			</File>
 			<File
