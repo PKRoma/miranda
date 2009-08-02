@@ -520,11 +520,11 @@ static void TZ_LoadTimeZone(HANDLE hContact, struct ExtraCache *c, const char *s
 		c->dwCFlags &= ~ECF_HASREALTIMEZONE;
 	}
 #else
-	g_ExtraCache[index].timezone = (DWORD)DBGetContactSettingByte(contact->hContact,"UserInfo","Timezone", DBGetContactSettingByte(contact->hContact, szProto,"Timezone",-1));
-	if(g_ExtraCache[index].timezone != -1) {
+	c->timezone = (DWORD)DBGetContactSettingByte(hContact,"UserInfo","Timezone", DBGetContactSettingByte(hContact, szProto,"Timezone",-1));
+	if(c->timezone != -1) {
 		DWORD contact_gmt_diff;
-		contact_gmt_diff = g_ExtraCache[index].timezone > 128 ? 256 - g_ExtraCache[index].timezone : 0 - g_ExtraCache[index].timezone;
-		g_ExtraCache[index].timediff = (int)g_CluiData.local_gmt_diff - (int)contact_gmt_diff*60*60/2;
+		contact_gmt_diff = c->timezone > 128 ? 256 - c->timezone : 0 - c->timezone;
+		c->timediff = (int)g_CluiData.local_gmt_diff - (int)contact_gmt_diff*60*60/2;
 	}
 	c->dwCFlags &= ECF_HASREALTIMEZONE;
 #endif
