@@ -22,7 +22,7 @@ Contents
 --------------------------
 * New in 0.8.3
 Bugfixes:
- - Fixed contast minimum row height determination
+ - Fixed contact list minimum row height determination
  - AIM: Chat message processing improvements
  - AIM: Fixed error messages during nickname upload
  - AIM: File transfer improvements
