@@ -2317,7 +2317,7 @@ void CLCPaint::_PaintClc( HWND hwnd, struct ClcData *dat, HDC hdc, RECT *_rcPain
 
     //insertion mark
     if( dat->iInsertionMark != -1 ) 
-        _DrawLines( hwnd, dat, hdc, paintMode, rcPaint, clRect, pc );
+        _DrawInsertionMark( dat, clRect, pc );
     
     // BitBlt from memory to destination 
     _CopyPaintToDest( hwnd, dat, hdc, paintMode, rcPaint, clRect, pc );
