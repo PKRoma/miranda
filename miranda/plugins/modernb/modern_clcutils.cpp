@@ -462,44 +462,43 @@ COLORREF sttGetColor(char * module, char * color, COLORREF defColor)
 	else return ModernGetSettingDword(NULL, module, color, defColor);
 }
 void RegisterCLUIFonts( void );
-void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
+void LoadCLCFonts( HWND hwnd, struct ClcData *dat )
+{
+	RegisterCLUIFonts();
+	
+	HDC hdc=GetDC(hwnd);
+	HFONT holdfont = (HFONT)GetCurrentObject( hdc, OBJ_FONT );
+	
+	for( int i = 0 ; i <= FONTID_MODERN_MAX; i++ ) 
+	{
+		if( !dat->fontModernInfo[i].changed && dat->fontModernInfo[i].hFont )
+		{
+			DeleteObject(dat->fontModernInfo[i].hFont);
+		}
+		LOGFONT lf;
+
+		// Issue 40: Do not reload font colors for embedded clists
+		// Parent window is responsible to re-set fonts colors if needed
+		GetFontSetting( i, &lf, dat->force_in_dialog ? NULL: &dat->fontModernInfo[i].colour, &dat->fontModernInfo[i].effect, &dat->fontModernInfo[i].effectColour1, &dat->fontModernInfo[i].effectColour2 );
+		dat->fontModernInfo[i].hFont = CreateFontIndirect( &lf );
+		dat->fontModernInfo[i].changed = 0;
+
+		SelectObject( hdc, dat->fontModernInfo[i].hFont );
+		SIZE fontSize;
+		GetTextExtentPoint32A( hdc, "x", 1, &fontSize );
+		dat->fontModernInfo[i].fontHeight = fontSize.cy;
+	}
+	SelectObject( hdc, holdfont );
+	ReleaseDC( hwnd, hdc );
+}
+
+void LoadCLCOptions(HWND hwnd, struct ClcData *dat )
 { 
 	int i;
-    RegisterCLUIFonts();
+
 	g_CluiData.fDisableSkinEngine=ModernGetSettingByte(NULL,"ModernData","DisableEngine", SETTING_DISABLESKIN_DEFAULT);
-	{	
-
-		LOGFONT lf;
-		HFONT holdfont;
-		SIZE fontSize;
-		HDC hdc=GetDC(hwnd);
-		for(i=0;i<=FONTID_MODERN_MAX;i++) 
-        {
-			if(!dat->fontModernInfo[i].changed && dat->fontModernInfo[i].hFont) 
-                DeleteObject(dat->fontModernInfo[i].hFont);
-			GetFontSetting(i,&lf,&dat->fontModernInfo[i].colour,&dat->fontModernInfo[i].effect,&dat->fontModernInfo[i].effectColour1,&dat->fontModernInfo[i].effectColour2);
-			{
-		//		LONG height;
-		//		HDC hdc=GetDC(NULL);
-		//		height=lf.lfHeight;
-		//		lf.lfHeight=-MulDiv(lf.lfHeight, GetDeviceCaps(hdc, LOGPIXELSY), 72);
-		//		ReleaseDC(NULL,hdc);				
-
-				dat->fontModernInfo[i].hFont=CreateFontIndirect(&lf);
-
-		//		lf.lfHeight=height;
-			}
-        
-
-			dat->fontModernInfo[i].changed=0;
-			holdfont=(HFONT)SelectObject(hdc,dat->fontModernInfo[i].hFont);
-			GetTextExtentPoint32A(hdc,"x",1,&fontSize);
-			dat->fontModernInfo[i].fontHeight=fontSize.cy;
-			//			if(fontSize.cy>dat->rowHeight && (!DBGetContactSettingByte(NULL,"CLC","DoNotCheckFontSize",0))) dat->rowHeight=fontSize.cy;
-			if(holdfont) SelectObject(hdc,holdfont);
-		}
-		ReleaseDC(hwnd,hdc);
-	}
+	
+	LoadCLCFonts( hwnd, dat );
 
 	g_CluiData.bSortByOrder[0]=ModernGetSettingByte(NULL,"CList","SortBy1",SETTING_SORTBY1_DEFAULT);
 	g_CluiData.bSortByOrder[1]=ModernGetSettingByte(NULL,"CList","SortBy2",SETTING_SORTBY2_DEFAULT);

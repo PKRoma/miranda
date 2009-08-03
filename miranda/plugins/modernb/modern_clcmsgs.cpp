@@ -87,10 +87,31 @@ LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARA
 
 		dat->fontModernInfo[wParam].colour=lParam;
 		dat->force_in_dialog=TRUE;
-		if (wParam==FONTID_CONTACTS) {
-			dat->fontModernInfo[FONTID_SECONDLINE].colour=lParam;
-			dat->fontModernInfo[FONTID_THIRDLINE].colour=lParam;
+		// Issue 40: option knows nothing about moderns colors
+		// others who know have to set colors from lowest to highest
+		switch ( wParam )  
+		{
+			case FONTID_CONTACTS:
+				dat->fontModernInfo[FONTID_SECONDLINE].colour=lParam;
+				dat->fontModernInfo[FONTID_THIRDLINE].colour=lParam;
+				dat->fontModernInfo[FONTID_AWAY].colour=lParam;
+				dat->fontModernInfo[FONTID_DND].colour=lParam;
+				dat->fontModernInfo[FONTID_NA].colour=lParam;
+				dat->fontModernInfo[FONTID_OCCUPIED].colour=lParam;
+				dat->fontModernInfo[FONTID_CHAT].colour=lParam;
+				dat->fontModernInfo[FONTID_INVISIBLE].colour=lParam;
+				dat->fontModernInfo[FONTID_PHONE].colour=lParam;
+				dat->fontModernInfo[FONTID_LUNCH].colour=lParam;
+				dat->fontModernInfo[FONTID_CONTACT_TIME].colour=lParam;
+				break;
+			case FONTID_OPENGROUPS:
+				dat->fontModernInfo[FONTID_CLOSEDGROUPS].colour=lParam;				
+				break;
+			case FONTID_OPENGROUPCOUNTS:
+				dat->fontModernInfo[FONTID_CLOSEDGROUPCOUNTS].colour=lParam;				
+				break;
 		}
+		return 0;
 
 	case CLM_GETNEXTITEM:
 		{
