@@ -1359,15 +1359,20 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 				if (( n = xmlGetChild( inviteNode , "reason" )) != NULL )
 					inviteReason = xmlGetText( n );
 			}
-
+			inviteRoomJid = from;
+			if ( !inviteReason )
+				inviteReason = szMessage;
+			isChatRoomInvitation = TRUE;
 			if (( n = xmlGetChild( xNode , "password" )) != NULL )
 				invitePassword = xmlGetText( n );
 		}
-		else if ( !_tcscmp( ptszXmlns, _T("jabber:x:conference"))) {
+		else if ( !isChatRoomInvitation && !_tcscmp( ptszXmlns, _T("jabber:x:conference"))) {
 			inviteRoomJid = xmlGetAttrValue( xNode, _T("jid"));
 			inviteFromJid = from;
 			if ( inviteReason == NULL )
 				inviteReason = xmlGetText( xNode );
+			if ( !inviteReason )
+				inviteReason = szMessage;
 			isChatRoomInvitation = TRUE;
 	}	}
 
