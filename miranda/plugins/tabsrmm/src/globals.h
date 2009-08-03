@@ -29,12 +29,12 @@ $Id:$
 
 typedef     BOOL (WINAPI *pfnSetMenuInfo )( HMENU hmenu, LPCMENUINFO lpcmi );
 
-class _Globals
+class CGlobals
 {
 public:
-	_Globals() {}
+	CGlobals() {}
 
-	~_Globals() {}
+	~CGlobals() {}
 
 	HWND        g_hwndHotkeyHandler;
 	HICON       g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus;
@@ -137,13 +137,13 @@ public:
 	HANDLE 		m_hMessageWindowList;
 };
 
-extern	_Globals	_Plugin;
-extern	_Globals	*Plugin;
+extern	CGlobals	PluginConfig;
+extern	CGlobals	*pConfig;
 
-#define DPISCALEY(argY) ((int) ((double)(argY) * _Plugin.g_DPIscaleY))
-#define DPISCALEX(argX) ((int) ((double)(argX) * _Plugin.g_DPIscaleX))
+#define DPISCALEY(argY) ((int) ((double)(argY) * PluginConfig.g_DPIscaleY))
+#define DPISCALEX(argX) ((int) ((double)(argX) * PluginConfig.g_DPIscaleX))
 
-#define DPISCALEY_S(argY) ((int) ((double)(argY) * _Plugin.g_DPIscaleY))
-#define DPISCALEX_S(argX) ((int) ((double)(argX) * _Plugin.g_DPIscaleX))
+#define DPISCALEY_S(argY) ((int) ((double)(argY) * PluginConfig.g_DPIscaleY))
+#define DPISCALEX_S(argX) ((int) ((double)(argX) * PluginConfig.g_DPIscaleX))
 
 #endif /* __GLOBALS_H */

@@ -73,8 +73,8 @@ extern TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNi
 TCHAR 	*szWarnClose = _T("Do you really want to close this session?");
 DWORD 	m_LangPackCP = CP_ACP;
 
-struct 	ContainerWindowData *pFirstContainer = 0;        // the linked list of struct ContainerWindowData
-struct 	ContainerWindowData *pLastActiveContainer = NULL;
+ContainerWindowData *pFirstContainer = 0;        // the linked list of struct ContainerWindowData
+ContainerWindowData *pLastActiveContainer = NULL;
 
 static 	WNDPROC OldStatusBarproc = 0, OldContainerWndProc = 0;
 
@@ -360,7 +360,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				hbmOld = (HBITMAP)SelectObject(hdcMem, hbm);
 				SetBkMode(hdcMem, TRANSPARENT);
 				if(!fAero)
-					SetTextColor(hdcMem, _Plugin.skinDefaultFontColor);
+					SetTextColor(hdcMem, PluginConfig.skinDefaultFontColor);
 				else
 					SetTextColor(hdcMem, RGB(250, 250, 250));
 				hFontOld = (HFONT)SelectObject(hdcMem, GetStockObject(DEFAULT_GUI_FONT));
@@ -420,7 +420,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 			GetCursorPos(&pt);
 			GetWindowRect(GetDlgItem(hWnd, 1001), &rc);
 			if (PtInRect(&rc, pt)) {
-				SendMessage(_Plugin.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 100, WM_RBUTTONUP);
+				SendMessage(PluginConfig.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 100, WM_RBUTTONUP);
 				return 0;
 			}
 			break;
@@ -460,8 +460,8 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 			SendMessage(hWnd, WM_SIZE, 0, 0);
 			GetWindowRect(hWnd, &rcs);
 
-			statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH + 20) - (35 + ((list_icons) * (_Plugin.m_smcxicon + 2)));
-			statwidths[1] = (rcs.right - rcs.left) - (45 + ((list_icons) * (_Plugin.m_smcxicon + 2)));
+			statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH + 20) - (35 + ((list_icons) * (PluginConfig.m_smcxicon + 2)));
+			statwidths[1] = (rcs.right - rcs.left) - (45 + ((list_icons) * (PluginConfig.m_smcxicon + 2)));
 			statwidths[2] = -1;
 			SendMessage(hWnd, SB_SETPARTS, 3, (LPARAM) statwidths);
 			return 0;
@@ -526,7 +526,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 						struct StatusIconListNode *clicked = NULL;
 						struct StatusIconListNode *currentSIN = NULL;
 
-						unsigned int iconNum = (pt.x - rc.left) / (_Plugin.m_smcxicon + gap);
+						unsigned int iconNum = (pt.x - rc.left) / (PluginConfig.m_smcxicon + gap);
 						unsigned int list_icons = 0;
 						char         buff[100];
 						DWORD        flags;
@@ -958,9 +958,9 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
 				GetWindowText(hwndDlg, szWindowText, 512);
 				szWindowText[511] = 0;
-				hOldFont = (HFONT)SelectObject(dcMem, _Plugin.hFontCaption);
+				hOldFont = (HFONT)SelectObject(dcMem, PluginConfig.hFontCaption);
 				GetTextMetrics(dcMem, &tm);
-				SetTextColor(dcMem, _Plugin.ipConfig.isValid ? _Plugin.ipConfig.clrs[IPFONTCOUNT - 1] : GetSysColor(COLOR_CAPTIONTEXT));
+				SetTextColor(dcMem, PluginConfig.ipConfig.isValid ? PluginConfig.ipConfig.clrs[IPFONTCOUNT - 1] : GetSysColor(COLOR_CAPTIONTEXT));
 				SetBkMode(dcMem, TRANSPARENT);
 				rcText.left =20 + CSkin::m_SkinnedFrame_left + CSkin::m_bClipBorder + CSkin::m_titleBarLeftOff;//26;
 				rcText.right = rcWindow.right - 3 * CSkin::m_titleBarButtonSize.cx - 11 - CSkin::m_titleBarRightOff;
@@ -1185,7 +1185,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 			OldContainerWndProc = (WNDPROC)SetWindowLongPtr(hwndDlg, GWLP_WNDPROC, (LONG_PTR)ContainerWndProc);
 
-			if (_Plugin.m_TabAppearance & TCF_FLAT)
+			if (PluginConfig.m_TabAppearance & TCF_FLAT)
 				SetWindowLongPtr(hwndTab, GWL_STYLE, GetWindowLongPtr(hwndTab, GWL_STYLE) | TCS_BUTTONS);
 			pContainer = (struct ContainerWindowData *) lParam;
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR) pContainer);
@@ -1255,7 +1255,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			InsertMenu(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_SEPARATOR, 0, _T(""));
 			InsertMenu(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_MOREOPTIONS, TranslateT("Container options..."));
 			SetWindowText(hwndDlg, TranslateT("Message Session..."));
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)_Plugin.g_iconContainer);
+			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)PluginConfig.g_iconContainer);
 
 			/*
 			 * make the tab control the controlling parent window for all message dialogs
@@ -1265,7 +1265,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_EXSTYLE, ws | WS_EX_CONTROLPARENT);
 
 			ws = GetWindowLongPtr(hwndTab, GWL_STYLE);
-			if (_Plugin.m_TabAppearance & TCF_SINGLEROWTABCONTROL) {
+			if (PluginConfig.m_TabAppearance & TCF_SINGLEROWTABCONTROL) {
 				ws &= ~TCS_MULTILINE;
 				ws |= TCS_SINGLELINE;
 				ws |= TCS_FIXEDWIDTH;
@@ -1277,7 +1277,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					ws |= TCS_FIXEDWIDTH;
 			}
 			SetWindowLongPtr(hwndTab, GWL_STYLE, ws);
-			TabCtrl_SetImageList(GetDlgItem(hwndDlg, IDC_MSGTABS), _Plugin.g_hImageList);
+			TabCtrl_SetImageList(GetDlgItem(hwndDlg, IDC_MSGTABS), PluginConfig.g_hImageList);
 			TabCtrl_SetPadding(GetDlgItem(hwndDlg, IDC_MSGTABS), M->GetByte("x-pad", 3), M->GetByte("y-pad", 3));
 
 			SendMessage(hwndDlg, DM_CONFIGURECONTAINER, 0, 10);
@@ -1285,7 +1285,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			/*
 			 * context menu
 			 */
-			pContainer->hMenuContext = _Plugin.g_hMenuContext;
+			pContainer->hMenuContext = PluginConfig.g_hMenuContext;
 			/*
 			 * tab tooltips...
 			 */
@@ -1699,7 +1699,7 @@ buttons_done:
 					mmi->ptMaxPosition.x += rcDesktop.left;
 					mmi->ptMaxPosition.y += rcDesktop.top;
 				}
-				if (_Plugin.m_MathModAvail) {
+				if (PluginConfig.m_MathModAvail) {
 					if (CallService(MTH_GET_PREVIEW_SHOWN, 0, 0)) {
 						RECT rc;
 						HWND hwndMath = FindWindowA("TfrmPreview", "Preview");
@@ -1711,7 +1711,7 @@ buttons_done:
 			return 0;
 		}
 		case WM_MOVE:
-			if (_Plugin.m_MathModAvail) {
+			if (PluginConfig.m_MathModAvail) {
 				TMathWindowInfo mathWndInfo;
 				RECT windRect;
 				GetWindowRect(hwndDlg, &windRect);
@@ -1794,7 +1794,7 @@ buttons_done:
 
 			if (pContainer->buttonItems && sizeChanged)
 				DrawSideBar(hwndDlg, pContainer, &rcUnadjusted);
-			if (_Plugin.m_MathModAvail) {
+			if (PluginConfig.m_MathModAvail) {
 				TMathWindowInfo mathWndInfo;
 
 				RECT windRect;
@@ -1864,7 +1864,7 @@ buttons_done:
 			}
 			if (dat) {
 				SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM)(dat->hXStatusIcon ? dat->hXStatusIcon : dat->hTabStatusIcon));
-				m_LangPackCP = _Plugin.m_LangPackCP;
+				m_LangPackCP = PluginConfig.m_LangPackCP;
 				szNewTitle = NewTitle(dat->hContact, pContainer->szTitleFormat, dat->szNickname, dat->szStatus, pContainer->szName, dat->uin, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->idle, dat->codePage, dat->xStatus, dat->wStatus, dat->szAccount);
 				if (szNewTitle) {
 					SetWindowText(hwndDlg, szNewTitle);
@@ -1881,7 +1881,7 @@ buttons_done:
 				struct _MessageWindowData *dat = 0;
 
 				item.mask = TCIF_PARAM;
-				if ((dwTimeout = _Plugin.m_TabAutoClose) > 0) {
+				if ((dwTimeout = PluginConfig.m_TabAutoClose) > 0) {
 					int clients = TabCtrl_GetItemCount(GetDlgItem(hwndDlg, IDC_MSGTABS));
 					HWND *hwndClients = (HWND *)mir_alloc(sizeof(HWND) * (clients + 1));
 					for (i = 0; i < clients; i++) {
@@ -2207,11 +2207,11 @@ panel_found:
 			if (pContainer == NULL)
 				break;
 
-			if (_Plugin.m_MathModAvail && LOWORD(wParam == WA_INACTIVE))
+			if (PluginConfig.m_MathModAvail && LOWORD(wParam == WA_INACTIVE))
 				CallService(MTH_HIDE, 0, 0);
 
-			if (LOWORD(wParam == WA_INACTIVE) && (HWND)lParam != _Plugin.g_hwndHotkeyHandler && GetParent((HWND)lParam) != hwndDlg) {
-				BOOL fTransAllowed = !bSkinned || _Plugin.m_WinVerMajor >= 6;
+			if (LOWORD(wParam == WA_INACTIVE) && (HWND)lParam != PluginConfig.g_hwndHotkeyHandler && GetParent((HWND)lParam) != hwndDlg) {
+				BOOL fTransAllowed = !bSkinned || PluginConfig.m_WinVerMajor >= 6;
 
 				if (pContainer->dwFlags & CNT_TRANSPARENCY && M->m_pSetLayeredWindowAttributes != NULL && fTransAllowed)
 					M->m_pSetLayeredWindowAttributes(hwndDlg, Skin->getColorKey(), (BYTE)HIWORD(pContainer->dwTransparency), (/* pContainer->bSkinned ? LWA_COLORKEY :  */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
@@ -2223,7 +2223,7 @@ panel_found:
 		case WM_MOUSEACTIVATE: {
 			TCITEM item;
 			int curItem = 0;
-			BOOL  fTransAllowed = !bSkinned || _Plugin.m_WinVerMajor >= 6;
+			BOOL  fTransAllowed = !bSkinned || PluginConfig.m_WinVerMajor >= 6;
 
 			if (pContainer == NULL)
 				break;
@@ -2418,20 +2418,20 @@ panel_found:
 				}
 			}
 			if (dwLocalFlags == 0xffffffff) {
-				pContainer->dwFlags = pContainer->dwPrivateFlags = _Plugin.m_GlobalContainerFlags;
+				pContainer->dwFlags = pContainer->dwPrivateFlags = PluginConfig.m_GlobalContainerFlags;
 				pContainer->dwPrivateFlags |= (CNT_GLOBALSETTINGS);
 			}
 			else {
 				if (!(dwLocalFlags & CNT_NEWCONTAINERFLAGS))
 					dwLocalFlags = CNT_FLAGS_DEFAULT;
 				pContainer->dwPrivateFlags = dwLocalFlags;
-				pContainer->dwFlags = dwLocalFlags & CNT_GLOBALSETTINGS ? _Plugin.m_GlobalContainerFlags : dwLocalFlags;
+				pContainer->dwFlags = dwLocalFlags & CNT_GLOBALSETTINGS ? PluginConfig.m_GlobalContainerFlags : dwLocalFlags;
 			}
 
 			if (dwLocalTrans == 0xffffffff)
-				pContainer->dwTransparency = _Plugin.m_GlobalContainerTrans;
+				pContainer->dwTransparency = PluginConfig.m_GlobalContainerTrans;
 			else
-				pContainer->dwTransparency = pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS ? _Plugin.m_GlobalContainerTrans : dwLocalTrans;
+				pContainer->dwTransparency = pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS ? PluginConfig.m_GlobalContainerTrans : dwLocalTrans;
 
 			if (LOWORD(pContainer->dwTransparency) < 50)
 				pContainer->dwTransparency = MAKELONG(50, (WORD)HIWORD(pContainer->dwTransparency));
@@ -2442,10 +2442,10 @@ panel_found:
 				if (szTitleFormat[0])
 					_tcsncpy(pContainer->szTitleFormat, szTitleFormat, TITLE_FORMATLEN);
 				else
-					_tcsncpy(pContainer->szTitleFormat, _Plugin.szDefaultTitleFormat, TITLE_FORMATLEN);
+					_tcsncpy(pContainer->szTitleFormat, PluginConfig.szDefaultTitleFormat, TITLE_FORMATLEN);
 			}
 			else
-				_tcsncpy(pContainer->szTitleFormat, _Plugin.szDefaultTitleFormat, TITLE_FORMATLEN);
+				_tcsncpy(pContainer->szTitleFormat, PluginConfig.szDefaultTitleFormat, TITLE_FORMATLEN);
 
 			pContainer->szTitleFormat[TITLE_FORMATLEN - 1] = 0;
 
@@ -2482,7 +2482,7 @@ panel_found:
 			int i = 0;
 			UINT sBarHeight;
 
-			if (!_Plugin.m_SideBarEnabled)
+			if (!PluginConfig.m_SideBarEnabled)
 				pContainer->dwFlags &= ~CNT_SIDEBAR;
 
 			ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBARUP), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
@@ -2491,12 +2491,12 @@ panel_found:
 			SendDlgItemMessage(hwndDlg, IDC_SIDEBARUP, BUTTONSETASFLATBTN + 10, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_SIDEBARUP, BUTTONSETASFLATBTN + 12, 0, (LPARAM)pContainer);
 			SendDlgItemMessage(hwndDlg, IDC_SIDEBARUP, BUTTONSETASFLATBTN, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_SIDEBARUP, BM_SETIMAGE, IMAGE_ICON, (LPARAM)_Plugin.g_buttonBarIcons[26]);
+			SendDlgItemMessage(hwndDlg, IDC_SIDEBARUP, BM_SETIMAGE, IMAGE_ICON, (LPARAM)PluginConfig.g_buttonBarIcons[26]);
 
 			SendDlgItemMessage(hwndDlg, IDC_SIDEBARDOWN, BUTTONSETASFLATBTN + 10, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_SIDEBARDOWN, BUTTONSETASFLATBTN + 12, 0, (LPARAM)pContainer);
 			SendDlgItemMessage(hwndDlg, IDC_SIDEBARDOWN, BUTTONSETASFLATBTN, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_SIDEBARDOWN, BM_SETIMAGE, IMAGE_ICON, (LPARAM)_Plugin.g_buttonBarIcons[16]);
+			SendDlgItemMessage(hwndDlg, IDC_SIDEBARDOWN, BM_SETIMAGE, IMAGE_ICON, (LPARAM)PluginConfig.g_buttonBarIcons[16]);
 
 			ws = wsold = GetWindowLongPtr(hwndDlg, GWL_STYLE);
 			if (!CSkin::m_frameSkins) {
@@ -2515,7 +2515,7 @@ panel_found:
 			sBarHeight = (UINT)M->GetByte((bSkinned ? "S_sbarheight" : "sbarheight"), 0);
 
 			if (LOBYTE(LOWORD(GetVersion())) >= 5  && M->m_pSetLayeredWindowAttributes != NULL) {
-				BOOL  fTransAllowed = !bSkinned || _Plugin.m_WinVerMajor >= 6;
+				BOOL  fTransAllowed = !bSkinned || PluginConfig.m_WinVerMajor >= 6;
 				DWORD exold;
 
 				ex = exold = GetWindowLongPtr(hwndDlg, GWL_EXSTYLE);
@@ -2582,7 +2582,7 @@ panel_found:
 				SendMessage(pContainer->hwndSlist, BUTTONSETASFLATBTN, 0, 0);
 				SendMessage(pContainer->hwndSlist, BUTTONSETASFLATBTN + 10, 0, 0);
 				SendMessage(pContainer->hwndSlist, BUTTONSETASFLATBTN + 12, 0, (LPARAM)pContainer);
-				SendMessage(pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)_Plugin.g_buttonBarIcons[16]);
+				SendMessage(pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)PluginConfig.g_buttonBarIcons[16]);
 				SendMessage(pContainer->hwndSlist, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Show session list (right click to show quick menu)"), 0);
 			}
 			if (pContainer->dwFlags & CNT_NOMENUBAR) {
@@ -2700,14 +2700,14 @@ panel_found:
 			break;
 		}
 		case DM_SETICON: {
-			HICON hIconMsg = _Plugin.g_IconMsgEvent;
-			if ((HICON)lParam == _Plugin.g_buttonBarIcons[5]) {              // always set typing icon, but don't save it...
+			HICON hIconMsg = PluginConfig.g_IconMsgEvent;
+			if ((HICON)lParam == PluginConfig.g_buttonBarIcons[5]) {              // always set typing icon, but don't save it...
 				SendMessage(hwndDlg, WM_SETICON, wParam, lParam);
 				break;
 			}
 
-			if ((HICON)lParam != hIconMsg && pContainer->dwFlags & CNT_STATICICON && _Plugin.g_iconContainer != 0)
-				lParam = (LPARAM)_Plugin.g_iconContainer;
+			if ((HICON)lParam != hIconMsg && pContainer->dwFlags & CNT_STATICICON && PluginConfig.g_iconContainer != 0)
+				lParam = (LPARAM)PluginConfig.g_iconContainer;
 
 			if (pContainer->hIcon == STICK_ICON_MSG && (HICON)lParam != hIconMsg && pContainer->dwFlags & CNT_NEED_UPDATETITLE)
 				lParam = (LPARAM)hIconMsg;
@@ -2717,8 +2717,8 @@ panel_found:
 			break;
 		}
 		case WM_DRAWITEM: {
-			int cx = _Plugin.m_smcxicon;
-			int cy = _Plugin.m_smcyicon;
+			int cx = PluginConfig.m_smcxicon;
+			int cy = PluginConfig.m_smcyicon;
 			DRAWITEMSTRUCT *dis = (DRAWITEMSTRUCT *)lParam;
 			int id = LOWORD(dis->itemID);
 
@@ -2740,7 +2740,7 @@ panel_found:
 				GetTextExtentPoint32(dis->hDC, menuName, lstrlen(menuName), &sz);
 				SetBkMode(dis->hDC, TRANSPARENT);
 
-				if (_Plugin.m_bIsXP) {
+				if (PluginConfig.m_bIsXP) {
 					if (M->m_pfnIsThemeActive && M->m_pfnIsThemeActive())
 						clrBack = COLOR_MENUBAR;
 					else
@@ -2769,7 +2769,7 @@ panel_found:
 					else
 						DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENINNER, BF_RECT);
 				}
-				SetTextColor(dis->hDC, !(dis->itemState & ODS_DISABLED) ? (bSkinned ? _Plugin.skinDefaultFontColor : GetSysColor(COLOR_MENUTEXT)) : GetSysColor(COLOR_GRAYTEXT)); ;
+				SetTextColor(dis->hDC, !(dis->itemState & ODS_DISABLED) ? (bSkinned ? PluginConfig.skinDefaultFontColor : GetSysColor(COLOR_MENUTEXT)) : GetSysColor(COLOR_GRAYTEXT)); ;
 				DrawText(dis->hDC, menuName, lstrlen(menuName), &dis->rcItem,
 						 DT_VCENTER | DT_SINGLELINE | DT_CENTER);
 				SelectObject(dis->hDC, hOldFont);
@@ -2805,7 +2805,7 @@ panel_found:
 			return 0;
 		}
 		case DM_SESSIONLIST: {
-			SendMessage(_Plugin.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, WM_LBUTTONUP);
+			SendMessage(PluginConfig.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, WM_LBUTTONUP);
 			break;
 		}
 		case WM_DESTROY: {
@@ -2813,7 +2813,7 @@ panel_found:
 			TCITEM item;
 			SESSION_INFO *node = m_WndList;
 
-			if (_Plugin.g_FlashAvatarAvail) { // destroy own flash avatar
+			if (PluginConfig.g_FlashAvatarAvail) { // destroy own flash avatar
 				FLASHAVATAR fa = {0};
 				struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 
@@ -2863,7 +2863,7 @@ panel_found:
 			if (pContainer->hwndTip)
 				DestroyWindow(pContainer->hwndTip);
 			RemoveContainerFromList(pContainer);
-			if (_Plugin.m_MathModAvail)
+			if (PluginConfig.m_MathModAvail)
 				CallService(MTH_HIDE, 0, 0);
 			while (node) {
 				if (node->pContainer == pContainer) {
@@ -2886,7 +2886,7 @@ panel_found:
 			break;
 		case WM_CLOSE: {
 			//mad
-			if (_Plugin.m_HideOnClose&&!lParam)
+			if (PluginConfig.m_HideOnClose&&!lParam)
 				ShowWindow(hwndDlg,0);
 			else{
 			//
@@ -3123,7 +3123,7 @@ int GetTabItemFromMouse(HWND hwndTab, POINT *pt)
 
 int CutContactName(TCHAR *oldname, TCHAR *newname, unsigned int size)
 {
-	int cutMax = _Plugin.m_CutContactNameTo;
+	int cutMax = PluginConfig.m_CutContactNameTo;
 
 	if ((int)lstrlen(oldname) <= cutMax) {
 		lstrcpyn(newname, oldname, size);
@@ -3416,11 +3416,11 @@ HMENU BuildContainerMenu()
 	HMENU hMenu;
 	MENUITEMINFO mii = {0};
 
-	if (_Plugin.g_hMenuContainer != 0) {
-		HMENU submenu = GetSubMenu(_Plugin.g_hMenuContext, 0);
+	if (PluginConfig.g_hMenuContainer != 0) {
+		HMENU submenu = GetSubMenu(PluginConfig.g_hMenuContext, 0);
 		RemoveMenu(submenu, 6, MF_BYPOSITION);
-		DestroyMenu(_Plugin.g_hMenuContainer);
-		_Plugin.g_hMenuContainer = 0;
+		DestroyMenu(PluginConfig.g_hMenuContainer);
+		PluginConfig.g_hMenuContainer = 0;
 	}
 
 	// no container attach menu, if we are using the "clist group mode"
@@ -3443,8 +3443,8 @@ HMENU BuildContainerMenu()
 	}
 	while (TRUE);
 
-	InsertMenu(_Plugin.g_hMenuContext, ID_TABMENU_ATTACHTOCONTAINER, MF_BYCOMMAND | MF_POPUP, (UINT_PTR) hMenu, TranslateT("Attach to"));
-	_Plugin.g_hMenuContainer = hMenu;
+	InsertMenu(PluginConfig.g_hMenuContext, ID_TABMENU_ATTACHTOCONTAINER, MF_BYCOMMAND | MF_POPUP, (UINT_PTR) hMenu, TranslateT("Attach to"));
+	PluginConfig.g_hMenuContainer = hMenu;
 	return hMenu;
 }
 
@@ -3481,7 +3481,7 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg) {
 
 	for (i = 0; i < iNumProtos; i++) {
 		mir_snprintf(szTemp, sizeof(szTemp), "Protocol%d", i);
-		if (DBGetContactSettingString(dat->hContact, _Plugin.szMetaName, szTemp, &dbv))
+		if (DBGetContactSettingString(dat->hContact, PluginConfig.szMetaName, szTemp, &dbv))
 			continue;
 #if defined(_UNICODE)
 		tzProtoName = (TCHAR *)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)dbv.pszVal);
@@ -3489,10 +3489,10 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg) {
 		tzProtoName = dbv.pszVal;
 #endif
 		mir_snprintf(szTemp, sizeof(szTemp), "Handle%d", i);
-		if ((handle = (HANDLE)M->GetDword(dat->hContact, _Plugin.szMetaName, szTemp, 0)) != 0) {
+		if ((handle = (HANDLE)M->GetDword(dat->hContact, PluginConfig.szMetaName, szTemp, 0)) != 0) {
 			nick = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)handle, GCDNF_TCHAR);
 			mir_snprintf(szTemp, sizeof(szTemp), "Status%d", i);
-			wStatus = (WORD)DBGetContactSettingWord(dat->hContact, _Plugin.szMetaName, szTemp, 0);
+			wStatus = (WORD)DBGetContactSettingWord(dat->hContact, PluginConfig.szMetaName, szTemp, 0);
 			szStatusText = (TCHAR *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, wStatus, GCMDF_TCHAR);
 		}
 		mir_sntprintf(szMenuLine, safe_sizeof(szMenuLine), _T("%s: %s [%s] %s"), tzProtoName, nick, szStatusText, i == isForced ? TranslateT("(Forced)") : _T(""));

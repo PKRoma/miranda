@@ -832,7 +832,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 		/*
 		* run smileyadd
 		*/
-		if (_Plugin.g_SmileyAddAvail && fDoReplace) {
+		if (PluginConfig.g_SmileyAddAvail && fDoReplace) {
 			SMADD_RICHEDIT3 sm = {0};
 
 			newsel.cpMax = -1;

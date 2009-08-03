@@ -167,37 +167,37 @@ void CacheLogFonts()
 	 * cache/create the info panel fonts
 	 */
 
-	_Plugin.ipConfig.isValid = 1;
+	PluginConfig.ipConfig.isValid = 1;
 
-	if (_Plugin.ipConfig.isValid) {
+	if (PluginConfig.ipConfig.isValid) {
 		COLORREF clr;
 		LOGFONTA lf;
 
 		for (i = 0; i < IPFONTCOUNT; i++) {
-			if (_Plugin.ipConfig.hFonts[i])
-				DeleteObject(_Plugin.ipConfig.hFonts[i]);
+			if (PluginConfig.ipConfig.hFonts[i])
+				DeleteObject(PluginConfig.ipConfig.hFonts[i]);
 			LoadLogfont(i + 100, &lf, &clr, FONTMODULE);
 			lf.lfHeight =-MulDiv(lf.lfHeight, logPixelSY, 72);
-			_Plugin.ipConfig.hFonts[i] = CreateFontIndirectA(&lf);
-			_Plugin.ipConfig.clrs[i] = clr;
+			PluginConfig.ipConfig.hFonts[i] = CreateFontIndirectA(&lf);
+			PluginConfig.ipConfig.clrs[i] = clr;
 		}
-		_Plugin.hFontCaption = _Plugin.ipConfig.hFonts[IPFONTCOUNT - 1];
+		PluginConfig.hFontCaption = PluginConfig.ipConfig.hFonts[IPFONTCOUNT - 1];
 	}
 
-	if (_Plugin.ipConfig.bkgBrush)
-		DeleteObject(_Plugin.ipConfig.bkgBrush);
+	if (PluginConfig.ipConfig.bkgBrush)
+		DeleteObject(PluginConfig.ipConfig.bkgBrush);
 
-	_Plugin.ipConfig.clrBackground = M->GetDword(FONTMODULE, "ipfieldsbg", GetSysColor(COLOR_3DFACE));
-	_Plugin.ipConfig.clrClockSymbol = M->GetDword(FONTMODULE, "col_clock", GetSysColor(COLOR_WINDOWTEXT));
+	PluginConfig.ipConfig.clrBackground = M->GetDword(FONTMODULE, "ipfieldsbg", GetSysColor(COLOR_3DFACE));
+	PluginConfig.ipConfig.clrClockSymbol = M->GetDword(FONTMODULE, "col_clock", GetSysColor(COLOR_WINDOWTEXT));
 
-	_Plugin.ipConfig.bkgBrush = CreateSolidBrush(_Plugin.ipConfig.clrBackground);
+	PluginConfig.ipConfig.bkgBrush = CreateSolidBrush(PluginConfig.ipConfig.clrBackground);
 
-	_Plugin.crDefault = M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
-	_Plugin.crIncoming = M->GetDword(FONTMODULE, "inbg", SRMSGDEFSET_BKGINCOLOUR);
-	_Plugin.crOutgoing = M->GetDword(FONTMODULE, "outbg", SRMSGDEFSET_BKGOUTCOLOUR);
-	_Plugin.crStatus = M->GetDword(FONTMODULE, "statbg", SRMSGDEFSET_BKGCOLOUR);
-	_Plugin.crOldIncoming = M->GetDword(FONTMODULE, "oldinbg", SRMSGDEFSET_BKGINCOLOUR);
-	_Plugin.crOldOutgoing = M->GetDword(FONTMODULE, "oldoutbg", SRMSGDEFSET_BKGOUTCOLOUR);
+	PluginConfig.crDefault = M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
+	PluginConfig.crIncoming = M->GetDword(FONTMODULE, "inbg", SRMSGDEFSET_BKGINCOLOUR);
+	PluginConfig.crOutgoing = M->GetDword(FONTMODULE, "outbg", SRMSGDEFSET_BKGOUTCOLOUR);
+	PluginConfig.crStatus = M->GetDword(FONTMODULE, "statbg", SRMSGDEFSET_BKGCOLOUR);
+	PluginConfig.crOldIncoming = M->GetDword(FONTMODULE, "oldinbg", SRMSGDEFSET_BKGINCOLOUR);
+	PluginConfig.crOldOutgoing = M->GetDword(FONTMODULE, "oldoutbg", SRMSGDEFSET_BKGOUTCOLOUR);
 }
 
 void FreeLogFonts()
@@ -205,11 +205,11 @@ void FreeLogFonts()
 	int i;
 
 	for (i = 0; i < IPFONTCOUNT; i++)
-		if (_Plugin.ipConfig.hFonts[i])
-			DeleteObject(_Plugin.ipConfig.hFonts[i]);
+		if (PluginConfig.ipConfig.hFonts[i])
+			DeleteObject(PluginConfig.ipConfig.hFonts[i]);
 
-	if (_Plugin.ipConfig.bkgBrush)
-		DeleteObject(_Plugin.ipConfig.bkgBrush);
+	if (PluginConfig.ipConfig.bkgBrush)
+		DeleteObject(PluginConfig.ipConfig.bkgBrush);
 }
 
 /*
@@ -226,10 +226,10 @@ void CacheMsgLogIcons()
 	Logicons[0] = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
 	Logicons[1] = LoadSkinnedIcon(SKINICON_EVENT_URL);
 	Logicons[2] = LoadSkinnedIcon(SKINICON_EVENT_FILE);
-	Logicons[3] = _Plugin.g_iconOut;
-	Logicons[4] = _Plugin.g_iconIn;
-	Logicons[5] = _Plugin.g_iconStatus;
-	Logicons[6] = _Plugin.g_iconErr;
+	Logicons[3] = PluginConfig.g_iconOut;
+	Logicons[4] = PluginConfig.g_iconIn;
+	Logicons[5] = PluginConfig.g_iconStatus;
+	Logicons[6] = PluginConfig.g_iconErr;
 }
 
 /*
@@ -532,7 +532,7 @@ static void Build_RTF_Header(char **buffer, int *bufferEnd, int *bufferAlloced, 
 
 	// bbcode colors...
 
-	for (i = 0; i < _Plugin.rtf_ctablesize; i++)
+	for (i = 0; i < PluginConfig.rtf_ctablesize; i++)
 		AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(rtf_ctable[i].clr), GetGValue(rtf_ctable[i].clr), GetBValue(rtf_ctable[i].clr));
 
 	/*
@@ -640,7 +640,7 @@ static char *Template_CreateRTFFromDbEvent(struct _MessageWindowData *dat, HANDL
 	TemplateSet *this_templateset;
 	BOOL isBold = FALSE, isItalic = FALSE, isUnderline = FALSE;
 	DWORD dwEffectiveFlags;
-	DWORD dwFormattingParams = MAKELONG(_Plugin.m_FormatWholeWordsOnly, 0);
+	DWORD dwFormattingParams = MAKELONG(PluginConfig.m_FormatWholeWordsOnly, 0);
 	char  *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 	BOOL  fIsStatusChangeEvent = FALSE;
 	TCHAR *msg, *formatted = NULL;
@@ -1597,7 +1597,7 @@ static void ReplaceIcons(HWND hwndDlg, struct _MessageWindowData *dat, LONG star
 			SendMessageA(hwndrtf, EM_REPLACESEL, FALSE, (LPARAM)"");
 			length = (unsigned int)atol(&trbuffer[7]);
 			index = atol(&trbuffer[14]);
-			if (length > 0 && length < 20000 && index >= RTF_CTABLE_DEFSIZE && index < _Plugin.rtf_ctablesize) {
+			if (length > 0 && length < 20000 && index >= RTF_CTABLE_DEFSIZE && index < PluginConfig.rtf_ctablesize) {
 				cf2.crTextColor = rtf_ctable[index].clr;
 				cr.cpMin = fi.chrgText.cpMin;
 				cr.cpMax = cr.cpMin + length;
@@ -1645,7 +1645,7 @@ static void ReplaceIcons(HWND hwndDlg, struct _MessageWindowData *dat, LONG star
 	 * do smiley replacing, using the service
 	 */
 
-	if (_Plugin.g_SmileyAddAvail) {
+	if (PluginConfig.g_SmileyAddAvail) {
 		CHARRANGE sel;
 		SMADD_RICHEDIT3 smadd;
 
@@ -1669,7 +1669,7 @@ static void ReplaceIcons(HWND hwndDlg, struct _MessageWindowData *dat, LONG star
 			CallService(MS_SMILEYADD_REPLACESMILEYS, TABSRMM_SMILEYADD_BKGCOLORMODE, (LPARAM)&smadd);
 	}
 
-	if (_Plugin.m_MathModAvail) {
+	if (PluginConfig.m_MathModAvail) {
 		TMathRicheditInfo mathReplaceInfo;
 		CHARRANGE mathNewSel;
 		mathNewSel.cpMin = startAt;
@@ -1712,16 +1712,16 @@ static BOOL CALLBACK LangAddCallback(LPTSTR str)
 	count = sizeof(cpTable) / sizeof(cpTable[0]);
 	for (i = 0; i < count && cpTable[i].cpId != cp; i++);
 	if (i < count) {
-		AppendMenu(_Plugin.g_hMenuEncoding, MF_STRING, cp, TranslateTS(cpTable[i].cpName));
+		AppendMenu(PluginConfig.g_hMenuEncoding, MF_STRING, cp, TranslateTS(cpTable[i].cpName));
 	}
 	return TRUE;
 }
 
 void BuildCodePageList()
 {
-	_Plugin.g_hMenuEncoding = CreateMenu();
-	AppendMenu(_Plugin.g_hMenuEncoding, MF_STRING, 500, TranslateT("Use default codepage"));
-	AppendMenuA(_Plugin.g_hMenuEncoding, MF_SEPARATOR, 0, 0);
+	PluginConfig.g_hMenuEncoding = CreateMenu();
+	AppendMenu(PluginConfig.g_hMenuEncoding, MF_STRING, 500, TranslateT("Use default codepage"));
+	AppendMenuA(PluginConfig.g_hMenuEncoding, MF_SEPARATOR, 0, 0);
 	EnumSystemCodePages(LangAddCallback, CP_INSTALLED);
 }
 

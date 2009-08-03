@@ -539,7 +539,7 @@ void BB_InitDlgButtons(HWND hdlg, struct _MessageWindowData *dat)
 	RECT rcSplitter;
 	POINT ptSplitter;
 	int splitterY;
-	BYTE gap = DPISCALEX(_Plugin.g_iButtonsBarGap);
+	BYTE gap = DPISCALEX(PluginConfig.g_iButtonsBarGap);
 	BOOL isFlat = M->GetByte("tbflat", 1);
 	BOOL isThemed = !M->GetByte("nlflat", 0);
 	int cx = 0, cy = 0;
@@ -640,7 +640,7 @@ BOOL BB_SetButtonsPos(HWND hwnd, struct _MessageWindowData *dat)
 	RECT rcSplitter;
 	POINT ptSplitter;
 	int splitterY, iOff;
-	BYTE gap = DPISCALEX(_Plugin.g_iButtonsBarGap);
+	BYTE gap = DPISCALEX(PluginConfig.g_iButtonsBarGap);
 	int foravatar = 0;
 	BOOL showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
 	BOOL bBottomToolbar = dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR ? 1 : 0;
@@ -657,7 +657,7 @@ BOOL BB_SetButtonsPos(HWND hwnd, struct _MessageWindowData *dat)
 	ptSplitter.x = 0;
 	ptSplitter.y = rcSplitter.top;
 	ScreenToClient(hwnd, &ptSplitter);
-	if (_Plugin.g_DPIscaleY > 1.0)
+	if (PluginConfig.g_DPIscaleY > 1.0)
 		iOff = dat->bType == SESSIONTYPE_IM ? DPISCALEY(22) : DPISCALEY(23);
 	else
 		iOff = DPISCALEY(22);
@@ -667,7 +667,7 @@ BOOL BB_SetButtonsPos(HWND hwnd, struct _MessageWindowData *dat)
 	if (!bBottomToolbar) splitterY = ptSplitter.y - DPISCALEY(1);
 	else splitterY = rect.bottom;
 
-	if ((rect.bottom - ptSplitter.y - (rcSplitter.bottom - rcSplitter.top) /*- DPISCALEY(2)*/ - (bBottomToolbar ? DPISCALEY(24) : 0) < dat->pic.cy - DPISCALEY(2)) && dat->showPic && !_Plugin.m_AlwaysFullToolbarWidth)
+	if ((rect.bottom - ptSplitter.y - (rcSplitter.bottom - rcSplitter.top) /*- DPISCALEY(2)*/ - (bBottomToolbar ? DPISCALEY(24) : 0) < dat->pic.cy - DPISCALEY(2)) && dat->showPic && !PluginConfig.m_AlwaysFullToolbarWidth)
 		foravatar = dat->pic.cx + gap;
 
 	if (bNeedResort)
@@ -885,17 +885,17 @@ void CB_InitDefaultButtons()
 	bbd.bbbFlags = BBBF_ISIMBUTTON | BBBF_ISLSIDEBUTTON | BBBF_ISARROWBUTTON | BBBF_CREATEBYID;
 	bbd.dwButtonID = IDC_NAME;
 	bbd.dwDefPos = 20;
-	bbd.hIcon = _Plugin.g_buttonBarIconHandles[9];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[9];
 	bbd.ptszTooltip = _T("Info button");
 
 	CB_AddButton(0, (LPARAM)&bbd);
 
-	if (_Plugin.g_SmileyAddAvail) {
+	if (PluginConfig.g_SmileyAddAvail) {
 		bbd.bbbFlags = BBBF_ISIMBUTTON | BBBF_ISCHATBUTTON | BBBF_ISLSIDEBUTTON | BBBF_CREATEBYID;
 		bbd.dwButtonID = IDC_SMILEYBTN;
 		bbd.iButtonWidth = 0;
 		bbd.dwDefPos = 30;
-		bbd.hIcon = _Plugin.g_buttonBarIconHandles[10];
+		bbd.hIcon = PluginConfig.g_buttonBarIconHandles[10];
 		bbd.ptszTooltip = _T("Insert Emoticon");
 		CB_AddButton(0, (LPARAM)&bbd);
 	}
@@ -903,7 +903,7 @@ void CB_InitDefaultButtons()
 	bbd.bbbFlags = BBBF_ISIMBUTTON | BBBF_ISCHATBUTTON | BBBF_ISLSIDEBUTTON | BBBF_ISPUSHBUTTON | BBBF_CANBEHIDDEN | BBBF_CREATEBYID;
 	bbd.dwButtonID = IDC_FONTBOLD;
 	bbd.dwDefPos = 40;
-	bbd.hIcon = _Plugin.g_buttonBarIconHandles[11];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[11];
 	bbd.ptszTooltip = _T("Bold text");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -911,7 +911,7 @@ void CB_InitDefaultButtons()
 	bbd.bbbFlags = BBBF_ISIMBUTTON | BBBF_ISCHATBUTTON | BBBF_ISLSIDEBUTTON | BBBF_ISPUSHBUTTON | BBBF_CANBEHIDDEN | BBBF_CREATEBYID;
 	bbd.dwButtonID = IDC_FONTITALIC;
 	bbd.dwDefPos = 50;
-	bbd.hIcon = _Plugin.g_buttonBarIconHandles[12];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[12];
 	bbd.ptszTooltip = _T("Italic text");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -919,7 +919,7 @@ void CB_InitDefaultButtons()
 	bbd.bbbFlags = BBBF_ISIMBUTTON | BBBF_ISCHATBUTTON | BBBF_ISLSIDEBUTTON | BBBF_ISPUSHBUTTON | BBBF_CANBEHIDDEN | BBBF_CREATEBYID;
 	bbd.dwButtonID = IDC_FONTUNDERLINE;
 	bbd.dwDefPos = 60;
-	bbd.hIcon = _Plugin.g_buttonBarIconHandles[13];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[13];
 	bbd.ptszTooltip = _T("Underlined text");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -927,7 +927,7 @@ void CB_InitDefaultButtons()
 	bbd.bbbFlags = BBBF_ISIMBUTTON | BBBF_ISLSIDEBUTTON | BBBF_ISPUSHBUTTON | BBBF_CANBEHIDDEN | BBBF_CREATEBYID;
 	bbd.dwButtonID = IDC_FONTSTRIKEOUT;
 	bbd.dwDefPos = 70;
-	bbd.hIcon = _Plugin.g_buttonBarIconHandles[16];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[16];
 	bbd.ptszTooltip = _T("Strike-through text");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -935,7 +935,7 @@ void CB_InitDefaultButtons()
 	bbd.bbbFlags = BBBF_ISIMBUTTON | BBBF_ISCHATBUTTON | BBBF_ISLSIDEBUTTON | BBBF_CANBEHIDDEN | BBBF_CREATEBYID;
 	bbd.dwButtonID = IDC_FONTFACE;
 	bbd.dwDefPos = 80;
-	bbd.hIcon = _Plugin.g_buttonBarIconHandles[15];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[15];
 	bbd.ptszTooltip = _T("Select font color");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -945,7 +945,7 @@ void CB_InitDefaultButtons()
 	bbd.dwButtonID = IDOK;
 	bbd.dwDefPos = 10;
 	bbd.iButtonWidth = 51;
-	bbd.hIcon = _Plugin.g_buttonBarIconHandles[6];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[6];
 	bbd.ptszTooltip = _T("Send message\nClick dropdown arrow for sending options");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -954,7 +954,7 @@ void CB_InitDefaultButtons()
 	bbd.dwButtonID = IDC_SAVE;
 	bbd.dwDefPos = 20;
 	bbd.iButtonWidth = 0;
-	bbd.hIcon = _Plugin.g_buttonBarIconHandles[8];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[8];
 	bbd.ptszTooltip = _T("Close session");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -963,7 +963,7 @@ void CB_InitDefaultButtons()
 	bbd.dwButtonID = IDC_QUOTE;
 	bbd.dwDefPos = 30;
 	bbd.iButtonWidth = 0;
-	bbd.hIcon = _Plugin.g_buttonBarIconHandles[4];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[4];
 	bbd.ptszTooltip = _T("Quote last message OR selected text");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -972,7 +972,7 @@ void CB_InitDefaultButtons()
 	bbd.dwButtonID = IDC_TIME;
 	bbd.dwDefPos = 40;
 	bbd.iButtonWidth = 0;
-	bbd.hIcon = _Plugin.g_buttonBarIconHandles[1];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[1];
 	bbd.ptszTooltip = _T("Message Log Options");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -981,7 +981,7 @@ void CB_InitDefaultButtons()
 	bbd.dwButtonID = IDC_HISTORY;
 	bbd.dwDefPos = 50;
 	bbd.iButtonWidth = 0;
-	bbd.hIcon = _Plugin.g_buttonBarIconHandles[0];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[0];
 	bbd.ptszTooltip = _T("View User's History");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -990,7 +990,7 @@ void CB_InitDefaultButtons()
 	bbd.dwButtonID = IDC_PIC;
 	bbd.dwDefPos = 60;
 	bbd.iButtonWidth = 0;
-	bbd.hIcon = _Plugin.g_buttonBarIconHandles[7];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[7];
 	bbd.ptszTooltip = _T("Avatar Options");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -1031,7 +1031,7 @@ void CB_InitDefaultButtons()
 	bbd.pszModuleName = "Tabsrmm";
 	bbd.dwDefPos = 81;
 	bbd.iButtonWidth = 22;
-	bbd.hIcon = _Plugin.g_buttonBarIconHandles[17];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[17];
 	bbd.ptszTooltip = _T("Change background color");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -1041,7 +1041,7 @@ void CB_InitDefaultButtons()
 	bbd.dwButtonID = IDC_SHOWNICKLIST;
 	bbd.dwDefPos = 22;
 	bbd.iButtonWidth = 22;
-	bbd.hIcon = _Plugin.g_buttonBarIconHandles[21];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[21];
 	bbd.ptszTooltip = _T("Toggle nick list");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -1050,7 +1050,7 @@ void CB_InitDefaultButtons()
 	bbd.dwButtonID = IDC_FILTER;
 	bbd.dwDefPos = 24;
 	bbd.iButtonWidth = 22;
-	bbd.hIcon = _Plugin.g_buttonBarIconHandles[19];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[19];
 	bbd.ptszTooltip = _T("Event filter - right click to setup, left click to activate/deactivate");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -1059,7 +1059,7 @@ void CB_InitDefaultButtons()
 	bbd.dwButtonID = IDC_CHANMGR;
 	bbd.dwDefPos = 33;
 	bbd.iButtonWidth = 22;
-	bbd.hIcon = _Plugin.g_buttonBarIconHandles[18];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[18];
 	bbd.ptszTooltip = _T("Channel manager");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -1250,7 +1250,7 @@ INT_PTR CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CANBEHIDDEN), FALSE);
 
 			SendDlgItemMessage(hwndDlg, IDC_SPIN1, UDM_SETRANGE, 0, MAKELONG(10, 0));
-			SendDlgItemMessage(hwndDlg, IDC_SPIN1, UDM_SETPOS, 0, MAKELONG(_Plugin.g_iButtonsBarGap, 0));
+			SendDlgItemMessage(hwndDlg, IDC_SPIN1, UDM_SETPOS, 0, MAKELONG(PluginConfig.g_iButtonsBarGap, 0));
 			TranslateDialogDefault(hwndDlg);
 			bOptionsInit = FALSE;
 		}
@@ -1403,12 +1403,12 @@ INT_PTR CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 
 							SaveTree(hToolBarTree);
 							CB_ReInitCustomButtons();
-							_Plugin.g_iButtonsBarGap = (BYTE)SendDlgItemMessage(hwndDlg, IDC_SPIN1, UDM_GETPOS, 0, 0);
+							PluginConfig.g_iButtonsBarGap = (BYTE)SendDlgItemMessage(hwndDlg, IDC_SPIN1, UDM_GETPOS, 0, 0);
 
-							if (_Plugin.g_iButtonsBarGap != M->GetByte("ButtonsBarGap", 1))
+							if (PluginConfig.g_iButtonsBarGap != M->GetByte("ButtonsBarGap", 1))
 								M->BroadcastMessageAsync(WM_SIZE, 0, 0);
 
-							M->WriteByte(SRMSGMOD_T, "ButtonsBarGap", _Plugin.g_iButtonsBarGap);
+							M->WriteByte(SRMSGMOD_T, "ButtonsBarGap", PluginConfig.g_iButtonsBarGap);
 
 							EnableWindow(GetDlgItem(hwndDlg, IDC_IMCHECK), FALSE);
 							EnableWindow(GetDlgItem(hwndDlg, IDC_CHATCHECK), FALSE);

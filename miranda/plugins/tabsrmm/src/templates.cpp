@@ -446,7 +446,7 @@ INT_PTR CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		case WM_INITDIALOG: {
 			int i = 1;
 			char szHeader[2048];
-			SETTEXTEX stx = {ST_SELECTION, _Plugin.m_LangPackCP};
+			SETTEXTEX stx = {ST_SELECTION, PluginConfig.m_LangPackCP};
 			RECT rc;
 			char szBasename[_MAX_FNAME], szExt[_MAX_EXT];
 
@@ -497,7 +497,7 @@ INT_PTR CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 						case EN_LINK:
 							switch (((ENLINK *) lParam)->msg) {
 								case WM_SETCURSOR:
-									SetCursor(_Plugin.hCurHyperlinkHand);
+									SetCursor(PluginConfig.hCurHyperlinkHand);
 									SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
 									return(TRUE);
 								case WM_LBUTTONUP: {

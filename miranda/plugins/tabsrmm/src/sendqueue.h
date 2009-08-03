@@ -49,7 +49,7 @@ struct SendJob {
 	HANDLE  hContact[SENDJOBS_MAX_SENDS];
 	HANDLE  hSendId[SENDJOBS_MAX_SENDS];
 	char    *sendBuffer;
-	int     dwLen;        // actual buffer langth (checked for reallocs()
+	int     dwLen;        // actual buffer length (checked for reallocs()
 	int     sendCount;
 	HANDLE  hOwner;
 	HWND    hwndOwner;

@@ -70,7 +70,6 @@ static HANDLE hSVC[14];
 #define H_MS_TABMSG_TRAYSUPPORT 10
 #define H_MSG_MOD_GETWINDOWFLAGS 11
 
-extern      struct ContainerWindowData *pFirstContainer;
 extern      INT_PTR CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern      int g_chat_integration_enabled;
 extern      struct MsgLogIcon msgLogIcons[NR_LOGICONS * 3];
@@ -199,7 +198,7 @@ static INT_PTR SetUserPrefs(WPARAM wParam, LPARAM lParam)
 
 static INT_PTR Service_OpenTrayMenu(WPARAM wParam, LPARAM lParam)
 {
-	SendMessage(_Plugin.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, lParam == 0 ? WM_LBUTTONUP : WM_RBUTTONUP);
+	SendMessage(PluginConfig.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, lParam == 0 ? WM_LBUTTONUP : WM_RBUTTONUP);
 	return 0;
 }
 
@@ -437,7 +436,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 		wp.length = sizeof(wp);
 		SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM)&pTargetContainer);
 
-		if(pTargetContainer && _Plugin.m_HideOnClose && !IsWindowVisible(pTargetContainer->hwnd))	{
+		if(pTargetContainer && PluginConfig.m_HideOnClose && !IsWindowVisible(pTargetContainer->hwnd))	{
 			GetWindowPlacement(pTargetContainer->hwnd, &wp);
 			GetContainerNameForContact((HANDLE) wParam, szName, CONTAINER_NAMELEN);
 
@@ -515,7 +514,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 		char *szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)wParam, 0);
 		DWORD dwStatus = 0;
 
-		if (_Plugin.g_MetaContactsAvail && szProto && !strcmp(szProto, (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0))) {
+		if (PluginConfig.g_MetaContactsAvail && szProto && !strcmp(szProto, (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0))) {
 			HANDLE hSubconttact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, wParam, 0);
 
 			szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hSubconttact, 0);
@@ -539,7 +538,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 			bPopup = (BOOL) M->GetByte("cpopup", 0);
 			pContainer = FindContainerByName(szName);
 			if (pContainer != NULL) {
-				if ((IsIconic(pContainer->hwnd)) && _Plugin.m_AutoSwitchTabs) {
+				if ((IsIconic(pContainer->hwnd)) && PluginConfig.m_AutoSwitchTabs) {
 					bActivate = TRUE;
 					pContainer->dwFlags |= CNT_DEFERREDTABSELECT;
 				}
@@ -576,7 +575,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 nowindowcreate:
 	if (!(dbei.flags & DBEF_READ)) {
 		UpdateTrayMenu(0, 0, dbei.szModule, NULL, (HANDLE)wParam, 1);
-		if (!nen_options.bTraySupport || _Plugin.m_WinVerMajor < 5) {
+		if (!nen_options.bTraySupport || PluginConfig.m_WinVerMajor < 5) {
 			TCHAR toolTip[256], *contactName;
 			ZeroMemory(&cle, sizeof(cle));
 			cle.cbSize = sizeof(cle);
@@ -616,15 +615,15 @@ INT_PTR SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 	/*
 	 * make sure that only the main UI thread will handle window creation
      */
-	if (GetCurrentThreadId() != _Plugin.dwThreadID) {
+	if (GetCurrentThreadId() != PluginConfig.dwThreadID) {
 		if (lParam) {
 			unsigned iLen = lstrlenW((wchar_t *)lParam);
 			wchar_t *tszText = (wchar_t *)malloc((iLen + 1) * sizeof(wchar_t));
 			wcsncpy(tszText, (wchar_t *)lParam, iLen + 1);
 			tszText[iLen] = 0;
-			PostMessage(_Plugin.g_hwndHotkeyHandler, DM_SENDMESSAGECOMMANDW, wParam, (LPARAM)tszText);
+			PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_SENDMESSAGECOMMANDW, wParam, (LPARAM)tszText);
 		} else
-			PostMessage(_Plugin.g_hwndHotkeyHandler, DM_SENDMESSAGECOMMANDW, wParam, 0);
+			PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_SENDMESSAGECOMMANDW, wParam, 0);
 		return 0;
 	}
 
@@ -654,12 +653,12 @@ INT_PTR SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 		 * strange problem, maybe related to the window list service in miranda?
 		 */
 		if (M->GetByte("trayfix", 0)) {
-			if (_Plugin.hLastOpenedContact == (HANDLE)wParam) {
+			if (PluginConfig.hLastOpenedContact == (HANDLE)wParam) {
 				//LeaveCriticalSection(&cs_sessions);
 				return 0;
 			}
 		}
-		_Plugin.hLastOpenedContact = (HANDLE)wParam;
+		PluginConfig.hLastOpenedContact = (HANDLE)wParam;
 		GetContainerNameForContact((HANDLE) wParam, szName, CONTAINER_NAMELEN);
 		pContainer = FindContainerByName(szName);
 		if (pContainer == NULL)
@@ -688,15 +687,15 @@ INT_PTR SendMessageCommand(WPARAM wParam, LPARAM lParam)
 	struct ContainerWindowData *pContainer = 0;
 	int isSplit = 1;
 
-	if (GetCurrentThreadId() != _Plugin.dwThreadID) {
+	if (GetCurrentThreadId() != PluginConfig.dwThreadID) {
 		if (lParam) {
 			unsigned iLen = lstrlenA((char *)lParam);
 			char *szText = (char *)malloc(iLen + 1);
 			strncpy(szText, (char *)lParam, iLen + 1);
 			szText[iLen] = 0;
-			PostMessage(_Plugin.g_hwndHotkeyHandler, DM_SENDMESSAGECOMMAND, wParam, (LPARAM)szText);
+			PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_SENDMESSAGECOMMAND, wParam, (LPARAM)szText);
 		} else
-			PostMessage(_Plugin.g_hwndHotkeyHandler, DM_SENDMESSAGECOMMAND, wParam, 0);
+			PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_SENDMESSAGECOMMAND, wParam, 0);
 		return 0;
 	}
 
@@ -726,12 +725,12 @@ INT_PTR SendMessageCommand(WPARAM wParam, LPARAM lParam)
 		 * strange problem, maybe related to the window list service in miranda?
 		 */
 		if (M->GetByte("trayfix", 0)) {
-			if (_Plugin.hLastOpenedContact == (HANDLE)wParam) {
+			if (PluginConfig.hLastOpenedContact == (HANDLE)wParam) {
 				//LeaveCriticalSection(&cs_sessions);
 				return 0;
 			}
 		}
-		_Plugin.hLastOpenedContact = (HANDLE)wParam;
+		PluginConfig.hLastOpenedContact = (HANDLE)wParam;
 		GetContainerNameForContact((HANDLE) wParam, szName, CONTAINER_NAMELEN);
 		pContainer = FindContainerByName(szName);
 		if (pContainer == NULL)
@@ -849,7 +848,7 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
 				if(hwnd == 0)
 					fShow = TRUE;
 				else {
-					if(_Plugin.m_HideOnClose) {
+					if(PluginConfig.m_HideOnClose) {
 						struct	ContainerWindowData *pContainer = 0;
 						SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
 						if(pContainer) {
@@ -890,7 +889,7 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
 			cle.hContact = (HANDLE) wParam;
 			cle.hDbEvent = (HANDLE) 1;
 			cle.flags = CLEF_ONLYAFEW | CLEF_TCHAR;
-			cle.hIcon = _Plugin.g_buttonBarIcons[5];
+			cle.hIcon = PluginConfig.g_buttonBarIcons[5];
 			cle.pszService = "SRMsg/TypingMessage";
 			cle.ptszTooltip = szTip;
 			CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
@@ -918,9 +917,9 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
 		if (lstrcmpA(cws->szModule, "CList") && (szProto == NULL || lstrcmpA(cws->szModule, szProto)))
 			return 0;                       // filter out settings we aren't interested in...
 		if (DBGetContactSettingWord((HANDLE)wParam, SRMSGMOD_T, "isFavorite", 0))
-			AddContactToFavorites((HANDLE)wParam, NULL, szProto, NULL, 0, 0, 0, _Plugin.g_hMenuFavorites, M->GetDword((HANDLE)wParam, "ANSIcodepage", _Plugin.m_LangPackCP));
+			AddContactToFavorites((HANDLE)wParam, NULL, szProto, NULL, 0, 0, 0, PluginConfig.g_hMenuFavorites, M->GetDword((HANDLE)wParam, "ANSIcodepage", PluginConfig.m_LangPackCP));
 		if (M->GetDword((HANDLE)wParam, "isRecent", 0))
-			AddContactToFavorites((HANDLE)wParam, NULL, szProto, NULL, 0, 0, 0, _Plugin.g_hMenuRecent, M->GetDword((HANDLE)wParam, "ANSIcodepage", _Plugin.m_LangPackCP));
+			AddContactToFavorites((HANDLE)wParam, NULL, szProto, NULL, 0, 0, 0, PluginConfig.g_hMenuRecent, M->GetDword((HANDLE)wParam, "ANSIcodepage", PluginConfig.m_LangPackCP));
 		return 0;       // for the hContact.
 	}
 
@@ -936,7 +935,7 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
 
 	// metacontacts support
 
-	if (!lstrcmpA(cws->szModule, _Plugin.szMetaName) && !lstrcmpA(cws->szSetting, "Nick"))      // filter out this setting to avoid infinite loops while trying to obtain the most online contact
+	if (!lstrcmpA(cws->szModule, PluginConfig.szMetaName) && !lstrcmpA(cws->szSetting, "Nick"))      // filter out this setting to avoid infinite loops while trying to obtain the most online contact
 		return 0;
 
 	if (hwnd) {
@@ -1103,7 +1102,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	HookEvent(ME_FONT_RELOAD, FontServiceFontsChanged);
 	RestoreUnreadMessageAlerts();
 	for (i = 0; i < NR_BUTTONBARICONS; i++)
-		_Plugin.g_buttonBarIcons[i] = 0;
+		PluginConfig.g_buttonBarIcons[i] = 0;
 	LoadIconTheme();
 
 	CreateImageList(TRUE);
@@ -1111,7 +1110,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	mii.cbSize = sizeof(mii);
 	mii.fMask = MIIM_BITMAP;
 	mii.hbmpItem = HBMMENU_CALLBACK;
-	submenu = GetSubMenu(_Plugin.g_hMenuContext, 7);
+	submenu = GetSubMenu(PluginConfig.g_hMenuContext, 7);
 	for (i = 0; i <= 8; i++)
 		SetMenuItemInfoA(submenu, (UINT_PTR)i, TRUE, &mii);
 
@@ -1134,7 +1133,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 		DBFreeVariant(&dbv);
 
 	if (ServiceExists(MS_SMILEYADD_REPLACESMILEYS)) {
-		_Plugin.g_SmileyAddAvail = 1;
+		PluginConfig.g_SmileyAddAvail = 1;
 		hEventSmileyAdd = HookEvent(ME_SMILEYADD_OPTIONSCHANGED, SmileyAddOptionsChanged);
 	}
 
@@ -1145,7 +1144,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	//
 
 	if (ServiceExists(MS_FAVATAR_GETINFO))
-		_Plugin.g_FlashAvatarAvail = 1;
+		PluginConfig.g_FlashAvatarAvail = 1;
 
 	bIEView = ServiceExists(MS_IEVIEW_WINDOW);
 	if (bIEView) {
@@ -1157,47 +1156,47 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	} else
 		M->WriteByte(SRMSGMOD_T, "ieview_installed", 0);
    //MAD
-	_Plugin.g_bDisableAniAvatars=M->GetByte("adv_DisableAniAvatars", 0);
-	_Plugin.g_iButtonsBarGap=M->GetByte("ButtonsBarGap", 1);
+	PluginConfig.g_bDisableAniAvatars=M->GetByte("adv_DisableAniAvatars", 0);
+	PluginConfig.g_iButtonsBarGap=M->GetByte("ButtonsBarGap", 1);
 	//
-	_Plugin.m_hwndClist = (HWND)CallService(MS_CLUI_GETHWND, 0, 0);
-	_Plugin.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE);
-	if (_Plugin.m_MathModAvail) {
+	PluginConfig.m_hwndClist = (HWND)CallService(MS_CLUI_GETHWND, 0, 0);
+	PluginConfig.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE);
+	if (PluginConfig.m_MathModAvail) {
 		char *szDelim = (char *)CallService(MATH_GET_STARTDELIMITER, 0, 0);
 		if (szDelim) {
 #if defined(_UNICODE)
-			MultiByteToWideChar(CP_ACP, 0, szDelim, -1, _Plugin.m_MathModStartDelimiter, sizeof(_Plugin.m_MathModStartDelimiter));
+			MultiByteToWideChar(CP_ACP, 0, szDelim, -1, PluginConfig.m_MathModStartDelimiter, sizeof(PluginConfig.m_MathModStartDelimiter));
 #else
-			strncpy(_Plugin.m_MathModStartDelimiter, szDelim, sizeof(_Plugin.m_MathModStartDelimiter));
+			strncpy(PluginConfig.m_MathModStartDelimiter, szDelim, sizeof(PluginConfig.m_MathModStartDelimiter));
 #endif
 			CallService(MTH_FREE_MATH_BUFFER, 0, (LPARAM)szDelim);
 		}
 	}
 
-	haveMathMod = _Plugin.m_MathModAvail;
+	haveMathMod = PluginConfig.m_MathModAvail;
 	if (haveMathMod)
-		mathModDelimiter = _Plugin.m_MathModStartDelimiter;
+		mathModDelimiter = PluginConfig.m_MathModStartDelimiter;
 
 	if (ServiceExists(MS_MC_GETDEFAULTCONTACT))
-		_Plugin.g_MetaContactsAvail = 1;
+		PluginConfig.g_MetaContactsAvail = 1;
 
-	if (_Plugin.g_MetaContactsAvail)
-		mir_snprintf(_Plugin.szMetaName, 256, "%s", (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0));
+	if (PluginConfig.g_MetaContactsAvail)
+		mir_snprintf(PluginConfig.szMetaName, 256, "%s", (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0));
 	else
-		_Plugin.szMetaName[0] = 0;
+		PluginConfig.szMetaName[0] = 0;
 
 	if (ServiceExists(MS_POPUP_ADDPOPUPEX))
-		_Plugin.g_PopupAvail = 1;
+		PluginConfig.g_PopupAvail = 1;
 
 #if defined(_UNICODE)
 	if (ServiceExists(MS_POPUP_ADDPOPUPW))
-		_Plugin.g_PopupWAvail = 1;
+		PluginConfig.g_PopupWAvail = 1;
 #endif
 
 	if (M->GetByte("avatarmode", -1) == -1)
 		M->WriteByte(SRMSGMOD_T, "avatarmode", 2);
 
-	_Plugin.g_hwndHotkeyHandler = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_HOTKEYSLAVE), 0, HotkeyHandlerDlgProc);
+	PluginConfig.g_hwndHotkeyHandler = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_HOTKEYSLAVE), 0, HotkeyHandlerDlgProc);
 
 	CreateTrayMenus(TRUE);
 	if (nen_options.bTraySupport)
@@ -1207,14 +1206,14 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 		CLISTMENUITEM mi = { 0 };
 		mi.cbSize = sizeof(mi);
 		mi.position = -500050005;
-		mi.hIcon = _Plugin.g_iconContainer;
+		mi.hIcon = PluginConfig.g_iconContainer;
 		mi.pszContactOwner = NULL;
 		mi.pszName = LPGEN("&Messaging settings...");
 		mi.pszService = MS_TABMSG_SETUSERPREFS;
-		_Plugin.m_UserMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
+		PluginConfig.m_UserMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 	}
 	PreTranslateDates();
-	_Plugin.m_hFontWebdings = CreateFontA(-16, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, SYMBOL_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FF_DONTCARE | DEFAULT_PITCH, "Wingdings");
+	PluginConfig.m_hFontWebdings = CreateFontA(-16, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, SYMBOL_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FF_DONTCARE | DEFAULT_PITCH, "Wingdings");
 
 	// updater plugin support
 
@@ -1248,7 +1247,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	RegisterFontServiceFonts();
 	CacheLogFonts();
 	Chat_ModulesLoaded(wParam, lParam);
-	if(_Plugin.g_PopupWAvail||_Plugin.g_PopupAvail)
+	if(PluginConfig.g_PopupWAvail||PluginConfig.g_PopupAvail)
 		TN_ModuleInit();
 
 	return 0;
@@ -1279,8 +1278,8 @@ static int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 
 	while(pFirstContainer){
 		//MaD: fix for correct closing hidden contacts
-		if (_Plugin.m_HideOnClose)
-			_Plugin.m_HideOnClose = FALSE;
+		if (PluginConfig.m_HideOnClose)
+			PluginConfig.m_HideOnClose = FALSE;
 		//
 		SendMessage(pFirstContainer->hwnd, WM_CLOSE, 0, 1);
 	}
@@ -1321,7 +1320,7 @@ static int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 	DestroyHookableEvent(g_hEvent_MsgPopup);
 
 	NEN_WriteOptions(&nen_options);
-	DestroyWindow(_Plugin.g_hwndHotkeyHandler);
+	DestroyWindow(PluginConfig.g_hwndHotkeyHandler);
 
 	//UnregisterClass(_T("TabSRMSG_Win"), g_hInst);
 	UnregisterClass(_T("TSStatusBarClass"), g_hInst);
@@ -1331,24 +1330,24 @@ static int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 
 int SplitmsgShutdown(void)
 {
-	DestroyCursor(_Plugin.hCurSplitNS);
-	DestroyCursor(_Plugin.hCurHyperlinkHand);
-	DestroyCursor(_Plugin.hCurSplitWE);
-	DeleteObject(_Plugin.m_hFontWebdings);
+	DestroyCursor(PluginConfig.hCurSplitNS);
+	DestroyCursor(PluginConfig.hCurHyperlinkHand);
+	DestroyCursor(PluginConfig.hCurSplitWE);
+	DeleteObject(PluginConfig.m_hFontWebdings);
 	FreeLibrary(GetModuleHandleA("riched20"));
 	FreeLibrary(GetModuleHandleA("user32"));
 	if (g_hIconDLL)
 		FreeLibrary(g_hIconDLL);
 
-	ImageList_RemoveAll(_Plugin.g_hImageList);
-	ImageList_Destroy(_Plugin.g_hImageList);
+	ImageList_RemoveAll(PluginConfig.g_hImageList);
+	ImageList_Destroy(PluginConfig.g_hImageList);
 
 	OleUninitialize();
-	DestroyMenu(_Plugin.g_hMenuContext);
-	if (_Plugin.g_hMenuContainer)
-		DestroyMenu(_Plugin.g_hMenuContainer);
-	if (_Plugin.g_hMenuEncoding)
-		DestroyMenu(_Plugin.g_hMenuEncoding);
+	DestroyMenu(PluginConfig.g_hMenuContext);
+	if (PluginConfig.g_hMenuContainer)
+		DestroyMenu(PluginConfig.g_hMenuContainer);
+	if (PluginConfig.g_hMenuEncoding)
+		DestroyMenu(PluginConfig.g_hMenuEncoding);
 
 	UnloadIcons();
 	FreeTabConfig();
@@ -1363,8 +1362,8 @@ int SplitmsgShutdown(void)
 		g_hIconDLL = 0;
 	}
 
-	if(_Plugin.hbmLogo)
-		DeleteObject(_Plugin.hbmLogo);
+	if(PluginConfig.hbmLogo)
+		DeleteObject(PluginConfig.hbmLogo);
 
 	return 0;
 }
@@ -1494,7 +1493,7 @@ int LoadSendRecvMessageModule(void)
 tzdone:
 	mREOLECallback = new REOLECallback;
 
-	ZeroMemory((void *)&_Plugin, sizeof(_Plugin));
+	ZeroMemory((void *)&PluginConfig, sizeof(PluginConfig));
 	ZeroMemory((void *)&nen_options, sizeof(nen_options));
 
 	M->m_hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
@@ -1521,26 +1520,26 @@ tzdone:
 	SkinAddNewSoundEx("SendMsg", Translate("Messages"), Translate("Outgoing"));
 	SkinAddNewSoundEx("SendError", Translate("Messages"), Translate("Error sending message"));
 	//MAD: sound on typing...
-	if(_Plugin.g_bSoundOnTyping = M->GetByte("adv_soundontyping", 0))
+	if(PluginConfig.g_bSoundOnTyping = M->GetByte("adv_soundontyping", 0))
 		SkinAddNewSoundEx("SoundOnTyping", Translate("Other"), Translate("TABSRMM: Typing"));
 	//
-	_Plugin.hCurSplitNS = LoadCursor(NULL, IDC_SIZENS);
-	_Plugin.hCurSplitWE = LoadCursor(NULL, IDC_SIZEWE);
-	_Plugin.hCurHyperlinkHand = LoadCursor(NULL, IDC_HAND);
-	if (_Plugin.hCurHyperlinkHand == NULL)
-		_Plugin.hCurHyperlinkHand = LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_HYPERLINKHAND));
+	PluginConfig.hCurSplitNS = LoadCursor(NULL, IDC_SIZENS);
+	PluginConfig.hCurSplitWE = LoadCursor(NULL, IDC_SIZEWE);
+	PluginConfig.hCurHyperlinkHand = LoadCursor(NULL, IDC_HAND);
+	if (PluginConfig.hCurHyperlinkHand == NULL)
+		PluginConfig.hCurHyperlinkHand = LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_HYPERLINKHAND));
 
 	LoadTSButtonModule();
 	RegisterTabCtrlClass();
 	ReloadGlobals();
-	_Plugin.dwThreadID = GetCurrentThreadId();
+	PluginConfig.dwThreadID = GetCurrentThreadId();
 	GetDataDir();
 
 	/*
 	 * extract the default skin
 	 */
 
-	if(_Plugin.m_WinVerMajor >=5 && M->GetDword("def_skin_installed", -1) != SKIN_VERSION) {
+	if(PluginConfig.m_WinVerMajor >=5 && M->GetDword("def_skin_installed", -1) != SKIN_VERSION) {
 		M->WriteDword(SRMSGMOD_T, "def_skin_installed", SKIN_VERSION);
 
 		for(i = 0; i < SKIN_NR_ELEMENTS; i++) {
@@ -1596,28 +1595,28 @@ tzdone:
 			}
 		}
 	}
-	_Plugin.hbmLogo = IMG_LoadLogo(szFilenameA);
+	PluginConfig.hbmLogo = IMG_LoadLogo(szFilenameA);
 
 	ReloadTabConfig();
 	NEN_ReadOptions(&nen_options);
 
-	_Plugin.g_hMenuContext = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_TABCONTEXT));
-	CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) _Plugin.g_hMenuContext, 0);
+	PluginConfig.g_hMenuContext = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_TABCONTEXT));
+	CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) PluginConfig.g_hMenuContext, 0);
 
 	M->WriteByte(TEMPLATES_MODULE, "setup", 2);
 	LoadDefaultTemplates();
 
 	BuildCodePageList();
 	GetDefaultContainerTitleFormat();
-	_Plugin.m_GlobalContainerFlags = M->GetDword("containerflags", CNT_FLAGS_DEFAULT);
-	if (!(_Plugin.m_GlobalContainerFlags & CNT_NEWCONTAINERFLAGS))
-		_Plugin.m_GlobalContainerFlags = CNT_FLAGS_DEFAULT;
-	_Plugin.m_GlobalContainerTrans = M->GetDword("containertrans", CNT_TRANS_DEFAULT);
-	_Plugin.local_gmt_diff = nOffset;
+	PluginConfig.m_GlobalContainerFlags = M->GetDword("containerflags", CNT_FLAGS_DEFAULT);
+	if (!(PluginConfig.m_GlobalContainerFlags & CNT_NEWCONTAINERFLAGS))
+		PluginConfig.m_GlobalContainerFlags = CNT_FLAGS_DEFAULT;
+	PluginConfig.m_GlobalContainerTrans = M->GetDword("containertrans", CNT_TRANS_DEFAULT);
+	PluginConfig.local_gmt_diff = nOffset;
 
 	hScrnDC = GetDC(0);
-	_Plugin.g_DPIscaleX = GetDeviceCaps(hScrnDC, LOGPIXELSX) / 96.0;
-	_Plugin.g_DPIscaleY = GetDeviceCaps(hScrnDC, LOGPIXELSY) / 96.0;
+	PluginConfig.g_DPIscaleX = GetDeviceCaps(hScrnDC, LOGPIXELSX) / 96.0;
+	PluginConfig.g_DPIscaleY = GetDeviceCaps(hScrnDC, LOGPIXELSY) / 96.0;
 	ReleaseDC(0, hScrnDC);
 
 	return 0;
@@ -1828,7 +1827,7 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 			SetForegroundWindow(pContainer->hwnd);
 	}
 	//MaD
-	if (_Plugin.m_HideOnClose&&!IsWindowVisible(pContainer->hwnd)){
+	if (PluginConfig.m_HideOnClose&&!IsWindowVisible(pContainer->hwnd)){
 		WINDOWPLACEMENT wp={0};
 		wp.length = sizeof(wp);
 		GetWindowPlacement(pContainer->hwnd, &wp);
@@ -1890,23 +1889,23 @@ static void CreateImageList(BOOL bInitial)
 	 */
 
 	if (bInitial) {
-		_Plugin.g_hImageList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 2, 0);
-		_Plugin.g_IconFolder = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWEXPAND), IMAGE_ICON, 16, 16, LR_SHARED);
-		_Plugin.g_IconUnchecked = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWUNCHECKED), IMAGE_ICON, 16, 16, LR_SHARED);
-		_Plugin.g_IconChecked = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWCHECKED), IMAGE_ICON, 16, 16, LR_SHARED);
+		PluginConfig.g_hImageList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 2, 0);
+		PluginConfig.g_IconFolder = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWEXPAND), IMAGE_ICON, 16, 16, LR_SHARED);
+		PluginConfig.g_IconUnchecked = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWUNCHECKED), IMAGE_ICON, 16, 16, LR_SHARED);
+		PluginConfig.g_IconChecked = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWCHECKED), IMAGE_ICON, 16, 16, LR_SHARED);
 	} else
-		ImageList_RemoveAll(_Plugin.g_hImageList);
+		ImageList_RemoveAll(PluginConfig.g_hImageList);
 
 	hIcon = CreateIcon(g_hInst, 16, 16, 1, 4, NULL, NULL);
-	ImageList_AddIcon(_Plugin.g_hImageList, hIcon);
+	ImageList_AddIcon(PluginConfig.g_hImageList, hIcon);
 	//ImageList_GetIcon(myGlobals.g_hImageList, 0, 0);
 	DestroyIcon(hIcon);
 
-	_Plugin.g_IconFileEvent = LoadSkinnedIcon(SKINICON_EVENT_FILE);
-	_Plugin.g_IconUrlEvent = LoadSkinnedIcon(SKINICON_EVENT_URL);
-	_Plugin.g_IconMsgEvent = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-	_Plugin.g_IconSend = _Plugin.g_buttonBarIcons[9];
-	_Plugin.g_IconTypingEvent = _Plugin.g_buttonBarIcons[5];
+	PluginConfig.g_IconFileEvent = LoadSkinnedIcon(SKINICON_EVENT_FILE);
+	PluginConfig.g_IconUrlEvent = LoadSkinnedIcon(SKINICON_EVENT_URL);
+	PluginConfig.g_IconMsgEvent = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+	PluginConfig.g_IconSend = PluginConfig.g_buttonBarIcons[9];
+	PluginConfig.g_IconTypingEvent = PluginConfig.g_buttonBarIcons[5];
 }
 
 
@@ -1995,72 +1994,72 @@ int TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned in
  */
 
 static ICONDESC _toolbaricons[] = {
-	"tabSRMM_history", LPGEN("Show History"), &_Plugin.g_buttonBarIcons[1], -IDI_HISTORY, 1,
-	"tabSRMM_mlog", LPGEN("Message Log Options"), &_Plugin.g_buttonBarIcons[2], -IDI_MSGLOGOPT, 1,
-	"tabSRMM_add", LPGEN("Add contact"), &_Plugin.g_buttonBarIcons[0], -IDI_ADDCONTACT, 1,
-	"tabSRMM_multi", LPGEN("Multisend indicator"), &_Plugin.g_buttonBarIcons[3], -IDI_MULTISEND, 1,
-	"tabSRMM_quote", LPGEN("Quote text"), &_Plugin.g_buttonBarIcons[8], -IDI_QUOTE, 1,
-	"tabSRMM_save", LPGEN("Save and close"), &_Plugin.g_buttonBarIcons[7], -IDI_SAVE, 1,
-	"tabSRMM_send", LPGEN("Send message"), &_Plugin.g_buttonBarIcons[9], -IDI_SEND, 1,
-	"tabSRMM_avatar", LPGEN("Avatar menu"), &_Plugin.g_buttonBarIcons[10], -IDI_CONTACTPIC, 1,
-	"tabSRMM_close", LPGEN("Close"), &_Plugin.g_buttonBarIcons[6], -IDI_CLOSEMSGDLG, 1,
-	"tabSRMM_usermenu", LPGEN("User menu"), &_Plugin.g_buttonBarIcons[4], -IDI_USERMENU, 1,
+	"tabSRMM_history", LPGEN("Show History"), &PluginConfig.g_buttonBarIcons[1], -IDI_HISTORY, 1,
+	"tabSRMM_mlog", LPGEN("Message Log Options"), &PluginConfig.g_buttonBarIcons[2], -IDI_MSGLOGOPT, 1,
+	"tabSRMM_add", LPGEN("Add contact"), &PluginConfig.g_buttonBarIcons[0], -IDI_ADDCONTACT, 1,
+	"tabSRMM_multi", LPGEN("Multisend indicator"), &PluginConfig.g_buttonBarIcons[3], -IDI_MULTISEND, 1,
+	"tabSRMM_quote", LPGEN("Quote text"), &PluginConfig.g_buttonBarIcons[8], -IDI_QUOTE, 1,
+	"tabSRMM_save", LPGEN("Save and close"), &PluginConfig.g_buttonBarIcons[7], -IDI_SAVE, 1,
+	"tabSRMM_send", LPGEN("Send message"), &PluginConfig.g_buttonBarIcons[9], -IDI_SEND, 1,
+	"tabSRMM_avatar", LPGEN("Avatar menu"), &PluginConfig.g_buttonBarIcons[10], -IDI_CONTACTPIC, 1,
+	"tabSRMM_close", LPGEN("Close"), &PluginConfig.g_buttonBarIcons[6], -IDI_CLOSEMSGDLG, 1,
+	"tabSRMM_usermenu", LPGEN("User menu"), &PluginConfig.g_buttonBarIcons[4], -IDI_USERMENU, 1,
 	NULL, NULL, NULL, 0, 0
 };
 
 static ICONDESC _exttoolbaricons[] = {
-	"tabSRMM_emoticon", LPGEN("Smiley button"), &_Plugin.g_buttonBarIcons[11], -IDI_SMILEYICON, 1,
-	"tabSRMM_bold", LPGEN("Format bold"), &_Plugin.g_buttonBarIcons[17], -IDI_FONTBOLD, 1,
-	"tabSRMM_italic", LPGEN("Format italic"), &_Plugin.g_buttonBarIcons[18], -IDI_FONTITALIC, 1,
-	"tabSRMM_underline", LPGEN("Format underline"), &_Plugin.g_buttonBarIcons[19], -IDI_FONTUNDERLINE, 1,
-	"tabSRMM_face", LPGEN("Font face"), &_Plugin.g_buttonBarIcons[20], -IDI_FONTFACE, 1,
-	"tabSRMM_color", LPGEN("Font color"), &_Plugin.g_buttonBarIcons[21], -IDI_FONTCOLOR, 1,
-	"tabSRMM_strikeout", LPGEN("Format strike-through"), &_Plugin.g_buttonBarIcons[30], -IDI_STRIKEOUT, 1,
+	"tabSRMM_emoticon", LPGEN("Smiley button"), &PluginConfig.g_buttonBarIcons[11], -IDI_SMILEYICON, 1,
+	"tabSRMM_bold", LPGEN("Format bold"), &PluginConfig.g_buttonBarIcons[17], -IDI_FONTBOLD, 1,
+	"tabSRMM_italic", LPGEN("Format italic"), &PluginConfig.g_buttonBarIcons[18], -IDI_FONTITALIC, 1,
+	"tabSRMM_underline", LPGEN("Format underline"), &PluginConfig.g_buttonBarIcons[19], -IDI_FONTUNDERLINE, 1,
+	"tabSRMM_face", LPGEN("Font face"), &PluginConfig.g_buttonBarIcons[20], -IDI_FONTFACE, 1,
+	"tabSRMM_color", LPGEN("Font color"), &PluginConfig.g_buttonBarIcons[21], -IDI_FONTCOLOR, 1,
+	"tabSRMM_strikeout", LPGEN("Format strike-through"), &PluginConfig.g_buttonBarIcons[30], -IDI_STRIKEOUT, 1,
 	NULL, NULL, NULL, 0, 0
 };
 //MAD
 static ICONDESC _chattoolbaricons[] = {
-	"chat_bkgcol",LPGEN("Background colour"), &_Plugin.g_buttonBarIcons[31] ,-IDI_BKGCOLOR, 1,
-	"chat_settings",LPGEN("Room settings"),  &_Plugin.g_buttonBarIcons[32],-IDI_TOPICBUT, 1,
-	"chat_filter",LPGEN("Event filter disabled"), &_Plugin.g_buttonBarIcons[33] ,-IDI_FILTER, 1,
-	"chat_filter2",LPGEN("Event filter enabled"), &_Plugin.g_buttonBarIcons[34] ,-IDI_FILTER2, 1,
-	"chat_shownicklist",LPGEN("Show nicklist"),&_Plugin.g_buttonBarIcons[35]  ,-IDI_SHOWNICKLIST, 1,
-	"chat_hidenicklist",LPGEN("Hide nicklist"), &_Plugin.g_buttonBarIcons[36] ,-IDI_HIDENICKLIST, 1,
+	"chat_bkgcol",LPGEN("Background colour"), &PluginConfig.g_buttonBarIcons[31] ,-IDI_BKGCOLOR, 1,
+	"chat_settings",LPGEN("Room settings"),  &PluginConfig.g_buttonBarIcons[32],-IDI_TOPICBUT, 1,
+	"chat_filter",LPGEN("Event filter disabled"), &PluginConfig.g_buttonBarIcons[33] ,-IDI_FILTER, 1,
+	"chat_filter2",LPGEN("Event filter enabled"), &PluginConfig.g_buttonBarIcons[34] ,-IDI_FILTER2, 1,
+	"chat_shownicklist",LPGEN("Show nicklist"),&PluginConfig.g_buttonBarIcons[35]  ,-IDI_SHOWNICKLIST, 1,
+	"chat_hidenicklist",LPGEN("Hide nicklist"), &PluginConfig.g_buttonBarIcons[36] ,-IDI_HIDENICKLIST, 1,
 	NULL, NULL, NULL, 0, 0
 	};
 //
 static ICONDESC _logicons[] = {
-	"tabSRMM_error", LPGEN("Message delivery error"), &_Plugin.g_iconErr, -IDI_MSGERROR, 1,
-	"tabSRMM_in", LPGEN("Incoming message"), &_Plugin.g_iconIn, -IDI_ICONIN, 0,
-	"tabSRMM_out", LPGEN("Outgoing message"), &_Plugin.g_iconOut, -IDI_ICONOUT, 0,
-	"tabSRMM_status", LPGEN("Statuschange"), &_Plugin.g_iconStatus, -IDI_STATUSCHANGE, 0,
+	"tabSRMM_error", LPGEN("Message delivery error"), &PluginConfig.g_iconErr, -IDI_MSGERROR, 1,
+	"tabSRMM_in", LPGEN("Incoming message"), &PluginConfig.g_iconIn, -IDI_ICONIN, 0,
+	"tabSRMM_out", LPGEN("Outgoing message"), &PluginConfig.g_iconOut, -IDI_ICONOUT, 0,
+	"tabSRMM_status", LPGEN("Statuschange"), &PluginConfig.g_iconStatus, -IDI_STATUSCHANGE, 0,
 	NULL, NULL, NULL, 0, 0
 };
 static ICONDESC _deficons[] = {
-	"tabSRMM_container", LPGEN("Static container icon"), &_Plugin.g_iconContainer, -IDI_CONTAINER, 1,
-	"tabSRMM_mtn_off", LPGEN("Sending typing notify is off"), &_Plugin.g_buttonBarIcons[13], -IDI_SELFTYPING_OFF, 1,
-	"tabSRMM_secureim_on", LPGEN("RESERVED (currently not in use)"), &_Plugin.g_buttonBarIcons[14], -IDI_SECUREIM_ENABLED, 1,
-	"tabSRMM_secureim_off", LPGEN("RESERVED (currently not in use)"), &_Plugin.g_buttonBarIcons[15], -IDI_SECUREIM_DISABLED, 1,
-	"tabSRMM_sounds_on", LPGEN("Sounds are On"), &_Plugin.g_buttonBarIcons[22], -IDI_SOUNDSON, 1,
-	"tabSRMM_sounds_off", LPGEN("Sounds are off"), &_Plugin.g_buttonBarIcons[23], -IDI_SOUNDSOFF, 1,
-	"tabSRMM_log_frozen", LPGEN("Message Log frozen"), &_Plugin.g_buttonBarIcons[24], -IDI_MSGERROR, 1,
-	"tabSRMM_undefined", LPGEN("Default"), &_Plugin.g_buttonBarIcons[27], -IDI_EMPTY, 1,
-	"tabSRMM_pulldown", LPGEN("Pulldown Arrow"), &_Plugin.g_buttonBarIcons[16], -IDI_PULLDOWNARROW, 1,
-	"tabSRMM_Leftarrow", LPGEN("Left Arrow"), &_Plugin.g_buttonBarIcons[25], -IDI_LEFTARROW, 1,
-	"tabSRMM_Rightarrow", LPGEN("Right Arrow"), &_Plugin.g_buttonBarIcons[28], -IDI_RIGHTARROW, 1,
-	"tabSRMM_Pulluparrow", LPGEN("Up Arrow"), &_Plugin.g_buttonBarIcons[26], -IDI_PULLUPARROW, 1,
-	"tabSRMM_sb_slist", LPGEN("Session List"), &_Plugin.g_sideBarIcons[0], -IDI_SESSIONLIST, 1,
-	"tabSRMM_sb_Favorites", LPGEN("Favorite Contacts"), &_Plugin.g_sideBarIcons[1], -IDI_FAVLIST, 1,
-	"tabSRMM_sb_Recent", LPGEN("Recent Sessions"), &_Plugin.g_sideBarIcons[2], -IDI_RECENTLIST, 1,
-	"tabSRMM_sb_Setup", LPGEN("Setup Sidebar"), &_Plugin.g_sideBarIcons[3], -IDI_CONFIGSIDEBAR, 1,
-	"tabSRMM_sb_Userprefs", LPGEN("Contact Preferences"), &_Plugin.g_sideBarIcons[4], -IDI_USERPREFS, 1,
+	"tabSRMM_container", LPGEN("Static container icon"), &PluginConfig.g_iconContainer, -IDI_CONTAINER, 1,
+	"tabSRMM_mtn_off", LPGEN("Sending typing notify is off"), &PluginConfig.g_buttonBarIcons[13], -IDI_SELFTYPING_OFF, 1,
+	"tabSRMM_secureim_on", LPGEN("RESERVED (currently not in use)"), &PluginConfig.g_buttonBarIcons[14], -IDI_SECUREIM_ENABLED, 1,
+	"tabSRMM_secureim_off", LPGEN("RESERVED (currently not in use)"), &PluginConfig.g_buttonBarIcons[15], -IDI_SECUREIM_DISABLED, 1,
+	"tabSRMM_sounds_on", LPGEN("Sounds are On"), &PluginConfig.g_buttonBarIcons[22], -IDI_SOUNDSON, 1,
+	"tabSRMM_sounds_off", LPGEN("Sounds are off"), &PluginConfig.g_buttonBarIcons[23], -IDI_SOUNDSOFF, 1,
+	"tabSRMM_log_frozen", LPGEN("Message Log frozen"), &PluginConfig.g_buttonBarIcons[24], -IDI_MSGERROR, 1,
+	"tabSRMM_undefined", LPGEN("Default"), &PluginConfig.g_buttonBarIcons[27], -IDI_EMPTY, 1,
+	"tabSRMM_pulldown", LPGEN("Pulldown Arrow"), &PluginConfig.g_buttonBarIcons[16], -IDI_PULLDOWNARROW, 1,
+	"tabSRMM_Leftarrow", LPGEN("Left Arrow"), &PluginConfig.g_buttonBarIcons[25], -IDI_LEFTARROW, 1,
+	"tabSRMM_Rightarrow", LPGEN("Right Arrow"), &PluginConfig.g_buttonBarIcons[28], -IDI_RIGHTARROW, 1,
+	"tabSRMM_Pulluparrow", LPGEN("Up Arrow"), &PluginConfig.g_buttonBarIcons[26], -IDI_PULLUPARROW, 1,
+	"tabSRMM_sb_slist", LPGEN("Session List"), &PluginConfig.g_sideBarIcons[0], -IDI_SESSIONLIST, 1,
+	"tabSRMM_sb_Favorites", LPGEN("Favorite Contacts"), &PluginConfig.g_sideBarIcons[1], -IDI_FAVLIST, 1,
+	"tabSRMM_sb_Recent", LPGEN("Recent Sessions"), &PluginConfig.g_sideBarIcons[2], -IDI_RECENTLIST, 1,
+	"tabSRMM_sb_Setup", LPGEN("Setup Sidebar"), &PluginConfig.g_sideBarIcons[3], -IDI_CONFIGSIDEBAR, 1,
+	"tabSRMM_sb_Userprefs", LPGEN("Contact Preferences"), &PluginConfig.g_sideBarIcons[4], -IDI_USERPREFS, 1,
 	NULL, NULL, NULL, 0, 0
 };
 static ICONDESC _trayIcon[] = {
-	"tabSRMM_frame1", LPGEN("Frame 1"), &_Plugin.m_AnimTrayIcons[0], -IDI_TRAYANIM1, 1,
-	"tabSRMM_frame2", LPGEN("Frame 2"), &_Plugin.m_AnimTrayIcons[1], -IDI_TRAYANIM2, 1,
-	"tabSRMM_frame3", LPGEN("Frame 3"), &_Plugin.m_AnimTrayIcons[2], -IDI_TRAYANIM3, 1,
-	"tabSRMM_frame4", LPGEN("Frame 4"), &_Plugin.m_AnimTrayIcons[3], -IDI_TRAYANIM4, 1,
+	"tabSRMM_frame1", LPGEN("Frame 1"), &PluginConfig.m_AnimTrayIcons[0], -IDI_TRAYANIM1, 1,
+	"tabSRMM_frame2", LPGEN("Frame 2"), &PluginConfig.m_AnimTrayIcons[1], -IDI_TRAYANIM2, 1,
+	"tabSRMM_frame3", LPGEN("Frame 3"), &PluginConfig.m_AnimTrayIcons[2], -IDI_TRAYANIM3, 1,
+	"tabSRMM_frame4", LPGEN("Frame 4"), &PluginConfig.m_AnimTrayIcons[3], -IDI_TRAYANIM4, 1,
 	NULL, NULL, NULL, 0, 0
 };
 
@@ -2130,10 +2129,10 @@ static int SetupIconLibConfig()
 	if (g_chat_integration_enabled)
 		Chat_AddIcons();
 	version = GetIconPackVersion(g_hIconDLL);
-	_Plugin.g_hbmUnknown = (HBITMAP)LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
-	if (_Plugin.g_hbmUnknown == 0) {
+	PluginConfig.g_hbmUnknown = (HBITMAP)LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
+	if (PluginConfig.g_hbmUnknown == 0) {
 		HDC dc = GetDC(0);
-		_Plugin.g_hbmUnknown = CreateCompatibleBitmap(dc, 20, 20);
+		PluginConfig.g_hbmUnknown = CreateCompatibleBitmap(dc, 20, 20);
 		ReleaseDC(0, dc);
 	}
 	FreeLibrary(g_hIconDLL);
@@ -2151,7 +2150,7 @@ static int SetupIconLibConfig()
 			sid.iDefaultIndex = ICONBLOCKS[n].idesc[i].uId == -IDI_HISTORY ? 0 : ICONBLOCKS[n].idesc[i].uId;        // workaround problem /w icoLib and a resource id of 1 (actually, a Windows problem)
 			i++;
 			if(n>0&&n<4)
-				_Plugin.g_buttonBarIconHandles[j++]=(HANDLE)CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+				PluginConfig.g_buttonBarIconHandles[j++]=(HANDLE)CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 			else
 				CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 		}
@@ -2174,7 +2173,7 @@ static int LoadFromIconLib()
 		}
 		n++;
 	}
-	_Plugin.g_buttonBarIcons[5] = _Plugin.g_buttonBarIcons[12] = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)"core_main_23");
+	PluginConfig.g_buttonBarIcons[5] = PluginConfig.g_buttonBarIcons[12] = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)"core_main_23");
 
 	CacheMsgLogIcons();
 	M->BroadcastMessage(DM_LOADBUTTONBARICONS, 0, 0);
@@ -2209,11 +2208,11 @@ static void UnloadIcons()
 		}
 		n++;
 	}
-	if (_Plugin.g_hbmUnknown)
-		DeleteObject(_Plugin.g_hbmUnknown);
+	if (PluginConfig.g_hbmUnknown)
+		DeleteObject(PluginConfig.g_hbmUnknown);
 	for (i = 0; i < 4; i++) {
-		if (_Plugin.m_AnimTrayIcons[i])
-			DestroyIcon(_Plugin.m_AnimTrayIcons[i]);
+		if (PluginConfig.m_AnimTrayIcons[i])
+			DestroyIcon(PluginConfig.m_AnimTrayIcons[i]);
 	}
 }
 

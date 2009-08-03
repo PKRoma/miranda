@@ -31,7 +31,7 @@ extern PLUGININFOEX pluginInfo;
  * read a setting for a contact
  */
 
-DWORD _Mim::GetDword(const HANDLE hContact = 0, const char *szModule = 0, const char *szSetting = 0, DWORD uDefault = 0) const
+DWORD CMimAPI::GetDword(const HANDLE hContact = 0, const char *szModule = 0, const char *szSetting = 0, DWORD uDefault = 0) const
 {
 	return((DWORD)DBGetContactSettingDword(hContact, szModule, szSetting, uDefault));
 }
@@ -40,7 +40,7 @@ DWORD _Mim::GetDword(const HANDLE hContact = 0, const char *szModule = 0, const 
  * read a setting from our default module (Tab_SRMSG)
  */
 
-DWORD _Mim::GetDword(const char *szSetting = 0, DWORD uDefault = 0) const
+DWORD CMimAPI::GetDword(const char *szSetting = 0, DWORD uDefault = 0) const
 {
 	return((DWORD)DBGetContactSettingDword(0, SRMSGMOD_T, szSetting, uDefault));
 }
@@ -49,7 +49,7 @@ DWORD _Mim::GetDword(const char *szSetting = 0, DWORD uDefault = 0) const
  * read a contact setting with our default module name (Tab_SRMSG)
  */
 
-DWORD _Mim::GetDword(const HANDLE hContact = 0, const char *szSetting = 0, DWORD uDefault = 0) const
+DWORD CMimAPI::GetDword(const HANDLE hContact = 0, const char *szSetting = 0, DWORD uDefault = 0) const
 {
 	return((DWORD)DBGetContactSettingDword(hContact, SRMSGMOD_T, szSetting, uDefault));
 }
@@ -58,7 +58,7 @@ DWORD _Mim::GetDword(const HANDLE hContact = 0, const char *szSetting = 0, DWORD
  * read a setting from module only
  */
 
-DWORD _Mim::GetDword(const char *szModule, const char *szSetting, DWORD uDefault) const
+DWORD CMimAPI::GetDword(const char *szModule, const char *szSetting, DWORD uDefault) const
 {
 	return((DWORD)DBGetContactSettingDword(0, szModule, szSetting, uDefault));
 }
@@ -66,32 +66,32 @@ DWORD _Mim::GetDword(const char *szModule, const char *szSetting, DWORD uDefault
 /*
  * same for bytes now
  */
-int _Mim::GetByte(const HANDLE hContact = 0, const char *szModule = 0, const char *szSetting = 0, int uDefault = 0) const
+int CMimAPI::GetByte(const HANDLE hContact = 0, const char *szModule = 0, const char *szSetting = 0, int uDefault = 0) const
 {
 	return(DBGetContactSettingByte(hContact, szModule, szSetting, uDefault));
 }
 
-int _Mim::GetByte(const char *szSetting = 0, int uDefault = 0) const
+int CMimAPI::GetByte(const char *szSetting = 0, int uDefault = 0) const
 {
 	return(DBGetContactSettingByte(0, SRMSGMOD_T, szSetting, uDefault));
 }
 
-int _Mim::GetByte(const HANDLE hContact = 0, const char *szSetting = 0, int uDefault = 0) const
+int CMimAPI::GetByte(const HANDLE hContact = 0, const char *szSetting = 0, int uDefault = 0) const
 {
 	return(DBGetContactSettingByte(hContact, SRMSGMOD_T, szSetting, uDefault));
 }
 
-int _Mim::GetByte(const char *szModule, const char *szSetting, int uDefault) const
+int CMimAPI::GetByte(const char *szModule, const char *szSetting, int uDefault) const
 {
 	return(DBGetContactSettingByte(0, szModule, szSetting, uDefault));
 }
 
-INT_PTR _Mim::GetTString(const HANDLE hContact, const char *szModule, const char *szSetting, DBVARIANT *dbv) const
+INT_PTR CMimAPI::GetTString(const HANDLE hContact, const char *szModule, const char *szSetting, DBVARIANT *dbv) const
 {
 	return(DBGetContactSettingTString(hContact, szModule, szSetting, dbv));
 }
 
-INT_PTR _Mim::GetString(const HANDLE hContact, const char *szModule, const char *szSetting, DBVARIANT *dbv) const
+INT_PTR CMimAPI::GetString(const HANDLE hContact, const char *szModule, const char *szSetting, DBVARIANT *dbv) const
 {
 	return(DBGetContactSettingString(hContact, szModule, szSetting, dbv));
 }
@@ -100,7 +100,7 @@ INT_PTR _Mim::GetString(const HANDLE hContact, const char *szModule, const char 
  * writer functions
  */
 
-INT_PTR _Mim::WriteDword(const HANDLE hContact = 0, const char *szModule = 0, const char *szSetting = 0, DWORD value = 0) const
+INT_PTR CMimAPI::WriteDword(const HANDLE hContact = 0, const char *szModule = 0, const char *szSetting = 0, DWORD value = 0) const
 {
 	return(DBWriteContactSettingDword(hContact, szModule, szSetting, value));
 }
@@ -109,57 +109,57 @@ INT_PTR _Mim::WriteDword(const HANDLE hContact = 0, const char *szModule = 0, co
  * write non-contact setting
 */
 
-INT_PTR _Mim::WriteDword(const char *szModule = 0, const char *szSetting = 0, DWORD value = 0) const
+INT_PTR CMimAPI::WriteDword(const char *szModule = 0, const char *szSetting = 0, DWORD value = 0) const
 {
 	return(DBWriteContactSettingDword(0, szModule, szSetting, value));
 }
 
-INT_PTR _Mim::WriteByte(const HANDLE hContact = 0, const char *szModule = 0, const char *szSetting = 0, BYTE value = 0) const
+INT_PTR CMimAPI::WriteByte(const HANDLE hContact = 0, const char *szModule = 0, const char *szSetting = 0, BYTE value = 0) const
 {
 	return(DBWriteContactSettingByte(hContact, szModule, szSetting, value));
 }
 
-INT_PTR _Mim::WriteByte(const char *szModule = 0, const char *szSetting = 0, BYTE value = 0) const
+INT_PTR CMimAPI::WriteByte(const char *szModule = 0, const char *szSetting = 0, BYTE value = 0) const
 {
 	return(DBWriteContactSettingByte(0, szModule, szSetting, value));
 }
 
-INT_PTR _Mim::WriteTString(const HANDLE hContact, const char *szModule = 0, const char *szSetting = 0, const TCHAR *str = 0) const
+INT_PTR CMimAPI::WriteTString(const HANDLE hContact, const char *szModule = 0, const char *szSetting = 0, const TCHAR *str = 0) const
 {
 	return(DBWriteContactSettingTString(hContact, szModule, szSetting, str));
 }
 
-void _Mim::GetUTFI()
+void CMimAPI::GetUTFI()
 {
 	mir_getUTFI(&m_utfi);
 }
-char *_Mim::utf8_decode(char* str, wchar_t** ucs2) const
+char *CMimAPI::utf8_decode(char* str, wchar_t** ucs2) const
 {
 	return(m_utfi.utf8_decode(str, ucs2));
 }
-char *_Mim::utf8_decodecp(char* str, int codepage, wchar_t** ucs2 ) const
+char *CMimAPI::utf8_decodecp(char* str, int codepage, wchar_t** ucs2 ) const
 {
 	return(m_utfi.utf8_decodecp(str, codepage, ucs2));
 }
-char *_Mim::utf8_encode(const char* src) const
+char *CMimAPI::utf8_encode(const char* src) const
 {
 	return(m_utfi.utf8_encode(src));
 }
 
-char *_Mim::utf8_encodecp(const char* src, int codepage) const
+char *CMimAPI::utf8_encodecp(const char* src, int codepage) const
 {
 	return(m_utfi.utf8_encodecp(src, codepage));
 }
-char *_Mim::utf8_encodeW(const wchar_t* src) const
+char *CMimAPI::utf8_encodeW(const wchar_t* src) const
 {
 	return(m_utfi.utf8_encodeW(src));
 }
-wchar_t *_Mim::utf8_decodeW(const char* str) const
+wchar_t *CMimAPI::utf8_decodeW(const char* str) const
 {
 	return(m_utfi.utf8_decodeW(str));
 }
 
-int _Mim::pathIsAbsolute(const TCHAR *path) const
+int CMimAPI::pathIsAbsolute(const TCHAR *path) const
 {
 	if (!path || !(lstrlen(path) > 2))
 		return 0;
@@ -168,7 +168,7 @@ int _Mim::pathIsAbsolute(const TCHAR *path) const
 	return 0;
 }
 
-size_t _Mim::pathToRelative(const TCHAR *pSrc, TCHAR *pOut)
+size_t CMimAPI::pathToRelative(const TCHAR *pSrc, TCHAR *pOut)
 {
 	if (!pSrc || !lstrlen(pSrc) || lstrlen(pSrc) > MAX_PATH)
 		return 0;
@@ -198,7 +198,7 @@ size_t _Mim::pathToRelative(const TCHAR *pSrc, TCHAR *pOut)
 	}
 }
 
-size_t _Mim::pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut)
+size_t CMimAPI::pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut)
 {
 	if (!pSrc || !lstrlen(pSrc) || lstrlen(pSrc) > MAX_PATH)
 		return 0;
@@ -221,7 +221,7 @@ size_t _Mim::pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut)
 
 #if defined(UNICODE)
 
-int _Mim::pathIsAbsolute(const char *path) const
+int CMimAPI::pathIsAbsolute(const char *path) const
 {
 	if (!path || !(lstrlenA(path) > 2))
 		return 0;
@@ -230,7 +230,7 @@ int _Mim::pathIsAbsolute(const char *path) const
 	return 0;
 }
 
-size_t _Mim::pathToRelative(const char *pSrc, char *pOut)
+size_t CMimAPI::pathToRelative(const char *pSrc, char *pOut)
 {
 	if (!pSrc || !lstrlenA(pSrc) || lstrlenA(pSrc) > MAX_PATH)
 		return 0;
@@ -260,7 +260,7 @@ size_t _Mim::pathToRelative(const char *pSrc, char *pOut)
 	}
 }
 
-size_t _Mim::pathToAbsolute(const char *pSrc, char *pOut)
+size_t CMimAPI::pathToAbsolute(const char *pSrc, char *pOut)
 {
 	if (!pSrc || !lstrlenA(pSrc) || lstrlenA(pSrc) > MAX_PATH)
 		return 0;
@@ -281,32 +281,32 @@ size_t _Mim::pathToAbsolute(const char *pSrc, char *pOut)
  * window list functions
  */
 
-void _Mim::BroadcastMessage(UINT msg = 0, WPARAM wParam = 0, LPARAM lParam = 0)
+void CMimAPI::BroadcastMessage(UINT msg = 0, WPARAM wParam = 0, LPARAM lParam = 0)
 {
 	WindowList_Broadcast(m_hMessageWindowList, msg, wParam, lParam);
 }
 
-void _Mim::BroadcastMessageAsync(UINT msg = 0, WPARAM wParam = 0, LPARAM lParam = 0)
+void CMimAPI::BroadcastMessageAsync(UINT msg = 0, WPARAM wParam = 0, LPARAM lParam = 0)
 {
 	WindowList_BroadcastAsync(m_hMessageWindowList, msg, wParam, lParam);
 }
 
-HWND _Mim::FindWindow(HANDLE h = 0) const
+HWND CMimAPI::FindWindow(HANDLE h = 0) const
 {
 	return(WindowList_Find(m_hMessageWindowList, h));
 }
 
-INT_PTR _Mim::AddWindow(HWND hWnd = 0, HANDLE h = 0)
+INT_PTR CMimAPI::AddWindow(HWND hWnd = 0, HANDLE h = 0)
 {
 	return(WindowList_Add(m_hMessageWindowList, hWnd, h));
 }
 
-INT_PTR _Mim::RemoveWindow(HWND hWnd = 0)
+INT_PTR CMimAPI::RemoveWindow(HWND hWnd = 0)
 {
 	return(WindowList_Remove(m_hMessageWindowList, hWnd));
 }
 
-void _Mim::InitPaths()
+void CMimAPI::InitPaths()
 {
 	m_szProfilePath[0] = 0;
 	m_szSkinsPath[0] = 0;
@@ -362,7 +362,7 @@ void _Mim::InitPaths()
  * Initialize various Win32 API functions which are not common to all versions of Windows.
  * We have to work with functions pointers here.
  */
-void _Mim::InitAPI()
+void CMimAPI::InitAPI()
 {
 	m_hUxTheme = 0;
 	m_pfnIsThemeActive = 0;
@@ -370,6 +370,7 @@ void _Mim::InitAPI()
 	m_pfnDrawThemeBackground = 0;
 	m_pfnCloseThemeData = 0;
 	m_pfnDrawThemeText = 0;
+	m_pfnDrawThemeTextEx = 0;
 	m_pfnIsThemeBackgroundPartiallyTransparent = 0;
 	m_pfnDrawThemeParentBackground = 0;
 	m_pfnGetThemeBackgroundContentRect = 0;
@@ -424,7 +425,12 @@ void _Mim::InitAPI()
             m_dwmExtendFrameIntoClientArea = (DEFICA)GetProcAddress(m_hDwmApi,"DwmExtendFrameIntoClientArea");
             m_dwmIsCompositionEnabled = (DICE)GetProcAddress(m_hDwmApi,"DwmIsCompositionEnabled");
 	    }
+		/*
+		 * additional uxtheme APIs (Vista+)
+		 */
+		if(m_hUxTheme)
+			m_pfnDrawThemeTextEx = (PDTTE)GetProcAddress(m_hUxTheme,  "DrawThemeTextEx");
     }
 }
 
-_Mim *M = 0;
+CMimAPI *M = 0;

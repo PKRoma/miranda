@@ -107,7 +107,7 @@ void RTF_CTableInit()
 	rtf_ctable = (struct RTFColorTable *) malloc(iSize);
 	ZeroMemory(rtf_ctable, iSize);
 	CopyMemory(rtf_ctable, _rtf_ctable, iSize);
-	_Plugin.rtf_ctablesize = g_ctable_size = RTF_CTABLE_DEFSIZE;
+	PluginConfig.rtf_ctablesize = g_ctable_size = RTF_CTABLE_DEFSIZE;
 }
 
 /*
@@ -119,7 +119,7 @@ void RTF_ColorAdd(const TCHAR *tszColname, size_t length)
 	TCHAR *stopped;
 	COLORREF clr;
 
-	_Plugin.rtf_ctablesize++;
+	PluginConfig.rtf_ctablesize++;
 	g_ctable_size++;
 	rtf_ctable = (struct RTFColorTable *)realloc(rtf_ctable, sizeof(struct RTFColorTable) * g_ctable_size);
 	clr = _tcstol(tszColname, &stopped, 16);
@@ -297,7 +297,7 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct _MessageWindowData *dat, BITMAP 
 	BOOL bBottomToolBar=dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR;
 	BOOL bToolBar=dat->pContainer->dwFlags & CNT_HIDETOOLBAR?0:1;
 
-	if (_Plugin.g_FlashAvatarAvail) {
+	if (PluginConfig.g_FlashAvatarAvail) {
 		FLASHAVATAR fa = {0};
 		fa.cProto = dat->szProto;
 		fa.id = 25367;
@@ -321,15 +321,15 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct _MessageWindowData *dat, BITMAP 
 
 	//MaD: by changing dat->iButtonBarReallyNeeds to dat->iButtonBarNeeds
 	//	   we can change resize priority to buttons, if needed...
-	if (((rc.right) - (int)picProjectedWidth) > (dat->iButtonBarReallyNeeds) && !_Plugin.m_AlwaysFullToolbarWidth)
+	if (((rc.right) - (int)picProjectedWidth) > (dat->iButtonBarReallyNeeds) && !PluginConfig.m_AlwaysFullToolbarWidth)
 		dat->iRealAvatarHeight = dat->dynaSplitter + 4 + (dat->showUIElements ? DPISCALEY(28):DPISCALEY(2));
 	else
 		dat->iRealAvatarHeight = dat->dynaSplitter +DPISCALEY(4);
 	//mad
 	dat->iRealAvatarHeight-=((bBottomToolBar&&bToolBar)? DPISCALEY(24):0);
 
-	if (_Plugin.m_LimitStaticAvatarHeight > 0)
-		dat->iRealAvatarHeight = min(dat->iRealAvatarHeight, _Plugin.m_LimitStaticAvatarHeight);
+	if (PluginConfig.m_LimitStaticAvatarHeight > 0)
+		dat->iRealAvatarHeight = min(dat->iRealAvatarHeight, PluginConfig.m_LimitStaticAvatarHeight);
 
 	if (M->GetByte(dat->hContact, "dontscaleavatars", M->GetByte("dontscaleavatars", 0)))
 		dat->iRealAvatarHeight = min(bminfo->bmHeight, dat->iRealAvatarHeight);
@@ -355,7 +355,7 @@ int IsMetaContact(HWND hwndDlg, _MessageWindowData *dat)
 	if (dat->hContact == 0 || dat->szProto == NULL)
 		return 0;
 
-	return (_Plugin.g_MetaContactsAvail && !strcmp(dat->szProto, _Plugin.szMetaName));
+	return (PluginConfig.g_MetaContactsAvail && !strcmp(dat->szProto, PluginConfig.szMetaName));
 }
 
 /*
@@ -387,7 +387,7 @@ void WriteStatsOnClose(HWND hwndDlg, struct _MessageWindowData *dat)
 
 	return;
 
-	if (dat->hContact != 0 &&(_Plugin.m_LogStatusChanges != 0) && dat->dwFlags & MWF_LOG_STATUSCHANGES) {
+	if (dat->hContact != 0 &&(PluginConfig.m_LogStatusChanges != 0) && dat->dwFlags & MWF_LOG_STATUSCHANGES) {
 		mir_snprintf(buffer, sizeof(buffer), "Session close - active for: %d:%02d:%02d, Sent: %d (%d), Rcvd: %d (%d)", now / 3600, now / 60, now % 60, dat->stats.iSent, dat->stats.iSentBytes, dat->stats.iReceived, dat->stats.iReceivedBytes);
 		dbei.cbSize = sizeof(dbei);
 		dbei.pBlob = (PBYTE) buffer;
@@ -417,7 +417,7 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct _MessageWindowData *dat, HMENU subm
 		TCHAR *szText = NULL;
 		char  avOverride = (char)M->GetByte(dat->hContact, "hideavatar", -1);
 		HMENU visMenu = GetSubMenu(submenu, 0);
-		BOOL picValid = dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? (dat->hOwnPic != 0) : (dat->ace && dat->ace->hbmPic && dat->ace->hbmPic != _Plugin.g_hbmUnknown);
+		BOOL picValid = dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? (dat->hOwnPic != 0) : (dat->ace && dat->ace->hbmPic && dat->ace->hbmPic != PluginConfig.g_hbmUnknown);
 		mii.cbSize = sizeof(mii);
 		mii.fMask = MIIM_STRING;
 
@@ -427,7 +427,7 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct _MessageWindowData *dat, HMENU subm
 		CheckMenuItem(visMenu, ID_VISIBILITY_HIDDENFORTHISCONTACT, MF_BYCOMMAND | (avOverride == 0 ? MF_CHECKED : MF_UNCHECKED));
 		CheckMenuItem(visMenu, ID_VISIBILITY_VISIBLEFORTHISCONTACT, MF_BYCOMMAND | (avOverride == 1 ? MF_CHECKED : MF_UNCHECKED));
 
-		CheckMenuItem(submenu, ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH, MF_BYCOMMAND | (_Plugin.m_AlwaysFullToolbarWidth ? MF_CHECKED : MF_UNCHECKED));
+		CheckMenuItem(submenu, ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH, MF_BYCOMMAND | (PluginConfig.m_AlwaysFullToolbarWidth ? MF_CHECKED : MF_UNCHECKED));
 		if (!(dat->dwFlagsEx & MWF_SHOW_INFOPANEL)) {
 			EnableMenuItem(submenu, ID_PICMENU_SETTINGS, MF_BYCOMMAND | (ServiceExists(MS_AV_GETAVATARBITMAP) ? MF_ENABLED : MF_GRAYED));
 			szText = TranslateT("Contact picture settings...");
@@ -449,7 +449,7 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct _MessageWindowData *dat, HMENU subm
 		CheckMenuItem(visMenu, ID_VISIBILITY_VISIBLEFORTHISCONTACT, MF_BYCOMMAND | (avOverride == 1 ? MF_CHECKED : MF_UNCHECKED));
 
 		EnableMenuItem(submenu, ID_PICMENU_SETTINGS, MF_BYCOMMAND | (ServiceExists(MS_AV_GETAVATARBITMAP) ? MF_ENABLED : MF_GRAYED));
-		EnableMenuItem(submenu, ID_PANELPICMENU_SAVETHISPICTUREAS, MF_BYCOMMAND | ((ServiceExists(MS_AV_SAVEBITMAP) && dat->ace && dat->ace->hbmPic && dat->ace->hbmPic != _Plugin.g_hbmUnknown) ? MF_ENABLED : MF_GRAYED));
+		EnableMenuItem(submenu, ID_PANELPICMENU_SAVETHISPICTUREAS, MF_BYCOMMAND | ((ServiceExists(MS_AV_SAVEBITMAP) && dat->ace && dat->ace->hbmPic && dat->ace->hbmPic != PluginConfig.g_hbmUnknown) ? MF_ENABLED : MF_GRAYED));
 	}
 	return 0;
 }
@@ -507,8 +507,8 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct _MessageWindowData *dat, int selec
 				return 1;
 			}
 			case ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH:
-				_Plugin.m_AlwaysFullToolbarWidth = !_Plugin.m_AlwaysFullToolbarWidth;
-				M->WriteByte(SRMSGMOD_T, "alwaysfulltoolbar", (BYTE)_Plugin.m_AlwaysFullToolbarWidth);
+				PluginConfig.m_AlwaysFullToolbarWidth = !PluginConfig.m_AlwaysFullToolbarWidth;
+				M->WriteByte(SRMSGMOD_T, "alwaysfulltoolbar", (BYTE)PluginConfig.m_AlwaysFullToolbarWidth);
 				M->BroadcastMessage(DM_CONFIGURETOOLBAR, 0, 1);
 				break;
 			case ID_PICMENU_SAVETHISPICTUREAS:
@@ -557,8 +557,8 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct _MessageWindowData *dat, int selec
 		}
 	} else if (menuId == MENU_LOGMENU) {
 		int iLocalTime = 0;
-		int iRtl = (_Plugin.m_RTLDefault == 0 ? M->GetByte(dat->hContact, "RTL", 0) : M->GetByte(dat->hContact, "RTL", 1));
-		int iLogStatus = (_Plugin.m_LogStatusChanges != 0) && dat->dwFlags & MWF_LOG_STATUSCHANGES;
+		int iRtl = (PluginConfig.m_RTLDefault == 0 ? M->GetByte(dat->hContact, "RTL", 0) : M->GetByte(dat->hContact, "RTL", 1));
+		int iLogStatus = (PluginConfig.m_LogStatusChanges != 0) && dat->dwFlags & MWF_LOG_STATUSCHANGES;
 
 		DWORD dwOldFlags = dat->dwFlags;
 
@@ -688,7 +688,7 @@ void HandleIconFeedback(HWND hwndDlg, struct _MessageWindowData *dat, HICON iIco
 
 	if (iIcon == (HICON) - 1) { // restore status image
 		if (dat->dwFlags & MWF_ERRORSTATE) {
-			dat->hTabIcon = _Plugin.g_iconErr;
+			dat->hTabIcon = PluginConfig.g_iconErr;
 		} else {
 			dat->hTabIcon = dat->hTabStatusIcon;
 		}
@@ -706,8 +706,8 @@ void HandleIconFeedback(HWND hwndDlg, struct _MessageWindowData *dat, HICON iIco
 
 int GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
 {
-	BYTE bAvatarMode = _Plugin.m_AvatarMode;
-	BYTE bOwnAvatarMode = _Plugin.m_OwnAvatarMode;
+	BYTE bAvatarMode = PluginConfig.m_AvatarMode;
+	BYTE bOwnAvatarMode = PluginConfig.m_OwnAvatarMode;
 	char hideOverride = (char)M->GetByte(dat->hContact, "hideavatar", -1);
 	// infopanel visible, consider own avatar display
 
@@ -718,7 +718,7 @@ int GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
 			dat->showPic = FALSE;
 		else {
 			FLASHAVATAR fa = {0};
-			if (_Plugin.g_FlashAvatarAvail) {
+			if (PluginConfig.g_FlashAvatarAvail) {
 				fa.cProto = dat->szProto;
 				fa.id = 25367;
 				fa.hParentWindow = GetDlgItem(hwndDlg, IDC_CONTACTPIC);
@@ -728,11 +728,11 @@ int GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
 					DestroyWindow(dat->hwndContactPic);
 					dat->hwndContactPic = NULL;
 				}
-				dat->showPic = ((dat->hOwnPic && dat->hOwnPic != _Plugin.g_hbmUnknown) || (fa.hWindow != NULL)) ? 1 : 0;
+				dat->showPic = ((dat->hOwnPic && dat->hOwnPic != PluginConfig.g_hbmUnknown) || (fa.hWindow != NULL)) ? 1 : 0;
 			} else
-				dat->showPic = (dat->hOwnPic && dat->hOwnPic != _Plugin.g_hbmUnknown) ? 1 : 0;
+				dat->showPic = (dat->hOwnPic && dat->hOwnPic != PluginConfig.g_hbmUnknown) ? 1 : 0;
 
-			if (!_Plugin.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndContactPic)
+			if (!PluginConfig.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndContactPic)
 				dat->hwndContactPic =CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, GetDlgItem(hwndDlg, IDC_CONTACTPIC), (HMENU)0, NULL, NULL);
 
 		}
@@ -748,7 +748,7 @@ int GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
 				FLASHAVATAR fa = {0};
 				HBITMAP hbm = ((dat->ace && !(dat->ace->dwFlags & AVS_HIDEONCLIST)) ? dat->ace->hbmPic : 0);
 
-				if (_Plugin.g_FlashAvatarAvail) {
+				if (PluginConfig.g_FlashAvatarAvail) {
 					fa.cProto = dat->szProto;
 					fa.id = 25367;
 					fa.hContact = dat->hContact;
@@ -760,11 +760,11 @@ int GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
 						dat->hwndPanelPic = NULL;
 					}
 				}
-				if (!_Plugin.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndPanelPic) {
+				if (!PluginConfig.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndPanelPic) {
 					dat->hwndPanelPic =CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, GetDlgItem(hwndDlg, IDC_PANELPIC), (HMENU)0, NULL, NULL);
 
 				}
-				if ((hbm && hbm != _Plugin.g_hbmUnknown) || (fa.hWindow != NULL))
+				if ((hbm && hbm != PluginConfig.g_hbmUnknown) || (fa.hWindow != NULL))
 					dat->showInfoPic = 1;
 				else
 					dat->showInfoPic = 0;
@@ -813,7 +813,7 @@ int GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
 				FLASHAVATAR fa = {0};
 				HBITMAP hbm = (dat->ace && !(dat->ace->dwFlags & AVS_HIDEONCLIST)) ? dat->ace->hbmPic : 0;
 
-				if (_Plugin.g_FlashAvatarAvail) {
+				if (PluginConfig.g_FlashAvatarAvail) {
 					fa.cProto = dat->szProto;
 					fa.id = 25367;
 					fa.hContact = dat->hContact;
@@ -826,10 +826,10 @@ int GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
 						dat->hwndContactPic = NULL;
 					}
 				}
-				if (!_Plugin.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndContactPic)
+				if (!PluginConfig.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndContactPic)
 					dat->hwndContactPic =CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, GetDlgItem(hwndDlg, IDC_CONTACTPIC), (HMENU)0, NULL, NULL);
 
-				if ((hbm && hbm != _Plugin.g_hbmUnknown) || (fa.hWindow != NULL))
+				if ((hbm && hbm != PluginConfig.g_hbmUnknown) || (fa.hWindow != NULL))
 					dat->showPic = 1;
 				else
 					dat->showPic = 0;
@@ -860,7 +860,7 @@ int CheckValidSmileyPack(char *szProto, HANDLE hContact, HICON *hButtonIcon)
 {
 	SMADD_INFO2 smainfo = {0};
 
-	if (_Plugin.g_SmileyAddAvail) {
+	if (PluginConfig.g_SmileyAddAvail) {
 		smainfo.cbSize = sizeof(smainfo);
 		smainfo.Protocolname = szProto;
 		smainfo.hContact = hContact;
@@ -939,9 +939,9 @@ TCHAR *QuoteText(TCHAR *text, int charsPerLine, int removeExistingQuotes)
 
 void AdjustBottomAvatarDisplay(HWND hwndDlg, struct _MessageWindowData *dat)
 {
-	HBITMAP hbm = dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : _Plugin.g_hbmUnknown);
+	HBITMAP hbm = dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
 
-	if (_Plugin.g_FlashAvatarAvail) {
+	if (PluginConfig.g_FlashAvatarAvail) {
 		FLASHAVATAR fa = {0};
 
 		fa.hContact = dat->hContact;
@@ -1024,14 +1024,14 @@ void FlashOnClist(HWND hwndDlg, struct _MessageWindowData *dat, HANDLE hEvent, D
 	dat->dwTickLastEvent = GetTickCount();
 	if ((GetForegroundWindow() != dat->pContainer->hwnd || dat->pContainer->hwndActive != hwndDlg) && !(dbei->flags & DBEF_SENT) && dbei->eventType == EVENTTYPE_MESSAGE) {
 		UpdateTrayMenu(dat, (WORD)(dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->hContact, 0L);
-		if (nen_options.bTraySupport == TRUE && _Plugin.m_WinVerMajor >= 5)
+		if (nen_options.bTraySupport == TRUE && PluginConfig.m_WinVerMajor >= 5)
 			return;
 	}
 
 	if (hEvent == 0)
 		return;
 
-	if (!_Plugin.m_FlashOnClist)
+	if (!PluginConfig.m_FlashOnClist)
 		return;
 	if ((GetForegroundWindow() != dat->pContainer->hwnd || dat->pContainer->hwndActive != hwndDlg) && !(dbei->flags & DBEF_SENT) && dbei->eventType == EVENTTYPE_MESSAGE && !(dat->dwFlagsEx & MWF_SHOW_FLASHCLIST)) {
 		ZeroMemory(&cle, sizeof(cle));
@@ -1556,13 +1556,13 @@ unsigned int GetIEViewMode(HWND hwndDlg, HANDLE hContact)
 	if (g_HPPAvail == -1)
 		g_HPPAvail = ServiceExists("History++/ExtGrid/NewWindow");
 
-	_Plugin.g_WantIEView = g_IEViewAvail && M->GetByte("default_ieview", 0);
-	_Plugin.g_WantHPP = g_HPPAvail && M->GetByte("default_hpp", 0);
+	PluginConfig.g_WantIEView = g_IEViewAvail && M->GetByte("default_ieview", 0);
+	PluginConfig.g_WantHPP = g_HPPAvail && M->GetByte("default_hpp", 0);
 
-	iWantIEView = (_Plugin.g_WantIEView) || (M->GetByte(hContact, "ieview", 0) == 1 && g_IEViewAvail);
+	iWantIEView = (PluginConfig.g_WantIEView) || (M->GetByte(hContact, "ieview", 0) == 1 && g_IEViewAvail);
 	iWantIEView = (M->GetByte(hContact, "ieview", 0) == (BYTE) - 1) ? 0 : iWantIEView;
 
-	iWantHPP = (_Plugin.g_WantHPP) || (M->GetByte(hContact, "hpplog", 0) == 1 && g_HPPAvail);
+	iWantHPP = (PluginConfig.g_WantHPP) || (M->GetByte(hContact, "hpplog", 0) == 1 && g_HPPAvail);
 	iWantHPP = (M->GetByte(hContact, "hpplog", 0) == (BYTE) - 1) ? 0 : iWantHPP;
 
 	return iWantHPP ? WANT_HPP_LOG : (iWantIEView ? WANT_IEVIEW_LOG : 0);
@@ -1778,7 +1778,7 @@ void SaveSplitter(HWND hwndDlg, struct _MessageWindowData *dat)
 		if (dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE)
 			M->WriteDword(dat->hContact, SRMSGMOD_T, "panelheight", dat->panelHeight);
 		else {
-			_Plugin.m_panelHeight = dat->panelHeight;
+			PluginConfig.m_panelHeight = dat->panelHeight;
 			M->WriteDword(SRMSGMOD_T, "panelheight", dat->panelHeight);
 		}
 	}
@@ -1806,9 +1806,9 @@ void LoadSplitter(HWND hwndDlg, struct _MessageWindowData *dat)
 void LoadPanelHeight(HWND hwndDlg, struct _MessageWindowData *dat)
 {
 	if (!(dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE))
-		dat->panelHeight = _Plugin.m_panelHeight;
+		dat->panelHeight = PluginConfig.m_panelHeight;
 	else
-		dat->panelHeight = M->GetDword(dat->hContact, "panelheight", _Plugin.m_panelHeight);
+		dat->panelHeight = M->GetDword(dat->hContact, "panelheight", PluginConfig.m_panelHeight);
 
 	if (dat->panelHeight <= 0 || dat->panelHeight > 120)
 		dat->panelHeight = 52;
@@ -1851,11 +1851,11 @@ void GetSendFormat(HWND hwndDlg, struct _MessageWindowData *dat, int mode)
 	int i;
 
 	if (mode) {
-		dat->SendFormat = M->GetDword(dat->hContact, "sendformat", _Plugin.m_SendFormat);
+		dat->SendFormat = M->GetDword(dat->hContact, "sendformat", PluginConfig.m_SendFormat);
 		if (dat->SendFormat == -1)          // per contact override to disable it..
 			dat->SendFormat = 0;
 		else if (dat->SendFormat == 0)
-			dat->SendFormat = _Plugin.m_SendFormat ? 1 : 0;
+			dat->SendFormat = PluginConfig.m_SendFormat ? 1 : 0;
 	}
 	for (i = 0; i < 5; i++) {
 		EnableWindow(GetDlgItem(hwndDlg, controls[i]), dat->SendFormat != 0 ? TRUE : FALSE);
@@ -1937,9 +1937,9 @@ int FoldersPathChanged(WPARAM wParam,LPARAM lParam)
 void GetDataDir()
 {
 	if (ServiceExists(MS_FOLDERS_REGISTER_PATH)) {
-		_Plugin.m_hDataPath=(HANDLE)FoldersRegisterCustomPath("TabSRMM", "TabSRMM data", PROFILE_PATH "\\tabSRMM\\");
-		_Plugin.m_hSkinsPath=(HANDLE)FoldersRegisterCustomPath("TabSRMM", "TabSRMM Skins", PROFILE_PATH "\\tabSRMM\\Skins\\");
-		_Plugin.m_hAvatarsPath=(HANDLE)FoldersRegisterCustomPath("TabSRMM", "TabSRMM Saved Avatars", PROFILE_PATH "\\tabSRMM\\Saved Contact Pictures\\");
+		PluginConfig.m_hDataPath=(HANDLE)FoldersRegisterCustomPath("TabSRMM", "TabSRMM data", PROFILE_PATH "\\tabSRMM\\");
+		PluginConfig.m_hSkinsPath=(HANDLE)FoldersRegisterCustomPath("TabSRMM", "TabSRMM Skins", PROFILE_PATH "\\tabSRMM\\Skins\\");
+		PluginConfig.m_hAvatarsPath=(HANDLE)FoldersRegisterCustomPath("TabSRMM", "TabSRMM Saved Avatars", PROFILE_PATH "\\tabSRMM\\Saved Contact Pictures\\");
 		HookEvent(ME_FOLDERS_PATH_CHANGED,FoldersPathChanged);
 	}
 	FoldersPathChanged(0,0);
@@ -1963,7 +1963,7 @@ void LoadContactAvatar(HWND hwndDlg, struct _MessageWindowData *dat)
 			PostMessage(hwndDlg, WM_SIZE, 0, 0);
 		} else if (dat->ace == NULL) {
 			AdjustBottomAvatarDisplay(hwndDlg, dat);
-			GetObject(_Plugin.g_hbmUnknown, sizeof(bm), &bm);
+			GetObject(PluginConfig.g_hbmUnknown, sizeof(bm), &bm);
 			CalcDynamicAvatarSize(hwndDlg, dat, &bm);
 			PostMessage(hwndDlg, WM_SIZE, 0, 0);
 		}
@@ -1981,7 +1981,7 @@ void LoadOwnAvatar(HWND hwndDlg, struct _MessageWindowData *dat)
 		dat->hOwnPic = ace->hbmPic;
 		dat->ownAce = ace;
 	} else {
-		dat->hOwnPic = _Plugin.g_hbmUnknown;
+		dat->hOwnPic = PluginConfig.g_hbmUnknown;
 		dat->ownAce = NULL;
 	}
 	if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
@@ -2006,7 +2006,7 @@ void LoadTimeZone(HWND hwndDlg, struct _MessageWindowData *dat)
 		if (dat->timezone != -1) {
 			DWORD contact_gmt_diff;
 			contact_gmt_diff = dat->timezone > 128 ? 256 - dat->timezone : 0 - dat->timezone;
-			dat->timediff = (int)_Plugin.local_gmt_diff - (int)contact_gmt_diff * 60 * 60 / 2;
+			dat->timediff = (int)PluginConfig.local_gmt_diff - (int)contact_gmt_diff * 60 * 60 / 2;
 		}
 	}
 }
@@ -2017,7 +2017,7 @@ void LoadTimeZone(HWND hwndDlg, struct _MessageWindowData *dat)
 
 void HandlePasteAndSend(HWND hwndDlg, struct _MessageWindowData *dat)
 {
-	if (!_Plugin.m_PasteAndSend) {
+	if (!PluginConfig.m_PasteAndSend) {
 		SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)TranslateT("The 'paste and send' feature is disabled. You can enable it on the 'General' options page in the 'Sending Messages' section"));
 		return;                                     // feature disabled
 	}
@@ -2039,7 +2039,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 	if (!dat)
 		return 0;
 
-	if (dis->CtlType == ODT_MENU && dis->hwndItem == (HWND)GetSubMenu(_Plugin.g_hMenuContext, 7)) {
+	if (dis->CtlType == ODT_MENU && dis->hwndItem == (HWND)GetSubMenu(PluginConfig.g_hMenuContext, 7)) {
 		RECT rc = { 0 };
 		HBRUSH old, col;
 		COLORREF clr;
@@ -2087,7 +2087,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		return TRUE;
 	}
 
-	else if ((dis->hwndItem == GetDlgItem(hwndDlg, IDC_CONTACTPIC) && (dat->ace ? dat->ace->hbmPic : _Plugin.g_hbmUnknown) && dat->showPic) || (dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELPIC) && dat->dwFlagsEx & MWF_SHOW_INFOPANEL && (dat->ace ? dat->ace->hbmPic : _Plugin.g_hbmUnknown))) {
+	else if ((dis->hwndItem == GetDlgItem(hwndDlg, IDC_CONTACTPIC) && (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown) && dat->showPic) || (dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELPIC) && dat->dwFlagsEx & MWF_SHOW_INFOPANEL && (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown))) {
 		HBRUSH hOldBrush;
 		BITMAP bminfo;
 		double dAspect = 0, dNewWidth = 0, dNewHeight = 0;
@@ -2101,10 +2101,10 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		BYTE borderType = CSkin::m_bAvatarBorderType;
 		HPEN hPenBorder = 0, hPenOld = 0;
 		HRGN clipRgn = 0;
-		int  iRad = _Plugin.m_WinVerMajor >= 5 ? 4 : 6;
+		int  iRad = PluginConfig.m_WinVerMajor >= 5 ? 4 : 6;
 		BOOL flashAvatar = FALSE;
 
-		if (_Plugin.g_FlashAvatarAvail && (!bPanelPic || (bPanelPic && dat->showInfoPic == 1))) {
+		if (PluginConfig.g_FlashAvatarAvail && (!bPanelPic || (bPanelPic && dat->showInfoPic == 1))) {
 			FLASHAVATAR fa = {0};
 
 			fa.id = 25367;
@@ -2122,7 +2122,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 						DestroyWindow(dat->hwndPanelPic);
 						dat->hwndPanelPic = NULL;
 					}
-					if (!_Plugin.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndPanelPic) {
+					if (!PluginConfig.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndPanelPic) {
 						dat->hwndPanelPic =CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, GetDlgItem(hwndDlg, IDC_PANELPIC), (HMENU)0, NULL, NULL);
 						SendMessage(dat->hwndPanelPic, AVATAR_SETCONTACT, (WPARAM)0, (LPARAM)dat->hContact);
 					}
@@ -2131,7 +2131,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 						DestroyWindow(dat->hwndContactPic);
 						dat->hwndContactPic = NULL;
 					}
-					if (!_Plugin.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndContactPic) {
+					if (!PluginConfig.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndContactPic) {
 						dat->hwndContactPic =CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, GetDlgItem(hwndDlg, IDC_CONTACTPIC), (HMENU)0, NULL, NULL);
 						SendMessage(dat->hwndContactPic, AVATAR_SETCONTACT, (WPARAM)0, (LPARAM)dat->hContact);
 					}
@@ -2149,7 +2149,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 
 		if (bPanelPic) {
 			if (!flashAvatar) {
-				GetObject(dat->ace ? dat->ace->hbmPic : _Plugin.g_hbmUnknown, sizeof(bminfo), &bminfo);
+				GetObject(dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown, sizeof(bminfo), &bminfo);
 			}
 			if ((dat->ace && dat->showInfoPic && !(dat->ace->dwFlags & AVS_HIDEONCLIST)) || dat->showInfoPic)
 				aceFlags = dat->ace ? dat->ace->dwFlags : 0;
@@ -2167,7 +2167,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 			} else if (dat->ownAce)
 				aceFlags = dat->ownAce->dwFlags;
 
-			GetObject(dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : _Plugin.g_hbmUnknown), sizeof(bminfo), &bminfo);
+			GetObject(dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown), sizeof(bminfo), &bminfo);
 		}
 
 		GetClientRect(hwndDlg, &rc);
@@ -2256,9 +2256,9 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 				}
 			}
 		}
-		if (((dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : _Plugin.g_hbmUnknown)) && dat->showPic) || bPanelPic) {
+		if (((dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown)) && dat->showPic) || bPanelPic) {
 			HDC hdcMem = CreateCompatibleDC(dis->hDC);
-			HBITMAP hbmAvatar = bPanelPic ? (dat->ace ? dat->ace->hbmPic : _Plugin.g_hbmUnknown) : (dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : _Plugin.g_hbmUnknown));
+			HBITMAP hbmAvatar = bPanelPic ? (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown) : (dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown));
 			HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, hbmAvatar);
 			if (bPanelPic) {
 				LONG width_off = borderType ? 0 : 2;
@@ -2325,12 +2325,12 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		DWORD	oldPanelStatusCX = dat->panelStatusCX;
 		RECT	rc;
 		HFONT	hOldFont = 0;
-		BOOL	config = _Plugin.ipConfig.isValid;
+		BOOL	config = PluginConfig.ipConfig.isValid;
 		CSkinItem *item = &SkinItems[ID_EXTBKINFOPANEL];
 		TCHAR   *szFinalProto = NULL;
 
 		if (config)
-			hOldFont = (HFONT)SelectObject(dis->hDC, _Plugin.ipConfig.hFonts[IPFONTID_STATUS]);
+			hOldFont = (HFONT)SelectObject(dis->hDC, PluginConfig.ipConfig.hFonts[IPFONTID_STATUS]);
 
 		if (dat->szStatus[0])
 			GetTextExtentPoint32(dis->hDC, dat->szStatus, lstrlen(dat->szStatus), &sStatus);
@@ -2348,7 +2348,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 
 		if (szFinalProto) {
 			if (config)
-				SelectObject(dis->hDC, _Plugin.ipConfig.hFonts[IPFONTID_PROTO]);
+				SelectObject(dis->hDC, PluginConfig.ipConfig.hFonts[IPFONTID_PROTO]);
 			GetTextExtentPoint32(dis->hDC, szFinalProto, lstrlen(szFinalProto), &sProto);
 		}
 
@@ -2359,7 +2359,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 
 		if (dat->hdcCached != NULL) {
 			CSkin::SkinDrawBGFromDC(dis->hwndItem, hwndDlg, dat->hdcCached, &dis->rcItem, dis->hDC);
-			SetTextColor(dis->hDC, _Plugin.skinDefaultFontColor);
+			SetTextColor(dis->hDC, PluginConfig.skinDefaultFontColor);
 		} else {
 			FillRect(dis->hDC, &rc, GetSysColorBrush(COLOR_3DFACE));
 			SetTextColor(dis->hDC, GetSysColor(COLOR_BTNTEXT));
@@ -2378,23 +2378,23 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		}
 
 		SetBkMode(dis->hDC, TRANSPARENT);
-		if (_Plugin.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
-			DrawEdge(dis->hDC, &rc, _Plugin.ipConfig.edgeType, _Plugin.ipConfig.edgeFlags);
+		if (PluginConfig.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
+			DrawEdge(dis->hDC, &rc, PluginConfig.ipConfig.edgeType, PluginConfig.ipConfig.edgeFlags);
 
 		rc.left += 2;
 		rc.right -=3;
 		if (dat->szStatus[0]) {
 			if (config) {
-				SelectObject(dis->hDC, _Plugin.ipConfig.hFonts[IPFONTID_STATUS]);
-				SetTextColor(dis->hDC, _Plugin.ipConfig.clrs[IPFONTID_STATUS]);
+				SelectObject(dis->hDC, PluginConfig.ipConfig.hFonts[IPFONTID_STATUS]);
+				SetTextColor(dis->hDC, PluginConfig.ipConfig.clrs[IPFONTID_STATUS]);
 			}
 			DrawText(dis->hDC, dat->szStatus, lstrlen(dat->szStatus), &rc, DT_SINGLELINE | DT_VCENTER);
 		}
 		if (szFinalProto) {
 			rc.left = rc.right - sProto.cx - 3 - (dat->hClientIcon ? 20 : 0);
 			if (config) {
-				SelectObject(dis->hDC, _Plugin.ipConfig.hFonts[IPFONTID_PROTO]);
-				SetTextColor(dis->hDC, _Plugin.ipConfig.clrs[IPFONTID_PROTO]);
+				SelectObject(dis->hDC, PluginConfig.ipConfig.hFonts[IPFONTID_PROTO]);
+				SetTextColor(dis->hDC, PluginConfig.ipConfig.clrs[IPFONTID_PROTO]);
 			} else
 				SetTextColor(dis->hDC, GetSysColor(COLOR_HOTLIGHT));
 			DrawText(dis->hDC, szFinalProto, lstrlen(szFinalProto), &rc, DT_SINGLELINE | DT_VCENTER);
@@ -2419,7 +2419,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		SetBkMode(dis->hDC, TRANSPARENT);
 		if (dat->hdcCached != NULL) {
 			CSkin::SkinDrawBGFromDC(dis->hwndItem, hwndDlg, dat->hdcCached, &dis->rcItem, dis->hDC);
-			SetTextColor(dis->hDC, _Plugin.skinDefaultFontColor);
+			SetTextColor(dis->hDC, PluginConfig.skinDefaultFontColor);
 		} else {
 			FillRect(dis->hDC, &rc, GetSysColorBrush(COLOR_3DFACE));
 			SetTextColor(dis->hDC, GetSysColor(COLOR_BTNTEXT));
@@ -2435,8 +2435,8 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 						  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 		}
 
-		if (_Plugin.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
-			DrawEdge(dis->hDC, &dis->rcItem, _Plugin.ipConfig.edgeType, _Plugin.ipConfig.edgeFlags);
+		if (PluginConfig.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
+			DrawEdge(dis->hDC, &dis->rcItem, PluginConfig.ipConfig.edgeType, PluginConfig.ipConfig.edgeFlags);
 		dis->rcItem.left += 2;
 		if (dat->szNickname[0]) {
 			HFONT hOldFont = 0;
@@ -2445,14 +2445,14 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 			xIcon = GetXStatusIcon(dat);
 
 			if (xIcon) {
-				DrawIconEx(dis->hDC, dis->rcItem.left, (dis->rcItem.bottom + dis->rcItem.top - _Plugin.m_smcyicon) / 2, xIcon, _Plugin.m_smcxicon, _Plugin.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
+				DrawIconEx(dis->hDC, dis->rcItem.left, (dis->rcItem.bottom + dis->rcItem.top - PluginConfig.m_smcyicon) / 2, xIcon, PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
 				DestroyIcon(xIcon);
 				dis->rcItem.left += 21;
 			}
 
-			if (_Plugin.ipConfig.isValid) {
-				hOldFont = (HFONT)SelectObject(dis->hDC, _Plugin.ipConfig.hFonts[IPFONTID_NICK]);
-				SetTextColor(dis->hDC, _Plugin.ipConfig.clrs[IPFONTID_NICK]);
+			if (PluginConfig.ipConfig.isValid) {
+				hOldFont = (HFONT)SelectObject(dis->hDC, PluginConfig.ipConfig.hFonts[IPFONTID_NICK]);
+				SetTextColor(dis->hDC, PluginConfig.ipConfig.clrs[IPFONTID_NICK]);
 			}
 			if (szStatusMsg && szStatusMsg[0]) {
 				SIZE szNick, sStatusMsg, sMask;
@@ -2465,9 +2465,9 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 				if ((szNick.cx + sStatusMsg.cx + 6) < (dis->rcItem.right - dis->rcItem.left) || (dis->rcItem.bottom - dis->rcItem.top) < (2 * sMask.cy))
 					dtFlagsNick |= DT_VCENTER;
 				DrawText(dis->hDC, dat->szNickname, -1, &dis->rcItem, dtFlagsNick);
-				if (_Plugin.ipConfig.isValid) {
-					SelectObject(dis->hDC, _Plugin.ipConfig.hFonts[IPFONTID_STATUS]);
-					SetTextColor(dis->hDC, _Plugin.ipConfig.clrs[IPFONTID_STATUS]);
+				if (PluginConfig.ipConfig.isValid) {
+					SelectObject(dis->hDC, PluginConfig.ipConfig.hFonts[IPFONTID_STATUS]);
+					SetTextColor(dis->hDC, PluginConfig.ipConfig.clrs[IPFONTID_STATUS]);
 				}
 				dis->rcItem.left += (szNick.cx + 10);
 
@@ -2493,7 +2493,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		return TRUE;
 	} else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELUIN) && dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
 		char szBuf[256];
-		BOOL config = _Plugin.ipConfig.isValid;
+		BOOL config = PluginConfig.ipConfig.isValid;
 		HFONT hOldFont = 0;
 		CSkinItem *item = &SkinItems[ID_EXTBKINFOPANEL];
 		HDC	  hdc = CreateCompatibleDC(dis->hDC);
@@ -2503,7 +2503,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 
 		if (dat->hdcCached != NULL) {
 			CSkin::SkinDrawBGFromDC(dis->hwndItem, hwndDlg, dat->hdcCached, &dis->rcItem, hdc);
-			SetTextColor(hdc, _Plugin.skinDefaultFontColor);
+			SetTextColor(hdc, PluginConfig.skinDefaultFontColor);
 		} else {
 			FillRect(hdc, &dis->rcItem, GetSysColorBrush(COLOR_3DFACE));
 			SetTextColor(hdc, GetSysColor(COLOR_BTNTEXT));
@@ -2521,12 +2521,12 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 						  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 		}
 
-		if (_Plugin.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
-			DrawEdge(hdc, &dis->rcItem, _Plugin.ipConfig.edgeType, _Plugin.ipConfig.edgeFlags);
+		if (PluginConfig.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
+			DrawEdge(hdc, &dis->rcItem, PluginConfig.ipConfig.edgeType, PluginConfig.ipConfig.edgeFlags);
 		dis->rcItem.left += 2;
 		if (config) {
-			hOldFont = (HFONT)SelectObject(hdc, _Plugin.ipConfig.hFonts[IPFONTID_UIN]);
-			SetTextColor(hdc, _Plugin.ipConfig.clrs[IPFONTID_UIN]);
+			hOldFont = (HFONT)SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_UIN]);
+			SetTextColor(hdc, PluginConfig.ipConfig.clrs[IPFONTID_UIN]);
 		}
 		if (dat->uin[0]) {
 			SIZE sUIN, sTime;
@@ -2556,13 +2556,13 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 				dbtts.szFormat = "t";
 				CallService(MS_DB_TIME_TIMESTAMPTOSTRING, final_time, (LPARAM) & dbtts);
 				if (config) {
-					SelectObject(hdc, _Plugin.ipConfig.hFonts[IPFONTID_TIME]);
-					SetTextColor(hdc, _Plugin.ipConfig.clrs[IPFONTID_TIME]);
+					SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_TIME]);
+					SetTextColor(hdc, PluginConfig.ipConfig.clrs[IPFONTID_TIME]);
 				}
 				GetTextExtentPoint32A(hdc, szResult, lstrlenA(szResult), &sTime);
 				if (sUIN.cx + sTime.cx + 23 < dis->rcItem.right - dis->rcItem.left) {
 					dis->rcItem.left = dis->rcItem.right - sTime.cx - 3 - 16;
-					oldFont = (HFONT)SelectObject(hdc, _Plugin.m_hFontWebdings);
+					oldFont = (HFONT)SelectObject(hdc, PluginConfig.m_hFontWebdings);
 					base_hour = atoi(szResult);
 					base_hour = base_hour > 11 ? base_hour - 12 : base_hour;
 					symbolic_time[0] = (char)(0xB7 + base_hour);
@@ -2585,7 +2585,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 	} else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_STATICTEXT) || dis->hwndItem == GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT)) {
 		TCHAR szWindowText[256];
 		if (dat->pContainer->bSkinned) {
-			SetTextColor(dis->hDC, _Plugin.skinDefaultFontColor);
+			SetTextColor(dis->hDC, PluginConfig.skinDefaultFontColor);
 			CSkin::SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
 		} else {
 			SetTextColor(dis->hDC, GetSysColor(COLOR_BTNTEXT));
@@ -2602,7 +2602,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		else
 			FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_3DFACE));
 		DrawIconEx(dis->hDC, (dis->rcItem.right - dis->rcItem.left) / 2 - 8, (dis->rcItem.bottom - dis->rcItem.top) / 2 - 8,
-				   _Plugin.g_iconErr, 16, 16, 0, 0, DI_NORMAL);
+				   PluginConfig.g_iconErr, 16, 16, 0, 0, DI_NORMAL);
 		return TRUE;
 	}
 	return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
@@ -2613,12 +2613,12 @@ void LoadThemeDefaults(HWND hwndDlg, struct _MessageWindowData *dat)
 	int i;
 	char szTemp[40];
 	COLORREF colour;
-	dat->theme.statbg = _Plugin.crStatus;
-	dat->theme.oldinbg = _Plugin.crOldIncoming;
-	dat->theme.oldoutbg = _Plugin.crOldOutgoing;
-	dat->theme.inbg = _Plugin.crIncoming;
-	dat->theme.outbg = _Plugin.crOutgoing;
-	dat->theme.bg = _Plugin.crDefault;
+	dat->theme.statbg = PluginConfig.crStatus;
+	dat->theme.oldinbg = PluginConfig.crOldIncoming;
+	dat->theme.oldoutbg = PluginConfig.crOldOutgoing;
+	dat->theme.inbg = PluginConfig.crIncoming;
+	dat->theme.outbg = PluginConfig.crOutgoing;
+	dat->theme.bg = PluginConfig.crDefault;
 	dat->theme.hgrid = M->GetDword(FONTMODULE, "hgrid", RGB(224, 224, 224));
 	dat->theme.left_indent = M->GetDword("IndentAmount", 20) * 15;
 	dat->theme.right_indent = M->GetDword("RightIndent", 20) * 15;
@@ -2700,15 +2700,15 @@ void ConfigureSmileyButton(HWND hwndDlg, struct _MessageWindowData *dat)
   	int showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
 	int iItemID = IDC_SMILEYBTN;
 
-	if (_Plugin.g_SmileyAddAvail) {
+	if (PluginConfig.g_SmileyAddAvail) {
 
 		nrSmileys = CheckValidSmileyPack(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->hSubContact : dat->hContact, &hButtonIcon);
 
 		dat->doSmileys = 1;
 
-		if (hButtonIcon == 0 || _Plugin.m_SmileyButtonOverride) {
+		if (hButtonIcon == 0 || PluginConfig.m_SmileyButtonOverride) {
 			dat->hSmileyIcon = 0;
-			SendDlgItemMessage(hwndDlg, iItemID, BM_SETIMAGE, IMAGE_ICON, (LPARAM) _Plugin.g_buttonBarIcons[11]);
+			SendDlgItemMessage(hwndDlg, iItemID, BM_SETIMAGE, IMAGE_ICON, (LPARAM) PluginConfig.g_buttonBarIcons[11]);
 			if (hButtonIcon)
 				DestroyIcon(hButtonIcon);
 		} else {
@@ -2891,7 +2891,7 @@ void GetMyNick(HWND hwndDlg, struct _MessageWindowData *dat)
 	ci.szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 	ci.dwFlag = CNF_DISPLAY;
 #if defined(_UNICODE)
-	if (_Plugin.bUnicodeBuild)
+	if (PluginConfig.bUnicodeBuild)
 		ci.dwFlag |= CNF_UNICODE;
 	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM)&ci)) {
 		if (ci.type == CNFT_ASCIIZ) {
@@ -3011,7 +3011,7 @@ void MTH_updateMathWindow(HWND hwndDlg, struct _MessageWindowData *dat)
 {
 	WINDOWPLACEMENT cWinPlace;
 
-	if (!_Plugin.m_MathModAvail)
+	if (!PluginConfig.m_MathModAvail)
 		return;
 
 	MTH_updatePreview(hwndDlg, dat);

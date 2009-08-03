@@ -36,7 +36,6 @@ $Id: msgoptions.c 10390 2009-07-22 19:43:01Z silvercircle $
 
 #define DM_GETSTATUSMASK (WM_USER + 10)
 
-extern		struct ContainerWindowData *pFirstContainer;
 extern		int g_chat_integration_enabled;
 extern		INT_PTR CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern		INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -69,10 +68,10 @@ HIMAGELIST CreateStateImageList()
 {
 	if (g_himlStates == 0) {
 		g_himlStates = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 4, 0);
-		ImageList_AddIcon(g_himlStates, _Plugin.g_IconFolder);
-		ImageList_AddIcon(g_himlStates, _Plugin.g_IconFolder);
-		ImageList_AddIcon(g_himlStates, _Plugin.g_IconUnchecked);
-		ImageList_AddIcon(g_himlStates, _Plugin.g_IconChecked);
+		ImageList_AddIcon(g_himlStates, PluginConfig.g_IconFolder);
+		ImageList_AddIcon(g_himlStates, PluginConfig.g_IconFolder);
+		ImageList_AddIcon(g_himlStates, PluginConfig.g_IconUnchecked);
+		ImageList_AddIcon(g_himlStates, PluginConfig.g_IconChecked);
 	}
 	return g_himlStates;
 }
@@ -296,7 +295,7 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SendDlgItemMessage(hwndDlg, IDC_SENDFORMATTING, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Off"));
 			SendDlgItemMessage(hwndDlg, IDC_SENDFORMATTING, CB_INSERTSTRING, -1, (LPARAM)TranslateT("BBCode"));
 
-			SendDlgItemMessage(hwndDlg, IDC_SENDFORMATTING, CB_SETCURSEL, (WPARAM)_Plugin.m_SendFormat ? 1 : 0, 0);
+			SendDlgItemMessage(hwndDlg, IDC_SENDFORMATTING, CB_SETCURSEL, (WPARAM)PluginConfig.m_SendFormat ? 1 : 0, 0);
 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_AUTOCLOSELAST), GetDlgItemInt(hwndDlg, IDC_AUTOCLOSETABTIME, &translated, FALSE) > 0);
 			return TRUE;
@@ -807,7 +806,7 @@ static INT_PTR CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam
 
 			SendDlgItemMessage(hwndDlg, IDC_MTN_POPUPMODE, CB_SETCURSEL, (WPARAM)M->GetByte("MTN_PopupMode", 0), 0);
 
-			if(!_Plugin.g_PopupWAvail) {
+			if(!PluginConfig.g_PopupWAvail) {
 				ShowWindow(GetDlgItem(hwndDlg, IDC_NOTIFYPOPUP), SW_HIDE);
 				ShowWindow(GetDlgItem(hwndDlg, IDC_STATIC111), SW_HIDE);
 				ShowWindow(GetDlgItem(hwndDlg, IDC_MTN_POPUPMODE), SW_HIDE);
@@ -1059,8 +1058,8 @@ static INT_PTR CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 
 							ReloadGlobals();
 							M->BroadcastMessage(DM_OPTIONSAPPLIED, 0, 0);
-							SendMessage(_Plugin.g_hwndHotkeyHandler, DM_FORCEUNREGISTERHOTKEYS, 0, 0);
-							SendMessage(_Plugin.g_hwndHotkeyHandler, DM_REGISTERHOTKEYS, 0, 0);
+							SendMessage(PluginConfig.g_hwndHotkeyHandler, DM_FORCEUNREGISTERHOTKEYS, 0, 0);
+							SendMessage(PluginConfig.g_hwndHotkeyHandler, DM_REGISTERHOTKEYS, 0, 0);
 							return TRUE;
 						}
 					}
@@ -1096,7 +1095,7 @@ static INT_PTR CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM 
 			SendDlgItemMessage(hwndDlg, IDC_FLASHINTERVALSPIN, UDM_SETRANGE, 0, MAKELONG(10000, 500));
 			SendDlgItemMessage(hwndDlg, IDC_FLASHINTERVALSPIN, UDM_SETPOS, 0, (int)M->GetDword("flashinterval", 1000));
 			SendDlgItemMessage(hwndDlg, IDC_FLASHINTERVALSPIN, UDM_SETACCEL, 0, (int)M->GetDword("flashinterval", 1000));
-			SetDlgItemText(hwndDlg, IDC_DEFAULTTITLEFORMAT, _Plugin.szDefaultTitleFormat);
+			SetDlgItemText(hwndDlg, IDC_DEFAULTTITLEFORMAT, PluginConfig.szDefaultTitleFormat);
 			SendDlgItemMessage(hwndDlg, IDC_DEFAULTTITLEFORMAT, EM_LIMITTEXT, TITLE_FORMATLEN - 1, 0);
 			CheckDlgButton(hwndDlg, IDC_USESKIN, M->GetByte("useskin", 0) ? 1 : 0);
 			SendMessage(hwndDlg, WM_COMMAND, MAKELONG(IDC_USESKIN, BN_CLICKED), 0);
@@ -1184,7 +1183,7 @@ static int OptInitialise(WPARAM wParam, LPARAM lParam)
 
 	Chat_OptionsInitialize(wParam, lParam);
 
-	if(_Plugin.g_PopupWAvail||_Plugin.g_PopupAvail)
+	if(PluginConfig.g_PopupWAvail||PluginConfig.g_PopupAvail)
 		TN_OptionsInitialize(wParam, lParam);
 
 	odp.cbSize = sizeof(odp);
@@ -1965,7 +1964,7 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			} else
 				SetDlgItemText(hwndDlg, IDC_SKINFILENAME, _T(""));
 
-			if (_Plugin.m_WinVerMajor < 5) {
+			if (PluginConfig.m_WinVerMajor < 5) {
 				int i = 0;
 
 				EnableWindow(hwndDlg, FALSE);
@@ -2094,7 +2093,7 @@ static INT_PTR CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			if (M->m_pfnEnableThemeDialogTexture)
 				M->m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
-			if (0 && _Plugin.m_WinVerMajor >= 5) {
+			if (0 && PluginConfig.m_WinVerMajor >= 5) {
 				if (ServiceExists(MS_CLNSE_INVOKE)) {
 
 					ZeroMemory(&sd, sizeof(sd));
@@ -2242,88 +2241,88 @@ void ReloadGlobals()
 {
 	DWORD dwFlags = M->GetDword("mwflags", MWF_LOG_DEFAULT);
 
-	_Plugin.m_SendOnShiftEnter = (int)M->GetByte("sendonshiftenter", 0);
-	_Plugin.m_SendOnEnter = (int)M->GetByte(SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER);
-	_Plugin.m_SendOnDblEnter = (int)M->GetByte("SendOnDblEnter", 0);
-	_Plugin.m_AutoLocaleSupport = (int)M->GetByte("al", 1);
-	_Plugin.m_AutoSwitchTabs = (int)M->GetByte("autoswitchtabs", 1);
-	_Plugin.m_CutContactNameTo = (int) DBGetContactSettingWord(NULL, SRMSGMOD_T, "cut_at", 15);
-	_Plugin.m_CutContactNameOnTabs = (int)M->GetByte("cuttitle", 0);
-	_Plugin.m_StatusOnTabs = (int)M->GetByte("tabstatus", 1);
-	_Plugin.m_LogStatusChanges = (int)dwFlags&MWF_LOG_STATUSCHANGES;//DBGetContactSettingByte(NULL, SRMSGMOD_T, "logstatus", 0);
-	_Plugin.m_UseDividers = (int)M->GetByte("usedividers", 0);
-	_Plugin.m_DividersUsePopupConfig = (int)M->GetByte("div_popupconfig", 0);
-	_Plugin.m_MsgTimeout = (int)M->GetDword(SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
+	PluginConfig.m_SendOnShiftEnter = (int)M->GetByte("sendonshiftenter", 0);
+	PluginConfig.m_SendOnEnter = (int)M->GetByte(SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER);
+	PluginConfig.m_SendOnDblEnter = (int)M->GetByte("SendOnDblEnter", 0);
+	PluginConfig.m_AutoLocaleSupport = (int)M->GetByte("al", 1);
+	PluginConfig.m_AutoSwitchTabs = (int)M->GetByte("autoswitchtabs", 1);
+	PluginConfig.m_CutContactNameTo = (int) DBGetContactSettingWord(NULL, SRMSGMOD_T, "cut_at", 15);
+	PluginConfig.m_CutContactNameOnTabs = (int)M->GetByte("cuttitle", 0);
+	PluginConfig.m_StatusOnTabs = (int)M->GetByte("tabstatus", 1);
+	PluginConfig.m_LogStatusChanges = (int)dwFlags&MWF_LOG_STATUSCHANGES;//DBGetContactSettingByte(NULL, SRMSGMOD_T, "logstatus", 0);
+	PluginConfig.m_UseDividers = (int)M->GetByte("usedividers", 0);
+	PluginConfig.m_DividersUsePopupConfig = (int)M->GetByte("div_popupconfig", 0);
+	PluginConfig.m_MsgTimeout = (int)M->GetDword(SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
 
-	if (_Plugin.m_MsgTimeout < SRMSGSET_MSGTIMEOUT_MIN)
-		_Plugin.m_MsgTimeout = SRMSGSET_MSGTIMEOUT_MIN;
+	if (PluginConfig.m_MsgTimeout < SRMSGSET_MSGTIMEOUT_MIN)
+		PluginConfig.m_MsgTimeout = SRMSGSET_MSGTIMEOUT_MIN;
 
-	_Plugin.m_EscapeCloses = (int)M->GetByte("escmode", 0);
+	PluginConfig.m_EscapeCloses = (int)M->GetByte("escmode", 0);
 	//MaD
-	if (M->GetByte("escmode_2",0)&&_Plugin.m_EscapeCloses)
+	if (M->GetByte("escmode_2",0)&&PluginConfig.m_EscapeCloses)
 	{
-		_Plugin.m_EscapeCloses=2;
+		PluginConfig.m_EscapeCloses=2;
 	}
-	_Plugin.m_HideOnClose =(int) M->GetByte("hideonclose", 0);
-	_Plugin.m_AllowTab =(int) M->GetByte("tabmode", 0);
-	_Plugin.m_AllowOfflineMultisend =(int) M->GetByte("AllowOfflineMultisend", 0);
+	PluginConfig.m_HideOnClose =(int) M->GetByte("hideonclose", 0);
+	PluginConfig.m_AllowTab =(int) M->GetByte("tabmode", 0);
+	PluginConfig.m_AllowOfflineMultisend =(int) M->GetByte("AllowOfflineMultisend", 0);
 
 	//MaD_
-	_Plugin.m_WarnOnClose = (int)M->GetByte("warnonexit", 0);
-	_Plugin.m_AvatarMode = (int)M->GetByte("avatarmode", 0);
+	PluginConfig.m_WarnOnClose = (int)M->GetByte("warnonexit", 0);
+	PluginConfig.m_AvatarMode = (int)M->GetByte("avatarmode", 0);
 
-	if (_Plugin.m_AvatarMode == 1 || _Plugin.m_AvatarMode == 2)
-		_Plugin.m_AvatarMode = 3;
+	if (PluginConfig.m_AvatarMode == 1 || PluginConfig.m_AvatarMode == 2)
+		PluginConfig.m_AvatarMode = 3;
 
-	_Plugin.m_OwnAvatarMode = (int)M->GetByte("ownavatarmode", 0);
-	_Plugin.m_FlashOnClist = (int)M->GetByte("flashcl", 0);
-	_Plugin.m_TabAutoClose = (int)M->GetDword("tabautoclose", 0);
-	_Plugin.m_AlwaysFullToolbarWidth = (int)M->GetByte("alwaysfulltoolbar", 1);
-	_Plugin.m_LimitStaticAvatarHeight = (int)M->GetDword("avatarheight", 96);
-	_Plugin.m_SendFormat = (int)M->GetByte("sendformat", 0);
-	_Plugin.m_FormatWholeWordsOnly = 1;
-	_Plugin.m_FixFutureTimestamps = (int)M->GetByte("do_fft", 1);
-	_Plugin.m_RTLDefault = (int)M->GetByte("rtldefault", 0);
-	_Plugin.m_SplitterSaveOnClose = (int)M->GetByte("splitsavemode", 1);
-	_Plugin.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE);
-	_Plugin.m_WinVerMajor = WinVerMajor();
-	_Plugin.m_WinVerMinor = WinVerMinor();
-	_Plugin.m_bIsXP = IsWinVerXPPlus();
-	_Plugin.m_TabAppearance = (int)M->GetDword("tabconfig", TCF_FLASHICON | TCF_SINGLEROWTABCONTROL);
-	_Plugin.m_panelHeight = (DWORD)M->GetDword("panelheight", 51);
-	_Plugin.m_IdleDetect = (int)M->GetByte("detectidle", 1);
-	_Plugin.m_smcxicon = GetSystemMetrics(SM_CXSMICON);
-	_Plugin.m_smcyicon = GetSystemMetrics(SM_CYSMICON);
-	_Plugin.m_PasteAndSend = (int)M->GetByte("pasteandsend", 1);
-	_Plugin.m_szNoStatus = TranslateTS(tszNoStatus);
-	_Plugin.ipConfig.borderStyle = IPFIELD_FLAT; // (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ipfieldborder", IPFIELD_FLAT);
-	_Plugin.m_LangPackCP = ServiceExists(MS_LANGPACK_GETCODEPAGE) ? CallService(MS_LANGPACK_GETCODEPAGE, 0, 0) : CP_ACP;
-	_Plugin.m_SmileyButtonOverride = (BYTE)M->GetByte("smbutton_override", 1);
-	_Plugin.m_visualMessageSizeIndicator = M->GetByte("msgsizebar", 0);
-	_Plugin.m_autoSplit = M->GetByte("autosplit", 0);
-	_Plugin.m_FlashOnMTN = M->GetByte(SRMSGMOD, SRMSGSET_SHOWTYPINGWINFLASH, SRMSGDEFSET_SHOWTYPINGWINFLASH);
+	PluginConfig.m_OwnAvatarMode = (int)M->GetByte("ownavatarmode", 0);
+	PluginConfig.m_FlashOnClist = (int)M->GetByte("flashcl", 0);
+	PluginConfig.m_TabAutoClose = (int)M->GetDword("tabautoclose", 0);
+	PluginConfig.m_AlwaysFullToolbarWidth = (int)M->GetByte("alwaysfulltoolbar", 1);
+	PluginConfig.m_LimitStaticAvatarHeight = (int)M->GetDword("avatarheight", 96);
+	PluginConfig.m_SendFormat = (int)M->GetByte("sendformat", 0);
+	PluginConfig.m_FormatWholeWordsOnly = 1;
+	PluginConfig.m_FixFutureTimestamps = (int)M->GetByte("do_fft", 1);
+	PluginConfig.m_RTLDefault = (int)M->GetByte("rtldefault", 0);
+	PluginConfig.m_SplitterSaveOnClose = (int)M->GetByte("splitsavemode", 1);
+	PluginConfig.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE);
+	PluginConfig.m_WinVerMajor = WinVerMajor();
+	PluginConfig.m_WinVerMinor = WinVerMinor();
+	PluginConfig.m_bIsXP = IsWinVerXPPlus();
+	PluginConfig.m_TabAppearance = (int)M->GetDword("tabconfig", TCF_FLASHICON | TCF_SINGLEROWTABCONTROL);
+	PluginConfig.m_panelHeight = (DWORD)M->GetDword("panelheight", 51);
+	PluginConfig.m_IdleDetect = (int)M->GetByte("detectidle", 1);
+	PluginConfig.m_smcxicon = GetSystemMetrics(SM_CXSMICON);
+	PluginConfig.m_smcyicon = GetSystemMetrics(SM_CYSMICON);
+	PluginConfig.m_PasteAndSend = (int)M->GetByte("pasteandsend", 1);
+	PluginConfig.m_szNoStatus = TranslateTS(tszNoStatus);
+	PluginConfig.ipConfig.borderStyle = IPFIELD_FLAT; // (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ipfieldborder", IPFIELD_FLAT);
+	PluginConfig.m_LangPackCP = ServiceExists(MS_LANGPACK_GETCODEPAGE) ? CallService(MS_LANGPACK_GETCODEPAGE, 0, 0) : CP_ACP;
+	PluginConfig.m_SmileyButtonOverride = (BYTE)M->GetByte("smbutton_override", 1);
+	PluginConfig.m_visualMessageSizeIndicator = M->GetByte("msgsizebar", 0);
+	PluginConfig.m_autoSplit = M->GetByte("autosplit", 0);
+	PluginConfig.m_FlashOnMTN = M->GetByte(SRMSGMOD, SRMSGSET_SHOWTYPINGWINFLASH, SRMSGDEFSET_SHOWTYPINGWINFLASH);
 
-	switch (_Plugin.ipConfig.borderStyle) {
+	switch (PluginConfig.ipConfig.borderStyle) {
 		case IPFIELD_SUNKEN:
-			_Plugin.ipConfig.edgeType = BDR_SUNKENINNER;
+			PluginConfig.ipConfig.edgeType = BDR_SUNKENINNER;
 			break;
 		case IPFIELD_RAISEDINNER:
-			_Plugin.ipConfig.edgeType = BDR_RAISEDINNER;
+			PluginConfig.ipConfig.edgeType = BDR_RAISEDINNER;
 			break;
 		case IPFIELD_RAISEDOUTER:
-			_Plugin.ipConfig.edgeType = BDR_RAISEDOUTER;
+			PluginConfig.ipConfig.edgeType = BDR_RAISEDOUTER;
 			break;
 		case IPFIELD_EDGE:
-			_Plugin.ipConfig.edgeType = EDGE_BUMP;
+			PluginConfig.ipConfig.edgeType = EDGE_BUMP;
 			break;
 	}
-	_Plugin.ipConfig.edgeFlags = BF_RECT | BF_ADJUST;
+	PluginConfig.ipConfig.edgeFlags = BF_RECT | BF_ADJUST;
 	// checkversion, warn user about ansi<>unicode conflicts between core and plugin
 	{
 		char str[512];
 		CallService(MS_SYSTEM_GETVERSIONTEXT, (WPARAM)500, (LPARAM)(char*)str);
 		if (strstr(str, "Unicode")) {
-			_Plugin.bUnicodeBuild = TRUE;
+			PluginConfig.bUnicodeBuild = TRUE;
 #if !defined(_UNICODE)
 			MessageBoxA(0, "You are running a ANSI version of tabSRMM under a unicode Miranda core. This is an unsupported configuration and can cause various problems. Please consider using the UNICODE build", "Warning", MB_OK);
 #endif
@@ -2331,11 +2330,11 @@ void ReloadGlobals()
 #if defined(_UNICODE)
 			MessageBoxA(0, "You are running a UNICODE version of tabSRMM under a non-unicode Miranda core. This is an unsupported configuration and can cause various problems. Please consider using the ANSI build", "Warning", MB_OK);
 #endif
-			_Plugin.bUnicodeBuild = FALSE;
+			PluginConfig.bUnicodeBuild = FALSE;
 		}
 	}
-	_Plugin.ncm.cbSize = sizeof(NONCLIENTMETRICS);
-	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &_Plugin.ncm, 0);
+	PluginConfig.ncm.cbSize = sizeof(NONCLIENTMETRICS);
+	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &PluginConfig.ncm, 0);
 }
 
 /*
@@ -2353,10 +2352,10 @@ void GetDefaultContainerTitleFormat()
 
 	if (M->GetTString(NULL, SRMSGMOD_T, tszKeyName, &dbv)) {
 		M->WriteTString(NULL, SRMSGMOD_T, tszKeyName, _T("%n - %s"));
-		_tcsncpy(_Plugin.szDefaultTitleFormat, _T("%n - %s"), safe_sizeof(_Plugin.szDefaultTitleFormat));
+		_tcsncpy(PluginConfig.szDefaultTitleFormat, _T("%n - %s"), safe_sizeof(PluginConfig.szDefaultTitleFormat));
 	} else {
-		_tcsncpy(_Plugin.szDefaultTitleFormat, dbv.ptszVal, safe_sizeof(_Plugin.szDefaultTitleFormat));
+		_tcsncpy(PluginConfig.szDefaultTitleFormat, dbv.ptszVal, safe_sizeof(PluginConfig.szDefaultTitleFormat));
 		DBFreeVariant(&dbv);
 	}
-	_Plugin.szDefaultTitleFormat[255] = 0;
+	PluginConfig.szDefaultTitleFormat[255] = 0;
 }

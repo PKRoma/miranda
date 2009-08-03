@@ -163,7 +163,7 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			SendDlgItemMessage(hwndDlg, IDC_TEXTFORMATTING, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Force Off"));
 			SendDlgItemMessage(hwndDlg, IDC_TEXTFORMATTING, CB_SETCURSEL, iLocalFormat == 0 ? 0 : (iLocalFormat == -1 ? 3 : (iLocalFormat == SENDFORMAT_BBCODE ? 1 : 2)), 0);
 
-			if (CheckMenuItem(_Plugin.g_hMenuFavorites, (UINT_PTR)lParam, MF_BYCOMMAND | MF_UNCHECKED) == -1)
+			if (CheckMenuItem(PluginConfig.g_hMenuFavorites, (UINT_PTR)lParam, MF_BYCOMMAND | MF_UNCHECKED) == -1)
 				CheckDlgButton(hwndDlg, IDC_ISFAVORITE, FALSE);
 			else
 				CheckDlgButton(hwndDlg, IDC_ISFAVORITE, TRUE);
@@ -306,9 +306,9 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 #endif
 					if (IsDlgButtonChecked(hwndDlg, IDC_ISFAVORITE)) {
 						if (!DBGetContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", 0))
-							AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, _Plugin.g_hMenuFavorites, newCodePage);
+							AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, PluginConfig.g_hMenuFavorites, newCodePage);
 					} else
-						DeleteMenu(_Plugin.g_hMenuFavorites, (UINT_PTR)hContact, MF_BYCOMMAND);
+						DeleteMenu(PluginConfig.g_hMenuFavorites, (UINT_PTR)hContact, MF_BYCOMMAND);
 
 					DBWriteContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", (WORD)(IsDlgButtonChecked(hwndDlg, IDC_ISFAVORITE) ? 1 : 0));
 					M->WriteByte(hContact, SRMSGMOD_T, "splitoverride", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_PRIVATESPLITTER) ? 1 : 0));

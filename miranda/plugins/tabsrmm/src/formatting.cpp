@@ -427,7 +427,7 @@ extern TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNi
 	return szResult;
 }
 
-char *FilterEventMarkersA(char *szText)
+char *FilterEventMarkers(char *szText)
 {
 	std::string text(szText);
 	INT_PTR beginmark = 0, endmark = 0;

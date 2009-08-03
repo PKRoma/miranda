@@ -97,8 +97,7 @@ public:
 	void 			Create(const TCHAR *szImageFile);
 	void __fastcall	Render(const HDC hdc, const RECT *rc) const;
 	static void 	PreMultiply(HBITMAP hBitmap, int mode);
-	static void 	CorrectBitmap32Alpha(HBITMAP hBitmap);		// TODO: make this a real member function later
-
+	static void 	CorrectBitmap32Alpha(HBITMAP hBitmap);
 public:
 	bool			m_fValid;
 private:
@@ -119,7 +118,8 @@ private:
 };
 
 /**
- * Implements the skinning engine. There is only one instance of this class and it always holds the currently loaded skin (if any).
+ * Implements the skinning engine. There is only one instance of this class and
+ * it always holds the currently loaded skin (if any).
  */
 class CSkin
 {
@@ -188,6 +188,7 @@ public:
 
 private:
 	TCHAR			m_tszFileName[MAX_PATH];				// full path and filename of the currently loaded skin
+	char			m_tszFileNameA[MAX_PATH];				// compatibility (todo: remove later)
 	CSkinItem*		m_SkinItems;
 	CImageItem*		m_ImageItems;							// the list of image item objects
 	CImageItem		m_glyphItem;

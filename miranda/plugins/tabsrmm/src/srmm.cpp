@@ -98,7 +98,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK * link)
 	mir_getMMI(&mmi);
 	mir_getLI(&li);
 
-	M = new _Mim();
+	M = new CMimAPI();
 
 	SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(lfDefault), &lfDefault, FALSE);
 
@@ -267,7 +267,7 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				mir_snprintf(str, sizeof(str), Translate("Built %s %s"), __DATE__, __TIME__);
 				SetDlgItemTextA(hwndDlg, IDC_BUILDTIME, str);
 			}
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)_Plugin.g_iconContainer);
+			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)PluginConfig.g_iconContainer);
 			return TRUE;
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {

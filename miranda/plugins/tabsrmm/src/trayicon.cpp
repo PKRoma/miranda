@@ -32,29 +32,27 @@ Functions, concerning tabSRMMs system tray support. There is more in eventpopups
 #pragma hdrstop
 //#include "m_toptoolbar.h"
 
-extern  struct ContainerWindowData *pFirstContainer;
-
-BOOL    isAnimThreadRunning = TRUE;
-HANDLE  hTrayAnimThread = 0;
+static BOOL    isAnimThreadRunning = TRUE;
+static HANDLE  hTrayAnimThread = 0;
+static HICON   hIconTrayCurrent = 0;
 HANDLE  g_hEvent = 0;
-static  HICON hIconTrayCurrent = 0;
 
 static TCHAR g_eventName[100];
 
 static unsigned __stdcall TrayAnimThread(LPVOID vParam)
 {
-	int     iAnimMode = (_Plugin.m_AnimTrayIcons[0] && _Plugin.m_AnimTrayIcons[1] && _Plugin.m_AnimTrayIcons[2] &&
-						 _Plugin.m_AnimTrayIcons[3]);
+	int     iAnimMode = (PluginConfig.m_AnimTrayIcons[0] && PluginConfig.m_AnimTrayIcons[1] && PluginConfig.m_AnimTrayIcons[2] &&
+						 PluginConfig.m_AnimTrayIcons[3]);
 	DWORD   dwElapsed = 0, dwAnimStep = 0;
-	HICON   hIconDefault = iAnimMode ? _Plugin.m_AnimTrayIcons[0] : _Plugin.g_iconContainer;
+	HICON   hIconDefault = iAnimMode ? PluginConfig.m_AnimTrayIcons[0] : PluginConfig.g_iconContainer;
 	DWORD   idleTimer = 0;
 	HANDLE  hEvent = OpenEvent(EVENT_ALL_ACCESS, FALSE, g_eventName);
 
 	do {
-		if (isAnimThreadRunning && _Plugin.m_UnreadInTray == 0) {
+		if (isAnimThreadRunning && PluginConfig.m_UnreadInTray == 0) {
 			if (hIconTrayCurrent != hIconDefault)
 				FlashTrayIcon(hIconDefault);                        // restore default icon
-			_Plugin.m_TrayFlashState = 0;
+			PluginConfig.m_TrayFlashState = 0;
 			dwElapsed = 0;
 			dwAnimStep = 0;
 			WaitForSingleObject(hEvent, (nen_options.bFloaterOnlyMin && nen_options.floaterMode) ? 2000 : INFINITE);
@@ -64,22 +62,22 @@ static unsigned __stdcall TrayAnimThread(LPVOID vParam)
 		if (!isAnimThreadRunning) {
 			if (hIconTrayCurrent != hIconDefault)
 				FlashTrayIcon(hIconDefault);                        // restore default icon
-			_Plugin.m_TrayFlashState = 0;
+			PluginConfig.m_TrayFlashState = 0;
 			break;
 		}
-		if (_Plugin.m_UnreadInTray) {
+		if (PluginConfig.m_UnreadInTray) {
 			if (iAnimMode) {
 				dwAnimStep++;
 				if (dwAnimStep > 3)
 					dwAnimStep = 0;
-				FlashTrayIcon(_Plugin.m_AnimTrayIcons[dwAnimStep]);                        // restore default icon
+				FlashTrayIcon(PluginConfig.m_AnimTrayIcons[dwAnimStep]);                        // restore default icon
 			}
 			else {                                 // simple flashing
 				dwElapsed += 200;
 				if (dwElapsed >= 600) {
-					_Plugin.m_TrayFlashState = !_Plugin.m_TrayFlashState;
+					PluginConfig.m_TrayFlashState = !PluginConfig.m_TrayFlashState;
 					dwElapsed = 0;
-					FlashTrayIcon(_Plugin.m_TrayFlashState ? 0 : hIconDefault);                        // restore default icon
+					FlashTrayIcon(PluginConfig.m_TrayFlashState ? 0 : hIconDefault);                        // restore default icon
 				}
 			}
 			Sleep(200);
@@ -88,10 +86,10 @@ static unsigned __stdcall TrayAnimThread(LPVOID vParam)
 		if (idleTimer >= 2000) {
 			idleTimer = 0;
 			if (nen_options.bFloaterOnlyMin && nen_options.floaterMode) {
-				if (IsWindowVisible(_Plugin.m_hwndClist) && IsWindowVisible(_Plugin.g_hwndHotkeyHandler))
-					ShowWindow(_Plugin.g_hwndHotkeyHandler, SW_HIDE);
-				else if (!IsWindowVisible(_Plugin.m_hwndClist) && !IsWindowVisible(_Plugin.g_hwndHotkeyHandler))
-					ShowWindow(_Plugin.g_hwndHotkeyHandler, SW_SHOW);
+				if (IsWindowVisible(PluginConfig.m_hwndClist) && IsWindowVisible(PluginConfig.g_hwndHotkeyHandler))
+					ShowWindow(PluginConfig.g_hwndHotkeyHandler, SW_HIDE);
+				else if (!IsWindowVisible(PluginConfig.m_hwndClist) && !IsWindowVisible(PluginConfig.g_hwndHotkeyHandler))
+					ShowWindow(PluginConfig.g_hwndHotkeyHandler, SW_SHOW);
 			}
 		}
 	}
@@ -107,20 +105,20 @@ void CreateTrayMenus(int mode)
 		g_hEvent = CreateEvent(NULL, TRUE, FALSE, g_eventName);
 		isAnimThreadRunning = TRUE;
 		hTrayAnimThread = (HANDLE)mir_forkthreadex(TrayAnimThread, NULL, 16000, NULL);
-		_Plugin.g_hMenuTrayUnread = CreatePopupMenu();
-		_Plugin.g_hMenuFavorites = CreatePopupMenu();
-		_Plugin.g_hMenuRecent = CreatePopupMenu();
-		_Plugin.g_hMenuTrayContext = GetSubMenu(_Plugin.g_hMenuContext, 6);
-		if (_Plugin.m_WinVerMajor >= 5) {
-			ModifyMenu(_Plugin.g_hMenuTrayContext, 0, MF_BYPOSITION | MF_POPUP, (UINT_PTR)_Plugin.g_hMenuFavorites, TranslateT("Favorites"));
-			ModifyMenu(_Plugin.g_hMenuTrayContext, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR)_Plugin.g_hMenuRecent, TranslateT("Recent Sessions"));
+		PluginConfig.g_hMenuTrayUnread = CreatePopupMenu();
+		PluginConfig.g_hMenuFavorites = CreatePopupMenu();
+		PluginConfig.g_hMenuRecent = CreatePopupMenu();
+		PluginConfig.g_hMenuTrayContext = GetSubMenu(PluginConfig.g_hMenuContext, 6);
+		if (PluginConfig.m_WinVerMajor >= 5) {
+			ModifyMenu(PluginConfig.g_hMenuTrayContext, 0, MF_BYPOSITION | MF_POPUP, (UINT_PTR)PluginConfig.g_hMenuFavorites, TranslateT("Favorites"));
+			ModifyMenu(PluginConfig.g_hMenuTrayContext, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR)PluginConfig.g_hMenuRecent, TranslateT("Recent Sessions"));
 			LoadFavoritesAndRecent();
 		}
 		else {
-			DeleteMenu(_Plugin.g_hMenuTrayContext, 2, MF_BYPOSITION);
-			DeleteMenu(_Plugin.g_hMenuTrayContext, 0, MF_BYPOSITION);
-			DeleteMenu(_Plugin.g_hMenuTrayContext, 0, MF_BYPOSITION);
-			DeleteMenu(_Plugin.g_hMenuTrayContext, 0, MF_BYPOSITION);
+			DeleteMenu(PluginConfig.g_hMenuTrayContext, 2, MF_BYPOSITION);
+			DeleteMenu(PluginConfig.g_hMenuTrayContext, 0, MF_BYPOSITION);
+			DeleteMenu(PluginConfig.g_hMenuTrayContext, 0, MF_BYPOSITION);
+			DeleteMenu(PluginConfig.g_hMenuTrayContext, 0, MF_BYPOSITION);
 		}
 	}
 	else {
@@ -131,17 +129,17 @@ void CreateTrayMenus(int mode)
 		CloseHandle(g_hEvent);
 		g_hEvent = 0;
 		hTrayAnimThread = 0;
-		if (_Plugin.g_hMenuTrayUnread != 0) {
-			DestroyMenu(_Plugin.g_hMenuTrayUnread);
-			_Plugin.g_hMenuTrayUnread = 0;
+		if (PluginConfig.g_hMenuTrayUnread != 0) {
+			DestroyMenu(PluginConfig.g_hMenuTrayUnread);
+			PluginConfig.g_hMenuTrayUnread = 0;
 		}
-		if (_Plugin.g_hMenuFavorites != 0) {
-			DestroyMenu(_Plugin.g_hMenuFavorites);
-			_Plugin.g_hMenuFavorites = 0;
+		if (PluginConfig.g_hMenuFavorites != 0) {
+			DestroyMenu(PluginConfig.g_hMenuFavorites);
+			PluginConfig.g_hMenuFavorites = 0;
 		}
-		if (_Plugin.g_hMenuRecent != 0) {
-			DestroyMenu(_Plugin.g_hMenuRecent);
-			_Plugin.g_hMenuRecent = 0;
+		if (PluginConfig.g_hMenuRecent != 0) {
+			DestroyMenu(PluginConfig.g_hMenuRecent);
+			PluginConfig.g_hMenuRecent = 0;
 		}
 	}
 }
@@ -154,10 +152,10 @@ void CreateSystrayIcon(int create)
 	NOTIFYICONDATA nim;
 
 	nim.cbSize = sizeof(nim);
-	nim.hWnd = _Plugin.g_hwndHotkeyHandler;
+	nim.hWnd = PluginConfig.g_hwndHotkeyHandler;
 	nim.uID = 100;
 	nim.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
-	nim.hIcon = _Plugin.g_iconContainer;
+	nim.hIcon = PluginConfig.g_iconContainer;
 	nim.uCallbackMessage = DM_TRAYICONNOTIFY;
 	mir_sntprintf(nim.szTip, 64, _T("%s"), _T("tabSRMM"));
 	if (create && !nen_options.bTrayExist) {
@@ -170,7 +168,7 @@ void CreateSystrayIcon(int create)
 		Shell_NotifyIcon(NIM_DELETE, &nim);
 		nen_options.bTrayExist = FALSE;
 	}
-	ShowWindow(_Plugin.g_hwndHotkeyHandler, nen_options.floaterMode ? SW_SHOW : SW_HIDE);
+	ShowWindow(PluginConfig.g_hwndHotkeyHandler, nen_options.floaterMode ? SW_SHOW : SW_HIDE);
 }
 
 static BOOL CALLBACK FindTrayWnd(HWND hwnd, LPARAM lParam)
@@ -213,52 +211,8 @@ static void GetTrayWindowRect(LPRECT lprect)
 
 static BOOL RemoveTaskbarIcon(HWND hWnd)
 {
-	SetParent(hWnd, GetDlgItem(_Plugin.g_hwndHotkeyHandler, IDC_TRAYCONTAINER));
+	SetParent(hWnd, GetDlgItem(PluginConfig.g_hwndHotkeyHandler, IDC_TRAYCONTAINER));
 	return TRUE;
-}
-
-/*
- * minimise a window to the system tray, using a simple animation.
- */
-
-void MinimiseToTray(HWND hWnd, BOOL bForceAnimation)
-{
-	if (bForceAnimation) {
-		RECT rectFrom, rectTo;
-
-		GetWindowRect(hWnd, &rectFrom);
-		GetTrayWindowRect(&rectTo);
-		if (nen_options.floaterMode && IsWindowVisible(_Plugin.g_hwndHotkeyHandler))
-			GetWindowRect(_Plugin.g_hwndHotkeyHandler, &rectTo);
-		DrawAnimatedRects(hWnd, IDANI_CAPTION, &rectFrom, &rectTo);
-	}
-	RemoveTaskbarIcon(hWnd);
-	ShowWindow(hWnd, SW_HIDE);              // experimental - now works with docks like rklauncher..
-	SetWindowLongPtr(hWnd, GWL_STYLE, GetWindowLongPtr(hWnd, GWL_STYLE) & ~WS_VISIBLE);
-}
-
-void MaximiseFromTray(HWND hWnd, BOOL bForceAnimation, RECT *rectTo)
-{
-	if (bForceAnimation) {
-		RECT rectFrom;
-
-		GetTrayWindowRect(&rectFrom);
-		if (nen_options.floaterMode && IsWindowVisible(_Plugin.g_hwndHotkeyHandler))
-			GetWindowRect(_Plugin.g_hwndHotkeyHandler, &rectFrom);
-		SetParent(hWnd, NULL);
-		DrawAnimatedRects(hWnd, IDANI_CAPTION, &rectFrom, rectTo);
-	}
-	else
-		SetParent(hWnd, NULL);
-
-	ShowWindow(hWnd, SW_SHOW);
-	SetWindowLongPtr(hWnd, GWL_STYLE, GetWindowLongPtr(hWnd, GWL_STYLE) | WS_VISIBLE);
-	RedrawWindow(hWnd, NULL, NULL, RDW_UPDATENOW | RDW_ALLCHILDREN | RDW_FRAME |
-				 RDW_INVALIDATE | RDW_ERASE);
-
-	SetActiveWindow(_Plugin.g_hwndHotkeyHandler);
-	SetActiveWindow(hWnd);
-	SetForegroundWindow(hWnd);
 }
 
 /*
@@ -271,21 +225,21 @@ void FlashTrayIcon(HICON hIcon)
 {
 	NOTIFYICONDATA nim;
 
-	if (_Plugin.m_WinVerMajor < 5)
+	if (PluginConfig.m_WinVerMajor < 5)
 		return;
 
 	hIconTrayCurrent = hIcon;
 
 	if (nen_options.bTraySupport) {
 		nim.cbSize = sizeof(nim);
-		nim.hWnd = _Plugin.g_hwndHotkeyHandler;
+		nim.hWnd = PluginConfig.g_hwndHotkeyHandler;
 		nim.uID = 100;
 		nim.uFlags = NIF_ICON;
 		nim.hIcon = hIcon;
 		Shell_NotifyIcon(NIM_MODIFY, &nim);
 	}
-	else if (IsWindowVisible(_Plugin.g_hwndHotkeyHandler) && !nen_options.bTraySupport) {
-		SendDlgItemMessage(_Plugin.g_hwndHotkeyHandler, IDC_TRAYICON, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hIcon);
+	else if (IsWindowVisible(PluginConfig.g_hwndHotkeyHandler) && !nen_options.bTraySupport) {
+		SendDlgItemMessage(PluginConfig.g_hwndHotkeyHandler, IDC_TRAYICON, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hIcon);
 	}
 }
 
@@ -294,12 +248,12 @@ void RemoveBalloonTip()
 	NOTIFYICONDATA nim;
 
 	nim.cbSize = sizeof(nim);
-	nim.hWnd = _Plugin.g_hwndHotkeyHandler;
+	nim.hWnd = PluginConfig.g_hwndHotkeyHandler;
 	nim.uID = 100;
 	nim.uFlags = NIF_INFO;
 	nim.szInfo[0] = 0;
 	Shell_NotifyIcon(NIM_MODIFY, &nim);
-	_Plugin.m_TipOwner = (HANDLE)0;
+	PluginConfig.m_TipOwner = (HANDLE)0;
 }
 
 /*
@@ -356,12 +310,12 @@ void AddContactToFavorites(HANDLE hContact, TCHAR *szNickname, char *szProto, TC
 	mii.cbSize = sizeof(mii);
 	mir_sntprintf(szMenuEntry, safe_sizeof(szMenuEntry), _T("%s: %s (%s)"), szFinalProto, szFinalNick, szStatus);
 	if (mode) {
-		if (hMenu == _Plugin.g_hMenuRecent) {
+		if (hMenu == PluginConfig.g_hMenuRecent) {
 			if (CheckMenuItem(hMenu, (UINT_PTR)hContact, MF_BYCOMMAND | MF_UNCHECKED) == 0) {
 				DeleteMenu(hMenu, (UINT_PTR)hContact, MF_BYCOMMAND);
 				goto addnew;                                            // move to the end of the menu...
 			}
-			if (GetMenuItemCount(_Plugin.g_hMenuRecent) > nen_options.wMaxRecent) {           // throw out oldest entry in the recent menu...
+			if (GetMenuItemCount(PluginConfig.g_hMenuRecent) > nen_options.wMaxRecent) {           // throw out oldest entry in the recent menu...
 				UINT uid = GetMenuItemID(hMenu, 0);
 				if (uid) {
 					DeleteMenu(hMenu, (UINT_PTR)0, MF_BYPOSITION);
@@ -372,24 +326,24 @@ addnew:
 			M->WriteDword(hContact, SRMSGMOD_T, "isRecent", time(NULL));
 			AppendMenu(hMenu, MF_BYCOMMAND, (UINT_PTR)hContact, szMenuEntry);
 		}
-		else if (hMenu == _Plugin.g_hMenuFavorites) {            // insert the item sorted...
+		else if (hMenu == PluginConfig.g_hMenuFavorites) {            // insert the item sorted...
 			MENUITEMINFO mii2 = {0};
 			TCHAR szBuffer[142];
-			int i, c = GetMenuItemCount(_Plugin.g_hMenuFavorites);
+			int i, c = GetMenuItemCount(PluginConfig.g_hMenuFavorites);
 			mii2.fMask = MIIM_STRING;
 			mii2.cbSize = sizeof(mii2);
 			if (c == 0)
-				InsertMenu(_Plugin.g_hMenuFavorites, 0, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntry);
+				InsertMenu(PluginConfig.g_hMenuFavorites, 0, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntry);
 			else {
 				for (i = 0; i <= c; i++) {
 					mii2.cch = 0;
 					mii2.dwTypeData = NULL;
-					GetMenuItemInfo(_Plugin.g_hMenuFavorites, i, TRUE, &mii2);
+					GetMenuItemInfo(PluginConfig.g_hMenuFavorites, i, TRUE, &mii2);
 					mii2.cch++;
 					mii2.dwTypeData = szBuffer;
-					GetMenuItemInfo(_Plugin.g_hMenuFavorites, i, TRUE, &mii2);
+					GetMenuItemInfo(PluginConfig.g_hMenuFavorites, i, TRUE, &mii2);
 					if (_tcsncmp((TCHAR *)mii2.dwTypeData, szMenuEntry, 140) > 0 || i == c) {
-						InsertMenu(_Plugin.g_hMenuFavorites, i, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntry);
+						InsertMenu(PluginConfig.g_hMenuFavorites, i, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntry);
 						break;
 					}
 				}
@@ -431,7 +385,7 @@ void LoadFavoritesAndRecent()
 	if (recentEntries != NULL) {
 		while (hContact != 0) {
 			if (DBGetContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", 0))
-				AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, _Plugin.g_hMenuFavorites, M->GetDword(hContact, "ANSIcodepage", _Plugin.m_LangPackCP));
+				AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, PluginConfig.g_hMenuFavorites, M->GetDword(hContact, "ANSIcodepage", PluginConfig.m_LangPackCP));
 			if ((dwRecent = M->GetDword(hContact, "isRecent", 0)) != 0 && iIndex < nen_options.wMaxRecent) {
 				recentEntries[iIndex].dwTimestamp = dwRecent;
 				recentEntries[iIndex++].hContact = hContact;
@@ -453,7 +407,7 @@ void LoadFavoritesAndRecent()
 			}
 		}
 		for (i = 0; i < iIndex; i++)
-			AddContactToFavorites(recentEntries[i].hContact, NULL, NULL, NULL, 0, 0, 1, _Plugin.g_hMenuRecent, M->GetDword(recentEntries[i].hContact, "ANSIcodepage", _Plugin.m_LangPackCP));
+			AddContactToFavorites(recentEntries[i].hContact, NULL, NULL, NULL, 0, 0, 1, PluginConfig.g_hMenuRecent, M->GetDword(recentEntries[i].hContact, "ANSIcodepage", PluginConfig.m_LangPackCP));
 
 		free(recentEntries);
 	}

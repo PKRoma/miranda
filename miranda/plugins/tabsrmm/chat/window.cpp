@@ -219,7 +219,7 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct _MessageWindowData *dat,
 		if (dat->dwFlags & MWF_NEEDCHECKSIZE)
 			PostMessage(hwndDlg, DM_SAVESIZE, 0, 0);
 
-		if (_Plugin.m_AutoLocaleSupport && dat->hContact != 0) {
+		if (PluginConfig.m_AutoLocaleSupport && dat->hContact != 0) {
 			if (dat->hkl == 0)
 				//DM_LoadLocale(hwndDlg, dat);
 				PostMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
@@ -265,9 +265,9 @@ static void	InitButtons(HWND hwndDlg, SESSION_INFO* si)
 
 	int i = 0;
 
-	SendDlgItemMessage(hwndDlg, IDC_SHOWNICKLIST, BM_SETIMAGE, IMAGE_ICON, bNicklistEnabled ? (LPARAM)_Plugin.g_buttonBarIcons[36] : (LPARAM)_Plugin.g_buttonBarIcons[35]);
-	SendDlgItemMessage(hwndDlg, IDC_FILTER, BM_SETIMAGE, IMAGE_ICON, bFilterEnabled ? (LPARAM)_Plugin.g_buttonBarIcons[34] : (LPARAM)_Plugin.g_buttonBarIcons[33]);
-	SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BM_SETIMAGE, IMAGE_ICON, (LPARAM)_Plugin.g_buttonBarIcons[25]);
+	SendDlgItemMessage(hwndDlg, IDC_SHOWNICKLIST, BM_SETIMAGE, IMAGE_ICON, bNicklistEnabled ? (LPARAM)PluginConfig.g_buttonBarIcons[36] : (LPARAM)PluginConfig.g_buttonBarIcons[35]);
+	SendDlgItemMessage(hwndDlg, IDC_FILTER, BM_SETIMAGE, IMAGE_ICON, bFilterEnabled ? (LPARAM)PluginConfig.g_buttonBarIcons[34] : (LPARAM)PluginConfig.g_buttonBarIcons[33]);
+	SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BM_SETIMAGE, IMAGE_ICON, (LPARAM)PluginConfig.g_buttonBarIcons[25]);
 
 	if (pInfo) {
 		EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_BOLD), pInfo->bBold);
@@ -332,14 +332,14 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 		EnableWindow(GetDlgItem(hwndDlg, IDC_FILTER), FALSE);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_CHANMGR), FALSE);
 	}
-	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_TOGGLESIDEBAR), _Plugin.m_SideBarEnabled ? SW_SHOW : SW_HIDE);
+	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_TOGGLESIDEBAR), PluginConfig.m_SideBarEnabled ? SW_SHOW : SW_HIDE);
 
 	switch (urc->wId) {
 		case IDC_CHAT_LOG:
 			urc->rcItem.top = bTabs ? (bTabBottom ? 0 : rcTabs.top - 1) : 0;
 			urc->rcItem.left = 0;
 			urc->rcItem.right = bNick ? urc->dlgNewSize.cx - si->iSplitterX : urc->dlgNewSize.cx;
-			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY - (_Plugin.g_DPIscaleY > 1.0 ? DPISCALEY(24) : DPISCALEY(23))) : (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(2));
+			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY - (PluginConfig.g_DPIscaleY > 1.0 ? DPISCALEY(24) : DPISCALEY(23))) : (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(2));
 			//if (!splitterEdges)
 			//	urc->rcItem.bottom += 2;
 			if (dat->pContainer->bSkinned) {
@@ -382,7 +382,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 			urc->rcItem.right = urc->dlgNewSize.cx;
 			urc->rcItem.top = (bToolbar&&!bBottomToolbar) ? urc->dlgNewSize.cy - si->iSplitterY : urc->dlgNewSize.cy - si->iSplitterY;
 			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY + DPISCALEY(2)) : (urc->dlgNewSize.cy - si->iSplitterY + DPISCALEY(2));
-			if (_Plugin.m_SideBarEnabled)
+			if (PluginConfig.m_SideBarEnabled)
 				urc->rcItem.left = 9;
 			else
 				urc->rcItem.left = 0;
@@ -396,7 +396,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 			urc->rcItem.bottom = urc->dlgNewSize.cy; // - 1 ;
 			msgBottom = urc->rcItem.bottom;
 			msgTop = urc->rcItem.top;
-			if (_Plugin.m_SideBarEnabled)
+			if (PluginConfig.m_SideBarEnabled)
 				urc->rcItem.left += 9;
 			//mad
 			if (bBottomToolbar&&bToolbar)
@@ -585,18 +585,18 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			BOOL isMenu = GetKeyState(VK_MENU) & 0x8000;
 
 			//MAD: sound on typing..
-			if(_Plugin.g_bSoundOnTyping&&!isMenu&&!isCtrl&&!(mwdat->pContainer->dwFlags&CNT_NOSOUND)&&wParam!=VK_ESCAPE&&!(wParam==VK_TAB&&_Plugin.m_AllowTab))
+			if(PluginConfig.g_bSoundOnTyping&&!isMenu&&!isCtrl&&!(mwdat->pContainer->dwFlags&CNT_NOSOUND)&&wParam!=VK_ESCAPE&&!(wParam==VK_TAB&&PluginConfig.m_AllowTab))
 				SkinPlaySound("SoundOnTyping");
 			//MAD
 
-			if (wParam == 0x0d && isCtrl && _Plugin.m_MathModAvail) {
+			if (wParam == 0x0d && isCtrl && PluginConfig.m_MathModAvail) {
 				TCHAR toInsert[100];
 				BYTE keyState[256];
 				size_t i;
-				size_t iLen = _tcslen(_Plugin.m_MathModStartDelimiter);
+				size_t iLen = _tcslen(PluginConfig.m_MathModStartDelimiter);
 				ZeroMemory(keyState, 256);
-				_tcsncpy(toInsert, _Plugin.m_MathModStartDelimiter, 30);
-				_tcsncat(toInsert, _Plugin.m_MathModStartDelimiter, 30);
+				_tcsncpy(toInsert, PluginConfig.m_MathModStartDelimiter, 30);
+				_tcsncat(toInsert, PluginConfig.m_MathModStartDelimiter, 30);
 				SendMessage(hwnd, EM_REPLACESEL, TRUE, (LPARAM)toInsert);
 				SetKeyboardState(keyState);
 				for (i = 0; i < iLen; i++)
@@ -615,21 +615,21 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 
 			if (wParam == '\n' || wParam == '\r') {
 				if (isShift) {
-					if (!_Plugin.m_SendOnShiftEnter)
+					if (!PluginConfig.m_SendOnShiftEnter)
 						break;
 
 					PostMessage(hwndParent, WM_COMMAND, IDOK, 0);
 					return 0;
 				}
-				if ((isCtrl && !isShift) ^(0 != _Plugin.m_SendOnEnter)) {
+				if ((isCtrl && !isShift) ^(0 != PluginConfig.m_SendOnEnter)) {
 					PostMessage(hwndParent, WM_COMMAND, IDOK, 0);
 					return 0;
 				}
-				if (_Plugin.m_SendOnEnter || _Plugin.m_SendOnDblEnter) {
+				if (PluginConfig.m_SendOnEnter || PluginConfig.m_SendOnDblEnter) {
 					if (isCtrl)
 						break;
 					else {
-						if (_Plugin.m_SendOnDblEnter) {
+						if (PluginConfig.m_SendOnDblEnter) {
 							if (dat->lastEnterTime + 2 < time(NULL)) {
 								dat->lastEnterTime = time(NULL);
 								break;
@@ -659,7 +659,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 			BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
 			//MAD: sound on typing..
-			if(_Plugin.g_bSoundOnTyping&&!isAlt&&wParam == VK_DELETE)
+			if(PluginConfig.g_bSoundOnTyping&&!isAlt&&wParam == VK_DELETE)
 				SkinPlaySound("SoundOnTyping");
 			//
 			if (wParam == VK_INSERT && !isShift && !isCtrl && !isAlt) {
@@ -704,17 +704,17 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				dat->iSavedSpaces = 0;
 
 				if (isShift) {
-					if (_Plugin.m_SendOnShiftEnter) {
+					if (PluginConfig.m_SendOnShiftEnter) {
 						PostMessage(hwndParent, WM_COMMAND, IDOK, 0);
 						return 0;
 					} else
 						break;
 				}
 
-				if (((isCtrl) != 0) ^(0 != _Plugin.m_SendOnEnter))
+				if (((isCtrl) != 0) ^(0 != PluginConfig.m_SendOnEnter))
 					return 0;
 
-				if (_Plugin.m_SendOnDblEnter)
+				if (PluginConfig.m_SendOnDblEnter)
 					if (dat->lastEnterTime + 2 >= time(NULL))
 						return 0;
 
@@ -1069,7 +1069,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			return DefWindowProc(hwnd, WM_INPUTLANGCHANGEREQUEST, wParam, lParam);
 
 		case WM_INPUTLANGCHANGE:
-			if (_Plugin.m_AutoLocaleSupport && GetFocus() == hwnd && mwdat->pContainer->hwndActive == hwndParent && GetForegroundWindow() == mwdat->pContainer->hwnd && GetActiveWindow() == mwdat->pContainer->hwnd)
+			if (PluginConfig.m_AutoLocaleSupport && GetFocus() == hwnd && mwdat->pContainer->hwndActive == hwndParent && GetForegroundWindow() == mwdat->pContainer->hwnd && GetActiveWindow() == mwdat->pContainer->hwnd)
 				DM_SaveLocale(hwndParent, mwdat, wParam, lParam);
 
 			return 1;
@@ -1544,7 +1544,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 		//MAD: attemp to fix weird bug, when combobox with hidden vscroll
 		//can't be scrolled with mouse-wheel.
 		case WM_NCCALCSIZE: {
-		   if (CSkin::m_DisableScrollbars && _Plugin.g_NickListScrollBarFix) {
+		   if (CSkin::m_DisableScrollbars && PluginConfig.g_NickListScrollBarFix) {
 			RECT lpRect;
 			LONG itemHeight;
 
@@ -1587,7 +1587,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 		//MAD
 		case WM_MOUSEWHEEL: {
-			if (CSkin::m_DisableScrollbars && _Plugin.g_NickListScrollBarFix)
+			if (CSkin::m_DisableScrollbars && PluginConfig.g_NickListScrollBarFix)
 				{
 				UINT uScroll;
 				int dLines;
@@ -1979,7 +1979,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 			//SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETOLECALLBACK, 0, (LPARAM) mREOLECallback);
 			//MAD
-			_Plugin.g_NickListScrollBarFix = M->GetByte("adv_ScrollBarFix", 1);
+			PluginConfig.g_NickListScrollBarFix = M->GetByte("adv_ScrollBarFix", 1);
 
 			BB_InitDlgButtons(hwndDlg,dat);
 			//TODO: unify "change font color" button behavior in IM and Chat windows
@@ -2010,7 +2010,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), TRUE);
 
-			if (_Plugin.g_hMenuTrayUnread != 0 && dat->hContact != 0 && dat->szProto != NULL)
+			if (PluginConfig.g_hMenuTrayUnread != 0 && dat->hContact != 0 && dat->szProto != NULL)
 				UpdateTrayMenu(0, dat->wStatus, dat->szProto, dat->szStatus, dat->hContact, FALSE);
 
 			DM_ThemeChanged(hwndDlg, dat);
@@ -2210,7 +2210,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 					lstrcpyn(szFinalStatusBarText, ptszDispName, SIZEOF(szFinalStatusBarText));
 
 				SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM)szFinalStatusBarText);
-				SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? _Plugin.g_buttonBarIcons[16] : 0));
+				SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? PluginConfig.g_buttonBarIcons[16] : 0));
 //				SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXT, 0, (LPARAM)szFinalStatusBarText);
 				UpdateStatusBar(hwndDlg, dat);
 				mir_free(ptszDispName);
@@ -2760,7 +2760,7 @@ LABEL_SHOWWINDOW:
 						if (si->iType != GCW_SERVER && !(si->dwFlags & GC_UNICODE)) {
 							pos = GetMenuItemCount(hMenu);
 							RemoveMenu(hMenu, pos - 1, MF_BYPOSITION);
-							RemoveMenu(_Plugin.g_hMenuEncoding, 1, MF_BYPOSITION);
+							RemoveMenu(PluginConfig.g_hMenuEncoding, 1, MF_BYPOSITION);
 						}
 						DestroyGCMenu(&hMenu, 5);
 					}
@@ -3107,7 +3107,7 @@ LABEL_SHOWWINDOW:
 					smaddInfo.yPosition = rc.top + 24;
 					smaddInfo.hContact = si->hContact;
 					smaddInfo.hwndParent = dat->pContainer->hwnd;
-					if (_Plugin.g_SmileyAddAvail)
+					if (PluginConfig.g_SmileyAddAvail)
 						CallService(MS_SMILEYADD_SHOWSELECTION, 0, (LPARAM) &smaddInfo);
 				}
 				break;
@@ -3353,11 +3353,11 @@ LABEL_SHOWWINDOW:
 		}
 
 		case WM_CLOSE:
-			if (wParam == 0 && lParam == 0 && !_Plugin.m_EscapeCloses) {
+			if (wParam == 0 && lParam == 0 && !PluginConfig.m_EscapeCloses) {
 				SendMessage(dat->pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
 				return TRUE;
 			}
-			if (lParam && _Plugin.m_WarnOnClose)
+			if (lParam && PluginConfig.m_WarnOnClose)
 				if (MessageBox(dat->pContainer->hwnd, TranslateTS(szWarnClose), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO)
 					return TRUE;
 
@@ -3378,7 +3378,7 @@ LABEL_SHOWWINDOW:
 		#else
 			M->WriteTString(dat->hContact, SRMSGMOD_T, "container", szNewName);
 		#endif
-			PostMessage(_Plugin.g_hwndHotkeyHandler, DM_DOCREATETAB_CHAT, (WPARAM)pNewContainer, (LPARAM)hwndDlg);
+			PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_DOCREATETAB_CHAT, (WPARAM)pNewContainer, (LPARAM)hwndDlg);
 			if (iOldItems > 1)                // there were more than 1 tab, container is still valid
 				SendMessage(dat->pContainer->hwndActive, WM_SIZE, 0, 0);
 			SetForegroundWindow(pNewContainer->hwnd);
@@ -3460,7 +3460,7 @@ LABEL_SHOWWINDOW:
 		case DM_SETLOCALE:
 			if (dat->dwFlags & MWF_WASBACKGROUNDCREATE)
 				break;
-			if (dat->pContainer->hwndActive == hwndDlg && _Plugin.m_AutoLocaleSupport && dat->hContact != 0 && dat->pContainer->hwnd == GetForegroundWindow() && dat->pContainer->hwnd == GetActiveWindow()) {
+			if (dat->pContainer->hwndActive == hwndDlg && PluginConfig.m_AutoLocaleSupport && dat->hContact != 0 && dat->pContainer->hwnd == GetForegroundWindow() && dat->pContainer->hwnd == GetActiveWindow()) {
 				if (lParam == 0) {
 					if (GetKeyboardLayout(0) != dat->hkl) {
 						ActivateKeyboardLayout(dat->hkl, 0);
@@ -3604,8 +3604,8 @@ LABEL_SHOWWINDOW:
 			DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
 
 			UpdateTrayMenuState(dat, FALSE);               // remove me from the tray menu (if still there)
-			if (_Plugin.g_hMenuTrayUnread)
-				DeleteMenu(_Plugin.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, MF_BYCOMMAND);
+			if (PluginConfig.g_hMenuTrayUnread)
+				DeleteMenu(PluginConfig.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, MF_BYCOMMAND);
 
 			if (dat->hSmileyIcon)
 				DestroyIcon(dat->hSmileyIcon);

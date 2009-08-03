@@ -601,7 +601,7 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				hListHeading5 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Icons to display in the tray and the message window tabs / title"), M->GetByte("Chat", "Branch5Exp", 0) ? TRUE : FALSE);
 				hListHeading7 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Log these events to the log file (when file logging is enabled)"), M->GetByte("Chat", "Branch7Exp", 0) ? TRUE : FALSE);
 
-				if (_Plugin.g_PopupAvail)
+				if (PluginConfig.g_PopupAvail)
 					hListHeading6 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Pop-ups to display"), M->GetByte("Chat", "Branch6Exp", 0) ? TRUE : FALSE);
 				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading1, branch1, SIZEOF(branch1), 0x0000);
 				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading2, branch2, SIZEOF(branch2), 0x0000);
@@ -734,7 +734,7 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 								SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch5, sizeof(branch5) / sizeof(branch5[0]));
 								SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch7, SIZEOF(branch7));
 
-								if (_Plugin.g_PopupAvail)
+								if (PluginConfig.g_PopupAvail)
 									SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch6, sizeof(branch6) / sizeof(branch6[0]));
 								LoadGlobalSettings();
 								MM_FontsChanged();
@@ -760,7 +760,7 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 			M->WriteByte("Chat", "Branch4Exp", b);
 			b = TreeView_GetItemState(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading5, TVIS_EXPANDED) & TVIS_EXPANDED ? 1 : 0;
 			M->WriteByte("Chat", "Branch5Exp", b);
-			if (_Plugin.g_PopupAvail) {
+			if (PluginConfig.g_PopupAvail) {
 				b = TreeView_GetItemState(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading6, TVIS_EXPANDED) & TVIS_EXPANDED ? 1 : 0;
 				M->WriteByte("Chat", "Branch6Exp", b);
 			}
@@ -1382,7 +1382,7 @@ int Chat_OptionsInitialize(WPARAM wParam, LPARAM lParam)
 	if (!g_chat_integration_enabled)
 		return 0;
 
-	if (_Plugin.g_PopupAvail) {
+	if (PluginConfig.g_PopupAvail) {
 		odp.cbSize = sizeof(odp);
 		odp.position = 910000002;
 		odp.hInstance = g_hInst;

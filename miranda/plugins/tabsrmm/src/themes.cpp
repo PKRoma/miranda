@@ -45,7 +45,6 @@ CSkin* Skin = 0;
 
 extern char *TemplateNames[];
 extern TemplateSet LTR_Active, RTL_Active;
-extern struct ContainerWindowData *pFirstContainer;
 extern int          g_chat_integration_enabled;
 
 static void __inline gradientVertical(UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UCHAR *ubBlueFinal,
@@ -1046,7 +1045,7 @@ static CSkinItem StatusItem_Default = {
 static HBITMAP LoadPNG(const TCHAR *szFilename)
 {
 	HBITMAP hBitmap = 0;
-	hBitmap = (HBITMAP)CallService("IMG/Load",  (WPARAM)szFilename,  2);
+	hBitmap = (HBITMAP)CallService("IMG/Load", (WPARAM)szFilename,  2);
 	//hBitmap = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM)szFilename);
 	if (hBitmap != 0)
 		CImageItem::CorrectBitmap32Alpha(hBitmap);
@@ -1216,9 +1215,10 @@ void CImageItem::Free()
 {
 	if(m_hdc ) {
 		::SelectObject(m_hdc, m_hbmOld);
-		::DeleteObject(m_hbm);
 		::DeleteDC(m_hdc);
 	}
+	if(m_hbm)
+		::DeleteObject(m_hbm);
 
 	if(m_fillBrush)
 		::DeleteObject(m_fillBrush);
@@ -1315,6 +1315,13 @@ void CSkin::setFileName()
 	}
 	else
 		m_tszFileName[0] = 0;
+
+	/*
+	 * ANSI filename is kept for compatibility reasons. will go away at some time
+	 */
+
+	if(m_tszFileName[0])
+		WideCharToMultiByte(CP_ACP, 0, m_tszFileName, MAX_PATH, m_tszFileNameA, MAX_PATH, 0, 0);
 
 	m_fLoadOnStartup = M->GetByte("useskin", 0) ? true : false;
 }
@@ -1423,7 +1430,11 @@ void CSkin::Unload()
 
 	m_closeIcon = m_maxIcon = m_minIcon = 0;
 
-	M->getAeroState();
+	for(i = 0; i < m_nrSkinIcons; i++) {
+		if(m_skinIcons[i].phIcon )
+			::DestroyIcon(*(m_skinIcons[i].phIcon));
+	}
+	M->getAeroState();				// refresh after unload
 }
 
 void CSkin::LoadIcon(const TCHAR *szSection, const TCHAR *name, HICON *hIcon)
@@ -1535,6 +1546,7 @@ void CSkin::ReadImageItem(const TCHAR *itemname)
 			m_glyphItem = tmpItem;
 			m_fHaveGlyph = true;
 		}
+		tmpItem.Clear();
 		delete szImageFileName;
 		return;
 	}
@@ -1553,8 +1565,10 @@ void CSkin::ReadImageItem(const TCHAR *itemname)
 				if (!(tmpItem.getFlags() & IMAGE_GLYPH)) {
 					if(szImageFileName)
 						tmpItem.Create(szImageFileName);
-					else
+					else {
+						tmpItem.Clear();
 						return;							// no reference to the glpyh image and no valid image file name -> invalid item
+					}
 				}
 				if (tmpItem.getHbm() || (tmpItem.getFlags() & IMAGE_GLYPH)) {
 					CImageItem *newItem = new CImageItem(tmpItem);
@@ -1647,7 +1661,7 @@ void CSkin::ReadButtonItem(const TCHAR *itemName) const
 
 	if (GetPrivateProfileInt(itemName, _T("Sidebar"), 0, m_tszFileName)) {
 		tmpItem.dwFlags |= BUTTON_ISSIDEBAR;
-		_Plugin.m_SideBarEnabled = TRUE;
+		PluginConfig.m_SideBarEnabled = TRUE;
 		SIDEBARWIDTH = max(tmpItem.width + 2, SIDEBARWIDTH);
 	}
 
@@ -1805,6 +1819,7 @@ create_it:
 	}
 #ifdef _UNICODE
 	mir_free(szItemNameA);
+	mir_free(szFileNameA);
 #endif
 	return;
 }
@@ -1903,8 +1918,8 @@ void CSkin::Load()
 			m_DisableScrollbars = GetPrivateProfileInt(_T("Global"), _T("NoScrollbars"), 0, m_tszFileName) ? true : false;
 
 			data = GetPrivateProfileInt(_T("Global"), _T("SkinnedTabs"), 1, m_tszFileName);
-			_Plugin.m_TabAppearance = data ? _Plugin.m_TabAppearance | TCF_NOSKINNING : _Plugin.m_TabAppearance & ~TCF_NOSKINNING;
-			M->WriteDword(SRMSGMOD_T, "tabconfig", _Plugin.m_TabAppearance);
+			PluginConfig.m_TabAppearance = data ? PluginConfig.m_TabAppearance | TCF_NOSKINNING : PluginConfig.m_TabAppearance & ~TCF_NOSKINNING;
+			M->WriteDword(SRMSGMOD_T, "tabconfig", PluginConfig.m_TabAppearance);
 
 			m_SkinnedFrame_left = GetPrivateProfileInt(_T("WindowFrame"), _T("left"), 4, m_tszFileName);
 			m_SkinnedFrame_right = GetPrivateProfileInt(_T("WindowFrame"), _T("right"), 4, m_tszFileName);
@@ -1924,28 +1939,29 @@ void CSkin::Load()
 			m_sidebarBottomOffset = GetPrivateProfileInt(_T("ClientArea"), _T("SidebarBottom"), -1, m_tszFileName);
 
 			m_bClipBorder = GetPrivateProfileInt(_T("WindowFrame"), _T("ClipFrame"), 0, m_tszFileName) ? true : false;;
-			{
-				BYTE radius_tl, radius_tr, radius_bl, radius_br;
-				TCHAR szFinalName[MAX_PATH];
-				TCHAR szDrive[MAX_PATH], szPath[MAX_PATH];
 
-				radius_tl = GetPrivateProfileInt(_T("WindowFrame"), _T("RadiusTL"), 0, m_tszFileName);
-				radius_tr = GetPrivateProfileInt(_T("WindowFrame"), _T("RadiusTR"), 0, m_tszFileName);
-				radius_bl = GetPrivateProfileInt(_T("WindowFrame"), _T("RadiusBL"), 0, m_tszFileName);
-				radius_br = GetPrivateProfileInt(_T("WindowFrame"), _T("RadiusBR"), 0, m_tszFileName);
+			BYTE radius_tl, radius_tr, radius_bl, radius_br;
+			char szFinalName[MAX_PATH];
+			char szDrive[MAX_PATH], szPath[MAX_PATH];
+			char bufferA[MAX_PATH];
 
-				CSkin::m_bRoundedCorner = radius_tl;
+			radius_tl = GetPrivateProfileInt(_T("WindowFrame"), _T("RadiusTL"), 0, m_tszFileName);
+			radius_tr = GetPrivateProfileInt(_T("WindowFrame"), _T("RadiusTR"), 0, m_tszFileName);
+			radius_bl = GetPrivateProfileInt(_T("WindowFrame"), _T("RadiusBL"), 0, m_tszFileName);
+			radius_br = GetPrivateProfileInt(_T("WindowFrame"), _T("RadiusBR"), 0, m_tszFileName);
 
-				GetPrivateProfileString(_T("Theme"), _T("File"), _T("None"), buffer, MAX_PATH, m_tszFileName);
+			CSkin::m_bRoundedCorner = radius_tl;
 
-				_tsplitpath(m_tszFileName, szDrive, szPath, NULL, NULL);
-				mir_sntprintf(szFinalName, MAX_PATH, _T("%s\\%s\\%s"), szDrive, szPath, buffer);
-				if (PathFileExists(szFinalName)) {
-					ReadThemeFromINI((char *)szFinalName, 0, FALSE, m_fLoadOnStartup ? 0 : M->GetByte("skin_loadmode", 0));
-					CacheLogFonts();
-					CacheMsgLogIcons();
-				}
+			GetPrivateProfileStringA("Theme", "File", "None", bufferA, MAX_PATH, m_tszFileNameA);
+
+			_splitpath(m_tszFileNameA, szDrive, szPath, NULL, NULL);
+			mir_snprintf(szFinalName, MAX_PATH, "%s\\%s\\%s", szDrive, szPath, bufferA);
+			if (PathFileExistsA(szFinalName)) {
+				ReadThemeFromINI(szFinalName, 0, FALSE, m_fLoadOnStartup ? 0 : M->GetByte("skin_loadmode", 0));
+				CacheLogFonts();
+				CacheMsgLogIcons();
 			}
+
 			GetPrivateProfileString(_T("Global"), _T("MenuBarBG"), _T("None"), buffer, 20, m_tszFileName);
 			data = HexStringToLong(buffer);
 			if (m_MenuBGBrush) {
@@ -1966,9 +1982,9 @@ void CSkin::Load()
 
 			GetPrivateProfileString(_T("Global"), _T("FontColor"), _T("None"), buffer, 20, m_tszFileName);
 			if (_tcscmp(buffer, _T("None")))
-				_Plugin.skinDefaultFontColor = HexStringToLong(buffer);
+				PluginConfig.skinDefaultFontColor = HexStringToLong(buffer);
 			else
-				_Plugin.skinDefaultFontColor = GetSysColor(COLOR_BTNTEXT);
+				PluginConfig.skinDefaultFontColor = GetSysColor(COLOR_BTNTEXT);
 			buffer[499] = 0;
 			free(szSections);
 
@@ -2083,17 +2099,17 @@ void CSkin::SkinDrawBG(HWND hwndClient, HWND hwnd, struct ContainerWindowData *p
 	LONG height = rcClient->bottom - rcClient->top;
 	HDC dc;
 
-	GetWindowRect(hwndClient, &rcWindow);
+	::GetWindowRect(hwndClient, &rcWindow);
 	pt.x = rcWindow.left + rcClient->left;
 	pt.y = rcWindow.top + rcClient->top;
-	ScreenToClient(hwnd, &pt);
+	::ScreenToClient(hwnd, &pt);
 	if (pContainer)
 		dc = pContainer->cachedDC;
 	else
-		dc = GetDC(hwnd);
-	BitBlt(hdcTarget, rcClient->left, rcClient->top, width, height, dc, pt.x, pt.y, SRCCOPY);
+		dc = ::GetDC(hwnd);
+	::BitBlt(hdcTarget, rcClient->left, rcClient->top, width, height, dc, pt.x, pt.y, SRCCOPY);
 	if (!pContainer)
-		ReleaseDC(hwnd, dc);
+		::ReleaseDC(hwnd, dc);
 }
 
 /**
@@ -2184,7 +2200,9 @@ void CSkin::DrawDimmedIcon(HDC hdc, LONG left, LONG top, LONG dx, LONG dy, HICON
 /**
  * convert a html-style color string (without the #) to a 32bit COLORREF value
  *
- * @param szSource char*: the color value as string. format: html-style without the leading #. e.g. "f3e355"
+ * @param szSource TCHAR*: the color value as string. format:
+ *  			   html-style without the leading #. e.g.
+ *  			   "f3e355"
  *
  * @return COLORREF representation of the string value.
  */

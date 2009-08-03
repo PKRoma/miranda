@@ -36,7 +36,6 @@ $Id: tabctrl.c 9269 2009-03-29 03:05:20Z nightwish2004 $
 #pragma hdrstop
 
 static WNDPROC		OldTabControlClassProc;
-extern struct		ContainerWindowData *pFirstContainer;
 extern ButtonSet	g_ButtonSet;
 
 static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -340,30 +339,30 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 		HBRUSH bg;
 		HFONT oldFont;
 		DWORD dwStyle = tabdat->dwStyle;
-		BOOL bFill = ((dwStyle & TCS_BUTTONS && !tabdat->pContainer->bSkinned) && (tabdat->m_skinning == FALSE || _Plugin.m_TabAppearance & TCF_NOSKINNING));
+		BOOL bFill = ((dwStyle & TCS_BUTTONS && !tabdat->pContainer->bSkinned) && (tabdat->m_skinning == FALSE || PluginConfig.m_TabAppearance & TCF_NOSKINNING));
 		int oldMode = 0;
 		InflateRect(rcItem, -1, -1);
 
 		if (nHint & HINT_ACTIVE_ITEM)
-			SetTextColor(dc, _Plugin.tabConfig.colors[1]);
+			SetTextColor(dc, PluginConfig.tabConfig.colors[1]);
 		else if (dat->mayFlashTab == TRUE)
-			SetTextColor(dc, _Plugin.tabConfig.colors[2]);
+			SetTextColor(dc, PluginConfig.tabConfig.colors[2]);
 		else if (nHint & HINT_HOTTRACK)
-			SetTextColor(dc, _Plugin.tabConfig.colors[3]);
+			SetTextColor(dc, PluginConfig.tabConfig.colors[3]);
 		else
-			SetTextColor(dc, _Plugin.tabConfig.colors[0]);
+			SetTextColor(dc, PluginConfig.tabConfig.colors[0]);
 
 		oldMode = SetBkMode(dc, TRANSPARENT);
 
 		if (bFill) {
 			if (dat->mayFlashTab == TRUE)
-				bg = _Plugin.tabConfig.m_hBrushUnread;
+				bg = PluginConfig.tabConfig.m_hBrushUnread;
 			else if (nHint & HINT_ACTIVE_ITEM)
-				bg = _Plugin.tabConfig.m_hBrushActive;
+				bg = PluginConfig.tabConfig.m_hBrushActive;
 			else if (nHint & HINT_HOTTRACK)
-				bg = _Plugin.tabConfig.m_hBrushHottrack;
+				bg = PluginConfig.tabConfig.m_hBrushHottrack;
 			else
-				bg = _Plugin.tabConfig.m_hBrushDefault;
+				bg = PluginConfig.tabConfig.m_hBrushDefault;
 			FillRect(dc, rcItem, bg);
 		}
 		rcItem->left++;
@@ -380,7 +379,7 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 			OffsetRect(rcItem, 0, 1);
 
 		if (dat->dwFlags & MWF_ERRORSTATE)
-			hIcon = _Plugin.g_iconErr;
+			hIcon = PluginConfig.g_iconErr;
 		else if (dat->mayFlashTab)
 			hIcon = dat->iFlashIcon;
 		else {
@@ -396,10 +395,10 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 				hIcon = dat->hTabIcon;
 		}
 
-		if (dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0) || !(_Plugin.m_TabAppearance & TCF_FLASHICON)) {
+		if (dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0) || !(PluginConfig.m_TabAppearance & TCF_FLASHICON)) {
 			DWORD ix = rcItem->left + tabdat->m_xpad - 1;
 			DWORD iy = (rcItem->bottom + rcItem->top - iSize) / 2;
-			if (dat->dwFlagsEx & MWF_SHOW_ISIDLE && _Plugin.m_IdleDetect)
+			if (dat->dwFlagsEx & MWF_SHOW_ISIDLE && PluginConfig.m_IdleDetect)
 				CSkin::DrawDimmedIcon(dc, ix, iy, iSize, iSize, hIcon, 180);
 			else
 				DrawIconEx(dc, ix, iy, hIcon, iSize, iSize, 0, NULL, DI_NORMAL | DI_COMPAT);
@@ -407,14 +406,14 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 
 		rcItem->left += (iSize + 2 + tabdat->m_xpad);
 
-		if (dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0) || !(_Plugin.m_TabAppearance & TCF_FLASHLABEL)) {
+		if (dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0) || !(PluginConfig.m_TabAppearance & TCF_FLASHLABEL)) {
 			oldFont = (HFONT)SelectObject(dc, (HFONT)SendMessage(tabdat->hwnd, WM_GETFONT, 0, 0));
 			if (tabdat->dwStyle & TCS_BUTTONS || !(tabdat->dwStyle & TCS_MULTILINE)) { // || (tabdat->m_moderntabs && leftMost)) {
 				rcItem->right -= tabdat->m_xpad;
 				dwTextFlags |= DT_WORD_ELLIPSIS;
 			}
 #if defined(_UNICODE)
-			if (tabdat->m_skinning == FALSE || _Plugin.m_TabAppearance & TCF_NOSKINNING)
+			if (tabdat->m_skinning == FALSE || PluginConfig.m_TabAppearance & TCF_NOSKINNING)
 				DrawText(dc, dat->newtitle, (int)(_tcslen(dat->newtitle)), rcItem, dwTextFlags);
 			else
 				M->m_pfnDrawThemeText(dwStyle & TCS_BUTTONS ? tabdat->hThemeButton : tabdat->hTheme, dc, 1, nHint & HINT_ACTIVE_ITEM ? 3 : (nHint & HINT_HOTTRACK ? 2 : 1), dat->newtitle, (int)(_tcslen(dat->newtitle)), dwTextFlags, 0, rcItem);
@@ -448,7 +447,7 @@ static void DrawItemRect(struct TabControlData *tabdat, HDC dc, RECT *rcItem, in
 		 */
 
 		if (dwStyle & TCS_BUTTONS) {
-			BOOL bClassicDraw = (tabdat->m_skinning == FALSE) || (_Plugin.m_TabAppearance & TCF_NOSKINNING);
+			BOOL bClassicDraw = (tabdat->m_skinning == FALSE) || (PluginConfig.m_TabAppearance & TCF_NOSKINNING);
 
 			// draw frame controls for button or bottom tabs
 			if (dwStyle & TCS_BOTTOM)
@@ -482,7 +481,7 @@ b_nonskinned:
 			}
 			return;
 		}
-		SelectObject(dc, _Plugin.tabConfig.m_hPenLight);
+		SelectObject(dc, PluginConfig.tabConfig.m_hPenLight);
 
 		if (nHint & HINT_ACTIVE_ITEM) {
 			if (dwStyle & TCS_BOTTOM) {
@@ -603,19 +602,19 @@ b_nonskinned:
 					SelectClipRgn(dc, 0);
 				} else if (dat) {
 					if (dat->mayFlashTab == TRUE)
-						bg = _Plugin.tabConfig.m_hBrushUnread;
+						bg = PluginConfig.tabConfig.m_hBrushUnread;
 					else if (nHint & HINT_ACTIVE_ITEM)
-						bg = _Plugin.tabConfig.m_hBrushActive;
+						bg = PluginConfig.tabConfig.m_hBrushActive;
 					else if (nHint & HINT_HOTTRACK)
-						bg = _Plugin.tabConfig.m_hBrushHottrack;
+						bg = PluginConfig.tabConfig.m_hBrushHottrack;
 					else
-						bg = _Plugin.tabConfig.m_hBrushDefault;
+						bg = PluginConfig.tabConfig.m_hBrushDefault;
 					FillRgn(dc, rgn, bg);
 				}
-				SelectObject(dc, _Plugin.tabConfig.m_hPenStyledDark);
+				SelectObject(dc, PluginConfig.tabConfig.m_hPenStyledDark);
 				if (active || rc.left < 10) {
-					DrawWuLine(dc, pt[0].x, pt[0].y, pt[1].x, pt[1].y, _Plugin.tabConfig.colors[9]);
-					DrawWuLine(dc, pt[1].x, pt[1].y, pt[2].x, pt[2].y, _Plugin.tabConfig.colors[9]);
+					DrawWuLine(dc, pt[0].x, pt[0].y, pt[1].x, pt[1].y, PluginConfig.tabConfig.colors[9]);
+					DrawWuLine(dc, pt[1].x, pt[1].y, pt[2].x, pt[2].y, PluginConfig.tabConfig.colors[9]);
 					/*
 					short basecolor;
 					COLORREF clr = GetSysColor(COLOR_3DDKSHADOW);
@@ -634,7 +633,7 @@ b_nonskinned:
 				LineTo(dc, pt[3].x, pt[3].y);
 				LineTo(dc, pt[4].x, pt[4].y - 1);
 
-				SelectObject(dc, _Plugin.tabConfig.m_hPenStyledLight);
+				SelectObject(dc, PluginConfig.tabConfig.m_hPenStyledLight);
 				MoveToEx(dc, pt[4].x - 1, pt[4].y, &pts);
 				LineTo(dc, pt[3].x - 1, pt[3].y - 1);
 				LineTo(dc, pt[2].x, pt[2].y - 1);
@@ -646,13 +645,13 @@ b_nonskinned:
 					DrawWuLineBW(dc, pt[2].x, pt[2].y - 1, pt[1].x, pt[1].y - 1, basecolor, 256, 8);
 					DrawWuLineBW(dc, pt[1].x, pt[1].y - 1, pt[0].x + 1, pt[0].y, basecolor, 256, 8);
 					*/
-					DrawWuLine(dc, pt[2].x, pt[2].y - 1, pt[1].x + 1, pt[1].y - 1, _Plugin.tabConfig.colors[8]);
-					DrawWuLine(dc, pt[1].x + 1, pt[1].y - 1, pt[0].x + 1, pt[0].y, _Plugin.tabConfig.colors[8]);
+					DrawWuLine(dc, pt[2].x, pt[2].y - 1, pt[1].x + 1, pt[1].y - 1, PluginConfig.tabConfig.colors[8]);
+					DrawWuLine(dc, pt[1].x + 1, pt[1].y - 1, pt[0].x + 1, pt[0].y, PluginConfig.tabConfig.colors[8]);
 					//LineTo(dc, pt[1].x, pt[1].y - 1);
 					//LineTo(dc, pt[0].x + 1, pt[0].y);
 					if (rc.top > rcTabPage.bottom + 10 && !active) {
-						DrawWuLine(dc, pt[0].x, pt[0].y - 1, pt[4].x, pt[4].y - 1, _Plugin.tabConfig.colors[9]);
-						DrawWuLine(dc, pt[0].x + 1, pt[0].y, pt[4].x - 1, pt[4].y, _Plugin.tabConfig.colors[8]);
+						DrawWuLine(dc, pt[0].x, pt[0].y - 1, pt[4].x, pt[4].y - 1, PluginConfig.tabConfig.colors[9]);
+						DrawWuLine(dc, pt[0].x + 1, pt[0].y, pt[4].x - 1, pt[4].y, PluginConfig.tabConfig.colors[8]);
 					}
 				} else
 					LineTo(dc, pt[1].x, pt[1].y - 1);
@@ -661,13 +660,13 @@ b_nonskinned:
 				MoveToEx(dc, rcItem->left, rcItem->top - (nHint & HINT_ACTIVE_ITEM ? 1 : 0), &pt);
 				LineTo(dc, rcItem->left, rcItem->bottom - 2);
 				LineTo(dc, rcItem->left + 2, rcItem->bottom);
-				SelectObject(dc, _Plugin.tabConfig.m_hPenShadow);
+				SelectObject(dc, PluginConfig.tabConfig.m_hPenShadow);
 				LineTo(dc, rcItem->right - 3, rcItem->bottom);
 
 				LineTo(dc, rcItem->right - 1, rcItem->bottom - 2);
 				LineTo(dc, rcItem->right - 1, rcItem->top - 1);
 				MoveToEx(dc, rcItem->right - 2, rcItem->top, &pt);
-				SelectObject(dc, _Plugin.tabConfig.m_hPenItemShadow);
+				SelectObject(dc, PluginConfig.tabConfig.m_hPenItemShadow);
 				LineTo(dc, rcItem->right - 2, rcItem->bottom - 1);
 				MoveToEx(dc, rcItem->right - 3, rcItem->bottom - 1, &pt);
 				LineTo(dc, rcItem->left + 2, rcItem->bottom - 1);
@@ -731,22 +730,22 @@ b_nonskinned:
 					SelectClipRgn(dc, 0);
 				} else if (dat) {
 					if (dat->mayFlashTab == TRUE)
-						bg = _Plugin.tabConfig.m_hBrushUnread;
+						bg = PluginConfig.tabConfig.m_hBrushUnread;
 					else if (nHint & HINT_ACTIVE_ITEM)
-						bg = _Plugin.tabConfig.m_hBrushActive;
+						bg = PluginConfig.tabConfig.m_hBrushActive;
 					else if (nHint & HINT_HOTTRACK)
-						bg = _Plugin.tabConfig.m_hBrushHottrack;
+						bg = PluginConfig.tabConfig.m_hBrushHottrack;
 					else
-						bg = _Plugin.tabConfig.m_hBrushDefault;
+						bg = PluginConfig.tabConfig.m_hBrushDefault;
 					FillRgn(dc, rgn, bg);
 				}
-				SelectObject(dc, _Plugin.tabConfig.m_hPenStyledDark);
+				SelectObject(dc, PluginConfig.tabConfig.m_hPenStyledDark);
 				if (active || rc.left < 10) {
 					//MoveToEx(dc, pt[0].x, pt[0].y - (active ? 1 : 0), &pts);
 					//LineTo(dc, pt[1].x, pt[1].y);
 					//LineTo(dc, pt[2].x, pt[2].y);
-					DrawWuLine(dc, pt[0].x, pt[0].y - (active ? 1 : 0), pt[1].x, pt[1].y, _Plugin.tabConfig.colors[9]);
-					DrawWuLine(dc, pt[1].x, pt[1].y, pt[2].x, pt[2].y, _Plugin.tabConfig.colors[9]);
+					DrawWuLine(dc, pt[0].x, pt[0].y - (active ? 1 : 0), pt[1].x, pt[1].y, PluginConfig.tabConfig.colors[9]);
+					DrawWuLine(dc, pt[1].x, pt[1].y, pt[2].x, pt[2].y, PluginConfig.tabConfig.colors[9]);
 					MoveToEx(dc, pt[2].x, pt[2].y, &pts);
 				} else {
 					MoveToEx(dc, pt[1].x, pt[1].y, &pts);
@@ -755,19 +754,19 @@ b_nonskinned:
 				LineTo(dc, pt[3].x, pt[3].y);
 				LineTo(dc, pt[4].x, pt[4].y);
 
-				SelectObject(dc, _Plugin.tabConfig.m_hPenStyledLight);
+				SelectObject(dc, PluginConfig.tabConfig.m_hPenStyledLight);
 				MoveToEx(dc, pt[4].x - 1, pt[4].y - 1, &pts);
 				LineTo(dc, pt[3].x - 1, pt[3].y + 1);
 				LineTo(dc, pt[2].x, pt[2].y + 1);
 				if (active || rc.left < 10) {
 					//LineTo(dc, pt[1].x, pt[1].y + 1);
 					//LineTo(dc, pt[0].x, pt[0].y);
-					DrawWuLine(dc, pt[2].x, pt[2].y + 1, pt[1].x + 1, pt[1].y + 1, _Plugin.tabConfig.colors[8]);
-					DrawWuLine(dc, pt[1].x + 1, pt[1].y + 1, pt[0].x + 1, pt[0].y, _Plugin.tabConfig.colors[8]);
+					DrawWuLine(dc, pt[2].x, pt[2].y + 1, pt[1].x + 1, pt[1].y + 1, PluginConfig.tabConfig.colors[8]);
+					DrawWuLine(dc, pt[1].x + 1, pt[1].y + 1, pt[0].x + 1, pt[0].y, PluginConfig.tabConfig.colors[8]);
 
 					if (rc.bottom < rcTabPage.top - 10 && !active) {
-						DrawWuLine(dc, pt[0].x, pt[0].y + 1, pt[4].x, pt[4].y + 1, _Plugin.tabConfig.colors[9]);
-						DrawWuLine(dc, pt[0].x + 1, pt[0].y, pt[4].x - 1, pt[4].y, _Plugin.tabConfig.colors[8]);
+						DrawWuLine(dc, pt[0].x, pt[0].y + 1, pt[4].x, pt[4].y + 1, PluginConfig.tabConfig.colors[9]);
+						DrawWuLine(dc, pt[0].x + 1, pt[0].y, pt[4].x - 1, pt[4].y, PluginConfig.tabConfig.colors[8]);
 					}
 				} else
 					LineTo(dc, pt[1].x, pt[1].y + 1);
@@ -777,11 +776,11 @@ b_nonskinned:
 				LineTo(dc, rcItem->left, rcItem->top + 2);
 				LineTo(dc, rcItem->left + 2, rcItem->top);
 				LineTo(dc, rcItem->right - 2, rcItem->top);
-				SelectObject(dc, _Plugin.tabConfig.m_hPenItemShadow);
+				SelectObject(dc, PluginConfig.tabConfig.m_hPenItemShadow);
 
 				MoveToEx(dc, rcItem->right - 2, rcItem->top + 1, &pt);
 				LineTo(dc, rcItem->right - 2, rcItem->bottom + 1);
-				SelectObject(dc, _Plugin.tabConfig.m_hPenShadow);
+				SelectObject(dc, PluginConfig.tabConfig.m_hPenShadow);
 				MoveToEx(dc, rcItem->right - 1, rcItem->top + 2, &pt);
 				LineTo(dc, rcItem->right - 1, rcItem->bottom + 1);
 			}
@@ -1037,8 +1036,8 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			return 0;
 		}
 		case EM_VALIDATEBOTTOM: {
-			BOOL bClassicDraw = (tabdat->m_skinning == FALSE) || (_Plugin.m_TabAppearance & TCF_NOSKINNING);
-			if ((tabdat->dwStyle & TCS_BOTTOM) && !bClassicDraw && _Plugin.tabConfig.m_bottomAdjust != 0)
+			BOOL bClassicDraw = (tabdat->m_skinning == FALSE) || (PluginConfig.m_TabAppearance & TCF_NOSKINNING);
+			if ((tabdat->dwStyle & TCS_BOTTOM) && !bClassicDraw && PluginConfig.tabConfig.m_bottomAdjust != 0)
 				InvalidateRect(hwnd, NULL, FALSE);
 			else if (tabdat->m_moderntabs)
 				InvalidateRect(hwnd, NULL, FALSE);
@@ -1134,10 +1133,10 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 					TabCtrl_GetItemRect(hwnd, iTabs - 1, &rc);
 					newItemSize = (rcClient.right - 6) - (tabdat->dwStyle & TCS_BUTTONS ? (iTabs) * 10 : 0);
 					newItemSize = newItemSize / iTabs;
-					if (newItemSize < _Plugin.tabConfig.m_fixedwidth) {
+					if (newItemSize < PluginConfig.tabConfig.m_fixedwidth) {
 						TabCtrl_SetItemSize(hwnd, newItemSize, rc.bottom - rc.top);
 					} else {
-						TabCtrl_SetItemSize(hwnd, _Plugin.tabConfig.m_fixedwidth, rc.bottom - rc.top);
+						TabCtrl_SetItemSize(hwnd, PluginConfig.tabConfig.m_fixedwidth, rc.bottom - rc.top);
 					}
 					SendMessage(hwnd, EM_SEARCHSCROLLER, 0, 0);
 				}
@@ -1146,11 +1145,11 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 				int nrTabsPerLine;
 				GetClientRect(hwnd, &rcClient);
 				TabCtrl_GetItemRect(hwnd, 0, &rcItem);
-				nrTabsPerLine = (rcClient.right) / _Plugin.tabConfig.m_fixedwidth;
+				nrTabsPerLine = (rcClient.right) / PluginConfig.tabConfig.m_fixedwidth;
 				if (iTabs >= nrTabsPerLine && nrTabsPerLine > 0)
 					TabCtrl_SetItemSize(hwnd, ((rcClient.right - 6) / nrTabsPerLine) - (tabdat->dwStyle & TCS_BUTTONS ? 8 : 0), rcItem.bottom - rcItem.top);
 				else
-					TabCtrl_SetItemSize(hwnd, _Plugin.tabConfig.m_fixedwidth, rcItem.bottom - rcItem.top);
+					TabCtrl_SetItemSize(hwnd, PluginConfig.tabConfig.m_fixedwidth, rcItem.bottom - rcItem.top);
 			}
 			break;
 		}
@@ -1309,7 +1308,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			UINT uiFlags = 1;
 			UINT uiBottom = 0;
 			TCHITTESTINFO hti;
-			BOOL bClassicDraw = (tabdat->m_skinning == FALSE) || (_Plugin.m_TabAppearance & TCF_NOSKINNING);
+			BOOL bClassicDraw = (tabdat->m_skinning == FALSE) || (PluginConfig.m_TabAppearance & TCF_NOSKINNING);
 			HBITMAP bmpMem, bmpOld;
 			DWORD cx, cy;
 
@@ -1365,7 +1364,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 				InflateRect(&rctClip, -tabdat->pContainer->tBorder, -tabdat->pContainer->tBorder);
 			}
 
-			hPenOld = (HPEN)SelectObject(hdc, _Plugin.tabConfig.m_hPenLight);
+			hPenOld = (HPEN)SelectObject(hdc, PluginConfig.tabConfig.m_hPenLight);
 			/*
 			 * visual style support
 			 */
@@ -1410,26 +1409,26 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 						MoveToEx(hdc, rectTemp.left, rectTemp.bottom, &pt);
 						LineTo(hdc, rectTemp.left, rectTemp.top + 1);
 						LineTo(hdc, rectTemp.right - 1, rectTemp.top + 1);
-						SelectObject(hdc, _Plugin.tabConfig.m_hPenShadow);
+						SelectObject(hdc, PluginConfig.tabConfig.m_hPenShadow);
 						LineTo(hdc, rectTemp.right - 1, rectTemp.bottom);
 						LineTo(hdc, rectTemp.left, rectTemp.bottom);
 					} else {
 						rectTemp = rctPage;
 
 						if (tabdat->m_moderntabs)
-							SelectObject(hdc, _Plugin.tabConfig.m_hPenItemShadow);
+							SelectObject(hdc, PluginConfig.tabConfig.m_hPenItemShadow);
 
 						MoveToEx(hdc, rectTemp.left, rectTemp.bottom - 1, &pt);
 						LineTo(hdc, rectTemp.left, rectTemp.top);
 
 						if (dwStyle & TCS_BOTTOM) {
 							LineTo(hdc, rectTemp.right - 1, rectTemp.top);
-							SelectObject(hdc, _Plugin.tabConfig.m_hPenShadow);
+							SelectObject(hdc, PluginConfig.tabConfig.m_hPenShadow);
 							LineTo(hdc, rectTemp.right - 1, rectTemp.bottom - 1);
 							LineTo(hdc, rctActive.right, rectTemp.bottom - 1);
 							MoveToEx(hdc, rctActive.left - 2, rectTemp.bottom - 1, &pt);
 							LineTo(hdc, rectTemp.left - 1, rectTemp.bottom - 1);
-							SelectObject(hdc, _Plugin.tabConfig.m_hPenItemShadow);
+							SelectObject(hdc, PluginConfig.tabConfig.m_hPenItemShadow);
 							if (!tabdat->m_moderntabs) {
 								MoveToEx(hdc, rectTemp.right - 2, rectTemp.top + 1, &pt);
 								LineTo(hdc, rectTemp.right - 2, rectTemp.bottom - 2);
@@ -1456,12 +1455,12 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 								LineTo(hdc, rectTemp.right - 2, rctActive.bottom);
 							}
 							if (!tabdat->m_moderntabs) {
-								SelectObject(hdc, _Plugin.tabConfig.m_hPenItemShadow);
+								SelectObject(hdc, PluginConfig.tabConfig.m_hPenItemShadow);
 								LineTo(hdc, rectTemp.right - 2, rectTemp.bottom - 2);
 								LineTo(hdc, rectTemp.left, rectTemp.bottom - 2);
 							}
 
-							SelectObject(hdc, tabdat->m_moderntabs ? _Plugin.tabConfig.m_hPenItemShadow : _Plugin.tabConfig.m_hPenShadow);
+							SelectObject(hdc, tabdat->m_moderntabs ? PluginConfig.tabConfig.m_hPenItemShadow : PluginConfig.tabConfig.m_hPenShadow);
 							MoveToEx(hdc, rectTemp.right - 1, rctActive.bottom, &pt);
 							LineTo(hdc, rectTemp.right - 1, rectTemp.bottom - 1);
 							LineTo(hdc, rectTemp.left - 2, rectTemp.bottom - 1);
@@ -1486,8 +1485,8 @@ page_done:
 				if (i != iActive) {
 					TabCtrl_GetItemRect(hwnd, i, &rcItem);
 					if (!bClassicDraw && uiBottom) {
-						rcItem.top -= _Plugin.tabConfig.m_bottomAdjust;
-						rcItem.bottom -= _Plugin.tabConfig.m_bottomAdjust;
+						rcItem.top -= PluginConfig.tabConfig.m_bottomAdjust;
+						rcItem.bottom -= PluginConfig.tabConfig.m_bottomAdjust;
 					}
 					if (IntersectRect(&rectTemp, &rcItem, &ps.rcPaint) || bClassicDraw) {
 						int nHint = 0;
@@ -1505,8 +1504,8 @@ page_done:
 			 * draw the active item
 			 */
 			if (!bClassicDraw && uiBottom) {
-				rctActive.top -= _Plugin.tabConfig.m_bottomAdjust;
-				rctActive.bottom -= _Plugin.tabConfig.m_bottomAdjust;
+				rctActive.top -= PluginConfig.tabConfig.m_bottomAdjust;
+				rctActive.bottom -= PluginConfig.tabConfig.m_bottomAdjust;
 			}
 			if (rctActive.left >= 0) {
 				int nHint = 0;
@@ -1611,49 +1610,49 @@ void ReloadTabConfig()
 {
 	NONCLIENTMETRICS nclim;
 	int i = 0;
-	BOOL iLabelDefault = _Plugin.m_TabAppearance & TCF_LABELUSEWINCOLORS;
-	BOOL iBkgDefault = _Plugin.m_TabAppearance & TCF_BKGUSEWINCOLORS;
+	BOOL iLabelDefault = PluginConfig.m_TabAppearance & TCF_LABELUSEWINCOLORS;
+	BOOL iBkgDefault = PluginConfig.m_TabAppearance & TCF_BKGUSEWINCOLORS;
 
-	_Plugin.tabConfig.m_hPenLight = CreatePen(PS_SOLID, 1, GetSysColor(COLOR_3DHILIGHT));
-	_Plugin.tabConfig.m_hPenShadow = CreatePen(PS_SOLID, 1, GetSysColor(COLOR_3DDKSHADOW));
-	_Plugin.tabConfig.m_hPenItemShadow = CreatePen(PS_SOLID, 1, GetSysColor(COLOR_3DSHADOW));
+	PluginConfig.tabConfig.m_hPenLight = CreatePen(PS_SOLID, 1, GetSysColor(COLOR_3DHILIGHT));
+	PluginConfig.tabConfig.m_hPenShadow = CreatePen(PS_SOLID, 1, GetSysColor(COLOR_3DDKSHADOW));
+	PluginConfig.tabConfig.m_hPenItemShadow = CreatePen(PS_SOLID, 1, GetSysColor(COLOR_3DSHADOW));
 
 	nclim.cbSize = sizeof(nclim);
 	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &nclim, 0);
-	_Plugin.tabConfig.m_hMenuFont = CreateFontIndirect(&nclim.lfMessageFont);
+	PluginConfig.tabConfig.m_hMenuFont = CreateFontIndirect(&nclim.lfMessageFont);
 
 	while (tabcolors[i].szKey != NULL) {
 		if (i < 4)
-			_Plugin.tabConfig.colors[i] = iLabelDefault ? GetSysColor(tabcolors[i].defclr) : M->GetDword(CSkin::m_skinEnabled ? tabcolors[i].szSkinnedKey : tabcolors[i].szKey, GetSysColor(tabcolors[i].defclr));
+			PluginConfig.tabConfig.colors[i] = iLabelDefault ? GetSysColor(tabcolors[i].defclr) : M->GetDword(CSkin::m_skinEnabled ? tabcolors[i].szSkinnedKey : tabcolors[i].szKey, GetSysColor(tabcolors[i].defclr));
 		else
-			_Plugin.tabConfig.colors[i] = iBkgDefault ? GetSysColor(tabcolors[i].defclr) :  M->GetDword(CSkin::m_skinEnabled ? tabcolors[i].szSkinnedKey : tabcolors[i].szKey, GetSysColor(tabcolors[i].defclr));
+			PluginConfig.tabConfig.colors[i] = iBkgDefault ? GetSysColor(tabcolors[i].defclr) :  M->GetDword(CSkin::m_skinEnabled ? tabcolors[i].szSkinnedKey : tabcolors[i].szKey, GetSysColor(tabcolors[i].defclr));
 		i++;
 	}
-	_Plugin.tabConfig.m_hBrushDefault = CreateSolidBrush(_Plugin.tabConfig.colors[4]);
-	_Plugin.tabConfig.m_hBrushActive = CreateSolidBrush(_Plugin.tabConfig.colors[5]);
-	_Plugin.tabConfig.m_hBrushUnread = CreateSolidBrush(_Plugin.tabConfig.colors[6]);
-	_Plugin.tabConfig.m_hBrushHottrack = CreateSolidBrush(_Plugin.tabConfig.colors[7]);
+	PluginConfig.tabConfig.m_hBrushDefault = CreateSolidBrush(PluginConfig.tabConfig.colors[4]);
+	PluginConfig.tabConfig.m_hBrushActive = CreateSolidBrush(PluginConfig.tabConfig.colors[5]);
+	PluginConfig.tabConfig.m_hBrushUnread = CreateSolidBrush(PluginConfig.tabConfig.colors[6]);
+	PluginConfig.tabConfig.m_hBrushHottrack = CreateSolidBrush(PluginConfig.tabConfig.colors[7]);
 
-	_Plugin.tabConfig.m_bottomAdjust = (int)M->GetDword("bottomadjust", 0);
-	_Plugin.tabConfig.m_fixedwidth = M->GetDword("fixedwidth", FIXED_TAB_SIZE);
+	PluginConfig.tabConfig.m_bottomAdjust = (int)M->GetDword("bottomadjust", 0);
+	PluginConfig.tabConfig.m_fixedwidth = M->GetDword("fixedwidth", FIXED_TAB_SIZE);
 
-	_Plugin.tabConfig.m_fixedwidth = (_Plugin.tabConfig.m_fixedwidth < 60 ? 60 : _Plugin.tabConfig.m_fixedwidth);
-	_Plugin.tabConfig.m_hPenStyledLight = CreatePen(PS_SOLID, 1, _Plugin.tabConfig.colors[8]);
-	_Plugin.tabConfig.m_hPenStyledDark = CreatePen(PS_SOLID, 1, _Plugin.tabConfig.colors[9]);
+	PluginConfig.tabConfig.m_fixedwidth = (PluginConfig.tabConfig.m_fixedwidth < 60 ? 60 : PluginConfig.tabConfig.m_fixedwidth);
+	PluginConfig.tabConfig.m_hPenStyledLight = CreatePen(PS_SOLID, 1, PluginConfig.tabConfig.colors[8]);
+	PluginConfig.tabConfig.m_hPenStyledDark = CreatePen(PS_SOLID, 1, PluginConfig.tabConfig.colors[9]);
 }
 
 void FreeTabConfig()
 {
-	DeleteObject(_Plugin.tabConfig.m_hPenItemShadow);
-	DeleteObject(_Plugin.tabConfig.m_hPenLight);
-	DeleteObject(_Plugin.tabConfig.m_hPenShadow);
-	DeleteObject(_Plugin.tabConfig.m_hMenuFont);
-	DeleteObject(_Plugin.tabConfig.m_hBrushActive);
-	DeleteObject(_Plugin.tabConfig.m_hBrushDefault);
-	DeleteObject(_Plugin.tabConfig.m_hBrushUnread);
-	DeleteObject(_Plugin.tabConfig.m_hBrushHottrack);
-	DeleteObject(_Plugin.tabConfig.m_hPenStyledDark);
-	DeleteObject(_Plugin.tabConfig.m_hPenStyledLight);
+	DeleteObject(PluginConfig.tabConfig.m_hPenItemShadow);
+	DeleteObject(PluginConfig.tabConfig.m_hPenLight);
+	DeleteObject(PluginConfig.tabConfig.m_hPenShadow);
+	DeleteObject(PluginConfig.tabConfig.m_hMenuFont);
+	DeleteObject(PluginConfig.tabConfig.m_hBrushActive);
+	DeleteObject(PluginConfig.tabConfig.m_hBrushDefault);
+	DeleteObject(PluginConfig.tabConfig.m_hBrushUnread);
+	DeleteObject(PluginConfig.tabConfig.m_hBrushHottrack);
+	DeleteObject(PluginConfig.tabConfig.m_hPenStyledDark);
+	DeleteObject(PluginConfig.tabConfig.m_hPenStyledLight);
 }
 
 /*
@@ -1702,12 +1701,12 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			SetDlgItemInt(hwndDlg, IDC_TABBORDER, (int)M->GetByte(CSkin::m_skinEnabled ? "S_tborder" : "tborder", 2), FALSE);;
 
 			SendDlgItemMessage(hwndDlg, IDC_BOTTOMTABADJUSTSPIN, UDM_SETRANGE, 0, MAKELONG(3, -3));
-			SendDlgItemMessage(hwndDlg, IDC_BOTTOMTABADJUSTSPIN, UDM_SETPOS, 0, _Plugin.tabConfig.m_bottomAdjust);
-			SetDlgItemInt(hwndDlg, IDC_BOTTOMTABADJUST, _Plugin.tabConfig.m_bottomAdjust, TRUE);
+			SendDlgItemMessage(hwndDlg, IDC_BOTTOMTABADJUSTSPIN, UDM_SETPOS, 0, PluginConfig.tabConfig.m_bottomAdjust);
+			SetDlgItemInt(hwndDlg, IDC_BOTTOMTABADJUST, PluginConfig.tabConfig.m_bottomAdjust, TRUE);
 
 			SendDlgItemMessage(hwndDlg, IDC_TABWIDTHSPIN, UDM_SETRANGE, 0, MAKELONG(400, 50));
-			SendDlgItemMessage(hwndDlg, IDC_TABWIDTHSPIN, UDM_SETPOS, 0, _Plugin.tabConfig.m_fixedwidth);
-			SetDlgItemInt(hwndDlg, IDC_TABWIDTH, _Plugin.tabConfig.m_fixedwidth, TRUE);
+			SendDlgItemMessage(hwndDlg, IDC_TABWIDTHSPIN, UDM_SETPOS, 0, PluginConfig.tabConfig.m_fixedwidth);
+			SetDlgItemInt(hwndDlg, IDC_TABWIDTH, PluginConfig.tabConfig.m_fixedwidth, TRUE);
 
 			SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTER, UDM_SETRANGE, 0, MAKELONG(50, 0));
 			SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTERRIGHT, UDM_SETRANGE, 0, MAKELONG(50, 0));
@@ -1752,7 +1751,7 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 											(IsDlgButtonChecked(hwndDlg, IDC_NOSKINNING) ? TCF_NOSKINNING : 0);
 
 							M->WriteDword(SRMSGMOD_T, "tabconfig", dwFlags);
-							_Plugin.m_TabAppearance = dwFlags;
+							PluginConfig.m_TabAppearance = dwFlags;
 							while (tabcolors[i].szKey != NULL) {
 								clr = SendDlgItemMessage(hwndDlg, tabcolors[i].id, CPM_GETCOLOUR, 0, 0);
 								M->WriteDword(SRMSGMOD_T, CSkin::m_skinEnabled ? tabcolors[i].szSkinnedKey : tabcolors[i].szKey, clr);

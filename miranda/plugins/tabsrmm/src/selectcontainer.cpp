@@ -32,8 +32,6 @@ $Id: selectcontainer.c 9205 2009-03-24 05:00:43Z nightwish2004 $
 #include "commonheaders.h"
 #pragma hdrstop
 
-extern      struct ContainerWindowData *pFirstContainer;
-
 INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndMsgDlg = 0;

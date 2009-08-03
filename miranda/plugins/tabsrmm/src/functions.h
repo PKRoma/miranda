@@ -29,6 +29,10 @@ $Id: functions.h 10390 2009-07-22 19:43:01Z silvercircle $
  * global prototypes
  */
 
+TCHAR *FilterEventMarkers(TCHAR *wszText);
+char  *FilterEventMarkers(char *wszText);
+const TCHAR *DoubleAmpersands(TCHAR *pszText);
+
 /*
  * nen / event popup stuff
  */
@@ -45,8 +49,6 @@ void        RemoveBalloonTip();
  */
 
 void        CreateSystrayIcon(int create);
-void        MinimiseToTray(HWND hWnd, BOOL bForceAnimation);
-void        MaximiseFromTray(HWND hWnd, BOOL bForceAnimation, RECT *rc);
 void        FlashTrayIcon(HICON hIcon);
 void        UpdateTrayMenuState(struct _MessageWindowData *dat, BOOL bForced);
 void        LoadFavoritesAndRecent();

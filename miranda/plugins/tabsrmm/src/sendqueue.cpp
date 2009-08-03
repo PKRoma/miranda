@@ -91,7 +91,7 @@ static unsigned __stdcall WINAPI DoMultiSend(LPVOID param)
 
 	for (i = 0; i < job->sendCount; i++) {
 		job->hSendId[i] = (HANDLE) CallContactService(job->hContact[i], SendQueue::MsgServiceName(job->hContact[i], dat, job->dwFlags), (dat->sendMode & SMODE_FORCEANSI) ? (job->dwFlags & ~PREF_UNICODE) : job->dwFlags, (LPARAM) job->sendBuffer);
-		SetTimer(job->hwndOwner, TIMERID_MULTISEND_BASE + (iIndex * SENDJOBS_MAX_SENDS) + i, _Plugin.m_MsgTimeout, NULL);
+		SetTimer(job->hwndOwner, TIMERID_MULTISEND_BASE + (iIndex * SENDJOBS_MAX_SENDS) + i, PluginConfig.m_MsgTimeout, NULL);
 		Sleep((50 * i) + dwDelay + dwDelayAdd);
 		if (i > 2)
 			dwDelayAdd = 500;
@@ -132,7 +132,7 @@ void SendQueue::handleError(_MessageWindowData *dat, const int iEntry) const
 		_snprintf(szErrorMsg, 500, "%s", m_jobs[iEntry].szErrorMsg);
 #if defined(_UNICODE)
 			wchar_t wszErrorMsg[512];
-			MultiByteToWideChar(_Plugin.m_LangPackCP, 0, szErrorMsg, -1, wszErrorMsg, 512);
+			MultiByteToWideChar(PluginConfig.m_LangPackCP, 0, szErrorMsg, -1, wszErrorMsg, 512);
 			wszErrorMsg[511] = 0;
 			logError(dat, iEntry, wszErrorMsg);
 #else
@@ -140,7 +140,7 @@ void SendQueue::handleError(_MessageWindowData *dat, const int iEntry) const
 #endif
 		recallFailed(dat, iEntry);
 		showErrorControls(dat, TRUE);
-		::HandleIconFeedback(dat->hwnd, dat, _Plugin.g_iconErr);
+		::HandleIconFeedback(dat->hwnd, dat, PluginConfig.g_iconErr);
 	}
 }
 /*
@@ -304,7 +304,7 @@ static void DoSplitSendW(LPVOID param)
 			if (!fFirstSend) {
 				job->hSendId[0] = (HANDLE)id;
 				fFirstSend = TRUE;
-				PostMessage(_Plugin.g_hwndHotkeyHandler, DM_SPLITSENDACK, (WPARAM)param, 0);
+				PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_SPLITSENDACK, (WPARAM)param, 0);
 			}
 			*wszSaved = savedChar;
 			wszTemp = wszSaved;
@@ -318,7 +318,7 @@ static void DoSplitSendW(LPVOID param)
 			if (!fFirstSend) {
 				job->hSendId[0] = (HANDLE)id;
 				fFirstSend = TRUE;
-				PostMessage(_Plugin.g_hwndHotkeyHandler, DM_SPLITSENDACK, (WPARAM)param, 0);
+				PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_SPLITSENDACK, (WPARAM)param, 0);
 			}
 		}
 		Sleep(500L);
@@ -377,7 +377,7 @@ static void DoSplitSendA(LPVOID param)
 			if (!fFirstSend) {
 				job->hSendId[0] = (HANDLE)id;
 				fFirstSend = TRUE;
-				PostMessage(_Plugin.g_hwndHotkeyHandler, DM_SPLITSENDACK, (WPARAM)param, 0);
+				PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_SPLITSENDACK, (WPARAM)param, 0);
 			}
 			*szSaved = savedChar;
 			szTemp = szSaved;
@@ -391,7 +391,7 @@ static void DoSplitSendA(LPVOID param)
 			if (!fFirstSend) {
 				job->hSendId[0] = (HANDLE)id;
 				fFirstSend = TRUE;
-				PostMessage(_Plugin.g_hwndHotkeyHandler, DM_SPLITSENDACK, (WPARAM)param, 0);
+				PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_SPLITSENDACK, (WPARAM)param, 0);
 			}
 		}
 		Sleep(500L);
@@ -514,7 +514,7 @@ send_unsplitted:
 				SendMessage(hwndDlg, HM_EVENTSENT, (WPARAM)MAKELONG(iEntry, 0), (LPARAM)&ack);
 			}
 			else
-				SetTimer(hwndDlg, TIMERID_MSGSEND + iEntry, _Plugin.m_MsgTimeout, NULL);
+				SetTimer(hwndDlg, TIMERID_MSGSEND + iEntry, PluginConfig.m_MsgTimeout, NULL);
 		}
 	}
 	dat->iOpenJobs++;
@@ -526,7 +526,7 @@ send_unsplitted:
 		::UpdateReadChars(hwndDlg, dat);
 
 	if (!(dat->sendMode & SMODE_NOACK))
-		::HandleIconFeedback(hwndDlg, dat, _Plugin.g_IconSend);
+		::HandleIconFeedback(hwndDlg, dat, PluginConfig.g_IconSend);
 
 	if (M->GetByte(SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN))
 		::SendMessage(dat->pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
@@ -564,7 +564,7 @@ void SendQueue::checkQueue(const _MessageWindowData *dat) const
 			::HandleIconFeedback(hwndDlg, const_cast<_MessageWindowData *>(dat), (HICON) - 1);
 		}
 		else if (!(dat->sendMode & SMODE_NOACK))
-			::HandleIconFeedback(hwndDlg, const_cast<_MessageWindowData *>(dat), _Plugin.g_IconSend);
+			::HandleIconFeedback(hwndDlg, const_cast<_MessageWindowData *>(dat), PluginConfig.g_IconSend);
 
 		if (dat->pContainer->hwndActive == hwndDlg)
 			::UpdateReadChars(hwndDlg, const_cast<_MessageWindowData *>(dat));
@@ -638,7 +638,7 @@ void SendQueue::showErrorControls(_MessageWindowData *dat, const int showCmd) co
 
 	if (showCmd) {
 		TCITEM item = {0};
-		dat->hTabIcon = _Plugin.g_iconErr;
+		dat->hTabIcon = PluginConfig.g_iconErr;
 		item.mask = TCIF_IMAGE;
 		item.iImage = 0;
 		TabCtrl_SetItem(GetDlgItem(dat->pContainer->hwnd, IDC_MSGTABS), dat->iTabID, &item);
@@ -714,18 +714,18 @@ void SendQueue::UpdateSaveAndSendButton(_MessageWindowData *dat)
 
 		if (len) {          // looks complex but avoids flickering on the button while typing.
 			if (!(dat->dwFlags & MWF_SAVEBTN_SAV)) {
-				SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) _Plugin.g_buttonBarIcons[7]);
+				SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) PluginConfig.g_buttonBarIcons[7]);
 				SendDlgItemMessage(hwndDlg, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM) pszIDCSAVE_save, 0);
 				dat->dwFlags |= MWF_SAVEBTN_SAV;
 			}
 		}
 		else {
-			SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) _Plugin.g_buttonBarIcons[6]);
+			SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) PluginConfig.g_buttonBarIcons[6]);
 			SendDlgItemMessage(hwndDlg, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM) pszIDCSAVE_close, 0);
 			dat->dwFlags &= ~MWF_SAVEBTN_SAV;
 		}
 		dat->textLen = len;
-		if (_Plugin.m_visualMessageSizeIndicator)
+		if (PluginConfig.m_visualMessageSizeIndicator)
 			InvalidateRect(GetDlgItem(hwndDlg, IDC_MSGINDICATOR), NULL, FALSE);
 	}
 }
@@ -736,11 +736,11 @@ static INT_PTR CALLBACK PopupDlgProcError(HWND hWnd, UINT message, WPARAM wParam
 
 	switch (message) {
 		case WM_COMMAND:
-			PostMessage(_Plugin.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)hContact, 0);
+			PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)hContact, 0);
 			PUDeletePopUp(hWnd);
 			break;
 		case WM_CONTEXTMENU:
-			PostMessage(_Plugin.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)hContact, 0);
+			PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)hContact, 0);
 			PUDeletePopUp(hWnd);
 			break;
 		case WM_MOUSEWHEEL:
@@ -770,7 +770,7 @@ void SendQueue::NotifyDeliveryFailure(const _MessageWindowData *dat)
 		ppd.colorText = RGB(255, 245, 225);
 		ppd.colorBack = RGB(191, 0, 0);
 		ppd.PluginWindowProc = (WNDPROC)PopupDlgProcError;
-		ppd.lchIcon = _Plugin.g_iconErr;
+		ppd.lchIcon = PluginConfig.g_iconErr;
 		ppd.PluginData = (void *)dat->hContact;
 		ppd.iSeconds = -1;
 		CallService(MS_POPUP_ADDPOPUPW, (WPARAM)&ppd, 0);
@@ -790,7 +790,7 @@ void SendQueue::NotifyDeliveryFailure(const _MessageWindowData *dat)
 		ppd.colorText = RGB(255, 245, 225);
 		ppd.colorBack = RGB(191, 0, 0);
 		ppd.PluginWindowProc = (WNDPROC)PopupDlgProcError;
-		ppd.lchIcon = _Plugin.g_iconErr;
+		ppd.lchIcon = PluginConfig.g_iconErr;
 		ppd.PluginData = (void *)dat->hContact;
 		ppd.iSeconds = -1;
 		CallService(MS_POPUP_ADDPOPUP, (WPARAM)&ppd, 0);
@@ -900,7 +900,7 @@ int SendQueue::ackMessage(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 #if defined(_UNICODE)
 			{
 				wchar_t wszErrMsg[256];
-				MultiByteToWideChar(_Plugin.m_LangPackCP, 0, szErrMsg, -1, wszErrMsg, 256);
+				MultiByteToWideChar(PluginConfig.m_LangPackCP, 0, szErrMsg, -1, wszErrMsg, 256);
 				wszErrMsg[255] = 0;
 				logError(dat, -1, wszErrMsg);
 			}

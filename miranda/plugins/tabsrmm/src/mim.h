@@ -45,6 +45,7 @@ typedef HANDLE(WINAPI *POTD)(HWND, LPCWSTR);
 typedef UINT(WINAPI *PDTB)(HANDLE, HDC, int, int, RECT *, RECT *);
 typedef UINT(WINAPI *PCTD)(HANDLE);
 typedef UINT(WINAPI *PDTT)(HANDLE, HDC, int, int, LPCWSTR, int, DWORD, DWORD, RECT *);
+typedef UINT(WINAPI *PDTTE)(HANDLE, HDC, int, int, LPCWSTR, int, DWORD, RECT *, const DTTOPTS *);
 typedef BOOL (WINAPI *PITBPT)(HANDLE, int, int);
 typedef HRESULT(WINAPI *PDTPB)(HWND, HDC, RECT *);
 typedef HRESULT(WINAPI *PGTBCR)(HANDLE, HDC, int, int, const RECT *, const RECT *);
@@ -62,10 +63,10 @@ typedef BOOL(WINAPI *GMIA)(HMONITOR, LPMONITORINFO);
  * when the object is instantiated.
  */
 
-class _Mim
+class CMimAPI
 {
 public:
-	_Mim()
+	CMimAPI()
 	{
 		GetUTFI();
 		InitPaths();
@@ -73,7 +74,7 @@ public:
 		getAeroState();
 	}
 
-	~_Mim() {
+	~CMimAPI() {
 		if (m_hUxTheme != 0)
 			FreeLibrary(m_hUxTheme);
 		if (m_hDwmApi != 0)
@@ -183,6 +184,7 @@ public:
 	PDTB 	m_pfnDrawThemeBackground;
 	PCTD 	m_pfnCloseThemeData;
 	PDTT 	m_pfnDrawThemeText;
+	PDTTE	m_pfnDrawThemeTextEx;
 	PITBPT 	m_pfnIsThemeBackgroundPartiallyTransparent;
 	PDTPB  	m_pfnDrawThemeParentBackground;
 	PGTBCR 	m_pfnGetThemeBackgroundContentRect;
@@ -209,6 +211,6 @@ private:
 	void	GetUTFI();
 };
 
-extern  _Mim		*M;
+extern  CMimAPI		*M;
 
 #endif /* __MIM_H */

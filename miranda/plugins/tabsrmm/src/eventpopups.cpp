@@ -38,10 +38,9 @@ astyle --force-indent=tab=4 --brackets=linux --indent-switches
 
 #include <m_icq.h>
 
-extern      struct ContainerWindowData *pFirstContainer;
 extern      INT_PTR CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern      HIMAGELIST CreateStateImageList();
-extern      HANDLE hTrayAnimThread, g_hEvent;
+extern      HANDLE g_hEvent;
 
 PLUGIN_DATA *PopUpList[20];
 static int PopupCount = 0;
@@ -456,7 +455,7 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 					CreateSystrayIcon(nen_options.bTraySupport);
 					SetEvent(g_hEvent);                                 // wake up the thread which cares about the floater and tray
 
-					ShowWindow(_Plugin.g_hwndHotkeyHandler, nen_options.floaterMode ? SW_SHOW : SW_HIDE);
+					ShowWindow(PluginConfig.g_hwndHotkeyHandler, nen_options.floaterMode ? SW_SHOW : SW_HIDE);
 					break;
 				}
 				case PSN_RESET:
@@ -637,7 +636,7 @@ static int PopupAct(HWND hWnd, UINT mask, PLUGIN_DATA* pdata)
 
 		for (i = 0; i < pdata->nrMerged; i++) {
 			if (pdata->eventData[i].hEvent != 0) {
-				PostMessage(_Plugin.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
+				PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
 				pdata->eventData[i].hEvent = 0;
 			}
 		}
@@ -647,7 +646,7 @@ static int PopupAct(HWND hWnd, UINT mask, PLUGIN_DATA* pdata)
 
 		for (i = 0; i < pdata->nrMerged; i++) {
 			if (pdata->eventData[i].hEvent != 0) {
-				PostMessage(_Plugin.g_hwndHotkeyHandler, DM_REMOVECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
+				PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_REMOVECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
 				pdata->eventData[i].hEvent = 0;
 			}
 		}
@@ -727,7 +726,7 @@ static int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent,
 	if (PopupCount >= MAX_POPUPS)
 		return 2;
 
-	if (!_Plugin.g_PopupAvail)
+	if (!PluginConfig.g_PopupAvail)
 		return 0;
 
 	//check if we should report this kind of event
@@ -925,7 +924,7 @@ static int PopupUpdateW(HANDLE hContact, HANDLE hEvent)
 	int  available = 0, i;
 	char szHeader[256], *szPreview = NULL;
 	BOOL isUnicode = 0;
-	DWORD codePage = M->GetDword(hContact, "ANSIcodepage", _Plugin.m_LangPackCP);
+	DWORD codePage = M->GetDword(hContact, "ANSIcodepage", PluginConfig.m_LangPackCP);
 
 	pdata = (PLUGIN_DATAW *)PopUpList[NumberPopupData(hContact)];
 
@@ -934,7 +933,7 @@ static int PopupUpdateW(HANDLE hContact, HANDLE hEvent)
 	if (hEvent) {
 		if (pdata->pluginOptions->bShowHeaders) {
 			mir_snprintf(szHeader, sizeof(szHeader), "[b]%s %d[/b]\n", Translate("New messages: "), pdata->nrMerged + 1);
-			MultiByteToWideChar(_Plugin.m_LangPackCP, 0, szHeader, -1, pdata->szHeader, 256);
+			MultiByteToWideChar(PluginConfig.m_LangPackCP, 0, szHeader, -1, pdata->szHeader, 256);
 			pdata->szHeader[255] = 0;
 		}
 		ZeroMemory(&dbe, sizeof(dbe));
@@ -1012,13 +1011,13 @@ static int PopupActW(HWND hWnd, UINT mask, PLUGIN_DATAW* pdata)
 		int i;
 
 		for (i = 0; i < pdata->nrMerged; i++)
-			PostMessage(_Plugin.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
+			PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
 	}
 	if (mask & MASK_REMOVE) {
 		int i;
 
 		for (i = 0; i < pdata->nrMerged; i++)
-			PostMessage(_Plugin.g_hwndHotkeyHandler, DM_REMOVECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
+			PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_REMOVECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
 		PopUpList[NumberPopupData(pdata->hContact)] = NULL;
 	}
 	if (mask & MASK_DISMISS) {
@@ -1096,7 +1095,7 @@ static int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
 	if (PopupCount >= MAX_POPUPS)
 		return 2;
 
-	if (!_Plugin.g_PopupAvail)
+	if (!PluginConfig.g_PopupAvail)
 		return 0;
 
 	//check if we should report this kind of event
@@ -1163,7 +1162,7 @@ static int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
 	pud.PluginWindowProc = (WNDPROC)PopupDlgProcW;
 	pud.PluginData = pdata;
 
-	codePage = M->GetDword(hContact, "ANSIcodepage", _Plugin.m_LangPackCP);
+	codePage = M->GetDword(hContact, "ANSIcodepage", PluginConfig.m_LangPackCP);
 
 	if (hContact) {
 		mir_sntprintf(pud.lpwzContactName, MAX_CONTACTNAME, _T("%s"), (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
@@ -1171,7 +1170,7 @@ static int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
 		//pud.lpwzContactName[MAX_CONTACTNAME - 1] = 0;
 	}
 	else {
-		MultiByteToWideChar(_Plugin.m_LangPackCP, 0, dbe.szModule, -1, pud.lpwzContactName, MAX_CONTACTNAME);
+		MultiByteToWideChar(PluginConfig.m_LangPackCP, 0, dbe.szModule, -1, pud.lpwzContactName, MAX_CONTACTNAME);
 		pud.lpwzContactName[MAX_CONTACTNAME - 1] = 0;
 	}
 
@@ -1253,10 +1252,10 @@ static int tabSRMM_ShowBalloon(WPARAM wParam, LPARAM lParam, UINT eventType)
 	ZeroMemory((void *)&nim, sizeof(nim));
 	nim.cbSize = sizeof(nim);
 
-	nim.hWnd = _Plugin.g_hwndHotkeyHandler;
+	nim.hWnd = PluginConfig.g_hwndHotkeyHandler;
 	nim.uID = 100;
 	nim.uFlags = NIF_ICON | NIF_INFO;
-	nim.hIcon = _Plugin.g_iconContainer;
+	nim.hIcon = PluginConfig.g_iconContainer;
 	nim.uCallbackMessage = DM_TRAYICONNOTIFY;
 	nim.uTimeout = 10000;
 	nim.dwInfoFlags = NIIF_INFO;
@@ -1278,7 +1277,7 @@ static int tabSRMM_ShowBalloon(WPARAM wParam, LPARAM lParam, UINT eventType)
 		mir_snprintf(szTitle, 64, "No Nickname");
 
 #if defined(_UNICODE)
-	MultiByteToWideChar(_Plugin.m_LangPackCP, 0, szTitle, -1, nim.szInfoTitle, 64);
+	MultiByteToWideChar(PluginConfig.m_LangPackCP, 0, szTitle, -1, nim.szInfoTitle, 64);
 #else
 	strcpy(nim.szInfoTitle, szTitle);
 #endif
@@ -1302,7 +1301,7 @@ static int tabSRMM_ShowBalloon(WPARAM wParam, LPARAM lParam, UINT eventType)
 		} else {
 nounicode:
 			msg = (wchar_t *)alloca(2 * (msglen + 1));
-			MultiByteToWideChar(_Plugin.m_LangPackCP, 0, (char *)dbei.pBlob, -1, msg, msglen);
+			MultiByteToWideChar(PluginConfig.m_LangPackCP, 0, (char *)dbei.pBlob, -1, msg, msglen);
 			if (lstrlenW(msg) >= iPreviewLimit) {
 				wcsncpy(&msg[iPreviewLimit - 3], L"...", 3);
 				msg[iPreviewLimit] = 0;
@@ -1320,7 +1319,7 @@ nounicode:
 #endif
 	} else {
 #if defined(_UNICODE)
-		MultiByteToWideChar(_Plugin.m_LangPackCP, 0, (char *)szPreview, -1, nim.szInfo, 250);
+		MultiByteToWideChar(PluginConfig.m_LangPackCP, 0, (char *)szPreview, -1, nim.szInfo, 250);
 #else
 		strncpy(nim.szInfo, (char *)dbei.pBlob, 250);
 #endif
@@ -1334,7 +1333,7 @@ nounicode:
 		CallService("OSD/Announce", (WPARAM)finalOSDString, 0);
 		free(finalOSDString);
 	} else {
-		_Plugin.m_TipOwner = (HANDLE)wParam;
+		PluginConfig.m_TipOwner = (HANDLE)wParam;
 		Shell_NotifyIcon(NIM_MODIFY, (NOTIFYICONDATA *)&nim);
 	}
 	if (dbei.pBlob)
@@ -1351,7 +1350,7 @@ void UpdateTrayMenuState(struct _MessageWindowData *dat, BOOL bForced)
 	MENUITEMINFO	mii = {0};
 	TCHAR			szMenuEntry[80];
 
-	if (_Plugin.g_hMenuTrayUnread == 0)
+	if (PluginConfig.g_hMenuTrayUnread == 0)
 		return;
 
 	mii.cbSize = sizeof(mii);
@@ -1360,9 +1359,9 @@ void UpdateTrayMenuState(struct _MessageWindowData *dat, BOOL bForced)
 	if (dat->hContact != 0) {
 		TCHAR  *tszProto = a2tf((TCHAR *)(dat->bIsMeta ? dat->szMetaProto : dat->szProto), 0, 0);
 
-		GetMenuItemInfo(_Plugin.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, FALSE, &mii);
+		GetMenuItemInfo(PluginConfig.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, FALSE, &mii);
 		if (!bForced)
-			_Plugin.m_UnreadInTray -= (mii.dwItemData & 0x0000ffff);
+			PluginConfig.m_UnreadInTray -= (mii.dwItemData & 0x0000ffff);
 		if (mii.dwItemData > 0 || bForced) {
 			if (!bForced)
 				mii.dwItemData = 0;
@@ -1372,7 +1371,7 @@ void UpdateTrayMenuState(struct _MessageWindowData *dat, BOOL bForced)
 			mii.cch = lstrlen(szMenuEntry) + 1;
 		}
 		mii.hbmpItem = HBMMENU_CALLBACK;
-		SetMenuItemInfo(_Plugin.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, FALSE, &mii);
+		SetMenuItemInfo(PluginConfig.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, FALSE, &mii);
 		if (tszProto)
 			mir_free(tszProto);
 	}
@@ -1383,7 +1382,7 @@ void UpdateTrayMenuState(struct _MessageWindowData *dat, BOOL bForced)
 
 int UpdateTrayMenu(struct _MessageWindowData *dat, WORD wStatus, char *szProto, TCHAR *szStatus, HANDLE hContact, DWORD fromEvent)
 {
-	if (_Plugin.g_hMenuTrayUnread != 0 && hContact != 0 && szProto != NULL) {
+	if (PluginConfig.g_hMenuTrayUnread != 0 && hContact != 0 && szProto != NULL) {
 		TCHAR			szMenuEntry[80], *tszFinalProto = NULL;
 		MENUITEMINFO	mii = {0};
 		WORD			wMyStatus;
@@ -1404,19 +1403,19 @@ int UpdateTrayMenu(struct _MessageWindowData *dat, WORD wStatus, char *szProto, 
 
 		if (dat != 0) {
 			szNick = dat->szNickname;
-			GetMenuItemInfo(_Plugin.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
+			GetMenuItemInfo(PluginConfig.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
 			mii.dwItemData++;
 			if (fromEvent == 2)                         // from chat...
 				mii.dwItemData |= 0x10000000;
-			DeleteMenu(_Plugin.g_hMenuTrayUnread, (UINT_PTR)hContact, MF_BYCOMMAND);
+			DeleteMenu(PluginConfig.g_hMenuTrayUnread, (UINT_PTR)hContact, MF_BYCOMMAND);
 			mir_sntprintf(szMenuEntry, safe_sizeof(szMenuEntry), _T("%s: %s (%s) [%d]"), tszFinalProto, szNick, szMyStatus, mii.dwItemData & 0x0000ffff);
-			AppendMenu(_Plugin.g_hMenuTrayUnread, MF_BYCOMMAND | MF_STRING, (UINT_PTR)hContact, szMenuEntry);
-			_Plugin.m_UnreadInTray++;
-			if (_Plugin.m_UnreadInTray)
+			AppendMenu(PluginConfig.g_hMenuTrayUnread, MF_BYCOMMAND | MF_STRING, (UINT_PTR)hContact, szMenuEntry);
+			PluginConfig.m_UnreadInTray++;
+			if (PluginConfig.m_UnreadInTray)
 				SetEvent(g_hEvent);
-			SetMenuItemInfo(_Plugin.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
+			SetMenuItemInfo(PluginConfig.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
 		} else {
-			UINT codePage = M->GetDword(hContact, "ANSIcodepage", _Plugin.m_LangPackCP);
+			UINT codePage = M->GetDword(hContact, "ANSIcodepage", PluginConfig.m_LangPackCP);
 /*
 #if defined(_UNICODE)
 			TCHAR szWNick[101];
@@ -1427,20 +1426,20 @@ int UpdateTrayMenu(struct _MessageWindowData *dat, WORD wStatus, char *szProto, 
 #endif
 */
 			szNick = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR);
-			if (CheckMenuItem(_Plugin.g_hMenuTrayUnread, (UINT_PTR)hContact, MF_BYCOMMAND | MF_UNCHECKED) == -1) {
+			if (CheckMenuItem(PluginConfig.g_hMenuTrayUnread, (UINT_PTR)hContact, MF_BYCOMMAND | MF_UNCHECKED) == -1) {
 				mir_sntprintf(szMenuEntry, safe_sizeof(szMenuEntry), _T("%s: %s (%s) [%d]"), tszFinalProto, szNick, szMyStatus, fromEvent ? 1 : 0);
-				AppendMenu(_Plugin.g_hMenuTrayUnread, MF_BYCOMMAND | MF_STRING, (UINT_PTR)hContact, szMenuEntry);
+				AppendMenu(PluginConfig.g_hMenuTrayUnread, MF_BYCOMMAND | MF_STRING, (UINT_PTR)hContact, szMenuEntry);
 				mii.dwItemData = fromEvent ? 1 : 0;
-				_Plugin.m_UnreadInTray += (mii.dwItemData & 0x0000ffff);
-				if (_Plugin.m_UnreadInTray)
+				PluginConfig.m_UnreadInTray += (mii.dwItemData & 0x0000ffff);
+				if (PluginConfig.m_UnreadInTray)
 					SetEvent(g_hEvent);
 				if (fromEvent == 2)
 					mii.dwItemData |= 0x10000000;
 			} else {
-				GetMenuItemInfo(_Plugin.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
+				GetMenuItemInfo(PluginConfig.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
 				mii.dwItemData += (fromEvent ? 1 : 0);
-				_Plugin.m_UnreadInTray += (fromEvent ? 1 : 0);
-				if (_Plugin.m_UnreadInTray)
+				PluginConfig.m_UnreadInTray += (fromEvent ? 1 : 0);
+				if (PluginConfig.m_UnreadInTray)
 					SetEvent(g_hEvent);
 				mii.fMask |= MIIM_STRING;
 				if (fromEvent == 2)
@@ -1449,7 +1448,7 @@ int UpdateTrayMenu(struct _MessageWindowData *dat, WORD wStatus, char *szProto, 
 				mii.cch = lstrlen(szMenuEntry) + 1;
 				mii.dwTypeData = (LPTSTR)szMenuEntry;
 			}
-			SetMenuItemInfo(_Plugin.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
+			SetMenuItemInfo(PluginConfig.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
 		}
 		if (tszFinalProto)
 			mir_free(tszFinalProto);
@@ -1532,7 +1531,7 @@ passed:
 	}
 	if (NumberPopupData((HANDLE)wParam) != -1 && nen_options.bMergePopup && eventType == EVENTTYPE_MESSAGE) {
 #if defined(_UNICODE)
-		if (_Plugin.g_PopupWAvail)
+		if (PluginConfig.g_PopupWAvail)
 			PopupUpdateW((HANDLE)wParam, (HANDLE)lParam);
 		else
 			PopupUpdate((HANDLE)wParam, (HANDLE)lParam);
@@ -1541,7 +1540,7 @@ passed:
 #endif
 	} else {
 #if defined(_UNICODE)
-		if (_Plugin.g_PopupWAvail)
+		if (PluginConfig.g_PopupWAvail)
 			PopupShowW(&nen_options, (HANDLE)wParam, (HANDLE)lParam, (UINT)eventType);
 		else
 			PopupShow(&nen_options, (HANDLE)wParam, (HANDLE)lParam, (UINT)eventType);
@@ -1560,7 +1559,7 @@ void DeletePopupsForContact(HANDLE hContact, DWORD dwMask)
 {
 	int i = 0;
 
-	if (!(dwMask & nen_options.dwRemoveMask) || nen_options.iDisable || !_Plugin.g_PopupAvail)
+	if (!(dwMask & nen_options.dwRemoveMask) || nen_options.iDisable || !PluginConfig.g_PopupAvail)
 		return;
 
 	while ((i = NumberPopupData(hContact)) != -1) {

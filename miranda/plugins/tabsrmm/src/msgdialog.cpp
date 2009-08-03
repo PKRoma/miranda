@@ -41,10 +41,6 @@ extern struct GlobalLogSettings_t g_Settings;
 extern HANDLE g_hEvent_MsgPopup;
 extern int    g_chat_integration_enabled;
 
-TCHAR *FilterEventMarkers(TCHAR *wszText);
-char  *FilterEventMarkersA(char *wszText);
-extern const TCHAR *DoubleAmpersands(TCHAR *pszText);
-
 TCHAR *xStatusDescr[] = {	_T("Angry"), _T("Duck"), _T("Tired"), _T("Party"), _T("Beer"), _T("Thinking"), _T("Eating"),
 								_T("TV"), _T("Friends"), _T("Coffee"),	_T("Music"), _T("Business"), _T("Camera"), _T("Funny"),
 								_T("Phone"), _T("Games"), _T("College"), _T("Shopping"), _T("Sick"), _T("Sleeping"),
@@ -90,11 +86,11 @@ static struct _buttonicons {
 	int id;
 	HICON *pIcon;
 } buttonicons[] = {
-	IDC_ADD, &_Plugin.g_buttonBarIcons[0],
-	IDC_CANCELADD, &_Plugin.g_buttonBarIcons[6],
-	IDC_LOGFROZEN, &_Plugin.g_buttonBarIcons[24],
-	IDC_TOGGLENOTES, &_Plugin.g_buttonBarIcons[28],
-	IDC_TOGGLESIDEBAR, &_Plugin.g_buttonBarIcons[25],
+	IDC_ADD, &PluginConfig.g_buttonBarIcons[0],
+	IDC_CANCELADD, &PluginConfig.g_buttonBarIcons[6],
+	IDC_LOGFROZEN, &PluginConfig.g_buttonBarIcons[24],
+	IDC_TOGGLENOTES, &PluginConfig.g_buttonBarIcons[28],
+	IDC_TOGGLESIDEBAR, &PluginConfig.g_buttonBarIcons[25],
 	-1, NULL
 };
 
@@ -146,8 +142,8 @@ static void ShowPopupMenu(HWND hwndDlg, struct _MessageWindowData *dat, int idFr
 	else {
 		hSubMenu = GetSubMenu(hMenu, 2);
 		EnableMenuItem(hSubMenu, IDM_PASTEFORMATTED, MF_BYCOMMAND | (dat->SendFormat != 0 ? MF_ENABLED : MF_GRAYED));
-		EnableMenuItem(hSubMenu, ID_EDITOR_PASTEANDSENDIMMEDIATELY, MF_BYCOMMAND | (_Plugin.m_PasteAndSend ? MF_ENABLED : MF_GRAYED));
-		CheckMenuItem(hSubMenu, ID_EDITOR_SHOWMESSAGELENGTHINDICATOR, MF_BYCOMMAND | (_Plugin.m_visualMessageSizeIndicator ? MF_CHECKED : MF_UNCHECKED));
+		EnableMenuItem(hSubMenu, ID_EDITOR_PASTEANDSENDIMMEDIATELY, MF_BYCOMMAND | (PluginConfig.m_PasteAndSend ? MF_ENABLED : MF_GRAYED));
+		CheckMenuItem(hSubMenu, ID_EDITOR_SHOWMESSAGELENGTHINDICATOR, MF_BYCOMMAND | (PluginConfig.m_visualMessageSizeIndicator ? MF_CHECKED : MF_UNCHECKED));
 	}
 	CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
 	SendMessage(hwndFrom, EM_EXGETSEL, 0, (LPARAM) & sel);
@@ -164,13 +160,13 @@ static void ShowPopupMenu(HWND hwndDlg, struct _MessageWindowData *dat, int idFr
 		int i;
 		//MAD: quote mod
 		InsertMenuA(hSubMenu, 6/*5*/, MF_BYPOSITION | MF_SEPARATOR, 0, 0);
-		InsertMenu(hSubMenu, 7/*6*/, MF_BYPOSITION | MF_POPUP, (UINT_PTR) _Plugin.g_hMenuEncoding, TranslateT("Character Encoding"));
-		for (i = 0; i < GetMenuItemCount(_Plugin.g_hMenuEncoding); i++)
-			CheckMenuItem(_Plugin.g_hMenuEncoding, i, MF_BYPOSITION | MF_UNCHECKED);
+		InsertMenu(hSubMenu, 7/*6*/, MF_BYPOSITION | MF_POPUP, (UINT_PTR) PluginConfig.g_hMenuEncoding, TranslateT("Character Encoding"));
+		for (i = 0; i < GetMenuItemCount(PluginConfig.g_hMenuEncoding); i++)
+			CheckMenuItem(PluginConfig.g_hMenuEncoding, i, MF_BYPOSITION | MF_UNCHECKED);
 		if (dat->codePage == CP_ACP)
-			CheckMenuItem(_Plugin.g_hMenuEncoding, 0, MF_BYPOSITION | MF_CHECKED);
+			CheckMenuItem(PluginConfig.g_hMenuEncoding, 0, MF_BYPOSITION | MF_CHECKED);
 		else
-			CheckMenuItem(_Plugin.g_hMenuEncoding, dat->codePage, MF_BYCOMMAND | MF_CHECKED);
+			CheckMenuItem(PluginConfig.g_hMenuEncoding, dat->codePage, MF_BYCOMMAND | MF_CHECKED);
 		CheckMenuItem(hSubMenu, ID_LOG_FREEZELOG, MF_BYCOMMAND | (dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED ? MF_CHECKED : MF_UNCHECKED));
 	}
 #endif
@@ -237,8 +233,8 @@ static void ShowPopupMenu(HWND hwndDlg, struct _MessageWindowData *dat, int idFr
 				SendMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_KEYDOWN, VK_F12, 0);
 				break;
 			case ID_EDITOR_SHOWMESSAGELENGTHINDICATOR:
-				_Plugin.m_visualMessageSizeIndicator = !_Plugin.m_visualMessageSizeIndicator;
-				M->WriteByte(SRMSGMOD_T, "msgsizebar", (BYTE)_Plugin.m_visualMessageSizeIndicator);
+				PluginConfig.m_visualMessageSizeIndicator = !PluginConfig.m_visualMessageSizeIndicator;
+				M->WriteByte(SRMSGMOD_T, "msgsizebar", (BYTE)PluginConfig.m_visualMessageSizeIndicator);
 				M->BroadcastMessage(DM_CONFIGURETOOLBAR, 0, 0);
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
 				break;
@@ -422,7 +418,7 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct _MessageWindowData *dat, U
 		if (dat->dwFlags & MWF_NEEDCHECKSIZE)
 			PostMessage(hwndDlg, DM_SAVESIZE, 0, 0);
 
-		if (_Plugin.m_AutoLocaleSupport && dat->hContact != 0) {
+		if (PluginConfig.m_AutoLocaleSupport && dat->hContact != 0) {
 			if (dat->hkl == 0)
 				//DM_LoadLocale(hwndDlg, dat);
 				PostMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
@@ -438,9 +434,9 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct _MessageWindowData *dat, U
 		UpdateContainerMenu(hwndDlg, dat);
 		UpdateTrayMenuState(dat, FALSE);
 
-		if (_Plugin.m_TipOwner == dat->hContact)
+		if (PluginConfig.m_TipOwner == dat->hContact)
 			RemoveBalloonTip();
-		if (_Plugin.m_MathModAvail) {
+		if (PluginConfig.m_MathModAvail) {
 			CallService(MTH_Set_ToolboxEditHwnd, 0, (LPARAM)GetDlgItem(hwndDlg, IDC_MESSAGE));
 			MTH_updateMathWindow(hwndDlg, dat);
 		}
@@ -508,7 +504,7 @@ static void ConfigurePanel(HWND hwndDlg, struct _MessageWindowData *dat)
 }
 static void ShowHideInfoPanel(HWND hwndDlg, struct _MessageWindowData *dat)
 {
-	HBITMAP hbm = dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : _Plugin.g_hbmUnknown);
+	HBITMAP hbm = dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
 	BITMAP bm;
 
 	if (dat->dwFlags & MWF_ERRORSTATE)
@@ -642,12 +638,12 @@ void SetDialogToType(HWND hwndDlg)
 	SendMessage(hwndDlg, DM_UPDATETITLE, 0, 1);
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
 
-	if (!_Plugin.g_FlashAvatarAvail) {
+	if (!PluginConfig.g_FlashAvatarAvail) {
 		EnableWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), FALSE);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_PANELPIC), FALSE);
 	}
 
-	ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLESIDEBAR), _Plugin.m_SideBarEnabled ? SW_SHOW : SW_HIDE);
+	ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLESIDEBAR), PluginConfig.m_SideBarEnabled ? SW_SHOW : SW_HIDE);
 
 	// info panel stuff
 	if (!(dat->dwFlags & MWF_ERRORSTATE)) {
@@ -735,7 +731,7 @@ UINT DrawRichEditFrame(HWND hwnd, struct _MessageWindowData *mwdat, UINT skinID,
 		ClientToScreen(hwnd, &pt);
 		left_off = pt.x - rcWindow.left;
 		if (dwStyle & WS_VSCROLL && dwExStyle & WS_EX_RTLREADING)
-			left_off -= _Plugin.ncm.iScrollWidth;
+			left_off -= PluginConfig.ncm.iScrollWidth;
 		top_off = pt.y - rcWindow.top;
 
 		if (mwdat->pContainer->bSkinned && !item->IGNORED) {
@@ -865,17 +861,17 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
 			BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
 			//MAD: sound on typing..
-			if(_Plugin.g_bSoundOnTyping&&!isAlt&&!isCtrl&&!(mwdat->pContainer->dwFlags&CNT_NOSOUND)&&wParam!=VK_ESCAPE&&!(wParam==VK_TAB&&_Plugin.m_AllowTab))
+			if(PluginConfig.g_bSoundOnTyping&&!isAlt&&!isCtrl&&!(mwdat->pContainer->dwFlags&CNT_NOSOUND)&&wParam!=VK_ESCAPE&&!(wParam==VK_TAB&&PluginConfig.m_AllowTab))
 		  		SkinPlaySound("SoundOnTyping");
 			 //MAD
-			if (wParam == 0x0d && isCtrl && _Plugin.m_MathModAvail) {
+			if (wParam == 0x0d && isCtrl && PluginConfig.m_MathModAvail) {
 				TCHAR toInsert[100];
 				BYTE keyState[256];
 				size_t i;
-				size_t iLen = _tcslen(_Plugin.m_MathModStartDelimiter);
+				size_t iLen = _tcslen(PluginConfig.m_MathModStartDelimiter);
 				ZeroMemory(keyState, 256);
-				_tcsncpy(toInsert, _Plugin.m_MathModStartDelimiter, 30);
-				_tcsncat(toInsert, _Plugin.m_MathModStartDelimiter, 30);
+				_tcsncpy(toInsert, PluginConfig.m_MathModStartDelimiter, 30);
+				_tcsncat(toInsert, PluginConfig.m_MathModStartDelimiter, 30);
 				SendMessage(hwnd, EM_REPLACESEL, TRUE, (LPARAM)toInsert);
 				SetKeyboardState(keyState);
 				for (i = 0; i < iLen; i++)
@@ -940,7 +936,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
 
 			//MAD: sound on typing..
-  			if(_Plugin.g_bSoundOnTyping&&!isAlt&&!(mwdat->pContainer->dwFlags&CNT_NOSOUND)&&wParam == VK_DELETE)
+  			if(PluginConfig.g_bSoundOnTyping&&!isAlt&&!(mwdat->pContainer->dwFlags&CNT_NOSOUND)&&wParam == VK_DELETE)
   				SkinPlaySound("SoundOnTyping");
  			//
 
@@ -953,21 +949,21 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 
 			if (wParam == VK_RETURN) {
 				if (isShift) {
-					if (_Plugin.m_SendOnShiftEnter) {
+					if (PluginConfig.m_SendOnShiftEnter) {
 						PostMessage(hwndParent, WM_COMMAND, IDOK, 0);
 						return 0;
 					} else
 						break;
 				}
-				if ((isCtrl && !isShift) ^(0 != _Plugin.m_SendOnEnter)) {
+				if ((isCtrl && !isShift) ^(0 != PluginConfig.m_SendOnEnter)) {
 					PostMessage(hwndParent, WM_COMMAND, IDOK, 0);
 					return 0;
 				}
-				if (_Plugin.m_SendOnEnter || _Plugin.m_SendOnDblEnter) {
+				if (PluginConfig.m_SendOnEnter || PluginConfig.m_SendOnDblEnter) {
 					if (isCtrl)
 						break;
 					else {
-						if (_Plugin.m_SendOnDblEnter) {
+						if (PluginConfig.m_SendOnDblEnter) {
 							if (lastEnterTime + 2 < time(NULL)) {
 								lastEnterTime = time(NULL);
 								SetWindowLongPtr(hwnd, GWLP_USERDATA, lastEnterTime);
@@ -1195,7 +1191,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			return CallWindowProc(OldMessageEditProc, hwnd, WM_INPUTLANGCHANGEREQUEST, wParam, lParam);
 		}
 		case WM_INPUTLANGCHANGE:
-			if (_Plugin.m_AutoLocaleSupport && GetFocus() == hwnd && mwdat->pContainer->hwndActive == hwndParent && GetForegroundWindow() == mwdat->pContainer->hwnd && GetActiveWindow() == mwdat->pContainer->hwnd) {
+			if (PluginConfig.m_AutoLocaleSupport && GetFocus() == hwnd && mwdat->pContainer->hwndActive == hwndParent && GetForegroundWindow() == mwdat->pContainer->hwnd && GetActiveWindow() == mwdat->pContainer->hwnd) {
 				DM_SaveLocale(hwndParent, mwdat, wParam, lParam);
 				SendMessage(hwnd, EM_SETLANGOPTIONS, 0, (LPARAM) SendMessage(hwnd, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
 			}
@@ -1272,13 +1268,13 @@ static LRESULT CALLBACK MsgIndicatorSubclassProc(HWND hwnd, UINT msg, WPARAM wPa
 				Rectangle(dc, 0, 0, rc.right, 2);
 				//SkinDrawBG(hwnd, dat->pContainer->hwnd, dat->pContainer, &rc, dc);
 				SelectObject(dc, hPenOld);
-			} else if (_Plugin.m_visualMessageSizeIndicator)
+			} else if (PluginConfig.m_visualMessageSizeIndicator)
 				FillRect(dc, &rc, GetSysColorBrush(COLOR_3DHIGHLIGHT));
 
-			if (_Plugin.m_visualMessageSizeIndicator) {
+			if (PluginConfig.m_visualMessageSizeIndicator) {
 				HBRUSH br = CreateSolidBrush(RGB(0, 255, 0));
 				HBRUSH brOld = (HBRUSH)SelectObject(dc, br);
-				if (!_Plugin.m_autoSplit) {
+				if (!PluginConfig.m_autoSplit) {
 					float fMax = (float)dat->nMax;
 					float uPercent = (float)dat->textLen / ((fMax / (float)100.0) ? (fMax / (float)100.0) : (float)75.0);
 					float fx = ((float)rc.right / (float)100.0) * uPercent;
@@ -1330,7 +1326,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		case WM_SETCURSOR: {
 			RECT rc;
 			GetClientRect(hwnd, &rc);
-			SetCursor(rc.right > rc.bottom ? _Plugin.hCurSplitNS : _Plugin.hCurSplitWE);
+			SetCursor(rc.right > rc.bottom ? PluginConfig.hCurSplitNS : PluginConfig.hCurSplitWE);
 			return TRUE;
 		}
 		case WM_LBUTTONDOWN: {
@@ -1456,10 +1452,10 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 						if (bSync) {
 							if (dat->bType == SESSIONTYPE_IM) {
 								dwOff_IM = 0;
-								dwOff_CHAT = -(2 + (_Plugin.g_DPIscaleY > 1.0 ? 1 : 0));
+								dwOff_CHAT = -(2 + (PluginConfig.g_DPIscaleY > 1.0 ? 1 : 0));
 							} else if (dat->bType == SESSIONTYPE_CHAT) {
 								dwOff_CHAT = 0;
-								dwOff_IM = 2 + (_Plugin.g_DPIscaleY > 1.0 ? 1 : 0);
+								dwOff_IM = 2 + (PluginConfig.g_DPIscaleY > 1.0 ? 1 : 0);
 							}
 						}
 						GetWindowRect(hwndParent, &rcWin);
@@ -1606,7 +1602,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
  				urc->rcItem.right-urc->rcItem.left-2,
  				urc->rcItem.bottom-urc->rcItem.top-2, SWP_SHOWWINDOW);
 			//Bolshevik_
-			if (_Plugin.g_FlashAvatarAvail) {
+			if (PluginConfig.g_FlashAvatarAvail) {
 				RECT rc = { urc->rcItem.left,  urc->rcItem.top, urc->rcItem.right, urc->rcItem.bottom };
 				if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
 					FLASHAVATAR fa = {0};
@@ -1641,7 +1637,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
 			urc->rcItem.bottom = urc->rcItem.top + 2;
 			OffsetRect(&urc->rcItem, 0, 1);
-			if (_Plugin.m_SideBarEnabled)
+			if (PluginConfig.m_SideBarEnabled)
 				urc->rcItem.left = 9;
 			else
 				urc->rcItem.left = 0;
@@ -1661,7 +1657,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			} else
 				dat->fMustOffset = FALSE;
 
-			if(showToolbar&&bBottomToolbar&&(_Plugin.m_AlwaysFullToolbarWidth||((dat->pic.cy-DPISCALEY(6))<rc.bottom))) urc->rcItem.bottom-=DPISCALEY(22);
+			if(showToolbar&&bBottomToolbar&&(PluginConfig.m_AlwaysFullToolbarWidth||((dat->pic.cy-DPISCALEY(6))<rc.bottom))) urc->rcItem.bottom-=DPISCALEY(22);
 
 			//Bolshevik: resizes avatar control _FIXED
 			if( dat->hwndContactPic ) //if Panel control was created?
@@ -1669,7 +1665,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 				dat->pic.cx-2,
 				dat->pic.cy-2, SWP_SHOWWINDOW);
 			//Bolshevik_
-			if (_Plugin.g_FlashAvatarAvail) {
+			if (PluginConfig.g_FlashAvatarAvail) {
 				RECT rc = { urc->rcItem.left,  urc->rcItem.top, urc->rcItem.right, urc->rcItem.bottom };
 				FLASHAVATAR fa = {0};
 
@@ -1694,9 +1690,9 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 				}
 			} else
 				not_on_list = 0;
-			if (_Plugin.m_SideBarEnabled)
+			if (PluginConfig.m_SideBarEnabled)
 				urc->rcItem.left += 9;
-			if (_Plugin.m_visualMessageSizeIndicator)
+			if (PluginConfig.m_visualMessageSizeIndicator)
 				urc->rcItem.bottom -= DPISCALEY(2);
 			//mad
 			if (bBottomToolbar&&showToolbar)
@@ -1740,7 +1736,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			urc->rcItem.right = urc->dlgNewSize.cx;
 			if (dat->showPic)
 				urc->rcItem.right -= dat->pic.cx + 2;
-			if (_Plugin.m_SideBarEnabled)
+			if (PluginConfig.m_SideBarEnabled)
 				urc->rcItem.left += 9;
  			if (bBottomToolbar&&showToolbar){
 				urc->rcItem.bottom -= DPISCALEY(23);
@@ -1749,7 +1745,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 
 			urc->rcItem.right -= not_on_list;
 			OffsetRect(&urc->rcItem, 0, -1);
-			ShowWindow(GetDlgItem(hwndDlg, IDC_MSGINDICATOR), _Plugin.m_visualMessageSizeIndicator ? SW_SHOW : SW_HIDE);
+			ShowWindow(GetDlgItem(hwndDlg, IDC_MSGINDICATOR), PluginConfig.m_visualMessageSizeIndicator ? SW_SHOW : SW_HIDE);
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_BOTTOM;
 	}
 	return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
@@ -1975,7 +1971,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			ZeroMemory((void *)&dat->ti, sizeof(dat->ti));
 			dat->ti.cbSize = sizeof(dat->ti);
-			dat->ti.lpszText = _Plugin.m_szNoStatus;
+			dat->ti.lpszText = PluginConfig.m_szNoStatus;
 			dat->ti.hinst = g_hInst;
 			dat->ti.hwnd = hwndDlg;
 			dat->ti.uFlags = TTF_TRACK | TTF_IDISHWND | TTF_TRANSPARENT;
@@ -2079,7 +2075,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			 * add us to the tray list (if it exists)
 			 */
 
-			if (_Plugin.g_hMenuTrayUnread != 0 && dat->hContact != 0 && dat->szProto != NULL)
+			if (PluginConfig.g_hMenuTrayUnread != 0 && dat->hContact != 0 && dat->szProto != NULL)
 				UpdateTrayMenu(0, dat->wStatus, dat->szProto, dat->szStatus, dat->hContact, FALSE);
 
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
@@ -2191,7 +2187,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 				dbei.flags = 0;
 				dbei.eventType = EVENTTYPE_MESSAGE;
-				dat->iFlashIcon = _Plugin.g_IconMsgEvent;
+				dat->iFlashIcon = PluginConfig.g_IconMsgEvent;
 				SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
 				dat->mayFlashTab = TRUE;
 				FlashOnClist(hwndDlg, dat, dat->hDbEventFirst, &dbei);
@@ -2398,7 +2394,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				/*
 				 * correct the input area text color to avoid a color from the table of usable bbcode colors
 				 */
-				for (i = 0; i < _Plugin.rtf_ctablesize; i++) {
+				for (i = 0; i < PluginConfig.rtf_ctablesize; i++) {
 					if (rtf_ctable[i].clr == inputcharcolor)
 						inputcharcolor = RGB(GetRValue(inputcharcolor), GetGValue(inputcharcolor), GetBValue(inputcharcolor) == 0 ? GetBValue(inputcharcolor) + 1 : GetBValue(inputcharcolor) - 1);
 				}
@@ -2533,7 +2529,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					dat->wApparentMode = DBGetContactSettingWord(hActContact, szActProto, "ApparentMode", 0);
 
 					if (iHash != dat->iOldHash || dat->wStatus != dat->wOldStatus || dat->xStatus != oldXStatus || lParam != 0) {
-						if (_Plugin.m_CutContactNameOnTabs)
+						if (PluginConfig.m_CutContactNameOnTabs)
 							CutContactName(dat->szNickname, newcontactname, safe_sizeof(newcontactname));
 						else
 							lstrcpyn(newcontactname, dat->szNickname, safe_sizeof(newcontactname));
@@ -2541,7 +2537,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						DoubleAmpersands(newcontactname);
 
 						if (lstrlen(newcontactname) != 0 && dat->szStatus != NULL) {
-							if (_Plugin.m_StatusOnTabs)
+							if (PluginConfig.m_StatusOnTabs)
 								mir_sntprintf(newtitle, 127, _T("%s (%s)"), newcontactname, dat->szStatus);
 							else
 								mir_sntprintf(newtitle, 127, _T("%s"), newcontactname);
@@ -2565,7 +2561,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				lstrcpyn(newtitle, pszNewTitleEnd, safe_sizeof(newtitle));
 
 			if (dat->xStatus != oldXStatus || dat->idle != dwOldIdle || iHash != dat->iOldHash || dat->wApparentMode != wOldApparentMode || dat->wStatus != dat->wOldStatus || lParam != 0 || (dat->bIsMeta && dat->szMetaProto != szOldMetaProto)) {
-				if (dat->hContact != 0 &&(_Plugin.m_LogStatusChanges != 0)&& dat->dwFlags & MWF_LOG_STATUSCHANGES) {
+				if (dat->hContact != 0 &&(PluginConfig.m_LogStatusChanges != 0)&& dat->dwFlags & MWF_LOG_STATUSCHANGES) {
 					if (dat->wStatus != dat->wOldStatus && dat->hContact != 0 && dat->wOldStatus != (WORD) - 1 && !(dat->dwFlags & MWF_INITMODE)) {          // log status changes to message log
 						DBEVENTINFO dbei;
 						TCHAR buffer[450];
@@ -2622,10 +2618,10 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 				UpdateTrayMenuState(dat, TRUE);
 				if (LOWORD(dat->dwIsFavoritOrRecent))
-					AddContactToFavorites(dat->hContact, dat->szNickname, szActProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 0, _Plugin.g_hMenuFavorites, dat->codePage);
+					AddContactToFavorites(dat->hContact, dat->szNickname, szActProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 0, PluginConfig.g_hMenuFavorites, dat->codePage);
 				if (M->GetDword(dat->hContact, "isRecent", 0)) {
 					dat->dwIsFavoritOrRecent |= 0x00010000;
-					AddContactToFavorites(dat->hContact, dat->szNickname, szActProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 0, _Plugin.g_hMenuRecent, dat->codePage);
+					AddContactToFavorites(dat->hContact, dat->szNickname, szActProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 0, PluginConfig.g_hMenuRecent, dat->codePage);
 				} else
 					dat->dwIsFavoritOrRecent &= 0x0000ffff;
 
@@ -2635,7 +2631,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
 				}
 
-				if (_Plugin.g_FlashAvatarAvail) {
+				if (PluginConfig.g_FlashAvatarAvail) {
 					FLASHAVATAR fa = {0};
 
 					fa.hContact = dat->hContact;
@@ -2668,7 +2664,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			GetMyNick(hwndDlg, dat);
 			return 0;
 		case DM_ADDDIVIDER:
-			if (!(dat->dwFlags & MWF_DIVIDERSET) && _Plugin.m_UseDividers) {
+			if (!(dat->dwFlags & MWF_DIVIDERSET) && PluginConfig.m_UseDividers) {
 				if (GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_LOG)) > 0) {
 					dat->dwFlags |= MWF_DIVIDERWANTED;
 					dat->dwFlags |= MWF_DIVIDERSET;
@@ -2677,7 +2673,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			return 0;
 
 		case WM_SETFOCUS:
-			if (_Plugin.g_FlashAvatarAvail) { // own avatar draw
+			if (PluginConfig.g_FlashAvatarAvail) { // own avatar draw
 				FLASHAVATAR fa = { 0 };
 				fa.cProto = dat->szProto;
 				fa.id = 25367;
@@ -2725,7 +2721,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			BITMAP bminfo;
 			RECT rc, rcPic;
 			int saved = 0;
-			HBITMAP hbm = dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : _Plugin.g_hbmUnknown);
+			HBITMAP hbm = dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
 			RECT rcPanelBottom;
 
 			if (IsIconic(hwndDlg))
@@ -3037,10 +3033,10 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					*/
 					if (!(dbei.flags & DBEF_SENT) && !fIsStatusChangeEvent) {
 
-						if (_Plugin.m_DividersUsePopupConfig && _Plugin.m_UseDividers) {
+						if (PluginConfig.m_DividersUsePopupConfig && PluginConfig.m_UseDividers) {
 							if (!MessageWindowOpened((WPARAM)dat->hContact, 0))
 								SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
-						} else if (_Plugin.m_UseDividers) {
+						} else if (PluginConfig.m_UseDividers) {
 							if ((GetForegroundWindow() != hwndContainer || GetActiveWindow() != hwndContainer))
 								SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
 							else {
@@ -3053,7 +3049,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 					if ((HANDLE) lParam != dat->hDbEventFirst) {
 						HANDLE nextEvent = (HANDLE) CallService(MS_DB_EVENT_FINDNEXT, lParam, 0);
-						if (_Plugin.m_FixFutureTimestamps || nextEvent == 0) {
+						if (PluginConfig.m_FixFutureTimestamps || nextEvent == 0) {
 							if (!(dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED))
 								SendMessage(hwndDlg, DM_APPENDTOLOG, lParam, 0);
 							else {
@@ -3082,16 +3078,16 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					if ((TabCtrl_GetCurSel(hwndTab) != dat->iTabID) && !(dbei.flags & DBEF_SENT) && !fIsStatusChangeEvent) {
 						switch (dbei.eventType) {
 							case EVENTTYPE_MESSAGE:
-								dat->iFlashIcon = _Plugin.g_IconMsgEvent;
+								dat->iFlashIcon = PluginConfig.g_IconMsgEvent;
 								break;
 							case EVENTTYPE_URL:
-								dat->iFlashIcon = _Plugin.g_IconUrlEvent;
+								dat->iFlashIcon = PluginConfig.g_IconUrlEvent;
 								break;
 							case EVENTTYPE_FILE:
-								dat->iFlashIcon = _Plugin.g_IconFileEvent;
+								dat->iFlashIcon = PluginConfig.g_IconFileEvent;
 								break;
 							default:
-								dat->iFlashIcon = _Plugin.g_IconMsgEvent;
+								dat->iFlashIcon = PluginConfig.g_IconMsgEvent;
 								break;
 						}
 						SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
@@ -3107,7 +3103,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					* never switch for status changes...
 					*/
 					if (!(dbei.flags & DBEF_SENT) && !fIsStatusChangeEvent) {
-						if (IsIconic(hwndContainer) && !IsZoomed(hwndContainer) && _Plugin.m_AutoSwitchTabs && m_pContainer->hwndActive != hwndDlg) {
+						if (IsIconic(hwndContainer) && !IsZoomed(hwndContainer) && PluginConfig.m_AutoSwitchTabs && m_pContainer->hwndActive != hwndDlg) {
 							int iItem = GetTabIndexFromHWND(GetParent(hwndDlg), hwndDlg);
 							if (iItem >= 0) {
 								TabCtrl_SetCurSel(GetParent(hwndDlg), iItem);
@@ -3220,7 +3216,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							SendMessage(hwndContainer, DM_UPDATETITLE, 0, 0);
 						else
 							SendMessage(hwndContainer, DM_UPDATETITLE, (WPARAM)m_pContainer->hwndActive, (LPARAM)1);
-						if (!(m_pContainer->dwFlags & CNT_NOFLASH) && _Plugin.m_FlashOnMTN)
+						if (!(m_pContainer->dwFlags & CNT_NOFLASH) && PluginConfig.m_FlashOnMTN)
 							ReflashContainer(m_pContainer);
 					}
 				} else {
@@ -3232,29 +3228,29 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						dat->nTypeSecs--;
 						if (m_pContainer->hwndStatus && m_pContainer->hwndActive == hwndDlg) {
 							SendMessage(m_pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM) szBuf);
-							SendMessage(m_pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) _Plugin.g_buttonBarIcons[5]);
+							SendMessage(m_pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) PluginConfig.g_buttonBarIcons[5]);
 							if (m_pContainer->hwndSlist)
-								SendMessage(m_pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM) _Plugin.g_buttonBarIcons[5]);
+								SendMessage(m_pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM) PluginConfig.g_buttonBarIcons[5]);
 						}
 						if (IsIconic(hwndContainer) || GetForegroundWindow() != hwndContainer || GetActiveWindow() != hwndContainer) {
 							SetWindowText(hwndContainer, szBuf);
 							m_pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
-							if (!(m_pContainer->dwFlags & CNT_NOFLASH) && _Plugin.m_FlashOnMTN)
+							if (!(m_pContainer->dwFlags & CNT_NOFLASH) && PluginConfig.m_FlashOnMTN)
 								ReflashContainer(m_pContainer);
 						}
 						if (m_pContainer->hwndActive != hwndDlg) {
 							if (dat->mayFlashTab)
-								dat->iFlashIcon = _Plugin.g_IconTypingEvent;
-							HandleIconFeedback(hwndDlg, dat, _Plugin.g_IconTypingEvent);
+								dat->iFlashIcon = PluginConfig.g_IconTypingEvent;
+							HandleIconFeedback(hwndDlg, dat, PluginConfig.g_IconTypingEvent);
 						} else {         // active tab may show icon if status bar is disabled
 							if (!m_pContainer->hwndStatus) {
 								if (TabCtrl_GetItemCount(GetParent(hwndDlg)) > 1 || !(m_pContainer->dwFlags & CNT_HIDETABS)) {
-									HandleIconFeedback(hwndDlg, dat, _Plugin.g_IconTypingEvent);
+									HandleIconFeedback(hwndDlg, dat, PluginConfig.g_IconTypingEvent);
 								}
 							}
 						}
 						if ((GetForegroundWindow() != hwndContainer) || (m_pContainer->hwndStatus == 0))
-							SendMessage(hwndContainer, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) _Plugin.g_buttonBarIcons[5]);
+							SendMessage(hwndContainer, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) PluginConfig.g_buttonBarIcons[5]);
 						dat->showTyping = 1;
 					}
 				}
@@ -3287,7 +3283,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							EnableSendButton(hwndDlg, FALSE);
 							if (m_pContainer->hwndActive == hwndDlg)
 								UpdateReadChars(hwndDlg, dat);
-							SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) _Plugin.g_buttonBarIcons[6]);
+							SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) PluginConfig.g_buttonBarIcons[6]);
 							SendDlgItemMessage(hwndDlg, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM)pszIDCSAVE_close, 0);
 							dat->dwFlags &= ~MWF_SAVEBTN_SAV;
 							SendQueue::SendLater();							// to be implemented at a later time
@@ -3330,7 +3326,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						int iNextFailed;
 						SendJob *job = sendQueue->getJobByIndex(dat->iCurrentQueueError);
 
-						SetTimer(hwndDlg, TIMERID_MSGSEND + dat->iCurrentQueueError, _Plugin.m_MsgTimeout, NULL);
+						SetTimer(hwndDlg, TIMERID_MSGSEND + dat->iCurrentQueueError, PluginConfig.m_MsgTimeout, NULL);
 						job->iStatus = SendQueue::SQ_INPROGRESS;
 						dat->iCurrentQueueError = -1;
 						sendQueue->showErrorControls(dat, FALSE);
@@ -3354,7 +3350,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		case DM_SETLOCALE:
 			if (dat->dwFlags & MWF_WASBACKGROUNDCREATE)
 				break;
-			if (m_pContainer->hwndActive == hwndDlg && _Plugin.m_AutoLocaleSupport && dat->hContact != 0 && hwndContainer == GetForegroundWindow() && hwndContainer == GetActiveWindow()) {
+			if (m_pContainer->hwndActive == hwndDlg && PluginConfig.m_AutoLocaleSupport && dat->hContact != 0 && hwndContainer == GetForegroundWindow() && hwndContainer == GetActiveWindow()) {
 				if (lParam == 0) {
 					if (GetKeyboardLayout(0) != dat->hkl) {
 						ActivateKeyboardLayout(dat->hkl, 0);
@@ -3420,7 +3416,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			if (m_pContainer->dwFlags & CNT_INFOPANEL)
 				height += dat->panelHeight;
 			if (!(m_pContainer->dwFlags & CNT_NOMENUBAR))
-				height += _Plugin.ncm.iMenuHeight;
+				height += PluginConfig.ncm.iMenuHeight;
 			dat->uMinHeight = height;
 			return 0;
 		}
@@ -3534,7 +3530,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			else if (PtInRect(&rcPanelPicture, pt) || PtInRect(&rcPanelNick, pt))
 				menuID = MENU_PANELPICMENU;
 
-			if ((menuID == MENU_PICMENU && ((dat->ace ? dat->ace->hbmPic : _Plugin.g_hbmUnknown) || dat->hOwnPic) && dat->showPic != 0) || (menuID == MENU_PANELPICMENU && dat->dwFlagsEx & MWF_SHOW_INFOPANEL)) {
+			if ((menuID == MENU_PICMENU && ((dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown) || dat->hOwnPic) && dat->showPic != 0) || (menuID == MENU_PANELPICMENU && dat->dwFlagsEx & MWF_SHOW_INFOPANEL)) {
 				int iSelection, isHandled;
 				HMENU submenu = 0;
 
@@ -3961,14 +3957,13 @@ quote_from_last:
 					CHARFORMAT2 cf, cfOld;
 					int cmd = LOWORD(wParam);
 					BOOL isBold, isItalic, isUnderline, isStrikeout;
-					cf.cbSize = sizeof(CHARFORMAT2);
 
 					if (dat->SendFormat == 0)           // dont use formatting if disabled
 						break;
 
 					ZeroMemory(&cf, sizeof(CHARFORMAT2));
 					ZeroMemory(&cfOld, sizeof(CHARFORMAT2));
-					cfOld.cbSize = sizeof(CHARFORMAT2);
+					cfOld.cbSize = cf.cbSize = sizeof(CHARFORMAT2);
 					cfOld.dwMask = CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE | CFM_STRIKEOUT;
 					SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
 					isBold = (cfOld.dwEffects & CFE_BOLD) && (cfOld.dwMask & CFM_BOLD);
@@ -3996,11 +3991,11 @@ quote_from_last:
 						cf.dwEffects = isUnderline ? 0 : CFE_UNDERLINE;
 						cf.dwMask = CFM_UNDERLINE;
 						CheckDlgButton(hwndDlg, IDC_FONTUNDERLINE, !isUnderline);
-						} else if (cmd == IDC_FONTSTRIKEOUT) {
-							cf.dwEffects = isStrikeout ? 0 : CFM_STRIKEOUT;
-							cf.dwMask = CFM_STRIKEOUT;
-							CheckDlgButton(hwndDlg, IDC_FONTSTRIKEOUT, !isStrikeout);
-						}
+					} else if (cmd == IDC_FONTSTRIKEOUT) {
+						cf.dwEffects = isStrikeout ? 0 : CFM_STRIKEOUT;
+						cf.dwMask = CFM_STRIKEOUT;
+						CheckDlgButton(hwndDlg, IDC_FONTSTRIKEOUT, !isStrikeout);
+					}
 					SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
 					break;
 				}
@@ -4026,7 +4021,7 @@ quote_from_last:
 					if (iSelection == ID_FONT_DEFAULTCOLOR) {
 						int i = 0;
 						cf.crTextColor = M->GetDword(FONTMODULE, "Font16Col", 0);
-						for (i = 0; i < _Plugin.rtf_ctablesize; i++) {
+						for (i = 0; i < PluginConfig.rtf_ctablesize; i++) {
 							if (rtf_ctable[i].clr == cf.crTextColor)
 								cf.crTextColor = RGB(GetRValue(cf.crTextColor), GetGValue(cf.crTextColor), GetBValue(cf.crTextColor) == 0 ? GetBValue(cf.crTextColor) + 1 : GetBValue(cf.crTextColor) - 1);
 						}
@@ -4063,7 +4058,7 @@ quote_from_last:
 					CallService(MS_HISTORY_SHOWCONTACTHISTORY, (WPARAM) dat->hContact, 0);
 					break;
 				case IDC_SMILEYBTN:
-					if (dat->doSmileys && _Plugin.g_SmileyAddAvail) {
+					if (dat->doSmileys && PluginConfig.g_SmileyAddAvail) {
 						HICON hButtonIcon = 0;
 						RECT rc;
 						HANDLE hContact = dat->bIsMeta ? dat->hSubContact : dat->hContact;
@@ -4120,7 +4115,7 @@ quote_from_last:
 					RECT rc;
 					HMENU submenu = GetSubMenu(m_pContainer->hMenuContext, 4);
 					int iSelection;
-					int iOldGlobalSendFormat = _Plugin.m_SendFormat;
+					int iOldGlobalSendFormat = PluginConfig.m_SendFormat;
 
 					if (dat->hContact) {
 						unsigned int iOldIEView = GetIEViewMode(hwndDlg, dat->hContact);
@@ -4139,7 +4134,7 @@ quote_from_last:
 						CheckMenuItem(submenu, ID_MESSAGELOGDISPLAY_USEHISTORY, MF_BYCOMMAND | (M->GetByte(dat->hContact, "hpplog", 0) == 1 ? MF_CHECKED : MF_UNCHECKED));
 						CheckMenuItem(submenu, ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG, MF_BYCOMMAND | ((M->GetByte(dat->hContact, "ieview", 0) == (BYTE) - 1 && M->GetByte(dat->hContact, "hpplog", 0) == (BYTE) - 1) ? MF_CHECKED : MF_UNCHECKED));
 
-						CheckMenuItem(submenu, ID_SPLITTER_AUTOSAVEONCLOSE, MF_BYCOMMAND | (_Plugin.m_SplitterSaveOnClose ? MF_CHECKED : MF_UNCHECKED));
+						CheckMenuItem(submenu, ID_SPLITTER_AUTOSAVEONCLOSE, MF_BYCOMMAND | (PluginConfig.m_SplitterSaveOnClose ? MF_CHECKED : MF_UNCHECKED));
 						CheckMenuItem(submenu, ID_MODE_GLOBAL, MF_BYCOMMAND | (!(dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE) ? MF_CHECKED : MF_UNCHECKED));
 						CheckMenuItem(submenu, ID_MODE_PRIVATE, MF_BYCOMMAND | (dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE ? MF_CHECKED : MF_UNCHECKED));
 
@@ -4147,8 +4142,8 @@ quote_from_last:
 						 * formatting menu..
 						 */
 
-						CheckMenuItem(submenu, ID_GLOBAL_BBCODE, MF_BYCOMMAND | ((_Plugin.m_SendFormat) ? MF_CHECKED : MF_UNCHECKED));
-						CheckMenuItem(submenu, ID_GLOBAL_OFF, MF_BYCOMMAND | ((_Plugin.m_SendFormat == SENDFORMAT_NONE) ? MF_CHECKED : MF_UNCHECKED));
+						CheckMenuItem(submenu, ID_GLOBAL_BBCODE, MF_BYCOMMAND | ((PluginConfig.m_SendFormat) ? MF_CHECKED : MF_UNCHECKED));
+						CheckMenuItem(submenu, ID_GLOBAL_OFF, MF_BYCOMMAND | ((PluginConfig.m_SendFormat == SENDFORMAT_NONE) ? MF_CHECKED : MF_UNCHECKED));
 
 						CheckMenuItem(submenu, ID_THISCONTACT_GLOBALSETTING, MF_BYCOMMAND | ((iLocalFormat == SENDFORMAT_NONE) ? MF_CHECKED : MF_UNCHECKED));
 						CheckMenuItem(submenu, ID_THISCONTACT_BBCODE, MF_BYCOMMAND | ((iLocalFormat > 0) ? MF_CHECKED : MF_UNCHECKED));
@@ -4176,8 +4171,8 @@ quote_from_last:
 								M->WriteByte(dat->hContact, SRMSGMOD_T, "hpplog", 1);
 								break;
 							case ID_SPLITTER_AUTOSAVEONCLOSE:
-								_Plugin.m_SplitterSaveOnClose ^= 1;
-								M->WriteByte(SRMSGMOD_T, "splitsavemode", (BYTE)_Plugin.m_SplitterSaveOnClose);
+								PluginConfig.m_SplitterSaveOnClose ^= 1;
+								M->WriteByte(SRMSGMOD_T, "splitsavemode", (BYTE)PluginConfig.m_SplitterSaveOnClose);
 								break;
 							case ID_SPLITTER_SAVENOW:
 								SaveSplitter(hwndDlg, dat);
@@ -4199,10 +4194,10 @@ quote_from_last:
 								SendMessage(hwndDlg, WM_SIZE, 0, 0);
 								break;
 							case ID_GLOBAL_BBCODE:
-								_Plugin.m_SendFormat = SENDFORMAT_BBCODE;
+								PluginConfig.m_SendFormat = SENDFORMAT_BBCODE;
 								break;
 							case ID_GLOBAL_OFF:
-								_Plugin.m_SendFormat = SENDFORMAT_NONE;
+								PluginConfig.m_SendFormat = SENDFORMAT_NONE;
 								break;
 							case ID_THISCONTACT_GLOBALSETTING:
 								iNewLocalFormat = 0;
@@ -4216,12 +4211,12 @@ quote_from_last:
 							case ID_FAVORITES_ADDCONTACTTOFAVORITES:
 								DBWriteContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 1);
 								dat->dwIsFavoritOrRecent |= 0x00000001;
-								AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 1, _Plugin.g_hMenuFavorites, dat->codePage);
+								AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 1, PluginConfig.g_hMenuFavorites, dat->codePage);
 								break;
 							case ID_FAVORITES_REMOVECONTACTFROMFAVORITES:
 								DBWriteContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 0);
 								dat->dwIsFavoritOrRecent &= 0xffff0000;
-								DeleteMenu(_Plugin.g_hMenuFavorites, (UINT_PTR)dat->hContact, MF_BYCOMMAND);
+								DeleteMenu(PluginConfig.g_hMenuFavorites, (UINT_PTR)dat->hContact, MF_BYCOMMAND);
 								break;
 						}
 						if (iNewLocalFormat == 0)
@@ -4229,10 +4224,10 @@ quote_from_last:
 						else if (iNewLocalFormat != iLocalFormat)
 							M->WriteDword(dat->hContact, SRMSGMOD_T, "sendformat", iNewLocalFormat);
 
-						if (_Plugin.m_SendFormat != iOldGlobalSendFormat)
-							M->WriteByte(SRMSGMOD_T, "sendformat", (BYTE)_Plugin.m_SendFormat);
-						if (iNewLocalFormat != iLocalFormat || _Plugin.m_SendFormat != iOldGlobalSendFormat) {
-							dat->SendFormat = M->GetDword(dat->hContact, "sendformat", _Plugin.m_SendFormat);
+						if (PluginConfig.m_SendFormat != iOldGlobalSendFormat)
+							M->WriteByte(SRMSGMOD_T, "sendformat", (BYTE)PluginConfig.m_SendFormat);
+						if (iNewLocalFormat != iLocalFormat || PluginConfig.m_SendFormat != iOldGlobalSendFormat) {
+							dat->SendFormat = M->GetDword(dat->hContact, "sendformat", PluginConfig.m_SendFormat);
 							if (dat->SendFormat == -1)          // per contact override to disable it..
 								dat->SendFormat = 0;
 							M->BroadcastMessage(DM_CONFIGURETOOLBAR, 0, 1);
@@ -4509,7 +4504,7 @@ quote_from_last:
 					}
 					break;
 				case IDC_MESSAGE:
-					if (_Plugin.m_MathModAvail && HIWORD(wParam) == EN_CHANGE)
+					if (PluginConfig.m_MathModAvail && HIWORD(wParam) == EN_CHANGE)
 						MTH_updateMathWindow(hwndDlg, dat);
 
 					if (HIWORD(wParam) == EN_CHANGE) {
@@ -4682,7 +4677,7 @@ quote_from_last:
 								break;
 							}
 							//MAD: tabulation mod
-							if(msg == WM_KEYDOWN&&wp == VK_TAB&&_Plugin.m_AllowTab) {
+							if(msg == WM_KEYDOWN&&wp == VK_TAB&&PluginConfig.m_AllowTab) {
 								SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)"\t");
 								((MSGFILTER *) lParam)->msg = WM_NULL;
 								((MSGFILTER *) lParam)->wParam = 0;
@@ -4789,7 +4784,7 @@ quote_from_last:
 												else
 													streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_LOG), dat, (CP_UTF8 << 16) | (SF_TEXT | SFF_SELECTION | SF_USECODEPAGE));
 												if (streamOut) {
-													FilterEventMarkersA(streamOut);
+													FilterEventMarkers(streamOut);
 													SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)streamOut);
 													free(streamOut);
 												}
@@ -4817,7 +4812,7 @@ quote_from_last:
 						case EN_LINK:
 							switch (((ENLINK *) lParam)->msg) {
 								case WM_SETCURSOR:
-									SetCursor(_Plugin.hCurHyperlinkHand);
+									SetCursor(PluginConfig.hCurHyperlinkHand);
 									SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
 									return TRUE;
 								case WM_RBUTTONDOWN:
@@ -4970,7 +4965,7 @@ quote_from_last:
 			M->WriteTString(dat->hContact, SRMSGMOD_T, "container", szNewName);
 #endif
 			dat->fIsReattach = TRUE;
-			PostMessage(_Plugin.g_hwndHotkeyHandler, DM_DOCREATETAB, (WPARAM)pNewContainer, (LPARAM)dat->hContact);
+			PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_DOCREATETAB, (WPARAM)pNewContainer, (LPARAM)dat->hContact);
 			if (iOldItems > 1)                // there were more than 1 tab, container is still valid
 				SendMessage(m_pContainer->hwndActive, WM_SIZE, 0, 0);
 			SetForegroundWindow(pNewContainer->hwnd);
@@ -5042,7 +5037,7 @@ quote_from_last:
 					if (lstrlen(dat->statusMsg) > 0)
 						dat->ti.lpszText = dat->statusMsg;
 					else
-						dat->ti.lpszText = _Plugin.m_szNoStatus;
+						dat->ti.lpszText = PluginConfig.m_szNoStatus;
 				}
 
 				SendMessage(dat->hwndTip, TTM_UPDATETIPTEXT, 0, (LPARAM)&dat->ti);
@@ -5223,7 +5218,7 @@ quote_from_last:
 			if ((isForced = M->GetDword(dat->hContact, "tabSRMM_forced", -1)) >= 0) {
 				char szTemp[64];
 				mir_snprintf(szTemp, sizeof(szTemp), "Status%d", isForced);
-				if (DBGetContactSettingWord(dat->hContact, _Plugin.szMetaName, szTemp, 0) == ID_STATUS_OFFLINE) {
+				if (DBGetContactSettingWord(dat->hContact, PluginConfig.szMetaName, szTemp, 0) == ID_STATUS_OFFLINE) {
 					TCHAR szBuffer[200];
 					mir_sntprintf(szBuffer, 200, TranslateT("Warning: you have selected a subprotocol for sending the following messages which is currently offline"));
 					SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)szBuffer);
@@ -5410,7 +5405,7 @@ quote_from_last:
 				return TRUE;
 			}
 
-			if (wParam == 0 && lParam == 0 && !_Plugin.m_EscapeCloses) {
+			if (wParam == 0 && lParam == 0 && !PluginConfig.m_EscapeCloses) {
 				SendMessage(hwndContainer, WM_SYSCOMMAND, SC_MINIMIZE, 0);
 				return TRUE;
 			}
@@ -5433,7 +5428,7 @@ quote_from_last:
 			}
 
 			if (!lParam) {
-				if (_Plugin.m_WarnOnClose) {
+				if (PluginConfig.m_WarnOnClose) {
 					if (MessageBox(hwndContainer, TranslateTS(szWarnClose), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO) {
 						return TRUE;
 					}
@@ -5446,7 +5441,7 @@ quote_from_last:
 			}
 
 			//MAD: close container by ESC mod
-			if(wParam == 0 && lParam == 0 && _Plugin.m_EscapeCloses==2) {
+			if(wParam == 0 && lParam == 0 && PluginConfig.m_EscapeCloses==2) {
 				PostMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
 				return TRUE;
 			}
@@ -5612,8 +5607,8 @@ quote_from_last:
 				HDC		hdcImage = CreateCompatibleDC(hdc);
 				HBITMAP hbmOld;
 
-				GetObject(_Plugin.hbmLogo, sizeof(bm), &bm);
-				hbmOld = (HBITMAP)SelectObject(hdcImage, _Plugin.hbmLogo);
+				GetObject(PluginConfig.hbmLogo, sizeof(bm), &bm);
+				hbmOld = (HBITMAP)SelectObject(hdcImage, PluginConfig.hbmLogo);
 				CSkin::MY_AlphaBlend(hdcMem, 4, 1, bm.bmWidth, bm.bmHeight, bm.bmWidth, bm.bmHeight, hdcImage);
 				SelectObject(hdcImage, hbmOld);
 				DeleteDC(hdcImage);
@@ -5626,7 +5621,7 @@ quote_from_last:
 			return 0;
 		}
 		case WM_DESTROY:
-			if (_Plugin.g_FlashAvatarAvail) {
+			if (PluginConfig.g_FlashAvatarAvail) {
 				FLASHAVATAR fa = {0};
 
 				fa.hContact = dat->hContact;
@@ -5646,7 +5641,7 @@ quote_from_last:
 			//
 			if (!dat->bWasDeleted) {
 				TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING, 0);
-				AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 1, _Plugin.g_hMenuRecent, dat->codePage);
+				AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 1, PluginConfig.g_hMenuRecent, dat->codePage);
 				if (dat->hContact) {
 					int len;
 
@@ -5735,13 +5730,13 @@ quote_from_last:
 				DestroyWindow(dat->hwndTip);
 
 			UpdateTrayMenuState(dat, FALSE);               // remove me from the tray menu (if still there)
-			if (_Plugin.g_hMenuTrayUnread)
-				DeleteMenu(_Plugin.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, MF_BYCOMMAND);
+			if (PluginConfig.g_hMenuTrayUnread)
+				DeleteMenu(PluginConfig.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, MF_BYCOMMAND);
 			M->RemoveWindow(hwndDlg);
 
 			if (!dat->bWasDeleted) {
 				SendMessage(hwndDlg, DM_SAVEPERCONTACT, 0, 0);
-				if (_Plugin.m_SplitterSaveOnClose)
+				if (PluginConfig.m_SplitterSaveOnClose)
 					SaveSplitter(hwndDlg, dat);
 				if (!dat->stats.bWritten) {
 					WriteStatsOnClose(hwndDlg, dat);
@@ -5787,8 +5782,8 @@ quote_from_last:
 			}
 			TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE, 0);
 
-			if (dat->hContact == _Plugin.hLastOpenedContact)
-				_Plugin.hLastOpenedContact = 0;
+			if (dat->hContact == PluginConfig.hLastOpenedContact)
+				PluginConfig.hLastOpenedContact = 0;
 
 			/*
 			 * clean up IEView and H++ log windows

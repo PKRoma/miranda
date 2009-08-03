@@ -192,7 +192,7 @@ static BOOL DoTrayIcon(SESSION_INFO* si, GCEVENT * gce)
 		switch (iEvent) {
 			case GC_EVENT_MESSAGE | GC_EVENT_HIGHLIGHT :
 			case GC_EVENT_ACTION | GC_EVENT_HIGHLIGHT :
-				CList_AddEvent(si->hContact, _Plugin.g_IconMsgEvent, szChatIconString, 0, TranslateT("%s wants your attention in %s"), gce->ptszNick, si->ptszName);
+				CList_AddEvent(si->hContact, PluginConfig.g_IconMsgEvent, szChatIconString, 0, TranslateT("%s wants your attention in %s"), gce->ptszNick, si->ptszName);
 				break;
 			case GC_EVENT_MESSAGE :
 				CList_AddEvent(si->hContact, hIcons[ICON_MESSAGE], szChatIconString, CLEF_ONLYAFEW, TranslateT("%s speaks in %s"), gce->ptszNick, si->ptszName);
@@ -408,7 +408,7 @@ static void DoFlashAndSoundThread(FLASH_PARAMS* p)
 
 		// autoswitch tab..
 		if (p->bMustAutoswitch) {
-			if ((IsIconic(p->dat->pContainer->hwnd)) && !IsZoomed(p->dat->pContainer->hwnd) && _Plugin.m_AutoSwitchTabs && p->dat->pContainer->hwndActive != p->si->hWnd) {
+			if ((IsIconic(p->dat->pContainer->hwnd)) && !IsZoomed(p->dat->pContainer->hwnd) && PluginConfig.m_AutoSwitchTabs && p->dat->pContainer->hwndActive != p->si->hWnd) {
 				int iItem = GetTabIndexFromHWND(hwndTab, p->si->hWnd);
 				if (iItem >= 0) {
 					TabCtrl_SetCurSel(hwndTab, iItem);
@@ -1023,15 +1023,15 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 
 	if (iIndex == 1 && si->iType != GCW_SERVER && !(si->dwFlags && GC_UNICODE)) {
 		AppendMenu(*hMenu, MF_SEPARATOR, 0, 0);
-		InsertMenu(_Plugin.g_hMenuEncoding, 1, MF_BYPOSITION | MF_STRING, (UINT_PTR)CP_UTF8, TranslateT("UTF-8"));
+		InsertMenu(PluginConfig.g_hMenuEncoding, 1, MF_BYPOSITION | MF_STRING, (UINT_PTR)CP_UTF8, TranslateT("UTF-8"));
 		pos = GetMenuItemCount(*hMenu);
-		InsertMenu(*hMenu, pos, MF_BYPOSITION | MF_POPUP, (UINT_PTR) _Plugin.g_hMenuEncoding, TranslateT("Character Encoding"));
-		for (i = 0; i < GetMenuItemCount(_Plugin.g_hMenuEncoding); i++)
-			CheckMenuItem(_Plugin.g_hMenuEncoding, i, MF_BYPOSITION | MF_UNCHECKED);
+		InsertMenu(*hMenu, pos, MF_BYPOSITION | MF_POPUP, (UINT_PTR) PluginConfig.g_hMenuEncoding, TranslateT("Character Encoding"));
+		for (i = 0; i < GetMenuItemCount(PluginConfig.g_hMenuEncoding); i++)
+			CheckMenuItem(PluginConfig.g_hMenuEncoding, i, MF_BYPOSITION | MF_UNCHECKED);
 		if (codepage == CP_ACP)
-			CheckMenuItem(_Plugin.g_hMenuEncoding, 0, MF_BYPOSITION | MF_CHECKED);
+			CheckMenuItem(PluginConfig.g_hMenuEncoding, 0, MF_BYPOSITION | MF_CHECKED);
 		else
-			CheckMenuItem(_Plugin.g_hMenuEncoding, codepage, MF_BYCOMMAND | MF_CHECKED);
+			CheckMenuItem(PluginConfig.g_hMenuEncoding, codepage, MF_BYCOMMAND | MF_CHECKED);
 
 	}
 
@@ -1174,7 +1174,7 @@ TCHAR* a2tf(const TCHAR* str, int flags, DWORD cp)
 			return(M->utf8_decodeW((char *)str));
 
 		if (cp == 0)
-			cp = _Plugin.m_LangPackCP; // CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
+			cp = PluginConfig.m_LangPackCP; // CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
 		cbLen = MultiByteToWideChar(cp, 0, (char*)str, -1, 0, 0);
 		result = (TCHAR*)mir_alloc(sizeof(TCHAR) * (cbLen + 1));
 		if (result == NULL)
@@ -1195,7 +1195,7 @@ static char* u2a(const wchar_t* src, DWORD cp)
 	char *result;
 
 	if (cp == 0)
-		cp = _Plugin.m_LangPackCP;
+		cp = PluginConfig.m_LangPackCP;
 	else if (cp == CP_UTF8)
 		return(M->utf8_encodeW(src));
 

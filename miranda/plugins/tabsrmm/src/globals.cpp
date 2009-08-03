@@ -27,6 +27,6 @@ $Id$
 #include "commonheaders.h"
 extern PLUGININFOEX pluginInfo;
 
-_Globals _Plugin;
-_Globals *pConfig = &_Plugin;
+CGlobals PluginConfig;
+CGlobals *pConfig = &PluginConfig;
 
