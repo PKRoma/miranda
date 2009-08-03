@@ -489,23 +489,19 @@ void CJabberProto::FormatMirVer(JABBER_RESOURCE_STATUS *resource, TCHAR *buf, in
 	// jabber:iq:version info requested and exists?
 	if ( resource->dwVersionRequestTime && resource->software ) {
 		Log("JabberUpdateMirVer: for iq:version rc " TCHAR_STR_PARAM ": " TCHAR_STR_PARAM, resource->resourceName, resource->software);
-		if (_tcsstr(resource->software, resource->version))
+		if ( !resource->version || _tcsstr(resource->software, resource->version))
 			lstrcpyn(buf, resource->software, bufSize);
 		else
 			mir_sntprintf(buf, bufSize, _T("%s %s"), resource->software, resource->version);
 	}
-	else
-
 	// no version info and no caps info? set MirVer = resource name
-	if ( !resource->szCapsNode || !resource->szCapsVer ) {
+	else if ( !resource->szCapsNode || !resource->szCapsVer ) {
 		Log("JabberUpdateMirVer: for rc " TCHAR_STR_PARAM ": " TCHAR_STR_PARAM, resource->resourceName, resource->resourceName);
 		if ( resource->resourceName )
 			lstrcpyn(buf, resource->resourceName, bufSize);
 	}
-	else
-
 	// XEP-0115 caps mode
-	{
+	else {
 		Log("JabberUpdateMirVer: for rc " TCHAR_STR_PARAM ": " TCHAR_STR_PARAM "#" TCHAR_STR_PARAM, resource->resourceName, resource->szCapsNode, resource->szCapsVer);
 
 		int i;
