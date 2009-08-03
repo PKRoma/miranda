@@ -1366,6 +1366,7 @@ bool CSkin::warnToClose() const
  */
 void CSkin::Unload()
 {
+	int i;
 	CImageItem *tmp = m_ImageItems, *nextItem = 0;
 
 	/*
@@ -1401,7 +1402,7 @@ void CSkin::Unload()
 		::DeleteObject(m_SkinDarkShadowPen);
 	m_SkinDarkShadowPen = 0;
 
-	for(int i = 0; i < ID_EXTBK_LAST; i++) {
+	for(i = 0; i < ID_EXTBK_LAST; i++) {
 		m_SkinItems[i].IGNORED = 1;
 		m_SkinItems[i].imageItem = 0;
 	}
