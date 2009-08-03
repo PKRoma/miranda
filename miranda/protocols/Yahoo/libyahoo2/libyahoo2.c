@@ -2531,20 +2531,18 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 						YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_PASSWD, NULL);
 						break;
 						
-				case 1213: /* As a security precaution please enter your Yahoo! ID and password and type in the code you see in the picture below. */
-						YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_PASSWD, NULL);
-						break;
-
-				case 1214: /* Invalid ID or password. Please try again and type the text you see in the picture below */
-						YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_PASSWD, NULL);
+				case 1213: 
+						/* security lock from too many failed login attempts */
+						YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_LOCK, "Yahoo! website");
 						break;
 
 				case 1235: /* This ID is not yet taken */
 						YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_UNAME, NULL);
 						break;
-
-				case 1236: /* Invalid ID or password. Please try again. */
-						YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_PASSWD, NULL);
+				
+				case 1214:
+				case 1236: /* indicates a lock of some description */
+						YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_LOCK, "Yahoo! website");
 						break;
 
 
@@ -3459,7 +3457,8 @@ static void yahoo_process_picture_upload(struct yahoo_input_data *yid, struct ya
 				break;
 		}
 	}
-	NOTICE(("got picture_upload packet"));
+	NOTICE(("[yahoo_process_picture_upload]"));
+	
 	YAHOO_CALLBACK(ext_yahoo_got_picture_upload)(yid->yd->client_id, me, url, ts);
 }
 
@@ -3484,7 +3483,7 @@ static void yahoo_process_picture_status(struct yahoo_input_data *yid, struct ya
 				break;
 		}
 	}
-	NOTICE(("got picture_upload packet"));
+	NOTICE(("[yahoo_process_picture_status]"));
 	if (who) // sometimes we just get a confirmation without the WHO.(ack on our avt update)
 		YAHOO_CALLBACK(ext_yahoo_got_picture_status)(yid->yd->client_id, me, who, buddy_icon);
 }
@@ -3527,7 +3526,7 @@ static void yahoo_process_audible(struct yahoo_input_data *yid, struct yahoo_pac
 				break;
 		}
 	}
-	NOTICE(("got picture_upload packet"));
+	NOTICE(("[yahoo_process_audible]"));
 	if (who) // sometimes we just get a confirmation without the WHO.(ack on our send/update)
 		YAHOO_CALLBACK(ext_yahoo_got_audible)(yid->yd->client_id, me, who, aud, msg, aud_hash);
 }
