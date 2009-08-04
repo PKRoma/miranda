@@ -541,7 +541,10 @@ void CJabberProto::UpdateMirVer(HANDLE hContact, JABBER_RESOURCE_STATUS *resourc
 {
 	TCHAR szMirVer[ 512 ];
 	FormatMirVer(resource, szMirVer, SIZEOF(szMirVer));
-	JSetStringT( hContact, "MirVer", szMirVer );
+	if ( szMirVer[0] )
+		JSetStringT( hContact, "MirVer", szMirVer );
+	else
+		JDeleteSetting( hContact, "MirVer" );
 
 	DBVARIANT dbv;
 	if ( !JGetStringT( hContact, "jid", &dbv )) {
