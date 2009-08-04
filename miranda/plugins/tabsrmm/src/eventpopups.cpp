@@ -24,7 +24,7 @@ astyle --force-indent=tab=4 --brackets=linux --indent-switches
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-	$Id: eventpopups.c 10326 2009-07-10 19:39:44Z george.hazan $
+	$Id$
 
 	Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyright above)
 
@@ -99,9 +99,7 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
 	options->wMaxFavorites = 15;
 	options->wMaxRecent = 15;
 	options->iAnnounceMethod = (int)M->GetByte(MODULE, OPT_ANNOUNCEMETHOD, 0);
-	options->floaterMode = (BOOL)M->GetByte(MODULE, OPT_FLOATER, 0);
 	options->bFloaterInWin = (BOOL)M->GetByte(MODULE, OPT_FLOATERINWIN, 1);
-	options->bFloaterOnlyMin = (BOOL)M->GetByte(MODULE, OPT_FLOATERONLYMIN, 0);
 	options->dwRemoveMask = M->GetDword(MODULE, OPT_REMOVEMASK, 0);
 	options->bSimpleMode = M->GetByte(MODULE, OPT_SIMPLEOPT, 0);
 	CheckForRemoveMask();
@@ -144,9 +142,7 @@ int NEN_WriteOptions(NEN_OPTIONS *options)
 	M->WriteDword(MODULE, OPT_LIMITPREVIEW, options->iLimitPreview);
 	M->WriteByte(MODULE, OPT_MINIMIZEANIMATED, (BYTE)options->bAnimated);
 	M->WriteByte(MODULE, OPT_ANNOUNCEMETHOD, (BYTE)options->iAnnounceMethod);
-	M->WriteByte(MODULE, OPT_FLOATER, (BYTE)options->floaterMode);
 	M->WriteByte(MODULE, OPT_FLOATERINWIN, (BYTE)options->bFloaterInWin);
-	M->WriteByte(MODULE, OPT_FLOATERONLYMIN, (BYTE)options->bFloaterOnlyMin);
 	M->WriteDword(MODULE, OPT_REMOVEMASK, options->dwRemoveMask);
 	M->WriteByte(MODULE, OPT_SIMPLEOPT, (BYTE)options->bSimpleMode);
 	return 0;
@@ -169,8 +165,6 @@ static struct LISTOPTIONSITEM defaultItems[] = {
 	0, _T("Don't announce event when message dialog is open"), IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bWindowCheck, 1,
 	0, _T("Don't announce events from RSS protocols"), IDC_NORSS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bNoRSS, 1,
 	0, _T("Enable the system tray icon"), IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bTraySupport, 2,
-	0, _T("Show the floater"), IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.floaterMode, 2,
-	0, _T("When floater is enabled, only show it while the contact list is minimized"), IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bFloaterOnlyMin, 2,
 	0, _T("Show session list menu on the message windows status bar"), IDC_MINIMIZETOTRAY, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bFloaterInWin, 2,
 	0, _T("Merge popups \"per user\" (experimental, unstable)"), IDC_CHKMERGEPOPUP, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bMergePopup, 6,
 	0, _T("Show date for merged popups"), IDC_CHKSHOWDATE, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowDate, 6,
@@ -454,8 +448,6 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 					CheckForRemoveMask();
 					CreateSystrayIcon(nen_options.bTraySupport);
 					SetEvent(g_hEvent);                                 // wake up the thread which cares about the floater and tray
-
-					ShowWindow(PluginConfig.g_hwndHotkeyHandler, nen_options.floaterMode ? SW_SHOW : SW_HIDE);
 					break;
 				}
 				case PSN_RESET:

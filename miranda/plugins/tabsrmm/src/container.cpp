@@ -44,7 +44,7 @@ Tab icons are stored in a global image list (g_hImageList). They are loaded at
 plugin startup, or after a icon change event. Multiple containers can share the
 same image list, because the list is read-only.
 
-$Id: container.c 10399 2009-07-23 20:11:21Z silvercircle $
+$Id$
 */
 
 #include "commonheaders.h"
@@ -55,7 +55,6 @@ $Id: container.c 10399 2009-07-23 20:11:21Z silvercircle $
 #define DEFAULT_CONTAINER_POS 	0x00400040
 #define DEFAULT_CONTAINER_SIZE 	0x019001f4
 
-extern HWND floaterOwner;
 extern SESSION_INFO *m_WndList;
 extern int SIDEBARWIDTH;
 extern ButtonSet g_ButtonSet;

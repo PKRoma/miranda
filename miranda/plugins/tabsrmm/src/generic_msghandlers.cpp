@@ -314,7 +314,7 @@ LRESULT DM_RecalcPictureSize(HWND hwndDlg, struct _MessageWindowData *dat)
 			return 0;
 		}
 		GetObject(hbm, sizeof(bminfo), &bminfo);
-		CalcDynamicAvatarSize(hwndDlg, dat, &bminfo);
+		CalcDynamicAvatarSize(dat, &bminfo);
 		SendMessage(hwndDlg, WM_SIZE, 0, 0);
 	}
 	return 0;

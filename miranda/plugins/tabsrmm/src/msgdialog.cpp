@@ -23,7 +23,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
-$Id: msgdialog.c 10399 2009-07-23 20:11:21Z silvercircle $
+$Id$
 */
 
 #include "commonheaders.h"
@@ -376,10 +376,9 @@ LRESULT CALLBACK HPPKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 
 static void MsgWindowUpdateState(_MessageWindowData *dat, UINT msg)
 {
-	HWND hwndTab = GetParent(hwndDlg);
-
 	if (dat && dat->iTabID >= 0) {
 		HWND hwndDlg = dat->hwnd;
+		HWND hwndTab = GetParent(hwndDlg);
 
 		if (msg == WM_ACTIVATE || msg == WM_SETFOCUS) {
 			if (dat->pContainer->dwFlags & CNT_TRANSPARENCY && M->m_pSetLayeredWindowAttributes != NULL) {
@@ -515,9 +514,9 @@ static void ShowHideInfoPanel(HWND hwndDlg, struct _MessageWindowData *dat)
 	}
 	//
 	dat->iRealAvatarHeight = 0;
-	AdjustBottomAvatarDisplay(hwndDlg, dat);
+	AdjustBottomAvatarDisplay(dat);
 	GetObject(hbm, sizeof(bm), &bm);
-	CalcDynamicAvatarSize(hwndDlg, dat, &bm);
+	CalcDynamicAvatarSize(dat, &bm);
 	ShowMultipleControls(hwndDlg, infoPanelControls, 7, dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
 
 	if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
@@ -1849,6 +1848,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			newData->item.lParam = (LPARAM) hwndDlg;
 			TabCtrl_SetItem(hwndTab, newData->iTabID, &newData->item);
 			dat->iTabID = newData->iTabID;
+			dat->hwnd = hwndDlg;
 
 			DM_ThemeChanged(hwndDlg, dat);
 
@@ -1877,8 +1877,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			dat->sendMode |= M->GetByte(dat->hContact, "forceansi", 0) ? SMODE_FORCEANSI : 0;
 			dat->sendMode |= dat->hContact == 0 ? SMODE_MULTIPLE : 0;
 			dat->sendMode |= M->GetByte(dat->hContact, "no_ack", 0) ? SMODE_NOACK : 0;
-
-			dat->hwnd = hwndDlg;
 
 			dat->ltr_templates = &LTR_Active;
 			dat->rtl_templates = &RTL_Active;
@@ -2106,7 +2104,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			dat->stats.started = time(NULL);
  			LoadContactAvatar(hwndDlg, dat);
 			SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
-			LoadOwnAvatar(hwndDlg, dat);
+			LoadOwnAvatar(dat);
 
 			/*
 			 * restore saved msg if any...
@@ -2750,7 +2748,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			if (hbm != 0) {
 				GetObject(hbm, sizeof(bminfo), &bminfo);
-				CalcDynamicAvatarSize(hwndDlg, dat, &bminfo);
+				CalcDynamicAvatarSize(dat, &bminfo);
 			}
 
 			// dynamic toolbar layout...
@@ -4180,7 +4178,7 @@ quote_from_last:
 								dat->dwFlagsEx &= ~(MWF_SHOW_SPLITTEROVERRIDE);
 								M->WriteByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0);
 								LoadSplitter(hwndDlg, dat);
-								AdjustBottomAvatarDisplay(hwndDlg, dat);
+								AdjustBottomAvatarDisplay(dat);
 								DM_RecalcPictureSize(hwndDlg, dat);
 								SendMessage(hwndDlg, WM_SIZE, 0, 0);
 								break;
@@ -4188,7 +4186,7 @@ quote_from_last:
 								dat->dwFlagsEx |= MWF_SHOW_SPLITTEROVERRIDE;
 								M->WriteByte(dat->hContact, SRMSGMOD_T, "splitoverride", 1);
 								LoadSplitter(hwndDlg, dat);
-								AdjustBottomAvatarDisplay(hwndDlg, dat);
+								AdjustBottomAvatarDisplay(dat);
 								DM_RecalcPictureSize(hwndDlg, dat);
 								SendMessage(hwndDlg, WM_SIZE, 0, 0);
 								break;
@@ -5249,7 +5247,7 @@ quote_from_last:
 			char *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 
 			if (!strcmp((char *)wParam, szProto) && lstrlenA(szProto) == lstrlenA((char *)wParam))
-				LoadOwnAvatar(hwndDlg, dat);
+				LoadOwnAvatar(dat);
 			break;
 		}
 		//case WM_INPUTLANGCHANGE:

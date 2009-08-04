@@ -22,7 +22,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id: trayicon.c 9901 2009-06-01 05:57:47Z borkra $
+$Id$
 
 Functions, concerning tabSRMMs system tray support. There is more in eventpopups.c
 
@@ -55,7 +55,7 @@ static unsigned __stdcall TrayAnimThread(LPVOID vParam)
 			PluginConfig.m_TrayFlashState = 0;
 			dwElapsed = 0;
 			dwAnimStep = 0;
-			WaitForSingleObject(hEvent, (nen_options.bFloaterOnlyMin && nen_options.floaterMode) ? 2000 : INFINITE);
+			WaitForSingleObject(hEvent, INFINITE);
 			ResetEvent(hEvent);
 			idleTimer += 2000;
 		}
@@ -85,12 +85,6 @@ static unsigned __stdcall TrayAnimThread(LPVOID vParam)
 		}
 		if (idleTimer >= 2000) {
 			idleTimer = 0;
-			if (nen_options.bFloaterOnlyMin && nen_options.floaterMode) {
-				if (IsWindowVisible(PluginConfig.m_hwndClist) && IsWindowVisible(PluginConfig.g_hwndHotkeyHandler))
-					ShowWindow(PluginConfig.g_hwndHotkeyHandler, SW_HIDE);
-				else if (!IsWindowVisible(PluginConfig.m_hwndClist) && !IsWindowVisible(PluginConfig.g_hwndHotkeyHandler))
-					ShowWindow(PluginConfig.g_hwndHotkeyHandler, SW_SHOW);
-			}
 		}
 	}
 	while (isAnimThreadRunning);
@@ -168,7 +162,6 @@ void CreateSystrayIcon(int create)
 		Shell_NotifyIcon(NIM_DELETE, &nim);
 		nen_options.bTrayExist = FALSE;
 	}
-	ShowWindow(PluginConfig.g_hwndHotkeyHandler, nen_options.floaterMode ? SW_SHOW : SW_HIDE);
 }
 
 static BOOL CALLBACK FindTrayWnd(HWND hwnd, LPARAM lParam)
@@ -205,17 +198,6 @@ static void GetTrayWindowRect(LPRECT lprect)
 }
 
 /*
- * this hides the window from the taskbar by re-parenting it to our invisible background
- * window.
- */
-
-static BOOL RemoveTaskbarIcon(HWND hWnd)
-{
-	SetParent(hWnd, GetDlgItem(PluginConfig.g_hwndHotkeyHandler, IDC_TRAYCONTAINER));
-	return TRUE;
-}
-
-/*
  * flash the tray icon
  * mode = 0 - continue to flash
  * mode = 1 - restore the original icon
@@ -237,9 +219,6 @@ void FlashTrayIcon(HICON hIcon)
 		nim.uFlags = NIF_ICON;
 		nim.hIcon = hIcon;
 		Shell_NotifyIcon(NIM_MODIFY, &nim);
-	}
-	else if (IsWindowVisible(PluginConfig.g_hwndHotkeyHandler) && !nen_options.bTraySupport) {
-		SendDlgItemMessage(PluginConfig.g_hwndHotkeyHandler, IDC_TRAYICON, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hIcon);
 	}
 }
 

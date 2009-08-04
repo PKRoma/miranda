@@ -22,7 +22,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id: msgdlgutils.c 10399 2009-07-23 20:11:21Z silvercircle $
+$Id$
 */
 
 /*
@@ -197,50 +197,58 @@ static BOOL CALLBACK OpenFileSubclass(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 static void SaveAvatarToFile(_MessageWindowData *dat, HBITMAP hbm, int isOwnPic)
 {
-	char szFinalPath[MAX_PATH];
-	char szFinalFilename[MAX_PATH];
-	char szBaseName[MAX_PATH];
-	char szTimestamp[100];
-	OPENFILENAMEA ofn = {0};
+	TCHAR szFinalPath[MAX_PATH];
+	TCHAR szFinalFilename[MAX_PATH];
+	TCHAR szBaseName[MAX_PATH];
+	TCHAR szTimestamp[100];
+	OPENFILENAME ofn = {0};
 	time_t t = time(NULL);
 	struct tm *lt = localtime(&t);
-	static char *forbiddenCharacters = "%/\\'";
-	unsigned int i, j;
+	static TCHAR *forbiddenCharacters = _T("%/\\'");
+	int i, j;
 	DWORD setView = 1;
 
-	mir_snprintf(szTimestamp, 100, "%04u %02u %02u_%02u%02u", lt->tm_year + 1900, lt->tm_mon, lt->tm_mday, lt->tm_hour, lt->tm_min);
+	mir_sntprintf(szTimestamp, 100, _T("%04u %02u %02u_%02u%02u"), lt->tm_year + 1900, lt->tm_mon, lt->tm_mday, lt->tm_hour, lt->tm_min);
 
-	mir_snprintf(szFinalPath, MAX_PATH, "%s%s", M->getSavedAvatarPathA(), dat->bIsMeta ? dat->szMetaProto : dat->szProto);
+#if defined(_UNICODE)
+	TCHAR *szMetaProto = mir_a2u(dat->szMetaProto);
+	TCHAR *szProto = mir_a2u(dat->szProto);
+#else
+	TCHAR *szMetaProto = dat->szMetaProto;
+	TCHAR *szProto = dat->szProto;
+#endif
+	mir_sntprintf(szFinalPath, MAX_PATH, _T("%s\\%s"), M->getSavedAvatarPath(), dat->bIsMeta ? szMetaProto : szProto);
 
-	if (CreateDirectoryA(szFinalPath, 0) == 0) {
+#if defined(_UNICODE)
+	mir_free(szProto);
+	mir_free(szMetaProto);
+#endif
+
+	if (CreateDirectory(szFinalPath, 0) == 0) {
 		if (GetLastError() != ERROR_ALREADY_EXISTS) {
 			MessageBox(0, TranslateT("Error creating destination directory"), TranslateT("Save contact picture"), MB_OK | MB_ICONSTOP);
 			return;
 		}
 	}
 	if (isOwnPic)
-		mir_snprintf(szBaseName, MAX_PATH,"My Avatar_%s", szTimestamp);
+		mir_sntprintf(szBaseName, MAX_PATH,_T("My Avatar_%s"), szTimestamp);
 	else
-		mir_snprintf(szBaseName, MAX_PATH, "%s_%s", dat->uin, szTimestamp);
+		mir_sntprintf(szBaseName, MAX_PATH, _T("%s_%s"), dat->szNickname, szTimestamp);
 
-	mir_snprintf(szFinalFilename, MAX_PATH, "%s.png", szBaseName);
-	ofn.lpstrDefExt = "png";
-	if (CallService(MS_AV_CANSAVEBITMAP, 0, PA_FORMAT_PNG) == 0) {
-		ofn.lpstrDefExt = "bmp";
-		mir_snprintf(szFinalFilename, MAX_PATH,"%s.bmp", szBaseName);
-	}
+	mir_sntprintf(szFinalFilename, MAX_PATH, _T("%s.png"), szBaseName);
+	ofn.lpstrDefExt = _T("png");
 
 	/*
 	 * do not allow / or \ or % in the filename
 	 */
-	for (i = 0; i < strlen(forbiddenCharacters); i++) {
-		for(j = 0; j < strlen(szFinalFilename); j++) {
+	for (i = 0; i < lstrlen(forbiddenCharacters); i++) {
+		for(j = 0; j < lstrlen(szFinalFilename); j++) {
 			if(szFinalFilename[j] == forbiddenCharacters[i])
 				szFinalFilename[j] = '_';
 		}
 	}
 
-	ofn.lpstrFilter = "Image files\0*.bmp;*.png;*.jpg;*.gif\0\0";
+	ofn.lpstrFilter = _T("Image files\0*.bmp;*.png;*.jpg;*.gif\0\0");
 	if (IsWinVer2000Plus()) {
 		ofn.Flags = OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ENABLESIZING | OFN_ENABLEHOOK;
 		ofn.lpfnHook = (LPOFNHOOKPROC)OpenFileSubclass;
@@ -255,12 +263,22 @@ static void SaveAvatarToFile(_MessageWindowData *dat, HBITMAP hbm, int isOwnPic)
 	ofn.nMaxFile = MAX_PATH;
 	ofn.nMaxFileTitle = MAX_PATH;
 	ofn.lCustData = (LPARAM) & setView;
-	if (GetSaveFileNameA(&ofn)) {
-		if (PathFileExistsA(szFinalFilename)) {
+	if (GetSaveFileName(&ofn)) {
+		if (PathFileExists(szFinalFilename)) {
 			if (MessageBox(0, TranslateT("The file exists. Do you want to overwrite it?"), TranslateT("Save contact picture"), MB_YESNO | MB_ICONQUESTION) == IDNO)
 				return;
 		}
-		CallService(MS_AV_SAVEBITMAP, (WPARAM)hbm, (LPARAM)szFinalFilename);
+		IMGSRVC_INFO ii;
+		ii.cbSize = sizeof(ii);
+#if defined(_UNICODE)
+		ii.wszName = szFinalFilename;
+#else
+		ii.szName = szFinalFilename;
+#endif
+		ii.hbm = hbm;
+		ii.dwMask = IMGI_HBITMAP;
+		ii.fif = FIF_UNKNOWN;			// get the format from the filename extension. png is default.
+		CallService(MS_IMG_SAVE, (WPARAM)&ii, IMGL_TCHAR);
 	}
 }
 
@@ -289,7 +307,7 @@ void FlashTab(struct _MessageWindowData *dat, HWND hwndTab, int iTabindex, BOOL 
  * for the avatar w/o disturbing the toolbar too much.
  */
 
-void CalcDynamicAvatarSize(HWND hwndDlg, struct _MessageWindowData *dat, BITMAP *bminfo)
+void CalcDynamicAvatarSize(_MessageWindowData *dat, BITMAP *bminfo)
 {
 	RECT rc;
 	double aspect = 0, newWidth = 0, picAspect = 0;
@@ -308,7 +326,7 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct _MessageWindowData *dat, BITMAP 
 			bminfo->bmWidth = FAVATAR_WIDTH;
 		}
 	}
-	GetClientRect(hwndDlg, &rc);
+	GetClientRect(dat->hwnd, &rc);
 
 	if (dat->dwFlags & MWF_WASBACKGROUNDCREATE || dat->pContainer->dwFlags & CNT_DEFERREDCONFIGURE || dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED || IsIconic(dat->pContainer->hwnd))
 		return;                 // at this stage, the layout is not yet ready...
@@ -937,51 +955,54 @@ TCHAR *QuoteText(TCHAR *text, int charsPerLine, int removeExistingQuotes)
 }
 
 
-void AdjustBottomAvatarDisplay(HWND hwndDlg, struct _MessageWindowData *dat)
+void AdjustBottomAvatarDisplay(_MessageWindowData *dat)
 {
-	HBITMAP hbm = dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
+	if(dat) {
+		HBITMAP hbm = dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
+		HWND	hwndDlg = dat->hwnd;
 
-	if (PluginConfig.g_FlashAvatarAvail) {
-		FLASHAVATAR fa = {0};
+		if (PluginConfig.g_FlashAvatarAvail) {
+			FLASHAVATAR fa = {0};
 
-		fa.hContact = dat->hContact;
-		fa.hWindow = 0;
-		fa.id = 25367;
-		fa.cProto = dat->szProto;
-		CallService(MS_FAVATAR_GETINFO, (WPARAM)&fa, 0);
-		if (fa.hWindow) {
-			dat->hwndFlash = fa.hWindow;
-			SetParent(dat->hwndFlash, GetDlgItem(hwndDlg, (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) ? IDC_PANELPIC : IDC_CONTACTPIC));
-		}
-		fa.hContact = 0;
-		fa.hWindow = 0;
-		if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
-			fa.hParentWindow = GetDlgItem(hwndDlg, IDC_CONTACTPIC);
-			CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
-			if (fa.hWindow) {
-				SetParent(fa.hWindow, GetDlgItem(hwndDlg, IDC_CONTACTPIC));
-				ShowWindow(fa.hWindow, SW_SHOW);
-			}
-		} else {
+			fa.hContact = dat->hContact;
+			fa.hWindow = 0;
+			fa.id = 25367;
+			fa.cProto = dat->szProto;
 			CallService(MS_FAVATAR_GETINFO, (WPARAM)&fa, 0);
-			if (fa.hWindow)
-				ShowWindow(fa.hWindow, SW_HIDE);
+			if (fa.hWindow) {
+				dat->hwndFlash = fa.hWindow;
+				SetParent(dat->hwndFlash, GetDlgItem(dat->hwnd, (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) ? IDC_PANELPIC : IDC_CONTACTPIC));
+			}
+			fa.hContact = 0;
+			fa.hWindow = 0;
+			if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
+				fa.hParentWindow = GetDlgItem(hwndDlg, IDC_CONTACTPIC);
+				CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
+				if (fa.hWindow) {
+					SetParent(fa.hWindow, GetDlgItem(hwndDlg, IDC_CONTACTPIC));
+					ShowWindow(fa.hWindow, SW_SHOW);
+				}
+			} else {
+				CallService(MS_FAVATAR_GETINFO, (WPARAM)&fa, 0);
+				if (fa.hWindow)
+					ShowWindow(fa.hWindow, SW_HIDE);
+			}
 		}
-	}
 
-	if (hbm) {
-		dat->showPic = GetAvatarVisibility(hwndDlg, dat);
-		if (dat->dynaSplitter == 0 || dat->splitterY == 0)
-			LoadSplitter(hwndDlg, dat);
-		dat->dynaSplitter = dat->splitterY - DPISCALEY(34);
-		DM_RecalcPictureSize(hwndDlg, dat);
-		ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
-		InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
-	} else {
-		dat->showPic = GetAvatarVisibility(hwndDlg, dat);
-		ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
-		dat->pic.cy = dat->pic.cx = DPISCALEY(60);
-		InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
+		if (hbm) {
+			dat->showPic = GetAvatarVisibility(hwndDlg, dat);
+			if (dat->dynaSplitter == 0 || dat->splitterY == 0)
+				LoadSplitter(hwndDlg, dat);
+			dat->dynaSplitter = dat->splitterY - DPISCALEY(34);
+			DM_RecalcPictureSize(hwndDlg, dat);
+			ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
+			InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
+		} else {
+			dat->showPic = GetAvatarVisibility(hwndDlg, dat);
+			ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
+			dat->pic.cy = dat->pic.cx = DPISCALEY(60);
+			InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
+		}
 	}
 }
 
@@ -999,7 +1020,7 @@ void ShowPicture(HWND hwndDlg, struct _MessageWindowData *dat, BOOL showNewPic)
 				InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELPIC), NULL, FALSE);
 			return;
 		}
-		AdjustBottomAvatarDisplay(hwndDlg, dat);
+		AdjustBottomAvatarDisplay(dat);
 	} else {
 		dat->showPic = dat->showPic ? 0 : 1;
 		DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "MOD_ShowPic", (BYTE)dat->showPic);
@@ -1957,20 +1978,20 @@ void LoadContactAvatar(HWND hwndDlg, struct _MessageWindowData *dat)
 		dat->iRealAvatarHeight = 0;
 
 		if (dat->ace && dat->ace->hbmPic) {
-			AdjustBottomAvatarDisplay(hwndDlg, dat);
+			AdjustBottomAvatarDisplay(dat);
 			GetObject(dat->ace->hbmPic, sizeof(bm), &bm);
-			CalcDynamicAvatarSize(hwndDlg, dat, &bm);
+			CalcDynamicAvatarSize(dat, &bm);
 			PostMessage(hwndDlg, WM_SIZE, 0, 0);
 		} else if (dat->ace == NULL) {
-			AdjustBottomAvatarDisplay(hwndDlg, dat);
+			AdjustBottomAvatarDisplay(dat);
 			GetObject(PluginConfig.g_hbmUnknown, sizeof(bm), &bm);
-			CalcDynamicAvatarSize(hwndDlg, dat, &bm);
+			CalcDynamicAvatarSize(dat, &bm);
 			PostMessage(hwndDlg, WM_SIZE, 0, 0);
 		}
 	}
 }
 
-void LoadOwnAvatar(HWND hwndDlg, struct _MessageWindowData *dat)
+void LoadOwnAvatar(_MessageWindowData *dat)
 {
 	AVATARCACHEENTRY *ace = NULL;
 
@@ -1988,10 +2009,10 @@ void LoadOwnAvatar(HWND hwndDlg, struct _MessageWindowData *dat)
 		BITMAP bm;
 
 		dat->iRealAvatarHeight = 0;
-		AdjustBottomAvatarDisplay(hwndDlg, dat);
+		AdjustBottomAvatarDisplay(dat);
 		GetObject(dat->hOwnPic, sizeof(bm), &bm);
-		CalcDynamicAvatarSize(hwndDlg, dat, &bm);
-		SendMessage(hwndDlg, WM_SIZE, 0, 0);
+		CalcDynamicAvatarSize(dat, &bm);
+		SendMessage(dat->hwnd, WM_SIZE, 0, 0);
 	}
 }
 
@@ -2259,10 +2280,20 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		if (((dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown)) && dat->showPic) || bPanelPic) {
 			HDC hdcMem = CreateCompatibleDC(dis->hDC);
 			HBITMAP hbmAvatar = bPanelPic ? (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown) : (dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown));
-			HBITMAP hbmMem = (HBITMAP)SelectObject(hdcMem, hbmAvatar);
+			HBITMAP hbmMem = 0;
 			if (bPanelPic) {
 				LONG width_off = borderType ? 0 : 2;
 				LONG height_off = 0;
+
+				ResizeBitmap rb;
+				rb.size = sizeof(rb);
+				rb.fit = RESIZEBITMAP_KEEP_PROPORTIONS;
+				rb.max_height = dNewHeight + width_off;
+				rb.max_width = dNewWidth + width_off;
+				rb.hBmp = hbmAvatar;
+
+				HBITMAP hbmNew = (HBITMAP)CallService("IMG/ResizeBitmap", (WPARAM)&rb, 0);
+				hbmMem = (HBITMAP)SelectObject(hdcMem, hbmNew);
 
 				rcFrame = rcClient;
 				rcFrame.left = rcFrame.right - ((LONG)dNewWidth + 2);
@@ -2272,21 +2303,34 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 					rcFrame.top += height_off;
 					rcFrame.bottom += height_off;
 				}
-				SetStretchBltMode(hdcDraw, HALFTONE);
 				if (borderType == 2)
 					DrawEdge(hdcDraw, &rcFrame, BDR_SUNKENINNER, BF_RECT);
 				else if (borderType == 3)
-					Rectangle(hdcDraw, rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom);
+					clipRgn = CreateRectRgn(rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom);
+					//Rectangle(hdcDraw, rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom);
 				else if (borderType == 4) {
 					clipRgn = CreateRoundRectRgn(rcFrame.left, rcFrame.top, rcFrame.right + 1, rcFrame.bottom + 1, iRad, iRad);
 					SelectClipRgn(hdcDraw, clipRgn);
 				}
-				if (aceFlags & AVS_PREMULTIPLIED)
-					CSkin::MY_AlphaBlend(hdcDraw, rcFrame.left + (borderType ? 1 : 0), height_off + (borderType ? 1 : 0), (int)dNewWidth + width_off, (int)dNewHeight + width_off, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
+				if(M->m_MyAlphaBlend) {
+					BLENDFUNCTION bf = {0};
+					bf.SourceConstantAlpha = 255;
+					bf.AlphaFormat = AC_SRC_ALPHA;
+					bf.BlendOp = AC_SRC_OVER;
+					M->m_MyAlphaBlend(hdcDraw, rcFrame.left + (borderType ? 1 : 0), height_off + (borderType ? 1 : 0),
+									  (int)dNewWidth + width_off, (int)dNewHeight + width_off, hdcMem, 0, 0,
+									  (int)dNewWidth + width_off, (int)dNewHeight + width_off, bf);
+				}
 				else
-					StretchBlt(hdcDraw, rcFrame.left + (borderType ? 1 : 0), height_off + (borderType ? 1 : 0), (int)dNewWidth + width_off, (int)dNewHeight + width_off, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+					CSkin::MY_AlphaBlend(hdcDraw, rcFrame.left + (borderType ? 1 : 0), height_off + (borderType ? 1 : 0), (int)dNewWidth + width_off, (int)dNewHeight + width_off, (int)dNewWidth + width_off, (int)dNewHeight + width_off, hdcMem);
 
+				SelectObject(hdcMem, hbmMem);
+				DeleteObject(hbmMem);
+				DeleteDC(hdcMem);
+				if(hbmNew != hbmAvatar)
+					DeleteObject(hbmNew);
 			} else {
+				hbmMem = (HBITMAP)SelectObject(hdcMem, hbmAvatar);
 				LONG xy_off = borderType ? 1 : 0;
 				LONG width_off = borderType ? 0 : 2;
 
@@ -2295,6 +2339,9 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 					CSkin::MY_AlphaBlend(hdcDraw, xy_off, top + xy_off, (int)dNewWidth + width_off, iMaxHeight + width_off, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
 				else
 					StretchBlt(hdcDraw, xy_off, top + xy_off, (int)dNewWidth + width_off, iMaxHeight + width_off, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+				SelectObject(hdcMem, hbmMem);
+				DeleteObject(hbmMem);
+				DeleteDC(hdcMem);
 			}
 			if (clipRgn) {
 				HBRUSH hbr = CreateSolidBrush((COLORREF)M->GetDword("avborderclr", RGB(0, 0, 0)));
@@ -2302,11 +2349,6 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 				DeleteObject(hbr);
 				DeleteObject(clipRgn);
 			}
-			//mad
-			SelectObject(hdcMem, hbmMem);
-			//
-			DeleteObject(hbmMem);
-			DeleteDC(hdcMem);
 		}
 		SelectObject(hdcDraw, hPenOld);
 		SelectObject(hdcDraw, hOldBrush);

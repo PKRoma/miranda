@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id: msgdlgutils.h 10390 2009-07-22 19:43:01Z silvercircle $
+$Id$
 */
 
 #ifndef _MSGDLGUTILS_H
@@ -29,7 +29,7 @@ $Id: msgdlgutils.h 10390 2009-07-22 19:43:01Z silvercircle $
 //MAD
 HWND GetLastChild(HWND hwndParent);
 //MAD_
-void        CalcDynamicAvatarSize(HWND hwndDlg, struct _MessageWindowData *dat, BITMAP *bminfo);
+void        CalcDynamicAvatarSize(_MessageWindowData *dat, BITMAP *bminfo);
 int         IsMetaContact(HWND hwndDlg, struct _MessageWindowData *dat);
 char        *GetCurrentMetaContactProto(HWND hwndDlg, struct _MessageWindowData *dat);
 void        WriteStatsOnClose(HWND hwndDlg, struct _MessageWindowData *dat);
@@ -43,7 +43,7 @@ int         CheckValidSmileyPack(char *szProto, HANDLE hContact, HICON *hButtonI
 TCHAR       *QuoteText(TCHAR *text,int charsPerLine,int removeExistingQuotes);
 void        UpdateReadChars(HWND hwndDlg, struct _MessageWindowData *dat);
 void        ShowPicture(HWND hwndDlg, struct _MessageWindowData *dat, BOOL showNewPic);
-void        AdjustBottomAvatarDisplay(HWND hwndDlg, struct _MessageWindowData *dat);
+void        AdjustBottomAvatarDisplay(_MessageWindowData *dat);
 void        SetDialogToType(HWND hwndDlg);
 void        FlashOnClist(HWND hwndDlg, struct _MessageWindowData *dat, HANDLE hEvent, DBEVENTINFO *dbei);
 char        *Message_GetFromStream(HWND hwndDlg, struct _MessageWindowData* dat, DWORD dwPassedFlags);
@@ -62,7 +62,7 @@ void        SwitchMessageLog(HWND hwndDlg, struct _MessageWindowData *dat, int i
 void        GetSendFormat(HWND hwndDlg, struct _MessageWindowData *dat, int mode);
 void        GetLocaleID(struct _MessageWindowData *dat, char *szKLName);
 void        GetDataDir();
-void        LoadOwnAvatar(HWND hwndDlg, struct _MessageWindowData *dat);
+void        LoadOwnAvatar(_MessageWindowData *dat);
 void        LoadContactAvatar(HWND hwndDlg, struct _MessageWindowData *dat);
 BYTE        GetInfoPanelSetting(HWND hwndDlg, struct _MessageWindowData *dat);
 void        LoadPanelHeight(HWND hwndDlg, struct _MessageWindowData *dat);

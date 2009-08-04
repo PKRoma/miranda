@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 The Hotkey-Handler is a hidden dialog window which needs to be in place for
 handling the global hotkeys registered by tabSRMM.
 
-$Id: hotkeyhandler.c 10201 2009-06-21 22:38:51Z silvercircle $
+$Id$
 
 The hotkeyhandler is a small, invisible window which cares about a few things:
 
@@ -41,16 +41,14 @@ The hotkeyhandler is a small, invisible window which cares about a few things:
 
 #include "commonheaders.h"
 #pragma hdrstop
-#include "sendqueue.h"
 
 extern HICON		hIcons[];
-INT_PTR					SendMessageCommand(WPARAM wParam, LPARAM lParam);
-INT_PTR					SendMessageCommand_W(WPARAM wParam, LPARAM lParam);
+extern INT_PTR		SendMessageCommand(WPARAM wParam, LPARAM lParam);
+extern INT_PTR		SendMessageCommand_W(WPARAM wParam, LPARAM lParam);
 
-int g_hotkeysEnabled = 0;
-HWND g_hotkeyHwnd = 0;
+static int g_hotkeysEnabled = 0;
+static HWND g_hotkeyHwnd = 0, floaterOwner = 0;
 static UINT WM_TASKBARCREATED;
-HWND floaterOwner;
 
 void HandleMenuEntryFromhContact(int iSelection)
 {
@@ -156,36 +154,10 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			SendMessage(hwndDlg, DM_REGISTERHOTKEYS, 0, 0);
 			g_hotkeyHwnd = hwndDlg;
 			WM_TASKBARCREATED = RegisterWindowMessageA("TaskbarCreated");
-			SendMessage(GetDlgItem(hwndDlg, IDC_SLIST), BUTTONSETASFLATBTN, 0, 0);
-			SendMessage(GetDlgItem(hwndDlg, IDC_TRAYICON), BUTTONSETASFLATBTN, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_SLIST, BUTTONADDTOOLTIP, (WPARAM) Translate("tabSRMM Quick Menu"), 0);
-			SendDlgItemMessage(hwndDlg, IDC_TRAYICON, BUTTONADDTOOLTIP, (WPARAM) Translate("Session List"), 0);
-			SendDlgItemMessage(hwndDlg, IDC_SLIST, BM_SETIMAGE, IMAGE_ICON, (LPARAM) PluginConfig.g_buttonBarIcons[16]);
-			SendDlgItemMessage(hwndDlg, IDC_TRAYICON, BM_SETIMAGE, IMAGE_ICON, (LPARAM) PluginConfig.m_AnimTrayIcons[0]);
-			ShowWindow(GetDlgItem(hwndDlg, IDC_TRAYCONTAINER), SW_HIDE);
-			if (M->m_pSetLayeredWindowAttributes != NULL)
-				SetWindowLongPtr(hwndDlg, GWL_EXSTYLE, GetWindowLongPtr(hwndDlg, GWL_EXSTYLE) | WS_EX_LAYERED);
-
-			if (Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, "hkh")) {
-				if (Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMSGMOD_T, "hkh"))
-					SetWindowPos(hwndDlg, 0, 50, 50, 50, 17, SWP_NOZORDER);
-
-			}
 			SendMessage(hwndDlg, DM_HKSAVESIZE, 0, 0);
 			SendMessage(hwndDlg, DM_HKDETACH, 0, 0);
-			ShowWindow(hwndDlg, nen_options.floaterMode ? SW_SHOW : SW_HIDE);
+			ShowWindow(hwndDlg, SW_HIDE);
 			return TRUE;
-		case WM_COMMAND:
-			SetFocus(floaterOwner);
-			switch (LOWORD(wParam)) {
-				case IDC_TRAYICON:
-					SendMessage(hwndDlg, DM_TRAYICONNOTIFY, 101, WM_LBUTTONUP);
-					break;
-				case IDC_SLIST:
-					SendMessage(hwndDlg, DM_TRAYICONNOTIFY, 101, WM_RBUTTONUP);
-					break;
-			}
-			break;
 		case WM_LBUTTONDOWN:
 			iMousedown = 1;
 			GetCursorPos(&ptLast);
@@ -350,8 +322,7 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 						CheckMenuItem(submenu, ID_TRAYCONTEXT_DISABLEALLPOPUPS, MF_BYCOMMAND | (nen_options.iDisable ? MF_CHECKED : MF_UNCHECKED));
 						CheckMenuItem(submenu, ID_TRAYCONTEXT_DON40223, MF_BYCOMMAND | (nen_options.iNoSounds ? MF_CHECKED : MF_UNCHECKED));
 						CheckMenuItem(submenu, ID_TRAYCONTEXT_DON, MF_BYCOMMAND | (nen_options.iNoAutoPopup ? MF_CHECKED : MF_UNCHECKED));
-						EnableMenuItem(submenu, ID_TRAYCONTEXT_HIDEALLMESSAGECONTAINERS, MF_BYCOMMAND | (nen_options.bTraySupport || nen_options.floaterMode) ? MF_ENABLED : MF_GRAYED);
-						CheckMenuItem(submenu, ID_TRAYCONTEXT_SHOWTHEFLOATER, MF_BYCOMMAND | (nen_options.floaterMode > 0 ? MF_CHECKED : MF_UNCHECKED));
+						EnableMenuItem(submenu, ID_TRAYCONTEXT_HIDEALLMESSAGECONTAINERS, MF_BYCOMMAND | (nen_options.bTraySupport) ? MF_ENABLED : MF_GRAYED);
 						CheckMenuItem(submenu, ID_TRAYCONTEXT_SHOWTHETRAYICON, MF_BYCOMMAND | (nen_options.bTraySupport ? MF_CHECKED : MF_UNCHECKED));
 						iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
 
@@ -365,10 +336,6 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 								HandleMenuEntryFromhContact(iSelection);
 							} else {
 								switch (iSelection) {
-									case ID_TRAYCONTEXT_SHOWTHEFLOATER:
-										nen_options.floaterMode = !nen_options.floaterMode;
-										ShowWindow(hwndDlg, nen_options.floaterMode ? SW_SHOW : SW_HIDE);
-										break;
 									case ID_TRAYCONTEXT_SHOWTHETRAYICON:
 										nen_options.bTraySupport = !nen_options.bTraySupport;
 										CreateSystrayIcon(nen_options.bTraySupport ? TRUE : FALSE);

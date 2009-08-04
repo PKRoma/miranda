@@ -62,6 +62,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include  <win2k.h>
 #include  <newpluginapi.h>
+#include  <m_imgsrvc.h>
 #include  <m_system.h>
 #include  <m_database.h>
 #include  <m_langpack.h>
@@ -83,6 +84,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include  <m_acc.h>
 #include  <m_chat.h>
 #include  <m_protomod.h>
+
 
 extern struct LIST_INTERFACE li;
 

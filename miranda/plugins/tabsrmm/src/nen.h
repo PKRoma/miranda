@@ -21,7 +21,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-$Id: nen.h 8774 2009-01-06 05:07:43Z nightwish2004 $
+$Id$
 
 Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyright above)
 
@@ -147,10 +147,8 @@ typedef struct _nen {
     WORD wMaxRecent;
     WORD wMaxFavorites;
     int  iAnnounceMethod;
-    BOOL floaterMode;
-    BOOL bFloaterInWin;
-    BOOL bFloaterOnlyMin;
 	BYTE bSimpleMode;
+	BYTE bFloaterInWin;
     DWORD dwRemoveMask;
 } NEN_OPTIONS;
 
