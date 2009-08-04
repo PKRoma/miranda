@@ -483,19 +483,15 @@ protected:
 
 			m_cbResource.SetText(dbv.ptszVal);
 			JFreeVariant(&dbv);
-		} else
-		{
-			m_cbResource.SetText(_T("Miranda"));
-		}
+		} 
+		else m_cbResource.SetText(_T("Miranda"));
 
-		TCHAR *szSelectedLang = m_proto->GetXmlLang();
 		for (i = 0; g_LanguageCodes[i].szCode; ++i)
 		{
 			int iItem = m_cbLocale.AddString(TranslateTS(g_LanguageCodes[i].szDescription), (LPARAM)g_LanguageCodes[i].szCode);
-			if (!_tcscmp(szSelectedLang, g_LanguageCodes[i].szCode))
+			if (!_tcscmp(m_proto->m_tszSelectedLang, g_LanguageCodes[i].szCode))
 				m_cbLocale.SetCurSel(iItem);
 		}
-		if ( szSelectedLang ) mir_free( szSelectedLang );
 
 		EnableWindow(GetDlgItem(m_hwnd, IDC_COMBO_RESOURCE ), m_chkUseHostnameAsResource.GetState() != BST_CHECKED);
 		EnableWindow(GetDlgItem(m_hwnd, IDC_UNREGISTER), m_proto->m_bJabberOnline);
@@ -523,18 +519,19 @@ protected:
 			JCallService(MS_DB_CRYPT_ENCODESTRING, lstrlenA(text), (LPARAM)text);
 			m_proto->JSetString(NULL, "Password", text);
 			mir_free(text);
-		} else
-		{
-			m_proto->JDeleteSetting(NULL, "Password");
-		}
+		} 
+		else m_proto->JDeleteSetting(NULL, "Password");
 
 		int index = m_cbLocale.GetCurSel();
 		if ( index >= 0 )
 		{
 			TCHAR *szLanguageCode = (TCHAR *)m_cbLocale.GetItemData(index);
-			if ( szLanguageCode )
+			if ( szLanguageCode ) {
 				m_proto->JSetStringT(NULL, "XmlLang", szLanguageCode);
-		}
+
+				mir_free( m_proto->m_tszSelectedLang );
+				m_proto->m_tszSelectedLang = mir_tstrdup( szLanguageCode );
+		}	}
 
 		sttStoreJidFromUI(m_proto, m_txtUsername, m_cbServer);
 

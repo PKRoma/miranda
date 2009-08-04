@@ -181,6 +181,13 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	mir_snprintf( text, sizeof( text ), "%s/Grant", m_szModuleName );
 	JCallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
 
+	DBVARIANT dbv;
+	if ( !JGetStringT( NULL, "XmlLang", &dbv )) {
+		m_tszSelectedLang = mir_tstrdup( dbv.ptszVal );
+		JFreeVariant( &dbv );
+	}
+	else m_tszSelectedLang = mir_tstrdup( _T( "en" ));
+	
 	CleanLastResourceMap();
 }
 
@@ -208,6 +215,7 @@ CJabberProto::~CJabberProto()
 	ListWipe();
 	DeleteCriticalSection( &m_csLists );
 
+	mir_free( m_tszSelectedLang );
 	mir_free( m_phIconLibItems );
 
 	DeleteCriticalSection( &m_filterInfo.csPatternLock );
@@ -869,11 +877,9 @@ HANDLE __cdecl CJabberProto::SearchByName( const char* nick, const char* firstNa
 	if ( bIsExtFormat ) {
 		IqAdd( iqId, IQ_PROC_GETSEARCH, &CJabberProto::OnIqResultExtSearch );
 
-		TCHAR *szXmlLang = GetXmlLang();
-		if ( szXmlLang ) {
-			iq << XATTR( _T("xml:lang"), szXmlLang );
-			mir_free( szXmlLang );
-		}
+		if ( m_tszSelectedLang )
+			iq << XATTR( _T("xml:lang"), m_tszSelectedLang );
+
 		HXML x = query << XCHILDNS( _T("x"), _T(JABBER_FEAT_DATA_FORMS)) << XATTR( _T("type"), _T("submit"));
 		if ( nick[0] != '\0' )
 			x << XCHILD( _T("field")) << XATTR( _T("var"), _T("user")) << XATTR( _T("value"), _A2T(nick));

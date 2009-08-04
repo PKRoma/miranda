@@ -201,6 +201,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	time_t m_tmJabberLoggedInTime;
 	time_t m_tmJabberIdleStartTime;
 	UINT   m_nJabberCodePage;
+	TCHAR* m_tszSelectedLang;
 
 	CMString m_szCurrentEntityCapsHash;
 
@@ -802,7 +803,6 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   SendPresence( int m_iStatus, bool bSendToAll );
 	void   StringAppend( char* *str, int *sizeAlloced, const char* fmt, ... );
 	TCHAR* GetClientJID( const TCHAR* jid, TCHAR*, size_t );
-	TCHAR* GetXmlLang( void );
 	void   RebuildInfoFrame( void );
 
 	void   ComboLoadRecentStrings(HWND hwndDlg, UINT idcCombo, char *param, int recentCount=JABBER_DEFAULT_RECENT_COUNT);

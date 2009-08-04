@@ -1099,7 +1099,10 @@ void CJabberProto::GroupchatProcessMessage( HXML node )
 		replaceStr(item->itemResource.statusMessage, msgText);
 	}
 	else {
-		if (( n = xmlGetChild( node , "body" )) == NULL ) return;
+		if (( n = xmlGetChildByTag( node , "body", "xml:lang", m_tszSelectedLang )) == NULL )
+			if (( n = xmlGetChild( node , "body" )) == NULL )
+				return;
+
 		if ( xmlGetText( n ) == NULL )
 			return;
 

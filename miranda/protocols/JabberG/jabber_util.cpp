@@ -1015,22 +1015,6 @@ TCHAR* __stdcall JabberStripJid( const TCHAR* jid, TCHAR* dest, size_t destLen )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// JabberGetXmlLang() - returns language code for xml:lang attribute, caller must free return value
-
-TCHAR* CJabberProto::GetXmlLang()
-{
-	DBVARIANT dbv;
-	TCHAR *szSelectedLang = NULL;
-	if ( !JGetStringT( NULL, "XmlLang", &dbv )) {
-		szSelectedLang = mir_tstrdup( dbv.ptszVal );
-		JFreeVariant( &dbv );
-	}
-	else
-		szSelectedLang = mir_tstrdup( _T( "en" ));
-	return szSelectedLang;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 // JabberGetPictureType - tries to autodetect the picture type from the buffer
 
 int __stdcall JabberGetPictureType( const char* buf )
