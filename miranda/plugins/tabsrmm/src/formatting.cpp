@@ -427,6 +427,7 @@ extern TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNi
 	return szResult;
 }
 
+#if defined(_UNICODE)
 char *FilterEventMarkers(char *szText)
 {
 	std::string text(szText);
@@ -459,6 +460,7 @@ char *FilterEventMarkers(char *szText)
 	lstrcpyA(szText, text.c_str());
 	return szText;
 }
+#endif
 
 // __T() not defined by MingW32
 

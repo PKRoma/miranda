@@ -1042,14 +1042,17 @@ static CSkinItem StatusItem_Default = {
 	CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 };
 
+#if defined(_UNICODE)
+	#define IMGL_LOAD 2			// IMGL_WCHAR, assume filename is wchar_t *
+#else
+	#define IMGL_LOAD 0
+#endif
+
 static HBITMAP LoadPNG(const TCHAR *szFilename)
 {
 	HBITMAP hBitmap = 0;
-	hBitmap = (HBITMAP)CallService("IMG/Load", (WPARAM)szFilename,  2);
-	//hBitmap = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM)szFilename);
-	if (hBitmap != 0)
-		CImageItem::CorrectBitmap32Alpha(hBitmap);
-
+	hBitmap = (HBITMAP)CallService("IMG/Load", (WPARAM)szFilename,  IMGL_LOAD);
+	CImageItem::PreMultiply(hBitmap, 1);
 	return hBitmap;
 }
 
@@ -1074,8 +1077,7 @@ static struct {
 
 HBITMAP IMG_LoadLogo(const char *szFilename)
 {
-	HBITMAP hbm = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM)szFilename);
-	//CImageItem::CorrectBitmap32Alpha(hbm);
+	HBITMAP hbm = (HBITMAP)CallService("IMG/Load", (LPARAM)szFilename, 0);
 	CImageItem::PreMultiply(hbm, 1);
 	return(hbm);
 }
@@ -1211,6 +1213,9 @@ TCHAR* CImageItem::Read(const TCHAR *szFilename)
 	return 0;
 }
 
+/**
+ * Free all resources allocated by an image item
+ */
 void CImageItem::Free()
 {
 	if(m_hdc ) {
@@ -1320,8 +1325,13 @@ void CSkin::setFileName()
 	 * ANSI filename is kept for compatibility reasons. will go away at some time
 	 */
 
+#if defined(_UNICODE)
 	if(m_tszFileName[0])
 		WideCharToMultiByte(CP_ACP, 0, m_tszFileName, MAX_PATH, m_tszFileNameA, MAX_PATH, 0, 0);
+#else
+	lstrcpyn(m_tszFileNameA, m_tszFileName, MAX_PATH);
+	m_tszFileNameA[MAX_PATH - 1] = 0;
+#endif
 
 	m_fLoadOnStartup = M->GetByte("useskin", 0) ? true : false;
 }
@@ -1601,11 +1611,11 @@ void CSkin::ReadButtonItem(const TCHAR *itemName) const
 	HICON *phIcon;
 
 #if defined(_UNICODE)
-	char *szItemNameA = mir_u2a(itemName);
-	char *szFileNameA = mir_u2a(m_tszFileName);
+	const char *szItemNameA = mir_u2a(itemName);
+	const char *szFileNameA = m_tszFileNameA;
 #else
-	char *szItemNameA = itemName;
-	char *szFileNameA = m_tszFileName;
+	const char *szItemNameA = itemName;
+	const char *szFileNameA = m_tszFileName;
 #endif
 	ZeroMemory(&tmpItem, sizeof(tmpItem));
 	mir_snprintf(tmpItem.szName, safe_sizeof(tmpItem.szName), "%s", &szItemNameA[1]);
@@ -1819,8 +1829,7 @@ create_it:
 		curItem->nextItem = newItem;
 	}
 #ifdef _UNICODE
-	mir_free(szItemNameA);
-	mir_free(szFileNameA);
+	mir_free((void *)szItemNameA);
 #endif
 	return;
 }

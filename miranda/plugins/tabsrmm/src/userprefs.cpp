@@ -216,7 +216,7 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				mtzp.cbSize = sizeof(MIM_TZ_PREPARELIST);
 				mtzp.hContact = hContact;
 				mtzp.hWnd = GetDlgItem(hwndDlg, IDC_TIMEZONE);
-				mtzp.dwFlags = MIM_TZ_PLF_CB;
+				//mtzp.dwFlags = MIM_TZ_PLF_CB;
 				CallService(MS_TZ_PREPARELIST, (WPARAM)0, (LPARAM)&mtzp);
 			}
 			else

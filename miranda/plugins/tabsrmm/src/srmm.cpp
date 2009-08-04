@@ -33,8 +33,6 @@ extern void LogErrorMessage(HWND hwndDlg, struct _MessageWindowData *dat, int i,
 extern int  Chat_Load(PLUGINLINK *link), Chat_Unload();
 extern void FreeLogFonts();
 
-DWORD g_mirandaVersion = 0;
-
 PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
 LOGFONT lfDefault = {0};
@@ -76,7 +74,6 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 
 extern "C" __declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	g_mirandaVersion = mirandaVersion;
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 9, 0, 0)) {
 		MessageBox(0, _T("This version of tabSRMM requires Miranda 0.9.0 or later. The plugin cannot be loaded."), _T("tabSRMM"), MB_OK | MB_ICONERROR);
 		return NULL;

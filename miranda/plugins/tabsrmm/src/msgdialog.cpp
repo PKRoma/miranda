@@ -374,11 +374,13 @@ LRESULT CALLBACK HPPKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
  * normal IM sessions *only*. Group chat sessions have their own activation handler (see chat/window.c)
 */
 
-static void MsgWindowUpdateState(HWND hwndDlg, struct _MessageWindowData *dat, UINT msg)
+static void MsgWindowUpdateState(_MessageWindowData *dat, UINT msg)
 {
 	HWND hwndTab = GetParent(hwndDlg);
 
 	if (dat && dat->iTabID >= 0) {
+		HWND hwndDlg = dat->hwnd;
+
 		if (msg == WM_ACTIVATE || msg == WM_SETFOCUS) {
 			if (dat->pContainer->dwFlags & CNT_TRANSPARENCY && M->m_pSetLayeredWindowAttributes != NULL) {
 				DWORD trans = LOWORD(dat->pContainer->dwTransparency);
@@ -387,8 +389,6 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct _MessageWindowData *dat, U
 		}
 		if (dat->pContainer->hwndSaved == hwndDlg)
 			return;
-
-		//_DebugTraceW(_T("update with: hwnd = %d, msg = %d, hwndSaved = %d"), hwndDlg, msg, dat->pContainer->hwndSaved);
 
 		dat->pContainer->hwndSaved = hwndDlg;
 		dat->dwTickLastEvent = 0;
@@ -489,9 +489,8 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct _MessageWindowData *dat, U
 			PostMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
 		}
 		SetAeroMargins(dat->pContainer);
+		BB_SetButtonsPos(hwndDlg,dat);
 	}
-	BB_SetButtonsPos(hwndDlg,dat);
-//
 }
 
 static void ConfigurePanel(HWND hwndDlg, struct _MessageWindowData *dat)
@@ -2688,7 +2687,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					}
 				}
 			}
-			MsgWindowUpdateState(hwndDlg, dat, WM_SETFOCUS);
+			MsgWindowUpdateState(dat, WM_SETFOCUS);
 			SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 			return 1;
 
@@ -2699,7 +2698,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			}
 			//fall through
 		case WM_MOUSEACTIVATE:
-			MsgWindowUpdateState(hwndDlg, dat, WM_ACTIVATE);
+			MsgWindowUpdateState(dat, WM_ACTIVATE);
 			return 1;
 
 		case WM_GETMINMAXINFO: {

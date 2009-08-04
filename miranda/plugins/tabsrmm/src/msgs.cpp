@@ -4,7 +4,7 @@ astyle --force-indent=tab=4 --brackets=linux --indent-switches
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project,
+Copyright 2000-2009 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -2226,7 +2226,7 @@ HICON *BTN_GetIcon(const TCHAR *szIconName)
 #if defined(_UNICODE)
 	char *szIconNameA = mir_u2a(szIconName);
 #else
-	char *szIconNameA = szIconName;
+	const char *szIconNameA = szIconName;
 #endif
 	int n = 0, i;
 	while (ICONBLOCKS[n].szSection) {

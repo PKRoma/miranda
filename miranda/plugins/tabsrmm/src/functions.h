@@ -30,7 +30,9 @@ $Id: functions.h 10390 2009-07-22 19:43:01Z silvercircle $
  */
 
 TCHAR *FilterEventMarkers(TCHAR *wszText);
-char  *FilterEventMarkers(char *wszText);
+#if defined(_UNICODE)
+	char  *FilterEventMarkers(char *wszText);
+#endif
 const TCHAR *DoubleAmpersands(TCHAR *pszText);
 
 /*
