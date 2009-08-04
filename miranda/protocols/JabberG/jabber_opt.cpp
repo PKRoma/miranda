@@ -1723,7 +1723,7 @@ protected:
 			m_cbType.SetCurSel(ACC_TLS);
 		else
 			m_cbType.SetCurSel(ACC_PUBLIC);
-		cbType_OnChange(&m_cbType);
+		//cbType_OnChange(&m_cbType);
 
 		if (m_chkManualHost.Enabled())
 		{
