@@ -256,13 +256,13 @@ goto :eof
 
 :Pack
 if %2 == 00 (
-   set FileVer=v0%1a%3.zip
+   set FileVer=v0%1a%3.7z
 ) else (
-   set FileVer=v0%1%2a%3.zip
+   set FileVer=v0%1%2a%3.7z
 )
 
 del /Q /F "%Temp%\miranda-%FileVer%"
-7z.exe a -tzip -r -mx=9 "%Temp%\miranda-%FileVer%" ./* ..\ChangeLog.txt
+"%PROGRAMFILES%\7-zip\7z.exe" a -r -mx=9 "%Temp%\miranda-%FileVer%" ./* ..\ChangeLog.txt
 
 rd /Q /S %Temp%\pdba >nul
 md %Temp%\pdba
@@ -294,7 +294,7 @@ copy ..\..\plugins\srmm\Release\srmm.pdb               %Temp%\pdba\plugins
 copy ..\..\plugins\tabSRMM\Release\tabSRMM.pdb         %Temp%\pdba\plugins
 
 del /Q /F "%Temp%\miranda-pdb-%FileVer%"
-7z.exe a -tzip -r -mx=9 "%Temp%\miranda-pdb-%FileVer%" %Temp%\pdba/*
+"%PROGRAMFILES%\7-zip\7z.exe" a -r -mx=9 "%Temp%\miranda-pdb-%FileVer%" %Temp%\pdba/*
 rd /Q /S %Temp%\pdba
 goto :eof
 
