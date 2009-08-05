@@ -297,18 +297,18 @@ int CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NET
                     memcpy(buf, recv_ft->filename, buflen);
                     enc = _htons(recv_ft->encoding);
 
-                    TCHAR *name;
+                    char *name;
                     if (enc == 2)
                     {
                         wchar_t* wbuf = (wchar_t*)buf;
                         wcs_htons(wbuf);
                         for (wchar_t *p = wbuf; *p; ++p) { if (*p == 1) *p = '\\'; }
-                        name = mir_u2t(wbuf);
+                        name = mir_u2a(wbuf);
                     }
                     else
                     {
                         for (char *p = buf; *p; ++p) { if (*p == 1) *p = '\\'; }
-                        name = mir_a2t(buf);
+                        name = mir_strdup(buf);
                     }
 
                     mir_free(buf);
@@ -368,7 +368,7 @@ int CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NET
                     ft->pfts.currentFileProgress = _htonl(oft->recv_bytes);
                     ft->pfts.totalProgress += ft->pfts.currentFileProgress;
 
-                    _lseeki64(fid, ft->pfts.currentFileProgress, SEEK_SET);
+                    _lseek(fid, ft->pfts.currentFileProgress, SEEK_SET);
                     accepted_file = true;
 
                     oft->type = _htons(0x0207);
