@@ -2521,7 +2521,7 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 		
 		i = atoi(response);
 		
-		if (i>0) {
+		if (i != 0) {
 			/**
 			 * Some Error Code, we need to process it here
 			 */
@@ -2606,6 +2606,35 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 	
 	LOG(("Got response:\n%s", response));
 	
+	if (!isdigit(response[0])) {
+		LOG(("Non numeric status code received."));
+		
+		YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_SOCK, NULL);
+		return; // fail for now
+	}
+		
+	i = atoi(response);
+	
+	if (i != 0) {
+		/**
+		 * Some Error Code, we need to process it here
+		 */
+		
+		switch (i) {
+
+			case 100: /* Required field missing???? */
+					YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_SOCK, NULL);
+					break;
+
+			default:
+					YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_SOCK, NULL);
+					break;
+		}
+		
+		FREE(response);
+		return;
+	}
+
 	c = strstr(response,"crumb=");
 	if (c != NULL) {
 		t = c + 6;
