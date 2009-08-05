@@ -139,6 +139,10 @@ static INT_PTR CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			ppro->SetByte("DisableYahoomail", ( BYTE )!IsDlgButtonChecked( hwndDlg, IDC_DISABLEYAHOOMAIL ));
 			ppro->SetByte("ShowErrors", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SHOW_ERRORS )); 
 
+			if (reconnectRequired ) {
+				DBDeleteContactSetting(NULL, ppro->m_szModuleName, YAHOO_PWTOKEN);
+			}
+			
 			/*if ( restartRequired )
 				MessageBoxA( hwndDlg, Translate( "The changes you have made require you to restart Miranda IM before they take effect"), Translate("YAHOO Options"), MB_OK );
 			else */

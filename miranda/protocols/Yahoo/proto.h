@@ -134,6 +134,7 @@ struct CYahooProto : public PROTO_INTERFACE
 	// former ylad structure
 	char   m_yahoo_id[255]; // user id (login)
 	char   m_password[255]; // user password
+	char   *m_pw_token; 	// yahoo token (login)
 	int    m_id;            // libyahoo id allocated for that proto instance
 	int    m_fd;            // socket descriptor
 	int    m_status;

@@ -71,6 +71,7 @@ extern "C"
 #define YAHOO_LOGINPORT						"LoginPort"
 #define YAHOO_LOGINID						"yahoo_id"
 #define YAHOO_PASSWORD						"Password"
+#define YAHOO_PWTOKEN						"PWToken"
 #define YAHOO_CHECKMAIL						"CheckMail"
 #define YAHOO_CUSTSTATDB					"CustomStat"
 #define YAHOO_DEFAULT_PORT					5050
