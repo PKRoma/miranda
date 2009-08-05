@@ -915,6 +915,45 @@ SESSION_INFO* SM_FindSessionByIndex(const char* pszModule, int iItem)
 
 }
 
+SESSION_INFO* SM_FindSessionAutoComplete(const char* pszModule, SESSION_INFO* currSession, SESSION_INFO* prevSession, const TCHAR* pszOriginal, const TCHAR* pszCurrent)
+{
+	SESSION_INFO* pResult = NULL;
+	if (prevSession == NULL && my_strstri(currSession->ptszName, pszOriginal) == currSession->ptszName) {
+		pResult = currSession;
+	} else {
+		TCHAR* pszName = NULL;
+		SESSION_INFO* pTemp = m_WndList;
+		if (currSession == prevSession) {
+			pszCurrent = pszOriginal;
+		}
+		while (pTemp != NULL) {
+			if (pTemp != currSession && !lstrcmpiA(pszModule, pTemp->pszModule)) {
+				if (my_strstri(pTemp->ptszName, pszOriginal) == pTemp->ptszName) {
+					if (prevSession != pTemp && lstrcmpi(pTemp->ptszName, pszCurrent) > 0 && (!pszName || lstrcmpi(pTemp->ptszName, pszName) < 0)) {
+						pResult = pTemp;
+						pszName = pTemp->ptszName;
+					}
+				}
+			}
+			pTemp = pTemp->next;
+		}
+	}
+	return pResult;
+
+}
+
+BOOL SM_ReconfigureFilters()
+{
+	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
+
+	while (pTemp != NULL) {
+		Chat_SetFilters(pTemp);
+		pLast = pTemp;
+		pTemp = pTemp->next;
+	}
+	return TRUE;
+}
+
 char* SM_GetUsers(SESSION_INFO* si)
 {
 	SESSION_INFO* pTemp = m_WndList;
@@ -1358,6 +1397,24 @@ USERINFO* UM_FindUserFromIndex(USERINFO* pUserList, int index)
 	return NULL;
 }
 
+TCHAR* UM_FindUserAutoComplete(USERINFO* pUserList, const TCHAR* pszOriginal, const TCHAR* pszCurrent)
+{
+	TCHAR* pszName = NULL;
+	USERINFO *pTemp = pUserList;
+
+	if (!pUserList || !pszOriginal || !pszCurrent)
+		return NULL;
+
+	while (pTemp != NULL) {
+		if (my_strstri(pTemp->pszNick, pszOriginal) == pTemp->pszNick)
+			if (lstrcmpi(pTemp->pszNick, pszCurrent) > 0 && (!pszName || lstrcmpi(pTemp->pszNick, pszName) < 0))
+				pszName = pTemp->pszNick;
+
+		pTemp = pTemp->next;
+	}
+	return pszName;
+}
+
 USERINFO* UM_GiveStatus(USERINFO* pUserList, const TCHAR* pszUID, WORD status)
 {
 	USERINFO *pTemp = pUserList, *pLast = NULL;
@@ -1438,24 +1495,6 @@ USERINFO* UM_TakeStatus(USERINFO* pUserList, const TCHAR* pszUID, WORD status)
 		pTemp = pTemp->next;
 	}
 	return 0;
-}
-
-TCHAR* UM_FindUserAutoComplete(USERINFO* pUserList, const TCHAR* pszOriginal, const TCHAR* pszCurrent)
-{
-	TCHAR* pszName = NULL;
-	USERINFO *pTemp = pUserList;
-
-	if (!pUserList || !pszOriginal || !pszCurrent)
-		return NULL;
-
-	while (pTemp != NULL) {
-		if (my_strstri(pTemp->pszNick, pszOriginal) == pTemp->pszNick)
-			if (lstrcmpi(pTemp->pszNick, pszCurrent) > 0 && (!pszName || lstrcmpi(pTemp->pszNick, pszName) < 0))
-				pszName = pTemp->pszNick;
-
-		pTemp = pTemp->next;
-	}
-	return pszName;
 }
 
 BOOL UM_RemoveUser(USERINFO** ppUserList, const TCHAR* pszUID)

@@ -28,11 +28,16 @@ Version 2.2.1.x is for Miranda 0.8 and was released in June 2009
 			Detailed change log
 			===================
 
+Version 2.2.1.21  - 2009/08/05
+
+	! fixed few groupchat issues
+
 Version 2.2.1.20  - 2009/07/20
 
 	! various visual glitches fixed.
 	! fixed problem with private container theme (using relative pathnames)
-
+	! fixed few groupchat issues
+	
 Version 2.2.1.19  - 2009/07/08
 
 	! fixed some slowdowns when opening new tabs

@@ -733,6 +733,7 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 								FreeMsgLogBitmaps();
 								LoadMsgLogBitmaps();
 								SM_BroadcastMessage(NULL, GC_SETWNDPROPS, 0, 0, TRUE);
+								SM_ReconfigureFilters();
 							}
 							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "enable_chat", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_CHAT_ENABLE) ? 1 : 0));
 						}
