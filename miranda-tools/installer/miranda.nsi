@@ -167,7 +167,7 @@ SubSection /e "Protocols"
     !insertmacro WriteInstallerOption "1" "Gadu-Gadu"
     SetOutPath "$INSTDIR\Plugins"
     File "${MIM_BUILD_DIRANSI}\plugins\GG.dll"
-    ; GG uses embedded icons
+    !insertmacro InstallMirandaProtoIcon "GG"
   SectionEnd
   
   Section "ICQ" pProtoICQ
