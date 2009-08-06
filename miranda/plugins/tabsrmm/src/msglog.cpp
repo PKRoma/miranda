@@ -22,7 +22,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id: msglog.c 10324 2009-07-10 10:22:44Z george.hazan@gmail.com $
+$Id$
 */
 
 #include "commonheaders.h"
@@ -177,7 +177,7 @@ void CacheLogFonts()
 			if (PluginConfig.ipConfig.hFonts[i])
 				DeleteObject(PluginConfig.ipConfig.hFonts[i]);
 			LoadLogfont(i + 100, &lf, &clr, FONTMODULE);
-			lf.lfHeight =-MulDiv(lf.lfHeight, logPixelSY, 72);
+			//lf.lfHeight =-MulDiv(lf.lfHeight, logPixelSY, 72);
 			PluginConfig.ipConfig.hFonts[i] = CreateFontIndirectA(&lf);
 			PluginConfig.ipConfig.clrs[i] = clr;
 		}

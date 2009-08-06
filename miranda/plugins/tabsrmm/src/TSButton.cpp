@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id: TSButton.c 9284 2009-03-30 11:54:21Z borkra $
+$Id$
 
 skinable button class for tabSRMM
 
@@ -97,11 +97,11 @@ static void DestroyTheme(MButtonCtrl *ctl)
 {
 	if (M->isVSAPIState()) {
 		if (ctl->hThemeButton) {
-			M->m_pfnCloseThemeData(ctl->hThemeButton);
+			CMimAPI::m_pfnCloseThemeData(ctl->hThemeButton);
 			ctl->hThemeButton = NULL;
 		}
 		if (ctl->hThemeToolbar) {
-			M->m_pfnCloseThemeData(ctl->hThemeToolbar);
+			CMimAPI::m_pfnCloseThemeData(ctl->hThemeToolbar);
 			ctl->hThemeToolbar = NULL;
 		}
 	}
@@ -111,8 +111,8 @@ static void LoadTheme(MButtonCtrl *ctl)
 {
 	if (M->isVSAPIState()) {
 		DestroyTheme(ctl);
-		ctl->hThemeButton = M->m_pfnOpenThemeData(ctl->hwnd, L"BUTTON");
-		ctl->hThemeToolbar = M->m_pfnOpenThemeData(ctl->hwnd, L"TOOLBAR");
+		ctl->hThemeButton = CMimAPI::m_pfnOpenThemeData(ctl->hwnd, L"BUTTON");
+		ctl->hThemeToolbar = CMimAPI::m_pfnOpenThemeData(ctl->hwnd, L"TOOLBAR");
 		ctl->bThemed = TRUE;
 	}
 }
@@ -234,13 +234,13 @@ flat_themed:
 
 					if (rc.right < 20 || rc.bottom < 20)
 						InflateRect(&rc, 2, 2);
-					if (M->m_pfnIsThemeBackgroundPartiallyTransparent(ctl->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state))) {
-						M->m_pfnDrawThemeParentBackground(ctl->hwnd, hdcMem, &rc);
+					if (CMimAPI::m_pfnIsThemeBackgroundPartiallyTransparent(ctl->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state))) {
+						CMimAPI::m_pfnDrawThemeParentBackground(ctl->hwnd, hdcMem, &rc);
 					}
-					M->m_pfnDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(state), &rc, &rc);
+					CMimAPI::m_pfnDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(state), &rc, &rc);
 					if (clip) {
 						SelectClipRgn(hdcMem, clip);
-						M->m_pfnDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(realState), &rc, &rc);
+						CMimAPI::m_pfnDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(realState), &rc, &rc);
 					}
 				} else {
 					HBRUSH hbr;
@@ -307,16 +307,16 @@ nonflat_themed:
 					if (clip)
 						state = PBS_NORMAL;
 
-					if (M->m_pfnIsThemeBackgroundPartiallyTransparent(ctl->hThemeButton, BP_PUSHBUTTON, state)) {
-						M->m_pfnDrawThemeParentBackground(ctl->hwnd, hdcMem, &rcClient);
+					if (CMimAPI::m_pfnIsThemeBackgroundPartiallyTransparent(ctl->hThemeButton, BP_PUSHBUTTON, state)) {
+						CMimAPI::m_pfnDrawThemeParentBackground(ctl->hwnd, hdcMem, &rcClient);
 					}
-					M->m_pfnDrawThemeBackground(ctl->hThemeButton, hdcMem, BP_PUSHBUTTON, state, &rcClient, &rcClient);
+					CMimAPI::m_pfnDrawThemeBackground(ctl->hThemeButton, hdcMem, BP_PUSHBUTTON, state, &rcClient, &rcClient);
 
 					if (clip) {
 						SelectClipRgn(hdcMem, clip);
-						M->m_pfnDrawThemeBackground(ctl->hThemeButton, hdcMem, BP_PUSHBUTTON, realState, &rcClient, &rcClient);
+						CMimAPI::m_pfnDrawThemeBackground(ctl->hThemeButton, hdcMem, BP_PUSHBUTTON, realState, &rcClient, &rcClient);
 					}
-					M->m_pfnGetThemeBackgroundContentRect(ctl->hThemeToolbar, hdcMem, BP_PUSHBUTTON, PBS_NORMAL, &rcClient, &rcContent);
+					CMimAPI::m_pfnGetThemeBackgroundContentRect(ctl->hThemeToolbar, hdcMem, BP_PUSHBUTTON, PBS_NORMAL, &rcClient, &rcContent);
 				} else {
 					RECT rcFill = rcClient;
 					UINT uType = ctl->stateId == PBS_PRESSED ? EDGE_ETCHED : EDGE_BUMP;
@@ -382,19 +382,19 @@ bg_done:
 
 			if (hIcon) {
 				szText.cx += 16;
-				if (ctl->stateId != PBS_DISABLED || M->m_MyAlphaBlend == 0)
+				if (ctl->stateId != PBS_DISABLED || CMimAPI::m_MyAlphaBlend == 0)
 					DrawIconEx(hdcMem, rcClient.right / 2 - szText.cx / 2, rcClient.bottom / 2 - 8, hIcon, 16, 16, 0, 0, DI_NORMAL);
 				else {
 					BitBlt(hdc_buttonglyph, 0, 0, 16, 16, hdcMem, rcClient.right / 2 - szText.cx / 2, rcClient.bottom / 2 - 8, SRCCOPY);
 					DrawIconEx(hdc_buttonglyph, 0, 0, hIcon, 16, 16, 0, 0, DI_NORMAL);
-					M->m_MyAlphaBlend(hdcMem, rcClient.right / 2 - szText.cx / 2, rcClient.bottom / 2 - 8, 16, 16, hdc_buttonglyph, 0, 0, 16, 16, bf_buttonglyph);
+					CMimAPI::m_MyAlphaBlend(hdcMem, rcClient.right / 2 - szText.cx / 2, rcClient.bottom / 2 - 8, 16, 16, hdc_buttonglyph, 0, 0, 16, 16, bf_buttonglyph);
 				}
 				xOff = 18;
 			} else {
 				const CImageItem	*glyphItem = Skin->getGlyphItem();
 				szText.cx += glyphMetrics[2];
 				if (glyphItem) {
-					M->m_MyAlphaBlend(hdcMem, (rcClient.right - szText.cx / 2), (rcClient.bottom - glyphMetrics[3]) / 2,
+					CMimAPI::m_MyAlphaBlend(hdcMem, (rcClient.right - szText.cx / 2), (rcClient.bottom - glyphMetrics[3]) / 2,
 								 glyphMetrics[2], glyphMetrics[3], glyphItem->getDC(),
 								 glyphMetrics[0], glyphMetrics[1], glyphMetrics[2],
 								 glyphMetrics[3], glyphItem->getBF());
@@ -429,12 +429,12 @@ bg_done:
 			if (ctl->dimmed && PluginConfig.m_IdleDetect)
 				CSkin::DrawDimmedIcon(hdcMem, ix, iy, PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, hIconNew, 180);
 			else {
-				if (ctl->stateId != PBS_DISABLED || M->m_MyAlphaBlend == 0)
+				if (ctl->stateId != PBS_DISABLED || CMimAPI::m_MyAlphaBlend == 0)
 					DrawIconEx(hdcMem, ix, iy, hIconNew, PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, 0, 0, DI_NORMAL);
 				else {
 					BitBlt(hdc_buttonglyph, 0, 0, 16, 16, hdcMem, ix, iy, SRCCOPY);
 					DrawIconEx(hdc_buttonglyph, 0, 0, hIconNew, 16, 16, 0, 0, DI_NORMAL);
- 					M->m_MyAlphaBlend(hdcMem, ix, iy, PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, hdc_buttonglyph, 0, 0, 16, 16, bf_buttonglyph);
+ 					CMimAPI::m_MyAlphaBlend(hdcMem, ix, iy, PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, hdc_buttonglyph, 0, 0, 16, 16, bf_buttonglyph);
 				}
 			}
 		} else if (GetWindowTextLength(ctl->hwnd)) {

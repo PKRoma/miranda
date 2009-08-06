@@ -23,7 +23,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ---------------------------------------------------------------------------
 
-$Id: formatting.cpp 10366 2009-07-18 22:15:04Z silvercircle $
+$Id$
 
 License: GPL
 */
@@ -40,7 +40,6 @@ License: GPL
 
 extern RTFColorTable *rtf_ctable;
 extern TCHAR *xStatusDescr[];
-extern DWORD m_LangPackCP;
 extern void RTF_ColorAdd(const TCHAR *tszColname, size_t length);
 extern int  haveMathMod;
 extern TCHAR *mathModDelimiter;
@@ -290,12 +289,15 @@ nosimpletags:
  * the caller must free() the returned string
  */
 
-extern TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const TCHAR *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus, WORD wStatus, TCHAR *tszAccname)
+const TCHAR *NewTitle(const _MessageWindowData *dat, const TCHAR *szFormat)
 {
 	TCHAR *szResult = 0;
 	INT_PTR length = 0;
 	INT_PTR tempmark = 0;
 	TCHAR szTemp[512];
+
+	if(dat == 0)
+		return(0);
 
 	tstring title(szFormat);
 
@@ -311,33 +313,33 @@ extern TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNi
 
 		switch (title[curpos]) {
 			case 'n': {
-				if (szNickname)
-					title.insert(tempmark + 2, szNickname);
+				if (dat->szNickname)
+					title.insert(tempmark + 2, dat->szNickname);
 				title.erase(tempmark, 2);
-				curpos = tempmark + lstrlen(szNickname);
+				curpos = tempmark + lstrlen(dat->szNickname);
 				break;
-					  }
+			}
 			case 'a': {
-				if (tszAccname)
-					title.insert(tempmark + 2, tszAccname);
+				if (dat->szAccount)
+					title.insert(tempmark + 2, dat->szAccount);
 				title.erase(tempmark, 2);
-				curpos = tempmark + lstrlen(tszAccname);
+				curpos = tempmark + lstrlen(dat->szAccount);
 				break;
-					  }
+			}
 			case 's': {
-				if (szStatus && szStatus[0])
-					title.insert(tempmark + 2, szStatus);
+				if (dat->szStatus && dat->szStatus[0])
+					title.insert(tempmark + 2, dat->szStatus);
 				title.erase(tempmark, 2);
-				curpos = tempmark + lstrlen(szStatus);
+				curpos = tempmark + lstrlen(dat->szStatus);
 				break;
-					  }
+			}
 			case 'u': {
-				if (szUin) {
+				if (dat->uin) {
 #if defined(_UNICODE)
-					MultiByteToWideChar(CP_ACP, 0, szUin, -1, szTemp, 500);
+					MultiByteToWideChar(CP_ACP, 0, dat->uin, -1, szTemp, 500);
 					title.insert(tempmark + 2, szTemp);
 #else
-					_snprintf(szTemp, 512, "%s", szUin);
+					_snprintf(szTemp, 512, "%s", dat->uin);
 					szTemp[511] = 0;
 					title.insert(tempmark + 2, szTemp);
 #endif
@@ -345,14 +347,15 @@ extern TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNi
 				title.erase(tempmark, 2);
 				curpos = tempmark + lstrlen(szTemp);
 				break;
-					  }
+			}
 			case 'c': {
-				title.insert(tempmark + 2, szContainer);
+				title.insert(tempmark + 2, dat->pContainer->szName);
 				title.erase(tempmark, 2);
-				curpos = tempmark + lstrlen(szContainer);
+				curpos = tempmark + lstrlen(dat->pContainer->szName);
 				break;
-					  }
+			}
 			case 'p': {
+				char	*szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 				if (szProto) {
 #if defined(_UNICODE)
 					MultiByteToWideChar(CP_ACP, 0, szProto, -1, szTemp, 500);
@@ -366,14 +369,14 @@ extern TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNi
 				title.erase(tempmark, 2);
 				curpos = tempmark + lstrlen(szTemp);
 				break;
-					  }
+			}
 			case 'x': {
 				TCHAR *szFinalStatus = NULL;
 
-				if (wStatus != ID_STATUS_OFFLINE && xStatus > 0 && xStatus <= 31) {
+				if (dat->wStatus != ID_STATUS_OFFLINE && dat->xStatus > 0 && dat->xStatus <= 31) {
 					DBVARIANT dbv = {0};
 
-					if (!M->GetTString(hContact, (char *)szProto, "XStatusName", &dbv)) {
+					if (!M->GetTString(dat->hContact, (char *)dat->szProto, "XStatusName", &dbv)) {
 						_tcsncpy(szTemp, dbv.ptszVal, 500);
 						szTemp[500] = 0;
 						DBFreeVariant(&dbv);
@@ -381,28 +384,28 @@ extern TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNi
 						curpos = tempmark + lstrlen(szTemp);
 					}
 					else {
-						title.insert(tempmark + 2, xStatusDescr[xStatus - 1]);
-						curpos = tempmark + lstrlen(xStatusDescr[xStatus - 1]);
+						title.insert(tempmark + 2, xStatusDescr[dat->xStatus - 1]);
+						curpos = tempmark + lstrlen(xStatusDescr[dat->xStatus - 1]);
 					}
 				}
 				title.erase(tempmark, 2);
 				break;
-					  }
+			}
 			case 'm': {
 				TCHAR *szFinalStatus = NULL;
 
-				if (wStatus != ID_STATUS_OFFLINE && xStatus > 0 && xStatus <= 31) {
+				if (dat->wStatus != ID_STATUS_OFFLINE && dat->xStatus > 0 && dat->xStatus <= 31) {
 					DBVARIANT dbv = {0};
 
-					if (!M->GetTString(hContact, (char *)szProto, "XStatusName", &dbv)) {
+					if (!M->GetTString(dat->hContact, (char *)dat->szProto, "XStatusName", &dbv)) {
 						_tcsncpy(szTemp, dbv.ptszVal, 500);
 						szTemp[500] = 0;
 						DBFreeVariant(&dbv);
 						title.insert(tempmark + 2, szTemp);
 					} else
-						szFinalStatus = xStatusDescr[xStatus - 1];
+						szFinalStatus = xStatusDescr[dat->xStatus - 1];
 				} else
-					szFinalStatus = (TCHAR *)(szStatus && szStatus[0] ? szStatus : _T("(undef)"));
+					szFinalStatus = (TCHAR *)(dat->szStatus && dat->szStatus[0] ? dat->szStatus : _T("(undef)"));
 
 				if (szFinalStatus) {
 					title.insert(tempmark + 2, szFinalStatus);
@@ -411,7 +414,7 @@ extern TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNi
 
 				title.erase(tempmark, 2);
 				break;
-					  }
+			}
 			default:
 				title.erase(tempmark, 1);
 				break;

@@ -22,7 +22,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id: userprefs.c 10399 2009-07-23 20:11:21Z silvercircle $
+$Id$
 
 Dialog to setup per contact (user) prefs.
 Invoked by the contact menu entry, handled by the SetUserPrefs Service
@@ -375,7 +375,7 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					if (hWnd && dat) {
 						SendMessage(hWnd, DM_CONFIGURETOOLBAR, 0, 1);
 						dat->panelWidth = -1;
-						ShowPicture(hWnd, dat, FALSE);
+						ShowPicture(dat, FALSE);
 						SendMessage(hWnd, WM_SIZE, 0, 0);
 						DM_ScrollToBottom(hWnd, dat, 0, 1);
 					}
@@ -549,8 +549,8 @@ INT_PTR CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			TabCtrl_InsertItem(GetDlgItem(hwndDlg, IDC_OPTIONSTAB), 0, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 32, rcClient.right - 10, rcClient.bottom - 80, 1);
 			ShowWindow((HWND)tci.lParam, SW_SHOW);
-			if (M->m_pfnEnableThemeDialogTexture)
-				M->m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+			if (CMimAPI::m_pfnEnableThemeDialogTexture)
+				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
 
 			tci.lParam = (LPARAM)CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_USERPREFS1), hwndDlg, DlgProcUserPrefs1, (LPARAM)hContact);
@@ -558,8 +558,8 @@ INT_PTR CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			TabCtrl_InsertItem(GetDlgItem(hwndDlg, IDC_OPTIONSTAB), 1, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 32, rcClient.right - 10, rcClient.bottom - 80, 1);
 			ShowWindow((HWND)tci.lParam, SW_HIDE);
-			if (M->m_pfnEnableThemeDialogTexture)
-				M->m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+			if (CMimAPI::m_pfnEnableThemeDialogTexture)
+				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 			TabCtrl_SetCurSel(GetDlgItem(hwndDlg, IDC_OPTIONSTAB), 0);
 			ShowWindow(hwndDlg, SW_SHOW);
 			return TRUE;

@@ -35,13 +35,13 @@ int BTN_GetStockItem(ButtonItem *item, const TCHAR *szName);
 HWND DM_CreateClist(HWND hwndParent, struct _MessageWindowData *dat);
 
 LRESULT DM_ScrollToBottom(HWND hwndDlg, struct _MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
-LRESULT DM_LoadLocale(HWND hwndDlg, struct _MessageWindowData *dat);
-LRESULT DM_SaveLocale(HWND hwndDlg, struct _MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
-LRESULT DM_UpdateLastMessage(HWND hwndDlg, struct _MessageWindowData *dat);
-LRESULT DM_RecalcPictureSize(HWND hwndDlg, struct _MessageWindowData *dat);
+LRESULT DM_LoadLocale(_MessageWindowData *dat);
+LRESULT DM_SaveLocale(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
+LRESULT DM_UpdateLastMessage(const _MessageWindowData *dat);
+LRESULT DM_RecalcPictureSize(_MessageWindowData *dat);
 LRESULT DM_WMCopyHandler(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lParam);
 LRESULT DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct _MessageWindowData *mwdat, WPARAM wParam, LPARAM lParam);
-LRESULT DM_ThemeChanged(HWND hwnd, struct _MessageWindowData *dat);
+LRESULT DM_ThemeChanged(_MessageWindowData *dat);
 
 void BB_InitDlgButtons(HWND hdlg,struct _MessageWindowData *dat);
 

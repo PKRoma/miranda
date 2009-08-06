@@ -4,7 +4,7 @@ astyle --force-indent=tab=4 --brackets=linux --indent-switches
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project,
+Copyright 2000-2009 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -67,10 +67,9 @@ extern INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM w
 extern BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-extern TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const TCHAR *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus, WORD wStatus, TCHAR *szAcc);
+const TCHAR *NewTitle(const _MessageWindowData *dat, const TCHAR *szFormat);
 
 TCHAR 	*szWarnClose = _T("Do you really want to close this session?");
-DWORD 	m_LangPackCP = CP_ACP;
 
 ContainerWindowData *pFirstContainer = 0;        // the linked list of struct ContainerWindowData
 ContainerWindowData *pLastActiveContainer = NULL;
@@ -179,13 +178,26 @@ void SetAeroMargins(ContainerWindowData *pContainer)
 	if(M->isAero() && pContainer && !pContainer->bSkinned) {
 		MARGINS	m;
 		_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+		RECT	rcWnd;
+		POINT	pt;
 
 		if(dat) {
+			GetWindowRect(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_CHAT ? IDC_CHAT_LOG : IDC_LOG), &rcWnd);
+			pt.x = rcWnd.left;
+			pt.y = rcWnd.top;
+			ScreenToClient(pContainer->hwnd, &pt);
+			if(!(pContainer->dwFlags & CNT_NOMENUBAR))
+				pt.y += (PluginConfig.iMenuHeight + 1);
+			m.cyTopHeight = pt.y;
 			m.cxLeftWidth = 0;
 			m.cxRightWidth = 0;
-			m.cyTopHeight = (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) ? dat->panelHeight + 1 : 0;
+			//m.cyTopHeight = (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) ? dat->panelHeight + 1 : 0;
 			m.cyBottomHeight = pContainer->statusBarHeight;
-			M->m_dwmExtendFrameIntoClientArea(pContainer->hwnd, &m);
+			if(pt.y != pContainer->dwOldAeroTop || pContainer->statusBarHeight != pContainer->dwOldAeroBottom) {
+				pContainer->dwOldAeroTop = pt.y;
+				pContainer->dwOldAeroBottom = pContainer->statusBarHeight;
+				CMimAPI::m_pfnDwmExtendFrameIntoClientArea(pContainer->hwnd, &m);
+			}
 		}
 	}
 }
@@ -320,8 +332,8 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 
 			if (pContainer && pContainer->bSkinned)
 				return 1;
-			if (M->m_pfnIsThemeActive != 0) {
-				if (M->m_pfnIsThemeActive() && !M->isAero())
+			if (CMimAPI::m_pfnIsThemeActive != 0) {
+				if (CMimAPI::m_pfnIsThemeActive() && !M->isAero())
 					break;
 			}
 			GetClientRect(hWnd, &rcClient);
@@ -352,16 +364,15 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				CSkinItem *item = &SkinItems[ID_EXTBKSTATUSBARPANEL];
 
 				BOOL	fAero = M->isAero();
+				HANDLE  hTheme = fAero ? CMimAPI::m_pfnOpenThemeData(hWnd, L"ButtonStyle") : 0;
 
 				GetClientRect(hWnd, &rcClient);
 
-				hbm = CreateCompatibleBitmap(hdc, rcClient.right, rcClient.bottom);
+				hbm = CSkin::CreateAeroCompatibleBitmap(rcClient, hdc);
+				//hbm = CreateCompatibleBitmap(hdc, rcClient.right, rcClient.bottom);
 				hbmOld = (HBITMAP)SelectObject(hdcMem, hbm);
 				SetBkMode(hdcMem, TRANSPARENT);
-				if(!fAero)
-					SetTextColor(hdcMem, PluginConfig.skinDefaultFontColor);
-				else
-					SetTextColor(hdcMem, RGB(250, 250, 250));
+				SetTextColor(hdcMem, PluginConfig.skinDefaultFontColor);
 				hFontOld = (HFONT)SelectObject(hdcMem, GetStockObject(DEFAULT_GUI_FONT));
 
 				if (pContainer && pContainer->bSkinned)
@@ -392,7 +403,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 							if (LOWORD(result) > 1) {				// we have a text
 								DrawIconEx(hdcMem, itemRect.left + 3, (height / 2 - 8) + itemRect.top, hIcon, 16, 16, 0, 0, DI_NORMAL);
 								itemRect.left += 20;
-								DrawText(hdcMem, szText, -1, &itemRect, DT_VCENTER | DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX);
+								CSkin::RenderText(hdcMem, hTheme, szText, &itemRect, DT_VCENTER | DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX);
 							}
 							else
 								DrawIconEx(hdcMem, itemRect.left + 3, (height / 2 - 8) + itemRect.top, hIcon, 16, 16, 0, 0, DI_NORMAL);
@@ -400,7 +411,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 						else {
 							itemRect.left += 2;
 							itemRect.right -= 2;
-							DrawText(hdcMem, szText, -1, &itemRect, DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX);
+							CSkin::RenderText(hdcMem, hTheme, szText, &itemRect, DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX);
 						}
 					}
 				}
@@ -409,6 +420,9 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				DeleteObject(hbm);
 				SelectObject(hdcMem, hFontOld);
 				DeleteDC(hdcMem);
+
+				if(hTheme)
+					CMimAPI::m_pfnCloseThemeData(hTheme);
 
 				EndPaint(hWnd, &ps);
 				return 0;
@@ -1362,7 +1376,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				DWORD dwOldMsgWindowFlags = dat->dwFlags;
 				DWORD dwOldEventIsShown = dat->dwFlagsEx;
 
-				if (MsgWindowMenuHandler(pContainer->hwndActive, dat, LOWORD(wParam), MENU_PICMENU) == 1)
+				if (MsgWindowMenuHandler(dat, LOWORD(wParam), MENU_PICMENU) == 1)
 					break;
 			}
 			SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
@@ -1475,8 +1489,8 @@ buttons_done:
 					BOOL skinnedMode = bSkinned;
 					ButtonItem *pItem = pContainer->buttonItems;
 
-					if (M->m_pfnIsThemeActive)
-						skinnedMode |= (M->m_pfnIsThemeActive() ? 1 : 0);
+					if (CMimAPI::m_pfnIsThemeActive)
+						skinnedMode |= (CMimAPI::m_pfnIsThemeActive() ? 1 : 0);
 
 					GetWindowRect(hwndDlg, &rc);
 					dwNewLeft = pContainer->dwFlags & CNT_SIDEBAR ? -SIDEBARWIDTH : SIDEBARWIDTH;
@@ -1623,7 +1637,7 @@ buttons_done:
 					struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 
 					if(dat) {
-						MsgWindowMenuHandler(pContainer->hwndActive, dat, (int)LOWORD(wParam), MENU_LOGMENU);
+						MsgWindowMenuHandler(dat, (int)LOWORD(wParam), MENU_LOGMENU);
 						return 0;
 					}
 					break;
@@ -1673,12 +1687,12 @@ buttons_done:
 				int monitorXOffset = 0;
 				WINDOWPLACEMENT wp = {0};
 
-				if (M->m_pfnMonitorFromWindow && M->m_pfnGetMonitorInfoA) {
-					HMONITOR hMonitor = M->m_pfnMonitorFromWindow(hwndDlg, 2);
+				if (CMimAPI::m_pfnMonitorFromWindow && CMimAPI::m_pfnGetMonitorInfoA) {
+					HMONITOR hMonitor = CMimAPI::m_pfnMonitorFromWindow(hwndDlg, 2);
 					if (hMonitor) {
 						MONITORINFO mi = { 0 };
 						mi.cbSize = sizeof(mi);
-						M->m_pfnGetMonitorInfoA(hMonitor, &mi);
+						CMimAPI::m_pfnGetMonitorInfoA(hMonitor, &mi);
 						rcDesktop = mi.rcWork;
 						OffsetRect(&rcDesktop, -mi.rcMonitor.left, -mi.rcMonitor.top);
 						monitorXOffset = mi.rcMonitor.left;
@@ -1826,20 +1840,18 @@ buttons_done:
 		}
 		case DM_UPDATETITLE: {
 			HANDLE hContact = 0;
-			TCHAR *szNewTitle = NULL;
+			const TCHAR *szNewTitle = NULL;
 			_MessageWindowData *dat = NULL;
 
 			if (lParam) {               // lParam != 0 means sent by a chat window
 				TCHAR szText[512];
 				dat = (struct _MessageWindowData *)GetWindowLongPtr((HWND)wParam, GWLP_USERDATA);
-				if(!(pContainer->dwFlags & CNT_TITLE_PRIVATE)){
-						GetWindowText((HWND)wParam, szText, SIZEOF(szText));
-						szText[SIZEOF(szText)-1] = 0;
- 						SetWindowText(hwndDlg, szText);
- 						if (dat)
- 							SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM)(dat->hTabIcon != dat->hTabStatusIcon ? dat->hTabIcon : dat->hTabStatusIcon));
-						break;
-				}
+					GetWindowText((HWND)wParam, szText, SIZEOF(szText));
+					szText[SIZEOF(szText)-1] = 0;
+					SetWindowText(hwndDlg, szText);
+					if (dat)
+						SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM)(dat->hTabIcon != dat->hTabStatusIcon ? dat->hTabIcon : dat->hTabStatusIcon));
+					return(0);
 			}
 			if (wParam == 0) {           // no hContact given - obtain the hContact for the active tab
 				if (pContainer->hwndActive && IsWindow(pContainer->hwndActive))
@@ -1863,11 +1875,10 @@ buttons_done:
 			}
 			if (dat) {
 				SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM)(dat->hXStatusIcon ? dat->hXStatusIcon : dat->hTabStatusIcon));
-				m_LangPackCP = PluginConfig.m_LangPackCP;
-				szNewTitle = NewTitle(dat->hContact, pContainer->szTitleFormat, dat->szNickname, dat->szStatus, pContainer->szName, dat->uin, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->idle, dat->codePage, dat->xStatus, dat->wStatus, dat->szAccount);
+				szNewTitle = NewTitle(dat, pContainer->szTitleFormat);
 				if (szNewTitle) {
 					SetWindowText(hwndDlg, szNewTitle);
-					free(szNewTitle);
+					free((void *)szNewTitle);
 				}
 			}
 			return 0;
@@ -2126,7 +2137,7 @@ panel_found:
 						dat = (struct _MessageWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
 
 					if (dat)
-						MsgWindowUpdateMenu((HWND)item.lParam, dat, subMenu, MENU_TABCONTEXT);
+						MsgWindowUpdateMenu(dat, subMenu, MENU_TABCONTEXT);
 
 					iSelection = TrackPopupMenu(subMenu, TPM_RETURNCMD, pt1.x, pt1.y, 0, hwndDlg, NULL);
 					if (iSelection >= IDM_CONTAINERMENU) {
@@ -2212,8 +2223,8 @@ panel_found:
 			if (LOWORD(wParam == WA_INACTIVE) && (HWND)lParam != PluginConfig.g_hwndHotkeyHandler && GetParent((HWND)lParam) != hwndDlg) {
 				BOOL fTransAllowed = !bSkinned || PluginConfig.m_WinVerMajor >= 6;
 
-				if (pContainer->dwFlags & CNT_TRANSPARENCY && M->m_pSetLayeredWindowAttributes != NULL && fTransAllowed)
-					M->m_pSetLayeredWindowAttributes(hwndDlg, Skin->getColorKey(), (BYTE)HIWORD(pContainer->dwTransparency), (/* pContainer->bSkinned ? LWA_COLORKEY :  */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
+				if (pContainer->dwFlags & CNT_TRANSPARENCY && CMimAPI::m_pSetLayeredWindowAttributes != NULL && fTransAllowed)
+					CMimAPI::m_pSetLayeredWindowAttributes(hwndDlg, Skin->getColorKey(), (BYTE)HIWORD(pContainer->dwTransparency), (/* pContainer->bSkinned ? LWA_COLORKEY :  */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 			}
 			pContainer->hwndSaved = 0;
 
@@ -2246,9 +2257,9 @@ panel_found:
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
 			}
 
-			if (pContainer->dwFlags & CNT_TRANSPARENCY && M->m_pSetLayeredWindowAttributes != NULL && fTransAllowed) {
+			if (pContainer->dwFlags & CNT_TRANSPARENCY && CMimAPI::m_pSetLayeredWindowAttributes != NULL && fTransAllowed) {
 				DWORD trans = LOWORD(pContainer->dwTransparency);
-				M->m_pSetLayeredWindowAttributes(hwndDlg, Skin->getColorKey(), (BYTE)trans, (/* pContainer->bSkinned ? LWA_COLORKEY : */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
+				CMimAPI::m_pSetLayeredWindowAttributes(hwndDlg, Skin->getColorKey(), (BYTE)trans, (/* pContainer->bSkinned ? LWA_COLORKEY : */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 			}
 			if (pContainer->dwFlags & CNT_NEED_UPDATETITLE) {
 				HANDLE hContact = 0;
@@ -2315,7 +2326,7 @@ panel_found:
 
 			submenu = GetSubMenu(hMenu, 2);
 			if (dat && submenu) {
-				MsgWindowUpdateMenu(pContainer->hwndActive, dat, submenu, MENU_LOGMENU);
+				MsgWindowUpdateMenu(dat, submenu, MENU_LOGMENU);
 			}
 			break;
 		}
@@ -2513,7 +2524,7 @@ panel_found:
 			pContainer->tBorder_outer_bottom = g_ButtonSet.bottom + M->GetByte((bSkinned ? "S_tborder_outer_bottom" : "tborder_outer_bottom"), 2);
 			sBarHeight = (UINT)M->GetByte((bSkinned ? "S_sbarheight" : "sbarheight"), 0);
 
-			if (LOBYTE(LOWORD(GetVersion())) >= 5  && M->m_pSetLayeredWindowAttributes != NULL) {
+			if (LOBYTE(LOWORD(GetVersion())) >= 5  && CMimAPI::m_pSetLayeredWindowAttributes != NULL) {
 				BOOL  fTransAllowed = !bSkinned || PluginConfig.m_WinVerMajor >= 6;
 				DWORD exold;
 
@@ -2525,7 +2536,7 @@ panel_found:
 				SetWindowLongPtr(hwndDlg, GWL_EXSTYLE, ex);
 				if (pContainer->dwFlags & CNT_TRANSPARENCY && fTransAllowed) {
 					DWORD trans = LOWORD(pContainer->dwTransparency);
-					M->m_pSetLayeredWindowAttributes(hwndDlg, Skin->getColorKey(), (BYTE)trans, (/* pContainer->bSkinned ? LWA_COLORKEY : */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
+					CMimAPI::m_pSetLayeredWindowAttributes(hwndDlg, Skin->getColorKey(), (BYTE)trans, (/* pContainer->bSkinned ? LWA_COLORKEY : */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 				}
 
 				if ((exold & WS_EX_LAYERED) != (ex & WS_EX_LAYERED))
@@ -2604,11 +2615,11 @@ panel_found:
 						mii.wID = 0xffff5000 + i;
 						SetMenuItemInfo(pContainer->hMenu, i, TRUE, &mii);
 					}
-					if (bSkinned && CSkin::m_MenuBGBrush && M->m_fnSetMenuInfo) {
+					if (bSkinned && CSkin::m_MenuBGBrush && CMimAPI::m_fnSetMenuInfo) {
 						mi.cbSize = sizeof(mi);
 						mi.hbrBack = CSkin::m_MenuBGBrush;
 						mi.fMask = MIM_BACKGROUND;
-						M->m_fnSetMenuInfo(pContainer->hMenu, &mi);
+						CMimAPI::m_fnSetMenuInfo(pContainer->hMenu, &mi);
 					}
 				}
 				SetMenu(hwndDlg, pContainer->hMenu);
@@ -2740,7 +2751,7 @@ panel_found:
 				SetBkMode(dis->hDC, TRANSPARENT);
 
 				if (PluginConfig.m_bIsXP) {
-					if (M->m_pfnIsThemeActive && M->m_pfnIsThemeActive())
+					if (CMimAPI::m_pfnIsThemeActive && CMimAPI::m_pfnIsThemeActive())
 						clrBack = COLOR_MENUBAR;
 					else
 						clrBack = COLOR_3DFACE;
@@ -3461,7 +3472,7 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg) {
 	if (dat == NULL)
 		return (HMENU) 0;
 
-	if (!IsMetaContact(hwndDlg, dat))
+	if (!IsMetaContact(dat))
 		return (HMENU) 0;
 
 	hMenu = CreatePopupMenu();
@@ -3523,7 +3534,7 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg) {
 void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iCount) {
 	FLASHWINFO fwi;
 
-	if (M->m_MyFlashWindowEx == NULL)
+	if (CMimAPI::m_MyFlashWindowEx == NULL)
 		return;
 
 	if (pContainer->dwFlags & CNT_NOFLASH)                  // container should never flash
@@ -3546,7 +3557,7 @@ void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iCoun
 
 	fwi.hwnd = pContainer->hwnd;
 	pContainer->dwFlashingStarted = GetTickCount();
-	M->m_MyFlashWindowEx(&fwi);
+	CMimAPI::m_MyFlashWindowEx(&fwi);
 }
 
 void ReflashContainer(struct ContainerWindowData *pContainer) {

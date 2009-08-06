@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id: manager.c 10402 2009-07-24 00:35:21Z silvercircle $
+$Id$
 */
 
 #include "../src/commonheaders.h"
@@ -584,6 +584,18 @@ BOOL SM_BroadcastMessage(const char* pszModule, UINT msg, WPARAM wParam, LPARAM 
 	return TRUE;
 }
 
+BOOL SM_ReconfigureFilters()
+{
+	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
+
+	while (pTemp != NULL) {
+		Chat_SetFilters(pTemp);
+		pLast = pTemp;
+		pTemp = pTemp->next;
+	}
+	return TRUE;
+}
+
 BOOL SM_SetStatus(const TCHAR* pszID, const char* pszModule, int wStatus)
 {
 	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
@@ -703,21 +715,6 @@ BOOL SM_ChangeUID(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID
 	return TRUE;
 }
 
-
-BOOL SM_SetTabbedWindowHwnd(SESSION_INFO* si, HWND hwnd)
-{
-	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
-
-	while (pTemp != NULL) {
-		if (si && si == pTemp) {
-			pTemp->hWnd = hwnd;
-		} else
-			pTemp->hWnd = NULL;
-		pLast = pTemp;
-		pTemp = pTemp->next;
-	}
-	return TRUE;
-}
 BOOL SM_ChangeNick(const TCHAR* pszID, const char* pszModule, GCEVENT * gce)
 {
 	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;

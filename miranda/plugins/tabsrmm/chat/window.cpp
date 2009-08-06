@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id: window.c 10402 2009-07-24 00:35:21Z silvercircle $
+$Id$
 
 */
 
@@ -182,9 +182,9 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct _MessageWindowData *dat,
 		return;
 
 	if (msg == WM_ACTIVATE) {
-		if (dat->pContainer->dwFlags & CNT_TRANSPARENCY && M->m_pSetLayeredWindowAttributes != NULL && !dat->pContainer->bSkinned) {
+		if (dat->pContainer->dwFlags & CNT_TRANSPARENCY && CMimAPI::m_pSetLayeredWindowAttributes != NULL && !dat->pContainer->bSkinned) {
 			DWORD trans = LOWORD(dat->pContainer->dwTransparency);
-			M->m_pSetLayeredWindowAttributes(dat->pContainer->hwnd, CSkin::m_ContainerColorKey, (BYTE)trans, (dat->pContainer->bSkinned ? LWA_COLORKEY : 0) | (dat->pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
+			CMimAPI::m_pSetLayeredWindowAttributes(dat->pContainer->hwnd, CSkin::m_ContainerColorKey, (BYTE)trans, (dat->pContainer->bSkinned ? LWA_COLORKEY : 0) | (dat->pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 		}
 	}
 
@@ -234,7 +234,7 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct _MessageWindowData *dat,
 
 		if (g_Settings.MathMod) {
 			CallService(MTH_Set_ToolboxEditHwnd, 0, (LPARAM)GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
-			MTH_updateMathWindow(hwndDlg, dat);
+			MTH_updateMathWindow(dat);
 		}
 
 		if (dat->dwFlagsEx & MWF_EX_DELAYEDSPLITTER) {
@@ -245,9 +245,8 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct _MessageWindowData *dat,
 			dat->wParam = dat->lParam = 0;
 		}
 	}
-	//mad
+	SetAeroMargins(dat->pContainer);
 	BB_SetButtonsPos(hwndDlg,dat);
-	//
 }
 
 
@@ -443,10 +442,10 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 	dat = (MESSAGESUBDATA *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	switch (msg) {
 		case WM_NCCALCSIZE:
-			return(NcCalcRichEditFrame(hwnd, mwdat, ID_EXTBKINPUTAREA, msg, wParam, lParam, OldMessageProc));
+			return(CSkin::NcCalcRichEditFrame(hwnd, mwdat, ID_EXTBKINPUTAREA, msg, wParam, lParam, OldMessageProc));
 
 		case WM_NCPAINT:
-			return(DrawRichEditFrame(hwnd, mwdat, ID_EXTBKINPUTAREA, msg, wParam, lParam, OldMessageProc));
+			return(CSkin::DrawRichEditFrame(hwnd, mwdat, ID_EXTBKINPUTAREA, msg, wParam, lParam, OldMessageProc));
 
 		case EM_SUBCLASSED:
 			dat = (MESSAGESUBDATA *) mir_calloc(sizeof(MESSAGESUBDATA));
@@ -832,7 +831,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				dat->szSearchQuery = NULL;
 				mir_free(dat->szSearchResult);
 				dat->szSearchResult = NULL;
-			 }
+			}
 			if (wParam == VK_F4 && isCtrl && !isAlt) { // ctrl-F4 (close tab)
 				SendMessage(hwndParent, WM_COMMAND, MAKEWPARAM(IDC_CHAT_CLOSE, BN_CLICKED), 0);
 				return TRUE;
@@ -1070,7 +1069,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 
 		case WM_INPUTLANGCHANGE:
 			if (PluginConfig.m_AutoLocaleSupport && GetFocus() == hwnd && mwdat->pContainer->hwndActive == hwndParent && GetForegroundWindow() == mwdat->pContainer->hwnd && GetActiveWindow() == mwdat->pContainer->hwnd)
-				DM_SaveLocale(hwndParent, mwdat, wParam, lParam);
+				DM_SaveLocale(mwdat, wParam, lParam);
 
 			return 1;
 
@@ -1386,10 +1385,10 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 
 	switch (msg) {
 		case WM_NCCALCSIZE:
-			return(NcCalcRichEditFrame(hwnd, mwdat, ID_EXTBKHISTORY, msg, wParam, lParam, OldLogProc));
+			return(CSkin::NcCalcRichEditFrame(hwnd, mwdat, ID_EXTBKHISTORY, msg, wParam, lParam, OldLogProc));
 
 		case WM_NCPAINT:
-			return(DrawRichEditFrame(hwnd, mwdat, ID_EXTBKHISTORY, msg, wParam, lParam, OldLogProc));
+			return(CSkin::DrawRichEditFrame(hwnd, mwdat, ID_EXTBKHISTORY, msg, wParam, lParam, OldLogProc));
 
 		case WM_COPY:
 			return(DM_WMCopyHandler(hwnd, OldLogProc, wParam, lParam));
@@ -1552,11 +1551,11 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 			itemHeight = SendMessage(hwnd, LB_GETITEMHEIGHT, 0, 0);
 			g_cLinesPerPage = (lpRect.bottom - lpRect.top) /itemHeight	;
 			 }
-			return(NcCalcRichEditFrame(hwnd, mwdat, ID_EXTBKUSERLIST, msg, wParam, lParam, OldNicklistProc));
+			return(CSkin::NcCalcRichEditFrame(hwnd, mwdat, ID_EXTBKUSERLIST, msg, wParam, lParam, OldNicklistProc));
 			}
 		 //
 		case WM_NCPAINT:
-			return(DrawRichEditFrame(hwnd, mwdat, ID_EXTBKUSERLIST, msg, wParam, lParam, OldNicklistProc));
+			return(CSkin::DrawRichEditFrame(hwnd, mwdat, ID_EXTBKUSERLIST, msg, wParam, lParam, OldNicklistProc));
 
 		case WM_ERASEBKGND: {
 			HDC dc = (HDC)wParam;
@@ -1977,7 +1976,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			//
 			BroadCastContainer(dat->pContainer, DM_REFRESHTABINDEX, 0, 0);
 
-			//SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETOLECALLBACK, 0, (LPARAM) mREOLECallback);
+			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETOLECALLBACK, 0, (LPARAM) mREOLECallback);
 			//MAD
 			PluginConfig.g_NickListScrollBarFix = M->GetByte("adv_ScrollBarFix", 1);
 
@@ -2013,7 +2012,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			if (PluginConfig.g_hMenuTrayUnread != 0 && dat->hContact != 0 && dat->szProto != NULL)
 				UpdateTrayMenu(0, dat->wStatus, dat->szProto, dat->szStatus, dat->hContact, FALSE);
 
-			DM_ThemeChanged(hwndDlg, dat);
+			DM_ThemeChanged(dat);
 			SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), EM_HIDESELECTION, TRUE, 0);
 
 			splitterEdges = M->GetByte("splitteredges", 1);
@@ -2212,7 +2211,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM)szFinalStatusBarText);
 				SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? PluginConfig.g_buttonBarIcons[16] : 0));
 //				SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXT, 0, (LPARAM)szFinalStatusBarText);
-				UpdateStatusBar(hwndDlg, dat);
+				UpdateStatusBar(dat);
 				mir_free(ptszDispName);
 				return TRUE;
 			}
@@ -3076,11 +3075,11 @@ LABEL_SHOWWINDOW:
 
 				case IDC_CHAT_MESSAGE:
 					if (g_Settings.MathMod)
-						MTH_updateMathWindow(hwndDlg, dat);
+						MTH_updateMathWindow(dat);
 
 					if (HIWORD(wParam) == EN_CHANGE) {
 						if (dat->pContainer->hwndActive == hwndDlg)
-							UpdateReadChars(hwndDlg, dat);
+							UpdateReadChars(dat);
 						dat->dwLastActivity = GetTickCount();
 						dat->pContainer->dwLastActivity = dat->dwLastActivity;
 						SendDlgItemMessage(hwndDlg, IDOK, BUTTONSETASFLATBTN + 14, GetRichTextLength(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE)) != 0, 0);
@@ -3312,7 +3311,7 @@ LABEL_SHOWWINDOW:
 			GetCursorPos(&pt);
 			subMenu = GetSubMenu(dat->pContainer->hMenuContext, 0);
 
-			MsgWindowUpdateMenu(hwndDlg, dat, subMenu, MENU_TABCONTEXT);
+			MsgWindowUpdateMenu(dat, subMenu, MENU_TABCONTEXT);
 
 			iSelection = TrackPopupMenu(subMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
 			if (iSelection >= IDM_CONTAINERMENU) {
@@ -3333,7 +3332,7 @@ LABEL_SHOWWINDOW:
 
 				break;
 			}
-			isHandled = MsgWindowMenuHandler(hwndDlg, dat, iSelection, MENU_TABCONTEXT);
+			isHandled = MsgWindowMenuHandler(dat, iSelection, MENU_TABCONTEXT);
 			break;
 		}
 
@@ -3453,7 +3452,7 @@ LABEL_SHOWWINDOW:
 		}
 
 		case DM_LOADLOCALE: {
-			DM_LoadLocale(hwndDlg, dat);
+			DM_LoadLocale(dat);
 			return 0;
 		}
 
@@ -3536,7 +3535,7 @@ LABEL_SHOWWINDOW:
 			return 0;
 
 		case DM_STATUSBARCHANGED:
-			UpdateStatusBar(hwndDlg, dat);
+			UpdateStatusBar(dat);
 			break;
 
 			//mad: bb-api
@@ -3567,11 +3566,17 @@ LABEL_SHOWWINDOW:
 			break;
 
 		case EM_THEMECHANGED:
-			if (dat->hTheme && M->m_pfnCloseThemeData) {
-				M->m_pfnCloseThemeData(dat->hTheme);
-				dat->hTheme = 0;
+			if (CMimAPI::m_pfnCloseThemeData) {
+				if(dat->hThemeIP) {
+					CMimAPI::m_pfnCloseThemeData(dat->hTheme);
+					dat->hTheme = 0;
+				}
+				if(dat->hThemeIP) {
+					CMimAPI::m_pfnCloseThemeData(dat->hThemeIP);
+					dat->hThemeIP = 0;
+				}
 			}
-			return DM_ThemeChanged(hwndDlg, dat);
+			return DM_ThemeChanged(dat);
 
 		case WM_NCDESTROY:
 			if (dat) {
@@ -3603,6 +3608,16 @@ LABEL_SHOWWINDOW:
 			DBWriteContactSettingWord(NULL, "Chat", "SplitterX", (WORD)g_Settings.iSplitterX);
 			DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
 
+			if (CMimAPI::m_pfnCloseThemeData) {
+				if(dat->hThemeIP) {
+					CMimAPI::m_pfnCloseThemeData(dat->hTheme);
+					dat->hTheme = 0;
+				}
+				if(dat->hThemeIP) {
+					CMimAPI::m_pfnCloseThemeData(dat->hThemeIP);
+					dat->hThemeIP = 0;
+				}
+			}
 			UpdateTrayMenuState(dat, FALSE);               // remove me from the tray menu (if still there)
 			if (PluginConfig.g_hMenuTrayUnread)
 				DeleteMenu(PluginConfig.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, MF_BYCOMMAND);

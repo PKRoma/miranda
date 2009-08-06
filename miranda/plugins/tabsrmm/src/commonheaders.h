@@ -36,6 +36,24 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <windows.h>
 #include <commctrl.h>
 #include <uxtheme.h>
+
+#if _MSC_VER >= 1400
+	#include <dwmapi.h>
+#else
+typedef struct _DWM_THUMBNAIL_PROPERTIES
+{
+    DWORD dwFlags;
+    RECT rcDestination;
+    RECT rcSource;
+    BYTE opacity;
+    BOOL fVisible;
+    BOOL fSourceClientAreaOnly;
+} DWM_THUMBNAIL_PROPERTIES, *PDWM_THUMBNAIL_PROPERTIES;
+
+typedef HANDLE HTHUMBNAIL;
+typedef HTHUMBNAIL* PHTHUMBNAIL;
+#endif
+
 #include <stdio.h>
 #include <time.h>
 #include <stddef.h>

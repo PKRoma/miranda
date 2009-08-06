@@ -29,7 +29,7 @@ for different tab states (active,  unread etc..)
 allows skinable tabs with visual styles properly applied to bottom row tabs (flipped
 style bitmaps).
 
-$Id: tabctrl.c 9269 2009-03-29 03:05:20Z nightwish2004 $
+$Id$
 */
 
 #include "commonheaders.h"
@@ -477,7 +477,7 @@ b_nonskinned:
 				}
 			} else {
 				FillRect(dc, rcItem, GetSysColorBrush(COLOR_3DFACE));
-				M->m_pfnDrawThemeBackground(tabdat->hThemeButton, dc, 1, nHint & HINT_ACTIVE_ITEM ? 3 : (nHint & HINT_HOTTRACK ? 2 : 1), rcItem, rcItem);
+				CMimAPI::m_pfnDrawThemeBackground(tabdat->hThemeButton, dc, 1, nHint & HINT_ACTIVE_ITEM ? 3 : (nHint & HINT_HOTTRACK ? 2 : 1), rcItem, rcItem);
 			}
 			return;
 		}
@@ -804,11 +804,11 @@ static HRESULT DrawThemesPart(struct TabControlData *tabdat, HDC hDC, int iPartI
 {
 	HRESULT hResult = 0;
 
-	if (M->m_pfnDrawThemeBackground == 0)
+	if (CMimAPI::m_pfnDrawThemeBackground == 0)
 		return 0;
 
 	if (tabdat->hTheme != 0)
-		hResult = M->m_pfnDrawThemeBackground(tabdat->hTheme, hDC, iPartId, iStateId, prcBox, NULL);
+		hResult = CMimAPI::m_pfnDrawThemeBackground(tabdat->hTheme, hDC, iPartId, iStateId, prcBox, NULL);
 	return hResult;
 }
 
@@ -1007,15 +1007,15 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			tabdat->m_xpad = M->GetByte("x-pad", 3);
 			tabdat->m_skinning = FALSE;
 			if (IsWinVerXPPlus() && M->isVSAPIState()) {
-				if (M->m_pfnIsThemeActive != 0)
-					if (M->m_pfnIsThemeActive()) {
+				if (CMimAPI::m_pfnIsThemeActive != 0)
+					if (CMimAPI::m_pfnIsThemeActive()) {
 						tabdat->m_skinning = TRUE;
-						if (tabdat->hTheme != 0 && M->m_pfnCloseThemeData != 0) {
-							M->m_pfnCloseThemeData(tabdat->hTheme);
-							M->m_pfnCloseThemeData(tabdat->hThemeButton);
+						if (tabdat->hTheme != 0 && CMimAPI::m_pfnCloseThemeData != 0) {
+							CMimAPI::m_pfnCloseThemeData(tabdat->hTheme);
+							CMimAPI::m_pfnCloseThemeData(tabdat->hThemeButton);
 						}
-						if (M->m_pfnOpenThemeData != 0) {
-							if ((tabdat->hTheme = M->m_pfnOpenThemeData(hwnd, L"TAB")) == 0 || (tabdat->hThemeButton = M->m_pfnOpenThemeData(hwnd, L"BUTTON")) == 0)
+						if (CMimAPI::m_pfnOpenThemeData != 0) {
+							if ((tabdat->hTheme = CMimAPI::m_pfnOpenThemeData(hwnd, L"TAB")) == 0 || (tabdat->hThemeButton = CMimAPI::m_pfnOpenThemeData(hwnd, L"BUTTON")) == 0)
 								tabdat->m_skinning = FALSE;
 						}
 					}
@@ -1087,9 +1087,9 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			break;
 		case WM_DESTROY:
 			if (tabdat) {
-				if (tabdat->hTheme != 0 && M->m_pfnCloseThemeData != 0) {
-					M->m_pfnCloseThemeData(tabdat->hTheme);
-					M->m_pfnCloseThemeData(tabdat->hThemeButton);
+				if (tabdat->hTheme != 0 && CMimAPI::m_pfnCloseThemeData != 0) {
+					CMimAPI::m_pfnCloseThemeData(tabdat->hTheme);
+					CMimAPI::m_pfnCloseThemeData(tabdat->hThemeButton);
 				}
 				mir_free(tabdat);
 				SetWindowLongPtr(hwnd, GWLP_USERDATA, 0L);
@@ -1639,6 +1639,7 @@ void ReloadTabConfig()
 	PluginConfig.tabConfig.m_fixedwidth = (PluginConfig.tabConfig.m_fixedwidth < 60 ? 60 : PluginConfig.tabConfig.m_fixedwidth);
 	PluginConfig.tabConfig.m_hPenStyledLight = CreatePen(PS_SOLID, 1, PluginConfig.tabConfig.colors[8]);
 	PluginConfig.tabConfig.m_hPenStyledDark = CreatePen(PS_SOLID, 1, PluginConfig.tabConfig.colors[9]);
+	PluginConfig.iMenuHeight = nclim.iMenuHeight;
 }
 
 void FreeTabConfig()

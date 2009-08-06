@@ -30,19 +30,19 @@ $Id$
 HWND GetLastChild(HWND hwndParent);
 //MAD_
 void        CalcDynamicAvatarSize(_MessageWindowData *dat, BITMAP *bminfo);
-int         IsMetaContact(HWND hwndDlg, struct _MessageWindowData *dat);
-char        *GetCurrentMetaContactProto(HWND hwndDlg, struct _MessageWindowData *dat);
-void        WriteStatsOnClose(HWND hwndDlg, struct _MessageWindowData *dat);
-int         MsgWindowUpdateMenu(HWND hwndDlg, struct _MessageWindowData *dat, HMENU submenu, int menuID);
-int         MsgWindowMenuHandler(HWND hwndDlg, struct _MessageWindowData *dat, int selection, int menuId);
+int         IsMetaContact(const _MessageWindowData *dat);
+char        *GetCurrentMetaContactProto(_MessageWindowData *dat);
+void        WriteStatsOnClose(_MessageWindowData *dat);
+int         MsgWindowUpdateMenu(_MessageWindowData *dat, HMENU submenu, int menuID);
+int         MsgWindowMenuHandler(_MessageWindowData *dat, int selection, int menuId);
 int         GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat);
-void        UpdateStatusBar(HWND hwndDlg, struct _MessageWindowData *dat);
+void        UpdateStatusBar(const _MessageWindowData *dat);
 void        UpdateStatusBarTooltips(HWND hwndDlg, struct _MessageWindowData *dat, int iSecIMStatus);
 void        SetSelftypingIcon(HWND dlg, struct _MessageWindowData *dat, int iMode);
 int         CheckValidSmileyPack(char *szProto, HANDLE hContact, HICON *hButtonIcon);
 TCHAR       *QuoteText(TCHAR *text,int charsPerLine,int removeExistingQuotes);
-void        UpdateReadChars(HWND hwndDlg, struct _MessageWindowData *dat);
-void        ShowPicture(HWND hwndDlg, struct _MessageWindowData *dat, BOOL showNewPic);
+void        UpdateReadChars(const _MessageWindowData *dat);
+void        ShowPicture(_MessageWindowData *dat, BOOL showNewPic);
 void        AdjustBottomAvatarDisplay(_MessageWindowData *dat);
 void        SetDialogToType(HWND hwndDlg);
 void        FlashOnClist(HWND hwndDlg, struct _MessageWindowData *dat, HANDLE hEvent, DBEVENTINFO *dbei);
@@ -54,7 +54,7 @@ void        GetContactUIN(HWND hwndDlg, struct _MessageWindowData *dat);
 void        SetMessageLog(HWND hwndDlg, struct _MessageWindowData *dat);
 void        SwitchMessageLog(HWND hwndDlg, struct _MessageWindowData *dat, int iMode);
 unsigned int GetIEViewMode(HWND hwndDlg, HANDLE hContact);
-void        FindFirstEvent(HWND hwndDlg, struct _MessageWindowData *dat);
+void        FindFirstEvent(_MessageWindowData *dat);
 void        SaveSplitter(HWND hwndDlg, struct _MessageWindowData *dat);
 void        LoadSplitter(HWND hwndDlg, struct _MessageWindowData *dat);
 void        PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd);
@@ -79,22 +79,21 @@ void        EnableSendButton(HWND hwnd, int iMode);
 LRESULT     GetSendButtonState(HWND hwnd);
 HICON       GetXStatusIcon(struct _MessageWindowData *dat);
 void        FlashTab(struct _MessageWindowData *dat, HWND hwndTab, int iTabindex, BOOL *bState, BOOL mode, HICON origImage);
-void        GetClientIcon(struct _MessageWindowData *dat, HWND hwndDlg);
-void        GetMaxMessageLength(HWND hwndDlg, struct _MessageWindowData *dat);
+void        GetClientIcon(_MessageWindowData *dat);
+void        GetMaxMessageLength(_MessageWindowData *dat);
 void        RearrangeTab(HWND hwndDlg, struct _MessageWindowData *dat, int iMode, BOOL fSavePos);
-void        GetCachedStatusMsg(HWND hwndDlg, struct _MessageWindowData *dat);
+void        GetCachedStatusMsg(_MessageWindowData *dat);
 size_t      MY_pathToRelative(const char *pSrc, char *pOut);
 size_t      MY_pathToAbsolute(const char *pSrc, char *pOut);
 void        GetRealIEViewWindow(HWND hwndDlg, struct _MessageWindowData *dat);
 BOOL        IsStatusEvent(int eventType);
-void        GetMyNick(HWND hwndDlg, struct _MessageWindowData *dat);
+void        GetMyNick(_MessageWindowData *dat);
 int         FindRTLLocale(struct _MessageWindowData *dat);
 HICON       MY_GetContactIcon(struct _MessageWindowData *dat);
 
 // mathmod
 
-void        MTH_updatePreview(HWND hwndDlg, struct _MessageWindowData *dat);
-void        MTH_updateMathWindow(HWND hwndDlg, struct _MessageWindowData *dat);
+void        MTH_updateMathWindow(const _MessageWindowData *dat);
 
 extern INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);

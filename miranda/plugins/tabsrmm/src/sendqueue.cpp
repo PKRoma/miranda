@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * implements a queued send system
  * part of tabSRMM, (C) 2004-2009 by Miranda IM project
  *
- * $Id: sendqueue.c 10390 2009-07-22 19:43:01Z silvercircle $
+ * $Id$
  */
 
 #include "commonheaders.h"
@@ -140,7 +140,7 @@ void SendQueue::handleError(_MessageWindowData *dat, const int iEntry) const
 #endif
 		recallFailed(dat, iEntry);
 		showErrorControls(dat, TRUE);
-		::HandleIconFeedback(dat->hwnd, dat, PluginConfig.g_iconErr);
+		::HandleIconFeedback(dat, PluginConfig.g_iconErr);
 	}
 }
 /*
@@ -443,7 +443,7 @@ int SendQueue::sendQueued(_MessageWindowData *dat, const int iEntry)
 			BOOL    fSplit = FALSE;
 			DWORD   dwOldFlags;
 
-			::GetMaxMessageLength(hwndDlg, dat);                      // refresh length info
+			::GetMaxMessageLength(dat);                      // refresh length info
 			/*
 			 + determine send buffer length
 			*/
@@ -523,10 +523,10 @@ send_unsplitted:
 	// give icon feedback...
 
 	if (dat->pContainer->hwndActive == hwndDlg)
-		::UpdateReadChars(hwndDlg, dat);
+		::UpdateReadChars(dat);
 
 	if (!(dat->sendMode & SMODE_NOACK))
-		::HandleIconFeedback(hwndDlg, dat, PluginConfig.g_IconSend);
+		::HandleIconFeedback(dat, PluginConfig.g_IconSend);
 
 	if (M->GetByte(SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN))
 		::SendMessage(dat->pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
@@ -561,13 +561,13 @@ void SendQueue::checkQueue(const _MessageWindowData *dat) const
 		HWND	hwndDlg = dat->hwnd;
 
 		if (dat->iOpenJobs == 0) {
-			::HandleIconFeedback(hwndDlg, const_cast<_MessageWindowData *>(dat), (HICON) - 1);
+			::HandleIconFeedback(const_cast<_MessageWindowData *>(dat), (HICON) - 1);
 		}
 		else if (!(dat->sendMode & SMODE_NOACK))
-			::HandleIconFeedback(hwndDlg, const_cast<_MessageWindowData *>(dat), PluginConfig.g_IconSend);
+			::HandleIconFeedback(const_cast<_MessageWindowData *>(dat), PluginConfig.g_IconSend);
 
 		if (dat->pContainer->hwndActive == hwndDlg)
-			::UpdateReadChars(hwndDlg, const_cast<_MessageWindowData *>(dat));
+			::UpdateReadChars(const_cast<_MessageWindowData *>(dat));
 	}
 }
 

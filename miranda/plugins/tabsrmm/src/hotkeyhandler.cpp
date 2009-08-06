@@ -531,8 +531,8 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			break;
 		case DM_HKDETACH:
 			SetWindowPos(hwndDlg, HWND_TOPMOST, rcLast.left, rcLast.top, rcLast.right - rcLast.left, rcLast.bottom - rcLast.top, SWP_NOACTIVATE);
-			if (M->m_pSetLayeredWindowAttributes != NULL)
-				M->m_pSetLayeredWindowAttributes(hwndDlg, RGB(50, 250, 250), (BYTE)220, LWA_ALPHA);
+			if (CMimAPI::m_pSetLayeredWindowAttributes != NULL)
+				CMimAPI::m_pSetLayeredWindowAttributes(hwndDlg, RGB(50, 250, 250), (BYTE)220, LWA_ALPHA);
 			break;
 		case DM_HKSAVESIZE: {
 			WINDOWPLACEMENT wp = {0};

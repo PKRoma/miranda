@@ -4,7 +4,7 @@ astyle --force-indent=tab=4 --brackets=linux --indent-switches
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project,
+Copyright 2000-2009 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -56,6 +56,7 @@ static struct LISTOPTIONSITEM lvItems[] = {
 	0, _T("Close current tab on send"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_AutoClose_2", 0,
 	0, _T("Enable icon pack version check (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_IconpackWarning", 0,
 	0, _T("Disable error popups on sending failures"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_noErrorPopups", 1,
+	0, _T("Use Aero Glass for the message window (Vista+)(experimental, use with care)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"useAero", 0,
 	0, NULL, 0, 0, 0, 0
 };
 

@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id: sendqueue.h 9205 2009-03-24 05:00:43Z nightwish2004 $
+$Id$
 
 */
 
@@ -127,8 +127,7 @@ extern SendQueue *sendQueue;
 
 int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild);
 void ShowMultipleControls	(const HWND hwndDlg, const UINT * controls, int cControls, int state);
-void UpdateReadChars		(const HWND hwndDlg, const _MessageWindowData *dat);
-void HandleIconFeedback(HWND hwndDlg, _MessageWindowData *dat, HICON iIcon);
+void HandleIconFeedback(_MessageWindowData *dat, HICON iIcon);
 
 #define TIMERID_MULTISEND_BASE (TIMERID_MSGSEND + SendQueue::NR_SENDJOBS)
 

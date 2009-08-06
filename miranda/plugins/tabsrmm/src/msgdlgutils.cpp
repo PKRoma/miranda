@@ -368,7 +368,7 @@ void CalcDynamicAvatarSize(_MessageWindowData *dat, BITMAP *bminfo)
  + returns TRUE if the contact is handled by the MetaContacts protocol
  */
 
-int IsMetaContact(HWND hwndDlg, _MessageWindowData *dat)
+int IsMetaContact(const _MessageWindowData *dat)
 {
 	if (dat->hContact == 0 || dat->szProto == NULL)
 		return 0;
@@ -381,7 +381,7 @@ int IsMetaContact(HWND hwndDlg, _MessageWindowData *dat)
  * "most online" protocol, unless a specific protocol is forced
  */
 
-char *GetCurrentMetaContactProto(HWND hwndDlg, struct _MessageWindowData *dat)
+char *GetCurrentMetaContactProto(_MessageWindowData *dat)
 {
 	dat->hSubContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)dat->hContact, 0);
 	if (dat->hSubContact) {
@@ -395,7 +395,7 @@ char *GetCurrentMetaContactProto(HWND hwndDlg, struct _MessageWindowData *dat)
 		return dat->szProto;
 }
 
-void WriteStatsOnClose(HWND hwndDlg, struct _MessageWindowData *dat)
+void WriteStatsOnClose(_MessageWindowData *dat)
 {
 	DBEVENTINFO dbei;
 	char buffer[450];
@@ -417,13 +417,15 @@ void WriteStatsOnClose(HWND hwndDlg, struct _MessageWindowData *dat)
 		hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) dat->hContact, (LPARAM) & dbei);
 		if (dat->hDbEventFirst == NULL) {
 			dat->hDbEventFirst = hNewEvent;
-			SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
+			SendMessage(dat->hwnd, DM_REMAKELOG, 0, 0);
 		}
 	}
 }
 
-int MsgWindowUpdateMenu(HWND hwndDlg, struct _MessageWindowData *dat, HMENU submenu, int menuID)
+int MsgWindowUpdateMenu(_MessageWindowData *dat, HMENU submenu, int menuID)
 {
+	HWND	hwndDlg = dat->hwnd;
+
 	if (menuID == MENU_TABCONTEXT) {
 		SESSION_INFO *si = (SESSION_INFO *)dat->si;
 		int iTabs = TabCtrl_GetItemCount(GetParent(hwndDlg));
@@ -472,8 +474,13 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct _MessageWindowData *dat, HMENU subm
 	return 0;
 }
 
-int MsgWindowMenuHandler(HWND hwndDlg, struct _MessageWindowData *dat, int selection, int menuId)
+int MsgWindowMenuHandler(_MessageWindowData *dat, int selection, int menuId)
 {
+	if(dat == 0)
+		return(0);
+
+	HWND	hwndDlg = dat->hwnd;
+
 	if (menuId == MENU_PICMENU || menuId == MENU_PANELPICMENU || menuId == MENU_TABCONTEXT) {
 		switch (selection) {
 			case ID_TABMENU_ATTACHTOCONTAINER:
@@ -519,7 +526,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct _MessageWindowData *dat, int selec
 					avOverrideMode = 1;
 				M->WriteByte(dat->hContact, SRMSGMOD_T, "hideavatar", avOverrideMode);
 				dat->panelWidth = -1;
-				ShowPicture(hwndDlg, dat, FALSE);
+				ShowPicture(dat, FALSE);
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
 				DM_ScrollToBottom(hwndDlg, dat, 0, 1);
 				return 1;
@@ -632,7 +639,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct _MessageWindowData *dat, int selec
  * and various indicators (caps lock, num lock, insert mode).
  */
 
-void UpdateReadChars(HWND hwndDlg, struct _MessageWindowData *dat)
+void UpdateReadChars(const _MessageWindowData *dat)
 {
 
 	if (dat->pContainer->hwndStatus && SendMessage(dat->pContainer->hwndStatus, SB_GETPARTS, 0, 0) >= 3) {
@@ -643,7 +650,7 @@ void UpdateReadChars(HWND hwndDlg, struct _MessageWindowData *dat)
 
 		szIndicators[0] = 0;
 		if (dat->bType == SESSIONTYPE_CHAT)
-			len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
+			len = GetWindowTextLength(GetDlgItem(dat->hwnd, IDC_CHAT_MESSAGE));
 		else {
 #if defined(_UNICODE)
 			/*
@@ -653,9 +660,9 @@ void UpdateReadChars(HWND hwndDlg, struct _MessageWindowData *dat)
 			gtxl.codepage = CP_UTF8;
 			gtxl.flags = GTL_DEFAULT | GTL_PRECISE | GTL_NUMBYTES;
 
-			len = SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTLENGTHEX, (WPARAM) & gtxl, 0);
+			len = SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_GETTEXTLENGTHEX, (WPARAM) & gtxl, 0);
 #else
-			len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
+			len = GetWindowTextLength(GetDlgItem(dat->hwnd, IDC_MESSAGE));
 #endif
 		}
 
@@ -680,12 +687,12 @@ void UpdateReadChars(HWND hwndDlg, struct _MessageWindowData *dat)
  * update all status bar fields and force a redraw of the status bar.
  */
 
-void UpdateStatusBar(HWND hwndDlg, struct _MessageWindowData *dat)
+void UpdateStatusBar(const _MessageWindowData *dat)
 {
-	if (dat && dat->pContainer->hwndStatus && dat->pContainer->hwndActive == hwndDlg) {
+	if (dat && dat->pContainer->hwndStatus && dat->pContainer->hwndActive == dat->hwnd) {
 		if (dat->bType == SESSIONTYPE_IM)
-			DM_UpdateLastMessage(hwndDlg, dat);
-		UpdateReadChars(hwndDlg, dat);
+			DM_UpdateLastMessage(dat);
+		UpdateReadChars(dat);
 		InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
 		SendMessage(dat->pContainer->hwndStatus, WM_USER + 101, 0, (LPARAM)dat);
 	}
@@ -699,7 +706,7 @@ void UpdateStatusBar(HWND hwndDlg, struct _MessageWindowData *dat)
  * MTN handler.
  */
 
-void HandleIconFeedback(HWND hwndDlg, struct _MessageWindowData *dat, HICON iIcon)
+void HandleIconFeedback(_MessageWindowData *dat, HICON iIcon)
 {
 	TCITEM item = {0};
 	HICON iOldIcon = dat->hTabIcon;
@@ -994,7 +1001,7 @@ void AdjustBottomAvatarDisplay(_MessageWindowData *dat)
 			if (dat->dynaSplitter == 0 || dat->splitterY == 0)
 				LoadSplitter(hwndDlg, dat);
 			dat->dynaSplitter = dat->splitterY - DPISCALEY(34);
-			DM_RecalcPictureSize(hwndDlg, dat);
+			DM_RecalcPictureSize(dat);
 			ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
 			InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
 		} else {
@@ -1006,10 +1013,11 @@ void AdjustBottomAvatarDisplay(_MessageWindowData *dat)
 	}
 }
 
-void ShowPicture(HWND hwndDlg, struct _MessageWindowData *dat, BOOL showNewPic)
+void ShowPicture(_MessageWindowData *dat, BOOL showNewPic)
 {
-	DBVARIANT dbv = {0};
-	RECT rc;
+	DBVARIANT 	dbv = {0};
+	RECT 		rc;
+	HWND		hwndDlg = dat->hwnd;
 
 	if (!(dat->dwFlagsEx & MWF_SHOW_INFOPANEL))
 		dat->pic.cy = dat->pic.cx = DPISCALEY(60);
@@ -1728,7 +1736,7 @@ void SwitchMessageLog(HWND hwndDlg, struct _MessageWindowData *dat, int iMode)
 
 }
 
-void FindFirstEvent(HWND hwndDlg, struct _MessageWindowData *dat)
+void FindFirstEvent(_MessageWindowData *dat)
 {
 	int historyMode = (int)M->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_LOADHISTORY, -1);
 	if (historyMode == -1)
@@ -2060,6 +2068,8 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 	if (!dat)
 		return 0;
 
+	bool	fAero = M->isAero();
+
 	if (dis->CtlType == ODT_MENU && dis->hwndItem == (HWND)GetSubMenu(PluginConfig.g_hMenuContext, 7)) {
 		RECT rc = { 0 };
 		HBRUSH old, col;
@@ -2287,7 +2297,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 
 				ResizeBitmap rb;
 				rb.size = sizeof(rb);
-				rb.fit = RESIZEBITMAP_KEEP_PROPORTIONS;
+				rb.fit = RESIZEBITMAP_STRETCH;
 				rb.max_height = dNewHeight + width_off;
 				rb.max_width = dNewWidth + width_off;
 				rb.hBmp = hbmAvatar;
@@ -2307,17 +2317,16 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 					DrawEdge(hdcDraw, &rcFrame, BDR_SUNKENINNER, BF_RECT);
 				else if (borderType == 3)
 					clipRgn = CreateRectRgn(rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom);
-					//Rectangle(hdcDraw, rcFrame.left, rcFrame.top, rcFrame.right, rcFrame.bottom);
 				else if (borderType == 4) {
 					clipRgn = CreateRoundRectRgn(rcFrame.left, rcFrame.top, rcFrame.right + 1, rcFrame.bottom + 1, iRad, iRad);
 					SelectClipRgn(hdcDraw, clipRgn);
 				}
-				if(M->m_MyAlphaBlend) {
+				if(CMimAPI::m_MyAlphaBlend) {
 					BLENDFUNCTION bf = {0};
 					bf.SourceConstantAlpha = 255;
 					bf.AlphaFormat = AC_SRC_ALPHA;
 					bf.BlendOp = AC_SRC_OVER;
-					M->m_MyAlphaBlend(hdcDraw, rcFrame.left + (borderType ? 1 : 0), height_off + (borderType ? 1 : 0),
+					CMimAPI::m_MyAlphaBlend(hdcDraw, rcFrame.left + (borderType ? 1 : 0), height_off + (borderType ? 1 : 0),
 									  (int)dNewWidth + width_off, (int)dNewHeight + width_off, hdcMem, 0, 0,
 									  (int)dNewWidth + width_off, (int)dNewHeight + width_off, bf);
 				}
@@ -2325,7 +2334,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 					CSkin::MY_AlphaBlend(hdcDraw, rcFrame.left + (borderType ? 1 : 0), height_off + (borderType ? 1 : 0), (int)dNewWidth + width_off, (int)dNewHeight + width_off, (int)dNewWidth + width_off, (int)dNewHeight + width_off, hdcMem);
 
 				SelectObject(hdcMem, hbmMem);
-				DeleteObject(hbmMem);
+				//DeleteObject(hbmMem);
 				DeleteDC(hdcMem);
 				if(hbmNew != hbmAvatar)
 					DeleteObject(hbmNew);
@@ -2365,17 +2374,20 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		char	*szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 		SIZE	sProto = {0}, sStatus = {0};
 		DWORD	oldPanelStatusCX = dat->panelStatusCX;
-		RECT	rc;
+		RECT	rc, rcOrig = dis->rcItem;;
 		HFONT	hOldFont = 0;
 		BOOL	config = PluginConfig.ipConfig.isValid;
 		CSkinItem *item = &SkinItems[ID_EXTBKINFOPANEL];
 		TCHAR   *szFinalProto = NULL;
+		HDC		hdcMem = CreateCompatibleDC(dis->hDC);
+		HBITMAP hbm = CSkin::CreateAeroCompatibleBitmap(dis->rcItem, dis->hDC);
+		HBITMAP hbmOld = (HBITMAP)SelectObject(hdcMem, hbm);
 
 		if (config)
-			hOldFont = (HFONT)SelectObject(dis->hDC, PluginConfig.ipConfig.hFonts[IPFONTID_STATUS]);
+			hOldFont = (HFONT)SelectObject(hdcMem, PluginConfig.ipConfig.hFonts[IPFONTID_STATUS]);
 
 		if (dat->szStatus[0])
-			GetTextExtentPoint32(dis->hDC, dat->szStatus, lstrlen(dat->szStatus), &sStatus);
+			GetTextExtentPoint32(hdcMem, dat->szStatus, lstrlen(dat->szStatus), &sStatus);
 
 		/*
 		 * figure out final account name
@@ -2390,8 +2402,8 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 
 		if (szFinalProto) {
 			if (config)
-				SelectObject(dis->hDC, PluginConfig.ipConfig.hFonts[IPFONTID_PROTO]);
-			GetTextExtentPoint32(dis->hDC, szFinalProto, lstrlen(szFinalProto), &sProto);
+				SelectObject(hdcMem, PluginConfig.ipConfig.hFonts[IPFONTID_PROTO]);
+			GetTextExtentPoint32(hdcMem, szFinalProto, lstrlen(szFinalProto), &sProto);
 		}
 
 		dat->panelStatusCX = 3 + sStatus.cx + sProto.cx + 14 + (dat->hClientIcon ? 20 : 0);
@@ -2399,60 +2411,68 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		if (dat->panelStatusCX != oldPanelStatusCX)
 			SendMessage(hwndDlg, WM_SIZE, 0, 0);
 
+		SetBkMode(hdcMem, TRANSPARENT);
 		if (dat->hdcCached != NULL) {
-			CSkin::SkinDrawBGFromDC(dis->hwndItem, hwndDlg, dat->hdcCached, &dis->rcItem, dis->hDC);
-			SetTextColor(dis->hDC, PluginConfig.skinDefaultFontColor);
+			CSkin::SkinDrawBGFromDC(dis->hwndItem, hwndDlg, dat->hdcCached, &dis->rcItem, hdcMem);
+			SetTextColor(hdcMem, PluginConfig.skinDefaultFontColor);
 		} else {
-			FillRect(dis->hDC, &rc, GetSysColorBrush(COLOR_3DFACE));
-			SetTextColor(dis->hDC, GetSysColor(COLOR_BTNTEXT));
+			FillRect(hdcMem, &rc, GetSysColorBrush(COLOR_3DFACE));
+			SetTextColor(hdcMem, GetSysColor(COLOR_BTNTEXT));
 		}
 
 		GetClientRect(dis->hwndItem, &rc);
 		if (dat->pContainer->bSkinned) {
-			CSkin::SkinDrawBGFromDC(dis->hwndItem, hwndDlg, dat->hdcCached, &dis->rcItem, dis->hDC);
+			RECT rc = dis->rcItem;
 			rc.left += item->MARGIN_LEFT;
 			rc.right -= item->MARGIN_RIGHT;
 			rc.top += item->MARGIN_TOP;
 			rc.bottom -= item->MARGIN_BOTTOM;
 			if (!item->IGNORED)
-				DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
+				DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
 						  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 		}
-
-		SetBkMode(dis->hDC, TRANSPARENT);
-		if (PluginConfig.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
-			DrawEdge(dis->hDC, &rc, PluginConfig.ipConfig.edgeType, PluginConfig.ipConfig.edgeFlags);
 
 		rc.left += 2;
 		rc.right -=3;
 		if (dat->szStatus[0]) {
 			if (config) {
-				SelectObject(dis->hDC, PluginConfig.ipConfig.hFonts[IPFONTID_STATUS]);
-				SetTextColor(dis->hDC, PluginConfig.ipConfig.clrs[IPFONTID_STATUS]);
+				SelectObject(hdcMem, PluginConfig.ipConfig.hFonts[IPFONTID_STATUS]);
+				SetTextColor(hdcMem, PluginConfig.ipConfig.clrs[IPFONTID_STATUS]);
 			}
-			DrawText(dis->hDC, dat->szStatus, lstrlen(dat->szStatus), &rc, DT_SINGLELINE | DT_VCENTER);
+			CSkin::RenderText(hdcMem, dat->hThemeIP, dat->szStatus, &rc, DT_SINGLELINE | DT_VCENTER);
+			//DrawText(dis->hDC, dat->szStatus, lstrlen(dat->szStatus), &rc, DT_SINGLELINE | DT_VCENTER);
 		}
 		if (szFinalProto) {
 			rc.left = rc.right - sProto.cx - 3 - (dat->hClientIcon ? 20 : 0);
 			if (config) {
-				SelectObject(dis->hDC, PluginConfig.ipConfig.hFonts[IPFONTID_PROTO]);
-				SetTextColor(dis->hDC, PluginConfig.ipConfig.clrs[IPFONTID_PROTO]);
+				SelectObject(hdcMem, PluginConfig.ipConfig.hFonts[IPFONTID_PROTO]);
+				SetTextColor(hdcMem, PluginConfig.ipConfig.clrs[IPFONTID_PROTO]);
 			} else
-				SetTextColor(dis->hDC, GetSysColor(COLOR_HOTLIGHT));
-			DrawText(dis->hDC, szFinalProto, lstrlen(szFinalProto), &rc, DT_SINGLELINE | DT_VCENTER);
+				SetTextColor(hdcMem, GetSysColor(COLOR_HOTLIGHT));
+			CSkin::RenderText(hdcMem, dat->hThemeIP, szFinalProto, &rc, DT_SINGLELINE | DT_VCENTER);
+			//DrawText(dis->hDC, szFinalProto, lstrlen(szFinalProto), &rc, DT_SINGLELINE | DT_VCENTER);
 		}
 
 		if (dat->hClientIcon)
-			DrawIconEx(dis->hDC, rc.right - 19, (rc.bottom + rc.top - 16) / 2, dat->hClientIcon, 16, 16, 0, 0, DI_NORMAL);
+			DrawIconEx(hdcMem, rc.right - 19, (rc.bottom + rc.top - 16) / 2, dat->hClientIcon, 16, 16, 0, 0, DI_NORMAL);
 
 		if (config && hOldFont)
-			SelectObject(dis->hDC, hOldFont);
+			SelectObject(hdcMem, hOldFont);
+
+		BitBlt(dis->hDC, 0, 0, rcOrig.right - rcOrig.left, rcOrig.bottom - rcOrig.top, hdcMem, 0, 0, SRCCOPY);
+		SelectObject(hdcMem, hbmOld);
+		DeleteObject(hbm);
+		DeleteDC(hdcMem);
 		return TRUE;
 
 	} else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELNICK) && dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
-		RECT rc = dis->rcItem;
-		TCHAR *szStatusMsg = NULL;
+		RECT 	rc = dis->rcItem;
+		TCHAR 	*szStatusMsg = NULL;
 		CSkinItem *item = &SkinItems[ID_EXTBKINFOPANEL];
+		HDC hdcMem = CreateCompatibleDC(dis->hDC);
+		HBITMAP hbm = CSkin::CreateAeroCompatibleBitmap(dis->rcItem, dis->hDC);
+		HBITMAP hbmOld = (HBITMAP)SelectObject(hdcMem, hbm);
+		RECT	rcOrig = dis->rcItem;
 
 		szStatusMsg = dat->statusMsg;
 
@@ -2460,11 +2480,11 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		rc.right = rc.left;
 		SetBkMode(dis->hDC, TRANSPARENT);
 		if (dat->hdcCached != NULL) {
-			CSkin::SkinDrawBGFromDC(dis->hwndItem, hwndDlg, dat->hdcCached, &dis->rcItem, dis->hDC);
-			SetTextColor(dis->hDC, PluginConfig.skinDefaultFontColor);
+			CSkin::SkinDrawBGFromDC(dis->hwndItem, hwndDlg, dat->hdcCached, &dis->rcItem, hdcMem);
+			SetTextColor(hdcMem, PluginConfig.skinDefaultFontColor);
 		} else {
-			FillRect(dis->hDC, &rc, GetSysColorBrush(COLOR_3DFACE));
-			SetTextColor(dis->hDC, GetSysColor(COLOR_BTNTEXT));
+			FillRect(hdcMem, &rc, GetSysColorBrush(COLOR_3DFACE));
+			SetTextColor(hdcMem, GetSysColor(COLOR_BTNTEXT));
 		}
 		if (dat->pContainer->bSkinned) {
 			RECT rc = dis->rcItem;
@@ -2473,12 +2493,9 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 			rc.top += item->MARGIN_TOP;
 			rc.bottom -= item->MARGIN_BOTTOM;
 			if (!item->IGNORED)
-				DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
+				DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
 						  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 		}
-
-		if (PluginConfig.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
-			DrawEdge(dis->hDC, &dis->rcItem, PluginConfig.ipConfig.edgeType, PluginConfig.ipConfig.edgeFlags);
 		dis->rcItem.left += 2;
 		if (dat->szNickname[0]) {
 			HFONT hOldFont = 0;
@@ -2487,29 +2504,30 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 			xIcon = GetXStatusIcon(dat);
 
 			if (xIcon) {
-				DrawIconEx(dis->hDC, dis->rcItem.left, (dis->rcItem.bottom + dis->rcItem.top - PluginConfig.m_smcyicon) / 2, xIcon, PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
+				DrawIconEx(hdcMem, dis->rcItem.left, (dis->rcItem.bottom + dis->rcItem.top - PluginConfig.m_smcyicon) / 2, xIcon, PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
 				DestroyIcon(xIcon);
 				dis->rcItem.left += 21;
 			}
 
 			if (PluginConfig.ipConfig.isValid) {
-				hOldFont = (HFONT)SelectObject(dis->hDC, PluginConfig.ipConfig.hFonts[IPFONTID_NICK]);
-				SetTextColor(dis->hDC, PluginConfig.ipConfig.clrs[IPFONTID_NICK]);
+				hOldFont = (HFONT)SelectObject(hdcMem, PluginConfig.ipConfig.hFonts[IPFONTID_NICK]);
+				SetTextColor(hdcMem, PluginConfig.ipConfig.clrs[IPFONTID_NICK]);
 			}
 			if (szStatusMsg && szStatusMsg[0]) {
 				SIZE szNick, sStatusMsg, sMask;
 				DWORD dtFlags, dtFlagsNick;
 
-				GetTextExtentPoint32(dis->hDC, dat->szNickname, lstrlen(dat->szNickname), &szNick);
-				GetTextExtentPoint32(dis->hDC, _T("A"), 1, &sMask);
-				GetTextExtentPoint32(dis->hDC, szStatusMsg, lstrlen(szStatusMsg), &sStatusMsg);
+				GetTextExtentPoint32(hdcMem, dat->szNickname, lstrlen(dat->szNickname), &szNick);
+				GetTextExtentPoint32(hdcMem, _T("A"), 1, &sMask);
+				GetTextExtentPoint32(hdcMem, szStatusMsg, lstrlen(szStatusMsg), &sStatusMsg);
 				dtFlagsNick = DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_NOPREFIX;
 				if ((szNick.cx + sStatusMsg.cx + 6) < (dis->rcItem.right - dis->rcItem.left) || (dis->rcItem.bottom - dis->rcItem.top) < (2 * sMask.cy))
 					dtFlagsNick |= DT_VCENTER;
-				DrawText(dis->hDC, dat->szNickname, -1, &dis->rcItem, dtFlagsNick);
+				CSkin::RenderText(hdcMem, dat->hThemeIP, dat->szNickname, &dis->rcItem, dtFlagsNick);
+				//DrawText(dis->hDC, dat->szNickname, -1, &dis->rcItem, dtFlagsNick);
 				if (PluginConfig.ipConfig.isValid) {
-					SelectObject(dis->hDC, PluginConfig.ipConfig.hFonts[IPFONTID_STATUS]);
-					SetTextColor(dis->hDC, PluginConfig.ipConfig.clrs[IPFONTID_STATUS]);
+					SelectObject(hdcMem, PluginConfig.ipConfig.hFonts[IPFONTID_STATUS]);
+					SetTextColor(hdcMem, PluginConfig.ipConfig.clrs[IPFONTID_STATUS]);
 				}
 				dis->rcItem.left += (szNick.cx + 10);
 
@@ -2521,27 +2539,37 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 
 
 				dis->rcItem.right -= 3;
-				if (dis->rcItem.left + 30 < dis->rcItem.right) {
-					//RECT rc = dis->rcItem;
-					//dis->rcItem.left += (rc.right - rc.left);
-					DrawText(dis->hDC, szStatusMsg, -1, &dis->rcItem, dtFlags);
-				}
+				if (dis->rcItem.left + 30 < dis->rcItem.right)
+					CSkin::RenderText(hdcMem, dat->hThemeIP, szStatusMsg, &dis->rcItem, dtFlags);
+					//DrawText(dis->hDC, szStatusMsg, -1, &dis->rcItem, dtFlags);
 			} else
-				DrawText(dis->hDC, dat->szNickname, -1, &dis->rcItem, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX);
+				CSkin::RenderText(hdcMem, dat->hThemeIP, dat->szNickname, &dis->rcItem, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX);
+				//DrawText(dis->hDC, dat->szNickname, -1, &dis->rcItem, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX);
 
 			if (hOldFont)
-				SelectObject(dis->hDC, hOldFont);
+				SelectObject(hdcMem, hOldFont);
 		}
+		BitBlt(dis->hDC, 0, 0, rcOrig.right - rcOrig.left, rcOrig.bottom - rcOrig.top, hdcMem, 0, 0, SRCCOPY);
+		SelectObject(hdcMem, hbmOld);
+		DeleteObject(hbm);
+		DeleteDC(hdcMem);
 		return TRUE;
 	} else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELUIN) && dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
-		char szBuf[256];
-		BOOL config = PluginConfig.ipConfig.isValid;
-		HFONT hOldFont = 0;
+		TCHAR	szBuf[256];
+		BOOL 	config = PluginConfig.ipConfig.isValid;
+		HFONT 	hOldFont = 0;
 		CSkinItem *item = &SkinItems[ID_EXTBKINFOPANEL];
-		HDC	  hdc = CreateCompatibleDC(dis->hDC);
-		HBITMAP hbm = CreateCompatibleBitmap(dis->hDC, dis->rcItem.right - dis->rcItem.left, dis->rcItem.bottom - dis->rcItem.top);
+		HDC	  	hdc = CreateCompatibleDC(dis->hDC);
+		//HBITMAP hbm = CreateCompatibleBitmap(dis->hDC, dis->rcItem.right - dis->rcItem.left, dis->rcItem.bottom - dis->rcItem.top);
+		HBITMAP hbm = CSkin::CreateAeroCompatibleBitmap(dis->rcItem, dis->hDC);
 		HBITMAP hbmOld = (HBITMAP)SelectObject(hdc, hbm);
 		RECT	rcOrig = dis->rcItem;
+
+#if defined(_UNICODE)
+		TCHAR	*tszUin = mir_a2u(dat->uin);
+#else
+		TCHAR	*tszUin = dat->uin;
+#endif
 
 		if (dat->hdcCached != NULL) {
 			CSkin::SkinDrawBGFromDC(dis->hwndItem, hwndDlg, dat->hdcCached, &dis->rcItem, hdc);
@@ -2563,8 +2591,6 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 						  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 		}
 
-		if (PluginConfig.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
-			DrawEdge(hdc, &dis->rcItem, PluginConfig.ipConfig.edgeType, PluginConfig.ipConfig.edgeFlags);
 		dis->rcItem.left += 2;
 		if (config) {
 			hOldFont = (HFONT)SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_UIN]);
@@ -2576,43 +2602,43 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 				time_t diff = time(NULL) - dat->idle;
 				int i_hrs = diff / 3600;
 				int i_mins = (diff - i_hrs * 3600) / 60;
-				mir_snprintf(szBuf, sizeof(szBuf), "%s    Idle: %dh,%02dm", dat->uin, i_hrs, i_mins);
-				GetTextExtentPoint32A(hdc, szBuf, lstrlenA(szBuf), &sUIN);
-				DrawTextA(hdc, szBuf, lstrlenA(szBuf), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
+				mir_sntprintf(szBuf, safe_sizeof(szBuf), _T("%s    Idle: %dh,%02dm"), tszUin, i_hrs, i_mins);
+				GetTextExtentPoint32(hdc, szBuf, lstrlen(szBuf), &sUIN);
+				CSkin::RenderText(hdc, dat->hThemeIP, szBuf, &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
 			} else {
-				GetTextExtentPoint32A(hdc, dat->uin, lstrlenA(dat->uin), &sUIN);
-				DrawTextA(hdc, dat->uin, lstrlenA(dat->uin), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
+				GetTextExtentPoint32(hdc, tszUin, lstrlen(tszUin), &sUIN);
+				CSkin::RenderText(hdc, dat->hThemeIP, tszUin, &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
 			}
 			if (dat->timezone != -1) {
-				DBTIMETOSTRING dbtts;
-				char szResult[80];
-				time_t final_time;
-				time_t now = time(NULL);
-				HFONT oldFont = 0;
-				int base_hour;
-				char symbolic_time[3];
+				DBTIMETOSTRINGT dbtts;
+				TCHAR 			szResult[80];
+				time_t 			final_time;
+				time_t 			now = time(NULL);
+				HFONT 			oldFont = 0;
+				int 			base_hour;
+				TCHAR 			symbolic_time[3];
 
 				final_time = now - dat->timediff;
 				dbtts.szDest = szResult;
 				dbtts.cbDest = 70;
-				dbtts.szFormat = "t";
-				CallService(MS_DB_TIME_TIMESTAMPTOSTRING, final_time, (LPARAM) & dbtts);
+				dbtts.szFormat = _T("t");
+				CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, final_time, (LPARAM) &dbtts);
 				if (config) {
 					SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_TIME]);
 					SetTextColor(hdc, PluginConfig.ipConfig.clrs[IPFONTID_TIME]);
 				}
-				GetTextExtentPoint32A(hdc, szResult, lstrlenA(szResult), &sTime);
+				GetTextExtentPoint32(hdc, szResult, lstrlen(szResult), &sTime);
 				if (sUIN.cx + sTime.cx + 23 < dis->rcItem.right - dis->rcItem.left) {
 					dis->rcItem.left = dis->rcItem.right - sTime.cx - 3 - 16;
 					oldFont = (HFONT)SelectObject(hdc, PluginConfig.m_hFontWebdings);
-					base_hour = atoi(szResult);
+					base_hour = _ttoi(szResult);
 					base_hour = base_hour > 11 ? base_hour - 12 : base_hour;
-					symbolic_time[0] = (char)(0xB7 + base_hour);
+					symbolic_time[0] = (TCHAR)(0xB7 + base_hour);
 					symbolic_time[1] = 0;
-					DrawTextA(hdc, symbolic_time, 1, &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
+					CSkin::RenderText(hdc, dat->hThemeIP, symbolic_time, &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
 					SelectObject(hdc, oldFont);
 					dis->rcItem.left += 16;
-					DrawTextA(hdc, szResult, lstrlenA(szResult), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
+					CSkin::RenderText(hdc, dat->hThemeIP, szResult, &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
 				}
 			}
 		}
@@ -2623,6 +2649,10 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		SelectObject(hdc, hbmOld);
 		DeleteObject(hbm);
 		DeleteDC(hdc);
+#if defined(_UNICODE)
+		if(tszUin)
+			mir_free(tszUin);
+#endif
 		return TRUE;
 	} else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_STATICTEXT) || dis->hwndItem == GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT)) {
 		TCHAR szWindowText[256];
@@ -2810,7 +2840,7 @@ void SendNudge(struct _MessageWindowData *dat, HWND hwndDlg)
 		CallService(MS_NUDGE_SEND, (WPARAM)hContact, 0);
 }
 
-void GetClientIcon(struct _MessageWindowData *dat, HWND hwndDlg)
+void GetClientIcon(_MessageWindowData *dat)
 {
 	DBVARIANT dbv = {0};
 
@@ -2826,13 +2856,13 @@ void GetClientIcon(struct _MessageWindowData *dat, HWND hwndDlg)
 		}
 	}
 }
-void GetMaxMessageLength(HWND hwndDlg, struct _MessageWindowData *dat)
+void GetMaxMessageLength(_MessageWindowData *dat)
 {
 	HANDLE hContact;
 	char   *szProto;
 
 	if (dat->bIsMeta)
-		GetCurrentMetaContactProto(hwndDlg, dat);
+		GetCurrentMetaContactProto(dat);
 
 	hContact = dat->bIsMeta ? dat->hSubContact : dat->hContact;
 	szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
@@ -2843,12 +2873,12 @@ void GetMaxMessageLength(HWND hwndDlg, struct _MessageWindowData *dat)
 		nMax = CallProtoService(szProto, PS_GETCAPS, PFLAG_MAXLENOFMESSAGE, (LPARAM)hContact);
 		if (nMax) {
 			if (M->GetByte("autosplit", 0))
-				SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_EXLIMITTEXT, 0, 20000);
+				SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_EXLIMITTEXT, 0, 20000);
 			else
-				SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_EXLIMITTEXT, 0, (LPARAM)nMax);
+				SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_EXLIMITTEXT, 0, (LPARAM)nMax);
 			dat->nMax = nMax;
 		} else {
-			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_EXLIMITTEXT, 0, (LPARAM)20000);
+			SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_EXLIMITTEXT, 0, (LPARAM)20000);
 			dat->nMax = 20000;
 		}
 	}
@@ -2865,7 +2895,7 @@ void GetMaxMessageLength(HWND hwndDlg, struct _MessageWindowData *dat)
  * but if not available, custom messages like xStatus can be used.
  */
 
-void GetCachedStatusMsg(HWND hwndDlg, struct _MessageWindowData *dat)
+void GetCachedStatusMsg(_MessageWindowData *dat)
 {
 	DBVARIANT dbv = {0};
 	HANDLE hContact;
@@ -2923,7 +2953,7 @@ void GetCachedStatusMsg(HWND hwndDlg, struct _MessageWindowData *dat)
  * taken and modified from core services
  */
 
-void GetMyNick(HWND hwndDlg, struct _MessageWindowData *dat)
+void GetMyNick(_MessageWindowData *dat)
 {
 	CONTACTINFO ci;
 
@@ -3015,7 +3045,7 @@ int FindRTLLocale(struct _MessageWindowData *dat)
 	return result;
 }
 
-HICON MY_GetContactIcon(struct _MessageWindowData *dat)
+HICON MY_GetContactIcon(_MessageWindowData *dat)
 {
 	if (dat->bIsMeta)
 		return CopyIcon(LoadSkinnedProtoIcon(dat->szMetaProto, dat->wMetaStatus));
@@ -3029,10 +3059,10 @@ HICON MY_GetContactIcon(struct _MessageWindowData *dat)
 	return CopyIcon(LoadSkinnedProtoIcon(dat->szProto, dat->wStatus));
 }
 
-void MTH_updatePreview(HWND hwndDlg, struct _MessageWindowData *dat)
+static void MTH_updatePreview(const _MessageWindowData *dat)
 {
 	TMathWindowInfo mathWndInfo;
-	HWND hwndEdit = GetDlgItem(hwndDlg, dat->bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE);
+	HWND hwndEdit = GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE);
 	int len = GetWindowTextLengthA(hwndEdit);
 	RECT windRect;
 	char * thestr = (char *)malloc(len + 5);
@@ -3049,14 +3079,14 @@ void MTH_updatePreview(HWND hwndDlg, struct _MessageWindowData *dat)
 	free(thestr);
 }
 
-void MTH_updateMathWindow(HWND hwndDlg, struct _MessageWindowData *dat)
+void MTH_updateMathWindow(const _MessageWindowData *dat)
 {
 	WINDOWPLACEMENT cWinPlace;
 
 	if (!PluginConfig.m_MathModAvail)
 		return;
 
-	MTH_updatePreview(hwndDlg, dat);
+	MTH_updatePreview(dat);
 	CallService(MTH_SHOW, 0, 0);
 	cWinPlace.length = sizeof(WINDOWPLACEMENT);
 	GetWindowPlacement(dat->pContainer->hwnd, &cWinPlace);

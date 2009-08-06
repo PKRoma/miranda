@@ -31,29 +31,29 @@ $Id$
 #ifndef __MIM_H
 #define __MIM_H
 
-typedef BOOL 	(WINAPI *pfnSetMenuInfo )( HMENU hmenu, LPCMENUINFO lpcmi );
-typedef HRESULT (STDAPICALLTYPE *DEFICA)(HWND hwnd, const MARGINS *margins);
-typedef HRESULT (STDAPICALLTYPE *DICE)(BOOL *);
-typedef DWORD (WINAPI *PSLWA)(HWND, DWORD, BYTE, DWORD);
-typedef BOOL (WINAPI *PULW)(HWND, HDC, POINT *, SIZE *, HDC, POINT *, COLORREF, BLENDFUNCTION *, DWORD);
-typedef BOOL (WINAPI *PFWEX)(FLASHWINFO *);
-typedef BOOL (WINAPI *PAB)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION);
-typedef BOOL (WINAPI *PGF)(HDC, PTRIVERTEX, ULONG, PVOID, ULONG, ULONG);
+typedef BOOL 	(WINAPI *SMI)( HMENU hmenu, LPCMENUINFO lpcmi );
+typedef HRESULT (WINAPI *DEFICA)(HWND hwnd, const MARGINS *margins);
+typedef HRESULT (WINAPI *DICE)(BOOL *);
+typedef DWORD 	(WINAPI *PSLWA)(HWND, DWORD, BYTE, DWORD);
+typedef BOOL 	(WINAPI *PULW)(HWND, HDC, POINT *, SIZE *, HDC, POINT *, COLORREF, BLENDFUNCTION *, DWORD);
+typedef BOOL 	(WINAPI *PFWEX)(FLASHWINFO *);
+typedef BOOL 	(WINAPI *PAB)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION);
+typedef BOOL 	(WINAPI *PGF)(HDC, PTRIVERTEX, ULONG, PVOID, ULONG, ULONG);
 
-typedef BOOL (WINAPI *PITA)();
-typedef HANDLE(WINAPI *POTD)(HWND, LPCWSTR);
-typedef UINT(WINAPI *PDTB)(HANDLE, HDC, int, int, RECT *, RECT *);
-typedef UINT(WINAPI *PCTD)(HANDLE);
-typedef UINT(WINAPI *PDTT)(HANDLE, HDC, int, int, LPCWSTR, int, DWORD, DWORD, RECT *);
-typedef UINT(WINAPI *PDTTE)(HANDLE, HDC, int, int, LPCWSTR, int, DWORD, RECT *, const DTTOPTS *);
-typedef BOOL (WINAPI *PITBPT)(HANDLE, int, int);
-typedef HRESULT(WINAPI *PDTPB)(HWND, HDC, RECT *);
-typedef HRESULT(WINAPI *PGTBCR)(HANDLE, HDC, int, int, const RECT *, const RECT *);
+typedef BOOL 	(WINAPI *PITA)();
+typedef HANDLE	(WINAPI *POTD)(HWND, LPCWSTR);
+typedef UINT	(WINAPI *PDTB)(HANDLE, HDC, int, int, RECT *, RECT *);
+typedef UINT	(WINAPI *PCTD)(HANDLE);
+typedef UINT	(WINAPI *PDTT)(HANDLE, HDC, int, int, LPCWSTR, int, DWORD, DWORD, RECT *);
+typedef UINT	(WINAPI *PDTTE)(HANDLE, HDC, int, int, LPCWSTR, int, DWORD, RECT *, const DTTOPTS *);
+typedef BOOL 	(WINAPI *PITBPT)(HANDLE, int, int);
+typedef HRESULT	(WINAPI *PDTPB)(HWND, HDC, RECT *);
+typedef HRESULT	(WINAPI *PGTBCR)(HANDLE, HDC, int, int, const RECT *, const RECT *);
 
 typedef HMONITOR(WINAPI *MMFW)(HWND, DWORD);
-typedef BOOL(WINAPI *GMIA)(HMONITOR, LPMONITORINFO);
-
-
+typedef BOOL	(WINAPI *GMIA)(HMONITOR, LPMONITORINFO);
+typedef HRESULT	(WINAPI *DRT)(HWND, HWND *, PHTHUMBNAIL);
+typedef BOOL	(WINAPI *ETDT)(HANDLE, DWORD);
 /*
  * used to encapsulate some parts of the Miranda API
  * constructor does early time initialization - do NOT put anything
@@ -117,7 +117,6 @@ public:
 	 * path utilities
 	 */
 
-	void InitPaths();
 	int pathIsAbsolute(const TCHAR *path) const;
 	size_t pathToRelative(const TCHAR *pSrc, TCHAR *pOut);
 	size_t pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut);
@@ -159,8 +158,13 @@ public:
 	bool		getAeroState()
 	{
 		BOOL result = FALSE;
-		m_isAero = (CSkin::m_skinEnabled == false) && GetByte("useAero", 0) &&
-			((m_dwmIsCompositionEnabled && (m_dwmIsCompositionEnabled(&result) == S_OK) && result) ? true : false);
+		m_isAero = false;
+#if defined(_UNICODE)
+		if(IsWinVerVistaPlus()) {
+			m_isAero = (CSkin::m_skinEnabled == false) && GetByte("useAero", 0) &&
+				((m_pfnDwmIsCompositionEnabled && (m_pfnDwmIsCompositionEnabled(&result) == S_OK) && result) ? true : false);
+		}
+#endif
 		return(m_isAero);
 	}
 	/*
@@ -179,26 +183,27 @@ public:
 	/*
 	 various function pointers
 	*/
-	PITA 	m_pfnIsThemeActive;
-	POTD 	m_pfnOpenThemeData;
-	PDTB 	m_pfnDrawThemeBackground;
-	PCTD 	m_pfnCloseThemeData;
-	PDTT 	m_pfnDrawThemeText;
-	PDTTE	m_pfnDrawThemeTextEx;
-	PITBPT 	m_pfnIsThemeBackgroundPartiallyTransparent;
-	PDTPB  	m_pfnDrawThemeParentBackground;
-	PGTBCR 	m_pfnGetThemeBackgroundContentRect;
-	BOOL (WINAPI *m_pfnEnableThemeDialogTexture)(HANDLE, DWORD);
-	PSLWA 	m_pSetLayeredWindowAttributes;
-	PULW	m_pUpdateLayeredWindow;
-	PFWEX	m_MyFlashWindowEx;
-	PAB		m_MyAlphaBlend;
-	PGF		m_MyGradientFill;
-	pfnSetMenuInfo m_fnSetMenuInfo;
-	DEFICA	m_dwmExtendFrameIntoClientArea;
-	DICE	m_dwmIsCompositionEnabled;
-	MMFW	m_pfnMonitorFromWindow;
-	GMIA	m_pfnGetMonitorInfoA;
+	static PITA 	m_pfnIsThemeActive;
+	static POTD 	m_pfnOpenThemeData;
+	static PDTB 	m_pfnDrawThemeBackground;
+	static PCTD 	m_pfnCloseThemeData;
+	static PDTT 	m_pfnDrawThemeText;
+	static PDTTE	m_pfnDrawThemeTextEx;
+	static PITBPT 	m_pfnIsThemeBackgroundPartiallyTransparent;
+	static PDTPB  	m_pfnDrawThemeParentBackground;
+	static PGTBCR 	m_pfnGetThemeBackgroundContentRect;
+	static ETDT 	m_pfnEnableThemeDialogTexture;
+	static PSLWA 	m_pSetLayeredWindowAttributes;
+	static PULW		m_pUpdateLayeredWindow;
+	static PFWEX	m_MyFlashWindowEx;
+	static PAB		m_MyAlphaBlend;
+	static PGF		m_MyGradientFill;
+	static SMI		m_fnSetMenuInfo;
+	static DEFICA	m_pfnDwmExtendFrameIntoClientArea;
+	static DICE		m_pfnDwmIsCompositionEnabled;
+	static MMFW		m_pfnMonitorFromWindow;
+	static GMIA		m_pfnGetMonitorInfoA;
+	static DRT		m_pfnDwmRegisterThumbnail;
 private:
 	UTF8_INTERFACE 	m_utfi;
 	TCHAR 		m_szProfilePath[MAX_PATH], m_szSkinsPath[MAX_PATH], m_szSavedAvatarsPath[MAX_PATH];
@@ -209,6 +214,7 @@ private:
 
 	void	InitAPI();
 	void	GetUTFI();
+	void 	InitPaths();
 };
 
 extern  CMimAPI		*M;

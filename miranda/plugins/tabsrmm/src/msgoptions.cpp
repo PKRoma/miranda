@@ -22,7 +22,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id: msgoptions.c 10390 2009-07-22 19:43:01Z silvercircle $
+$Id$
 
 */
 
@@ -1737,48 +1737,48 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 0, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 			ShowWindow((HWND)tci.lParam, oPage == 0 ? SW_SHOW : SW_HIDE);
-			if (M->m_pfnEnableThemeDialogTexture)
-				M->m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+			if (CMimAPI::m_pfnEnableThemeDialogTexture)
+				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
 			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPT_TABBEDMSG), hwnd, DlgProcTabbedOptions);
 			tci.pszText = TranslateT("Tabs and layout");
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 1, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 			ShowWindow((HWND)tci.lParam, oPage == 1 ? SW_SHOW : SW_HIDE);
-			if (M->m_pfnEnableThemeDialogTexture)
-				M->m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+			if (CMimAPI::m_pfnEnableThemeDialogTexture)
+				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
 			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPT_CONTAINERS), hwnd, DlgProcContainerSettings);
 			tci.pszText = TranslateT("Containers");
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 2, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 			ShowWindow((HWND)tci.lParam, oPage == 2 ? SW_SHOW : SW_HIDE);
-			if (M->m_pfnEnableThemeDialogTexture)
-				M->m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+			if (CMimAPI::m_pfnEnableThemeDialogTexture)
+				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
 			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPT_MSGLOG), hwnd, DlgProcLogOptions);
 			tci.pszText = TranslateT("Message log");
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 3, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 			ShowWindow((HWND)tci.lParam, oPage == 3 ? SW_SHOW : SW_HIDE);
-			if (M->m_pfnEnableThemeDialogTexture)
-				M->m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+			if (CMimAPI::m_pfnEnableThemeDialogTexture)
+				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
 			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPT_TOOLBAR), hwnd, DlgProcToolBar);
 			tci.pszText = TranslateT("Tool bar");
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 4, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 			ShowWindow((HWND)tci.lParam, oPage == 4 ? SW_SHOW : SW_HIDE);
-			if (M->m_pfnEnableThemeDialogTexture)
-				M->m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+			if (CMimAPI::m_pfnEnableThemeDialogTexture)
+				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
 			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPTIONS_PLUS), hwnd, PlusOptionsProc);
 			tci.pszText = TranslateT("Advanced tweaks");
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 5, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 			ShowWindow((HWND)tci.lParam, oPage == 5 ? SW_SHOW : SW_HIDE);
-			if (M->m_pfnEnableThemeDialogTexture)
-				M->m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+			if (CMimAPI::m_pfnEnableThemeDialogTexture)
+				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
 			TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage);
 			iInit = FALSE;
@@ -1870,8 +1870,8 @@ static INT_PTR CALLBACK GroupOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			else
 				ShowWindow((HWND)tci.lParam, SW_SHOW);
 
-			if (M->m_pfnEnableThemeDialogTexture)
-				M->m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+			if (CMimAPI::m_pfnEnableThemeDialogTexture)
+				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
 
 			if(g_chat_integration_enabled) {
@@ -1880,8 +1880,8 @@ static INT_PTR CALLBACK GroupOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 1, &tci);
 				MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 				ShowWindow((HWND)tci.lParam, oPage == 1 ? SW_SHOW : SW_HIDE);
-				if (M->m_pfnEnableThemeDialogTexture)
-					M->m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+				if (CMimAPI::m_pfnEnableThemeDialogTexture)
+					CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
 				TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage);
 			}
@@ -2080,8 +2080,8 @@ static INT_PTR CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 0, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 60, 1);
 			ShowWindow((HWND)tci.lParam, SW_HIDE);
-			if (M->m_pfnEnableThemeDialogTexture)
-				M->m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+			if (CMimAPI::m_pfnEnableThemeDialogTexture)
+				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
 			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_TABCONFIG), hwnd, DlgProcTabConfig);
 			hwndTabConfig = (HWND)tci.lParam;
@@ -2090,8 +2090,8 @@ static INT_PTR CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 1, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 60, 1);
 			ShowWindow((HWND)tci.lParam, SW_HIDE);
-			if (M->m_pfnEnableThemeDialogTexture)
-				M->m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+			if (CMimAPI::m_pfnEnableThemeDialogTexture)
+				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
 			if (0 && PluginConfig.m_WinVerMajor >= 5) {
 				if (ServiceExists(MS_CLNSE_INVOKE)) {
@@ -2113,9 +2113,9 @@ static INT_PTR CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, L
 					ShowWindow(hwndSkinEdit, SW_HIDE);
 					ShowWindow(sd.hwndImageEdit, SW_HIDE);
 					TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage);
-					if (M->m_pfnEnableThemeDialogTexture) {
-						M->m_pfnEnableThemeDialogTexture(hwndSkinEdit, ETDT_ENABLETAB);
-						M->m_pfnEnableThemeDialogTexture(sd.hwndImageEdit, ETDT_ENABLETAB);
+					if (CMimAPI::m_pfnEnableThemeDialogTexture) {
+						CMimAPI::m_pfnEnableThemeDialogTexture(hwndSkinEdit, ETDT_ENABLETAB);
+						CMimAPI::m_pfnEnableThemeDialogTexture(sd.hwndImageEdit, ETDT_ENABLETAB);
 					}
 				}
 				{
@@ -2295,27 +2295,12 @@ void ReloadGlobals()
 	PluginConfig.m_smcyicon = GetSystemMetrics(SM_CYSMICON);
 	PluginConfig.m_PasteAndSend = (int)M->GetByte("pasteandsend", 1);
 	PluginConfig.m_szNoStatus = TranslateTS(tszNoStatus);
-	PluginConfig.ipConfig.borderStyle = IPFIELD_FLAT; // (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ipfieldborder", IPFIELD_FLAT);
 	PluginConfig.m_LangPackCP = ServiceExists(MS_LANGPACK_GETCODEPAGE) ? CallService(MS_LANGPACK_GETCODEPAGE, 0, 0) : CP_ACP;
 	PluginConfig.m_SmileyButtonOverride = (BYTE)M->GetByte("smbutton_override", 1);
 	PluginConfig.m_visualMessageSizeIndicator = M->GetByte("msgsizebar", 0);
 	PluginConfig.m_autoSplit = M->GetByte("autosplit", 0);
 	PluginConfig.m_FlashOnMTN = M->GetByte(SRMSGMOD, SRMSGSET_SHOWTYPINGWINFLASH, SRMSGDEFSET_SHOWTYPINGWINFLASH);
 
-	switch (PluginConfig.ipConfig.borderStyle) {
-		case IPFIELD_SUNKEN:
-			PluginConfig.ipConfig.edgeType = BDR_SUNKENINNER;
-			break;
-		case IPFIELD_RAISEDINNER:
-			PluginConfig.ipConfig.edgeType = BDR_RAISEDINNER;
-			break;
-		case IPFIELD_RAISEDOUTER:
-			PluginConfig.ipConfig.edgeType = BDR_RAISEDOUTER;
-			break;
-		case IPFIELD_EDGE:
-			PluginConfig.ipConfig.edgeType = EDGE_BUMP;
-			break;
-	}
 	PluginConfig.ipConfig.edgeFlags = BF_RECT | BF_ADJUST;
 	// checkversion, warn user about ansi<>unicode conflicts between core and plugin
 	{

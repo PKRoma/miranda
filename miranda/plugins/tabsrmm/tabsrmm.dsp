@@ -1610,10 +1610,6 @@ NODEP_CPP_MIM_C=\
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\mim.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\tabmodplus\modplus.cpp
 DEP_CPP_MODPL=\
 	"..\..\include\m_acc.h"\
@@ -2795,6 +2791,10 @@ SOURCE=.\src\globals.h
 # Begin Source File
 
 SOURCE=.\src\ImageDataObject.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\mim.h
 # End Source File
 # Begin Source File
 

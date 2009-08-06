@@ -282,6 +282,7 @@ struct ContainerWindowData {
 	RECT    rcSaved;
 	DWORD   exFlags;
 	BOOL	fPrivateThemeChanged;
+	DWORD	dwOldAeroTop, dwOldAeroBottom;
 };
 
 #define STICK_ICON_MSG 10
@@ -400,7 +401,7 @@ struct _MessageWindowData {
 	COLORREF avatarbg;
 	HANDLE  *hHistoryEvents;
 	int     maxHistory, curHistory;
-	HANDLE  hTheme;
+	HANDLE  hTheme, hThemeIP;
 	BYTE    bFlatMsgLog;
 	PVOID   si;
 	char    szMicroLf[128];
@@ -470,7 +471,6 @@ struct infopanelconfig {
 	COLORREF    clrs[IPFONTCOUNT];
 	COLORREF    clrClockSymbol, clrBackground;
 	BOOL        isValid;                   // valid data exist (font service required, otherwise, defaults are used)
-	BYTE        borderStyle;
 	HBRUSH      bkgBrush;
 	UINT        edgeType, edgeFlags;
 

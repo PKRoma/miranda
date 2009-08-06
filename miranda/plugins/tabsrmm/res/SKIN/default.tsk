@@ -299,7 +299,7 @@ TabTextActive=787878
 TabTextUnread=787878
 TabTextHottrack=787878
 MenuBarBG=f5f5f5
-NoScrollbars=1
+NoScrollbars=0
 SbarHeight=15
 
 [WindowFrame]

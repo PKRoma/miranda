@@ -267,7 +267,7 @@ LRESULT DM_ScrollToBottom(HWND hwndDlg, struct _MessageWindowData *dat, WPARAM w
 	return 0;
 }
 
-LRESULT DM_LoadLocale(HWND hwndDlg, struct _MessageWindowData *dat)
+LRESULT DM_LoadLocale(_MessageWindowData *dat)
 {
 	/*
 	* set locale if saved to contact
@@ -287,7 +287,7 @@ LRESULT DM_LoadLocale(HWND hwndDlg, struct _MessageWindowData *dat)
 			if (res == 0) {
 				dat->hkl = LoadKeyboardLayoutA(dbv.pszVal, KLF_ACTIVATE);
 				GetLocaleID(dat, dbv.pszVal);
-				PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
+				PostMessage(dat->hwnd, DM_SETLOCALE, 0, 0);
 				DBFreeVariant(&dbv);
 			} else {
 				GetKeyboardLayoutNameA(szKLName);
@@ -295,13 +295,13 @@ LRESULT DM_LoadLocale(HWND hwndDlg, struct _MessageWindowData *dat)
 				DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
 				GetLocaleID(dat, szKLName);
 			}
-			UpdateReadChars(hwndDlg, dat);
+			UpdateReadChars(dat);
 		}
 	}
 	return 0;
 }
 
-LRESULT DM_RecalcPictureSize(HWND hwndDlg, struct _MessageWindowData *dat)
+LRESULT DM_RecalcPictureSize(_MessageWindowData *dat)
 {
 	BITMAP bminfo;
 	HBITMAP hbm;
@@ -315,17 +315,17 @@ LRESULT DM_RecalcPictureSize(HWND hwndDlg, struct _MessageWindowData *dat)
 		}
 		GetObject(hbm, sizeof(bminfo), &bminfo);
 		CalcDynamicAvatarSize(dat, &bminfo);
-		SendMessage(hwndDlg, WM_SIZE, 0, 0);
+		SendMessage(dat->hwnd, WM_SIZE, 0, 0);
 	}
 	return 0;
 }
 
-LRESULT DM_UpdateLastMessage(HWND hwndDlg, struct _MessageWindowData *dat)
+LRESULT DM_UpdateLastMessage(const _MessageWindowData *dat)
 {
 	if (dat) {
 		if (dat->pContainer->hwndStatus == 0)
 			return 0;
-		if (dat->pContainer->hwndActive != hwndDlg)
+		if (dat->pContainer->hwndActive != dat->hwnd)
 			return 0;
 		if (dat->showTyping) {
 			TCHAR szBuf[80];
@@ -381,10 +381,10 @@ LRESULT DM_UpdateLastMessage(HWND hwndDlg, struct _MessageWindowData *dat)
 * save current keyboard layout for the given contact
 */
 
-LRESULT DM_SaveLocale(HWND hwndDlg, struct _MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
+LRESULT DM_SaveLocale(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
 	if (dat) {
-		if (PluginConfig.m_AutoLocaleSupport && dat->hContact && dat->pContainer->hwndActive == hwndDlg) {
+		if (PluginConfig.m_AutoLocaleSupport && dat->hContact && dat->pContainer->hwndActive == dat->hwnd) {
 			char szKLName[KL_NAMELENGTH + 1];
 			if ((HKL)lParam != dat->hkl) {
 				dat->hkl = (HKL)lParam;
@@ -392,7 +392,7 @@ LRESULT DM_SaveLocale(HWND hwndDlg, struct _MessageWindowData *dat, WPARAM wPara
 				GetKeyboardLayoutNameA(szKLName);
 				DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
 				GetLocaleID(dat, szKLName);
-				UpdateReadChars(hwndDlg, dat);
+				UpdateReadChars(dat);
 			}
 		}
 	}
@@ -532,15 +532,17 @@ LRESULT DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct _MessageWindowDa
 	return 1;
 }
 
-LRESULT DM_ThemeChanged(HWND hwnd, struct _MessageWindowData *dat)
+LRESULT DM_ThemeChanged(_MessageWindowData *dat)
 {
 	CSkinItem *item_log = &SkinItems[ID_EXTBKHISTORY];
 	CSkinItem *item_msg = &SkinItems[ID_EXTBKINPUTAREA];
 
 	dat->bFlatMsgLog = M->GetByte("flatlog", 1);
 
+	HWND	hwnd = dat->hwnd;
+
 	if (!dat->bFlatMsgLog)
-		dat->hTheme = (M->isVSAPIState() && M->m_pfnOpenThemeData) ? M->m_pfnOpenThemeData(hwnd, L"EDIT") : 0;
+		dat->hTheme = (M->isVSAPIState() && CMimAPI::m_pfnOpenThemeData) ? CMimAPI::m_pfnOpenThemeData(hwnd, L"EDIT") : 0;
 	else
 		dat->hTheme = 0;
 
@@ -557,6 +559,7 @@ LRESULT DM_ThemeChanged(HWND hwnd, struct _MessageWindowData *dat)
 		if (dat->bFlatMsgLog || dat->hTheme != 0 || (dat->pContainer->bSkinned && !item_msg->IGNORED))
 			SetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 	}
+	dat->hThemeIP = M->isAero() ? CMimAPI::m_pfnOpenThemeData(hwnd, L"ButtonStyle") : 0;
 	return 0;
 }
 

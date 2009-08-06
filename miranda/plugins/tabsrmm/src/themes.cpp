@@ -4,7 +4,7 @@ astyle --force-indent=tab=4 --brackets=linux --indent-switches
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project,
+Copyright 2000-2009 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -22,7 +22,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id: themes.c 10399 2009-07-23 20:11:21Z silvercircle $
+$Id$
 
 Themes and skinning for tabSRMM
 
@@ -636,7 +636,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 	LONG realWidth = (rc->right - rc->left);
 	LONG realHeightHalf = realHeight >> 1;
 
-	if (rc == NULL || M->m_MyGradientFill == 0 || M->m_MyAlphaBlend == 0)
+	if (rc == NULL || CMimAPI::m_MyGradientFill == 0 || CMimAPI::m_MyAlphaBlend == 0)
 		return;
 
 	if (imageItem) {
@@ -680,7 +680,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 		grect.UpperLeft = 0;
 		grect.LowerRight = 1;
 
-		M->m_MyGradientFill(hdcwnd, tvtx, 2, &grect, 1, (FLG_GRADIENT & GRADIENT_TB || FLG_GRADIENT & GRADIENT_BT) ? GRADIENT_FILL_RECT_V : GRADIENT_FILL_RECT_H);
+		CMimAPI::m_MyGradientFill(hdcwnd, tvtx, 2, &grect, 1, (FLG_GRADIENT & GRADIENT_TB || FLG_GRADIENT & GRADIENT_BT) ? GRADIENT_FILL_RECT_V : GRADIENT_FILL_RECT_H);
 		return;
 	}
 
@@ -760,7 +760,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 	bf.SourceConstantAlpha = (UCHAR)(basecolor >> 24);
 	bf.AlphaFormat = AC_SRC_ALPHA; // so it will use our specified alpha value
 
-	M->m_MyAlphaBlend(hdcwnd, rc->left + realHeightHalf, rc->top, (realWidth - realHeightHalf * 2), realHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
+	CMimAPI::m_MyAlphaBlend(hdcwnd, rc->left + realHeightHalf, rc->top, (realWidth - realHeightHalf * 2), realHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
 
 	SelectObject(hdc, holdbitmap);
 	DeleteObject(hbitmap);
@@ -814,7 +814,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 				}
 			}
 		}
-		M->m_MyAlphaBlend(hdcwnd, rc->left, rc->top, ulBitmapWidth, ulBitmapHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
+		CMimAPI::m_MyAlphaBlend(hdcwnd, rc->left, rc->top, ulBitmapWidth, ulBitmapHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
 		SelectObject(hdc, holdbitmap);
 		DeleteObject(hbitmap);
 
@@ -850,7 +850,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 				}
 			}
 		}
-		M->m_MyAlphaBlend(hdcwnd, rc->right - realHeightHalf, rc->top, ulBitmapWidth, ulBitmapHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
+		CMimAPI::m_MyAlphaBlend(hdcwnd, rc->right - realHeightHalf, rc->top, ulBitmapWidth, ulBitmapHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
 	}
 	SelectObject(hdc, holdbitmap);
 	DeleteObject(hbitmap);
@@ -933,7 +933,7 @@ void __fastcall CImageItem::Render(const HDC hdc, const RECT *rc) const
 	LONG srcOrigX = isGlyph ? m_glyphMetrics[0] : 0;
 	LONG srcOrigY = isGlyph ? m_glyphMetrics[1] : 0;
 
-	if (M->m_MyAlphaBlend == 0)
+	if (CMimAPI::m_MyAlphaBlend == 0)
 		return;
 
 	if (m_hdc == 0) {
@@ -947,13 +947,13 @@ void __fastcall CImageItem::Render(const HDC hdc, const RECT *rc) const
 	if (m_dwFlags & IMAGE_FLAG_DIVIDED) {
 		// top 3 items
 
-		M->m_MyAlphaBlend(hdc, rc->left, rc->top, l, t, hdcSrc, srcOrigX, srcOrigY, l, t, m_bf);
-		M->m_MyAlphaBlend(hdc, rc->left + l, rc->top, width - l - r, t, hdcSrc, srcOrigX + l, srcOrigY, m_inner_width, t, m_bf);
-		M->m_MyAlphaBlend(hdc, rc->right - r, rc->top, r, t, hdcSrc, srcOrigX + (m_width - r), srcOrigY, r, t, m_bf);
+		CMimAPI::m_MyAlphaBlend(hdc, rc->left, rc->top, l, t, hdcSrc, srcOrigX, srcOrigY, l, t, m_bf);
+		CMimAPI::m_MyAlphaBlend(hdc, rc->left + l, rc->top, width - l - r, t, hdcSrc, srcOrigX + l, srcOrigY, m_inner_width, t, m_bf);
+		CMimAPI::m_MyAlphaBlend(hdc, rc->right - r, rc->top, r, t, hdcSrc, srcOrigX + (m_width - r), srcOrigY, r, t, m_bf);
 
 		// middle 3 items
 
-		M->m_MyAlphaBlend(hdc, rc->left, rc->top + t, l, height - t - b, hdcSrc, srcOrigX, srcOrigY + t, l, m_inner_height, m_bf);
+		CMimAPI::m_MyAlphaBlend(hdc, rc->left, rc->top + t, l, height - t - b, hdcSrc, srcOrigX, srcOrigY + t, l, m_inner_height, m_bf);
 
 		if ((m_dwFlags & IMAGE_FILLSOLID) && m_fillBrush) {
 			RECT rcFill;
@@ -962,17 +962,16 @@ void __fastcall CImageItem::Render(const HDC hdc, const RECT *rc) const
 			rcFill.right = rc->right - r;
 			rcFill.bottom = rc->bottom - b;
 			FillRect(hdc, &rcFill, m_fillBrush);
-			_DebugTraceA("%s, %d, %d, %d, %d - %d", m_szName, rcFill.left, rcFill.top, rcFill.right, rcFill.bottom, m_fillBrush);
 		} else
-			M->m_MyAlphaBlend(hdc, rc->left + l, rc->top + t, width - l - r, height - t - b, hdcSrc, srcOrigX + l, srcOrigY + t, m_inner_width, m_inner_height, m_bf);
+			CMimAPI::m_MyAlphaBlend(hdc, rc->left + l, rc->top + t, width - l - r, height - t - b, hdcSrc, srcOrigX + l, srcOrigY + t, m_inner_width, m_inner_height, m_bf);
 
-		M->m_MyAlphaBlend(hdc, rc->right - r, rc->top + t, r, height - t - b, hdcSrc, srcOrigX + (m_width - r), srcOrigY + t, r, m_inner_height, m_bf);
+		CMimAPI::m_MyAlphaBlend(hdc, rc->right - r, rc->top + t, r, height - t - b, hdcSrc, srcOrigX + (m_width - r), srcOrigY + t, r, m_inner_height, m_bf);
 
 		// bottom 3 items
 
-		M->m_MyAlphaBlend(hdc, rc->left, rc->bottom - b, l, b, hdcSrc, srcOrigX, srcOrigY + (m_height - b), l, b, m_bf);
-		M->m_MyAlphaBlend(hdc, rc->left + l, rc->bottom - b, width - l - r, b, hdcSrc, srcOrigX + l, srcOrigY + (m_height - b), m_inner_width, b, m_bf);
-		M->m_MyAlphaBlend(hdc, rc->right - r, rc->bottom - b, r, b, hdcSrc, srcOrigX + (m_width - r), srcOrigY + (m_height - b), r, b, m_bf);
+		CMimAPI::m_MyAlphaBlend(hdc, rc->left, rc->bottom - b, l, b, hdcSrc, srcOrigX, srcOrigY + (m_height - b), l, b, m_bf);
+		CMimAPI::m_MyAlphaBlend(hdc, rc->left + l, rc->bottom - b, width - l - r, b, hdcSrc, srcOrigX + l, srcOrigY + (m_height - b), m_inner_width, b, m_bf);
+		CMimAPI::m_MyAlphaBlend(hdc, rc->right - r, rc->bottom - b, r, b, hdcSrc, srcOrigX + (m_width - r), srcOrigY + (m_height - b), r, b, m_bf);
 	} else {
 		switch (m_bStretch) {
 			case IMAGE_STRETCH_H:
@@ -982,10 +981,10 @@ void __fastcall CImageItem::Render(const HDC hdc, const RECT *rc) const
 
 				do {
 					if (top + m_height <= rc->bottom) {
-						M->m_MyAlphaBlend(hdc, rc->left, top, width, m_height, hdcSrc, srcOrigX, srcOrigY, m_width, m_height, m_bf);
+						CMimAPI::m_MyAlphaBlend(hdc, rc->left, top, width, m_height, hdcSrc, srcOrigX, srcOrigY, m_width, m_height, m_bf);
 						top += m_height;
 					} else {
-						M->m_MyAlphaBlend(hdc, rc->left, top, width, rc->bottom - top, hdcSrc, srcOrigX, srcOrigY, m_width, rc->bottom - top, m_bf);
+						CMimAPI::m_MyAlphaBlend(hdc, rc->left, top, width, rc->bottom - top, hdcSrc, srcOrigX, srcOrigY, m_width, rc->bottom - top, m_bf);
 						break;
 					}
 				} while (TRUE);
@@ -998,10 +997,10 @@ void __fastcall CImageItem::Render(const HDC hdc, const RECT *rc) const
 
 				do {
 					if (left + m_width <= rc->right) {
-						M->m_MyAlphaBlend(hdc, left, rc->top, m_width, height, hdcSrc, srcOrigX, srcOrigY, m_width, m_height, m_bf);
+						CMimAPI::m_MyAlphaBlend(hdc, left, rc->top, m_width, height, hdcSrc, srcOrigX, srcOrigY, m_width, m_height, m_bf);
 						left += m_width;
 					} else {
-						M->m_MyAlphaBlend(hdc, left, rc->top, rc->right - left, height, hdcSrc, srcOrigX, srcOrigY, rc->right - left, m_height, m_bf);
+						CMimAPI::m_MyAlphaBlend(hdc, left, rc->top, rc->right - left, height, hdcSrc, srcOrigX, srcOrigY, rc->right - left, m_height, m_bf);
 						break;
 					}
 				} while (TRUE);
@@ -1009,7 +1008,7 @@ void __fastcall CImageItem::Render(const HDC hdc, const RECT *rc) const
 			}
 			case IMAGE_STRETCH_B:
 				// stretch the image in both directions...
-				M->m_MyAlphaBlend(hdc, rc->left, rc->top, width, height, hdcSrc, srcOrigX, srcOrigY, m_width, m_height, m_bf);
+				CMimAPI::m_MyAlphaBlend(hdc, rc->left, rc->top, width, height, hdcSrc, srcOrigX, srcOrigY, m_width, m_height, m_bf);
 				break;
 				/*
 				case IMAGE_STRETCH_V:
@@ -2169,8 +2168,8 @@ void CSkin::MY_AlphaBlend(HDC hdcDraw, DWORD left, DWORD top,  int width, int he
 
 	SetStretchBltMode(hdcTemp, HALFTONE);
 	StretchBlt(hdcTemp, 0, 0, bmWidth, bmHeight, hdcDraw, left, top, width, height, SRCCOPY);
-	if (M->m_MyAlphaBlend)
-		M->m_MyAlphaBlend(hdcTemp, 0, 0, bmWidth, bmHeight, hdcMem, 0, 0, bmWidth, bmHeight, bf);
+	if (CMimAPI::m_MyAlphaBlend)
+		CMimAPI::m_MyAlphaBlend(hdcTemp, 0, 0, bmWidth, bmHeight, hdcMem, 0, 0, bmWidth, bmHeight, bf);
 	else {
 		SetStretchBltMode(hdcTemp, HALFTONE);
 		StretchBlt(hdcTemp, 0, 0, bmWidth, bmHeight, hdcMem, 0, 0, bmWidth, bmHeight, SRCCOPY);
@@ -2196,8 +2195,8 @@ void CSkin::DrawDimmedIcon(HDC hdc, LONG left, LONG top, LONG dx, LONG dy, HICON
 	BitBlt(dcMem, 0, 0, dx, dx, hdc, left, top, SRCCOPY);
 	DrawIconEx(dcMem, 0, 0, hIcon, dx, dy, 0, 0, DI_NORMAL);
 	bf_t.SourceConstantAlpha = alpha;
-	if (M->m_MyAlphaBlend)
-		M->m_MyAlphaBlend(hdc, left, top, dx, dy, dcMem, 0, 0, dx, dy, bf_t);
+	if (CMimAPI::m_MyAlphaBlend)
+		CMimAPI::m_MyAlphaBlend(hdc, left, top, dx, dy, dcMem, 0, 0, dx, dy, bf_t);
 	else {
 		SetStretchBltMode(hdc, HALFTONE);
 		StretchBlt(hdc, left, top, dx, dy, dcMem, 0, 0, dx, dy, SRCCOPY);
@@ -2205,6 +2204,117 @@ void CSkin::DrawDimmedIcon(HDC hdc, LONG left, LONG top, LONG dx, LONG dy, HICON
 	SelectObject(dcMem, hbmOld);
 	DeleteObject(hbm);
 	DeleteDC(dcMem);
+}
+
+UINT CSkin::NcCalcRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc)
+{
+	LRESULT orig;
+	NCCALCSIZE_PARAMS *nccp = (NCCALCSIZE_PARAMS *)lParam;
+	BOOL bReturn = FALSE;
+
+	if (CSkin::m_DisableScrollbars) {
+		SetWindowLongPtr(hwnd, GWL_STYLE, GetWindowLongPtr(hwnd, GWL_STYLE) & ~WS_VSCROLL);
+		EnableScrollBar(hwnd, SB_VERT, ESB_DISABLE_BOTH);
+		ShowScrollBar(hwnd, SB_VERT, FALSE);
+	}
+	orig = CallWindowProc(OldWndProc, hwnd, msg, wParam, lParam);
+
+	if (mwdat && mwdat->pContainer->bSkinned && !mwdat->bFlatMsgLog) {
+		CSkinItem *item = &SkinItems[skinID];
+		if (!item->IGNORED) {
+			/*
+				nccp->rgrc[0].left += item->MARGIN_LEFT;
+				nccp->rgrc[0].right -= item->MARGIN_RIGHT;
+				nccp->rgrc[0].bottom -= item->MARGIN_BOTTOM;
+				nccp->rgrc[0].top += item->MARGIN_TOP;
+			*/
+			return WVR_REDRAW;
+		}
+	}
+	if (mwdat && mwdat->hTheme && wParam && CMimAPI::m_pfnGetThemeBackgroundContentRect) {
+		RECT rcClient;
+		HDC hdc = GetDC(GetParent(hwnd));
+
+		if (CMimAPI::m_pfnGetThemeBackgroundContentRect(mwdat->hTheme, hdc, 1, 1, &nccp->rgrc[0], &rcClient) == S_OK) {
+			if (EqualRect(&rcClient, &nccp->rgrc[0]))
+				InflateRect(&rcClient, -1, -1);
+			CopyRect(&nccp->rgrc[0], &rcClient);
+			bReturn = TRUE;
+		}
+		ReleaseDC(GetParent(hwnd), hdc);
+		if (bReturn)
+			return WVR_REDRAW;
+		else
+			return orig;
+	}
+	if (mwdat && (mwdat->sendMode & SMODE_MULTIPLE || mwdat->sendMode & SMODE_CONTAINER) && skinID == ID_EXTBKINPUTAREA) {
+		InflateRect(&nccp->rgrc[0], -1, -1);
+		return WVR_REDRAW;
+	}
+	return orig;
+}
+
+/*
+ * process WM_NCPAINT for the rich edit control. Draw a visual style border and avoid classic static edge / client edge
+ * may also draw a skin item around the rich edit control.
+ */
+
+UINT CSkin::DrawRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc)
+{
+	CSkinItem *item = &SkinItems[skinID];
+	LRESULT result = 0;
+	BOOL isMultipleReason;
+
+	result = CallWindowProc(OldWndProc, hwnd, msg, wParam, lParam);			// do default processing (otherwise, NO scrollbar as it is painted in NC_PAINT)
+	if (!mwdat)
+		return result;
+
+	isMultipleReason = ((skinID == ID_EXTBKINPUTAREA) && (mwdat->sendMode & SMODE_MULTIPLE || mwdat->sendMode & SMODE_CONTAINER));
+
+	if (isMultipleReason || ((mwdat && mwdat->hTheme) || (mwdat && mwdat->pContainer->bSkinned && !item->IGNORED && !mwdat->bFlatMsgLog))) {
+		HDC hdc = GetWindowDC(hwnd);
+		RECT rcWindow;
+		POINT pt;
+		LONG left_off, top_off, right_off, bottom_off;
+		LONG dwStyle = GetWindowLongPtr(hwnd, GWL_STYLE);
+		LONG dwExStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+
+		GetWindowRect(hwnd, &rcWindow);
+		pt.x = pt.y = 0;
+		ClientToScreen(hwnd, &pt);
+		left_off = pt.x - rcWindow.left;
+		if (dwStyle & WS_VSCROLL && dwExStyle & WS_EX_RTLREADING)
+			left_off -= PluginConfig.ncm.iScrollWidth;
+		top_off = pt.y - rcWindow.top;
+
+		if (mwdat->pContainer->bSkinned && !item->IGNORED) {
+			right_off = item->MARGIN_RIGHT;
+			bottom_off = item->MARGIN_BOTTOM;
+		} else {
+			right_off = left_off;
+			bottom_off = top_off;
+		}
+
+		rcWindow.right -= rcWindow.left;
+		rcWindow.bottom -= rcWindow.top;
+		rcWindow.left = rcWindow.top = 0;
+
+		ExcludeClipRect(hdc, left_off, top_off, rcWindow.right - right_off, rcWindow.bottom - bottom_off);
+		if (mwdat->pContainer->bSkinned && !item->IGNORED) {
+			ReleaseDC(hwnd, hdc);
+			return result;
+		} else if (CMimAPI::m_pfnDrawThemeBackground) {
+			if (isMultipleReason) {
+				HBRUSH br = CreateSolidBrush(RGB(255, 130, 130));
+				FillRect(hdc, &rcWindow, br);
+				DeleteObject(br);
+			} else
+				CMimAPI::m_pfnDrawThemeBackground(mwdat->hTheme, hdc, 1, 1, &rcWindow, &rcWindow);
+		}
+		ReleaseDC(hwnd, hdc);
+		return result;
+	}
+	return result;
 }
 
 /**
@@ -2231,7 +2341,37 @@ DWORD __fastcall CSkin::HexStringToLong(const TCHAR *szSource)
  *
  * @return
  */
-int CSkin::RenderText()
+#if defined(_UNICODE)
+int CSkin::RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags)
 {
-	return 0;
+	if(M->isAero()) {
+		DTTOPTS dto = {0};
+		dto.dwSize = sizeof(dto);
+		dto.dwFlags = DTT_COMPOSITED|DTT_GLOWSIZE;
+		dto.iGlowSize = 10;
+		return(CMimAPI::m_pfnDrawThemeTextEx(hTheme, hdc, BP_PUSHBUTTON, PBS_NORMAL, szText, -1, dtFlags, rc, &dto));
+	}
+	else {
+		return(::DrawText(hdc, szText, -1, rc, dtFlags));
+	}
+}
+#else
+int CSkin::RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags)
+{
+	return(::DrawText(hdc, szText, -1, rc, dtFlags));
+}
+#endif
+
+HBITMAP CSkin::CreateAeroCompatibleBitmap(const RECT &rc, HDC dc)
+{
+	BITMAPINFO dib = {0};
+
+	dib.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    dib.bmiHeader.biWidth = rc.right - rc.left;
+    dib.bmiHeader.biHeight = -(rc.bottom - rc.top);
+    dib.bmiHeader.biPlanes = 1;
+    dib.bmiHeader.biBitCount = 32;
+    dib.bmiHeader.biCompression = BI_RGB;
+
+    return(CreateDIBSection(dc, &dib, DIB_RGB_COLORS, NULL, NULL, 0 ));
 }

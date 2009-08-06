@@ -72,16 +72,16 @@ typedef struct{
 
 /*Folders/Register/Path service
   wParam - not used, must be 0
-  lParam - (LPARAM) (const FOLDERDATA *) - Data structure filled with 
+  lParam - (LPARAM) (const FOLDERDATA *) - Data structure filled with
   the necessary information.
-  Returns a handle to the registered path or 0 on error. 
+  Returns a handle to the registered path or 0 on error.
   You need to use this to call the other services.
 */
 #define MS_FOLDERS_REGISTER_PATH "Folders/Register/Path"
 
 /*Folders/Get/PathSize service
   wParam - (WPARAM) (int) - handle to registered path
-  lParam - (LPARAM) (int *) - pointer to the variable that receives the size of the path 
+  lParam - (LPARAM) (int *) - pointer to the variable that receives the size of the path
   string (not including the null character). Depending on the flags set when creating the path
   it will either call strlen() or wcslen() to get the length of the string.
   Returns the size of the buffer.

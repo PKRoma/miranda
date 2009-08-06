@@ -84,7 +84,6 @@ BOOL          SM_ChangeUID(const TCHAR* pszID, const char* pszModule, const TCHA
 BOOL          SM_ChangeNick(const TCHAR* pszID, const char* pszModule, GCEVENT * gce);
 BOOL          SM_RemoveUser(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID);
 BOOL          SM_SetOffline(const TCHAR* pszID, const char* pszModule);
-BOOL          SM_SetTabbedWindowHwnd(SESSION_INFO* si, HWND hwnd);
 HICON         SM_GetStatusIcon(SESSION_INFO* si, USERINFO* ui, char* szIndicator);
 BOOL          SM_SetStatus(const TCHAR* pszID, const char* pszModule, int wStatus);
 BOOL          SM_SetStatusEx(const TCHAR* pszID, const char* pszModule, const TCHAR* pszText, int flags );
@@ -111,6 +110,7 @@ SESSION_INFO* SM_FindSessionByHCONTACT(HANDLE h);
 SESSION_INFO* SM_FindSessionByIndex(const char* pszModule, int iItem);
 char*         SM_GetUsers(SESSION_INFO* si);
 USERINFO*     SM_GetUserFromIndex(const TCHAR* pszID, const char* pszModule, int index);
+BOOL		  SM_ReconfigureFilters();
 MODULEINFO*   MM_AddModule(const char* pszModule);
 MODULEINFO*   MM_FindModule(const char* pszModule);
 void          MM_FixColors();

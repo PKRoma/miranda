@@ -134,6 +134,7 @@ public:
 	DWORD       dwThreadID;
 	char        szMetaName[256];
 	HBITMAP		hbmLogo;
+	int			iMenuHeight;
 	HANDLE 		m_hMessageWindowList;
 };
 

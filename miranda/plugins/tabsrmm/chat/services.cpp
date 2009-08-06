@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id: services.c 10402 2009-07-24 00:35:21Z silvercircle $
+$Id$
 
 */
 
@@ -477,15 +477,6 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
 
 	ZeroMemory((void *)&newData.item, sizeof(newData.item));
 
-/*
-#if defined(_UNICODE)
-	contactNameW[0] = 0;
-	MY_GetContactDisplayNameW(hContact, contactNameW, 100, szProto, 0);
-	contactName = contactNameW;
-#else
-	contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) newData.hContact, 0);
-#endif
-*/
 	contactName = (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) newData.hContact, GCDNF_TCHAR);
 
 	/*
@@ -567,11 +558,30 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
 		}
 	}
 	if (bActivateTab) {
-		SetFocus(hwndNew);
-		RedrawWindow(pContainer->hwnd, NULL, NULL, RDW_INVALIDATE);
-		UpdateWindow(pContainer->hwnd);
-		if (GetForegroundWindow() != pContainer->hwnd && bPopupContainer == TRUE)
-			SetForegroundWindow(pContainer->hwnd);
+		if (PluginConfig.m_HideOnClose && !IsWindowVisible(pContainer->hwnd)){
+			WINDOWPLACEMENT wp={0};
+			wp.length = sizeof(wp);
+			GetWindowPlacement(pContainer->hwnd, &wp);
+
+			BroadCastContainer(pContainer, DM_CHECKSIZE, 0, 0);			// make sure all tabs will re-check layout on activation
+			if(wp.showCmd == SW_SHOWMAXIMIZED)
+				ShowWindow(pContainer->hwnd, SW_SHOWMAXIMIZED);
+			else {
+				if(bPopupContainer)
+					ShowWindow(pContainer->hwnd, SW_SHOWNORMAL);
+				else
+					ShowWindow(pContainer->hwnd, SW_SHOWMINNOACTIVE);
+			}
+			SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
+			SetFocus(hwndNew);
+		}
+		else {
+			SetFocus(hwndNew);
+			RedrawWindow(pContainer->hwnd, NULL, NULL, RDW_INVALIDATE);
+			UpdateWindow(pContainer->hwnd);
+			if (GetForegroundWindow() != pContainer->hwnd && bPopupContainer == TRUE)
+				SetForegroundWindow(pContainer->hwnd);
+		}
 	}
 	return hwndNew;		// return handle of the new dialog
 }
@@ -596,7 +606,8 @@ void ShowRoom(SESSION_INFO* si, WPARAM wp, BOOL bSetForeground)
 		if (pContainer == NULL)
 			pContainer = CreateContainer(szName, FALSE, si->hContact);
 		si->hWnd = CreateNewRoom(pContainer, si, TRUE, TRUE, FALSE);
-	} else ActivateExistingTab(si->pContainer, si->hWnd);
+	} else
+		ActivateExistingTab(si->pContainer, si->hWnd);
 }
 
 INT_PTR Service_AddEvent(WPARAM wParam, LPARAM lParam)

@@ -28,6 +28,28 @@ $Id$
 #include "commonheaders.h"
 extern PLUGININFOEX pluginInfo;
 
+PITA 	CMimAPI::m_pfnIsThemeActive = 0;
+POTD 	CMimAPI::m_pfnOpenThemeData = 0;
+PDTB 	CMimAPI::m_pfnDrawThemeBackground = 0;
+PCTD 	CMimAPI::m_pfnCloseThemeData = 0;
+PDTT 	CMimAPI::m_pfnDrawThemeText = 0;
+PDTTE	CMimAPI::m_pfnDrawThemeTextEx = 0;
+PITBPT 	CMimAPI::m_pfnIsThemeBackgroundPartiallyTransparent = 0;
+PDTPB  	CMimAPI::m_pfnDrawThemeParentBackground = 0;
+PGTBCR 	CMimAPI::m_pfnGetThemeBackgroundContentRect = 0;
+ETDT 	CMimAPI::m_pfnEnableThemeDialogTexture = 0;
+PSLWA 	CMimAPI::m_pSetLayeredWindowAttributes = 0;
+PULW	CMimAPI::m_pUpdateLayeredWindow = 0;
+PFWEX	CMimAPI::m_MyFlashWindowEx = 0;
+PAB		CMimAPI::m_MyAlphaBlend = 0;
+PGF		CMimAPI::m_MyGradientFill = 0;
+SMI		CMimAPI::m_fnSetMenuInfo = 0;
+DEFICA	CMimAPI::m_pfnDwmExtendFrameIntoClientArea = 0;
+DICE	CMimAPI::m_pfnDwmIsCompositionEnabled = 0;
+MMFW	CMimAPI::m_pfnMonitorFromWindow = 0;
+GMIA	CMimAPI::m_pfnGetMonitorInfoA = 0;
+DRT		CMimAPI::m_pfnDwmRegisterThumbnail = 0;
+
 /*
  * read a setting for a contact
  */
@@ -366,22 +388,6 @@ void CMimAPI::InitPaths()
 void CMimAPI::InitAPI()
 {
 	m_hUxTheme = 0;
-	m_pfnIsThemeActive = 0;
-	m_pfnOpenThemeData = 0;
-	m_pfnDrawThemeBackground = 0;
-	m_pfnCloseThemeData = 0;
-	m_pfnDrawThemeText = 0;
-	m_pfnDrawThemeTextEx = 0;
-	m_pfnIsThemeBackgroundPartiallyTransparent = 0;
-	m_pfnDrawThemeParentBackground = 0;
-	m_pfnGetThemeBackgroundContentRect = 0;
-	m_pfnEnableThemeDialogTexture = 0;
-
-	m_dwmExtendFrameIntoClientArea = 0;
-	m_dwmIsCompositionEnabled = 0;
-	m_pfnMonitorFromWindow = 0;
-	m_pfnGetMonitorInfoA = 0;
-
 	m_VsAPI = false;
 
 	HMODULE hDLL = GetModuleHandleA("user32");
@@ -390,7 +396,7 @@ void CMimAPI::InitAPI()
 	m_MyFlashWindowEx = (PFWEX) GetProcAddress(hDLL, "FlashWindowEx");
 	m_MyAlphaBlend = (PAB) GetProcAddress(GetModuleHandleA("msimg32"), "AlphaBlend");
 	m_MyGradientFill = (PGF) GetProcAddress(GetModuleHandleA("msimg32"), "GradientFill");
-	m_fnSetMenuInfo = (pfnSetMenuInfo)GetProcAddress(GetModuleHandleA("USER32.DLL"), "SetMenuInfo");
+	m_fnSetMenuInfo = (SMI)GetProcAddress(GetModuleHandleA("USER32.DLL"), "SetMenuInfo");
 
 	m_pfnMonitorFromWindow = (MMFW)GetProcAddress(GetModuleHandleA("USER32"), "MonitorFromWindow");
 	m_pfnGetMonitorInfoA = (GMIA)GetProcAddress(GetModuleHandleA("USER32"), "GetMonitorInfoA");
@@ -405,7 +411,7 @@ void CMimAPI::InitAPI()
 			m_pfnIsThemeBackgroundPartiallyTransparent = (PITBPT)GetProcAddress(m_hUxTheme, "IsThemeBackgroundPartiallyTransparent");
 			m_pfnDrawThemeParentBackground = (PDTPB)GetProcAddress(m_hUxTheme, "DrawThemeParentBackground");
 			m_pfnGetThemeBackgroundContentRect = (PGTBCR)GetProcAddress(m_hUxTheme, "GetThemeBackgroundContentRect");
-			m_pfnEnableThemeDialogTexture = (BOOL (WINAPI *)(HANDLE, DWORD))GetProcAddress(m_hUxTheme, "EnableThemeDialogTexture");
+			m_pfnEnableThemeDialogTexture = (ETDT)GetProcAddress(m_hUxTheme, "EnableThemeDialogTexture");
 
 			if (m_pfnIsThemeActive != 0 && m_pfnOpenThemeData != 0 && m_pfnDrawThemeBackground != 0 && m_pfnCloseThemeData != 0
 				&& m_pfnDrawThemeText != 0 && m_pfnIsThemeBackgroundPartiallyTransparent != 0 && m_pfnDrawThemeParentBackground != 0
@@ -423,8 +429,9 @@ void CMimAPI::InitAPI()
 	if (IsWinVerVistaPlus())  {
 	    m_hDwmApi = LoadLibraryA("dwmapi.dll");
 	    if (m_hDwmApi)  {
-            m_dwmExtendFrameIntoClientArea = (DEFICA)GetProcAddress(m_hDwmApi,"DwmExtendFrameIntoClientArea");
-            m_dwmIsCompositionEnabled = (DICE)GetProcAddress(m_hDwmApi,"DwmIsCompositionEnabled");
+            m_pfnDwmExtendFrameIntoClientArea = (DEFICA)GetProcAddress(m_hDwmApi,"DwmExtendFrameIntoClientArea");
+            m_pfnDwmIsCompositionEnabled = (DICE)GetProcAddress(m_hDwmApi,"DwmIsCompositionEnabled");
+			m_pfnDwmRegisterThumbnail = (DRT)GetProcAddress(m_hDwmApi, "DwmRegisterThumbnail");
 	    }
 		/*
 		 * additional uxtheme APIs (Vista+)

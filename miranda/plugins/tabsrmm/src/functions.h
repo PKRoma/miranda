@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id: functions.h 10390 2009-07-22 19:43:01Z silvercircle $
+$Id$
 */
 
 #ifndef _TABSRMM_FUNCTIONS_H
@@ -90,8 +90,6 @@ void        RenameContainer(int iIndex, const TCHAR *newName);
 int         EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const TCHAR *szNew, DWORD dwExtinfo, DWORD dwExtinfoEx);
 void        GetLocaleID(struct _MessageWindowData *dat, char *szKLName);
 int         GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLen);
-UINT        DrawRichEditFrame(HWND hwnd, struct _MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
-UINT        NcCalcRichEditFrame(HWND hwnd, struct _MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
 HMENU       BuildContainerMenu();
 void        BuildCodePageList();
 void        PreTranslateDates();

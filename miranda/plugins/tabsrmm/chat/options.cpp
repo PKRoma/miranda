@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 Option and settings handling for the group chat module. Implements
 the option pages and various support functions.
 
-$Id: options.c 10402 2009-07-24 00:35:21Z silvercircle $
+$Id$
 
 */
 
@@ -301,7 +301,7 @@ void LoadMsgDlgFont(int section, int i, LOGFONT *lf, COLORREF* colour, char *szM
 		lf->lfQuality = DEFAULT_QUALITY;
 		lf->lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
 		wsprintfA(str, "Font%d", i);
-		if (i == 17 && !strcmp(szMod, CHAT_FONTMODULE)) {
+		if ((i == 17 && !strcmp(szMod, CHAT_FONTMODULE)) || ((i == 20 || i == 21) && !strcmp(szMod, FONTMODULE))) {
 			lf->lfCharSet = SYMBOL_CHARSET;
 			lstrcpyn(lf->lfFaceName, _T("Webdings"), SIZEOF(lf->lfFaceName));
 		} else {
@@ -741,6 +741,7 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 								FreeMsgLogBitmaps();
 								LoadMsgLogBitmaps();
 								SM_BroadcastMessage(NULL, GC_SETWNDPROPS, 0, 0, TRUE);
+								SM_ReconfigureFilters();
 							}
 							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "enable_chat", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_CHAT_ENABLE) ? 1 : 0));
 						}
@@ -912,7 +913,8 @@ void RegisterFontServiceFonts() {
 
 
 	fontOptionsList=IP_fontOptionsList;
-	fid.flags|=FIDF_SAVEPOINTSIZE;
+	fid.flags = FIDF_DEFAULTVALID|FIDF_ALLOWEFFECTS;
+	//fid.flags|=FIDF_SAVEPOINTSIZE;
 	_tcsncpy(fid.group, _T("TabSRMM/Info Panel"), SIZEOF(fid.group));
 	_tcsncpy(fid.backgroundGroup, _T("TabSRMM/Info Panel"), SIZEOF(fid.backgroundGroup));
 	_tcsncpy(fid.backgroundName, _T("Fields background"), SIZEOF(fid.backgroundName));
@@ -925,6 +927,7 @@ void RegisterFontServiceFonts() {
 		fid.deffontsettings.colour = fontOptionsList[i].colour;
 		fid.deffontsettings.size = (char) lf.lfHeight;
 		fid.deffontsettings.style = (lf.lfWeight >= FW_BOLD ? FONTF_BOLD : 0) | (lf.lfItalic ? FONTF_ITALIC : 0);
+		fid.deffontsettings.charset = lf.lfCharSet;
 		fid.flags = fid.flags & ~FIDF_CLASSMASK | (fid.deffontsettings.style&FONTF_BOLD ? FIDF_CLASSHEADER : FIDF_CLASSGENERAL);
 		fid.deffontsettings.charset = lf.lfCharSet;
 		_tcsncpy(fid.deffontsettings.szFace, lf.lfFaceName, LF_FACESIZE);

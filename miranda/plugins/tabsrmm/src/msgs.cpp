@@ -22,7 +22,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id: msgs.c 10399 2009-07-23 20:11:21Z silvercircle $
+$Id$
 
 */
 #include "commonheaders.h"
@@ -1397,10 +1397,10 @@ static int AvatarChanged(WPARAM wParam, LPARAM lParam)
 			dat->ace = ace;
 			if (dat->hwndFlash == 0)
 				dat->panelWidth = -1;				// force new size calculations (not for flash avatars)
-			DM_RecalcPictureSize(hwnd, dat);
+			DM_RecalcPictureSize(dat);
 			if (dat->showPic == 0 || dat->showInfoPic == 0)
 				GetAvatarVisibility(hwnd, dat);
-			ShowPicture(hwnd, dat, TRUE);
+			ShowPicture(dat, TRUE);
 			dat->dwFlagsEx |= MWF_EX_AVATARCHANGED;
 		}
 	}
