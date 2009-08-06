@@ -126,7 +126,6 @@ static PBYTE createAdvancedSearchStructureTLV(HWND hwndDlg, int *length)
 {
 	PBYTE buf = NULL;
 	int buflen = 0;
-	WORD w;
 
 	ppackLEWord(&buf, &buflen, META_SEARCH_GENERIC);       /* subtype: full search */
 
@@ -142,13 +141,20 @@ static PBYTE createAdvancedSearchStructureTLV(HWND hwndDlg, int *length)
 	searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_KEYWORDS, TLV_KEYWORDS);
 
 	ppackLETLVDWord(&buf, &buflen, (DWORD)getCurItemData(hwndDlg, IDC_AGERANGE),      TLV_AGERANGE,  0);
-	ppackLETLVByte(&buf,  &buflen, (BYTE)getCurItemData(hwndDlg,  IDC_GENDER),        TLV_GENDER,    0);
+
+  BYTE b = (BYTE)getCurItemData(hwndDlg,  IDC_GENDER);
+  switch (b) {
+    case 'F': b = 1; break;
+    case 'M': b = 2; break;
+    default: b = 0;
+  };
+	ppackLETLVByte(&buf,  &buflen, b, TLV_GENDER, 0);
 	ppackLETLVByte(&buf,  &buflen, (BYTE)getCurItemData(hwndDlg,  IDC_MARITALSTATUS), TLV_MARITAL,   0);
 	ppackLETLVWord(&buf,  &buflen, (WORD)getCurItemData(hwndDlg,  IDC_LANGUAGE),      TLV_LANGUAGE,  0);
 	ppackLETLVWord(&buf,  &buflen, (WORD)getCurItemData(hwndDlg,  IDC_COUNTRY),       TLV_COUNTRY,   0);
 	ppackLETLVWord(&buf,  &buflen, (WORD)getCurItemData(hwndDlg,  IDC_WORKFIELD),     TLV_OCUPATION, 0);
 
-	w = (WORD)getCurItemData(hwndDlg, IDC_PASTCAT);
+	WORD w = (WORD)getCurItemData(hwndDlg, IDC_PASTCAT);
 	searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_PASTKEY, w, TLV_PASTINFO);
 
 	w = (WORD)getCurItemData(hwndDlg, IDC_INTERESTSCAT);
@@ -157,10 +163,12 @@ static PBYTE createAdvancedSearchStructureTLV(HWND hwndDlg, int *length)
 	w = (WORD)getCurItemData(hwndDlg, IDC_ORGANISATION);
 	searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_ORGKEYWORDS, w, TLV_AFFILATIONS);
 
-	w = (WORD)getCurItemData(hwndDlg, IDC_HOMEPAGECAT);;
-	searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_HOMEPAGEKEY, w, TLV_HOMEPAGE);
+	w = (WORD)getCurItemData(hwndDlg, IDC_HOMEPAGECAT);
+  if (w != 0xFFFF)
+	  searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_HOMEPAGEKEY, w, TLV_HOMEPAGE);
 
-	ppackLETLVByte(&buf, &buflen, (BYTE)IsDlgButtonChecked(hwndDlg, IDC_ONLINEONLY), TLV_ONLINEONLY, 1);
+  if (IsDlgButtonChecked(hwndDlg, IDC_ONLINEONLY))
+	  ppackLETLVByte(&buf, &buflen, 1, TLV_ONLINEONLY, 1);
 
 	if (length)
 		*length = buflen;
