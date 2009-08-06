@@ -554,6 +554,8 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wPara
 							char* szProto;
 							GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, DWLP_USER);
 
+							if (!gg) break;
+
 							// Delete non-gg contacts
 							hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 							while (hContact)
