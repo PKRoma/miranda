@@ -31,6 +31,28 @@ $Id$
 #define __THEMES_H
 
 
+typedef struct {
+	HWND    hwnd;
+	int     stateId; // button state
+	int     focus;   // has focus (1 or 0)
+	HFONT   hFont;   // font
+	HICON   arrow;   // uses down arrow
+	int     defbutton; // default button
+	HICON   hIcon, hIconPrivate;
+	HBITMAP hBitmap;
+	int     pushBtn;
+	int     pbState;
+	HANDLE  hThemeButton;
+	HANDLE  hThemeToolbar;
+	BOOL    bThemed;
+	BOOL	bTitleButton;
+	TCHAR	cHot;
+	int     flatBtn;
+	int     dimmed;
+	struct ContainerWindowData *pContainer;
+	ButtonItem *item;
+} MButtonCtrl;
+
 /**
  * CImageItem implementes image-based skin items. These items are loaded
  * from a skin file definition (.tsk file) and are then linked to one or
@@ -174,6 +196,11 @@ public:
 	static HBITMAP 	CreateAeroCompatibleBitmap(const RECT &rc, HDC dc);
 	static int 		RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags);
 	static int 		RenderText(HDC hdc, HANDLE hTheme, const char *szText, RECT *rc, DWORD dtFlags);
+	static void 	MapClientToParent(HWND hwndClient, HWND hwndParent, RECT &rc);
+	static void		RenderIPNickname(HDC hdc, RECT &rc, _MessageWindowData *dat);
+	static void 	RenderIPUIN(HDC hdc, RECT &rcItem, _MessageWindowData *dat);
+	static void 	RenderIPStatus(HDC hdc, RECT &rcItem, _MessageWindowData *dat);
+	static void 	RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &rcWindow);
 
 public:
 	static bool		m_DisableScrollbars, m_bClipBorder;

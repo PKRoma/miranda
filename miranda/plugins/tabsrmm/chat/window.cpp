@@ -3256,7 +3256,7 @@ LABEL_SHOWWINDOW:
 				return 0;
 			break;
 		case WM_PAINT:
-			if (dat->pContainer->bSkinned) {
+			if (dat->pContainer->bSkinned || M->isAero()) {
 				PAINTSTRUCT ps;
 				RECT rcClient, rcWindow, rc;
 				CSkinItem *item;
@@ -3264,28 +3264,31 @@ LABEL_SHOWWINDOW:
 				UINT item_ids[3] = {ID_EXTBKUSERLIST, ID_EXTBKHISTORY, ID_EXTBKINPUTAREA};
 				UINT ctl_ids[3] = {IDC_LIST, IDC_CHAT_LOG, IDC_CHAT_MESSAGE};
 				int  i;
+				bool fAero = M->isAero();
 
 				HDC hdc = BeginPaint(hwndDlg, &ps);
 				GetClientRect(hwndDlg, &rcClient);
-				CSkin::SkinDrawBG(hwndDlg, dat->pContainer->hwnd, dat->pContainer, &rcClient, hdc);
+				if(dat->pContainer->bSkinned && !fAero) {
+					CSkin::SkinDrawBG(hwndDlg, dat->pContainer->hwnd, dat->pContainer, &rcClient, hdc);
+					for (i = 0; i < 3; i++) {
+						item = &SkinItems[item_ids[i]];
+						if (!item->IGNORED) {
 
-				for (i = 0; i < 3; i++) {
-					item = &SkinItems[item_ids[i]];
-					if (!item->IGNORED) {
-
-						GetWindowRect(GetDlgItem(hwndDlg, ctl_ids[i]), &rcWindow);
-						pt.x = rcWindow.left;
-						pt.y = rcWindow.top;
-						ScreenToClient(hwndDlg, &pt);
-						rc.left = pt.x - item->MARGIN_LEFT;
-						rc.top = pt.y - item->MARGIN_TOP;
-						rc.right = rc.left + item->MARGIN_RIGHT + (rcWindow.right - rcWindow.left) + item->MARGIN_LEFT;
-						rc.bottom = rc.top + item->MARGIN_BOTTOM + (rcWindow.bottom - rcWindow.top) + item->MARGIN_TOP;
-						DrawAlpha(hdc, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
-								  item->CORNER, item->BORDERSTYLE, item->imageItem);
+							GetWindowRect(GetDlgItem(hwndDlg, ctl_ids[i]), &rcWindow);
+							pt.x = rcWindow.left;
+							pt.y = rcWindow.top;
+							ScreenToClient(hwndDlg, &pt);
+							rc.left = pt.x - item->MARGIN_LEFT;
+							rc.top = pt.y - item->MARGIN_TOP;
+							rc.right = rc.left + item->MARGIN_RIGHT + (rcWindow.right - rcWindow.left) + item->MARGIN_LEFT;
+							rc.bottom = rc.top + item->MARGIN_BOTTOM + (rcWindow.bottom - rcWindow.top) + item->MARGIN_TOP;
+							DrawAlpha(hdc, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+									  item->CORNER, item->BORDERSTYLE, item->imageItem);
+						}
 					}
 				}
-
+				if(fAero)
+					CSkin::RenderToolbarBG(dat, hdc, rcClient);
 				EndPaint(hwndDlg, &ps);
 				return 0;
 			}

@@ -481,9 +481,6 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Tab options",IDC_STATIC,3,0,300,147
     GROUPBOX        "Miscellaneous options",IDC_STATIC,3,149,300,75
-    LTEXT           "Info Panel field borders:",IDC_STATIC,10,161,166,12
-    COMBOBOX        IDC_IPFIELDBORDERS,192,158,106,50,CBS_DROPDOWNLIST | 
-                    CBS_SORT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Setup status modes for automatic tab creation...",
                     IDC_SETUPAUTOCREATEMODES,56,174,190,14
     CONTROL         "Limit nicknames on tabs to",IDC_CUT_TABTITLE,"Button",

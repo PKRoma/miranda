@@ -66,8 +66,7 @@ static const UINT controlsToHide1[] = { IDOK, IDC_FONTFACE,IDC_FONTSTRIKEOUT, ID
 static const UINT controlsToHide2[] = { IDOK, IDC_PIC, IDC_PROTOCOL, -1};
 static const UINT addControls[] = { IDC_ADD, IDC_CANCELADD };
 
-UINT infoPanelControls[] = {IDC_PANELPIC, IDC_PANELNICK, IDC_PANELUIN,
-								  IDC_PANELSTATUS, IDC_TOGGLENOTES, IDC_NOTES, IDC_PANELSPLITTER };
+UINT infoPanelControls[] = {IDC_PANELPIC, IDC_TOGGLENOTES, IDC_NOTES, IDC_PANELSPLITTER };
 
 static const UINT errorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER};
 static const UINT errorButtons[] = { IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER};
@@ -496,9 +495,6 @@ static void MsgWindowUpdateState(_MessageWindowData *dat, UINT msg)
 
 static void ConfigurePanel(HWND hwndDlg, struct _MessageWindowData *dat)
 {
-	const UINT cntrls[] = {IDC_PANELNICK, IDC_PANELUIN, IDC_PANELSTATUS};
-
-	ShowMultipleControls(hwndDlg, cntrls, 3, dat->dwFlagsEx & MWF_SHOW_INFONOTES ? SW_HIDE : SW_SHOW);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_NOTES), dat->dwFlagsEx & MWF_SHOW_INFONOTES ? SW_SHOW : SW_HIDE);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLENOTES), dat->dwFlagsEx & MWF_SHOW_INFONOTES ? SW_SHOW : SW_HIDE);
 }
@@ -519,7 +515,7 @@ static void ShowHideInfoPanel(HWND hwndDlg, struct _MessageWindowData *dat)
 	AdjustBottomAvatarDisplay(dat);
 	GetObject(hbm, sizeof(bm), &bm);
 	CalcDynamicAvatarSize(dat, &bm);
-	ShowMultipleControls(hwndDlg, infoPanelControls, 7, dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
+	ShowMultipleControls(hwndDlg, infoPanelControls, 4, dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
 
 	if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
 		//MAD
@@ -647,7 +643,7 @@ void SetDialogToType(HWND hwndDlg)
 
 	// info panel stuff
 	if (!(dat->dwFlags & MWF_ERRORSTATE)) {
-		ShowMultipleControls(hwndDlg, infoPanelControls, 7, dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
+		ShowMultipleControls(hwndDlg, infoPanelControls, 4, dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
 		if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL)
 			ConfigurePanel(hwndDlg, dat);
 	}
@@ -5169,16 +5165,7 @@ quote_from_last:
 			DeletePopupsForContact(dat->hContact, (DWORD)wParam);
 			return 0;
 		case EM_THEMECHANGED:
-			if (CMimAPI::m_pfnCloseThemeData) {
-				if(dat->hTheme) {
-					CMimAPI::m_pfnCloseThemeData(dat->hTheme);
-					dat->hTheme = 0;
-				}
-				if(dat->hThemeIP) {
-					CMimAPI::m_pfnCloseThemeData(dat->hThemeIP);
-					dat->hThemeIP = 0;
-				}
-			}
+			DM_FreeTheme(dat);
 			return DM_ThemeChanged(dat);
 		case DM_PLAYINCOMINGSOUND:
 			if (!dat)
@@ -5393,14 +5380,15 @@ quote_from_last:
 			break;
 		}
 		case WM_ERASEBKGND: {
-			if (m_pContainer->bSkinned)
+			if (m_pContainer->bSkinned || M->isAero())
 				return TRUE;
 			break;
 		}
-		case WM_NCPAINT:
+		case WM_NCPAINT: {
 			if (m_pContainer->bSkinned)
 				return 0;
 			break;
+		}
 		case WM_PAINT: {
 			/*
 			 * in skinned mode only, draw the background elements for the 2 richedit controls
@@ -5418,7 +5406,7 @@ quote_from_last:
 			GetClientRect(hwndDlg, &rcClient);
 			cx = rcClient.right - rcClient.left;
 			cy = rcClient.bottom - rcClient.top;
-			hbm =  CreateCompatibleBitmap(hdc, cx, cy);
+			hbm =  CSkin::CreateAeroCompatibleBitmap(rcClient, hdc);
 
 			hbmOld = (HBITMAP)SelectObject(hdcMem, hbm);
 
@@ -5463,32 +5451,20 @@ quote_from_last:
 				CSkinItem *item = &t_item;
 
 				GetClientRect(hwndDlg, &rc);
-				rc.bottom = dat->panelHeight + 2 + (fAero ? 30 : 0);
-				if(dat->hdcCached == 0)
-					dat->hdcCached = CreateCompatibleDC(hdc);
-				if(dat->hbmCachedOld) {
-					SelectObject(dat->hdcCached, dat->hbmCachedOld);
-					DeleteObject(dat->hbmCached);
-				}
-				dat->hbmCached = CreateCompatibleBitmap(hdc, rc.right - rc.left, rc.bottom - rc.top);
-				dat->hbmCachedOld = (HBITMAP)SelectObject(dat->hdcCached, dat->hbmCached);
-
+				if(!fAero)
+					rc.bottom = dat->panelHeight + 2;
 				if(fAero) {
-					FillRect(dat->hdcCached, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
-					FillRect(hdcMem, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+					RECT	rcBlack = rc;
+					rcBlack.bottom = dat->panelHeight + 2 + 30;
+					//FillRect(dat->hdcCached, &rcBlack, (HBRUSH)GetStockObject(BLACK_BRUSH));
+					FillRect(hdcMem, &rcBlack, (HBRUSH)GetStockObject(BLACK_BRUSH));
 				}
 				else {
-					if(m_pContainer->bSkinned) {
-						CSkin::SkinDrawBG(hwndDlg, m_pContainer->hwnd, m_pContainer, &rc, dat->hdcCached);
+					if(m_pContainer->bSkinned)
 						CSkin::SkinDrawBG(hwndDlg, m_pContainer->hwnd, m_pContainer, &rc, hdcMem);
-					}
-					else {
-						FillRect(dat->hdcCached, &rcClient, GetSysColorBrush(COLOR_3DFACE));
+					else
 						FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
-					}
 					if(!item->IGNORED) {
-						DrawAlpha(dat->hdcCached, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
-								  item->CORNER, item->BORDERSTYLE, item->imageItem);
 						DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
 								  item->CORNER, item->BORDERSTYLE, item->imageItem);
 					}
@@ -5509,6 +5485,29 @@ quote_from_last:
 				SelectObject(hdcImage, hbmOld);
 				DeleteDC(hdcImage);
 			}
+			/*
+			 * draw aero related stuff
+			*/
+			if(fAero)
+				CSkin::RenderToolbarBG(dat, hdcMem, rcClient);
+			/*
+			 * render info panel fields
+			 */
+			CSkin::MapClientToParent(GetDlgItem(hwndDlg, IDC_PANELNICK), hwndDlg, rc);
+			CSkin::RenderIPNickname(hdcMem, rc, dat);
+			CSkin::MapClientToParent(GetDlgItem(hwndDlg, IDC_PANELUIN), hwndDlg, rc);
+			CSkin::RenderIPUIN(hdcMem, rc, dat);
+			CSkin::MapClientToParent(GetDlgItem(hwndDlg, IDC_PANELSTATUS), hwndDlg, rc);
+			CSkin::RenderIPStatus(hdcMem, rc, dat);
+
+			DRAWITEMSTRUCT dis = {0};
+
+			ShowWindow(GetDlgItem(hwndDlg, IDC_PANELPIC), SW_HIDE);
+			CSkin::MapClientToParent(GetDlgItem(hwndDlg, IDC_PANELPIC), hwndDlg, dis.rcItem);
+			dis.hDC = hdcMem;
+			dis.hwndItem = GetDlgItem(hwndDlg, IDC_PANELPIC);
+			MsgWindowDrawHandler(0, (LPARAM)&dis, hwndDlg, dat);
+
 			BitBlt(hdc, 0, 0, cx, cy, hdcMem, 0, 0, SRCCOPY);
 			SelectObject(hdcMem, hbmOld);
 			DeleteObject(hbm);
@@ -5560,16 +5559,8 @@ quote_from_last:
 			if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON)
 				NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
 
-			if (CMimAPI::m_pfnCloseThemeData) {
-				if(dat->hTheme) {
-					CMimAPI::m_pfnCloseThemeData(dat->hTheme);
-					dat->hTheme = 0;
-				}
-				if(dat->hThemeIP) {
-					CMimAPI::m_pfnCloseThemeData(dat->hThemeIP);
-					dat->hThemeIP = 0;
-				}
-			}
+			DM_FreeTheme(dat);
+
 			if (dat->hBkgBrush)
 				DeleteObject(dat->hBkgBrush);
 			if (dat->hInputBkgBrush)
@@ -5716,13 +5707,6 @@ quote_from_last:
 					dat->oldIEViewProc = 0;
 				}
 				CallService(MS_HPP_EG_WINDOW, 0, (LPARAM)&ieWindow);
-			}
-			if(dat->hdcCached) {
-				if(dat->hbmCachedOld) {
-					SelectObject(dat->hdcCached, dat->hbmCachedOld);
-					DeleteObject(dat->hbmCached);
-				}
-				DeleteDC(dat->hdcCached);
 			}
 			break;
 		case WM_NCDESTROY:

@@ -283,6 +283,8 @@ struct ContainerWindowData {
 	DWORD   exFlags;
 	BOOL	fPrivateThemeChanged;
 	DWORD	dwOldAeroTop, dwOldAeroBottom;
+	HDC		cachedToolbarDC;
+	HBITMAP hbmToolbarBG, oldhbmToolbarBG;
 };
 
 #define STICK_ICON_MSG 10
@@ -401,7 +403,7 @@ struct _MessageWindowData {
 	COLORREF avatarbg;
 	HANDLE  *hHistoryEvents;
 	int     maxHistory, curHistory;
-	HANDLE  hTheme, hThemeIP;
+	HANDLE  hTheme, hThemeIP, hThemeToolbar;
 	BYTE    bFlatMsgLog;
 	PVOID   si;
 	char    szMicroLf[128];
@@ -416,8 +418,6 @@ struct _MessageWindowData {
 	LPARAM  lParam;
 	int     iHaveRTLLang;
 	BOOL    fInsertMode;
-	HDC		hdcCached;
-	HBITMAP hbmCached, hbmCachedOld;
 };
 
 typedef struct _recentinfo {

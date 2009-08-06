@@ -532,6 +532,26 @@ LRESULT DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct _MessageWindowDa
 	return 1;
 }
 
+void DM_FreeTheme(_MessageWindowData *dat)
+{
+	if(dat) {
+		if (CMimAPI::m_pfnCloseThemeData) {
+			if(dat->hTheme) {
+				CMimAPI::m_pfnCloseThemeData(dat->hTheme);
+				dat->hTheme = 0;
+			}
+			if(dat->hThemeIP) {
+				CMimAPI::m_pfnCloseThemeData(dat->hThemeIP);
+				dat->hThemeIP = 0;
+			}
+			if(dat->hThemeToolbar) {
+				CMimAPI::m_pfnCloseThemeData(dat->hThemeToolbar);
+				dat->hThemeToolbar = 0;
+			}
+		}
+	}
+}
+
 LRESULT DM_ThemeChanged(_MessageWindowData *dat)
 {
 	CSkinItem *item_log = &SkinItems[ID_EXTBKHISTORY];
@@ -560,6 +580,8 @@ LRESULT DM_ThemeChanged(_MessageWindowData *dat)
 			SetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 	}
 	dat->hThemeIP = M->isAero() ? CMimAPI::m_pfnOpenThemeData(hwnd, L"ButtonStyle") : 0;
+	dat->hThemeToolbar = M->isAero() ? CMimAPI::m_pfnOpenThemeData(hwnd, L"REBAR") : 0;
+
 	return 0;
 }
 

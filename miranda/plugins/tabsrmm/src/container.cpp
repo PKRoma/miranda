@@ -192,7 +192,7 @@ void SetAeroMargins(ContainerWindowData *pContainer)
 			m.cxLeftWidth = 0;
 			m.cxRightWidth = 0;
 			//m.cyTopHeight = (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) ? dat->panelHeight + 1 : 0;
-			m.cyBottomHeight = pContainer->statusBarHeight;
+			m.cyBottomHeight = pContainer->statusBarHeight - 1;
 			if(pt.y != pContainer->dwOldAeroTop || pContainer->statusBarHeight != pContainer->dwOldAeroBottom) {
 				pContainer->dwOldAeroTop = pt.y;
 				pContainer->dwOldAeroBottom = pContainer->statusBarHeight;
@@ -1185,6 +1185,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			HWND  hwndButton = 0;
 			BOOL isFlat = M->GetByte("tbflat", 1);
 			BOOL isThemed = !M->GetByte("nlflat", 0);
+			bool fAero = M->isAero();
 
 			fHaveTipper = ServiceExists("mToolTip/ShowTip");
 
@@ -1278,7 +1279,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_EXSTYLE, ws | WS_EX_CONTROLPARENT);
 
 			ws = GetWindowLongPtr(hwndTab, GWL_STYLE);
-			if (PluginConfig.m_TabAppearance & TCF_SINGLEROWTABCONTROL) {
+			if ((PluginConfig.m_TabAppearance & TCF_SINGLEROWTABCONTROL) || fAero) {
 				ws &= ~TCS_MULTILINE;
 				ws |= TCS_SINGLELINE;
 				ws |= TCS_FIXEDWIDTH;
@@ -2359,7 +2360,7 @@ panel_found:
 			break;
 		}
 		case WM_PAINT: {
-			if (bSkinned) {
+			if (bSkinned || M->isAero()) {
 				PAINTSTRUCT ps;
 				HDC hdc = BeginPaint(hwndDlg, &ps);
 				EndPaint(hwndDlg, &ps);
@@ -2491,6 +2492,7 @@ panel_found:
 			HANDLE hContact = 0;
 			int i = 0;
 			UINT sBarHeight;
+			bool fAero = M->isAero();
 
 			if (!PluginConfig.m_SideBarEnabled)
 				pContainer->dwFlags &= ~CNT_SIDEBAR;
@@ -2517,10 +2519,10 @@ panel_found:
 
 			SetWindowLongPtr(hwndDlg, GWL_STYLE, ws);
 
-			pContainer->tBorder = M->GetByte("tborder", 2);
-			pContainer->tBorder_outer_left = g_ButtonSet.left + M->GetByte((bSkinned ? "S_tborder_outer_left" : "tborder_outer_left"), 2);
-			pContainer->tBorder_outer_right = g_ButtonSet.right + M->GetByte((bSkinned ? "S_tborder_outer_right" : "tborder_outer_right"), 2);
-			pContainer->tBorder_outer_top = g_ButtonSet.top + M->GetByte((bSkinned ? "S_tborder_outer_top" : "tborder_outer_top"), 2);
+			pContainer->tBorder = fAero ? 0 : M->GetByte("tborder", 2);
+			pContainer->tBorder_outer_left = g_ButtonSet.left + (fAero ? 0 : M->GetByte((bSkinned ? "S_tborder_outer_left" : "tborder_outer_left"), 2));
+			pContainer->tBorder_outer_right = g_ButtonSet.right + (fAero ? 0 : M->GetByte((bSkinned ? "S_tborder_outer_right" : "tborder_outer_right"), 2));
+			pContainer->tBorder_outer_top = g_ButtonSet.top + (fAero ? 0 : M->GetByte((bSkinned ? "S_tborder_outer_top" : "tborder_outer_top"), 2));
 			pContainer->tBorder_outer_bottom = g_ButtonSet.bottom + M->GetByte((bSkinned ? "S_tborder_outer_bottom" : "tborder_outer_bottom"), 2);
 			sBarHeight = (UINT)M->GetByte((bSkinned ? "S_sbarheight" : "sbarheight"), 0);
 
@@ -2530,7 +2532,7 @@ panel_found:
 
 				ex = exold = GetWindowLongPtr(hwndDlg, GWL_EXSTYLE);
 				ex =  (pContainer->dwFlags & CNT_TRANSPARENCY && (!CSkin::m_skinEnabled || fTransAllowed)) ? ex | WS_EX_LAYERED : ex & ~(WS_EX_LAYERED);
-				//if(myGlobals.m_WinVerMajor >= 6)
+				//if(M->isAero())
 				//	ex = ex | (WS_EX_COMPOSITED); // | WS_EX_COMPOSITED);			// faster/smoother redrawing on Vista+, especially with skins
 
 				SetWindowLongPtr(hwndDlg, GWL_EXSTYLE, ex);

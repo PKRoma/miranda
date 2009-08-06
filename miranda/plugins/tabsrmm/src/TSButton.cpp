@@ -29,28 +29,6 @@ skinable button class for tabSRMM
 
 static LRESULT CALLBACK TSButtonWndProc(HWND hwnd, UINT  msg, WPARAM wParam, LPARAM lParam);
 
-typedef struct {
-	HWND    hwnd;
-	int     stateId; // button state
-	int     focus;   // has focus (1 or 0)
-	HFONT   hFont;   // font
-	HICON   arrow;   // uses down arrow
-	int     defbutton; // default button
-	HICON   hIcon, hIconPrivate;
-	HBITMAP hBitmap;
-	int     pushBtn;
-	int     pbState;
-	HANDLE  hThemeButton;
-	HANDLE  hThemeToolbar;
-	BOOL    bThemed;
-	BOOL	bTitleButton;
-	TCHAR	cHot;
-	int     flatBtn;
-	int     dimmed;
-	struct ContainerWindowData *pContainer;
-	ButtonItem *item;
-} MButtonCtrl;
-
 // External theme methods and properties
 
 static CRITICAL_SECTION csTips;
@@ -112,7 +90,7 @@ static void LoadTheme(MButtonCtrl *ctl)
 	if (M->isVSAPIState()) {
 		DestroyTheme(ctl);
 		ctl->hThemeButton = CMimAPI::m_pfnOpenThemeData(ctl->hwnd, L"BUTTON");
-		ctl->hThemeToolbar = CMimAPI::m_pfnOpenThemeData(ctl->hwnd, L"TOOLBAR");
+		ctl->hThemeToolbar = M->isAero() ? CMimAPI::m_pfnOpenThemeData(ctl->hwnd, L"MENU") : CMimAPI::m_pfnOpenThemeData(ctl->hwnd, L"TOOLBAR");
 		ctl->bThemed = TRUE;
 	}
 }
@@ -134,6 +112,31 @@ static int TBStateConvert2Flat(int state)
 	return TS_NORMAL;
 }
 
+
+/**
+ * convert button state (hot, pressed, normal) to REBAR part state ids
+ *
+ * @param state  int: button state
+ *
+ * @return int: state item id
+ */
+static int RBStateConvert2Flat(int state)
+{
+	switch (state) {
+		case PBS_NORMAL:
+			return 1;
+		case PBS_HOT:
+			return 2;
+		case PBS_PRESSED:
+			return 3;
+		case PBS_DISABLED:
+			return 1;
+		case PBS_DEFAULTED:
+			return 1;
+	}
+	return 1;
+}
+
 static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
 {
 	if (hdc_buttonglyph == 0) {
@@ -150,7 +153,8 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
 		HBITMAP hbmMem, hOld;
 		RECT rcClient, rcContent;
 		HRGN clip = 0;
-
+		bool fAero = M->isAero();
+		_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(GetParent(ctl->hwnd), GWLP_USERDATA);
 		GetClientRect(ctl->hwnd, &rcClient);
 		CopyRect(&rcContent, &rcClient);
 
@@ -232,13 +236,29 @@ flat_themed:
 					if (clip)
 						state = PBS_NORMAL;
 
+					FillRect(hdcMem, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
 					if (rc.right < 20 || rc.bottom < 20)
 						InflateRect(&rc, 2, 2);
-					if (CMimAPI::m_pfnIsThemeBackgroundPartiallyTransparent(ctl->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state))) {
-						CMimAPI::m_pfnDrawThemeParentBackground(ctl->hwnd, hdcMem, &rc);
+					if(fAero) {
+						if(dat) {
+							RECT	rcWin;
+							GetWindowRect(ctl->hwnd, &rcWin);
+							POINT 	pt;
+							pt.x = rcWin.left;
+							ScreenToClient(dat->hwnd, &pt);
+							BitBlt(hdcMem, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top,
+								   dat->pContainer->cachedToolbarDC, pt.x, 0, SRCCOPY);
+						}
 					}
-					CMimAPI::m_pfnDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(state), &rc, &rc);
-					if (clip) {
+					else {
+						if (CMimAPI::m_pfnIsThemeBackgroundPartiallyTransparent(ctl->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state)))
+							CMimAPI::m_pfnDrawThemeParentBackground(ctl->hwnd, hdcMem, &rc);
+					}
+					if(fAero)
+						CMimAPI::m_pfnDrawThemeBackground(ctl->hThemeToolbar, hdcMem, 8, RBStateConvert2Flat(state), &rc, &rc);
+					else
+						CMimAPI::m_pfnDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(state), &rc, &rc);
+					if (clip && !fAero) {
 						SelectClipRgn(hdcMem, clip);
 						CMimAPI::m_pfnDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(realState), &rc, &rc);
 					}
@@ -802,7 +822,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			break;
 		}
 		case WM_ERASEBKGND:
-			return 1;
+			return 0;
 	}
 	return DefWindowProc(hwndDlg, msg, wParam, lParam);
 }

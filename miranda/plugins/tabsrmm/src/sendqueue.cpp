@@ -650,7 +650,7 @@ void SendQueue::showErrorControls(_MessageWindowData *dat, const int showCmd) co
 	}
 	if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
 		if (showCmd)
-			::ShowMultipleControls(hwndDlg, infoPanelControls, 7, SW_HIDE);
+			::ShowMultipleControls(hwndDlg, infoPanelControls, 4, SW_HIDE);
 		else
 			::SendMessage(hwndDlg, DM_SETINFOPANEL, 0, 0);
 	}

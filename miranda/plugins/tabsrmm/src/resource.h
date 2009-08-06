@@ -351,7 +351,6 @@
 #define IDC_TEXTFORMATTING              1266
 #define IDC_SIMPLEMODE                  1266
 #define IDC_AVATARMODE                  1267
-#define IDC_IPFIELDBORDERS              1267
 #define IDC_CODEPAGES                   1268
 #define IDC_OWNAVATARMODE               1268
 #define IDC_AVATARBORDER                1269

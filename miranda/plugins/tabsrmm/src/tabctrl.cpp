@@ -1311,6 +1311,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			BOOL bClassicDraw = (tabdat->m_skinning == FALSE) || (PluginConfig.m_TabAppearance & TCF_NOSKINNING);
 			HBITMAP bmpMem, bmpOld;
 			DWORD cx, cy;
+			bool  isAero = M->isAero();
 
 			tabdat->m_moderntabs = (M->GetByte("moderntabs", 0) &&
 									!(tabdat->dwStyle & TCS_BUTTONS));

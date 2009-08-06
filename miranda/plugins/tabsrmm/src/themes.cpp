@@ -1345,6 +1345,7 @@ void CSkin::Init()
 	m_SkinItems = ::SkinItems;
 	m_fLoadOnStartup = false;
 	m_skinEnabled = m_frameSkins = false;
+	m_bAvatarBorderType = (BYTE)M->GetByte("avbordertype", 0);
 
 	/*
 	 * read current skin name from db
@@ -2375,3 +2376,302 @@ HBITMAP CSkin::CreateAeroCompatibleBitmap(const RECT &rc, HDC dc)
 
     return(CreateDIBSection(dc, &dib, DIB_RGB_COLORS, NULL, NULL, 0 ));
 }
+
+void CSkin::MapClientToParent(HWND hwndClient, HWND hwndParent, RECT &rc)
+{
+	POINT pt;
+	GetWindowRect(hwndClient, &rc);
+
+	LONG  cx = rc.right - rc.left;
+	LONG  cy = rc.bottom - rc.top;
+
+	pt.x = rc.left; pt.y = rc.top;
+
+	ScreenToClient(hwndParent, &pt);
+
+	rc.top = pt.y;
+	rc.left = pt.x;
+	rc.right = rc.left + cx;
+	rc.bottom = rc.top + cy;
+}
+
+void CSkin::RenderIPNickname(HDC hdc, RECT &rcItem, _MessageWindowData *dat)
+{
+	RECT 	rc = rcItem;
+	TCHAR 	*szStatusMsg = NULL;
+	CSkinItem *item = &SkinItems[ID_EXTBKINFOPANEL];
+
+	ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELNICK), SW_HIDE);
+	szStatusMsg = dat->statusMsg;
+
+	dat->szLabel.cx = 0;
+	rc.right = rc.left;
+	SetBkMode(hdc, TRANSPARENT);
+
+	if (dat->pContainer->bSkinned) {
+		RECT rc = rcItem;
+		rc.left += item->MARGIN_LEFT;
+		rc.right -= item->MARGIN_RIGHT;
+		rc.top += item->MARGIN_TOP;
+		rc.bottom -= item->MARGIN_BOTTOM;
+		if (!item->IGNORED)
+			DrawAlpha(hdc, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
+					  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
+	}
+	rcItem.left += 2;
+	if (dat->szNickname[0]) {
+		HFONT hOldFont = 0;
+		HICON xIcon = 0;
+
+		xIcon = GetXStatusIcon(dat);
+
+		if (xIcon) {
+			DrawIconEx(hdc, rcItem.left, (rcItem.bottom + rcItem.top - PluginConfig.m_smcyicon) / 2, xIcon, PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
+			DestroyIcon(xIcon);
+			rcItem.left += 21;
+		}
+
+		if (PluginConfig.ipConfig.isValid) {
+			hOldFont = (HFONT)SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_NICK]);
+			SetTextColor(hdc, PluginConfig.ipConfig.clrs[IPFONTID_NICK]);
+		}
+		if (szStatusMsg && szStatusMsg[0]) {
+			SIZE szNick, sStatusMsg, sMask;
+			DWORD dtFlags, dtFlagsNick;
+
+			GetTextExtentPoint32(hdc, dat->szNickname, lstrlen(dat->szNickname), &szNick);
+			GetTextExtentPoint32(hdc, _T("A"), 1, &sMask);
+			GetTextExtentPoint32(hdc, szStatusMsg, lstrlen(szStatusMsg), &sStatusMsg);
+			dtFlagsNick = DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_NOPREFIX;
+			if ((szNick.cx + sStatusMsg.cx + 6) < (rcItem.right - rcItem.left) || (rcItem.bottom - rcItem.top) < (2 * sMask.cy))
+				dtFlagsNick |= DT_VCENTER;
+			CSkin::RenderText(hdc, dat->hThemeIP, dat->szNickname, &rcItem, dtFlagsNick);
+			if (PluginConfig.ipConfig.isValid) {
+				SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_STATUS]);
+				SetTextColor(hdc, PluginConfig.ipConfig.clrs[IPFONTID_STATUS]);
+			}
+			rcItem.left += (szNick.cx + 10);
+
+			if (!(dtFlagsNick & DT_VCENTER))
+				//if(dis->rcItem.bottom - dis->rcItem.top >= 2 * sStatusMsg.cy)
+				dtFlags = DT_WORDBREAK | DT_END_ELLIPSIS | DT_NOPREFIX;
+			else
+				dtFlags = DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | DT_VCENTER;
+
+
+			rcItem.right -= 3;
+			if (rcItem.left + 30 < rcItem.right)
+				CSkin::RenderText(hdc, dat->hThemeIP, szStatusMsg, &rcItem, dtFlags);
+				//DrawText(dis->hDC, szStatusMsg, -1, &dis->rcItem, dtFlags);
+		} else
+			CSkin::RenderText(hdc, dat->hThemeIP, dat->szNickname, &rcItem, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX);
+			//DrawText(dis->hDC, dat->szNickname, -1, &dis->rcItem, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX);
+
+		if (hOldFont)
+			SelectObject(hdc, hOldFont);
+	}
+}
+
+void CSkin::RenderIPUIN(HDC hdc, RECT &rcItem, _MessageWindowData *dat)
+{
+	ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELUIN), SW_HIDE);
+
+	TCHAR	szBuf[256];
+	BOOL 	config = PluginConfig.ipConfig.isValid;
+	HFONT 	hOldFont = 0;
+	CSkinItem *item = &SkinItems[ID_EXTBKINFOPANEL];
+#if defined(_UNICODE)
+	TCHAR	*tszUin = mir_a2u(dat->uin);
+#else
+	TCHAR	*tszUin = dat->uin;
+#endif
+	SetBkMode(hdc, TRANSPARENT);
+	if (dat->pContainer->bSkinned) {
+		RECT rc = rcItem;
+		rc.left += item->MARGIN_LEFT;
+		rc.right -= item->MARGIN_RIGHT;
+		rc.top += item->MARGIN_TOP;
+		rc.bottom -= item->MARGIN_BOTTOM;
+		if (!item->IGNORED)
+			DrawAlpha(hdc, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
+					  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
+	}
+
+	rcItem.left += 2;
+	if (config) {
+		hOldFont = (HFONT)SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_UIN]);
+		SetTextColor(hdc, PluginConfig.ipConfig.clrs[IPFONTID_UIN]);
+	}
+	if (dat->uin[0]) {
+		SIZE sUIN, sTime;
+		if (dat->idle) {
+			time_t diff = time(NULL) - dat->idle;
+			int i_hrs = diff / 3600;
+			int i_mins = (diff - i_hrs * 3600) / 60;
+			mir_sntprintf(szBuf, safe_sizeof(szBuf), _T("%s    Idle: %dh,%02dm"), tszUin, i_hrs, i_mins);
+			GetTextExtentPoint32(hdc, szBuf, lstrlen(szBuf), &sUIN);
+			CSkin::RenderText(hdc, dat->hThemeIP, szBuf, &rcItem, DT_SINGLELINE | DT_VCENTER);
+		} else {
+			GetTextExtentPoint32(hdc, tszUin, lstrlen(tszUin), &sUIN);
+			CSkin::RenderText(hdc, dat->hThemeIP, tszUin, &rcItem, DT_SINGLELINE | DT_VCENTER);
+		}
+		if (dat->timezone != -1) {
+			DBTIMETOSTRINGT dbtts;
+			TCHAR 			szResult[80];
+			time_t 			final_time;
+			time_t 			now = time(NULL);
+			HFONT 			oldFont = 0;
+			int 			base_hour;
+			TCHAR 			symbolic_time[3];
+
+			final_time = now - dat->timediff;
+			dbtts.szDest = szResult;
+			dbtts.cbDest = 70;
+			dbtts.szFormat = _T("t");
+			CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, final_time, (LPARAM) &dbtts);
+			if (config) {
+				SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_TIME]);
+				SetTextColor(hdc, PluginConfig.ipConfig.clrs[IPFONTID_TIME]);
+			}
+			GetTextExtentPoint32(hdc, szResult, lstrlen(szResult), &sTime);
+			if (sUIN.cx + sTime.cx + 23 < rcItem.right - rcItem.left) {
+				rcItem.left = rcItem.right - sTime.cx - 3 - 16;
+				oldFont = (HFONT)SelectObject(hdc, PluginConfig.m_hFontWebdings);
+				base_hour = _ttoi(szResult);
+				base_hour = base_hour > 11 ? base_hour - 12 : base_hour;
+				symbolic_time[0] = (TCHAR)(0xB7 + base_hour);
+				symbolic_time[1] = 0;
+				CSkin::RenderText(hdc, dat->hThemeIP, symbolic_time, &rcItem, DT_SINGLELINE | DT_VCENTER);
+				SelectObject(hdc, oldFont);
+				rcItem.left += 16;
+				CSkin::RenderText(hdc, dat->hThemeIP, szResult, &rcItem, DT_SINGLELINE | DT_VCENTER);
+			}
+		}
+	}
+	if (hOldFont)
+		SelectObject(hdc, hOldFont);
+#if defined(_UNICODE)
+	if(tszUin)
+		mir_free(tszUin);
+#endif
+}
+
+void CSkin::RenderIPStatus(HDC hdc, RECT &rcItem, _MessageWindowData *dat)
+{
+	ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELSTATUS), SW_HIDE);
+	char	*szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
+	SIZE	sProto = {0}, sStatus = {0};
+	DWORD	oldPanelStatusCX = dat->panelStatusCX;
+	RECT	rc;
+	HFONT	hOldFont = 0;
+	BOOL	config = PluginConfig.ipConfig.isValid;
+	CSkinItem *item = &SkinItems[ID_EXTBKINFOPANEL];
+	TCHAR   *szFinalProto = NULL;
+
+	if (config)
+		hOldFont = (HFONT)SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_STATUS]);
+
+	if (dat->szStatus[0])
+		GetTextExtentPoint32(hdc, dat->szStatus, lstrlen(dat->szStatus), &sStatus);
+
+	/*
+	 * figure out final account name
+	 */
+	if(dat->bIsMeta) {
+		PROTOACCOUNT *acc = (PROTOACCOUNT *)CallService(MS_PROTO_GETACCOUNT, (WPARAM)0, (LPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto));
+		if(acc && acc->tszAccountName)
+			szFinalProto = acc->tszAccountName;
+	}
+	else
+		szFinalProto = dat->szAccount;
+
+	if (szFinalProto) {
+		if (config)
+			SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_PROTO]);
+		GetTextExtentPoint32(hdc, szFinalProto, lstrlen(szFinalProto), &sProto);
+	}
+
+	dat->panelStatusCX = 3 + sStatus.cx + sProto.cx + 14 + (dat->hClientIcon ? 20 : 0);
+
+	if (dat->panelStatusCX != oldPanelStatusCX) {
+		SendMessage(dat->hwnd, WM_SIZE, 0, 0);
+		CSkin::MapClientToParent(GetDlgItem(dat->hwnd, IDC_PANELSTATUS), dat->hwnd, rcItem);
+	}
+
+	SetBkMode(hdc, TRANSPARENT);
+	rc = rcItem;
+	if (dat->pContainer->bSkinned) {
+		RECT rc = rcItem;
+		rc.left += item->MARGIN_LEFT;
+		rc.right -= item->MARGIN_RIGHT;
+		rc.top += item->MARGIN_TOP;
+		rc.bottom -= item->MARGIN_BOTTOM;
+		if (!item->IGNORED)
+			DrawAlpha(hdc, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
+					  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
+	}
+	rc.left += 2;
+	rc.right -=3;
+	if (dat->szStatus[0]) {
+		if (config) {
+			SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_STATUS]);
+			SetTextColor(hdc, PluginConfig.ipConfig.clrs[IPFONTID_STATUS]);
+		}
+		CSkin::RenderText(hdc, dat->hThemeIP, dat->szStatus, &rc, DT_SINGLELINE | DT_VCENTER);
+	}
+	if (szFinalProto) {
+		rc.left = rc.right - sProto.cx - 3 - (dat->hClientIcon ? 20 : 0);
+		if (config) {
+			SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_PROTO]);
+			SetTextColor(hdc, PluginConfig.ipConfig.clrs[IPFONTID_PROTO]);
+		} else
+			SetTextColor(hdc, GetSysColor(COLOR_HOTLIGHT));
+		CSkin::RenderText(hdc, dat->hThemeIP, szFinalProto, &rc, DT_SINGLELINE | DT_VCENTER);
+	}
+
+	if (dat->hClientIcon)
+		DrawIconEx(hdc, rc.right - 19, (rc.bottom + rc.top - 16) / 2, dat->hClientIcon, 16, 16, 0, 0, DI_NORMAL);
+
+	if (config && hOldFont)
+		SelectObject(hdc, hOldFont);
+}
+
+void CSkin::RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &rcWindow)
+{
+	if(dat) {
+		RECT 	rc, rcToolbar;;
+		POINT	pt;
+		GetWindowRect(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_CHAT ? IDC_CHAT_LOG : IDC_LOG), &rc);
+		pt.y = rc.bottom;
+		ScreenToClient(dat->hwnd, &pt);
+		rcToolbar.top = pt.y + 1;
+		rcToolbar.left = 0;
+		rcToolbar.right = rcWindow.right;
+		GetWindowRect(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_CHAT ? IDC_CHAT_MESSAGE : IDC_MESSAGE), &rc);
+		pt.y = rc.top - 1;
+		ScreenToClient(dat->hwnd, &pt);
+		rcToolbar.bottom = pt.y;
+
+		LONG cx = rcToolbar.right - rcToolbar.left;
+		LONG cy = rcToolbar.bottom - rcToolbar.top;
+
+		if(dat->pContainer->cachedToolbarDC) {
+			SelectObject(dat->pContainer->cachedToolbarDC, dat->pContainer->oldhbmToolbarBG);
+			DeleteObject(dat->pContainer->hbmToolbarBG);
+			DeleteDC(dat->pContainer->cachedToolbarDC);
+		}
+		dat->pContainer->cachedToolbarDC = CreateCompatibleDC(hdc);
+		dat->pContainer->hbmToolbarBG = CreateCompatibleBitmap(hdc, cx, cy);
+		dat->pContainer->oldhbmToolbarBG = (HBITMAP)SelectObject(dat->pContainer->cachedToolbarDC, dat->pContainer->hbmToolbarBG);
+
+		CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, hdc, 6, PBS_NORMAL, &rcToolbar, &rcToolbar);
+
+		RECT rcCachedToolbar = {0};
+		rcCachedToolbar.right = cx;
+		rcCachedToolbar.bottom = cy;
+
+		CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, dat->pContainer->cachedToolbarDC, 6, PBS_NORMAL,
+										  &rcCachedToolbar, &rcCachedToolbar);
+	}
+}
+
