@@ -1223,7 +1223,7 @@ DWORD CIcqProto::icq_sendAdvancedSearchServ(BYTE* fieldsBuffer,int bufferLen)
 	else
 		return 0;
 
-	packServIcqExtensionHeader(&packet, this, (WORD)(2 + bufferLen), CLI_META_INFO_REQ, (WORD)dwCookie);
+	packServIcqExtensionHeader(&packet, this, (WORD)bufferLen, CLI_META_INFO_REQ, (WORD)dwCookie);
 	packBuffer(&packet, (LPBYTE)fieldsBuffer, (WORD)bufferLen);
 
 	sendServPacket(&packet);
