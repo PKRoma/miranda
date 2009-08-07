@@ -330,16 +330,25 @@ Function VerifyInstallDir
   ${Else}
     !insertmacro SetSectionFlag ${pProtoAim} ${SF_SELECTED}
   ${EndIf}
-  ;ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Gadu-Gadu"
-  ;${If} $0 == "0"
-  ;  !insertmacro ClearSectionFlag ${pProtoGaduGadu} ${SF_SELECTED}
-  ;${Else}
-  ;  !insertmacro SetSectionFlag ${pProtoGaduGadu} ${SF_SELECTED}
-  ;${EndIf}
+  ${If} ${FileExists} "$INSTDIR\plugins\Aim.dll"
+    !insertmacro SetSectionFlag ${pProtoAim} ${SF_SELECTED}
+  ${EndIf}
+  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Gadu-Gadu"
+  ${If} $0 == "0"
+    !insertmacro ClearSectionFlag ${pProtoGaduGadu} ${SF_SELECTED}
+  ${Else}
+    !insertmacro SetSectionFlag ${pProtoGaduGadu} ${SF_SELECTED}
+  ${EndIf}
+  ${If} ${FileExists} "$INSTDIR\plugins\GG.dll"
+    !insertmacro SetSectionFlag ${pProtoGaduGadu} ${SF_SELECTED}
+  ${EndIf}
   ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "ICQ"
   ${If} $0 == "0"
     !insertmacro ClearSectionFlag ${pProtoICQ} ${SF_SELECTED}
   ${Else}
+    !insertmacro SetSectionFlag ${pProtoICQ} ${SF_SELECTED}
+  ${EndIf}
+  ${If} ${FileExists} "$INSTDIR\plugins\icq.dll"
     !insertmacro SetSectionFlag ${pProtoICQ} ${SF_SELECTED}
   ${EndIf}
   ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "IRC"
@@ -348,10 +357,16 @@ Function VerifyInstallDir
   ${Else}
     !insertmacro SetSectionFlag ${pProtoIRC} ${SF_SELECTED}
   ${EndIf}
+  ${If} ${FileExists} "$INSTDIR\plugins\irc.dll"
+    !insertmacro SetSectionFlag ${pProtoIRC} ${SF_SELECTED}
+  ${EndIf}
   ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Jabber"
   ${If} $0 == "0"
     !insertmacro ClearSectionFlag ${pProtoJabber} ${SF_SELECTED}
   ${Else}
+    !insertmacro SetSectionFlag ${pProtoJabber} ${SF_SELECTED}
+  ${EndIf}
+  ${If} ${FileExists} "$INSTDIR\plugins\jabber.dll"
     !insertmacro SetSectionFlag ${pProtoJabber} ${SF_SELECTED}
   ${EndIf}
   ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "MSN"
@@ -360,16 +375,25 @@ Function VerifyInstallDir
   ${Else}
     !insertmacro SetSectionFlag ${pProtoMSN} ${SF_SELECTED}
   ${EndIf}
+  ${If} ${FileExists} "$INSTDIR\plugins\msn.dll"
+    !insertmacro SetSectionFlag ${pProtoMSN} ${SF_SELECTED}
+  ${EndIf}
   ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Yahoo"
   ${If} $0 == "0"
     !insertmacro ClearSectionFlag ${pProtoYahoo} ${SF_SELECTED}
   ${Else}
     !insertmacro SetSectionFlag ${pProtoYahoo} ${SF_SELECTED}
   ${EndIf}
+  ${If} ${FileExists} "$INSTDIR\plugins\yahoo.dll"
+    !insertmacro SetSectionFlag ${pProtoYahoo} ${SF_SELECTED}
+  ${EndIf}
   ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Import"
   ${If} $0 == "0"
     !insertmacro ClearSectionFlag ${pImport} ${SF_SELECTED}
   ${Else}
+    !insertmacro SetSectionFlag ${pImport} ${SF_SELECTED}
+  ${EndIf}
+  ${If} ${FileExists} "$INSTDIR\plugins\import.dll"
     !insertmacro SetSectionFlag ${pImport} ${SF_SELECTED}
   ${EndIf}
   ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "StartMenuShortCut"
