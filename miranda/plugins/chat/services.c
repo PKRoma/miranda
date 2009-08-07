@@ -44,21 +44,32 @@ CRITICAL_SECTION	cs;
 void RegisterFonts( void );
 
 static HANDLE
-	hServiceRegister = NULL,
+   hServiceRegister = NULL,
    hServiceNewChat = NULL,
    hServiceAddEvent = NULL,
    hServiceGetAddEventPtr = NULL,
    hServiceGetInfo = NULL,
    hServiceGetCount = NULL,
-	hEventPrebuildMenu = NULL,
-	hEventDoubleclicked = NULL,
+   hEventPrebuildMenu = NULL,
+   hEventDoubleclicked = NULL,
    hEventJoinChat = NULL,
-	hEventLeaveChat = NULL;
+   hEventLeaveChat = NULL;
+
+#ifdef _WIN64 
+
+#define SIZEOF_STRUCT_GCREGISTER_V1 40
+#define SIZEOF_STRUCT_GCWINDOW_V1	48
+#define SIZEOF_STRUCT_GCEVENT_V1	76
+#define SIZEOF_STRUCT_GCEVENT_V2	80
+
+#else
 
 #define SIZEOF_STRUCT_GCREGISTER_V1 28
 #define SIZEOF_STRUCT_GCWINDOW_V1	32
 #define SIZEOF_STRUCT_GCEVENT_V1	44
 #define SIZEOF_STRUCT_GCEVENT_V2	48
+
+#endif
 
 void ShowRoom(SESSION_INFO* si, WPARAM wp, BOOL bSetForeground)
 {

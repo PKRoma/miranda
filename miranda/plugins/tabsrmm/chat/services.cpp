@@ -52,10 +52,21 @@ static HANDLE		hServiceRegister = NULL,
 					hEventJoinChat = NULL,
 					hEventLeaveChat = NULL;
 
+#ifdef _WIN64 
+
+#define SIZEOF_STRUCT_GCREGISTER_V1 40
+#define SIZEOF_STRUCT_GCWINDOW_V1	48
+#define SIZEOF_STRUCT_GCEVENT_V1	76
+#define SIZEOF_STRUCT_GCEVENT_V2	80
+
+#else
+
 #define SIZEOF_STRUCT_GCREGISTER_V1 28
 #define SIZEOF_STRUCT_GCWINDOW_V1	32
 #define SIZEOF_STRUCT_GCEVENT_V1	44
 #define SIZEOF_STRUCT_GCEVENT_V2	48
+
+#endif
 
 int Chat_ModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
