@@ -447,32 +447,38 @@ char* bbcodes_to_html(const char *src)
 	char *ptr;
 	char *rptr;
 	char* dest = mir_strdup(src);
-	while ((ptr = strstr(dest, "[b]")) != NULL) {
+	while ((ptr = strstr(dest, "[b]")) != NULL) 
+    {
 		*ptr = '<';
 		*(ptr+1) = 'b';
 		*(ptr+2) = '>';
 	}
-	while ((ptr = strstr(dest, "[/b]")) != NULL) {
+	while ((ptr = strstr(dest, "[/b]")) != NULL) 
+    {
 		*ptr = '<';
 		*(ptr+2) = 'b';
 		*(ptr+3) = '>';
 	}
-	while ((ptr = strstr(dest, "[i]")) != NULL) {
+	while ((ptr = strstr(dest, "[i]")) != NULL) 
+    {
 		*ptr = '<';
 		*(ptr+1) = 'i';
 		*(ptr+2) = '>';
 	}
-	while ((ptr = strstr(dest, "[/i]")) != NULL) {
+	while ((ptr = strstr(dest, "[/i]")) != NULL) 
+    {
 		*ptr = '<';
 		*(ptr+2) = 'i';
 		*(ptr+3) = '>';
 	}
-	while ((ptr = strstr(dest, "[u]")) != NULL) {
+	while ((ptr = strstr(dest, "[u]")) != NULL) 
+    {
 		*ptr = '<';
 		*(ptr+1) = 'u';
 		*(ptr+2) = '>';
 	}
-	while ((ptr = strstr(dest, "[/u]")) != NULL) {
+	while ((ptr = strstr(dest, "[/u]")) != NULL) 
+    {
 		*ptr = '<';
 		*(ptr+2) = 'u';
 		*(ptr+3) = '>';

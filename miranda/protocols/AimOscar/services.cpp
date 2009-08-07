@@ -364,16 +364,6 @@ INT_PTR CAimProto::InstantIdle(WPARAM /*wParam*/, LPARAM /*lParam*/)
 	return 0;
 }
 
-INT_PTR CAimProto::CheckMail(WPARAM /*wParam*/, LPARAM /*lParam*/)
-{
-	if (state == 1) 
-    {
-		checking_mail = 1;
-		aim_new_service_request(hServerConn, seqno, 0x0018);
-	}
-	return 0;
-}
-
 INT_PTR CAimProto::ManageAccount(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	execute_cmd("https://my.screenname.aol.com");

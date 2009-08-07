@@ -134,13 +134,6 @@ int CAimProto::OnModulesLoaded(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int CAimProto::OnPreShutdown(WPARAM wParam, LPARAM lParam)
-{
-	if (hDirectBoundPort) Netlib_Shutdown(hDirectBoundPort);
-	if (hMailConn) Netlib_Shutdown(hMailConn);
-	return 0;
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////
 // AddToList - adds a contact to the contact list
 
@@ -190,7 +183,8 @@ int __cdecl CAimProto::AuthRequest(HANDLE hContact, const char* szMessage)
 		return 1;
 
 	DBVARIANT dbv;
-	if (!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv)) {
+	if (!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv)) 
+    {
 		add_contact_to_group(hContact, dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
@@ -369,11 +363,14 @@ int __cdecl CAimProto::GetInfo(HANDLE hContact, int infoType)
 void __cdecl CAimProto::basic_search_ack_success(void* p)
 {
     char *sn = normalize_name((char*)p);
-	if (sn) { // normalize it
-		if (strlen(sn) > 32) {
+	if (sn) // normalize it
+    {
+		if (strlen(sn) > 32) 
+        {
 			sendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 		}
-        else {
+        else 
+        {
 		    PROTOSEARCHRESULT psr;
 		    ZeroMemory(&psr, sizeof(psr));
 		    psr.cbSize = sizeof(psr);
@@ -648,7 +645,8 @@ int __cdecl CAimProto::SetStatus(int iNewStatus)
 		case ID_STATUS_OCCUPIED:
 		case ID_STATUS_ONTHEPHONE:
 			broadcast_status(ID_STATUS_AWAY);
-			if(m_iStatus != ID_STATUS_AWAY) {
+			if (m_iStatus != ID_STATUS_AWAY) 
+            {
                 aim_set_away(hServerConn,seqno,*msgptr?*msgptr:DEFAULT_AWAY_MSG);//set actual away message
 				aim_set_invis(hServerConn,seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);//away not invis
 			}
@@ -669,7 +667,8 @@ void __cdecl CAimProto::get_online_msg_thread(void* arg)
 
 	const HANDLE hContact = arg;
 	DBVARIANT dbv;
-	if (!DBGetContactSettingString(hContact, MOD_KEY_CL, OTH_KEY_SM, &dbv)) {
+	if (!DBGetContactSettingString(hContact, MOD_KEY_CL, OTH_KEY_SM, &dbv)) 
+    {
 		sendBroadcast(hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE)1, (LPARAM)dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
@@ -726,7 +725,8 @@ int __cdecl CAimProto::SetAwayMsg(int status, const char* msg)
 
 	if (state == 1 && status == m_iStatus)
     {
-		switch(status) {
+		switch(status) 
+        {
 		case ID_STATUS_ONLINE:
 		case ID_STATUS_FREECHAT:
 		case ID_STATUS_INVISIBLE:
@@ -757,7 +757,8 @@ int __cdecl CAimProto::UserIsTyping(HANDLE hContact, int type)
         return 0;
 
 	DBVARIANT dbv;
-	if (!getString(hContact, AIM_KEY_SN, &dbv)) {
+	if (!getString(hContact, AIM_KEY_SN, &dbv)) 
+    {
 		if (type == PROTOTYPE_SELFTYPING_ON)
 			aim_typing_notification(hServerConn, seqno, dbv.pszVal, 0x0002);
 		else if (type == PROTOTYPE_SELFTYPING_OFF)
@@ -777,8 +778,8 @@ int __cdecl CAimProto::OnEvent(PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM l
 		case EV_PROTO_ONLOAD:    
             return OnModulesLoaded(0, 0);
 
-		case EV_PROTO_ONEXIT:    
-            return OnPreShutdown(0, 0);
+//		case EV_PROTO_ONEXIT:    
+//            return OnPreShutdown(0, 0);
 
 		case EV_PROTO_ONOPTIONS: 
             return OnOptionsInit(wParam, lParam);

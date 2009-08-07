@@ -74,7 +74,7 @@ BEGIN
     CONTROL         "Disable Avatars",IDC_DA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,147,136,13
     CONTROL         "Disable Account Type Icons",IDC_AT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,159,133,13
     CONTROL         "Disable Extended Status Icons",IDC_ES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,171,134,13
-    CONTROL         "Check Mail on Login",IDC_CM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,183,112,13
+    CONTROL         "Notify about new mail",IDC_CM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,183,112,13
     GROUPBOX        "Advanced Options",IDC_EXPERT,154,7,142,80,WS_GROUP
     CONTROL         "Instant Idle on Login",IDC_II,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,18,131,15
     CONTROL         "Force Proxy File Transfers",IDC_FP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,31,130,11

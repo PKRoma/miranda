@@ -112,6 +112,7 @@ void CAimProto::snac_mail_rate_limitations(SNAC &snac,HANDLE hServerConn,unsigne
     {
         aim_accept_rates(hServerConn,seqno);
         aim_request_mail(hServerConn,seqno);
+        aim_activate_mail(hServerConn,seqno);
         aim_mail_ready(hServerConn,seqno);
     }
 }
@@ -817,7 +818,7 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
         int num_obj = snac.ushort(1);
 
         int offset=3;
-        for(int i=0; i<num_obj; ++i)
+        for (int i=0; i<num_obj; ++i)
             process_ssi_list(snac, offset);
 
         if (!list_received)//because they can send us multiple buddy list packets
@@ -842,8 +843,9 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
                 setDword(AIM_KEY_LV, __VERSION_DWORD);
             }
 
-            if(getByte( AIM_KEY_CM, 0))
-                aim_new_service_request(hServerConn,seqno,0x0018 );//mail
+            if (getByte( AIM_KEY_CM, 0))
+                aim_new_service_request(hServerConn, seqno, 0x0018);//mail
+
             LOG("Connection Negotiation Finished");
             state = 1;
         }
@@ -1590,6 +1592,7 @@ void CAimProto::snac_mail_response(SNAC &snac)//family 0x0018
         char* sn = NULL;
         time_t time = 0;
         unsigned short num_msgs = 0;
+        unsigned short flags = 0;
         char new_mail = 0;
         char* url = NULL;
         char* address = NULL;
@@ -1609,11 +1612,15 @@ void CAimProto::snac_mail_response(SNAC &snac)//family 0x0018
             }
             else if (tlv.cmp(0x0080))
             {
-                num_msgs=tlv.ushort();
+                num_msgs = tlv.ushort();
             }
             else if (tlv.cmp(0x0081))
             {
                 new_mail = tlv.ubyte();
+            }
+            else if (tlv.cmp(0x0084))
+            {
+                flags = tlv.ushort();
             }
             else if (tlv.cmp(0x0007))
             {
@@ -1625,7 +1632,7 @@ void CAimProto::snac_mail_response(SNAC &snac)//family 0x0018
             }
             position += TLV_HEADER_SIZE + tlv.len();
         }
-        if (new_mail || checking_mail)
+        if (new_mail)
         {
             char msg[1024];
             int len = mir_snprintf(msg, SIZEOF(msg), "%s@%s (%d)\r\n%s", sn, address, num_msgs,
