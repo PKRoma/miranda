@@ -149,7 +149,7 @@ int NEN_WriteOptions(NEN_OPTIONS *options)
 }
 
 static struct LISTOPTIONSGROUP lGroups[] = {
-	0, _T("Announce events of t4ype..."),
+	0, _T("Announce events of type..."),
 	0, _T("General options"),
 	0, _T("System tray and floater options"),
 	0, _T("Left click actions (popups only)"),
