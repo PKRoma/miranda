@@ -1241,7 +1241,8 @@ INT_PTR CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 {
     CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
-    switch (msg) {
+    switch (msg) 
+    {
     case WM_INITDIALOG:
         TranslateDialogDefault(hwndDlg);
 

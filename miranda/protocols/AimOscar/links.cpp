@@ -57,22 +57,24 @@ static INT_PTR ServiceParseAimLink(WPARAM /*wParam*/,LPARAM lParam)
         open chatroom: aim:gochat?roomname=ROOM&exchange=NUM
     */
     /* add a contact to the list */
-    if(!_strnicmp(arg,"addbuddy?",9)) 
+    if (!_strnicmp(arg,"addbuddy?",9)) 
 	{
         char *tok,*tok2,*sn=NULL,*group=NULL;
         ADDCONTACTSTRUCT acs;
         PROTOSEARCHRESULT psr;
 		
-        for(tok=arg+8;tok!=NULL;tok=tok2) {
+        for (tok=arg+8;tok!=NULL;tok=tok2) 
+        {
 			tok2=strchr(++tok,'&'); /* first token */
 			if (tok2) *tok2=0;
-            if(!_strnicmp(tok,"screenname=",11) && *(tok+11)!=0)
+            if (!_strnicmp(tok,"screenname=",11) && *(tok+11)!=0)
                 sn=Netlib_UrlDecode(tok+11);
-            if(!_strnicmp(tok,"groupname=",10) && *(tok+10)!=0)
+            if (!_strnicmp(tok,"groupname=",10) && *(tok+10)!=0)
                 group=Netlib_UrlDecode(tok+10);  /* group is currently ignored */
         }
-        if(sn==NULL) return 1; /* parse failed */
-        if(proto->contact_from_sn(sn)==NULL) { /* does not yet check if sn is current user */
+        if (sn==NULL) return 1; /* parse failed */
+        if (proto->contact_from_sn(sn)==NULL) /* does not yet check if sn is current user */
+        {
             acs.handleType=HANDLE_SEARCHRESULT;
 			acs.szProto=proto->m_szModuleName;
             acs.psr=&psr;
@@ -84,11 +86,13 @@ static INT_PTR ServiceParseAimLink(WPARAM /*wParam*/,LPARAM lParam)
         return 0;
     }
     /* send a message to a contact */
-    else if(!_strnicmp(arg,"goim?",5)) {
+    else if (!_strnicmp(arg,"goim?",5)) 
+    {
         char *tok,*tok2,*sn=NULL,*msg=NULL;
         HANDLE hContact;
 
-        for(tok=arg+4;tok!=NULL;tok=tok2) {
+        for(tok=arg+4;tok!=NULL;tok=tok2) 
+        {
 			tok2=strchr(++tok,'&'); /* first token */
 			if (tok2) *tok2=0;
             if(!_strnicmp(tok,"screenname=",11) && *(tok+11)!=0)
@@ -106,11 +110,13 @@ static INT_PTR ServiceParseAimLink(WPARAM /*wParam*/,LPARAM lParam)
         return 0;
     }
     /* open a chatroom */
-    else if(!_strnicmp(arg,"gochat?",7)) {
+    else if(!_strnicmp(arg,"gochat?",7)) 
+    {
         char *tok,*tok2,*rm=NULL;
         int exchange=0;
 
-        for(tok=arg+6;tok!=NULL;tok=tok2) {
+        for(tok=arg+6;tok!=NULL;tok=tok2) 
+        {
 			tok2=strchr(++tok,'&'); /* first token */
 			if (tok2) *tok2=0;
             if (!_strnicmp(tok,"roomname=",9) && *(tok+9)!=0)

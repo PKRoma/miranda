@@ -451,23 +451,17 @@ void CAimProto::InitMenus(void)
 	mi.pszName = LPGEN( "Manage Account" );
 	hMainMenu[0] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
-	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/CheckMail");
-	CreateProtoService("/CheckMail",&CAimProto::CheckMail);
-	mi.icolibItem = GetIconHandle("mail");
-	mi.pszName = LPGEN( "Check Mail" );
-	hMainMenu[1] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
-
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/InstantIdle");
 	CreateProtoService("/InstantIdle",&CAimProto::InstantIdle);
 	mi.icolibItem = GetIconHandle("idle");
 	mi.pszName = LPGEN( "Instant Idle" );
-	hMainMenu[2] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+	hMainMenu[1] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/JoinChatRoom");
 	CreateProtoService("/JoinChatRoom",&CAimProto::JoinChatUI);
 	mi.icolibItem = GetIconHandle("aol");
 	mi.pszName = LPGEN( "Join Chat Room" );
-	hMainMenu[3] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+	hMainMenu[2] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	mi.pszPopupName=NULL;
 	mi.popupPosition=0;

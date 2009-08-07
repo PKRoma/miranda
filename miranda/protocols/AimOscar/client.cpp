@@ -617,8 +617,22 @@ int CAimProto::aim_set_idle(HANDLE hServerConn,unsigned short &seqno,unsigned lo
 int CAimProto::aim_request_mail(HANDLE hServerConn,unsigned short &seqno)
 {
     unsigned short offset=0;
-    char buf[SNAC_SIZE];
+    char buf[SNAC_SIZE+34];
     aim_writesnac(0x18,0x06,offset,buf);
+    aim_writegeneric(34,
+        "\x00\x02"
+        "\xb3\x80\x9a\xd8\x0d\xba\x11\xd5\x9f\x8a\x00\x60\xb0\xee\x06\x31"
+        "\x5d\x5e\x17\x08\x55\xaa\x11\xd3\xb1\x43\x00\x60\xb0\xfb\x1e\xcb",
+        offset,buf);
+    return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
+}
+
+int CAimProto::aim_activate_mail(HANDLE hServerConn,unsigned short &seqno)
+{
+    unsigned short offset=0;
+    char buf[SNAC_SIZE+17];
+    aim_writesnac(0x18,0x16,offset,buf);
+    aim_writegeneric(17,"\x02\x04\x00\x00\x00\x04\x00\x00\x00\x04\x00\x00\x00\x00\x00\x00\x00",offset,buf);
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 

@@ -83,7 +83,6 @@ struct CAimProto : public PROTO_INTERFACE
     INT_PTR  __cdecl GetAvatarCaps(WPARAM wParam, LPARAM lParam);
 
     INT_PTR  __cdecl ManageAccount(WPARAM wParam, LPARAM lParam);
-    INT_PTR  __cdecl CheckMail(WPARAM wParam, LPARAM lParam);
     INT_PTR  __cdecl InstantIdle(WPARAM wParam, LPARAM lParam);
     INT_PTR  __cdecl JoinChatUI(WPARAM wParam, LPARAM lParam);
     INT_PTR  __cdecl GetHTMLAwayMsg(WPARAM wParam, LPARAM lParam);
@@ -103,7 +102,7 @@ struct CAimProto : public PROTO_INTERFACE
     int  __cdecl OnModulesLoaded( WPARAM wParam, LPARAM lParam );
     int  __cdecl OnOptionsInit(WPARAM wParam,LPARAM lParam);
     int  __cdecl OnPreBuildContactMenu(WPARAM wParam,LPARAM lParam);
-    int  __cdecl OnPreShutdown(WPARAM wParam,LPARAM lParam);
+//    int  __cdecl OnPreShutdown(WPARAM wParam,LPARAM lParam);
     int  __cdecl OnSettingChanged(WPARAM wParam,LPARAM lParam);
     int  __cdecl OnUserInfoInit(WPARAM wParam,LPARAM lParam);
     int  __cdecl OnGCEvent(WPARAM wParam,LPARAM lParam);
@@ -135,7 +134,6 @@ struct CAimProto : public PROTO_INTERFACE
     bool extra_icons_loaded;
     bool idle;
     bool instantidle;
-    bool checking_mail;
     bool list_received;
 
     //Some main connection stuff
@@ -155,7 +153,7 @@ struct CAimProto : public PROTO_INTERFACE
     HANDLE hAddToServerListContextMenuItem;
     HANDLE hReadProfileMenuItem;
     HANDLE hBlockContextMenuItem;
-    HANDLE hMainMenu[4];
+    HANDLE hMainMenu[3];
 
     //Some mail connection stuff
     HANDLE hMailConn;
@@ -277,6 +275,7 @@ struct CAimProto : public PROTO_INTERFACE
     int    aim_typing_notification(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short type);
     int    aim_set_idle(HANDLE hServerConn,unsigned short &seqno,unsigned long seconds);
     int    aim_request_mail(HANDLE hServerConn,unsigned short &seqno);
+    int    aim_activate_mail(HANDLE hServerConn,unsigned short &seqno);
     int    aim_request_avatar(HANDLE hServerConn,unsigned short &seqno,const char* sn, const char* hash, unsigned short hash_size);//family 0x0010
     int    aim_set_avatar_hash(HANDLE hServerConn,unsigned short &seqno, char flags, char size, const char* hash);
     int    aim_upload_avatar(HANDLE hServerConn,unsigned short &seqno, const char* avatar, unsigned short avatar_size);

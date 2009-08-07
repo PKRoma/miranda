@@ -37,6 +37,11 @@ void CAimProto::broadcast_status(int status)
 			Netlib_CloseHandle(hDirectBoundPort);
 			hDirectBoundPort=NULL;
 		}
+        if (hMailConn && hMailConn != (HANDLE)1)
+		{
+			aim_sendflap(hMailConn,0x04,0,NULL,mail_seqno);
+			Netlib_Shutdown(hMailConn);
+		}
         if (hAvatarConn && hAvatarConn != (HANDLE)1)
 		{
 			aim_sendflap(hAvatarConn,0x04,0,NULL,avatar_seqno);
@@ -49,12 +54,11 @@ void CAimProto::broadcast_status(int status)
 		}
         shutdown_chat_conn();
 
-		idle=0;
-		instantidle=0;
-		checking_mail=0;
-		list_received=0;
-		state=0;
-        m_iDesiredStatus=ID_STATUS_OFFLINE;
+		idle = false;
+		instantidle = false;
+		list_received = false;
+		state = 0;
+        m_iDesiredStatus = ID_STATUS_OFFLINE;
 	}
 	sendBroadcast(NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)old_status, m_iStatus);	
 }
@@ -106,7 +110,8 @@ bool CAimProto::wait_conn(HANDLE& hConn, HANDLE& hEvent, unsigned short service)
 		return false;
 
     EnterCriticalSection(&connMutex);
-	if (hConn == NULL && hServerConn) {
+	if (hConn == NULL && hServerConn) 
+    {
 		LOG("Starting Connection.");
 		hConn = (HANDLE)1;    //set so no additional service request attempts are made while aim is still processing the request
 		aim_new_service_request(hServerConn, seqno, service) ;//general service connection!

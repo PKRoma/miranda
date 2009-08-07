@@ -325,18 +325,20 @@ void __cdecl CAimProto::aim_mail_negotiation( void* )
                     MAIL_COOKIE=NULL;
                     MAIL_COOKIE_LENGTH=0;
                 }
-                else if(flap.cmp(0x02))
+                else if (flap.cmp(0x02))
                 {
                     SNAC snac(flap.val(),flap.snaclen());
-                    if(snac.cmp(0x0001))
+                    if (snac.cmp(0x0001))
                     {
                         snac_supported_families(snac,hMailConn,mail_seqno);
                         snac_supported_family_versions(snac,hMailConn,mail_seqno);
                         snac_mail_rate_limitations(snac,hMailConn,mail_seqno);
                         snac_error(snac);
                     }
-                    else if(snac.cmp(0x0018))
+                    else if (snac.cmp(0x0018))
+                    {
                         snac_mail_response(snac);
+                    }
                 }
                 else if(flap.cmp(0x04))
                     goto exit;
