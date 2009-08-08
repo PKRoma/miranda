@@ -1082,7 +1082,7 @@ static int MenuProtoAck(WPARAM, LPARAM lParam)
 			tmi.flags = CMIM_FLAGS | CMIF_ROOTHANDLE | CMIF_CHECKED;
 			MO_ModifyMenuItem( hStatusMainMenuHandles[pos], &tmi );
 		}
-		cli.currentDesiredStatusMode = cli.currentStatusMenuItem;
+//		cli.currentDesiredStatusMode = cli.currentStatusMenuItem;
 	}
 	else {
 		int pos = statustopos( cli.currentStatusMenuItem );
