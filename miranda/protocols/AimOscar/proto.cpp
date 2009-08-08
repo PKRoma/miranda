@@ -602,7 +602,7 @@ int __cdecl CAimProto::SetStatus(int iNewStatus)
 
     if (iNewStatus == ID_STATUS_OFFLINE)
     {
-       	char** msgptr = getStatusMsgLoc(m_iStatus);
+       	char** msgptr = getStatusMsgLoc(iNewStatus);
         if (msgptr && *msgptr)
         {
             if (m_iStatus == ID_STATUS_AWAY)
@@ -723,7 +723,7 @@ int __cdecl CAimProto::SetAwayMsg(int status, const char* msg)
     mir_free(*msgptr);
     *msgptr = mir_utf8encode(msg);
 
-	if (state == 1 && status == m_iStatus)
+	if (state == 1 && status == m_iDesiredStatus)
     {
 		switch(status) 
         {
