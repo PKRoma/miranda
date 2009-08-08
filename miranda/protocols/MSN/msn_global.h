@@ -605,7 +605,7 @@ struct TWinErrorCode
 /////////////////////////////////////////////////////////////////////////////////////////
 //	External variables
 
-#define MSN_NUM_MODES 8
+#define MSN_NUM_MODES 9
 
 const char msnProtChallenge[] = "ILTXC!4IXB5FB*PX";
 const char msnProductID[] = "PROD0119GSJUC$18";
