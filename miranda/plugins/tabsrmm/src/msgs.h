@@ -521,15 +521,7 @@ struct InputHistory {
 
 #define TCF_DEFAULT (TCF_FLASHICON | TCF_LABELUSEWINCOLORS | TCF_BKGUSEWINCOLORS)
 
-/*
- * info panel field edges
- */
-
-#define IPFIELD_SUNKEN 0
-#define IPFIELD_RAISEDINNER 1
-#define IPFIELD_RAISEDOUTER 2
-#define IPFIELD_EDGE 3
-#define IPFIELD_FLAT 4
+#define MIN_PANELHEIGHT 24
 
 struct NewMessageWindowLParam {
 	HANDLE  hContact;

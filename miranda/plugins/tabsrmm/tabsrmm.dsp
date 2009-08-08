@@ -865,6 +865,10 @@ NODEP_CPP_WINDO=\
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\API\m_buttonbar.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\API\m_cln_skinedit.h
 # End Source File
 # Begin Source File
@@ -914,10 +918,6 @@ SOURCE=.\API\m_smileyadd.h
 # Begin Source File
 
 SOURCE=.\API\m_spellchecker.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\API\m_toptoolbar.h
 # End Source File
 # Begin Source File
 

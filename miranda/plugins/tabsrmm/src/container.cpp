@@ -1,51 +1,37 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
-		--pad=oper --one-line=keep-blocks  --unpad=paren
-
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2009 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
----------------------------------------------------------------------------
-
-message window container implementation
-Written by Nightwish (bof@hell.at.eu.org), Jul 2004
-
-License: GPL
-
-Just a few notes, how the container "works".
---------------------------------------------
-
-The container has only one child window, a tab control with the id IDC_MSGTABS.
-Each tab is assigned to a message window - the message windows are shown or hidden,
-depending on the current tab selection. They are never disabled, just sent to the
-background if not active.
-
-Each tab "knows" the hwnd handle of his message dialog child, because at creation,
-this handle is saved in the lparam member of the TCITEM structure assigned to
-this tab.
-
-Tab icons are stored in a global image list (g_hImageList). They are loaded at
-plugin startup, or after a icon change event. Multiple containers can share the
-same image list, because the list is read-only.
-
-$Id$
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * implements the "Container" window which acts as a toplevel window
+ * for message sessions.
+ *
+ */
 
 #include "commonheaders.h"
 #include "sendqueue.h"
@@ -182,17 +168,21 @@ void SetAeroMargins(ContainerWindowData *pContainer)
 		POINT	pt;
 
 		if(dat) {
-			GetWindowRect(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_CHAT ? IDC_CHAT_LOG : IDC_LOG), &rcWnd);
-			pt.x = rcWnd.left;
-			pt.y = rcWnd.top;
-			ScreenToClient(pContainer->hwnd, &pt);
-			if(!(pContainer->dwFlags & CNT_NOMENUBAR))
-				pt.y += (PluginConfig.iMenuHeight + 1);
-			m.cyTopHeight = pt.y;
+			if((dat->dwFlagsEx & MWF_SHOW_INFOPANEL) && !(dat->dwFlags & MWF_ERRORSTATE) && !(dat->dwFlagsEx & MWF_SHOW_INFONOTES)) {
+				GetWindowRect(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_CHAT ? IDC_CHAT_LOG : IDC_LOG), &rcWnd);
+				pt.x = rcWnd.left;
+				pt.y = rcWnd.top;
+				ScreenToClient(pContainer->hwnd, &pt);
+				if(!(pContainer->dwFlags & CNT_NOMENUBAR))
+					pt.y += (PluginConfig.iMenuHeight + 1);
+				m.cyTopHeight = pt.y;
+			}
+			else
+				m.cyTopHeight = 0;
 			m.cxLeftWidth = 0;
 			m.cxRightWidth = 0;
 			//m.cyTopHeight = (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) ? dat->panelHeight + 1 : 0;
-			m.cyBottomHeight = pContainer->statusBarHeight - 1;
+			m.cyBottomHeight = (pContainer->dwFlags & CNT_NOSTATUSBAR ? 0 : pContainer->statusBarHeight - 1);
 			if(pt.y != pContainer->dwOldAeroTop || pContainer->statusBarHeight != pContainer->dwOldAeroBottom) {
 				pContainer->dwOldAeroTop = pt.y;
 				pContainer->dwOldAeroBottom = pContainer->statusBarHeight;
@@ -330,18 +320,14 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 		case WM_ERASEBKGND: {
 			RECT rcClient;
 
-			if (pContainer && pContainer->bSkinned)
+			if ((pContainer && pContainer->bSkinned) || M->isAero())
 				return 1;
 			if (CMimAPI::m_pfnIsThemeActive != 0) {
 				if (CMimAPI::m_pfnIsThemeActive() && !M->isAero())
 					break;
 			}
 			GetClientRect(hWnd, &rcClient);
-			if(M->isAero()) {
-				FillRect((HDC)wParam, &rcClient, (HBRUSH)GetStockObject(BLACK_BRUSH));
-				return 1;
-			} else
-				FillRect((HDC)wParam, &rcClient, GetSysColorBrush(COLOR_3DFACE));
+			FillRect((HDC)wParam, &rcClient, GetSysColorBrush(COLOR_3DFACE));
 			return 1;
 		}
 		case WM_PAINT:
@@ -369,7 +355,6 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				GetClientRect(hWnd, &rcClient);
 
 				hbm = CSkin::CreateAeroCompatibleBitmap(rcClient, hdc);
-				//hbm = CreateCompatibleBitmap(hdc, rcClient.right, rcClient.bottom);
 				hbmOld = (HBITMAP)SelectObject(hdcMem, hbm);
 				SetBkMode(hdcMem, TRANSPARENT);
 				SetTextColor(hdcMem, PluginConfig.skinDefaultFontColor);
@@ -1183,9 +1168,9 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			int i = 0;
 			ButtonItem *pbItem;
 			HWND  hwndButton = 0;
+			bool fAero = M->isAero();
 			BOOL isFlat = M->GetByte("tbflat", 1);
 			BOOL isThemed = !M->GetByte("nlflat", 0);
-			bool fAero = M->isAero();
 
 			fHaveTipper = ServiceExists("mToolTip/ShowTip");
 
@@ -1328,6 +1313,14 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			}
 			SetTimer(hwndDlg, TIMERID_HEARTBEAT, TIMEOUT_HEARTBEAT, NULL);
 			SendMessage(hwndDlg, DM_SETSIDEBARBUTTONS, 0, 0);
+
+			/*
+			 * prevent ugly back background being visible while tabbed clients are created
+			 */
+			if(M->isAero()) {
+				MARGINS m = {-1};
+				CMimAPI::m_pfnDwmExtendFrameIntoClientArea(hwndDlg, &m);
+			}
 			return TRUE;
 		}
 		case DM_RESTOREWINDOWPOS: {
@@ -2592,7 +2585,7 @@ panel_found:
 					SendMessage(pContainer->hwndStatus, SB_SETMINHEIGHT, sBarHeight, 0);
 
 				SendMessage(pContainer->hwndSlist, BUTTONSETASFLATBTN, 0, 0);
-				SendMessage(pContainer->hwndSlist, BUTTONSETASFLATBTN + 10, 0, 0);
+				SendMessage(pContainer->hwndSlist, BUTTONSETASFLATBTN + 10, 0, M->isAero() ? 1 : 0);
 				SendMessage(pContainer->hwndSlist, BUTTONSETASFLATBTN + 12, 0, (LPARAM)pContainer);
 				SendMessage(pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)PluginConfig.g_buttonBarIcons[16]);
 				SendMessage(pContainer->hwndSlist, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Show session list (right click to show quick menu)"), 0);
@@ -2887,6 +2880,11 @@ panel_found:
 				SelectObject(pContainer->cachedDC, pContainer->oldHBM);
 				DeleteObject(pContainer->cachedHBM);
 				DeleteDC(pContainer->cachedDC);
+			}
+			if(pContainer->cachedToolbarDC) {
+				SelectObject(pContainer->cachedToolbarDC, pContainer->oldhbmToolbarBG);
+				DeleteObject(pContainer->hbmToolbarBG);
+				DeleteDC(pContainer->cachedToolbarDC);
 			}
 			SetWindowLongPtr(hwndDlg, GWLP_WNDPROC, (LONG_PTR)OldContainerWndProc);
 			return 0;

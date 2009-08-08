@@ -1,32 +1,35 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
-		--pad=oper --one-line=keep-blocks  --unpad=paren
-
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2003 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-$Id$
-*/
-
-/*
- * utility functions for the message dialog window
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * Helper functions for the message dialog.
+ *
  */
 
 #include "commonheaders.h"
@@ -738,7 +741,7 @@ int GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
 
 	dat->showPic = 0;
 
-	if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
+	if ((dat->dwFlagsEx & MWF_SHOW_INFOPANEL) && bAvatarMode != 5) {
 		if (bOwnAvatarMode)
 			dat->showPic = FALSE;
 		else {
@@ -832,6 +835,7 @@ int GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
 			case 4:             // globally OFF
 				dat->showPic = 0;
 				break;
+			case 5:
 			case 3:             // on, if present
 			case 2:
 			case 1: {
@@ -965,7 +969,7 @@ TCHAR *QuoteText(TCHAR *text, int charsPerLine, int removeExistingQuotes)
 void AdjustBottomAvatarDisplay(_MessageWindowData *dat)
 {
 	if(dat) {
-		HBITMAP hbm = dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
+		HBITMAP hbm = ((dat->dwFlagsEx & MWF_SHOW_INFOPANEL) && PluginConfig.m_AvatarMode != 5) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
 		HWND	hwndDlg = dat->hwnd;
 
 		if (PluginConfig.g_FlashAvatarAvail) {
@@ -1023,12 +1027,12 @@ void ShowPicture(_MessageWindowData *dat, BOOL showNewPic)
 		dat->pic.cy = dat->pic.cx = DPISCALEY(60);
 
 	if (showNewPic) {
-		if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
+		if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL && PluginConfig.m_AvatarMode != 5) {
 			if (!dat->hwndPanelPic) {
 				dat->panelWidth = -1;
 				InvalidateRect(dat->hwnd, NULL, TRUE);
-				SendMessage(dat->hwnd, WM_SIZE, 0, 0);
 				UpdateWindow(dat->hwnd);
+				SendMessage(dat->hwnd, WM_SIZE, 0, 0);
 			}
 			return;
 		}
@@ -1554,9 +1558,6 @@ void GetContactUIN(HWND hwndDlg, struct _MessageWindowData *dat)
 static int g_IEViewAvail = -1;
 static int g_HPPAvail = -1;
 
-#define WANT_IEVIEW_LOG 1
-#define WANT_HPP_LOG 2
-
 //MAD
 HWND GetLastChild(HWND hwndParent)
 {
@@ -1598,18 +1599,6 @@ unsigned int GetIEViewMode(HWND hwndDlg, HANDLE hContact)
 	return iWantHPP ? WANT_HPP_LOG : (iWantIEView ? WANT_IEVIEW_LOG : 0);
 }
 
-void GetRealIEViewWindow(HWND hwndDlg, struct _MessageWindowData *dat)
-{
-	POINT pt;
-
-	pt.x = 10;
-	pt.y = dat->panelHeight + 10;
-	if (dat->hwndIEView)
-		dat->hwndIWebBrowserControl = ChildWindowFromPointEx(dat->hwndIEView, pt, CWP_SKIPDISABLED);
-	else if (dat->hwndHPP)
-		dat->hwndIWebBrowserControl = ChildWindowFromPointEx(dat->hwndHPP, pt, CWP_SKIPDISABLED);
-}
-
 static void CheckAndDestroyHPP(struct _MessageWindowData *dat)
 {
 	if (dat->hwndHPP) {
@@ -1628,7 +1617,7 @@ static void CheckAndDestroyHPP(struct _MessageWindowData *dat)
 	}
 }
 
-static void CheckAndDestroyIEView(struct _MessageWindowData *dat)
+void CheckAndDestroyIEView(struct _MessageWindowData *dat)
 {
 	if (dat->hwndIEView) {
 		IEVIEWWINDOW ieWindow;
@@ -1638,12 +1627,12 @@ static void CheckAndDestroyIEView(struct _MessageWindowData *dat)
 		if (dat->oldIEViewProc){
 			SetWindowLongPtr(dat->hwndIEView, GWLP_WNDPROC, (LONG_PTR)dat->oldIEViewProc);
 			dat->oldIEViewProc =0;
-			}
+		}
 		if (dat->oldIEViewLastChildProc) {
 			//mad: get LAST child, because ieserver has many of them..
 			SetWindowLongPtr(GetLastChild(dat->hwndIEView), GWLP_WNDPROC, (LONG_PTR)dat->oldIEViewLastChildProc);
 			dat->oldIEViewLastChildProc = 0;
-			}
+		}
 		//mad_
 		CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
 		dat->oldIEViewProc = 0;
@@ -1658,6 +1647,7 @@ void SetMessageLog(HWND hwndDlg, struct _MessageWindowData *dat)
 	if (iLogMode == WANT_IEVIEW_LOG && dat->hwndIEView == 0) {
 		IEVIEWWINDOW ieWindow;
 
+		ZeroMemory(&ieWindow, sizeof(ieWindow));
 		CheckAndDestroyHPP(dat);
 		ieWindow.cbSize = sizeof(IEVIEWWINDOW);
 		ieWindow.iType = IEW_CREATE;
@@ -1666,10 +1656,11 @@ void SetMessageLog(HWND hwndDlg, struct _MessageWindowData *dat)
 		ieWindow.parent = hwndDlg;
 		ieWindow.x = 0;
 		ieWindow.y = 0;
-		ieWindow.cx = 10;
-		ieWindow.cy = 10;
+		ieWindow.cx = 200;
+		ieWindow.cy = 200;
 		CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
 		dat->hwndIEView = ieWindow.hwnd;
+		_DebugTraceA("ieview created: hwnd = %d", dat->hwndIEView);
 		ShowWindow(GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), FALSE);
 	} else if (iLogMode == WANT_HPP_LOG && dat->hwndHPP == 0) {
@@ -1804,7 +1795,7 @@ void FindFirstEvent(_MessageWindowData *dat)
 
 void SaveSplitter(HWND hwndDlg, struct _MessageWindowData *dat)
 {
-	if (dat->panelHeight < 110 && dat->panelHeight > 50) {          // only save valid panel splitter positions
+	if (dat->panelHeight < 110 && dat->panelHeight >= MIN_PANELHEIGHT) {          // only save valid panel splitter positions
 		if (dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE)
 			M->WriteDword(dat->hContact, SRMSGMOD_T, "panelheight", dat->panelHeight);
 		else {
@@ -1982,7 +1973,7 @@ void LoadContactAvatar(HWND hwndDlg, struct _MessageWindowData *dat)
 	else if (dat)
 		dat->ace = NULL;
 
-	if (dat && !(dat->dwFlagsEx & MWF_SHOW_INFOPANEL)) {
+	if (dat && (!(dat->dwFlagsEx & MWF_SHOW_INFOPANEL) || PluginConfig.m_AvatarMode == 5)) {
 		BITMAP bm;
 		dat->iRealAvatarHeight = 0;
 
@@ -2014,7 +2005,7 @@ void LoadOwnAvatar(_MessageWindowData *dat)
 		dat->hOwnPic = PluginConfig.g_hbmUnknown;
 		dat->ownAce = NULL;
 	}
-	if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
+	if ((dat->dwFlagsEx & MWF_SHOW_INFOPANEL) && PluginConfig.m_AvatarMode != 5) {
 		BITMAP bm;
 
 		dat->iRealAvatarHeight = 0;
@@ -2193,13 +2184,13 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 				return TRUE;
 			}
 		} else  {
-			if (!(dat->dwFlagsEx & MWF_SHOW_INFOPANEL)) {
+			if (!(dat->dwFlagsEx & MWF_SHOW_INFOPANEL) || PluginConfig.m_AvatarMode == 5) {
 				if (dat->ace)
 					aceFlags = dat->ace->dwFlags;
 			} else if (dat->ownAce)
 				aceFlags = dat->ownAce->dwFlags;
 
-			GetObject(dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown), sizeof(bminfo), &bminfo);
+			GetObject((dat->dwFlagsEx & MWF_SHOW_INFOPANEL && PluginConfig.m_AvatarMode != 5) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown), sizeof(bminfo), &bminfo);
 		}
 
 		GetClientRect(hwndDlg, &rc);
@@ -2294,9 +2285,9 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 				}
 			}
 		}
-		if (((dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown)) && dat->showPic) || bPanelPic) {
+		if ((((dat->dwFlagsEx & MWF_SHOW_INFOPANEL && PluginConfig.m_AvatarMode != 5) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown)) && dat->showPic) || bPanelPic) {
 			HDC hdcMem = CreateCompatibleDC(dis->hDC);
-			HBITMAP hbmAvatar = bPanelPic ? (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown) : (dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown));
+			HBITMAP hbmAvatar = bPanelPic ? (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown) : ((dat->dwFlagsEx & MWF_SHOW_INFOPANEL && PluginConfig.m_AvatarMode != 5) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown));
 			HBITMAP hbmMem = 0;
 			if (bPanelPic) {
 				LONG width_off = borderType ? 0 : 2;
@@ -2332,13 +2323,9 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 					SelectClipRgn(dis->hDC, clipRgn);
 				}
 				if(CMimAPI::m_MyAlphaBlend) {
-					BLENDFUNCTION bf = {0};
-					bf.SourceConstantAlpha = 255;
-					bf.AlphaFormat = AC_SRC_ALPHA;
-					bf.BlendOp = AC_SRC_OVER;
 					CMimAPI::m_MyAlphaBlend(dis->hDC, rcClient.left + rcFrame.left + (borderType ? 1 : 0), rcClient.top + height_off + (borderType ? 1 : 0),
 									  (int)dNewWidth + width_off, (int)dNewHeight + width_off, hdcMem, 0, 0,
-									  (int)dNewWidth + width_off, (int)dNewHeight + width_off, bf);
+									  (int)dNewWidth + width_off, (int)dNewHeight + width_off, CSkin::m_default_bf);
 				}
 				else
 					CSkin::MY_AlphaBlend(dis->hDC, rcClient.left + rcFrame.left + (borderType ? 1 : 0), rcClient.top + height_off + (borderType ? 1 : 0), (int)dNewWidth + width_off, (int)dNewHeight + width_off, (int)dNewWidth + width_off, (int)dNewHeight + width_off, hdcMem);

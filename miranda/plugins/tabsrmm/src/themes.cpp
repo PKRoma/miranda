@@ -1,32 +1,37 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
-		--pad=oper --one-line=keep-blocks  --unpad=paren
-
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2009 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-$Id$
-
-Themes and skinning for tabSRMM
-
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * Implements the skinning engine and most parts of the aero support in
+ * tabSRMM 3.x+
+ *
+ */
 
 #include "commonheaders.h"
 
@@ -69,10 +74,13 @@ ButtonSet g_ButtonSet = {0};
 
 int CSkin::m_bAvatarBorderType = 0;
 
-bool CSkin::m_bClipBorder = false, CSkin::m_DisableScrollbars = false,
-	CSkin::m_skinEnabled = false, CSkin::m_frameSkins = false;
+BLENDFUNCTION CSkin::m_default_bf = {0};
 
-char CSkin::m_SkinnedFrame_left = 0, CSkin::m_SkinnedFrame_right = 0, CSkin::m_SkinnedFrame_bottom = 0, CSkin::m_SkinnedFrame_caption = 0;
+bool CSkin::m_bClipBorder = false, CSkin::m_DisableScrollbars = false,
+	 CSkin::m_skinEnabled = false, CSkin::m_frameSkins = false;
+
+char CSkin::m_SkinnedFrame_left = 0, CSkin::m_SkinnedFrame_right = 0,
+	 CSkin::m_SkinnedFrame_bottom = 0, CSkin::m_SkinnedFrame_caption = 0;
 
 char CSkin::m_realSkinnedFrame_left = 0;
 char CSkin::m_realSkinnedFrame_right = 0;
@@ -2363,6 +2371,43 @@ int CSkin::RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWO
 }
 #endif
 
+/**
+ * Resize a bitmap using image service. The function does not care about the image aspect ratio.
+ * The caller is responsible to submit proper values for the desired height and width.
+ *
+ * @param hBmpSrc  HBITMAP: the source bitmap
+ * @param width    LONG: width of the destination bitmap
+ * @param height   LONG: height of the new bitmap
+ * @param mustFree bool: indicates that the new bitmap had been
+ *                 resized and either the source or destination
+ *                 bitmap should be freed.
+ *
+ * @return
+ */
+HBITMAP CSkin::ResizeBitmap(HBITMAP hBmpSrc, LONG width, LONG height, bool &mustFree)
+{
+	BITMAP	bm;
+
+	GetObject(hBmpSrc, sizeof(bm), &bm);
+	if(bm.bmHeight != height || bm.bmWidth != width) {
+		::ResizeBitmap rb;
+		rb.size = sizeof(rb);
+		rb.fit = RESIZEBITMAP_STRETCH;
+		rb.max_height = height;
+		rb.max_width = width;
+		rb.hBmp = hBmpSrc;
+
+		HBITMAP hbmNew = (HBITMAP)CallService("IMG/ResizeBitmap", (WPARAM)&rb, 0);
+		if(hbmNew != hBmpSrc)
+			mustFree = true;
+		return(hbmNew);
+	}
+	else {
+		mustFree = false;
+		return(hBmpSrc);
+	}
+}
+
 HBITMAP CSkin::CreateAeroCompatibleBitmap(const RECT &rc, HDC dc)
 {
 	BITMAPINFO dib = {0};
@@ -2395,11 +2440,39 @@ void CSkin::MapClientToParent(HWND hwndClient, HWND hwndParent, RECT &rc)
 	rc.bottom = rc.top + cy;
 }
 
+/**
+ * Render the nickname in the info panel.
+ * This will also show the status message (if one is available)
+ * The field will dynamically adjust itself to the available info panel space. If
+ * the info panel is too small to show both nick and UIN fields, this field will show
+ * the UIN _instead_ of the nickname (most people have the nickname in the title
+ * bar anyway).
+ *
+ * @param hdc    HDC: target DC for drawing
+ *
+ * @param rcItem RECT &: target rectangle
+ * @param dat    _MessageWindowData*: message window information structure
+ */
 void CSkin::RenderIPNickname(HDC hdc, RECT &rcItem, _MessageWindowData *dat)
 {
 	RECT 	rc = rcItem;
 	TCHAR 	*szStatusMsg = NULL;
 	CSkinItem *item = &SkinItems[ID_EXTBKINFOPANEL];
+	TCHAR	*szTextToShow = 0;
+	bool	fFree = false;
+
+	if(dat->panelHeight < 51) {
+		ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELUIN), SW_HIDE);
+#if defined(_UNICODE)
+		szTextToShow = mir_a2u(dat->uin);
+		fFree = true;
+#else
+		fFree = true;
+		szTextToShow = dat->uin;
+#endif
+	}
+	else
+		szTextToShow = dat->szNickname;
 
 	ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELNICK), SW_HIDE);
 	szStatusMsg = dat->statusMsg;
@@ -2419,7 +2492,7 @@ void CSkin::RenderIPNickname(HDC hdc, RECT &rcItem, _MessageWindowData *dat)
 					  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 	}
 	rcItem.left += 2;
-	if (dat->szNickname[0]) {
+	if (szTextToShow[0]) {
 		HFONT hOldFont = 0;
 		HICON xIcon = 0;
 
@@ -2432,20 +2505,26 @@ void CSkin::RenderIPNickname(HDC hdc, RECT &rcItem, _MessageWindowData *dat)
 		}
 
 		if (PluginConfig.ipConfig.isValid) {
-			hOldFont = (HFONT)SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_NICK]);
-			SetTextColor(hdc, PluginConfig.ipConfig.clrs[IPFONTID_NICK]);
+			if(fFree) {
+				hOldFont = (HFONT)SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_UIN]);
+				SetTextColor(hdc, PluginConfig.ipConfig.clrs[IPFONTID_UIN]);
+			}
+			else {
+				hOldFont = (HFONT)SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_NICK]);
+				SetTextColor(hdc, PluginConfig.ipConfig.clrs[IPFONTID_NICK]);
+			}
 		}
 		if (szStatusMsg && szStatusMsg[0]) {
 			SIZE szNick, sStatusMsg, sMask;
 			DWORD dtFlags, dtFlagsNick;
 
-			GetTextExtentPoint32(hdc, dat->szNickname, lstrlen(dat->szNickname), &szNick);
+			GetTextExtentPoint32(hdc, szTextToShow, lstrlen(szTextToShow), &szNick);
 			GetTextExtentPoint32(hdc, _T("A"), 1, &sMask);
 			GetTextExtentPoint32(hdc, szStatusMsg, lstrlen(szStatusMsg), &sStatusMsg);
 			dtFlagsNick = DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_NOPREFIX;
 			if ((szNick.cx + sStatusMsg.cx + 6) < (rcItem.right - rcItem.left) || (rcItem.bottom - rcItem.top) < (2 * sMask.cy))
 				dtFlagsNick |= DT_VCENTER;
-			CSkin::RenderText(hdc, dat->hThemeIP, dat->szNickname, &rcItem, dtFlagsNick);
+			CSkin::RenderText(hdc, dat->hThemeIP, szTextToShow, &rcItem, dtFlagsNick);
 			if (PluginConfig.ipConfig.isValid) {
 				SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_STATUS]);
 				SetTextColor(hdc, PluginConfig.ipConfig.clrs[IPFONTID_STATUS]);
@@ -2462,16 +2541,25 @@ void CSkin::RenderIPNickname(HDC hdc, RECT &rcItem, _MessageWindowData *dat)
 			rcItem.right -= 3;
 			if (rcItem.left + 30 < rcItem.right)
 				CSkin::RenderText(hdc, dat->hThemeIP, szStatusMsg, &rcItem, dtFlags);
-				//DrawText(dis->hDC, szStatusMsg, -1, &dis->rcItem, dtFlags);
 		} else
-			CSkin::RenderText(hdc, dat->hThemeIP, dat->szNickname, &rcItem, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX);
-			//DrawText(dis->hDC, dat->szNickname, -1, &dis->rcItem, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX);
+			CSkin::RenderText(hdc, dat->hThemeIP, szTextToShow, &rcItem, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX);
 
 		if (hOldFont)
 			SelectObject(hdc, hOldFont);
 	}
+#if defined(_UNICODE)
+	if(fFree)
+		mir_free(szTextToShow);
+#endif
 }
 
+/**
+ * Draws the UIN field for the info panel.
+ *
+ * @param hdc    HDC: device context for drawing.
+ * @param rcItem RECT &: target rectangle for drawing
+ * @param dat    _MessageWindowData *: the message session structure
+ */
 void CSkin::RenderIPUIN(HDC hdc, RECT &rcItem, _MessageWindowData *dat)
 {
 	ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELUIN), SW_HIDE);
@@ -2503,7 +2591,7 @@ void CSkin::RenderIPUIN(HDC hdc, RECT &rcItem, _MessageWindowData *dat)
 		SetTextColor(hdc, PluginConfig.ipConfig.clrs[IPFONTID_UIN]);
 	}
 	if (dat->uin[0]) {
-		SIZE sUIN, sTime;
+		SIZE sUIN;
 		if (dat->idle) {
 			time_t diff = time(NULL) - dat->idle;
 			int i_hrs = diff / 3600;
@@ -2514,38 +2602,6 @@ void CSkin::RenderIPUIN(HDC hdc, RECT &rcItem, _MessageWindowData *dat)
 		} else {
 			GetTextExtentPoint32(hdc, tszUin, lstrlen(tszUin), &sUIN);
 			CSkin::RenderText(hdc, dat->hThemeIP, tszUin, &rcItem, DT_SINGLELINE | DT_VCENTER);
-		}
-		if (dat->timezone != -1) {
-			DBTIMETOSTRINGT dbtts;
-			TCHAR 			szResult[80];
-			time_t 			final_time;
-			time_t 			now = time(NULL);
-			HFONT 			oldFont = 0;
-			int 			base_hour;
-			TCHAR 			symbolic_time[3];
-
-			final_time = now - dat->timediff;
-			dbtts.szDest = szResult;
-			dbtts.cbDest = 70;
-			dbtts.szFormat = _T("t");
-			CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, final_time, (LPARAM) &dbtts);
-			if (config) {
-				SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_TIME]);
-				SetTextColor(hdc, PluginConfig.ipConfig.clrs[IPFONTID_TIME]);
-			}
-			GetTextExtentPoint32(hdc, szResult, lstrlen(szResult), &sTime);
-			if (sUIN.cx + sTime.cx + 23 < rcItem.right - rcItem.left) {
-				rcItem.left = rcItem.right - sTime.cx - 3 - 16;
-				oldFont = (HFONT)SelectObject(hdc, PluginConfig.m_hFontWebdings);
-				base_hour = _ttoi(szResult);
-				base_hour = base_hour > 11 ? base_hour - 12 : base_hour;
-				symbolic_time[0] = (TCHAR)(0xB7 + base_hour);
-				symbolic_time[1] = 0;
-				CSkin::RenderText(hdc, dat->hThemeIP, symbolic_time, &rcItem, DT_SINGLELINE | DT_VCENTER);
-				SelectObject(hdc, oldFont);
-				rcItem.left += 16;
-				CSkin::RenderText(hdc, dat->hThemeIP, szResult, &rcItem, DT_SINGLELINE | DT_VCENTER);
-			}
 		}
 	}
 	if (hOldFont)
@@ -2559,17 +2615,20 @@ void CSkin::RenderIPUIN(HDC hdc, RECT &rcItem, _MessageWindowData *dat)
 void CSkin::RenderIPStatus(HDC hdc, RECT &rcItem, _MessageWindowData *dat)
 {
 	ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELSTATUS), SW_HIDE);
-	char	*szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
-	SIZE	sProto = {0}, sStatus = {0};
-	DWORD	oldPanelStatusCX = dat->panelStatusCX;
-	RECT	rc;
-	HFONT	hOldFont = 0;
-	BOOL	config = PluginConfig.ipConfig.isValid;
-	CSkinItem *item = &SkinItems[ID_EXTBKINFOPANEL];
-	TCHAR   *szFinalProto = NULL;
 
-	if (config)
-		hOldFont = (HFONT)SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_STATUS]);
+	char		*szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
+	SIZE		sProto = {0}, sStatus = {0}, sTime = {0};
+	DWORD		oldPanelStatusCX = dat->panelStatusCX;
+	RECT		rc;
+	HFONT		hOldFont = 0;
+	BOOL		config = PluginConfig.ipConfig.isValid;
+	CSkinItem 	*item = &SkinItems[ID_EXTBKINFOPANEL];
+	TCHAR   	*szFinalProto = NULL;
+	TCHAR 		szResult[80];
+	int 		base_hour;
+	TCHAR 		symbolic_time[3];
+
+	szResult[0] = 0;
 
 	if (dat->szStatus[0])
 		GetTextExtentPoint32(hdc, dat->szStatus, lstrlen(dat->szStatus), &sStatus);
@@ -2591,7 +2650,20 @@ void CSkin::RenderIPStatus(HDC hdc, RECT &rcItem, _MessageWindowData *dat)
 		GetTextExtentPoint32(hdc, szFinalProto, lstrlen(szFinalProto), &sProto);
 	}
 
-	dat->panelStatusCX = 3 + sStatus.cx + sProto.cx + 14 + (dat->hClientIcon ? 20 : 0);
+	if (dat->timezone != -1) {
+		DBTIMETOSTRINGT dbtts;
+		time_t 			final_time;
+		time_t 			now = time(NULL);
+
+		final_time = now - dat->timediff;
+		dbtts.szDest = szResult;
+		dbtts.cbDest = 70;
+		dbtts.szFormat = _T("t");
+		CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, final_time, (LPARAM) &dbtts);
+		GetTextExtentPoint32(hdc, szResult, lstrlen(szResult), &sTime);
+	}
+
+	dat->panelStatusCX = 3 + sStatus.cx + sProto.cx + 14 + (dat->hClientIcon ? 20 : 0) + sTime.cx + 13;;
 
 	if (dat->panelStatusCX != oldPanelStatusCX) {
 		SendMessage(dat->hwnd, WM_SIZE, 0, 0);
@@ -2612,6 +2684,27 @@ void CSkin::RenderIPStatus(HDC hdc, RECT &rcItem, _MessageWindowData *dat)
 	}
 	rc.left += 2;
 	rc.right -=3;
+
+	if(szResult[0]) {
+		HFONT oldFont = (HFONT)SelectObject(hdc, PluginConfig.m_hFontWebdings);
+		base_hour = _ttoi(szResult);
+		base_hour = base_hour > 11 ? base_hour - 12 : base_hour;
+		symbolic_time[0] = (TCHAR)(0xB7 + base_hour);
+		symbolic_time[1] = 0;
+		CSkin::RenderText(hdc, dat->hThemeIP, symbolic_time, &rcItem, DT_SINGLELINE | DT_VCENTER);
+		if (config) {
+			oldFont = (HFONT)SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_TIME]);
+			SetTextColor(hdc, PluginConfig.ipConfig.clrs[IPFONTID_TIME]);
+		}
+		rcItem.left += 16;
+		CSkin::RenderText(hdc, dat->hThemeIP, szResult, &rcItem, DT_SINGLELINE | DT_VCENTER);
+		SelectObject(hdc, oldFont);
+		rc.left += (sTime.cx + 20);
+	}
+
+	if (config)
+		hOldFont = (HFONT)SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_STATUS]);
+
 	if (dat->szStatus[0]) {
 		if (config) {
 			SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_STATUS]);
@@ -2636,22 +2729,43 @@ void CSkin::RenderIPStatus(HDC hdc, RECT &rcItem, _MessageWindowData *dat)
 		SelectObject(hdc, hOldFont);
 }
 
+/**
+ * Draw the background for the message window tool bar
+ *
+ * @param dat      _MessageWindowData *: structure describing the message session
+ *
+ * @param hdc      HDC: handle to the device context in which painting should occur.
+ * @param rcWindow RECT &: The window rectangle of the message dialog window
+ */
 void CSkin::RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &rcWindow)
 {
 	if(dat) {
+		if(dat->pContainer->dwFlags & CNT_HIDETOOLBAR)
+			return;
+
 		RECT 	rc, rcToolbar;;
 		POINT	pt;
-		GetWindowRect(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_CHAT ? IDC_CHAT_LOG : IDC_LOG), &rc);
-		pt.y = rc.bottom;
-		ScreenToClient(dat->hwnd, &pt);
-		rcToolbar.top = pt.y + 1;
-		rcToolbar.left = 0;
-		rcToolbar.right = rcWindow.right;
-		GetWindowRect(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_CHAT ? IDC_CHAT_MESSAGE : IDC_MESSAGE), &rc);
-		pt.y = rc.top - 1;
-		ScreenToClient(dat->hwnd, &pt);
-		rcToolbar.bottom = pt.y;
-
+		if(!(dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR)) {
+			GetWindowRect(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_CHAT ? IDC_CHAT_LOG : IDC_LOG), &rc);
+			pt.y = rc.bottom + 0;
+			ScreenToClient(dat->hwnd, &pt);
+			rcToolbar.top = pt.y;
+			rcToolbar.left = 0;
+			rcToolbar.right = rcWindow.right;
+			GetWindowRect(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_CHAT ? IDC_CHAT_MESSAGE : IDC_MESSAGE), &rc);
+			pt.y = rc.top - 2;
+			ScreenToClient(dat->hwnd, &pt);
+			rcToolbar.bottom = pt.y;
+		}
+		else {
+			GetWindowRect(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_CHAT ? IDC_CHAT_MESSAGE : IDC_MESSAGE), &rc);
+			pt.y = rc.bottom - (dat->bType == SESSIONTYPE_IM ? 2 : 0);;
+			ScreenToClient(dat->hwnd, &pt);
+			rcToolbar.top = pt.y + 1;
+			rcToolbar.left = 0;
+			rcToolbar.right = rcWindow.right;
+			rcToolbar.bottom = rcWindow.bottom;
+		}
 		LONG cx = rcToolbar.right - rcToolbar.left;
 		LONG cy = rcToolbar.bottom - rcToolbar.top;
 

@@ -666,6 +666,7 @@ void SendQueue::showErrorControls(_MessageWindowData *dat, const int showCmd) co
 	DM_ScrollToBottom(hwndDlg, dat, 0, 1);
 	if (m_jobs[0].sendCount > 1)
 		EnableSending(dat, TRUE);
+	SetAeroMargins(dat->pContainer);
 }
 
 void SendQueue::recallFailed(const _MessageWindowData *dat, int iEntry) const

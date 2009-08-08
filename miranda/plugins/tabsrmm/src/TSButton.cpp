@@ -239,7 +239,7 @@ flat_themed:
 					FillRect(hdcMem, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
 					if (rc.right < 20 || rc.bottom < 20)
 						InflateRect(&rc, 2, 2);
-					if(fAero) {
+					if(fAero && ctl->bToolbarButton) {
 						if(dat) {
 							RECT	rcWin;
 							GetWindowRect(ctl->hwnd, &rcWin);
@@ -247,7 +247,7 @@ flat_themed:
 							pt.x = rcWin.left;
 							ScreenToClient(dat->hwnd, &pt);
 							BitBlt(hdcMem, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top,
-								   dat->pContainer->cachedToolbarDC, pt.x, 0, SRCCOPY);
+								   dat->pContainer->cachedToolbarDC, pt.x, 1, SRCCOPY);
 						}
 					}
 					else {
@@ -327,8 +327,21 @@ nonflat_themed:
 					if (clip)
 						state = PBS_NORMAL;
 
-					if (CMimAPI::m_pfnIsThemeBackgroundPartiallyTransparent(ctl->hThemeButton, BP_PUSHBUTTON, state)) {
-						CMimAPI::m_pfnDrawThemeParentBackground(ctl->hwnd, hdcMem, &rcClient);
+					if(fAero && ctl->bToolbarButton) {
+						if(dat) {
+							RECT	rcWin;
+							GetWindowRect(ctl->hwnd, &rcWin);
+							POINT 	pt;
+							pt.x = rcWin.left;
+							ScreenToClient(dat->hwnd, &pt);
+							BitBlt(hdcMem, rcClient.left, rcClient.top, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top,
+								   dat->pContainer->cachedToolbarDC, pt.x, 1, SRCCOPY);
+						}
+					}
+					else {
+						if (CMimAPI::m_pfnIsThemeBackgroundPartiallyTransparent(ctl->hThemeButton, BP_PUSHBUTTON, state)) {
+							CMimAPI::m_pfnDrawThemeParentBackground(ctl->hwnd, hdcMem, &rcClient);
+						}
 					}
 					CMimAPI::m_pfnDrawThemeBackground(ctl->hThemeButton, hdcMem, BP_PUSHBUTTON, state, &rcClient, &rcClient);
 
@@ -702,7 +715,9 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 		case BUTTONSETASFLATBTN + 20:
 			bct->item = (ButtonItem *)lParam;
 			break;
-
+		case BUTTONSETASTOOLBARBUTTON:
+			bct->bToolbarButton = lParam;
+			break;
 		case BUTTONADDTOOLTIP: {
 			TOOLINFO ti;
 

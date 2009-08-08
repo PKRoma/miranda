@@ -1008,20 +1008,11 @@ static void RestoreUnreadMessageAlerts(void)
 				if (!usingReadNext && windowAlreadyExists)
 					continue;
 
-				if (0) {
-					struct NewMessageWindowLParam newData = {
-						0
-					};
-					newData.hContact = hContact;
-					newData.isWchar = 0;
-					CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSPLITNEW), NULL, DlgProcMessage, (LPARAM) & newData);
-				} else {
-					cle.hContact = hContact;
-					cle.hDbEvent = hDbEvent;
-					_snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, 0));
-					cle.pszTooltip = toolTip;
-					CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
-				}
+				cle.hContact = hContact;
+				cle.hDbEvent = hDbEvent;
+				_snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, 0));
+				cle.pszTooltip = toolTip;
+				CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
 			}
 			hDbEvent = (HANDLE) CallService(MS_DB_EVENT_FINDNEXT, (WPARAM) hDbEvent, 0);
 		}

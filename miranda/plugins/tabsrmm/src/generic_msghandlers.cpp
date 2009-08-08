@@ -307,7 +307,7 @@ LRESULT DM_RecalcPictureSize(_MessageWindowData *dat)
 	HBITMAP hbm;
 
 	if (dat) {
-		hbm = dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
+		hbm = ((dat->dwFlagsEx & MWF_SHOW_INFOPANEL) && PluginConfig.m_AvatarMode != 5) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
 
 		if (hbm == 0) {
 			dat->pic.cy = dat->pic.cx = 60;

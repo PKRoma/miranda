@@ -1,30 +1,36 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
-		--pad=oper --one-line=keep-blocks  --unpad=paren
-
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2009 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-
-$Id$
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * This implements the message dialog window.
+ *
+ */
 
 #include "commonheaders.h"
 #pragma hdrstop
@@ -53,7 +59,8 @@ static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG
 
 TCHAR *pszIDCSAVE_close = 0, *pszIDCSAVE_save = 0;
 
-static WNDPROC OldMessageEditProc=0, OldAvatarWndProc=0, OldMessageLogProc=0, OldIEViewProc = 0, OldHppProc = 0;
+static  WNDPROC OldMessageEditProc=0, OldAvatarWndProc=0, OldMessageLogProc=0;
+WNDPROC OldIEViewProc = 0, OldHppProc = 0;
 
 WNDPROC OldSplitterProc = 0;
 
@@ -257,12 +264,13 @@ static void ShowPopupMenu(_MessageWindowData *dat, int idFrom, HWND hwndFrom, PO
 
 static void ResizeIeView(const _MessageWindowData *dat, DWORD px, DWORD py, DWORD cx, DWORD cy)
 {
-	RECT 			rcRichEdit, rcIeView;
+	RECT 			rcRichEdit;
 	POINT 			pt;
 	IEVIEWWINDOW 	ieWindow;
 	int 			iMode = dat->hwndIEView ? 1 : 2;
 	HWND			hwndDlg = dat->hwnd;
 
+	ZeroMemory(&ieWindow, sizeof(ieWindow));
 	GetWindowRect(GetDlgItem(hwndDlg, IDC_LOG), &rcRichEdit);
 	pt.x = rcRichEdit.left;
 	pt.y = rcRichEdit.top;
@@ -271,18 +279,10 @@ static void ResizeIeView(const _MessageWindowData *dat, DWORD px, DWORD py, DWOR
 	ieWindow.iType = IEW_SETPOS;
 	ieWindow.parent = hwndDlg;
 	ieWindow.hwnd = iMode == 1 ? dat->hwndIEView : dat->hwndHPP;
-	if (cx != 0 || cy != 0) {
-		ieWindow.x = px;
-		ieWindow.y = py;
-		ieWindow.cx = cx;
-		ieWindow.cy = cy;
-	} else {
-		ieWindow.x = pt.x;
-		ieWindow.y = pt.y;
-		ieWindow.cx = rcRichEdit.right - rcRichEdit.left;
-		ieWindow.cy = rcRichEdit.bottom - rcRichEdit.top;
-	}
-	GetWindowRect(iMode == 1 ? dat->hwndIEView : dat->hwndHPP, &rcIeView);
+	ieWindow.x = pt.x;
+	ieWindow.y = pt.y;
+	ieWindow.cx = rcRichEdit.right - rcRichEdit.left;
+	ieWindow.cy = rcRichEdit.bottom - rcRichEdit.top;
 	if (ieWindow.cx != 0 && ieWindow.cy != 0) {
 		CallService(iMode == 1 ? MS_IEVIEW_WINDOW : MS_HPP_EG_WINDOW, 0, (LPARAM)&ieWindow);
 	}
@@ -443,10 +443,10 @@ static void MsgWindowUpdateState(_MessageWindowData *dat, UINT msg)
 		dat->dwLastUpdate = GetTickCount();
 		if (dat->hContact)
 			PostMessage(hwndDlg, DM_REMOVEPOPUPS, PU_REMOVE_ON_FOCUS, 0);
-		if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
-			InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
-			InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), NULL, FALSE);
-		}
+
+		if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL)
+			InvalidateRect(hwndDlg, NULL, FALSE);
+
 		if (dat->dwFlags & MWF_DEFERREDSCROLL && dat->hwndIEView == 0 && dat->hwndHPP == 0) {
 			HWND hwnd = GetDlgItem(hwndDlg, IDC_LOG);
 
@@ -478,6 +478,7 @@ static void MsgWindowUpdateState(_MessageWindowData *dat, UINT msg)
 			}
 			dat->hwndIWebBrowserControl = WindowFromPoint(pt);
 		}
+
 		if (dat->dwFlagsEx & MWF_EX_DELAYEDSPLITTER) {
 			dat->dwFlagsEx &= ~MWF_EX_DELAYEDSPLITTER;
 			ShowWindow(dat->pContainer->hwnd, SW_RESTORE);
@@ -500,7 +501,7 @@ static void ConfigurePanel(HWND hwndDlg, struct _MessageWindowData *dat)
 }
 static void ShowHideInfoPanel(HWND hwndDlg, struct _MessageWindowData *dat)
 {
-	HBITMAP hbm = dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
+	HBITMAP hbm = ((dat->dwFlagsEx & MWF_SHOW_INFOPANEL) && PluginConfig.m_AvatarMode != 5) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
 	BITMAP bm;
 
 	if (dat->dwFlags & MWF_ERRORSTATE)
@@ -526,9 +527,7 @@ static void ShowHideInfoPanel(HWND hwndDlg, struct _MessageWindowData *dat)
 		//
 		GetAvatarVisibility(hwndDlg, dat);
 		ConfigurePanel(hwndDlg, dat);
-		InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELNICK), NULL, FALSE);
-		InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
-		InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), NULL, FALSE);
+		InvalidateRect(hwndDlg, NULL, FALSE);
 	}
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
 	InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
@@ -604,8 +603,6 @@ void SetDialogToType(HWND hwndDlg)
 		ShowWindow(GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), FALSE);
 		ShowWindow(GetDlgItem(hwndDlg, IDC_MESSAGE), SW_SHOW);
-		//if(DBGetContactSettingDword(NULL, "IEVIEW", "TemplatesFlags", 0) & 0x01)
-		//    EnableWindow(GetDlgItem(hwndDlg, IDC_TIME), FALSE);
 
 	} else
 		ShowMultipleControls(hwndDlg, sendControls, sizeof(sendControls) / sizeof(sendControls[0]), SW_SHOW);
@@ -1455,8 +1452,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			urc->rcItem.right++;
 			return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
 		case IDC_LOG:
-			if (dat->dwFlags & MWF_ERRORSTATE && !(dat->dwFlagsEx & MWF_SHOW_INFOPANEL))
-				urc->rcItem.top += 38;
+			if (dat->dwFlags & MWF_ERRORSTATE)
+				urc->rcItem.top += 51;
 			if (dat->sendMode & SMODE_MULTIPLE)
 				urc->rcItem.right -= (dat->multiSplitterX + 3);
 			urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
@@ -1464,7 +1461,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 				urc->rcItem.bottom += 23;
 			if (dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED)
 				urc->rcItem.top += 24;
-			if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL)
+			if ((dat->dwFlagsEx & MWF_SHOW_INFOPANEL) && !(dat->dwFlags & MWF_ERRORSTATE))
 				urc->rcItem.top += panelHeight;
 			urc->rcItem.bottom += 3;
 			if (dat->pContainer->bSkinned) {
@@ -1507,11 +1504,15 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
 		}
 		case IDC_PANELNICK: {
-			urc->rcItem.right = urc->dlgNewSize.cx - panelWidth;
-			urc->rcItem.bottom = panelHeight - 3 - dat->ipFieldHeight - 2;;
+			RECT	rcStatus;
+			GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), &rcStatus);
+			urc->rcItem.left = panelHeight <= 52 ? panelHeight : 52;
+			urc->rcItem.right = urc->dlgNewSize.cx - panelWidth - (panelHeight <= 52 ? (rcStatus.right - rcStatus.left) + 3 : 0);
+			urc->rcItem.bottom = panelHeight - 3 - (panelHeight >= 52 ? dat->ipFieldHeight : 0) - 2;;
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
 		}
 		case IDC_PANELUIN: {
+			urc->rcItem.left = panelHeight <= 52 ? panelHeight : 52;
 			urc->rcItem.right = urc->dlgNewSize.cx - (panelWidth + 2) - dat->panelStatusCX;
 			urc->rcItem.bottom = panelHeight - 3;
 			urc->rcItem.top = urc->rcItem.bottom - dat->ipFieldHeight;
@@ -1903,8 +1904,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			for (i = 0; i < sizeof(errorButtons) / sizeof(errorButtons[0]); i++) {
 				hwndItem = GetDlgItem(hwndDlg, errorButtons[i]);
-				SendMessage(hwndItem, BUTTONSETASFLATBTN, 0, isFlat ? 0 : 1);
-				SendMessage(hwndItem, BUTTONSETASFLATBTN + 10, 0, isThemed ? 1 : 0);
+				SendMessage(hwndItem, BUTTONSETASFLATBTN, 0, isFlat ? 0 : 0);
+				SendMessage(hwndItem, BUTTONSETASFLATBTN + 10, 0, isThemed ? 0 : 0);
 				SendMessage(hwndItem, BUTTONSETASFLATBTN + 12, 0, (LPARAM)m_pContainer);
 			}
 
@@ -2509,11 +2510,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				} else
 					dat->dwIsFavoritOrRecent &= 0x0000ffff;
 
-				if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
-					InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), NULL, FALSE);
-					InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELNICK), NULL, FALSE);
-					InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
-				}
+				if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL)
+					InvalidateRect(hwndDlg, NULL, FALSE);
 
 				if (PluginConfig.g_FlashAvatarAvail) {
 					FLASHAVATAR fa = {0};
@@ -2542,7 +2540,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		}
 		case DM_UPDATESTATUSMSG:
 			GetCachedStatusMsg(dat);
-			InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELNICK), NULL, FALSE);
+			InvalidateRect(hwndDlg, NULL, FALSE);
 			return 0;
 		case DM_OWNNICKCHANGED:
 			GetMyNick(dat);
@@ -2605,7 +2603,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			BITMAP bminfo;
 			RECT rc, rcPic;
 			int saved = 0;
-			HBITMAP hbm = dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
+			HBITMAP hbm = ((dat->dwFlagsEx & MWF_SHOW_INFOPANEL) && PluginConfig.m_AvatarMode != 5) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
 			RECT rcPanelBottom;
 
 			if (IsIconic(hwndDlg))
@@ -2616,7 +2614,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			urd.hwndDlg = hwndDlg;
 			urd.lParam = (LPARAM) dat;
 			urd.lpTemplate = MAKEINTRESOURCEA(IDD_MSGSPLITNEW);
-			urd.pfnResizer = /* dat->dwEventIsShown & MWF_SHOW_RESIZEIPONLY ? MessageDialogResizeIP : */ MessageDialogResize;
+			urd.pfnResizer = MessageDialogResize;
 
 			if (dat->ipFieldHeight == 0) {
 				GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELUIN), &rcPanelBottom);
@@ -2675,10 +2673,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			if (dat->hwndIEView || dat->hwndHPP)
 				ResizeIeView(dat, 0, 0, 0, 0);
- 			if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
- 				InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
- 				InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELNICK), NULL, FALSE);
- 			}
+ 			if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL)
+ 				InvalidateRect(hwndDlg, NULL, FALSE);
+
 			if (wParam == 0 && lParam == 0 && m_pContainer->bSkinned)
 				RedrawWindow(hwndDlg, NULL, NULL, RDW_UPDATENOW | RDW_NOCHILDREN | RDW_INVALIDATE);
 			break;
@@ -2772,12 +2769,13 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				pt.y = wParam;
 				ScreenToClient(hwndDlg, &pt);
 				GetClientRect(hwndDlg, &rc);
-				if (pt.y + 2 >= 51 && pt.y + 2 < 100)
+				if (pt.y + 2 >= MIN_PANELHEIGHT+2 && pt.y + 2 < 100)
 					dat->panelHeight = pt.y + 2;
-				SendMessage(hwndDlg, WM_SIZE, DM_SPLITTERMOVED, 0);
+				dat->panelWidth = -1;
+				InvalidateRect(hwndDlg, NULL, TRUE);
+				UpdateWindow(hwndDlg);
+				SendMessage(hwndDlg, WM_SIZE, 0, 0);
 				SetAeroMargins(dat->pContainer);
-				InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
-				InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELNICK), NULL, FALSE);
 				break;
 			}
 			SendMessage(hwndDlg, WM_SIZE, DM_SPLITTERMOVED, 0);
@@ -4134,6 +4132,7 @@ quote_from_last:
 						dat->dwFlagsEx ^= MWF_SHOW_INFONOTES;
 						ConfigurePanel(hwndDlg, dat);
 						RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_ERASE);
+						SetAeroMargins(m_pContainer);
 					}
 					break;
 				case IDC_APPARENTMODE1: {
@@ -5155,10 +5154,8 @@ quote_from_last:
 		}
 		case DM_CLIENTCHANGED: {
 			GetClientIcon(dat);
-			if (dat->hClientIcon) {
-				//SendMessage(hwndDlg, WM_SIZE, 0, 0);
-				InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), NULL, TRUE);
-			}
+			if (dat->hClientIcon && dat->dwFlagsEx & MWF_SHOW_INFOPANEL)
+				InvalidateRect(hwndDlg, NULL, TRUE);
 			return 0;
 		}
 		case DM_REMOVEPOPUPS:
@@ -5402,7 +5399,7 @@ quote_from_last:
 			DWORD 	cx, cy;
 			HBITMAP hbm, hbmOld;
 			CSkinItem t_item;
-
+			bool	fInfoPanel = (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) && !(dat->dwFlagsEx & MWF_SHOW_INFONOTES) && !(dat->dwFlags & MWF_ERRORSTATE);
 			GetClientRect(hwndDlg, &rcClient);
 			cx = rcClient.right - rcClient.left;
 			cy = rcClient.bottom - rcClient.top;
@@ -5447,26 +5444,28 @@ quote_from_last:
 			 */
 
 			t_item = SkinItems[ID_EXTBKINFOPANELBG];
-			if(((dat->dwFlags & MWF_SHOW_INFOPANEL) && !(dat->dwFlags & MWF_ERRORSTATE)) || fAero) {
+			if(!(dat->dwFlags & MWF_ERRORSTATE) && ((dat->dwFlagsEx & MWF_SHOW_INFOPANEL) || fAero)) {
+				//if(((dat->dwFlags & MWF_SHOW_INFOPANEL) && !(dat->dwFlags & MWF_ERRORSTATE)) || fAero) {
 				CSkinItem *item = &t_item;
 
-				GetClientRect(hwndDlg, &rc);
-				if(!fAero)
-					rc.bottom = dat->panelHeight + 2;
-				if(fAero) {
-					RECT	rcBlack = rc;
-					rcBlack.bottom = dat->panelHeight + 2 + 30;
-					//FillRect(dat->hdcCached, &rcBlack, (HBRUSH)GetStockObject(BLACK_BRUSH));
-					FillRect(hdcMem, &rcBlack, (HBRUSH)GetStockObject(BLACK_BRUSH));
-				}
-				else {
-					if(m_pContainer->bSkinned)
-						CSkin::SkinDrawBG(hwndDlg, m_pContainer->hwnd, m_pContainer, &rc, hdcMem);
-					else
-						FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
-					if(!item->IGNORED) {
-						DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
-								  item->CORNER, item->BORDERSTYLE, item->imageItem);
+				if(!(dat->dwFlags & MWF_ERRORSTATE) && !(dat->dwFlagsEx & MWF_SHOW_INFONOTES)) {
+					GetClientRect(hwndDlg, &rc);
+					if(!fAero)
+						rc.bottom = dat->panelHeight + 2;
+					if(fAero) {
+						RECT	rcBlack = rc;
+						rcBlack.bottom = dat->panelHeight + 2 + 30;
+						FillRect(hdcMem, &rcBlack, (HBRUSH)GetStockObject(BLACK_BRUSH));
+					}
+					else {
+						if(m_pContainer->bSkinned)
+							CSkin::SkinDrawBG(hwndDlg, m_pContainer->hwnd, m_pContainer, &rc, hdcMem);
+						else
+							FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
+						if(!item->IGNORED) {
+							DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+									  item->CORNER, item->BORDERSTYLE, item->imageItem);
+						}
 					}
 				}
 			}
@@ -5474,15 +5473,30 @@ quote_from_last:
 			 * draw the logo
 			 */
 
-			if(dat->dwFlagsEx & MWF_SHOW_INFOPANEL && !(dat->dwFlagsEx & MWF_SHOW_INFONOTES) && !(dat->dwFlags & MWF_ERRORSTATE)) {
+			if(fInfoPanel) {
 				BITMAP 	bm;
 				HDC		hdcImage = CreateCompatibleDC(hdc);
-				HBITMAP hbmOld;
+				HBITMAP hbmOld, hbmNew = 0;
+				bool	fFree = false;
 
 				GetObject(PluginConfig.hbmLogo, sizeof(bm), &bm);
-				hbmOld = (HBITMAP)SelectObject(hdcImage, PluginConfig.hbmLogo);
-				CSkin::MY_AlphaBlend(hdcMem, 4, 1, bm.bmWidth, bm.bmHeight, bm.bmWidth, bm.bmHeight, hdcImage);
+
+				LONG height = dat->panelHeight >= 50 ? bm.bmHeight : dat->panelHeight - 2;
+				double aspect = (double)height / (double)bm.bmHeight;
+				LONG width = (LONG)((double)bm.bmWidth * aspect);
+
+				if(height != bm.bmHeight) {
+					hbmNew = CSkin::ResizeBitmap(PluginConfig.hbmLogo, width, height, fFree);
+					hbmOld = (HBITMAP)SelectObject(hdcImage, hbmNew);
+					CMimAPI::m_MyAlphaBlend(hdcMem, 4, 1, width, height, hdcImage, 0, 0, width, height, CSkin::m_default_bf);
+				}
+				else {
+					hbmOld = (HBITMAP)SelectObject(hdcImage, PluginConfig.hbmLogo);
+					CSkin::MY_AlphaBlend(hdcMem, 4, 1, width, height, bm.bmWidth, bm.bmHeight, hdcImage);
+				}
 				SelectObject(hdcImage, hbmOld);
+				if(hbmNew && fFree)
+					DeleteObject(hbmNew);
 				DeleteDC(hdcImage);
 			}
 			/*
@@ -5493,20 +5507,24 @@ quote_from_last:
 			/*
 			 * render info panel fields
 			 */
-			CSkin::MapClientToParent(GetDlgItem(hwndDlg, IDC_PANELNICK), hwndDlg, rc);
-			CSkin::RenderIPNickname(hdcMem, rc, dat);
-			CSkin::MapClientToParent(GetDlgItem(hwndDlg, IDC_PANELUIN), hwndDlg, rc);
-			CSkin::RenderIPUIN(hdcMem, rc, dat);
-			CSkin::MapClientToParent(GetDlgItem(hwndDlg, IDC_PANELSTATUS), hwndDlg, rc);
-			CSkin::RenderIPStatus(hdcMem, rc, dat);
+			if(fInfoPanel) {
+				CSkin::MapClientToParent(GetDlgItem(hwndDlg, IDC_PANELNICK), hwndDlg, rc);
+				CSkin::RenderIPNickname(hdcMem, rc, dat);
+				if(dat->panelHeight >= 50) {
+					CSkin::MapClientToParent(GetDlgItem(hwndDlg, IDC_PANELUIN), hwndDlg, rc);
+					CSkin::RenderIPUIN(hdcMem, rc, dat);
+				}
+				CSkin::MapClientToParent(GetDlgItem(hwndDlg, IDC_PANELSTATUS), hwndDlg, rc);
+				CSkin::RenderIPStatus(hdcMem, rc, dat);
 
-			DRAWITEMSTRUCT dis = {0};
+				DRAWITEMSTRUCT dis = {0};
 
-			ShowWindow(GetDlgItem(hwndDlg, IDC_PANELPIC), SW_HIDE);
-			CSkin::MapClientToParent(GetDlgItem(hwndDlg, IDC_PANELPIC), hwndDlg, dis.rcItem);
-			dis.hDC = hdcMem;
-			dis.hwndItem = GetDlgItem(hwndDlg, IDC_PANELPIC);
-			MsgWindowDrawHandler(0, (LPARAM)&dis, hwndDlg, dat);
+				ShowWindow(GetDlgItem(hwndDlg, IDC_PANELPIC), SW_HIDE);
+				CSkin::MapClientToParent(GetDlgItem(hwndDlg, IDC_PANELPIC), hwndDlg, dis.rcItem);
+				dis.hDC = hdcMem;
+				dis.hwndItem = GetDlgItem(hwndDlg, IDC_PANELPIC);
+				MsgWindowDrawHandler(0, (LPARAM)&dis, hwndDlg, dat);
+			}
 
 			BitBlt(hdc, 0, 0, cx, cy, hdcMem, 0, 0, SRCCOPY);
 			SelectObject(hdcMem, hbmOld);
@@ -5708,6 +5726,13 @@ quote_from_last:
 				}
 				CallService(MS_HPP_EG_WINDOW, 0, (LPARAM)&ieWindow);
 			}
+			break;
+		case WM_DWMCOMPOSITIONCHANGED:
+			BB_RefreshTheme(dat);
+			m_pContainer->dwOldAeroBottom = m_pContainer->dwOldAeroTop = 0;
+			InvalidateRect(hwndDlg, NULL, TRUE);
+			UpdateWindow(hwndDlg);
+			SetAeroMargins(dat->pContainer);
 			break;
 		case WM_NCDESTROY:
 			if (dat)

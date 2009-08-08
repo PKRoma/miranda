@@ -68,6 +68,72 @@ typedef struct
 } MESSAGESUBDATA;
 
 static const CLSID IID_ITextDocument= { 0x8CC497C0,0xA1DF,0x11CE, { 0x80,0x98, 0x00,0xAA, 0x00,0x47,0xBE,0x5D} };
+extern WNDPROC OldIEViewProc, OldHppProc;
+
+static void Chat_SetMessageLog(_MessageWindowData *dat)
+{
+	unsigned int iLogMode = M->GetByte("Chat", "useIEView", 0);
+
+	if (iLogMode == WANT_IEVIEW_LOG && dat->hwndIEView == 0) {
+		IEVIEWWINDOW ieWindow;
+		IEVIEWEVENT iee;
+
+		//CheckAndDestroyHPP(dat);
+		ZeroMemory(&ieWindow, sizeof(ieWindow));
+		ZeroMemory(&iee, sizeof(iee));
+		ieWindow.cbSize = sizeof(ieWindow);
+		ieWindow.iType = IEW_CREATE;
+		ieWindow.dwFlags = 0;
+		ieWindow.dwMode = IEWM_TABSRMM;
+		ieWindow.parent = dat->hwnd;
+		ieWindow.x = 0;
+		ieWindow.y = 0;
+		ieWindow.cx = 200;
+		ieWindow.cy = 300;
+		CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
+		dat->hwndIEView = ieWindow.hwnd;
+		ZeroMemory(&iee, sizeof(iee));
+		iee.cbSize = sizeof(iee);
+		iee.iType = IEE_CLEAR_LOG;
+		iee.hwnd = dat->hwndIEView;
+		iee.hContact = dat->hContact;
+		iee.codepage = dat->codePage;
+
+		SESSION_INFO *si = (SESSION_INFO *)dat->si;
+
+		iee.pszProto = si->pszModule;
+		CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&iee);
+
+		ShowWindow(GetDlgItem(dat->hwnd, IDC_CHAT_LOG), SW_HIDE);
+		EnableWindow(GetDlgItem(dat->hwnd, IDC_CHAT_LOG), FALSE);
+	} else if (iLogMode == WANT_HPP_LOG && dat->hwndHPP == 0) {
+		IEVIEWWINDOW ieWindow;
+
+		ZeroMemory(&ieWindow, sizeof(ieWindow));
+		//CheckAndDestroyIEView(dat);
+		ieWindow.cbSize = sizeof(IEVIEWWINDOW);
+		ieWindow.iType = IEW_CREATE;
+		ieWindow.dwFlags = 0;
+		ieWindow.dwMode = IEWM_MUCC;
+		ieWindow.parent = dat->hwnd;
+		ieWindow.x = 0;
+		ieWindow.y = 0;
+		ieWindow.cx = 10;
+		ieWindow.cy = 10;
+		CallService(MS_HPP_EG_WINDOW, 0, (LPARAM)&ieWindow);
+		dat->hwndHPP = ieWindow.hwnd;
+		ShowWindow(GetDlgItem(dat->hwnd, IDC_CHAT_LOG), SW_HIDE);
+		EnableWindow(GetDlgItem(dat->hwnd, IDC_CHAT_LOG), FALSE);
+	} else {
+		if (iLogMode != WANT_IEVIEW_LOG)
+			CheckAndDestroyIEView(dat);
+		ShowWindow(GetDlgItem(dat->hwnd, IDC_CHAT_LOG), SW_SHOW);
+		EnableWindow(GetDlgItem(dat->hwnd, IDC_CHAT_LOG), TRUE);
+		dat->hwndIEView = 0;
+		dat->hwndIWebBrowserControl = 0;
+		dat->hwndHPP = 0;
+	}
+}
 
 
 /*
@@ -244,6 +310,25 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct _MessageWindowData *dat,
 			PostMessage(hwndDlg, WM_SIZE, 0, 0);
 			dat->wParam = dat->lParam = 0;
 		}
+		if (dat->hwndIEView) {
+			RECT rcRTF;
+			POINT pt;
+
+			GetWindowRect(GetDlgItem(hwndDlg, IDC_CHAT_LOG), &rcRTF);
+			rcRTF.left += 20;
+			rcRTF.top += 20;
+			pt.x = rcRTF.left;
+			pt.y = rcRTF.top;
+			if (dat->hwndIEView) {
+				if (M->GetByte("subclassIEView", 0) && dat->oldIEViewProc == 0) {
+					WNDPROC wndProc = (WNDPROC)SetWindowLongPtr(dat->hwndIEView, GWLP_WNDPROC, (LONG_PTR)IEViewSubclassProc);
+					if (OldIEViewProc == 0)
+						OldIEViewProc = wndProc;
+					dat->oldIEViewProc = wndProc;
+				}
+			}
+			dat->hwndIWebBrowserControl = WindowFromPoint(pt);
+		}
 	}
 	SetAeroMargins(dat->pContainer);
 	BB_SetButtonsPos(hwndDlg,dat);
@@ -284,6 +369,33 @@ static int splitterEdges = FALSE;
 static UINT _toolbarCtrls[] = { IDC_SMILEYBTN, IDC_CHAT_BOLD, IDC_CHAT_UNDERLINE, IDC_ITALICS, IDC_COLOR, IDC_BKGCOLOR,
 								IDC_CHAT_HISTORY, IDC_SHOWNICKLIST, IDC_FILTER, IDC_CHANMGR, IDOK, IDC_CHAT_CLOSE, 0
 							  };
+
+
+static void Chat_ResizeIeView(const _MessageWindowData *dat)
+{
+	RECT 			rcRichEdit;
+	POINT 			pt;
+	IEVIEWWINDOW 	ieWindow;
+	int 			iMode = dat->hwndIEView ? 1 : 2;
+	HWND			hwndDlg = dat->hwnd;
+
+	ZeroMemory(&ieWindow, sizeof(ieWindow));
+	GetWindowRect(GetDlgItem(hwndDlg, IDC_CHAT_LOG), &rcRichEdit);
+	pt.x = rcRichEdit.left;
+	pt.y = rcRichEdit.top;
+	ScreenToClient(hwndDlg, &pt);
+	ieWindow.cbSize = sizeof(IEVIEWWINDOW);
+	ieWindow.iType = IEW_SETPOS;
+	ieWindow.parent = hwndDlg;
+	ieWindow.hwnd = iMode == 1 ? dat->hwndIEView : dat->hwndHPP;
+	ieWindow.x = pt.x;
+	ieWindow.y = pt.y;
+	ieWindow.cx = rcRichEdit.right - rcRichEdit.left;
+	ieWindow.cy = rcRichEdit.bottom - rcRichEdit.top;
+	if (ieWindow.cx != 0 && ieWindow.cy != 0) {
+		CallService(iMode == 1 ? MS_IEVIEW_WINDOW : MS_HPP_EG_WINDOW, 0, (LPARAM)&ieWindow);
+	}
+}
 
 /*
  * resizer callback for the group chat session window. Called from Mirandas dialog
@@ -2025,6 +2137,9 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BUTTONSETASFLATBTN + 12, 0, (LPARAM)dat->pContainer);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BUTTONSETASFLATBTN, 0, 0);
 
+			dat->hwndIEView = dat->hwndHPP = 0;
+			Chat_SetMessageLog(dat);
+
 			dat->wOldStatus = -1;
 			SendMessage(hwndDlg, GC_SETWNDPROPS, 0, 0);
 			SendMessage(hwndDlg, GC_UPDATESTATUSBAR, 0, 0);
@@ -2234,7 +2349,11 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM)&urd);
 			//mad
 			BB_SetButtonsPos(hwndDlg,dat);
-			}
+
+			if (dat->hwndIEView || dat->hwndHPP)
+				Chat_ResizeIeView(dat);
+
+		}
 		break;
 
 		case GC_REDRAWWINDOW:
@@ -2617,7 +2736,6 @@ LABEL_SHOWWINDOW:
 		break;
 
 		case GC_SCROLLTOBOTTOM: {
-			SCROLLINFO si = { 0 };
 			return(DM_ScrollToBottom(hwndDlg, dat, wParam, lParam));
 		}
 
@@ -3247,7 +3365,7 @@ LABEL_SHOWWINDOW:
 			break;
 
 		case WM_ERASEBKGND:
-			if (dat->pContainer->bSkinned)
+			if (dat && (dat->pContainer->bSkinned || M->isAero()))
 				return TRUE;
 			break;
 

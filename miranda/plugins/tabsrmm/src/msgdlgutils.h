@@ -26,6 +26,9 @@ $Id$
 #ifndef _MSGDLGUTILS_H
 #define _MSGDLGUTILS_H
 
+#define WANT_IEVIEW_LOG 1
+#define WANT_HPP_LOG 2
+
 //MAD
 HWND GetLastChild(HWND hwndParent);
 //MAD_
@@ -90,7 +93,7 @@ BOOL        IsStatusEvent(int eventType);
 void        GetMyNick(_MessageWindowData *dat);
 int         FindRTLLocale(struct _MessageWindowData *dat);
 HICON       MY_GetContactIcon(struct _MessageWindowData *dat);
-
+void 		CheckAndDestroyIEView(struct _MessageWindowData *dat);
 // mathmod
 
 void        MTH_updateMathWindow(const _MessageWindowData *dat);

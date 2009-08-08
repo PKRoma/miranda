@@ -578,6 +578,7 @@ void BB_InitDlgButtons(HWND hdlg, struct _MessageWindowData *dat)
 				if (cbd->hIcon)SendMessage(hwndBtn, BM_SETIMAGE, IMAGE_ICON, (LPARAM)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)cbd->hIcon));
 				if (cbd->ptszTooltip)SendMessage(hwndBtn, BUTTONADDTOOLTIP, (WPARAM)TranslateTS(cbd->ptszTooltip), 0);
 				SendMessage(hwndBtn, BUTTONSETASFLATBTN + 12, 0, (LPARAM)dat->pContainer);
+				SendMessage(hwndBtn, BUTTONSETASTOOLBARBUTTON, 0, 1);
 
 				if (hwndBtn && cbd->dwArrowCID)
 					SendMessage(hwndBtn, BUTTONSETARROW, cbd->dwArrowCID, 0);
@@ -601,7 +602,8 @@ void BB_InitDlgButtons(HWND hdlg, struct _MessageWindowData *dat)
 		if (((dat->bType == SESSIONTYPE_IM && cbd->bIMButton)
 				|| (dat->bType == SESSIONTYPE_CHAT && cbd->bChatButton))) {
 			if (!cbd->bDummy && !GetDlgItem(hdlg, cbd->dwButtonCID))
-				hwndBtn = CreateWindowEx(0, _T("TSButtonClass"), _T(""), WS_CHILD | WS_VISIBLE | WS_TABSTOP, 2 + lwidth, splitterY, cbd->iButtonWidth, DPISCALEY(22), hdlg, (HMENU) cbd->dwButtonCID, g_hInst, NULL);
+				hwndBtn = CreateWindowEx(0, _T("TSButtonClass"), _T(""), WS_CHILD | WS_VISIBLE | WS_TABSTOP, 2 + lwidth, splitterY,
+										 cbd->iButtonWidth, DPISCALEY(22), hdlg, (HMENU) cbd->dwButtonCID, g_hInst, NULL);
 			if (!cbd->bHidden)
 				lwidth += cbd->iButtonWidth + gap;
 			if (!cbd->bHidden && !cbd->bCanBeHidden)
@@ -612,6 +614,7 @@ void BB_InitDlgButtons(HWND hdlg, struct _MessageWindowData *dat)
 				if (cbd->hIcon)SendMessage(hwndBtn, BM_SETIMAGE, IMAGE_ICON, (LPARAM)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)cbd->hIcon));
 				if (cbd->ptszTooltip)SendMessage(hwndBtn, BUTTONADDTOOLTIP, (WPARAM)TranslateTS(cbd->ptszTooltip), 0);
 				SendMessage(hwndBtn, BUTTONSETASFLATBTN + 12, 0, (LPARAM)dat->pContainer);
+				SendMessage(hwndBtn, BUTTONSETASTOOLBARBUTTON, 0, 1);
 
 				if (hwndBtn && cbd->dwArrowCID)
 					SendMessage(hwndBtn, BUTTONSETARROW, cbd->dwArrowCID, 0);
@@ -865,6 +868,20 @@ void BB_RegisterSeparators()
 		bbd.dwButtonID = i + 1;
 		bbd.dwDefPos = 410 + i;
 		CB_AddButton(0, (LPARAM)&bbd);
+	}
+}
+
+void BB_RefreshTheme(const _MessageWindowData *dat)
+{
+	int i;
+
+	for (i = 0; i < RButtonsList->realCount; i++) {
+		CustomButtonData* cbd = (CustomButtonData *)RButtonsList->items[i];
+		SendMessage(GetDlgItem(dat->hwnd, cbd->dwButtonCID), WM_THEMECHANGED, 0, 0);
+	}
+	for (i = 0; i < LButtonsList->realCount; i++) {
+		CustomButtonData* cbd = (CustomButtonData *)LButtonsList->items[i];
+		SendMessage(GetDlgItem(dat->hwnd, cbd->dwButtonCID), WM_THEMECHANGED, 0, 0);
 	}
 }
 

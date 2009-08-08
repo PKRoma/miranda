@@ -45,6 +45,7 @@ typedef struct {
 	HANDLE  hThemeButton;
 	HANDLE  hThemeToolbar;
 	BOOL    bThemed;
+	BOOL	bToolbarButton;			// is a toolbar button (important for aero background rendering)
 	BOOL	bTitleButton;
 	TCHAR	cHot;
 	int     flatBtn;
@@ -52,6 +53,8 @@ typedef struct {
 	struct ContainerWindowData *pContainer;
 	ButtonItem *item;
 } MButtonCtrl;
+
+#define BUTTONSETASTOOLBARBUTTON (BUTTONSETASFLATBTN + 21)
 
 /**
  * CImageItem implementes image-based skin items. These items are loaded
@@ -148,6 +151,9 @@ class CSkin
 public:
 	CSkin()
 	{
+		m_default_bf.SourceConstantAlpha = 255;
+		m_default_bf.AlphaFormat = AC_SRC_ALPHA;
+		m_default_bf.BlendOp = AC_SRC_OVER;
 		Init();
 		if(m_fLoadOnStartup)
 			Load();								// load skin on init if this is checked
@@ -201,6 +207,7 @@ public:
 	static void 	RenderIPUIN(HDC hdc, RECT &rcItem, _MessageWindowData *dat);
 	static void 	RenderIPStatus(HDC hdc, RECT &rcItem, _MessageWindowData *dat);
 	static void 	RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &rcWindow);
+	static HBITMAP 	ResizeBitmap(HBITMAP hBmpSrc, LONG width, LONG height, bool &mustFree);
 
 public:
 	static bool		m_DisableScrollbars, m_bClipBorder;
@@ -216,7 +223,7 @@ public:
 	static bool		m_skinEnabled;
 	static bool		m_frameSkins;
 	static HICON	m_closeIcon, m_minIcon, m_maxIcon;
-
+	static BLENDFUNCTION m_default_bf;
 private:
 	TCHAR			m_tszFileName[MAX_PATH];				// full path and filename of the currently loaded skin
 	char			m_tszFileNameA[MAX_PATH];				// compatibility (todo: remove later)

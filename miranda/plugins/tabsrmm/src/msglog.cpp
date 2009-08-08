@@ -1379,6 +1379,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 	hwndrtf = dat->hwndIEView ? dat->hwndIWebBrowserControl : GetDlgItem(hwndDlg, IDC_LOG);
 
 	si.cbSize = sizeof(si);
+	/*
 	if (IsWindow(hwndrtf)) {
 		si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;;
 		GetScrollInfo(hwndrtf, SB_VERT, &si);
@@ -1389,6 +1390,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 		else
 			psi = NULL;
 	}
+	*/
 
 	rtfFonts = dat->theme.rtfFonts ? dat->theme.rtfFonts : &(rtfFontsGlobal[0][0]);
 	now = time(NULL);
@@ -1401,6 +1403,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 	if (dat->hwndIEView != 0) {
 		IEVIEWEVENT event;
 
+		ZeroMemory(&event, sizeof(event));
 		event.cbSize = sizeof(IEVIEWEVENT);
 		event.hwnd = dat->hwndIEView;
 		event.hContact = dat->hContact;
@@ -1419,9 +1422,10 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 			event.iType = IEE_CLEAR_LOG;
 			CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
 		}
-		event.iType = IEE_LOG_EVENTS;
+		event.iType = IEE_LOG_DB_EVENTS;
 		event.hDbEventFirst = hDbEventFirst;
 		event.count = count;
+		event.pszProto = dat->szProto;
 		CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
 		DM_ScrollToBottom(hwndDlg, dat, 0, 0);
 		if (fAppend)
@@ -1451,7 +1455,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 			event.iType = IEE_CLEAR_LOG;
 			CallService(MS_HPP_EG_EVENT, 0, (LPARAM)&event);
 		}
-		event.iType = IEE_LOG_EVENTS;
+		event.iType = IEE_LOG_DB_EVENTS;
 		event.hDbEventFirst = hDbEventFirst;
 		event.count = count;
 		CallService(MS_HPP_EG_EVENT, 0, (LPARAM)&event);

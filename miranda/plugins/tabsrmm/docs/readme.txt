@@ -1,17 +1,17 @@
-				tabbed  SRMM plugin for Miranda IM 0.5.0.0
-				------------------------------------------
+				tabbed  SRMM plugin for Miranda IM 0.9.0
+				----------------------------------------
 
 Online resources at: http://miranda.or.at
 
 ----------------------------------------------------------
-				
-Version: 2.0.0.0
-Created: October 2007
+
+Version: 3.x
+Created: August 2009
 
 1. Overview
 -----------
 
-tabSRMM is an advanced messaging module for Miranda IM (version 0.5.x or later
+tabSRMM is an advanced messaging module for Miranda IM (version 0.9.x or later
 required). It adds many new options and features to make instant messaging more
 enjoyable and allows you to tweak almost every aspect of the message window to
 fit your needs.
@@ -25,47 +25,47 @@ fit your needs.
    windows "top level". You can define as many container windows as you want and
    assign your contacts to different containers. This allows you to organize your
    chat sessions in many different ways.
-   
+
    If you dislike a tabbed interface for chatting, you can also configure a "single
    window mode" in which each session is opened in a separate window.
-   
+
 *  Lots of options to tweak the look of your message log.
 
 *  Works with the external IEView plugin to give you a fully customizable message log
    using HTML templates and CSS.
-   
+
 *  Avatar support - both contacts and own avatars can be shown in the message dialog.
-   
+
 *  message templates for the message history in the chat window. You can freely define
    how messages will look like by using a powerful system of variables and templates.
-   
+
 *  built-in event notification system can announce messages and other events by using
    popups, system tray tooltips or On Screen Displa (announcing via poups or on screen
    display requires additional plugins).
-   
-*  WYSIWYG text editing in the message input box. Formatted text can be parsed to 
+
+*  WYSIWYG text editing in the message input box. Formatted text can be parsed to
    either BBCodes or simple */_ style formatting tags.
-   
+
 *  many features which make chatting more user friendly and easier. Some examples.
-   
+
    * auto-select-and-copy: Selecting text in the message log history will automatically
      copy it to the clipboard. Holding down the ctrl key while selecting text will
      insert the selection in the edit box immediatly.
-     
+
    * simplified mousewheel handling. No need to change the focus if you want to scroll
      the history log. Just move the mouse pointer over it and use the wheel.
-     
-   * Many hotkeys. Almost everything can be done without using the mouse. 
-      
-   * option to minimize chat windows to the tray so they won't clutter your taskbar. 
+
+   * Many hotkeys. Almost everything can be done without using the mouse.
+
+   * option to minimize chat windows to the tray so they won't clutter your taskbar.
      A session list is available which can be used to access chat windows which have
      been minimized to the system tray.
-     
+
 *  A "favorite contact" list which can be used to access favorite contacts quickly.
    (Win 2000 or later).
 
 *  Remembers the last 15 active sessions in a menu (Win 2000 or later).
-     
+
 *  System tray support.
 
 *  integrated group chat module, based on chat.dll but merged into tabSRMM to give
@@ -78,21 +78,6 @@ fit your needs.
    There you can find a lot of useful information, articles, a small FAQ, and some
    links telling you more about tabSRMM in general.
 
-4. Known bugs and issues
-------------------------
-
-*  some minor glitches under Windows 9x/ME, mostly graphical.
-
-*  some features don't work under Windows 9x. Affected are most things related
-   to the session list, the favorite contact and recent list.
-   
-*  Skinning is only supported on Windows 2000 or later.
-
-*  multisend doesn't work well. I suggest using it with "care" :) It will
-   improve in the future. Also, multisend shouldn't be used "excessivly" -
-   tabSRMM limits the number of contacts to 20 per message, but even that
-   *may* be too much for some IM networks.
-  
 6. Credits and thanks:
 ----------------------
 
@@ -102,27 +87,32 @@ the development phase. I cannot name you all here, because it's just too many.
 * The Miranda-IM development team and all contributors for making the best
   IM client on this planet (and probably in the entire universe :) )
 
-* sryo (teodalton@yahoo.com) for the minimal icons. 
+* sryo (teodalton@yahoo.com) for the minimal icons.
 
 * Faith Healer for making icon packs, lots of suggestions, testing and
   feedback.
-  
-* the members on my own forum (http://www.miranda.or.at/forums/) for a lot 
+
+* the members on my own forum (http://www.miranda.or.at/forums/) for a lot
   of bug reports, feature suggestions and testing every new snapshot.
 
-* Angeli-Ka for many bug reports and general feedback,  especially in the 
+* Angeli-Ka for many bug reports and general feedback,  especially in the
   early phase of development when using tabSRMM could be really frustrating :)
 
   Also, for making the final icon set which is now distributed as default icon
   pack.
-  
+
 * Progame - for finding even the most carefully hidden bugs :)
 
-* All other mambers of the Miranda community,  who helped with hunting down 
+* All other members of the Miranda community,  who helped with hunting down
   sometimes hard to find, bugs, and for suggesting features.
-  
-License: GPL
 
-Contact me at:         mailto: silvercircle@gmail.com
+* "Mad" for the madmod patch which added a number of new features to the
+  plugin.
+
+------------
+License: GPL
+------------
+
+Contact me at: mailto: silvercircle _at_ gmail _dot_ com
 		       ICQ:    7769309
-                       MSN:    silvercircle@gmail.com
+               MSN:    silvercircle _at_ gmail _dot_ com
