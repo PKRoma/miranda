@@ -1174,17 +1174,21 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 		break;
 
 	case IDM_SET_BAN:
-		if ((GetTickCount() - dwLastBanKickTime) > BAN_KICK_INTERVAL)
-		{
-			dwLastBanKickTime = GetTickCount();
-			mir_sntprintf( szBuffer, SIZEOF(szBuffer), _T("%s: "), me->resourceName );
-			mir_sntprintf( szTitle, SIZEOF(szTitle), _T("%s %s"), TranslateT( "Reason to ban" ), him->resourceName );
-			TCHAR *resourceName_copy = NEWTSTR_ALLOCA(him->resourceName); // copy resource name to prevent possible crash if user list rebuilds
-			if ( ppro->EnterString(szBuffer, SIZEOF(szBuffer), szTitle, JES_MULTINE, "gcReason_" ))
-				ppro->m_ThreadInfo->send(
+		if ((GetTickCount() - dwLastBanKickTime) > BAN_KICK_INTERVAL) {
+			if ( him->szRealJid && *him->szRealJid ) {
+				TCHAR szVictimBareJid[ JABBER_MAX_JID_LEN ];
+				JabberStripJid( him->szRealJid, szVictimBareJid, SIZEOF(szVictimBareJid) );
+
+				mir_sntprintf( szBuffer, SIZEOF(szBuffer), _T("%s: "), me->resourceName );
+				mir_sntprintf( szTitle, SIZEOF(szTitle), _T("%s %s"), TranslateT( "Reason to ban" ), him->resourceName );
+
+				if ( ppro->EnterString(szBuffer, SIZEOF(szBuffer), szTitle, JES_MULTINE, "gcReason_" )) {
+					ppro->m_ThreadInfo->send(
 					XmlNodeIq( _T("set"), ppro->SerialNext(), item->jid ) << XQUERY( xmlnsAdmin )
-						<< XCHILD( _T("item")) << XATTR( _T("nick"), resourceName_copy ) << XATTR( _T("affiliation"), _T("outcast"))
-						<< XCHILD( _T("reason"), szBuffer ));
+					<< XCHILD( _T("item")) << XATTR( _T("jid"), szVictimBareJid ) << XATTR( _T("affiliation"), _T("outcast"))
+					<< XCHILD( _T("reason"), szBuffer ));
+				}
+			}
 		}
 		dwLastBanKickTime = GetTickCount();
 		break;
@@ -1510,7 +1514,7 @@ int CJabberProto::JabberGcEventHook(WPARAM, LPARAM lParam)
 
 void CJabberProto::AddMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, TCHAR* str )
 {
-	const TCHAR* field = _tcschr(str,'@') ? _T("jid") : _T("nick");
+	const TCHAR* field = ( jidListInfo->type == MUC_BANLIST || _tcschr(str,'@') ) ? _T("jid") : _T("nick");
 	TCHAR* roomJid = jidListInfo->roomJid;
 
 	switch (jidListInfo->type) {
