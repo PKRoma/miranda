@@ -286,8 +286,8 @@ int __cdecl CAimProto::FileResume(HANDLE hTransfer, int* action, const char** sz
         break;
 
     case FILERESUME_RENAME:
-        mir_free(ft->pfts.tszCurrentFile);
-        ft->pfts.tszCurrentFile = mir_tstrdup(*szFilename);
+        mir_free(ft->pfts.currentFile);
+        ft->pfts.currentFile = mir_strdup(*szFilename);
 		break;
 
     case FILERESUME_OVERWRITE:
