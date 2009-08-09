@@ -2434,8 +2434,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			ieWindow.hwnd = dat->windowData.hwndLog;
 			CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
 		}
-		mir_free(dat);
 		NotifyLocalWinEvent(dat->windowData.hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE);
+		mir_free(dat);
 		break;
 	}
 	return FALSE;
