@@ -233,16 +233,15 @@ int gg_decodehosts(char *var, GGHOST *hosts, int max)
 // Wait for thread to stop
 void gg_threadwait(GGPROTO *gg, pthread_t *thread)
 {
-	DWORD exitCode = 0;
-	GetExitCodeThread(thread->hThread, &exitCode);
-	if (GetCurrentThreadId() != thread->dwThreadId && exitCode == STILL_ACTIVE)
-	{
+	if (!thread->hThread)
+		return;
+
 #ifdef DEBUGMODE
-		gg_netlog(gg, "gg_threadwait(): Waiting until %s finished.", thread->dwThreadId == gg->pth_dcc.dwThreadId ? "gg_dccmainthread()" : "gg_mainthread()");
+	gg_netlog(gg, "gg_threadwait(): Waiting until %s finished, if needed.", thread->hThread == gg->pth_dcc.hThread ? "DCC Server Thread" : "Server Thread");
 #endif
-		while (WaitForSingleObjectEx(thread->hThread, INFINITE, TRUE) != WAIT_OBJECT_0);
-	}
+	while (WaitForSingleObjectEx(thread->hThread, INFINITE, TRUE) != WAIT_OBJECT_0);
 	pthread_detach(thread);
+	ZeroMemory(thread, sizeof(pthread_t));
 }
 
 ////////////////////////////////////////////////////////////
@@ -359,9 +358,6 @@ void *__stdcall gg_mainthread(void *empty)
 		gg_netlog(gg, "gg_mainthread(%x): No password specified. Exiting.", empty);
 #endif
 		gg_broadcastnewstatus(gg, ID_STATUS_OFFLINE);
-		pthread_mutex_lock(&gg->sess_mutex);
-		ZeroMemory(&gg->pth_sess, sizeof(gg->pth_sess));
-		pthread_mutex_unlock(&gg->sess_mutex);
 		return NULL;
 	}
 
@@ -373,9 +369,6 @@ void *__stdcall gg_mainthread(void *empty)
 #endif
 		gg_broadcastnewstatus(gg, ID_STATUS_OFFLINE);
 		free(p.password);
-		pthread_mutex_lock(&gg->sess_mutex);
-		ZeroMemory(&gg->pth_sess, sizeof(gg->pth_sess));
-		pthread_mutex_unlock(&gg->sess_mutex);
 		return NULL;
 	}
 
@@ -607,7 +600,6 @@ retry:
 					char *descr = (e->type == GG_EVENT_NOTIFY_DESCR) ? e->event.notify_descr.descr : NULL;
 					gg_changecontactstatus(gg, n->uin, n->status, descr, 0, n->remote_ip, n->remote_port, n->version);
 				}
-
 				break;
 			}
 			// Statuslist notify (version 6.0)
@@ -1066,20 +1058,13 @@ retry:
 	free(p.password);
 	free(p.status_descr);
 
-	pthread_mutex_lock(&gg->sess_mutex);
-	gg->pth_sess.dwThreadId = 0;
-	pthread_mutex_unlock(&gg->sess_mutex);
-
 	// Stop dcc server
+	gg->pth_dcc.dwThreadId = 0;
 	gg_threadwait(gg, &gg->pth_dcc);
 
 #ifdef DEBUGMODE
 	gg_netlog(gg, "gg_mainthread(%x): Server Thread Ending", gg);
 #endif
-
-	pthread_mutex_lock(&gg->sess_mutex);
-	ZeroMemory(&gg->pth_sess, sizeof(gg->pth_sess));
-	pthread_mutex_unlock(&gg->sess_mutex);
 
 	return NULL;
 }

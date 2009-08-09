@@ -183,7 +183,7 @@ void *__stdcall gg_dccmainthread(void *empty)
 	list_add(&gg->watches, gg->dcc, 0);
 
 	// Do while we are in the main server thread
-	while(gg->pth_sess.dwThreadId && gg->dcc)
+	while(gg->pth_dcc.dwThreadId && gg->dcc)
 	{
 		// Timeouts
 		tv.tv_sec = 1;
@@ -673,8 +673,6 @@ void *__stdcall gg_dccmainthread(void *empty)
 #ifdef DEBUGMODE
 	gg_netlog(gg, "gg_dccmainthread(): DCC Server Thread Ending");
 #endif
-
-	ZeroMemory(&gg->pth_dcc, sizeof(gg->pth_dcc));
 
 	return NULL;
 }
