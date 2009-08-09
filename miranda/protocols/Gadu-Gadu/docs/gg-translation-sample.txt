@@ -34,8 +34,9 @@ Ikona zadañ systemowych
 Wyskakuj¹ce okno
 [Message with [img] BBCode]
 Wiadomoœæ z tagiem [img]
-[Show contacts not on my list having me on their list]
-Pokazuj kontakty spoza mojej listy maj¹ce mnie na swojej liœcie
+;[Show contacts not on my list having me on their list] @ deprecated 0.0.5.3
+[Show links from unknown contacts]
+Pokazuj linki od nieznajomych
 [Gadu-Gadu Number:]
 Numer Gadu-Gadu:
 [Gadu-Gadu Number]
@@ -107,7 +108,7 @@ Eksport listy do serwera
 Eksport listy do pliku tekstowego
 [Account settings]
 Ustawienia konta
-;[Blocked to this contact} @ deprecated 0.0.5.2
+;[Blocked to this contact] @ deprecated 0.0.5.2
 [Previous image]
 Poprzedni obrazek
 [Next image]

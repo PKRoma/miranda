@@ -234,8 +234,8 @@ typedef struct
 #define GG_KEY_FRIENDSONLY		"FriendsOnly"	// Friend only visibility
 #define GG_KEYDEF_FRIENDSONLY	0
 
-#define GG_KEY_SHOWNOTONMYLIST		"ShowNotOnMyList"	// Show contacts having me on their list but not on my list
-#define GG_KEYDEF_SHOWNOTONMYLIST	0
+#define GG_KEY_SHOWLINKS		"ShowLinks"		// Show links from unknown contacts
+#define GG_KEYDEF_SHOWLINKS		0
 
 #define GG_KEY_SHOWINVISIBLE	"ShowInvisible" // Show invisible users when described
 #define GG_KEYDEF_SHOWINVISIBLE	0

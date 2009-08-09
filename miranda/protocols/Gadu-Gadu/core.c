@@ -297,6 +297,8 @@ void *__stdcall gg_mainthread(void *empty)
 	p.client_version = "8.0.0.8731";
 	p.protocol_version = 0x2e;
 	p.protocol_features = GG_FEATURE_STATUS80BETA | GG_FEATURE_DND_FFC;
+	if (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWLINKS, GG_KEYDEF_SHOWLINKS))
+		p.protocol_flags80 = 0x800000;
 
 	// Use audio
 	/* p.has_audio = 1; */
@@ -1567,7 +1569,7 @@ int status_gg2m(GGPROTO *gg, int status)
 // Called when contact status is changed
 void gg_changecontactstatus(GGPROTO *gg, uin_t uin, int status, const char *idescr, int time, uint32_t remote_ip, uint16_t remote_port, uint32_t version)
 {
-	HANDLE hContact = gg_getcontact(gg, uin, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWNOTONMYLIST, GG_KEYDEF_SHOWNOTONMYLIST) ? 1 : 0, 0, NULL);
+	HANDLE hContact = gg_getcontact(gg, uin, 0, 0, NULL);
 
 	// Check if contact is on list
 	if(!hContact) return;

@@ -208,6 +208,10 @@ void gg_cleanuplastplugin(GGPROTO *gg, DWORD version)
 		}
 	}
 
+	// Remove old unneeded entry
+	if(version < PLUGIN_MAKE_VERSION(0, 0, 5, 3))
+		DBDeleteContactSetting(NULL, GG_PROTO, "ShowNotOnMyList");
+
 	// Store this plugin version
 	DBWriteContactSettingDword(NULL, GG_PROTO, GG_PLUGINVERSION, pluginInfo.version);
 }
