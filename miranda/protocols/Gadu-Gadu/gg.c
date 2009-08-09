@@ -25,7 +25,7 @@
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"Gadu-Gadu Protocol",
-	PLUGIN_MAKE_VERSION(0, 0, 5, 2),
+	PLUGIN_MAKE_VERSION(0, 0, 5, 3),
 	"Provides support for Gadu-Gadu protocol",
 	"Adam Strzelecki, Bartosz Bia³ek",
 	"dezred"/*antispam*/"@"/*antispam*/"gmail"/*antispam*/"."/*antispam*/"com",
