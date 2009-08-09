@@ -21,6 +21,10 @@ Contents
 1. Changes in this version
 --------------------------
 * New in 0.8.4
+Enhancements:
+ - Gadu-Gadu: Added option: 'Show links from unknown contacts'
+ - Yahoo: Improved login error detection
+
 Bugfixes:
  - Installer uses safer method of previous installation choices detection
  - AIM: Fixed mail notifications
@@ -28,13 +32,13 @@ Bugfixes:
  - AIM: Fixed setting status to unknown status
  - Gadu-Gadu: Icons were not installed correctly
  - Gadu-Gadu: Fixed crash opening new conference
+ - Gadu-Gadu: Removed 'Show contacts not on my list having me on their list' option due to the server changes
  - ICQ: Advanced search was not working in some cases
  - Jabber: Ignored Google Talk custom domains in account manager
  - Jabber: Receiving messages stops if <version> tag in response is incomplete
  - Jabber: Group chat invites didn't process non-legacy invites
  - Jabber: Fix for rare crash
  - MSN: Fixed setting status to unknown status
- - Yahoo: Improved login error detection
 
 
 * New in 0.8.3
