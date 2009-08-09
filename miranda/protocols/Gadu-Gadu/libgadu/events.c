@@ -1961,7 +1961,7 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 				l.hash_type     = sess->hash_type;
 				memcpy(l.hash, login_hash, sizeof(login_hash));
 				l.status        = gg_fix32(sess->initial_status ? sess->initial_status : GG_STATUS_AVAIL);
-				l.flags		= gg_fix32(0x01);
+				l.flags		= gg_fix32(sess->protocol_flags80 | 0x01);
 				l.features	= gg_fix32(sess->protocol_features);
 			/*
 				l.local_ip      = (sess->external_addr) ? sess->external_addr : sess->client_addr;

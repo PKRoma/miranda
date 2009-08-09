@@ -311,6 +311,7 @@ struct gg_session {
 	void (*resolver_cleanup)(void **private_data, int force);	/**< Funkcja zwalniająca zasoby po rozwiązaniu nazwy */
 
 	int protocol_features;	/**< Opcje protokołu */
+	int protocol_flags80;	/**< Flagi protokołu GG8 */
 };
 
 /**
@@ -613,6 +614,7 @@ struct gg_login_params {
 	int encoding;			/**< Rodzaj kodowania używanego w sesji (domyślnie CP1250) */
 	gg_resolver_t resolver;		/**< Sposób rozwiązywania nazw (patrz \ref build-resolver) */
 	int protocol_features;		/**< Opcje protokołu (flagi GG_FEATURE_*) */
+	int protocol_flags80;		/**< Flagi protokołu GG8 */
 
 #ifndef DOXYGEN
 	char dummy[2 * sizeof(int)];	/**< \internal Miejsce na kilka kolejnych

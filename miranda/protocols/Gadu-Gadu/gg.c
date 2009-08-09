@@ -25,7 +25,7 @@
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"Gadu-Gadu Protocol",
-	PLUGIN_MAKE_VERSION(0, 0, 5, 2),
+	PLUGIN_MAKE_VERSION(0, 0, 5, 3),
 	"Provides support for Gadu-Gadu protocol",
 	"Adam Strzelecki, Bartosz Bia³ek",
 	"dezred"/*antispam*/"@"/*antispam*/"gmail"/*antispam*/"."/*antispam*/"com",
@@ -207,6 +207,10 @@ void gg_cleanuplastplugin(GGPROTO *gg, DWORD version)
 			hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 		}
 	}
+
+	// Remove old unneeded entry
+	if(version < PLUGIN_MAKE_VERSION(0, 0, 5, 3))
+		DBDeleteContactSetting(NULL, GG_PROTO, "ShowNotOnMyList");
 
 	// Store this plugin version
 	DBWriteContactSettingDword(NULL, GG_PROTO, GG_PLUGINVERSION, pluginInfo.version);

@@ -763,6 +763,7 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 	sess->external_port = p->external_port;
 	sess->external_addr = p->external_addr;
 	sess->protocol_features = p->protocol_features;
+	sess->protocol_flags80 = p->protocol_flags80;
 	sess->protocol_version = (p->protocol_version) ? p->protocol_version : GG_DEFAULT_PROTOCOL_VERSION;
 	if (p->era_omnix)
 		sess->protocol_flags |= GG_ERA_OMNIX_MASK;

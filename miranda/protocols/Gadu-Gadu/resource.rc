@@ -61,7 +61,7 @@ BEGIN
 //		CONTROL 		"Ignore incoming conference messages",IDC_IGNORECONF,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,145,255,10
 		CONTROL 		"Receive image and after image is received use:",IDC_IMGRECEIVE,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,135,175,10
 		COMBOBOX		IDC_IMGMETHOD,190,133,102,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-		CONTROL 		"Show contacts not on my list having me on their list",IDC_SHOWNOTONMYLIST,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,150,255,10
+		CONTROL 		"Show links from unknown contacts",IDC_SHOWLINKS,"Button",BS_AUTOCHECKBOX|WS_TABSTOP,12,150,255,10
 
 	CTEXT				"You will need to reconnect for the changes you have made on this page to take effect.",IDC_RELOADREQD,4,215,290,8,NOT WS_VISIBLE
 END

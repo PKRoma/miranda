@@ -234,7 +234,7 @@ static INT_PTR CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
 				CheckDlgButton(hwndDlg, IDC_IGNORECONF, TRUE);
 			}
 			CheckDlgButton(hwndDlg, IDC_IMGRECEIVE, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_IMGRECEIVE, GG_KEYDEF_IMGRECEIVE));
-			CheckDlgButton(hwndDlg, IDC_SHOWNOTONMYLIST, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWNOTONMYLIST, GG_KEYDEF_SHOWNOTONMYLIST));
+			CheckDlgButton(hwndDlg, IDC_SHOWLINKS, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWLINKS, GG_KEYDEF_SHOWLINKS));
 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_LEAVESTATUS), IsDlgButtonChecked(hwndDlg, IDC_LEAVESTATUSMSG));
 			EnableWindow(GetDlgItem(hwndDlg, IDC_IMGMETHOD), IsDlgButtonChecked(hwndDlg, IDC_IMGRECEIVE));
@@ -292,6 +292,11 @@ static INT_PTR CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
 				case IDC_IMGRECEIVE:
 				{
 					EnableWindow(GetDlgItem(hwndDlg, IDC_IMGMETHOD), IsDlgButtonChecked(hwndDlg, IDC_IMGRECEIVE));
+					break;
+				}
+				case IDC_SHOWLINKS:
+				{
+					ShowWindow(GetDlgItem(hwndDlg, IDC_RELOADREQD), SW_SHOW);
 					break;
 				}
 				case IDC_LOSTPASS:
@@ -446,7 +451,7 @@ static INT_PTR CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
 					if(gg->gc_enabled)
 						DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_IGNORECONF, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_IGNORECONF));
 					DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_IMGRECEIVE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_IMGRECEIVE));
-					DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWNOTONMYLIST, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWNOTONMYLIST));
+					DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWLINKS, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWLINKS));
 
 					DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_IMGMETHOD,
 						(BYTE)SendDlgItemMessage(hwndDlg, IDC_IMGMETHOD, CB_GETCURSEL, 0, 0));

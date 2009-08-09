@@ -118,10 +118,8 @@ int gg_refreshstatus(GGPROTO *gg, int status)
 
 	if(!gg_isonline(gg))
 	{
-		pthread_mutex_lock(&gg->sess_mutex);
-		if(!gg->pth_sess.dwThreadId)
-			pthread_create(&gg->pth_sess, NULL, gg_mainthread, gg);
-		pthread_mutex_unlock(&gg->sess_mutex);
+		gg_threadwait(gg, &gg->pth_sess);
+		pthread_create(&gg->pth_sess, NULL, gg_mainthread, gg);
 	}
 	else
 	{
