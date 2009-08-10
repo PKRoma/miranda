@@ -781,7 +781,6 @@ CJabberProto *JabberChooseInstance(bool bAllowOffline=false, bool atCursor=true)
 
 //---- jabber_xml.cpp -------------------------------------------------------------------
 
-char* skipSpaces( char* p, int* num = NULL );
 void  strdel( char* parBuffer, int len );
 
 //---- jabber_userinfo.cpp --------------------------------------------------------------

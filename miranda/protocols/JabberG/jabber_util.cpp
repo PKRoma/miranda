@@ -211,18 +211,6 @@ TCHAR* JabberPrepareJid( TCHAR *jid )
 	return szNewJid;
 }
 
-char* skipSpaces( char* p, int* num )
-{
-	int i;
-
-	for ( i=0; *p != 0 && isspace( BYTE( *p )); i++ )
-      p++;
-
-	if ( num != NULL )
-		*num += i;
-	return p;
-}
-
 void strdel( char* parBuffer, int len )
 {
 	char* p;
@@ -1037,27 +1025,25 @@ TStringPairs::TStringPairs( char* buffer ) :
 {
    TStringPairsElem tempElem[ 100 ];
 
-	for ( numElems=0; *buffer; numElems++ ) {
-		char* p = strchr( buffer, '=' );
+	char* token = strtok( buffer, "," );
+
+	for ( numElems=0; token != NULL; numElems++ ) {
+		char* p = strchr( token, '=' ), *p1;
 		if ( p == NULL )
 			break;
 
-		tempElem[ numElems ].name = rtrim( buffer );
-		*p = 0;
-		if (( p = strchr( ++p, '\"' )) == NULL )
-			break;
+		tempElem[ numElems ].name = rtrim( token );
+		*p++ = 0;
+		if (( p1 = strchr( p, '\"' )) != NULL ) {
+			*p1 = 0;
+			p = p1+1;
+		}
 
-		char* p1 = strchr( p+1, '\"' );
-		if ( p1 == NULL )
-			break;
+		if (( p1 = strrchr( p, '\"' )) != NULL )
+			*p1 = 0;
 
-		*p1++ = 0;
-		tempElem[ numElems ].value = rtrim( p+1 );
-		p1 = skipSpaces( p1 );
-		if ( *p1 == ',' )
-			p1++;
-		
-		buffer = skipSpaces( p1 );
+		tempElem[ numElems ].value = rtrim( p );
+		token = strtok( NULL, "," );
 	}
 
 	if ( numElems ) {
