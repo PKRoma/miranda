@@ -118,6 +118,11 @@ int gg_refreshstatus(GGPROTO *gg, int status)
 
 	if(!gg_isonline(gg))
 	{
+		if (gg->proto.m_iStatus != ID_STATUS_OFFLINE)
+			return TRUE;
+#ifdef DEBUGMODE
+		gg_netlog(gg, "gg_refreshstatus(): Going to connect...");
+#endif
 		gg_threadwait(gg, &gg->pth_sess);
 		pthread_create(&gg->pth_sess, NULL, gg_mainthread, gg);
 	}

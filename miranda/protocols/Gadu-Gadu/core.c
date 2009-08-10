@@ -476,8 +476,6 @@ retry:
 			char error[128], *perror = NULL;
 			int i;
 
-			gg_broadcastnewstatus(gg, ID_STATUS_OFFLINE);
-
 			// Lookup for error desciption
 			if(errno == EACCES)
 			{
@@ -514,7 +512,6 @@ retry:
 				|| (hostnum < hostcount - 1)))
 		{
 			if(hostnum < hostcount - 1) hostnum ++;
-			gg_broadcastnewstatus(gg, ID_STATUS_CONNECTING);
 			goto retry;
 		}
 		// We cannot do more about this
@@ -1042,7 +1039,6 @@ retry:
 		gg_free_event(e);
 	}
 
-	gg_broadcastnewstatus(gg, ID_STATUS_OFFLINE);
 	gg_setalloffline(gg);
 
 	// If it was unwanted disconnection reconnect
@@ -1056,6 +1052,7 @@ retry:
 		gg_broadcastnewstatus(gg, ID_STATUS_CONNECTING);
 		goto retry;
 	}
+	gg_broadcastnewstatus(gg, ID_STATUS_OFFLINE);
 
 	free(p.password);
 	free(p.status_descr);
