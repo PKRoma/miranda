@@ -1,34 +1,43 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
-		--pad=oper --one-line=keep-blocks  --unpad=paren
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * Load, setup and shutdown the plugin
+ * core plugin messaging services (single IM chats only).
+ *
+ */
 
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2009 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-$Id$
-
-*/
 #include "commonheaders.h"
 #pragma hdrstop
 #include "sendqueue.h"
 
+/*
 static SKINDESC my_default_skin[] = {
 	IDR_SKIN_GLYPH, _T("glyph.png"),
 	IDR_SKIN_TSK, _T("default.tsk"),
@@ -37,6 +46,8 @@ static SKINDESC my_default_skin[] = {
 	IDR_SKIN_ICO_MAX, _T("maximize.ico"),
 	IDR_SKIN_ICO_MIN, _T("minimize.ico")
 };
+*/
+
 REOLECallback *mREOLECallback;
 
 NEN_OPTIONS nen_options;
@@ -71,10 +82,8 @@ static HANDLE hSVC[14];
 #define H_MSG_MOD_GETWINDOWFLAGS 11
 
 extern      INT_PTR CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern      int g_chat_integration_enabled;
 extern      struct MsgLogIcon msgLogIcons[NR_LOGICONS * 3];
 extern      INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern      int g_sessionshutdown;
 extern      struct RTFColorTable *rtf_ctable;
 extern		const TCHAR *DoubleAmpersands(TCHAR *pszText);
 extern      void RegisterFontServiceFonts();
@@ -111,7 +120,7 @@ static int IEViewOptionsChanged(WPARAM wParam, LPARAM lParam)
 static int SmileyAddOptionsChanged(WPARAM wParam, LPARAM lParam)
 {
 	M->BroadcastMessage(DM_SMILEYOPTIONSCHANGED, 0, 0);
-	if (g_chat_integration_enabled)
+	if (PluginConfig.m_chat_enabled)
 		SM_BroadcastMessage(NULL, DM_SMILEYOPTIONSCHANGED, 0, 0, FALSE);
 	return 0;
 }
@@ -1248,7 +1257,7 @@ static int OkToExit(WPARAM wParam, LPARAM lParam)
 {
 	CreateSystrayIcon(0);
 	CreateTrayMenus(0);
-	g_sessionshutdown = 1;
+	CMimAPI::m_shutDown = true;
 	UnhookEvent(hEventDbEventAdded);
 	UnhookEvent(hEventDispatch);
 	UnhookEvent(hEventPrebuildMenu);
@@ -1262,7 +1271,7 @@ static int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hContact;
 
-	if (g_chat_integration_enabled)
+	if (PluginConfig.m_chat_enabled)
 		Chat_PreShutdown(0, 0);
 
 	TN_ModuleDeInit();
@@ -1402,7 +1411,7 @@ static int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam)
 {
 	LoadFromIconLib();
 	CacheMsgLogIcons();
-	if (g_chat_integration_enabled)
+	if (PluginConfig.m_chat_enabled)
 		Chat_IconsChanged(wParam, lParam);
 	return 0;
 }
@@ -1435,7 +1444,7 @@ int IconsChanged(WPARAM wParam, LPARAM lParam)
 	CacheMsgLogIcons();
 	M->BroadcastMessage(DM_OPTIONSAPPLIED, 0, 0);
 	M->BroadcastMessage(DM_UPDATEWINICON, 0, 0);
-	if (g_chat_integration_enabled)
+	if (PluginConfig.m_chat_enabled)
 		Chat_IconsChanged(wParam, lParam);
 
 	return 0;
@@ -1443,13 +1452,13 @@ int IconsChanged(WPARAM wParam, LPARAM lParam)
 
 int LoadSendRecvMessageModule(void)
 {
-	int 	nOffset = 0, i;
+	int 	nOffset = 0;
 	HDC 	hScrnDC;
 
 	INITCOMMONCONTROLSEX icex;
 
 	icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
-	icex.dwICC   = ICC_COOL_CLASSES | ICC_BAR_CLASSES;
+	icex.dwICC   = ICC_COOL_CLASSES | ICC_BAR_CLASSES | ICC_LISTVIEW_CLASSES;;
 	InitCommonControlsEx(&icex);
 
 	{
@@ -1522,7 +1531,7 @@ tzdone:
 
 	LoadTSButtonModule();
 	RegisterTabCtrlClass();
-	ReloadGlobals();
+	PluginConfig.Reload();
 	PluginConfig.dwThreadID = GetCurrentThreadId();
 	GetDataDir();
 
@@ -1530,6 +1539,7 @@ tzdone:
 	 * extract the default skin
 	 */
 
+	/*
 	if(PluginConfig.m_WinVerMajor >=5 && M->GetDword("def_skin_installed", -1) != SKIN_VERSION) {
 		M->WriteDword(SRMSGMOD_T, "def_skin_installed", SKIN_VERSION);
 
@@ -1558,7 +1568,7 @@ tzdone:
 			}
 		}
 	}
-
+	*/
 	/*
 	 * load the logo
 	 */
@@ -2117,7 +2127,7 @@ static int SetupIconLibConfig()
 	}
 
 	GetModuleFileNameA(g_hIconDLL, szFilename, MAX_PATH);
-	if (g_chat_integration_enabled)
+	if (PluginConfig.m_chat_enabled)
 		Chat_AddIcons();
 	version = GetIconPackVersion(g_hIconDLL);
 	PluginConfig.g_hbmUnknown = (HBITMAP)LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);

@@ -1,26 +1,36 @@
 /*
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2003 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-$Id$
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * Global function prototypes
+ *
+ */
 
 #ifndef _TABSRMM_FUNCTIONS_H
 #define _TABSRMM_FUNCTIONS_H
@@ -116,7 +126,6 @@ void        CacheMsgLogIcons();
 void        UncacheMsgLogIcons();
 void        CacheLogFonts();
 static void InitAPI();
-void        ReloadGlobals();
 static void LoadIconTheme();
 static int  LoadFromIconLib();
 static  int SetupIconLibConfig();
@@ -127,7 +136,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 INT_PTR CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 int         InitOptions(void);
-static      INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static 		INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 int         DbEventIsShown(struct _MessageWindowData *dat, DBEVENTINFO *dbei);
 void        StreamInEvents(HWND hwndDlg,HANDLE hDbEventFirst,int count,int fAppend, DBEVENTINFO *dbei_s);
 void        LoadLogfont(int i,LOGFONTA *lf,COLORREF *colour, char *szModule);
@@ -138,7 +147,7 @@ void        LoadLogfont(int i,LOGFONTA *lf,COLORREF *colour, char *szModule);
 void        ReloadTabConfig(), FreeTabConfig();
 int         RegisterTabCtrlClass(void);
 
-void        ReloadGlobals(), LoadIconTheme(), UnloadIconTheme();
+void        LoadIconTheme(), UnloadIconTheme();
 int         Chat_OptionsInitialize(WPARAM wParam, LPARAM lParam);
 
 

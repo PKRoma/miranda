@@ -49,6 +49,12 @@ DICE	CMimAPI::m_pfnDwmIsCompositionEnabled = 0;
 MMFW	CMimAPI::m_pfnMonitorFromWindow = 0;
 GMIA	CMimAPI::m_pfnGetMonitorInfoA = 0;
 DRT		CMimAPI::m_pfnDwmRegisterThumbnail = 0;
+BPI		CMimAPI::m_pfnBufferedPaintInit = 0;
+BPU		CMimAPI::m_pfnBufferedPaintUninit = 0;
+BBP		CMimAPI::m_pfnBeginBufferedPaint = 0;
+EBP		CMimAPI::m_pfnEndBufferedPaint = 0;
+
+bool	CMimAPI::m_shutDown = 0;
 
 /*
  * read a setting for a contact
@@ -436,8 +442,13 @@ void CMimAPI::InitAPI()
 		/*
 		 * additional uxtheme APIs (Vista+)
 		 */
-		if(m_hUxTheme)
-			m_pfnDrawThemeTextEx = (PDTTE)GetProcAddress(m_hUxTheme,  "DrawThemeTextEx");
+		if(m_hUxTheme) {
+			m_pfnDrawThemeTextEx = (PDTTE)GetProcAddress(m_hUxTheme, "DrawThemeTextEx");
+			m_pfnBeginBufferedPaint = (BBP)GetProcAddress(m_hUxTheme, "BeginBufferedPaint");
+			m_pfnEndBufferedPaint = (EBP)GetProcAddress(m_hUxTheme, "EndBufferedPaint");
+			m_pfnBufferedPaintInit = (BPI)GetProcAddress(m_hUxTheme, "BufferedPaintInit");
+			m_pfnBufferedPaintUninit = (BPU)GetProcAddress(m_hUxTheme, "BufferedPaintUnInit");
+		}
     }
 }
 

@@ -36,7 +36,6 @@ $Id$
 
 #define DM_GETSTATUSMASK (WM_USER + 10)
 
-extern		int g_chat_integration_enabled;
 extern		INT_PTR CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern		INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern		INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -406,7 +405,7 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 									//pMim->WriteByte(SRMSGMOD_T, (char *)defaultItems[i].lParam, (BYTE)((item.state >> 12) == 2 ? 1 : 0));
 								i++;
 							}
-							ReloadGlobals();
+							PluginConfig.Reload();
 							M->BroadcastMessage(DM_OPTIONSAPPLIED, 1, 0);
 							return TRUE;
 						}
@@ -694,7 +693,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 								M->WriteDword(SRMSGMOD_T, "maxhist", (DWORD)SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_GETPOS, 0, 0));
 							else
 								M->WriteDword(SRMSGMOD_T, "maxhist", 0);
-							ReloadGlobals();
+							PluginConfig.Reload();
 							M->BroadcastMessage(DM_OPTIONSAPPLIED, 1, 0);
 							return TRUE;
 						}
@@ -866,7 +865,7 @@ static INT_PTR CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam
 							M->WriteByte(SRMSGMOD, "ShowTypingBalloon", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_NOTIFYBALLOON));
 							M->WriteByte(SRMSGMOD, "ShowTypingPopup",(BYTE) IsDlgButtonChecked(hwndDlg, IDC_NOTIFYPOPUP));
 							M->WriteByte(SRMSGMOD_T, "MTN_PopupMode", (BYTE)SendDlgItemMessage(hwndDlg, IDC_MTN_POPUPMODE, CB_GETCURSEL, 0, 0));
-							ReloadGlobals();
+							PluginConfig.Reload();
 						}
 					}
 					break;
@@ -1053,7 +1052,7 @@ static INT_PTR CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 								i++;
 							}
 
-							ReloadGlobals();
+							PluginConfig.Reload();
 							M->BroadcastMessage(DM_OPTIONSAPPLIED, 0, 0);
 							SendMessage(PluginConfig.g_hwndHotkeyHandler, DM_FORCEUNREGISTERHOTKEYS, 0, 0);
 							SendMessage(PluginConfig.g_hwndHotkeyHandler, DM_REGISTERHOTKEYS, 0, 0);
@@ -1593,7 +1592,7 @@ static INT_PTR CALLBACK DlgProcTabSrmmModernOptions(HWND hwndDlg, UINT msg, WPAR
 								M->WriteByte(SRMSGMOD_T, "singlewinmode", 0);
 								break;
 							}
-							ReloadGlobals();
+							PluginConfig.Reload();
 							M->BroadcastMessage(DM_OPTIONSAPPLIED, 1, 0);
 							return TRUE;
 						}
@@ -1862,7 +1861,7 @@ static INT_PTR CALLBACK GroupOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 0, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 
-			if(g_chat_integration_enabled)
+			if(PluginConfig.m_chat_enabled)
 				ShowWindow((HWND)tci.lParam, oPage == 0 ? SW_SHOW : SW_HIDE);
 			else
 				ShowWindow((HWND)tci.lParam, SW_SHOW);
@@ -1871,7 +1870,7 @@ static INT_PTR CALLBACK GroupOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
 
-			if(g_chat_integration_enabled) {
+			if(PluginConfig.m_chat_enabled) {
 				tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPTIONS2), hwnd, DlgProcOptions2);
 				tci.pszText = TranslateT("Log formatting");
 				TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 1, &tci);
@@ -2231,93 +2230,6 @@ static INT_PTR CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, L
  * reload options which may change during M is running and put them in our global option
  * struct to minimize the number of DB reads...
  */
-
-static TCHAR *tszNoStatus = _T("No status message available");
-
-void ReloadGlobals()
-{
-	DWORD dwFlags = M->GetDword("mwflags", MWF_LOG_DEFAULT);
-
-	PluginConfig.m_SendOnShiftEnter = (int)M->GetByte("sendonshiftenter", 0);
-	PluginConfig.m_SendOnEnter = (int)M->GetByte(SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER);
-	PluginConfig.m_SendOnDblEnter = (int)M->GetByte("SendOnDblEnter", 0);
-	PluginConfig.m_AutoLocaleSupport = (int)M->GetByte("al", 1);
-	PluginConfig.m_AutoSwitchTabs = (int)M->GetByte("autoswitchtabs", 1);
-	PluginConfig.m_CutContactNameTo = (int) DBGetContactSettingWord(NULL, SRMSGMOD_T, "cut_at", 15);
-	PluginConfig.m_CutContactNameOnTabs = (int)M->GetByte("cuttitle", 0);
-	PluginConfig.m_StatusOnTabs = (int)M->GetByte("tabstatus", 1);
-	PluginConfig.m_LogStatusChanges = (int)dwFlags&MWF_LOG_STATUSCHANGES;//DBGetContactSettingByte(NULL, SRMSGMOD_T, "logstatus", 0);
-	PluginConfig.m_UseDividers = (int)M->GetByte("usedividers", 0);
-	PluginConfig.m_DividersUsePopupConfig = (int)M->GetByte("div_popupconfig", 0);
-	PluginConfig.m_MsgTimeout = (int)M->GetDword(SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
-
-	if (PluginConfig.m_MsgTimeout < SRMSGSET_MSGTIMEOUT_MIN)
-		PluginConfig.m_MsgTimeout = SRMSGSET_MSGTIMEOUT_MIN;
-
-	PluginConfig.m_EscapeCloses = (int)M->GetByte("escmode", 0);
-	//MaD
-	if (M->GetByte("escmode_2",0)&&PluginConfig.m_EscapeCloses)
-	{
-		PluginConfig.m_EscapeCloses=2;
-	}
-	PluginConfig.m_HideOnClose =(int) M->GetByte("hideonclose", 0);
-	PluginConfig.m_AllowTab =(int) M->GetByte("tabmode", 0);
-	PluginConfig.m_AllowOfflineMultisend =(int) M->GetByte("AllowOfflineMultisend", 0);
-
-	//MaD_
-	PluginConfig.m_WarnOnClose = (int)M->GetByte("warnonexit", 0);
-	PluginConfig.m_AvatarMode = (int)M->GetByte("avatarmode", 0);
-
-	if (PluginConfig.m_AvatarMode == 1 || PluginConfig.m_AvatarMode == 2)
-		PluginConfig.m_AvatarMode = 3;
-
-	PluginConfig.m_OwnAvatarMode = (int)M->GetByte("ownavatarmode", 0);
-	PluginConfig.m_FlashOnClist = (int)M->GetByte("flashcl", 0);
-	PluginConfig.m_TabAutoClose = (int)M->GetDword("tabautoclose", 0);
-	PluginConfig.m_AlwaysFullToolbarWidth = (int)M->GetByte("alwaysfulltoolbar", 1);
-	PluginConfig.m_LimitStaticAvatarHeight = (int)M->GetDword("avatarheight", 96);
-	PluginConfig.m_SendFormat = (int)M->GetByte("sendformat", 0);
-	PluginConfig.m_FormatWholeWordsOnly = 1;
-	PluginConfig.m_FixFutureTimestamps = (int)M->GetByte("do_fft", 1);
-	PluginConfig.m_RTLDefault = (int)M->GetByte("rtldefault", 0);
-	PluginConfig.m_SplitterSaveOnClose = (int)M->GetByte("splitsavemode", 1);
-	PluginConfig.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE);
-	PluginConfig.m_WinVerMajor = WinVerMajor();
-	PluginConfig.m_WinVerMinor = WinVerMinor();
-	PluginConfig.m_bIsXP = IsWinVerXPPlus();
-	PluginConfig.m_TabAppearance = (int)M->GetDword("tabconfig", TCF_FLASHICON | TCF_SINGLEROWTABCONTROL);
-	PluginConfig.m_panelHeight = (DWORD)M->GetDword("panelheight", 51);
-	PluginConfig.m_IdleDetect = (int)M->GetByte("detectidle", 1);
-	PluginConfig.m_smcxicon = GetSystemMetrics(SM_CXSMICON);
-	PluginConfig.m_smcyicon = GetSystemMetrics(SM_CYSMICON);
-	PluginConfig.m_PasteAndSend = (int)M->GetByte("pasteandsend", 1);
-	PluginConfig.m_szNoStatus = TranslateTS(tszNoStatus);
-	PluginConfig.m_LangPackCP = ServiceExists(MS_LANGPACK_GETCODEPAGE) ? CallService(MS_LANGPACK_GETCODEPAGE, 0, 0) : CP_ACP;
-	PluginConfig.m_SmileyButtonOverride = (BYTE)M->GetByte("smbutton_override", 1);
-	PluginConfig.m_visualMessageSizeIndicator = M->GetByte("msgsizebar", 0);
-	PluginConfig.m_autoSplit = M->GetByte("autosplit", 0);
-	PluginConfig.m_FlashOnMTN = M->GetByte(SRMSGMOD, SRMSGSET_SHOWTYPINGWINFLASH, SRMSGDEFSET_SHOWTYPINGWINFLASH);
-
-	PluginConfig.ipConfig.edgeFlags = BF_RECT | BF_ADJUST;
-	// checkversion, warn user about ansi<>unicode conflicts between core and plugin
-	{
-		char str[512];
-		CallService(MS_SYSTEM_GETVERSIONTEXT, (WPARAM)500, (LPARAM)(char*)str);
-		if (strstr(str, "Unicode")) {
-			PluginConfig.bUnicodeBuild = TRUE;
-#if !defined(_UNICODE)
-			MessageBoxA(0, "You are running a ANSI version of tabSRMM under a unicode Miranda core. This is an unsupported configuration and can cause various problems. Please consider using the UNICODE build", "Warning", MB_OK);
-#endif
-		} else {
-#if defined(_UNICODE)
-			MessageBoxA(0, "You are running a UNICODE version of tabSRMM under a non-unicode Miranda core. This is an unsupported configuration and can cause various problems. Please consider using the ANSI build", "Warning", MB_OK);
-#endif
-			PluginConfig.bUnicodeBuild = FALSE;
-		}
-	}
-	PluginConfig.ncm.cbSize = sizeof(NONCLIENTMETRICS);
-	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &PluginConfig.ncm, 0);
-}
 
 /*
  * get the default format string for the window (container) title bar.

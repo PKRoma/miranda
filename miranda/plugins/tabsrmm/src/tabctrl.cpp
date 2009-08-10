@@ -39,7 +39,6 @@ static WNDPROC		OldTabControlClassProc;
 extern ButtonSet	g_ButtonSet;
 
 static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-extern LRESULT CALLBACK StatusBarSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern void GetIconSize(HICON hIcon, int* sizeX, int* sizeY);
 
 #define FIXED_TAB_SIZE 100

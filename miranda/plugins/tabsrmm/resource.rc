@@ -1478,12 +1478,12 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
-IDR_SKIN_GLYPH         SKIN_GLYPH DISCARDABLE  "res\\SKIN\\glyph.png"
-IDR_SKIN_TSK           SKIN_GLYPH DISCARDABLE  "res\\SKIN\\default.tsk"
-IDR_SKIN_TABSRMM       SKIN_GLYPH DISCARDABLE  "res\\SKIN\\default.tabsrmm"
-IDR_SKIN_ICO_CLOSE     SKIN_GLYPH DISCARDABLE  "res\\SKIN\\close.ico"
-IDR_SKIN_ICO_MIN       SKIN_GLYPH DISCARDABLE  "res\\SKIN\\minimize.ico"
-IDR_SKIN_ICO_MAX       SKIN_GLYPH DISCARDABLE  "res\\SKIN\\maximize.ico"
+//IDR_SKIN_GLYPH         SKIN_GLYPH DISCARDABLE  "res\\SKIN\\glyph.png"
+//IDR_SKIN_TSK           SKIN_GLYPH DISCARDABLE  "res\\SKIN\\default.tsk"
+//IDR_SKIN_TABSRMM       SKIN_GLYPH DISCARDABLE  "res\\SKIN\\default.tabsrmm"
+//IDR_SKIN_ICO_CLOSE     SKIN_GLYPH DISCARDABLE  "res\\SKIN\\close.ico"
+//IDR_SKIN_ICO_MIN       SKIN_GLYPH DISCARDABLE  "res\\SKIN\\minimize.ico"
+//IDR_SKIN_ICO_MAX       SKIN_GLYPH DISCARDABLE  "res\\SKIN\\maximize.ico"
 
 IDR_SKIN_LOGO		   SKIN_GLYPH DISCARDABLE  "res\\SKIN\\logo.png"
 

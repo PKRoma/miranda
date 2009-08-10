@@ -109,6 +109,10 @@ the development phase. I cannot name you all here, because it's just too many.
 * "Mad" for the madmod patch which added a number of new features to the
   plugin.
 
+* Joergen Persson for the original MUC ("multiuser chat") module for
+  Miranda IM. Large parts of tabSRMM's multiuser chat integration are based
+  on his code.
+
 ------------
 License: GPL
 ------------

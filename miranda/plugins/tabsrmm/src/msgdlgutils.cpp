@@ -1524,15 +1524,18 @@ void GetContactUIN(HWND hwndDlg, struct _MessageWindowData *dat)
 		ci.szProto = dat->szProto;
 	}
 	ci.cbSize = sizeof(ci);
-	ci.dwFlag = CNF_DISPLAYUID;
+	ci.dwFlag = CNF_DISPLAYUID | CNF_TCHAR;
 	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
 		switch (ci.type) {
 			case CNFT_ASCIIZ:
-				mir_snprintf(dat->uin, sizeof(dat->uin), "%s", ci.pszVal);
-				mir_free(ci.pszVal);
+				mir_sntprintf(dat->uin, safe_sizeof(dat->uin), _T("%s"), reinterpret_cast<TCHAR *>(ci.pszVal));
+				mir_free((void *)ci.pszVal);
 				break;
 			case CNFT_DWORD:
-				mir_snprintf(dat->uin, sizeof(dat->uin), "%u", ci.dVal);
+				mir_sntprintf(dat->uin, safe_sizeof(dat->uin), _T("%u"), ci.dVal);
+				break;
+			default:
+				dat->uin[0] = 0;
 				break;
 		}
 	} else
@@ -1544,11 +1547,14 @@ void GetContactUIN(HWND hwndDlg, struct _MessageWindowData *dat)
 	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
 		switch (ci.type) {
 			case CNFT_ASCIIZ:
-				mir_snprintf(dat->myUin, sizeof(dat->myUin), "%s", ci.pszVal);
-				mir_free(ci.pszVal);
+				mir_sntprintf(dat->myUin, safe_sizeof(dat->myUin), _T("%s"), reinterpret_cast<TCHAR *>(ci.pszVal));
+				mir_free((void *)ci.pszVal);
 				break;
 			case CNFT_DWORD:
-				mir_snprintf(dat->myUin, sizeof(dat->myUin), "%u", ci.dVal);
+				mir_sntprintf(dat->myUin, safe_sizeof(dat->myUin), _T("%u"), ci.dVal);
+				break;
+			default:
+				dat->uin[0] = 0;
 				break;
 		}
 	} else
@@ -1628,12 +1634,6 @@ void CheckAndDestroyIEView(struct _MessageWindowData *dat)
 			SetWindowLongPtr(dat->hwndIEView, GWLP_WNDPROC, (LONG_PTR)dat->oldIEViewProc);
 			dat->oldIEViewProc =0;
 		}
-		if (dat->oldIEViewLastChildProc) {
-			//mad: get LAST child, because ieserver has many of them..
-			SetWindowLongPtr(GetLastChild(dat->hwndIEView), GWLP_WNDPROC, (LONG_PTR)dat->oldIEViewLastChildProc);
-			dat->oldIEViewLastChildProc = 0;
-		}
-		//mad_
 		CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
 		dat->oldIEViewProc = 0;
 		dat->hwndIEView = 0;
@@ -1710,10 +1710,6 @@ void SwitchMessageLog(HWND hwndDlg, struct _MessageWindowData *dat, int iMode)
 
 	//MAD: simple subclassing after log changed
 	if (dat->hwndIEView) {
-		if (dat->oldIEViewLastChildProc == 0) {
-			WNDPROC wndProc = (WNDPROC)SetWindowLongPtr(GetLastChild(dat->hwndIEView), GWLP_WNDPROC, (LONG_PTR)IEViewKFSubclassProc);
-			dat->oldIEViewLastChildProc = wndProc;
-		}
  		if (M->GetByte("subclassIEView", 0)&&dat->oldIEViewProc == 0) {
  			WNDPROC wndProc = (WNDPROC)SetWindowLongPtr(dat->hwndIEView, GWLP_WNDPROC, (LONG_PTR)IEViewSubclassProc);
  			dat->oldIEViewProc = wndProc;
@@ -2676,21 +2672,18 @@ void GetMyNick(_MessageWindowData *dat)
 	ci.cbSize = sizeof(ci);
 	ci.hContact = NULL;
 	ci.szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
-	ci.dwFlag = CNF_DISPLAY;
-#if defined(_UNICODE)
-	if (PluginConfig.bUnicodeBuild)
-		ci.dwFlag |= CNF_UNICODE;
+	ci.dwFlag = CNF_TCHAR | CNF_NICK;
+
 	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM)&ci)) {
 		if (ci.type == CNFT_ASCIIZ) {
-			if (lstrlen(ci.pszVal) < 1 || !_tcscmp(ci.pszVal, TranslateT("'(Unknown Contact)'"))) {
-				MultiByteToWideChar(CP_ACP, 0, dat->myUin, -1, dat->szMyNickname, 130);
-				dat->szMyNickname[129] = 0;
+			if (lstrlen(reinterpret_cast<TCHAR *>(ci.pszVal)) < 1 || !_tcscmp(reinterpret_cast<TCHAR *>(ci.pszVal), TranslateT("'(Unknown Contact)'"))) {
+				mir_sntprintf(dat->szNickname, safe_sizeof(dat->szNickname), _T("%s"), dat->uin);
 				if (ci.pszVal) {
 					mir_free(ci.pszVal);
 					ci.pszVal = NULL;
 				}
 			} else {
-				_tcsncpy(dat->szMyNickname, ci.pszVal, 110);
+				_tcsncpy(dat->szMyNickname, reinterpret_cast<TCHAR *>(ci.pszVal), 110);
 				dat->szMyNickname[109] = 0;
 				if (ci.pszVal) {
 					mir_free(ci.pszVal);
@@ -2703,31 +2696,6 @@ void GetMyNick(_MessageWindowData *dat)
 			_tcsncpy(dat->szMyNickname, _T("<undef>"), 110);                // that really should *never* happen
 	} else
 		_tcsncpy(dat->szMyNickname, _T("<undef>"), 110);                    // same here
-#else
-	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM)&ci)) {
-		if (ci.type == CNFT_ASCIIZ) {
-			if (lstrlen(ci.pszVal) < 1 || !_tcscmp(ci.pszVal, TranslateT("'(Unknown Contact)'"))) {
-				lstrcpynA(dat->szMyNickname, dat->myUin, 130);
-				dat->szMyNickname[129] = 0;
-				if (ci.pszVal) {
-					mir_free(ci.pszVal);
-					ci.pszVal = NULL;
-				}
-			} else {
-				_tcsncpy(dat->szMyNickname, ci.pszVal, 130);
-				dat->szMyNickname[129] = 0;
-				if (ci.pszVal) {
-					mir_free(ci.pszVal);
-					ci.pszVal = NULL;
-				}
-			}
-		} else if (ci.type == CNFT_DWORD)
-			_ltoa(ci.dVal, dat->szMyNickname, 10);
-		else
-			_tcsncpy(dat->szMyNickname, "<undef>", 110);
-	} else
-		_tcsncpy(dat->szMyNickname, "<undef>", 110);
-#endif
 	if (ci.pszVal)
 		mir_free(ci.pszVal);
 }

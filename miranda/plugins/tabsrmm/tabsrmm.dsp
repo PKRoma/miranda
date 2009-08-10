@@ -1130,6 +1130,10 @@ NODEP_CPP_CONTAI=\
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\controls.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\eventpopups.cpp
 DEP_CPP_EVENT=\
 	"..\..\include\m_acc.h"\
@@ -2362,6 +2366,10 @@ NODEP_CPP_TABCT=\
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\taskbar.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\templates.cpp
 DEP_CPP_TEMPL=\
 	"..\..\include\m_acc.h"\
@@ -2427,6 +2435,10 @@ DEP_CPP_TEMPL=\
 NODEP_CPP_TEMPL=\
 	".\xtheme.h"\
 	
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\themeio.cpp
 # End Source File
 # Begin Source File
 
@@ -2778,6 +2790,10 @@ SOURCE=.\src\commonheaders.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\controls.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\functions.h
 # End Source File
 # Begin Source File
@@ -2815,6 +2831,10 @@ SOURCE=.\src\resource.h
 # Begin Source File
 
 SOURCE=.\src\sendqueue.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\taskbar.h
 # End Source File
 # Begin Source File
 

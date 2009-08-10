@@ -55,19 +55,40 @@
 #if _MSC_VER >= 1500
 	#include <dwmapi.h>
 #else
-typedef struct _DWM_THUMBNAIL_PROPERTIES
-{
-    DWORD dwFlags;
-    RECT rcDestination;
-    RECT rcSource;
-    BYTE opacity;
-    BOOL fVisible;
-    BOOL fSourceClientAreaOnly;
-} DWM_THUMBNAIL_PROPERTIES, *PDWM_THUMBNAIL_PROPERTIES;
+	typedef struct _DWM_THUMBNAIL_PROPERTIES
+	{
+		DWORD dwFlags;
+		RECT rcDestination;
+		RECT rcSource;
+		BYTE opacity;
+		BOOL fVisible;
+		BOOL fSourceClientAreaOnly;
+	} DWM_THUMBNAIL_PROPERTIES, *PDWM_THUMBNAIL_PROPERTIES;
 
-typedef HANDLE HTHUMBNAIL;
-typedef HTHUMBNAIL* PHTHUMBNAIL;
+	typedef HANDLE HTHUMBNAIL;
+	typedef HTHUMBNAIL* PHTHUMBNAIL;
+
+	typedef enum _BP_BUFFERFORMAT
+	{
+		BPBF_COMPATIBLEBITMAP,    // Compatible bitmap
+		BPBF_DIB,                 // Device-independent bitmap
+		BPBF_TOPDOWNDIB,          // Top-down device-independent bitmap
+		BPBF_TOPDOWNMONODIB       // Top-down monochrome device-independent bitmap
+	} BP_BUFFERFORMAT;
+
+	typedef struct _BP_PAINTPARAMS
+	{
+		DWORD                       cbSize;
+		DWORD                       dwFlags; // BPPF_ flags
+		const RECT *                prcExclude;
+		const BLENDFUNCTION *       pBlendFunction;
+	} BP_PAINTPARAMS, *PBP_PAINTPARAMS;
+
+	#define BPPF_ERASE               1
+	#define BPPF_NOCLIP              2
+	#define BPPF_NONCLIENT           4
 #endif
+#define WM_DWMCOMPOSITIONCHANGED        0x031E
 
 #include <stdio.h>
 #include <time.h>
@@ -78,6 +99,7 @@ typedef HTHUMBNAIL* PHTHUMBNAIL;
 #include <limits.h>
 #include <ctype.h>
 #include <string>
+#include <assert.h>
 
 #include "resource.h"
 
@@ -118,7 +140,6 @@ typedef HTHUMBNAIL* PHTHUMBNAIL;
 #include  <m_chat.h>
 #include  <m_protomod.h>
 
-
 extern struct LIST_INTERFACE li;
 
 #define safe_sizeof(a) (unsigned int)((sizeof((a)) / sizeof((a)[0])))
@@ -156,6 +177,9 @@ extern 	NEN_OPTIONS	nen_options;
 #include "globals.h"
 #include "mim.h"
 #include "sendqueue.h"
+#include "taskbar.h"
+#include "controls.h"
+
 
 #if !defined(_WIN64) && !defined(_USE_32BIT_TIME_T)
 	#define _USE_32BIT_TIME_T
@@ -165,10 +189,6 @@ extern 	NEN_OPTIONS	nen_options;
 
 #if _MSC_VER >= 1500 || defined(__GNUWIN32__)
 	#define wEffects wReserved
-#endif
-
-#if _MSC_VER <= 1600 || defined(__GNUWIN32__)
-	#define WM_DWMCOMPOSITIONCHANGED        0x031E
 #endif
 
 typedef struct __paraformat2

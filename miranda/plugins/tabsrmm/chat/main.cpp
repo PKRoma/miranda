@@ -1,46 +1,54 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
-		--pad=oper --one-line=keep-blocks  --unpad=paren
-
-Chat module plugin for Miranda IM
-
-Copyright (C) 2003 Jörgen Persson
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-$Id: main.c 10402 2009-07-24 00:35:21Z silvercircle $
-
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * This code is based on and still contains large parts of the the
+ * original chat module for Miranda IM, written and copyrighted
+ * by Joergen Persson in 2005.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * chat module exports and functions to load/unload the plugin.
+ *
+ */
 
 #include "../src/commonheaders.h"
 
-//globals
 HANDLE		g_hWindowList;
 HMENU		g_hMenu = NULL;
 
 FONTINFO	aFonts[OPTIONS_FONTCOUNT];
 HICON		hIcons[30];
-BOOL		IEviewInstalled = FALSE;
 HBRUSH		hListBkgBrush = NULL;
 
 struct GlobalLogSettings_t g_Settings;
 
 TCHAR		*pszActiveWndID = 0;
 char		*pszActiveWndModule = 0;
-int			g_chat_integration_enabled = 0;
-int			g_chat_fully_initialized = 0;
 
 /*
  * load the group chat module
@@ -53,7 +61,7 @@ int Chat_Load(PLUGINLINK *link)
 	if (!M->GetByte("enable_chat", 1))
 		return 0;
 
-	g_chat_integration_enabled = 1;
+	PluginConfig.m_chat_enabled = true;
 
 	g_hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENU));
 	HookEvents();
@@ -70,7 +78,7 @@ int Chat_Load(PLUGINLINK *link)
 
 int Chat_Unload(void)
 {
-	if (!g_chat_integration_enabled)
+	if (!PluginConfig.m_chat_enabled)
 		return 0;
 
 	DBWriteContactSettingWord(NULL, "Chat", "SplitterX", (WORD)g_Settings.iSplitterX);

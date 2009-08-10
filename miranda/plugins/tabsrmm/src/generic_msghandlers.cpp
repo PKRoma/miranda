@@ -354,11 +354,10 @@ LRESULT DM_UpdateLastMessage(const _MessageWindowData *dat)
 				CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, dat->lastMessage, (LPARAM) & dbtts);
 			}
 			if (dat->pContainer->dwFlags & CNT_UINSTATUSBAR) {
-				char fmt[100];
-				char *uidName = (char *)CallProtoService(dat->szProto, PS_GETCAPS, PFLAG_UNIQUEIDTEXT, 0);
-				if (!uidName) uidName = Translate("ID");
-				mir_snprintf(fmt, sizeof(fmt), "%s: %s", uidName, dat->uin);
-				SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) fmt);
+				TCHAR fmt[100];
+				TCHAR *uidName = TranslateT("UIN");
+				mir_sntprintf(fmt, safe_sizeof(fmt), _T("%s: %s"), uidName, dat->uin);
+				SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM)fmt);
 			} else {
 				TCHAR fmt[100];
 				mir_sntprintf(fmt, safe_sizeof(fmt), TranslateT("Last received: %s at %s"), date, time);
@@ -580,7 +579,7 @@ LRESULT DM_ThemeChanged(_MessageWindowData *dat)
 			SetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 	}
 	dat->hThemeIP = M->isAero() ? CMimAPI::m_pfnOpenThemeData(hwnd, L"ButtonStyle") : 0;
-	dat->hThemeToolbar = M->isAero() ? CMimAPI::m_pfnOpenThemeData(hwnd, L"REBAR") : 0;
+	dat->hThemeToolbar = (M->isAero() || (!CSkin::m_skinEnabled && M->isVSThemed())) ? CMimAPI::m_pfnOpenThemeData(hwnd, L"MENU") : 0;
 
 	return 0;
 }

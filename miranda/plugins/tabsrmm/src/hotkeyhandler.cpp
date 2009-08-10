@@ -552,6 +552,7 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		case WM_THEMECHANGED: {
 			struct ContainerWindowData *pContainer = pFirstContainer;
 
+			M->getAeroState();
 			PluginConfig.ncm.cbSize = sizeof(NONCLIENTMETRICS);
 			SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &PluginConfig.ncm, 0);
 			FreeTabConfig();

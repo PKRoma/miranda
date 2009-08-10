@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id:$
+$Id$
 
 */
 
@@ -32,9 +32,12 @@ typedef     BOOL (WINAPI *pfnSetMenuInfo )( HMENU hmenu, LPCMENUINFO lpcmi );
 class CGlobals
 {
 public:
-	CGlobals() {}
+	CGlobals()
+	{}
 
-	~CGlobals() {}
+	~CGlobals()
+	{}
+	void		Reload();
 
 	HWND        g_hwndHotkeyHandler;
 	HICON       g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus;
@@ -136,6 +139,7 @@ public:
 	HBITMAP		hbmLogo;
 	int			iMenuHeight;
 	HANDLE 		m_hMessageWindowList;
+	bool		m_chat_enabled;
 };
 
 extern	CGlobals	PluginConfig;

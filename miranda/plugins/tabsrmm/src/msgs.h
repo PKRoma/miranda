@@ -233,6 +233,9 @@ struct TitleBtn {
 #define NR_BUTTONBARICONS 37//MaD: 29
 #define NR_SIDEBARICONS 10
 
+class CTaskbarInteract;
+class CMenuBar;
+
 struct ContainerWindowData {
 	struct  ContainerWindowData *pNextContainer;
 	TCHAR   szName[CONTAINER_NAMELEN + 4];		// container name
@@ -252,7 +255,6 @@ struct ContainerWindowData {
 	int	    tBorder_outer_left, tBorder_outer_right, tBorder_outer_top, tBorder_outer_bottom;
 	HANDLE  hContactFrom;
 	BOOL    isCloned;
-	HMENU   hMenu;
 	HWND    hwndStatus, hwndSlist;
 	int     statusBarHeight;
 	DWORD   dwLastActivity;
@@ -285,6 +287,8 @@ struct ContainerWindowData {
 	DWORD	dwOldAeroTop, dwOldAeroBottom;
 	HDC		cachedToolbarDC;
 	HBITMAP hbmToolbarBG, oldhbmToolbarBG;
+	CTaskbarInteract *TaskBar;
+	CMenuBar		 *MenuBar;
 };
 
 #define STICK_ICON_MSG 10
@@ -374,7 +378,7 @@ struct _MessageWindowData {
 	HANDLE  hMultiSendThread;
 	BOOL    bIsMeta;
 	HANDLE  hFlashingEvent;
-	char    uin[80], myUin[80];
+	TCHAR   uin[80], myUin[80];
 	BOOL    bNotOnList;
 	int     SendFormat;
 	DWORD   dwIsFavoritOrRecent;
@@ -411,7 +415,7 @@ struct _MessageWindowData {
 	int     nMax;            // max message size
 	int     textLen;         // current text len
 	LONG    ipFieldHeight;
-	WNDPROC oldIEViewProc, oldIEViewLastChildProc;
+	WNDPROC oldIEViewProc;
 	BOOL    clr_added;
 	BOOL    fIsReattach;
 	WPARAM  wParam;          // used for "delayed" actions like moved splitters in minimized windows

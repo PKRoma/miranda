@@ -1,34 +1,37 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
-		--pad=oper --one-line=keep-blocks  --unpad=paren
-
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2009 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-$Id$
-
-*/
-
-/*
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
  * implements the "advanced tweak" option page
- * originally developed by Mad Cluster for the tabSRMM "MADMOD" patch in May 2008
+ * originally developed by Mad Cluster for the tabSRMM "MADMOD" patch in
+ * May 2008.
+ *
  */
 
 #include "../src/commonheaders.h"
@@ -123,6 +126,7 @@ INT_PTR CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lPar
 							/*
 							* scan the tree view and obtain the options...
 							*/
+							bool	fOldAeroState = M->getAeroState();
 							while (lvItems[i].szName != NULL) {
 								item.mask = TVIF_HANDLE | TVIF_STATE;
 								item.hItem = (HTREEITEM)lvItems[i].handle;
@@ -141,6 +145,8 @@ INT_PTR CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lPar
 							M->WriteDword(SRMSGMOD, SRMSGSET_MSGTIMEOUT, PluginConfig.m_MsgTimeout);
 
 							M->WriteByte(SRMSGMOD_T, "historysize", (BYTE)SendDlgItemMessage(hwndDlg, IDC_HISTORYSIZESPIN, UDM_GETPOS, 0, 0));
+							if(M->getAeroState() != fOldAeroState)
+								SendMessage(PluginConfig.g_hwndHotkeyHandler, WM_DWMCOMPOSITIONCHANGED, 0, 0);	// simulate aero state change
 							return TRUE;
 						}
 					}

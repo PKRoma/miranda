@@ -334,18 +334,10 @@ const TCHAR *NewTitle(const _MessageWindowData *dat, const TCHAR *szFormat)
 				break;
 			}
 			case 'u': {
-				if (dat->uin) {
-#if defined(_UNICODE)
-					MultiByteToWideChar(CP_ACP, 0, dat->uin, -1, szTemp, 500);
-					title.insert(tempmark + 2, szTemp);
-#else
-					_snprintf(szTemp, 512, "%s", dat->uin);
-					szTemp[511] = 0;
-					title.insert(tempmark + 2, szTemp);
-#endif
-				}
+				if (dat->uin[0])
+					title.insert(tempmark + 2, dat->uin);
 				title.erase(tempmark, 2);
-				curpos = tempmark + lstrlen(szTemp);
+				curpos = tempmark + lstrlen(dat->uin);
 				break;
 			}
 			case 'c': {

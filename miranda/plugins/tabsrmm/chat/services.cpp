@@ -1,37 +1,45 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
-		--pad=oper --one-line=keep-blocks  --unpad=paren
-
-Chat module plugin for Miranda IM
-
-Copyright (C) 2003 Jörgen Persson
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-$Id$
-
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * This code is based on and still contains large parts of the the
+ * original chat module for Miranda IM, written and copyrighted
+ * by Joergen Persson in 2005.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * This implements the services that form the group chat API
+ *
+ */
 
 #include "../src/commonheaders.h"
-//#include "../m_MathModule.h"
 
 // defs
 extern HICON		hIcons[30];
-extern BOOL			IEviewInstalled;
-extern int			g_chat_integration_enabled;
-extern int			g_chat_fully_initialized;
 
 HANDLE				hSendEvent;
 HANDLE				hBuildMenuEvent;
@@ -39,7 +47,6 @@ HANDLE				hJoinMenuItem, hLeaveMenuItem;
 HANDLE				g_hHookPrebuildMenu;
 extern SESSION_INFO	g_TabSession;
 CRITICAL_SECTION	cs;
-int					g_sessionshutdown = 0;
 
 static HANDLE		hServiceRegister = NULL,
 					hServiceNewChat = NULL,
@@ -52,7 +59,7 @@ static HANDLE		hServiceRegister = NULL,
 					hEventJoinChat = NULL,
 					hEventLeaveChat = NULL;
 
-#ifdef _WIN64 
+#ifdef _WIN64
 
 #define SIZEOF_STRUCT_GCREGISTER_V1 40
 #define SIZEOF_STRUCT_GCWINDOW_V1	48
@@ -70,39 +77,31 @@ static HANDLE		hServiceRegister = NULL,
 
 int Chat_ModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
-	if (!g_chat_integration_enabled)
+	if (!PluginConfig.m_chat_enabled)
 		return 0;
 
-	{
-		char * mods[3] = {"Chat", CHAT_FONTMODULE};
-		CallService("DBEditorpp/RegisterModule", (WPARAM)mods, (LPARAM)2);
-	}
+	char * mods[3] = {"Chat", CHAT_FONTMODULE};
+	CallService("DBEditorpp/RegisterModule", (WPARAM)mods, (LPARAM)2);
 
 	LoadIcons();
-	{
-		CLISTMENUITEM mi = { 0 };
-		mi.cbSize = sizeof(mi);
-		mi.position = -2000090001;
-		mi.flags = CMIF_DEFAULT;
-		mi.hIcon = LoadSkinnedIcon( SKINICON_CHAT_JOIN );
-		mi.pszName = LPGEN("&Join");
-		mi.pszService = "GChat/JoinChat";
-		hJoinMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 
-		mi.position = -2000090000;
-		mi.flags = CMIF_NOTOFFLINE;
-		mi.hIcon = LoadSkinnedIcon( SKINICON_CHAT_LEAVE );
-		mi.pszName = LPGEN("&Leave");
-		mi.pszService = "GChat/LeaveChat";
-		hLeaveMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
-	}
+	CLISTMENUITEM mi = { 0 };
+	mi.cbSize = sizeof(mi);
+	mi.position = -2000090001;
+	mi.flags = CMIF_DEFAULT;
+	mi.hIcon = LoadSkinnedIcon( SKINICON_CHAT_JOIN );
+	mi.pszName = LPGEN("&Join");
+	mi.pszService = "GChat/JoinChat";
+	hJoinMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 
-	if (ServiceExists(MS_IEVIEW_WINDOW))
-		IEviewInstalled = TRUE;
+	mi.position = -2000090000;
+	mi.flags = CMIF_NOTOFFLINE;
+	mi.hIcon = LoadSkinnedIcon( SKINICON_CHAT_LEAVE );
+	mi.pszName = LPGEN("&Leave");
+	mi.pszService = "GChat/LeaveChat";
+	hLeaveMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 
 	CList_SetAllOffline(TRUE, NULL);
-
-	g_chat_fully_initialized = TRUE;
 
 	g_Settings.MathMod = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && M->GetByte("Chat", "MathModSupport", 0);
 	return 0;
@@ -637,7 +636,7 @@ INT_PTR Service_AddEvent(WPARAM wParam, LPARAM lParam)
 	SESSION_INFO *si = NULL;
 	BOOL fFreeText = FALSE;
 
-	if (g_sessionshutdown)
+	if (CMimAPI::m_shutDown)
 		return 0;
 
 	if (gce == NULL)

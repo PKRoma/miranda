@@ -54,6 +54,11 @@ typedef HMONITOR(WINAPI *MMFW)(HWND, DWORD);
 typedef BOOL	(WINAPI *GMIA)(HMONITOR, LPMONITORINFO);
 typedef HRESULT	(WINAPI *DRT)(HWND, HWND *, PHTHUMBNAIL);
 typedef BOOL	(WINAPI *ETDT)(HANDLE, DWORD);
+typedef HANDLE  (WINAPI *BBP)(HDC, RECT *, BP_BUFFERFORMAT, BP_PAINTPARAMS *, HDC *);
+typedef HRESULT (WINAPI *EBP)(HANDLE, BOOL);
+typedef HRESULT (WINAPI *BPI)(void);
+typedef HRESULT (WINAPI *BPU)(void);
+
 /*
  * used to encapsulate some parts of the Miranda API
  * constructor does early time initialization - do NOT put anything
@@ -72,6 +77,8 @@ public:
 		InitPaths();
 		InitAPI();
 		getAeroState();
+		if(m_pfnBufferedPaintInit)
+			m_pfnBufferedPaintInit();
 	}
 
 	~CMimAPI() {
@@ -79,6 +86,8 @@ public:
 			FreeLibrary(m_hUxTheme);
 		if (m_hDwmApi != 0)
 			FreeLibrary(m_hDwmApi);
+		if(m_pfnBufferedPaintUninit)
+			m_pfnBufferedPaintUninit();
 	}
 
 	/*
@@ -165,7 +174,17 @@ public:
 				((m_pfnDwmIsCompositionEnabled && (m_pfnDwmIsCompositionEnabled(&result) == S_OK) && result) ? true : false);
 		}
 #endif
+		m_isVsThemed = (m_VsAPI && m_pfnIsThemeActive && m_pfnIsThemeActive());
 		return(m_isAero);
+	}
+	/**
+	 * return status of visual styles theming engine (Windows XP+)
+	 *
+	 * @return bool: themes are enabled
+	 */
+	bool		isVSThemed()
+	{
+		return(m_isVsThemed);
 	}
 	/*
 	 * window lists
@@ -204,6 +223,12 @@ public:
 	static MMFW		m_pfnMonitorFromWindow;
 	static GMIA		m_pfnGetMonitorInfoA;
 	static DRT		m_pfnDwmRegisterThumbnail;
+	static BPI		m_pfnBufferedPaintInit;
+	static BPU		m_pfnBufferedPaintUninit;
+	static BBP		m_pfnBeginBufferedPaint;
+	static EBP		m_pfnEndBufferedPaint;
+
+	static bool		m_shutDown;
 private:
 	UTF8_INTERFACE 	m_utfi;
 	TCHAR 		m_szProfilePath[MAX_PATH], m_szSkinsPath[MAX_PATH], m_szSavedAvatarsPath[MAX_PATH];
@@ -211,6 +236,7 @@ private:
 	HMODULE		m_hUxTheme, m_hDwmApi;
 	bool		m_VsAPI;
 	bool		m_isAero;
+	bool		m_isVsThemed;
 
 	void	InitAPI();
 	void	GetUTFI();

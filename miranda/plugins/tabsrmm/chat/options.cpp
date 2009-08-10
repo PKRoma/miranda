@@ -1,31 +1,37 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
-		--pad=oper --one-line=keep-blocks  --unpad=paren
-
-Chat module plugin for Miranda IM
-
-Copyright (C) 2003 Jörgen Persson
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-Option and settings handling for the group chat module. Implements
-the option pages and various support functions.
-
-$Id$
-
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * The main option pages, which appear under Options->Message sessions in
+ * Miranda.
+ *
+ */
 
 #include "../src/commonheaders.h"
 #undef Translate
@@ -46,7 +52,6 @@ extern HBRUSH 			hListBkgBrush;
 extern HICON			hIcons[30];
 extern FONTINFO			aFonts[OPTIONS_FONTCOUNT];
 extern SESSION_INFO		g_TabSession;
-extern int              g_chat_integration_enabled;
 extern HMODULE          g_hIconDLL;
 
 extern HIMAGELIST       CreateStateImageList();
@@ -585,7 +590,7 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 	switch (uMsg) {
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
-			if (g_chat_integration_enabled) {
+			if (PluginConfig.m_chat_enabled) {
 				HIMAGELIST himlOptions;
 
 				SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CHECKBOXES), GWL_STYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CHECKBOXES), GWL_STYLE) | TVS_NOHSCROLL | TVS_CHECKBOXES);
@@ -710,7 +715,7 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				case 0:
 					switch (((LPNMHDR)lParam)->code) {
 						case PSN_APPLY: {
-							if (g_chat_integration_enabled) {
+							if (PluginConfig.m_chat_enabled) {
 								int iLen;
 								TCHAR *pszText = NULL;
 								BYTE b;
@@ -995,7 +1000,7 @@ void RegisterFontServiceFonts() {
 
 int FontServiceFontsChanged(WPARAM wParam, LPARAM lParam)
 {
-	if (g_chat_integration_enabled) {
+	if (PluginConfig.m_chat_enabled) {
 		LOGFONT lf;
 		HFONT hFont;
 		int iText;
@@ -1018,7 +1023,7 @@ int FontServiceFontsChanged(WPARAM wParam, LPARAM lParam)
 		SM_BroadcastMessage(NULL, GC_SETWNDPROPS, 0, 0, TRUE);
 	}
 
-	ReloadGlobals();
+	PluginConfig.Reload();
 	CacheMsgLogIcons();
 	CacheLogFonts();
 	M->BroadcastMessage(DM_OPTIONSAPPLIED, 1, 0);
@@ -1038,7 +1043,7 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 			TranslateDialogDefault(hwndDlg);
 
 			g_Settings.crLogBackground = (BOOL)M->GetDword("Chat", "ColorLogBG", SRMSGDEFSET_BKGCOLOUR);
-			if (g_chat_integration_enabled) {
+			if (PluginConfig.m_chat_enabled) {
 				TCHAR	tszTemp[MAX_PATH];
 
 				SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN2, UDM_SETRANGE, 0, MAKELONG(5000, 0));
@@ -1151,7 +1156,7 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 					EnableWindow(GetDlgItem(hwndDlg, IDC_HIGHLIGHTWORDS), IsDlgButtonChecked(hwndDlg, IDC_HIGHLIGHT) == BST_CHECKED ? TRUE : FALSE);
 					break;
 				case IDC_LOGGING:
-					if (g_chat_integration_enabled) {
+					if (PluginConfig.m_chat_enabled) {
 						EnableWindow(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED ? TRUE : FALSE);
 						EnableWindow(GetDlgItem(hwndDlg, IDC_FONTCHOOSE), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED ? TRUE : FALSE);
 						EnableWindow(GetDlgItem(hwndDlg, IDC_LIMIT), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED ? TRUE : FALSE);
@@ -1170,7 +1175,7 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				char  *pszText = NULL;
 				TCHAR *ptszPath = NULL;
 
-				if (g_chat_integration_enabled) {
+				if (PluginConfig.m_chat_enabled) {
 
 					iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY));
 					if (iLen > 0) {
@@ -1253,7 +1258,7 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				hListBkgBrush = CreateSolidBrush(M->GetDword("Chat", "ColorNicklistBG", SRMSGDEFSET_BKGCOLOUR));
 
 
-				if (g_chat_integration_enabled) {
+				if (PluginConfig.m_chat_enabled) {
 					LOGFONT lf;
 					HFONT hFont;
 					int iText;
@@ -1276,7 +1281,7 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 					SM_BroadcastMessage(NULL, GC_SETWNDPROPS, 0, 0, TRUE);
 				}
 
-				ReloadGlobals();
+				PluginConfig.Reload();
 				CacheMsgLogIcons();
 				CacheLogFonts();
 				M->BroadcastMessage(DM_OPTIONSAPPLIED, 1, 0);
@@ -1382,7 +1387,7 @@ int Chat_OptionsInitialize(WPARAM wParam, LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp = {0};
 
-	if (!g_chat_integration_enabled)
+	if (!PluginConfig.m_chat_enabled)
 		return 0;
 
 	if (PluginConfig.g_PopupAvail) {

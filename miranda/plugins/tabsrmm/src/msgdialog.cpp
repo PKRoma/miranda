@@ -45,7 +45,6 @@ extern TCHAR *szWarnClose;
 extern struct RTFColorTable *rtf_ctable;
 extern struct GlobalLogSettings_t g_Settings;
 extern HANDLE g_hEvent_MsgPopup;
-extern int    g_chat_integration_enabled;
 
 TCHAR *xStatusDescr[] = {	_T("Angry"), _T("Duck"), _T("Tired"), _T("Party"), _T("Beer"), _T("Thinking"), _T("Eating"),
 								_T("TV"), _T("Friends"), _T("Coffee"),	_T("Music"), _T("Business"), _T("Camera"), _T("Funny"),
@@ -301,38 +300,6 @@ LRESULT CALLBACK IEViewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	return CallWindowProc(mwdat->hwndIEView ? OldIEViewProc : OldHppProc, hwnd, msg, wParam, lParam);
 }
 
-//MAD: subclassing for keyfilter mod
-
-/*
- * subclasses IEView to add keyboard filtering (if needed)
- */
-
-LRESULT CALLBACK IEViewKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	struct _MessageWindowData *mwdat = (struct _MessageWindowData *)GetWindowLongPtr(GetParent(GetParent(GetParent(hwnd))), GWLP_USERDATA);
-
-	BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
-	BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
-	BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
-
-	switch(msg) {
-		case WM_KEYDOWN:
-			if(!isCtrl && !isAlt&&!isShift) {
-				if (wParam != VK_PRIOR&&wParam != VK_NEXT&&
-					wParam != VK_DELETE&&wParam != VK_MENU&&wParam != VK_END&&
-					wParam != VK_HOME&&wParam != VK_UP&&wParam != VK_DOWN&&
-					wParam != VK_LEFT&&wParam != VK_RIGHT&&wParam != VK_TAB&&
-					wParam != VK_SPACE)	{
-						SetFocus(GetDlgItem(mwdat->hwnd,IDC_MESSAGE));
-						keybd_event((BYTE)wParam, (BYTE)MapVirtualKey(wParam,0), KEYEVENTF_EXTENDEDKEY | 0, 0);
-						return 0;
-				}
-				break;
-			}
-	}
-	return CallWindowProc(mwdat->oldIEViewLastChildProc, hwnd, msg, wParam, lParam);
-}
-
 /*
  * sublassing procedure for the h++ based message log viewer
  */
@@ -498,7 +465,12 @@ static void ConfigurePanel(HWND hwndDlg, struct _MessageWindowData *dat)
 {
 	ShowWindow(GetDlgItem(hwndDlg, IDC_NOTES), dat->dwFlagsEx & MWF_SHOW_INFONOTES ? SW_SHOW : SW_HIDE);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLENOTES), dat->dwFlagsEx & MWF_SHOW_INFONOTES ? SW_SHOW : SW_HIDE);
+	ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELSTATUS), SW_HIDE);
+	ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELUIN), SW_HIDE);
+	ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELNICK), SW_HIDE);
+	ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELPIC), SW_HIDE);
 }
+
 static void ShowHideInfoPanel(HWND hwndDlg, struct _MessageWindowData *dat)
 {
 	HBITMAP hbm = ((dat->dwFlagsEx & MWF_SHOW_INFOPANEL) && PluginConfig.m_AvatarMode != 5) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
@@ -529,6 +501,10 @@ static void ShowHideInfoPanel(HWND hwndDlg, struct _MessageWindowData *dat)
 		ConfigurePanel(hwndDlg, dat);
 		InvalidateRect(hwndDlg, NULL, FALSE);
 	}
+	ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELSTATUS), SW_HIDE);
+	ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELUIN), SW_HIDE);
+	ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELNICK), SW_HIDE);
+	ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELPIC), SW_HIDE);
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
 	InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
 	SetAeroMargins(dat->pContainer);
@@ -1357,7 +1333,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 								DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
 							}
 						}
-						if ((dat->bType == SESSIONTYPE_CHAT || bSync) && g_chat_integration_enabled) {
+						if ((dat->bType == SESSIONTYPE_CHAT || bSync) && PluginConfig.m_chat_enabled) {
 							SM_BroadcastMessage(NULL, DM_SAVESIZE, 0, 0, 0);
 							SM_BroadcastMessage(NULL, DM_SPLITTERMOVEDGLOBAL, rcWin.bottom - (short)HIWORD(messagePos) + rc.bottom / 2 + dwOff_CHAT, (LPARAM)rc.bottom, 0);
 							SM_BroadcastMessage(NULL, WM_SIZE, 0, 0, 1);
@@ -1535,7 +1511,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			RECT rc;
 			GetClientRect(GetDlgItem(hwndDlg, IDC_MESSAGE), &rc);
 			urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
-			//urc->rcItem.top=urc->rcItem.bottom-(dat->pic.cy +2);
 			urc->rcItem.left = urc->rcItem.right - (dat->pic.cx + 2);
 			if ((urc->rcItem.bottom - urc->rcItem.top) < (dat->pic.cy +2) && dat->showPic) {
 				urc->rcItem.top = urc->rcItem.bottom - dat->pic.cy;
@@ -1560,7 +1535,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 				fa.cProto = dat->szProto;
 				CallService(MS_FAVATAR_RESIZE, (WPARAM)&fa, (LPARAM)&rc);
 			}
-			}return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
+			return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
+		}
 		case IDC_MESSAGE:
 			urc->rcItem.right = urc->dlgNewSize.cx;
 			if (dat->showPic)
@@ -2110,17 +2086,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					dat->oldIEViewProc = wndProc;
 				}
 
-			}
-			else if(dat->hwndIEView) {
-				if(dat->oldIEViewProc == 0) {
-					WNDPROC wndProc;
-					wndProc= (WNDPROC)SetWindowLongPtr(GetLastChild(dat->hwndIEView), GWLP_WNDPROC, (LONG_PTR)IEViewKFSubclassProc);
-					// alex: fixed double subclassing issue with IEView (IE parent frame must also be subclassed with different
-					//       procedure to enable visual style IEView control border.
-					//if(OldIEViewProc == 0)
-					//	OldIEViewProc = wndProc;
-					dat->oldIEViewLastChildProc = wndProc;
-				}
 			}
 			dat->dwFlags &= ~MWF_INITMODE;
 			//MAD_
@@ -4870,13 +4835,13 @@ quote_from_last:
 			if (dat->hContact) {
 				if (!OpenClipboard(hwndDlg))
 					break;
-				if (lstrlenA(dat->uin) == 0)
+				if (lstrlen(dat->uin) == 0)
 					break;
 				EmptyClipboard();
-				hData = GlobalAlloc(GMEM_MOVEABLE, lstrlenA(dat->uin) + 1);
-				lstrcpyA((char *)GlobalLock(hData), dat->uin);
+				hData = GlobalAlloc(GMEM_MOVEABLE, (lstrlen(dat->uin) + 1) * sizeof(TCHAR));
+				lstrcpy((TCHAR *)GlobalLock(hData), dat->uin);
 				GlobalUnlock(hData);
-				SetClipboardData(CF_TEXT, hData);
+				SetClipboardData(sizeof(TCHAR) == 1 ? CF_TEXT : CF_UNICODETEXT, hData);
 				CloseClipboard();
 				GlobalFree(hData);
 			}
@@ -5377,7 +5342,7 @@ quote_from_last:
 			break;
 		}
 		case WM_ERASEBKGND: {
-			if (m_pContainer->bSkinned || M->isAero())
+			if (m_pContainer->bSkinned || M->isAero() || M->isVSThemed())
 				return TRUE;
 			break;
 		}
@@ -5395,17 +5360,21 @@ quote_from_last:
 			PAINTSTRUCT ps;
 			HDC 	hdc = BeginPaint(hwndDlg, &ps);
 			RECT 	rcClient, rcWindow, rc;
-			HDC	 	hdcMem = CreateCompatibleDC(hdc);
-			DWORD 	cx, cy;
+			HDC		hdcMem;
 			HBITMAP hbm, hbmOld;
-			CSkinItem t_item;
-			bool	fInfoPanel = (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) && !(dat->dwFlagsEx & MWF_SHOW_INFONOTES) && !(dat->dwFlags & MWF_ERRORSTATE);
-			GetClientRect(hwndDlg, &rcClient);
+			DWORD 	cx, cy;
+						GetClientRect(hwndDlg, &rcClient);
+
 			cx = rcClient.right - rcClient.left;
 			cy = rcClient.bottom - rcClient.top;
-			hbm =  CSkin::CreateAeroCompatibleBitmap(rcClient, hdc);
 
+			hdcMem = CreateCompatibleDC(hdc);
+			hbm =  CSkin::CreateAeroCompatibleBitmap(rcClient, hdc);
 			hbmOld = (HBITMAP)SelectObject(hdcMem, hbm);
+
+			CSkinItem t_item;
+			bool	fInfoPanel = (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) && !(dat->dwFlagsEx & MWF_SHOW_INFONOTES) &&
+				!(dat->dwFlags & MWF_ERRORSTATE);
 
 			bool	fAero = M->isAero();
 
@@ -5440,12 +5409,11 @@ quote_from_last:
 				FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
 
 			/*
-			 * draw the (new) infopanel. Use the gradient from the statusitem.
+			 * draw the (new) infopanel background. Use the gradient from the statusitem.
 			 */
 
 			t_item = SkinItems[ID_EXTBKINFOPANELBG];
 			if(!(dat->dwFlags & MWF_ERRORSTATE) && ((dat->dwFlagsEx & MWF_SHOW_INFOPANEL) || fAero)) {
-				//if(((dat->dwFlags & MWF_SHOW_INFOPANEL) && !(dat->dwFlags & MWF_ERRORSTATE)) || fAero) {
 				CSkinItem *item = &t_item;
 
 				if(!(dat->dwFlags & MWF_ERRORSTATE) && !(dat->dwFlagsEx & MWF_SHOW_INFONOTES)) {
@@ -5458,14 +5426,18 @@ quote_from_last:
 						FillRect(hdcMem, &rcBlack, (HBRUSH)GetStockObject(BLACK_BRUSH));
 					}
 					else {
-						if(m_pContainer->bSkinned)
+						if(m_pContainer->bSkinned) {
 							CSkin::SkinDrawBG(hwndDlg, m_pContainer->hwnd, m_pContainer, &rc, hdcMem);
+							if(!item->IGNORED) {
+								DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+										  item->CORNER, item->BORDERSTYLE, item->imageItem);
+							}
+						}
+						else if(M->isVSThemed())
+							//CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, hdcMem, 6, PBS_NORMAL, &rc, &rc);
+							CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, hdcMem, 7, 1, &rc, &rc);
 						else
 							FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
-						if(!item->IGNORED) {
-							DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
-									  item->CORNER, item->BORDERSTYLE, item->imageItem);
-						}
 					}
 				}
 			}
@@ -5502,7 +5474,7 @@ quote_from_last:
 			/*
 			 * draw aero related stuff
 			*/
-			if(fAero)
+			if(fAero || (M->isVSThemed() && !CSkin::m_skinEnabled))
 				CSkin::RenderToolbarBG(dat, hdcMem, rcClient);
 			/*
 			 * render info panel fields
@@ -5525,7 +5497,6 @@ quote_from_last:
 				dis.hwndItem = GetDlgItem(hwndDlg, IDC_PANELPIC);
 				MsgWindowDrawHandler(0, (LPARAM)&dis, hwndDlg, dat);
 			}
-
 			BitBlt(hdc, 0, 0, cx, cy, hdcMem, 0, 0, SRCCOPY);
 			SelectObject(hdcMem, hbmOld);
 			DeleteObject(hbm);
@@ -5705,14 +5676,10 @@ quote_from_last:
 				ieWindow.cbSize = sizeof(IEVIEWWINDOW);
 				ieWindow.iType = IEW_DESTROY;
 				ieWindow.hwnd = dat->hwndIEView;
-				if (dat->oldIEViewLastChildProc) {
-					SetWindowLongPtr(GetLastChild(dat->hwndIEView), GWLP_WNDPROC, (LONG_PTR)dat->oldIEViewLastChildProc);
-					dat->oldIEViewLastChildProc = 0;
-				}
 				if (dat->oldIEViewProc) {
 					SetWindowLongPtr(dat->hwndIEView, GWLP_WNDPROC, (LONG_PTR)dat->oldIEViewProc);
 					dat->oldIEViewProc = 0;
-					}
+				}
 				CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
 			}
 			if (dat->hwndHPP) {

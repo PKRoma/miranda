@@ -1,26 +1,36 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
-		--pad=oper --one-line=keep-blocks  --unpad=paren
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-$Id$
-
-skinable button class for tabSRMM
-
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * A skinnable button class for tabSRMM.
+ *
+ */
 
 #include "commonheaders.h"
 #include <ctype.h>
@@ -90,7 +100,7 @@ static void LoadTheme(MButtonCtrl *ctl)
 	if (M->isVSAPIState()) {
 		DestroyTheme(ctl);
 		ctl->hThemeButton = CMimAPI::m_pfnOpenThemeData(ctl->hwnd, L"BUTTON");
-		ctl->hThemeToolbar = M->isAero() ? CMimAPI::m_pfnOpenThemeData(ctl->hwnd, L"MENU") : CMimAPI::m_pfnOpenThemeData(ctl->hwnd, L"TOOLBAR");
+		ctl->hThemeToolbar = (M->isAero() || M->isVSThemed()) ? CMimAPI::m_pfnOpenThemeData(ctl->hwnd, L"MENU") : CMimAPI::m_pfnOpenThemeData(ctl->hwnd, L"TOOLBAR");
 		ctl->bThemed = TRUE;
 	}
 }
@@ -154,6 +164,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
 		RECT rcClient, rcContent;
 		HRGN clip = 0;
 		bool fAero = M->isAero();
+		bool fVSThemed = !CSkin::m_skinEnabled && M->isVSThemed();
 		_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(GetParent(ctl->hwnd), GWLP_USERDATA);
 		GetClientRect(ctl->hwnd, &rcClient);
 		CopyRect(&rcContent, &rcClient);
@@ -239,7 +250,7 @@ flat_themed:
 					FillRect(hdcMem, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
 					if (rc.right < 20 || rc.bottom < 20)
 						InflateRect(&rc, 2, 2);
-					if(fAero && ctl->bToolbarButton) {
+					if((fAero || fVSThemed) && ctl->bToolbarButton) {
 						if(dat) {
 							RECT	rcWin;
 							GetWindowRect(ctl->hwnd, &rcWin);
@@ -254,11 +265,11 @@ flat_themed:
 						if (CMimAPI::m_pfnIsThemeBackgroundPartiallyTransparent(ctl->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state)))
 							CMimAPI::m_pfnDrawThemeParentBackground(ctl->hwnd, hdcMem, &rc);
 					}
-					if(fAero)
+					if(fAero || fVSThemed)
 						CMimAPI::m_pfnDrawThemeBackground(ctl->hThemeToolbar, hdcMem, 8, RBStateConvert2Flat(state), &rc, &rc);
 					else
 						CMimAPI::m_pfnDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(state), &rc, &rc);
-					if (clip && !fAero) {
+					if (clip && !(fAero || fVSThemed)) {
 						SelectClipRgn(hdcMem, clip);
 						CMimAPI::m_pfnDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(realState), &rc, &rc);
 					}
@@ -327,7 +338,7 @@ nonflat_themed:
 					if (clip)
 						state = PBS_NORMAL;
 
-					if(fAero && ctl->bToolbarButton) {
+					if((fAero || fVSThemed) && ctl->bToolbarButton) {
 						if(dat) {
 							RECT	rcWin;
 							GetWindowRect(ctl->hwnd, &rcWin);

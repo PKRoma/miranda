@@ -44,9 +44,6 @@
 extern SESSION_INFO *m_WndList;
 extern int SIDEBARWIDTH;
 extern ButtonSet g_ButtonSet;
-extern int status_icon_list_size;
-extern struct StatusIconListNode *status_icon_list;
-extern      int g_sessionshutdown;
 
 extern INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -60,7 +57,7 @@ TCHAR 	*szWarnClose = _T("Do you really want to close this session?");
 ContainerWindowData *pFirstContainer = 0;        // the linked list of struct ContainerWindowData
 ContainerWindowData *pLastActiveContainer = NULL;
 
-static 	WNDPROC OldStatusBarproc = 0, OldContainerWndProc = 0;
+static 	WNDPROC OldContainerWndProc = 0;
 
 static BOOL	CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -269,419 +266,6 @@ struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE
 	return NULL;
 }
 
-static int tooltip_active = FALSE;
-static POINT ptMouse = {0};
-RECT 	rcLastStatusBarClick;						// remembers click (down event) point for status bar clicks
-
-LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	struct ContainerWindowData *pContainer = (struct ContainerWindowData *)GetWindowLongPtr(GetParent(hWnd), GWLP_USERDATA);
-
-	if (!OldStatusBarproc) {
-		WNDCLASSEX wc = {0};
-		wc.cbSize = sizeof(wc);
-		GetClassInfoEx(g_hInst, STATUSCLASSNAME, &wc);
-		OldStatusBarproc = wc.lpfnWndProc;
-	}
-	switch (msg) {
-		case WM_CREATE: {
-			CREATESTRUCT *cs = (CREATESTRUCT *)lParam;
-			LRESULT ret;
-			HWND hwndParent = GetParent(hWnd);
-			SetWindowLongPtr(hwndParent, GWL_STYLE, GetWindowLongPtr(hwndParent, GWL_STYLE) & ~WS_THICKFRAME);
-			SetWindowLongPtr(hwndParent, GWL_EXSTYLE, GetWindowLongPtr(hwndParent, GWL_EXSTYLE) & ~WS_EX_APPWINDOW);
-			cs->style &= ~SBARS_SIZEGRIP;
-			ret = CallWindowProc(OldStatusBarproc, hWnd, msg, wParam, lParam);
-			SetWindowLongPtr(hwndParent, GWL_STYLE, GetWindowLongPtr(hwndParent, GWL_STYLE) | WS_THICKFRAME);
-			SetWindowLongPtr(hwndParent, GWL_EXSTYLE, GetWindowLongPtr(hwndParent, GWL_EXSTYLE) | WS_EX_APPWINDOW);
-			return ret;
-		}
-		case WM_COMMAND:
-			if (LOWORD(wParam) == 1001)
-				SendMessage(GetParent(hWnd), DM_SESSIONLIST, 0, 0);
-			break;
-		case WM_NCHITTEST: {
-			RECT r;
-			POINT pt;
-			LRESULT lr = SendMessage(GetParent(hWnd), WM_NCHITTEST, wParam, lParam);
-			int clip = CSkin::m_bClipBorder;
-
-			GetWindowRect(hWnd, &r);
-			GetCursorPos(&pt);
-			if (pt.y <= r.bottom && pt.y >= r.bottom - clip - 3) {
-				if (pt.x > r.right - clip - 4)
-					return HTBOTTOMRIGHT;
-			}
-			if (lr == HTLEFT || lr == HTRIGHT || lr == HTBOTTOM || lr == HTTOP || lr == HTTOPLEFT || lr == HTTOPRIGHT
-					|| lr == HTBOTTOMLEFT || lr == HTBOTTOMRIGHT)
-				return HTTRANSPARENT;
-			break;
-		}
-		case WM_ERASEBKGND: {
-			RECT rcClient;
-
-			if ((pContainer && pContainer->bSkinned) || M->isAero())
-				return 1;
-			if (CMimAPI::m_pfnIsThemeActive != 0) {
-				if (CMimAPI::m_pfnIsThemeActive() && !M->isAero())
-					break;
-			}
-			GetClientRect(hWnd, &rcClient);
-			FillRect((HDC)wParam, &rcClient, GetSysColorBrush(COLOR_3DFACE));
-			return 1;
-		}
-		case WM_PAINT:
-			if (!CSkin::m_skinEnabled && !M->isAero())
-				break;
-			else {
-				PAINTSTRUCT ps;
-				TCHAR szText[1024];
-				int i;
-				RECT itemRect;
-				HICON hIcon;
-				LONG height, width;
-				HDC hdc = BeginPaint(hWnd, &ps);
-				HFONT hFontOld = 0;
-				UINT nParts = SendMessage(hWnd, SB_GETPARTS, 0, 0);
-				LRESULT result;
-				RECT rcClient;
-				HDC hdcMem = CreateCompatibleDC(hdc);
-				HBITMAP hbm, hbmOld;
-				CSkinItem *item = &SkinItems[ID_EXTBKSTATUSBARPANEL];
-
-				BOOL	fAero = M->isAero();
-				HANDLE  hTheme = fAero ? CMimAPI::m_pfnOpenThemeData(hWnd, L"ButtonStyle") : 0;
-
-				GetClientRect(hWnd, &rcClient);
-
-				hbm = CSkin::CreateAeroCompatibleBitmap(rcClient, hdc);
-				hbmOld = (HBITMAP)SelectObject(hdcMem, hbm);
-				SetBkMode(hdcMem, TRANSPARENT);
-				SetTextColor(hdcMem, PluginConfig.skinDefaultFontColor);
-				hFontOld = (HFONT)SelectObject(hdcMem, GetStockObject(DEFAULT_GUI_FONT));
-
-				if (pContainer && pContainer->bSkinned)
-					CSkin::SkinDrawBG(hWnd, GetParent(hWnd), pContainer, &rcClient, hdcMem);
-
-				for (i = 0; i < (int)nParts; i++) {
-					SendMessage(hWnd, SB_GETRECT, (WPARAM)i, (LPARAM)&itemRect);
-					if (!item->IGNORED && !fAero)
-						DrawAlpha(hdcMem, &itemRect, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
-								  item->CORNER, item->BORDERSTYLE, item->imageItem);
-
-					if (i == 0)
-						itemRect.left += 2;
-
-					height = itemRect.bottom - itemRect.top;
-					width = itemRect.right - itemRect.left;
-					hIcon = (HICON)SendMessage(hWnd, SB_GETICON, i, 0);
-					szText[0] = 0;
-					result = SendMessage(hWnd, SB_GETTEXT, i, (LPARAM)szText);
-					if (i == 2 && pContainer) {
-						_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
-
-						if (dat)
-							DrawStatusIcons(dat, hdcMem, itemRect, 2);
-					}
-					else {
-						if (hIcon) {
-							if (LOWORD(result) > 1) {				// we have a text
-								DrawIconEx(hdcMem, itemRect.left + 3, (height / 2 - 8) + itemRect.top, hIcon, 16, 16, 0, 0, DI_NORMAL);
-								itemRect.left += 20;
-								CSkin::RenderText(hdcMem, hTheme, szText, &itemRect, DT_VCENTER | DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX);
-							}
-							else
-								DrawIconEx(hdcMem, itemRect.left + 3, (height / 2 - 8) + itemRect.top, hIcon, 16, 16, 0, 0, DI_NORMAL);
-						}
-						else {
-							itemRect.left += 2;
-							itemRect.right -= 2;
-							CSkin::RenderText(hdcMem, hTheme, szText, &itemRect, DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX);
-						}
-					}
-				}
-				BitBlt(hdc, 0, 0, rcClient.right, rcClient.bottom, hdcMem, 0, 0, SRCCOPY);
-				SelectObject(hdcMem, hbmOld);
-				DeleteObject(hbm);
-				SelectObject(hdcMem, hFontOld);
-				DeleteDC(hdcMem);
-
-				if(hTheme)
-					CMimAPI::m_pfnCloseThemeData(hTheme);
-
-				EndPaint(hWnd, &ps);
-				return 0;
-			}
-		case WM_CONTEXTMENU: {
-			RECT rc;
-			POINT pt;
-			GetCursorPos(&pt);
-			GetWindowRect(GetDlgItem(hWnd, 1001), &rc);
-			if (PtInRect(&rc, pt)) {
-				SendMessage(PluginConfig.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 100, WM_RBUTTONUP);
-				return 0;
-			}
-			break;
-		}
-
-		case WM_USER + 101: {
-			struct _MessageWindowData *dat = (struct _MessageWindowData *)lParam;
-			RECT rcs;
-			int statwidths[5];
-			struct StatusIconListNode *current = status_icon_list;
-			int    list_icons = 0;
-			char   buff[100];
-			DWORD  flags;
-
-			while (current && dat) {
-				flags=current->sid.flags;
-				if(current->sid.flags&MBF_OWNERSTATE){
-					struct StatusIconListNode *currentSIN = dat->pSINod;
-
-					while (currentSIN) {
-						if (strcmp(currentSIN->sid.szModule, current->sid.szModule) == 0 && currentSIN->sid.dwId == current->sid.dwId) {
-							flags=currentSIN->sid.flags;
-							break;
-						}
-						currentSIN = currentSIN->next;
-					}
-				}
-				else {
-					sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
-					flags = M->GetByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
-				}
-				if (!(flags & MBF_HIDDEN))
-					list_icons++;
-				current = current->next;
-			}
-
-			SendMessage(hWnd, WM_SIZE, 0, 0);
-			GetWindowRect(hWnd, &rcs);
-
-			statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH + 20) - (35 + ((list_icons) * (PluginConfig.m_smcxicon + 2)));
-			statwidths[1] = (rcs.right - rcs.left) - (45 + ((list_icons) * (PluginConfig.m_smcxicon + 2)));
-			statwidths[2] = -1;
-			SendMessage(hWnd, SB_SETPARTS, 3, (LPARAM) statwidths);
-			return 0;
-		}
-
-		case WM_SETCURSOR: {
-			POINT pt;
-
-			GetCursorPos(&pt);
-			SendMessage(GetParent(hWnd), msg, wParam, lParam);
-			if (pt.x == ptMouse.x && pt.y == ptMouse.y) {
-				return 1;
-			}
-			ptMouse = pt;
-			if (tooltip_active) {
-				KillTimer(hWnd, TIMERID_HOVER);
-				CallService("mToolTip/HideTip", 0, 0);
-				tooltip_active = FALSE;
-			}
-			KillTimer(hWnd, TIMERID_HOVER);
-			SetTimer(hWnd, TIMERID_HOVER, 450, 0);
-			break;
-		}
-
-		case WM_LBUTTONDOWN:
-		case WM_RBUTTONDOWN: {
-			POINT 	pt;
-
-			KillTimer(hWnd, TIMERID_HOVER);
-			CallService("mToolTip/HideTip", 0, 0);
-			tooltip_active = FALSE;
-			GetCursorPos(&pt);
-			rcLastStatusBarClick.left = pt.x - 2;
-			rcLastStatusBarClick.right = pt.x + 2;
-			rcLastStatusBarClick.top = pt.y - 2;
-			rcLastStatusBarClick.bottom = pt.y + 2;
-			break;
-		}
-
-		case WM_TIMER:
-			if (wParam == TIMERID_HOVER) {
-				POINT pt;
-				BOOL  fHaveUCTip = ServiceExists("mToolTip/ShowTipW");
-				CLCINFOTIP ti = {0};
-				ti.cbSize = sizeof(ti);
-
-				KillTimer(hWnd, TIMERID_HOVER);
-				GetCursorPos(&pt);
-				if (pt.x == ptMouse.x && pt.y == ptMouse.y) {
-					RECT rc;
-					struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
-//mad
-					SIZE size;
-					TCHAR  szStatusBarText[512];
-//mad_
-					ti.ptCursor = pt;
-					ScreenToClient(hWnd, &pt);
-					SendMessage(hWnd, SB_GETRECT, 2, (LPARAM)&rc);
-					if (dat && PtInRect(&rc, pt)) {
-						int gap = 2;
-						struct StatusIconListNode *current = status_icon_list;
-						struct StatusIconListNode *clicked = NULL;
-						struct StatusIconListNode *currentSIN = NULL;
-
-						unsigned int iconNum = (pt.x - rc.left) / (PluginConfig.m_smcxicon + gap);
-						unsigned int list_icons = 0;
-						char         buff[100];
-						DWORD        flags;
-
-						while (current) {
-							if(current->sid.flags&MBF_OWNERSTATE&&dat->pSINod){
-								struct StatusIconListNode *currentSIN = dat->pSINod;
-								flags=current->sid.flags;
-								while (currentSIN)
-									{
-									if (strcmp(currentSIN->sid.szModule, current->sid.szModule) == 0 && currentSIN->sid.dwId == current->sid.dwId) {
-										flags=currentSIN->sid.flags;
-										break;
-										}
-									currentSIN = currentSIN->next;
-									}
-								}
-							else  {
-							sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
-							flags = M->GetByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
-							}
-							if (!(flags & MBF_HIDDEN)) {
-								if (list_icons++ == iconNum)
-									clicked = current;
-							}
-							current = current->next;
-						}
-
- 						if(clicked&&clicked->sid.flags&MBF_OWNERSTATE){
- 							currentSIN=dat->pSINod;
- 							while (currentSIN)
- 								{
- 								if (strcmp(currentSIN->sid.szModule, clicked->sid.szModule) == 0 && currentSIN->sid.dwId == clicked->sid.dwId) {
- 									clicked=currentSIN;
- 									break;
- 									}
- 								currentSIN = currentSIN->next;
- 								}
- 							}
-
-						if ((int)iconNum == list_icons && pContainer) {
-#if defined(_UNICODE)
-							if (fHaveUCTip) {
-								wchar_t wBuf[512];
-
-								mir_sntprintf(wBuf, safe_sizeof(wBuf), TranslateT("Sounds are %s. Click to toggle status, hold SHIFT and click to set for all open containers"), pContainer->dwFlags & CNT_NOSOUND ? TranslateT("disabled") : TranslateT("enabled"));
-								CallService("mToolTip/ShowTipW", (WPARAM)wBuf, (LPARAM)&ti);
-							}
-							else {
-								char buf[512];
-
-								mir_snprintf(buf, sizeof(buf), Translate("Sounds are %s. Click to toggle status, hold SHIFT and click to set for all open containers"), pContainer->dwFlags & CNT_NOSOUND ? Translate("disabled") : Translate("enabled"));
-								CallService("mToolTip/ShowTip", (WPARAM)buf, (LPARAM)&ti);
-							}
-#else
-							char buf[512];
-							mir_snprintf(buf, sizeof(buf), Translate("Sounds are %s. Click to toggle status, hold SHIFT and click to set for all open containers"), pContainer->dwFlags & CNT_NOSOUND ? Translate("disabled") : Translate("enabled"));
-							CallService("mToolTip/ShowTip", (WPARAM)buf, (LPARAM)&ti);
-#endif
-							tooltip_active = TRUE;
-						}
-						else if ((int)iconNum == list_icons + 1 && dat && dat->bType == SESSIONTYPE_IM) {
-							int mtnStatus = (int)M->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, M->GetByte(SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW));
-#if defined(_UNICODE)
-
-							if (fHaveUCTip) {
-								wchar_t wBuf[512];
-
-								mir_sntprintf(wBuf, safe_sizeof(wBuf), TranslateT("Sending typing notifications is %s."), mtnStatus ? TranslateT("enabled") : TranslateT("disabled"));
-								CallService("mToolTip/ShowTipW", (WPARAM)wBuf, (LPARAM)&ti);
-							}
-							else {
-								char buf[512];
-
-								mir_snprintf(buf, sizeof(buf), Translate("Sending typing notifications is %s."), mtnStatus ? Translate("enabled") : Translate("disabled"));
-								CallService("mToolTip/ShowTip", (WPARAM)buf, (LPARAM)&ti);
-							}
-#else
-							char buf[512];
-							mir_snprintf(buf, sizeof(buf), Translate("Sending typing notifications is %s."), mtnStatus ? Translate("enabled") : Translate("disabled"));
-							CallService("mToolTip/ShowTip", (WPARAM)buf, (LPARAM)&ti);
-#endif
-							tooltip_active = TRUE;
-						}
-						else {
-							if (clicked) {
-								CallService("mToolTip/ShowTip", (WPARAM)clicked->sid.szTooltip, (LPARAM)&ti);
-								tooltip_active = TRUE;
-							}
-						}
-					}
-					SendMessage(hWnd, SB_GETRECT, 1, (LPARAM)&rc);
-					if (dat && PtInRect(&rc, pt)) {
-						int iLength = 0;
-#if defined(_UNICODE)
-						GETTEXTLENGTHEX gtxl = {0};
-
-						gtxl.codepage = CP_UTF8;
-						gtxl.flags = GTL_DEFAULT | GTL_PRECISE | GTL_NUMBYTES;
-						iLength = SendDlgItemMessage(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE, EM_GETTEXTLENGTHEX, (WPARAM) & gtxl, 0);
-						tooltip_active = TRUE;
-						if (fHaveUCTip) {
-							wchar_t wBuf[512];
-							wchar_t *szFormat = _T("There are %d pending send jobs. Message length: %d bytes, message length limit: %d bytes");
-
-							mir_sntprintf(wBuf, safe_sizeof(wBuf), TranslateTS(szFormat), dat->iOpenJobs, iLength, dat->nMax ? dat->nMax : 20000);
-							CallService("mToolTip/ShowTipW", (WPARAM)wBuf, (LPARAM)&ti);
-						}
-						else {
-							char buf[512];
-							char *szFormat = "There are %d pending send jobs. Message length: %d bytes, message length limit: %d bytes";
-
-							mir_snprintf(buf, sizeof(buf), Translate(szFormat), dat->iOpenJobs, iLength, dat->nMax ? dat->nMax : 20000);
-							CallService("mToolTip/ShowTip", (WPARAM)buf, (LPARAM)&ti);
-						}
-#else
-						char buf[512];
-						char *szFormat = "There are %d pending send jobs. Message length: %d bytes, message length limit: %d bytes";
- 						iLength = GetWindowTextLength(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE));
- 						mir_snprintf(buf, sizeof(buf), Translate(szFormat), dat->iOpenJobs, iLength, dat->nMax ? dat->nMax : 20000);
-						CallService("mToolTip/ShowTip", (WPARAM)buf, (LPARAM)&ti);
-#endif
-					}
-					//MAD
-					if(SendMessage(dat->pContainer->hwndStatus, SB_GETTEXT, 0, (LPARAM)szStatusBarText))
-					{
-						HDC hdc;
-						int iLen=SendMessage(dat->pContainer->hwndStatus,SB_GETTEXTLENGTH,0,0);
-						SendMessage(hWnd, SB_GETRECT, 0, (LPARAM)&rc);
-						GetTextExtentPoint32( hdc=GetDC( dat->pContainer->hwndStatus), szStatusBarText, iLen, &size );
-						ReleaseDC (dat->pContainer->hwndStatus,hdc);
-
-					if(dat && PtInRect(&rc,pt)&&((rc.right-rc.left)<size.cx)) {
-						DBVARIANT dbv={0};
-
-						if(dat->bType == SESSIONTYPE_CHAT)
-							M->GetTString(dat->hContact,dat->szProto,"Topic",&dbv);
-
-						tooltip_active = TRUE;
-#if defined(_UNICODE)
-						if(fHaveUCTip)	 CallService("mToolTip/ShowTipW", (WPARAM)(dbv.pwszVal?dbv.pwszVal:szStatusBarText), (LPARAM)&ti);
-						else CallService("mToolTip/ShowTip", (WPARAM)mir_u2a(dbv.pwszVal?dbv.pwszVal:szStatusBarText), (LPARAM)&ti);
-#else
-						CallService("mToolTip/ShowTip", (WPARAM)(dbv.pszVal?dbv.pszVal:szStatusBarText), (LPARAM)&ti);
-#endif
-					if(dbv.pszVal) DBFreeVariant(&dbv);
-					}
-				}
-					// MAD_
-				}
-			}
-			break;
-		case WM_DESTROY:
-			KillTimer(hWnd, TIMERID_HOVER);
-	}
-	return CallWindowProc(OldStatusBarproc, hWnd, msg, wParam, lParam);
-}
 /*
  * draws the sidebar, arranges the buttons, cares about hiding buttons if space
  * is not sufficient.
@@ -1018,26 +602,6 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					}
 				}
 				SetBkMode(dcMem, TRANSPARENT);
-				if (!(pContainer->dwFlags & CNT_NOMENUBAR) && pContainer->hMenu) {
-					RECT rcItem;
-					RECT rcWindow2;
-
-					GetWindowRect(hwndDlg, &rcWindow2);
-
-					dis.hDC = dcMem;
-					dis.CtlType = ODT_MENU;
-					for (i = 0; i <= 4; i++) {
-						dis.itemID = 0xffff5000 + i;
-						GetMenuItemRect(hwndDlg, pContainer->hMenu, i, &rcItem);
-
-						dis.rcItem.left = rcItem.left - rcWindow2.left;
-						dis.rcItem.top = rcItem.top - rcWindow2.top;
-
-						dis.rcItem.right = dis.rcItem.left + (rcItem.right - rcItem.left);
-						dis.rcItem.bottom = dis.rcItem.top + (rcItem.bottom - rcItem.top);
-						SendMessage(hwndDlg, WM_DRAWITEM, 0, (LPARAM)&dis);
-					}
-				}
 				BitBlt(dcFrame, 0, 0, rcWindow.right, rcWindow.bottom, dcMem, 0, 0, SRCCOPY);
 				SelectObject(dcMem, hbmOld);
 				DeleteObject(hbmMem);
@@ -1198,9 +762,12 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);          // set options...
 			pContainer->dwFlags |= dwCreateFlags;
 			pContainer->buttonItems = g_ButtonSet.items;
+
 			/*
 			 * create the button items
 			 */
+
+			pContainer->MenuBar = new CMenuBar(hwndDlg, pContainer);
 
 			pbItem = pContainer->buttonItems;
 
@@ -1264,7 +831,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_EXSTYLE, ws | WS_EX_CONTROLPARENT);
 
 			ws = GetWindowLongPtr(hwndTab, GWL_STYLE);
-			if ((PluginConfig.m_TabAppearance & TCF_SINGLEROWTABCONTROL) || fAero) {
+			if (PluginConfig.m_TabAppearance & TCF_SINGLEROWTABCONTROL) {
 				ws &= ~TCS_MULTILINE;
 				ws |= TCS_SINGLELINE;
 				ws |= TCS_FIXEDWIDTH;
@@ -1730,7 +1297,7 @@ buttons_done:
 			}
 			break;
 		case WM_SIZE: {
-			RECT rcClient, rcUnadjusted;
+			RECT rcClient, rcUnadjusted, rcRebar;
 			int i = 0;
 			TCITEM item = {0};
 			POINT pt = {0};
@@ -1741,6 +1308,9 @@ buttons_done:
 				pContainer->dwFlags |= CNT_DEFERREDSIZEREQUEST;
 				break;
 			}
+			pContainer->MenuBar->Resize(LOWORD(lParam), HIWORD(lParam));
+			rcRebar = pContainer->MenuBar->getClientRect();
+
 			if (pContainer->hwndStatus) {
 				struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 				RECT   rcs;
@@ -1762,12 +1332,17 @@ buttons_done:
 			GetClientRect(hwndDlg, &rcClient);
 			CopyRect(&pContainer->rcSaved, &rcClient);
 			rcUnadjusted = rcClient;
+
+			LONG rebarHeight = (pContainer->dwFlags & CNT_NOMENUBAR) ? 0 : pContainer->MenuBar->getHeight();
+
+			pContainer->MenuBar->Show((pContainer->dwFlags & CNT_NOMENUBAR) ? SW_HIDE : SW_SHOW);
+
 			sbarWidth = pContainer->dwFlags & CNT_SIDEBAR ? SIDEBARWIDTH : 0;
 			if (lParam) {
 				if (pContainer->dwFlags & CNT_TABSBOTTOM)
-					MoveWindow(hwndTab, pContainer->tBorder_outer_left + sbarWidth, pContainer->tBorder_outer_top, (rcClient.right - rcClient.left) - (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right + sbarWidth), (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom), FALSE);
+					MoveWindow(hwndTab, pContainer->tBorder_outer_left + sbarWidth, pContainer->tBorder_outer_top + rebarHeight, (rcClient.right - rcClient.left) - (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right + sbarWidth), (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom) - rebarHeight, FALSE);
 				else
-					MoveWindow(hwndTab, pContainer->tBorder_outer_left + sbarWidth, pContainer->tBorder_outer_top, (rcClient.right - rcClient.left) - (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right + sbarWidth), (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom), FALSE);
+					MoveWindow(hwndTab, pContainer->tBorder_outer_left + sbarWidth, pContainer->tBorder_outer_top + rebarHeight, (rcClient.right - rcClient.left) - (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right + sbarWidth), (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom) - rebarHeight, FALSE);
 			}
 			AdjustTabClientRect(pContainer, &rcClient);
 
@@ -2045,6 +1620,13 @@ panel_found:
 				break;
 			}
 			switch (pNMHDR->code) {
+				case NM_CUSTOMDRAW: {
+					NMCUSTOMDRAW *nm = (NMCUSTOMDRAW*)lParam;
+					/*
+					 * TODO: handle rebar custom drawing here...
+					 */
+					break;
+				}
 				case TCN_SELCHANGE: {
 					ZeroMemory((void *)&item, sizeof(item));
 					iItem = TabCtrl_GetCurSel(hwndTab);
@@ -2286,6 +1868,7 @@ panel_found:
 			break;
 		}
 		case WM_ENTERMENULOOP: {
+		/*
 			POINT pt;
 			int pos;
 			HMENU hMenu, submenu;
@@ -2322,6 +1905,7 @@ panel_found:
 			if (dat && submenu) {
 				MsgWindowUpdateMenu(dat, submenu, MENU_LOGMENU);
 			}
+			*/
 			break;
 		}
 		case DM_CLOSETABATMOUSE: {
@@ -2525,7 +2109,7 @@ panel_found:
 
 				ex = exold = GetWindowLongPtr(hwndDlg, GWL_EXSTYLE);
 				ex =  (pContainer->dwFlags & CNT_TRANSPARENCY && (!CSkin::m_skinEnabled || fTransAllowed)) ? ex | WS_EX_LAYERED : ex & ~(WS_EX_LAYERED);
-				//if(M->isAero())
+				//if(!pContainer->bSkinned && IsWinVerXPPlus())
 				//	ex = ex | (WS_EX_COMPOSITED); // | WS_EX_COMPOSITED);			// faster/smoother redrawing on Vista+, especially with skins
 
 				SetWindowLongPtr(hwndDlg, GWL_EXSTYLE, ex);
@@ -2589,36 +2173,6 @@ panel_found:
 				SendMessage(pContainer->hwndSlist, BUTTONSETASFLATBTN + 12, 0, (LPARAM)pContainer);
 				SendMessage(pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)PluginConfig.g_buttonBarIcons[16]);
 				SendMessage(pContainer->hwndSlist, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Show session list (right click to show quick menu)"), 0);
-			}
-			if (pContainer->dwFlags & CNT_NOMENUBAR) {
-				if (pContainer->hMenu)
-					SetMenu(hwndDlg, NULL);
-			}
-			else {
-				if (pContainer->hMenu == 0) {
-					int i;
-					MENUINFO mi = {0};
-					MENUITEMINFO mii = {0};
-
-					mii.cbSize = sizeof(mii);
-					mii.fMask = MIIM_FTYPE | MIIM_ID | MIIM_DATA;
-					mii.fType = MFT_OWNERDRAW;
-					mii.dwItemData = 0xf0f0f0f0;
-					pContainer->hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENUBAR));
-					CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM)pContainer->hMenu, 0);
-					for (i = 0; i <= 4; i++) {
-						mii.wID = 0xffff5000 + i;
-						SetMenuItemInfo(pContainer->hMenu, i, TRUE, &mii);
-					}
-					if (bSkinned && CSkin::m_MenuBGBrush && CMimAPI::m_fnSetMenuInfo) {
-						mi.cbSize = sizeof(mi);
-						mi.hbrBack = CSkin::m_MenuBGBrush;
-						mi.fMask = MIM_BACKGROUND;
-						CMimAPI::m_fnSetMenuInfo(pContainer->hMenu, &mi);
-					}
-				}
-				SetMenu(hwndDlg, pContainer->hMenu);
-				DrawMenuBar(hwndDlg);
 			}
 			if (pContainer->hwndActive != 0) {
 				hContact = 0;
@@ -2830,16 +2384,12 @@ panel_found:
 			for (i = 0; i < TabCtrl_GetItemCount(hwndTab); i++) {
 				item.mask = TCIF_PARAM;
 				TabCtrl_GetItem(hwndTab, i, &item);
-				if (IsWindow((HWND)item.lParam))
-					{
-					//mad
-
+				if (IsWindow((HWND)item.lParam)) {
 					struct _MessageWindowData *mwdat = (struct _MessageWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
 					if (mwdat->bActualHistory)
-						M->WriteDword(mwdat->hContact, SRMSGMOD_T, "messagecount", g_sessionshutdown?0:(DWORD)mwdat->messageCount);
-					//
+						M->WriteDword(mwdat->hContact, SRMSGMOD_T, "messagecount", CMimAPI::m_shutDown ? 0:(DWORD)mwdat->messageCount);
 					DestroyWindow((HWND) item.lParam);
-					}
+				}
 			}
 			KillTimer(hwndDlg, TIMERID_HEARTBEAT);
 			pContainer->hwnd = 0;
@@ -2863,8 +2413,6 @@ panel_found:
 			if (pContainer->rtfFonts)
 				free(pContainer->rtfFonts);
 
-			if (pContainer->hMenu)
-				DestroyMenu(pContainer->hMenu);
 			if (pContainer->hwndTip)
 				DestroyWindow(pContainer->hwndTip);
 			RemoveContainerFromList(pContainer);
@@ -2886,6 +2434,7 @@ panel_found:
 				DeleteObject(pContainer->hbmToolbarBG);
 				DeleteDC(pContainer->cachedToolbarDC);
 			}
+			delete pContainer->MenuBar;
 			SetWindowLongPtr(hwndDlg, GWLP_WNDPROC, (LONG_PTR)OldContainerWndProc);
 			return 0;
 		}
@@ -3274,6 +2823,7 @@ void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc)
 	else {
 		rc->bottom -= pContainer->statusBarHeight;
 		rc->bottom -= (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom);
+		rc->bottom -= pContainer->MenuBar->getHeight();
 	}
 	rc->right -= (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right);
 	if (pContainer->dwFlags & CNT_SIDEBAR)
@@ -3635,11 +3185,13 @@ void UpdateContainerMenu(HWND hwndDlg, struct _MessageWindowData *dat) {
 		else if (dat->hwndHPP)
 			fDisable = TRUE;
 	}
+	/*
 	if (dat->pContainer->hMenu) {
 		EnableMenuItem(dat->pContainer->hMenu, 2, MF_BYPOSITION | (fDisable ? MF_GRAYED | MF_DISABLED : MF_ENABLED));
 		if (!(dat->pContainer->dwFlags & CNT_NOMENUBAR))
 			DrawMenuBar(dat->pContainer->hwnd);
 	}
+	*/
 	if (dat->bType == SESSIONTYPE_IM)
 		EnableWindow(GetDlgItem(hwndDlg, IDC_TIME), fDisable ? FALSE : TRUE);
 }
