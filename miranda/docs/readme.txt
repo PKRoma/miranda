@@ -38,6 +38,7 @@ Bugfixes:
  - Jabber: Receiving messages stops if <version> tag in response is incomplete
  - Jabber: Group chat invites didn't process non-legacy invites
  - Jabber: Fix for rare crash
+ - Jabber: Handle realms correctly in Digest-MD5 SASL
  - MSN: Fixed setting status message to not supported status
 
 
