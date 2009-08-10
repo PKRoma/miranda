@@ -29,7 +29,7 @@ Bugfixes:
  - Installer uses safer method of previous installation choices detection
  - AIM: Fixed mail notifications
  - AIM: Filenames were not correct on file receive
- - AIM: Fixed setting status to unknown status
+ - AIM: Fixed setting status message to not supported status
  - Gadu-Gadu: Icons were not installed correctly
  - Gadu-Gadu: Fixed crash opening new conference
  - Gadu-Gadu: Removed 'Show contacts not on my list having me on their list' option due to the server changes
@@ -38,7 +38,7 @@ Bugfixes:
  - Jabber: Receiving messages stops if <version> tag in response is incomplete
  - Jabber: Group chat invites didn't process non-legacy invites
  - Jabber: Fix for rare crash
- - MSN: Fixed setting status to unknown status
+ - MSN: Fixed setting status message to not supported status
 
 
 * New in 0.8.3
