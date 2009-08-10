@@ -476,7 +476,6 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM )
 					mir_snprintf( tDest, SIZEOF(text) - nModuleNameLength, "/UseResource_%d", i );
 					if ( i >= m_nMenuResourceItems ) {
 						JCreateServiceParam( tDest, &CJabberProto::OnMenuHandleResource, MENUITEM_RESOURCES+i );
-						JCreateService( tDest, &CJabberProto::OnMenuHandleRequestAuth );
 						mi.pszName = "";
 						mi.position = i;
 						mi.pszPopupName = (char *)g_hMenuResourcesRoot;
