@@ -293,7 +293,7 @@ void LoadMsgDlgFont(int section, int i, LOGFONT *lf, COLORREF* colour, char *szM
 		lf->lfQuality = DEFAULT_QUALITY;
 		lf->lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
 		wsprintfA(str, "Font%d", i);
-		if (i == 17 && !strcmp(szMod, CHAT_FONTMODULE)) {
+		if ((i == 17 && !strcmp(szMod, CHAT_FONTMODULE)) || ((i == 20 || i == 21) && !strcmp(szMod, FONTMODULE))) {
 			lf->lfCharSet = SYMBOL_CHARSET;
 			lstrcpyn(lf->lfFaceName, _T("Webdings"), SIZEOF(lf->lfFaceName));
 		} else {

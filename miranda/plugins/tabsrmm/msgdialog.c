@@ -322,39 +322,6 @@ LRESULT CALLBACK IEViewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	}
 	return CallWindowProc(mwdat->hwndIEView ? OldIEViewProc : OldHppProc, hwnd, msg, wParam, lParam);
 }
-
-//MAD: subclassing for keyfilter mod
-
-/*
- * subclasses IEView to add keyboard filtering (if needed)
- */
-
-LRESULT CALLBACK IEViewKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLongPtr(GetParent(GetParent(GetParent(hwnd))), GWLP_USERDATA);
-
-	BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
-	BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
-	BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
-
-	switch(msg) {
-		case WM_KEYDOWN:
-			if(!isCtrl && !isAlt&&!isShift) {
-				if (wParam != VK_PRIOR&&wParam != VK_NEXT&&
-					wParam != VK_DELETE&&wParam != VK_MENU&&wParam != VK_END&&
-					wParam != VK_HOME&&wParam != VK_UP&&wParam != VK_DOWN&&
-					wParam != VK_LEFT&&wParam != VK_RIGHT&&wParam != VK_TAB&&
-					wParam != VK_SPACE)	{
-						SetFocus(GetDlgItem(mwdat->hwnd,IDC_MESSAGE));
-						keybd_event((BYTE)wParam, (BYTE)MapVirtualKey(wParam,0), KEYEVENTF_EXTENDEDKEY | 0, 0);
-						return 0;
-				}
-				break;
-			}
-	}
-	return CallWindowProc(mwdat->oldIEViewLastChildProc, hwnd, msg, wParam, lParam);
-}
-
 /*
  * sublassing procedure for the h++ based message log viewer
  */
@@ -2281,17 +2248,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					dat->oldIEViewProc = wndProc;
 				}
 
-			}
-			else if(dat->hwndIEView) {
-				if(dat->oldIEViewProc == 0) {
-					WNDPROC wndProc;
-					wndProc= (WNDPROC)SetWindowLongPtr(GetLastChild(dat->hwndIEView), GWLP_WNDPROC, (LONG_PTR)IEViewKFSubclassProc);
-					// alex: fixed double subclassing issue with IEView (IE parent frame must also be subclassed with different
-					//       procedure to enable visual style IEView control border.
-					//if(OldIEViewProc == 0)
-					//	OldIEViewProc = wndProc;
-					dat->oldIEViewLastChildProc = wndProc;
-				}
 			}
 			dat->dwFlags &= ~MWF_INITMODE;
 			//MAD_
@@ -5789,14 +5745,10 @@ quote_from_last:
 				ieWindow.cbSize = sizeof(IEVIEWWINDOW);
 				ieWindow.iType = IEW_DESTROY;
 				ieWindow.hwnd = dat->hwndIEView;
-				if (dat->oldIEViewLastChildProc) {
-					SetWindowLongPtr(GetLastChild(dat->hwndIEView), GWLP_WNDPROC, (LONG_PTR)dat->oldIEViewLastChildProc);
-					dat->oldIEViewLastChildProc = 0;
-				}
 				if (dat->oldIEViewProc) {
 					SetWindowLongPtr(dat->hwndIEView, GWLP_WNDPROC, (LONG_PTR)dat->oldIEViewProc);
 					dat->oldIEViewProc = 0;
-					}
+				}
 				CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
 			}
 			if (dat->hwndHPP) {

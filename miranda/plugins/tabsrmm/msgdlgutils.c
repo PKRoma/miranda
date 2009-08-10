@@ -1649,13 +1649,7 @@ static void CheckAndDestroyIEView(struct MessageWindowData *dat)
 		if (dat->oldIEViewProc){
 			SetWindowLongPtr(dat->hwndIEView, GWLP_WNDPROC, (LONG_PTR)dat->oldIEViewProc);
 			dat->oldIEViewProc =0;
-			}
-		if (dat->oldIEViewLastChildProc) {
-			//mad: get LAST child, because ieserver has many of them..
-			SetWindowLongPtr(GetLastChild(dat->hwndIEView), GWLP_WNDPROC, (LONG_PTR)dat->oldIEViewLastChildProc);
-			dat->oldIEViewLastChildProc = 0;
-			}
-		//mad_
+		}
 		CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
 		dat->oldIEViewProc = 0;
 		dat->hwndIEView = 0;
@@ -1730,10 +1724,6 @@ void SwitchMessageLog(HWND hwndDlg, struct MessageWindowData *dat, int iMode)
 
 	//MAD: simple subclassing after log changed
 	if (dat->hwndIEView) {
-		if (dat->oldIEViewLastChildProc == 0) {
-			WNDPROC wndProc = (WNDPROC)SetWindowLongPtr(GetLastChild(dat->hwndIEView), GWLP_WNDPROC, (LONG_PTR)IEViewKFSubclassProc);
-			dat->oldIEViewLastChildProc = wndProc;
-		}
  		if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "subclassIEView", 0)&&dat->oldIEViewProc == 0) {
  			WNDPROC wndProc = (WNDPROC)SetWindowLongPtr(dat->hwndIEView, GWLP_WNDPROC, (LONG_PTR)IEViewSubclassProc);
  			dat->oldIEViewProc = wndProc;

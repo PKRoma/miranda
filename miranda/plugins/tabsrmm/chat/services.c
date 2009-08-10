@@ -28,6 +28,7 @@ $Id$
 //#include "../m_MathModule.h"
 
 // defs
+extern MYGLOBALS	myGlobals;
 extern HANDLE		hMessageWindowList;
 extern HICON		hIcons[30];
 extern BOOL			IEviewInstalled;
@@ -568,11 +569,30 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
 		}
 	}
 	if (bActivateTab) {
-		SetFocus(hwndNew);
-		RedrawWindow(pContainer->hwnd, NULL, NULL, RDW_INVALIDATE);
-		UpdateWindow(pContainer->hwnd);
-		if (GetForegroundWindow() != pContainer->hwnd && bPopupContainer == TRUE)
-			SetForegroundWindow(pContainer->hwnd);
+		if (myGlobals.m_HideOnClose && !IsWindowVisible(pContainer->hwnd)){
+			WINDOWPLACEMENT wp={0};
+			wp.length = sizeof(wp);
+			GetWindowPlacement(pContainer->hwnd, &wp);
+
+			BroadCastContainer(pContainer, DM_CHECKSIZE, 0, 0);			// make sure all tabs will re-check layout on activation
+			if(wp.showCmd == SW_SHOWMAXIMIZED)
+				ShowWindow(pContainer->hwnd, SW_SHOWMAXIMIZED);
+			else {
+				if(bPopupContainer)
+					ShowWindow(pContainer->hwnd, SW_SHOWNORMAL);
+				else
+					ShowWindow(pContainer->hwnd, SW_SHOWMINNOACTIVE);
+			}
+			SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
+			SetFocus(hwndNew);
+		}
+		else {
+			SetFocus(hwndNew);
+			RedrawWindow(pContainer->hwnd, NULL, NULL, RDW_INVALIDATE);
+			UpdateWindow(pContainer->hwnd);
+			if (GetForegroundWindow() != pContainer->hwnd && bPopupContainer == TRUE)
+				SetForegroundWindow(pContainer->hwnd);
+		}
 	}
 	return hwndNew;		// return handle of the new dialog
 }
