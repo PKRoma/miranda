@@ -114,6 +114,9 @@ void CJabberProto::OnIqResultNotes( HXML iqNode, CJabberIqInfo* pInfo )
 
 void CJabberProto::OnProcessLoginRq( ThreadData* info, DWORD rq )
 {
+	if ( info == NULL )
+		return;
+
 	info->dwLoginRqs |= rq;
 
 	if ((info->dwLoginRqs & JABBER_LOGIN_ROSTER) && (info->dwLoginRqs & JABBER_LOGIN_BOOKMARKS) &&
