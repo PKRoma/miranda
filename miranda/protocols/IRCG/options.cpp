@@ -289,13 +289,32 @@ struct { UINT cpId; TCHAR *cpName; } static cpTable[] =
 
 static CCtrlCombo* sttCombo;
 
+typedef BOOL ( WINAPI *pfnGetCPInfoEx )( UINT, DWORD, LPCPINFOEX );
+static pfnGetCPInfoEx fnGetCPInfoEx = NULL;
+
 static BOOL CALLBACK sttLangAddCallback( CHAR* str )
 {
 	UINT cp = atoi(str);
-	int i;
-	for ( i=0; i < SIZEOF(cpTable) && cpTable[i].cpId != cp; i++ );
-	if ( i < SIZEOF(cpTable))
-		sttCombo->AddString( TranslateTS( cpTable[i].cpName ), cp );
+	if ( fnGetCPInfoEx == NULL ) {
+		int i;
+		for ( i=0; i < SIZEOF(cpTable) && cpTable[i].cpId != cp; i++ );
+		if ( i < SIZEOF(cpTable))
+			sttCombo->AddString( TranslateTS( cpTable[i].cpName ), cp );
+	}
+	else {
+		CPINFOEX cpinfo;
+		if ( fnGetCPInfoEx( cp, 0, &cpinfo )) {
+			TCHAR* b = _tcschr( cpinfo.CodePageName, '(' );
+			if ( b ) {
+				TCHAR* e = _tcsrchr( cpinfo.CodePageName, ')' );
+				if ( e ) {
+					*e = 0;
+					sttCombo->AddString( b+1, cp );
+				}
+				else sttCombo->AddString( cpinfo.CodePageName, cp );
+			}
+			else sttCombo->AddString( cpinfo.CodePageName, cp );
+	}	}
 
 	return TRUE;
 }
@@ -1057,6 +1076,12 @@ void COtherPrefsDlg::OnInitDialog()
 
 	m_codepage.AddString( TranslateT("Default ANSI codepage"), CP_ACP );
 	m_codepage.AddString( TranslateT("UTF-8"), CP_UTF8 );
+
+	#if defined( _UNICODE )
+		fnGetCPInfoEx = ( pfnGetCPInfoEx )GetProcAddress( GetModuleHandleA( "kernel32.dll" ), "GetCPInfoExW" );
+	#else
+		fnGetCPInfoEx = ( pfnGetCPInfoEx )GetProcAddress( GetModuleHandleA( "kernel32.dll" ), "GetCPInfoExA" );
+	#endif
 
 	sttCombo = &m_codepage;
 	EnumSystemCodePagesA(sttLangAddCallback, CP_INSTALLED);
