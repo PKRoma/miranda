@@ -777,11 +777,15 @@ LONG  CMsnProto::p2p_sendPortion(filetransfer* ft, ThreadData* T)
 		trid = T->sendRawMessage('D', (char *)databuf, p - databuf);
 	}
 
-	if (trid != 0) {
+	if (trid != 0) 
+    {
 		ft->std.totalProgress += portion;
 		ft->std.currentFileProgress += portion;
-		if (ft->p2p_appID == MSN_APPID_FILE)
+		if (ft->p2p_appID == MSN_APPID_FILE && clock() >= ft->nNotify)
+        {
 			SendBroadcast(ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&ft->std);
+            ft->nNotify = clock() + 500;
+        }
 	}
 	else
 		MSN_DebugLog(" Error sending");
@@ -852,6 +856,7 @@ void __cdecl CMsnProto::p2p_sendFeedThread(void* arg)
 			WaitForSingleObject(T->hWaitEvent, 5000);
 	}
 	ReleaseMutex(hLockHandle);
+    SendBroadcast(ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&ft->std);
 	MSN_DebugLog("File send thread completed");
 }
 
@@ -1062,7 +1067,7 @@ void CMsnProto::p2p_InitFileTransfer(
                 mir_free(ft->std.tszCurrentFile);
 				ft->std.tszCurrentFile = mir_u2t(wszFileName);
 
-				ft->std.totalBytes = ft->std.currentFileSize = *(long*)&szContext[8];
+                ft->std.totalBytes = ft->std.currentFileSize = ((HFileContext*)szContext)->dwSize;
 				ft->std.totalFiles = 1;
 
 				p2p_registerSession(ft);
@@ -1071,7 +1076,7 @@ void CMsnProto::p2p_InitFileTransfer(
 
 				size_t tFileNameLen = strlen(fname);
 				char tComment[40];
-				int tCommentLen = mir_snprintf(tComment, sizeof(tComment), "%lu bytes", ft->std.currentFileSize);
+				int tCommentLen = mir_snprintf(tComment, sizeof(tComment), "%I64u bytes", ft->std.currentFileSize);
 				char* szBlob = (char*)alloca(sizeof(DWORD) + tFileNameLen + tCommentLen + 2);
 				*(PDWORD)szBlob = 0;
 				strcpy(szBlob + sizeof(DWORD), fname);
@@ -1675,11 +1680,14 @@ void  CMsnProto::p2p_processMsg(ThreadData* info,  char* msgbody)
 				__int64 dp = ft->lstFilePtr - ft->std.currentFileProgress;
 				if (dp > 0) 
                 {
-					ft->std.totalProgress += (unsigned long)dp;
-					ft->std.currentFileProgress += (unsigned long)dp;
+					ft->std.totalProgress += dp;
+					ft->std.currentFileProgress += dp;
 
-					if (ft->p2p_appID == MSN_APPID_FILE)
+					if (ft->p2p_appID == MSN_APPID_FILE && clock() >= ft->nNotify)
+                    {
 						SendBroadcast(ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&ft->std);
+                        ft->nNotify = clock() + 500;
+                    }
 				}
 
 				//---- send an ack: body was transferred correctly
@@ -1688,6 +1696,7 @@ void  CMsnProto::p2p_processMsg(ThreadData* info,  char* msgbody)
 
 			if (ft->std.currentFileProgress >= hdrdata->mTotalSize) 
             {
+				SendBroadcast(ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&ft->std);
 				p2p_sendAck(ft->std.hContact, hdrdata);
 				if (ft->p2p_appID == MSN_APPID_FILE)
 					ft->bCompleted = true;
@@ -1783,7 +1792,7 @@ void  CMsnProto::p2p_invite(HANDLE hContact, int iAppID, filetransfer* ft)
 				p = ezxml_attr(xmlo, "Size");
 				if (p != NULL) {
 					ezxml_set_attr(xmlr, "Size", p);
-					ft->std.totalBytes = ft->std.currentFileSize = atol(p);
+					ft->std.totalBytes = ft->std.currentFileSize = _atoi64(p);
 				}
 				p = ezxml_attr(xmlo, "Type");
 				if (p != NULL)

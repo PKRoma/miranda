@@ -143,8 +143,7 @@ void CMsnProto::sttInviteMessage(ThreadData* info, char* msgBody, char* email, c
         mir_free(ft->std.tszCurrentFile);
 		ft->std.tszCurrentFile = mir_utf8decodeT(Appfile);
 		ft->fileId = -1;
-		ft->std.currentFileSize = atol(Appfilesize);
-		ft->std.totalBytes = atol(Appfilesize);
+		ft->std.totalBytes = ft->std.currentFileSize = _atoi64(Appfilesize);
 		ft->std.totalFiles = 1;
 		ft->szInvcookie = mir_strdup(Invcookie);
 
