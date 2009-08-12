@@ -417,8 +417,11 @@ static int DeactivationThread( DeactivationThreadParam* param )
 
 void DeactivateAccount( PROTOACCOUNT* pa, bool bIsDynamic, bool bErase )
 {
-	if ( !pa->ppro )
+	if ( pa->ppro == NULL ) {
+        if ( bErase )
+            EraseAccount( pa->szModuleName );
 		return;
+    }
 
 	if ( pa->hwndAccMgrUI ) {
 		DestroyWindow(pa->hwndAccMgrUI);
