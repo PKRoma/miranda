@@ -157,7 +157,7 @@ void GetSensiblyFormattedSize(__int64 size,TCHAR *szOut,int cchOut,int unitsOver
 		case UNITS_BYTES: mir_sntprintf(szOut,cchOut,_T("%u%s%s"),(int)size,appendUnits?_T(" "):_T(""),appendUnits?TranslateT("bytes"):_T("")); break;
 		case UNITS_KBPOINT1: mir_sntprintf(szOut,cchOut,_T("%.1lf%s"),size/1024.0,appendUnits?_T(" KB"):_T("")); break;
 		case UNITS_KBPOINT0: mir_sntprintf(szOut,cchOut,_T("%u%s"),(int)(size/1024),appendUnits?_T(" KB"):_T("")); break;
-    case UNITS_GBPOINT3: mir_sntprintf(szOut,cchOut,_T("%.3f%s"),size/1024.0/1024.0,appendUnits?_T(" GB"):_T("")); break;
+		case UNITS_GBPOINT3: mir_sntprintf(szOut,cchOut,_T("%.3f%s"),(size >> 20)/1024.0,appendUnits?_T(" GB"):_T("")); break;
 		default: mir_sntprintf(szOut,cchOut,_T("%.2lf%s"),size/1048576.0,appendUnits?_T(" MB"):_T("")); break;
 	}
 }
