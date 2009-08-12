@@ -398,7 +398,7 @@ static void MsgWindowUpdateState(_MessageWindowData *dat, UINT msg)
 		dat->dwLastActivity = GetTickCount();
 		dat->pContainer->dwLastActivity = dat->dwLastActivity;
 
-		UpdateContainerMenu(hwndDlg, dat);
+		dat->pContainer->MenuBar->configureMenu();
 		UpdateTrayMenuState(dat, FALSE);
 
 		if (PluginConfig.m_TipOwner == dat->hContact)
@@ -4090,7 +4090,13 @@ quote_from_last:
 						ApplyContainerSetting(m_pContainer, CNT_NOMENUBAR, m_pContainer->dwFlags & CNT_NOMENUBAR ? 0 : 1);
 					else
 						ApplyContainerSetting(m_pContainer, CNT_HIDETOOLBAR, m_pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1);
-					SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+
+					RECT	rc;
+
+					GetWindowRect(dat->pContainer->hwnd, &rc);
+					SetWindowPos(dat->pContainer->hwnd, 0, rc.left, rc.top, (rc.right - rc.left) - 1, (rc.bottom - rc.top) - 0, SWP_NOZORDER | SWP_DRAWFRAME | SWP_FRAMECHANGED);
+					SetWindowPos(dat->pContainer->hwnd, 0, rc.left, rc.top, (rc.right - rc.left), (rc.bottom - rc.top), SWP_NOZORDER | SWP_DRAWFRAME | SWP_SHOWWINDOW);
+					RedrawWindow(dat->pContainer->hwnd, 0, 0, RDW_UPDATENOW | RDW_INVALIDATE |RDW_ALLCHILDREN);
 					break;
 				case IDC_TOGGLENOTES:
 					if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
@@ -5433,10 +5439,11 @@ quote_from_last:
 										  item->CORNER, item->BORDERSTYLE, item->imageItem);
 							}
 						}
-						else if(M->isVSThemed())
-							//CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, hdcMem, 6, PBS_NORMAL, &rc, &rc);
+						else if(M->isVSThemed()) {
+							rc.bottom -=3;
 							CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, hdcMem, 7, 1, &rc, &rc);
-						else
+							//CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, hdcMem, 7, 1, &rc, &rc);
+						} else
 							FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
 					}
 				}

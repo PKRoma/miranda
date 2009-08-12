@@ -33,11 +33,18 @@ class CGlobals
 {
 public:
 	CGlobals()
-	{}
+	{
+		//::ZeroMemory(this, sizeof(CGlobals));
+	}
 
 	~CGlobals()
-	{}
+	{
+		if(m_MenuBar)
+			::DestroyMenu(m_MenuBar);
+	}
 	void		Reload();
+
+	const HMENU getMenuBar();
 
 	HWND        g_hwndHotkeyHandler;
 	HICON       g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus;
@@ -137,9 +144,9 @@ public:
 	DWORD       dwThreadID;
 	char        szMetaName[256];
 	HBITMAP		hbmLogo;
-	int			iMenuHeight;
 	HANDLE 		m_hMessageWindowList;
 	bool		m_chat_enabled;
+	HMENU		m_MenuBar;
 };
 
 extern	CGlobals	PluginConfig;

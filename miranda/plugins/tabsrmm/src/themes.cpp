@@ -245,7 +245,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 		return;
 
 	if (imageItem) {
-		imageItem->Render(hdcwnd, rc);
+		imageItem->Render(hdcwnd, rc, false);
 		//IMG_RenderImageItem(hdcwnd, imageItem, rc);
 		return;
 	}
@@ -526,12 +526,12 @@ void __forceinline gradientVertical(UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UCHA
  * @param hdc    HDC: target device context
  * @param rc     RECT *: client rectangle inside the target DC.
  */
-void __fastcall CImageItem::Render(const HDC hdc, const RECT *rc) const
+void __fastcall CImageItem::Render(const HDC hdc, const RECT *rc, bool fIgnoreGlyph) const
 {
 	BYTE l = m_bLeft, r = m_bRight, t = m_bTop, b = m_bBottom;
 	LONG width = rc->right - rc->left;
 	LONG height = rc->bottom - rc->top;
-	BOOL isGlyph = (m_dwFlags & IMAGE_GLYPH) && Skin->haveGlyphItem();
+	BOOL isGlyph = ((m_dwFlags & IMAGE_GLYPH) && Skin->haveGlyphItem());
 	BOOL fCleanUp = TRUE;
 	HDC hdcSrc = 0;
 	HBITMAP hbmOld;
@@ -545,7 +545,10 @@ void __fastcall CImageItem::Render(const HDC hdc, const RECT *rc) const
 		hdcSrc = CreateCompatibleDC(hdc);
 		hbmOld = (HBITMAP)SelectObject(hdcSrc, isGlyph ? Skin->getGlyphItem()->getHbm() : m_hbm);
 	} else {
-		hdcSrc = isGlyph ? Skin->getGlyphItem()->getDC() : m_hdc;
+		if(fIgnoreGlyph)
+			hdcSrc = m_hdc;
+		else
+			hdcSrc = isGlyph ? Skin->getGlyphItem()->getDC() : m_hdc;
 		fCleanUp = FALSE;
 	}
 

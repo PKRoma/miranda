@@ -101,25 +101,19 @@ void CGlobals::Reload()
 	m_visualMessageSizeIndicator = M->GetByte("msgsizebar", 0);
 	m_autoSplit = M->GetByte("autosplit", 0);
 	m_FlashOnMTN = M->GetByte(SRMSGMOD, SRMSGSET_SHOWTYPINGWINFLASH, SRMSGDEFSET_SHOWTYPINGWINFLASH);
+	m_chat_enabled = M->GetByte("enable_chat", 1) ? true : false;
 
-	ipConfig.edgeFlags = BF_RECT | BF_ADJUST;
-	// checkversion, warn user about ansi<>unicode conflicts between core and plugin
-	{
-		char str[512];
-		CallService(MS_SYSTEM_GETVERSIONTEXT, (WPARAM)500, (LPARAM)(char*)str);
-		if (strstr(str, "Unicode")) {
-			bUnicodeBuild = TRUE;
-#if !defined(_UNICODE)
-			MessageBoxA(0, "You are running a ANSI version of tabSRMM under a unicode Miranda core. This is an unsupported configuration and can cause various problems. Please consider using the UNICODE build", "Warning", MB_OK);
-#endif
-		} else {
-#if defined(_UNICODE)
-			MessageBoxA(0, "You are running a UNICODE version of tabSRMM under a non-unicode Miranda core. This is an unsupported configuration and can cause various problems. Please consider using the ANSI build", "Warning", MB_OK);
-#endif
-			bUnicodeBuild = FALSE;
-		}
-	}
+	if(m_MenuBar == 0)
+		m_MenuBar = ::LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENUBAR));
+
 	ncm.cbSize = sizeof(NONCLIENTMETRICS);
 	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, 0);
+}
+
+const HMENU CGlobals::getMenuBar()
+{
+	if(m_MenuBar == 0)
+		m_MenuBar = ::LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENUBAR));
+	return(m_MenuBar);
 }
 

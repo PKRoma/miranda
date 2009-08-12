@@ -100,11 +100,15 @@ public:
 		m_hbm = hbm;
 		m_dwFlags = dwFlags;
 		m_fillBrush = brush;
-		m_bf.SourceConstantAlpha = alpha;
 		m_inner_height = inner_height;
 		m_inner_width = inner_width;
 		m_height = height;
 		m_width = width;
+
+		m_bf.SourceConstantAlpha = alpha;
+		m_bf.AlphaFormat = 0;
+		m_bf.BlendOp = AC_SRC_OVER;
+		m_bf.BlendFlags = 0;
 	}
 	~CImageItem()
 	{
@@ -129,7 +133,7 @@ public:
 	const TCHAR*	getName() const { return (m_szName); }
 	TCHAR*			Read(const TCHAR *szFilename);
 	void 			Create(const TCHAR *szImageFile);
-	void __fastcall	Render(const HDC hdc, const RECT *rc) const;
+	void __fastcall	Render(const HDC hdc, const RECT *rc, bool fIgnoreGlyph) const;
 	static void 	PreMultiply(HBITMAP hBitmap, int mode);
 	static void 	CorrectBitmap32Alpha(HBITMAP hBitmap);
 public:

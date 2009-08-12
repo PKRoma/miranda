@@ -37,10 +37,6 @@
 #include "sendqueue.h"
 #pragma hdrstop
 
-#define SB_CHAR_WIDTH			45
-#define DEFAULT_CONTAINER_POS 	0x00400040
-#define DEFAULT_CONTAINER_SIZE 	0x019001f4
-
 extern SESSION_INFO *m_WndList;
 extern int SIDEBARWIDTH;
 extern ButtonSet g_ButtonSet;
@@ -60,10 +56,6 @@ ContainerWindowData *pLastActiveContainer = NULL;
 static 	WNDPROC OldContainerWndProc = 0;
 
 static BOOL	CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
-static TCHAR	*menuBarNames[] = {_T("File"), _T("View"), _T("Message Log"), _T("Container"), _T("Help") };
-static TCHAR	*menuBarNames_translated[6];
-static BOOL		menuBarNames_done = FALSE;
 
 #define RWPF_HIDE 8
 
@@ -170,8 +162,6 @@ void SetAeroMargins(ContainerWindowData *pContainer)
 				pt.x = rcWnd.left;
 				pt.y = rcWnd.top;
 				ScreenToClient(pContainer->hwnd, &pt);
-				if(!(pContainer->dwFlags & CNT_NOMENUBAR))
-					pt.y += (PluginConfig.iMenuHeight + 1);
 				m.cyTopHeight = pt.y;
 			}
 			else
@@ -738,14 +728,6 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 			fHaveTipper = ServiceExists("mToolTip/ShowTip");
 
-			if (!menuBarNames_done) {
-				int j;
-
-				for (j = 0; j < 5; j++)
-					menuBarNames_translated[j] = TranslateTS(menuBarNames[j]);
-				menuBarNames_done = TRUE;
-			}
-
 			OldContainerWndProc = (WNDPROC)SetWindowLongPtr(hwndDlg, GWLP_WNDPROC, (LONG_PTR)ContainerWndProc);
 
 			if (PluginConfig.m_TabAppearance & TCF_FLAT)
@@ -927,8 +909,11 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			break;
 		}
 		case WM_COMMAND: {
+			bool fProcessContactMenu = pContainer->MenuBar->isContactMenu();
+			pContainer->MenuBar->Cancel();
+
 			HANDLE hContact;
-			struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+			_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 			DWORD dwOldFlags = pContainer->dwFlags;
 			int i = 0;
 			ButtonItem *pItem = pContainer->buttonItems;
@@ -937,6 +922,8 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				DWORD dwOldMsgWindowFlags = dat->dwFlags;
 				DWORD dwOldEventIsShown = dat->dwFlagsEx;
 
+				if(fProcessContactMenu)
+					return(CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM)dat->hContact));
 				if (MsgWindowMenuHandler(dat, LOWORD(wParam), MENU_PICMENU) == 1)
 					break;
 			}
@@ -1297,7 +1284,7 @@ buttons_done:
 			}
 			break;
 		case WM_SIZE: {
-			RECT rcClient, rcUnadjusted, rcRebar;
+			RECT rcClient, rcUnadjusted;
 			int i = 0;
 			TCITEM item = {0};
 			POINT pt = {0};
@@ -1308,8 +1295,8 @@ buttons_done:
 				pContainer->dwFlags |= CNT_DEFERREDSIZEREQUEST;
 				break;
 			}
-			pContainer->MenuBar->Resize(LOWORD(lParam), HIWORD(lParam));
-			rcRebar = pContainer->MenuBar->getClientRect();
+			GetClientRect(hwndDlg, &rcClient);
+			RECT rcRebar = pContainer->MenuBar->getClientRect();
 
 			if (pContainer->hwndStatus) {
 				struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
@@ -1329,12 +1316,10 @@ buttons_done:
 
 			SetAeroMargins(pContainer);
 
-			GetClientRect(hwndDlg, &rcClient);
 			CopyRect(&pContainer->rcSaved, &rcClient);
 			rcUnadjusted = rcClient;
 
 			LONG rebarHeight = (pContainer->dwFlags & CNT_NOMENUBAR) ? 0 : pContainer->MenuBar->getHeight();
-
 			pContainer->MenuBar->Show((pContainer->dwFlags & CNT_NOMENUBAR) ? SW_HIDE : SW_SHOW);
 
 			sbarWidth = pContainer->dwFlags & CNT_SIDEBAR ? SIDEBARWIDTH : 0;
@@ -1351,6 +1336,8 @@ buttons_done:
 				pContainer->preSIZE.cx = rcClient.right - rcClient.left;
 				pContainer->preSIZE.cy = rcClient.bottom - rcClient.top;
 			}
+			pContainer->MenuBar->Resize(LOWORD(lParam), HIWORD(lParam), sizeChanged ? TRUE : FALSE);
+
 			/*
 			 * we care about all client sessions, but we really resize only the active tab (hwndActive)
 			 * we tell inactive tabs to resize theirselves later when they get activated (DM_CHECKSIZE
@@ -1369,7 +1356,7 @@ buttons_done:
 			}
 
 			RedrawWindow(hwndTab, NULL, NULL, RDW_INVALIDATE | (pContainer->bSizingLoop ? RDW_ERASE : 0));
-			RedrawWindow(hwndDlg, NULL, NULL, (bSkinned ? RDW_FRAME : 0) | RDW_INVALIDATE | (pContainer->bSizingLoop || wParam == SIZE_RESTORED ? RDW_ERASE : 0));
+			RedrawWindow(hwndDlg, NULL, NULL, (bSkinned ? RDW_FRAME : 0) | RDW_INVALIDATE | (pContainer->bSizingLoop /* || wParam == SIZE_RESTORED */ ? RDW_ERASE : 0));
 
 			if (pContainer->hwndStatus)
 				InvalidateRect(pContainer->hwndStatus, NULL, FALSE);
@@ -1570,7 +1557,15 @@ buttons_done:
 			}
 			break;
 		}
+		case WM_INITMENUPOPUP:
+			pContainer->MenuBar->setActive(reinterpret_cast<HMENU>(wParam));
+			break;
 		case WM_NOTIFY: {
+			if(pContainer->MenuBar) {
+				LRESULT processed = pContainer->MenuBar->processMsg(msg, wParam, lParam);
+				if(processed != -1)
+					return(processed);
+			}
 			NMHDR* pNMHDR = (NMHDR*) lParam;
 			if (pContainer != NULL && pContainer->hwndStatus != 0 && ((LPNMHDR)lParam)->hwndFrom == pContainer->hwndStatus) {
 				switch (((LPNMHDR)lParam)->code) {
@@ -1620,13 +1615,6 @@ panel_found:
 				break;
 			}
 			switch (pNMHDR->code) {
-				case NM_CUSTOMDRAW: {
-					NMCUSTOMDRAW *nm = (NMCUSTOMDRAW*)lParam;
-					/*
-					 * TODO: handle rebar custom drawing here...
-					 */
-					break;
-				}
 				case TCN_SELCHANGE: {
 					ZeroMemory((void *)&item, sizeof(item));
 					iItem = TabCtrl_GetCurSel(hwndTab);
@@ -1865,47 +1853,6 @@ panel_found:
 				SendMessage((HWND) item.lParam, WM_ACTIVATE, WA_ACTIVE, 0);
 			if (GetMenu(hwndDlg) != 0)
 				DrawMenuBar(hwndDlg);
-			break;
-		}
-		case WM_ENTERMENULOOP: {
-		/*
-			POINT pt;
-			int pos;
-			HMENU hMenu, submenu;
-			struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
-
-			GetCursorPos(&pt);
-			pos = MenuItemFromPoint(hwndDlg, pContainer->hMenu, pt);
-
-			hMenu = pContainer->hMenu;
-			CheckMenuItem(hMenu, ID_VIEW_SHOWMENUBAR, MF_BYCOMMAND | pContainer->dwFlags & CNT_NOMENUBAR ? MF_UNCHECKED : MF_CHECKED);
-			CheckMenuItem(hMenu, ID_VIEW_SHOWSTATUSBAR, MF_BYCOMMAND | pContainer->dwFlags & CNT_NOSTATUSBAR ? MF_UNCHECKED : MF_CHECKED);
-			CheckMenuItem(hMenu, ID_VIEW_SHOWAVATAR, MF_BYCOMMAND | dat->showPic ? MF_CHECKED : MF_UNCHECKED);
-			CheckMenuItem(hMenu, ID_VIEW_SHOWTITLEBAR, MF_BYCOMMAND | pContainer->dwFlags & CNT_NOTITLE ? MF_UNCHECKED : MF_CHECKED);
-			EnableMenuItem(hMenu, ID_VIEW_SHOWTITLEBAR, pContainer->bSkinned && CSkin::m_frameSkins ? MF_GRAYED : MF_ENABLED);
-			CheckMenuItem(hMenu, ID_VIEW_TABSATBOTTOM, MF_BYCOMMAND | pContainer->dwFlags & CNT_TABSBOTTOM ? MF_CHECKED : MF_UNCHECKED);
-			CheckMenuItem(hMenu, ID_VIEW_VERTICALMAXIMIZE, MF_BYCOMMAND | pContainer->dwFlags & CNT_VERTICALMAX ? MF_CHECKED : MF_UNCHECKED);
-			CheckMenuItem(hMenu, ID_TITLEBAR_USESTATICCONTAINERICON, MF_BYCOMMAND | pContainer->dwFlags & CNT_STATICICON ? MF_CHECKED : MF_UNCHECKED);
-			CheckMenuItem(hMenu, ID_VIEW_SHOWTOOLBAR, MF_BYCOMMAND | pContainer->dwFlags & CNT_HIDETOOLBAR ? MF_UNCHECKED : MF_CHECKED);
-			CheckMenuItem(hMenu, ID_VIEW_BOTTOMTOOLBAR, MF_BYCOMMAND | pContainer->dwFlags & CNT_BOTTOMTOOLBAR ? MF_CHECKED : MF_UNCHECKED);
-
-			CheckMenuItem(hMenu, ID_VIEW_SHOWMULTISENDCONTACTLIST, MF_BYCOMMAND | (dat->sendMode & SMODE_MULTIPLE) ? MF_CHECKED : MF_UNCHECKED);
-			CheckMenuItem(hMenu, ID_VIEW_STAYONTOP, MF_BYCOMMAND | pContainer->dwFlags & CNT_STICKY ? MF_CHECKED : MF_UNCHECKED);
-
-			CheckMenuItem(hMenu, ID_EVENTPOPUPS_DISABLEALLEVENTPOPUPS, MF_BYCOMMAND | pContainer->dwFlags & (CNT_DONTREPORT | CNT_DONTREPORTUNFOCUSED | CNT_ALWAYSREPORTINACTIVE) ? MF_UNCHECKED : MF_CHECKED);
-			CheckMenuItem(hMenu, ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISMINIMIZED, MF_BYCOMMAND | pContainer->dwFlags & CNT_DONTREPORT ? MF_CHECKED : MF_UNCHECKED);
-			CheckMenuItem(hMenu, ID_EVENTPOPUPS_SHOWPOPUPSFORALLINACTIVESESSIONS, MF_BYCOMMAND | pContainer->dwFlags & CNT_ALWAYSREPORTINACTIVE ? MF_CHECKED : MF_UNCHECKED);
-			CheckMenuItem(hMenu, ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISUNFOCUSED, MF_BYCOMMAND | pContainer->dwFlags & CNT_DONTREPORTUNFOCUSED ? MF_CHECKED : MF_UNCHECKED);
-
-			CheckMenuItem(hMenu, ID_WINDOWFLASHING_USEDEFAULTVALUES, MF_BYCOMMAND | (pContainer->dwFlags & (CNT_NOFLASH | CNT_FLASHALWAYS)) ? MF_UNCHECKED : MF_CHECKED);
-			CheckMenuItem(hMenu, ID_WINDOWFLASHING_DISABLEFLASHING, MF_BYCOMMAND | pContainer->dwFlags & CNT_NOFLASH ? MF_CHECKED : MF_UNCHECKED);
-			CheckMenuItem(hMenu, ID_WINDOWFLASHING_FLASHUNTILFOCUSED, MF_BYCOMMAND | pContainer->dwFlags & CNT_FLASHALWAYS ? MF_CHECKED : MF_UNCHECKED);
-
-			submenu = GetSubMenu(hMenu, 2);
-			if (dat && submenu) {
-				MsgWindowUpdateMenu(dat, submenu, MENU_LOGMENU);
-			}
-			*/
 			break;
 		}
 		case DM_CLOSETABATMOUSE: {
@@ -2287,71 +2234,9 @@ panel_found:
 					DrawStatusIcons(dat, dis->hDC, dis->rcItem, 2);
 				return TRUE;
 			}
-			if (dis->CtlType == ODT_MENU && (HIWORD(dis->itemID) == 0xffff || dis->itemData == 0xf0f0f0f0) && id >= 0x5000 && id <= 0x5005) {
-				SIZE sz;
-				HFONT hOldFont;
-				TCHAR *menuName = TranslateTS(menuBarNames_translated[id - 0x5000]);
-				COLORREF clrBack;
-
-				hOldFont = (HFONT)SelectObject(dis->hDC, GetStockObject(DEFAULT_GUI_FONT));
-				if (bSkinned && CSkin::m_frameSkins)
-					OffsetRect(&dis->rcItem, CSkin::m_realSkinnedFrame_left, CSkin::m_realSkinnedFrame_caption);
-				GetTextExtentPoint32(dis->hDC, menuName, lstrlen(menuName), &sz);
-				SetBkMode(dis->hDC, TRANSPARENT);
-
-				if (PluginConfig.m_bIsXP) {
-					if (CMimAPI::m_pfnIsThemeActive && CMimAPI::m_pfnIsThemeActive())
-						clrBack = COLOR_MENUBAR;
-					else
-						clrBack = COLOR_3DFACE;
-				}
-				else
-					clrBack = COLOR_3DFACE;
-
-				FillRect(dis->hDC, &dis->rcItem, bSkinned && CSkin::m_MenuBGBrush ? CSkin::m_MenuBGBrush : GetSysColorBrush(clrBack));
-
-				if (dis->itemState & ODS_SELECTED && !(dis->itemState & ODS_DISABLED)) {
-					if (bSkinned) {
-						POINT pt;
-						HPEN  hPenOld;
-
-						MoveToEx(dis->hDC, dis->rcItem.left, dis->rcItem.bottom - 1, &pt);
-						hPenOld = (HPEN)SelectObject(dis->hDC, CSkin::m_SkinDarkShadowPen);
-						LineTo(dis->hDC, dis->rcItem.left, dis->rcItem.top);
-						LineTo(dis->hDC, dis->rcItem.right, dis->rcItem.top);
-						SelectObject(dis->hDC, CSkin::m_SkinLightShadowPen);
-						MoveToEx(dis->hDC, dis->rcItem.right - 1, dis->rcItem.top + 1, &pt);
-						LineTo(dis->hDC, dis->rcItem.right - 1, dis->rcItem.bottom - 1);
-						LineTo(dis->hDC, dis->rcItem.left, dis->rcItem.bottom - 1);
-						SelectObject(dis->hDC, hPenOld);
-					}
-					else
-						DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENINNER, BF_RECT);
-				}
-				SetTextColor(dis->hDC, !(dis->itemState & ODS_DISABLED) ? (bSkinned ? PluginConfig.skinDefaultFontColor : GetSysColor(COLOR_MENUTEXT)) : GetSysColor(COLOR_GRAYTEXT)); ;
-				DrawText(dis->hDC, menuName, lstrlen(menuName), &dis->rcItem,
-						 DT_VCENTER | DT_SINGLELINE | DT_CENTER);
-				SelectObject(dis->hDC, hOldFont);
-				return TRUE;
-			}
 			return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
 		}
 		case WM_MEASUREITEM: {
-			LPMEASUREITEMSTRUCT lpmi = (LPMEASUREITEMSTRUCT)lParam;
-			int id = LOWORD(lpmi->itemID);
-			if (lpmi->CtlType == ODT_MENU && (HIWORD(lpmi->itemID) == 0xffff || lpmi->itemData == 0xf0f0f0f0) &&  id >= 0x5000 && id <= 0x5005) {
-				SIZE sz;
-				HFONT hOldFont;
-				HDC hdc = GetWindowDC(hwndDlg);
-				TCHAR *menuName = TranslateTS(menuBarNames_translated[id - 0x5000]);
-
-				hOldFont = (HFONT)SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
-				GetTextExtentPoint32(hdc, menuName, lstrlen(menuName), &sz);
-				lpmi->itemWidth = sz.cx;
-				SelectObject(hdc, hOldFont);
-				ReleaseDC(hwndDlg, hdc);
-				return TRUE;
-			}
 			return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
 		}
 		case DM_QUERYCLIENTAREA: {
@@ -2435,6 +2320,7 @@ panel_found:
 				DeleteDC(pContainer->cachedToolbarDC);
 			}
 			delete pContainer->MenuBar;
+			pContainer->MenuBar = 0;
 			SetWindowLongPtr(hwndDlg, GWLP_WNDPROC, (LONG_PTR)OldContainerWndProc);
 			return 0;
 		}
@@ -2823,7 +2709,7 @@ void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc)
 	else {
 		rc->bottom -= pContainer->statusBarHeight;
 		rc->bottom -= (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom);
-		rc->bottom -= pContainer->MenuBar->getHeight();
+		rc->bottom -= (pContainer->MenuBar->getHeight());
 	}
 	rc->right -= (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right);
 	if (pContainer->dwFlags & CNT_SIDEBAR)
@@ -3157,41 +3043,4 @@ void BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WP
 	}
 }
 
-/*
- * this updates the container menu bar and other window elements depending on the current child
- * session (IM, chat etc.). It fully supports IEView and will disable/enable the message log menus
- * depending on the configuration of IEView (e.g. when template mode is on, the message log settin
- * menus have no functionality, thus can be disabled to improve ui feedback quality).
- */
 
-void UpdateContainerMenu(HWND hwndDlg, struct _MessageWindowData *dat) {
-	char szTemp[100];
-	BYTE IEViewMode = 0;
-	BOOL fDisable = FALSE;
-
-	if (dat->bType == SESSIONTYPE_CHAT)             // TODO: chat sessions may get their own message log submenu
-		fDisable = TRUE;							// in the future. for now, its just disabled
-	else {
-		if (dat->hwndIEView != 0) {
-			mir_snprintf(szTemp, 100, "%s.SRMMEnable", dat->bIsMeta ? dat->szMetaProto : dat->szProto);
-			if (M->GetByte("IEVIEW", szTemp, 0)) {
-				mir_snprintf(szTemp, 100, "%s.SRMMMode", dat->bIsMeta ? dat->szMetaProto : dat->szProto);
-				IEViewMode = M->GetByte("IEVIEW", szTemp, 0);
-			}
-			else
-				IEViewMode = M->GetByte("IEVIEW", "_default_.SRMMMode", 0);
-			fDisable = (IEViewMode == 2);
-		}
-		else if (dat->hwndHPP)
-			fDisable = TRUE;
-	}
-	/*
-	if (dat->pContainer->hMenu) {
-		EnableMenuItem(dat->pContainer->hMenu, 2, MF_BYPOSITION | (fDisable ? MF_GRAYED | MF_DISABLED : MF_ENABLED));
-		if (!(dat->pContainer->dwFlags & CNT_NOMENUBAR))
-			DrawMenuBar(dat->pContainer->hwnd);
-	}
-	*/
-	if (dat->bType == SESSIONTYPE_IM)
-		EnableWindow(GetDlgItem(hwndDlg, IDC_TIME), fDisable ? FALSE : TRUE);
-}

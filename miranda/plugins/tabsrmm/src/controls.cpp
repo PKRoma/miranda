@@ -39,108 +39,427 @@ static 	WNDPROC OldStatusBarproc = 0;
 extern int 		status_icon_list_size;
 extern 			StatusIconListNode *status_icon_list;
 
+bool	 	CMenuBar::m_buttonsInit = false;
+HHOOK		CMenuBar::m_hHook = 0;
+TBBUTTON 	CMenuBar::m_TbButtons[7] = {0};
+CMenuBar	*CMenuBar::m_Owner = 0;
+
 CMenuBar::CMenuBar(HWND hwndParent, const ContainerWindowData *pContainer)
 {
 	REBARINFO RebarInfo;
 	REBARBANDINFO RebarBandInfo;
 	RECT Rc;
 
-	m_pContainer = const_cast<ContainerWindowData *>(pContainer);
-	assert(m_pContainer != 0);
+	m_pContainer = pContainer;
 
-	m_hwndRebar = ::CreateWindowEx(WS_EX_TOOLWINDOW,REBARCLASSNAME, NULL, WS_CHILD|WS_VISIBLE|WS_CLIPSIBLINGS|WS_CLIPCHILDREN|RBS_VARHEIGHT|RBS_BANDBORDERS|RBS_DBLCLKTOGGLE|RBS_DBLCLKTOGGLE|CCS_NODIVIDER,
+	m_hwndRebar = ::CreateWindowEx(WS_EX_TOOLWINDOW, REBARCLASSNAME, NULL, WS_CHILD|WS_VISIBLE|WS_CLIPSIBLINGS|WS_CLIPCHILDREN|/*RBS_VARHEIGHT|RBS_BANDBORDERS|*/RBS_DBLCLKTOGGLE,
 								 0, 0, 0, 0, hwndParent, NULL, g_hInst, NULL);
 
 	RebarInfo.cbSize = 	sizeof(REBARINFO);
 	RebarInfo.fMask = 	0;
 	RebarInfo.himl = 	(HIMAGELIST)NULL;
 
-	::SendMessage(m_hwndRebar ,RB_SETBARINFO, 0, (LPARAM)&RebarInfo);
+	::SendMessage(m_hwndRebar, RB_SETBARINFO, 0, (LPARAM)&RebarInfo);
 
 	RebarBandInfo.cbSize = sizeof(REBARBANDINFO);
-	RebarBandInfo.fMask  = RBBIM_CHILD|RBBIM_CHILDSIZE|RBBIM_COLORS|RBBIM_SIZE|RBBIM_STYLE|RBBIM_TEXT|RBBIM_IDEALSIZE;
-	RebarBandInfo.fStyle = RBBS_FIXEDBMP|RBBS_GRIPPERALWAYS|RBBS_CHILDEDGE;
+	RebarBandInfo.fMask  = RBBIM_CHILD|RBBIM_CHILDSIZE|RBBIM_SIZE|RBBIM_STYLE|RBBIM_TEXT|RBBIM_IDEALSIZE;
+	RebarBandInfo.fStyle = RBBS_FIXEDBMP|RBBS_GRIPPERALWAYS;
 	RebarBandInfo.hbmBack = 0;
-	RebarBandInfo.clrBack = 0;
-
-	TBBUTTON TbButton[5];
+	RebarBandInfo.clrBack = GetSysColor(COLOR_3DFACE);;
 
 	m_hwndToolbar = ::CreateWindowEx(0, TOOLBARCLASSNAME, NULL, WS_CHILD|WS_VISIBLE|TBSTYLE_FLAT|TBSTYLE_LIST|CCS_NOPARENTALIGN|CCS_NORESIZE|CCS_NODIVIDER,
 								   0, 0, 0, 0, hwndParent, NULL, g_hInst, NULL);
 
 	::SendMessage(m_hwndToolbar, TB_BUTTONSTRUCTSIZE, (WPARAM)sizeof(TBBUTTON), 0);
 
-	::ZeroMemory(TbButton, sizeof(TbButton));
+	if(m_buttonsInit == false) {
+		::ZeroMemory(m_TbButtons, sizeof(m_TbButtons));
 
-	TbButton[0].iBitmap = I_IMAGENONE;
-	TbButton[0].iString = (INT_PTR)TranslateT("File");
-	TbButton[0].fsState = TBSTATE_ENABLED;
-	TbButton[0].fsStyle = BTNS_DROPDOWN|BTNS_AUTOSIZE;
-	TbButton[0].idCommand = 100;
+		m_TbButtons[0].iBitmap = I_IMAGENONE;
+		m_TbButtons[0].iString = (INT_PTR)TranslateT("&File");
+		m_TbButtons[0].fsState = TBSTATE_ENABLED;
+		m_TbButtons[0].fsStyle = BTNS_DROPDOWN|BTNS_AUTOSIZE;
+		m_TbButtons[0].idCommand = 100;
+		m_TbButtons[0].dwData = reinterpret_cast<DWORD_PTR>(::GetSubMenu(PluginConfig.getMenuBar(), 0));
 
-	TbButton[1].iBitmap = I_IMAGENONE;
-	TbButton[1].iString = (INT_PTR)TranslateT("View");
-	TbButton[1].fsState = TBSTATE_ENABLED;
-	TbButton[1].fsStyle = BTNS_DROPDOWN|BTNS_AUTOSIZE;
-	TbButton[1].idCommand = 101;
+		m_TbButtons[1].iBitmap = I_IMAGENONE;
+		m_TbButtons[1].iString = (INT_PTR)TranslateT("&View");
+		m_TbButtons[1].fsState = TBSTATE_ENABLED;
+		m_TbButtons[1].fsStyle = BTNS_DROPDOWN|BTNS_AUTOSIZE;
+		m_TbButtons[1].idCommand = 101;
+		m_TbButtons[1].dwData = reinterpret_cast<DWORD_PTR>(::GetSubMenu(PluginConfig.getMenuBar(), 1));
 
-	TbButton[2].iBitmap = I_IMAGENONE;
-	TbButton[2].iString = (INT_PTR)TranslateT("Message Log");
-	TbButton[2].fsState = TBSTATE_ENABLED;
-	TbButton[2].fsStyle = BTNS_DROPDOWN|BTNS_AUTOSIZE;
-	TbButton[2].idCommand = 102;
+		m_TbButtons[2].iBitmap = I_IMAGENONE;
+		m_TbButtons[2].iString = (INT_PTR)TranslateT("&User");
+		m_TbButtons[2].fsState = TBSTATE_ENABLED;
+		m_TbButtons[2].fsStyle = BTNS_DROPDOWN|BTNS_AUTOSIZE;
+		m_TbButtons[2].idCommand = 102;
+		m_TbButtons[2].dwData = 0;								// dynamically built by Clist service
 
-	TbButton[3].iBitmap = I_IMAGENONE;
-	TbButton[3].iString = (INT_PTR)TranslateT("Container");
-	TbButton[3].fsState = TBSTATE_ENABLED;
-	TbButton[3].fsStyle = BTNS_DROPDOWN|BTNS_AUTOSIZE;
-	TbButton[3].idCommand = 102;
+		m_TbButtons[3].iBitmap = I_IMAGENONE;
+		m_TbButtons[3].iString = (INT_PTR)TranslateT("Room");
+		m_TbButtons[3].fsState = TBSTATE_ENABLED;
+		m_TbButtons[3].fsStyle = BTNS_DROPDOWN|BTNS_AUTOSIZE;
+		m_TbButtons[3].idCommand = 103;
+		m_TbButtons[3].dwData = 0;
 
-	TbButton[4].iBitmap = I_IMAGENONE;
-	TbButton[4].iString = (INT_PTR)TranslateT("Help");
-	TbButton[4].fsState = TBSTATE_ENABLED;
-	TbButton[4].fsStyle = BTNS_DROPDOWN|BTNS_AUTOSIZE;
-	TbButton[4].idCommand = 102;
+		m_TbButtons[4].iBitmap = I_IMAGENONE;
+		m_TbButtons[4].iString = (INT_PTR)TranslateT("Message &Log");
+		m_TbButtons[4].fsState = TBSTATE_ENABLED;
+		m_TbButtons[4].fsStyle = BTNS_DROPDOWN|BTNS_AUTOSIZE;
+		m_TbButtons[4].idCommand = 104;
+		m_TbButtons[4].dwData = reinterpret_cast<DWORD_PTR>(::GetSubMenu(PluginConfig.getMenuBar(), 2));
 
-	::SendMessage(m_hwndToolbar, TB_ADDBUTTONS, sizeof(TbButton)/sizeof(TBBUTTON), (LPARAM)&TbButton);
+		m_TbButtons[5].iBitmap = I_IMAGENONE;
+		m_TbButtons[5].iString = (INT_PTR)TranslateT("&Container");
+		m_TbButtons[5].fsState = TBSTATE_ENABLED;
+		m_TbButtons[5].fsStyle = BTNS_DROPDOWN|BTNS_AUTOSIZE;
+		m_TbButtons[5].idCommand = 105;
+		m_TbButtons[5].dwData = reinterpret_cast<DWORD_PTR>(::GetSubMenu(PluginConfig.getMenuBar(), 3));
 
-	long Size = SendMessage(m_hwndToolbar, TB_GETBUTTONSIZE, 0, 0);
+		m_TbButtons[6].iBitmap = I_IMAGENONE;
+		m_TbButtons[6].iString = (INT_PTR)TranslateT("Help");
+		m_TbButtons[6].fsState = TBSTATE_ENABLED;
+		m_TbButtons[6].fsStyle = BTNS_DROPDOWN|BTNS_AUTOSIZE;
+		m_TbButtons[6].idCommand = 106;
+		m_TbButtons[6].dwData = reinterpret_cast<DWORD_PTR>(::GetSubMenu(PluginConfig.getMenuBar(), 4));
+
+		m_buttonsInit = true;
+	}
+
+	::SendMessage(m_hwndToolbar, TB_ADDBUTTONS, sizeof(m_TbButtons)/sizeof(TBBUTTON), (LPARAM)&m_TbButtons);
+
+	LONG size_y = SendMessage(m_hwndToolbar, TB_GETBUTTONSIZE, 0, 0);
 
 	::GetWindowRect(m_hwndToolbar, &Rc);
 
 	RebarBandInfo.lpText     = NULL;
 	RebarBandInfo.hwndChild  = m_hwndToolbar;
 	RebarBandInfo.cxMinChild = 10;
-	RebarBandInfo.cyMinChild = HIWORD(Size);
-	RebarBandInfo.cx         = 10;
+	RebarBandInfo.cyMinChild = HIWORD(size_y);
+	RebarBandInfo.cx         = 30;
 
-	::SendMessage(m_hwndRebar,RB_INSERTBAND, (WPARAM)-1, (LPARAM)&RebarBandInfo);
+	::SendMessage(m_hwndRebar, RB_INSERTBAND, (WPARAM)-1, (LPARAM)&RebarBandInfo);
+
+	m_activeMenu = 0;
+	m_activeID = 0;
 }
 
 CMenuBar::~CMenuBar()
 {
 	::DestroyWindow(m_hwndToolbar);
 	::DestroyWindow(m_hwndRebar);
+	if(m_hHook) {
+		UnhookWindowsHookEx(m_hHook);
+		m_hHook = 0;
+		//_DebugTraceA("warning, stale hook found, hwnd = %d", m_pContainer->hwnd);
+	}
 }
 
+/**
+ * retrieves the client rectangle for the rebar control. This must be
+ * called once per WM_SIZE event by the parent window. getHeight() depends on it.
+ *
+ * @return RECT&: client rectangle of the rebar control
+ */
 const RECT& CMenuBar::getClientRect()
 {
 	::GetClientRect(m_hwndRebar, &m_rcClient);
 	return(m_rcClient);
 }
 
+/**
+ * Retrieve the height of the rebar control
+ *
+ * @return LONG: height of the rebar, in pixels
+ */
 LONG CMenuBar::getHeight() const
 {
-	return((m_pContainer->dwFlags & CNT_NOMENUBAR) ? 0 : m_rcClient.bottom - m_rcClient.top);
+	return((m_pContainer->dwFlags & CNT_NOMENUBAR) ? 0 : (m_rcClient.bottom - m_rcClient.top) + 2);
 }
 
-static 	int tooltip_active = FALSE;
-static 	POINT ptMouse = {0};
+/**
+ * process all relevant messages. Must be called by the parent window's
+ * window procedure.
+ *
+ * @param msg
+ * @param wParam
+ * @param lParam
+ *
+ * @return LRESULT: message processing result. Win32 conform.
+ *         -1 means: nothing processed, caller should continue as usual.
+ */
+LONG_PTR CMenuBar::processMsg(const UINT msg, const WPARAM wParam, const LPARAM lParam)
+{
+	if(msg == WM_NOTIFY) {
+		NMHDR* pNMHDR = (NMHDR*)lParam;
+		switch(pNMHDR->code) {
+			case NM_CUSTOMDRAW: {
+				NMCUSTOMDRAW *nm = (NMCUSTOMDRAW*)lParam;
+
+				LRESULT result = customDrawWorker(nm);
+				return(result);
+			}
+			case TBN_DROPDOWN: {
+				NMTOOLBAR *mtb = (NMTOOLBAR *)lParam;
+
+				LRESULT result = Handle(mtb);
+				return(result);
+			}
+			case TBN_HOTITEMCHANGE: {
+				NMTBHOTITEM *nmtb = (NMTBHOTITEM *)lParam;
+
+				if(nmtb->idNew != 0 && m_fTracking && nmtb->idNew != m_activeID && m_activeID != 0) {
+					cancel(0);
+					return(0);
+				}
+				else if(m_fTracking == true && m_activeID == 0 && nmtb->idNew != 0) {
+					invoke(nmtb->idNew);
+					return(0);
+				}
+				break;
+			}
+			default:
+				return(-1);
+		}
+	}
+	return(-1);
+}
+/**
+ * Implements NM_CUSTOMDRAW for the rebar
+ *
+ * @param nm     NMCUSTOMDRAW *: sent via NM_CUSTOMDRAW message
+ *
+ * @return LONG_PTR: see Win32 NM_CUSTOMDRAW message. The function must return a valid
+ *         message return value to indicate how Windows should continue with the drawing process.
+ *
+ *         It may return zero in which case, the caller should allow default processing for
+ *         the NM_CUSTOMDRAW message.
+ */
+LONG_PTR CMenuBar::customDrawWorker(const NMCUSTOMDRAW *nm) const
+{
+	if(nm->hdr.hwndFrom != m_hwndRebar)
+		return(0);
+	/*
+	 * TODO: process drawing here...
+	 */
+	return(0);
+}
+
+/**
+ * Handle the TBN_DROPDOWN notification message sent by the
+ * toolbar control.
+ *
+ * @param nmtb   NMTOOLBAR *: notification message structure
+ *
+ * @return LONG_PTR: must be a valid return value. See Win32 API, TBN_DROPDOWN
+ */
+LONG_PTR CMenuBar::Handle(const NMTOOLBAR *nmtb)
+{
+	if(nmtb->hdr.hwndFrom != m_hwndToolbar)
+		return(TBDDRET_NODEFAULT);
+
+	const int index = idToIndex(nmtb->iItem);
+	invoke(nmtb->iItem);
+
+	return(TBDDRET_DEFAULT);
+}
+
+/**
+ * Invoke the dropdown menu for the button with the given control id.
+ *
+ * @param id     int: the control id of the toolbar button which has been activated
+ */
+void CMenuBar::invoke(const int id)
+{
+	const int index = idToIndex(id);
+
+	HMENU	hMenu;
+
+	m_isContactMenu = false;
+
+	_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(m_pContainer->hwndActive, GWLP_USERDATA);
+
+	HANDLE hContact = dat ? dat->hContact : 0;
+
+	if(index == 2 && hContact != 0) {
+		hMenu = reinterpret_cast<HMENU>(::CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM)hContact, 0));
+		m_isContactMenu = true;
+	} else
+		hMenu = reinterpret_cast<HMENU>(m_TbButtons[index].dwData);
+
+	RECT  rcButton;
+	POINT pt;
+	::SendMessage(m_hwndToolbar, TB_GETITEMRECT, (WPARAM)index, (LPARAM)&rcButton);
+	pt.x = rcButton.left;
+	pt.y = rcButton.bottom;
+	::ClientToScreen(m_hwndToolbar, &pt);
+
+	if(m_activeID)
+		cancel(0);
+
+	m_activeMenu = hMenu;
+	m_activeSubMenu = 0;
+	m_activeID = id;
+	m_Owner = this;
+	updateState(hMenu);
+	if(m_hHook == 0)
+		m_hHook = ::SetWindowsHookEx(WH_MSGFILTER, CMenuBar::MessageHook, g_hInst, 0);
+	m_fTracking = true;
+	::SendMessage(m_hwndToolbar, TB_SETSTATE, (WPARAM)id, TBSTATE_PRESSED | TBSTATE_ENABLED);
+	::TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, m_pContainer->hwnd, 0);
+}
+
+void CMenuBar::cancel(const int id)
+{
+	if(m_hHook) {
+		//_DebugTraceA("hook REMOVED: %d", m_hHook);
+		UnhookWindowsHookEx(m_hHook);
+		m_hHook = 0;
+	}
+	if(m_activeID)
+		::SendMessage(m_hwndToolbar, TB_SETSTATE, (WPARAM)m_activeID, TBSTATE_ENABLED);
+	m_activeID = 0;
+	m_activeMenu = 0;
+	m_isContactMenu = false;
+	::EndMenu();
+}
+
+/**
+ * Cancel menu tracking completely
+ */
+void CMenuBar::Cancel(void)
+{
+	cancel(0);
+	m_fTracking = false;
+}
+
+void CMenuBar::updateState(const HMENU hMenu) const
+{
+	_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(m_pContainer->hwndActive, GWLP_USERDATA);
+
+	assert(dat != 0);
+
+	::CheckMenuItem(hMenu, ID_VIEW_SHOWMENUBAR, MF_BYCOMMAND | m_pContainer->dwFlags & CNT_NOMENUBAR ? MF_UNCHECKED : MF_CHECKED);
+	::CheckMenuItem(hMenu, ID_VIEW_SHOWSTATUSBAR, MF_BYCOMMAND | m_pContainer->dwFlags & CNT_NOSTATUSBAR ? MF_UNCHECKED : MF_CHECKED);
+	::CheckMenuItem(hMenu, ID_VIEW_SHOWAVATAR, MF_BYCOMMAND | dat->showPic ? MF_CHECKED : MF_UNCHECKED);
+	::CheckMenuItem(hMenu, ID_VIEW_SHOWTITLEBAR, MF_BYCOMMAND | m_pContainer->dwFlags & CNT_NOTITLE ? MF_UNCHECKED : MF_CHECKED);
+
+	::EnableMenuItem(hMenu, ID_VIEW_SHOWTITLEBAR, m_pContainer->bSkinned && CSkin::m_frameSkins ? MF_GRAYED : MF_ENABLED);
+
+	::CheckMenuItem(hMenu, ID_VIEW_TABSATBOTTOM, MF_BYCOMMAND | m_pContainer->dwFlags & CNT_TABSBOTTOM ? MF_CHECKED : MF_UNCHECKED);
+	::CheckMenuItem(hMenu, ID_VIEW_VERTICALMAXIMIZE, MF_BYCOMMAND | m_pContainer->dwFlags & CNT_VERTICALMAX ? MF_CHECKED : MF_UNCHECKED);
+	::CheckMenuItem(hMenu, ID_TITLEBAR_USESTATICCONTAINERICON, MF_BYCOMMAND | m_pContainer->dwFlags & CNT_STATICICON ? MF_CHECKED : MF_UNCHECKED);
+	::CheckMenuItem(hMenu, ID_VIEW_SHOWTOOLBAR, MF_BYCOMMAND | m_pContainer->dwFlags & CNT_HIDETOOLBAR ? MF_UNCHECKED : MF_CHECKED);
+	::CheckMenuItem(hMenu, ID_VIEW_BOTTOMTOOLBAR, MF_BYCOMMAND | m_pContainer->dwFlags & CNT_BOTTOMTOOLBAR ? MF_CHECKED : MF_UNCHECKED);
+
+	::CheckMenuItem(hMenu, ID_VIEW_SHOWMULTISENDCONTACTLIST, MF_BYCOMMAND | (dat->sendMode & SMODE_MULTIPLE) ? MF_CHECKED : MF_UNCHECKED);
+	::CheckMenuItem(hMenu, ID_VIEW_STAYONTOP, MF_BYCOMMAND | m_pContainer->dwFlags & CNT_STICKY ? MF_CHECKED : MF_UNCHECKED);
+
+	::CheckMenuItem(hMenu, ID_EVENTPOPUPS_DISABLEALLEVENTPOPUPS, MF_BYCOMMAND | m_pContainer->dwFlags & (CNT_DONTREPORT | CNT_DONTREPORTUNFOCUSED | CNT_ALWAYSREPORTINACTIVE) ? MF_UNCHECKED : MF_CHECKED);
+	::CheckMenuItem(hMenu, ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISMINIMIZED, MF_BYCOMMAND | m_pContainer->dwFlags & CNT_DONTREPORT ? MF_CHECKED : MF_UNCHECKED);
+	::CheckMenuItem(hMenu, ID_EVENTPOPUPS_SHOWPOPUPSFORALLINACTIVESESSIONS, MF_BYCOMMAND | m_pContainer->dwFlags & CNT_ALWAYSREPORTINACTIVE ? MF_CHECKED : MF_UNCHECKED);
+	::CheckMenuItem(hMenu, ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISUNFOCUSED, MF_BYCOMMAND | m_pContainer->dwFlags & CNT_DONTREPORTUNFOCUSED ? MF_CHECKED : MF_UNCHECKED);
+
+	::CheckMenuItem(hMenu, ID_WINDOWFLASHING_USEDEFAULTVALUES, MF_BYCOMMAND | (m_pContainer->dwFlags & (CNT_NOFLASH | CNT_FLASHALWAYS)) ? MF_UNCHECKED : MF_CHECKED);
+	::CheckMenuItem(hMenu, ID_WINDOWFLASHING_DISABLEFLASHING, MF_BYCOMMAND | m_pContainer->dwFlags & CNT_NOFLASH ? MF_CHECKED : MF_UNCHECKED);
+	::CheckMenuItem(hMenu, ID_WINDOWFLASHING_FLASHUNTILFOCUSED, MF_BYCOMMAND | m_pContainer->dwFlags & CNT_FLASHALWAYS ? MF_CHECKED : MF_UNCHECKED);
+}
+
+/*
+ * this updates the container menu bar and other window elements depending on the current child
+ * session (IM, chat etc.). It fully supports IEView and will disable/enable the message log menus
+ * depending on the configuration of IEView (e.g. when template mode is on, the message log settin
+ * menus have no functionality, thus can be disabled to improve ui feedback quality).
+ */
+
+void CMenuBar::configureMenu() const
+{
+	_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(m_pContainer->hwndActive, GWLP_USERDATA);
+
+	BOOL fDisable = FALSE;
+
+	if(dat) {
+		bool fChat = (dat->bType == SESSIONTYPE_CHAT);
+
+		::SendMessage(m_hwndToolbar, TB_SETSTATE, 102, fChat ? TBSTATE_HIDDEN : TBSTATE_ENABLED);
+		::SendMessage(m_hwndToolbar, TB_SETSTATE, 103, fChat ? TBSTATE_ENABLED : TBSTATE_HIDDEN);
+		::SendMessage(m_hwndToolbar, TB_SETSTATE, 104, fChat ? TBSTATE_HIDDEN : TBSTATE_ENABLED);
+
+		if (dat->bType == SESSIONTYPE_IM)
+			EnableWindow(GetDlgItem(dat->hwnd, IDC_TIME), fDisable ? FALSE : TRUE);
+	}
+}
+
+/**
+ * Message hook function, installed by the menu handler to support
+ * hot-tracking and keyboard navigation for the menu bar while a modal
+ * popup menu is active.
+ *
+ * Hook is only active while a (modal) popup menu is processed.
+ *
+ * @params See Win32, message hooks
+ *
+ * @return
+ */
+LRESULT CALLBACK CMenuBar::MessageHook(int nCode, WPARAM wParam, LPARAM lParam)
+{
+	if (nCode < 0)
+        return(::CallNextHookEx(m_hHook, nCode,	wParam, lParam));
+
+	MSG *pMsg = reinterpret_cast<MSG *>(lParam);
+
+	if(nCode == MSGF_MENU) {
+		switch(pMsg->message) {
+			case WM_NOTIFY: {
+				break;;
+			}
+			case WM_MENUSELECT:
+				break;
+			case WM_LBUTTONDOWN: {
+				POINT	pt;
+
+				GetCursorPos(&pt);
+				if(MenuItemFromPoint(0, m_Owner->m_activeMenu, pt) >= 0) 			// inside menu
+					break;
+				if(m_Owner->m_activeSubMenu && MenuItemFromPoint(0, m_Owner->m_activeSubMenu, pt) >= 0)
+					break;
+				else {																// anywhere else, cancel the menu
+					::CallNextHookEx(m_hHook, nCode, wParam, lParam);
+					m_Owner->Cancel();
+					return(0);
+				}
+			}
+			/*
+			 * allow hottracking by the toolbar control
+			 */
+			case WM_MOUSEMOVE: {
+				POINT pt;
+
+				GetCursorPos(&pt);
+				ScreenToClient(m_Owner->m_hwndToolbar, &pt);
+				LPARAM newPos = MAKELONG(pt.x, pt.y);
+				::SendMessage(m_Owner->m_hwndToolbar, pMsg->message, pMsg->wParam, newPos);
+				break;
+			}
+			default:
+				break;
+		}
+	}
+	return(::CallNextHookEx(m_hHook, nCode, wParam, lParam));
+}
+
+/*
+ *  window procedure for the status bar class.
+ */
+
+static 	int 	tooltip_active = FALSE;
+static 	POINT 	ptMouse = {0};
 RECT 	rcLastStatusBarClick;						// remembers click (down event) point for status bar clicks
 
 LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct ContainerWindowData *pContainer = (struct ContainerWindowData *)GetWindowLongPtr(GetParent(hWnd), GWLP_USERDATA);
+	ContainerWindowData *pContainer = (ContainerWindowData *)GetWindowLongPtr(GetParent(hWnd), GWLP_USERDATA);
 
 	if (OldStatusBarproc == 0) {
 		WNDCLASSEX wc = {0};

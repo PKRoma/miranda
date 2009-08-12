@@ -305,7 +305,7 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct _MessageWindowData *dat,
 		SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
 		dat->dwLastActivity = dat->dwLastUpdate = GetTickCount();
 		dat->pContainer->dwLastActivity = dat->dwLastActivity;
-		UpdateContainerMenu(hwndDlg, dat);
+		dat->pContainer->MenuBar->configureMenu();
 		UpdateTrayMenuState(dat, FALSE);
 		DM_SetDBButtonStates(hwndDlg, dat);
 
@@ -3385,7 +3385,7 @@ LABEL_SHOWWINDOW:
 				return 0;
 			break;
 		case WM_PAINT:
-			if (dat->pContainer->bSkinned || M->isAero()) {
+			if (dat->pContainer->bSkinned || M->isAero() || M->isVSThemed()) {
 				PAINTSTRUCT ps;
 				RECT rcClient, rcWindow, rc;
 				CSkinItem *item;

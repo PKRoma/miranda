@@ -1660,7 +1660,6 @@ void SetMessageLog(HWND hwndDlg, struct _MessageWindowData *dat)
 		ieWindow.cy = 200;
 		CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
 		dat->hwndIEView = ieWindow.hwnd;
-		_DebugTraceA("ieview created: hwnd = %d", dat->hwndIEView);
 		ShowWindow(GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), FALSE);
 	} else if (iLogMode == WANT_HPP_LOG && dat->hwndHPP == 0) {
@@ -1706,9 +1705,7 @@ void SwitchMessageLog(HWND hwndDlg, struct _MessageWindowData *dat, int iMode)
 	SetDialogToType(hwndDlg);
 	SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
-	UpdateContainerMenu(hwndDlg, dat);
 
-	//MAD: simple subclassing after log changed
 	if (dat->hwndIEView) {
  		if (M->GetByte("subclassIEView", 0)&&dat->oldIEViewProc == 0) {
  			WNDPROC wndProc = (WNDPROC)SetWindowLongPtr(dat->hwndIEView, GWLP_WNDPROC, (LONG_PTR)IEViewSubclassProc);

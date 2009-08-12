@@ -933,10 +933,10 @@ static void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, 
 			SetDIBits(hdcTemp, hbmTemp, nStart, 50 - nLenSub, pcImg, &biOut, DIB_RGB_COLORS);
 			mir_free(pcImg);
 		}
-		CImageItem tempItem(10, 10, 10, 10, hdcTemp, hbmTemp, IMAGE_FLAG_DIVIDED | IMAGE_FILLSOLID,
+		CImageItem tempItem(10, 10, 10, 10, hdcTemp, PluginConfig.hbmLogo, IMAGE_FLAG_DIVIDED | IMAGE_FILLSOLID,
 							GetSysColorBrush(COLOR_3DFACE), 255, 30, 80, 50, 100);
 
-		tempItem.Render(pDC, rcItem);
+		tempItem.Render(pDC, rcItem, true);
 		tempItem.Clear();
 		SelectObject(hdcTemp, hbmTempOld);
 		DeleteObject(hbmTemp);
@@ -1639,7 +1639,6 @@ void ReloadTabConfig()
 	PluginConfig.tabConfig.m_fixedwidth = (PluginConfig.tabConfig.m_fixedwidth < 60 ? 60 : PluginConfig.tabConfig.m_fixedwidth);
 	PluginConfig.tabConfig.m_hPenStyledLight = CreatePen(PS_SOLID, 1, PluginConfig.tabConfig.colors[8]);
 	PluginConfig.tabConfig.m_hPenStyledDark = CreatePen(PS_SOLID, 1, PluginConfig.tabConfig.colors[9]);
-	PluginConfig.iMenuHeight = nclim.iMenuHeight;
 }
 
 void FreeTabConfig()

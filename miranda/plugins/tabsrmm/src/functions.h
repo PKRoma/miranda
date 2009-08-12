@@ -107,7 +107,6 @@ void        ApplyContainerSetting(struct ContainerWindowData *pContainer, DWORD 
 void        BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);
 void        GetDefaultContainerTitleFormat();
 extern const WCHAR *EncodeWithNickname(const char *string, const WCHAR *szNick, UINT codePage);
-void        UpdateContainerMenu(HWND hwndDlg, struct _MessageWindowData *dat);
 INT_PTR     MessageWindowOpened(WPARAM wParam, LPARAM lParam);
 void 		SetAeroMargins(ContainerWindowData *pContainer);
 int         TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned int subType);

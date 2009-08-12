@@ -1078,6 +1078,10 @@ typedef struct {
 #define MS_HPP_EG_OPTIONSCHANGED "History++/ExtGrid/OptionsChanged"
 #define MS_HPP_EG_NOTIFICATION   "History++/ExtGrid/Notification"
 
+#define SB_CHAR_WIDTH			45					// default width for status bar panel #2
+#define DEFAULT_CONTAINER_POS 	0x00400040			// default container position and size
+#define DEFAULT_CONTAINER_SIZE 	0x019001f4
+
 /*
  * encryption status bar indicator
  */
