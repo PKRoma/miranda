@@ -71,7 +71,7 @@ void CMsnProto::msnftp_invite(filetransfer *ft)
 		"Invitation-Command: INVITE\r\n"
 		"Invitation-Cookie: %i\r\n"
 		"Application-File: %s\r\n"
-		"Application-FileSize: %i\r\n\r\n",
+		"Application-FileSize: %I64u\r\n\r\n",
 		MSN_GenRandom(), UTF8(pszFiles), ft->std.currentFileSize);
 
 	if (thread == NULL)
@@ -116,9 +116,10 @@ int CMsnProto::MSN_HandleMSNFTP(ThreadData *info, char *cmdString)
 
 			info->mCaller = 3;
 
-			while(ft->std.currentFileProgress < ft->std.currentFileSize)
+			while (ft->std.currentFileProgress < ft->std.currentFileSize)
 			{
-				if (ft->bCanceled) {
+				if (ft->bCanceled) 
+                {
 					sendpacket[0] = 0x01;
 					sendpacket[1] = 0x00;
 					sendpacket[2] = 0x00;
@@ -128,9 +129,8 @@ int CMsnProto::MSN_HandleMSNFTP(ThreadData *info, char *cmdString)
 
 				int wPlace = 0;
 				sendpacket[wPlace++] = 0x00;
-				__int64 packetLen = ft->std.currentFileSize - ft->std.currentFileProgress;
-				if (packetLen > 2045)
-					packetLen = 2045;
+				unsigned __int64 packetLen = ft->std.currentFileSize - ft->std.currentFileProgress;
+				if (packetLen > 2045) packetLen = 2045;
 
 				sendpacket[wPlace++] = (char)(packetLen & 0x00ff);
 				sendpacket[wPlace++] = (char)((packetLen & 0xff00) >> 8);
@@ -210,7 +210,8 @@ LBL_InvalidCommand:
 				BYTE* p = tBuf.surelyRead(3);
 				if (p == NULL) 
                 {
-LBL_Error:		ft->close();
+LBL_Error:
+                    ft->close();
 					MSN_ShowError("file transfer is canceled by remote host");
 					return 1;
 				}
@@ -219,7 +220,8 @@ LBL_Error:		ft->close();
 				WORD dataLen = *p++;
 				dataLen |= (*p++ << 8);
 
-				if (tIsTransitionFinished) {
+				if (tIsTransitionFinished) 
+                {
 LBL_Success:
 					static const char sttCommand[] = "BYE 16777989\r\n";
 					info->send(sttCommand, strlen(sttCommand));
