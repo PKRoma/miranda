@@ -418,7 +418,7 @@ int CJabberProto::FileSendParse( JABBER_SOCKET s, filetransfer* ft, char* buffer
 		}
 		else {	// FT_INITIALIZING
 			if ( str[0] == '\0' ) {
-				struct _stat statbuf;
+				struct _stati64 statbuf;
 
 				mir_free( str );
 				num += 2;
@@ -439,7 +439,7 @@ int CJabberProto::FileSendParse( JABBER_SOCKET s, filetransfer* ft, char* buffer
 					break;
 				}
 				Log( "Sending [%s]", ft->std.ptszFiles[ currentFile ] );
-				_tstat( ft->std.ptszFiles[ currentFile ], &statbuf );	// file size in statbuf.st_size
+				_tstati64( ft->std.ptszFiles[ currentFile ], &statbuf );	// file size in statbuf.st_size
 				if (( fileId = _topen( ft->std.ptszFiles[currentFile], _O_BINARY|_O_RDONLY )) < 0 ) {
 					Log( "File cannot be opened" );
 					ft->state = FT_ERROR;
@@ -449,7 +449,7 @@ int CJabberProto::FileSendParse( JABBER_SOCKET s, filetransfer* ft, char* buffer
 				}
 
 				char fileBuffer[ 2048 ];
-				int bytes = mir_snprintf( fileBuffer, sizeof(fileBuffer), "HTTP/1.1 200 OK\r\nContent-Length: %d\r\n\r\n", statbuf.st_size );
+				int bytes = mir_snprintf( fileBuffer, sizeof(fileBuffer), "HTTP/1.1 200 OK\r\nContent-Length: %I64u\r\n\r\n", statbuf.st_size );
 				WsSend( s, fileBuffer, bytes, MSG_DUMPASTEXT );
 
 				ft->std.flags |= PFTS_SENDING;

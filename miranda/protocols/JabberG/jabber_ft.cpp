@@ -217,13 +217,13 @@ BOOL CJabberProto::FtSend( HANDLE hConn, filetransfer* ft )
 
 BOOL CJabberProto::FtIbbSend( int blocksize, filetransfer* ft )
 {
-	struct _stat statbuf;
+	struct _stati64 statbuf;
 	int fd;
 	char* buffer;
 	int numRead;
 
 	Log( "Sending [%s]", ft->std.ptszFiles[ ft->std.currentFileNumber ] );
-	_tstat( ft->std.ptszFiles[ ft->std.currentFileNumber ], &statbuf );	// file size in statbuf.st_size
+	_tstati64( ft->std.ptszFiles[ ft->std.currentFileNumber ], &statbuf );	// file size in statbuf.st_size
 	if (( fd = _topen( ft->std.ptszFiles[ ft->std.currentFileNumber ], _O_BINARY|_O_RDONLY )) < 0 ) {
 		Log( "File cannot be opened" );
 		return FALSE;
