@@ -437,11 +437,11 @@ struct filetransfer
 	char* httpHostName;
 	WORD httpPort;
 	TCHAR* httpPath;
-	DWORD dwExpectedRecvFileSize;
+	unsigned __int64 dwExpectedRecvFileSize;
 
 	// Used by file sending only
 	HANDLE hFileEvent;
-	long *fileSize;
+	unsigned __int64 *fileSize;
 	TCHAR* szDescription;
 	
 	CJabberProto* ppro;

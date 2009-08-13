@@ -144,6 +144,14 @@ void __fastcall xmlAddAttr( HXML hXml, LPCTSTR pszName, int value )
 	xi.addAttrInt( hXml, pszName, value );
 }
 
+void __fastcall xmlAddAttr( HXML hXml, LPCTSTR pszName, unsigned __int64 value )
+{
+	TCHAR buf[60];
+	_ui64tot( value, buf, 10 );
+
+    xi.addAttr( hXml, pszName, buf );
+}
+
 void __fastcall xmlAddAttrID( HXML hXml, int id )
 {
 	TCHAR text[ 100 ];

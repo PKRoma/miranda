@@ -35,7 +35,7 @@ typedef struct {
 	TCHAR* sid;
 	TCHAR* srcJID;
 	TCHAR* dstJID;
-	DWORD dwTransferredSize;
+	unsigned __int64 dwTransferredSize;
 	JABBER_IBB_STATE state;
 	HANDLE hEvent;
 	BOOL bStreamInitialized;

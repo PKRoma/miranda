@@ -145,7 +145,7 @@ int CJabberProto::FileReceiveParse( filetransfer* ft, char* buffer, int datalen 
 						else if (( s=strchr( str, ':' )) != NULL ) {
 							*s = '\0';
 							if ( !strcmp( str, "Content-Length" ))
-								ft->std.totalBytes = ft->std.currentFileSize = strtol( s+1, NULL, 10 );
+								ft->std.totalBytes = ft->std.currentFileSize = _atoi64( s+1 );
 					}	}
 
 					mir_free( str );
@@ -163,7 +163,8 @@ int CJabberProto::FileReceiveParse( filetransfer* ft, char* buffer, int datalen 
 			}
 		}
 		else if ( ft->state == FT_RECEIVING ) {
-			int bufferSize, remainingBytes, writeSize;
+			int bufferSize, writeSize;
+            __int64 remainingBytes;
 
 			if ( ft->std.currentFileSize < 0 || ft->std.currentFileProgress < ft->std.currentFileSize ) {
 				bufferSize = eob - p;

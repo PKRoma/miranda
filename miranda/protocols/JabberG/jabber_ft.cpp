@@ -113,7 +113,7 @@ void CJabberProto::FtInitiate( TCHAR* jid, filetransfer* ft )
 	HXML si = iq << XCHILDNS( _T("si"), _T(JABBER_FEAT_SI)) << XATTR( _T("id"), sid ) 
 						<< XATTR( _T("mime-type"), _T("binary/octet-stream")) << XATTR( _T("profile"), _T(JABBER_FEAT_SI_FT));
 	si << XCHILDNS( _T("file"), _T(JABBER_FEAT_SI_FT)) << XATTR( _T("name"), filename) 
-		<< XATTRI( _T("size"), ft->fileSize[ ft->std.currentFileNumber ] ) << XCHILD( _T("desc"), ft->szDescription);
+		<< XATTRI64( _T("size"), ft->fileSize[ ft->std.currentFileNumber ] ) << XCHILD( _T("desc"), ft->szDescription);
 	
 	HXML field = si << XCHILDNS( _T("feature"), _T(JABBER_FEAT_FEATURE_NEG))
 							<< XCHILDNS( _T("x"), _T(JABBER_FEAT_DATA_FORMS)) << XATTR( _T("type"), _T("form"))
@@ -182,13 +182,13 @@ void CJabberProto::OnFtSiResult( HXML iqNode, CJabberIqInfo* pInfo )
 
 BOOL CJabberProto::FtSend( HANDLE hConn, filetransfer* ft )
 {
-	struct _stat statbuf;
+	struct _stati64 statbuf;
 	int fd;
 	char* buffer;
 	int numRead;
 
 	Log( "Sending [%s]", ft->std.ptszFiles[ ft->std.currentFileNumber ] );
-	_tstat( ft->std.ptszFiles[ ft->std.currentFileNumber ], &statbuf );	// file size in statbuf.st_size
+	_tstati64( ft->std.ptszFiles[ ft->std.currentFileNumber ], &statbuf );	// file size in statbuf.st_size
 	if (( fd = _topen( ft->std.ptszFiles[ ft->std.currentFileNumber ], _O_BINARY|_O_RDONLY )) < 0 ) {
 		Log( "File cannot be opened" );
 		return FALSE;
@@ -303,7 +303,8 @@ void CJabberProto::FtHandleSiRequest( HXML iqNode )
 {
 	const TCHAR* from, *sid, *str, *szId, *filename;
 	HXML siNode, fileNode, featureNode, xNode, fieldNode, n;
-	int filesize, i;
+	int i;
+    unsigned __int64 filesize;
 
 	if ( !iqNode ||
 		  ( from = xmlGetAttrValue( iqNode, _T("from"))) == NULL ||
@@ -317,7 +318,7 @@ void CJabberProto::FtHandleSiRequest( HXML iqNode )
 		( filename = xmlGetAttrValue( fileNode,  _T("name"))) != NULL &&
 		( str = xmlGetAttrValue( fileNode,  _T("size"))) != NULL ) {
 
-		filesize = _ttoi( str );
+		filesize = _ttoi64( str );
 		if (( featureNode = xmlGetChildByTag( siNode, "feature", "xmlns", _T(JABBER_FEAT_FEATURE_NEG))) != NULL &&
 			( xNode = xmlGetChildByTag( featureNode, "x", "xmlns", _T(JABBER_FEAT_DATA_FORMS)))!=NULL &&
 			( fieldNode = xmlGetChildByTag( xNode, "field", "var", _T("stream-method")))!=NULL ) {
@@ -356,7 +357,7 @@ void CJabberProto::FtHandleSiRequest( HXML iqNode )
 			if ( optionNode != NULL ) {
 				// Found known stream mechanism
 				filetransfer* ft = new filetransfer( this );
-				ft->dwExpectedRecvFileSize = (DWORD)filesize;
+				ft->dwExpectedRecvFileSize = filesize;
 				ft->jid = mir_tstrdup( from );
 				ft->std.hContact = HContactFromJID( from );
 				ft->sid = mir_tstrdup( sid );
@@ -526,7 +527,7 @@ int CJabberProto::FtReceive( HANDLE, filetransfer* ft, char* buffer, int datalen
 	if ( ft->create() == -1 )
 		return -1;
 
-	int remainingBytes = ft->std.currentFileSize - ft->std.currentFileProgress;
+	__int64 remainingBytes = ft->std.currentFileSize - ft->std.currentFileProgress;
 	if ( remainingBytes > 0 ) {
 		int writeSize = ( remainingBytes<datalen ) ? remainingBytes : datalen;
 		if ( _write( ft->fileId, buffer, writeSize ) != writeSize ) {

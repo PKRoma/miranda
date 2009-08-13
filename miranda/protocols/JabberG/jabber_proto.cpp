@@ -974,7 +974,7 @@ HANDLE __cdecl CJabberProto::SendFile( HANDLE hContact, const TCHAR* szDescripti
 		return 0;
 
 	int i, j;
-	struct _stat statbuf;
+	struct _stati64 statbuf;
 	JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
 	if ( item == NULL ) {
 		JFreeVariant( &dbv );
@@ -1017,9 +1017,9 @@ HANDLE __cdecl CJabberProto::SendFile( HANDLE hContact, const TCHAR* szDescripti
 		ft->std.totalFiles++;
 
 	ft->std.ptszFiles = ( TCHAR** ) mir_alloc( sizeof( TCHAR* )* ft->std.totalFiles );
-	ft->fileSize = ( long* ) mir_alloc( sizeof( long ) * ft->std.totalFiles );
+	ft->fileSize = ( unsigned __int64* ) mir_alloc( sizeof( unsigned __int64 ) * ft->std.totalFiles );
 	for( i=j=0; i < ft->std.totalFiles; i++ ) {
-		if ( _tstat( ppszFiles[i], &statbuf ))
+		if ( _tstati64( ppszFiles[i], &statbuf ))
 			Log( "'%s' is an invalid filename", ppszFiles[i] );
 		else {
 			ft->std.ptszFiles[j] = mir_tstrdup( ppszFiles[i] );
