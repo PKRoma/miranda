@@ -565,33 +565,39 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid, bool deltas
 
 				    if (szEmail[0] == '\0')
 				    {
-					    ezxml_t phn = ezxml_get(contInf, "phones", 0, "ContactPhone", -1);
-					    if (phn != NULL)
+					    ezxml_t eml = ezxml_get(contInf, "emails", 0, "ContactEmail", -1);
+					    while (eml != NULL)
 					    {
-						    szMsgUsr = ezxml_txt(ezxml_child(phn, "isMessengerEnabled"));
-						    szEmail = ezxml_txt(ezxml_child(phn, "number"));
-						    mir_snprintf(email, sizeof(email), "tel:%s", szEmail);
-						    szEmail = email;
-						    netId = NETID_MOB;
+					        szMsgUsr = ezxml_txt(ezxml_child(eml, "isMessengerEnabled"));
+					        if (strcmp(szMsgUsr, "true") == 0) 
+                            {
+						        szEmail = ezxml_txt(ezxml_child(eml, "email"));
+						        const char* szCntType = ezxml_txt(ezxml_child(eml, "contactEmailType"));
+						        if (strcmp(szCntType, "Messenger2") == 0)
+							        netId = NETID_YAHOO;
+						        else if (strcmp(szCntType, "Messenger3") == 0)
+							        netId = NETID_LCS;
+                                break;
+                            }
+						    eml = ezxml_next(eml);
 					    }
-					    else 
-					    {
-						    ezxml_t eml = ezxml_get(contInf, "emails", 0, "ContactEmail", -1);
-						    while (eml != NULL)
-						    {
-						        szMsgUsr = ezxml_txt(ezxml_child(eml, "isMessengerEnabled"));
-						        if (strcmp(szMsgUsr, "true") == 0) 
+
+                        if (netId == NETID_UNKNOWN)
+                        {
+                            ezxml_t phn = ezxml_get(contInf, "phones", 0, "ContactPhone", -1);
+					        while (phn != NULL)
+					        {
+						        szMsgUsr = ezxml_txt(ezxml_child(phn, "isMessengerEnabled"));
+					            if (strcmp(szMsgUsr, "true") == 0) 
                                 {
-							        szEmail = ezxml_txt(ezxml_child(eml, "email"));
-							        const char* szCntType = ezxml_txt(ezxml_child(eml, "contactEmailType"));
-							        if (strcmp(szCntType, "Messenger2") == 0)
-								        netId = NETID_YAHOO;
-							        else if (strcmp(szCntType, "Messenger3") == 0)
-								        netId = NETID_LCS;
+						            szEmail = ezxml_txt(ezxml_child(phn, "number"));
+						            mir_snprintf(email, sizeof(email), "tel:%s", szEmail);
+						            szEmail = email;
+						            netId = NETID_MOB;
                                     break;
                                 }
-							    eml = ezxml_next(eml);
-						    }
+						        phn = ezxml_next(phn);
+					        }
 					    }
 				    }
 
