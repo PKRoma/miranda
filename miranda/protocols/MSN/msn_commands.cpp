@@ -533,6 +533,7 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 			    if (dbv.pszVal[0]) MSN_SetNicknameUtf(dbv.pszVal);
 			    MSN_FreeVariant(&dbv);
 		    }
+			msnNsThread->sendPacket("BLP", msnOtherContactsBlocked ? "BL" : "AL");
 		    MSN_SetServerStatus(m_iDesiredStatus);
 
    		    MSN_EnableMenuItems(true);
@@ -1670,7 +1671,6 @@ LBL_InvalidCommand:
 					ForkThread(&CMsnProto::msn_keepAliveThread, NULL);
 					ForkThread(&CMsnProto::MSNConnDetectThread, NULL);
 
-					msnNsThread->sendPacket("BLP", msnOtherContactsBlocked ? "BL" : "AL");
 					tridUrlInbox = msnNsThread->sendPacket("URL", "INBOX");
 				}
 				else 
