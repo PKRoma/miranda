@@ -228,7 +228,6 @@ CMsnProto::~CMsnProto()
 
 	mir_free(msnPreviousUUX);
 	mir_free(msnExternalIP);
-	mir_free(abchMigrated);
 
 	FreeAuthTokens();
 }
@@ -670,7 +669,8 @@ int __cdecl CMsnProto::FileResume(HANDLE hTransfer, int* action, const char** sz
 		break;
 
 	case FILERESUME_RENAME:
-		if (ft->wszFileName != NULL) {
+		if (ft->wszFileName != NULL) 
+		{
 			mir_free(ft->wszFileName);
 			ft->wszFileName = NULL;
 		}
@@ -678,7 +678,8 @@ int __cdecl CMsnProto::FileResume(HANDLE hTransfer, int* action, const char** sz
 
 	default:
 		bool fcrt = ft->create() != -1;
-		if (ft->p2p_appID != 0) {
+		if (ft->p2p_appID != 0) 
+        {
 			p2p_sendStatus(ft, fcrt ? 200 : 603);
 			if (fcrt)
 				p2p_sendFeedStart(ft);
@@ -865,7 +866,8 @@ HANDLE __cdecl CMsnProto::SendFile(HANDLE hContact, const char* szDescription, c
 		++sft->std.totalFiles;
 	}
 
-	if (sft->openNext() == -1) {
+	if (sft->openNext() == -1) 
+    {
 		delete sft;
 		return 0;
 	}
