@@ -502,6 +502,7 @@ struct CMsnProto : public PROTO_INTERFACE
     void MSN_ABUpdateNick(const char* szNick, const char* szCntId);
     void MSN_ABUpdateAttr(const char* szCntId, const char* szAttr, const char* szValue);
     bool MSN_ABUpdateProperty(const char* szCntId, const char* propName, const char* propValue);
+    bool MSN_ABAddRemoveContact(const char* szCntId, int netId, bool add);
     unsigned MSN_ABContactAdd(const char* szEmail, const char* szNick, int netId, const bool search, const bool retry=false);
     void MSN_ABUpdateDynamicItem(void);
 

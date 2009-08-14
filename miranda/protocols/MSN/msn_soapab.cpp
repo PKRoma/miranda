@@ -958,6 +958,102 @@ void CMsnProto::MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId)
 }
 
 
+bool CMsnProto::MSN_ABAddRemoveContact(const char* szCntId, int netId, bool add)
+{
+	char* reqHdr;
+	ezxml_t tbdy;
+	ezxml_t xmlp = abSoapHdr("ABContactUpdate", "Timer", tbdy, reqHdr);
+
+	ezxml_t node = ezxml_add_child(tbdy, "contacts", 0);
+	ezxml_t cont = ezxml_add_child(node, "Contact", 0);
+	ezxml_set_attr(cont, "xmlns", "http://www.msn.com/webservices/AddressBook");
+
+	node = ezxml_add_child(cont, "contactId", 0);
+	ezxml_set_txt(node, szCntId);
+	ezxml_t conti = ezxml_add_child(cont, "contactInfo", 0);
+
+    switch (netId)
+    {
+    case NETID_MSN:
+	    node = ezxml_add_child(conti, "isMessengerUser", 0);
+        ezxml_set_txt(node, add ? "true" : "false");
+	    node = ezxml_add_child(cont, "propertiesChanged", 0);
+        ezxml_set_txt(node, "IsMessengerUser");
+        break;
+
+    case NETID_LCS:
+    case NETID_YAHOO:
+        {
+      	    ezxml_t contp = ezxml_add_child(conti, "emails", 0);
+	        contp = ezxml_add_child(contp, "ContactEmail", 0);
+      	    node = ezxml_add_child(contp, "contactEmailType", 0);
+	        ezxml_set_txt(node, netId == NETID_YAHOO ? "Messenger2" : "Messenger3");
+	        node = ezxml_add_child(contp, "isMessengerEnabled", 0);
+            ezxml_set_txt(node, add ? "true" : "false");
+	        node = ezxml_add_child(contp, "propertiesChanged", 0);
+	        ezxml_set_txt(node, "IsMessengerEnabled");
+	        node = ezxml_add_child(cont, "propertiesChanged", 0);
+            ezxml_set_txt(node, "ContactEmail");
+        }
+        break;
+
+    case NETID_MOB:
+        {
+      	    ezxml_t contp = ezxml_add_child(conti, "phones", 0);
+	        contp = ezxml_add_child(contp, "ContactPhone", 0);
+      	    node = ezxml_add_child(contp, "contactPhoneType", 0);
+	        ezxml_set_txt(node, "ContactPhoneMobile");
+	        node = ezxml_add_child(contp, "isMessengerEnabled", 0);
+            ezxml_set_txt(node, add ? "true" : "false");
+	        node = ezxml_add_child(contp, "propertiesChanged", 0);
+	        ezxml_set_txt(node, "IsMessengerEnabled");
+	        node = ezxml_add_child(cont, "propertiesChanged", 0);
+	        ezxml_set_txt(node, "ContactPhone");
+        }
+        break;
+    }
+
+	char* szData = ezxml_toxml(xmlp, true);
+	ezxml_free(xmlp);
+
+	unsigned status = 0;
+	char *abUrl = NULL, *tResult = NULL;
+
+    for (int k = 4; --k;)
+    {
+        mir_free(abUrl);
+        abUrl = GetABHost("ABContactUpdate", false);
+	    tResult = getSslResult(&abUrl, szData, reqHdr, status);
+        if (tResult == NULL) UpdateABHost("ABContactUpdate", NULL);
+        else break;
+    }
+
+	mir_free(reqHdr);
+	free(szData);
+
+	if (tResult != NULL)
+	{
+		UpdateABHost("ABContactUpdate", abUrl);
+		ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
+		if (status == 500)
+		{
+			const char* szErr = ezxml_txt(getSoapFault(xmlm, true));
+            if (strcmp(szErr, "PassportAuthFail") == 0)
+            {
+                MSN_GetPassportAuth();
+                if (MSN_ABAddRemoveContact(szCntId, netId, add))
+                    status = 200;
+            }
+		}
+		ezxml_free(xmlm);
+	}
+	mir_free(tResult);
+	mir_free(abUrl);
+
+    return status == 200;
+}
+
+
 bool CMsnProto::MSN_ABUpdateProperty(const char* szCntId, const char* propName, const char* propValue)
 {
 	char* reqHdr;
@@ -1210,7 +1306,7 @@ unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, in
 				MSN_ABAddDelContactGroup(szContId , NULL, "ABContactDelete");
 			else
 			{
-				MSN_ABUpdateProperty(szContId, "isMessengerUser", "1");
+				MSN_ABAddRemoveContact(szContId, NETID_MSN, true);
 				HANDLE hContact = MSN_HContactFromEmail(szEmail, szNick ? szNick : szEmail, true, false);
 				setString(hContact, "ID", szContId);
 			}
