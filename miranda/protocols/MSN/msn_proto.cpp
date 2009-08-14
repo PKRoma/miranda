@@ -228,7 +228,6 @@ CMsnProto::~CMsnProto()
 
 	mir_free(msnPreviousUUX);
 	mir_free(msnExternalIP);
-	mir_free(abchMigrated);
 
 	FreeAuthTokens();
 }

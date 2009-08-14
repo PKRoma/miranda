@@ -516,11 +516,27 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 	else if (!_strnicmp(tContentType, "text/x-msmsgsprofile", 20)) 
     {
 		replaceStr(msnExternalIP, tHeader["ClientIP"]);
-		replaceStr(abchMigrated, tHeader["ABCHMigrated"]);
+		abchMigrated = atol(tHeader["ABCHMigrated"]);
 		langpref = atol(tHeader["lang_preference"]);
 		emailEnabled = atol(tHeader["EmailEnabled"]);
 
-   		MSN_EnableMenuItems(true);
+		if (!MSN_RefreshContactList()) 
+        {
+			SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER);
+			MSN_GoOffline();
+		}
+        else
+        {
+		    DBVARIANT dbv;
+		    if (!getStringUtf("Nick", &dbv)) 
+            {
+			    if (dbv.pszVal[0]) MSN_SetNicknameUtf(dbv.pszVal);
+			    MSN_FreeVariant(&dbv);
+		    }
+		    MSN_SetServerStatus(m_iDesiredStatus);
+
+   		    MSN_EnableMenuItems(true);
+        }
 	}
 	else if (!_strnicmp(tContentType, "text/x-msmsgscontrol", 20)) 
     {
@@ -1651,20 +1667,6 @@ LBL_InvalidCommand:
 				}
 				else if (!strcmp(data.security, "OK")) 
 				{
-					if (!MSN_RefreshContactList()) 
-                    {
-						SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER);
-						return 1;
-					}
-
-					DBVARIANT dbv;
-					if (!getStringUtf("Nick", &dbv)) 
-                    {
-						if (dbv.pszVal[0]) MSN_SetNicknameUtf(dbv.pszVal);
-						MSN_FreeVariant(&dbv);
-					}
-					MSN_SetServerStatus(m_iDesiredStatus);
-
 					ForkThread(&CMsnProto::msn_keepAliveThread, NULL);
 					ForkThread(&CMsnProto::MSNConnDetectThread, NULL);
 

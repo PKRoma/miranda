@@ -179,7 +179,7 @@ struct CMsnProto : public PROTO_INTERFACE
     char*       rru;
     unsigned	langpref;
     unsigned    emailEnabled;
-    char*       abchMigrated;
+    unsigned    abchMigrated;
 
 	HANDLE		msnSearchId;
     unsigned	msnOtherContactsBlocked;
