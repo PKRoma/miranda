@@ -144,11 +144,12 @@ bool CMsnProto::MSN_AddUser(HANDLE hContact, const char* email, int netId, int f
 			char id[MSN_GUID_LEN];
 			if (!getStaticString(hContact, "ID", id, sizeof(id))) 
 			{
+                int netId = Lists_GetNetId(email);
                 if (leaveHotmail)
-                    res = MSN_ABUpdateProperty(id, "isMessengerUser", "0");
+                    res = MSN_ABAddRemoveContact(id, netId, false);
                 else
 				    res = MSN_ABAddDelContactGroup(id , NULL, "ABContactDelete");
-				if (res) AddDelUserContList(email, flags, Lists_GetNetId(email), true);
+				if (res) AddDelUserContList(email, flags, netId, true);
 			}
 		}
 		else 
@@ -169,7 +170,7 @@ bool CMsnProto::MSN_AddUser(HANDLE hContact, const char* email, int netId, int f
 			    hContact = MSN_HContactFromEmail(email, email, false, false);
 				if (getStaticString(hContact, "ID", szContactID, sizeof(szContactID)) == 0)
 				{
-					MSN_ABUpdateProperty(szContactID, "isMessengerUser", "1");
+					MSN_ABAddRemoveContact(szContactID, netId, true);
 					res = true;
 				}
 			}
