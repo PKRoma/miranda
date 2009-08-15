@@ -120,7 +120,8 @@ static int serviceModeIdx = -1;
 static pluginEntry * pluginListSM;
 static pluginEntry * pluginListDb;
 static pluginEntry * pluginListUI;
-static pluginEntry * pluginList_freeimg = NULL;
+static pluginEntry * pluginList_freeimg;
+static pluginEntry * pluginList_crshdmp;
 static HANDLE hPluginListHeap = NULL;
 static pluginEntry * pluginDefModList[DEFMOD_HIGHEST+1]; // do not free this memory
 static int askAboutIgnoredPlugins;
@@ -542,6 +543,8 @@ static BOOL scanPluginsDir (WIN32_FIND_DATAA * fd, char * path, WPARAM, LPARAM)
 					p->pclass |= (PCLASS_SERVICE);
 					if ( pluginListSM != NULL ) p->nextclass=pluginListSM;
 					pluginListSM=p;
+	                if (pluginList_crshdmp == NULL &&  lstrcmpiA(fd->cFileName, "svc_crshdmp.dll") == 0)
+		                pluginList_crshdmp = p;
 					break;
 				}
 			}
@@ -550,7 +553,7 @@ static BOOL scanPluginsDir (WIN32_FIND_DATAA * fd, char * path, WPARAM, LPARAM)
 			// didn't have basic APIs or DB exports - failed.
 			p->pclass |= PCLASS_FAILED;
 	}
-	else if ( lstrcmpiA(fd->cFileName, "advaimg.dll") == 0)
+	else if (pluginList_freeimg == NULL && lstrcmpiA(fd->cFileName, "advaimg.dll") == 0)
 		pluginList_freeimg = p;
 
 	// add it to the list
@@ -983,6 +986,14 @@ int LoadNewPluginsModule(void)
 	// remember some useful options
 	askAboutIgnoredPlugins=(UINT) GetPrivateProfileInt( _T("PluginLoader"), _T("AskAboutIgnoredPlugins"), 0, mirandabootini);
 
+	// if Crash Dumper is present, load it to provide Crash Reports
+	if ( pluginList_crshdmp != NULL ) {
+		if ( pluginList_crshdmp->bpi.Load(&pluginCoreLink) == 0 )
+			pluginList_crshdmp->pclass |= PCLASS_LOADED | PCLASS_LAST;
+		else
+			Plugin_Uninit( pluginList_crshdmp );
+    }
+
 	// if freeimage is present, load it to provide the basic core functions
 	if ( pluginList_freeimg != NULL ) {
 		BASIC_PLUGIN_INFO bpi;
@@ -1147,9 +1158,12 @@ void UnloadNewPluginsModule(void)
 	// unload everything but the DB
 	for ( i = pluginList.realCount-1; i >= 0; i-- ) {
 		pluginEntry* p = ( pluginEntry* )pluginList.items[i];
-		if ( !(p->pclass & PCLASS_DB) )
+		if ( !(p->pclass & PCLASS_DB) && p != pluginList_crshdmp )
 			Plugin_Uninit( p );
 	}
+
+    if ( pluginList_crshdmp )
+		Plugin_Uninit( pluginList_crshdmp );
 
 	// unload the DB
 	for ( i = pluginList.realCount-1; i >= 0; i-- ) {
