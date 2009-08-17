@@ -926,7 +926,6 @@ static INT_PTR CALLBACK DlgProcTrayOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
             {
                 int i,count,item;
                 PROTOACCOUNT **accs;
-                char szName[64];
                 DBVARIANT dbv={DBVT_DELETED};
                 ModernGetSetting(NULL,"CList","PrimaryStatus",&dbv);
                 ProtoEnumAccounts( &count, &accs );
