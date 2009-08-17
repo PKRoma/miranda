@@ -596,7 +596,6 @@ static BOOL CLUI_WaitThreadsCompletion(HWND hwnd)
 		TRACEVAR("g_dwSmoothAnimationThreadID: %x",g_dwSmoothAnimationThreadID);
 		TRACEVAR("g_dwFillFontListThreadID: %x",g_dwFillFontListThreadID);
 		bEntersCount++;
-		PostMessage(hwnd,WM_DESTROY,0,0);
 		SleepEx(10,TRUE);
 		return TRUE;
 	}
@@ -2989,7 +2988,7 @@ LRESULT CLUI::OnDestroy( UINT msg, WPARAM wParam, LPARAM lParam )
 	}
 
 	TRACE("CLUI.c: WM_DESTROY - WaitThreadsCompletion \n");
-	if (CLUI_WaitThreadsCompletion(m_hWnd)) return 0; //stop all my threads                
+	while (CLUI_WaitThreadsCompletion(m_hWnd)); //stop all my threads                
 	TRACE("CLUI.c: WM_DESTROY - WaitThreadsCompletion DONE\n");
 	{
 		int i=0;
