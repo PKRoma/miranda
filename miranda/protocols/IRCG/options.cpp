@@ -1074,14 +1074,15 @@ void COtherPrefsDlg::OnInitDialog()
 	m_add.Enable( m_proto->m_perform );
 	m_delete.Enable( m_proto->m_perform );
 
-	m_codepage.AddString( TranslateT("Default ANSI codepage"), CP_ACP );
-	m_codepage.AddString( TranslateT("UTF-8"), CP_UTF8 );
-
 	#if defined( _UNICODE )
 		fnGetCPInfoEx = ( pfnGetCPInfoEx )GetProcAddress( GetModuleHandleA( "kernel32.dll" ), "GetCPInfoExW" );
 	#else
 		fnGetCPInfoEx = ( pfnGetCPInfoEx )GetProcAddress( GetModuleHandleA( "kernel32.dll" ), "GetCPInfoExA" );
 	#endif
+
+	m_codepage.AddString( TranslateT("Default ANSI codepage"), CP_ACP );
+	if ( fnGetCPInfoEx == NULL )
+		m_codepage.AddString( TranslateT("UTF-8"), CP_UTF8 );
 
 	sttCombo = &m_codepage;
 	EnumSystemCodePagesA(sttLangAddCallback, CP_INSTALLED);
