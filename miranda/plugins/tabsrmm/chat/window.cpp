@@ -298,8 +298,8 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct _MessageWindowData *dat,
 
 		if (PluginConfig.m_AutoLocaleSupport && dat->hContact != 0) {
 			if (dat->hkl == 0)
-				//DM_LoadLocale(hwndDlg, dat);
-				PostMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
+				DM_LoadLocale(dat);
+				//PostMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
 			PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
 		}
 		SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
@@ -715,7 +715,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				TCHAR toInsert[100];
 				BYTE keyState[256];
 				size_t i;
-				size_t iLen = _tcslen(PluginConfig.m_MathModStartDelimiter);
+				size_t iLen = lstrlen(PluginConfig.m_MathModStartDelimiter);
 				ZeroMemory(keyState, 256);
 				_tcsncpy(toInsert, PluginConfig.m_MathModStartDelimiter, 30);
 				_tcsncat(toInsert, PluginConfig.m_MathModStartDelimiter, 30);
@@ -935,7 +935,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 						dat->szSearchResult = mir_tstrdup(pszName);
 						if ((int)end != (int)start) {
 							if (!isRoom && !isTopic && g_Settings.AddColonToAutoComplete && start == 0) {
-								pszText = (TCHAR *)mir_alloc((_tcslen(pszName) + 4) * sizeof(TCHAR));
+								pszText = (TCHAR *)mir_alloc((lstrlen(pszName) + 4) * sizeof(TCHAR));
 								_tcscpy(pszText, pszName);
 								_tcscat(pszText, _T(": "));
 								pszName = pszText;
@@ -2149,7 +2149,8 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BUTTONSETASFLATBTN, 0, 0);
 
 			dat->hwndIEView = dat->hwndHPP = 0;
-			Chat_SetMessageLog(dat);
+
+			//Chat_SetMessageLog(dat);
 
 			dat->wOldStatus = -1;
 			SendMessage(hwndDlg, GC_SETWNDPROPS, 0, 0);
@@ -3026,7 +3027,7 @@ LABEL_SHOWWINDOW:
 
 										//if(fFound) {
 											SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_EXGETSEL, 0, (LPARAM) &chr);
-											tszTmp = tszAppeal = (TCHAR *) malloc((_tcslen(tr.lpstrText) + _tcslen(tszAplTmpl) + 3) * sizeof(TCHAR));
+											tszTmp = tszAppeal = (TCHAR *) malloc((lstrlen(tr.lpstrText) + lstrlen(tszAplTmpl) + 3) * sizeof(TCHAR));
 											tr2.lpstrText = (LPTSTR) malloc(sizeof(TCHAR) * 2);
 											if (chr.cpMin) {
 												/* prepend nick with space if needed */
@@ -3040,7 +3041,7 @@ LABEL_SHOWWINDOW:
 											else
 												/* in the beginning of the message window */
 												_stprintf(tszAppeal, tszAplTmpl, tr.lpstrText);
-											st = _tcslen(tszAppeal);
+											st = lstrlen(tszAppeal);
 											if (chr.cpMax != -1) {
 												tr2.chrg.cpMin = chr.cpMax;
 												tr2.chrg.cpMax = chr.cpMax + 1;
@@ -3146,7 +3147,7 @@ LABEL_SHOWWINDOW:
 					break;
 
 				case IDC_CHAT_TOGGLESIDEBAR:
-					ApplyContainerSetting(dat->pContainer, CNT_SIDEBAR, dat->pContainer->dwFlags & CNT_SIDEBAR ? 0 : 1);
+					ApplyContainerSetting(dat->pContainer, CNT_SIDEBAR, dat->pContainer->dwFlags & CNT_SIDEBAR ? 0 : 1, false);
 					break;
 
 				case IDCANCEL:
@@ -3162,13 +3163,6 @@ LABEL_SHOWWINDOW:
 					pszRtf = Chat_Message_GetFromStream(hwndDlg, si);
 					SM_AddCommand(si->ptszID, si->pszModule, pszRtf);
 					ptszText = Chat_DoRtfToTags(pszRtf, si);
-// 					p1 = _tcschr(ptszText, '\0');
-//
-// 					//remove trailing linebreaks
-// 					while (p1 > ptszText && (*p1 == '\0' || *p1 == '\r' || *p1 == '\n')) {
-// 						*p1 = '\0';
-// 						p1--;
-// 					}
 					DoTrimMessage(ptszText);
 
 					if (MM_FindModule(si->pszModule)->bAckMsg) {
@@ -3257,7 +3251,7 @@ LABEL_SHOWWINDOW:
 						CallService("MSP/HTMLlog/ViewLog", (WPARAM)si->pszModule, (LPARAM)si->ptszName);
 #endif
 					} else if (pInfo)
-						ShellExecute(hwndDlg, NULL, GetChatLogsFilename(si->hContact, 0), NULL, NULL, SW_SHOW);
+						ShellExecute(hwndDlg, NULL, GetChatLogsFilename(si, 0), NULL, NULL, SW_SHOW);
 				}
 				break;
 

@@ -1,25 +1,38 @@
 /*
-Chat module plugin for Miranda IM
-
-Copyright (C) 2003 J�rgen Persson
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-$Id$
-
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * This code is based on and still contains large parts of the the
+ * original chat module for Miranda IM, written and copyrighted
+ * by Joergen Persson in 2005.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ */
 
 #ifndef _CHAT_H_
 #define _CHAT_H_
@@ -28,8 +41,6 @@ $Id$
 #pragma warning( disable : 4996 ) // limitation in MSVC's debugger.
 
 #define WIN32_LEAN_AND_MEAN
-
-#define _WIN32_WINNT 0x0501
 
 #include "m_stdhdr.h"
 
@@ -205,6 +216,7 @@ typedef struct SESSION_INFO_TYPE
 	TCHAR*      ptszName;
 	TCHAR*      ptszStatusbarText;
 	TCHAR*      ptszTopic;
+	TCHAR		pszLogFileName[MAX_PATH + 50];
 
 	#if defined( _UNICODE )
 		char*    pszID;		// ugly fix for returning static ANSI strings in GC_INFO
@@ -299,7 +311,7 @@ struct GlobalLogSettings_t {
 	TCHAR*      pszIncomingNick;
 	TCHAR*      pszOutgoingNick;
 	TCHAR*      pszHighlightWords;
-	TCHAR*      pszLogDir;
+	TCHAR	    pszLogDir[MAX_PATH + 20];
 	HFONT       UserListFont;
 	HFONT       UserListHeadingsFont;
 	HFONT       NameFont;

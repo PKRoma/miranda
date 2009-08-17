@@ -163,9 +163,12 @@ void SetAeroMargins(ContainerWindowData *pContainer)
 				pt.y = rcWnd.top;
 				ScreenToClient(pContainer->hwnd, &pt);
 				m.cyTopHeight = pt.y;
+				pContainer->MenuBar->setAero(true);
 			}
-			else
+			else {
 				m.cyTopHeight = 0;
+				pContainer->MenuBar->setAero(false);
+			}
 			m.cxLeftWidth = 0;
 			m.cxRightWidth = 0;
 			//m.cyTopHeight = (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) ? dat->panelHeight + 1 : 0;
@@ -177,6 +180,8 @@ void SetAeroMargins(ContainerWindowData *pContainer)
 			}
 		}
 	}
+	else
+		pContainer->MenuBar->setAero(false);
 }
 
 /*
@@ -491,7 +496,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
 			if (CSkin::m_frameSkins) {
 				RECT rcWindow, rcClient;
-				HDC dcFrame = GetWindowDC(hwndDlg);
+				HDC dcFrame = GetDCEx(hwndDlg, 0, DCX_WINDOW|/*DCX_INTERSECTRGN|*/0x10000); // GetWindowDC(hwndDlg);
 				POINT pt, pt1;
 				LONG clip_top, clip_left;
 				HRGN rgn = 0;
@@ -924,7 +929,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 				if(fProcessContactMenu)
 					return(CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM)dat->hContact));
-				if (MsgWindowMenuHandler(dat, LOWORD(wParam), MENU_PICMENU) == 1)
+				else if (MsgWindowMenuHandler(dat, LOWORD(wParam), MENU_PICMENU) == 1)
 					break;
 			}
 			SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
@@ -1105,30 +1110,30 @@ buttons_done:
 					PostMessage(hwndDlg, WM_CLOSE, 0, 1);
 					break;
 				case ID_VIEW_SHOWSTATUSBAR:
-					ApplyContainerSetting(pContainer, CNT_NOSTATUSBAR, pContainer->dwFlags & CNT_NOSTATUSBAR ? 0 : 1);
+					ApplyContainerSetting(pContainer, CNT_NOSTATUSBAR, pContainer->dwFlags & CNT_NOSTATUSBAR ? 0 : 1, true);
 					break;
 				case ID_VIEW_VERTICALMAXIMIZE:
-					ApplyContainerSetting(pContainer, CNT_VERTICALMAX, pContainer->dwFlags & CNT_VERTICALMAX ? 0 : 1);
+					ApplyContainerSetting(pContainer, CNT_VERTICALMAX, pContainer->dwFlags & CNT_VERTICALMAX ? 0 : 1, false);
 					break;
 				case ID_VIEW_BOTTOMTOOLBAR:
-					ApplyContainerSetting(pContainer, CNT_BOTTOMTOOLBAR, pContainer->dwFlags & CNT_BOTTOMTOOLBAR ? 0 : 1);
+					ApplyContainerSetting(pContainer, CNT_BOTTOMTOOLBAR, pContainer->dwFlags & CNT_BOTTOMTOOLBAR ? 0 : 1, false);
 					M->BroadcastMessage(DM_CONFIGURETOOLBAR, 0, 1);
 					return 0;
 				case ID_VIEW_SHOWTOOLBAR:
-					ApplyContainerSetting(pContainer, CNT_HIDETOOLBAR, pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1);
+					ApplyContainerSetting(pContainer, CNT_HIDETOOLBAR, pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1, false);
 					M->BroadcastMessage(DM_CONFIGURETOOLBAR, 0, 1);
 					return 0;
 				case ID_VIEW_SHOWMENUBAR:
-					ApplyContainerSetting(pContainer, CNT_NOMENUBAR, pContainer->dwFlags & CNT_NOMENUBAR ? 0 : 1);
+					ApplyContainerSetting(pContainer, CNT_NOMENUBAR, pContainer->dwFlags & CNT_NOMENUBAR ? 0 : 1, true);
 					break;
 				case ID_VIEW_SHOWTITLEBAR:
-					ApplyContainerSetting(pContainer, CNT_NOTITLE, pContainer->dwFlags & CNT_NOTITLE ? 0 : 1);
+					ApplyContainerSetting(pContainer, CNT_NOTITLE, pContainer->dwFlags & CNT_NOTITLE ? 0 : 1, true);
 					break;
 				case ID_VIEW_TABSATBOTTOM:
-					ApplyContainerSetting(pContainer, CNT_TABSBOTTOM, pContainer->dwFlags & CNT_TABSBOTTOM ? 0 : 1);
+					ApplyContainerSetting(pContainer, CNT_TABSBOTTOM, pContainer->dwFlags & CNT_TABSBOTTOM ? 0 : 1, false);
 					break;
 				case ID_TITLEBAR_USESTATICCONTAINERICON:
-					ApplyContainerSetting(pContainer, CNT_STATICICON, pContainer->dwFlags & CNT_STATICICON ? 0 : 1);
+					ApplyContainerSetting(pContainer, CNT_STATICICON, pContainer->dwFlags & CNT_STATICICON ? 0 : 1, false);
 					break;
 				case ID_VIEW_SHOWMULTISENDCONTACTLIST:
 					SendMessage(pContainer->hwndActive, WM_COMMAND, MAKEWPARAM(IDC_SENDMENU, ID_SENDMENU_SENDTOMULTIPLEUSERS), 0);
@@ -1140,27 +1145,27 @@ buttons_done:
 					SendMessage(hwndDlg, WM_SYSCOMMAND, IDM_MOREOPTIONS, 0);
 					break;
 				case ID_EVENTPOPUPS_DISABLEALLEVENTPOPUPS:
-					ApplyContainerSetting(pContainer, (CNT_DONTREPORT | CNT_DONTREPORTUNFOCUSED | CNT_ALWAYSREPORTINACTIVE), 0);
+					ApplyContainerSetting(pContainer, (CNT_DONTREPORT | CNT_DONTREPORTUNFOCUSED | CNT_ALWAYSREPORTINACTIVE), 0, false);
 					return 0;
 				case ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISMINIMIZED:
-					ApplyContainerSetting(pContainer, CNT_DONTREPORT, pContainer->dwFlags & CNT_DONTREPORT ? 0 : 1);
+					ApplyContainerSetting(pContainer, CNT_DONTREPORT, pContainer->dwFlags & CNT_DONTREPORT ? 0 : 1, false);
 					return 0;
 				case ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISUNFOCUSED:
-					ApplyContainerSetting(pContainer, CNT_DONTREPORTUNFOCUSED, pContainer->dwFlags & CNT_DONTREPORTUNFOCUSED ? 0 : 1);
+					ApplyContainerSetting(pContainer, CNT_DONTREPORTUNFOCUSED, pContainer->dwFlags & CNT_DONTREPORTUNFOCUSED ? 0 : 1, false);
 					return 0;
 				case ID_EVENTPOPUPS_SHOWPOPUPSFORALLINACTIVESESSIONS:
-					ApplyContainerSetting(pContainer, CNT_ALWAYSREPORTINACTIVE, pContainer->dwFlags & CNT_ALWAYSREPORTINACTIVE ? 0 : 1);
+					ApplyContainerSetting(pContainer, CNT_ALWAYSREPORTINACTIVE, pContainer->dwFlags & CNT_ALWAYSREPORTINACTIVE ? 0 : 1, false);
 					return 0;
 				case ID_WINDOWFLASHING_DISABLEFLASHING:
-					ApplyContainerSetting(pContainer, CNT_NOFLASH, 1);
-					ApplyContainerSetting(pContainer, CNT_FLASHALWAYS, 0);
+					ApplyContainerSetting(pContainer, CNT_NOFLASH, 1, false);
+					ApplyContainerSetting(pContainer, CNT_FLASHALWAYS, 0, false);
 					return 0;
 				case ID_WINDOWFLASHING_FLASHUNTILFOCUSED:
-					ApplyContainerSetting(pContainer, CNT_NOFLASH, 0);
-					ApplyContainerSetting(pContainer, CNT_FLASHALWAYS, 1);
+					ApplyContainerSetting(pContainer, CNT_NOFLASH, 0, false);
+					ApplyContainerSetting(pContainer, CNT_FLASHALWAYS, 1, false);
 					return 0;
 				case ID_WINDOWFLASHING_USEDEFAULTVALUES:
-					ApplyContainerSetting(pContainer, (CNT_NOFLASH | CNT_FLASHALWAYS), 0);
+					ApplyContainerSetting(pContainer, (CNT_NOFLASH | CNT_FLASHALWAYS), 0, false);
 					return 0;
 				case ID_OPTIONS_SAVECURRENTWINDOWPOSITIONASDEFAULT: {
 					WINDOWPLACEMENT wp = {0};
@@ -1296,7 +1301,7 @@ buttons_done:
 				break;
 			}
 			GetClientRect(hwndDlg, &rcClient);
-			RECT rcRebar = pContainer->MenuBar->getClientRect();
+			pContainer->MenuBar->getClientRect();
 
 			if (pContainer->hwndStatus) {
 				struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
@@ -1480,14 +1485,14 @@ buttons_done:
 				case IDM_STAYONTOP:
 					SetWindowPos(hwndDlg, (pContainer->dwFlags & CNT_STICKY) ? HWND_NOTOPMOST : HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 					CheckMenuItem(GetSystemMenu(hwndDlg, FALSE), IDM_STAYONTOP, (pContainer->dwFlags & CNT_STICKY) ? MF_BYCOMMAND | MF_UNCHECKED : MF_BYCOMMAND | MF_CHECKED);
-					ApplyContainerSetting(pContainer, CNT_STICKY, pContainer->dwFlags & CNT_STICKY ? 0 : 1);
+					ApplyContainerSetting(pContainer, CNT_STICKY, pContainer->dwFlags & CNT_STICKY ? 0 : 1, false);
 					break;
 				case IDM_NOTITLE: {
 					pContainer->oldSize.cx = 0;
 					pContainer->oldSize.cy = 0;
 
 					CheckMenuItem(GetSystemMenu(hwndDlg, FALSE), IDM_NOTITLE, (pContainer->dwFlags & CNT_NOTITLE) ? MF_BYCOMMAND | MF_UNCHECKED : MF_BYCOMMAND | MF_CHECKED);
-					ApplyContainerSetting(pContainer, CNT_NOTITLE, pContainer->dwFlags & CNT_NOTITLE ? 0 : 1);
+					ApplyContainerSetting(pContainer, CNT_NOTITLE, pContainer->dwFlags & CNT_NOTITLE ? 0 : 1, false);
 					break;
 				}
 				case IDM_MOREOPTIONS:
@@ -1563,8 +1568,10 @@ buttons_done:
 		case WM_NOTIFY: {
 			if(pContainer->MenuBar) {
 				LRESULT processed = pContainer->MenuBar->processMsg(msg, wParam, lParam);
-				if(processed != -1)
+				if(processed != -1) {
+					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, processed);
 					return(processed);
+				}
 			}
 			NMHDR* pNMHDR = (NMHDR*) lParam;
 			if (pContainer != NULL && pContainer->hwndStatus != 0 && ((LPNMHDR)lParam)->hwndFrom == pContainer->hwndStatus) {
@@ -1884,9 +1891,16 @@ panel_found:
 			break;
 		}
 		case WM_PAINT: {
-			if (bSkinned || M->isAero()) {
+			bool fAero = M->isAero();
+			if (bSkinned || fAero) {
 				PAINTSTRUCT ps;
 				HDC hdc = BeginPaint(hwndDlg, &ps);
+				if(fAero && !(pContainer->dwFlags & CNT_NOMENUBAR)) {
+					RECT rc;
+					GetClientRect(hwndDlg, &rc);
+					rc.bottom = 5;
+					FillRect(hdc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+				}
 				EndPaint(hwndDlg, &ps);
 				return 0;
 			}
@@ -2607,7 +2621,7 @@ static struct ContainerWindowData *AppendToContainerList(struct ContainerWindowD
 struct ContainerWindowData *FindContainerByName(const TCHAR *name) {
 	struct ContainerWindowData *pCurrent = pFirstContainer;
 
-	if (name == NULL || _tcslen(name) == 0)
+	if (name == NULL || lstrlen(name) == 0)
 		return 0;
 
 	if (M->GetByte("singlewinmode", 0)) {            // single window mode - always return 0 and force a new container
@@ -2828,7 +2842,7 @@ void RenameContainer(int iIndex, const TCHAR *szNew) {
 	_snprintf(szIndex, 8, "%d", iIndex);
 	if (!M->GetTString(NULL, szKey, szIndex, &dbv)) {
 		if (szNew != NULL) {
-			if (_tcslen(szNew) != 0)
+			if (lstrlen(szNew) != 0)
 				M->WriteTString(NULL, szKey, szIndex, szNew);
 		}
 		hhContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);

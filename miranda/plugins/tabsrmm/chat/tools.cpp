@@ -1,25 +1,40 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
-		--pad=oper --one-line=keep-blocks  --unpad=paren
-
-Chat module plugin for Miranda IM
-
-Copyright (C) 2003 J�rgen Persson
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * This code is based on and still contains large parts of the the
+ * original chat module for Miranda IM, written and copyrighted
+ * by Joergen Persson in 2005.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * Helper functions for the group chat module.
+ *
+ */
 
 #include "../src/commonheaders.h"
 
@@ -771,7 +786,6 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 	TCHAR szLine[4096];
 	TCHAR szTime[100];
 	FILE *hFile = NULL;
-	TCHAR tszFile[MAX_PATH];
 	TCHAR tszFolder[MAX_PATH];
 	TCHAR p = '\0';
 	BOOL bFileJustCreated = TRUE;
@@ -791,16 +805,16 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 
 	szBuffer[0] = '\0';
 
-	lstrcpyn(tszFile, GetChatLogsFilename(si->hContact, gce->time), MAX_PATH);
-	bFileJustCreated = !PathFileExists(tszFile);
-	_tcscpy(tszFolder, tszFile);
+	GetChatLogsFilename(si, gce->time);
+	bFileJustCreated = !PathFileExists(si->pszLogFileName);
+	_tcscpy(tszFolder, si->pszLogFileName);
 	PathRemoveFileSpec(tszFolder);
 	if (!PathIsDirectory(tszFolder))
 		CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)tszFolder);
 
 	lstrcpyn(szTime, MakeTimeStamp(g_Settings.pszTimeStampLog, gce->time), 99);
 
-	hFile = _tfopen(tszFile, _T("ab+"));
+	hFile = _tfopen(si->pszLogFileName, _T("ab+"));
 	if (hFile) {
 		TCHAR szTemp[512], szTemp2[512];
 		TCHAR* pszNick = NULL;
@@ -922,7 +936,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 					} else pBufferTemp = pBuffer;
 
 					if (read > 0) {
-						hFile = _tfopen(tszFile, _T("wb"));
+						hFile = _tfopen(si->pszLogFileName, _T("wb"));
 						if (hFile) {
 #ifdef _UNICODE
 							fputws((const wchar_t*)"\377\376", hFile);		//UTF-16 LE BOM == FF FE
@@ -1283,66 +1297,89 @@ void Chat_SetFilters(SESSION_INFO *si)
 		si->bFilterEnabled = 0;
 }
 
-TCHAR* GetChatLogsFilename (HANDLE  hContact, time_t tTime)
-{	REPLACEVARSARRAY rva[11];
-	REPLACEVARSDATA dat = {0};
-	static TCHAR tszFileName[MAX_PATH];
-	TCHAR *p = {0}, *tszParsedName = {0};
-	int i;
+static TCHAR tszOldTimeStamp[30] = _T("\0");
 
-	if (g_Settings.pszLogDir[_tcslen(g_Settings.pszLogDir)-1] == '\\')
-		_tcscat(g_Settings.pszLogDir, _T("%userid%.log"));
+TCHAR* GetChatLogsFilename(SESSION_INFO *si, time_t tTime)
+{
+	REPLACEVARSARRAY 	rva[11];
+	REPLACEVARSDATA 	dat = {0};
+	TCHAR				*p = {0}, *tszParsedName = {0};
+	int 				i;
+	bool				fReparse = false;
+
 	if(!tTime)
 	  time(&tTime);
 
-	// day 1-31
-	rva[0].lptzKey = _T("d");
-	rva[0].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%#d"), tTime));
-	// day 01-31
-	rva[1].lptzKey = _T("dd");
-	rva[1].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%d"), tTime));
-	// month 1-12
-	rva[2].lptzKey = _T("m");
-	rva[2].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%#m"), tTime));
-	// month 01-12
-	rva[3].lptzKey = _T("mm");
-	rva[3].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%m"), tTime));
-	// month text short
-	rva[4].lptzKey = _T("mon");
-	rva[4].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%b"), tTime));
-	// month text
-	rva[5].lptzKey = _T("month");
-	rva[5].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%B"), tTime));
-	// year 01-99
-	rva[6].lptzKey = _T("yy");
-	rva[6].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%y"), tTime));
-	// year 1901-9999
-	rva[7].lptzKey = _T("yyyy");
-	rva[7].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%Y"), tTime));
-	// weekday short
-	rva[8].lptzKey = _T("wday");
-	rva[8].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%a"), tTime));
-	// weekday
-	rva[9].lptzKey = _T("weekday");
-	rva[9].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%A"), tTime));
-	// end of array
-	rva[10].lptzKey = NULL;
-	rva[10].lptzValue = NULL;
+	/*
+	 * check whether relevant parts of the timestamp have changed and
+	 * we have to reparse the filename
+	 */
 
-	dat.cbSize    = sizeof(dat);
-	dat.dwFlags   = RVF_TCHAR;
-	dat.hContact  = hContact;
-	dat.variables = rva;
-	tszParsedName = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)g_Settings.pszLogDir, (LPARAM)&dat);
-	_tcsncpy(tszFileName, tszParsedName, MAX_PATH);
-	mir_free(tszParsedName);
-	for (i=0; i < SIZEOF(rva);i++)
-		mir_free(rva[i].lptzValue);
+	TCHAR *tszNow = MakeTimeStamp(_T("%a%d%m%Y"), tTime);
 
-	for (p = tszFileName + 2; *p; ++p) {
-		if (*p == ':' || *p == '*' || *p == '?' || *p == '"' || *p == '<' || *p == '>' || *p == '|' )
-			*p = _T('_');
+	if(_tcscmp(tszOldTimeStamp, tszNow)) {
+		   _tcsncpy(tszOldTimeStamp, tszNow, 30);
+		   tszOldTimeStamp[29] = 0;
+		   fReparse = true;
 	}
 
-	return tszFileName;
+	if(fReparse || 0 == si->pszLogFileName[0]) {
+		rva[0].lptzKey = _T("d");
+		rva[0].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%#d"), tTime));
+		// day 01-31
+		rva[1].lptzKey = _T("dd");
+		rva[1].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%d"), tTime));
+		// month 1-12
+		rva[2].lptzKey = _T("m");
+		rva[2].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%#m"), tTime));
+		// month 01-12
+		rva[3].lptzKey = _T("mm");
+		rva[3].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%m"), tTime));
+		// month text short
+		rva[4].lptzKey = _T("mon");
+		rva[4].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%b"), tTime));
+		// month text
+		rva[5].lptzKey = _T("month");
+		rva[5].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%B"), tTime));
+		// year 01-99
+		rva[6].lptzKey = _T("yy");
+		rva[6].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%y"), tTime));
+		// year 1901-9999
+		rva[7].lptzKey = _T("yyyy");
+		rva[7].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%Y"), tTime));
+		// weekday short
+		rva[8].lptzKey = _T("wday");
+		rva[8].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%a"), tTime));
+		// weekday
+		rva[9].lptzKey = _T("weekday");
+		rva[9].lptzValue = mir_tstrdup(MakeTimeStamp(_T("%A"), tTime));
+		// end of array
+		rva[10].lptzKey = NULL;
+		rva[10].lptzValue = NULL;
+
+		if (g_Settings.pszLogDir[lstrlen(g_Settings.pszLogDir)-1] == '\\')
+			_tcscat(g_Settings.pszLogDir, _T("%userid%.log"));
+
+		dat.cbSize    = sizeof(dat);
+		dat.dwFlags   = RVF_TCHAR;
+		dat.hContact  = si->hContact;
+		dat.variables = rva;
+		tszParsedName = (TCHAR*) CallService(MS_UTILS_REPLACEVARS, (WPARAM)g_Settings.pszLogDir, (LPARAM)&dat);
+
+		if(!M->pathIsAbsolute(tszParsedName))
+			mir_sntprintf(si->pszLogFileName, MAX_PATH, _T("%s%s"), M->getChatLogPath(),  tszParsedName);
+
+		si->pszLogFileName[MAX_PATH - 1] = 0;
+		mir_free(tszParsedName);
+
+		for (i=0; i < SIZEOF(rva);i++)
+			mir_free(rva[i].lptzValue);
+
+		for (p = si->pszLogFileName + 2; *p; ++p) {
+			if (*p == ':' || *p == '*' || *p == '?' || *p == '"' || *p == '<' || *p == '>' || *p == '|' )
+				*p = _T('_');
+		}
+    }
+
+	return si->pszLogFileName;
 }

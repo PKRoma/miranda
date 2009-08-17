@@ -30,7 +30,6 @@
  *
  * Menu and status bar control(s) for the container window.
  *
- *
  */
 
 #include "commonheaders.h"
@@ -52,22 +51,22 @@ CMenuBar::CMenuBar(HWND hwndParent, const ContainerWindowData *pContainer)
 
 	m_pContainer = pContainer;
 
-	m_hwndRebar = ::CreateWindowEx(WS_EX_TOOLWINDOW, REBARCLASSNAME, NULL, WS_CHILD|WS_VISIBLE|WS_CLIPSIBLINGS|WS_CLIPCHILDREN|/*RBS_VARHEIGHT|RBS_BANDBORDERS|*/RBS_DBLCLKTOGGLE,
-								 0, 0, 0, 0, hwndParent, NULL, g_hInst, NULL);
+	m_hwndRebar = ::CreateWindowEx(WS_EX_TOOLWINDOW, REBARCLASSNAME, NULL, WS_CHILD|WS_VISIBLE|WS_CLIPSIBLINGS|WS_CLIPCHILDREN|RBS_VARHEIGHT|/*RBS_BANDBORDERS|*/RBS_DBLCLKTOGGLE|RBS_AUTOSIZE,
+								   0, 0, 0, 0, hwndParent, NULL, g_hInst, NULL);
 
 	RebarInfo.cbSize = 	sizeof(REBARINFO);
 	RebarInfo.fMask = 	0;
 	RebarInfo.himl = 	(HIMAGELIST)NULL;
 
 	::SendMessage(m_hwndRebar, RB_SETBARINFO, 0, (LPARAM)&RebarInfo);
+	::SendMessage(m_hwndRebar, RB_SETWINDOWTHEME, 0, (WPARAM)L"TASKBAND");
 
 	RebarBandInfo.cbSize = sizeof(REBARBANDINFO);
-	RebarBandInfo.fMask  = RBBIM_CHILD|RBBIM_CHILDSIZE|RBBIM_SIZE|RBBIM_STYLE|RBBIM_TEXT|RBBIM_IDEALSIZE;
-	RebarBandInfo.fStyle = RBBS_FIXEDBMP|RBBS_GRIPPERALWAYS;
+	RebarBandInfo.fMask  = RBBIM_CHILD|RBBIM_CHILDSIZE|RBBIM_SIZE|RBBIM_STYLE|RBBIM_IDEALSIZE;
+	RebarBandInfo.fStyle = RBBS_FIXEDBMP|RBBS_TOPALIGN|RBBS_GRIPPERALWAYS;
 	RebarBandInfo.hbmBack = 0;
 	RebarBandInfo.clrBack = GetSysColor(COLOR_3DFACE);;
-
-	m_hwndToolbar = ::CreateWindowEx(0, TOOLBARCLASSNAME, NULL, WS_CHILD|WS_VISIBLE|TBSTYLE_FLAT|TBSTYLE_LIST|CCS_NOPARENTALIGN|CCS_NORESIZE|CCS_NODIVIDER,
+	m_hwndToolbar = ::CreateWindowEx(WS_EX_TOOLWINDOW, TOOLBARCLASSNAME, NULL, WS_CHILD|WS_CLIPCHILDREN|WS_CLIPSIBLINGS|WS_VISIBLE|TBSTYLE_FLAT|TBSTYLE_LIST|CCS_NOPARENTALIGN|/*CCS_NORESIZE|*/CCS_NODIVIDER|CCS_TOP,
 								   0, 0, 0, 0, hwndParent, NULL, g_hInst, NULL);
 
 	::SendMessage(m_hwndToolbar, TB_BUTTONSTRUCTSIZE, (WPARAM)sizeof(TBBUTTON), 0);
@@ -129,20 +128,21 @@ CMenuBar::CMenuBar(HWND hwndParent, const ContainerWindowData *pContainer)
 
 	::SendMessage(m_hwndToolbar, TB_ADDBUTTONS, sizeof(m_TbButtons)/sizeof(TBBUTTON), (LPARAM)&m_TbButtons);
 
-	LONG size_y = SendMessage(m_hwndToolbar, TB_GETBUTTONSIZE, 0, 0);
+	m_size_y = HIWORD(SendMessage(m_hwndToolbar, TB_GETBUTTONSIZE, 0, 0));
 
 	::GetWindowRect(m_hwndToolbar, &Rc);
 
 	RebarBandInfo.lpText     = NULL;
 	RebarBandInfo.hwndChild  = m_hwndToolbar;
 	RebarBandInfo.cxMinChild = 10;
-	RebarBandInfo.cyMinChild = HIWORD(size_y);
-	RebarBandInfo.cx         = 30;
+	RebarBandInfo.cyMinChild = m_size_y;
+	RebarBandInfo.cx         = 2000;
 
 	::SendMessage(m_hwndRebar, RB_INSERTBAND, (WPARAM)-1, (LPARAM)&RebarBandInfo);
 
 	m_activeMenu = 0;
 	m_activeID = 0;
+	m_isAero = false;
 }
 
 CMenuBar::~CMenuBar()
@@ -175,7 +175,7 @@ const RECT& CMenuBar::getClientRect()
  */
 LONG CMenuBar::getHeight() const
 {
-	return((m_pContainer->dwFlags & CNT_NOMENUBAR) ? 0 : (m_rcClient.bottom - m_rcClient.top) + 2);
+	return((m_pContainer->dwFlags & CNT_NOMENUBAR) ? 0 : m_size_y + 2);
 }
 
 /**
@@ -197,8 +197,7 @@ LONG_PTR CMenuBar::processMsg(const UINT msg, const WPARAM wParam, const LPARAM 
 			case NM_CUSTOMDRAW: {
 				NMCUSTOMDRAW *nm = (NMCUSTOMDRAW*)lParam;
 
-				LRESULT result = customDrawWorker(nm);
-				return(result);
+				return(customDrawWorker(nm));
 			}
 			case TBN_DROPDOWN: {
 				NMTOOLBAR *mtb = (NMTOOLBAR *)lParam;
@@ -236,13 +235,135 @@ LONG_PTR CMenuBar::processMsg(const UINT msg, const WPARAM wParam, const LPARAM 
  *         It may return zero in which case, the caller should allow default processing for
  *         the NM_CUSTOMDRAW message.
  */
-LONG_PTR CMenuBar::customDrawWorker(const NMCUSTOMDRAW *nm) const
+LONG_PTR CMenuBar::customDrawWorker(const NMCUSTOMDRAW *nm)
 {
-	if(nm->hdr.hwndFrom != m_hwndRebar)
+	bool fMustDraw = (m_pContainer->bSkinned || m_isAero);
+
+	if(nm->hdr.hwndFrom == m_hwndRebar) {
+		switch(nm->dwDrawStage) {
+			case CDDS_PREPAINT:
+				if(fMustDraw) {
+					m_hdcDraw = ::CreateCompatibleDC(nm->hdc);
+					::GetClientRect(m_hwndRebar, &m_rcItem);
+					m_hbmDraw = CSkin::CreateAeroCompatibleBitmap(m_rcItem, nm->hdc);
+					m_hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(m_hdcDraw, m_hbmDraw));
+					::FillRect(m_hdcDraw, &nm->rc, reinterpret_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH)));
+					return(CDRF_NOTIFYITEMDRAW | CDRF_NOTIFYPOSTPAINT | CDRF_NOTIFYPOSTERASE);
+				}
+				else {
+					m_hdcDraw = 0;
+					return(CDRF_DODEFAULT);
+				}
+
+			case CDDS_ITEMPREPAINT:
+				return(fMustDraw ? CDRF_SKIPDEFAULT : CDRF_DODEFAULT);
+
+			case CDDS_PREERASE:
+				return(fMustDraw ? CDRF_SKIPDEFAULT : CDRF_DODEFAULT);
+
+			case CDDS_POSTERASE:
+				return(fMustDraw ? CDRF_SKIPDEFAULT : CDRF_DODEFAULT);
+
+			case CDDS_POSTPAINT:
+				if(m_hdcDraw) {
+					::BitBlt(nm->hdc, 0, 0, m_rcItem.right - m_rcItem.left, m_rcItem.bottom - m_rcItem.top,
+							 m_hdcDraw, 0, 0, SRCCOPY);
+					::SelectObject(m_hdcDraw, m_hbmOld);
+					::DeleteObject(m_hbmDraw);
+					::DeleteDC(m_hdcDraw);
+					m_hdcDraw = 0;
+				}
+				return(CDRF_SKIPDEFAULT);
+
+			default:
+				return(CDRF_SKIPDEFAULT);
+		}
+	}
+	else if(nm->hdr.hwndFrom == m_hwndToolbar) {
+		NMTBCUSTOMDRAW *nmtb = (NMTBCUSTOMDRAW *)(nm);
+
+		switch(nmtb->nmcd.dwDrawStage) {
+			case CDDS_PREPAINT:
+				if(fMustDraw) {
+					if(nmtb->nmcd.dwItemSpec == 0) {
+						m_hdcDraw = ::CreateCompatibleDC(nmtb->nmcd.hdc);
+						::GetClientRect(m_hwndToolbar, &m_rcItem);
+
+						m_hbmDraw = CSkin::CreateAeroCompatibleBitmap(m_rcItem, nmtb->nmcd.hdc);
+						m_hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(m_hdcDraw, m_hbmDraw));
+						m_hTheme = M->isAero() ? CMimAPI::m_pfnOpenThemeData(m_hwndToolbar, L"BUTTON") : 0;
+						m_hOldFont = (HFONT)::SelectObject(m_hdcDraw, (HFONT)::GetStockObject(DEFAULT_GUI_FONT));
+						//_DebugTraceA("TOOLBAR: prepaint %d, %d, %d, %d (%d)", nmtb->nmcd.rc.left, nmtb->nmcd.rc.top, nmtb->nmcd.rc.right, nmtb->nmcd.rc.bottom, nmtb->nmcd.dwItemSpec);
+						::FillRect(m_hdcDraw, &nmtb->nmcd.rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+					}
+					return(CDRF_NOTIFYITEMDRAW | CDRF_NOTIFYPOSTPAINT | CDRF_NOTIFYPOSTERASE);
+				}
+				else {
+					m_hdcDraw = 0;
+					return(CDRF_DODEFAULT);
+				}
+
+			case CDDS_ITEMPREPAINT:
+				if(fMustDraw) {
+					TCHAR	*szText = 0;
+
+					//_DebugTraceA("TOOLBAR: ITEM prepaint %d, %d, %d, %d (%d)", nmtb->nmcd.rc.left, nmtb->nmcd.rc.top, nmtb->nmcd.rc.right, nmtb->nmcd.rc.bottom, nmtb->nmcd.dwItemSpec);
+					int iIndex = idToIndex(nmtb->nmcd.dwItemSpec);
+
+					if(iIndex >= 0 && iIndex < NR_BUTTONS)
+						szText = reinterpret_cast<TCHAR *>(m_TbButtons[iIndex].iString);
+
+					switch(nmtb->nmcd.uItemState) {
+						case CDIS_HOT:
+							if(m_hTheme)
+								CMimAPI::m_pfnDrawThemeBackground(m_hTheme, m_hdcDraw, 1, 2, &nmtb->nmcd.rc, &nmtb->nmcd.rc);
+							break;
+						case CDIS_SELECTED:
+						case CDIS_FOCUS:
+							if(m_hTheme)
+								CMimAPI::m_pfnDrawThemeBackground(m_hTheme, m_hdcDraw, 1, 3, &nmtb->nmcd.rc, &nmtb->nmcd.rc);
+							break;
+						default:
+							::FillRect(m_hdcDraw, &nmtb->nmcd.rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+							break;
+
+					}
+					if(szText)
+						CSkin::RenderText(m_hdcDraw, m_hTheme, szText, &nmtb->nmcd.rc, DT_SINGLELINE | DT_VCENTER | DT_CENTER);
+					return(CDRF_SKIPDEFAULT);
+				}
+				else
+					return(CDRF_DODEFAULT);
+
+			case CDDS_PREERASE:
+				return(fMustDraw ? CDRF_SKIPDEFAULT : CDRF_DODEFAULT);
+
+			case CDDS_POSTERASE:
+				return(fMustDraw ? CDRF_SKIPDEFAULT : CDRF_DODEFAULT);
+
+			case CDDS_POSTPAINT:
+				if(nmtb->nmcd.dwItemSpec == 0 && m_hdcDraw) {
+					::BitBlt(nmtb->nmcd.hdc, 0, 0, m_rcItem.right - m_rcItem.left, m_rcItem.bottom - m_rcItem.top,
+							 m_hdcDraw, 0, 0, SRCCOPY);
+					::SelectObject(m_hdcDraw, m_hbmOld);
+					::DeleteObject(m_hbmDraw);
+					::SelectObject(m_hdcDraw, m_hOldFont);
+					::DeleteDC(m_hdcDraw);
+					m_hdcDraw = 0;
+					//_DebugTraceA("TOOLBAR: POSTPAINT %d, %d, %d, %d (%d)", nmtb->nmcd.rc.left, nmtb->nmcd.rc.top, nmtb->nmcd.rc.right, nmtb->nmcd.rc.bottom, nmtb->nmcd.dwItemSpec);
+					if(m_hTheme)
+						CMimAPI::m_pfnCloseThemeData(m_hTheme);
+					return(CDRF_SKIPDEFAULT);
+				}
+				else
+					return(CDRF_DODEFAULT);
+
+			default:
+				return(CDRF_SKIPDEFAULT);
+		}
+
 		return(0);
-	/*
-	 * TODO: process drawing here...
-	 */
+	}
 	return(0);
 }
 
@@ -313,7 +434,6 @@ void CMenuBar::invoke(const int id)
 void CMenuBar::cancel(const int id)
 {
 	if(m_hHook) {
-		//_DebugTraceA("hook REMOVED: %d", m_hHook);
 		UnhookWindowsHookEx(m_hHook);
 		m_hHook = 0;
 	}
@@ -376,6 +496,8 @@ void CMenuBar::updateState(const HMENU hMenu) const
 void CMenuBar::configureMenu() const
 {
 	_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(m_pContainer->hwndActive, GWLP_USERDATA);
+
+	assert(dat != 0);
 
 	BOOL fDisable = FALSE;
 
@@ -506,13 +628,15 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 
 			if ((pContainer && pContainer->bSkinned) || M->isAero())
 				return 1;
+			/*
 			if (CMimAPI::m_pfnIsThemeActive != 0) {
 				if (CMimAPI::m_pfnIsThemeActive() && !M->isAero())
 					break;
 			}
+			*/
 			GetClientRect(hWnd, &rcClient);
 			FillRect((HDC)wParam, &rcClient, GetSysColorBrush(COLOR_3DFACE));
-			return 1;
+			return 0;
 		}
 		case WM_PAINT:
 			if (!CSkin::m_skinEnabled && !M->isAero())
@@ -686,7 +810,11 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 		case WM_TIMER:
 			if (wParam == TIMERID_HOVER) {
 				POINT pt;
-				BOOL  fHaveUCTip = ServiceExists("mToolTip/ShowTipW");
+#if defined(_UNICODE)
+				char *szTTService = "mToolTip/ShowTipW";
+#else
+				char *szTTService = "mToolTip/ShowTip";
+#endif
 				CLCINFOTIP ti = {0};
 				ti.cbSize = sizeof(ti);
 
@@ -750,47 +878,18 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
  							}
 
 						if ((int)iconNum == list_icons && pContainer) {
-#if defined(_UNICODE)
-							if (fHaveUCTip) {
-								wchar_t wBuf[512];
+							TCHAR wBuf[512];
 
-								mir_sntprintf(wBuf, safe_sizeof(wBuf), TranslateT("Sounds are %s. Click to toggle status, hold SHIFT and click to set for all open containers"), pContainer->dwFlags & CNT_NOSOUND ? TranslateT("disabled") : TranslateT("enabled"));
-								CallService("mToolTip/ShowTipW", (WPARAM)wBuf, (LPARAM)&ti);
-							}
-							else {
-								char buf[512];
-
-								mir_snprintf(buf, sizeof(buf), Translate("Sounds are %s. Click to toggle status, hold SHIFT and click to set for all open containers"), pContainer->dwFlags & CNT_NOSOUND ? Translate("disabled") : Translate("enabled"));
-								CallService("mToolTip/ShowTip", (WPARAM)buf, (LPARAM)&ti);
-							}
-#else
-							char buf[512];
-							mir_snprintf(buf, sizeof(buf), Translate("Sounds are %s. Click to toggle status, hold SHIFT and click to set for all open containers"), pContainer->dwFlags & CNT_NOSOUND ? Translate("disabled") : Translate("enabled"));
-							CallService("mToolTip/ShowTip", (WPARAM)buf, (LPARAM)&ti);
-#endif
+							mir_sntprintf(wBuf, safe_sizeof(wBuf), TranslateT("Sounds are %s. Click to toggle status, hold SHIFT and click to set for all open containers"), pContainer->dwFlags & CNT_NOSOUND ? TranslateT("disabled") : TranslateT("enabled"));
+							CallService(szTTService, (WPARAM)wBuf, (LPARAM)&ti);
 							tooltip_active = TRUE;
 						}
 						else if ((int)iconNum == list_icons + 1 && dat && dat->bType == SESSIONTYPE_IM) {
 							int mtnStatus = (int)M->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, M->GetByte(SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW));
-#if defined(_UNICODE)
+							TCHAR wBuf[512];
 
-							if (fHaveUCTip) {
-								wchar_t wBuf[512];
-
-								mir_sntprintf(wBuf, safe_sizeof(wBuf), TranslateT("Sending typing notifications is %s."), mtnStatus ? TranslateT("enabled") : TranslateT("disabled"));
-								CallService("mToolTip/ShowTipW", (WPARAM)wBuf, (LPARAM)&ti);
-							}
-							else {
-								char buf[512];
-
-								mir_snprintf(buf, sizeof(buf), Translate("Sending typing notifications is %s."), mtnStatus ? Translate("enabled") : Translate("disabled"));
-								CallService("mToolTip/ShowTip", (WPARAM)buf, (LPARAM)&ti);
-							}
-#else
-							char buf[512];
-							mir_snprintf(buf, sizeof(buf), Translate("Sending typing notifications is %s."), mtnStatus ? Translate("enabled") : Translate("disabled"));
-							CallService("mToolTip/ShowTip", (WPARAM)buf, (LPARAM)&ti);
-#endif
+							mir_sntprintf(wBuf, safe_sizeof(wBuf), TranslateT("Sending typing notifications is %s."), mtnStatus ? TranslateT("enabled") : TranslateT("disabled"));
+							CallService(szTTService, (WPARAM)wBuf, (LPARAM)&ti);
 							tooltip_active = TRUE;
 						}
 						else {
@@ -803,60 +902,39 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 					SendMessage(hWnd, SB_GETRECT, 1, (LPARAM)&rc);
 					if (dat && PtInRect(&rc, pt)) {
 						int iLength = 0;
-#if defined(_UNICODE)
 						GETTEXTLENGTHEX gtxl = {0};
 
 						gtxl.codepage = CP_UTF8;
 						gtxl.flags = GTL_DEFAULT | GTL_PRECISE | GTL_NUMBYTES;
 						iLength = SendDlgItemMessage(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE, EM_GETTEXTLENGTHEX, (WPARAM) & gtxl, 0);
 						tooltip_active = TRUE;
-						if (fHaveUCTip) {
-							wchar_t wBuf[512];
-							wchar_t *szFormat = _T("There are %d pending send jobs. Message length: %d bytes, message length limit: %d bytes");
 
-							mir_sntprintf(wBuf, safe_sizeof(wBuf), TranslateTS(szFormat), dat->iOpenJobs, iLength, dat->nMax ? dat->nMax : 20000);
-							CallService("mToolTip/ShowTipW", (WPARAM)wBuf, (LPARAM)&ti);
-						}
-						else {
-							char buf[512];
-							char *szFormat = "There are %d pending send jobs. Message length: %d bytes, message length limit: %d bytes";
+						TCHAR wBuf[512];
+						TCHAR *szFormat = _T("There are %d pending send jobs. Message length: %d bytes, message length limit: %d bytes");
 
-							mir_snprintf(buf, sizeof(buf), Translate(szFormat), dat->iOpenJobs, iLength, dat->nMax ? dat->nMax : 20000);
-							CallService("mToolTip/ShowTip", (WPARAM)buf, (LPARAM)&ti);
-						}
-#else
-						char buf[512];
-						char *szFormat = "There are %d pending send jobs. Message length: %d bytes, message length limit: %d bytes";
- 						iLength = GetWindowTextLength(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE));
- 						mir_snprintf(buf, sizeof(buf), Translate(szFormat), dat->iOpenJobs, iLength, dat->nMax ? dat->nMax : 20000);
-						CallService("mToolTip/ShowTip", (WPARAM)buf, (LPARAM)&ti);
-#endif
+						mir_sntprintf(wBuf, safe_sizeof(wBuf), TranslateTS(szFormat), dat->iOpenJobs, iLength, dat->nMax ? dat->nMax : 20000);
+						CallService(szTTService, (WPARAM)wBuf, (LPARAM)&ti);
 					}
 					//MAD
-					if(SendMessage(dat->pContainer->hwndStatus, SB_GETTEXT, 0, (LPARAM)szStatusBarText))
-					{
+					if(SendMessage(dat->pContainer->hwndStatus, SB_GETTEXT, 0, (LPARAM)szStatusBarText)) {
 						HDC hdc;
 						int iLen=SendMessage(dat->pContainer->hwndStatus,SB_GETTEXTLENGTH,0,0);
 						SendMessage(hWnd, SB_GETRECT, 0, (LPARAM)&rc);
 						GetTextExtentPoint32( hdc=GetDC( dat->pContainer->hwndStatus), szStatusBarText, iLen, &size );
 						ReleaseDC (dat->pContainer->hwndStatus,hdc);
 
-					if(dat && PtInRect(&rc,pt)&&((rc.right-rc.left)<size.cx)) {
-						DBVARIANT dbv={0};
+						if(dat && PtInRect(&rc,pt)&&((rc.right-rc.left)<size.cx)) {
+							DBVARIANT dbv={0};
 
-						if(dat->bType == SESSIONTYPE_CHAT)
-							M->GetTString(dat->hContact,dat->szProto,"Topic",&dbv);
+							if(dat->bType == SESSIONTYPE_CHAT)
+								M->GetTString(dat->hContact,dat->szProto,"Topic",&dbv);
 
-						tooltip_active = TRUE;
-#if defined(_UNICODE)
-						if(fHaveUCTip)	 CallService("mToolTip/ShowTipW", (WPARAM)(dbv.pwszVal?dbv.pwszVal:szStatusBarText), (LPARAM)&ti);
-						else CallService("mToolTip/ShowTip", (WPARAM)mir_u2a(dbv.pwszVal?dbv.pwszVal:szStatusBarText), (LPARAM)&ti);
-#else
-						CallService("mToolTip/ShowTip", (WPARAM)(dbv.pszVal?dbv.pszVal:szStatusBarText), (LPARAM)&ti);
-#endif
-					if(dbv.pszVal) DBFreeVariant(&dbv);
+							tooltip_active = TRUE;
+							CallService(szTTService, (WPARAM)dbv.ptszVal, (LPARAM)&ti);
+							if(dbv.pszVal)
+								DBFreeVariant(&dbv);
+						}
 					}
-				}
 					// MAD_
 				}
 			}

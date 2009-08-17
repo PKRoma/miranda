@@ -209,10 +209,10 @@ static int CustomButtonPressed(WPARAM wParam,LPARAM lParam)
 				res = TrackPopupMenu(hMenu, TPM_RETURNCMD, cbcd->pt.x, cbcd->pt.y, 0, cbcd->hwndFrom, NULL);
 				if ( res==0 ) break;
 
-				pszFormatedText = (TCHAR *)mir_alloc((textlenght+_tcslen(pszMenu[res-1])+2)*sizeof(TCHAR));
-				ZeroMemory(pszFormatedText,(textlenght+_tcslen(pszMenu[res-1])+2)*sizeof(TCHAR));
+				pszFormatedText = (TCHAR *)mir_alloc((textlenght+lstrlen(pszMenu[res-1])+2)*sizeof(TCHAR));
+				ZeroMemory(pszFormatedText,(textlenght+lstrlen(pszMenu[res-1])+2)*sizeof(TCHAR));
 
-				mir_sntprintf(pszFormatedText,(textlenght+_tcslen(pszMenu[res-1])+2)*sizeof(TCHAR),pszMenu[res-1],pszText);
+				mir_sntprintf(pszFormatedText,(textlenght+lstrlen(pszMenu[res-1])+2)*sizeof(TCHAR),pszMenu[res-1],pszText);
 
 			}break;
 		case 2:

@@ -387,9 +387,10 @@ static void MsgWindowUpdateState(_MessageWindowData *dat, UINT msg)
 
 		if (PluginConfig.m_AutoLocaleSupport && dat->hContact != 0) {
 			if (dat->hkl == 0)
-				//DM_LoadLocale(hwndDlg, dat);
-				PostMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
-			PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
+				DM_LoadLocale(dat);
+				//PostMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
+			else
+				PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
 		}
 
 		SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
@@ -726,7 +727,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 				TCHAR toInsert[100];
 				BYTE keyState[256];
 				size_t i;
-				size_t iLen = _tcslen(PluginConfig.m_MathModStartDelimiter);
+				size_t iLen = lstrlen(PluginConfig.m_MathModStartDelimiter);
 				ZeroMemory(keyState, 256);
 				_tcsncpy(toInsert, PluginConfig.m_MathModStartDelimiter, 30);
 				_tcsncat(toInsert, PluginConfig.m_MathModStartDelimiter, 30);
@@ -1045,7 +1046,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 		case WM_KILLFOCUS:
 			break;
 		case WM_INPUTLANGCHANGEREQUEST: {
-			//return DefWindowProc(hwnd, WM_INPUTLANGCHANGEREQUEST, wParam, lParam);
 			return CallWindowProc(OldMessageEditProc, hwnd, WM_INPUTLANGCHANGEREQUEST, wParam, lParam);
 		}
 		case WM_INPUTLANGCHANGE:
@@ -4087,16 +4087,9 @@ quote_from_last:
 				}
 				case IDC_TOGGLETOOLBAR:
 					if (lParam == 1)
-						ApplyContainerSetting(m_pContainer, CNT_NOMENUBAR, m_pContainer->dwFlags & CNT_NOMENUBAR ? 0 : 1);
+						ApplyContainerSetting(m_pContainer, CNT_NOMENUBAR, m_pContainer->dwFlags & CNT_NOMENUBAR ? 0 : 1, true);
 					else
-						ApplyContainerSetting(m_pContainer, CNT_HIDETOOLBAR, m_pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1);
-
-					RECT	rc;
-
-					GetWindowRect(dat->pContainer->hwnd, &rc);
-					SetWindowPos(dat->pContainer->hwnd, 0, rc.left, rc.top, (rc.right - rc.left) - 1, (rc.bottom - rc.top) - 0, SWP_NOZORDER | SWP_DRAWFRAME | SWP_FRAMECHANGED);
-					SetWindowPos(dat->pContainer->hwnd, 0, rc.left, rc.top, (rc.right - rc.left), (rc.bottom - rc.top), SWP_NOZORDER | SWP_DRAWFRAME | SWP_SHOWWINDOW);
-					RedrawWindow(dat->pContainer->hwnd, 0, 0, RDW_UPDATENOW | RDW_INVALIDATE |RDW_ALLCHILDREN);
+						ApplyContainerSetting(m_pContainer, CNT_HIDETOOLBAR, m_pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1, true);
 					break;
 				case IDC_TOGGLENOTES:
 					if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
@@ -4177,7 +4170,7 @@ quote_from_last:
 							return 0;
 					}
 					if (bNewGlobal != bGlobal)
-						ApplyContainerSetting(m_pContainer, CNT_INFOPANEL, bNewGlobal ? 1 : 0);
+						ApplyContainerSetting(m_pContainer, CNT_INFOPANEL, bNewGlobal ? 1 : 0, false);
 					if (bNewLocal != bLocal)
 						DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "infopanel", bNewLocal);
 
@@ -4282,7 +4275,7 @@ quote_from_last:
 					SendMessage(hwndDlg, WM_SIZE, 0, 0);
 					break;
 				case IDC_TOGGLESIDEBAR: {
-					ApplyContainerSetting(m_pContainer, CNT_SIDEBAR, m_pContainer->dwFlags & CNT_SIDEBAR ? 0 : 1);
+					ApplyContainerSetting(m_pContainer, CNT_SIDEBAR, m_pContainer->dwFlags & CNT_SIDEBAR ? 0 : 1, false);
 					break;
 				}
 				case IDC_PIC: {

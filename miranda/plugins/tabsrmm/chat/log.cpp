@@ -1,30 +1,41 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
-		--pad=oper --one-line=keep-blocks  --unpad=paren
-
-Chat module plugin for Miranda IM
-
-Copyright (C) 2003 Jörgen Persson
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-log.c implements the group chat message history display using a
-rich edit text control.
-
-$Id$
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * This code is based on and still contains large parts of the the
+ * original chat module for Miranda IM, written and copyrighted
+ * by Joergen Persson in 2005.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * Implements the richedit-based message history display for the group
+ * chat window.
+ *
+ */
 
 #include "../src/commonheaders.h"
 #include <math.h>
@@ -160,7 +171,7 @@ static int Log_AppendIEView(LOGSTREAMDATA* streamData, BOOL simpleMode, TCHAR **
 			}
 
 			if ( szTemp[0] ) {
-				size_t iLen = _tcslen(szTemp);
+				size_t iLen = lstrlen(szTemp);
 				memcpy( d, szTemp, iLen * sizeof(TCHAR));
 				d += iLen;
 			}
@@ -462,9 +473,9 @@ static TCHAR * _tcsrplc(TCHAR **src, const TCHAR *ptrn, const TCHAR *rplc)
 	size_t lSrc, lPtrn, lRplc;
 	TCHAR *tszFound, *tszTail;
 
-	lSrc = _tcslen(*src);
-	lPtrn = _tcslen(ptrn);
-	lRplc = _tcslen(rplc);
+	lSrc = lstrlen(*src);
+	lPtrn = lstrlen(ptrn);
+	lRplc = lstrlen(rplc);
 	if (lPtrn && lSrc && lSrc >= lPtrn && (tszFound = _tcsstr(*src, ptrn)) != NULL) {
 		if (lRplc > lPtrn)
 			*src = (TCHAR *) realloc((void *) * src,
@@ -493,9 +504,9 @@ static TCHAR * _tcsnrplc(TCHAR *src, size_t n, const TCHAR *ptrn, const TCHAR *r
 	size_t lSrc, lPtrn, lRplc;
 	TCHAR *tszFound, *tszTail;
 
-	lSrc = _tcslen(src);
-	lPtrn = _tcslen(ptrn);
-	lRplc = _tcslen(rplc);
+	lSrc = lstrlen(src);
+	lPtrn = lstrlen(ptrn);
+	lRplc = lstrlen(rplc);
 	if (lPtrn && lSrc && lSrc >= lPtrn && /* lengths are ok */
 			(tszFound = _tcsstr(src, ptrn)) != NULL && /* pattern was found in string */
 			(n < 0 || lSrc - lPtrn + lRplc < n) && /* there is enough room in the string */
@@ -802,13 +813,14 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 			if (lin->next != NULL)
 				Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par ");
 
+			/* TODO IEView support
 			if (streamData->dat->hwndIEView != 0 || streamData->dat->hwndHPP != 0) {
 				LogEventIEView(streamData, lin->ptszNick);
 				streamData->lin = lin;
 				lin = lin->prev;
 				continue;
 			}
-
+			*/
 			if (streamData->dat->dwFlags & MWF_DIVIDERWANTED || lin->dwFlags & MWF_DIVIDERWANTED) {
 				static char szStyle_div[128] = "\0";
 				if (szStyle_div[0] == 0)

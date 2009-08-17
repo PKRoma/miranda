@@ -531,6 +531,36 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			UnregisterHotKey(hwndDlg, 0xc002);
 			g_hotkeysEnabled = FALSE;
 			break;
+		case DM_SETLOCALE: {
+			HKL 	hkl = (HKL)lParam;
+			HANDLE 	hContact = (HANDLE)wParam;
+
+			HWND	hWnd = M->FindWindow(hContact);
+
+			if(hWnd) {
+				_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+				if(dat) {
+					DBVARIANT  dbv;
+
+					if(hkl)
+						ActivateKeyboardLayout(hkl, 0);
+					if(0 == DBGetContactSettingString(hContact, SRMSGMOD_T, "locale", &dbv)) {
+						dat->hkl = hkl;
+						GetLocaleID(dat, dbv.pszVal);
+						PostMessage(dat->hwnd, DM_SETLOCALE, 0, 0);
+						DBFreeVariant(&dbv);
+						UpdateReadChars(dat);
+					}
+				}
+			}
+			/*
+			= LoadKeyboardLayoutA(dbv.pszVal, KLF_ACTIVATE);
+			GetLocaleID(dat, dbv.pszVal);
+			PostMessage(dat->hwnd, DM_SETLOCALE, 0, 0);
+			DBFreeVariant(&dbv);
+			*/
+			return(0);
+		}
 		case DM_HKDETACH:
 			SetWindowPos(hwndDlg, HWND_TOPMOST, rcLast.left, rcLast.top, rcLast.right - rcLast.left, rcLast.bottom - rcLast.top, SWP_NOACTIVATE);
 			if (CMimAPI::m_pSetLayeredWindowAttributes != NULL)

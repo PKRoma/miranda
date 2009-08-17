@@ -26,7 +26,7 @@ selectcontainer.c  dialog procedure for the "select/create container" dialog
                    box..
                    (C) 2004 by Nightwish, this file ispart of tabSRMM, a tabbed
                    message module for Miranda 0.3.3 and higher.
-$Id: selectcontainer.c 9205 2009-03-24 05:00:43Z nightwish2004 $
+$Id$
 */
 
 #include "commonheaders.h"
@@ -115,7 +115,7 @@ INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						if (iItem != LB_ERR) {
 							TCHAR szOldName[CONTAINER_NAMELEN + 1];
 							SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_GETTEXT, (WPARAM) iItem, (LPARAM) szOldName);
-							if (_tcslen(szOldName) == _tcslen(szNewName)) {
+							if (lstrlen(szOldName) == lstrlen(szNewName)) {
 								MessageBoxA(0, Translate("This name is already in use"), "Error", MB_OK);
 								SetFocus(GetDlgItem(hwndDlg, IDC_NEWCONTAINERNAME));
 								break;
@@ -130,7 +130,7 @@ INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 								RenameContainer(iIndex, szNewName);
 								SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_RESETCONTENT, 0, 0);
 								while (pCurrent) {
-									if (!_tcsncmp(pCurrent->szName, szName, CONTAINER_NAMELEN) && _tcslen(pCurrent->szName) == _tcslen(szName)) {
+									if (!_tcsncmp(pCurrent->szName, szName, CONTAINER_NAMELEN) && lstrlen(pCurrent->szName) == lstrlen(szName)) {
 										_tcsncpy(pCurrent->szName, szNewName, CONTAINER_NAMELEN);
 										SendMessage(pCurrent->hwnd, DM_CONFIGURECONTAINER, 0, 0);
 									}
@@ -153,7 +153,7 @@ INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						iItem = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_FINDSTRING, (WPARAM) - 1, (LPARAM) szNewName);
 						if (iItem != LB_ERR) {
 							SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_GETTEXT, (WPARAM)iItem, (LPARAM)szName);
-							if (_tcslen(szName) == _tcslen(szNewName)) {
+							if (lstrlen(szName) == lstrlen(szNewName)) {
 								MessageBoxA(0, Translate("This name is already in use"), "Error", MB_OK);
 								SetFocus(GetDlgItem(hwndDlg, IDC_NEWCONTAINER));
 								break;

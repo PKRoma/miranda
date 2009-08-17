@@ -103,7 +103,7 @@ int         GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iName
 HMENU       BuildContainerMenu();
 void        BuildCodePageList();
 void        PreTranslateDates();
-void        ApplyContainerSetting(struct ContainerWindowData *pContainer, DWORD flags, int mode);
+void        ApplyContainerSetting(struct ContainerWindowData *pContainer, DWORD flags, int mode, bool fForceResize);
 void        BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);
 void        GetDefaultContainerTitleFormat();
 extern const WCHAR *EncodeWithNickname(const char *string, const WCHAR *szNick, UINT codePage);

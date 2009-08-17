@@ -1,40 +1,40 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
-		--pad=oper --one-line=keep-blocks  --unpad=paren
-
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2009 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-$Id$
-
-Dialog to setup per contact (user) prefs.
-Invoked by the contact menu entry, handled by the SetUserPrefs Service
-function.
-
-Sets things like:
-
-* global/local message log options
-* local (per user) template overrides
-* view mode (ieview/default)
-* text formatting
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ *
+ * global/local message log options
+ * local (per user) template overrides
+ * view mode (ieview/default)
+ * text formatting
+ *
+ */
 
 #include "commonheaders.h"
 
@@ -452,7 +452,15 @@ int LoadLocalFlags(HWND hwnd, struct _MessageWindowData *dat)
 	return 0;
 }
 
-static INT_PTR CALLBACK DlgProcUserPrefs1(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+/**
+ * dialog procedure for the user preferences dialog (2nd page,
+ * "per contact" message log options)
+ *
+ * @params: Win32 window procedure conform
+ *
+ * @return LRESULT
+ */
+static INT_PTR CALLBACK DlgProcUserPrefsLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hContact = (HANDLE)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	switch(msg) {
@@ -522,6 +530,15 @@ static INT_PTR CALLBACK DlgProcUserPrefs1(HWND hwndDlg, UINT msg, WPARAM wParam,
 	return FALSE;
 }
 
+/**
+ * dialog procedure for the user preferences dialog. Handles the top
+ * level window (a tab control with 2 subpages)
+ *
+ * @params: like any Win32 window procedure
+ *
+ * @return LRESULT (ignored for dialog procs, use
+ *  	   DWLP_MSGRESULT)
+ */
 INT_PTR CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hContact = (HANDLE)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
@@ -553,7 +570,7 @@ INT_PTR CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
 
-			tci.lParam = (LPARAM)CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_USERPREFS1), hwndDlg, DlgProcUserPrefs1, (LPARAM)hContact);
+			tci.lParam = (LPARAM)CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_USERPREFS1), hwndDlg, DlgProcUserPrefsLogOptions, (LPARAM)hContact);
 			tci.pszText = TranslateT("Message Log");
 			TabCtrl_InsertItem(GetDlgItem(hwndDlg, IDC_OPTIONSTAB), 1, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 32, rcClient.right - 10, rcClient.bottom - 80, 1);

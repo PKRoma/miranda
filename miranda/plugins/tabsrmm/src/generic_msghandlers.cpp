@@ -1,36 +1,38 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
---pad=oper --one-line=keep-blocks  --unpad=paren
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * these are generic message handlers which are used by the message dialog window procedure.
+ * calling them directly instead of using SendMessage() is faster.
+ * also contains various callback functions for custom buttons
+ */
 
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2009 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-$Id$
-
-*/
-
-/*
-* these are generic message handlers which are used by the message dialog window procedure.
-* calling them directly instead of using SendMessage() is faster.
-* also contains various callback functions for custom buttons
-*/
 
 #include "commonheaders.h"
 
@@ -267,6 +269,20 @@ LRESULT DM_ScrollToBottom(HWND hwndDlg, struct _MessageWindowData *dat, WPARAM w
 	return 0;
 }
 
+static unsigned __stdcall LoadKLThread(LPVOID vParam)
+{
+	HANDLE 		hContact = reinterpret_cast<HANDLE>(vParam);
+	DBVARIANT 	dbv = {0};
+
+	LRESULT res = DBGetContactSettingString(hContact, SRMSGMOD_T, "locale", &dbv);
+	if (res == 0) {
+		HKL hkl = LoadKeyboardLayoutA(dbv.pszVal, KLF_SETFORPROCESS | KLF_ACTIVATE);//KLF_ACTIVATE);
+		PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_SETLOCALE, (WPARAM)hContact, (LPARAM)hkl);
+		DBFreeVariant(&dbv);
+	}
+	return(0);
+}
+
 LRESULT DM_LoadLocale(_MessageWindowData *dat)
 {
 	/*
@@ -285,17 +301,22 @@ LRESULT DM_LoadLocale(_MessageWindowData *dat)
 
 			res = DBGetContactSettingString(dat->hContact, SRMSGMOD_T, "locale", &dbv);
 			if (res == 0) {
+				DBFreeVariant(&dbv);
+				CloseHandle((HANDLE)mir_forkthreadex(LoadKLThread, reinterpret_cast<void *>(dat->hContact), 16000, NULL));
+
+				/*
 				dat->hkl = LoadKeyboardLayoutA(dbv.pszVal, KLF_ACTIVATE);
 				GetLocaleID(dat, dbv.pszVal);
 				PostMessage(dat->hwnd, DM_SETLOCALE, 0, 0);
 				DBFreeVariant(&dbv);
+				*/
 			} else {
 				GetKeyboardLayoutNameA(szKLName);
 				dat->hkl = LoadKeyboardLayoutA(szKLName, 0);
 				DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
 				GetLocaleID(dat, szKLName);
+				UpdateReadChars(dat);
 			}
-			UpdateReadChars(dat);
 		}
 	}
 	return 0;

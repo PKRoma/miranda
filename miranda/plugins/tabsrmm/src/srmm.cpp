@@ -148,7 +148,7 @@ int _DebugTraceW(const wchar_t *fmt, ...)
 			fputs("\n", f);
 			fclose(f);
 			if (szDebug)
-				free(szDebug);
+				mir_free(szDebug);
 		}
 	}
 #endif

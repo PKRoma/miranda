@@ -1232,7 +1232,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct _MessageWindowData *dat)
 		TCHAR InsertThis[50];
 		p1 += 5;
 
-		MoveMemory(pszText, p1, (_tcslen(p1) + 1) * sizeof(TCHAR));
+		MoveMemory(pszText, p1, (lstrlen(p1) + 1) * sizeof(TCHAR));
 		p1 = pszText;
 		// iterate through all characters, if rtf control character found then take action
 		while (*p1 != (TCHAR) '\0') {
@@ -1248,7 +1248,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct _MessageWindowData *dat)
 						bJustRemovedRTF = TRUE;
 
 						_sntprintf(szTemp, 20, _T("%d"), iCol);
-						iRemoveChars = 3 + _tcslen(szTemp);
+						iRemoveChars = 3 + lstrlen(szTemp);
 						if (bTextHasStarted || iCol)
 							_sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), (iInd > 0) ? (inColor ? _T("[/color][color=%s]") : _T("[color=%s]")) : (inColor ? _T("[/color]") : _T("")), rtf_ctable[iInd - 1].szName);
 						inColor = iInd > 0 ? 1 : 0;
@@ -1259,7 +1259,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct _MessageWindowData *dat)
 						bJustRemovedRTF = TRUE;
 
 						_sntprintf(szTemp, 20, _T("%d"), iCol);
-						iRemoveChars = 10 + _tcslen(szTemp);
+						iRemoveChars = 10 + lstrlen(szTemp);
 						//if(bTextHasStarted || iInd >= 0)
 						//	_snprintf(InsertThis, sizeof(InsertThis), ( iInd >= 0 ) ? _T("%%f%02u") : _T("%%F"), iInd);
 					} else if (p1 == _tcsstr(p1, _T("\\par"))) { // newline
@@ -1419,10 +1419,10 @@ BOOL DoRtfToTags(TCHAR * pszText, struct _MessageWindowData *dat)
 			}
 
 			// move the memory and paste in new commands instead of the old RTF
-			if (_tcslen(InsertThis) || iRemoveChars) {
-				MoveMemory(p1 + _tcslen(InsertThis), p1 + iRemoveChars, (_tcslen(p1) - iRemoveChars + 1) * sizeof(TCHAR));
-				CopyMemory(p1, InsertThis, _tcslen(InsertThis) * sizeof(TCHAR));
-				p1 += _tcslen(InsertThis);
+			if (lstrlen(InsertThis) || iRemoveChars) {
+				MoveMemory(p1 + lstrlen(InsertThis), p1 + iRemoveChars, (lstrlen(p1) - iRemoveChars + 1) * sizeof(TCHAR));
+				CopyMemory(p1, InsertThis, lstrlen(InsertThis) * sizeof(TCHAR));
+				p1 += lstrlen(InsertThis);
 			} else
 				p1++;
 		}
@@ -1439,7 +1439,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct _MessageWindowData *dat)
 
 void DoTrimMessage(TCHAR *msg)
 {
-	size_t iLen = _tcslen(msg);
+	size_t iLen = lstrlen(msg);
 	size_t i = iLen;
 
 	while (i && (msg[i-1] == '\r' || msg[i-1] == '\n') || msg[i-1] == ' ') {
@@ -1928,35 +1928,6 @@ BYTE GetInfoPanelSetting(HWND hwndDlg, struct _MessageWindowData *dat)
 	if (dat->hContact == 0)     // no info panel, if no hcontact
 		return 0;
 	return bContact == 0 ? bDefault : (bContact == (BYTE) - 1 ? 0 : 1);
-}
-
-int FoldersPathChanged(WPARAM wParam,LPARAM lParam)
-{
-	/*if (ServiceExists(MS_FOLDERS_REGISTER_PATH)) {
-		char szTemp[MAX_PATH]={'\0'};
-		FoldersGetCustomPath(Config.m_hDataPath, szTemp, MAX_PATH, PROFILE_PATH "\\tabSRMM\\");
-		mir_snprintf(Config.szDataPath,MAX_PATH,"%s",szTemp);
-		FoldersGetCustomPath(Config.m_hSkinsPath, szTemp, MAX_PATH, PROFILE_PATH "\\tabSRMM\\Skins\\");
-		mir_snprintf(Config.szSkinsPath,MAX_PATH,"%s",szTemp);
-		FoldersGetCustomPath(Config.m_hAvatarsPath,szTemp, MAX_PATH,PROFILE_PATH "\\tabSRMM\\Saved Contact Pictures\\");
-		mir_snprintf(Config.szAvatarsPath,MAX_PATH,"%s",szTemp);
-	}
-	*/
-	CreateDirectory(M->getDataPath(), NULL);
-	CreateDirectory(M->getSkinPath(), NULL);
-	CreateDirectory(M->getSavedAvatarPath(), NULL);
-	return 0;
-}
-
-void GetDataDir()
-{
-	if (ServiceExists(MS_FOLDERS_REGISTER_PATH)) {
-		PluginConfig.m_hDataPath=(HANDLE)FoldersRegisterCustomPath("TabSRMM", "TabSRMM data", PROFILE_PATH "\\tabSRMM\\");
-		PluginConfig.m_hSkinsPath=(HANDLE)FoldersRegisterCustomPath("TabSRMM", "TabSRMM Skins", PROFILE_PATH "\\tabSRMM\\Skins\\");
-		PluginConfig.m_hAvatarsPath=(HANDLE)FoldersRegisterCustomPath("TabSRMM", "TabSRMM Saved Avatars", PROFILE_PATH "\\tabSRMM\\Saved Contact Pictures\\");
-		HookEvent(ME_FOLDERS_PATH_CHANGED,FoldersPathChanged);
-	}
-	FoldersPathChanged(0,0);
 }
 
 void LoadContactAvatar(HWND hwndDlg, struct _MessageWindowData *dat)
@@ -2688,7 +2659,7 @@ void GetMyNick(_MessageWindowData *dat)
 				}
 			}
 		} else if (ci.type == CNFT_DWORD)
-			_ltow(ci.dVal, dat->szMyNickname, 10);
+			_ltot(ci.dVal, dat->szMyNickname, 10);
 		else
 			_tcsncpy(dat->szMyNickname, _T("<undef>"), 110);                // that really should *never* happen
 	} else

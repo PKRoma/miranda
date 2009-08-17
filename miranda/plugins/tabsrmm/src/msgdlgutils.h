@@ -64,7 +64,6 @@ void        PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd)
 void        SwitchMessageLog(HWND hwndDlg, struct _MessageWindowData *dat, int iMode);
 void        GetSendFormat(HWND hwndDlg, struct _MessageWindowData *dat, int mode);
 void        GetLocaleID(struct _MessageWindowData *dat, char *szKLName);
-void        GetDataDir();
 void        LoadOwnAvatar(_MessageWindowData *dat);
 void        LoadContactAvatar(HWND hwndDlg, struct _MessageWindowData *dat);
 BYTE        GetInfoPanelSetting(HWND hwndDlg, struct _MessageWindowData *dat);

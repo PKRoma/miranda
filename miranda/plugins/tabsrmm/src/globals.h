@@ -105,9 +105,6 @@ public:
 	BOOL		g_bDisableAniAvatars;
 	HBITMAP     m_hbmMsgArea;
 	BYTE		g_iButtonsBarGap;
-	HANDLE		m_hDataPath;
-	HANDLE		m_hSkinsPath;
-	HANDLE		m_hAvatarsPath;
 	BYTE        m_WinVerMajor;
 	BYTE        m_WinVerMinor;
 	BYTE        m_bIsXP;

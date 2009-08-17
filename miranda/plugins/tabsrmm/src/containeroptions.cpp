@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 containeroptions.c  dialog implementaion for setting the container options.
                     part of tabSRMM
-$Id: containeroptions.c 10366 2009-07-18 22:15:04Z silvercircle $
+$Id$
 */
 
 #include "commonheaders.h"
@@ -51,7 +51,7 @@ static void ReloadGlobalContainerSettings()
 	}
 }
 
-void ApplyContainerSetting(struct ContainerWindowData *pContainer, DWORD flags, int mode)
+void ApplyContainerSetting(ContainerWindowData *pContainer, DWORD flags, int mode, bool fForceResize)
 {
 	DWORD dwOld = pContainer->dwFlags;
 
@@ -87,6 +87,14 @@ void ApplyContainerSetting(struct ContainerWindowData *pContainer, DWORD flags, 
 	if(!CSkin::m_frameSkins && ((dwOld & CNT_NOMENUBAR) != (pContainer->dwFlags & CNT_NOMENUBAR)))
 		RedrawWindow(pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
 
+	if(fForceResize) {
+		RECT	rc;
+
+		GetWindowRect(pContainer->hwnd, &rc);
+		SetWindowPos(pContainer->hwnd, 0, rc.left, rc.top, (rc.right - rc.left) - 1, (rc.bottom - rc.top) - 0, SWP_NOZORDER | SWP_DRAWFRAME | SWP_FRAMECHANGED);
+		SetWindowPos(pContainer->hwnd, 0, rc.left, rc.top, (rc.right - rc.left), (rc.bottom - rc.top), SWP_NOZORDER | SWP_DRAWFRAME | SWP_SHOWWINDOW);
+		RedrawWindow(pContainer->hwnd, 0, 0, RDW_UPDATENOW | RDW_INVALIDATE |RDW_ALLCHILDREN);
+	}
 	BroadCastContainer(pContainer, DM_BBNEEDUPDATE, 0, 0);
 }
 

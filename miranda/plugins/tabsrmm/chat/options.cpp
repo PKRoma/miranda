@@ -433,9 +433,11 @@ static INT CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM p
 {
 	char szDir[MAX_PATH];
 	switch (uMsg) {
-		case BFFM_INITIALIZED:
-			SendMessage(hwnd, BFFM_SETSELECTION, TRUE, pData);
+		case BFFM_INITIALIZED: {
+			const TCHAR *szData = M->getUserDir();
+			SendMessage(hwnd, BFFM_SETSELECTION, TRUE, (LPARAM)szData);
 			break;
+		}
 		case BFFM_SELCHANGED:
 			if (SHGetPathFromIDListA((LPITEMIDLIST) lp , szDir))
 				SendMessage(hwnd, BFFM_SETSTATUSTEXT, 0, (LPARAM)szDir);
@@ -1044,7 +1046,6 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 			g_Settings.crLogBackground = (BOOL)M->GetDword("Chat", "ColorLogBG", SRMSGDEFSET_BKGCOLOUR);
 			if (PluginConfig.m_chat_enabled) {
-				TCHAR	tszTemp[MAX_PATH];
 
 				SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN2, UDM_SETRANGE, 0, MAKELONG(5000, 0));
 				SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN2, UDM_SETPOS, 0, MAKELONG(DBGetContactSettingWord(NULL, "Chat", "LogLimit", 100), 0));
@@ -1058,8 +1059,7 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				CheckDlgButton(hwndDlg, IDC_HIGHLIGHT, g_Settings.HighlightEnabled);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_HIGHLIGHTWORDS), g_Settings.HighlightEnabled ? TRUE : FALSE);
 				CheckDlgButton(hwndDlg, IDC_LOGGING, g_Settings.LoggingEnabled);
-				CallService(MS_UTILS_PATHTORELATIVET, (WPARAM)g_Settings.pszLogDir, (LPARAM)tszTemp);
-				SetDlgItemText(hwndDlg, IDC_LOGDIRECTORY, tszTemp);
+				SetDlgItemText(hwndDlg, IDC_LOGDIRECTORY, g_Settings.pszLogDir);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), g_Settings.LoggingEnabled ? TRUE : FALSE);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_FONTCHOOSE), g_Settings.LoggingEnabled ? TRUE : FALSE);
 				SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN4, UDM_SETRANGE, 0, MAKELONG(10000, 0));
@@ -1139,11 +1139,13 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 						bi.lpfn = BrowseCallbackProc;
 						bi.lParam = (LPARAM)tszDirectory;
 
+
 						idList = SHBrowseForFolder(&bi);
 						if (idList) {
+							const TCHAR *szUserDir = M->getUserDir();
 							SHGetPathFromIDList(idList, tszDirectory);
 							lstrcat(tszDirectory, _T("\\"));
-							CallService(MS_UTILS_PATHTORELATIVET, (WPARAM)tszDirectory, (LPARAM)tszTemp);
+							M->pathToRelative(tszDirectory, tszTemp, const_cast<TCHAR *>(szUserDir));
 							SetWindowText(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), lstrlen(tszTemp) > 1 ? tszTemp : DEFLOGFILENAME);
 						}
 						psMalloc->Free(idList);
@@ -1183,7 +1185,6 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 						GetDlgItemText(hwndDlg, IDC_LOGDIRECTORY, pszText1, iLen + 1);
 						M->WriteTString(NULL, "Chat", "LogDirectory", pszText1);
 						free(pszText1);
-						CallService(MS_UTILS_PATHTOABSOLUTET, (WPARAM)pszText, (LPARAM)g_Settings.pszLogDir);
 					} else
 						DBDeleteContactSetting(NULL, "Chat", "LogDirectory");
 
@@ -1467,14 +1468,15 @@ void LoadGlobalSettings(void)
 	InitSetting(&g_Settings.pszOutgoingNick, "HeaderOutgoing", _T("%n:"));
 	InitSetting(&g_Settings.pszHighlightWords, "HighlightWords", _T("%m"));
 
-	{
-		DBVARIANT dbv;
-		g_Settings.pszLogDir = (TCHAR *)mir_realloc(g_Settings.pszLogDir, MAX_PATH*sizeof(TCHAR));
-		if (!M->GetTString(NULL, "Chat", "LogDirectory", &dbv)) {
-			lstrcpyn(g_Settings.pszLogDir, dbv.ptszVal, MAX_PATH);
-			DBFreeVariant(&dbv);
-		} else lstrcpyn(g_Settings.pszLogDir, DEFLOGFILENAME, MAX_PATH);
-	}
+	DBVARIANT dbv;
+
+	if (!M->GetTString(NULL, "Chat", "LogDirectory", &dbv)) {
+		lstrcpyn(g_Settings.pszLogDir, dbv.ptszVal, MAX_PATH);
+		DBFreeVariant(&dbv);
+	} else
+		lstrcpyn(g_Settings.pszLogDir, DEFLOGFILENAME, MAX_PATH);
+
+	g_Settings.pszLogDir[MAX_PATH - 1] = 0;
 
 	g_Settings.LogIndentEnabled = (M->GetByte("Chat", "LogIndentEnabled", 1) != 0) ? TRUE : FALSE;
 
@@ -1506,7 +1508,6 @@ static void FreeGlobalSettings(void)
 	mir_free(g_Settings.pszIncomingNick);
 	mir_free(g_Settings.pszOutgoingNick);
 	mir_free(g_Settings.pszHighlightWords);
-	mir_free(g_Settings.pszLogDir);
 	if (g_Settings.UserListFont)
 		DeleteObject(g_Settings.UserListFont);
 	if (g_Settings.UserListHeadingsFont)

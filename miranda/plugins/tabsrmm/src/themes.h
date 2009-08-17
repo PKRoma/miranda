@@ -213,7 +213,9 @@ public:
 	static UINT 	DrawRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
 	static UINT 	NcCalcRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
 	static HBITMAP 	CreateAeroCompatibleBitmap(const RECT &rc, HDC dc);
+#if defined(_UNICODE)
 	static int 		RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags);
+#endif
 	static int 		RenderText(HDC hdc, HANDLE hTheme, const char *szText, RECT *rc, DWORD dtFlags);
 	static void 	MapClientToParent(HWND hwndClient, HWND hwndParent, RECT &rc);
 	static void		RenderIPNickname(HDC hdc, RECT &rc, _MessageWindowData *dat);

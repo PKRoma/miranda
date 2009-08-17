@@ -192,7 +192,6 @@ static struct LISTOPTIONSITEM defaultItems[] = {
 	//mad_
 	0, _T("Always flash contact list and tray icon for new messages"), 0, LOI_TYPE_SETTING, (UINT_PTR)"flashcl", 0,
 	0, _T("Delete temporary contacts on close"), 0, LOI_TYPE_SETTING, (UINT_PTR)"deletetemp", 0,
-	0, _T("Enable event API (support for third party plugins)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"eventapi", 2,
 	0, _T("Allow PASTE AND SEND feature (Ctrl-D)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"pasteandsend", 1,
 	0, _T("Automatically split long messages (experimental, use with care)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autosplit", 2,
 	0, NULL, 0, 0, 0, 0
@@ -881,7 +880,7 @@ static INT_PTR CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam
 
 static struct LISTOPTIONSGROUP tabGroups[] = {
 	0, _T("Tab options"),
-	0, _T("Message tab and window creation options"),
+	0, _T("How to create tabs and windows for incoming messages"),
 	0, _T("Message dialog visual settings"),
 	0, _T("Miscellaneous options"),
 	0, NULL
@@ -892,22 +891,22 @@ static struct LISTOPTIONSITEM tabItems[] = {
 	0, _T("Prefer xStatus icons when available"), 1, LOI_TYPE_SETTING, (UINT_PTR)"use_xicons", 0,
 	0, _T("Warn when closing a tab or window"), 0, LOI_TYPE_SETTING, (UINT_PTR)"warnonexit", 0,
 	0, _T("Detailed tooltip on tabs (requires mToolTip or Tipper plugin)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"d_tooltips", 0,
-	0, _T("ALWAYS pop up and activate new message windows (has PRIORITY!)"), SRMSGDEFSET_AUTOPOPUP, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_AUTOPOPUP, 1,
-	0, _T("Create new tabs in existing windows without activating them"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autotabs", 1,
-	0, _T("Create new windows in minimized state"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autocontainer", 1,
-	0, _T("Pop up a minimized window when a new tab is created"), 0, LOI_TYPE_SETTING, (UINT_PTR)"cpopup", 1,
-	0, _T("New events will automatically switch tabs in minimized windows"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autoswitchtabs", 1,
+	0, _T("ALWAYS activate new message sessions (has PRIORITY over the options below)"), SRMSGDEFSET_AUTOPOPUP, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_AUTOPOPUP, 1,
+	0, _T("Automatically create new message sessions without activating them"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autotabs", 1,
+	0, _T("New windows are minimized (the option above MUST be active)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autocontainer", 1,
+	0, _T("Activate a minimized window when a new tab is created inside it"), 0, LOI_TYPE_SETTING, (UINT_PTR)"cpopup", 1,
+	0, _T("Automatically activate existing tabs in minimized windows"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autoswitchtabs", 1,
 	0, _T("Don't draw visual styles on toolbar buttons"), 0, LOI_TYPE_SETTING, (UINT_PTR)"nlflat", 2,
 	0, _T("Flat toolbar buttons"), 1, LOI_TYPE_SETTING, (UINT_PTR)"tbflat", 2,
-	0, _T("Splitters have static edges (uncheck this to make them invisible)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"splitteredges", 2,
-	0, _T("No visible borders on text boxes"), 1, LOI_TYPE_SETTING, (UINT_PTR)"flatlog", 2,
+	0, _T("Splitters are visible"), 1, LOI_TYPE_SETTING, (UINT_PTR)"splitteredges", 2,
+	0, _T("No borders for text areas (make them appear \"flat\")"), 1, LOI_TYPE_SETTING, (UINT_PTR)"flatlog", 2,
 	0, _T("Always use icon pack image on the smiley button"), 1, LOI_TYPE_SETTING, (UINT_PTR)"smbutton_override", 2,
 	0, _T("Remember and set keyboard layout per contact"), 1, LOI_TYPE_SETTING, (UINT_PTR)"al", 3,
 	0, _T("ESC closes sessions (minimizes window, if disabled)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"escmode", 3,
 	//MAD
 	0, _T("ESC closes whole container(uncheck for closing per-tab)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"escmode_2", 3,
-	0, _T("Close button only hides message container"), 0, LOI_TYPE_SETTING, (UINT_PTR)"hideonclose", 3,
-	0, _T("Allow tabulation (uncheck for TAB focus-switching)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"tabmode", 3,
+	0, _T("Close button only hides message windows"), 0, LOI_TYPE_SETTING, (UINT_PTR)"hideonclose", 3,
+	0, _T("Allow TAB key in message input ares (will disable focus switching by TAB key)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"tabmode", 3,
 	//
 	0, _T("Use global hotkeys (configure modifiers below)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"globalhotkeys", 3,
 	//0, _T("Force more aggressive window updates"), 1, LOI_TYPE_SETTING, (UINT_PTR)"aggromode", 3,

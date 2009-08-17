@@ -127,8 +127,9 @@ public:
 	 */
 
 	int pathIsAbsolute(const TCHAR *path) const;
-	size_t pathToRelative(const TCHAR *pSrc, TCHAR *pOut);
-	size_t pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut);
+	size_t pathToRelative(const TCHAR *pSrc, TCHAR *pOut) const;
+	size_t pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut) const;
+	size_t pathToRelative(const TCHAR *pSrc, TCHAR *pOut, TCHAR *szBase) const;
 
 	/*
 	 * for backwards compatiblity still needed (not everything path-related is unicode
@@ -136,17 +137,30 @@ public:
 
 #if defined(UNICODE)
 	int pathIsAbsolute(const char *path) const;
-	size_t pathToRelative(const char *pSrc, char *pOut);
-	size_t pathToAbsolute(const char *pSrc, char *pOut);
+	size_t pathToRelative(const char *pSrc, char *pOut) const;
+	size_t pathToAbsolute(const char *pSrc, char *pOut) const;
 #endif
 
 	const TCHAR  *getDataPath() const { return(m_szProfilePath); }
 	const TCHAR  *getSkinPath() const { return(m_szSkinsPath); }
 	const TCHAR  *getSavedAvatarPath() const { return(m_szSavedAvatarsPath); }
+	const TCHAR  *getChatLogPath() const { return(m_szChatLogsPath); }
 
+	const TCHAR	 *getUserDir()
+	{
+		if(m_userDir == 0) {
+			m_userDir = ::Utils_ReplaceVarsT(_T("%miranda_userdata%"));
+			if(m_userDir[lstrlen(m_userDir) - 1] != '\\')
+			   _tcscat(m_userDir, _T("\\"));
+		}
+		return(m_userDir);
+	}
 	const char  *getDataPathA() const { return(m_szProfilePathA); }
 	const char  *getSkinPathA() const { return(m_szSkinsPathA); }
 	const char  *getSavedAvatarPathA() const { return(m_szSavedAvatarsPathA); }
+
+	void		configureCustomFolders();
+	INT_PTR		foldersPathChanged();
 
 	const bool  isVSAPIState() const { return m_VsAPI; }
 	/**
@@ -196,6 +210,7 @@ public:
 	INT_PTR		RemoveWindow(HWND hWnd);
 	HWND		FindWindow(HANDLE h) const;
 
+	static		INT_PTR FoldersPathChanged(WPARAM wParam, LPARAM lParam);
 
 public:
 	HANDLE 		m_hMessageWindowList;
@@ -231,16 +246,20 @@ public:
 	static bool		m_shutDown;
 private:
 	UTF8_INTERFACE 	m_utfi;
-	TCHAR 		m_szProfilePath[MAX_PATH], m_szSkinsPath[MAX_PATH], m_szSavedAvatarsPath[MAX_PATH];
+	TCHAR 		m_szProfilePath[MAX_PATH], m_szSkinsPath[MAX_PATH], m_szSavedAvatarsPath[MAX_PATH], m_szChatLogsPath[MAX_PATH];
 	char		m_szProfilePathA[MAX_PATH], m_szSkinsPathA[MAX_PATH], m_szSavedAvatarsPathA[MAX_PATH];
 	HMODULE		m_hUxTheme, m_hDwmApi;
 	bool		m_VsAPI;
 	bool		m_isAero;
 	bool		m_isVsThemed;
+	HANDLE		m_hDataPath, m_hSkinsPath, m_hAvatarsPath, m_hChatLogsPath;
 
 	void	InitAPI();
 	void	GetUTFI();
 	void 	InitPaths();
+
+private:
+	static TCHAR*	m_userDir;
 };
 
 extern  CMimAPI		*M;

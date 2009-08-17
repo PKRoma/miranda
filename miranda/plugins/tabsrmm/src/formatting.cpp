@@ -155,7 +155,7 @@ search_again:
 				TCHAR szTemp[5];
 				for (ii = 0; ii < g_ctable_size; ii++) {
 					if (!_tcsnicmp((TCHAR *)colorname.c_str(), rtf_ctable[ii].szName, lstrlen(rtf_ctable[ii].szName))) {
-						closing = beginmark + 7 + _tcslen(rtf_ctable[ii].szName);
+						closing = beginmark + 7 + lstrlen(rtf_ctable[ii].szName);
 						if (endmark != message.npos) {
 							message.erase(endmark, 4);
 							message.replace(endmark, 4, _T("c0 "));

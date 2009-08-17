@@ -135,7 +135,7 @@ int safe_wcslen(wchar_t *msg, int chars)
 
 static void TrimMessage(TCHAR *msg)
 {
-	size_t iLen = _tcslen(msg) - 1;
+	size_t iLen = lstrlen(msg) - 1;
 	size_t i = iLen;
 
 	while (i && (msg[i] == '\r' || msg[i] == '\n')) {
@@ -792,7 +792,7 @@ static char *Template_CreateRTFFromDbEvent(struct _MessageWindowData *dat, HANDL
 			szTemplate = isSent ? this_templateset->szTemplates[TMPL_MSGOUT] : this_templateset->szTemplates[TMPL_MSGIN];
 	}
 
-	iTemplateLen = _tcslen(szTemplate);
+	iTemplateLen = lstrlen(szTemplate);
 	showTime = dwEffectiveFlags & MWF_LOG_SHOWTIME;
 	showDate = dwEffectiveFlags & MWF_LOG_SHOWDATES;
 

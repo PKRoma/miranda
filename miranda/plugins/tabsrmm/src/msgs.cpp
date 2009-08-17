@@ -1533,7 +1533,8 @@ tzdone:
 	RegisterTabCtrlClass();
 	PluginConfig.Reload();
 	PluginConfig.dwThreadID = GetCurrentThreadId();
-	GetDataDir();
+
+	M->configureCustomFolders();
 
 	/*
 	 * extract the default skin

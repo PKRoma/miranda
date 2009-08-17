@@ -55,6 +55,7 @@ BBP		CMimAPI::m_pfnBeginBufferedPaint = 0;
 EBP		CMimAPI::m_pfnEndBufferedPaint = 0;
 
 bool	CMimAPI::m_shutDown = 0;
+TCHAR*	CMimAPI::m_userDir = 0;
 
 /*
  * read a setting for a contact
@@ -197,8 +198,9 @@ int CMimAPI::pathIsAbsolute(const TCHAR *path) const
 	return 0;
 }
 
-size_t CMimAPI::pathToRelative(const TCHAR *pSrc, TCHAR *pOut)
+size_t CMimAPI::pathToRelative(const TCHAR *pSrc, TCHAR *pOut) const
 {
+	pOut[0] = 0;
 	if (!pSrc || !lstrlen(pSrc) || lstrlen(pSrc) > MAX_PATH)
 		return 0;
 	if (!pathIsAbsolute(pSrc)) {
@@ -227,8 +229,35 @@ size_t CMimAPI::pathToRelative(const TCHAR *pSrc, TCHAR *pOut)
 	}
 }
 
-size_t CMimAPI::pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut)
+size_t CMimAPI::pathToRelative(const TCHAR *pSrc, TCHAR *pOut, TCHAR *szBase) const
 {
+	pOut[0] = 0;
+	if (!pSrc||!lstrlen(pSrc)||lstrlen(pSrc) > MAX_PATH)
+		return 0;
+	if (!pathIsAbsolute(pSrc)) {
+		mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
+		return lstrlen(pOut);
+	}
+	else {
+		TCHAR szTmp[MAX_PATH];
+
+		mir_sntprintf(szTmp, SIZEOF(szTmp), _T("%s"), pSrc);
+		_tcslwr(szBase);
+		_tcslwr(szTmp);
+		if (_tcsstr(szTmp, szBase)) {
+			mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc + lstrlen(szBase));
+			return lstrlen(pOut);
+		}
+		else {
+			mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
+			return lstrlen(pOut);
+		}
+	}
+}
+
+size_t CMimAPI::pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut) const
+{
+	pOut[0] = 0;
 	if (!pSrc || !lstrlen(pSrc) || lstrlen(pSrc) > MAX_PATH)
 		return 0;
 	if (pathIsAbsolute(pSrc) && pSrc[0]!='.')
@@ -238,6 +267,8 @@ size_t CMimAPI::pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut)
 		mir_sntprintf(pOut, MAX_PATH, _T("%s%s"), m_szSkinsPath, pSrc);
 
 	else if (pSrc[0]=='.')
+		mir_sntprintf(pOut, MAX_PATH, _T("%s\\%s"), m_szProfilePath, pSrc + 1);
+	else
 		mir_sntprintf(pOut, MAX_PATH, _T("%s\\%s"), m_szProfilePath, pSrc);
 
 	return lstrlen(pOut);
@@ -259,8 +290,9 @@ int CMimAPI::pathIsAbsolute(const char *path) const
 	return 0;
 }
 
-size_t CMimAPI::pathToRelative(const char *pSrc, char *pOut)
+size_t CMimAPI::pathToRelative(const char *pSrc, char *pOut) const
 {
+	pOut[0] = 0;
 	if (!pSrc || !lstrlenA(pSrc) || lstrlenA(pSrc) > MAX_PATH)
 		return 0;
 	if (!pathIsAbsolute(pSrc)) {
@@ -289,8 +321,9 @@ size_t CMimAPI::pathToRelative(const char *pSrc, char *pOut)
 	}
 }
 
-size_t CMimAPI::pathToAbsolute(const char *pSrc, char *pOut)
+size_t CMimAPI::pathToAbsolute(const char *pSrc, char *pOut) const
 {
+	pOut[0] = 0;
 	if (!pSrc || !lstrlenA(pSrc) || lstrlenA(pSrc) > MAX_PATH)
 		return 0;
 	if (pathIsAbsolute(pSrc) && pSrc[0]!='.')
@@ -335,39 +368,65 @@ INT_PTR CMimAPI::RemoveWindow(HWND hWnd = 0)
 	return(WindowList_Remove(m_hMessageWindowList, hWnd));
 }
 
+INT_PTR CMimAPI::FoldersPathChanged(WPARAM wParam, LPARAM lParam)
+{
+	return(M->foldersPathChanged());
+}
+
+void CMimAPI::configureCustomFolders()
+{
+	if (ServiceExists(MS_FOLDERS_REGISTER_PATH)) {
+		m_hDataPath = (HANDLE)FoldersRegisterCustomPathT("TabSRMM", "Data path", const_cast<TCHAR *>(getDataPath()));
+		m_hSkinsPath = (HANDLE)FoldersRegisterCustomPathT("TabSRMM", "Skins root", const_cast<TCHAR *>(getSkinPath()));
+		m_hAvatarsPath = (HANDLE)FoldersRegisterCustomPathT("TabSRMM", "Saved Avatars", const_cast<TCHAR *>(getSavedAvatarPath()));
+		m_hChatLogsPath = (HANDLE)FoldersRegisterCustomPathT("TabSRMM", "Group chat logs root", const_cast<TCHAR *>(getChatLogPath()));
+		HookEvent(ME_FOLDERS_PATH_CHANGED, CMimAPI::FoldersPathChanged);
+	}
+	else
+		m_hDataPath = m_hSkinsPath = m_hAvatarsPath = m_hChatLogsPath = 0;
+
+	foldersPathChanged();
+}
+
+INT_PTR CMimAPI::foldersPathChanged()
+{
+	TCHAR szTemp[MAX_PATH] = {'\0'};
+
+	if(m_hDataPath) {
+		FoldersGetCustomPathT(m_hDataPath, szTemp, MAX_PATH, const_cast<TCHAR *>(getDataPath()));
+		mir_sntprintf(m_szProfilePath, MAX_PATH, _T("%s"), szTemp);
+
+		FoldersGetCustomPathT(m_hSkinsPath, szTemp, MAX_PATH, const_cast<TCHAR *>(getSkinPath()));
+		mir_sntprintf(m_szSkinsPath, MAX_PATH, _T("%s"), szTemp);
+
+		FoldersGetCustomPathT(m_hAvatarsPath, szTemp, MAX_PATH, const_cast<TCHAR *>(getSavedAvatarPath()));
+		mir_sntprintf(m_szSavedAvatarsPath, MAX_PATH, _T("%s"), szTemp);
+
+		FoldersGetCustomPathT(m_hChatLogsPath, szTemp, MAX_PATH, const_cast<TCHAR *>(getChatLogPath()));
+		mir_sntprintf(m_szChatLogsPath, MAX_PATH, _T("%s"), szTemp);
+	}
+	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szProfilePath);
+	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szSkinsPath);
+	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szSavedAvatarsPath);
+
+	return 0;
+}
+
 void CMimAPI::InitPaths()
 {
 	m_szProfilePath[0] = 0;
 	m_szSkinsPath[0] = 0;
 	m_szSavedAvatarsPath[0] = 0;
 
-	char	szProfilePath[MAX_PATH], szProfileName[100];
-	TCHAR	szTmp[MAX_PATH];
+	const TCHAR *szUserdataDir = getUserDir();
 
-	CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)szProfilePath);
-#if defined(_UNICODE)
-	MultiByteToWideChar(CP_ACP, 0, szProfilePath, MAX_PATH - 1, szTmp, MAX_PATH - 1);
-#else
-	_snprintf(szTmp, MAX_PATH, "%s", szProfilePath);
-#endif
-	szTmp[MAX_PATH - 1] = 0;
+	mir_sntprintf(m_szProfilePath, MAX_PATH, _T("%stabSRMM"), szUserdataDir);
+	mir_sntprintf(m_szChatLogsPath, MAX_PATH, _T("%s"), szUserdataDir);
 
-	CallService(MS_DB_GETPROFILENAME, 100, (LPARAM)szProfileName);
-	if(lstrlenA(szProfileName) > 4) {
-		szProfileName[lstrlenA(szProfileName) - 4] = 0;
-	}
-	TCHAR tszProfileName[100];
-#if defined(_UNICODE)
-	MultiByteToWideChar(CP_ACP, 0, szProfileName, 100, tszProfileName, 100);
-#else
-	_sntprintf(tszProfileName, 100, "%s", szProfileName);
-	tszProfileName[99] = 0;
-#endif
-	_sntprintf(m_szProfilePath, MAX_PATH, _T("%s\\Profiles\\%s\\tabSRMM"), szTmp, tszProfileName);
-	m_szProfilePath[MAX_PATH - 1] = 0;
 	_sntprintf(m_szSkinsPath, MAX_PATH, _T("%s\\skins"), m_szProfilePath);
 	_sntprintf(m_szSavedAvatarsPath, MAX_PATH, _T("%s\\Saved Contact Pictures"), m_szProfilePath);
 	m_szSkinsPath[MAX_PATH - 1] = m_szSavedAvatarsPath[MAX_PATH - 1] = 0;
+
 #if defined(_UNICODE)
 	WideCharToMultiByte(CP_ACP, 0, m_szProfilePath, MAX_PATH, m_szProfilePathA, MAX_PATH, 0, 0);
 	WideCharToMultiByte(CP_ACP, 0, m_szSkinsPath, MAX_PATH, m_szSkinsPathA, MAX_PATH, 0, 0);
@@ -378,6 +437,7 @@ void CMimAPI::InitPaths()
 	strncpy(m_szSavedAvatarsPathA, m_szSavedAvatarsPath, MAX_PATH);
 	m_szSavedAvatarsPathA[MAX_PATH - 1] = m_szSkinsPathA[MAX_PATH - 1] = m_szProfilePathA[MAX_PATH - 1] = 0;
 #endif
+
 	strlwr(m_szProfilePathA);
 	strlwr(m_szSavedAvatarsPathA);
 	strlwr(m_szSkinsPathA);

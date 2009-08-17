@@ -1318,7 +1318,7 @@ nounicode:
 		nim.szInfo[250] = 0;
 	}
 	if (nen_options.iAnnounceMethod == 3) {                         // announce via OSD service
-		size_t iLen = _tcslen(nim.szInfo) + _tcslen(nim.szInfoTitle) + 30;
+		size_t iLen = lstrlen(nim.szInfo) + lstrlen(nim.szInfoTitle) + 30;
 		TCHAR *finalOSDString = (TCHAR *)malloc(iLen * sizeof(TCHAR));
 
 		mir_sntprintf(finalOSDString, iLen, TranslateT("Message from %s: %s"), nim.szInfoTitle, nim.szInfo);

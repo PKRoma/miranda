@@ -413,11 +413,11 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 			}
 #if defined(_UNICODE)
 			if (tabdat->m_skinning == FALSE || PluginConfig.m_TabAppearance & TCF_NOSKINNING)
-				DrawText(dc, dat->newtitle, (int)(_tcslen(dat->newtitle)), rcItem, dwTextFlags);
+				DrawText(dc, dat->newtitle, (int)(lstrlen(dat->newtitle)), rcItem, dwTextFlags);
 			else
-				M->m_pfnDrawThemeText(dwStyle & TCS_BUTTONS ? tabdat->hThemeButton : tabdat->hTheme, dc, 1, nHint & HINT_ACTIVE_ITEM ? 3 : (nHint & HINT_HOTTRACK ? 2 : 1), dat->newtitle, (int)(_tcslen(dat->newtitle)), dwTextFlags, 0, rcItem);
+				M->m_pfnDrawThemeText(dwStyle & TCS_BUTTONS ? tabdat->hThemeButton : tabdat->hTheme, dc, 1, nHint & HINT_ACTIVE_ITEM ? 3 : (nHint & HINT_HOTTRACK ? 2 : 1), dat->newtitle, (int)(lstrlen(dat->newtitle)), dwTextFlags, 0, rcItem);
 #else
-			DrawText(dc, dat->newtitle, _tcslen(dat->newtitle), rcItem, dwTextFlags);
+			DrawText(dc, dat->newtitle, lstrlen(dat->newtitle), rcItem, dwTextFlags);
 #endif
 			SelectObject(dc, oldFont);
 		}

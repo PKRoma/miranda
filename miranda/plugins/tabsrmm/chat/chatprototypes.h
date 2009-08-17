@@ -33,7 +33,7 @@ INT_PTR CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, L
 void   Log_StreamInEvent(HWND hwndDlg, LOGINFO* lin, SESSION_INFO* si, BOOL bRedraw, BOOL bPhaseTwo);
 void   LoadMsgLogBitmaps(void);
 void   FreeMsgLogBitmaps(void);
-TCHAR* GetChatLogsFilename (HANDLE  hContact, time_t tTime);
+TCHAR* GetChatLogsFilename(SESSION_INFO *si, time_t tTime);
 TCHAR* MakeTimeStamp(TCHAR* pszStamp, time_t time);
 char*  Log_CreateRtfHeader(MODULEINFO * mi);
 

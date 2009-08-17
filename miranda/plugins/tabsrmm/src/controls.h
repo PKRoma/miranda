@@ -50,14 +50,13 @@ public:
 	const RECT&		getClientRect();
 	void			Resize(WORD wWidth, WORD wHeight, BOOL redraw) const
 	{
-		::MoveWindow(m_hwndRebar, 0, 0, wWidth, wHeight, redraw);
+		::SetWindowPos(m_hwndRebar, 0, 0, 0, wWidth, m_size_y, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSENDCHANGING);
 	}
 	LONG			getHeight() const;
 	void			Show(int showCmd) const
 	{
 		::ShowWindow(m_hwndRebar, showCmd);
 	}
-	LONG_PTR		customDrawWorker(const NMCUSTOMDRAW *nm) const;
 	LONG_PTR		Handle(const NMTOOLBAR *nmtb);
 	void			Cancel();
 	LONG_PTR		processMsg(const UINT msg, const WPARAM wParam, const LPARAM lParam);
@@ -67,20 +66,35 @@ public:
 	{
 		m_activeSubMenu = hMenu;
 	}
+	void			setAero(bool fState) { m_isAero = fState; }
+	const bool		getAero(void) const { return(m_isAero); }
 public:
 	static HHOOK	m_hHook;
+
 private:
 	HWND		m_hwndRebar;
 	HWND		m_hwndToolbar;
 	RECT		m_rcClient;
 	const 		ContainerWindowData *m_pContainer;
-	static 		TBBUTTON m_TbButtons[7];
-	static		bool m_buttonsInit;
-	static		CMenuBar *m_Owner;
 	HMENU		m_activeMenu, m_activeSubMenu;;
 	int			m_activeID;
 	bool		m_fTracking;
 	bool		m_isContactMenu;
+	bool		m_isAero;
+	LONG		m_size_y;
+	/*
+	 * for custom drawing
+	 */
+	RECT		m_rcItem;
+	HDC			m_hdcDraw;
+	HBITMAP		m_hbmDraw, m_hbmOld;
+	HANDLE		m_hTheme;
+	HFONT		m_hOldFont;
+
+	static 		TBBUTTON m_TbButtons[7];
+	static		bool m_buttonsInit;
+	static		CMenuBar *m_Owner;
+
 private:
 	const int	idToIndex(const int id) const
 	{
@@ -90,6 +104,7 @@ private:
 		}
 		return(-1);
 	}
+	LONG_PTR	customDrawWorker(const NMCUSTOMDRAW *nm);
 	void		updateState(const HMENU hMenu) const;
 	void		invoke(const int id);
 	void		cancel(const int id);
