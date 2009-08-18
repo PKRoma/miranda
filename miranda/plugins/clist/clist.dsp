@@ -280,26 +280,6 @@ SOURCE=.\commonheaders.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\forkthread.c
-
-!IF  "$(CFG)" == "clist - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=.\init.c
 
 !IF  "$(CFG)" == "clist - Win32 Release"

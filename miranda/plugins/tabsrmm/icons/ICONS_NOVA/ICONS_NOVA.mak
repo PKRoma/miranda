@@ -25,82 +25,25 @@ NULL=
 NULL=nul
 !ENDIF 
 
-CPP=cl.exe
-MTL=midl.exe
-RSC=rc.exe
-
 !IF  "$(CFG)" == "ICONS_NOVA - Win32 Release"
 
-OUTDIR=.\../../../bin/Release/Icons
-INTDIR=.\Release
+OUTDIR=.\ICONS_NOVA___Win32_Release
+INTDIR=.\ICONS_NOVA___Win32_Release
 
-ALL : ".\tabsrmm_icons.dll"
+ALL : "..\..\..\..\bin\release\Icons\tabsrmm_icons.dll"
 
 
 CLEAN :
 	-@erase "$(INTDIR)\ICONS_NOVA.res"
 	-@erase "$(OUTDIR)\tabsrmm_icons.exp"
 	-@erase "$(OUTDIR)\tabsrmm_icons.lib"
-	-@erase ".\tabsrmm_icons.dll"
+	-@erase "..\..\..\..\bin\release\Icons\tabsrmm_icons.dll"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-"$(INTDIR)" :
-    if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
-
+CPP=cl.exe
 CPP_PROJ=/nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "ICONS_NOVA_EXPORTS" /Fp"$(INTDIR)\ICONS_NOVA.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
-RSC_PROJ=/l 0xc07 /fo"$(INTDIR)\ICONS_NOVA.res" /d "NDEBUG" 
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\ICONS_NOVA.bsc" 
-BSC32_SBRS= \
-	
-LINK32=link.exe
-LINK32_FLAGS=/nologo /dll /pdb:none /machine:I386 /out:"tabsrmm_icons.dll" /implib:"$(OUTDIR)\tabsrmm_icons.lib" /noentry 
-LINK32_OBJS= \
-	"$(INTDIR)\ICONS_NOVA.res"
-
-".\tabsrmm_icons.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
-    $(LINK32) @<<
-  $(LINK32_FLAGS) $(LINK32_OBJS)
-<<
-
-!ELSEIF  "$(CFG)" == "ICONS_NOVA - Win32 Debug"
-
-OUTDIR=.\Debug
-INTDIR=.\Debug
-
-ALL : ".\Release\tabsrmm_icons.dll"
-
-
-CLEAN :
-	-@erase "$(INTDIR)\ICONS_NOVA.res"
-	-@erase "$(OUTDIR)\tabsrmm_icons.exp"
-	-@erase "$(OUTDIR)\tabsrmm_icons.lib"
-	-@erase ".\Release\tabsrmm_icons.dll"
-
-"$(OUTDIR)" :
-    if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
-
-CPP_PROJ=/nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "ICONS_NOVA_EXPORTS" /Fp"$(INTDIR)\ICONS_NOVA.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
-RSC_PROJ=/l 0xc07 /fo"$(INTDIR)\ICONS_NOVA.res" /d "_DEBUG" 
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\ICONS_NOVA.bsc" 
-BSC32_SBRS= \
-	
-LINK32=link.exe
-LINK32_FLAGS=/nologo /dll /pdb:none /machine:I386 /out:"Release/tabsrmm_icons.dll" /implib:"$(OUTDIR)\tabsrmm_icons.lib" 
-LINK32_OBJS= \
-	"$(INTDIR)\ICONS_NOVA.res"
-
-".\Release\tabsrmm_icons.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
-    $(LINK32) @<<
-  $(LINK32_FLAGS) $(LINK32_OBJS)
-<<
-
-!ENDIF 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -131,6 +74,94 @@ LINK32_OBJS= \
    $(CPP) @<<
    $(CPP_PROJ) $< 
 <<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
+RSC=rc.exe
+RSC_PROJ=/l 0xc07 /fo"$(INTDIR)\ICONS_NOVA.res" /d "NDEBUG" 
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\ICONS_NOVA.bsc" 
+BSC32_SBRS= \
+	
+LINK32=link.exe
+LINK32_FLAGS=/nologo /dll /pdb:none /machine:I386 /out:"..\..\..\..\bin\release\Icons\tabsrmm_icons.dll" /implib:"$(OUTDIR)\tabsrmm_icons.lib" /noentry 
+LINK32_OBJS= \
+	"$(INTDIR)\ICONS_NOVA.res"
+
+"..\..\..\..\bin\release\Icons\tabsrmm_icons.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+    $(LINK32) @<<
+  $(LINK32_FLAGS) $(LINK32_OBJS)
+<<
+
+!ELSEIF  "$(CFG)" == "ICONS_NOVA - Win32 Debug"
+
+OUTDIR=.\Debug
+INTDIR=.\Debug
+
+ALL : "..\..\..\..\bin\debug\Icons\tabsrmm_icons.dll"
+
+
+CLEAN :
+	-@erase "$(INTDIR)\ICONS_NOVA.res"
+	-@erase "$(OUTDIR)\tabsrmm_icons.exp"
+	-@erase "$(OUTDIR)\tabsrmm_icons.lib"
+	-@erase "..\..\..\..\bin\debug\Icons\tabsrmm_icons.dll"
+
+"$(OUTDIR)" :
+    if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
+
+CPP=cl.exe
+CPP_PROJ=/nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "ICONS_NOVA_EXPORTS" /Fp"$(INTDIR)\ICONS_NOVA.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC=rc.exe
+RSC_PROJ=/l 0xc07 /fo"$(INTDIR)\ICONS_NOVA.res" /d "_DEBUG" 
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\ICONS_NOVA.bsc" 
+BSC32_SBRS= \
+	
+LINK32=link.exe
+LINK32_FLAGS=/nologo /dll /pdb:none /machine:I386 /out:"..\..\..\..\bin\debug\Icons\tabsrmm_icons.dll" /implib:"$(OUTDIR)\tabsrmm_icons.lib" 
+LINK32_OBJS= \
+	"$(INTDIR)\ICONS_NOVA.res"
+
+"..\..\..\..\bin\debug\Icons\tabsrmm_icons.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+    $(LINK32) @<<
+  $(LINK32_FLAGS) $(LINK32_OBJS)
+<<
+
+!ENDIF 
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
