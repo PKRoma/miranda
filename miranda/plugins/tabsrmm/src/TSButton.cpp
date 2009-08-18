@@ -649,7 +649,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 				GetObject(ii.hbmColor, sizeof(bm), &bm);
 				if (bm.bmWidth != PluginConfig.m_smcxicon || bm.bmHeight != PluginConfig.m_smcyicon) {
 					HIMAGELIST hImageList;
-					hImageList = ImageList_Create(PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR16 | ILC_MASK, 1, 0);
+					hImageList = ImageList_Create(PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, PluginConfig.m_bIsXP ? ILC_COLOR32 | ILC_MASK : ILC_COLOR16 | ILC_MASK, 1, 0);
 					ImageList_AddIcon(hImageList, (HICON)lParam);
 					bct->hIconPrivate = ImageList_GetIcon(hImageList, 0, ILD_NORMAL);
 					ImageList_RemoveAll(hImageList);

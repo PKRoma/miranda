@@ -34,7 +34,6 @@ astyle --force-indent=tab=4 --brackets=linux --indent-switches
 
 #include "commonheaders.h"
 #pragma hdrstop
-#include <malloc.h>
 
 #include <m_icq.h>
 
@@ -1408,15 +1407,6 @@ int UpdateTrayMenu(struct _MessageWindowData *dat, WORD wStatus, char *szProto, 
 			SetMenuItemInfo(PluginConfig.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
 		} else {
 			UINT codePage = M->GetDword(hContact, "ANSIcodepage", PluginConfig.m_LangPackCP);
-/*
-#if defined(_UNICODE)
-			TCHAR szWNick[101];
-			MY_GetContactDisplayNameW(hContact, szWNick, 100, (const char *)szProto, codePage);
-			szNick = szWNick;
-#else
-			szNick = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0);
-#endif
-*/
 			szNick = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR);
 			if (CheckMenuItem(PluginConfig.g_hMenuTrayUnread, (UINT_PTR)hContact, MF_BYCOMMAND | MF_UNCHECKED) == -1) {
 				mir_sntprintf(szMenuEntry, safe_sizeof(szMenuEntry), _T("%s: %s (%s) [%d]"), tszFinalProto, szNick, szMyStatus, fromEvent ? 1 : 0);

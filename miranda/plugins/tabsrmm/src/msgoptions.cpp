@@ -66,7 +66,7 @@ static HIMAGELIST g_himlStates = 0;
 HIMAGELIST CreateStateImageList()
 {
 	if (g_himlStates == 0) {
-		g_himlStates = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 4, 0);
+		g_himlStates = ImageList_Create(16, 16, PluginConfig.m_bIsXP ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 4, 0);
 		ImageList_AddIcon(g_himlStates, PluginConfig.g_IconFolder);
 		ImageList_AddIcon(g_himlStates, PluginConfig.g_IconFolder);
 		ImageList_AddIcon(g_himlStates, PluginConfig.g_IconUnchecked);
@@ -908,7 +908,6 @@ static struct LISTOPTIONSITEM tabItems[] = {
 	0, _T("Close button only hides message windows"), 0, LOI_TYPE_SETTING, (UINT_PTR)"hideonclose", 3,
 	0, _T("Allow TAB key in message input ares (will disable focus switching by TAB key)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"tabmode", 3,
 	//
-	0, _T("Use global hotkeys (configure modifiers below)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"globalhotkeys", 3,
 	//0, _T("Force more aggressive window updates"), 1, LOI_TYPE_SETTING, (UINT_PTR)"aggromode", 3,
 
 	//MAD
@@ -966,11 +965,6 @@ static INT_PTR CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CUT_TITLEMAX), IsDlgButtonChecked(hwndDlg, IDC_CUT_TABTITLE));
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CUT_TITLEMAXSPIN), IsDlgButtonChecked(hwndDlg, IDC_CUT_TABTITLE));
-
-			SendDlgItemMessage(hwndDlg, IDC_MODIFIERS, CB_INSERTSTRING, -1, (LPARAM)_T("CTRL-SHIFT"));
-			SendDlgItemMessage(hwndDlg, IDC_MODIFIERS, CB_INSERTSTRING, -1, (LPARAM)_T("CTRL-ALT"));
-			SendDlgItemMessage(hwndDlg, IDC_MODIFIERS, CB_INSERTSTRING, -1, (LPARAM)_T("ALT-SHIFT"));
-			SendDlgItemMessage(hwndDlg, IDC_MODIFIERS, CB_SETCURSEL, (WPARAM)M->GetByte("hotkeymodifier", 0), 0);
 			break;
 		}
 		case WM_COMMAND:
@@ -1035,7 +1029,6 @@ static INT_PTR CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 							int i = 0;
 							M->WriteByte(SRMSGMOD_T, "cuttitle", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CUT_TABTITLE));
 							DBWriteContactSettingWord(NULL, SRMSGMOD_T, "cut_at", (WORD)SendDlgItemMessage(hwndDlg, IDC_CUT_TITLEMAXSPIN, UDM_GETPOS, 0, 0));
-							M->WriteByte(SRMSGMOD_T, "hotkeymodifier", (BYTE) SendDlgItemMessage(hwndDlg, IDC_MODIFIERS, CB_GETCURSEL, 0, 0));
 
 							/*
 							* scan the tree view and obtain the options...
@@ -1053,8 +1046,6 @@ static INT_PTR CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 
 							PluginConfig.Reload();
 							M->BroadcastMessage(DM_OPTIONSAPPLIED, 0, 0);
-							SendMessage(PluginConfig.g_hwndHotkeyHandler, DM_FORCEUNREGISTERHOTKEYS, 0, 0);
-							SendMessage(PluginConfig.g_hwndHotkeyHandler, DM_REGISTERHOTKEYS, 0, 0);
 							return TRUE;
 						}
 					}
@@ -1359,102 +1350,6 @@ static INT_PTR CALLBACK DlgProcTabSrmmModernOptions(HWND hwndDlg, UINT msg, WPAR
 		{IDC_NOTIFYOTHER, MASK_MESSAGE|MASK_FILE|MASK_URL|MASK_OTHER, MASK_OTHER, DBVT_BYTE, "tabSRMM_NEN", OPT_MASKNOTIFY, CBVT_INT, &nen_options.maskNotify},
 	};
 
-//		0, _T("RTL is default text direction"), 0, LOI_TYPE_FLAG, MWF_LOG_RTL, 0,
-//		0, _T("Log status changes"), 1, LOI_TYPE_FLAG, MWF_LOG_STATUSCHANGES, 2,
-//		0, _T("Disable ALL event notifications (check, if you're using an external plugin for event notifications)"), IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.iDisable, 0,
-
-/*
-	struct LISTOPTIONSITEM opts[] =
-	{
-		0, _T("Send on SHIFT - Enter"), IDC_SENDONSHIFTENTER, LOI_TYPE_SETTING, (UINT_PTR)"sendonshiftenter", 1,
-		0, _T("Send message on 'Enter'"), SRMSGDEFSET_SENDONENTER, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SENDONENTER, 1,
-		0, _T("Send message on double 'Enter'"), 0, LOI_TYPE_SETTING, (UINT_PTR)"SendOnDblEnter", 1,
-		0, _T("Minimize the message window on send"), SRMSGDEFSET_AUTOMIN, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_AUTOMIN, 1,
-		//0, _T("Close the message window on send"), 0, LOI_TYPE_SETTING, (UINT_PTR)"AutoClose", 1,
-		//0, _T("Always flash contact list and tray icon for new messages"), 0, LOI_TYPE_SETTING, (UINT_PTR)"flashcl", 0,
-		//0, _T("Delete temporary contacts on close"), 0, LOI_TYPE_SETTING, (UINT_PTR)"deletetemp", 0,
-		//0, _T("Enable event API (support for third party plugins)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"eventapi", 2,
-		//0, _T("Allow PASTE AND SEND feature (Ctrl-D)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"pasteandsend", 1,
-		//0, _T("Automatically split long messages (experimental, use with care)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autosplit", 2,
-		//0, _T("Show file events"), 1, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SHOWFILES, 3,
-		//0, _T("Show url events"), 1, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SHOWURLS, 3,
-		//0, _T("Show timestamps"), 1, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_SHOWTIME, 4,
-		//0, _T("Show dates in timestamps"), 1, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_SHOWDATES, 4,
-		//0, _T("Show seconds in timestamps"), 1, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_SHOWSECONDS, 4,
-		//0, _T("Use contacts local time (if timezone info available)"), 0, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_LOCALTIME, 4,
-		//0, _T("Draw grid lines"), 1, LOI_TYPE_FLAG,  MWF_LOG_GRID, 0,
-		//0, _T("Show Icons"), 1, LOI_TYPE_FLAG, MWF_LOG_SHOWICONS, 5,
-		//0, _T("Show Symbols"), 0, LOI_TYPE_FLAG, MWF_LOG_SYMBOLS, 5,
-		//0, _T("Use Incoming/Outgoing Icons"), 1, LOI_TYPE_FLAG, MWF_LOG_INOUTICONS, 5,
-		//0, _T("Use Message Grouping"), 1, LOI_TYPE_FLAG, MWF_LOG_GROUPMODE, 0,
-		//0, _T("Indent message body"), 1, LOI_TYPE_FLAG, MWF_LOG_INDENT, 0,
-		//0, _T("Simple text formatting (*bold* etc.)"), 0, LOI_TYPE_FLAG, MWF_LOG_TEXTFORMAT, 0,
-		//0, _T("Support BBCode formatting"), 1, LOI_TYPE_FLAG, MWF_LOG_BBCODE, 0,
-		//0, _T("Place dividers in inactive sessions"), 0, LOI_TYPE_SETTING, (UINT_PTR)"usedividers", 0,
-		//0, _T("Use popup configuration for placing dividers"), 0, LOI_TYPE_SETTING, (UINT_PTR)"div_popupconfig", 0,
-		0, _T("RTL is default text direction"), 0, LOI_TYPE_FLAG, MWF_LOG_RTL, 0,
-		////0, _T("Support Math Module plugin"), 1, LOI_TYPE_SETTING, (UINT_PTR)"wantmathmod", 1,
-		//0, _T("Show events at the new line (IEView Compatibility Mode)"), 1, LOI_TYPE_FLAG, MWF_LOG_NEWLINE, 1,
-		//0, _T("Underline timestamp/nickname (IEView Compatibility Mode)"), 0, LOI_TYPE_FLAG, MWF_LOG_UNDERLINE, 1,
-		//0, _T("Show timestamp after nickname (IEView Compatibility Mode)"), 0, LOI_TYPE_FLAG, MWF_LOG_SWAPNICK, 1,
-		0, _T("Log status changes"), 1, LOI_TYPE_FLAG, MWF_LOG_STATUSCHANGES, 2,
-		//0, _T("Automatically copy selected text"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autocopy", 2,
-		//0, _T("Use multiple background colors"), 1, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_INDIVIDUALBKG, 0,
-		//0, _T("Use normal templates (uncheck to use simple templates if your template set supports them)"), 1, LOI_TYPE_FLAG, MWF_LOG_NORMALTEMPLATES, 0,
-		//0, _T("Show status text on tabs"), 1, LOI_TYPE_SETTING, (UINT_PTR)"tabstatus", 0,
-		//0, _T("Prefer xStatus icons when available"), 1, LOI_TYPE_SETTING, (UINT_PTR)"use_xicons", 0,
-		//0, _T("Warn when closing a tab or window"), 0, LOI_TYPE_SETTING, (UINT_PTR)"warnonexit", 0,
-		//0, _T("Detailed tooltip on tabs (requires mToolTip or Tipper plugin)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"d_tooltips", 0,
-		0, _T("ALWAYS pop up and activate new message windows (has PRIORITY!)"), SRMSGDEFSET_AUTOPOPUP, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_AUTOPOPUP, 1,
-		0, _T("Create new tabs in existing windows without activating them"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autotabs", 1,
-		0, _T("Create new windows in minimized state"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autocontainer", 1,
-		0, _T("Pop up a minimized window when a new tab is created"), 0, LOI_TYPE_SETTING, (UINT_PTR)"cpopup", 1,
-		0, _T("New events will automatically switch tabs in minimized windows"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autoswitchtabs", 1,
-		//0, _T("Don't draw visual styles on toolbar buttons"), 0, LOI_TYPE_SETTING, (UINT_PTR)"nlflat", 2,
-		//0, _T("Flat toolbar buttons"), 1, LOI_TYPE_SETTING, (UINT_PTR)"tbflat", 2,
-		//0, _T("Splitters have static edges (uncheck this to make them invisible)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"splitteredges", 2,
-		//0, _T("No visible borders on text boxes"), 1, LOI_TYPE_SETTING, (UINT_PTR)"flatlog", 2,
-		//0, _T("Always use icon pack image on the smiley button"), 1, LOI_TYPE_SETTING, (UINT_PTR)"smbutton_override", 2,
-		//0, _T("Remember and set keyboard layout per contact"), 1, LOI_TYPE_SETTING, (UINT_PTR)"al", 3,
-		0, _T("ESC closes sessions (minimizes window, if disabled)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"escmode", 3,
-		//0, _T("ESC closes whole container(uncheck for closing per-tab)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"escmode_2", 3,
-		//0, _T("Close button only hides message container"), 0, LOI_TYPE_SETTING, (UINT_PTR)"hideonclose", 3,
-		//0, _T("Allow tabulation (uncheck for TAB focus-switching)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"tabmode", 3,
-		//0, _T("Use global hotkeys (configure modifiers below)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"globalhotkeys", 3,
-		////0, _T("Force more aggressive window updates"), 1, LOI_TYPE_SETTING, (UINT_PTR)"aggromode", 3,
-		//0, _T("Add offline contacts to multisend list"),0,LOI_TYPE_SETTING,(UINT_PTR) "AllowOfflineMultisend", 3,
-		//0, _T("Dim icons for idle contacts"), 1, LOI_TYPE_SETTING, (UINT_PTR)"detectidle", 2,
-		//0, _T("Show a preview of the event"), IDC_CHKPREVIEW, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bPreview, 1,
-//		0, _T("Don't announce event when message dialog is open"), IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bWindowCheck, 1,
-		//0, _T("Don't announce events from RSS protocols"), IDC_NORSS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bNoRSS, 1,
-		//0, _T("Enable the system tray icon"), IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bTraySupport, 2,
-		//0, _T("Show the floater"), IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.floaterMode, 2,
-		//0, _T("When floater is enabled, only show it while the contact list is minimized"), IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bFloaterOnlyMin, 2,
-		//0, _T("Show session list menu on the message windows status bar"), IDC_MINIMIZETOTRAY, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bFloaterInWin, 2,
-		//0, _T("Minimize containers to system tray or floater"), IDC_MINIMIZETOTRAY, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bMinimizeToTray, 2,
-		//0, _T("Minimize and restore animated"), IDC_ANIMATED, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bAnimated, 2,
-		//0, _T("Merge popups \"per user\" (experimental, unstable)"), IDC_CHKMERGEPOPUP, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bMergePopup, 6,
-		//0, _T("Show date for merged popups"), IDC_CHKSHOWDATE, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowDate, 6,
-		//0, _T("Show time for merged popups"), IDC_CHKSHOWTIME, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowTime, 6,
-		//0, _T("Show headers"), IDC_CHKSHOWHEADERS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowHeaders, 6,
-		//0, _T("Dismiss popup"), MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
-		//0, _T("Open event"), MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
-		//0, _T("Dismiss event"), MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
-		//0, _T("Dismiss popup"), MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
-		//0, _T("Open event"), MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
-		//0, _T("Dismiss event"), MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
-		//0, _T("Dismiss popup"), MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
-		//0, _T("Open event"), MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
-//		0, _T("Disable ALL event notifications (check, if you're using an external plugin for event notifications)"), IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.iDisable, 0,
-//		0, _T("Message events"), MASK_MESSAGE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
-//		0, _T("File events"), MASK_FILE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
-//		0, _T("URL events"), MASK_URL, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
-//		0, _T("Other events"), MASK_OTHER, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
-		//0, _T("Remove event popups for a contact when its message window becomes focused"), PU_REMOVE_ON_FOCUS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
-		//0, _T("Remove event popups for a contact when you start typing a reply"), PU_REMOVE_ON_TYPE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
-		//0, _T("Remove event popups for a contact when you send a reply"), PU_REMOVE_ON_SEND, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
-	};
-*/
 	static BOOL bInit = TRUE;
 
 	switch (msg)

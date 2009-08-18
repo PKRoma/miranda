@@ -101,6 +101,12 @@ static struct _buttonicons {
 
 static int splitterEdges = -1;
 
+static LRESULT _dlgReturn(HWND hWnd, LRESULT result)
+{
+	SetWindowLongPtr(hWnd, DWLP_MSGRESULT, result);
+	return(result);
+}
+
 static BOOL IsStringValidLinkA(char* pszText)
 {
 	char *p = pszText;
@@ -3263,7 +3269,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			if (m_pContainer->dwFlags & CNT_INFOPANEL)
 				height += dat->panelHeight;
 			if (!(m_pContainer->dwFlags & CNT_NOMENUBAR))
-				height += PluginConfig.ncm.iMenuHeight;
+				height += PluginConfig.m_ncm.iMenuHeight;
 			dat->uMinHeight = height;
 			return 0;
 		}
@@ -4404,6 +4410,31 @@ quote_from_last:
 							BOOL	isShift = (GetKeyState(VK_SHIFT) & 0x8000);
 							BOOL	isAlt = (GetKeyState(VK_MENU) & 0x8000);
 
+							MSG		message;
+							message.hwnd = hwndDlg;
+							message.message = msg;
+							message.lParam = lp;
+							message.wParam = wp;
+
+							if(msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN) {
+								LRESULT mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)&message, (LPARAM)"tabSRMM");
+
+								switch(mim_hotkey_check) {
+									case TABSRMM_HK_PASTEANDSEND:
+										HandlePasteAndSend(hwndDlg, dat);
+										return(_dlgReturn(hwndDlg, 1));
+									case TABSRMM_HK_SETUSERPREFS:
+										CallService(MS_TABMSG_SETUSERPREFS, (WPARAM)dat->hContact, 0);
+										return(_dlgReturn(hwndDlg, 1));
+									case TABSRMM_HK_CONTAINEROPTIONS:
+										if (m_pContainer->hWndOptions == 0)
+											CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), hwndContainer, DlgProcContainerOptions, (LPARAM)m_pContainer);
+										return(_dlgReturn(hwndDlg, 1));
+									default:
+										break;
+								}
+							}
+
 							if (wp == VK_BROWSER_BACK || wp == VK_BROWSER_FORWARD)
 								return 1;
 
@@ -4412,13 +4443,6 @@ quote_from_last:
 									switch (wp) {
 										case 23:                // ctrl - w
 											PostMessage(hwndDlg, WM_CLOSE, 1, 0);
-											break;
-										case 0x0f:              // ctrl - o
-											if (m_pContainer->hWndOptions == 0)
-												CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), hwndContainer, DlgProcContainerOptions, (LPARAM)m_pContainer);
-											break;
-										case 0x04:              // ctrl - d  (paste and send)
-											HandlePasteAndSend(hwndDlg, dat);
 											break;
 										case 19:
 											PostMessage(hwndDlg, WM_COMMAND, IDC_SENDMENU, IDC_SENDMENU);
@@ -4503,11 +4527,6 @@ quote_from_last:
 									SendMessage(hwndContainer, DM_SELECTTAB, DM_SELECT_PREV, 0);
 									return 1;
 								}
-								if (wp == 'C') {
-									CallService(MS_TABMSG_SETUSERPREFS, (WPARAM)dat->hContact, 0);
-									return 1;
-								}
-
 							}
 							if (msg == WM_KEYDOWN && wp == VK_F12) {
 								if ((GetKeyState(VK_SHIFT) & 0x8000) ||

@@ -143,6 +143,7 @@
 #include  <m_acc.h>
 #include  <m_chat.h>
 #include  <m_protomod.h>
+#include  <m_hotkeys.h>
 
 extern struct LIST_INTERFACE li;
 

@@ -1888,7 +1888,7 @@ UINT CSkin::DrawRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT s
 		ClientToScreen(hwnd, &pt);
 		left_off = pt.x - rcWindow.left;
 		if (dwStyle & WS_VSCROLL && dwExStyle & WS_EX_RTLREADING)
-			left_off -= PluginConfig.ncm.iScrollWidth;
+			left_off -= PluginConfig.m_ncm.iScrollWidth;
 		top_off = pt.y - rcWindow.top;
 
 		if (mwdat->pContainer->bSkinned && !item->IGNORED) {

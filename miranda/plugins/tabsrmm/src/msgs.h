@@ -637,8 +637,8 @@ struct NewMessageWindowLParam {
 #define DM_QUERYCLIENTAREA   (WM_USER+45)
 #define DM_QUERYRECENT       (WM_USER+47)
 #define DM_ACTIVATEME        (WM_USER+46)
-#define DM_REGISTERHOTKEYS   (WM_USER+48)
-#define DM_FORCEUNREGISTERHOTKEYS (WM_USER+49)
+//#define DM_REGISTERHOTKEYS   (WM_USER+48)
+//#define DM_FORCEUNREGISTERHOTKEYS (WM_USER+49)
 #define DM_ADDDIVIDER        (WM_USER+50)
 #define DM_STATUSMASKSET     (WM_USER+51)
 #define DM_CONTACTSETTINGCHANGED (WM_USER+52)
@@ -669,8 +669,8 @@ struct NewMessageWindowLParam {
 #define DM_DOCREATETAB       (WM_USER+77)
 #define DM_DELAYEDSCROLL     (WM_USER+78)
 #define DM_REPLAYQUEUE       (WM_USER+79)
-#define DM_HKDETACH          (WM_USER+80)
-#define DM_HKSAVESIZE        (WM_USER+81)
+// #define DM_HKDETACH          (WM_USER+80) ** FREE **
+// #define DM_HKSAVESIZE        (WM_USER+81)  ** FREE **
 #define DM_SETSIDEBARBUTTONS (WM_USER+82)
 #define DM_REFRESHTABINDEX   (WM_USER+83)
 #define DM_PROTOAVATARCHANGED (WM_USER+84)
@@ -1047,6 +1047,8 @@ typedef struct {
 //
 #define MS_TABMSG_TRAYSUPPORT "SRMsg_MOD/Show_TrayMenu"
 
+#define MS_TABMSG_HOTKEYPROCESS "SRMsg_MOD/ProcessHotkey"
+
 #define MBF_DISABLED		0x01
 
 #define TEMPLATES_MODULE "tabSRMM_Templates"
@@ -1081,6 +1083,16 @@ typedef struct {
 #define SB_CHAR_WIDTH			45					// default width for status bar panel #2
 #define DEFAULT_CONTAINER_POS 	0x00400040			// default container position and size
 #define DEFAULT_CONTAINER_SIZE 	0x019001f4
+
+/*
+ * core hotkey service ids
+ */
+
+#define TABSRMM_HK_LASTUNREAD 2
+#define TABSRMM_HK_LASTRECENT 4
+#define TABSRMM_HK_PASTEANDSEND 8
+#define TABSRMM_HK_SETUSERPREFS 9
+#define TABSRMM_HK_CONTAINEROPTIONS 10
 
 /*
  * encryption status bar indicator

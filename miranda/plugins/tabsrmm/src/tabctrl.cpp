@@ -1005,7 +1005,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 		case EM_THEMECHANGED:
 			tabdat->m_xpad = M->GetByte("x-pad", 3);
 			tabdat->m_skinning = FALSE;
-			if (IsWinVerXPPlus() && M->isVSAPIState()) {
+			if (PluginConfig.m_bIsXP && M->isVSAPIState()) {
 				if (CMimAPI::m_pfnIsThemeActive != 0)
 					if (CMimAPI::m_pfnIsThemeActive()) {
 						tabdat->m_skinning = TRUE;
@@ -1193,7 +1193,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 							tabdat->hwndDrag = (HWND)tc.lParam;
 							tabdat->dragDat = dat;
 							tabdat->fSavePos = TRUE;
-							tabdat->himlDrag = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 1, 0);
+							tabdat->himlDrag = ImageList_Create(16, 16, ILC_MASK | (PluginConfig.m_bIsXP ? ILC_COLOR32 : ILC_COLOR16), 1, 0);
 							ImageList_AddIcon(tabdat->himlDrag, dat->hTabIcon);
 							ImageList_BeginDrag(tabdat->himlDrag, 0, 8, 8);
 							ImageList_DragEnter(hwnd, tci.pt.x, tci.pt.y);
@@ -1225,7 +1225,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 							tabdat->iBeginIndex = i;
 							tabdat->hwndDrag = (HWND)tc.lParam;
 							tabdat->dragDat = dat;
-							tabdat->himlDrag = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 1, 0);
+							tabdat->himlDrag = ImageList_Create(16, 16, ILC_MASK | (PluginConfig.m_bIsXP ? ILC_COLOR32 : ILC_COLOR16), 1, 0);
 							tabdat->fSavePos = FALSE;
 							ImageList_AddIcon(tabdat->himlDrag, dat->hTabIcon);
 							ImageList_BeginDrag(tabdat->himlDrag, 0, 8, 8);

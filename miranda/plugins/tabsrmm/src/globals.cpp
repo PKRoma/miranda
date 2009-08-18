@@ -89,6 +89,8 @@ void CGlobals::Reload()
 	m_WinVerMajor = WinVerMajor();
 	m_WinVerMinor = WinVerMinor();
 	m_bIsXP = IsWinVerXPPlus();
+	m_bIsVista = IsWinVerVistaPlus();
+	m_bIsWin7 = IsWinVer7Plus();
 	m_TabAppearance = (int)M->GetDword("tabconfig", TCF_FLASHICON | TCF_SINGLEROWTABCONTROL);
 	m_panelHeight = (DWORD)M->GetDword("panelheight", 51);
 	m_IdleDetect = (int)M->GetByte("detectidle", 1);
@@ -106,8 +108,8 @@ void CGlobals::Reload()
 	if(m_MenuBar == 0)
 		m_MenuBar = ::LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENUBAR));
 
-	ncm.cbSize = sizeof(NONCLIENTMETRICS);
-	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, 0);
+	m_ncm.cbSize = sizeof(NONCLIENTMETRICS);
+	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &m_ncm, 0);
 }
 
 const HMENU CGlobals::getMenuBar()

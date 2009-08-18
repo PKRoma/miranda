@@ -1304,7 +1304,7 @@ buttons_done:
 			pContainer->MenuBar->getClientRect();
 
 			if (pContainer->hwndStatus) {
-				struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+				_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 				RECT   rcs;
 
 				SendMessage(pContainer->hwndStatus, WM_USER + 101, 0, (LPARAM)dat);
@@ -1318,8 +1318,6 @@ buttons_done:
 			}
 			else
 				pContainer->statusBarHeight = 0;
-
-			SetAeroMargins(pContainer);
 
 			CopyRect(&pContainer->rcSaved, &rcClient);
 			rcUnadjusted = rcClient;
@@ -1336,7 +1334,8 @@ buttons_done:
 			}
 			AdjustTabClientRect(pContainer, &rcClient);
 
-			sizeChanged = (((rcClient.right - rcClient.left) != pContainer->preSIZE.cx) || ((rcClient.bottom - rcClient.top) != pContainer->preSIZE.cy));
+			sizeChanged = (((rcClient.right - rcClient.left) != pContainer->preSIZE.cx) ||
+						   ((rcClient.bottom - rcClient.top) != pContainer->preSIZE.cy));
 			if (sizeChanged) {
 				pContainer->preSIZE.cx = rcClient.right - rcClient.left;
 				pContainer->preSIZE.cy = rcClient.bottom - rcClient.top;
@@ -1353,12 +1352,17 @@ buttons_done:
 				TabCtrl_GetItem(hwndTab, i, &item);
 				if ((HWND)item.lParam == pContainer->hwndActive) {
 					MoveWindow((HWND)item.lParam, rcClient.left, rcClient.top, (rcClient.right - rcClient.left), (rcClient.bottom - rcClient.top), TRUE);
-					if (!pContainer->bSizingLoop && sizeChanged)
+					if (!pContainer->bSizingLoop && sizeChanged) {
+						//RedrawWindow(pContainer->hwndActive, NULL, NULL, RDW_ALLCHILDREN);
 						DM_ScrollToBottom(pContainer->hwndActive, 0, 0, 1);
+					}
 				}
 				else if (sizeChanged)
 					SendMessage((HWND)item.lParam, DM_CHECKSIZE, 0, 0);
 			}
+
+			SetAeroMargins(pContainer);
+
 
 			RedrawWindow(hwndTab, NULL, NULL, RDW_INVALIDATE | (pContainer->bSizingLoop ? RDW_ERASE : 0));
 			RedrawWindow(hwndDlg, NULL, NULL, (bSkinned ? RDW_FRAME : 0) | RDW_INVALIDATE | (pContainer->bSizingLoop /* || wParam == SIZE_RESTORED */ ? RDW_ERASE : 0));
@@ -1898,7 +1902,7 @@ panel_found:
 				if(fAero && !(pContainer->dwFlags & CNT_NOMENUBAR)) {
 					RECT rc;
 					GetClientRect(hwndDlg, &rc);
-					rc.bottom = 5;
+					rc.bottom = 20;
 					FillRect(hdc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
 				}
 				EndPaint(hwndDlg, &ps);
@@ -2720,10 +2724,14 @@ void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc)
 		rc->top += tBorder;
 		rc->bottom -= tBorder;
 	}
-	else {
+	else {/*
 		rc->bottom -= pContainer->statusBarHeight;
 		rc->bottom -= (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom);
-		rc->bottom -= (pContainer->MenuBar->getHeight());
+		rc->bottom -= (pContainer->MenuBar->getHeight());*/
+		//TabCtrl_AdjustRect(hwndTab, FALSE, &rcTab);
+		rc->bottom = rcTab.bottom;
+		rc->top = rcTab.top;
+		//CopyRect(rc, &rcTab);
 	}
 	rc->right -= (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right);
 	if (pContainer->dwFlags & CNT_SIDEBAR)

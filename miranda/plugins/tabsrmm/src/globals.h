@@ -107,7 +107,7 @@ public:
 	BYTE		g_iButtonsBarGap;
 	BYTE        m_WinVerMajor;
 	BYTE        m_WinVerMinor;
-	BYTE        m_bIsXP;
+	bool		m_bIsXP, m_bIsVista, m_bIsWin7;
 	BYTE        m_SideBarEnabled;
 	HWND        m_hwndClist;
 	int         m_TabAppearance;
@@ -132,7 +132,7 @@ public:
 	COLORREF    skinDefaultFontColor;
 	DWORD       m_LangPackCP;
 	BYTE        m_SmileyButtonOverride;
-	NONCLIENTMETRICS ncm;
+	NONCLIENTMETRICS m_ncm;
 	HICON       m_AnimTrayIcons[4];
 	BOOL        m_visualMessageSizeIndicator;
 	BOOL        m_autoSplit;

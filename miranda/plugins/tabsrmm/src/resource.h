@@ -347,7 +347,6 @@
 #define IDC_IEVIEWMODE                  1265
 #define IDC_ANNOUNCEMETHOD              1265
 #define IDC_TABBORDERSPINOUTERBOTTOM    1265
-#define IDC_MODIFIERS                   1266
 #define IDC_TEXTFORMATTING              1266
 #define IDC_SIMPLEMODE                  1266
 #define IDC_AVATARMODE                  1267

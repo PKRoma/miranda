@@ -48,9 +48,20 @@ extern HICON		hIcons[];
 extern INT_PTR		SendMessageCommand(WPARAM wParam, LPARAM lParam);
 extern INT_PTR		SendMessageCommand_W(WPARAM wParam, LPARAM lParam);
 
-static int g_hotkeysEnabled = 0;
-static HWND g_hotkeyHwnd = 0, floaterOwner = 0;
-static UINT WM_TASKBARCREATED;
+static UINT 	WM_TASKBARCREATED;
+static HANDLE 	hSvcHotkeyProcessor = 0;
+
+static INT_PTR HotkeyProcessor(WPARAM wParam, LPARAM lParam)
+{
+	switch(lParam) {
+		case TABSRMM_HK_LASTUNREAD:
+			PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, WM_MBUTTONDOWN);
+			break;
+		default:
+			break;
+	}
+	return 0;
+}
 
 void HandleMenuEntryFromhContact(int iSelection)
 {
@@ -94,7 +105,7 @@ static void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle)
 	int cx = PluginConfig.m_smcxicon;
 	int cy = PluginConfig.m_smcyicon;
 
-	if (!IsWinVerXPPlus()) {
+	if (PluginConfig.m_bIsXP) {
 		FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENU));
 		if (dis->itemState & ODS_HOTLIGHT)
 			DrawEdge(dis->hDC, &dis->rcItem, BDR_RAISEDINNER, BF_RECT);
@@ -143,7 +154,6 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 {
 	static POINT ptLast;
 	static int iMousedown;
-	static RECT rcLast;
 
 	if (msg == WM_TASKBARCREATED) {
 		CreateSystrayIcon(FALSE);
@@ -153,12 +163,40 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 	}
 	switch (msg) {
 		case WM_INITDIALOG:
-			SendMessage(hwndDlg, DM_REGISTERHOTKEYS, 0, 0);
-			g_hotkeyHwnd = hwndDlg;
+			HOTKEYDESC shk;
+			shk.cbSize = sizeof(shk);
+			shk.pszSection = "tabSRMM";
+			shk.pszService = MS_TABMSG_HOTKEYPROCESS;
+			shk.pszDescription = "Most recent unread session";
+			shk.pszName = "tabsrmm_mostrecent";
+			shk.lParam = TABSRMM_HK_LASTUNREAD;
+			shk.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'R');
+			CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&shk);
+
+			shk.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'D');
+			shk.pszDescription = "Paste and send";
+			shk.pszName = "tabsrmm_paste_and_send";
+			shk.pszService = 0;
+			shk.lParam = TABSRMM_HK_PASTEANDSEND;
+			CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&shk);
+
+			shk.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'C');
+			shk.pszDescription = "Contact's messaging prefs";
+			shk.pszName = "tabsrmm_uprefs";
+			shk.pszService = 0;
+			shk.lParam = TABSRMM_HK_SETUSERPREFS;
+			CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&shk);
+
+			shk.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL, 'O');
+			shk.pszDescription = "Container options";
+			shk.pszName = "tabsrmm_copts";
+			shk.pszService = 0;
+			shk.lParam = TABSRMM_HK_CONTAINEROPTIONS;
+			CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&shk);
+
 			WM_TASKBARCREATED = RegisterWindowMessageA("TaskbarCreated");
-			SendMessage(hwndDlg, DM_HKSAVESIZE, 0, 0);
-			SendMessage(hwndDlg, DM_HKDETACH, 0, 0);
 			ShowWindow(hwndDlg, SW_HIDE);
+			hSvcHotkeyProcessor = CreateServiceFunction(MS_TABMSG_HOTKEYPROCESS, HotkeyProcessor);
 			return TRUE;
 		case WM_LBUTTONDOWN:
 			iMousedown = 1;
@@ -168,7 +206,6 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		case WM_LBUTTONUP: {
 			iMousedown = 0;
 			ReleaseCapture();
-			SendMessage(hwndDlg, DM_HKSAVESIZE, 0, 0);
 			break;
 		}
 		case WM_MOUSEMOVE: {
@@ -499,38 +536,7 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			CallService(MS_CLIST_REMOVEEVENT, wParam, lParam);
 			CallService(MS_DB_EVENT_MARKREAD, wParam, lParam);
 			break;
-		case DM_REGISTERHOTKEYS: {
-			int iWantHotkeys = M->GetByte("globalhotkeys", 0);
 
-			if (iWantHotkeys && !g_hotkeysEnabled) {
-				int mod = MOD_CONTROL | MOD_SHIFT;
-
-				switch (M->GetByte("hotkeymodifier", 0)) {
-					case HOTKEY_MODIFIERS_CTRLSHIFT:
-						mod = MOD_CONTROL | MOD_SHIFT;
-						break;
-					case HOTKEY_MODIFIERS_ALTSHIFT:
-						mod = MOD_ALT | MOD_SHIFT;
-						break;
-					case HOTKEY_MODIFIERS_CTRLALT:
-						mod = MOD_CONTROL | MOD_ALT;
-						break;
-				}
-				RegisterHotKey(hwndDlg, 0xc001, mod, 0x52);
-				RegisterHotKey(hwndDlg, 0xc002, mod, 0x55);         // ctrl-shift-u
-				g_hotkeysEnabled = TRUE;
-			} else {
-				if (g_hotkeysEnabled) {
-					SendMessage(hwndDlg, DM_FORCEUNREGISTERHOTKEYS, 0, 0);
-				}
-			}
-			break;
-		}
-		case DM_FORCEUNREGISTERHOTKEYS:
-			UnregisterHotKey(hwndDlg, 0xc001);
-			UnregisterHotKey(hwndDlg, 0xc002);
-			g_hotkeysEnabled = FALSE;
-			break;
 		case DM_SETLOCALE: {
 			HKL 	hkl = (HKL)lParam;
 			HANDLE 	hContact = (HANDLE)wParam;
@@ -553,27 +559,9 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					}
 				}
 			}
-			/*
-			= LoadKeyboardLayoutA(dbv.pszVal, KLF_ACTIVATE);
-			GetLocaleID(dat, dbv.pszVal);
-			PostMessage(dat->hwnd, DM_SETLOCALE, 0, 0);
-			DBFreeVariant(&dbv);
-			*/
 			return(0);
 		}
-		case DM_HKDETACH:
-			SetWindowPos(hwndDlg, HWND_TOPMOST, rcLast.left, rcLast.top, rcLast.right - rcLast.left, rcLast.bottom - rcLast.top, SWP_NOACTIVATE);
-			if (CMimAPI::m_pSetLayeredWindowAttributes != NULL)
-				CMimAPI::m_pSetLayeredWindowAttributes(hwndDlg, RGB(50, 250, 250), (BYTE)220, LWA_ALPHA);
-			break;
-		case DM_HKSAVESIZE: {
-			WINDOWPLACEMENT wp = {0};
 
-			wp.length = sizeof(wp);
-			GetWindowPlacement(hwndDlg, &wp);
-			rcLast = wp.rcNormalPosition;
-			break;
-		}
 		case WM_DWMCOMPOSITIONCHANGED:
 			M->getAeroState();					// refresh dwm state
 			SendMessage(hwndDlg, WM_THEMECHANGED, 0, 0);
@@ -583,8 +571,8 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			struct ContainerWindowData *pContainer = pFirstContainer;
 
 			M->getAeroState();
-			PluginConfig.ncm.cbSize = sizeof(NONCLIENTMETRICS);
-			SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &PluginConfig.ncm, 0);
+			PluginConfig.m_ncm.cbSize = sizeof(NONCLIENTMETRICS);
+			SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &PluginConfig.m_ncm, 0);
 			FreeTabConfig();
 			ReloadTabConfig();
 			while (pContainer) {
@@ -635,12 +623,8 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		case WM_CLOSE:
 			return 0;
 		case WM_DESTROY: {
-			M->WriteDword(SRMSGMOD_T, "hkhx", rcLast.left);
-			M->WriteDword(SRMSGMOD_T, "hkhy", rcLast.top);
-			M->WriteDword(SRMSGMOD_T, "hkhwidth", rcLast.right - rcLast.left);
-			M->WriteDword(SRMSGMOD_T, "hkhheight", rcLast.bottom - rcLast.top);
-			if (g_hotkeysEnabled)
-				SendMessage(hwndDlg, DM_FORCEUNREGISTERHOTKEYS, 0, 0);
+			DestroyServiceFunction(hSvcHotkeyProcessor);
+			CallService(MS_HOTKEY_UNREGISTER, 0, (LPARAM)"tabsrmm_mostrecent");
 			break;
 		}
 	}

@@ -189,6 +189,40 @@ wchar_t *CMimAPI::utf8_decodeW(const char* str) const
 	return(m_utfi.utf8_decodeW(str));
 }
 
+/**
+ * Case insensitive _tcsstr
+ *
+ * @param szString TCHAR *: String to be searched
+ * @param szSearchFor
+ *                 TCHAR *: String that should be found in szString
+ *
+ * @return TCHAR *: found position of szSearchFor in szString. 0 if szSearchFor was not found
+ */
+const TCHAR* CMimAPI::StriStr(const TCHAR *szString, const TCHAR *szSearchFor)
+{
+	assert(szString != 0 && szSearchFor != 0);
+
+	if(szString && *szString) {
+		if (0 == szSearchFor || 0 == *szSearchFor)
+			return(szString);
+
+		for(; *szString; ++szString) {
+			if(_totupper(*szString) == _totupper(*szSearchFor)) {
+				const TCHAR *h, *n;
+				for(h = szString, n = szSearchFor; *h && *n; ++h, ++n) {
+					if(_totupper(*h) != _totupper(*n))
+						break;
+				}
+				if(!*n)
+					return(szString);
+			}
+		}
+		return(0);
+	}
+	else
+		return(0);
+}
+
 int CMimAPI::pathIsAbsolute(const TCHAR *path) const
 {
 	if (!path || !(lstrlen(path) > 2))
@@ -210,21 +244,19 @@ size_t CMimAPI::pathToRelative(const TCHAR *pSrc, TCHAR *pOut) const
 		TCHAR	szTmp[MAX_PATH];
 		TCHAR 	szSTmp[MAX_PATH];
 		mir_sntprintf(szTmp, SIZEOF(szTmp), _T("%s"), pSrc);
-		_tcslwr(szTmp);
-		if (m_szSkinsPath[0]) {
+		if (m_szSkinsPath[0])
 			mir_sntprintf(szSTmp, SIZEOF(szSTmp), _T("%s"), m_szSkinsPath);
-			_tcslwr(szSTmp);
-		}
-		if (_tcsstr(szTmp, _T(".tsk")) && szSTmp && _tcsstr(szTmp, szSTmp)) {
+
+		if(StriStr(szTmp, _T(".tsk")) && szSTmp && StriStr(szTmp, szSTmp)) {
 			mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc + lstrlen(m_szSkinsPath));
-			return lstrlen(pOut);
-		} else if (_tcsstr(szTmp, m_szProfilePath)) {
+			return(lstrlen(pOut));
+		} else if (StriStr(szTmp, m_szProfilePath)) {
 			mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc + lstrlen(m_szProfilePath) - 1);
 			pOut[0]='.';
-			return lstrlen(pOut);
+			return(lstrlen(pOut));
 		} else {
 			mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
-			return lstrlen(pOut);
+			return(lstrlen(pOut));
 		}
 	}
 }
@@ -242,15 +274,13 @@ size_t CMimAPI::pathToRelative(const TCHAR *pSrc, TCHAR *pOut, TCHAR *szBase) co
 		TCHAR szTmp[MAX_PATH];
 
 		mir_sntprintf(szTmp, SIZEOF(szTmp), _T("%s"), pSrc);
-		_tcslwr(szBase);
-		_tcslwr(szTmp);
-		if (_tcsstr(szTmp, szBase)) {
+		if (StriStr(szTmp, szBase)) {
 			mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc + lstrlen(szBase));
-			return lstrlen(pOut);
+			return(lstrlen(pOut));
 		}
 		else {
 			mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
-			return lstrlen(pOut);
+			return(lstrlen(pOut));
 		}
 	}
 }
@@ -263,7 +293,7 @@ size_t CMimAPI::pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut) const
 	if (pathIsAbsolute(pSrc) && pSrc[0]!='.')
 		mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
 
-	else if (m_szSkinsPath[0] && _tcsstr(pSrc, _T(".tsk")) && pSrc[0] != '.')
+	else if (m_szSkinsPath[0] && StriStr(pSrc, _T(".tsk")) && pSrc[0] != '.')
 		mir_sntprintf(pOut, MAX_PATH, _T("%s%s"), m_szSkinsPath, pSrc);
 
 	else if (pSrc[0]=='.')
@@ -368,7 +398,7 @@ INT_PTR CMimAPI::RemoveWindow(HWND hWnd = 0)
 	return(WindowList_Remove(m_hMessageWindowList, hWnd));
 }
 
-INT_PTR CMimAPI::FoldersPathChanged(WPARAM wParam, LPARAM lParam)
+int CMimAPI::FoldersPathChanged(WPARAM wParam, LPARAM lParam)
 {
 	return(M->foldersPathChanged());
 }
@@ -441,10 +471,6 @@ void CMimAPI::InitPaths()
 	strlwr(m_szProfilePathA);
 	strlwr(m_szSavedAvatarsPathA);
 	strlwr(m_szSkinsPathA);
-
-	_tcslwr(m_szProfilePath);
-	_tcslwr(m_szSkinsPath);
-	_tcslwr(m_szSavedAvatarsPath);
 }
 
 /**

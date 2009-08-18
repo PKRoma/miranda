@@ -832,9 +832,9 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 					SendMessage(hWnd, SB_GETRECT, 2, (LPARAM)&rc);
 					if (dat && PtInRect(&rc, pt)) {
 						int gap = 2;
-						struct StatusIconListNode *current = status_icon_list;
-						struct StatusIconListNode *clicked = NULL;
-						struct StatusIconListNode *currentSIN = NULL;
+						StatusIconListNode *current = status_icon_list;
+						StatusIconListNode *clicked = NULL;
+						StatusIconListNode *currentSIN = NULL;
 
 						unsigned int iconNum = (pt.x - rc.left) / (PluginConfig.m_smcxicon + gap);
 						unsigned int list_icons = 0;
@@ -843,20 +843,19 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 
 						while (current) {
 							if(current->sid.flags&MBF_OWNERSTATE&&dat->pSINod){
-								struct StatusIconListNode *currentSIN = dat->pSINod;
+								StatusIconListNode *currentSIN = dat->pSINod;
 								flags=current->sid.flags;
-								while (currentSIN)
-									{
+								while (currentSIN)	{
 									if (strcmp(currentSIN->sid.szModule, current->sid.szModule) == 0 && currentSIN->sid.dwId == current->sid.dwId) {
 										flags=currentSIN->sid.flags;
 										break;
-										}
-									currentSIN = currentSIN->next;
 									}
+									currentSIN = currentSIN->next;
 								}
+							}
 							else  {
-							sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
-							flags = M->GetByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
+								sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
+								flags = M->GetByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
 							}
 							if (!(flags & MBF_HIDDEN)) {
 								if (list_icons++ == iconNum)
@@ -865,17 +864,16 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 							current = current->next;
 						}
 
- 						if(clicked&&clicked->sid.flags&MBF_OWNERSTATE){
+ 						if(clicked&&clicked->sid.flags&MBF_OWNERSTATE) {
  							currentSIN=dat->pSINod;
- 							while (currentSIN)
- 								{
+ 							while (currentSIN) {
  								if (strcmp(currentSIN->sid.szModule, clicked->sid.szModule) == 0 && currentSIN->sid.dwId == clicked->sid.dwId) {
  									clicked=currentSIN;
  									break;
- 									}
- 								currentSIN = currentSIN->next;
  								}
+ 								currentSIN = currentSIN->next;
  							}
+ 						}
 
 						if ((int)iconNum == list_icons && pContainer) {
 							TCHAR wBuf[512];

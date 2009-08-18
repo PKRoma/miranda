@@ -44,6 +44,7 @@ static void ReloadGlobalContainerSettings()
 			DWORD dwOld = pC->dwFlags;
 			pC->dwFlags = PluginConfig.m_GlobalContainerFlags;
 			SendMessage(pC->hwnd, DM_CONFIGURECONTAINER, 0, 0);
+			SendMessage(pC->hwnd, WM_SIZE, 0, 1);
 			if ((dwOld & CNT_INFOPANEL) != (pC->dwFlags & CNT_INFOPANEL))
 				BroadCastContainer(pC, DM_SETINFOPANEL, 0, 0);
 		}
@@ -84,17 +85,10 @@ void ApplyContainerSetting(ContainerWindowData *pContainer, DWORD flags, int mod
 		if (flags & CNT_INFOPANEL)
 			BroadCastContainer(pContainer, DM_SETINFOPANEL, 0, 0);
 	}
-	if(!CSkin::m_frameSkins && ((dwOld & CNT_NOMENUBAR) != (pContainer->dwFlags & CNT_NOMENUBAR)))
-		RedrawWindow(pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
 
-	if(fForceResize) {
-		RECT	rc;
+	if(fForceResize)
+		SendMessage(pContainer->hwnd, WM_SIZE, 0, 1);
 
-		GetWindowRect(pContainer->hwnd, &rc);
-		SetWindowPos(pContainer->hwnd, 0, rc.left, rc.top, (rc.right - rc.left) - 1, (rc.bottom - rc.top) - 0, SWP_NOZORDER | SWP_DRAWFRAME | SWP_FRAMECHANGED);
-		SetWindowPos(pContainer->hwnd, 0, rc.left, rc.top, (rc.right - rc.left), (rc.bottom - rc.top), SWP_NOZORDER | SWP_DRAWFRAME | SWP_SHOWWINDOW);
-		RedrawWindow(pContainer->hwnd, 0, 0, RDW_UPDATENOW | RDW_INVALIDATE |RDW_ALLCHILDREN);
-	}
 	BroadCastContainer(pContainer, DM_BBNEEDUPDATE, 0, 0);
 }
 

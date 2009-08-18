@@ -210,7 +210,8 @@ public:
 	INT_PTR		RemoveWindow(HWND hWnd);
 	HWND		FindWindow(HANDLE h) const;
 
-	static		INT_PTR FoldersPathChanged(WPARAM wParam, LPARAM lParam);
+	static		int FoldersPathChanged(WPARAM wParam, LPARAM lParam);
+	static 		const TCHAR* StriStr(const TCHAR *szString, const TCHAR *szSearchFor);
 
 public:
 	HANDLE 		m_hMessageWindowList;
