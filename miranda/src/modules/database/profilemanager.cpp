@@ -376,10 +376,10 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 		}
 	case WM_FOCUSTEXTBOX:
 		{
-			HWND hwndList=GetDlgItem(hwndDlg,IDC_PROFILELIST);
+			HWND hwndList=GetDlgItem(hwndDlg, IDC_PROFILELIST);
 			SetFocus(hwndList);
-            if ( dat->pd->szProfile[0] == 0 || ListView_GetSelectedCount(GetDlgItem(hwndDlg,IDC_PROFILELIST)) == 0 )
-				ListView_SetItemState(hwndList, 0, LVIS_SELECTED, LVIS_SELECTED);
+            if (dat->pd->szProfile[0] == 0 || ListView_GetSelectedCount(hwndList) == 0)
+				ListView_SetItemState(hwndList, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
 			break;
 		}
 	case WM_SHOWWINDOW:
@@ -498,24 +498,17 @@ static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam,
 				ShowWindow( GetDlgItem(hwndDlg, IDC_SM_COMBO ), FALSE );
 			} else {
 				int i = 0;
-				TCHAR *str;
 				LRESULT index;
 				HWND hwndCombo = GetDlgItem(hwndDlg, IDC_SM_COMBO );
 				index = SendMessage( hwndCombo, CB_ADDSTRING, 0, (LPARAM)_T("") );
 				SendMessage( hwndCombo, CB_SETITEMDATA, index, (LPARAM)-1 );
 				SendMessage( hwndCombo, CB_SETCURSEL, 0, 0);
 				while ( list[i] ) {
-					#ifdef _UNICODE
-						str = a2u( Translate(list[i]) );
-					#else
-						str = Translate(list[i]);
-					#endif
+					TCHAR *str = LangPackPcharToTchar( list[i] );
 					index = SendMessage( hwndCombo, CB_ADDSTRING, 0, (LPARAM)str );
+					mir_free(str);
 					SendMessage( hwndCombo, CB_SETITEMDATA, index, (LPARAM)i );
 					i++;
-					#ifdef _UNICODE
-						mir_free(str);
-					#endif
 				}
 				mir_free(list);
 			}
