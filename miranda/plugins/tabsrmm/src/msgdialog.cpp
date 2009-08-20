@@ -1182,7 +1182,7 @@ static LRESULT CALLBACK MsgIndicatorSubclassProc(HWND hwnd, UINT msg, WPARAM wPa
 LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndParent = GetParent(hwnd);
-	struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
+	_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 
 	switch (msg) {
 		case WM_NCHITTEST:
@@ -1222,55 +1222,28 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 					InvalidateRect(hwndParent, NULL, FALSE);
 			}
 			return 0;
+		case WM_ERASEBKGND:
+			return(1);
 		case WM_PAINT: {
 			struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
 			RECT rc;
 			PAINTSTRUCT ps;
 			HDC dc = BeginPaint(hwnd, &ps);
 
-			if (dat && dat->pContainer->bSkinned) {
-				GetClientRect(hwnd, &rc);
+			GetClientRect(hwnd, &rc);
+
+			if (dat && dat->pContainer->bSkinned)
 				CSkin::SkinDrawBG(hwnd, dat->pContainer->hwnd, dat->pContainer, &rc, dc);
-			} else {
-				GetClientRect(hwnd, &rc);
+			else {
 				FillRect(dc, &rc, (M->isAero() && hwnd == GetDlgItem(hwndParent, IDC_PANELSPLITTER)) ? (HBRUSH)GetStockObject(BLACK_BRUSH) : GetSysColorBrush(COLOR_3DFACE));
+				if(hwnd == GetDlgItem(hwndParent, IDC_PANELSPLITTER) && !M->isAero()) {
+					rc.bottom--; rc.left--; rc.right++;
+					DrawEdge(dc, &rc, BDR_SUNKENOUTER, BF_RECT);
+				}
 			}
+
 			EndPaint(hwnd, &ps);
 			return 0;
-		}
-		case WM_NCPAINT: {
-			if (splitterEdges == -1)
-				splitterEdges = M->GetByte("splitteredges", 1);
-
-			if (dat && dat->pContainer->bSkinned && splitterEdges > 0) {
-				HDC dc = GetWindowDC(hwnd);
-				POINT pt;
-				RECT rc;
-				HPEN hPenOld;
-
-				GetWindowRect(hwnd, &rc);
-				if (rc.right - rc.left > rc.bottom - rc.top) {
-					MoveToEx(dc, 0, 0, &pt);
-					hPenOld = (HPEN)SelectObject(dc, CSkin::m_SkinDarkShadowPen);
-					LineTo(dc, rc.right - rc.left, 0);
-					MoveToEx(dc, rc.right - rc.left, 1, &pt);
-					SelectObject(dc, CSkin::m_SkinLightShadowPen);
-					LineTo(dc, -1, 1);
-					SelectObject(dc, hPenOld);
-					ReleaseDC(hwnd, dc);
-				} else {
-					MoveToEx(dc, 0, 0, &pt);
-					hPenOld = (HPEN)SelectObject(dc, CSkin::m_SkinDarkShadowPen);
-					LineTo(dc, 0, rc.bottom - rc.top);
-					MoveToEx(dc, 1, rc.bottom - rc.top, &pt);
-					SelectObject(dc, CSkin::m_SkinLightShadowPen);
-					LineTo(dc, 1, -1);
-					SelectObject(dc, hPenOld);
-					ReleaseDC(hwnd, dc);
-				}
-				return 0;
-			}
-			break;
 		}
 
 		case WM_LBUTTONUP: {
@@ -1279,8 +1252,9 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			ReleaseCapture();
 			DM_ScrollToBottom(hwndParent, dat, 0, 1);
 			if (dat && dat->bType == SESSIONTYPE_IM && hwnd == GetDlgItem(hwndParent, IDC_PANELSPLITTER)) {
-				dat->panelWidth = -1;
 				SendMessage(hwndParent, WM_SIZE, 0, 0);
+				dat->panelWidth = -1;
+				RedrawWindow(hwndParent, NULL, NULL, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW);
 			} else if ((dat && dat->bType == SESSIONTYPE_IM && hwnd == GetDlgItem(hwndParent, IDC_SPLITTER)) ||
 					   (dat && dat->bType == SESSIONTYPE_CHAT && hwnd == GetDlgItem(hwndParent, IDC_SPLITTERY))) {
 				RECT rc;
@@ -1457,6 +1431,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			}
 			return RD_ANCHORX_WIDTH | RD_ANCHORY_HEIGHT;
 		case IDC_PANELPIC:
+			urc->rcItem.top = 1;
 			urc->rcItem.left = urc->rcItem.right - (panelWidth > 0 ? panelWidth - 2 : panelHeight + 2);
 			urc->rcItem.bottom = urc->rcItem.top + (panelHeight - 3);
 
@@ -1481,7 +1456,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 		case IDC_PANELSTATUS: {
 			urc->rcItem.right = urc->dlgNewSize.cx - panelWidth;
 			urc->rcItem.left = urc->dlgNewSize.cx - panelWidth - dat->panelStatusCX;
-			urc->rcItem.bottom = panelHeight - 3;
+			urc->rcItem.bottom = panelHeight - 1;
 			urc->rcItem.top = urc->rcItem.bottom - dat->ipFieldHeight;
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
 		}
@@ -1489,14 +1464,14 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			RECT	rcStatus;
 			GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), &rcStatus);
 			urc->rcItem.left = panelHeight <= 52 ? panelHeight : 52;
-			urc->rcItem.right = urc->dlgNewSize.cx - panelWidth - (panelHeight <= 52 ? (rcStatus.right - rcStatus.left) + 3 : 0);
-			urc->rcItem.bottom = panelHeight - 3 - (panelHeight >= 52 ? dat->ipFieldHeight : 0) - 2;;
+			urc->rcItem.right = urc->dlgNewSize.cx - panelWidth - (panelHeight <= 42 ? (rcStatus.right - rcStatus.left) + 3 : 0);
+			urc->rcItem.bottom = panelHeight - 3 - (panelHeight > 42 ? dat->ipFieldHeight : 0) - 1;;
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
 		}
 		case IDC_PANELUIN: {
 			urc->rcItem.left = panelHeight <= 52 ? panelHeight : 52;
 			urc->rcItem.right = urc->dlgNewSize.cx - (panelWidth + 2) - dat->panelStatusCX;
-			urc->rcItem.bottom = panelHeight - 3;
+			urc->rcItem.bottom = panelHeight - 1;
 			urc->rcItem.top = urc->rcItem.bottom - dat->ipFieldHeight;
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
 		}
@@ -2157,13 +2132,10 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			splitterEdges = M->GetByte("splitteredges", 1);
 
-			if (splitterEdges == 0) {
+			if (splitterEdges == 0)
 				SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
-				SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
-			} else {
+			else
 				SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) | WS_EX_STATICEDGE);
-				SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) | WS_EX_STATICEDGE);
-			}
 			if (lParam == 1) {
 				GetSendFormat(hwndDlg, dat, 1);
 				SetDialogToType(hwndDlg);
@@ -2743,9 +2715,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				if (pt.y + 2 >= MIN_PANELHEIGHT+2 && pt.y + 2 < 100)
 					dat->panelHeight = pt.y + 2;
 				dat->panelWidth = -1;
-				InvalidateRect(hwndDlg, NULL, TRUE);
-				UpdateWindow(hwndDlg);
-				SendMessage(hwndDlg, WM_SIZE, 0, 0);
+				RedrawWindow(hwndDlg, NULL, NULL, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW);
 				SetAeroMargins(dat->pContainer);
 				break;
 			}
@@ -5444,12 +5414,17 @@ quote_from_last:
 						FillRect(hdcMem, &rcBlack, (HBRUSH)GetStockObject(BLACK_BRUSH));
 					}
 					else {
-						if(m_pContainer->bSkinned) {
+						if(m_pContainer->bSkinned || 1) {
 							CSkin::SkinDrawBG(hwndDlg, m_pContainer->hwnd, m_pContainer, &rc, hdcMem);
+							rc.bottom -= 2;
 							if(!item->IGNORED) {
 								DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
 										  item->CORNER, item->BORDERSTYLE, item->imageItem);
 							}
+							//rc.bottom -= 2;
+							rc.top = rc.bottom - 1;
+							rc.left--; rc.right++;
+							::DrawEdge(hdcMem, &rc, BDR_SUNKENOUTER, BF_RECT);
 						}
 						else if(M->isVSThemed()) {
 							rc.bottom -=3;
@@ -5500,8 +5475,11 @@ quote_from_last:
 			 */
 			if(fInfoPanel) {
 				CSkin::MapClientToParent(GetDlgItem(hwndDlg, IDC_PANELNICK), hwndDlg, rc);
+				if(dat->panelHeight >= 42) {
+					rc.top -= 2; rc.bottom += 6;
+				}
 				CSkin::RenderIPNickname(hdcMem, rc, dat);
-				if(dat->panelHeight >= 50) {
+				if(dat->panelHeight >= 42) {
 					CSkin::MapClientToParent(GetDlgItem(hwndDlg, IDC_PANELUIN), hwndDlg, rc);
 					CSkin::RenderIPUIN(hdcMem, rc, dat);
 				}

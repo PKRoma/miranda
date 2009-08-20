@@ -190,9 +190,16 @@ CSkinItem SkinItems[] = {
 		CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 	}, {_T("InfoPanelBackground"), "TSKIN_INFOPANELBG", ID_EXTBKINFOPANELBG,
 		8, CLCDEFAULT_CORNER,
-		CLCDEFAULT_COLOR, 0xf0f0f0, 1, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
+		0xf0f0f0, 0x42b1ff, 1, CLCDEFAULT_TEXTCOLOR, 40, CLCDEFAULT_MRGN_LEFT,
 		CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 	}
+};
+
+static CSkinItem _defInfoPanel = {
+	_T("InfoPanelBackground"), "TSKIN_INFOPANELBG", ID_EXTBKINFOPANELBG,
+	8, CLCDEFAULT_CORNER,
+	0xf0f0f0, 0x62caff, 0, CLCDEFAULT_TEXTCOLOR, 255, CLCDEFAULT_MRGN_LEFT,
+	CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, 0
 };
 
 static BYTE __forceinline percent_to_byte(UINT32 percent)
@@ -955,6 +962,7 @@ void CSkin::Init()
 	m_skinEnabled = m_frameSkins = false;
 	m_bAvatarBorderType = (BYTE)M->GetByte("avbordertype", 0);
 
+	m_SkinItems[ID_EXTBKINFOPANELBG] = _defInfoPanel;
 	/*
 	 * read current skin name from db
 	 */
@@ -1024,6 +1032,8 @@ void CSkin::Unload()
 		m_SkinItems[i].IGNORED = 1;
 		m_SkinItems[i].imageItem = 0;
 	}
+	m_SkinItems[ID_EXTBKINFOPANELBG] = _defInfoPanel;
+
 	ZeroMemory(this, sizeof(CSkin));
 	m_SkinItems = ::SkinItems;
 	setFileName();
@@ -1054,6 +1064,8 @@ void CSkin::Unload()
 			::DestroyIcon(*(m_skinIcons[i].phIcon));
 	}
 	M->getAeroState();				// refresh after unload
+	::ReloadTabConfig();
+	m_bAvatarBorderType = (BYTE)M->GetByte("avbordertype", 0);
 }
 
 void CSkin::LoadIcon(const TCHAR *szSection, const TCHAR *name, HICON *hIcon)
@@ -2075,7 +2087,7 @@ void CSkin::RenderIPNickname(HDC hdc, RECT &rcItem, _MessageWindowData *dat)
 	TCHAR	*szTextToShow = 0;
 	bool	fShowUin = false;
 
-	if(dat->panelHeight < 51) {
+	if(dat->panelHeight < 42) {
 		szTextToShow = dat->uin;
 		fShowUin = true;
 	} else

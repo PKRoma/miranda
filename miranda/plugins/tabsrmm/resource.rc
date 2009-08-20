@@ -55,8 +55,7 @@ BEGIN
     PUSHBUTTON      "Revert to (safe) defaults",IDC_PLUS_REVERT,180,207,111,
                     14
     CONTROL         "",IDC_PLUS_CHECKTREE,"SysTreeView32",TVS_HASBUTTONS | 
-                    TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
-                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,137
+                    TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,137
 END
 
 IDD_POPUP_OPT DIALOGEX 0, 0, 314, 241
@@ -124,7 +123,7 @@ BEGIN
                     UDS_ARROWKEYS,199,224,11,13
     PUSHBUTTON      "Preview popup",IDC_PREVIEW,226,223,83,12
     CONTROL         "",IDC_EVENTOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
-                    TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
+                    TVS_DISABLEDRAGDROP | 
                     TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,98
 END
 
@@ -371,8 +370,11 @@ BEGIN
     LTEXT           "Send text formatting:",IDC_STATIC,9,211,132,11
     COMBOBOX        IDC_SENDFORMATTING,143,209,74,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
+                    
+//    CONTROL         "List1",IDC_WINDOWOPTIONS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_AUTOARRANGE | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,6,8,294,76
+                    
     CONTROL         "",IDC_WINDOWOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
-                    TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
+                    TVS_DISABLEDRAGDROP | 
                     TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,76
     CONTROL         "Try to keep original size",IDC_PRESERVEAVATARSIZE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,187,98,105,9
@@ -428,7 +430,7 @@ BEGIN
                     14
     LTEXT           "Events",IDC_STATIC,215,212,82,8
     CONTROL         "",IDC_LOGOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
-                    TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
+                    TVS_DISABLEDRAGDROP | 
                     TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,95
     LTEXT           "minutes old",IDC_STMINSOLD,215,200,83,8,WS_DISABLED
     GROUPBOX        "Global message log display",IDC_STMSGLOGGROUP3,149,107,
@@ -491,7 +493,7 @@ BEGIN
                     UDS_ARROWKEYS,191,192,11,13
     LTEXT           "characters",IDC_STATIC,208,195,88,9
     CONTROL         "",IDC_TABMSGOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
-                    TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
+                    TVS_DISABLEDRAGDROP | 
                     TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,135
 END
 

@@ -189,82 +189,6 @@ static struct branch_t branch2[] = {
 	{LPGENT("Use the containers popup configuration to place dividers"), "DividersUsePopupConfig", 0, 1, NULL},
 	{LPGENT("Support math module plugin"), "MathModSupport", 0, 0, NULL}
 };
-static struct branch_t branch3[] = {
-	{LPGENT("Show topic changes"), "FilterFlags", GC_EVENT_TOPIC, 0, NULL},
-	{LPGENT("Show users joining"), "FilterFlags", GC_EVENT_JOIN, 0, NULL},
-	{LPGENT("Show users disconnecting"), "FilterFlags", GC_EVENT_QUIT, 0, NULL},
-	{LPGENT("Show messages"), "FilterFlags", GC_EVENT_MESSAGE, 1, NULL},
-	{LPGENT("Show actions"), "FilterFlags", GC_EVENT_ACTION, 1, NULL},
-	{LPGENT("Show users leaving"), "FilterFlags", GC_EVENT_PART, 0, NULL},
-	{LPGENT("Show users being kicked"), "FilterFlags", GC_EVENT_KICK, 1, NULL},
-	{LPGENT("Show notices"), "FilterFlags", GC_EVENT_NOTICE, 1, NULL},
-	{LPGENT("Show users changing name"), "FilterFlags", GC_EVENT_NICK, 0, NULL},
-	{LPGENT("Show information messages"), "FilterFlags", GC_EVENT_INFORMATION, 1, NULL},
-	{LPGENT("Show status changes of users"), "FilterFlags", GC_EVENT_ADDSTATUS, 0, NULL},
-};
-
-static struct branch_t branch4[] = {
-	{LPGENT("Show icon for topic changes"), "IconFlags", GC_EVENT_TOPIC, 0, NULL},
-	{LPGENT("Show icon for users joining"), "IconFlags", GC_EVENT_JOIN, 1, NULL},
-	{LPGENT("Show icon for users disconnecting"), "IconFlags", GC_EVENT_QUIT, 0, NULL},
-	{LPGENT("Show icon for messages"), "IconFlags", GC_EVENT_MESSAGE, 0, NULL},
-	{LPGENT("Show icon for actions"), "IconFlags", GC_EVENT_ACTION, 0, NULL},
-	{LPGENT("Show icon for highlights"), "IconFlags", GC_EVENT_HIGHLIGHT, 0, NULL},
-	{LPGENT("Show icon for users leaving"), "IconFlags", GC_EVENT_PART, 0, NULL},
-	{LPGENT("Show icon for users kicking other user"), "IconFlags", GC_EVENT_KICK, 0, NULL},
-	{LPGENT("Show icon for notices "), "IconFlags", GC_EVENT_NOTICE, 0, NULL},
-	{LPGENT("Show icon for name changes"), "IconFlags", GC_EVENT_NICK, 0, NULL},
-	{LPGENT("Show icon for information messages"), "IconFlags", GC_EVENT_INFORMATION, 0, NULL},
-	{LPGENT("Show icon for status changes"), "IconFlags", GC_EVENT_ADDSTATUS, 0, NULL},
-};
-
-static struct branch_t branch5[] = {
-	{LPGENT("Show icons in tray only when the chat room is not active"), "TrayIconInactiveOnly", 0, 1, NULL},
-	{LPGENT("Show icon in tray for topic changes"), "TrayIconFlags", GC_EVENT_TOPIC, 0, NULL},
-	{LPGENT("Show icon in tray for users joining"), "TrayIconFlags", GC_EVENT_JOIN, 0, NULL},
-	{LPGENT("Show icon in tray for users disconnecting"), "TrayIconFlags", GC_EVENT_QUIT, 0, NULL},
-	{LPGENT("Show icon in tray for messages"), "TrayIconFlags", GC_EVENT_MESSAGE, 0, NULL},
-	{LPGENT("Show icon in tray for actions"), "TrayIconFlags", GC_EVENT_ACTION, 0, NULL},
-	{LPGENT("Show icon in tray for highlights"), "TrayIconFlags", GC_EVENT_HIGHLIGHT, 1, NULL},
-	{LPGENT("Show icon in tray for users leaving"), "TrayIconFlags", GC_EVENT_PART, 0, NULL},
-	{LPGENT("Show icon in tray for users kicking other user"), "TrayIconFlags", GC_EVENT_KICK, 0, NULL},
-	{LPGENT("Show icon in tray for notices "), "TrayIconFlags", GC_EVENT_NOTICE, 0, NULL},
-	{LPGENT("Show icon in tray for name changes"), "TrayIconFlags", GC_EVENT_NICK, 0, NULL},
-	{LPGENT("Show icon in tray for information messages"), "TrayIconFlags", GC_EVENT_INFORMATION, 0, NULL},
-	{LPGENT("Show icon in tray for status changes"), "TrayIconFlags", GC_EVENT_ADDSTATUS, 0, NULL},
-};
-
-static struct branch_t branch6[] = {
-	{LPGENT("Skip all popups when no channel window is opened"), "SkipWhenNoWindow", 0, 0, NULL},
-	{LPGENT("Show pop-up for topic changes"), "PopupFlags", GC_EVENT_TOPIC, 0, NULL},
-	{LPGENT("Show pop-up for users joining"), "PopupFlags", GC_EVENT_JOIN, 0, NULL},
-	{LPGENT("Show pop-up for users disconnecting"), "PopupFlags", GC_EVENT_QUIT, 0, NULL},
-	{LPGENT("Show pop-up for messages"), "PopupFlags", GC_EVENT_MESSAGE, 0, NULL},
-	{LPGENT("Show pop-up for actions"), "PopupFlags", GC_EVENT_ACTION, 0, NULL},
-	{LPGENT("Show pop-up for highlights"), "PopupFlags", GC_EVENT_HIGHLIGHT, 0, NULL},
-	{LPGENT("Show pop-up for users leaving"), "PopupFlags", GC_EVENT_PART, 0, NULL},
-	{LPGENT("Show pop-up for users kicking other user"), "PopupFlags", GC_EVENT_KICK, 0, NULL},
-	{LPGENT("Show pop-up for notices "), "PopupFlags", GC_EVENT_NOTICE, 0, NULL},
-	{LPGENT("Show pop-up for name changes"), "PopupFlags", GC_EVENT_NICK, 0, NULL},
-	{LPGENT("Show pop-up for information messages"), "PopupFlags", GC_EVENT_INFORMATION, 0, NULL},
-	{LPGENT("Show pop-up for status changes"), "PopupFlags", GC_EVENT_ADDSTATUS, 0, NULL},
-	{LPGENT("Use bold form for nickname (requires BBCode support)"), "BBCodeInPopups", 0, 0, NULL},
-};
-
-static struct branch_t branch7[] = {
-        {LPGENT("Log topic changes"), "DiskLogFlags", GC_EVENT_TOPIC, 0, NULL},
-        {LPGENT("Log users joining"), "DiskLogFlags", GC_EVENT_JOIN, 0, NULL},
-        {LPGENT("Log users disconnecting"), "DiskLogFlags", GC_EVENT_QUIT, 0, NULL},
-        {LPGENT("Log messages"), "DiskLogFlags", GC_EVENT_MESSAGE, 0, NULL},
-        {LPGENT("Log actions"), "DiskLogFlags", GC_EVENT_ACTION, 0, NULL},
-        {LPGENT("Log highlights"), "DiskLogFlags", GC_EVENT_HIGHLIGHT, 0, NULL},
-        {LPGENT("Log users leaving"), "DiskLogFlags", GC_EVENT_PART, 0, NULL},
-        {LPGENT("Log users kicking other user"), "DiskLogFlags", GC_EVENT_KICK, 0, NULL},
-        {LPGENT("Log notices "), "DiskLogFlags", GC_EVENT_NOTICE, 0, NULL},
-        {LPGENT("Log name changes"), "DiskLogFlags", GC_EVENT_NICK, 0, NULL},
-        {LPGENT("Log information messages"), "DiskLogFlags", GC_EVENT_INFORMATION, 0, NULL},
-        {LPGENT("Log status changes"), "DiskLogFlags", GC_EVENT_ADDSTATUS, 0, NULL},
-};
 
 static HWND hPathTip = 0;
 
@@ -583,11 +507,6 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 {
 	static HTREEITEM hListHeading1 = 0;
 	static HTREEITEM hListHeading2 = 0;
-	static HTREEITEM hListHeading3 = 0;
-	static HTREEITEM hListHeading4 = 0;
-	static HTREEITEM hListHeading5 = 0;
-	static HTREEITEM hListHeading6 = 0;
-	static HTREEITEM hListHeading7 = 0;
 
 	switch (uMsg) {
 		case WM_INITDIALOG:
@@ -603,20 +522,9 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 				hListHeading1 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Appearance and functionality of chat room windows"), M->GetByte("Chat", "Branch1Exp", 0) ? TRUE : FALSE);
 				hListHeading2 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Appearance of the message log"), M->GetByte("Chat", "Branch2Exp", 0) ? TRUE : FALSE);
-				hListHeading3 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Default events to show in new chat rooms if the \'event filter\' is enabled"), M->GetByte("Chat", "Branch3Exp", 0) ? TRUE : FALSE);
-				hListHeading4 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Icons to display in the message log"), M->GetByte("Chat", "Branch4Exp", 0) ? TRUE : FALSE);
-				hListHeading5 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Icons to display in the tray and the message window tabs / title"), M->GetByte("Chat", "Branch5Exp", 0) ? TRUE : FALSE);
-				hListHeading7 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Log these events to the log file (when file logging is enabled)"), M->GetByte("Chat", "Branch7Exp", 0) ? TRUE : FALSE);
 
-				if (PluginConfig.g_PopupAvail)
-					hListHeading6 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Pop-ups to display"), M->GetByte("Chat", "Branch6Exp", 0) ? TRUE : FALSE);
 				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading1, branch1, SIZEOF(branch1), 0x0000);
 				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading2, branch2, SIZEOF(branch2), 0x0000);
-				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading3, branch3, SIZEOF(branch3), 0x03E0);
-				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading4, branch4, SIZEOF(branch4), 0x0000);
-				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading5, branch5, SIZEOF(branch5), 0x1000);
-				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading6, branch6, SIZEOF(branch6), 0x0000);
-				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading7, branch7, SIZEOF(branch7), 0xFFFFF);
 
 				SendMessage(hwndDlg, OPT_FIXHEADINGS, 0, 0);
 				{
@@ -638,11 +546,6 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 		case OPT_FIXHEADINGS:
 			CheckHeading(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading1);
 			CheckHeading(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading2);
-			CheckHeading(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading3);
-			CheckHeading(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading4);
-			CheckHeading(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading5);
-			CheckHeading(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading6);
-			CheckHeading(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading7);
 			break;
 		case WM_COMMAND:
 			if (LOWORD(wParam) == IDC_CHAT_ENABLE) {
@@ -684,16 +587,6 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 									CheckBranches(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading1);
 								else if (tvi.hItem == hListHeading2)
 									CheckBranches(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading2);
-								else if (tvi.hItem == hListHeading3)
-									CheckBranches(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading3);
-								else if (tvi.hItem == hListHeading4)
-									CheckBranches(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading4);
-								else if (tvi.hItem == hListHeading5)
-									CheckBranches(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading5);
-								else if (tvi.hItem == hListHeading6)
-									CheckBranches(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading6);
-								else if (tvi.hItem == hListHeading7)
-									CheckBranches(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading7);
 								else {
 
 									if (tvi.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
@@ -736,13 +629,7 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 								b = M->GetByte("Chat", "Tabs", 1);
 								SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch1, sizeof(branch1) / sizeof(branch1[0]));
 								SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch2, sizeof(branch2) / sizeof(branch2[0]));
-								SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch3, sizeof(branch3) / sizeof(branch3[0]));
-								SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch4, sizeof(branch4) / sizeof(branch4[0]));
-								SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch5, sizeof(branch5) / sizeof(branch5[0]));
-								SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch7, SIZEOF(branch7));
 
-								if (PluginConfig.g_PopupAvail)
-									SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch6, sizeof(branch6) / sizeof(branch6[0]));
 								LoadGlobalSettings();
 								MM_FontsChanged();
 								FreeMsgLogBitmaps();
@@ -762,19 +649,6 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 			M->WriteByte("Chat", "Branch1Exp", b);
 			b = TreeView_GetItemState(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading2, TVIS_EXPANDED) & TVIS_EXPANDED ? 1 : 0;
 			M->WriteByte("Chat", "Branch2Exp", b);
-			b = TreeView_GetItemState(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading3, TVIS_EXPANDED) & TVIS_EXPANDED ? 1 : 0;
-			M->WriteByte("Chat", "Branch3Exp", b);
-			b = TreeView_GetItemState(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading4, TVIS_EXPANDED) & TVIS_EXPANDED ? 1 : 0;
-			M->WriteByte("Chat", "Branch4Exp", b);
-			b = TreeView_GetItemState(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading5, TVIS_EXPANDED) & TVIS_EXPANDED ? 1 : 0;
-			M->WriteByte("Chat", "Branch5Exp", b);
-			if (PluginConfig.g_PopupAvail) {
-				b = TreeView_GetItemState(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading6, TVIS_EXPANDED) & TVIS_EXPANDED ? 1 : 0;
-				M->WriteByte("Chat", "Branch6Exp", b);
-			}
-			b = TreeView_GetItemState(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading7, TVIS_EXPANDED) & TVIS_EXPANDED ? 1 : 0;
-            M->WriteByte("Chat", "Branch7Exp", b);
-
 		}
 		break;
 
@@ -1036,6 +910,8 @@ int FontServiceFontsChanged(WPARAM wParam, LPARAM lParam)
 static UINT _o2chatcontrols[] = { IDC_CHAT_SPIN2, IDC_LIMIT, IDC_CHAT_SPIN4, IDC_LOGTIMESTAMP, IDC_TIMESTAMP,
 								  IDC_OUTSTAMP, IDC_FONTCHOOSE, IDC_LOGGING, IDC_LOGDIRECTORY, IDC_INSTAMP, IDC_HIGHLIGHT, IDC_HIGHLIGHTWORDS, IDC_CHAT_SPIN2, IDC_CHAT_SPIN3, IDC_NICKROW2, IDC_LOGLIMIT,
 								  IDC_STATIC110, IDC_STATIC112, 0};
+
+static UINT _o3chatcontrols[] = {0};
 
 INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -1301,6 +1177,115 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				hPathTip = 0;
 			}
 			break;
+	}
+	return FALSE;
+}
+
+#define NR_GC_EVENTS 12
+
+static UINT _eventorder[] = { GC_EVENT_ACTION,
+	GC_EVENT_MESSAGE,
+	GC_EVENT_NICK,
+	GC_EVENT_JOIN,
+	GC_EVENT_PART,
+	GC_EVENT_TOPIC,
+	GC_EVENT_ADDSTATUS,
+	GC_EVENT_INFORMATION,
+	GC_EVENT_QUIT,
+	GC_EVENT_KICK,
+	GC_EVENT_NOTICE,
+	GC_EVENT_HIGHLIGHT,
+	0
+};
+
+#define GC_EVENT_ALL (GC_EVENT_ACTION | GC_EVENT_MESSAGE | GC_EVENT_NICK | GC_EVENT_JOIN | \
+	GC_EVENT_PART | GC_EVENT_TOPIC | GC_EVENT_ADDSTATUS | GC_EVENT_INFORMATION | GC_EVENT_QUIT | \
+	GC_EVENT_KICK |	GC_EVENT_NOTICE)
+
+/**
+ * Dialog procedure for group chat options tab #3 (event filter configuration)
+ *
+ * @return
+ */
+INT_PTR CALLBACK DlgProcOptions3(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg) {
+		case WM_INITDIALOG: {
+
+			TranslateDialogDefault(hwndDlg);
+
+			if (PluginConfig.m_chat_enabled) {
+				DWORD dwFilterFlags = M->GetDword("Chat", "FilterFlags", GC_EVENT_ALL);
+				DWORD dwTrayFlags = M->GetDword("Chat", "TrayIconFlags", GC_EVENT_ALL);
+				DWORD dwPopupFlags = M->GetDword("Chat", "PopupFlags", GC_EVENT_ALL);
+				DWORD dwLogFlags = M->GetDword("Chat", "DiskLogFlags", GC_EVENT_ALL);
+
+				for(int i = 0; _eventorder[i]; i++) {
+					if(_eventorder[i] != GC_EVENT_HIGHLIGHT) {
+						CheckDlgButton(hwndDlg, IDC_1 + i, dwFilterFlags & _eventorder[i] ? BST_CHECKED : BST_UNCHECKED);
+						CheckDlgButton(hwndDlg, IDC_L1 + i, dwLogFlags & _eventorder[i] ? BST_CHECKED : BST_UNCHECKED);
+					}
+					CheckDlgButton(hwndDlg, IDC_P1 + i, dwPopupFlags & _eventorder[i] ? BST_CHECKED : BST_UNCHECKED);
+					CheckDlgButton(hwndDlg, IDC_T1 + i, dwTrayFlags & _eventorder[i] ? BST_CHECKED : BST_UNCHECKED);
+				}
+				SendDlgItemMessage(hwndDlg, IDC_LOGICONTYPE, CB_ADDSTRING, -1, (LPARAM)TranslateT("No markers"));
+				SendDlgItemMessage(hwndDlg, IDC_LOGICONTYPE, CB_ADDSTRING, -1, (LPARAM)TranslateT("Show as icons"));
+				SendDlgItemMessage(hwndDlg, IDC_LOGICONTYPE, CB_ADDSTRING, -1, (LPARAM)TranslateT("Show as text symbols"));
+
+				SendDlgItemMessage(hwndDlg, IDC_LOGICONTYPE, CB_SETCURSEL, (g_Settings.LogSymbols ? 2 : (g_Settings.dwIconFlags ? 1 : 0)), 0);
+
+				CheckDlgButton(hwndDlg, IDC_NOPOPUPSFORCLOSEDWINDOWS, M->GetByte("Chat", "SkipWhenNoWindow", 0) ? BST_CHECKED : BST_UNCHECKED);
+				CheckDlgButton(hwndDlg, IDC_TRAYONLYFORINACTIVE, M->GetByte("Chat", "TrayIconInactiveOnly", 0) ? BST_CHECKED : BST_UNCHECKED);
+			}
+			break;
+		}
+		case WM_COMMAND:
+			if (lParam != (LPARAM)NULL)
+				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			break;
+
+		case WM_NOTIFY:
+			switch (((LPNMHDR)lParam)->idFrom) {
+				case 0:
+					switch (((LPNMHDR)lParam)->code) {
+						case PSN_APPLY: {
+							DWORD dwFilterFlags = 0, dwTrayFlags = 0,
+								dwPopupFlags = 0, dwLogFlags = 0;
+
+							for(int i = 0; _eventorder[i]; i++) {
+								if(_eventorder[i] != GC_EVENT_HIGHLIGHT) {
+									dwFilterFlags |= (IsDlgButtonChecked(hwndDlg, IDC_1 + i) ? _eventorder[i] : 0);
+									dwLogFlags |= (IsDlgButtonChecked(hwndDlg, IDC_L1 + i) ? _eventorder[i] : 0);
+								}
+								dwPopupFlags |= (IsDlgButtonChecked(hwndDlg, IDC_P1 + i) ? _eventorder[i] : 0);
+								dwTrayFlags |= (IsDlgButtonChecked(hwndDlg, IDC_T1 + i) ? _eventorder[i] : 0);
+							}
+							M->WriteDword("Chat", "FilterFlags", dwFilterFlags);
+							M->WriteDword("Chat", "PopupsFlags", dwPopupFlags);
+							M->WriteDword("Chat", "TrayIconFlags", dwTrayFlags);
+							M->WriteDword("Chat", "DiskLogFlags", dwLogFlags);
+
+							LRESULT lr = SendDlgItemMessage(hwndDlg, IDC_LOGICONTYPE, CB_GETCURSEL, 0, 0);
+
+							M->WriteDword("Chat", "IconFlags", lr == 1 ? 1 : 0);
+							M->WriteByte("Chat", "LogSymbols", lr == 2 ? 1 : 0);
+
+							M->WriteByte("Chat", "SkipWhenNoWindow", IsDlgButtonChecked(hwndDlg, IDC_NOPOPUPSFORCLOSEDWINDOWS) ? 1 : 0);
+							M->WriteByte("Chat", "TrayIconInactiveOnly", IsDlgButtonChecked(hwndDlg, IDC_TRAYONLYFORINACTIVE) ? 1 : 0);
+							LoadGlobalSettings();
+							MM_FontsChanged();
+							SM_BroadcastMessage(NULL, GC_SETWNDPROPS, 0, 0, TRUE);
+							SM_ReconfigureFilters();
+							break;
+						}
+						return TRUE;
+					}
+			}
+			break;
+
+		case WM_DESTROY:
+			break;
+
 	}
 	return FALSE;
 }

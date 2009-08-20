@@ -2315,7 +2315,10 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 			}
 			if (clipRgn) {
 				HBRUSH hbr = CreateSolidBrush((COLORREF)M->GetDword("avborderclr", RGB(0, 0, 0)));
-				FrameRgn(dis->hDC, clipRgn, hbr, 1, 1);
+				if(bPanelPic)
+					FrameRgn(dis->hDC, clipRgn, hbr, 1, 1);
+				else
+					FrameRgn(hdcDraw, clipRgn, hbr, 1, 1);
 				DeleteObject(hbr);
 				DeleteObject(clipRgn);
 			}

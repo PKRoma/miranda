@@ -1,7 +1,7 @@
-/*
- * $Id$
- */
-
+//{{NO_DEPENDENCIES}}
+// Microsoft Developer Studio generated include file.
+// Used by chat.rc
+//
 #define IDR_MENU                        151
 #define IDD_CHANNEL                     401
 #define IDD_OPTIONS1                    402
@@ -9,6 +9,7 @@
 #define IDD_FILTER                      404
 #define IDD_OPTIONSPOPUP                405
 #define IDD_COLORCHOOSER                406
+#define IDD_OPTIONS3                    407
 #define IDC_CHAT_LOG                    1005
 #define IDC_SPLITTERX                   1006
 #define IDC_SMILEY                      1007
@@ -49,41 +50,46 @@
 #define IDC_TEXTO2                      1070
 #define IDC_TEXTO3                      1071
 #define IDC_LIST                        1072
-#define IDC_1                           1075
-#define IDC_2                           1076
-#define IDC_3                           1077
+#define IDC_TEXTO4                      1072
 #define IDC_STATIC_ADD                  1077
-#define IDC_4                           1078
 #define IDC_STATIC_ULIST                1078
-#define IDC_5                           1079
 #define IDC_STATIC_OTHER                1079
-#define IDC_6                           1080
 #define IDC_CHAT_ENABLE                 1080
-#define IDC_7                           1081
 #define IDC_STATIC_MESSAGE              1081
-#define IDC_8                           1082
 #define IDC_STATIC110                   1082
-#define IDC_9                           1083
-#define IDC_10                          1084
 #define IDC_STATIC112                   1085
-#define IDC_11                          1085
+#define IDC_TRAYONLYFORINACTIVE         1086
+#define IDC_NOPOPUPSFORCLOSEDWINDOWS    1087
+#define IDC_LOGICONTYPE                 1088
 #define IDC_CHAT_BOLD                   1106
 #define IDC_ITALICS                     1107
 #define IDC_CHAT_UNDERLINE              1108
 #define IDC_COLOR                       1110
 #define IDC_CHAT_HISTORY                1111
+#define IDC_1                           1200
+#define IDC_2                           1201
+#define IDC_3                           1202
+#define IDC_4                           1203
+#define IDC_5                           1204
+#define IDC_6                           1205
+#define IDC_7                           1206
+#define IDC_8                           1207
+#define IDC_9                           1208
+#define IDC_10                          1209
+#define IDC_11                          1210
 #define IDC_CHAT_TOGGLESIDEBAR          1277
-#define IDC_P1                          1387
-#define IDC_P2                          1388
-#define IDC_P3                          1389
-#define IDC_P4                          1390
-#define IDC_P5                          1391
-#define IDC_P6                          1392
-#define IDC_P7                          1393
-#define IDC_P8                          1394
-#define IDC_P9                          1395
-#define IDC_P10                         1396
-#define IDC_P11                         1397
+#define IDC_P1                          1300
+#define IDC_P2                          1301
+#define IDC_P3                          1302
+#define IDC_P4                          1303
+#define IDC_P5                          1304
+#define IDC_P6                          1305
+#define IDC_P7                          1306
+#define IDC_P8                          1307
+#define IDC_P9                          1308
+#define IDC_P10                         1309
+#define IDC_P11                         1310
+#define IDC_P12                         1311
 #define IDC_T1                          1400
 #define IDC_T2                          1401
 #define IDC_T3                          1402
@@ -95,6 +101,18 @@
 #define IDC_T9                          1408
 #define IDC_T10                         1409
 #define IDC_T11                         1410
+#define IDC_T12                         1411
+#define IDC_L1                          1500
+#define IDC_L2                          1501
+#define IDC_L3                          1502
+#define IDC_L4                          1503
+#define IDC_L5                          1504
+#define IDC_L6                          1505
+#define IDC_L7                          1506
+#define IDC_L8                          1507
+#define IDC_L9                          1508
+#define IDC_L10                         1509
+#define IDC_L11                         1510
 #define ID_MESS                         40001
 #define ID_NEW                          40002
 #define ID_CURR                         40003
@@ -121,7 +139,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        163
 #define _APS_NEXT_COMMAND_VALUE         40030
-#define _APS_NEXT_CONTROL_VALUE         1084
+#define _APS_NEXT_CONTROL_VALUE         1089
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

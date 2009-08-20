@@ -44,6 +44,7 @@ extern		INT_PTR CALLBACK PlusOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 
 extern		INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 extern		INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+extern		INT_PTR CALLBACK DlgProcOptions3(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 INT_PTR CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -199,6 +200,48 @@ static struct LISTOPTIONSITEM defaultItems[] = {
 
 HIMAGELIST g_himlOptions;
 
+static void FillBranch(HWND hwndList, LISTOPTIONSITEM *loiList, TCHAR *szSection, UINT uSectionNumber)
+{
+	int i = 0, nItems=0;
+	ListView_DeleteAllItems(hwndList);
+
+	while(loiList[i].szName) {
+
+		if(loiList[i].uGroup != uSectionNumber) {
+			i++;
+			continue;
+		}
+
+		LVITEM lvi = {0};
+
+		lvi.mask = LVIF_TEXT|LVIF_PARAM;
+		lvi.iItem = nItems++;
+		lvi.iSubItem = 0;
+		lvi.lParam = 0;
+		lvi.pszText = szSection;
+		ListView_InsertItem(hwndList, &lvi);
+
+		BOOL checked = loiList[i].uType == LOI_TYPE_SETTING ? (M->GetByte(reinterpret_cast<const char *>(loiList[i].lParam),
+																		  (BYTE)(loiList[i].id)) ? TRUE : FALSE) : FALSE;
+
+		ListView_SetCheckState(hwndList, lvi.iItem, checked);
+
+		lvi.mask = LVIF_TEXT;
+		lvi.iSubItem = 1;
+		lvi.pszText = szSection;
+		ListView_SetItem(hwndList, &lvi);
+
+		lvi.iSubItem = 0;
+
+		lvi.mask = LVIF_PARAM;
+		lvi.mask |= LVIF_INDENT;
+		lvi.iIndent = 1;
+		lvi.iItem = nItems++;
+		lvi.lParam = uSectionNumber;
+		ListView_InsertItem(hwndList, &lvi);
+	}
+}
+
 static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
@@ -217,7 +260,6 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			g_himlOptions = (HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_WINDOWOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
 			if (g_himlOptions)
 				ImageList_Destroy(g_himlOptions);
-
 
 			/*
 			* fill the list box, create groups first, then add items
@@ -379,6 +421,10 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							}
 							M->WriteByte(SRMSGMOD_T, "avbordertype", (BYTE) SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_GETCURSEL, 0, 0));
 							M->WriteDword(SRMSGMOD_T, "avborderclr", SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0));
+
+							if(!CSkin::m_skinEnabled)
+								CSkin::m_bAvatarBorderType = (BYTE)M->GetByte("avbordertype", 0);
+
 							M->WriteByte(SRMSGMOD_T, "avatarmode", avMode);
 							M->WriteByte(SRMSGMOD_T, "ownavatarmode", (BYTE) SendDlgItemMessage(hwndDlg, IDC_OWNAVATARMODE, CB_GETCURSEL, 0, 0));
 
@@ -1770,6 +1816,14 @@ static INT_PTR CALLBACK GroupOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 1, &tci);
 				MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 				ShowWindow((HWND)tci.lParam, oPage == 1 ? SW_SHOW : SW_HIDE);
+				if (CMimAPI::m_pfnEnableThemeDialogTexture)
+					CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+
+				tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPTIONS3), hwnd, DlgProcOptions3);
+				tci.pszText = TranslateT("Events and filters");
+				TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 2, &tci);
+				MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
+				ShowWindow((HWND)tci.lParam, oPage == 2 ? SW_SHOW : SW_HIDE);
 				if (CMimAPI::m_pfnEnableThemeDialogTexture)
 					CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 

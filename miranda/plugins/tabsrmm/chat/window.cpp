@@ -1210,58 +1210,43 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
  * session
  */
 
+static UINT _eventorder[] = { GC_EVENT_ACTION,
+	GC_EVENT_MESSAGE,
+	GC_EVENT_NICK,
+	GC_EVENT_JOIN,
+	GC_EVENT_PART,
+	GC_EVENT_TOPIC,
+	GC_EVENT_ADDSTATUS,
+	GC_EVENT_INFORMATION,
+	GC_EVENT_QUIT,
+	GC_EVENT_KICK,
+	GC_EVENT_NOTICE,
+	0
+};
+
 static INT_PTR CALLBACK FilterWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	SESSION_INFO * si = (SESSION_INFO *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	switch (uMsg) {
 		case WM_INITDIALOG: {
-			DWORD dwMask, dwFlags;
 
 			si = (SESSION_INFO *)lParam;
-			dwMask = M->GetDword(si->hContact, "Chat", "FilterMask", 0);
-			dwFlags = M->GetDword(si->hContact, "Chat", "FilterFlags", 0);
+			DWORD dwMask = M->GetDword(si->hContact, "Chat", "FilterMask", 0);
+			DWORD dwFlags = M->GetDword(si->hContact, "Chat", "FilterFlags", 0);
+
+			DWORD dwPopupMask = M->GetDword(si->hContact, "Chat", "PopupMask", 0);
+			DWORD dwPopupFlags = M->GetDword(si->hContact, "Chat", "PopupFlags", 0);
+
+			DWORD dwTrayMask = M->GetDword(si->hContact, "Chat", "TrayIconMask", 0);
+			DWORD dwTrayFlags = M->GetDword(si->hContact, "Chat", "TrayIconFlags", 0);
+
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)si);
 
-			CheckDlgButton(hwndDlg, IDC_1, dwMask & GC_EVENT_ACTION ? (dwFlags & GC_EVENT_ACTION ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_2, dwMask & GC_EVENT_MESSAGE ? (dwFlags & GC_EVENT_MESSAGE ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_3, dwMask & GC_EVENT_NICK ? (dwFlags & GC_EVENT_NICK ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_4, dwMask & GC_EVENT_JOIN ? (dwFlags & GC_EVENT_JOIN ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_5, dwMask & GC_EVENT_PART ? (dwFlags & GC_EVENT_PART ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_6, dwMask & GC_EVENT_TOPIC ? (dwFlags & GC_EVENT_TOPIC ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_7, dwMask & GC_EVENT_ADDSTATUS ? (dwFlags & GC_EVENT_ADDSTATUS ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_8, dwMask & GC_EVENT_INFORMATION ? (dwFlags & GC_EVENT_INFORMATION ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_9, dwMask & GC_EVENT_QUIT ? (dwFlags & GC_EVENT_QUIT ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_10, dwMask & GC_EVENT_KICK ? (dwFlags & GC_EVENT_KICK ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_11, dwMask & GC_EVENT_NOTICE ? (dwFlags & GC_EVENT_NOTICE ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-
-			dwMask = M->GetDword(si->hContact, "Chat", "PopupMask", 0);
-			dwFlags = M->GetDword(si->hContact, "Chat", "PopupFlags", 0);
-			CheckDlgButton(hwndDlg, IDC_P1, dwMask & GC_EVENT_ACTION ? (dwFlags & GC_EVENT_ACTION ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_P2, dwMask & GC_EVENT_MESSAGE ? (dwFlags & GC_EVENT_MESSAGE ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_P3, dwMask & GC_EVENT_NICK ? (dwFlags & GC_EVENT_NICK ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_P4, dwMask & GC_EVENT_JOIN ? (dwFlags & GC_EVENT_JOIN ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_P5, dwMask & GC_EVENT_PART ? (dwFlags & GC_EVENT_PART ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_P6, dwMask & GC_EVENT_TOPIC ? (dwFlags & GC_EVENT_TOPIC ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_P7, dwMask & GC_EVENT_ADDSTATUS ? (dwFlags & GC_EVENT_ADDSTATUS ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_P8, dwMask & GC_EVENT_INFORMATION ? (dwFlags & GC_EVENT_INFORMATION ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_P9, dwMask & GC_EVENT_QUIT ? (dwFlags & GC_EVENT_QUIT ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_P10, dwMask & GC_EVENT_KICK ? (dwFlags & GC_EVENT_KICK ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_P11, dwMask & GC_EVENT_NOTICE ? (dwFlags & GC_EVENT_NOTICE ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-
-			dwMask = M->GetDword(si->hContact, "Chat", "TrayIconMask", 0);
-			dwFlags = M->GetDword(si->hContact, "Chat", "TrayIconFlags", 0);
-			CheckDlgButton(hwndDlg, IDC_T1, dwMask & GC_EVENT_ACTION ? (dwFlags & GC_EVENT_ACTION ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_T2, dwMask & GC_EVENT_MESSAGE ? (dwFlags & GC_EVENT_MESSAGE ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_T3, dwMask & GC_EVENT_NICK ? (dwFlags & GC_EVENT_NICK ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_T4, dwMask & GC_EVENT_JOIN ? (dwFlags & GC_EVENT_JOIN ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_T5, dwMask & GC_EVENT_PART ? (dwFlags & GC_EVENT_PART ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_T6, dwMask & GC_EVENT_TOPIC ? (dwFlags & GC_EVENT_TOPIC ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_T7, dwMask & GC_EVENT_ADDSTATUS ? (dwFlags & GC_EVENT_ADDSTATUS ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_T8, dwMask & GC_EVENT_INFORMATION ? (dwFlags & GC_EVENT_INFORMATION ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_T9, dwMask & GC_EVENT_QUIT ? (dwFlags & GC_EVENT_QUIT ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_T10, dwMask & GC_EVENT_KICK ? (dwFlags & GC_EVENT_KICK ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-			CheckDlgButton(hwndDlg, IDC_T11, dwMask & GC_EVENT_NOTICE ? (dwFlags & GC_EVENT_NOTICE ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
-
+			for(int i = 0; _eventorder[i]; i++) {
+				CheckDlgButton(hwndDlg, IDC_1 + i, dwMask & _eventorder[i] ? (dwFlags & _eventorder[i] ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
+				CheckDlgButton(hwndDlg, IDC_P1 + i, dwPopupMask & _eventorder[i] ? (dwPopupFlags & _eventorder[i] ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
+				CheckDlgButton(hwndDlg, IDC_T1 + i, dwTrayMask & _eventorder[i] ? (dwTrayFlags & _eventorder[i] ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
+			}
 			break;
 		}
 		case WM_CTLCOLOREDIT:
@@ -1272,53 +1257,15 @@ static INT_PTR CALLBACK FilterWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
 
 		case WM_ACTIVATE:
 			if (LOWORD(wParam) == WA_INACTIVE) {
-				int iFlags = 0;
+				int iFlags = 0, i;
 				UINT result;
 				DWORD dwMask = 0, dwFlags = 0;
 
-				result = IsDlgButtonChecked(hwndDlg, IDC_1);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_ACTION : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_ACTION : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_2);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_MESSAGE : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_MESSAGE : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_3);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_NICK : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_NICK : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_4);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_JOIN : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_JOIN : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_5);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_PART : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_PART : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_6);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_TOPIC : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_TOPIC : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_7);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_ADDSTATUS : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_ADDSTATUS : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_8);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_INFORMATION : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_INFORMATION : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_9);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_QUIT : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_QUIT : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_10);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_KICK : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_KICK : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_11);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_NOTICE : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_NOTICE : 0);
+				for(i = 0; _eventorder[i]; i++) {
+					result = IsDlgButtonChecked(hwndDlg, IDC_1 + i);
+					dwMask |= (result != BST_INDETERMINATE ? _eventorder[i] : 0);
+					iFlags |= (result == BST_CHECKED ? _eventorder[i] : 0);
+				}
 
 				if (iFlags&GC_EVENT_ADDSTATUS)
 					iFlags |= GC_EVENT_REMOVESTATUS;
@@ -1335,49 +1282,11 @@ static INT_PTR CALLBACK FilterWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
 
 				dwMask = iFlags = 0;
 
-				result = IsDlgButtonChecked(hwndDlg, IDC_P1);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_ACTION : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_ACTION : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_P2);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_MESSAGE : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_MESSAGE : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_P3);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_NICK : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_NICK : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_P4);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_JOIN : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_JOIN : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_P5);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_PART : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_PART : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_P6);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_TOPIC : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_TOPIC : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_P7);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_ADDSTATUS : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_ADDSTATUS : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_P8);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_INFORMATION : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_INFORMATION : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_P9);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_QUIT : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_QUIT : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_P10);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_KICK : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_KICK : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_P11);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_NOTICE : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_NOTICE : 0);
+				for(i = 0; _eventorder[i]; i++) {
+					result = IsDlgButtonChecked(hwndDlg, IDC_P1 + i);
+					dwMask |= (result != BST_INDETERMINATE ? _eventorder[i] : 0);
+					iFlags |= (result == BST_CHECKED ? _eventorder[i] : 0);
+				}
 
 				if (iFlags&GC_EVENT_ADDSTATUS)
 					iFlags |= GC_EVENT_REMOVESTATUS;
@@ -1394,50 +1303,11 @@ static INT_PTR CALLBACK FilterWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
 
 				dwMask = iFlags = 0;
 
-				result = IsDlgButtonChecked(hwndDlg, IDC_T1);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_ACTION : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_ACTION : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_T2);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_MESSAGE : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_MESSAGE : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_T3);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_NICK : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_NICK : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_T4);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_JOIN : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_JOIN : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_T5);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_PART : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_PART : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_T6);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_TOPIC : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_TOPIC : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_T7);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_ADDSTATUS : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_ADDSTATUS : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_T8);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_INFORMATION : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_INFORMATION : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_T9);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_QUIT : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_QUIT : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_T10);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_KICK : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_KICK : 0);
-
-				result = IsDlgButtonChecked(hwndDlg, IDC_T11);
-				dwMask |= (result != BST_INDETERMINATE ? GC_EVENT_NOTICE : 0);
-				iFlags |= (result == BST_CHECKED ? GC_EVENT_NOTICE : 0);
-
+				for(i = 0; _eventorder[i]; i++) {
+					result = IsDlgButtonChecked(hwndDlg, IDC_T1 + i);
+					dwMask |= (result != BST_INDETERMINATE ? _eventorder[i] : 0);
+					iFlags |= (result == BST_CHECKED ? _eventorder[i] : 0);
+				}
 				if (iFlags&GC_EVENT_ADDSTATUS)
 					iFlags |= GC_EVENT_REMOVESTATUS;
 

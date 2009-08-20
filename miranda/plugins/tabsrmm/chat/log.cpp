@@ -838,16 +838,14 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 			// Insert icon
 			if (g_Settings.LogSymbols)                // use symbols
 				Log_Append(&buffer, &bufferEnd, &bufferAlloced, "%s %c", Log_SetStyle(17, 17), EventToSymbol(lin));
-			else {
-				if (lin->iType&g_Settings.dwIconFlags || lin->bIsHighlighted && g_Settings.dwIconFlags&GC_EVENT_HIGHLIGHT) {
-					int iIndex = (lin->bIsHighlighted && g_Settings.dwIconFlags & GC_EVENT_HIGHLIGHT) ? ICON_HIGHLIGHT : EventToIcon(lin);
-					Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\f0\\fs14");
-					while (bufferAlloced - bufferEnd < (logIconBmpSize[0] + 20))
-						bufferAlloced += 4096;
-					buffer = (char *) mir_realloc(buffer, bufferAlloced);
-					CopyMemory(buffer + bufferEnd, pLogIconBmpBits[iIndex], logIconBmpSize[iIndex]);
-					bufferEnd += logIconBmpSize[iIndex];
-				}
+			else if (g_Settings.dwIconFlags) {
+				int iIndex = lin->bIsHighlighted ? ICON_HIGHLIGHT : EventToIcon(lin);
+				Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\f0\\fs14");
+				while (bufferAlloced - bufferEnd < (logIconBmpSize[0] + 20))
+					bufferAlloced += 4096;
+				buffer = (char *) mir_realloc(buffer, bufferAlloced);
+				CopyMemory(buffer + bufferEnd, pLogIconBmpBits[iIndex], logIconBmpSize[iIndex]);
+				bufferEnd += logIconBmpSize[iIndex];
 			}
 
 			if (g_Settings.TimeStampEventColour) {
