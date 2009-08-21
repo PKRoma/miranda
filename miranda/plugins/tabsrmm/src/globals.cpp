@@ -103,8 +103,7 @@ void CGlobals::Reload()
 	m_visualMessageSizeIndicator = M->GetByte("msgsizebar", 0);
 	m_autoSplit = M->GetByte("autosplit", 0);
 	m_FlashOnMTN = M->GetByte(SRMSGMOD, SRMSGSET_SHOWTYPINGWINFLASH, SRMSGDEFSET_SHOWTYPINGWINFLASH);
-	m_chat_enabled = M->GetByte("enable_chat", 1) ? true : false;
-
+	m_bSessionList = M->GetByte("slistinstatusbar", 1) ? true : false;
 	if(m_MenuBar == 0)
 		m_MenuBar = ::LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENUBAR));
 

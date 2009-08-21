@@ -384,12 +384,12 @@ LRESULT DM_UpdateLastMessage(const _MessageWindowData *dat)
 				mir_sntprintf(fmt, safe_sizeof(fmt), TranslateT("Last received: %s at %s"), date, time);
 				SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM) fmt);
 			}
-			SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? PluginConfig.g_buttonBarIcons[16] : 0));
+			SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(PluginConfig.m_bSessionList ? PluginConfig.g_buttonBarIcons[16] : 0));
 			if (dat->pContainer->hwndSlist)
 				SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)PluginConfig.g_buttonBarIcons[16]);
 		} else {
 			SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) "");
-			SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? PluginConfig.g_buttonBarIcons[16] : 0));
+			SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(PluginConfig.m_bSessionList ? PluginConfig.g_buttonBarIcons[16] : 0));
 			if (dat->pContainer->hwndSlist)
 				SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)PluginConfig.g_buttonBarIcons[16]);
 		}

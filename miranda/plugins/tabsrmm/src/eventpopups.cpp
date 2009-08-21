@@ -97,7 +97,6 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
 	options->wMaxFavorites = 15;
 	options->wMaxRecent = 15;
 	options->iAnnounceMethod = (int)M->GetByte(MODULE, OPT_ANNOUNCEMETHOD, 0);
-	options->bFloaterInWin = (BOOL)M->GetByte(MODULE, OPT_FLOATERINWIN, 1);
 	options->dwRemoveMask = M->GetDword(MODULE, OPT_REMOVEMASK, 0);
 	options->bSimpleMode = M->GetByte(MODULE, OPT_SIMPLEOPT, 0);
 	CheckForRemoveMask();
@@ -131,7 +130,6 @@ int NEN_WriteOptions(NEN_OPTIONS *options)
 	M->WriteDword(MODULE, OPT_LIMITPREVIEW, options->iLimitPreview);
 	M->WriteByte(MODULE, OPT_MINIMIZEANIMATED, (BYTE)options->bAnimated);
 	M->WriteByte(MODULE, OPT_ANNOUNCEMETHOD, (BYTE)options->iAnnounceMethod);
-	M->WriteByte(MODULE, OPT_FLOATERINWIN, (BYTE)options->bFloaterInWin);
 	M->WriteDword(MODULE, OPT_REMOVEMASK, options->dwRemoveMask);
 	M->WriteByte(MODULE, OPT_SIMPLEOPT, (BYTE)options->bSimpleMode);
 	return 0;
@@ -140,7 +138,7 @@ int NEN_WriteOptions(NEN_OPTIONS *options)
 static struct LISTOPTIONSGROUP lGroups[] = {
 	0, _T("Disable notifications"),
 	0, _T("General options"),
-	0, _T("System tray and floater options"),
+	0, _T("System tray icon"),
 	0, _T("Left click actions (popups only)"),
 	0, _T("Right click actions (popups only)"),
 	0, _T("Timeout actions (popups only)"),
@@ -154,7 +152,6 @@ static struct LISTOPTIONSITEM defaultItems[] = {
 	0, _T("Don't announce event when message dialog is open"), IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bWindowCheck, 1,
 	0, _T("Don't announce events from RSS protocols"), IDC_NORSS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bNoRSS, 1,
 	0, _T("Enable the system tray icon"), IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bTraySupport, 2,
-	0, _T("Show session list menu on the message windows status bar"), IDC_MINIMIZETOTRAY, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bFloaterInWin, 2,
 	0, _T("Merge popups \"per user\" (experimental, unstable)"), IDC_CHKMERGEPOPUP, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bMergePopup, 6,
 	0, _T("Show date for merged popups"), IDC_CHKSHOWDATE, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowDate, 6,
 	0, _T("Show time for merged popups"), IDC_CHKSHOWTIME, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowTime, 6,

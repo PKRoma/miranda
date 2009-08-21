@@ -142,7 +142,7 @@ CMenuBar::CMenuBar(HWND hwndParent, const ContainerWindowData *pContainer)
 
 	m_activeMenu = 0;
 	m_activeID = 0;
-	m_isAero = false;
+	m_isAero = M->isAero();
 }
 
 CMenuBar::~CMenuBar()
@@ -624,24 +624,12 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 			break;
 		}
 		case WM_ERASEBKGND: {
-			RECT rcClient;
-
 			if ((pContainer && pContainer->bSkinned) || M->isAero())
 				return 1;
-			/*
-			if (CMimAPI::m_pfnIsThemeActive != 0) {
-				if (CMimAPI::m_pfnIsThemeActive() && !M->isAero())
-					break;
-			}
-			*/
-			GetClientRect(hWnd, &rcClient);
-			FillRect((HDC)wParam, &rcClient, GetSysColorBrush(COLOR_3DFACE));
-			return 0;
+			break;
 		}
 		case WM_PAINT:
-			if (!CSkin::m_skinEnabled && !M->isAero())
-				break;
-			else {
+			if (1) {
 				PAINTSTRUCT ps;
 				TCHAR szText[1024];
 				int i;
@@ -670,10 +658,12 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 
 				if (pContainer && pContainer->bSkinned)
 					CSkin::SkinDrawBG(hWnd, GetParent(hWnd), pContainer, &rcClient, hdcMem);
+				else if(!fAero)
+					FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
 
 				for (i = 0; i < (int)nParts; i++) {
 					SendMessage(hWnd, SB_GETRECT, (WPARAM)i, (LPARAM)&itemRect);
-					if (!item->IGNORED && !fAero)
+					if (!item->IGNORED && !fAero && pContainer && pContainer->bSkinned)
 						DrawAlpha(hdcMem, &itemRect, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
 								  item->CORNER, item->BORDERSTYLE, item->imageItem);
 
@@ -720,6 +710,7 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 				EndPaint(hWnd, &ps);
 				return 0;
 			}
+			break;
 		case WM_CONTEXTMENU: {
 			RECT rc;
 			POINT pt;

@@ -1482,7 +1482,6 @@ int LoadSendRecvMessageModule(void)
 tzdone:
 	mREOLECallback = new REOLECallback;
 
-	ZeroMemory((void *)&PluginConfig, sizeof(PluginConfig));
 	ZeroMemory((void *)&nen_options, sizeof(nen_options));
 
 	M->m_hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);

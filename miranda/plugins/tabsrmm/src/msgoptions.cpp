@@ -197,6 +197,7 @@ static struct LISTOPTIONSITEM defaultItems[] = {
 	0, _T("Delete temporary contacts on close"), 0, LOI_TYPE_SETTING, (UINT_PTR)"deletetemp", 0,
 	0, _T("Allow PASTE AND SEND feature (Ctrl-D)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"pasteandsend", 1,
 	0, _T("Automatically split long messages (experimental, use with care)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autosplit", 2,
+	0, _T("Show session list menu on the message window status bar"), 1, LOI_TYPE_SETTING, (UINT_PTR)"slistinstatusbar", 2,
 	0, NULL, 0, 0, 0, 0
 };
 

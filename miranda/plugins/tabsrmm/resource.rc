@@ -10,7 +10,6 @@
 #include <windows.h>
 #include "../../include/statusmodes.h"
 
-#include <version.h>
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -84,31 +83,31 @@ BEGIN
     LTEXT           "Background",IDC_STATIC,86,193,47,8
     CTEXT           "Timeout (seconds, 0 = default, -1 = no timeout)",
                     IDC_STATIC,134,193,168,8
-    LTEXT           "Message",IDC_STATIC,11,207,44,13
+    LTEXT           "Message",IDC_STATIC,11,208,44,13
     CONTROL         "",IDC_COLTEXT_MESSAGE,"ColourPicker",WS_TABSTOP,56,207,
                     24,13
     CONTROL         "",IDC_COLBACK_MESSAGE,"ColourPicker",WS_TABSTOP,92,207,
                     24,13
     CONTROL         "Default colors",IDC_CHKDEFAULTCOL_MESSAGE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,126,207,62,12
-    LTEXT           "Others",IDC_STATIC,12,226,44,11
+    LTEXT           "Others",IDC_STATIC,12,225,44,11
     CONTROL         "",IDC_COLTEXT_OTHERS,"ColourPicker",WS_TABSTOP,56,223,
                     24,13
     CONTROL         "",IDC_COLBACK_OTHERS,"ColourPicker",WS_TABSTOP,92,223,
                     24,13
     CONTROL         "Default colors",IDC_CHKDEFAULTCOL_OTHERS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,126,223,62,12
-    EDITTEXT        IDC_DELAY_MESSAGE,210,205,46,12,ES_AUTOHSCROLL | 
+    EDITTEXT        IDC_DELAY_MESSAGE,210,206,46,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_DELAY_MESSAGE_SPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
                     UDS_ARROWKEYS,197,207,9,13
-    EDITTEXT        IDC_DELAY_OTHERS,210,224,46,12,ES_AUTOHSCROLL | 
+    EDITTEXT        IDC_DELAY_OTHERS,210,223,46,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_DELAY_OTHERS_SPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
                     UDS_ARROWKEYS,199,224,11,13
-    PUSHBUTTON      "Preview",IDC_PREVIEW,261,205,48,31
+    PUSHBUTTON      "Preview",IDC_PREVIEW,261,206,48,31
     CONTROL         "",IDC_EVENTOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | 
                     WS_TABSTOP,6,8,294,115
@@ -1444,14 +1443,13 @@ END
 
 1 TEXTINCLUDE MOVEABLE PURE 
 BEGIN
-    "resource.h\0"
+    "src/resource.h\0"
 END
 
 2 TEXTINCLUDE MOVEABLE PURE 
 BEGIN
     "#include <windows.h>\r\n"
     "#include ""../../include/statusmodes.h""\r\r\n"
-    "#include <version.h>\r\n"
     "\r\0"
 END
 

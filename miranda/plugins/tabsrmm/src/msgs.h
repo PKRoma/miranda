@@ -289,6 +289,7 @@ struct ContainerWindowData {
 	HBITMAP hbmToolbarBG, oldhbmToolbarBG;
 	CTaskbarInteract *TaskBar;
 	CMenuBar		 *MenuBar;
+	LONG	fPreviousMenubar;
 };
 
 #define STICK_ICON_MSG 10

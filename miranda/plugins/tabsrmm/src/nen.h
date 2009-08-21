@@ -140,7 +140,6 @@ typedef struct _nen {
     WORD wMaxFavorites;
     int  iAnnounceMethod;
 	BYTE bSimpleMode;
-	BYTE bFloaterInWin;
     DWORD dwRemoveMask;
 } NEN_OPTIONS;
 

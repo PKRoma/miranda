@@ -127,9 +127,6 @@ EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Options",IDC_STATIC,3,0,300,229
-    CONTROL         "Enable chat integration (changing this needs restart)",
-                    IDC_CHAT_ENABLE,"Button",BS_AUTOCHECKBOX | BS_FLAT | 
-                    WS_TABSTOP,13,11,280,11
     CONTROL         "",IDC_CHECKBOXES,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_DISABLEDRAGDROP | 
                     TVS_FULLROWSELECT | WS_BORDER | WS_TABSTOP,6,26,294,177

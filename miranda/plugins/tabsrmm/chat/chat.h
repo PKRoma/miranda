@@ -341,7 +341,6 @@ struct GlobalLogSettings_t {
 	BOOL		DoubleClick4Privat;
 	BOOL		ShowContactStatus;
 	BOOL		ContactStatusFirst;
-
 };
 extern struct GlobalLogSettings_t g_Settings;
 

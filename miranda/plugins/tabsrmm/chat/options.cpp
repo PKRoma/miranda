@@ -380,13 +380,7 @@ static void LoadLogFonts(void)
 
 static struct _tagicons { char *szDesc; char *szName; int id; UINT size;} _icons[] = {
 	LPGEN("Window Icon"), "chat_window", IDI_CHANMGR, 16,
-// 	LPGEN("Background colour"), "chat_bkgcol", IDI_BKGCOLOR, 16,
-// 	LPGEN("Room settings"), "chat_settings", IDI_TOPICBUT, 16,
-// 	LPGEN("Event filter disabled"), "chat_filter", IDI_FILTER, 16,
-// 	LPGEN("Event filter enabled"), "chat_filter2", IDI_FILTER2, 16,
 	LPGEN("Icon overlay"), "chat_overlay", IDI_OVERLAY, 16,
-// 	LPGEN("Show nicklist"), "chat_shownicklist", IDI_SHOWNICKLIST, 16,
-// 	LPGEN("Hide nicklist"), "chat_hidenicklist", IDI_HIDENICKLIST, 16,
 
 	LPGEN("Status 1 (10x10)"), "chat_status0", IDI_STATUS0, 16,
 	LPGEN("Status 2 (10x10)"), "chat_status1", IDI_STATUS1, 16,
@@ -520,8 +514,8 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				if (himlOptions)
 					ImageList_Destroy(himlOptions);
 
-				hListHeading1 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Appearance and functionality of chat room windows"), M->GetByte("Chat", "Branch1Exp", 0) ? TRUE : FALSE);
-				hListHeading2 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Appearance of the message log"), M->GetByte("Chat", "Branch2Exp", 0) ? TRUE : FALSE);
+				hListHeading1 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Appearance and functionality of chat room windows"), TRUE);
+				hListHeading2 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Appearance of the message log"), TRUE);
 
 				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading1, branch1, SIZEOF(branch1), 0x0000);
 				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading2, branch2, SIZEOF(branch2), 0x0000);
@@ -540,7 +534,6 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				while (_o1controls[i])
 					ShowWindow(GetDlgItem(hwndDlg, _o1controls[i++]), SW_HIDE);
 			}
-			CheckDlgButton(hwndDlg, IDC_CHAT_ENABLE, M->GetByte("enable_chat", 1));
 			break;
 
 		case OPT_FIXHEADINGS:
@@ -548,10 +541,6 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 			CheckHeading(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading2);
 			break;
 		case WM_COMMAND:
-			if (LOWORD(wParam) == IDC_CHAT_ENABLE) {
-				M->WriteByte("PluginDisable", "chat.dll", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_CHAT_ENABLE) ? 1 : 0));
-				MessageBox(0, TranslateT("You should now immediatly restart Miranda to make this change take effect."), TranslateT("tabSRMM Message"), MB_OK);
-			}
 			if ((LOWORD(wParam) == IDC_GROUP)
 					&& (HIWORD(wParam) != EN_CHANGE || (HWND)lParam != GetFocus()))	return 0;
 
@@ -637,7 +626,6 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 								SM_BroadcastMessage(NULL, GC_SETWNDPROPS, 0, 0, TRUE);
 								SM_ReconfigureFilters();
 							}
-							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "enable_chat", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_CHAT_ENABLE) ? 1 : 0));
 						}
 						return TRUE;
 					}
@@ -1542,7 +1530,6 @@ int OptionsInit(void)
 	DeleteObject(hFont);
 	g_Settings.LogTextIndent = iText;
 	g_Settings.LogTextIndent = g_Settings.LogTextIndent * 12 / 10;
-
 	return 0;
 }
 

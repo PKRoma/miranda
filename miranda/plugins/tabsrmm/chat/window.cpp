@@ -2206,7 +2206,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 					lstrcpyn(szFinalStatusBarText, ptszDispName, SIZEOF(szFinalStatusBarText));
 
 				SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM)szFinalStatusBarText);
-				SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? PluginConfig.g_buttonBarIcons[16] : 0));
+				SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(PluginConfig.m_bSessionList ? PluginConfig.g_buttonBarIcons[16] : 0));
 //				SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXT, 0, (LPARAM)szFinalStatusBarText);
 				UpdateStatusBar(dat);
 				mir_free(ptszDispName);

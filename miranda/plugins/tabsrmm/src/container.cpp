@@ -166,8 +166,8 @@ void SetAeroMargins(ContainerWindowData *pContainer)
 				pContainer->MenuBar->setAero(true);
 			}
 			else {
-				m.cyTopHeight = 0;
-				pContainer->MenuBar->setAero(false);
+				m.cyTopHeight = pContainer->dwFlags & CNT_NOMENUBAR ? 0 : pContainer->MenuBar->getHeight();
+				pContainer->MenuBar->setAero(true);
 			}
 			m.cxLeftWidth = 0;
 			m.cxRightWidth = 0;
@@ -1340,6 +1340,8 @@ buttons_done:
 				pContainer->preSIZE.cx = rcClient.right - rcClient.left;
 				pContainer->preSIZE.cy = rcClient.bottom - rcClient.top;
 			}
+			SetAeroMargins(pContainer);
+
 			pContainer->MenuBar->Resize(LOWORD(lParam), HIWORD(lParam), sizeChanged ? TRUE : FALSE);
 
 			/*
@@ -1361,11 +1363,8 @@ buttons_done:
 					SendMessage((HWND)item.lParam, DM_CHECKSIZE, 0, 0);
 			}
 
-			SetAeroMargins(pContainer);
-
-
 			RedrawWindow(hwndTab, NULL, NULL, RDW_INVALIDATE | (pContainer->bSizingLoop ? RDW_ERASE : 0));
-			RedrawWindow(hwndDlg, NULL, NULL, (bSkinned ? RDW_FRAME : 0) | RDW_INVALIDATE | (pContainer->bSizingLoop /* || wParam == SIZE_RESTORED */ ? RDW_ERASE : 0));
+			RedrawWindow(hwndDlg, NULL, NULL, (bSkinned ? RDW_FRAME : 0) | RDW_INVALIDATE | (pContainer->bSizingLoop || wParam == SIZE_RESTORED ? RDW_ERASE : 0));
 
 			if (pContainer->hwndStatus)
 				InvalidateRect(pContainer->hwndStatus, NULL, FALSE);
@@ -1899,21 +1898,53 @@ panel_found:
 			if (bSkinned || fAero) {
 				PAINTSTRUCT ps;
 				HDC hdc = BeginPaint(hwndDlg, &ps);
+				/*
+				RECT rc;
+				GetClientRect(hwndDlg, &rc);
+				FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
 				if(fAero && !(pContainer->dwFlags & CNT_NOMENUBAR)) {
-					RECT rc;
-					GetClientRect(hwndDlg, &rc);
 					rc.bottom = 20;
 					FillRect(hdc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
 				}
+				*/
 				EndPaint(hwndDlg, &ps);
 				return 0;
 			}
 			break;
 		}
 		case WM_ERASEBKGND: {
-			if (bSkinned)
-				return TRUE;
-			break;
+			/*
+			 * avoid flickering of the menu bar when aero is active
+			 */
+			HDC hdc = (HDC)wParam;
+			RECT rc;
+			GetClientRect(hwndDlg, &rc);
+
+			if (bSkinned || M->isAero()) {
+				FillRect(hdc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+				if(M->isAero() && (!(pContainer->dwFlags & CNT_NOMENUBAR) || pContainer->fPreviousMenubar)) {
+					_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+
+					bool fInfoPanel = (dat && (dat->dwFlagsEx & MWF_SHOW_INFOPANEL));
+
+					LONG oldBottom = rc.bottom;
+					LONG mBarHeight = pContainer->MenuBar->getHeight();
+					rc.bottom = fInfoPanel ? (pContainer->fPreviousMenubar ? pContainer->fPreviousMenubar : mBarHeight) : mBarHeight;
+
+					FillRect(hdc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+					rc.top = fInfoPanel ? (pContainer->fPreviousMenubar ? pContainer->fPreviousMenubar : mBarHeight) : mBarHeight;
+					rc.bottom = oldBottom;
+					FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
+					pContainer->fPreviousMenubar = mBarHeight;
+				}
+				else
+					FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
+			}
+			else
+				FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
+
+			SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, 1);
+			return TRUE;
 		}
 		case DM_OPTIONSAPPLIED: {
 			DWORD dwLocalFlags = 0;
@@ -2125,7 +2156,7 @@ panel_found:
 			}
 			else if (pContainer->hwndStatus == 0) {
 				pContainer->hwndStatus = CreateWindowEx(0, _T("TSStatusBarClass"), NULL, SBT_TOOLTIPS | WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwndDlg, NULL, g_hInst, NULL);
-				if (nen_options.bFloaterInWin)
+				if (PluginConfig.m_bSessionList)
 					pContainer->hwndSlist = CreateWindowExA(0, "TSButtonClass", "", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 1, 2, 18, 18, pContainer->hwndStatus, (HMENU)1001, g_hInst, NULL);
 				else
 					pContainer->hwndSlist = 0;

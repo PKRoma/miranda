@@ -54,7 +54,6 @@
 #define IDC_STATIC_ADD                  1077
 #define IDC_STATIC_ULIST                1078
 #define IDC_STATIC_OTHER                1079
-#define IDC_CHAT_ENABLE                 1080
 #define IDC_STATIC_MESSAGE              1081
 #define IDC_STATIC110                   1082
 #define IDC_STATIC112                   1085

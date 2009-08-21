@@ -34,7 +34,7 @@ class CGlobals
 public:
 	CGlobals()
 	{
-		//::ZeroMemory(this, sizeof(CGlobals));
+		::ZeroMemory(this, sizeof(CGlobals));
 	}
 
 	~CGlobals()
@@ -143,6 +143,7 @@ public:
 	HBITMAP		hbmLogo;
 	HANDLE 		m_hMessageWindowList;
 	bool		m_chat_enabled;
+	bool		m_bSessionList;
 	HMENU		m_MenuBar;
 };
 
