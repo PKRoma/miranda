@@ -394,7 +394,6 @@ static void MsgWindowUpdateState(_MessageWindowData *dat, UINT msg)
 		if (PluginConfig.m_AutoLocaleSupport && dat->hContact != 0) {
 			if (dat->hkl == 0)
 				DM_LoadLocale(dat);
-				//PostMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
 			else
 				PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
 		}
@@ -949,12 +948,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 						return 0;
 					case 'H':
 						SendMessage(hwndDlg, WM_COMMAND, IDC_HISTORY, 0);
-						return 0;
-					case 'Q':
-						SendMessage(hwndDlg, WM_COMMAND, IDC_QUOTE, 0);
-						return 0;
-					case 'F':
-						CallService(MS_FILE_SENDFILE, (WPARAM)mwdat->hContact, 0);
 						return 0;
 					case 'P':
 						SendMessage(hwndDlg, WM_COMMAND, IDC_PIC, 0);
@@ -1775,11 +1768,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			/*
 			 * 0.8+ retrieve user defined and "readable" account name
 			 */
-			if(ServiceExists(MS_PROTO_GETACCOUNT)) {
-				acc = (PROTOACCOUNT *)CallService(MS_PROTO_GETACCOUNT, (WPARAM)0, (LPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto));
-				if(acc && acc->tszAccountName)
-					mir_sntprintf(dat->szAccount, 128, acc->tszAccountName);
-			}
+			acc = (PROTOACCOUNT *)CallService(MS_PROTO_GETACCOUNT, (WPARAM)0, (LPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto));
+			if(acc && acc->tszAccountName)
+				mir_sntprintf(dat->szAccount, 128, acc->tszAccountName);
 
 			dat->multiSplitterX = (int) M->GetDword(SRMSGMOD, "multisplit", 150);
 			dat->nTypeMode = PROTOTYPE_SELFTYPING_OFF;
@@ -2430,6 +2421,16 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					}
 				}
 
+				/*
+				 * update readable account name (the subcontact may have changed
+				 */
+
+				if(dat->bIsMeta) {
+					PROTOACCOUNT *acc = (PROTOACCOUNT *)CallService(MS_PROTO_GETACCOUNT, (WPARAM)0, (LPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto));
+					if(acc && acc->tszAccountName)
+						mir_sntprintf(dat->szAccount, 128, acc->tszAccountName);
+				}
+
 				if (item.mask & TCIF_TEXT) {
 					item.pszText = newtitle;
 					_tcsncpy(dat->newtitle, newtitle, safe_sizeof(dat->newtitle));
@@ -2835,7 +2836,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					dat->hDbEventFirst = (HANDLE) lParam;
 
 				fIsStatusChangeEvent = IsStatusEvent(dbei.eventType);
-				fIsNotifyEvent = (dbei.eventType == EVENTTYPE_MESSAGE || dbei.eventType == EVENTTYPE_FILE || dbei.eventType == EVENTTYPE_URL);
+				fIsNotifyEvent = (dbei.eventType == EVENTTYPE_MESSAGE || dbei.eventType == EVENTTYPE_FILE);
 
 				if (!fIsStatusChangeEvent) {
 					int heFlags = HistoryEvents_GetFlags(dbei.eventType);
@@ -2902,9 +2903,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						switch (dbei.eventType) {
 							case EVENTTYPE_MESSAGE:
 								dat->iFlashIcon = PluginConfig.g_IconMsgEvent;
-								break;
-							case EVENTTYPE_URL:
-								dat->iFlashIcon = PluginConfig.g_IconUrlEvent;
 								break;
 							case EVENTTYPE_FILE:
 								dat->iFlashIcon = PluginConfig.g_IconFileEvent;
@@ -3166,10 +3164,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			SendMessage(hwndContainer, DM_SELECTTAB, wParam, lParam);       // pass the msg to our container
 			return 0;
 
-		case DM_LOADLOCALE: {
-			DM_LoadLocale(dat);
-			return 0;
-		}
 		case DM_SETLOCALE:
 			if (dat->dwFlags & MWF_WASBACKGROUNDCREATE)
 				break;
@@ -3272,8 +3266,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
 				LoadSplitter(hwndDlg, dat);
 				PostMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
-				//DM_LoadLocale(hwndDlg, dat);
-				PostMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
+				DM_LoadLocale(dat);
+				//PostMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
 				PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
 				if (dat->hwndIEView != 0)
 					SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
@@ -3713,17 +3707,6 @@ quote_from_last:
 							}
 						}
 #endif
-						if (dbei.eventType == EVENTTYPE_URL) {
-							iDescr = lstrlenA((char *)szText);
-							MoveMemory(szText + iDescr + 2, szText + iDescr + 1, dbei.cbBlob - iDescr - 1);
-							szText[iDescr] = '\r';
-							szText[iDescr+1] = '\n';
-#ifdef _UNICODE
-							szConverted = (TCHAR *)malloc(sizeof(TCHAR) * (1 + lstrlenA((char *)szText)));
-							MultiByteToWideChar(CP_ACP, 0, (char *) szText, -1, szConverted, 1 + lstrlenA((char *)szText));
-							iAlloced = TRUE;
-#endif
-						}
 						if (dbei.eventType == EVENTTYPE_FILE) {
 							iDescr = lstrlenA((char *)(szText + sizeof(DWORD)));
 							MoveMemory(szText, szText + sizeof(DWORD), iDescr);
@@ -4192,7 +4175,7 @@ quote_from_last:
 							}
 							break;
 						case ID_SENDMENU_SENDNUDGE:
-							SendNudge(dat, hwndDlg);
+							SendNudge(dat);
 							break;
 						case ID_SENDMENU_SENDDEFAULT:
 							dat->sendMode = 0;
@@ -4387,14 +4370,29 @@ quote_from_last:
 							message.wParam = wp;
 
 							if(msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN) {
-								LRESULT mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)&message, (LPARAM)"tabSRMM");
+								LRESULT mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)&message, (LPARAM)Translate(TABSRMM_HK_SECTION_IM));
+
+								switch(mim_hotkey_check) {
+									case TABSRMM_HK_SETUSERPREFS:
+										CallService(MS_TABMSG_SETUSERPREFS, (WPARAM)dat->hContact, 0);
+										return(_dlgReturn(hwndDlg, 1));
+									case TABSRMM_HK_NUDGE:
+										SendNudge(dat);
+										return(_dlgReturn(hwndDlg, 1));
+									case TABSRMM_HK_SENDFILE:
+										CallService(MS_FILE_SENDFILE, (WPARAM)dat->hContact, 0);
+										return(_dlgReturn(hwndDlg, 1));
+									case TABSRMM_HK_QUOTEMSG:
+										SendMessage(hwndDlg, WM_COMMAND, IDC_QUOTE, 0);
+										return(_dlgReturn(hwndDlg, 1));
+									default:
+										break;
+								}
+								mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)&message, (LPARAM)Translate(TABSRMM_HK_SECTION_GENERIC));
 
 								switch(mim_hotkey_check) {
 									case TABSRMM_HK_PASTEANDSEND:
 										HandlePasteAndSend(hwndDlg, dat);
-										return(_dlgReturn(hwndDlg, 1));
-									case TABSRMM_HK_SETUSERPREFS:
-										CallService(MS_TABMSG_SETUSERPREFS, (WPARAM)dat->hContact, 0);
 										return(_dlgReturn(hwndDlg, 1));
 									case TABSRMM_HK_CONTAINEROPTIONS:
 										if (m_pContainer->hWndOptions == 0)
@@ -4422,9 +4420,6 @@ quote_from_last:
 											break;
 										case 20:
 											PostMessage(hwndDlg, WM_COMMAND, IDC_TOGGLETOOLBAR, 1);
-											break;
-										case 14:				// ctrl - n (send a nudge if protocol supports the /SendNudge service)
-											SendNudge(dat, hwndDlg);
 											break;
 									}
 									return 1;

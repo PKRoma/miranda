@@ -3447,11 +3447,6 @@ LABEL_SHOWWINDOW:
 			return 0;
 		}
 
-		case DM_LOADLOCALE: {
-			DM_LoadLocale(dat);
-			return 0;
-		}
-
 		case DM_SETLOCALE:
 			if (dat->dwFlags & MWF_WASBACKGROUNDCREATE)
 				break;
@@ -3486,8 +3481,7 @@ LABEL_SHOWWINDOW:
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
 				//LoadSplitter(hwndDlg, dat);
 				SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETSCROLLPOS, 0, (LPARAM)&pt);
-				//DM_LoadLocale(hwndDlg, dat);
-				PostMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
+				DM_LoadLocale(dat);
 				PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
 			} else {
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);

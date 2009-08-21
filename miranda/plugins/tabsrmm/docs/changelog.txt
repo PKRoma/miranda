@@ -31,6 +31,13 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
+Version 3.0.0.3  - 2009/08/20
+
+	* too many changes to list here. Major rewrites in many areas, aero support
+	  new menu bar (rebar-based), new, more dynamic info panel layout and drawing,
+	  support for core hotkey service added, folders support extended, reworked
+	  some groupchat options, got rid of old protocol names where possible
+
 Version 3.0.0.2  - 2009/07/30
 
 	* Major rewrites in some areas

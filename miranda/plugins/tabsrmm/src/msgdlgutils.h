@@ -76,7 +76,7 @@ void        LoadThemeDefaults(HWND hwndDlg, struct _MessageWindowData *dat);
 void        SaveMessageLogFlags(HWND hwndDlg, struct _MessageWindowData *dat);
 void        ConfigureSmileyButton(HWND hwndDlg, struct _MessageWindowData *dat);
 int         CutContactName(TCHAR *szold, TCHAR *sznew, unsigned int size);
-void        SendNudge(struct _MessageWindowData *dat, HWND hwndDlg);
+void        SendNudge(const _MessageWindowData *dat);
 void        EnableSendButton(HWND hwnd, int iMode);
 LRESULT     GetSendButtonState(HWND hwnd);
 HICON       GetXStatusIcon(struct _MessageWindowData *dat);

@@ -2511,7 +2511,7 @@ void EnableSendButton(HWND hwnd, int iMode)
 		SendMessage(hwndOK, BUTTONSETASFLATBTN + 14, iMode, 0);
 }
 
-void SendNudge(struct _MessageWindowData *dat, HWND hwndDlg)
+void SendNudge(const _MessageWindowData *dat)
 {
 	char *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 	char szServiceName[128];
@@ -2520,6 +2520,9 @@ void SendNudge(struct _MessageWindowData *dat, HWND hwndDlg)
 	mir_snprintf(szServiceName, 128, "%s/SendNudge", szProto);
 	if (ServiceExists(szServiceName) && ServiceExists(MS_NUDGE_SEND))
 		CallService(MS_NUDGE_SEND, (WPARAM)hContact, 0);
+	else
+		SendMessage(dat->hwnd, DM_ACTIVATETOOLTIP, IDC_MESSAGE,
+					(LPARAM)TranslateT("Either the nudge plugin is not installed or the contact's protocol does not support sending a nudge event."));
 }
 
 void GetClientIcon(_MessageWindowData *dat)

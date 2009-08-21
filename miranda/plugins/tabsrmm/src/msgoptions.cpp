@@ -1,33 +1,35 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
-		--pad=oper --one-line=keep-blocks  --unpad=paren
-
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2003 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-$Id$
-
-*/
-
-/* UNDONE
- * all state image masks changed to use simple checkboxes instead of image lists
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * Implementation of the option pages
+ *
  */
 
 #include "commonheaders.h"
@@ -466,7 +468,7 @@ static struct LISTOPTIONSGROUP lvGroups[] = {
 	0, _T("Message log appearance"),
 	0, _T("Support for external plugins"),
 	0, _T("Other options"),
-	0, _T("Events to show"),
+	0, _T("Additional events to show"),
 	0, _T("Timestamp settings (note: timstamps also depend on your templates)"),
 	0, _T("Message log icons"),
 	0, NULL
@@ -474,7 +476,6 @@ static struct LISTOPTIONSGROUP lvGroups[] = {
 
 static struct LISTOPTIONSITEM lvItems[] = {
 	0, _T("Show file events"), 1, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SHOWFILES, 3,
-	0, _T("Show url events"), 1, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SHOWURLS, 3,
 	0, _T("Show timestamps"), 1, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_SHOWTIME, 4,
 	0, _T("Show dates in timestamps"), 1, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_SHOWDATES, 4,
 	0, _T("Show seconds in timestamps"), 1, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_SHOWSECONDS, 4,
@@ -952,10 +953,7 @@ static struct LISTOPTIONSITEM tabItems[] = {
 	//MAD
 	0, _T("ESC closes whole container(uncheck for closing per-tab)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"escmode_2", 3,
 	0, _T("Close button only hides message windows"), 0, LOI_TYPE_SETTING, (UINT_PTR)"hideonclose", 3,
-	0, _T("Allow TAB key in message input ares (will disable focus switching by TAB key)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"tabmode", 3,
-	//
-	//0, _T("Force more aggressive window updates"), 1, LOI_TYPE_SETTING, (UINT_PTR)"aggromode", 3,
-
+	0, _T("Allow TAB key in typing area (this will disable focus selection by TAB key)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"tabmode", 3,
 	//MAD
 	0, _T("Add offline contacts to multisend list"),0,LOI_TYPE_SETTING,(UINT_PTR) "AllowOfflineMultisend", 3,
 	//
@@ -1390,10 +1388,6 @@ static INT_PTR CALLBACK DlgProcTabSrmmModernOptions(HWND hwndDlg, UINT msg, WPAR
 		{IDC_SENDDBLENTER, FALSE, 0, DBVT_BYTE, SRMSGMOD_T, "SendOnDblEnter"},
 		{IDC_MINSEND, FALSE, 0, DBVT_BYTE, SRMSGMOD_T, SRMSGSET_AUTOMIN},
 		{IDC_NOOPENNOTIFY, FALSE, 0, DBVT_BYTE, "tabSRMM_NEN", OPT_WINDOWCHECK, CBVT_BOOL, &nen_options.bWindowCheck},
-		{IDC_NOTIFYMSG, MASK_MESSAGE|MASK_FILE|MASK_URL|MASK_OTHER, MASK_MESSAGE, DBVT_BYTE, "tabSRMM_NEN", OPT_MASKNOTIFY, CBVT_INT, &nen_options.maskNotify},
-		{IDC_NOTIFYFILE, MASK_MESSAGE|MASK_FILE|MASK_URL|MASK_OTHER, MASK_FILE, DBVT_BYTE, "tabSRMM_NEN", OPT_MASKNOTIFY, CBVT_INT, &nen_options.maskNotify},
-		{IDC_NOTIFYURL, MASK_MESSAGE|MASK_FILE|MASK_URL|MASK_OTHER, MASK_URL, DBVT_BYTE, "tabSRMM_NEN", OPT_MASKNOTIFY, CBVT_INT, &nen_options.maskNotify},
-		{IDC_NOTIFYOTHER, MASK_MESSAGE|MASK_FILE|MASK_URL|MASK_OTHER, MASK_OTHER, DBVT_BYTE, "tabSRMM_NEN", OPT_MASKNOTIFY, CBVT_INT, &nen_options.maskNotify},
 	};
 
 	static BOOL bInit = TRUE;

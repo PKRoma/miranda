@@ -1,32 +1,36 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
-		--pad=oper --one-line=keep-blocks  --unpad=paren
-
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2003 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
----------------------------------------------------------------------------
-
-$Id$
-
-License: GPL
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * some text utility functions for message formatting (bbcode translation etc.)
+ *
+ */
 
 #define __CPP_LEAN
 
@@ -45,7 +49,6 @@ extern int  haveMathMod;
 extern TCHAR *mathModDelimiter;
 extern unsigned int g_ctable_size;
 
-static int iHaveSmileyadd = -1;
 
 /*
  * old code (textformat plugin dealing directly in the edit control - not the best solution, but the author
@@ -100,117 +103,114 @@ TCHAR *FilterEventMarkers(TCHAR *wszText)
 	return wszText;
 }
 
-const TCHAR *FormatRaw(DWORD dwFlags, const TCHAR *msg, int flags, const char *szProto, HANDLE hContact, BOOL *clr_added, BOOL isSent)
+const TCHAR *FormatRaw(_MessageWindowData *dat, const TCHAR *msg, int flags, BOOL isSent)
 {
-	bool clr_was_added = false, was_added;
-	static tstring message(msg);
+	bool 	clr_was_added = false, was_added;
+	static 	tstring message(msg);
 	INT_PTR beginmark = 0, endmark = 0, tempmark = 0, index;
-	int i, endindex;
-	TCHAR endmarker;
+	int 	i, endindex;
+	TCHAR 	endmarker;
+	DWORD	dwFlags = dat->dwFlags;
 	message.assign(msg);
+
 
 
 	if (haveMathMod && mathModDelimiter && message.find(mathModDelimiter) != message.npos)
 		return(message.c_str());
 
-	if(!(dwFlags & MWF_LOG_BBCODE))
-		goto nobbcode;
-
-	if (iHaveSmileyadd == -1)
-		iHaveSmileyadd = ServiceExists(MS_SMILEYADD_BATCHPARSE);
-
-	if (haveMathMod && mathModDelimiter) {
-		INT_PTR mark = 0;
-		int      nrDelims = 0;
-		while ((mark = message.find(mathModDelimiter, mark)) != message.npos) {
-			nrDelims++;
-			mark += lstrlen(mathModDelimiter);
-		}
-		if (nrDelims > 0 && (nrDelims % 2) != 0)
-			message.append(mathModDelimiter);
-	}
-	beginmark = 0;
-	while (TRUE) {
-		for (i = 0; i < NR_CODES; i++) {
-			if ((tempmark = message.find(w_bbcodes_begin[i], 0)) != message.npos)
-				break;
-		}
-		if (i >= NR_CODES)
-			break;
-		beginmark = tempmark;
-		endindex = i;
-		endmark = message.find(w_bbcodes_end[i], beginmark);
-		if (endindex == 4) {                                 // color
-			size_t closing = message.find_first_of(_T("]"), beginmark);
-			was_added = false;
-
-			if (closing == message.npos) {                      // must be an invalid [color=] tag w/o closing bracket
-				message[beginmark] = ' ';
-				continue;
-			} else {
-				tstring colorname = message.substr(beginmark + 7, 8);
-search_again:
-				bool  clr_found = false;
-				unsigned int ii = 0;
-				TCHAR szTemp[5];
-				for (ii = 0; ii < g_ctable_size; ii++) {
-					if (!_tcsnicmp((TCHAR *)colorname.c_str(), rtf_ctable[ii].szName, lstrlen(rtf_ctable[ii].szName))) {
-						closing = beginmark + 7 + lstrlen(rtf_ctable[ii].szName);
-						if (endmark != message.npos) {
-							message.erase(endmark, 4);
-							message.replace(endmark, 4, _T("c0 "));
-						}
-						message.erase(beginmark, (closing - beginmark));
-						message.insert(beginmark, _T("cxxx "));
-						_sntprintf(szTemp, 4, _T("%02d"), MSGDLGFONTCOUNT + 13 + ii);
-						message[beginmark + 3] = szTemp[0];
-						message[beginmark + 4] = szTemp[1];
-						clr_found = true;
-						if (was_added) {
-							TCHAR wszTemp[100];
-							_sntprintf(wszTemp, 100, _T("##col##%06u:%04u"), endmark - closing, ii);
-							wszTemp[99] = 0;
-							message.insert(beginmark, wszTemp);
-						}
-						break;
-					}
-				}
-				if (!clr_found) {
-					size_t  c_closing = colorname.find_first_of(_T("]"), 0);
-					if (c_closing == colorname.npos)
-						c_closing = colorname.length();
-					const TCHAR *wszColname = colorname.c_str();
-					if (endmark != message.npos && c_closing > 2 && c_closing <= 6 && iswalnum(colorname[0]) && iswalnum(colorname[c_closing -1])) {
-						RTF_ColorAdd(wszColname, c_closing);
-						if (!was_added) {
-							clr_was_added = was_added = true;
-							goto search_again;
-						} else
-							goto invalid_code;
-					} else {
-invalid_code:
-						if (endmark != message.npos)
-							message.erase(endmark, 8);
-						if (closing != message.npos && closing < (size_t)endmark)
-							message.erase(beginmark, (closing - beginmark) + 1);
-						else
-							message[beginmark] = ' ';
-					}
-				}
-				continue;
+	if(dwFlags & MWF_LOG_BBCODE) {
+		if (haveMathMod && mathModDelimiter) {
+			INT_PTR mark = 0;
+			int      nrDelims = 0;
+			while ((mark = message.find(mathModDelimiter, mark)) != message.npos) {
+				nrDelims++;
+				mark += lstrlen(mathModDelimiter);
 			}
+			if (nrDelims > 0 && (nrDelims % 2) != 0)
+				message.append(mathModDelimiter);
 		}
-		if (endmark != message.npos)
-			message.replace(endmark, 4, formatting_strings_end[i]);
-		message.insert(beginmark, _T(" "));
-		message.replace(beginmark, 4, formatting_strings_begin[i]);
-	}
-nobbcode:
-	if (message.find(_T("://")) != message.npos)
-		goto nosimpletags;
+		beginmark = 0;
+		while (TRUE) {
+			for (i = 0; i < NR_CODES; i++) {
+				if ((tempmark = message.find(w_bbcodes_begin[i], 0)) != message.npos)
+					break;
+			}
+			if (i >= NR_CODES)
+				break;
+			beginmark = tempmark;
+			endindex = i;
+			endmark = message.find(w_bbcodes_end[i], beginmark);
+			if (endindex == 4) {                                 // color
+				size_t closing = message.find_first_of(_T("]"), beginmark);
+				was_added = false;
 
-	if (!(dwFlags & MWF_LOG_TEXTFORMAT))
-		goto nosimpletags;
+				if (closing == message.npos) {                      // must be an invalid [color=] tag w/o closing bracket
+					message[beginmark] = ' ';
+					continue;
+				} else {
+					tstring colorname = message.substr(beginmark + 7, 8);
+search_again:
+					bool  clr_found = false;
+					unsigned int ii = 0;
+					TCHAR szTemp[5];
+					for (ii = 0; ii < g_ctable_size; ii++) {
+						if (!_tcsnicmp((TCHAR *)colorname.c_str(), rtf_ctable[ii].szName, lstrlen(rtf_ctable[ii].szName))) {
+							closing = beginmark + 7 + lstrlen(rtf_ctable[ii].szName);
+							if (endmark != message.npos) {
+								message.erase(endmark, 4);
+								message.replace(endmark, 4, _T("c0 "));
+							}
+							message.erase(beginmark, (closing - beginmark));
+							message.insert(beginmark, _T("cxxx "));
+							_sntprintf(szTemp, 4, _T("%02d"), MSGDLGFONTCOUNT + 13 + ii);
+							message[beginmark + 3] = szTemp[0];
+							message[beginmark + 4] = szTemp[1];
+							clr_found = true;
+							if (was_added) {
+								TCHAR wszTemp[100];
+								_sntprintf(wszTemp, 100, _T("##col##%06u:%04u"), endmark - closing, ii);
+								wszTemp[99] = 0;
+								message.insert(beginmark, wszTemp);
+							}
+							break;
+						}
+					}
+					if (!clr_found) {
+						size_t  c_closing = colorname.find_first_of(_T("]"), 0);
+						if (c_closing == colorname.npos)
+							c_closing = colorname.length();
+						const TCHAR *wszColname = colorname.c_str();
+						if (endmark != message.npos && c_closing > 2 && c_closing <= 6 && iswalnum(colorname[0]) && iswalnum(colorname[c_closing -1])) {
+							RTF_ColorAdd(wszColname, c_closing);
+							if (!was_added) {
+								clr_was_added = was_added = true;
+								goto search_again;
+							} else
+								goto invalid_code;
+						} else {
+invalid_code:
+							if (endmark != message.npos)
+								message.erase(endmark, 8);
+							if (closing != message.npos && closing < (size_t)endmark)
+								message.erase(beginmark, (closing - beginmark) + 1);
+							else
+								message[beginmark] = ' ';
+						}
+					}
+					continue;
+				}
+			}
+			if (endmark != message.npos)
+				message.replace(endmark, 4, formatting_strings_end[i]);
+			message.insert(beginmark, _T(" "));
+			message.replace(beginmark, 4, formatting_strings_begin[i]);
+		}
+	}
+
+	if (!(dwFlags & MWF_LOG_TEXTFORMAT) || message.find(_T("://")) != message.npos) {
+		dat->clr_added = clr_was_added ? TRUE : FALSE;
+		return(message.c_str());
+	}
 
 
 	while ((beginmark = message.find_first_of(_T("*/_"), beginmark)) != message.npos) {
@@ -255,17 +255,17 @@ ok:
 		* it really is one.
 		*/
 
-		if (iHaveSmileyadd && endmark > beginmark + 1) {
+		if (PluginConfig.g_SmileyAddAvail && (endmark > (beginmark + 1))) {
 			tstring smcode;
 			smcode.assign(message, beginmark, (endmark - beginmark) + 1);
 			SMADD_BATCHPARSE2 smbp = {0};
 			SMADD_BATCHPARSERES *smbpr;
 
 			smbp.cbSize = sizeof(smbp);
-			smbp.Protocolname = szProto;
+			smbp.Protocolname = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 			smbp.flag = SAFL_TCHAR | SAFL_PATH | (isSent ? SAFL_OUTGOING : 0);
 			smbp.str = (TCHAR *)smcode.c_str();
-			smbp.hContact = hContact;
+			smbp.hContact = dat->hContact;
 			smbpr = (SMADD_BATCHPARSERES *)CallService(MS_SMILEYADD_BATCHPARSE, 0, (LPARAM) & smbp);
 			if (smbpr) {
 				CallService(MS_SMILEYADD_BATCHFREE, 0, (LPARAM)smbpr);
@@ -278,9 +278,7 @@ ok:
 		message.insert(beginmark, _T("%%%"));
 		message.replace(beginmark, 4, formatting_strings_begin[index]);
 	}
-nosimpletags:
-	if (clr_added && clr_was_added)
-		*clr_added = TRUE;
+	dat->clr_added = clr_was_added ? TRUE : FALSE;
 	return(message.c_str());
 }
 
@@ -319,6 +317,7 @@ const TCHAR *NewTitle(const _MessageWindowData *dat, const TCHAR *szFormat)
 				curpos = tempmark + lstrlen(dat->szNickname);
 				break;
 			}
+			case 'p':
 			case 'a': {
 				if (dat->szAccount)
 					title.insert(tempmark + 2, dat->szAccount);
@@ -346,7 +345,7 @@ const TCHAR *NewTitle(const _MessageWindowData *dat, const TCHAR *szFormat)
 				curpos = tempmark + lstrlen(dat->pContainer->szName);
 				break;
 			}
-			case 'p': {
+			case 'o': {
 				char	*szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 				if (szProto) {
 #if defined(_UNICODE)

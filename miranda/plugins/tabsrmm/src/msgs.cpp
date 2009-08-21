@@ -423,19 +423,8 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 			mwdat->messageCount++;
 	//mad_
 	}
-	if (dbei.flags & DBEF_SENT || dbei.eventType != EVENTTYPE_MESSAGE || dbei.flags & DBEF_READ) {
-		BOOL	fIsNotifyEvent = (dbei.eventType == EVENTTYPE_URL || dbei.eventType == EVENTTYPE_FILE);
-
-		/*
-		 * care about popups for non-message events for contacts w/o an openend window
-		 * if a window is open, the msg window itself will care about showing the popup
-		 */
-		if (dbei.eventType != EVENTTYPE_MESSAGE && fIsNotifyEvent && hwnd == 0 && !(dbei.flags & DBEF_SENT)) {
-			if (!(dbei.flags & DBEF_READ))
-				tabSRMM_ShowPopup(wParam, lParam, dbei.eventType, 0, 0, 0, dbei.szModule, 0);
-		}
+	if (dbei.flags & DBEF_SENT || dbei.eventType != EVENTTYPE_MESSAGE || dbei.flags & DBEF_READ)
 		return 0;
-	}
 
 	CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
 		//MaD: hide on close mod, simulating standard behavior for hidden container
@@ -502,10 +491,10 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 		goto nowindowcreate;
 
 	//MAD
-	if (M->GetByte((HANDLE) wParam, "ActualHistory", 0)){
+	if (M->GetByte((HANDLE) wParam, "ActualHistory", 0)) {
 		mesCount=(UINT)M->GetDword((HANDLE) wParam, "messagecount", 0);
 		M->WriteDword((HANDLE) wParam, SRMSGMOD_T, "messagecount", (DWORD)mesCount++);
-		}
+	}
 	//
 
 	GetContainerNameForContact((HANDLE) wParam, szName, CONTAINER_NAMELEN);

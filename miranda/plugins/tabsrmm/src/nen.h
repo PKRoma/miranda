@@ -40,6 +40,7 @@ Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyr
 
 int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOpen, struct ContainerWindowData *pContainer, HWND hwndChild, char *szProto, struct _MessageWindowData *dat);
 
+
 #define DEFAULT_COLBACK RGB(255,255,128)
 #define DEFAULT_COLTEXT RGB(0,0,0)
 #define DEFAULT_MASKNOTIFY (MASK_MESSAGE|MASK_URL|MASK_FILE|MASK_OTHER)
@@ -107,24 +108,15 @@ int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOp
 typedef struct _nen {
     BOOL bPreview;
     BOOL bDefaultColorMsg;
-	BOOL bDefaultColorUrl;
-	BOOL bDefaultColorFile;
 	BOOL bDefaultColorOthers;
     COLORREF colBackMsg;
     COLORREF colTextMsg;
-	COLORREF colBackUrl;
-    COLORREF colTextUrl;
-	COLORREF colBackFile;
-    COLORREF colTextFile;
 	COLORREF colBackOthers;
     COLORREF colTextOthers;
-    UINT maskNotify;
     UINT maskActL;
     UINT maskActR;
 	UINT maskActTE;
 	int iDelayMsg;
-	int iDelayUrl;
-	int iDelayFile;
 	int iDelayOthers;
 	int iDelayDefault;
 	BOOL bMergePopup;
@@ -156,61 +148,34 @@ typedef struct _nen {
 #define FLOATER_FREE 2
 #define FLOATER_ALWAYS 4
 
-typedef struct EVENT_DATA {
+typedef struct {
 	HANDLE hEvent;
-    char szText[MAX_SECONDLINE + 2];
+    TCHAR szText[MAX_SECONDLINE + 2];
     DWORD timestamp;
-} EVENT_DATA;
+} EVENT_DATAT;
 
 typedef struct {
     UINT eventType;
     HANDLE hContact;
     NEN_OPTIONS *pluginOptions;
-	POPUPDATAEX* pud;
+	POPUPDATAT* pud;
 	HWND hWnd;
 	long iSeconds;
-    char szHeader[256];
+    TCHAR szHeader[256];
     int  nrMerged;
-    EVENT_DATA *eventData;
+    EVENT_DATAT *eventData;
     int  nrEventsAlloced;
     int  iActionTaken;
-} PLUGIN_DATA;
-
-typedef struct EVENT_DATAW {
-	HANDLE hEvent;
-    wchar_t szText[MAX_SECONDLINE + 2];
-    DWORD timestamp;
-} EVENT_DATAW;
-
-typedef struct {
-    UINT eventType;
-    HANDLE hContact;
-    NEN_OPTIONS *pluginOptions;
-	POPUPDATAW* pud;
-	HWND hWnd;
-	long iSeconds;
-    wchar_t szHeader[256];
-    int  nrMerged;
-    EVENT_DATAW *eventData;
-    int  nrEventsAlloced;
-    int  iActionTaken;
-} PLUGIN_DATAW;
+} PLUGIN_DATAT;
 
 #define NR_MERGED 5
 
 #define TIMER_TO_ACTION 50685
 
 #define POPUP_COMMENT_MESSAGE "Message"
-#define POPUP_COMMENT_URL "URL"
-#define POPUP_COMMENT_FILE "File"
-#define POPUP_COMMENT_CONTACTS "Contacts"
-#define POPUP_COMMENT_ADDED "You were added!"
-#define POPUP_COMMENT_AUTH "Requests your authorisation"
-#define POPUP_COMMENT_WEBPAGER "ICQ Web pager"
-#define POPUP_COMMENT_EMAILEXP "ICQ Email express"
 #define POPUP_COMMENT_OTHER "Unknown Event"
 
-#define MAX_DATASIZE	24
+#define MAX_DATASIZE	50
 #define MAX_POPUPS 20
 
 #endif

@@ -253,7 +253,6 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 
 	if (imageItem) {
 		imageItem->Render(hdcwnd, rc, false);
-		//IMG_RenderImageItem(hdcwnd, imageItem, rc);
 		return;
 	}
 

@@ -51,7 +51,7 @@ const TCHAR *DoubleAmpersands(TCHAR *pszText);
 
 int         NEN_ReadOptions(NEN_OPTIONS *options);
 int         NEN_WriteOptions(NEN_OPTIONS *options);
-int         UpdateTrayMenu(struct _MessageWindowData *dat, WORD wStatus, char *szProto, TCHAR *szStatus, HANDLE hContact, DWORD fromEvent);
+int 		UpdateTrayMenu(const _MessageWindowData *dat, WORD wStatus, const char *szProto, const TCHAR *szStatus, HANDLE hContact, DWORD fromEvent);
 static int  PopupPreview(NEN_OPTIONS *pluginOptions);
 void        DeletePopupsForContact(HANDLE hContact, DWORD dwMask);
 void        RemoveBalloonTip();

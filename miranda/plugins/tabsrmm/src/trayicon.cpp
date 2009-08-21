@@ -360,7 +360,7 @@ void LoadFavoritesAndRecent()
 	DWORD	dwRecent;
 	int		iIndex = 0, i, j;
 	HANDLE	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	recentEntries = (RCENTRY *)malloc((nen_options.wMaxRecent + 1) * sizeof(RCENTRY));
+	recentEntries = new RCENTRY[nen_options.wMaxRecent + 1];
 	if (recentEntries != NULL) {
 		while (hContact != 0) {
 			if (DBGetContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", 0))
@@ -388,7 +388,7 @@ void LoadFavoritesAndRecent()
 		for (i = 0; i < iIndex; i++)
 			AddContactToFavorites(recentEntries[i].hContact, NULL, NULL, NULL, 0, 0, 1, PluginConfig.g_hMenuRecent, M->GetDword(recentEntries[i].hContact, "ANSIcodepage", PluginConfig.m_LangPackCP));
 
-		free(recentEntries);
+		delete[] recentEntries;
 	}
 }
 

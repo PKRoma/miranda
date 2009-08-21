@@ -1,29 +1,36 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
-		--pad=oper --one-line=keep-blocks  --unpad=paren
-
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2003 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details .
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-$Id$
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * implements the richedit based message log and the template parser
+ *
+ */
 
 #include "commonheaders.h"
 #pragma hdrstop
@@ -75,7 +82,7 @@ int g_groupBreak = TRUE;
 static TCHAR *szMyName = NULL;
 static TCHAR *szYourName = NULL;
 
-const TCHAR *FormatRaw(DWORD dwFlags, const TCHAR *msg, int flags, const char *szProto, HANDLE hContact, BOOL *clr_added, BOOL isSent);
+const TCHAR *FormatRaw(_MessageWindowData *dat, const TCHAR *msg, int flags, BOOL isSent);
 
 static int logPixelSY;
 static TCHAR szToday[22], szYesterday[22];
@@ -603,10 +610,7 @@ int DbEventIsShown(struct _MessageWindowData *dat, DBEVENTINFO * dbei)
 
 	switch (dbei->eventType) {
 		case EVENTTYPE_MESSAGE:
-			//case EVENTTYPE_STATUSCHANGE:
 			return 1;
-		case EVENTTYPE_URL:
-			return (dat->dwFlagsEx & MWF_SHOW_URLEVENTS);
 		case EVENTTYPE_FILE:
 			return(dat->dwFlagsEx & MWF_SHOW_FILEEVENTS);
 	}
@@ -641,7 +645,6 @@ static char *Template_CreateRTFFromDbEvent(struct _MessageWindowData *dat, HANDL
 	BOOL isBold = FALSE, isItalic = FALSE, isUnderline = FALSE;
 	DWORD dwEffectiveFlags;
 	DWORD dwFormattingParams = MAKELONG(PluginConfig.m_FormatWholeWordsOnly, 0);
-	char  *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 	BOOL  fIsStatusChangeEvent = FALSE;
 	TCHAR *msg, *formatted = NULL;
 	int heFlags = -1;
@@ -670,8 +673,7 @@ static char *Template_CreateRTFFromDbEvent(struct _MessageWindowData *dat, HANDL
 		}
 	}
 
-	if (dbei.eventType != EVENTTYPE_MESSAGE && dbei.eventType != EVENTTYPE_FILE
-			&& dbei.eventType != EVENTTYPE_URL && !IsStatusEvent(dbei.eventType))
+	if (dbei.eventType != EVENTTYPE_MESSAGE && dbei.eventType != EVENTTYPE_FILE	&& !IsStatusEvent(dbei.eventType))
 		heFlags = HistoryEvents_GetFlags(dbei.eventType);
 	if (heFlags & HISTORYEVENTS_FLAG_DEFAULT)
 		heFlags = -1;
@@ -689,7 +691,7 @@ static char *Template_CreateRTFFromDbEvent(struct _MessageWindowData *dat, HANDL
 			return NULL;
 		}
 		TrimMessage(msg);
-		formatted = (TCHAR *)FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added, isSent);
+		formatted = const_cast<TCHAR *>(FormatRaw(dat, msg, dwFormattingParams, isSent));
 		mir_free(msg);
 	}
 
@@ -714,11 +716,10 @@ static char *Template_CreateRTFFromDbEvent(struct _MessageWindowData *dat, HANDL
 	isSent = (dbei.flags & DBEF_SENT);
 
 	if (!isSent && (fIsStatusChangeEvent || dbei.eventType == EVENTTYPE_MESSAGE || dbei.eventType == EVENTTYPE_URL)) {
-		 //MAD: ugly hack for hideOnClose...
-		if(IsWindowVisible(GetParent(dat->hwnd))){
+		if(IsWindowVisible(GetParent(dat->hwnd))) {
 			CallService(MS_DB_EVENT_MARKREAD, (WPARAM)hContact, (LPARAM)hDbEvent);
 			CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM)hDbEvent);
-			}
+		}
 	}
 
 	g_groupBreak = TRUE;
@@ -873,9 +874,6 @@ static char *Template_CreateRTFFromDbEvent(struct _MessageWindowData *dat, HANDL
 							icon = isSent ? LOGICON_OUT : LOGICON_IN;
 						else {
 							switch (dbei.eventType) {
-								case EVENTTYPE_URL:
-									icon = LOGICON_URL;
-									break;
 								case EVENTTYPE_FILE:
 									icon = LOGICON_FILE;
 									break;
@@ -1036,11 +1034,12 @@ static char *Template_CreateRTFFromDbEvent(struct _MessageWindowData *dat, HANDL
 								case EVENTTYPE_FILE:
 									c = (char)0xcd;
 									break;
-								case EVENTTYPE_URL:
-									c = (char)0xfe;
-									break;
 								case EVENTTYPE_ERRMSG:
 									c = (char)0x72;;
+									break;
+								default:
+									c = (char)0xaa;
+									break;
 							}
 							if (fIsStatusChangeEvent)
 								c = 0x4e;
@@ -1128,13 +1127,6 @@ static char *Template_CreateRTFFromDbEvent(struct _MessageWindowData *dat, HANDL
 							AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", "\\b0\\ul0\\i0 ");
 							break;
 						}
-						case EVENTTYPE_URL:
-							if (!skipFont)
-								AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", GetRTFFont(isSent ? MSGFONTID_MYMISC + iFontIDOffset : MSGFONTID_YOURMISC + iFontIDOffset));
-							AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", dbei.pBlob);
-							if ((dbei.pBlob + lstrlenA((char *)dbei.pBlob) + 1) != NULL && lstrlenA((char *)(dbei.pBlob + lstrlenA((char *)dbei.pBlob) + 1)))
-								AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, " (%s)", dbei.pBlob + lstrlenA((char *)dbei.pBlob) + 1);
-							break;
 						case EVENTTYPE_FILE:
 							if (!skipFont)
 								AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", GetRTFFont(isSent ? MSGFONTID_MYMISC + iFontIDOffset : MSGFONTID_YOURMISC + iFontIDOffset));

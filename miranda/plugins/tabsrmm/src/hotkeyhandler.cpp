@@ -30,9 +30,6 @@
  *
  * The hotkeyhandler is a small, invisible window which cares about a few things:
 
-    a) global hotkeys (they need to work even if NO message window is open, that's
-       why we handle it here.
-
     b) event notify stuff, messages posted from the popups to avoid threading
        issues.
 
@@ -50,6 +47,16 @@ extern INT_PTR		SendMessageCommand_W(WPARAM wParam, LPARAM lParam);
 
 static UINT 	WM_TASKBARCREATED;
 static HANDLE 	hSvcHotkeyProcessor = 0;
+
+static HOTKEYDESC _hotkeydescs[] = {
+	0, "tabsrmm_mostrecent", "Most recent unread session", TABSRMM_HK_SECTION_IM, MS_TABMSG_HOTKEYPROCESS, HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'R'), TABSRMM_HK_LASTUNREAD,
+	0, "tabsrmm_paste_and_send", "Paste and send", TABSRMM_HK_SECTION_GENERIC, 0, HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'D'), TABSRMM_HK_PASTEANDSEND,
+	0, "tabsrmm_uprefs", "Contact's messaging prefs", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'C'), TABSRMM_HK_SETUSERPREFS,
+	0, "tabsrmm_copts", "Container options", TABSRMM_HK_SECTION_GENERIC, 0, HOTKEYCODE(HOTKEYF_CONTROL, 'O'), TABSRMM_HK_CONTAINEROPTIONS,
+	0, "tabsrmm_nudge", "Send nudge", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_CONTROL, 'N'), TABSRMM_HK_NUDGE,
+	0, "tabsrmm_sendfile", "Send a file", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT, 'F'), TABSRMM_HK_SENDFILE,
+	0, "tabsrmm_quote", "Quote message", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT, 'Q'), TABSRMM_HK_QUOTEMSG,
+};
 
 static INT_PTR HotkeyProcessor(WPARAM wParam, LPARAM lParam)
 {
@@ -163,36 +170,14 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 	}
 	switch (msg) {
 		case WM_INITDIALOG:
-			HOTKEYDESC shk;
-			shk.cbSize = sizeof(shk);
-			shk.pszSection = "tabSRMM";
-			shk.pszService = MS_TABMSG_HOTKEYPROCESS;
-			shk.pszDescription = "Most recent unread session";
-			shk.pszName = "tabsrmm_mostrecent";
-			shk.lParam = TABSRMM_HK_LASTUNREAD;
-			shk.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'R');
-			CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&shk);
+			int i;
 
-			shk.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'D');
-			shk.pszDescription = "Paste and send";
-			shk.pszName = "tabsrmm_paste_and_send";
-			shk.pszService = 0;
-			shk.lParam = TABSRMM_HK_PASTEANDSEND;
-			CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&shk);
-
-			shk.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'C');
-			shk.pszDescription = "Contact's messaging prefs";
-			shk.pszName = "tabsrmm_uprefs";
-			shk.pszService = 0;
-			shk.lParam = TABSRMM_HK_SETUSERPREFS;
-			CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&shk);
-
-			shk.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL, 'O');
-			shk.pszDescription = "Container options";
-			shk.pszName = "tabsrmm_copts";
-			shk.pszService = 0;
-			shk.lParam = TABSRMM_HK_CONTAINEROPTIONS;
-			CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&shk);
+			for(i = 0; i < safe_sizeof(_hotkeydescs); i++) {
+				_hotkeydescs[i].cbSize = sizeof(HOTKEYDESC);
+				_hotkeydescs[i].pszSection = Translate(_hotkeydescs[i].pszSection);
+				_hotkeydescs[i].pszDescription = Translate(_hotkeydescs[i].pszDescription);
+				CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&_hotkeydescs[i]);
+			}
 
 			WM_TASKBARCREATED = RegisterWindowMessageA("TaskbarCreated");
 			ShowWindow(hwndDlg, SW_HIDE);
@@ -273,7 +258,6 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					if (dis->itemData > 0)
 						hIcon = dis->itemData & 0x10000000 ? hIcons[ICON_HIGHLIGHT] : PluginConfig.g_IconMsgEvent;
 					else if (dat != NULL) {
-						//hIcon = LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus);
 						hIcon = MY_GetContactIcon(dat);
 						fNeedFree = TRUE;
 						idle = dat->idle;
@@ -624,7 +608,6 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			return 0;
 		case WM_DESTROY: {
 			DestroyServiceFunction(hSvcHotkeyProcessor);
-			CallService(MS_HOTKEY_UNREGISTER, 0, (LPARAM)"tabsrmm_mostrecent");
 			break;
 		}
 	}

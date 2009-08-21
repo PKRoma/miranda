@@ -691,7 +691,6 @@ struct NewMessageWindowLParam {
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
 #define DM_SCROLLIEVIEW		 (WM_USER+102)
-#define DM_LOADLOCALE	 	 (WM_USER+200)
 
 #define MINSPLITTERY         42
 #define MINLOGHEIGHT         30
@@ -1093,6 +1092,13 @@ typedef struct {
 #define TABSRMM_HK_PASTEANDSEND 8
 #define TABSRMM_HK_SETUSERPREFS 9
 #define TABSRMM_HK_CONTAINEROPTIONS 10
+#define TABSRMM_HK_NUDGE 11
+#define TABSRMM_HK_SENDFILE 12
+#define TABSRMM_HK_QUOTEMSG 13
+
+#define TABSRMM_HK_SECTION_IM "Message windows - IM"
+#define TABSRMM_HK_SECTION_GENERIC "Message windows - all"
+#define TABSRMM_HK_SECTION_GC "Message windows - groupchats"
 
 /*
  * encryption status bar indicator

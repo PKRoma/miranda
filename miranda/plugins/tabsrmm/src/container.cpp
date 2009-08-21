@@ -2917,14 +2917,15 @@ HMENU BuildContainerMenu()
 }
 
 HMENU BuildMCProtocolMenu(HWND hwndDlg) {
-	HMENU hMCContextMenu = 0, hMCSubForce = 0, hMCSubDefault = 0, hMenu = 0;
-	DBVARIANT dbv;
-	int iNumProtos = 0, i = 0, iDefaultProtoByNum = 0;
-	char  szTemp[50], *szProtoMostOnline = NULL;
-	TCHAR szMenuLine[128], *nick = NULL, *szStatusText = NULL, *tzProtoName = NULL;
-	HANDLE hContactMostOnline, handle;
-	int    iChecked, isForced;
-	WORD   wStatus;
+	HMENU 		hMCContextMenu = 0, hMCSubForce = 0, hMCSubDefault = 0, hMenu = 0;
+	DBVARIANT 	dbv;
+	int 		iNumProtos = 0, i = 0, iDefaultProtoByNum = 0;
+	char  		szTemp[50], *szProtoMostOnline = NULL;
+	TCHAR 		szMenuLine[128], *nick = NULL, *szStatusText = NULL;
+	char  		*tzProtoName = NULL;
+	HANDLE 		hContactMostOnline, handle;
+	int    		iChecked, isForced;
+	WORD   		wStatus;
 
 	struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	if (dat == NULL)
@@ -2951,28 +2952,25 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg) {
 		mir_snprintf(szTemp, sizeof(szTemp), "Protocol%d", i);
 		if (DBGetContactSettingString(dat->hContact, PluginConfig.szMetaName, szTemp, &dbv))
 			continue;
-#if defined(_UNICODE)
-		tzProtoName = (TCHAR *)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)dbv.pszVal);
-#else
+
 		tzProtoName = dbv.pszVal;
-#endif
-		mir_snprintf(szTemp, sizeof(szTemp), "Handle%d", i);
-		if ((handle = (HANDLE)M->GetDword(dat->hContact, PluginConfig.szMetaName, szTemp, 0)) != 0) {
-			nick = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)handle, GCDNF_TCHAR);
-			mir_snprintf(szTemp, sizeof(szTemp), "Status%d", i);
-			wStatus = (WORD)DBGetContactSettingWord(dat->hContact, PluginConfig.szMetaName, szTemp, 0);
-			szStatusText = (TCHAR *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, wStatus, GCMDF_TCHAR);
+		PROTOACCOUNT *acc = (PROTOACCOUNT *)CallService(MS_PROTO_GETACCOUNT, (WPARAM)0, (LPARAM)tzProtoName);
+
+		if(acc && acc->tszAccountName) {
+			mir_snprintf(szTemp, sizeof(szTemp), "Handle%d", i);
+			if ((handle = (HANDLE)M->GetDword(dat->hContact, PluginConfig.szMetaName, szTemp, 0)) != 0) {
+				nick = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)handle, GCDNF_TCHAR);
+				mir_snprintf(szTemp, sizeof(szTemp), "Status%d", i);
+				wStatus = (WORD)DBGetContactSettingWord(dat->hContact, PluginConfig.szMetaName, szTemp, 0);
+				szStatusText = (TCHAR *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, wStatus, GCMDF_TCHAR);
+			}
+			mir_sntprintf(szMenuLine, safe_sizeof(szMenuLine), _T("%s: %s [%s] %s"), acc->tszAccountName, nick, szStatusText, i == isForced ? TranslateT("(Forced)") : _T(""));
+			iChecked = MF_UNCHECKED;
+			if (hContactMostOnline != 0 && hContactMostOnline == handle)
+				iChecked = MF_CHECKED;
+			AppendMenu(hMCSubForce, MF_STRING | iChecked, 100 + i, szMenuLine);
+			AppendMenu(hMCSubDefault, MF_STRING | (i == iDefaultProtoByNum ? MF_CHECKED : MF_UNCHECKED), 1000 + i, szMenuLine);
 		}
-		mir_sntprintf(szMenuLine, safe_sizeof(szMenuLine), _T("%s: %s [%s] %s"), tzProtoName, nick, szStatusText, i == isForced ? TranslateT("(Forced)") : _T(""));
-#if defined(_UNICODE)
-		if (tzProtoName)
-			mir_free(tzProtoName);
-#endif
-		iChecked = MF_UNCHECKED;
-		if (hContactMostOnline != 0 && hContactMostOnline == handle)
-			iChecked = MF_CHECKED;
-		AppendMenu(hMCSubForce, MF_STRING | iChecked, 100 + i, szMenuLine);
-		AppendMenu(hMCSubDefault, MF_STRING | (i == iDefaultProtoByNum ? MF_CHECKED : MF_UNCHECKED), 1000 + i, szMenuLine);
 		DBFreeVariant(&dbv);
 	}
 	AppendMenu(hMCSubForce, MF_SEPARATOR, 900, _T(""));

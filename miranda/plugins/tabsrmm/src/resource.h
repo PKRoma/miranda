@@ -117,13 +117,7 @@
 #define IDC_SPLITTER2                   1039
 #define IDC_COLBACK_MESSAGE             1041
 #define IDC_COLTEXT_MESSAGE             1042
-#define IDC_CHKDEFAULTCOL_URL           1043
-#define IDC_COLBACK_URL                 1044
-#define IDC_COLTEXT_URL                 1045
-#define IDC_CHKDEFAULTCOL_FILE          1046
 #define IDC_SHOWNAMES                   1047
-#define IDC_COLBACK_FILE                1048
-#define IDC_COLTEXT_FILE                1049
 #define IDC_MSGINDICATOR                1050
 #define IDC_CHKDEFAULTCOL_OTHERS        1050
 #define IDC_COLBACK_OTHERS              1051
@@ -139,12 +133,10 @@
 #define IDC_DELAY_MESSAGE               1060
 #define IDC_SCROLLFIX                   1060
 #define IDC_CLIENTINSTATBAR             1061
-#define IDC_DELAY_URL                   1062
 #define IDC_TYPINGSOUNDS                1062
 #define IDC_OFFLINEMULTI                1063
 #define IDC_CLIENTINSTATBAR2            1063
 #define IDC_ICONWARNINGS                1063
-#define IDC_DELAY_FILE                  1064
 #define IDC_AUTOCLOSEV2                 1064
 #define IDC_RESTART                     1065
 #define IDC_DELAY_OTHERS                1066
@@ -453,8 +445,6 @@
 #define IDC_MESSAGEPREVIEWLIMIT         1349
 #define IDC_MESSAGEPREVIEWLIMITSPIN     1350
 #define IDC_DELAY_MESSAGE_SPIN          1351
-#define IDC_DELAY_URL_SPIN              1352
-#define IDC_DELAY_FILE_SPIN             1353
 #define IDC_MESSAGEPREVIEWLIMITSPIN2    1354
 #define IDC_DELAY_OTHERS_SPIN           1354
 #define IDC_TEMPLATELIST                1361
