@@ -78,13 +78,13 @@ static INT_PTR CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				int i,iItem;
 				for( i=0; i < SIZEOF(virusScanners); i++ ) {
 					if(SRFile_GetRegValue(HKEY_LOCAL_MACHINE,virusScanners[i].szExeRegPath,virusScanners[i].szExeRegValue,szScanExe,SIZEOF(szScanExe))) {
-						iItem=SendDlgItemMessageA(hwndDlg,IDC_SCANCMDLINE,CB_ADDSTRING,0,(LPARAM)virusScanners[i].szProductName);
+						iItem=SendDlgItemMessage(hwndDlg,IDC_SCANCMDLINE,CB_ADDSTRING,0,(LPARAM)virusScanners[i].szProductName);
 						SendDlgItemMessage(hwndDlg,IDC_SCANCMDLINE,CB_SETITEMDATA,iItem,i);
 					}
 				}
 				if ( SendDlgItemMessageA(hwndDlg,IDC_SCANCMDLINE,CB_GETCOUNT,0,0) == 0 )
 				{
-					iItem = SendDlgItemMessageA(hwndDlg,IDC_SCANCMDLINE,CB_ADDSTRING,0,(LPARAM)("") );
+					iItem = SendDlgItemMessage(hwndDlg,IDC_SCANCMDLINE,CB_ADDSTRING,0,(LPARAM)_T("") );
 					SendDlgItemMessage(hwndDlg,IDC_SCANCMDLINE,CB_SETITEMDATA,iItem, (LPARAM)-1);
 				}
 			}
