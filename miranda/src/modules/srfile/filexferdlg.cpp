@@ -53,7 +53,7 @@ TCHAR* PFTS_StringToTchar( PROTOFILETRANSFERSTATUS* ft, const PROTOCHAR* s )
 			return mir_a2t(( char* )s );
 	#else
 		if ( ft->flags & PFTS_UTF ) {
-      char *szAnsi = mir_strdup(( char* )s );
+            char *szAnsi = mir_strdup(( char* )s );
 			return Utf8Decode(szAnsi, NULL);
 		}
 		else
@@ -397,7 +397,11 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 				case IDC_OPENFOLDER:
 					if (dat && dat->transferStatus.tszWorkingDir)
-						ShellExecute(NULL,NULL,dat->transferStatus.tszWorkingDir,NULL,NULL,SW_SHOW);
+                    {
+                        TCHAR* path = PFTS_StringToTchar(&dat->transferStatus, dat->transferStatus.tszWorkingDir);
+						if (path) ShellExecute(NULL,_T("open"),path,NULL,NULL,SW_SHOW);
+                        mir_free(path);
+                    }
 					break;
 
 				case IDC_OPENFILE:
