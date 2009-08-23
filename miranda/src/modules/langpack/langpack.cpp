@@ -66,7 +66,7 @@ static int IsEmpty(char *str)
 	return 1;
 }
 
-static void ConvertBackslashes(char *str)
+void ConvertBackslashes(char *str)
 {
 	char *pstr;
 	for ( pstr = str; *pstr; pstr = CharNextExA(( WORD )langPack.defaultANSICp, pstr, 0 )) {
