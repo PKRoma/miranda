@@ -330,7 +330,6 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 
     case WM_NCDESTROY:
 		mir_free(bct);
-		SetWindowLongPtr(hwndDlg, 0, 0);
         break;
 
 	case WM_SETTEXT:
