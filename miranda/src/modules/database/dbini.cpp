@@ -177,6 +177,7 @@ static INT_PTR CALLBACK IniImportDoneDlgProc(HWND hwndDlg,UINT message,WPARAM wP
 	return FALSE;
 }
 
+void ConvertBackslashes(char *);
 static void ProcessIniFile(TCHAR* szIniPath, char *szSafeSections, char *szUnsafeSections, int secur, bool secFN)
 {
 	FILE *fp = _tfopen(szIniPath, _T("rt"));
@@ -274,16 +275,34 @@ static void ProcessIniFile(TCHAR* szIniPath, char *szSafeSections, char *szUnsaf
 		case 'L':
 			DBDeleteContactSetting(NULL,szSection,szName);
 			break;
+		case 'e':
+		case 'E':
+			ConvertBackslashes(szValue+1);
 		case 's':
 		case 'S':
 			DBWriteContactSettingString(NULL,szSection,szName,szValue+1);
 			break;
+		case 'g':
+		case 'G':
+			{	char *pstr;
+				for(pstr=szValue+1;*pstr;pstr++){
+					if(*pstr=='\\'){
+						switch(pstr[1]){
+						case 'n': *pstr='\n'; break;
+						case 't': *pstr='\t'; break;
+						case 'r': *pstr='\r'; break;
+						default:  *pstr=pstr[1]; break;
+						}
+						MoveMemory(pstr+1,pstr+2,lstrlenA(pstr+2)+1);
+			}	}	}
 		case 'u':
 		case 'U':
 			DBWriteContactSettingStringUtf(NULL,szSection,szName,szValue+1);
 			break;
 		case 'n':
+		case 'h':
 		case 'N':
+		case 'H':
 			{	PBYTE buf;
 				int len;
 				char *pszValue,*pszEnd;
@@ -305,7 +324,7 @@ static void ProcessIniFile(TCHAR* szIniPath, char *szSafeSections, char *szUnsaf
 			}
 			break;
 		default:
-			MessageBox(NULL,TranslateT("Invalid setting type. The first character of every value must be b, w, d, l, s or n."),TranslateT("Install Database Settings"),MB_OK);
+			MessageBox(NULL,TranslateT("Invalid setting type. The first character of every value must be b, w, d, l, s, e, u, g, h or n."),TranslateT("Install Database Settings"),MB_OK);
 			break;
 		}
 	}
