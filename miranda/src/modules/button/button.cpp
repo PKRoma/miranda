@@ -325,10 +325,12 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 			}
 			if (bct->arrow) IconLib_ReleaseIcon(bct->arrow, 0);
 			DestroyTheme(bct);
-			mir_free(bct);
 		}
-		SetWindowLongPtr(hwndDlg,0,(LONG_PTR)NULL);
 		break;	// DONT! fall thru
+
+    case WM_NCDESTROY:
+		mir_free(bct);
+        break;
 
 	case WM_SETTEXT:
 		bct->cHot = 0;

@@ -347,6 +347,8 @@ INT_PTR CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
 	case WM_DESTROY:
 		UnhookEvent(GetPropA(hwndDlg,"Miranda.Preshutdown")); // GetProp() will return NULL if it couldnt find anything
+		RemovePropA(hwndDlg,"Miranda.Preshutdown");
+		RemovePropA(hwndDlg,"Miranda.ParentWnd");
 		DestroyIcon((HICON)SendDlgItemMessage(hwndDlg,IDC_EXISTINGICON,STM_GETICON,0,0));
 		DestroyIcon((HICON)SendDlgItemMessage(hwndDlg,IDC_NEWICON,STM_GETICON,0,0));
 		FreeProtoFileTransferStatus(fts);

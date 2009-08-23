@@ -99,12 +99,12 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 //fileopts.c
 int FileOptInitialise(WPARAM wParam,LPARAM lParam);
 //ftmanager.c
-#define WM_FT_ADD			(WM_APP+1)
-#define WM_FT_RESIZE		(WM_APP+2)
-#define WM_FT_REMOVE		(WM_APP+3)
-#define WM_FT_SELECTPAGE	(WM_APP+4)
-#define WM_FT_CLEANUP		(WM_APP+5)
-#define WM_FT_COMPLETED		(WM_APP+6)
+#define WM_FT_ADD			(WM_USER+701)
+#define WM_FT_RESIZE		(WM_USER+702)
+#define WM_FT_REMOVE		(WM_USER+703)
+#define WM_FT_SELECTPAGE	(WM_USER+704)
+#define WM_FT_CLEANUP		(WM_USER+705)
+#define WM_FT_COMPLETED		(WM_USER+706)
 
 HWND FtMgr_Show(bool bForceActivate, bool bFromMenu);
 void FtMgr_Destroy();

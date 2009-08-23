@@ -261,7 +261,7 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			DBEVENTINFO dbei={0};
 			DBTIMETOSTRINGT dbtts;
 			TCHAR datetimestr[64];
-      char buf[540];
+			char buf[540];
 
 			dbei.cbSize=sizeof(dbei);
 			dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)dat->hDbEvent,0);
@@ -269,13 +269,13 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			CallService(MS_DB_EVENT_GET,(WPARAM)dat->hDbEvent,(LPARAM)&dbei);
 			dat->fs = cle->lParam ? (HANDLE)cle->lParam : (HANDLE)*(PDWORD)dbei.pBlob;
 			lstrcpynA(buf, (char*)dbei.pBlob+4, min(dbei.cbBlob+1,SIZEOF(buf)));
-      TCHAR* ptszFileName = DbGetEventStringT( &dbei, buf );
+			TCHAR* ptszFileName = DbGetEventStringT( &dbei, buf );
 			SetDlgItemText(hwndDlg,IDC_FILENAMES,ptszFileName);
-      mir_free(ptszFileName);
+			mir_free(ptszFileName);
 			lstrcpynA(buf, (char*)dbei.pBlob+4+strlen((char*)dbei.pBlob+4)+1, min((int)(dbei.cbBlob-4-strlen((char*)dbei.pBlob+4)),SIZEOF(buf)));
-      TCHAR* ptszDescription = DbGetEventStringT( &dbei, buf );
+			TCHAR* ptszDescription = DbGetEventStringT( &dbei, buf );
 			SetDlgItemText(hwndDlg,IDC_MSG,ptszDescription);
-      mir_free(ptszDescription);
+			mir_free(ptszDescription);
 			mir_free(dbei.pBlob);
 
 			dbtts.szFormat = _T("t d");
@@ -362,8 +362,9 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				GetLowestExistingDirName(szDirName,szExistingDirName,SIZEOF(szExistingDirName));
 				if(BrowseForFolder(hwndDlg,szExistingDirName))
 					SetDlgItemText(hwndDlg,IDC_FILEDIR,szExistingDirName);
-				return TRUE;
 			}
+            break;
+
 		case IDOK:
 			{	//most recently used directories
 				TCHAR szRecvDir[MAX_PATH],szDefaultRecvDir[MAX_PATH];
@@ -400,13 +401,13 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				ShowWindow(hwndDlg,SW_SHOWMINNOACTIVE);
 			}
 			DestroyWindow(hwndDlg);
-			return TRUE;
+            break;
 
 		case IDCANCEL:
 			if (dat->fs) CallContactService(dat->hContact,PSS_FILEDENY,(WPARAM)dat->fs,(LPARAM)Translate("Cancelled"));
 			dat->fs=NULL; /* the protocol will free the handle */
 			DestroyWindow(hwndDlg);
-			return TRUE;
+            break;
 
 		case IDC_ADD:
 			{	ADDCONTACTSTRUCT acs={0};
@@ -417,8 +418,9 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				CallService(MS_ADDCONTACT_SHOW,(WPARAM)hwndDlg,(LPARAM)&acs);
 				if(!DBGetContactSettingByte(dat->hContact,"CList","NotOnList",0))
 					ShowWindow(GetDlgItem(hwndDlg,IDC_ADD), SW_HIDE);
-				return TRUE;
 			}
+            break;
+
 		case IDC_USERMENU:
 			{	RECT rc;
 				HMENU hMenu=(HMENU)CallService(MS_CLIST_MENUBUILDCONTACT,(WPARAM)dat->hContact,0);
@@ -430,11 +432,11 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
 		case IDC_DETAILS:
 			CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)dat->hContact,0);
-			return TRUE;
+            break;
 
 		case IDC_HISTORY:
 			CallService(MS_HISTORY_SHOWCONTACTHISTORY,(WPARAM)dat->hContact,0);
-			return TRUE;
+            break;
 		}
 		break;
 
@@ -445,9 +447,8 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		Button_FreeIcon_IcoLib(hwndDlg,IDC_HISTORY);
 		Button_FreeIcon_IcoLib(hwndDlg,IDC_USERMENU);
 
-		if ( dat )
-			FreeFileDlgData( dat );
-		return TRUE;
+		if ( dat ) FreeFileDlgData( dat );
+        break;
 	}
 	return FALSE;
 }

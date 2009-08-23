@@ -185,7 +185,7 @@ static INT_PTR CALLBACK FtMgrPageDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 		}
 
 		SetWindowLongPtr(hwnd, DWLP_MSGRESULT, 0);
-		return TRUE;
+		break;
 	}
 
 	case WM_VSCROLL:
