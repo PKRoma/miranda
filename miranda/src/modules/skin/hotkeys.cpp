@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_hotkeys.h>
 
 #define DBMODULENAME "SkinHotKeys"
+#define WM_HOTKEYUNREGISTERED   (WM_USER+721)
 
 typedef enum { HKT_GLOBAL, HKT_LOCAL, HKT_MANUAL, HKT_COUNT } THotkeyType;
 
@@ -258,7 +259,7 @@ static INT_PTR svcHotkeyUnregister(WPARAM, LPARAM lParam)
 	}
 
 	if (g_hwndOptions)
-		SendMessage(g_hwndOptions, WM_APP, 0, 0);
+		SendMessage(g_hwndOptions, WM_HOTKEYUNREGISTERED, 0, 0);
 
 	for (i = 0; i < hotkeys.getCount(); ++i)
 		if (hotkeys[i]->UnregisterHotkey) {
@@ -902,7 +903,7 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 		break;
 	}
 
-	case WM_APP:
+	case WM_HOTKEYUNREGISTERED:
 	{
 		int count;
 		LVITEM lvi = {0};
