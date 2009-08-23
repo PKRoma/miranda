@@ -294,6 +294,7 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				PostMessage(GetParent(hwndDlg), WM_FT_REMOVE, 0, (LPARAM)hwndDlg);
 				DestroyWindow(hwndDlg);
 			}
+            break;
 
 		case WM_COMMAND:
 			if ( CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam),MPCF_CONTACTMENU), (LPARAM)dat->hContact ))
@@ -504,7 +505,7 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 						PostMessage(hwndDlg,M_FILEEXISTSDLGREPLY,(WPARAM)mir_strdup(fts->currentFile),(LPARAM)pfr);
 					}
 					SetWindowLongPtr(hwndDlg,DWLP_MSGRESULT,1);
-					return TRUE;
+					return FALSE;
 				}
 				case ACKRESULT_DATA:
 				{

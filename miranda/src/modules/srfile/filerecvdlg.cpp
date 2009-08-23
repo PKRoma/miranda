@@ -324,8 +324,9 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				GetLowestExistingDirName(szDirName,szExistingDirName,SIZEOF(szExistingDirName));
 				if(BrowseForFolder(hwndDlg,szExistingDirName))
 					SetDlgItemTextA(hwndDlg,IDC_FILEDIR,szExistingDirName);
-				return TRUE;
 			}
+            break;
+
 		case IDOK:
 			{	//most recently used directories
 				char szRecvDir[MAX_PATH],szDefaultRecvDir[MAX_PATH];
@@ -361,13 +362,13 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				ShowWindow(hwndDlg,SW_SHOWMINNOACTIVE);
 			}
 			DestroyWindow(hwndDlg);
-			return TRUE;
+            break;
 
 		case IDCANCEL:
 			if (dat->fs) CallContactService(dat->hContact,PSS_FILEDENY,(WPARAM)dat->fs,(LPARAM)Translate("Cancelled"));
 			dat->fs=NULL; /* the protocol will free the handle */
 			DestroyWindow(hwndDlg);
-			return TRUE;
+            break;
 
 		case IDC_ADD:
 			{	ADDCONTACTSTRUCT acs={0};
@@ -378,8 +379,9 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				CallService(MS_ADDCONTACT_SHOW,(WPARAM)hwndDlg,(LPARAM)&acs);
 				if(!DBGetContactSettingByte(dat->hContact,"CList","NotOnList",0))
 					ShowWindow(GetDlgItem(hwndDlg,IDC_ADD), SW_HIDE);
-				return TRUE;
 			}
+            break;
+
 		case IDC_USERMENU:
 			{	RECT rc;
 				HMENU hMenu=(HMENU)CallService(MS_CLIST_MENUBUILDCONTACT,(WPARAM)dat->hContact,0);
@@ -391,11 +393,11 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
 		case IDC_DETAILS:
 			CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)dat->hContact,0);
-			return TRUE;
+            break;
 
 		case IDC_HISTORY:
 			CallService(MS_HISTORY_SHOWCONTACTHISTORY,(WPARAM)dat->hContact,0);
-			return TRUE;
+            break;
 		}
 		break;
 
@@ -406,9 +408,8 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		Button_FreeIcon_IcoLib(hwndDlg,IDC_HISTORY);
 		Button_FreeIcon_IcoLib(hwndDlg,IDC_USERMENU);
 
-		if ( dat )
-			FreeFileDlgData( dat );
-		return TRUE;
+		if ( dat ) FreeFileDlgData( dat );
+        break;
 	}
 	return FALSE;
 }

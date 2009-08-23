@@ -415,6 +415,10 @@ static LRESULT CALLBACK AeroPaintSubclassProc(HWND hwnd, UINT msg, WPARAM wParam
 			EndPaint(hwnd, &ps);
 			return TRUE;
 		}
+
+		case WM_DESTROY:
+            RemovePropA(hwnd, "Miranda.AeroRender.Active");
+            break;
 	}
 	return CallWindowProc(OldWndProc, hwnd, msg, wParam, lParam);
 }
