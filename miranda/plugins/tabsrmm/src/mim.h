@@ -31,6 +31,9 @@ $Id$
 #ifndef __MIM_H
 #define __MIM_H
 
+
+extern  FI_INTERFACE *FIF;
+
 typedef BOOL 	(WINAPI *SMI)( HMENU hmenu, LPCMENUINFO lpcmi );
 typedef HRESULT (WINAPI *DEFICA)(HWND hwnd, const MARGINS *margins);
 typedef HRESULT (WINAPI *DICE)(BOOL *);
@@ -58,6 +61,8 @@ typedef HANDLE  (WINAPI *BBP)(HDC, RECT *, BP_BUFFERFORMAT, BP_PAINTPARAMS *, HD
 typedef HRESULT (WINAPI *EBP)(HANDLE, BOOL);
 typedef HRESULT (WINAPI *BPI)(void);
 typedef HRESULT (WINAPI *BPU)(void);
+typedef HRESULT (WINAPI *BBW)(HWND, DWM_BLURBEHIND *);
+typedef HRESULT (WINAPI *DGC)(DWORD *, BOOL *);
 
 /*
  * used to encapsulate some parts of the Miranda API
@@ -79,6 +84,9 @@ public:
 		getAeroState();
 		if(m_pfnBufferedPaintInit)
 			m_pfnBufferedPaintInit();
+
+		LRESULT fi_version = CallService(MS_IMG_GETIFVERSION, 0, 0);
+		CallService(MS_IMG_GETINTERFACE, fi_version, (LPARAM)&FIF);
 	}
 
 	~CMimAPI() {
@@ -243,6 +251,8 @@ public:
 	static BPU		m_pfnBufferedPaintUninit;
 	static BBP		m_pfnBeginBufferedPaint;
 	static EBP		m_pfnEndBufferedPaint;
+	static BBW 		m_pfnDwmBlurBehindWindow;
+	static DGC		m_pfnDwmGetColorizationColor;
 
 	static bool		m_shutDown;
 private:

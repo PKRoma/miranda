@@ -37,16 +37,10 @@
 #pragma hdrstop
 #include "sendqueue.h"
 
-/*
 static SKINDESC my_default_skin[] = {
-	IDR_SKIN_GLYPH, _T("glyph.png"),
-	IDR_SKIN_TSK, _T("default.tsk"),
-	IDR_SKIN_TABSRMM, _T("default.tabsrmm"),
-	IDR_SKIN_ICO_CLOSE, _T("close.ico"),
-	IDR_SKIN_ICO_MAX, _T("maximize.ico"),
-	IDR_SKIN_ICO_MIN, _T("minimize.ico")
+	IDR_SKIN_AERO, _T("tabskin_aero.png"),
+	IDR_SKIN_AERO_GLOW, _T("tabskin_aero_glow.png"),
 };
-*/
 
 REOLECallback *mREOLECallback;
 
@@ -1528,11 +1522,9 @@ tzdone:
 	 * extract the default skin
 	 */
 
-	/*
-	if(PluginConfig.m_WinVerMajor >=5 && M->GetDword("def_skin_installed", -1) != SKIN_VERSION) {
-		M->WriteDword(SRMSGMOD_T, "def_skin_installed", SKIN_VERSION);
+	if(PluginConfig.m_WinVerMajor >=6) {
 
-		for(i = 0; i < SKIN_NR_ELEMENTS; i++) {
+		for(int i = 0; i < safe_sizeof(my_default_skin); i++) {
 			HRSRC 	hRes;
 			HGLOBAL	hResource;
 
@@ -1545,10 +1537,9 @@ tzdone:
 					HANDLE  hFile;
 					char 	*pData = (char *)LockResource(hResource);
 					DWORD	dwSize = SizeofResource(g_hInst, hRes), written = 0;
-					mir_sntprintf(szFilename, MAX_PATH, _T("%s\\default"), M->getSkinPath());
-					if(!PathFileExists(szFilename))
-						CreateDirectory(szFilename, NULL);
-					mir_sntprintf(szFilename, MAX_PATH, _T("%s\\default\\%s"), M->getSkinPath(), (TCHAR *)my_default_skin[i].tszName);
+					mir_sntprintf(szFilename, MAX_PATH, _T("%s\\%s"), M->getDataPath(), (TCHAR *)my_default_skin[i].tszName);
+					if(PathFileExists(szFilename))
+					   continue;
 					if((hFile = CreateFile(szFilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)) != INVALID_HANDLE_VALUE) {
 						WriteFile(hFile, (void *)pData, dwSize, &written, NULL);
 						CloseHandle(hFile);
@@ -1557,7 +1548,8 @@ tzdone:
 			}
 		}
 	}
-	*/
+
+	Skin->setupAeroSkins();
 	/*
 	 * load the logo
 	 */

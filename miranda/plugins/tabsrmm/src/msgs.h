@@ -432,29 +432,6 @@ typedef struct _recentinfo {
 } RECENTINFO;
 
 /*
- * window data for the tab control window class
- */
-
-struct TabControlData {
-	BOOL    m_skinning;
-	BOOL    m_moderntabs;
-	HWND    hwnd;
-	DWORD   dwStyle;
-	DWORD   cx, cy;
-	HANDLE  hTheme, hThemeButton;
-	BYTE    m_xpad;
-	struct  ContainerWindowData *pContainer;
-	BOOL    bDragging;
-	int     iBeginIndex;
-	HWND    hwndDrag;
-	struct  _MessageWindowData *dragDat;
-	HIMAGELIST himlDrag;
-	BOOL    bRefreshWithoutClip;
-	BOOL    fSavePos;
-	BOOL    fTipActive;
-};
-
-/*
  * configuration data for custom tab ctrl
  */
 
@@ -1117,7 +1094,7 @@ void SI_CheckStatusIconClick(struct _MessageWindowData *dat, HWND hwndFrom, POIN
 
 typedef struct _tagSKINDesc {
 	ULONG	ulID;				// resource id
-	TCHAR	tszName[20];
+	TCHAR	tszName[30];
 } SKINDESC;
 
 #define SKIN_NR_ELEMENTS 6

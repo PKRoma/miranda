@@ -157,7 +157,9 @@ void SetAeroMargins(ContainerWindowData *pContainer)
 		POINT	pt;
 
 		if(dat) {
-			if((dat->dwFlagsEx & MWF_SHOW_INFOPANEL) && !(dat->dwFlags & MWF_ERRORSTATE) && !(dat->dwFlagsEx & MWF_SHOW_INFONOTES)) {
+			LRESULT tabStyle = GetWindowLongPtr(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), GWL_STYLE);
+
+			if(!(tabStyle & TCS_BOTTOM) || ((dat->dwFlagsEx & MWF_SHOW_INFOPANEL) && !(dat->dwFlags & MWF_ERRORSTATE) && !(dat->dwFlagsEx & MWF_SHOW_INFONOTES))) {
 				GetWindowRect(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_CHAT ? IDC_CHAT_LOG : IDC_LOG), &rcWnd);
 				pt.x = rcWnd.left;
 				pt.y = rcWnd.top;
@@ -173,8 +175,8 @@ void SetAeroMargins(ContainerWindowData *pContainer)
 			m.cxRightWidth = 0;
 			//m.cyTopHeight = (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) ? dat->panelHeight + 1 : 0;
 			m.cyBottomHeight = (pContainer->dwFlags & CNT_NOSTATUSBAR ? 0 : pContainer->statusBarHeight - 1);
-			if(pt.y != pContainer->dwOldAeroTop || pContainer->statusBarHeight != pContainer->dwOldAeroBottom) {
-				pContainer->dwOldAeroTop = pt.y;
+			if(m.cyTopHeight != pContainer->dwOldAeroTop || pContainer->statusBarHeight != pContainer->dwOldAeroBottom) {
+				pContainer->dwOldAeroTop = m.cyTopHeight;
 				pContainer->dwOldAeroBottom = pContainer->statusBarHeight;
 				CMimAPI::m_pfnDwmExtendFrameIntoClientArea(pContainer->hwnd, &m);
 			}
@@ -1341,7 +1343,6 @@ buttons_done:
 				pContainer->preSIZE.cy = rcClient.bottom - rcClient.top;
 			}
 			SetAeroMargins(pContainer);
-
 			pContainer->MenuBar->Resize(LOWORD(lParam), HIWORD(lParam), sizeChanged ? TRUE : FALSE);
 
 			/*
@@ -1355,7 +1356,6 @@ buttons_done:
 				if ((HWND)item.lParam == pContainer->hwndActive) {
 					MoveWindow((HWND)item.lParam, rcClient.left, rcClient.top, (rcClient.right - rcClient.left), (rcClient.bottom - rcClient.top), TRUE);
 					if (!pContainer->bSizingLoop && sizeChanged) {
-						//RedrawWindow(pContainer->hwndActive, NULL, NULL, RDW_ALLCHILDREN);
 						DM_ScrollToBottom(pContainer->hwndActive, 0, 0, 1);
 					}
 				}
@@ -2092,7 +2092,7 @@ panel_found:
 
 			SetWindowLongPtr(hwndDlg, GWL_STYLE, ws);
 
-			pContainer->tBorder = fAero ? 0 : M->GetByte("tborder", 2);
+			pContainer->tBorder = /* fAero ? 0 : */ M->GetByte("tborder", 2);
 			pContainer->tBorder_outer_left = g_ButtonSet.left + (fAero ? 0 : M->GetByte((bSkinned ? "S_tborder_outer_left" : "tborder_outer_left"), 2));
 			pContainer->tBorder_outer_right = g_ButtonSet.right + (fAero ? 0 : M->GetByte((bSkinned ? "S_tborder_outer_right" : "tborder_outer_right"), 2));
 			pContainer->tBorder_outer_top = g_ButtonSet.top + (fAero ? 0 : M->GetByte((bSkinned ? "S_tborder_outer_top" : "tborder_outer_top"), 2));

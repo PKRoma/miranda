@@ -100,7 +100,7 @@ static void LoadTheme(MButtonCtrl *ctl)
 	if (M->isVSAPIState()) {
 		DestroyTheme(ctl);
 		ctl->hThemeButton = CMimAPI::m_pfnOpenThemeData(ctl->hwnd, L"BUTTON");
-		ctl->hThemeToolbar = (M->isAero() || M->isVSThemed()) ? CMimAPI::m_pfnOpenThemeData(ctl->hwnd, L"MENU") : CMimAPI::m_pfnOpenThemeData(ctl->hwnd, L"TOOLBAR");
+		ctl->hThemeToolbar = (M->isAero() || IsWinVerVistaPlus()) ? CMimAPI::m_pfnOpenThemeData(ctl->hwnd, L"MENU") : CMimAPI::m_pfnOpenThemeData(ctl->hwnd, L"TOOLBAR");
 		ctl->bThemed = TRUE;
 	}
 }
@@ -164,7 +164,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
 		RECT rcClient, rcContent;
 		HRGN clip = 0;
 		bool fAero = M->isAero();
-		bool fVSThemed = !CSkin::m_skinEnabled && M->isVSThemed();
+		bool fVSThemed = (!CSkin::m_skinEnabled && M->isVSThemed());
 		_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(GetParent(ctl->hwnd), GWLP_USERDATA);
 		GetClientRect(ctl->hwnd, &rcClient);
 		CopyRect(&rcContent, &rcClient);
@@ -265,7 +265,7 @@ flat_themed:
 						if (CMimAPI::m_pfnIsThemeBackgroundPartiallyTransparent(ctl->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state)))
 							CMimAPI::m_pfnDrawThemeParentBackground(ctl->hwnd, hdcMem, &rc);
 					}
-					if(fAero || fVSThemed)
+					if(fAero || PluginConfig.m_WinVerMajor >= 6)
 						CMimAPI::m_pfnDrawThemeBackground(ctl->hThemeToolbar, hdcMem, 8, RBStateConvert2Flat(state), &rc, &rc);
 					else
 						CMimAPI::m_pfnDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(state), &rc, &rc);

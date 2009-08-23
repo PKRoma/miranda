@@ -1467,6 +1467,8 @@ END
 //
 
 IDR_SKIN_LOGO           SKIN_GLYPH DISCARDABLE  "res\\SKIN\\logo.png"
+IDR_SKIN_AERO           SKIN_GLYPH DISCARDABLE  "res\\SKIN\\tabskin_aero.png"
+IDR_SKIN_AERO_GLOW      SKIN_GLYPH DISCARDABLE  "res\\SKIN\\tabskin_aero_glow.png"
 #endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 

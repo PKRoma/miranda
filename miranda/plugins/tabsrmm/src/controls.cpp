@@ -222,6 +222,14 @@ LONG_PTR CMenuBar::processMsg(const UINT msg, const WPARAM wParam, const LPARAM 
 				return(-1);
 		}
 	}
+	else if(msg == WM_LBUTTONDOWN) {
+		if (m_pContainer->dwFlags & CNT_NOTITLE) {
+			POINT	pt;
+
+			GetCursorPos(&pt);
+			return SendMessage(m_pContainer->hwnd, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, MAKELPARAM(pt.x, pt.y));
+		}
+	}
 	return(-1);
 }
 /**
@@ -795,6 +803,16 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 			rcLastStatusBarClick.right = pt.x + 2;
 			rcLastStatusBarClick.top = pt.y - 2;
 			rcLastStatusBarClick.bottom = pt.y + 2;
+
+			if (pContainer->dwFlags & CNT_NOTITLE) {
+				POINT	pt1 = pt;
+				RECT	rcIconpart;
+
+				ScreenToClient(hWnd, &pt1);
+				SendMessage(hWnd, SB_GETRECT, 2, (LPARAM)&rcIconpart);
+				if(!PtInRect(&rcIconpart, pt1))
+					return SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, MAKELPARAM(pt.x, pt.y));
+			}
 			break;
 		}
 

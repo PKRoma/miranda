@@ -114,11 +114,32 @@ public:
 	{
 		Free();
 	}
+
 	void			Clear()
 	{
 		m_hdc = 0; m_hbm = 0; m_hbmOld = 0;
 		m_fillBrush = (HBRUSH)0;
 	}
+
+	void			setBitmap(const HBITMAP hbm) {
+		m_hbm = hbm;
+	}
+
+	void			setAlphaFormat(const BYTE bFormat, const BYTE bConstantAlpha)
+	{
+		m_bf.AlphaFormat = bFormat;
+		m_bf.SourceConstantAlpha = bConstantAlpha;
+	}
+
+	void			setMetrics(const LONG width, const LONG height)
+	{
+		m_height = height;
+		m_width = width;
+
+		m_inner_height = m_height - m_bBottom - m_bTop;
+		m_inner_width = m_width - m_bLeft - m_bRight;
+	}
+
 	void			Free();
 	CImageItem*		getNextItem() const { return(m_nextItem); }
 	void			setNextItem(CImageItem *item) { m_nextItem = item; }
@@ -136,6 +157,8 @@ public:
 	void __fastcall	Render(const HDC hdc, const RECT *rc, bool fIgnoreGlyph) const;
 	static void 	PreMultiply(HBITMAP hBitmap, int mode);
 	static void 	CorrectBitmap32Alpha(HBITMAP hBitmap);
+	static void 	Colorize(HBITMAP hBitmap, BYTE dr, BYTE dg, BYTE db);
+
 public:
 	bool			m_fValid;
 private:
@@ -168,6 +191,8 @@ public:
 		m_default_bf.AlphaFormat = AC_SRC_ALPHA;
 		m_default_bf.BlendOp = AC_SRC_OVER;
 		Init();
+
+		m_hbmAeroTabBottom = m_hbmAeroTabTop = 0;
 		if(m_fLoadOnStartup)
 			Load();								// load skin on init if this is checked
 	}
@@ -202,6 +227,19 @@ public:
 	}
 	bool				warnToClose() const;
 	COLORREF			getColorKey() const { return(m_ContainerColorKey); }
+
+	void				setupAeroSkins();
+
+	const HBITMAP		getAeroTabBitmap(const int bmpid, LONG& width, LONG& height) const
+	{
+		BITMAP	bminfo = {0};
+
+		::GetObject(bmpid == 0 ? m_hbmAeroTabTop : m_hbmAeroTabBottom, sizeof(bminfo), &bminfo);
+
+		width = bminfo.bmWidth;
+		height = bminfo.bmHeight;
+		return(bmpid == 0 ? m_hbmAeroTabTop : m_hbmAeroTabBottom);
+	}
 	/*
 	 * static member functions
 	 */
@@ -214,7 +252,7 @@ public:
 	static UINT 	NcCalcRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
 	static HBITMAP 	CreateAeroCompatibleBitmap(const RECT &rc, HDC dc);
 #if defined(_UNICODE)
-	static int 		RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags);
+	static int 		RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags, const int iGlowSize = 10);
 #endif
 	static int 		RenderText(HDC hdc, HANDLE hTheme, const char *szText, RECT *rc, DWORD dtFlags);
 	static void 	MapClientToParent(HWND hwndClient, HWND hwndParent, RECT &rc);
@@ -251,6 +289,34 @@ private:
 	void 			SkinCalcFrameWidth();
 	ICONDESCW		*m_skinIcons;
 	int				m_nrSkinIcons;
+
+	HBITMAP			m_hbmAeroTabTop, m_hbmAeroTabBottom;
+};
+
+/*
+ * window data for the tab control window class
+ */
+
+struct TabControlData {
+	BOOL    m_skinning;
+	BOOL    m_moderntabs;
+	HWND    hwnd;
+	DWORD   dwStyle;
+	DWORD   cx, cy;
+	HANDLE  hTheme, hThemeButton, hThemeAeroTabs;
+	BYTE    m_xpad;
+	ContainerWindowData *pContainer;
+	BOOL    bDragging;
+	int     iBeginIndex;
+	HWND    hwndDrag;
+	_MessageWindowData *dragDat;
+	HIMAGELIST himlDrag;
+	BOOL    bRefreshWithoutClip;
+	BOOL    fSavePos;
+	BOOL    fTipActive;
+	BOOL	fAeroTabs;
+	_MessageWindowData* helperDat;
+	CImageItem			*helperItem;
 };
 
 extern CSkin *Skin;

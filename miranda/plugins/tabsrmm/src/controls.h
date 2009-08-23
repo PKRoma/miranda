@@ -50,7 +50,8 @@ public:
 	const RECT&		getClientRect();
 	void			Resize(WORD wWidth, WORD wHeight, BOOL redraw) const
 	{
-		::SetWindowPos(m_hwndRebar, 0, 0, 0, wWidth, m_size_y, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSENDCHANGING);
+		::SetWindowPos(m_hwndRebar, 0, 0, 0, wWidth, m_size_y, SWP_NOZORDER | SWP_NOACTIVATE |
+					   SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOCOPYBITS | SWP_NOREDRAW);
 	}
 	LONG			getHeight() const;
 	void			Show(int showCmd) const

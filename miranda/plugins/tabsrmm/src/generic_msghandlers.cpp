@@ -600,7 +600,7 @@ LRESULT DM_ThemeChanged(_MessageWindowData *dat)
 			SetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 	}
 	dat->hThemeIP = M->isAero() ? CMimAPI::m_pfnOpenThemeData(hwnd, L"ButtonStyle") : 0;
-	dat->hThemeToolbar = (M->isAero() || (!CSkin::m_skinEnabled && M->isVSThemed())) ? CMimAPI::m_pfnOpenThemeData(hwnd, L"MENU") : 0;
+	dat->hThemeToolbar = (M->isAero() || (!CSkin::m_skinEnabled && M->isVSThemed())) ? CMimAPI::m_pfnOpenThemeData(hwnd, L"REBAR") : 0;
 
 	return 0;
 }

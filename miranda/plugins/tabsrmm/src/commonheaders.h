@@ -88,11 +88,23 @@
 		const BLENDFUNCTION *       pBlendFunction;
 	} BP_PAINTPARAMS, *PBP_PAINTPARAMS;
 
+	typedef struct _DWM_BLURBEHIND
+	{
+		DWORD dwFlags;
+		BOOL fEnable;
+		HRGN hRgnBlur;
+		BOOL fTransitionOnMaximized;
+	} DWM_BLURBEHIND, *PDWM_BLURBEHIND;
+
 	#define BPPF_ERASE               1
 	#define BPPF_NOCLIP              2
 	#define BPPF_NONCLIENT           4
+
+	#define DWM_BB_ENABLE 1
+
 #endif
 #define WM_DWMCOMPOSITIONCHANGED        0x031E
+#define WM_DWMCOLORIZATIONCOLORCHANGED  0x0320
 
 #include <stdio.h>
 #include <time.h>

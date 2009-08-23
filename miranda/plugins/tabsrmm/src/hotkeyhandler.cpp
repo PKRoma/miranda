@@ -551,6 +551,18 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			SendMessage(hwndDlg, WM_THEMECHANGED, 0, 0);
 			M->BroadcastMessage(WM_DWMCOMPOSITIONCHANGED, 0, 0);
 			break;
+		case WM_DWMCOLORIZATIONCOLORCHANGED: {
+			M->getAeroState();
+			Skin->setupAeroSkins();
+
+			ContainerWindowData *pContainer = pFirstContainer;
+
+			while (pContainer) {
+				InvalidateRect(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), NULL, FALSE);
+				pContainer = pContainer->pNextContainer;
+			}
+			break;
+		}
 		case WM_THEMECHANGED: {
 			struct ContainerWindowData *pContainer = pFirstContainer;
 

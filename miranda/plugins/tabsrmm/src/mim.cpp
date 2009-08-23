@@ -53,6 +53,8 @@ BPI		CMimAPI::m_pfnBufferedPaintInit = 0;
 BPU		CMimAPI::m_pfnBufferedPaintUninit = 0;
 BBP		CMimAPI::m_pfnBeginBufferedPaint = 0;
 EBP		CMimAPI::m_pfnEndBufferedPaint = 0;
+BBW		CMimAPI::m_pfnDwmBlurBehindWindow = 0;
+DGC		CMimAPI::m_pfnDwmGetColorizationColor = 0;
 
 bool	CMimAPI::m_shutDown = 0;
 TCHAR*	CMimAPI::m_userDir = 0;
@@ -524,6 +526,8 @@ void CMimAPI::InitAPI()
             m_pfnDwmExtendFrameIntoClientArea = (DEFICA)GetProcAddress(m_hDwmApi,"DwmExtendFrameIntoClientArea");
             m_pfnDwmIsCompositionEnabled = (DICE)GetProcAddress(m_hDwmApi,"DwmIsCompositionEnabled");
 			m_pfnDwmRegisterThumbnail = (DRT)GetProcAddress(m_hDwmApi, "DwmRegisterThumbnail");
+			m_pfnDwmBlurBehindWindow = (BBW)GetProcAddress(m_hDwmApi, "DwmEnableBlurBehindWindow");
+			m_pfnDwmGetColorizationColor = (DGC)GetProcAddress(m_hDwmApi, "DwmGetColorizationColor");
 	    }
 		/*
 		 * additional uxtheme APIs (Vista+)
@@ -539,3 +543,5 @@ void CMimAPI::InitAPI()
 }
 
 CMimAPI *M = 0;
+FI_INTERFACE *FIF = 0;
+

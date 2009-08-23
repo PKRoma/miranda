@@ -76,7 +76,7 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
 	options->maskActL = (UINT)M->GetByte(MODULE, OPT_MASKACTL, DEFAULT_MASKACTL);
 	options->maskActR = (UINT)M->GetByte(MODULE, OPT_MASKACTR, DEFAULT_MASKACTR);
 	options->maskActTE = (UINT)M->GetByte(MODULE, OPT_MASKACTTE, DEFAULT_MASKACTR) & (MASK_OPEN | MASK_DISMISS);
-	options->bMergePopup = (BOOL)M->GetByte(MODULE, OPT_MERGEPOPUP, FALSE);
+	options->bMergePopup = (BOOL)M->GetByte(MODULE, OPT_MERGEPOPUP, 1);
 	options->iDelayMsg = (int)M->GetDword(MODULE, OPT_DELAY_MESSAGE, (DWORD)DEFAULT_DELAY);
 	options->iDelayOthers = (int)M->GetDword(MODULE, OPT_DELAY_OTHERS, (DWORD)DEFAULT_DELAY);
 	options->iDelayDefault = (int)DBGetContactSettingRangedWord(NULL, "PopUp", "Seconds", SETTING_LIFETIME_DEFAULT, SETTING_LIFETIME_MIN, SETTING_LIFETIME_MAX);
@@ -142,7 +142,7 @@ static struct LISTOPTIONSGROUP lGroups[] = {
 	0, _T("Left click actions (popups only)"),
 	0, _T("Right click actions (popups only)"),
 	0, _T("Timeout actions (popups only)"),
-	0, _T("Popup merging (per user) options"),
+	0, _T("Combine notifications for the same contact"),
 	0, _T("Remove popups under following conditions"),
 	0, NULL
 };
@@ -152,7 +152,7 @@ static struct LISTOPTIONSITEM defaultItems[] = {
 	0, _T("Don't announce event when message dialog is open"), IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bWindowCheck, 1,
 	0, _T("Don't announce events from RSS protocols"), IDC_NORSS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bNoRSS, 1,
 	0, _T("Enable the system tray icon"), IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bTraySupport, 2,
-	0, _T("Merge popups \"per user\" (experimental, unstable)"), IDC_CHKMERGEPOPUP, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bMergePopup, 6,
+	0, _T("Merge new events for the same contact into existing popup"), 1, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bMergePopup, 6,
 	0, _T("Show date for merged popups"), IDC_CHKSHOWDATE, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowDate, 6,
 	0, _T("Show time for merged popups"), IDC_CHKSHOWTIME, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowTime, 6,
 	0, _T("Show headers"), IDC_CHKSHOWHEADERS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowHeaders, 6,
@@ -166,13 +166,12 @@ static struct LISTOPTIONSITEM defaultItems[] = {
 
 	0, _T("Dismiss popup"), MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
 	0, _T("Open event"), MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
-//    0, "Dismiss event", MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
 
 	0, _T("Disable event notifications (check, if you're using an external notification plugin)"), IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.iDisable, 0,
 
-	0, _T("Remove event popups for a contact when its message window becomes focused"), PU_REMOVE_ON_FOCUS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
-	0, _T("Remove event popups for a contact when you start typing a reply"), PU_REMOVE_ON_TYPE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
-	0, _T("Remove event popups for a contact when you send a reply"), PU_REMOVE_ON_SEND, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
+	0, _T("Remove popups for a contact when the message window is focused"), PU_REMOVE_ON_FOCUS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
+	0, _T("Remove popups for a contact when I start typing a reply"), PU_REMOVE_ON_TYPE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
+	0, _T("Remove popups for a contact when I send a reply"), PU_REMOVE_ON_SEND, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
 
 	0, NULL, 0, 0, 0, 0
 };

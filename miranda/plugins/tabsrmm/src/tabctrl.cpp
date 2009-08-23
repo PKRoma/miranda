@@ -414,6 +414,8 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 #if defined(_UNICODE)
 			if (tabdat->m_skinning == FALSE || PluginConfig.m_TabAppearance & TCF_NOSKINNING)
 				DrawText(dc, dat->newtitle, (int)(lstrlen(dat->newtitle)), rcItem, dwTextFlags);
+			else if(M->isAero())
+				CSkin::RenderText(dc, dwStyle & TCS_BUTTONS ? tabdat->hThemeButton : tabdat->hTheme, dat->newtitle, rcItem, dwTextFlags, 5);
 			else
 				M->m_pfnDrawThemeText(dwStyle & TCS_BUTTONS ? tabdat->hThemeButton : tabdat->hTheme, dc, 1, nHint & HINT_ACTIVE_ITEM ? 3 : (nHint & HINT_HOTTRACK ? 2 : 1), dat->newtitle, (int)(lstrlen(dat->newtitle)), dwTextFlags, 0, rcItem);
 #else
@@ -475,7 +477,7 @@ b_nonskinned:
 						DrawEdge(dc, rcItem, EDGE_RAISED, BF_RECT | BF_SOFT);
 				}
 			} else {
-				FillRect(dc, rcItem, GetSysColorBrush(COLOR_3DFACE));
+				FillRect(dc, rcItem, (M->isAero() && !(dwStyle & TCS_BOTTOM)) ? (HBRUSH)GetStockObject(BLACK_BRUSH) : GetSysColorBrush(COLOR_3DFACE));
 				CMimAPI::m_pfnDrawThemeBackground(tabdat->hThemeButton, dc, 1, nHint & HINT_ACTIVE_ITEM ? 3 : (nHint & HINT_HOTTRACK ? 2 : 1), rcItem, rcItem);
 			}
 			return;
@@ -795,11 +797,33 @@ static int DWordAlign(int n)
 	return n;
 }
 
+static HRESULT DrawThemesPartWithAero(const TabControlData *tabdat, HDC hDC, int iPartId, int iStateId, LPRECT prcBox)
+{
+	HRESULT hResult = 0;
+
+	if (CMimAPI::m_pfnDrawThemeBackground == 0)
+		return 0;
+
+	if(tabdat->fAeroTabs) {
+		int iState = (iStateId == PBS_NORMAL || iStateId == PBS_HOT) ? 2 : 1;
+		FillRect(hDC, prcBox, (HBRUSH)GetStockObject(BLACK_BRUSH));
+		if(iStateId != 3)
+			prcBox->bottom += 2;
+		tabdat->helperItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == 3 ? 180 : 100);
+		tabdat->helperItem->Render(hDC, prcBox, true);
+	}
+	else {
+		if (tabdat->hTheme != 0)
+			hResult = CMimAPI::m_pfnDrawThemeBackground(tabdat->hTheme, hDC, iPartId, iStateId, prcBox, NULL);
+	}
+
+	return hResult;
+}
 /*
  * draws a theme part (identifier in uiPartNameID) using the given clipping rectangle
  */
 
-static HRESULT DrawThemesPart(struct TabControlData *tabdat, HDC hDC, int iPartId, int iStateId, LPRECT prcBox)
+static HRESULT DrawThemesPart(const TabControlData *tabdat, HDC hDC, int iPartId, int iStateId, LPRECT prcBox)
 {
 	HRESULT hResult = 0;
 
@@ -808,6 +832,7 @@ static HRESULT DrawThemesPart(struct TabControlData *tabdat, HDC hDC, int iPartI
 
 	if (tabdat->hTheme != 0)
 		hResult = CMimAPI::m_pfnDrawThemeBackground(tabdat->hTheme, hDC, iPartId, iStateId, prcBox, NULL);
+
 	return hResult;
 }
 
@@ -845,7 +870,7 @@ static void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, 
 			DrawThemesPart(tabdat, pDC, 9, 0, rcItem);	// TABP_PANE id = 9
 		else {
 			int iStateId = bSel ? 3 : (bHot ? 2 : 1);                       // leftmost item has different part id
-			DrawThemesPart(tabdat, pDC, rcItem->left < 20 ? 2 : 1, iStateId, rcItem);
+			DrawThemesPartWithAero(tabdat, pDC, rcItem->left < 20 ? 2 : 1, iStateId, rcItem);
 		}
 		return;
 	}
@@ -1000,6 +1025,17 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			tabdat->fTipActive = FALSE;
 			SendMessage(hwnd, EM_THEMECHANGED, 0, 0);
 			OldTabControlClassProc = wcl.lpfnWndProc;
+			tabdat->helperItem = new CImageItem(5, 5, 5, 5, 0, 0, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
+												0, 255, 30, 80, 50, 100);
+
+			LONG	height, width;
+
+			const	HBITMAP hbm = Skin->getAeroTabBitmap(0, width, height);
+
+			tabdat->helperItem->setBitmap(hbm);
+			tabdat->helperItem->setMetrics(width, height);
+			tabdat->helperItem->setAlphaFormat(AC_SRC_ALPHA, 255);
+
 			return TRUE;
 		}
 		case EM_THEMECHANGED:
@@ -1012,10 +1048,13 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 						if (tabdat->hTheme != 0 && CMimAPI::m_pfnCloseThemeData != 0) {
 							CMimAPI::m_pfnCloseThemeData(tabdat->hTheme);
 							CMimAPI::m_pfnCloseThemeData(tabdat->hThemeButton);
+							if(tabdat->hThemeAeroTabs)
+								CMimAPI::m_pfnCloseThemeData(tabdat->hThemeAeroTabs);
 						}
 						if (CMimAPI::m_pfnOpenThemeData != 0) {
 							if ((tabdat->hTheme = CMimAPI::m_pfnOpenThemeData(hwnd, L"TAB")) == 0 || (tabdat->hThemeButton = CMimAPI::m_pfnOpenThemeData(hwnd, L"BUTTON")) == 0)
 								tabdat->m_skinning = FALSE;
+							tabdat->hThemeAeroTabs = M->isAero() ? CMimAPI::m_pfnOpenThemeData(hwnd, L"STARTPANEL") : 0;
 						}
 					}
 			}
@@ -1089,7 +1128,11 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 				if (tabdat->hTheme != 0 && CMimAPI::m_pfnCloseThemeData != 0) {
 					CMimAPI::m_pfnCloseThemeData(tabdat->hTheme);
 					CMimAPI::m_pfnCloseThemeData(tabdat->hThemeButton);
+					if(tabdat->hThemeAeroTabs)
+						CMimAPI::m_pfnCloseThemeData(tabdat->hThemeAeroTabs);
 				}
+				tabdat->helperItem->Clear();
+				delete tabdat->helperItem;
 				mir_free(tabdat);
 				SetWindowLongPtr(hwnd, GWLP_USERDATA, 0L);
 			}
@@ -1312,6 +1355,25 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			DWORD cx, cy;
 			bool  isAero = M->isAero();
 
+			tabdat->fAeroTabs = M->isAero() ? TRUE : FALSE;
+
+			if(tabdat->fAeroTabs) {
+				_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(tabdat->pContainer->hwndActive, GWLP_USERDATA);
+				assert(dat != 0);
+				if(dat) {
+					//tabdat->fAeroTabs = dat && ((dat->dwFlagsEx & MWF_SHOW_INFOPANEL) && !(dat->dwFlagsEx & MWF_SHOW_INFONOTES) &&
+					//					!(dat->dwFlags & MWF_ERRORSTATE));
+					tabdat->helperDat = dat;
+				}
+				else {
+					tabdat->helperDat = 0;
+					tabdat->fAeroTabs = 0;
+				}
+
+				LONG width, height;
+				tabdat->helperItem->setBitmap(Skin->getAeroTabBitmap(0, height, width));
+			}
+
 			tabdat->m_moderntabs = (M->GetByte("moderntabs", 0) &&
 									!(tabdat->dwStyle & TCS_BUTTONS));
 
@@ -1327,7 +1389,8 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			 */
 
 			hdc = CreateCompatibleDC(hdcreal);
-			bmpMem = CreateCompatibleBitmap(hdcreal, cx, cy);
+
+			bmpMem = tabdat->fAeroTabs ? CSkin::CreateAeroCompatibleBitmap(rctPage, hdcreal) : CreateCompatibleBitmap(hdcreal, cx, cy);
 
 			bmpOld = (HBITMAP)SelectObject(hdc, bmpMem);
 
@@ -1469,6 +1532,24 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 				}
 			}
 page_done:
+			/*
+			 * if aero is active _and_ the infopanel is visible in the current window, we "flatten" out the top area
+			 * of the tab page by overpainting it black (thus it will appear transparent)
+			 */
+			if(tabdat->fAeroTabs && tabdat->helperDat) {
+				RECT	rcLog, rcPage;
+				POINT	pt;
+
+				GetClientRect(hwnd, &rcPage);
+				GetWindowRect(GetDlgItem(tabdat->helperDat->hwnd, tabdat->helperDat->bType == SESSIONTYPE_IM ? IDC_LOG : IDC_CHAT_LOG), &rcLog);
+				pt.y = rcLog.top;
+				pt.x = rcLog.left;
+				ScreenToClient(hwnd, &pt);
+				rcPage.bottom = pt.y;
+				FillRect(hdc, &rcPage, (HBRUSH)GetStockObject(BLACK_BRUSH));
+				//_DebugTraceA("filling upper tab client area %d to %d", rcPage.top, rcPage.bottom);
+			}
+
 			uiFlags = 0;
 			/*
 			 * figure out hottracked item (if any)
@@ -1536,6 +1617,7 @@ skip_tabs:
 			//if(!tabdat->pContainer->bSkinned)
 			if (!tabdat->bRefreshWithoutClip)
 				ExcludeClipRect(hdcreal, rctClip.left, rctClip.top, rctClip.right, rctClip.bottom);
+
 			BitBlt(hdcreal, 0, 0, cx, cy, hdc, 0, 0, SRCCOPY);
 			SelectObject(hdc, bmpOld);
 			DeleteObject(bmpMem);

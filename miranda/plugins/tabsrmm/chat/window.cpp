@@ -3348,10 +3348,17 @@ LABEL_SHOWWINDOW:
 		}
 
 		case WM_CLOSE:
-			if (wParam == 0 && lParam == 0 && !PluginConfig.m_EscapeCloses) {
-				SendMessage(dat->pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+			if (wParam == 0 && lParam == 0) {
+				if(!PluginConfig.m_EscapeCloses) {
+					SendMessage(dat->pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+					return(TRUE);
+				} else if(PluginConfig.m_HideOnClose) {
+					ShowWindow(dat->pContainer->hwnd, SW_HIDE);
+					return(TRUE);
+				}
 				return TRUE;
 			}
+
 			if (lParam && PluginConfig.m_WarnOnClose)
 				if (MessageBox(dat->pContainer->hwnd, TranslateTS(szWarnClose), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO)
 					return TRUE;

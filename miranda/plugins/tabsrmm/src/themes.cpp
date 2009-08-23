@@ -917,6 +917,40 @@ void CImageItem::PreMultiply(HBITMAP hBitmap, int mode)
 	}
 }
 
+void CImageItem::Colorize(HBITMAP hBitmap, BYTE dr, BYTE dg, BYTE db)
+{
+	BYTE 	*p = NULL;
+	DWORD 	dwLen;
+	int 	width, height, x, y;
+	BITMAP 	bmp;
+
+	float r = (float)dr / 2.55;
+	float g = (float)dg / 2.55;
+	float b = (float)db / 2.55;
+
+	GetObject(hBitmap, sizeof(bmp), &bmp);
+	width = bmp.bmWidth;
+	height = bmp.bmHeight;
+	dwLen = width * height * 4;
+	p = (BYTE *)malloc(dwLen);
+	if (p) {
+		GetBitmapBits(hBitmap, dwLen, p);
+		for (y = 0; y < height; ++y) {
+			BYTE *px = p + width * 4 * y;
+
+			for (x = 0; x < width; ++x) {
+				px[0] = (int)(px[0] + b) > 255 ? 255 : px[0] + b;
+				px[1] = (int)(px[1] + g) > 255 ? 255 : px[1] + g;
+				px[2] = (int)(px[2] + r) > 255 ? 255 : px[2] + r;
+				px += 4;
+			}
+		}
+		dwLen = SetBitmapBits(hBitmap, dwLen, p);
+		free(p);
+	}
+}
+
+
 /**
  * set filename and load parameters from the database
  * called on:
@@ -1693,6 +1727,38 @@ void CSkin::LoadItems()
 }
 
 /**
+ * load and setup some images which are used to draw tabs in aero mode
+ */
+void CSkin::setupAeroSkins()
+{
+	TCHAR	tszFilename[MAX_PATH];
+
+	mir_sntprintf(tszFilename, MAX_PATH, _T("%s\\tabskin_aero.png"), M->getDataPath());
+
+	M->getAeroState();
+
+	if(m_hbmAeroTabBottom)
+		::DeleteObject(m_hbmAeroTabBottom);
+	if(m_hbmAeroTabTop)
+		::DeleteObject(m_hbmAeroTabTop);
+
+	if(IsWinVerVistaPlus()) {
+
+		DWORD 	dwmColor;
+		BOOL	isOpaque;
+
+		CMimAPI::m_pfnDwmGetColorizationColor(&dwmColor, &isOpaque);
+
+		m_hbmAeroTabTop = (HBITMAP)CallService("IMG/Load", (WPARAM)tszFilename, IMGL_LOAD);
+		CImageItem::Colorize(m_hbmAeroTabTop, (BYTE)((dwmColor & 0x00ff0000) >> 16),
+							 (BYTE)((dwmColor & 0x0000ff00) >> 8),
+							 (BYTE)((dwmColor & 0x000000ff)));
+
+		CImageItem::PreMultiply(m_hbmAeroTabTop, 1);
+	}
+
+}
+/**
  * Calculate window frame borders for a skin with the ability to paint the window frame.
  * Uses system metrics to determine predefined window borders and caption bar size.
  */
@@ -1957,13 +2023,13 @@ DWORD __fastcall CSkin::HexStringToLong(const TCHAR *szSource)
  * @return
  */
 #if defined(_UNICODE)
-int CSkin::RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags)
+int CSkin::RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags, const int iGlowSize)
 {
 	if(M->isAero()) {
 		DTTOPTS dto = {0};
 		dto.dwSize = sizeof(dto);
 		dto.dwFlags = DTT_COMPOSITED|DTT_GLOWSIZE;
-		dto.iGlowSize = 10;
+		dto.iGlowSize = iGlowSize;
 		return(CMimAPI::m_pfnDrawThemeTextEx(hTheme, hdc, BP_PUSHBUTTON, PBS_NORMAL, szText, -1, dtFlags, rc, &dto));
 	}
 	else {
@@ -2098,16 +2164,6 @@ void CSkin::RenderIPNickname(HDC hdc, RECT &rcItem, _MessageWindowData *dat)
 	rc.right = rc.left;
 	SetBkMode(hdc, TRANSPARENT);
 
-	if (dat->pContainer->bSkinned) {
-		RECT rc = rcItem;
-		rc.left += item->MARGIN_LEFT;
-		rc.right -= item->MARGIN_RIGHT;
-		rc.top += item->MARGIN_TOP;
-		rc.bottom -= item->MARGIN_BOTTOM;
-		if (!item->IGNORED)
-			DrawAlpha(hdc, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-					  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
-	}
 	rcItem.left += 2;
 	if (szTextToShow[0]) {
 		HFONT hOldFont = 0;
@@ -2182,16 +2238,6 @@ void CSkin::RenderIPUIN(HDC hdc, RECT &rcItem, _MessageWindowData *dat)
 	TCHAR	*tszUin = dat->uin;
 
 	SetBkMode(hdc, TRANSPARENT);
-	if (dat->pContainer->bSkinned) {
-		RECT rc = rcItem;
-		rc.left += item->MARGIN_LEFT;
-		rc.right -= item->MARGIN_RIGHT;
-		rc.top += item->MARGIN_TOP;
-		rc.bottom -= item->MARGIN_BOTTOM;
-		if (!item->IGNORED)
-			DrawAlpha(hdc, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-					  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
-	}
 
 	rcItem.left += 2;
 	if (config) {
@@ -2274,16 +2320,6 @@ void CSkin::RenderIPStatus(HDC hdc, RECT &rcItem, _MessageWindowData *dat)
 
 	SetBkMode(hdc, TRANSPARENT);
 	rc = rcItem;
-	if (dat->pContainer->bSkinned) {
-		RECT rc = rcItem;
-		rc.left += item->MARGIN_LEFT;
-		rc.right -= item->MARGIN_RIGHT;
-		rc.top += item->MARGIN_TOP;
-		rc.bottom -= item->MARGIN_BOTTOM;
-		if (!item->IGNORED)
-			DrawAlpha(hdc, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-					  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
-	}
 	rc.left += 2;
 	rc.right -=3;
 
@@ -2380,13 +2416,13 @@ void CSkin::RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &
 		dat->pContainer->hbmToolbarBG = CreateCompatibleBitmap(hdc, cx, cy);
 		dat->pContainer->oldhbmToolbarBG = (HBITMAP)SelectObject(dat->pContainer->cachedToolbarDC, dat->pContainer->hbmToolbarBG);
 
-		CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, hdc, 7, PBS_NORMAL, &rcToolbar, &rcToolbar);
+		CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, hdc, 6, 1, &rcToolbar, &rcToolbar);
 
 		RECT rcCachedToolbar = {0};
 		rcCachedToolbar.right = cx;
 		rcCachedToolbar.bottom = cy;
 
-		CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, dat->pContainer->cachedToolbarDC, 7, PBS_NORMAL,
+		CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, dat->pContainer->cachedToolbarDC, 6, 1,
 										  &rcCachedToolbar, &rcCachedToolbar);
 	}
 }

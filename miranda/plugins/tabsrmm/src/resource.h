@@ -15,12 +15,8 @@
 #define IDD_USERPREFS_FRAME             11
 #define IDD_DIALOG1                     12
 #define IDR_SKIN1                       13
-#define IDR_SKIN_GLYPH                  14
-#define	IDR_SKIN_TSK					15
-#define	IDR_SKIN_TABSRMM				16
-#define	IDR_SKIN_ICO_CLOSE				17
-#define	IDR_SKIN_ICO_MAX				18
-#define	IDR_SKIN_ICO_MIN				19
+#define IDR_SKIN_AERO                   14
+#define	IDR_SKIN_AERO_GLOW				15
 #define IDR_SKIN_LOGO					20
 #define IDI_IMGOPEN                     102
 #define IDI_IMGCLOSE                    103

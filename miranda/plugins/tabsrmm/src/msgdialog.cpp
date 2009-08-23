@@ -464,6 +464,8 @@ static void MsgWindowUpdateState(_MessageWindowData *dat, UINT msg)
 		}
 		BB_SetButtonsPos(hwndDlg,dat);
 		SetAeroMargins(dat->pContainer);
+		if(M->isAero())
+			InvalidateRect(hwndTab, NULL, FALSE);
 	}
 }
 
@@ -514,6 +516,8 @@ static void ShowHideInfoPanel(HWND hwndDlg, struct _MessageWindowData *dat)
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
 	InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
 	SetAeroMargins(dat->pContainer);
+	if(M->isAero())
+		InvalidateRect(GetParent(hwndDlg), NULL, FALSE);
 	DM_ScrollToBottom(hwndDlg, dat, 0, 1);
 }
 // drop files onto message input area...
@@ -5231,8 +5235,14 @@ quote_from_last:
 				return TRUE;
 			}
 
-			if (wParam == 0 && lParam == 0 && !PluginConfig.m_EscapeCloses) {
-				SendMessage(hwndContainer, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+			if (wParam == 0 && lParam == 0) {
+				if(!PluginConfig.m_EscapeCloses) {
+					SendMessage(hwndContainer, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+					_dlgReturn(hwndDlg, TRUE);
+				} else if(PluginConfig.m_HideOnClose) {
+					ShowWindow(hwndContainer, SW_HIDE);
+					_dlgReturn(hwndDlg, TRUE);
+				}
 				return TRUE;
 			}
 
@@ -5262,13 +5272,13 @@ quote_from_last:
 			}
 			iTabs = TabCtrl_GetItemCount(hwndTab);
 			if (iTabs == 1) {
-				PostMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
+				PostMessage(hwndContainer, WM_CLOSE, 0, 1);
 				return 1;
 			}
 
 			//MAD: close container by ESC mod
 			if(wParam == 0 && lParam == 0 && PluginConfig.m_EscapeCloses==2) {
-				PostMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
+				PostMessage(hwndContainer, WM_CLOSE, 0, 1);
 				return TRUE;
 			}
 			//MAD_
@@ -5346,7 +5356,7 @@ quote_from_last:
 			HDC		hdcMem;
 			HBITMAP hbm, hbmOld;
 			DWORD 	cx, cy;
-						GetClientRect(hwndDlg, &rcClient);
+			GetClientRect(hwndDlg, &rcClient);
 
 			cx = rcClient.right - rcClient.left;
 			cy = rcClient.bottom - rcClient.top;
@@ -5357,7 +5367,7 @@ quote_from_last:
 
 			CSkinItem t_item;
 			bool	fInfoPanel = (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) && !(dat->dwFlagsEx & MWF_SHOW_INFONOTES) &&
-				!(dat->dwFlags & MWF_ERRORSTATE);
+								!(dat->dwFlags & MWF_ERRORSTATE);
 
 			bool	fAero = M->isAero();
 
