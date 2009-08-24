@@ -96,6 +96,7 @@ struct ChangeInfoData
   ChangeInfoData() { settingData = (SettingItemData*)SAFE_MALLOC(sizeof(SettingItemData) * settingCount); hAckHook = NULL; hUpload[0] = NULL; hUpload[1] = NULL;}
   ~ChangeInfoData() { SAFE_FREE((void**)&settingData); }
 
+  char* GetItemSettingText(int i, char *buf, size_t buf_size);
   void PaintItemSetting(HDC hdc, RECT *rc, int i, UINT itemState);
 
   //db.cpp

@@ -466,8 +466,8 @@ INT_PTR CIcqProto::GetMyAvatar(WPARAM wParam, LPARAM lParam)
 	if (!wParam) return -3;
 
 	char* file = loadMyAvatarFileName();
-	if (file) strncpy((char*)wParam, file, (int)lParam);
-	SAFE_FREE((void**)&file);
+	null_strcpy((char*)wParam, file, (int)lParam - 1);
+	SAFE_FREE(&file);
 	if (!_access((char*)wParam, 0)) return 0;
 	return -1;
 }

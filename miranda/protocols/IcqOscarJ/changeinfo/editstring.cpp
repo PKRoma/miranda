@@ -126,14 +126,14 @@ char *BinaryToEscapes(char *str)
 			pout=out=(char*)SAFE_REALLOC(out,len);
 		}
 		*pout++='\\';
-		for(i=0;i<sizeof(escapes)/sizeof(escapes[0]);i+=2)
+		for(i = 0; i < SIZEOF(escapes); i += 2)
 			if(*str==escapes[i+1]) 
 			{
 				*pout++=escapes[i];
 				extra--;
 				break;
 			}
-			if(i<sizeof(escapes)/sizeof(escapes[0])) continue;
+			if(i < SIZEOF(escapes)) continue;
 			*pout++='0'; extra--;
 			if(*str>=8) 
 			{
@@ -275,7 +275,7 @@ void ChangeInfoData::BeginStringEdit(int iItem, RECT *rc, int i, WORD wVKey)
   dataStringEdit = this;
 	hwndEdit = CreateWindow(_T("EDIT"),_T(""),WS_VISIBLE|WS_CHILD|ES_AUTOHSCROLL|((setting[i].displayType&LIM_TYPE)==LI_NUMBER?ES_NUMBER:0)|(setting[i].displayType&LIF_PASSWORD?ES_PASSWORD:0),rc->left,rc->top,rc->right-rc->left,rc->bottom-rc->top,hwndList,NULL,hInst,NULL);
 	SetWindowTextUtf(hwndEdit, szValue);
-	if (alloced) SAFE_FREE((void**)&szValue);
+	if (alloced) SAFE_FREE(&szValue);
 	OldStringEditProc=(WNDPROC)SetWindowLongPtr(hwndEdit,GWLP_WNDPROC,(LONG_PTR)StringEditSubclassProc);
 	SendMessage(hwndEdit,WM_SETFONT,(WPARAM)hListFont,0);
 	if ((setting[i].displayType & LIM_TYPE) == LI_NUMBER) 
@@ -310,7 +310,7 @@ void ChangeInfoData::EndStringEdit(int save)
 		{
 			LPARAM newValue;
 			int *range=(int*)setting[iEditItem].pList;
-			newValue = atoi((char*)text);
+			newValue = atoi(text);
 			if (newValue) 
 			{
 				if (newValue<range[0]) newValue=range[0];
@@ -318,31 +318,39 @@ void ChangeInfoData::EndStringEdit(int save)
 			}
 			settingData[iEditItem].changed = settingData[iEditItem].value != newValue;
 			settingData[iEditItem].value = newValue;
-			SAFE_FREE((void**)&text);
+			SAFE_FREE(&text);
 		}
 		else
 		{
 			if (!(setting[iEditItem].displayType & LIF_PASSWORD))
 			{
-				SAFE_FREE((void**)&text);
+				SAFE_FREE(&text);
 				text = GetWindowTextUtf(hwndEdit);
-				EscapesToBinary((char*)text);
+				EscapesToBinary(text);
 			}
 			if ((setting[iEditItem].displayType & LIF_PASSWORD && strcmpnull(text,"                ")) ||
 				(!(setting[iEditItem].displayType & LIF_PASSWORD) && strcmpnull(text, (char*)settingData[iEditItem].value) && (strlennull(text) + strlennull((char*)settingData[iEditItem].value))))
 			{
 				SAFE_FREE((void**)&settingData[iEditItem].value);
-				if (text[0])
+				if (strlennull(text))
 					settingData[iEditItem].value = (LPARAM)text;
 				else
 				{
 					settingData[iEditItem].value = 0; 
-					SAFE_FREE((void**)&text);
+					SAFE_FREE(&text);
 				}
 				settingData[iEditItem].changed = 1;
 			}
 		}
-		if (settingData[iEditItem].changed) EnableDlgItem(hwndDlg, IDC_SAVE, TRUE);
+    if (settingData[iEditItem].changed)
+    {
+      TCHAR tbuf[MAX_PATH];
+
+      GetWindowText(hwndEdit, tbuf, SIZEOF(tbuf));
+      ListView_SetItemText(hwndList, iEditItem, 1, tbuf);
+
+      EnableDlgItem(hwndDlg, IDC_SAVE, TRUE);
+    }
 	}
 	ListView_RedrawItems(hwndList, iEditItem, iEditItem);
 	iEditItem = -1;

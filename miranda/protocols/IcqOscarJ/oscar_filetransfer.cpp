@@ -57,7 +57,6 @@ extern void NormalizeBackslash(char* path);
 
 char *FindFilePathContainer(const char **files, int iFile, char *szContainer)
 {
-	int i;
 	const char *szThisFile = files[iFile];
 	char *szFileName = (char*)ExtractFileName(szThisFile);
 
@@ -65,7 +64,7 @@ char *FindFilePathContainer(const char **files, int iFile, char *szContainer)
 
 	if (szThisFile != szFileName)
 	{ // find an earlier subdirectory to be used as a container
-		for (i = iFile - 1; i >= 0; i--)
+		for (int i = iFile - 1; i >= 0; i--)
 		{
 			int len = strlennull(files[i]);
 
@@ -81,8 +80,7 @@ char *FindFilePathContainer(const char **files, int iFile, char *szContainer)
 				else
 				{
 					len = pszLastBackslash - files[i] + 1;
-					strncpy(szContainer, szThisFile + len,  szFileName - szThisFile - len);
-					szContainer[szFileName - szThisFile - len] = '\0';
+					null_strcpy(szContainer, szThisFile + len,  szFileName - szThisFile - len);
 				}
 			}
 		}
@@ -137,9 +135,7 @@ filetransfer *CIcqProto::CreateIcqFileTransfer()
 
 int CIcqProto::getFileTransferIndex(void *ft)
 {
-	int i;
-
-	for (i = 0; i < fileTransferCount; i++)
+	for (int i = 0; i < fileTransferCount; i++)
 	{
 		if (fileTransferList[i] == ft)
 			return i;
@@ -188,11 +184,9 @@ int CIcqProto::IsValidOscarTransfer(void *ft)
 
 oscar_filetransfer* CIcqProto::FindOscarTransfer(HANDLE hContact, DWORD dwID1, DWORD dwID2)
 {
-	int i;
-
 	EnterCriticalSection(&oftMutex);
 
-	for (i = 0; i < fileTransferCount; i++)
+	for (int i = 0; i < fileTransferCount; i++)
 	{
 		if (fileTransferList[i]->ft_magic == FT_MAGIC_OSCAR)
 		{
@@ -464,8 +458,7 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 							{ // decode charset
 								char *szEnc = (char*)_alloca(charset->wLen + 1);
 
-								strncpy(szEnc, (char*)charset->pData, charset->wLen);
-								szEnc[charset->wLen] = '\0';
+								null_strcpy(szEnc, (char*)charset->pData, charset->wLen);
 								str = ApplyEncoding((char*)pszDescription, szEnc);
 							}
 							else 
@@ -549,8 +542,7 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 						{
 							char* szEnc = (char*)_alloca(charset->wLen + 1);
 
-							strncpy(szEnc, (char*)charset->pData, charset->wLen);
-							szEnc[charset->wLen] = '\0';
+							null_strcpy(szEnc, (char*)charset->pData, charset->wLen);
 							pszFileName = ApplyEncoding(pszFileName, szEnc);
 						}
 						else
@@ -1014,6 +1006,9 @@ HANDLE CIcqProto::oftFileAllow(HANDLE hContact, HANDLE hTransfer, const char* sz
 	if (getContactUid(hContact, &dwUin, &szUid))
 		return 0; // Invalid contact
 
+	if (!IsValidOscarTransfer(ft))
+		return 0; // Invalid transfer
+
 	ft->szSavePath = ansi_to_utf8(szPath);
 	if (ft->szThisPath)
 	{ // Append Directory name to the save path, when transfering a directory
@@ -1039,10 +1034,13 @@ DWORD CIcqProto::oftFileDeny(HANDLE hContact, HANDLE hTransfer, const char* reaz
 	DWORD dwUin;
 	uid_str szUid;
 
+	if (getContactUid(hContact, &dwUin, &szUid))
+		return 1; // Invalid contact
+
 	if (IsValidOscarTransfer(ft))
 	{
-		if (getContactUid(hContact, &dwUin, &szUid))
-			return 1; // Invalid contact
+		if (ft->hContact != hContact)
+			return 1; // Bad contact or hTransfer
 
 #ifdef _DEBUG
 		NetLog_Direct("OFT: Request denied.");
@@ -1064,13 +1062,13 @@ DWORD CIcqProto::oftFileCancel(HANDLE hContact, HANDLE hTransfer)
 	DWORD dwUin;
 	uid_str szUid;
 
+	if (getContactUid(hContact, &dwUin, &szUid))
+		return 1; // Invalid contact
+
 	if (IsValidOscarTransfer(ft))
 	{
 		if (ft->hContact != hContact)
 			return 1; // Bad contact or hTransfer
-
-		if (getContactUid(hContact, &dwUin, &szUid))
-			return 1; // Invalid contact
 
 #ifdef _DEBUG
 		NetLog_Direct("OFT: Transfer cancelled.");
@@ -1090,13 +1088,12 @@ DWORD CIcqProto::oftFileCancel(HANDLE hContact, HANDLE hTransfer)
 
 void CIcqProto::oftFileResume(oscar_filetransfer *ft, int action, const char *szFilename)
 {
-	oscar_connection *oc;
 	int openFlags;
 
 	if (ft->connection == NULL)
 		return;
 
-	oc = (oscar_connection*)ft->connection;
+	oscar_connection *oc = (oscar_connection*)ft->connection;
 
 #ifdef _DEBUG
 	NetLog_Direct("OFT: Resume Transfer, Action: %d, FileName: '%s'", action, szFilename);
@@ -2149,7 +2146,10 @@ void CIcqProto::handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE 
 			{
 				ft->qwBytesDone -= (ft->qwFileBytesDone - dwResumeOffset);
 				ft->qwFileBytesDone = dwResumeOffset;
-				ft->dwRecvFileCheck = dwResumeCheck;
+				if (dwResumeOffset)
+					ft->dwRecvFileCheck = dwResumeCheck;
+				else // Restarted resume (data mismatch)
+					ft->dwRecvFileCheck = 0xFFFF0000;
 			}
 			_lseek(ft->fileId, dwResumeOffset, SEEK_SET);
 

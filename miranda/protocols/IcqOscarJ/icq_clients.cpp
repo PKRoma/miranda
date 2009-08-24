@@ -570,10 +570,7 @@ char* CIcqProto::detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass,
 				if (dwFT3 == 0x0F)
 					strcpy(ver, "2005");
 				else
-				{
-					strncpy(ver, (char*)(*capId)+11, 5);
-					ver[5] = '\0'; // fill in missing zero
-				}
+					null_strcpy(ver, (char*)(*capId) + 11, 5);
 
 				null_snprintf(szClientBuf, 64, cliQip, ver);
 				if (dwFT1 && dwFT2 == 0x0E)

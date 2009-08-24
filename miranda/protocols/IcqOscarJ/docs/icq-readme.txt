@@ -71,6 +71,7 @@ Improvements:
   Use new offline messages protocol (supports unicode)
   Ability to send/receive contacts to/from ICQ6 and AIM
   Server-list support now groups requests - much more faster & reliable
+  Improved ChangeInfo module compatibility with screen readers
 
 
 0.3.9.5

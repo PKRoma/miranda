@@ -1334,7 +1334,7 @@ int __cdecl CIcqProto::SendContacts( HANDLE hContact, int flags, int nContacts, 
 
 						// Finally we need to copy the contact data into the packet body
 						pBuffer = pBody = (char *)SAFE_MALLOC(nBodyLength);
-						strncpy(pBuffer, szCount, nBodyLength);
+						null_strcpy(pBuffer, szCount, nBodyLength - 1);
 						pBuffer += strlennull(pBuffer);
 						*pBuffer++ = (char)0xFE;
 						for (i = 0; i < nContacts; i++)
@@ -2274,7 +2274,7 @@ int __cdecl CIcqProto::SetAwayMsg(int status, const char* msg)
 {
 	EnterCriticalSection(&m_modeMsgsMutex);
 
-	char **ppszMsg = MirandaStatusToAwayMsg(status);
+	char **ppszMsg = MirandaStatusToAwayMsg(MirandaStatusToSupported(status));
 	if (!ppszMsg)
 	{
 		LeaveCriticalSection(&m_modeMsgsMutex);

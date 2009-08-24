@@ -739,6 +739,7 @@ int null_snprintf(WCHAR *buffer, size_t count, const WCHAR *fmt, ...)
   return len;
 }
 
+
 char* __fastcall null_strdup(const char *string)
 {
 	if (string)
@@ -746,6 +747,24 @@ char* __fastcall null_strdup(const char *string)
 
 	return NULL;
 }
+
+
+char* __fastcall null_strcpy(char *dest, const char *src, size_t maxlen)
+{
+  if (!dest)
+    return NULL;
+
+  if (strlennull(src))
+  {
+    strncpy(dest, src, maxlen);
+    dest[maxlen] = '\0';
+  }
+  else
+    dest[0] = '\0';
+
+  return dest;
+}
+
 
 size_t __fastcall null_strcut(char *string, size_t maxlen)
 { // limit the string to max length (null & utf-8 strings ready)
@@ -765,6 +784,7 @@ size_t __fastcall null_strcut(char *string, size_t maxlen)
 
 	return len;
 }
+
 
 void parseServerAddress(char* szServer, WORD* wPort)
 {
