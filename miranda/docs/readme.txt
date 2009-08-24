@@ -20,6 +20,19 @@ Contents
 
 1. Changes in this version
 --------------------------
+* New in 0.8.5
+Bugfixes:
+ - Auto away did not respect locked protocols
+ - Fixed possible file transfer crashes with Windows 9x
+ - Fixed deleting accounts for not loaded protocols
+ - Fixed minor selection issues with the profile manager
+ - ICQ: Incorrect behavior of error messages when popups were unloaded
+ - MSN: Fixed Address Book migration from 0.7
+ - MSN: Fixed phones in the contact list
+ - MSN: Fixed removing IM contacts
+ - MSN: Fixed blocking contacts not on contact list
+
+
 * New in 0.8.4
 Enhancements:
  - Gadu-Gadu: Added option: 'Show links from unknown contacts'
