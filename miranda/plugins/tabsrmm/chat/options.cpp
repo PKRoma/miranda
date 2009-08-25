@@ -150,44 +150,43 @@ static struct branch_t branch1[] = {
 	{LPGENT("Flash window when someone speaks"), "FlashWindow", 0, 0, NULL},
 	{LPGENT("Flash window when a word is highlighted"), "FlashWindowHighlight", 0, 1, NULL},
 //MAD: highlight mod
-	{LPGENT("Create container/tab on highlight, if it's not available"), "CreateWindowOnHighlight", 0,0, NULL},
+	{LPGENT("Create tabs or windows for highlight events"), "CreateWindowOnHighlight", 0,0, NULL},
 	{LPGENT("Activate chat window on highlight"), "AnnoyingHighlight", 0,0, NULL},
 //
 	{LPGENT("Show list of users in the chat room"), "ShowNicklist", 0, 1, NULL},
 	{LPGENT("Colorize nicknames in member list"), "ColorizeNicks", 0, 1, NULL},
 	{LPGENT("Show button menus when right clicking the buttons"), "RightClickFilter", 0, 0, NULL},
-	{LPGENT("Show the topic of the room on your contact list (if supported)"), "TopicOnClist", 0, 1, NULL},
+	{LPGENT("Show topic as status message on the contact list"), "TopicOnClist", 0, 1, NULL},
 	{LPGENT("Do not play sounds when the chat room is focused"), "SoundsFocus", 0, 0, NULL},
 	{LPGENT("Do not pop up the window when joining a chat room"), "PopupOnJoin", 0, 0, NULL},
-	{LPGENT("Toggle the visible state when double clicking in the contact list"), "ToggleVisibility", 0, 0, NULL},
+	{LPGENT("Hide or show the window by double click in the contact list"), "ToggleVisibility", 0, 0, NULL},
 	{LPGENT("Sync splitter position with standard IM sessions"), "SyncSplitter", 0, 0, NULL},
-	{LPGENT("Show contact statuses if protocol supports them"), "ShowContactStatus", 0, 1, NULL},
-	{LPGENT("Display contact status icon before user role icon"), "ContactStatusFirst", 0, 0, NULL},
+	{LPGENT("Show contact's status modes if supported by the protocol"), "ShowContactStatus", 0, 1, NULL},
+	{LPGENT("Display contact's status icon before user role icon"), "ContactStatusFirst", 0, 0, NULL},
 	//MAD: simple customization improvement
-	{LPGENT("Use IRC style status indicators in the member list (@, %, + etc.)"), "ClassicIndicators", 0, 0, NULL},
+	{LPGENT("Use IRC style status indicators in the user list"), "ClassicIndicators", 0, 0, NULL},
 	{LPGENT("Use alternative sorting method in member list"), "AlternativeSorting", 0, 1, NULL},
 
 };
 static struct branch_t branch2[] = {
 	{LPGENT("Prefix all events with a timestamp"), "ShowTimeStamp", 0, 1, NULL},
-	{LPGENT("Only prefix with timestamp if it has changed"), "ShowTimeStampIfChanged", 0, 0, NULL},
-	{LPGENT("Timestamp has same colour as the event"), "TimeStampEventColour", 0, 0, NULL},
+	{LPGENT("Timestamp only when event time differs"), "ShowTimeStampIfChanged", 0, 0, NULL},
+	{LPGENT("Timestamp has same color as the event"), "TimeStampEventColour", 0, 0, NULL},
 	{LPGENT("Indent the second line of a message"), "LogIndentEnabled", 0, 1, NULL},
 	{LPGENT("Limit user names in the message log to 20 characters"), "LogLimitNames", 0, 1, NULL},
-	{LPGENT("Add \':\' to auto-completed user names"), "AddColonToAutoComplete", 0, 1, NULL},
+	{LPGENT("Add a colon (:) to auto-completed user names"), "AddColonToAutoComplete", 0, 1, NULL},
 	{LPGENT("Start private conversation on doubleclick in nick list (insert nick if unchecked)"), "DoubleClick4Privat", 0, 0, NULL},
 	{LPGENT("Strip colors from messages in the log"), "StripFormatting", 0, 0, NULL},
 	{LPGENT("Enable the \'event filter\' for new rooms"), "FilterEnabled", 0, 0, NULL},
 //MAD: simple customization improvement
 	{LPGENT("Use IRC style status indicators in the log"), "LogClassicIndicators", 0,0, NULL},
 //
-	{LPGENT("Use text symbols instead of icons in the chat log (faster)"), "LogSymbols", 0, 1, NULL},
-	{LPGENT("Make nicknames clickable hyperlinks"), "ClickableNicks", 0, 1, NULL},
-	{LPGENT("Colorize nicknames in message log"), "ColorizeNicksInLog", 0, 1, NULL},
+	{LPGENT("Allow clickable user names in the message log"), "ClickableNicks", 0, 1, NULL},
+	{LPGENT("Colorize user names in message log"), "ColorizeNicksInLog", 0, 1, NULL},
 	{LPGENT("Scale down icons to 10x10 pixels in the chat log"), "ScaleIcons", 0, 1, NULL},
 	{LPGENT("Draw dividers to mark inactivity"), "UseDividers", 0, 1, NULL},
 	{LPGENT("Use the containers popup configuration to place dividers"), "DividersUsePopupConfig", 0, 1, NULL},
-	{LPGENT("Support math module plugin"), "MathModSupport", 0, 0, NULL}
+	{LPGENT("Support the math module plugin"), "MathModSupport", 0, 0, NULL}
 };
 
 static HWND hPathTip = 0;

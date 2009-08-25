@@ -1419,7 +1419,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 		event.count = count;
 		event.pszProto = dat->szProto;
 		CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
-		DM_ScrollToBottom(hwndDlg, dat, 0, 0);
+		DM_ScrollToBottom(dat, 0, 0);
 		if (fAppend)
 			dat->hDbEventLast = hDbEventFirst;
 		else
@@ -1452,7 +1452,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 		event.count = count;
 		CallService(MS_HPP_EG_EVENT, 0, (LPARAM)&event);
 		//SendMessage(hwndDlg, DM_FORCESCROLL, (WPARAM)&pt, (LPARAM)&si);
-		DM_ScrollToBottom(hwndDlg, dat, 0, 0);
+		DM_ScrollToBottom(dat, 0, 0);
 		if (fAppend)
 			dat->hDbEventLast = hDbEventFirst;
 		else

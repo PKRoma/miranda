@@ -655,16 +655,10 @@ static CSkinItem StatusItem_Default = {
 	CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 };
 
-#if defined(_UNICODE)
-	#define IMGL_LOAD 2			// IMGL_WCHAR, assume filename is wchar_t *
-#else
-	#define IMGL_LOAD 0
-#endif
-
 static HBITMAP LoadPNG(const TCHAR *szFilename)
 {
 	HBITMAP hBitmap = 0;
-	hBitmap = (HBITMAP)CallService("IMG/Load", (WPARAM)szFilename,  IMGL_LOAD);
+	hBitmap = (HBITMAP)CallService(MS_IMG_LOAD, (WPARAM)szFilename, IMGL_TCHAR);
 	CImageItem::PreMultiply(hBitmap, 1);
 	return hBitmap;
 }
@@ -690,7 +684,7 @@ static struct {
 
 HBITMAP IMG_LoadLogo(const char *szFilename)
 {
-	HBITMAP hbm = (HBITMAP)CallService("IMG/Load", (LPARAM)szFilename, 0);
+	HBITMAP hbm = (HBITMAP)CallService(MS_IMG_LOAD, (LPARAM)szFilename, 0);
 	CImageItem::PreMultiply(hbm, 1);
 	return(hbm);
 }
@@ -1749,12 +1743,26 @@ void CSkin::setupAeroSkins()
 
 		CMimAPI::m_pfnDwmGetColorizationColor(&dwmColor, &isOpaque);
 
-		m_hbmAeroTabTop = (HBITMAP)CallService("IMG/Load", (WPARAM)tszFilename, IMGL_LOAD);
+		FIBITMAP *fib = (FIBITMAP *)CallService(MS_IMG_LOAD, (WPARAM)tszFilename, IMGL_TCHAR | IMGL_RETURNDIB);
+
+		m_hbmAeroTabTop = FIF->FI_CreateHBITMAPFromDIB(fib);
 		CImageItem::Colorize(m_hbmAeroTabTop, (BYTE)((dwmColor & 0x00ff0000) >> 16),
 							 (BYTE)((dwmColor & 0x0000ff00) >> 8),
 							 (BYTE)((dwmColor & 0x000000ff)));
-
 		CImageItem::PreMultiply(m_hbmAeroTabTop, 1);
+
+		/*
+		 * created inverted bitmap for bottom tabs
+		 */
+
+		FIF->FI_FlipVertical(fib);
+
+		m_hbmAeroTabBottom = FIF->FI_CreateHBITMAPFromDIB(fib);
+		CImageItem::Colorize(m_hbmAeroTabBottom, (BYTE)((dwmColor & 0x00ff0000) >> 16),
+							 (BYTE)((dwmColor & 0x0000ff00) >> 8),
+							 (BYTE)((dwmColor & 0x000000ff)));
+		CImageItem::PreMultiply(m_hbmAeroTabBottom, 1);
+		FIF->FI_Unload(fib);
 	}
 
 }
@@ -2037,7 +2045,7 @@ int CSkin::RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWO
 	}
 }
 #else
-int CSkin::RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags)
+int CSkin::RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags, const int iGlowSize)
 {
 	return(::DrawText(hdc, szText, -1, rc, dtFlags));
 }
@@ -2083,6 +2091,9 @@ HBITMAP CSkin::ResizeBitmap(HBITMAP hBmpSrc, LONG width, LONG height, bool &must
 /**
  * Create a 32bit RGBA bitmap, compatible for rendering with alpha channel.
  * Required by anything which would render on a transparent aero surface.
+ * the image is a "bottom up" bitmap, as it has a negative
+ * height. This is a requirement for some UxTheme APIs (e.g.
+ * DrawThemeTextEx).
  *
  * @param rc     RECT &: the rectangle describing the target area.
  * @param dc     The device context for which the bitmap should be created.

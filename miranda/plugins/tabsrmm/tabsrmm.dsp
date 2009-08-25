@@ -125,10 +125,11 @@ LINK32=link.exe
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir ".\Debug_Unicode"
 # PROP Intermediate_Dir ".\Debug_Unicode"
-# PROP Ignore_Export_Lib 1
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR /Fp".\Debug_Unicode/srmm.pch" /YX /GZ /c
-# ADD CPP /nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR /Fp".\Debug_Unicode/srmm.pch" /Yu"commonheaders.h" /GZ /c
+# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /GZ /c
+# SUBTRACT CPP /Fr /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x809 /d "_DEBUG"
@@ -139,8 +140,8 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /subsystem:windows /dll /incremental:no /pdb:".\Debug_Unicode\srmm.pdb" /debug /machine:IX86 /out:"..\..\Bin\Debug\Plugins\tabsrmm_unicode.dll" /implib:".\Debug_Unicode/srmm.lib" /pdbtype:sept
 # SUBTRACT BASE LINK32 /pdb:none
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /subsystem:windows /dll /pdb:".\Debug_Unicode\srmm.pdb" /debug /machine:IX86 /out:"..\..\Bin\Debug Unicode\Plugins\tabsrmm.dll" /implib:".\Debug_Unicode/srmm.lib" /pdbtype:sept
-# SUBTRACT LINK32 /pdb:none /incremental:no
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /base:"0x6a540000" /stack:0xfa00 /subsystem:windows /dll /incremental:no /map /debug /machine:IX86 /out:"..\..\Bin\Debug Unicode\Plugins\tabsrmm.dll" /implib:".\Debug_Unicode/srmm.lib" /pdbtype:sept
+# SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
 
@@ -184,8 +185,11 @@ DEP_CPP_CLIST=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -220,6 +224,7 @@ DEP_CPP_CLIST=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -227,13 +232,13 @@ DEP_CPP_CLIST=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_CLIST=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -253,8 +258,11 @@ DEP_CPP_COLOR=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -289,6 +297,7 @@ DEP_CPP_COLOR=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -296,13 +305,13 @@ DEP_CPP_COLOR=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_COLOR=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -322,8 +331,11 @@ DEP_CPP_LOG_C=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -358,6 +370,7 @@ DEP_CPP_LOG_C=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -365,13 +378,13 @@ DEP_CPP_LOG_C=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_LOG_C=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -391,8 +404,11 @@ DEP_CPP_MAIN_=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -427,6 +443,7 @@ DEP_CPP_MAIN_=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -434,13 +451,13 @@ DEP_CPP_MAIN_=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MAIN_=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -460,8 +477,11 @@ DEP_CPP_MANAG=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -496,6 +516,7 @@ DEP_CPP_MANAG=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -503,13 +524,13 @@ DEP_CPP_MANAG=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MANAG=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -529,8 +550,11 @@ DEP_CPP_MESSA=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -565,6 +589,7 @@ DEP_CPP_MESSA=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -572,13 +597,13 @@ DEP_CPP_MESSA=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MESSA=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -598,8 +623,11 @@ DEP_CPP_OPTIO=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -634,6 +662,7 @@ DEP_CPP_OPTIO=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -641,13 +670,13 @@ DEP_CPP_OPTIO=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_OPTIO=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -667,8 +696,11 @@ DEP_CPP_SERVI=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -703,6 +735,7 @@ DEP_CPP_SERVI=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -710,13 +743,13 @@ DEP_CPP_SERVI=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_SERVI=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -736,8 +769,11 @@ DEP_CPP_TOOLS=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -772,6 +808,7 @@ DEP_CPP_TOOLS=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -779,13 +816,13 @@ DEP_CPP_TOOLS=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_TOOLS=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -805,8 +842,11 @@ DEP_CPP_WINDO=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -841,6 +881,7 @@ DEP_CPP_WINDO=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -848,14 +889,14 @@ DEP_CPP_WINDO=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_WINDO=\
-	".\om.h"\
-	".\xtheme.h"\
+	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -940,8 +981,11 @@ DEP_CPP_BUTTO=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -976,6 +1020,7 @@ DEP_CPP_BUTTO=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -983,13 +1028,13 @@ DEP_CPP_BUTTO=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_BUTTO=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1008,8 +1053,11 @@ DEP_CPP_CONTA=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1044,6 +1092,7 @@ DEP_CPP_CONTA=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -1051,13 +1100,13 @@ DEP_CPP_CONTA=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_CONTA=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1076,8 +1125,11 @@ DEP_CPP_CONTAI=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1112,6 +1164,7 @@ DEP_CPP_CONTAI=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -1119,18 +1172,86 @@ DEP_CPP_CONTAI=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_CONTAI=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\controls.cpp
+DEP_CPP_CONTR=\
+	"..\..\include\m_acc.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\API\m_buttonbar.h"\
+	".\API\m_cln_skinedit.h"\
+	".\API\m_fingerprint.h"\
+	".\API\m_flash.h"\
+	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
+	".\API\m_ieview.h"\
+	".\API\m_mathmodule.h"\
+	".\API\m_metacontacts.h"\
+	".\API\m_msg_buttonsbar.h"\
+	".\API\m_nudge.h"\
+	".\API\m_popup.h"\
+	".\API\m_smileyadd.h"\
+	".\API\m_spellchecker.h"\
+	".\API\m_toptoolbar.h"\
+	".\API\m_updater.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\src\commonheaders.h"\
+	".\src\controls.h"\
+	".\src\functions.h"\
+	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
+	".\src\msgdlgutils.h"\
+	".\src\msgs.h"\
+	".\src\nen.h"\
+	".\src\resource.h"\
+	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
+	".\src\templates.h"\
+	".\src\themes.h"\
+	".\src\typingnotify.h"\
+	{$(INCLUDE)}"uxtheme.h"\
+	
 # End Source File
 # Begin Source File
 
@@ -1148,9 +1269,12 @@ DEP_CPP_EVENT=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_icq.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1185,6 +1309,7 @@ DEP_CPP_EVENT=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -1192,13 +1317,13 @@ DEP_CPP_EVENT=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_EVENT=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1217,8 +1342,11 @@ DEP_CPP_FORMA=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1253,6 +1381,7 @@ DEP_CPP_FORMA=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -1260,13 +1389,13 @@ DEP_CPP_FORMA=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_FORMA=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
@@ -1286,8 +1415,11 @@ DEP_CPP_GENER=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1322,6 +1454,7 @@ DEP_CPP_GENER=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -1329,13 +1462,13 @@ DEP_CPP_GENER=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_GENER=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1354,8 +1487,11 @@ DEP_CPP_GLOBA=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1390,6 +1526,7 @@ DEP_CPP_GLOBA=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -1397,13 +1534,13 @@ DEP_CPP_GLOBA=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_GLOBA=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1422,8 +1559,11 @@ DEP_CPP_HOTKE=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1458,6 +1598,7 @@ DEP_CPP_HOTKE=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -1465,13 +1606,13 @@ DEP_CPP_HOTKE=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_HOTKE=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1490,8 +1631,11 @@ DEP_CPP_IMAGE=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1526,6 +1670,7 @@ DEP_CPP_IMAGE=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -1534,13 +1679,13 @@ DEP_CPP_IMAGE=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_IMAGE=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
@@ -1560,8 +1705,11 @@ DEP_CPP_MIM_C=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1596,6 +1744,7 @@ DEP_CPP_MIM_C=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -1603,13 +1752,13 @@ DEP_CPP_MIM_C=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MIM_C=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1628,8 +1777,11 @@ DEP_CPP_MODPL=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1664,6 +1816,7 @@ DEP_CPP_MODPL=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -1671,13 +1824,13 @@ DEP_CPP_MODPL=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MODPL=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -1697,8 +1850,11 @@ DEP_CPP_MSGDI=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1733,6 +1889,7 @@ DEP_CPP_MSGDI=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -1740,13 +1897,13 @@ DEP_CPP_MSGDI=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MSGDI=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1765,8 +1922,11 @@ DEP_CPP_MSGDL=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1801,6 +1961,7 @@ DEP_CPP_MSGDL=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -1808,13 +1969,13 @@ DEP_CPP_MSGDL=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MSGDL=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1833,8 +1994,11 @@ DEP_CPP_MSGLO=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1869,6 +2033,7 @@ DEP_CPP_MSGLO=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -1876,13 +2041,13 @@ DEP_CPP_MSGLO=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MSGLO=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1901,8 +2066,11 @@ DEP_CPP_MSGOP=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_modernopt.h"\
@@ -1938,6 +2106,7 @@ DEP_CPP_MSGOP=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -1945,13 +2114,13 @@ DEP_CPP_MSGOP=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MSGOP=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1970,8 +2139,11 @@ DEP_CPP_MSGOPT=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -2006,6 +2178,7 @@ DEP_CPP_MSGOPT=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -2013,13 +2186,13 @@ DEP_CPP_MSGOPT=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MSGOPT=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -2039,8 +2212,11 @@ DEP_CPP_MSGS_=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -2075,6 +2251,7 @@ DEP_CPP_MSGS_=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -2082,13 +2259,13 @@ DEP_CPP_MSGS_=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MSGS_=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2107,8 +2284,11 @@ DEP_CPP_SELEC=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -2143,6 +2323,7 @@ DEP_CPP_SELEC=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -2150,13 +2331,13 @@ DEP_CPP_SELEC=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_SELEC=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2175,8 +2356,11 @@ DEP_CPP_SENDQ=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -2211,6 +2395,7 @@ DEP_CPP_SENDQ=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -2218,13 +2403,13 @@ DEP_CPP_SENDQ=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_SENDQ=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2243,8 +2428,11 @@ DEP_CPP_SRMM_=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -2279,6 +2467,7 @@ DEP_CPP_SRMM_=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -2286,13 +2475,13 @@ DEP_CPP_SRMM_=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_SRMM_=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yc"commonheaders.h"
 # End Source File
@@ -2312,8 +2501,11 @@ DEP_CPP_TABCT=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -2348,6 +2540,7 @@ DEP_CPP_TABCT=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -2355,18 +2548,86 @@ DEP_CPP_TABCT=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_TABCT=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\taskbar.cpp
+DEP_CPP_TASKB=\
+	"..\..\include\m_acc.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\API\m_buttonbar.h"\
+	".\API\m_cln_skinedit.h"\
+	".\API\m_fingerprint.h"\
+	".\API\m_flash.h"\
+	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
+	".\API\m_ieview.h"\
+	".\API\m_mathmodule.h"\
+	".\API\m_metacontacts.h"\
+	".\API\m_msg_buttonsbar.h"\
+	".\API\m_nudge.h"\
+	".\API\m_popup.h"\
+	".\API\m_smileyadd.h"\
+	".\API\m_spellchecker.h"\
+	".\API\m_toptoolbar.h"\
+	".\API\m_updater.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\src\commonheaders.h"\
+	".\src\controls.h"\
+	".\src\functions.h"\
+	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
+	".\src\msgdlgutils.h"\
+	".\src\msgs.h"\
+	".\src\nen.h"\
+	".\src\resource.h"\
+	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
+	".\src\templates.h"\
+	".\src\themes.h"\
+	".\src\typingnotify.h"\
+	{$(INCLUDE)}"uxtheme.h"\
+	
 # End Source File
 # Begin Source File
 
@@ -2384,8 +2645,11 @@ DEP_CPP_TEMPL=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -2420,6 +2684,7 @@ DEP_CPP_TEMPL=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -2427,22 +2692,18 @@ DEP_CPP_TEMPL=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_TEMPL=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\themeio.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\themes.cpp
 DEP_CPP_THEME=\
 	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
@@ -2456,8 +2717,11 @@ DEP_CPP_THEME=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -2492,6 +2756,7 @@ DEP_CPP_THEME=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -2499,13 +2764,85 @@ DEP_CPP_THEME=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
-NODEP_CPP_THEME=\
-	".\xtheme.h"\
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\themes.cpp
+DEP_CPP_THEMES=\
+	"..\..\include\m_acc.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\API\m_buttonbar.h"\
+	".\API\m_cln_skinedit.h"\
+	".\API\m_fingerprint.h"\
+	".\API\m_flash.h"\
+	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
+	".\API\m_ieview.h"\
+	".\API\m_mathmodule.h"\
+	".\API\m_metacontacts.h"\
+	".\API\m_msg_buttonsbar.h"\
+	".\API\m_nudge.h"\
+	".\API\m_popup.h"\
+	".\API\m_smileyadd.h"\
+	".\API\m_spellchecker.h"\
+	".\API\m_toptoolbar.h"\
+	".\API\m_updater.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\src\commonheaders.h"\
+	".\src\controls.h"\
+	".\src\functions.h"\
+	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\mim.h"\
+	".\src\msgdlgutils.h"\
+	".\src\msgs.h"\
+	".\src\nen.h"\
+	".\src\resource.h"\
+	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
+	".\src\templates.h"\
+	".\src\themes.h"\
+	".\src\typingnotify.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2524,8 +2861,11 @@ DEP_CPP_TRAYI=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -2560,6 +2900,7 @@ DEP_CPP_TRAYI=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -2567,13 +2908,13 @@ DEP_CPP_TRAYI=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_TRAYI=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2592,8 +2933,11 @@ DEP_CPP_TSBUT=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -2628,6 +2972,7 @@ DEP_CPP_TSBUT=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -2635,13 +2980,13 @@ DEP_CPP_TSBUT=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_TSBUT=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2660,8 +3005,11 @@ DEP_CPP_TYPIN=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -2696,6 +3044,7 @@ DEP_CPP_TYPIN=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -2703,13 +3052,13 @@ DEP_CPP_TYPIN=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_TYPIN=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2728,8 +3077,11 @@ DEP_CPP_USERP=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -2764,6 +3116,7 @@ DEP_CPP_USERP=\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\src\commonheaders.h"\
+	".\src\controls.h"\
 	".\src\functions.h"\
 	".\src\generic_msghandlers.h"\
 	".\src\globals.h"\
@@ -2771,13 +3124,13 @@ DEP_CPP_USERP=\
 	".\src\msgdlgutils.h"\
 	".\src\msgs.h"\
 	".\src\nen.h"\
+	".\src\resource.h"\
 	".\src\sendqueue.h"\
+	".\src\taskbar.h"\
 	".\src\templates.h"\
 	".\src\themes.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_USERP=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # End Group

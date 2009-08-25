@@ -56,8 +56,31 @@ static HOTKEYDESC _hotkeydescs[] = {
 	0, "tabsrmm_nudge", "Send nudge", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_CONTROL, 'N'), TABSRMM_HK_NUDGE,
 	0, "tabsrmm_sendfile", "Send a file", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT, 'F'), TABSRMM_HK_SENDFILE,
 	0, "tabsrmm_quote", "Quote message", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT, 'Q'), TABSRMM_HK_QUOTEMSG,
+
+	0, "tabsrmm_send", "Send message", TABSRMM_HK_SECTION_GENERIC, 0, HOTKEYCODE(HOTKEYF_ALT, 'S'), TABSRMM_HK_SEND,
+	0, "tabsrmm_emot", "Smiley selector", TABSRMM_HK_SECTION_GENERIC, 0, HOTKEYCODE(HOTKEYF_ALT, 'E'), TABSRMM_HK_EMOTICONS,
+	0, "tabsrmm_hist", "Show message history", TABSRMM_HK_SECTION_GENERIC, 0, HOTKEYCODE(HOTKEYF_ALT, 'H'), TABSRMM_HK_HISTORY,
+	0, "tabsrmm_umenu", "Show user menu", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT, 'D'), TABSRMM_HK_USERMENU,
+	0, "tabsrmm_udet", "Show user details", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT, 'U'), TABSRMM_HK_USERDETAILS,
+	0, "tabsrmm_tbar", "Toggle tool bar", TABSRMM_HK_SECTION_GENERIC, 0, HOTKEYCODE(HOTKEYF_ALT|HOTKEYF_SHIFT, 'T'), TABSRMM_HK_TOGGLETOOLBAR,
+	0, "tabsrmm_ipanel", "Toggle info panel", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT|HOTKEYF_SHIFT, 'I'), TABSRMM_HK_TOGGLEINFOPANEL,
+	0, "tabsrmm_rtl", "Toggle text direction", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT|HOTKEYF_SHIFT, 'B'), TABSRMM_HK_TOGGLERTL,
+	0, "tabsrmm_msend", "Toggle multi send", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT|HOTKEYF_SHIFT, 'M'), TABSRMM_HK_TOGGLEMULTISEND
 };
 
+LRESULT ProcessHotkeysByMsgFilter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR ctrlId)
+{
+	MSGFILTER  mf;
+	mf.nmhdr.code = EN_MSGFILTER;
+	mf.nmhdr.hwndFrom = hwnd;
+	mf.nmhdr.idFrom = ctrlId;
+
+	mf.lParam = lParam;
+	mf.wParam = wParam;
+	mf.msg = msg;
+
+	return(SendMessage(GetParent(hwnd), WM_NOTIFY, 0, (LPARAM)&mf));
+}
 static INT_PTR HotkeyProcessor(WPARAM wParam, LPARAM lParam)
 {
 	switch(lParam) {

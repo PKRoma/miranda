@@ -377,7 +377,7 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 						dat->panelWidth = -1;
 						ShowPicture(dat, FALSE);
 						SendMessage(hWnd, WM_SIZE, 0, 0);
-						DM_ScrollToBottom(hWnd, dat, 0, 1);
+						DM_ScrollToBottom(dat, 0, 1);
 					}
 
 					if (IsDlgButtonChecked(hwndDlg, IDC_NOAUTOCLOSE))

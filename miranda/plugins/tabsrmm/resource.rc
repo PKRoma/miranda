@@ -1181,15 +1181,7 @@ BEGIN
     END
     POPUP "Apparentmenu"
     BEGIN
-        MENUITEM "You appear always offline or have this contact blocked", 
-                                                ID_APPARENTMENU_YOUAPPEARALWAYSOFFLINEORHAVETHISCONTACTBLOCKED
-
-        MENUITEM "You are always visible to this contact", 
-                                                ID_APPARENTMENU_YOUAREALWAYSVISIBLETOTHISCONTACT
-
-        MENUITEM "Your status determines visibility to this contact", 
-                                                ID_APPARENTMENU_YOURSTATUSDETERMINESVISIBLITYTOTHISCONTACT
-
+        MENUITEM "dummy", -1
     END
     POPUP "Panelpicmenu"
     BEGIN

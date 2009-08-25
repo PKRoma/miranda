@@ -223,12 +223,12 @@ void DM_SetDBButtonStates(HWND hwndChild, struct _MessageWindowData *dat)
 	}
 }
 
-LRESULT DM_ScrollToBottom(HWND hwndDlg, struct _MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
+LRESULT DM_ScrollToBottom(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
 	SCROLLINFO si = { 0 };
 
-	if (dat == NULL)
-		dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	if (dat == 0)
+		return(0);
 
 	if (dat) {
 
@@ -239,13 +239,13 @@ LRESULT DM_ScrollToBottom(HWND hwndDlg, struct _MessageWindowData *dat, WPARAM w
 			dat->dwFlags |= MWF_DEFERREDSCROLL;
 
 		if (dat->hwndIEView) {
-			PostMessage(hwndDlg, DM_SCROLLIEVIEW, 0, 0);
+			PostMessage(dat->hwnd, DM_SCROLLIEVIEW, 0, 0);
 			return 0;
 		} else if (dat->hwndHPP) {
-			SendMessage(hwndDlg, DM_SCROLLIEVIEW, 0, 0);
+			SendMessage(dat->hwnd, DM_SCROLLIEVIEW, 0, 0);
 			return 0;
 		} else {
-			HWND hwnd = GetDlgItem(hwndDlg, dat->bType == SESSIONTYPE_IM ? IDC_LOG : IDC_CHAT_LOG);
+			HWND hwnd = GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_LOG : IDC_CHAT_LOG);
 
 			if (lParam)
 				SendMessage(hwnd, WM_SIZE, 0, 0);
@@ -354,8 +354,6 @@ LRESULT DM_UpdateLastMessage(const _MessageWindowData *dat)
 			mir_sntprintf(szBuf, safe_sizeof(szBuf), TranslateT("%s is typing..."), dat->szNickname);
 			SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM) szBuf);
 			SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) PluginConfig.g_buttonBarIcons[5]);
-			if (dat->pContainer->hwndSlist)
-				SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)PluginConfig.g_buttonBarIcons[5]);
 			return 0;
 		}
 		if (dat->lastMessage || dat->pContainer->dwFlags & CNT_UINSTATUSBAR) {
@@ -385,13 +383,9 @@ LRESULT DM_UpdateLastMessage(const _MessageWindowData *dat)
 				SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM) fmt);
 			}
 			SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(PluginConfig.m_bSessionList ? PluginConfig.g_buttonBarIcons[16] : 0));
-			if (dat->pContainer->hwndSlist)
-				SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)PluginConfig.g_buttonBarIcons[16]);
 		} else {
 			SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) "");
 			SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(PluginConfig.m_bSessionList ? PluginConfig.g_buttonBarIcons[16] : 0));
-			if (dat->pContainer->hwndSlist)
-				SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)PluginConfig.g_buttonBarIcons[16]);
 		}
 	}
 	return 0;

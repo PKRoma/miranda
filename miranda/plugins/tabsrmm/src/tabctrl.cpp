@@ -1,36 +1,37 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
-		--pad=oper --one-line=keep-blocks  --unpad=paren
-
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2003 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
----------------------------------------------------------------------------
-
-custom tab control for tabSRMM. Allows for configuartion of colors and backgrounds
-for different tab states (active,  unread etc..)
-
-allows skinable tabs with visual styles properly applied to bottom row tabs (flipped
-style bitmaps).
-
-$Id$
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * a custom tab control, skinable, aero support, single/multi row, button
+ * tabs support, proper rendering for bottom row tabs and more.
+ *
+ */
 
 #include "commonheaders.h"
 #pragma hdrstop
@@ -807,7 +808,7 @@ static HRESULT DrawThemesPartWithAero(const TabControlData *tabdat, HDC hDC, int
 	if(tabdat->fAeroTabs) {
 		int iState = (iStateId == PBS_NORMAL || iStateId == PBS_HOT) ? 2 : 1;
 		FillRect(hDC, prcBox, (HBRUSH)GetStockObject(BLACK_BRUSH));
-		if(iStateId != 3)
+		if(!(tabdat->dwStyle & TCS_BOTTOM) && iStateId != 3)
 			prcBox->bottom += 2;
 		tabdat->helperItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == 3 ? 180 : 100);
 		tabdat->helperItem->Render(hDC, prcBox, true);
@@ -872,6 +873,11 @@ static void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, 
 			int iStateId = bSel ? 3 : (bHot ? 2 : 1);                       // leftmost item has different part id
 			DrawThemesPartWithAero(tabdat, pDC, rcItem->left < 20 ? 2 : 1, iStateId, rcItem);
 		}
+		return;
+	}
+	else if(tabdat->fAeroTabs && !bBody) {
+		int iStateId = bSel ? 3 : (bHot ? 2 : 1);                       // leftmost item has different part id
+		DrawThemesPartWithAero(tabdat, pDC, rcItem->left < 20 ? 2 : 1, iStateId, rcItem);
 		return;
 	}
 
@@ -1028,10 +1034,8 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			tabdat->helperItem = new CImageItem(5, 5, 5, 5, 0, 0, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
 												0, 255, 30, 80, 50, 100);
 
-			LONG	height, width;
-
-			const	HBITMAP hbm = Skin->getAeroTabBitmap(0, width, height);
-
+			LONG    width, height;
+			const	HBITMAP hbm = Skin->getAeroTabBitmap(CSkin::TAB_BITMAP_TOP, width, height);
 			tabdat->helperItem->setBitmap(hbm);
 			tabdat->helperItem->setMetrics(width, height);
 			tabdat->helperItem->setAlphaFormat(AC_SRC_ALPHA, 255);
@@ -1048,13 +1052,10 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 						if (tabdat->hTheme != 0 && CMimAPI::m_pfnCloseThemeData != 0) {
 							CMimAPI::m_pfnCloseThemeData(tabdat->hTheme);
 							CMimAPI::m_pfnCloseThemeData(tabdat->hThemeButton);
-							if(tabdat->hThemeAeroTabs)
-								CMimAPI::m_pfnCloseThemeData(tabdat->hThemeAeroTabs);
 						}
 						if (CMimAPI::m_pfnOpenThemeData != 0) {
 							if ((tabdat->hTheme = CMimAPI::m_pfnOpenThemeData(hwnd, L"TAB")) == 0 || (tabdat->hThemeButton = CMimAPI::m_pfnOpenThemeData(hwnd, L"BUTTON")) == 0)
 								tabdat->m_skinning = FALSE;
-							tabdat->hThemeAeroTabs = M->isAero() ? CMimAPI::m_pfnOpenThemeData(hwnd, L"STARTPANEL") : 0;
 						}
 					}
 			}
@@ -1128,9 +1129,11 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 				if (tabdat->hTheme != 0 && CMimAPI::m_pfnCloseThemeData != 0) {
 					CMimAPI::m_pfnCloseThemeData(tabdat->hTheme);
 					CMimAPI::m_pfnCloseThemeData(tabdat->hThemeButton);
-					if(tabdat->hThemeAeroTabs)
-						CMimAPI::m_pfnCloseThemeData(tabdat->hThemeAeroTabs);
 				}
+			}
+			break;
+		case WM_NCDESTROY:
+			if(tabdat) {
 				tabdat->helperItem->Clear();
 				delete tabdat->helperItem;
 				mir_free(tabdat);
@@ -1333,9 +1336,9 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 		break;
 
 		case WM_ERASEBKGND:
-			if (tabdat->pContainer->bSkinned)
+			if (tabdat->pContainer && tabdat->pContainer->bSkinned)
 				return TRUE;
-			return 0;
+			return(0);
 		case WM_PAINT: {
 			PAINTSTRUCT ps;
 			HDC hdcreal, hdc;
@@ -1355,24 +1358,29 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			DWORD cx, cy;
 			bool  isAero = M->isAero();
 
-			tabdat->fAeroTabs = M->isAero() ? TRUE : FALSE;
+			if(GetUpdateRect(hwnd, NULL, TRUE) == 0)
+				break;
 
-			if(tabdat->fAeroTabs) {
+			tabdat->fAeroTabs = isAero ? TRUE : FALSE;
+
+			tabdat->helperDat = 0;
+
+			if(tabdat->fAeroTabs && tabdat->pContainer) {
 				_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(tabdat->pContainer->hwndActive, GWLP_USERDATA);
-				assert(dat != 0);
 				if(dat) {
-					//tabdat->fAeroTabs = dat && ((dat->dwFlagsEx & MWF_SHOW_INFOPANEL) && !(dat->dwFlagsEx & MWF_SHOW_INFONOTES) &&
-					//					!(dat->dwFlags & MWF_ERRORSTATE));
 					tabdat->helperDat = dat;
 				}
-				else {
-					tabdat->helperDat = 0;
+				else
 					tabdat->fAeroTabs = 0;
-				}
 
 				LONG width, height;
-				tabdat->helperItem->setBitmap(Skin->getAeroTabBitmap(0, height, width));
+
+				const	HBITMAP hbm = Skin->getAeroTabBitmap((dwStyle & TCS_BOTTOM) ? CSkin::TAB_BITMAP_BOTTOM : CSkin::TAB_BITMAP_TOP, height, width);
+				tabdat->helperItem->setBitmap(hbm);
+				//tabdat->helperItem->setMetrics(width, height);
 			}
+			else
+				tabdat->fAeroTabs = FALSE;
 
 			tabdat->m_moderntabs = (M->GetByte("moderntabs", 0) &&
 									!(tabdat->dwStyle & TCS_BUTTONS));
@@ -1541,13 +1549,21 @@ page_done:
 				POINT	pt;
 
 				GetClientRect(hwnd, &rcPage);
+				if(dwStyle & TCS_BOTTOM) {
+					GetWindowRect(tabdat->helperDat->hwnd, &rcLog);
+					pt.y = rcLog.bottom;
+					pt.x = rcLog.left;
+					ScreenToClient(hwnd, &pt);
+					rcPage.top = pt.y;
+					FillRect(hdc, &rcPage, (HBRUSH)GetStockObject(BLACK_BRUSH));
+					rcPage.top = 0;
+				}
 				GetWindowRect(GetDlgItem(tabdat->helperDat->hwnd, tabdat->helperDat->bType == SESSIONTYPE_IM ? IDC_LOG : IDC_CHAT_LOG), &rcLog);
 				pt.y = rcLog.top;
 				pt.x = rcLog.left;
 				ScreenToClient(hwnd, &pt);
 				rcPage.bottom = pt.y;
 				FillRect(hdc, &rcPage, (HBRUSH)GetStockObject(BLACK_BRUSH));
-				//_DebugTraceA("filling upper tab client area %d to %d", rcPage.top, rcPage.bottom);
 			}
 
 			uiFlags = 0;

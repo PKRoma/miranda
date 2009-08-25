@@ -693,8 +693,9 @@ static int PopupShowT(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
 	if (hContact)
 		mir_sntprintf(pud.lptzContactName, MAX_CONTACTNAME, _T("%s"), (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
 	else {
-		MultiByteToWideChar(PluginConfig.m_LangPackCP, 0, dbe.szModule, -1, pud.lptzContactName, MAX_CONTACTNAME);
-		pud.lptzContactName[MAX_CONTACTNAME - 1] = 0;
+		TCHAR *szModule = mir_a2t(dbe.szModule);
+		mir_sntprintf(pud.lptzContactName, MAX_CONTACTNAME, _T("%s"), szModule);
+		mir_free(szModule);
 	}
 
 	szPreview = GetPreviewT((WORD)eventType, &dbe);

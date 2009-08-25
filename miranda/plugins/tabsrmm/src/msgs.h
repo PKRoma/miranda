@@ -255,7 +255,7 @@ struct ContainerWindowData {
 	int	    tBorder_outer_left, tBorder_outer_right, tBorder_outer_top, tBorder_outer_bottom;
 	HANDLE  hContactFrom;
 	BOOL    isCloned;
-	HWND    hwndStatus, hwndSlist;
+	HWND    hwndStatus;
 	int     statusBarHeight;
 	DWORD   dwLastActivity;
 	int     hIcon;                // current window icon stick indicator
@@ -423,6 +423,7 @@ struct _MessageWindowData {
 	LPARAM  lParam;
 	int     iHaveRTLLang;
 	BOOL    fInsertMode;
+	bool	fkeyProcessed;
 };
 
 typedef struct _recentinfo {
@@ -1073,6 +1074,16 @@ typedef struct {
 #define TABSRMM_HK_NUDGE 11
 #define TABSRMM_HK_SENDFILE 12
 #define TABSRMM_HK_QUOTEMSG 13
+#define TABSRMM_HK_SEND 14
+#define TABSRMM_HK_EMOTICONS 15
+#define TABARMM_HK_TOGGLEINFOPANEL 16
+#define TABSRMM_HK_HISTORY 17
+#define TABSRMM_HK_TOGGLETOOLBAR 18
+#define TABSRMM_HK_TOGGLEMULTISEND 19
+#define TABSRMM_HK_TOGGLERTL 20
+#define TABSRMM_HK_USERMENU 21
+#define TABSRMM_HK_USERDETAILS 22
+#define TABSRMM_HK_TOGGLEINFOPANEL 23
 
 #define TABSRMM_HK_SECTION_IM "Message windows - IM"
 #define TABSRMM_HK_SECTION_GENERIC "Message windows - all"

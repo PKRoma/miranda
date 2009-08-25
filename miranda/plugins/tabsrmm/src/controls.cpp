@@ -49,7 +49,7 @@ CMenuBar::CMenuBar(HWND hwndParent, const ContainerWindowData *pContainer)
 	REBARBANDINFO RebarBandInfo;
 	RECT Rc;
 
-	m_pContainer = pContainer;
+	m_pContainer = const_cast<ContainerWindowData *>(pContainer);
 
 	m_hwndRebar = ::CreateWindowEx(WS_EX_TOOLWINDOW, REBARCLASSNAME, NULL, WS_CHILD|WS_VISIBLE|WS_CLIPSIBLINGS|WS_CLIPCHILDREN|RBS_VARHEIGHT|/*RBS_BANDBORDERS|*/RBS_DBLCLKTOGGLE|RBS_AUTOSIZE,
 								   0, 0, 0, 0, hwndParent, NULL, g_hInst, NULL);
@@ -149,11 +149,7 @@ CMenuBar::~CMenuBar()
 {
 	::DestroyWindow(m_hwndToolbar);
 	::DestroyWindow(m_hwndRebar);
-	if(m_hHook) {
-		UnhookWindowsHookEx(m_hHook);
-		m_hHook = 0;
-		//_DebugTraceA("warning, stale hook found, hwnd = %d", m_pContainer->hwnd);
-	}
+	releaseHook();
 }
 
 /**
@@ -168,6 +164,24 @@ const RECT& CMenuBar::getClientRect()
 	return(m_rcClient);
 }
 
+void CMenuBar::obtainHook()
+{
+	//if(m_hHook != 0)
+	//	_DebugTraceA("stale hook found");
+
+	releaseHook();
+	if(m_hHook == 0)
+		m_hHook = ::SetWindowsHookEx(WH_MSGFILTER, CMenuBar::MessageHook, g_hInst, 0);
+	m_Owner = this;
+}
+
+void CMenuBar::releaseHook()
+{
+	if(m_hHook) {
+		UnhookWindowsHookEx(m_hHook);
+		m_hHook = 0;
+	}
+}
 /**
  * Retrieve the height of the rebar control
  *
@@ -322,15 +336,23 @@ LONG_PTR CMenuBar::customDrawWorker(const NMCUSTOMDRAW *nm)
 						szText = reinterpret_cast<TCHAR *>(m_TbButtons[iIndex].iString);
 
 					switch(nmtb->nmcd.uItemState) {
+						case CDIS_SELECTED:
+						case CDIS_FOCUS:
+						case CDIS_MARKED:
+						case CDIS_CHECKED:
 						case CDIS_HOT:
+						case 0x1000:		//(CDIS_DROPHILITED, Vista+)
+						case CDIS_INDETERMINATE:
 							if(m_hTheme)
 								CMimAPI::m_pfnDrawThemeBackground(m_hTheme, m_hdcDraw, 1, 2, &nmtb->nmcd.rc, &nmtb->nmcd.rc);
 							break;
-						case CDIS_SELECTED:
+						/*case CDIS_SELECTED:
 						case CDIS_FOCUS:
+						case CDIS_MARKED:
+						case CDIS_CHECKED:
 							if(m_hTheme)
 								CMimAPI::m_pfnDrawThemeBackground(m_hTheme, m_hdcDraw, 1, 3, &nmtb->nmcd.rc, &nmtb->nmcd.rc);
-							break;
+							break;*/
 						default:
 							::FillRect(m_hdcDraw, &nmtb->nmcd.rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
 							break;
@@ -430,21 +452,16 @@ void CMenuBar::invoke(const int id)
 	m_activeMenu = hMenu;
 	m_activeSubMenu = 0;
 	m_activeID = id;
-	m_Owner = this;
 	updateState(hMenu);
-	if(m_hHook == 0)
-		m_hHook = ::SetWindowsHookEx(WH_MSGFILTER, CMenuBar::MessageHook, g_hInst, 0);
+	obtainHook();
 	m_fTracking = true;
-	::SendMessage(m_hwndToolbar, TB_SETSTATE, (WPARAM)id, TBSTATE_PRESSED | TBSTATE_ENABLED);
+	::SendMessage(m_hwndToolbar, TB_SETSTATE, (WPARAM)id, TBSTATE_PRESSED | TBSTATE_MARKED | TBSTATE_ENABLED);
 	::TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, m_pContainer->hwnd, 0);
 }
 
 void CMenuBar::cancel(const int id)
 {
-	if(m_hHook) {
-		UnhookWindowsHookEx(m_hHook);
-		m_hHook = 0;
-	}
+	releaseHook();
 	if(m_activeID)
 		::SendMessage(m_hwndToolbar, TB_SETSTATE, (WPARAM)m_activeID, TBSTATE_ENABLED);
 	m_activeID = 0;
@@ -460,6 +477,7 @@ void CMenuBar::Cancel(void)
 {
 	cancel(0);
 	m_fTracking = false;
+	autoShow(0);
 }
 
 void CMenuBar::updateState(const HMENU hMenu) const
@@ -522,6 +540,36 @@ void CMenuBar::configureMenu() const
 }
 
 /**
+ * Automatically shows or hides the menu bar. Depends on the current state,
+ * used when the ALT key is hit in the message window.
+ */
+void CMenuBar::autoShow(const int showcmd)
+{
+	if(m_mustAutoHide && !(m_pContainer->dwFlags & CNT_NOMENUBAR)) {
+		m_pContainer->dwFlags |= CNT_NOMENUBAR;
+		m_mustAutoHide = false;
+		::SendMessage(m_pContainer->hwnd, WM_SIZE, 0, 1);
+		releaseHook();
+	}
+
+	if(showcmd == 0) {
+		::SetFocus(m_pContainer->hwndActive);
+		return;
+	}
+
+	if(m_pContainer->dwFlags & CNT_NOMENUBAR) {
+		m_mustAutoHide = true;
+		m_pContainer->dwFlags &= ~CNT_NOMENUBAR;
+		::SendMessage(m_pContainer->hwnd, WM_SIZE, 0, 1);
+	}
+	else											// do nothing, already visible
+		m_mustAutoHide = false;
+	//obtainHook();
+	::SetFocus(m_hwndToolbar);
+	//::SendMessage(m_hwndToolbar, TB_SETHOTITEM, 0, HICF_ACCELERATOR);
+}
+
+/**
  * Message hook function, installed by the menu handler to support
  * hot-tracking and keyboard navigation for the menu bar while a modal
  * popup menu is active.
@@ -541,11 +589,30 @@ LRESULT CALLBACK CMenuBar::MessageHook(int nCode, WPARAM wParam, LPARAM lParam)
 
 	if(nCode == MSGF_MENU) {
 		switch(pMsg->message) {
+			case WM_KEYDOWN:
+				switch(pMsg->wParam) {
+					case VK_ESCAPE: {
+						int iIndex = m_Owner->idToIndex(m_Owner->m_activeID);
+						if(iIndex != -1)
+							::SendMessage(m_Owner->m_hwndToolbar, TB_SETHOTITEM, (WPARAM)iIndex, 0);
+						::SetFocus(m_Owner->m_hwndToolbar);
+						::SendMessage(m_Owner->m_hwndToolbar, TB_SETSTATE, (WPARAM)m_Owner->m_activeID, TBSTATE_ENABLED | TBSTATE_PRESSED);
+						m_Owner->cancel(0);
+						m_Owner->m_fTracking = false;
+						break;
+					}
+					default:
+						break;
+				}
+				break;
+
 			case WM_NOTIFY: {
 				break;;
 			}
+
 			case WM_MENUSELECT:
 				break;
+
 			case WM_LBUTTONDOWN: {
 				POINT	pt;
 
@@ -636,89 +703,90 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 				return 1;
 			break;
 		}
-		case WM_PAINT:
-			if (1) {
-				PAINTSTRUCT ps;
-				TCHAR szText[1024];
-				int i;
-				RECT itemRect;
-				HICON hIcon;
-				LONG height, width;
-				HDC hdc = BeginPaint(hWnd, &ps);
-				HFONT hFontOld = 0;
-				UINT nParts = SendMessage(hWnd, SB_GETPARTS, 0, 0);
-				LRESULT result;
-				RECT rcClient;
-				HDC hdcMem = CreateCompatibleDC(hdc);
-				HBITMAP hbm, hbmOld;
-				CSkinItem *item = &SkinItems[ID_EXTBKSTATUSBARPANEL];
+		case WM_PAINT: {
+			PAINTSTRUCT ps;
+			TCHAR szText[1024];
+			int i;
+			RECT itemRect;
+			HICON hIcon;
+			LONG height, width;
+			HDC hdc = BeginPaint(hWnd, &ps);
+			HFONT hFontOld = 0;
+			UINT nParts = SendMessage(hWnd, SB_GETPARTS, 0, 0);
+			LRESULT result;
+			RECT rcClient;
+			HDC hdcMem = CreateCompatibleDC(hdc);
+			HBITMAP hbm, hbmOld;
+			CSkinItem *item = &SkinItems[ID_EXTBKSTATUSBARPANEL];
 
-				BOOL	fAero = M->isAero();
-				HANDLE  hTheme = fAero ? CMimAPI::m_pfnOpenThemeData(hWnd, L"ButtonStyle") : 0;
+			BOOL	fAero = M->isAero();
+			HANDLE  hTheme = fAero ? CMimAPI::m_pfnOpenThemeData(hWnd, L"ButtonStyle") : 0;
 
-				GetClientRect(hWnd, &rcClient);
+			GetClientRect(hWnd, &rcClient);
 
-				hbm = CSkin::CreateAeroCompatibleBitmap(rcClient, hdc);
-				hbmOld = (HBITMAP)SelectObject(hdcMem, hbm);
-				SetBkMode(hdcMem, TRANSPARENT);
-				SetTextColor(hdcMem, PluginConfig.skinDefaultFontColor);
-				hFontOld = (HFONT)SelectObject(hdcMem, GetStockObject(DEFAULT_GUI_FONT));
+			hbm = CSkin::CreateAeroCompatibleBitmap(rcClient, hdc);
+			hbmOld = (HBITMAP)SelectObject(hdcMem, hbm);
+			SetBkMode(hdcMem, TRANSPARENT);
+			SetTextColor(hdcMem, PluginConfig.skinDefaultFontColor);
+			hFontOld = (HFONT)SelectObject(hdcMem, GetStockObject(DEFAULT_GUI_FONT));
 
-				if (pContainer && pContainer->bSkinned)
-					CSkin::SkinDrawBG(hWnd, GetParent(hWnd), pContainer, &rcClient, hdcMem);
-				else if(!fAero)
-					FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
+			if (pContainer && pContainer->bSkinned)
+				CSkin::SkinDrawBG(hWnd, GetParent(hWnd), pContainer, &rcClient, hdcMem);
+			else if(fAero)
+				DrawAlpha(hdcMem, &rcClient, 0xf0f0f0, 30, 0x555555, 0, 9,
+						  31, 6, 0);
+			else
+				FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
 
-				for (i = 0; i < (int)nParts; i++) {
-					SendMessage(hWnd, SB_GETRECT, (WPARAM)i, (LPARAM)&itemRect);
-					if (!item->IGNORED && !fAero && pContainer && pContainer->bSkinned)
-						DrawAlpha(hdcMem, &itemRect, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
-								  item->CORNER, item->BORDERSTYLE, item->imageItem);
+			for (i = 0; i < (int)nParts; i++) {
+				SendMessage(hWnd, SB_GETRECT, (WPARAM)i, (LPARAM)&itemRect);
+				if (!item->IGNORED && !fAero && pContainer && pContainer->bSkinned)
+					DrawAlpha(hdcMem, &itemRect, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+							  item->CORNER, item->BORDERSTYLE, item->imageItem);
 
-					if (i == 0)
-						itemRect.left += 2;
+				if (i == 0)
+					itemRect.left += 2;
 
-					height = itemRect.bottom - itemRect.top;
-					width = itemRect.right - itemRect.left;
-					hIcon = (HICON)SendMessage(hWnd, SB_GETICON, i, 0);
-					szText[0] = 0;
-					result = SendMessage(hWnd, SB_GETTEXT, i, (LPARAM)szText);
-					if (i == 2 && pContainer) {
-						_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+				height = itemRect.bottom - itemRect.top;
+				width = itemRect.right - itemRect.left;
+				hIcon = (HICON)SendMessage(hWnd, SB_GETICON, i, 0);
+				szText[0] = 0;
+				result = SendMessage(hWnd, SB_GETTEXT, i, (LPARAM)szText);
+				if (i == 2 && pContainer) {
+					_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 
-						if (dat)
-							DrawStatusIcons(dat, hdcMem, itemRect, 2);
+					if (dat)
+						DrawStatusIcons(dat, hdcMem, itemRect, 2);
+				}
+				else {
+					if (hIcon) {
+						if (LOWORD(result) > 1) {				// we have a text
+							DrawIconEx(hdcMem, itemRect.left + 3, (height / 2 - 8) + itemRect.top, hIcon, 16, 16, 0, 0, DI_NORMAL);
+							itemRect.left += 20;
+							CSkin::RenderText(hdcMem, hTheme, szText, &itemRect, DT_VCENTER | DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX);
+						}
+						else
+							DrawIconEx(hdcMem, itemRect.left + 3, (height / 2 - 8) + itemRect.top, hIcon, 16, 16, 0, 0, DI_NORMAL);
 					}
 					else {
-						if (hIcon) {
-							if (LOWORD(result) > 1) {				// we have a text
-								DrawIconEx(hdcMem, itemRect.left + 3, (height / 2 - 8) + itemRect.top, hIcon, 16, 16, 0, 0, DI_NORMAL);
-								itemRect.left += 20;
-								CSkin::RenderText(hdcMem, hTheme, szText, &itemRect, DT_VCENTER | DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX);
-							}
-							else
-								DrawIconEx(hdcMem, itemRect.left + 3, (height / 2 - 8) + itemRect.top, hIcon, 16, 16, 0, 0, DI_NORMAL);
-						}
-						else {
-							itemRect.left += 2;
-							itemRect.right -= 2;
-							CSkin::RenderText(hdcMem, hTheme, szText, &itemRect, DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX);
-						}
+						itemRect.left += 2;
+						itemRect.right -= 2;
+						CSkin::RenderText(hdcMem, hTheme, szText, &itemRect, DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX);
 					}
 				}
-				BitBlt(hdc, 0, 0, rcClient.right, rcClient.bottom, hdcMem, 0, 0, SRCCOPY);
-				SelectObject(hdcMem, hbmOld);
-				DeleteObject(hbm);
-				SelectObject(hdcMem, hFontOld);
-				DeleteDC(hdcMem);
-
-				if(hTheme)
-					CMimAPI::m_pfnCloseThemeData(hTheme);
-
-				EndPaint(hWnd, &ps);
-				return 0;
 			}
-			break;
+			BitBlt(hdc, 0, 0, rcClient.right, rcClient.bottom, hdcMem, 0, 0, SRCCOPY);
+			SelectObject(hdcMem, hbmOld);
+			DeleteObject(hbm);
+			SelectObject(hdcMem, hFontOld);
+			DeleteDC(hdcMem);
+
+			if(hTheme)
+				CMimAPI::m_pfnCloseThemeData(hTheme);
+
+			EndPaint(hWnd, &ps);
+			return 0;
+		}
 		case WM_CONTEXTMENU: {
 			RECT rc;
 			POINT pt;

@@ -121,7 +121,8 @@ public:
 		m_fillBrush = (HBRUSH)0;
 	}
 
-	void			setBitmap(const HBITMAP hbm) {
+	void			setBitmap(const HBITMAP hbm)
+	{
 		m_hbm = hbm;
 	}
 
@@ -160,22 +161,22 @@ public:
 	static void 	Colorize(HBITMAP hBitmap, BYTE dr, BYTE dg, BYTE db);
 
 public:
-	bool			m_fValid;
+	bool			m_fValid;									// verified item, indicates that all parameters are valid
 private:
-	TCHAR 		 	m_szName[40];
-	HBITMAP 		m_hbm;
-	BYTE    		m_bLeft, m_bRight, m_bTop, m_bBottom;      // sizing margins
-	BYTE    		m_alpha;
-	DWORD   		m_dwFlags;
-	HDC     		m_hdc;
-	HBITMAP 		m_hbmOld;
-	LONG    		m_inner_height, m_inner_width;
-	LONG    		m_width, m_height;
-	BLENDFUNCTION 	m_bf;
-	BYTE    		m_bStretch;
-	HBRUSH  		m_fillBrush;
-	LONG    		m_glyphMetrics[4];
-	CImageItem*		m_nextItem;
+	TCHAR 		 	m_szName[40];								// everything wants a name, an image item doesn't need one though
+	HBITMAP 		m_hbm;										// the bitmap handle
+	BYTE    		m_bLeft, m_bRight, m_bTop, m_bBottom;      	// sizing margins for the outer 8 image parts
+	BYTE    		m_alpha;									// constant alpha for the entire image, applied via m_bf. sums with perpixel alpha
+	DWORD   		m_dwFlags;									// flags
+	HDC     		m_hdc;										// *can* hold a pre-created hdc to speed up rendering
+	HBITMAP 		m_hbmOld;									// old bitmap, needs to be selected into m_hdc before destroying it
+	LONG    		m_inner_height, m_inner_width;				// dimensions of the inner image part
+	LONG    		m_width, m_height;							// width and height of the image, in pixels
+	BLENDFUNCTION 	m_bf;										// for AlphaBlend()
+	BYTE    		m_bStretch;									// stretch mode (unused in tabSRMM
+	HBRUSH  		m_fillBrush;								// brush to fill the inner part (faster) dwFlags & IMAGE_FILLSOLID must be set
+	LONG    		m_glyphMetrics[4];							// these coordinates point into the glyph image (if IMAGE_GLYPH is set)
+	CImageItem*		m_nextItem;									// next item in a set of image items (usually the skin set)
 };
 
 /**
@@ -230,15 +231,25 @@ public:
 
 	void				setupAeroSkins();
 
+	enum
+	{
+						TAB_BITMAP_TOP = 0,
+						TAB_BITMAP_BOTTOM = 1
+	};
+
 	const HBITMAP		getAeroTabBitmap(const int bmpid, LONG& width, LONG& height) const
 	{
 		BITMAP	bminfo = {0};
 
-		::GetObject(bmpid == 0 ? m_hbmAeroTabTop : m_hbmAeroTabBottom, sizeof(bminfo), &bminfo);
+		::GetObject(bmpid == TAB_BITMAP_TOP ? m_hbmAeroTabTop : m_hbmAeroTabBottom, sizeof(bminfo), &bminfo);
 
 		width = bminfo.bmWidth;
 		height = bminfo.bmHeight;
 		return(bmpid == 0 ? m_hbmAeroTabTop : m_hbmAeroTabBottom);
+	}
+	const HBITMAP		getAeroTabBitmap(const int bmpid) const
+	{
+		return(bmpid == TAB_BITMAP_TOP ? m_hbmAeroTabTop : m_hbmAeroTabBottom);
 	}
 	/*
 	 * static member functions
@@ -254,7 +265,7 @@ public:
 #if defined(_UNICODE)
 	static int 		RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags, const int iGlowSize = 10);
 #endif
-	static int 		RenderText(HDC hdc, HANDLE hTheme, const char *szText, RECT *rc, DWORD dtFlags);
+	static int 		RenderText(HDC hdc, HANDLE hTheme, const char *szText, RECT *rc, DWORD dtFlags, const int iGlowSize = 10);
 	static void 	MapClientToParent(HWND hwndClient, HWND hwndParent, RECT &rc);
 	static void		RenderIPNickname(HDC hdc, RECT &rc, _MessageWindowData *dat);
 	static void 	RenderIPUIN(HDC hdc, RECT &rcItem, _MessageWindowData *dat);
@@ -303,7 +314,7 @@ struct TabControlData {
 	HWND    hwnd;
 	DWORD   dwStyle;
 	DWORD   cx, cy;
-	HANDLE  hTheme, hThemeButton, hThemeAeroTabs;
+	HANDLE  hTheme, hThemeButton;
 	BYTE    m_xpad;
 	ContainerWindowData *pContainer;
 	BOOL    bDragging;
@@ -315,8 +326,8 @@ struct TabControlData {
 	BOOL    fSavePos;
 	BOOL    fTipActive;
 	BOOL	fAeroTabs;
-	_MessageWindowData* helperDat;
-	CImageItem			*helperItem;
+	_MessageWindowData* helperDat;				// points to the client data of the active tab
+	CImageItem*			helperItem;				// aero ui, holding the skin image for the tabs
 };
 
 extern CSkin *Skin;

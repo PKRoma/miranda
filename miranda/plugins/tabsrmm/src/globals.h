@@ -112,7 +112,7 @@ public:
 	HWND        m_hwndClist;
 	int         m_TabAppearance;
 	struct      myTabCtrl tabConfig;
-	int         m_panelHeight;
+	int         m_panelHeight, m_MUCpanelHeight;
 	TCHAR       szDefaultTitleFormat[256];
 	DWORD       m_GlobalContainerFlags;
 	DWORD       m_GlobalContainerTrans;

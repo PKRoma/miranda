@@ -189,4 +189,8 @@ int			TN_TypingMessage(WPARAM wParam, LPARAM lParam);
 
 int			ChangeClientIconInStatusBar(WPARAM wparam, LPARAM lparam);
 
+// hotkeys
+
+LRESULT 	ProcessHotkeysByMsgFilter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR ctrlId);
+
 #endif /* _TABSRMM_FUNCTIONS_H */

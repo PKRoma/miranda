@@ -531,7 +531,7 @@ int MsgWindowMenuHandler(_MessageWindowData *dat, int selection, int menuId)
 				dat->panelWidth = -1;
 				ShowPicture(dat, FALSE);
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
-				DM_ScrollToBottom(hwndDlg, dat, 0, 1);
+				DM_ScrollToBottom(dat, 0, 1);
 				return 1;
 			}
 			case ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH:
@@ -1003,7 +1003,7 @@ void AdjustBottomAvatarDisplay(_MessageWindowData *dat)
 		if (hbm) {
 			dat->showPic = GetAvatarVisibility(hwndDlg, dat);
 			if (dat->dynaSplitter == 0 || dat->splitterY == 0)
-				LoadSplitter(hwndDlg, dat);
+				LoadSplitter(dat);
 			dat->dynaSplitter = dat->splitterY - DPISCALEY(34);
 			DM_RecalcPictureSize(dat);
 			ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
@@ -1786,16 +1786,25 @@ void FindFirstEvent(_MessageWindowData *dat)
 	}
 }
 
-void SaveSplitter(HWND hwndDlg, struct _MessageWindowData *dat)
+void SaveSplitter(_MessageWindowData *dat)
 {
 	if (dat->panelHeight < 110 && dat->panelHeight >= MIN_PANELHEIGHT) {          // only save valid panel splitter positions
 		if (dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE)
 			M->WriteDword(dat->hContact, SRMSGMOD_T, "panelheight", dat->panelHeight);
 		else {
-			PluginConfig.m_panelHeight = dat->panelHeight;
-			M->WriteDword(SRMSGMOD_T, "panelheight", dat->panelHeight);
+			if(dat->bType == SESSIONTYPE_IM) {
+				PluginConfig.m_panelHeight = dat->panelHeight;
+				M->WriteDword(SRMSGMOD_T, "panelheight", dat->panelHeight);
+			}
+			else {
+				PluginConfig.m_MUCpanelHeight = dat->panelHeight;
+				M->WriteDword("Chat", "panelheight", dat->panelHeight);
+			}
 		}
 	}
+
+	if(dat->bType == SESSIONTYPE_CHAT)
+		return;
 
 	if (dat->splitterY < DPISCALEY_S(MINSPLITTERY) || dat->splitterY < 0)
 		dat->splitterY = DPISCALEY_S(MINSPLITTERY);
@@ -1806,7 +1815,7 @@ void SaveSplitter(HWND hwndDlg, struct _MessageWindowData *dat)
 		M->WriteDword(SRMSGMOD_T, "splitsplity", dat->splitterY);
 }
 
-void LoadSplitter(HWND hwndDlg, struct _MessageWindowData *dat)
+void LoadSplitter(_MessageWindowData *dat)
 {
 	if (!(dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE))
 		dat->splitterY = (int)M->GetDword("splitsplity", (DWORD) 60);
@@ -1817,10 +1826,10 @@ void LoadSplitter(HWND hwndDlg, struct _MessageWindowData *dat)
 		dat->splitterY = 150;
 }
 
-void LoadPanelHeight(HWND hwndDlg, struct _MessageWindowData *dat)
+void LoadPanelHeight(_MessageWindowData *dat)
 {
 	if (!(dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE))
-		dat->panelHeight = PluginConfig.m_panelHeight;
+		dat->panelHeight = dat->bType == SESSIONTYPE_IM ? PluginConfig.m_panelHeight : PluginConfig.m_MUCpanelHeight;
 	else
 		dat->panelHeight = M->GetDword(dat->hContact, "panelheight", PluginConfig.m_panelHeight);
 
@@ -1921,7 +1930,7 @@ void GetLocaleID(struct _MessageWindowData *dat, char *szKLName)
 	}
 }
 
-BYTE GetInfoPanelSetting(HWND hwndDlg, struct _MessageWindowData *dat)
+BYTE GetInfoPanelSetting(const _MessageWindowData *dat)
 {
 	BYTE bDefault = dat->pContainer->dwFlags & CNT_INFOPANEL ? 1 : 0;
 	BYTE bContact = M->GetByte(dat->hContact, "infopanel", 0);

@@ -34,7 +34,7 @@ void DM_SetDBButtonStates(HWND hwndChild, struct _MessageWindowData *dat);
 int BTN_GetStockItem(ButtonItem *item, const TCHAR *szName);
 HWND DM_CreateClist(HWND hwndParent, struct _MessageWindowData *dat);
 
-LRESULT DM_ScrollToBottom(HWND hwndDlg, struct _MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
+LRESULT DM_ScrollToBottom(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
 LRESULT DM_LoadLocale(_MessageWindowData *dat);
 LRESULT DM_SaveLocale(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
 LRESULT DM_UpdateLastMessage(const _MessageWindowData *dat);

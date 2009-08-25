@@ -69,6 +69,26 @@ public:
 	}
 	void			setAero(bool fState) { m_isAero = fState; }
 	const bool		getAero(void) const { return(m_isAero); }
+
+	const LRESULT	processAccelerator(TCHAR a, UINT& ctlId) const
+	{
+		UINT		_ctlId;
+
+		const LRESULT result = ::SendMessage(m_hwndToolbar, TB_MAPACCELERATOR, (WPARAM)a, (LPARAM)&_ctlId);
+		ctlId = _ctlId;
+
+		return(result);
+	}
+	void			autoShow(const int showcmd = 1);
+
+	const int	idToIndex(const int id) const
+	{
+		for(int i = 0; i < NR_BUTTONS; i++) {
+			if(m_TbButtons[i].idCommand == id )
+				return(i);
+		}
+		return(-1);
+	}
 public:
 	static HHOOK	m_hHook;
 
@@ -76,12 +96,13 @@ private:
 	HWND		m_hwndRebar;
 	HWND		m_hwndToolbar;
 	RECT		m_rcClient;
-	const 		ContainerWindowData *m_pContainer;
+	ContainerWindowData *m_pContainer;
 	HMENU		m_activeMenu, m_activeSubMenu;;
 	int			m_activeID;
 	bool		m_fTracking;
 	bool		m_isContactMenu;
 	bool		m_isAero;
+	bool		m_mustAutoHide;
 	LONG		m_size_y;
 	/*
 	 * for custom drawing
@@ -97,18 +118,13 @@ private:
 	static		CMenuBar *m_Owner;
 
 private:
-	const int	idToIndex(const int id) const
-	{
-		for(int i = 0; i < NR_BUTTONS; i++) {
-			if(m_TbButtons[i].idCommand == id )
-				return(i);
-		}
-		return(-1);
-	}
 	LONG_PTR	customDrawWorker(const NMCUSTOMDRAW *nm);
 	void		updateState(const HMENU hMenu) const;
 	void		invoke(const int id);
 	void		cancel(const int id);
+	void 		obtainHook();
+	void		releaseHook();
+
 	static LRESULT CALLBACK MessageHook(int nCode, WPARAM wParam, LPARAM lParam);
 };
 

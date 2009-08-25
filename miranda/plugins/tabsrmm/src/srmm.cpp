@@ -165,9 +165,9 @@ int _DebugTraceA(const char *fmt, ...)
 
 	lstrcpyA(debug, "TABSRMM: ");
 	_vsnprintf(&debug[9], ibsize - 10, fmt, va);
- #ifdef _DEBUG
- 	OutputDebugStringA(debug);
- #else
+// #ifdef _DEBUG
+// 	OutputDebugStringA(debug);
+// #else
 	{
 		char szLogFileName[MAX_PATH], szDataPath[MAX_PATH];
 		FILE *f;
@@ -181,7 +181,7 @@ int _DebugTraceA(const char *fmt, ...)
 			fclose(f);
 		}
 	}
-#endif
+//#endif
 	return 0;
 }
 

@@ -132,6 +132,13 @@
 #define ID_SEARCH_WIKIPEDIA             40028
 #define ID_WIKIPEDIA_                   40029
 
+#ifndef IDC_PANELNICK
+	#define IDC_PANELNICK                   1032
+	#define IDC_PANELUIN                    1033
+	#define IDC_PANELSPLITTER               1216
+#endif
+
+
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED

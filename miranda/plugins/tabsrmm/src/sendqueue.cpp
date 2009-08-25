@@ -664,7 +664,7 @@ void SendQueue::showErrorControls(_MessageWindowData *dat, const int showCmd) co
 	}
 
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
-	DM_ScrollToBottom(hwndDlg, dat, 0, 1);
+	DM_ScrollToBottom(dat, 0, 1);
 	if (m_jobs[0].sendCount > 1)
 		EnableSending(dat, TRUE);
 	SetAeroMargins(dat->pContainer);

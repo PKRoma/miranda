@@ -70,6 +70,7 @@ static int MY_RestoreWindowPosition(WPARAM wParam, LPARAM lParam)
 	char szSettingName[64];
 	int x, y;
 
+	ZeroMemory(&wp, sizeof(wp));
 	wp.length = sizeof(wp);
 	GetWindowPlacement(swp->hwnd, &wp);
 	wsprintfA(szSettingName, "%sx", swp->szNamePrefix);
@@ -145,7 +146,8 @@ static int ServiceParamsOK(ButtonItem *item, WPARAM *wParam, LPARAM *lParam, HAN
 
 /*
  * Windows Vista+
- * extend the glassy area to get aero look for the status bar and info panel
+ * extend the glassy area to get aero look for the status bar, tab bar, info panel
+ * and outer margins.
  */
 
 void SetAeroMargins(ContainerWindowData *pContainer)
@@ -157,25 +159,39 @@ void SetAeroMargins(ContainerWindowData *pContainer)
 		POINT	pt;
 
 		if(dat) {
-			LRESULT tabStyle = GetWindowLongPtr(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), GWL_STYLE);
-
-			if(!(tabStyle & TCS_BOTTOM) || ((dat->dwFlagsEx & MWF_SHOW_INFOPANEL) && !(dat->dwFlags & MWF_ERRORSTATE) && !(dat->dwFlagsEx & MWF_SHOW_INFONOTES))) {
-				GetWindowRect(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_CHAT ? IDC_CHAT_LOG : IDC_LOG), &rcWnd);
-				pt.x = rcWnd.left;
-				pt.y = rcWnd.top;
-				ScreenToClient(pContainer->hwnd, &pt);
-				m.cyTopHeight = pt.y;
-				pContainer->MenuBar->setAero(true);
+			if(dat->bType == SESSIONTYPE_IM) {
+				if(((dat->dwFlagsEx & MWF_SHOW_INFOPANEL) && !(dat->dwFlags & MWF_ERRORSTATE) && !(dat->dwFlagsEx & MWF_SHOW_INFONOTES)))
+					GetWindowRect(GetDlgItem(dat->hwnd, IDC_LOG), &rcWnd);
+				else
+					GetWindowRect(dat->hwnd, &rcWnd);
 			}
 			else {
-				m.cyTopHeight = pContainer->dwFlags & CNT_NOMENUBAR ? 0 : pContainer->MenuBar->getHeight();
-				pContainer->MenuBar->setAero(true);
+				if(dat->dwFlagsEx & MWF_SHOW_INFOPANEL)
+					GetWindowRect(GetDlgItem(dat->hwnd, IDC_CHAT_LOG), &rcWnd);
+				else
+					GetWindowRect(dat->hwnd, &rcWnd);
 			}
-			m.cxLeftWidth = 0;
-			m.cxRightWidth = 0;
-			//m.cyTopHeight = (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) ? dat->panelHeight + 1 : 0;
-			m.cyBottomHeight = (pContainer->dwFlags & CNT_NOSTATUSBAR ? 0 : pContainer->statusBarHeight - 1);
-			if(m.cyTopHeight != pContainer->dwOldAeroTop || pContainer->statusBarHeight != pContainer->dwOldAeroBottom) {
+
+			pt.x = rcWnd.left;
+			pt.y = rcWnd.top;
+			ScreenToClient(pContainer->hwnd, &pt);
+			m.cyTopHeight = pt.y;
+			pContainer->MenuBar->setAero(true);
+
+			/*
+			 * bottom part
+			 */
+
+			GetWindowRect(dat->hwnd, &rcWnd);
+			pt.x = rcWnd.left;
+			pt.y = rcWnd.bottom;
+			ScreenToClient(pContainer->hwnd, &pt);
+			GetClientRect(pContainer->hwnd, &rcWnd);
+			m.cyBottomHeight = rcWnd.bottom - pt.y;
+
+			m.cxLeftWidth = pContainer->tBorder_outer_left;
+			m.cxRightWidth = pContainer->tBorder_outer_right;
+			if(m.cyTopHeight != pContainer->dwOldAeroTop || m.cyBottomHeight != pContainer->dwOldAeroBottom) {
 				pContainer->dwOldAeroTop = m.cyTopHeight;
 				pContainer->dwOldAeroBottom = pContainer->statusBarHeight;
 				CMimAPI::m_pfnDwmExtendFrameIntoClientArea(pContainer->hwnd, &m);
@@ -913,7 +929,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					}
 				}
 			}
-			break;
+			return(0);
 		}
 		case WM_COMMAND: {
 			bool fProcessContactMenu = pContainer->MenuBar->isContactMenu();
@@ -1220,10 +1236,14 @@ buttons_done:
 
 			GetClientRect(GetDlgItem(hwndDlg, IDC_MSGTABS), &rc);
 			if (!((rc.right - rc.left) == pContainer->oldSize.cx && (rc.bottom - rc.top) == pContainer->oldSize.cy)) {
-				DM_ScrollToBottom(pContainer->hwndActive, 0, 0, 0);
+				_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+				DM_ScrollToBottom(dat, 0, 0);
 				SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
 			}
 			pContainer->bSizingLoop = FALSE;
+			if(M->isAero())
+				SetAeroMargins(pContainer);
+				InvalidateRect(hwndDlg, NULL, FALSE);
 			break;
 		}
 		case WM_GETMINMAXINFO: {
@@ -1302,6 +1322,7 @@ buttons_done:
 				pContainer->dwFlags |= CNT_DEFERREDSIZEREQUEST;
 				break;
 			}
+
 			GetClientRect(hwndDlg, &rcClient);
 			pContainer->MenuBar->getClientRect();
 
@@ -1313,8 +1334,6 @@ buttons_done:
 				GetWindowRect(pContainer->hwndStatus, &rcs);
 
 				pContainer->statusBarHeight = (rcs.bottom - rcs.top) + 1;
-				if (pContainer->hwndSlist)
-					MoveWindow(pContainer->hwndSlist, bSkinned ? 4 : 2, (rcs.bottom - rcs.top) / 2 - 7, 16, 16, FALSE);
 				SendMessage(pContainer->hwndStatus, SB_SETTEXT, (WPARAM)(SBT_OWNERDRAW) | 2, (LPARAM)0);
 
 			}
@@ -1324,15 +1343,19 @@ buttons_done:
 			CopyRect(&pContainer->rcSaved, &rcClient);
 			rcUnadjusted = rcClient;
 
-			LONG rebarHeight = (pContainer->dwFlags & CNT_NOMENUBAR) ? 0 : pContainer->MenuBar->getHeight();
+			LONG rebarHeight = pContainer->MenuBar->getHeight();
 			pContainer->MenuBar->Show((pContainer->dwFlags & CNT_NOMENUBAR) ? SW_HIDE : SW_SHOW);
 
 			sbarWidth = pContainer->dwFlags & CNT_SIDEBAR ? SIDEBARWIDTH : 0;
 			if (lParam) {
 				if (pContainer->dwFlags & CNT_TABSBOTTOM)
-					MoveWindow(hwndTab, pContainer->tBorder_outer_left + sbarWidth, pContainer->tBorder_outer_top + rebarHeight, (rcClient.right - rcClient.left) - (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right + sbarWidth), (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom) - rebarHeight, FALSE);
+					//MoveWindow(hwndTab, pContainer->tBorder_outer_left + sbarWidth, pContainer->tBorder_outer_top + rebarHeight, (rcClient.right - rcClient.left) - (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right + sbarWidth), (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom) - rebarHeight, FALSE);
+					SetWindowPos(hwndTab, 0, pContainer->tBorder_outer_left + sbarWidth, pContainer->tBorder_outer_top + rebarHeight, (rcClient.right - rcClient.left) - (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right + sbarWidth), (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom) - rebarHeight,
+								 SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_NOSENDCHANGING | SWP_ASYNCWINDOWPOS);
 				else
-					MoveWindow(hwndTab, pContainer->tBorder_outer_left + sbarWidth, pContainer->tBorder_outer_top + rebarHeight, (rcClient.right - rcClient.left) - (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right + sbarWidth), (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom) - rebarHeight, FALSE);
+					//MoveWindow(hwndTab, pContainer->tBorder_outer_left + sbarWidth, pContainer->tBorder_outer_top + rebarHeight, (rcClient.right - rcClient.left) - (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right + sbarWidth), (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom) - rebarHeight, FALSE);
+					SetWindowPos(hwndTab, 0, pContainer->tBorder_outer_left + sbarWidth, pContainer->tBorder_outer_top + rebarHeight, (rcClient.right - rcClient.left) - (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right + sbarWidth), (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom) - rebarHeight,
+								 SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_NOSENDCHANGING | SWP_ASYNCWINDOWPOS);
 			}
 			AdjustTabClientRect(pContainer, &rcClient);
 
@@ -1342,7 +1365,6 @@ buttons_done:
 				pContainer->preSIZE.cx = rcClient.right - rcClient.left;
 				pContainer->preSIZE.cy = rcClient.bottom - rcClient.top;
 			}
-			SetAeroMargins(pContainer);
 			pContainer->MenuBar->Resize(LOWORD(lParam), HIWORD(lParam), sizeChanged ? TRUE : FALSE);
 
 			/*
@@ -1350,18 +1372,24 @@ buttons_done:
 			 * we tell inactive tabs to resize theirselves later when they get activated (DM_CHECKSIZE
 			 * just queues a resize request)
 			 */
-			for (i = 0; i < TabCtrl_GetItemCount(hwndTab); i++) {
+			int nCount = TabCtrl_GetItemCount(hwndTab);
+
+			for (i = 0; i < nCount; i++) {
 				item.mask = TCIF_PARAM;
 				TabCtrl_GetItem(hwndTab, i, &item);
 				if ((HWND)item.lParam == pContainer->hwndActive) {
-					MoveWindow((HWND)item.lParam, rcClient.left, rcClient.top, (rcClient.right - rcClient.left), (rcClient.bottom - rcClient.top), TRUE);
+					//MoveWindow((HWND)item.lParam, rcClient.left, rcClient.top, (rcClient.right - rcClient.left), (rcClient.bottom - rcClient.top), TRUE);
+					SetWindowPos((HWND)item.lParam, 0, rcClient.left, rcClient.top, (rcClient.right - rcClient.left), (rcClient.bottom - rcClient.top),
+								 SWP_NOSENDCHANGING);
 					if (!pContainer->bSizingLoop && sizeChanged) {
-						DM_ScrollToBottom(pContainer->hwndActive, 0, 0, 1);
+						_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+						DM_ScrollToBottom(dat, 0, 1);
 					}
 				}
 				else if (sizeChanged)
 					SendMessage((HWND)item.lParam, DM_CHECKSIZE, 0, 0);
 			}
+			SetAeroMargins(pContainer);
 
 			RedrawWindow(hwndTab, NULL, NULL, RDW_INVALIDATE | (pContainer->bSizingLoop ? RDW_ERASE : 0));
 			RedrawWindow(hwndDlg, NULL, NULL, (bSkinned ? RDW_FRAME : 0) | RDW_INVALIDATE | (pContainer->bSizingLoop || wParam == SIZE_RESTORED ? RDW_ERASE : 0));
@@ -1509,13 +1537,7 @@ buttons_done:
 					break;
 				case SC_RESTORE:
 					pContainer->oldSize.cx = pContainer->oldSize.cy = 0;
-					if (0) {
-						ShowWindow(hwndDlg, SW_RESTORE);
-						return 0;
-					}
- 					//MAD: to fix rare (windows?) bug...
- 					// ShowWindow(hwndDlg, SW_RESTORE);
- 					//
+					pContainer->dwOldAeroBottom = pContainer->dwOldAeroTop = 0;
 					break;
 				case SC_MINIMIZE:
 					break;
@@ -1802,8 +1824,10 @@ panel_found:
 			}
 			pContainer->hwndSaved = 0;
 
-			if (LOWORD(wParam) != WA_ACTIVE)
+			if (LOWORD(wParam) != WA_ACTIVE) {
+				pContainer->MenuBar->Cancel();
 				break;
+			}
 		case WM_MOUSEACTIVATE: {
 			TCITEM item;
 			int curItem = 0;
@@ -1895,6 +1919,7 @@ panel_found:
 		}
 		case WM_PAINT: {
 			bool fAero = M->isAero();
+
 			if (bSkinned || fAero) {
 				PAINTSTRUCT ps;
 				HDC hdc = BeginPaint(hwndDlg, &ps);
@@ -1916,13 +1941,20 @@ panel_found:
 			/*
 			 * avoid flickering of the menu bar when aero is active
 			 */
-			HDC hdc = (HDC)wParam;
+			if(!pContainer)
+				break;
+
+			HDC hdc = 	(HDC)wParam;
 			RECT rc;
 			GetClientRect(hwndDlg, &rc);
+			bool 		fAero = M->isAero();
+			bool 		fDone = false;
+			LRESULT		tabStyle = GetWindowLongPtr(hwndTab, GWL_STYLE);
 
-			if (bSkinned || M->isAero()) {
+			if (/*bSkinned ||*/ fAero) {
 				FillRect(hdc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
-				if(M->isAero() && (!(pContainer->dwFlags & CNT_NOMENUBAR) || pContainer->fPreviousMenubar)) {
+				/*
+				if(fAero && (!(pContainer->dwFlags & CNT_NOMENUBAR) || pContainer->fPreviousMenubar)) {
 					_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 
 					bool fInfoPanel = (dat && (dat->dwFlagsEx & MWF_SHOW_INFOPANEL));
@@ -1936,9 +1968,18 @@ panel_found:
 					rc.bottom = oldBottom;
 					FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
 					pContainer->fPreviousMenubar = mBarHeight;
+					fDone = true;
 				}
-				else
+				if(fAero && (tabStyle & TCS_BOTTOM)) {
+					if(!fDone)
+						FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
+					rc.top = rc.bottom - pContainer->dwOldAeroBottom;
+					FillRect(hdc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+					rc.top = 0;
+				}
+				if(!fDone)
 					FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
+				*/
 			}
 			else
 				FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
@@ -2087,15 +2128,15 @@ panel_found:
 			if (!CSkin::m_frameSkins) {
 				ws = (pContainer->dwFlags & CNT_NOTITLE) ?
 					 ((IsWindowVisible(hwndDlg) ? WS_VISIBLE : 0) | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPCHILDREN | WS_THICKFRAME | (CSkin::m_frameSkins ? WS_SYSMENU : WS_SYSMENU | WS_SIZEBOX)) :
-							 ws | WS_CAPTION | WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN;
+							 ws | WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN;
 			}
 
 			SetWindowLongPtr(hwndDlg, GWL_STYLE, ws);
 
-			pContainer->tBorder = /* fAero ? 0 : */ M->GetByte("tborder", 2);
-			pContainer->tBorder_outer_left = g_ButtonSet.left + (fAero ? 0 : M->GetByte((bSkinned ? "S_tborder_outer_left" : "tborder_outer_left"), 2));
-			pContainer->tBorder_outer_right = g_ButtonSet.right + (fAero ? 0 : M->GetByte((bSkinned ? "S_tborder_outer_right" : "tborder_outer_right"), 2));
-			pContainer->tBorder_outer_top = g_ButtonSet.top + (fAero ? 0 : M->GetByte((bSkinned ? "S_tborder_outer_top" : "tborder_outer_top"), 2));
+			pContainer->tBorder = M->GetByte("tborder", 2);
+			pContainer->tBorder_outer_left = g_ButtonSet.left + M->GetByte((bSkinned ? "S_tborder_outer_left" : "tborder_outer_left"), 2);
+			pContainer->tBorder_outer_right = g_ButtonSet.right + M->GetByte((bSkinned ? "S_tborder_outer_right" : "tborder_outer_right"), 2);
+			pContainer->tBorder_outer_top = g_ButtonSet.top + M->GetByte((bSkinned ? "S_tborder_outer_top" : "tborder_outer_top"), 2);
 			pContainer->tBorder_outer_bottom = g_ButtonSet.bottom + M->GetByte((bSkinned ? "S_tborder_outer_bottom" : "tborder_outer_bottom"), 2);
 			sBarHeight = (UINT)M->GetByte((bSkinned ? "S_sbarheight" : "sbarheight"), 0);
 
@@ -2105,8 +2146,8 @@ panel_found:
 
 				ex = exold = GetWindowLongPtr(hwndDlg, GWL_EXSTYLE);
 				ex =  (pContainer->dwFlags & CNT_TRANSPARENCY && (!CSkin::m_skinEnabled || fTransAllowed)) ? ex | WS_EX_LAYERED : ex & ~(WS_EX_LAYERED);
-				//if(!pContainer->bSkinned && IsWinVerXPPlus())
-				//	ex = ex | (WS_EX_COMPOSITED); // | WS_EX_COMPOSITED);			// faster/smoother redrawing on Vista+, especially with skins
+				//if(fAero && !pContainer->bSkinned && IsWinVerVistaPlus())
+				//	ex = ex | (WS_EX_LAYERED);//|WS_EX_LAYERED); // | WS_EX_COMPOSITED);			// faster/smoother redrawing on Vista+, especially with skins
 
 				SetWindowLongPtr(hwndDlg, GWL_EXSTYLE, ex);
 				if (pContainer->dwFlags & CNT_TRANSPARENCY && fTransAllowed) {
@@ -2129,8 +2170,10 @@ panel_found:
 					//SetWindowPos(hwndDlg,  0, rc.left, rc.top, rc.right - rc.left, (rc.bottom - rc.top) + 1, SWP_NOACTIVATE | SWP_FRAMECHANGED);
 					SetWindowPos(hwndDlg,  0, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, SWP_NOACTIVATE | SWP_FRAMECHANGED | SWP_NOCOPYBITS);
 					RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW);
-					if (pContainer->hwndActive != 0)
-						DM_ScrollToBottom(pContainer->hwndActive, 0, 0, 0);
+					if (pContainer->hwndActive != 0) {
+						_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+						DM_ScrollToBottom(dat, 0, 0);
+					}
 				}
 			}
 			ws = wsold = GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_STYLE);
@@ -2146,8 +2189,6 @@ panel_found:
 			if (pContainer->dwFlags & CNT_NOSTATUSBAR) {
 				if (pContainer->hwndStatus) {
 					//SetWindowLongPtr(pContainer->hwndStatus, GWLP_WNDPROC, (LONG_PTR)OldStatusBarproc);
-					if (pContainer->hwndSlist)
-						DestroyWindow(pContainer->hwndSlist);
 					DestroyWindow(pContainer->hwndStatus);
 					pContainer->hwndStatus = 0;
 					pContainer->statusBarHeight = 0;
@@ -2156,19 +2197,9 @@ panel_found:
 			}
 			else if (pContainer->hwndStatus == 0) {
 				pContainer->hwndStatus = CreateWindowEx(0, _T("TSStatusBarClass"), NULL, SBT_TOOLTIPS | WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwndDlg, NULL, g_hInst, NULL);
-				if (PluginConfig.m_bSessionList)
-					pContainer->hwndSlist = CreateWindowExA(0, "TSButtonClass", "", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 1, 2, 18, 18, pContainer->hwndStatus, (HMENU)1001, g_hInst, NULL);
-				else
-					pContainer->hwndSlist = 0;
 
 				if (sBarHeight && bSkinned)
 					SendMessage(pContainer->hwndStatus, SB_SETMINHEIGHT, sBarHeight, 0);
-
-				SendMessage(pContainer->hwndSlist, BUTTONSETASFLATBTN, 0, 0);
-				SendMessage(pContainer->hwndSlist, BUTTONSETASFLATBTN + 10, 0, M->isAero() ? 1 : 0);
-				SendMessage(pContainer->hwndSlist, BUTTONSETASFLATBTN + 12, 0, (LPARAM)pContainer);
-				SendMessage(pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM)PluginConfig.g_buttonBarIcons[16]);
-				SendMessage(pContainer->hwndSlist, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Show session list (right click to show quick menu)"), 0);
 			}
 			if (pContainer->hwndActive != 0) {
 				hContact = 0;
@@ -2330,10 +2361,8 @@ panel_found:
 			pContainer->hwndActive = 0;
 			pContainer->hMenuContext = 0;
 			SetMenu(hwndDlg, NULL);
-			if (pContainer->hwndStatus) {
-				DestroyWindow(pContainer->hwndSlist);
+			if (pContainer->hwndStatus)
 				DestroyWindow(pContainer->hwndStatus);
-			}
 
 			// free private theme...
 			if (pContainer->ltr_templates)
@@ -3087,7 +3116,8 @@ void BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WP
 
 	item.mask = TCIF_PARAM;
 
-	for (i = 0; i < TabCtrl_GetItemCount(hwndTab); i++) {
+	int nCount = TabCtrl_GetItemCount(hwndTab);
+	for (i = 0; i < nCount; i++) {
 		TabCtrl_GetItem(hwndTab, i, &item);
 		if (IsWindow((HWND)item.lParam))
 			SendMessage((HWND)item.lParam, message, wParam, lParam);

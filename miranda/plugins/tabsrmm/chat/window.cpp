@@ -81,6 +81,38 @@ typedef struct
 static const CLSID IID_ITextDocument= { 0x8CC497C0,0xA1DF,0x11CE, { 0x80,0x98, 0x00,0xAA, 0x00,0x47,0xBE,0x5D} };
 extern WNDPROC OldIEViewProc, OldHppProc;
 
+static LRESULT _dlgReturn(HWND hWnd, LRESULT result)
+{
+	SetWindowLongPtr(hWnd, DWLP_MSGRESULT, result);
+	return(result);
+}
+
+static void Chat_ConfigurePanel(const _MessageWindowData *dat)
+{
+	ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELUIN), SW_HIDE);
+	ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELNICK), SW_HIDE);
+}
+
+static void Chat_ShowHideInfoPanel(_MessageWindowData *dat)
+{
+	HWND	hwndDlg = dat->hwnd;
+
+	ShowWindow(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
+
+	if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
+		Chat_ConfigurePanel(dat);
+		InvalidateRect(hwndDlg, NULL, FALSE);
+	}
+
+	ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELUIN), SW_HIDE);
+	ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELNICK), SW_HIDE);
+	SendMessage(hwndDlg, WM_SIZE, 0, 0);
+	SetAeroMargins(dat->pContainer);
+	if(M->isAero())
+		InvalidateRect(GetParent(hwndDlg), NULL, FALSE);
+	DM_ScrollToBottom(dat, 0, 1);
+}
+
 static void Chat_SetMessageLog(_MessageWindowData *dat)
 {
 	unsigned int iLogMode = M->GetByte("Chat", "useIEView", 0);
@@ -342,6 +374,8 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct _MessageWindowData *dat,
 		}
 	}
 	SetAeroMargins(dat->pContainer);
+	if(M->isAero())
+		InvalidateRect(hwndTab, NULL, FALSE);
 	BB_SetButtonsPos(hwndDlg,dat);
 }
 
@@ -421,10 +455,9 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 	int			TabHeight;
 	BOOL		bToolbar = !(dat->pContainer->dwFlags & CNT_HIDETOOLBAR);
 	BOOL		bBottomToolbar = dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR ? 1 : 0;
+	int 		panelHeight = dat->panelHeight + 1;
 
 	BOOL		bNick = si->iType != GCW_SERVER && si->bNicklistEnabled;
-	BOOL		bTabs = 0;
-	BOOL		bTabBottom = 0;
 	int         i = 0;
 	static      int msgBottom = 0, msgTop = 0;
 
@@ -457,13 +490,32 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_TOGGLESIDEBAR), PluginConfig.m_SideBarEnabled ? SW_SHOW : SW_HIDE);
 
 	switch (urc->wId) {
+		case IDC_PANELSPLITTER:
+			urc->rcItem.bottom = panelHeight;
+			urc->rcItem.top = panelHeight - 2;
+			return RD_ANCHORX_WIDTH | RD_ANCHORY_TOP;
+		case IDC_PANELNICK: {
+			RECT	rcStatus;
+			GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), &rcStatus);
+			urc->rcItem.left = panelHeight <= 52 ? panelHeight : 52;
+			urc->rcItem.right = urc->dlgNewSize.cx;
+			urc->rcItem.bottom = panelHeight - 3 - (panelHeight > 42 ? dat->ipFieldHeight : 0) - 1;;
+			return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
+		}
+		case IDC_PANELUIN: {
+			urc->rcItem.left = panelHeight <= 52 ? panelHeight : 52;
+			urc->rcItem.right = urc->dlgNewSize.cx;
+			urc->rcItem.bottom = panelHeight - 1;
+			urc->rcItem.top = urc->rcItem.bottom - dat->ipFieldHeight;
+			return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
+		}
 		case IDC_CHAT_LOG:
-			urc->rcItem.top = bTabs ? (bTabBottom ? 0 : rcTabs.top - 1) : 0;
+			urc->rcItem.top = 0;
 			urc->rcItem.left = 0;
 			urc->rcItem.right = bNick ? urc->dlgNewSize.cx - si->iSplitterX : urc->dlgNewSize.cx;
 			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY - (PluginConfig.g_DPIscaleY > 1.0 ? DPISCALEY(24) : DPISCALEY(23))) : (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(2));
-			//if (!splitterEdges)
-			//	urc->rcItem.bottom += 2;
+			if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL)
+				urc->rcItem.top += panelHeight;
 			if (dat->pContainer->bSkinned) {
 				CSkinItem *item = &SkinItems[ID_EXTBKHISTORY];
 				if (!item->IGNORED) {
@@ -476,12 +528,12 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_CUSTOM;
 
 		case IDC_LIST:
-			urc->rcItem.top = bTabs ? (bTabBottom ? 0 : rcTabs.top - 1) : 0;
+			urc->rcItem.top = 0;
 			urc->rcItem.right = urc->dlgNewSize.cx ;
 			urc->rcItem.left = urc->dlgNewSize.cx - si->iSplitterX + 2;
 			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(23)) : (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(2));
-			//if (!splitterEdges)
-			//	urc->rcItem.bottom += 2;
+			if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL)
+				urc->rcItem.top += panelHeight;
 			if (dat->pContainer->bSkinned) {
 				CSkinItem *item = &SkinItems[ID_EXTBKUSERLIST];
 				if (!item->IGNORED) {
@@ -497,7 +549,9 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 			urc->rcItem.right = urc->dlgNewSize.cx - si->iSplitterX + 2;
 			urc->rcItem.left = urc->dlgNewSize.cx - si->iSplitterX;
 			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(23)) : (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(2));
-			urc->rcItem.top = bTabs ? rcTabs.top : 1;
+			urc->rcItem.top = 0;
+			if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL)
+				urc->rcItem.top += panelHeight;
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_CUSTOM;
 
 		case IDC_SPLITTERY:
@@ -541,9 +595,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 			urc->rcItem.bottom = msgBottom;
 			urc->rcItem.top = msgTop;
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_CUSTOM;
-
 	}
-
 	return RD_ANCHORX_LEFT | RD_ANCHORY_TOP;
 }
 
@@ -663,7 +715,26 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			SetActiveWindow(hwndParent);
 			break;
 
+		case WM_SYSKEYUP:
+			if(wParam == VK_MENU) {
+				ProcessHotkeysByMsgFilter(hwnd, msg, wParam, lParam, IDC_CHAT_MESSAGE);
+				return(0);
+			}
+			break;
+
+		case WM_SYSKEYDOWN:
+			mwdat->fkeyProcessed = false;
+			if(ProcessHotkeysByMsgFilter(hwnd, msg, wParam, lParam, IDC_CHAT_MESSAGE)) {
+				mwdat->fkeyProcessed = true;
+				return(0);
+			}
+			break;
+
 		case WM_SYSCHAR: {
+			if(mwdat->fkeyProcessed) {
+				mwdat->fkeyProcessed = false;						// preceeding key event has been processed by miranda hotkey service
+				return(0);
+			}
 			HWND hwndDlg = hwndParent;
 			BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
 			BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
@@ -680,26 +751,8 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				SendMessage(mwdat->pContainer->hwnd, DM_SELECTTAB, DM_SELECT_BY_INDEX, (LPARAM)iIndex);
 				return 0;
 			}
-			if (isMenu && !isShift && !isCtrl) {
-				switch (LOBYTE(VkKeyScan((TCHAR)wParam))) {
-					case 'S':
-						if (!(GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), GWL_STYLE) & ES_READONLY)) {
-							PostMessage(hwndDlg, WM_COMMAND, IDOK, 0);
-							return 0;
-						}
-					case'E':
-						SendMessage(hwndDlg, WM_COMMAND, IDC_SMILEYBTN, 0);
-						return 0;
-					case 'H':
-						SendMessage(hwndDlg, WM_COMMAND, IDC_CHAT_HISTORY, 0);
-						return 0;
-					case 'T':
-						SendMessage(hwndDlg, WM_COMMAND, IDC_TOGGLETOOLBAR, 0);
-						return 0;
-				}
-			}
+			break;
 		}
-		break;
 
 		case WM_CHAR: {
 			BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
@@ -810,7 +863,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 						else if (wParam == VK_HOME)
 							wp = MAKEWPARAM(SB_TOP, 0);
 						else if (wParam == VK_END) {
-							DM_ScrollToBottom(hwndParent, mwdat, 0, 0);
+							DM_ScrollToBottom(mwdat, 0, 0);
 							return 0;
 						} else if (wParam == VK_DOWN)
 							wp = MAKEWPARAM(SB_LINEDOWN, 0);
@@ -1430,6 +1483,29 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			}
 			break;
 
+		case WM_SYSKEYUP:
+			if(wParam == VK_MENU) {
+				ProcessHotkeysByMsgFilter(hwnd, msg, wParam, lParam, IDC_CHAT_LOG);
+				return(0);
+			}
+			break;
+
+		case WM_SYSKEYDOWN:
+			mwdat->fkeyProcessed = false;
+			if(ProcessHotkeysByMsgFilter(hwnd, msg, wParam, lParam, IDC_CHAT_LOG)) {
+				mwdat->fkeyProcessed = true;
+				return(0);
+			}
+			break;
+
+		case WM_SYSCHAR: {
+			if(mwdat->fkeyProcessed) {
+				mwdat->fkeyProcessed = false;
+				return(0);
+			}
+			break;
+		}
+
 		case WM_ACTIVATE: {
 			if (LOWORD(wParam) == WA_INACTIVE) {
 				CHARRANGE sel;
@@ -1964,6 +2040,8 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			dat->fInsertMode = FALSE;
 
 			dat->codePage = M->GetDword(dat->hContact, "ANSIcodepage", CP_ACP);
+			dat->dwFlagsEx = GetInfoPanelSetting(dat) ? dat->dwFlagsEx | MWF_SHOW_INFOPANEL : dat->dwFlagsEx & ~MWF_SHOW_INFOPANEL;
+			Chat_ConfigurePanel(dat);
 			//MAD
 			M->AddWindow(hwndDlg, dat->hContact);
 			//
@@ -1987,19 +2065,19 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			OldMessageProc = (WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), GWLP_WNDPROC, (LONG_PTR)MessageSubclassProc);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SUBCLASSED, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_AUTOURLDETECT, 1, 0);
-
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWLP_WNDPROC, (LONG_PTR) SplitterSubclassProc);
 			TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING, 0);
 
 			mask = (int)SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_GETEVENTMASK, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETEVENTMASK, 0, mask | ENM_LINK | ENM_MOUSEEVENTS);
+			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETEVENTMASK, 0, mask | ENM_LINK | ENM_MOUSEEVENTS | ENM_KEYEVENTS);
 
 			mask = (int)SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_GETEVENTMASK, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETEVENTMASK, 0, mask | ENM_CHANGE);
+			SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETEVENTMASK, 0, mask | ENM_CHANGE | ENM_KEYEVENTS);
 
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_LIMITTEXT, (WPARAM)0x7FFFFFFF, 0);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(3, 3));
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(3, 3));
-
+			LoadPanelHeight(dat);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), TRUE);
 
 			if (PluginConfig.g_hMenuTrayUnread != 0 && dat->hContact != 0 && dat->szProto != NULL)
@@ -2217,6 +2295,11 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 		case WM_SIZE: {
 			UTILRESIZEDIALOG urd;
 
+			if (dat->ipFieldHeight == 0) {
+				RECT rcPanelBottom;
+				GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELUIN), &rcPanelBottom);
+				dat->ipFieldHeight = rcPanelBottom.bottom - rcPanelBottom.top;
+			}
 			if (wParam == SIZE_MAXIMIZED)
 				PostMessage(hwndDlg, GC_SCROLLTOBOTTOM, 0, 0);
 
@@ -2539,6 +2622,22 @@ LABEL_SHOWWINDOW:
 				if (si->iSplitterY > rc.bottom - rc.top - DPISCALEY_S(40))
 					si->iSplitterY = rc.bottom - rc.top - DPISCALEY_S(40);
 				g_Settings.iSplitterY = si->iSplitterY;
+			} else if ((HWND) lParam == GetDlgItem(hwndDlg, IDC_PANELSPLITTER)) {
+				RECT rc;
+				POINT pt;
+				pt.x = 0;
+				pt.y = wParam;
+				ScreenToClient(hwndDlg, &pt);
+				GetClientRect(hwndDlg, &rc);
+				if (pt.y + 2 >= MIN_PANELHEIGHT+2 && pt.y + 2 < 100)
+					dat->panelHeight = pt.y + 2;
+				dat->panelWidth = -1;
+				RedrawWindow(hwndDlg, NULL, NULL, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW);
+				SetAeroMargins(dat->pContainer);
+				if(M->isAero())
+					InvalidateRect(GetParent(hwndDlg), NULL, FALSE);
+				SendMessage(hwndDlg, WM_SIZE, DM_SPLITTERMOVED, 0);
+				break;
 			}
 			if (x == 2) {
 				PostMessage(hwndDlg, WM_SIZE, 0, 0);
@@ -2618,7 +2717,7 @@ LABEL_SHOWWINDOW:
 		break;
 
 		case GC_SCROLLTOBOTTOM: {
-			return(DM_ScrollToBottom(hwndDlg, dat, wParam, lParam));
+			return(DM_ScrollToBottom(dat, wParam, lParam));
 		}
 
 		case WM_TIMER:
@@ -2641,7 +2740,46 @@ LABEL_SHOWWINDOW:
 		case WM_NOTIFY: {
 			LPNMHDR pNmhdr = (LPNMHDR)lParam;
 			switch (pNmhdr->code) {
-				case EN_MSGFILTER:
+				case EN_MSGFILTER: {
+					UINT  msg = ((MSGFILTER *) lParam)->msg;
+					WPARAM wp = ((MSGFILTER *) lParam)->wParam;
+					LPARAM lp = ((MSGFILTER *) lParam)->lParam;
+
+					MSG		message;
+					message.hwnd = hwndDlg;
+					message.message = msg;
+					message.lParam = lp;
+					message.wParam = wp;
+
+					if (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN) {
+						LRESULT mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)&message, (LPARAM)Translate(TABSRMM_HK_SECTION_GENERIC));
+
+						switch(mim_hotkey_check) {
+							case TABSRMM_HK_SEND:
+								if (!(GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), GWL_STYLE) & ES_READONLY)) {
+									PostMessage(hwndDlg, WM_COMMAND, IDOK, 0);
+									return(_dlgReturn(hwndDlg, 1));
+								}
+								break;
+							case TABSRMM_HK_HISTORY:
+								SendMessage(hwndDlg, WM_COMMAND, IDC_CHAT_HISTORY, 0);
+								return(_dlgReturn(hwndDlg, 1));
+							case TABSRMM_HK_EMOTICONS:
+								SendMessage(hwndDlg, WM_COMMAND, IDC_SMILEYBTN, 0);
+								return(_dlgReturn(hwndDlg, 1));
+							case TABSRMM_HK_TOGGLETOOLBAR:
+								SendMessage(hwndDlg, WM_COMMAND, IDC_TOGGLETOOLBAR, 0);
+								return(_dlgReturn(hwndDlg, 1));
+							default:
+								break;
+						}
+
+						mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)&message, (LPARAM)Translate(TABSRMM_HK_SECTION_GC));
+						switch(mim_hotkey_check) {								// nothing (yet) FIXME
+							default:
+								break;
+						}
+					}
 					if (pNmhdr->idFrom == IDC_CHAT_LOG && ((MSGFILTER *) lParam)->msg == WM_RBUTTONUP) {
 						CHARRANGE sel, all = { 0, -1 };
 						POINT pt;
@@ -2764,7 +2902,7 @@ LABEL_SHOWWINDOW:
 						DestroyGCMenu(&hMenu, 5);
 					}
 					break;
-
+				}
 				case EN_LINK:
 					if (pNmhdr->idFrom == IDC_CHAT_LOG) {
 						switch (((ENLINK *) lParam)->msg) {
@@ -3259,10 +3397,20 @@ LABEL_SHOWWINDOW:
 				int  i;
 				bool fAero = M->isAero();
 
+				BOOL fInfoPanel = (dat->dwFlagsEx & MWF_SHOW_INFOPANEL);
+
 				HDC hdc = BeginPaint(hwndDlg, &ps);
 				GetClientRect(hwndDlg, &rcClient);
+				LONG cx = rcClient.right - rcClient.left;
+				LONG cy = rcClient.bottom - rcClient.top;
+
+				HDC hdcMem = CreateCompatibleDC(hdc);
+				HBITMAP hbm =  CSkin::CreateAeroCompatibleBitmap(rcClient, hdc);
+				HBITMAP hbmOld = (HBITMAP)SelectObject(hdcMem, hbm);
+
+
 				if(dat->pContainer->bSkinned && !fAero) {
-					CSkin::SkinDrawBG(hwndDlg, dat->pContainer->hwnd, dat->pContainer, &rcClient, hdc);
+					CSkin::SkinDrawBG(hwndDlg, dat->pContainer->hwnd, dat->pContainer, &rcClient, hdcMem);
 					for (i = 0; i < 3; i++) {
 						item = &SkinItems[item_ids[i]];
 						if (!item->IGNORED) {
@@ -3275,13 +3423,58 @@ LABEL_SHOWWINDOW:
 							rc.top = pt.y - item->MARGIN_TOP;
 							rc.right = rc.left + item->MARGIN_RIGHT + (rcWindow.right - rcWindow.left) + item->MARGIN_LEFT;
 							rc.bottom = rc.top + item->MARGIN_BOTTOM + (rcWindow.bottom - rcWindow.top) + item->MARGIN_TOP;
-							DrawAlpha(hdc, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+							DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
 									  item->CORNER, item->BORDERSTYLE, item->imageItem);
 						}
 					}
 				}
+
+				SkinItems[ID_EXTBKINFOPANELBG];
+				if((dat->dwFlagsEx & MWF_SHOW_INFOPANEL) || fAero) {
+					CSkinItem *item = &SkinItems[ID_EXTBKINFOPANELBG];
+
+					GetClientRect(hwndDlg, &rc);
+					rc.bottom = dat->panelHeight + 2;
+					if(fAero) {
+						RECT	rcBlack = rc;
+						rcBlack.bottom = dat->panelHeight + 2 + 30;
+						FillRect(hdcMem, &rcBlack, (HBRUSH)GetStockObject(BLACK_BRUSH));
+						rc.bottom -= 2;
+						if(fInfoPanel) {
+							if(!item->IGNORED) {
+								DrawAlpha(hdcMem, &rc, item->COLOR, 80, item->COLOR2, 1, item->GRADIENT + 1,
+										  1+2+8 + 4 + 16, 8, 0);
+							}
+							rc.top = rc.bottom - 1;
+							rc.left--; rc.right++;
+							::DrawEdge(hdcMem, &rc, BDR_SUNKENOUTER, BF_RECT);
+						}
+					}
+					else {
+						if(PluginConfig.m_WinVerMajor >= 5) {
+							if(dat->pContainer->bSkinned)
+								CSkin::SkinDrawBG(hwndDlg, dat->pContainer->hwnd, dat->pContainer, &rc, hdcMem);
+							rc.bottom -= 2;
+							if(!item->IGNORED) {
+								DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+										  item->CORNER, item->BORDERSTYLE, item->imageItem);
+							}
+							rc.top = rc.bottom - 1;
+							rc.left--; rc.right++;
+							::DrawEdge(hdcMem, &rc, BDR_SUNKENOUTER, BF_RECT);
+						}
+						else
+							FillRect(hdcMem, &rc, GetSysColorBrush(COLOR_3DFACE));
+					}
+				}
+
 				if(fAero || (M->isVSThemed() && !CSkin::m_skinEnabled))
-					CSkin::RenderToolbarBG(dat, hdc, rcClient);
+					CSkin::RenderToolbarBG(dat, hdcMem, rcClient);
+
+				BitBlt(hdc, 0, 0, cx, cy, hdcMem, 0, 0, SRCCOPY);
+				SelectObject(hdcMem, hbmOld);
+				DeleteObject(hbm);
+				DeleteDC(hdcMem);
 				EndPaint(hwndDlg, &ps);
 				return 0;
 			}
@@ -3577,6 +3770,8 @@ LABEL_SHOWWINDOW:
 
 		case WM_NCDESTROY:
 			if (dat) {
+				dat->pContainer->dwOldAeroBottom = dat->pContainer->dwOldAeroTop = 0;
+				PostMessage(dat->pContainer->hwnd, WM_SIZE, 0, 1);
 				free(dat);
 				SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 			}

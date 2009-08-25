@@ -93,6 +93,7 @@ void CGlobals::Reload()
 	m_bIsWin7 = IsWinVer7Plus();
 	m_TabAppearance = (int)M->GetDword("tabconfig", TCF_FLASHICON | TCF_SINGLEROWTABCONTROL);
 	m_panelHeight = (DWORD)M->GetDword("panelheight", 51);
+	m_MUCpanelHeight = M->GetDword("Chat", "panelheight", 30);
 	m_IdleDetect = (int)M->GetByte("detectidle", 1);
 	m_smcxicon = GetSystemMetrics(SM_CXSMICON);
 	m_smcyicon = GetSystemMetrics(SM_CYSMICON);
