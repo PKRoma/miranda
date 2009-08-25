@@ -4430,6 +4430,7 @@ quote_from_last:
 								}
 							}
 							if (msg == WM_KEYDOWN) {
+								if (wp == VK_ESCAPE) PostMessage(hwndDlg, WM_CLOSE, 1, 0);
 								if (wp == VK_INSERT && (GetKeyState(VK_SHIFT) & 0x8000)) {
 									SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_PASTESPECIAL, CF_TEXT, 0);
 									((MSGFILTER *) lParam)->msg = WM_NULL;

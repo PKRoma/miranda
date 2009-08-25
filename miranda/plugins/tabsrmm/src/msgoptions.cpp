@@ -419,6 +419,7 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 									break;
 								case 2:
 									avMode = 4;
+									break;
 								case 3:
 									avMode = 5;
 							}
