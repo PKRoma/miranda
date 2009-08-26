@@ -141,15 +141,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			DWORD dwTemp[2];
 			int   i, j;
 			TVINSERTSTRUCT tvis = {0};
-			LOGFONT lf;
-			HFONT hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_WHITERECT, WM_GETFONT, 0, 0);
 			HTREEITEM hItem;
-
-			GetObject(hFont, sizeof(lf), &lf);
-			lf.lfHeight = (int)(lf.lfHeight * 1.5);
-			lf.lfWeight = FW_BOLD;
-			hFont = CreateFontIndirect(&lf);
-			SendDlgItemMessage(hwndDlg, IDC_WHITERECT, WM_SETFONT, (WPARAM)hFont, 0);
 
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR) lParam);
 			pContainer = (struct ContainerWindowData *) lParam;
@@ -171,9 +163,6 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			SendDlgItemMessage(hwndDlg, IDC_TITLEFORMAT, EM_LIMITTEXT, TITLE_FORMATLEN - 1, 0);
 			SetDlgItemText(hwndDlg, IDC_TITLEFORMAT, pContainer->szTitleFormat);
 			SetDlgItemTextA(hwndDlg, IDC_THEME, pContainer->szRelThemeFile);
-			SetDlgItemText(hwndDlg, IDC_CURRENTNAME, TranslateT("\tConfigure container options"));
-			SetDlgItemText(hwndDlg, IDC_WHITERECT, szNewTitle);
-			SetWindowPos(GetDlgItem(hwndDlg, IDC_LOGO), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 			for (i = 0; i < NR_O_PAGES; i++) {
 				tvis.hParent = NULL;
 				tvis.hInsertAfter = TVI_LAST;
@@ -205,21 +194,80 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), TRUE);
 			}
 			break;
-		case WM_CTLCOLOREDIT:
-		case WM_CTLCOLORSTATIC:
-			if ((HWND)lParam == GetDlgItem(hwndDlg, IDC_WHITERECT)
-					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_CURRENTNAME)
-					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_LOGO)) {
-				if ((HWND)lParam == GetDlgItem(hwndDlg, IDC_WHITERECT))
-					SetTextColor((HDC)wParam, RGB(180, 10, 10));
-				else if ((HWND)lParam == GetDlgItem(hwndDlg, IDC_CURRENTNAME))
-					SetTextColor((HDC)wParam, RGB(70, 70, 70));
-				else
-					SetTextColor((HDC)wParam, RGB(0, 0, 0));
-				SetBkColor((HDC)wParam, RGB(255, 255, 255));
-				return (INT_PTR)GetStockObject(WHITE_BRUSH);
+		case WM_PAINT: {
+			PAINTSTRUCT 	ps;
+			HDC 			hdc = BeginPaint(hwndDlg, &ps);
+			RECT			rcClient;
+			HDC				hdcMem = CreateCompatibleDC(hdc);
+			bool			fAero = M->isAero(), fFree = false;
+			GetClientRect(hwndDlg, &rcClient);
+			LONG			cx = rcClient.right;
+			LONG			cy = rcClient.bottom;
+			HBITMAP			hbm = fAero ? CSkin::CreateAeroCompatibleBitmap(rcClient, hdc) : CreateCompatibleBitmap(hdc, rcClient.right, rcClient.bottom);;
+			HBITMAP			hbmOld = reinterpret_cast<HBITMAP>(SelectObject(hdcMem, hbm));
+
+			if(fAero) {
+				MARGINS m;
+				m.cxLeftWidth = m.cxRightWidth = 0;
+				m.cyBottomHeight = 0;
+				m.cyTopHeight = 40;
+				if(CMimAPI::m_pfnDwmExtendFrameIntoClientArea)
+					CMimAPI::m_pfnDwmExtendFrameIntoClientArea(hwndDlg, &m);
 			}
-			break;
+
+			FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
+			rcClient.bottom = 40;
+			if(fAero) {
+				FillRect(hdcMem, &rcClient, reinterpret_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
+				CSkin::ApplyAeroEffect(hdcMem, &rcClient, CSkin::AERO_EFFECT_AREA_INFOPANEL);
+			}
+			else if(PluginConfig.m_WinVerMajor >= 5) {
+				CSkinItem *item = &SkinItems[ID_EXTBKINFOPANELBG];
+				DrawAlpha(hdcMem, &rcClient, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+						  item->CORNER, item->BORDERSTYLE, 0);
+			}
+			HBITMAP bmpLogo = CSkin::ResizeBitmap(PluginConfig.hbmLogo, 38, 38, fFree);
+
+			HDC		hdcBmp = CreateCompatibleDC(hdc);
+			HBITMAP hbmOldLogo = reinterpret_cast<HBITMAP>(SelectObject(hdcBmp, bmpLogo));
+			CMimAPI::m_MyAlphaBlend(hdcMem, 3, 1, 38, 38, hdcBmp, 0, 0, 38, 38, CSkin::m_default_bf);
+			SelectObject(hdcBmp, hbmOldLogo);
+			DeleteDC(hdcBmp);
+			if(fFree)
+				DeleteObject(bmpLogo);
+			rcClient.left = 60;
+
+			HFONT hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_SELECTTHEME, WM_GETFONT, 0, 0);
+			LOGFONT lf = {0};
+
+			GetObject(hFont, sizeof(lf), &lf);
+			lf.lfHeight = (int)(lf.lfHeight * 1.3);
+			lf.lfWeight = FW_BOLD;
+			hFont = CreateFontIndirect(&lf);
+
+			SetBkMode(hdcMem, TRANSPARENT);
+			HFONT hFontOld = reinterpret_cast<HFONT>(SelectObject(hdcMem, hFont));
+			if(pContainer) {
+				rcClient.top = 10;
+				rcClient.bottom = 30;
+				TCHAR	szText[200];
+
+				mir_sntprintf(szText, 200, _T("Configure container options for: %s"), pContainer->szName);
+				HANDLE hTheme = CMimAPI::m_pfnOpenThemeData ? CMimAPI::m_pfnOpenThemeData(hwndDlg, L"BUTTON") : 0;
+				CSkin::RenderText(hdcMem, hTheme, szText, &rcClient, DT_SINGLELINE|DT_VCENTER, 3);
+				if(hTheme)
+					CMimAPI::m_pfnCloseThemeData(hTheme);
+			}
+
+			BitBlt(hdc, 0, 0, cx, cy, hdcMem, 0, 0, SRCCOPY);
+			SelectObject(hdcMem, hbmOld);
+			SelectObject(hdcMem, hFontOld);
+			DeleteObject(hbm);
+			DeleteObject(hFont);
+			DeleteDC(hdcMem);
+			EndPaint(hwndDlg, &ps);
+			return(0);
+		}
 		case WM_NOTIFY:
 			if (wParam == IDC_SECTIONTREE && ((LPNMHDR)lParam)->code == TVN_SELCHANGED) {
 				NMTREEVIEW *pmtv = (NMTREEVIEW *)lParam;
@@ -466,11 +514,6 @@ do_apply:
 			break;
 		}
 		case WM_DESTROY: {
-			HFONT hFont;
-
-			hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_WHITERECT, WM_GETFONT, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_WHITERECT, WM_SETFONT, SendDlgItemMessage(hwndDlg, IDOK, WM_GETFONT, 0, 0), 0);
-			DeleteObject(hFont);
 			pContainer->hWndOptions = 0;
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 			break;

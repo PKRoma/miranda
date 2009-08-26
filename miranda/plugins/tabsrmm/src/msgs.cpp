@@ -1378,11 +1378,17 @@ static int AvatarChanged(WPARAM wParam, LPARAM lParam)
 		struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		if (dat) {
 			dat->ace = ace;
-			if (dat->hwndFlash == 0)
-				dat->panelWidth = -1;				// force new size calculations (not for flash avatars)
 			DM_RecalcPictureSize(dat);
 			if (dat->showPic == 0 || dat->showInfoPic == 0)
 				GetAvatarVisibility(hwnd, dat);
+			if(dat->hwndPanelPic) {
+				ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELPIC), SW_SHOW);
+				dat->panelWidth = -1;				// force new size calculations (not for flash avatars)
+				SendMessage(dat->hwnd, WM_SIZE, 0, 1);
+				dat->panelWidth = -1;				// force new size calculations (not for flash avatars)
+				RedrawWindow(dat->hwnd, NULL, NULL, RDW_INVALIDATE|RDW_UPDATENOW|RDW_ALLCHILDREN);
+				SendMessage(dat->hwnd, WM_SIZE, 0, 1);
+			}
 			ShowPicture(dat, TRUE);
 			dat->dwFlagsEx |= MWF_EX_AVATARCHANGED;
 		}

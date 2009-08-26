@@ -186,6 +186,21 @@ private:
 class CSkin
 {
 public:
+	enum {
+		AERO_EFFECT_MILK = 0,
+		AERO_EFFECT_CARBON = 1,
+		AERO_EFFECT_RAINBOW = 2,
+		AERO_EFFECT_LAST = 3
+	};
+	enum {
+		AERO_EFFECT_AREA_MENUBAR = 0,
+		AERO_EFFECT_AREA_STATUSBAR = 1,
+		AERO_EFFECT_AREA_INFOPANEL = 2,
+		AERO_EFFECT_AREA_TAB_ACTIVE = 3,
+		AERO_EFFECT_AREA_TAB_HOVER = 4,
+		AERO_EFFECT_AREA_TAB_NORMAL = 5
+	};
+
 	CSkin()
 	{
 		m_default_bf.SourceConstantAlpha = 255;
@@ -272,6 +287,8 @@ public:
 	static void 	RenderIPStatus(HDC hdc, RECT &rcItem, _MessageWindowData *dat);
 	static void 	RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &rcWindow);
 	static HBITMAP 	ResizeBitmap(HBITMAP hBmpSrc, LONG width, LONG height, bool &mustFree);
+	static void		ApplyAeroEffect(const HDC hdc, const RECT* rc, int iEffectArea);
+	static void		setAeroEffect(const LRESULT effect);
 
 public:
 	static bool		m_DisableScrollbars, m_bClipBorder;
@@ -288,6 +305,7 @@ public:
 	static bool		m_frameSkins;
 	static HICON	m_closeIcon, m_minIcon, m_maxIcon;
 	static BLENDFUNCTION m_default_bf;
+	static BYTE		m_aeroEffect;
 private:
 	TCHAR			m_tszFileName[MAX_PATH];				// full path and filename of the currently loaded skin
 	char			m_tszFileNameA[MAX_PATH];				// compatibility (todo: remove later)

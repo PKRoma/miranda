@@ -118,7 +118,7 @@ private:
 	static		CMenuBar *m_Owner;
 
 private:
-	LONG_PTR	customDrawWorker(const NMCUSTOMDRAW *nm);
+	LONG_PTR	customDrawWorker(NMCUSTOMDRAW *nm);
 	void		updateState(const HMENU hMenu) const;
 	void		invoke(const int id);
 	void		cancel(const int id);

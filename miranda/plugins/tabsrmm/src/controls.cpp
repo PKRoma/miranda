@@ -63,7 +63,7 @@ CMenuBar::CMenuBar(HWND hwndParent, const ContainerWindowData *pContainer)
 
 	RebarBandInfo.cbSize = sizeof(REBARBANDINFO);
 	RebarBandInfo.fMask  = RBBIM_CHILD|RBBIM_CHILDSIZE|RBBIM_SIZE|RBBIM_STYLE|RBBIM_IDEALSIZE;
-	RebarBandInfo.fStyle = RBBS_FIXEDBMP|RBBS_TOPALIGN|RBBS_GRIPPERALWAYS;
+	RebarBandInfo.fStyle = RBBS_FIXEDBMP|RBBS_TOPALIGN|RBBS_NOGRIPPER;//|RBBS_GRIPPERALWAYS;
 	RebarBandInfo.hbmBack = 0;
 	RebarBandInfo.clrBack = GetSysColor(COLOR_3DFACE);;
 	m_hwndToolbar = ::CreateWindowEx(WS_EX_TOOLWINDOW, TOOLBARCLASSNAME, NULL, WS_CHILD|WS_CLIPCHILDREN|WS_CLIPSIBLINGS|WS_VISIBLE|TBSTYLE_FLAT|TBSTYLE_LIST|CCS_NOPARENTALIGN|/*CCS_NORESIZE|*/CCS_NODIVIDER|CCS_TOP,
@@ -166,9 +166,6 @@ const RECT& CMenuBar::getClientRect()
 
 void CMenuBar::obtainHook()
 {
-	//if(m_hHook != 0)
-	//	_DebugTraceA("stale hook found");
-
 	releaseHook();
 	if(m_hHook == 0)
 		m_hHook = ::SetWindowsHookEx(WH_MSGFILTER, CMenuBar::MessageHook, g_hInst, 0);
@@ -257,7 +254,7 @@ LONG_PTR CMenuBar::processMsg(const UINT msg, const WPARAM wParam, const LPARAM 
  *         It may return zero in which case, the caller should allow default processing for
  *         the NM_CUSTOMDRAW message.
  */
-LONG_PTR CMenuBar::customDrawWorker(const NMCUSTOMDRAW *nm)
+LONG_PTR CMenuBar::customDrawWorker(NMCUSTOMDRAW *nm)
 {
 	bool fMustDraw = (m_pContainer->bSkinned || m_isAero);
 
@@ -269,7 +266,12 @@ LONG_PTR CMenuBar::customDrawWorker(const NMCUSTOMDRAW *nm)
 					::GetClientRect(m_hwndRebar, &m_rcItem);
 					m_hbmDraw = CSkin::CreateAeroCompatibleBitmap(m_rcItem, nm->hdc);
 					m_hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(m_hdcDraw, m_hbmDraw));
-					::FillRect(m_hdcDraw, &nm->rc, reinterpret_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH)));
+					if(m_isAero)
+						::FillRect(m_hdcDraw, &nm->rc, reinterpret_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH)));
+					else if(CSkin::m_MenuBGBrush)
+						::FillRect(m_hdcDraw, &nm->rc, CSkin::m_MenuBGBrush);
+					else
+						::FillRect(m_hdcDraw, &nm->rc, GetSysColorBrush(COLOR_3DFACE));
 					return(CDRF_NOTIFYITEMDRAW | CDRF_NOTIFYPOSTPAINT | CDRF_NOTIFYPOSTERASE);
 				}
 				else {
@@ -310,13 +312,23 @@ LONG_PTR CMenuBar::customDrawWorker(const NMCUSTOMDRAW *nm)
 					if(nmtb->nmcd.dwItemSpec == 0) {
 						m_hdcDraw = ::CreateCompatibleDC(nmtb->nmcd.hdc);
 						::GetClientRect(m_hwndToolbar, &m_rcItem);
-
 						m_hbmDraw = CSkin::CreateAeroCompatibleBitmap(m_rcItem, nmtb->nmcd.hdc);
 						m_hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(m_hdcDraw, m_hbmDraw));
 						m_hTheme = M->isAero() ? CMimAPI::m_pfnOpenThemeData(m_hwndToolbar, L"BUTTON") : 0;
 						m_hOldFont = (HFONT)::SelectObject(m_hdcDraw, (HFONT)::GetStockObject(DEFAULT_GUI_FONT));
-						//_DebugTraceA("TOOLBAR: prepaint %d, %d, %d, %d (%d)", nmtb->nmcd.rc.left, nmtb->nmcd.rc.top, nmtb->nmcd.rc.right, nmtb->nmcd.rc.bottom, nmtb->nmcd.dwItemSpec);
-						::FillRect(m_hdcDraw, &nmtb->nmcd.rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+						if(m_isAero) {
+							nm->rc.bottom--;
+							//if(nmtb->nmcd.dwItemSpec == 0)
+							//	nm->rc.right -= 2;
+							CSkin::ApplyAeroEffect(m_hdcDraw, &m_rcItem, CSkin::AERO_EFFECT_AREA_MENUBAR);
+							nm->rc.bottom++;
+							//if(nmtb->nmcd.dwItemSpec == 0)
+							//	nm->rc.right += 2;
+						}
+						else if(CSkin::m_MenuBGBrush)
+							::FillRect(m_hdcDraw, &nm->rc, CSkin::m_MenuBGBrush);
+						else
+							::FillRect(m_hdcDraw, &nm->rc, GetSysColorBrush(COLOR_3DFACE));
 					}
 					return(CDRF_NOTIFYITEMDRAW | CDRF_NOTIFYPOSTPAINT | CDRF_NOTIFYPOSTERASE);
 				}
@@ -329,34 +341,25 @@ LONG_PTR CMenuBar::customDrawWorker(const NMCUSTOMDRAW *nm)
 				if(fMustDraw) {
 					TCHAR	*szText = 0;
 
-					//_DebugTraceA("TOOLBAR: ITEM prepaint %d, %d, %d, %d (%d)", nmtb->nmcd.rc.left, nmtb->nmcd.rc.top, nmtb->nmcd.rc.right, nmtb->nmcd.rc.bottom, nmtb->nmcd.dwItemSpec);
 					int iIndex = idToIndex(nmtb->nmcd.dwItemSpec);
 
 					if(iIndex >= 0 && iIndex < NR_BUTTONS)
 						szText = reinterpret_cast<TCHAR *>(m_TbButtons[iIndex].iString);
 
-					switch(nmtb->nmcd.uItemState) {
-						case CDIS_SELECTED:
-						case CDIS_FOCUS:
-						case CDIS_MARKED:
-						case CDIS_CHECKED:
-						case CDIS_HOT:
-						case 0x1000:		//(CDIS_DROPHILITED, Vista+)
-						case CDIS_INDETERMINATE:
-							if(m_hTheme)
-								CMimAPI::m_pfnDrawThemeBackground(m_hTheme, m_hdcDraw, 1, 2, &nmtb->nmcd.rc, &nmtb->nmcd.rc);
-							break;
-						/*case CDIS_SELECTED:
-						case CDIS_FOCUS:
-						case CDIS_MARKED:
-						case CDIS_CHECKED:
-							if(m_hTheme)
-								CMimAPI::m_pfnDrawThemeBackground(m_hTheme, m_hdcDraw, 1, 3, &nmtb->nmcd.rc, &nmtb->nmcd.rc);
-							break;*/
-						default:
-							::FillRect(m_hdcDraw, &nmtb->nmcd.rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
-							break;
+					UINT	uState = nmtb->nmcd.uItemState;
 
+					nmtb->nmcd.rc.bottom--;
+					if(uState & CDIS_MARKED) {
+						::DrawAlpha(m_hdcDraw, &nmtb->nmcd.rc, 0x909090, 80, 0x909090, 0, 9,
+									31, 4, 0);
+					}
+					if(uState & CDIS_SELECTED) {
+						::DrawAlpha(m_hdcDraw, &nmtb->nmcd.rc, 0x404040, 80, 0x404040, 0, 9,
+									31, 4, 0);
+					}
+					if(uState & CDIS_HOT) {
+						::DrawAlpha(m_hdcDraw, &nmtb->nmcd.rc, 0xf02020, 80, 0xf02020, 0, 9,
+									31, 4, 0);
 					}
 					if(szText)
 						CSkin::RenderText(m_hdcDraw, m_hTheme, szText, &nmtb->nmcd.rc, DT_SINGLELINE | DT_VCENTER | DT_CENTER);
@@ -380,7 +383,6 @@ LONG_PTR CMenuBar::customDrawWorker(const NMCUSTOMDRAW *nm)
 					::SelectObject(m_hdcDraw, m_hOldFont);
 					::DeleteDC(m_hdcDraw);
 					m_hdcDraw = 0;
-					//_DebugTraceA("TOOLBAR: POSTPAINT %d, %d, %d, %d (%d)", nmtb->nmcd.rc.left, nmtb->nmcd.rc.top, nmtb->nmcd.rc.right, nmtb->nmcd.rc.bottom, nmtb->nmcd.dwItemSpec);
 					if(m_hTheme)
 						CMimAPI::m_pfnCloseThemeData(m_hTheme);
 					return(CDRF_SKIPDEFAULT);
@@ -733,8 +735,7 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 			if (pContainer && pContainer->bSkinned)
 				CSkin::SkinDrawBG(hWnd, GetParent(hWnd), pContainer, &rcClient, hdcMem);
 			else if(fAero)
-				DrawAlpha(hdcMem, &rcClient, 0xf0f0f0, 30, 0x555555, 0, 9,
-						  31, 6, 0);
+				CSkin::ApplyAeroEffect(hdcMem, &rcClient, CSkin::AERO_EFFECT_AREA_STATUSBAR);
 			else
 				FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
 

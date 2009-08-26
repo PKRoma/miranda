@@ -1084,6 +1084,7 @@ typedef struct {
 #define TABSRMM_HK_USERMENU 21
 #define TABSRMM_HK_USERDETAILS 22
 #define TABSRMM_HK_TOGGLEINFOPANEL 23
+#define TABSRMM_HK_CLEARLOG 24
 
 #define TABSRMM_HK_SECTION_IM "Message windows - IM"
 #define TABSRMM_HK_SECTION_GENERIC "Message windows - all"

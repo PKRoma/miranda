@@ -237,10 +237,6 @@ BEGIN
                     TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS | TVS_TRACKSELECT | 
                     TVS_FULLROWSELECT | TVS_NONEVENHEIGHT | WS_BORDER | 
                     WS_TABSTOP,3,28,87,163
-    LTEXT           "Test",IDC_WHITERECT,66,0,288,25,0,WS_EX_TRANSPARENT
-    CONTROL         10,IDC_LOGO,"Static",SS_BITMAP,0,0,67,25
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,-1,25,355,1
-    LTEXT           "",IDC_CURRENTNAME,68,13,285,9,0,WS_EX_TRANSPARENT
     CONTROL         "Only show tab bar when it's needed",IDC_O_NOTABS,"Button",
                     BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,135,65,156,
                     10
@@ -559,7 +555,10 @@ BEGIN
     GROUPBOX        "Default window title format",IDC_STATIC,3,139,300,28
     EDITTEXT        IDC_DEFAULTTITLEFORMAT,10,150,274,14,ES_AUTOHSCROLL
     CONTROL         "Help on containers",IDC_HELP_CONTAINERS,"Hyperlink",
-                    WS_TABSTOP | 0x1,21,201,262,9
+                    WS_TABSTOP | 0x1,21,210,262,9
+    COMBOBOX        IDC_AEROEFFECT,9,183,158,36,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Aero effect",IDC_STATIC,3,170,300,35
 END
 
 IDD_OPT_TYPINGNOTIFYPOPUP DIALOGEX 0, 0, 318, 174
@@ -768,13 +767,9 @@ EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "About tabSRMM"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    LTEXT           "",IDC_WHITERECT,0,0,228,116
     DEFPUSHBUTTON   "OK",IDOK,168,123,55,14
-    LTEXT           "tabSRMM",IDC_TABSRMM,5,7,150,15
     CTEXT           "Copyright © 2004-2009 by the Miranda IM project. More  \ndetailed copyright information can be found in the included README file.\n\nThis software is distributed and licensed under the terms of the GNU General Public License V2 or any later version.",
                     IDC_COPYRIGHT,5,39,217,47
-    CONTROL         10,IDC_LOGO,"Static",SS_BITMAP,160,2,67,25
-    LTEXT           "Version",IDC_VERSION,5,19,150,15
     CTEXT           "build time",IDC_BUILDTIME,37,105,150,11
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,117,228,1
     CONTROL         "Support and latest version information",IDC_SUPPORT,
@@ -1181,7 +1176,7 @@ BEGIN
     END
     POPUP "Apparentmenu"
     BEGIN
-        MENUITEM "dummy", -1
+        MENUITEM "dummy",                       65535
     END
     POPUP "Panelpicmenu"
     BEGIN
@@ -1285,13 +1280,6 @@ BEGIN
     END
 END
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Bitmap
-//
-
-IDB_LOGO                BITMAP  MOVEABLE PURE   "res/LOGO.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //

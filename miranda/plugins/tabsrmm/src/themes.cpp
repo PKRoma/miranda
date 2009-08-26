@@ -82,6 +82,8 @@ char CSkin::m_realSkinnedFrame_caption = 0;
 int CSkin::m_titleBarLeftOff = 0, CSkin::m_titleButtonTopOff = 0, CSkin::m_captionOffset = 0, CSkin::m_captionPadding = 0,
 	CSkin::m_titleBarRightOff = 0, CSkin::m_sidebarTopOffset = 0, CSkin::m_sidebarBottomOffset = 0, CSkin::m_bRoundedCorner = 0;
 
+BYTE CSkin::m_aeroEffect = 0;
+
 SIZE CSkin::m_titleBarButtonSize = {0};
 
 COLORREF CSkin::m_ContainerColorKey = 0;
@@ -995,6 +997,7 @@ void CSkin::Init()
 	 */
 
 	setFileName();
+	m_aeroEffect = M->GetByte("aerostyle", 0);
 }
 
 bool CSkin::warnToClose() const
@@ -2436,5 +2439,36 @@ void CSkin::RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &
 		CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, dat->pContainer->cachedToolbarDC, 6, 1,
 										  &rcCachedToolbar, &rcCachedToolbar);
 	}
+}
+
+void CSkin::ApplyAeroEffect(const HDC hdc, const RECT *rc, int iEffectArea)
+{
+	switch(m_aeroEffect) {
+		case AERO_EFFECT_MILK: {
+			int 	alpha = (iEffectArea == AERO_EFFECT_AREA_INFOPANEL) ? 70 : 40;
+			BYTE 	color2_trans = (iEffectArea == AERO_EFFECT_AREA_MENUBAR) ? 0 : 1;
+			DWORD   corner = (iEffectArea == AERO_EFFECT_AREA_INFOPANEL) ? 8 : 6;
+
+			DrawAlpha(hdc, const_cast<RECT *>(rc), 0xf5f5f5, alpha, 0xaaaaaa, color2_trans, 9,
+					  31, corner, 0);
+			break;
+		}
+		case AERO_EFFECT_CARBON:
+			DrawAlpha(hdc, const_cast<RECT *>(rc), 0xf0f0f0, 75, 0x000000, 0, 9,
+				  31, 6, 0);
+			break;
+		default:
+			break;
+	}
+}
+
+void CSkin::setAeroEffect(LRESULT effect)
+{
+	if(effect >= 0 && effect < AERO_EFFECT_LAST)
+		m_aeroEffect = (BYTE)effect;
+	else
+		m_aeroEffect = AERO_EFFECT_MILK;
+
+	M->WriteByte(SRMSGMOD_T, "aerostyle", m_aeroEffect);
 }
 

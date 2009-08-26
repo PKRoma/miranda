@@ -790,7 +790,6 @@ int GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
 				}
 				if (!PluginConfig.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndPanelPic) {
 					dat->hwndPanelPic =CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, GetDlgItem(hwndDlg, IDC_PANELPIC), (HMENU)0, NULL, NULL);
-
 				}
 				if ((hbm && hbm != PluginConfig.g_hbmUnknown) || (fa.hWindow != NULL))
 					dat->showInfoPic = 1;
@@ -804,9 +803,7 @@ int GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
 		else
 			dat->showInfoPic = hideOverride == 1 ? 1 : dat->showInfoPic;
 		//Bolshevik: reloads avatars
-		if (dat->showInfoPic)
-// 			if(dat->hwndPanelPic)
-		{
+		if (dat->showInfoPic) {
 			/** panel and contact is shown, reloads contact's avatar -> panel
 			*  user avatar -> bottom picture
 			*/
@@ -814,16 +811,11 @@ int GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
 			if (dat->hwndContactPic)
 				SendMessage(dat->hwndContactPic, AVATAR_SETPROTOCOL, (WPARAM)0, (LPARAM)dat->szProto);
 		}
-// 			else
-// 			{
-// 				//show only contact picture at bottom
-// 				if(dat->hwndContactPic)
-// 					SendMessage(dat->hwndContactPic, AVATAR_SETCONTACT, (WPARAM)0, (LPARAM)dat->hContact);
-// 			}
-		else
+		else {
 			//show only user picture(contact is unaccessible)
 			if (dat->hwndContactPic)
 				SendMessage(dat->hwndContactPic, AVATAR_SETPROTOCOL, (WPARAM)0, (LPARAM)dat->szProto);
+		}
 //Bolshevik_
 	} else {
 		dat->showInfoPic = 0;
@@ -1803,6 +1795,10 @@ void SaveSplitter(_MessageWindowData *dat)
 		}
 	}
 
+	/*
+	 * group chats save their normal splitter position independently
+	 */
+
 	if(dat->bType == SESSIONTYPE_CHAT)
 		return;
 
@@ -2122,6 +2118,8 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 						dat->hwndPanelPic =CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, GetDlgItem(hwndDlg, IDC_PANELPIC), (HMENU)0, NULL, NULL);
 						SendMessage(dat->hwndPanelPic, AVATAR_SETCONTACT, (WPARAM)0, (LPARAM)dat->hContact);
 					}
+					if(dat->hwndPanelPic)
+						ShowWindow(GetDlgItem(hwndDlg, IDC_PANELPIC), SW_SHOW);
 				} else {
 					if (fa.hWindow != NULL&&dat->hwndContactPic) {
 						DestroyWindow(dat->hwndContactPic);

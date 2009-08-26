@@ -236,38 +236,8 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
 			{
-				int h;
-				HFONT hFont;
-				LOGFONT lf;
-
-				hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_TABSRMM, WM_GETFONT, 0, 0);
-				GetObject(hFont, sizeof(lf), &lf);
-				h = lf.lfHeight;
-				lf.lfHeight = (int)(lf.lfHeight * 1.5);
-				lf.lfWeight = FW_BOLD;
-				hFont = CreateFontIndirect(&lf);
-				SendDlgItemMessage(hwndDlg, IDC_TABSRMM, WM_SETFONT, (WPARAM)hFont, 0);
-				lf.lfHeight = h;
-				hFont = CreateFontIndirect(&lf);
-				SendDlgItemMessage(hwndDlg, IDC_VERSION, WM_SETFONT, (WPARAM)hFont, 0);
-			}
-			{
 				char str[64];
-				DWORD v = pluginInfo.version;
-				char szVersion[512], *found = NULL, buildstr[50] = "";
-				UINT build_nr = 0;
 
-				CallService(MS_SYSTEM_GETVERSIONTEXT, 500, (LPARAM)szVersion);
-				if ((found = strchr(szVersion, '#')) != NULL) {
-					build_nr = atoi(found + 1);
-					mir_snprintf(buildstr, 50, "[Build #%d]", build_nr);
-				}
-#if defined(_UNICODE)
-				mir_snprintf(str, sizeof(str), "%s %d.%d.%d.%d (Unicode) %s", Translate("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)), buildstr);
-#else
-				mir_snprintf(str, sizeof(str), "%s %d.%d.%d.%d %s", Translate("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)), buildstr);
-#endif
-				SetDlgItemTextA(hwndDlg, IDC_VERSION, str);
 				mir_snprintf(str, sizeof(str), Translate("Built %s %s"), __DATE__, __TIME__);
 				SetDlgItemTextA(hwndDlg, IDC_BUILDTIME, str);
 			}
@@ -286,32 +256,116 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			break;
 		case WM_CTLCOLOREDIT:
 		case WM_CTLCOLORSTATIC:
-			if ((HWND)lParam == GetDlgItem(hwndDlg, IDC_WHITERECT)
-					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_TABSRMM)
-					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_VERSION)
-					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_BUILDTIME)
+			if ((HWND)lParam == GetDlgItem(hwndDlg, IDC_BUILDTIME)
 					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_COPYRIGHT)
-					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_SUPPORT)
-					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_LOGO)) {
-				if ((HWND)lParam == GetDlgItem(hwndDlg, IDC_TABSRMM))
-					SetTextColor((HDC)wParam, RGB(180, 10, 10));
-				else if ((HWND)lParam == GetDlgItem(hwndDlg, IDC_VERSION))
-					SetTextColor((HDC)wParam, RGB(70, 70, 70));
-				else
-					SetTextColor((HDC)wParam, RGB(0, 0, 0));
+					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_SUPPORT)) {
+				SetTextColor((HDC)wParam, RGB(0, 0, 0));
 				SetBkColor((HDC)wParam, RGB(255, 255, 255));
 				return (INT_PTR)GetStockObject(WHITE_BRUSH);
 			}
 			break;
-		case WM_DESTROY: {
-			HFONT hFont;
+		case WM_PAINT: {
+			PAINTSTRUCT 	ps;
+			HDC 			hdc = BeginPaint(hwndDlg, &ps);
+			RECT			rcClient;
+			HDC				hdcMem = CreateCompatibleDC(hdc);
+			bool			fAero = M->isAero(), fFree = false;
+			GetClientRect(hwndDlg, &rcClient);
+			LONG			cx = rcClient.right;
+			LONG			cy = rcClient.bottom;
+			HBITMAP			hbm = fAero ? CSkin::CreateAeroCompatibleBitmap(rcClient, hdc) : CreateCompatibleBitmap(hdc, rcClient.right, rcClient.bottom);;
+			HBITMAP			hbmOld = reinterpret_cast<HBITMAP>(SelectObject(hdcMem, hbm));
+			DWORD 			v = pluginInfo.version;
+			TCHAR			str[80];
 
-			hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_TABSRMM, WM_GETFONT, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_TABSRMM, WM_SETFONT, SendDlgItemMessage(hwndDlg, IDOK, WM_GETFONT, 0, 0), 0);
-			DeleteObject(hFont);
-			hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_VERSION, WM_GETFONT, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_VERSION, WM_SETFONT, SendDlgItemMessage(hwndDlg, IDOK, WM_GETFONT, 0, 0), 0);
-			DeleteObject(hFont);
+			char 			szVersion[512], *found = NULL, buildstr[50] = "";
+			UINT 			build_nr = 0;
+			SIZE 			sz;
+
+			if(fAero) {
+				MARGINS m;
+				m.cxLeftWidth = m.cxRightWidth = 0;
+				m.cyBottomHeight = 0;
+				m.cyTopHeight = 50;
+				if(CMimAPI::m_pfnDwmExtendFrameIntoClientArea)
+					CMimAPI::m_pfnDwmExtendFrameIntoClientArea(hwndDlg, &m);
+			}
+
+			FillRect(hdcMem, &rcClient, reinterpret_cast<HBRUSH>(GetStockObject(WHITE_BRUSH)));
+			rcClient.bottom = 50;
+			if(fAero) {
+				FillRect(hdcMem, &rcClient, reinterpret_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
+				CSkin::ApplyAeroEffect(hdcMem, &rcClient, CSkin::AERO_EFFECT_AREA_INFOPANEL);
+			}
+			else if(PluginConfig.m_WinVerMajor >= 5) {
+				CSkinItem *item = &SkinItems[ID_EXTBKINFOPANELBG];
+				DrawAlpha(hdcMem, &rcClient, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+						  item->CORNER, item->BORDERSTYLE, 0);
+			}
+			HBITMAP bmpLogo = CSkin::ResizeBitmap(PluginConfig.hbmLogo, 48, 48, fFree);
+
+			HDC		hdcBmp = CreateCompatibleDC(hdc);
+			HBITMAP hbmOldLogo = reinterpret_cast<HBITMAP>(SelectObject(hdcBmp, bmpLogo));
+			CMimAPI::m_MyAlphaBlend(hdcMem, 3, 1, 48, 48, hdcBmp, 0, 0, 48, 48, CSkin::m_default_bf);
+			SelectObject(hdcBmp, hbmOldLogo);
+			DeleteDC(hdcBmp);
+			if(fFree)
+				DeleteObject(bmpLogo);
+			rcClient.left = 60;
+
+			HFONT hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_COPYRIGHT, WM_GETFONT, 0, 0);
+			LOGFONT lf = {0};
+
+			GetObject(hFont, sizeof(lf), &lf);
+			lf.lfHeight = (int)(lf.lfHeight * 1.3);
+			lf.lfWeight = FW_BOLD;
+			HFONT hFontBig = CreateFontIndirect(&lf);
+
+			HFONT hFontOld = reinterpret_cast<HFONT>(SelectObject(hdcMem, hFontBig));
+
+			rcClient.top = 1;
+			rcClient.bottom = 48;
+
+			GetTextExtentPoint32(hdcMem, _T("M"), 1, &sz);
+			SetBkMode(hdcMem, TRANSPARENT);
+
+			HANDLE hTheme = CMimAPI::m_pfnOpenThemeData ? CMimAPI::m_pfnOpenThemeData(hwndDlg, L"BUTTON") : 0;
+			CSkin::RenderText(hdcMem, hTheme, _T("TabSRMM"), &rcClient, DT_SINGLELINE, 3);
+
+			SelectObject(hdcMem, hFont);
+			DeleteObject(hFontBig);
+
+			rcClient.top += (sz.cy + 5);
+
+			CallService(MS_SYSTEM_GETVERSIONTEXT, 500, (LPARAM)szVersion);
+			if ((found = strchr(szVersion, '#')) != NULL) {
+				build_nr = atoi(found + 1);
+				mir_snprintf(buildstr, 50, "[Build #%d]", build_nr);
+			}
+			TCHAR	*szBuildstr = mir_a2t(buildstr);
+#if defined(_UNICODE)
+			mir_sntprintf(str, safe_sizeof(str), _T("%s %d.%d.%d.%d (Unicode) %s"),
+						 TranslateT("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)),
+						 szBuildstr);
+#else
+			mir_snprintf(str, safe_sizeof(str), "%s %d.%d.%d.%d %s"),
+						 TranslateT("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)),
+						 szBuildstr);
+#endif
+			CSkin::RenderText(hdcMem, hTheme, str, &rcClient, DT_SINGLELINE, 8);
+
+			mir_free(szBuildstr);
+
+			if(hTheme)
+				CMimAPI::m_pfnCloseThemeData(hTheme);
+
+			BitBlt(hdc, 0, 0, cx, cy, hdcMem, 0, 0, SRCCOPY);
+			SelectObject(hdcMem, hbmOld);
+			SelectObject(hdcMem, hFontOld);
+			DeleteObject(hbm);
+			DeleteDC(hdcMem);
+			EndPaint(hwndDlg, &ps);
+			return(0);
 		}
 		break;
 	}

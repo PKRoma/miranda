@@ -1,6 +1,6 @@
-	//{{NO_DEPENDENCIES}}
+//{{NO_DEPENDENCIES}}
 // Microsoft Developer Studio generated include file.
-// Used by resource.rc
+// Used by C:\tabsrmm\trunk\miranda\plugins\tabsrmm\resource.rc
 //
 #define IDD_TEMPLATEEDIT                1
 #define IDD_USERPREFS                   2
@@ -16,8 +16,8 @@
 #define IDD_DIALOG1                     12
 #define IDR_SKIN1                       13
 #define IDR_SKIN_AERO                   14
-#define	IDR_SKIN_AERO_GLOW				15
-#define IDR_SKIN_LOGO					20
+#define IDR_SKIN_AERO_GLOW              15
+#define IDR_SKIN_LOGO                   20
 #define IDI_IMGOPEN                     102
 #define IDI_IMGCLOSE                    103
 #define IDR_CONTEXT                     180
@@ -393,7 +393,6 @@
 #define IDC_AUTOCLOSELAST               1300
 #define IDC_SECTIONTREE                 1300
 #define IDC_UPREFS_MULTIPLEBG           1300
-#define IDC_CURRENTNAME                 1301
 #define IDC_UPREFS_RTL                  1301
 #define IDC_CHECKICONDLL                1302
 #define IDC_UPREFS_LOGSTATUS            1302
@@ -510,6 +509,7 @@
 #define IDC_HELP_GENERAL                1422
 #define IDC_CLOSEONESC                  1423
 #define IDC_ALWAYSPOPUP                 1424
+#define IDC_AEROEFFECT                  1424
 #define IDC_CREATEMIN                   1425
 #define IDC_CHECK5                      1426
 #define IDC_SENDSHIFTENTER              1427
@@ -531,13 +531,9 @@
 #define IDC_TXT_TITLE4                  1620
 #define IDC_TXT_TITLE5                  1622
 #define IDC_TXT_TITLE3                  1623
-#define IDC_WHITERECT                   2000
 #define IDC_PLUS_CHECKTREE              2000
-#define IDC_TABSRMM                     2001
 #define IDC_COPYRIGHT                   2002
-#define IDC_LOGO                        2003
 #define IDC_PLUS_HELP                   2004
-#define IDC_VERSION                     2004
 #define IDC_BUILDTIME                   2005
 #define IDD_OPT_TYPINGNOTIFYPOPUP       30159
 #define IDI_START1                      30160
@@ -736,7 +732,6 @@
 #define ID_PICMENU_CHOOSEBACKGROUNDCOLOR 40227
 #define ID_SENDMENU_SENDNUDGE           40228
 #define ID_SPLITTERCONTEXT_SAVEGLOBALFORALLSESSIONS 40229
-#define ID_SPLITTERCONTEXT_SAVEFORCONTAINER 40340
 #define ID_SPLITTERCONTEXT_SAVEFORTHISCONTACTONLY 40230
 #define ID_SPLITTERCONTEXT_FORGETTHECHANGES 40231
 #define ID_SPLITTERCONTEXT_SETPOSITIONFORTHISSESSION 40232
@@ -757,6 +752,7 @@
 #define ID_MESSAGELOGSETTINGS_GLOBAL    40251
 #define ID_MESSAGELOGSETTINGS_FORTHISCONTACT 40252
 #define ID_MESSAGELOG_MESSAGELOGSETTINGS 40253
+#define ID_SPLITTERCONTEXT_SAVEFORCONTAINER 40340
 
 // Next default values for new objects
 //
@@ -764,10 +760,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        15
 #define _APS_NEXT_COMMAND_VALUE         40256
-#define _APS_NEXT_CONTROL_VALUE         1424
+#define _APS_NEXT_CONTROL_VALUE         1425
 #define _APS_NEXT_SYMED_VALUE           40283
 #endif
-#endif
-#ifndef IDC_STATIC
-#define IDC_STATIC -1
 #endif

@@ -87,10 +87,30 @@ static LRESULT _dlgReturn(HWND hWnd, LRESULT result)
 	return(result);
 }
 
+static void Chat_ClearLog(const _MessageWindowData *dat)
+{
+	if(dat && dat->si) {
+		SESSION_INFO* si = reinterpret_cast<SESSION_INFO *>(dat->si);
+		SESSION_INFO* s = SM_FindSession(si->ptszID, si->pszModule);
+		if (s) {
+			SetDlgItemText(dat->hwnd, IDC_CHAT_LOG, _T(""));
+			LM_RemoveAll(&s->pLog, &s->pLogEnd);
+			s->iEventCount = 0;
+			s->LastTime = 0;
+			si->iEventCount = 0;
+			si->LastTime = 0;
+			si->pLog = s->pLog;
+			si->pLogEnd = s->pLogEnd;
+			PostMessage(dat->hwnd, WM_MOUSEACTIVATE, 0, 0);
+		}
+	}
+}
+
 static void Chat_ConfigurePanel(const _MessageWindowData *dat)
 {
 	ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELUIN), SW_HIDE);
 	ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELNICK), SW_HIDE);
+	ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELSPLITTER), dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
 }
 
 static void Chat_ShowHideInfoPanel(_MessageWindowData *dat)
@@ -2770,6 +2790,9 @@ LABEL_SHOWWINDOW:
 							case TABSRMM_HK_TOGGLETOOLBAR:
 								SendMessage(hwndDlg, WM_COMMAND, IDC_TOGGLETOOLBAR, 0);
 								return(_dlgReturn(hwndDlg, 1));
+							case TABSRMM_HK_CLEARLOG:
+								Chat_ClearLog(dat);
+								return(_dlgReturn(hwndDlg, 1));
 							default:
 								break;
 						}
@@ -2852,21 +2875,9 @@ LABEL_SHOWWINDOW:
 									PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0);
 									break;
 
-								case ID_CLEARLOG: {
-									SESSION_INFO* s = SM_FindSession(si->ptszID, si->pszModule);
-									if (s) {
-										SetDlgItemText(hwndDlg, IDC_CHAT_LOG, _T(""));
-										LM_RemoveAll(&s->pLog, &s->pLogEnd);
-										s->iEventCount = 0;
-										s->LastTime = 0;
-										si->iEventCount = 0;
-										si->LastTime = 0;
-										si->pLog = s->pLog;
-										si->pLogEnd = s->pLogEnd;
-										PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0);
-									}
-								}
-								break;
+								case ID_CLEARLOG:
+									Chat_ClearLog(dat);
+									break;
 
 								case ID_SEARCH_GOOGLE: {
 									char szURL[4096];
@@ -3441,10 +3452,7 @@ LABEL_SHOWWINDOW:
 						FillRect(hdcMem, &rcBlack, (HBRUSH)GetStockObject(BLACK_BRUSH));
 						rc.bottom -= 2;
 						if(fInfoPanel) {
-							if(!item->IGNORED) {
-								DrawAlpha(hdcMem, &rc, item->COLOR, 80, item->COLOR2, 1, item->GRADIENT + 1,
-										  1+2+8 + 4 + 16, 8, 0);
-							}
+							CSkin::ApplyAeroEffect(hdcMem, &rc, CSkin::AERO_EFFECT_AREA_INFOPANEL);
 							rc.top = rc.bottom - 1;
 							rc.left--; rc.right++;
 							::DrawEdge(hdcMem, &rc, BDR_SUNKENOUTER, BF_RECT);
@@ -3799,6 +3807,7 @@ LABEL_SHOWWINDOW:
 
 			DBWriteContactSettingWord(NULL, "Chat", "SplitterX", (WORD)g_Settings.iSplitterX);
 			DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
+			SaveSplitter(dat);
 
 			if (CMimAPI::m_pfnCloseThemeData) {
 				if(dat->hThemeIP) {

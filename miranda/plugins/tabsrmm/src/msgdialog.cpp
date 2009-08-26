@@ -107,6 +107,28 @@ static LRESULT _dlgReturn(HWND hWnd, LRESULT result)
 	return(result);
 }
 
+static void ClearLog(_MessageWindowData *dat)
+{
+	if(dat) {
+		if (dat->hwndIEView || dat->hwndHPP) {
+			IEVIEWEVENT event;
+			event.cbSize = sizeof(IEVIEWEVENT);
+			event.iType = IEE_CLEAR_LOG;
+			event.dwFlags = (dat->dwFlags & MWF_LOG_RTL) ? IEEF_RTL : 0;
+			event.hContact = dat->hContact;
+			if (dat->hwndIEView) {
+				event.hwnd = dat->hwndIEView;
+				CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
+			} else {
+				event.hwnd = dat->hwndHPP;
+				CallService(MS_HPP_EG_EVENT, 0, (LPARAM)&event);
+			}
+		}
+		SetDlgItemText(dat->hwnd, IDC_LOG, _T(""));
+		dat->hDbEventFirst = NULL;
+	}
+}
+
 static BOOL IsStringValidLinkA(char* pszText)
 {
 	char *p = pszText;
@@ -238,8 +260,7 @@ static void ShowPopupMenu(_MessageWindowData *dat, int idFrom, HWND hwndFrom, PO
 				SendMessage(hwndFrom, EM_EXSETSEL, 0, (LPARAM) & all);
 				break;
 			case IDM_CLEAR:
-				SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
-				dat->hDbEventFirst = NULL;
+				ClearLog(dat);
 				break;
 			case ID_LOG_FREEZELOG:
 				SendMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_KEYDOWN, VK_F12, 0);
@@ -3236,6 +3257,10 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					PostMessage(hwndDlg, DM_FORCESCROLL, 0, 0);
 				}
 			}
+			if(M->isAero()) {
+				dat->pContainer->dwOldAeroBottom = dat->pContainer->dwOldAeroTop = 0;
+				SetAeroMargins(dat->pContainer);
+			}
 			return 0;
 		}
 		case DM_CHECKSIZE:
@@ -4179,22 +4204,7 @@ quote_from_last:
 				}
 				break;
 				case IDM_CLEAR:
-					if (dat->hwndIEView || dat->hwndHPP) {
-						IEVIEWEVENT event;
-						event.cbSize = sizeof(IEVIEWEVENT);
-						event.iType = IEE_CLEAR_LOG;
-						event.dwFlags = (dat->dwFlags & MWF_LOG_RTL) ? IEEF_RTL : 0;
-						event.hContact = dat->hContact;
-						if (dat->hwndIEView) {
-							event.hwnd = dat->hwndIEView;
-							CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
-						} else {
-							event.hwnd = dat->hwndHPP;
-							CallService(MS_HPP_EG_EVENT, 0, (LPARAM)&event);
-						}
-					}
-					SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
-					dat->hDbEventFirst = NULL;
+					ClearLog(dat);
 					break;
 				case IDC_PROTOCOL:
 					//MAD
@@ -4414,6 +4424,9 @@ quote_from_last:
 									case TABSRMM_HK_TOGGLETOOLBAR:
 										SendMessage(hwndDlg, WM_COMMAND, IDC_TOGGLETOOLBAR, 0);
 										return(_dlgReturn(hwndDlg, 1));
+									case TABSRMM_HK_CLEARLOG:
+										ClearLog(dat);
+										return(_dlgReturn(hwndDlg, 1));
 									default:
 										break;
 								}
@@ -4446,7 +4459,7 @@ quote_from_last:
 									((MSGFILTER *) lParam)->msg = WM_NULL;
 									((MSGFILTER *) lParam)->wParam = 0;
 									((MSGFILTER *) lParam)->lParam = 0;
-									return 0;
+									return(_dlgReturn(hwndDlg, 1));
 								}
 								if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(VK_SHIFT) & 0x8000)) {
 									if (wp == 0x9) {            // ctrl-shift tab
@@ -4454,7 +4467,7 @@ quote_from_last:
 										((MSGFILTER *) lParam)->msg = WM_NULL;
 										((MSGFILTER *) lParam)->wParam = 0;
 										((MSGFILTER *) lParam)->lParam = 0;
-										return 0;
+										return(_dlgReturn(hwndDlg, 1));
 									}
 								}
 								if ((GetKeyState(VK_CONTROL)) & 0x8000 && !(GetKeyState(VK_SHIFT) & 0x8000) && !(GetKeyState(VK_MENU) & 0x8000)) {
@@ -4463,49 +4476,49 @@ quote_from_last:
 										((MSGFILTER *) lParam)->msg = WM_NULL;
 										((MSGFILTER *) lParam)->wParam = 0;
 										((MSGFILTER *) lParam)->lParam = 0;
-										return 0;
+										return(_dlgReturn(hwndDlg, 1));
 									}
 									if (wp == VK_TAB) {
 										SendMessage(hwndDlg, DM_SELECTTAB, DM_SELECT_NEXT, 0);
 										((MSGFILTER *) lParam)->msg = WM_NULL;
 										((MSGFILTER *) lParam)->wParam = 0;
 										((MSGFILTER *) lParam)->lParam = 0;
-										return 0;
+										return(_dlgReturn(hwndDlg, 1));
 									}
 									if (wp == VK_F4) {
 										PostMessage(hwndDlg, WM_CLOSE, 1, 0);
-										return 1;
+										return(_dlgReturn(hwndDlg, 1));
 									}
 									if (wp == VK_PRIOR) {
 										SendMessage(hwndDlg, DM_SELECTTAB, DM_SELECT_PREV, 0);
-										return 1;
+										return(_dlgReturn(hwndDlg, 1));
 									}
 									if (wp == VK_NEXT) {
 										SendMessage(hwndDlg, DM_SELECTTAB, DM_SELECT_NEXT, 0);
-										return 1;
+										return(_dlgReturn(hwndDlg, 1));
 									}
 								}
 							}
 							if (msg == WM_SYSKEYDOWN && isAlt) {
 								if(wp == 0x52) {
 									SendMessage(hwndDlg, DM_QUERYPENDING, DM_QUERY_MOSTRECENT, 0);
-									return 1;
+									return(_dlgReturn(hwndDlg, 1));
 								}
 								if (wp == VK_MULTIPLY) {
 									SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
-									return 1;
+									return(_dlgReturn(hwndDlg, 1));
 								}
 								if (wp == VK_DIVIDE) {
 									SetFocus(GetDlgItem(hwndDlg, IDC_LOG));
-									return 1;
+									return(_dlgReturn(hwndDlg, 1));
 								}
 								if (wp == VK_ADD) {
 									SendMessage(hwndContainer, DM_SELECTTAB, DM_SELECT_NEXT, 0);
-									return 1;
+									return(_dlgReturn(hwndDlg, 1));
 								}
 								if (wp == VK_SUBTRACT) {
 									SendMessage(hwndContainer, DM_SELECTTAB, DM_SELECT_PREV, 0);
-									return 1;
+									return(_dlgReturn(hwndDlg, 1));
 								}
 							}
 
@@ -4513,7 +4526,7 @@ quote_from_last:
 								if ((GetKeyState(VK_SHIFT) & 0x8000) ||
 										(GetKeyState(VK_CONTROL) & 0x8000) ||
 										(GetKeyState(VK_MENU) & 0x8000))
-									return 1;
+									return(_dlgReturn(hwndDlg, 1));
 								if (dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED)
 									SendMessage(hwndDlg, DM_REPLAYQUEUE, 0, 0);
 								dat->dwFlagsEx ^= MWF_SHOW_SCROLLINGDISABLED;
@@ -4529,7 +4542,7 @@ quote_from_last:
 								((MSGFILTER *) lParam)->msg = WM_NULL;
 								((MSGFILTER *) lParam)->wParam = 0;
 								((MSGFILTER *) lParam)->lParam = 0;
-								return 0;
+								return(_dlgReturn(hwndDlg, 1));
 							}
 							//MAD_
 							if (msg == WM_MOUSEWHEEL && (((NMHDR *)lParam)->idFrom == IDC_LOG || ((NMHDR *)lParam)->idFrom == IDC_MESSAGE)) {
@@ -4545,9 +4558,9 @@ quote_from_last:
 											SendMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_VSCROLL, MAKEWPARAM(SB_PAGEDOWN, 0), 0);
 										else if (wDirection > 0)
 											SendMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_VSCROLL, MAKEWPARAM(SB_PAGEUP, 0), 0);
-										return 0;
+										return(_dlgReturn(hwndDlg, 1));
 									}
-									return 0;
+									return(_dlgReturn(hwndDlg, 1));
 								}
 								return 1;
 							}
@@ -5431,10 +5444,7 @@ quote_from_last:
 						FillRect(hdcMem, &rcBlack, (HBRUSH)GetStockObject(BLACK_BRUSH));
 						rc.bottom -= 2;
 						if(fInfoPanel) {
-							if(!item->IGNORED) {
-								DrawAlpha(hdcMem, &rc, item->COLOR, 80, item->COLOR2, 1, item->GRADIENT + 1,
-										  1+2+8 + 4 + 16, 8, 0);
-							}
+							CSkin::ApplyAeroEffect(hdcMem, &rc, CSkin::AERO_EFFECT_AREA_INFOPANEL);
 							rc.top = rc.bottom - 1;
 							rc.left--; rc.right++;
 							::DrawEdge(hdcMem, &rc, BDR_SUNKENOUTER, BF_RECT);
