@@ -7,7 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "winres.h"
+#include "afxres.h"
 #include "richedit.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -449,7 +449,7 @@ END
 
 2 TEXTINCLUDE MOVEABLE PURE 
 BEGIN
-    "#include ""winres.h""\r\n"
+    "#include ""afxres.h""\r\n"
     "#include ""richedit.h""\0"
 END
 
