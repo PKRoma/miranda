@@ -37,11 +37,6 @@
 #pragma hdrstop
 #include "sendqueue.h"
 
-static SKINDESC my_default_skin[] = {
-	IDR_SKIN_AERO, _T("tabskin_aero.png"),
-	IDR_SKIN_AERO_GLOW, _T("tabskin_aero_glow.png"),
-};
-
 REOLECallback *mREOLECallback;
 
 NEN_OPTIONS nen_options;
@@ -84,7 +79,6 @@ extern      void RegisterFontServiceFonts();
 extern      int FontServiceFontsChanged(WPARAM wParam, LPARAM lParam);
 extern		int ModPlus_PreShutdown(WPARAM wparam, LPARAM lparam);
 extern		int ModPlus_Init(WPARAM wparam, LPARAM lparam);
-extern		HBITMAP IMG_LoadLogo(const char *szName);
 extern 		int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
 extern		void DeleteCachedIcon(struct MsgLogIcon *theIcon);
 
@@ -1060,6 +1054,10 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 	hEventDispatch = HookEvent(ME_DB_EVENT_ADDED, DispatchNewEvent);
 	hEventDbEventAdded = HookEvent(ME_DB_EVENT_ADDED, MessageEventAdded);
+
+	M->configureCustomFolders();
+	Skin->setupAeroSkins();
+
 	{
 		CLISTMENUITEM mi = { 0 };
 		mi.cbSize = sizeof(mi);
@@ -1385,10 +1383,10 @@ static int AvatarChanged(WPARAM wParam, LPARAM lParam)
 				ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELPIC), SW_SHOW);
 				dat->panelWidth = -1;				// force new size calculations (not for flash avatars)
 				SendMessage(dat->hwnd, WM_SIZE, 0, 1);
+			}
 				dat->panelWidth = -1;				// force new size calculations (not for flash avatars)
 				RedrawWindow(dat->hwnd, NULL, NULL, RDW_INVALIDATE|RDW_UPDATENOW|RDW_ALLCHILDREN);
 				SendMessage(dat->hwnd, WM_SIZE, 0, 1);
-			}
 			ShowPicture(dat, TRUE);
 			dat->dwFlagsEx |= MWF_EX_AVATARCHANGED;
 		}
@@ -1521,69 +1519,6 @@ tzdone:
 	RegisterTabCtrlClass();
 	PluginConfig.Reload();
 	PluginConfig.dwThreadID = GetCurrentThreadId();
-
-	M->configureCustomFolders();
-
-	/*
-	 * extract the default skin
-	 */
-
-	if(PluginConfig.m_WinVerMajor >=6) {
-
-		for(int i = 0; i < safe_sizeof(my_default_skin); i++) {
-			HRSRC 	hRes;
-			HGLOBAL	hResource;
-
-			hRes = FindResource(g_hInst, MAKEINTRESOURCE(my_default_skin[i].ulID), _T("SKIN_GLYPH"));
-
-			if(hRes) {
-				hResource = LoadResource(g_hInst, hRes);
-				if(hResource) {
-					TCHAR	szFilename[MAX_PATH];
-					HANDLE  hFile;
-					char 	*pData = (char *)LockResource(hResource);
-					DWORD	dwSize = SizeofResource(g_hInst, hRes), written = 0;
-					mir_sntprintf(szFilename, MAX_PATH, _T("%s\\%s"), M->getDataPath(), (TCHAR *)my_default_skin[i].tszName);
-					if(PathFileExists(szFilename))
-					   continue;
-					if((hFile = CreateFile(szFilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)) != INVALID_HANDLE_VALUE) {
-						WriteFile(hFile, (void *)pData, dwSize, &written, NULL);
-						CloseHandle(hFile);
-					}
-				}
-			}
-		}
-	}
-
-	Skin->setupAeroSkins();
-	/*
-	 * load the logo
-	 */
-	char	szFilenameA[MAX_PATH];
-
-	mir_snprintf(szFilenameA, MAX_PATH, "%s\\logo.png", M->getDataPathA());
-	if(!PathFileExistsA(szFilenameA)) {
-		HRSRC	hRes;
-		HGLOBAL hResource;
-		char	*pData = NULL;
-
-		hRes = FindResource(g_hInst, MAKEINTRESOURCE(IDR_SKIN_LOGO), _T("SKIN_GLYPH"));
-		if(hRes) {
-			hResource = LoadResource(g_hInst, hRes);
-			if(hResource) {
-				DWORD written = 0, dwSize;
-				HANDLE hFile;
-
-				pData = (char *)LockResource(hResource);
-				dwSize = SizeofResource(g_hInst, hRes);
-				if((hFile = CreateFileA(szFilenameA, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)) != INVALID_HANDLE_VALUE) {
-					WriteFile(hFile, (void *)pData, dwSize, &written, NULL);
-					CloseHandle(hFile);
-				}
-			}
-		}
-	}
-	PluginConfig.hbmLogo = IMG_LoadLogo(szFilenameA);
 
 	ReloadTabConfig();
 	NEN_ReadOptions(&nen_options);

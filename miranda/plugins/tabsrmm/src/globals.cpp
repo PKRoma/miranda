@@ -62,8 +62,6 @@ void CGlobals::Reload()
 		m_MsgTimeout = SRMSGSET_MSGTIMEOUT_MIN;
 
 	m_EscapeCloses = (int)M->GetByte("escmode", 0);
-	if (M->GetByte("escmode_2",0) && m_EscapeCloses)
-		m_EscapeCloses = 2;
 
 	m_HideOnClose =(int) M->GetByte("hideonclose", 0);
 	m_AllowTab =(int) M->GetByte("tabmode", 0);

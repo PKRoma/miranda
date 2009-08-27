@@ -38,7 +38,6 @@
 SendQueue *sendQueue = 0;
 
 extern      TCHAR *pszIDCSAVE_save, *pszIDCSAVE_close;
-extern 		UINT infoPanelControls[];
 
 static char *pss_msg = "/SendMsg";
 static char *pss_msgw = "/SendMsgW";
@@ -649,9 +648,9 @@ void SendQueue::showErrorControls(_MessageWindowData *dat, const int showCmd) co
 		dat->dwFlags &= ~MWF_ERRORSTATE;
 		dat->hTabIcon = dat->hTabStatusIcon;
 	}
-	if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
+	if (dat->Panel->isActive()) {
 		if (showCmd)
-			::ShowMultipleControls(hwndDlg, infoPanelControls, 4, SW_HIDE);
+			dat->Panel->showHideControls(SW_HIDE);
 		else
 			::SendMessage(hwndDlg, DM_SETINFOPANEL, 0, 0);
 	}

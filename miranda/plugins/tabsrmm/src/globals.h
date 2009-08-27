@@ -125,7 +125,6 @@ public:
 	int         m_PasteAndSend;
 	TCHAR       *m_szNoStatus;
 	HFONT       m_hFontWebdings;
-	struct      infopanelconfig ipConfig;
 	COLORREF    crDefault, crIncoming, crOutgoing, crOldIncoming, crOldOutgoing, crStatus;
 	BOOL        bUnicodeBuild;
 	HFONT       hFontCaption;

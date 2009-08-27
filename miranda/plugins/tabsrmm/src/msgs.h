@@ -178,8 +178,7 @@ typedef struct _settextex {
 #define MWF_SHOW_FLASHCLIST 64
 #define MWF_SHOW_SPLITTEROVERRIDE 128
 #define MWF_SHOW_SCROLLINGDISABLED 256
-#define MWF_SHOW_INFOPANEL 1024
-#define MWF_SHOW_INFONOTES 2048
+//#define MWF_SHOW_INFONOTES ** FREE **
 #define MWF_SHOW_ISIDLE 4096
 #define MWF_SHOW_AWAYMSGTIMER 8192
 #define MWF_EX_DELAYEDSPLITTER 32768
@@ -235,6 +234,7 @@ struct TitleBtn {
 
 class CTaskbarInteract;
 class CMenuBar;
+class CInfoPanel;
 
 struct ContainerWindowData {
 	struct  ContainerWindowData *pNextContainer;
@@ -392,7 +392,7 @@ struct _MessageWindowData {
 	TCHAR   newtitle[130];        // tab title...
 	LCID    lcid;
 	char    lcID[4];
-	int     panelHeight, panelWidth;
+	int     panelWidth;
 	WORD    wApparentMode;
 	DWORD   idle;
 	HWND    hwndTip;
@@ -405,7 +405,6 @@ struct _MessageWindowData {
 	SIZE    szLabel;
 	struct  MessageWindowTheme theme;
 	struct  avatarCacheEntry *ace, *ownAce;
-	COLORREF avatarbg;
 	HANDLE  *hHistoryEvents;
 	int     maxHistory, curHistory;
 	HANDLE  hTheme, hThemeIP, hThemeToolbar;
@@ -424,6 +423,7 @@ struct _MessageWindowData {
 	int     iHaveRTLLang;
 	BOOL    fInsertMode;
 	bool	fkeyProcessed;
+	CInfoPanel *Panel;
 };
 
 typedef struct _recentinfo {
@@ -443,20 +443,6 @@ struct myTabCtrl {
 	HBRUSH  m_hBrushDefault, m_hBrushActive, m_hBrushUnread, m_hBrushHottrack;
 	DWORD   m_fixedwidth;
 	int     m_bottomAdjust;
-};
-
-/*
- * configuration data for the info panel (fonts, colors)
- */
-
-struct infopanelconfig {
-	HFONT       hFonts[IPFONTCOUNT];
-	COLORREF    clrs[IPFONTCOUNT];
-	COLORREF    clrClockSymbol, clrBackground;
-	BOOL        isValid;                   // valid data exist (font service required, otherwise, defaults are used)
-	HBRUSH      bkgBrush;
-	UINT        edgeType, edgeFlags;
-
 };
 
 typedef struct _tag_ICONDESC {

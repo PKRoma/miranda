@@ -8,10 +8,8 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include <windows.h>
-#include "../../include/statusmodes.h"
-
-
-
+#include "../../include/statusmodes.h"
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -463,17 +461,20 @@ BEGIN
     GROUPBOX        "Tab options",IDC_STATIC,3,0,300,147
     GROUPBOX        "Miscellaneous options",IDC_STATIC,3,149,300,75
     PUSHBUTTON      "Setup status modes for automatic tab creation...",
-                    IDC_SETUPAUTOCREATEMODES,56,174,190,14
+                    IDC_SETUPAUTOCREATEMODES,35,189,228,14
     CONTROL         "Limit nicknames on tabs to",IDC_CUT_TABTITLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,195,135,10
-    EDITTEXT        IDC_CUT_TITLEMAX,166,193,30,12,ES_AUTOHSCROLL
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,210,135,10
+    EDITTEXT        IDC_CUT_TITLEMAX,166,208,30,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_CUT_TITLEMAXSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS,191,192,11,13
-    LTEXT           "characters",IDC_STATIC,208,195,88,9
+                    UDS_ARROWKEYS,191,208,11,13
+    LTEXT           "characters",IDC_STATIC,208,210,88,9
     CONTROL         "",IDC_TABMSGOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | 
-                    WS_TABSTOP,6,8,294,135
+                    WS_HSCROLL | WS_TABSTOP,6,8,294,135
+    LTEXT           "ESC key behavior",IDC_STATIC,38,161,135,9
+    COMBOBOX        IDC_ESCMODE,36,172,227,46,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
 END
 
 IDD_SELECTCONTAINER DIALOGEX 0, 0, 212, 147
@@ -646,9 +647,9 @@ BEGIN
                     90,15
 END
 
-IDD_TABCONFIG DIALOGEX 0, 0, 303, 230
+IDD_TABCONFIG DIALOG DISCARDABLE  0, 0, 303, 230
 STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Tab label colors",IDC_STATIC,6,10,144,80
     CONTROL         "Use windows colors",IDC_LABELUSEWINCOLORS,"Button",
@@ -682,7 +683,7 @@ BEGIN
                     24,8
     LTEXT           "NOTE: Background colors will only work with button-style tabs.",
                     IDC_STATIC,13,90,285,14
-    GROUPBOX        "Other options",IDC_STATIC,3,99,297,108
+    GROUPBOX        "Other options",IDC_STATIC,3,99,297,124
     CONTROL         "Flash icon",IDC_FLASHICON,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,13,110,110,9
     CONTROL         "Flash text label",IDC_FLASHLABEL,"Button",
@@ -747,6 +748,8 @@ BEGIN
     LTEXT           "Dark shadow",IDC_STATIC,164,78,84,10
     CONTROL         "",IDC_LIGHTSHADOW,"ColourPicker",WS_TABSTOP,269,68,24,8
     CONTROL         "",IDC_DARKSHADOW,"ColourPicker",WS_TABSTOP,269,78,24,8
+    CONTROL         "",IDC_AEROGLOW,"ColourPicker",WS_TABSTOP,126,206,24,13
+    LTEXT           "Aero glow on tabs",IDC_STATIC,13,208,105,9
 END
 
 IDD_VARIABLEHELP DIALOGEX 0, 0, 336, 238
@@ -1026,7 +1029,6 @@ BEGIN
         END
         MENUITEM SEPARATOR
         MENUITEM "Contact Picture Settings...", ID_PICMENU_SETTINGS
-        MENUITEM "Choose Background Color...",  ID_PICMENU_CHOOSEBACKGROUNDCOLOR
 
         MENUITEM "Always keep the button bar at full width", 
                                                 ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH
@@ -1182,7 +1184,6 @@ BEGIN
     BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Contact Picture Settings...", ID_PICMENU_SETTINGS
-        MENUITEM "Choose Background Color...",  ID_PANELPICMENU_CHOOSEBACKGROUNDCOLOR
 
         MENUITEM "Save this Picture As...",     ID_PANELPICMENU_SAVETHISPICTUREAS
 
@@ -1446,9 +1447,9 @@ END
 // SKIN_GLYPH
 //
 
-IDR_SKIN_LOGO           SKIN_GLYPH DISCARDABLE  "res\\SKIN\\logo.png"
-IDR_SKIN_AERO           SKIN_GLYPH DISCARDABLE  "res\\SKIN\\tabskin_aero.png"
-IDR_SKIN_AERO_GLOW      SKIN_GLYPH DISCARDABLE  "res\\SKIN\\tabskin_aero_glow.png"
+IDR_SKIN_LOGO           SKIN_GLYPH MOVEABLE PURE "res\\SKIN\\logo.png"
+IDR_SKIN_AERO           SKIN_GLYPH MOVEABLE PURE "res\\SKIN\\tabskin_aero.png"
+IDR_SKIN_AERO_GLOW      SKIN_GLYPH MOVEABLE PURE "res\\SKIN\\tabskin_aero_glow.png"
 #endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 

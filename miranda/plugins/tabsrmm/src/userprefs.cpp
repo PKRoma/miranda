@@ -74,7 +74,7 @@ typedef struct _tagPrepareList {
 	HANDLE	hContact;								// contact handle (for preselecting)
 } MIM_TZ_PREPARELIST;
 #define MS_TZ_PREPARELIST "TZ/PrepareList"
-
+#define MIM_TZ_PLF_CB 1
 
 #define UPREF_ACTION_APPLYOPTIONS 1
 #define UPREF_ACTION_REMAKELOG 2
@@ -216,7 +216,7 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				mtzp.cbSize = sizeof(MIM_TZ_PREPARELIST);
 				mtzp.hContact = hContact;
 				mtzp.hWnd = GetDlgItem(hwndDlg, IDC_TIMEZONE);
-				//mtzp.dwFlags = MIM_TZ_PLF_CB;
+				mtzp.dwFlags = MIM_TZ_PLF_CB;
 				CallService(MS_TZ_PREPARELIST, (WPARAM)0, (LPARAM)&mtzp);
 			}
 			else

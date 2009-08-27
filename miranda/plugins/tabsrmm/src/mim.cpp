@@ -441,6 +441,7 @@ INT_PTR CMimAPI::foldersPathChanged()
 	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szSkinsPath);
 	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szSavedAvatarsPath);
 
+	Skin->extractSkinsAndLogo();
 	return 0;
 }
 

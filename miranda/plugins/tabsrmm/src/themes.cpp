@@ -36,11 +36,10 @@
 #include "commonheaders.h"
 #pragma hdrstop
 
-/*
- * writes the current "theme" to .ini file
- * a theme contains all the fonts, colors and message log formatting
- * options.
- */
+static SKINDESC my_default_skin[] = {
+	IDR_SKIN_AERO, _T("tabskin_aero.png"),
+	IDR_SKIN_AERO_GLOW, _T("tabskin_aero_glow.png"),
+};
 
 CSkin* Skin = 0;
 
@@ -220,7 +219,8 @@ static DWORD __forceinline argb_from_cola(COLORREF col, UINT32 alpha)
 }
 
 
-void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor2, BYTE transparent, BYTE FLG_GRADIENT, BYTE FLG_CORNER, DWORD BORDERSTYLE, CImageItem *imageItem)
+void DrawAlpha(HDC hDC, PRECT rc, DWORD clr_base, int alpha, DWORD clr_dest, BYTE clr_dest_trans, BYTE bGradient,
+			   BYTE bCorner, DWORD dwRadius, CImageItem *imageItem)
 {
 	HBRUSH BrMask;
 	HBRUSH holdbrush;
@@ -254,7 +254,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 		return;
 
 	if (imageItem) {
-		imageItem->Render(hdcwnd, rc, false);
+		imageItem->Render(hDC, rc, false);
 		return;
 	}
 
@@ -265,12 +265,12 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 	 * use GDI fast gradient drawing when no corner radi exist
 	 */
 
-	if (FLG_CORNER == 0) {
+	if (bCorner == 0) {
 		GRADIENT_RECT grect;
 		TRIVERTEX tvtx[2];
 		int orig = 1, dest = 0;
 
-		if (FLG_GRADIENT & GRADIENT_LR || FLG_GRADIENT & GRADIENT_TB) {
+		if (bGradient & GRADIENT_LR || bGradient & GRADIENT_TB) {
 			orig = 0;
 			dest = 1;
 		}
@@ -280,24 +280,24 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 		tvtx[1].x = rc->right;
 		tvtx[1].y = rc->bottom;
 
-		tvtx[orig].Red = (COLOR16)GetRValue(basecolor) << 8;
-		tvtx[orig].Blue = (COLOR16)GetBValue(basecolor) << 8;
-		tvtx[orig].Green = (COLOR16)GetGValue(basecolor) << 8;
+		tvtx[orig].Red = (COLOR16)GetRValue(clr_base) << 8;
+		tvtx[orig].Blue = (COLOR16)GetBValue(clr_base) << 8;
+		tvtx[orig].Green = (COLOR16)GetGValue(clr_base) << 8;
 		tvtx[orig].Alpha = (COLOR16) alpha << 8;
 
-		tvtx[dest].Red = (COLOR16)GetRValue(basecolor2) << 8;
-		tvtx[dest].Blue = (COLOR16)GetBValue(basecolor2) << 8;
-		tvtx[dest].Green = (COLOR16)GetGValue(basecolor2) << 8;
+		tvtx[dest].Red = (COLOR16)GetRValue(clr_dest) << 8;
+		tvtx[dest].Blue = (COLOR16)GetBValue(clr_dest) << 8;
+		tvtx[dest].Green = (COLOR16)GetGValue(clr_dest) << 8;
 		tvtx[dest].Alpha = (COLOR16) alpha << 8;
 
 		grect.UpperLeft = 0;
 		grect.LowerRight = 1;
 
-		CMimAPI::m_MyGradientFill(hdcwnd, tvtx, 2, &grect, 1, (FLG_GRADIENT & GRADIENT_TB || FLG_GRADIENT & GRADIENT_BT) ? GRADIENT_FILL_RECT_V : GRADIENT_FILL_RECT_H);
+		CMimAPI::m_MyGradientFill(hDC, tvtx, 2, &grect, 1, (bGradient & GRADIENT_TB || bGradient & GRADIENT_BT) ? GRADIENT_FILL_RECT_V : GRADIENT_FILL_RECT_H);
 		return;
 	}
 
-	hdc = CreateCompatibleDC(hdcwnd);
+	hdc = CreateCompatibleDC(hDC);
 	if (!hdc)
 		return;
 
@@ -305,10 +305,10 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 
 	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 
-	if (FLG_GRADIENT & GRADIENT_ACTIVE && (FLG_GRADIENT & GRADIENT_LR || FLG_GRADIENT & GRADIENT_RL)) {
+	if (bGradient & GRADIENT_ACTIVE && (bGradient & GRADIENT_LR || bGradient & GRADIENT_RL)) {
 		bmi.bmiHeader.biWidth = ulBitmapWidth = realWidth;
 		bmi.bmiHeader.biHeight = ulBitmapHeight = 1;
-	} else if (FLG_GRADIENT & GRADIENT_ACTIVE && (FLG_GRADIENT & GRADIENT_TB || FLG_GRADIENT & GRADIENT_BT)) {
+	} else if (bGradient & GRADIENT_ACTIVE && (bGradient & GRADIENT_TB || bGradient & GRADIENT_BT)) {
 		bmi.bmiHeader.biWidth = ulBitmapWidth = 1;
 		bmi.bmiHeader.biHeight = ulBitmapHeight = realHeight;
 	} else {
@@ -333,27 +333,27 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 	holdbitmap = (HBITMAP)SelectObject(hdc, hbitmap);
 
 	// convert basecolor to RGB and then merge alpha so its ARGB
-	basecolor = argb_from_cola(revcolref(basecolor), alpha);
-	basecolor2 = argb_from_cola(revcolref(basecolor2), alpha);
+	clr_base = argb_from_cola(revcolref(clr_base), alpha);
+	clr_dest = argb_from_cola(revcolref(clr_dest), alpha);
 
-	ubRed = (UCHAR)(basecolor >> 16);
-	ubGreen = (UCHAR)(basecolor >> 8);
-	ubBlue = (UCHAR) basecolor;
+	ubRed = (UCHAR)(clr_base >> 16);
+	ubGreen = (UCHAR)(clr_base >> 8);
+	ubBlue = (UCHAR) clr_base;
 
-	ubRed2 = (UCHAR)(basecolor2 >> 16);
-	ubGreen2 = (UCHAR)(basecolor2 >> 8);
-	ubBlue2 = (UCHAR) basecolor2;
+	ubRed2 = (UCHAR)(clr_dest >> 16);
+	ubGreen2 = (UCHAR)(clr_dest >> 8);
+	ubBlue2 = (UCHAR) clr_dest;
 
 	//DRAW BASE - make corner space 100% transparent
 	for (y = 0; y < ulBitmapHeight; y++) {
 		for (x = 0 ; x < ulBitmapWidth ; x++) {
-			if (FLG_GRADIENT & GRADIENT_ACTIVE) {
-				if (FLG_GRADIENT & GRADIENT_LR || FLG_GRADIENT & GRADIENT_RL) {
+			if (bGradient & GRADIENT_ACTIVE) {
+				if (bGradient & GRADIENT_LR || bGradient & GRADIENT_RL) {
 					realx = x + realHeightHalf;
 					realx = (ULONG) realx > ulBitmapWidth ? ulBitmapWidth : realx;
-					gradientHorizontal(&ubRedFinal, &ubGreenFinal, &ubBlueFinal, ulBitmapWidth, ubRed, ubGreen, ubBlue, ubRed2, ubGreen2, ubBlue2, FLG_GRADIENT, transparent, realx, &ubAlpha);
-				} else if (FLG_GRADIENT & GRADIENT_TB || FLG_GRADIENT & GRADIENT_BT)
-					gradientVertical(&ubRedFinal, &ubGreenFinal, &ubBlueFinal, ulBitmapHeight, ubRed, ubGreen, ubBlue, ubRed2, ubGreen2, ubBlue2, FLG_GRADIENT, transparent, y, &ubAlpha);
+					gradientHorizontal(&ubRedFinal, &ubGreenFinal, &ubBlueFinal, ulBitmapWidth, ubRed, ubGreen, ubBlue, ubRed2, ubGreen2, ubBlue2, bGradient, clr_dest_trans, realx, &ubAlpha);
+				} else if (bGradient & GRADIENT_TB || bGradient & GRADIENT_BT)
+					gradientVertical(&ubRedFinal, &ubGreenFinal, &ubBlueFinal, ulBitmapHeight, ubRed, ubGreen, ubBlue, ubRed2, ubGreen2, ubBlue2, bGradient, clr_dest_trans, y, &ubAlpha);
 
 				fAlphaFactor = (float) ubAlpha / (float) 0xff;
 				((UINT32 *) pvBits)[x + y * ulBitmapWidth] = (ubAlpha << 24) | ((UCHAR)(ubRedFinal * fAlphaFactor) << 16) | ((UCHAR)(ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR)(ubBlueFinal * fAlphaFactor));
@@ -370,10 +370,10 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 	}
 	bf.BlendOp = AC_SRC_OVER;
 	bf.BlendFlags = 0;
-	bf.SourceConstantAlpha = (UCHAR)(basecolor >> 24);
+	bf.SourceConstantAlpha = (UCHAR)(clr_base >> 24);
 	bf.AlphaFormat = AC_SRC_ALPHA; // so it will use our specified alpha value
 
-	CMimAPI::m_MyAlphaBlend(hdcwnd, rc->left + realHeightHalf, rc->top, (realWidth - realHeightHalf * 2), realHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
+	CMimAPI::m_MyAlphaBlend(hDC, rc->left + realHeightHalf, rc->top, (realWidth - realHeightHalf * 2), realHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
 
 	SelectObject(hdc, holdbitmap);
 	DeleteObject(hbitmap);
@@ -402,16 +402,16 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 
 		holdbrush = (HBRUSH)SelectObject(hdc, BrMask);
 		holdbitmap = (HBITMAP)SelectObject(hdc, hbitmap);
-		RoundRect(hdc, -1, -1, ulBitmapWidth * 2 + 1, (realHeight + 1), BORDERSTYLE, BORDERSTYLE);
+		RoundRect(hdc, -1, -1, ulBitmapWidth * 2 + 1, (realHeight + 1), dwRadius, dwRadius);
 
 		for (y = 0; y < ulBitmapHeight; y++) {
 			for (x = 0; x < ulBitmapWidth; x++) {
-				if (((((UINT32 *) pvBits)[x + y * ulBitmapWidth]) << 8) == 0xFF00FF00 || (y < ulBitmapHeight >> 1 && !(FLG_CORNER & CORNER_BL && FLG_CORNER & CORNER_ACTIVE)) || (y > ulBitmapHeight >> 2 && !(FLG_CORNER & CORNER_TL && FLG_CORNER & CORNER_ACTIVE))) {
-					if (FLG_GRADIENT & GRADIENT_ACTIVE) {
-						if (FLG_GRADIENT & GRADIENT_LR || FLG_GRADIENT & GRADIENT_RL)
-							gradientHorizontal(&ubRedFinal, &ubGreenFinal, &ubBlueFinal, realWidth, ubRed, ubGreen, ubBlue, ubRed2, ubGreen2, ubBlue2, FLG_GRADIENT, transparent, x, &ubAlpha);
-						else if (FLG_GRADIENT & GRADIENT_TB || FLG_GRADIENT & GRADIENT_BT)
-							gradientVertical(&ubRedFinal, &ubGreenFinal, &ubBlueFinal, ulBitmapHeight, ubRed, ubGreen, ubBlue, ubRed2, ubGreen2, ubBlue2, FLG_GRADIENT, transparent, y, &ubAlpha);
+				if (((((UINT32 *) pvBits)[x + y * ulBitmapWidth]) << 8) == 0xFF00FF00 || (y < ulBitmapHeight >> 1 && !(bCorner & CORNER_BL && bCorner & CORNER_ACTIVE)) || (y > ulBitmapHeight >> 2 && !(bCorner & CORNER_TL && bCorner & CORNER_ACTIVE))) {
+					if (bGradient & GRADIENT_ACTIVE) {
+						if (bGradient & GRADIENT_LR || bGradient & GRADIENT_RL)
+							gradientHorizontal(&ubRedFinal, &ubGreenFinal, &ubBlueFinal, realWidth, ubRed, ubGreen, ubBlue, ubRed2, ubGreen2, ubBlue2, bGradient, clr_dest_trans, x, &ubAlpha);
+						else if (bGradient & GRADIENT_TB || bGradient & GRADIENT_BT)
+							gradientVertical(&ubRedFinal, &ubGreenFinal, &ubBlueFinal, ulBitmapHeight, ubRed, ubGreen, ubBlue, ubRed2, ubGreen2, ubBlue2, bGradient, clr_dest_trans, y, &ubAlpha);
 
 						fAlphaFactor = (float) ubAlpha / (float) 0xff;
 						((UINT32 *) pvBits)[x + y * ulBitmapWidth] = (ubAlpha << 24) | ((UCHAR)(ubRedFinal * fAlphaFactor) << 16) | ((UCHAR)(ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR)(ubBlueFinal * fAlphaFactor));
@@ -427,7 +427,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 				}
 			}
 		}
-		CMimAPI::m_MyAlphaBlend(hdcwnd, rc->left, rc->top, ulBitmapWidth, ulBitmapHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
+		CMimAPI::m_MyAlphaBlend(hDC, rc->left, rc->top, ulBitmapWidth, ulBitmapHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
 		SelectObject(hdc, holdbitmap);
 		DeleteObject(hbitmap);
 
@@ -436,18 +436,18 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 
 		//SelectObject(hdc, BrMask); // already BrMask?
 		holdbitmap = (HBITMAP)SelectObject(hdc, hbitmap);
-		RoundRect(hdc, -1 - ulBitmapWidth, -1, ulBitmapWidth + 1, (realHeight + 1), BORDERSTYLE, BORDERSTYLE);
+		RoundRect(hdc, -1 - ulBitmapWidth, -1, ulBitmapWidth + 1, (realHeight + 1), dwRadius, dwRadius);
 
 		for (y = 0; y < ulBitmapHeight; y++) {
 			for (x = 0; x < ulBitmapWidth; x++) {
-				if (((((UINT32 *) pvBits)[x + y * ulBitmapWidth]) << 8) == 0xFF00FF00 || (y < ulBitmapHeight >> 1 && !(FLG_CORNER & CORNER_BR && FLG_CORNER & CORNER_ACTIVE)) || (y > ulBitmapHeight >> 1 && !(FLG_CORNER & CORNER_TR && FLG_CORNER & CORNER_ACTIVE))) {
-					if (FLG_GRADIENT & GRADIENT_ACTIVE) {
-						if (FLG_GRADIENT & GRADIENT_LR || FLG_GRADIENT & GRADIENT_RL) {
+				if (((((UINT32 *) pvBits)[x + y * ulBitmapWidth]) << 8) == 0xFF00FF00 || (y < ulBitmapHeight >> 1 && !(bCorner & CORNER_BR && bCorner & CORNER_ACTIVE)) || (y > ulBitmapHeight >> 1 && !(bCorner & CORNER_TR && bCorner & CORNER_ACTIVE))) {
+					if (bGradient & GRADIENT_ACTIVE) {
+						if (bGradient & GRADIENT_LR || bGradient & GRADIENT_RL) {
 							realx = x + realWidth;
 							realx = realx > realWidth ? realWidth : realx;
-							gradientHorizontal(&ubRedFinal, &ubGreenFinal, &ubBlueFinal, realWidth, ubRed, ubGreen, ubBlue, ubRed2, ubGreen2, ubBlue2, FLG_GRADIENT, transparent, realx, &ubAlpha);
-						} else if (FLG_GRADIENT & GRADIENT_TB || FLG_GRADIENT & GRADIENT_BT)
-							gradientVertical(&ubRedFinal, &ubGreenFinal, &ubBlueFinal, ulBitmapHeight, ubRed, ubGreen, ubBlue, ubRed2, ubGreen2, ubBlue2, FLG_GRADIENT, transparent, y, &ubAlpha);
+							gradientHorizontal(&ubRedFinal, &ubGreenFinal, &ubBlueFinal, realWidth, ubRed, ubGreen, ubBlue, ubRed2, ubGreen2, ubBlue2, bGradient, clr_dest_trans, realx, &ubAlpha);
+						} else if (bGradient & GRADIENT_TB || bGradient & GRADIENT_BT)
+							gradientVertical(&ubRedFinal, &ubGreenFinal, &ubBlueFinal, ulBitmapHeight, ubRed, ubGreen, ubBlue, ubRed2, ubGreen2, ubBlue2, bGradient, clr_dest_trans, y, &ubAlpha);
 
 						fAlphaFactor = (float) ubAlpha / (float) 0xff;
 						((UINT32 *) pvBits)[x + y * ulBitmapWidth] = (ubAlpha << 24) | ((UCHAR)(ubRedFinal * fAlphaFactor) << 16) | ((UCHAR)(ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR)(ubBlueFinal * fAlphaFactor));
@@ -463,7 +463,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 				}
 			}
 		}
-		CMimAPI::m_MyAlphaBlend(hdcwnd, rc->right - realHeightHalf, rc->top, ulBitmapWidth, ulBitmapHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
+		CMimAPI::m_MyAlphaBlend(hDC, rc->right - realHeightHalf, rc->top, ulBitmapWidth, ulBitmapHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
 	}
 	SelectObject(hdc, holdbitmap);
 	DeleteObject(hbitmap);
@@ -661,7 +661,6 @@ static HBITMAP LoadPNG(const TCHAR *szFilename)
 {
 	HBITMAP hBitmap = 0;
 	hBitmap = (HBITMAP)CallService(MS_IMG_LOAD, (WPARAM)szFilename, IMGL_TCHAR);
-	CImageItem::PreMultiply(hBitmap, 1);
 	return hBitmap;
 }
 
@@ -684,9 +683,9 @@ static struct {
 	NULL, NULL, NULL, 0, 0
 };
 
-HBITMAP IMG_LoadLogo(const char *szFilename)
+HBITMAP IMG_LoadLogo(const TCHAR *szFilename)
 {
-	HBITMAP hbm = (HBITMAP)CallService(MS_IMG_LOAD, (LPARAM)szFilename, 0);
+	HBITMAP hbm = (HBITMAP)CallService(MS_IMG_LOAD, (LPARAM)szFilename, IMGL_TCHAR);
 	CImageItem::PreMultiply(hbm, 1);
 	return(hbm);
 }
@@ -1064,7 +1063,12 @@ void CSkin::Unload()
 	}
 	m_SkinItems[ID_EXTBKINFOPANELBG] = _defInfoPanel;
 
+	HBITMAP btmp = m_hbmAeroTabBottom;
+	HBITMAP btmp1 = m_hbmAeroTabTop;
 	ZeroMemory(this, sizeof(CSkin));
+	m_hbmAeroTabBottom = btmp;
+	m_hbmAeroTabTop = btmp1;
+
 	m_SkinItems = ::SkinItems;
 	setFileName();
 
@@ -1542,7 +1546,7 @@ void CSkin::Load()
 
 			m_DisableScrollbars = false;
 
-			ZeroMemory(szSections, 3000);
+			ZeroMemory(szSections, 6000);
 			p = szSections;
 			GetPrivateProfileSectionNames(szSections, 3000, m_tszFileName);
 			szSections[3001] = szSections[3000] = 0;
@@ -1738,6 +1742,10 @@ void CSkin::setupAeroSkins()
 		::DeleteObject(m_hbmAeroTabBottom);
 	if(m_hbmAeroTabTop)
 		::DeleteObject(m_hbmAeroTabTop);
+	if(m_hbmGlowBottom)
+		::DeleteObject(m_hbmGlowBottom);
+	if(m_hbmGlowTop)
+		::DeleteObject(m_hbmGlowTop);
 
 	if(IsWinVerVistaPlus()) {
 
@@ -1765,6 +1773,24 @@ void CSkin::setupAeroSkins()
 							 (BYTE)((dwmColor & 0x0000ff00) >> 8),
 							 (BYTE)((dwmColor & 0x000000ff)));
 		CImageItem::PreMultiply(m_hbmAeroTabBottom, 1);
+		FIF->FI_Unload(fib);
+
+
+
+		mir_sntprintf(tszFilename, MAX_PATH, _T("%s\\tabskin_aero_glow.png"), M->getDataPath());
+
+		fib = (FIBITMAP *)CallService(MS_IMG_LOAD, (WPARAM)tszFilename, IMGL_TCHAR | IMGL_RETURNDIB);
+
+		COLORREF glowColor = M->GetDword("aeroGlow", RGB(40, 40, 255));
+		m_hbmGlowTop = FIF->FI_CreateHBITMAPFromDIB(fib);
+		CImageItem::Colorize(m_hbmGlowTop, GetRValue(glowColor), GetGValue(glowColor), GetBValue(glowColor));
+		CImageItem::PreMultiply(m_hbmGlowTop, 1);
+
+		FIF->FI_FlipVertical(fib);
+
+		m_hbmGlowBottom = FIF->FI_CreateHBITMAPFromDIB(fib);
+		CImageItem::Colorize(m_hbmGlowBottom, GetRValue(glowColor), GetGValue(glowColor), GetBValue(glowColor));
+		CImageItem::PreMultiply(m_hbmGlowBottom, 1);
 		FIF->FI_Unload(fib);
 	}
 
@@ -2041,6 +2067,7 @@ int CSkin::RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWO
 		dto.dwSize = sizeof(dto);
 		dto.dwFlags = DTT_COMPOSITED|DTT_GLOWSIZE;
 		dto.iGlowSize = iGlowSize;
+		dto.iBorderSize = 10;
 		return(CMimAPI::m_pfnDrawThemeTextEx(hTheme, hdc, BP_PUSHBUTTON, PBS_NORMAL, szText, -1, dtFlags, rc, &dto));
 	}
 	else {
@@ -2146,242 +2173,6 @@ void CSkin::MapClientToParent(HWND hwndClient, HWND hwndParent, RECT &rc)
 }
 
 /**
- * Render the nickname in the info panel.
- * This will also show the status message (if one is available)
- * The field will dynamically adjust itself to the available info panel space. If
- * the info panel is too small to show both nick and UIN fields, this field will show
- * the UIN _instead_ of the nickname (most people have the nickname in the title
- * bar anyway).
- *
- * @param hdc    HDC: target DC for drawing
- *
- * @param rcItem RECT &: target rectangle
- * @param dat    _MessageWindowData*: message window information structure
- */
-void CSkin::RenderIPNickname(HDC hdc, RECT &rcItem, _MessageWindowData *dat)
-{
-	RECT 	rc = rcItem;
-	TCHAR 	*szStatusMsg = NULL;
-	CSkinItem *item = &SkinItems[ID_EXTBKINFOPANEL];
-	TCHAR	*szTextToShow = 0;
-	bool	fShowUin = false;
-
-	if(dat->panelHeight < 42) {
-		szTextToShow = dat->uin;
-		fShowUin = true;
-	} else
-		szTextToShow = dat->szNickname;
-
-	szStatusMsg = dat->statusMsg;
-
-	dat->szLabel.cx = 0;
-	rc.right = rc.left;
-	SetBkMode(hdc, TRANSPARENT);
-
-	rcItem.left += 2;
-	if (szTextToShow[0]) {
-		HFONT hOldFont = 0;
-		HICON xIcon = 0;
-
-		xIcon = GetXStatusIcon(dat);
-
-		if (xIcon) {
-			DrawIconEx(hdc, rcItem.left, (rcItem.bottom + rcItem.top - PluginConfig.m_smcyicon) / 2, xIcon, PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
-			DestroyIcon(xIcon);
-			rcItem.left += 21;
-		}
-
-		if (PluginConfig.ipConfig.isValid) {
-			if(fShowUin) {
-				hOldFont = (HFONT)SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_UIN]);
-				SetTextColor(hdc, PluginConfig.ipConfig.clrs[IPFONTID_UIN]);
-			}
-			else {
-				hOldFont = (HFONT)SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_NICK]);
-				SetTextColor(hdc, PluginConfig.ipConfig.clrs[IPFONTID_NICK]);
-			}
-		}
-		if (szStatusMsg && szStatusMsg[0]) {
-			SIZE szNick, sStatusMsg, sMask;
-			DWORD dtFlags, dtFlagsNick;
-
-			GetTextExtentPoint32(hdc, szTextToShow, lstrlen(szTextToShow), &szNick);
-			GetTextExtentPoint32(hdc, _T("A"), 1, &sMask);
-			GetTextExtentPoint32(hdc, szStatusMsg, lstrlen(szStatusMsg), &sStatusMsg);
-			dtFlagsNick = DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_NOPREFIX;
-			if ((szNick.cx + sStatusMsg.cx + 6) < (rcItem.right - rcItem.left) || (rcItem.bottom - rcItem.top) < (2 * sMask.cy))
-				dtFlagsNick |= DT_VCENTER;
-			CSkin::RenderText(hdc, dat->hThemeIP, szTextToShow, &rcItem, dtFlagsNick);
-			if (PluginConfig.ipConfig.isValid) {
-				SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_STATUS]);
-				SetTextColor(hdc, PluginConfig.ipConfig.clrs[IPFONTID_STATUS]);
-			}
-			rcItem.left += (szNick.cx + 10);
-
-			if (!(dtFlagsNick & DT_VCENTER))
-				//if(dis->rcItem.bottom - dis->rcItem.top >= 2 * sStatusMsg.cy)
-				dtFlags = DT_WORDBREAK | DT_END_ELLIPSIS | DT_NOPREFIX;
-			else
-				dtFlags = DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | DT_VCENTER;
-
-
-			rcItem.right -= 3;
-			if (rcItem.left + 30 < rcItem.right)
-				CSkin::RenderText(hdc, dat->hThemeIP, szStatusMsg, &rcItem, dtFlags);
-		} else
-			CSkin::RenderText(hdc, dat->hThemeIP, szTextToShow, &rcItem, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX);
-
-		if (hOldFont)
-			SelectObject(hdc, hOldFont);
-	}
-}
-
-/**
- * Draws the UIN field for the info panel.
- *
- * @param hdc    HDC: device context for drawing.
- * @param rcItem RECT &: target rectangle for drawing
- * @param dat    _MessageWindowData *: the message session structure
- */
-void CSkin::RenderIPUIN(HDC hdc, RECT &rcItem, _MessageWindowData *dat)
-{
-	TCHAR	szBuf[256];
-	BOOL 	config = PluginConfig.ipConfig.isValid;
-	HFONT 	hOldFont = 0;
-	CSkinItem *item = &SkinItems[ID_EXTBKINFOPANEL];
-	TCHAR	*tszUin = dat->uin;
-
-	SetBkMode(hdc, TRANSPARENT);
-
-	rcItem.left += 2;
-	if (config) {
-		hOldFont = (HFONT)SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_UIN]);
-		SetTextColor(hdc, PluginConfig.ipConfig.clrs[IPFONTID_UIN]);
-	}
-	if (dat->uin[0]) {
-		SIZE sUIN;
-		if (dat->idle) {
-			time_t diff = time(NULL) - dat->idle;
-			int i_hrs = diff / 3600;
-			int i_mins = (diff - i_hrs * 3600) / 60;
-			mir_sntprintf(szBuf, safe_sizeof(szBuf), _T("%s    Idle: %dh,%02dm"), tszUin, i_hrs, i_mins);
-			GetTextExtentPoint32(hdc, szBuf, lstrlen(szBuf), &sUIN);
-			CSkin::RenderText(hdc, dat->hThemeIP, szBuf, &rcItem, DT_SINGLELINE | DT_VCENTER);
-		} else {
-			GetTextExtentPoint32(hdc, tszUin, lstrlen(tszUin), &sUIN);
-			CSkin::RenderText(hdc, dat->hThemeIP, tszUin, &rcItem, DT_SINGLELINE | DT_VCENTER);
-		}
-	}
-	if (hOldFont)
-		SelectObject(hdc, hOldFont);
-}
-
-void CSkin::RenderIPStatus(HDC hdc, RECT &rcItem, _MessageWindowData *dat)
-{
-	char		*szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
-	SIZE		sProto = {0}, sStatus = {0}, sTime = {0};
-	DWORD		oldPanelStatusCX = dat->panelStatusCX;
-	RECT		rc;
-	HFONT		hOldFont = 0;
-	BOOL		config = PluginConfig.ipConfig.isValid;
-	CSkinItem 	*item = &SkinItems[ID_EXTBKINFOPANEL];
-	TCHAR   	*szFinalProto = NULL;
-	TCHAR 		szResult[80];
-	int 		base_hour;
-	TCHAR 		symbolic_time[3];
-
-	szResult[0] = 0;
-
-	if (dat->szStatus[0])
-		GetTextExtentPoint32(hdc, dat->szStatus, lstrlen(dat->szStatus), &sStatus);
-
-	/*
-	 * figure out final account name
-	 */
-	if(dat->bIsMeta) {
-		PROTOACCOUNT *acc = (PROTOACCOUNT *)CallService(MS_PROTO_GETACCOUNT, (WPARAM)0, (LPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto));
-		if(acc && acc->tszAccountName)
-			szFinalProto = acc->tszAccountName;
-	}
-	else
-		szFinalProto = dat->szAccount;
-
-	if (szFinalProto) {
-		if (config)
-			SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_PROTO]);
-		GetTextExtentPoint32(hdc, szFinalProto, lstrlen(szFinalProto), &sProto);
-	}
-
-	if (dat->timezone != -1) {
-		DBTIMETOSTRINGT dbtts;
-		time_t 			final_time;
-		time_t 			now = time(NULL);
-
-		final_time = now - dat->timediff;
-		dbtts.szDest = szResult;
-		dbtts.cbDest = 70;
-		dbtts.szFormat = _T("t");
-		CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, final_time, (LPARAM) &dbtts);
-		GetTextExtentPoint32(hdc, szResult, lstrlen(szResult), &sTime);
-	}
-
-	dat->panelStatusCX = 3 + sStatus.cx + sProto.cx + 14 + (dat->hClientIcon ? 20 : 0) + sTime.cx + 13;;
-
-	if (dat->panelStatusCX != oldPanelStatusCX) {
-		SendMessage(dat->hwnd, WM_SIZE, 0, 0);
-		CSkin::MapClientToParent(GetDlgItem(dat->hwnd, IDC_PANELSTATUS), dat->hwnd, rcItem);
-	}
-
-	SetBkMode(hdc, TRANSPARENT);
-	rc = rcItem;
-	rc.left += 2;
-	rc.right -=3;
-
-	if(szResult[0]) {
-		HFONT oldFont = (HFONT)SelectObject(hdc, PluginConfig.m_hFontWebdings);
-		base_hour = _ttoi(szResult);
-		base_hour = base_hour > 11 ? base_hour - 12 : base_hour;
-		symbolic_time[0] = (TCHAR)(0xB7 + base_hour);
-		symbolic_time[1] = 0;
-		CSkin::RenderText(hdc, dat->hThemeIP, symbolic_time, &rcItem, DT_SINGLELINE | DT_VCENTER);
-		if (config) {
-			oldFont = (HFONT)SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_TIME]);
-			SetTextColor(hdc, PluginConfig.ipConfig.clrs[IPFONTID_TIME]);
-		}
-		rcItem.left += 16;
-		CSkin::RenderText(hdc, dat->hThemeIP, szResult, &rcItem, DT_SINGLELINE | DT_VCENTER);
-		SelectObject(hdc, oldFont);
-		rc.left += (sTime.cx + 20);
-	}
-
-	if (config)
-		hOldFont = (HFONT)SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_STATUS]);
-
-	if (dat->szStatus[0]) {
-		if (config) {
-			SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_STATUS]);
-			SetTextColor(hdc, PluginConfig.ipConfig.clrs[IPFONTID_STATUS]);
-		}
-		CSkin::RenderText(hdc, dat->hThemeIP, dat->szStatus, &rc, DT_SINGLELINE | DT_VCENTER);
-	}
-	if (szFinalProto) {
-		rc.left = rc.right - sProto.cx - 3 - (dat->hClientIcon ? 20 : 0);
-		if (config) {
-			SelectObject(hdc, PluginConfig.ipConfig.hFonts[IPFONTID_PROTO]);
-			SetTextColor(hdc, PluginConfig.ipConfig.clrs[IPFONTID_PROTO]);
-		} else
-			SetTextColor(hdc, GetSysColor(COLOR_HOTLIGHT));
-		CSkin::RenderText(hdc, dat->hThemeIP, szFinalProto, &rc, DT_SINGLELINE | DT_VCENTER);
-	}
-
-	if (dat->hClientIcon)
-		DrawIconEx(hdc, rc.right - 19, (rc.bottom + rc.top - 16) / 2, dat->hClientIcon, 16, 16, 0, 0, DI_NORMAL);
-
-	if (config && hOldFont)
-		SelectObject(hdc, hOldFont);
-}
-
-/**
  * Draw the background for the message window tool bar
  *
  * @param dat      _MessageWindowData *: structure describing the message session
@@ -2470,5 +2261,64 @@ void CSkin::setAeroEffect(LRESULT effect)
 		m_aeroEffect = AERO_EFFECT_MILK;
 
 	M->WriteByte(SRMSGMOD_T, "aerostyle", m_aeroEffect);
+}
+
+void CSkin::extractSkinsAndLogo() const
+{
+	if(PluginConfig.m_WinVerMajor >=6) {
+
+		for(int i = 0; i < safe_sizeof(my_default_skin); i++) {
+			HRSRC 	hRes;
+			HGLOBAL	hResource;
+
+			hRes = FindResource(g_hInst, MAKEINTRESOURCE(my_default_skin[i].ulID), _T("SKIN_GLYPH"));
+
+			if(hRes) {
+				hResource = LoadResource(g_hInst, hRes);
+				if(hResource) {
+					TCHAR	szFilename[MAX_PATH];
+					HANDLE  hFile;
+					char 	*pData = (char *)LockResource(hResource);
+					DWORD	dwSize = SizeofResource(g_hInst, hRes), written = 0;
+					mir_sntprintf(szFilename, MAX_PATH, _T("%s\\%s"), M->getDataPath(), (TCHAR *)my_default_skin[i].tszName);
+					//if(PathFileExists(szFilename))
+					//   continue;
+					if((hFile = CreateFile(szFilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)) != INVALID_HANDLE_VALUE) {
+						WriteFile(hFile, (void *)pData, dwSize, &written, NULL);
+						CloseHandle(hFile);
+					}
+				}
+			}
+		}
+	}
+
+	/*
+	 * load the logo
+	 */
+	TCHAR	szFilename[MAX_PATH];
+
+	mir_sntprintf(szFilename, MAX_PATH, _T("%s\\logo.png"), M->getDataPath());
+	if(!PathFileExists(szFilename)) {
+		HRSRC	hRes;
+		HGLOBAL hResource;
+		char	*pData = NULL;
+
+		hRes = FindResource(g_hInst, MAKEINTRESOURCE(IDR_SKIN_LOGO), _T("SKIN_GLYPH"));
+		if(hRes) {
+			hResource = LoadResource(g_hInst, hRes);
+			if(hResource) {
+				DWORD written = 0, dwSize;
+				HANDLE hFile;
+
+				pData = (char *)LockResource(hResource);
+				dwSize = SizeofResource(g_hInst, hRes);
+				if((hFile = CreateFile(szFilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)) != INVALID_HANDLE_VALUE) {
+					WriteFile(hFile, (void *)pData, dwSize, &written, NULL);
+					CloseHandle(hFile);
+				}
+			}
+		}
+	}
+	PluginConfig.hbmLogo = ::IMG_LoadLogo(szFilename);
 }
 

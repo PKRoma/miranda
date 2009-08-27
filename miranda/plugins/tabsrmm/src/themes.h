@@ -39,6 +39,7 @@
 #ifndef __THEMES_H
 #define __THEMES_H
 
+HBITMAP IMG_LoadLogo(const TCHAR *szName);
 
 typedef struct {
 	HWND    hwnd;
@@ -139,6 +140,8 @@ public:
 
 		m_inner_height = m_height - m_bBottom - m_bTop;
 		m_inner_width = m_width - m_bLeft - m_bRight;
+		if(!(m_dwFlags & IMAGE_FLAG_DIVIDED))
+			m_bStretch = IMAGE_STRETCH_B;
 	}
 
 	void			Free();
@@ -249,7 +252,9 @@ public:
 	enum
 	{
 						TAB_BITMAP_TOP = 0,
-						TAB_BITMAP_BOTTOM = 1
+						TAB_BITMAP_BOTTOM = 1,
+						GLOW_BITMAP_TOP = 2,
+						GLOW_BITMAP_BOTTOM = 3
 	};
 
 	const HBITMAP		getAeroTabBitmap(const int bmpid, LONG& width, LONG& height) const
@@ -260,12 +265,26 @@ public:
 
 		width = bminfo.bmWidth;
 		height = bminfo.bmHeight;
-		return(bmpid == 0 ? m_hbmAeroTabTop : m_hbmAeroTabBottom);
+		return(bmpid == TAB_BITMAP_TOP ? m_hbmAeroTabTop : m_hbmAeroTabBottom);
 	}
+
+	const HBITMAP		getAeroGlowBitmap(const int bmpid, LONG& width, LONG& height) const
+	{
+		BITMAP	bminfo = {0};
+
+		::GetObject(bmpid == GLOW_BITMAP_TOP ? m_hbmGlowTop : m_hbmGlowBottom, sizeof(bminfo), &bminfo);
+
+		width = bminfo.bmWidth;
+		height = bminfo.bmHeight;
+		return(bmpid == GLOW_BITMAP_TOP ? m_hbmGlowTop : m_hbmGlowBottom);
+	}
+
 	const HBITMAP		getAeroTabBitmap(const int bmpid) const
 	{
 		return(bmpid == TAB_BITMAP_TOP ? m_hbmAeroTabTop : m_hbmAeroTabBottom);
 	}
+	void 				extractSkinsAndLogo() const;
+
 	/*
 	 * static member functions
 	 */
@@ -282,9 +301,6 @@ public:
 #endif
 	static int 		RenderText(HDC hdc, HANDLE hTheme, const char *szText, RECT *rc, DWORD dtFlags, const int iGlowSize = 10);
 	static void 	MapClientToParent(HWND hwndClient, HWND hwndParent, RECT &rc);
-	static void		RenderIPNickname(HDC hdc, RECT &rc, _MessageWindowData *dat);
-	static void 	RenderIPUIN(HDC hdc, RECT &rcItem, _MessageWindowData *dat);
-	static void 	RenderIPStatus(HDC hdc, RECT &rcItem, _MessageWindowData *dat);
 	static void 	RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &rcWindow);
 	static HBITMAP 	ResizeBitmap(HBITMAP hBmpSrc, LONG width, LONG height, bool &mustFree);
 	static void		ApplyAeroEffect(const HDC hdc, const RECT* rc, int iEffectArea);
@@ -320,6 +336,7 @@ private:
 	int				m_nrSkinIcons;
 
 	HBITMAP			m_hbmAeroTabTop, m_hbmAeroTabBottom;
+	HBITMAP			m_hbmGlowBottom, m_hbmGlowTop;
 };
 
 /*
@@ -345,7 +362,7 @@ struct TabControlData {
 	BOOL    fTipActive;
 	BOOL	fAeroTabs;
 	_MessageWindowData* helperDat;				// points to the client data of the active tab
-	CImageItem*			helperItem;				// aero ui, holding the skin image for the tabs
+	CImageItem*			helperItem, *helperGlowItem;				// aero ui, holding the skin image for the tabs
 };
 
 extern CSkin *Skin;

@@ -271,8 +271,6 @@
 #define IDC_FLASHDEFAULT                1209
 #define IDC_DEFAULTCONTAINERMODE        1210
 #define IDC_ALWAYS                      1211
-#define IDC_TOGGLENOTES                 1214
-#define IDC_NOTES                       1215
 #define IDC_TRANSPARENCY                1215
 #define IDC_PANELSPLITTER               1216
 #define IDC_AUTOCREATECONTAINER         1216
@@ -482,6 +480,7 @@
 #define IDC_DARKSHADOW                  1394
 #define IDC_CHECK3                      1395
 #define IDC_INFOPANEL                   1395
+#define IDC_AEROGLOW                    1395
 #define IDC_SUPPORT                     1396
 #define IDC_SHOWAVATAR                  1396
 #define IDC_QHTM                        1399
@@ -511,6 +510,7 @@
 #define IDC_ALWAYSPOPUP                 1424
 #define IDC_AEROEFFECT                  1424
 #define IDC_CREATEMIN                   1425
+#define IDC_ESCMODE                     1425
 #define IDC_CHECK5                      1426
 #define IDC_SENDSHIFTENTER              1427
 #define IDC_SENDENTER                   1428
@@ -728,8 +728,6 @@
 #define ID_PANELPICMENU_RESETTHEAVATAR  40218
 #define ID_EDITOR_PASTEANDSENDIMMEDIATELY 40221
 #define ID_HELP_ABOUTTABSRMM            40223
-#define ID_PANELPICMENU_CHOOSEBACKGROUNDCOLOR 40226
-#define ID_PICMENU_CHOOSEBACKGROUNDCOLOR 40227
 #define ID_SENDMENU_SENDNUDGE           40228
 #define ID_SPLITTERCONTEXT_SAVEGLOBALFORALLSESSIONS 40229
 #define ID_SPLITTERCONTEXT_SAVEFORTHISCONTACTONLY 40230
@@ -754,13 +752,17 @@
 #define ID_MESSAGELOG_MESSAGELOGSETTINGS 40253
 #define ID_SPLITTERCONTEXT_SAVEFORCONTAINER 40340
 
+#ifndef IDC_STATIC
+#define IDC_STATIC                      -1
+#endif
+
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        15
 #define _APS_NEXT_COMMAND_VALUE         40256
-#define _APS_NEXT_CONTROL_VALUE         1425
+#define _APS_NEXT_CONTROL_VALUE         1426
 #define _APS_NEXT_SYMED_VALUE           40283
 #endif
 #endif

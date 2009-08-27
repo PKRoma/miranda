@@ -196,7 +196,7 @@ extern 	NEN_OPTIONS	nen_options;
 #include "sendqueue.h"
 #include "taskbar.h"
 #include "controls.h"
-
+#include "infopanel.h"
 
 #if !defined(_WIN64) && !defined(_USE_32BIT_TIME_T)
 	#define _USE_32BIT_TIME_T

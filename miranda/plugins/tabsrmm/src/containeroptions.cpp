@@ -226,16 +226,18 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				DrawAlpha(hdcMem, &rcClient, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
 						  item->CORNER, item->BORDERSTYLE, 0);
 			}
-			HBITMAP bmpLogo = CSkin::ResizeBitmap(PluginConfig.hbmLogo, 38, 38, fFree);
+			if(PluginConfig.hbmLogo) {
+				HBITMAP bmpLogo = CSkin::ResizeBitmap(PluginConfig.hbmLogo, 38, 38, fFree);
 
-			HDC		hdcBmp = CreateCompatibleDC(hdc);
-			HBITMAP hbmOldLogo = reinterpret_cast<HBITMAP>(SelectObject(hdcBmp, bmpLogo));
-			CMimAPI::m_MyAlphaBlend(hdcMem, 3, 1, 38, 38, hdcBmp, 0, 0, 38, 38, CSkin::m_default_bf);
-			SelectObject(hdcBmp, hbmOldLogo);
-			DeleteDC(hdcBmp);
-			if(fFree)
-				DeleteObject(bmpLogo);
-			rcClient.left = 60;
+				HDC		hdcBmp = CreateCompatibleDC(hdc);
+				HBITMAP hbmOldLogo = reinterpret_cast<HBITMAP>(SelectObject(hdcBmp, bmpLogo));
+				CMimAPI::m_MyAlphaBlend(hdcMem, 3, 1, 38, 38, hdcBmp, 0, 0, 38, 38, CSkin::m_default_bf);
+				SelectObject(hdcBmp, hbmOldLogo);
+				DeleteDC(hdcBmp);
+				if(fFree)
+					DeleteObject(bmpLogo);
+				rcClient.left = 60;
+			}
 
 			HFONT hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_SELECTTHEME, WM_GETFONT, 0, 0);
 			LOGFONT lf = {0};
@@ -254,7 +256,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 				mir_sntprintf(szText, 200, _T("Configure container options for: %s"), pContainer->szName);
 				HANDLE hTheme = CMimAPI::m_pfnOpenThemeData ? CMimAPI::m_pfnOpenThemeData(hwndDlg, L"BUTTON") : 0;
-				CSkin::RenderText(hdcMem, hTheme, szText, &rcClient, DT_SINGLELINE|DT_VCENTER, 3);
+				CSkin::RenderText(hdcMem, hTheme, szText, &rcClient, DT_SINGLELINE|DT_VCENTER);
 				if(hTheme)
 					CMimAPI::m_pfnCloseThemeData(hTheme);
 			}

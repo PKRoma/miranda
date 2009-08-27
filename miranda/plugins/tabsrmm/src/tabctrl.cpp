@@ -413,10 +413,10 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 				dwTextFlags |= DT_WORD_ELLIPSIS;
 			}
 #if defined(_UNICODE)
-			if (tabdat->m_skinning == FALSE || PluginConfig.m_TabAppearance & TCF_NOSKINNING)
+			if(M->isAero())
+				CSkin::RenderText(dc, dwStyle & TCS_BUTTONS ? tabdat->hThemeButton : tabdat->hTheme, dat->newtitle, rcItem, dwTextFlags, 7);
+			else if (tabdat->m_skinning == FALSE || PluginConfig.m_TabAppearance & TCF_NOSKINNING)
 				DrawText(dc, dat->newtitle, (int)(lstrlen(dat->newtitle)), rcItem, dwTextFlags);
-			else if(M->isAero())
-				CSkin::RenderText(dc, dwStyle & TCS_BUTTONS ? tabdat->hThemeButton : tabdat->hTheme, dat->newtitle, rcItem, dwTextFlags, 5);
 			else
 				M->m_pfnDrawThemeText(dwStyle & TCS_BUTTONS ? tabdat->hThemeButton : tabdat->hTheme, dc, 1, nHint & HINT_ACTIVE_ITEM ? 3 : (nHint & HINT_HOTTRACK ? 2 : 1), dat->newtitle, (int)(lstrlen(dat->newtitle)), dwTextFlags, 0, rcItem);
 #else
@@ -810,8 +810,27 @@ static HRESULT DrawThemesPartWithAero(const TabControlData *tabdat, HDC hDC, int
 		FillRect(hDC, prcBox, (HBRUSH)GetStockObject(BLACK_BRUSH));
 		if(!(tabdat->dwStyle & TCS_BOTTOM) && iStateId != 3)
 			prcBox->bottom += 2;
-		tabdat->helperItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == 3 ? 180 : 100);
+		tabdat->helperItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == 3 ? 200 : 150);
 		tabdat->helperItem->Render(hDC, prcBox, true);
+		tabdat->helperGlowItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == 3 ? 180 : 100);
+
+		/*
+		 * glow effect for hot and/or selected tabs
+		 */
+
+		if(iStateId != PBS_NORMAL) {
+			RECT rcGlow = *prcBox;
+			if(tabdat->dwStyle & TCS_BOTTOM) {
+				rcGlow.bottom -= 2;
+				rcGlow.top = rcGlow.bottom - 18;
+			} else {
+				rcGlow.top += 2;
+				rcGlow.bottom = rcGlow.top + 18;
+			}
+			rcGlow.left += 2;
+			rcGlow.right -= 2;
+			tabdat->helperGlowItem->Render(hDC, &rcGlow, true);
+		}
 	}
 	else {
 		if (tabdat->hTheme != 0)
@@ -1034,11 +1053,20 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			tabdat->helperItem = new CImageItem(5, 5, 5, 5, 0, 0, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
 												0, 255, 30, 80, 50, 100);
 
+			tabdat->helperGlowItem = new CImageItem(0, 0, 0, 0, 0, 0, IMAGE_PERPIXEL_ALPHA,
+												0, 255, 30, 80, 50, 100);
+
 			LONG    width, height;
-			const	HBITMAP hbm = Skin->getAeroTabBitmap(CSkin::TAB_BITMAP_TOP, width, height);
+			HBITMAP hbm = Skin->getAeroTabBitmap(CSkin::TAB_BITMAP_TOP, width, height);
 			tabdat->helperItem->setBitmap(hbm);
 			tabdat->helperItem->setMetrics(width, height);
 			tabdat->helperItem->setAlphaFormat(AC_SRC_ALPHA, 255);
+
+			hbm = Skin->getAeroGlowBitmap(CSkin::GLOW_BITMAP_TOP, width, height);
+			tabdat->helperGlowItem->setBitmap(hbm);
+			tabdat->helperGlowItem->setMetrics(width, height);
+			tabdat->helperGlowItem->setAlphaFormat(AC_SRC_ALPHA, 255);
+
 
 			return TRUE;
 		}
@@ -1136,6 +1164,8 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			if(tabdat) {
 				tabdat->helperItem->Clear();
 				delete tabdat->helperItem;
+				tabdat->helperGlowItem->Clear();
+				delete tabdat->helperGlowItem;
 				mir_free(tabdat);
 				SetWindowLongPtr(hwnd, GWLP_USERDATA, 0L);
 			}
@@ -1261,11 +1291,11 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 					i = TabCtrl_HitTest(hwnd, &tci);
 					if (i != -1) {
 						TCITEM tc;
-						struct _MessageWindowData *dat = NULL;
+						_MessageWindowData *dat = NULL;
 
 						tc.mask = TCIF_PARAM;
 						TabCtrl_GetItem(hwnd, i, &tc);
-						dat = (struct _MessageWindowData *)GetWindowLongPtr((HWND)tc.lParam, GWLP_USERDATA);
+						dat = (_MessageWindowData *)GetWindowLongPtr((HWND)tc.lParam, GWLP_USERDATA);
 						if (dat)	{
 							tabdat->bDragging = TRUE;
 							tabdat->iBeginIndex = i;
@@ -1353,10 +1383,10 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			UINT uiFlags = 1;
 			UINT uiBottom = 0;
 			TCHITTESTINFO hti;
-			BOOL bClassicDraw = (tabdat->m_skinning == FALSE) || (PluginConfig.m_TabAppearance & TCF_NOSKINNING);
 			HBITMAP bmpMem, bmpOld;
 			DWORD cx, cy;
 			bool  isAero = M->isAero();
+			BOOL bClassicDraw = !isAero && ((tabdat->m_skinning == FALSE) || (PluginConfig.m_TabAppearance & TCF_NOSKINNING));
 
 			if(GetUpdateRect(hwnd, NULL, TRUE) == 0)
 				break;
@@ -1375,8 +1405,10 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 
 				LONG width, height;
 
-				const	HBITMAP hbm = Skin->getAeroTabBitmap((dwStyle & TCS_BOTTOM) ? CSkin::TAB_BITMAP_BOTTOM : CSkin::TAB_BITMAP_TOP, height, width);
+				HBITMAP hbm = Skin->getAeroTabBitmap((dwStyle & TCS_BOTTOM) ? CSkin::TAB_BITMAP_BOTTOM : CSkin::TAB_BITMAP_TOP, height, width);
 				tabdat->helperItem->setBitmap(hbm);
+				hbm = Skin->getAeroGlowBitmap((dwStyle & TCS_BOTTOM) ? CSkin::GLOW_BITMAP_BOTTOM : CSkin::GLOW_BITMAP_TOP, height, width);
+				tabdat->helperGlowItem->setBitmap(hbm);
 				//tabdat->helperItem->setMetrics(width, height);
 			}
 			else
@@ -1826,6 +1858,8 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_LABELUSEWINCOLORS), CSkin::m_skinEnabled ? FALSE : TRUE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_BKGUSEWINCOLORS2), CSkin::m_skinEnabled ? FALSE : TRUE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_NOSKINNING), IsDlgButtonChecked(hwndDlg, IDC_STYLEDTABS) ? FALSE : TRUE);
+
+			SendDlgItemMessage(hwndDlg, IDC_AEROGLOW, CPM_SETCOLOUR, 0, (LPARAM)M->GetDword("aeroGlow", RGB(40, 40, 255)));
 			return 0;
 		}
 		case WM_NOTIFY:
@@ -1880,6 +1914,9 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 								RedrawWindow(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), NULL, NULL, RDW_INVALIDATE | RDW_ERASE);
 								pContainer = pContainer->pNextContainer;
 							}
+							M->WriteDword(SRMSGMOD_T, "aeroGlow", (DWORD)SendDlgItemMessage(hwndDlg, IDC_AEROGLOW, CPM_GETCOLOUR, 0, 0));
+							M->WriteDword(SRMSGMOD_T, CSkin::m_skinEnabled ? tabcolors[i].szSkinnedKey : tabcolors[i].szKey, clr);
+							Skin->setupAeroSkins();  // re-colorize
 							return TRUE;
 						}
 					}

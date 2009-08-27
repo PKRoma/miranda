@@ -43,7 +43,6 @@
 #define MSGDLGFONTCOUNT 22
 
 extern RTFColorTable *rtf_ctable;
-extern TCHAR *xStatusDescr[];
 extern void RTF_ColorAdd(const TCHAR *tszColname, size_t length);
 extern int  haveMathMod;
 extern TCHAR *mathModDelimiter;

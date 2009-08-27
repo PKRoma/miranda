@@ -302,16 +302,18 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				DrawAlpha(hdcMem, &rcClient, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
 						  item->CORNER, item->BORDERSTYLE, 0);
 			}
-			HBITMAP bmpLogo = CSkin::ResizeBitmap(PluginConfig.hbmLogo, 48, 48, fFree);
+			if(PluginConfig.hbmLogo) {
+				HBITMAP bmpLogo = CSkin::ResizeBitmap(PluginConfig.hbmLogo, 48, 48, fFree);
 
-			HDC		hdcBmp = CreateCompatibleDC(hdc);
-			HBITMAP hbmOldLogo = reinterpret_cast<HBITMAP>(SelectObject(hdcBmp, bmpLogo));
-			CMimAPI::m_MyAlphaBlend(hdcMem, 3, 1, 48, 48, hdcBmp, 0, 0, 48, 48, CSkin::m_default_bf);
-			SelectObject(hdcBmp, hbmOldLogo);
-			DeleteDC(hdcBmp);
-			if(fFree)
-				DeleteObject(bmpLogo);
-			rcClient.left = 60;
+				HDC		hdcBmp = CreateCompatibleDC(hdc);
+				HBITMAP hbmOldLogo = reinterpret_cast<HBITMAP>(SelectObject(hdcBmp, bmpLogo));
+				CMimAPI::m_MyAlphaBlend(hdcMem, 3, 1, 48, 48, hdcBmp, 0, 0, 48, 48, CSkin::m_default_bf);
+				SelectObject(hdcBmp, hbmOldLogo);
+				DeleteDC(hdcBmp);
+				if(fFree)
+					DeleteObject(bmpLogo);
+				rcClient.left = 60;
+			}
 
 			HFONT hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_COPYRIGHT, WM_GETFONT, 0, 0);
 			LOGFONT lf = {0};
@@ -330,7 +332,7 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			SetBkMode(hdcMem, TRANSPARENT);
 
 			HANDLE hTheme = CMimAPI::m_pfnOpenThemeData ? CMimAPI::m_pfnOpenThemeData(hwndDlg, L"BUTTON") : 0;
-			CSkin::RenderText(hdcMem, hTheme, _T("TabSRMM"), &rcClient, DT_SINGLELINE, 3);
+			CSkin::RenderText(hdcMem, hTheme, _T("TabSRMM"), &rcClient, DT_SINGLELINE);
 
 			SelectObject(hdcMem, hFont);
 			DeleteObject(hFontBig);
@@ -348,11 +350,11 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 						 TranslateT("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)),
 						 szBuildstr);
 #else
-			mir_snprintf(str, safe_sizeof(str), "%s %d.%d.%d.%d %s"),
+			mir_snprintf(str, safe_sizeof(str), "%s %d.%d.%d.%d %s",
 						 TranslateT("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)),
 						 szBuildstr);
 #endif
-			CSkin::RenderText(hdcMem, hTheme, str, &rcClient, DT_SINGLELINE, 8);
+			CSkin::RenderText(hdcMem, hTheme, str, &rcClient, DT_SINGLELINE);
 
 			mir_free(szBuildstr);
 

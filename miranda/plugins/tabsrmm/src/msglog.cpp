@@ -174,30 +174,30 @@ void CacheLogFonts()
 	 * cache/create the info panel fonts
 	 */
 
-	PluginConfig.ipConfig.isValid = 1;
+	CInfoPanel::m_ipConfig.isValid = 1;
 
-	if (PluginConfig.ipConfig.isValid) {
+	if (CInfoPanel::m_ipConfig.isValid) {
 		COLORREF clr;
 		LOGFONTA lf;
 
 		for (i = 0; i < IPFONTCOUNT; i++) {
-			if (PluginConfig.ipConfig.hFonts[i])
-				DeleteObject(PluginConfig.ipConfig.hFonts[i]);
+			if (CInfoPanel::m_ipConfig.hFonts[i])
+				DeleteObject(CInfoPanel::m_ipConfig.hFonts[i]);
 			LoadLogfont(i + 100, &lf, &clr, FONTMODULE);
 			//lf.lfHeight =-MulDiv(lf.lfHeight, logPixelSY, 72);
-			PluginConfig.ipConfig.hFonts[i] = CreateFontIndirectA(&lf);
-			PluginConfig.ipConfig.clrs[i] = clr;
+			CInfoPanel::m_ipConfig.hFonts[i] = CreateFontIndirectA(&lf);
+			CInfoPanel::m_ipConfig.clrs[i] = clr;
 		}
-		PluginConfig.hFontCaption = PluginConfig.ipConfig.hFonts[IPFONTCOUNT - 1];
+		PluginConfig.hFontCaption = CInfoPanel::m_ipConfig.hFonts[IPFONTCOUNT - 1];
 	}
 
-	if (PluginConfig.ipConfig.bkgBrush)
-		DeleteObject(PluginConfig.ipConfig.bkgBrush);
+	if (CInfoPanel::m_ipConfig.bkgBrush)
+		DeleteObject(CInfoPanel::m_ipConfig.bkgBrush);
 
-	PluginConfig.ipConfig.clrBackground = M->GetDword(FONTMODULE, "ipfieldsbg", GetSysColor(COLOR_3DFACE));
-	PluginConfig.ipConfig.clrClockSymbol = M->GetDword(FONTMODULE, "col_clock", GetSysColor(COLOR_WINDOWTEXT));
+	CInfoPanel::m_ipConfig.clrBackground = M->GetDword(FONTMODULE, "ipfieldsbg", GetSysColor(COLOR_3DFACE));
+	CInfoPanel::m_ipConfig.clrClockSymbol = M->GetDword(FONTMODULE, "col_clock", GetSysColor(COLOR_WINDOWTEXT));
 
-	PluginConfig.ipConfig.bkgBrush = CreateSolidBrush(PluginConfig.ipConfig.clrBackground);
+	CInfoPanel::m_ipConfig.bkgBrush = CreateSolidBrush(CInfoPanel::m_ipConfig.clrBackground);
 
 	PluginConfig.crDefault = M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
 	PluginConfig.crIncoming = M->GetDword(FONTMODULE, "inbg", SRMSGDEFSET_BKGINCOLOUR);
@@ -212,11 +212,11 @@ void FreeLogFonts()
 	int i;
 
 	for (i = 0; i < IPFONTCOUNT; i++)
-		if (PluginConfig.ipConfig.hFonts[i])
-			DeleteObject(PluginConfig.ipConfig.hFonts[i]);
+		if (CInfoPanel::m_ipConfig.hFonts[i])
+			DeleteObject(CInfoPanel::m_ipConfig.hFonts[i]);
 
-	if (PluginConfig.ipConfig.bkgBrush)
-		DeleteObject(PluginConfig.ipConfig.bkgBrush);
+	if (CInfoPanel::m_ipConfig.bkgBrush)
+		DeleteObject(CInfoPanel::m_ipConfig.bkgBrush);
 }
 
 /*

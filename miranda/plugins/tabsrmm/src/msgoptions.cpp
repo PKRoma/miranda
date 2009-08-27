@@ -951,9 +951,6 @@ static struct LISTOPTIONSITEM tabItems[] = {
 	0, _T("No borders for text areas (make them appear \"flat\")"), 1, LOI_TYPE_SETTING, (UINT_PTR)"flatlog", 2,
 	0, _T("Always use icon pack image on the smiley button"), 1, LOI_TYPE_SETTING, (UINT_PTR)"smbutton_override", 2,
 	0, _T("Remember and set keyboard layout per contact"), 1, LOI_TYPE_SETTING, (UINT_PTR)"al", 3,
-	0, _T("ESC closes sessions (minimizes window, if disabled)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"escmode", 3,
-	//MAD
-	0, _T("ESC closes whole container(uncheck for closing per-tab)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"escmode_2", 3,
 	0, _T("Close button only hides message windows"), 0, LOI_TYPE_SETTING, (UINT_PTR)"hideonclose", 3,
 	0, _T("Allow TAB key in typing area (this will disable focus selection by TAB key)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"tabmode", 3,
 	//MAD
@@ -1011,6 +1008,11 @@ static INT_PTR CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CUT_TITLEMAX), IsDlgButtonChecked(hwndDlg, IDC_CUT_TABTITLE));
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CUT_TITLEMAXSPIN), IsDlgButtonChecked(hwndDlg, IDC_CUT_TABTITLE));
+
+			SendDlgItemMessage(hwndDlg, IDC_ESCMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Normal - close tab, if last tab is closed also close the window"));
+			SendDlgItemMessage(hwndDlg, IDC_ESCMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Minimize the window to the task bar"));
+			SendDlgItemMessage(hwndDlg, IDC_ESCMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Close or hide window, depends on the close button setting above"));
+			SendDlgItemMessage(hwndDlg, IDC_ESCMODE, CB_SETCURSEL, (WPARAM)PluginConfig.m_EscapeCloses, 0);
 			break;
 		}
 		case WM_COMMAND:
@@ -1090,6 +1092,8 @@ static INT_PTR CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 								i++;
 							}
 
+							PluginConfig.m_EscapeCloses = (int)SendDlgItemMessage(hwndDlg, IDC_ESCMODE, CB_GETCURSEL, 0, 0);
+							M->WriteByte(SRMSGMOD_T, "escmode", (BYTE)PluginConfig.m_EscapeCloses);
 							PluginConfig.Reload();
 							M->BroadcastMessage(DM_OPTIONSAPPLIED, 0, 0);
 							return TRUE;
@@ -1904,9 +1908,9 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			CheckDlgButton(hwndDlg, IDC_SKIN_LOADFONTS, loadMode & THEME_READ_FONTS);
 			CheckDlgButton(hwndDlg, IDC_SKIN_LOADTEMPLATES, loadMode & THEME_READ_TEMPLATES);
 
-			if (!DBGetContactSettingString(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
-				if (lstrlenA(dbv.pszVal) > 4)
-					SetDlgItemTextA(hwndDlg, IDC_SKINFILENAME, dbv.pszVal);
+			if (!DBGetContactSettingTString(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
+				if (lstrlen(dbv.ptszVal) > 4)
+					SetDlgItemText(hwndDlg, IDC_SKINFILENAME, dbv.ptszVal);
 				DBFreeVariant(&dbv);
 			} else
 				SetDlgItemText(hwndDlg, IDC_SKINFILENAME, _T(""));
@@ -1944,38 +1948,38 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					SendMessage(hwndTabConfig, WM_USER + 100, 0, 0);
 					break;
 				case IDC_SELECTSKINFILE: {
-					OPENFILENAMEA ofn = {0};
-					char str[MAX_PATH] = "*.tsk", final_path[MAX_PATH], initDir[MAX_PATH];
+					OPENFILENAME ofn = {0};
+					TCHAR str[MAX_PATH] = _T("*.tsk"), final_path[MAX_PATH], initDir[MAX_PATH];
 
-					mir_snprintf(initDir, MAX_PATH,"%s", M->getSkinPathA());
+					mir_sntprintf(initDir, MAX_PATH, _T("%s"), M->getSkinPath());
 
 					ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 					ofn.hwndOwner = hwndDlg;
 					ofn.hInstance = NULL;
-					ofn.lpstrFilter = "*.tsk";
+					ofn.lpstrFilter = _T("*.tsk");
 					ofn.lpstrFile = str;
 					ofn.lpstrInitialDir = initDir;
 					ofn.Flags = OFN_FILEMUSTEXIST;
-					ofn.nMaxFile = sizeof(str);
+					ofn.nMaxFile = safe_sizeof(str);
 					ofn.nMaxFileTitle = MAX_PATH;
-					ofn.lpstrDefExt = "";
-					if (!GetOpenFileNameA(&ofn))
+					ofn.lpstrDefExt = _T("");
+					if (!GetOpenFileName(&ofn))
 						break;
 					M->pathToRelative(str, final_path);
-					if (PathFileExistsA(str)) {
+					if (PathFileExists(str)) {
 						int skinChanged = 0;
 						DBVARIANT dbv = {0};
 
 						if (!DBGetContactSettingString(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
-							if (strcmp(dbv.pszVal, final_path))
+							if (_tcscmp(dbv.ptszVal, final_path))
 								skinChanged = TRUE;
 							DBFreeVariant(&dbv);
 						} else
 							skinChanged = TRUE;
 
-						DBWriteContactSettingString(NULL, SRMSGMOD_T, "ContainerSkin", final_path);
+						DBWriteContactSettingTString(NULL, SRMSGMOD_T, "ContainerSkin", final_path);
 						M->WriteByte(SRMSGMOD_T, "skin_changed", (BYTE)skinChanged);
-						SetDlgItemTextA(hwndDlg, IDC_SKINFILENAME, final_path);
+						SetDlgItemText(hwndDlg, IDC_SKINFILENAME, final_path);
 					}
 					break;
 				}
@@ -2025,7 +2029,7 @@ static INT_PTR CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, L
 
 			tci.pszText = TranslateT("Load and apply");
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 0, &tci);
-			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 60, 1);
+			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 			ShowWindow((HWND)tci.lParam, SW_HIDE);
 			if (CMimAPI::m_pfnEnableThemeDialogTexture)
 				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
@@ -2035,7 +2039,7 @@ static INT_PTR CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, L
 
 			tci.pszText = TranslateT("Tab appearance");
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 1, &tci);
-			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 60, 1);
+			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 			ShowWindow((HWND)tci.lParam, SW_HIDE);
 			if (CMimAPI::m_pfnEnableThemeDialogTexture)
 				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);

@@ -210,6 +210,7 @@ LONG_PTR CMenuBar::processMsg(const UINT msg, const WPARAM wParam, const LPARAM 
 
 				return(customDrawWorker(nm));
 			}
+
 			case TBN_DROPDOWN: {
 				NMTOOLBAR *mtb = (NMTOOLBAR *)lParam;
 
