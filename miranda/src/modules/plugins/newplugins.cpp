@@ -987,7 +987,8 @@ int LoadNewPluginsModule(void)
 	askAboutIgnoredPlugins=(UINT) GetPrivateProfileInt( _T("PluginLoader"), _T("AskAboutIgnoredPlugins"), 0, mirandabootini);
 
 	// if Crash Dumper is present, load it to provide Crash Reports
-	if ( pluginList_crshdmp != NULL ) {
+	if (pluginList_crshdmp != NULL && isPluginOnWhiteList(pluginList_crshdmp->pluginname)) 
+    {
 		if ( pluginList_crshdmp->bpi.Load(&pluginCoreLink) == 0 )
 			pluginList_crshdmp->pclass |= PCLASS_LOADED | PCLASS_LAST;
 		else
