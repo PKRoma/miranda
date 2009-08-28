@@ -671,7 +671,7 @@ static int PopupShowT(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
 	CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbe);
 
 	if(hEvent == 0 && hContact == 0)
-		dbe.szModule = "Unknown module or contact";
+		dbe.szModule = Translate("Unknown module or contact");
 
 	pdata = (PLUGIN_DATAT *)malloc(sizeof(PLUGIN_DATAT));
 	ZeroMemory((void *)pdata, sizeof(PLUGIN_DATAT));

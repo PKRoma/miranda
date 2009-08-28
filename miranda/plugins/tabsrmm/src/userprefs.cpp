@@ -220,7 +220,7 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				CallService(MS_TZ_PREPARELIST, (WPARAM)0, (LPARAM)&mtzp);
 			}
 			else
-				SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_ADDSTRING, 0, (LPARAM)_T("time zone service is missing"));
+				SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_ADDSTRING, 0, (LPARAM)TranslateT("time zone service is missing"));
 
 			ShowWindow(hwndDlg, SW_SHOW);
 			CheckDlgButton(hwndDlg, IDC_NOAUTOCLOSE, M->GetByte(hContact, "NoAutoClose", 0));

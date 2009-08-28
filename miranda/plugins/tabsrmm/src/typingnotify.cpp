@@ -302,12 +302,12 @@ static INT_PTR CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 						switch (i) {
 							case PROTOTYPE_CONTACTTYPING_OFF:
-								lstrcpy(ppd.lptzContactName, _T("Contact"));
+								lstrcpy(ppd.lptzContactName, TranslateT("Contact"));
 								lstrcpyn(ppd.lptzText, szStop, MAX_SECONDLINE);
 								notyping = 1;
 								break;
 							default:
-								lstrcpy(ppd.lptzContactName, _T("Contact"));
+								lstrcpy(ppd.lptzContactName, TranslateT("Contact"));
 								lstrcpyn(ppd.lptzText, szStart, MAX_SECONDLINE);
 								notyping = 0;
 								break;
