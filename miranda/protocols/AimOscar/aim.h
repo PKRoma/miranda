@@ -191,6 +191,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #define CLIENT_AIM6_5 "AIM 6.5"
 #define CLIENT_AIM6_8 "AIM 6.8"
 #define CLIENT_AIM6_9 "AIM 6.9"
+#define CLIENT_AIM7_0 "AIM 7.0"
 #define CLIENT_AIMTOC "AIM TOC"
 #define CLIENT_BOT "AIM Bot"
 #define CLIENT_GAIM "Gaim"

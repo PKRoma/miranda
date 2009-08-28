@@ -488,6 +488,8 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
                     else
                         strcpy(client,CLIENT_AIM_TRITON);
                 }
+                else if(O1ff&&l343&&l341&&O104&&O105&&O101&&l346)
+                    strcpy(client,CLIENT_AIM7_0);
                 else if(l346&&l34e&&tlv.len()==4)
                     strcpy(client,CLIENT_MEEBO);
                 else if(l34e&&tlv.len()==2)
