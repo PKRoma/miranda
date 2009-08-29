@@ -541,10 +541,11 @@ struct ServerGroupItem
 struct MsnContact
 {
 	char *email;
+	char *invite;
 	int list;
 	int netId;
 
-	~MsnContact() { mir_free(email); }
+	~MsnContact() { mir_free(email); mir_free(invite); }
 };
 
 #define NETID_UNKNOWN	0x0000

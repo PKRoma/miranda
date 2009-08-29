@@ -421,8 +421,9 @@ struct CMsnProto : public PROTO_INTERFACE
     /////////////////////////////////////////////////////////////////////////////////////////
     //	MSN contact list
 
-    int		 Lists_Add(int list, int netId, const char* email);
+    int		 Lists_Add(int list, int netId, const char* email, const char* invite = NULL);
     bool	 Lists_IsInList(int list, const char* email);
+    char*	 Lists_GetInvite(const char* email);
     int		 Lists_GetMask(const char* email);
     int		 Lists_GetNetId(const char* email);
     void	 Lists_Remove(int list, const char* email);
@@ -441,7 +442,7 @@ struct CMsnProto : public PROTO_INTERFACE
     bool	 MSN_IsMyContact(HANDLE hContact);
     bool	 MSN_IsMeByContact(HANDLE hContact, char* szEmail  = NULL);
     bool     MSN_AddUser(HANDLE hContact, const char* email, int netId, int flags);
-    void     MSN_AddAuthRequest(const char *email, const char *nick);
+    void     MSN_AddAuthRequest(const char *email, const char *nick, const char *reason);
     void	 MSN_SetContactDb(HANDLE hContact, const char *szEmail);
     HANDLE	 MSN_HContactFromEmail(const char* msnEmail, const char* msnNick, bool addIfNeeded, bool temporary);
     HANDLE	 AddToListByEmail(const char *email, DWORD flags);
@@ -503,7 +504,7 @@ struct CMsnProto : public PROTO_INTERFACE
     void MSN_ABUpdateAttr(const char* szCntId, const char* szAttr, const char* szValue);
     bool MSN_ABUpdateProperty(const char* szCntId, const char* propName, const char* propValue);
     bool MSN_ABAddRemoveContact(const char* szCntId, int netId, bool add);
-    unsigned MSN_ABContactAdd(const char* szEmail, const char* szNick, int netId, const bool search, const bool retry=false);
+    unsigned MSN_ABContactAdd(const char* szEmail, const char* szNick, int netId, const char* szInvite, const bool search, const bool retry=false);
     void MSN_ABUpdateDynamicItem(void);
 
     ezxml_t abSoapHdr(const char* service, const char* scenario, ezxml_t& tbdy, char*& httphdr);
