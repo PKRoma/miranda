@@ -505,7 +505,7 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 						PostMessage(hwndDlg,M_FILEEXISTSDLGREPLY,(WPARAM)mir_strdup(fts->currentFile),(LPARAM)pfr);
 					}
 					SetWindowLongPtr(hwndDlg,DWLP_MSGRESULT,1);
-					return FALSE;
+					return TRUE;
 				}
 				case ACKRESULT_DATA:
 				{
