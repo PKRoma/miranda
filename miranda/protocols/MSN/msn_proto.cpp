@@ -991,8 +991,21 @@ int __cdecl CMsnProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 		ForkThread(&CMsnProto::MsnFakeAck, new TFakeAckParams(hContact, seq, errMsg, this));
 		break;
 
-	case NETID_MSN:
-	case NETID_LCS:
+	case NETID_YAHOO:
+		if (strlen(msg) > 1202) 
+		{
+			seq = 999996;
+			errMsg = MSN_Translate("Message is too long: MSN messages are limited by 1202 UTF8 chars");
+			ForkThread(&CMsnProto::MsnFakeAck, new TFakeAckParams(hContact, seq, errMsg, this));
+		}
+		else
+		{
+			seq = msnNsThread->sendMessage('1', tEmail, netId, msg, rtlFlag);
+			ForkThread(&CMsnProto::MsnFakeAck, new TFakeAckParams(hContact, seq, NULL, this));
+		}
+		break;
+
+	default:
 		if (strlen(msg) > 1202) 
 		{
 			seq = 999996;
@@ -1008,7 +1021,7 @@ int __cdecl CMsnProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 			{
 				if (isOffline) 
 				{
-					if (netId == NETID_MSN)
+					if (netId != NETID_LCS)
 					{
 						seq = MSN_GenRandom();
 						ForkThread(&CMsnProto::MsnSendOim, new TFakeAckParams(hContact, seq, mir_strdup(msg), this));
@@ -1030,23 +1043,6 @@ int __cdecl CMsnProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 					ForkThread(&CMsnProto::MsnFakeAck, new TFakeAckParams(hContact, seq, NULL, this));
 			}
 		}
-		break;
-		
-	case NETID_YAHOO:
-		if (strlen(msg) > 1202) 
-		{
-			seq = 999996;
-			errMsg = MSN_Translate("Message is too long: MSN messages are limited by 1202 UTF8 chars");
-			ForkThread(&CMsnProto::MsnFakeAck, new TFakeAckParams(hContact, seq, errMsg, this));
-		}
-		else
-		{
-			seq = msnNsThread->sendMessage('1', tEmail, netId, msg, rtlFlag);
-			ForkThread(&CMsnProto::MsnFakeAck, new TFakeAckParams(hContact, seq, NULL, this));
-		}
-		break;
-
-	default:
 		break;
 	}
 
