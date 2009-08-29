@@ -699,12 +699,12 @@ void CMsnProto::sttProcessAdd(char* buf, size_t len)
             }
 
             if (listId == LIST_RL)
-				Lists_Add(LIST_PL, netId, szEmail);
+                MSN_SharingFindMembership(true);
 
 			MSN_AddUser(NULL, szEmail, netId, listId);
 		
 			if (listId == LIST_RL && !(Lists_GetMask(szEmail) & (LIST_FL | LIST_AL | LIST_BL)))
-				MSN_AddAuthRequest(szEmail, szNick);
+				MSN_AddAuthRequest(szEmail, szNick, Lists_GetInvite(szEmail));
 
 			cont = ezxml_next(cont);
 		}

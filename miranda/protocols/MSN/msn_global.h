@@ -419,8 +419,8 @@ struct ThreadData
 	ThreadData();
 	~ThreadData();
 
-	MsnThreadFunc  mFunc;            // thread entry point
 	TInfoType      mType;            // thread type
+	MsnThreadFunc  mFunc;            // thread entry point
 	char           mServer[80];      // server name
 
 	HANDLE         s;	               // NetLib connection for the thread
@@ -542,10 +542,11 @@ struct ServerGroupItem
 struct MsnContact
 {
 	char *email;
+	char *invite;
 	int list;
 	int netId;
 
-	~MsnContact() { mir_free(email); }
+	~MsnContact() { mir_free(email); mir_free(invite); }
 };
 
 #define NETID_UNKNOWN	0x0000

@@ -468,7 +468,7 @@ void __cdecl CMsnProto::MsnSearchAckThread(void* arg)
 		return;
 	}
 
-	unsigned res = MSN_ABContactAdd(email, NULL, 1, true);
+	unsigned res = MSN_ABContactAdd(email, NULL, NETID_UNKNOWN, NULL, 1, true);
 	switch(res)
 	{
 	case 0:

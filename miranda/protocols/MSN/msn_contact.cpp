@@ -123,7 +123,7 @@ void CMsnProto::AddDelUserContList(const char* email, const int list, const int 
 bool CMsnProto::MSN_AddUser(HANDLE hContact, const char* email, int netId, int flags)
 {
 	bool needRemove     = (flags & LIST_REMOVE) != 0;
-	bool leaveHotmail   = (flags & LIST_REMOVENH) != 0;
+	bool leaveHotmail   = (flags & LIST_REMOVENH) == LIST_REMOVENH;
 	flags &= 0xFF;
 
 	if (needRemove != Lists_IsInList(flags, email))
@@ -158,11 +158,11 @@ bool CMsnProto::MSN_AddUser(HANDLE hContact, const char* email, int netId, int f
 			if (!strcmp(email, MyOptions.szEmail))
 				getStringUtf("Nick", &dbv);
 
-			unsigned res1 = MSN_ABContactAdd(email, dbv.pszVal, netId, false);
+			unsigned res1 = MSN_ABContactAdd(email, dbv.pszVal, netId, NULL, false);
 			if (netId == NETID_MSN && res1 == 2)
 			{
 				netId = NETID_LCS;
-				res = MSN_ABContactAdd(email, dbv.pszVal, netId, false) == 0;
+				res = MSN_ABContactAdd(email, dbv.pszVal, netId, NULL, false) == 0;
 			}
 			else if (netId == NETID_MSN && res1 == 3)
 			{

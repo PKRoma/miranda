@@ -263,8 +263,18 @@ bool CMsnProto::MSN_SharingFindMembership(bool deltas)
 					const char* szType = ezxml_txt(ezxml_child(memb, "Type"));
 					if (strcmp(szType, "Passport") == 0)
 					{
+                        const char* szInvite = NULL;
 						const char* szEmail = ezxml_txt(ezxml_child(memb, "PassportName"));
-						if (!deleted) Lists_Add(lstId, 1, szEmail); else Lists_Remove(lstId, szEmail);
+						ezxml_t anot = ezxml_get(memb, "Annotations", 0, "Annotation", -1);
+						while (anot != NULL)
+						{
+							if (strcmp(ezxml_txt(ezxml_child(anot, "Name")), "MSN.IM.InviteMessage") == 0)
+                            {
+                                szInvite = ezxml_txt(ezxml_child(anot, "Value"));
+                            }
+							anot = ezxml_next(anot);
+						}
+						if (!deleted) Lists_Add(lstId, 1, szEmail, szInvite); else Lists_Remove(lstId, szEmail);
 					}
 					else if (strcmp(szType, "Phone") == 0)
 					{
@@ -275,6 +285,7 @@ bool CMsnProto::MSN_SharingFindMembership(bool deltas)
 					}
 					else if (strcmp(szType, "Email") == 0)
 					{
+                        const char* szInvite = NULL;
 						const char* szEmail = ezxml_txt(ezxml_child(memb, "Email"));
 						int netId = strstr(szEmail, "@yahoo.com") ? NETID_YAHOO : NETID_LCS;
 						ezxml_t anot = ezxml_get(memb, "Annotations", 0, "Annotation", -1);
@@ -283,12 +294,15 @@ bool CMsnProto::MSN_SharingFindMembership(bool deltas)
 							if (strcmp(ezxml_txt(ezxml_child(anot, "Name")), "MSN.IM.BuddyType") == 0)
 							{
 								netId = atol(ezxml_txt(ezxml_child(anot, "Value")));
-								break;
 							}
+							else if (strcmp(ezxml_txt(ezxml_child(anot, "Name")), "MSN.IM.InviteMessage") == 0)
+                            {
+                                szInvite = ezxml_txt(ezxml_child(anot, "Value"));
+                            }
 							anot = ezxml_next(anot);
 						}
 
-						if (!deleted) Lists_Add(lstId, netId, szEmail);  else Lists_Remove(lstId, szEmail);
+						if (!deleted) Lists_Add(lstId, netId, szEmail, szInvite);  else Lists_Remove(lstId, szEmail);
 					}
 					memb = ezxml_next(memb);
 				}
@@ -1202,7 +1216,7 @@ void CMsnProto::MSN_ABUpdateNick(const char* szNick, const char* szCntId)
 }
 
 
-unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, int netId, const bool search, const bool retry)
+unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, int netId, const char* szInvite, const bool search, const bool retry)
 {
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -1226,6 +1240,17 @@ unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, in
 		ezxml_set_txt(node, szEmail);
 		node = ezxml_add_child(conti, "isMessengerUser", 0);
 		ezxml_set_txt(node, "true");
+
+        if (szInvite)
+        {
+		    node = ezxml_add_child(conti, "MessengerMemberInfo", 0);
+		    node = ezxml_add_child(node, "PendingAnnotations", 0);
+		    ezxml_t anot = ezxml_add_child(node, "Annotation", 0);
+		    node = ezxml_add_child(anot, "Name", 0);
+		    ezxml_set_txt(node, "MSN.IM.InviteMessage");
+		    node = ezxml_add_child(anot, "Value", 0);
+		    ezxml_set_txt(node, szInvite);
+        }
 		break;
 
 	case NETID_MOB:
@@ -1347,11 +1372,11 @@ unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, in
             else if (strcmp(szErr, "PassportAuthFail") == 0)
             {
                 MSN_GetPassportAuth();
-                status = MSN_ABContactAdd(szEmail, szNick, netId, search, retry);
+                status = MSN_ABContactAdd(szEmail, szNick, netId, NULL, search, retry);
             }
             else
             {
-                status = MSN_ABContactAdd(szEmail, szNick, netId, search, true);
+                status = MSN_ABContactAdd(szEmail, szNick, netId, NULL, search, true);
             }
 		}
 		ezxml_free(xmlm);

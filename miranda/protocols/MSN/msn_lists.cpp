@@ -53,6 +53,17 @@ bool CMsnProto::Lists_IsInList(int list, const char* email)
 	return res;
 }
 
+char* CMsnProto::Lists_GetInvite(const char* email)
+{
+	EnterCriticalSection(&csLists);
+
+	MsnContact* p = contList.find((MsnContact*)&email);
+	char* res = p ? p->invite : NULL;
+
+	LeaveCriticalSection(&csLists);
+	return res;
+}
+
 int CMsnProto::Lists_GetMask(const char* email)
 {
 	EnterCriticalSection(&csLists);
@@ -77,7 +88,7 @@ int CMsnProto::Lists_GetNetId(const char* email)
 	return res;
 }
 
-int CMsnProto::Lists_Add(int list, int netId, const char* email)
+int CMsnProto::Lists_Add(int list, int netId, const char* email, const char* invite)
 {
 	EnterCriticalSection(&csLists);
 
@@ -88,10 +99,18 @@ int CMsnProto::Lists_Add(int list, int netId, const char* email)
 		p->list = list;
 		p->netId = netId;
 		p->email = mir_strdup(email);
+		p->invite = mir_strdup(invite);
 		contList.insert(p);
 	}
 	else
+    {
 		p->list |= list;
+        if (invite)
+        {
+            mir_free(p->invite);
+		    p->invite = mir_strdup(invite);
+        }
+    }
 	int result = p->list;
 
 	LeaveCriticalSection(&csLists);
@@ -106,6 +125,7 @@ void  CMsnProto::Lists_Remove(int list, const char* email)
 	{
 		MsnContact& p = contList[i];
 		p.list &= ~list;
+        if (list & LIST_PL) { mir_free(p.invite); p.invite = NULL; }
 		if (p.list == 0) contList.remove(i);
 	}
 	LeaveCriticalSection(&csLists);
@@ -142,11 +162,11 @@ void CMsnProto::MSN_CleanupLists(void)
 			if (p.list & (LIST_AL | LIST_BL))
 				MSN_AddUser(NULL, p.email, p.netId, LIST_PL + LIST_REMOVE);
 			else
-				MSN_AddAuthRequest(p.email, p.email);
+                MSN_AddAuthRequest(p.email, p.email, p.invite);
 		}
 
 		if (p.list == LIST_RL)
-			MSN_AddAuthRequest(p.email, p.email);
+            MSN_AddAuthRequest(p.email, p.email, p.invite);
 	}
 //	LeaveCriticalSection(&csLists);
 
@@ -166,7 +186,7 @@ void CMsnProto::MSN_CleanupLists(void)
 			if (localList || (mask & LIST_FL))
 			{
 				char path[MAX_PATH];
-				MSN_GetCustomSmileyFileName(hContact, path, SIZEOF(path), "", 0);
+				MSN_GetCustomSmileyFileName(hContact, path, sizeof(path), "", 0);
 				if (path[0])
 				{
 					SMADD_CONT cont;
@@ -176,7 +196,7 @@ void CMsnProto::MSN_CleanupLists(void)
 					cont.path = mir_a2t(path);
 
 					MSN_CallService(MS_SMILEYADD_LOADCONTACTSMILEYS, 0, (LPARAM)&cont);
-                    mir_free(cont.path);
+					mir_free(cont.path);
 				}
 			    continue;
 			}
