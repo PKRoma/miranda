@@ -1372,11 +1372,11 @@ unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, in
             else if (strcmp(szErr, "PassportAuthFail") == 0)
             {
                 MSN_GetPassportAuth();
-                status = MSN_ABContactAdd(szEmail, szNick, netId, search, retry);
+                status = MSN_ABContactAdd(szEmail, szNick, netId, NULL, search, retry);
             }
             else
             {
-                status = MSN_ABContactAdd(szEmail, szNick, netId, search, true);
+                status = MSN_ABContactAdd(szEmail, szNick, netId, NULL, search, true);
             }
 		}
 		ezxml_free(xmlm);

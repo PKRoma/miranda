@@ -233,8 +233,8 @@ struct CMsnProto : public PROTO_INTERFACE
 	void		MSN_ShowPopup(const HANDLE hContact, const TCHAR* msg, int flags);
 	void		MSN_ShowError(const char* msgtext, ...);
 
-    void		MSN_SetNicknameUtf(char* nickname);
-    void		MSN_SendNicknameUtf(char* nickname);
+    void		MSN_SetNicknameUtf(const char* nickname);
+    void		MSN_SendNicknameUtf(const char* nickname);
 
 
 	/////////////////////////////////////////////////////////////////////////////////////////

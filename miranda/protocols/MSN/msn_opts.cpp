@@ -303,13 +303,13 @@ LBL_Continue:
 			if	(!proto->getTString("Nick", &dbv)) 
             {
 				if (_tcscmp(dbv.ptszVal, screenStr))
-					proto->MSN_SendNicknameT(screenStr);
+					proto->MSN_SendNickname(screenStr);
 				MSN_FreeVariant(&dbv);
 			}
             else
             {
 				if (screenStr[0])
-					proto->MSN_SendNicknameT(screenStr);
+					proto->MSN_SendNickname(screenStr);
             }
 
 			BYTE mblsnd = IsDlgButtonChecked(hwndDlg, IDC_MOBILESEND) == BST_CHECKED;

@@ -339,7 +339,7 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 
 INT_PTR CMsnProto::SetNickName(WPARAM wParam, LPARAM lParam)
 {
-	MSN_SendNicknameA((char*)lParam);
+	MSN_SendNickname((char*)lParam);
 	return 0;
 }
 

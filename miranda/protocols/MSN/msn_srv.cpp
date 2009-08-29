@@ -313,17 +313,16 @@ void CMsnProto::MSN_SyncContactToServerGroup(HANDLE hContact, const char* szCont
 /////////////////////////////////////////////////////////////////////////////////////////
 // Msn_SendNickname - update our own nickname on the server
 
-void  CMsnProto::MSN_SendNicknameUtf(char* nickname)
+void  CMsnProto::MSN_SendNicknameUtf(const char* nickname)
 {
 	setStringUtf(NULL, "Nick", nickname);
 	
 	MSN_SetNicknameUtf(nickname);
 	MSN_StoreUpdateNick(nickname);
 //	MSN_ABUpdateNick(nickname, NULL);
-	mir_free(nickname);
 }
 
-void  CMsnProto::MSN_SetNicknameUtf(char* nickname)
+void  CMsnProto::MSN_SetNicknameUtf(const char* nickname)
 {
 	const size_t urlNickSz = strlen(nickname) * 3 + 1;
 	char* urlNick = (char*)alloca(urlNickSz);
