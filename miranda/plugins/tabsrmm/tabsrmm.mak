@@ -48,6 +48,7 @@ CLEAN :
 	-@erase "$(INTDIR)\globals.obj"
 	-@erase "$(INTDIR)\hotkeyhandler.obj"
 	-@erase "$(INTDIR)\ImageDataObject.obj"
+	-@erase "$(INTDIR)\infopanel.obj"
 	-@erase "$(INTDIR)\log.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\manager.obj"
@@ -151,6 +152,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\globals.obj" \
 	"$(INTDIR)\hotkeyhandler.obj" \
 	"$(INTDIR)\ImageDataObject.obj" \
+	"$(INTDIR)\infopanel.obj" \
 	"$(INTDIR)\mim.obj" \
 	"$(INTDIR)\modplus.obj" \
 	"$(INTDIR)\msgdialog.obj" \
@@ -199,6 +201,7 @@ CLEAN :
 	-@erase "$(INTDIR)\globals.obj"
 	-@erase "$(INTDIR)\hotkeyhandler.obj"
 	-@erase "$(INTDIR)\ImageDataObject.obj"
+	-@erase "$(INTDIR)\infopanel.obj"
 	-@erase "$(INTDIR)\log.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\manager.obj"
@@ -301,6 +304,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\globals.obj" \
 	"$(INTDIR)\hotkeyhandler.obj" \
 	"$(INTDIR)\ImageDataObject.obj" \
+	"$(INTDIR)\infopanel.obj" \
 	"$(INTDIR)\mim.obj" \
 	"$(INTDIR)\modplus.obj" \
 	"$(INTDIR)\msgdialog.obj" \
@@ -349,6 +353,7 @@ CLEAN :
 	-@erase "$(INTDIR)\globals.obj"
 	-@erase "$(INTDIR)\hotkeyhandler.obj"
 	-@erase "$(INTDIR)\ImageDataObject.obj"
+	-@erase "$(INTDIR)\infopanel.obj"
 	-@erase "$(INTDIR)\log.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\manager.obj"
@@ -451,6 +456,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\globals.obj" \
 	"$(INTDIR)\hotkeyhandler.obj" \
 	"$(INTDIR)\ImageDataObject.obj" \
+	"$(INTDIR)\infopanel.obj" \
 	"$(INTDIR)\mim.obj" \
 	"$(INTDIR)\modplus.obj" \
 	"$(INTDIR)\msgdialog.obj" \
@@ -482,108 +488,66 @@ LINK32_OBJS= \
 
 OUTDIR=.\Debug_Unicode
 INTDIR=.\Debug_Unicode
-# Begin Custom Macros
-OutDir=.\Debug_Unicode
-# End Custom Macros
 
-ALL : "..\..\Bin\Debug Unicode\Plugins\tabsrmm.dll" "$(OUTDIR)\tabsrmm.bsc"
+ALL : "..\..\Bin\Debug Unicode\Plugins\tabsrmm.dll"
 
 
 CLEAN :
 	-@erase "$(INTDIR)\buttonsbar.obj"
-	-@erase "$(INTDIR)\buttonsbar.sbr"
 	-@erase "$(INTDIR)\clist.obj"
-	-@erase "$(INTDIR)\clist.sbr"
 	-@erase "$(INTDIR)\colorchooser.obj"
-	-@erase "$(INTDIR)\colorchooser.sbr"
 	-@erase "$(INTDIR)\container.obj"
-	-@erase "$(INTDIR)\container.sbr"
 	-@erase "$(INTDIR)\containeroptions.obj"
-	-@erase "$(INTDIR)\containeroptions.sbr"
 	-@erase "$(INTDIR)\controls.obj"
-	-@erase "$(INTDIR)\controls.sbr"
 	-@erase "$(INTDIR)\eventpopups.obj"
-	-@erase "$(INTDIR)\eventpopups.sbr"
 	-@erase "$(INTDIR)\formatting.obj"
-	-@erase "$(INTDIR)\formatting.sbr"
 	-@erase "$(INTDIR)\generic_msghandlers.obj"
-	-@erase "$(INTDIR)\generic_msghandlers.sbr"
 	-@erase "$(INTDIR)\globals.obj"
-	-@erase "$(INTDIR)\globals.sbr"
 	-@erase "$(INTDIR)\hotkeyhandler.obj"
-	-@erase "$(INTDIR)\hotkeyhandler.sbr"
 	-@erase "$(INTDIR)\ImageDataObject.obj"
-	-@erase "$(INTDIR)\ImageDataObject.sbr"
+	-@erase "$(INTDIR)\infopanel.obj"
 	-@erase "$(INTDIR)\log.obj"
-	-@erase "$(INTDIR)\log.sbr"
 	-@erase "$(INTDIR)\main.obj"
-	-@erase "$(INTDIR)\main.sbr"
 	-@erase "$(INTDIR)\manager.obj"
-	-@erase "$(INTDIR)\manager.sbr"
 	-@erase "$(INTDIR)\message.obj"
-	-@erase "$(INTDIR)\message.sbr"
 	-@erase "$(INTDIR)\mim.obj"
-	-@erase "$(INTDIR)\mim.sbr"
 	-@erase "$(INTDIR)\modplus.obj"
-	-@erase "$(INTDIR)\modplus.sbr"
 	-@erase "$(INTDIR)\msgdialog.obj"
-	-@erase "$(INTDIR)\msgdialog.sbr"
 	-@erase "$(INTDIR)\msgdlgutils.obj"
-	-@erase "$(INTDIR)\msgdlgutils.sbr"
 	-@erase "$(INTDIR)\msglog.obj"
-	-@erase "$(INTDIR)\msglog.sbr"
 	-@erase "$(INTDIR)\msgoptions.obj"
-	-@erase "$(INTDIR)\msgoptions.sbr"
 	-@erase "$(INTDIR)\msgoptions_plus.obj"
-	-@erase "$(INTDIR)\msgoptions_plus.sbr"
 	-@erase "$(INTDIR)\msgs.obj"
-	-@erase "$(INTDIR)\msgs.sbr"
 	-@erase "$(INTDIR)\options.obj"
-	-@erase "$(INTDIR)\options.sbr"
 	-@erase "$(INTDIR)\selectcontainer.obj"
-	-@erase "$(INTDIR)\selectcontainer.sbr"
 	-@erase "$(INTDIR)\sendqueue.obj"
-	-@erase "$(INTDIR)\sendqueue.sbr"
 	-@erase "$(INTDIR)\services.obj"
-	-@erase "$(INTDIR)\services.sbr"
 	-@erase "$(INTDIR)\srmm.obj"
-	-@erase "$(INTDIR)\srmm.pch"
-	-@erase "$(INTDIR)\srmm.sbr"
 	-@erase "$(INTDIR)\tabctrl.obj"
-	-@erase "$(INTDIR)\tabctrl.sbr"
+	-@erase "$(INTDIR)\tabsrmm.pch"
 	-@erase "$(INTDIR)\tabsrmm_private.res"
 	-@erase "$(INTDIR)\taskbar.obj"
-	-@erase "$(INTDIR)\taskbar.sbr"
 	-@erase "$(INTDIR)\templates.obj"
-	-@erase "$(INTDIR)\templates.sbr"
 	-@erase "$(INTDIR)\themeio.obj"
-	-@erase "$(INTDIR)\themeio.sbr"
 	-@erase "$(INTDIR)\themes.obj"
-	-@erase "$(INTDIR)\themes.sbr"
 	-@erase "$(INTDIR)\tools.obj"
-	-@erase "$(INTDIR)\tools.sbr"
 	-@erase "$(INTDIR)\trayicon.obj"
-	-@erase "$(INTDIR)\trayicon.sbr"
 	-@erase "$(INTDIR)\TSButton.obj"
-	-@erase "$(INTDIR)\TSButton.sbr"
 	-@erase "$(INTDIR)\typingnotify.obj"
-	-@erase "$(INTDIR)\typingnotify.sbr"
 	-@erase "$(INTDIR)\userprefs.obj"
-	-@erase "$(INTDIR)\userprefs.sbr"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\window.obj"
-	-@erase "$(INTDIR)\window.sbr"
 	-@erase "$(OUTDIR)\srmm.exp"
-	-@erase "$(OUTDIR)\srmm.pdb"
-	-@erase "$(OUTDIR)\tabsrmm.bsc"
+	-@erase "$(OUTDIR)\srmm.lib"
+	-@erase "$(OUTDIR)\tabsrmm.map"
+	-@erase "$(OUTDIR)\tabsrmm.pdb"
 	-@erase "..\..\Bin\Debug Unicode\Plugins\tabsrmm.dll"
-	-@erase "..\..\Bin\Debug Unicode\Plugins\tabsrmm.ilk"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 CPP=cl.exe
-CPP_PROJ=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
+CPP_PROJ=/nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -622,54 +586,9 @@ RSC_PROJ=/l 0x809 /fo"$(INTDIR)\tabsrmm_private.res" /d "_DEBUG" /d "UNICODE"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\tabsrmm.bsc" 
 BSC32_SBRS= \
-	"$(INTDIR)\clist.sbr" \
-	"$(INTDIR)\colorchooser.sbr" \
-	"$(INTDIR)\log.sbr" \
-	"$(INTDIR)\main.sbr" \
-	"$(INTDIR)\manager.sbr" \
-	"$(INTDIR)\message.sbr" \
-	"$(INTDIR)\options.sbr" \
-	"$(INTDIR)\services.sbr" \
-	"$(INTDIR)\tools.sbr" \
-	"$(INTDIR)\window.sbr" \
-	"$(INTDIR)\buttonsbar.sbr" \
-	"$(INTDIR)\container.sbr" \
-	"$(INTDIR)\containeroptions.sbr" \
-	"$(INTDIR)\controls.sbr" \
-	"$(INTDIR)\eventpopups.sbr" \
-	"$(INTDIR)\formatting.sbr" \
-	"$(INTDIR)\generic_msghandlers.sbr" \
-	"$(INTDIR)\globals.sbr" \
-	"$(INTDIR)\hotkeyhandler.sbr" \
-	"$(INTDIR)\ImageDataObject.sbr" \
-	"$(INTDIR)\mim.sbr" \
-	"$(INTDIR)\modplus.sbr" \
-	"$(INTDIR)\msgdialog.sbr" \
-	"$(INTDIR)\msgdlgutils.sbr" \
-	"$(INTDIR)\msglog.sbr" \
-	"$(INTDIR)\msgoptions.sbr" \
-	"$(INTDIR)\msgoptions_plus.sbr" \
-	"$(INTDIR)\msgs.sbr" \
-	"$(INTDIR)\selectcontainer.sbr" \
-	"$(INTDIR)\sendqueue.sbr" \
-	"$(INTDIR)\srmm.sbr" \
-	"$(INTDIR)\tabctrl.sbr" \
-	"$(INTDIR)\taskbar.sbr" \
-	"$(INTDIR)\templates.sbr" \
-	"$(INTDIR)\themeio.sbr" \
-	"$(INTDIR)\themes.sbr" \
-	"$(INTDIR)\trayicon.sbr" \
-	"$(INTDIR)\TSButton.sbr" \
-	"$(INTDIR)\typingnotify.sbr" \
-	"$(INTDIR)\userprefs.sbr"
-
-"$(OUTDIR)\tabsrmm.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
-    $(BSC32) @<<
-  $(BSC32_FLAGS) $(BSC32_SBRS)
-<<
-
+	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /subsystem:windows /dll /incremental:yes /pdb:"$(OUTDIR)\srmm.pdb" /debug /machine:IX86 /out:"..\..\Bin\Debug Unicode\Plugins\tabsrmm.dll" /implib:"$(OUTDIR)\srmm.lib" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /base:"0x6a540000" /stack:0xfa00 /subsystem:windows /dll /incremental:no /pdb:"$(OUTDIR)\tabsrmm.pdb" /map:"$(INTDIR)\tabsrmm.map" /debug /machine:IX86 /out:"..\..\Bin\Debug Unicode\Plugins\tabsrmm.dll" /implib:"$(OUTDIR)\srmm.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\clist.obj" \
 	"$(INTDIR)\colorchooser.obj" \
@@ -691,6 +610,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\globals.obj" \
 	"$(INTDIR)\hotkeyhandler.obj" \
 	"$(INTDIR)\ImageDataObject.obj" \
+	"$(INTDIR)\infopanel.obj" \
 	"$(INTDIR)\mim.obj" \
 	"$(INTDIR)\modplus.obj" \
 	"$(INTDIR)\msgdialog.obj" \
@@ -765,9 +685,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\tabsrmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
-"$(INTDIR)\clist.obj"	"$(INTDIR)\clist.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+"$(INTDIR)\clist.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\tabsrmm.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -809,9 +729,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\tabsrmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
-"$(INTDIR)\colorchooser.obj"	"$(INTDIR)\colorchooser.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+"$(INTDIR)\colorchooser.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\tabsrmm.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -853,9 +773,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\tabsrmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
-"$(INTDIR)\log.obj"	"$(INTDIR)\log.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+"$(INTDIR)\log.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\tabsrmm.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -897,9 +817,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\tabsrmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
-"$(INTDIR)\main.obj"	"$(INTDIR)\main.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+"$(INTDIR)\main.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\tabsrmm.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -941,9 +861,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\tabsrmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
-"$(INTDIR)\manager.obj"	"$(INTDIR)\manager.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+"$(INTDIR)\manager.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\tabsrmm.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -985,9 +905,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\tabsrmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
-"$(INTDIR)\message.obj"	"$(INTDIR)\message.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+"$(INTDIR)\message.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\tabsrmm.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -1029,9 +949,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\tabsrmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
-"$(INTDIR)\options.obj"	"$(INTDIR)\options.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+"$(INTDIR)\options.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\tabsrmm.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -1073,9 +993,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\tabsrmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
-"$(INTDIR)\services.obj"	"$(INTDIR)\services.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+"$(INTDIR)\services.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\tabsrmm.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -1117,9 +1037,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\tabsrmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
-"$(INTDIR)\tools.obj"	"$(INTDIR)\tools.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+"$(INTDIR)\tools.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\tabsrmm.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -1161,9 +1081,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\tabsrmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
-"$(INTDIR)\window.obj"	"$(INTDIR)\window.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+"$(INTDIR)\window.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\tabsrmm.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -1173,163 +1093,33 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32"
 
 SOURCE=.\src\buttonsbar.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\buttonsbar.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\buttonsbar.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\buttonsbar.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\buttonsbar.obj"	"$(INTDIR)\buttonsbar.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\src\container.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\container.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\container.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\container.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\container.obj"	"$(INTDIR)\container.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\src\containeroptions.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\containeroptions.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\containeroptions.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\containeroptions.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\containeroptions.obj"	"$(INTDIR)\containeroptions.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\src\controls.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\controls.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\controls.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\controls.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\controls.obj"	"$(INTDIR)\controls.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\src\eventpopups.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\eventpopups.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\eventpopups.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\eventpopups.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\eventpopups.obj"	"$(INTDIR)\eventpopups.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\src\formatting.cpp
 
@@ -1365,9 +1155,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
-"$(INTDIR)\formatting.obj"	"$(INTDIR)\formatting.sbr" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\formatting.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -1377,99 +1167,21 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32"
 
 SOURCE=.\src\generic_msghandlers.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\generic_msghandlers.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\generic_msghandlers.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\generic_msghandlers.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\generic_msghandlers.obj"	"$(INTDIR)\generic_msghandlers.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\src\globals.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\globals.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\globals.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\globals.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\globals.obj"	"$(INTDIR)\globals.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\src\hotkeyhandler.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\hotkeyhandler.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\hotkeyhandler.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\hotkeyhandler.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\hotkeyhandler.obj"	"$(INTDIR)\hotkeyhandler.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\src\ImageDataObject.cpp
 
@@ -1505,9 +1217,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
-"$(INTDIR)\ImageDataObject.obj"	"$(INTDIR)\ImageDataObject.sbr" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\ImageDataObject.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -1515,37 +1227,17 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32"
 
 !ENDIF 
 
+SOURCE=.\src\infopanel.cpp
+
+"$(INTDIR)\infopanel.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
 SOURCE=.\src\mim.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\mim.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\mim.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\mim.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\mim.obj"	"$(INTDIR)\mim.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\tabmodplus\modplus.cpp
 
@@ -1581,9 +1273,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\tabsrmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
-"$(INTDIR)\modplus.obj"	"$(INTDIR)\modplus.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+"$(INTDIR)\modplus.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\tabsrmm.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -1593,131 +1285,27 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32"
 
 SOURCE=.\src\msgdialog.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\msgdialog.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\msgdialog.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\msgdialog.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\msgdialog.obj"	"$(INTDIR)\msgdialog.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\src\msgdlgutils.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\msgdlgutils.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\msgdlgutils.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\msgdlgutils.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\msgdlgutils.obj"	"$(INTDIR)\msgdlgutils.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\src\msglog.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\msglog.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\msglog.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\msglog.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\msglog.obj"	"$(INTDIR)\msglog.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\src\msgoptions.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\msgoptions.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\msgoptions.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\msgoptions.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\msgoptions.obj"	"$(INTDIR)\msgoptions.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\tabmodplus\msgoptions_plus.cpp
 
@@ -1753,9 +1341,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\tabsrmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
-"$(INTDIR)\msgoptions_plus.obj"	"$(INTDIR)\msgoptions_plus.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+"$(INTDIR)\msgoptions_plus.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\tabsrmm.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -1765,99 +1353,21 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32"
 
 SOURCE=.\src\msgs.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\msgs.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\msgs.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\msgs.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\msgs.obj"	"$(INTDIR)\msgs.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\src\selectcontainer.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\selectcontainer.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\selectcontainer.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\selectcontainer.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\selectcontainer.obj"	"$(INTDIR)\selectcontainer.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\src\sendqueue.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\sendqueue.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\sendqueue.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\sendqueue.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\sendqueue.obj"	"$(INTDIR)\sendqueue.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\src\srmm.cpp
 
@@ -1893,9 +1403,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\tabsrmm.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
-"$(INTDIR)\srmm.obj"	"$(INTDIR)\srmm.sbr"	"$(INTDIR)\srmm.pch" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\srmm.obj"	"$(INTDIR)\tabsrmm.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -1905,291 +1415,57 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32"
 
 SOURCE=.\src\tabctrl.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\tabctrl.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\tabctrl.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\tabctrl.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\tabctrl.obj"	"$(INTDIR)\tabctrl.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\src\taskbar.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\taskbar.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\taskbar.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\taskbar.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\taskbar.obj"	"$(INTDIR)\taskbar.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\src\templates.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\templates.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\templates.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\templates.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\templates.obj"	"$(INTDIR)\templates.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\src\themeio.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\themeio.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\themeio.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\themeio.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\themeio.obj"	"$(INTDIR)\themeio.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\src\themes.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\themes.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\themes.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\themes.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\themes.obj"	"$(INTDIR)\themes.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\src\trayicon.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\trayicon.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\trayicon.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\trayicon.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\trayicon.obj"	"$(INTDIR)\trayicon.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\src\TSButton.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\TSButton.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\TSButton.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\TSButton.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\TSButton.obj"	"$(INTDIR)\TSButton.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\src\typingnotify.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\typingnotify.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\typingnotify.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\typingnotify.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\typingnotify.obj"	"$(INTDIR)\typingnotify.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\src\userprefs.cpp
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-
 "$(INTDIR)\userprefs.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-
-"$(INTDIR)\userprefs.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-
-"$(INTDIR)\userprefs.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-
-"$(INTDIR)\userprefs.obj"	"$(INTDIR)\userprefs.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
 
 SOURCE=.\tabsrmm_private.rc
 
