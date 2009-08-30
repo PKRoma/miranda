@@ -87,6 +87,9 @@ bool send_init_oft2(file_transfer *ft, TCHAR* file)
     oft->encoding = _htons(astr.isUnicode() ? 2 : 0);
     memcpy(oft->filename, astr.getBuf(), astr.getTermSize());
 
+    if (!ft->requester)
+        memcpy(oft->icbm_cookie, ft->icbm_cookie, 8);
+
     return Netlib_Send(ft->hConn, (char*)oft, len, 0) > 0;
 }
 
