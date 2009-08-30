@@ -2966,7 +2966,7 @@ HMENU BuildContainerMenu()
 
 		if (dbv.type == DBVT_ASCIIZ || dbv.type == DBVT_WCHAR) {
 			if (_tcsncmp(dbv.ptszVal, _T("**free**"), CONTAINER_NAMELEN)) {
-				AppendMenu(hMenu, MF_STRING, IDM_CONTAINERMENU + i, dbv.ptszVal);
+				AppendMenu(hMenu, MF_STRING, IDM_CONTAINERMENU + i, TranslateTS(dbv.ptszVal));
 			}
 		}
 		DBFreeVariant(&dbv);
