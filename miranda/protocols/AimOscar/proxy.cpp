@@ -104,10 +104,11 @@ void __cdecl CAimProto::aim_proxy_helper(void* param)
                 sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED, ft, 0);
 
                 int i;
-                for (i = 21; --i && !ft->accepted; )
+                for (i = 21; --i; )
                 {
                     if (Miranda_Terminated()) return;
                     Sleep(100);
+                    if (ft->accepted) break;
                 }
                 if (i == 0) 
                 {
@@ -115,7 +116,7 @@ void __cdecl CAimProto::aim_proxy_helper(void* param)
                     break;
                 }
 
-                packetRecv.dwTimeout = 6000;
+                packetRecv.dwTimeout = 350000;
 
                 int result;
                 if (ft->sending)//we are sending
