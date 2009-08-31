@@ -55,9 +55,9 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD /*fdwReason*/,LPVOID /*lpvReserved*
 
 PLUGININFOEX pluginInfo={
 	sizeof(PLUGININFOEX),
-	"AIM OSCAR Plugin",
+	"AIM Protocol",
 	__VERSION_DWORD,
-	"Provides basic support for AOL® OSCAR Instant Messenger protocol. [Built: "__DATE__" "__TIME__"]",
+	"Provides support for AOL® Instant Messenger (AIM) protocol",
 	"Boris Krasnovskiy, Aaron Myles Landwehr",
 	"borkra@miranda-im.org",
 	"© 2008-2009 Boris Krasnovskiy, 2005-2006 Aaron Myles Landwehr",
