@@ -204,7 +204,7 @@ INT_PTR Service_Register(WPARAM wParam, LPARAM lParam)
 
 	mi = MM_AddModule(gcr->pszModule);
 	if (mi) {
-		mi->pszModDispName = mir_strdup(gcr->pszModuleDispName);
+		mi->ptszModDispName = mir_tstrdup(gcr->ptszModuleDispName);
 		mi->bBold = gcr->dwFlags & GC_BOLD;
 		mi->bUnderline = gcr->dwFlags & GC_UNDERLINE ;
 		mi->bItalics = gcr->dwFlags & GC_ITALICS ;

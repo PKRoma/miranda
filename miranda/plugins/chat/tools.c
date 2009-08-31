@@ -519,6 +519,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 	char szName[MAX_PATH];
 	char szFolder[MAX_PATH];
 	char p = '\0', *pszSessionName;
+	char *szModName = NULL;
 	szBuffer[0] = '\0';
 
 	if (!si || !gce)
@@ -528,7 +529,11 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 	if ( !mi )
 		return FALSE;
 
- 	mir_snprintf(szName, MAX_PATH,"%s",mi->pszModDispName);
+	if (mi->ptszModDispName) {
+		 szModName = mir_t2a(mi->ptszModDispName);
+	}
+	mir_snprintf(szName, MAX_PATH,"%s",szModName?szModName:si->pszModule);
+	mir_free(szModName);
 	ValidateFilename(szName);
 	mir_snprintf(szFolder, MAX_PATH,"%s\\%s", g_Settings.pszLogDir, szName );
 

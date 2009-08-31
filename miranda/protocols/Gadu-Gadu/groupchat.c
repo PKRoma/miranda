@@ -44,7 +44,7 @@ int gg_gc_init(GGPROTO *gg)
 		gcr.iMaxText = 0;
 		gcr.nColors = 0;
 		gcr.pColors = 0;
-		gcr.pszModuleDispName = GG_PROTONAME;
+		gcr.ptszModuleDispName = gg->proto.m_tszUserName;
 		gcr.pszModule = GG_PROTO;
 #ifdef DEBUGMODE
 		gg_netlog(gg, "gg_gc_init(): Trying to register groupchat plugin...");

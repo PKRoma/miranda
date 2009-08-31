@@ -245,7 +245,7 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 		gcr.iMaxText = 0;
 		gcr.nColors = 16;
 		gcr.pColors = colors;
-		gcr.pszModuleDispName = m_szModuleName;
+		gcr.ptszModuleDispName = m_tszUserName;
 		gcr.pszModule = m_szModuleName;
 		CallServiceSync( MS_GC_REGISTER, NULL, (LPARAM)&gcr );
 		IrcHookEvent( ME_GC_EVENT, &CIrcProto::GCEventHook );

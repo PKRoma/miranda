@@ -262,7 +262,7 @@ int CJabberProto::OnModulesLoadedEx( WPARAM, LPARAM )
 		gcr.iMaxText = 0;
 		gcr.nColors = 16;
 		gcr.pColors = &crCols[0];
-		gcr.pszModuleDispName = m_szModuleName;
+		gcr.ptszModuleDispName = m_tszUserName;
 		gcr.pszModule = m_szModuleName;
 		CallServiceSync( MS_GC_REGISTER, NULL, ( LPARAM )&gcr );
 

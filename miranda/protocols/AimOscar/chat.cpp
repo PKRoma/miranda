@@ -27,7 +27,7 @@ void CAimProto::chat_register(void)
 	gcr.iMaxText = 0;
 	gcr.nColors = 16;
 	gcr.pColors = (COLORREF*)crCols;
-	gcr.pszModuleDispName = m_szModuleName;
+	gcr.ptszModuleDispName = m_tszUserName;
 	gcr.pszModule = m_szModuleName;
 	CallServiceSync(MS_GC_REGISTER, 0, (LPARAM)&gcr);
 

@@ -1068,7 +1068,7 @@ BOOL MM_RemoveAll (void)
 	{
 		MODULEINFO *pLast = m_ModList->next;
 		mir_free(m_ModList->pszModule);
-		mir_free(m_ModList->pszModDispName);
+		mir_free(m_ModList->ptszModDispName);
 		mir_free(m_ModList->pszHeader);
 		mir_free(m_ModList->crColors);
 

@@ -2253,7 +2253,6 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				break;
 	//TODO: check tooltip module, if not presented, show normal tooltip
 			if (si->pszModule != NULL) {
-				TCHAR* ptszDispName = NULL;
 				TCHAR  szFinalStatusBarText[512];
 				MODULEINFO* mi=NULL;
 				int    x = 12;
@@ -2262,22 +2261,20 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				mi=MM_FindModule(si->pszModule);
 				if(!mi) break;
 
-				ptszDispName=a2tf((TCHAR*)mi->pszModDispName, 0, 0);
-				if(!ptszDispName) break;
+				if(!mi->ptszModDispName) break;
 
-				x += GetTextPixelSize(ptszDispName, (HFONT)SendMessage(dat->pContainer->hwndStatus, WM_GETFONT, 0, 0), TRUE);
+				x += GetTextPixelSize(mi->ptszModDispName, (HFONT)SendMessage(dat->pContainer->hwndStatus, WM_GETFONT, 0, 0), TRUE);
 				x += GetSystemMetrics(SM_CXSMICON);
 
 				if (si->ptszStatusbarText)
-					mir_sntprintf(szFinalStatusBarText, SIZEOF(szFinalStatusBarText), _T("%s %s"), ptszDispName, si->ptszStatusbarText);
+					mir_sntprintf(szFinalStatusBarText, SIZEOF(szFinalStatusBarText), _T("%s %s"), mi->ptszModDispName, si->ptszStatusbarText);
 				else
-					lstrcpyn(szFinalStatusBarText, ptszDispName, SIZEOF(szFinalStatusBarText));
+					lstrcpyn(szFinalStatusBarText, mi->ptszModDispName, SIZEOF(szFinalStatusBarText));
 
 				SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM)szFinalStatusBarText);
 				SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(PluginConfig.m_bSessionList ? PluginConfig.g_buttonBarIcons[16] : 0));
 //				SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXT, 0, (LPARAM)szFinalStatusBarText);
 				UpdateStatusBar(dat);
-				mir_free(ptszDispName);
 				return TRUE;
 			}
 			break;

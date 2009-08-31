@@ -1343,7 +1343,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		{
 			HICON hIcon;
 			int iStatusbarParts[2];
-			TCHAR* ptszDispName = a2tf((TCHAR*)MM_FindModule(si->pszModule)->pszModDispName, 0);
+			TCHAR* ptszDispName = MM_FindModule(si->pszModule)->ptszModDispName;
 			int x = 12;
 
 			x += GetTextPixelSize(ptszDispName, (HFONT)SendMessage(si->hwndStatus,WM_GETFONT,0,0), TRUE);
@@ -1366,7 +1366,6 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 			SendMessage(si->hwndStatus, SB_SETTEXT,1,(LPARAM)(si->ptszStatusbarText ? si->ptszStatusbarText : _T("")));
 			SendMessage(si->hwndStatus, SB_SETTIPTEXT,1,(LPARAM)(si->ptszStatusbarText ? si->ptszStatusbarText : _T("")));
-			mir_free( ptszDispName );
 			return TRUE;
 		}
 		break;
@@ -2534,7 +2533,12 @@ LABEL_SHOWWINDOW:
 					break;
 
 				if ( pInfo ) {
-					mir_snprintf(szName, MAX_PATH,"%s",pInfo->pszModDispName?pInfo->pszModDispName:si->pszModule);
+					char *szModName = NULL;
+					if (pInfo->ptszModDispName) {
+						 szModName = mir_t2a(pInfo->ptszModDispName);
+					}
+					mir_snprintf(szName, MAX_PATH,"%s",szModName?szModName:si->pszModule);
+					mir_free(szModName);
 					ValidateFilename(szName);
 					mir_snprintf(szFolder, MAX_PATH,"%s\\%s", g_Settings.pszLogDir, szName );
 #if defined(_UNICODE)
