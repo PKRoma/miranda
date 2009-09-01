@@ -105,6 +105,8 @@ CAimProto::~CAimProto()
 	CloseHandle(hChatNavEvent);
 	CloseHandle(hAdminEvent);
 
+    ft_list.destroy();
+
 	for (int i=0; i<9; ++i)
 		mir_free(modeMsgs[i]);
 
@@ -262,7 +264,6 @@ int __cdecl CAimProto::FileDeny(HANDLE hContact, HANDLE hTransfer, const char* /
 
 	LOG("We are denying a file transfer.");
 
-//    aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true, 1);
     aim_chat_deny(hServerConn, seqno, ft->sn, ft->icbm_cookie);
 	return 0;
 }

@@ -46,7 +46,7 @@ void __cdecl CAimProto::aim_dc_helper(void* param) //only called when we are ini
     }
     else
     {
-        if (!ft->requester && result == 1)
+        if (!ft->requester && result == 1 && !Miranda_Terminated())
         {
             ft->accepted = false;
             unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);

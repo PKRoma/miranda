@@ -25,9 +25,12 @@ void CAimProto::broadcast_status(int status)
 	LOG("Broadcast Status: %d",status);
 	int old_status=m_iStatus;
 	m_iStatus=status;
-	if(m_iStatus==ID_STATUS_OFFLINE)
+	if (m_iStatus == ID_STATUS_OFFLINE)
 	{
-		if (hServerConn)
+        shutdown_file_transfers();
+        shutdown_chat_conn();
+
+        if (hServerConn)
 		{
 			aim_sendflap(hServerConn,0x04,0,NULL,seqno);
 			Netlib_Shutdown(hServerConn);
@@ -52,7 +55,6 @@ void CAimProto::broadcast_status(int status)
 			aim_sendflap(hChatNavConn,0x04,0,NULL,chatnav_seqno);
 			Netlib_Shutdown(hChatNavConn);
 		}
-        shutdown_chat_conn();
 
 		idle = false;
 		instantidle = false;
@@ -310,7 +312,6 @@ void CAimProto::offline_contacts(void)
     allow_list.destroy();
     block_list.destroy();
     group_list.destroy();
-    ft_list.destroy();
 }
 
 char *normalize_name(const char *s)
