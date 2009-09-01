@@ -44,7 +44,6 @@
 #define IDI_CHANMGR                     426
 #define IDI_COLOR                       427
 #define IDI_FILTER                      428
-#define IDI_CHAT_HISTORY                429
 #define IDI_NICKLIST                    430
 #define IDI_JOIN                        431
 #define IDI_PART                        432
