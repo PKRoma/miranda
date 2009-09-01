@@ -95,6 +95,7 @@ int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOp
 #define OPT_SHOW_ON "ShowOldOrNew"
 #define OPT_NORSS "NoRSSAnnounces"
 #define OPT_DISABLE "Disabled"
+#define OPT_MUCDISABLE "MUCDisabled"
 #define OPT_WINDOWCHECK "WindowCheck"
 #define OPT_LIMITPREVIEW "LimitPreview"
 #define OPT_MINIMIZEANIMATED "Animated"
@@ -127,6 +128,7 @@ typedef struct _nen {
 	BOOL bShowON;
 	BOOL bNoRSS;
     int  iDisable;
+	int	 iMUCDisable;
     int  dwStatusMask;
     BOOL bTraySupport;
     BOOL bTrayExist;

@@ -52,6 +52,10 @@ extern TCHAR *xStatusDescr[];
 class CInfoPanel
 {
 public:
+	enum {
+		DEGRADE_THRESHOLD = 39,					// defines the height at which the infopanel will transition from 1 to 2 lines
+		LEFT_OFFSET_LOGO = 3
+	};
 	CInfoPanel(_MessageWindowData *dat)
 	{
 		if(dat) {
@@ -91,11 +95,11 @@ private:
 	void 			RenderIPStatus(const HDC hdc, RECT& rcItem);
 
 private:
-	bool		m_isChat;											// is MUC session
-	bool		m_active;											// panel active and visible
-	_MessageWindowData *m_dat;										// this one OWNS us...
-	LONG		m_height;											// height (determined by position of IDC_PANELSPLITTER)
-	LONG		m_defaultHeight, m_defaultMUCHeight;				// global values for the info bar height
+	bool				m_isChat;											// is MUC session
+	bool				m_active;											// panel active and visible
+	_MessageWindowData*	m_dat;												// this one OWNS us...
+	LONG				m_height;											// height (determined by position of IDC_PANELSPLITTER)
+	LONG				m_defaultHeight, m_defaultMUCHeight;				// global values for the info bar height
 };
 
 #endif /* __INFOPANEL_H */

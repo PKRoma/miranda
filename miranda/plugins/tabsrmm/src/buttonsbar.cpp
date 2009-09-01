@@ -541,7 +541,7 @@ void BB_InitDlgButtons(HWND hdlg, struct _MessageWindowData *dat)
 	int splitterY;
 	BYTE gap = DPISCALEX(PluginConfig.g_iButtonsBarGap);
 	BOOL isFlat = M->GetByte("tbflat", 1);
-	BOOL isThemed = !M->GetByte("nlflat", 0);
+	BOOL isThemed = PluginConfig.m_bIsXP;
 	int cx = 0, cy = 0;
 	int lcount = LButtonsList->realCount;
 	int rcount = RButtonsList->realCount;
@@ -1008,7 +1008,7 @@ void CB_InitDefaultButtons()
 	bbd.dwDefPos = 60;
 	bbd.iButtonWidth = 0;
 	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[7];
-	bbd.ptszTooltip = _T("Avatar Options");
+	bbd.ptszTooltip = _T("Edit user notes");
 
 	CB_AddButton(0, (LPARAM)&bbd);
 

@@ -108,13 +108,12 @@ public:
 	BYTE        m_WinVerMajor;
 	BYTE        m_WinVerMinor;
 	bool		m_bIsXP, m_bIsVista, m_bIsWin7;
-	BYTE        m_SideBarEnabled;
 	HWND        m_hwndClist;
 	int         m_TabAppearance;
 	struct      myTabCtrl tabConfig;
 	int         m_panelHeight, m_MUCpanelHeight;
 	TCHAR       szDefaultTitleFormat[256];
-	DWORD       m_GlobalContainerFlags;
+	DWORD       m_GlobalContainerFlags, m_GlobalContainerFlagsEx;
 	DWORD       m_GlobalContainerTrans;
 	WINDOWPLACEMENT m_GlobalContainerWpos;
 	HANDLE      hLastOpenedContact;
@@ -144,6 +143,7 @@ public:
 	bool		m_chat_enabled;
 	bool		m_bSessionList;
 	HMENU		m_MenuBar;
+	COLORREF	m_ipBackgroundGradient;
 };
 
 extern	CGlobals	PluginConfig;

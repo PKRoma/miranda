@@ -40,33 +40,51 @@ extern 			StatusIconListNode *status_icon_list;
 
 bool	 	CMenuBar::m_buttonsInit = false;
 HHOOK		CMenuBar::m_hHook = 0;
-TBBUTTON 	CMenuBar::m_TbButtons[7] = {0};
+TBBUTTON 	CMenuBar::m_TbButtons[8] = {0};
 CMenuBar	*CMenuBar::m_Owner = 0;
+HBITMAP		CMenuBar::m_MimIcon = 0;
+int			CMenuBar::m_MimIconRefCount = 0;
 
 CMenuBar::CMenuBar(HWND hwndParent, const ContainerWindowData *pContainer)
 {
-	REBARINFO RebarInfo;
-	REBARBANDINFO RebarBandInfo;
+	//REBARINFO RebarInfo;
+	//REBARBANDINFO RebarBandInfo;
 	RECT Rc;
 
 	m_pContainer = const_cast<ContainerWindowData *>(pContainer);
 
-	m_hwndRebar = ::CreateWindowEx(WS_EX_TOOLWINDOW, REBARCLASSNAME, NULL, WS_CHILD|WS_VISIBLE|WS_CLIPSIBLINGS|WS_CLIPCHILDREN|RBS_VARHEIGHT|/*RBS_BANDBORDERS|*/RBS_DBLCLKTOGGLE|RBS_AUTOSIZE,
-								   0, 0, 0, 0, hwndParent, NULL, g_hInst, NULL);
+	if(m_MimIcon == 0) {
+		HDC	hdc = ::GetDC(m_pContainer->hwnd);
+		HICON hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
 
-	RebarInfo.cbSize = 	sizeof(REBARINFO);
+		HDC hdcTemp = ::CreateCompatibleDC(hdc);
+
+		RECT rc = {0,0,16,16};
+		m_MimIcon = CSkin::CreateAeroCompatibleBitmap(rc, hdcTemp);
+		HBITMAP hbmOld = (HBITMAP)::SelectObject(hdcTemp, m_MimIcon);
+		::DrawIconEx(hdcTemp, 0, 0, hIcon, 16, 16, 0, 0, DI_NORMAL);
+		::SelectObject(hdcTemp, hbmOld);
+		::DeleteDC(hdcTemp);
+		::ReleaseDC(m_pContainer->hwnd, hdc);
+	}
+
+	m_MimIconRefCount++;
+
+	//m_hwndRebar = ::CreateWindowEx(WS_EX_TOOLWINDOW, REBARCLASSNAME, NULL, WS_CHILD|WS_VISIBLE|WS_CLIPSIBLINGS|WS_CLIPCHILDREN|RBS_AUTOSIZE|/*RBS_BANDBORDERS|*/RBS_DBLCLKTOGGLE,
+	//							   0, 0, 0, 0, hwndParent, NULL, g_hInst, NULL);
+
+	/*RebarInfo.cbSize = 	sizeof(REBARINFO);
 	RebarInfo.fMask = 	0;
 	RebarInfo.himl = 	(HIMAGELIST)NULL;
 
 	::SendMessage(m_hwndRebar, RB_SETBARINFO, 0, (LPARAM)&RebarInfo);
-	::SendMessage(m_hwndRebar, RB_SETWINDOWTHEME, 0, (WPARAM)L"TASKBAND");
 
 	RebarBandInfo.cbSize = sizeof(REBARBANDINFO);
 	RebarBandInfo.fMask  = RBBIM_CHILD|RBBIM_CHILDSIZE|RBBIM_SIZE|RBBIM_STYLE|RBBIM_IDEALSIZE;
 	RebarBandInfo.fStyle = RBBS_FIXEDBMP|RBBS_TOPALIGN|RBBS_NOGRIPPER;//|RBBS_GRIPPERALWAYS;
 	RebarBandInfo.hbmBack = 0;
-	RebarBandInfo.clrBack = GetSysColor(COLOR_3DFACE);;
-	m_hwndToolbar = ::CreateWindowEx(WS_EX_TOOLWINDOW, TOOLBARCLASSNAME, NULL, WS_CHILD|WS_CLIPCHILDREN|WS_CLIPSIBLINGS|WS_VISIBLE|TBSTYLE_FLAT|TBSTYLE_LIST|CCS_NOPARENTALIGN|/*CCS_NORESIZE|*/CCS_NODIVIDER|CCS_TOP,
+	RebarBandInfo.clrBack = GetSysColor(COLOR_3DFACE);*/
+	m_hwndToolbar = ::CreateWindowEx(WS_EX_TOOLWINDOW, TOOLBARCLASSNAME, NULL, WS_CHILD|WS_CLIPCHILDREN|WS_CLIPSIBLINGS|WS_VISIBLE|TBSTYLE_FLAT|TBSTYLE_TRANSPARENT|TBSTYLE_LIST|/*CCS_NOPARENTALIGN|*/CCS_NODIVIDER|CCS_TOP,
 								   0, 0, 0, 0, hwndParent, NULL, g_hInst, NULL);
 
 	::SendMessage(m_hwndToolbar, TB_BUTTONSTRUCTSIZE, (WPARAM)sizeof(TBBUTTON), 0);
@@ -74,82 +92,104 @@ CMenuBar::CMenuBar(HWND hwndParent, const ContainerWindowData *pContainer)
 	if(m_buttonsInit == false) {
 		::ZeroMemory(m_TbButtons, sizeof(m_TbButtons));
 
-		m_TbButtons[0].iBitmap = I_IMAGENONE;
-		m_TbButtons[0].iString = (INT_PTR)TranslateT("&File");
+		m_TbButtons[0].iBitmap = 0;//I_IMAGENONE;
+		m_TbButtons[0].iString = 0;//(INT_PTR)TranslateT("&Main");
 		m_TbButtons[0].fsState = TBSTATE_ENABLED;
 		m_TbButtons[0].fsStyle = BTNS_DROPDOWN|BTNS_AUTOSIZE;
 		m_TbButtons[0].idCommand = 100;
-		m_TbButtons[0].dwData = reinterpret_cast<DWORD_PTR>(::GetSubMenu(PluginConfig.getMenuBar(), 0));
+		m_TbButtons[0].dwData = 0;
 
 		m_TbButtons[1].iBitmap = I_IMAGENONE;
-		m_TbButtons[1].iString = (INT_PTR)TranslateT("&View");
+		m_TbButtons[1].iString = (INT_PTR)TranslateT("&File");
 		m_TbButtons[1].fsState = TBSTATE_ENABLED;
 		m_TbButtons[1].fsStyle = BTNS_DROPDOWN|BTNS_AUTOSIZE;
 		m_TbButtons[1].idCommand = 101;
-		m_TbButtons[1].dwData = reinterpret_cast<DWORD_PTR>(::GetSubMenu(PluginConfig.getMenuBar(), 1));
+		m_TbButtons[1].dwData = reinterpret_cast<DWORD_PTR>(::GetSubMenu(PluginConfig.getMenuBar(), 0));
 
 		m_TbButtons[2].iBitmap = I_IMAGENONE;
-		m_TbButtons[2].iString = (INT_PTR)TranslateT("&User");
+		m_TbButtons[2].iString = (INT_PTR)TranslateT("&View");
 		m_TbButtons[2].fsState = TBSTATE_ENABLED;
 		m_TbButtons[2].fsStyle = BTNS_DROPDOWN|BTNS_AUTOSIZE;
 		m_TbButtons[2].idCommand = 102;
-		m_TbButtons[2].dwData = 0;								// dynamically built by Clist service
+		m_TbButtons[2].dwData = reinterpret_cast<DWORD_PTR>(::GetSubMenu(PluginConfig.getMenuBar(), 1));
 
 		m_TbButtons[3].iBitmap = I_IMAGENONE;
-		m_TbButtons[3].iString = (INT_PTR)TranslateT("Room");
+		m_TbButtons[3].iString = (INT_PTR)TranslateT("&User");
 		m_TbButtons[3].fsState = TBSTATE_ENABLED;
 		m_TbButtons[3].fsStyle = BTNS_DROPDOWN|BTNS_AUTOSIZE;
 		m_TbButtons[3].idCommand = 103;
-		m_TbButtons[3].dwData = 0;
+		m_TbButtons[3].dwData = 0;								// dynamically built by Clist service
 
 		m_TbButtons[4].iBitmap = I_IMAGENONE;
-		m_TbButtons[4].iString = (INT_PTR)TranslateT("Message &Log");
+		m_TbButtons[4].iString = (INT_PTR)TranslateT("Room");
 		m_TbButtons[4].fsState = TBSTATE_ENABLED;
 		m_TbButtons[4].fsStyle = BTNS_DROPDOWN|BTNS_AUTOSIZE;
 		m_TbButtons[4].idCommand = 104;
-		m_TbButtons[4].dwData = reinterpret_cast<DWORD_PTR>(::GetSubMenu(PluginConfig.getMenuBar(), 2));
+		m_TbButtons[4].dwData = 0;
 
 		m_TbButtons[5].iBitmap = I_IMAGENONE;
-		m_TbButtons[5].iString = (INT_PTR)TranslateT("&Container");
+		m_TbButtons[5].iString = (INT_PTR)TranslateT("Message &Log");
 		m_TbButtons[5].fsState = TBSTATE_ENABLED;
 		m_TbButtons[5].fsStyle = BTNS_DROPDOWN|BTNS_AUTOSIZE;
 		m_TbButtons[5].idCommand = 105;
-		m_TbButtons[5].dwData = reinterpret_cast<DWORD_PTR>(::GetSubMenu(PluginConfig.getMenuBar(), 3));
+		m_TbButtons[5].dwData = reinterpret_cast<DWORD_PTR>(::GetSubMenu(PluginConfig.getMenuBar(), 2));
 
 		m_TbButtons[6].iBitmap = I_IMAGENONE;
-		m_TbButtons[6].iString = (INT_PTR)TranslateT("Help");
+		m_TbButtons[6].iString = (INT_PTR)TranslateT("&Container");
 		m_TbButtons[6].fsState = TBSTATE_ENABLED;
 		m_TbButtons[6].fsStyle = BTNS_DROPDOWN|BTNS_AUTOSIZE;
 		m_TbButtons[6].idCommand = 106;
-		m_TbButtons[6].dwData = reinterpret_cast<DWORD_PTR>(::GetSubMenu(PluginConfig.getMenuBar(), 4));
+		m_TbButtons[6].dwData = reinterpret_cast<DWORD_PTR>(::GetSubMenu(PluginConfig.getMenuBar(), 3));
+
+		m_TbButtons[7].iBitmap = I_IMAGENONE;
+		m_TbButtons[7].iString = (INT_PTR)TranslateT("Help");
+		m_TbButtons[7].fsState = TBSTATE_ENABLED;
+		m_TbButtons[7].fsStyle = BTNS_DROPDOWN|BTNS_AUTOSIZE;
+		m_TbButtons[7].idCommand = 107;
+		m_TbButtons[7].dwData = reinterpret_cast<DWORD_PTR>(::GetSubMenu(PluginConfig.getMenuBar(), 4));
 
 		m_buttonsInit = true;
 	}
 
-	::SendMessage(m_hwndToolbar, TB_ADDBUTTONS, sizeof(m_TbButtons)/sizeof(TBBUTTON), (LPARAM)&m_TbButtons);
-
+	::SendMessage(m_hwndToolbar, TB_ADDBUTTONS, sizeof(m_TbButtons)/sizeof(TBBUTTON), (LPARAM)m_TbButtons);
+	::SendMessage(m_hwndToolbar, TB_SETWINDOWTHEME, 0, (LPARAM)L"REBAR");
 	m_size_y = HIWORD(SendMessage(m_hwndToolbar, TB_GETBUTTONSIZE, 0, 0));
 
 	::GetWindowRect(m_hwndToolbar, &Rc);
 
-	RebarBandInfo.lpText     = NULL;
+	TBADDBITMAP tb;
+	tb.nID = (UINT_PTR)m_MimIcon;
+	tb.hInst = 0;
+
+	::SendMessage(m_hwndToolbar, TB_ADDBITMAP, 1, (LPARAM)&tb);
+
+	/*RebarBandInfo.lpText     = NULL;
 	RebarBandInfo.hwndChild  = m_hwndToolbar;
 	RebarBandInfo.cxMinChild = 10;
 	RebarBandInfo.cyMinChild = m_size_y;
 	RebarBandInfo.cx         = 2000;
 
 	::SendMessage(m_hwndRebar, RB_INSERTBAND, (WPARAM)-1, (LPARAM)&RebarBandInfo);
-
+	*/
 	m_activeMenu = 0;
 	m_activeID = 0;
 	m_isAero = M->isAero();
+	m_mustAutoHide = false;
+	m_activeSubMenu = 0;
+	m_fTracking = false;
+	m_isContactMenu = m_isMainMenu = false;
 }
 
 CMenuBar::~CMenuBar()
 {
 	::DestroyWindow(m_hwndToolbar);
-	::DestroyWindow(m_hwndRebar);
+	//::DestroyWindow(m_hwndRebar);
 	releaseHook();
+	m_MimIconRefCount--;
+	if(m_MimIconRefCount == 0) {
+		::DeleteObject(m_MimIcon);
+		m_MimIcon = 0;
+	}
 }
 
 /**
@@ -160,7 +200,7 @@ CMenuBar::~CMenuBar()
  */
 const RECT& CMenuBar::getClientRect()
 {
-	::GetClientRect(m_hwndRebar, &m_rcClient);
+	::GetClientRect(m_hwndToolbar, &m_rcClient);
 	return(m_rcClient);
 }
 
@@ -207,7 +247,6 @@ LONG_PTR CMenuBar::processMsg(const UINT msg, const WPARAM wParam, const LPARAM 
 		switch(pNMHDR->code) {
 			case NM_CUSTOMDRAW: {
 				NMCUSTOMDRAW *nm = (NMCUSTOMDRAW*)lParam;
-
 				return(customDrawWorker(nm));
 			}
 
@@ -257,54 +296,9 @@ LONG_PTR CMenuBar::processMsg(const UINT msg, const WPARAM wParam, const LPARAM 
  */
 LONG_PTR CMenuBar::customDrawWorker(NMCUSTOMDRAW *nm)
 {
-	bool fMustDraw = (m_pContainer->bSkinned || m_isAero);
+	bool fMustDraw = (m_pContainer->bSkinned || m_isAero || M->isVSThemed());
 
-	if(nm->hdr.hwndFrom == m_hwndRebar) {
-		switch(nm->dwDrawStage) {
-			case CDDS_PREPAINT:
-				if(fMustDraw) {
-					m_hdcDraw = ::CreateCompatibleDC(nm->hdc);
-					::GetClientRect(m_hwndRebar, &m_rcItem);
-					m_hbmDraw = CSkin::CreateAeroCompatibleBitmap(m_rcItem, nm->hdc);
-					m_hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(m_hdcDraw, m_hbmDraw));
-					if(m_isAero)
-						::FillRect(m_hdcDraw, &nm->rc, reinterpret_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH)));
-					else if(CSkin::m_MenuBGBrush)
-						::FillRect(m_hdcDraw, &nm->rc, CSkin::m_MenuBGBrush);
-					else
-						::FillRect(m_hdcDraw, &nm->rc, GetSysColorBrush(COLOR_3DFACE));
-					return(CDRF_NOTIFYITEMDRAW | CDRF_NOTIFYPOSTPAINT | CDRF_NOTIFYPOSTERASE);
-				}
-				else {
-					m_hdcDraw = 0;
-					return(CDRF_DODEFAULT);
-				}
-
-			case CDDS_ITEMPREPAINT:
-				return(fMustDraw ? CDRF_SKIPDEFAULT : CDRF_DODEFAULT);
-
-			case CDDS_PREERASE:
-				return(fMustDraw ? CDRF_SKIPDEFAULT : CDRF_DODEFAULT);
-
-			case CDDS_POSTERASE:
-				return(fMustDraw ? CDRF_SKIPDEFAULT : CDRF_DODEFAULT);
-
-			case CDDS_POSTPAINT:
-				if(m_hdcDraw) {
-					::BitBlt(nm->hdc, 0, 0, m_rcItem.right - m_rcItem.left, m_rcItem.bottom - m_rcItem.top,
-							 m_hdcDraw, 0, 0, SRCCOPY);
-					::SelectObject(m_hdcDraw, m_hbmOld);
-					::DeleteObject(m_hbmDraw);
-					::DeleteDC(m_hdcDraw);
-					m_hdcDraw = 0;
-				}
-				return(CDRF_SKIPDEFAULT);
-
-			default:
-				return(CDRF_SKIPDEFAULT);
-		}
-	}
-	else if(nm->hdr.hwndFrom == m_hwndToolbar) {
+	if(nm->hdr.hwndFrom == m_hwndToolbar) {
 		NMTBCUSTOMDRAW *nmtb = (NMTBCUSTOMDRAW *)(nm);
 
 		switch(nmtb->nmcd.dwDrawStage) {
@@ -315,16 +309,16 @@ LONG_PTR CMenuBar::customDrawWorker(NMCUSTOMDRAW *nm)
 						::GetClientRect(m_hwndToolbar, &m_rcItem);
 						m_hbmDraw = CSkin::CreateAeroCompatibleBitmap(m_rcItem, nmtb->nmcd.hdc);
 						m_hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(m_hdcDraw, m_hbmDraw));
-						m_hTheme = M->isAero() ? CMimAPI::m_pfnOpenThemeData(m_hwndToolbar, L"BUTTON") : 0;
+						m_hTheme = M->isAero() || M->isVSThemed() ? CMimAPI::m_pfnOpenThemeData(m_hwndToolbar, L"REBAR") : 0;
 						m_hOldFont = (HFONT)::SelectObject(m_hdcDraw, (HFONT)::GetStockObject(DEFAULT_GUI_FONT));
 						if(m_isAero) {
 							nm->rc.bottom--;
-							//if(nmtb->nmcd.dwItemSpec == 0)
-							//	nm->rc.right -= 2;
 							CSkin::ApplyAeroEffect(m_hdcDraw, &m_rcItem, CSkin::AERO_EFFECT_AREA_MENUBAR);
 							nm->rc.bottom++;
-							//if(nmtb->nmcd.dwItemSpec == 0)
-							//	nm->rc.right += 2;
+						}
+						else if(M->isVSThemed()) {
+							m_rcItem.bottom -= 2;
+							M->m_pfnDrawThemeBackground(m_hTheme, m_hdcDraw, 6, 1, &m_rcItem, &m_rcItem);
 						}
 						else if(CSkin::m_MenuBGBrush)
 							::FillRect(m_hdcDraw, &nm->rc, CSkin::m_MenuBGBrush);
@@ -350,26 +344,42 @@ LONG_PTR CMenuBar::customDrawWorker(NMCUSTOMDRAW *nm)
 					UINT	uState = nmtb->nmcd.uItemState;
 
 					nmtb->nmcd.rc.bottom--;
-					if(uState & CDIS_MARKED) {
-						::DrawAlpha(m_hdcDraw, &nmtb->nmcd.rc, 0x909090, 80, 0x909090, 0, 9,
-									31, 4, 0);
+					if(m_isAero || M->isVSThemed()) {
+						COLORREF clr = GetSysColor(COLOR_HOTLIGHT);
+						COLORREF clrRev = clr; //RGB(GetBValue(clr), GetGValue(clr), GetRValue(clr));
+						if(uState & CDIS_MARKED || uState & CDIS_CHECKED) {
+							::DrawAlpha(m_hdcDraw, &nmtb->nmcd.rc, clrRev, 80, clrRev, 0, 9,
+										31, 4, 0);
+						}
+						if(uState & CDIS_SELECTED) {
+							::DrawAlpha(m_hdcDraw, &nmtb->nmcd.rc, clrRev, 80, clrRev, 0, 9,
+										31, 4, 0);
+						}
+						if(uState & CDIS_HOT) {
+							::DrawAlpha(m_hdcDraw, &nmtb->nmcd.rc, clrRev, 80, clrRev, 0, 9,
+										31, 4, 0);
+						}
 					}
-					if(uState & CDIS_SELECTED) {
-						::DrawAlpha(m_hdcDraw, &nmtb->nmcd.rc, 0x404040, 80, 0x404040, 0, 9,
-									31, 4, 0);
-					}
-					if(uState & CDIS_HOT) {
-						::DrawAlpha(m_hdcDraw, &nmtb->nmcd.rc, 0xf02020, 80, 0xf02020, 0, 9,
-									31, 4, 0);
-					}
-					if(szText)
+
+					if(szText) {
+						::SetBkColor(m_hdcDraw, (uState & (CDIS_SELECTED | CDIS_HOT | CDIS_MARKED)) ? ::GetSysColor(COLOR_HIGHLIGHTTEXT) : ::GetSysColor(COLOR_BTNTEXT));
+						::SetBkMode(m_hdcDraw, TRANSPARENT);
 						CSkin::RenderText(m_hdcDraw, m_hTheme, szText, &nmtb->nmcd.rc, DT_SINGLELINE | DT_VCENTER | DT_CENTER);
+					}
+					if(iIndex == 0) {
+						::DrawIconEx(m_hdcDraw, (nmtb->nmcd.rc.left + nmtb->nmcd.rc.right) / 2 - 8,
+									 (nmtb->nmcd.rc.top + nmtb->nmcd.rc.bottom) / 2 - 8, LoadSkinnedIcon(SKINICON_OTHER_MIRANDA),
+									 16, 16, 0, 0, DI_NORMAL);
+					}
 					return(CDRF_SKIPDEFAULT);
 				}
 				else
 					return(CDRF_DODEFAULT);
 
 			case CDDS_PREERASE:
+			case CDDS_ITEMPOSTERASE:
+			case CDDS_ITEMPOSTPAINT:
+			case CDDS_ITEMPREERASE:
 				return(fMustDraw ? CDRF_SKIPDEFAULT : CDRF_DODEFAULT);
 
 			case CDDS_POSTERASE:
@@ -392,7 +402,7 @@ LONG_PTR CMenuBar::customDrawWorker(NMCUSTOMDRAW *nm)
 					return(CDRF_DODEFAULT);
 
 			default:
-				return(CDRF_SKIPDEFAULT);
+				return(CDRF_DODEFAULT);
 		}
 
 		return(0);
@@ -430,15 +440,18 @@ void CMenuBar::invoke(const int id)
 
 	HMENU	hMenu;
 
-	m_isContactMenu = false;
+	m_isContactMenu = m_isMainMenu = false;
 
 	_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(m_pContainer->hwndActive, GWLP_USERDATA);
 
 	HANDLE hContact = dat ? dat->hContact : 0;
 
-	if(index == 2 && hContact != 0) {
+	if(index == 3 && hContact != 0) {
 		hMenu = reinterpret_cast<HMENU>(::CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM)hContact, 0));
 		m_isContactMenu = true;
+	} else if(index == 0) {
+		hMenu = reinterpret_cast<HMENU>(::CallService(MS_CLIST_MENUBUILDMAIN, 0, 0));
+		m_isMainMenu = true;
 	} else
 		hMenu = reinterpret_cast<HMENU>(m_TbButtons[index].dwData);
 
@@ -458,7 +471,7 @@ void CMenuBar::invoke(const int id)
 	updateState(hMenu);
 	obtainHook();
 	m_fTracking = true;
-	::SendMessage(m_hwndToolbar, TB_SETSTATE, (WPARAM)id, TBSTATE_PRESSED | TBSTATE_MARKED | TBSTATE_ENABLED);
+	::SendMessage(m_hwndToolbar, TB_SETSTATE, (WPARAM)id, TBSTATE_CHECKED | TBSTATE_ENABLED);
 	::TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, m_pContainer->hwnd, 0);
 }
 
@@ -469,7 +482,7 @@ void CMenuBar::cancel(const int id)
 		::SendMessage(m_hwndToolbar, TB_SETSTATE, (WPARAM)m_activeID, TBSTATE_ENABLED);
 	m_activeID = 0;
 	m_activeMenu = 0;
-	m_isContactMenu = false;
+	m_isContactMenu = m_isMainMenu = false;
 	::EndMenu();
 }
 
@@ -486,8 +499,6 @@ void CMenuBar::Cancel(void)
 void CMenuBar::updateState(const HMENU hMenu) const
 {
 	_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(m_pContainer->hwndActive, GWLP_USERDATA);
-
-	assert(dat != 0);
 
 	::CheckMenuItem(hMenu, ID_VIEW_SHOWMENUBAR, MF_BYCOMMAND | m_pContainer->dwFlags & CNT_NOMENUBAR ? MF_UNCHECKED : MF_CHECKED);
 	::CheckMenuItem(hMenu, ID_VIEW_SHOWSTATUSBAR, MF_BYCOMMAND | m_pContainer->dwFlags & CNT_NOSTATUSBAR ? MF_UNCHECKED : MF_CHECKED);
@@ -526,16 +537,14 @@ void CMenuBar::configureMenu() const
 {
 	_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(m_pContainer->hwndActive, GWLP_USERDATA);
 
-	assert(dat != 0);
-
 	BOOL fDisable = FALSE;
 
 	if(dat) {
 		bool fChat = (dat->bType == SESSIONTYPE_CHAT);
 
-		::SendMessage(m_hwndToolbar, TB_SETSTATE, 102, fChat ? TBSTATE_HIDDEN : TBSTATE_ENABLED);
-		::SendMessage(m_hwndToolbar, TB_SETSTATE, 103, fChat ? TBSTATE_ENABLED : TBSTATE_HIDDEN);
-		::SendMessage(m_hwndToolbar, TB_SETSTATE, 104, fChat ? TBSTATE_HIDDEN : TBSTATE_ENABLED);
+		::SendMessage(m_hwndToolbar, TB_SETSTATE, 103, fChat ? TBSTATE_HIDDEN : TBSTATE_ENABLED);
+		::SendMessage(m_hwndToolbar, TB_SETSTATE, 104, fChat ? TBSTATE_ENABLED : TBSTATE_HIDDEN);
+		::SendMessage(m_hwndToolbar, TB_SETSTATE, 105, fChat ? TBSTATE_HIDDEN : TBSTATE_ENABLED);
 
 		if (dat->bType == SESSIONTYPE_IM)
 			EnableWindow(GetDlgItem(dat->hwnd, IDC_TIME), fDisable ? FALSE : TRUE);

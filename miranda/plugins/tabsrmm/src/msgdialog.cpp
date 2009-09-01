@@ -76,6 +76,8 @@ static struct _tooltips {
 	-1, NULL
 };
 
+static TCHAR *tszEditNotesMsg = _T("You are editing the user notes. Klick the button again or use the hotkey (default: Alt-N) to save the notes and return to normal messaging mode");
+
 static struct _buttonicons {
 	int id;
 	HICON *pIcon;
@@ -474,6 +476,8 @@ static void MsgWindowUpdateState(_MessageWindowData *dat, UINT msg)
 		SetAeroMargins(dat->pContainer);
 		if(M->isAero())
 			InvalidateRect(hwndTab, NULL, FALSE);
+		if(dat->pContainer->dwFlags & CNT_SIDEBAR)
+			dat->pContainer->SideBar->setActiveItem(dat);
 	}
 }
 
@@ -535,7 +539,7 @@ void SetDialogToType(HWND hwndDlg)
 		ShowMultipleControls(hwndDlg, addControls, 2, SW_HIDE);
 	}
 
-	ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLETOOLBAR), SW_HIDE);
+	//ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLETOOLBAR), SW_HIDE);
 
 	ShowWindow(GetDlgItem(hwndDlg, IDC_LOGFROZEN), SW_HIDE);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT), SW_HIDE);
@@ -570,7 +574,7 @@ void SetDialogToType(HWND hwndDlg)
 	ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER), SW_SHOW);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
 
-	EnableSendButton(hwndDlg, GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE)) != 0);
+	EnableSendButton(dat, GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE)) != 0);
 	SendMessage(hwndDlg, DM_UPDATETITLE, 0, 1);
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
 
@@ -579,7 +583,7 @@ void SetDialogToType(HWND hwndDlg)
 		EnableWindow(GetDlgItem(hwndDlg, IDC_PANELPIC), FALSE);
 	}
 
-	ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLESIDEBAR), PluginConfig.m_SideBarEnabled ? SW_SHOW : SW_HIDE);
+	ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLESIDEBAR), dat->pContainer->SideBar->isActive() ? SW_SHOW : SW_HIDE);
 
 	// info panel stuff
 	if (!(dat->dwFlags & MWF_ERRORSTATE)) {
@@ -796,6 +800,9 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 				SendMessage(hwndParent, WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hwnd), EN_CHANGE), (LPARAM) hwnd);
 
 			if (wParam == VK_RETURN) {
+				if(mwdat->fEditNotesActive)
+					break;
+
 				if (isShift) {
 					if (PluginConfig.m_SendOnShiftEnter) {
 						PostMessage(hwndParent, WM_COMMAND, IDOK, 0);
@@ -1363,13 +1370,13 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 		case IDC_PANELNICK: {
 			RECT	rcStatus;
 			GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), &rcStatus);
-			urc->rcItem.left = panelHeight <= 52 ? panelHeight : 52;
-			urc->rcItem.right = urc->dlgNewSize.cx - panelWidth - (panelHeight <= 42 ? (rcStatus.right - rcStatus.left) + 3 : 0);
-			urc->rcItem.bottom = panelHeight - 3 - (panelHeight > 42 ? dat->ipFieldHeight : 0) - 1;;
+			urc->rcItem.left = panelHeight <= CInfoPanel::LEFT_OFFSET_LOGO ? panelHeight : CInfoPanel::LEFT_OFFSET_LOGO;
+			urc->rcItem.right = urc->dlgNewSize.cx - panelWidth - (panelHeight <= CInfoPanel::DEGRADE_THRESHOLD ? (rcStatus.right - rcStatus.left) + 3 : 0);
+			urc->rcItem.bottom = panelHeight - 3 - (panelHeight > CInfoPanel::DEGRADE_THRESHOLD ? dat->ipFieldHeight : 0) - 1;;
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
 		}
 		case IDC_PANELUIN: {
-			urc->rcItem.left = panelHeight <= 52 ? panelHeight : 52;
+			urc->rcItem.left = panelHeight <= CInfoPanel::LEFT_OFFSET_LOGO ? panelHeight : CInfoPanel::LEFT_OFFSET_LOGO;
 			urc->rcItem.right = urc->dlgNewSize.cx - (panelWidth + 2) - dat->panelStatusCX;
 			urc->rcItem.bottom = panelHeight - 1;
 			urc->rcItem.top = urc->rcItem.bottom - dat->ipFieldHeight;
@@ -1380,7 +1387,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
 			urc->rcItem.bottom = urc->rcItem.top + 2;
 			OffsetRect(&urc->rcItem, 0, 1);
-			if (PluginConfig.m_SideBarEnabled)
+			if (dat->pContainer->dwFlags & CNT_SIDEBAR)
 				urc->rcItem.left = 9;
 			else
 				urc->rcItem.left = 0;
@@ -1433,8 +1440,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 				}
 			} else
 				not_on_list = 0;
-			if (PluginConfig.m_SideBarEnabled)
-				urc->rcItem.left += 9;
+			if (dat->pContainer->dwFlags & CNT_SIDEBAR)
+				urc->rcItem.left += 6;
 			if (PluginConfig.m_visualMessageSizeIndicator)
 				urc->rcItem.bottom -= DPISCALEY(2);
 			//mad
@@ -1461,7 +1468,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			urc->rcItem.bottom = iClistOffset;
 			return RD_ANCHORX_RIGHT | RD_ANCHORY_CUSTOM;
 		case IDC_TOGGLESIDEBAR:
-			urc->rcItem.right = 8;
+			urc->rcItem.right = 6;
 			urc->rcItem.left = 0;
 			urc->rcItem.bottom = msgBottom;
 			urc->rcItem.top = msgTop;
@@ -1479,7 +1486,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			urc->rcItem.right = urc->dlgNewSize.cx;
 			if (dat->showPic)
 				urc->rcItem.right -= dat->pic.cx + 2;
-			if (PluginConfig.m_SideBarEnabled)
+			if (dat->pContainer->dwFlags & CNT_SIDEBAR)
 				urc->rcItem.left += 9;
  			if (bBottomToolbar&&showToolbar){
 				urc->rcItem.bottom -= DPISCALEY(23);
@@ -1512,6 +1519,9 @@ static void NotifyTyping(struct _MessageWindowData *dat, int mode)
 		// Don't send to protocols that are offline
 		// Don't send to users who are not visible and
 		// Don't send to users who are not on the visible list when you are in invisible mode.
+
+		if(dat->fEditNotesActive)							// don't send them when editing user notes, pretty scary, huh? :)
+			return;
 
 		if (!M->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, M->GetByte(SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)))
 			return;
@@ -1563,7 +1573,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			POINT pt;
 			int i;
 			BOOL	isFlat = M->GetByte("tbflat", 1);
-			BOOL	isThemed = !M->GetByte("nlflat", 0);
+			BOOL	isThemed = PluginConfig.m_bIsXP;
 			HWND	hwndItem;
 			int		dwLocalSmAdd = 0;
 			PROTOACCOUNT *acc = 0;
@@ -1762,19 +1772,17 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			for (i = 0; i < sizeof(errorButtons) / sizeof(errorButtons[0]); i++) {
 				hwndItem = GetDlgItem(hwndDlg, errorButtons[i]);
 				SendMessage(hwndItem, BUTTONSETASFLATBTN, 0, isFlat ? 0 : 0);
-				SendMessage(hwndItem, BUTTONSETASFLATBTN + 10, 0, isThemed ? 0 : 0);
+				SendMessage(hwndItem, BUTTONSETASFLATBTN + 10, 0, isThemed ? 0 : 1);
 				SendMessage(hwndItem, BUTTONSETASFLATBTN + 12, 0, (LPARAM)m_pContainer);
 			}
 
-			SendMessage(GetDlgItem(hwndDlg, IDC_TOGGLESIDEBAR), BUTTONSETASFLATBTN, 0, 0);
 			SendMessage(GetDlgItem(hwndDlg, IDC_ADD), BUTTONSETASFLATBTN, 0, 0);
 			SendMessage(GetDlgItem(hwndDlg, IDC_CANCELADD), BUTTONSETASFLATBTN, 0, 0);
 			SendMessage(GetDlgItem(hwndDlg, IDC_LOGFROZEN), BUTTONSETASFLATBTN, 0, 0);
 
-			SendDlgItemMessage(hwndDlg, IDC_TOGGLESIDEBAR, BUTTONSETASFLATBTN + 10, 0, 0);
+			SendDlgItemMessage(hwndDlg, IDC_TOGGLESIDEBAR, BUTTONSETASFLATBTN, 0, 0);
+			SendDlgItemMessage(hwndDlg, IDC_TOGGLESIDEBAR, BUTTONSETASFLATBTN + 10, 0, isThemed ? 1 : 0);
 			SendDlgItemMessage(hwndDlg, IDC_TOGGLESIDEBAR, BUTTONSETASFLATBTN + 12, 0, (LPARAM)m_pContainer);
-
-
 
 //			dat->dwFlags |= MWF_INITMODE;
 			TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING, 0);
@@ -1876,7 +1884,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
 				PostMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, len, len);
 				if (len)
-					EnableSendButton(hwndDlg, TRUE);
+					EnableSendButton(dat, TRUE);
 			}
 			//dat->dwFlags &= ~MWF_INITMODE;
 			{
@@ -2054,6 +2062,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			 * draw the logo
 			 */
 
+			/*
 			if(fInfoPanel && PluginConfig.hbmLogo) {
 				BITMAP 	bm = {0};
 				HDC		hdcImage = CreateCompatibleDC(hdc);
@@ -2081,6 +2090,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					DeleteObject(hbmNew);
 				DeleteDC(hdcImage);
 			}
+			*/
 			/*
 			 * draw aero related stuff
 			*/
@@ -2247,6 +2257,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 										return(_dlgReturn(hwndDlg, 1));
 									case TABSRMM_HK_USERDETAILS:
 										SendMessage(hwndDlg, WM_COMMAND, MAKELONG(IDC_NAME, BN_CLICKED), 0);
+										return(_dlgReturn(hwndDlg, 1));
+									case TABSRMM_HK_EDITNOTES:
+										PostMessage(hwndDlg, WM_COMMAND, MAKELONG(IDC_PIC, BN_CLICKED), 0);
 										return(_dlgReturn(hwndDlg, 1));
 									case TABSRMM_HK_TOGGLEINFOPANEL:
 										if (!(dat->dwFlags & MWF_ERRORSTATE)) {
@@ -3004,8 +3017,11 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					dat->newtitle[127] = 0;
 					item.cchTextMax = 127;;
 				}
-				if (dat->iTabID  >= 0)
+				if (dat->iTabID  >= 0) {
 					TabCtrl_SetItem(hwndTab, dat->iTabID, &item);
+					if(m_pContainer->dwFlags & CNT_SIDEBAR)
+						m_pContainer->SideBar->updateSession(dat);
+				}
 				if (m_pContainer->hwndActive == hwndDlg && (dat->iOldHash != iHash || dat->wOldStatus != dat->wStatus || dat->xStatus != oldXStatus))
 					SendMessage(hwndContainer, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
 
@@ -3189,6 +3205,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					dat->dynaSplitter = (rc.bottom - pt.y) - DPISCALEY(11);
 					DM_RecalcPictureSize(dat);
 				}
+				RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE|RDW_UPDATENOW|RDW_ALLCHILDREN);
 			} else if ((HWND) lParam == GetDlgItem(hwndDlg, IDC_PANELSPLITTER)) {
 				RECT rc;
 				POINT pt;
@@ -3584,7 +3601,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							if (dat->hDbEventFirst == NULL)
 								SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 							SaveInputHistory(hwndDlg, dat, 0, 0);
-							EnableSendButton(hwndDlg, FALSE);
+							EnableSendButton(dat, FALSE);
 							if (m_pContainer->hwndActive == hwndDlg)
 								UpdateReadChars(dat);
 							SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) PluginConfig.g_buttonBarIcons[6]);
@@ -3750,10 +3767,11 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				LoadSplitter(dat);
 				PostMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
 				DM_LoadLocale(dat);
-				//PostMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
 				PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
 				if (dat->hwndIEView != 0)
 					SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+				if(dat->pContainer->dwFlags & CNT_SIDEBAR)
+					dat->pContainer->SideBar->Layout();
 			} else {
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
 				if (lParam == 0) {
@@ -3917,7 +3935,12 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				}
 			//
 			switch (LOWORD(wParam)) {
-				case IDOK: {
+					case IDOK: {
+
+					if(dat->fEditNotesActive) {
+						SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_PIC, (LPARAM)TranslateTS(tszEditNotesMsg));
+						return(0);
+					}
 					int bufSize = 0, memRequired = 0, flags = 0;
 					char *streamOut = NULL;
 					TCHAR *decoded = NULL, *converted = NULL;
@@ -4036,7 +4059,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					if (dat->sendMode & SMODE_CONTAINER && m_pContainer->hwndActive == hwndDlg && GetForegroundWindow() == hwndContainer) {
 						HWND contacthwnd;
 						TCITEM tci;
-						BOOL bOldState;
 						int tabCount = TabCtrl_GetItemCount(hwndTab), i;
 						char *szFromStream = NULL;
 
@@ -4063,12 +4085,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 									// send the buffer to the contacts msg typing area
 									SendDlgItemMessage(contacthwnd, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szFromStream);
 									// enable the IDOK
-									bOldState = GetSendButtonState(contacthwnd);
-									EnableSendButton(contacthwnd, 1);
 									// simulate an ok
 									// SendDlgItemMessage(contacthwnd, IDOK, BM_CLICK, 0, 0);
 									SendMessage(contacthwnd, WM_COMMAND, IDOK, 0);
-									EnableSendButton(contacthwnd, bOldState == PBS_DISABLED ? 0 : 1);
 								}
 							}
 						}
@@ -4651,20 +4670,45 @@ quote_from_last:
 					SendMessage(hwndDlg, WM_SIZE, 0, 0);
 					break;
 				case IDC_TOGGLESIDEBAR: {
-					ApplyContainerSetting(m_pContainer, CNT_SIDEBAR, m_pContainer->dwFlags & CNT_SIDEBAR ? 0 : 1, false);
+					SendMessage(m_pContainer->hwnd, WM_COMMAND, IDC_TOGGLESIDEBAR, 0);
 					break;
 				}
 				case IDC_PIC: {
 					RECT rc;
-					int iSelection, isHandled;
+					GetClientRect(hwndDlg, &rc);
 
-					HMENU submenu = GetSubMenu(m_pContainer->hMenuContext, 1);
-					GetWindowRect(GetDlgItem(hwndDlg, IDC_PIC), &rc);
-					MsgWindowUpdateMenu(dat, submenu, MENU_PICMENU);
-					iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
-					isHandled = MsgWindowMenuHandler(dat, iSelection, MENU_PICMENU);
-					if (isHandled)
-						RedrawWindow(GetDlgItem(hwndDlg, IDC_PIC), NULL, NULL, RDW_INVALIDATE);
+					dat->fEditNotesActive = !dat->fEditNotesActive;
+					if(dat->fEditNotesActive) {
+						int iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
+						if(iLen != 0) {
+							SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)TranslateT("You cannot edit user notes when there are unsent messages"));
+							dat->fEditNotesActive = false;
+							break;
+						}
+						dat->iSplitterSaved = dat->splitterY;
+
+						dat->splitterY = rc.bottom / 2;
+						SendMessage(hwndDlg, WM_SIZE, 1, 1);
+
+						DBVARIANT dbv = {0};
+
+						if(0 == DBGetContactSettingTString(dat->hContact, "UserInfo", "MyNotes", &dbv)) {
+							SetDlgItemText(hwndDlg, IDC_MESSAGE, dbv.ptszVal);
+							mir_free(dbv.ptszVal);
+						}
+						SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)TranslateTS(tszEditNotesMsg));
+					}
+					else {
+						int iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
+
+						TCHAR *buf = (TCHAR *)mir_alloc((iLen + 2) * sizeof(TCHAR));
+						GetDlgItemText(hwndDlg, IDC_MESSAGE, buf, iLen + 1);
+						DBWriteContactSettingTString(dat->hContact, "UserInfo", "MyNotes", buf);
+						SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
+						dat->splitterY = dat->iSplitterSaved;
+						SendMessage(hwndDlg, WM_SIZE, 0, 0);
+						DM_ScrollToBottom(dat, 0, 1);
+					}
 				}
 				break;
 				case IDM_CLEAR:
@@ -5066,8 +5110,6 @@ quote_from_last:
 			break;
 		case DM_REFRESHTABINDEX:
 			dat->iTabID = GetTabIndexFromHWND(GetParent(hwndDlg), hwndDlg);
-			if (dat->iTabID == -1)
-				_DebugPopup(dat->hContact, _T("WARNING: new tabindex: %d"), dat->iTabID);
 			return 0;
 		case DM_STATUSICONCHANGE:
 			if (m_pContainer->hwndStatus) {
@@ -5209,6 +5251,7 @@ quote_from_last:
 					}
 				}
 			}
+
 			iTabs = TabCtrl_GetItemCount(hwndTab);
 			if (iTabs == 1) {
 				PostMessage(hwndContainer, WM_CLOSE, 0, 1);
@@ -5361,6 +5404,9 @@ quote_from_last:
 			if (dat->hwndTip)
 				DestroyWindow(dat->hwndTip);
 
+			if(dat->fEditNotesActive)
+				SendMessage(hwndDlg, WM_COMMAND, IDC_PIC, 0);
+
 			UpdateTrayMenuState(dat, FALSE);               // remove me from the tray menu (if still there)
 			if (PluginConfig.g_hMenuTrayUnread)
 				DeleteMenu(PluginConfig.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, MF_BYCOMMAND);
@@ -5455,6 +5501,8 @@ quote_from_last:
 			if (dat) {
 				dat->pContainer->dwOldAeroBottom = dat->pContainer->dwOldAeroTop = 0;
 				PostMessage(dat->pContainer->hwnd, WM_SIZE, 0, 1);
+				if(m_pContainer->dwFlags & CNT_SIDEBAR)
+					m_pContainer->SideBar->removeSession(dat);
 				delete dat->Panel;
 				free(dat);
 			}

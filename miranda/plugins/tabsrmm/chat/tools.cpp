@@ -44,7 +44,6 @@ extern FONTINFO			aFonts[OPTIONS_FONTCOUNT];
 extern HMENU			g_hMenu;
 extern HANDLE			hBuildMenuEvent ;
 extern HANDLE			hSendEvent;
-extern SESSION_INFO		g_TabSession;
 
 static void Chat_PlaySound(const char *szSound, HWND hWnd, struct _MessageWindowData *dat)
 {
@@ -268,7 +267,7 @@ static BOOL DoPopup(SESSION_INFO* si, GCEVENT* gce, struct _MessageWindowData* d
 
 	if (si && (iEvent & si->iLogPopupFlags)) {
 
-		if (nen_options.iDisable || (dat == 0 && g_Settings.SkipWhenNoWindow))                          // no popups at all. Period
+		if (nen_options.iMUCDisable || (dat == 0 && g_Settings.SkipWhenNoWindow))                          // no popups at all. Period
 			return 0;
 		/*
 		* check the status mode against the status mask
@@ -511,8 +510,8 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 		//
 		if (dat || !g_Settings.SkipWhenNoWindow)
 			DoPopup(si, gce, dat);
-		if (params->bInactive && g_TabSession.hWnd)
-			SendMessage(g_TabSession.hWnd, GC_SETMESSAGEHIGHLIGHT, 0, (LPARAM) si);
+		if (params->bInactive && si && si->hWnd)
+			SendMessage(si->hWnd, GC_SETMESSAGEHIGHLIGHT, 0, (LPARAM) si);
 		if (g_Settings.FlashWindowHightlight && params->bInactive)
 			params->bMustFlash = TRUE;
 		params->bMustAutoswitch = TRUE;

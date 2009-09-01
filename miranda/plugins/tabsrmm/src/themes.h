@@ -41,6 +41,8 @@
 
 HBITMAP IMG_LoadLogo(const TCHAR *szName);
 
+class CSideBarButton;
+
 typedef struct {
 	HWND    hwnd;
 	int     stateId; // button state
@@ -62,9 +64,11 @@ typedef struct {
 	int     dimmed;
 	struct ContainerWindowData *pContainer;
 	ButtonItem *item;
+	CSideBarButton *sitem;
 } MButtonCtrl;
 
 #define BUTTONSETASTOOLBARBUTTON (BUTTONSETASFLATBTN + 21)
+#define BUTTONSETASSIDEBARBUTTON (BUTTONSETASFLATBTN + 22)
 
 /**
  * CImageItem implementes image-based skin items. These items are loaded
@@ -211,7 +215,6 @@ public:
 		m_default_bf.BlendOp = AC_SRC_OVER;
 		Init();
 
-		m_hbmAeroTabBottom = m_hbmAeroTabTop = 0;
 		if(m_fLoadOnStartup)
 			Load();								// load skin on init if this is checked
 	}
@@ -248,41 +251,6 @@ public:
 	COLORREF			getColorKey() const { return(m_ContainerColorKey); }
 
 	void				setupAeroSkins();
-
-	enum
-	{
-						TAB_BITMAP_TOP = 0,
-						TAB_BITMAP_BOTTOM = 1,
-						GLOW_BITMAP_TOP = 2,
-						GLOW_BITMAP_BOTTOM = 3
-	};
-
-	const HBITMAP		getAeroTabBitmap(const int bmpid, LONG& width, LONG& height) const
-	{
-		BITMAP	bminfo = {0};
-
-		::GetObject(bmpid == TAB_BITMAP_TOP ? m_hbmAeroTabTop : m_hbmAeroTabBottom, sizeof(bminfo), &bminfo);
-
-		width = bminfo.bmWidth;
-		height = bminfo.bmHeight;
-		return(bmpid == TAB_BITMAP_TOP ? m_hbmAeroTabTop : m_hbmAeroTabBottom);
-	}
-
-	const HBITMAP		getAeroGlowBitmap(const int bmpid, LONG& width, LONG& height) const
-	{
-		BITMAP	bminfo = {0};
-
-		::GetObject(bmpid == GLOW_BITMAP_TOP ? m_hbmGlowTop : m_hbmGlowBottom, sizeof(bminfo), &bminfo);
-
-		width = bminfo.bmWidth;
-		height = bminfo.bmHeight;
-		return(bmpid == GLOW_BITMAP_TOP ? m_hbmGlowTop : m_hbmGlowBottom);
-	}
-
-	const HBITMAP		getAeroTabBitmap(const int bmpid) const
-	{
-		return(bmpid == TAB_BITMAP_TOP ? m_hbmAeroTabTop : m_hbmAeroTabBottom);
-	}
 	void 				extractSkinsAndLogo() const;
 
 	/*
@@ -322,6 +290,9 @@ public:
 	static HICON	m_closeIcon, m_minIcon, m_maxIcon;
 	static BLENDFUNCTION m_default_bf;
 	static BYTE		m_aeroEffect;
+
+	static CImageItem *m_switchBarItem,	*m_tabTop, *m_tabBottom, *m_tabGlowTop,	*m_tabGlowBottom;
+
 private:
 	TCHAR			m_tszFileName[MAX_PATH];				// full path and filename of the currently loaded skin
 	char			m_tszFileNameA[MAX_PATH];				// compatibility (todo: remove later)
@@ -334,9 +305,6 @@ private:
 	void 			SkinCalcFrameWidth();
 	ICONDESCW		*m_skinIcons;
 	int				m_nrSkinIcons;
-
-	HBITMAP			m_hbmAeroTabTop, m_hbmAeroTabBottom;
-	HBITMAP			m_hbmGlowBottom, m_hbmGlowTop;
 };
 
 /*
@@ -344,7 +312,7 @@ private:
  */
 
 struct TabControlData {
-	BOOL    m_skinning;
+	BOOL    m_VisualStyles;
 	BOOL    m_moderntabs;
 	HWND    hwnd;
 	DWORD   dwStyle;

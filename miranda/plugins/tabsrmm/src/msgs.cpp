@@ -1305,6 +1305,7 @@ static int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 
 	//UnregisterClass(_T("TabSRMSG_Win"), g_hInst);
 	UnregisterClass(_T("TSStatusBarClass"), g_hInst);
+	UnregisterClass(_T("SideBarClass"), g_hInst);
 	UnregisterClassA("TSTabCtrlClass", g_hInst);
 	return 0;
 }
@@ -1532,6 +1533,8 @@ tzdone:
 	BuildCodePageList();
 	GetDefaultContainerTitleFormat();
 	PluginConfig.m_GlobalContainerFlags = M->GetDword("containerflags", CNT_FLAGS_DEFAULT);
+	PluginConfig.m_GlobalContainerFlagsEx = M->GetDword("containerflagsEx", CNT_FLAGSEX_DEFAULT);
+
 	if (!(PluginConfig.m_GlobalContainerFlags & CNT_NEWCONTAINERFLAGS))
 		PluginConfig.m_GlobalContainerFlags = CNT_FLAGS_DEFAULT;
 	PluginConfig.m_GlobalContainerTrans = M->GetDword("containertrans", CNT_TRANS_DEFAULT);
@@ -1726,6 +1729,14 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 	newData.bWantPopup = bWantPopup;
 	newData.hdbEvent = hdbEvent;
 	hwndNew = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSPLITNEW), GetDlgItem(pContainer->hwnd, IDC_MSGTABS), DlgProcMessage, (LPARAM) & newData);
+	/*
+	 * switchbar support
+	 */
+	if(pContainer->dwFlags & CNT_SIDEBAR) {
+		_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(hwndNew, GWLP_USERDATA);
+		if(dat)
+			pContainer->SideBar->addSession(dat, pContainer->iTabIndex);
+	}
 	SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
 
 	// if the container is minimized, then pop it up...

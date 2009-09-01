@@ -72,6 +72,16 @@ int RegisterTabCtrlClass(void)
 	wce.hbrBackground  = 0;
 	wce.style          = CS_GLOBALCLASS | CS_DBLCLKS | CS_PARENTDC;
 	RegisterClassEx(&wce);
+
+	ZeroMemory(&wce, sizeof(wce));
+	wce.cbSize         = sizeof(wce);
+	wce.lpszClassName  = _T("SideBarClass");
+	wce.lpfnWndProc    = CSideBar::wndProcStub;;
+	wce.hCursor        = LoadCursor(NULL, IDC_ARROW);
+	wce.cbWndExtra     = sizeof(void*);
+	wce.hbrBackground  = 0;
+	wce.style          = CS_GLOBALCLASS;// | CS_DBLCLKS; // | CS_PARENTDC;
+	RegisterClassEx(&wce);
 	return 0;
 }
 
@@ -339,7 +349,7 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 		HBRUSH bg;
 		HFONT oldFont;
 		DWORD dwStyle = tabdat->dwStyle;
-		BOOL bFill = ((dwStyle & TCS_BUTTONS && !tabdat->pContainer->bSkinned) && (tabdat->m_skinning == FALSE || PluginConfig.m_TabAppearance & TCF_NOSKINNING));
+		BOOL bFill = ((dwStyle & TCS_BUTTONS && !tabdat->pContainer->bSkinned) && (tabdat->m_VisualStyles == FALSE));
 		int oldMode = 0;
 		InflateRect(rcItem, -1, -1);
 
@@ -395,7 +405,7 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 				hIcon = dat->hTabIcon;
 		}
 
-		if (dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0) || !(PluginConfig.m_TabAppearance & TCF_FLASHICON)) {
+		if (dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0) || !(dat->pContainer->dwFlagsEx & TCF_FLASHICON)) {
 			DWORD ix = rcItem->left + tabdat->m_xpad - 1;
 			DWORD iy = (rcItem->bottom + rcItem->top - iSize) / 2;
 			if (dat->dwFlagsEx & MWF_SHOW_ISIDLE && PluginConfig.m_IdleDetect)
@@ -406,7 +416,7 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 
 		rcItem->left += (iSize + 2 + tabdat->m_xpad);
 
-		if (dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0) || !(PluginConfig.m_TabAppearance & TCF_FLASHLABEL)) {
+		if (dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0) || !(dat->pContainer->dwFlagsEx & TCF_FLASHLABEL)) {
 			oldFont = (HFONT)SelectObject(dc, (HFONT)SendMessage(tabdat->hwnd, WM_GETFONT, 0, 0));
 			if (tabdat->dwStyle & TCS_BUTTONS || !(tabdat->dwStyle & TCS_MULTILINE)) { // || (tabdat->m_moderntabs && leftMost)) {
 				rcItem->right -= tabdat->m_xpad;
@@ -415,7 +425,7 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 #if defined(_UNICODE)
 			if(M->isAero())
 				CSkin::RenderText(dc, dwStyle & TCS_BUTTONS ? tabdat->hThemeButton : tabdat->hTheme, dat->newtitle, rcItem, dwTextFlags, 7);
-			else if (tabdat->m_skinning == FALSE || PluginConfig.m_TabAppearance & TCF_NOSKINNING)
+			else if (tabdat->m_VisualStyles == FALSE)
 				DrawText(dc, dat->newtitle, (int)(lstrlen(dat->newtitle)), rcItem, dwTextFlags);
 			else
 				M->m_pfnDrawThemeText(dwStyle & TCS_BUTTONS ? tabdat->hThemeButton : tabdat->hTheme, dc, 1, nHint & HINT_ACTIVE_ITEM ? 3 : (nHint & HINT_HOTTRACK ? 2 : 1), dat->newtitle, (int)(lstrlen(dat->newtitle)), dwTextFlags, 0, rcItem);
@@ -449,7 +459,7 @@ static void DrawItemRect(struct TabControlData *tabdat, HDC dc, RECT *rcItem, in
 		 */
 
 		if (dwStyle & TCS_BUTTONS) {
-			BOOL bClassicDraw = (tabdat->m_skinning == FALSE) || (PluginConfig.m_TabAppearance & TCF_NOSKINNING);
+			BOOL bClassicDraw = (tabdat->m_VisualStyles == FALSE);
 
 			// draw frame controls for button or bottom tabs
 			if (dwStyle & TCS_BOTTOM)
@@ -513,7 +523,7 @@ b_nonskinned:
 				rcItem->bottom--;
 				rcItem->top -= 2;
 			}
-			if (tabdat->pContainer->bSkinned && !tabdat->m_moderntabs) {
+			if (tabdat->pContainer->bSkinned) {
 				CSkinItem *item = &SkinItems[dwStyle & TCS_BOTTOM ? ID_EXTBKTABITEMACTIVEBOTTOM : ID_EXTBKTABITEMACTIVE];
 				if (!item->IGNORED) {
 					rcItem->left += item->MARGIN_LEFT;
@@ -526,7 +536,7 @@ b_nonskinned:
 				}
 			}
 		}
-		if (tabdat->pContainer->bSkinned && !tabdat->m_moderntabs) {
+		if (tabdat->pContainer->bSkinned) {
 			CSkinItem *item = &SkinItems[dwStyle & TCS_BOTTOM ? (nHint & HINT_HOTTRACK ? ID_EXTBKTABITEMHOTTRACKBOTTOM : ID_EXTBKTABITEMBOTTOM) :
 													   (nHint & HINT_HOTTRACK ? ID_EXTBKTABITEMHOTTRACK : ID_EXTBKTABITEM)];
 			if (!item->IGNORED) {
@@ -812,7 +822,7 @@ static HRESULT DrawThemesPartWithAero(const TabControlData *tabdat, HDC hDC, int
 			prcBox->bottom += 2;
 		tabdat->helperItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == 3 ? 200 : 150);
 		tabdat->helperItem->Render(hDC, prcBox, true);
-		tabdat->helperGlowItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == 3 ? 180 : 100);
+		tabdat->helperGlowItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == 3 ? 190 : 130);
 
 		/*
 		 * glow effect for hot and/or selected tabs
@@ -1029,8 +1039,11 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 
 	tabdat = (struct TabControlData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	if (tabdat) {
-		if (tabdat->pContainer == NULL)
-			tabdat->pContainer = (struct ContainerWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
+		if (tabdat->pContainer == NULL) {
+			tabdat->pContainer = (ContainerWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
+			if(tabdat->pContainer)
+				tabdat->m_moderntabs = (tabdat->pContainer->dwFlagsEx & TCF_STYLED);
+		}
 		tabdat->dwStyle = GetWindowLongPtr(hwnd, GWL_STYLE);
 	}
 
@@ -1050,40 +1063,22 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			tabdat->fTipActive = FALSE;
 			SendMessage(hwnd, EM_THEMECHANGED, 0, 0);
 			OldTabControlClassProc = wcl.lpfnWndProc;
-			tabdat->helperItem = new CImageItem(5, 5, 5, 5, 0, 0, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
-												0, 255, 30, 80, 50, 100);
-
-			tabdat->helperGlowItem = new CImageItem(0, 0, 0, 0, 0, 0, IMAGE_PERPIXEL_ALPHA,
-												0, 255, 30, 80, 50, 100);
-
-			LONG    width, height;
-			HBITMAP hbm = Skin->getAeroTabBitmap(CSkin::TAB_BITMAP_TOP, width, height);
-			tabdat->helperItem->setBitmap(hbm);
-			tabdat->helperItem->setMetrics(width, height);
-			tabdat->helperItem->setAlphaFormat(AC_SRC_ALPHA, 255);
-
-			hbm = Skin->getAeroGlowBitmap(CSkin::GLOW_BITMAP_TOP, width, height);
-			tabdat->helperGlowItem->setBitmap(hbm);
-			tabdat->helperGlowItem->setMetrics(width, height);
-			tabdat->helperGlowItem->setAlphaFormat(AC_SRC_ALPHA, 255);
-
-
 			return TRUE;
 		}
 		case EM_THEMECHANGED:
 			tabdat->m_xpad = M->GetByte("x-pad", 3);
-			tabdat->m_skinning = FALSE;
+			tabdat->m_VisualStyles = FALSE;
 			if (PluginConfig.m_bIsXP && M->isVSAPIState()) {
 				if (CMimAPI::m_pfnIsThemeActive != 0)
 					if (CMimAPI::m_pfnIsThemeActive()) {
-						tabdat->m_skinning = TRUE;
+						tabdat->m_VisualStyles = TRUE;
 						if (tabdat->hTheme != 0 && CMimAPI::m_pfnCloseThemeData != 0) {
 							CMimAPI::m_pfnCloseThemeData(tabdat->hTheme);
 							CMimAPI::m_pfnCloseThemeData(tabdat->hThemeButton);
 						}
 						if (CMimAPI::m_pfnOpenThemeData != 0) {
 							if ((tabdat->hTheme = CMimAPI::m_pfnOpenThemeData(hwnd, L"TAB")) == 0 || (tabdat->hThemeButton = CMimAPI::m_pfnOpenThemeData(hwnd, L"BUTTON")) == 0)
-								tabdat->m_skinning = FALSE;
+								tabdat->m_VisualStyles = FALSE;
 						}
 					}
 			}
@@ -1103,7 +1098,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			return 0;
 		}
 		case EM_VALIDATEBOTTOM: {
-			BOOL bClassicDraw = (tabdat->m_skinning == FALSE) || (PluginConfig.m_TabAppearance & TCF_NOSKINNING);
+			BOOL bClassicDraw = (tabdat->m_VisualStyles == FALSE);
 			if ((tabdat->dwStyle & TCS_BOTTOM) && !bClassicDraw && PluginConfig.tabConfig.m_bottomAdjust != 0)
 				InvalidateRect(hwnd, NULL, FALSE);
 			else if (tabdat->m_moderntabs)
@@ -1162,10 +1157,6 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			break;
 		case WM_NCDESTROY:
 			if(tabdat) {
-				tabdat->helperItem->Clear();
-				delete tabdat->helperItem;
-				tabdat->helperGlowItem->Clear();
-				delete tabdat->helperGlowItem;
 				mir_free(tabdat);
 				SetWindowLongPtr(hwnd, GWLP_USERDATA, 0L);
 			}
@@ -1386,7 +1377,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			HBITMAP bmpMem, bmpOld;
 			DWORD cx, cy;
 			bool  isAero = M->isAero();
-			BOOL bClassicDraw = !isAero && ((tabdat->m_skinning == FALSE) || (PluginConfig.m_TabAppearance & TCF_NOSKINNING));
+			BOOL bClassicDraw = !isAero && (tabdat->m_VisualStyles == FALSE || tabdat->m_moderntabs || tabdat->pContainer->bSkinned);
 
 			if(GetUpdateRect(hwnd, NULL, TRUE) == 0)
 				break;
@@ -1403,21 +1394,29 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 				else
 					tabdat->fAeroTabs = 0;
 
-				LONG width, height;
-
-				HBITMAP hbm = Skin->getAeroTabBitmap((dwStyle & TCS_BOTTOM) ? CSkin::TAB_BITMAP_BOTTOM : CSkin::TAB_BITMAP_TOP, height, width);
-				tabdat->helperItem->setBitmap(hbm);
-				hbm = Skin->getAeroGlowBitmap((dwStyle & TCS_BOTTOM) ? CSkin::GLOW_BITMAP_BOTTOM : CSkin::GLOW_BITMAP_TOP, height, width);
-				tabdat->helperGlowItem->setBitmap(hbm);
-				//tabdat->helperItem->setMetrics(width, height);
+				tabdat->helperItem =  (dwStyle & TCS_BOTTOM) ? CSkin::m_tabBottom : CSkin::m_tabTop;
+				tabdat->helperGlowItem = (dwStyle & TCS_BOTTOM) ? CSkin::m_tabGlowBottom : CSkin::m_tabGlowTop;
 			}
 			else
 				tabdat->fAeroTabs = FALSE;
 
-			tabdat->m_moderntabs = (M->GetByte("moderntabs", 0) &&
-									!(tabdat->dwStyle & TCS_BUTTONS));
+			if(tabdat->pContainer)
+				tabdat->m_moderntabs = !tabdat->fAeroTabs && (tabdat->pContainer->dwFlagsEx & TCF_STYLED) &&
+				!(tabdat->dwStyle & TCS_BUTTONS) && !(tabdat->pContainer->bSkinned);
 
 			hdcreal = BeginPaint(hwnd, &ps);
+
+			/*
+			 * switchbar is active, don't paint a single pixel, the tab control won't be visible at all
+			 */
+
+			if(tabdat->pContainer->dwFlags & CNT_SIDEBAR) {
+				if(nCount == 0)
+					FillRect(hdcreal, &ps.rcPaint, GetSysColorBrush(COLOR_3DFACE));
+				EndPaint(hwnd, &ps);
+				return(0);
+			}
+
 			GetClientRect(hwnd, &rctPage);
 			iActive = TabCtrl_GetCurSel(hwnd);
 			TabCtrl_GetItemRect(hwnd, iActive, &rctActive);
@@ -1803,23 +1802,11 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			int i = 0;
 			COLORREF clr;
 
-			CheckDlgButton(hwndDlg, IDC_FLATTABS2, dwFlags & TCF_FLAT);
-			CheckDlgButton(hwndDlg, IDC_FLASHICON, dwFlags & TCF_FLASHICON);
-			CheckDlgButton(hwndDlg, IDC_FLASHLABEL, dwFlags & TCF_FLASHLABEL);
-			CheckDlgButton(hwndDlg, IDC_NOSKINNING, dwFlags & TCF_NOSKINNING);
-			CheckDlgButton(hwndDlg, IDC_SINGLEROWTAB, dwFlags & TCF_SINGLEROWTABCONTROL);
 			CheckDlgButton(hwndDlg, IDC_LABELUSEWINCOLORS, !CSkin::m_skinEnabled && dwFlags & TCF_LABELUSEWINCOLORS);
 			CheckDlgButton(hwndDlg, IDC_BKGUSEWINCOLORS2, !CSkin::m_skinEnabled && dwFlags & TCF_BKGUSEWINCOLORS);
 
-			CheckDlgButton(hwndDlg, IDC_STYLEDTABS, M->GetByte("moderntabs", 0));
-
 			SendMessage(hwndDlg, WM_COMMAND, IDC_LABELUSEWINCOLORS, 0);
 
-			if (M->isVSAPIState() == false) {
-				CheckDlgButton(hwndDlg, IDC_NOSKINNING, TRUE);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_NOSKINNING), FALSE);
-			}
-			EnableWindow(GetDlgItem(hwndDlg, IDC_NOSKINNING), IsDlgButtonChecked(hwndDlg, IDC_STYLEDTABS) ? FALSE : TRUE);
 			while (tabcolors[i].szKey != NULL) {
 				clr = (COLORREF)M->GetDword(CSkin::m_skinEnabled ? tabcolors[i].szSkinnedKey : tabcolors[i].szKey, GetSysColor(tabcolors[i].defclr));
 				SendDlgItemMessage(hwndDlg, tabcolors[i].id, CPM_SETCOLOUR, 0, (LPARAM)clr);
@@ -1854,10 +1841,8 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			SendDlgItemMessage(hwndDlg, IDC_SPIN3, UDM_SETPOS, 0, (LPARAM)M->GetByte("x-pad", 4));
 			SetDlgItemInt(hwndDlg, IDC_TABPADDING, (int)M->GetByte("y-pad", 3), FALSE);;
 			SetDlgItemInt(hwndDlg, IDC_HTABPADDING, (int)M->GetByte("x-pad", 4), FALSE);;
-			EnableWindow(GetDlgItem(hwndDlg, IDC_NOSKINNING), CSkin::m_skinEnabled ? FALSE : TRUE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_LABELUSEWINCOLORS), CSkin::m_skinEnabled ? FALSE : TRUE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_BKGUSEWINCOLORS2), CSkin::m_skinEnabled ? FALSE : TRUE);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_NOSKINNING), IsDlgButtonChecked(hwndDlg, IDC_STYLEDTABS) ? FALSE : TRUE);
 
 			SendDlgItemMessage(hwndDlg, IDC_AEROGLOW, CPM_SETCOLOUR, 0, (LPARAM)M->GetDword("aeroGlow", RGB(40, 40, 255)));
 			return 0;
@@ -1874,13 +1859,8 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 							struct ContainerWindowData *pContainer = pFirstContainer;
 
-							DWORD dwFlags = (IsDlgButtonChecked(hwndDlg, IDC_FLATTABS2) ? TCF_FLAT : 0) |
-											(IsDlgButtonChecked(hwndDlg, IDC_FLASHICON) ? TCF_FLASHICON : 0) |
-											(IsDlgButtonChecked(hwndDlg, IDC_FLASHLABEL) ? TCF_FLASHLABEL : 0) |
-											(IsDlgButtonChecked(hwndDlg, IDC_SINGLEROWTAB) ? TCF_SINGLEROWTABCONTROL : 0) |
-											(IsDlgButtonChecked(hwndDlg, IDC_LABELUSEWINCOLORS) ? TCF_LABELUSEWINCOLORS : 0) |
-											(IsDlgButtonChecked(hwndDlg, IDC_BKGUSEWINCOLORS2) ? TCF_BKGUSEWINCOLORS : 0) |
-											(IsDlgButtonChecked(hwndDlg, IDC_NOSKINNING) ? TCF_NOSKINNING : 0);
+							DWORD dwFlags =	(IsDlgButtonChecked(hwndDlg, IDC_LABELUSEWINCOLORS) ? TCF_LABELUSEWINCOLORS : 0) |
+											(IsDlgButtonChecked(hwndDlg, IDC_BKGUSEWINCOLORS2) ? TCF_BKGUSEWINCOLORS : 0);
 
 							M->WriteDword(SRMSGMOD_T, "tabconfig", dwFlags);
 							PluginConfig.m_TabAppearance = dwFlags;
@@ -1901,7 +1881,6 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 							fixedWidth = GetDlgItemInt(hwndDlg, IDC_TABWIDTH, &translated, FALSE);
 							fixedWidth = (fixedWidth < 60 ? 60 : fixedWidth);
 							M->WriteDword(SRMSGMOD_T, "fixedwidth", fixedWidth);
-							M->WriteByte(SRMSGMOD_T, "moderntabs", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_STYLEDTABS) ? 1 : 0));
 							FreeTabConfig();
 							if ((COLORREF)SendDlgItemMessage(hwndDlg, IDC_LIGHTSHADOW, CPM_GETCOLOUR, 0, 0) == RGB(255, 0, 255))
 								DBDeleteContactSetting(NULL, SRMSGMOD_T, "tab_lightshadow");
@@ -1925,9 +1904,6 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			break;
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
-				case IDC_STYLEDTABS:
-					EnableWindow(GetDlgItem(hwndDlg, IDC_NOSKINNING), IsDlgButtonChecked(hwndDlg, IDC_STYLEDTABS) ? FALSE : TRUE);
-					break;
 				case IDC_LABELUSEWINCOLORS:
 				case IDC_BKGUSEWINCOLORS2: {
 					int i = 0;

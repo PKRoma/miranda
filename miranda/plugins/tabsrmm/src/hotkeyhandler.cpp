@@ -66,7 +66,8 @@ static HOTKEYDESC _hotkeydescs[] = {
 	0, "tabsrmm_ipanel", "Toggle info panel", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT|HOTKEYF_SHIFT, 'I'), TABSRMM_HK_TOGGLEINFOPANEL,
 	0, "tabsrmm_rtl", "Toggle text direction", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT|HOTKEYF_SHIFT, 'B'), TABSRMM_HK_TOGGLERTL,
 	0, "tabsrmm_msend", "Toggle multi send", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT|HOTKEYF_SHIFT, 'M'), TABSRMM_HK_TOGGLEMULTISEND,
-	0, "tabsrmm_clearlog", "Clear message log", TABSRMM_HK_SECTION_GENERIC, 0, HOTKEYCODE(HOTKEYF_CONTROL, 'L'), TABSRMM_HK_CLEARLOG
+	0, "tabsrmm_clearlog", "Clear message log", TABSRMM_HK_SECTION_GENERIC, 0, HOTKEYCODE(HOTKEYF_CONTROL, 'L'), TABSRMM_HK_CLEARLOG,
+	0, "tabsrmm_notes", "Edit user notes", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT, 'N'), TABSRMM_HK_EDITNOTES
 };
 
 LRESULT ProcessHotkeysByMsgFilter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR ctrlId)

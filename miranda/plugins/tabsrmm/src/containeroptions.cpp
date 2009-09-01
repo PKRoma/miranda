@@ -43,6 +43,7 @@ static void ReloadGlobalContainerSettings()
 		if (pC->dwPrivateFlags & CNT_GLOBALSETTINGS) {
 			DWORD dwOld = pC->dwFlags;
 			pC->dwFlags = PluginConfig.m_GlobalContainerFlags;
+			pC->dwFlagsEx = PluginConfig.m_GlobalContainerFlagsEx;
 			SendMessage(pC->hwnd, DM_CONFIGURECONTAINER, 0, 0);
 			SendMessage(pC->hwnd, WM_SIZE, 0, 1);
 			if ((dwOld & CNT_INFOPANEL) != (pC->dwFlags & CNT_INFOPANEL))
@@ -92,30 +93,28 @@ void ApplyContainerSetting(ContainerWindowData *pContainer, DWORD flags, int mod
 	BroadCastContainer(pContainer, DM_BBNEEDUPDATE, 0, 0);
 }
 
-#define NR_O_PAGES 7
-#define NR_O_OPTIONSPERPAGE 8
+#define NR_O_PAGES 8
+#define NR_O_OPTIONSPERPAGE 9
 
 static struct _tagPages {
 	TCHAR *szTitle;
 	TCHAR *szDesc;
-	UINT uIds[8];
+	UINT uIds[9];
 } o_pages[] = {
-	{ _T("General options"), NULL, IDC_O_NOTABS, IDC_O_STICKY, IDC_VERTICALMAX, 0, 0, 0, 0, 0},
-	{ _T("Window layout"), NULL, IDC_CNTNOSTATUSBAR, IDC_HIDEMENUBAR, IDC_TABSATBOTTOM, IDC_UIDSTATUSBAR, IDC_HIDETOOLBAR, IDC_INFOPANEL, IDC_BOTTOMTOOLBAR, 0},
-	{ _T("Notifications"), _T("Select, in which cases you want to see event notifications for this message container. These options are disabled when you are using one of the \"simple\" notifications modes"), IDC_O_DONTREPORT, IDC_DONTREPORTUNFOCUSED2, IDC_ALWAYSPOPUPSINACTIVE, IDC_SYNCSOUNDS, 0, 0, 0, 0},
-	{ _T("Flashing"), NULL, IDC_O_FLASHDEFAULT, IDC_O_FLASHALWAYS, IDC_O_FLASHNEVER, 0, 0, 0, 0},
-	{ _T("Title bar"), NULL, IDC_O_HIDETITLE, IDC_STATICICON, IDC_USEPRIVATETITLE, IDC_TITLEFORMAT, 0, 0, 0},
-	{ _T("Window size and theme"), _T("You can select a private theme (.tabsrmm file) for this container which will then override the default message log theme. You will have to close and re-open all message windows after changing this option."), IDC_THEME, IDC_SELECTTHEME, IDC_USEGLOBALSIZE, IDC_SAVESIZEASGLOBAL, IDC_LABEL_PRIVATETHEME, 0,0, 0},
-	{ _T("Transparency"), _T("This feature requires Windows 2000 or later and is not available when custom container skins are in use"), IDC_TRANSPARENCY, IDC_TRANSPARENCY_ACTIVE, IDC_TRANSPARENCY_INACTIVE, IDC_TLABEL_ACTIVE, IDC_TLABEL_INACTIVE, IDC_TSLABEL_ACTIVE, IDC_TSLABEL_INACTIVE,0},
-	{ NULL, NULL, 0, 0, 0, 0, 0, 0, 0}
+	{ _T("General options"), NULL, IDC_O_NOTABS, IDC_O_STICKY, IDC_VERTICALMAX, 0, 0, 0, 0, 0, 0},
+	{ _T("Window layout"), NULL, IDC_CNTNOSTATUSBAR, IDC_HIDEMENUBAR, IDC_UIDSTATUSBAR, IDC_HIDETOOLBAR, IDC_INFOPANEL, IDC_BOTTOMTOOLBAR, 0, 0, 0},
+	{ _T("Tabs and switch bar"), _T("Choose your options for the tabbed user interface. Not all options can be applied to open windows. You may need to close and re-open them."), IDC_TABMODE, IDC_O_TABMODE, IDC_O_SBARLAYOUT, IDC_SBARLAYOUT, IDC_FLASHICON, IDC_FLASHLABEL, IDC_SINGLEROWTAB, IDC_BUTTONTABS, IDC_STYLEDTABS},
+	{ _T("Notifications"), _T("Select, in which cases you want to see event notifications for this message container. These options are disabled when you are using one of the \"simple\" notifications modes"), IDC_O_DONTREPORT, IDC_DONTREPORTUNFOCUSED2, IDC_ALWAYSPOPUPSINACTIVE, IDC_SYNCSOUNDS, 0, 0, 0, 0, 0},
+	{ _T("Flashing"), NULL, IDC_O_FLASHDEFAULT, IDC_O_FLASHALWAYS, IDC_O_FLASHNEVER, 0, 0, 0, 0, 0, 0},
+	{ _T("Title bar"), NULL, IDC_O_HIDETITLE, IDC_STATICICON, IDC_USEPRIVATETITLE, IDC_TITLEFORMAT, 0, 0, 0, 0, 0},
+	{ _T("Window size and theme"), _T("You can select a private theme (.tabsrmm file) for this container which will then override the default message log theme. You will have to close and re-open all message windows after changing this option."), IDC_THEME, IDC_SELECTTHEME, IDC_USEGLOBALSIZE, IDC_SAVESIZEASGLOBAL, IDC_LABEL_PRIVATETHEME, 0,0, 0, 0},
+	{ _T("Transparency"), _T("This feature requires Windows 2000 or later and is not available when custom container skins are in use"), IDC_TRANSPARENCY, IDC_TRANSPARENCY_ACTIVE, IDC_TRANSPARENCY_INACTIVE, IDC_TLABEL_ACTIVE, IDC_TLABEL_INACTIVE, IDC_TSLABEL_ACTIVE, IDC_TSLABEL_INACTIVE,0, 0},
 };
 
 static void ShowPage(HWND hwndDlg, int iPage, BOOL fShow)
 {
-	int i;
-
 	if (iPage >= 0 && iPage < NR_O_PAGES) {
-		for (i = 0; i < NR_O_OPTIONSPERPAGE && o_pages[iPage].uIds[i] != 0; i++)
+		for (int i = 0; i < NR_O_OPTIONSPERPAGE && o_pages[iPage].uIds[i] != 0; i++)
 			ShowWindow(GetDlgItem(hwndDlg, o_pages[iPage].uIds[i]), fShow ? SW_SHOW : SW_HIDE);
 	}
 	if (fShow) {
@@ -135,16 +134,18 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 	switch (msg) {
 		case WM_INITDIALOG: {
-			TCHAR szNewTitle[128];
-			struct ContainerWindowData *pContainer = 0;
-			DWORD dwFlags = 0;
-			DWORD dwTemp[2];
-			int   i, j;
-			TVINSERTSTRUCT tvis = {0};
-			HTREEITEM hItem;
+			TCHAR 			szNewTitle[128];
+			ContainerWindowData *pContainer = 0;
+			DWORD 			dwFlags = 0;
+			DWORD 			dwTemp[3];
+			int   			i, j;
+			TVINSERTSTRUCT 	tvis = {0};
+			HTREEITEM 		hItem;
+			int				nr_layouts = 0;
+			const 			TSideBarLayout* sblayouts = CSideBar::getLayouts(nr_layouts);
 
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR) lParam);
-			pContainer = (struct ContainerWindowData *) lParam;
+			pContainer = (ContainerWindowData *) lParam;
 			pContainer->hWndOptions = hwndDlg;
 			TranslateDialogDefault(hwndDlg);
 			mir_sntprintf(szNewTitle, SIZEOF(szNewTitle), _T("\t%s"), pContainer->szName);
@@ -156,6 +157,18 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 			dwTemp[0] = (pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS ? PluginConfig.m_GlobalContainerFlags : pContainer->dwPrivateFlags);
 			dwTemp[1] = pContainer->dwTransparency;
+			dwTemp[2] = (pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS ? PluginConfig.m_GlobalContainerFlagsEx : pContainer->dwPrivateFlagsEx);
+
+			SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Tabs at the top"));
+			SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Tabs at the bottom"));
+			SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Switch bar on the left side"));
+			SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Switch bar on the right side (UNIMPLEMENTED)"));
+
+			for(i = 0; i < nr_layouts; i++)
+				SendDlgItemMessage(hwndDlg, IDC_SBARLAYOUT, CB_INSERTSTRING, -1, (LPARAM)sblayouts[i].szName);
+
+			/* bits 24 - 31 of dwFlagsEx hold the side bar layout id */
+			SendDlgItemMessage(hwndDlg, IDC_SBARLAYOUT, CB_SETCURSEL, (WPARAM)((dwTemp[2] & 0xff000000) >> 24), 0);
 
 			SendMessage(hwndDlg, DM_SC_INITDIALOG, (WPARAM)0, (LPARAM)dwTemp);
 			CheckDlgButton(hwndDlg, IDC_USEPRIVATETITLE, pContainer->dwFlags & CNT_TITLE_PRIVATE);
@@ -179,6 +192,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			ShowPage(hwndDlg, 0, TRUE);
 			SetFocus(hwndTree);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), FALSE);
+
 			return FALSE;
 		}
 
@@ -281,15 +295,17 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
 				case IDC_CNTPRIVATE: {
-					DWORD dwTemp[2];
+					DWORD dwTemp[3];
 
 					if (IsDlgButtonChecked(hwndDlg, IDC_CNTPRIVATE)) {
 						dwTemp[0] = pContainer->dwPrivateFlags;
 						dwTemp[1] = pContainer->dwTransparency;
+						dwTemp[2] = pContainer->dwPrivateFlagsEx;
 						SendMessage(hwndDlg, DM_SC_INITDIALOG, 0, (LPARAM)dwTemp);
 					}
 					else {
-						dwTemp[0] = PluginConfig.m_GlobalContainerFlags;;
+						dwTemp[2] = PluginConfig.m_GlobalContainerFlagsEx;
+						dwTemp[0] = PluginConfig.m_GlobalContainerFlags;
 						dwTemp[1] = pContainer->dwTransparency;
 						SendMessage(hwndDlg, DM_SC_INITDIALOG, 0, (LPARAM)dwTemp);
 					}
@@ -335,20 +351,22 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				}
 				case IDOK:
 				case IDC_APPLY: {
-					DWORD 	dwNewFlags = 0, dwNewTrans = 0;
+					DWORD 	dwNewFlags[2], dwNewTrans = 0;
 
-					SendMessage(hwndDlg, DM_SC_BUILDLIST, 0, (LPARAM)&dwNewFlags);
-					dwNewFlags = (pContainer->dwFlags & CNT_SIDEBAR) | dwNewFlags;
+					SendMessage(hwndDlg, DM_SC_BUILDLIST, 0, (LPARAM)dwNewFlags);
 
 					dwNewTrans = MAKELONG((WORD)SendDlgItemMessage(hwndDlg, IDC_TRANSPARENCY_ACTIVE, TBM_GETPOS, 0, 0), (WORD)SendDlgItemMessage(hwndDlg, IDC_TRANSPARENCY_INACTIVE, TBM_GETPOS, 0, 0));
 
 					if (IsDlgButtonChecked(hwndDlg, IDC_CNTPRIVATE)) {
-						pContainer->dwPrivateFlags = pContainer->dwFlags = (dwNewFlags & ~CNT_GLOBALSETTINGS);
+						pContainer->dwPrivateFlags = pContainer->dwFlags = (dwNewFlags[0] & ~CNT_GLOBALSETTINGS);
+						pContainer->dwPrivateFlagsEx = pContainer->dwFlagsEx = dwNewFlags[1];
 					}
 					else {
-						PluginConfig.m_GlobalContainerFlags = dwNewFlags;
+						PluginConfig.m_GlobalContainerFlags = dwNewFlags[0];
+						PluginConfig.m_GlobalContainerFlagsEx = dwNewFlags[1];
 						pContainer->dwPrivateFlags |= CNT_GLOBALSETTINGS;
-						M->WriteDword(SRMSGMOD_T, "containerflags", dwNewFlags);
+						M->WriteDword(SRMSGMOD_T, "containerflags", dwNewFlags[0]);
+						M->WriteDword(SRMSGMOD_T, "containerflagsEx", dwNewFlags[1]);
 						if (IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENCY)) {
 							PluginConfig.m_GlobalContainerTrans = dwNewTrans;
 							M->WriteDword(SRMSGMOD_T, "containertrans", dwNewTrans);
@@ -357,7 +375,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					if (IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENCY))
 						pContainer->dwTransparency = dwNewTrans;
 
-					if (dwNewFlags & CNT_TITLE_PRIVATE) {
+					if (dwNewFlags[0] & CNT_TITLE_PRIVATE) {
 						GetDlgItemText(hwndDlg, IDC_TITLEFORMAT, pContainer->szTitleFormat, TITLE_FORMATLEN);
 						pContainer->szTitleFormat[TITLE_FORMATLEN - 1] = 0;
 					}
@@ -422,6 +440,7 @@ do_apply:
 
 			DWORD dwFlags = dwTemp[0];
 			DWORD dwTransparency = dwTemp[1];
+			DWORD dwFlagsEx = dwTemp[2];
 			char szBuf[20];
 			int  isTrans;
 			BOOL fAllowTrans = FALSE;
@@ -444,7 +463,6 @@ do_apply:
 			MY_CheckDlgButton(hwndDlg, IDC_SYNCSOUNDS, dwFlags & CNT_SYNCSOUNDS);
 			MY_CheckDlgButton(hwndDlg, IDC_CNTNOSTATUSBAR, dwFlags & CNT_NOSTATUSBAR);
 			MY_CheckDlgButton(hwndDlg, IDC_HIDEMENUBAR, dwFlags & CNT_NOMENUBAR);
-			MY_CheckDlgButton(hwndDlg, IDC_TABSATBOTTOM, dwFlags & CNT_TABSBOTTOM);
 			MY_CheckDlgButton(hwndDlg, IDC_STATICICON, dwFlags & CNT_STATICICON);
 			MY_CheckDlgButton(hwndDlg, IDC_HIDETOOLBAR, dwFlags & CNT_HIDETOOLBAR);
 			MY_CheckDlgButton(hwndDlg, IDC_BOTTOMTOOLBAR, dwFlags & CNT_BOTTOMTOOLBAR);
@@ -453,6 +471,18 @@ do_apply:
 			MY_CheckDlgButton(hwndDlg, IDC_USEPRIVATETITLE, dwFlags & CNT_TITLE_PRIVATE);
 			MY_CheckDlgButton(hwndDlg, IDC_INFOPANEL, dwFlags & CNT_INFOPANEL);
 			MY_CheckDlgButton(hwndDlg, IDC_USEGLOBALSIZE, dwFlags & CNT_GLOBALSIZE);
+
+			MY_CheckDlgButton(hwndDlg, IDC_FLASHICON, dwFlagsEx & TCF_FLASHICON);
+			MY_CheckDlgButton(hwndDlg, IDC_FLASHLABEL, dwFlagsEx & TCF_FLASHLABEL);
+			MY_CheckDlgButton(hwndDlg, IDC_STYLEDTABS, dwFlagsEx & TCF_STYLED);
+
+			MY_CheckDlgButton(hwndDlg, IDC_SINGLEROWTAB, dwFlagsEx & TCF_SINGLEROWTABCONTROL);
+			MY_CheckDlgButton(hwndDlg, IDC_BUTTONTABS, dwFlagsEx & TCF_FLAT);
+
+			if(!(dwFlagsEx & (TCF_SBARLEFT | TCF_SBARRIGHT)))
+				SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_SETCURSEL, dwFlags & CNT_TABSBOTTOM ? 1 : 0, 0);
+			else
+				SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_SETCURSEL, dwFlagsEx & TCF_SBARLEFT ? 2 : 3, 0);
 
 			if (LOBYTE(LOWORD(GetVersion())) >= 5 && fAllowTrans)
 				CheckDlgButton(hwndDlg, IDC_TRANSPARENCY, dwFlags & CNT_TRANSPARENCY);
@@ -484,7 +514,7 @@ do_apply:
 			break;
 		}
 		case DM_SC_BUILDLIST: {
-			DWORD dwNewFlags = 0, *dwOut = (DWORD *)lParam;
+			DWORD dwNewFlags = 0, *dwOut = (DWORD *)lParam, dwNewFlagsEx = 0;
 
 			dwNewFlags = (IsDlgButtonChecked(hwndDlg, IDC_O_HIDETITLE) ? CNT_NOTITLE : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_O_DONTREPORT) ? CNT_DONTREPORT : 0) |
@@ -498,7 +528,6 @@ do_apply:
 						 (IsDlgButtonChecked(hwndDlg, IDC_SYNCSOUNDS) ? CNT_SYNCSOUNDS : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_CNTNOSTATUSBAR) ? CNT_NOSTATUSBAR : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_HIDEMENUBAR) ? CNT_NOMENUBAR : 0) |
-						 (IsDlgButtonChecked(hwndDlg, IDC_TABSATBOTTOM) ? CNT_TABSBOTTOM : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_STATICICON) ? CNT_STATICICON : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_HIDETOOLBAR) ? CNT_HIDETOOLBAR : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_BOTTOMTOOLBAR) ? CNT_BOTTOMTOOLBAR : 0) |
@@ -509,10 +538,33 @@ do_apply:
 						 (IsDlgButtonChecked(hwndDlg, IDC_VERTICALMAX) ? CNT_VERTICALMAX : 0) |
 						 (CNT_NEWCONTAINERFLAGS);
 
+			LRESULT iTabMode = SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_GETCURSEL, 0, 0);
+			LRESULT iTabLayout = SendDlgItemMessage(hwndDlg, IDC_SBARLAYOUT, CB_GETCURSEL, 0, 0);
+
+			dwNewFlagsEx = 0;
+
+			if(iTabMode < 2)
+				dwNewFlags = ((iTabMode == 1) ? (dwNewFlags | CNT_TABSBOTTOM) : (dwNewFlags & ~CNT_TABSBOTTOM));
+			else {
+				dwNewFlags &= ~CNT_TABSBOTTOM;
+				dwNewFlagsEx = iTabMode == 2 ? TCF_SBARLEFT : TCF_SBARRIGHT;
+			}
+
+			dwNewFlagsEx |= ((IsDlgButtonChecked(hwndDlg, IDC_FLASHICON) ? TCF_FLASHICON : 0) |
+						   (IsDlgButtonChecked(hwndDlg, IDC_FLASHLABEL) ? TCF_FLASHLABEL : 0) |
+						   (IsDlgButtonChecked(hwndDlg, IDC_BUTTONTABS) ? TCF_FLAT : 0) |
+						   (IsDlgButtonChecked(hwndDlg, IDC_STYLEDTABS) ? TCF_STYLED : 0) |
+						   (IsDlgButtonChecked(hwndDlg, IDC_SINGLEROWTAB) ? TCF_SINGLEROWTABCONTROL : 0)
+						  );
+
+			/* bits 24 - 31 of dwFlagsEx hold the sidebar layout id */
+			dwNewFlagsEx |= ((int)((iTabLayout << 24) & 0xff000000));
+
 			if (IsDlgButtonChecked(hwndDlg, IDC_O_FLASHDEFAULT))
 				dwNewFlags &= ~(CNT_FLASHALWAYS | CNT_NOFLASH);
 
-			*dwOut = dwNewFlags;
+			dwOut[0] = dwNewFlags;
+			dwOut[1] = dwNewFlagsEx;
 			break;
 		}
 		case WM_DESTROY: {

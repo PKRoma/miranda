@@ -51,7 +51,6 @@
 extern HBRUSH 			hListBkgBrush;
 extern HICON			hIcons[30];
 extern FONTINFO			aFonts[OPTIONS_FONTCOUNT];
-extern SESSION_INFO		g_TabSession;
 extern HMODULE          g_hIconDLL;
 
 extern HIMAGELIST       CreateStateImageList();

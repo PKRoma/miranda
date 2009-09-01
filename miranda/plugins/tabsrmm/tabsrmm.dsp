@@ -2478,6 +2478,10 @@ NODEP_CPP_SENDQ=\
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\sidebar.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\srmm.cpp
 DEP_CPP_SRMM_=\
 	"..\..\include\m_acc.h"\
@@ -3272,6 +3276,10 @@ SOURCE=.\src\resource.h
 # Begin Source File
 
 SOURCE=.\src\sendqueue.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sidebar.h
 # End Source File
 # Begin Source File
 

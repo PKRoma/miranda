@@ -27,7 +27,6 @@ $Id$
 
 extern  TCHAR	*pszActiveWndID ;
 extern  char	*pszActiveWndModule ;
-SESSION_INFO	g_TabSession;
 extern  HICON	hIcons[30];
 
 #define	WINDOWS_COMMANDS_MAX 30
@@ -103,9 +102,6 @@ int SM_RemoveSession(const TCHAR* pszID, const char* pszModule)
 
 			if (pTemp->hWnd)
 				SendMessage(pTemp->hWnd, GC_EVENT_CONTROL + WM_USER + 500, SESSION_TERMINATE, 0);
-
-			if (pTemp->hWnd)
-				g_TabSession.nUsersInNicklist = 0;
 
 			DoEventHook(pTemp->ptszID, pTemp->pszModule, GC_SESSION_TERMINATE, NULL, NULL, (DWORD)pTemp->dwItemData);
 
@@ -191,12 +187,8 @@ BOOL SM_SetOffline(const TCHAR* pszID, const char* pszModule)
 		if ((!pszID || !lstrcmpi(pTemp->ptszID, pszID)) && !lstrcmpiA(pTemp->pszModule, pszModule)) {
 			UM_RemoveAll(&pTemp->pUsers);
 			pTemp->nUsersInNicklist = 0;
-			if (pTemp->hWnd)
-				g_TabSession.nUsersInNicklist = 0;
 			if (pTemp->iType != GCW_SERVER)
 				pTemp->bInitDone = FALSE;
-			if (pTemp->hWnd)
-				g_TabSession.pUsers = 0;
 
 			if (pszID)
 				return TRUE;
@@ -280,12 +272,8 @@ BOOL SM_AddEventToAllMatchingUID(GCEVENT * gce)
 			if (UM_FindUser(pTemp->pUsers, gce->ptszUID)) {
 				if (pTemp->bInitDone) {
 					if (SM_AddEvent(pTemp->ptszID, pTemp->pszModule, gce, FALSE) && pTemp->hWnd && pTemp->bInitDone) {
-						g_TabSession.pLog = pTemp->pLog;
-						g_TabSession.pLogEnd = pTemp->pLogEnd;
 						SendMessage(pTemp->hWnd, GC_ADDLOG, 0, 0);
 					} else if (pTemp->hWnd && pTemp->bInitDone) {
-						g_TabSession.pLog = pTemp->pLog;
-						g_TabSession.pLogEnd = pTemp->pLogEnd;
 						SendMessage(pTemp->hWnd, GC_REDRAWLOG2, 0, 0);
 					}
 					DoSoundsFlashPopupTrayStuff(pTemp, gce, FALSE, bManyFix);
@@ -349,8 +337,6 @@ USERINFO * SM_AddUser(const TCHAR* pszID, const char* pszModule, const TCHAR* ps
 		if (!lstrcmpi(pTemp->ptszID, pszID) && !lstrcmpiA(pTemp->pszModule, pszModule)) {
 			USERINFO * p = UM_AddUser(pTemp->pStatuses, &pTemp->pUsers, pszUID, pszNick, wStatus);
 			pTemp->nUsersInNicklist++;
-			if (pTemp->hWnd)
-				g_TabSession.nUsersInNicklist ++;
 			return p;
 		}
 		pLast = pTemp;
@@ -391,10 +377,6 @@ BOOL SM_RemoveUser(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUI
 			USERINFO * ui = UM_FindUser(pTemp->pUsers, pszUID);
 			if (ui) {
 				pTemp->nUsersInNicklist--;
-				if (pTemp->hWnd) {
-					g_TabSession.pUsers = pTemp->pUsers;
-					g_TabSession.nUsersInNicklist --;
-				}
 
 				dw = UM_RemoveUser(&pTemp->pUsers, pszUID);
 
@@ -442,8 +424,6 @@ STATUSINFO * SM_AddStatus(const TCHAR* pszID, const char* pszModule, const TCHAR
 			STATUSINFO* ti = TM_AddStatus(&pTemp->pStatuses, pszStatus, &pTemp->iStatusCount);
 			if (ti)
 				pTemp->iStatusCount++;
-			if (pTemp->hWnd)
-				g_TabSession.pStatuses = pTemp->pStatuses;
 			return ti;
 		}
 		pLast = pTemp;
@@ -606,8 +586,6 @@ BOOL SM_SetStatus(const TCHAR* pszID, const char* pszModule, int wStatus)
 	while (pTemp != NULL) {
 		if ((!pszID || !lstrcmpi(pTemp->ptszID, pszID)) && !lstrcmpiA(pTemp->pszModule, pszModule)) {
 			pTemp->wStatus = wStatus;
-			if (pTemp->hWnd)
-				g_TabSession.wStatus = wStatus;
 
 			if (pTemp->hContact) {
 				if (pTemp->iType != GCW_SERVER && wStatus != ID_STATUS_OFFLINE)

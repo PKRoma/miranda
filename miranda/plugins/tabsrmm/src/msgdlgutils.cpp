@@ -302,6 +302,8 @@ void FlashTab(struct _MessageWindowData *dat, HWND hwndTab, int iTabindex, BOOL 
 		dat->hTabIcon = origImage;
 	item.iImage = 0;
 	TabCtrl_SetItem(hwndTab, iTabindex, &item);
+	if(dat->pContainer->dwFlags & CNT_SIDEBAR)
+		dat->pContainer->SideBar->updateSession(dat);
 }
 
 /*
@@ -707,7 +709,10 @@ void HandleIconFeedback(_MessageWindowData *dat, HICON iIcon)
 		dat->hTabIcon = iIcon;
 	item.iImage = 0;
 	item.mask = TCIF_IMAGE;
-	TabCtrl_SetItem(GetDlgItem(dat->pContainer->hwnd, IDC_MSGTABS), dat->iTabID, &item);
+	if(dat->pContainer->dwFlags & CNT_SIDEBAR)
+		dat->pContainer->SideBar->updateSession(dat);
+	else
+		TabCtrl_SetItem(GetDlgItem(dat->pContainer->hwnd, IDC_MSGTABS), dat->iTabID, &item);
 }
 
 /*
@@ -2451,12 +2456,13 @@ LRESULT GetSendButtonState(HWND hwnd)
 		return 0;
 }
 
-void EnableSendButton(HWND hwnd, int iMode)
+void EnableSendButton(const _MessageWindowData *dat, int iMode)
 {
 	HWND hwndOK;
-	SendMessage(GetDlgItem(hwnd, IDOK), BUTTONSETASFLATBTN + 14, iMode, 0);
+	SendMessage(GetDlgItem(dat->hwnd, IDOK), BUTTONSETASFLATBTN + 14, iMode, 0);
+	SendMessage(GetDlgItem(dat->hwnd, IDC_PIC), BUTTONSETASFLATBTN + 14, dat->fEditNotesActive ? iMode : !iMode, 0);
 
-	hwndOK = GetDlgItem(GetParent(GetParent(hwnd)), IDOK);
+	hwndOK = GetDlgItem(GetParent(GetParent(dat->hwnd)), IDOK);
 
 	if (IsWindow(hwndOK))
 		SendMessage(hwndOK, BUTTONSETASFLATBTN + 14, iMode, 0);

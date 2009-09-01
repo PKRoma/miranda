@@ -107,6 +107,7 @@ void CGlobals::Reload()
 		m_MenuBar = ::LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENUBAR));
 
 	m_ncm.cbSize = sizeof(NONCLIENTMETRICS);
+	m_ipBackgroundGradient = M->GetDword(FONTMODULE, "ipfieldsbg", GetSysColor(COLOR_3DSHADOW));
 	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &m_ncm, 0);
 }
 

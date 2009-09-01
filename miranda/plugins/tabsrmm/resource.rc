@@ -9,7 +9,9 @@
 //
 #include <windows.h>
 #include "../../include/statusmodes.h"
-
+
+#include <winres.h>
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -166,10 +168,6 @@ CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_MSGTABS,"TSTabCtrlClass",0xc048,31,7,5,5
-    CONTROL         "",IDC_SIDEBARUP,"TSButtonClass",WS_TABSTOP,124,33,14,13,
-                    0x18000000L
-    CONTROL         "",IDC_SIDEBARDOWN,"TSButtonClass",WS_TABSTOP,124,33,14,
-                    13,0x18000000L
 END
 
 IDD_USERPREFS DIALOG DISCARDABLE  0, 0, 286, 265
@@ -225,16 +223,16 @@ BEGIN
     LTEXT           "Events",IDC_STATIC,218,186,38,8
 END
 
-IDD_CONTAINEROPTIONS DIALOGEX 0, 0, 354, 211
+IDD_CONTAINEROPTIONS DIALOG DISCARDABLE  0, 0, 354, 224
 STYLE DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | 
     WS_CAPTION | WS_SYSMENU
 CAPTION "   "
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "",IDC_SECTIONTREE,"SysTreeView32",TVS_DISABLEDRAGDROP | 
                     TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS | TVS_TRACKSELECT | 
                     TVS_FULLROWSELECT | TVS_NONEVENHEIGHT | WS_BORDER | 
-                    WS_TABSTOP,3,28,87,163
+                    WS_TABSTOP,1,31,87,163
     CONTROL         "Only show tab bar when it's needed",IDC_O_NOTABS,"Button",
                     BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,135,65,156,
                     10
@@ -260,10 +258,8 @@ BEGIN
     CONTROL         "Sync sounds with popup mode",IDC_SYNCSOUNDS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,135,101,156,10
     CONTROL         "Hide the status bar",IDC_CNTNOSTATUSBAR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,135,65,156,10
-    CONTROL         "Hide the menu bar",IDC_HIDEMENUBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,135,77,156,10
-    CONTROL         "Tabs at the bottom",IDC_TABSATBOTTOM,"Button",
+    CONTROL         "Hide the menu bar",IDC_HIDEMENUBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,135,89,156,10
     CONTROL         "User ID in Status Bar",IDC_UIDSTATUSBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,135,101,156,10
@@ -307,6 +303,25 @@ BEGIN
     GROUPBOX        "Static",IDC_TITLEBOX,95,27,254,136
     EDITTEXT        IDC_DESC,99,37,246,26,ES_MULTILINE | ES_READONLY | 
                     ES_WANTRETURN | NOT WS_BORDER | NOT WS_TABSTOP
+    LTEXT           "Tab location",IDC_O_TABMODE,121,63,83,12
+    COMBOBOX        IDC_TABMODE,120,72,196,14,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "When using the switch bar, use the following layout",
+                    IDC_O_SBARLAYOUT,124,88,212,12
+    COMBOBOX        IDC_SBARLAYOUT,120,98,196,14,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Flash event icon on tab",IDC_FLASHICON,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,120,116,187,12
+    CONTROL         "Flash text label on tabs",IDC_FLASHLABEL,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,120,127,186,12
+
+    CONTROL         "Single row tab control",IDC_SINGLEROWTAB,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,120,138,190,12
+
+    CONTROL         "Use button tabs",IDC_BUTTONTABS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,120,149,60,12
+    CONTROL         "Styled tabs",IDC_STYLEDTABS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,260,149,60,12
 END
 
 IDD_OPT_MSGDLG DIALOGEX 0, 0, 303, 226
@@ -683,72 +698,61 @@ BEGIN
                     24,8
     LTEXT           "NOTE: Background colors will only work with button-style tabs.",
                     IDC_STATIC,13,90,285,14
-    GROUPBOX        "Other options",IDC_STATIC,3,99,297,124
-    CONTROL         "Flash icon",IDC_FLASHICON,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,110,110,9
-    CONTROL         "Flash text label",IDC_FLASHLABEL,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,13,121,111,9
-    CONTROL         "Single row tab control",IDC_SINGLEROWTAB,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,13,133,123,10
-    LTEXT           "Default tab width:",IDC_STATIC,146,133,113,11
-    CONTROL         "Disable visual styles",IDC_NOSKINNING,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,127,109,89,9
-    CONTROL         "Use button tabs",IDC_FLATTABS2,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,127,119,149,12
-    EDITTEXT        IDC_TABWIDTH,260,131,36,13,ES_AUTOHSCROLL
+    GROUPBOX        "Other options",IDC_STATIC,3,101,297,124
+    LTEXT           "Default width for fixed (single row) tabs",IDC_STATIC,
+                    15,121,134,11
+    EDITTEXT        IDC_TABWIDTH,163,119,36,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABWIDTHSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,292,130,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,195,118,
                     11,13
-    LTEXT           "Tab text label padding vertical",IDC_STATIC,14,149,126,
+    LTEXT           "Tab text label padding vertical",IDC_STATIC,14,139,126,
                     10
-    EDITTEXT        IDC_TABPADDING,163,147,28,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_TABPADDING,163,137,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,187,152,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,187,142,
                     11,13
-    LTEXT           "horizontal",IDC_STATIC,212,149,44,10
-    EDITTEXT        IDC_HTABPADDING,260,147,28,13,ES_AUTOHSCROLL
+    LTEXT           "horizontal",IDC_STATIC,212,139,44,10
+    EDITTEXT        IDC_HTABPADDING,260,137,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_SPIN3,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,292,147,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,292,137,
                     11,13
-    LTEXT           "Tab page padding:",IDC_STATIC,14,173,84,11
-    RTEXT           "inner",IDC_STATIC,93,173,21,11
-    EDITTEXT        IDC_TABBORDER,127,170,28,13,ES_AUTOHSCROLL
+    LTEXT           "Tab page padding:",IDC_STATIC,14,165,84,11
+    RTEXT           "inner",IDC_STATIC,93,165,21,11
+    EDITTEXT        IDC_TABBORDER,127,163,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABBORDERSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,154,169,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,154,162,
                     11,13
-    LTEXT           "outer",IDC_STATIC,175,172,21,11
-    EDITTEXT        IDC_TABBORDEROUTER,199,170,28,13,ES_AUTOHSCROLL
+    LTEXT           "outer",IDC_STATIC,175,164,21,11
+    EDITTEXT        IDC_TABBORDEROUTER,199,163,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABBORDERSPINOUTER,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS,226,176,11,13
-    LTEXT           "Bottom tabs vertical adjustment:",IDC_STATIC,13,197,217,
+                    UDS_ARROWKEYS,226,169,11,13
+    LTEXT           "Bottom tabs vertical adjustment:",IDC_STATIC,13,192,181,
                     9
-    EDITTEXT        IDC_BOTTOMTABADJUST,199,191,28,13,ES_AUTOHSCROLL | 
+    EDITTEXT        IDC_BOTTOMTABADJUST,199,189,28,13,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_BOTTOMTABADJUSTSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS,226,193,11,13
+                    UDS_ARROWKEYS,226,191,11,13
     CTEXT           "NOTE: some settings will not affect open containers.",
                     IDC_STATIC,3,0,300,10
-    EDITTEXT        IDC_TABBORDEROUTERRIGHT,265,170,28,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_TABBORDEROUTERRIGHT,265,163,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABBORDERSPINOUTERRIGHT,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS,291,170,11,13
-    EDITTEXT        IDC_TABBORDEROUTERTOP,232,164,28,13,ES_AUTOHSCROLL
+                    UDS_ARROWKEYS,291,163,11,13
+    EDITTEXT        IDC_TABBORDEROUTERTOP,232,157,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABBORDERSPINOUTERTOP,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
                     UDS_ARROWKEYS,259,164,11,13
-    EDITTEXT        IDC_TABBORDEROUTERBOTTOM,232,177,28,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_TABBORDEROUTERBOTTOM,232,170,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABBORDERSPINOUTERBOTTOM,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS,259,177,11,13
-    CONTROL         "Styled tabs",IDC_STYLEDTABS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,227,108,65,12
+                    UDS_ARROWKEYS,259,170,11,13
     LTEXT           "Light shadow",IDC_STATIC,164,69,84,10
     LTEXT           "Dark shadow",IDC_STATIC,164,78,84,10
     CONTROL         "",IDC_LIGHTSHADOW,"ColourPicker",WS_TABSTOP,269,68,24,8
     CONTROL         "",IDC_DARKSHADOW,"ColourPicker",WS_TABSTOP,269,78,24,8
-    CONTROL         "",IDC_AEROGLOW,"ColourPicker",WS_TABSTOP,126,206,24,13
+    CONTROL         "",IDC_AEROGLOW,"ColourPicker",WS_TABSTOP,126,205,24,13
     LTEXT           "Aero glow on tabs",IDC_STATIC,13,208,105,9
 END
 
@@ -902,7 +906,7 @@ BEGIN
     IDD_CONTAINEROPTIONS, DIALOG
     BEGIN
         LEFTMARGIN, 1
-        BOTTOMMARGIN, 204
+        BOTTOMMARGIN, 217
     END
 
     IDD_OPT_TOOLBAR, DIALOG
@@ -1029,7 +1033,6 @@ BEGIN
         END
         MENUITEM SEPARATOR
         MENUITEM "Contact Picture Settings...", ID_PICMENU_SETTINGS
-
         MENUITEM "Always keep the button bar at full width", 
                                                 ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH
 
@@ -1184,7 +1187,6 @@ BEGIN
     BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Contact Picture Settings...", ID_PICMENU_SETTINGS
-
         MENUITEM "Save this Picture As...",     ID_PANELPICMENU_SAVETHISPICTUREAS
 
     END
@@ -1450,6 +1452,7 @@ END
 IDR_SKIN_LOGO           SKIN_GLYPH MOVEABLE PURE "res\\SKIN\\logo.png"
 IDR_SKIN_AERO           SKIN_GLYPH MOVEABLE PURE "res\\SKIN\\tabskin_aero.png"
 IDR_SKIN_AERO_GLOW      SKIN_GLYPH MOVEABLE PURE "res\\SKIN\\tabskin_aero_glow.png"
+IDR_SKIN_AERO_SWITCHBAR SKIN_GLYPH MOVEABLE PURE "res\\SKIN\\tabskin_aero_button.png"
 #endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 

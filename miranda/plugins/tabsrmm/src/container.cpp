@@ -38,7 +38,6 @@
 #pragma hdrstop
 
 extern SESSION_INFO *m_WndList;
-extern int SIDEBARWIDTH;
 extern ButtonSet g_ButtonSet;
 
 extern INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -191,9 +190,14 @@ void SetAeroMargins(ContainerWindowData *pContainer)
 
 			m.cxLeftWidth = pContainer->tBorder_outer_left;
 			m.cxRightWidth = pContainer->tBorder_outer_right;
-			if(m.cyTopHeight != pContainer->dwOldAeroTop || m.cyBottomHeight != pContainer->dwOldAeroBottom) {
+			m.cxLeftWidth += pContainer->SideBar->getWidth();
+
+			if(m.cyTopHeight != pContainer->dwOldAeroTop || m.cyBottomHeight != pContainer->dwOldAeroBottom ||
+			   m.cxLeftWidth != pContainer->dwOldAeroLeft) {
+
 				pContainer->dwOldAeroTop = m.cyTopHeight;
-				pContainer->dwOldAeroBottom = pContainer->statusBarHeight;
+				pContainer->dwOldAeroBottom = m.cyBottomHeight;
+				pContainer->dwOldAeroLeft = m.cxLeftWidth;
 				CMimAPI::m_pfnDwmExtendFrameIntoClientArea(pContainer->hwnd, &m);
 			}
 		}
@@ -277,87 +281,6 @@ struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE
 		return pContainer;
 	}
 	return NULL;
-}
-
-/*
- * draws the sidebar, arranges the buttons, cares about hiding buttons if space
- * is not sufficient.
- * also, updates the scroll buttons on top and bottom of the sidebar
- */
-
-static void DrawSideBar(HWND hwndDlg, struct ContainerWindowData *pContainer, RECT *rc)
-{
-	int i, topCount = 0, bottomCount = 0, j = 0;
-	BOOL topEnabled = FALSE, bottomEnabled = FALSE;
-	int leftMargin = pContainer->tBorder_outer_left;
-	ButtonItem *pItem = pContainer->buttonItems;
-	HWND hwnd;
-	LONG topOffset = (CSkin::m_sidebarTopOffset == -1 ? pContainer->tBorder_outer_top + 12 : CSkin::m_sidebarTopOffset + 12);
-	LONG topOffset_s = topOffset;
-	LONG bottomOffset = 12 + pContainer->statusBarHeight + (CSkin::m_sidebarBottomOffset == -1 ? pContainer->tBorder_outer_bottom : CSkin::m_sidebarBottomOffset);
-	LONG bottomOffset_s = bottomOffset;
-	int iSpaceAvail = (rc->bottom - rc->top) - (topOffset + bottomOffset);
-	int iTopSpaceAvail = iSpaceAvail - (pContainer->sb_BottomHeight + 4);
-	BOOL hideFollowing = FALSE;
-	DWORD dwFlags = SWP_NOZORDER | SWP_NOCOPYBITS;
-
-	if (pContainer->sb_TopHeight <= iTopSpaceAvail)
-		i = pContainer->sb_FirstButton = 0;
-	else {
-		if (pContainer->sb_FirstButton == 0)
-			i = 0;
-		else
-			i = pContainer->sb_FirstButton;
-	}
-	while (pItem) {
-		if (pItem->dwFlags & BUTTON_ISSIDEBAR) {
-			if (pContainer->dwFlags & CNT_SIDEBAR) {
-				hwnd = GetDlgItem(hwndDlg, pItem->uId);
-				if (j < i) {
-					ShowWindow(hwnd, SW_HIDE);
-					j++;
-					pItem = pItem->nextItem;
-					continue;
-				}
-				if (pItem->yOff >= 0) {
-					if (iTopSpaceAvail >= pItem->height && !hideFollowing) {
-						SetWindowPos(hwnd, 0, leftMargin + ((SIDEBARWIDTH - pItem->width) / 2), topOffset, pItem->width, pItem->height, SWP_SHOWWINDOW | dwFlags);
-						iTopSpaceAvail -= (pItem->height + 2);
-						topOffset += (pItem->height + 2);
-					}
-					else {
-						hideFollowing = TRUE;
-						ShowWindow(hwnd, SW_HIDE);
-						bottomEnabled = TRUE;
-						iTopSpaceAvail -= (pItem->height + 2);
-					}
-				}
-				else {
-					SetWindowPos(hwnd, 0, leftMargin + ((SIDEBARWIDTH - pItem->width) / 2), (rc->bottom - rc->top) - bottomOffset - pItem->height, pItem->width, pItem->height, dwFlags);
-					bottomOffset += (pItem->height + 2);
-				}
-			}
-			j++;
-		}
-		else {
-			LONG xOffset = pItem->xOff >= 0 ? pItem->xOff : rc->right - abs(pItem->xOff);
-			LONG yOffset = pItem->yOff >= 0 ? pItem->yOff : rc->bottom - abs(pItem->yOff) - pContainer->statusBarHeight;
-			if (CSkin::m_sidebarTopOffset != -1 && pItem->xOff >= 0 && pItem->yOff >= 0)
-				xOffset += (pContainer->dwFlags & CNT_SIDEBAR ? SIDEBARWIDTH + 2 : 0);
-			if (CSkin::m_sidebarBottomOffset != -1 && pItem->xOff >= 0 && pItem->yOff < 0)
-				xOffset += (pContainer->dwFlags & CNT_SIDEBAR ? SIDEBARWIDTH + 2 : 0);
-			hwnd = GetDlgItem(hwndDlg, pItem->uId);
-			SetWindowPos(hwnd, 0, xOffset, yOffset, pItem->width, pItem->height, SWP_SHOWWINDOW | dwFlags);
-		}
-		pItem = pItem->nextItem;
-	}
-	topEnabled = pContainer->sb_FirstButton ? TRUE : FALSE;
-	MoveWindow(GetDlgItem(hwndDlg, IDC_SIDEBARUP), 2 + leftMargin, topOffset_s - 12, SIDEBARWIDTH - 4, 10, TRUE);
-	MoveWindow(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN), 2 + leftMargin, (rc->bottom - rc->top) - bottomOffset_s + 2, SIDEBARWIDTH - 4, 10, TRUE);
-	EnableWindow(GetDlgItem(hwndDlg, IDC_SIDEBARUP), topEnabled);
-	EnableWindow(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN), bottomEnabled);
-	InvalidateRect(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN), NULL, FALSE);
-	InvalidateRect(GetDlgItem(hwndDlg, IDC_SIDEBARUP), NULL, FALSE);
 }
 
 static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -753,8 +676,6 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 			OldContainerWndProc = (WNDPROC)SetWindowLongPtr(hwndDlg, GWLP_WNDPROC, (LONG_PTR)ContainerWndProc);
 
-			if (PluginConfig.m_TabAppearance & TCF_FLAT)
-				SetWindowLongPtr(hwndTab, GWL_STYLE, GetWindowLongPtr(hwndTab, GWL_STYLE) | TCS_BUTTONS);
 			pContainer = (struct ContainerWindowData *) lParam;
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR) pContainer);
 
@@ -766,7 +687,30 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 			SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);          // set options...
 			pContainer->dwFlags |= dwCreateFlags;
+
+			ws = GetWindowLongPtr(hwndTab, GWL_STYLE);
+			if(pContainer->dwFlagsEx & TCF_FLAT)
+				ws |= TCS_BUTTONS;
+
+			if (pContainer->dwFlagsEx & TCF_SINGLEROWTABCONTROL) {
+				ws &= ~TCS_MULTILINE;
+				ws |= TCS_SINGLELINE;
+				ws |= TCS_FIXEDWIDTH;
+			}
+			else {
+				ws &= ~TCS_SINGLELINE;
+				ws |= TCS_MULTILINE;
+				if (ws & TCS_BUTTONS)
+					ws |= TCS_FIXEDWIDTH;
+			}
+			SetWindowLongPtr(hwndTab, GWL_STYLE, ws);
+
 			pContainer->buttonItems = g_ButtonSet.items;
+
+			pContainer->dwFlags = ((pContainer->dwFlagsEx & (TCF_SBARLEFT | TCF_SBARRIGHT)) ?
+								   pContainer->dwFlags | CNT_SIDEBAR : pContainer->dwFlags & ~CNT_SIDEBAR);
+
+			pContainer->SideBar = new CSideBar(pContainer);
 
 			/*
 			 * create the button items
@@ -776,36 +720,6 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 			pbItem = pContainer->buttonItems;
 
-			while (pbItem) {
-				hwndButton = CreateWindowEx(0, _T("TSButtonClass"), _T(""), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 5, 5, hwndDlg, (HMENU)pbItem->uId, g_hInst, NULL);
-				SendMessage(hwndButton, BUTTONSETASFLATBTN, 0, isFlat ? 0 : 1);
-				SendMessage(hwndButton, BUTTONSETASFLATBTN + 10, 0, isThemed ? 1 : 0);
-
-				SendMessage(hwndButton, BUTTONSETASFLATBTN + 20, 0, (LPARAM)pbItem);
-
-				if (pbItem->dwFlags & BUTTON_ISTOGGLE)
-					SendMessage(hwndButton, BUTTONSETASPUSHBTN, 0, 0);
-
-				if (pbItem->szTip[0])
-					SendMessage(hwndButton, BUTTONADDTOOLTIP, (WPARAM)pbItem->szTip, 0);
-
-				if (pbItem->dwFlags & BUTTON_ISSIDEBAR) {
-					if (pbItem->yOff >= 0) {
-						pContainer->sb_NrBottomButtons++;
-						pContainer->sb_TopHeight += pbItem->height + 2;
-					}
-					else if (pbItem->yOff < 0) {
-						pContainer->sb_NrBottomButtons++;
-						pContainer->sb_BottomHeight += pbItem->height + 2;
-					}
-					ShowWindow(hwndButton, pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
-				}
-
-				SendMessage(hwndButton, BUTTONSETASFLATBTN + 12, 0, (LPARAM)pContainer);
-				pbItem = pbItem->nextItem;
-			}
-
-			pContainer->sb_FirstButton = 0;
 			pContainer->bSkinned = CSkin::m_skinEnabled;
 			SetClassLongPtr(hwndDlg, GCL_STYLE, GetClassLongPtr(hwndDlg, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
 			SetClassLongPtr(hwndTab, GCL_STYLE, GetClassLongPtr(hwndTab, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
@@ -836,19 +750,6 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_EXSTYLE, ws | WS_EX_CONTROLPARENT);
 
 			TabCtrl_SetPadding(GetDlgItem(hwndDlg, IDC_MSGTABS), M->GetByte("x-pad", 3), M->GetByte("y-pad", 3));
-			ws = GetWindowLongPtr(hwndTab, GWL_STYLE);
-			if (PluginConfig.m_TabAppearance & TCF_SINGLEROWTABCONTROL) {
-				ws &= ~TCS_MULTILINE;
-				ws |= TCS_SINGLELINE;
-				ws |= TCS_FIXEDWIDTH;
-			}
-			else {
-				ws &= ~TCS_SINGLELINE;
-				ws |= TCS_MULTILINE;
-				if (ws & TCS_BUTTONS)
-					ws |= TCS_FIXEDWIDTH;
-			}
-			SetWindowLongPtr(hwndTab, GWL_STYLE, ws);
 			TabCtrl_SetImageList(GetDlgItem(hwndDlg, IDC_MSGTABS), PluginConfig.g_hImageList);
 
 			SendMessage(hwndDlg, DM_CONFIGURECONTAINER, 0, 10);
@@ -884,7 +785,6 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				ShowWindow(hwndDlg, SW_SHOWNORMAL);
 			}
 			SetTimer(hwndDlg, TIMERID_HEARTBEAT, TIMEOUT_HEARTBEAT, NULL);
-			SendMessage(hwndDlg, DM_SETSIDEBARBUTTONS, 0, 0);
 
 			/*
 			 * prevent ugly back background being visible while tabbed clients are created
@@ -965,20 +865,25 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			CopyRect(&pContainer->rcSaved, &rcClient);
 			rcUnadjusted = rcClient;
 
+			pContainer->MenuBar->Resize(LOWORD(lParam), HIWORD(lParam), sizeChanged ? TRUE : FALSE);
 			LONG rebarHeight = pContainer->MenuBar->getHeight();
 			pContainer->MenuBar->Show((pContainer->dwFlags & CNT_NOMENUBAR) ? SW_HIDE : SW_SHOW);
 
-			sbarWidth = pContainer->dwFlags & CNT_SIDEBAR ? SIDEBARWIDTH : 0;
+			sbarWidth = pContainer->SideBar->getWidth();
 			if (lParam) {
 				if (pContainer->dwFlags & CNT_TABSBOTTOM)
-					//MoveWindow(hwndTab, pContainer->tBorder_outer_left + sbarWidth, pContainer->tBorder_outer_top + rebarHeight, (rcClient.right - rcClient.left) - (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right + sbarWidth), (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom) - rebarHeight, FALSE);
 					SetWindowPos(hwndTab, 0, pContainer->tBorder_outer_left + sbarWidth, pContainer->tBorder_outer_top + rebarHeight, (rcClient.right - rcClient.left) - (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right + sbarWidth), (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom) - rebarHeight,
 								 SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_NOSENDCHANGING | SWP_ASYNCWINDOWPOS);
 				else
-					//MoveWindow(hwndTab, pContainer->tBorder_outer_left + sbarWidth, pContainer->tBorder_outer_top + rebarHeight, (rcClient.right - rcClient.left) - (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right + sbarWidth), (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom) - rebarHeight, FALSE);
 					SetWindowPos(hwndTab, 0, pContainer->tBorder_outer_left + sbarWidth, pContainer->tBorder_outer_top + rebarHeight, (rcClient.right - rcClient.left) - (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right + sbarWidth), (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom) - rebarHeight,
 								 SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_NOSENDCHANGING | SWP_ASYNCWINDOWPOS);
 			}
+
+			pContainer->SideBar->resizeScrollWnd(pContainer->tBorder_outer_left,
+												 pContainer->tBorder_outer_top + rebarHeight,
+												 0,
+												 (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom) - rebarHeight);
+
 			AdjustTabClientRect(pContainer, &rcClient);
 
 			sizeChanged = (((rcClient.right - rcClient.left) != pContainer->preSIZE.cx) ||
@@ -987,7 +892,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				pContainer->preSIZE.cx = rcClient.right - rcClient.left;
 				pContainer->preSIZE.cy = rcClient.bottom - rcClient.top;
 			}
-			pContainer->MenuBar->Resize(LOWORD(lParam), HIWORD(lParam), sizeChanged ? TRUE : FALSE);
+
 
 			/*
 			 * we care about all client sessions, but we really resize only the active tab (hwndActive)
@@ -1012,6 +917,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					SendMessage((HWND)item.lParam, DM_CHECKSIZE, 0, 0);
 			}
 			SetAeroMargins(pContainer);
+			pContainer->SideBar->scrollIntoView();
 
 			RedrawWindow(hwndTab, NULL, NULL, RDW_INVALIDATE | (pContainer->bSizingLoop ? RDW_ERASE : 0));
 			RedrawWindow(hwndDlg, NULL, NULL, (bSkinned ? RDW_FRAME : 0) | RDW_INVALIDATE | (pContainer->bSizingLoop || wParam == SIZE_RESTORED ? RDW_ERASE : 0));
@@ -1019,8 +925,6 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			if (pContainer->hwndStatus)
 				InvalidateRect(pContainer->hwndStatus, NULL, FALSE);
 
-			if (pContainer->buttonItems && sizeChanged)
-				DrawSideBar(hwndDlg, pContainer, &rcUnadjusted);
 			if (PluginConfig.m_MathModAvail) {
 				TMathWindowInfo mathWndInfo;
 
@@ -1263,6 +1167,7 @@ panel_found:
 
 		case WM_COMMAND: {
 			bool fProcessContactMenu = pContainer->MenuBar->isContactMenu();
+			bool fProcessMainMenu = pContainer->MenuBar->isMainMenu();
 			pContainer->MenuBar->Cancel();
 
 			HANDLE hContact;
@@ -1277,6 +1182,9 @@ panel_found:
 
 				if(fProcessContactMenu)
 					return(CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM)dat->hContact));
+				else if(fProcessMainMenu) {
+					return(CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_MAINMENU), 0));
+				}
 				else if (MsgWindowMenuHandler(dat, LOWORD(wParam), MENU_PICMENU) == 1)
 					break;
 			}
@@ -1386,28 +1294,30 @@ buttons_done:
 				case IDC_TOGGLESIDEBAR: {
 					RECT rc;
 					LONG dwNewLeft;
-					DWORD exStyle = GetWindowLongPtr(hwndDlg, GWL_EXSTYLE);
 					BOOL skinnedMode = bSkinned;
-					ButtonItem *pItem = pContainer->buttonItems;
 
 					if (CMimAPI::m_pfnIsThemeActive)
 						skinnedMode |= (CMimAPI::m_pfnIsThemeActive() ? 1 : 0);
 
 					GetWindowRect(hwndDlg, &rc);
-					dwNewLeft = pContainer->dwFlags & CNT_SIDEBAR ? -SIDEBARWIDTH : SIDEBARWIDTH;
-					while (pItem) {
-						ShowWindow(GetDlgItem(hwndDlg, pItem->uId), SW_HIDE);
-						pItem = pItem->nextItem;
+
+					bool fVisible = pContainer->SideBar->isVisible();
+					if(fVisible) {
+						dwNewLeft = pContainer->SideBar->getWidth();
+						pContainer->SideBar->setVisible(false);
 					}
-					SetWindowLongPtr(hwndDlg, GWL_EXSTYLE, exStyle | WS_EX_TRANSPARENT);
-					SetWindowLongPtr(hwndDlg, GWL_EXSTYLE, exStyle);
-					ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN), SW_HIDE);
-					ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBARUP), SW_HIDE);
+					else {
+						pContainer->SideBar->setVisible(true);
+						dwNewLeft = -(pContainer->SideBar->getWidth());
+					}
+
 					pContainer->preSIZE.cx = pContainer->preSIZE.cy = 0;
 					pContainer->oldDCSize.cx = pContainer->oldDCSize.cy = 0;
 
-					SetWindowPos(hwndDlg, 0, rc.left + dwNewLeft, rc.top, (rc.right - rc.left) - dwNewLeft, rc.bottom - rc.top,
-								 SWP_NOACTIVATE | SWP_FRAMECHANGED | SWP_NOCOPYBITS | SWP_NOZORDER | SWP_DEFERERASE | SWP_ASYNCWINDOWPOS | (dwNewLeft < 0 && skinnedMode ? SWP_NOREDRAW : 0));
+					//SetWindowPos(hwndDlg, 0, rc.left + dwNewLeft, rc.top, (rc.right - rc.left) - dwNewLeft, rc.bottom - rc.top,
+					//			 SWP_NOACTIVATE | SWP_FRAMECHANGED | SWP_NOCOPYBITS | SWP_NOZORDER | SWP_DEFERERASE | SWP_ASYNCWINDOWPOS | (dwNewLeft < 0 && skinnedMode ? SWP_NOREDRAW : 0));
+					//SetWindowPos(hwndDlg, 0, rc.left + dwNewLeft, rc.top, (rc.right - rc.left) - dwNewLeft, rc.bottom - rc.top,
+					//			 SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOZORDER | SWP_DEFERERASE | SWP_NOSENDCHANGING | SWP_ASYNCWINDOWPOS | SWP_NOREDRAW);
 					pItem = pContainer->buttonItems;
 					while (pItem) {
 						if (pItem->dwFlags & BUTTON_ISSIDEBAR)
@@ -1416,24 +1326,16 @@ buttons_done:
 							ShowWindow(GetDlgItem(hwndDlg, pItem->uId), SW_SHOW);
 						pItem = pItem->nextItem;
 					}
-					ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
-					ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBARUP), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
 					PostMessage(hwndDlg, WM_SIZE, 0, 1);
 					break;
 
 				}
 				case IDC_SIDEBARDOWN:
 				case IDC_SIDEBARUP: {
-					RECT rc;
 
-					GetClientRect(hwndDlg, &rc);
-					if (LOWORD(wParam) == IDC_SIDEBARUP)
-						pContainer->sb_FirstButton = pContainer->sb_FirstButton > 0 ? --pContainer->sb_FirstButton : 0;
-					else
-						pContainer->sb_FirstButton += IsWindowEnabled(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN)) ? 1 : 0;
-					DrawSideBar(hwndDlg, pContainer, &rc);
-					SendMessage(hwndDlg, WM_SIZE, 0, 0);
-					SetFocus(GetDlgItem(pContainer->hwndActive, IDC_MESSAGE));
+					pContainer->SideBar->processScrollerButtons(LOWORD(wParam));
+					if(lParam)
+						SetFocus(GetDlgItem(pContainer->hwndActive, lParam));
 					break;
 				}
 				case IDC_CLOSE:
@@ -1951,47 +1853,34 @@ buttons_done:
 			RECT rc;
 			GetClientRect(hwndDlg, &rc);
 			bool 		fAero = M->isAero();
-			bool 		fDone = false;
-			LRESULT		tabStyle = GetWindowLongPtr(hwndTab, GWL_STYLE);
 
-			if (/*bSkinned ||*/ fAero) {
+			if (fAero) {
 				FillRect(hdc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
-				/*
-				if(fAero && (!(pContainer->dwFlags & CNT_NOMENUBAR) || pContainer->fPreviousMenubar)) {
-					_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
-
-					bool fInfoPanel = (dat && (dat->dwFlagsEx & MWF_SHOW_INFOPANEL));
-
-					LONG oldBottom = rc.bottom;
-					LONG mBarHeight = pContainer->MenuBar->getHeight();
-					rc.bottom = fInfoPanel ? (pContainer->fPreviousMenubar ? pContainer->fPreviousMenubar : mBarHeight) : mBarHeight;
-
-					FillRect(hdc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
-					rc.top = fInfoPanel ? (pContainer->fPreviousMenubar ? pContainer->fPreviousMenubar : mBarHeight) : mBarHeight;
-					rc.bottom = oldBottom;
-					FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
-					pContainer->fPreviousMenubar = mBarHeight;
-					fDone = true;
-				}
-				if(fAero && (tabStyle & TCS_BOTTOM)) {
-					if(!fDone)
-						FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
-					rc.top = rc.bottom - pContainer->dwOldAeroBottom;
-					FillRect(hdc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
-					rc.top = 0;
-				}
-				if(!fDone)
-					FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
-				*/
 			}
 			else
 				FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
 
+			if((pContainer->dwFlags & CNT_SIDEBAR) && pContainer->SideBar->isVisible()) {
+				rc.left = 0;
+				rc.top = pContainer->MenuBar->getHeight();
+				rc.right = pContainer->SideBar->getWidth();
+				HDC dc = CreateCompatibleDC(hdc);
+				HBITMAP hbmOld = (HBITMAP)SelectObject(dc, CSideBar::m_hbmBackground);
+				if(CMimAPI::m_MyAlphaBlend) {
+					CSkin::m_default_bf.SourceConstantAlpha = 255;
+					//CMimAPI::m_MyAlphaBlend(hdc, 0, rc.top, rc.right, rc.bottom, dc, 0, 0, 150, 350, CSkin::m_default_bf);
+					CSkin::m_default_bf.SourceConstantAlpha = 255;
+				}
+				else
+					StretchBlt(hdc, 0, 0, rc.right, rc.bottom, dc, 0, 0, 150, 350, SRCCOPY);
+				SelectObject(dc, hbmOld);
+				DeleteDC(dc);
+			}
 			SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, 1);
 			return TRUE;
 		}
 		case DM_OPTIONSAPPLIED: {
-			DWORD dwLocalFlags = 0;
+			DWORD dwLocalFlags = 0, dwLocalFlagsEx;
 			DWORD dwLocalTrans = 0;
 			char szCname[40];
 			int overridePerContact = 1;
@@ -2010,6 +1899,10 @@ buttons_done:
 			if (pContainer->isCloned && pContainer->hContactFrom != 0) {
 				mir_snprintf(szCname, 40, "%s_Flags", szSetting);
 				dwLocalFlags = M->GetDword(pContainer->hContactFrom, szCname, 0xffffffff);
+
+				mir_snprintf(szCname, 40, "%s_FlagsEx", szSetting);
+				dwLocalFlagsEx = M->GetDword(pContainer->hContactFrom, szCname, 0xffffffff);
+
 				mir_snprintf(szCname, 40, "%s_Trans", szSetting);
 				dwLocalTrans = M->GetDword(pContainer->hContactFrom, szCname, 0xffffffff);
 				mir_snprintf(szCname, 40, "%s_titleformat", szSetting);
@@ -2030,6 +1923,8 @@ buttons_done:
 			if (overridePerContact) {
 				mir_snprintf(szCname, 40, "%s%d_Flags", szSetting, pContainer->iContainerIndex);
 				dwLocalFlags = M->GetDword(szCname, 0xffffffff);
+				mir_snprintf(szCname, 40, "%s%d_FlagsEx", szSetting, pContainer->iContainerIndex);
+				dwLocalFlagsEx = M->GetDword(szCname, 0xffffffff);
 				mir_snprintf(szCname, 40, "%s%d_Trans", szSetting, pContainer->iContainerIndex);
 				dwLocalTrans = M->GetDword(szCname, 0xffffffff);
 				if (!szTitleFormat[0]) {
@@ -2048,12 +1943,17 @@ buttons_done:
 			if (dwLocalFlags == 0xffffffff) {
 				pContainer->dwFlags = pContainer->dwPrivateFlags = PluginConfig.m_GlobalContainerFlags;
 				pContainer->dwPrivateFlags |= (CNT_GLOBALSETTINGS);
+				pContainer->dwFlagsEx = pContainer->dwPrivateFlagsEx = PluginConfig.m_GlobalContainerFlagsEx;
 			}
 			else {
-				if (!(dwLocalFlags & CNT_NEWCONTAINERFLAGS))
+				if (!(dwLocalFlags & CNT_NEWCONTAINERFLAGS)) {
 					dwLocalFlags = CNT_FLAGS_DEFAULT;
+					dwLocalFlagsEx = CNT_FLAGSEX_DEFAULT;
+				}
 				pContainer->dwPrivateFlags = dwLocalFlags;
+				pContainer->dwPrivateFlagsEx = dwLocalFlagsEx;
 				pContainer->dwFlags = dwLocalFlags & CNT_GLOBALSETTINGS ? PluginConfig.m_GlobalContainerFlags : dwLocalFlags;
+				pContainer->dwFlagsEx = dwLocalFlags & CNT_GLOBALSETTINGS ? PluginConfig.m_GlobalContainerFlagsEx : dwLocalFlagsEx;
 			}
 
 			if (dwLocalTrans == 0xffffffff)
@@ -2111,22 +2011,6 @@ buttons_done:
 			UINT sBarHeight;
 			bool fAero = M->isAero();
 
-			if (!PluginConfig.m_SideBarEnabled)
-				pContainer->dwFlags &= ~CNT_SIDEBAR;
-
-			ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBARUP), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
-			ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
-
-			SendDlgItemMessage(hwndDlg, IDC_SIDEBARUP, BUTTONSETASFLATBTN + 10, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_SIDEBARUP, BUTTONSETASFLATBTN + 12, 0, (LPARAM)pContainer);
-			SendDlgItemMessage(hwndDlg, IDC_SIDEBARUP, BUTTONSETASFLATBTN, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_SIDEBARUP, BM_SETIMAGE, IMAGE_ICON, (LPARAM)PluginConfig.g_buttonBarIcons[26]);
-
-			SendDlgItemMessage(hwndDlg, IDC_SIDEBARDOWN, BUTTONSETASFLATBTN + 10, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_SIDEBARDOWN, BUTTONSETASFLATBTN + 12, 0, (LPARAM)pContainer);
-			SendDlgItemMessage(hwndDlg, IDC_SIDEBARDOWN, BUTTONSETASFLATBTN, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_SIDEBARDOWN, BM_SETIMAGE, IMAGE_ICON, (LPARAM)PluginConfig.g_buttonBarIcons[16]);
-
 			ws = wsold = GetWindowLongPtr(hwndDlg, GWL_STYLE);
 			if (!CSkin::m_frameSkins) {
 				ws = (pContainer->dwFlags & CNT_NOTITLE) ?
@@ -2150,7 +2034,7 @@ buttons_done:
 				ex = exold = GetWindowLongPtr(hwndDlg, GWL_EXSTYLE);
 				ex =  (pContainer->dwFlags & CNT_TRANSPARENCY && (!CSkin::m_skinEnabled || fTransAllowed)) ? ex | WS_EX_LAYERED : ex & ~(WS_EX_LAYERED);
 				//if(fAero && !pContainer->bSkinned && IsWinVerVistaPlus())
-				//	ex = ex | (WS_EX_LAYERED);//|WS_EX_LAYERED); // | WS_EX_COMPOSITED);			// faster/smoother redrawing on Vista+, especially with skins
+				//	ex = ex | (WS_EX_COMPOSITED);//|WS_EX_LAYERED); // | WS_EX_COMPOSITED);			// faster/smoother redrawing on Vista+, especially with skins
 
 				SetWindowLongPtr(hwndDlg, GWL_EXSTYLE, ex);
 				if (pContainer->dwFlags & CNT_TRANSPARENCY && fTransAllowed) {
@@ -2179,6 +2063,12 @@ buttons_done:
 					}
 				}
 			}
+
+			pContainer->dwFlags = ((pContainer->dwFlagsEx & (TCF_SBARLEFT | TCF_SBARRIGHT)) ?
+								   pContainer->dwFlags | CNT_SIDEBAR : pContainer->dwFlags & ~CNT_SIDEBAR);
+
+			pContainer->SideBar->Init();
+
 			ws = wsold = GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_STYLE);
 			if (pContainer->dwFlags & CNT_TABSBOTTOM)
 				ws |= (TCS_BOTTOM);
@@ -2210,19 +2100,8 @@ buttons_done:
 				if (hContact)
 					SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)hContact, 0);
 			}
-			SendMessage(hwndDlg, WM_SIZE, 0, 0);
+			SendMessage(hwndDlg, WM_SIZE, 0, 1);
 			BroadCastContainer(pContainer, DM_CONFIGURETOOLBAR, 0, 1);
-			break;
-		}
-		case DM_SETSIDEBARBUTTONS: {
-			/*
-			int i = 0;
-			for(i = 0; sbarItems[i].uId != 0; i++) {
-			    SendDlgItemMessage(hwndDlg, sbarItems[i].uId, BM_SETIMAGE, IMAGE_ICON, (LPARAM)*(sbarItems[i].hIcon));
-			    SendDlgItemMessage(hwndDlg, sbarItems[i].uId, BUTTONADDTOOLTIP, (WPARAM)TranslateTS(sbarItems[i].szTip), 0);
-			    if(sbarItems[i].dwFlags & SBI_TOGGLE)
-			        SendDlgItemMessage(hwndDlg, sbarItems[i].uId, BUTTONSETASPUSHBTN, 0, 0);
-			}*/
 			break;
 		}
 		/*
@@ -2400,14 +2279,16 @@ buttons_done:
 				DeleteObject(pContainer->hbmToolbarBG);
 				DeleteDC(pContainer->cachedToolbarDC);
 			}
-			delete pContainer->MenuBar;
-			pContainer->MenuBar = 0;
 			SetWindowLongPtr(hwndDlg, GWLP_WNDPROC, (LONG_PTR)OldContainerWndProc);
 			return 0;
 		}
+
 		case WM_NCDESTROY:
-			if (pContainer)
+			if (pContainer) {
+				delete pContainer->MenuBar;
+				delete pContainer->SideBar;
 				free(pContainer);
+			}
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 			break;
 		case WM_CLOSE: {
@@ -2516,6 +2397,9 @@ buttons_done:
 						_snprintf(szCName, 40, "%s_Trans", szSetting);
 						M->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->dwTransparency);
 
+						_snprintf(szCName, 40, "%s_FlagsEx", szSetting);
+						M->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->dwPrivateFlagsEx);
+
 						mir_snprintf(szCName, 40, "%s_theme", szSetting);
 						if (lstrlenA(pContainer->szRelThemeFile) > 1) {
 							if(pContainer->fPrivateThemeChanged == TRUE) {
@@ -2540,6 +2424,8 @@ buttons_done:
 				pContainer->dwFlags &= ~(CNT_DEFERREDCONFIGURE | CNT_CREATE_MINIMIZED | CNT_DEFERREDSIZEREQUEST | CNT_CREATE_CLONED);
 				_snprintf(szCName, 40, "%s%d_Flags", szSetting, pContainer->iContainerIndex);
 				M->WriteDword(SRMSGMOD_T, szCName, pContainer->dwPrivateFlags);
+				_snprintf(szCName, 40, "%s%d_FlagsEx", szSetting, pContainer->iContainerIndex);
+				M->WriteDword(SRMSGMOD_T, szCName, pContainer->dwPrivateFlagsEx);
 				_snprintf(szCName, 40, "%s%d_Trans", szSetting, pContainer->iContainerIndex);
 				M->WriteDword(SRMSGMOD_T, szCName, pContainer->dwTransparency);
 				if (pContainer->dwFlags & CNT_TITLE_PRIVATE) {
@@ -2750,7 +2636,7 @@ void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc)
 	GetClientRect(hwndTab, &rcTab);
 	dwBottom = rcTab.bottom;
 	dwTop = rcTab.top;
-	if (pContainer->iChilds > 1 || !(pContainer->dwFlags & CNT_HIDETABS)) {
+	if (!(pContainer->dwFlags & CNT_SIDEBAR) && (pContainer->iChilds > 1 || !(pContainer->dwFlags & CNT_HIDETABS))) {
 		DWORD dwTopPad;
 		rcTabOrig = rcTab;
 		TabCtrl_AdjustRect(hwndTab, FALSE, &rcTab);
@@ -2787,18 +2673,13 @@ void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc)
 		rc->top += tBorder;
 		rc->bottom -= tBorder;
 	}
-	else {/*
-		rc->bottom -= pContainer->statusBarHeight;
-		rc->bottom -= (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom);
-		rc->bottom -= (pContainer->MenuBar->getHeight());*/
-		//TabCtrl_AdjustRect(hwndTab, FALSE, &rcTab);
+	else {
 		rc->bottom = rcTab.bottom;
 		rc->top = rcTab.top;
-		//CopyRect(rc, &rcTab);
 	}
 	rc->right -= (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right);
-	if (pContainer->dwFlags & CNT_SIDEBAR)
-		rc->right -= SIDEBARWIDTH;
+	if (pContainer->SideBar->isVisible())
+		rc->right -= pContainer->SideBar->getWidth();
 }
 
 /*
@@ -3126,5 +3007,3 @@ void BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WP
 			SendMessage((HWND)item.lParam, message, wParam, lParam);
 	}
 }
-
-

@@ -102,17 +102,6 @@ static void BTN_StockCallback(ButtonItem *item, HWND hwndDlg, struct _MessageWin
 */
 
 static struct SIDEBARITEM sbarItems[] = {
-	IDC_SBAR_SLIST, SBI_TOP, &PluginConfig.g_sideBarIcons[0], &PluginConfig.g_sideBarIcons[0], &PluginConfig.g_sideBarIcons[0], _T("t_slist"), BTN_StockAction, BTN_StockCallback, _T("Open session list"),
-	IDC_SBAR_FAVORITES, SBI_TOP, &PluginConfig.g_sideBarIcons[1], &PluginConfig.g_sideBarIcons[1], &PluginConfig.g_sideBarIcons[1], _T("t_fav"), BTN_StockAction, BTN_StockCallback, _T("Open favorites"),
-	IDC_SBAR_RECENT, SBI_TOP, &PluginConfig.g_sideBarIcons[2],  &PluginConfig.g_sideBarIcons[2], &PluginConfig.g_sideBarIcons[2], _T("t_recent"), BTN_StockAction, BTN_StockCallback, _T("Open recent contacts"),
-	IDC_SBAR_USERPREFS, SBI_TOP, &PluginConfig.g_sideBarIcons[4], &PluginConfig.g_sideBarIcons[4], &PluginConfig.g_sideBarIcons[4], _T("t_prefs"), BTN_StockAction, BTN_StockCallback, _T("Contact preferences"),
-	IDC_SBAR_TOGGLEFORMAT, SBI_TOP | SBI_TOGGLE, &PluginConfig.g_buttonBarIcons[20], &PluginConfig.g_buttonBarIcons[20], &PluginConfig.g_buttonBarIcons[20], _T("t_tformat"), BTN_StockAction, BTN_StockCallback, _T("Formatting"),
-	IDC_SBAR_SETUP, SBI_BOTTOM, &PluginConfig.g_sideBarIcons[3], &PluginConfig.g_sideBarIcons[3], &PluginConfig.g_sideBarIcons[3], _T("t_setup"), BTN_StockAction, BTN_StockCallback, _T("Miranda options"),
-	IDOK, SBI_TOP | SBI_HANDLEBYCLIENT, &PluginConfig.g_buttonBarIcons[9], &PluginConfig.g_buttonBarIcons[9], &PluginConfig.g_buttonBarIcons[9], _T("t_send"), BTN_StockAction, BTN_StockCallback, _T("Send message"),
-	IDC_SBAR_CANCEL, SBI_TOP, &PluginConfig.g_buttonBarIcons[6], &PluginConfig.g_buttonBarIcons[6], &PluginConfig.g_buttonBarIcons[6], _T("t_close"), BTN_StockAction, BTN_StockCallback, _T("Close session"),
-	IDC_SMILEYBTN, SBI_TOP | SBI_HANDLEBYCLIENT, &PluginConfig.g_buttonBarIcons[11], &PluginConfig.g_buttonBarIcons[11], &PluginConfig.g_buttonBarIcons[11], _T("t_emoticon"), BTN_StockAction, BTN_StockCallback, _T("Emoticon"),
-	IDC_NAME, SBI_TOP | SBI_HANDLEBYCLIENT, &PluginConfig.g_buttonBarIcons[16], &PluginConfig.g_buttonBarIcons[16], &PluginConfig.g_buttonBarIcons[16], _T("t_menu"), BTN_StockAction, BTN_StockCallback, _T("User menu"),
-	IDC_PROTOCOL, SBI_TOP | SBI_HANDLEBYCLIENT, &PluginConfig.g_buttonBarIcons[4], &PluginConfig.g_buttonBarIcons[4], &PluginConfig.g_buttonBarIcons[4], _T("t_details"), BTN_StockAction, BTN_StockCallback, _T("User details"),
 	0, 0, 0, 0, 0, _T(""), NULL, NULL, _T("")
 };
 
@@ -498,6 +487,7 @@ LRESULT DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct _MessageWindowDa
 	TCHITTESTINFO hti;
 	HWND hwndTab;
 	UINT uID = mwdat->bType == SESSIONTYPE_IM ? IDC_LOG : IDC_CHAT_LOG;
+	UINT uIDMsg = mwdat->bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE;
 
 	GetCursorPos(&pt);
 	GetWindowRect(hwnd, &rc);
@@ -509,7 +499,7 @@ LRESULT DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct _MessageWindowDa
 		rc.bottom = rc1.bottom;
 		if (PtInRect(&rc, pt)) {
 			short amount = (short)(HIWORD(wParam));
-			SendMessage(mwdat->pContainer->hwnd, WM_COMMAND, MAKELONG(amount > 0 ? IDC_SIDEBARUP : IDC_SIDEBARDOWN, 0), 0);
+			SendMessage(mwdat->pContainer->hwnd, WM_COMMAND, MAKELONG(amount > 0 ? IDC_SIDEBARUP : IDC_SIDEBARDOWN, 0), (LPARAM)uIDMsg);
 			return 0;
 		}
 	}
@@ -594,7 +584,7 @@ LRESULT DM_ThemeChanged(_MessageWindowData *dat)
 			SetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 	}
 	dat->hThemeIP = M->isAero() ? CMimAPI::m_pfnOpenThemeData(hwnd, L"ButtonStyle") : 0;
-	dat->hThemeToolbar = (M->isAero() || (!CSkin::m_skinEnabled && M->isVSThemed())) ? CMimAPI::m_pfnOpenThemeData(hwnd, L"REBAR") : 0;
+	dat->hThemeToolbar = (M->isAero() || (!CSkin::m_skinEnabled && M->isVSThemed())) ? (PluginConfig.m_bIsVista ? CMimAPI::m_pfnOpenThemeData(hwnd, L"STARTPANEL") : CMimAPI::m_pfnOpenThemeData(hwnd, L"REBAR")) : 0;
 
 	return 0;
 }

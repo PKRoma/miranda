@@ -247,7 +247,7 @@ flat_themed:
 					if (clip)
 						state = PBS_NORMAL;
 
-					FillRect(hdcMem, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+					FillRect(hdcMem, &rc, (HBRUSH)GetSysColor(COLOR_3DFACE));
 					if (rc.right < 20 || rc.bottom < 20)
 						InflateRect(&rc, 2, 2);
 					if((fAero || fVSThemed) && ctl->bToolbarButton) {
@@ -525,7 +525,9 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 		case WM_NCCREATE: {
 			SetWindowLongPtr(hwndDlg, GWL_STYLE, GetWindowLongPtr(hwndDlg, GWL_STYLE) | BS_OWNERDRAW);
 			bct = (MButtonCtrl *)malloc(sizeof(MButtonCtrl));
-			if (bct == NULL) return FALSE;
+			if (bct == NULL)
+				return FALSE;
+			ZeroMemory(bct, sizeof(MButtonCtrl));
 			bct->hwnd = hwndDlg;
 			bct->stateId = PBS_NORMAL;
 			bct->focus = 0;
@@ -543,7 +545,8 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			bct->bThemed = bct->bTitleButton = FALSE;
 			bct->dimmed = 0;
 			bct->pContainer = NULL;
-			bct->item = NULL;
+			bct->item = 0;
+			bct->sitem = 0;
 			LoadTheme(bct);
 			SetWindowLongPtr(hwndDlg, 0, (LONG_PTR)bct);
 			if (((CREATESTRUCTA *)lParam)->lpszName) SetWindowTextA(hwndDlg, ((CREATESTRUCTA *)lParam)->lpszName);
@@ -572,11 +575,15 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 					DestroyIcon(bct->hIconPrivate);
 				LeaveCriticalSection(&csTips);
 				DestroyTheme(bct);
-				free(bct);
 			}
-			SetWindowLongPtr(hwndDlg, 0, (LONG_PTR)NULL);
 			break;	// DONT! fall thru
 		}
+
+		case WM_NCDESTROY:
+			free(bct);
+			SetWindowLongPtr(hwndDlg, 0, (LONG_PTR)NULL);
+			break;
+
 		case WM_SETTEXT: {
 			bct->cHot = 0;
 			if ((TCHAR *)lParam) {
@@ -632,10 +639,13 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 
 			hdcPaint = BeginPaint(hwndDlg, &ps);
 			if (hdcPaint) {
-				PaintWorker(bct, hdcPaint);
+				if(bct->sitem)
+					bct->sitem->RenderThis(hdcPaint);
+				else
+					PaintWorker(bct, hdcPaint);
 				EndPaint(hwndDlg, &ps);
 			}
-			break;
+			return(0);
 		}
 		case BM_SETIMAGE:
 			if (wParam == IMAGE_ICON) {
@@ -729,6 +739,9 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 		case BUTTONSETASTOOLBARBUTTON:
 			bct->bToolbarButton = lParam;
 			break;
+		case BUTTONSETASSIDEBARBUTTON:
+			bct->sitem = reinterpret_cast<CSideBarButton *>(lParam);
+			break;
 		case BUTTONADDTOOLTIP: {
 			TOOLINFO ti;
 
@@ -779,6 +792,12 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 		}
 		case WM_LBUTTONDOWN: {
 			RECT rc;
+
+			if(bct->sitem) {
+				bct->stateId = PBS_PRESSED;
+				InvalidateRect(bct->hwnd, NULL, TRUE);
+				bct->sitem->activateSession();
+			}
 
 			if (bct->arrow && bct->stateId != PBS_DISABLED) {
 				GetClientRect(bct->hwnd, &rc);

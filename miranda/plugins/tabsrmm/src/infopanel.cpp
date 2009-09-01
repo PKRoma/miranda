@@ -211,7 +211,7 @@ void CInfoPanel::renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero) 
 			CSkin::ApplyAeroEffect(hdc, &rc, CSkin::AERO_EFFECT_AREA_INFOPANEL);
 			rc.top = rc.bottom - 1;
 			rc.left--; rc.right++;
-			::DrawEdge(hdc, &rc, BDR_SUNKENOUTER, BF_RECT);
+			//::DrawEdge(hdc, &rc, BDR_SUNKENOUTER, BF_RECT);
 		}
 		else {
 			if(PluginConfig.m_WinVerMajor >= 5) {
@@ -219,7 +219,7 @@ void CInfoPanel::renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero) 
 					CSkin::SkinDrawBG(m_dat->hwnd, m_dat->pContainer->hwnd, m_dat->pContainer, &rc, hdc);
 				rc.bottom -= 2;
 				if(!item->IGNORED) {
-					DrawAlpha(hdc, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+					DrawAlpha(hdc, &rc, item->COLOR, item->ALPHA, PluginConfig.m_ipBackgroundGradient, item->COLOR2_TRANSPARENT, item->GRADIENT,
 							  item->CORNER, item->BORDERSTYLE, item->imageItem);
 				}
 				rc.top = rc.bottom - 1;
@@ -248,11 +248,11 @@ void CInfoPanel::renderContent(const HDC hdc)
 			RECT rc;
 
 			CSkin::MapClientToParent(GetDlgItem(m_dat->hwnd, IDC_PANELNICK), m_dat->hwnd, rc);
-			if(m_height >= 42) {
+			if(m_height >= DEGRADE_THRESHOLD) {
 				rc.top -= 2; rc.bottom += 6;
 			}
 			RenderIPNickname(hdc, rc);
-			if(m_height >= 42) {
+			if(m_height >= DEGRADE_THRESHOLD) {
 				CSkin::MapClientToParent(GetDlgItem(m_dat->hwnd, IDC_PANELUIN), m_dat->hwnd, rc);
 				RenderIPUIN(hdc, rc);
 			}
@@ -274,8 +274,9 @@ void CInfoPanel::renderContent(const HDC hdc)
 		else {
 			RECT rc;
 
+			SetBkMode(hdc, TRANSPARENT);
 			CSkin::MapClientToParent(GetDlgItem(m_dat->hwnd, IDC_PANELNICK), m_dat->hwnd, rc);
-			if(m_height >= 42) {
+			if(m_height >= DEGRADE_THRESHOLD) {
 				rc.top -= 2; rc.bottom += 6;
 			}
 			CSkin::RenderText(hdc, m_dat->hTheme, _T("place holder"), &rc, DT_SINGLELINE);
@@ -304,7 +305,7 @@ void CInfoPanel::RenderIPNickname(const HDC hdc, RECT& rcItem)
 	TCHAR*		szTextToShow = 0;
 	bool		fShowUin = false;
 
-	if(m_height < 42) {
+	if(m_height < DEGRADE_THRESHOLD) {
 		szTextToShow = m_dat->uin;
 		fShowUin = true;
 	} else

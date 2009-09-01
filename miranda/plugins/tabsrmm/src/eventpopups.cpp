@@ -87,6 +87,7 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
 	options->bShowON = (BYTE)M->GetByte(MODULE, OPT_SHOW_ON, TRUE);
 	options->bNoRSS = (BOOL)M->GetByte(MODULE, OPT_NORSS, FALSE);
 	options->iDisable = (BYTE)M->GetByte(MODULE, OPT_DISABLE, 0);
+	options->iMUCDisable = (BYTE)M->GetByte(MODULE, OPT_MUCDISABLE, 0);
 	options->dwStatusMask = (DWORD)M->GetDword(MODULE, "statusmask", (DWORD) - 1);
 	options->bTraySupport = (BOOL)M->GetByte(MODULE, "traysupport", 0);
 	options->iAutoRestore = 0;
@@ -124,6 +125,7 @@ int NEN_WriteOptions(NEN_OPTIONS *options)
 	M->WriteByte(MODULE, OPT_NUMBER_MSG, (BYTE)options->iNumberMsg);
 	M->WriteByte(MODULE, OPT_SHOW_ON, (BYTE)options->bShowON);
 	M->WriteByte(MODULE, OPT_DISABLE, (BYTE)options->iDisable);
+	M->WriteByte(MODULE, OPT_MUCDISABLE, (BYTE)options->iMUCDisable);
 	M->WriteByte(MODULE, "traysupport", (BYTE)options->bTraySupport);
 	M->WriteByte(MODULE, OPT_WINDOWCHECK, (BYTE)options->bWindowCheck);
 	M->WriteByte(MODULE, OPT_NORSS, (BYTE)options->bNoRSS);
@@ -167,7 +169,8 @@ static struct LISTOPTIONSITEM defaultItems[] = {
 	0, _T("Dismiss popup"), MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
 	0, _T("Open event"), MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
 
-	0, _T("Disable event notifications (check, if you're using an external notification plugin)"), IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.iDisable, 0,
+	0, _T("Disable event notifications for instant messages"), IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.iDisable, 0,
+	0, _T("Disable event notifications for group chats"), IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.iMUCDisable, 0,
 
 	0, _T("Remove popups for a contact when the message window is focused"), PU_REMOVE_ON_FOCUS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
 	0, _T("Remove popups for a contact when I start typing a reply"), PU_REMOVE_ON_TYPE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
@@ -519,16 +522,21 @@ static BOOL CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
  */
 static TCHAR *GetPreviewT(WORD eventType, DBEVENTINFO* dbe)
 {
-	TCHAR *commentFix = NULL;
-	char  *pBlob = (char *)dbe->pBlob;
+	TCHAR	*commentFix = NULL;
+	char	*pBlob = (char *)dbe->pBlob;
+
+	int		iPreviewLimit = nen_options.iLimitPreview;
+
+	if(iPreviewLimit > 255 || iPreviewLimit == 0)
+		iPreviewLimit = 255;
 
 	switch (eventType) {
 		case EVENTTYPE_MESSAGE:
 			if (pBlob) {
 				if(nen_options.bPreview) {
 					TCHAR* buf = DbGetEventTextT(dbe, CP_ACP);
-					if(lstrlen(buf) > nen_options.iLimitPreview) {
-						int iIndex = nen_options.iLimitPreview;
+					if(lstrlen(buf) > iPreviewLimit) {
+						int iIndex = iPreviewLimit;
 						int iWordThreshold = 20;
 						while(iIndex && buf[iIndex] != ' ' && iWordThreshold--) {
 							buf[iIndex--] = 0;
@@ -536,7 +544,8 @@ static TCHAR *GetPreviewT(WORD eventType, DBEVENTINFO* dbe)
 						buf[iIndex] = 0;
 					}
 					buf = (TCHAR *)mir_realloc(buf, (lstrlen(buf) + 5) * sizeof(TCHAR));
-					_tcscat(buf, _T("..."));
+					if(lstrlen(buf) < iPreviewLimit)
+						_tcscat(buf, _T("..."));
 					return(buf);
 				}
 			}

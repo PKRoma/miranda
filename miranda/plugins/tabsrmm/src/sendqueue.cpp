@@ -201,7 +201,7 @@ entry_found:
 
 	::SaveInputHistory(hwndDlg, dat, 0, 0);
 	::SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
-	::EnableSendButton(hwndDlg, FALSE);
+	::EnableSendButton(dat, FALSE);
 	::SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 
 	UpdateSaveAndSendButton(dat);
@@ -622,7 +622,7 @@ void SendQueue::EnableSending(const _MessageWindowData *dat, const int iMode)
 		HWND hwndDlg = dat->hwnd;
 		::SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETREADONLY, (WPARAM) iMode ? FALSE : TRUE, 0);
 		::EnableWindow(GetDlgItem(hwndDlg, IDC_CLIST), iMode ? TRUE : FALSE);
-		::EnableSendButton(hwndDlg, iMode);
+		::EnableSendButton(dat, iMode);
 	}
 }
 
@@ -709,9 +709,9 @@ void SendQueue::UpdateSaveAndSendButton(_MessageWindowData *dat)
 		len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
 	#endif
 		if (len && GetSendButtonState(hwndDlg) == PBS_DISABLED)
-			EnableSendButton(hwndDlg, TRUE);
+			EnableSendButton(dat, TRUE);
 		else if (len == 0 && GetSendButtonState(hwndDlg) != PBS_DISABLED)
-			EnableSendButton(hwndDlg, FALSE);
+			EnableSendButton(dat, FALSE);
 
 		if (len) {          // looks complex but avoids flickering on the button while typing.
 			if (!(dat->dwFlags & MWF_SAVEBTN_SAV)) {

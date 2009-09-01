@@ -235,6 +235,7 @@ struct TitleBtn {
 class CTaskbarInteract;
 class CMenuBar;
 class CInfoPanel;
+class CSideBar;
 
 struct ContainerWindowData {
 	struct  ContainerWindowData *pNextContainer;
@@ -248,6 +249,7 @@ struct ContainerWindowData {
 	HWND    hwndTip;			// tab - tooltips...
 	BOOL    bDontSmartClose;      // if set, do not search and select the next possible tab after closing one.
 	DWORD   dwFlags, dwPrivateFlags;
+	DWORD   dwFlagsEx, dwPrivateFlagsEx;
 	UINT    uChildMinHeight;
 	SIZE    oldSize, preSIZE;
 	DWORD   dwTransparency;
@@ -260,11 +262,8 @@ struct ContainerWindowData {
 	DWORD   dwLastActivity;
 	int     hIcon;                // current window icon stick indicator
 	DWORD   dwFlashingStarted;
-	RECT    restoreRect;
 	HWND    hWndOptions;
 	BOOL    bSizingLoop;
-	int     sb_NrTopButtons, sb_NrBottomButtons, sb_FirstButton;
-	int     sb_TopHeight, sb_BottomHeight;
 	TCHAR   szTitleFormat[TITLE_FORMATLEN + 2];
 	char    szRelThemeFile[MAX_PATH], szAbsThemeFile[MAX_PATH];
 	TemplateSet *ltr_templates, *rtl_templates;
@@ -285,11 +284,12 @@ struct ContainerWindowData {
 	DWORD   exFlags;
 	BOOL	fPrivateThemeChanged;
 	DWORD	dwOldAeroTop, dwOldAeroBottom;
+	DWORD	dwOldAeroLeft, dwOldAeroRight;
 	HDC		cachedToolbarDC;
 	HBITMAP hbmToolbarBG, oldhbmToolbarBG;
 	CTaskbarInteract *TaskBar;
 	CMenuBar		 *MenuBar;
-	LONG	fPreviousMenubar;
+	CSideBar		 *SideBar;
 };
 
 #define STICK_ICON_MSG 10
@@ -423,7 +423,9 @@ struct _MessageWindowData {
 	int     iHaveRTLLang;
 	BOOL    fInsertMode;
 	bool	fkeyProcessed;
+	bool	fEditNotesActive;
 	CInfoPanel *Panel;
+	DWORD	iSplitterSaved;
 };
 
 typedef struct _recentinfo {
@@ -481,12 +483,14 @@ struct InputHistory {
  */
 
 #define TCF_FLAT 1
-#define TCF_NOSKINNING 4
+#define TCF_STYLED 2
 #define TCF_FLASHICON 8
 #define TCF_FLASHLABEL 16
 #define TCF_SINGLEROWTABCONTROL 32
 #define TCF_LABELUSEWINCOLORS 64
 #define TCF_BKGUSEWINCOLORS 128
+#define TCF_SBARLEFT 256
+#define TCF_SBARRIGHT 512
 
 #define TCF_DEFAULT (TCF_FLASHICON | TCF_LABELUSEWINCOLORS | TCF_BKGUSEWINCOLORS)
 
@@ -542,6 +546,8 @@ struct NewMessageWindowLParam {
 
 #define CNT_FLAGS_DEFAULT (CNT_DONTREPORT | CNT_DONTREPORTUNFOCUSED | CNT_ALWAYSREPORTINACTIVE | CNT_HIDETABS | CNT_GLOBALSETTINGS | CNT_NEWCONTAINERFLAGS | CNT_NOMENUBAR | CNT_INFOPANEL)
 #define CNT_TRANS_DEFAULT 0x00ff00ff
+
+#define CNT_FLAGSEX_DEFAULT (TCF_FLASHICON)
 
 #define CNT_CREATEFLAG_CLONED 1
 #define CNT_CREATEFLAG_MINIMIZED 2
@@ -634,9 +640,6 @@ struct NewMessageWindowLParam {
 #define DM_DOCREATETAB       (WM_USER+77)
 #define DM_DELAYEDSCROLL     (WM_USER+78)
 #define DM_REPLAYQUEUE       (WM_USER+79)
-// #define DM_HKDETACH          (WM_USER+80) ** FREE **
-// #define DM_HKSAVESIZE        (WM_USER+81)  ** FREE **
-#define DM_SETSIDEBARBUTTONS (WM_USER+82)
 #define DM_REFRESHTABINDEX   (WM_USER+83)
 #define DM_PROTOAVATARCHANGED (WM_USER+84)
 #define DM_SMILEYOPTIONSCHANGED (WM_USER+85)
@@ -1071,6 +1074,7 @@ typedef struct {
 #define TABSRMM_HK_USERDETAILS 22
 #define TABSRMM_HK_TOGGLEINFOPANEL 23
 #define TABSRMM_HK_CLEARLOG 24
+#define TABSRMM_HK_EDITNOTES 25
 
 #define TABSRMM_HK_SECTION_IM "Message windows - IM"
 #define TABSRMM_HK_SECTION_GENERIC "Message windows - all"

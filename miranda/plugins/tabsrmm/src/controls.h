@@ -41,7 +41,7 @@ class CMenuBar
 {
 public:
 	enum {
-		NR_BUTTONS = 7
+		NR_BUTTONS = 8
 	};
 
 	CMenuBar(HWND hwndParent, const ContainerWindowData *pContainer);
@@ -50,18 +50,20 @@ public:
 	const RECT&		getClientRect();
 	void			Resize(WORD wWidth, WORD wHeight, BOOL redraw) const
 	{
-		::SetWindowPos(m_hwndRebar, 0, 0, 0, wWidth, m_size_y, SWP_NOZORDER | SWP_NOACTIVATE |
-					   SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOCOPYBITS | SWP_NOREDRAW);
+		::SetWindowPos(m_hwndToolbar, 0, 4, 0, wWidth, m_size_y, SWP_NOZORDER | SWP_NOACTIVATE |
+					   SWP_NOCOPYBITS|SWP_NOREDRAW);
+
 	}
 	LONG			getHeight() const;
 	void			Show(int showCmd) const
 	{
-		::ShowWindow(m_hwndRebar, showCmd);
+		::ShowWindow(m_hwndToolbar, showCmd);
 	}
 	LONG_PTR		Handle(const NMTOOLBAR *nmtb);
 	void			Cancel();
 	LONG_PTR		processMsg(const UINT msg, const WPARAM wParam, const LPARAM lParam);
 	bool			isContactMenu() const { return(m_isContactMenu); }
+	bool			isMainMenu() const { return(m_isMainMenu); }
 	void			configureMenu(void) const;
 	void			setActive(HMENU hMenu)
 	{
@@ -101,6 +103,7 @@ private:
 	int			m_activeID;
 	bool		m_fTracking;
 	bool		m_isContactMenu;
+	bool		m_isMainMenu;
 	bool		m_isAero;
 	bool		m_mustAutoHide;
 	LONG		m_size_y;
@@ -113,10 +116,11 @@ private:
 	HANDLE		m_hTheme;
 	HFONT		m_hOldFont;
 
-	static 		TBBUTTON m_TbButtons[7];
+	static 		TBBUTTON m_TbButtons[8];
 	static		bool m_buttonsInit;
 	static		CMenuBar *m_Owner;
-
+	static		HBITMAP   m_MimIcon;
+	static		int		  m_MimIconRefCount;
 private:
 	LONG_PTR	customDrawWorker(NMCUSTOMDRAW *nm);
 	void		updateState(const HMENU hMenu) const;

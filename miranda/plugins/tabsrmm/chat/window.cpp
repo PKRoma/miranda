@@ -46,7 +46,6 @@
 // externs...
 extern LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern HRESULT(WINAPI *MyCloseThemeData)(HANDLE);
-extern SESSION_INFO g_TabSession;
 extern HANDLE g_hEvent_MsgPopup;
 extern REOLECallback *mREOLECallback;
 
@@ -369,6 +368,8 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct _MessageWindowData *dat,
 	SetAeroMargins(dat->pContainer);
 	if(M->isAero())
 		InvalidateRect(hwndTab, NULL, FALSE);
+	if(dat->pContainer->dwFlags & CNT_SIDEBAR)
+		dat->pContainer->SideBar->setActiveItem(dat);
 	BB_SetButtonsPos(hwndDlg,dat);
 }
 
@@ -380,7 +381,7 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct _MessageWindowData *dat,
 static void	InitButtons(HWND hwndDlg, SESSION_INFO* si)
 {
 	BOOL isFlat = M->GetByte("tbflat", 1);
-	BOOL isThemed = !M->GetByte("nlflat", 0);
+	BOOL isThemed = PluginConfig.m_bIsXP;
 	MODULEINFO *pInfo = si ? MM_FindModule(si->pszModule) : NULL;
 	BOOL bNicklistEnabled = si ? si->bNicklistEnabled : FALSE;
 	BOOL bFilterEnabled = si ? si->bFilterEnabled : FALSE;
@@ -481,7 +482,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 		EnableWindow(GetDlgItem(hwndDlg, IDC_FILTER), FALSE);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_CHANMGR), FALSE);
 	}
-	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_TOGGLESIDEBAR), PluginConfig.m_SideBarEnabled ? SW_SHOW : SW_HIDE);
+	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_TOGGLESIDEBAR), dat->pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
 
 	switch (urc->wId) {
 		case IDC_PANELSPLITTER:
@@ -552,9 +553,9 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 			urc->rcItem.right = urc->dlgNewSize.cx;
 			urc->rcItem.top = (bToolbar&&!bBottomToolbar) ? urc->dlgNewSize.cy - si->iSplitterY : urc->dlgNewSize.cy - si->iSplitterY;
 			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY + DPISCALEY(2)) : (urc->dlgNewSize.cy - si->iSplitterY + DPISCALEY(2));
-			if (PluginConfig.m_SideBarEnabled)
-				urc->rcItem.left = 9;
-			else
+			//if (dat->pContainer->dwFlags & CNT_SIDEBAR)
+			//	urc->rcItem.left = 7;
+			//else
 				urc->rcItem.left = 0;
 			urc->rcItem.bottom++;
 			urc->rcItem.top++;
@@ -566,8 +567,8 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 			urc->rcItem.bottom = urc->dlgNewSize.cy; // - 1 ;
 			msgBottom = urc->rcItem.bottom;
 			msgTop = urc->rcItem.top;
-			if (PluginConfig.m_SideBarEnabled)
-				urc->rcItem.left += 9;
+			if (dat->pContainer->dwFlags & CNT_SIDEBAR)
+				urc->rcItem.left += 6;
 			//mad
 			if (bBottomToolbar&&bToolbar)
 				urc->rcItem.bottom -= DPISCALEY(24);
@@ -584,7 +585,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_CUSTOM;
 
 		case IDC_CHAT_TOGGLESIDEBAR:
-			urc->rcItem.right = 8;
+			urc->rcItem.right = 6;
 			urc->rcItem.left = 0;
 			urc->rcItem.bottom = msgBottom;
 			urc->rcItem.top = msgTop;
@@ -2087,7 +2088,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTERY), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTERY), GWL_EXSTYLE) | WS_EX_STATICEDGE);
 			}
 
-			SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BUTTONSETASFLATBTN + 10, 0, 0);
+			SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BUTTONSETASFLATBTN + 10, 0, PluginConfig.m_bIsXP);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BUTTONSETASFLATBTN + 12, 0, (LPARAM)dat->pContainer);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BUTTONSETASFLATBTN, 0, 0);
 
@@ -2261,19 +2262,21 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				mi=MM_FindModule(si->pszModule);
 				if(!mi) break;
 
-				if(!mi->ptszModDispName) break;
+				if(!mi->ptszModDispName)
+					break;
 
 				x += GetTextPixelSize(mi->ptszModDispName, (HFONT)SendMessage(dat->pContainer->hwndStatus, WM_GETFONT, 0, 0), TRUE);
 				x += GetSystemMetrics(SM_CXSMICON);
 
 				if (si->ptszStatusbarText)
 					mir_sntprintf(szFinalStatusBarText, SIZEOF(szFinalStatusBarText), _T("%s %s"), mi->ptszModDispName, si->ptszStatusbarText);
-				else
+				else {
 					lstrcpyn(szFinalStatusBarText, mi->ptszModDispName, SIZEOF(szFinalStatusBarText));
+					szFinalStatusBarText[511] = 0;
+				}
 
 				SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM)szFinalStatusBarText);
 				SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(PluginConfig.m_bSessionList ? PluginConfig.g_buttonBarIcons[16] : 0));
-//				SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXT, 0, (LPARAM)szFinalStatusBarText);
 				UpdateStatusBar(dat);
 				return TRUE;
 			}
@@ -2630,7 +2633,9 @@ LABEL_SHOWWINDOW:
 				PostMessage(hwndDlg, WM_SIZE, 0, 0);
 				x = 0;
 			}
-			else x++;
+			else
+				x++;
+			RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE|RDW_UPDATENOW|RDW_ALLCHILDREN);
 		}
 		break;
 
@@ -3133,7 +3138,7 @@ LABEL_SHOWWINDOW:
 					break;
 
 				case IDC_CHAT_TOGGLESIDEBAR:
-					ApplyContainerSetting(dat->pContainer, CNT_SIDEBAR, dat->pContainer->dwFlags & CNT_SIDEBAR ? 0 : 1, false);
+					SendMessage(dat->pContainer->hwnd, WM_COMMAND, IDC_TOGGLESIDEBAR, 0);
 					break;
 
 				case IDCANCEL:
@@ -3356,7 +3361,7 @@ LABEL_SHOWWINDOW:
 			break;
 
 		case WM_ERASEBKGND:
-			if (dat && (dat->pContainer->bSkinned || M->isAero()))
+			if (dat->pContainer->bSkinned || M->isAero() || M->isVSThemed())
 				return TRUE;
 			break;
 
@@ -3717,11 +3722,17 @@ LABEL_SHOWWINDOW:
 			}
 			return DM_ThemeChanged(dat);
 
+		case DM_ACTIVATEME:
+			ActivateExistingTab(dat->pContainer, hwndDlg);
+			return 0;
+
 		case WM_NCDESTROY:
 			if (dat) {
 				dat->pContainer->dwOldAeroBottom = dat->pContainer->dwOldAeroTop = 0;
 				PostMessage(dat->pContainer->hwnd, WM_SIZE, 0, 1);
 				delete dat->Panel;
+				if(dat->pContainer->dwFlags & CNT_SIDEBAR)
+					dat->pContainer->SideBar->removeSession(dat);
 				free(dat);
 				SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 			}

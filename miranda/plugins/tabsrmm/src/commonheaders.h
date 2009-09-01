@@ -156,6 +156,7 @@
 #include  <m_chat.h>
 #include  <m_protomod.h>
 #include  <m_hotkeys.h>
+#include  <m_genmenu.h>
 
 extern struct LIST_INTERFACE li;
 
@@ -197,6 +198,7 @@ extern 	NEN_OPTIONS	nen_options;
 #include "taskbar.h"
 #include "controls.h"
 #include "infopanel.h"
+#include "sidebar.h"
 
 #if !defined(_WIN64) && !defined(_USE_32BIT_TIME_T)
 	#define _USE_32BIT_TIME_T

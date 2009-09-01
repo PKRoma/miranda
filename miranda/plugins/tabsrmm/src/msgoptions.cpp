@@ -945,7 +945,6 @@ static struct LISTOPTIONSITEM tabItems[] = {
 	0, _T("New windows are minimized (the option above MUST be active)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autocontainer", 1,
 	0, _T("Activate a minimized window when a new tab is created inside it"), 0, LOI_TYPE_SETTING, (UINT_PTR)"cpopup", 1,
 	0, _T("Automatically activate existing tabs in minimized windows"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autoswitchtabs", 1,
-	0, _T("Don't draw visual styles on toolbar buttons"), 0, LOI_TYPE_SETTING, (UINT_PTR)"nlflat", 2,
 	0, _T("Flat toolbar buttons"), 1, LOI_TYPE_SETTING, (UINT_PTR)"tbflat", 2,
 	0, _T("Splitters are visible"), 1, LOI_TYPE_SETTING, (UINT_PTR)"splitteredges", 2,
 	0, _T("No borders for text areas (make them appear \"flat\")"), 1, LOI_TYPE_SETTING, (UINT_PTR)"flatlog", 2,

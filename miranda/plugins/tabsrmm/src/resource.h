@@ -17,6 +17,7 @@
 #define IDR_SKIN1                       13
 #define IDR_SKIN_AERO                   14
 #define IDR_SKIN_AERO_GLOW              15
+#define IDR_SKIN_AERO_SWITCHBAR         16
 #define IDR_SKIN_LOGO                   20
 #define IDI_IMGOPEN                     102
 #define IDI_IMGCLOSE                    103
@@ -243,7 +244,7 @@
 #define IDC_TABWIDTH                    1181
 #define IDC_PRIVATESPLITTER             1182
 #define IDC_CNTPRIVATE                  1182
-#define IDC_STYLEDTABS                  1182
+#define IDC_STYLEDTABS                  1482
 #define IDC_NEWSPLITLAYOUT              1183
 #define IDC_O_NOTABS                    1184
 #define IDC_DONTREPORTUNFOCUSED         1185
@@ -356,24 +357,22 @@
 #define IDC_GROUPMODE                   1288
 #define IDC_ANIMATED                    1289
 #define IDC_ISFAVORITE                  1289
-#define IDC_FLATTABS                    1289
-#define IDC_FLASHICON                   1289
+#define IDC_FLASHICON                   1489
 #define IDC_USEPRIVATETITLE             1289
 #define IDC_ALWAYSTRIM                  1289
 #define IDC_SKIN_LOADFONTS              1289
 #define IDC_PRESERVEAVATARSIZE          1289
 #define IDC_UPREFS_SHOWICONS            1289
 #define IDC_SYNCSOUNDS                  1290
-#define IDC_FLASHLABEL                  1290
+#define IDC_FLASHLABEL                  1490
 #define IDC_ALWAYSTRIM2                 1290
 #define IDC_SKIN_LOADTEMPLATES          1290
 #define IDC_UPREFS_SHOWSYMBOLS          1290
-#define IDC_NOSKINNING                  1291
 #define IDC_SKIN_LOADTEMPLATES2         1291
 #define IDC_NOAUTOCLOSE                 1291
 #define IDC_UPREFS_INOUTICONS           1291
 #define IDC_AVADYNAMIC                  1292
-#define IDC_FLATTABS2                   1292
+#define IDC_BUTTONTABS                  1492
 #define IDC_UPREFS_SHOWTIMESTAMP        1292
 #define IDC_USESNAPPING                 1293
 #define IDC_UPREFS_SHOWSECONDS          1293
@@ -399,7 +398,6 @@
 #define IDC_UPREFS_NORMALTEMPLATES      1303
 #define IDC_HEADERSHADING               1304
 #define IDC_HIDEMENUBAR                 1305
-#define IDC_TABSATBOTTOM                1306
 #define IDC_STATICCONTROL               1307
 #define IDC_AUTOCLOSETABTIME            1308
 #define IDC_AUTOCLOSETABSPIN            1309
@@ -512,9 +510,13 @@
 #define IDC_CREATEMIN                   1425
 #define IDC_ESCMODE                     1425
 #define IDC_CHECK5                      1426
+#define IDC_TABMODE                     1426
 #define IDC_SENDSHIFTENTER              1427
+#define IDC_O_TABMODE                   1427
 #define IDC_SENDENTER                   1428
+#define IDC_O_SBARLAYOUT                1428
 #define IDC_SENDDBLENTER                1429
+#define IDC_SBARLAYOUT                  1429
 #define IDC_MINSEND                     1430
 #define IDC_SENDCTRLENTER               1431
 #define IDC_USETABS                     1432
@@ -762,10 +764,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        15
 #define _APS_NEXT_COMMAND_VALUE         40256
-#define _APS_NEXT_CONTROL_VALUE         1426
+#define _APS_NEXT_CONTROL_VALUE         1428
 #define _APS_NEXT_SYMED_VALUE           40283
 #endif
-#endif
-#ifndef IDC_STATIC
-#define IDC_STATIC -1
 #endif
