@@ -165,6 +165,7 @@ typedef struct {
 	                               //that should be showed in the colorchooser menu.
 	                               //ie:	COLORREF crCols[nColors];
 	                               //		pColors = &crCols[0];
+	DWORD       dwReserved;
 }
 	GCREGISTER;
 
