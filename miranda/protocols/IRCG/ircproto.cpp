@@ -241,7 +241,7 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 	if ( ServiceExists( MS_GC_REGISTER )) {
 		GCREGISTER gcr = {0};
 		gcr.cbSize = sizeof(GCREGISTER);
-		gcr.dwFlags = GC_CHANMGR|GC_BOLD|GC_ITALICS|GC_UNDERLINE|GC_COLOR|GC_BKGCOLOR;
+		gcr.dwFlags = GC_CHANMGR | GC_BOLD | GC_ITALICS | GC_UNDERLINE | GC_COLOR | GC_BKGCOLOR | GC_TCHAR;
 		gcr.iMaxText = 0;
 		gcr.nColors = 16;
 		gcr.pColors = colors;

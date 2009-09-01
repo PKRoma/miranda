@@ -258,7 +258,7 @@ int CJabberProto::OnModulesLoadedEx( WPARAM, LPARAM )
 
 		GCREGISTER gcr = {0};
 		gcr.cbSize = sizeof( GCREGISTER );
-		gcr.dwFlags = GC_TYPNOTIF|GC_CHANMGR;
+		gcr.dwFlags = GC_TYPNOTIF | GC_CHANMGR | GC_TCHAR;
 		gcr.iMaxText = 0;
 		gcr.nColors = 16;
 		gcr.pColors = &crCols[0];

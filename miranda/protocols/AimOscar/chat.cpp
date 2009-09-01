@@ -21,9 +21,9 @@ static const COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
 void CAimProto::chat_register(void)
 {
-    GCREGISTER gcr = {0};
+	GCREGISTER gcr = {0};
 	gcr.cbSize = sizeof(gcr);
-	gcr.dwFlags = GC_TYPNOTIF | GC_CHANMGR;
+	gcr.dwFlags = GC_TYPNOTIF | GC_CHANMGR | GC_TCHAR;
 	gcr.iMaxText = 0;
 	gcr.nColors = 16;
 	gcr.pColors = (COLORREF*)crCols;

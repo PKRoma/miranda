@@ -40,7 +40,7 @@ int gg_gc_init(GGPROTO *gg)
 
 		// Register Gadu-Gadu proto
 		gcr.cbSize = sizeof(GCREGISTER);
-		gcr.dwFlags = 0;
+		gcr.dwFlags = GC_TCHAR;
 		gcr.iMaxText = 0;
 		gcr.nColors = 0;
 		gcr.pColors = 0;

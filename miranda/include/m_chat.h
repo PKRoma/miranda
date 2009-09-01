@@ -158,14 +158,16 @@ typedef struct {
 	int         cbSize;            //Set to sizeof(GCREGISTER);
 	DWORD       dwFlags;           //Use GC_* flags above to indicate features supported
 	const char* pszModule;         //This MUST be the protocol name as registered with Miranda IM
-	const TCHAR* ptszModuleDispName; //This is the protocol's real name as it will be displayed to the user
+	union {
+		const char* pszModuleDispName; //This is the protocol's real name as it will be displayed to the user
+		const TCHAR* ptszModuleDispName; // used if GC_TCHAR flag is passed
+	};
 	int         iMaxText;          //Max message length the protocol supports. Will limit the typing area input. 0 = no limit
 	int         nColors;           //Number of colors in the colorchooser menu for the color buttons. Max = 100
 	COLORREF*   pColors;           //pointer to the first item in a static COLORREF array containing the colors
 	                               //that should be showed in the colorchooser menu.
 	                               //ie:	COLORREF crCols[nColors];
 	                               //		pColors = &crCols[0];
-	DWORD       dwReserved;
 }
 	GCREGISTER;
 
