@@ -76,7 +76,7 @@ bool send_init_oft2(file_transfer *ft, TCHAR* file)
     oft->total_size       = _htonl(ft->pfts.totalBytes);
     oft->size             = _htonl(ft->pfts.currentFileSize);
     oft->mod_time         = _htonl(ft->pfts.currentFileTime);
-    oft->checksum         = ft->pfts.totalFiles > 1 ? 0 : _htonl(aim_oft_checksum_file(file));
+    oft->checksum         = _htonl(aim_oft_checksum_file(file));
     oft->recv_RFchecksum  = 0x0000FFFF;
     oft->RFchecksum       = 0x0000FFFF;
     oft->recv_checksum    = 0x0000FFFF;
@@ -87,7 +87,7 @@ bool send_init_oft2(file_transfer *ft, TCHAR* file)
     oft->encoding = _htons(astr.isUnicode() ? 2 : 0);
     memcpy(oft->filename, astr.getBuf(), astr.getTermSize());
 
-    if (!ft->requester)
+    if (!ft->requester || ft->pfts.currentFileNumber)
         memcpy(oft->icbm_cookie, ft->icbm_cookie, 8);
 
     return Netlib_Send(ft->hConn, (char*)oft, len, 0) > 0;
@@ -126,6 +126,7 @@ int CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLI
     LOG("P2P: Entered file sending thread.");
 
     bool failed = true;
+    bool failed_conn = false;
 
     if (!setup_next_file_send(ft)) return 2;
 
@@ -144,6 +145,7 @@ int CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLI
         }
         if (recvResult == SOCKET_ERROR)
         {
+            failed_conn = true;
             LOG("P2P: File transfer connection Error: -1");
             break;
         }
@@ -242,13 +244,14 @@ int CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLI
     }
 
     ft->success = !failed;
-    return failed;
+    return failed ? (failed_conn ? 1 : 2) : 0;
 }
 
 int CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv)
 {
     LOG("P2P: Entered file receiving thread.");
     bool failed = true;
+    bool failed_conn = false;
     bool accepted_file = false;
     int fid = -1;
 
@@ -269,6 +272,7 @@ int CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NET
         }
         if (recvResult == SOCKET_ERROR)
         {
+            failed_conn = true;
             LOG("P2P: File transfer connection Error: -1");
             break;
         }
@@ -421,7 +425,17 @@ int CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NET
     mir_free(oft);
 
     ft->success = !failed;
-    return accepted_file ? failed : 2;
+    return failed ? (failed_conn ? 1 : 2) : 0;
+}
+
+void CAimProto::shutdown_file_transfers(void)
+{
+    for(int i=0; i<ft_list.getCount(); ++i)
+    {
+        file_transfer& ft = ft_list[i];
+        if (ft.hConn)
+		    Netlib_Shutdown(ft.hConn);
+    }
 }
 
 ft_list_type::ft_list_type() :  OBJLIST <file_transfer>(10) {};

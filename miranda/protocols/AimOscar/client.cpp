@@ -494,7 +494,7 @@ int CAimProto::aim_send_file(HANDLE hServerConn, unsigned short &seqno,
     aim_writegeneric(AIM_CAPS_LENGTH, AIM_CAP_FILE_TRANSFER,
         frag_offset, msg_frag);                                         // uuid
     aim_writetlvshort(0x0a,++ft->req_num,frag_offset,msg_frag);         // request number
-//    aim_writetlvshort(0x12,2,frag_offset,msg_frag);                     // max protocol version
+    aim_writetlvshort(0x12,2,frag_offset,msg_frag);                     // max protocol version
 
     aim_writetlvlong(0x02,ip,frag_offset,msg_frag);                     // ip
     aim_writetlvlong(0x16,~ip,frag_offset,msg_frag);                    // ip check
@@ -538,7 +538,7 @@ int CAimProto::aim_send_file(HANDLE hServerConn, unsigned short &seqno,
         const char* enc = is_utf(fname) ? "utf-8" : "us-ascii";
         aim_writetlv(0x2711,9+fnlen,fblock,frag_offset,msg_frag);               // extra data, file names, size
         aim_writetlv(0x2712,8,enc,frag_offset,msg_frag);                        // character set used by data
-//        aim_writetlvlong64(0x2713,ft->pfts.totalBytes,frag_offset,msg_frag);    // file length
+        aim_writetlvlong64(0x2713,ft->pfts.totalBytes,frag_offset,msg_frag);    // file length
 
         LOG("Attempting to Send a file to a buddy.");
     }
@@ -574,8 +574,8 @@ int CAimProto::aim_file_ad(HANDLE hServerConn,unsigned short &seqno,char* sn, ch
     aim_writegeneric(AIM_CAPS_LENGTH,
         AIM_CAP_FILE_TRANSFER,frag_offset,msg_frag);                // uuid
 
-//    if (max_ver > 1)
-//        aim_writetlvshort(0x12,2,frag_offset,msg_frag);             // max protocol version
+    if (max_ver > 1)
+        aim_writetlvshort(0x12,2,frag_offset,msg_frag);             // max protocol version
 
     unsigned short sn_length=(unsigned short)strlen(sn);
     unsigned short offset=0;

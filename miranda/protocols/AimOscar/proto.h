@@ -331,6 +331,7 @@ struct CAimProto : public PROTO_INTERFACE
     int    sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv);
     int    receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv);
     void   report_file_error(TCHAR* fname);
+    void   shutdown_file_transfers(void);
 
     //////////////////////////////////////////////////////////////////////////////////////
     // packets.cpp

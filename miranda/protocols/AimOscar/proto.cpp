@@ -105,6 +105,8 @@ CAimProto::~CAimProto()
 	CloseHandle(hChatNavEvent);
 	CloseHandle(hAdminEvent);
 
+    ft_list.destroy();
+
 	for (int i=0; i<9; ++i)
 		mir_free(modeMsgs[i]);
 
