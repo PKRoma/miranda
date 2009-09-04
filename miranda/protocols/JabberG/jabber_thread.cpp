@@ -240,6 +240,19 @@ void CJabberProto::ServerThread( ThreadData* info )
 
 	info->resolveID = -1;
 	info->auth = NULL;
+
+	if ( m_options.ManualConnect == TRUE ) {
+		if ( !DBGetContactSettingString( NULL, m_szModuleName, "ManualHost", &dbv )) {
+			strncpy( info->manualHost, dbv.pszVal, SIZEOF( info->manualHost ));
+			info->manualHost[sizeof( info->manualHost )-1] = '\0';
+			JFreeVariant( &dbv );
+		}
+		info->port = JGetWord( NULL, "ManualPort", JABBER_DEFAULT_PORT );
+	}
+	else info->port = JGetWord( NULL, "Port", JABBER_DEFAULT_PORT );
+
+	info->useSSL = m_options.UseSSL;
+
 	if ( info->type == JABBER_SESSION_NORMAL ) {
 
 		// Normal server connection, we will fetch all connection parameters
@@ -351,20 +364,7 @@ LBL_FatalError:
 			strncpy( info->password, dbv.pszVal, SIZEOF( info->password ));
 			info->password[SIZEOF( info->password )-1] = '\0';
 			JFreeVariant( &dbv );
-		}
-
-		if ( m_options.ManualConnect == TRUE ) {
-			if ( !DBGetContactSettingString( NULL, m_szModuleName, "ManualHost", &dbv )) {
-				strncpy( info->manualHost, dbv.pszVal, SIZEOF( info->manualHost ));
-				info->manualHost[sizeof( info->manualHost )-1] = '\0';
-				JFreeVariant( &dbv );
-			}
-			info->port = JGetWord( NULL, "ManualPort", JABBER_DEFAULT_PORT );
-		}
-		else info->port = JGetWord( NULL, "Port", JABBER_DEFAULT_PORT );
-
-		info->useSSL = m_options.UseSSL;
-	}
+	}	}
 
 	else if ( info->type == JABBER_SESSION_REGISTER ) {
 		// Register new user connection, all connection parameters are already filled-in.
