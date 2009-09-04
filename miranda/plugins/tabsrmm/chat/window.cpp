@@ -498,7 +498,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 			urc->rcItem.left = panelHeight <= CInfoPanel::LEFT_OFFSET_LOGO ? panelHeight : CInfoPanel::LEFT_OFFSET_LOGO;
 			urc->rcItem.right = urc->dlgNewSize.cx;
 			urc->rcItem.bottom = panelHeight - 1;
-			urc->rcItem.top = dat->ipFieldHeight - 1;;
+			urc->rcItem.top = dat->ipFieldHeight + 1;;
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
 		}
 		case IDC_CHAT_LOG:
@@ -2303,11 +2303,9 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 		case WM_SIZE: {
 			UTILRESIZEDIALOG urd;
 
-			if (dat->ipFieldHeight == 0) {
-				RECT rcPanelBottom;
-				GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELNICK), &rcPanelBottom);
-				dat->ipFieldHeight = rcPanelBottom.bottom - rcPanelBottom.top;
-			}
+			if (dat->ipFieldHeight == 0)
+				dat->ipFieldHeight = CInfoPanel::m_ipConfig.height1;
+
 			if (wParam == SIZE_MAXIMIZED)
 				PostMessage(hwndDlg, GC_SCROLLTOBOTTOM, 0, 0);
 
@@ -3409,7 +3407,7 @@ LABEL_SHOWWINDOW:
 			bool 	fAero = M->isAero();
 			bool 	fInfoPanel = dat->Panel->isActive();
 			HANDLE 	hbp = 0;
-			HDC 	hdcMem;
+			HDC 	hdcMem = 0;
 			HBITMAP hbm, hbmOld;
 
 			HDC 	hdc = BeginPaint(hwndDlg, &ps);

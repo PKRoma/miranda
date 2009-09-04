@@ -44,7 +44,7 @@ struct InfoPanelConfig {
 	COLORREF    clrClockSymbol, clrBackground;
 	BOOL        isValid;                   // valid data exist (font service required, otherwise, defaults are used)
 	HBRUSH      bkgBrush;
-	UINT        edgeType, edgeFlags;
+	UINT		height1, height2;
 };
 
 extern TCHAR *xStatusDescr[];

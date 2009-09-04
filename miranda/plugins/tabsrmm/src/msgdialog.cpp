@@ -1954,7 +1954,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			PAINTSTRUCT ps;
 			HDC 	hdc = BeginPaint(hwndDlg, &ps);
 			RECT 	rcClient, rcWindow, rc;
-			HDC		hdcMem;
+			HDC		hdcMem = 0;
 			HBITMAP hbm, hbmOld;
 			DWORD 	cx, cy;
 			GetClientRect(hwndDlg, &rcClient);

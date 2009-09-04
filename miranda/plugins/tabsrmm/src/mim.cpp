@@ -60,7 +60,7 @@ BPSA	CMimAPI::m_pfnBufferedPaintSetAlpha = 0;
 bool	CMimAPI::m_shutDown = 0;
 TCHAR*	CMimAPI::m_userDir = 0;
 
-bool	CMimAPI::m_haveBufferedPaint = 0;
+bool	CMimAPI::m_haveBufferedPaint = false;
 
 /*
  * read a setting for a contact
@@ -543,11 +543,13 @@ void CMimAPI::InitAPI()
 			m_pfnBufferedPaintInit = (BPI)GetProcAddress(m_hUxTheme, "BufferedPaintInit");
 			m_pfnBufferedPaintUninit = (BPU)GetProcAddress(m_hUxTheme, "BufferedPaintUnInit");
 			m_pfnBufferedPaintSetAlpha = (BPSA)GetProcAddress(m_hUxTheme, "BufferedPaintSetAlpha");
-			m_haveBufferedPaint = (m_pfnBeginBufferedPaint != 0 && m_pfnEndBufferedPaint != 0);
+			m_haveBufferedPaint = (m_pfnBeginBufferedPaint != 0 && m_pfnEndBufferedPaint != 0) ? true : false;
 			if(m_haveBufferedPaint)
 				m_pfnBufferedPaintInit();
 		}
     }
+	else
+		m_haveBufferedPaint = false;
 }
 
 CMimAPI *M = 0;
