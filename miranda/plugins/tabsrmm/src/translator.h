@@ -1,0 +1,248 @@
+/*
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * string handling
+ *
+ */
+
+#ifndef __STRINGS_H
+#define __STRINGS_H
+
+class CTranslator {
+
+public:
+
+	enum {
+		CNT_MENU_STAYONTOP 										= 0,
+		CNT_MENU_HIDETITLEBAR 									= 1,
+		CNT_MENU_CONTAINEROPTIONS 								= 2,
+		CNT_TITLE_DEFAULT										= 3,
+		CNT_ATTACH_TO											= 4,
+		GEN_META_CONTACT										= 5,
+		GEN_META_FORCED											= 6,
+		GEN_META_AUTOSELECT										= 7,
+		GEN_META_USEPROTO										= 8,
+		GEN_META_SETDEFAULT										= 9,
+		GEN_MUC_NICKNAME										= 10,
+		GEN_MUC_UID												= 11,
+		GEN_MUC_STATUS											= 12,
+		GEN_MUC_ROOM_TITLE_USER									= 13,
+		GEN_MUC_ROOM_TITLE_USERS								= 14,
+		GEN_MUC_ROOM_TITLE_FILTER								= 15,
+		GEN_MUC_PRIVSESSION										= 16,
+		GEN_MUC_PRIVSESSION_MULTI								= 17,
+		GEN_MUC_FILTER_ERROR									= 18,
+		GEN_MUC_FILTER_ERROR_TITLE								= 19,
+		GEN_MUC_TEXTCOLOR										= 20,
+		GEN_MUC_BGCOLOR											= 21,
+		CNT_OPT_TITLE											= 22,
+		CNT_OPT_TABSTOP											= 23,
+		CNT_OPT_TABSBOTTOM										= 24,
+		CNT_OPT_TABSLEFT										= 25,
+		CNT_OPT_TABSRIGHT										= 26,
+		CNT_OPT_HEADERBAR										= 27,
+		GEN_MENUBAR_FILE										= 28,
+		GEN_MENUBAR_VIEW										= 29,
+		GEN_MENUBAR_USER										= 30,
+		GEN_MENUBAR_ROOM										= 31,
+		GEN_MENUBAR_LOG											= 32,
+		GEN_MENUBAR_CONTAINER									= 33,
+		GEN_MENUBAR_HELP										= 34,
+		CNT_SBAR_SOUNDS											= 35,
+		GEN_ENABLED												= 36,
+		GEN_DISABLED											= 37,
+		CNT_SBAR_MTN											= 38,
+		GEN_IP_TIP_XSTATUS										= 39,
+		GEN_IP_TIP_CLIENT										= 40,
+		GEN_IP_TIP_STATUSMSG									= 41,
+		GEN_IP_TIP_TITLE										= 42,
+		GEN_SKIN_WARNCLOSE										= 43,
+		GEN_SKIN_WARNCLOSE_TITLE								= 44,
+		GEN_MTN_POPUP_WARNING									= 45,
+		GEN_MTN_POPUP_UNSUPPORTED								= 46,
+		GEN_CONTACT												= 47,
+		GEN_MTN_START											= 48,
+		GEN_MTN_STOP											= 49,
+		GEN_FAVORITES											= 50,
+		GEN_RECENT_SESSIONS										= 51,
+		GEN_SBAR_LASTRECEIVED									= 52,
+		GEN_SBAR_TIP_MSGLENGTH									= 53,
+		CNT_OPT_TITLE_GEN										= 54,
+		CNT_OPT_TITLE_LAYOUT									= 55,
+		CNT_OPT_TITLE_TABS										= 56,
+		CNT_OPT_TITLE_NOTIFY									= 57,
+		CNT_OPT_TITLE_FLASHING									= 58,
+		CNT_OPT_TITLE_TITLEBAR									= 59,
+		CNT_OPT_TITLE_THEME										= 60,
+		CNT_OPT_TITLE_TRANS										= 61,
+		CNT_OPT_DESC_TABS										= 62,
+		CNT_OPT_DESC_NOTIFY										= 63,
+		CNT_OPT_DESC_THEME										= 64,
+		CNT_OPT_DESC_TRANS										= 65,
+		GEN_POPUPS_MESSAGE										= 66,
+		GEN_POPUPS_UNKNOWN										= 67,
+		GEN_POPUPS_NEW											= 68,
+		GEN_NO_STATUS											= 69,
+		GEN_MTN_STARTWITHNICK									= 70,
+		GEN_MTN_TTITLE											= 71,
+		GEN_MSG_TTITLE											= 72,
+		GEN_ICONPACK_WARNING									= 73,
+		CNT_SELECT_FOR											= 74,
+		CNT_SELECT_INUSE										= 75,
+		CNT_SELECT_RENAMEERROR									= 76,
+		CNT_SELECT_DELETEERROR									= 77,
+		GEN_WARN_CLOSE											= 78,
+		GEN_MSG_SAVE_NODIR										= 79,
+		GEN_MSG_SAVE											= 80,
+		GEN_MSG_SAVE_FILE_EXISTS								= 81,
+		GEN_MUC_TOPIC_IS										= 82,
+		GEN_MUC_NO_TOPIC										= 83,
+		GEN_MTN_STOPPED											= 84,
+		GEN_AVATAR_SETTINGS										= 85,
+		GEN_AVATAR_SETOWN										= 86,
+		GEN_WARNING_LOADTEMPLATES								= 87,
+		GEN_TITLE_LOADTHEME										= 88,
+		GEN_WARNING_PASTEANDSEND_DISABLED						= 89,
+		GEN_WARNING_NUDGE_DISABLED								= 90,
+		GEN_UNKNOWN_CONTACT										= 91,
+		GEN_LOG_TODAY											= 92,
+		GEN_LOG_YESTERDAY										= 93,
+		GEN_LOG_USEDEFAULTCP									= 94,
+		GEN_MSG_UINCOPY											= 95,
+		GEN_MSG_NOUIN											= 96,
+		GEN_MSG_UINCOPY_NOMC									= 97,
+		GEN_MSG_SIGNEDOFF										= 98,
+		GEN_MSG_SIGNEDON										= 99,
+		GEN_MSG_CHANGEDSTATUS									= 100,
+		STR_LAST 												= 101
+	};
+
+	enum {
+		OPT_UPREFS_IPGLOBAL										= 0,
+		OPT_UPREFS_IPON											= 1,
+		OPT_UPREFS_IPOFF										= 2,
+		OPT_UPREFS_AVON											= 3,
+		OPT_UPREFS_AVOFF										= 4,
+		OPT_UPREFS_FORCEHPP										= 5,
+		OPT_UPREFS_FORCEIEV										= 6,
+		OPT_UPREFS_FORCEDEFAULT									= 7,
+		OPT_UPREFS_SIMPLETAGS									= 8,
+		OPT_UPREFS_BBCODE										= 9,
+		OPT_UPREFS_FORMATTING_OFF								= 10,
+		OPT_UPREFS_DEFAULTCP									= 11,
+		OPT_UPREFS_NOTZSVC										= 12,
+		OPT_UPREFS_TITLE										= 13,
+		OPT_UPREFS_MSGLOG										= 14,
+		OPT_UPREFS_GENERIC										= 15,
+		OPT_AERO_EFFECT_NONE									= 16,
+		OPT_AERO_EFFECT_MILK									= 17,
+		OPT_AERO_EFFECT_CARBON									= 18,
+		OPT_AERO_EFFECT_SOLID									= 19,
+		OPT_GEN_NONE											= 20,
+		OPT_GEN_AUTO											= 21,
+		OPT_GEN_SUNKEN											= 22,
+		OPT_GEN_1PIXEL											= 23,
+		OPT_GEN_ROUNDED											= 24,
+		OPT_GEN_GLOBALLY_ON										= 25,
+		OPT_GEN_ON_IF_PRESENT									= 26,
+		OPT_GEN_GLOBALLY_OFF									= 27,
+		OPT_GEN_ON_ALWAYS_BOTTOM								= 28,
+		OPT_GEN_DONT_SHOW										= 29,
+		OPT_LAST												= 30
+	};
+
+	/*
+	 * identities for the option trees
+	 */
+
+	enum {
+		TREE_MODPLUS = 0,
+		TREE_NEN = 1,
+		TREE_MSG = 2,
+		TREE_LOG = 3,
+		TREE_TAB = 4,
+	};
+
+	CTranslator();
+	~CTranslator();
+
+	inline static const TCHAR* get(UINT id)
+	{
+		return(m_translated[id]);
+	}
+
+	inline static const TCHAR* getOpt(UINT id)
+	{
+		return(m_OptTranslated[id]);
+	}
+
+	static void preTranslateAll()
+	{
+		int i;
+
+		for(i = 0; i < STR_LAST; i++)
+			m_translated[i] = TranslateTS(m_strings[i]);
+
+		for(i = 0; i < OPT_LAST; i++)
+			m_OptTranslated[i] = TranslateTS(m_OptStrings[i]);
+
+		translateGroupTree(m_lvGroupsModPlus);
+		translateGroupTree(m_lvGroupsNEN);
+		translateGroupTree(m_lvGroupsMsg);
+		translateGroupTree(m_lvGroupsTab);
+		translateGroupTree(m_lvGroupsLog);
+
+		translateOptionTree(m_lvItemsModPlus);
+		translateOptionTree(m_lvItemsNEN);
+		translateOptionTree(m_lvItemsMsg);
+		translateOptionTree(m_lvItemsTab);
+		translateOptionTree(m_lvItemsLog);
+	}
+
+	static void translateGroupTree(LISTOPTIONSGROUP *groups);
+	static void translateOptionTree(LISTOPTIONSITEM *items);
+
+	static	LISTOPTIONSITEM* 	getTree(UINT id);
+	static  LISTOPTIONSGROUP* 	getGroupTree(UINT id);
+
+private:
+	static TCHAR *m_strings[STR_LAST];
+	static TCHAR *m_translated[STR_LAST];
+
+	static TCHAR *m_OptStrings[OPT_LAST];
+	static TCHAR *m_OptTranslated[OPT_LAST];
+
+	static LISTOPTIONSGROUP		m_lvGroupsModPlus[], m_lvGroupsNEN[], m_lvGroupsMsg[], m_lvGroupsLog[], m_lvGroupsTab[];
+	static LISTOPTIONSITEM		m_lvItemsModPlus[], m_lvItemsNEN[], m_lvItemsMsg[], m_lvItemsLog[], m_lvItemsTab[];
+};
+
+#endif
+
+

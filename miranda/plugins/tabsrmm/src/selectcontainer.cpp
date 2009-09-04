@@ -52,7 +52,7 @@ INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			if (lParam) {
 				struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
 				if (dat) {
-					mir_sntprintf(szNewTitle, safe_sizeof(szNewTitle), TranslateT("Select container for %s"), dat->szNickname);
+					mir_sntprintf(szNewTitle, safe_sizeof(szNewTitle), CTranslator::get(CTranslator::CNT_SELECT_FOR), dat->szNickname);
 					SetWindowText(hwndDlg, szNewTitle);
 				}
 			}
@@ -92,7 +92,7 @@ INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					if ((iItem = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_GETCURSEL, 0, 0)) != LB_ERR) {
 						SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_GETTEXT, (WPARAM) iItem, (LPARAM) szName);
 						if (!_tcsncmp(szName, _T("default"), CONTAINER_NAMELEN))
-							MessageBoxA(hwndDlg, Translate("You cannot delete the default container"), "Error", MB_OK);
+							MessageBox(hwndDlg, CTranslator::get(CTranslator::CNT_SELECT_DELETEERROR), _T("Error"), MB_OK);
 						else {
 							int iIndex = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_GETITEMDATA, (WPARAM)iItem, 0);
 							DeleteContainer(iIndex);
@@ -116,7 +116,7 @@ INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 							TCHAR szOldName[CONTAINER_NAMELEN + 1];
 							SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_GETTEXT, (WPARAM) iItem, (LPARAM) szOldName);
 							if (lstrlen(szOldName) == lstrlen(szNewName)) {
-								MessageBoxA(0, Translate("This name is already in use"), "Error", MB_OK);
+								MessageBox(0, CTranslator::get(CTranslator::CNT_SELECT_INUSE), _T("Error"), MB_OK);
 								SetFocus(GetDlgItem(hwndDlg, IDC_NEWCONTAINERNAME));
 								break;
 							}
@@ -124,7 +124,7 @@ INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						if ((iItem = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_GETCURSEL, 0, 0)) != LB_ERR) {
 							SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_GETTEXT, (WPARAM) iItem, (LPARAM) szName);
 							if (!_tcsncmp(szName, _T("default"), CONTAINER_NAMELEN))
-								MessageBoxA(hwndDlg, Translate("You cannot rename the default container"), "Error", MB_OK);
+								MessageBox(hwndDlg, CTranslator::get(CTranslator::CNT_SELECT_RENAMEERROR), _T("Error"), MB_OK);
 							else {
 								int iIndex = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_GETITEMDATA, (WPARAM)iItem, 0);
 								RenameContainer(iIndex, szNewName);
@@ -154,7 +154,7 @@ INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						if (iItem != LB_ERR) {
 							SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_GETTEXT, (WPARAM)iItem, (LPARAM)szName);
 							if (lstrlen(szName) == lstrlen(szNewName)) {
-								MessageBoxA(0, Translate("This name is already in use"), "Error", MB_OK);
+								MessageBox(0, CTranslator::get(CTranslator::CNT_SELECT_INUSE), _T("Error"), MB_OK);
 								SetFocus(GetDlgItem(hwndDlg, IDC_NEWCONTAINER));
 								break;
 							}

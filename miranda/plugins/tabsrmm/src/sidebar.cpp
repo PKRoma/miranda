@@ -107,6 +107,7 @@ void CSideBarButton::_create()
 CSideBarButton::~CSideBarButton()
 {
 	if(m_hwnd) {
+		::SendMessage(m_hwnd, BUTTONSETASSIDEBARBUTTON, 0, 0);		// make sure, the button will no longer call us back
 		::DestroyWindow(m_hwnd);
 		//_DebugTraceA("button item %d destroyed", m_id);
 	}
@@ -159,9 +160,10 @@ void CSideBarButton::RenderThis(const HDC hdc) const
 {
 	RECT		rc;
 	LONG		cx, cy;
-
+	HDC			hdcMem = 0;
 	bool		fVertical = (m_sideBarLayout->dwFlags & CSideBar::SIDEBARLAYOUT_VERTICALORIENTATION) ? true : false;
-	HBITMAP		hbmMem;
+	HBITMAP		hbmMem, hbmOld;
+	HANDLE		hbp = 0;
 
 	::GetClientRect(m_hwnd, &rc);
 
@@ -177,7 +179,8 @@ void CSideBarButton::RenderThis(const HDC hdc) const
 		cy = rc.bottom;
 	}
 
-	HDC 	hdcMem = ::CreateCompatibleDC(hdc);
+	hdcMem = ::CreateCompatibleDC(hdc);
+
 	if(fVertical) {
 		RECT	rcFlipped = {0,0,cx,cy};
 		hbmMem = CSkin::CreateAeroCompatibleBitmap(rcFlipped, hdcMem);
@@ -186,7 +189,7 @@ void CSideBarButton::RenderThis(const HDC hdc) const
 	else
 		hbmMem = CSkin::CreateAeroCompatibleBitmap(rc, hdcMem);
 
-	HBITMAP hbmOld = (HBITMAP)::SelectObject(hdcMem, hbmMem);
+	hbmOld = (HBITMAP)::SelectObject(hdcMem, hbmMem);
 
 	HFONT hFontOld = (HFONT)::SelectObject(hdcMem, GetStockObject(DEFAULT_GUI_FONT));
 
@@ -667,12 +670,14 @@ void CSideBar::Layout(const RECT *rc, bool fOnlyCalc)
 		return;
 	}
 
+	HDWP hdwp = ::BeginDeferWindowPos(1);
+
 	int 	topCount = 0, bottomCount = 0;
 	size_t  i = 0, j = 0;
 	BOOL 	topEnabled = FALSE, bottomEnabled = FALSE;
 	HWND 	hwnd;
 	LONG 	spaceUsed = 0;
-	DWORD 	dwFlags = SWP_NOZORDER|SWP_NOCOPYBITS|SWP_NOSENDCHANGING;;
+	DWORD 	dwFlags = SWP_NOZORDER|SWP_NOACTIVATE;
 	LONG	iSpaceAvail = rc->bottom;
 
 	m_firstVisibleOffset = max(0, m_firstVisibleOffset);
@@ -699,14 +704,14 @@ void CSideBar::Layout(const RECT *rc, bool fOnlyCalc)
 		if ((*item)->isTopAligned()) {
 			if(m_totalItemHeight <= m_firstVisibleOffset) {				// partially visible
 				if(!fOnlyCalc)
-					::SetWindowPos(hwnd, 0, 2, -(m_firstVisibleOffset - m_totalItemHeight),
+					hdwp = ::DeferWindowPos(hdwp, hwnd, 0, 2, -(m_firstVisibleOffset - m_totalItemHeight),
 								   m_elementWidth, height, SWP_SHOWWINDOW | dwFlags);
 				spaceUsed += ((height + 1) - (m_firstVisibleOffset - m_totalItemHeight));
 				m_totalItemHeight += (height + 1);
 			}
 			else {
 				if(!fOnlyCalc)
-					::SetWindowPos(hwnd, 0, 2, spaceUsed,
+					hdwp = ::DeferWindowPos(hdwp, hwnd, 0, 2, spaceUsed,
 								   m_elementWidth, height, SWP_SHOWWINDOW | dwFlags);
 				spaceUsed += (height + 1);
 				m_totalItemHeight += (height + 1);
@@ -724,6 +729,7 @@ void CSideBar::Layout(const RECT *rc, bool fOnlyCalc)
 	}
 	topEnabled = m_firstVisibleOffset > 0;
 	bottomEnabled = (m_totalItemHeight - m_firstVisibleOffset > rc->bottom);
+	::EndDeferWindowPos(hdwp);
 
 	//_DebugTraceA("layout: total %d, used: %d, first visible: %d", m_totalItemHeight, spaceUsed, m_firstVisibleOffset);
 	if(!fOnlyCalc) {
@@ -732,7 +738,8 @@ void CSideBar::Layout(const RECT *rc, bool fOnlyCalc)
 
 		::SetWindowPos(m_up->getHwnd(), 0, m_pContainer->tBorder_outer_left, m_pContainer->tBorder_outer_top + m_pContainer->MenuBar->getHeight(),
 					   m_elementWidth + 4, 14, dwFlags | SWP_SHOWWINDOW);
-		::SetWindowPos(m_down->getHwnd(), 0, m_pContainer->tBorder_outer_left, (rcContainer.bottom - 14 - m_pContainer->statusBarHeight - 1), m_elementWidth + 4, 14, dwFlags | SWP_SHOWWINDOW);
+		::SetWindowPos(m_down->getHwnd(), 0, m_pContainer->tBorder_outer_left, (rcContainer.bottom - 14 - m_pContainer->statusBarHeight - 1),
+					   m_elementWidth + 4, 14, dwFlags | SWP_SHOWWINDOW);
 		::EnableWindow(m_up->getHwnd(), topEnabled);
 		::EnableWindow(m_down->getHwnd(), bottomEnabled);
 		::InvalidateRect(m_up->getHwnd(), NULL, FALSE);
@@ -886,14 +893,19 @@ void __fastcall CSideBar::m_DefaultBackgroundRenderer(const HDC hdc, const RECT 
 
 	if(M->isAero()) {
 		if(id == IDC_SIDEBARUP || id == IDC_SIDEBARDOWN) {
-			CSkin::m_switchBarItem->setAlphaFormat(AC_SRC_ALPHA,
-												   stateId == PBS_HOT ? 250 : (stateId == PBS_PRESSED ? 250 : 200));
-			CSkin::m_switchBarItem->Render(hdc, rc, true);
+			::InflateRect(const_cast<RECT *>(rc), -2, 0);
+			if(stateId == PBS_HOT || stateId == PBS_PRESSED)
+				DrawAlpha(hdc, const_cast<RECT *>(rc), 0xf0f0f0, 75, 0x000000, 0, 9,
+						  31, 4, 0);
+			else
+				DrawAlpha(hdc, const_cast<RECT *>(rc), 0xf0f0f0, 85, 0x707070, 0, 9,
+						  31, 4, 0);
 		}
 		else {
 			CSkin::m_switchBarItem->setAlphaFormat(AC_SRC_ALPHA,
 												   (stateId == PBS_HOT && !fIsActiveItem) ? 250 : (fIsActiveItem || stateId == PBS_PRESSED ? 250 : 200));
 			CSkin::m_switchBarItem->Render(hdc, rc, true);
+			/*
 
 			if(fIsActiveItem) {
 				RECT rcBlend = *rc;
@@ -910,6 +922,15 @@ void __fastcall CSideBar::m_DefaultBackgroundRenderer(const HDC hdc, const RECT 
 				CSkin::m_tabGlowTop->setAlphaFormat(AC_SRC_ALPHA, stateId == PBS_HOT ? 160 : 200);
 				CSkin::m_tabGlowTop->Render(hdc, &rcGlow, true);
 			}
+			*/
+			if(stateId == PBS_HOT || stateId == PBS_PRESSED || fIsActiveItem) {
+ 				RECT rcGlow = *rc;
+ 				rcGlow.top += 1;
+				rcGlow.bottom -= 2;
+
+				CSkin::m_tabGlowTop->setAlphaFormat(AC_SRC_ALPHA, (stateId == PBS_PRESSED || fIsActiveItem) ? 180 : 100);
+ 				CSkin::m_tabGlowTop->Render(hdc, &rcGlow, true);
+ 			}
 		}
 	}
 	else if(M->isVSThemed()) {
@@ -929,7 +950,7 @@ void __fastcall CSideBar::m_DefaultBackgroundRenderer(const HDC hdc, const RECT 
 	else {
 		RECT *rcDraw = const_cast<RECT *>(rc);
 		if(!(id == IDC_SIDEBARUP || id == IDC_SIDEBARDOWN)) {
-			HBRUSH br = (stateId == PBS_HOT && !fIsActiveItem) ? ::GetSysColorBrush(COLOR_BTNSHADOW) : (fIsActiveItem || stateId == PBS_PRESSED ? ::GetSysColorBrush(COLOR_BTNHIGHLIGHT) : ::GetSysColorBrush(COLOR_3DFACE));
+			HBRUSH br = (stateId == PBS_HOT && !fIsActiveItem) ? ::GetSysColorBrush(COLOR_BTNSHADOW) : (fIsActiveItem || stateId == PBS_PRESSED ? ::GetSysColorBrush(COLOR_HOTLIGHT) : ::GetSysColorBrush(COLOR_3DFACE));
 			::FillRect(hdc, rc, br);
 			::DrawEdge(hdc, rcDraw, (stateId == PBS_HOT && !fIsActiveItem) ? EDGE_ETCHED : (fIsActiveItem || stateId == PBS_PRESSED) ? EDGE_BUMP : EDGE_ETCHED, BF_RECT | BF_SOFT | BF_FLAT);
 		}

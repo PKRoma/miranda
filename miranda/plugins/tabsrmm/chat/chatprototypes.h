@@ -89,8 +89,6 @@ BOOL          SM_SetStatus(const TCHAR* pszID, const char* pszModule, int wStatu
 BOOL          SM_SetStatusEx(const TCHAR* pszID, const char* pszModule, const TCHAR* pszText, int flags );
 BOOL          SM_SendUserMessage(const TCHAR* pszID, const char* pszModule, const TCHAR* pszText);
 STATUSINFO*   SM_AddStatus(const TCHAR* pszID, const char* pszModule, const TCHAR* pszStatus);
-SESSION_INFO* SM_GetNextWindow(SESSION_INFO* si);
-SESSION_INFO* SM_GetPrevWindow(SESSION_INFO* si);
 BOOL          SM_AddEventToAllMatchingUID(GCEVENT * gce);
 BOOL          SM_AddEvent(const TCHAR* pszID, const char* pszModule, GCEVENT * gce, BOOL bIsHighlighted);
 LRESULT       SM_SendMessage(const TCHAR* pszID, const char* pszModule, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -111,6 +109,7 @@ SESSION_INFO* SM_FindSessionByIndex(const char* pszModule, int iItem);
 char*         SM_GetUsers(SESSION_INFO* si);
 USERINFO*     SM_GetUserFromIndex(const TCHAR* pszID, const char* pszModule, int index);
 BOOL		  SM_ReconfigureFilters();
+BOOL		  SM_InvalidateLogDirectories();
 MODULEINFO*   MM_AddModule(const char* pszModule);
 MODULEINFO*   MM_FindModule(const char* pszModule);
 void          MM_FixColors();

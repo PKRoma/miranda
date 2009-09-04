@@ -1302,7 +1302,7 @@ TCHAR* GetChatLogsFilename(SESSION_INFO *si, time_t tTime)
 {
 	REPLACEVARSARRAY 	rva[11];
 	REPLACEVARSDATA 	dat = {0};
-	TCHAR				*p = {0}, *tszParsedName = {0};
+	TCHAR				*p = 0, *tszParsedName = 0;
 	int 				i;
 	bool				fReparse = false;
 
@@ -1366,9 +1366,10 @@ TCHAR* GetChatLogsFilename(SESSION_INFO *si, time_t tTime)
 		tszParsedName = (TCHAR*) CallService(MS_UTILS_REPLACEVARS, (WPARAM)g_Settings.pszLogDir, (LPARAM)&dat);
 
 		if(!M->pathIsAbsolute(tszParsedName))
-			mir_sntprintf(si->pszLogFileName, MAX_PATH, _T("%s%s"), M->getChatLogPath(),  tszParsedName);
+			mir_sntprintf(si->pszLogFileName, MAX_PATH, _T("%s%s"), M->getChatLogPath(), tszParsedName);
+		else
+			mir_sntprintf(si->pszLogFileName, MAX_PATH, _T("%s"), tszParsedName);
 
-		si->pszLogFileName[MAX_PATH - 1] = 0;
 		mir_free(tszParsedName);
 
 		for (i=0; i < SIZEOF(rva);i++)

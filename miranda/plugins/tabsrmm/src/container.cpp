@@ -47,8 +47,6 @@ extern INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 const TCHAR *NewTitle(const _MessageWindowData *dat, const TCHAR *szFormat);
 
-TCHAR 	*szWarnClose = _T("Do you really want to close this session?");
-
 ContainerWindowData *pFirstContainer = 0;        // the linked list of struct ContainerWindowData
 ContainerWindowData *pLastActiveContainer = NULL;
 
@@ -159,7 +157,7 @@ void SetAeroMargins(ContainerWindowData *pContainer)
 
 		if(dat) {
 			if(dat->bType == SESSIONTYPE_IM) {
-				if((dat->Panel->isActive()) && !(dat->dwFlags & MWF_ERRORSTATE))
+				if(dat->Panel->isActive())
 					GetWindowRect(GetDlgItem(dat->hwnd, IDC_LOG), &rcWnd);
 				else
 					GetWindowRect(dat->hwnd, &rcWnd);
@@ -183,7 +181,10 @@ void SetAeroMargins(ContainerWindowData *pContainer)
 
 			GetWindowRect(dat->hwnd, &rcWnd);
 			pt.x = rcWnd.left;
-			pt.y = rcWnd.bottom;
+			if(!pContainer->SideBar->isActive())
+				pt.y = rcWnd.bottom + ((pContainer->iChilds > 1 || !(pContainer->dwFlags & CNT_HIDETABS)) ? pContainer->tBorder : 0);
+			else
+				pt.y = rcWnd.bottom;
 			ScreenToClient(pContainer->hwnd, &pt);
 			GetClientRect(pContainer->hwnd, &rcWnd);
 			m.cyBottomHeight = rcWnd.bottom - pt.y;
@@ -734,12 +735,12 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			iMenuItems = GetMenuItemCount(hSysmenu);
 
 			InsertMenu(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_SEPARATOR, 0, _T(""));
-			InsertMenu(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_STAYONTOP, TranslateT("Stay on Top"));
+			InsertMenu(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_STAYONTOP, CTranslator::get(CTranslator::CNT_MENU_STAYONTOP));
 			if (!CSkin::m_frameSkins)
-				InsertMenu(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_NOTITLE, TranslateT("Hide titlebar"));
+				InsertMenu(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_NOTITLE, CTranslator::get(CTranslator::CNT_MENU_HIDETITLEBAR));
 			InsertMenu(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_SEPARATOR, 0, _T(""));
-			InsertMenu(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_MOREOPTIONS, TranslateT("Container options..."));
-			SetWindowText(hwndDlg, TranslateT("Message Session..."));
+			InsertMenu(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_MOREOPTIONS, CTranslator::get(CTranslator::CNT_MENU_CONTAINEROPTIONS));
+			SetWindowText(hwndDlg, CTranslator::get(CTranslator::CNT_TITLE_DEFAULT));
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)PluginConfig.g_iconContainer);
 
 			/*
@@ -749,7 +750,9 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			ws = GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_EXSTYLE);
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_EXSTYLE, ws | WS_EX_CONTROLPARENT);
 
-			TabCtrl_SetPadding(GetDlgItem(hwndDlg, IDC_MSGTABS), M->GetByte("x-pad", 3), M->GetByte("y-pad", 3));
+			TabCtrl_SetPadding(GetDlgItem(hwndDlg, IDC_MSGTABS), M->GetByte("x-pad", 3),  M->GetByte("y-pad", 3) +
+							   ((pContainer->dwFlags & CNT_TABSBOTTOM) ? 1 : 0));
+
 			TabCtrl_SetImageList(GetDlgItem(hwndDlg, IDC_MSGTABS), PluginConfig.g_hImageList);
 
 			SendMessage(hwndDlg, DM_CONFIGURECONTAINER, 0, 10);
@@ -871,12 +874,14 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 			sbarWidth = pContainer->SideBar->getWidth();
 			if (lParam) {
+				DWORD	dwSWPFlags = SWP_NOACTIVATE|SWP_NOZORDER|SWP_DEFERERASE | SWP_NOCOPYBITS;// | SWP_NOSENDCHANGING */ | SWP_ASYNCWINDOWPOS;
+
 				if (pContainer->dwFlags & CNT_TABSBOTTOM)
 					SetWindowPos(hwndTab, 0, pContainer->tBorder_outer_left + sbarWidth, pContainer->tBorder_outer_top + rebarHeight, (rcClient.right - rcClient.left) - (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right + sbarWidth), (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom) - rebarHeight,
-								 SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_NOSENDCHANGING | SWP_ASYNCWINDOWPOS);
+								 dwSWPFlags);
 				else
 					SetWindowPos(hwndTab, 0, pContainer->tBorder_outer_left + sbarWidth, pContainer->tBorder_outer_top + rebarHeight, (rcClient.right - rcClient.left) - (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right + sbarWidth), (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom) - rebarHeight,
-								 SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_NOSENDCHANGING | SWP_ASYNCWINDOWPOS);
+								 dwSWPFlags);
 			}
 
 			pContainer->SideBar->resizeScrollWnd(pContainer->tBorder_outer_left,
@@ -905,9 +910,8 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				item.mask = TCIF_PARAM;
 				TabCtrl_GetItem(hwndTab, i, &item);
 				if ((HWND)item.lParam == pContainer->hwndActive) {
-					//MoveWindow((HWND)item.lParam, rcClient.left, rcClient.top, (rcClient.right - rcClient.left), (rcClient.bottom - rcClient.top), TRUE);
 					SetWindowPos((HWND)item.lParam, 0, rcClient.left, rcClient.top, (rcClient.right - rcClient.left), (rcClient.bottom - rcClient.top),
-								 SWP_NOSENDCHANGING);
+								 SWP_NOSENDCHANGING|SWP_NOACTIVATE|SWP_NOCOPYBITS);
 					if (!pContainer->bSizingLoop && sizeChanged) {
 						_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 						DM_ScrollToBottom(dat, 0, 1);
@@ -916,11 +920,13 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				else if (sizeChanged)
 					SendMessage((HWND)item.lParam, DM_CHECKSIZE, 0, 0);
 			}
-			SetAeroMargins(pContainer);
+			//SetAeroMargins(pContainer);  FIXME maybe
 			pContainer->SideBar->scrollIntoView();
 
-			RedrawWindow(hwndTab, NULL, NULL, RDW_INVALIDATE | (pContainer->bSizingLoop ? RDW_ERASE : 0));
-			RedrawWindow(hwndDlg, NULL, NULL, (bSkinned ? RDW_FRAME : 0) | RDW_INVALIDATE | (pContainer->bSizingLoop || wParam == SIZE_RESTORED ? RDW_ERASE : 0));
+			if(!M->isAero()) {					// aero mode uses buffered paint, no forced redraw needed
+				RedrawWindow(hwndTab, NULL, NULL, RDW_INVALIDATE | (pContainer->bSizingLoop ? RDW_ERASE : 0));
+				RedrawWindow(hwndDlg, NULL, NULL, (bSkinned ? RDW_FRAME : 0) | RDW_INVALIDATE | ((pContainer->bSizingLoop || wParam == SIZE_RESTORED ) ? RDW_ERASE : 0));
+			}
 
 			if (pContainer->hwndStatus)
 				InvalidateRect(pContainer->hwndStatus, NULL, FALSE);
@@ -1473,9 +1479,9 @@ buttons_done:
 				SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
 			}
 			pContainer->bSizingLoop = FALSE;
-			if(M->isAero())
-				SetAeroMargins(pContainer);
-				InvalidateRect(hwndDlg, NULL, FALSE);
+			//if(M->isAero())  FIXME maybe
+				//SetAeroMargins(pContainer);
+				//InvalidateRect(hwndDlg, NULL, FALSE);
 			break;
 		}
 		case WM_GETMINMAXINFO: {
@@ -1613,10 +1619,12 @@ buttons_done:
 					mir_free(hwndClients);
 				}
 				dat = (struct _MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
-				if (dat && dat->bType == SESSIONTYPE_IM) {
+				if(dat && dat->bType == SESSIONTYPE_IM) {
 					if ((dat->idle || dat->timezone != -1) && pContainer->hwndActive && IsWindow(pContainer->hwndActive))
 						InvalidateRect(GetDlgItem(pContainer->hwndActive, IDC_PANELUIN), NULL, FALSE);
 				}
+				else if(dat)
+					SendMessage(dat->hwnd, GC_UPDATESTATUSBAR, 0, 0);
 			}
 			else if (wParam == TIMERID_HOVER) {
 				RECT rcWindow;
@@ -1801,7 +1809,7 @@ buttons_done:
 			TCITEM item = {0};
 
 			if (M->GetByte("warnonexit", 0)) {
-				if (MessageBox(pContainer->hwnd, TranslateTS(szWarnClose), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO)
+				if (MessageBox(pContainer->hwnd, CTranslator::get(CTranslator::GEN_WARN_CLOSE), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO)
 					break;
 			}
 			hwndCurrent = pContainer->hwndActive;
@@ -2041,20 +2049,17 @@ buttons_done:
 					DWORD trans = LOWORD(pContainer->dwTransparency);
 					CMimAPI::m_pSetLayeredWindowAttributes(hwndDlg, Skin->getColorKey(), (BYTE)trans, (/* pContainer->bSkinned ? LWA_COLORKEY : */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 				}
-
-				if ((exold & WS_EX_LAYERED) != (ex & WS_EX_LAYERED))
-					RedrawWindow(hwndDlg, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
 			}
 
 			if (!CSkin::m_frameSkins)
 				CheckMenuItem(hSysmenu, IDM_NOTITLE, (pContainer->dwFlags & CNT_NOTITLE) ? MF_BYCOMMAND | MF_CHECKED : MF_BYCOMMAND | MF_UNCHECKED);
+
 			CheckMenuItem(hSysmenu, IDM_STAYONTOP, pContainer->dwFlags & CNT_STICKY ? MF_BYCOMMAND | MF_CHECKED : MF_BYCOMMAND | MF_UNCHECKED);
 			SetWindowPos(hwndDlg, (pContainer->dwFlags & CNT_STICKY) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOREDRAW | SWP_NOCOPYBITS);
 			if (ws != wsold) {
 				RECT rc;
 				GetWindowRect(hwndDlg, &rc);
 				if ((ws & WS_CAPTION) != (wsold & WS_CAPTION)) {
-					//SetWindowPos(hwndDlg,  0, rc.left, rc.top, rc.right - rc.left, (rc.bottom - rc.top) + 1, SWP_NOACTIVATE | SWP_FRAMECHANGED);
 					SetWindowPos(hwndDlg,  0, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, SWP_NOACTIVATE | SWP_FRAMECHANGED | SWP_NOCOPYBITS);
 					RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW);
 					if (pContainer->hwndActive != 0) {
@@ -2313,7 +2318,7 @@ buttons_done:
 				int    iOpenJobs = 0;
 
 				if (M->GetByte("warnonexit", 0)) {
-					if (MessageBox(hwndDlg, TranslateTS(szWarnClose), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO)
+					if (MessageBox(hwndDlg, CTranslator::get(CTranslator::GEN_WARN_CLOSE), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO)
 						return TRUE;
 				}
 				item.mask = TCIF_PARAM;
@@ -2855,7 +2860,7 @@ HMENU BuildContainerMenu()
 	}
 	while (TRUE);
 
-	InsertMenu(PluginConfig.g_hMenuContext, ID_TABMENU_ATTACHTOCONTAINER, MF_BYCOMMAND | MF_POPUP, (UINT_PTR) hMenu, TranslateT("Attach to"));
+	InsertMenu(PluginConfig.g_hMenuContext, ID_TABMENU_ATTACHTOCONTAINER, MF_BYCOMMAND | MF_POPUP, (UINT_PTR) hMenu, CTranslator::get(CTranslator::CNT_ATTACH_TO));
 	PluginConfig.g_hMenuContainer = hMenu;
 	return hMenu;
 }
@@ -2883,7 +2888,7 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg) {
 	hMCSubForce = CreatePopupMenu();
 	hMCSubDefault = CreatePopupMenu();
 
-	AppendMenu(hMenu, MF_STRING | MF_DISABLED | MF_GRAYED | MF_CHECKED, 1, TranslateT("Meta Contact"));
+	AppendMenu(hMenu, MF_STRING | MF_DISABLED | MF_GRAYED | MF_CHECKED, 1, CTranslator::get(CTranslator::GEN_META_CONTACT));
 	AppendMenu(hMenu, MF_SEPARATOR, 1, _T(""));
 
 	iNumProtos = (int)CallService(MS_MC_GETNUMCONTACTS, (WPARAM)dat->hContact, 0);
@@ -2908,7 +2913,8 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg) {
 				wStatus = (WORD)DBGetContactSettingWord(dat->hContact, PluginConfig.szMetaName, szTemp, 0);
 				szStatusText = (TCHAR *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, wStatus, GCMDF_TCHAR);
 			}
-			mir_sntprintf(szMenuLine, safe_sizeof(szMenuLine), _T("%s: %s [%s] %s"), acc->tszAccountName, nick, szStatusText, i == isForced ? TranslateT("(Forced)") : _T(""));
+			mir_sntprintf(szMenuLine, safe_sizeof(szMenuLine), _T("%s: %s [%s] %s"), acc->tszAccountName, nick, szStatusText,
+						  i == isForced ? CTranslator::get(CTranslator::GEN_META_FORCED) : _T(""));
 			iChecked = MF_UNCHECKED;
 			if (hContactMostOnline != 0 && hContactMostOnline == handle)
 				iChecked = MF_CHECKED;
@@ -2918,9 +2924,9 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg) {
 		DBFreeVariant(&dbv);
 	}
 	AppendMenu(hMCSubForce, MF_SEPARATOR, 900, _T(""));
-	AppendMenu(hMCSubForce, MF_STRING | ((isForced == -1) ? MF_CHECKED : MF_UNCHECKED), 999, TranslateT("Autoselect"));
-	InsertMenu(hMenu, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR) hMCSubForce, TranslateT("Use Protocol"));
-	InsertMenu(hMenu, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR) hMCSubDefault, TranslateT("Set Default Protocol"));
+	AppendMenu(hMCSubForce, MF_STRING | ((isForced == -1) ? MF_CHECKED : MF_UNCHECKED), 999, CTranslator::get(CTranslator::GEN_META_AUTOSELECT));
+	InsertMenu(hMenu, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR) hMCSubForce, CTranslator::get(CTranslator::GEN_META_USEPROTO));
+	InsertMenu(hMenu, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR) hMCSubDefault, CTranslator::get(CTranslator::GEN_META_SETDEFAULT));
 
 	return hMenu;
 }

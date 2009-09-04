@@ -327,6 +327,8 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
 			return 0;
 		}
 	}
+	else if(pAck->type == ACKTYPE_STATUS) {
+	}
 	return 0;
 }
 
@@ -571,7 +573,7 @@ nowindowcreate:
 			cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
 			cle.pszService = "SRMsg/ReadMessage";
 			contactName = (TCHAR*) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCDNF_TCHAR);
-			mir_sntprintf(toolTip, SIZEOF(toolTip), TranslateT("Message from %s"), contactName);
+			mir_sntprintf(toolTip, SIZEOF(toolTip), CTranslator::get(CTranslator::GEN_MSG_TTITLE), contactName);
 			cle.ptszTooltip = toolTip;
 			CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
 		}
@@ -852,12 +854,12 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
 	if ((int) lParam) {
 		TCHAR szTip[256];
 
-		_sntprintf(szTip, SIZEOF(szTip), TranslateT("%s is typing a message"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCDNF_TCHAR));
+		_sntprintf(szTip, SIZEOF(szTip), CTranslator::get(CTranslator::GEN_MTN_STARTWITHNICK), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCDNF_TCHAR));
 		if (fShowOnClist && ServiceExists(MS_CLIST_SYSTRAY_NOTIFY) && M->GetByte(SRMSGMOD, "ShowTypingBalloon", 0)) {
 			MIRANDASYSTRAYNOTIFY tn;
 			tn.szProto = NULL;
 			tn.cbSize = sizeof(tn);
-			tn.tszInfoTitle = TranslateT("Typing Notification");
+			tn.tszInfoTitle = const_cast<TCHAR *>(CTranslator::get(CTranslator::GEN_MTN_TTITLE));
 			tn.tszInfo = szTip;
 #ifdef UNICODE
 			tn.dwInfoFlags = NIIF_INFO | NIIF_INTERN_UNICODE;
@@ -985,6 +987,10 @@ static void RestoreUnreadMessageAlerts(void)
 
 	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	while (hContact) {
+
+		if(M->GetDword(hContact, "SendLater", "count", 0))
+		   SendLater_Add(hContact);
+
 		hDbEvent = (HANDLE) CallService(MS_DB_EVENT_FINDFIRSTUNREAD, (WPARAM) hContact, 0);
 		while (hDbEvent) {
 			dbei.cbBlob = 0;
@@ -1042,12 +1048,6 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 #endif
 	static char *szPrefix = "tabsrmm ";
 
-#if defined(_UNICODE)
-	if (!ServiceExists(MS_DB_CONTACT_GETSETTING_STR)) {
-		MessageBox(NULL, TranslateT("This plugin requires db3x plugin version 0.5.1.0 or later"), _T("tabSRMM (Unicode)"), MB_OK);
-		return 1;
-	}
-#endif
 	UnhookEvent(hModulesLoadedEvent);
 	hEventDbSettingChange = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, MessageSettingChanged);
 	hEventContactDeleted = HookEvent(ME_DB_CONTACT_DELETED, ContactDeleted);
@@ -1081,7 +1081,6 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 		HookEvent(ME_AV_MYAVATARCHANGED, MyAvatarChanged);
 	}
 	HookEvent(ME_FONT_RELOAD, FontServiceFontsChanged);
-	RestoreUnreadMessageAlerts();
 	for (i = 0; i < NR_BUTTONBARICONS; i++)
 		PluginConfig.g_buttonBarIcons[i] = 0;
 	LoadIconTheme();
@@ -1196,6 +1195,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	PreTranslateDates();
 	PluginConfig.m_hFontWebdings = CreateFontA(-16, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, SYMBOL_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FF_DONTCARE | DEFAULT_PITCH, "Wingdings");
 
+	RestoreUnreadMessageAlerts();
 	// updater plugin support
 
  	upd.cbSize = sizeof(upd);
@@ -2055,7 +2055,7 @@ static int SetupIconLibConfig()
 	strncpy(szFilename, "icons\\tabsrmm_icons.dll", MAX_PATH);
 	g_hIconDLL = LoadLibraryA(szFilename);
 	if (g_hIconDLL == 0) {
-		MessageBox(0, TranslateT("Icon pack missing. Please install it in the /icons subfolder."), _T("tabSRMM"), MB_OK);
+		MessageBox(0, CTranslator::get(CTranslator::GEN_ICONPACK_WARNING), _T("tabSRMM"), MB_OK);
 		return 0;
 	}
 

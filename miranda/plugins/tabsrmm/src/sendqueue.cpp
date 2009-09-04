@@ -658,8 +658,6 @@ void SendQueue::showErrorControls(_MessageWindowData *dat, const int showCmd) co
 	for (i = 0; i < 5; i++) {
 		if (IsWindow(GetDlgItem(hwndDlg, myerrorControls[i])))
 			ShowWindow(GetDlgItem(hwndDlg, myerrorControls[i]), showCmd ? SW_SHOW : SW_HIDE);
-		else
-			_DebugPopup(0, _T("%d is not a window"), myerrorControls[i]);
 	}
 
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);

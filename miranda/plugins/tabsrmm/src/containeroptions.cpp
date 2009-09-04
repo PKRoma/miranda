@@ -35,7 +35,7 @@ static void MY_CheckDlgButton(HWND hWnd, UINT id, int iCheck)
 	CheckDlgButton(hWnd, id, iCheck ? BST_CHECKED : BST_UNCHECKED);
 }
 
-static void ReloadGlobalContainerSettings()
+static void ReloadGlobalContainerSettings(bool fForceReconfig)
 {
 	struct ContainerWindowData *pC = pFirstContainer;
 
@@ -44,8 +44,10 @@ static void ReloadGlobalContainerSettings()
 			DWORD dwOld = pC->dwFlags;
 			pC->dwFlags = PluginConfig.m_GlobalContainerFlags;
 			pC->dwFlagsEx = PluginConfig.m_GlobalContainerFlagsEx;
-			SendMessage(pC->hwnd, DM_CONFIGURECONTAINER, 0, 0);
-			SendMessage(pC->hwnd, WM_SIZE, 0, 1);
+			if(fForceReconfig)
+				SendMessage(pC->hwnd, DM_CONFIGURECONTAINER, 0, 0);
+			else
+				SendMessage(pC->hwnd, WM_SIZE, 0, 1);
 			if ((dwOld & CNT_INFOPANEL) != (pC->dwFlags & CNT_INFOPANEL))
 				BroadCastContainer(pC, DM_SETINFOPANEL, 0, 0);
 		}
@@ -53,14 +55,32 @@ static void ReloadGlobalContainerSettings()
 	}
 }
 
-void ApplyContainerSetting(ContainerWindowData *pContainer, DWORD flags, int mode, bool fForceResize)
+/**
+ * Apply a container setting
+ *
+ * @param pContainer ContainerWindowData *: the container
+ * @param flags      DWORD: the flag values to set or clear
+ * @param mode       int: bit #0 set/clear, any bit from 16-31 indicates that dwFlagsEx should be affected
+ * @param fForceResize
+ */
+void ApplyContainerSetting(ContainerWindowData *pContainer, DWORD flags, UINT mode, bool fForceResize)
 {
 	DWORD dwOld = pContainer->dwFlags;
+	bool  isEx = (mode & 0xffff0000) ? true : false;
+	bool  set = (mode & 0x01) ? true : false;
 
 	if (pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS) {
-		PluginConfig.m_GlobalContainerFlags = (mode ? PluginConfig.m_GlobalContainerFlags | flags : PluginConfig.m_GlobalContainerFlags & ~flags);
-		pContainer->dwFlags = PluginConfig.m_GlobalContainerFlags;
-		M->WriteDword(SRMSGMOD_T, "containerflags", PluginConfig.m_GlobalContainerFlags);
+		if(isEx) {
+			PluginConfig.m_GlobalContainerFlagsEx = (set ? PluginConfig.m_GlobalContainerFlagsEx | flags : PluginConfig.m_GlobalContainerFlagsEx & ~flags);
+			pContainer->dwFlagsEx = PluginConfig.m_GlobalContainerFlagsEx;
+			M->WriteDword(SRMSGMOD_T, "containerflagsEx", PluginConfig.m_GlobalContainerFlagsEx);
+		}
+		else {
+			PluginConfig.m_GlobalContainerFlags = (set ? PluginConfig.m_GlobalContainerFlags | flags : PluginConfig.m_GlobalContainerFlags & ~flags);
+			pContainer->dwFlags = PluginConfig.m_GlobalContainerFlags;
+			M->WriteDword(SRMSGMOD_T, "containerflags", PluginConfig.m_GlobalContainerFlags);
+		}
+
 		if (flags & CNT_INFOPANEL)
 			BroadCastContainer(pContainer, DM_SETINFOPANEL, 0, 0);
 		if (flags & CNT_SIDEBAR) {
@@ -74,11 +94,17 @@ void ApplyContainerSetting(ContainerWindowData *pContainer, DWORD flags, int mod
 			}
 		}
 		else
-			ReloadGlobalContainerSettings();
+			ReloadGlobalContainerSettings(fForceResize);
 	}
 	else {
-		pContainer->dwPrivateFlags = (mode ? pContainer->dwPrivateFlags | flags : pContainer->dwPrivateFlags & ~flags);
-		pContainer->dwFlags = pContainer->dwPrivateFlags;
+		if(!isEx) {
+			pContainer->dwPrivateFlags = (set ? pContainer->dwPrivateFlags | flags : pContainer->dwPrivateFlags & ~flags);
+			pContainer->dwFlags = pContainer->dwPrivateFlags;
+		}
+		else {
+			pContainer->dwPrivateFlagsEx = (set ? pContainer->dwPrivateFlagsEx | flags : pContainer->dwPrivateFlagsEx & ~flags);
+			pContainer->dwFlagsEx = pContainer->dwPrivateFlagsEx;
+		}
 		if (flags & CNT_SIDEBAR)
 			SendMessage(pContainer->hwnd, WM_COMMAND, IDC_TOGGLESIDEBAR, 0);
 		else
@@ -97,18 +123,18 @@ void ApplyContainerSetting(ContainerWindowData *pContainer, DWORD flags, int mod
 #define NR_O_OPTIONSPERPAGE 9
 
 static struct _tagPages {
-	TCHAR *szTitle;
-	TCHAR *szDesc;
+	UINT idTitle;
+	UINT idDesc;
 	UINT uIds[9];
 } o_pages[] = {
-	{ _T("General options"), NULL, IDC_O_NOTABS, IDC_O_STICKY, IDC_VERTICALMAX, 0, 0, 0, 0, 0, 0},
-	{ _T("Window layout"), NULL, IDC_CNTNOSTATUSBAR, IDC_HIDEMENUBAR, IDC_UIDSTATUSBAR, IDC_HIDETOOLBAR, IDC_INFOPANEL, IDC_BOTTOMTOOLBAR, 0, 0, 0},
-	{ _T("Tabs and switch bar"), _T("Choose your options for the tabbed user interface. Not all options can be applied to open windows. You may need to close and re-open them."), IDC_TABMODE, IDC_O_TABMODE, IDC_O_SBARLAYOUT, IDC_SBARLAYOUT, IDC_FLASHICON, IDC_FLASHLABEL, IDC_SINGLEROWTAB, IDC_BUTTONTABS, IDC_STYLEDTABS},
-	{ _T("Notifications"), _T("Select, in which cases you want to see event notifications for this message container. These options are disabled when you are using one of the \"simple\" notifications modes"), IDC_O_DONTREPORT, IDC_DONTREPORTUNFOCUSED2, IDC_ALWAYSPOPUPSINACTIVE, IDC_SYNCSOUNDS, 0, 0, 0, 0, 0},
-	{ _T("Flashing"), NULL, IDC_O_FLASHDEFAULT, IDC_O_FLASHALWAYS, IDC_O_FLASHNEVER, 0, 0, 0, 0, 0, 0},
-	{ _T("Title bar"), NULL, IDC_O_HIDETITLE, IDC_STATICICON, IDC_USEPRIVATETITLE, IDC_TITLEFORMAT, 0, 0, 0, 0, 0},
-	{ _T("Window size and theme"), _T("You can select a private theme (.tabsrmm file) for this container which will then override the default message log theme. You will have to close and re-open all message windows after changing this option."), IDC_THEME, IDC_SELECTTHEME, IDC_USEGLOBALSIZE, IDC_SAVESIZEASGLOBAL, IDC_LABEL_PRIVATETHEME, 0,0, 0, 0},
-	{ _T("Transparency"), _T("This feature requires Windows 2000 or later and is not available when custom container skins are in use"), IDC_TRANSPARENCY, IDC_TRANSPARENCY_ACTIVE, IDC_TRANSPARENCY_INACTIVE, IDC_TLABEL_ACTIVE, IDC_TLABEL_INACTIVE, IDC_TSLABEL_ACTIVE, IDC_TSLABEL_INACTIVE,0, 0},
+	{ CTranslator::CNT_OPT_TITLE_GEN, CTranslator::STR_LAST, IDC_O_NOTABS, IDC_O_STICKY, IDC_VERTICALMAX, 0, 0, 0, 0, 0, 0},
+	{ CTranslator::CNT_OPT_TITLE_LAYOUT, CTranslator::STR_LAST, IDC_CNTNOSTATUSBAR, IDC_HIDEMENUBAR, IDC_UIDSTATUSBAR, IDC_HIDETOOLBAR, IDC_INFOPANEL, IDC_BOTTOMTOOLBAR, 0, 0, 0},
+	{ CTranslator::CNT_OPT_TITLE_TABS, CTranslator::CNT_OPT_DESC_TABS, IDC_TABMODE, IDC_O_TABMODE, IDC_O_SBARLAYOUT, IDC_SBARLAYOUT, IDC_FLASHICON, IDC_FLASHLABEL, IDC_SINGLEROWTAB, IDC_BUTTONTABS, IDC_STYLEDTABS},
+	{ CTranslator::CNT_OPT_TITLE_NOTIFY, CTranslator::CNT_OPT_DESC_NOTIFY, IDC_O_DONTREPORT, IDC_DONTREPORTUNFOCUSED2, IDC_ALWAYSPOPUPSINACTIVE, IDC_SYNCSOUNDS, 0, 0, 0, 0, 0},
+	{ CTranslator::CNT_OPT_TITLE_FLASHING, CTranslator::STR_LAST, IDC_O_FLASHDEFAULT, IDC_O_FLASHALWAYS, IDC_O_FLASHNEVER, 0, 0, 0, 0, 0, 0},
+	{ CTranslator::CNT_OPT_TITLE_TITLEBAR, CTranslator::STR_LAST, IDC_O_HIDETITLE, IDC_STATICICON, IDC_USEPRIVATETITLE, IDC_TITLEFORMAT, 0, 0, 0, 0, 0},
+	{ CTranslator::CNT_OPT_TITLE_THEME, CTranslator::CNT_OPT_DESC_THEME, IDC_THEME, IDC_SELECTTHEME, IDC_USEGLOBALSIZE, IDC_SAVESIZEASGLOBAL, IDC_LABEL_PRIVATETHEME, 0,0, 0, 0},
+	{ CTranslator::CNT_OPT_TITLE_TRANS, CTranslator::CNT_OPT_DESC_TRANS, IDC_TRANSPARENCY, IDC_TRANSPARENCY_ACTIVE, IDC_TRANSPARENCY_INACTIVE, IDC_TLABEL_ACTIVE, IDC_TLABEL_INACTIVE, IDC_TSLABEL_ACTIVE, IDC_TSLABEL_INACTIVE,0, 0},
 };
 
 static void ShowPage(HWND hwndDlg, int iPage, BOOL fShow)
@@ -118,9 +144,9 @@ static void ShowPage(HWND hwndDlg, int iPage, BOOL fShow)
 			ShowWindow(GetDlgItem(hwndDlg, o_pages[iPage].uIds[i]), fShow ? SW_SHOW : SW_HIDE);
 	}
 	if (fShow) {
-		SetDlgItemText(hwndDlg, IDC_TITLEBOX, TranslateTS(o_pages[iPage].szTitle));
-		if (o_pages[iPage].szDesc)
-			SetDlgItemText(hwndDlg, IDC_DESC, TranslateTS(o_pages[iPage].szDesc));
+		SetDlgItemText(hwndDlg, IDC_TITLEBOX, CTranslator::get(o_pages[iPage].idTitle));
+		if (o_pages[iPage].idDesc != CTranslator::STR_LAST)
+			SetDlgItemText(hwndDlg, IDC_DESC, CTranslator::get(o_pages[iPage].idDesc));
 		else
 			SetDlgItemText(hwndDlg, IDC_DESC, _T(""));
 	}
@@ -149,7 +175,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			pContainer->hWndOptions = hwndDlg;
 			TranslateDialogDefault(hwndDlg);
 			mir_sntprintf(szNewTitle, SIZEOF(szNewTitle), _T("\t%s"), pContainer->szName);
-			SetWindowText(hwndDlg, TranslateT("Container options"));
+			SetWindowText(hwndDlg, CTranslator::get(CTranslator::CNT_OPT_TITLE));
 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_O_HIDETITLE), CSkin::m_frameSkins ? FALSE : TRUE);
 			CheckDlgButton(hwndDlg, IDC_CNTPRIVATE, !(pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS));
@@ -159,10 +185,10 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			dwTemp[1] = pContainer->dwTransparency;
 			dwTemp[2] = (pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS ? PluginConfig.m_GlobalContainerFlagsEx : pContainer->dwPrivateFlagsEx);
 
-			SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Tabs at the top"));
-			SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Tabs at the bottom"));
-			SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Switch bar on the left side"));
-			SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Switch bar on the right side (UNIMPLEMENTED)"));
+			SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::get(CTranslator::CNT_OPT_TABSTOP));
+			SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::get(CTranslator::CNT_OPT_TABSBOTTOM));
+			SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::get(CTranslator::CNT_OPT_TABSLEFT));
+			SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::get(CTranslator::CNT_OPT_TABSRIGHT));
 
 			for(i = 0; i < nr_layouts; i++)
 				SendDlgItemMessage(hwndDlg, IDC_SBARLAYOUT, CB_INSERTSTRING, -1, (LPARAM)sblayouts[i].szName);
@@ -180,7 +206,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				tvis.hParent = NULL;
 				tvis.hInsertAfter = TVI_LAST;
 				tvis.item.mask = TVIF_TEXT | TVIF_PARAM;
-				tvis.item.pszText = TranslateTS(o_pages[i].szTitle);
+				tvis.item.pszText = const_cast<TCHAR *>(CTranslator::get(o_pages[i].idTitle));
 				tvis.item.lParam = i;
 				hItem = TreeView_InsertItem(hwndTree, &tvis);
 				if (i == 0)
@@ -268,7 +294,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				rcClient.bottom = 30;
 				TCHAR	szText[200];
 
-				mir_sntprintf(szText, 200, TranslateT("Configure container options for: %s"), pContainer->szName);
+				mir_sntprintf(szText, 200, CTranslator::get(CTranslator::CNT_OPT_HEADERBAR), pContainer->szName);
 				HANDLE hTheme = CMimAPI::m_pfnOpenThemeData ? CMimAPI::m_pfnOpenThemeData(hwndDlg, L"BUTTON") : 0;
 				CSkin::RenderText(hdcMem, hTheme, szText, &rcClient, DT_SINGLELINE|DT_VCENTER);
 				if(hTheme)
@@ -405,7 +431,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					}
 
 					if (!IsDlgButtonChecked(hwndDlg, IDC_CNTPRIVATE))
-						ReloadGlobalContainerSettings();
+						ReloadGlobalContainerSettings(true);
 
 					SendMessage(pContainer->hwnd, DM_CONFIGURECONTAINER, 0, 0);
 					BroadCastContainer(pContainer, DM_SETINFOPANEL, 0, 0);

@@ -48,6 +48,8 @@ extern INT_PTR		SendMessageCommand_W(WPARAM wParam, LPARAM lParam);
 static UINT 	WM_TASKBARCREATED;
 static HANDLE 	hSvcHotkeyProcessor = 0;
 
+#define TIMERID_SENDLATER 12000
+
 static HOTKEYDESC _hotkeydescs[] = {
 	0, "tabsrmm_mostrecent", "Most recent unread session", TABSRMM_HK_SECTION_IM, MS_TABMSG_HOTKEYPROCESS, HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'R'), TABSRMM_HK_LASTUNREAD,
 	0, "tabsrmm_paste_and_send", "Paste and send", TABSRMM_HK_SECTION_GENERIC, 0, HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'D'), TABSRMM_HK_PASTEANDSEND,
@@ -63,12 +65,14 @@ static HOTKEYDESC _hotkeydescs[] = {
 	0, "tabsrmm_umenu", "Show user menu", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT, 'D'), TABSRMM_HK_USERMENU,
 	0, "tabsrmm_udet", "Show user details", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT, 'U'), TABSRMM_HK_USERDETAILS,
 	0, "tabsrmm_tbar", "Toggle tool bar", TABSRMM_HK_SECTION_GENERIC, 0, HOTKEYCODE(HOTKEYF_ALT|HOTKEYF_SHIFT, 'T'), TABSRMM_HK_TOGGLETOOLBAR,
-	0, "tabsrmm_ipanel", "Toggle info panel", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT|HOTKEYF_SHIFT, 'I'), TABSRMM_HK_TOGGLEINFOPANEL,
+	0, "tabsrmm_ipanel", "Toggle info panel", TABSRMM_HK_SECTION_GENERIC, 0, HOTKEYCODE(HOTKEYF_ALT|HOTKEYF_SHIFT, 'I'), TABSRMM_HK_TOGGLEINFOPANEL,
 	0, "tabsrmm_rtl", "Toggle text direction", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT|HOTKEYF_SHIFT, 'B'), TABSRMM_HK_TOGGLERTL,
 	0, "tabsrmm_msend", "Toggle multi send", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT|HOTKEYF_SHIFT, 'M'), TABSRMM_HK_TOGGLEMULTISEND,
 	0, "tabsrmm_clearlog", "Clear message log", TABSRMM_HK_SECTION_GENERIC, 0, HOTKEYCODE(HOTKEYF_CONTROL, 'L'), TABSRMM_HK_CLEARLOG,
 	0, "tabsrmm_notes", "Edit user notes", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT, 'N'), TABSRMM_HK_EDITNOTES
 };
+
+std::vector<HANDLE> sendLaterList;
 
 LRESULT ProcessHotkeysByMsgFilter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR ctrlId)
 {
@@ -203,10 +207,12 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				_hotkeydescs[i].pszDescription = Translate(_hotkeydescs[i].pszDescription);
 				CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&_hotkeydescs[i]);
 			}
+			sendLaterList.clear();
 
 			WM_TASKBARCREATED = RegisterWindowMessageA("TaskbarCreated");
 			ShowWindow(hwndDlg, SW_HIDE);
 			hSvcHotkeyProcessor = CreateServiceFunction(MS_TABMSG_HOTKEYPROCESS, HotkeyProcessor);
+			SetTimer(hwndDlg, TIMERID_SENDLATER, 10000, NULL);
 			return TRUE;
 		case WM_LBUTTONDOWN:
 			iMousedown = 1;
@@ -571,11 +577,28 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			return(0);
 		}
 
-		case WM_DWMCOMPOSITIONCHANGED:
-			M->getAeroState();					// refresh dwm state
+		case WM_DWMCOMPOSITIONCHANGED: {
+			bool fNewAero = M->getAeroState();					// refresh dwm state
 			SendMessage(hwndDlg, WM_THEMECHANGED, 0, 0);
+			ContainerWindowData *pContainer = pFirstContainer;
+
+			while (pContainer) {
+				if(fNewAero)
+					SetAeroMargins(pContainer);
+				else {
+					MARGINS m = {0};
+
+					if(M->m_pfnDwmExtendFrameIntoClientArea)
+						M->m_pfnDwmExtendFrameIntoClientArea(pContainer->hwnd, &m);
+				}
+				if(pContainer->SideBar->isActive())
+					RedrawWindow(GetDlgItem(pContainer->hwnd, 5000), NULL, NULL, RDW_ERASE|RDW_INVALIDATE|RDW_UPDATENOW);			// the container for the sidebar buttons
+				pContainer = pContainer->pNextContainer;
+			}
 			M->BroadcastMessage(WM_DWMCOMPOSITIONCHANGED, 0, 0);
 			break;
+		}
+
 		case WM_DWMCOLORIZATIONCOLORCHANGED: {
 			M->getAeroState();
 			Skin->setupAeroSkins();
@@ -588,6 +611,7 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			}
 			break;
 		}
+
 		case WM_THEMECHANGED: {
 			struct ContainerWindowData *pContainer = pFirstContainer;
 
@@ -637,13 +661,33 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			}
 			break;
 		}
+
+		case DM_REMOVEFROMSENDLATER:
+			SendLater_Remove((HANDLE)wParam);
+			return(0);
+
 		case WM_ACTIVATE:
 			if (LOWORD(wParam) != WA_ACTIVE)
 				SetWindowPos(hwndDlg, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
 			return 0;
+
 		case WM_CLOSE:
 			return 0;
+
+		case WM_TIMER:
+			if(wParam == TIMERID_SENDLATER) {
+				std::vector<HANDLE>::iterator it = sendLaterList.begin();
+
+				while(it != sendLaterList.end()) {
+					SendLater_Process(*it);
+					break;
+					it++;
+				}
+			}
+			break;
+
 		case WM_DESTROY: {
+			KillTimer(hwndDlg, TIMERID_SENDLATER);
 			DestroyServiceFunction(hSvcHotkeyProcessor);
 			break;
 		}
@@ -651,3 +695,44 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 	return FALSE;
 }
 
+/*
+ * send later functions
+ */
+
+void SendLater_Add(const HANDLE hContact)
+{
+	std::vector<HANDLE>::iterator it = sendLaterList.begin();
+
+	if(sendLaterList.empty()) {
+		sendLaterList.push_back(hContact);
+		return;
+	}
+
+	while(it != sendLaterList.end()) {
+		if(*it == hContact) {
+			//_DebugTraceA("%d already in list", hContact);
+			return;
+		}
+		it++;
+	}
+	sendLaterList.push_back(hContact);
+}
+
+static void SendLater_Remove(const HANDLE hContact)
+{
+	std::vector<HANDLE>::iterator it = sendLaterList.begin();
+
+	while(it != sendLaterList.end()) {
+		if(*it == hContact) {
+			//_DebugTraceA("%d deleted from list", hContact);
+			sendLaterList.erase(it);
+			return;
+		}
+		it++;
+	}
+}
+
+static void SendLater_Process(const HANDLE hContact)
+{
+
+}

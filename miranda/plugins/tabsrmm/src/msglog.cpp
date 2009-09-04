@@ -166,8 +166,8 @@ void CacheLogFonts()
 	}
 	wsprintfA(rtfFontsGlobal[MSGDLGFONTCOUNT], "\\f%u\\cf%u\\b%d\\i%d\\fs%u", MSGDLGFONTCOUNT, MSGDLGFONTCOUNT, 0, 0, 0);
 
-	_tcsncpy(szToday, TranslateT("Today"), 20);
-	_tcsncpy(szYesterday, TranslateT("Yesterday"), 20);
+	_tcsncpy(szToday, CTranslator::get(CTranslator::GEN_LOG_TODAY), 20);
+	_tcsncpy(szYesterday, CTranslator::get(CTranslator::GEN_LOG_YESTERDAY), 20);
 	szToday[19] = szYesterday[19] = 0;
 
 	/*
@@ -1716,7 +1716,7 @@ static BOOL CALLBACK LangAddCallback(LPTSTR str)
 void BuildCodePageList()
 {
 	PluginConfig.g_hMenuEncoding = CreateMenu();
-	AppendMenu(PluginConfig.g_hMenuEncoding, MF_STRING, 500, TranslateT("Use default codepage"));
+	AppendMenu(PluginConfig.g_hMenuEncoding, MF_STRING, 500, CTranslator::get(CTranslator::GEN_LOG_USEDEFAULTCP));
 	AppendMenuA(PluginConfig.g_hMenuEncoding, MF_SEPARATOR, 0, 0);
 	EnumSystemCodePages(LangAddCallback, CP_INSTALLED);
 }

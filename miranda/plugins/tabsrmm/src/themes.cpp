@@ -81,8 +81,6 @@ char CSkin::m_realSkinnedFrame_caption = 0;
 int CSkin::m_titleBarLeftOff = 0, CSkin::m_titleButtonTopOff = 0, CSkin::m_captionOffset = 0, CSkin::m_captionPadding = 0,
 	CSkin::m_titleBarRightOff = 0, CSkin::m_sidebarTopOffset = 0, CSkin::m_sidebarBottomOffset = 0, CSkin::m_bRoundedCorner = 0;
 
-BYTE CSkin::m_aeroEffect = 0;
-
 CImageItem* CSkin::m_switchBarItem = 0,
 		   *CSkin::m_tabTop = 0,
 		   *CSkin::m_tabBottom = 0,
@@ -91,12 +89,59 @@ CImageItem* CSkin::m_switchBarItem = 0,
 
 SIZE CSkin::m_titleBarButtonSize = {0};
 
-COLORREF CSkin::m_ContainerColorKey = 0;
+COLORREF CSkin::m_ContainerColorKey = 0, CSkin::m_dwmColorRGB = 0;
 HBRUSH 	 CSkin::m_ContainerColorKeyBrush = 0, CSkin::m_MenuBGBrush = 0;
 
-HPEN 	 CSkin::m_SkinLightShadowPen = 0, CSkin::m_SkinDarkShadowPen = 0;
+HPEN 	CSkin::m_SkinLightShadowPen = 0, CSkin::m_SkinDarkShadowPen = 0;
 
-HICON	 CSkin::m_closeIcon = 0, CSkin::m_maxIcon = 0, CSkin::m_minIcon = 0;
+HICON	CSkin::m_closeIcon = 0, CSkin::m_maxIcon = 0, CSkin::m_minIcon = 0;
+
+UINT 	CSkin::m_aeroEffect = 0;
+
+DWORD 	CSkin::m_glowSize = 0;
+
+AeroEffect* CSkin::m_currentAeroEffect = 0;
+
+AeroEffect  CSkin::m_aeroEffects[AERO_EFFECT_LAST] = {
+	{
+		0, 0, 0, 0, 0, 0, 0, 10
+	},
+	{
+		0xf5f5f5, 									/* base color */
+		0xaaaaaa,									/* gradient color */
+		70,											/* base alpha */
+		0,											/* final alpha */
+		CORNER_ALL,									/* corner type */
+		GRADIENT_TB + 1,							/* gradient type */
+		8,											/* gradient radius */
+		8											/* glow size (0 means no glowing text, colors can be used) */
+	},
+	{
+		0xf0f0f0,
+		0x000000,
+		75,
+		0,
+		CORNER_ALL,
+		GRADIENT_TB + 1,
+		6,
+		8
+	},
+	{
+		0xe0e0e0,
+		0x222222,
+		100,
+		225,
+		0,
+		GRADIENT_TB + 1,
+		0,
+		0
+	}
+};
+
+/*
+ * aero effects
+ */
+
 
 /*
  * definition of the availbale skin items
@@ -845,6 +890,10 @@ void CImageItem::Free()
 	ZeroMemory(this, sizeof(CImageItem));
 }
 
+/*
+ * unused...
+ */
+
 void CImageItem::CorrectBitmap32Alpha(HBITMAP hBitmap)
 {
 	BITMAP bmp;
@@ -892,13 +941,13 @@ void CImageItem::PreMultiply(HBITMAP hBitmap, int mode)
 	BITMAP bmp;
 	BYTE alpha;
 
-	GetObject(hBitmap, sizeof(bmp), &bmp);
+	::GetObject(hBitmap, sizeof(bmp), &bmp);
 	width = bmp.bmWidth;
 	height = bmp.bmHeight;
 	dwLen = width * height * 4;
 	p = (BYTE *)malloc(dwLen);
 	if (p) {
-		GetBitmapBits(hBitmap, dwLen, p);
+		::GetBitmapBits(hBitmap, dwLen, p);
 		for (y = 0; y < height; ++y) {
 			BYTE *px = p + width * 4 * y;
 
@@ -913,12 +962,12 @@ void CImageItem::PreMultiply(HBITMAP hBitmap, int mode)
 				px += 4;
 			}
 		}
-		dwLen = SetBitmapBits(hBitmap, dwLen, p);
+		dwLen = ::SetBitmapBits(hBitmap, dwLen, p);
 		free(p);
 	}
 }
 
-void CImageItem::Colorize(HBITMAP hBitmap, BYTE dr, BYTE dg, BYTE db)
+void CImageItem::Colorize(HBITMAP hBitmap, BYTE dr, BYTE dg, BYTE db, BYTE alpha)
 {
 	BYTE 	*p = NULL;
 	DWORD 	dwLen;
@@ -929,13 +978,13 @@ void CImageItem::Colorize(HBITMAP hBitmap, BYTE dr, BYTE dg, BYTE db)
 	float g = (float)dg / 2.55;
 	float b = (float)db / 2.55;
 
-	GetObject(hBitmap, sizeof(bmp), &bmp);
+	::GetObject(hBitmap, sizeof(bmp), &bmp);
 	width = bmp.bmWidth;
 	height = bmp.bmHeight;
 	dwLen = width * height * 4;
 	p = (BYTE *)malloc(dwLen);
 	if (p) {
-		GetBitmapBits(hBitmap, dwLen, p);
+		::GetBitmapBits(hBitmap, dwLen, p);
 		for (y = 0; y < height; ++y) {
 			BYTE *px = p + width * 4 * y;
 
@@ -943,10 +992,11 @@ void CImageItem::Colorize(HBITMAP hBitmap, BYTE dr, BYTE dg, BYTE db)
 				px[0] = (int)(px[0] + b) > 255 ? 255 : px[0] + b;
 				px[1] = (int)(px[1] + g) > 255 ? 255 : px[1] + g;
 				px[2] = (int)(px[2] + r) > 255 ? 255 : px[2] + r;
+				px[3] += alpha;
 				px += 4;
 			}
 		}
-		dwLen = SetBitmapBits(hBitmap, dwLen, p);
+		dwLen = ::SetBitmapBits(hBitmap, dwLen, p);
 		free(p);
 	}
 }
@@ -1003,12 +1053,14 @@ void CSkin::Init()
 
 	setFileName();
 	m_aeroEffect = M->GetByte("aerostyle", 0);
+	initAeroEffect();
 }
 
 bool CSkin::warnToClose() const
 {
 	if (::pFirstContainer) {
-		if (MessageBox(0, TranslateT("All message containers need to close before the skin can be changed\nProceed?"), TranslateT("Change skin"), MB_YESNO | MB_ICONQUESTION) == IDYES) {
+		if (MessageBox(0, CTranslator::get(CTranslator::GEN_SKIN_WARNCLOSE),
+					   CTranslator::get(CTranslator::GEN_SKIN_WARNCLOSE_TITLE), MB_YESNO | MB_ICONQUESTION) == IDYES) {
 			ContainerWindowData *pContainer = ::pFirstContainer;
 			while (pFirstContainer)
 				SendMessage(pFirstContainer->hwnd, WM_CLOSE, 0, 1);
@@ -1740,28 +1792,64 @@ void CSkin::setupAeroSkins()
 
 	if(IsWinVerVistaPlus()) {
 
-		DWORD 	dwmColor;
 		BOOL	isOpaque;
 		HBITMAP hbm;
 		BITMAP  bm;
 
-		CMimAPI::m_pfnDwmGetColorizationColor(&dwmColor, &isOpaque);
+		CMimAPI::m_pfnDwmGetColorizationColor(&m_dwmColor, &isOpaque);
+
+		float fr = (float)((m_dwmColor & 0x00ff0000) >> 16);
+		float fg = (float)((m_dwmColor & 0x0000ff00) >> 8);
+		float fb = (float)((m_dwmColor & 0x000000ff));
+		BYTE alphafactor = 255 - ((m_dwmColor & 0xff000000) >> 24);
+
+		/*
+		 * a bit tricky, because for low alpha settings (high DWM transparency), the dwm
+		 * color is almost dark gray, so we need to intensify the strongest color a bit more than
+		 * the others. This will give us a good match for the dwm color that can be used
+		 * to render non transparent stuff (i.e. the tool bar).
+		 *
+		 * TODO: this isn't perfect yet, for some colors, the result is a bit off...
+		 */
+
+		if(!isOpaque && alphafactor > 150 && !(fr == fg && fg == fb)) {
+			float fmax =  max(max(fr,fg), fb);
+
+			if(fmax == fr) {
+				fr *= (alphafactor / 100 * 2.7);
+				fr = min(fr, 255);
+				fb = min(fb * alphafactor / 100, 255);
+				fg = min(fg * alphafactor / 100, 255);
+			} else if(fmax == fg) {
+				fg *= (alphafactor / 100 * 2.7);
+				fg = min(fg, 255);
+				fr = min(fr * alphafactor / 100, 255);
+				fb = min(fb * alphafactor / 100, 255);
+			} else {
+				fb *= (alphafactor / 100 * 2.7);
+				fb = min(fb, 255);
+				fr = min(fr * alphafactor / 100, 255);
+				fg = min(fg * alphafactor / 100, 255);
+			}
+		}
+
+		m_dwmColorRGB = RGB((BYTE)fr, (BYTE)fg, (BYTE)fb);
 
 		FIBITMAP *fib = (FIBITMAP *)CallService(MS_IMG_LOAD, (WPARAM)tszFilename, IMGL_TCHAR | IMGL_RETURNDIB);
 
 		hbm = FIF->FI_CreateHBITMAPFromDIB(fib);
-		CImageItem::Colorize(hbm, (BYTE)((dwmColor & 0x00ff0000) >> 16),
-							 (BYTE)((dwmColor & 0x0000ff00) >> 8),
-							 (BYTE)((dwmColor & 0x000000ff)));
+		CImageItem::Colorize(hbm, GetRValue(m_dwmColorRGB),
+							 GetGValue(m_dwmColorRGB),
+							 GetBValue(m_dwmColorRGB));
+
 		CImageItem::PreMultiply(hbm, 1);
 
 		GetObject(hbm, sizeof(bm), &bm);
-		m_tabTop = new CImageItem(5, 5, 5, 5, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
-										 0, 255, 30, 80, 50, 100);
+		m_tabTop = new CImageItem(2, 4, 2, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
+								  0, 255, 30, 80, 50, 100);
 
 		m_tabTop->setAlphaFormat(AC_SRC_ALPHA, 255);
 		m_tabTop->setMetrics(bm.bmWidth, bm.bmHeight);
-
 
 
 		/*
@@ -1771,15 +1859,15 @@ void CSkin::setupAeroSkins()
 		FIF->FI_FlipVertical(fib);
 
 		hbm = FIF->FI_CreateHBITMAPFromDIB(fib);
-		CImageItem::Colorize(hbm, (BYTE)((dwmColor & 0x00ff0000) >> 16),
-							 (BYTE)((dwmColor & 0x0000ff00) >> 8),
-							 (BYTE)((dwmColor & 0x000000ff)));
+		CImageItem::Colorize(hbm, GetRValue(m_dwmColorRGB),
+							 GetGValue(m_dwmColorRGB),
+							 GetBValue(m_dwmColorRGB));
 		CImageItem::PreMultiply(hbm, 1);
 		FIF->FI_Unload(fib);
 
 		GetObject(hbm, sizeof(bm), &bm);
-		m_tabBottom = new CImageItem(5, 5, 5, 5, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
-										 0, 255, 30, 80, 50, 100);
+		m_tabBottom = new CImageItem(2, 4, 2, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
+									 0, 255, 30, 80, 50, 100);
 
 		m_tabBottom->setAlphaFormat(AC_SRC_ALPHA, 255);
 		m_tabBottom->setMetrics(bm.bmWidth, bm.bmHeight);
@@ -1795,8 +1883,8 @@ void CSkin::setupAeroSkins()
 		CImageItem::PreMultiply(hbm, 1);
 
 		GetObject(hbm, sizeof(bm), &bm);
-		m_tabGlowTop = new CImageItem(5, 5, 5, 5, 0, hbm, IMAGE_PERPIXEL_ALPHA,
-										 0, 255, 30, 80, 50, 100);
+		m_tabGlowTop = new CImageItem(2, 4, 2, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
+									  0, 255, 30, 80, 50, 100);
 
 		m_tabGlowTop->setAlphaFormat(AC_SRC_ALPHA, 255);
 		m_tabGlowTop->setMetrics(bm.bmWidth, bm.bmHeight);
@@ -1809,8 +1897,8 @@ void CSkin::setupAeroSkins()
 		FIF->FI_Unload(fib);
 
 		GetObject(hbm, sizeof(bm), &bm);
-		m_tabGlowBottom = new CImageItem(5, 5, 5, 5, 0, hbm, IMAGE_PERPIXEL_ALPHA,
-										 0, 255, 30, 80, 50, 100);
+		m_tabGlowBottom = new CImageItem(2, 4, 2, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
+ 										 0, 255, 30, 80, 50, 100);
 
 		m_tabGlowBottom->setAlphaFormat(AC_SRC_ALPHA, 255);
 		m_tabGlowBottom->setMetrics(bm.bmWidth, bm.bmHeight);
@@ -1826,15 +1914,15 @@ void CSkin::setupAeroSkins()
 
 		hbm  = (HBITMAP)CallService(MS_IMG_LOAD, (WPARAM)tszFilename, IMGL_TCHAR);
 
-		CImageItem::Colorize(hbm, (BYTE)((dwmColor & 0x00ff0000) >> 16),
-							 (BYTE)((dwmColor & 0x0000ff00) >> 8),
-							 (BYTE)((dwmColor & 0x000000ff)));
+		CImageItem::Colorize(hbm, (BYTE)((m_dwmColor & 0x00ff0000) >> 16),
+							 (BYTE)((m_dwmColor & 0x0000ff00) >> 8),
+							 (BYTE)((m_dwmColor & 0x000000ff)));
 		CImageItem::PreMultiply(hbm, 1);
 
 		GetObject(hbm, sizeof(bm), &bm);
 
-		m_switchBarItem = new CImageItem(5, 5, 5, 5, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
-										 0, 255, 30, 80, 50, 100);
+		m_switchBarItem = new CImageItem(3, 4, 3, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
+ 										 0, 255, 30, 80, 50, 100);
 
 		m_switchBarItem->setAlphaFormat(AC_SRC_ALPHA, 255);
 		m_switchBarItem->setMetrics(bm.bmWidth, bm.bmHeight);
@@ -2109,7 +2197,7 @@ DWORD __fastcall CSkin::HexStringToLong(const TCHAR *szSource)
 #if defined(_UNICODE)
 int CSkin::RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags, const int iGlowSize)
 {
-	if(M->isAero()) {
+	if(M->isAero() && iGlowSize > 0) {
 		DTTOPTS dto = {0};
 		dto.dwSize = sizeof(dto);
 		dto.dwFlags = DTT_COMPOSITED|DTT_GLOWSIZE;
@@ -2233,6 +2321,8 @@ void CSkin::RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &
 		if(dat->pContainer->dwFlags & CNT_HIDETOOLBAR)
 			return;
 
+		bool	fAero = M->isAero();
+
 		RECT 	rc, rcToolbar;;
 		POINT	pt;
 		if(!(dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR)) {
@@ -2242,6 +2332,10 @@ void CSkin::RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &
 			rcToolbar.top = pt.y;
 			rcToolbar.left = 0;
 			rcToolbar.right = rcWindow.right;
+
+			if(dat->bType == SESSIONTYPE_IM && dat->dwFlags & MWF_ERRORSTATE)
+				rcToolbar.top += ERRORPANEL_HEIGHT;
+
 			GetWindowRect(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_CHAT ? IDC_CHAT_MESSAGE : IDC_MESSAGE), &rc);
 			pt.y = rc.top - 2;
 			ScreenToClient(dat->hwnd, &pt);
@@ -2268,47 +2362,121 @@ void CSkin::RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &
 		dat->pContainer->hbmToolbarBG = CreateCompatibleBitmap(hdc, cx, cy);
 		dat->pContainer->oldhbmToolbarBG = (HBITMAP)SelectObject(dat->pContainer->cachedToolbarDC, dat->pContainer->hbmToolbarBG);
 
-		CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, hdc, PluginConfig.m_bIsVista ? 12 : 6,  PluginConfig.m_bIsVista ? 2 : 1,
-										  &rcToolbar, &rcToolbar);
-		//CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, hdc, 6, 1, &rcToolbar, &rcToolbar);
+		if(fAero)
+			::DrawAlpha(hdc, &rcToolbar, 0xf0f0f0, 60, m_dwmColorRGB, 0, 9, 31, 4, 0);
+		else
+			CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, hdc, PluginConfig.m_bIsVista ? 12 : 6,  PluginConfig.m_bIsVista ? 2 : 1,
+											  &rcToolbar, &rcToolbar);
 
 		RECT rcCachedToolbar = {0};
 		rcCachedToolbar.right = cx;
 		rcCachedToolbar.bottom = cy;
 
-		CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, dat->pContainer->cachedToolbarDC, PluginConfig.m_bIsVista ? 12 : 6,  PluginConfig.m_bIsVista ? 2 : 1,
-										  &rcCachedToolbar, &rcCachedToolbar);
+		if(fAero) {
+			::FillRect(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, GetSysColorBrush(COLOR_3DFACE));
+			::DrawAlpha(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, 0xf0f0f0, 60, m_dwmColorRGB, 0, 9, 31, 4, 0);
+		} else
+			CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, dat->pContainer->cachedToolbarDC, PluginConfig.m_bIsVista ? 12 : 6,  PluginConfig.m_bIsVista ? 2 : 1,
+											  &rcCachedToolbar, &rcCachedToolbar);
 	}
 }
 
-void CSkin::ApplyAeroEffect(const HDC hdc, const RECT *rc, int iEffectArea)
+/**
+ * Initiate a buffered paint operation
+ *
+ * @param hdcSrc The source device context (usually obtained by BeginPaint())
+ * @param rc     RECT&: the target rectangle that receives the painting
+ * @param hdcOut HDC& (out) receives the buffered device context handle
+ *
+ * @return
+ */
+HANDLE CSkin::InitiateBufferedPaint(const HDC hdcSrc, RECT& rc, HDC& hdcOut)
 {
-	switch(m_aeroEffect) {
-		case AERO_EFFECT_MILK: {
-			int 	alpha = (iEffectArea == AERO_EFFECT_AREA_INFOPANEL) ? 70 : 40;
-			BYTE 	color2_trans = (iEffectArea == AERO_EFFECT_AREA_MENUBAR) ? 0 : 1;
-			DWORD   corner = (iEffectArea == AERO_EFFECT_AREA_INFOPANEL) ? 8 : 6;
+	HANDLE hbp = CMimAPI::m_pfnBeginBufferedPaint(hdcSrc, &rc, BPBF_TOPDOWNDIB, NULL, &hdcOut);
+	return(hbp);
+}
 
-			DrawAlpha(hdc, const_cast<RECT *>(rc), 0xf5f5f5, alpha, 0xaaaaaa, color2_trans, 9,
-					  31, corner, 0);
+/**
+ * finalize buffered paint cycle and apply (if applicable) the global alpha value
+ *
+ * @param hbp    HANDLE: handle of the buffered paint context
+ * @param rc     RECT*: target rectangly where alpha value should be applied
+ */
+void CSkin::FinalizeBufferedPaint(HANDLE hbp, RECT *rc)
+{
+	if(m_currentAeroEffect && m_currentAeroEffect->m_finalAlpha > 0)
+		CMimAPI::m_pfnBufferedPaintSetAlpha(hbp, rc, m_currentAeroEffect->m_finalAlpha);
+	CMimAPI::m_pfnEndBufferedPaint(hbp, TRUE);
+}
+/**
+ * Apply an effect to a aero glass area
+ *
+ * @param hdc    HDC: device context
+ * @param rc     RECT*: target rectangle
+ * @param iEffectArea
+ *  			 int: area identifier (specifies which area we are drawing, so that allows to
+ *  			 have different effects on different areas).
+ *  			 Area can be the status bar, info panel, menu
+ *  			 bar etc.
+ * @param hbp    HANDLE: handle to a buffered paint identifier.
+ *  			 default is none, needed forsome special
+ *  			 effects. default paramenter is 0
+ */
+
+void CSkin::ApplyAeroEffect(const HDC hdc, const RECT *rc, int iEffectArea, HANDLE hbp)
+{
+	if(m_currentAeroEffect == 0)
+		return;
+
+	switch(m_aeroEffect) {
+		case AERO_EFFECT_NONE:
+			return;
+
+		case AERO_EFFECT_MILK: {
+			int 	alpha = (iEffectArea == AERO_EFFECT_AREA_INFOPANEL) ? m_currentAeroEffect->m_baseAlpha : 40;
+			BYTE 	color2_trans = (iEffectArea == AERO_EFFECT_AREA_MENUBAR) ? 0 : 1;
+			DWORD   corner = (iEffectArea == AERO_EFFECT_AREA_INFOPANEL) ? m_currentAeroEffect->m_cornerRadius : 6;
+
+			DrawAlpha(hdc, const_cast<RECT *>(rc), m_currentAeroEffect->m_baseColor, alpha, m_currentAeroEffect->m_gradientColor,
+					  color2_trans, m_currentAeroEffect->m_gradientType, m_currentAeroEffect->m_cornerType, corner, 0);
 			break;
 		}
+
 		case AERO_EFFECT_CARBON:
-			DrawAlpha(hdc, const_cast<RECT *>(rc), 0xf0f0f0, 75, 0x000000, 0, 9,
-				  31, 6, 0);
+			DrawAlpha(hdc, const_cast<RECT *>(rc), m_currentAeroEffect->m_baseColor, m_currentAeroEffect->m_baseAlpha,
+					  m_currentAeroEffect->m_gradientColor, 0, m_currentAeroEffect->m_gradientType,
+					  m_currentAeroEffect->m_cornerType, m_currentAeroEffect->m_cornerRadius, 0);
+			break;
+
+		case AERO_EFFECT_SOLID:
+			DrawAlpha(hdc, const_cast<RECT *>(rc), m_currentAeroEffect->m_baseColor, m_currentAeroEffect->m_baseAlpha,
+					  m_currentAeroEffect->m_gradientColor, 0, m_currentAeroEffect->m_gradientType,
+					  m_currentAeroEffect->m_cornerType, m_currentAeroEffect->m_cornerRadius, 0);
 			break;
 		default:
 			break;
 	}
 }
 
+void CSkin::initAeroEffect()
+{
+	if(m_aeroEffect >= 0 && m_aeroEffect < AERO_EFFECT_LAST) {
+		m_currentAeroEffect = &m_aeroEffects[m_aeroEffect];
+		m_glowSize = m_currentAeroEffect->m_glowSize;
+	} else {
+		m_currentAeroEffect = 0;
+		m_glowSize = 10;
+	}
+}
+
 void CSkin::setAeroEffect(LRESULT effect)
 {
 	if(effect >= 0 && effect < AERO_EFFECT_LAST)
-		m_aeroEffect = (BYTE)effect;
+		m_aeroEffect = (UINT)effect;
 	else
-		m_aeroEffect = AERO_EFFECT_MILK;
+		m_aeroEffect = AERO_EFFECT_NONE;
 
+	initAeroEffect();
 	M->WriteByte(SRMSGMOD_T, "aerostyle", m_aeroEffect);
 }
 

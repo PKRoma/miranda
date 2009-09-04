@@ -228,7 +228,8 @@ static void SaveAvatarToFile(_MessageWindowData *dat, HBITMAP hbm, int isOwnPic)
 
 	if (CreateDirectory(szFinalPath, 0) == 0) {
 		if (GetLastError() != ERROR_ALREADY_EXISTS) {
-			MessageBox(0, TranslateT("Error creating destination directory"), TranslateT("Save contact picture"), MB_OK | MB_ICONSTOP);
+			MessageBox(0, CTranslator::get(CTranslator::GEN_MSG_SAVE_NODIR),
+					   CTranslator::get(CTranslator::GEN_MSG_SAVE), MB_OK | MB_ICONSTOP);
 			return;
 		}
 	}
@@ -267,7 +268,8 @@ static void SaveAvatarToFile(_MessageWindowData *dat, HBITMAP hbm, int isOwnPic)
 	ofn.lCustData = (LPARAM) & setView;
 	if (GetSaveFileName(&ofn)) {
 		if (PathFileExists(szFinalFilename)) {
-			if (MessageBox(0, TranslateT("The file exists. Do you want to overwrite it?"), TranslateT("Save contact picture"), MB_YESNO | MB_ICONQUESTION) == IDNO)
+			if (MessageBox(0, CTranslator::get(CTranslator::GEN_MSG_SAVE_FILE_EXISTS),
+						   CTranslator::get(CTranslator::GEN_MSG_SAVE), MB_YESNO | MB_ICONQUESTION) == IDNO)
 				return;
 		}
 		IMGSRVC_INFO ii;
@@ -456,12 +458,12 @@ int MsgWindowUpdateMenu(_MessageWindowData *dat, HMENU submenu, int menuID)
 		CheckMenuItem(submenu, ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH, MF_BYCOMMAND | (PluginConfig.m_AlwaysFullToolbarWidth ? MF_CHECKED : MF_UNCHECKED));
 		if (!fInfoPanel) {
 			EnableMenuItem(submenu, ID_PICMENU_SETTINGS, MF_BYCOMMAND | (ServiceExists(MS_AV_GETAVATARBITMAP) ? MF_ENABLED : MF_GRAYED));
-			szText = TranslateT("Contact picture settings...");
+			szText = const_cast<TCHAR *>(CTranslator::get(CTranslator::GEN_AVATAR_SETTINGS));
 			EnableMenuItem(submenu, 0, MF_BYPOSITION | MF_ENABLED);
 		} else {
 			EnableMenuItem(submenu, 0, MF_BYPOSITION | MF_GRAYED);
 			EnableMenuItem(submenu, ID_PICMENU_SETTINGS, MF_BYCOMMAND | ((ServiceExists(MS_AV_SETMYAVATAR) && CallService(MS_AV_CANSETMYAVATAR, (WPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto), 0)) ? MF_ENABLED : MF_GRAYED));
-			szText = TranslateT("Set your avatar...");
+			szText = const_cast<TCHAR *>(CTranslator::get(CTranslator::GEN_AVATAR_SETOWN));
 		}
 		mii.dwTypeData = szText;
 		mii.cch = lstrlen(szText) + 1;
@@ -603,8 +605,8 @@ int MsgWindowMenuHandler(_MessageWindowData *dat, int selection, int menuId)
 				int   result;
 
 				if (szFilename != NULL) {
-					result = MessageBox(0, TranslateT("Do you want to also read message templates from the theme?\nCaution: This will overwrite the stored template set which may affect the look of your message window significantly.\nSelect cancel to not load anything at all."),
-										TranslateT("Load theme"), MB_YESNOCANCEL);
+					result = MessageBox(0, CTranslator::get(CTranslator::GEN_WARNING_LOADTEMPLATES),
+										CTranslator::get(CTranslator::GEN_TITLE_LOADTHEME), MB_YESNOCANCEL);
 					if (result == IDCANCEL)
 						return 1;
 					else if (result == IDYES)
@@ -678,8 +680,16 @@ void UpdateReadChars(const _MessageWindowData *dat)
 void UpdateStatusBar(const _MessageWindowData *dat)
 {
 	if (dat && dat->pContainer->hwndStatus && dat->pContainer->hwndActive == dat->hwnd) {
-		if (dat->bType == SESSIONTYPE_IM)
-			DM_UpdateLastMessage(dat);
+		if (dat->bType == SESSIONTYPE_IM) {
+			if(dat->szStatusBar[0]) {
+				SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)PluginConfig.g_buttonBarIcons[5]);
+				SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM)dat->szStatusBar);
+			}
+			else {
+				SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, 0);
+				DM_UpdateLastMessage(dat);
+			}
+		}
 		UpdateReadChars(dat);
 		InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
 		SendMessage(dat->pContainer->hwndStatus, WM_USER + 101, 0, (LPARAM)dat);
@@ -1964,7 +1974,7 @@ void LoadTimeZone(HWND hwndDlg, struct _MessageWindowData *dat)
 void HandlePasteAndSend(HWND hwndDlg, struct _MessageWindowData *dat)
 {
 	if (!PluginConfig.m_PasteAndSend) {
-		SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)TranslateT("The 'paste and send' feature is disabled. You can enable it on the 'General' options page in the 'Sending Messages' section"));
+		SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)CTranslator::get(CTranslator::GEN_WARNING_PASTEANDSEND_DISABLED));
 		return;                                     // feature disabled
 	}
 
@@ -2460,7 +2470,7 @@ void EnableSendButton(const _MessageWindowData *dat, int iMode)
 {
 	HWND hwndOK;
 	SendMessage(GetDlgItem(dat->hwnd, IDOK), BUTTONSETASFLATBTN + 14, iMode, 0);
-	SendMessage(GetDlgItem(dat->hwnd, IDC_PIC), BUTTONSETASFLATBTN + 14, dat->fEditNotesActive ? iMode : !iMode, 0);
+	SendMessage(GetDlgItem(dat->hwnd, IDC_PIC), BUTTONSETASFLATBTN + 14, dat->fEditNotesActive ? TRUE : !iMode, 0);
 
 	hwndOK = GetDlgItem(GetParent(GetParent(dat->hwnd)), IDOK);
 
@@ -2479,7 +2489,7 @@ void SendNudge(const _MessageWindowData *dat)
 		CallService(MS_NUDGE_SEND, (WPARAM)hContact, 0);
 	else
 		SendMessage(dat->hwnd, DM_ACTIVATETOOLTIP, IDC_MESSAGE,
-					(LPARAM)TranslateT("Either the nudge plugin is not installed or the contact's protocol does not support sending a nudge event."));
+					(LPARAM)CTranslator::get(CTranslator::GEN_WARNING_NUDGE_DISABLED));
 }
 
 void GetClientIcon(_MessageWindowData *dat)
@@ -2607,7 +2617,8 @@ void GetMyNick(_MessageWindowData *dat)
 
 	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM)&ci)) {
 		if (ci.type == CNFT_ASCIIZ) {
-			if (lstrlen(reinterpret_cast<TCHAR *>(ci.pszVal)) < 1 || !_tcscmp(reinterpret_cast<TCHAR *>(ci.pszVal), TranslateT("'(Unknown Contact)'"))) {
+			if (lstrlen(reinterpret_cast<TCHAR *>(ci.pszVal)) < 1 || !_tcscmp(reinterpret_cast<TCHAR *>(ci.pszVal),
+																			  CTranslator::get(CTranslator::GEN_UNKNOWN_CONTACT))) {
 				mir_sntprintf(dat->szNickname, safe_sizeof(dat->szNickname), _T("%s"), dat->uin);
 				if (ci.pszVal) {
 					mir_free(ci.pszVal);

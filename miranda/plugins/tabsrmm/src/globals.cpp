@@ -39,8 +39,6 @@ extern PLUGININFOEX pluginInfo;
 CGlobals PluginConfig;
 CGlobals *pConfig = &PluginConfig;
 
-static TCHAR *tszNoStatus = _T("No status message available");
-
 void CGlobals::Reload()
 {
 	DWORD dwFlags = M->GetDword("mwflags", MWF_LOG_DEFAULT);
@@ -96,13 +94,12 @@ void CGlobals::Reload()
 	m_smcxicon = GetSystemMetrics(SM_CXSMICON);
 	m_smcyicon = GetSystemMetrics(SM_CYSMICON);
 	m_PasteAndSend = (int)M->GetByte("pasteandsend", 1);
-	m_szNoStatus = TranslateTS(tszNoStatus);
+	m_szNoStatus = const_cast<TCHAR *>(CTranslator::get(CTranslator::GEN_NO_STATUS));
 	m_LangPackCP = ServiceExists(MS_LANGPACK_GETCODEPAGE) ? CallService(MS_LANGPACK_GETCODEPAGE, 0, 0) : CP_ACP;
 	m_SmileyButtonOverride = (BYTE)M->GetByte("smbutton_override", 1);
 	m_visualMessageSizeIndicator = M->GetByte("msgsizebar", 0);
 	m_autoSplit = M->GetByte("autosplit", 0);
 	m_FlashOnMTN = M->GetByte(SRMSGMOD, SRMSGSET_SHOWTYPINGWINFLASH, SRMSGDEFSET_SHOWTYPINGWINFLASH);
-	m_bSessionList = M->GetByte("slistinstatusbar", 1) ? true : false;
 	if(m_MenuBar == 0)
 		m_MenuBar = ::LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENUBAR));
 

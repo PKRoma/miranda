@@ -44,25 +44,6 @@ static BOOL bOptionsInit;
 
 HWND g_opHdlg;
 
-static struct LISTOPTIONSGROUP lvGroups[] = {
-	0, _T("Message window tweaks (changing any of them requires a restart)"),
-	0, _T("General tweaks"),
-	0, NULL
-};
-
-static struct LISTOPTIONSITEM lvItems[] = {
-	0, _T("Enable image tag button (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_IMGtagButton", 0,
-	0, _T("Show client icon in status bar (fingerprint plugin required) (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_ClientIconInStatusBar", 0,
-	0, _T("Enable typing sounds (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_soundontyping", 0,
-	0, _T("Disable animated GIF avatars (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_DisableAniAvatars", 0,
-	0, _T("Enable fix for nicklist scroll bar"), 1, LOI_TYPE_SETTING, (UINT_PTR)"adv_ScrollBarFix", 0,
-	0, _T("Close current tab on send"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_AutoClose_2", 0,
-	0, _T("Enable icon pack version check (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_IconpackWarning", 0,
-	0, _T("Disable error popups on sending failures"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_noErrorPopups", 1,
-	0, _T("Use Aero Glass for the message window (Vista+)(experimental, use with care)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"useAero", 0,
-	0, NULL, 0, 0, 0, 0
-};
-
 INT_PTR CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
 {
 	switch(msg)	{
@@ -126,6 +107,8 @@ INT_PTR CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lPar
 							/*
 							* scan the tree view and obtain the options...
 							*/
+							LISTOPTIONSITEM* lvItems = CTranslator::getTree(CTranslator::TREE_MODPLUS);
+
 							bool	fOldAeroState = M->getAeroState();
 							while (lvItems[i].szName != NULL) {
 								item.mask = TVIF_HANDLE | TVIF_STATE;
@@ -133,8 +116,6 @@ INT_PTR CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lPar
 								item.stateMask = TVIS_STATEIMAGEMASK;
 
 								SendDlgItemMessageA(hwndDlg, IDC_PLUS_CHECKTREE, TVM_GETITEMA, 0, (LPARAM)&item);
-								//if (lvItems[i].uType == LOI_TYPE_FLAG)
-								//	dwFlags |= (item.state >> 12) == 3/*2*/ ? lvItems[i].lParam : 0;
 								if (lvItems[i].uType == LOI_TYPE_SETTING)
 									M->WriteByte(SRMSGMOD_T, (char *)lvItems[i].lParam, (BYTE)((item.state >> 12) == 3/*2*/ ? 1 : 0));  // NOTE: state image masks changed
 								i++;
@@ -161,6 +142,8 @@ INT_PTR CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lPar
 			else if(LOWORD(wParam) == IDC_PLUS_REVERT) {		// revert to defaults...
 				int i = 0;
 
+				LISTOPTIONSITEM *lvItems = CTranslator::getTree(CTranslator::TREE_MODPLUS);
+
 				while(lvItems[i].szName) {
 					if(lvItems[i].uType == LOI_TYPE_SETTING)
 						M->WriteByte(SRMSGMOD_T, (char *)lvItems[i].lParam, (BYTE)lvItems[i].id);
@@ -182,11 +165,13 @@ INT_PTR CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lPar
 			TVINSERTSTRUCT tvi = {0};
 			int		i = 0;
 
+			LISTOPTIONSGROUP *lvGroups = CTranslator::getGroupTree(CTranslator::TREE_MODPLUS);
+
 			while (lvGroups[i].szName != NULL) {
 				tvi.hParent = 0;
 				tvi.hInsertAfter = TVI_LAST;
 				tvi.item.mask = TVIF_TEXT | TVIF_STATE;
-				tvi.item.pszText = TranslateTS(lvGroups[i].szName);
+				tvi.item.pszText = lvGroups[i].szName;
 				tvi.item.stateMask = TVIS_STATEIMAGEMASK | TVIS_EXPANDED | TVIS_BOLD;
 				tvi.item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_EXPANDED | TVIS_BOLD;
 				lvGroups[i++].handle = (LRESULT)TreeView_InsertItem(GetDlgItem(hwndDlg, IDC_PLUS_CHECKTREE), &tvi);
@@ -194,10 +179,12 @@ INT_PTR CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lPar
 
 			i = 0;
 
+			LISTOPTIONSITEM *lvItems = CTranslator::getTree(CTranslator::TREE_MODPLUS);
+
 			while (lvItems[i].szName != 0) {
 				tvi.hParent = (HTREEITEM)lvGroups[lvItems[i].uGroup].handle;
 				tvi.hInsertAfter = TVI_LAST;
-				tvi.item.pszText = TranslateTS(lvItems[i].szName);
+				tvi.item.pszText = lvItems[i].szName;
 				tvi.item.mask = TVIF_TEXT | TVIF_STATE | TVIF_PARAM;
 				tvi.item.lParam = i;
 				tvi.item.stateMask = TVIS_STATEIMAGEMASK;

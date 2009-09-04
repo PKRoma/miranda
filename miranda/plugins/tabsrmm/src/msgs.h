@@ -251,7 +251,6 @@ struct ContainerWindowData {
 	DWORD   dwFlags, dwPrivateFlags;
 	DWORD   dwFlagsEx, dwPrivateFlagsEx;
 	UINT    uChildMinHeight;
-	SIZE    oldSize, preSIZE;
 	DWORD   dwTransparency;
 	int     tBorder;
 	int	    tBorder_outer_left, tBorder_outer_right, tBorder_outer_top, tBorder_outer_bottom;
@@ -287,6 +286,7 @@ struct ContainerWindowData {
 	DWORD	dwOldAeroLeft, dwOldAeroRight;
 	HDC		cachedToolbarDC;
 	HBITMAP hbmToolbarBG, oldhbmToolbarBG;
+	SIZE    oldSize, preSIZE;
 	CTaskbarInteract *TaskBar;
 	CMenuBar		 *MenuBar;
 	CSideBar		 *SideBar;
@@ -313,24 +313,43 @@ struct MessageWindowTheme {
 };
 
 struct _MessageWindowData {
+	UINT	cbSize;
 	BYTE    bType;
-	BYTE    bWasDeleted;
+	struct  ContainerWindowData *pContainer;		// parent container description structure
+	HWND    hwnd;
+	DWORD   dwFlags;
+	DWORD   dwFlagsEx;
 	HANDLE  hContact, hSubContact;
+	char    *szProto;
+	char    *szMetaProto;
+	TCHAR	szAccount[128];
+	TCHAR   szNickname[130];
+	TCHAR 	szMyNickname[130];
+	TCHAR	szStatusBar[100];
+	TCHAR   newtitle[130];        // tab title...
+	TCHAR   statusMsg[1025];
+	TCHAR	szStatus[50];
+	WORD    wStatus, wMetaStatus;
+	char    *sendBuffer;
+	int     iSendBufferSize;
+	struct  MessageSessionStats stats;
+	HICON   hTabIcon, hTabStatusIcon, hXStatusIcon, hClientIcon;
+	HICON   iFlashIcon;
+	BOOL    mayFlashTab;
+	BOOL    bTabFlash;
 	HWND    hwndIEView, hwndFlash, hwndIWebBrowserControl, hwndHPP;
 	HWND	hwndContactPic, hwndPanelPic; //Bolshevik: avatar control handlers
 	UINT    messageCount;  //MAD
 	UINT	bbLSideWidth;  //MAD
 	UINT	bbRSideWidth;    //MAD
 	struct StatusIconListNode *pSINod;
-	BOOL	bActualHistory;
-	HWND    hwnd;
-	HANDLE  hDbEventFirst, hDbEventLast, hDbEventLastFeed;
+	PVOID   si;
+
+	HANDLE  hDbEventFirst, hDbEventLast;
 	int     sendMode;
 	HBRUSH  hBkgBrush, hInputBkgBrush;
 	int     splitterY, originalSplitterY, dynaSplitter, savedSplitter, savedSplitY, savedDynaSplit;
 	int     multiSplitterX;
-	char    *sendBuffer;
-	int     iSendBufferSize;
 	SIZE    minEditBoxSize;
 	int     showUIElements;
 	int     nTypeSecs;
@@ -338,11 +357,7 @@ struct _MessageWindowData {
 	DWORD   nLastTyping;
 	int     showTyping;
 	DWORD   lastMessage;
-	struct  ContainerWindowData *pContainer;		// parent container description structure
 	int     iTabID;
-	BOOL    bTabFlash;
-	HICON   hTabIcon, hTabStatusIcon, hXStatusIcon, hClientIcon;
-	BOOL    mayFlashTab;
 	HKL     hkl;                                    // keyboard layout identifier
 	DWORD   dwTickLastEvent;
 	HBITMAP hOwnPic;
@@ -351,9 +366,6 @@ struct _MessageWindowData {
 	BOOL    fMustOffset;
 	UINT    uMinHeight;
 	BOOL    isHistory;
-	DWORD   dwFlags;
-	HICON   iFlashIcon;
-	//POINT   ptLast;
 	WORD    wOldStatus;
 	int     iOldHash;
 	struct  InputHistory *history;
@@ -361,19 +373,11 @@ struct _MessageWindowData {
 	int     doSmileys;
 	UINT    codePage;
 	HICON   hSmileyIcon;
-	char    *szProto;
-	char    *szMetaProto;
-	TCHAR	szAccount[128];
-	TCHAR   szNickname[130], szMyNickname[130];
-	TCHAR	szStatus[50];
-	WORD    wStatus, wMetaStatus;
 	int     iLastEventType;
 	time_t  lastEventTime;
-	DWORD   dwFlagsEx;
 	int     iRealAvatarHeight;
-	int     iButtonBarNeeds, iButtonBarReallyNeeds, controlsHidden;
+	int     iButtonBarReallyNeeds;
 	DWORD   dwLastActivity;
-	struct  MessageSessionStats stats;
 	int     iOpenJobs;
 	int     iCurrentQueueError;
 	HANDLE  hMultiSendThread;
@@ -389,7 +393,6 @@ struct _MessageWindowData {
 	int     iNextQueuedEvent;
 #define EVENT_QUEUE_SIZE 10
 	int     iEventQueueSize;
-	TCHAR   newtitle[130];        // tab title...
 	LCID    lcid;
 	char    lcID[4];
 	int     panelWidth;
@@ -397,19 +400,16 @@ struct _MessageWindowData {
 	DWORD   idle;
 	HWND    hwndTip;
 	TOOLINFO ti;
-	TCHAR   statusMsg[1025];
 	DWORD   timezone, timediff;
 	DWORD   panelStatusCX;
 	BYTE    xStatus;
 	COLORREF inputbg;
-	SIZE    szLabel;
 	struct  MessageWindowTheme theme;
 	struct  avatarCacheEntry *ace, *ownAce;
 	HANDLE  *hHistoryEvents;
 	int     maxHistory, curHistory;
 	HANDLE  hTheme, hThemeIP, hThemeToolbar;
 	BYTE    bFlatMsgLog;
-	PVOID   si;
 	char    szMicroLf[128];
 	DWORD   isAutoRTL;
 	int     nMax;            // max message size
@@ -426,7 +426,11 @@ struct _MessageWindowData {
 	bool	fEditNotesActive;
 	CInfoPanel *Panel;
 	DWORD	iSplitterSaved;
+	BYTE    bWasDeleted;
+	BOOL	bActualHistory;
 };
+
+#define MESSAGE_WINDOW_DATA_SIZE offsetof(_MessageWindowData, hdbEventFirst);
 
 typedef struct _recentinfo {
 	DWORD dwFirst, dwMostRecent;        // timestamps
@@ -494,7 +498,7 @@ struct InputHistory {
 
 #define TCF_DEFAULT (TCF_FLASHICON | TCF_LABELUSEWINCOLORS | TCF_BKGUSEWINCOLORS)
 
-#define MIN_PANELHEIGHT 24
+#define MIN_PANELHEIGHT 20
 
 struct NewMessageWindowLParam {
 	HANDLE  hContact;
@@ -608,7 +612,7 @@ struct NewMessageWindowLParam {
 #define DM_QUERYCLIENTAREA   (WM_USER+45)
 #define DM_QUERYRECENT       (WM_USER+47)
 #define DM_ACTIVATEME        (WM_USER+46)
-//#define DM_REGISTERHOTKEYS   (WM_USER+48)
+#define DM_REMOVEFROMSENDLATER  (WM_USER+48)
 //#define DM_FORCEUNREGISTERHOTKEYS (WM_USER+49)
 #define DM_ADDDIVIDER        (WM_USER+50)
 #define DM_STATUSMASKSET     (WM_USER+51)
@@ -662,6 +666,7 @@ struct NewMessageWindowLParam {
 
 #define MINSPLITTERY         42
 #define MINLOGHEIGHT         30
+#define ERRORPANEL_HEIGHT    51
 
 // wParam values for DM_SELECTTAB
 

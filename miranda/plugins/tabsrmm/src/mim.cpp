@@ -55,9 +55,12 @@ BBP		CMimAPI::m_pfnBeginBufferedPaint = 0;
 EBP		CMimAPI::m_pfnEndBufferedPaint = 0;
 BBW		CMimAPI::m_pfnDwmBlurBehindWindow = 0;
 DGC		CMimAPI::m_pfnDwmGetColorizationColor = 0;
+BPSA	CMimAPI::m_pfnBufferedPaintSetAlpha = 0;
 
 bool	CMimAPI::m_shutDown = 0;
 TCHAR*	CMimAPI::m_userDir = 0;
+
+bool	CMimAPI::m_haveBufferedPaint = 0;
 
 /*
  * read a setting for a contact
@@ -539,6 +542,10 @@ void CMimAPI::InitAPI()
 			m_pfnEndBufferedPaint = (EBP)GetProcAddress(m_hUxTheme, "EndBufferedPaint");
 			m_pfnBufferedPaintInit = (BPI)GetProcAddress(m_hUxTheme, "BufferedPaintInit");
 			m_pfnBufferedPaintUninit = (BPU)GetProcAddress(m_hUxTheme, "BufferedPaintUnInit");
+			m_pfnBufferedPaintSetAlpha = (BPSA)GetProcAddress(m_hUxTheme, "BufferedPaintSetAlpha");
+			m_haveBufferedPaint = (m_pfnBeginBufferedPaint != 0 && m_pfnEndBufferedPaint != 0);
+			if(m_haveBufferedPaint)
+				m_pfnBufferedPaintInit();
 		}
     }
 }

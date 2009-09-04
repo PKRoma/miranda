@@ -35,8 +35,6 @@
 #ifndef __SIDEBAR_H
 #define  __SIDEBAR_H
 
-#include <vector>
-
 /* layout descrtiption structure */
 
 struct TSideBarLayout {

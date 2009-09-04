@@ -817,17 +817,27 @@ static HRESULT DrawThemesPartWithAero(const TabControlData *tabdat, HDC hDC, int
 
 	if(tabdat->fAeroTabs) {
 		int iState = (iStateId == PBS_NORMAL || iStateId == PBS_HOT) ? 2 : 1;
+		if(tabdat->dwStyle & TCS_BOTTOM && iStateId == 3)
+			prcBox->top += 2;
+
+
+		if(!(tabdat->dwStyle & TCS_BOTTOM)) {
+			OffsetRect(prcBox, 0, 1);
+			if(iStateId != 3)
+				prcBox->bottom += 2;
+		}
+
 		FillRect(hDC, prcBox, (HBRUSH)GetStockObject(BLACK_BRUSH));
-		if(!(tabdat->dwStyle & TCS_BOTTOM) && iStateId != 3)
-			prcBox->bottom += 2;
-		tabdat->helperItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == 3 ? 200 : 150);
+
+		tabdat->helperItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == 3 ? 240 : 220);
 		tabdat->helperItem->Render(hDC, prcBox, true);
-		tabdat->helperGlowItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == 3 ? 190 : 130);
+		tabdat->helperGlowItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == 3 ? 200 : 150);
 
 		/*
 		 * glow effect for hot and/or selected tabs
 		 */
 
+		/*
 		if(iStateId != PBS_NORMAL) {
 			RECT rcGlow = *prcBox;
 			if(tabdat->dwStyle & TCS_BOTTOM) {
@@ -840,7 +850,10 @@ static HRESULT DrawThemesPartWithAero(const TabControlData *tabdat, HDC hDC, int
 			rcGlow.left += 2;
 			rcGlow.right -= 2;
 			tabdat->helperGlowItem->Render(hDC, &rcGlow, true);
-		}
+		}*/
+		if(iStateId != PBS_NORMAL)
+			tabdat->helperGlowItem->Render(hDC, prcBox, true);
+
 	}
 	else {
 		if (tabdat->hTheme != 0)
@@ -896,9 +909,11 @@ static void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, 
 
 	//FillRect(pDC, rcItem, GetSysColorBrush(COLOR_3DFACE));
 	if (!bBottom) {
-		if (bBody)
+		if (bBody) {
+			if(PluginConfig.m_bIsVista)
+				rcItem->right += 2;
 			DrawThemesPart(tabdat, pDC, 9, 0, rcItem);	// TABP_PANE id = 9
-		else {
+		} else {
 			int iStateId = bSel ? 3 : (bHot ? 2 : 1);                       // leftmost item has different part id
 			DrawThemesPartWithAero(tabdat, pDC, rcItem->left < 20 ? 2 : 1, iStateId, rcItem);
 		}
@@ -995,6 +1010,9 @@ static void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, 
 		}
 		CImageItem tempItem(10, 10, 10, 10, hdcTemp, PluginConfig.hbmLogo, IMAGE_FLAG_DIVIDED | IMAGE_FILLSOLID,
 							GetSysColorBrush(COLOR_3DFACE), 255, 30, 80, 50, 100);
+
+		if(PluginConfig.m_bIsVista)
+			rcItem->right += 2;
 
 		tempItem.Render(pDC, rcItem, true);
 		tempItem.Clear();
@@ -1377,6 +1395,8 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			HBITMAP bmpMem, bmpOld;
 			DWORD cx, cy;
 			bool  isAero = M->isAero();
+			HANDLE hpb = 0;
+
 			BOOL bClassicDraw = !isAero && (tabdat->m_VisualStyles == FALSE || tabdat->m_moderntabs || tabdat->pContainer->bSkinned);
 
 			if(GetUpdateRect(hwnd, NULL, TRUE) == 0)
@@ -1427,11 +1447,13 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			 * draw everything to a memory dc to avoid flickering
 			 */
 
-			hdc = CreateCompatibleDC(hdcreal);
-
-			bmpMem = tabdat->fAeroTabs ? CSkin::CreateAeroCompatibleBitmap(rctPage, hdcreal) : CreateCompatibleBitmap(hdcreal, cx, cy);
-
-			bmpOld = (HBITMAP)SelectObject(hdc, bmpMem);
+			if(CMimAPI::m_haveBufferedPaint)
+				hpb = CSkin::InitiateBufferedPaint(hdcreal, rctPage, hdc);
+			else {
+				hdc = CreateCompatibleDC(hdcreal);
+				bmpMem = tabdat->fAeroTabs ? CSkin::CreateAeroCompatibleBitmap(rctPage, hdcreal) : CreateCompatibleBitmap(hdcreal, cx, cy);
+				bmpOld = (HBITMAP)SelectObject(hdc, bmpMem);
+			}
 
 			if (nCount == 1 && tabdat->pContainer->dwFlags & CNT_HIDETABS)
 				rctClip = rctPage;
@@ -1585,7 +1607,7 @@ page_done:
 					pt.y = rcLog.bottom;
 					pt.x = rcLog.left;
 					ScreenToClient(hwnd, &pt);
-					rcPage.top = pt.y;
+					rcPage.top = pt.y + ((nCount > 1 || !(tabdat->helperDat->pContainer->dwFlags & CNT_HIDETABS)) ? tabdat->helperDat->pContainer->tBorder : 0);
 					FillRect(hdc, &rcPage, (HBRUSH)GetStockObject(BLACK_BRUSH));
 					rcPage.top = 0;
 				}
@@ -1665,10 +1687,14 @@ skip_tabs:
 			if (!tabdat->bRefreshWithoutClip)
 				ExcludeClipRect(hdcreal, rctClip.left, rctClip.top, rctClip.right, rctClip.bottom);
 
-			BitBlt(hdcreal, 0, 0, cx, cy, hdc, 0, 0, SRCCOPY);
-			SelectObject(hdc, bmpOld);
-			DeleteObject(bmpMem);
-			DeleteDC(hdc);
+			if(hpb)
+				CMimAPI::m_pfnEndBufferedPaint(hpb, TRUE);
+			else {
+				BitBlt(hdcreal, 0, 0, cx, cy, hdc, 0, 0, SRCCOPY);
+				SelectObject(hdc, bmpOld);
+				DeleteObject(bmpMem);
+				DeleteDC(hdc);
+			}
 			EndPaint(hwnd, &ps);
 			return 0;
 		}

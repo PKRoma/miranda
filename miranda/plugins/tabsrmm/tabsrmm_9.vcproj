@@ -1151,6 +1151,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\translator.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\trayicon.cpp"
 				>
 			</File>
@@ -1937,6 +1941,10 @@
 			</File>
 			<File
 				RelativePath=".\src\themes.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\translator.h"
 				>
 			</File>
 			<File

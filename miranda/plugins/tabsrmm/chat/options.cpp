@@ -1047,11 +1047,13 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 						GetDlgItemText(hwndDlg, IDC_LOGDIRECTORY, pszText1, iLen + 1);
 						M->WriteTString(NULL, "Chat", "LogDirectory", pszText1);
 						free(pszText1);
-					} else
+						g_Settings.LoggingEnabled = IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED ? TRUE : FALSE;
+						M->WriteByte("Chat", "LoggingEnabled", (BYTE)g_Settings.LoggingEnabled);
+					} else {
 						DBDeleteContactSetting(NULL, "Chat", "LogDirectory");
-
-					g_Settings.LoggingEnabled = IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED ? TRUE : FALSE;
-					M->WriteByte("Chat", "LoggingEnabled", (BYTE)g_Settings.LoggingEnabled);
+						M->WriteByte("Chat", "LoggingEnabled", 0);
+					}
+					SM_InvalidateLogDirectories();
 
 					iLen = SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN4, UDM_GETPOS, 0, 0);
 					DBWriteContactSettingWord(NULL, "Chat", "LoggingLimit", (WORD)iLen);
@@ -1147,7 +1149,6 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				PluginConfig.Reload();
 				CacheMsgLogIcons();
 				CacheLogFonts();
-				M->BroadcastMessage(DM_OPTIONSAPPLIED, 1, 0);
 				return TRUE;
 			}
 			break;

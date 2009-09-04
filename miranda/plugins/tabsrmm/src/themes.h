@@ -70,6 +70,16 @@ typedef struct {
 #define BUTTONSETASTOOLBARBUTTON (BUTTONSETASFLATBTN + 21)
 #define BUTTONSETASSIDEBARBUTTON (BUTTONSETASFLATBTN + 22)
 
+struct AeroEffect {
+	DWORD	m_baseColor;
+	DWORD	m_gradientColor;
+	BYTE	m_baseAlpha;
+	BYTE	m_finalAlpha;
+	BYTE	m_cornerType;
+	BYTE	m_gradientType;
+	DWORD	m_cornerRadius;
+	DWORD	m_glowSize;
+};
 /**
  * CImageItem implementes image-based skin items. These items are loaded
  * from a skin file definition (.tsk file) and are then linked to one or
@@ -165,7 +175,7 @@ public:
 	void __fastcall	Render(const HDC hdc, const RECT *rc, bool fIgnoreGlyph) const;
 	static void 	PreMultiply(HBITMAP hBitmap, int mode);
 	static void 	CorrectBitmap32Alpha(HBITMAP hBitmap);
-	static void 	Colorize(HBITMAP hBitmap, BYTE dr, BYTE dg, BYTE db);
+	static void 	Colorize(HBITMAP hBitmap, BYTE dr, BYTE dg, BYTE db, BYTE alpha = 0);
 
 public:
 	bool			m_fValid;									// verified item, indicates that all parameters are valid
@@ -194,10 +204,11 @@ class CSkin
 {
 public:
 	enum {
-		AERO_EFFECT_MILK = 0,
-		AERO_EFFECT_CARBON = 1,
-		AERO_EFFECT_RAINBOW = 2,
-		AERO_EFFECT_LAST = 3
+		AERO_EFFECT_NONE = 0,
+		AERO_EFFECT_MILK = 1,
+		AERO_EFFECT_CARBON = 2,
+		AERO_EFFECT_SOLID = 3,
+		AERO_EFFECT_LAST = 4
 	};
 	enum {
 		AERO_EFFECT_AREA_MENUBAR = 0,
@@ -206,6 +217,10 @@ public:
 		AERO_EFFECT_AREA_TAB_ACTIVE = 3,
 		AERO_EFFECT_AREA_TAB_HOVER = 4,
 		AERO_EFFECT_AREA_TAB_NORMAL = 5
+	};
+
+	enum {
+		DEFAULT_GLOW_SIZE = 10
 	};
 
 	CSkin()
@@ -234,6 +249,8 @@ public:
 	void 			ReadButtonItem(const TCHAR *itemName) const;
 	bool			haveGlyphItem() const { return(m_fHaveGlyph); }
 	int				getNrIcons() const { return(m_nrSkinIcons); }
+	const	DWORD	getDwmColor() const { return(m_dwmColor); }
+
 	const ICONDESCW* getIconDesc(const int id) const { return(&m_skinIcons[id]); }
 	/**
 	 * get the glyph image item (a single PNG image, containing a number of textures
@@ -265,14 +282,17 @@ public:
 	static UINT 	NcCalcRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
 	static HBITMAP 	CreateAeroCompatibleBitmap(const RECT &rc, HDC dc);
 #if defined(_UNICODE)
-	static int 		RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags, const int iGlowSize = 10);
+	static int 		RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags, const int iGlowSize = DEFAULT_GLOW_SIZE);
 #endif
-	static int 		RenderText(HDC hdc, HANDLE hTheme, const char *szText, RECT *rc, DWORD dtFlags, const int iGlowSize = 10);
+	static int 		RenderText(HDC hdc, HANDLE hTheme, const char *szText, RECT *rc, DWORD dtFlags, const int iGlowSize = DEFAULT_GLOW_SIZE);
 	static void 	MapClientToParent(HWND hwndClient, HWND hwndParent, RECT &rc);
 	static void 	RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &rcWindow);
 	static HBITMAP 	ResizeBitmap(HBITMAP hBmpSrc, LONG width, LONG height, bool &mustFree);
-	static void		ApplyAeroEffect(const HDC hdc, const RECT* rc, int iEffectArea);
+	static void		ApplyAeroEffect(const HDC hdc, const RECT* rc, int iEffectArea, HANDLE hbp = 0);
 	static void		setAeroEffect(const LRESULT effect);
+	static void		initAeroEffect();
+	static HANDLE 	InitiateBufferedPaint(const HDC hdcSrc, RECT& rc, HDC& hdcOut);
+	static void 	FinalizeBufferedPaint(HANDLE hbp, RECT *rc);
 
 public:
 	static bool		m_DisableScrollbars, m_bClipBorder;
@@ -288,8 +308,19 @@ public:
 	static bool		m_skinEnabled;
 	static bool		m_frameSkins;
 	static HICON	m_closeIcon, m_minIcon, m_maxIcon;
-	static BLENDFUNCTION m_default_bf;
-	static BYTE		m_aeroEffect;
+	static BLENDFUNCTION m_default_bf;										// general purpose bf, dynamically modified when needed
+
+	/*
+	 * controls the aero effect. Set by initAeroEffect()
+	 */
+
+	static UINT		m_aeroEffect;											// effect id, initAeroEffect() is using it to set
+																			// the parameters below.
+	static AeroEffect	m_aeroEffects[AERO_EFFECT_LAST];
+	static AeroEffect*	m_currentAeroEffect;
+	static DWORD		m_glowSize;
+
+	static COLORREF	m_dwmColorRGB;
 
 	static CImageItem *m_switchBarItem,	*m_tabTop, *m_tabBottom, *m_tabGlowTop,	*m_tabGlowBottom;
 
@@ -305,6 +336,7 @@ private:
 	void 			SkinCalcFrameWidth();
 	ICONDESCW		*m_skinIcons;
 	int				m_nrSkinIcons;
+	DWORD			m_dwmColor;
 };
 
 /*

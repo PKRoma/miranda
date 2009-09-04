@@ -159,33 +159,29 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
 		bf_buttonglyph.AlphaFormat = 0;
 	}
 	if (hdcPaint) {
-		HDC hdcMem;
+		HDC 	hdcMem;
 		HBITMAP hbmMem, hOld;
-		RECT rcClient, rcContent;
-		HRGN clip = 0;
-		bool fAero = M->isAero();
-		bool fVSThemed = (!CSkin::m_skinEnabled && M->isVSThemed());
+		RECT 	rcClient, rcContent;
+		HRGN 	clip = 0;
+		bool 	fAero = M->isAero();
+		bool 	fVSThemed = (!CSkin::m_skinEnabled && M->isVSThemed());
+		HANDLE 	hbp = 0;
+
 		_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(GetParent(ctl->hwnd), GWLP_USERDATA);
 		GetClientRect(ctl->hwnd, &rcClient);
 		CopyRect(&rcContent, &rcClient);
 
-		hdcMem = CreateCompatibleDC(hdcPaint);
-		hbmMem = CreateCompatibleBitmap(hdcPaint, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top);
-		hOld = (HBITMAP)SelectObject(hdcMem, hbmMem);
+		if(CMimAPI::m_haveBufferedPaint)
+			hbp = CMimAPI::m_pfnBeginBufferedPaint(hdcPaint, &rcClient, BPBF_TOPDOWNDIB, NULL, &hdcMem);
+		else {
+			hdcMem = CreateCompatibleDC(hdcPaint);
+			hbmMem = CreateCompatibleBitmap(hdcPaint, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top);
+			hOld = (HBITMAP)SelectObject(hdcMem, hbmMem);
+		}
 
 		if (ctl->pushBtn && ctl->pbState)
 			ctl->stateId = PBS_PRESSED;
 
-		/*
-		if (ctl->arrow && (ctl->stateId == PBS_HOT || ctl->stateId == PBS_PRESSED || ctl->stateId == PBS_PUSHDOWNPRESSED)) {
-			POINT pt;
-
-			GetCursorPos(&pt);
-			ScreenToClient(ctl->hwnd, &pt);
-
-			if (pt.x >= rcClient.right - 10)
-				clip = CreateRectRgn(rcClient.right - 10, 0, rcClient.right, rcClient.bottom);
-		}*/
 		if (ctl->item) {
 			RECT rcParent;
 			POINT pt;
@@ -388,7 +384,7 @@ bg_done:
 			rcContent.left = rcClient.right - 12;
 			rcContent.right = rcContent.left;
 
-			DrawIconEx(hdcMem, rcClient.right - 13, (rcClient.bottom - rcClient.top) / 2 - (PluginConfig.m_smcyicon / 2),
+			DrawIconEx(hdcMem, rcClient.right - 15, (rcClient.bottom - rcClient.top) / 2 - (PluginConfig.m_smcyicon / 2),
 					   PluginConfig.g_buttonBarIcons[16], 16, 16, 0, 0, DI_NORMAL);
 			if (!ctl->flatBtn)
 				DrawEdge(hdcMem, &rcContent, EDGE_BUMP, BF_LEFT);
@@ -510,10 +506,14 @@ bg_done:
 			DrawState(hdcMem, NULL, NULL, (LPARAM)szText, lstrlen(szText), (rcText.right - rcText.left - sz.cx) / 2 + (!ctl->hThemeButton && ctl->stateId == PBS_PRESSED ? 1 : 0), ctl->hThemeButton ? (rcText.bottom - rcText.top - sz.cy) / 2 : (rcText.bottom - rcText.top - sz.cy) / 2 - (ctl->stateId == PBS_PRESSED ? 0 : 1), sz.cx, sz.cy, IsWindowEnabled(ctl->hwnd) || ctl->hThemeButton ? DST_PREFIXTEXT | DSS_NORMAL : DST_PREFIXTEXT | DSS_DISABLED);
 			SelectObject(hdcMem, hOldFont);
 		}
-		BitBlt(hdcPaint, 0, 0, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top, hdcMem, 0, 0, SRCCOPY);
-		SelectObject(hdcMem, hOld);
-		DeleteObject(hbmMem);
-		DeleteDC(hdcMem);
+		if(hbp)
+			CMimAPI::m_pfnEndBufferedPaint(hbp, TRUE);
+		else {
+			BitBlt(hdcPaint, 0, 0, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top, hdcMem, 0, 0, SRCCOPY);
+			SelectObject(hdcMem, hOld);
+			DeleteObject(hbmMem);
+			DeleteDC(hdcMem);
+		}
 
 	}
 }

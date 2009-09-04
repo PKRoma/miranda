@@ -63,6 +63,7 @@ typedef HRESULT (WINAPI *BPI)(void);
 typedef HRESULT (WINAPI *BPU)(void);
 typedef HRESULT (WINAPI *BBW)(HWND, DWM_BLURBEHIND *);
 typedef HRESULT (WINAPI *DGC)(DWORD *, BOOL *);
+typedef HRESULT (WINAPI *BPSA)(HANDLE, const RECT *, BYTE);
 
 /*
  * used to encapsulate some parts of the Miranda API
@@ -82,8 +83,6 @@ public:
 		InitPaths();
 		InitAPI();
 		getAeroState();
-		if(m_pfnBufferedPaintInit)
-			m_pfnBufferedPaintInit();
 
 		LRESULT fi_version = CallService(MS_IMG_GETIFVERSION, 0, 0);
 		CallService(MS_IMG_GETINTERFACE, fi_version, (LPARAM)&FIF);
@@ -94,7 +93,7 @@ public:
 			FreeLibrary(m_hUxTheme);
 		if (m_hDwmApi != 0)
 			FreeLibrary(m_hDwmApi);
-		if(m_pfnBufferedPaintUninit)
+		if	(m_haveBufferedPaint)
 			m_pfnBufferedPaintUninit();
 	}
 
@@ -253,8 +252,8 @@ public:
 	static EBP		m_pfnEndBufferedPaint;
 	static BBW 		m_pfnDwmBlurBehindWindow;
 	static DGC		m_pfnDwmGetColorizationColor;
-
-	static bool		m_shutDown;
+	static BPSA		m_pfnBufferedPaintSetAlpha;
+	static bool		m_shutDown, m_haveBufferedPaint;
 private:
 	UTF8_INTERFACE 	m_utfi;
 	TCHAR 		m_szProfilePath[MAX_PATH], m_szSkinsPath[MAX_PATH], m_szSavedAvatarsPath[MAX_PATH], m_szChatLogsPath[MAX_PATH];

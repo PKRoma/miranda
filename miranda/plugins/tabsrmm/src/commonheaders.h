@@ -115,6 +115,7 @@
 #include <limits.h>
 #include <ctype.h>
 #include <string>
+#include <vector>
 #include <assert.h>
 
 #include "resource.h"
@@ -191,6 +192,7 @@ extern struct LIST_INTERFACE li;
 extern 	NEN_OPTIONS	nen_options;
 #endif
 
+#include "translator.h"
 #include "themes.h"
 #include "globals.h"
 #include "mim.h"

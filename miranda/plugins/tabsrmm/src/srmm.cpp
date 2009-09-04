@@ -58,7 +58,7 @@ PLUGININFOEX pluginInfo = {
 #else
 	"TabSRMM",
 #endif
-	PLUGIN_MAKE_VERSION(3, 0, 0, 3),
+	PLUGIN_MAKE_VERSION(3, 0, 0, 4),
 	"Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
 	"The Miranda developers team and contributors",
 	"silvercircle _at_ gmail _dot_ com",
@@ -101,6 +101,8 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK * link)
 
 	mir_getMMI(&mmi);
 	mir_getLI(&li);
+
+	CTranslator::preTranslateAll();
 
 	M = new CMimAPI();
 

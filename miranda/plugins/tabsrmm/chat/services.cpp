@@ -58,7 +58,7 @@ static HANDLE		hServiceRegister = NULL,
 					hEventJoinChat = NULL,
 					hEventLeaveChat = NULL;
 
-#ifdef _WIN64 
+#ifdef _WIN64
 
 #define SIZEOF_STRUCT_GCREGISTER_V1 40
 #define SIZEOF_STRUCT_GCWINDOW_V1	48
@@ -203,7 +203,7 @@ INT_PTR Service_Register(WPARAM wParam, LPARAM lParam)
 
 	mi = MM_AddModule(gcr->pszModule);
 	if (mi) {
-		mi->ptszModDispName = a2tf( gcr->ptszModuleDispName, gcr->dwFlags, 0 );
+		mi->ptszModDispName = a2tf( gcr->ptszModuleDispName, gcr->dwFlags, 0);
 		mi->bBold = gcr->dwFlags & GC_BOLD;
 		mi->bUnderline = gcr->dwFlags & GC_UNDERLINE ;
 		mi->bItalics = gcr->dwFlags & GC_ITALICS ;
@@ -446,7 +446,12 @@ static void AddUser(GCEVENT * gce)
 
 			if (si->hWnd) {
 				SendMessage(si->hWnd, GC_UPDATENICKLIST, (WPARAM)0, (LPARAM)0);
-}	}	}	}
+				if(si->dat)
+					GetMyNick(si->dat);
+			}
+		}
+	}
+}
 
 HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOOL bActivateTab, BOOL bPopupContainer, BOOL bWantPopup)
 {
@@ -856,11 +861,12 @@ void UnhookEvents(void)
 
 void CreateServiceFunctions(void)
 {
+	PluginConfig.m_chat_enabled = false;
+
 	if(ServiceExists(MS_GC_REGISTER)) {
 		if(MessageBox(0, TranslateT("TabSRMM could not enable its group chat module. The most likely cause is that you have installed and enabled chat.dll or another plugin that provides groupchat services.\n\nShould I try to fix this now (a RESTART of Miranda is required to apply these changes)?"),
 					  TranslateT("TabSRMM group chat module"),  MB_YESNO | MB_ICONQUESTION) == IDYES) {
 
-			PluginConfig.m_chat_enabled = false;
 			M->WriteByte("PluginDisable", "chat.dll", 1);
 		}
 		return;

@@ -53,9 +53,10 @@ static unsigned __stdcall TrayAnimThread(LPVOID vParam)
 			if (hIconTrayCurrent != hIconDefault)
 				FlashTrayIcon(hIconDefault);                        // restore default icon
 			PluginConfig.m_TrayFlashState = 0;
+
 			dwElapsed = 0;
 			dwAnimStep = 0;
-			WaitForSingleObject(hEvent, INFINITE);
+			WaitForSingleObject(hEvent, 30000);
 			ResetEvent(hEvent);
 			idleTimer += 2000;
 		}
@@ -96,16 +97,19 @@ void CreateTrayMenus(int mode)
 {
 	if (mode) {
 		mir_sntprintf(g_eventName, 100, _T("tsr_evt_%d"), GetCurrentThreadId());
-		g_hEvent = CreateEvent(NULL, TRUE, FALSE, g_eventName);
+		g_hEvent = CreateEvent(NULL, FALSE, FALSE, g_eventName);
 		isAnimThreadRunning = TRUE;
 		hTrayAnimThread = (HANDLE)mir_forkthreadex(TrayAnimThread, NULL, 16000, NULL);
+
 		PluginConfig.g_hMenuTrayUnread = CreatePopupMenu();
 		PluginConfig.g_hMenuFavorites = CreatePopupMenu();
 		PluginConfig.g_hMenuRecent = CreatePopupMenu();
 		PluginConfig.g_hMenuTrayContext = GetSubMenu(PluginConfig.g_hMenuContext, 6);
 		if (PluginConfig.m_WinVerMajor >= 5) {
-			ModifyMenu(PluginConfig.g_hMenuTrayContext, 0, MF_BYPOSITION | MF_POPUP, (UINT_PTR)PluginConfig.g_hMenuFavorites, TranslateT("Favorites"));
-			ModifyMenu(PluginConfig.g_hMenuTrayContext, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR)PluginConfig.g_hMenuRecent, TranslateT("Recent Sessions"));
+			ModifyMenu(PluginConfig.g_hMenuTrayContext, 0, MF_BYPOSITION | MF_POPUP,
+					   (UINT_PTR)PluginConfig.g_hMenuFavorites, CTranslator::get(CTranslator::GEN_FAVORITES));
+			ModifyMenu(PluginConfig.g_hMenuTrayContext, 2, MF_BYPOSITION | MF_POPUP,
+					   (UINT_PTR)PluginConfig.g_hMenuRecent, CTranslator::get(CTranslator::GEN_RECENT_SESSIONS));
 			LoadFavoritesAndRecent();
 		}
 		else {

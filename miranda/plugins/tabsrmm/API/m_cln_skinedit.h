@@ -96,6 +96,7 @@ typedef struct _tagSkinDescription {
 #define CORNER_TR 4
 #define CORNER_BR 8
 #define CORNER_BL 16
+#define CORNER_ALL (CORNER_TL | CORNER_TR | CORNER_BR | CORNER_BL | CORNER_ACTIVE)
 
 #define GRADIENT_NONE 0
 #define GRADIENT_ACTIVE 1

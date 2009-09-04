@@ -34,6 +34,8 @@ void DM_SetDBButtonStates(HWND hwndChild, struct _MessageWindowData *dat);
 int BTN_GetStockItem(ButtonItem *item, const TCHAR *szName);
 HWND DM_CreateClist(HWND hwndParent, struct _MessageWindowData *dat);
 
+void 	DM_OptionsApplied(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
+void 	DM_UpdateTitle(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
 LRESULT DM_ScrollToBottom(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
 LRESULT DM_LoadLocale(_MessageWindowData *dat);
 LRESULT DM_SaveLocale(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
@@ -42,6 +44,7 @@ LRESULT DM_RecalcPictureSize(_MessageWindowData *dat);
 LRESULT DM_WMCopyHandler(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lParam);
 LRESULT DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct _MessageWindowData *mwdat, WPARAM wParam, LPARAM lParam);
 LRESULT DM_ThemeChanged(_MessageWindowData *dat);
+void	DM_Typing(_MessageWindowData *dat);
 void	DM_FreeTheme(_MessageWindowData *dat);
 
 void BB_InitDlgButtons(HWND hdlg,struct _MessageWindowData *dat);

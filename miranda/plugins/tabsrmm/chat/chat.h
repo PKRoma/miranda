@@ -138,6 +138,9 @@ typedef struct  MODULE_INFO_TYPE
 	int			OnlineIconIndex;
 	int			OfflineIconIndex;
 	int			iMaxText;
+	DWORD		   idleTimeStamp;
+	DWORD		   lastIdleCheck;
+	TCHAR		   tszIdleMsg[30];
 	struct MODULE_INFO_TYPE *next;
 }
 	MODULEINFO;
@@ -258,7 +261,8 @@ typedef struct SESSION_INFO_TYPE
 	USERINFO*      pMe;
 	STATUSINFO*    pStatuses;
 	struct         ContainerWindowData *pContainer;
-   int            wasTrimmed;
+	struct		   _MessageWindowData *dat;
+	int            wasTrimmed;
 	struct SESSION_INFO_TYPE *next;
 }	SESSION_INFO;
 

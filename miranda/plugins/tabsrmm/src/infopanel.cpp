@@ -110,9 +110,6 @@ void CInfoPanel::showHide() const
 	HWND	hwndDlg = m_dat->hwnd;
 
 	if(!m_isChat) {
-		if (m_dat->dwFlags & MWF_ERRORSTATE)
-			return;
-		 //MAD
 		if(!m_active && m_dat->hwndPanelPic) {
 			::DestroyWindow(m_dat->hwndPanelPic);
 			m_dat->hwndPanelPic=NULL;
@@ -198,14 +195,12 @@ bool CInfoPanel::getVisibility()
  */
 void CInfoPanel::renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero) const
 {
-	if(m_dat->dwFlags & MWF_ERRORSTATE)
-		return;
-
 	if(m_active) {
+
 		rc.bottom = m_height + 2;
 		if(fAero) {
 			RECT	rcBlack = rc;
-			rcBlack.bottom = m_height + 2 + 30;
+			rcBlack.bottom = m_height + 2; // + 30;
 			::FillRect(hdc, &rcBlack, reinterpret_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
 			rc.bottom -= 2;
 			CSkin::ApplyAeroEffect(hdc, &rc, CSkin::AERO_EFFECT_AREA_INFOPANEL);
@@ -218,10 +213,8 @@ void CInfoPanel::renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero) 
 				if(m_dat->pContainer->bSkinned)
 					CSkin::SkinDrawBG(m_dat->hwnd, m_dat->pContainer->hwnd, m_dat->pContainer, &rc, hdc);
 				rc.bottom -= 2;
-				if(!item->IGNORED) {
-					DrawAlpha(hdc, &rc, item->COLOR, item->ALPHA, PluginConfig.m_ipBackgroundGradient, item->COLOR2_TRANSPARENT, item->GRADIENT,
-							  item->CORNER, item->BORDERSTYLE, item->imageItem);
-				}
+				::DrawAlpha(hdc, &rc, PluginConfig.m_ipBackgroundGradient, 100, GetSysColor(COLOR_3DFACE), 1, 17,
+						  31, 8, 0);
 				rc.top = rc.bottom - 1;
 				rc.left--; rc.right++;
 				::DrawEdge(hdc, &rc, BDR_SUNKENOUTER, BF_RECT);
@@ -240,9 +233,6 @@ void CInfoPanel::renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero) 
  */
 void CInfoPanel::renderContent(const HDC hdc)
 {
-	if(m_dat->dwFlags & MWF_ERRORSTATE)
-		return;
-
 	if(m_active) {
 		if(!m_isChat) {
 			RECT rc;
@@ -273,13 +263,16 @@ void CInfoPanel::renderContent(const HDC hdc)
 		}
 		else {
 			RECT rc;
-
-			SetBkMode(hdc, TRANSPARENT);
 			CSkin::MapClientToParent(GetDlgItem(m_dat->hwnd, IDC_PANELNICK), m_dat->hwnd, rc);
 			if(m_height >= DEGRADE_THRESHOLD) {
 				rc.top -= 2; rc.bottom += 6;
 			}
-			CSkin::RenderText(hdc, m_dat->hTheme, _T("place holder"), &rc, DT_SINGLELINE);
+			Chat_RenderIPNickname(hdc, rc);
+			if(m_height >= DEGRADE_THRESHOLD) {
+				CSkin::MapClientToParent(GetDlgItem(m_dat->hwnd, IDC_PANELUIN), m_dat->hwnd, rc);
+				rc.top -= 3;
+				Chat_RenderIPSecondLine(hdc, rc);
+			}
 		}
 	}
 }
@@ -299,7 +292,6 @@ void CInfoPanel::renderContent(const HDC hdc)
  */
 void CInfoPanel::RenderIPNickname(const HDC hdc, RECT& rcItem)
 {
-	RECT 		rc = rcItem;
 	TCHAR 		*szStatusMsg = NULL;
 	CSkinItem*	item = &SkinItems[ID_EXTBKINFOPANEL];
 	TCHAR*		szTextToShow = 0;
@@ -313,8 +305,6 @@ void CInfoPanel::RenderIPNickname(const HDC hdc, RECT& rcItem)
 
 	szStatusMsg = m_dat->statusMsg;
 
-	m_dat->szLabel.cx = 0;
-	rc.right = rc.left;
 	SetBkMode(hdc, TRANSPARENT);
 
 	rcItem.left += 2;
@@ -350,7 +340,7 @@ void CInfoPanel::RenderIPNickname(const HDC hdc, RECT& rcItem)
 			dtFlagsNick = DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_NOPREFIX;
 			if ((szNick.cx + sStatusMsg.cx + 6) < (rcItem.right - rcItem.left) || (rcItem.bottom - rcItem.top) < (2 * sMask.cy))
 				dtFlagsNick |= DT_VCENTER;
-			CSkin::RenderText(hdc, m_dat->hThemeIP, szTextToShow, &rcItem, dtFlagsNick);
+			CSkin::RenderText(hdc, m_dat->hThemeIP, szTextToShow, &rcItem, dtFlagsNick, CSkin::m_glowSize);
 			if (m_ipConfig.isValid) {
 				SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_STATUS]);
 				SetTextColor(hdc, m_ipConfig.clrs[IPFONTID_STATUS]);
@@ -366,9 +356,9 @@ void CInfoPanel::RenderIPNickname(const HDC hdc, RECT& rcItem)
 
 			rcItem.right -= 3;
 			if (rcItem.left + 30 < rcItem.right)
-				CSkin::RenderText(hdc, m_dat->hThemeIP, szStatusMsg, &rcItem, dtFlags);
+				CSkin::RenderText(hdc, m_dat->hThemeIP, szStatusMsg, &rcItem, dtFlags, CSkin::m_glowSize);
 		} else
-			CSkin::RenderText(hdc, m_dat->hThemeIP, szTextToShow, &rcItem, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX);
+			CSkin::RenderText(hdc, m_dat->hThemeIP, szTextToShow, &rcItem, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX, CSkin::m_glowSize);
 
 		if (hOldFont)
 			SelectObject(hdc, hOldFont);
@@ -405,10 +395,10 @@ void CInfoPanel::RenderIPUIN(const HDC hdc, RECT& rcItem)
 			int i_mins = (diff - i_hrs * 3600) / 60;
 			mir_sntprintf(szBuf, safe_sizeof(szBuf), _T("%s    Idle: %dh,%02dm"), tszUin, i_hrs, i_mins);
 			GetTextExtentPoint32(hdc, szBuf, lstrlen(szBuf), &sUIN);
-			CSkin::RenderText(hdc, m_dat->hThemeIP, szBuf, &rcItem, DT_SINGLELINE | DT_VCENTER);
+			CSkin::RenderText(hdc, m_dat->hThemeIP, szBuf, &rcItem, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize);
 		} else {
 			GetTextExtentPoint32(hdc, tszUin, lstrlen(tszUin), &sUIN);
-			CSkin::RenderText(hdc, m_dat->hThemeIP, tszUin, &rcItem, DT_SINGLELINE | DT_VCENTER);
+			CSkin::RenderText(hdc, m_dat->hThemeIP, tszUin, &rcItem, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize);
 		}
 	}
 	if (hOldFont)
@@ -489,7 +479,7 @@ void CInfoPanel::RenderIPStatus(const HDC hdc, RECT& rcItem)
 			SetTextColor(hdc, m_ipConfig.clrs[IPFONTID_TIME]);
 		}
 		rcItem.left += 16;
-		CSkin::RenderText(hdc, m_dat->hThemeIP, szResult, &rcItem, DT_SINGLELINE | DT_VCENTER);
+		CSkin::RenderText(hdc, m_dat->hThemeIP, szResult, &rcItem, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize);
 		SelectObject(hdc, oldFont);
 		rc.left += (sTime.cx + 20);
 	}
@@ -502,7 +492,7 @@ void CInfoPanel::RenderIPStatus(const HDC hdc, RECT& rcItem)
 			SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_STATUS]);
 			SetTextColor(hdc, m_ipConfig.clrs[IPFONTID_STATUS]);
 		}
-		CSkin::RenderText(hdc, m_dat->hThemeIP, m_dat->szStatus, &rc, DT_SINGLELINE | DT_VCENTER);
+		CSkin::RenderText(hdc, m_dat->hThemeIP, m_dat->szStatus, &rc, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize);
 	}
 	if (szFinalProto) {
 		rc.left = rc.right - sProto.cx - 3 - (m_dat->hClientIcon ? 20 : 0);
@@ -511,7 +501,7 @@ void CInfoPanel::RenderIPStatus(const HDC hdc, RECT& rcItem)
 			SetTextColor(hdc, m_ipConfig.clrs[IPFONTID_PROTO]);
 		} else
 			SetTextColor(hdc, GetSysColor(COLOR_HOTLIGHT));
-		CSkin::RenderText(hdc, m_dat->hThemeIP, szFinalProto, &rc, DT_SINGLELINE | DT_VCENTER);
+		CSkin::RenderText(hdc, m_dat->hThemeIP, szFinalProto, &rc, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize);
 	}
 
 	if (m_dat->hClientIcon)
@@ -521,14 +511,110 @@ void CInfoPanel::RenderIPStatus(const HDC hdc, RECT& rcItem)
 		SelectObject(hdc, hOldFont);
 }
 
+/**
+ * Draws the Nickname field (first line) in a MUC window
+ *
+ * @param hdc    HDC: device context for drawing.
+ * @param rcItem RECT &: target rectangle for drawing
+ */
+void CInfoPanel::Chat_RenderIPNickname(const HDC hdc, RECT& rcItem)
+{
+	SESSION_INFO	*si = reinterpret_cast<SESSION_INFO *>(m_dat->si);
+
+	const TCHAR *tszMode = 0;
+	const TCHAR	*tszTopic = 0;
+	size_t 		s = 0;
+	HFONT 		hOldFont = 0;
+
+	if(si == 0)
+		return;
+
+	if(si->ptszStatusbarText) {
+		tstring sbarText(si->ptszStatusbarText);
+		if((s = sbarText.find_first_of(' ')) != sbarText.npos) {
+			sbarText[s] = 0;
+			tszMode = sbarText.c_str();
+			tszTopic = &sbarText[s + 1];
+		}
+	}
+
+	::SetBkMode(hdc, TRANSPARENT);
+
+	if(m_height < DEGRADE_THRESHOLD) {
+		TCHAR	tszText[256];
+
+		mir_sntprintf(tszText, 256, CTranslator::get(CTranslator::GEN_MUC_TOPIC_IS), tszTopic ? tszTopic :
+					  CTranslator::get(CTranslator::GEN_MUC_NO_TOPIC));
+
+		hOldFont = (HFONT)::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_UIN]);
+		::SetTextColor(hdc, m_ipConfig.clrs[IPFONTID_UIN]);
+		CSkin::RenderText(hdc, m_dat->hTheme, tszText, &rcItem, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, CSkin::m_glowSize);
+	} else {
+		SIZE	szNick;
+
+		hOldFont = (HFONT)::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_NICK]);
+		::SetTextColor(hdc, m_ipConfig.clrs[IPFONTID_NICK]);
+		::GetTextExtentPoint32(hdc, m_dat->szNickname, lstrlen(m_dat->szNickname), &szNick);
+		CSkin::RenderText(hdc, m_dat->hTheme, m_dat->szNickname, &rcItem, DT_SINGLELINE | DT_NOPREFIX | DT_TOP, CSkin::m_glowSize);
+		rcItem.left += (szNick.cx + 4);
+		::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_STATUS]);
+		::SetTextColor(hdc, m_ipConfig.clrs[IPFONTID_STATUS]);
+		if(tszMode)
+			CSkin::RenderText(hdc, m_dat->hTheme, tszMode, &rcItem, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | DT_TOP, CSkin::m_glowSize);
+	}
+	if (hOldFont)
+		SelectObject(hdc, hOldFont);
+}
+
+void CInfoPanel::Chat_RenderIPSecondLine(const HDC hdc, RECT& rcItem)
+{
+	const 	TCHAR *tszMode = 0;
+	const 	TCHAR	*tszTopic = 0;
+	HFONT 	hOldFont = 0;
+	size_t 	s;
+	SIZE	szTitle;
+	TCHAR	szPrefix[100];
+
+	SESSION_INFO	*si = reinterpret_cast<SESSION_INFO *>(m_dat->si);
+
+	if(si == 0)
+		return;
+
+	if(si->ptszStatusbarText) {
+		tstring sbarText(si->ptszStatusbarText);
+		if((s = sbarText.find_first_of(' ')) != sbarText.npos) {
+			sbarText[s] = 0;
+			tszMode = sbarText.c_str();
+			tszTopic = &sbarText[s + 1];
+		}
+	}
+
+	hOldFont = (HFONT)::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_UIN]);
+	::SetTextColor(hdc, m_ipConfig.clrs[IPFONTID_UIN]);
+
+	const TCHAR *szTopicTitle = CTranslator::get(CTranslator::GEN_MUC_TOPIC_IS);
+	mir_sntprintf(szPrefix, 100, szTopicTitle, _T(""));
+	::GetTextExtentPoint32(hdc, szPrefix, lstrlen(szPrefix), &szTitle);
+
+	CSkin::RenderText(hdc, m_dat->hTheme, szPrefix, &rcItem, DT_SINGLELINE | DT_NOPREFIX | DT_TOP);
+	rcItem.left += (szTitle.cx + 4);
+
+	if(tszTopic && lstrlen(tszTopic) > 1)
+		CSkin::RenderText(hdc, m_dat->hTheme, tszTopic, &rcItem, DT_WORDBREAK | DT_END_ELLIPSIS | DT_NOPREFIX | DT_TOP, CSkin::m_glowSize);
+	else
+		CSkin::RenderText(hdc, m_dat->hTheme, CTranslator::get(CTranslator::GEN_MUC_NO_TOPIC), &rcItem, DT_TOP| DT_SINGLELINE | DT_NOPREFIX, CSkin::m_glowSize);
+
+
+	if(hOldFont)
+		::SelectObject(hdc, hOldFont);
+}
+
 void CInfoPanel::Invalidate() const
 {
 	RECT	rc;
 
 	GetClientRect(m_dat->hwnd, &rc);
-
 	rc.bottom = m_height;
-
 	::InvalidateRect(m_dat->hwnd, &rc, FALSE);
 }
 
@@ -586,7 +672,6 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 			else
 				m_dat->ti.lpszText = PluginConfig.m_szNoStatus;
 		}
-
 		SendMessage(m_dat->hwndTip, TTM_UPDATETIPTEXT, 0, (LPARAM)&m_dat->ti);
 		SendMessage(m_dat->hwndTip, TTM_SETMAXTIPWIDTH, 0, 350);
 
@@ -596,7 +681,7 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 
 				if (!M->GetTString(m_dat->bIsMeta ? m_dat->hSubContact : m_dat->hContact, m_dat->bIsMeta ? m_dat->szMetaProto : m_dat->szProto, "XStatusName", &dbv)) {
 					if (lstrlen(dbv.ptszVal) > 1) {
-						_sntprintf(szTitle, safe_sizeof(szTitle), TranslateT("Extended status for %s: %s"), m_dat->szNickname, dbv.ptszVal);
+						_sntprintf(szTitle, safe_sizeof(szTitle), CTranslator::get(CTranslator::GEN_IP_TIP_XSTATUS), m_dat->szNickname, dbv.ptszVal);
 						szTitle[safe_sizeof(szTitle) - 1] = 0;
 						DBFreeVariant(&dbv);
 						break;
@@ -604,23 +689,23 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 					DBFreeVariant(&dbv);
 				}
 				if (m_dat->xStatus > 0 && m_dat->xStatus <= 32) {
-					_sntprintf(szTitle, safe_sizeof(szTitle), TranslateT("Extended status for %s: %s"), m_dat->szNickname, xStatusDescr[m_dat->xStatus - 1]);
+					_sntprintf(szTitle, safe_sizeof(szTitle), CTranslator::get(CTranslator::GEN_IP_TIP_XSTATUS), m_dat->szNickname, xStatusDescr[m_dat->xStatus - 1]);
 					szTitle[safe_sizeof(szTitle) - 1] = 0;
 				} else
 					return;
 				break;
 			}
 			case IDC_PANELSTATUS + 1: {
-				_sntprintf(szTitle, safe_sizeof(szTitle), TranslateT("%s is using"), m_dat->szNickname);
+				_sntprintf(szTitle, safe_sizeof(szTitle), CTranslator::get(CTranslator::GEN_IP_TIP_CLIENT), m_dat->szNickname);
 				szTitle[safe_sizeof(szTitle) - 1] = 0;
 				break;
 			}
 			case IDC_PANELSTATUS: {
-				mir_sntprintf(szTitle, safe_sizeof(szTitle), TranslateT("Status message for %s (%s)"), m_dat->szNickname, m_dat->szStatus);
+				mir_sntprintf(szTitle, safe_sizeof(szTitle), CTranslator::get(CTranslator::GEN_IP_TIP_STATUSMSG), m_dat->szNickname, m_dat->szStatus);
 				break;
 			}
 			default:
-				_sntprintf(szTitle, safe_sizeof(szTitle), TranslateT("tabSRMM Information"));
+				_sntprintf(szTitle, safe_sizeof(szTitle), CTranslator::get(CTranslator::GEN_IP_TIP_TITLE));
 		}
 		SendMessage(m_dat->hwndTip, TTM_SETTITLE, 1, (LPARAM)szTitle);
 		SendMessage(m_dat->hwndTip, TTM_TRACKACTIVATE, TRUE, (LPARAM)&m_dat->ti);

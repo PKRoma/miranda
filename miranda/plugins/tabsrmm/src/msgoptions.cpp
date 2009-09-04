@@ -178,72 +178,7 @@ void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour, char *szModule)
 #endif
 }
 
-static struct LISTOPTIONSGROUP defaultGroups[] = {
-	0, _T("Message window behaviour"),
-	0, _T("Sending messages"),
-	0, _T("Other options"),
-	0, NULL
-};
-
-static struct LISTOPTIONSITEM defaultItems[] = {
-	0, _T("Send on SHIFT - Enter"), 0, LOI_TYPE_SETTING, (UINT_PTR)"sendonshiftenter", 1,
-	0, _T("Send message on 'Enter'"), SRMSGDEFSET_SENDONENTER, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SENDONENTER, 1,
-	0, _T("Send message on double 'Enter'"), 0, LOI_TYPE_SETTING, (UINT_PTR)"SendOnDblEnter", 1,
-	0, _T("Minimize the message window on send"), SRMSGDEFSET_AUTOMIN, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_AUTOMIN, 1,
-	//Mad
-	0, _T("Close the message window on send"), 0, LOI_TYPE_SETTING, (UINT_PTR)"AutoClose", 1,
-	//mad_
-	0, _T("Always flash contact list and tray icon for new messages"), 0, LOI_TYPE_SETTING, (UINT_PTR)"flashcl", 0,
-	0, _T("Delete temporary contacts on close"), 0, LOI_TYPE_SETTING, (UINT_PTR)"deletetemp", 0,
-	0, _T("Allow PASTE AND SEND feature (Ctrl-D)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"pasteandsend", 1,
-	0, _T("Automatically split long messages (experimental, use with care)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autosplit", 2,
-	0, _T("Show session list menu on the message window status bar"), 1, LOI_TYPE_SETTING, (UINT_PTR)"slistinstatusbar", 2,
-	0, NULL, 0, 0, 0, 0
-};
-
 HIMAGELIST g_himlOptions;
-
-static void FillBranch(HWND hwndList, LISTOPTIONSITEM *loiList, TCHAR *szSection, UINT uSectionNumber)
-{
-	int i = 0, nItems=0;
-	ListView_DeleteAllItems(hwndList);
-
-	while(loiList[i].szName) {
-
-		if(loiList[i].uGroup != uSectionNumber) {
-			i++;
-			continue;
-		}
-
-		LVITEM lvi = {0};
-
-		lvi.mask = LVIF_TEXT|LVIF_PARAM;
-		lvi.iItem = nItems++;
-		lvi.iSubItem = 0;
-		lvi.lParam = 0;
-		lvi.pszText = szSection;
-		ListView_InsertItem(hwndList, &lvi);
-
-		BOOL checked = loiList[i].uType == LOI_TYPE_SETTING ? (M->GetByte(reinterpret_cast<const char *>(loiList[i].lParam),
-																		  (BYTE)(loiList[i].id)) ? TRUE : FALSE) : FALSE;
-
-		ListView_SetCheckState(hwndList, lvi.iItem, checked);
-
-		lvi.mask = LVIF_TEXT;
-		lvi.iSubItem = 1;
-		lvi.pszText = szSection;
-		ListView_SetItem(hwndList, &lvi);
-
-		lvi.iSubItem = 0;
-
-		lvi.mask = LVIF_PARAM;
-		lvi.mask |= LVIF_INDENT;
-		lvi.iIndent = 1;
-		lvi.iItem = nItems++;
-		lvi.lParam = uSectionNumber;
-		ListView_InsertItem(hwndList, &lvi);
-	}
-}
 
 static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -268,11 +203,13 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			* fill the list box, create groups first, then add items
 			*/
 
+			LISTOPTIONSGROUP *defaultGroups = CTranslator::getGroupTree(CTranslator::TREE_MSG);
+
 			while (defaultGroups[i].szName != NULL) {
 				tvi.hParent = 0;
 				tvi.hInsertAfter = TVI_LAST;
 				tvi.item.mask = TVIF_TEXT | TVIF_STATE;
-				tvi.item.pszText = TranslateTS(defaultGroups[i].szName);
+				tvi.item.pszText = defaultGroups[i].szName;
 				tvi.item.stateMask = TVIS_STATEIMAGEMASK | TVIS_EXPANDED | TVIS_BOLD;
 				tvi.item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_EXPANDED | TVIS_BOLD;
 				defaultGroups[i++].handle = (LRESULT)TreeView_InsertItem(GetDlgItem(hwndDlg, IDC_WINDOWOPTIONS), &tvi);
@@ -280,36 +217,49 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 			i = 0;
 
+			LISTOPTIONSITEM *defaultItems = CTranslator::getTree(CTranslator::TREE_MSG);
+
 			while (defaultItems[i].szName != 0) {
 				tvi.hParent = (HTREEITEM)defaultGroups[defaultItems[i].uGroup].handle;
 				tvi.hInsertAfter = TVI_LAST;
-				tvi.item.pszText = TranslateTS(defaultItems[i].szName);
+				tvi.item.pszText = defaultItems[i].szName;
 				tvi.item.mask = TVIF_TEXT | TVIF_STATE | TVIF_PARAM;
 				tvi.item.lParam = i;
 				tvi.item.stateMask = TVIS_STATEIMAGEMASK;
 				if (defaultItems[i].uType == LOI_TYPE_SETTING)
 					tvi.item.state = INDEXTOSTATEIMAGEMASK(M->GetByte((char *)defaultItems[i].lParam, (BYTE)defaultItems[i].id) ? 3 : 2);
-					//tvi.item.state = INDEXTOSTATEIMAGEMASK(DBGetContactSettingByte(NULL, SRMSGMOD_T, (char *)defaultItems[i].lParam, (BYTE)defaultItems[i].id) ? 2 : 1);
 				defaultItems[i].handle = (LRESULT)TreeView_InsertItem(GetDlgItem(hwndDlg, IDC_WINDOWOPTIONS), &tvi);
 				i++;
 			}
 
-			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1, (LPARAM)TranslateT("None"));
-			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Automatic"));
-			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Sunken"));
-			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1, (LPARAM)TranslateT("1 pixel solid"));
-			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Rounded border"));
+			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1,
+							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_NONE));
+			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1,
+							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_AUTO));
+			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1,
+							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_SUNKEN));
+			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1,
+							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_1PIXEL));
+			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1,
+							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_ROUNDED));
+
 			SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETCOLOUR, 0, M->GetDword("avborderclr", RGB(0, 0, 0)));
 
 			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_SETCURSEL, (WPARAM)M->GetByte("avbordertype", 0), 0);
 
-			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Globally on"));
-			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("On, if present"));
-			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Globally OFF"));
-			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("On, if present, always in bottom display"));
+			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1,
+							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_GLOBALLY_ON));
+			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1,
+							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_ON_IF_PRESENT));
+			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1,
+							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_GLOBALLY_OFF));
+			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1,
+							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_ON_ALWAYS_BOTTOM));
 
-			SendDlgItemMessage(hwndDlg, IDC_OWNAVATARMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Show them if present"));
-			SendDlgItemMessage(hwndDlg, IDC_OWNAVATARMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Don't show them"));
+			SendDlgItemMessage(hwndDlg, IDC_OWNAVATARMODE, CB_INSERTSTRING, -1,
+							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_ON_IF_PRESENT));
+			SendDlgItemMessage(hwndDlg, IDC_OWNAVATARMODE, CB_INSERTSTRING, -1,
+							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_DONT_SHOW));
 
 			switch (M->GetByte("avatarmode", 0)) {
 				case 5:
@@ -443,6 +393,9 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							/*
 							* scan the tree view and obtain the options...
 							*/
+
+							LISTOPTIONSITEM *defaultItems = CTranslator::getTree(CTranslator::TREE_MSG);
+
 							while (defaultItems[i].szName != NULL) {
 								item.mask = TVIF_HANDLE | TVIF_STATE;
 								item.hItem = (HTREEITEM)defaultItems[i].handle;
@@ -465,47 +418,6 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 	}
 	return FALSE;
 }
-
-static struct LISTOPTIONSGROUP lvGroups[] = {
-	0, _T("Message log appearance"),
-	0, _T("Support for external plugins"),
-	0, _T("Other options"),
-	0, _T("Additional events to show"),
-	0, _T("Timestamp settings (note: timstamps also depend on your templates)"),
-	0, _T("Message log icons"),
-	0, NULL
-};
-
-static struct LISTOPTIONSITEM lvItems[] = {
-	0, _T("Show file events"), 1, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SHOWFILES, 3,
-	0, _T("Show timestamps"), 1, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_SHOWTIME, 4,
-	0, _T("Show dates in timestamps"), 1, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_SHOWDATES, 4,
-	0, _T("Show seconds in timestamps"), 1, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_SHOWSECONDS, 4,
-	0, _T("Use contacts local time (if timezone info available)"), 0, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_LOCALTIME, 4,
-	0, _T("Draw grid lines"), 1, LOI_TYPE_FLAG,  MWF_LOG_GRID, 0,
-	0, _T("Show Icons"), 1, LOI_TYPE_FLAG, MWF_LOG_SHOWICONS, 5,
-	0, _T("Show Symbols"), 0, LOI_TYPE_FLAG, MWF_LOG_SYMBOLS, 5,
-	0, _T("Use Incoming/Outgoing Icons"), 1, LOI_TYPE_FLAG, MWF_LOG_INOUTICONS, 5,
-	0, _T("Use Message Grouping"), 1, LOI_TYPE_FLAG, MWF_LOG_GROUPMODE, 0,
-	0, _T("Indent message body"), 1, LOI_TYPE_FLAG, MWF_LOG_INDENT, 0,
-	0, _T("Simple text formatting (*bold* etc.)"), 0, LOI_TYPE_FLAG, MWF_LOG_TEXTFORMAT, 0,
-	0, _T("Support BBCode formatting"), 1, LOI_TYPE_FLAG, MWF_LOG_BBCODE, 0,
-	0, _T("Place dividers in inactive sessions"), 0, LOI_TYPE_SETTING, (UINT_PTR)"usedividers", 0,
-	0, _T("Use popup configuration for placing dividers"), 0, LOI_TYPE_SETTING, (UINT_PTR)"div_popupconfig", 0,
-	0, _T("RTL is default text direction"), 0, LOI_TYPE_FLAG, MWF_LOG_RTL, 0,
-	//0, _T("Support Math Module plugin"), 1, LOI_TYPE_SETTING, (UINT_PTR)"wantmathmod", 1,
-//MAD:
-	0, _T("Show events at the new line (IEView Compatibility Mode)"), 1, LOI_TYPE_FLAG, MWF_LOG_NEWLINE, 1,
-	0, _T("Underline timestamp/nickname (IEView Compatibility Mode)"), 0, LOI_TYPE_FLAG, MWF_LOG_UNDERLINE, 1,
-	0, _T("Show timestamp after nickname (IEView Compatibility Mode)"), 0, LOI_TYPE_FLAG, MWF_LOG_SWAPNICK, 1,
-//
-	0, _T("Log status changes"), 1, LOI_TYPE_FLAG, MWF_LOG_STATUSCHANGES, 2,
-	0, _T("Automatically copy selected text"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autocopy", 2,
-	0, _T("Use multiple background colors"), 1, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_INDIVIDUALBKG, 0,
-	0, _T("Use normal templates (uncheck to use simple templates if your template set supports them)"), 1, LOI_TYPE_FLAG, MWF_LOG_NORMALTEMPLATES, 0,
-	0, NULL, 0, 0, 0, 0
-	};
-
 static int have_ieview = 0, have_hpp = 0;
 
 static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -547,11 +459,13 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 			* fill the list box, create groups first, then add items
 			*/
 
+			LISTOPTIONSGROUP *lvGroups = CTranslator::getGroupTree(CTranslator::TREE_LOG);
+
 			while (lvGroups[i].szName != NULL) {
 				tvi.hParent = 0;
 				tvi.hInsertAfter = TVI_LAST;
 				tvi.item.mask = TVIF_TEXT | TVIF_STATE;
-				tvi.item.pszText = TranslateTS(lvGroups[i].szName);
+				tvi.item.pszText = lvGroups[i].szName;
 				tvi.item.stateMask = TVIS_STATEIMAGEMASK | TVIS_EXPANDED | TVIS_BOLD;
 				tvi.item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_EXPANDED | TVIS_BOLD;
 				lvGroups[i++].handle = (LRESULT)TreeView_InsertItem(GetDlgItem(hwndDlg, IDC_LOGOPTIONS), &tvi);
@@ -559,10 +473,12 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 			i = 0;
 
+			LISTOPTIONSITEM *lvItems = CTranslator::getTree(CTranslator::TREE_LOG);
+
 			while (lvItems[i].szName != 0) {
 				tvi.hParent = (HTREEITEM)lvGroups[lvItems[i].uGroup].handle;
 				tvi.hInsertAfter = TVI_LAST;
-				tvi.item.pszText = TranslateTS(lvItems[i].szName);
+				tvi.item.pszText = lvItems[i].szName;
 				tvi.item.mask = TVIF_TEXT | TVIF_STATE | TVIF_PARAM;
 				tvi.item.lParam = i;
 				tvi.item.stateMask = TVIS_STATEIMAGEMASK;
@@ -723,6 +639,8 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 							/*
 							* scan the tree view and obtain the options...
 							*/
+							LISTOPTIONSITEM *lvItems = CTranslator::getTree(CTranslator::TREE_LOG);
+
 							while (lvItems[i].szName != NULL) {
 								item.mask = TVIF_HANDLE | TVIF_STATE;
 								item.hItem = (HTREEITEM)lvItems[i].handle;
@@ -927,38 +845,6 @@ static INT_PTR CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam
  * options for tabbed messaging got their own page.. finally :)
  */
 
-static struct LISTOPTIONSGROUP tabGroups[] = {
-	0, _T("Tab options"),
-	0, _T("How to create tabs and windows for incoming messages"),
-	0, _T("Message dialog visual settings"),
-	0, _T("Miscellaneous options"),
-	0, NULL
-};
-
-static struct LISTOPTIONSITEM tabItems[] = {
-	0, _T("Show status text on tabs"), 1, LOI_TYPE_SETTING, (UINT_PTR)"tabstatus", 0,
-	0, _T("Prefer xStatus icons when available"), 1, LOI_TYPE_SETTING, (UINT_PTR)"use_xicons", 0,
-	0, _T("Warn when closing a tab or window"), 0, LOI_TYPE_SETTING, (UINT_PTR)"warnonexit", 0,
-	0, _T("Detailed tooltip on tabs (requires mToolTip or Tipper plugin)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"d_tooltips", 0,
-	0, _T("ALWAYS activate new message sessions (has PRIORITY over the options below)"), SRMSGDEFSET_AUTOPOPUP, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_AUTOPOPUP, 1,
-	0, _T("Automatically create new message sessions without activating them"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autotabs", 1,
-	0, _T("New windows are minimized (the option above MUST be active)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autocontainer", 1,
-	0, _T("Activate a minimized window when a new tab is created inside it"), 0, LOI_TYPE_SETTING, (UINT_PTR)"cpopup", 1,
-	0, _T("Automatically activate existing tabs in minimized windows"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autoswitchtabs", 1,
-	0, _T("Flat toolbar buttons"), 1, LOI_TYPE_SETTING, (UINT_PTR)"tbflat", 2,
-	0, _T("Splitters are visible"), 1, LOI_TYPE_SETTING, (UINT_PTR)"splitteredges", 2,
-	0, _T("No borders for text areas (make them appear \"flat\")"), 1, LOI_TYPE_SETTING, (UINT_PTR)"flatlog", 2,
-	0, _T("Always use icon pack image on the smiley button"), 1, LOI_TYPE_SETTING, (UINT_PTR)"smbutton_override", 2,
-	0, _T("Remember and set keyboard layout per contact"), 1, LOI_TYPE_SETTING, (UINT_PTR)"al", 3,
-	0, _T("Close button only hides message windows"), 0, LOI_TYPE_SETTING, (UINT_PTR)"hideonclose", 3,
-	0, _T("Allow TAB key in typing area (this will disable focus selection by TAB key)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"tabmode", 3,
-	//MAD
-	0, _T("Add offline contacts to multisend list"),0,LOI_TYPE_SETTING,(UINT_PTR) "AllowOfflineMultisend", 3,
-	//
-	0, _T("Dim icons for idle contacts"), 1, LOI_TYPE_SETTING, (UINT_PTR)"detectidle", 2,
-	0, NULL, 0, 0, 0, 0
-};
-
 static INT_PTR CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
@@ -977,11 +863,13 @@ static INT_PTR CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 			* fill the list box, create groups first, then add items
 			*/
 
+			LISTOPTIONSGROUP *tabGroups = CTranslator::getGroupTree(CTranslator::TREE_TAB);
+
 			while (tabGroups[i].szName != NULL) {
 				tvi.hParent = 0;
 				tvi.hInsertAfter = TVI_LAST;
 				tvi.item.mask = TVIF_TEXT | TVIF_STATE;
-				tvi.item.pszText = TranslateTS(tabGroups[i].szName);
+				tvi.item.pszText = tabGroups[i].szName;
 				tvi.item.stateMask = TVIS_STATEIMAGEMASK | TVIS_EXPANDED | TVIS_BOLD;
 				tvi.item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_EXPANDED | TVIS_BOLD;
 				tabGroups[i++].handle = (LRESULT)TreeView_InsertItem(GetDlgItem(hwndDlg, IDC_TABMSGOPTIONS), &tvi);
@@ -989,10 +877,12 @@ static INT_PTR CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 
 			i = 0;
 
+			LISTOPTIONSITEM *tabItems = CTranslator::getTree(CTranslator::TREE_TAB);
+
 			while (tabItems[i].szName != 0) {
 				tvi.hParent = (HTREEITEM)tabGroups[tabItems[i].uGroup].handle;
 				tvi.hInsertAfter = TVI_LAST;
-				tvi.item.pszText = TranslateTS(tabItems[i].szName);
+				tvi.item.pszText = tabItems[i].szName;
 				tvi.item.mask = TVIF_TEXT | TVIF_STATE | TVIF_PARAM;
 				tvi.item.lParam = i;
 				tvi.item.stateMask = TVIS_STATEIMAGEMASK;
@@ -1080,6 +970,9 @@ static INT_PTR CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 							/*
 							* scan the tree view and obtain the options...
 							*/
+
+							LISTOPTIONSITEM *tabItems = CTranslator::getTree(CTranslator::TREE_TAB);
+
 							while (tabItems[i].szName != NULL) {
 								item.mask = TVIF_HANDLE | TVIF_STATE;
 								item.hItem = (HTREEITEM)tabItems[i].handle;
@@ -1136,8 +1029,11 @@ static INT_PTR CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM 
 			SendMessage(hwndDlg, WM_COMMAND, MAKELONG(IDC_USESKIN, BN_CLICKED), 0);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_USESKIN), IsWinVer2000Plus() ? TRUE : FALSE);
 
-			SendDlgItemMessage(hwndDlg, IDC_AEROEFFECT, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Milky glass"));
-			SendDlgItemMessage(hwndDlg, IDC_AEROEFFECT, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Carbon"));
+
+			SendDlgItemMessage(hwndDlg, IDC_AEROEFFECT, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_AERO_EFFECT_NONE));
+			SendDlgItemMessage(hwndDlg, IDC_AEROEFFECT, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_AERO_EFFECT_MILK));
+			SendDlgItemMessage(hwndDlg, IDC_AEROEFFECT, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_AERO_EFFECT_CARBON));
+			SendDlgItemMessage(hwndDlg, IDC_AEROEFFECT, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_AERO_EFFECT_SOLID));
 
 			SendDlgItemMessage(hwndDlg, IDC_AEROEFFECT, CB_SETCURSEL, (WPARAM)CSkin::m_aeroEffect, 0);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_AEROEFFECT), PluginConfig.m_bIsVista ? TRUE : FALSE);

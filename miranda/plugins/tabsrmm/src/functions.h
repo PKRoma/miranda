@@ -72,6 +72,7 @@ void        HandleMenuEntryFromhContact(int iSelection);
  * gneric msgwindow functions (creation, container management etc.)
  */
 
+void 		DM_NotifyTyping(_MessageWindowData *dat, int mode);
 int         ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild);
 HWND        CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hContact, int isSend, const char *pszInitialText, BOOL bActivateTAb, BOOL bPopupContainer, BOOL bWantPopup, HANDLE hdbEvent);
 int         GetProtoIconFromList(const char *szProto, int iStatus);
@@ -103,7 +104,7 @@ int         GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iName
 HMENU       BuildContainerMenu();
 void        BuildCodePageList();
 void        PreTranslateDates();
-void        ApplyContainerSetting(struct ContainerWindowData *pContainer, DWORD flags, int mode, bool fForceResize);
+void        ApplyContainerSetting(struct ContainerWindowData *pContainer, DWORD flags, UINT mode, bool fForceResize);
 void        BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);
 void        GetDefaultContainerTitleFormat();
 extern const WCHAR *EncodeWithNickname(const char *string, const WCHAR *szNick, UINT codePage);
@@ -192,5 +193,11 @@ int			ChangeClientIconInStatusBar(WPARAM wparam, LPARAM lparam);
 // hotkeys
 
 LRESULT 	ProcessHotkeysByMsgFilter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR ctrlId);
+
+// send laster
+
+void 		SendLater_Add(const HANDLE hContact);
+void		SendLater_Process(const HANDLE hContact);
+void 		SendLater_Remove(const HANDLE hContact);
 
 #endif /* _TABSRMM_FUNCTIONS_H */

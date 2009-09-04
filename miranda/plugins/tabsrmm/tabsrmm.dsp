@@ -2927,6 +2927,10 @@ NODEP_CPP_THEMES=\
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\translator.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\trayicon.cpp
 DEP_CPP_TRAYI=\
 	"..\..\include\m_acc.h"\
@@ -3292,6 +3296,10 @@ SOURCE=.\src\templates.h
 # Begin Source File
 
 SOURCE=.\src\themes.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\translator.h
 # End Source File
 # Begin Source File
 

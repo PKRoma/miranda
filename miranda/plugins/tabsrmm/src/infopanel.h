@@ -93,6 +93,8 @@ private:
 	void			RenderIPNickname(const HDC hdc, RECT& rc);
 	void 			RenderIPUIN(const HDC hdc, RECT& rcItem);
 	void 			RenderIPStatus(const HDC hdc, RECT& rcItem);
+	void 			Chat_RenderIPNickname(const HDC hdc, RECT& rcItem);
+	void 			Chat_RenderIPSecondLine(const HDC hdc, RECT& rcItem);
 
 private:
 	bool				m_isChat;											// is MUC session

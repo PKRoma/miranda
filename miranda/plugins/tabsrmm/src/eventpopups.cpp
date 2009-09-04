@@ -137,48 +137,6 @@ int NEN_WriteOptions(NEN_OPTIONS *options)
 	return 0;
 }
 
-static struct LISTOPTIONSGROUP lGroups[] = {
-	0, _T("Disable notifications"),
-	0, _T("General options"),
-	0, _T("System tray icon"),
-	0, _T("Left click actions (popups only)"),
-	0, _T("Right click actions (popups only)"),
-	0, _T("Timeout actions (popups only)"),
-	0, _T("Combine notifications for the same contact"),
-	0, _T("Remove popups under following conditions"),
-	0, NULL
-};
-
-static struct LISTOPTIONSITEM defaultItems[] = {
-	0, _T("Show a preview of the event"), IDC_CHKPREVIEW, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bPreview, 1,
-	0, _T("Don't announce event when message dialog is open"), IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bWindowCheck, 1,
-	0, _T("Don't announce events from RSS protocols"), IDC_NORSS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bNoRSS, 1,
-	0, _T("Enable the system tray icon"), IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bTraySupport, 2,
-	0, _T("Merge new events for the same contact into existing popup"), 1, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bMergePopup, 6,
-	0, _T("Show date for merged popups"), IDC_CHKSHOWDATE, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowDate, 6,
-	0, _T("Show time for merged popups"), IDC_CHKSHOWTIME, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowTime, 6,
-	0, _T("Show headers"), IDC_CHKSHOWHEADERS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowHeaders, 6,
-	0, _T("Dismiss popup"), MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
-	0, _T("Open event"), MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
-	0, _T("Dismiss event"), MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
-
-	0, _T("Dismiss popup"), MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
-	0, _T("Open event"), MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
-	0, _T("Dismiss event"), MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
-
-	0, _T("Dismiss popup"), MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
-	0, _T("Open event"), MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
-
-	0, _T("Disable event notifications for instant messages"), IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.iDisable, 0,
-	0, _T("Disable event notifications for group chats"), IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.iMUCDisable, 0,
-
-	0, _T("Remove popups for a contact when the message window is focused"), PU_REMOVE_ON_FOCUS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
-	0, _T("Remove popups for a contact when I start typing a reply"), PU_REMOVE_ON_TYPE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
-	0, _T("Remove popups for a contact when I send a reply"), PU_REMOVE_ON_SEND, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
-
-	0, NULL, 0, 0, 0, 0
-};
-
 INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	NEN_OPTIONS *options = &nen_options;
@@ -197,21 +155,25 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 			* fill the tree view
 			*/
 
+			LISTOPTIONSGROUP *lGroups = CTranslator::getGroupTree(CTranslator::TREE_NEN);
+
 			while (lGroups[i].szName != NULL) {
 				tvi.hParent = 0;
 				tvi.hInsertAfter = TVI_LAST;
 				tvi.item.mask = TVIF_TEXT | TVIF_STATE;
-				tvi.item.pszText = TranslateTS(lGroups[i].szName);
+				tvi.item.pszText = lGroups[i].szName;
 				tvi.item.stateMask = TVIS_STATEIMAGEMASK | TVIS_EXPANDED | TVIS_BOLD;
 				tvi.item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_EXPANDED | TVIS_BOLD;
 				lGroups[i++].handle = (LRESULT)TreeView_InsertItem(GetDlgItem(hWnd, IDC_EVENTOPTIONS), &tvi);
 			}
 			i = 0;
 
+			LISTOPTIONSITEM *defaultItems = CTranslator::getTree(CTranslator::TREE_NEN);
+
 			while (defaultItems[i].szName != 0) {
 				tvi.hParent = (HTREEITEM)lGroups[defaultItems[i].uGroup].handle;
 				tvi.hInsertAfter = TVI_LAST;
-				tvi.item.pszText = TranslateTS(defaultItems[i].szName);
+				tvi.item.pszText = defaultItems[i].szName;
 				tvi.item.mask = TVIF_TEXT | TVIF_STATE | TVIF_PARAM;
 				tvi.item.lParam = i;
 				tvi.item.stateMask = TVIS_STATEIMAGEMASK;
@@ -274,12 +236,6 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 			SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_SETITEMDATA, (WPARAM)iIndex, 2);
 			if (options->iAnnounceMethod == 2)
 				SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_SETCURSEL, iIndex, 0);
-			if (ServiceExists("OSD/Announce")) {
-				iIndex = SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_ADDSTRING, -1, (LPARAM)TranslateT("On screen display"));
-				SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_SETITEMDATA, (WPARAM)iIndex, 3);
-				if (options->iAnnounceMethod == 3)
-					SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_SETCURSEL, iIndex, 0);
-			}
 			bWmNotify = FALSE;
 			return TRUE;
 		}
@@ -374,6 +330,8 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 					int i = 0;
 					TVITEM item = {0};
 					struct ContainerWindowData *pContainer = pFirstContainer;
+
+					LISTOPTIONSITEM *defaultItems = CTranslator::getTree(CTranslator::TREE_NEN);
 
 					while (defaultItems[i].szName != NULL) {
 						item.mask = TVIF_HANDLE | TVIF_STATE;
@@ -524,11 +482,12 @@ static TCHAR *GetPreviewT(WORD eventType, DBEVENTINFO* dbe)
 {
 	TCHAR	*commentFix = NULL;
 	char	*pBlob = (char *)dbe->pBlob;
+	bool	fAddEllipsis = false;
 
 	int		iPreviewLimit = nen_options.iLimitPreview;
 
-	if(iPreviewLimit > 255 || iPreviewLimit == 0)
-		iPreviewLimit = 255;
+	if(iPreviewLimit > 500 || iPreviewLimit == 0)
+		iPreviewLimit = 500;
 
 	switch (eventType) {
 		case EVENTTYPE_MESSAGE:
@@ -536,6 +495,7 @@ static TCHAR *GetPreviewT(WORD eventType, DBEVENTINFO* dbe)
 				if(nen_options.bPreview) {
 					TCHAR* buf = DbGetEventTextT(dbe, CP_ACP);
 					if(lstrlen(buf) > iPreviewLimit) {
+						fAddEllipsis = true;
 						int iIndex = iPreviewLimit;
 						int iWordThreshold = 20;
 						while(iIndex && buf[iIndex] != ' ' && iWordThreshold--) {
@@ -544,15 +504,15 @@ static TCHAR *GetPreviewT(WORD eventType, DBEVENTINFO* dbe)
 						buf[iIndex] = 0;
 					}
 					buf = (TCHAR *)mir_realloc(buf, (lstrlen(buf) + 5) * sizeof(TCHAR));
-					if(lstrlen(buf) < iPreviewLimit)
+					if(fAddEllipsis)
 						_tcscat(buf, _T("..."));
 					return(buf);
 				}
 			}
-			commentFix = mir_tstrdup(TranslateT(POPUP_COMMENT_MESSAGE));
+			commentFix = mir_tstrdup(CTranslator::get(CTranslator::GEN_POPUPS_MESSAGE));
 			break;
 		default:
-			commentFix = mir_tstrdup(TranslateT(POPUP_COMMENT_OTHER));
+			commentFix = mir_tstrdup(CTranslator::get(CTranslator::GEN_POPUPS_UNKNOWN));
 			break;
 	}
 	return commentFix;
@@ -576,7 +536,8 @@ static int PopupUpdateT(HANDLE hContact, HANDLE hEvent)
 
 	if (hEvent) {
 		if (pdata->pluginOptions->bShowHeaders) {
-			mir_sntprintf(pdata->szHeader, safe_sizeof(pdata->szHeader), _T("[b]%s %d[/b]\n"), TranslateT("New messages: "), pdata->nrMerged + 1);
+			mir_sntprintf(pdata->szHeader, safe_sizeof(pdata->szHeader), _T("[b]%s %d[/b]\n"),
+						  CTranslator::get(CTranslator::GEN_POPUPS_NEW), pdata->nrMerged + 1);
 			pdata->szHeader[255] = 0;
 		}
 		ZeroMemory(&dbe, sizeof(dbe));
@@ -600,7 +561,7 @@ static int PopupUpdateT(HANDLE hContact, HANDLE hEvent)
 			_tcsncat(pdata->eventData[pdata->nrMerged].szText, szPreview, MAX_SECONDLINE);
 			mir_free(szPreview);
 		} else
-			_tcsncat(pdata->eventData[pdata->nrMerged].szText, _T("No body"), MAX_SECONDLINE);
+			_tcsncat(pdata->eventData[pdata->nrMerged].szText, _T(" "), MAX_SECONDLINE);
 
 		pdata->eventData[pdata->nrMerged].szText[MAX_SECONDLINE - 1] = 0;
 
@@ -712,7 +673,7 @@ static int PopupShowT(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
 		mir_sntprintf(pud.lptzText, MAX_SECONDLINE, _T("%s"), szPreview);
 		mir_free(szPreview);
 	} else
-		mir_sntprintf(pud.lptzText, MAX_SECONDLINE, _T("No body"));
+		mir_sntprintf(pud.lptzText, MAX_SECONDLINE, _T(" "));
 
 	pdata->eventData = (EVENT_DATAT *)malloc(NR_MERGED * sizeof(EVENT_DATAT));
 	pdata->eventData[0].hEvent = hEvent;
@@ -795,7 +756,10 @@ static int tabSRMM_ShowBalloon(WPARAM wParam, LPARAM lParam, UINT eventType)
 		mir_sntprintf(nim.szInfoTitle, 64, _T("No Nickname"));
 
 	if (eventType == EVENTTYPE_MESSAGE) {
-		mir_sntprintf(nim.szInfo, 255, _T("%s"), szPreview);
+		if(szPreview)
+			mir_sntprintf(nim.szInfo, 255, _T("%s"), szPreview);
+		else
+			mir_sntprintf(nim.szInfo, 255, _T("%s"), _T(""));
 	} else {
 		if(dbei.pBlob)
 			free(dbei.pBlob);

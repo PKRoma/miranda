@@ -76,6 +76,13 @@ SESSION_INFO* SM_AddSession(const TCHAR* pszID, const char* pszModule)
 		node->ptszID = mir_tstrdup(pszID);
 		node->pszModule = mir_strdup(pszModule);
 
+		MODULEINFO *mi = MM_FindModule(pszModule);
+
+		if(mi) {
+			mi->idleTimeStamp = time(0);
+			SM_BroadcastMessage(pszModule, GC_UPDATESTATUSBAR, 0, 1, TRUE);
+		}
+
 		if (m_WndList == NULL) { // list is empty
 			m_WndList = node;
 			node->next = NULL;
@@ -576,6 +583,18 @@ BOOL SM_ReconfigureFilters()
 	return TRUE;
 }
 
+BOOL SM_InvalidateLogDirectories()
+{
+	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
+
+	while (pTemp != NULL) {
+		pTemp->pszLogFileName[0] = 0;
+		pLast = pTemp;
+		pTemp = pTemp->next;
+	}
+	return TRUE;
+}
+
 BOOL SM_SetStatus(const TCHAR* pszID, const char* pszModule, int wStatus)
 {
 	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
@@ -623,54 +642,6 @@ BOOL SM_SendUserMessage(const TCHAR* pszID, const char* pszModule, const TCHAR* 
 	return TRUE;
 }
 
-SESSION_INFO* SM_GetPrevWindow(SESSION_INFO* si)
-{
-	BOOL bFound = FALSE;
-	SESSION_INFO* pTemp = m_WndList;
-
-	if (!si)
-		return NULL;
-
-	while (pTemp != NULL) {
-		if (si == pTemp) {
-			if (bFound)
-				return NULL;
-			else
-				bFound = TRUE;
-		} else if (bFound == TRUE && pTemp->hWnd)
-			return pTemp;
-		pTemp = pTemp->next;
-		if (pTemp == NULL && bFound)
-			pTemp = m_WndList;
-	}
-	return NULL;
-}
-
-SESSION_INFO* SM_GetNextWindow(SESSION_INFO* si)
-{
-	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
-
-	if (!si)
-		return NULL;
-
-	while (pTemp != NULL) {
-		if (si == pTemp) {
-			if (pLast) {
-				if (pLast != pTemp)
-					return pLast;
-				else
-					return NULL;
-			}
-		}
-		if (pTemp->hWnd)
-			pLast = pTemp;
-		pTemp = pTemp->next;
-		if (pTemp == NULL)
-			pTemp = m_WndList;
-	}
-	return NULL;
-}
-
 BOOL SM_ChangeUID(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID, const TCHAR* pszNewUID)
 {
 	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
@@ -706,10 +677,13 @@ BOOL SM_ChangeNick(const TCHAR* pszID, const char* pszModule, GCEVENT * gce)
 			if (ui) {
 				replaceStr(&ui->pszNick, gce->ptszText);
 				SM_MoveUser(pTemp->ptszID, pTemp->pszModule, ui->pszUID);
-				if (pTemp->hWnd)
+				if (pTemp->hWnd) {
 					SendMessage(pTemp->hWnd, GC_UPDATENICKLIST, 0, 0);
+					if(pTemp->dat)
+						GetMyNick(pTemp->dat);
+					SendMessage(pTemp->hWnd, GC_UPDATESTATUSBAR, 0, 0);
+				}
 			}
-
 			if (pszID)
 				return TRUE;
 		}
@@ -976,7 +950,7 @@ MODULEINFO* MM_AddModule(const char* pszModule)
 
 		node->pszModule = (char*)mir_alloc(lstrlenA(pszModule) + 1);
 		lstrcpyA(node->pszModule, pszModule);
-
+		node->idleTimeStamp = time(0);
 		if (m_ModList == NULL) { // list is empty
 			m_ModList = node;
 			node->next = NULL;

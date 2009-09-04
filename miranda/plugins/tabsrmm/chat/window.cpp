@@ -58,7 +58,6 @@ extern HANDLE		hSendEvent;
 extern HICON		hIcons[30];
 extern HMENU		g_hMenu;
 extern WNDPROC 		OldSplitterProc;
-extern TCHAR		*szWarnClose;
 
 static WNDPROC OldMessageProc;
 static WNDPROC OldNicklistProc;
@@ -365,7 +364,7 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct _MessageWindowData *dat,
 			dat->hwndIWebBrowserControl = WindowFromPoint(pt);
 		}
 	}
-	SetAeroMargins(dat->pContainer);
+	//SetAeroMargins(dat->pContainer);  FIXME maybe
 	if(M->isAero())
 		InvalidateRect(hwndTab, NULL, FALSE);
 	if(dat->pContainer->dwFlags & CNT_SIDEBAR)
@@ -490,18 +489,16 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 			urc->rcItem.top = panelHeight - 2;
 			return RD_ANCHORX_WIDTH | RD_ANCHORY_TOP;
 		case IDC_PANELNICK: {
-			RECT	rcStatus;
-			GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), &rcStatus);
-			urc->rcItem.left = panelHeight <= 52 ? panelHeight : 52;
+			urc->rcItem.left = panelHeight <= CInfoPanel::LEFT_OFFSET_LOGO ? panelHeight : CInfoPanel::LEFT_OFFSET_LOGO;
 			urc->rcItem.right = urc->dlgNewSize.cx;
-			urc->rcItem.bottom = panelHeight - 3 - (panelHeight > 42 ? dat->ipFieldHeight : 0) - 1;;
+			urc->rcItem.bottom = urc->rcItem.top + dat->ipFieldHeight;
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
 		}
 		case IDC_PANELUIN: {
-			urc->rcItem.left = panelHeight <= 52 ? panelHeight : 52;
+			urc->rcItem.left = panelHeight <= CInfoPanel::LEFT_OFFSET_LOGO ? panelHeight : CInfoPanel::LEFT_OFFSET_LOGO;
 			urc->rcItem.right = urc->dlgNewSize.cx;
 			urc->rcItem.bottom = panelHeight - 1;
-			urc->rcItem.top = urc->rcItem.bottom - dat->ipFieldHeight;
+			urc->rcItem.top = dat->ipFieldHeight - 1;;
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
 		}
 		case IDC_CHAT_LOG:
@@ -1579,9 +1576,9 @@ static void ProcessNickListHovering(HWND hwnd, int hoveredItem, POINT * pt, SESS
 			else {
 				TCHAR ptszBuf[ 1024 ];
 				mir_sntprintf( ptszBuf, SIZEOF(ptszBuf), _T("%s: %s\r\n%s: %s\r\n%s: %s"),
-					TranslateT( "Nick name" ), ui1->pszNick,
-					TranslateT( "Unique id" ), ui1->pszUID,
-					TranslateT( "Status" ), TM_WordToString( parentdat->pStatuses, ui1->Status ));
+					CTranslator::get(CTranslator::GEN_MUC_NICKNAME), ui1->pszNick,
+					CTranslator::get(CTranslator::GEN_MUC_UID), ui1->pszUID,
+					CTranslator::get(CTranslator::GEN_MUC_STATUS), TM_WordToString( parentdat->pStatuses, ui1->Status ));
 				ti.lpszText = mir_tstrdup( ptszBuf );
 			}
 		}
@@ -1664,7 +1661,6 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 					return 0;
 
 				zDelta += g_iWheelCarryover;    /* Accumulate wheel motion */
-
 
 				dLines = zDelta * (int)uScroll / WHEEL_DELTA;
 
@@ -2032,6 +2028,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			psi->pContainer = newData->pContainer;
 			dat->hwnd = hwndDlg;
 			psi->hWnd = hwndDlg;
+			psi->dat = dat;
 			psi->iSplitterY = g_Settings.iSplitterY;
 			dat->fInsertMode = FALSE;
 
@@ -2087,7 +2084,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTERX), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTERX), GWL_EXSTYLE) | WS_EX_STATICEDGE);
 				SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTERY), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTERY), GWL_EXSTYLE) | WS_EX_STATICEDGE);
 			}
-
+			GetMyNick(dat);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BUTTONSETASFLATBTN + 10, 0, PluginConfig.m_bIsXP);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BUTTONSETASFLATBTN + 12, 0, (LPARAM)dat->pContainer);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BUTTONSETASFLATBTN, 0, 0);
@@ -2209,13 +2206,14 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
  					hIcon = dat->wStatus <= ID_STATUS_OFFLINE ? LoadSkinnedProtoIcon(si->pszModule, ID_STATUS_OFFLINE) : LoadSkinnedProtoIcon(si->pszModule, dat->wStatus);
  					fNoCopy = FALSE;
  					mir_sntprintf(szTemp, SIZEOF(szTemp),
- 								  (si->nUsersInNicklist == 1) ? TranslateT("%s: Chat Room (%u user%s)") : TranslateT("%s: Chat Room (%u users%s)"),
- 								  si->ptszName, si->nUsersInNicklist, si->bFilterEnabled ? TranslateT(", event filter active") : _T(""));
+ 								  (si->nUsersInNicklist == 1) ? CTranslator::get(CTranslator::GEN_MUC_ROOM_TITLE_USER) :
+								  CTranslator::get(CTranslator::GEN_MUC_ROOM_TITLE_USERS),
+ 								  si->ptszName, si->nUsersInNicklist, si->bFilterEnabled ? CTranslator::get(CTranslator::GEN_MUC_ROOM_TITLE_FILTER) : _T(""));
  					break;
 				case GCW_PRIVMESS:
 					mir_sntprintf(szTemp, SIZEOF(szTemp),
-								  (si->nUsersInNicklist == 1) ? TranslateT("%s: Message Session") : TranslateT("%s: Message Session (%u users)"),
-								  si->ptszName, si->nUsersInNicklist);
+								  (si->nUsersInNicklist == 1) ? CTranslator::get(CTranslator::GEN_MUC_PRIVSESSION) :
+								  CTranslator::get(CTranslator::GEN_MUC_PRIVSESSION_MULTI), si->ptszName, si->nUsersInNicklist);
 					break;
 				case GCW_SERVER:
 					mir_sntprintf(szTemp, SIZEOF(szTemp), _T("%s: Server"), si->ptszName);
@@ -2259,8 +2257,9 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				int    x = 12;
 
 				//Mad: strange rare crash here...
-				mi=MM_FindModule(si->pszModule);
-				if(!mi) break;
+				mi = MM_FindModule(si->pszModule);
+				if(!mi)
+					break;
 
 				if(!mi->ptszModDispName)
 					break;
@@ -2268,16 +2267,35 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				x += GetTextPixelSize(mi->ptszModDispName, (HFONT)SendMessage(dat->pContainer->hwndStatus, WM_GETFONT, 0, 0), TRUE);
 				x += GetSystemMetrics(SM_CXSMICON);
 
-				if (si->ptszStatusbarText)
-					mir_sntprintf(szFinalStatusBarText, SIZEOF(szFinalStatusBarText), _T("%s %s"), mi->ptszModDispName, si->ptszStatusbarText);
-				else {
-					lstrcpyn(szFinalStatusBarText, mi->ptszModDispName, SIZEOF(szFinalStatusBarText));
-					szFinalStatusBarText[511] = 0;
-				}
+				if(dat->Panel->isActive()) {
+					time_t now = time(0);
+					DWORD diff = (now - mi->idleTimeStamp) / 60;
 
+					if((diff >= 1 && diff != mi->lastIdleCheck) || lParam) {
+						mi->lastIdleCheck = diff;
+						if(diff == 0)
+							mi->tszIdleMsg[0] = 0;
+						else if(diff > 59) {
+							DWORD hours = diff / 60;
+							DWORD minutes = diff % 60;
+							mir_sntprintf(mi->tszIdleMsg, 30, _T(", %d %s, %d %s idle"), hours, hours > 1 ? _T("hours") : _T("hour"),
+										   minutes, minutes > 1 ? _T("minutes") : _T("minute"));
+						}
+						else
+							mir_sntprintf(mi->tszIdleMsg, 30, _T(", %d %s idle"), diff, diff > 1 ? _T("minutes") : _T("minute"));
+					}
+					mir_sntprintf(szFinalStatusBarText, SIZEOF(szFinalStatusBarText), _T("%s on %s%s"), dat->szMyNickname, mi->ptszModDispName, mi->tszIdleMsg);
+				} else {
+					if (si->ptszStatusbarText)
+						mir_sntprintf(szFinalStatusBarText, SIZEOF(szFinalStatusBarText), _T("%s %s"), mi->ptszModDispName, si->ptszStatusbarText);
+					else {
+						lstrcpyn(szFinalStatusBarText, mi->ptszModDispName, SIZEOF(szFinalStatusBarText));
+						szFinalStatusBarText[511] = 0;
+					}
+				}
 				SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM)szFinalStatusBarText);
-				SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(PluginConfig.m_bSessionList ? PluginConfig.g_buttonBarIcons[16] : 0));
 				UpdateStatusBar(dat);
+				dat->Panel->Invalidate();
 				return TRUE;
 			}
 			break;
@@ -2287,7 +2305,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 			if (dat->ipFieldHeight == 0) {
 				RECT rcPanelBottom;
-				GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELUIN), &rcPanelBottom);
+				GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELNICK), &rcPanelBottom);
 				dat->ipFieldHeight = rcPanelBottom.bottom - rcPanelBottom.top;
 			}
 			if (wParam == SIZE_MAXIMIZED)
@@ -2765,6 +2783,10 @@ LABEL_SHOWWINDOW:
 							case TABSRMM_HK_CLEARLOG:
 								Chat_ClearLog(dat);
 								return(_dlgReturn(hwndDlg, 1));
+							case TABSRMM_HK_TOGGLEINFOPANEL:
+								dat->Panel->setActive(dat->Panel->isActive() ? FALSE : TRUE);
+								dat->Panel->showHide();
+								return(_dlgReturn(hwndDlg, 1));
 							default:
 								break;
 						}
@@ -3148,15 +3170,19 @@ LABEL_SHOWWINDOW:
 				case IDOK: {
 					char*  pszRtf;
 					TCHAR* ptszText/*, *p1*/;
+					MODULEINFO *mi;
+
 					if (GetSendButtonState(hwndDlg) == PBS_DISABLED)
 						break;
+
+					mi = MM_FindModule(si->pszModule);
 
 					pszRtf = Chat_Message_GetFromStream(hwndDlg, si);
 					SM_AddCommand(si->ptszID, si->pszModule, pszRtf);
 					ptszText = Chat_DoRtfToTags(pszRtf, si);
 					DoTrimMessage(ptszText);
 
-					if (MM_FindModule(si->pszModule)->bAckMsg) {
+					if(mi && mi->bAckMsg) {
 						EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), FALSE);
 						SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETREADONLY, TRUE, 0);
 					} else SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, WM_SETTEXT, 0, (LPARAM)_T(""));
@@ -3164,6 +3190,9 @@ LABEL_SHOWWINDOW:
 					EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
 
 					DoEventHookAsync(hwndDlg, si->ptszID, si->pszModule, GC_USER_MESSAGE, NULL, ptszText, (LPARAM)NULL);
+					mi->idleTimeStamp = time(0);
+					mi->lastIdleCheck = 0;
+					SM_BroadcastMessage(si->pszModule, GC_UPDATESTATUSBAR, 0, 1, TRUE);
 					mir_free(pszRtf);
 #if defined( _UNICODE )
 					mir_free(ptszText);
@@ -3261,7 +3290,7 @@ LABEL_SHOWWINDOW:
 						break;
 
 					if (si->iLogFilterFlags == 0 && !si->bFilterEnabled) {
-						MessageBox(0, TranslateT("The filter canoot be enabled, because there are no event types selected either global or for this chat room"), TranslateT("Event filter error"), MB_OK);
+						MessageBox(0, CTranslator::get(CTranslator::GEN_MUC_FILTER_ERROR), CTranslator::get(CTranslator::GEN_MUC_FILTER_ERROR_TITLE), MB_OK);
 						si->bFilterEnabled = 0;
 					} else
 						si->bFilterEnabled = !si->bFilterEnabled;
@@ -3369,65 +3398,75 @@ LABEL_SHOWWINDOW:
 			if (dat->pContainer->bSkinned)
 				return 0;
 			break;
-		case WM_PAINT:
-			if (dat->pContainer->bSkinned || M->isAero() || M->isVSThemed()) {
-				PAINTSTRUCT ps;
-				RECT rcClient, rcWindow, rc;
-				CSkinItem *item;
-				POINT pt;
-				UINT item_ids[3] = {ID_EXTBKUSERLIST, ID_EXTBKHISTORY, ID_EXTBKINPUTAREA};
-				UINT ctl_ids[3] = {IDC_LIST, IDC_CHAT_LOG, IDC_CHAT_MESSAGE};
-				int  i;
-				bool fAero = M->isAero();
-				bool fInfoPanel = dat->Panel->isActive();
+		case WM_PAINT: {
+			PAINTSTRUCT ps;
+			RECT rcClient, rcWindow, rc;
+			CSkinItem *item;
+			POINT pt;
+			UINT item_ids[3] = {ID_EXTBKUSERLIST, ID_EXTBKHISTORY, ID_EXTBKINPUTAREA};
+			UINT ctl_ids[3] = {IDC_LIST, IDC_CHAT_LOG, IDC_CHAT_MESSAGE};
+			int  i;
+			bool 	fAero = M->isAero();
+			bool 	fInfoPanel = dat->Panel->isActive();
+			HANDLE 	hbp = 0;
+			HDC 	hdcMem;
+			HBITMAP hbm, hbmOld;
 
-				HDC hdc = BeginPaint(hwndDlg, &ps);
-				GetClientRect(hwndDlg, &rcClient);
-				LONG cx = rcClient.right - rcClient.left;
-				LONG cy = rcClient.bottom - rcClient.top;
+			HDC 	hdc = BeginPaint(hwndDlg, &ps);
+			GetClientRect(hwndDlg, &rcClient);
+			LONG cx = rcClient.right - rcClient.left;
+			LONG cy = rcClient.bottom - rcClient.top;
 
-				HDC hdcMem = CreateCompatibleDC(hdc);
-				HBITMAP hbm =  CSkin::CreateAeroCompatibleBitmap(rcClient, hdc);
-				HBITMAP hbmOld = (HBITMAP)SelectObject(hdcMem, hbm);
+			if(CMimAPI::m_haveBufferedPaint)
+				hbp = CSkin::InitiateBufferedPaint(hdc, rcClient, hdcMem);
+			else {
+				hdcMem = CreateCompatibleDC(hdc);
+				hbm =  CSkin::CreateAeroCompatibleBitmap(rcClient, hdc);
+				hbmOld = (HBITMAP)SelectObject(hdcMem, hbm);
+			}
 
+			if(dat->pContainer->bSkinned && !fAero) {
+				CSkin::SkinDrawBG(hwndDlg, dat->pContainer->hwnd, dat->pContainer, &rcClient, hdcMem);
+				for (i = 0; i < 3; i++) {
+					item = &SkinItems[item_ids[i]];
+					if (!item->IGNORED) {
 
-				if(dat->pContainer->bSkinned && !fAero) {
-					CSkin::SkinDrawBG(hwndDlg, dat->pContainer->hwnd, dat->pContainer, &rcClient, hdcMem);
-					for (i = 0; i < 3; i++) {
-						item = &SkinItems[item_ids[i]];
-						if (!item->IGNORED) {
-
-							GetWindowRect(GetDlgItem(hwndDlg, ctl_ids[i]), &rcWindow);
-							pt.x = rcWindow.left;
-							pt.y = rcWindow.top;
-							ScreenToClient(hwndDlg, &pt);
-							rc.left = pt.x - item->MARGIN_LEFT;
-							rc.top = pt.y - item->MARGIN_TOP;
-							rc.right = rc.left + item->MARGIN_RIGHT + (rcWindow.right - rcWindow.left) + item->MARGIN_LEFT;
-							rc.bottom = rc.top + item->MARGIN_BOTTOM + (rcWindow.bottom - rcWindow.top) + item->MARGIN_TOP;
-							DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
-									  item->CORNER, item->BORDERSTYLE, item->imageItem);
-						}
+						GetWindowRect(GetDlgItem(hwndDlg, ctl_ids[i]), &rcWindow);
+						pt.x = rcWindow.left;
+						pt.y = rcWindow.top;
+						ScreenToClient(hwndDlg, &pt);
+						rc.left = pt.x - item->MARGIN_LEFT;
+						rc.top = pt.y - item->MARGIN_TOP;
+						rc.right = rc.left + item->MARGIN_RIGHT + (rcWindow.right - rcWindow.left) + item->MARGIN_LEFT;
+						rc.bottom = rc.top + item->MARGIN_BOTTOM + (rcWindow.bottom - rcWindow.top) + item->MARGIN_TOP;
+						DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+								  item->CORNER, item->BORDERSTYLE, item->imageItem);
 					}
 				}
+			}
+			else
+				FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
 
-				GetClientRect(hwndDlg, &rc);
-				dat->Panel->renderBG(hdcMem, rc, &SkinItems[ID_EXTBKINFOPANELBG], fAero);
+			GetClientRect(hwndDlg, &rc);
+			dat->Panel->renderBG(hdcMem, rc, &SkinItems[ID_EXTBKINFOPANELBG], fAero);
 
-				dat->Panel->renderContent(hdcMem);
+			dat->Panel->renderContent(hdcMem);
 
-				if(fAero || (M->isVSThemed() && !CSkin::m_skinEnabled))
-					CSkin::RenderToolbarBG(dat, hdcMem, rcClient);
+			if(fAero || (M->isVSThemed() && !CSkin::m_skinEnabled))
+				CSkin::RenderToolbarBG(dat, hdcMem, rcClient);
 
+			if(hbp)
+				CSkin::FinalizeBufferedPaint(hbp, &rcClient);
+			else {
 				BitBlt(hdc, 0, 0, cx, cy, hdcMem, 0, 0, SRCCOPY);
 				SelectObject(hdcMem, hbmOld);
 				DeleteObject(hbm);
 				DeleteDC(hdcMem);
-				EndPaint(hwndDlg, &ps);
-				return 0;
 			}
-			break;
-
+			EndPaint(hwndDlg, &ps);
+			SetAeroMargins(dat->pContainer);
+			return 0;
+		}
 		case DM_SETINFOPANEL:
 			dat->Panel->getVisibility();
 			if (!(dat->dwFlags & MWF_ERRORSTATE))
@@ -3507,7 +3546,7 @@ LABEL_SHOWWINDOW:
 			}
 
 			if (lParam && PluginConfig.m_WarnOnClose)
-				if (MessageBox(dat->pContainer->hwnd, TranslateTS(szWarnClose), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO)
+				if (MessageBox(dat->pContainer->hwnd, CTranslator::get(CTranslator::GEN_WARN_CLOSE), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO)
 					return TRUE;
 
 			SendMessage(hwndDlg, GC_CLOSEWINDOW, 0, 1);
@@ -3745,6 +3784,9 @@ LABEL_SHOWWINDOW:
 				CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)szChatIconString);
 			si->wState &= ~STATE_TALK;
 			si->hWnd = NULL;
+			si->dat = 0;
+			si->pContainer = 0;
+
 			//SetWindowLongPtr(hwndDlg,GWLP_USERDATA,0);
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTERX), GWLP_WNDPROC, (LONG_PTR)OldSplitterProc);
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTERY), GWLP_WNDPROC, (LONG_PTR)OldSplitterProc);
