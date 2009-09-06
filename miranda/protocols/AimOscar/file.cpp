@@ -102,20 +102,41 @@ void CAimProto::report_file_error(char *fname)
 
 bool setup_next_file_send(file_transfer *ft)
 {
-    ft->pfts.currentFileProgress = 0;
-    ft->pfts.currentFile = ft->pfts.files[ft->pfts.currentFileNumber];
+	struct _stat statbuf;
+	for (;;)
+	{
+		ft->pfts.currentFile = ft->pfts.files[ft->cf];
+		if (ft->pfts.currentFile == NULL) return false;
 
-    struct _stat statbuf;
-    if (_stat(ft->pfts.currentFile, &statbuf))
-    {
-        return false;
-    }
+		if (_stat(ft->pfts.currentFile, &statbuf) == 0 && (statbuf.st_mode & _S_IFDIR) == 0) 
+			break;
+
+		++ft->cf;
+	}
 
     ft->pfts.currentFileSize = statbuf.st_size;
     ft->pfts.currentFileTime = statbuf.st_mtime;
+    ft->pfts.currentFileProgress = 0;
 
-    send_init_oft2(ft, ft->pfts.currentFile);
+	char* fnamea;
+    char* fname = mir_utf8encode(ft->pfts.currentFile);
+	if (ft->pfts.totalFiles > 1 && ft->file[0])
+	{
+		size_t dlen = strlen(ft->file);
+		if (strncmp(fname, ft->file, dlen) == 0 && fname[dlen] == '\\')
+		{
+			fnamea = &fname[dlen+1];
+            for (char *p = fnamea; *p; ++p) { if (*p == '\\') *p = 1; }
+		}
+		else
+			fnamea = get_fname(fname);
+	}
+	else
+		fnamea = get_fname(fname);
 
+    send_init_oft2(ft, fnamea);
+
+    mir_free(fname);
     return true;
 }
 
@@ -202,11 +223,17 @@ int CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLI
             }
             else if (type == 0x0204)
             {
+				// Handle file skip case
+				if (ft->pfts.currentFileProgress == 0)
+				{
+					ft->pfts.totalProgress += ft->pfts.currentFileSize;
+				}
+
                 LOG("P2P: Buddy says they got the file successfully");
                 if ((ft->pfts.currentFileNumber + 1) < ft->pfts.totalFiles)
                 {
                     sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0);
-                    ++ft->pfts.currentFileNumber;
+                    ++ft->pfts.currentFileNumber; ++ft->cf;
 
 		            if (!setup_next_file_send(ft))
                     {
@@ -217,8 +244,8 @@ int CAimProto::sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLI
                 else
                 {
                     failed = _htonl(recv_ft->recv_bytes) != ft->pfts.currentFileSize;
-                break;
-            }
+                    break;
+                }
             }
             else if (type == 0x0205)
             {
@@ -342,10 +369,10 @@ int CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NET
 					    fid = _open(ft->pfts.currentFile, _O_CREAT | _O_WRONLY | _O_BINARY | flag, _S_IREAD | _S_IWRITE);
 
                         if (fid < 0)	
-                    {
-                        report_file_error(fname);
-                        break;
-                    }
+						{
+							report_file_error(fname);
+							break;
+						}
 
                         accepted_file = ft->pfts.currentFileProgress == 0;
 
@@ -353,6 +380,16 @@ int CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NET
                         {
                             oft->recv_bytes = _htonl(ft->pfts.currentFileProgress);
                             oft->recv_checksum = _htonl(aim_oft_checksum_file(ft->pfts.currentFile));
+							if (oft->size == oft->recv_bytes && oft->checksum == oft->recv_checksum)
+							{
+								ft->pfts.totalProgress += ft->pfts.currentFileProgress;
+								oft->type = _htons(0x0204);
+								_close(fid);
+
+								sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0);
+								++ft->pfts.currentFileNumber;
+								ft->pfts.currentFileProgress = 0;
+							}
                         }
                     }
                     else
@@ -360,12 +397,18 @@ int CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NET
                         oft->type = _htons(0x0204);
 
                         sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0);
-                        ++ft->pfts.currentFileNumber;
+						++ft->pfts.currentFileNumber;
                         ft->pfts.currentFileProgress = 0;
                     }
 
                     if (Netlib_Send(ft->hConn, (char*)oft, pkt_len, 0) == SOCKET_ERROR)
                         break;
+
+					if (ft->pfts.currentFileNumber >= ft->pfts.totalFiles && _htons(oft->type) == 0x0204)
+                    {
+                    	failed = false;
+                    	break;
+					}
                 }
                 else if (type == 0x0106)
                 {

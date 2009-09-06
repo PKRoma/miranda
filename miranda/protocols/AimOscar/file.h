@@ -34,7 +34,9 @@ struct file_transfer
 
     PROTOFILETRANSFERSTATUS pfts;
 
-    //below is for when receiving only
+    unsigned long cf;
+
+	//below is for when receiving only
     unsigned long local_ip;
     unsigned long verified_ip;
     unsigned long proxy_ip;
