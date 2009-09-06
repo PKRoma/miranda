@@ -162,7 +162,7 @@ void GetContactReceivedFilesDir(HANDLE hContact,TCHAR *szDir,int cchDir, BOOL pa
 		rvaVarsToReplace[0].lptzKey   = _T("nick");
 		rvaVarsToReplace[0].lptzValue = mir_tstrdup((TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
 		rvaVarsToReplace[1].lptzKey   = _T("userid");
-		rvaVarsToReplace[1].lptzValue = mir_tstrdup(( TCHAR* )GetContactID(hContact));
+		rvaVarsToReplace[1].lptzValue = GetContactID(hContact);
 		rvaVarsToReplace[2].lptzKey   = _T("proto");
 		rvaVarsToReplace[2].lptzValue = mir_a2t((char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact,0));
 		rvaVarsToReplace[3].lptzKey   = NULL;

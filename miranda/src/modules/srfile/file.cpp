@@ -184,12 +184,12 @@ void FreeFilesMatrix(TCHAR ***files)
 
 void FreeProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *fts)
 {
-	if(fts->tszCurrentFile) mir_free(fts->tszCurrentFile);
+	mir_free(fts->tszCurrentFile);
 	if(fts->ptszFiles) {
 		for( int i=0;i<fts->totalFiles;i++) mir_free(fts->ptszFiles[i]);
 		mir_free(fts->ptszFiles);
 	}
-	if(fts->tszWorkingDir) mir_free(fts->tszWorkingDir);
+	mir_free(fts->tszWorkingDir);
 }
 
 void CopyProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest,PROTOFILETRANSFERSTATUS *src)
@@ -202,8 +202,8 @@ void CopyProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest,PROTOFILETRANSFER
 			dest->ptszFiles[i] = PFTS_StringToTchar(src, src->ptszFiles[i] );
 	}
 	if ( src->tszWorkingDir ) dest->tszWorkingDir = PFTS_StringToTchar(src, src->tszWorkingDir );
-  dest->flags &= ~PFTS_UTF;
-  dest->flags |= PFTS_TCHAR;
+	dest->flags &= ~PFTS_UTF;
+	dest->flags |= PFTS_TCHAR;
 }
 
 void UpdateProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest,PROTOFILETRANSFERSTATUS *src)
