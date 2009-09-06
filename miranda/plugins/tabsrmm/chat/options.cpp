@@ -807,8 +807,13 @@ void RegisterFontServiceFonts() {
 		}
 	cid.order=0;
 	_tcsncpy(cid.group, _T("TabSRMM/Info Panel"), SIZEOF(fid.group));
-	_tcsncpy(cid.name, _T("Fields background"), SIZEOF(cid.name));
+	_tcsncpy(cid.name, _T("Panel background low"), SIZEOF(cid.name));
 	strncpy(cid.setting, "ipfieldsbg", SIZEOF(cid.setting));
+	cid.defcolour = GetSysColor(COLOR_HOTLIGHT);
+	CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
+
+	_tcsncpy(cid.name, _T("Panel background high"), SIZEOF(cid.name));
+	strncpy(cid.setting, "ipfieldsbgHigh", SIZEOF(cid.setting));
 	cid.defcolour = GetSysColor(COLOR_3DFACE);
 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
 

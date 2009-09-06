@@ -72,6 +72,7 @@ void        HandleMenuEntryFromhContact(int iSelection);
  * gneric msgwindow functions (creation, container management etc.)
  */
 
+BOOL 		IsUtfSendAvailable(HANDLE hContact);
 void 		DM_NotifyTyping(_MessageWindowData *dat, int mode);
 int         ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild);
 HWND        CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hContact, int isSend, const char *pszInitialText, BOOL bActivateTAb, BOOL bPopupContainer, BOOL bWantPopup, HANDLE hdbEvent);
@@ -168,11 +169,11 @@ int         _DebugMessage(HWND hwndDlg, struct _MessageWindowData *dat, const ch
 
 // themes
 
-char        *GetThemeFileName(int iMode);
+const TCHAR *GetThemeFileName(int iMode);
 static void LoadLogfontFromINI(int i, char *szKey, LOGFONTA *lf, COLORREF *colour, const char *szIniFilename);
-int         CheckThemeVersion(const char *szIniFilename);
-void        WriteThemeToINI(const char *szIniFilename, struct _MessageWindowData *dat);
-void        ReadThemeFromINI(const char *szIniFilename, struct _MessageWindowData *dat, int noAdvanced, DWORD dwFlags);
+int         CheckThemeVersion(const TCHAR *szIniFilename);
+void        WriteThemeToINI(const TCHAR *szIniFilename, struct _MessageWindowData *dat);
+void        ReadThemeFromINI(const TCHAR *szIniFilename, struct _MessageWindowData *dat, int noAdvanced, DWORD dwFlags);
 
 // compatibility
 
@@ -199,5 +200,7 @@ LRESULT 	ProcessHotkeysByMsgFilter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 void 		SendLater_Add(const HANDLE hContact);
 void		SendLater_Process(const HANDLE hContact);
 void 		SendLater_Remove(const HANDLE hContact);
-
+HANDLE	 	SendLater_ProcessAck(const ACKDATA *ack);
+void 		SendLater_ClearAll();
+int 		SendLater_SendIt(const char *szSetting, LPARAM lParam);
 #endif /* _TABSRMM_FUNCTIONS_H */

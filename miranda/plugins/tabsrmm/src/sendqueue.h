@@ -62,6 +62,15 @@ struct SendJob {
 	DWORD   dwTime;
 };
 
+struct SendLaterJob {
+	HANDLE	hContact;
+	HANDLE  hOrigContact;								// owner of that job
+	HANDLE	hProcess;									// returned from the protocols sending service. needed to find it in the ACK handler
+	DWORD	dwOriginalId;								// the id of the message (also it's database key name)
+	DWORD	dwTime;										// time at which the delivery was initiated. used to handle timeouts
+	char	*sendBuffer;
+	DWORD	dwFlags;
+};
 
 class SendQueue {
 public:
@@ -104,7 +113,7 @@ public:
 	void 	recallFailed			(const _MessageWindowData *dat, int iEntry) const;
 	void 	showErrorControls		(_MessageWindowData *dat, const int showCmd) const;
 	int 	ackMessage				(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
-
+	int		sendLater				(int iIndex, _MessageWindowData *dat);
 	/*
 	 * static members
 	 */
@@ -117,7 +126,6 @@ public:
 	static	void NotifyDeliveryFailure	(const _MessageWindowData *dat);
 	static	void UpdateSaveAndSendButton(_MessageWindowData *dat);
 	static	void EnableSending			(const _MessageWindowData *dat, const int iMode);
-	static	void SendLater				(void) {};
 private:
 	SendJob		m_jobs[NR_SENDJOBS];
 	int			m_currentIndex;

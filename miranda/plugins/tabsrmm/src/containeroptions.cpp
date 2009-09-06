@@ -201,7 +201,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_TITLEFORMAT), IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE));
 			SendDlgItemMessage(hwndDlg, IDC_TITLEFORMAT, EM_LIMITTEXT, TITLE_FORMATLEN - 1, 0);
 			SetDlgItemText(hwndDlg, IDC_TITLEFORMAT, pContainer->szTitleFormat);
-			SetDlgItemTextA(hwndDlg, IDC_THEME, pContainer->szRelThemeFile);
+			SetDlgItemText(hwndDlg, IDC_THEME, pContainer->szRelThemeFile);
 			for (i = 0; i < NR_O_PAGES; i++) {
 				tvis.hParent = NULL;
 				tvis.hInsertAfter = TVI_LAST;
@@ -367,10 +367,10 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 						return TRUE;
 					goto do_apply;
 				case IDC_SELECTTHEME: {
-					char *szFileName = GetThemeFileName(0);
+					const TCHAR *szFileName = GetThemeFileName(0);
 
-					if (PathFileExistsA(szFileName)) {
-						SetDlgItemTextA(hwndDlg, IDC_THEME, szFileName);
+					if (PathFileExists(szFileName)) {
+						SetDlgItemText(hwndDlg, IDC_THEME, szFileName);
 						goto do_apply;
 					}
 					break;
@@ -411,17 +411,17 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					pContainer->szRelThemeFile[0] = pContainer->szAbsThemeFile[0] = 0;
 
 					if (GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_THEME)) > 0) {
-						char	szFinalThemeFile[MAX_PATH], szFilename[MAX_PATH];
+						TCHAR	szFinalThemeFile[MAX_PATH], szFilename[MAX_PATH];
 
-						GetDlgItemTextA(hwndDlg, IDC_THEME, szFilename, MAX_PATH);
+						GetDlgItemText(hwndDlg, IDC_THEME, szFilename, MAX_PATH);
 						szFilename[MAX_PATH - 1] = 0;
 						M->pathToAbsolute(szFilename, szFinalThemeFile);
 
-						if(strcmp(szFilename, pContainer->szRelThemeFile))
+						if(_tcscmp(szFilename, pContainer->szRelThemeFile))
 						   pContainer->fPrivateThemeChanged = TRUE;
 
-						if (PathFileExistsA(szFinalThemeFile))
-							mir_snprintf(pContainer->szRelThemeFile, MAX_PATH, "%s", szFilename);
+						if (PathFileExists(szFinalThemeFile))
+							mir_sntprintf(pContainer->szRelThemeFile, MAX_PATH, _T("%s"), szFilename);
 						else
 							pContainer->szRelThemeFile[0] = 0;
 					}

@@ -108,22 +108,28 @@ static struct _tagFontBlocks {
 	NULL, 0, 0, NULL
 };
 
-int CheckThemeVersion(const char *szIniFilename)
+int CheckThemeVersion(const TCHAR *szIniFilename)
 {
-	int cookie = GetPrivateProfileIntA("TabSRMM Theme", "Cookie", 0, szIniFilename);
-	int version = GetPrivateProfileIntA("TabSRMM Theme", "Version", 0, szIniFilename);
+	int cookie = GetPrivateProfileInt(_T("TabSRMM Theme"), _T("Cookie"), 0, szIniFilename);
+	int version = GetPrivateProfileInt(_T("TabSRMM Theme"), _T("Version"), 0, szIniFilename);
 
 	if (version >= CURRENT_THEME_VERSION && cookie == THEME_COOKIE)
 		return 1;
 	return 0;
 }
 
-void WriteThemeToINI(const char *szIniFilename, struct _MessageWindowData *dat)
+void WriteThemeToINI(const TCHAR *szIniFilenameT, struct _MessageWindowData *dat)
 {
 	int i, n = 0;
 	DBVARIANT dbv;
 	char szBuf[100], szTemp[100], szAppname[100];
 	COLORREF def;
+
+#if defined(_UNICODE)
+	char *szIniFilename = mir_u2a(szIniFilenameT);
+#else
+	const char *szIniFilename = szIniFilenameT;
+#endif
 
 	WritePrivateProfileStringA("TabSRMM Theme", "Version", _itoa(CURRENT_THEME_VERSION, szBuf, 10), szIniFilename);
 	WritePrivateProfileStringA("TabSRMM Theme", "Cookie", _itoa(THEME_COOKIE, szBuf, 10), szIniFilename);
@@ -206,17 +212,26 @@ void WriteThemeToINI(const char *szIniFilename, struct _MessageWindowData *dat)
 	}
 	for (i = 0; i <= 7; i++)
 		WritePrivateProfileStringA("Nick Colors", _itoa(i, szBuf, 10), _itoa(g_Settings.nickColors[i], szTemp, 10), szIniFilename);
+
+#if defined(_UNICODE)
+	mir_free(szIniFilename);
+#endif
 }
 
-void ReadThemeFromINI(const char *szIniFilename, struct _MessageWindowData *dat, int noAdvanced, DWORD dwFlags)
+void ReadThemeFromINI(const TCHAR *szIniFilenameT, struct _MessageWindowData *dat, int noAdvanced, DWORD dwFlags)
 {
 	char szBuf[512], szTemp[100], szAppname[100];
 	int i, n = 0;
 	int version;
 	COLORREF def;
+
 #if defined(_UNICODE)
+	char *szIniFilename = mir_u2a(szIniFilenameT);
 	char szTemplateBuffer[TEMPLATE_LENGTH * 3 + 2];
+#else
+	const char *szIniFilename = szIniFilenameT;
 #endif
+
 	char bSize = 0;
 	HDC hdc;
 	int charset;
@@ -399,23 +414,27 @@ void ReadThemeFromINI(const char *szIniFilename, struct _MessageWindowData *dat,
 	}
 	if (PluginConfig.m_chat_enabled)
 		LoadGlobalSettings();
+
+#if defined(_UNICODE)
+	mir_free(szIniFilename);
+#endif
 }
 
 /*
  * iMode = 0 - GetOpenFilename, otherwise, GetSaveAs...
  */
 
-char *GetThemeFileName(int iMode)
+const TCHAR *GetThemeFileName(int iMode)
 {
-	static char szFilename[MAX_PATH];
-	OPENFILENAMEA ofn = {0};
-	char szInitialDir[MAX_PATH];
+	static TCHAR szFilename[MAX_PATH];
+	OPENFILENAME ofn = {0};
+	TCHAR szInitialDir[MAX_PATH];
 
-	mir_snprintf(szInitialDir, MAX_PATH, "%s" ,M->getSkinPathA());
+	mir_sntprintf(szInitialDir, MAX_PATH, _T("%s"), M->getSkinPath());
 
 	szFilename[0] = 0;
 
-	ofn.lpstrFilter = "tabSRMM themes\0*.tabsrmm\0\0";
+	ofn.lpstrFilter = _T("tabSRMM themes\0*.tabsrmm\0\0");
 	ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 	ofn.hwndOwner = 0;
 	ofn.lpstrFile = szFilename;
@@ -423,14 +442,14 @@ char *GetThemeFileName(int iMode)
 	ofn.nMaxFile = MAX_PATH;
 	ofn.nMaxFileTitle = MAX_PATH;
 	ofn.Flags = OFN_HIDEREADONLY | OFN_DONTADDTORECENT;
-	ofn.lpstrDefExt = "tabsrmm";
+	ofn.lpstrDefExt = _T("tabsrmm");
 	if (!iMode) {
-		if (GetOpenFileNameA(&ofn))
+		if (GetOpenFileName(&ofn))
 			return szFilename;
 		else
 			return NULL;
 	} else {
-		if (GetSaveFileNameA(&ofn))
+		if (GetSaveFileName(&ofn))
 			return szFilename;
 		else
 			return NULL;

@@ -185,10 +185,30 @@ char *CMimAPI::utf8_encodecp(const char* src, int codepage) const
 {
 	return(m_utfi.utf8_encodecp(src, codepage));
 }
+
 char *CMimAPI::utf8_encodeW(const wchar_t* src) const
 {
 	return(m_utfi.utf8_encodeW(src));
 }
+
+char *CMimAPI::utf8_encodeT(const TCHAR* src) const
+{
+#if defined(_UNICODE)
+	return(m_utfi.utf8_encodeW(src));
+#else
+	return(m_utfi.utf8_encode(src));
+#endif
+}
+
+TCHAR *CMimAPI::utf8_decodeT(const char* src) const
+{
+#if defined(_UNICODE)
+	return(m_utfi.utf8_decodeW(src));
+#else
+	return(m_utfi.utf8_decode(const_cast<char *>(src), NULL));
+#endif
+}
+
 wchar_t *CMimAPI::utf8_decodeW(const char* str) const
 {
 	return(m_utfi.utf8_decodeW(str));
@@ -310,71 +330,6 @@ size_t CMimAPI::pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut) const
 }
 
 /*
- * ansi versions
- * they will go away at some point...
- */
-
-#if defined(UNICODE)
-
-int CMimAPI::pathIsAbsolute(const char *path) const
-{
-	if (!path || !(lstrlenA(path) > 2))
-		return 0;
-	if ((path[1] == ':' && path[2] == '\\') || (path[0] == '\\' && path[1] == '\\'))
-		return 1;
-	return 0;
-}
-
-size_t CMimAPI::pathToRelative(const char *pSrc, char *pOut) const
-{
-	pOut[0] = 0;
-	if (!pSrc || !lstrlenA(pSrc) || lstrlenA(pSrc) > MAX_PATH)
-		return 0;
-	if (!pathIsAbsolute(pSrc)) {
-		mir_snprintf(pOut, MAX_PATH, "%s", pSrc);
-		return lstrlenA(pOut);
-	} else {
-		char	szTmp[MAX_PATH];
-		char 	szSTmp[MAX_PATH];
-		mir_snprintf(szTmp, SIZEOF(szTmp), "%s", pSrc);
-		strlwr(szTmp);
-		if (m_szSkinsPathA[0]) {
-			mir_snprintf(szSTmp, SIZEOF(szSTmp), "%s", m_szSkinsPathA);
-			strlwr(szSTmp);
-		}
-		if (strstr(szTmp, ".tsk") && szSTmp && strstr(szTmp, szSTmp)) {
-			mir_snprintf(pOut, MAX_PATH, "%s", pSrc + lstrlenA(m_szSkinsPathA));
-			return lstrlenA(pOut);
-		} else if (strstr(szTmp, m_szProfilePathA)) {
-			mir_snprintf(pOut, MAX_PATH, "%s", pSrc + lstrlenA(m_szProfilePathA) - 1);
-			pOut[0]='.';
-			return lstrlenA(pOut);
-		} else {
-			mir_snprintf(pOut, MAX_PATH, "%s", pSrc);
-			return lstrlenA(pOut);
-		}
-	}
-}
-
-size_t CMimAPI::pathToAbsolute(const char *pSrc, char *pOut) const
-{
-	pOut[0] = 0;
-	if (!pSrc || !lstrlenA(pSrc) || lstrlenA(pSrc) > MAX_PATH)
-		return 0;
-	if (pathIsAbsolute(pSrc) && pSrc[0]!='.')
-		mir_snprintf(pOut, MAX_PATH, "%s", pSrc);
-
-	else if (m_szSkinsPathA[0] && strstr(pSrc, ".tsk") && pSrc[0] != '.')
-		mir_snprintf(pOut, MAX_PATH, "%s%s", m_szSkinsPathA, pSrc);
-
-	else if (pSrc[0]=='.')
-		mir_snprintf(pOut, MAX_PATH, "%s\\%s", m_szProfilePathA, pSrc);
-
-	return lstrlenA(pOut);
-}
-
-#endif /* UNICODE */
-/*
  * window list functions
  */
 
@@ -443,6 +398,7 @@ INT_PTR CMimAPI::foldersPathChanged()
 	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szProfilePath);
 	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szSkinsPath);
 	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szSavedAvatarsPath);
+	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szChatLogsPath);
 
 	Skin->extractSkinsAndLogo();
 	return 0;
@@ -462,21 +418,6 @@ void CMimAPI::InitPaths()
 	_sntprintf(m_szSkinsPath, MAX_PATH, _T("%s\\skins"), m_szProfilePath);
 	_sntprintf(m_szSavedAvatarsPath, MAX_PATH, _T("%s\\Saved Contact Pictures"), m_szProfilePath);
 	m_szSkinsPath[MAX_PATH - 1] = m_szSavedAvatarsPath[MAX_PATH - 1] = 0;
-
-#if defined(_UNICODE)
-	WideCharToMultiByte(CP_ACP, 0, m_szProfilePath, MAX_PATH, m_szProfilePathA, MAX_PATH, 0, 0);
-	WideCharToMultiByte(CP_ACP, 0, m_szSkinsPath, MAX_PATH, m_szSkinsPathA, MAX_PATH, 0, 0);
-	WideCharToMultiByte(CP_ACP, 0, m_szSavedAvatarsPath, MAX_PATH, m_szSavedAvatarsPathA, MAX_PATH, 0, 0);
-#else
-	strncpy(m_szProfilePathA, m_szProfilePath, MAX_PATH);
-	strncpy(m_szSkinsPathA, m_szSkinsPath, MAX_PATH);
-	strncpy(m_szSavedAvatarsPathA, m_szSavedAvatarsPath, MAX_PATH);
-	m_szSavedAvatarsPathA[MAX_PATH - 1] = m_szSkinsPathA[MAX_PATH - 1] = m_szProfilePathA[MAX_PATH - 1] = 0;
-#endif
-
-	strlwr(m_szProfilePathA);
-	strlwr(m_szSavedAvatarsPathA);
-	strlwr(m_szSkinsPathA);
 }
 
 /**

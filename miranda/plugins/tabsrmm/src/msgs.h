@@ -264,7 +264,7 @@ struct ContainerWindowData {
 	HWND    hWndOptions;
 	BOOL    bSizingLoop;
 	TCHAR   szTitleFormat[TITLE_FORMATLEN + 2];
-	char    szRelThemeFile[MAX_PATH], szAbsThemeFile[MAX_PATH];
+	TCHAR   szRelThemeFile[MAX_PATH], szAbsThemeFile[MAX_PATH];
 	TemplateSet *ltr_templates, *rtl_templates;
 	LOGFONTA *logFonts;
 	COLORREF *fontColors;
@@ -613,7 +613,7 @@ struct NewMessageWindowLParam {
 #define DM_QUERYRECENT       (WM_USER+47)
 #define DM_ACTIVATEME        (WM_USER+46)
 #define DM_REMOVEFROMSENDLATER  (WM_USER+48)
-//#define DM_FORCEUNREGISTERHOTKEYS (WM_USER+49)
+#define DM_SENDLATER_RESEND  (WM_USER+49)
 #define DM_ADDDIVIDER        (WM_USER+50)
 #define DM_STATUSMASKSET     (WM_USER+51)
 #define DM_CONTACTSETTINGCHANGED (WM_USER+52)
@@ -1080,6 +1080,7 @@ typedef struct {
 #define TABSRMM_HK_TOGGLEINFOPANEL 23
 #define TABSRMM_HK_CLEARLOG 24
 #define TABSRMM_HK_EDITNOTES 25
+#define TABSRMM_HK_TOGGLESENDLATER 26
 
 #define TABSRMM_HK_SECTION_IM "Message windows - IM"
 #define TABSRMM_HK_SECTION_GENERIC "Message windows - all"

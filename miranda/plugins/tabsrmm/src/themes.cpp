@@ -1649,9 +1649,8 @@ void CSkin::Load()
 			m_bClipBorder = GetPrivateProfileInt(_T("WindowFrame"), _T("ClipFrame"), 0, m_tszFileName) ? true : false;;
 
 			BYTE radius_tl, radius_tr, radius_bl, radius_br;
-			char szFinalName[MAX_PATH];
-			char szDrive[MAX_PATH], szPath[MAX_PATH];
-			char bufferA[MAX_PATH];
+			TCHAR 	szFinalName[MAX_PATH];
+			TCHAR 	szDrive[MAX_PATH], szPath[MAX_PATH];
 
 			radius_tl = GetPrivateProfileInt(_T("WindowFrame"), _T("RadiusTL"), 0, m_tszFileName);
 			radius_tr = GetPrivateProfileInt(_T("WindowFrame"), _T("RadiusTR"), 0, m_tszFileName);
@@ -1660,11 +1659,11 @@ void CSkin::Load()
 
 			CSkin::m_bRoundedCorner = radius_tl;
 
-			GetPrivateProfileStringA("Theme", "File", "None", bufferA, MAX_PATH, m_tszFileNameA);
+			GetPrivateProfileString(_T("Theme"), _T("File"), _T("None"), buffer, MAX_PATH, m_tszFileName);
 
-			_splitpath(m_tszFileNameA, szDrive, szPath, NULL, NULL);
-			mir_snprintf(szFinalName, MAX_PATH, "%s\\%s\\%s", szDrive, szPath, bufferA);
-			if (PathFileExistsA(szFinalName)) {
+			_tsplitpath(m_tszFileName, szDrive, szPath, NULL, NULL);
+			mir_sntprintf(szFinalName, MAX_PATH, _T("%s\\%s\\%s"), szDrive, szPath, buffer);
+			if (PathFileExists(szFinalName)) {
 				ReadThemeFromINI(szFinalName, 0, FALSE, m_fLoadOnStartup ? 0 : M->GetByte("skin_loadmode", 0));
 				CacheLogFonts();
 				CacheMsgLogIcons();
@@ -2117,6 +2116,7 @@ UINT CSkin::DrawRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT s
 	LRESULT result = 0;
 	BOOL isMultipleReason;
 	BOOL isEditNotesReason = ((mwdat && mwdat->fEditNotesActive) && (skinID == ID_EXTBKINPUTAREA));
+	BOOL isSendLaterReason = ((mwdat && mwdat->sendMode & SMODE_SENDLATER) && (skinID == ID_EXTBKINPUTAREA));
 
 	result = CallWindowProc(OldWndProc, hwnd, msg, wParam, lParam);			// do default processing (otherwise, NO scrollbar as it is painted in NC_PAINT)
 	if (!mwdat)
@@ -2157,8 +2157,8 @@ UINT CSkin::DrawRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT s
 			ReleaseDC(hwnd, hdc);
 			return result;
 		} else if (CMimAPI::m_pfnDrawThemeBackground) {
-			if (isMultipleReason || isEditNotesReason) {
-				HBRUSH br = CreateSolidBrush(isMultipleReason ? RGB(255, 130, 130) : RGB(80, 255, 80));
+			if (isMultipleReason || isEditNotesReason || isSendLaterReason) {
+				HBRUSH br = CreateSolidBrush(isMultipleReason ? RGB(255, 130, 130) : (isEditNotesReason ? RGB(80, 255, 80) : RGB(80, 80, 255)));
 				FillRect(hdc, &rcWindow, br);
 				DeleteObject(br);
 			} else
@@ -2363,7 +2363,7 @@ void CSkin::RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &
 		dat->pContainer->oldhbmToolbarBG = (HBITMAP)SelectObject(dat->pContainer->cachedToolbarDC, dat->pContainer->hbmToolbarBG);
 
 		if(fAero)
-			::DrawAlpha(hdc, &rcToolbar, 0xf0f0f0, 60, m_dwmColorRGB, 0, 9, 31, 4, 0);
+			::DrawAlpha(hdc, &rcToolbar, 0xf0f0f0, 40, m_dwmColorRGB, 0, 9, 31, 4, 0);
 		else
 			CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, hdc, PluginConfig.m_bIsVista ? 12 : 6,  PluginConfig.m_bIsVista ? 2 : 1,
 											  &rcToolbar, &rcToolbar);
@@ -2374,7 +2374,7 @@ void CSkin::RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &
 
 		if(fAero) {
 			::FillRect(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, GetSysColorBrush(COLOR_3DFACE));
-			::DrawAlpha(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, 0xf0f0f0, 60, m_dwmColorRGB, 0, 9, 31, 4, 0);
+			::DrawAlpha(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, 0xf0f0f0, 55, m_dwmColorRGB, 0, 9, 31, 4, 0);
 		} else
 			CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, dat->pContainer->cachedToolbarDC, PluginConfig.m_bIsVista ? 12 : 6,  PluginConfig.m_bIsVista ? 2 : 1,
 											  &rcCachedToolbar, &rcCachedToolbar);
@@ -2434,6 +2434,8 @@ void CSkin::ApplyAeroEffect(const HDC hdc, const RECT *rc, int iEffectArea, HAND
 
 		case AERO_EFFECT_MILK: {
 			int 	alpha = (iEffectArea == AERO_EFFECT_AREA_INFOPANEL) ? m_currentAeroEffect->m_baseAlpha : 40;
+			if(iEffectArea == AERO_EFFECT_AREA_MENUBAR)
+				alpha = 90;
 			BYTE 	color2_trans = (iEffectArea == AERO_EFFECT_AREA_MENUBAR) ? 0 : 1;
 			DWORD   corner = (iEffectArea == AERO_EFFECT_AREA_INFOPANEL) ? m_currentAeroEffect->m_cornerRadius : 6;
 

@@ -141,7 +141,16 @@ public:
 		GEN_MSG_SIGNEDOFF										= 98,
 		GEN_MSG_SIGNEDON										= 99,
 		GEN_MSG_CHANGEDSTATUS									= 100,
-		STR_LAST 												= 101
+		GEN_SQ_WARNING											= 101,
+		GEN_SQ_WARNING_TITLE									= 102,
+		GEN_SQ_MULTISEND_NO_CONTACTS							= 103,
+		GEN_SQ_DELIVERYFAILED									= 104,
+		GEN_SQ_DELIVERYFAILEDLATE								= 105,
+		GEN_SQ_MULTISEND_SUCCESS								= 106,
+		GEN_SQ_QUEUED_MESSAGE									= 107,
+		GEN_SQ_QUEUING_NOT_AVAIL								= 108,
+		GEN_SQ_SENDLATER_HEADER									= 109,
+		STR_LAST 												= 110
 	};
 
 	enum {

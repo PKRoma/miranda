@@ -594,13 +594,13 @@ int MsgWindowMenuHandler(_MessageWindowData *dat, int selection, int menuId)
 				return 1;
 
 			case ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS: {
-				char *szFilename = GetThemeFileName(1);
+				const TCHAR *szFilename = GetThemeFileName(1);
 				if (szFilename != NULL)
 					WriteThemeToINI(szFilename, dat);
 				return 1;
 			}
 			case ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS: {
-				char *szFilename = GetThemeFileName(0);
+				const TCHAR *szFilename = GetThemeFileName(0);
 				DWORD dwFlags = THEME_READ_FONTS;
 				int   result;
 
@@ -2115,7 +2115,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 				aceFlags = dat->ace ? dat->ace->dwFlags : 0;
 			else {
 				if (dat->panelWidth) {
-					dat->panelWidth = 0;
+					dat->panelWidth = -1;
 					SendMessage(hwndDlg, WM_SIZE, 0, 0);
 				}
 				return TRUE;
@@ -2162,7 +2162,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 			}
 			if (dat->panelWidth == -1) {
 				dat->panelWidth = (int)dNewWidth + 2;
-				SendMessage(hwndDlg, WM_SIZE, 0, 0);
+				return(0);
 			}
 		} else {
 
@@ -2243,15 +2243,17 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 					rcFrame.top += height_off;
 					rcFrame.bottom += height_off;
 				}
-				if (borderType == 2)
-					DrawEdge(hdcDraw, &rcFrame, BDR_SUNKENINNER, BF_RECT);
-				else if (borderType == 3)
-					clipRgn = CreateRectRgn(rcClient.left + rcFrame.left, rcClient.top + rcFrame.top, rcClient.left + rcFrame.right,
-											rcClient.top + rcFrame.bottom);
-				else if (borderType == 4) {
-					clipRgn = CreateRoundRectRgn(rcClient.left + rcFrame.left, rcClient.top + rcFrame.top, rcClient.left + rcFrame.right + 1,
-												 rcClient.top + rcFrame.bottom + 1, iRad, iRad);
-					SelectClipRgn(dis->hDC, clipRgn);
+				if(!fAero) {
+					if (borderType == 2)
+						DrawEdge(hdcDraw, &rcFrame, BDR_SUNKENINNER, BF_RECT);
+					else if (borderType == 3)
+						clipRgn = CreateRectRgn(rcClient.left + rcFrame.left, rcClient.top + rcFrame.top, rcClient.left + rcFrame.right,
+												rcClient.top + rcFrame.bottom);
+					else if (borderType == 4) {
+						clipRgn = CreateRoundRectRgn(rcClient.left + rcFrame.left, rcClient.top + rcFrame.top, rcClient.left + rcFrame.right + 1,
+													 rcClient.top + rcFrame.bottom + 1, iRad, iRad);
+						SelectClipRgn(dis->hDC, clipRgn);
+					}
 				}
 				if(CMimAPI::m_MyAlphaBlend) {
 					CMimAPI::m_MyAlphaBlend(dis->hDC, rcClient.left + rcFrame.left + (borderType ? 1 : 0), rcClient.top + height_off + (borderType ? 1 : 0),
@@ -2361,8 +2363,8 @@ void LoadOverrideTheme(HWND hwndDlg, struct _MessageWindowData *dat)
 	BOOL bReadTemplates = ((dat->pContainer->ltr_templates == NULL) || (dat->pContainer->rtl_templates == NULL) ||
 						   (dat->pContainer->logFonts == NULL) || (dat->pContainer->fontColors == NULL));
 
-	if (lstrlenA(dat->pContainer->szAbsThemeFile) > 1) {
-		if (PathFileExistsA(dat->pContainer->szAbsThemeFile)) {
+	if (lstrlen(dat->pContainer->szAbsThemeFile) > 1) {
+		if (PathFileExists(dat->pContainer->szAbsThemeFile)) {
 			if (CheckThemeVersion(dat->pContainer->szAbsThemeFile) == 0) {
 				LoadThemeDefaults(hwndDlg, dat);
 				return;

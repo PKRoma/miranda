@@ -2065,7 +2065,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETEVENTMASK, 0, mask | ENM_LINK | ENM_MOUSEEVENTS | ENM_KEYEVENTS);
 
 			mask = (int)SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_GETEVENTMASK, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETEVENTMASK, 0, mask | ENM_CHANGE | ENM_KEYEVENTS);
+			SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETEVENTMASK, 0, mask | ENM_CHANGE | ENM_KEYEVENTS | ENM_MOUSEEVENTS);
 
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_LIMITTEXT, (WPARAM)0x7FFFFFFF, 0);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(3, 3));
@@ -2645,13 +2645,8 @@ LABEL_SHOWWINDOW:
 				SendMessage(hwndDlg, WM_SIZE, DM_SPLITTERMOVED, 0);
 				break;
 			}
-			if (x == 2) {
-				PostMessage(hwndDlg, WM_SIZE, 0, 0);
-				x = 0;
-			}
-			else
-				x++;
-			RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE|RDW_UPDATENOW|RDW_ALLCHILDREN);
+			SendMessage(hwndDlg, WM_SIZE, 0, 0);
+			RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE|RDW_UPDATENOW);
 		}
 		break;
 
@@ -2758,6 +2753,16 @@ LABEL_SHOWWINDOW:
 					message.message = msg;
 					message.lParam = lp;
 					message.wParam = wp;
+
+					if(msg == WM_SYSKEYUP) {
+						UINT ctrlId = 0;
+						if(wp == VK_MENU)
+							dat->pContainer->MenuBar->autoShow();
+						return(_dlgReturn(hwndDlg, 0));
+					}
+
+					if(msg == WM_LBUTTONDOWN || msg == WM_RBUTTONDOWN || msg == WM_MBUTTONDOWN)
+						dat->pContainer->MenuBar->Cancel();
 
 					if (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN) {
 						LRESULT mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)&message, (LPARAM)Translate(TABSRMM_HK_SECTION_GENERIC));
@@ -2928,6 +2933,8 @@ LABEL_SHOWWINDOW:
 								BOOL isLink = FALSE;
 								UINT msg = ((ENLINK *) lParam)->msg;
 
+								dat->pContainer->MenuBar->Cancel();
+
 								tr.lpstrText = NULL;
 								SendMessage(pNmhdr->hwndFrom, EM_EXGETSEL, 0, (LPARAM) & sel);
 								if (sel.cpMin != sel.cpMax)
@@ -3026,17 +3033,6 @@ LABEL_SHOWWINDOW:
 									}
 									else if (msg == WM_LBUTTONUP) {
 										USERINFO	*ui = si->pUsers;
-										//BOOL		fFound = TRUE;
-
-										/*while(ui) {
-											if(!lstrcmp(ui->pszNick, tr.lpstrText)) {
-												fFound = TRUE;
-												break;
-											}
-											ui = ui->next;
-										}*/
-
-										//if(fFound) {
 											SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_EXGETSEL, 0, (LPARAM) &chr);
 											tszTmp = tszAppeal = (TCHAR *) malloc((lstrlen(tr.lpstrText) + lstrlen(tszAplTmpl) + 3) * sizeof(TCHAR));
 											tr2.lpstrText = (LPTSTR) malloc(sizeof(TCHAR) * 2);

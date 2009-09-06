@@ -136,6 +136,15 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("signed off."),								/* GEN_MSG_SIGNEDOFF */
 	LPGENT("signed on and is now %s."),					/* GEN_MSG_SIGNEDON */
 	LPGENT("changed status from %s to %s."), 			/* GEN_MSG_CHANGEDSTATUS */
+	LPGENT("There are unsent messages waiting for confirmation.\nWhen you close the window now, Miranda will try to send them but may be unable to inform you about possible delivery errors.\nDo you really want to close the Window(s)?"), /* GEN_SQ_WARNING */
+	LPGENT("Message window warning"), 					/* GEN_SQ_WARNING_TITLE */
+	LPGENT("You haven't selected any contacts from the list. Click the checkbox box next to a name to send the message to that person."), /* GEN_SQ_MULTISEND_NOCONTACTS */
+	LPGENT("A message delivery has failed.\nClick to open the message window."), /* GEN_SQ_DELIVERYFAILED */
+	LPGENT("A message delivery has failed after the contacts chat window was closed. You may want to resend the last message"), /* GEN_SQ_DELIVERYFAILEDLATE */
+	LPGENT("Multisend: successfully sent to: %s"), 		/* GEN_SQ_MULTISEND_SUCCESS */
+	LPGENT("Message successfully queued for later delivery.\nIt will be sent as soon as possible and a popup will inform you about the result."), /* GEN_SQ_QUEUED_MESSAGE */
+	LPGENT("The send later feature is not available on this protocol."), /* GEN_SQ_QUEUING_NOT_AVAIL */
+	LPGENT("This message was sent delayed. Original timestamp %s\n\n"),  /* GEN_SQ_SENDLATER_HEADER */
 };
 
 /*
@@ -163,7 +172,7 @@ TCHAR* CTranslator::m_OptStrings[OPT_LAST] = {
 	LPGENT("Milky glass"),											/* OPT_AERO_EFFECT_MILK */
 	LPGENT("Carbon (needs a dark aero theme)"), 					/* OPT_AERO_EFFECT_CARBON */
 	LPGENT("Opaque, colored text"), 								/* OPT_AERO_EFFECT_SOLID */
-	LPGENT("None"),													/* OPT_GEN_NONE */
+	LPGENT("No border"),											/* OPT_GEN_NONE */
 	LPGENT("Automatic"),											/* OPT_GEN_AUTO */
 	LPGENT("Sunken"),												/* OPT_GEN_SUNKEN */
 	LPGENT("1 pixel, solid"),										/* OPT_GEN_1PIXEL */

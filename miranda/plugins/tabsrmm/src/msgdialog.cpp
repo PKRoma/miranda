@@ -137,7 +137,7 @@ static BOOL IsStringValidLinkA(char* pszText)
 	return(strstr(pszText, "://") == NULL ? FALSE : TRUE);
 }
 
-static BOOL IsUtfSendAvailable(HANDLE hContact)
+BOOL IsUtfSendAvailable(HANDLE hContact)
 {
 	char* szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 	if (szProto == NULL)
@@ -1145,7 +1145,21 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			if (dat && dat->pContainer->bSkinned)
 				CSkin::SkinDrawBG(hwnd, dat->pContainer->hwnd, dat->pContainer, &rc, dc);
 			else {
-				FillRect(dc, &rc, (M->isAero() && hwnd == GetDlgItem(hwndParent, IDC_PANELSPLITTER)) ? (HBRUSH)GetStockObject(BLACK_BRUSH) : GetSysColorBrush(COLOR_3DFACE));
+				if(M->isAero()) {
+					if(GetDlgCtrlID(hwnd) == IDC_PANELSPLITTER)
+						FillRect(dc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+					else if(GetDlgCtrlID(hwnd) == IDC_SPLITTER || GetDlgCtrlID(hwnd) == IDC_SPLITTERY) {
+						rc.bottom--;
+						FillRect(dc, &rc, GetSysColorBrush(COLOR_3DDKSHADOW));
+						rc.top++; rc.bottom++;
+						FillRect(dc, &rc, GetSysColorBrush(COLOR_3DSHADOW));
+					}
+					else
+						FillRect(dc, &rc, GetSysColorBrush(COLOR_3DFACE));
+				}
+				else
+					FillRect(dc, &rc, GetSysColorBrush(COLOR_3DFACE));
+
 				if(hwnd == GetDlgItem(hwndParent, IDC_PANELSPLITTER) && !M->isAero()) {
 					rc.bottom--; rc.left--; rc.right++;
 					DrawEdge(dc, &rc, BDR_SUNKENOUTER, BF_RECT);
@@ -1377,10 +1391,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
 			urc->rcItem.bottom = urc->rcItem.top + 2;
 			OffsetRect(&urc->rcItem, 0, 1);
-			if (dat->pContainer->dwFlags & CNT_SIDEBAR)
-				urc->rcItem.left = 9;
-			else
-				urc->rcItem.left = 0;
+			urc->rcItem.left = 0;
 
 			if (dat->fMustOffset)
 				urc->rcItem.right -= (dat->pic.cx + DPISCALEX(2));
@@ -2219,6 +2230,10 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 									case TABSRMM_HK_EDITNOTES:
 										PostMessage(hwndDlg, WM_COMMAND, MAKELONG(IDC_PIC, BN_CLICKED), 0);
 										return(_dlgReturn(hwndDlg, 1));
+									case TABSRMM_HK_TOGGLESENDLATER:
+										dat->sendMode ^= SMODE_SENDLATER;
+										RedrawWindow(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, NULL, RDW_INVALIDATE|RDW_FRAME|RDW_UPDATENOW);
+										return(_dlgReturn(hwndDlg, 1));
 									case TABSRMM_HK_TOGGLERTL:
 									{
 										DWORD	dwGlobal = M->GetDword("mwflags", MWF_LOG_DEFAULT);
@@ -2493,6 +2508,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							switch (msg) {
 								case WM_LBUTTONDOWN: {
 									HCURSOR hCur = GetCursor();
+									m_pContainer->MenuBar->Cancel();
 									if (hCur == LoadCursor(NULL, IDC_SIZENS) || hCur == LoadCursor(NULL, IDC_SIZEWE)
 											|| hCur == LoadCursor(NULL, IDC_SIZENESW) || hCur == LoadCursor(NULL, IDC_SIZENWSE)) {
 										SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
@@ -3168,28 +3184,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					if (!(dat->dwFlags & MWF_ERRORSTATE))
 						break;
 
-					if (wParam == MSGERROR_SENDLATER) {
-						char *szNote = "Send later currently not implemented (work in progress.)";
-						DBEVENTINFO dbei;
-						dbei.cbSize = sizeof(dbei);
-						dbei.eventType = EVENTTYPE_MESSAGE;
-						dbei.flags = DBEF_SENT;
-						dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
-						dbei.timestamp = time(NULL);
-						dbei.cbBlob = lstrlenA(szNote) + 1;
-						dbei.pBlob = (PBYTE) szNote;
-						StreamInEvents(hwndDlg,  0, 1, 1, &dbei);
-						if (dat->hDbEventFirst == NULL)
-							SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
-						SaveInputHistory(hwndDlg, dat, 0, 0);
-						EnableSendButton(dat, FALSE);
-						if (m_pContainer->hwndActive == hwndDlg)
-							UpdateReadChars(dat);
-						SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) PluginConfig.g_buttonBarIcons[6]);
-						SendDlgItemMessage(hwndDlg, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM)pszIDCSAVE_close, 0);
-						dat->dwFlags &= ~MWF_SAVEBTN_SAV;
-						SendQueue::SendLater();							// to be implemented at a later time
-					}
+					if (wParam == MSGERROR_SENDLATER)
+						sendQueue->sendLater(dat->iCurrentQueueError, dat);							// to be implemented at a later time
 					dat->iOpenJobs--;
 					sendQueue->dec();
 					if (dat->iCurrentQueueError >= 0 && dat->iCurrentQueueError < SendQueue::NR_SENDJOBS)
@@ -3618,22 +3614,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					if (memRequired == 0 || dat->sendBuffer[0] == 0)
 						break;
 
-					if (dat->sendMode & SMODE_SENDLATER) {
-#if defined(_UNICODE)
-						if (ServiceExists("BuddyPounce/AddToPounce"))
-							CallService("BuddyPounce/AddToPounce", (WPARAM)dat->hContact, (LPARAM)dat->sendBuffer);
-#else
-						if (ServiceExists("BuddyPounce/AddToPounce"))
-							CallService("BuddyPounce/AddToPounce", (WPARAM)dat->hContact, (LPARAM)dat->sendBuffer);
-#endif
-						if (dat->hwndIEView != 0 && m_pContainer->hwndStatus) {
-							SendMessage(m_pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM)Translate("Message saved for later delivery"));
-						} else
-							sendQueue->logError(dat, -1, TranslateT("Message saved for later delivery"));
-
-						SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
-						break;
-					}
 					if (dat->sendMode & SMODE_CONTAINER && m_pContainer->hwndActive == hwndDlg && GetForegroundWindow() == hwndContainer) {
 						HWND contacthwnd;
 						TCITEM tci;
@@ -4163,7 +4143,6 @@ quote_from_last:
 					CheckMenuItem(submenu, ID_SENDMENU_SENDDEFAULT, MF_BYCOMMAND | (dat->sendMode == 0 ? MF_CHECKED : MF_UNCHECKED));
 					CheckMenuItem(submenu, ID_SENDMENU_SENDTOCONTAINER, MF_BYCOMMAND | (dat->sendMode & SMODE_CONTAINER ? MF_CHECKED : MF_UNCHECKED));
 					CheckMenuItem(submenu, ID_SENDMENU_FORCEANSISEND, MF_BYCOMMAND | (dat->sendMode & SMODE_FORCEANSI ? MF_CHECKED : MF_UNCHECKED));
-					EnableMenuItem(submenu, ID_SENDMENU_SENDLATER, MF_BYCOMMAND | (ServiceExists("BuddyPounce/AddToPounce") ? MF_ENABLED : MF_GRAYED));
 					CheckMenuItem(submenu, ID_SENDMENU_SENDLATER, MF_BYCOMMAND | (dat->sendMode & SMODE_SENDLATER ? MF_CHECKED : MF_UNCHECKED));
 					CheckMenuItem(submenu, ID_SENDMENU_SENDWITHOUTTIMEOUTS, MF_BYCOMMAND | (dat->sendMode & SMODE_NOACK ? MF_CHECKED : MF_UNCHECKED));
 					{

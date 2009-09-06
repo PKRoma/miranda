@@ -143,6 +143,8 @@ public:
 	bool		m_chat_enabled;
 	HMENU		m_MenuBar;
 	COLORREF	m_ipBackgroundGradient;
+	COLORREF	m_ipBackgroundGradientHigh;
+	BOOL		m_SendLaterAvail;
 };
 
 extern	CGlobals	PluginConfig;

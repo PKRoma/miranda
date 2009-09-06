@@ -60,8 +60,10 @@ char *SendQueue::MsgServiceName(const HANDLE hContact = 0, const _MessageWindowD
 	if (szProto == NULL)
 		return pss_msg;
 
-	if (dat->sendMode & SMODE_FORCEANSI || !(dwFlags & PREF_UNICODE))
-		return pss_msg;
+	if(dat) {
+		if (dat->sendMode & SMODE_FORCEANSI || !(dwFlags & PREF_UNICODE))
+			return pss_msg;
+	}
 
 	_snprintf(szServiceName, sizeof(szServiceName), "%s%sW", szProto, PSS_MESSAGE);
 	if (ServiceExists(szServiceName))
@@ -418,7 +420,7 @@ int SendQueue::sendQueued(_MessageWindowData *dat, const int iEntry)
 		}
 		while (hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0));
 		if (m_jobs[iEntry].sendCount == 0) {
-			logError(dat, -1, TranslateT("You haven't selected any contacts from the list. Click the checkbox box next to a name to send the message to that person."));
+			logError(dat, -1, CTranslator::get(CTranslator::GEN_SQ_MULTISEND_NO_CONTACTS));
 			return 0;
 		}
 
@@ -439,7 +441,7 @@ int SendQueue::sendQueued(_MessageWindowData *dat, const int iEntry)
 		else if (!(dat->sendMode & SMODE_FORCEANSI) && !M->GetByte(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "UnicodeSend", 0))
 			M->WriteByte(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "UnicodeSend", 1);
 
-		if (M->GetByte("autosplit", 0)) {
+		if (M->GetByte("autosplit", 0) && !(dat->sendMode & SMODE_SENDLATER)) {
 			BOOL    fSplit = FALSE;
 			DWORD   dwOldFlags;
 
@@ -499,11 +501,16 @@ send_unsplitted:
 
 			m_jobs[iEntry].sendCount = 1;
 			m_jobs[iEntry].hContact[0] = dat->hContact;
-			m_jobs[iEntry].hSendId[0] = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact, dat, m_jobs[iEntry].dwFlags), (dat->sendMode & SMODE_FORCEANSI) ? (m_jobs[iEntry].dwFlags & ~PREF_UNICODE) : m_jobs[iEntry].dwFlags, (LPARAM) m_jobs[iEntry].sendBuffer);
 			m_jobs[iEntry].hOwner = dat->hContact;
 			m_jobs[iEntry].hwndOwner = hwndDlg;
 			m_jobs[iEntry].iStatus = SQ_INPROGRESS;
 			m_jobs[iEntry].iAcksNeeded = 1;
+			if(dat->sendMode & SMODE_SENDLATER) {
+				sendLater(iEntry, dat);
+				clearJob(iEntry);
+				return(0);
+			}
+			m_jobs[iEntry].hSendId[0] = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact, dat, m_jobs[iEntry].dwFlags), (dat->sendMode & SMODE_FORCEANSI) ? (m_jobs[iEntry].dwFlags & ~PREF_UNICODE) : m_jobs[iEntry].dwFlags, (LPARAM) m_jobs[iEntry].sendBuffer);
 
 			if (dat->sendMode & SMODE_NOACK) {              // fake the ack if we are not interested in receiving real acks
 				ACKDATA ack = {0};
@@ -754,8 +761,7 @@ static INT_PTR CALLBACK PopupDlgProcError(HWND hWnd, UINT message, WPARAM wParam
 
 void SendQueue::NotifyDeliveryFailure(const _MessageWindowData *dat)
 {
-#if defined _UNICODE
-	POPUPDATAW		ppd;
+	POPUPDATAT		ppd;
 	int				ibsize = 1023;
 
 	if(M->GetByte("adv_noErrorPopups", 0))
@@ -764,8 +770,8 @@ void SendQueue::NotifyDeliveryFailure(const _MessageWindowData *dat)
 	if (CallService(MS_POPUP_QUERY, PUQS_GETSTATUS, 0) == 1) {
 		ZeroMemory((void *)&ppd, sizeof(ppd));
 		ppd.lchContact = dat->hContact;
-		mir_sntprintf(ppd.lpwzContactName, MAX_CONTACTNAME, _T("%s"), dat->szNickname);
-		mir_sntprintf(ppd.lpwzText, MAX_SECONDLINE, _T("%s"), TranslateT("A message delivery has failed.\nClick to open the message window."));
+		mir_sntprintf(ppd.lptzContactName, MAX_CONTACTNAME, _T("%s"), dat->szNickname);
+		mir_sntprintf(ppd.lptzText, MAX_SECONDLINE, _T("%s"), CTranslator::get(CTranslator::GEN_SQ_DELIVERYFAILED));
 		ppd.colorText = RGB(255, 245, 225);
 		ppd.colorBack = RGB(191, 0, 0);
 		ppd.PluginWindowProc = (WNDPROC)PopupDlgProcError;
@@ -774,27 +780,6 @@ void SendQueue::NotifyDeliveryFailure(const _MessageWindowData *dat)
 		ppd.iSeconds = -1;
 		CallService(MS_POPUP_ADDPOPUPW, (WPARAM)&ppd, 0);
 	}
-#else
-	POPUPDATAEX	ppd;
-	int			ibsize = 1023;
-
-	if(M->GetByte("adv_noErrorPopups", 0))
-		return;
-
-	if (CallService(MS_POPUP_QUERY, PUQS_GETSTATUS, 0) == 1) {
-		ZeroMemory((void *)&ppd, sizeof(ppd));
-		ppd.lchContact = dat->hContact;
-		mir_sntprintf(ppd.lpzContactName, MAX_CONTACTNAME, "%s", dat->szNickname);
-		mir_sntprintf(ppd.lpzText, MAX_SECONDLINE, "%s", Translate("A message delivery has failed.\nClick to open the message window."));
-		ppd.colorText = RGB(255, 245, 225);
-		ppd.colorBack = RGB(191, 0, 0);
-		ppd.PluginWindowProc = (WNDPROC)PopupDlgProcError;
-		ppd.lchIcon = PluginConfig.g_iconErr;
-		ppd.PluginData = (void *)dat->hContact;
-		ppd.iSeconds = -1;
-		CallService(MS_POPUP_ADDPOPUP, (WPARAM)&ppd, 0);
-	}
-#endif
 }
 
 /*
@@ -890,7 +875,7 @@ int SendQueue::ackMessage(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 		}
 		else {
 inform_and_discard:
-			_DebugPopup(m_jobs[iFound].hOwner, TranslateT("A message delivery has failed after the contacts chat window was closed. You may want to resend the last message"));
+			_DebugPopup(m_jobs[iFound].hOwner, CTranslator::get(CTranslator::GEN_SQ_DELIVERYFAILEDLATE));
 			clearJob(iFound);
 			return 0;
 		}
@@ -933,7 +918,7 @@ inform_and_discard:
 		if (m_jobs[iFound].hContact[i] != m_jobs[iFound].hOwner) {
 			TCHAR szErrMsg[256];
 			TCHAR *szReceiver = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)m_jobs[iFound].hContact[i], GCDNF_TCHAR);
-			mir_sntprintf(szErrMsg, safe_sizeof(szErrMsg), TranslateT("Multisend: successfully sent to: %s"), szReceiver);
+			mir_sntprintf(szErrMsg, safe_sizeof(szErrMsg), CTranslator::get(CTranslator::GEN_SQ_MULTISEND_SUCCESS), szReceiver);
 			logError(dat, -1, szErrMsg);
 		}
 	}
@@ -979,5 +964,70 @@ verify:
 
 LRESULT SendQueue::WarnPendingJobs(unsigned int uNrMessages)
 {
-	return(MessageBox(0, TranslateT("There are unsent messages waiting for confirmation.\nWhen you close the window now, Miranda will try to send them but may be unable to inform you about possible delivery errors.\nDo you really want to close the Window(s)?"), TranslateT("Message Window warning"), MB_YESNO | MB_ICONHAND));
+	return(MessageBox(0, CTranslator::get(CTranslator::GEN_SQ_WARNING),
+					  CTranslator::get(CTranslator::GEN_SQ_WARNING_TITLE), MB_YESNO | MB_ICONHAND));
 }
+
+/**
+ * This just adds the message to the database for later delivery and
+ * adds the contact to the list of contacts that have queued messages
+ *
+ * @param iJobIndex int: index of the send job
+ *
+ * @return the index on success, -1 on failure
+ */
+int SendQueue::sendLater(int iJobIndex, _MessageWindowData *dat)
+{
+	bool  fAvail = false;
+	const TCHAR *szNote = 0;
+
+	if(IsUtfSendAvailable(dat->bIsMeta ? dat->hSubContact : dat->hContact)) {
+		szNote = CTranslator::get(CTranslator::GEN_SQ_QUEUED_MESSAGE);
+		fAvail = PluginConfig.m_SendLaterAvail ? true : false;
+	}
+	else
+		szNote = CTranslator::get(CTranslator::GEN_SQ_QUEUING_NOT_AVAIL);
+
+	char  *utfText = M->utf8_encodeT(szNote);
+	DBEVENTINFO dbei;
+	dbei.cbSize = sizeof(dbei);
+	dbei.eventType = EVENTTYPE_MESSAGE;
+	dbei.flags = DBEF_SENT | DBEF_UTF;
+	dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
+	dbei.timestamp = time(NULL);
+	dbei.cbBlob = lstrlenA(utfText) + 1;
+	dbei.pBlob = (PBYTE) utfText;
+	StreamInEvents(dat->hwnd,  0, 1, 1, &dbei);
+	if (dat->hDbEventFirst == NULL)
+		SendMessage(dat->hwnd, DM_REMAKELOG, 0, 0);
+	SaveInputHistory(dat->hwnd, dat, 0, 0);
+	EnableSendButton(dat, FALSE);
+	if (dat->pContainer->hwndActive == dat->hwnd)
+		UpdateReadChars(dat);
+	SendDlgItemMessage(dat->hwnd, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) PluginConfig.g_buttonBarIcons[6]);
+	SendDlgItemMessage(dat->hwnd, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM)pszIDCSAVE_close, 0);
+	dat->dwFlags &= ~MWF_SAVEBTN_SAV;
+	mir_free(utfText);
+
+	if(!fAvail)
+		return(0);
+
+	if(iJobIndex >= 0 && iJobIndex < NR_SENDJOBS) {
+		SendJob *job = &m_jobs[iJobIndex];
+		char	szKeyName[20];
+
+		mir_snprintf(szKeyName, 20, "%d", time(0));
+		if(job->dwFlags & PREF_UTF || !(job->dwFlags & PREF_UNICODE))
+			DBWriteContactSettingString(job->hOwner, "SendLater", szKeyName, job->sendBuffer);
+		else
+			DBWriteContactSettingTString(job->hOwner, "SendLater", szKeyName, reinterpret_cast<TCHAR *>(job->sendBuffer));
+
+		int iCount = M->GetDword(job->hOwner, "SendLater", "count", 0);
+		iCount++;
+		M->WriteDword(job->hOwner, "SendLater", "count", iCount);
+		SendLater_Add(job->hOwner);
+		return(iJobIndex);
+	}
+	return(-1);
+}
+

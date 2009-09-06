@@ -814,17 +814,6 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 			EndPaint(hWnd, &ps);
 			return 0;
 		}
-		case WM_CONTEXTMENU: {
-			RECT rc;
-			POINT pt;
-			GetCursorPos(&pt);
-			GetWindowRect(GetDlgItem(hWnd, 1001), &rc);
-			if (PtInRect(&rc, pt)) {
-				SendMessage(PluginConfig.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 100, WM_RBUTTONUP);
-				return 0;
-			}
-			break;
-		}
 
 		case WM_USER + 101: {
 			struct _MessageWindowData *dat = (struct _MessageWindowData *)lParam;

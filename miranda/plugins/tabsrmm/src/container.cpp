@@ -1893,7 +1893,7 @@ buttons_done:
 			char szCname[40];
 			int overridePerContact = 1;
 			TCHAR szTitleFormat[200];
-			char *szThemeName = NULL;
+			TCHAR *szThemeName = NULL;
 			DBVARIANT dbv = {0};
 			DBVARIANT dbv1 = {0};
 
@@ -1921,8 +1921,8 @@ buttons_done:
 				}
 				pContainer->szRelThemeFile[0] = pContainer->szAbsThemeFile[0] = 0;
 				mir_snprintf(szCname, 40, "%s_theme", szSetting);
-				if (!DBGetContactSettingString(pContainer->hContactFrom, SRMSGMOD_T, szCname, &dbv))
-					szThemeName = dbv.pszVal;
+				if (!DBGetContactSettingTString(pContainer->hContactFrom, SRMSGMOD_T, szCname, &dbv))
+					szThemeName = dbv.ptszVal;
 				if (dwLocalFlags == 0xffffffff || dwLocalTrans == 0xffffffff)
 					overridePerContact = 1;
 				else
@@ -1944,8 +1944,8 @@ buttons_done:
 				}
 				if (szThemeName == NULL) {
 					mir_snprintf(szCname, 40, "%s%d_theme", szSetting, pContainer->iContainerIndex);
-					if (!DBGetContactSettingString(NULL, SRMSGMOD_T, szCname, &dbv))
-						szThemeName = dbv.pszVal;
+					if (!DBGetContactSettingTString(NULL, SRMSGMOD_T, szCname, &dbv))
+						szThemeName = dbv.ptszVal;
 				}
 			}
 			if (dwLocalFlags == 0xffffffff) {
@@ -1987,7 +1987,7 @@ buttons_done:
 
 			if (szThemeName != NULL) {
 				M->pathToAbsolute(szThemeName, pContainer->szAbsThemeFile);
-				mir_snprintf(pContainer->szRelThemeFile, MAX_PATH, "%s", szThemeName);
+				mir_sntprintf(pContainer->szRelThemeFile, MAX_PATH, _T("%s"), szThemeName);
 				DBFreeVariant(&dbv);
 			}
 			else
@@ -2406,10 +2406,10 @@ buttons_done:
 						M->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->dwPrivateFlagsEx);
 
 						mir_snprintf(szCName, 40, "%s_theme", szSetting);
-						if (lstrlenA(pContainer->szRelThemeFile) > 1) {
+						if (lstrlen(pContainer->szRelThemeFile) > 1) {
 							if(pContainer->fPrivateThemeChanged == TRUE) {
 								M->pathToRelative(pContainer->szRelThemeFile, pContainer->szAbsThemeFile);
-								DBWriteContactSettingString(hContact, SRMSGMOD_T, szCName, pContainer->szRelThemeFile);
+								DBWriteContactSettingTString(hContact, SRMSGMOD_T, szCName, pContainer->szRelThemeFile);
 								pContainer->fPrivateThemeChanged = FALSE;
 							}
 						}
@@ -2438,10 +2438,10 @@ buttons_done:
 					M->WriteTString(NULL, SRMSGMOD_T, szCName, pContainer->szTitleFormat);
 				}
 				mir_snprintf(szCName, 40, "%s%d_theme", szSetting, pContainer->iContainerIndex);
-				if (lstrlenA(pContainer->szRelThemeFile) > 1) {
+				if (lstrlen(pContainer->szRelThemeFile) > 1) {
 					if(pContainer->fPrivateThemeChanged == TRUE) {
 						M->pathToRelative(pContainer->szRelThemeFile, pContainer->szAbsThemeFile);
-						DBWriteContactSettingString(NULL, SRMSGMOD_T, szCName, pContainer->szAbsThemeFile);
+						DBWriteContactSettingTString(NULL, SRMSGMOD_T, szCName, pContainer->szAbsThemeFile);
 						pContainer->fPrivateThemeChanged = FALSE;
 					}
 				}

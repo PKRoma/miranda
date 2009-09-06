@@ -448,7 +448,6 @@ INT_PTR CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			char szHeader[2048];
 			SETTEXTEX stx = {ST_SELECTION, PluginConfig.m_LangPackCP};
 			RECT rc;
-			char szBasename[_MAX_FNAME], szExt[_MAX_EXT];
 
 			/*
 			* send the help text
@@ -465,23 +464,6 @@ INT_PTR CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				}
 				SetWindowText(hwndDlg, TranslateT("Template editor help"));
 			} else {
-				HANDLE hFile;
-				DWORD size, actual_read;
-				BYTE *buffer = 0;
-				char final_path[MAX_PATH];
-
-				M->pathToAbsolute((char *)lParam, final_path);
-				_splitpath(final_path, NULL, NULL, szBasename, szExt);
-				if ((hFile = CreateFileA(final_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE) {
-					DestroyWindow(hwndDlg);
-					return(FALSE);
-				}
-				size = GetFileSize(hFile, 0);
-				buffer = (BYTE *)malloc(size + 10);
-				ReadFile(hFile, (void *)buffer, size, &actual_read, 0);
-				SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)buffer);
-				CloseHandle(hFile);
-				free(buffer);
 			}
 			GetWindowRect(hwndDlg, &rc);
 			if (lParam == 0)

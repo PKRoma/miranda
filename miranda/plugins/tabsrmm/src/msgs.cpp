@@ -320,14 +320,13 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
 			else
 				break;
 		}
-		if (iFound == SendQueue::NR_SENDJOBS)              // no matching send info found in the queue
-			return 0;
-		else {                                  // the job was found
+		if (iFound == SendQueue::NR_SENDJOBS) {             // no matching send info found in the queue
+			SendLater_ProcessAck(pAck);											   //
+			return 0;									   // try to find the process handle in the list of open send later jobs
+		} else {                                  // the job was found
 			SendMessage(jobs[iFound].hwndOwner, HM_EVENTSENT, (WPARAM)MAKELONG(iFound, i), lParam);
 			return 0;
 		}
-	}
-	else if(pAck->type == ACKTYPE_STATUS) {
 	}
 	return 0;
 }
@@ -1245,6 +1244,7 @@ static int OkToExit(WPARAM wParam, LPARAM lParam)
 	UnhookEvent(hEventDbSettingChange);
 	UnhookEvent(hEventContactDeleted);
 	ModPlus_PreShutdown(wParam, lParam);
+	SendLater_ClearAll();
 	return 0;
 }
 

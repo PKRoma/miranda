@@ -127,6 +127,8 @@ public:
 	char *utf8_encode(const char* src) const;
 	char *utf8_encodecp(const char* src, int codepage) const;
 	char *utf8_encodeW(const wchar_t* src) const;
+	char *utf8_encodeT(const TCHAR* src) const;
+	TCHAR *utf8_decodeT(const char* src) const;
 	wchar_t *utf8_decodeW(const char* str) const;
 
 	/*
@@ -142,12 +144,6 @@ public:
 	 * for backwards compatiblity still needed (not everything path-related is unicode
 	*/
 
-#if defined(UNICODE)
-	int pathIsAbsolute(const char *path) const;
-	size_t pathToRelative(const char *pSrc, char *pOut) const;
-	size_t pathToAbsolute(const char *pSrc, char *pOut) const;
-#endif
-
 	const TCHAR  *getDataPath() const { return(m_szProfilePath); }
 	const TCHAR  *getSkinPath() const { return(m_szSkinsPath); }
 	const TCHAR  *getSavedAvatarPath() const { return(m_szSavedAvatarsPath); }
@@ -162,9 +158,6 @@ public:
 		}
 		return(m_userDir);
 	}
-	const char  *getDataPathA() const { return(m_szProfilePathA); }
-	const char  *getSkinPathA() const { return(m_szSkinsPathA); }
-	const char  *getSavedAvatarPathA() const { return(m_szSavedAvatarsPathA); }
 
 	void		configureCustomFolders();
 	INT_PTR		foldersPathChanged();
@@ -257,7 +250,6 @@ public:
 private:
 	UTF8_INTERFACE 	m_utfi;
 	TCHAR 		m_szProfilePath[MAX_PATH], m_szSkinsPath[MAX_PATH], m_szSavedAvatarsPath[MAX_PATH], m_szChatLogsPath[MAX_PATH];
-	char		m_szProfilePathA[MAX_PATH], m_szSkinsPathA[MAX_PATH], m_szSavedAvatarsPathA[MAX_PATH];
 	HMODULE		m_hUxTheme, m_hDwmApi;
 	bool		m_VsAPI;
 	bool		m_isAero;

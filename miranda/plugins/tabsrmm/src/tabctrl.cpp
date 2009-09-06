@@ -424,8 +424,8 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 			}
 #if defined(_UNICODE)
 			if(M->isAero())
-				CSkin::RenderText(dc, dwStyle & TCS_BUTTONS ? tabdat->hThemeButton : tabdat->hTheme, dat->newtitle, rcItem, dwTextFlags, 7);
-			else if (tabdat->m_VisualStyles == FALSE)
+				CSkin::RenderText(dc, dwStyle & TCS_BUTTONS ? tabdat->hThemeButton : tabdat->hTheme, dat->newtitle, rcItem, dwTextFlags, CSkin::m_glowSize);
+			else if (tabdat->m_VisualStyles == FALSE || tabdat->m_moderntabs)
 				DrawText(dc, dat->newtitle, (int)(lstrlen(dat->newtitle)), rcItem, dwTextFlags);
 			else
 				M->m_pfnDrawThemeText(dwStyle & TCS_BUTTONS ? tabdat->hThemeButton : tabdat->hTheme, dc, 1, nHint & HINT_ACTIVE_ITEM ? 3 : (nHint & HINT_HOTTRACK ? 2 : 1), dat->newtitle, (int)(lstrlen(dat->newtitle)), dwTextFlags, 0, rcItem);
@@ -1375,13 +1375,13 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 		break;
 
 		case WM_ERASEBKGND:
-			if (tabdat->pContainer && tabdat->pContainer->bSkinned)
+			if (tabdat->pContainer && (tabdat->pContainer->bSkinned || M->isAero()))
 				return TRUE;
 			return(0);
 		case WM_PAINT: {
 			PAINTSTRUCT ps;
 			HDC hdcreal, hdc;
-			RECT rectTemp, rctPage, rctActive, rcItem, rctClip;
+			RECT rectTemp, rctPage, rctActive, rcItem, rctClip, rctOrig;
 			RECT rectUpDn = {0, 0, 0, 0};
 			int nCount = TabCtrl_GetItemCount(hwnd), i;
 			TCITEM item = {0};
@@ -1438,6 +1438,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			}
 
 			GetClientRect(hwnd, &rctPage);
+			rctOrig = rctPage;
 			iActive = TabCtrl_GetCurSel(hwnd);
 			TabCtrl_GetItemRect(hwnd, iActive, &rctActive);
 			cx = rctPage.right - rctPage.left;
@@ -1688,7 +1689,8 @@ skip_tabs:
 				ExcludeClipRect(hdcreal, rctClip.left, rctClip.top, rctClip.right, rctClip.bottom);
 
 			if(hpb)
-				CMimAPI::m_pfnEndBufferedPaint(hpb, TRUE);
+				CSkin::FinalizeBufferedPaint(hpb, &rctOrig);
+				//CMimAPI::m_pfnEndBufferedPaint(hpb, TRUE);
 			else {
 				BitBlt(hdcreal, 0, 0, cx, cy, hdc, 0, 0, SRCCOPY);
 				SelectObject(hdc, bmpOld);

@@ -213,7 +213,7 @@ void CInfoPanel::renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero) 
 				if(m_dat->pContainer->bSkinned)
 					CSkin::SkinDrawBG(m_dat->hwnd, m_dat->pContainer->hwnd, m_dat->pContainer, &rc, hdc);
 				rc.bottom -= 2;
-				::DrawAlpha(hdc, &rc, PluginConfig.m_ipBackgroundGradient, 100, GetSysColor(COLOR_3DFACE), 1, 17,
+				::DrawAlpha(hdc, &rc, PluginConfig.m_ipBackgroundGradient, 100, PluginConfig.m_ipBackgroundGradientHigh, 0, 17,
 						  31, 8, 0);
 				rc.top = rc.bottom - 1;
 				rc.left--; rc.right++;
@@ -259,7 +259,10 @@ void CInfoPanel::renderContent(const HDC hdc)
 			CSkin::MapClientToParent(GetDlgItem(m_dat->hwnd, IDC_PANELPIC), m_dat->hwnd, dis.rcItem);
 			dis.hDC = hdc;
 			dis.hwndItem = GetDlgItem(m_dat->hwnd, IDC_PANELPIC);
-			::MsgWindowDrawHandler(0, (LPARAM)&dis, m_dat->hwnd, m_dat);
+			if(::MsgWindowDrawHandler(0, (LPARAM)&dis, m_dat->hwnd, m_dat) == 0) {
+				//::MsgWindowDrawHandler(0, (LPARAM)&dis, m_dat->hwnd, m_dat);
+				::PostMessage(m_dat->hwnd, WM_SIZE, 0, 1);
+			}
 		}
 		else {
 			RECT rc;
@@ -550,7 +553,7 @@ void CInfoPanel::Chat_RenderIPNickname(const HDC hdc, RECT& rcItem)
 			TCHAR *pTmp = _tcschr(si->ptszStatusbarText, ']');
 			pTmp += 2;
 			TCHAR tszTemp[30];
-			if(pTmp > si->ptszStatusbarText && ((pTmp - si->ptszStatusbarText) < (size_t)30)) {
+			if(si->ptszStatusbarText[0] == '[' && pTmp > si->ptszStatusbarText && ((pTmp - si->ptszStatusbarText) < (size_t)30)) {
 				mir_sntprintf(tszTemp, pTmp - si->ptszStatusbarText, _T("%s"), si->ptszStatusbarText);
 				CSkin::RenderText(hdc, m_dat->hTheme, tszTemp, &rcItem, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | DT_VCENTER, CSkin::m_glowSize);
 			}
