@@ -530,7 +530,7 @@ int CAimProto::aim_send_file(HANDLE hServerConn, unsigned short &seqno,
         const unsigned short fnlen = (unsigned short)strlen(fname);
 
         char* fblock = (char*)alloca(9 + fnlen);
-        *(unsigned short*)&fblock[0] = _htons(ft->pfts.totalFiles);     // single file transfer
+		*(unsigned short*)&fblock[0] = _htons(ft->pfts.totalFiles > 1 ? 2 : 1);     // single file transfer
         *(unsigned short*)&fblock[2] = _htons(ft->pfts.totalFiles);     // number of files
         *(unsigned long*) &fblock[4] = _htonl(ft->pfts.totalBytes);     // total bytes in files
         memcpy(&fblock[8], fname, fnlen + 1);

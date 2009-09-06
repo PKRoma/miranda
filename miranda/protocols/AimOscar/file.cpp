@@ -55,7 +55,7 @@ struct oft2//oscar file transfer 2 class- See On_Sending_Files_via_OSCAR.pdf
 
 #pragma pack(pop)
 
-bool send_init_oft2(file_transfer *ft,  char* file)
+bool send_init_oft2(file_transfer *ft, char* file)
 {
     char* fname = mir_utf8encode(file);
     aimString astr(get_fname(fname));
@@ -438,7 +438,7 @@ int CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NET
                 if (ft->pfts.currentFileSize == ft->pfts.currentFileProgress)
                 {
                     oft->type = _htons(0x0204);
-                    oft->recv_bytes = _htonl(ft->pfts.totalBytes);
+                    oft->recv_bytes = _htonl(ft->pfts.currentFileProgress);
                     oft->recv_checksum = _htonl(aim_oft_checksum_file(ft->pfts.currentFile));
 
                     LOG("P2P: We got the file successfully");
