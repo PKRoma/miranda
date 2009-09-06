@@ -82,7 +82,7 @@ bool send_init_oft2(file_transfer *ft, char* file)
     oft->flags            = 0x20;
     oft->list_name_offset = 0x1c;
     oft->list_size_offset = 0x11;
-    oft->encoding = _htons(astr.isUnicode() ? 2 : 0);
+    oft->encoding         = _htons(astr.isUnicode() ? 2 : 0);
     memcpy(oft->filename, astr.getBuf(), astr.getTermSize());
 
     if (!ft->requester || ft->pfts.currentFileNumber)
@@ -378,9 +378,11 @@ int CAimProto::receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NET
 
                         if (ft->pfts.currentFileProgress)
                         {
+							bool the_same;
                             oft->recv_bytes = _htonl(ft->pfts.currentFileProgress);
                             oft->recv_checksum = _htonl(aim_oft_checksum_file(ft->pfts.tszCurrentFile));
-							if (oft->size == oft->recv_bytes && oft->checksum == oft->recv_checksum)
+							the_same = oft->size == oft->recv_bytes && oft->checksum == oft->recv_checksum;
+							if (the_same)
 							{
 								ft->pfts.totalProgress += ft->pfts.currentFileProgress;
 								oft->type = _htons(0x0204);
