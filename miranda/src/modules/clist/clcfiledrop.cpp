@@ -171,10 +171,14 @@ static STDMETHODIMP_(HRESULT) CDropTarget_DragLeave(struct CDropTarget *lpThis)
 
 static void AddToFileList(char ***pppFiles, int *totalCount, const char *szFilename)
 {
+	DWORD attr = GetFileAttributesA(szFilename);
+	if (attr == INVALID_FILE_ATTRIBUTES) return;
+
 	*pppFiles = (char **) mir_realloc(*pppFiles, (++*totalCount + 1) * sizeof(char *));
 	(*pppFiles)[*totalCount] = NULL;
 	(*pppFiles)[*totalCount - 1] = mir_strdup(szFilename);
-	if (GetFileAttributesA(szFilename) & FILE_ATTRIBUTE_DIRECTORY) {
+	
+	if (attr & FILE_ATTRIBUTE_DIRECTORY) {
 		WIN32_FIND_DATAA fd;
 		HANDLE hFind;
 		char szPath[MAX_PATH];
