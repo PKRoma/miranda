@@ -387,7 +387,7 @@ XCHAR *GetInternalVariable(XCHAR *key, size_t keyLength, HANDLE hContact)
 		else if (!_xcscmp(theKey, XSTR(key, "proto")))
 			theValue = mir_a2x(key, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact,0));
 		else if (!_xcscmp(theKey, XSTR(key, "userid"))) 
-			theValue = GetContactNickX(key, hContact);
+			theValue = GetContactIDX(key, hContact);
 	}
 
 	if (!theValue) {
