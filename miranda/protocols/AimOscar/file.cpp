@@ -102,24 +102,26 @@ void CAimProto::report_file_error(TCHAR *fname)
 
 bool setup_next_file_send(file_transfer *ft)
 {
+	TCHAR *file;
 	struct _stati64 statbuf;
 	for (;;)
 	{
-		ft->pfts.tszCurrentFile = ft->pfts.ptszFiles[ft->cf];
-		if (ft->pfts.tszCurrentFile == NULL) return false;
+		file = ft->pfts.ptszFiles[ft->cf];
+		if (file == NULL) return false;
 
-		if (_tstati64(ft->pfts.tszCurrentFile, &statbuf) == 0 && (statbuf.st_mode & _S_IFDIR) == 0) 
+		if (_tstati64(file, &statbuf) == 0 && (statbuf.st_mode & _S_IFDIR) == 0) 
 			break;
 
 		++ft->cf;
 	}
 
+	ft->pfts.tszCurrentFile = file;
     ft->pfts.currentFileSize = statbuf.st_size;
     ft->pfts.currentFileTime = statbuf.st_mtime;
     ft->pfts.currentFileProgress = 0;
 
 	char* fnamea;
-    char* fname = mir_utf8encodeT(ft->pfts.tszCurrentFile);
+    char* fname = mir_utf8encodeT(file);
 	if (ft->pfts.totalFiles > 1 && ft->file[0])
 	{
 		size_t dlen = strlen(ft->file);
@@ -568,7 +570,7 @@ file_transfer::~file_transfer()
 
     if (success && pfts.ptszFiles)
     {
-        for (int i = 0; i < pfts.totalFiles; i++)
+        for (int i = 0; pfts.ptszFiles[i]; i++)
             mir_free(pfts.ptszFiles[i]);
 
         mir_free(pfts.ptszFiles);
