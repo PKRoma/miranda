@@ -484,14 +484,25 @@ HANDLE __cdecl CAimProto::SendFile(HANDLE hContact, const PROTOCHAR* szDescripti
 		if (!getString(hContact, AIM_KEY_SN, &dbv)) 
         {
             file_transfer *ft = new file_transfer(hContact, dbv.pszVal, NULL);
-            
-	        while (ppszFiles[ft->pfts.totalFiles] != NULL) 
+
+			bool isDir = false;
+			int count = 0;
+	        while (ppszFiles[count] != NULL) 
             {
 		        struct _stati64 statbuf;
-		        if (_tstati64(ppszFiles[ft->pfts.totalFiles], &statbuf) == 0)
-			        ft->pfts.totalBytes += statbuf.st_size;
+				if (_tstati64(ppszFiles[count++], &statbuf) == 0)
+				{
+					if (statbuf.st_mode & _S_IFDIR)
+					{
+						if (ft->pfts.totalFiles == 0) isDir = true;
+					}
+					else
+					{
+						ft->pfts.totalBytes += statbuf.st_size;
+						++ft->pfts.totalFiles;
+					}
+				}
 
-		        ++ft->pfts.totalFiles;
 	        }
 
             if (ft->pfts.totalFiles == 0)
@@ -503,7 +514,7 @@ HANDLE __cdecl CAimProto::SendFile(HANDLE hContact, const PROTOCHAR* szDescripti
             ft->pfts.flags |= PFTS_SENDING;
             ft->pfts.ptszFiles = ppszFiles;
 
-            ft->file = ft->pfts.totalFiles > 1 ? (char*)mir_calloc(1) : mir_utf8encodeT(ppszFiles[0]);
+			ft->file = ft->pfts.totalFiles == 1 || isDir ? mir_utf8encodeT(ppszFiles[0]) : (char*)mir_calloc(1);
             ft->sending = true;
             ft->message = szDescription[0] ? mir_utf8encodeT(szDescription) : NULL;
 			ft->me_force_proxy = getByte(AIM_KEY_FP, 0) != 0;

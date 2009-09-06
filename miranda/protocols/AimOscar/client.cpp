@@ -494,7 +494,7 @@ int CAimProto::aim_send_file(HANDLE hServerConn, unsigned short &seqno,
     aim_writegeneric(AIM_CAPS_LENGTH, AIM_CAP_FILE_TRANSFER,
         frag_offset, msg_frag);                                         // uuid
     aim_writetlvshort(0x0a,++ft->req_num,frag_offset,msg_frag);         // request number
-    aim_writetlvshort(0x12,2,frag_offset,msg_frag);                     // max protocol version
+//    aim_writetlvshort(0x12,2,frag_offset,msg_frag);                     // max protocol version
 
     aim_writetlvlong(0x02,ip,frag_offset,msg_frag);                     // ip
     aim_writetlvlong(0x16,~ip,frag_offset,msg_frag);                    // ip check
@@ -530,7 +530,7 @@ int CAimProto::aim_send_file(HANDLE hServerConn, unsigned short &seqno,
         const unsigned short fnlen = (unsigned short)strlen(fname);
 
         char* fblock = (char*)alloca(9 + fnlen);
-        *(unsigned short*)&fblock[0] = _htons(ft->pfts.totalFiles);     // single file transfer
+		*(unsigned short*)&fblock[0] = _htons(ft->pfts.totalFiles > 1 ? 2 : 1);     // single file transfer
         *(unsigned short*)&fblock[2] = _htons(ft->pfts.totalFiles);     // number of files
         *(unsigned long*) &fblock[4] = _htonl(ft->pfts.totalBytes);     // total bytes in files
         memcpy(&fblock[8], fname, fnlen + 1);
