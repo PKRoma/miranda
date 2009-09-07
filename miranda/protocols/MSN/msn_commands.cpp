@@ -1765,7 +1765,7 @@ LBL_InvalidCommand:
             {
 				UrlDecode(data.newServer);
 
-				if (numWords < 7)
+				if (numWords < 4)
 					goto LBL_InvalidCommand;
 
 				if (strcmp(data.security, "CKI")) 
@@ -1776,7 +1776,7 @@ LBL_InvalidCommand:
 
 				ThreadData* newThread = new ThreadData;
 				strcpy(newThread->mServer, data.newServer);
-				newThread->gatewayType = atol(data.genGateway) != 0;
+				newThread->gatewayType = data.genGateway && atol(data.genGateway) != 0;
 				newThread->mType = SERVER_SWITCHBOARD;
 				newThread->mCaller = 1;
 				strcpy(newThread->mCookie, data.authChallengeInfo);
