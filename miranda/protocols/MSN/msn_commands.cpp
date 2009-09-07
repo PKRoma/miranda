@@ -599,7 +599,11 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 	else if (!_strnicmp(tContentType, "text/x-msmsgsinvite", 19))
 		sttInviteMessage(info, msgBody, email, nick);
 	else if (!_strnicmp(tContentType, "application/x-msnmsgrp2p", 24))
-		p2p_processMsg(info, msgBody);
+	{
+		const char* dest = tHeader["P2P-Dest"];
+		if (dest && stricmp(dest, MyOptions.szEmail) == 0)
+			p2p_processMsg(info, msgBody);
+	}
 	else if (!_strnicmp(tContentType, "text/x-mms-emoticon", 19))
 		sttCustomSmiley(msgBody, email, nick, MSN_APPID_CUSTOMSMILEY);
 	else if (!_strnicmp(tContentType, "text/x-mms-animemoticon", 23))
@@ -702,7 +706,7 @@ void CMsnProto::sttProcessAdd(char* buf, size_t len)
                 MSN_SharingFindMembership(true);
 
 			MSN_AddUser(NULL, szEmail, netId, listId);
-		
+
 			if (listId == LIST_RL && !(Lists_GetMask(szEmail) & (LIST_FL | LIST_AL | LIST_BL)))
 				MSN_AddAuthRequest(szEmail, szNick, Lists_GetInvite(szEmail));
 

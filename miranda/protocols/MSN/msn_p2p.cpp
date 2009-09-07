@@ -318,7 +318,12 @@ void  CMsnProto::p2p_sendMsg(HANDLE hContact, unsigned appId, P2P_Header& hdrdat
 		{
 			char email[MSN_MAX_EMAIL_LEN];
 			if (getStaticString(hContact, "e-mail", email, sizeof(email)))
-				return;
+			{
+				filetransfer *ft = p2p_getThreadSession(hContact, SERVER_SWITCHBOARD);
+				if (ft == NULL) ft = p2p_getThreadSession(hContact, SERVER_DISPATCH);
+				if (ft == NULL) return;
+				p += sprintf(p, sttP2Pheader, ft->p2p_dest);
+			}
 			else
 				p += sprintf(p, sttP2Pheader, email);
 		}
@@ -414,7 +419,8 @@ void  CMsnProto::p2p_sendAbortSession(filetransfer* ft)
 
 void  CMsnProto::p2p_sendRedirect(filetransfer* ft)
 {
-	if (ft == NULL) {
+	if (ft == NULL) 
+    {
 		MSN_DebugLog(sttVoidSession);
 		return;
 	}
@@ -947,12 +953,18 @@ void CMsnProto::p2p_InitFileTransfer(
 	if (info->mJoinedCount == 0)
 		return;
 
-	char szContactEmail[MSN_MAX_EMAIL_LEN];
-	if (getStaticString(info->mJoinedContacts[0], "e-mail", szContactEmail, sizeof(szContactEmail)))
-		return;
-
 	const char	*szCallID = tFileInfo["Call-ID"],
-				*szBranch = tFileInfo["Via"];
+				*szBranch = tFileInfo["Via"],
+                *szFrom   = tFileInfo["From"];
+
+    if (szFrom)
+    {
+        const char *ch = strchr(szFrom, ':');
+        if (ch) szFrom = ch + 1;
+        ch = strrchr(szFrom, '>');
+        if (ch) *(char*)ch = '\0';
+    }
+    else return;
 
 	if (szBranch != NULL) {
 		szBranch = strstr(szBranch, "branch=");
@@ -988,8 +1000,10 @@ void CMsnProto::p2p_InitFileTransfer(
 	ft->p2p_ackID = dwAppID == MSN_APPID_FILE ? 2000 : 1000;
 	replaceStr(ft->p2p_callID, szCallID);
 	replaceStr(ft->p2p_branch, szBranch);
-	ft->p2p_dest = mir_strdup(szContactEmail);
+	ft->p2p_dest = mir_strdup(szFrom);
 	ft->std.hContact = info->mJoinedContacts[0];
+
+	p2p_registerSession(ft);
 
 	p2p_sendAck(ft->std.hContact, hdrdata);
 
@@ -1025,19 +1039,18 @@ void CMsnProto::p2p_InitFileTransfer(
 						p2p_sendStatus(ft, 603);
 						MSN_ShowError("Your avatar not set correctly. Avatar should be set in View/Change My Details | Avatar");
 						MSN_DebugLog("Unable to open avatar file '%s', error %d", szFileName, errno);
-						delete ft;
+						p2p_unregisterSession(ft);
 					}
 					else
 					{
                         mir_free(ft->std.tszCurrentFile);
 						ft->std.tszCurrentFile = mir_a2t(szFileName);
-						MSN_DebugLog("My avatar file opened for %s as %08p::%d", szContactEmail, ft, ft->fileId);
+						MSN_DebugLog("My avatar file opened for %s as %08p::%d", szFrom, ft, ft->fileId);
 						ft->std.totalBytes = ft->std.currentFileSize = _filelengthi64(ft->fileId);
 						ft->std.flags |= PFTS_SENDING;
 
 						//---- send 200 OK Message
 						p2p_sendStatus(ft, 200);
-						p2p_registerSession(ft);
 						p2p_sendFeedStart(ft);
 					}
 				}
@@ -1045,7 +1058,7 @@ void CMsnProto::p2p_InitFileTransfer(
 				{
 					p2p_sendStatus(ft, 603);
 					MSN_DebugLog("Requested avatar does not match current avatar");
-					delete ft;
+					p2p_unregisterSession(ft);
 				}
 			}
 			break;
@@ -1069,8 +1082,6 @@ void CMsnProto::p2p_InitFileTransfer(
 
                 ft->std.totalBytes = ft->std.currentFileSize = ((HFileContext*)szContext)->dwSize;
 				ft->std.totalFiles = 1;
-
-				p2p_registerSession(ft);
 
                 char* fname = mir_utf8encodeT(ft->std.tszCurrentFile);
 
@@ -1111,12 +1122,12 @@ void CMsnProto::p2p_InitFileTransfer(
 					MSN_ALLOW_MSGBOX);
 			}
 			p2p_sendStatus(ft, 603);
-			delete ft;
+			p2p_unregisterSession(ft);
 			break;
 
 		default:
 			p2p_sendStatus(ft, 603);
-			delete ft;
+			p2p_unregisterSession(ft);
 			MSN_DebugLog("Invalid or unknown AppID/EUF-GUID combination: %ld/%s", dwAppID, szEufGuid);
 			break;
 	}
