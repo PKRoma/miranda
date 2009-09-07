@@ -1265,30 +1265,6 @@
 					RelativePath=".\chat\chat.h"
 					>
 				</File>
-				<File
-					RelativePath=".\chat\IcoLib.h"
-					>
-				</File>
-				<File
-					RelativePath=".\chat\m_chat.h"
-					>
-				</File>
-				<File
-					RelativePath=".\chat\m_ieview.h"
-					>
-				</File>
-				<File
-					RelativePath=".\chat\m_smileyadd.h"
-					>
-				</File>
-				<File
-					RelativePath=".\chat\m_uninstaller.h"
-					>
-				</File>
-				<File
-					RelativePath=".\chat\resource.h"
-					>
-				</File>
 			</Filter>
 		</Filter>
 		<Filter
@@ -1545,42 +1521,6 @@
 				<File
 					RelativePath=".\chat\Icons\bold.ico"
 					>
-				</File>
-				<File
-					RelativePath=".\chat\chat.rc"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCResourceCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCResourceCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCResourceCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug Unicode|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCResourceCompilerTool"
-						/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\chat\Icons\close.ico"
