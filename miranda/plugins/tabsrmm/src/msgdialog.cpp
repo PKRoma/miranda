@@ -74,7 +74,7 @@ static struct _tooltips {
 	-1, NULL
 };
 
-static TCHAR *tszEditNotesMsg = _T("You are editing the user notes. Klick the button again or use the hotkey (default: Alt-N) to save the notes and return to normal messaging mode");
+static TCHAR *tszEditNotesMsg = _T("You are editing the user notes. Click the button again or use the hotkey (default: Alt-N) to save the notes and return to normal messaging mode");
 
 static struct _buttonicons {
 	int id;
