@@ -57,7 +57,7 @@ void CMsnProto::msnftp_invite(filetransfer *ft)
 	if (isOffline) return; 
 	if (thread != NULL) thread->mMsnFtp = ft;
 
-	char* pszFiles = strrchr(*ft->std.files, '\\'), msg[1024];
+	char* pszFiles = strrchr(ft->std.files[0], '\\'), msg[1024];
 	if (pszFiles)
 		pszFiles++;
 	else

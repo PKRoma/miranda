@@ -87,7 +87,8 @@ bool CMsnProto::p2p_createListener(filetransfer* ft, directconnection *dc, MimeH
 	nlb.pfnNewConnectionV2 = MSN_ConnectionProc;
 	nlb.pExtra = this;
 	HANDLE sb = (HANDLE) MSN_CallService(MS_NETLIB_BINDPORT, (WPARAM) hNetlibUser, (LPARAM)&nlb);
-	if (sb == NULL) {
+	if (sb == NULL) 
+    {
 		MSN_DebugLog("Unable to bind the port for incoming transfers");
 		return false;
 	}
@@ -314,7 +315,12 @@ void  CMsnProto::p2p_sendMsg(HANDLE hContact, unsigned appId, P2P_Header& hdrdat
 		{
 			char email[MSN_MAX_EMAIL_LEN];
 			if (getStaticString(hContact, "e-mail", email, sizeof(email)))
-				return;
+			{
+				filetransfer *ft = p2p_getThreadSession(hContact, SERVER_SWITCHBOARD);
+				if (ft == NULL) ft = p2p_getThreadSession(hContact, SERVER_DISPATCH);
+				if (ft == NULL) return;
+				p += sprintf(p, sttP2Pheader, ft->p2p_dest);
+			}
 			else
 				p += sprintf(p, sttP2Pheader, email);
 		}
@@ -410,7 +416,8 @@ void  CMsnProto::p2p_sendAbortSession(filetransfer* ft)
 
 void  CMsnProto::p2p_sendRedirect(filetransfer* ft)
 {
-	if (ft == NULL) {
+	if (ft == NULL) 
+    {
 		MSN_DebugLog(sttVoidSession);
 		return;
 	}
@@ -773,11 +780,15 @@ LONG  CMsnProto::p2p_sendPortion(filetransfer* ft, ThreadData* T)
 		trid = T->sendRawMessage('D', (char *)databuf, p - databuf);
 	}
 
-	if (trid != 0) {
+	if (trid != 0) 
+    {
 		ft->std.totalProgress += portion;
 		ft->std.currentFileProgress += portion;
-		if (ft->p2p_appID == MSN_APPID_FILE)
+		if (ft->p2p_appID == MSN_APPID_FILE && clock() >= ft->nNotify)
+        {
 			SendBroadcast(ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&ft->std);
+            ft->nNotify = clock() + 500;
+        }
 	}
 	else
 		MSN_DebugLog(" Error sending");
@@ -848,6 +859,7 @@ void __cdecl CMsnProto::p2p_sendFeedThread(void* arg)
 			WaitForSingleObject(T->hWaitEvent, 5000);
 	}
 	ReleaseMutex(hLockHandle);
+    SendBroadcast(ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&ft->std);
 	MSN_DebugLog("File send thread completed");
 }
 
@@ -938,12 +950,18 @@ void CMsnProto::p2p_InitFileTransfer(
 	if (info->mJoinedCount == 0)
 		return;
 
-	char szContactEmail[MSN_MAX_EMAIL_LEN];
-	if (getStaticString(info->mJoinedContacts[0], "e-mail", szContactEmail, sizeof(szContactEmail)))
-		return;
-
 	const char	*szCallID = tFileInfo["Call-ID"],
-				*szBranch = tFileInfo["Via"];
+				*szBranch = tFileInfo["Via"],
+                *szFrom   = tFileInfo["From"];
+
+    if (szFrom)
+    {
+        const char *ch = strchr(szFrom, ':');
+        if (ch) szFrom = ch + 1;
+        ch = strrchr(szFrom, '>');
+        if (ch) *(char*)ch = '\0';
+    }
+    else return;
 
 	if (szBranch != NULL) {
 		szBranch = strstr(szBranch, "branch=");
@@ -979,8 +997,10 @@ void CMsnProto::p2p_InitFileTransfer(
 	ft->p2p_ackID = dwAppID == MSN_APPID_FILE ? 2000 : 1000;
 	replaceStr(ft->p2p_callID, szCallID);
 	replaceStr(ft->p2p_branch, szBranch);
-	ft->p2p_dest = mir_strdup(szContactEmail);
+	ft->p2p_dest = mir_strdup(szFrom);
 	ft->std.hContact = info->mJoinedContacts[0];
+
+	p2p_registerSession(ft);
 
 	p2p_sendAck(ft->std.hContact, hdrdata);
 
@@ -1009,25 +1029,24 @@ void CMsnProto::p2p_InitFileTransfer(
 				if (pictmatch) 
 				{
 					char szFileName[MAX_PATH];
-					MSN_GetAvatarFileName(NULL, szFileName, sizeof(szFileName));
+					MSN_GetAvatarFileName(NULL, szFileName, SIZEOF(szFileName));
 					ft->fileId = _open(szFileName, O_RDONLY | _O_BINARY, _S_IREAD);
 					if (ft->fileId == -1) 
 					{
 						p2p_sendStatus(ft, 603);
 						MSN_ShowError("Your avatar not set correctly. Avatar should be set in View/Change My Details | Avatar");
 						MSN_DebugLog("Unable to open avatar file '%s', error %d", szFileName, errno);
-						delete ft;
+						p2p_unregisterSession(ft);
 					}
 					else
 					{
 						replaceStr(ft->std.currentFile, szFileName);
-						MSN_DebugLog("My avatar file opened for %s as %08p::%d", szContactEmail, ft, ft->fileId);
+						MSN_DebugLog("My avatar file opened for %s as %08p::%d", szFrom, ft, ft->fileId);
 						ft->std.totalBytes = ft->std.currentFileSize = _filelength(ft->fileId);
 						ft->std.sending = true;
 
 						//---- send 200 OK Message
 						p2p_sendStatus(ft, 200);
-						p2p_registerSession(ft);
 						p2p_sendFeedStart(ft);
 					}
 				}
@@ -1035,7 +1054,7 @@ void CMsnProto::p2p_InitFileTransfer(
 				{
 					p2p_sendStatus(ft, 603);
 					MSN_DebugLog("Requested avatar does not match current avatar");
-					delete ft;
+					p2p_unregisterSession(ft);
 				}
 			}
 			break;
@@ -1067,8 +1086,6 @@ void CMsnProto::p2p_InitFileTransfer(
 				replaceStr(ft->std.currentFile, szFileName);
 				ft->std.totalBytes =	ft->std.currentFileSize = *(long*)&szContext[8];
 				ft->std.totalFiles = 1;
-
-				p2p_registerSession(ft);
 
 				size_t tFileNameLen = strlen(ft->std.currentFile);
 				char tComment[40];
@@ -1105,12 +1122,12 @@ void CMsnProto::p2p_InitFileTransfer(
 					MSN_ALLOW_MSGBOX);
 			}
 			p2p_sendStatus(ft, 603);
-			delete ft;
+			p2p_unregisterSession(ft);
 			break;
 
 		default:
 			p2p_sendStatus(ft, 603);
-			delete ft;
+			p2p_unregisterSession(ft);
 			MSN_DebugLog("Invalid or unknown AppID/EUF-GUID combination: %ld/%s", dwAppID, szEufGuid);
 			break;
 	}
@@ -1585,7 +1602,8 @@ void  CMsnProto::p2p_processMsg(ThreadData* info,  char* msgbody)
     }
 
 	//---- receiving ack -----------
-	if (hdrdata->mFlags == 0x02) {
+	if (hdrdata->mFlags == 0x02) 
+    {
 		ft->p2p_waitack = false;
 
 		if (hdrdata->mAckSessionID == ft->p2p_sendmsgid) 
@@ -1604,7 +1622,8 @@ void  CMsnProto::p2p_processMsg(ThreadData* info,  char* msgbody)
 			return;
 		}
 
-		switch(ft->p2p_ackID) {
+		switch(ft->p2p_ackID) 
+        {
 		case 1000:
 			{
 				//---- send Data Preparation Message
@@ -1675,8 +1694,11 @@ void  CMsnProto::p2p_processMsg(ThreadData* info,  char* msgbody)
 					ft->std.totalProgress += (unsigned long)dp;
 					ft->std.currentFileProgress += (unsigned long)dp;
 
-					if (ft->p2p_appID == MSN_APPID_FILE)
+					if (ft->p2p_appID == MSN_APPID_FILE && clock() >= ft->nNotify)
+                    {
 						SendBroadcast(ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&ft->std);
+                        ft->nNotify = clock() + 500;
+                    }
 				}
 
 				//---- send an ack: body was transferred correctly
@@ -1685,6 +1707,7 @@ void  CMsnProto::p2p_processMsg(ThreadData* info,  char* msgbody)
 
 			if (ft->std.currentFileProgress >= hdrdata->mTotalSize) 
             {
+				SendBroadcast(ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&ft->std);
 				p2p_sendAck(ft->std.hContact, hdrdata);
 				if (ft->p2p_appID == MSN_APPID_FILE)
 					ft->bCompleted = true;

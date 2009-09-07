@@ -194,9 +194,8 @@ int CMsnProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM)
 	if (szEmail[0]) 
     {
 	    int listId = Lists_GetMask(szEmail);
-		int netId = Lists_GetNetId(szEmail);
         
-        bool noChat = !(listId & LIST_FL) || isMe;
+        bool noChat = !(listId & LIST_FL) || isMe || getByte(hContact, "ChatRoom", 0);
 
 		mi.flags = CMIM_NAME | CMIM_FLAGS | CMIF_ICONFROMICOLIB;
         if (noChat) mi.flags |= CMIF_HIDDEN;

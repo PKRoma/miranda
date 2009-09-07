@@ -916,7 +916,8 @@ filetransfer::~filetransfer(void)
 
 	mir_free(std.currentFile);
 	mir_free(std.workingDir);
-	if (std.files != NULL) {
+	if (std.files != NULL) 
+	{
 		for (int i=0; i < std.totalFiles; i++)
 			mir_free(std.files[i]);
 		mir_free(std.files);
@@ -985,6 +986,16 @@ int filetransfer::openNext(void)
 	if (fileId != -1) 
     {
 		close();
+		fileId = -1;
+		++std.currentFileNumber;
+	}
+
+	while (std.currentFileNumber < std.totalFiles)
+	{
+		struct _stat statbuf;
+		if (_stat(std.files[std.currentFileNumber], &statbuf) == 0 && (statbuf.st_mode & _S_IFDIR) == 0)
+			break;
+
 		++std.currentFileNumber;
 	}
 

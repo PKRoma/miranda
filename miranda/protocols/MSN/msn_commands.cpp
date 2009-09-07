@@ -599,7 +599,11 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 	else if (!_strnicmp(tContentType, "text/x-msmsgsinvite", 19))
 		sttInviteMessage(info, msgBody, email, nick);
 	else if (!_strnicmp(tContentType, "application/x-msnmsgrp2p", 24))
-		p2p_processMsg(info, msgBody);
+	{
+		const char* dest = tHeader["P2P-Dest"];
+		if (dest && stricmp(dest, MyOptions.szEmail) == 0)
+			p2p_processMsg(info, msgBody);
+	}
 	else if (!_strnicmp(tContentType, "text/x-mms-emoticon", 19))
 		sttCustomSmiley(msgBody, email, nick, MSN_APPID_CUSTOMSMILEY);
 	else if (!_strnicmp(tContentType, "text/x-mms-animemoticon", 23))

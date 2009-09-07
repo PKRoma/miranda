@@ -858,7 +858,8 @@ HANDLE __cdecl CMsnProto::SendFile(HANDLE hContact, const char* szDescription, c
 	sft->std.hContact = hContact;
 	sft->std.sending = true;
 
-	while (ppszFiles[sft->std.totalFiles] != NULL) {
+	while (ppszFiles[sft->std.totalFiles] != NULL) 
+	{
 		struct _stat statbuf;
 		if (_stat(ppszFiles[sft->std.totalFiles], &statbuf) == 0)
 			sft->std.totalBytes += statbuf.st_size;

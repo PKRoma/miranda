@@ -321,6 +321,7 @@ struct filetransfer
 	TInfoType	tType;
 	TInfoType	tTypeReq;
 	time_t		ts;
+    clock_t     nNotify;
 
 	unsigned    p2p_sessionid;	// session id
 	unsigned    p2p_acksessid;	// acknowledged session id
@@ -631,7 +632,7 @@ public:
 	UTFEncoder(const wchar_t* pSrc) :
 		m_body(mir_utf8encodeW(pSrc)) {}
 
-	~UTFEncoder() {  mir_free(m_body);	}
+    ~UTFEncoder() {  mir_free(m_body);	}
 	const char* str() const { return m_body; }
 };
 
