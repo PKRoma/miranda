@@ -967,6 +967,15 @@ int filetransfer::openNext(void)
 		++std.currentFileNumber;
 	}
 
+	while (std.currentFileNumber < std.totalFiles)
+	{
+		struct _stati64 statbuf;
+		if (_tstati64(std.ptszFiles[std.currentFileNumber], &statbuf) == 0 && (statbuf.st_mode & _S_IFDIR) == 0)
+			break;
+
+		++std.currentFileNumber;
+	}
+
 	if (std.currentFileNumber < std.totalFiles) 
     {
 		bCompleted = false;
