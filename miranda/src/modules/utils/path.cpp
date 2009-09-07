@@ -293,7 +293,10 @@ static __forceinline char *GetContactNickX(char *, HANDLE hContact)
 }
 static __forceinline char *GetContactIDX(char *, HANDLE hContact)
 {
-	return mir_t2a(GetContactID(hContact));
+	TCHAR *id = GetContactID(hContact);
+	char* res = mir_t2a(id);
+	mir_free(id);
+	return res;
 }
 static __forceinline char *GetEnvironmentVariableX(char *variable)
 {
@@ -340,7 +343,7 @@ static __forceinline TCHAR *GetContactNickX(TCHAR *, HANDLE hContact)
 }
 static __forceinline TCHAR *GetContactIDX(TCHAR *, HANDLE hContact)
 {
-	return mir_tstrdup(GetContactID(hContact));
+	return GetContactID(hContact);
 }
 static __forceinline TCHAR *GetEnvironmentVariableX(TCHAR *variable)
 {
