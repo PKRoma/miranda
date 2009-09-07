@@ -156,7 +156,7 @@ void __cdecl CMsnProto::MSNServerThread(void* arg)
 
 	if (info->mType == SERVER_DISPATCH || info->mType == SERVER_NOTIFICATION) 
     {
-		info->sendPacket("VER", "MSNP15 MSNP14 MSNP13 CVR0");
+		info->sendPacket("VER", "MSNP15 MSNP14 CVR0");
 
 		OSVERSIONINFO osvi = {0};
 		osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);

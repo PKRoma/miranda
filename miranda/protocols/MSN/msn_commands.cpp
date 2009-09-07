@@ -536,8 +536,8 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 			msnNsThread->sendPacket("BLP", msnOtherContactsBlocked ? "BL" : "AL");
 		    MSN_SetServerStatus(m_iDesiredStatus);
 
-   			MSN_EnableMenuItems(true);
-		}
+   		    MSN_EnableMenuItems(true);
+        }
 	}
 	else if (!_strnicmp(tContentType, "text/x-msmsgscontrol", 20)) 
     {
@@ -1765,7 +1765,7 @@ LBL_InvalidCommand:
             {
 				UrlDecode(data.newServer);
 
-				if (numWords < 7)
+				if (numWords < 4)
 					goto LBL_InvalidCommand;
 
 				if (strcmp(data.security, "CKI")) 
@@ -1776,7 +1776,7 @@ LBL_InvalidCommand:
 
 				ThreadData* newThread = new ThreadData;
 				strcpy(newThread->mServer, data.newServer);
-				newThread->gatewayType = atol(data.genGateway) != 0;
+				newThread->gatewayType = data.genGateway && atol(data.genGateway) != 0;
 				newThread->mType = SERVER_SWITCHBOARD;
 				newThread->mCaller = 1;
 				strcpy(newThread->mCookie, data.authChallengeInfo);
