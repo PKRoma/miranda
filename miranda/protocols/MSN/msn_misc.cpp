@@ -965,6 +965,7 @@ int filetransfer::openNext(void)
 	if (fileId != -1) 
     {
 		close();
+		fileId = -1;
 		++std.currentFileNumber;
 		++cf;
 	}

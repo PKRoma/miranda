@@ -860,7 +860,6 @@ HANDLE __cdecl CMsnProto::SendFile(HANDLE hContact, const PROTOCHAR* szDescripti
 		}
     }
 
-
 	if (sft->openNext() == -1) 
     {
 		delete sft;
