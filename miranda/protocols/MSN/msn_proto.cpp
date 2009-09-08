@@ -550,10 +550,11 @@ void __cdecl CMsnProto::MsnFileAckThread(void* arg)
 
 	bool fcrt = ft->create() != -1;
 
-	if (ft->p2p_appID != 0) {
-		p2p_sendStatus(ft, fcrt ? 200 : 603);
+	if (ft->p2p_appID != 0) 
+	{
 		if (fcrt)
 			p2p_sendFeedStart(ft);
+		p2p_sendStatus(ft, fcrt ? 200 : 603);
 	}
 	else
 		msnftp_sendAcceptReject (ft, fcrt);
@@ -669,9 +670,10 @@ int __cdecl CMsnProto::FileResume(HANDLE hTransfer, int* action, const PROTOCHAR
 		bool fcrt = ft->create() != -1;
 		if (ft->p2p_appID != 0) 
         {
-			p2p_sendStatus(ft, fcrt ? 200 : 603);
 			if (fcrt)
 				p2p_sendFeedStart(ft);
+
+			p2p_sendStatus(ft, fcrt ? 200 : 603);
 		}
 		else
 			msnftp_sendAcceptReject (ft, fcrt);
@@ -847,14 +849,17 @@ HANDLE __cdecl CMsnProto::SendFile(HANDLE hContact, const PROTOCHAR* szDescripti
 	sft->std.hContact = hContact;
 	sft->std.flags |= PFTS_SENDING;
 
-	while (ppszFiles[sft->std.totalFiles] != NULL) 
+	int count = 0;
+    while (ppszFiles[count] != NULL) 
     {
-		struct _stati64 statbuf;
-		if (_tstati64(ppszFiles[sft->std.totalFiles], &statbuf) == 0)
+        struct _stati64 statbuf;
+		if (_tstati64(ppszFiles[count++], &statbuf) == 0 && (statbuf.st_mode & _S_IFDIR) == 0)
+		{
 			sft->std.totalBytes += statbuf.st_size;
+			++sft->std.totalFiles;
+		}
+    }
 
-		++sft->std.totalFiles;
-	}
 
 	if (sft->openNext() == -1) 
     {

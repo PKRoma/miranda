@@ -324,6 +324,7 @@ struct filetransfer
 	TInfoType	tTypeReq;
 	time_t		ts;
     clock_t     nNotify;
+	unsigned	cf;
 
 	unsigned    p2p_sessionid;	// session id
 	unsigned    p2p_acksessid;	// acknowledged session id

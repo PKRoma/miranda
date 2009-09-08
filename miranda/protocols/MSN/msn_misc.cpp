@@ -924,8 +924,9 @@ filetransfer::~filetransfer(void)
 
 	mir_free(std.tszCurrentFile);
 	mir_free(std.tszWorkingDir);
-	if (std.ptszFiles != NULL) {
-		for (int i=0; i < std.totalFiles; i++)
+	if (std.ptszFiles != NULL) 
+	{
+		for (int i=0; std.ptszFiles[i]; i++)
 			mir_free(std.ptszFiles[i]);
 		mir_free(std.ptszFiles);
 	}
@@ -965,21 +966,22 @@ int filetransfer::openNext(void)
     {
 		close();
 		++std.currentFileNumber;
+		++cf;
 	}
 
-	while (std.currentFileNumber < std.totalFiles)
+	while (std.ptszFiles[cf])
 	{
 		struct _stati64 statbuf;
-		if (_tstati64(std.ptszFiles[std.currentFileNumber], &statbuf) == 0 && (statbuf.st_mode & _S_IFDIR) == 0)
+		if (_tstati64(std.ptszFiles[cf], &statbuf) == 0 && (statbuf.st_mode & _S_IFDIR) == 0)
 			break;
 
-		++std.currentFileNumber;
+		++cf;
 	}
 
-	if (std.currentFileNumber < std.totalFiles) 
+	if (std.ptszFiles[cf]) 
     {
 		bCompleted = false;
-		replaceStr(std.tszCurrentFile, std.ptszFiles[std.currentFileNumber]);
+		replaceStr(std.tszCurrentFile, std.ptszFiles[cf]);
 		fileId = _topen(std.tszCurrentFile, _O_BINARY | _O_RDONLY, _S_IREAD);
 		if (fileId != -1) 
         {

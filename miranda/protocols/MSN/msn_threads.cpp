@@ -712,10 +712,6 @@ void __cdecl CMsnProto::ThreadStub(void* arg)
 {
 	ThreadData* info = (ThreadData*)arg;
 
-	EnterCriticalSection(&sttLock);
-	sttThreads.insert(info);
-	LeaveCriticalSection(&sttLock);
-
 	MSN_DebugLog("Starting thread %08X (%08X)", GetCurrentThreadId(), info->mFunc);
 
 	(this->*(info->mFunc))(info);
@@ -732,6 +728,10 @@ void ThreadData::startThread(MsnThreadFunc parFunc, CMsnProto *prt)
 {
 	mFunc = parFunc;
 	proto = prt;
+
+	EnterCriticalSection(&proto->sttLock);
+	proto->sttThreads.insert(this);
+	LeaveCriticalSection(&proto->sttLock);
 
 	proto->ForkThread(&CMsnProto::ThreadStub, this);
 }
