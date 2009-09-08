@@ -425,7 +425,7 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 #if defined(_UNICODE)
 			if(M->isAero())
 				CSkin::RenderText(dc, dwStyle & TCS_BUTTONS ? tabdat->hThemeButton : tabdat->hTheme, dat->newtitle, rcItem, dwTextFlags, CSkin::m_glowSize);
-			else if (tabdat->m_VisualStyles == FALSE || tabdat->m_moderntabs)
+			else if (tabdat->m_VisualStyles == FALSE || tabdat->m_moderntabs || tabdat->pContainer->bSkinned)
 				DrawText(dc, dat->newtitle, (int)(lstrlen(dat->newtitle)), rcItem, dwTextFlags);
 			else
 				M->m_pfnDrawThemeText(dwStyle & TCS_BUTTONS ? tabdat->hThemeButton : tabdat->hTheme, dc, 1, nHint & HINT_ACTIVE_ITEM ? 3 : (nHint & HINT_HOTTRACK ? 2 : 1), dat->newtitle, (int)(lstrlen(dat->newtitle)), dwTextFlags, 0, rcItem);
@@ -1462,7 +1462,8 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			if (tabdat->pContainer->bSkinned)
 				CSkin::SkinDrawBG(hwnd, tabdat->pContainer->hwnd, tabdat->pContainer, &rctPage, hdc);
 			else
-				FillRect(hdc, &ps.rcPaint, GetSysColorBrush(COLOR_3DFACE));
+				//FillRect(hdc, &ps.rcPaint, GetSysColorBrush(COLOR_3DFACE));
+				FillRect(hdc, &rctPage, GetSysColorBrush(COLOR_3DFACE));
 
 			if (dwStyle & TCS_BUTTONS) {
 				RECT rc1;
@@ -1800,16 +1801,37 @@ void ReloadTabConfig()
 
 void FreeTabConfig()
 {
-	DeleteObject(PluginConfig.tabConfig.m_hPenItemShadow);
-	DeleteObject(PluginConfig.tabConfig.m_hPenLight);
-	DeleteObject(PluginConfig.tabConfig.m_hPenShadow);
-	DeleteObject(PluginConfig.tabConfig.m_hMenuFont);
-	DeleteObject(PluginConfig.tabConfig.m_hBrushActive);
-	DeleteObject(PluginConfig.tabConfig.m_hBrushDefault);
-	DeleteObject(PluginConfig.tabConfig.m_hBrushUnread);
-	DeleteObject(PluginConfig.tabConfig.m_hBrushHottrack);
-	DeleteObject(PluginConfig.tabConfig.m_hPenStyledDark);
-	DeleteObject(PluginConfig.tabConfig.m_hPenStyledLight);
+	if(PluginConfig.tabConfig.m_hPenItemShadow)
+		DeleteObject(PluginConfig.tabConfig.m_hPenItemShadow);
+
+	if(PluginConfig.tabConfig.m_hPenLight)
+		DeleteObject(PluginConfig.tabConfig.m_hPenLight);
+
+	if(PluginConfig.tabConfig.m_hPenShadow)
+		DeleteObject(PluginConfig.tabConfig.m_hPenShadow);
+
+	if(PluginConfig.tabConfig.m_hMenuFont)
+		DeleteObject(PluginConfig.tabConfig.m_hMenuFont);
+
+	if(PluginConfig.tabConfig.m_hBrushActive)
+		DeleteObject(PluginConfig.tabConfig.m_hBrushActive);
+
+	if(PluginConfig.tabConfig.m_hBrushDefault)
+		DeleteObject(PluginConfig.tabConfig.m_hBrushDefault);
+
+	if(PluginConfig.tabConfig.m_hBrushUnread)
+		DeleteObject(PluginConfig.tabConfig.m_hBrushUnread);
+
+	if(PluginConfig.tabConfig.m_hBrushHottrack)
+		DeleteObject(PluginConfig.tabConfig.m_hBrushHottrack);
+
+	if(PluginConfig.tabConfig.m_hPenStyledDark)
+		DeleteObject(PluginConfig.tabConfig.m_hPenStyledDark);
+
+	if(PluginConfig.tabConfig.m_hPenStyledLight)
+		DeleteObject(PluginConfig.tabConfig.m_hPenStyledLight);
+
+	ZeroMemory(&PluginConfig.tabConfig, sizeof(myTabCtrl));
 }
 
 /*
@@ -1915,6 +1937,7 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 							if ((COLORREF)SendDlgItemMessage(hwndDlg, IDC_DARKSHADOW, CPM_GETCOLOUR, 0, 0) == RGB(255, 0, 255))
 								DBDeleteContactSetting(NULL, SRMSGMOD_T, "tab_darkshadow");
 
+							FreeTabConfig();
 							ReloadTabConfig();
 							while (pContainer) {
 								TabCtrl_SetPadding(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), GetDlgItemInt(hwndDlg, IDC_HTABPADDING, NULL, FALSE), GetDlgItemInt(hwndDlg, IDC_TABPADDING, NULL, FALSE));

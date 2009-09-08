@@ -9,9 +9,7 @@
 //
 #include <windows.h>
 #include "../../include/statusmodes.h"
-
 #include <winres.h>
-
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -62,55 +60,63 @@ IDD_POPUP_OPT DIALOG DISCARDABLE  0, 0, 314, 241
 STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg"
 BEGIN
-    GROUPBOX        "Event notify options",IDC_STATIC,3,0,310,186
-    LTEXT           "Simple configuration",IDC_STATIC,14,129,82,9
-    COMBOBOX        IDC_SIMPLEMODE,122,126,176,46,CBS_DROPDOWNLIST | 
-                    CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Announce events with",IDC_STATIC,13,143,82,9
-    COMBOBOX        IDC_ANNOUNCEMETHOD,122,141,176,46,CBS_DROPDOWNLIST | 
-                    CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Event notify options",IDC_STATIC,3,0,310,157
     CONTROL         "Limit message preview to",IDC_LIMITPREVIEW,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,11,155,107,12
-    EDITTEXT        IDC_MESSAGEPREVIEWLIMIT,121,155,37,13,ES_AUTOHSCROLL
+                    BS_AUTOCHECKBOX | WS_TABSTOP,11,123,120,12
+    EDITTEXT        IDC_MESSAGEPREVIEWLIMIT,153,123,37,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_MESSAGEPREVIEWLIMITSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS,164,155,9,13
-    LTEXT           "characters",IDC_STATIC,178,157,103,10
-    PUSHBUTTON      "Announce events when status is...",IDC_POPUPSTATUSMODES,
-                    11,169,178,13
-    GROUPBOX        "Popup Options",IDC_STATIC,3,186,310,54
-    LTEXT           "Text",IDC_STATIC,60,193,23,8
-    LTEXT           "Background",IDC_STATIC,86,193,47,8
+                    UDS_ARROWKEYS,196,123,9,13
+    LTEXT           "characters",IDC_STATIC,210,124,89,10
+    PUSHBUTTON      "Only show event notifications when my status is...",IDC_POPUPSTATUSMODES,
+                    11,139,292,15
+    GROUPBOX        "Popup Options",IDC_STATIC,3,158,310,83
+    LTEXT           "Text",IDC_STATIC,60,167,23,8
+    LTEXT           "Background",IDC_STATIC,86,167,47,8
     CTEXT           "Timeout (seconds, 0 = default, -1 = no timeout)",
-                    IDC_STATIC,134,193,168,8
-    LTEXT           "Message",IDC_STATIC,11,208,44,13
-    CONTROL         "",IDC_COLTEXT_MESSAGE,"ColourPicker",WS_TABSTOP,56,207,
+                    IDC_STATIC,134,167,168,8
+    LTEXT           "Message",IDC_STATIC,11,181,44,13
+    CONTROL         "",IDC_COLTEXT_MESSAGE,"ColourPicker",WS_TABSTOP,56,179,
                     24,13
-    CONTROL         "",IDC_COLBACK_MESSAGE,"ColourPicker",WS_TABSTOP,92,207,
+    CONTROL         "",IDC_COLBACK_MESSAGE,"ColourPicker",WS_TABSTOP,92,179,
                     24,13
     CONTROL         "Default colors",IDC_CHKDEFAULTCOL_MESSAGE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,126,207,62,12
-    LTEXT           "Others",IDC_STATIC,12,225,44,11
-    CONTROL         "",IDC_COLTEXT_OTHERS,"ColourPicker",WS_TABSTOP,56,223,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,126,179,62,12
+    LTEXT           "Others",IDC_STATIC,12,197,44,11
+    CONTROL         "",IDC_COLTEXT_OTHERS,"ColourPicker",WS_TABSTOP,56,195,
                     24,13
-    CONTROL         "",IDC_COLBACK_OTHERS,"ColourPicker",WS_TABSTOP,92,223,
+    CONTROL         "",IDC_COLBACK_OTHERS,"ColourPicker",WS_TABSTOP,92,195,
                     24,13
     CONTROL         "Default colors",IDC_CHKDEFAULTCOL_OTHERS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,126,223,62,12
-    EDITTEXT        IDC_DELAY_MESSAGE,210,206,46,12,ES_AUTOHSCROLL | 
+                    BS_AUTOCHECKBOX | WS_TABSTOP,126,195,62,12
+    EDITTEXT        IDC_DELAY_MESSAGE,210,179,46,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_DELAY_MESSAGE_SPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS,197,207,9,13
-    EDITTEXT        IDC_DELAY_OTHERS,210,223,46,12,ES_AUTOHSCROLL | 
+                    UDS_ARROWKEYS,197,179,9,13
+    EDITTEXT        IDC_DELAY_OTHERS,210,195,46,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_DELAY_OTHERS_SPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS,199,224,11,13
-    PUSHBUTTON      "Preview",IDC_PREVIEW,261,206,48,31
+                    UDS_ARROWKEYS,199,196,11,13
+    PUSHBUTTON      "Preview",IDC_PREVIEW,261,178,48,46
     CONTROL         "",IDC_EVENTOPTIONS,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | 
-                    WS_TABSTOP,6,8,294,115
+                    WS_TABSTOP,6,8,303,109
+    CONTROL         "",IDC_COLTEXT_MUC,"ColourPicker",WS_TABSTOP,56,211,24,
+                    13
+    CONTROL         "",IDC_COLBACK_MUC,"ColourPicker",WS_TABSTOP,92,211,24,
+                    13
+    CONTROL         "Default colors",IDC_CHKDEFAULTCOL_MUC,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,126,211,62,12
+    LTEXT           "Group chats",IDC_STATIC,12,212,44,11
+    EDITTEXT        IDC_DELAY_MUC,210,211,46,12,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_DELAY_MESSAGE_MUC_SPIN,"msctls_updown32",
+                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
+                    UDS_ARROWKEYS,253,211,9,13
+    CONTROL         "Use the message log color theme for group chat popups",
+                    IDC_MUC_LOGCOLORS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    12,225,263,12
 END
 
 IDD_HOTKEYSLAVE DIALOGEX 0, 0, 38, 11
@@ -232,7 +238,7 @@ BEGIN
     CONTROL         "",IDC_SECTIONTREE,"SysTreeView32",TVS_DISABLEDRAGDROP | 
                     TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS | TVS_TRACKSELECT | 
                     TVS_FULLROWSELECT | TVS_NONEVENHEIGHT | WS_BORDER | 
-                    WS_TABSTOP,1,31,87,163
+                    WS_TABSTOP,1,33,87,180
     CONTROL         "Only show tab bar when it's needed",IDC_O_NOTABS,"Button",
                     BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,135,65,156,
                     10
@@ -314,14 +320,14 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,120,116,187,12
     CONTROL         "Flash text label on tabs",IDC_FLASHLABEL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,120,127,186,12
-
     CONTROL         "Single row tab control",IDC_SINGLEROWTAB,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,120,138,190,12
-
     CONTROL         "Use button tabs",IDC_BUTTONTABS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,120,149,60,12
     CONTROL         "Styled tabs",IDC_STYLEDTABS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,260,149,60,12
+    LTEXT           "You have chosen to disable all event notifications for open message windows.",
+                    IDC_O_EXPLAINGLOBALNOTIFY,103,127,240,30
 END
 
 IDD_OPT_MSGDLG DIALOGEX 0, 0, 303, 226
@@ -786,10 +792,10 @@ END
 IDD_SKINTABDIALOG DIALOGEX 0, 0, 312, 247
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "",IDC_OPTIONSTAB,"SysTabControl32",WS_TABSTOP,1,1,310,
-                    226,WS_EX_ACCEPTFILES
+                    245,WS_EX_ACCEPTFILES
 END
 
 IDD_OPT_SKIN DIALOGEX 0, 0, 303, 200
@@ -832,10 +838,11 @@ CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Icons",IDC_STATIC,8,36,266,42
-    CONTROL         "Show icons",IDC_UPREFS_SHOWICONS,"Button",BS_AUTO3STATE | 
-                    WS_TABSTOP,15,47,121,11
-    CONTROL         "Show symbols",IDC_UPREFS_SHOWSYMBOLS,"Button",
-                    BS_AUTO3STATE | WS_TABSTOP,147,47,121,11
+    CONTROL         "Event type icons in the message log",
+                    IDC_UPREFS_SHOWICONS,"Button",BS_AUTO3STATE | WS_TABSTOP,
+                    15,47,121,11
+    CONTROL         "Text symbols as event markers",IDC_UPREFS_SHOWSYMBOLS,
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,147,47,121,11
     CONTROL         "Use different icons to mark incoming and outgoing messages",
                     IDC_UPREFS_INOUTICONS,"Button",BS_AUTO3STATE | 
                     WS_TABSTOP,15,60,244,11
@@ -1432,6 +1439,7 @@ END
 2 TEXTINCLUDE MOVEABLE PURE 
 BEGIN
     "#include <windows.h>\r\n"
+    "#include <winres.h>\r\n"
     "#include ""../../include/statusmodes.h""\r\r\n"
     "\r\0"
 END

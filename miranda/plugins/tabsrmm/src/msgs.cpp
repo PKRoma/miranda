@@ -412,7 +412,8 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 			mwdat->messageCount++;
 	//mad_
 	}
-	if (dbei.flags & DBEF_SENT || dbei.eventType != EVENTTYPE_MESSAGE || dbei.flags & DBEF_READ)
+
+	if (dbei.flags & DBEF_SENT || !(dbei.eventType == EVENTTYPE_MESSAGE || dbei.eventType == EVENTTYPE_FILE) || dbei.flags & DBEF_READ)
 		return 0;
 
 	CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
@@ -465,8 +466,10 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 		}
 		else
 			return 0;
-	}			/*  do not process it here, when a session window is open for this contact.
-        						DispatchNewEvent() will handle this */
+	} else {
+		if(dbei.eventType == EVENTTYPE_FILE)
+			goto nowindowcreate;
+	}
 
 	/*
 	 * if no window is open, we are not interested in anything else but unread message events
@@ -838,10 +841,8 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
 					if(PluginConfig.m_HideOnClose) {
 						struct	ContainerWindowData *pContainer = 0;
 						SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
-						if(pContainer) {
-							if(!IsWindowVisible(pContainer->hwnd) && !IsIconic(pContainer->hwnd))
-								fShow = TRUE;
-						}
+						if(pContainer && pContainer->fHidden)
+							fShow = TRUE;
 					}
 				}
 				break;
@@ -1575,7 +1576,7 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
 	NMHDR nmhdr;
 
 	dat = (struct _MessageWindowData *) GetWindowLongPtr(hwndChild, GWLP_USERDATA);	// needed to obtain the hContact for the message window
-	if (dat) {
+	if (dat && pContainer) {
 		ZeroMemory((void *)&nmhdr, sizeof(nmhdr));
 		nmhdr.code = TCN_SELCHANGE;
 		if (TabCtrl_GetItemCount(GetDlgItem(pContainer->hwnd, IDC_MSGTABS)) > 1 && !(pContainer->dwFlags & CNT_DEFERREDTABSELECT)) {

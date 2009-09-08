@@ -293,13 +293,6 @@ LRESULT DM_LoadLocale(_MessageWindowData *dat)
 			if (res == 0) {
 				DBFreeVariant(&dbv);
 				CloseHandle((HANDLE)mir_forkthreadex(LoadKLThread, reinterpret_cast<void *>(dat->hContact), 16000, NULL));
-
-				/*
-				dat->hkl = LoadKeyboardLayoutA(dbv.pszVal, KLF_ACTIVATE);
-				GetLocaleID(dat, dbv.pszVal);
-				PostMessage(dat->hwnd, DM_SETLOCALE, 0, 0);
-				DBFreeVariant(&dbv);
-				*/
 			} else {
 				GetKeyboardLayoutNameA(szKLName);
 				dat->hkl = LoadKeyboardLayoutA(szKLName, 0);
@@ -1253,19 +1246,21 @@ void DrawStatusIcons(struct _MessageWindowData *dat, HDC hDC, RECT r, int gap)
 			if (flags & MBF_DISABLED && current->sid.hIconDisabled == (HICON)0)
 				CSkin::DrawDimmedIcon(hDC, x, (r.top + r.bottom - PluginConfig.m_smcxicon) >> 1, PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, hIcon, 50);
 			else
-				DrawIconEx(hDC, x, (r.top + r.bottom - PluginConfig.m_smcxicon) >> 1, hIcon, PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, 0, NULL, DI_NORMAL);
+				DrawIconEx(hDC, x, (r.top + r.bottom - 16) >> 1, hIcon, 16, 16, 0, NULL, DI_NORMAL);
 
-			x += PluginConfig.m_smcxicon + gap;
+			x += 16 + gap;
 		}
 		current = current->next;
 	}
-	DrawIconEx(hDC, x, (r.top + r.bottom - PluginConfig.m_smcxicon) >> 1, dat->pContainer->dwFlags & CNT_NOSOUND ? PluginConfig.g_buttonBarIcons[23] : PluginConfig.g_buttonBarIcons[22], PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, 0, NULL, DI_NORMAL);
+	DrawIconEx(hDC, x, (r.top + r.bottom - 16) >> 1, dat->pContainer->dwFlags & CNT_NOSOUND ? PluginConfig.g_buttonBarIcons[23] : PluginConfig.g_buttonBarIcons[22], PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, 0, NULL, DI_NORMAL);
 	x += PluginConfig.m_smcxicon + gap;
 	if (dat->bType == SESSIONTYPE_IM)
 		DrawIconEx(hDC, x, (r.top + r.bottom - PluginConfig.m_smcxicon) >> 1, M->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, M->GetByte(SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)) ? PluginConfig.g_buttonBarIcons[12] : PluginConfig.g_buttonBarIcons[13], PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, 0, NULL, DI_NORMAL);
 	else
 		CSkin::DrawDimmedIcon(hDC, x, (r.top + r.bottom - PluginConfig.m_smcxicon) >> 1, PluginConfig.m_smcxicon, PluginConfig.m_smcyicon,
 					   M->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, M->GetByte(SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)) ? PluginConfig.g_buttonBarIcons[12] : PluginConfig.g_buttonBarIcons[13], 50);
+	x += PluginConfig.m_smcxicon + gap;
+	DrawIconEx(hDC, x, (r.top + r.bottom - PluginConfig.m_smcxicon) >> 1, PluginConfig.g_sideBarIcons[3], PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, 0, NULL, DI_NORMAL);
 }
 
 void SI_CheckStatusIconClick(struct _MessageWindowData *dat, HWND hwndFrom, POINT pt, RECT r, int gap, int code)
@@ -1324,6 +1319,11 @@ void SI_CheckStatusIconClick(struct _MessageWindowData *dat, HWND hwndFrom, POIN
 	} else if ((int)iconNum == list_icons + 1 && code != NM_RCLICK && dat->bType == SESSIONTYPE_IM) {
 		SendMessage(dat->pContainer->hwndActive, WM_COMMAND, IDC_SELFTYPING, 0);
 		InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
+	} else if ((int)iconNum == list_icons + 2) {
+		if(code == NM_CLICK)
+			PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, WM_LBUTTONUP);
+		else if(code == NM_RCLICK)
+			PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, WM_RBUTTONUP);
 	} else if (clicked) {
 		sicd.cbSize = sizeof(StatusIconClickData);
 		GetCursorPos(&sicd.clickLocation);

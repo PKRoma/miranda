@@ -1,32 +1,40 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
-		--pad=oper --one-line=keep-blocks  --unpad=paren
-
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2003 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-$Id$
-
-Functions, concerning tabSRMMs system tray support. There is more in eventpopups.c
-
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * This code is based on and still contains large parts of the the
+ * original chat module for Miranda IM, written and copyrighted
+ * by Joergen Persson in 2005.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * The code that creates and animates the tray icon.
+ *
+ */
 
 #include "commonheaders.h"
 #pragma hdrstop
@@ -258,17 +266,9 @@ void AddContactToFavorites(HANDLE hContact, TCHAR *szNickname, char *szProto, TC
 	MENUITEMINFO	mii = {0};
 	TCHAR			szMenuEntry[80];
 	TCHAR			szFinalNick[100];
-	TCHAR			*szFinalProto = NULL;
 
 	if (szNickname == NULL) {
-/*
-#if defined(_UNICODE)
-		MY_GetContactDisplayNameW(hContact, szFinalNick, 100, szProto, 0);
-#else
-		strncpy(szFinalNick, (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0), 100);
-		szFinalNick[99] = 0;
-#endif
-*/		mir_sntprintf(szFinalNick, safe_sizeof(szFinalNick), _T("%s"), (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
+		mir_sntprintf(szFinalNick, safe_sizeof(szFinalNick), _T("%s"), (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
 	}
 	else {
 		_tcsncpy(szFinalNick, szNickname, 100);
@@ -289,62 +289,62 @@ void AddContactToFavorites(HANDLE hContact, TCHAR *szNickname, char *szProto, TC
 	if (hIcon == 0)
 		hIcon = LoadSkinnedProtoIcon(szProto, wStatus);
 
-	szFinalProto = a2tf((TCHAR *)szProto, 0, 0);
-	mii.cbSize = sizeof(mii);
-	mir_sntprintf(szMenuEntry, safe_sizeof(szMenuEntry), _T("%s: %s (%s)"), szFinalProto, szFinalNick, szStatus);
-	if (mode) {
-		if (hMenu == PluginConfig.g_hMenuRecent) {
-			if (CheckMenuItem(hMenu, (UINT_PTR)hContact, MF_BYCOMMAND | MF_UNCHECKED) == 0) {
-				DeleteMenu(hMenu, (UINT_PTR)hContact, MF_BYCOMMAND);
-				goto addnew;                                            // move to the end of the menu...
-			}
-			if (GetMenuItemCount(PluginConfig.g_hMenuRecent) > nen_options.wMaxRecent) {           // throw out oldest entry in the recent menu...
-				UINT uid = GetMenuItemID(hMenu, 0);
-				if (uid) {
-					DeleteMenu(hMenu, (UINT_PTR)0, MF_BYPOSITION);
-					M->WriteDword((HANDLE)uid, SRMSGMOD_T, "isRecent", 0);
+	PROTOACCOUNT *acc = (PROTOACCOUNT *)CallService(MS_PROTO_GETACCOUNT, (WPARAM)0, (LPARAM)szProto);
+
+	if(acc && acc->tszAccountName) {
+		mii.cbSize = sizeof(mii);
+		mir_sntprintf(szMenuEntry, safe_sizeof(szMenuEntry), _T("%s: %s (%s)"), acc->tszAccountName, szFinalNick, szStatus);
+		if (mode) {
+			if (hMenu == PluginConfig.g_hMenuRecent) {
+				if (CheckMenuItem(hMenu, (UINT_PTR)hContact, MF_BYCOMMAND | MF_UNCHECKED) == 0) {
+					DeleteMenu(hMenu, (UINT_PTR)hContact, MF_BYCOMMAND);
+					goto addnew;                                            // move to the end of the menu...
 				}
+				if (GetMenuItemCount(PluginConfig.g_hMenuRecent) > nen_options.wMaxRecent) {           // throw out oldest entry in the recent menu...
+					UINT uid = GetMenuItemID(hMenu, 0);
+					if (uid) {
+						DeleteMenu(hMenu, (UINT_PTR)0, MF_BYPOSITION);
+						M->WriteDword((HANDLE)uid, SRMSGMOD_T, "isRecent", 0);
+					}
+				}
+	addnew:
+				M->WriteDword(hContact, SRMSGMOD_T, "isRecent", time(NULL));
+				AppendMenu(hMenu, MF_BYCOMMAND, (UINT_PTR)hContact, szMenuEntry);
 			}
-addnew:
-			M->WriteDword(hContact, SRMSGMOD_T, "isRecent", time(NULL));
-			AppendMenu(hMenu, MF_BYCOMMAND, (UINT_PTR)hContact, szMenuEntry);
-		}
-		else if (hMenu == PluginConfig.g_hMenuFavorites) {            // insert the item sorted...
-			MENUITEMINFO mii2 = {0};
-			TCHAR szBuffer[142];
-			int i, c = GetMenuItemCount(PluginConfig.g_hMenuFavorites);
-			mii2.fMask = MIIM_STRING;
-			mii2.cbSize = sizeof(mii2);
-			if (c == 0)
-				InsertMenu(PluginConfig.g_hMenuFavorites, 0, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntry);
-			else {
-				for (i = 0; i <= c; i++) {
-					mii2.cch = 0;
-					mii2.dwTypeData = NULL;
-					GetMenuItemInfo(PluginConfig.g_hMenuFavorites, i, TRUE, &mii2);
-					mii2.cch++;
-					mii2.dwTypeData = szBuffer;
-					GetMenuItemInfo(PluginConfig.g_hMenuFavorites, i, TRUE, &mii2);
-					if (_tcsncmp((TCHAR *)mii2.dwTypeData, szMenuEntry, 140) > 0 || i == c) {
-						InsertMenu(PluginConfig.g_hMenuFavorites, i, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntry);
-						break;
+			else if (hMenu == PluginConfig.g_hMenuFavorites) {            // insert the item sorted...
+				MENUITEMINFO mii2 = {0};
+				TCHAR szBuffer[142];
+				int i, c = GetMenuItemCount(PluginConfig.g_hMenuFavorites);
+				mii2.fMask = MIIM_STRING;
+				mii2.cbSize = sizeof(mii2);
+				if (c == 0)
+					InsertMenu(PluginConfig.g_hMenuFavorites, 0, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntry);
+				else {
+					for (i = 0; i <= c; i++) {
+						mii2.cch = 0;
+						mii2.dwTypeData = NULL;
+						GetMenuItemInfo(PluginConfig.g_hMenuFavorites, i, TRUE, &mii2);
+						mii2.cch++;
+						mii2.dwTypeData = szBuffer;
+						GetMenuItemInfo(PluginConfig.g_hMenuFavorites, i, TRUE, &mii2);
+						if (_tcsncmp((TCHAR *)mii2.dwTypeData, szMenuEntry, 140) > 0 || i == c) {
+							InsertMenu(PluginConfig.g_hMenuFavorites, i, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntry);
+							break;
+						}
 					}
 				}
 			}
 		}
+		mii.fMask = MIIM_BITMAP | MIIM_DATA;
+		if (!mode) {
+			mii.fMask |= MIIM_STRING;
+			mii.dwTypeData = (LPTSTR)szMenuEntry;
+			mii.cch = lstrlen(szMenuEntry) + 1;
+		}
+		mii.hbmpItem = HBMMENU_CALLBACK;
+		mii.dwItemData = (ULONG_PTR)hIcon;
+		SetMenuItemInfo(hMenu, (UINT)hContact, FALSE, &mii);
 	}
-	mii.fMask = MIIM_BITMAP | MIIM_DATA;
-	if (!mode) {
-		mii.fMask |= MIIM_STRING;
-		mii.dwTypeData = (LPTSTR)szMenuEntry;
-		mii.cch = lstrlen(szMenuEntry) + 1;
-	}
-	mii.hbmpItem = HBMMENU_CALLBACK;
-	mii.dwItemData = (ULONG_PTR)hIcon;
-	SetMenuItemInfo(hMenu, (UINT)hContact, FALSE, &mii);
-
-	if(szFinalProto)
-		mir_free(szFinalProto);
 }
 
 /*

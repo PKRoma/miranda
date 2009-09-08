@@ -212,12 +212,14 @@ void CInfoPanel::renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero) 
 			if(PluginConfig.m_WinVerMajor >= 5) {
 				if(m_dat->pContainer->bSkinned)
 					CSkin::SkinDrawBG(m_dat->hwnd, m_dat->pContainer->hwnd, m_dat->pContainer, &rc, hdc);
-				rc.bottom -= 2;
-				::DrawAlpha(hdc, &rc, PluginConfig.m_ipBackgroundGradient, 100, PluginConfig.m_ipBackgroundGradientHigh, 0, 17,
-						  31, 8, 0);
-				rc.top = rc.bottom - 1;
-				rc.left--; rc.right++;
-				::DrawEdge(hdc, &rc, BDR_SUNKENOUTER, BF_RECT);
+				else {
+					rc.bottom -= 2;
+					::DrawAlpha(hdc, &rc, PluginConfig.m_ipBackgroundGradient, 100, PluginConfig.m_ipBackgroundGradientHigh, 0, 17,
+							  31, 8, 0);
+					rc.top = rc.bottom - 1;
+					rc.left--; rc.right++;
+					::DrawEdge(hdc, &rc, BDR_SUNKENOUTER, BF_RECT);
+				}
 			}
 			else
 				FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));

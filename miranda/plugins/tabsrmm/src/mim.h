@@ -184,7 +184,7 @@ public:
 		m_isAero = false;
 #if defined(_UNICODE)
 		if(IsWinVerVistaPlus()) {
-			m_isAero = (CSkin::m_skinEnabled == false) && GetByte("useAero", 0) &&
+			m_isAero = (CSkin::m_skinEnabled == false) && GetByte("useAero", 1) &&
 				((m_pfnDwmIsCompositionEnabled && (m_pfnDwmIsCompositionEnabled(&result) == S_OK) && result) ? true : false);
 		}
 #endif

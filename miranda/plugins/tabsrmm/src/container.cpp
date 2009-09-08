@@ -911,7 +911,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				TabCtrl_GetItem(hwndTab, i, &item);
 				if ((HWND)item.lParam == pContainer->hwndActive) {
 					SetWindowPos((HWND)item.lParam, 0, rcClient.left, rcClient.top, (rcClient.right - rcClient.left), (rcClient.bottom - rcClient.top),
-								 SWP_NOSENDCHANGING|SWP_NOACTIVATE|SWP_NOCOPYBITS);
+								 SWP_NOSENDCHANGING|SWP_NOACTIVATE/*|SWP_NOCOPYBITS*/);
 					if (!pContainer->bSizingLoop && sizeChanged) {
 						_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 						DM_ScrollToBottom(dat, 0, 1);
@@ -1710,6 +1710,7 @@ buttons_done:
 		case WM_INITMENUPOPUP:
 			pContainer->MenuBar->setActive(reinterpret_cast<HMENU>(wParam));
 			break;
+
 		case WM_LBUTTONDOWN: {
 			POINT pt;
 
@@ -1722,6 +1723,12 @@ buttons_done:
 		/*
 		 * pass the WM_ACTIVATE msg to the active message dialog child
 		 */
+
+		case WM_NCACTIVATE:
+			if(IsWindowVisible(hwndDlg))
+				pContainer->fHidden = false;
+			break;
+
 		case WM_ACTIVATE:
 			if (pContainer == NULL)
 				break;
@@ -1730,10 +1737,11 @@ buttons_done:
 				CallService(MTH_HIDE, 0, 0);
 
 			if (LOWORD(wParam == WA_INACTIVE) && (HWND)lParam != PluginConfig.g_hwndHotkeyHandler && GetParent((HWND)lParam) != hwndDlg) {
-				BOOL fTransAllowed = !bSkinned || PluginConfig.m_WinVerMajor >= 6;
+				BOOL fTransAllowed = !bSkinned || PluginConfig.m_bIsVista;
 
-				if (pContainer->dwFlags & CNT_TRANSPARENCY && CMimAPI::m_pSetLayeredWindowAttributes != NULL && fTransAllowed)
-					CMimAPI::m_pSetLayeredWindowAttributes(hwndDlg, Skin->getColorKey(), (BYTE)HIWORD(pContainer->dwTransparency), (/* pContainer->bSkinned ? LWA_COLORKEY :  */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
+				if (pContainer->dwFlags & CNT_TRANSPARENCY && CMimAPI::m_pSetLayeredWindowAttributes != NULL && fTransAllowed) {
+					CMimAPI::m_pSetLayeredWindowAttributes(hwndDlg, Skin->getColorKey(), (BYTE)HIWORD(pContainer->dwTransparency), (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
+				}
 			}
 			pContainer->hwndSaved = 0;
 
@@ -1770,7 +1778,7 @@ buttons_done:
 
 			if (pContainer->dwFlags & CNT_TRANSPARENCY && CMimAPI::m_pSetLayeredWindowAttributes != NULL && fTransAllowed) {
 				DWORD trans = LOWORD(pContainer->dwTransparency);
-				CMimAPI::m_pSetLayeredWindowAttributes(hwndDlg, Skin->getColorKey(), (BYTE)trans, (/* pContainer->bSkinned ? LWA_COLORKEY : */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
+				CMimAPI::m_pSetLayeredWindowAttributes(hwndDlg, Skin->getColorKey(), (BYTE)trans, (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 			}
 			if (pContainer->dwFlags & CNT_NEED_UPDATETITLE) {
 				HANDLE hContact = 0;
@@ -2298,9 +2306,11 @@ buttons_done:
 			break;
 		case WM_CLOSE: {
 			//mad
-			if (PluginConfig.m_HideOnClose&&!lParam)
-				ShowWindow(hwndDlg,0);
-			else{
+			if (PluginConfig.m_HideOnClose && !lParam) {
+				ShowWindow(hwndDlg, SW_HIDE);
+				pContainer->fHidden = true;
+			}
+			else {
 			//
 
 			WINDOWPLACEMENT wp;

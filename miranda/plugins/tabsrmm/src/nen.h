@@ -98,7 +98,6 @@ int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOp
 #define OPT_MUCDISABLE "MUCDisabled"
 #define OPT_WINDOWCHECK "WindowCheck"
 #define OPT_LIMITPREVIEW "LimitPreview"
-#define OPT_MINIMIZEANIMATED "Animated"
 #define OPT_ANNOUNCEMETHOD "method"
 #define OPT_FLOATER "floater"
 #define OPT_FLOATERINWIN "floater_win"
@@ -137,10 +136,8 @@ typedef struct _nen {
     BOOL iNoAutoPopup;
     BOOL bWindowCheck;
     int  iLimitPreview;
-    BOOL bAnimated;
     WORD wMaxRecent;
     WORD wMaxFavorites;
-    int  iAnnounceMethod;
 	BYTE bSimpleMode;
     DWORD dwRemoveMask;
 } NEN_OPTIONS;

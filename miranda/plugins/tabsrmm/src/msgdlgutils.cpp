@@ -690,6 +690,8 @@ void UpdateStatusBar(const _MessageWindowData *dat)
 				DM_UpdateLastMessage(dat);
 			}
 		}
+		else
+			SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, 0);
 		UpdateReadChars(dat);
 		InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
 		SendMessage(dat->pContainer->hwndStatus, WM_USER + 101, 0, (LPARAM)dat);
@@ -1823,8 +1825,7 @@ void PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd)
 			iPlay = !MessageWindowOpened(0, (LPARAM)hwnd);
 		} else
 			iPlay = TRUE;
-	} else
-		iPlay = dwFlags & CNT_NOSOUND ? FALSE : TRUE;
+	}
 
 	if (iPlay) {
 		if (GetForegroundWindow() == pContainer->hwnd && pContainer->hwndActive == hwnd)
@@ -2718,4 +2719,13 @@ void MTH_updateMathWindow(const _MessageWindowData *dat)
 	cWinPlace.length = sizeof(WINDOWPLACEMENT);
 	GetWindowPlacement(dat->pContainer->hwnd, &cWinPlace);
 	return;
+}
+
+bool IsContainerMinimized(const ContainerWindowData *pContainer)
+{
+	if(pContainer) {
+		if(IsIconic(pContainer->hwnd) || (PluginConfig.m_HideOnClose && !IsWindowVisible(pContainer->hwnd)))
+			return(true);
+	}
+	return(false);
 }

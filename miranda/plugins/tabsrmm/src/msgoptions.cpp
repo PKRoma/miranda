@@ -196,8 +196,7 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 
 			g_himlOptions = (HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_WINDOWOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
-			if (g_himlOptions)
-				ImageList_Destroy(g_himlOptions);
+			ImageList_Destroy(g_himlOptions);
 
 			/*
 			* fill the list box, create groups first, then add items
@@ -297,6 +296,9 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			EnableWindow(GetDlgItem(hwndDlg, IDC_AUTOCLOSELAST), GetDlgItemInt(hwndDlg, IDC_AUTOCLOSETABTIME, &translated, FALSE) > 0);
 			return TRUE;
 		}
+		case WM_DESTROY:
+			ImageList_Destroy((HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_WINDOWOPTIONS, TVM_GETIMAGELIST, 0, 0));
+			break;
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
 				case IDC_MAXAVATARHEIGHT:
@@ -451,9 +453,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_LOGOPTIONS), GWL_STYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_LOGOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
 
 			g_himlOptions = (HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_LOGOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
-			if (g_himlOptions)
-				ImageList_Destroy(g_himlOptions);
-
+			ImageList_Destroy(g_himlOptions);
 
 			/*
 			* fill the list box, create groups first, then add items
@@ -856,8 +856,7 @@ static INT_PTR CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_TABMSGOPTIONS), GWL_STYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_TABMSGOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
 
 			g_himlOptions = (HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_TABMSGOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
-			if (g_himlOptions)
-				ImageList_Destroy(g_himlOptions);
+			ImageList_Destroy(g_himlOptions);
 
 			/*
 			* fill the list box, create groups first, then add items
@@ -1118,8 +1117,6 @@ struct {
 static int OptInitialise(WPARAM wParam, LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
-
-	Chat_OptionsInitialize(wParam, lParam);
 
 	if(PluginConfig.g_PopupWAvail||PluginConfig.g_PopupAvail)
 		TN_OptionsInitialize(wParam, lParam);
@@ -1922,7 +1919,7 @@ static INT_PTR CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPT_SKIN), hwnd, DlgProcSkinOpts);
 			hwndFirstPage = (HWND)tci.lParam;
 
-			tci.pszText = TranslateT("Load and apply");
+			tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TAB_SKINLOAD));
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 0, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 			ShowWindow((HWND)tci.lParam, SW_HIDE);
@@ -1932,7 +1929,8 @@ static INT_PTR CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_TABCONFIG), hwnd, DlgProcTabConfig);
 			hwndTabConfig = (HWND)tci.lParam;
 
-			tci.pszText = TranslateT("Tab appearance");
+			tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TAB_LAYOUTTWEAKS));
+
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 1, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 			ShowWindow((HWND)tci.lParam, SW_HIDE);

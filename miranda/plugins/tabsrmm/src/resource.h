@@ -112,8 +112,11 @@
 #define IDC_SPLITTER                    1037
 #define IDC_CHKDEFAULTCOL_MESSAGE       1038
 #define IDC_SPLITTER2                   1039
+#define IDC_CHKDEFAULTCOL_MUC           1039
 #define IDC_COLBACK_MESSAGE             1041
 #define IDC_COLTEXT_MESSAGE             1042
+#define IDC_COLTEXT_MUC                 1043
+#define IDC_COLBACK_MUC                 1044
 #define IDC_SHOWNAMES                   1047
 #define IDC_MSGINDICATOR                1050
 #define IDC_CHKDEFAULTCOL_OTHERS        1050
@@ -138,6 +141,7 @@
 #define IDC_RESTART                     1065
 #define IDC_DELAY_OTHERS                1066
 #define IDC_CLIST                       1067
+#define IDC_DELAY_MUC                   1067
 #define IDC_NUMBERMSG                   1068
 #define IDC_MULTISPLITTER               1069
 #define IDC_CHKSHOWDATE                 1070
@@ -180,7 +184,6 @@
 #define IDC_FONTBOLD                    1106
 #define IDC_FONTITALIC                  1107
 #define IDC_FONTUNDERLINE               1108
-#define IDC_LOGFROZEN                   1109
 #define IDC_FONTFACE                    1110
 #define IDC_HISTORY                     1111
 #define IDC_CANCELADD                   1112
@@ -244,7 +247,6 @@
 #define IDC_TABWIDTH                    1181
 #define IDC_PRIVATESPLITTER             1182
 #define IDC_CNTPRIVATE                  1182
-#define IDC_STYLEDTABS                  1482
 #define IDC_NEWSPLITLAYOUT              1183
 #define IDC_O_NOTABS                    1184
 #define IDC_DONTREPORTUNFOCUSED         1185
@@ -255,6 +257,7 @@
 #define IDC_WANTVERTICALGRID            1190
 #define IDC_LIMITPREVIEW                1191
 #define IDC_AUTOLOCALE                  1192
+#define IDC_MUC_LOGCOLORS               1192
 #define IDC_DONTREPORTUNFOCUSED2        1193
 #define IDC_GCHECK                      1194
 #define IDC_HIDETAB                     1195
@@ -276,7 +279,6 @@
 #define IDC_PANELSPLITTER               1216
 #define IDC_AUTOCREATECONTAINER         1216
 #define IDC_LIMITAVATARS                1217
-#define IDC_USESHELLNOTIFY              1218
 #define IDC_DONTREPORT                  1219
 #define IDC_SPIN1                       1220
 #define IDC_CNTLIST                     1221
@@ -331,10 +333,8 @@
 #define IDC_STREAMTHREADING             1264
 #define IDC_TABBORDEROUTERBOTTOM        1264
 #define IDC_IEVIEWMODE                  1265
-#define IDC_ANNOUNCEMETHOD              1265
 #define IDC_TABBORDERSPINOUTERBOTTOM    1265
 #define IDC_TEXTFORMATTING              1266
-#define IDC_SIMPLEMODE                  1266
 #define IDC_AVATARMODE                  1267
 #define IDC_CODEPAGES                   1268
 #define IDC_OWNAVATARMODE               1268
@@ -357,14 +357,12 @@
 #define IDC_GROUPMODE                   1288
 #define IDC_ANIMATED                    1289
 #define IDC_ISFAVORITE                  1289
-#define IDC_FLASHICON                   1489
 #define IDC_USEPRIVATETITLE             1289
 #define IDC_ALWAYSTRIM                  1289
 #define IDC_SKIN_LOADFONTS              1289
 #define IDC_PRESERVEAVATARSIZE          1289
 #define IDC_UPREFS_SHOWICONS            1289
 #define IDC_SYNCSOUNDS                  1290
-#define IDC_FLASHLABEL                  1490
 #define IDC_ALWAYSTRIM2                 1290
 #define IDC_SKIN_LOADTEMPLATES          1290
 #define IDC_UPREFS_SHOWSYMBOLS          1290
@@ -372,7 +370,6 @@
 #define IDC_NOAUTOCLOSE                 1291
 #define IDC_UPREFS_INOUTICONS           1291
 #define IDC_AVADYNAMIC                  1292
-#define IDC_BUTTONTABS                  1492
 #define IDC_UPREFS_SHOWTIMESTAMP        1292
 #define IDC_USESNAPPING                 1293
 #define IDC_UPREFS_SHOWSECONDS          1293
@@ -435,6 +432,7 @@
 #define IDC_MESSAGEPREVIEWLIMIT         1349
 #define IDC_MESSAGEPREVIEWLIMITSPIN     1350
 #define IDC_DELAY_MESSAGE_SPIN          1351
+#define IDC_DELAY_MESSAGE_MUC_SPIN      1352
 #define IDC_MESSAGEPREVIEWLIMITSPIN2    1354
 #define IDC_DELAY_OTHERS_SPIN           1354
 #define IDC_TEMPLATELIST                1361
@@ -528,11 +526,16 @@
 #define IDC_NOTIFYFILE                  1438
 #define IDC_NOTIFYURL                   1439
 #define IDC_NOTIFYOTHER                 1440
+#define IDC_STYLEDTABS                  1482
+#define IDC_FLASHICON                   1489
+#define IDC_FLASHLABEL                  1490
+#define IDC_BUTTONTABS                  1492
 #define IDC_TXT_TITLE1                  1617
 #define IDC_TXT_TITLE2                  1618
 #define IDC_TXT_TITLE4                  1620
 #define IDC_TXT_TITLE5                  1622
 #define IDC_TXT_TITLE3                  1623
+#define IDC_O_EXPLAINGLOBALNOTIFY       1624
 #define IDC_PLUS_CHECKTREE              2000
 #define IDC_COPYRIGHT                   2002
 #define IDC_PLUS_HELP                   2004
@@ -755,7 +758,7 @@
 #define ID_SPLITTERCONTEXT_SAVEFORCONTAINER 40340
 
 #ifndef IDC_STATIC
-#define IDC_STATIC                      -1
+#define IDC_STATIC -1
 #endif
 
 // Next default values for new objects

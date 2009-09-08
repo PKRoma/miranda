@@ -91,8 +91,8 @@ void CGlobals::Reload()
 	m_panelHeight = (DWORD)M->GetDword("panelheight", 51);
 	m_MUCpanelHeight = M->GetDword("Chat", "panelheight", 30);
 	m_IdleDetect = (int)M->GetByte("detectidle", 1);
-	m_smcxicon = GetSystemMetrics(SM_CXSMICON);
-	m_smcyicon = GetSystemMetrics(SM_CYSMICON);
+	m_smcxicon = 16;//GetSystemMetrics(SM_CXSMICON);
+	m_smcyicon = 16;//GetSystemMetrics(SM_CYSMICON);
 	m_PasteAndSend = (int)M->GetByte("pasteandsend", 1);
 	m_szNoStatus = const_cast<TCHAR *>(CTranslator::get(CTranslator::GEN_NO_STATUS));
 	m_LangPackCP = ServiceExists(MS_LANGPACK_GETCODEPAGE) ? CallService(MS_LANGPACK_GETCODEPAGE, 0, 0) : CP_ACP;

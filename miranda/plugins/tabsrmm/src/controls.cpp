@@ -517,6 +517,7 @@ void CMenuBar::updateState(const HMENU hMenu) const
 		::CheckMenuItem(hMenu, ID_VIEW_SHOWMULTISENDCONTACTLIST, MF_BYCOMMAND | (dat->sendMode & SMODE_MULTIPLE) ? MF_CHECKED : MF_UNCHECKED);
 		::CheckMenuItem(hMenu, ID_VIEW_STAYONTOP, MF_BYCOMMAND | m_pContainer->dwFlags & CNT_STICKY ? MF_CHECKED : MF_UNCHECKED);
 
+		::EnableMenuItem(hMenu, 2, MF_BYPOSITION | (nen_options.bWindowCheck ? MF_GRAYED : MF_ENABLED));
 		::CheckMenuItem(hMenu, ID_EVENTPOPUPS_DISABLEALLEVENTPOPUPS, MF_BYCOMMAND | m_pContainer->dwFlags & (CNT_DONTREPORT | CNT_DONTREPORTUNFOCUSED | CNT_ALWAYSREPORTINACTIVE) ? MF_UNCHECKED : MF_CHECKED);
 		::CheckMenuItem(hMenu, ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISMINIMIZED, MF_BYCOMMAND | m_pContainer->dwFlags & CNT_DONTREPORT ? MF_CHECKED : MF_UNCHECKED);
 		::CheckMenuItem(hMenu, ID_EVENTPOPUPS_SHOWPOPUPSFORALLINACTIVESESSIONS, MF_BYCOMMAND | m_pContainer->dwFlags & CNT_ALWAYSREPORTINACTIVE ? MF_CHECKED : MF_UNCHECKED);
@@ -849,8 +850,8 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 			SendMessage(hWnd, WM_SIZE, 0, 0);
 			GetWindowRect(hWnd, &rcs);
 
-			statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH + 20) - (35 + ((list_icons) * (PluginConfig.m_smcxicon + 2)));
-			statwidths[1] = (rcs.right - rcs.left) - (45 + ((list_icons) * (PluginConfig.m_smcxicon + 2)));
+			statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH + 20) - (52 + ((list_icons) * (PluginConfig.m_smcxicon + 2)));
+			statwidths[1] = (rcs.right - rcs.left) - (62 + ((list_icons) * (PluginConfig.m_smcxicon + 2)));
 			statwidths[2] = -1;
 			SendMessage(hWnd, SB_SETPARTS, 3, (LPARAM) statwidths);
 			return 0;
@@ -982,6 +983,14 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 
 							mir_sntprintf(wBuf, safe_sizeof(wBuf), CTranslator::get(CTranslator::CNT_SBAR_MTN),
 										  mtnStatus ? CTranslator::get(CTranslator::GEN_ENABLED) : CTranslator::get(CTranslator::GEN_DISABLED));
+							CallService(szTTService, (WPARAM)wBuf, (LPARAM)&ti);
+							tooltip_active = TRUE;
+						}
+						else if((int)iconNum == list_icons + 2) {
+							TCHAR wBuf[512];
+
+							mir_sntprintf(wBuf, safe_sizeof(wBuf), _T("%s"), CTranslator::get(CTranslator::CNT_SBAR_SLIST));
+
 							CallService(szTTService, (WPARAM)wBuf, (LPARAM)&ti);
 							tooltip_active = TRUE;
 						}

@@ -454,8 +454,8 @@ bg_done:
 				SelectObject(hdcMem, hOldFont);
 			}
 		} else if (ctl->hIcon || ctl->hIconPrivate) {
-			int ix = (rcClient.right - rcClient.left) / 2 - (PluginConfig.m_smcxicon / 2);
-			int iy = (rcClient.bottom - rcClient.top) / 2 - (PluginConfig.m_smcyicon / 2);
+			int ix = (rcClient.right - rcClient.left) / 2 - 8;
+			int iy = (rcClient.bottom - rcClient.top) / 2 - 8;
 			HICON hIconNew = ctl->hIconPrivate != 0 ? ctl->hIconPrivate : ctl->hIcon;
 
 			if (ctl->stateId == PBS_PRESSED) {
@@ -470,7 +470,7 @@ bg_done:
 				CSkin::DrawDimmedIcon(hdcMem, ix, iy, PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, hIconNew, 180);
 			else {
 				if (ctl->stateId != PBS_DISABLED || CMimAPI::m_MyAlphaBlend == 0)
-					DrawIconEx(hdcMem, ix, iy, hIconNew, PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, 0, 0, DI_NORMAL);
+					DrawIconEx(hdcMem, ix, iy, hIconNew, 16, 16, 0, 0, DI_NORMAL);
 				else {
 					BitBlt(hdc_buttonglyph, 0, 0, 16, 16, hdcMem, ix, iy, SRCCOPY);
 					DrawIconEx(hdc_buttonglyph, 0, 0, hIconNew, 16, 16, 0, 0, DI_NORMAL);
@@ -775,9 +775,10 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			bct->focus = 0;
 			InvalidateRect(bct->hwnd, NULL, TRUE);
 			break;
+			/*
 		case WM_WINDOWPOSCHANGED:
 			InvalidateRect(bct->hwnd, NULL, TRUE);
-			break;
+			break;*/
 		case WM_ENABLE: { // windows tells us to enable/disable
 			bct->stateId = wParam ? PBS_NORMAL : PBS_DISABLED;
 			InvalidateRect(bct->hwnd, NULL, TRUE);

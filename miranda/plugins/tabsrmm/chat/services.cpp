@@ -859,7 +859,7 @@ void UnhookEvents(void)
 	DeleteCriticalSection(&cs);
 }
 
-void CreateServiceFunctions(void)
+int CreateServiceFunctions(void)
 {
 	PluginConfig.m_chat_enabled = false;
 
@@ -869,7 +869,7 @@ void CreateServiceFunctions(void)
 
 			M->WriteByte("PluginDisable", "chat.dll", 1);
 		}
-		return;
+		return(0);
 	}
 	PluginConfig.m_chat_enabled = true;
 
@@ -884,6 +884,7 @@ void CreateServiceFunctions(void)
 	hEventPrebuildMenu     = CreateServiceFunction("GChat/PrebuildMenuEvent", CList_PrebuildContactMenuSvc);
 	hEventJoinChat         = CreateServiceFunction("GChat/JoinChat",          CList_JoinChat);
 	hEventLeaveChat        = CreateServiceFunction("GChat/LeaveChat",         CList_LeaveChat);
+	return(1);
 }
 
 void DestroyServiceFunctions(void)

@@ -35,6 +35,8 @@ extern  HICON	hIcons[30];
 SESSION_INFO	*m_WndList = 0;
 MODULEINFO		*m_ModList = 0;
 
+extern CRITICAL_SECTION cs;
+
 void SetActiveSession(const TCHAR* pszID, const char* pszModule)
 {
 	SESSION_INFO* si = SM_FindSession(pszID, pszModule);
@@ -587,11 +589,15 @@ BOOL SM_InvalidateLogDirectories()
 {
 	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
 
+	EnterCriticalSection(&cs);
+
 	while (pTemp != NULL) {
 		pTemp->pszLogFileName[0] = 0;
 		pLast = pTemp;
 		pTemp = pTemp->next;
 	}
+
+	LeaveCriticalSection(&cs);
 	return TRUE;
 }
 

@@ -37,7 +37,7 @@
 
 SendQueue *sendQueue = 0;
 
-extern      TCHAR *pszIDCSAVE_save, *pszIDCSAVE_close;
+extern      const TCHAR *pszIDCSAVE_save, *pszIDCSAVE_close;
 
 static char *pss_msg = "/SendMsg";
 static char *pss_msgw = "/SendMsgW";
@@ -128,18 +128,11 @@ int SendQueue::findNextFailed(const _MessageWindowData *dat) const
 void SendQueue::handleError(_MessageWindowData *dat, const int iEntry) const
 {
 	if(dat) {
-		char szErrorMsg[512];
+		TCHAR szErrorMsg[500];
 
 		dat->iCurrentQueueError = iEntry;
-		_snprintf(szErrorMsg, 500, "%s", m_jobs[iEntry].szErrorMsg);
-#if defined(_UNICODE)
-			wchar_t wszErrorMsg[512];
-			MultiByteToWideChar(PluginConfig.m_LangPackCP, 0, szErrorMsg, -1, wszErrorMsg, 512);
-			wszErrorMsg[511] = 0;
-			logError(dat, iEntry, wszErrorMsg);
-#else
+		mir_sntprintf(szErrorMsg, 500, _T("%s"), m_jobs[iEntry].szErrorMsg);
 		logError(dat, iEntry, szErrorMsg);
-#endif
 		recallFailed(dat, iEntry);
 		showErrorControls(dat, TRUE);
 		::HandleIconFeedback(dat, PluginConfig.g_iconErr);
@@ -850,23 +843,19 @@ int SendQueue::ackMessage(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 			if (!nen_options.iNoSounds && !(m_pContainer->dwFlags & CNT_NOSOUND))
 				SkinPlaySound("SendError");
 			if (m_jobs[iFound].sendCount > 1) {        // multisend is different...
-				char szErrMsg[256];
-				mir_snprintf(szErrMsg, sizeof(szErrMsg), Translate("Multisend: failed sending to: %s"), dat->szProto);
-#if defined(_UNICODE)
-			{
-				wchar_t wszErrMsg[256];
-				MultiByteToWideChar(PluginConfig.m_LangPackCP, 0, szErrMsg, -1, wszErrMsg, 256);
-				wszErrMsg[255] = 0;
-				logError(dat, -1, wszErrMsg);
-			}
-#else
+				TCHAR szErrMsg[256];
+				TCHAR *tszProto = mir_a2t(dat->szProto);
+				mir_sntprintf(szErrMsg, safe_sizeof(szErrMsg), TranslateT("Multisend: failed sending to: %s"), tszProto);
 				logError(dat, -1, szErrMsg);
-#endif
+				mir_free(tszProto);
 				goto verify;
 			}
 			else {
-				mir_snprintf(m_jobs[iFound].szErrorMsg, sizeof(m_jobs[iFound].szErrorMsg), Translate("Delivery failure: %s"), (char *)ack->lParam);
+				TCHAR *szAckMsg = mir_a2t((char *)ack->lParam);
+				mir_sntprintf(m_jobs[iFound].szErrorMsg, safe_sizeof(m_jobs[iFound].szErrorMsg),
+							 CTranslator::get(CTranslator::GEN_MSG_DELIVERYFAILURE), szAckMsg);
 				m_jobs[iFound].iStatus = SQ_ERROR;
+				mir_free(szAckMsg);
 				KillTimer(dat->hwnd, TIMERID_MSGSEND + iFound);
 				if (!(dat->dwFlags & MWF_ERRORSTATE))
 					handleError(dat, iFound);

@@ -183,8 +183,8 @@ static struct branch_t branch2[] = {
 	{LPGENT("Allow clickable user names in the message log"), "ClickableNicks", 0, 1, NULL},
 	{LPGENT("Colorize user names in message log"), "ColorizeNicksInLog", 0, 1, NULL},
 	{LPGENT("Scale down icons to 10x10 pixels in the chat log"), "ScaleIcons", 0, 1, NULL},
-	{LPGENT("Draw dividers to mark inactivity"), "UseDividers", 0, 1, NULL},
-	{LPGENT("Use the containers popup configuration to place dividers"), "DividersUsePopupConfig", 0, 1, NULL},
+	{LPGENT("Place a separator in the log after a window lost its foreground status"), "UseDividers", 0, 1, NULL},
+	{LPGENT("Only place a separator when an incoming event is announced with a popup"), "DividersUsePopupConfig", 0, 1, NULL},
 	{LPGENT("Support the math module plugin"), "MathModSupport", 0, 0, NULL}
 };
 
@@ -251,7 +251,7 @@ static HTREEITEM InsertBranch(HWND hwndTree, TCHAR* pszDescr, BOOL bExpanded)
 	tvis.item.mask = TVIF_TEXT | TVIF_STATE;
 	tvis.item.pszText = TranslateTS(pszDescr);
 	tvis.item.stateMask = (bExpanded ? TVIS_STATEIMAGEMASK | TVIS_EXPANDED : TVIS_STATEIMAGEMASK) | TVIS_BOLD;
-	tvis.item.state = (bExpanded ? INDEXTOSTATEIMAGEMASK(1) | TVIS_EXPANDED : INDEXTOSTATEIMAGEMASK(1)) | TVIS_BOLD;
+	tvis.item.state = (bExpanded ? INDEXTOSTATEIMAGEMASK(0) | TVIS_EXPANDED : INDEXTOSTATEIMAGEMASK(0)) | TVIS_BOLD;
 	return TreeView_InsertItem(hwndTree, &tvis);
 }
 
@@ -320,7 +320,7 @@ static void CheckHeading(HWND hwndTree, HTREEITEM hHeading)
 		tvi.hItem = TreeView_GetNextSibling(hwndTree, tvi.hItem);
 	}
 	tvi.stateMask = TVIS_STATEIMAGEMASK;
-	tvi.state = INDEXTOSTATEIMAGEMASK(bChecked ? 3 : 2);
+	tvi.state = INDEXTOSTATEIMAGEMASK(1); //bChecked ? 3 : 2);
 	tvi.hItem = hHeading;
 	TreeView_SetItem(hwndTree, &tvi);
 }
@@ -509,8 +509,7 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CHECKBOXES), GWL_STYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CHECKBOXES), GWL_STYLE) | TVS_NOHSCROLL | TVS_CHECKBOXES);
 
 				himlOptions = (HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_CHECKBOXES, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
-				if (himlOptions)
-					ImageList_Destroy(himlOptions);
+				ImageList_Destroy(himlOptions);
 
 				hListHeading1 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Appearance and functionality of chat room windows"), TRUE);
 				hListHeading2 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Appearance of the message log"), TRUE);
@@ -518,7 +517,7 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading1, branch1, SIZEOF(branch1), 0x0000);
 				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading2, branch2, SIZEOF(branch2), 0x0000);
 
-				SendMessage(hwndDlg, OPT_FIXHEADINGS, 0, 0);
+				//SendMessage(hwndDlg, OPT_FIXHEADINGS, 0, 0);
 				{
 					TCHAR* pszGroup = NULL;
 					InitSetting(&pszGroup, "AddToGroup", _T("Chat rooms"));
@@ -534,10 +533,10 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 			}
 			break;
 
-		case OPT_FIXHEADINGS:
+		/*case OPT_FIXHEADINGS:
 			CheckHeading(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading1);
 			CheckHeading(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading2);
-			break;
+			break;*/
 		case WM_COMMAND:
 			if ((LOWORD(wParam) == IDC_GROUP)
 					&& (HIWORD(wParam) != EN_CHANGE || (HWND)lParam != GetFocus()))	return 0;
@@ -570,23 +569,16 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 								TreeView_GetItem(((LPNMHDR)lParam)->hwndFrom, &tvi);
 
-								if (tvi.hItem == hListHeading1)
-									CheckBranches(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading1);
-								else if (tvi.hItem == hListHeading2)
-									CheckBranches(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading2);
-								else {
-
-									if (tvi.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
-										tvi.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_BOLD;
+								if (tvi.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
+									tvi.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_BOLD;
+									SendDlgItemMessageA(hwndDlg, IDC_CHECKBOXES, TVM_SETITEMA, 0, (LPARAM)&tvi);
+								} else if (hti.flags&TVHT_ONITEMSTATEICON) {
+									if (((tvi.state & TVIS_STATEIMAGEMASK) >> 12) == 3) {
+										tvi.state = INDEXTOSTATEIMAGEMASK(1);
 										SendDlgItemMessageA(hwndDlg, IDC_CHECKBOXES, TVM_SETITEMA, 0, (LPARAM)&tvi);
-									} else if (hti.flags&TVHT_ONITEMSTATEICON) {
-										if (((tvi.state & TVIS_STATEIMAGEMASK) >> 12) == 3) {
-											tvi.state = INDEXTOSTATEIMAGEMASK(1);
-											SendDlgItemMessageA(hwndDlg, IDC_CHECKBOXES, TVM_SETITEMA, 0, (LPARAM)&tvi);
-										}
 									}
-									PostMessage(hwndDlg, OPT_FIXHEADINGS, 0, 0);
 								}
+								//PostMessage(hwndDlg, OPT_FIXHEADINGS, 0, 0);
 								SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 							}
 						}
@@ -1253,7 +1245,7 @@ INT_PTR CALLBACK DlgProcOptions3(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 								dwTrayFlags |= (IsDlgButtonChecked(hwndDlg, IDC_T1 + i) ? _eventorder[i] : 0);
 							}
 							M->WriteDword("Chat", "FilterFlags", dwFilterFlags);
-							M->WriteDword("Chat", "PopupsFlags", dwPopupFlags);
+							M->WriteDword("Chat", "PopupFlags", dwPopupFlags);
 							M->WriteDword("Chat", "TrayIconFlags", dwTrayFlags);
 							M->WriteDword("Chat", "DiskLogFlags", dwLogFlags);
 
@@ -1282,106 +1274,6 @@ INT_PTR CALLBACK DlgProcOptions3(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 	return FALSE;
 }
 
-static INT_PTR CALLBACK DlgProcOptionsPopup(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-		case WM_INITDIALOG:
-			TranslateDialogDefault(hwndDlg);
-
-			SendDlgItemMessage(hwndDlg, IDC_BKG, CPM_SETCOLOUR, 0, g_Settings.crPUBkgColour);
-			SendDlgItemMessage(hwndDlg, IDC_TEXT, CPM_SETCOLOUR, 0, g_Settings.crPUTextColour);
-
-			if (g_Settings.iPopupStyle == 2)
-				CheckDlgButton(hwndDlg, IDC_RADIO2, BST_CHECKED);
-			else if (g_Settings.iPopupStyle == 3)
-				CheckDlgButton(hwndDlg, IDC_RADIO3, BST_CHECKED);
-			else
-				CheckDlgButton(hwndDlg, IDC_CHAT_RADIO1, BST_CHECKED);
-
-			EnableWindow(GetDlgItem(hwndDlg, IDC_BKG), IsDlgButtonChecked(hwndDlg, IDC_RADIO3) == BST_CHECKED ? TRUE : FALSE);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_TEXT), IsDlgButtonChecked(hwndDlg, IDC_RADIO3) == BST_CHECKED ? TRUE : FALSE);
-
-			SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN1, UDM_SETRANGE, 0, MAKELONG(100, -1));
-			SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN1, UDM_SETPOS, 0, MAKELONG(g_Settings.iPopupTimeout, 0));
-			break;
-
-		case WM_COMMAND:
-			if ((LOWORD(wParam)		  == IDC_TIMEOUT)
-					&& (HIWORD(wParam) != EN_CHANGE || (HWND)lParam != GetFocus()))	return 0;
-
-			if (lParam != (LPARAM)NULL)
-				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-			switch (LOWORD(wParam)) {
-
-		case IDC_CHAT_RADIO1:
-				case IDC_RADIO2:
-				case IDC_RADIO3:
-					EnableWindow(GetDlgItem(hwndDlg, IDC_BKG), IsDlgButtonChecked(hwndDlg, IDC_RADIO3) == BST_CHECKED ? TRUE : FALSE);
-					EnableWindow(GetDlgItem(hwndDlg, IDC_TEXT), IsDlgButtonChecked(hwndDlg, IDC_RADIO3) == BST_CHECKED ? TRUE : FALSE);
-					break;
-			}
-			break;
-
-		case WM_NOTIFY: {
-			switch (((LPNMHDR)lParam)->idFrom) {
-				case 0:
-					switch (((LPNMHDR)lParam)->code) {
-						case PSN_APPLY: {
-							int iLen;
-
-							if (IsDlgButtonChecked(hwndDlg, IDC_RADIO2) == BST_CHECKED)
-								iLen = 2;
-							else if (IsDlgButtonChecked(hwndDlg, IDC_RADIO3) == BST_CHECKED)
-								iLen = 3;
-							else
-								iLen = 1;
-
-							g_Settings.iPopupStyle = iLen;
-							M->WriteByte("Chat", "PopupStyle", (BYTE)iLen);
-
-							iLen = SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN1, UDM_GETPOS, 0, 0);
-							g_Settings.iPopupTimeout = iLen;
-							DBWriteContactSettingWord(NULL, "Chat", "PopupTimeout", (WORD)iLen);
-
-							g_Settings.crPUBkgColour = SendDlgItemMessage(hwndDlg, IDC_BKG, CPM_GETCOLOUR, 0, 0);
-							M->WriteDword("Chat", "PopupColorBG", (DWORD)SendDlgItemMessage(hwndDlg, IDC_BKG, CPM_GETCOLOUR, 0, 0));
-							g_Settings.crPUTextColour = SendDlgItemMessage(hwndDlg, IDC_TEXT, CPM_GETCOLOUR, 0, 0);
-							M->WriteDword("Chat", "PopupColorText", (DWORD)SendDlgItemMessage(hwndDlg, IDC_TEXT, CPM_GETCOLOUR, 0, 0));
-
-						}
-						return TRUE;
-					}
-			}
-		}
-		break;
-
-		default:
-			break;
-	}
-	return FALSE;
-}
-
-int Chat_OptionsInitialize(WPARAM wParam, LPARAM lParam)
-{
-	OPTIONSDIALOGPAGE odp = {0};
-
-	if (!PluginConfig.m_chat_enabled)
-		return 0;
-
-	if (PluginConfig.g_PopupAvail) {
-		odp.cbSize = sizeof(odp);
-		odp.position = 910000002;
-		odp.hInstance = g_hInst;
-		odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONSPOPUP);
-		odp.pszTitle = "Chat";
-		odp.pszGroup = "Popups";
-		odp.pfnDlgProc = DlgProcOptionsPopup;
-		odp.flags = ODPF_BOLDGROUPS;
-		CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
-	}
-	return 0;
-}
-
 void LoadGlobalSettings(void)
 {
 	LOGFONT lf;
@@ -1407,7 +1299,6 @@ void LoadGlobalSettings(void)
 	g_Settings.crLogBackground = (BOOL)M->GetDword("Chat", "ColorLogBG", SRMSGDEFSET_BKGCOLOUR);
 	g_Settings.StripFormat = (BOOL)M->GetByte("Chat", "StripFormatting", 0);
 	g_Settings.TrayIconInactiveOnly = (BOOL)M->GetByte("Chat", "TrayIconInactiveOnly", 1);
-	g_Settings.SkipWhenNoWindow = (BOOL)M->GetByte("Chat", "SkipWhenNoWindow", 0);
 	g_Settings.BBCodeInPopups = (BOOL)M->GetByte("Chat", "BBCodeInPopups", 0);
 	g_Settings.AddColonToAutoComplete = (BOOL)M->GetByte("Chat", "AddColonToAutoComplete", 1);
 	g_Settings.iPopupStyle = M->GetByte("Chat", "PopupStyle", 1);

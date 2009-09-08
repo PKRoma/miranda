@@ -53,7 +53,7 @@ HICON LoadIconEx(int iIndex, char * pszIcoLibName, int iX, int iY);
 //services.c
 void HookEvents(void);
 void UnhookEvents(void);
-void CreateServiceFunctions(void);
+int  CreateServiceFunctions(void);
 void DestroyServiceFunctions(void);
 void DestroyHookableEvents(void);
 void CreateHookableEvents(void);

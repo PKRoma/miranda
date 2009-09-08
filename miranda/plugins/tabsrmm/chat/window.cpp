@@ -288,6 +288,19 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct _MessageWindowData *dat,
 		}
 	}
 
+
+	if(si->hwndFilter) {
+		POINT pt;
+		RECT  rcFilter;
+
+		GetCursorPos(&pt);
+		GetWindowRect(si->hwndFilter, &rcFilter);
+		if(!PtInRect(&rcFilter, pt)) {
+			SendMessage(si->hwndFilter, WM_CLOSE, 1, 1);
+			si->hwndFilter = 0;
+		}
+	}
+
 	if (dat->pContainer->hwndSaved == hwndDlg)
 		return;
 
@@ -322,8 +335,8 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct _MessageWindowData *dat,
 		if (PluginConfig.m_AutoLocaleSupport && dat->hContact != 0) {
 			if (dat->hkl == 0)
 				DM_LoadLocale(dat);
-				//PostMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
-			PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
+			else
+				PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
 		}
 		SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
 		dat->dwLastActivity = dat->dwLastUpdate = GetTickCount();
@@ -401,8 +414,6 @@ static void	InitButtons(HWND hwndDlg, SESSION_INFO* si)
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CHANMGR), pInfo->bChanMgr);
 	}
 }
-
-static int splitterEdges = FALSE;
 
 static UINT _toolbarCtrls[] = { IDC_SMILEYBTN, IDC_CHAT_BOLD, IDC_CHAT_UNDERLINE, IDC_ITALICS, IDC_COLOR, IDC_BKGCOLOR,
 								IDC_CHAT_HISTORY, IDC_SHOWNICKLIST, IDC_FILTER, IDC_CHANMGR, IDOK, IDC_CHAT_CLOSE, 0
@@ -1292,7 +1303,7 @@ static INT_PTR CALLBACK FilterWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
 				CheckDlgButton(hwndDlg, IDC_P1 + i, dwPopupMask & _eventorder[i] ? (dwPopupFlags & _eventorder[i] ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
 				CheckDlgButton(hwndDlg, IDC_T1 + i, dwTrayMask & _eventorder[i] ? (dwTrayFlags & _eventorder[i] ? BST_CHECKED : BST_UNCHECKED) : BST_INDETERMINATE);
 			}
-			break;
+			return(FALSE);
 		}
 		case WM_CTLCOLOREDIT:
 		case WM_CTLCOLORSTATIC:
@@ -1300,8 +1311,8 @@ static INT_PTR CALLBACK FilterWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
 			SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
 			return (INT_PTR)GetSysColorBrush(COLOR_WINDOW);
 
-		case WM_ACTIVATE:
-			if (LOWORD(wParam) == WA_INACTIVE) {
+		case WM_CLOSE:
+			if (wParam == 1 && lParam == 1) {
 				int iFlags = 0, i;
 				UINT result;
 				DWORD dwMask = 0, dwFlags = 0;
@@ -1369,15 +1380,9 @@ static INT_PTR CALLBACK FilterWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
 					if (si->bFilterEnabled)
 						SendMessage(si->hWnd, GC_REDRAWLOG, 0, 0);
 				}
-
-				PostMessage(hwndDlg, WM_CLOSE, 0, 0);
 			}
-			break;
-
-		case WM_CLOSE:
 			DestroyWindow(hwndDlg);
 			break;
-
 		case WM_DESTROY:
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 			break;
@@ -2079,11 +2084,6 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			DM_ThemeChanged(dat);
 			SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), EM_HIDESELECTION, TRUE, 0);
 
-			splitterEdges = M->GetByte("splitteredges", 1);
-			if (splitterEdges) {
-				SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTERX), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTERX), GWL_EXSTYLE) | WS_EX_STATICEDGE);
-				SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTERY), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTERY), GWL_EXSTYLE) | WS_EX_STATICEDGE);
-			}
 			GetMyNick(dat);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BUTTONSETASFLATBTN + 10, 0, PluginConfig.m_bIsXP);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BUTTONSETASFLATBTN + 12, 0, (LPARAM)dat->pContainer);
@@ -2671,11 +2671,19 @@ LABEL_SHOWWINDOW:
 			break;
 
 		case GC_SHOWFILTERMENU: {
-			RECT rc;
-			HWND hwnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_FILTER), hwndDlg, FilterWndProc, (LPARAM)si);
-			TranslateDialogDefault(hwnd);
-			GetWindowRect(GetDlgItem(hwndDlg, IDC_FILTER), &rc);
-			SetWindowPos(hwnd, HWND_TOP, rc.left - 85, (IsWindowVisible(GetDlgItem(hwndDlg, IDC_FILTER)) || IsWindowVisible(GetDlgItem(hwndDlg, IDC_CHAT_BOLD))) ? rc.top - 206 : rc.top - 186, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+			RECT  rcFilter, rcLog;
+			POINT pt;
+
+			si->hwndFilter = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_FILTER), dat->pContainer->hwnd, FilterWndProc, (LPARAM)si);
+			TranslateDialogDefault(si->hwndFilter);
+
+			GetClientRect(si->hwndFilter, &rcFilter);
+			GetWindowRect(GetDlgItem(hwndDlg, IDC_CHAT_LOG), &rcLog);
+			pt.x = rcLog.right;
+			pt.y = rcLog.bottom;
+			ScreenToClient(dat->pContainer->hwnd, &pt);
+
+			SetWindowPos(si->hwndFilter, HWND_TOP, pt.x - rcFilter.right, pt.y - rcFilter.bottom, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
 		}
 		break;
 
@@ -3743,17 +3751,13 @@ LABEL_SHOWWINDOW:
 			break;
 
 		case EM_THEMECHANGED:
-			if (CMimAPI::m_pfnCloseThemeData) {
-				if(dat->hThemeIP) {
-					CMimAPI::m_pfnCloseThemeData(dat->hTheme);
-					dat->hTheme = 0;
-				}
-				if(dat->hThemeIP) {
-					CMimAPI::m_pfnCloseThemeData(dat->hThemeIP);
-					dat->hThemeIP = 0;
-				}
-			}
+			DM_FreeTheme(dat);
 			return DM_ThemeChanged(dat);
+
+		case WM_DWMCOMPOSITIONCHANGED:
+			BB_RefreshTheme(dat);
+			dat->pContainer->dwOldAeroBottom = dat->pContainer->dwOldAeroTop = 0;
+			break;
 
 		case DM_ACTIVATEME:
 			ActivateExistingTab(dat->pContainer, hwndDlg);

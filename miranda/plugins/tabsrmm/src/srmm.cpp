@@ -56,7 +56,15 @@ PLUGININFOEX pluginInfo = {
 #ifdef __GNUWIN32__
 	"TabSRMM (MINGW32)",
 #else
+#ifdef _WIN64_
+	"TabSRMM (x64, Unicode)",
+#else
+#ifdef _UNICODE
+	"TabSRMM (Unicode)",
+#else
 	"TabSRMM",
+#endif
+#endif
 #endif
 	PLUGIN_MAKE_VERSION(3, 0, 0, 5),
 	"Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
@@ -131,9 +139,7 @@ int _DebugTraceW(const wchar_t *fmt, ...)
 	va_list va;
 	va_start(va, fmt);
 
-	lstrcpyW(debug, L"TABSRMM: ");
-
-	_vsnwprintf(&debug[9], ibsize - 10, fmt, va);
+	_vsnwprintf(debug, ibsize - 10, fmt, va);
 #ifdef _DEBUG
 	OutputDebugStringW(debug);
 #else
@@ -167,9 +173,9 @@ int _DebugTraceA(const char *fmt, ...)
 
 	lstrcpyA(debug, "TABSRMM: ");
 	_vsnprintf(&debug[9], ibsize - 10, fmt, va);
-// #ifdef _DEBUG
-// 	OutputDebugStringA(debug);
-// #else
+#ifdef _DEBUG
+ 	OutputDebugStringA(debug);
+#else
 	{
 		char szLogFileName[MAX_PATH], szDataPath[MAX_PATH];
 		FILE *f;
@@ -183,7 +189,7 @@ int _DebugTraceA(const char *fmt, ...)
 			fclose(f);
 		}
 	}
-//#endif
+#endif
 	return 0;
 }
 

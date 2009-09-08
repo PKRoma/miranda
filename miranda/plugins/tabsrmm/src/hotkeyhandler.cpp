@@ -412,42 +412,33 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 										break;
 									case ID_TRAYCONTEXT_HIDEALLMESSAGECONTAINERS: {
 										struct ContainerWindowData *pContainer = pFirstContainer;
-										BOOL bAnimatedState = nen_options.bAnimated;
 
-										nen_options.bAnimated = FALSE;
 										while (pContainer) {
-											SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 1);
+											ShowWindow(pContainer->hwnd, SW_HIDE);
 											pContainer = pContainer->pNextContainer;
 										}
-										nen_options.bAnimated = bAnimatedState;
 										break;
 									}
 									case ID_TRAYCONTEXT_RESTOREALLMESSAGECONTAINERS: {
 										struct ContainerWindowData *pContainer = pFirstContainer;
-										BOOL bAnimatedState = nen_options.bAnimated;
 
-										nen_options.bAnimated = FALSE;
 										while (pContainer) {
-											SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+											ShowWindow(pContainer->hwnd, SW_SHOW);
 											pContainer = pContainer->pNextContainer;
 										}
-										nen_options.bAnimated = bAnimatedState;
 										break;
 									}
 									case ID_TRAYCONTEXT_BE: {
 										struct ContainerWindowData *pContainer = pFirstContainer;
-										BOOL bAnimatedState = nen_options.bAnimated;
 
 										nen_options.iDisable = 1;
 										nen_options.iNoSounds = 1;
 										nen_options.iNoAutoPopup = 1;
 
-										nen_options.bAnimated = FALSE;
 										while (pContainer) {
 											SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 1);
 											pContainer = pContainer->pNextContainer;
 										}
-										nen_options.bAnimated = bAnimatedState;
 										break;
 									}
 								}
@@ -600,6 +591,7 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				}
 				if(pContainer->SideBar->isActive())
 					RedrawWindow(GetDlgItem(pContainer->hwnd, 5000), NULL, NULL, RDW_ERASE|RDW_INVALIDATE|RDW_UPDATENOW);			// the container for the sidebar buttons
+				RedrawWindow(pContainer->hwnd, NULL, NULL, RDW_ERASE|RDW_INVALIDATE|RDW_UPDATENOW|RDW_ALLCHILDREN);
 				pContainer = pContainer->pNextContainer;
 			}
 			M->BroadcastMessage(WM_DWMCOMPOSITIONCHANGED, 0, 0);

@@ -149,7 +149,6 @@ void        ReloadTabConfig(), FreeTabConfig();
 int         RegisterTabCtrlClass(void);
 
 void        LoadIconTheme(), UnloadIconTheme();
-int         Chat_OptionsInitialize(WPARAM wParam, LPARAM lParam);
 
 
 // buttons

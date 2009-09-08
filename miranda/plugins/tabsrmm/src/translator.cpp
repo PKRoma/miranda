@@ -120,8 +120,8 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Topic is: %s"),								/* GEN_MUC_TOPIC_IS */
 	LPGENT("no topic set."), 							/* GEN_MUC_NO_TOPIC */
 	LPGENT("%s has stopped typing."),					/* GEN_MTN_STOPPED */
-	LPGENT("Contact picture settings..."),				/* GEN_AVATAR_SETTINGS */
-	LPGENT("Set your avatar..."),						/* GEN_AVATAR_SETOWN */
+	LPGENT("Contact Picture Settings..."),				/* GEN_AVATAR_SETTINGS */
+	LPGENT("Set Your Avatar..."),						/* GEN_AVATAR_SETOWN */
 	LPGENT("Do you want to also read message templates from the theme?\nCaution: This will overwrite the stored template set which may affect the look of your message window significantly.\nSelect cancel to not load anything at all."), /* GEN_WARNING_LOADTEMPLATES */
 	LPGENT("Load theme"),								/* GEN_TITLE_LOADTHEME */
 	LPGENT("The 'paste and send' feature is disabled. You can enable it on the 'General' options page in the 'Sending Messages' section"), /* GEN_WARNING_PASTEANDSEND_DISABELD */
@@ -145,6 +145,30 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Message successfully queued for later delivery.\nIt will be sent as soon as possible and a popup will inform you about the result."), /* GEN_SQ_QUEUED_MESSAGE */
 	LPGENT("The send later feature is not available on this protocol."), /* GEN_SQ_QUEUING_NOT_AVAIL */
 	LPGENT("This message was sent delayed. Original timestamp %s\n\n"),  /* GEN_SQ_SENDLATER_HEADER */
+	LPGENT("Session list.\nClick left for a list of open sessions.\nClick right to access favorites and quickly configure message window behavior"), /* CNT_SBAR_SLIST */
+	LPGENT("Character Encoding"),						/* GEN_MSG_ENCODING */
+	LPGENT("A message failed to send successfully."),   /* GEN_MSG_FAILEDSEND */
+	LPGENT("WARNING: The message you are trying to paste exceeds the message size limit for the active protocol. It will be sent in chunks of max %d characters"), /* GEN_MSG_TOO_LONG_SPLIT */
+	LPGENT("The message you are trying to paste exceeds the message size limit for the active protocol. Only the first %d characters will be sent."), /* GEN_MSG_TOO_LONG_NOSPLIT */
+	LPGENT("Close session"),							/* GEN_MSG_CLOSE */
+	LPGENT("Save and close session"),					/* GEN_MSG_SAVEANDCLOSE */
+	LPGENT("Autoscrolling is disabled (press F12 to enable it)"),					/* GEN_MSG_LOGFROZENSTATIC */
+	LPGENT("Click for contact menu\nClick dropdown for window settings"), /*GEN_MSG_TIP_CONTACTMENU */
+	LPGENT("Retry"),									/* GEN_MSG_BUTTON_RETRY */
+	LPGENT("Cancel"),									/* GEN_MSG_BUTTON_CANCEL */
+	LPGENT("Send later"),								/* GEN_MSG_BUTTON_SENDLATER */
+	LPGENT("Selection copied to clipboard"),			/* GEN_MSG_SEL_COPIED */
+	LPGENT("Autoscrolling is disabled, %d message(s) queued (press F12 to enable it)"),		/* GEN_MSG_LOGFROZENQUEUED */
+	LPGENT("Unknown client"),							/* GEN_MSG_UNKNOWNCLIENT */
+	LPGENT("No extended status message available"),		/* GEN_MSG_NOXSTATUSMSG */
+	LPGENT("Delivery failure: %s"),						/* GEN_MSG_DELIVERYFAILURE */
+	LPGENT("The message send timed out"),				/* GEN_MSG_SENDTIMEOUT */
+	LPGENT("Show Contact Picture"),						/* GEN_MSG_SHOWPICTURE */
+	LPGENT("You cannot edit user notes when there are unsent messages"), /* GEN_MSG_NO_EDIT_NOTES */
+	LPGENT("You are editing the user notes. Click the button again or use the hotkey (default: Alt-N) to save the notes and return to normal messaging mode"), /* GEN_MSG_EDIT_NOTES_TIP */
+	LPGENT("Warning: you have selected a subprotocol for sending the following messages which is currently offline"), /* GEN_MSG_MC_OFFLINEPROTOCOL */
+	LPGENT("Contact is offline and this protocol does not support sending files to offline users."), /* GEN_MSG_OFFLINE_NO_FILE */
+	LPGENT("File"),										/* GEN_STRING_FILE */
 };
 
 /*
@@ -182,6 +206,8 @@ TCHAR* CTranslator::m_OptStrings[OPT_LAST] = {
 	LPGENT("Globally OFF"),											/* OPT_GEN_GLOBALLY_OFF */
 	LPGENT("On, if present, always in bottom display"),				/* OPT_GEN_ON_ALWAYS_BOTTOM */
 	LPGENT("Don't show them"),										/* OPT_GEN_DONT_SHOW */
+	LPGENT("Window layout tweaks"), 								/* OPT_TAB_LAYOUTTWEAKS */
+	LPGENT("Load and apply"),										/* OPT_TAB_SKINLOAD */
 };
 TCHAR* CTranslator::m_translated[STR_LAST];
 TCHAR* CTranslator::m_OptTranslated[OPT_LAST];
@@ -286,15 +312,15 @@ LISTOPTIONSITEM CTranslator::m_lvItemsLog[] = {
 	0, LPGENT("Show seconds in timestamps"), 1, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_SHOWSECONDS, 4,
 	0, LPGENT("Use contacts local time (if timezone info available)"), 0, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_LOCALTIME, 4,
 	0, LPGENT("Draw grid lines"), 1, LOI_TYPE_FLAG,  MWF_LOG_GRID, 0,
-	0, LPGENT("Show Icons"), 1, LOI_TYPE_FLAG, MWF_LOG_SHOWICONS, 5,
-	0, LPGENT("Show Symbols"), 0, LOI_TYPE_FLAG, MWF_LOG_SYMBOLS, 5,
+	0, LPGENT("Event type icons in the message log"), 1, LOI_TYPE_FLAG, MWF_LOG_SHOWICONS, 5,
+	0, LPGENT("Text symbols as event markers"), 0, LOI_TYPE_FLAG, MWF_LOG_SYMBOLS, 5,
 	0, LPGENT("Use Incoming/Outgoing Icons"), 1, LOI_TYPE_FLAG, MWF_LOG_INOUTICONS, 5,
 	0, LPGENT("Use Message Grouping"), 1, LOI_TYPE_FLAG, MWF_LOG_GROUPMODE, 0,
 	0, LPGENT("Indent message body"), 1, LOI_TYPE_FLAG, MWF_LOG_INDENT, 0,
 	0, LPGENT("Simple text formatting (*bold* etc.)"), 0, LOI_TYPE_FLAG, MWF_LOG_TEXTFORMAT, 0,
 	0, LPGENT("Support BBCode formatting"), 1, LOI_TYPE_FLAG, MWF_LOG_BBCODE, 0,
-	0, LPGENT("Place dividers in inactive sessions"), 0, LOI_TYPE_SETTING, (UINT_PTR)"usedividers", 0,
-	0, LPGENT("Use popup configuration for placing dividers"), 0, LOI_TYPE_SETTING, (UINT_PTR)"div_popupconfig", 0,
+	0, LPGENT("Place a separator in the log after a window lost its foreground status"), 0, LOI_TYPE_SETTING, (UINT_PTR)"usedividers", 0,
+	0, LPGENT("Only place a separator when an incoming event is announced with a popup"), 0, LOI_TYPE_SETTING, (UINT_PTR)"div_popupconfig", 0,
 	0, LPGENT("RTL is default text direction"), 0, LOI_TYPE_FLAG, MWF_LOG_RTL, 0,
 	//0, LPGENT("Support Math Module plugin"), 1, LOI_TYPE_SETTING, (UINT_PTR)"wantmathmod", 1,
 //MAD:
@@ -328,7 +354,6 @@ LISTOPTIONSITEM CTranslator::m_lvItemsTab[] = {
 	0, LPGENT("Activate a minimized window when a new tab is created inside it"), 0, LOI_TYPE_SETTING, (UINT_PTR)"cpopup", 1,
 	0, LPGENT("Automatically activate existing tabs in minimized windows"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autoswitchtabs", 1,
 	0, LPGENT("Flat toolbar buttons"), 1, LOI_TYPE_SETTING, (UINT_PTR)"tbflat", 2,
-	0, LPGENT("Splitters are visible"), 1, LOI_TYPE_SETTING, (UINT_PTR)"splitteredges", 2,
 	0, LPGENT("No borders for text areas (make them appear \"flat\")"), 1, LOI_TYPE_SETTING, (UINT_PTR)"flatlog", 2,
 	0, LPGENT("Always use icon pack image on the smiley button"), 1, LOI_TYPE_SETTING, (UINT_PTR)"smbutton_override", 2,
 	0, LPGENT("Remember and set keyboard layout per contact"), 1, LOI_TYPE_SETTING, (UINT_PTR)"al", 3,

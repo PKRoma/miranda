@@ -237,10 +237,6 @@ typedef struct SESSION_INFO_TYPE
 	int         iDiskLogFlags;
 	int         nUsersInNicklist;
 	int         iEventCount;
-	int         iX;
-	int         iY;
-	int         iWidth;
-	int         iHeight;
 	int         iStatusCount;
 
 	WORD        wStatus;
@@ -249,7 +245,7 @@ typedef struct SESSION_INFO_TYPE
 	DWORD       dwItemData;
 	DWORD       dwFlags;
 	HANDLE      hContact;
-	HWND        hwndStatus;
+	HWND		hwndFilter;
 	time_t      LastTime;
     TCHAR          szSearch[255];
     int            iSearchItem;
@@ -292,7 +288,6 @@ struct GlobalLogSettings_t {
 	BOOL        LogIndentEnabled;
 	BOOL        StripFormat;
 	BOOL        SoundsFocus;
-	BOOL        SkipWhenNoWindow;
 	BOOL        BBCodeInPopups;
 	BOOL        TrayIconInactiveOnly;
 	BOOL        AddColonToAutoComplete;

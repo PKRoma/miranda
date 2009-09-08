@@ -130,7 +130,7 @@ static struct _tagPages {
 	{ CTranslator::CNT_OPT_TITLE_GEN, CTranslator::STR_LAST, IDC_O_NOTABS, IDC_O_STICKY, IDC_VERTICALMAX, 0, 0, 0, 0, 0, 0},
 	{ CTranslator::CNT_OPT_TITLE_LAYOUT, CTranslator::STR_LAST, IDC_CNTNOSTATUSBAR, IDC_HIDEMENUBAR, IDC_UIDSTATUSBAR, IDC_HIDETOOLBAR, IDC_INFOPANEL, IDC_BOTTOMTOOLBAR, 0, 0, 0},
 	{ CTranslator::CNT_OPT_TITLE_TABS, CTranslator::CNT_OPT_DESC_TABS, IDC_TABMODE, IDC_O_TABMODE, IDC_O_SBARLAYOUT, IDC_SBARLAYOUT, IDC_FLASHICON, IDC_FLASHLABEL, IDC_SINGLEROWTAB, IDC_BUTTONTABS, IDC_STYLEDTABS},
-	{ CTranslator::CNT_OPT_TITLE_NOTIFY, CTranslator::CNT_OPT_DESC_NOTIFY, IDC_O_DONTREPORT, IDC_DONTREPORTUNFOCUSED2, IDC_ALWAYSPOPUPSINACTIVE, IDC_SYNCSOUNDS, 0, 0, 0, 0, 0},
+	{ CTranslator::CNT_OPT_TITLE_NOTIFY, CTranslator::CNT_OPT_DESC_NOTIFY, IDC_O_DONTREPORT, IDC_DONTREPORTUNFOCUSED2, IDC_ALWAYSPOPUPSINACTIVE, IDC_SYNCSOUNDS, IDC_O_EXPLAINGLOBALNOTIFY, 0, 0, 0, 0},
 	{ CTranslator::CNT_OPT_TITLE_FLASHING, CTranslator::STR_LAST, IDC_O_FLASHDEFAULT, IDC_O_FLASHALWAYS, IDC_O_FLASHNEVER, 0, 0, 0, 0, 0, 0},
 	{ CTranslator::CNT_OPT_TITLE_TITLEBAR, CTranslator::STR_LAST, IDC_O_HIDETITLE, IDC_STATICICON, IDC_USEPRIVATETITLE, IDC_TITLEFORMAT, 0, 0, 0, 0, 0},
 	{ CTranslator::CNT_OPT_TITLE_THEME, CTranslator::CNT_OPT_DESC_THEME, IDC_THEME, IDC_SELECTTHEME, IDC_USEGLOBALSIZE, IDC_SAVESIZEASGLOBAL, IDC_LABEL_PRIVATETHEME, 0,0, 0, 0},
@@ -150,6 +150,7 @@ static void ShowPage(HWND hwndDlg, int iPage, BOOL fShow)
 		else
 			SetDlgItemText(hwndDlg, IDC_DESC, _T(""));
 	}
+	ShowWindow(GetDlgItem(hwndDlg, IDC_O_EXPLAINGLOBALNOTIFY), (iPage == 3 && nen_options.bWindowCheck) ? SW_SHOW : SW_HIDE);
 }
 
 INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -532,11 +533,12 @@ do_apply:
 			SendDlgItemMessage(hwndDlg, IDC_TRANSPARENCY_ACTIVE, TBM_SETPOS, TRUE, (LPARAM) LOWORD(dwTransparency));
 			SendDlgItemMessage(hwndDlg, IDC_TRANSPARENCY_INACTIVE, TBM_SETPOS, TRUE, (LPARAM) HIWORD(dwTransparency));
 
-			EnableWindow(GetDlgItem(hwndDlg, IDC_O_DONTREPORT), nen_options.bSimpleMode == 0);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_SYNCSOUNDS), nen_options.bSimpleMode == 0);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_DONTREPORTUNFOCUSED2), nen_options.bSimpleMode == 0);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_ALWAYSPOPUPSINACTIVE), nen_options.bSimpleMode == 0);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_O_DONTREPORT), nen_options.bWindowCheck == 0);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_SYNCSOUNDS), nen_options.bWindowCheck == 0);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_DONTREPORTUNFOCUSED2), nen_options.bWindowCheck == 0);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_ALWAYSPOPUPSINACTIVE), nen_options.bWindowCheck == 0);
 
+			ShowWindow(GetDlgItem(hwndDlg, IDC_O_EXPLAINGLOBALNOTIFY), nen_options.bWindowCheck ? SW_SHOW : SW_HIDE);
 			break;
 		}
 		case DM_SC_BUILDLIST: {

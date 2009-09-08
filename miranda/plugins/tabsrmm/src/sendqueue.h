@@ -54,7 +54,7 @@ struct SendJob {
 	HANDLE  hOwner;
 	HWND    hwndOwner;
 	unsigned int iStatus;
-	char    szErrorMsg[128];
+	TCHAR   szErrorMsg[128];
 	DWORD   dwFlags;
 	int     iAcksNeeded;
 	HANDLE  hEventSplit;

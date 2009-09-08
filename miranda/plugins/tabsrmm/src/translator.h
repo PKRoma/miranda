@@ -150,7 +150,32 @@ public:
 		GEN_SQ_QUEUED_MESSAGE									= 107,
 		GEN_SQ_QUEUING_NOT_AVAIL								= 108,
 		GEN_SQ_SENDLATER_HEADER									= 109,
-		STR_LAST 												= 110
+		CNT_SBAR_SLIST											= 110,
+		GEN_MSG_ENCODING										= 111,
+		GEN_MSG_FAILEDSEND										= 112,
+		GEN_MSG_TOO_LONG_SPLIT									= 113,
+		GEN_MSG_TOO_LONG_NOSPLIT								= 114,
+		GEN_MSG_CLOSE											= 115,
+		GEN_MSG_SAVEANDCLOSE									= 116,
+		GEN_MSG_LOGFROZENSTATIC									= 117,
+		GEN_MSG_TIP_CONTACTMENU									= 118,
+		GEN_MSG_BUTTON_RETRY									= 119,
+		GEN_MSG_BUTTON_CANCEL									= 120,
+		GEN_MSG_BUTTON_SENDLATER								= 121,
+		GEN_MSG_SEL_COPIED										= 122,
+		GEN_MSG_LOGFROZENQUEUED									= 123,
+		GEN_MSG_UNKNOWNCLIENT									= 124,
+		GEN_MSG_NOXSTATUSMSG									= 125,
+		GEN_MSG_DELIVERYFAILURE									= 126,
+		GEN_MSG_SENDTIMEOUT										= 127,
+		GEN_MSG_SHOWPICTURE										= 128,
+		GEN_MSG_NO_EDIT_NOTES									= 129,
+		GEN_MSG_EDIT_NOTES_TIP									= 130,
+		GEN_MSG_MC_OFFLINEPROTOCOL								= 131,
+		GEN_MSG_OFFLINE_NO_FILE									= 132,
+		GEN_STRING_FILE											= 133,
+
+		STR_LAST 												= 134
 	};
 
 	enum {
@@ -184,7 +209,9 @@ public:
 		OPT_GEN_GLOBALLY_OFF									= 27,
 		OPT_GEN_ON_ALWAYS_BOTTOM								= 28,
 		OPT_GEN_DONT_SHOW										= 29,
-		OPT_LAST												= 30
+		OPT_TAB_LAYOUTTWEAKS									= 30,
+		OPT_TAB_SKINLOAD										= 31,
+		OPT_LAST												= 32
 	};
 
 	/*

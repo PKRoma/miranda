@@ -93,6 +93,8 @@ void        GetMyNick(_MessageWindowData *dat);
 int         FindRTLLocale(struct _MessageWindowData *dat);
 HICON       MY_GetContactIcon(struct _MessageWindowData *dat);
 void 		CheckAndDestroyIEView(struct _MessageWindowData *dat);
+bool		IsContainerMinimized(const ContainerWindowData *pContainer);
+
 // mathmod
 
 void        MTH_updateMathWindow(const _MessageWindowData *dat);

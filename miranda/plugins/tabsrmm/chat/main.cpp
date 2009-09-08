@@ -59,10 +59,11 @@ int Chat_Load(PLUGINLINK *link)
 	BOOL bFlag = FALSE;
 
 	g_hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENU));
-	HookEvents();
-	CreateServiceFunctions();
-	CreateHookableEvents();
-	OptionsInit();
+	if(CreateServiceFunctions()) {
+		HookEvents();
+		CreateHookableEvents();
+		OptionsInit();
+	}
 	return 0;
 }
 

@@ -267,33 +267,11 @@ static BOOL DoPopup(SESSION_INFO* si, GCEVENT* gce, struct _MessageWindowData* d
 
 	if (si && (iEvent & si->iLogPopupFlags)) {
 
-		if (nen_options.iMUCDisable || (dat == 0 && g_Settings.SkipWhenNoWindow))                          // no popups at all. Period
+		if (nen_options.iMUCDisable)                          // no popups at all. Period
 			return 0;
 		/*
 		* check the status mode against the status mask
 		*/
-
-		if (nen_options.bSimpleMode) {
-			switch (nen_options.bSimpleMode) {
-				case 1:
-					goto passed;
-				case 3:
-					if (dat == 0)            // window not open
-						goto passed;
-					else
-						return 0;
-				case 2:
-					if (dat == 0)
-						goto passed;
-					if (pContainer != NULL) {
-						if (IsIconic(pContainer->hwnd) || GetForegroundWindow() != pContainer->hwnd)
-							goto passed;
-					}
-					return 0;
-				default:
-					return 0;
-			}
-		}
 
 		if (nen_options.dwStatusMask != -1) {
 			DWORD dwStatus = 0;
@@ -304,9 +282,14 @@ static BOOL DoPopup(SESSION_INFO* si, GCEVENT* gce, struct _MessageWindowData* d
 			}
 		}
 		if (dat && pContainer != 0) {                // message window is open, need to check the container config if we want to see a popup nonetheless
-			if (nen_options.bWindowCheck)                   // no popups at all for open windows... no exceptions
-				return 0;
-			if (pContainer->dwFlags & CNT_DONTREPORT && (IsIconic(pContainer->hwnd)))        // in tray counts as "minimised"
+			if (nen_options.bWindowCheck) {                  // no popups at all for open windows... no exceptions
+				if(!PluginConfig.m_HideOnClose)
+					return(0);
+				if(pContainer->fHidden)
+					goto passed;
+				return(0);
+			}
+			if (pContainer->dwFlags & CNT_DONTREPORT && IsIconic(pContainer->hwnd))        // in tray counts as "minimised"
 				goto passed;
 			if (pContainer->dwFlags & CNT_DONTREPORTUNFOCUSED) {
 				if (!IsIconic(pContainer->hwnd) && GetForegroundWindow() != pContainer->hwnd && GetActiveWindow() != pContainer->hwnd)
@@ -462,7 +445,7 @@ static void DoFlashAndSoundThread(FLASH_PARAMS* p)
 		}
 	}
 
-	if (p->bMustFlash)
+	if (p->bMustFlash & p->bInactive)
 		UpdateTrayMenu(p->dat, p->si->wStatus, p->si->pszModule, p->dat ? p->dat->szStatus : NULL, p->si->hContact, p->bHighlight ? 2 : 1);
 
 	free(p);
@@ -508,7 +491,7 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 				SetForegroundWindow(dat->hwnd);
 		}
 		//
-		if (dat || !g_Settings.SkipWhenNoWindow)
+		if (dat || !nen_options.iMUCDisable)
 			DoPopup(si, gce, dat);
 		if (params->bInactive && si && si->hWnd)
 			SendMessage(si->hWnd, GC_SETMESSAGEHIGHLIGHT, 0, (LPARAM) si);
@@ -524,7 +507,7 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 		// stupid thing to not create multiple popups for a QUIT event for instance
 		if (bManyFix == 0) {
 			// do popups
-			if (dat || !g_Settings.SkipWhenNoWindow)
+			if (dat || !nen_options.iMUCDisable)
 				DoPopup(si, gce, dat);
 
 			// do sounds and flashing

@@ -1152,6 +1152,7 @@ void CSkin::Unload()
 			::DestroyIcon(*(m_skinIcons[i].phIcon));
 	}
 	M->getAeroState();				// refresh after unload
+	::FreeTabConfig();
 	::ReloadTabConfig();
 	m_bAvatarBorderType = (BYTE)M->GetByte("avbordertype", 0);
 }
@@ -1696,6 +1697,8 @@ void CSkin::Load()
 			free(szSections);
 
 			LoadItems();
+			::FreeTabConfig();
+			::ReloadTabConfig();
 		}
 	}
 }
@@ -1815,17 +1818,17 @@ void CSkin::setupAeroSkins()
 			float fmax =  max(max(fr,fg), fb);
 
 			if(fmax == fr) {
-				fr *= (alphafactor / 100 * 2.7);
+				fr *= (alphafactor / 100 * 2.2);
 				fr = min(fr, 255);
 				fb = min(fb * alphafactor / 100, 255);
 				fg = min(fg * alphafactor / 100, 255);
 			} else if(fmax == fg) {
-				fg *= (alphafactor / 100 * 2.7);
+				fg *= (alphafactor / 100 * 2.2);
 				fg = min(fg, 255);
 				fr = min(fr * alphafactor / 100, 255);
 				fb = min(fb * alphafactor / 100, 255);
 			} else {
-				fb *= (alphafactor / 100 * 2.7);
+				fb *= (alphafactor / 100 * 2.2);
 				fb = min(fb, 255);
 				fr = min(fr * alphafactor / 100, 255);
 				fg = min(fg * alphafactor / 100, 255);
@@ -2333,8 +2336,12 @@ void CSkin::RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &
 			rcToolbar.left = 0;
 			rcToolbar.right = rcWindow.right;
 
-			if(dat->bType == SESSIONTYPE_IM && dat->dwFlags & MWF_ERRORSTATE)
-				rcToolbar.top += ERRORPANEL_HEIGHT;
+			if(dat->bType == SESSIONTYPE_IM) {
+				if(dat->dwFlags & MWF_ERRORSTATE)
+					rcToolbar.top += ERRORPANEL_HEIGHT;
+				if(dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED)
+					rcToolbar.top += 20;
+			}
 
 			GetWindowRect(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_CHAT ? IDC_CHAT_MESSAGE : IDC_MESSAGE), &rc);
 			pt.y = rc.top - 2;
