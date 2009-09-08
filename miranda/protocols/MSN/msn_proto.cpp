@@ -680,9 +680,10 @@ int __cdecl CMsnProto::FileResume(HANDLE hTransfer, int* action, const char** sz
 		bool fcrt = ft->create() != -1;
 		if (ft->p2p_appID != 0) 
         {
-			p2p_sendStatus(ft, fcrt ? 200 : 603);
 			if (fcrt)
 				p2p_sendFeedStart(ft);
+
+			p2p_sendStatus(ft, fcrt ? 200 : 603);
 		}
 		else
 			msnftp_sendAcceptReject (ft, fcrt);
@@ -858,14 +859,16 @@ HANDLE __cdecl CMsnProto::SendFile(HANDLE hContact, const char* szDescription, c
 	sft->std.hContact = hContact;
 	sft->std.sending = true;
 
-	while (ppszFiles[sft->std.totalFiles] != NULL) 
-	{
-		struct _stat statbuf;
-		if (_stat(ppszFiles[sft->std.totalFiles], &statbuf) == 0)
+	int count = 0;
+    while (ppszFiles[count] != NULL) 
+    {
+        struct _stat statbuf;
+		if (_stat(ppszFiles[count++], &statbuf) == 0 && (statbuf.st_mode & _S_IFDIR) == 0)
+		{
 			sft->std.totalBytes += statbuf.st_size;
-
-		++sft->std.totalFiles;
-	}
+			++sft->std.totalFiles;
+		}
+    }
 
 	if (sft->openNext() == -1) 
     {

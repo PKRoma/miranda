@@ -104,7 +104,7 @@ char**  CMsnProto::GetStatusMsgLoc(int status)
 		ID_STATUS_AWAY,
 		ID_STATUS_DND, 
 		ID_STATUS_NA,
-		ID_STATUS_OCCUPIED, 
+		ID_STATUS_OCCUPIED,
         ID_STATUS_FREECHAT,
 		ID_STATUS_INVISIBLE,
 		ID_STATUS_ONTHEPHONE,
@@ -279,7 +279,7 @@ int MSN_GetImageFormat(void* buf, const char** ext)
 	else 
 	{
 		res = PA_FORMAT_UNKNOWN;
-		*ext = "unk"; 
+		*ext = "unk";
 	}
 	return res;
 }
@@ -300,12 +300,14 @@ void  CMsnProto::MSN_GetCustomSmileyFileName(HANDLE hContact, char* pszDest, siz
 		tPathLen = strlen(pszDest);
 		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s\\CustomSmiley", m_szModuleName);
 	}
-	else {
+	else 
+    {
 		strcpy(pszDest, path);
 		tPathLen = strlen(pszDest);
 	}
 
-	if (hContact != NULL) {
+	if (hContact != NULL) 
+    {
 		char szEmail[MSN_MAX_EMAIL_LEN];
 		if (getStaticString(hContact, "e-mail", szEmail, sizeof(szEmail)))
 			_ltoa((long)hContact, szEmail, 10);
@@ -918,7 +920,7 @@ filetransfer::~filetransfer(void)
 	mir_free(std.workingDir);
 	if (std.files != NULL) 
 	{
-		for (int i=0; i < std.totalFiles; i++)
+		for (int i=0; std.files[i]; i++)
 			mir_free(std.files[i]);
 		mir_free(std.files);
 	}
@@ -988,18 +990,19 @@ int filetransfer::openNext(void)
 		close();
 		fileId = -1;
 		++std.currentFileNumber;
+		++cf;
 	}
 
-	while (std.currentFileNumber < std.totalFiles)
+	while (std.files[cf])
 	{
 		struct _stat statbuf;
-		if (_stat(std.files[std.currentFileNumber], &statbuf) == 0 && (statbuf.st_mode & _S_IFDIR) == 0)
+		if (_stat(std.files[cf], &statbuf) == 0 && (statbuf.st_mode & _S_IFDIR) == 0)
 			break;
 
-		++std.currentFileNumber;
+		++cf;
 	}
 
-	if (std.currentFileNumber < std.totalFiles) 
+	if (std.files[cf]) 
     {
 		bCompleted = false;
 		replaceStr(std.currentFile, std.files[std.currentFileNumber]);
