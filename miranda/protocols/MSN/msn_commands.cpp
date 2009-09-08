@@ -149,7 +149,7 @@ void CMsnProto::sttInviteMessage(ThreadData* info, char* msgBody, char* email, c
 
 		size_t tFileNameLen = strlen(Appfile);
 		char tComment[40];
-		int tCommentLen = mir_snprintf(tComment, sizeof(tComment), "%lu bytes", ft->std.currentFileSize);
+		int tCommentLen = mir_snprintf(tComment, sizeof(tComment), "%I64u bytes", ft->std.currentFileSize);
 		char* szBlob = (char*)mir_alloc(sizeof(DWORD) + tFileNameLen + tCommentLen + 2);
 		*(PDWORD)szBlob = 0;
 		strcpy(szBlob + sizeof(DWORD), Appfile);
