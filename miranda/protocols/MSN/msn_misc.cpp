@@ -993,7 +993,7 @@ int filetransfer::openNext(void)
 		++cf;
 	}
 
-	while (std.files[cf])
+	while (std.files && std.files[cf])
 	{
 		struct _stat statbuf;
 		if (_stat(std.files[cf], &statbuf) == 0 && (statbuf.st_mode & _S_IFDIR) == 0)
@@ -1002,7 +1002,7 @@ int filetransfer::openNext(void)
 		++cf;
 	}
 
-	if (std.files[cf]) 
+	if (std.files && std.files[cf]) 
     {
 		bCompleted = false;
 		replaceStr(std.currentFile, std.files[std.currentFileNumber]);
