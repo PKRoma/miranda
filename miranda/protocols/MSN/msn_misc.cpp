@@ -970,7 +970,7 @@ int filetransfer::openNext(void)
 		++cf;
 	}
 
-	while (std.ptszFiles[cf])
+	while (std.ptszFiles && std.ptszFiles[cf])
 	{
 		struct _stati64 statbuf;
 		if (_tstati64(std.ptszFiles[cf], &statbuf) == 0 && (statbuf.st_mode & _S_IFDIR) == 0)
@@ -979,7 +979,7 @@ int filetransfer::openNext(void)
 		++cf;
 	}
 
-	if (std.ptszFiles[cf]) 
+	if (std.ptszFiles && std.ptszFiles[cf]) 
     {
 		bCompleted = false;
 		replaceStr(std.tszCurrentFile, std.ptszFiles[cf]);
