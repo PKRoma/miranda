@@ -372,7 +372,6 @@ static INT_PTR NetlibLog(WPARAM wParam,LPARAM lParam)
 	else
 		szHead[0]=0;
 
-	EnterCriticalSection(&logOptions.cs);
 	if(logOptions.toOutputDebugString) {
 	    if (szHead[0])
 			OutputDebugStringA(szHead);
@@ -381,6 +380,8 @@ static INT_PTR NetlibLog(WPARAM wParam,LPARAM lParam)
 	}
 
 	if(logOptions.toFile && logOptions.szFile[0]) {
+		EnterCriticalSection(&logOptions.cs);
+
 		FILE *fp;
 		fp = _tfopen(logOptions.szFile, _T("at"));
 		if ( !fp ) {
@@ -390,11 +391,11 @@ static INT_PTR NetlibLog(WPARAM wParam,LPARAM lParam)
 		if ( fp ) {
 			fprintf(fp,"%s%s\n", szHead, pszMsg);
 			fclose(fp);
-	}	}
+		}	
+		LeaveCriticalSection(&logOptions.cs);
+	}
 
-	LeaveCriticalSection(&logOptions.cs);
-
-	{
+	if ((( THook* )hLogEvent)->subscriberCount ) {
 		LOGMSG logMsg = { szHead, pszMsg };
 		CallHookSubscribers( hLogEvent, (WPARAM)nlu, (LPARAM)&logMsg );
 	}
