@@ -604,8 +604,7 @@ BEGIN
     END
     POPUP "LogLink"
     BEGIN
-        MENUITEM "Open in &new window",         IDM_OPENNEW
-        MENUITEM "&Open in existing window",    IDM_OPENEXISTING
+        MENUITEM "&Open link",					IDM_OPENLINK
         MENUITEM "&Copy link",                  IDM_COPYLINK
     END
     POPUP "Message"
@@ -653,9 +652,8 @@ BEGIN
     END
     POPUP "Link"
     BEGIN
-        MENUITEM "Open a &new browser window",  ID_NEW
-        MENUITEM "&Open in current browser window", ID_CURR
-        MENUITEM "&Copy link",                  ID_COPY
+        MENUITEM "&Open link",					IDM_OPENLINK
+        MENUITEM "&Copy link",                  IDM_COPYLINK
     END
     MENUITEM "",                            65535
 END

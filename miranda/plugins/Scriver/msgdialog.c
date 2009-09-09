@@ -2324,11 +2324,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 								pt.y = (short) HIWORD(((ENLINK *) lParam)->lParam);
 								ClientToScreen(((NMHDR *) lParam)->hwndFrom, &pt);
 								switch (TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL)) {
-								case IDM_OPENNEW:
+								case IDM_OPENLINK:
 									CallService(MS_UTILS_OPENURL, 1, (LPARAM) pszUrl);
-									break;
-								case IDM_OPENEXISTING:
-									CallService(MS_UTILS_OPENURL, 0, (LPARAM) pszUrl);
 									break;
 								case IDM_COPYLINK:
 									{

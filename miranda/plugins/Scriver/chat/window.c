@@ -1875,15 +1875,11 @@ LABEL_SHOWWINDOW:
 							pt.y = (short) HIWORD(((ENLINK *) lParam)->lParam);
 							ClientToScreen(((NMHDR *) lParam)->hwndFrom, &pt);
 							switch (TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL)) {
-							case ID_NEW:
+							case IDM_OPENLINK:
 								CallService(MS_UTILS_OPENURL, 1, (LPARAM) pszUrl);
 								break;
 
-							case ID_CURR:
-								CallService(MS_UTILS_OPENURL, 0, (LPARAM) pszUrl);
-								break;
-
-							case ID_COPY:
+							case IDM_COPYLINK:
 								{
 									HGLOBAL hData;
 									if (!OpenClipboard(hwndDlg))
