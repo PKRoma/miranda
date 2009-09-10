@@ -51,8 +51,8 @@ int CMsnProto::MSN_ChatInit(WPARAM wParam, LPARAM)
 	info->mJoinedContacts[0] = (HANDLE)-sttChatID;
 
 	TCHAR szName[512];
-	mir_sntprintf(szName, SIZEOF(szName), _T(TCHAR_STR_PARAM) _T(" %s%s"), 
-		m_szModuleName, TranslateT("Chat #"), info->mChatID);
+	mir_sntprintf(szName, SIZEOF(szName), _T("%s %s%s"), 
+		m_tszUserName, TranslateT("Chat #"), info->mChatID);
 
 	GCSESSION gcw = {0};
 	gcw.cbSize = sizeof(GCSESSION);
