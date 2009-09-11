@@ -1032,6 +1032,9 @@ TStringPairs::TStringPairs( char* buffer ) :
 		if ( p == NULL )
 			break;
 
+		while( isspace( *token ))
+			token++;
+
 		tempElem[ numElems ].name = rtrim( token );
 		*p++ = 0;
 		if (( p1 = strchr( p, '\"' )) != NULL ) {
