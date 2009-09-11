@@ -9,11 +9,11 @@
 #define IDD_TABCONFIG                   4
 #define IDD_VARIABLEHELP                5
 #define IDD_ABOUT                       7
+#define IDD_INFOPANEL                   8
 #define IDC_TESTVALUE                   10
 #define IDB_BITMAP1                     10
 #define IDB_LOGO                        10
 #define IDD_USERPREFS_FRAME             11
-#define IDD_DIALOG1                     12
 #define IDR_SKIN1                       13
 #define IDR_SKIN_AERO                   14
 #define IDR_SKIN_AERO_GLOW              15
@@ -496,7 +496,10 @@
 #define IDC_BUTTON1                     1415
 #define IDC_SEPARATOR                   1415
 #define IDC_PLUS_REVERT                 1415
+#define IDC_SIZECOMPACT                 1415
 #define IDC_TIMEOUTSPIN                 1416
+#define IDC_SIZENORMAL                  1416
+#define IDC_SIZELARGE                   1417
 #define IDC_MTN_POPUPMODE               1418
 #define IDC_MTN_HELP                    1419
 #define IDC_CUT_TITLEMAXSPIN            1420
@@ -513,22 +516,34 @@
 #define IDC_O_TABMODE                   1427
 #define IDC_SENDENTER                   1428
 #define IDC_O_SBARLAYOUT                1428
+#define IDC_PANELVISIBILITY             1428
 #define IDC_SENDDBLENTER                1429
 #define IDC_SBARLAYOUT                  1429
+#define IDC_PANELSIZE                   1429
 #define IDC_MINSEND                     1430
+#define IDC_IPCONFIG_TITLE              1430
 #define IDC_SENDCTRLENTER               1431
+#define IDC_NOSYNC                      1431
 #define IDC_USETABS                     1432
+#define IDC_IPCONFIG_FOOTER             1432
 #define IDC_NOOPENPOPUP                 1433
 #define IDC_NOOPENNOTIFY                1433
+#define IDC_GROUP_SCOPE                 1433
 #define IDC_CREATENOACTIVATE            1434
+#define IDC_GROUP_SIZE                  1434
 #define IDC_NOTIFYMSG                   1435
+#define IDC_GROUP_OTHER                 1435
 #define IDC_POPUPONCREATE               1436
+#define IDC_SIZE_TIP                    1436
+#define IDC_IPCONFIG_PRIVATECONTAINER   1437
 #define IDC_NOTIFYFILE                  1438
+#define IDC_PANELPICTUREVIS             1438
 #define IDC_NOTIFYURL                   1439
 #define IDC_NOTIFYOTHER                 1440
 #define IDC_STYLEDTABS                  1482
 #define IDC_FLASHICON                   1489
 #define IDC_FLASHLABEL                  1490
+#define IDC_STATIC_VISIBILTY            1491
 #define IDC_BUTTONTABS                  1492
 #define IDC_TXT_TITLE1                  1617
 #define IDC_TXT_TITLE2                  1618
@@ -724,6 +739,7 @@
 #define ID_TRAYCONTEXT_SHOWTHETRAYICON  40204
 #define ID_INFOPANEL_QUICKTOGGLE        40206
 #define ID_INFOPANEL_GLOBAL             40207
+#define ID_VIEW_INFOPANEL               40208
 #define ID_GLOBAL_ENABLED               40208
 #define ID_GLOBAL_DISABLED              40209
 #define ID_INFOPANEL_THISCONTACT        40210
@@ -757,17 +773,13 @@
 #define ID_MESSAGELOG_MESSAGELOGSETTINGS 40253
 #define ID_SPLITTERCONTEXT_SAVEFORCONTAINER 40340
 
-#ifndef IDC_STATIC
-#define IDC_STATIC -1
-#endif
-
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        15
 #define _APS_NEXT_COMMAND_VALUE         40256
-#define _APS_NEXT_CONTROL_VALUE         1428
+#define _APS_NEXT_CONTROL_VALUE         1437
 #define _APS_NEXT_SYMED_VALUE           40283
 #endif
 #endif

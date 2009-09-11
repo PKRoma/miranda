@@ -1,30 +1,40 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
-		--pad=oper --one-line=keep-blocks  --unpad=paren
-
-Chat module plugin for Miranda IM
-
-Copyright (C) 2003 Jörgen Persson
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-$Id: colorchooser.c 10402 2009-07-24 00:35:21Z silvercircle $
-
-*/
-
-// this color chooser window is inspired by PeaCow's smiley chooser window for the Smileyadd plugin
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * This code is based on and still contains large parts of the the
+ * original chat module for Miranda IM, written and copyrighted
+ * by Joergen Persson in 2005.
+ *
+ * $Id$
+ *
+ * Color chooser for group chats
+ *
+ */
 
 #include "../src/commonheaders.h"
 #include <math.h>
@@ -239,7 +249,7 @@ INT_PTR CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				rc.bottom = iThisRow * 20 - 3 + 20 ;
 				rc.right = iThisColumn * 25 - 3 ;
 
-				FillRect(hdc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+				FillRect(hdc, &rc, CSkin::m_BrushBack);
 
 				hbr = CreateSolidBrush(pCC->pModule->crColors[i]);
 

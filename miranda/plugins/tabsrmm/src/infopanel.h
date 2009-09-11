@@ -36,6 +36,7 @@
 
 /*
  * configuration data for the info panel (fonts, colors)
+ * this is global for all panels
  */
 
 struct InfoPanelConfig {
@@ -53,7 +54,7 @@ class CInfoPanel
 {
 public:
 	enum {
-		DEGRADE_THRESHOLD = 39,					// defines the height at which the infopanel will transition from 1 to 2 lines
+		DEGRADE_THRESHOLD = 39,					// defines the height at which the infopanel will do the transition from 1 to 2 lines
 		LEFT_OFFSET_LOGO = 3
 	};
 	CInfoPanel(_MessageWindowData *dat)
@@ -64,44 +65,73 @@ public:
 		}
 		m_defaultHeight = PluginConfig.m_panelHeight;
 		m_defaultMUCHeight = PluginConfig.m_MUCpanelHeight;
+		m_hwndConfig = 0;
 	}
 
 	~CInfoPanel()
-	{}
+	{
+		if(m_hwndConfig)
+			::DestroyWindow(m_hwndConfig);
+		saveHeight(true);
+	}
 
-	const	LONG	getHeight() const { return(m_height); }
-	void			setHeight(LONG newHeight) { m_height = newHeight; }
-	bool			isActive() const { return(m_active); }
-	void			setActive(const int newActive);
-	void			loadHeight();
-	void			saveHeight();
+	const	LONG				getHeight					() const { return(m_height); }
+	void						setHeight					(LONG newHeight, bool fBroadcast = false);
+	bool						isActive					() const { return(m_active); }
+	bool						isPrivateHeight				() const { return(m_fPrivateHeight); }
+	void						setActive					(const int newActive);
+	void						loadHeight					();
+	void						saveHeight					(bool fFlush = false);
 
-	void 			Configure() const;
-	void 			showHideControls(const UINT showCmd) const;
-	void 			showHide() const;
-	bool 			getVisibility();
-	void 			renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero) const;
-	void 			renderContent(const HDC hdcMem);
-	void 			Invalidate() const;
-	void 			trackMouse(POINT& pt) const;
-	void			showTip(UINT ctrlId, const LPARAM lParam) const;
+	void 						Configure					() const;
+	void 						showHideControls			(const UINT showCmd) const;
+	void 						showHide					() const;
+	bool 						getVisibility				();
+	void 						renderBG					(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero) const;
+	void 						renderContent				(const HDC hdcMem);
+	void 						Invalidate					() const;
+	void 						trackMouse					(POINT& pt) const;
+	void						showTip						(UINT ctrlId, const LPARAM lParam) const;
+	int							invokeConfigDialog			(const POINT& pt);
+	void						dismissConfig				(bool fForced = false)
+	{
+		if(m_hwndConfig == 0)
+			return;
 
+		POINT pt;
+		RECT  rc;
+
+		::GetCursorPos(&pt);
+		::GetWindowRect(m_hwndConfig, &rc);
+		if(fForced || !PtInRect(&rc, pt)) {
+			SendMessage(m_hwndConfig, WM_CLOSE, 1, 1);
+			m_hwndConfig = 0;
+		}
+	}
 public:
-	static			InfoPanelConfig m_ipConfig;
+	static						InfoPanelConfig m_ipConfig;
 
 private:
-	void			RenderIPNickname(const HDC hdc, RECT& rc);
-	void 			RenderIPUIN(const HDC hdc, RECT& rcItem);
-	void 			RenderIPStatus(const HDC hdc, RECT& rcItem);
-	void 			Chat_RenderIPNickname(const HDC hdc, RECT& rcItem);
-	void 			Chat_RenderIPSecondLine(const HDC hdc, RECT& rcItem);
+	void						RenderIPNickname			(const HDC hdc, RECT& rc);
+	void 						RenderIPUIN					(const HDC hdc, RECT& rcItem);
+	void 						RenderIPStatus				(const HDC hdc, RECT& rcItem);
+	void 						Chat_RenderIPNickname		(const HDC hdc, RECT& rcItem);
+	void 						Chat_RenderIPSecondLine		(const HDC hdc, RECT& rcItem);
+	INT_PTR	CALLBACK			ConfigDlgProc				(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+	static INT_PTR CALLBACK	 	ConfigDlgProcStub			(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 private:
 	bool				m_isChat;											// is MUC session
 	bool				m_active;											// panel active and visible
+	bool				m_fPrivateHeight;
 	_MessageWindowData*	m_dat;												// this one OWNS us...
 	LONG				m_height;											// height (determined by position of IDC_PANELSPLITTER)
 	LONG				m_defaultHeight, m_defaultMUCHeight;				// global values for the info bar height
+	HWND				m_hwndConfig;										// window handle of the config dialog window
+	HFONT				m_configDlgFont, m_configDlgBoldFont;
+	SIZE				m_szNick;											// rectangle where the nick has been rendered,
+																			// used for hovering and showing tooltips
 };
 
 #endif /* __INFOPANEL_H */

@@ -30,26 +30,26 @@ $Id$
  * prototypes from generic_msghandlers.c
 */
 
-void DM_SetDBButtonStates(HWND hwndChild, struct _MessageWindowData *dat);
-int BTN_GetStockItem(ButtonItem *item, const TCHAR *szName);
-HWND DM_CreateClist(HWND hwndParent, struct _MessageWindowData *dat);
+void 				DM_SetDBButtonStates(HWND hwndChild, struct _MessageWindowData *dat);
+int 				BTN_GetStockItem(ButtonItem *item, const TCHAR *szName);
+HWND 				DM_CreateClist(HWND hwndParent, struct _MessageWindowData *dat);
 
-void 	DM_OptionsApplied(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
-void 	DM_UpdateTitle(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
-LRESULT DM_ScrollToBottom(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
-LRESULT DM_LoadLocale(_MessageWindowData *dat);
-LRESULT DM_SaveLocale(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
-LRESULT DM_UpdateLastMessage(const _MessageWindowData *dat);
-LRESULT DM_RecalcPictureSize(_MessageWindowData *dat);
-LRESULT DM_WMCopyHandler(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lParam);
-LRESULT DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct _MessageWindowData *mwdat, WPARAM wParam, LPARAM lParam);
-LRESULT DM_ThemeChanged(_MessageWindowData *dat);
-void	DM_Typing(_MessageWindowData *dat);
-void	DM_FreeTheme(_MessageWindowData *dat);
+void 				DM_OptionsApplied(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
+void 				DM_UpdateTitle(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
+LRESULT 			DM_ScrollToBottom(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
+LRESULT 			DM_LoadLocale(_MessageWindowData *dat);
+LRESULT 			DM_SaveLocale(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
+LRESULT 			DM_UpdateLastMessage(const _MessageWindowData *dat);
+LRESULT __stdcall 	DM_RecalcPictureSize(_MessageWindowData *dat);
+LRESULT 			DM_WMCopyHandler(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lParam);
+LRESULT 			DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct _MessageWindowData *mwdat, WPARAM wParam, LPARAM lParam);
+LRESULT 			DM_ThemeChanged(_MessageWindowData *dat);
+void				DM_Typing(_MessageWindowData *dat);
+void				DM_FreeTheme(_MessageWindowData *dat);
 
-void BB_InitDlgButtons(HWND hdlg,struct _MessageWindowData *dat);
+void 				BB_InitDlgButtons(HWND hdlg,struct _MessageWindowData *dat);
 
-BOOL BB_SetButtonsPos(HWND hwnd,struct _MessageWindowData *dat);
-void  InitButtonsBarModule();
-void BB_CustomButtonClick(struct _MessageWindowData *dat,DWORD idFrom ,HWND hwndFrom, BOOL code) ;
+BOOL 				BB_SetButtonsPos(HWND hwnd,struct _MessageWindowData *dat);
+void  				InitButtonsBarModule();
+void 				BB_CustomButtonClick(struct _MessageWindowData *dat,DWORD idFrom ,HWND hwndFrom, BOOL code) ;
 

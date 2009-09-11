@@ -967,13 +967,13 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 
 		if (pszWordText && pszWordText[0]) {
 			TCHAR szMenuText[4096];
-			mir_sntprintf(szMenuText, 4096, TranslateT("Look up \'%s\':"), pszWordText);
+			mir_sntprintf(szMenuText, 4096, CTranslator::get(CTranslator::GEN_MUC_LOOKUP), pszWordText);
 			ModifyMenu(*hMenu, 4, MF_STRING | MF_BYPOSITION, 4, szMenuText);
-		} else ModifyMenu(*hMenu, 4, MF_STRING | MF_GRAYED | MF_BYPOSITION, 4, TranslateT("No word to look up"));
+		} else ModifyMenu(*hMenu, 4, MF_STRING | MF_GRAYED | MF_BYPOSITION, 4, CTranslator::get(CTranslator::GEN_MUC_LOOKUP_NOWORD));
 		gcmi.Type = MENU_ON_LOG;
 	} else if (iIndex == 0) {
 		TCHAR szTemp[30], szTemp2[30];
-		lstrcpyn(szTemp, TranslateT("&Message"), 24);
+		lstrcpyn(szTemp, CTranslator::get(CTranslator::GEN_MUC_MESSAGEAMP), 24);
 		if (pszUID)
 			mir_sntprintf(szTemp2, SIZEOF(szTemp2), _T("%s %s"), szTemp, pszUID);
 		else
@@ -1019,9 +1019,9 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 
 	if (iIndex == 1 && si->iType != GCW_SERVER && !(si->dwFlags && GC_UNICODE)) {
 		AppendMenu(*hMenu, MF_SEPARATOR, 0, 0);
-		InsertMenu(PluginConfig.g_hMenuEncoding, 1, MF_BYPOSITION | MF_STRING, (UINT_PTR)CP_UTF8, TranslateT("UTF-8"));
+		InsertMenu(PluginConfig.g_hMenuEncoding, 1, MF_BYPOSITION | MF_STRING, (UINT_PTR)CP_UTF8, CTranslator::get(CTranslator::GEN_STRING_UTF8));
 		pos = GetMenuItemCount(*hMenu);
-		InsertMenu(*hMenu, pos, MF_BYPOSITION | MF_POPUP, (UINT_PTR) PluginConfig.g_hMenuEncoding, TranslateT("Character Encoding"));
+		InsertMenu(*hMenu, pos, MF_BYPOSITION | MF_POPUP, (UINT_PTR) PluginConfig.g_hMenuEncoding, CTranslator::get(CTranslator::GEN_MSG_ENCODING));
 		for (i = 0; i < GetMenuItemCount(PluginConfig.g_hMenuEncoding); i++)
 			CheckMenuItem(PluginConfig.g_hMenuEncoding, i, MF_BYPOSITION | MF_UNCHECKED);
 		if (codepage == CP_ACP)

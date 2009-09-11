@@ -1,33 +1,35 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
---pad=oper --one-line=keep-blocks  --unpad=paren
-
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2003 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details .
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-$Id: templates.c 10216 2009-06-22 18:49:50Z george.hazan $
-
-/*
- * message log templates supporting functions, including the template editor
- * FIXME: this needs some serious work. It basically does what it should do, but the UI isn't that
- * great...
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * Simple editor for the message log templates
+ *
  */
 
 #include "commonheaders.h"
@@ -166,20 +168,14 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			dat->hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 			dat->dwFlags = M->GetDword("mwflags", MWF_LOG_DEFAULT);
 			dat->szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0);
-			/*
-			#if defined(_UNICODE)
-			MY_GetContactDisplayNameW(dat->hContact, dat->szNickname, 84, dat->szProto, 0);
-			#else
-			mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0));
-			#endif
-			*/
+
 			mir_sntprintf(dat->szNickname, 80, _T("%s"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, GCDNF_TCHAR));
 			GetContactUIN(hwndDlg, dat);
 
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR) dat);
 			ShowWindow(hwndDlg, SW_SHOW);
 			SendDlgItemMessage(hwndDlg, IDC_EDITTEMPLATE, EM_LIMITTEXT, (WPARAM)TEMPLATE_LENGTH - 1, 0);
-			SetWindowText(hwndDlg, TranslateT("Template Set Editor"));
+			SetWindowText(hwndDlg, CTranslator::getOpt(CTranslator::OPT_TEMP_TITLE));
 			EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
@@ -204,12 +200,12 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					DestroyWindow(hwndDlg);
 					break;
 				case IDC_RESETALLTEMPLATES:
-					if (MessageBox(0, TranslateT("This will reset the template set to the default built-in templates. Are you sure you want to do this?"),
-								   TranslateT("Template editor"), MB_YESNO | MB_ICONQUESTION) == IDYES) {
+					if (MessageBox(0, CTranslator::getOpt(CTranslator::OPT_TEMP_RESET),
+								   CTranslator::getOpt(CTranslator::OPT_TEMP_TITLE), MB_YESNO | MB_ICONQUESTION) == IDYES) {
 						M->WriteByte(teInfo->rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, "setup", 0);
 						LoadDefaultTemplates();
-						MessageBox(0, TranslateT("Template set was successfully reset, please close and reopen all message windows. This template editor window will now close."),
-								   TranslateT("Template editor"), MB_OK);
+						MessageBox(0, CTranslator::getOpt(CTranslator::OPT_TEMP_WASRESET),
+								   CTranslator::getOpt(CTranslator::OPT_TEMP_TITLE), MB_OK);
 						DestroyWindow(hwndDlg);
 					}
 					break;
@@ -462,7 +458,7 @@ INT_PTR CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					mir_snprintf(szHeader, 2040, "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u %s\\par}", 60*15, 60*15, 5*15, 60*15, Translate(var_helptxt[i++]));
 					SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szHeader);
 				}
-				SetWindowText(hwndDlg, TranslateT("Template editor help"));
+				SetWindowText(hwndDlg, CTranslator::getOpt(CTranslator::OPT_TEMP_HELPTITLE));
 			} else {
 			}
 			GetWindowRect(hwndDlg, &rc);

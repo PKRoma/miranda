@@ -141,7 +141,7 @@ const SIZE& CSideBarButton::measureItem()
 		mir_sntprintf(tszLabel, 255, _T("%s"), m_dat->newtitle);
 		::GetTextExtentPoint32(dc, tszLabel, lstrlen(tszLabel), &sz);
 
-		sz.cx += 26;
+		sz.cx += 28;
 
 		m_sz.cy = sz.cx;
 
@@ -255,7 +255,7 @@ void CSideBarButton::renderIconAndNick(const HDC hdc, const RECT *rcItem) const
 		}
 
 		if (m_dat->mayFlashTab == FALSE || (m_dat->mayFlashTab == TRUE && m_dat->bTabFlash != 0) || !(pContainer->dwFlagsEx & TCF_FLASHICON)) {
-			DWORD ix = rc.left + 2;
+			DWORD ix = rc.left + 4;
 			DWORD iy = (rc.bottom + rc.top - iSize) / 2;
 			if (m_dat->dwFlagsEx & MWF_SHOW_ISIDLE && PluginConfig.m_IdleDetect)
 				CSkin::DrawDimmedIcon(hdc, ix, iy, iSize, iSize, hIcon, 180);
@@ -263,7 +263,7 @@ void CSideBarButton::renderIconAndNick(const HDC hdc, const RECT *rcItem) const
 				::DrawIconEx(hdc, ix, iy, hIcon, iSize, iSize, 0, NULL, DI_NORMAL | DI_COMPAT);
 		}
 
-		rc.left += (iSize + 2);
+		rc.left += (iSize + 7);
 		SetBkMode(hdc, TRANSPARENT);
 
 		if (m_dat->mayFlashTab == FALSE || (m_dat->mayFlashTab == TRUE && m_dat->bTabFlash != 0) || !(pContainer->dwFlagsEx & TCF_FLASHLABEL)) {
@@ -849,7 +849,7 @@ LRESULT CALLBACK CSideBar::wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			HDC hdc = (HDC)wParam;
 			RECT rc;
 			GetClientRect(hwnd, &rc);
-			::FillRect(hdc, &rc, (HBRUSH)(M->isAero() ? ::GetStockObject(BLACK_BRUSH) : ::GetSysColorBrush(COLOR_3DFACE)));
+			::FillRect(hdc, &rc, (HBRUSH)(M->isAero() ? CSkin::m_BrushBack : ::GetSysColorBrush(COLOR_3DFACE)));
 			return(1);
 		}
 		default:

@@ -79,6 +79,7 @@ struct AeroEffect {
 	BYTE	m_gradientType;
 	DWORD	m_cornerRadius;
 	DWORD	m_glowSize;
+	COLORREF m_clrBack;
 };
 /**
  * CImageItem implementes image-based skin items. These items are loaded
@@ -293,6 +294,7 @@ public:
 	static void		initAeroEffect();
 	static HANDLE 	InitiateBufferedPaint(const HDC hdcSrc, RECT& rc, HDC& hdcOut);
 	static void 	FinalizeBufferedPaint(HANDLE hbp, RECT *rc);
+	static bool 	__fastcall DrawItem(const HDC hdc, const RECT *rc, const CSkinItem *item);
 
 public:
 	static bool		m_DisableScrollbars, m_bClipBorder;
@@ -303,7 +305,7 @@ public:
 					m_titleBarRightOff, m_sidebarTopOffset, m_sidebarBottomOffset, m_bRoundedCorner;
 	static SIZE		m_titleBarButtonSize;
 	static int		m_bAvatarBorderType;
-	static COLORREF m_ContainerColorKey;
+	static COLORREF m_ContainerColorKey, m_DefaultFontColor;
 	static HBRUSH 	m_ContainerColorKeyBrush, m_MenuBGBrush;
 	static bool		m_skinEnabled;
 	static bool		m_frameSkins;
@@ -319,6 +321,7 @@ public:
 	static AeroEffect	m_aeroEffects[AERO_EFFECT_LAST];
 	static AeroEffect*	m_currentAeroEffect;
 	static DWORD		m_glowSize;
+	static HBRUSH		m_BrushBack;
 
 	static COLORREF	m_dwmColorRGB;
 

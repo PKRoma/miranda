@@ -174,8 +174,13 @@ public:
 		GEN_MSG_MC_OFFLINEPROTOCOL								= 131,
 		GEN_MSG_OFFLINE_NO_FILE									= 132,
 		GEN_STRING_FILE											= 133,
-
-		STR_LAST 												= 134
+		GEN_STRING_MESSAGEFROM									= 134,
+		GEN_SQ_MULTISENDERROR									= 135,
+		GEN_MUC_LOOKUP											= 136,
+		GEN_MUC_LOOKUP_NOWORD									= 137,
+		GEN_MUC_MESSAGEAMP										= 138,
+		GEN_STRING_UTF8											= 139,
+		STR_LAST 												= 140
 	};
 
 	enum {
@@ -211,7 +216,65 @@ public:
 		OPT_GEN_DONT_SHOW										= 29,
 		OPT_TAB_LAYOUTTWEAKS									= 30,
 		OPT_TAB_SKINLOAD										= 31,
-		OPT_LAST												= 32
+		OPT_IPANEL_VISBILITY_TITLE								= 32,
+		OPT_IPANEL_VISIBILTY_IM									= 33,
+		OPT_IPANEL_VISIBILTY_CHAT								= 34,
+		OPT_IPANEL_SYNC_TITLE_IM								= 35,
+		OPT_IPANEL_SYNC_TITLE_MUC								= 36,
+		OPT_IPANEL_VIS_INHERIT									= 37,
+		OPT_IPANEL_VIS_OFF										= 38,
+		OPT_IPANEL_VIS_ON										= 39,
+		OPT_IPANEL_SIZE_GLOBAL									= 40,
+		OPT_IPANEL_SIZE_PRIVATE									= 41,
+		OPT_GEN_OFF												= 42,
+		OPT_GEN_BBCODE											= 43,
+		OPT_LOG_DEFAULT											= 44,
+		OPT_LOG_IEVIEW											= 45,
+		OPT_LOG_HPP												= 46,
+		OPT_MTN_NEW												= 47,
+		OPT_MTN_UNKNOWN											= 48,
+		OPT_GEN_ALWAYS											= 49,
+		OPT_MTN_NOTFOCUSED										= 50,
+		OPT_MTN_ONLYCLOSED										= 51,
+		OPT_CNT_ESCNORMAL										= 52,
+		OPT_CNT_ESCMINIMIZE										= 53,
+		OPT_CNT_ESCCLOS											= 54,
+		OPT_MTN_UNSUPPORTED										= 55,
+		OPT_SMODE_CHOOSE										= 56,
+		OPT_MUC_LOGTIP1											= 57,
+		OPT_MUC_LOGTIP2											= 58,
+		OPT_MUC_LOGTIP3											= 59,
+		OPT_MUC_LOGTIP4											= 60,
+		OPT_MUC_LOGTIP5											= 61,
+		OPT_MUC_LOGTIP6											= 62,
+		OPT_MUC_LOGTIP7											= 63,
+		OPT_MUC_LOGTIP8											= 64,
+		OPT_MUC_LOGTIP9											= 65,
+		OPT_MUC_LOGTIP10										= 66,
+		OPT_MUC_LOGTIP11										= 67,
+		OPT_MUC_LOGTIP12										= 68,
+		OPT_MUC_LOGTIP13										= 69,
+		OPT_MUC_LOGTIP14										= 70,
+		OPT_MUC_LOGTIP15										= 71,
+		OPT_MUC_LOGTIP16										= 72,
+		OPT_MUC_LOGTIP17										= 73,
+		OPT_MUC_LOGTIP18										= 74,
+		OPT_MUC_LOGTIP19										= 75,
+		OPT_MUC_LOGTIP20										= 76,
+		OPT_MUC_LOGTIP21										= 77,
+		OPT_MUC_LOGTIP22										= 78,
+		OPT_MUC_OPTHEADER1										= 79,
+		OPT_MUC_OPTHEADER2										= 80,
+		OPT_MUC_VARIABLES										= 81,
+		OPT_MUC_SELECTFOLDER									= 82,
+		OPT_MUC_NOMARKERS										= 83,
+		OPT_MUC_ASICONS											= 84,
+		OPT_MUC_ASSYMBOLS										= 85,
+		OPT_TEMP_TITLE											= 86,
+		OPT_TEMP_RESET											= 87,
+		OPT_TEMP_WASRESET										= 88,
+		OPT_TEMP_HELPTITLE										= 89,
+		OPT_LAST												= 90
 	};
 
 	/*
@@ -229,12 +292,12 @@ public:
 	CTranslator();
 	~CTranslator();
 
-	inline static const TCHAR* get(UINT id)
+	inline static const TCHAR* get(const UINT id)
 	{
 		return(m_translated[id]);
 	}
 
-	inline static const TCHAR* getOpt(UINT id)
+	inline static const TCHAR* getOpt(const UINT id)
 	{
 		return(m_OptTranslated[id]);
 	}

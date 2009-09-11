@@ -130,7 +130,7 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Today"),									/* GEN_LOG_TODAY */
 	LPGENT("Yesterday"),								/* GEN_LOG_YESTERDAY */
 	LPGENT("Use default codepage"),						/* GEN_LOG_USEDEFAAULTCP */
-	LPGENT("UIN: %s (SHIFT click -> copy to clipboard)\nClick for User's Details\nRight click for MetaContact control\nClick dropdown for infopanel settings"), /* GEN_MSG_UINCOPY */
+	LPGENT("UIN: %s (SHIFT click -> copy to clipboard)\nClick for User's Details\nRight click for MetaContact control\nClick dropdown to add or remove user from your favorites."), /* GEN_MSG_UINCOPY */
 	LPGENT("No UIN"),									/* GEN_MSG_NOUIN */
 	LPGENT("UIN: %s (SHIFT click -> copy to clipboard)\nClick for User's Details\nClick dropdown for infopanel settings"), /* GEN_MSG_UINCOPY_NO_MC */
 	LPGENT("signed off."),								/* GEN_MSG_SIGNEDOFF */
@@ -169,6 +169,12 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Warning: you have selected a subprotocol for sending the following messages which is currently offline"), /* GEN_MSG_MC_OFFLINEPROTOCOL */
 	LPGENT("Contact is offline and this protocol does not support sending files to offline users."), /* GEN_MSG_OFFLINE_NO_FILE */
 	LPGENT("File"),										/* GEN_STRING_FILE */
+	LPGENT("Message from %s"),							/* GEN_STRING_MESSAGEFROM */
+	LPGENT("Multisend: failed sending to: %s"),			/* GEN_SQ_MULTISENDERROR */
+	LPGENT("Look up \'%s\':"), 							/* GEN_MUC_LOOKUP */
+	LPGENT("No word to look up"),						/* GEN_MUC_LOOKUP_NOWORD */
+	LPGENT("&Message"),									/* GEN_MUC_MESSAGEAMP */
+	LPGENT("UTF-8"),									/* GEN_STRING_UTF8 */
 };
 
 /*
@@ -208,6 +214,65 @@ TCHAR* CTranslator::m_OptStrings[OPT_LAST] = {
 	LPGENT("Don't show them"),										/* OPT_GEN_DONT_SHOW */
 	LPGENT("Window layout tweaks"), 								/* OPT_TAB_LAYOUTTWEAKS */
 	LPGENT("Load and apply"),										/* OPT_TAB_SKINLOAD */
+	LPGENT("Set panel visibilty for this %s"),						/* OPT_IPANEL_VISIBILTY_TITLE */
+	LPGENT("contact"), 												/* OPT_IPANEL_VISIBILTY_IM */
+	LPGENT("chat room"),											/* OPT_IPANEL_VISIBILTY_CHAT */
+	LPGENT("Do not synchronize the panel height with IM windows"),  /* OPT_IPANEL_SYNC_TITLE_IM */
+	LPGENT("Do not synchronize the panel height with group chat windows"),  /* OPT_IPANEL_SYNC_TITLE_MUC */
+	LPGENT("Inherit from container setting"), 						/* OPT_IPANEL_VIS_INHERIT */
+	LPGENT("Always off"),											/* OPT_IPANEL_VIS_OFF */
+	LPGENT("Always on"),											/* OPT_IPANEL_VIS_ON*/
+	LPGENT("Use default size"), 									/* OPT_IPANEL_SIZE_GLOBAL */
+	LPGENT("Use private size"), 									/* OPT_IPANEL_SIZE_PRIVATE */
+	LPGENT("Off"),													/* OPT_GEN_OFF */
+	LPGENT("BBCode"),												/* OPT_GEN_BBCODE */
+	LPGENT("Default"),												/* OPT_LOG_DEFAULT */
+	LPGENT("IEView plugin"),										/* OPT_LOG_IEVIEW */
+	LPGENT("History++ plugin"),										/* OPT_LOG_HPP */
+	LPGENT("** New contacts **"),									/* OPT_MTN_NEW */
+	LPGENT("** Unknown contacts **"),								/* OPT_MTN_UNKNOWN */
+	LPGENT("Always"), 												/* OPT_GEN_ALWAYS */
+	LPGENT("Always, but no popup when window is focused"),			/* OPT_MTN_NOTFOUCSED */
+	LPGENT("Only when no message window is open"),					/* OPT_MTN_ONLYCLOSED */
+	LPGENT("Normal - close tab, if last tab is closed also close the window"), /* OPT_CNT_ESCNORMAL */
+	LPGENT("Minimize the window to the task bar"),					/* OPT_CNT_ESCMINIMIZE */
+	LPGENT("Close or hide window, depends on the close button setting above"), /* OPT_CNT_ESCCLOSE */
+	LPGENT("Show balloon popup (unsupported system)"),				/* OPT_MTN_UNSUPPORTED */
+	LPGENT("Choose status modes"),									/* OPT_SMODE_CHOOSE */
+	LPGENT("nick of current contact (if defined)"),					/* OPT_MUC_LOGTIP1 */
+	LPGENT("protocol name of current contact (if defined). Account name is used when protocol supports multiaccounts"), /* OPT_MUC_LOGTIP2 */
+	LPGENT("UserID of current contact (if defined). It is like UIN Number for ICQ, JID for Jabber, etc."), /* OPT_MUC_LOGTIP3 */
+	LPGENT("path to root miranda folder"),							/* OPT_MUC_LOGTIP4 */
+	LPGENT("path to current miranda profile"),						/* OPT_MUC_LOGTIP5 */
+	LPGENT("name of current miranda profile (filename, without extension)"), /* OPT_MUC_LOGTIP6 */
+	LPGENT("will return parsed string %miranda_profile%\\Profiles\\%miranda_profilename%"), /* OPT_MUC_LOGTIP7 */
+	LPGENT("same as environment variable %APPDATA% for currently logged-on Windows user"), /* OPT_MUC_LOGTIP8 */
+	LPGENT("username for currently logged-on Windows user"),		/* OPT_MUC_LOGTIP9 */
+	LPGENT("\"My Documents\" folder for currently logged-on Windows user"), /* OPT_MUC_LOGTIP10 */
+	LPGENT("\"Desktop\" folder for currently logged-on Windows user"), /* OPT_MUC_LOGTIP11 */
+	LPGENT("any environment variable defined in current Windows session (like %systemroot%, %allusersprofile%, etc.)"), /* OPT_MUC_LOGTIP12 */
+	LPGENT("day of month, 1-31"),									/* OPT_MUC_LOGTIP13 */
+	LPGENT("day of month, 01-31"),									/* OPT_MUC_LOGTIP14 */
+	LPGENT("month number, 1-12"),									/* OPT_MUC_LOGTIP15 */
+	LPGENT("month number, 01-12"),									/* OPT_MUC_LOGTIP16 */
+	LPGENT("abbreviated month name"),								/* OPT_MUC_LOGTIP17 */
+	LPGENT("full month name"),										/* OPT_MUC_LOGTIP18 */
+	LPGENT("year without century, 01-99"),							/* OPT_MUC_LOGTIP19 */
+	LPGENT("year with century, 1901-9999"),							/* OPT_MUC_LOGTIP20 */
+	LPGENT("abbreviated weekday name"),								/* OPT_MUC_LOGTIP21 */
+	LPGENT("full weekday name"),									/* OPT_MUC_LOGTIP22 */
+	LPGENT("Appearance and functionality of chat room windows"), 	/* OPT_MUC_OPTHEADER1 */
+	LPGENT("Appearance of the message log"),						/* OPT_MUC_OPTEHADER2 */
+	LPGENT("Variables"), 											/* OPT_MUC_VARIABLES */
+	LPGENT("Select Folder"),										/* OPT_MUC_SELECTFOLDER */
+	LPGENT("No markers"),											/* OPT_MUC_NOMARKERS */
+	LPGENT("Show as icons"),										/* OPT_MUC_ASICONS */
+	LPGENT("Show as text symbols"),									/* OPT_MUC_ASSYMBOLS */
+	LPGENT("Template Set Editor"),									/* OPT_TEMP_TITLE */
+	LPGENT("This will reset the template set to the default built-in templates. Are you sure you want to do this?"), /* OPT_TEMP_RESET */
+	LPGENT("Template set was successfully reset, please close and reopen all message windows. This template editor window will now close."), /* OPT_TEMP_WASRESET */
+	LPGENT("Template editor help"),									/* OPT_TEMP_HELPTITLE */
+
 };
 TCHAR* CTranslator::m_translated[STR_LAST];
 TCHAR* CTranslator::m_OptTranslated[OPT_LAST];
@@ -253,6 +318,7 @@ LISTOPTIONSITEM CTranslator::m_lvItemsNEN [] = {
 
 	0, LPGENT("Disable event notifications for instant messages"), IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.iDisable, 0,
 	0, LPGENT("Disable event notifications for group chats"), IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.iMUCDisable, 0,
+	0, LPGENT("Disable notifications for non-message events"), IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bDisableNonMessage, 0,
 
 	0, LPGENT("Remove popups for a contact when the message window is focused"), PU_REMOVE_ON_FOCUS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
 	0, LPGENT("Remove popups for a contact when I start typing a reply"), PU_REMOVE_ON_TYPE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,

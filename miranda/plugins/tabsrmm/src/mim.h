@@ -149,16 +149,7 @@ public:
 	const TCHAR  *getSavedAvatarPath() const { return(m_szSavedAvatarsPath); }
 	const TCHAR  *getChatLogPath() const { return(m_szChatLogsPath); }
 
-	const TCHAR	 *getUserDir()
-	{
-		if(m_userDir == 0) {
-			m_userDir = ::Utils_ReplaceVarsT(_T("%miranda_userdata%"));
-			if(m_userDir[lstrlen(m_userDir) - 1] != '\\')
-			   _tcscat(m_userDir, _T("\\"));
-		}
-		return(m_userDir);
-	}
-
+	const TCHAR	 *getUserDir();
 	void		configureCustomFolders();
 	INT_PTR		foldersPathChanged();
 
@@ -247,6 +238,9 @@ public:
 	static DGC		m_pfnDwmGetColorizationColor;
 	static BPSA		m_pfnBufferedPaintSetAlpha;
 	static bool		m_shutDown, m_haveBufferedPaint;
+
+	static DWORD	m_MimVersion;
+
 private:
 	UTF8_INTERFACE 	m_utfi;
 	TCHAR 		m_szProfilePath[MAX_PATH], m_szSkinsPath[MAX_PATH], m_szSavedAvatarsPath[MAX_PATH], m_szChatLogsPath[MAX_PATH];
@@ -261,7 +255,7 @@ private:
 	void 	InitPaths();
 
 private:
-	static TCHAR*	m_userDir;
+	static TCHAR	m_userDir[MAX_PATH + 1];
 };
 
 extern  CMimAPI		*M;

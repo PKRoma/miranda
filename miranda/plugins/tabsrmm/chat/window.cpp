@@ -301,6 +301,8 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct _MessageWindowData *dat,
 		}
 	}
 
+	dat->Panel->dismissConfig();
+
 	if (dat->pContainer->hwndSaved == hwndDlg)
 		return;
 
@@ -339,7 +341,7 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct _MessageWindowData *dat,
 				PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
 		}
 		SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
-		dat->dwLastActivity = dat->dwLastUpdate = GetTickCount();
+		dat->dwLastActivity = GetTickCount();
 		dat->pContainer->dwLastActivity = dat->dwLastActivity;
 		dat->pContainer->MenuBar->configureMenu();
 		UpdateTrayMenuState(dat, FALSE);
@@ -502,7 +504,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 		case IDC_PANELNICK: {
 			urc->rcItem.left = panelHeight <= CInfoPanel::LEFT_OFFSET_LOGO ? panelHeight : CInfoPanel::LEFT_OFFSET_LOGO;
 			urc->rcItem.right = urc->dlgNewSize.cx;
-			urc->rcItem.bottom = urc->rcItem.top + dat->ipFieldHeight;
+			urc->rcItem.bottom = (panelHeight > CInfoPanel::DEGRADE_THRESHOLD ? urc->rcItem.top + dat->ipFieldHeight : panelHeight - 1);
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
 		}
 		case IDC_PANELUIN: {
@@ -898,10 +900,6 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 
 				break;
 			}
-// 			if(wParam == VK_TAB&&myGlobals.m_AllowTab) {
-//					SendMessage(hwnd, EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)"\t");
-// 				return TRUE;
-// 			}
 
 			if (wParam == VK_TAB && isShift && !isCtrl) { // SHIFT-TAB (go to nick list)
 				SetFocus(GetDlgItem(hwndParent, IDC_LIST));
@@ -3392,7 +3390,7 @@ LABEL_SHOWWINDOW:
 			break;
 
 		case WM_ERASEBKGND:
-			if (dat->pContainer->bSkinned || M->isAero() || M->isVSThemed())
+			//if (dat->pContainer->bSkinned || M->isAero() || M->isVSThemed())
 				return TRUE;
 			break;
 
@@ -3441,8 +3439,7 @@ LABEL_SHOWWINDOW:
 						rc.top = pt.y - item->MARGIN_TOP;
 						rc.right = rc.left + item->MARGIN_RIGHT + (rcWindow.right - rcWindow.left) + item->MARGIN_LEFT;
 						rc.bottom = rc.top + item->MARGIN_BOTTOM + (rcWindow.bottom - rcWindow.top) + item->MARGIN_TOP;
-						DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
-								  item->CORNER, item->BORDERSTYLE, item->imageItem);
+						CSkin::DrawItem(hdcMem, &rc, item);
 					}
 				}
 			}
@@ -3469,11 +3466,31 @@ LABEL_SHOWWINDOW:
 			SetAeroMargins(dat->pContainer);
 			return 0;
 		}
+
 		case DM_SETINFOPANEL:
-			dat->Panel->getVisibility();
-			if (!(dat->dwFlags & MWF_ERRORSTATE))
+			if(wParam == 0 && lParam == 0) {
+				dat->Panel->getVisibility();
+				dat->Panel->loadHeight();
 				dat->Panel->showHide();
-			return 0;
+			}
+			else {
+				_MessageWindowData *SrcDat = (_MessageWindowData *)wParam;
+				if(lParam == 0)
+					dat->Panel->loadHeight();
+				else {
+					if(SrcDat && lParam && dat != SrcDat && !dat->Panel->isPrivateHeight()) {
+						if(SrcDat->bType != SESSIONTYPE_CHAT && M->GetByte("syncAllPanels", 0) == 0)
+							return(0);
+
+						if(!(dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS) && SrcDat->pContainer != dat->pContainer)
+							return(0);
+
+						dat->panelWidth = -1;
+						dat->Panel->setHeight((LONG)lParam);
+					}
+				}
+			}
+			return(0);
 
 		case WM_GETMINMAXINFO: {
 			MINMAXINFO* mmi = (MINMAXINFO*)lParam;
@@ -3493,6 +3510,10 @@ LABEL_SHOWWINDOW:
 			int menuID = 0;
 
 			GetCursorPos(&pt);
+
+			if(dat->Panel->invokeConfigDialog(pt))
+				break;
+
 			subMenu = GetSubMenu(dat->pContainer->hMenuContext, 0);
 
 			MsgWindowUpdateMenu(dat, subMenu, MENU_TABCONTEXT);
@@ -3715,8 +3736,6 @@ LABEL_SHOWWINDOW:
 
 		case DM_REFRESHTABINDEX:
 			dat->iTabID = GetTabIndexFromHWND(GetParent(hwndDlg), hwndDlg);
-			if (dat->iTabID == -1)
-				_DebugPopup(si->hContact, _T("WARNING: new tabindex: %d"), dat->iTabID);
 			return 0;
 
 		case DM_STATUSBARCHANGED:

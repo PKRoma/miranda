@@ -364,6 +364,7 @@ static void MsgWindowUpdateState(_MessageWindowData *dat, UINT msg)
 				CMimAPI::m_pSetLayeredWindowAttributes(dat->pContainer->hwnd, 0, (BYTE)trans, (dat->pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 			}
 		}
+		dat->Panel->dismissConfig();
 		if (dat->pContainer->hwndSaved == hwndDlg)
 			return;
 
@@ -385,8 +386,7 @@ static void MsgWindowUpdateState(_MessageWindowData *dat, UINT msg)
 				CallService(MS_CLIST_REMOVEEVENT, (WPARAM)dat->hContact, (LPARAM)dat->hFlashingEvent);
 			dat->hFlashingEvent = 0;
 		}
-		if (dat->pContainer->dwFlags & CNT_NEED_UPDATETITLE)
-			dat->pContainer->dwFlags &= ~CNT_NEED_UPDATETITLE;
+		dat->pContainer->dwFlags &= ~CNT_NEED_UPDATETITLE;
 
 		if (dat->dwFlags & MWF_DEFERREDREMAKELOG) {
 			SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
@@ -418,7 +418,6 @@ static void MsgWindowUpdateState(_MessageWindowData *dat, UINT msg)
 			CallService(MTH_Set_ToolboxEditHwnd, 0, (LPARAM)GetDlgItem(hwndDlg, IDC_MESSAGE));
 			MTH_updateMathWindow(dat);
 		}
-		dat->dwLastUpdate = GetTickCount();
 		if (dat->hContact)
 			PostMessage(hwndDlg, DM_REMOVEPOPUPS, PU_REMOVE_ON_FOCUS, 0);
 
@@ -477,7 +476,7 @@ static void MsgWindowUpdateState(_MessageWindowData *dat, UINT msg)
 
 // drop files onto message input area...
 
-static void AddToFileList(TCHAR ***pppFiles, int *totalCount, const TCHAR* szFilename)
+static void AddToFileListT(TCHAR ***pppFiles, int *totalCount, const TCHAR* szFilename)
 {
 	*pppFiles = (TCHAR**)realloc(*pppFiles, (++*totalCount + 1) * sizeof(TCHAR*));
 	(*pppFiles)[*totalCount] = NULL;
@@ -496,7 +495,57 @@ static void AddToFileList(TCHAR ***pppFiles, int *totalCount, const TCHAR* szFil
 				lstrcpy(szPath, szFilename);
 				lstrcat(szPath, _T("\\"));
 				lstrcat(szPath, fd.cFileName);
-				AddToFileList(pppFiles, totalCount, szPath);
+				AddToFileListT(pppFiles, totalCount, szPath);
+			} while (FindNextFile(hFind, &fd));
+			FindClose(hFind);
+		}
+	}
+}
+
+/**
+ * compatibility with 0.8.x. TODO can go away somedays..
+ *
+ * @param pppFiles
+ * @param totalCount
+ * @param szFilename
+ */
+static void AddToFileListA(char ***pppFiles, int *totalCount, const TCHAR* szFilename)
+{
+	*pppFiles = (char**)realloc(*pppFiles, (++*totalCount + 1) * sizeof(char*));
+	(*pppFiles)[*totalCount] = NULL;
+
+#if defined( _UNICODE )
+{
+	TCHAR tszShortName[ MAX_PATH ];
+	char  szShortName[ MAX_PATH ];
+	BOOL  bIsDefaultCharUsed = FALSE;
+	WideCharToMultiByte(CP_ACP, 0, szFilename, -1, szShortName, sizeof(szShortName), NULL, &bIsDefaultCharUsed);
+	if (bIsDefaultCharUsed) {
+		if (GetShortPathName(szFilename, tszShortName, SIZEOF(tszShortName)) == 0)
+			WideCharToMultiByte(CP_ACP, 0, szFilename, -1, szShortName, sizeof(szShortName), NULL, NULL);
+		else
+			WideCharToMultiByte(CP_ACP, 0, tszShortName, -1, szShortName, sizeof(szShortName), NULL, NULL);
+	}
+	(*pppFiles)[*totalCount-1] = _strdup(szShortName);
+}
+#else
+	(*pppFiles)[*totalCount-1] = _strdup(szFilename);
+#endif
+
+	if (GetFileAttributes(szFilename) & FILE_ATTRIBUTE_DIRECTORY) {
+		WIN32_FIND_DATA fd;
+		HANDLE hFind;
+		TCHAR szPath[MAX_PATH];
+
+		lstrcpy(szPath, szFilename);
+		lstrcat(szPath, _T("\\*"));
+		if ((hFind = FindFirstFile(szPath, &fd)) != INVALID_HANDLE_VALUE) {
+			do {
+				if (!lstrcmp(fd.cFileName, _T(".")) || !lstrcmp(fd.cFileName, _T(".."))) continue;
+				lstrcpy(szPath, szFilename);
+				lstrcat(szPath, _T("\\"));
+				lstrcat(szPath, fd.cFileName);
+				AddToFileListA(pppFiles, totalCount, szPath);
 			} while (FindNextFile(hFind, &fd));
 			FindClose(hFind);
 		}
@@ -1139,7 +1188,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			else {
 				if(M->isAero()) {
 					if(GetDlgCtrlID(hwnd) == IDC_PANELSPLITTER)
-						FillRect(dc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+						FillRect(dc, &rc, CSkin::m_BrushBack);
 					else if(GetDlgCtrlID(hwnd) == IDC_SPLITTER || GetDlgCtrlID(hwnd) == IDC_SPLITTERY) {
 						rc.bottom--;
 						FillRect(dc, &rc, GetSysColorBrush(COLOR_3DDKSHADOW));
@@ -1935,7 +1984,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			return newData->iActivate ? TRUE : FALSE;
 		}
 		case WM_ERASEBKGND: {
-			if (m_pContainer->bSkinned || M->isAero() || M->isVSThemed())
+			//if (m_pContainer->bSkinned || M->isAero() || M->isVSThemed())
 				return TRUE;
 			break;
 		}
@@ -1996,8 +2045,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						rc.top = pt.y - item->MARGIN_TOP;
 						rc.right = rc.left + item->MARGIN_RIGHT + (rcWindow.right - rcWindow.left) + item->MARGIN_LEFT;
 						rc.bottom = rc.top + item->MARGIN_BOTTOM + (rcWindow.bottom - rcWindow.top) + item->MARGIN_TOP;
-						DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
-								  item->CORNER, item->BORDERSTYLE, item->imageItem);
+						CSkin::DrawItem(hdcMem, &rc, item);
 					}
 				}
 			}
@@ -2835,7 +2883,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				ScreenToClient(hwndDlg, &pt);
 				GetClientRect(hwndDlg, &rc);
 				if (pt.y + 2 >= MIN_PANELHEIGHT+2 && pt.y + 2 < 100)
-					dat->Panel->setHeight(pt.y + 2);
+					dat->Panel->setHeight(pt.y + 2, true);
 				dat->panelWidth = -1;
 				SetAeroMargins(dat->pContainer);
 				RedrawWindow(hwndDlg, NULL, NULL, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW);
@@ -3001,7 +3049,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							if (!(dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED))
 								SendMessage(hwndDlg, DM_APPENDTOLOG, lParam, 0);
 							else {
-								TCHAR szBuf[40];
+								TCHAR szBuf[100];
 
 								if (dat->iNextQueuedEvent >= dat->iEventQueueSize) {
 									dat->hQueuedEvents = (HANDLE *)realloc(dat->hQueuedEvents, (dat->iEventQueueSize + 10) * sizeof(HANDLE));
@@ -3392,24 +3440,17 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			rcPanelNick.left = rcPanelNick.right - 30;
 			GetCursorPos(&pt);
 
+			if(dat->Panel->invokeConfigDialog(pt))
+				break;
+
 			if (PtInRect(&rcPicture, pt))
 				menuID = MENU_PICMENU;
-			else if (PtInRect(&rcPanelPicture, pt) || PtInRect(&rcPanelNick, pt))
-				menuID = MENU_PANELPICMENU;
 
-			if ((menuID == MENU_PICMENU && ((dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown) || dat->hOwnPic) && dat->showPic != 0) || (menuID == MENU_PANELPICMENU && dat->Panel->isActive())) {
+			if ((menuID == MENU_PICMENU && ((dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown) || dat->hOwnPic) && dat->showPic != 0)) {
 				int iSelection, isHandled;
 				HMENU submenu = 0;
 
 				submenu = GetSubMenu(m_pContainer->hMenuContext, menuID == MENU_PICMENU ? 1 : 11);
-				if (menuID == MENU_PANELPICMENU) {
-					int iCount = GetMenuItemCount(submenu);
-
-					if (iCount < 5) {
-						HMENU visMenu = GetSubMenu(GetSubMenu(m_pContainer->hMenuContext, 1), 0);
-						InsertMenu(submenu, 0, MF_POPUP, (UINT_PTR)visMenu, CTranslator::get(CTranslator::GEN_MSG_SHOWPICTURE));
-					}
-				}
 				GetCursorPos(&pt);
 				MsgWindowUpdateMenu(dat, submenu, menuID);
 				iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
@@ -3951,9 +3992,6 @@ quote_from_last:
 						CheckMenuItem(submenu, ID_THISCONTACT_BBCODE, MF_BYCOMMAND | ((iLocalFormat > 0) ? MF_CHECKED : MF_UNCHECKED));
 						CheckMenuItem(submenu, ID_THISCONTACT_OFF, MF_BYCOMMAND | ((iLocalFormat == -1) ? MF_CHECKED : MF_UNCHECKED));
 
-						EnableMenuItem(submenu, ID_FAVORITES_ADDCONTACTTOFAVORITES, LOWORD(dat->dwIsFavoritOrRecent) == 0 ? MF_ENABLED : MF_GRAYED);
-						EnableMenuItem(submenu, ID_FAVORITES_REMOVECONTACTFROMFAVORITES, LOWORD(dat->dwIsFavoritOrRecent) == 0 ? MF_GRAYED : MF_ENABLED);
-
 						iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
 						switch (iSelection) {
 							case ID_IEVIEWSETTING_USEGLOBAL:
@@ -4010,16 +4048,6 @@ quote_from_last:
 							case ID_THISCONTACT_OFF:
 								iNewLocalFormat = -1;
 								break;
-							case ID_FAVORITES_ADDCONTACTTOFAVORITES:
-								DBWriteContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 1);
-								dat->dwIsFavoritOrRecent |= 0x00000001;
-								AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 1, PluginConfig.g_hMenuFavorites, dat->codePage);
-								break;
-							case ID_FAVORITES_REMOVECONTACTFROMFAVORITES:
-								DBWriteContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 0);
-								dat->dwIsFavoritOrRecent &= 0xffff0000;
-								DeleteMenu(PluginConfig.g_hMenuFavorites, (UINT_PTR)dat->hContact, MF_BYCOMMAND);
-								break;
 						}
 						if (iNewLocalFormat == 0)
 							DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "sendformat");
@@ -4047,55 +4075,30 @@ quote_from_last:
 						ApplyContainerSetting(m_pContainer, CNT_HIDETOOLBAR, m_pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1, true);
 					break;
 				case IDC_INFOPANELMENU: {
-					RECT rc;
+					RECT 	rc;
+					int 	iSelection;
+
 					HMENU submenu = GetSubMenu(m_pContainer->hMenuContext, 9);
-					int iSelection;
-					BYTE bNewGlobal = m_pContainer->dwFlags & CNT_INFOPANEL ? 1 : 0;
-					BYTE bNewLocal = M->GetByte(dat->hContact, "infopanel", 0);
-					BYTE bLocal = bNewLocal, bGlobal = bNewGlobal;
-					DWORD dwOld = dat->dwFlagsEx;
-
 					GetWindowRect(GetDlgItem(hwndDlg, IDC_NAME), &rc);
-					CheckMenuItem(submenu, ID_GLOBAL_ENABLED, MF_BYCOMMAND | (bGlobal ? MF_CHECKED : MF_UNCHECKED));
-					CheckMenuItem(submenu, ID_GLOBAL_DISABLED, MF_BYCOMMAND | (bGlobal ? MF_UNCHECKED : MF_CHECKED));
-					CheckMenuItem(submenu, ID_THISCONTACT_ALWAYSOFF, MF_BYCOMMAND | (bLocal == (BYTE) - 1 ? MF_CHECKED : MF_UNCHECKED));
-					CheckMenuItem(submenu, ID_THISCONTACT_ALWAYSON, MF_BYCOMMAND | (bLocal == 1 ? MF_CHECKED : MF_UNCHECKED));
-					CheckMenuItem(submenu, ID_THISCONTACT_USEGLOBALSETTING, MF_BYCOMMAND | (bLocal == 0 ? MF_CHECKED : MF_UNCHECKED));
-					iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
-					switch (iSelection) {
-						case ID_GLOBAL_ENABLED:
-							bNewGlobal = 1;
-							break;
-						case ID_GLOBAL_DISABLED:
-							bNewGlobal = 0;
-							break;
-						case ID_THISCONTACT_USEGLOBALSETTING:
-							bNewLocal = 0;
-							break;
-						case ID_THISCONTACT_ALWAYSON:
-							bNewLocal = 1;
-							break;
-						case ID_THISCONTACT_ALWAYSOFF:
-							bNewLocal = -1;
-							break;
-						case ID_INFOPANEL_QUICKTOGGLE:
-							dat->Panel->setActive(dat->Panel->isActive() ? FALSE : TRUE);
-							dat->Panel->showHide();
-							return 0;
-						default:
-							return 0;
-					}
-					if (bNewGlobal != bGlobal)
-						ApplyContainerSetting(m_pContainer, CNT_INFOPANEL, bNewGlobal ? 1 : 0, false);
-					if (bNewLocal != bLocal)
-						DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "infopanel", bNewLocal);
 
-					if (bNewGlobal != bGlobal);
-					else {
-						dat->Panel->getVisibility();
-						if (dat->dwFlagsEx != dwOld) {
-							dat->Panel->showHide();
-						}
+					EnableMenuItem(submenu, ID_FAVORITES_ADDCONTACTTOFAVORITES, LOWORD(dat->dwIsFavoritOrRecent) == 0 ? MF_ENABLED : MF_GRAYED);
+					EnableMenuItem(submenu, ID_FAVORITES_REMOVECONTACTFROMFAVORITES, LOWORD(dat->dwIsFavoritOrRecent) == 0 ? MF_GRAYED : MF_ENABLED);
+
+					iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
+
+					switch(iSelection) {
+						case ID_FAVORITES_ADDCONTACTTOFAVORITES:
+							DBWriteContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 1);
+							dat->dwIsFavoritOrRecent |= 0x00000001;
+							AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 1, PluginConfig.g_hMenuFavorites, dat->codePage);
+							break;
+						case ID_FAVORITES_REMOVECONTACTFROMFAVORITES:
+							DBWriteContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 0);
+							dat->dwIsFavoritOrRecent &= 0xffff0000;
+							DeleteMenu(PluginConfig.g_hMenuFavorites, (UINT_PTR)dat->hContact, MF_BYCOMMAND);
+							break;
+						default:
+							break;
 					}
 					break;
 				}
@@ -4302,14 +4305,14 @@ quote_from_last:
 					}
 			}
 			break;
-		case WM_CONTEXTMENU:
-			{
+		case WM_CONTEXTMENU: {
 			//mad
 			DWORD idFrom=GetDlgCtrlID((HWND)wParam);
-			if(idFrom>=MIN_CBUTTONID&&idFrom<=MAX_CBUTTONID){
+
+			if(idFrom>=MIN_CBUTTONID&&idFrom<=MAX_CBUTTONID) {
 				BB_CustomButtonClick(dat,idFrom,(HWND) wParam,1);
 				break;
-				}
+			}
 				//
 			if ((HWND)wParam == GetDlgItem(hwndDlg,IDC_NAME/* IDC_PROTOCOL*/) && dat->hContact != 0) {
 				POINT pt;
@@ -4339,9 +4342,9 @@ quote_from_last:
 					InvalidateRect(GetParent(hwndDlg), NULL, FALSE);
 					return TRUE;
 				}
-				}
 			}
 			break;
+		}
 			/*
 			 * this is now *only* called from the global ME_PROTO_ACK handler (static int ProtoAck() in msgs.c)
 			 * it receives:
@@ -4426,9 +4429,28 @@ quote_from_last:
 		 * broadcasted when GLOBAL info panel setting changes
 		 */
 		case DM_SETINFOPANEL:
-			dat->Panel->getVisibility();
-			dat->Panel->showHide();
-			return 0;
+			if(wParam == 0 && lParam == 0) {
+				dat->Panel->getVisibility();
+				dat->Panel->loadHeight();
+				dat->Panel->showHide();
+			}
+			else {
+				_MessageWindowData *SrcDat = (_MessageWindowData *)wParam;
+				if(lParam == 0)
+					dat->Panel->loadHeight();
+				else {
+					if(SrcDat && lParam && dat != SrcDat && !dat->Panel->isPrivateHeight()) {
+						if(SrcDat->bType != SESSIONTYPE_IM && M->GetByte("syncAllPanels", 0) == 0)
+							return(0);
+
+						if(!(dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS) && SrcDat->pContainer != dat->pContainer)
+							return(0);
+						dat->panelWidth = -1;
+						dat->Panel->setHeight((LONG)lParam);
+					}
+				}
+			}
+			return(0);
 
 			/*
 			 * show the balloon tooltip control.
@@ -4680,36 +4702,71 @@ quote_from_last:
 				}
 			}
 			if (dat->hContact != NULL) {
-				TCHAR szFilename[MAX_PATH];
-				HDROP hDrop = (HDROP)wParam;
-				int fileCount = DragQueryFile(hDrop, -1, NULL, 0), totalCount = 0, i;
-				TCHAR** ppFiles = NULL;
-				for (i = 0; i < fileCount; i++) {
-					DragQueryFile(hDrop, i, szFilename, SIZEOF(szFilename));
-					AddToFileList(&ppFiles, &totalCount, szFilename);
-				}
+				if (CMimAPI::m_MimVersion >= PLUGIN_MAKE_VERSION(0, 9, 0, 0)) {
 
-				if (!not_sending) {
-					CallService(MS_FILE_SENDSPECIFICFILEST, (WPARAM)dat->hContact, (LPARAM)ppFiles);
-				} else {
-#define MS_HTTPSERVER_ADDFILENAME "HTTPServer/AddFileName"
-
-					if (ServiceExists(MS_HTTPSERVER_ADDFILENAME)) {
-						char *szHTTPText;
-						int i;
-
-						for (i = 0;i < totalCount;i++) {
-							char* szFileName = mir_t2a( ppFiles[i] );
-							char *szTemp = (char*)CallService(MS_HTTPSERVER_ADDFILENAME, (WPARAM)szFileName, 0);
-							mir_free( szFileName );
-						}
-						szHTTPText = "DEBUG";
-						SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_REPLACESEL, TRUE, (LPARAM)szHTTPText);
-						SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+					TCHAR szFilename[MAX_PATH];
+					HDROP hDrop = (HDROP)wParam;
+					int fileCount = DragQueryFile(hDrop, -1, NULL, 0), totalCount = 0, i;
+					TCHAR** ppFiles = NULL;
+					for (i = 0; i < fileCount; i++) {
+						DragQueryFile(hDrop, i, szFilename, SIZEOF(szFilename));
+						AddToFileListT(&ppFiles, &totalCount, szFilename);
 					}
+
+					if (!not_sending) {
+						CallService(MS_FILE_SENDSPECIFICFILEST, (WPARAM)dat->hContact, (LPARAM)ppFiles);
+					} else {
+	#define MS_HTTPSERVER_ADDFILENAME "HTTPServer/AddFileName"
+
+						if (ServiceExists(MS_HTTPSERVER_ADDFILENAME)) {
+							char *szHTTPText;
+							int i;
+
+							for (i = 0;i < totalCount;i++) {
+								char* szFileName = mir_t2a( ppFiles[i] );
+								char *szTemp = (char*)CallService(MS_HTTPSERVER_ADDFILENAME, (WPARAM)szFileName, 0);
+								mir_free( szFileName );
+							}
+							szHTTPText = "DEBUG";
+							SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_REPLACESEL, TRUE, (LPARAM)szHTTPText);
+							SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+						}
+					}
+					for (i = 0;ppFiles[i];i++) free(ppFiles[i]);
+					free(ppFiles);
 				}
-				for (i = 0;ppFiles[i];i++) free(ppFiles[i]);
-				free(ppFiles);
+				else {
+					TCHAR szFilename[MAX_PATH];
+					HDROP hDrop = (HDROP)wParam;
+					int fileCount = DragQueryFile(hDrop, -1, NULL, 0), totalCount = 0, i;
+					char** ppFiles = NULL;
+					for (i = 0; i < fileCount; i++) {
+						DragQueryFile(hDrop, i, szFilename, SIZEOF(szFilename));
+						AddToFileListA(&ppFiles, &totalCount, szFilename);
+					}
+
+					if (!not_sending) {
+						CallService(MS_FILE_SENDSPECIFICFILES, (WPARAM)dat->hContact, (LPARAM)ppFiles);
+					} else {
+	#define MS_HTTPSERVER_ADDFILENAME "HTTPServer/AddFileName"
+
+						if (ServiceExists(MS_HTTPSERVER_ADDFILENAME)) {
+							char *szHTTPText;
+							int i;
+
+							for (i = 0;i < totalCount;i++) {
+								char* szFileName =  ppFiles[i];
+								char *szTemp = (char*)CallService(MS_HTTPSERVER_ADDFILENAME, (WPARAM)szFileName, 0);
+							}
+							szHTTPText = "DEBUG";
+							SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_REPLACESEL, TRUE, (LPARAM)szHTTPText);
+							SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+						}
+					}
+					for (i = 0;ppFiles[i];i++)
+						free(ppFiles[i]);
+					free(ppFiles);
+				}
 			}
 		}
 		return 0;

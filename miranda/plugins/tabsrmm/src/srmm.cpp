@@ -66,7 +66,7 @@ PLUGININFOEX pluginInfo = {
 #endif
 #endif
 #endif
-	PLUGIN_MAKE_VERSION(3, 0, 0, 5),
+	PLUGIN_MAKE_VERSION(3, 0, 0, 6),
 	"Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
 	"The Miranda developers team and contributors",
 	"silvercircle _at_ gmail _dot_ com",
@@ -89,6 +89,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 
 extern "C" __declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
+	CMimAPI::m_MimVersion = mirandaVersion;
+
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 9, 0, 0)) {
 		MessageBox(0, _T("This version of tabSRMM requires Miranda 0.9.0 or later. The plugin cannot be loaded."), _T("tabSRMM"), MB_OK | MB_ICONERROR);
 		return NULL;
@@ -258,7 +260,7 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 					DestroyWindow(hwndDlg);
 					return TRUE;
 				case IDC_SUPPORT:
-					CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://wiki.miranda.or.at/");
+					CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://miranda.or.at/TabSrmm:Development3_0_KnownIssues");
 					break;
 			}
 			break;
@@ -302,7 +304,7 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			FillRect(hdcMem, &rcClient, reinterpret_cast<HBRUSH>(GetStockObject(WHITE_BRUSH)));
 			rcClient.bottom = 50;
 			if(fAero) {
-				FillRect(hdcMem, &rcClient, reinterpret_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
+				FillRect(hdcMem, &rcClient, CSkin::m_BrushBack);
 				CSkin::ApplyAeroEffect(hdcMem, &rcClient, CSkin::AERO_EFFECT_AREA_INFOPANEL);
 			}
 			else if(PluginConfig.m_WinVerMajor >= 5) {

@@ -648,12 +648,6 @@ void SendQueue::showErrorControls(_MessageWindowData *dat, const int showCmd) co
 		dat->dwFlags &= ~MWF_ERRORSTATE;
 		dat->hTabIcon = dat->hTabStatusIcon;
 	}
-	if (dat->Panel->isActive()) {
-		if (showCmd)
-			dat->Panel->showHideControls(SW_HIDE);
-		else
-			::SendMessage(hwndDlg, DM_SETINFOPANEL, 0, 0);
-	}
 
 	for (i = 0; i < 5; i++) {
 		if (IsWindow(GetDlgItem(hwndDlg, myerrorControls[i])))
@@ -845,7 +839,7 @@ int SendQueue::ackMessage(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 			if (m_jobs[iFound].sendCount > 1) {        // multisend is different...
 				TCHAR szErrMsg[256];
 				TCHAR *tszProto = mir_a2t(dat->szProto);
-				mir_sntprintf(szErrMsg, safe_sizeof(szErrMsg), TranslateT("Multisend: failed sending to: %s"), tszProto);
+				mir_sntprintf(szErrMsg, safe_sizeof(szErrMsg), CTranslator::get(CTranslator::GEN_SQ_MULTISENDERROR), tszProto);
 				logError(dat, -1, szErrMsg);
 				mir_free(tszProto);
 				goto verify;

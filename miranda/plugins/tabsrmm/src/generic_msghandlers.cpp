@@ -305,7 +305,7 @@ LRESULT DM_LoadLocale(_MessageWindowData *dat)
 	return 0;
 }
 
-LRESULT DM_RecalcPictureSize(_MessageWindowData *dat)
+LRESULT __stdcall DM_RecalcPictureSize(_MessageWindowData *dat)
 {
 	BITMAP bminfo;
 	HBITMAP hbm;

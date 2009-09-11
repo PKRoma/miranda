@@ -58,9 +58,10 @@ DGC		CMimAPI::m_pfnDwmGetColorizationColor = 0;
 BPSA	CMimAPI::m_pfnBufferedPaintSetAlpha = 0;
 
 bool	CMimAPI::m_shutDown = 0;
-TCHAR*	CMimAPI::m_userDir = 0;
+TCHAR	CMimAPI::m_userDir[] = _T("\0");
 
 bool	CMimAPI::m_haveBufferedPaint = false;
+DWORD	CMimAPI::m_MimVersion = 0;
 
 /*
  * read a setting for a contact
@@ -404,6 +405,16 @@ INT_PTR CMimAPI::foldersPathChanged()
 	return 0;
 }
 
+const TCHAR* CMimAPI::getUserDir()
+{
+	if(m_userDir[0] == 0) {
+		mir_sntprintf(m_userDir, MAX_PATH, ::Utils_ReplaceVarsT(_T("%miranda_userdata%")));
+		if(m_userDir[lstrlen(m_userDir) - 1] != '\\')
+		   _tcscat(m_userDir, _T("\\"));
+	}
+	return(m_userDir);
+}
+
 void CMimAPI::InitPaths()
 {
 	m_szProfilePath[0] = 0;
@@ -424,6 +435,7 @@ void CMimAPI::InitPaths()
  * Initialize various Win32 API functions which are not common to all versions of Windows.
  * We have to work with functions pointers here.
  */
+
 void CMimAPI::InitAPI()
 {
 	m_hUxTheme = 0;

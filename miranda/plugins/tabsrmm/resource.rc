@@ -8,8 +8,9 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include <windows.h>
-#include "../../include/statusmodes.h"
 #include <winres.h>
+#include "../../include/statusmodes.h"
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -26,6 +27,38 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 //
 // Dialog
 //
+
+IDD_INFOPANEL DIALOGEX 0, 0, 282, 176
+STYLE DS_FIXEDSYS | WS_CHILD | WS_BORDER
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT           "",IDC_STATIC,0,0,281,175
+    LTEXT           "Customize the panel",IDC_IPCONFIG_TITLE,6,4,271,11
+    GROUPBOX        "Scope of settings",IDC_GROUP_SCOPE,5,15,271,43
+    LTEXT           "",IDC_STATIC_VISIBILTY,10,27,128,10
+    COMBOBOX        IDC_PANELVISIBILITY,149,24,118,16,CBS_DROPDOWNLIST | 
+                    CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Use global or private panel height",IDC_STATIC,10,42,128,10
+    COMBOBOX        IDC_PANELSIZE,149,39,118,16,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Set size to",IDC_GROUP_SIZE,5,59,271,45
+    PUSHBUTTON      "Compact (1 Line)",IDC_SIZECOMPACT,10,71,84,14
+    PUSHBUTTON      "Normal (2 Lines)",IDC_SIZENORMAL,98,71,84,14
+    PUSHBUTTON      "Large",IDC_SIZELARGE,187,71,84,14
+    LTEXT           "Tip: To use a custom size you can always drag the bottom edge of the panel",
+                    IDC_SIZE_TIP,11,89,255,12
+    GROUPBOX        "Other options",IDC_GROUP_OTHER,5,105,271,39
+    CONTROL         "",IDC_NOSYNC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,
+                    114,254,9
+    LTEXT           "Note: All settings are applied immediately",
+                    IDC_IPCONFIG_FOOTER,7,146,267,11
+    LTEXT           "The container is using private settings. The panel  height  will not be shared with other containers.",
+                    IDC_IPCONFIG_PRIVATECONTAINER,7,157,267,18
+    LTEXT           "Show picture for this contact",IDC_STATIC,10,129,128,10
+    COMBOBOX        IDC_PANELPICTUREVIS,149,126,118,16,CBS_DROPDOWNLIST | 
+                    CBS_SORT | WS_VSCROLL | WS_TABSTOP
+END
 
 IDD_OPTIONS_PLUS DIALOGEX 0, 0, 303, 226
 STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
@@ -68,8 +101,8 @@ BEGIN
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
                     UDS_ARROWKEYS,196,123,9,13
     LTEXT           "characters",IDC_STATIC,210,124,89,10
-    PUSHBUTTON      "Only show event notifications when my status is...",IDC_POPUPSTATUSMODES,
-                    11,139,292,15
+    PUSHBUTTON      "Only show event notifications when my status is...",
+                    IDC_POPUPSTATUSMODES,11,139,292,15
     GROUPBOX        "Popup Options",IDC_STATIC,3,158,310,83
     LTEXT           "Text",IDC_STATIC,60,167,23,8
     LTEXT           "Background",IDC_STATIC,86,167,47,8
@@ -230,15 +263,16 @@ BEGIN
 END
 
 IDD_CONTAINEROPTIONS DIALOG DISCARDABLE  0, 0, 354, 224
-STYLE DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | 
-    WS_CAPTION | WS_SYSMENU
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | 
+    WS_SYSMENU
 CAPTION "   "
 FONT 8, "MS Shell Dlg"
 BEGIN
+    LTEXT           "",IDC_STATIC,0,25,354,197
     CONTROL         "",IDC_SECTIONTREE,"SysTreeView32",TVS_DISABLEDRAGDROP | 
                     TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS | TVS_TRACKSELECT | 
                     TVS_FULLROWSELECT | TVS_NONEVENHEIGHT | WS_BORDER | 
-                    WS_TABSTOP,1,33,87,180
+                    WS_TABSTOP,1,30,87,180
     CONTROL         "Only show tab bar when it's needed",IDC_O_NOTABS,"Button",
                     BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,135,65,156,
                     10
@@ -300,12 +334,12 @@ BEGIN
                     TBS_BOTH | WS_TABSTOP,174,105,95,19
     LTEXT           "Statisch",IDC_TLABEL_INACTIVE,269,112,19,9
     CONTROL         "Container settings are private",IDC_CNTPRIVATE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,96,165,158,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,96,170,158,10
     LTEXT           "Check if you don't want this container to use the global container options. Titlebar format and window position can always be private.",
-                    IDC_STATIC,105,174,238,18
-    DEFPUSHBUTTON   "OK",IDOK,194,195,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,249,195,50,14
-    PUSHBUTTON      "Apply",IDC_APPLY,301,195,50,14,WS_DISABLED
+                    IDC_STATIC,107,180,238,18
+    DEFPUSHBUTTON   "OK",IDOK,194,205,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,249,205,50,14
+    PUSHBUTTON      "Apply",IDC_APPLY,301,205,50,14,WS_DISABLED
     GROUPBOX        "Static",IDC_TITLEBOX,95,27,254,136
     EDITTEXT        IDC_DESC,99,37,246,26,ES_MULTILINE | ES_READONLY | 
                     ES_WANTRETURN | NOT WS_BORDER | NOT WS_TABSTOP
@@ -792,7 +826,7 @@ END
 IDD_SKINTABDIALOG DIALOGEX 0, 0, 312, 247
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_OPTIONSTAB,"SysTabControl32",WS_TABSTOP,1,1,310,
                     245,WS_EX_ACCEPTFILES
@@ -1116,14 +1150,6 @@ BEGIN
                 MENUITEM "Force Off",                   ID_THISCONTACT_OFF
             END
         END
-        POPUP "Favorites"
-        BEGIN
-            MENUITEM "Add Contact to Favorites",    ID_FAVORITES_ADDCONTACTTOFAVORITES
-
-            MENUITEM "Remove Contact from Favorites", 
-                                                    ID_FAVORITES_REMOVECONTACTFROMFAVORITES
-
-        END
     END
     POPUP "Unread Menu"
     BEGIN
@@ -1169,22 +1195,13 @@ BEGIN
         MENUITEM "No Message Sessions opened",  ID_DUMMY_NOMESSAGESESSIONSOPENED
 
     END
-    POPUP "Info panel"
+    POPUP "Favorites"
     BEGIN
-        MENUITEM "Quick Toggle\tALT-I",         ID_INFOPANEL_QUICKTOGGLE
-        MENUITEM SEPARATOR
-        POPUP "Container Setting"
-        BEGIN
-            MENUITEM "Enabled",                     ID_GLOBAL_ENABLED
-            MENUITEM "Disabled",                    ID_GLOBAL_DISABLED
-        END
-        POPUP "This Contact"
-        BEGIN
-            MENUITEM "Use Global Setting",          ID_THISCONTACT_USEGLOBALSETTING
+        MENUITEM "Add Contact to Favorites",    ID_FAVORITES_ADDCONTACTTOFAVORITES
 
-            MENUITEM "Always On",                   ID_THISCONTACT_ALWAYSON
-            MENUITEM "Always Off",                  ID_THISCONTACT_ALWAYSOFF
-        END
+        MENUITEM "Remove Contact from Favorites", 
+                                                ID_FAVORITES_REMOVECONTACTFROMFAVORITES
+
     END
     POPUP "Apparentmenu"
     BEGIN
@@ -1231,6 +1248,7 @@ BEGIN
     BEGIN
         MENUITEM "Show Menu Bar",               40076
         MENUITEM "Show Status Bar",             40077
+        MENUITEM "Info Panel...",               40208
         POPUP "Tool Bar"
         BEGIN
             MENUITEM "Show Tool Bar",               40078

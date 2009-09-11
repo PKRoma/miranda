@@ -1781,8 +1781,6 @@ void FindFirstEvent(_MessageWindowData *dat)
 
 void SaveSplitter(_MessageWindowData *dat)
 {
-	dat->Panel->saveHeight();
-
 	/*
 	 * group chats save their normal splitter position independently
 	 */
@@ -1818,14 +1816,12 @@ void PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd)
 	if (nen_options.iNoSounds)
 		return;
 
-	if (nen_options.bSimpleMode == 0) {
-		if (dwFlags & CNT_NOSOUND)
-			iPlay = FALSE;
-		else if (dwFlags & CNT_SYNCSOUNDS) {
-			iPlay = !MessageWindowOpened(0, (LPARAM)hwnd);
-		} else
-			iPlay = TRUE;
-	}
+	if (dwFlags & CNT_NOSOUND)
+		iPlay = FALSE;
+	else if (dwFlags & CNT_SYNCSOUNDS) {
+		iPlay = !MessageWindowOpened(0, (LPARAM)hwnd);
+	} else
+		iPlay = TRUE;
 
 	if (iPlay) {
 		if (GetForegroundWindow() == pContainer->hwnd && pContainer->hwndActive == hwnd)
@@ -2308,7 +2304,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 	} else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_STATICTEXT) || dis->hwndItem == GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT)) {
 		TCHAR szWindowText[256];
 		if (dat->pContainer->bSkinned) {
-			SetTextColor(dis->hDC, PluginConfig.skinDefaultFontColor);
+			SetTextColor(dis->hDC, CSkin::m_DefaultFontColor);
 			CSkin::SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
 		} else {
 			SetTextColor(dis->hDC, GetSysColor(COLOR_BTNTEXT));

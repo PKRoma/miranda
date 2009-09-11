@@ -83,20 +83,18 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
 	options->bShowDate = (BYTE)M->GetByte(MODULE, OPT_SHOW_DATE, FALSE);
 	options->bShowTime = (BYTE)M->GetByte(MODULE, OPT_SHOW_TIME, FALSE);
 	options->bShowHeaders = (BYTE)M->GetByte(MODULE, OPT_SHOW_HEADERS, FALSE);
-	options->iNumberMsg = (BYTE)M->GetByte(MODULE, OPT_NUMBER_MSG, TRUE);
-	options->bShowON = (BYTE)M->GetByte(MODULE, OPT_SHOW_ON, TRUE);
 	options->bNoRSS = (BOOL)M->GetByte(MODULE, OPT_NORSS, FALSE);
 	options->iDisable = (BYTE)M->GetByte(MODULE, OPT_DISABLE, 0);
 	options->iMUCDisable = (BYTE)M->GetByte(MODULE, OPT_MUCDISABLE, 0);
 	options->dwStatusMask = (DWORD)M->GetDword(MODULE, "statusmask", (DWORD) - 1);
 	options->bTraySupport = (BOOL)M->GetByte(MODULE, "traysupport", 0);
-	options->iAutoRestore = 0;
 	options->bWindowCheck = (BOOL)M->GetByte(MODULE, OPT_WINDOWCHECK, 0);
 	options->bNoRSS = (BOOL)M->GetByte(MODULE, OPT_NORSS, 0);
 	options->iLimitPreview = (int)M->GetDword(MODULE, OPT_LIMITPREVIEW, 0);
 	options->wMaxFavorites = 15;
 	options->wMaxRecent = 15;
 	options->dwRemoveMask = M->GetDword(MODULE, OPT_REMOVEMASK, 0);
+	options->bDisableNonMessage = M->GetByte(MODULE, "disablenonmessage", 0);
 	CheckForRemoveMask();
 	return 0;
 }
@@ -119,8 +117,6 @@ int NEN_WriteOptions(NEN_OPTIONS *options)
 	M->WriteByte(MODULE, OPT_SHOW_DATE, (BYTE)options->bShowDate);
 	M->WriteByte(MODULE, OPT_SHOW_TIME, (BYTE)options->bShowTime);
 	M->WriteByte(MODULE, OPT_SHOW_HEADERS, (BYTE)options->bShowHeaders);
-	M->WriteByte(MODULE, OPT_NUMBER_MSG, (BYTE)options->iNumberMsg);
-	M->WriteByte(MODULE, OPT_SHOW_ON, (BYTE)options->bShowON);
 	M->WriteByte(MODULE, OPT_DISABLE, (BYTE)options->iDisable);
 	M->WriteByte(MODULE, OPT_MUCDISABLE, (BYTE)options->iMUCDisable);
 	M->WriteByte(MODULE, "traysupport", (BYTE)options->bTraySupport);
@@ -128,6 +124,7 @@ int NEN_WriteOptions(NEN_OPTIONS *options)
 	M->WriteByte(MODULE, OPT_NORSS, (BYTE)options->bNoRSS);
 	M->WriteDword(MODULE, OPT_LIMITPREVIEW, options->iLimitPreview);
 	M->WriteDword(MODULE, OPT_REMOVEMASK, options->dwRemoveMask);
+	M->WriteByte(MODULE, "disablenonmessage", options->bDisableNonMessage);
 	return 0;
 }
 
@@ -932,11 +929,14 @@ int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOp
 	int heFlags;
 
 	if (nen_options.iDisable)                         // no popups at all. Period
-		return 0;
+		return(0);
 
 	heFlags = HistoryEvents_GetFlags(eventType);
 	if (heFlags != -1 && !(heFlags & HISTORYEVENTS_FLAG_DEFAULT)) // Filter history events popups
 		return 0;
+
+	if (nen_options.bDisableNonMessage && eventType != EVENTTYPE_MESSAGE)
+		return(0);
 
 	/*
 	 * check the status mode against the status mask

@@ -89,7 +89,7 @@ CImageItem* CSkin::m_switchBarItem = 0,
 
 SIZE CSkin::m_titleBarButtonSize = {0};
 
-COLORREF CSkin::m_ContainerColorKey = 0, CSkin::m_dwmColorRGB = 0;
+COLORREF CSkin::m_ContainerColorKey = 0, CSkin::m_dwmColorRGB = 0, CSkin::m_DefaultFontColor = 0;
 HBRUSH 	 CSkin::m_ContainerColorKeyBrush = 0, CSkin::m_MenuBGBrush = 0;
 
 HPEN 	CSkin::m_SkinLightShadowPen = 0, CSkin::m_SkinDarkShadowPen = 0;
@@ -97,8 +97,8 @@ HPEN 	CSkin::m_SkinLightShadowPen = 0, CSkin::m_SkinDarkShadowPen = 0;
 HICON	CSkin::m_closeIcon = 0, CSkin::m_maxIcon = 0, CSkin::m_minIcon = 0;
 
 UINT 	CSkin::m_aeroEffect = 0;
-
 DWORD 	CSkin::m_glowSize = 0;
+HBRUSH  CSkin::m_BrushBack = 0;
 
 AeroEffect* CSkin::m_currentAeroEffect = 0;
 
@@ -114,7 +114,8 @@ AeroEffect  CSkin::m_aeroEffects[AERO_EFFECT_LAST] = {
 		CORNER_ALL,									/* corner type */
 		GRADIENT_TB + 1,							/* gradient type */
 		8,											/* gradient radius */
-		8											/* glow size (0 means no glowing text, colors can be used) */
+		8,											/* glow size (0 means no glowing text, colors can be used) */
+		0
 	},
 	{
 		0xf0f0f0,
@@ -124,15 +125,17 @@ AeroEffect  CSkin::m_aeroEffects[AERO_EFFECT_LAST] = {
 		CORNER_ALL,
 		GRADIENT_TB + 1,
 		6,
-		8
+		8,
+		0
 	},
 	{
-		0xe0e0e0,
+		0x808080,
 		0x222222,
 		100,
-		225,
+		20,
 		0,
 		GRADIENT_TB + 1,
+		0,
 		0,
 		0
 	}
@@ -270,7 +273,7 @@ static DWORD __forceinline argb_from_cola(COLORREF col, UINT32 alpha)
 }
 
 
-void DrawAlpha(HDC hDC, PRECT rc, DWORD clr_base, int alpha, DWORD clr_dest, BYTE clr_dest_trans, BYTE bGradient,
+void __stdcall DrawAlpha(HDC hDC, PRECT rc, DWORD clr_base, int alpha, DWORD clr_dest, BYTE clr_dest_trans, BYTE bGradient,
 			   BYTE bCorner, DWORD dwRadius, CImageItem *imageItem)
 {
 	HBRUSH BrMask;
@@ -1690,9 +1693,9 @@ void CSkin::Load()
 
 			GetPrivateProfileString(_T("Global"), _T("FontColor"), _T("None"), buffer, 20, m_tszFileName);
 			if (_tcscmp(buffer, _T("None")))
-				PluginConfig.skinDefaultFontColor = HexStringToLong(buffer);
+				CSkin::m_DefaultFontColor = HexStringToLong(buffer);
 			else
-				PluginConfig.skinDefaultFontColor = GetSysColor(COLOR_BTNTEXT);
+				CSkin::m_DefaultFontColor = GetSysColor(COLOR_BTNTEXT);
 			buffer[499] = 0;
 			free(szSections);
 
@@ -2101,7 +2104,8 @@ UINT CSkin::NcCalcRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT
 		else
 			return orig;
 	}
-	if (mwdat && (mwdat->sendMode & SMODE_MULTIPLE || mwdat->sendMode & SMODE_CONTAINER) && skinID == ID_EXTBKINPUTAREA) {
+	if (mwdat && (mwdat->sendMode & SMODE_MULTIPLE || mwdat->sendMode & SMODE_CONTAINER ||
+				  mwdat->fEditNotesActive || mwdat->sendMode & SMODE_SENDLATER) && skinID == ID_EXTBKINPUTAREA) {
 		InflateRect(&nccp->rgrc[0], -1, -1);
 		return WVR_REDRAW;
 	}
@@ -2127,7 +2131,7 @@ UINT CSkin::DrawRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT s
 
 	isMultipleReason = ((skinID == ID_EXTBKINPUTAREA) && (mwdat->sendMode & SMODE_MULTIPLE || mwdat->sendMode & SMODE_CONTAINER));
 
-	if (isMultipleReason || ((mwdat && mwdat->hTheme) || (mwdat && mwdat->pContainer->bSkinned && !item->IGNORED && !mwdat->bFlatMsgLog))) {
+	if ((isMultipleReason || isEditNotesReason || isSendLaterReason) || ((mwdat && mwdat->hTheme) || (mwdat && mwdat->pContainer->bSkinned && !item->IGNORED && !mwdat->bFlatMsgLog))) {
 		HDC hdc = GetWindowDC(hwnd);
 		RECT rcWindow;
 		POINT pt;
@@ -2257,6 +2261,26 @@ HBITMAP CSkin::ResizeBitmap(HBITMAP hBmpSrc, LONG width, LONG height, bool &must
 }
 
 /**
+ * Draw the given skin item to the target rectangle and dc
+ *
+ * @param hdc    HDC: device context
+ * @param rc     RECT: target rectangle
+ * @param item   CSkinItem*: fully initialiized skin item
+ *
+ * @return bool: true if the item has been painted, false if not
+ *  	   (only reason: the ignore flag in the item is set).
+ */
+bool __fastcall CSkin::DrawItem(const HDC hdc, const RECT *rc, const CSkinItem *item)
+{
+	if(!item->IGNORED) {
+		::DrawAlpha(hdc, const_cast<RECT *>(rc), item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
+				  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
+		return(true);
+	}
+	return(false);
+}
+
+/**
  * Create a 32bit RGBA bitmap, compatible for rendering with alpha channel.
  * Required by anything which would render on a transparent aero surface.
  * the image is a "bottom up" bitmap, as it has a negative
@@ -2295,14 +2319,14 @@ HBITMAP CSkin::CreateAeroCompatibleBitmap(const RECT &rc, HDC dc)
 void CSkin::MapClientToParent(HWND hwndClient, HWND hwndParent, RECT &rc)
 {
 	POINT pt;
-	GetWindowRect(hwndClient, &rc);
+	::GetWindowRect(hwndClient, &rc);
 
 	LONG  cx = rc.right - rc.left;
 	LONG  cy = rc.bottom - rc.top;
 
 	pt.x = rc.left; pt.y = rc.top;
 
-	ScreenToClient(hwndParent, &pt);
+	::ScreenToClient(hwndParent, &pt);
 
 	rc.top = pt.y;
 	rc.left = pt.x;
@@ -2469,12 +2493,19 @@ void CSkin::ApplyAeroEffect(const HDC hdc, const RECT *rc, int iEffectArea, HAND
 
 void CSkin::initAeroEffect()
 {
+	if(m_BrushBack) {
+		::DeleteObject(m_BrushBack);
+		m_BrushBack = 0;
+	}
 	if(m_aeroEffect >= 0 && m_aeroEffect < AERO_EFFECT_LAST) {
 		m_currentAeroEffect = &m_aeroEffects[m_aeroEffect];
 		m_glowSize = m_currentAeroEffect->m_glowSize;
+		m_BrushBack = ::CreateSolidBrush(m_currentAeroEffect->m_clrBack);
+
 	} else {
 		m_currentAeroEffect = 0;
 		m_glowSize = 10;
+		m_BrushBack = ::CreateSolidBrush(0);
 	}
 }
 

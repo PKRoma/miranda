@@ -1,31 +1,36 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
-		--pad=oper --one-line=keep-blocks  --unpad=paren
-
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2003 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-containeroptions.c  dialog implementaion for setting the container options.
-                    part of tabSRMM
-$Id$
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * The dialog to customize per container options
+ *
+ */
 
 #include "commonheaders.h"
 #pragma hdrstop
@@ -220,7 +225,31 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			SetFocus(hwndTree);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), FALSE);
 
+			HFONT hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_DESC, WM_GETFONT, 0, 0);
+			LOGFONT lf = {0};
+
+			GetObject(hFont, sizeof(lf), &lf);
+			//lf.lfWeight = FW_BOLD;
+			lf.lfHeight = (int)(lf.lfHeight * 1.2);
+			hFont = CreateFontIndirect(&lf);
+
+			SendDlgItemMessage(hwndDlg, IDC_TITLEBOX, WM_SETFONT, (WPARAM)hFont, TRUE);
+
 			return FALSE;
+		}
+
+		case WM_CTLCOLOREDIT:
+		case WM_CTLCOLORSTATIC:
+		{
+			HWND hwndChild = (HWND)lParam;
+			UINT id = GetDlgCtrlID(hwndChild);
+
+			if(hwndChild == GetDlgItem(hwndDlg, IDC_TITLEBOX)) {
+				::SetTextColor((HDC)wParam, RGB(60, 60, 150));
+			} else if(hwndChild == GetDlgItem(hwndDlg, IDC_DESC))
+				::SetTextColor((HDC)wParam, RGB(160, 50, 50));
+			SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
+			return (INT_PTR)GetSysColorBrush(COLOR_WINDOW);
 		}
 
 		case WM_HSCROLL:
@@ -259,7 +288,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
 			rcClient.bottom = 40;
 			if(fAero) {
-				FillRect(hdcMem, &rcClient, reinterpret_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
+				FillRect(hdcMem, &rcClient, CSkin::m_BrushBack);
 				CSkin::ApplyAeroEffect(hdcMem, &rcClient, CSkin::AERO_EFFECT_AREA_INFOPANEL);
 			}
 			else if(PluginConfig.m_WinVerMajor >= 5) {
@@ -598,6 +627,9 @@ do_apply:
 		case WM_DESTROY: {
 			pContainer->hWndOptions = 0;
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
+
+			HFONT hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_TITLEBOX, WM_GETFONT, 0, 0);
+			DeleteObject(hFont);
 			break;
 		}
 	}

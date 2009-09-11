@@ -316,7 +316,7 @@ LONG_PTR CMenuBar::customDrawWorker(NMCUSTOMDRAW *nm)
 							CSkin::ApplyAeroEffect(m_hdcDraw, &m_rcItem, CSkin::AERO_EFFECT_AREA_MENUBAR);
 							nm->rc.bottom++;
 						}
-						else if(M->isVSThemed()) {
+						else if(M->isVSThemed() && !CSkin::m_skinEnabled) {
 							m_rcItem.bottom -= 2;
 							M->m_pfnDrawThemeBackground(m_hTheme, m_hdcDraw, 6, 1, &m_rcItem, &m_rcItem);
 						}
@@ -335,6 +335,7 @@ LONG_PTR CMenuBar::customDrawWorker(NMCUSTOMDRAW *nm)
 			case CDDS_ITEMPREPAINT:
 				if(fMustDraw) {
 					TCHAR	*szText = 0;
+					bool	fDraw = true;
 
 					int iIndex = idToIndex(nmtb->nmcd.dwItemSpec);
 
@@ -344,7 +345,17 @@ LONG_PTR CMenuBar::customDrawWorker(NMCUSTOMDRAW *nm)
 					UINT	uState = nmtb->nmcd.uItemState;
 
 					nmtb->nmcd.rc.bottom--;
-					if(m_isAero || M->isVSThemed()) {
+					if(CSkin::m_skinEnabled) {
+						CSkinItem *item;
+
+						if(uState & CDIS_MARKED || uState & CDIS_CHECKED || uState & CDIS_SELECTED)
+							item = &SkinItems[ID_EXTBKBUTTONSPRESSED];
+						else if(uState & CDIS_HOT)
+							item = &SkinItems[ID_EXTBKBUTTONSMOUSEOVER];
+
+						fDraw = !CSkin::DrawItem(m_hdcDraw, &nmtb->nmcd.rc, item);
+					}
+					if(fDraw) {
 						COLORREF clr = GetSysColor(COLOR_HOTLIGHT);
 						COLORREF clrRev = clr; //RGB(GetBValue(clr), GetGValue(clr), GetRValue(clr));
 						if(uState & CDIS_MARKED || uState & CDIS_CHECKED) {
@@ -362,7 +373,10 @@ LONG_PTR CMenuBar::customDrawWorker(NMCUSTOMDRAW *nm)
 					}
 
 					if(szText) {
-						::SetBkColor(m_hdcDraw, (uState & (CDIS_SELECTED | CDIS_HOT | CDIS_MARKED)) ? ::GetSysColor(COLOR_HIGHLIGHTTEXT) : ::GetSysColor(COLOR_BTNTEXT));
+						if(CSkin::m_skinEnabled)
+							::SetTextColor(m_hdcDraw, CSkin::m_DefaultFontColor);
+						else
+							::SetTextColor(m_hdcDraw, (uState & (CDIS_SELECTED | CDIS_HOT | CDIS_MARKED)) ? ::GetSysColor(COLOR_HIGHLIGHTTEXT) : ::GetSysColor(COLOR_BTNTEXT));
 						::SetBkMode(m_hdcDraw, TRANSPARENT);
 						CSkin::RenderText(m_hdcDraw, m_hTheme, szText, &nmtb->nmcd.rc, DT_SINGLELINE | DT_VCENTER | DT_CENTER);
 					}
@@ -750,13 +764,13 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 
 			SetBkMode(hdcMem, TRANSPARENT);
 			if(CSkin::m_skinEnabled)
-				SetTextColor(hdcMem, PluginConfig.skinDefaultFontColor);
+				SetTextColor(hdcMem, CSkin::m_DefaultFontColor);
 			hFontOld = (HFONT)SelectObject(hdcMem, GetStockObject(DEFAULT_GUI_FONT));
 
 			if (pContainer && pContainer->bSkinned)
 				CSkin::SkinDrawBG(hWnd, GetParent(hWnd), pContainer, &rcClient, hdcMem);
 			else if(fAero) {
-				FillRect(hdcMem, &rcClient, (HBRUSH)GetStockObject(BLACK_BRUSH));
+				FillRect(hdcMem, &rcClient, CSkin::m_BrushBack);
 				CSkin::ApplyAeroEffect(hdcMem, &rcClient, CSkin::AERO_EFFECT_AREA_STATUSBAR);
 			} else
 				FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
@@ -764,8 +778,7 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 			for (i = 0; i < (int)nParts; i++) {
 				SendMessage(hWnd, SB_GETRECT, (WPARAM)i, (LPARAM)&itemRect);
 				if (!item->IGNORED && !fAero && pContainer && pContainer->bSkinned)
-					DrawAlpha(hdcMem, &itemRect, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
-							  item->CORNER, item->BORDERSTYLE, item->imageItem);
+					CSkin::DrawItem(hdcMem, &itemRect, item);
 
 				if (i == 0)
 					itemRect.left += 2;

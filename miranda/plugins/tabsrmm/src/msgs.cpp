@@ -971,11 +971,11 @@ static int ContactDeleted(WPARAM wParam, LPARAM lParam)
 
 static void RestoreUnreadMessageAlerts(void)
 {
-	CLISTEVENT cle = { 0 };
+	CLISTEVENT 	cle = { 0 };
 	DBEVENTINFO dbei = { 0 };
-	char toolTip[256];
-	int windowAlreadyExists;
-	int usingReadNext = 0;
+	TCHAR		toolTip[256];
+	int 		windowAlreadyExists;
+	int 		usingReadNext = 0;
 
 	int autoPopup = M->GetByte(SRMSGMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP);
 	HANDLE hDbEvent, hContact;
@@ -1002,8 +1002,9 @@ static void RestoreUnreadMessageAlerts(void)
 
 				cle.hContact = hContact;
 				cle.hDbEvent = hDbEvent;
-				_snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, 0));
-				cle.pszTooltip = toolTip;
+				mir_sntprintf(toolTip, safe_sizeof(toolTip), CTranslator::get(CTranslator::GEN_STRING_MESSAGEFROM),
+							  (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, GCDNF_TCHAR));
+				cle.ptszTooltip = toolTip;
 				CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
 			}
 			hDbEvent = (HANDLE) CallService(MS_DB_EVENT_FINDNEXT, (WPARAM) hDbEvent, 0);
@@ -1034,11 +1035,19 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	static Update upd = {0};
 
 #if defined(_UNICODE)
+#if defined(_WIN64)
 	static char szCurrentVersion[30];
-	static char *szVersionUrl = "http://download.miranda.or.at/tabsrmm/2/version.txt";
+	static char *szVersionUrl = "http://download.miranda.or.at/tabsrmm/3/version.txt";
 	static char *szUpdateUrl = "http://download.miranda.or.at/tabsrmm/2/tabsrmmW.zip";
 	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3699";
 	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3699";
+#else
+	static char szCurrentVersion[30];
+	static char *szVersionUrl = "http://download.miranda.or.at/tabsrmm/3/version.txt";
+	static char *szUpdateUrl = "http://download.miranda.or.at/tabsrmm/2/tabsrmmW.zip";
+	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3699";
+	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3699";
+#endif
 #else
 	static char szCurrentVersion[30];
 	static char *szVersionUrl = "http://download.miranda.or.at/tabsrmm/2/version.txt";
@@ -2081,6 +2090,7 @@ static int SetupIconLibConfig()
 		sid.pszSection = ICONBLOCKS[n].szSection;
 		while (ICONBLOCKS[n].idesc[i].szDesc) {
 			sid.pszName = ICONBLOCKS[n].idesc[i].szName;
+			sid.cx = sid.cy = 16;
 			sid.pszDescription = ICONBLOCKS[n].idesc[i].szDesc;
 			sid.iDefaultIndex = ICONBLOCKS[n].idesc[i].uId == -IDI_HISTORY ? 0 : ICONBLOCKS[n].idesc[i].uId;        // workaround problem /w icoLib and a resource id of 1 (actually, a Windows problem)
 			i++;

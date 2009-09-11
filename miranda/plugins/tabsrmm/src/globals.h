@@ -127,7 +127,6 @@ public:
 	COLORREF    crDefault, crIncoming, crOutgoing, crOldIncoming, crOldOutgoing, crStatus;
 	BOOL        bUnicodeBuild;
 	HFONT       hFontCaption;
-	COLORREF    skinDefaultFontColor;
 	DWORD       m_LangPackCP;
 	BYTE        m_SmileyButtonOverride;
 	NONCLIENTMETRICS m_ncm;

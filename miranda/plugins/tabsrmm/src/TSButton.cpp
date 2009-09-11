@@ -224,12 +224,10 @@ default_draw_bg:
 					rc1.right -= item->MARGIN_RIGHT;
 					rc1.top += item->MARGIN_TOP;
 					rc1.bottom -= item->MARGIN_BOTTOM;
-					DrawAlpha(hdcMem, &rc1, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-							  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
+					CSkin::DrawItem(hdcMem, &rc1, item);
 					if (clip && realItem) {
 						SelectClipRgn(hdcMem, clip);
-						DrawAlpha(hdcMem, &rc1, realItem->COLOR, realItem->ALPHA, realItem->COLOR2, realItem->COLOR2_TRANSPARENT,
-								  realItem->GRADIENT, realItem->CORNER, realItem->BORDERSTYLE, realItem->imageItem);
+						CSkin::DrawItem(hdcMem, &rc1, realItem);
 					}
 				} else
 					goto flat_themed;
@@ -316,12 +314,10 @@ flat_themed:
 					rc1.right -= item->MARGIN_RIGHT;
 					rc1.top += item->MARGIN_TOP;
 					rc1.bottom -= item->MARGIN_BOTTOM;
-					DrawAlpha(hdcMem, &rc1, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-							  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
+					CSkin::DrawItem(hdcMem, &rc1, item);
 					if (clip && realItem) {
 						SelectClipRgn(hdcMem, clip);
-						DrawAlpha(hdcMem, &rc1, realItem->COLOR, realItem->ALPHA, realItem->COLOR2, realItem->COLOR2_TRANSPARENT,
-								  realItem->GRADIENT, realItem->CORNER, realItem->BORDERSTYLE, realItem->imageItem);
+						CSkin::DrawItem(hdcMem, &rc1, realItem);
 					}
 				} else
 					goto nonflat_themed;
@@ -445,7 +441,7 @@ bg_done:
 				RECT rc = rcClient;
 
 				if (ctl->pContainer && ctl->pContainer->bSkinned)
-					SetTextColor(hdcMem, ctl->stateId != PBS_DISABLED ? PluginConfig.skinDefaultFontColor : GetSysColor(COLOR_GRAYTEXT));
+					SetTextColor(hdcMem, ctl->stateId != PBS_DISABLED ? CSkin::m_DefaultFontColor : GetSysColor(COLOR_GRAYTEXT));
 				else
 					SetTextColor(hdcMem, ctl->stateId != PBS_DISABLED ? GetSysColor(COLOR_BTNTEXT) : GetSysColor(COLOR_GRAYTEXT));
 				SetBkMode(hdcMem, TRANSPARENT);
@@ -490,7 +486,7 @@ bg_done:
 			hOldFont = (HFONT)SelectObject(hdcMem, ctl->hFont);
 			// XP w/themes doesn't used the glossy disabled text.  Is it always using COLOR_GRAYTEXT?  Seems so.
 			if (ctl->pContainer && ctl->pContainer->bSkinned)
-				SetTextColor(hdcMem, IsWindowEnabled(ctl->hwnd) ? PluginConfig.skinDefaultFontColor : GetSysColor(COLOR_GRAYTEXT));
+				SetTextColor(hdcMem, IsWindowEnabled(ctl->hwnd) ? CSkin::m_DefaultFontColor : GetSysColor(COLOR_GRAYTEXT));
 			else
 				SetTextColor(hdcMem, IsWindowEnabled(ctl->hwnd) || !ctl->hThemeButton ? GetSysColor(COLOR_BTNTEXT) : GetSysColor(COLOR_GRAYTEXT));
 			GetTextExtentPoint32(hdcMem, szText, lstrlen(szText), &sz);

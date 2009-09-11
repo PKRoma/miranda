@@ -70,12 +70,6 @@ int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOp
 #define OPT_COLDEFAULT_MESSAGE "DefaultColorMsg"
 #define OPT_COLBACK_MESSAGE "ColorBackMsg"
 #define OPT_COLTEXT_MESSAGE "ColorTextMsg"
-#define OPT_COLDEFAULT_URL "DefaultColorUrl"
-#define OPT_COLBACK_URL "ColorBackUrl"
-#define OPT_COLTEXT_URL "ColorTextUrl"
-#define OPT_COLDEFAULT_FILE "DefaultColorFile"
-#define OPT_COLBACK_FILE "ColorBackFile"
-#define OPT_COLTEXT_FILE "ColorTextFile"
 #define OPT_COLDEFAULT_OTHERS "DefaultColorOthers"
 #define OPT_COLBACK_OTHERS "ColorBackOthers"
 #define OPT_COLTEXT_OTHERS "ColorTextOthers"
@@ -85,30 +79,22 @@ int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOp
 #define OPT_MASKACTTE "ActionTimeExpires"
 #define OPT_MERGEPOPUP "MergePopup"
 #define OPT_DELAY_MESSAGE "DelayMessage"
-#define OPT_DELAY_URL "DelayUrl"
-#define OPT_DELAY_FILE "DelayFile"
 #define OPT_DELAY_OTHERS "DelayOthers"
 #define OPT_SHOW_DATE "ShowDate"
 #define OPT_SHOW_TIME "ShowTime"
 #define OPT_SHOW_HEADERS "ShowHeaders"
-#define OPT_NUMBER_MSG "NumberMsg"
-#define OPT_SHOW_ON "ShowOldOrNew"
 #define OPT_NORSS "NoRSSAnnounces"
 #define OPT_DISABLE "Disabled"
 #define OPT_MUCDISABLE "MUCDisabled"
 #define OPT_WINDOWCHECK "WindowCheck"
 #define OPT_LIMITPREVIEW "LimitPreview"
-#define OPT_ANNOUNCEMETHOD "method"
-#define OPT_FLOATER "floater"
-#define OPT_FLOATERINWIN "floater_win"
-#define OPT_FLOATERONLYMIN "floater_onlymin"
 #define OPT_REMOVEMASK "removemask"
-#define OPT_SIMPLEOPT "simplemode"
 
-typedef struct _nen {
+struct NEN_OPTIONS {
     BOOL bPreview;
     BOOL bDefaultColorMsg;
 	BOOL bDefaultColorOthers;
+	BOOL bDisableNonMessage;
     COLORREF colBackMsg;
     COLORREF colTextMsg;
 	COLORREF colBackOthers;
@@ -123,28 +109,20 @@ typedef struct _nen {
 	BOOL bShowDate;
 	BOOL bShowTime;
 	BOOL bShowHeaders;
-	BYTE iNumberMsg;
-	BOOL bShowON;
 	BOOL bNoRSS;
     int  iDisable;
 	int	 iMUCDisable;
     int  dwStatusMask;
     BOOL bTraySupport;
     BOOL bTrayExist;
-    int  iAutoRestore;
     BOOL iNoSounds;
     BOOL iNoAutoPopup;
     BOOL bWindowCheck;
     int  iLimitPreview;
     WORD wMaxRecent;
     WORD wMaxFavorites;
-	BYTE bSimpleMode;
     DWORD dwRemoveMask;
-} NEN_OPTIONS;
-
-#define FLOATER_ATTACHED 1
-#define FLOATER_FREE 2
-#define FLOATER_ALWAYS 4
+};
 
 typedef struct {
 	HANDLE hEvent;
@@ -169,9 +147,6 @@ typedef struct {
 #define NR_MERGED 5
 
 #define TIMER_TO_ACTION 50685
-
-#define POPUP_COMMENT_MESSAGE "Message"
-#define POPUP_COMMENT_OTHER "Unknown Event"
 
 #define MAX_DATASIZE	50
 #define MAX_POPUPS 20

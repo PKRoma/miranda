@@ -149,7 +149,7 @@ static struct colOptions {
  * used by the "styled" tabs which look similar to visual studio UI tabs.
  */
 
-static void DrawWuLine(HDC pDC, int X0, int Y0, int X1, int Y1, COLORREF clrLine)
+static void __stdcall DrawWuLine(HDC pDC, int X0, int Y0, int X1, int Y1, COLORREF clrLine)
 {
 	int XDir, DeltaX, DeltaY;
 	unsigned short ErrorAdj;
@@ -474,8 +474,7 @@ static void DrawItemRect(struct TabControlData *tabdat, HDC dc, RECT *rcItem, in
 
 					if (!item->IGNORED) {
 						CSkin::SkinDrawBG(tabdat->hwnd, tabdat->pContainer->hwnd, tabdat->pContainer, rcItem, dc);
-						DrawAlpha(dc, rcItem, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-								  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
+						CSkin::DrawItem(dc, rcItem, item);
 					} else
 						goto b_nonskinned;
 				} else {
@@ -488,7 +487,7 @@ b_nonskinned:
 						DrawEdge(dc, rcItem, EDGE_RAISED, BF_RECT | BF_SOFT);
 				}
 			} else {
-				FillRect(dc, rcItem, (M->isAero() && !(dwStyle & TCS_BOTTOM)) ? (HBRUSH)GetStockObject(BLACK_BRUSH) : GetSysColorBrush(COLOR_3DFACE));
+				FillRect(dc, rcItem, (M->isAero() && !(dwStyle & TCS_BOTTOM)) ? CSkin::m_BrushBack : GetSysColorBrush(COLOR_3DFACE));
 				CMimAPI::m_pfnDrawThemeBackground(tabdat->hThemeButton, dc, 1, nHint & HINT_ACTIVE_ITEM ? 3 : (nHint & HINT_HOTTRACK ? 2 : 1), rcItem, rcItem);
 			}
 			return;
@@ -530,8 +529,7 @@ b_nonskinned:
 					rcItem->right -= item->MARGIN_RIGHT;
 					rcItem->top += item->MARGIN_TOP;
 					rcItem->bottom -= item->MARGIN_BOTTOM;
-					DrawAlpha(dc, rcItem, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-							  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
+					CSkin::DrawItem(dc, rcItem, item);
 					return;
 				}
 			}
@@ -548,8 +546,7 @@ b_nonskinned:
 
 				rcItem->left += item->MARGIN_LEFT;
 				rcItem->right -= item->MARGIN_RIGHT;
-				DrawAlpha(dc, rcItem, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-						  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
+				CSkin::DrawItem(dc, rcItem, item);
 				return;
 			}
 		}
@@ -609,8 +606,7 @@ b_nonskinned:
 					if (active)
 						rc.top--;
 					SelectClipRgn(dc, rgn);
-					DrawAlpha(dc, &rc, s_item->COLOR, s_item->ALPHA, s_item->COLOR2, s_item->COLOR2_TRANSPARENT, s_item->GRADIENT,
-							  s_item->CORNER, s_item->BORDERSTYLE, s_item->imageItem);
+					CSkin::DrawItem(dc, &rc, s_item);
 					SelectClipRgn(dc, 0);
 				} else if (dat) {
 					if (dat->mayFlashTab == TRUE)
@@ -827,7 +823,7 @@ static HRESULT DrawThemesPartWithAero(const TabControlData *tabdat, HDC hDC, int
 				prcBox->bottom += 2;
 		}
 
-		FillRect(hDC, prcBox, (HBRUSH)GetStockObject(BLACK_BRUSH));
+		FillRect(hDC, prcBox, CSkin::m_BrushBack);
 
 		tabdat->helperItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == 3 ? 240 : 220);
 		tabdat->helperItem->Render(hDC, prcBox, true);
@@ -1200,7 +1196,8 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 				tabdat->fTipActive = FALSE;
 			}
 			KillTimer(hwnd, TIMERID_HOVER_T);
-			SetTimer(hwnd, TIMERID_HOVER_T, 450, 0);
+			if(tabdat->pContainer && (!tabdat->pContainer->SideBar->isActive() && (TabCtrl_GetItemCount(hwnd) > 1 || !(tabdat->pContainer->dwFlags & CNT_HIDETABS))))
+				SetTimer(hwnd, TIMERID_HOVER_T, 750, 0);
 			break;
 		}
 		case WM_SIZE: {
@@ -1610,7 +1607,7 @@ page_done:
 					pt.x = rcLog.left;
 					ScreenToClient(hwnd, &pt);
 					rcPage.top = pt.y + ((nCount > 1 || !(tabdat->helperDat->pContainer->dwFlags & CNT_HIDETABS)) ? tabdat->helperDat->pContainer->tBorder : 0);
-					FillRect(hdc, &rcPage, (HBRUSH)GetStockObject(BLACK_BRUSH));
+					FillRect(hdc, &rcPage, CSkin::m_BrushBack);
 					rcPage.top = 0;
 				}
 				GetWindowRect(GetDlgItem(tabdat->helperDat->hwnd, tabdat->helperDat->bType == SESSIONTYPE_IM ? IDC_LOG : IDC_CHAT_LOG), &rcLog);
@@ -1618,7 +1615,7 @@ page_done:
 				pt.x = rcLog.left;
 				ScreenToClient(hwnd, &pt);
 				rcPage.bottom = pt.y;
-				FillRect(hdc, &rcPage, (HBRUSH)GetStockObject(BLACK_BRUSH));
+				FillRect(hdc, &rcPage, CSkin::m_BrushBack);
 			}
 
 			uiFlags = 0;
@@ -1975,3 +1972,4 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	}
 	return FALSE;
 }
+

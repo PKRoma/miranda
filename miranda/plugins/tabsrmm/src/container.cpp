@@ -54,79 +54,6 @@ static 	WNDPROC OldContainerWndProc = 0;
 
 static BOOL	CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-#define RWPF_HIDE 8
-
-/*
- * helper functions to restory container window position
- * taken from the core, but modified
- */
-static int MY_RestoreWindowPosition(WPARAM wParam, LPARAM lParam)
-{
-	SAVEWINDOWPOS *swp = (SAVEWINDOWPOS*)lParam;
-	WINDOWPLACEMENT wp;
-	char szSettingName[64];
-	int x, y;
-
-	ZeroMemory(&wp, sizeof(wp));
-	wp.length = sizeof(wp);
-	GetWindowPlacement(swp->hwnd, &wp);
-	wsprintfA(szSettingName, "%sx", swp->szNamePrefix);
-	x = M->GetDword(swp->hContact, swp->szModule, szSettingName, -1);
-	wsprintfA(szSettingName, "%sy", swp->szNamePrefix);
-	y = (int)M->GetDword(swp->hContact, swp->szModule, szSettingName, -1);
-	if (x == -1)
-		return 1;
-	if (wParam&RWPF_NOSIZE) {
-		OffsetRect(&wp.rcNormalPosition, x - wp.rcNormalPosition.left, y - wp.rcNormalPosition.top);
-	}
-	else {
-		wp.rcNormalPosition.left = x;
-		wp.rcNormalPosition.top = y;
-		wsprintfA(szSettingName, "%swidth", swp->szNamePrefix);
-		wp.rcNormalPosition.right = wp.rcNormalPosition.left + M->GetDword(swp->hContact, swp->szModule, szSettingName, -1);
-		wsprintfA(szSettingName, "%sheight", swp->szNamePrefix);
-		wp.rcNormalPosition.bottom = wp.rcNormalPosition.top + M->GetDword(swp->hContact, swp->szModule, szSettingName, -1);
-	}
-	wp.flags = 0;
-	if (wParam&RWPF_NOACTIVATE)
-		wp.showCmd = SW_SHOWNOACTIVATE;
-	if(M->GetByte(swp->hContact, swp->szModule, "splitmax", 0))
-		wp.showCmd = SW_SHOWMAXIMIZED;
-	if (wParam & RWPF_HIDE)
-		wp.showCmd = SW_HIDE;
-
-	SetWindowPlacement(swp->hwnd, &wp);
-	return 0;
-}
-
-static int MY_Utils_RestoreWindowPosition(HWND hwnd, HANDLE hContact, const char *szModule, const char *szNamePrefix, WPARAM wParam)
-{
-	SAVEWINDOWPOS swp;
-	swp.hwnd = hwnd;
-	swp.hContact = hContact;
-	swp.szModule = szModule;
-	swp.szNamePrefix = szNamePrefix;
-	return MY_RestoreWindowPosition(wParam, (LPARAM)&swp);
-}
-static int MY_Utils_RestoreWindowPositionNoSize(HWND hwnd, HANDLE hContact, const char *szModule, const char *szNamePrefix, WPARAM wParam)
-{
-	SAVEWINDOWPOS swp;
-	swp.hwnd = hwnd;
-	swp.hContact = hContact;
-	swp.szModule = szModule;
-	swp.szNamePrefix = szNamePrefix;
-	return MY_RestoreWindowPosition(wParam | RWPF_NOSIZE, (LPARAM)&swp);
-}
-static int MY_Utils_RestoreWindowPositionNoMove(HWND hwnd, HANDLE hContact, const char *szModule, const char *szNamePrefix, WPARAM wParam)
-{
-	SAVEWINDOWPOS swp;
-	swp.hwnd = hwnd;
-	swp.hContact = hContact;
-	swp.szModule = szModule;
-	swp.szNamePrefix = szNamePrefix;
-	return MY_RestoreWindowPosition(wParam | RWPF_NOMOVE, (LPARAM)&swp);
-}
-
 static int ServiceParamsOK(ButtonItem *item, WPARAM *wParam, LPARAM *lParam, HANDLE hContact)
 {
 	if (item->dwFlags & BUTTON_PASSHCONTACTW || item->dwFlags & BUTTON_PASSHCONTACTL || item->dwFlags & BUTTON_ISCONTACTDBACTION) {
@@ -187,7 +114,7 @@ void SetAeroMargins(ContainerWindowData *pContainer)
 				pt.y = rcWnd.bottom;
 			ScreenToClient(pContainer->hwnd, &pt);
 			GetClientRect(pContainer->hwnd, &rcWnd);
-			m.cyBottomHeight = rcWnd.bottom - pt.y;
+			m.cyBottomHeight = (rcWnd.bottom - pt.y);
 
 			m.cxLeftWidth = pContainer->tBorder_outer_left;
 			m.cxRightWidth = pContainer->tBorder_outer_right;
@@ -341,9 +268,8 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				ExcludeClipRect(dcFrame, clip_left, clip_top, clip_left + (pt1.x - pt.x), clip_top + (pt1.y - pt.y));
 				ExcludeClipRect(dcMem, clip_left, clip_top, clip_left + (pt1.x - pt.x), clip_top + (pt1.y - pt.y));
 				item = pContainer->ncActive ? &SkinItems[ID_EXTBKFRAME] : &SkinItems[ID_EXTBKFRAMEINACTIVE];
-				if (!item->IGNORED)
-					DrawAlpha(dcMem, &rcWindow, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-							  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
+
+				CSkin::DrawItem(dcMem, &rcWindow, item);
 
 				GetWindowText(hwndDlg, szWindowText, 512);
 				szWindowText[511] = 0;
@@ -403,8 +329,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					}
 					if (rc) {
 						item = pContainer->buttons[i].isPressed ? item_pressed : (pContainer->buttons[i].isHot ? item_hot : item_normal);
-						DrawAlpha(dcMem, rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-								  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
+						CSkin::DrawItem(dcMem, rc, item);
 						DrawIconEx(dcMem, rc->left + ((rc->right - rc->left) / 2 - 8), rc->top + ((rc->bottom - rc->top) / 2 - 8), hIcon, 16, 16, 0, 0, DI_NORMAL);
 					}
 				}
@@ -441,16 +366,13 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				pContainer->oldHBM = (HBITMAP)SelectObject(pContainer->cachedDC, pContainer->cachedHBM);
 
 				hdc = pContainer->cachedDC;
-				if (!item->IGNORED)
-					DrawAlpha(hdc, &rcClient, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-							  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
-				else
+
+				if (!CSkin::DrawItem(hdc, &rcClient, item))
 					FillRect(hdc, &rcClient, GetSysColorBrush(COLOR_3DFACE));
 
 				if (sbarDelta) {
 					rcClient.top = rcClient.bottom - sbarDelta;
-					DrawAlpha(hdc, &rcClient, sbaritem->COLOR, sbaritem->ALPHA, sbaritem->COLOR2, sbaritem->COLOR2_TRANSPARENT,
-							  sbaritem->GRADIENT, sbaritem->CORNER, sbaritem->BORDERSTYLE, sbaritem->imageItem);
+					CSkin::DrawItem(hdc, &rcClient, sbaritem);
 				}
 			}
 			BitBlt(hdcReal, 0, 0, width, height, pContainer->cachedDC, 0, 0, SRCCOPY);
@@ -533,8 +455,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 							}
 							if (rc) {
 								CSkinItem *item = &SkinItems[pContainer->buttons[i].isPressed ? ID_EXTBKTITLEBUTTONPRESSED : (pContainer->buttons[i].isHot ? ID_EXTBKTITLEBUTTONMOUSEOVER : ID_EXTBKTITLEBUTTON)];
-								DrawAlpha(hdc, rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-										  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
+								CSkin::DrawItem(hdc, rc, item);
 								DrawIconEx(hdc, rc->left + ((rc->right - rc->left) / 2 - 8), rc->top + ((rc->bottom - rc->top) / 2 - 8), hIcon, 16, 16, 0, 0, DI_NORMAL);
 							}
 						}
@@ -779,7 +700,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 			if (pContainer->dwFlags & CNT_CREATE_MINIMIZED) {
  				SetWindowLongPtr(hwndDlg, GWL_STYLE, GetWindowLongPtr(hwndDlg, GWL_STYLE) & ~WS_VISIBLE);
- 				SendMessage(hwndDlg, DM_RESTOREWINDOWPOS, RWPF_HIDE, 0);
+ 				SendMessage(hwndDlg, DM_RESTOREWINDOWPOS, 0, 0);
 				GetClientRect(hwndDlg, &pContainer->rcSaved);
 				ShowWindow(hwndDlg, SW_SHOWMINNOACTIVE);
 			}
@@ -809,25 +730,25 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			 * retrieve the container window geometry information from the database.
 			 */
 			if (pContainer->isCloned && pContainer->hContactFrom != 0 && !(pContainer->dwFlags & CNT_GLOBALSIZE)) {
-				if (MY_Utils_RestoreWindowPosition(hwndDlg, pContainer->hContactFrom, SRMSGMOD_T, "split", wParam)) {
-					if (MY_Utils_RestoreWindowPositionNoMove(hwndDlg, pContainer->hContactFrom, SRMSGMOD_T, "split", wParam))
-						if (MY_Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, "split", wParam))
-							if (MY_Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMSGMOD_T, "split", wParam))
+				if (Utils_RestoreWindowPosition(hwndDlg, pContainer->hContactFrom, SRMSGMOD_T, "split")) {
+					if (Utils_RestoreWindowPositionNoMove(hwndDlg, pContainer->hContactFrom, SRMSGMOD_T, "split"))
+						if (Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, "split"))
+							if (Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMSGMOD_T, "split"))
 								SetWindowPos(hwndDlg, 0, 50, 50, 450, 300, SWP_NOZORDER | SWP_NOACTIVATE);
 				}
 			}
 			else {
 				if (pContainer->dwFlags & CNT_GLOBALSIZE) {
-					if (MY_Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, "split", wParam))
-						if (MY_Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMSGMOD_T, "split", wParam))
+					if (Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, "split"))
+						if (Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMSGMOD_T, "split"))
 							SetWindowPos(hwndDlg, 0, 50, 50, 450, 300, SWP_NOZORDER | SWP_NOACTIVATE);
 				}
 				else {
 					mir_snprintf(szCName, sizeof(szCName), "%s%d", szSetting, pContainer->iContainerIndex);
-					if (MY_Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, szCName, wParam)) {
-						if (MY_Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMSGMOD_T, szCName, wParam))
-							if (MY_Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, "split", wParam))
-								if (MY_Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMSGMOD_T, "split", wParam))
+					if (Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, szCName)) {
+						if (Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMSGMOD_T, szCName))
+							if (Utils_RestoreWindowPosition(hwndDlg, NULL, SRMSGMOD_T, "split"))
+								if (Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMSGMOD_T, "split"))
 									SetWindowPos(hwndDlg, 0, 50, 50, 450, 300, SWP_NOZORDER | SWP_NOACTIVATE);
 					}
 				}
@@ -1435,6 +1356,18 @@ buttons_done:
 					}
 					return 0;
 				}
+				case ID_VIEW_INFOPANEL: {
+					_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+					if(dat) {
+						RECT	rc;
+						POINT	pt;
+						GetWindowRect(pContainer->hwndActive, &rc);
+						pt.x = rc.left + 10;
+						pt.y = rc.top + dat->Panel->getHeight() - 10;
+						dat->Panel->invokeConfigDialog(pt);
+					}
+					return(0);
+				}
 				/*
 				 * commands from the message log popup will be routed to the
 				 * message log menu handler
@@ -1871,7 +1804,7 @@ buttons_done:
 			bool 		fAero = M->isAero();
 
 			if (fAero) {
-				FillRect(hdc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+				FillRect(hdc, &rc, CSkin::m_BrushBack);
 			}
 			else
 				FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
@@ -1919,6 +1852,9 @@ buttons_done:
 				mir_snprintf(szCname, 40, "%s_FlagsEx", szSetting);
 				dwLocalFlagsEx = M->GetDword(pContainer->hContactFrom, szCname, 0xffffffff);
 
+				mir_snprintf(szCname, 40, "%s_panel", szSetting);
+				pContainer->panelHeight = M->GetDword(pContainer->hContactFrom, szCname, PluginConfig.m_panelHeight);
+
 				mir_snprintf(szCname, 40, "%s_Trans", szSetting);
 				dwLocalTrans = M->GetDword(pContainer->hContactFrom, szCname, 0xffffffff);
 				mir_snprintf(szCname, 40, "%s_titleformat", szSetting);
@@ -1943,6 +1879,10 @@ buttons_done:
 				dwLocalFlagsEx = M->GetDword(szCname, 0xffffffff);
 				mir_snprintf(szCname, 40, "%s%d_Trans", szSetting, pContainer->iContainerIndex);
 				dwLocalTrans = M->GetDword(szCname, 0xffffffff);
+
+				mir_snprintf(szCname, 40, "%s%d_panel", szSetting, pContainer->iContainerIndex);
+				pContainer->panelHeight = M->GetDword(szCname, PluginConfig.m_panelHeight);
+
 				if (!szTitleFormat[0]) {
 					mir_snprintf(szCname, 40, "%s%d_titleformat", szSetting, pContainer->iContainerIndex);
 					if(0 == M->GetTString(pContainer->hContactFrom, SRMSGMOD_T, szCname, &dbv1)) {
@@ -2415,6 +2355,9 @@ buttons_done:
 						_snprintf(szCName, 40, "%s_FlagsEx", szSetting);
 						M->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->dwPrivateFlagsEx);
 
+						_snprintf(szCName, 40, "%s_panel", szSetting);
+						M->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->panelHeight);
+
 						mir_snprintf(szCName, 40, "%s_theme", szSetting);
 						if (lstrlen(pContainer->szRelThemeFile) > 1) {
 							if(pContainer->fPrivateThemeChanged == TRUE) {
@@ -2443,6 +2386,10 @@ buttons_done:
 				M->WriteDword(SRMSGMOD_T, szCName, pContainer->dwPrivateFlagsEx);
 				_snprintf(szCName, 40, "%s%d_Trans", szSetting, pContainer->iContainerIndex);
 				M->WriteDword(SRMSGMOD_T, szCName, pContainer->dwTransparency);
+
+				_snprintf(szCName, 40, "%s%d_panel", szSetting, pContainer->iContainerIndex);
+				M->WriteDword(SRMSGMOD_T, szCName, pContainer->panelHeight);
+
 				if (pContainer->dwFlags & CNT_TITLE_PRIVATE) {
 					mir_snprintf(szCName, 40, "%s%d_titleformat", szSetting, pContainer->iContainerIndex);
 					M->WriteTString(NULL, SRMSGMOD_T, szCName, pContainer->szTitleFormat);

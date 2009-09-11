@@ -288,8 +288,8 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SendDlgItemMessage(hwndDlg, IDC_AUTOCLOSETABSPIN, UDM_SETPOS, 0, GetDlgItemInt(hwndDlg, IDC_AUTOCLOSETABTIME, &translated, FALSE));
 			CheckDlgButton(hwndDlg, IDC_AUTOCLOSELAST, M->GetByte("autocloselast", 0));
 
-			SendDlgItemMessage(hwndDlg, IDC_SENDFORMATTING, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Off"));
-			SendDlgItemMessage(hwndDlg, IDC_SENDFORMATTING, CB_INSERTSTRING, -1, (LPARAM)TranslateT("BBCode"));
+			SendDlgItemMessage(hwndDlg, IDC_SENDFORMATTING, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_OFF));
+			SendDlgItemMessage(hwndDlg, IDC_SENDFORMATTING, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_BBCODE));
 
 			SendDlgItemMessage(hwndDlg, IDC_SENDFORMATTING, CB_SETCURSEL, (WPARAM)PluginConfig.m_SendFormat ? 1 : 0, 0);
 
@@ -512,16 +512,16 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 			have_ieview = ServiceExists(MS_IEVIEW_WINDOW);
 			have_hpp = ServiceExists("History++/ExtGrid/NewWindow");
 
-			SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Default"));
+			SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_LOG_DEFAULT));
 			SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_SETCURSEL, 0, 0);
 
 			if (have_ieview) {
-				SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_INSERTSTRING, -1, (LPARAM)TranslateT("IEView plugin"));
+				SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_LOG_IEVIEW));
 				if (M->GetByte("default_ieview", 0))
 					SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_SETCURSEL, 1, 0);
 			}
 			if (have_hpp) {
-				SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_INSERTSTRING, -1, (LPARAM)TranslateT("History++ plugin"));
+				SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_LOG_HPP));
 				if (M->GetByte("default_ieview", 0))
 					SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_SETCURSEL, 1, 0);
 				else if (M->GetByte("default_hpp", 0))
@@ -739,9 +739,9 @@ static INT_PTR CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam
 				CLCINFOITEM cii = { 0 };
 				cii.cbSize = sizeof(cii);
 				cii.flags = CLCIIF_GROUPFONT | CLCIIF_CHECKBOX;
-				cii.pszText = TranslateT("** New contacts **");
+				cii.pszText = CTranslator::getOpt(CTranslator::OPT_MTN_NEW);
 				hItemNew = (HANDLE) SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_ADDINFOITEM, 0, (LPARAM) & cii);
-				cii.pszText = TranslateT("** Unknown contacts **");
+				cii.pszText = CTranslator::getOpt(CTranslator::OPT_MTN_UNKNOWN);
 				hItemUnknown = (HANDLE) SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_ADDINFOITEM, 0, (LPARAM) & cii);
 			}
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CLIST), GWL_STYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CLIST), GWL_STYLE) | (CLS_SHOWHIDDEN));
@@ -768,12 +768,12 @@ static INT_PTR CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam
 
 			if (!ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)) {
 				EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYBALLOON), FALSE);
-				SetWindowText(GetDlgItem(hwndDlg, IDC_NOTIFYBALLOON), TranslateT("Show balloon popup (unsupported system)"));
+				SetWindowText(GetDlgItem(hwndDlg, IDC_NOTIFYBALLOON), CTranslator::getOpt(CTranslator::OPT_MTN_UNSUPPORTED));
 			}
 
-			SendDlgItemMessage(hwndDlg, IDC_MTN_POPUPMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Always"));
-			SendDlgItemMessage(hwndDlg, IDC_MTN_POPUPMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Always, but no popup when window is focused"));
-			SendDlgItemMessage(hwndDlg, IDC_MTN_POPUPMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Only when no message window is open"));
+			SendDlgItemMessage(hwndDlg, IDC_MTN_POPUPMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_ALWAYS));
+			SendDlgItemMessage(hwndDlg, IDC_MTN_POPUPMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_MTN_NOTFOCUSED));
+			SendDlgItemMessage(hwndDlg, IDC_MTN_POPUPMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_MTN_ONLYCLOSED));
 
 			SendDlgItemMessage(hwndDlg, IDC_MTN_POPUPMODE, CB_SETCURSEL, (WPARAM)M->GetByte("MTN_PopupMode", 0), 0);
 
@@ -897,9 +897,9 @@ static INT_PTR CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CUT_TITLEMAX), IsDlgButtonChecked(hwndDlg, IDC_CUT_TABTITLE));
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CUT_TITLEMAXSPIN), IsDlgButtonChecked(hwndDlg, IDC_CUT_TABTITLE));
 
-			SendDlgItemMessage(hwndDlg, IDC_ESCMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Normal - close tab, if last tab is closed also close the window"));
-			SendDlgItemMessage(hwndDlg, IDC_ESCMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Minimize the window to the task bar"));
-			SendDlgItemMessage(hwndDlg, IDC_ESCMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Close or hide window, depends on the close button setting above"));
+			SendDlgItemMessage(hwndDlg, IDC_ESCMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_CNT_ESCNORMAL));
+			SendDlgItemMessage(hwndDlg, IDC_ESCMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_CNT_ESCMINIMIZE));
+			SendDlgItemMessage(hwndDlg, IDC_ESCMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_CNT_ESCCLOS));
 			SendDlgItemMessage(hwndDlg, IDC_ESCMODE, CB_SETCURSEL, (WPARAM)PluginConfig.m_EscapeCloses, 0);
 			break;
 		}
@@ -1495,7 +1495,7 @@ INT_PTR CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 			dwStatusMask = lParam;
 
-			SetWindowText(hwndDlg, TranslateT("Choose status modes"));
+			SetWindowText(hwndDlg, CTranslator::getOpt(CTranslator::OPT_SMODE_CHOOSE));
 			for (i = ID_STATUS_ONLINE; i <= ID_STATUS_OUTTOLUNCH; i++) {
 				SetWindowText(GetDlgItem(hwndDlg, i), (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)i, GCMDF_TCHAR));
 				if (dwStatusMask != -1 && (dwStatusMask & (1 << (i - ID_STATUS_ONLINE))))

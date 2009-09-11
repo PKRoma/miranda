@@ -251,6 +251,7 @@ struct ContainerWindowData {
 	BOOL    bDontSmartClose;      // if set, do not search and select the next possible tab after closing one.
 	DWORD   dwFlags, dwPrivateFlags;
 	DWORD   dwFlagsEx, dwPrivateFlagsEx;
+	LONG	panelHeight;
 	UINT    uChildMinHeight;
 	DWORD   dwTransparency;
 	int     tBorder;
@@ -388,7 +389,6 @@ struct _MessageWindowData {
 	BOOL    bNotOnList;
 	int     SendFormat;
 	DWORD   dwIsFavoritOrRecent;
-	DWORD   dwLastUpdate;
 	TemplateSet *ltr_templates, *rtl_templates;
 	HANDLE  *hQueuedEvents;
 	int     iNextQueuedEvent;
