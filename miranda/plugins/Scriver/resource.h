@@ -44,7 +44,6 @@
 #define IDI_CHANMGR                     426
 #define IDI_COLOR                       427
 #define IDI_FILTER                      428
-#define IDI_CHAT_HISTORY                429
 #define IDI_NICKLIST                    430
 #define IDI_JOIN                        431
 #define IDI_PART                        432
@@ -180,8 +179,7 @@
 #define IDM_COPYALL                     40011
 #define IDM_SELECTALL                   40012
 #define IDM_CLEAR                       40013
-#define IDM_OPENNEW                     40014
-#define IDM_OPENEXISTING                40015
+#define IDM_OPENLINK                    40014
 #define IDM_COPYLINK                    40016
 #define IDM_CLOSETAB					40020
 #define IDM_CLOSEOTHERTABS				40021
@@ -246,8 +244,5 @@
 #define IDC_CHAT_10                          5084
 #define IDC_CHAT_11                          5085
 #define ID_MESS                         50001
-#define ID_NEW                          50002
-#define ID_CURR                         50003
-#define ID_COPY                         50004
 #define ID_COPYALL                      50006
 #define ID_Menu                         50026

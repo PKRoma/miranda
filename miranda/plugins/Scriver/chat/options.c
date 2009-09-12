@@ -446,7 +446,7 @@ void AddIcons(void)
 
 	sid.ptszDescription = LPGENT("Room history");
 	sid.pszName = "chat_history";
-	sid.iDefaultIndex = -IDI_CHAT_HISTORY;
+	sid.iDefaultIndex = -IDI_HISTORY;
 	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
 
