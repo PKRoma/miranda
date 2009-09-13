@@ -20,6 +20,25 @@ Contents
 
 1. Changes in this version
 --------------------------
+* New in 0.8.6
+Enhancements:
+ - Performance improvements with network logging disabled
+ - AIM: Added send directory ability
+ - MSN: Added ability to transfer all files in a directory
+ - MSN: Use protocol username for chat names in contact list
+
+Bugfixes:
+ - Fixed possible crash in the file transfer window while scrolling
+ - Fixed file transfer resume
+ - AIM: AIM 7 is now detected
+ - AIM: Improved file transfer support
+ - Jabber: Ignored the "Manual host" setting during the account registration
+ - MSN: Fixed chats with IM Control users
+ - MSN: Auth request reason is now displayed
+ - MSN: Fixed deletion of contact from Hotmail address book
+ - MSN: Fixed avatar sending on chat session
+
+
 * New in 0.8.5
 Bugfixes:
  - Auto away did not respect locked protocols
