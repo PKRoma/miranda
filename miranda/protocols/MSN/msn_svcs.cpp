@@ -242,6 +242,7 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 		MSN_GetAvatarFileName(NULL, tFileName, sizeof(tFileName));
 		remove(tFileName);
 		deleteSetting(NULL, "PictObject");
+		ForkThread(&CMsnProto::msn_storeAvatarThread, NULL);
 	}
 	else
 	{
@@ -249,7 +250,7 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 		if (fileId < 0) return 1;
 
 		long  dwPngSize = _filelengthi64(fileId);
-		BYTE* pResult = (BYTE*)mir_alloc(dwPngSize);
+		unsigned char* pResult = (unsigned char*)mir_alloc(dwPngSize);
 		if (pResult == NULL) return 2;
 
 		_read(fileId, pResult, dwPngSize);
@@ -332,7 +333,14 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
                 mir_free(fname);
             }
 		}
-		mir_free(pResult);
+
+		StoreAvatarData* par = (StoreAvatarData*)mir_alloc(sizeof(StoreAvatarData));
+		par->szName = mir_strdup(fname);
+		par->szMimeType = "image/png";
+		par->data = pResult;
+		par->dataSize = dwPngSize;
+
+		ForkThread(&CMsnProto::msn_storeAvatarThread, par);
 	}
 
 	MSN_SetServerStatus(m_iStatus);

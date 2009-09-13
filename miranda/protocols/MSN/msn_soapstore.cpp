@@ -88,7 +88,7 @@ bool CMsnProto::MSN_StoreCreateProfile(void)
 {
 	char* reqHdr;
 	ezxml_t tbdy;
-	ezxml_t xmlp = storeSoapHdr("CreateProfile", "RoamingIdentityChanged", tbdy, reqHdr);
+	ezxml_t xmlp = storeSoapHdr("CreateProfile", "RoamingSeed", tbdy, reqHdr);
 
 	ezxml_t pro = ezxml_add_child(tbdy, "profile", 0);
 	ezxml_t node;
@@ -103,21 +103,24 @@ bool CMsnProto::MSN_StoreCreateProfile(void)
 	ezxml_free(xmlp);
 
 	unsigned status = 0;
-	char *storeUrl = NULL, *tResult = NULL;
+	char *storeUrl, *tResult = NULL;
 
-    for (int k = 4; --k;)
-    {
-        mir_free(storeUrl);
-        storeUrl = GetStoreHost("CreateProfile");
-	    tResult = getSslResult(&storeUrl, szData, reqHdr, status);
-        if (tResult == NULL) UpdateStoreHost("CreateProfile", NULL);
-        else break;
-    }
+	storeUrl = mir_strdup("https://storage.msn.com/storageservice/SchematizedStore.asmx");
+    tResult = getSslResult(&storeUrl, szData, reqHdr, status);
 
 	mir_free(reqHdr);
 	free(szData);
 
-	if (tResult != NULL) UpdateStoreHost("CreateProfile", storeUrl);
+	if (tResult != NULL && status == 200)
+	{
+		ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
+		ezxml_t body = getSoapResponse(xmlm, "CreateProfile");
+
+		MSN_StoreShareItem(ezxml_txt(body));
+		MSN_SharingMyProfile();
+
+		ezxml_free(xmlm);
+	}
 
 	mir_free(tResult);
 	mir_free(storeUrl);
@@ -125,7 +128,37 @@ bool CMsnProto::MSN_StoreCreateProfile(void)
 	return status == 200;
 }
 
-bool CMsnProto::MSN_StoreGetProfile(void)
+bool CMsnProto::MSN_StoreShareItem(const char* id)
+{
+	char* reqHdr;
+	ezxml_t tbdy;
+	ezxml_t xmlp = storeSoapHdr("ShareItem", "RoamingSeed", tbdy, reqHdr);
+
+	ezxml_t node = ezxml_add_child(tbdy, "resourceID", 0);
+	ezxml_set_txt(node, id);
+	node = ezxml_add_child(tbdy, "displayName", 0);
+	ezxml_set_txt(node, "Messenger Roaming Identity");
+
+	char* szData = ezxml_toxml(xmlp, true);
+
+	ezxml_free(xmlp);
+
+	unsigned status = 0;
+	char *storeUrl, *tResult = NULL;
+
+	storeUrl = mir_strdup("https://storage.msn.com/storageservice/SchematizedStore.asmx");
+    tResult = getSslResult(&storeUrl, szData, reqHdr, status);
+
+	mir_free(reqHdr);
+	free(szData);
+
+	mir_free(tResult);
+	mir_free(storeUrl);
+
+	return status == 200;
+}
+
+bool CMsnProto::MSN_StoreGetProfile(bool allowRecurse)
 {
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -199,19 +232,29 @@ bool CMsnProto::MSN_StoreGetProfile(void)
 		    mir_snprintf(proresid, sizeof(proresid), "%s", ezxml_txt(ezxml_child(body, "ResourceID")));
 
 		    ezxml_t expr = ezxml_child(body, "ExpressionProfile");
-		    if (expr == NULL) 
-			    MSN_StoreCreateProfile();
+		    if (expr == NULL)
+			{
+				MSN_StoreShareItem(proresid);
+				MSN_SharingMyProfile();
+				if (allowRecurse) MSN_StoreGetProfile(false);
+			}
 		    else
 		    {
 			    const char* szNick = ezxml_txt(ezxml_child(expr, "DisplayName"));
 			    setStringUtf(NULL, "Nick", (char*)szNick);
+				
+				mir_snprintf(expresid, sizeof(expresid), "%s", ezxml_txt(ezxml_child(expr, "ResourceID")));
+				
+				ezxml_t photo = ezxml_child(expr, "Photo");
+				mir_snprintf(photoid, sizeof(photoid), "%s", ezxml_txt(ezxml_child(photo, "ResourceID")));
 		    }
 		    ezxml_free(xmlm);
 	    }
 	    else if (status == 500)
-	    {
-		    MSN_StoreCreateProfile();
-	    }
+		{
+			MSN_StoreCreateProfile();
+			if (allowRecurse && MSN_StoreGetProfile(false)) status = 200;;
+		}
     }
 	mir_free(tResult);
 	mir_free(storeUrl);
@@ -219,7 +262,7 @@ bool CMsnProto::MSN_StoreGetProfile(void)
 	return status == 200;
 }
 
-bool CMsnProto::MSN_StoreUpdateNick(const char* szNick)
+bool CMsnProto::MSN_StoreUpdateProfile(const char* szNick, bool lock)
 {
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -232,10 +275,13 @@ bool CMsnProto::MSN_StoreUpdateNick(const char* szNick)
 	ezxml_t expro = ezxml_add_child(pro, "ExpressionProfile", 0);
 	node = ezxml_add_child(expro, "FreeText", 0);
 	ezxml_set_txt(node, "Update");
-	node = ezxml_add_child(expro, "DisplayName", 0);
-	ezxml_set_txt(node, szNick);
+	if (szNick)
+	{
+		node = ezxml_add_child(expro, "DisplayName", 0);
+		ezxml_set_txt(node, szNick);
+	}
 	node = ezxml_add_child(expro, "Flags", 0);
-	ezxml_set_txt(node, "0");
+	ezxml_set_txt(node, lock ? "1" : "0");
 
 	char* szData = ezxml_toxml(xmlp, true);
 
@@ -256,15 +302,9 @@ bool CMsnProto::MSN_StoreUpdateNick(const char* szNick)
 	mir_free(reqHdr);
 	free(szData);
 
-	if (tResult != NULL)
-    {
-        UpdateStoreHost("UpdateProfile", storeUrl);
+	if (tResult != NULL) UpdateStoreHost("UpdateProfile", storeUrl);
+    if (status == 200) MSN_ABUpdateDynamicItem();
 
-	    if (status == 200)
-	    {
-		    MSN_ABUpdateDynamicItem();
-	    }
-    }
 	mir_free(tResult);
 	mir_free(storeUrl);
 
@@ -272,7 +312,7 @@ bool CMsnProto::MSN_StoreUpdateNick(const char* szNick)
 }
 
 
-bool CMsnProto::MSN_StoreCreateRelationships(const char *szSrcId, const char *szTgtId)
+bool CMsnProto::MSN_StoreCreateRelationships(void)
 {
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -281,11 +321,11 @@ bool CMsnProto::MSN_StoreCreateRelationships(const char *szSrcId, const char *sz
 	ezxml_t rels = ezxml_add_child(tbdy, "relationships", 0);
 	ezxml_t rel = ezxml_add_child(rels, "Relationship", 0);
 	ezxml_t node = ezxml_add_child(rel, "SourceID", 0);
-	ezxml_set_txt(node, szSrcId);
+	ezxml_set_txt(node, expresid);
 	node = ezxml_add_child(rel, "SourceType", 0);
 	ezxml_set_txt(node, "SubProfile");
 	node = ezxml_add_child(rel, "TargetID", 0);
-	ezxml_set_txt(node, szTgtId);
+	ezxml_set_txt(node, photoid);
 	node = ezxml_add_child(rel, "TargetType", 0);
 	ezxml_set_txt(node, "Photo");
 	node = ezxml_add_child(rel, "RelationshipName", 0);
@@ -310,7 +350,20 @@ bool CMsnProto::MSN_StoreCreateRelationships(const char *szSrcId, const char *sz
 	mir_free(reqHdr);
 	free(szData);
 
-	if (tResult != NULL) UpdateStoreHost("CreateRelationships", storeUrl);
+	if (tResult != NULL)
+	{
+		UpdateStoreHost("CreateRelationships", storeUrl);
+
+		if (status == 200)
+		{
+			ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
+			ezxml_t body = getSoapResponse(xmlm, "CreateProfile");
+
+			mir_snprintf(photoid, sizeof(photoid), "%s", ezxml_txt(body));
+
+			ezxml_free(xmlm);
+		}
+	}
 
 	mir_free(tResult);
 	mir_free(storeUrl);
@@ -319,26 +372,36 @@ bool CMsnProto::MSN_StoreCreateRelationships(const char *szSrcId, const char *sz
 }
 
 
-bool CMsnProto::MSN_StoreDeleteRelationships(const char *szResId)
+bool CMsnProto::MSN_StoreDeleteRelationships(bool tile)
 {
 	char* reqHdr;
 	ezxml_t tbdy;
 	ezxml_t xmlp = storeSoapHdr("DeleteRelationships", "RoamingIdentityChanged", tbdy, reqHdr);
 
 	ezxml_t srch = ezxml_add_child(tbdy, "sourceHandle", 0);
-	ezxml_t node = ezxml_add_child(srch, "RelationshipName", 0);
-	ezxml_set_txt(node, "/UserTiles");
 
-	ezxml_t alias = ezxml_add_child(srch, "Alias", 0);
-	node = ezxml_add_child(alias, "Name", 0);
-	ezxml_set_txt(node, mycid);
-	node = ezxml_add_child(alias, "NameSpace", 0);
-	ezxml_set_txt(node, "MyCidStuff");
+	ezxml_t node;
+	if (tile)
+	{
+		node = ezxml_add_child(srch, "RelationshipName", 0);
+		ezxml_set_txt(node, "/UserTiles");
+
+		ezxml_t alias = ezxml_add_child(srch, "Alias", 0);
+		node = ezxml_add_child(alias, "Name", 0);
+		ezxml_set_txt(node, mycid);
+		node = ezxml_add_child(alias, "NameSpace", 0);
+		ezxml_set_txt(node, "MyCidStuff");
+	}
+	else
+	{
+		node = ezxml_add_child(srch, "ResourceID", 0);
+		ezxml_set_txt(node, expresid);
+	}
 
 	node = ezxml_add_child(tbdy, "targetHandles", 0);
 	node = ezxml_add_child(node, "ObjectHandle", 0);
 	node = ezxml_add_child(node, "ResourceID", 0);
-	ezxml_set_txt(node, szResId);
+	ezxml_set_txt(node, photoid);
 
 	char* szData = ezxml_toxml(xmlp, true);
 
@@ -389,8 +452,8 @@ bool CMsnProto::MSN_StoreCreateDocument(const char *szName, const char *szMimeTy
 	node = ezxml_add_child(doc, "Name", 0);
 	ezxml_set_txt(node, szName);
 
-	doc = ezxml_add_child(tbdy, "DocumentStreams", 0);
-	doc = ezxml_add_child(tbdy, "DocumentStream", 0);
+	doc = ezxml_add_child(doc, "DocumentStreams", 0);
+	doc = ezxml_add_child(doc, "DocumentStream", 0);
 	ezxml_set_attr(doc, "xsi:type", "PhotoStream");
 	node = ezxml_add_child(doc, "DocumentStreamType", 0);
 
@@ -398,7 +461,7 @@ bool CMsnProto::MSN_StoreCreateDocument(const char *szName, const char *szMimeTy
 	node = ezxml_add_child(doc, "MimeType", 0);
 	ezxml_set_txt(node, szMimeType);
 	node = ezxml_add_child(doc, "Data", 0);
-	ezxml_set_txt(node, szPicData);
+	ezxml_set_txt(node, szPicData); 
 	node = ezxml_add_child(doc, "DataSize", 0);
 	ezxml_set_txt(node, "0");
 
@@ -425,6 +488,60 @@ bool CMsnProto::MSN_StoreCreateDocument(const char *szName, const char *szMimeTy
 	free(szData);
 
 	if (tResult != NULL) UpdateStoreHost("CreateDocument", storeUrl);
+
+	mir_free(tResult);
+	mir_free(storeUrl);
+
+	return status == 200;
+}
+
+
+bool CMsnProto::MSN_StoreUpdateDocument(const char *szName, const char *szMimeType, const char *szPicData)
+{
+	char* reqHdr;
+	ezxml_t tbdy;
+	ezxml_t xmlp = storeSoapHdr("UpdateDocument", "RoamingIdentityChanged", tbdy, reqHdr);
+
+	ezxml_t doc = ezxml_add_child(tbdy, "document", 0);
+	ezxml_set_attr(doc, "xsi:type", "Photo");
+	ezxml_t node = ezxml_add_child(doc, "ResourceID", 0);
+	ezxml_set_txt(node, photoid);
+	node = ezxml_add_child(doc, "Name", 0);
+	ezxml_set_txt(node, szName);
+
+	doc = ezxml_add_child(doc, "DocumentStreams", 0);
+	doc = ezxml_add_child(doc, "DocumentStream", 0);
+	ezxml_set_attr(doc, "xsi:type", "PhotoStream");
+	
+	node = ezxml_add_child(doc, "MimeType", 0);
+	ezxml_set_txt(node, szMimeType);
+	node = ezxml_add_child(doc, "Data", 0);
+	ezxml_set_txt(node, szPicData);
+	node = ezxml_add_child(doc, "DataSize", 0);
+	ezxml_set_txt(node, "0");
+	node = ezxml_add_child(doc, "DocumentStreamType", 0);
+	ezxml_set_txt(node, "UserTileStatic");
+
+	char* szData = ezxml_toxml(xmlp, true);
+
+	ezxml_free(xmlp);
+
+	unsigned status = 0;
+	char *storeUrl = NULL, *tResult = NULL;
+
+    for (int k = 4; --k;)
+    {
+        mir_free(storeUrl);
+        storeUrl = GetStoreHost("UpdateDocument");
+	    tResult = getSslResult(&storeUrl, szData, reqHdr, status);
+        if (tResult == NULL) UpdateStoreHost("UpdateDocument", NULL);
+        else break;
+    }
+
+	mir_free(reqHdr);
+	free(szData);
+
+	if (tResult != NULL) UpdateStoreHost("UpdateDocument", storeUrl);
 
 	mir_free(tResult);
 	mir_free(storeUrl);

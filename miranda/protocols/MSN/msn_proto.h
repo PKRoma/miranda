@@ -236,12 +236,15 @@ struct CMsnProto : public PROTO_INTERFACE
     void		MSN_SetNicknameUtf(const char* nickname);
     void		MSN_SendNicknameUtf(const char* nickname);
 
+	typedef struct { char *szName; const char *szMimeType; unsigned char *data; long dataSize; } StoreAvatarData;
+	void __cdecl msn_storeAvatarThread(void* arg);
 
 	/////////////////////////////////////////////////////////////////////////////////////////
     // MSN Connection properties detection
 
-	void DecryptEchoPacket(UDPProbePkt& pkt);
-	void MSNatDetect(void);
+	void		DecryptEchoPacket(UDPProbePkt& pkt);
+	void		MSNatDetect(void);
+
 	void __cdecl MSNConnDetectThread(void*);
 
 	/////////////////////////////////////////////////////////////////////////////////////////
@@ -495,6 +498,7 @@ struct CMsnProto : public PROTO_INTERFACE
 
     bool MSN_SharingFindMembership(bool deltas = false);
     bool MSN_SharingAddDelMember(const char* szEmail, const int listId, const int netId, const char* szMethod);
+	bool MSN_SharingMyProfile(void);
     bool MSN_ABAdd(void);
     bool MSN_ABFind(const char* szMethod, const char* szGuid, bool deltas = false);
     bool MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const char* szMethod);
@@ -521,12 +525,14 @@ struct CMsnProto : public PROTO_INTERFACE
 	/////////////////////////////////////////////////////////////////////////////////////////
     //	MSN SOAP Roaming Storage
 
-    bool MSN_StoreGetProfile(void);
-    bool MSN_StoreUpdateNick(const char* szNick);
+    bool MSN_StoreGetProfile(bool allowRecurse = true);
+	bool MSN_StoreUpdateProfile(const char* szNick, bool lock);
     bool MSN_StoreCreateProfile(void);
-    bool MSN_StoreCreateRelationships(const char *szSrcId, const char *szTgtId);
-    bool MSN_StoreDeleteRelationships(const char *szResId);
+	bool MSN_StoreShareItem(const char* id);
+    bool MSN_StoreCreateRelationships(void);
+    bool MSN_StoreDeleteRelationships(bool tile);
     bool MSN_StoreCreateDocument(const char *szName, const char *szMimeType, const char *szPicData);
+	bool MSN_StoreUpdateDocument(const char *szName, const char *szMimeType, const char *szPicData);
     bool MSN_StoreFindDocuments(void);
 
     ezxml_t storeSoapHdr(const char* service, const char* scenario, ezxml_t& tbdy, char*& httphdr);
@@ -534,6 +540,8 @@ struct CMsnProto : public PROTO_INTERFACE
     void UpdateStoreHost(const char* service, const char* url);
 
 	char proresid[64];
+	char expresid[64];
+	char photoid[64];
 
     //////////////////////////////////////////////////////////////////////////////////////
 

@@ -318,7 +318,7 @@ void  CMsnProto::MSN_SendNicknameUtf(const char* nickname)
 	setStringUtf(NULL, "Nick", nickname);
 	
 	MSN_SetNicknameUtf(nickname);
-	MSN_StoreUpdateNick(nickname);
+	MSN_StoreUpdateProfile(nickname, false);
 //	MSN_ABUpdateNick(nickname, NULL);
 }
 
@@ -329,4 +329,55 @@ void  CMsnProto::MSN_SetNicknameUtf(const char* nickname)
 
 	UrlEncode(nickname, urlNick, urlNickSz);
 	msnNsThread->sendPacket("PRP", "MFN %s", urlNick);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// MSN_StoreAvatar - update our own avatar on the server
+
+void CMsnProto::msn_storeAvatarThread(void* arg)
+{
+	StoreAvatarData* dat = (StoreAvatarData*)arg;
+	char *szEncBuf = NULL;
+
+	if (dat)
+	{
+		long szEncPngSize = Netlib_GetBase64EncodedBufferSize(dat->dataSize);
+		szEncBuf = (char*)mir_alloc(szEncPngSize);
+		NETLIBBASE64 nlb = { szEncBuf, szEncPngSize, dat->data, dat->dataSize };
+		MSN_CallService(MS_NETLIB_BASE64ENCODE, 0, LPARAM(&nlb));
+	}
+ 
+	if (photoid[0] && dat)
+	{
+		MSN_StoreUpdateDocument(dat->szName, dat->szMimeType, szEncBuf);
+	}
+	else
+	{
+		MSN_StoreUpdateProfile(NULL, 1);
+
+		if (photoid[0])
+		{
+			MSN_StoreDeleteRelationships(true);
+			MSN_StoreDeleteRelationships(false);
+			photoid[0] = 0;
+		}
+
+		if (dat)
+		{
+			MSN_StoreCreateDocument(dat->szName, dat->szMimeType, szEncBuf);
+			MSN_StoreCreateRelationships();
+		}
+
+		MSN_StoreUpdateProfile(NULL, 0);
+	}
+
+	MSN_ABUpdateDynamicItem();
+
+	if (dat)
+	{
+		mir_free(szEncBuf);
+		mir_free(dat->szName);
+		mir_free(dat->data);
+		mir_free(dat);
+	}
 }

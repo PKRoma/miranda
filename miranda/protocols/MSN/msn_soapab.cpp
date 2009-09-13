@@ -449,6 +449,74 @@ bool CMsnProto::MSN_SharingAddDelMember(const char* szEmail, const int listId, c
 	return status == 200;
 }
 
+bool CMsnProto::MSN_SharingMyProfile(void)
+{
+	char* reqHdr;
+	ezxml_t tbdy;
+	ezxml_t xmlp = abSoapHdr("AddMember", "RoamingSeed", tbdy, reqHdr);
+
+	ezxml_t svchnd = ezxml_add_child(tbdy, "serviceHandle", 0);
+	ezxml_t node = ezxml_add_child(svchnd, "Id", 0);
+	ezxml_set_txt(node, "0");
+	node = ezxml_add_child(svchnd, "Type", 0);
+	ezxml_set_txt(node, "Profile");
+	node = ezxml_add_child(svchnd, "ForeignId", 0);
+	ezxml_set_txt(node, "MyProfile");
+
+	ezxml_t memb = ezxml_add_child(tbdy, "memberships", 0);
+	memb = ezxml_add_child(memb, "Membership", 0);
+	node = ezxml_add_child(memb, "MemberRole", 0);
+	ezxml_set_txt(node, "ProfileExpression");
+	memb = ezxml_add_child(memb, "Members", 0);
+	memb = ezxml_add_child(memb, "Member", 0);
+	ezxml_set_attr(memb, "xsi:type", "RoleMember");
+	ezxml_set_attr(memb, "xmlns:xsi",  "http://www.w3.org/2001/XMLSchema-instance");
+	node = ezxml_add_child(memb, "Type", 0);
+	ezxml_set_txt(node, "Role");
+	node = ezxml_add_child(memb, "State", 0);
+	ezxml_set_txt(node, "Accepted");
+	node = ezxml_add_child(memb, "Id", 0);
+	ezxml_set_txt(node, "Allow");
+	
+	ezxml_t svcdef = ezxml_add_child(memb, "DefiningService", 0);
+	node = ezxml_add_child(svcdef, "Id", 0);
+	ezxml_set_txt(node, "0");
+	node = ezxml_add_child(svcdef, "Type", 0);
+	ezxml_set_txt(node, "Messenger");
+	node = ezxml_add_child(svcdef, "ForeignId", 0);
+
+	node = ezxml_add_child(memb, "MaxRoleRecursionDepth", 0);
+	ezxml_set_txt(node, "0");
+
+	node = ezxml_add_child(memb, "MaxDegreesSeparationDepth", 0);
+	ezxml_set_txt(node, "0");
+
+	char* szData = ezxml_toxml(xmlp, true);
+
+	ezxml_free(xmlp);
+
+	unsigned status;
+	char *abUrl = NULL, *tResult;
+
+    for (int k = 4; --k;)
+    {
+        mir_free(abUrl);
+        abUrl = GetABHost("AddMember", true);
+	    tResult = getSslResult(&abUrl, szData, reqHdr, status);
+        if (tResult == NULL) UpdateABHost("AddMember", NULL);
+        else break;
+    }
+
+	mir_free(reqHdr);
+	free(szData);
+
+	mir_free(tResult);
+	mir_free(abUrl);
+
+	return status == 200;
+}
+
+
 void CMsnProto::SetAbParam(HANDLE hContact, const char *name, const char *par)
 {
 	if (*par) setStringUtf(hContact, name, (char*)par);
