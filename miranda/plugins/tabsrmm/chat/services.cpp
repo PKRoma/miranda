@@ -258,7 +258,6 @@ INT_PTR Service_NewChat(WPARAM wParam, LPARAM lParam)
 			si->ptszName = a2tf(gcw->ptszName, gcw->dwFlags, 0);
 			si->ptszStatusbarText = a2tf(gcw->ptszStatusbarText, gcw->dwFlags, 0);
 			si->iSplitterX = g_Settings.iSplitterX;
-			si->iSplitterY = g_Settings.iSplitterY;
 			si->bFilterEnabled = M->GetByte(si->hContact, "Chat", "FilterEnabled", M->GetByte("Chat", "FilterEnabled", 0));
 			si->bNicklistEnabled = M->GetByte("Chat", "ShowNicklist", 1);
 #if defined( _UNICODE )

@@ -296,7 +296,7 @@ LONG_PTR CMenuBar::processMsg(const UINT msg, const WPARAM wParam, const LPARAM 
  */
 LONG_PTR CMenuBar::customDrawWorker(NMCUSTOMDRAW *nm)
 {
-	bool fMustDraw = (m_pContainer->bSkinned || m_isAero || M->isVSThemed());
+	bool fMustDraw = (CSkin::m_skinEnabled || m_isAero || M->isVSThemed());
 
 	if(nm->hdr.hwndFrom == m_hwndToolbar) {
 		NMTBCUSTOMDRAW *nmtb = (NMTBCUSTOMDRAW *)(nm);
@@ -520,7 +520,7 @@ void CMenuBar::updateState(const HMENU hMenu) const
 		::CheckMenuItem(hMenu, ID_VIEW_SHOWAVATAR, MF_BYCOMMAND | dat->showPic ? MF_CHECKED : MF_UNCHECKED);
 		::CheckMenuItem(hMenu, ID_VIEW_SHOWTITLEBAR, MF_BYCOMMAND | m_pContainer->dwFlags & CNT_NOTITLE ? MF_UNCHECKED : MF_CHECKED);
 
-		::EnableMenuItem(hMenu, ID_VIEW_SHOWTITLEBAR, m_pContainer->bSkinned && CSkin::m_frameSkins ? MF_GRAYED : MF_ENABLED);
+		::EnableMenuItem(hMenu, ID_VIEW_SHOWTITLEBAR, CSkin::m_skinEnabled && CSkin::m_frameSkins ? MF_GRAYED : MF_ENABLED);
 
 		::CheckMenuItem(hMenu, ID_VIEW_TABSATBOTTOM, MF_BYCOMMAND | m_pContainer->dwFlags & CNT_TABSBOTTOM ? MF_CHECKED : MF_UNCHECKED);
 		::CheckMenuItem(hMenu, ID_VIEW_VERTICALMAXIMIZE, MF_BYCOMMAND | m_pContainer->dwFlags & CNT_VERTICALMAX ? MF_CHECKED : MF_UNCHECKED);
@@ -767,7 +767,7 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 				SetTextColor(hdcMem, CSkin::m_DefaultFontColor);
 			hFontOld = (HFONT)SelectObject(hdcMem, GetStockObject(DEFAULT_GUI_FONT));
 
-			if (pContainer && pContainer->bSkinned)
+			if (pContainer && CSkin::m_skinEnabled)
 				CSkin::SkinDrawBG(hWnd, GetParent(hWnd), pContainer, &rcClient, hdcMem);
 			else if(fAero) {
 				FillRect(hdcMem, &rcClient, CSkin::m_BrushBack);
@@ -777,7 +777,7 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 
 			for (i = 0; i < (int)nParts; i++) {
 				SendMessage(hWnd, SB_GETRECT, (WPARAM)i, (LPARAM)&itemRect);
-				if (!item->IGNORED && !fAero && pContainer && pContainer->bSkinned)
+				if (!item->IGNORED && !fAero && pContainer && CSkin::m_skinEnabled)
 					CSkin::DrawItem(hdcMem, &itemRect, item);
 
 				if (i == 0)

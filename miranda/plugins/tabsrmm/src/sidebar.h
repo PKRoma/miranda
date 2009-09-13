@@ -139,7 +139,7 @@ public:
 	void 						showAll(int showCmd);
 	void						processScrollerButtons(UINT cmd);
 	const CSideBarButton* 		getActiveItem() const { return(m_activeItem); }
-	bool						isSkinnedContainer() const { return(m_pContainer->bSkinned ? true : false); }
+	bool						isSkinnedContainer() const { return(CSkin::m_skinEnabled ? true : false); }
 	const UINT					getLayoutId() const { return(m_uLayout); }
 	const CSideBarButton* 		setActiveItem(const CSideBarButton *newItem)
 	{

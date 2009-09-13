@@ -535,20 +535,20 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			SendMessageCommand_W(wParam, lParam);
 			if (lParam)
 				free((void *)lParam);
-			return 0;
+			return(0);
 #endif
 		case DM_SENDMESSAGECOMMAND:
 			SendMessageCommand(wParam, lParam);
 			if (lParam)
 				free((void *)lParam);
-			return 0;
+			return(0);
 			/*
 			* sent from the popup to "dismiss" the event. we should do this in the main thread
 			*/
 		case DM_REMOVECLISTEVENT:
 			CallService(MS_CLIST_REMOVEEVENT, wParam, lParam);
 			CallService(MS_DB_EVENT_MARKREAD, wParam, lParam);
-			break;
+			return(0);
 
 		case DM_SETLOCALE: {
 			HKL 	hkl = (HKL)lParam;
@@ -561,12 +561,12 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				if(dat) {
 					DBVARIANT  dbv;
 
-					if(hkl)
-						ActivateKeyboardLayout(hkl, 0);
-					if(0 == DBGetContactSettingString(hContact, SRMSGMOD_T, "locale", &dbv)) {
+					if(hkl) {
 						dat->hkl = hkl;
-						GetLocaleID(dat, dbv.pszVal);
 						PostMessage(dat->hwnd, DM_SETLOCALE, 0, 0);
+					}
+					if(0 == M->GetTString(hContact, SRMSGMOD_T, "locale", &dbv)) {
+						GetLocaleID(dat, dbv.ptszVal);
 						DBFreeVariant(&dbv);
 						UpdateReadChars(dat);
 					}
@@ -601,13 +601,7 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		case WM_DWMCOLORIZATIONCOLORCHANGED: {
 			M->getAeroState();
 			Skin->setupAeroSkins();
-
-			ContainerWindowData *pContainer = pFirstContainer;
-
-			while (pContainer) {
-				InvalidateRect(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), NULL, FALSE);
-				pContainer = pContainer->pNextContainer;
-			}
+			CSkin::initAeroEffect();
 			break;
 		}
 
@@ -648,7 +642,7 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			struct ContainerWindowData *pContainer = pFirstContainer;
 
 			while (pContainer) {
-				if (pContainer->bSkinned) {             // invalidate cached background DCs for skinned containers
+				if (CSkin::m_skinEnabled) {             // invalidate cached background DCs for skinned containers
 					pContainer->oldDCSize.cx = pContainer->oldDCSize.cy = 0;
 					SelectObject(pContainer->cachedDC, pContainer->oldHBM);
 					DeleteObject(pContainer->cachedHBM);

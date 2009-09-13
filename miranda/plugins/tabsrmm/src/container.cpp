@@ -76,7 +76,7 @@ static int ServiceParamsOK(ButtonItem *item, WPARAM *wParam, LPARAM *lParam, HAN
 
 void SetAeroMargins(ContainerWindowData *pContainer)
 {
-	if(M->isAero() && pContainer && !pContainer->bSkinned) {
+	if(M->isAero() && pContainer && !CSkin::m_skinEnabled) {
 		MARGINS	m;
 		_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 		RECT	rcWnd;
@@ -216,7 +216,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 	BOOL bSkinned;
 
 	struct ContainerWindowData *pContainer = (struct ContainerWindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-	bSkinned = pContainer ? pContainer->bSkinned : FALSE;
+	bSkinned = CSkin::m_skinEnabled ? TRUE : FALSE;
 
 	switch (msg) {
 		case WM_NCPAINT: {
@@ -578,7 +578,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 	BOOL  bSkinned;
 
 	pContainer = (struct ContainerWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-	bSkinned = pContainer ? pContainer->bSkinned : FALSE;
+	bSkinned = CSkin::m_skinEnabled ? TRUE : FALSE;
 	hwndTab = GetDlgItem(hwndDlg, IDC_MSGTABS);
 
 	switch (msg) {
@@ -633,16 +633,10 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 								   pContainer->dwFlags | CNT_SIDEBAR : pContainer->dwFlags & ~CNT_SIDEBAR);
 
 			pContainer->SideBar = new CSideBar(pContainer);
-
-			/*
-			 * create the button items
-			 */
-
 			pContainer->MenuBar = new CMenuBar(hwndDlg, pContainer);
 
 			pbItem = pContainer->buttonItems;
 
-			pContainer->bSkinned = CSkin::m_skinEnabled;
 			SetClassLongPtr(hwndDlg, GCL_STYLE, GetClassLongPtr(hwndDlg, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
 			SetClassLongPtr(hwndTab, GCL_STYLE, GetClassLongPtr(hwndTab, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
 
@@ -700,6 +694,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 			if (pContainer->dwFlags & CNT_CREATE_MINIMIZED) {
  				SetWindowLongPtr(hwndDlg, GWL_STYLE, GetWindowLongPtr(hwndDlg, GWL_STYLE) & ~WS_VISIBLE);
+				ShowWindow(hwndDlg, SW_SHOWMINNOACTIVE);
  				SendMessage(hwndDlg, DM_RESTOREWINDOWPOS, 0, 0);
 				GetClientRect(hwndDlg, &pContainer->rcSaved);
 				ShowWindow(hwndDlg, SW_SHOWMINNOACTIVE);
@@ -1118,6 +1113,7 @@ panel_found:
 			SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
 			if (LOWORD(wParam) == IDC_TBFIRSTUID - 1)
 				break;
+			/*
 			else if (LOWORD(wParam) >= IDC_TBFIRSTUID) {                    // skinnable buttons handling
 				ButtonItem *item = pContainer->buttonItems;
 				WPARAM wwParam = 0;
@@ -1217,6 +1213,7 @@ panel_found:
 				pItem = pItem->nextItem;
 			}
 buttons_done:
+			*/
 			switch (LOWORD(wParam)) {
 				case IDC_TOGGLESIDEBAR: {
 					RECT rc;
@@ -1241,10 +1238,6 @@ buttons_done:
 					pContainer->preSIZE.cx = pContainer->preSIZE.cy = 0;
 					pContainer->oldDCSize.cx = pContainer->oldDCSize.cy = 0;
 
-					//SetWindowPos(hwndDlg, 0, rc.left + dwNewLeft, rc.top, (rc.right - rc.left) - dwNewLeft, rc.bottom - rc.top,
-					//			 SWP_NOACTIVATE | SWP_FRAMECHANGED | SWP_NOCOPYBITS | SWP_NOZORDER | SWP_DEFERERASE | SWP_ASYNCWINDOWPOS | (dwNewLeft < 0 && skinnedMode ? SWP_NOREDRAW : 0));
-					//SetWindowPos(hwndDlg, 0, rc.left + dwNewLeft, rc.top, (rc.right - rc.left) - dwNewLeft, rc.bottom - rc.top,
-					//			 SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOZORDER | SWP_DEFERERASE | SWP_NOSENDCHANGING | SWP_ASYNCWINDOWPOS | SWP_NOREDRAW);
 					pItem = pContainer->buttonItems;
 					while (pItem) {
 						if (pItem->dwFlags & BUTTON_ISSIDEBAR)
@@ -1804,27 +1797,16 @@ buttons_done:
 			bool 		fAero = M->isAero();
 
 			if (fAero) {
-				FillRect(hdc, &rc, CSkin::m_BrushBack);
+				HDC		hdcMem;
+				HANDLE  hbp;
+
+				hbp = CMimAPI::m_pfnBeginBufferedPaint(hdc, &rc, BPBF_TOPDOWNDIB, 0, &hdcMem);
+				FillRect(hdcMem, &rc, CSkin::m_BrushBack);
+				CSkin::FinalizeBufferedPaint(hbp, &rc);
 			}
 			else
 				FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
 
-			if((pContainer->dwFlags & CNT_SIDEBAR) && pContainer->SideBar->isVisible()) {
-				rc.left = 0;
-				rc.top = pContainer->MenuBar->getHeight();
-				rc.right = pContainer->SideBar->getWidth();
-				HDC dc = CreateCompatibleDC(hdc);
-				HBITMAP hbmOld = (HBITMAP)SelectObject(dc, CSideBar::m_hbmBackground);
-				if(CMimAPI::m_MyAlphaBlend) {
-					CSkin::m_default_bf.SourceConstantAlpha = 255;
-					//CMimAPI::m_MyAlphaBlend(hdc, 0, rc.top, rc.right, rc.bottom, dc, 0, 0, 150, 350, CSkin::m_default_bf);
-					CSkin::m_default_bf.SourceConstantAlpha = 255;
-				}
-				else
-					StretchBlt(hdc, 0, 0, rc.right, rc.bottom, dc, 0, 0, 150, 350, SRCCOPY);
-				SelectObject(dc, hbmOld);
-				DeleteDC(dc);
-			}
 			SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, 1);
 			return TRUE;
 		}
@@ -1855,6 +1837,9 @@ buttons_done:
 				mir_snprintf(szCname, 40, "%s_panel", szSetting);
 				pContainer->panelHeight = M->GetDword(pContainer->hContactFrom, szCname, PluginConfig.m_panelHeight);
 
+				mir_snprintf(szCname, 40, "%s_split", szSetting);
+				pContainer->splitterPos = M->GetDword(pContainer->hContactFrom, szCname, 60);
+
 				mir_snprintf(szCname, 40, "%s_Trans", szSetting);
 				dwLocalTrans = M->GetDword(pContainer->hContactFrom, szCname, 0xffffffff);
 				mir_snprintf(szCname, 40, "%s_titleformat", szSetting);
@@ -1865,7 +1850,7 @@ buttons_done:
 				}
 				pContainer->szRelThemeFile[0] = pContainer->szAbsThemeFile[0] = 0;
 				mir_snprintf(szCname, 40, "%s_theme", szSetting);
-				if (!DBGetContactSettingTString(pContainer->hContactFrom, SRMSGMOD_T, szCname, &dbv))
+				if (!M->GetTString(pContainer->hContactFrom, SRMSGMOD_T, szCname, &dbv))
 					szThemeName = dbv.ptszVal;
 				if (dwLocalFlags == 0xffffffff || dwLocalTrans == 0xffffffff)
 					overridePerContact = 1;
@@ -1883,6 +1868,9 @@ buttons_done:
 				mir_snprintf(szCname, 40, "%s%d_panel", szSetting, pContainer->iContainerIndex);
 				pContainer->panelHeight = M->GetDword(szCname, PluginConfig.m_panelHeight);
 
+				mir_snprintf(szCname, 40, "%s%d_split", szSetting, pContainer->iContainerIndex);
+				pContainer->splitterPos = M->GetDword(szCname, 60);
+
 				if (!szTitleFormat[0]) {
 					mir_snprintf(szCname, 40, "%s%d_titleformat", szSetting, pContainer->iContainerIndex);
 					if(0 == M->GetTString(pContainer->hContactFrom, SRMSGMOD_T, szCname, &dbv1)) {
@@ -1892,7 +1880,7 @@ buttons_done:
 				}
 				if (szThemeName == NULL) {
 					mir_snprintf(szCname, 40, "%s%d_theme", szSetting, pContainer->iContainerIndex);
-					if (!DBGetContactSettingTString(NULL, SRMSGMOD_T, szCname, &dbv))
+					if (!M->GetTString(NULL, SRMSGMOD_T, szCname, &dbv))
 						szThemeName = dbv.ptszVal;
 				}
 			}
@@ -2332,8 +2320,6 @@ buttons_done:
 						M->WriteByte(SRMSGMOD_T, "splitmax", (BYTE)((wp.showCmd==SW_SHOWMAXIMIZED)?1:0));
 					}
 				}
-				else
-					MessageBoxA(0, "GetWindowPlacement() failed", "Error", MB_OK);
 			}
 			// clear temp flags which should NEVER be saved...
 
@@ -2358,11 +2344,14 @@ buttons_done:
 						_snprintf(szCName, 40, "%s_panel", szSetting);
 						M->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->panelHeight);
 
+						_snprintf(szCName, 40, "%s_split", szSetting);
+						M->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->splitterPos);
+
 						mir_snprintf(szCName, 40, "%s_theme", szSetting);
 						if (lstrlen(pContainer->szRelThemeFile) > 1) {
 							if(pContainer->fPrivateThemeChanged == TRUE) {
 								M->pathToRelative(pContainer->szRelThemeFile, pContainer->szAbsThemeFile);
-								DBWriteContactSettingTString(hContact, SRMSGMOD_T, szCName, pContainer->szRelThemeFile);
+								M->WriteTString(hContact, SRMSGMOD_T, szCName, pContainer->szRelThemeFile);
 								pContainer->fPrivateThemeChanged = FALSE;
 							}
 						}
@@ -2390,6 +2379,9 @@ buttons_done:
 				_snprintf(szCName, 40, "%s%d_panel", szSetting, pContainer->iContainerIndex);
 				M->WriteDword(SRMSGMOD_T, szCName, pContainer->panelHeight);
 
+				_snprintf(szCName, 40, "%s%d_split", szSetting, pContainer->iContainerIndex);
+				M->WriteDword(SRMSGMOD_T, szCName, pContainer->splitterPos);
+
 				if (pContainer->dwFlags & CNT_TITLE_PRIVATE) {
 					mir_snprintf(szCName, 40, "%s%d_titleformat", szSetting, pContainer->iContainerIndex);
 					M->WriteTString(NULL, SRMSGMOD_T, szCName, pContainer->szTitleFormat);
@@ -2398,7 +2390,7 @@ buttons_done:
 				if (lstrlen(pContainer->szRelThemeFile) > 1) {
 					if(pContainer->fPrivateThemeChanged == TRUE) {
 						M->pathToRelative(pContainer->szRelThemeFile, pContainer->szAbsThemeFile);
-						DBWriteContactSettingTString(NULL, SRMSGMOD_T, szCName, pContainer->szAbsThemeFile);
+						M->WriteTString(NULL, SRMSGMOD_T, szCName, pContainer->szAbsThemeFile);
 						pContainer->fPrivateThemeChanged = FALSE;
 					}
 				}
@@ -2954,7 +2946,7 @@ void ReflashContainer(struct ContainerWindowData *pContainer) {
  * broadcasts a message to all child windows (tabs/sessions)
  */
 
-void BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam) {
+void BroadCastContainer(const ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam, BYTE bType) {
 	int i;
 	TCITEM item;
 
@@ -2966,7 +2958,29 @@ void BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WP
 	int nCount = TabCtrl_GetItemCount(hwndTab);
 	for (i = 0; i < nCount; i++) {
 		TabCtrl_GetItem(hwndTab, i, &item);
-		if (IsWindow((HWND)item.lParam))
-			SendMessage((HWND)item.lParam, message, wParam, lParam);
+		if (IsWindow((HWND)item.lParam)) {
+			if(bType == SESSIONTYPE_ANY)
+				SendMessage((HWND)item.lParam, message, wParam, lParam);
+			else {
+				_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
+				if(dat && dat->bType == bType)
+					SendMessage((HWND)item.lParam, message, wParam, lParam);
+			}
+		}
 	}
 }
+
+void BroadCastAllContainerS(UINT message, WPARAM wParam, LPARAM lParam, bool fIgnorePrivate, BYTE iType)
+{
+	const ContainerWindowData *p = pFirstContainer;
+
+	while(p) {
+		if(!(p->dwPrivateFlags & CNT_GLOBALSETTINGS) && fIgnorePrivate) {
+			p = p->pNextContainer;
+			continue;
+		}
+		BroadCastContainer(p, message, wParam, lParam, iType);
+		p = p->pNextContainer;
+	}
+}
+

@@ -1,28 +1,37 @@
 /*
-
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2009 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-$Id$
-
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * wraps some parts of Miranda API
+ * Also, OS dependent stuff (visual styles api etc.)
+ *
+ */
 
 
 #include "commonheaders.h"
@@ -258,8 +267,10 @@ int CMimAPI::pathIsAbsolute(const TCHAR *path) const
 	return 0;
 }
 
-size_t CMimAPI::pathToRelative(const TCHAR *pSrc, TCHAR *pOut) const
+size_t CMimAPI::pathToRelative(const TCHAR *pSrc, TCHAR *pOut, const TCHAR *szBase) const
 {
+	const TCHAR	*tszBase = szBase ? szBase : m_szProfilePath;
+
 	pOut[0] = 0;
 	if (!pSrc || !lstrlen(pSrc) || lstrlen(pSrc) > MAX_PATH)
 		return 0;
@@ -268,16 +279,10 @@ size_t CMimAPI::pathToRelative(const TCHAR *pSrc, TCHAR *pOut) const
 		return lstrlen(pOut);
 	} else {
 		TCHAR	szTmp[MAX_PATH];
-		TCHAR 	szSTmp[MAX_PATH];
-		mir_sntprintf(szTmp, SIZEOF(szTmp), _T("%s"), pSrc);
-		if (m_szSkinsPath[0])
-			mir_sntprintf(szSTmp, SIZEOF(szSTmp), _T("%s"), m_szSkinsPath);
 
-		if(StriStr(szTmp, _T(".tsk")) && szSTmp && StriStr(szTmp, szSTmp)) {
-			mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc + lstrlen(m_szSkinsPath));
-			return(lstrlen(pOut));
-		} else if (StriStr(szTmp, m_szProfilePath)) {
-			mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc + lstrlen(m_szProfilePath) - 1);
+		mir_sntprintf(szTmp, SIZEOF(szTmp), _T("%s"), pSrc);
+		if (StriStr(szTmp, tszBase)) {
+			mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc + lstrlen(tszBase) - 1);
 			pOut[0]='.';
 			return(lstrlen(pOut));
 		} else {
@@ -287,45 +292,30 @@ size_t CMimAPI::pathToRelative(const TCHAR *pSrc, TCHAR *pOut) const
 	}
 }
 
-size_t CMimAPI::pathToRelative(const TCHAR *pSrc, TCHAR *pOut, TCHAR *szBase) const
+/**
+ * Translate a relativ path to an absolute, using the current profile
+ * data directory.
+ *
+ * @param pSrc   TCHAR *: input path + filename (relative)
+ * @param pOut   TCHAR *: the result
+ * @param szBase TCHAR *: (OPTIONAL) base path for the translation. Can be 0 in which case
+ *               the function will use m_szProfilePath (usually \tabSRMM below %miranda_userdata%
+ *
+ * @return
+ */
+size_t CMimAPI::pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut, const TCHAR *szBase) const
 {
-	pOut[0] = 0;
-	if (!pSrc||!lstrlen(pSrc)||lstrlen(pSrc) > MAX_PATH)
-		return 0;
-	if (!pathIsAbsolute(pSrc)) {
-		mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
-		return lstrlen(pOut);
-	}
-	else {
-		TCHAR szTmp[MAX_PATH];
+	const TCHAR	*tszBase = szBase ? szBase : m_szProfilePath;
 
-		mir_sntprintf(szTmp, SIZEOF(szTmp), _T("%s"), pSrc);
-		if (StriStr(szTmp, szBase)) {
-			mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc + lstrlen(szBase));
-			return(lstrlen(pOut));
-		}
-		else {
-			mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
-			return(lstrlen(pOut));
-		}
-	}
-}
-
-size_t CMimAPI::pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut) const
-{
 	pOut[0] = 0;
 	if (!pSrc || !lstrlen(pSrc) || lstrlen(pSrc) > MAX_PATH)
 		return 0;
 	if (pathIsAbsolute(pSrc) && pSrc[0]!='.')
 		mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
-
-	else if (m_szSkinsPath[0] && StriStr(pSrc, _T(".tsk")) && pSrc[0] != '.')
-		mir_sntprintf(pOut, MAX_PATH, _T("%s%s"), m_szSkinsPath, pSrc);
-
 	else if (pSrc[0]=='.')
-		mir_sntprintf(pOut, MAX_PATH, _T("%s\\%s"), m_szProfilePath, pSrc + 1);
+		mir_sntprintf(pOut, MAX_PATH, _T("%s\\%s"), tszBase, pSrc + 1);
 	else
-		mir_sntprintf(pOut, MAX_PATH, _T("%s\\%s"), m_szProfilePath, pSrc);
+		mir_sntprintf(pOut, MAX_PATH, _T("%s\\%s"), tszBase, pSrc);
 
 	return lstrlen(pOut);
 }
@@ -426,7 +416,7 @@ void CMimAPI::InitPaths()
 	mir_sntprintf(m_szProfilePath, MAX_PATH, _T("%stabSRMM"), szUserdataDir);
 	mir_sntprintf(m_szChatLogsPath, MAX_PATH, _T("%s"), szUserdataDir);
 
-	_sntprintf(m_szSkinsPath, MAX_PATH, _T("%s\\skins"), m_szProfilePath);
+	_sntprintf(m_szSkinsPath, MAX_PATH, _T("%s"), szUserdataDir);
 	_sntprintf(m_szSavedAvatarsPath, MAX_PATH, _T("%s\\Saved Contact Pictures"), m_szProfilePath);
 	m_szSkinsPath[MAX_PATH - 1] = m_szSavedAvatarsPath[MAX_PATH - 1] = 0;
 }

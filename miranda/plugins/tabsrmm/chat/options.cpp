@@ -1286,6 +1286,7 @@ void LoadGlobalSettings(void)
 	g_Settings.ShowTimeIfChanged = (BOOL)M->GetByte("Chat", "ShowTimeStampIfChanged", 0);
 	g_Settings.TimeStampEventColour = (BOOL)M->GetByte("Chat", "TimeStampEventColour", 0);
 	g_Settings.iEventLimit = DBGetContactSettingWord(NULL, "Chat", "LogLimit", 100);
+	g_Settings.iEventLimitThreshold = DBGetContactSettingWord(NULL, "Chat", "LogLimitThreshold", 20);
 	g_Settings.dwIconFlags = M->GetDword("Chat", "IconFlags", 0x0000);
 	g_Settings.LoggingLimit = (size_t)DBGetContactSettingWord(NULL, "Chat", "LoggingLimit", 100);
 	g_Settings.LoggingEnabled = (BOOL)M->GetByte("Chat", "LoggingEnabled", 0);
@@ -1402,10 +1403,6 @@ int OptionsInit(void)
 	g_Settings.UserListHeadingsFont = NULL;
 	g_Settings.iSplitterX = DBGetContactSettingWord(NULL, "Chat", "SplitterX", 105);
 	g_Settings.iSplitterY = DBGetContactSettingWord(NULL, "Chat", "splitY", 50);
-	g_Settings.iX = M->GetDword("Chat", "roomx", -1);
-	g_Settings.iY = M->GetDword("Chat", "roomy", -1);
-	g_Settings.iWidth = M->GetDword("Chat", "roomwidth", -1);
-	g_Settings.iHeight = M->GetDword("Chat", "roomheight", -1);
 	LoadGlobalSettings();
 	SkinAddNewSoundEx("ChatMessage", "Chat", TranslateA("Incoming message"));
 	SkinAddNewSoundEx("ChatHighlight", "Chat", TranslateA("Message is highlighted"));

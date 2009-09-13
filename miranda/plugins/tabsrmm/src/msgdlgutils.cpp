@@ -347,7 +347,7 @@ void CalcDynamicAvatarSize(_MessageWindowData *dat, BITMAP *bminfo)
 	//MaD: by changing dat->iButtonBarReallyNeeds to dat->iButtonBarNeeds
 	//	   we can change resize priority to buttons, if needed...
 	if (((rc.right) - (int)picProjectedWidth) > (dat->iButtonBarReallyNeeds) && !PluginConfig.m_AlwaysFullToolbarWidth)
-		dat->iRealAvatarHeight = dat->dynaSplitter + 4 + (dat->showUIElements ? DPISCALEY(28):DPISCALEY(2));
+		dat->iRealAvatarHeight = dat->dynaSplitter + 3 /*4 */ + (dat->showUIElements ? DPISCALEY(28):DPISCALEY(2));
 	else
 		dat->iRealAvatarHeight = dat->dynaSplitter +DPISCALEY(4);
 	//mad
@@ -632,11 +632,11 @@ int MsgWindowMenuHandler(_MessageWindowData *dat, int selection, int menuId)
 void UpdateReadChars(const _MessageWindowData *dat)
 {
 
-	if (dat->pContainer->hwndStatus && SendMessage(dat->pContainer->hwndStatus, SB_GETPARTS, 0, 0) >= 3) {
-		char buf[128];
-		int len;
-		char szIndicators[20];
-		BOOL fCaps, fNum;
+	if(dat && (dat->pContainer->hwndStatus && dat->pContainer->hwndActive == dat->hwnd)) {
+		TCHAR 	buf[128];
+		int 	len;
+		TCHAR 	szIndicators[20];
+		BOOL 	fCaps, fNum;
 
 		szIndicators[0] = 0;
 		if (dat->bType == SESSIONTYPE_CHAT)
@@ -660,16 +660,16 @@ void UpdateReadChars(const _MessageWindowData *dat)
 		fNum = (GetKeyState(VK_NUMLOCK) & 1);
 
 		if (dat->fInsertMode)
-			lstrcatA(szIndicators, "O");
+			lstrcat(szIndicators, _T("O"));
 		if (fCaps)
-			lstrcatA(szIndicators, "C");
+			lstrcat(szIndicators, _T("C"));
 		if (fNum)
-			lstrcatA(szIndicators, "N");
+			lstrcat(szIndicators, _T("N"));
 		if (dat->fInsertMode || fCaps || fNum)
-			lstrcatA(szIndicators, " | ");
+			lstrcat(szIndicators, _T(" | "));
 
-		_snprintf(buf, sizeof(buf), "%s%s %d/%d", szIndicators, dat->lcID, dat->iOpenJobs, len);
-		SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 1, (LPARAM) buf);
+		mir_sntprintf(buf, safe_sizeof(buf), _T("%s%s %d/%d"), szIndicators, dat->lcID, dat->iOpenJobs, len);
+		SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 1, (LPARAM) buf);
 	}
 }
 
@@ -1557,25 +1557,6 @@ void GetContactUIN(HWND hwndDlg, struct _MessageWindowData *dat)
 static int g_IEViewAvail = -1;
 static int g_HPPAvail = -1;
 
-//MAD
-HWND GetLastChild(HWND hwndParent)
-{
-	HWND hwnd = hwndParent;
-	char classbuf[25]={'\0'};
-	WCHAR classbufW[25]={_T('\0')};
-	while (TRUE) {
-		HWND hwndChild = GetWindow(hwnd, GW_CHILD);
-		if (hwndChild==NULL)
-			return hwnd;
-		hwnd = hwndChild;
-		if ((GetClassNameA(hwnd,classbuf,25)&&!strcmp(classbuf,"Internet Explorer_Server"))||(GetClassNameW(hwnd,classbufW,25)&&!wcscmp(classbufW,L"Internet Explorer_Server")))
-			return hwnd;
-	}
-	return NULL;
-}
-
-//MAD_
-
 unsigned int GetIEViewMode(HWND hwndDlg, HANDLE hContact)
 {
 	int iWantIEView = 0, iWantHPP = 0;
@@ -1793,14 +1774,21 @@ void SaveSplitter(_MessageWindowData *dat)
 
 	if (dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE)
 		M->WriteDword(dat->hContact, SRMSGMOD_T, "splitsplity", dat->splitterY);
-	else
-		M->WriteDword(SRMSGMOD_T, "splitsplity", dat->splitterY);
+	else {
+		if(!(dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS))
+			dat->pContainer->splitterPos = dat->splitterY;
+		else
+			M->WriteDword(SRMSGMOD_T, "splitsplity", dat->splitterY);
+	}
 }
 
 void LoadSplitter(_MessageWindowData *dat)
 {
 	if (!(dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE))
-		dat->splitterY = (int)M->GetDword("splitsplity", (DWORD) 60);
+		if(dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS)
+			dat->splitterY = (int)M->GetDword("splitsplity", (DWORD) 60);
+		else
+			dat->splitterY = dat->pContainer->splitterPos;
 	else
 		dat->splitterY = (int)M->GetDword(dat->hContact, "splitsplity", M->GetDword("splitsplity", (DWORD) 60));
 
@@ -1859,23 +1847,31 @@ void GetSendFormat(HWND hwndDlg, struct _MessageWindowData *dat, int mode)
  * get 2-digit locale id from current keyboard layout
  */
 
-void GetLocaleID(struct _MessageWindowData *dat, char *szKLName)
+void GetLocaleID(struct _MessageWindowData *dat, TCHAR *szKLName)
 {
-	char szLI[20], *stopped = NULL;
+	TCHAR szLI[20], *stopped = NULL;
 	USHORT langID;
 	WORD   wCtype2[3];
 	_PARAFORMAT2 pf2;
 	BOOL fLocaleNotSet;
 	char szTest[4] = {(char)0xe4, (char)0xf6, (char)0xfc, 0 };
 
+	LCTYPE infoType;
+
+	if(PluginConfig.m_bIsVista)
+		infoType = LOCALE_SISO639LANGNAME2;
+	else
+		infoType = LOCALE_SISO639LANGNAME;
+
+	szLI[0] = 0;
+
 	ZeroMemory(&pf2, sizeof(_PARAFORMAT2));
-	langID = (USHORT)strtol(szKLName, &stopped, 16);
+	langID = (USHORT)_tcstol(szKLName, &stopped, 16);
 	dat->lcid = MAKELCID(langID, 0);
-	GetLocaleInfoA(dat->lcid, LOCALE_SISO639LANGNAME , szLI, 10);
+	GetLocaleInfo(dat->lcid, infoType , szLI, 10);
 	fLocaleNotSet = (dat->lcID[0] == 0 && dat->lcID[1] == 0);
-	dat->lcID[0] = toupper(szLI[0]);
-	dat->lcID[1] = toupper(szLI[1]);
-	dat->lcID[2] = 0;
+	_tcsupr(szLI);
+	mir_sntprintf(dat->lcID, safe_sizeof(dat->lcID), szLI);
 	GetStringTypeA(dat->lcid, CT_CTYPE2, szTest, 3, wCtype2);
 	pf2.cbSize = sizeof(pf2);
 	pf2.dwMask = PFM_RTLPARA;
@@ -2184,17 +2180,21 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 
 		hPenOld = (HPEN)SelectObject(hdcDraw, hPenBorder);
 
-		hOldBrush = (HBRUSH)SelectObject(hdcDraw, GetSysColorBrush(COLOR_3DFACE));
-		rcFrame = rcClient;
-
 		bool	fAero = M->isAero();
 
-		if (dat->pContainer->bSkinned) {
+		hOldBrush = (HBRUSH)SelectObject(hdcDraw, fAero ? (HBRUSH)GetStockObject(HOLLOW_BRUSH) : GetSysColorBrush(COLOR_3DFACE));
+		rcFrame = rcClient;
+
+
+		if (CSkin::m_skinEnabled) {
 			if(!bPanelPic)
 				CSkin::SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &rcFrame, hdcDraw);
 		} else {
-			if(!bPanelPic)
+			if(!bPanelPic) {
 				FillRect(hdcDraw, &rcFrame, GetSysColorBrush(COLOR_3DFACE));
+				if(fAero)
+					::DrawAlpha(hdcDraw, &rcFrame, 0xf0f0f0, 40, CSkin::m_dwmColorRGB, 0, 9, 31, 4, 0);
+			}
 		}
 		if (borderType == 1)
 			borderType = aceFlags & AVS_PREMULTIPLIED ? 2 : 3;
@@ -2303,7 +2303,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 
 	} else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_STATICTEXT) || dis->hwndItem == GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT)) {
 		TCHAR szWindowText[256];
-		if (dat->pContainer->bSkinned) {
+		if (CSkin::m_skinEnabled) {
 			SetTextColor(dis->hDC, CSkin::m_DefaultFontColor);
 			CSkin::SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
 		} else {
@@ -2316,7 +2316,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		DrawText(dis->hDC, szWindowText, -1, &dis->rcItem, DT_SINGLELINE | DT_VCENTER | DT_NOCLIP | DT_END_ELLIPSIS);
 		return TRUE;
 	} else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_STATICERRORICON)) {
-		if (dat->pContainer->bSkinned)
+		if (CSkin::m_skinEnabled)
 			CSkin::SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
 		else
 			FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_3DFACE));

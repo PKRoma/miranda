@@ -546,7 +546,7 @@ void BB_InitDlgButtons(HWND hdlg, struct _MessageWindowData *dat)
 	int lcount = LButtonsList->realCount;
 	int rcount = RButtonsList->realCount;
 	if (dat == 0 || hdlg == 0) {return;}
-	if (dat->pContainer->bSkinned && !SkinItems[ID_EXTBKBUTTONSNPRESSED].IGNORED &&
+	if (CSkin::m_skinEnabled && !SkinItems[ID_EXTBKBUTTONSNPRESSED].IGNORED &&
 			!SkinItems[ID_EXTBKBUTTONSPRESSED].IGNORED && !SkinItems[ID_EXTBKBUTTONSMOUSEOVER].IGNORED) {
 		isFlat = TRUE;
 		isThemed = FALSE;

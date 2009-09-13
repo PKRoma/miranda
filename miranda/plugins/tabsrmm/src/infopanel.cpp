@@ -262,7 +262,7 @@ void CInfoPanel::renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero) 
 		}
 		else {
 			if(PluginConfig.m_WinVerMajor >= 5) {
-				if(m_dat->pContainer->bSkinned) {
+				if(CSkin::m_skinEnabled) {
 					rc.bottom -= 2;
 					CSkin::SkinDrawBG(m_dat->hwnd, m_dat->pContainer->hwnd, m_dat->pContainer, &rc, hdc);
 				} else {
@@ -638,7 +638,7 @@ void CInfoPanel::Chat_RenderIPSecondLine(const HDC hdc, RECT& rcItem)
 	mir_sntprintf(szPrefix, 100, szTopicTitle, _T(""));
 	::GetTextExtentPoint32(hdc, szPrefix, lstrlen(szPrefix), &szTitle);
 
-	CSkin::RenderText(hdc, m_dat->hTheme, szPrefix, &rcItem, DT_SINGLELINE | DT_NOPREFIX | DT_TOP);
+	CSkin::RenderText(hdc, m_dat->hTheme, szPrefix, &rcItem, DT_SINGLELINE | DT_NOPREFIX | DT_TOP, CSkin::m_glowSize);
 	rcItem.left += (szTitle.cx + 4);
 
 	if(si->ptszTopic && lstrlen(si->ptszTopic) > 1)

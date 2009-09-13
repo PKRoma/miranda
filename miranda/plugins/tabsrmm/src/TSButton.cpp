@@ -195,7 +195,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
 			pt.x = rcParent.left;
 			pt.y = rcParent.top;
 
-			if (ctl->pContainer->bSkinned) {
+			if (CSkin::m_skinEnabled) {
 				ScreenToClient(hwndParent, &pt);
 
 				BitBlt(hdcMem, 0, 0, rcClient.right, rcClient.bottom, ctl->pContainer->cachedDC, pt.x, pt.y, SRCCOPY);
@@ -207,7 +207,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
 default_draw_bg:
 
 		if (ctl->flatBtn) {
-			if (ctl->pContainer && ctl->pContainer->bSkinned) {
+			if (ctl->pContainer && CSkin::m_skinEnabled) {
 				CSkinItem *item, *realItem = 0;
 				if (ctl->bTitleButton)
 					item = &SkinItems[ctl->stateId == PBS_NORMAL ? ID_EXTBKTITLEBUTTON : (ctl->stateId == PBS_HOT ? ID_EXTBKTITLEBUTTONMOUSEOVER : ID_EXTBKTITLEBUTTONPRESSED)];
@@ -297,7 +297,7 @@ flat_themed:
 				}
 			}
 		} else {
-			if (ctl->pContainer && ctl->pContainer->bSkinned) {
+			if (ctl->pContainer && CSkin::m_skinEnabled) {
 				CSkinItem *item, *realItem = 0;
 				if (ctl->bTitleButton)
 					item = &SkinItems[ctl->stateId == PBS_NORMAL ? ID_EXTBKTITLEBUTTON : (ctl->stateId == PBS_HOT ? ID_EXTBKTITLEBUTTONMOUSEOVER : ID_EXTBKTITLEBUTTONPRESSED)];
@@ -384,7 +384,7 @@ bg_done:
 					   PluginConfig.g_buttonBarIcons[16], 16, 16, 0, 0, DI_NORMAL);
 			if (!ctl->flatBtn)
 				DrawEdge(hdcMem, &rcContent, EDGE_BUMP, BF_LEFT);
-			else if (ctl->pContainer && ctl->pContainer->bSkinned) {
+			else if (ctl->pContainer && CSkin::m_skinEnabled) {
 				HPEN hPenOld = (HPEN)SelectObject(hdcMem, CSkin::m_SkinLightShadowPen);
 				POINT pt;
 
@@ -440,7 +440,7 @@ bg_done:
 			if (ctl->item->dwFlags & BUTTON_HASLABEL) {
 				RECT rc = rcClient;
 
-				if (ctl->pContainer && ctl->pContainer->bSkinned)
+				if (ctl->pContainer && CSkin::m_skinEnabled)
 					SetTextColor(hdcMem, ctl->stateId != PBS_DISABLED ? CSkin::m_DefaultFontColor : GetSysColor(COLOR_GRAYTEXT));
 				else
 					SetTextColor(hdcMem, ctl->stateId != PBS_DISABLED ? GetSysColor(COLOR_BTNTEXT) : GetSysColor(COLOR_GRAYTEXT));
@@ -485,7 +485,7 @@ bg_done:
 			SetBkMode(hdcMem, TRANSPARENT);
 			hOldFont = (HFONT)SelectObject(hdcMem, ctl->hFont);
 			// XP w/themes doesn't used the glossy disabled text.  Is it always using COLOR_GRAYTEXT?  Seems so.
-			if (ctl->pContainer && ctl->pContainer->bSkinned)
+			if (ctl->pContainer && CSkin::m_skinEnabled)
 				SetTextColor(hdcMem, IsWindowEnabled(ctl->hwnd) ? CSkin::m_DefaultFontColor : GetSysColor(COLOR_GRAYTEXT));
 			else
 				SetTextColor(hdcMem, IsWindowEnabled(ctl->hwnd) || !ctl->hThemeButton ? GetSysColor(COLOR_BTNTEXT) : GetSysColor(COLOR_GRAYTEXT));

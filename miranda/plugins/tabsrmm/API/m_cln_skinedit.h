@@ -14,7 +14,7 @@ struct _MessageWindowData;
 class CImageItem;
 
 struct ButtonItem {
-    char    szName[40];
+    TCHAR   szName[40];
     HWND    hWnd;
     LONG    xOff, yOff;
     LONG    width, height;

@@ -251,7 +251,7 @@ struct ContainerWindowData {
 	BOOL    bDontSmartClose;      // if set, do not search and select the next possible tab after closing one.
 	DWORD   dwFlags, dwPrivateFlags;
 	DWORD   dwFlagsEx, dwPrivateFlagsEx;
-	LONG	panelHeight;
+	LONG	panelHeight, splitterPos;
 	UINT    uChildMinHeight;
 	DWORD   dwTransparency;
 	int     tBorder;
@@ -274,7 +274,6 @@ struct ContainerWindowData {
 	HDC     cachedDC;
 	HBITMAP cachedHBM, oldHBM;
 	SIZE    oldDCSize;
-	BOOL    bSkinned;
 	RECT    rcClose, rcMin, rcMax;
 	struct  TitleBtn buttons[3];
 	struct  TitleBtn oldbuttons[3];
@@ -349,7 +348,6 @@ struct _MessageWindowData {
 
 	HANDLE  hDbEventFirst, hDbEventLast;
 	int     sendMode;
-	HBRUSH  hBkgBrush, hInputBkgBrush;
 	int     splitterY, originalSplitterY, dynaSplitter, savedSplitter, savedSplitY, savedDynaSplit;
 	int     multiSplitterX;
 	SIZE    minEditBoxSize;
@@ -395,7 +393,7 @@ struct _MessageWindowData {
 #define EVENT_QUEUE_SIZE 10
 	int     iEventQueueSize;
 	LCID    lcid;
-	char    lcID[4];
+	TCHAR   lcID[10];
 	int     panelWidth;
 	WORD    wApparentMode;
 	DWORD   idle;
@@ -659,7 +657,8 @@ struct NewMessageWindowLParam {
 #define DM_REMOVEPOPUPS        (WM_USER+94)
 #define DM_BBNEEDUPDATE        (WM_USER+96)
 #define DM_CBDESTROY	       (WM_USER+97)
-#define DM_SPLITTERMOVEDGLOBAL_NOSYNC (WM_USER+98)
+#define DM_SPLITTERMOVEDGLOBAL_NOSYNC_CHAT (WM_USER+98)
+#define DM_SPLITTERMOVEDGLOBAL_NOSYNC_IM (WM_USER+99)
 
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
@@ -961,6 +960,7 @@ static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* 
 #define ID_EXTBKINFOPANELBG	   23
 #define ID_EXTBK_LAST 23
 
+#define SESSIONTYPE_ANY 0
 #define SESSIONTYPE_IM 1
 #define SESSIONTYPE_CHAT 2
 

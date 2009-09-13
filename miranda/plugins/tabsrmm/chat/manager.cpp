@@ -322,7 +322,7 @@ BOOL SM_AddEvent(const TCHAR* pszID, const char* pszModule, GCEVENT * gce, BOOL 
 			li->time = gce->time;
 			li->bIsHighlighted = bIsHighlighted;
 
-			if (g_Settings.iEventLimit > 0 && pTemp->iEventCount > g_Settings.iEventLimit + 20) {
+			if (g_Settings.iEventLimit > 0 && pTemp->iEventCount > g_Settings.iEventLimit + g_Settings.iEventLimitThreshold) {
 				LM_TrimLog(&pTemp->pLog, &pTemp->pLogEnd, pTemp->iEventCount - g_Settings.iEventLimit);
 				pTemp->wasTrimmed = TRUE;
 				pTemp->iEventCount = g_Settings.iEventLimit;

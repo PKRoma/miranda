@@ -86,7 +86,6 @@ public:
 	int         m_FormatWholeWordsOnly;
 	int         m_FixFutureTimestamps;
 	int         m_RTLDefault;
-	int         m_SplitterSaveOnClose;
 	int         m_MathModAvail;
 	TCHAR       m_MathModStartDelimiter[40];
 	int         m_UnreadInTray;

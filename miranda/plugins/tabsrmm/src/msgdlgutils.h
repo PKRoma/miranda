@@ -29,9 +29,6 @@ $Id$
 #define WANT_IEVIEW_LOG 1
 #define WANT_HPP_LOG 2
 
-//MAD
-HWND GetLastChild(HWND hwndParent);
-//MAD_
 void        CalcDynamicAvatarSize(_MessageWindowData *dat, BITMAP *bminfo);
 int         IsMetaContact(const _MessageWindowData *dat);
 char        *GetCurrentMetaContactProto(_MessageWindowData *dat);
@@ -63,7 +60,7 @@ void        LoadSplitter(_MessageWindowData *dat);
 void        PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd);
 void        SwitchMessageLog(HWND hwndDlg, struct _MessageWindowData *dat, int iMode);
 void        GetSendFormat(HWND hwndDlg, struct _MessageWindowData *dat, int mode);
-void        GetLocaleID(struct _MessageWindowData *dat, char *szKLName);
+void        GetLocaleID(_MessageWindowData *dat, TCHAR *szKLName);
 void        LoadOwnAvatar(_MessageWindowData *dat);
 void        LoadContactAvatar(HWND hwndDlg, struct _MessageWindowData *dat);
 BYTE        GetInfoPanelSetting(const _MessageWindowData *dat);

@@ -396,11 +396,11 @@ static void MsgWindowUpdateState(_MessageWindowData *dat, UINT msg)
 		if (dat->dwFlags & MWF_NEEDCHECKSIZE)
 			PostMessage(hwndDlg, DM_SAVESIZE, 0, 0);
 
-		if (PluginConfig.m_AutoLocaleSupport && dat->hContact != 0) {
+		if (PluginConfig.m_AutoLocaleSupport) {
 			if (dat->hkl == 0)
 				DM_LoadLocale(dat);
 			else
-				PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
+				SendMessage(hwndDlg, DM_SETLOCALE, 0, 0);
 		}
 
 		SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
@@ -1010,10 +1010,11 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 				DM_SaveLocale(mwdat, wParam, lParam);
 				SendMessage(hwnd, EM_SETLANGOPTIONS, 0, (LPARAM) SendMessage(hwnd, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
 			}
+			//return CallWindowProc(OldMessageEditProc, hwnd, WM_INPUTLANGCHANGE, wParam, lParam);
 			return 1;
 
 		case WM_ERASEBKGND: {
-			return(mwdat->pContainer->bSkinned ? 0 : 1);
+			return(CSkin::m_skinEnabled ? 0 : 1);
 		}
 
 		/*
@@ -1078,7 +1079,7 @@ static LRESULT CALLBACK MsgIndicatorSubclassProc(HWND hwnd, UINT msg, WPARAM wPa
 
 			GetClientRect(hwnd, &rc);
 
-			if (dat && dat->pContainer->bSkinned) {
+			if (dat && CSkin::m_skinEnabled) {
 				HPEN hPenOld = (HPEN)SelectObject(dc, CSkin::m_SkinLightShadowPen);
 				Rectangle(dc, 0, 0, rc.right, 2);
 				//SkinDrawBG(hwnd, dat->pContainer->hwnd, dat->pContainer, &rc, dc);
@@ -1169,7 +1170,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				RECT rc;
 				GetClientRect(hwnd, &rc);
 				SendMessage(hwndParent, DM_SPLITTERMOVED, rc.right > rc.bottom ? (short) HIWORD(GetMessagePos()) + rc.bottom / 2 : (short) LOWORD(GetMessagePos()) + rc.right / 2, (LPARAM) hwnd);
-				if (dat->pContainer->bSkinned)
+				if (CSkin::m_skinEnabled)
 					InvalidateRect(hwndParent, NULL, FALSE);
 			}
 			return 0;
@@ -1183,7 +1184,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 			GetClientRect(hwnd, &rc);
 
-			if (dat && dat->pContainer->bSkinned)
+			if (dat && CSkin::m_skinEnabled)
 				CSkin::SkinDrawBG(hwnd, dat->pContainer->hwnd, dat->pContainer, &rc, dc);
 			else {
 				if(M->isAero()) {
@@ -1250,6 +1251,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 						RECT rcWin;
 						BYTE bSync = M->GetByte("Chat", "SyncSplitter", 0);
 						DWORD dwOff_IM = 0, dwOff_CHAT = 0;
+						bool  fCntGlobal = (dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS) ? true : false;
 
 						if (bSync) {
 							if (dat->bType == SESSIONTYPE_IM) {
@@ -1265,25 +1267,47 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 						if (dat->bType == SESSIONTYPE_IM || bSync) {
 							dat->dwFlagsEx &= ~(MWF_SHOW_SPLITTEROVERRIDE);
 							M->WriteByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0);
-							if(bSync)
-								M->BroadcastMessage(DM_SPLITTERMOVEDGLOBAL,  rcWin.bottom - HIWORD(messagePos) + dwOff_IM, rc.bottom);
-							else
+							if(bSync) {
+								if(fCntGlobal)
+									BroadCastAllContainerS(DM_SPLITTERMOVEDGLOBAL,  rcWin.bottom - HIWORD(messagePos) + dwOff_IM, rc.bottom, true);
+								else
+									BroadCastContainer(dat->pContainer, DM_SPLITTERMOVEDGLOBAL, rcWin.bottom - HIWORD(messagePos) + dwOff_IM, rc.bottom);
+							} else {
 								/*
 								 * this message is ignored by group chat tabs
 								 */
-								M->BroadcastMessage(DM_SPLITTERMOVEDGLOBAL_NOSYNC,  rcWin.bottom - HIWORD(messagePos) + dwOff_IM, rc.bottom);
-							if (bSync) {
+								if(dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS)
+									BroadCastAllContainerS(DM_SPLITTERMOVEDGLOBAL_NOSYNC_CHAT,  rcWin.bottom - HIWORD(messagePos) + dwOff_IM, rc.bottom, true);
+								else
+									BroadCastContainer(dat->pContainer, DM_SPLITTERMOVEDGLOBAL_NOSYNC_CHAT,  rcWin.bottom - HIWORD(messagePos) + dwOff_IM, rc.bottom);
+							}
+							if (bSync && fCntGlobal) {
 								g_Settings.iSplitterY = dat->splitterY - DPISCALEY_S(23);
 								DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
 							}
+							if(!fCntGlobal)
+								dat->pContainer->splitterPos = dat->splitterY;
 						}
 						if ((dat->bType == SESSIONTYPE_CHAT || bSync) && PluginConfig.m_chat_enabled) {
-							SM_BroadcastMessage(NULL, DM_SAVESIZE, 0, 0, 0);
-							SM_BroadcastMessage(NULL, DM_SPLITTERMOVEDGLOBAL, rcWin.bottom - (short)HIWORD(messagePos) + rc.bottom / 2 + dwOff_CHAT, (LPARAM)rc.bottom, 0);
-							SM_BroadcastMessage(NULL, WM_SIZE, 0, 0, 1);
-							DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
-							if (bSync)
+							UINT msg = bSync ? DM_SPLITTERMOVEDGLOBAL : DM_SPLITTERMOVEDGLOBAL_NOSYNC_IM;
+
+							if(fCntGlobal) {
+								BroadCastAllContainerS(DM_SAVESIZE, 0, 0, true, SESSIONTYPE_CHAT);
+								BroadCastAllContainerS(msg, rcWin.bottom - (short)HIWORD(messagePos) + rc.bottom / 2 + dwOff_CHAT, (LPARAM)rc.bottom, true, SESSIONTYPE_CHAT);
+								BroadCastAllContainerS(WM_SIZE, 0, 0, true, SESSIONTYPE_CHAT);
+								DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
+							}
+							else {
+								BroadCastContainer(dat->pContainer, DM_SAVESIZE, 0, 0, SESSIONTYPE_CHAT);
+								BroadCastContainer(dat->pContainer, msg, rcWin.bottom - (short)HIWORD(messagePos) + rc.bottom / 2 + dwOff_CHAT, (LPARAM)rc.bottom, SESSIONTYPE_CHAT);
+								BroadCastContainer(dat->pContainer, WM_SIZE, 0, 0, SESSIONTYPE_CHAT);
+							}
+
+							if (bSync && fCntGlobal)
 								M->WriteDword(SRMSGMOD_T, "splitsplity", (DWORD)g_Settings.iSplitterY + DPISCALEY_S(23));
+							if (!fCntGlobal && bSync)
+								dat->pContainer->splitterPos = g_Settings.iSplitterY + DPISCALEY_S(23);
+
 							RedrawWindow(hwndParent, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
 						}
 						break;
@@ -1373,7 +1397,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			if (fInfoPanel)
 				urc->rcItem.top += panelHeight;
 			urc->rcItem.bottom += 3;
-			if (dat->pContainer->bSkinned) {
+			if (CSkin::m_skinEnabled) {
 				CSkinItem *item = &SkinItems[ID_EXTBKHISTORY];
 				if (!item->IGNORED) {
 					urc->rcItem.left += item->MARGIN_LEFT;
@@ -1439,7 +1463,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			} else
 				dat->fMustOffset = FALSE;
 
-			if(showToolbar&&bBottomToolbar&&(PluginConfig.m_AlwaysFullToolbarWidth||((dat->pic.cy-DPISCALEY(6))<rc.bottom))) urc->rcItem.bottom-=DPISCALEY(22);
+			if(showToolbar && bBottomToolbar && (PluginConfig.m_AlwaysFullToolbarWidth || ((dat->pic.cy-DPISCALEY(6)) < rc.bottom)))
+				urc->rcItem.bottom -= DPISCALEY(22);
 
 			//Bolshevik: resizes avatar control _FIXED
 			if( dat->hwndContactPic ) //if Panel control was created?
@@ -1466,7 +1491,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			urc->rcItem.left = 0;
 
 			if (dat->fMustOffset)
-				urc->rcItem.right -= (dat->pic.cx + DPISCALEX(2));
+				urc->rcItem.right -= (dat->pic.cx); // + DPISCALEX(2));
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_BOTTOM;
 		case IDC_MESSAGE:
 			urc->rcItem.right = urc->dlgNewSize.cx;
@@ -1493,7 +1518,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			//
 			msgTop = urc->rcItem.top;
 			msgBottom = urc->rcItem.bottom;
-			if (dat->pContainer->bSkinned) {
+			if (CSkin::m_skinEnabled) {
 				CSkinItem *item = &SkinItems[ID_EXTBKINPUTAREA];
 				if (!item->IGNORED) {
 					urc->rcItem.left += item->MARGIN_LEFT;
@@ -1754,8 +1779,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			pt.x = 0;
 			ScreenToClient(hwndDlg, &pt);
 			dat->originalSplitterY = pt.y;
-			if (m_pContainer->dwFlags & CNT_CREATE_MINIMIZED || (IsIconic(hwndContainer)))
-				dat->originalSplitterY--;
 			if (dat->splitterY == -1)
 				dat->splitterY = dat->originalSplitterY + 60;
 
@@ -1768,7 +1791,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			//
 			SendMessage(hwndDlg, DM_LOADBUTTONBARICONS, 0, 0);
 
-			if (m_pContainer->bSkinned && !SkinItems[ID_EXTBKBUTTONSNPRESSED].IGNORED &&
+			if (CSkin::m_skinEnabled && !SkinItems[ID_EXTBKBUTTONSNPRESSED].IGNORED &&
 					!SkinItems[ID_EXTBKBUTTONSPRESSED].IGNORED && !SkinItems[ID_EXTBKBUTTONSMOUSEOVER].IGNORED) {
 				isFlat = TRUE;
 				isThemed = FALSE;
@@ -1989,7 +2012,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			break;
 		}
 		case WM_NCPAINT: {
-			if (m_pContainer->bSkinned)
+			if (CSkin::m_skinEnabled)
 				return 0;
 			break;
 		}
@@ -2023,7 +2046,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			bool	fAero = M->isAero();
 
-			if (m_pContainer->bSkinned) {
+			if (CSkin::m_skinEnabled) {
 				CSkinItem *item;
 				POINT pt;
 				UINT item_ids[2] = {ID_EXTBKHISTORY, ID_EXTBKINPUTAREA};
@@ -2177,7 +2200,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			dat->Panel->Invalidate();
 
-			if (wParam == 0 && lParam == 0 && m_pContainer->bSkinned)
+			if (wParam == 0 && lParam == 0 && CSkin::m_skinEnabled)
 				RedrawWindow(hwndDlg, NULL, NULL, RDW_UPDATENOW | RDW_NOCHILDREN | RDW_INVALIDATE);
 			break;
 		}
@@ -2449,12 +2472,32 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 								return(_dlgReturn(hwndDlg, 1));
 							}
 							//MAD: tabulation mod
-							if(msg == WM_KEYDOWN&&wp == VK_TAB&&PluginConfig.m_AllowTab) {
-								SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)"\t");
-								((MSGFILTER *) lParam)->msg = WM_NULL;
-								((MSGFILTER *) lParam)->wParam = 0;
-								((MSGFILTER *) lParam)->lParam = 0;
-								return(_dlgReturn(hwndDlg, 1));
+							if(msg == WM_KEYDOWN && wp == VK_TAB) {
+								if(PluginConfig.m_AllowTab) {
+									SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)"\t");
+									((MSGFILTER *) lParam)->msg = WM_NULL;
+									((MSGFILTER *) lParam)->wParam = 0;
+									((MSGFILTER *) lParam)->lParam = 0;
+									SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+									return(_dlgReturn(hwndDlg, 1));
+								}
+								else {
+									if(((NMHDR *)lParam)->idFrom == IDC_MESSAGE) {
+										if(GetSendButtonState(hwndDlg) != PBS_DISABLED) {
+											SetFocus(GetDlgItem(hwndDlg, IDOK));
+											return(_dlgReturn(hwndDlg, 1));
+										}
+										else {
+											SetFocus(GetDlgItem(hwndDlg, IDC_LOG));
+											return(_dlgReturn(hwndDlg, 1));
+										}
+									}
+									if(((NMHDR *)lParam)->idFrom == IDC_LOG) {
+										SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+										return(_dlgReturn(hwndDlg, 1));
+									}
+								}
+								return(_dlgReturn(hwndDlg, 0));
 							}
 							//MAD_
 							if (msg == WM_MOUSEWHEEL && (((NMHDR *)lParam)->idFrom == IDC_LOG || ((NMHDR *)lParam)->idFrom == IDC_MESSAGE)) {
@@ -2797,7 +2840,11 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			LoadContactAvatar(hwndDlg, dat);
 			SendMessage(hwndDlg, WM_SIZE, 0, 0);
 			return 0;
-		case DM_SPLITTERMOVEDGLOBAL_NOSYNC:
+
+		case DM_SPLITTERMOVEDGLOBAL_NOSYNC_IM:
+			return(0);
+
+		case DM_SPLITTERMOVEDGLOBAL_NOSYNC_CHAT:
 		case DM_SPLITTERMOVEDGLOBAL:
 			if (!(dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE)) {
 				short newMessagePos;
@@ -3264,15 +3311,12 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		case DM_SETLOCALE:
 			if (dat->dwFlags & MWF_WASBACKGROUNDCREATE)
 				break;
-			if (m_pContainer->hwndActive == hwndDlg && PluginConfig.m_AutoLocaleSupport && dat->hContact != 0 && hwndContainer == GetForegroundWindow() && hwndContainer == GetActiveWindow()) {
-				if (lParam == 0) {
-					if (GetKeyboardLayout(0) != dat->hkl) {
-						ActivateKeyboardLayout(dat->hkl, 0);
-					}
-				} else {
-					dat->hkl = (HKL) lParam;
+			if (m_pContainer->hwndActive == hwndDlg && PluginConfig.m_AutoLocaleSupport && hwndContainer == GetForegroundWindow() && hwndContainer == GetActiveWindow()) {
+				if(lParam)
+					dat->hkl = (HKL)lParam;
+
+				if (dat->hkl)
 					ActivateKeyboardLayout(dat->hkl, 0);
-				}
 			}
 			return 0;
 			/*
@@ -3361,10 +3405,13 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			if (dat->dwFlags & MWF_WASBACKGROUNDCREATE) {
 				dat->dwFlags &= ~MWF_WASBACKGROUNDCREATE;
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
-				LoadSplitter(dat);
 				PostMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
-				DM_LoadLocale(dat);
-				PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
+				if(PluginConfig.m_AutoLocaleSupport) {
+					if(dat->hkl == 0)
+						DM_LoadLocale(dat);
+					else
+						PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
+				}
 				if (dat->hwndIEView != 0)
 					SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 				if(dat->pContainer->dwFlags & CNT_SIDEBAR)
@@ -3488,12 +3535,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			GetCursorPos(&pt);
 			dat->Panel->trackMouse(pt);
 			break;
-		}
-		case WM_CTLCOLOREDIT: {
-			if (dat->theme.fontColors != NULL)
-				SetTextColor((HDC)wParam, dat->theme.fontColors[MSGFONTID_MESSAGEAREA]);
-			SetBkColor((HDC)wParam, dat->inputbg);
-			return (INT_PTR)dat->hInputBkgBrush;
 		}
 		case WM_MEASUREITEM: {
 			LPMEASUREITEMSTRUCT lpmi = (LPMEASUREITEMSTRUCT) lParam;
@@ -3977,7 +4018,6 @@ quote_from_last:
 						CheckMenuItem(submenu, ID_MESSAGELOGDISPLAY_USEHISTORY, MF_BYCOMMAND | (M->GetByte(dat->hContact, "hpplog", 0) == 1 ? MF_CHECKED : MF_UNCHECKED));
 						CheckMenuItem(submenu, ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG, MF_BYCOMMAND | ((M->GetByte(dat->hContact, "ieview", 0) == (BYTE) - 1 && M->GetByte(dat->hContact, "hpplog", 0) == (BYTE) - 1) ? MF_CHECKED : MF_UNCHECKED));
 
-						CheckMenuItem(submenu, ID_SPLITTER_AUTOSAVEONCLOSE, MF_BYCOMMAND | (PluginConfig.m_SplitterSaveOnClose ? MF_CHECKED : MF_UNCHECKED));
 						CheckMenuItem(submenu, ID_MODE_GLOBAL, MF_BYCOMMAND | (!(dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE) ? MF_CHECKED : MF_UNCHECKED));
 						CheckMenuItem(submenu, ID_MODE_PRIVATE, MF_BYCOMMAND | (dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE ? MF_CHECKED : MF_UNCHECKED));
 
@@ -4009,13 +4049,6 @@ quote_from_last:
 							case ID_MESSAGELOGDISPLAY_USEHISTORY:
 								M->WriteByte(dat->hContact, SRMSGMOD_T, "ieview", -1);
 								M->WriteByte(dat->hContact, SRMSGMOD_T, "hpplog", 1);
-								break;
-							case ID_SPLITTER_AUTOSAVEONCLOSE:
-								PluginConfig.m_SplitterSaveOnClose ^= 1;
-								M->WriteByte(SRMSGMOD_T, "splitsavemode", (BYTE)PluginConfig.m_SplitterSaveOnClose);
-								break;
-							case ID_SPLITTER_SAVENOW:
-								SaveSplitter(dat);
 								break;
 							case ID_MODE_GLOBAL:
 								dat->dwFlagsEx &= ~(MWF_SHOW_SPLITTEROVERRIDE);
@@ -4215,7 +4248,7 @@ quote_from_last:
 
 						DBVARIANT dbv = {0};
 
-						if(0 == DBGetContactSettingTString(dat->hContact, "UserInfo", "MyNotes", &dbv)) {
+						if(0 == M->GetTString(dat->hContact, "UserInfo", "MyNotes", &dbv)) {
 							SetDlgItemText(hwndDlg, IDC_MESSAGE, dbv.ptszVal);
 							mir_free(dbv.ptszVal);
 						}
@@ -4226,7 +4259,7 @@ quote_from_last:
 
 						TCHAR *buf = (TCHAR *)mir_alloc((iLen + 2) * sizeof(TCHAR));
 						GetDlgItemText(hwndDlg, IDC_MESSAGE, buf, iLen + 1);
-						DBWriteContactSettingTString(dat->hContact, "UserInfo", "MyNotes", buf);
+						M->WriteTString(dat->hContact, "UserInfo", "MyNotes", buf);
 						SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
 						dat->splitterY = dat->iSplitterSaved;
 						SendMessage(hwndDlg, WM_SIZE, 0, 0);
@@ -4919,10 +4952,6 @@ quote_from_last:
 
 			DM_FreeTheme(dat);
 
-			if (dat->hBkgBrush)
-				DeleteObject(dat->hBkgBrush);
-			if (dat->hInputBkgBrush)
-				DeleteObject(dat->hInputBkgBrush);
 			if (dat->sendBuffer != NULL)
 				free(dat->sendBuffer);
 			if (dat->hHistoryEvents)
@@ -4990,8 +5019,7 @@ quote_from_last:
 
 			if (!dat->bWasDeleted) {
 				SendMessage(hwndDlg, DM_SAVEPERCONTACT, 0, 0);
-				if (PluginConfig.m_SplitterSaveOnClose)
-					SaveSplitter(dat);
+				SaveSplitter(dat);
 				if (!dat->stats.bWritten) {
 					WriteStatsOnClose(dat);
 					dat->stats.bWritten = TRUE;

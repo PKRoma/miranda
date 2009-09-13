@@ -86,7 +86,6 @@ struct      ContainerWindowData *FindMatchingContainer(const TCHAR *szName, HAND
 struct      ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE hContactFrom);
 int         CutContactName(TCHAR *oldname, TCHAR *newname, unsigned int size);
 struct      ContainerWindowData *FindContainerByName(const TCHAR *name);
-void        BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);
 int         GetTabIndexFromHWND(HWND hwndTab, HWND hwnd);
 int			GetTabItemFromMouse(HWND hwndTab, POINT *pt);
 int         ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
@@ -100,13 +99,13 @@ static struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindo
 void        DeleteContainer(int iIndex);
 void        RenameContainer(int iIndex, const TCHAR *newName);
 int         EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const TCHAR *szNew, DWORD dwExtinfo, DWORD dwExtinfoEx);
-void        GetLocaleID(struct _MessageWindowData *dat, char *szKLName);
 int         GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLen);
 HMENU       BuildContainerMenu();
 void        BuildCodePageList();
 void        PreTranslateDates();
 void        ApplyContainerSetting(struct ContainerWindowData *pContainer, DWORD flags, UINT mode, bool fForceResize);
-void        BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);
+void        BroadCastContainer(const ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam, BYTE iType = 0);
+void 		BroadCastAllContainerS(UINT message, WPARAM wParam, LPARAM lParam, bool fIgnorePrivate = false, BYTE iType = 0);
 void        GetDefaultContainerTitleFormat();
 extern const WCHAR *EncodeWithNickname(const char *string, const WCHAR *szNick, UINT codePage);
 INT_PTR     MessageWindowOpened(WPARAM wParam, LPARAM lParam);

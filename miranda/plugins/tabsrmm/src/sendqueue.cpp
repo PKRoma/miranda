@@ -1003,7 +1003,7 @@ int SendQueue::sendLater(int iJobIndex, _MessageWindowData *dat)
 		if(job->dwFlags & PREF_UTF || !(job->dwFlags & PREF_UNICODE))
 			DBWriteContactSettingString(job->hOwner, "SendLater", szKeyName, job->sendBuffer);
 		else
-			DBWriteContactSettingTString(job->hOwner, "SendLater", szKeyName, reinterpret_cast<TCHAR *>(job->sendBuffer));
+			M->WriteTString(job->hOwner, "SendLater", szKeyName, reinterpret_cast<TCHAR *>(job->sendBuffer));
 
 		int iCount = M->GetDword(job->hOwner, "SendLater", "count", 0);
 		iCount++;

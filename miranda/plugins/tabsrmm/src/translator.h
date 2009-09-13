@@ -180,7 +180,20 @@ public:
 		GEN_MUC_LOOKUP_NOWORD									= 137,
 		GEN_MUC_MESSAGEAMP										= 138,
 		GEN_STRING_UTF8											= 139,
-		STR_LAST 												= 140
+		MUC_LOG_JOINED											= 140,
+		MUC_LOG_ME_JOINED										= 141,
+		MUC_LOG_LEFT											= 142,
+		MUC_LOG_DISC											= 143,
+		MUC_LOG_NICKCHANGE										= 144,
+		MUC_LOG_ME_NICKCHANGE									= 145,
+		MUC_LOG_KICK											= 146,
+		MUC_LOG_NOTICE											= 147,
+		MUC_LOG_TOPICIS											= 148,
+		MUC_LOG_TOPICSETBYON									= 149,
+		MUC_LOG_TOPICSETBY										= 150,
+		MUC_LOG_STATUSENABLE									= 151,
+		MUC_LOG_STATUSDISABLE									= 152,
+		STR_LAST 												= 153
 	};
 
 	enum {
@@ -274,7 +287,16 @@ public:
 		OPT_TEMP_RESET											= 87,
 		OPT_TEMP_WASRESET										= 88,
 		OPT_TEMP_HELPTITLE										= 89,
-		OPT_LAST												= 90
+		OPT_TABS_GENERAL										= 90,
+		OPT_TABS_TABS											= 91,
+		OPT_TABS_CONTAINERS										= 92,
+		OPT_TABS_LOG											= 93,
+		OPT_TABS_TOOLBAR										= 94,
+		OPT_TABS_ADVANCED										= 95,
+		OPT_TABS_MUC_SETTINGS									= 96,
+		OPT_TABS_MUC_LOG										= 97,
+		OPT_TABS_MUC_EVENTS										= 98,
+		OPT_LAST												= 99
 	};
 
 	/*

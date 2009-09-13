@@ -100,24 +100,29 @@ UINT 	CSkin::m_aeroEffect = 0;
 DWORD 	CSkin::m_glowSize = 0;
 HBRUSH  CSkin::m_BrushBack = 0;
 
-AeroEffect* CSkin::m_currentAeroEffect = 0;
+AeroEffect  CSkin::m_currentAeroEffect;
+AeroEffect* CSkin::m_pCurrentAeroEffect = 0;
 
 AeroEffect  CSkin::m_aeroEffects[AERO_EFFECT_LAST] = {
 	{
-		0, 0, 0, 0, 0, 0, 0, 10
+		_T("No effect"), 0, 0, 0, 0, 0, 0, 0, 10
 	},
 	{
+		_T("Milky Glass"),
 		0xf5f5f5, 									/* base color */
 		0xaaaaaa,									/* gradient color */
 		70,											/* base alpha */
 		0,											/* final alpha */
 		CORNER_ALL,									/* corner type */
 		GRADIENT_TB + 1,							/* gradient type */
-		8,											/* gradient radius */
+		8,											/* corner radius */
 		8,											/* glow size (0 means no glowing text, colors can be used) */
-		0
+		0,											/* background color (black = transparency) */
+		0xf0f0f0,									/* toolbar first color (if 0, use custom gradient color) */
+		0 											/* toolbar 2nd gradient color (0 = use aero theme color, -1 = use custom gradient color  */
 	},
 	{
+		_T("Carbon"),
 		0xf0f0f0,
 		0x000000,
 		75,
@@ -126,9 +131,12 @@ AeroEffect  CSkin::m_aeroEffects[AERO_EFFECT_LAST] = {
 		GRADIENT_TB + 1,
 		6,
 		8,
+		0,
+		0xf0f0f0,
 		0
 	},
 	{
+		_T("Opaque, colored text"),
 		0x808080,
 		0x222222,
 		100,
@@ -137,7 +145,37 @@ AeroEffect  CSkin::m_aeroEffects[AERO_EFFECT_LAST] = {
 		GRADIENT_TB + 1,
 		0,
 		0,
+		0,
+		0xf0f0f0,
 		0
+	},
+	{
+		_T("Silver shadow"),
+		0xffffff,
+		0xa0a0a0,
+		80,
+		220,
+		0,
+		GRADIENT_TB + 1,
+		0,
+		0,
+		0xc0c0c0,
+		0xf0f0f0,
+		0x707070
+	},
+	{
+		_T("Custom (use own gradient colors)"),
+		0xffffff,
+		0xa0a0a0,
+		80,
+		220,
+		0,
+		GRADIENT_TB + 1,
+		0,
+		0,
+		0xc0c0c0,
+		-1,
+		-1
 	}
 };
 
@@ -1015,7 +1053,7 @@ void CSkin::setFileName()
 {
 	DBVARIANT dbv;
 	if(0 == M->GetTString(0, SRMSGMOD_T, "ContainerSkin", &dbv)) {
-		M->pathToAbsolute(dbv.ptszVal,  m_tszFileName);
+		M->pathToAbsolute(dbv.ptszVal, m_tszFileName, M->getUserDir());
 		m_tszFileName[MAX_PATH - 1] = 0;
 		DBFreeVariant(&dbv);
 	}
@@ -1025,14 +1063,6 @@ void CSkin::setFileName()
 	/*
 	 * ANSI filename is kept for compatibility reasons. will go away at some time
 	 */
-
-#if defined(_UNICODE)
-	if(m_tszFileName[0])
-		WideCharToMultiByte(CP_ACP, 0, m_tszFileName, MAX_PATH, m_tszFileNameA, MAX_PATH, 0, 0);
-#else
-	lstrcpyn(m_tszFileNameA, m_tszFileName, MAX_PATH);
-	m_tszFileNameA[MAX_PATH - 1] = 0;
-#endif
 
 	m_fLoadOnStartup = M->GetByte("useskin", 0) ? true : false;
 }
@@ -1314,6 +1344,8 @@ void CSkin::ReadImageItem(const TCHAR *itemname)
 		delete szImageFileName;
 }
 
+/* 				DISABLED TODO (fix it)
+
 void CSkin::ReadButtonItem(const TCHAR *itemName) const
 {
 	ButtonItem tmpItem, *newItem;
@@ -1322,13 +1354,6 @@ void CSkin::ReadButtonItem(const TCHAR *itemName) const
 	CImageItem *imgItem = m_ImageItems;
 	HICON *phIcon;
 
-#if defined(_UNICODE)
-	const char *szItemNameA = mir_u2a(itemName);
-	const char *szFileNameA = m_tszFileNameA;
-#else
-	const char *szItemNameA = itemName;
-	const char *szFileNameA = m_tszFileName;
-#endif
 	ZeroMemory(&tmpItem, sizeof(tmpItem));
 	mir_snprintf(tmpItem.szName, safe_sizeof(tmpItem.szName), "%s", &szItemNameA[1]);
 	tmpItem.width = GetPrivateProfileInt(itemName, _T("Width"), 16, m_tszFileName);
@@ -1539,6 +1564,8 @@ create_it:
 #endif
 	return;
 }
+
+*/
 
 /**
  * Load the skin from the .tsk file
@@ -1763,11 +1790,13 @@ void CSkin::LoadItems()
 	nextButtonID = IDC_TBFIRSTUID;
 
 	p = szSections;
+	/*
 	while (lstrlen(p) > 1) {
 		if (p[0] == '!')
 		 	ReadButtonItem(p);
 		p += (lstrlen(p) + 1);
 	}
+	*/
 	free(szSections);
 	g_ButtonSet.top = GetPrivateProfileInt(_T("ButtonArea"), _T("top"), 0, m_tszFileName);
 	g_ButtonSet.bottom = GetPrivateProfileInt(_T("ButtonArea"), _T("bottom"), 0, m_tszFileName);
@@ -1780,9 +1809,7 @@ void CSkin::LoadItems()
  */
 void CSkin::setupAeroSkins()
 {
-	TCHAR	tszFilename[MAX_PATH];
-
-	mir_sntprintf(tszFilename, MAX_PATH, _T("%s\\tabskin_aero.png"), M->getDataPath());
+	TCHAR	tszFilename[MAX_PATH], tszBasePath[MAX_PATH];
 
 	M->getAeroState();
 
@@ -1800,6 +1827,11 @@ void CSkin::setupAeroSkins()
 		BOOL	isOpaque;
 		HBITMAP hbm;
 		BITMAP  bm;
+
+		mir_sntprintf(tszBasePath, MAX_PATH, _T("%s"), _T("%miranda_userdata%\\tabSRMM\\"));
+		TCHAR *tszFinalBasePath = Utils_ReplaceVarsT(tszBasePath);
+
+		mir_sntprintf(tszFilename, MAX_PATH, _T("%stabskin_aero.png"), tszFinalBasePath);
 
 		CMimAPI::m_pfnDwmGetColorizationColor(&m_dwmColor, &isOpaque);
 
@@ -1878,7 +1910,7 @@ void CSkin::setupAeroSkins()
 		m_tabBottom->setMetrics(bm.bmWidth, bm.bmHeight);
 
 
-		mir_sntprintf(tszFilename, MAX_PATH, _T("%s\\tabskin_aero_glow.png"), M->getDataPath());
+		mir_sntprintf(tszFilename, MAX_PATH, _T("%stabskin_aero_glow.png"), tszFinalBasePath);
 
 		fib = (FIBITMAP *)CallService(MS_IMG_LOAD, (WPARAM)tszFilename, IMGL_TCHAR | IMGL_RETURNDIB);
 
@@ -1915,7 +1947,7 @@ void CSkin::setupAeroSkins()
 		 * background item for the button switch bar
 		 *
 		 */
-		mir_sntprintf(tszFilename, MAX_PATH, _T("%s\\tabskin_aero_button.png"), M->getDataPath());
+		mir_sntprintf(tszFilename, MAX_PATH, _T("%stabskin_aero_button.png"), tszFinalBasePath);
 
 		hbm  = (HBITMAP)CallService(MS_IMG_LOAD, (WPARAM)tszFilename, IMGL_TCHAR);
 
@@ -1931,6 +1963,8 @@ void CSkin::setupAeroSkins()
 
 		m_switchBarItem->setAlphaFormat(AC_SRC_ALPHA, 255);
 		m_switchBarItem->setMetrics(bm.bmWidth, bm.bmHeight);
+
+		mir_free(tszFinalBasePath);
 	}
 
 }
@@ -2076,7 +2110,7 @@ UINT CSkin::NcCalcRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT
 	}
 	orig = CallWindowProc(OldWndProc, hwnd, msg, wParam, lParam);
 
-	if (mwdat && mwdat->pContainer->bSkinned && !mwdat->bFlatMsgLog) {
+	if (mwdat && CSkin::m_skinEnabled && !mwdat->bFlatMsgLog) {
 		CSkinItem *item = &SkinItems[skinID];
 		if (!item->IGNORED) {
 			/*
@@ -2131,7 +2165,7 @@ UINT CSkin::DrawRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT s
 
 	isMultipleReason = ((skinID == ID_EXTBKINPUTAREA) && (mwdat->sendMode & SMODE_MULTIPLE || mwdat->sendMode & SMODE_CONTAINER));
 
-	if ((isMultipleReason || isEditNotesReason || isSendLaterReason) || ((mwdat && mwdat->hTheme) || (mwdat && mwdat->pContainer->bSkinned && !item->IGNORED && !mwdat->bFlatMsgLog))) {
+	if ((isMultipleReason || isEditNotesReason || isSendLaterReason) || ((mwdat && mwdat->hTheme) || (mwdat && CSkin::m_skinEnabled && !item->IGNORED && !mwdat->bFlatMsgLog))) {
 		HDC hdc = GetWindowDC(hwnd);
 		RECT rcWindow;
 		POINT pt;
@@ -2147,7 +2181,7 @@ UINT CSkin::DrawRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT s
 			left_off -= PluginConfig.m_ncm.iScrollWidth;
 		top_off = pt.y - rcWindow.top;
 
-		if (mwdat->pContainer->bSkinned && !item->IGNORED) {
+		if (CSkin::m_skinEnabled && !item->IGNORED) {
 			right_off = item->MARGIN_RIGHT;
 			bottom_off = item->MARGIN_BOTTOM;
 		} else {
@@ -2160,7 +2194,7 @@ UINT CSkin::DrawRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT s
 		rcWindow.left = rcWindow.top = 0;
 
 		ExcludeClipRect(hdc, left_off, top_off, rcWindow.right - right_off, rcWindow.bottom - bottom_off);
-		if (mwdat->pContainer->bSkinned && !item->IGNORED) {
+		if (CSkin::m_skinEnabled && !item->IGNORED) {
 			ReleaseDC(hwnd, hdc);
 			return result;
 		} else if (CMimAPI::m_pfnDrawThemeBackground) {
@@ -2348,7 +2382,8 @@ void CSkin::RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &
 		if(dat->pContainer->dwFlags & CNT_HIDETOOLBAR)
 			return;
 
-		bool	fAero = M->isAero();
+		bool	 fAero = M->isAero();
+		COLORREF clr1, clr2;
 
 		RECT 	rc, rcToolbar;;
 		POINT	pt;
@@ -2393,9 +2428,11 @@ void CSkin::RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &
 		dat->pContainer->hbmToolbarBG = CreateCompatibleBitmap(hdc, cx, cy);
 		dat->pContainer->oldhbmToolbarBG = (HBITMAP)SelectObject(dat->pContainer->cachedToolbarDC, dat->pContainer->hbmToolbarBG);
 
-		if(fAero)
-			::DrawAlpha(hdc, &rcToolbar, 0xf0f0f0, 40, m_dwmColorRGB, 0, 9, 31, 4, 0);
-		else
+		if(fAero) {
+			clr1 = m_pCurrentAeroEffect ? m_pCurrentAeroEffect->m_clrToolbar : 0xf0f0f0;
+			clr2 = m_pCurrentAeroEffect ? m_pCurrentAeroEffect->m_clrToolbar2 : m_dwmColorRGB;
+			::DrawAlpha(hdc, &rcToolbar, clr1, 40, clr2, 0, 9, 31, 4, 0);
+		} else
 			CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, hdc, PluginConfig.m_bIsVista ? 12 : 6,  PluginConfig.m_bIsVista ? 2 : 1,
 											  &rcToolbar, &rcToolbar);
 
@@ -2405,7 +2442,7 @@ void CSkin::RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &
 
 		if(fAero) {
 			::FillRect(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, GetSysColorBrush(COLOR_3DFACE));
-			::DrawAlpha(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, 0xf0f0f0, 55, m_dwmColorRGB, 0, 9, 31, 4, 0);
+			::DrawAlpha(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, clr1, 55, clr2, 0, 9, 31, 4, 0);
 		} else
 			CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, dat->pContainer->cachedToolbarDC, PluginConfig.m_bIsVista ? 12 : 6,  PluginConfig.m_bIsVista ? 2 : 1,
 											  &rcCachedToolbar, &rcCachedToolbar);
@@ -2435,8 +2472,8 @@ HANDLE CSkin::InitiateBufferedPaint(const HDC hdcSrc, RECT& rc, HDC& hdcOut)
  */
 void CSkin::FinalizeBufferedPaint(HANDLE hbp, RECT *rc)
 {
-	if(m_currentAeroEffect && m_currentAeroEffect->m_finalAlpha > 0)
-		CMimAPI::m_pfnBufferedPaintSetAlpha(hbp, rc, m_currentAeroEffect->m_finalAlpha);
+	if(m_pCurrentAeroEffect && m_pCurrentAeroEffect->m_finalAlpha > 0)
+		CMimAPI::m_pfnBufferedPaintSetAlpha(hbp, rc, m_pCurrentAeroEffect->m_finalAlpha);
 	CMimAPI::m_pfnEndBufferedPaint(hbp, TRUE);
 }
 /**
@@ -2456,7 +2493,7 @@ void CSkin::FinalizeBufferedPaint(HANDLE hbp, RECT *rc)
 
 void CSkin::ApplyAeroEffect(const HDC hdc, const RECT *rc, int iEffectArea, HANDLE hbp)
 {
-	if(m_currentAeroEffect == 0)
+	if(m_pCurrentAeroEffect == 0)
 		return;
 
 	switch(m_aeroEffect) {
@@ -2464,27 +2501,29 @@ void CSkin::ApplyAeroEffect(const HDC hdc, const RECT *rc, int iEffectArea, HAND
 			return;
 
 		case AERO_EFFECT_MILK: {
-			int 	alpha = (iEffectArea == AERO_EFFECT_AREA_INFOPANEL) ? m_currentAeroEffect->m_baseAlpha : 40;
+			int 	alpha = (iEffectArea == AERO_EFFECT_AREA_INFOPANEL) ? m_pCurrentAeroEffect->m_baseAlpha : 40;
 			if(iEffectArea == AERO_EFFECT_AREA_MENUBAR)
 				alpha = 90;
 			BYTE 	color2_trans = (iEffectArea == AERO_EFFECT_AREA_MENUBAR) ? 0 : 1;
-			DWORD   corner = (iEffectArea == AERO_EFFECT_AREA_INFOPANEL) ? m_currentAeroEffect->m_cornerRadius : 6;
+			DWORD   corner = (iEffectArea == AERO_EFFECT_AREA_INFOPANEL) ? m_pCurrentAeroEffect->m_cornerRadius : 6;
 
-			DrawAlpha(hdc, const_cast<RECT *>(rc), m_currentAeroEffect->m_baseColor, alpha, m_currentAeroEffect->m_gradientColor,
-					  color2_trans, m_currentAeroEffect->m_gradientType, m_currentAeroEffect->m_cornerType, corner, 0);
+			DrawAlpha(hdc, const_cast<RECT *>(rc), m_pCurrentAeroEffect->m_baseColor, alpha, m_pCurrentAeroEffect->m_gradientColor,
+					  color2_trans, m_pCurrentAeroEffect->m_gradientType, m_pCurrentAeroEffect->m_cornerType, corner, 0);
 			break;
 		}
 
 		case AERO_EFFECT_CARBON:
-			DrawAlpha(hdc, const_cast<RECT *>(rc), m_currentAeroEffect->m_baseColor, m_currentAeroEffect->m_baseAlpha,
-					  m_currentAeroEffect->m_gradientColor, 0, m_currentAeroEffect->m_gradientType,
-					  m_currentAeroEffect->m_cornerType, m_currentAeroEffect->m_cornerRadius, 0);
+			DrawAlpha(hdc, const_cast<RECT *>(rc), m_pCurrentAeroEffect->m_baseColor, m_pCurrentAeroEffect->m_baseAlpha,
+					  m_pCurrentAeroEffect->m_gradientColor, 0, m_pCurrentAeroEffect->m_gradientType,
+					  m_pCurrentAeroEffect->m_cornerType, m_pCurrentAeroEffect->m_cornerRadius, 0);
 			break;
 
 		case AERO_EFFECT_SOLID:
-			DrawAlpha(hdc, const_cast<RECT *>(rc), m_currentAeroEffect->m_baseColor, m_currentAeroEffect->m_baseAlpha,
-					  m_currentAeroEffect->m_gradientColor, 0, m_currentAeroEffect->m_gradientType,
-					  m_currentAeroEffect->m_cornerType, m_currentAeroEffect->m_cornerRadius, 0);
+		case AERO_EFFECT_WHITE:
+		case AERO_EFFECT_CUSTOM:
+			DrawAlpha(hdc, const_cast<RECT *>(rc), m_pCurrentAeroEffect->m_baseColor, m_pCurrentAeroEffect->m_baseAlpha,
+					  m_pCurrentAeroEffect->m_gradientColor, 0, m_pCurrentAeroEffect->m_gradientType,
+					  m_pCurrentAeroEffect->m_cornerType, m_pCurrentAeroEffect->m_cornerRadius, 0);
 			break;
 		default:
 			break;
@@ -2498,14 +2537,39 @@ void CSkin::initAeroEffect()
 		m_BrushBack = 0;
 	}
 	if(m_aeroEffect >= 0 && m_aeroEffect < AERO_EFFECT_LAST) {
-		m_currentAeroEffect = &m_aeroEffects[m_aeroEffect];
-		m_glowSize = m_currentAeroEffect->m_glowSize;
-		m_BrushBack = ::CreateSolidBrush(m_currentAeroEffect->m_clrBack);
+		m_currentAeroEffect = m_aeroEffects[m_aeroEffect];
+		m_pCurrentAeroEffect = &m_currentAeroEffect;
+		m_glowSize = m_pCurrentAeroEffect->m_glowSize;
 
+		if(m_pCurrentAeroEffect->m_clrToolbar == -1)
+			m_pCurrentAeroEffect->m_clrToolbar = PluginConfig.m_ipBackgroundGradientHigh;
+
+		if(m_pCurrentAeroEffect->m_clrToolbar2 == -1)
+			m_pCurrentAeroEffect->m_clrToolbar2 = PluginConfig.m_ipBackgroundGradient;
+		else if(m_pCurrentAeroEffect->m_clrToolbar2 == 0)
+			m_pCurrentAeroEffect->m_clrToolbar2 = m_dwmColorRGB;
+
+		if(m_aeroEffect == AERO_EFFECT_CUSTOM) {
+			m_pCurrentAeroEffect->m_baseColor = PluginConfig.m_ipBackgroundGradientHigh;
+			m_pCurrentAeroEffect->m_gradientColor = PluginConfig.m_ipBackgroundGradient;
+			m_pCurrentAeroEffect->m_clrBack = PluginConfig.m_ipBackgroundGradientHigh;
+		}
+
+		m_BrushBack = ::CreateSolidBrush(m_pCurrentAeroEffect->m_clrBack);
 	} else {
-		m_currentAeroEffect = 0;
+		m_pCurrentAeroEffect = 0;
 		m_glowSize = 10;
 		m_BrushBack = ::CreateSolidBrush(0);
+	}
+
+	ContainerWindowData *pContainer = pFirstContainer;
+
+	while (pContainer) {
+		InvalidateRect(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), NULL, TRUE);
+		InvalidateRect(pContainer->hwnd, NULL, TRUE);
+		if(IsWindow(GetDlgItem(pContainer->hwnd, 5000)))
+			InvalidateRect(GetDlgItem(pContainer->hwnd, 5000), NULL, TRUE);
+		pContainer = pContainer->pNextContainer;
 	}
 }
 
@@ -2522,8 +2586,15 @@ void CSkin::setAeroEffect(LRESULT effect)
 
 void CSkin::extractSkinsAndLogo() const
 {
-	if(PluginConfig.m_WinVerMajor >=6) {
+	TCHAR	szFilename[MAX_PATH];
+	TCHAR 	tszBasePath[MAX_PATH];
 
+	mir_sntprintf(tszBasePath, MAX_PATH, _T("%s"), _T("%miranda_userdata%\\tabSRMM\\"));
+	TCHAR *tszFinalBasePath = Utils_ReplaceVarsT(tszBasePath);
+
+	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)tszFinalBasePath);
+
+	if(PluginConfig.m_WinVerMajor >=6) {
 		for(int i = 0; i < safe_sizeof(my_default_skin); i++) {
 			HRSRC 	hRes;
 			HGLOBAL	hResource;
@@ -2533,13 +2604,12 @@ void CSkin::extractSkinsAndLogo() const
 			if(hRes) {
 				hResource = LoadResource(g_hInst, hRes);
 				if(hResource) {
-					TCHAR	szFilename[MAX_PATH];
 					HANDLE  hFile;
 					char 	*pData = (char *)LockResource(hResource);
 					DWORD	dwSize = SizeofResource(g_hInst, hRes), written = 0;
-					mir_sntprintf(szFilename, MAX_PATH, _T("%s\\%s"), M->getDataPath(), (TCHAR *)my_default_skin[i].tszName);
-					//if(PathFileExists(szFilename))
-					//   continue;
+					mir_sntprintf(szFilename, MAX_PATH, _T("%s%s"), tszFinalBasePath, my_default_skin[i].tszName);
+					if(PathFileExists(szFilename) && M->GetByte("keepCustomAeroSkins", 0))
+						continue;
 					if((hFile = CreateFile(szFilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)) != INVALID_HANDLE_VALUE) {
 						WriteFile(hFile, (void *)pData, dwSize, &written, NULL);
 						CloseHandle(hFile);
@@ -2552,9 +2622,7 @@ void CSkin::extractSkinsAndLogo() const
 	/*
 	 * load the logo
 	 */
-	TCHAR	szFilename[MAX_PATH];
-
-	mir_sntprintf(szFilename, MAX_PATH, _T("%s\\logo.png"), M->getDataPath());
+	mir_sntprintf(szFilename, MAX_PATH, _T("%slogo.png"), tszFinalBasePath);
 	if(!PathFileExists(szFilename)) {
 		HRSRC	hRes;
 		HGLOBAL hResource;
@@ -2576,6 +2644,7 @@ void CSkin::extractSkinsAndLogo() const
 			}
 		}
 	}
+	mir_free(tszFinalBasePath);
 	PluginConfig.hbmLogo = ::IMG_LoadLogo(szFilename);
 }
 

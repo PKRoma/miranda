@@ -264,9 +264,9 @@ static unsigned __stdcall LoadKLThread(LPVOID vParam)
 	HANDLE 		hContact = reinterpret_cast<HANDLE>(vParam);
 	DBVARIANT 	dbv = {0};
 
-	LRESULT res = DBGetContactSettingString(hContact, SRMSGMOD_T, "locale", &dbv);
+	LRESULT res = M->GetTString(hContact, SRMSGMOD_T, "locale", &dbv);
 	if (res == 0) {
-		HKL hkl = LoadKeyboardLayoutA(dbv.pszVal, KLF_SETFORPROCESS | KLF_ACTIVATE);//KLF_ACTIVATE);
+		HKL hkl = LoadKeyboardLayout(dbv.ptszVal, 0);
 		PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_SETLOCALE, (WPARAM)hContact, (LPARAM)hkl);
 		DBFreeVariant(&dbv);
 	}
@@ -283,22 +283,23 @@ LRESULT DM_LoadLocale(_MessageWindowData *dat)
 		if (dat->dwFlags & MWF_WASBACKGROUNDCREATE)
 			return 0;
 
-		if (PluginConfig.m_AutoLocaleSupport && dat->hContact != 0) {
+		if (PluginConfig.m_AutoLocaleSupport) {
 			DBVARIANT dbv;
 			int res;
-			char szKLName[KL_NAMELENGTH+1];
-			UINT flags = KLF_ACTIVATE;
+			TCHAR szKLName[KL_NAMELENGTH+1];
+			UINT  flags = KLF_ACTIVATE;
 
 			res = DBGetContactSettingString(dat->hContact, SRMSGMOD_T, "locale", &dbv);
 			if (res == 0) {
 				DBFreeVariant(&dbv);
 				CloseHandle((HANDLE)mir_forkthreadex(LoadKLThread, reinterpret_cast<void *>(dat->hContact), 16000, NULL));
 			} else {
-				GetKeyboardLayoutNameA(szKLName);
-				dat->hkl = LoadKeyboardLayoutA(szKLName, 0);
-				DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
-				GetLocaleID(dat, szKLName);
-				UpdateReadChars(dat);
+				TCHAR	szBuf[20];
+
+				GetLocaleInfo(LOCALE_SYSTEM_DEFAULT, LOCALE_ILANGUAGE, szBuf, 20);
+				mir_sntprintf(szKLName, KL_NAMELENGTH, _T("0000%s"), szBuf);
+				M->WriteTString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
+				CloseHandle((HANDLE)mir_forkthreadex(LoadKLThread, reinterpret_cast<void *>(dat->hContact), 16000, NULL));
 			}
 		}
 	}
@@ -379,12 +380,12 @@ LRESULT DM_SaveLocale(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
 	if (dat) {
 		if (PluginConfig.m_AutoLocaleSupport && dat->hContact && dat->pContainer->hwndActive == dat->hwnd) {
-			char szKLName[KL_NAMELENGTH + 1];
+			TCHAR szKLName[KL_NAMELENGTH + 1];
 			if ((HKL)lParam != dat->hkl) {
 				dat->hkl = (HKL)lParam;
 				ActivateKeyboardLayout(dat->hkl, 0);
-				GetKeyboardLayoutNameA(szKLName);
-				DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
+				GetKeyboardLayoutName(szKLName);
+				M->WriteTString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
 				GetLocaleID(dat, szKLName);
 				UpdateReadChars(dat);
 			}
@@ -562,16 +563,16 @@ LRESULT DM_ThemeChanged(_MessageWindowData *dat)
 		dat->hTheme = 0;
 
 	if (dat->bType == SESSIONTYPE_IM) {
-		if (dat->bFlatMsgLog || dat->hTheme != 0 || (dat->pContainer->bSkinned && !item_log->IGNORED))
+		if (dat->bFlatMsgLog || dat->hTheme != 0 || (CSkin::m_skinEnabled && !item_log->IGNORED))
 			SetWindowLongPtr(GetDlgItem(hwnd, IDC_LOG), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwnd, IDC_LOG), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
-		if (dat->bFlatMsgLog || dat->hTheme != 0 || (dat->pContainer->bSkinned && !item_msg->IGNORED))
+		if (dat->bFlatMsgLog || dat->hTheme != 0 || (CSkin::m_skinEnabled && !item_msg->IGNORED))
 			SetWindowLongPtr(GetDlgItem(hwnd, IDC_MESSAGE), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwnd, IDC_MESSAGE), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 	} else {
-		if (dat->bFlatMsgLog || dat->hTheme != 0 || (dat->pContainer->bSkinned && !item_log->IGNORED)) {
+		if (dat->bFlatMsgLog || dat->hTheme != 0 || (CSkin::m_skinEnabled && !item_log->IGNORED)) {
 			SetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_LOG), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_LOG), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 			SetWindowLongPtr(GetDlgItem(hwnd, IDC_LIST), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwnd, IDC_LIST), GWL_EXSTYLE) & ~(WS_EX_CLIENTEDGE | WS_EX_STATICEDGE));
 		}
-		if (dat->bFlatMsgLog || dat->hTheme != 0 || (dat->pContainer->bSkinned && !item_msg->IGNORED))
+		if (dat->bFlatMsgLog || dat->hTheme != 0 || (CSkin::m_skinEnabled && !item_msg->IGNORED))
 			SetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 	}
 	dat->hThemeIP = M->isAero() ? CMimAPI::m_pfnOpenThemeData(hwnd, L"ButtonStyle") : 0;
@@ -666,10 +667,6 @@ void DM_OptionsApplied(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 	SetDialogToType(hwndDlg);
 	SendMessage(hwndDlg, DM_CONFIGURETOOLBAR, 0, 0);
 
-	if (dat->hBkgBrush)
-		DeleteObject(dat->hBkgBrush);
-	if (dat->hInputBkgBrush)
-		DeleteObject(dat->hInputBkgBrush);
 	{
 		char *szStreamOut = NULL;
 		SETTEXTEX stx = {ST_DEFAULT, CP_UTF8};
@@ -684,8 +681,6 @@ void DM_OptionsApplied(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 		if (GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) > 0)
 			szStreamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, (CP_UTF8 << 16) | (SF_RTFNOOBJS | SFF_PLAINRTF | SF_USECODEPAGE));
 
-		dat->hBkgBrush = CreateSolidBrush(colour);
-		dat->hInputBkgBrush = CreateSolidBrush(dat->inputbg);
 		SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETBKGNDCOLOR, 0, colour);
 		SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETBKGNDCOLOR, 0, dat->inputbg);
 		lf = dat->theme.logFonts[MSGFONTID_MESSAGEAREA];

@@ -349,7 +349,7 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 		HBRUSH bg;
 		HFONT oldFont;
 		DWORD dwStyle = tabdat->dwStyle;
-		BOOL bFill = ((dwStyle & TCS_BUTTONS && !tabdat->pContainer->bSkinned) && (tabdat->m_VisualStyles == FALSE));
+		BOOL bFill = ((dwStyle & TCS_BUTTONS && !CSkin::m_skinEnabled) && (tabdat->m_VisualStyles == FALSE));
 		int oldMode = 0;
 		InflateRect(rcItem, -1, -1);
 
@@ -425,7 +425,7 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 #if defined(_UNICODE)
 			if(M->isAero())
 				CSkin::RenderText(dc, dwStyle & TCS_BUTTONS ? tabdat->hThemeButton : tabdat->hTheme, dat->newtitle, rcItem, dwTextFlags, CSkin::m_glowSize);
-			else if (tabdat->m_VisualStyles == FALSE || tabdat->m_moderntabs || tabdat->pContainer->bSkinned)
+			else if (tabdat->m_VisualStyles == FALSE || tabdat->m_moderntabs || CSkin::m_skinEnabled)
 				DrawText(dc, dat->newtitle, (int)(lstrlen(dat->newtitle)), rcItem, dwTextFlags);
 			else
 				M->m_pfnDrawThemeText(dwStyle & TCS_BUTTONS ? tabdat->hThemeButton : tabdat->hTheme, dc, 1, nHint & HINT_ACTIVE_ITEM ? 3 : (nHint & HINT_HOTTRACK ? 2 : 1), dat->newtitle, (int)(lstrlen(dat->newtitle)), dwTextFlags, 0, rcItem);
@@ -469,7 +469,7 @@ static void DrawItemRect(struct TabControlData *tabdat, HDC dc, RECT *rcItem, in
 
 			rcItem->right += 6;
 			if (bClassicDraw) {
-				if (tabdat->pContainer->bSkinned) {
+				if (CSkin::m_skinEnabled) {
 					CSkinItem *item = nHint & HINT_ACTIVE_ITEM ? &SkinItems[ID_EXTBKBUTTONSPRESSED] : (nHint & HINT_HOTTRACK ? &SkinItems[ID_EXTBKBUTTONSMOUSEOVER] : &SkinItems[ID_EXTBKBUTTONSNPRESSED]);
 
 					if (!item->IGNORED) {
@@ -502,7 +502,7 @@ b_nonskinned:
 				else
 					FillRect(dc, rcItem, GetSysColorBrush(COLOR_3DFACE));
 				*/
-				if (!tabdat->pContainer->bSkinned && !tabdat->m_moderntabs)
+				if (!CSkin::m_skinEnabled && !tabdat->m_moderntabs)
 					FillRect(dc, rcItem, GetSysColorBrush(COLOR_3DFACE));
 				//else if(tabdat->pContainer->bSkinned)
 				//    SkinDrawBG(tabdat->hwnd, tabdat->pContainer->hwnd, tabdat->pContainer, rcItem, dc);
@@ -515,14 +515,14 @@ b_nonskinned:
 				else
 					FillRect(dc, rcItem, GetSysColorBrush(COLOR_3DFACE));
 				*/
-				if (!tabdat->pContainer->bSkinned && !tabdat->m_moderntabs)
+				if (!CSkin::m_skinEnabled && !tabdat->m_moderntabs)
 					FillRect(dc, rcItem, GetSysColorBrush(COLOR_3DFACE));
 				//else if(tabdat->pContainer->bSkinned)
 				//    SkinDrawBG(tabdat->hwnd, tabdat->pContainer->hwnd, tabdat->pContainer, rcItem, dc);
 				rcItem->bottom--;
 				rcItem->top -= 2;
 			}
-			if (tabdat->pContainer->bSkinned) {
+			if (CSkin::m_skinEnabled) {
 				CSkinItem *item = &SkinItems[dwStyle & TCS_BOTTOM ? ID_EXTBKTABITEMACTIVEBOTTOM : ID_EXTBKTABITEMACTIVE];
 				if (!item->IGNORED) {
 					rcItem->left += item->MARGIN_LEFT;
@@ -534,7 +534,7 @@ b_nonskinned:
 				}
 			}
 		}
-		if (tabdat->pContainer->bSkinned) {
+		if (CSkin::m_skinEnabled) {
 			CSkinItem *item = &SkinItems[dwStyle & TCS_BOTTOM ? (nHint & HINT_HOTTRACK ? ID_EXTBKTABITEMHOTTRACKBOTTOM : ID_EXTBKTABITEMBOTTOM) :
 													   (nHint & HINT_HOTTRACK ? ID_EXTBKTABITEMHOTTRACK : ID_EXTBKTABITEM)];
 			if (!item->IGNORED) {
@@ -1372,7 +1372,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 		break;
 
 		case WM_ERASEBKGND:
-			if (tabdat->pContainer && (tabdat->pContainer->bSkinned || M->isAero()))
+			if (tabdat->pContainer && (CSkin::m_skinEnabled || M->isAero()))
 				return TRUE;
 			return(0);
 		case WM_PAINT: {
@@ -1394,7 +1394,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			bool  isAero = M->isAero();
 			HANDLE hpb = 0;
 
-			BOOL bClassicDraw = !isAero && (tabdat->m_VisualStyles == FALSE || tabdat->m_moderntabs || tabdat->pContainer->bSkinned);
+			BOOL bClassicDraw = !isAero && (tabdat->m_VisualStyles == FALSE || tabdat->m_moderntabs || CSkin::m_skinEnabled);
 
 			if(GetUpdateRect(hwnd, NULL, TRUE) == 0)
 				break;
@@ -1419,7 +1419,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 
 			if(tabdat->pContainer)
 				tabdat->m_moderntabs = !tabdat->fAeroTabs && (tabdat->pContainer->dwFlagsEx & TCF_STYLED) &&
-				!(tabdat->dwStyle & TCS_BUTTONS) && !(tabdat->pContainer->bSkinned);
+				!(tabdat->dwStyle & TCS_BUTTONS) && !(CSkin::m_skinEnabled);
 
 			hdcreal = BeginPaint(hwnd, &ps);
 
@@ -1456,7 +1456,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			if (nCount == 1 && tabdat->pContainer->dwFlags & CNT_HIDETABS)
 				rctClip = rctPage;
 
-			if (tabdat->pContainer->bSkinned)
+			if (CSkin::m_skinEnabled)
 				CSkin::SkinDrawBG(hwnd, tabdat->pContainer->hwnd, tabdat->pContainer, &rctPage, hdc);
 			else
 				//FillRect(hdc, &ps.rcPaint, GetSysColorBrush(COLOR_3DFACE));
@@ -1507,7 +1507,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 					goto skip_tabs;
 			} else {
 				if (IntersectRect(&rectTemp, &rctPage, &ps.rcPaint)) {
-					if (tabdat->pContainer->bSkinned) {
+					if (CSkin::m_skinEnabled) {
 						CSkinItem *item = &SkinItems[ID_EXTBKTABPAGE];
 
 						if (!item->IGNORED) {

@@ -297,14 +297,11 @@ struct GlobalLogSettings_t {
 	int         LogTextIndent;
 	long        LoggingLimit;
 	int         iEventLimit;
+	int			iEventLimitThreshold;
 	int         iPopupStyle;
 	int         iPopupTimeout;
 	int         iSplitterX;
 	int         iSplitterY;
-	int         iX;
-	int         iY;
-	int         iWidth;
-	int         iHeight;
 	TCHAR*      pszTimeStamp;
 	TCHAR*      pszTimeStampLog;
 	TCHAR*      pszIncomingNick;

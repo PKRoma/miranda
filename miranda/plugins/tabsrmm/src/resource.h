@@ -685,8 +685,6 @@
 #define ID_VIEW_VERTICALMAXIMIZE        40143
 #define ID_SENDMENU_SENDLATER           40144
 #define ID_PROTOMENU_SPLITTER           40145
-#define ID_SPLITTER_AUTOSAVEONCLOSE     40146
-#define ID_SPLITTER_SAVENOW             40147
 #define ID_MODE_GLOBAL                  40148
 #define ID_MODE_PRIVATE                 40150
 #define ID_UNREADMENU_TEST              40151

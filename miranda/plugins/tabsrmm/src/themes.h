@@ -71,6 +71,7 @@ typedef struct {
 #define BUTTONSETASSIDEBARBUTTON (BUTTONSETASFLATBTN + 22)
 
 struct AeroEffect {
+	TCHAR	tszName[40];
 	DWORD	m_baseColor;
 	DWORD	m_gradientColor;
 	BYTE	m_baseAlpha;
@@ -80,6 +81,8 @@ struct AeroEffect {
 	DWORD	m_cornerRadius;
 	DWORD	m_glowSize;
 	COLORREF m_clrBack;
+	COLORREF m_clrToolbar;
+	COLORREF m_clrToolbar2;
 };
 /**
  * CImageItem implementes image-based skin items. These items are loaded
@@ -209,7 +212,9 @@ public:
 		AERO_EFFECT_MILK = 1,
 		AERO_EFFECT_CARBON = 2,
 		AERO_EFFECT_SOLID = 3,
-		AERO_EFFECT_LAST = 4
+		AERO_EFFECT_WHITE = 4,
+		AERO_EFFECT_CUSTOM = 5,
+		AERO_EFFECT_LAST = 6
 	};
 	enum {
 		AERO_EFFECT_AREA_MENUBAR = 0,
@@ -319,7 +324,8 @@ public:
 	static UINT		m_aeroEffect;											// effect id, initAeroEffect() is using it to set
 																			// the parameters below.
 	static AeroEffect	m_aeroEffects[AERO_EFFECT_LAST];
-	static AeroEffect*	m_currentAeroEffect;
+	static AeroEffect	m_currentAeroEffect;
+	static AeroEffect*	m_pCurrentAeroEffect;
 	static DWORD		m_glowSize;
 	static HBRUSH		m_BrushBack;
 
@@ -329,7 +335,6 @@ public:
 
 private:
 	TCHAR			m_tszFileName[MAX_PATH];				// full path and filename of the currently loaded skin
-	char			m_tszFileNameA[MAX_PATH];				// compatibility (todo: remove later)
 	CSkinItem*		m_SkinItems;
 	CImageItem*		m_ImageItems;							// the list of image item objects
 	CImageItem		m_glyphItem;

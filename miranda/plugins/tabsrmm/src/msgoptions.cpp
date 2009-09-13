@@ -1028,11 +1028,8 @@ static INT_PTR CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM 
 			SendMessage(hwndDlg, WM_COMMAND, MAKELONG(IDC_USESKIN, BN_CLICKED), 0);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_USESKIN), IsWinVer2000Plus() ? TRUE : FALSE);
 
-
-			SendDlgItemMessage(hwndDlg, IDC_AEROEFFECT, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_AERO_EFFECT_NONE));
-			SendDlgItemMessage(hwndDlg, IDC_AEROEFFECT, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_AERO_EFFECT_MILK));
-			SendDlgItemMessage(hwndDlg, IDC_AEROEFFECT, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_AERO_EFFECT_CARBON));
-			SendDlgItemMessage(hwndDlg, IDC_AEROEFFECT, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_AERO_EFFECT_SOLID));
+			for(int i = 0; i < CSkin::AERO_EFFECT_LAST; i++)
+				SendDlgItemMessage(hwndDlg, IDC_AEROEFFECT, CB_INSERTSTRING, -1, (LPARAM)CSkin::m_aeroEffects[i].tszName);
 
 			SendDlgItemMessage(hwndDlg, IDC_AEROEFFECT, CB_SETCURSEL, (WPARAM)CSkin::m_aeroEffect, 0);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_AEROEFFECT), PluginConfig.m_bIsVista ? TRUE : FALSE);
@@ -1568,7 +1565,7 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 			iInit = TRUE;
 			tci.mask = TCIF_PARAM | TCIF_TEXT;
 			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPT_MSGDLG), hwnd, DlgProcOptions);
-			tci.pszText = TranslateT("General");
+			tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_GENERAL));
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 0, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 			ShowWindow((HWND)tci.lParam, oPage == 0 ? SW_SHOW : SW_HIDE);
@@ -1576,7 +1573,7 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
 			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPT_TABBEDMSG), hwnd, DlgProcTabbedOptions);
-			tci.pszText = TranslateT("Tabs and layout");
+			tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_TABS));
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 1, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 			ShowWindow((HWND)tci.lParam, oPage == 1 ? SW_SHOW : SW_HIDE);
@@ -1584,7 +1581,7 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
 			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPT_CONTAINERS), hwnd, DlgProcContainerSettings);
-			tci.pszText = TranslateT("Containers");
+			tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_CONTAINERS));
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 2, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 			ShowWindow((HWND)tci.lParam, oPage == 2 ? SW_SHOW : SW_HIDE);
@@ -1592,7 +1589,7 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
 			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPT_MSGLOG), hwnd, DlgProcLogOptions);
-			tci.pszText = TranslateT("Message log");
+			tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_LOG));
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 3, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 			ShowWindow((HWND)tci.lParam, oPage == 3 ? SW_SHOW : SW_HIDE);
@@ -1600,7 +1597,7 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
 			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPT_TOOLBAR), hwnd, DlgProcToolBar);
-			tci.pszText = TranslateT("Tool bar");
+			tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_TOOLBAR));
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 4, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 			ShowWindow((HWND)tci.lParam, oPage == 4 ? SW_SHOW : SW_HIDE);
@@ -1608,7 +1605,7 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
 			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPTIONS_PLUS), hwnd, PlusOptionsProc);
-			tci.pszText = TranslateT("Advanced tweaks");
+			tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_ADVANCED));
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 5, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 			ShowWindow((HWND)tci.lParam, oPage == 5 ? SW_SHOW : SW_HIDE);
@@ -1696,7 +1693,7 @@ static INT_PTR CALLBACK GroupOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			tci.mask = TCIF_PARAM | TCIF_TEXT;
 
 			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPTIONS1), hwnd, DlgProcOptions1);
-			tci.pszText = TranslateT("Settings");
+			tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_MUC_SETTINGS));
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 0, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 
@@ -1711,7 +1708,7 @@ static INT_PTR CALLBACK GroupOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, 
 
 			if(PluginConfig.m_chat_enabled) {
 				tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPTIONS2), hwnd, DlgProcOptions2);
-				tci.pszText = TranslateT("Log formatting");
+				tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_MUC_LOG));
 				TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 1, &tci);
 				MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 				ShowWindow((HWND)tci.lParam, oPage == 1 ? SW_SHOW : SW_HIDE);
@@ -1719,7 +1716,7 @@ static INT_PTR CALLBACK GroupOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, 
 					CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
 				tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPTIONS3), hwnd, DlgProcOptions3);
-				tci.pszText = TranslateT("Events and filters");
+				tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_MUC_EVENTS));
 				TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 2, &tci);
 				MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 				ShowWindow((HWND)tci.lParam, oPage == 2 ? SW_SHOW : SW_HIDE);
@@ -1800,7 +1797,7 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			CheckDlgButton(hwndDlg, IDC_SKIN_LOADFONTS, loadMode & THEME_READ_FONTS);
 			CheckDlgButton(hwndDlg, IDC_SKIN_LOADTEMPLATES, loadMode & THEME_READ_TEMPLATES);
 
-			if (!DBGetContactSettingTString(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
+			if (!M->GetTString(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
 				if (lstrlen(dbv.ptszVal) > 4)
 					SetDlgItemText(hwndDlg, IDC_SKINFILENAME, dbv.ptszVal);
 				DBFreeVariant(&dbv);
@@ -1857,7 +1854,7 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					ofn.lpstrDefExt = _T("");
 					if (!GetOpenFileName(&ofn))
 						break;
-					M->pathToRelative(str, final_path);
+					M->pathToRelative(str, final_path, M->getUserDir());
 					if (PathFileExists(str)) {
 						int skinChanged = 0;
 						DBVARIANT dbv = {0};
@@ -1869,7 +1866,7 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						} else
 							skinChanged = TRUE;
 
-						DBWriteContactSettingTString(NULL, SRMSGMOD_T, "ContainerSkin", final_path);
+						M->WriteTString(NULL, SRMSGMOD_T, "ContainerSkin", final_path);
 						M->WriteByte(SRMSGMOD_T, "skin_changed", (BYTE)skinChanged);
 						SetDlgItemText(hwndDlg, IDC_SKINFILENAME, final_path);
 					}

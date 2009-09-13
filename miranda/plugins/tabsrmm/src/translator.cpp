@@ -175,6 +175,22 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("No word to look up"),						/* GEN_MUC_LOOKUP_NOWORD */
 	LPGENT("&Message"),									/* GEN_MUC_MESSAGEAMP */
 	LPGENT("UTF-8"),									/* GEN_STRING_UTF8 */
+
+	/* MUC LOG Formatting strings*/
+
+	LPGENT("%s has joined"),							/* MUC_LOG_JOINED */
+	LPGENT("You have joined %s"),						/* MUC_LOG_ME_JOINED */
+	LPGENT("%s has left"), 								/* MUC_LOG_LEFT */
+	LPGENT("%s has disconnected"),						/* MUC_LOG_DISC */
+	LPGENT("%s is now known as %s"),					/* MUC_LOG_NICKCHANGE */
+	LPGENT("You are now known as %s"),					/* MUC_LOG_ME_NICKCHANGE */
+	LPGENT("%s kicked %s"),								/* MUC_LOG_KICK */
+	LPGENT("Notice from %s: "), 						/* MUC_LOG_NOTICE */
+	LPGENT("The topic is \'%s%s\'"),					/* MUC_LOG_TOPICIS */
+	LPGENT(" (set by %s on %s)"), 						/* MUC_LOG_TOPICSETBYON */
+	LPGENT(" (set by %s)"),								/* MUC_LOG_TOPICSETBY */
+	LPGENT("%s enables \'%s\' status for %s"),			/* MUC_LOG_STATUSENABLE */
+	LPGENT("%s disables \'%s\' status for %s"),			/* MUC_LOG_STATUSDISABLE */
 };
 
 /*
@@ -198,10 +214,10 @@ TCHAR* CTranslator::m_OptStrings[OPT_LAST] = {
 	LPGENT("Set messaging options for %s"),							/* OPT_UPREFS_TITLE */
 	LPGENT("Message Log"),											/* OPT_UPREFS_MSGLOG */
 	LPGENT("General"),												/* OPT_UPREFS_GENERIC */
-	LPGENT("No effect"),											/* OPT_AERO_EFFECT_NONE */
-	LPGENT("Milky glass"),											/* OPT_AERO_EFFECT_MILK */
-	LPGENT("Carbon (needs a dark aero theme)"), 					/* OPT_AERO_EFFECT_CARBON */
-	LPGENT("Opaque, colored text"), 								/* OPT_AERO_EFFECT_SOLID */
+	LPGENT(""),											/* OPT_AERO_EFFECT_NONE */
+	LPGENT(""),											/* OPT_AERO_EFFECT_MILK */
+	LPGENT(""), 					/* OPT_AERO_EFFECT_CARBON */
+	LPGENT(""), 								/* OPT_AERO_EFFECT_SOLID */
 	LPGENT("No border"),											/* OPT_GEN_NONE */
 	LPGENT("Automatic"),											/* OPT_GEN_AUTO */
 	LPGENT("Sunken"),												/* OPT_GEN_SUNKEN */
@@ -272,6 +288,15 @@ TCHAR* CTranslator::m_OptStrings[OPT_LAST] = {
 	LPGENT("This will reset the template set to the default built-in templates. Are you sure you want to do this?"), /* OPT_TEMP_RESET */
 	LPGENT("Template set was successfully reset, please close and reopen all message windows. This template editor window will now close."), /* OPT_TEMP_WASRESET */
 	LPGENT("Template editor help"),									/* OPT_TEMP_HELPTITLE */
+	LPGENT("General"),												/* OPT_TABS_GENERAL */
+	LPGENT("Tabs and layout"),										/* OPT_TABS_TABS */
+	LPGENT("Containers"),											/* OPT_TABS_CONTAINERS */
+	LPGENT("Message log"),											/* OPT_TABS_LOG */
+	LPGENT("Tool bar"),												/* OPT_TABS_TOOLBAR */
+	LPGENT("Advanced tweaks"),										/* OPT_TABS_ADVANCED */
+	LPGENT("Settings"),												/* OPT_TABS_MUC_SETTINGS */
+	LPGENT("Log formatting"),										/* OPT_TABS_MUC_LOG */
+	LPGENT("Events and filters"),									/* OPT_TABS_MUC_EVENTS */
 
 };
 TCHAR* CTranslator::m_translated[STR_LAST];

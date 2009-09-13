@@ -102,6 +102,9 @@
 
 	#define DWM_BB_ENABLE 1
 
+	#define LOCALE_SISO3166CTRYNAME2      0x00000068   // 3 character ISO country name, eg "USA Vista+
+	#define LOCALE_SISO639LANGNAME2       0x00000067   // 3 character ISO abbreviated language name, eg "eng"
+
 #endif
 #define WM_DWMCOMPOSITIONCHANGED        0x031E
 #define WM_DWMCOLORIZATIONCOLORCHANGED  0x0320

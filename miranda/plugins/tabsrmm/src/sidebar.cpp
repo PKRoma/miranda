@@ -849,7 +849,16 @@ LRESULT CALLBACK CSideBar::wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			HDC hdc = (HDC)wParam;
 			RECT rc;
 			GetClientRect(hwnd, &rc);
-			::FillRect(hdc, &rc, (HBRUSH)(M->isAero() ? CSkin::m_BrushBack : ::GetSysColorBrush(COLOR_3DFACE)));
+			if (M->isAero()) {
+				HDC		hdcMem;
+				HANDLE  hbp;
+
+				hbp = CMimAPI::m_pfnBeginBufferedPaint(hdc, &rc, BPBF_TOPDOWNDIB, 0, &hdcMem);
+				::FillRect(hdcMem, &rc, CSkin::m_BrushBack);
+				CSkin::FinalizeBufferedPaint(hbp, &rc);
+			}
+			else
+				::FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
 			return(1);
 		}
 		default:

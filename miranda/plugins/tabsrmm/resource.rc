@@ -1124,14 +1124,10 @@ BEGIN
 
         END
         MENUITEM SEPARATOR
-        POPUP "Splitter"
+        POPUP "Splitter Position"
         BEGIN
             MENUITEM "Global",                      ID_MODE_GLOBAL
             MENUITEM "Private",                     ID_MODE_PRIVATE
-            MENUITEM SEPARATOR
-            MENUITEM "Autosave on Close",           ID_SPLITTER_AUTOSAVEONCLOSE
-
-            MENUITEM "Save Now",                    ID_SPLITTER_SAVENOW
         END
         MENUITEM SEPARATOR
         POPUP "Send Text Formatting"

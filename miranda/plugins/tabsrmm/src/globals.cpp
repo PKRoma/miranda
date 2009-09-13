@@ -80,7 +80,6 @@ void CGlobals::Reload()
 	m_FormatWholeWordsOnly = 1;
 	m_FixFutureTimestamps = (int)M->GetByte("do_fft", 1);
 	m_RTLDefault = (int)M->GetByte("rtldefault", 0);
-	m_SplitterSaveOnClose = (int)M->GetByte("splitsavemode", 1);
 	m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE);
 	m_WinVerMajor = WinVerMajor();
 	m_WinVerMinor = WinVerMinor();
@@ -107,6 +106,7 @@ void CGlobals::Reload()
 	m_ncm.cbSize = sizeof(NONCLIENTMETRICS);
 	m_ipBackgroundGradient = M->GetDword(FONTMODULE, "ipfieldsbg", GetSysColor(COLOR_3DSHADOW));
 	m_ipBackgroundGradientHigh = M->GetDword(FONTMODULE, "ipfieldsbgHigh", GetSysColor(COLOR_3DSHADOW));
+	CSkin::initAeroEffect();
 	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &m_ncm, 0);
 }
 
