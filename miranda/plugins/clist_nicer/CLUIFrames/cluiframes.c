@@ -149,7 +149,6 @@ static int curdragbar = -1;
 static CRITICAL_SECTION csFrameHook;
 
 static BOOLEAN CLUIFramesFitInSize(void);
-static int RemoveItemFromList(int pos, wndFrame **lpFrames, int *FrameItemCount);
 HWND hWndExplorerToolBar;
 static int GapBetweenFrames = 1;
 
@@ -157,7 +156,6 @@ static int RemoveItemFromList(int pos, wndFrame **lpFrames, int *FrameItemCount)
 {
 	memcpy(&((*lpFrames)[pos]), &((*lpFrames)[pos+1]), sizeof(wndFrame)*(*FrameItemCount - pos - 1));
 	(*FrameItemCount)--;
-	(*lpFrames) = (wndFrame*)realloc((*lpFrames), sizeof(wndFrame) * (*FrameItemCount));
 	return 0;
 }
 
