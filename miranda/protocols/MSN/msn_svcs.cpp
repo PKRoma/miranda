@@ -242,28 +242,29 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 		MSN_GetAvatarFileName(NULL, tFileName, sizeof(tFileName));
 		remove(tFileName);
 		deleteSetting(NULL, "PictObject");
+		ForkThread(&CMsnProto::msn_storeAvatarThread, NULL);
 	}
 	else
 	{
 		int fileId = _open(szFileName, _O_RDONLY | _O_BINARY, _S_IREAD);
-		if (fileId == -1)
-			return 1;
+		if (fileId < 0) return 1;
 
 		long  dwPngSize = _filelength(fileId);
-		BYTE* pResult = (BYTE*)mir_alloc(dwPngSize);
-		if (pResult == NULL)
-			return 2;
+		unsigned char* pResult = (unsigned char*)mir_alloc(dwPngSize);
+		if (pResult == NULL) return 2;
 
 		_read(fileId, pResult, dwPngSize);
 		_close(fileId);
 
 		mir_sha1_ctx sha1ctx;
-		BYTE sha1c[ MIR_SHA1_HASH_SIZE ], sha1d[ MIR_SHA1_HASH_SIZE ];
-		char szSha1c[ 40 ], szSha1d[ 40 ];
+		BYTE sha1c[MIR_SHA1_HASH_SIZE], sha1d[MIR_SHA1_HASH_SIZE];
+		char szSha1c[40], szSha1d[40];
+
 		mir_sha1_init(&sha1ctx);
 		mir_sha1_append(&sha1ctx, pResult, dwPngSize);
 		mir_sha1_finish(&sha1ctx, sha1d);
-		{	NETLIBBASE64 nlb = { szSha1d, sizeof(szSha1d), (PBYTE)sha1d, sizeof(sha1d) };
+		{	
+            NETLIBBASE64 nlb = { szSha1d, sizeof(szSha1d), (PBYTE)sha1d, sizeof(sha1d) };
 			MSN_CallService(MS_NETLIB_BASE64ENCODE, 0, LPARAM(&nlb));
 		}
 		char drive[_MAX_DRIVE];
@@ -302,7 +303,8 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 		
 		mir_sha1_finish(&sha1ctx, sha1c);
 
-		{	NETLIBBASE64 nlb = { szSha1c, sizeof(szSha1c), (PBYTE)sha1c, sizeof(sha1c) };
+		{	
+            NETLIBBASE64 nlb = { szSha1c, sizeof(szSha1c), (PBYTE)sha1c, sizeof(sha1c) };
 			MSN_CallService(MS_NETLIB_BASE64ENCODE, 0, LPARAM(&nlb));
 			ezxml_set_attr(xmlp, "SHA1C", szSha1c);
 		}
@@ -315,10 +317,12 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 
 			setString(NULL, "PictObject", szEncodedBuffer);
 		}
-		{	char tFileName[ MAX_PATH ];
-			MSN_GetAvatarFileName(NULL, tFileName, sizeof(tFileName));
+		{	
+            char tFileName[MAX_PATH];
+			MSN_GetAvatarFileName(NULL, tFileName, SIZEOF(tFileName));
 			int fileId = _open(tFileName, _O_CREAT | _O_TRUNC | _O_WRONLY | O_BINARY,  _S_IREAD | _S_IWRITE);
-			if (fileId > -1) {
+			if (fileId >= 0) 
+            {
 				_write(fileId, pResult, dwPngSize);
 				_close(fileId);
 			}
@@ -327,7 +331,13 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 
 		}
 
-		mir_free(pResult);
+		StoreAvatarData* par = (StoreAvatarData*)mir_alloc(sizeof(StoreAvatarData));
+		par->szName = mir_strdup(fname);
+		par->szMimeType = "image/png";
+		par->data = pResult;
+		par->dataSize = dwPngSize;
+
+		ForkThread(&CMsnProto::msn_storeAvatarThread, par);
 	}
 
 	MSN_SetServerStatus(m_iStatus);
@@ -541,19 +551,13 @@ int CMsnProto::OnGroupChange(WPARAM wParam,LPARAM lParam)
 	{
 		if (grpchg->pszNewName == NULL && grpchg->pszOldName != NULL)
 		{
-			char* szOldName = mir_utf8encodeT(grpchg->pszOldName);
-			LPCSTR szId = MSN_GetGroupByName(szOldName);
+			LPCSTR szId = MSN_GetGroupByName(UTF8(grpchg->pszOldName));
 			if (szId != NULL) MSN_DeleteServerGroup(szId);	
-			mir_free(szOldName);
 		}
 		else if (grpchg->pszNewName != NULL && grpchg->pszOldName != NULL)
 		{
-			char* szNewName = mir_utf8encodeT(grpchg->pszNewName);
-			char* szOldName = mir_utf8encodeT(grpchg->pszOldName);
-			LPCSTR szId = MSN_GetGroupByName(szOldName);
-			if (szId != NULL) MSN_RenameServerGroup(szId, szNewName);
-			mir_free(szOldName);
-			mir_free(szNewName);
+			LPCSTR szId = MSN_GetGroupByName(UTF8(grpchg->pszOldName));
+			if (szId != NULL) MSN_RenameServerGroup(szId, UTF8(grpchg->pszNewName));
 		}
 	}
 	else
