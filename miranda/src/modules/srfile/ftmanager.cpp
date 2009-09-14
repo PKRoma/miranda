@@ -31,7 +31,7 @@ struct TFtMgrData
 	HWND hwndOutgoing;
 
 	HANDLE hhkPreshutdown;
-	ITaskbarList3 * pTaskbarInterface;
+	interface ITaskbarList3 * pTaskbarInterface;
 	TBPFLAG         errorState;
 };
 

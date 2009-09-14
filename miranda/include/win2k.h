@@ -503,13 +503,12 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 
 		/* windows seven taskbar interface comes with sdk v7.0
 		   if not existent define on our own */
-#ifndef __ITaskbarList3_INTERFACE_DEFINED__
-#define __ITaskbarList3_INTERFACE_DEFINED__
-
+#ifdef _SHLOBJ_H_
+	#ifndef __ITaskbarList3_INTERFACE_DEFINED__
+	#define __ITaskbarList3_INTERFACE_DEFINED__
 		/* interface ITaskbarList3 */
-		/* [object][uuid] */ 
-
-		typedef /* [v1_enum] */ 
+		
+		typedef
 			enum TBPFLAG
 		{	
 			TBPF_NOPROGRESS	= 0,
@@ -519,121 +518,36 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 			TBPF_PAUSED	= 0x8
 		} TBPFLAG;
 
-		EXTERN_C const IID IID_ITaskbarList3;
+		typedef struct THUMBBUTTON *LPTHUMBBUTTON;
+		                                        
+		static const GUID IID_ITaskbarList3 = { 0xea1afb91, 0x9e28, 0x4b86, { 0x90, 0xE9, 0x9e, 0x9f, 0x8a, 0x5e, 0xef, 0xaf } };
 
-		typedef struct ITaskbarList3Vtbl
+	#ifdef INTERFACE
+	#undef INTERFACE
+	#endif
+	#define INTERFACE ITaskbarList3
+		DECLARE_INTERFACE_( ITaskbarList3, ITaskbarList2 )
 		{
-			BEGIN_INTERFACE
+			// IUnknown methods
+			STDMETHOD (QueryInterface)(THIS_ REFIID riid, void **ppv) PURE;
+			STDMETHOD_(ULONG, AddRef) ( THIS ) PURE;
+			STDMETHOD_(ULONG, Release) ( THIS ) PURE;
 
-				HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
-				ITaskbarList3 * This,
-				/* [in] */ REFIID riid,
-				/* [annotation][iid_is][out] */ 
-				void **ppvObject);
-
-				ULONG ( STDMETHODCALLTYPE *AddRef )( 
-					ITaskbarList3 * This);
-
-				ULONG ( STDMETHODCALLTYPE *Release )( 
-					ITaskbarList3 * This);
-
-				HRESULT ( STDMETHODCALLTYPE *HrInit )( 
-					ITaskbarList3 * This);
-
-				HRESULT ( STDMETHODCALLTYPE *AddTab )( 
-					ITaskbarList3 * This,
-					/* [in] */ HWND hwnd);
-
-				HRESULT ( STDMETHODCALLTYPE *DeleteTab )( 
-					ITaskbarList3 * This,
-					/* [in] */ HWND hwnd);
-
-				HRESULT ( STDMETHODCALLTYPE *ActivateTab )( 
-					ITaskbarList3 * This,
-					/* [in] */ HWND hwnd);
-
-				HRESULT ( STDMETHODCALLTYPE *SetActiveAlt )( 
-					ITaskbarList3 * This,
-					/* [in] */ HWND hwnd);
-
-				HRESULT ( STDMETHODCALLTYPE *MarkFullscreenWindow )( 
-					ITaskbarList3 * This,
-					/* [in] */ HWND hwnd,
-					/* [in] */ BOOL fFullscreen);
-
-				HRESULT ( STDMETHODCALLTYPE *SetProgressValue )( 
-					ITaskbarList3 * This,
-					/* [in] */ HWND hwnd,
-					/* [in] */ ULONGLONG ullCompleted,
-					/* [in] */ ULONGLONG ullTotal);
-
-				HRESULT ( STDMETHODCALLTYPE *SetProgressState )( 
-					ITaskbarList3 * This,
-					/* [in] */ HWND hwnd,
-					/* [in] */ TBPFLAG tbpFlags);
-
-				HRESULT ( STDMETHODCALLTYPE *RegisterTab )( 
-					ITaskbarList3 * This,
-					/* [in] */ HWND hwndTab,
-					/* [in] */ HWND hwndMDI);
-
-				HRESULT ( STDMETHODCALLTYPE *UnregisterTab )( 
-					ITaskbarList3 * This,
-					/* [in] */ HWND hwndTab);
-
-				HRESULT ( STDMETHODCALLTYPE *SetTabOrder )( 
-					ITaskbarList3 * This,
-					/* [in] */ HWND hwndTab,
-					/* [in] */ HWND hwndInsertBefore);
-
-				HRESULT ( STDMETHODCALLTYPE *SetTabActive )( 
-					ITaskbarList3 * This,
-					/* [in] */ HWND hwndTab,
-					/* [in] */ HWND hwndMDI,
-					/* [in] */ DWORD dwReserved);
-
-				HRESULT ( STDMETHODCALLTYPE *ThumbBarAddButtons )( 
-					ITaskbarList3 * This,
-					/* [in] */ HWND hwnd,
-					/* [in] */ UINT cButtons,
-					/* [size_is][in] */ LPTHUMBBUTTON pButton);
-
-				HRESULT ( STDMETHODCALLTYPE *ThumbBarUpdateButtons )( 
-					ITaskbarList3 * This,
-					/* [in] */ HWND hwnd,
-					/* [in] */ UINT cButtons,
-					/* [size_is][in] */ LPTHUMBBUTTON pButton);
-
-				HRESULT ( STDMETHODCALLTYPE *ThumbBarSetImageList )( 
-					ITaskbarList3 * This,
-					/* [in] */ HWND hwnd,
-					/* [in] */ HIMAGELIST himl);
-
-				HRESULT ( STDMETHODCALLTYPE *SetOverlayIcon )( 
-					ITaskbarList3 * This,
-					/* [in] */ HWND hwnd,
-					/* [in] */ HICON hIcon,
-					/* [string][unique][in] */ LPCWSTR pszDescription);
-
-				HRESULT ( STDMETHODCALLTYPE *SetThumbnailTooltip )( 
-					ITaskbarList3 * This,
-					/* [in] */ HWND hwnd,
-					/* [string][unique][in] */ LPCWSTR pszTip);
-
-				HRESULT ( STDMETHODCALLTYPE *SetThumbnailClip )( 
-					ITaskbarList3 * This,
-					/* [in] */ HWND hwnd,
-					/* [in] */ RECT *prcClip);
-
-			END_INTERFACE
-		} ITaskbarList3Vtbl;
-
-		interface ITaskbarList3
-		{
-			const struct ITaskbarList3Vtbl *lpVtbl;
+			STDMETHOD (SetProgressValue)(THIS_ HWND hwnd, ULONGLONG ullCompleted, ULONGLONG ullTotal) PURE;
+			STDMETHOD (SetProgressState)(THIS_ HWND hwnd, TBPFLAG tbpFlags) PURE;
+			STDMETHOD (RegisterTab)( THIS_ HWND hwndTab,HWND hwndMDI) PURE;
+			STDMETHOD (UnregisterTab)( THIS_ HWND hwndTab) PURE;
+			STDMETHOD (SetTabOrder)( THIS_ HWND hwndTab, HWND hwndInsertBefore) PURE;
+			STDMETHOD (SetTabActive)( THIS_ HWND hwndTab, HWND hwndMDI, DWORD dwReserved) PURE;
+			STDMETHOD (ThumbBarAddButtons)( THIS_ HWND hwnd, UINT cButtons, LPTHUMBBUTTON pButton) PURE;
+			STDMETHOD (ThumbBarUpdateButtons)( THIS_ HWND hwnd, UINT cButtons, LPTHUMBBUTTON pButton) PURE;
+			STDMETHOD (ThumbBarSetImageList)( THIS_ HWND hwnd, HIMAGELIST himl) PURE;
+			STDMETHOD (SetOverlayIcon)( THIS_ HWND hwnd, HICON hIcon, LPCWSTR pszDescription) PURE;
+			STDMETHOD (SetThumbnailTooltip)( THIS_ HWND hwnd, LPCWSTR pszTip) PURE;
+			STDMETHOD (SetThumbnailClip)( THIS_ HWND hwnd, RECT *prcClip) PURE;
 		};
 
-
-#endif 	/* __ITaskbarList3_INTERFACE_DEFINED__ */
+	#endif 	/* __ITaskbarList3_INTERFACE_DEFINED__ */
+#endif  /* _SHLOBJ_H_ */
 
 #endif // WIN2K_H__
