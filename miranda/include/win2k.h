@@ -499,4 +499,141 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 }
 
 #endif /* SDK check */
+
+
+		/* windows seven taskbar interface comes with sdk v7.0
+		   if not existent define on our own */
+#ifndef __ITaskbarList3_INTERFACE_DEFINED__
+#define __ITaskbarList3_INTERFACE_DEFINED__
+
+		/* interface ITaskbarList3 */
+		/* [object][uuid] */ 
+
+		typedef /* [v1_enum] */ 
+			enum TBPFLAG
+		{	
+			TBPF_NOPROGRESS	= 0,
+			TBPF_INDETERMINATE	= 0x1,
+			TBPF_NORMAL	= 0x2,
+			TBPF_ERROR	= 0x4,
+			TBPF_PAUSED	= 0x8
+		} TBPFLAG;
+
+		EXTERN_C const IID IID_ITaskbarList3;
+
+		typedef struct ITaskbarList3Vtbl
+		{
+			BEGIN_INTERFACE
+
+				HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+				ITaskbarList3 * This,
+				/* [in] */ REFIID riid,
+				/* [annotation][iid_is][out] */ 
+				void **ppvObject);
+
+				ULONG ( STDMETHODCALLTYPE *AddRef )( 
+					ITaskbarList3 * This);
+
+				ULONG ( STDMETHODCALLTYPE *Release )( 
+					ITaskbarList3 * This);
+
+				HRESULT ( STDMETHODCALLTYPE *HrInit )( 
+					ITaskbarList3 * This);
+
+				HRESULT ( STDMETHODCALLTYPE *AddTab )( 
+					ITaskbarList3 * This,
+					/* [in] */ HWND hwnd);
+
+				HRESULT ( STDMETHODCALLTYPE *DeleteTab )( 
+					ITaskbarList3 * This,
+					/* [in] */ HWND hwnd);
+
+				HRESULT ( STDMETHODCALLTYPE *ActivateTab )( 
+					ITaskbarList3 * This,
+					/* [in] */ HWND hwnd);
+
+				HRESULT ( STDMETHODCALLTYPE *SetActiveAlt )( 
+					ITaskbarList3 * This,
+					/* [in] */ HWND hwnd);
+
+				HRESULT ( STDMETHODCALLTYPE *MarkFullscreenWindow )( 
+					ITaskbarList3 * This,
+					/* [in] */ HWND hwnd,
+					/* [in] */ BOOL fFullscreen);
+
+				HRESULT ( STDMETHODCALLTYPE *SetProgressValue )( 
+					ITaskbarList3 * This,
+					/* [in] */ HWND hwnd,
+					/* [in] */ ULONGLONG ullCompleted,
+					/* [in] */ ULONGLONG ullTotal);
+
+				HRESULT ( STDMETHODCALLTYPE *SetProgressState )( 
+					ITaskbarList3 * This,
+					/* [in] */ HWND hwnd,
+					/* [in] */ TBPFLAG tbpFlags);
+
+				HRESULT ( STDMETHODCALLTYPE *RegisterTab )( 
+					ITaskbarList3 * This,
+					/* [in] */ HWND hwndTab,
+					/* [in] */ HWND hwndMDI);
+
+				HRESULT ( STDMETHODCALLTYPE *UnregisterTab )( 
+					ITaskbarList3 * This,
+					/* [in] */ HWND hwndTab);
+
+				HRESULT ( STDMETHODCALLTYPE *SetTabOrder )( 
+					ITaskbarList3 * This,
+					/* [in] */ HWND hwndTab,
+					/* [in] */ HWND hwndInsertBefore);
+
+				HRESULT ( STDMETHODCALLTYPE *SetTabActive )( 
+					ITaskbarList3 * This,
+					/* [in] */ HWND hwndTab,
+					/* [in] */ HWND hwndMDI,
+					/* [in] */ DWORD dwReserved);
+
+				HRESULT ( STDMETHODCALLTYPE *ThumbBarAddButtons )( 
+					ITaskbarList3 * This,
+					/* [in] */ HWND hwnd,
+					/* [in] */ UINT cButtons,
+					/* [size_is][in] */ LPTHUMBBUTTON pButton);
+
+				HRESULT ( STDMETHODCALLTYPE *ThumbBarUpdateButtons )( 
+					ITaskbarList3 * This,
+					/* [in] */ HWND hwnd,
+					/* [in] */ UINT cButtons,
+					/* [size_is][in] */ LPTHUMBBUTTON pButton);
+
+				HRESULT ( STDMETHODCALLTYPE *ThumbBarSetImageList )( 
+					ITaskbarList3 * This,
+					/* [in] */ HWND hwnd,
+					/* [in] */ HIMAGELIST himl);
+
+				HRESULT ( STDMETHODCALLTYPE *SetOverlayIcon )( 
+					ITaskbarList3 * This,
+					/* [in] */ HWND hwnd,
+					/* [in] */ HICON hIcon,
+					/* [string][unique][in] */ LPCWSTR pszDescription);
+
+				HRESULT ( STDMETHODCALLTYPE *SetThumbnailTooltip )( 
+					ITaskbarList3 * This,
+					/* [in] */ HWND hwnd,
+					/* [string][unique][in] */ LPCWSTR pszTip);
+
+				HRESULT ( STDMETHODCALLTYPE *SetThumbnailClip )( 
+					ITaskbarList3 * This,
+					/* [in] */ HWND hwnd,
+					/* [in] */ RECT *prcClip);
+
+			END_INTERFACE
+		} ITaskbarList3Vtbl;
+
+		interface ITaskbarList3
+		{
+			const struct ITaskbarList3Vtbl *lpVtbl;
+		};
+
+
+#endif 	/* __ITaskbarList3_INTERFACE_DEFINED__ */
+
 #endif // WIN2K_H__

@@ -23,10 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "file.h"
 
-#ifdef __ITaskbarList3_INTERFACE_DEFINED__
-#pragma message ( "building with Windows 7 support" )
-#endif
-
 static HWND hwndFtMgr = NULL;
 
 struct TFtMgrData
@@ -35,21 +31,17 @@ struct TFtMgrData
 	HWND hwndOutgoing;
 
 	HANDLE hhkPreshutdown;
-#ifdef __ITaskbarList3_INTERFACE_DEFINED__
 	ITaskbarList3 * pTaskbarInterface;
 	TBPFLAG         errorState;
-#endif
 };
 
 
-#ifdef __ITaskbarList3_INTERFACE_DEFINED__
 #define M_CALCPROGRESS (WM_USER + 200)
 struct TFtProgressData
 {
 	unsigned int init, run, scan;
 	unsigned __int64 totalBytes, totalProgress;
 };
-#endif
 
 struct TLayoutWindowInfo
 {
@@ -140,9 +132,7 @@ static INT_PTR CALLBACK FtMgrPageDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 		List_Insert((SortedList *)dat->wnds, wnd, dat->wnds->realCount);
 		LayoutTransfers(hwnd, dat);
 		dat->wnds->runningCount++;
-#ifdef __ITaskbarList3_INTERFACE_DEFINED__
 		PostMessage(GetParent(hwnd), WM_TIMER, 1, NULL);
-#endif
 		break;
 	}
 
@@ -176,7 +166,6 @@ static INT_PTR CALLBACK FtMgrPageDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
  	case WM_FT_COMPLETED:
  	{ //wParam: { ACKRESULT_SUCCESS | ACKRESULT_FAILED | ACKRESULT_DENIED }
  		dat->wnds->runningCount--;
-#ifdef __ITaskbarList3_INTERFACE_DEFINED__
 		int i = 0;
 		while (i < dat->wnds->realCount)
 		{
@@ -190,8 +179,7 @@ static INT_PTR CALLBACK FtMgrPageDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 		}
 		if (i == dat->wnds->realCount)
 			PostMessage(GetParent(hwnd), WM_TIMER, 1, NULL);
-				
-#endif
+	
  		if(dat->wnds->runningCount == 0 && (int)wParam == ACKRESULT_SUCCESS && DBGetContactSettingByte(NULL,"SRFile","AutoClose",0))
  			ShowWindow(hwndFtMgr, SW_HIDE);
  		break;
@@ -279,7 +267,6 @@ static INT_PTR CALLBACK FtMgrPageDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 		break;
 	}
 
-#ifdef __ITaskbarList3_INTERFACE_DEFINED__
 	case M_CALCPROGRESS:
 	{
 		int i;
@@ -302,7 +289,6 @@ static INT_PTR CALLBACK FtMgrPageDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 
 		}
 	}
-#endif
 	}
 
 	return FALSE;
@@ -323,17 +309,9 @@ static INT_PTR CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 		Window_SetIcon_IcoLib(hwnd, SKINICON_EVENT_FILE);
 
 		dat = (struct TFtMgrData *)mir_calloc(sizeof(struct TFtMgrData));
-
-#ifdef __ITaskbarList3_INTERFACE_DEFINED__
-		DWORD dwVersion = GetVersion();
-		// is this windows 7 rtm or newer?
-		if ( (LOBYTE(LOWORD(dwVersion)) > 6) ||
-		    ((LOBYTE(LOWORD(dwVersion)) == 6) && (HIBYTE(LOWORD(dwVersion)) >= 1)) ||
-		    ((LOBYTE(LOWORD(dwVersion)) == 6) && (HIBYTE(LOWORD(dwVersion)) == 1) && (HIWORD(dwVersion) >= 7600)))
-		{
+		if (IsWinVer7Plus())
 			CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_ALL, IID_ITaskbarList3, (void**)&dat->pTaskbarInterface);
-		}
-#endif
+
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)dat);
 
 		dat->hhkPreshutdown = HookEventMessage(ME_SYSTEM_PRESHUTDOWN, hwnd, M_PRESHUTDOWN);
@@ -497,8 +475,6 @@ static INT_PTR CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 		Utils_SaveWindowPosition(hwnd, NULL, "SRFile", "FtMgrDlg_");
 		break;
 
-
-#ifdef __ITaskbarList3_INTERFACE_DEFINED__
 	case WM_ACTIVATE:
 	{
 		dat->errorState = TBPF_NOPROGRESS;
@@ -547,7 +523,7 @@ static INT_PTR CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 
 		}
 	} break;
-#endif
+
 	}
 
 	return FALSE;
