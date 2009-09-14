@@ -23,6 +23,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "file.h"
 
+#ifdef __ITaskbarList3_INTERFACE_DEFINED__
+#pragma message ( "building with Windows 7 support" )
+#endif
+
 static HWND hwndFtMgr = NULL;
 
 struct TFtMgrData
@@ -31,7 +35,21 @@ struct TFtMgrData
 	HWND hwndOutgoing;
 
 	HANDLE hhkPreshutdown;
+#ifdef __ITaskbarList3_INTERFACE_DEFINED__
+	ITaskbarList3 * pTaskbarInterface;
+	TBPFLAG         errorState;
+#endif
 };
+
+
+#ifdef __ITaskbarList3_INTERFACE_DEFINED__
+#define M_CALCPROGRESS (WM_USER + 200)
+struct TFtProgressData
+{
+	unsigned int init, run, scan;
+	unsigned __int64 totalBytes, totalProgress;
+};
+#endif
 
 struct TLayoutWindowInfo
 {
@@ -42,8 +60,9 @@ struct TLayoutWindowInfo
 struct TLayoutWindowList
 {
 	struct TLayoutWindowInfo **items;
-	int realCount, limit, increment, runningCount;
+	int realCount, limit, increment;
 	FSortFunc sortFunc;
+	int runningCount;
 };
 
 struct TFtPageData
@@ -108,7 +127,7 @@ static INT_PTR CALLBACK FtMgrPageDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 		dat = (struct TFtPageData *)mir_alloc(sizeof(struct TFtPageData));
 		dat->wnds = (struct TLayoutWindowList *)List_Create(0, 1);
 		dat->scrollPos = 0;
-        dat->wnds->runningCount = 0;
+		dat->wnds->runningCount = 0;
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)dat);
 		break;
 	}
@@ -120,7 +139,10 @@ static INT_PTR CALLBACK FtMgrPageDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 		GetWindowRect(wnd->hwnd, &wnd->rc);
 		List_Insert((SortedList *)dat->wnds, wnd, dat->wnds->realCount);
 		LayoutTransfers(hwnd, dat);
-        dat->wnds->runningCount++;
+		dat->wnds->runningCount++;
+#ifdef __ITaskbarList3_INTERFACE_DEFINED__
+		PostMessage(GetParent(hwnd), WM_TIMER, 1, NULL);
+#endif
 		break;
 	}
 
@@ -152,9 +174,25 @@ static INT_PTR CALLBACK FtMgrPageDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 	}
 
  	case WM_FT_COMPLETED:
- 	{ //wParam: 0=completed, 1=failed
+ 	{ //wParam: { ACKRESULT_SUCCESS | ACKRESULT_FAILED | ACKRESULT_DENIED }
  		dat->wnds->runningCount--;
- 		if(dat->wnds->runningCount == 0 && (int)wParam == 0 && DBGetContactSettingByte(NULL,"SRFile","AutoClose",0))
+#ifdef __ITaskbarList3_INTERFACE_DEFINED__
+		int i = 0;
+		while (i < dat->wnds->realCount)
+		{
+			// no error when canceling (WM_FT_REMOVE is send first, check if hwnd is still registered)
+			if (dat->wnds->items[i]->hwnd == (HWND)lParam)
+			{
+				SendMessage(GetParent(hwnd), WM_TIMER, 1, (LPARAM)wParam);
+				break;
+			}
+			++i;
+		}
+		if (i == dat->wnds->realCount)
+			PostMessage(GetParent(hwnd), WM_TIMER, 1, NULL);
+				
+#endif
+ 		if(dat->wnds->runningCount == 0 && (int)wParam == ACKRESULT_SUCCESS && DBGetContactSettingByte(NULL,"SRFile","AutoClose",0))
  			ShowWindow(hwndFtMgr, SW_HIDE);
  		break;
  	}
@@ -240,6 +278,31 @@ static INT_PTR CALLBACK FtMgrPageDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 		mir_free(dat);
 		break;
 	}
+
+#ifdef __ITaskbarList3_INTERFACE_DEFINED__
+	case M_CALCPROGRESS:
+	{
+		int i;
+		TFtProgressData * prg = (TFtProgressData *)wParam;
+		for (i = 0; i < dat->wnds->realCount; ++i)
+		{
+			struct FileDlgData *trdat = (struct FileDlgData *)GetWindowLongPtr(dat->wnds->items[i]->hwnd, GWLP_USERDATA);
+			if (trdat->transferStatus.totalBytes && trdat->fs && !trdat->send && (trdat->transferStatus.totalBytes == trdat->transferStatus.totalProgress))
+			{
+				prg->scan++;
+			} else if (trdat->transferStatus.totalBytes && trdat->fs)
+			{ // in progress
+				prg->run++;
+				prg->totalBytes += trdat->transferStatus.totalBytes;
+				prg->totalProgress += trdat->transferStatus.totalProgress;
+			} else if (trdat->fs) 
+			{ // starting
+				prg->init++;
+			}
+
+		}
+	}
+#endif
 	}
 
 	return FALSE;
@@ -259,7 +322,18 @@ static INT_PTR CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 		TranslateDialogDefault(hwnd);
 		Window_SetIcon_IcoLib(hwnd, SKINICON_EVENT_FILE);
 
-		dat = (struct TFtMgrData *)mir_alloc(sizeof(struct TFtMgrData));
+		dat = (struct TFtMgrData *)mir_calloc(sizeof(struct TFtMgrData));
+
+#ifdef __ITaskbarList3_INTERFACE_DEFINED__
+		DWORD dwVersion = GetVersion();
+		// is this windows 7 rtm or newer?
+		if ( (LOBYTE(LOWORD(dwVersion)) > 6) ||
+		    ((LOBYTE(LOWORD(dwVersion)) == 6) && (HIBYTE(LOWORD(dwVersion)) >= 1)) ||
+		    ((LOBYTE(LOWORD(dwVersion)) == 6) && (HIBYTE(LOWORD(dwVersion)) == 1) && (HIWORD(dwVersion) >= 7600)))
+		{
+			CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_ALL, IID_ITaskbarList3, (void**)&dat->pTaskbarInterface);
+		}
+#endif
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)dat);
 
 		dat->hhkPreshutdown = HookEventMessage(ME_SYSTEM_PRESHUTDOWN, hwnd, M_PRESHUTDOWN);
@@ -283,7 +357,6 @@ static INT_PTR CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 
 		// Fall through to setup initial placement
 	}
-
 	case WM_SIZE:
 	{
 		RECT rc, rcButton;
@@ -423,6 +496,58 @@ static INT_PTR CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
 		Utils_SaveWindowPosition(hwnd, NULL, "SRFile", "FtMgrDlg_");
 		break;
+
+
+#ifdef __ITaskbarList3_INTERFACE_DEFINED__
+	case WM_ACTIVATE:
+	{
+		dat->errorState = TBPF_NOPROGRESS;
+		wParam = 1;
+	} break;
+	case WM_SHOWWINDOW:
+	{
+		if (!wParam) // hiding
+		{
+			KillTimer(hwnd, 1);
+			break;
+		}
+		lParam = 0;
+	}
+	case WM_TIMER:
+	{
+		if (dat->pTaskbarInterface)
+		{
+			SetTimer(hwnd, 1, 400, NULL);
+			if ((lParam == ACKRESULT_FAILED) || (lParam == ACKRESULT_DENIED))
+				dat->errorState = TBPF_ERROR;
+
+			TFtProgressData prg = {0};
+			SendMessage(dat->hwndIncoming, M_CALCPROGRESS, (WPARAM)&prg, 0);
+			SendMessage(dat->hwndOutgoing, M_CALCPROGRESS, (WPARAM)&prg, 0);
+			if (dat->errorState)
+			{
+				dat->pTaskbarInterface->lpVtbl->SetProgressState(dat->pTaskbarInterface, hwnd, dat->errorState);
+				if (!prg.run)
+					dat->pTaskbarInterface->lpVtbl->SetProgressValue(dat->pTaskbarInterface, hwnd, 1, 1);
+			} else if (prg.run) 
+			{
+				dat->pTaskbarInterface->lpVtbl->SetProgressState(dat->pTaskbarInterface, hwnd, TBPF_NORMAL);
+			} else if (prg.init || prg.scan)
+			{
+				dat->pTaskbarInterface->lpVtbl->SetProgressState(dat->pTaskbarInterface, hwnd, TBPF_INDETERMINATE);
+			} else {
+				dat->pTaskbarInterface->lpVtbl->SetProgressState(dat->pTaskbarInterface, hwnd, TBPF_NOPROGRESS);
+				KillTimer(hwnd, 1);
+			}
+
+			if (prg.run)
+			{
+				dat->pTaskbarInterface->lpVtbl->SetProgressValue(dat->pTaskbarInterface, hwnd, prg.totalProgress, prg.totalBytes);	
+			}				
+
+		}
+	} break;
+#endif
 	}
 
 	return FALSE;

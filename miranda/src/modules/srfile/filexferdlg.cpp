@@ -628,86 +628,88 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					if (_tcscmp(str, str2)) SetDlgItemText(hwndDlg, IDC_ALLTRANSFERRED, str);
 					break;
 				}
-				case ACKRESULT_SUCCESS:
-				{
-					HideProgressControls(hwndDlg);
-					dat->fs=NULL; /* protocol will free structure */
-					if (dat->send)
-					{
-						SetFtStatus(hwndDlg, LPGENT("Transfer completed."), FTS_TEXT);
-					} else
-					{
-						SetFtStatus(hwndDlg,
-							(dat->transferStatus.totalFiles == 1) ?
-								LPGENT("Transfer completed, open file.") :
-								LPGENT("Transfer completed, open folder."),
-							FTS_OPEN);
-					}
-					if (ack->result==ACKRESULT_SUCCESS) SkinPlaySound("FileDone");
-					if(!dat->send) {	//receiving
-						int useScanner=DBGetContactSettingByte(NULL,"SRFile","UseScanner",VIRUSSCAN_DISABLE);
-						if(useScanner!=VIRUSSCAN_DISABLE) {
-							struct virusscanthreadstartinfo *vstsi;
-							vstsi=(struct virusscanthreadstartinfo*)mir_alloc(sizeof(struct virusscanthreadstartinfo));
-							vstsi->hwndReply=hwndDlg;
-							if(useScanner==VIRUSSCAN_DURINGDL) {
-								vstsi->returnCode=dat->transferStatus.currentFileNumber;
-								if ( GetFileAttributes(dat->files[dat->transferStatus.currentFileNumber])&FILE_ATTRIBUTE_DIRECTORY) {
-									PostMessage(hwndDlg,M_VIRUSSCANDONE,vstsi->returnCode,0);
-									mir_free(vstsi);
-									vstsi=NULL;
-								}
-								else vstsi->szFile = mir_tstrdup(dat->files[dat->transferStatus.currentFileNumber]);
-							}
-							else {
-								vstsi->szFile = mir_tstrdup(dat->transferStatus.tszWorkingDir);
-								vstsi->returnCode = -1;
-							}
-							SetFtStatus(hwndDlg, LPGENT("Scanning for viruses..."), FTS_TEXT);
-							if(vstsi) forkthread((void (*)(void*))RunVirusScannerThread,0,vstsi);
-						}
-						dat->transferStatus.currentFileNumber=dat->transferStatus.totalFiles;
-					}
-					else {	 //sending
-						DBEVENTINFO dbei={0};
-						FillSendData( dat, dbei );
-						CallService(MS_DB_EVENT_ADD,(WPARAM)dat->hContact,(LPARAM)&dbei);
-						if (dbei.pBlob)
-							mir_free(dbei.pBlob);
-						dat->files=NULL;   //protocol library frees this
-					}
-				}
-					//fall through
-				case ACKRESULT_FAILED:
-					HideProgressControls(hwndDlg);
-					dat->fs=NULL; /* protocol will free structure */
-					KillTimer(hwndDlg,1);
-					if(!dat->send) SetOpenFileButtonStyle(GetDlgItem(hwndDlg,IDC_OPENFILE),1);
-					SetDlgItemText(hwndDlg,IDCANCEL,TranslateT("Close"));
-					if (dat->hNotifyEvent) UnhookEvent(dat->hNotifyEvent);
-					dat->hNotifyEvent=NULL;
-					if(ack->result==ACKRESULT_FAILED) {
-						SetFtStatus(hwndDlg, LPGENT("File transfer failed"), FTS_TEXT);
-						SkinPlaySound("FileFailed");
-					} 
- 					PostMessage(GetParent(hwndDlg), WM_FT_COMPLETED, ack->result != ACKRESULT_SUCCESS, (LPARAM)hwndDlg);
-					break;
 
+				case ACKRESULT_SUCCESS:
+				case ACKRESULT_FAILED:
 				case ACKRESULT_DENIED:
+				{
+
 					HideProgressControls(hwndDlg);
-					dat->fs=NULL; /* protocol will free structure */
-					SkinPlaySound("FileDenied");
-					KillTimer(hwndDlg, 1);
-					if (!dat->send) SetOpenFileButtonStyle(GetDlgItem(hwndDlg, IDC_OPENFILE), 1);
-					SetDlgItemText(hwndDlg, IDCANCEL, TranslateT("Close"));
-					SetFtStatus(hwndDlg, LPGENT("File transfer denied"), FTS_TEXT);
-					UnhookEvent(dat->hNotifyEvent);
-					dat->hNotifyEvent = NULL;
+					KillTimer(hwndDlg,1);
+					if (!dat->send)
+						SetOpenFileButtonStyle(GetDlgItem(hwndDlg,IDC_OPENFILE),1);
+					SetDlgItemText(hwndDlg,IDCANCEL,TranslateT("Close"));
+					if (dat->hNotifyEvent) 
+						UnhookEvent(dat->hNotifyEvent);
+					dat->hNotifyEvent=NULL;
+					
+					if (ack->result == ACKRESULT_DENIED)
+					{
+						dat->fs=NULL; /* protocol will free structure */
+						SkinPlaySound("FileDenied");
+						SetFtStatus(hwndDlg, LPGENT("File transfer denied"), FTS_TEXT);
+					} else if (ack->result == ACKRESULT_FAILED)
+					{
+						dat->fs=NULL; /* protocol will free structure */
+						SkinPlaySound("FileFailed");
+						SetFtStatus(hwndDlg, LPGENT("File transfer failed"), FTS_TEXT);
+					} else {
+						SkinPlaySound("FileDone");
+						if (dat->send)
+						{
+							dat->fs=NULL; /* protocol will free structure */
+							SetFtStatus(hwndDlg, LPGENT("Transfer completed."), FTS_TEXT);
+
+							DBEVENTINFO dbei={0};
+							FillSendData( dat, dbei );
+							CallService(MS_DB_EVENT_ADD,(WPARAM)dat->hContact,(LPARAM)&dbei);
+							if (dbei.pBlob)
+								mir_free(dbei.pBlob);
+							dat->files=NULL;   //protocol library frees this
+						
+						} else {
+							
+							SetFtStatus(hwndDlg,
+								(dat->transferStatus.totalFiles == 1) ?
+								LPGENT("Transfer completed, open file.") :
+							LPGENT("Transfer completed, open folder."),
+								FTS_OPEN);
+
+							int useScanner=DBGetContactSettingByte(NULL,"SRFile","UseScanner",VIRUSSCAN_DISABLE);
+							if (useScanner!=VIRUSSCAN_DISABLE) {
+								struct virusscanthreadstartinfo *vstsi;
+								vstsi=(struct virusscanthreadstartinfo*)mir_alloc(sizeof(struct virusscanthreadstartinfo));
+								vstsi->hwndReply=hwndDlg;
+								if(useScanner==VIRUSSCAN_DURINGDL) {
+									vstsi->returnCode=dat->transferStatus.currentFileNumber;
+									if ( GetFileAttributes(dat->files[dat->transferStatus.currentFileNumber])&FILE_ATTRIBUTE_DIRECTORY) {
+										PostMessage(hwndDlg,M_VIRUSSCANDONE,vstsi->returnCode,0);
+										mir_free(vstsi);
+										vstsi=NULL;
+									}
+									else vstsi->szFile = mir_tstrdup(dat->files[dat->transferStatus.currentFileNumber]);
+								}
+								else {
+									vstsi->szFile = mir_tstrdup(dat->transferStatus.tszWorkingDir);
+									vstsi->returnCode = -1;
+								}
+								SetFtStatus(hwndDlg, LPGENT("Scanning for viruses..."), FTS_TEXT);
+								if(vstsi) forkthread((void (*)(void*))RunVirusScannerThread,0,vstsi);
+							} else {
+								dat->fs=NULL; /* protocol will free structure */
+							}
+							dat->transferStatus.currentFileNumber=dat->transferStatus.totalFiles;
+						} // else dat->send
+						
+					} // else ack->result
+					
+					PostMessage(GetParent(hwndDlg), WM_FT_COMPLETED, ack->result, (LPARAM)hwndDlg);
 					break;
 
 			}
 			break;
-		}
+		} // switch ack->result
+		} break; // case HM_RECVEVENT
 		case M_VIRUSSCANDONE:
 		{	int done=1,i;
 			if((int)wParam==-1) {
@@ -717,7 +719,11 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				dat->fileVirusScanned[wParam]=1;
 				for(i=0;i<dat->transferStatus.totalFiles;i++) if(!dat->fileVirusScanned[i]) {done=0; break;}
 			}
-			if(done) SetFtStatus(hwndDlg, LPGENT("Transfer and virus scan complete"), FTS_TEXT);
+			if (done)
+			{
+				dat->fs=NULL; /* protocol will free structure */
+				SetFtStatus(hwndDlg, LPGENT("Transfer and virus scan complete"), FTS_TEXT);
+			}
 			break;
 		}
 		case WM_SIZE:
