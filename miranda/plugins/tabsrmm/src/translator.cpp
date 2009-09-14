@@ -132,7 +132,7 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Use default codepage"),						/* GEN_LOG_USEDEFAAULTCP */
 	LPGENT("UIN: %s (SHIFT click -> copy to clipboard)\nClick for User's Details\nRight click for MetaContact control\nClick dropdown to add or remove user from your favorites."), /* GEN_MSG_UINCOPY */
 	LPGENT("No UIN"),									/* GEN_MSG_NOUIN */
-	LPGENT("UIN: %s (SHIFT click -> copy to clipboard)\nClick for User's Details\nClick dropdown for infopanel settings"), /* GEN_MSG_UINCOPY_NO_MC */
+	LPGENT("UIN: %s (SHIFT click -> copy to clipboard)\nClick for User's Details\nClick dropdown to change this contact's favorite status."), /* GEN_MSG_UINCOPY_NO_MC */
 	LPGENT("signed off."),								/* GEN_MSG_SIGNEDOFF */
 	LPGENT("signed on and is now %s."),					/* GEN_MSG_SIGNEDON */
 	LPGENT("changed status from %s to %s."), 			/* GEN_MSG_CHANGEDSTATUS */

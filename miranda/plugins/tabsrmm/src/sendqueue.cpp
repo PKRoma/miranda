@@ -748,7 +748,7 @@ static INT_PTR CALLBACK PopupDlgProcError(HWND hWnd, UINT message, WPARAM wParam
 
 void SendQueue::NotifyDeliveryFailure(const _MessageWindowData *dat)
 {
-	POPUPDATAT		ppd;
+	POPUPDATAT		ppd = {0};
 	int				ibsize = 1023;
 
 	if(M->GetByte("adv_noErrorPopups", 0))

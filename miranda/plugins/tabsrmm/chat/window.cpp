@@ -2455,7 +2455,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 						hOldFont = (HFONT) SelectObject(dis->hDC, hFont);
 						SetBkMode(dis->hDC, TRANSPARENT);
 
-						if (/*dis->itemAction == ODA_FOCUS || */ dis->itemState & ODS_SELECTED) {
+						if (dis->itemState & ODS_SELECTED) {
 							FillRect(dis->hDC, &dis->rcItem, g_Settings.SelectionBGBrush);
 							SetTextColor(dis->hDC, g_Settings.nickColors[6]);
 						} else {
@@ -2573,6 +2573,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				case SESSION_TERMINATE:
 					if (CallService(MS_CLIST_GETEVENT, (WPARAM)si->hContact, (LPARAM)0))
 						CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)szChatIconString);
+
 					si->wState &= ~STATE_TALK;
 					dat->bWasDeleted = 1;
 					DBWriteContactSettingWord(si->hContact, si->pszModule , "ApparentMode", (LPARAM) 0);
@@ -3818,6 +3819,7 @@ LABEL_SHOWWINDOW:
 					dat->pContainer->SideBar->removeSession(dat);
 				free(dat);
 				SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
+				//_DebugTraceA("NCdestroy window %d", hwndDlg);
 			}
 			break;
 
@@ -3870,6 +3872,7 @@ LABEL_SHOWWINDOW:
  						DestroyCursor(hCurHyperlinkHand);
 
 			i = GetTabIndexFromHWND(hwndTab, hwndDlg);
+			//_DebugTraceA("destroy window %d", hwndDlg);
 			if (i >= 0) {
 				SendMessage(hwndTab, WM_USER + 100, 0, 0);              // clean up tooltip
 				TabCtrl_DeleteItem(hwndTab, i);

@@ -2169,16 +2169,18 @@ buttons_done:
 				CallService(MS_FAVATAR_DESTROY, (WPARAM)&fa, 0);
 			}
 			ZeroMemory((void *)&item, sizeof(item));
+			/*
 			for (i = 0; i < TabCtrl_GetItemCount(hwndTab); i++) {
 				item.mask = TCIF_PARAM;
 				TabCtrl_GetItem(hwndTab, i, &item);
 				if (IsWindow((HWND)item.lParam)) {
 					struct _MessageWindowData *mwdat = (struct _MessageWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
-					if (mwdat->bActualHistory)
+					if (mwdat && mwdat->bActualHistory)
 						M->WriteDword(mwdat->hContact, SRMSGMOD_T, "messagecount", CMimAPI::m_shutDown ? 0:(DWORD)mwdat->messageCount);
-					DestroyWindow((HWND) item.lParam);
+					DestroyWindow((HWND)item.lParam);
 				}
 			}
+			*/
 			KillTimer(hwndDlg, TIMERID_HEARTBEAT);
 			pContainer->hwnd = 0;
 			pContainer->hwndActive = 0;
@@ -2239,168 +2241,166 @@ buttons_done:
 				pContainer->fHidden = true;
 			}
 			else {
-			//
-
-			WINDOWPLACEMENT wp;
-			char szCName[40];
+				WINDOWPLACEMENT wp;
+				char szCName[40];
 #if defined (_UNICODE)
-			char *szSetting = "CNTW_";
+				char *szSetting = "CNTW_";
 #else
-			char *szSetting = "CNT_";
+				char *szSetting = "CNT_";
 #endif
 
 
-			if (lParam == 0 && TabCtrl_GetItemCount(GetDlgItem(hwndDlg, IDC_MSGTABS)) > 0) {    // dont ask if container is empty (no tabs)
-				int    clients = TabCtrl_GetItemCount(hwndTab), i;
-				TCITEM item = {0};
-				int    iOpenJobs = 0;
+				if (lParam == 0 && TabCtrl_GetItemCount(GetDlgItem(hwndDlg, IDC_MSGTABS)) > 0) {    // dont ask if container is empty (no tabs)
+					int    clients = TabCtrl_GetItemCount(hwndTab), i;
+					TCITEM item = {0};
+					int    iOpenJobs = 0;
 
-				if (M->GetByte("warnonexit", 0)) {
-					if (MessageBox(hwndDlg, CTranslator::get(CTranslator::GEN_WARN_CLOSE), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO)
-						return TRUE;
-				}
-				item.mask = TCIF_PARAM;
-				for (i = 0; i < clients; i++) {
-					TabCtrl_GetItem(hwndTab, i, &item);
-					if (item.lParam && IsWindow((HWND)item.lParam)) {
-						SendMessage((HWND)item.lParam, DM_CHECKQUEUEFORCLOSE, 0, (LPARAM)&iOpenJobs);
+					if (M->GetByte("warnonexit", 0)) {
+						if (MessageBox(hwndDlg, CTranslator::get(CTranslator::GEN_WARN_CLOSE), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO)
+							return TRUE;
 					}
-				}
-				if (iOpenJobs && pContainer) {
-					LRESULT result;
-
-					if (pContainer->exFlags & CNT_EX_CLOSEWARN)
-						return TRUE;
-
-					pContainer->exFlags |= CNT_EX_CLOSEWARN;
-					result = SendQueue::WarnPendingJobs(iOpenJobs);
-					pContainer->exFlags &= ~CNT_EX_CLOSEWARN;
-					if (result == IDNO)
-						return TRUE;
-				}
-			}
-
-			ZeroMemory((void *)&wp, sizeof(wp));
-			wp.length = sizeof(wp);
-			/*
-			* save geometry information to the database...
-			*/
-			if (!(pContainer->dwFlags & CNT_GLOBALSIZE)) {
-				if (GetWindowPlacement(hwndDlg, &wp) != 0) {
-					if (pContainer->isCloned && pContainer->hContactFrom != 0) {
-						HANDLE hContact;
-						int i;
-						TCITEM item = {0};
-
-						item.mask = TCIF_PARAM;
-						TabCtrl_GetItem(hwndTab, TabCtrl_GetCurSel(hwndTab), &item);
-						SendMessage((HWND)item.lParam, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
-						M->WriteByte(hContact, SRMSGMOD_T, "splitmax", (BYTE)((wp.showCmd==SW_SHOWMAXIMIZED)?1:0));
-
-						for (i = 0; i < TabCtrl_GetItemCount(hwndTab); i++) {
-							if (TabCtrl_GetItem(hwndTab, i, &item)) {
-								SendMessage((HWND)item.lParam, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
-								M->WriteDword(hContact, SRMSGMOD_T, "splitx", wp.rcNormalPosition.left);
-								M->WriteDword(hContact, SRMSGMOD_T, "splity", wp.rcNormalPosition.top);
-								M->WriteDword(hContact, SRMSGMOD_T, "splitwidth", wp.rcNormalPosition.right - wp.rcNormalPosition.left);
-								M->WriteDword(hContact, SRMSGMOD_T, "splitheight", wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
-							}
+					item.mask = TCIF_PARAM;
+					for (i = 0; i < clients; i++) {
+						TabCtrl_GetItem(hwndTab, i, &item);
+						if (item.lParam && IsWindow((HWND)item.lParam)) {
+							SendMessage((HWND)item.lParam, DM_CHECKQUEUEFORCLOSE, 0, (LPARAM)&iOpenJobs);
 						}
 					}
-					else {
-						_snprintf(szCName, 40, "%s%dx", szSetting, pContainer->iContainerIndex);
-						M->WriteDword(SRMSGMOD_T, szCName, wp.rcNormalPosition.left);
-						_snprintf(szCName, 40, "%s%dy", szSetting, pContainer->iContainerIndex);
-						M->WriteDword(SRMSGMOD_T, szCName, wp.rcNormalPosition.top);
-						_snprintf(szCName, 40, "%s%dwidth", szSetting, pContainer->iContainerIndex);
-						M->WriteDword(SRMSGMOD_T, szCName, wp.rcNormalPosition.right - wp.rcNormalPosition.left);
-						_snprintf(szCName, 40, "%s%dheight", szSetting, pContainer->iContainerIndex);
-						M->WriteDword(SRMSGMOD_T, szCName, wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
+					if (iOpenJobs && pContainer) {
+						LRESULT result;
 
-						M->WriteByte(SRMSGMOD_T, "splitmax", (BYTE)((wp.showCmd==SW_SHOWMAXIMIZED)?1:0));
+						if (pContainer->exFlags & CNT_EX_CLOSEWARN)
+							return TRUE;
+
+						pContainer->exFlags |= CNT_EX_CLOSEWARN;
+						result = SendQueue::WarnPendingJobs(iOpenJobs);
+						pContainer->exFlags &= ~CNT_EX_CLOSEWARN;
+						if (result == IDNO)
+							return TRUE;
 					}
 				}
-			}
-			// clear temp flags which should NEVER be saved...
 
-			if (pContainer->isCloned && pContainer->hContactFrom != 0) {
-				HANDLE hContact;
-				int i;
-				TCITEM item = {0};
+				ZeroMemory((void *)&wp, sizeof(wp));
+				wp.length = sizeof(wp);
+				/*
+				* save geometry information to the database...
+				*/
+				if (!(pContainer->dwFlags & CNT_GLOBALSIZE)) {
+					if (GetWindowPlacement(hwndDlg, &wp) != 0) {
+						if (pContainer->isCloned && pContainer->hContactFrom != 0) {
+							HANDLE hContact;
+							int i;
+							TCITEM item = {0};
 
-				item.mask = TCIF_PARAM;
-				pContainer->dwFlags &= ~(CNT_DEFERREDCONFIGURE | CNT_CREATE_MINIMIZED | CNT_DEFERREDSIZEREQUEST | CNT_CREATE_CLONED);
-				for (i = 0; i < TabCtrl_GetItemCount(hwndTab); i++) {
-					if (TabCtrl_GetItem(hwndTab, i, &item)) {
-						SendMessage((HWND)item.lParam, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
-						_snprintf(szCName, 40, "%s_Flags", szSetting);
-						M->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->dwPrivateFlags);
-						_snprintf(szCName, 40, "%s_Trans", szSetting);
-						M->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->dwTransparency);
+							item.mask = TCIF_PARAM;
+							TabCtrl_GetItem(hwndTab, TabCtrl_GetCurSel(hwndTab), &item);
+							SendMessage((HWND)item.lParam, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
+							M->WriteByte(hContact, SRMSGMOD_T, "splitmax", (BYTE)((wp.showCmd==SW_SHOWMAXIMIZED)?1:0));
 
-						_snprintf(szCName, 40, "%s_FlagsEx", szSetting);
-						M->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->dwPrivateFlagsEx);
-
-						_snprintf(szCName, 40, "%s_panel", szSetting);
-						M->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->panelHeight);
-
-						_snprintf(szCName, 40, "%s_split", szSetting);
-						M->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->splitterPos);
-
-						mir_snprintf(szCName, 40, "%s_theme", szSetting);
-						if (lstrlen(pContainer->szRelThemeFile) > 1) {
-							if(pContainer->fPrivateThemeChanged == TRUE) {
-								M->pathToRelative(pContainer->szRelThemeFile, pContainer->szAbsThemeFile);
-								M->WriteTString(hContact, SRMSGMOD_T, szCName, pContainer->szRelThemeFile);
-								pContainer->fPrivateThemeChanged = FALSE;
+							for (i = 0; i < TabCtrl_GetItemCount(hwndTab); i++) {
+								if (TabCtrl_GetItem(hwndTab, i, &item)) {
+									SendMessage((HWND)item.lParam, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
+									M->WriteDword(hContact, SRMSGMOD_T, "splitx", wp.rcNormalPosition.left);
+									M->WriteDword(hContact, SRMSGMOD_T, "splity", wp.rcNormalPosition.top);
+									M->WriteDword(hContact, SRMSGMOD_T, "splitwidth", wp.rcNormalPosition.right - wp.rcNormalPosition.left);
+									M->WriteDword(hContact, SRMSGMOD_T, "splitheight", wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
+								}
 							}
 						}
 						else {
-							DBDeleteContactSetting(hContact, SRMSGMOD_T, szCName);
-							pContainer->fPrivateThemeChanged = FALSE;
-						}
+							_snprintf(szCName, 40, "%s%dx", szSetting, pContainer->iContainerIndex);
+							M->WriteDword(SRMSGMOD_T, szCName, wp.rcNormalPosition.left);
+							_snprintf(szCName, 40, "%s%dy", szSetting, pContainer->iContainerIndex);
+							M->WriteDword(SRMSGMOD_T, szCName, wp.rcNormalPosition.top);
+							_snprintf(szCName, 40, "%s%dwidth", szSetting, pContainer->iContainerIndex);
+							M->WriteDword(SRMSGMOD_T, szCName, wp.rcNormalPosition.right - wp.rcNormalPosition.left);
+							_snprintf(szCName, 40, "%s%dheight", szSetting, pContainer->iContainerIndex);
+							M->WriteDword(SRMSGMOD_T, szCName, wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
 
-						if (pContainer->dwFlags & CNT_TITLE_PRIVATE) {
-							mir_snprintf(szCName, 40, "%s_titleformat", szSetting);
-							M->WriteTString(hContact, SRMSGMOD_T, szCName, pContainer->szTitleFormat);
+							M->WriteByte(SRMSGMOD_T, "splitmax", (BYTE)((wp.showCmd==SW_SHOWMAXIMIZED)?1:0));
 						}
 					}
 				}
-			}
-			else {
-				pContainer->dwFlags &= ~(CNT_DEFERREDCONFIGURE | CNT_CREATE_MINIMIZED | CNT_DEFERREDSIZEREQUEST | CNT_CREATE_CLONED);
-				_snprintf(szCName, 40, "%s%d_Flags", szSetting, pContainer->iContainerIndex);
-				M->WriteDword(SRMSGMOD_T, szCName, pContainer->dwPrivateFlags);
-				_snprintf(szCName, 40, "%s%d_FlagsEx", szSetting, pContainer->iContainerIndex);
-				M->WriteDword(SRMSGMOD_T, szCName, pContainer->dwPrivateFlagsEx);
-				_snprintf(szCName, 40, "%s%d_Trans", szSetting, pContainer->iContainerIndex);
-				M->WriteDword(SRMSGMOD_T, szCName, pContainer->dwTransparency);
+				// clear temp flags which should NEVER be saved...
 
-				_snprintf(szCName, 40, "%s%d_panel", szSetting, pContainer->iContainerIndex);
-				M->WriteDword(SRMSGMOD_T, szCName, pContainer->panelHeight);
+				if (pContainer->isCloned && pContainer->hContactFrom != 0) {
+					HANDLE hContact;
+					int i;
+					TCITEM item = {0};
 
-				_snprintf(szCName, 40, "%s%d_split", szSetting, pContainer->iContainerIndex);
-				M->WriteDword(SRMSGMOD_T, szCName, pContainer->splitterPos);
+					item.mask = TCIF_PARAM;
+					pContainer->dwFlags &= ~(CNT_DEFERREDCONFIGURE | CNT_CREATE_MINIMIZED | CNT_DEFERREDSIZEREQUEST | CNT_CREATE_CLONED);
+					for (i = 0; i < TabCtrl_GetItemCount(hwndTab); i++) {
+						if (TabCtrl_GetItem(hwndTab, i, &item)) {
+							SendMessage((HWND)item.lParam, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
+							_snprintf(szCName, 40, "%s_Flags", szSetting);
+							M->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->dwPrivateFlags);
+							_snprintf(szCName, 40, "%s_Trans", szSetting);
+							M->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->dwTransparency);
 
-				if (pContainer->dwFlags & CNT_TITLE_PRIVATE) {
-					mir_snprintf(szCName, 40, "%s%d_titleformat", szSetting, pContainer->iContainerIndex);
-					M->WriteTString(NULL, SRMSGMOD_T, szCName, pContainer->szTitleFormat);
-				}
-				mir_snprintf(szCName, 40, "%s%d_theme", szSetting, pContainer->iContainerIndex);
-				if (lstrlen(pContainer->szRelThemeFile) > 1) {
-					if(pContainer->fPrivateThemeChanged == TRUE) {
-						M->pathToRelative(pContainer->szRelThemeFile, pContainer->szAbsThemeFile);
-						M->WriteTString(NULL, SRMSGMOD_T, szCName, pContainer->szAbsThemeFile);
-						pContainer->fPrivateThemeChanged = FALSE;
+							_snprintf(szCName, 40, "%s_FlagsEx", szSetting);
+							M->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->dwPrivateFlagsEx);
+
+							_snprintf(szCName, 40, "%s_panel", szSetting);
+							M->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->panelHeight);
+
+							_snprintf(szCName, 40, "%s_split", szSetting);
+							M->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->splitterPos);
+
+							mir_snprintf(szCName, 40, "%s_theme", szSetting);
+							if (lstrlen(pContainer->szRelThemeFile) > 1) {
+								if(pContainer->fPrivateThemeChanged == TRUE) {
+									M->pathToRelative(pContainer->szRelThemeFile, pContainer->szAbsThemeFile);
+									M->WriteTString(hContact, SRMSGMOD_T, szCName, pContainer->szRelThemeFile);
+									pContainer->fPrivateThemeChanged = FALSE;
+								}
+							}
+							else {
+								DBDeleteContactSetting(hContact, SRMSGMOD_T, szCName);
+								pContainer->fPrivateThemeChanged = FALSE;
+							}
+
+							if (pContainer->dwFlags & CNT_TITLE_PRIVATE) {
+								mir_snprintf(szCName, 40, "%s_titleformat", szSetting);
+								M->WriteTString(hContact, SRMSGMOD_T, szCName, pContainer->szTitleFormat);
+							}
+						}
 					}
 				}
 				else {
-					DBDeleteContactSetting(NULL, SRMSGMOD_T, szCName);
-					pContainer->fPrivateThemeChanged = FALSE;
+					pContainer->dwFlags &= ~(CNT_DEFERREDCONFIGURE | CNT_CREATE_MINIMIZED | CNT_DEFERREDSIZEREQUEST | CNT_CREATE_CLONED);
+					_snprintf(szCName, 40, "%s%d_Flags", szSetting, pContainer->iContainerIndex);
+					M->WriteDword(SRMSGMOD_T, szCName, pContainer->dwPrivateFlags);
+					_snprintf(szCName, 40, "%s%d_FlagsEx", szSetting, pContainer->iContainerIndex);
+					M->WriteDword(SRMSGMOD_T, szCName, pContainer->dwPrivateFlagsEx);
+					_snprintf(szCName, 40, "%s%d_Trans", szSetting, pContainer->iContainerIndex);
+					M->WriteDword(SRMSGMOD_T, szCName, pContainer->dwTransparency);
+
+					_snprintf(szCName, 40, "%s%d_panel", szSetting, pContainer->iContainerIndex);
+					M->WriteDword(SRMSGMOD_T, szCName, pContainer->panelHeight);
+
+					_snprintf(szCName, 40, "%s%d_split", szSetting, pContainer->iContainerIndex);
+					M->WriteDword(SRMSGMOD_T, szCName, pContainer->splitterPos);
+
+					if (pContainer->dwFlags & CNT_TITLE_PRIVATE) {
+						mir_snprintf(szCName, 40, "%s%d_titleformat", szSetting, pContainer->iContainerIndex);
+						M->WriteTString(NULL, SRMSGMOD_T, szCName, pContainer->szTitleFormat);
+					}
+					mir_snprintf(szCName, 40, "%s%d_theme", szSetting, pContainer->iContainerIndex);
+					if (lstrlen(pContainer->szRelThemeFile) > 1) {
+						if(pContainer->fPrivateThemeChanged == TRUE) {
+							M->pathToRelative(pContainer->szRelThemeFile, pContainer->szAbsThemeFile);
+							M->WriteTString(NULL, SRMSGMOD_T, szCName, pContainer->szAbsThemeFile);
+							pContainer->fPrivateThemeChanged = FALSE;
+						}
+					}
+					else {
+						DBDeleteContactSetting(NULL, SRMSGMOD_T, szCName);
+						pContainer->fPrivateThemeChanged = FALSE;
+					}
 				}
+				DestroyWindow(hwndDlg);
 			}
-			DestroyWindow(hwndDlg);
-		}//mad_
 			break;
 		}
 		default:

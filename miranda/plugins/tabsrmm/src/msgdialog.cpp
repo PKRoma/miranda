@@ -54,8 +54,8 @@ WNDPROC OldIEViewProc = 0, OldHppProc = 0;
 
 WNDPROC OldSplitterProc = 0;
 
-static const UINT infoLineControls[] = { IDC_PROTOCOL, /* IDC_PROTOMENU, */ IDC_NAME, /* IDC_INFOPANELMENU */};
-static const UINT buttonLineControlsNew[] = { IDC_PIC, IDC_HISTORY, IDC_TIME, IDC_QUOTE, IDC_SAVE /*, IDC_SENDMENU */};
+static const UINT infoLineControls[] = {IDC_PROTOCOL, IDC_NAME};
+static const UINT buttonLineControlsNew[] = { IDC_PIC, IDC_HISTORY, IDC_TIME, IDC_QUOTE, IDC_SAVE};
 static const UINT sendControls[] = { IDC_MESSAGE, IDC_LOG };
 static const UINT formatControls[] = { IDC_SMILEYBTN, IDC_FONTBOLD, IDC_FONTITALIC, IDC_FONTUNDERLINE, IDC_FONTFACE,IDC_FONTSTRIKEOUT }; //, IDC_FONTFACE, IDC_FONTCOLOR};
 static const UINT controlsToHide[] = { IDOK, IDC_PIC, IDC_PROTOCOL, IDC_FONTFACE, IDC_FONTUNDERLINE, IDC_HISTORY, -1 };
@@ -3929,27 +3929,29 @@ quote_from_last:
 					}
 					break;
 				}
+
 				case IDCANCEL: {
 					ShowWindow(hwndContainer, SW_MINIMIZE);
 					return FALSE;
 				}
+
 				case IDC_SAVE:
 					SendMessage(hwndDlg, WM_CLOSE, 1, 0);
 					break;
+
 				case IDC_NAME: {
 					if (GetKeyState(VK_SHIFT) & 0x8000)   // copy UIN
 						SendMessage(hwndDlg, DM_UINTOCLIPBOARD, 0, 0);
 					else {
-						//MAD
 						CallService(MS_USERINFO_SHOWDIALOG, (WPARAM) (dat->bIsMeta ? dat->hSubContact :  dat->hContact), 0);
-						//MAD_
-
 					}
+					break;
 				}
-				break;
+
 				case IDC_HISTORY:
 					CallService(MS_HISTORY_SHOWCONTACTHISTORY, (WPARAM) dat->hContact, 0);
 					break;
+
 				case IDC_SMILEYBTN:
 					if (dat->doSmileys && PluginConfig.g_SmileyAddAvail) {
 						HICON hButtonIcon = 0;
@@ -4270,9 +4272,7 @@ quote_from_last:
 				case IDM_CLEAR:
 					ClearLog(dat);
 					break;
-				case IDC_PROTOCOL:
-					//MAD
-					{
+				case IDC_PROTOCOL:	{
 					RECT rc;
 					int  iSel = 0;
 
@@ -4287,9 +4287,8 @@ quote_from_last:
 						CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(iSel), MPCF_CONTACTMENU), (LPARAM) dat->hContact);
 
 					DestroyMenu(hMenu);
-					}
-					//MAD_
 					break;
+				}
 // error control
 				case IDC_CANCELSEND:
 					SendMessage(hwndDlg, DM_ERRORDECIDED, MSGERROR_CANCEL, 0);
@@ -4448,13 +4447,18 @@ quote_from_last:
 					break;
 				if (lstrlen(dat->uin) == 0)
 					break;
+
+				char *szUin = mir_t2a(dat->uin);
+
 				EmptyClipboard();
-				hData = GlobalAlloc(GMEM_MOVEABLE, (lstrlen(dat->uin) + 1) * sizeof(TCHAR));
-				lstrcpy((TCHAR *)GlobalLock(hData), dat->uin);
+				hData = GlobalAlloc(GMEM_MOVEABLE, (lstrlen(dat->uin) + 1));
+
+				lstrcpyA((char *)GlobalLock(hData), szUin);
 				GlobalUnlock(hData);
-				SetClipboardData(sizeof(TCHAR) == 1 ? CF_TEXT : CF_UNICODETEXT, hData);
+				SetClipboardData(CF_TEXT, hData);
 				CloseClipboard();
 				GlobalFree(hData);
+				mir_free(szUin);
 			}
 			return 0;
 		}
@@ -4501,7 +4505,7 @@ quote_from_last:
 		case WM_NEXTDLGCTL:
 			if (dat->dwFlags & MWF_WASBACKGROUNDCREATE)
 				return 1;
-
+			/*
 			if (!LOWORD(lParam)) {
 				if (wParam == 0) {      // next ctrl to get the focus
 					if (GetNextDlgTabItem(hwndDlg, GetFocus(), FALSE) == GetDlgItem(hwndDlg, IDC_MESSAGE)) {
@@ -4529,6 +4533,7 @@ quote_from_last:
 				}
 			}
 			return 0;
+			*/
 			break;
 			/*
 			 * save the contents of the log as rtf file
@@ -5055,6 +5060,7 @@ quote_from_last:
 				item.mask = TCIF_PARAM;
 
 				i = GetTabIndexFromHWND(hwndTab, hwndDlg);
+				//_DebugTraceA("destroy window %d", hwndDlg);
 				if (i >= 0) {
 					SendMessage(hwndTab, WM_USER + 100, 0, 0);                      // remove tooltip
 					TabCtrl_DeleteItem(hwndTab, i);
@@ -5066,6 +5072,9 @@ quote_from_last:
 
 			if (dat->hContact == PluginConfig.hLastOpenedContact)
 				PluginConfig.hLastOpenedContact = 0;
+
+			if (dat && dat->bActualHistory)
+				M->WriteDword(dat->hContact, SRMSGMOD_T, "messagecount", CMimAPI::m_shutDown ? 0:(DWORD)dat->messageCount);
 
 			/*
 			 * clean up IEView and H++ log windows
@@ -5106,6 +5115,7 @@ quote_from_last:
 					m_pContainer->SideBar->removeSession(dat);
 				delete dat->Panel;
 				free(dat);
+				//_DebugTraceA("NCdestroy window %d", hwndDlg);
 			}
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 			break;
