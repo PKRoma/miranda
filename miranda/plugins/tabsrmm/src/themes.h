@@ -332,6 +332,7 @@ public:
 	static COLORREF	m_dwmColorRGB;
 
 	static CImageItem *m_switchBarItem,	*m_tabTop, *m_tabBottom, *m_tabGlowTop,	*m_tabGlowBottom;
+	static bool			m_fAeroSkinsValid;
 
 private:
 	TCHAR			m_tszFileName[MAX_PATH];				// full path and filename of the currently loaded skin

@@ -907,7 +907,7 @@ static void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, 
 	if (!bBottom) {
 		if (bBody) {
 			if(PluginConfig.m_bIsVista)
-				rcItem->right += 2;
+				rcItem->right += 2;							// hide right tab sheet shadow (only draw the actual border line)
 			DrawThemesPart(tabdat, pDC, 9, 0, rcItem);	// TABP_PANE id = 9
 		} else {
 			int iStateId = bSel ? 3 : (bHot ? 2 : 1);                       // leftmost item has different part id
@@ -1004,10 +1004,10 @@ static void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, 
 			SetDIBits(hdcTemp, hbmTemp, nStart, 50 - nLenSub, pcImg, &biOut, DIB_RGB_COLORS);
 			mir_free(pcImg);
 		}
-		CImageItem tempItem(10, 10, 10, 10, hdcTemp, PluginConfig.hbmLogo, IMAGE_FLAG_DIVIDED | IMAGE_FILLSOLID,
+		CImageItem tempItem(10, 10, 10, 10, hdcTemp, 0, IMAGE_FLAG_DIVIDED | IMAGE_FILLSOLID,
 							GetSysColorBrush(COLOR_3DFACE), 255, 30, 80, 50, 100);
 
-		if(PluginConfig.m_bIsVista)
+		if(PluginConfig.m_bIsVista)									// hide right tab sheet shadow (only draw the actual border line)
 			rcItem->right += 2;
 
 		tempItem.Render(pDC, rcItem, true);

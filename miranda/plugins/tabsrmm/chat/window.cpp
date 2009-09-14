@@ -3851,16 +3851,8 @@ LABEL_SHOWWINDOW:
 				DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
 			SaveSplitter(dat);
 
-			if (CMimAPI::m_pfnCloseThemeData) {
-				if(dat->hThemeIP) {
-					CMimAPI::m_pfnCloseThemeData(dat->hTheme);
-					dat->hTheme = 0;
-				}
-				if(dat->hThemeIP) {
-					CMimAPI::m_pfnCloseThemeData(dat->hThemeIP);
-					dat->hThemeIP = 0;
-				}
-			}
+			DM_FreeTheme(dat);
+
 			UpdateTrayMenuState(dat, FALSE);               // remove me from the tray menu (if still there)
 			if (PluginConfig.g_hMenuTrayUnread)
 				DeleteMenu(PluginConfig.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, MF_BYCOMMAND);

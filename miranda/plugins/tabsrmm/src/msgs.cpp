@@ -1065,7 +1065,6 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	hEventDbEventAdded = HookEvent(ME_DB_EVENT_ADDED, MessageEventAdded);
 
 	M->configureCustomFolders();
-	Skin->setupAeroSkins();
 
 	{
 		CLISTMENUITEM mi = { 0 };

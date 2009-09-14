@@ -87,6 +87,8 @@ CImageItem* CSkin::m_switchBarItem = 0,
 	       *CSkin::m_tabGlowTop = 0,
 	       *CSkin::m_tabGlowBottom = 0;
 
+bool CSkin::m_fAeroSkinsValid = false;
+
 SIZE CSkin::m_titleBarButtonSize = {0};
 
 COLORREF CSkin::m_ContainerColorKey = 0, CSkin::m_dwmColorRGB = 0, CSkin::m_DefaultFontColor = 0;
@@ -99,6 +101,10 @@ HICON	CSkin::m_closeIcon = 0, CSkin::m_maxIcon = 0, CSkin::m_minIcon = 0;
 UINT 	CSkin::m_aeroEffect = 0;
 DWORD 	CSkin::m_glowSize = 0;
 HBRUSH  CSkin::m_BrushBack = 0;
+
+/*
+ * aero effects
+ */
 
 AeroEffect  CSkin::m_currentAeroEffect;
 AeroEffect* CSkin::m_pCurrentAeroEffect = 0;
@@ -179,10 +185,32 @@ AeroEffect  CSkin::m_aeroEffects[AERO_EFFECT_LAST] = {
 	}
 };
 
-/*
- * aero effects
- */
+class CRTException : public std::runtime_error
+{
+public:
+	CRTException(const char *szMsg, const TCHAR *szParam);
+	~CRTException() {}
 
+	void display() const;
+
+private:
+	TCHAR	m_szParam[MAX_PATH];
+};
+
+CRTException::CRTException(const char *szMsg, const TCHAR *szParam) : std::runtime_error(std::string(szMsg))
+{
+ 	mir_sntprintf(m_szParam, MAX_PATH, szParam);
+}
+
+void CRTException::display() const
+{
+	TCHAR  *tszMsg = mir_a2t(what());
+	TCHAR  tszBoxMsg[500];
+
+	mir_sntprintf(tszBoxMsg, 500, _T("%s\n\n(%s)"), tszMsg, m_szParam);
+	::MessageBox(0, tszBoxMsg, _T("TabSRMM runtime error"), MB_OK | MB_ICONERROR);
+	mir_free(tszMsg);
+}
 
 /*
  * definition of the availbale skin items
@@ -778,7 +806,8 @@ static struct {
 HBITMAP IMG_LoadLogo(const TCHAR *szFilename)
 {
 	HBITMAP hbm = (HBITMAP)CallService(MS_IMG_LOAD, (LPARAM)szFilename, IMGL_TCHAR);
-	CImageItem::PreMultiply(hbm, 1);
+	if(hbm)
+		CImageItem::PreMultiply(hbm, 1);
 	return(hbm);
 }
 
@@ -1822,16 +1851,22 @@ void CSkin::setupAeroSkins()
 	if(m_tabGlowBottom)
 		delete m_tabGlowBottom;
 
+	m_tabTop = m_tabBottom = m_tabGlowBottom = m_tabGlowTop = 0;
+
 	if(IsWinVerVistaPlus()) {
 
 		BOOL	isOpaque;
 		HBITMAP hbm;
 		BITMAP  bm;
 
-		mir_sntprintf(tszBasePath, MAX_PATH, _T("%s"), _T("%miranda_userdata%\\tabSRMM\\"));
-		TCHAR *tszFinalBasePath = Utils_ReplaceVarsT(tszBasePath);
+		if(!m_fAeroSkinsValid)
+			return;
 
-		mir_sntprintf(tszFilename, MAX_PATH, _T("%stabskin_aero.png"), tszFinalBasePath);
+		mir_sntprintf(tszBasePath, MAX_PATH, _T("%s"), M->getDataPath());
+		if(tszBasePath[lstrlen(tszBasePath) - 1] != '\\')
+			_tcscat(tszBasePath, _T("\\"));
+
+		mir_sntprintf(tszFilename, MAX_PATH, _T("%stabskin_aero.png"), tszBasePath);
 
 		CMimAPI::m_pfnDwmGetColorizationColor(&m_dwmColor, &isOpaque);
 
@@ -1910,7 +1945,7 @@ void CSkin::setupAeroSkins()
 		m_tabBottom->setMetrics(bm.bmWidth, bm.bmHeight);
 
 
-		mir_sntprintf(tszFilename, MAX_PATH, _T("%stabskin_aero_glow.png"), tszFinalBasePath);
+		mir_sntprintf(tszFilename, MAX_PATH, _T("%stabskin_aero_glow.png"), tszBasePath);
 
 		fib = (FIBITMAP *)CallService(MS_IMG_LOAD, (WPARAM)tszFilename, IMGL_TCHAR | IMGL_RETURNDIB);
 
@@ -1947,7 +1982,7 @@ void CSkin::setupAeroSkins()
 		 * background item for the button switch bar
 		 *
 		 */
-		mir_sntprintf(tszFilename, MAX_PATH, _T("%stabskin_aero_button.png"), tszFinalBasePath);
+		mir_sntprintf(tszFilename, MAX_PATH, _T("%stabskin_aero_button.png"), tszBasePath);
 
 		hbm  = (HBITMAP)CallService(MS_IMG_LOAD, (WPARAM)tszFilename, IMGL_TCHAR);
 
@@ -1963,11 +1998,9 @@ void CSkin::setupAeroSkins()
 
 		m_switchBarItem->setAlphaFormat(AC_SRC_ALPHA, 255);
 		m_switchBarItem->setMetrics(bm.bmWidth, bm.bmHeight);
-
-		mir_free(tszFinalBasePath);
 	}
-
 }
+
 /**
  * Calculate window frame borders for a skin with the ability to paint the window frame.
  * Uses system metrics to determine predefined window borders and caption bar size.
@@ -2589,62 +2622,87 @@ void CSkin::extractSkinsAndLogo() const
 	TCHAR	szFilename[MAX_PATH];
 	TCHAR 	tszBasePath[MAX_PATH];
 
-	mir_sntprintf(tszBasePath, MAX_PATH, _T("%s"), _T("%miranda_userdata%\\tabSRMM\\"));
-	TCHAR *tszFinalBasePath = Utils_ReplaceVarsT(tszBasePath);
+	mir_sntprintf(tszBasePath, MAX_PATH, _T("%s"), M->getDataPath());
+	if(tszBasePath[lstrlen(tszBasePath) - 1] != '\\')
+		_tcscat(tszBasePath, _T("\\"));
 
-	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)tszFinalBasePath);
+	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)tszBasePath);
 
-	if(PluginConfig.m_WinVerMajor >=6) {
-		for(int i = 0; i < safe_sizeof(my_default_skin); i++) {
-			HRSRC 	hRes;
-			HGLOBAL	hResource;
+	m_fAeroSkinsValid = true;
 
-			hRes = FindResource(g_hInst, MAKEINTRESOURCE(my_default_skin[i].ulID), _T("SKIN_GLYPH"));
+	try {
+		if(PluginConfig.m_WinVerMajor >=6) {
+			for(int i = 0; i < safe_sizeof(my_default_skin); i++) {
+				HRSRC 	hRes;
+				HGLOBAL	hResource;
 
-			if(hRes) {
-				hResource = LoadResource(g_hInst, hRes);
-				if(hResource) {
-					HANDLE  hFile;
-					char 	*pData = (char *)LockResource(hResource);
-					DWORD	dwSize = SizeofResource(g_hInst, hRes), written = 0;
-					mir_sntprintf(szFilename, MAX_PATH, _T("%s%s"), tszFinalBasePath, my_default_skin[i].tszName);
-					if(PathFileExists(szFilename) && M->GetByte("keepCustomAeroSkins", 0))
-						continue;
-					if((hFile = CreateFile(szFilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)) != INVALID_HANDLE_VALUE) {
-						WriteFile(hFile, (void *)pData, dwSize, &written, NULL);
-						CloseHandle(hFile);
+				hRes = FindResource(g_hInst, MAKEINTRESOURCE(my_default_skin[i].ulID), _T("SKIN_GLYPH"));
+
+				if(hRes) {
+					hResource = LoadResource(g_hInst, hRes);
+					if(hResource) {
+						HANDLE  hFile;
+						char 	*pData = (char *)LockResource(hResource);
+						DWORD	dwSize = SizeofResource(g_hInst, hRes), written = 0;
+						mir_sntprintf(szFilename, MAX_PATH, _T("%s%s"), tszBasePath, my_default_skin[i].tszName);
+						if(PathFileExists(szFilename) && M->GetByte("keepCustomAeroSkins", 0))
+							continue;
+						if((hFile = CreateFile(szFilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)) != INVALID_HANDLE_VALUE) {
+							WriteFile(hFile, (void *)pData, dwSize, &written, NULL);
+							CloseHandle(hFile);
+						}
+						else
+							throw(CRTException("Error while extracting aero skin images, Aero mode disabled.", szFilename));
 					}
 				}
 			}
 		}
 	}
+	catch(CRTException& ex) {
+		ex.display();
+		m_fAeroSkinsValid = false;
+	}
 
 	/*
 	 * load the logo
 	 */
-	mir_sntprintf(szFilename, MAX_PATH, _T("%slogo.png"), tszFinalBasePath);
-	if(!PathFileExists(szFilename)) {
-		HRSRC	hRes;
-		HGLOBAL hResource;
-		char	*pData = NULL;
+	if(PluginConfig.hbmLogo) {
+		::DeleteObject(PluginConfig.hbmLogo);
+		PluginConfig.hbmLogo = 0;
+	}
 
-		hRes = FindResource(g_hInst, MAKEINTRESOURCE(IDR_SKIN_LOGO), _T("SKIN_GLYPH"));
-		if(hRes) {
-			hResource = LoadResource(g_hInst, hRes);
-			if(hResource) {
-				DWORD written = 0, dwSize;
-				HANDLE hFile;
+	try {
+		mir_sntprintf(szFilename, MAX_PATH, _T("%slogo.png"), tszBasePath);
+		if(!PathFileExists(szFilename)) {
+			HRSRC	hRes;
+			HGLOBAL hResource;
+			char	*pData = NULL;
 
-				pData = (char *)LockResource(hResource);
-				dwSize = SizeofResource(g_hInst, hRes);
-				if((hFile = CreateFile(szFilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)) != INVALID_HANDLE_VALUE) {
-					WriteFile(hFile, (void *)pData, dwSize, &written, NULL);
-					CloseHandle(hFile);
+			hRes = FindResource(g_hInst, MAKEINTRESOURCE(IDR_SKIN_LOGO), _T("SKIN_GLYPH"));
+			if(hRes) {
+				hResource = LoadResource(g_hInst, hRes);
+				if(hResource) {
+					DWORD written = 0, dwSize;
+					HANDLE hFile;
+
+					pData = (char *)LockResource(hResource);
+					dwSize = SizeofResource(g_hInst, hRes);
+					if((hFile = CreateFile(szFilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)) != INVALID_HANDLE_VALUE) {
+						WriteFile(hFile, (void *)pData, dwSize, &written, NULL);
+						CloseHandle(hFile);
+					}
+					else
+						throw(CRTException("Error while extracting the logo", szFilename));
 				}
 			}
 		}
+		PluginConfig.hbmLogo = ::IMG_LoadLogo(szFilename);
 	}
-	mir_free(tszFinalBasePath);
-	PluginConfig.hbmLogo = ::IMG_LoadLogo(szFilename);
+	catch(CRTException& ex) {
+		ex.display();
+
+		PluginConfig.hbmLogo = 0;
+		return;
+	}
 }
 

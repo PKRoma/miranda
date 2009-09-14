@@ -66,7 +66,7 @@ PLUGININFOEX pluginInfo = {
 #endif
 #endif
 #endif
-	PLUGIN_MAKE_VERSION(3, 0, 0, 7),
+	PLUGIN_MAKE_VERSION(3, 0, 0, 8),
 	"Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
 	"The Miranda developers team and contributors",
 	"silvercircle _at_ gmail _dot_ com",

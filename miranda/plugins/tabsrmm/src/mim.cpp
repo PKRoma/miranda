@@ -392,6 +392,7 @@ INT_PTR CMimAPI::foldersPathChanged()
 	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szChatLogsPath);
 
 	Skin->extractSkinsAndLogo();
+	Skin->setupAeroSkins();
 	return 0;
 }
 
