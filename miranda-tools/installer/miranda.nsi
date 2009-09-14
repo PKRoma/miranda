@@ -5,7 +5,7 @@
 
 !define MIM_NAME                "Miranda IM"
 !define MIM_VERSION             "0.8.6"
-!define MIM_PREVIEW             "1" ; 0 for final build
+!define MIM_PREVIEW             "0" ; 0 for final build
 
 !define MIM_BUILD_ICONS_LOW     "icons\bin\locolor"
 !define MIM_BUILD_ICONS_HI      "icons\bin\hicolor"
@@ -96,6 +96,16 @@ var INST_SUCCESS
   SetOverWrite on
 !macroend
 
+!macro InstallMirandaPlugin PluginFile
+  SetOutPath "$INSTDIR\Plugins"
+  File "${MIM_BUILD_DIR}\plugins\${PluginFile}"
+!macroend
+
+!macro InstallMirandaPluginANSI PluginFile
+  SetOutPath "$INSTDIR\Plugins"
+  File "${MIM_BUILD_DIRANSI}\plugins\${PluginFile}"
+!macroend
+
 !macro WriteInstallerOption IniOption IniValue
   SetOutPath "$INSTDIR"
   WriteINIStr "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" "${MIM_BUILD_OPTIONS_SECT}" "${IniValue}" "${IniOption}"
@@ -105,13 +115,6 @@ Section "Miranda IM"
   SectionIn RO
   !insertmacro PrintInstallerDetails "Installing Miranda IM Core Files..."
   
-  !insertmacro WriteInstallerOption "0" "AIM"
-  !insertmacro WriteInstallerOption "0" "Gadu-Gadu"
-  !insertmacro WriteInstallerOption "0" "ICQ"
-  !insertmacro WriteInstallerOption "0" "IRC"
-  !insertmacro WriteInstallerOption "0" "Jabber"
-  !insertmacro WriteInstallerOption "0" "MSN"
-  !insertmacro WriteInstallerOption "0" "Yahoo"
   !insertmacro WriteInstallerOption "0" "Import"
   !insertmacro WriteInstallerOption "0" "StartMenuShortCut"
   !insertmacro WriteInstallerOption "0" "DesktopShortCut"
@@ -124,107 +127,80 @@ Section "Miranda IM"
   File "${MIM_BUILD_SRC}\docs\contributors.txt"
   File "${MIM_BUILD_SRC}\docs\readme.txt"
   File "${MIM_BUILD_SRC}\docs\license.txt"
-  ; winssl.dll only needed in 0.7.x
-  Delete "$INSTDIR\winssl.dll"
   
   ${If} $INST_UPGRADE = 0
     SetOverWrite off
     File "${MIM_BUILD_SRC}\docs\mirandaboot.ini"
     SetOverWrite on
   ${EndIf}
-    
-  SetOutPath "$INSTDIR\Plugins"
-  File "${MIM_BUILD_DIR}\plugins\clist_classic.dll"
-  File "${MIM_BUILD_DIR}\plugins\srmm.dll"
-  File "${MIM_BUILD_DIR}\plugins\avs.dll"
-  File "${MIM_BUILD_DIRANSI}\plugins\advaimg.dll"
+
+  !insertmacro InstallMirandaPlugin "clist_classic.dll"
+  !insertmacro InstallMirandaPlugin "srmm.dll"
+  !insertmacro InstallMirandaPlugin "avs.dll"
+  !insertmacro InstallMirandaPluginANSI "advaimg.dll"
   !ifdef MIM_BUILD_UNICODE
-  File "${MIM_BUILD_DIR}\plugins\dbx_mmap.dll"
+  !insertmacro InstallMirandaPlugin "dbx_mmap.dll"
   !else
-  File "${MIM_BUILD_DIR}\plugins\dbx_3x.dll"
+  !insertmacro InstallMirandaPluginANSI "dbx_3x.dll"
   !endif
-  File "${MIM_BUILD_DIR}\plugins\chat.dll"
+  !insertmacro InstallMirandaPlugin "chat.dll"
   
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "DisplayName" "Miranda IM ${MIM_VERSION}" 
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "UninstallString" "$INSTDIR\Uninstall.exe"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "" "$INSTDIR\miranda32.exe"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "Path" "$INSTDIR"
 
+  ; AIM
+  !insertmacro PrintInstallerDetails "Installing AIM Protocol..."
+  !insertmacro InstallMirandaPlugin "Aim.dll"
+  !insertmacro InstallMirandaProtoIcon "AIM"
+  
+  ; Gadu-Gadu
+  !insertmacro PrintInstallerDetails "Installing Gadu-Gadu Protocol..."
+  !insertmacro InstallMirandaPluginANSI "GG.dll"
+  !insertmacro InstallMirandaProtoIcon "GG"
+  
+  ; ICQ 
+  !insertmacro PrintInstallerDetails "Installing ICQ Protocol..."
+  !insertmacro InstallMirandaPlugin "icq.dll"
+  SetOutPath "$INSTDIR\Icons"
+  File "${MIM_BUILD_DIRANSI}\Icons\xstatus_ICQ.dll"
+  !insertmacro InstallMirandaProtoIcon "ICQ"
+
+  ; IRC
+  !insertmacro PrintInstallerDetails "Installing IRC Protocol..."
+  !insertmacro InstallMirandaPlugin "irc.dll"
+  ${If} $INST_UPGRADE = 0
+    SetOverWrite off
+    File "${MIM_BUILD_SRC}\protocols\IRCG\Docs\irc_servers.ini"
+    SetOverWrite on
+  ${EndIf}
+  !insertmacro InstallMirandaProtoIcon "IRC"
+
+  ; Jabber
+  !insertmacro PrintInstallerDetails "Installing Jabber Protocol..."
+  !insertmacro InstallMirandaPlugin "jabber.dll"
+  SetOutPath "$INSTDIR\Icons"
+  File "${MIM_BUILD_DIRANSI}\Icons\xstatus_jabber.dll"
+  !insertmacro InstallMirandaProtoIcon "Jabber"
+
+  ; MSN
+  !insertmacro PrintInstallerDetails "Installing MSN Protocol..."
+  !insertmacro InstallMirandaPlugin "msn.dll"
+  !insertmacro InstallMirandaProtoIcon "MSN"
+
+  ; Yahoo
+  !insertmacro PrintInstallerDetails "Installing Yahoo Protocol..."
+  !insertmacro InstallMirandaPlugin "yahoo.dll"
+  !insertmacro InstallMirandaProtoIcon "Yahoo"
+  
   WriteUninstaller "$INSTDIR\Uninstall.exe"
 SectionEnd
-
-SubSection /e "Protocols"
-  Section "AIM" pProtoAim
-    !insertmacro PrintInstallerDetails "Installing AIM Protocol..."
-    !insertmacro WriteInstallerOption "1" "AIM"
-    SetOutPath "$INSTDIR\Plugins"
-    File "${MIM_BUILD_DIR}\plugins\Aim.dll"
-    !insertmacro InstallMirandaProtoIcon "AIM"
-  SectionEnd
-  
-  Section "Gadu-Gadu" pProtoGaduGadu
-    !insertmacro PrintInstallerDetails "Installing Gadu-Gadu Protocol..."
-    !insertmacro WriteInstallerOption "1" "Gadu-Gadu"
-    SetOutPath "$INSTDIR\Plugins"
-    File "${MIM_BUILD_DIRANSI}\plugins\GG.dll"
-    !insertmacro InstallMirandaProtoIcon "GG"
-  SectionEnd
-  
-  Section "ICQ" pProtoICQ
-    !insertmacro PrintInstallerDetails "Installing ICQ Protocol..."
-    !insertmacro WriteInstallerOption "1" "ICQ"
-    SetOutPath "$INSTDIR\Plugins"
-    File "${MIM_BUILD_DIR}\plugins\icq.dll"
-    SetOutPath "$INSTDIR\Icons"
-    File "${MIM_BUILD_DIRANSI}\Icons\xstatus_ICQ.dll"
-    !insertmacro InstallMirandaProtoIcon "ICQ"
-  SectionEnd
-
-  Section "IRC" pProtoIRC
-    !insertmacro PrintInstallerDetails "Installing IRC Protocol..."
-    !insertmacro WriteInstallerOption "1" "IRC"
-    SetOutPath "$INSTDIR\Plugins"
-    File "${MIM_BUILD_DIR}\plugins\irc.dll"
-    ${If} $INST_UPGRADE = 0
-      SetOverWrite off
-      File "${MIM_BUILD_SRC}\protocols\IRCG\Docs\irc_servers.ini"
-      SetOverWrite on
-    ${EndIf}
-    !insertmacro InstallMirandaProtoIcon "IRC"
-  SectionEnd
-
-  Section "Jabber" pProtoJabber
-    !insertmacro PrintInstallerDetails "Installing Jabber Protocol..."
-    !insertmacro WriteInstallerOption "1" "Jabber"
-    SetOutPath "$INSTDIR\Plugins"
-    File "${MIM_BUILD_DIR}\plugins\jabber.dll"
-    SetOutPath "$INSTDIR\Icons"
-    File "${MIM_BUILD_DIRANSI}\Icons\xstatus_jabber.dll"
-    !insertmacro InstallMirandaProtoIcon "Jabber"
-  SectionEnd
-
-  Section "MSN" pProtoMSN
-    !insertmacro PrintInstallerDetails "Installing MSN Protocol..."
-    !insertmacro WriteInstallerOption "1" "MSN"
-    SetOutPath "$INSTDIR\Plugins"
-    File "${MIM_BUILD_DIR}\plugins\msn.dll"
-    !insertmacro InstallMirandaProtoIcon "MSN"
-  SectionEnd
-
-  Section "Yahoo" pProtoYahoo
-    !insertmacro PrintInstallerDetails "Installing Yahoo Protocol..."
-    !insertmacro WriteInstallerOption "1" "Yahoo"
-    SetOutPath "$INSTDIR\Plugins"
-    File "${MIM_BUILD_DIR}\plugins\yahoo.dll"
-    !insertmacro InstallMirandaProtoIcon "Yahoo"
-  SectionEnd
-SubSectionEnd
 
 Section "Import Plugin" pImport
   !insertmacro PrintInstallerDetails "Installing Import Plugin..."
   !insertmacro WriteInstallerOption "1" "Import"
-  SetOutPath "$INSTDIR\Plugins"
-  File "${MIM_BUILD_DIR}\plugins\import.dll"
+  !insertmacro InstallMirandaPlugin "import.dll"
 SectionEnd
 
 SubSection /e "Options" pOptions
@@ -324,69 +300,6 @@ Function VerifyInstallDir
   ${EndIf}
   !endif
   
-  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "AIM"
-  ${If} $0 == "0"
-    !insertmacro ClearSectionFlag ${pProtoAim} ${SF_SELECTED}
-  ${Else}
-    !insertmacro SetSectionFlag ${pProtoAim} ${SF_SELECTED}
-  ${EndIf}
-  ${If} ${FileExists} "$INSTDIR\plugins\Aim.dll"
-    !insertmacro SetSectionFlag ${pProtoAim} ${SF_SELECTED}
-  ${EndIf}
-  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Gadu-Gadu"
-  ${If} $0 == "0"
-    !insertmacro ClearSectionFlag ${pProtoGaduGadu} ${SF_SELECTED}
-  ${Else}
-    !insertmacro SetSectionFlag ${pProtoGaduGadu} ${SF_SELECTED}
-  ${EndIf}
-  ${If} ${FileExists} "$INSTDIR\plugins\GG.dll"
-    !insertmacro SetSectionFlag ${pProtoGaduGadu} ${SF_SELECTED}
-  ${EndIf}
-  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "ICQ"
-  ${If} $0 == "0"
-    !insertmacro ClearSectionFlag ${pProtoICQ} ${SF_SELECTED}
-  ${Else}
-    !insertmacro SetSectionFlag ${pProtoICQ} ${SF_SELECTED}
-  ${EndIf}
-  ${If} ${FileExists} "$INSTDIR\plugins\icq.dll"
-    !insertmacro SetSectionFlag ${pProtoICQ} ${SF_SELECTED}
-  ${EndIf}
-  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "IRC"
-  ${If} $0 == "0"
-    !insertmacro ClearSectionFlag ${pProtoIRC} ${SF_SELECTED}
-  ${Else}
-    !insertmacro SetSectionFlag ${pProtoIRC} ${SF_SELECTED}
-  ${EndIf}
-  ${If} ${FileExists} "$INSTDIR\plugins\irc.dll"
-    !insertmacro SetSectionFlag ${pProtoIRC} ${SF_SELECTED}
-  ${EndIf}
-  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Jabber"
-  ${If} $0 == "0"
-    !insertmacro ClearSectionFlag ${pProtoJabber} ${SF_SELECTED}
-  ${Else}
-    !insertmacro SetSectionFlag ${pProtoJabber} ${SF_SELECTED}
-  ${EndIf}
-  ${If} ${FileExists} "$INSTDIR\plugins\jabber.dll"
-    !insertmacro SetSectionFlag ${pProtoJabber} ${SF_SELECTED}
-  ${EndIf}
-  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "MSN"
-  ${If} $0 == "0"
-    !insertmacro ClearSectionFlag ${pProtoMSN} ${SF_SELECTED}
-  ${Else}
-    !insertmacro SetSectionFlag ${pProtoMSN} ${SF_SELECTED}
-  ${EndIf}
-  ${If} ${FileExists} "$INSTDIR\plugins\msn.dll"
-    !insertmacro SetSectionFlag ${pProtoMSN} ${SF_SELECTED}
-  ${EndIf}
-  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Yahoo"
-  ${If} $0 == "0"
-    !insertmacro ClearSectionFlag ${pProtoYahoo} ${SF_SELECTED}
-  ${Else}
-    !insertmacro SetSectionFlag ${pProtoYahoo} ${SF_SELECTED}
-  ${EndIf}
-  ${If} ${FileExists} "$INSTDIR\plugins\yahoo.dll"
-    !insertmacro SetSectionFlag ${pProtoYahoo} ${SF_SELECTED}
-  ${EndIf}
   ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Import"
   ${If} $0 == "0"
     !insertmacro ClearSectionFlag ${pImport} ${SF_SELECTED}
