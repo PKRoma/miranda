@@ -99,8 +99,10 @@ void CGlobals::Reload()
 	m_visualMessageSizeIndicator = M->GetByte("msgsizebar", 0);
 	m_autoSplit = M->GetByte("autosplit", 0);
 	m_FlashOnMTN = M->GetByte(SRMSGMOD, SRMSGSET_SHOWTYPINGWINFLASH, SRMSGDEFSET_SHOWTYPINGWINFLASH);
-	if(m_MenuBar == 0)
+	if(m_MenuBar == 0) {
 		m_MenuBar = ::LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENUBAR));
+		CallService(MS_LANGPACK_TRANSLATEMENU, WPARAM(m_MenuBar), 0);
+	}
 
 	m_SendLaterAvail = M->GetByte("sendLaterAvail", 0);
 	m_ncm.cbSize = sizeof(NONCLIENTMETRICS);
@@ -112,8 +114,11 @@ void CGlobals::Reload()
 
 const HMENU CGlobals::getMenuBar()
 {
-	if(m_MenuBar == 0)
+	if(m_MenuBar == 0) {
 		m_MenuBar = ::LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENUBAR));
+		CallService(MS_LANGPACK_TRANSLATEMENU, WPARAM(m_MenuBar), 0);
+	}
+
 	return(m_MenuBar);
 }
 
