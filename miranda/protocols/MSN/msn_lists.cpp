@@ -139,18 +139,6 @@ void CMsnProto::MSN_CleanupLists(void)
 	{
 		MsnContact& p = contList[i];
 
-		if ((p.list & (LIST_FL | LIST_RL)) == 0 && (p.list & (LIST_AL | LIST_BL)) != 0 && p.netId != NETID_LCS) 
-		{
-			MSN_SharingAddDelMember(p.email, p.list, p.netId, "DeleteMember");
-			p.list &= ~(LIST_AL | LIST_BL);
-
-			if (p.list == 0) 
-			{
-				contList.remove(i);
-				continue;
-			}
-		}
-
 		if (p.list & LIST_FL)
         {
 		    HANDLE hContact = MSN_HContactFromEmail(p.email, p.email, true, false);
