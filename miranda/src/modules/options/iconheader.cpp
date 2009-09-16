@@ -188,7 +188,8 @@ static void MITListDestructor(void * adr)
 {
 	MIcoTab * mit=(MIcoTab *)adr;
 	mir_free(mit->tcsName);
-	if (mit->hIcon && !(mit->flag&MITCF_SHAREDICON)) DestroyIcon(mit->hIcon);
+	if (mit->hIcon && !(mit->flag&MITCF_SHAREDICON)) 
+		DestroyIcon(mit->hIcon);
     mir_free(adr);
 }
 
