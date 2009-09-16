@@ -245,7 +245,7 @@ static void sttFillResourceInfo( CJabberProto* ppro, HWND hwndTree, HTREEITEM ht
 		HICON hIcon = NULL;
 		if (ServiceExists( "Fingerprint/GetClientIcon" )) {
 			char *szMirver = mir_t2a(res->software);
-			hIcon = (HICON)CallService( "Fingerprint/GetClientIcon", (WPARAM)szMirver, 1 );
+			hIcon = (HICON)CallService( "Fingerprint/GetClientIcon", (WPARAM)szMirver, 0 );
 			mir_free( szMirver );
 		}
 
