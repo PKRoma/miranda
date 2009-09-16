@@ -675,6 +675,7 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		if ( dat )
 			mir_free( dat );
 
+		ImageList_Destroy(TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_MENUOBJECTS),NULL,TVSIL_NORMAL));
 		FreeTreeData( hwndDlg );
 		break;
 	}
