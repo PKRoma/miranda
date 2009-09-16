@@ -324,7 +324,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				rcClient.bottom = 30;
 				TCHAR	szText[200];
 
-				mir_sntprintf(szText, 200, CTranslator::get(CTranslator::CNT_OPT_HEADERBAR), pContainer->szName);
+				mir_sntprintf(szText, 200, CTranslator::get(CTranslator::CNT_OPT_HEADERBAR), TranslateTS(pContainer->szName));
 				HANDLE hTheme = CMimAPI::m_pfnOpenThemeData ? CMimAPI::m_pfnOpenThemeData(hwndDlg, L"BUTTON") : 0;
 				CSkin::RenderText(hdcMem, hTheme, szText, &rcClient, DT_SINGLELINE|DT_VCENTER);
 				if(hTheme)
