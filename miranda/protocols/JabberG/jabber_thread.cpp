@@ -1925,6 +1925,7 @@ ThreadData::~ThreadData()
 	delete auth;
 	mir_free( zRecvData );
 	DeleteCriticalSection( &iomutex );
+	CloseHandle(hThread);
 }
 
 void ThreadData::close()
