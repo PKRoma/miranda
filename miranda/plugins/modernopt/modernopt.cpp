@@ -339,6 +339,7 @@ static INT_PTR CALLBACK ModernOptDlgProc(HWND hwndDlg, UINT  msg, WPARAM wParam,
 		if (!dat) return TRUE;
 		li_List_Destruct(dat->pObjectList, ModernOptionsObject_Dtor);
 		DeleteObject(dat->hfntBold);
+		ImageList_Destroy(TreeView_SetImageList(GetDlgItem(hwndDlg, IDC_TV_SUBSECTIONS), NULL, TVSIL_NORMAL));
 		Utils_SaveWindowPosition(hwndDlg, NULL, "Options", "");
 		delete dat;
 	}
