@@ -596,7 +596,7 @@ static LRESULT CALLBACK MIcoTabWndProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 			if (pListMit->flag&MITCF_SHAREDICON)
 				pListMit->hIcon=pMit->hIcon;
 			else
-				pListMit->hIcon=DuplicateIcon(hMirandaInst, pMit->hIcon);
+				pListMit->hIcon=CopyIcon(pMit->hIcon);
 		}
 		itc->pList.insert(pListMit);
 

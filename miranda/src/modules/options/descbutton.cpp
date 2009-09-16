@@ -312,7 +312,7 @@ static LRESULT CALLBACK MDescButtonWndProc(HWND hwndDlg, UINT  msg, WPARAM wPara
 		} 
 		else {
 			dat->bSharedIcon = FALSE;
-			dat->hIcon = DuplicateIcon(hMirandaInst, (HICON)lParam);
+			dat->hIcon = CopyIcon((HICON)lParam);
 		}
 		RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE);
 		return TRUE;
@@ -322,6 +322,8 @@ static LRESULT CALLBACK MDescButtonWndProc(HWND hwndDlg, UINT  msg, WPARAM wPara
 			mir_free(dat->lpzTitle);
 		if (dat->lpzDescription)
 			mir_free(dat->lpzDescription);
+		if (dat->hIcon && !dat->bSharedIcon)
+			DestroyIcon(dat->hIcon);
 		mir_free(dat);
 		return TRUE;
 	}	
