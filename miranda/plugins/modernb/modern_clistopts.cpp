@@ -1533,6 +1533,9 @@ INT_PTR CALLBACK DlgProcExtraIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			}
 		}
 		break; 
+	case WM_DESTROY:
+		ImageList_Destroy(TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_EXTRAORDER),NULL,TVSIL_NORMAL));
+		break;
 	}
 	return FALSE;
 }
