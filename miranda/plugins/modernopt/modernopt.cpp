@@ -610,7 +610,7 @@ static int hookModernOpt_Initialize(WPARAM wParam, LPARAM lParam)
 	obj.dwFlags = MODEROPT_FLG_TCHAR;
 
 	obj.hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
-	obj.	hInstance = hInst;
+	obj.hInstance = hInst;
 
 	obj.iSection = MODERNOPT_PAGE_HOME;
 	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
