@@ -252,6 +252,7 @@ static void sttFillResourceInfo( CJabberProto* ppro, HWND hwndTree, HTREEITEM ht
 		sttFillInfoLine( hwndTree, htiResource, hIcon, TranslateT( "Software" ),
 			res->software ? res->software : TranslateT( "<not specified>" ),
 			sttInfoLineId(resource, INFOLINE_SOFTWARE));
+		DestroyIcon(hIcon);
 	}
 
 	{	// Version
