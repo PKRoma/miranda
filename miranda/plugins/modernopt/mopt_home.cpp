@@ -39,9 +39,11 @@ INT_PTR CALLBACK ModernOptHome_DlgProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 			if (g_ModernOptPages[i].idcButton) {
 				HWND hwndCtrl = GetDlgItem(hwndDlg, g_ModernOptPages[i].idcButton);
 				if (g_ModernOptPages[i].bShow) {
-					MDescButton_SetIconShared(hwndCtrl, LoadImage(hInst, MAKEINTRESOURCE(g_ModernOptPages[i].iIcon), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR));
+					HICON hIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(g_ModernOptPages[i].iIcon), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR);
+					MDescButton_SetIcon(hwndCtrl, hIcon);
 					MDescButton_SetTitle(hwndCtrl, TranslateTS(g_ModernOptPages[i].lpzTitle));
 					MDescButton_SetDescription(hwndCtrl, TranslateTS(g_ModernOptPages[i].lpzDescription));
+					DestroyIcon(hIcon);
 				} 
 				else ShowWindow(hwndCtrl, SW_HIDE);
 		}	}
