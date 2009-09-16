@@ -491,7 +491,7 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM )
 							clmi.flags |= CMIM_ICON;
 							FormatMirVer(&item->resource[i], szTmp, SIZEOF(szTmp));
 							char *szMirver = mir_t2a(szTmp);
-							clmi.hIcon = (HICON)CallService( "Fingerprint/GetClientIcon", (WPARAM)szMirver, 1 );
+							clmi.hIcon = (HICON)CallService( "Fingerprint/GetClientIcon", (WPARAM)szMirver, 0 );
 							mir_free( szMirver );
 							DestroyIcon(clmi.hIcon);
 						}
