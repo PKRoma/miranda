@@ -225,7 +225,7 @@ static INT_PTR CALLBACK ModernOptDlgProc(HWND hwndDlg, UINT  msg, WPARAM wParam,
 			if (g_ModernOptPages[i].bShow && g_ModernOptPages[i].bShowTab)
 			{
 				HICON hIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(g_ModernOptPages[i].iIcon), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR);
-				MIcoTab_AddItem(hwndCtrl, TranslateTS(g_ModernOptPages[i].lpzTitle), hIcon, i, TRUE);
+				MIcoTab_AddItem(hwndCtrl, TranslateTS(g_ModernOptPages[i].lpzTitle), hIcon, i, FALSE);
 				DestroyIcon(hIcon);
 			}
 
