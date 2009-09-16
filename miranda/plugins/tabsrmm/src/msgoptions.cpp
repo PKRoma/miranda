@@ -297,7 +297,7 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			return TRUE;
 		}
 		case WM_DESTROY:
-			ImageList_Destroy((HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_WINDOWOPTIONS, TVM_GETIMAGELIST, 0, 0));
+			//ImageList_Destroy((HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_WINDOWOPTIONS, TVM_GETIMAGELIST, 0, 0));
 			break;
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {

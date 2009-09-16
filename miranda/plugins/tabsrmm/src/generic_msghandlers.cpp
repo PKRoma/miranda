@@ -877,7 +877,6 @@ void DM_UpdateTitle(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 		int iHasName;
 		TCHAR fulluin[256];
 		if (dat->szProto) {
-			TCHAR	*wUIN = NULL;
 
 			GetContactUIN(hwndDlg, dat);
 
@@ -925,19 +924,16 @@ void DM_UpdateTitle(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 				item.mask |= TCIF_TEXT;
 			}
 			SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
-			wUIN = a2tf((TCHAR *)dat->uin, 0, 0);
 			if (dat->bIsMeta)
 				mir_sntprintf(fulluin, safe_sizeof(fulluin),
 							  CTranslator::get(CTranslator::GEN_MSG_UINCOPY),
-							  iHasName ? wUIN : CTranslator::get(CTranslator::GEN_MSG_NOUIN));
+							  iHasName ? dat->uin : CTranslator::get(CTranslator::GEN_MSG_NOUIN));
 			else
 				mir_sntprintf(fulluin, safe_sizeof(fulluin),
 							  CTranslator::get(CTranslator::GEN_MSG_UINCOPY_NOMC),
-							  iHasName ? wUIN : CTranslator::get(CTranslator::GEN_MSG_NOUIN));
+							  iHasName ? dat->uin : CTranslator::get(CTranslator::GEN_MSG_NOUIN));
 
 			SendMessage(GetDlgItem(hwndDlg, IDC_NAME), BUTTONADDTOOLTIP, /*iHasName ?*/ (WPARAM)fulluin /*: (WPARAM)_T("")*/, 0);
-			if(wUIN)
-				mir_free(wUIN);
 		}
 	} else
 		lstrcpyn(newtitle, pszNewTitleEnd, safe_sizeof(newtitle));

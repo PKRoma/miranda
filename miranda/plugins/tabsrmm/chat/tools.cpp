@@ -108,23 +108,19 @@ TCHAR* RemoveFormatting(const TCHAR* pszWord, bool fToLower)
 					break;
 
 				default:
-					if(fToLower)
-						szTemp[j] = _totlower(pszWord[i]);
-					else
-						szTemp[j] = pszWord[i];
+					szTemp[j] = pszWord[i];
 					j++;
 					i++;
 					break;
 			}
 		} else {
-			if(fToLower)
-				szTemp[j] = _totlower(pszWord[i]);
-			else
-				szTemp[j] = pszWord[i];
+			szTemp[j] = pszWord[i];
 			j++;
 			i++;
 		}
 	}
+	if(fToLower)
+		_tcslwr(szTemp);
 	return (TCHAR*) &szTemp;
 }
 

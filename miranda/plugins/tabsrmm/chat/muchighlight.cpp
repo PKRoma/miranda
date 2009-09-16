@@ -34,7 +34,7 @@
 
 #include "../src/commonheaders.h"
 
-//#define __HLT_PERFSTATS 1
+#define __HLT_PERFSTATS 1
 
 void CMUCHighlight::cleanup()
 {
@@ -43,8 +43,16 @@ void CMUCHighlight::cleanup()
 	if(m_TextPatternString)
 		mir_free(m_TextPatternString);
 
-	m_NickPatterns.clear();
-	m_TextPatterns.clear();
+	//m_NickPatterns.clear();
+	//m_TextPatterns.clear();
+
+	if(m_NickPatterns)
+		mir_free(m_NickPatterns);
+	if(m_TextPatterns)
+		mir_free(m_TextPatterns);
+
+	m_iNickPatterns = m_iTextPatterns = 0;
+	m_NickPatterns = m_TextPatterns = 0;
 }
 
 void CMUCHighlight::init()
@@ -66,27 +74,17 @@ void CMUCHighlight::init()
 
 	m_dwFlags = M->GetDword("Chat", "HighlightEnabled", MATCH_TEXT);
 
-	tokenize(m_TextPatternString, m_TextPatterns);
-	tokenize(m_NickPatternString, m_NickPatterns);
+	tokenize(m_TextPatternString, m_TextPatterns, m_iTextPatterns);
+	tokenize(m_NickPatternString, m_NickPatterns, m_iNickPatterns);
 
-	/*
-	PatternIterator it = m_TextPatterns.begin();
+	/*for(int i = 0; i < m_iTextPatterns; i++)
+		_DebugTraceW(_T("textpattern: %s %c, %c"), m_TextPatterns[i], *(m_TextPatterns[i]), *((m_TextPatterns[i] + 1)));
 
-	while(it != m_TextPatterns.end()) {
-		_DebugTraceW(_T("Text pattern: '%s'"), *it);
-		it++;
-	}
-
-	it = m_NickPatterns.begin();
-
-	while(it != m_NickPatterns.end()) {
-		_DebugTraceW(_T("Nick pattern: '%s'"), *it);
-		it++;
-	}
-	*/
+	for(i = 0; i < m_iNickPatterns; i++)
+		_DebugTraceW(_T("NICKpattern: %s"), m_NickPatterns[i]);*/
 }
 
-void CMUCHighlight::tokenize(TCHAR *tszString, PatternList& v)
+void CMUCHighlight::tokenize(TCHAR *tszString, TCHAR**& patterns, UINT& nr)
 {
 	if(tszString == 0)
 		return;
@@ -96,8 +94,28 @@ void CMUCHighlight::tokenize(TCHAR *tszString, PatternList& v)
 	if(*p == 0)
 		return;
 
+	nr = 0;
+
 	if(*p != ' ')
-		v.push_back(tszString);
+		nr++;
+
+	while(*p) {
+		if(*p == ' ') {
+			*p++;
+			while(*p && _istspace(*p))
+				p++;
+			if(*p)
+				nr++;
+		}
+		p++;
+	}
+	patterns = (TCHAR **)mir_alloc(nr * sizeof(TCHAR *));
+
+	p = tszString;
+	nr = 0;
+
+	if(*p != ' ')
+		patterns[nr++] = p;
 
 	while(*p) {
 		if(*p == ' ') {
@@ -105,7 +123,7 @@ void CMUCHighlight::tokenize(TCHAR *tszString, PatternList& v)
 			while(*p && _istspace(*p))
 				p++;
 			if(*p)
-				v.push_back(p);
+				patterns[nr++] = p;
 		}
 		p++;
 	}
@@ -114,7 +132,6 @@ void CMUCHighlight::tokenize(TCHAR *tszString, PatternList& v)
 int CMUCHighlight::match(const GCEVENT *pgce, const SESSION_INFO *psi, DWORD dwFlags, const TCHAR *tszAdditonal)
 {
 	int 			result = 0, nResult = 0;
-	PatternIterator it;
 
 	if(pgce == 0)
 		return(0);
@@ -126,15 +143,17 @@ int CMUCHighlight::match(const GCEVENT *pgce, const SESSION_INFO *psi, DWORD dwF
 #endif
 
 	int		words = 0;
-	size_t	patterns = m_TextPatterns.size();
+	//size_t	patterns = m_TextPatterns.size();
+	size_t	patterns = m_iTextPatterns;
 
-	if((m_dwFlags & MATCH_TEXT) && (dwFlags & MATCH_TEXT) && m_TextPatterns.size() > 0) {
+	if((m_dwFlags & MATCH_TEXT) && (dwFlags & MATCH_TEXT) && m_iTextPatterns > 0) {
 #ifdef __HLT_PERFSTATS
 		::QueryPerformanceCounter((LARGE_INTEGER *)&lStart);
 #endif
 		TCHAR	*tszCleaned = ::RemoveFormatting(pgce->ptszText, true);
 		register TCHAR	*p = tszCleaned;
 		register TCHAR  *p1;
+		UINT	 i = 0;
 
 		TCHAR	*tszMe = mir_tstrdup(psi->pMe->pszNick);
 		_tcslwr(tszMe);
@@ -154,14 +173,13 @@ int CMUCHighlight::match(const GCEVENT *pgce, const SESSION_INFO *psi, DWORD dwF
 				else
 					p1 = 0;
 
-				it = m_TextPatterns.begin();
-				while(it != m_TextPatterns.end() && !result) {
-					if(*(*it) == '%' && *(*it + 1) == 'm') {
+				for(i = 0; i < m_iTextPatterns && !result; i++) {
+					if(*(m_TextPatterns[i]) == '%' && *((m_TextPatterns[i]) + 1)  == 'm') {
 						result = wildmatch(tszMe, p) ? MATCH_TEXT : 0;
 					} else
-						result = wildmatch(*it, p) ? MATCH_TEXT : 0;
-					it++;
+						result = wildmatch(m_TextPatterns[i], p) ? MATCH_TEXT : 0;
 				}
+
 				if(p1) {
 					*p1 = ' ';
 					p = p1 + 1;
@@ -188,20 +206,18 @@ int CMUCHighlight::match(const GCEVENT *pgce, const SESSION_INFO *psi, DWORD dwF
 		mir_free(tszMe);
 
 	}
-	if((m_dwFlags & MATCH_NICKNAME) && (dwFlags & MATCH_NICKNAME) && pgce->ptszNick && m_NickPatterns.size() > 0) {
-		it = m_NickPatterns.begin();
+	if((m_dwFlags & MATCH_NICKNAME) && (dwFlags & MATCH_NICKNAME) && pgce->ptszNick && m_iNickPatterns > 0) {
 
-		while(it != m_NickPatterns.end() && !nResult) {
-			nResult = wildmatch(*it, pgce->ptszNick) ? MATCH_NICKNAME : 0;
+		for(UINT i = 0; i < m_iNickPatterns && !nResult; i++) {
+			nResult = wildmatch(m_NickPatterns[i], pgce->ptszNick) ? MATCH_NICKNAME : 0;
 			if(tszAdditonal) {
-				nResult = wildmatch(*it, tszAdditonal) ? MATCH_NICKNAME : 0;
+				nResult = wildmatch(m_NickPatterns[i], tszAdditonal) ? MATCH_NICKNAME : 0;
 				//_DebugTraceW(_T("match %s against additional: %s (%d)"), *it, tszAdditonal, nResult);
 			}
 			if((m_dwFlags & MATCH_UIN) && pgce->ptszUserInfo) {
-				nResult = wildmatch(*it, pgce->ptszUserInfo) ? MATCH_NICKNAME : 0;
+				nResult = wildmatch(m_NickPatterns[i], pgce->ptszUserInfo) ? MATCH_NICKNAME : 0;
 				//_DebugTraceW(_T("match %s against UID: %s (%d)"), *it, pgce->ptszUserInfo, nResult);
 			}
-			it++;
 		}
 	}
 
@@ -243,82 +259,6 @@ int CMUCHighlight::wildmatch(const TCHAR *pattern, const TCHAR *tszString) {
 	return(!*pattern);
 }
 
-/*
-BOOL CMUCHighlight::textMatch(SESSION_INFO* si, const TCHAR* pszText)
-{
-	TCHAR* p1 = m_TextPatternString;
-	TCHAR* p2 = NULL;
-	const TCHAR* p3 = pszText;
-	static TCHAR szWord1[1000];
-	static TCHAR szWord2[1000];
-	static TCHAR szTrimString[] = _T(":,.!?;\'>)");
-
-	// compare word for word
-	while (*p1 != '\0') {
-		// find the next/first word in the highlight word string
-		// skip 'spaces' be4 the word
-		while (*p1 == ' ' && *p1 != '\0')
-			p1 += 1;
-
-		//find the end of the word
-		p2 = _tcschr(p1, ' ');
-		if (!p2)
-			p2 = _tcschr(p1, '\0');
-		if (p1 == p2)
-			return FALSE;
-
-		// copy the word into szWord1
-		lstrcpyn(szWord1, p1, p2 - p1 > 998 ? 999 : p2 - p1 + 1);
-		p1 = p2;
-
-		// replace %m with the users nickname
-		p2 = _tcschr(szWord1, '%');
-		if (p2 && p2[1] == 'm') {
-			TCHAR szTemp[50];
-
-			p2[1] = 's';
-			lstrcpyn(szTemp, szWord1, SIZEOF(szTemp));
-			mir_sntprintf(szWord1, SIZEOF(szWord1), szTemp, si->pMe->pszNick);
-		}
-
-		// time to get the next/first word in the incoming text string
-		while (*p3 != '\0') {
-			// skip 'spaces' be4 the word
-			while (*p3 == ' ' && *p3 != '\0')
-				p3 += 1;
-
-			//find the end of the word
-			p2 = (TCHAR *)_tcschr(p3, ' ');
-			if (!p2)
-				p2 = (TCHAR *)_tcschr(p3, '\0');
-
-
-			if (p3 != p2) {
-				// eliminate ending character if needed
-				if (p2 - p3 > 1 && _tcschr(szTrimString, p2[-1]))
-					p2 -= 1;
-
-				// copy the word into szWord2 and remove formatting
-				lstrcpyn(szWord2, p3, p2 - p3 > 998 ? 999 : p2 - p3 + 1);
-
-				// reset the pointer if it was touched because of an ending character
-				if (*p2 != '\0' && *p2 != ' ')
-					p2 += 1;
-				p3 = p2;
-
-				CharLower(szWord1);
-				CharLower(szWord2);
-
-				// compare the words, using wildcards
-				if (WCCmp(szWord1, RemoveFormatting(szWord2)))
-					return TRUE;
-			}
-		}
-		p3 = pszText;
-	}
-	return FALSE;
-}
-*/
 /**
  * Dialog procedure to handle global highlight settings
  *

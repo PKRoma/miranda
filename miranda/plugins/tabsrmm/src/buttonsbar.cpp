@@ -1177,6 +1177,8 @@ static int BuildMenuObjectsTree(HWND hToolBarTree)
 	TreeView_DeleteAllItems(hToolBarTree);
 
 	himgl = ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), ILC_COLOR32 | ILC_MASK, 2, 2);
+	HIMAGELIST himl = TreeView_GetImageList(hToolBarTree, TVSIL_NORMAL);
+	ImageList_Destroy(himl);
 	TreeView_SetImageList(hToolBarTree, himgl, TVSIL_NORMAL);
 
 
@@ -1250,7 +1252,7 @@ INT_PTR CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 			hToolBarTree = GetDlgItem(hwndDlg, IDC_TOOLBARTREE);
 
 			style = GetWindowLongPtr(hToolBarTree, GWL_STYLE);
-			style ^= TVS_CHECKBOXES;
+			//style ^= TVS_CHECKBOXES;
 			SetWindowLongPtr(hToolBarTree, GWL_STYLE, style);
 			style |= TVS_CHECKBOXES;
 			style |= TVS_NOHSCROLL;
@@ -1558,9 +1560,13 @@ INT_PTR CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 		}
 		break;
 
-		case WM_DESTROY:
-			ImageList_Destroy(himgl);
+		case WM_DESTROY: {
+			HIMAGELIST hIml = TreeView_GetImageList(GetDlgItem(hwndDlg, IDC_TOOLBARTREE), TVSIL_NORMAL);
+			ImageList_Destroy(hIml);
+			hIml = TreeView_GetImageList(GetDlgItem(hwndDlg, IDC_TOOLBARTREE), TVSIL_STATE);
+			ImageList_Destroy(hIml);
 			break;
+		}
 
 		default:
 			break;

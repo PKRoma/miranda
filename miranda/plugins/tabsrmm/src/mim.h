@@ -106,43 +106,43 @@ public:
 	 * database functions
 	 */
 
-	DWORD GetDword(const HANDLE hContact, const char *szModule, const char *szSetting, DWORD uDefault) const;
-	DWORD GetDword(const char *szModule, const char *szSetting, DWORD uDefault) const;
-	DWORD GetDword(const char *szSetting, DWORD uDefault) const;
-	DWORD GetDword(const HANDLE hContact, const char *szSetting, DWORD uDefault) const;
+	DWORD FASTCALL GetDword(const HANDLE hContact, const char *szModule, const char *szSetting, DWORD uDefault) const;
+	DWORD FASTCALL GetDword(const char *szModule, const char *szSetting, DWORD uDefault) const;
+	DWORD FASTCALL GetDword(const char *szSetting, DWORD uDefault) const;
+	DWORD FASTCALL GetDword(const HANDLE hContact, const char *szSetting, DWORD uDefault) const;
 
-	int GetByte(const HANDLE hContact, const char *szModule, const char *szSetting, int uDefault) const;
-	int GetByte(const char *szModule, const char *szSetting, int uDefault) const;
-	int GetByte(const char *szSetting, int uDefault) const;
-	int GetByte(const HANDLE hContact, const char *szSetting, int uDefault) const;
+	int FASTCALL GetByte(const HANDLE hContact, const char *szModule, const char *szSetting, int uDefault) const;
+	int FASTCALL GetByte(const char *szModule, const char *szSetting, int uDefault) const;
+	int FASTCALL GetByte(const char *szSetting, int uDefault) const;
+	int FASTCALL GetByte(const HANDLE hContact, const char *szSetting, int uDefault) const;
 
-	INT_PTR GetTString(const HANDLE hContact, const char *szModule, const char *szSetting, DBVARIANT *dbv) const;
-	INT_PTR GetString(const HANDLE hContact, const char *szModule, const char *szSetting, DBVARIANT *dbv) const;
+	INT_PTR FASTCALL GetTString(const HANDLE hContact, const char *szModule, const char *szSetting, DBVARIANT *dbv) const;
+	INT_PTR FASTCALL GetString(const HANDLE hContact, const char *szModule, const char *szSetting, DBVARIANT *dbv) const;
 
-	INT_PTR WriteDword(const HANDLE hContact, const char *szModule, const char *szSetting, DWORD value) const;
-	INT_PTR WriteDword(const char *szModule, const char *szSetting, DWORD value) const;
+	INT_PTR FASTCALL WriteDword(const HANDLE hContact, const char *szModule, const char *szSetting, DWORD value) const;
+	INT_PTR FASTCALL WriteDword(const char *szModule, const char *szSetting, DWORD value) const;
 
-	INT_PTR WriteByte(const HANDLE hContact, const char *szModule, const char *szSetting, BYTE value) const;
-	INT_PTR WriteByte(const char *szModule, const char *szSetting, BYTE value) const;
+	INT_PTR FASTCALL WriteByte(const HANDLE hContact, const char *szModule, const char *szSetting, BYTE value) const;
+	INT_PTR FASTCALL WriteByte(const char *szModule, const char *szSetting, BYTE value) const;
 
-	INT_PTR WriteTString(const HANDLE hContact, const char *szModule, const char *szSetting, const TCHAR *st) const;
+	INT_PTR FASTCALL WriteTString(const HANDLE hContact, const char *szModule, const char *szSetting, const TCHAR *st) const;
 
-	char *utf8_decode(char* str, wchar_t** ucs2) const;
-	char *utf8_decodecp(char* str, int codepage, wchar_t** ucs2) const;
-	char *utf8_encode(const char* src) const;
-	char *utf8_encodecp(const char* src, int codepage) const;
-	char *utf8_encodeW(const wchar_t* src) const;
-	char *utf8_encodeT(const TCHAR* src) const;
-	TCHAR *utf8_decodeT(const char* src) const;
-	wchar_t *utf8_decodeW(const char* str) const;
+	char* FASTCALL utf8_decode(char* str, wchar_t** ucs2) const;
+	char* FASTCALL utf8_decodecp(char* str, int codepage, wchar_t** ucs2) const;
+	char* FASTCALL utf8_encode(const char* src) const;
+	char* FASTCALL utf8_encodecp(const char* src, int codepage) const;
+	char* FASTCALL utf8_encodeW(const wchar_t* src) const;
+	char* FASTCALL utf8_encodeT(const TCHAR* src) const;
+	TCHAR* FASTCALL utf8_decodeT(const char* src) const;
+	wchar_t* FASTCALL utf8_decodeW(const char* str) const;
 
 	/*
 	 * path utilities
 	 */
 
-	int pathIsAbsolute(const TCHAR *path) const;
-	size_t pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut, const TCHAR *szBase = 0) const;
-	size_t pathToRelative(const TCHAR *pSrc, TCHAR *pOut, const TCHAR *szBase = 0) const;
+	int TSAPI 		pathIsAbsolute(const TCHAR *path) const;
+	size_t TSAPI 	pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut, const TCHAR *szBase = 0) const;
+	size_t TSAPI	pathToRelative(const TCHAR *pSrc, TCHAR *pOut, const TCHAR *szBase = 0) const;
 
 	/*
 	 * for backwards compatiblity still needed (not everything path-related is unicode
@@ -153,9 +153,9 @@ public:
 	const TCHAR  *getSavedAvatarPath() const { return(m_szSavedAvatarsPath); }
 	const TCHAR  *getChatLogPath() const { return(m_szChatLogsPath); }
 
-	const TCHAR	 *getUserDir();
-	void		configureCustomFolders();
-	INT_PTR		foldersPathChanged();
+	const TCHAR* TSAPI  getUserDir();
+	void		 TSAPI  configureCustomFolders();
+	INT_PTR		 TSAPI  foldersPathChanged();
 
 	const bool  isVSAPIState() const { return m_VsAPI; }
 	/**
@@ -199,11 +199,11 @@ public:
 	 * window lists
 	 */
 
-	void		BroadcastMessage(UINT msg, WPARAM wParam, LPARAM lParam);
-	void		BroadcastMessageAsync(UINT msg, WPARAM wParam, LPARAM lParam);
-	INT_PTR		AddWindow(HWND hWnd, HANDLE h);
-	INT_PTR		RemoveWindow(HWND hWnd);
-	HWND		FindWindow(HANDLE h) const;
+	void		TSAPI BroadcastMessage(UINT msg, WPARAM wParam, LPARAM lParam);
+	void		TSAPI BroadcastMessageAsync(UINT msg, WPARAM wParam, LPARAM lParam);
+	INT_PTR		TSAPI AddWindow(HWND hWnd, HANDLE h);
+	INT_PTR		TSAPI RemoveWindow(HWND hWnd);
+	HWND		TSAPI FindWindow(HANDLE h) const;
 
 	static		int FoldersPathChanged(WPARAM wParam, LPARAM lParam);
 	static 		const TCHAR* StriStr(const TCHAR *szString, const TCHAR *szSearchFor);

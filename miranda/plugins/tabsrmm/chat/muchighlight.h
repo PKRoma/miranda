@@ -32,9 +32,6 @@
  *
  */
 
-typedef std::vector<TCHAR *> PatternList;
-typedef std::vector<TCHAR *>::iterator PatternIterator;
-
 class CMUCHighlight {
 
 public:
@@ -49,6 +46,8 @@ public:
 	{
 		m_fInitialized = false;
 		m_TextPatternString = m_NickPatternString = 0;
+		m_NickPatterns = m_TextPatterns = 0;
+		m_iNickPatterns = m_iTextPatterns = 0;
 		init();
 	}
 
@@ -65,12 +64,14 @@ public:
 	static INT_PTR CALLBACK                	dlgProc     (HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);		   // option page dlg proc
 	static INT_PTR CALLBACK                	dlgProcAdd  (HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);		   // for the "add to" dialog
 private:
-	void                                   	tokenize    (TCHAR *tszString, PatternList& v);
+	void 									tokenize(TCHAR *tszString, TCHAR**& patterns, UINT& nr);
 	int 									wildmatch	(const TCHAR *pattern, const TCHAR *tszString);
 	DWORD									m_dwFlags;
 	bool                                   	m_fInitialized;
-	PatternList			                   	m_NickPatterns;
-	PatternList			                   	m_TextPatterns;
+	TCHAR**									m_NickPatterns;
+	TCHAR**									m_TextPatterns;
+	UINT									m_iNickPatterns;
+	UINT									m_iTextPatterns;
 	TCHAR*                                 	m_NickPatternString;
 	TCHAR*                                 	m_TextPatternString;
 };

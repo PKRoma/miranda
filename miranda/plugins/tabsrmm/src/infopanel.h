@@ -76,24 +76,24 @@ public:
 	}
 
 	const	LONG				getHeight					() const { return(m_height); }
-	void						setHeight					(LONG newHeight, bool fBroadcast = false);
+	void			TSAPI		setHeight					(LONG newHeight, bool fBroadcast = false);
 	bool						isActive					() const { return(m_active); }
 	bool						isPrivateHeight				() const { return(m_fPrivateHeight); }
-	void						setActive					(const int newActive);
-	void						loadHeight					();
-	void						saveHeight					(bool fFlush = false);
+	void			TSAPI		setActive					(const int newActive);
+	void			TSAPI		loadHeight					();
+	void			TSAPI		saveHeight					(bool fFlush = false);
 
-	void 						Configure					() const;
-	void 						showHideControls			(const UINT showCmd) const;
-	void 						showHide					() const;
-	bool 						getVisibility				();
-	void 						renderBG					(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero) const;
-	void 						renderContent				(const HDC hdcMem);
-	void 						Invalidate					() const;
-	void 						trackMouse					(POINT& pt) const;
-	void						showTip						(UINT ctrlId, const LPARAM lParam) const;
-	int							invokeConfigDialog			(const POINT& pt);
-	void						dismissConfig				(bool fForced = false)
+	void 			TSAPI		Configure					() const;
+	void 			TSAPI		showHideControls			(const UINT showCmd) const;
+	void 			TSAPI		showHide					() const;
+	bool 			TSAPI		getVisibility				();
+	void 			TSAPI		renderBG					(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero) const;
+	void 			TSAPI		renderContent				(const HDC hdcMem);
+	void 			TSAPI		Invalidate					() const;
+	void 			TSAPI		trackMouse					(POINT& pt) const;
+	void			TSAPI		showTip						(UINT ctrlId, const LPARAM lParam) const;
+	int				TSAPI		invokeConfigDialog			(const POINT& pt);
+	void			TSAPI		dismissConfig				(bool fForced = false)
 	{
 		if(m_hwndConfig == 0)
 			return;
@@ -112,11 +112,11 @@ public:
 	static						InfoPanelConfig m_ipConfig;
 
 private:
-	void						RenderIPNickname			(const HDC hdc, RECT& rc);
-	void 						RenderIPUIN					(const HDC hdc, RECT& rcItem);
-	void 						RenderIPStatus				(const HDC hdc, RECT& rcItem);
-	void 						Chat_RenderIPNickname		(const HDC hdc, RECT& rcItem);
-	void 						Chat_RenderIPSecondLine		(const HDC hdc, RECT& rcItem);
+	void			TSAPI		RenderIPNickname			(const HDC hdc, RECT& rc);
+	void 			TSAPI		RenderIPUIN					(const HDC hdc, RECT& rcItem);
+	void 			TSAPI		RenderIPStatus				(const HDC hdc, RECT& rcItem);
+	void 			TSAPI		Chat_RenderIPNickname		(const HDC hdc, RECT& rcItem);
+	void 			TSAPI		Chat_RenderIPSecondLine		(const HDC hdc, RECT& rcItem);
 	INT_PTR	CALLBACK			ConfigDlgProc				(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 	static INT_PTR CALLBACK	 	ConfigDlgProcStub			(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);

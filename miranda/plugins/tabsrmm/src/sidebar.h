@@ -127,23 +127,23 @@ public:
 	CSideBar(ContainerWindowData *pContainer);
 	~CSideBar();
 
-	void						Init(const bool fForce = false);
-	void						addSession(const _MessageWindowData *dat, int position = -1);
-	HRESULT						removeSession(const _MessageWindowData *dat);
-	void						updateSession(const _MessageWindowData *dat);
+	void		TSAPI			Init(const bool fForce = false);
+	void		TSAPI			addSession(const _MessageWindowData *dat, int position = -1);
+	HRESULT		TSAPI			removeSession(const _MessageWindowData *dat);
+	void		TSAPI			updateSession(const _MessageWindowData *dat);
 
 	const LONG 					getWidth() const { return( m_isVisible ? m_width : 0); }
 	const ContainerWindowData*	getContainer() const { return(m_pContainer); }
-	void						Layout(const RECT *rc = 0, bool fOnlyCalc = false);
+	void		TSAPI			Layout(const RECT *rc = 0, bool fOnlyCalc = false);
 	const bool					isActive() const { return(m_isActive); }
 	const bool					isVisible() const { return(m_isVisible); }
-	void						setVisible(bool fNewVisibility);
-	void 						showAll(int showCmd);
-	void						processScrollerButtons(UINT cmd);
+	void		TSAPI			setVisible(bool fNewVisibility);
+	void 		TSAPI			showAll(int showCmd);
+	void		TSAPI			processScrollerButtons(UINT cmd);
 	const CSideBarButton* 		getActiveItem() const { return(m_activeItem); }
 	bool						isSkinnedContainer() const { return(CSkin::m_skinEnabled ? true : false); }
 	const UINT					getLayoutId() const { return(m_uLayout); }
-	const CSideBarButton* 		setActiveItem(const CSideBarButton *newItem)
+	const CSideBarButton* TSAPI	setActiveItem(const CSideBarButton *newItem)
 	{
 		CSideBarButton *oldItem = m_activeItem;
 		m_activeItem = const_cast<CSideBarButton *>(newItem);
@@ -159,7 +159,7 @@ public:
 	}
 	const CSideBarButton*				getHoveredClose() const { return(m_hoveredClose); }
 
-	const CSideBarButton* 				setActiveItem(const _MessageWindowData *dat);
+	const CSideBarButton* TSAPI 		setActiveItem(const _MessageWindowData *dat);
 
 	static HBITMAP						m_hbmBackground;
 
@@ -168,16 +168,16 @@ public:
 		uLayoutCount = NR_LAYOUTS;
 		return(m_layouts);
 	}
-	void								scrollIntoView(const CSideBarButton *item = 0);
-	void								resizeScrollWnd(LONG x, LONG y, LONG width, LONG height) const;
+	void				TSAPI			scrollIntoView(const CSideBarButton *item = 0);
+	void				TSAPI			resizeScrollWnd(LONG x, LONG y, LONG width, LONG height) const;
 	HWND								getScrollWnd() const { return(m_hwndScrollWnd); }
 	static LRESULT CALLBACK 			wndProcStub(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 private:
-	void								createScroller();
-	void								destroyScroller();
-	void								populateAll();
-	void								removeAll();
-	void								Invalidate();
+	void				TSAPI			createScroller();
+	void				TSAPI			destroyScroller();
+	void				TSAPI			populateAll();
+	void				TSAPI			removeAll();
+	void				TSAPI			Invalidate();
 	std::vector<CSideBarButton *>::iterator findSession(const _MessageWindowData *dat);
 	std::vector<CSideBarButton *>::iterator findSession(const HANDLE hContact);
 

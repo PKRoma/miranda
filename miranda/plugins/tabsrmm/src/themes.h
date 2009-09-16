@@ -162,7 +162,7 @@ public:
 			m_bStretch = IMAGE_STRETCH_B;
 	}
 
-	void			Free();
+	void	TSAPI	Free();
 	CImageItem*		getNextItem() const { return(m_nextItem); }
 	void			setNextItem(CImageItem *item) { m_nextItem = item; }
 	HBITMAP			getHbm() const { return(m_hbm); }
@@ -173,13 +173,13 @@ public:
 		const BLENDFUNCTION &bf = m_bf;
 		return(bf);
 	}
-	const TCHAR*	getName() const { return (m_szName); }
-	TCHAR*			Read(const TCHAR *szFilename);
-	void 			Create(const TCHAR *szImageFile);
-	void __fastcall	Render(const HDC hdc, const RECT *rc, bool fIgnoreGlyph) const;
-	static void 	PreMultiply(HBITMAP hBitmap, int mode);
-	static void 	CorrectBitmap32Alpha(HBITMAP hBitmap);
-	static void 	Colorize(HBITMAP hBitmap, BYTE dr, BYTE dg, BYTE db, BYTE alpha = 0);
+	const TCHAR*		getName() const { return (m_szName); }
+	TCHAR*				Read(const TCHAR *szFilename);
+	void 				Create(const TCHAR *szImageFile);
+	void __fastcall		Render(const HDC hdc, const RECT *rc, bool fIgnoreGlyph) const;
+	static void TSAPI	PreMultiply(HBITMAP hBitmap, int mode);
+	static void TSAPI	CorrectBitmap32Alpha(HBITMAP hBitmap);
+	static void TSAPI	Colorize(HBITMAP hBitmap, BYTE dr, BYTE dg, BYTE db, BYTE alpha = 0);
 
 public:
 	bool			m_fValid;									// verified item, indicates that all parameters are valid
@@ -268,41 +268,41 @@ public:
 	 *  	   modified.
 	 *
 	 */
-	const CImageItem*	getGlyphItem() const
+	const CImageItem*		getGlyphItem() const
 	{
 		return(m_fHaveGlyph ? &m_glyphItem : 0);
 	}
-	bool				warnToClose() const;
-	COLORREF			getColorKey() const { return(m_ContainerColorKey); }
+	bool					warnToClose() const;
+	COLORREF				getColorKey() const { return(m_ContainerColorKey); }
 
-	void				setupAeroSkins();
-	void 				extractSkinsAndLogo() const;
-	void				setupTabCloseBitmap();
+	void	TSAPI			setupAeroSkins();
+	void 	TSAPI			extractSkinsAndLogo() const;
+	void	TSAPI			setupTabCloseBitmap();
 
 	/*
 	 * static member functions
 	 */
-	static void 	SkinDrawBGFromDC(HWND hwndClient, HWND hwnd, HDC hdcSrc, RECT *rcClient, HDC hdcTarget);
-	static void 	SkinDrawBG(HWND hwndClient, HWND hwnd, struct ContainerWindowData *pContainer, RECT *rcClient, HDC hdcTarget);
-	static void 	MY_AlphaBlend(HDC hdcDraw, DWORD left, DWORD top,  int width, int height, int bmWidth, int bmHeight, HDC hdcMem);
-	static void 	DrawDimmedIcon(HDC hdc, LONG left, LONG top, LONG dx, LONG dy, HICON hIcon, BYTE alpha);
-	static DWORD 	__fastcall HexStringToLong(const TCHAR *szSource);
-	static UINT 	DrawRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
-	static UINT 	NcCalcRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
-	static HBITMAP 	CreateAeroCompatibleBitmap(const RECT &rc, HDC dc);
+	static void TSAPI		SkinDrawBGFromDC(HWND hwndClient, HWND hwnd, HDC hdcSrc, RECT *rcClient, HDC hdcTarget);
+	static void TSAPI		SkinDrawBG(HWND hwndClient, HWND hwnd, struct ContainerWindowData *pContainer, RECT *rcClient, HDC hdcTarget);
+	static void TSAPI		MY_AlphaBlend(HDC hdcDraw, DWORD left, DWORD top,  int width, int height, int bmWidth, int bmHeight, HDC hdcMem);
+	static void TSAPI		DrawDimmedIcon(HDC hdc, LONG left, LONG top, LONG dx, LONG dy, HICON hIcon, BYTE alpha);
+	static DWORD __fastcall HexStringToLong(const TCHAR *szSource);
+	static UINT TSAPI		DrawRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
+	static UINT TSAPI		NcCalcRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
+	static HBITMAP TSAPI 	CreateAeroCompatibleBitmap(const RECT &rc, HDC dc);
 #if defined(_UNICODE)
-	static int 		RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags, const int iGlowSize = DEFAULT_GLOW_SIZE);
+	static int TSAPI		RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags, const int iGlowSize = DEFAULT_GLOW_SIZE);
 #endif
-	static int 		RenderText(HDC hdc, HANDLE hTheme, const char *szText, RECT *rc, DWORD dtFlags, const int iGlowSize = DEFAULT_GLOW_SIZE);
-	static void 	MapClientToParent(HWND hwndClient, HWND hwndParent, RECT &rc);
-	static void 	RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &rcWindow);
-	static HBITMAP 	ResizeBitmap(HBITMAP hBmpSrc, LONG width, LONG height, bool &mustFree);
-	static void		ApplyAeroEffect(const HDC hdc, const RECT* rc, int iEffectArea, HANDLE hbp = 0);
-	static void		setAeroEffect(const LRESULT effect);
-	static void		initAeroEffect();
-	static HANDLE 	InitiateBufferedPaint(const HDC hdcSrc, RECT& rc, HDC& hdcOut);
-	static void 	FinalizeBufferedPaint(HANDLE hbp, RECT *rc);
-	static bool 	__fastcall DrawItem(const HDC hdc, const RECT *rc, const CSkinItem *item);
+	static int 	TSAPI		RenderText(HDC hdc, HANDLE hTheme, const char *szText, RECT *rc, DWORD dtFlags, const int iGlowSize = DEFAULT_GLOW_SIZE);
+	static void TSAPI		MapClientToParent(HWND hwndClient, HWND hwndParent, RECT &rc);
+	static void TSAPI		RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &rcWindow);
+	static HBITMAP TSAPI	ResizeBitmap(HBITMAP hBmpSrc, LONG width, LONG height, bool &mustFree);
+	static void	TSAPI		ApplyAeroEffect(const HDC hdc, const RECT* rc, int iEffectArea, HANDLE hbp = 0);
+	static void	TSAPI		setAeroEffect(const LRESULT effect);
+	static void	TSAPI		initAeroEffect();
+	static HANDLE TSAPI		InitiateBufferedPaint(const HDC hdcSrc, RECT& rc, HDC& hdcOut);
+	static void TSAPI		FinalizeBufferedPaint(HANDLE hbp, RECT *rc);
+	static bool __fastcall	DrawItem(const HDC hdc, const RECT *rc, const CSkinItem *item);
 
 public:
 	static bool		m_DisableScrollbars, m_bClipBorder;

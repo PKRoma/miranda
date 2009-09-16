@@ -3411,9 +3411,7 @@ LABEL_SHOWWINDOW:
 			break;
 
 		case WM_ERASEBKGND:
-			//if (dat->pContainer->bSkinned || M->isAero() || M->isVSThemed())
-				return TRUE;
-			break;
+			return(1);
 
 		case WM_NCPAINT:
 			if (CSkin::m_skinEnabled)

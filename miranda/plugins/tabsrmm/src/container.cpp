@@ -1770,15 +1770,6 @@ buttons_done:
 			if (bSkinned || fAero) {
 				PAINTSTRUCT ps;
 				HDC hdc = BeginPaint(hwndDlg, &ps);
-				/*
-				RECT rc;
-				GetClientRect(hwndDlg, &rc);
-				FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
-				if(fAero && !(pContainer->dwFlags & CNT_NOMENUBAR)) {
-					rc.bottom = 20;
-					FillRect(hdc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
-				}
-				*/
 				EndPaint(hwndDlg, &ps);
 				return 0;
 			}
@@ -1794,9 +1785,8 @@ buttons_done:
 			HDC hdc = 	(HDC)wParam;
 			RECT rc;
 			GetClientRect(hwndDlg, &rc);
-			bool 		fAero = M->isAero();
 
-			if (fAero) {
+			if (M->isAero()) {
 				HDC		hdcMem;
 				HANDLE  hbp;
 

@@ -439,7 +439,6 @@
 #define IDC_EDITTEMPLATE                1362
 #define IDC_REVERT                      1363
 #define IDC_FORGET                      1364
-#define IDC_VARHELP                     1365
 #define IDC_COLOR1                      1366
 #define IDC_COLOR2                      1367
 #define IDC_COLOR3                      1368
@@ -771,6 +770,10 @@
 #define ID_MESSAGELOGSETTINGS_FORTHISCONTACT 40252
 #define ID_MESSAGELOG_MESSAGELOGSETTINGS 40253
 #define ID_SPLITTERCONTEXT_SAVEFORCONTAINER 40340
+
+#ifndef IDC_STATIC
+	#define IDC_STATIC -1
+#endif
 
 // Next default values for new objects
 //

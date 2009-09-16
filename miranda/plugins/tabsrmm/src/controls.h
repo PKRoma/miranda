@@ -47,25 +47,25 @@ public:
 	CMenuBar(HWND hwndParent, const ContainerWindowData *pContainer);
 	~CMenuBar();
 
-	const RECT&		getClientRect();
-	void			Resize(WORD wWidth, WORD wHeight, BOOL redraw) const
+	const RECT&		TSAPI getClientRect();
+	void			TSAPI Resize(WORD wWidth, WORD wHeight, BOOL redraw) const
 	{
 		::SetWindowPos(m_hwndToolbar, 0, 4, 0, wWidth, m_size_y, SWP_NOZORDER | SWP_NOACTIVATE |
 					   SWP_NOCOPYBITS|SWP_NOREDRAW);
 
 	}
-	LONG			getHeight() const;
-	void			Show(int showCmd) const
+	LONG			TSAPI getHeight() const;
+	void			TSAPI Show(int showCmd) const
 	{
 		::ShowWindow(m_hwndToolbar, showCmd);
 	}
-	LONG_PTR		Handle(const NMTOOLBAR *nmtb);
-	void			Cancel();
-	LONG_PTR		processMsg(const UINT msg, const WPARAM wParam, const LPARAM lParam);
-	bool			isContactMenu() const { return(m_isContactMenu); }
-	bool			isMainMenu() const { return(m_isMainMenu); }
-	void			configureMenu(void) const;
-	void			setActive(HMENU hMenu)
+	LONG_PTR		TSAPI Handle(const NMTOOLBAR *nmtb);
+	void			TSAPI Cancel();
+	LONG_PTR		TSAPI processMsg(const UINT msg, const WPARAM wParam, const LPARAM lParam);
+	bool			TSAPI isContactMenu() const { return(m_isContactMenu); }
+	bool			TSAPI isMainMenu() const { return(m_isMainMenu); }
+	void			TSAPI configureMenu(void) const;
+	void			TSAPI setActive(HMENU hMenu)
 	{
 		m_activeSubMenu = hMenu;
 	}
@@ -81,7 +81,7 @@ public:
 
 		return(result);
 	}
-	void			autoShow(const int showcmd = 1);
+	void			TSAPI autoShow(const int showcmd = 1);
 
 	const int	idToIndex(const int id) const
 	{
@@ -122,12 +122,12 @@ private:
 	static		CMenuBar *m_Owner;
 	static		int		  m_MimIconRefCount;
 private:
-	LONG_PTR	customDrawWorker(NMCUSTOMDRAW *nm);
-	void		updateState(const HMENU hMenu) const;
-	void		invoke(const int id);
-	void		cancel(const int id);
-	void 		obtainHook();
-	void		releaseHook();
+	LONG_PTR	TSAPI customDrawWorker(NMCUSTOMDRAW *nm);
+	void		TSAPI updateState(const HMENU hMenu) const;
+	void		TSAPI invoke(const int id);
+	void		TSAPI cancel(const int id);
+	void 		TSAPI obtainHook();
+	void		TSAPI releaseHook();
 
 	static LRESULT CALLBACK MessageHook(int nCode, WPARAM wParam, LPARAM lParam);
 };

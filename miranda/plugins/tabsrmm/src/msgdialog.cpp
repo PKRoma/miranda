@@ -2009,11 +2009,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			}
 			return newData->iActivate ? TRUE : FALSE;
 		}
-		case WM_ERASEBKGND: {
-			//if (m_pContainer->bSkinned || M->isAero() || M->isVSThemed())
-				return TRUE;
-			break;
-		}
+		case WM_ERASEBKGND:
+			return(1);
+
 		case WM_NCPAINT: {
 			if (CSkin::m_skinEnabled)
 				return 0;

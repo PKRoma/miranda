@@ -56,6 +56,9 @@
 #include <commctrl.h>
 #include <uxtheme.h>
 
+#define TSAPI __stdcall
+#define FASTCALL __fastcall
+
 	typedef struct _DWM_THUMBNAIL_PROPERTIES
 	{
 		DWORD dwFlags;
