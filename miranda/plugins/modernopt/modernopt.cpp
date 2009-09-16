@@ -224,10 +224,9 @@ static INT_PTR CALLBACK ModernOptDlgProc(HWND hwndDlg, UINT  msg, WPARAM wParam,
 		for (i = 0; i < SIZEOF(g_ModernOptPages); ++i)
 			if (g_ModernOptPages[i].bShow && g_ModernOptPages[i].bShowTab)
 			{
-				MIcoTab_AddItem(hwndCtrl,
-					TranslateTS(g_ModernOptPages[i].lpzTitle),
-					(HICON)LoadImage(hInst, MAKEINTRESOURCE(g_ModernOptPages[i].iIcon), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR),
-					i, TRUE);
+				HICON hIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(g_ModernOptPages[i].iIcon), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR);
+				MIcoTab_AddItem(hwndCtrl, TranslateTS(g_ModernOptPages[i].lpzTitle), hIcon, i, TRUE);
+				DestroyIcon(hIcon);
 			}
 
 		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
@@ -549,7 +548,7 @@ static INT_PTR svcModernOpt_AddObject(WPARAM wParam, LPARAM lParam)
 
 	if (obj->lpzClassicGroup)	objCopy->optObject.lpzClassicGroup	= mir_strdup(obj->lpzClassicGroup);
 	if (obj->lpzClassicPage)	objCopy->optObject.lpzClassicPage	= mir_strdup(obj->lpzClassicPage);
-	if (obj->lpzClassicTab)	objCopy->optObject.lpzClassicTab	= mir_strdup(obj->lpzClassicTab);
+	if (obj->lpzClassicTab)		objCopy->optObject.lpzClassicTab	= mir_strdup(obj->lpzClassicTab);
 	if (obj->lpzHelpUrl)		objCopy->optObject.lpzHelpUrl		= mir_strdup(obj->lpzHelpUrl);
 
 	if (obj->iBoldControls) {
@@ -601,7 +600,7 @@ static int hookModernOpt_Initialize(WPARAM wParam, LPARAM lParam)
 	static int iBoldControls[] =
 	{
 		IDC_TXT_TITLE1, IDC_TXT_TITLE2, IDC_TXT_TITLE3, IDC_TXT_TITLE4,
-		IDC_TXT_TITLE5, IDC_TXT_TITLE6, IDC_TXT_TITLE7, IDC_TXT_TITLE8,
+//		IDC_TXT_TITLE5, IDC_TXT_TITLE6, IDC_TXT_TITLE7, IDC_TXT_TITLE8,
 		MODERNOPT_CTRL_LAST
 	};
 

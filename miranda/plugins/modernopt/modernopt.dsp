@@ -136,7 +136,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 ws2_32.lib kernel32.lib user32.lib shell32.lib msvcrt.lib comdlg32.lib gdi32.lib comctl32.lib /nologo /dll /machine:I386 /nodefaultlib /out:"../../bin/release/plugins/modernopt.dll"
-# ADD LINK32 ws2_32.lib msvcrt.lib comctl32.lib kernel32.lib user32.lib shell32.lib comdlg32.lib gdi32.lib rpcrt4.lib /nologo /dll /machine:I386 /nodefaultlib /out:"../../bin/release unicode/plugins/modernopt.dll" /filealign:512
+# ADD LINK32 ws2_32.lib msvcrt.lib comctl32.lib kernel32.lib user32.lib shell32.lib comdlg32.lib gdi32.lib rpcrt4.lib /nologo /dll /map /machine:I386 /nodefaultlib /out:"../../bin/release unicode/plugins/modernopt.dll" /filealign:512
 # SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
