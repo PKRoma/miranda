@@ -222,7 +222,9 @@ public:
 		AERO_EFFECT_AREA_INFOPANEL = 2,
 		AERO_EFFECT_AREA_TAB_ACTIVE = 3,
 		AERO_EFFECT_AREA_TAB_HOVER = 4,
-		AERO_EFFECT_AREA_TAB_NORMAL = 5
+		AERO_EFFECT_AREA_TAB_NORMAL = 5,
+		AERO_EFFECT_AREA_TAB_TOP = 0x1000,
+		AERO_EFFECT_AREA_TAB_BOTTOM = 0x2000
 	};
 
 	enum {
@@ -275,6 +277,7 @@ public:
 
 	void				setupAeroSkins();
 	void 				extractSkinsAndLogo() const;
+	void				setupTabCloseBitmap();
 
 	/*
 	 * static member functions
@@ -318,6 +321,13 @@ public:
 	static BLENDFUNCTION m_default_bf;										// general purpose bf, dynamically modified when needed
 
 	/*
+	 * cached bitmap for tab close button
+	 */
+
+	static HBITMAP	m_tabCloseBitmap, m_tabCloseOldBitmap;
+	static HDC		m_tabCloseHDC;
+
+	/*
 	 * controls the aero effect. Set by initAeroEffect()
 	 */
 
@@ -358,11 +368,12 @@ struct TabControlData {
 	HWND    hwnd;
 	DWORD   dwStyle;
 	DWORD   cx, cy;
-	HANDLE  hTheme, hThemeButton;
+	HANDLE  hTheme, hThemeButton, hbp;
 	BYTE    m_xpad;
 	ContainerWindowData *pContainer;
 	BOOL    bDragging;
 	int     iBeginIndex;
+	int		iHoveredCloseIcon;
 	HWND    hwndDrag;
 	_MessageWindowData *dragDat;
 	HIMAGELIST himlDrag;
@@ -370,6 +381,7 @@ struct TabControlData {
 	BOOL    fSavePos;
 	BOOL    fTipActive;
 	BOOL	fAeroTabs;
+	BOOL	fCloseButton;
 	_MessageWindowData* helperDat;				// points to the client data of the active tab
 	CImageItem*			helperItem, *helperGlowItem;				// aero ui, holding the skin image for the tabs
 };

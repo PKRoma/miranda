@@ -355,9 +355,11 @@ BEGIN
     CONTROL         "Flash text label on tabs",IDC_FLASHLABEL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,120,127,186,12
     CONTROL         "Single row tab control",IDC_SINGLEROWTAB,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,120,138,190,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,120,138,130,12
+    CONTROL         "Close button",IDC_CLOSEBUTTONONTABS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,260,138,60,12
     CONTROL         "Use button tabs",IDC_BUTTONTABS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,120,149,60,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,120,149,130,12
     CONTROL         "Styled tabs",IDC_STYLEDTABS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,260,149,60,12
     LTEXT           "You have chosen to disable all event notifications for open message windows.",

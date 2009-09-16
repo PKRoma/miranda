@@ -2134,6 +2134,8 @@ static void LoadIconTheme()
 		return;
 	else
 		LoadFromIconLib();
+
+	Skin->setupTabCloseBitmap();
 	return;
 }
 

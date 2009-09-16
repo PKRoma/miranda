@@ -115,6 +115,8 @@ typedef struct  {
 	GETEVENTFUNC pfnAddEvent;
 }GCPTRS;
 
+class CMUCHighlight;
+
 //structs
 
 typedef struct  MODULE_INFO_TYPE
@@ -138,9 +140,10 @@ typedef struct  MODULE_INFO_TYPE
 	int			OnlineIconIndex;
 	int			OfflineIconIndex;
 	int			iMaxText;
-	DWORD		   idleTimeStamp;
-	DWORD		   lastIdleCheck;
-	TCHAR		   tszIdleMsg[30];
+	DWORD		idleTimeStamp;
+	DWORD		lastIdleCheck;
+	TCHAR		tszIdleMsg[30];
+	CMUCHighlight* Highlight;
 	struct MODULE_INFO_TYPE *next;
 }
 	MODULEINFO;
@@ -196,14 +199,6 @@ typedef struct  USERINFO_TYPE
 }
 	USERINFO;
 
-typedef struct  TABLIST_TYPE
-{
-	TCHAR* pszID;
-	char*  pszModule;
-	struct TABLIST_TYPE *next;
-}
-	TABLIST;
-
 typedef struct SESSION_INFO_TYPE
 {
 	HWND        hWnd;
@@ -249,6 +244,7 @@ typedef struct SESSION_INFO_TYPE
 	time_t      LastTime;
     TCHAR          szSearch[255];
     int            iSearchItem;
+	CMUCHighlight* Highlight;
 	COMMAND_INFO*  lpCommands;
 	COMMAND_INFO*  lpCurrentCommand;
 	LOGINFO*       pLog;
@@ -306,10 +302,9 @@ struct GlobalLogSettings_t {
 	TCHAR*      pszTimeStampLog;
 	TCHAR*      pszIncomingNick;
 	TCHAR*      pszOutgoingNick;
-	TCHAR*      pszHighlightWords;
 	TCHAR	    pszLogDir[MAX_PATH + 20];
-	HFONT       UserListFont;
-	HFONT       UserListHeadingsFont;
+	LONG		iNickListFontHeight;
+	HFONT		UserListFont, UserListHeadingsFont;
 	HFONT       NameFont;
 	COLORREF    crLogBackground;
 	COLORREF    crUserListColor;
@@ -337,6 +332,7 @@ struct GlobalLogSettings_t {
 	BOOL		DoubleClick4Privat;
 	BOOL		ShowContactStatus;
 	BOOL		ContactStatusFirst;
+	CMUCHighlight* Highlight;
 };
 extern struct GlobalLogSettings_t g_Settings;
 

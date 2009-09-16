@@ -89,7 +89,7 @@ BOOL          SM_SetStatus(const TCHAR* pszID, const char* pszModule, int wStatu
 BOOL          SM_SetStatusEx(const TCHAR* pszID, const char* pszModule, const TCHAR* pszText, int flags );
 BOOL          SM_SendUserMessage(const TCHAR* pszID, const char* pszModule, const TCHAR* pszText);
 STATUSINFO*   SM_AddStatus(const TCHAR* pszID, const char* pszModule, const TCHAR* pszStatus);
-BOOL          SM_AddEventToAllMatchingUID(GCEVENT * gce);
+BOOL          SM_AddEventToAllMatchingUID(GCEVENT * gce, BOOL bisHighLight = FALSE);
 BOOL          SM_AddEvent(const TCHAR* pszID, const char* pszModule, GCEVENT * gce, BOOL bIsHighlighted);
 LRESULT       SM_SendMessage(const TCHAR* pszID, const char* pszModule, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL          SM_PostMessage(const TCHAR* pszID, const char* pszModule, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -154,7 +154,7 @@ HANDLE        CList_FindRoom (const char* pszModule, const TCHAR* pszRoom) ;
 int           WCCmp(TCHAR* wild, TCHAR*string);
 
 //tools.c
-TCHAR*        RemoveFormatting(const TCHAR* pszText);
+TCHAR*        RemoveFormatting(const TCHAR* pszText, bool fLower = false);
 BOOL          DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighlight, int bManyFix);
 int           Chat_GetColorIndex(const char* pszModule, COLORREF cr);
 void          CheckColorsInModule(const char* pszModule);

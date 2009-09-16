@@ -405,6 +405,14 @@ const TCHAR *NewTitle(const _MessageWindowData *dat, const TCHAR *szFormat)
 				title.erase(tempmark, 2);
 				break;
 			}
+			case 't':
+				if(dat->statusMsg[0]) {
+					title.insert(tempmark + 2, dat->statusMsg);
+					curpos = tempmark + lstrlen(dat->statusMsg);
+				}
+				title.erase(tempmark, 2);
+				break;
+
 			default:
 				title.erase(tempmark, 1);
 				break;

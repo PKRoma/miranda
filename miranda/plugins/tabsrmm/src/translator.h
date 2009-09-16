@@ -193,7 +193,11 @@ public:
 		MUC_LOG_TOPICSETBY										= 150,
 		MUC_LOG_STATUSENABLE									= 151,
 		MUC_LOG_STATUSDISABLE									= 152,
-		STR_LAST 												= 153
+		GEN_MUC_MENU_ADDTOHIGHLIGHT								= 153,
+		GEN_MUC_HIGHLIGHT_ADD									= 154,
+		GEN_MUC_HIGHLIGHT_EDIT									= 155,
+		GEN_MUC_MENU_EDITHIGHLIGHTLIST							= 156,
+		STR_LAST 												= 157
 	};
 
 	enum {
@@ -296,7 +300,8 @@ public:
 		OPT_TABS_MUC_SETTINGS									= 96,
 		OPT_TABS_MUC_LOG										= 97,
 		OPT_TABS_MUC_EVENTS										= 98,
-		OPT_LAST												= 99
+		OPT_TABS_MUC_HIGHLIGHT									= 99,
+		OPT_LAST												= 100
 	};
 
 	/*

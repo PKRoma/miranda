@@ -60,8 +60,8 @@ class CSideBar;
 class CSideBarButton
 {
 public:
-	CSideBarButton(const UINT id, const CSideBar *sideBar);
-	CSideBarButton(const _MessageWindowData *dat, const CSideBar *sideBar);
+	CSideBarButton(const UINT id, CSideBar *sideBar);
+	CSideBarButton(const _MessageWindowData *dat, CSideBar *sideBar);
 	~CSideBarButton();
 
 	void 						RenderThis(const HDC hdc) const;
@@ -71,6 +71,7 @@ public:
 	const HANDLE				getContactHandle() const { return(m_dat->hContact); }
 	const _MessageWindowData*	getDat() const { return(m_dat); }
 
+	int							testCloseButton() const;
 	const bool					isTopAligned() const { return(m_isTopAligned); }
 	void 						Show(const int showCmd) const;
 	void						activateSession() const;
@@ -81,9 +82,10 @@ public:
 	{
 		m_sideBarLayout = newLayout;
 	}
+	const TSideBarLayout*		getLayout() const { return(m_sideBarLayout); }
 
 public:
-	const	CSideBar* 			m_sideBar;
+	CSideBar* 					m_sideBar;
 	const	MButtonCtrl*		m_buttonControl;						// private data struct of the Win32 button object
 private:
 	void						_create();
@@ -151,6 +153,11 @@ public:
 		scrollIntoView(m_activeItem);
 		return(oldItem);
 	}
+	void								setHoveredClose(CSideBarButton* item)
+	{
+		m_hoveredClose = item;
+	}
+	const CSideBarButton*				getHoveredClose() const { return(m_hoveredClose); }
 
 	const CSideBarButton* 				setActiveItem(const _MessageWindowData *dat);
 
@@ -184,6 +191,7 @@ private:
 	DWORD								m_dwFlags;
 	CSideBarButton*						m_up, *m_down;							// the scroller buttons (up down)
 	CSideBarButton*						m_activeItem;							// active button item (for highlighting)
+	const CSideBarButton*				m_hoveredClose;							// item which must display an active close button
 	LONG								m_topHeight, m_bottomHeight;
 	LONG								m_firstVisibleOffset, m_totalItemHeight;
 	int									m_iTopButtons, m_iBottomButtons;

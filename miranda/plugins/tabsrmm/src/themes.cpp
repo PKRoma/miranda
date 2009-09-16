@@ -34,6 +34,7 @@
  */
 
 #include "commonheaders.h"
+#include <stdexcept>
 #pragma hdrstop
 
 static SKINDESC my_default_skin[] = {
@@ -102,6 +103,9 @@ UINT 	CSkin::m_aeroEffect = 0;
 DWORD 	CSkin::m_glowSize = 0;
 HBRUSH  CSkin::m_BrushBack = 0;
 
+HBITMAP CSkin::m_tabCloseBitmap = 0, CSkin::m_tabCloseOldBitmap = 0;
+HDC		CSkin::m_tabCloseHDC = 0;
+
 /*
  * aero effects
  */
@@ -149,7 +153,7 @@ AeroEffect  CSkin::m_aeroEffects[AERO_EFFECT_LAST] = {
 		20,
 		0,
 		GRADIENT_TB + 1,
-		0,
+		1,
 		0,
 		0,
 		0xf0f0f0,
@@ -163,7 +167,7 @@ AeroEffect  CSkin::m_aeroEffects[AERO_EFFECT_LAST] = {
 		220,
 		0,
 		GRADIENT_TB + 1,
-		0,
+		1,
 		0,
 		0xc0c0c0,
 		0xf0f0f0,
@@ -177,7 +181,7 @@ AeroEffect  CSkin::m_aeroEffects[AERO_EFFECT_LAST] = {
 		220,
 		0,
 		GRADIENT_TB + 1,
-		0,
+		1,
 		0,
 		0xc0c0c0,
 		-1,
@@ -204,8 +208,8 @@ CRTException::CRTException(const char *szMsg, const TCHAR *szParam) : std::runti
 
 void CRTException::display() const
 {
-	TCHAR  *tszMsg = mir_a2t(what());
-	TCHAR  tszBoxMsg[500];
+	TCHAR*	tszMsg = mir_a2t(what());
+	TCHAR  	tszBoxMsg[500];
 
 	mir_sntprintf(tszBoxMsg, 500, _T("%s\n\n(%s)"), tszMsg, m_szParam);
 	::MessageBox(0, tszBoxMsg, _T("TabSRMM runtime error"), MB_OK | MB_ICONERROR);
@@ -385,7 +389,7 @@ void __stdcall DrawAlpha(HDC hDC, PRECT rc, DWORD clr_base, int alpha, DWORD clr
 	 * use GDI fast gradient drawing when no corner radi exist
 	 */
 
-	if (bCorner == 0) {
+	if (bCorner == 0 && dwRadius == 0) {
 		GRADIENT_RECT grect;
 		TRIVERTEX tvtx[2];
 		int orig = 1, dest = 0;
@@ -1833,6 +1837,51 @@ void CSkin::LoadItems()
 	g_ButtonSet.right = GetPrivateProfileInt(_T("ButtonArea"), _T("right"), 0, m_tszFileName);
 }
 
+void CSkin::setupTabCloseBitmap()
+{
+	if(m_tabCloseHDC) {
+		::SelectObject(m_tabCloseHDC, m_tabCloseOldBitmap);
+		::DeleteObject(m_tabCloseBitmap);
+		::DeleteDC(m_tabCloseHDC);
+	}
+
+	bool fFree = false;
+	RECT rc = {0, 0, 20, 20};
+	HDC  dc = ::GetDC(PluginConfig.g_hwndHotkeyHandler);
+	m_tabCloseHDC = ::CreateCompatibleDC(dc);
+
+	if(M->isAero())
+		m_tabCloseBitmap = CreateAeroCompatibleBitmap(rc, m_tabCloseHDC);
+	else
+		m_tabCloseBitmap = ::CreateCompatibleBitmap(dc, 20, 20);
+
+	m_tabCloseOldBitmap = (HBITMAP)::SelectObject(m_tabCloseHDC, m_tabCloseBitmap);
+
+	if(M->isVSThemed() || M->isAero()) {
+		::FillRect(m_tabCloseHDC, &rc, M->isAero() ? (HBRUSH)::GetStockObject(BLACK_BRUSH) : ::GetSysColorBrush(COLOR_3DFACE));
+
+		HANDLE hTheme = CMimAPI::m_pfnOpenThemeData(PluginConfig.g_hwndHotkeyHandler, L"BUTTON");
+		rc.left--; rc.right++;
+		rc.top--; rc.bottom++;
+		CMimAPI::m_pfnDrawThemeParentBackground(PluginConfig.g_hwndHotkeyHandler, m_tabCloseHDC, &rc);
+		CMimAPI::m_pfnDrawThemeBackground(hTheme, m_tabCloseHDC, 1, 1, &rc, &rc);
+		CMimAPI::m_pfnCloseThemeData(hTheme);
+	}
+	else {
+		::FillRect(m_tabCloseHDC, &rc, ::GetSysColorBrush(COLOR_3DFACE));
+		::DrawFrameControl(m_tabCloseHDC, &rc, DFC_BUTTON, DFCS_BUTTONPUSH | DFCS_MONO);
+	}
+	::DrawIconEx(m_tabCloseHDC, 2, 2, PluginConfig.g_buttonBarIcons[6], 16, 16, 0, 0, DI_NORMAL);
+	::SelectObject(m_tabCloseHDC, m_tabCloseOldBitmap);
+
+	HBITMAP hbmTemp = ResizeBitmap(m_tabCloseBitmap, 16, 16, fFree);
+	::DeleteObject(m_tabCloseBitmap);
+	m_tabCloseBitmap = hbmTemp;
+	CImageItem::PreMultiply(m_tabCloseBitmap, 1);
+	m_tabCloseOldBitmap = (HBITMAP)::SelectObject(m_tabCloseHDC, m_tabCloseBitmap);
+
+	::ReleaseDC(PluginConfig.g_hwndHotkeyHandler, dc);
+}
 /**
  * load and setup some images which are used to draw tabs in aero mode
  */
@@ -2534,29 +2583,39 @@ void CSkin::ApplyAeroEffect(const HDC hdc, const RECT *rc, int iEffectArea, HAND
 			return;
 
 		case AERO_EFFECT_MILK: {
-			int 	alpha = (iEffectArea == AERO_EFFECT_AREA_INFOPANEL) ? m_pCurrentAeroEffect->m_baseAlpha : 40;
-			if(iEffectArea == AERO_EFFECT_AREA_MENUBAR)
-				alpha = 90;
-			BYTE 	color2_trans = (iEffectArea == AERO_EFFECT_AREA_MENUBAR) ? 0 : 1;
-			DWORD   corner = (iEffectArea == AERO_EFFECT_AREA_INFOPANEL) ? m_pCurrentAeroEffect->m_cornerRadius : 6;
+			if(iEffectArea < 0x1000) {
+				int 	alpha = (iEffectArea == AERO_EFFECT_AREA_INFOPANEL) ? m_pCurrentAeroEffect->m_baseAlpha : 40;
+				if(iEffectArea == AERO_EFFECT_AREA_MENUBAR)
+					alpha = 90;
+				BYTE 	color2_trans = (iEffectArea == AERO_EFFECT_AREA_MENUBAR) ? 0 : 1;
+				DWORD   corner = (iEffectArea == AERO_EFFECT_AREA_INFOPANEL) ? m_pCurrentAeroEffect->m_cornerRadius : 6;
 
-			DrawAlpha(hdc, const_cast<RECT *>(rc), m_pCurrentAeroEffect->m_baseColor, alpha, m_pCurrentAeroEffect->m_gradientColor,
-					  color2_trans, m_pCurrentAeroEffect->m_gradientType, m_pCurrentAeroEffect->m_cornerType, corner, 0);
+				DrawAlpha(hdc, const_cast<RECT *>(rc), m_pCurrentAeroEffect->m_baseColor, alpha, m_pCurrentAeroEffect->m_gradientColor,
+						  color2_trans, m_pCurrentAeroEffect->m_gradientType, m_pCurrentAeroEffect->m_cornerType, corner, 0);
+			}
 			break;
 		}
 
 		case AERO_EFFECT_CARBON:
-			DrawAlpha(hdc, const_cast<RECT *>(rc), m_pCurrentAeroEffect->m_baseColor, m_pCurrentAeroEffect->m_baseAlpha,
-					  m_pCurrentAeroEffect->m_gradientColor, 0, m_pCurrentAeroEffect->m_gradientType,
-					  m_pCurrentAeroEffect->m_cornerType, m_pCurrentAeroEffect->m_cornerRadius, 0);
+			if(iEffectArea < 0x1000)
+				DrawAlpha(hdc, const_cast<RECT *>(rc), m_pCurrentAeroEffect->m_baseColor, m_pCurrentAeroEffect->m_baseAlpha,
+						  m_pCurrentAeroEffect->m_gradientColor, 0, m_pCurrentAeroEffect->m_gradientType,
+						  m_pCurrentAeroEffect->m_cornerType, m_pCurrentAeroEffect->m_cornerRadius, 0);
 			break;
 
 		case AERO_EFFECT_SOLID:
 		case AERO_EFFECT_WHITE:
 		case AERO_EFFECT_CUSTOM:
-			DrawAlpha(hdc, const_cast<RECT *>(rc), m_pCurrentAeroEffect->m_baseColor, m_pCurrentAeroEffect->m_baseAlpha,
-					  m_pCurrentAeroEffect->m_gradientColor, 0, m_pCurrentAeroEffect->m_gradientType,
-					  m_pCurrentAeroEffect->m_cornerType, m_pCurrentAeroEffect->m_cornerRadius, 0);
+			if(iEffectArea < 0x1000)
+				DrawAlpha(hdc, const_cast<RECT *>(rc), m_pCurrentAeroEffect->m_baseColor, m_pCurrentAeroEffect->m_baseAlpha,
+						  m_pCurrentAeroEffect->m_gradientColor, 0, m_pCurrentAeroEffect->m_gradientType,
+						  m_pCurrentAeroEffect->m_cornerType, m_pCurrentAeroEffect->m_cornerRadius, 0);
+			else {
+				BYTE	bGradient = (iEffectArea & AERO_EFFECT_AREA_TAB_BOTTOM ? GRADIENT_BT : GRADIENT_TB) + 1;
+				DrawAlpha(hdc, const_cast<RECT *>(rc), m_pCurrentAeroEffect->m_baseColor, 70,
+						  m_pCurrentAeroEffect->m_gradientColor, 1, bGradient,
+						  m_pCurrentAeroEffect->m_cornerType, m_pCurrentAeroEffect->m_cornerRadius, 0);
+			}
 			break;
 		default:
 			break;
@@ -2700,7 +2759,6 @@ void CSkin::extractSkinsAndLogo() const
 	}
 	catch(CRTException& ex) {
 		ex.display();
-
 		PluginConfig.hbmLogo = 0;
 		return;
 	}

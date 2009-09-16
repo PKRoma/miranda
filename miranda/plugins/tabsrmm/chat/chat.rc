@@ -9,7 +9,6 @@
 //
 #include "winres.h"
 #include "richedit.h"
-
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -43,9 +42,28 @@ BEGIN
                     LBS_OWNERDRAWFIXED | LBS_NOINTEGRALHEIGHT | 
                     LBS_EXTENDEDSEL | LBS_NODATA | NOT WS_BORDER | 
                     WS_VSCROLL | WS_TABSTOP,WS_EX_STATICEDGE
-    CONTROL         "",IDC_PANELNICK,"Static",SS_OWNERDRAW | SS_CENTERIMAGE | WS_GROUP,40,2,100,14
-    CONTROL         "",IDC_PANELUIN,"Static",SS_OWNERDRAW | SS_CENTERIMAGE | WS_GROUP,40,16,100,14
-    CONTROL         "",IDC_PANELSPLITTER,"Static",SS_ENHMETAFILE,0,32,252,1,WS_EX_TRANSPARENT
+    CONTROL         "",IDC_PANELNICK,"Static",SS_OWNERDRAW | SS_CENTERIMAGE | 
+                    WS_GROUP,40,2,100,14
+    CONTROL         "",IDC_PANELUIN,"Static",SS_OWNERDRAW | SS_CENTERIMAGE | 
+                    WS_GROUP,40,16,100,14
+    CONTROL         "",IDC_PANELSPLITTER,"Static",SS_ENHMETAFILE,0,32,252,1,
+                    WS_EX_TRANSPARENT
+END
+
+IDD_ADDHIGHLIGHT DIALOG DISCARDABLE  0, 0, 212, 97
+STYLE DS_FIXEDSYS | WS_CHILD | WS_BORDER
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT           "",IDC_STATIC,0,0,211,97
+    LTEXT           "",IDC_ADDHIGHLIGHTTITLE,7,3,
+                    201,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_ADDHIGHLIGHTNAME,17,24,178,17,CBS_DROPDOWN | 
+                    CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "You can add the user by user name or his id. Wildcards are allowed and recommended.",
+                    IDC_ADDHIGHLIGHTEXPLAIN,15,49,179,21
+    DEFPUSHBUTTON   "OK",IDOK,152,76,55,14
+    DEFPUSHBUTTON   "Cancel",IDCANCEL,91,76,55,14
+    EDITTEXT        IDC_ADDHIGHLIGHTEDITLIST,9,18,192,47,ES_AUTOHSCROLL
 END
 
 IDD_FILTER DIALOGEX 0, 0, 201, 126
@@ -131,8 +149,8 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Options",IDC_STATIC,3,0,300,229
     CONTROL         "",IDC_CHECKBOXES,"SysTreeView32",TVS_HASBUTTONS | 
-                    TVS_DISABLEDRAGDROP | 
-                    TVS_FULLROWSELECT | WS_BORDER | WS_TABSTOP,6,26,294,177
+                    TVS_DISABLEDRAGDROP | TVS_FULLROWSELECT | WS_BORDER | 
+                    WS_TABSTOP,6,26,294,177
     LTEXT           "Add new rooms to group:",IDC_STATIC_ADD,10,213,132,8
     EDITTEXT        IDC_GROUP,152,210,50,14,ES_AUTOHSCROLL
     LTEXT           "Chat integration is disabled. You can enable it here, and then you to NEED RESTART Miranda after making this change.\n\nYou MUST disable the standard chat plugin when you enable the group chat support here. Otherwise no group chat at all may work.",
@@ -173,12 +191,6 @@ BEGIN
     CONTROL         "Spin1",IDC_CHAT_SPIN2,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS | UDS_HOTTRACK,281,122,11,14
-    GROUPBOX        "Highlighting",IDC_STATIC,1,147,299,58
-    CONTROL         "Enable highlighting",IDC_HIGHLIGHT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,161,118,10
-    LTEXT           "Words to highlight (wildcards allowed)",IDC_STATIC,17,
-                    173,240,8
-    EDITTEXT        IDC_HIGHLIGHTWORDS,15,183,276,14,ES_AUTOHSCROLL
     LTEXT           "Groupchat userlist row height (pixels)",
                     IDC_STATIC_ULIST,10,212,178,8
     EDITTEXT        IDC_NICKROW2,212,209,29,14,ES_RIGHT | ES_AUTOHSCROLL | 
@@ -191,7 +203,7 @@ END
 IDD_OPTIONS3 DIALOGEX 0, 0, 306, 239
 STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Default settings for known event types",IDC_STATIC,7,5,
                     293,146
@@ -202,10 +214,10 @@ BEGIN
     CTEXT           "Notify in tray",IDC_TEXTO3,183,13,49,13,SS_CENTERIMAGE
     CONTROL         "Actions",IDC_1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,32,
                     28,82,10
-    CONTROL         "Messages",IDC_2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,32,
-                    38,82,10
-    CONTROL         "Nick changes",IDC_3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    32,48,82,10
+    CONTROL         "Messages",IDC_2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    32,38,82,10
+    CONTROL         "Nick changes",IDC_3,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,32,48,82,10
     CONTROL         "Users joining",IDC_4,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,32,58,82,10
     CONTROL         "Users leaving",IDC_5,"Button",BS_AUTOCHECKBOX | 
@@ -214,80 +226,80 @@ BEGIN
                     WS_TABSTOP,32,78,82,10
     CONTROL         "Status changes",IDC_7,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,32,88,82,10
-    CONTROL         "Information",IDC_8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    32,98,82,10
-    CONTROL         "Disconnects",IDC_9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    32,108,82,10
-    CONTROL         "User kicks",IDC_10,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    32,118,82,10
-    CONTROL         "Notices",IDC_11,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,32,
-                    128,82,10
-    CONTROL         "",IDC_P1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,28,21,
-                    10
-    CONTROL         "",IDC_P2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,38,21,
-                    10
-    CONTROL         "",IDC_P3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,48,21,
-                    10
-    CONTROL         "",IDC_P4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,58,21,
-                    10
-    CONTROL         "",IDC_P5,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,68,21,
-                    10
-    CONTROL         "",IDC_P6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,78,21,
-                    10
-    CONTROL         "",IDC_P7,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,88,21,
-                    10
-    CONTROL         "",IDC_P8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,98,21,
-                    10
-    CONTROL         "",IDC_P9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,108,21,
-                    10
+    CONTROL         "Information",IDC_8,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,32,98,82,10
+    CONTROL         "Disconnects",IDC_9,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,32,108,82,10
+    CONTROL         "User kicks",IDC_10,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,32,118,82,10
+    CONTROL         "Notices",IDC_11,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    32,128,82,10
+    CONTROL         "",IDC_P1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,28,
+                    21,10
+    CONTROL         "",IDC_P2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,38,
+                    21,10
+    CONTROL         "",IDC_P3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,48,
+                    21,10
+    CONTROL         "",IDC_P4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,58,
+                    21,10
+    CONTROL         "",IDC_P5,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,68,
+                    21,10
+    CONTROL         "",IDC_P6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,78,
+                    21,10
+    CONTROL         "",IDC_P7,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,88,
+                    21,10
+    CONTROL         "",IDC_P8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,98,
+                    21,10
+    CONTROL         "",IDC_P9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,108,
+                    21,10
     CONTROL         "",IDC_P10,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,118,
                     21,10
     CONTROL         "",IDC_P11,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,128,
                     21,10
     CONTROL         "",IDC_P12,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,138,
                     21,10
-    CONTROL         "",IDC_T1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,28,21,
-                    10
-    CONTROL         "",IDC_T2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,38,21,
-                    10
-    CONTROL         "",IDC_T3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,48,21,
-                    10
-    CONTROL         "",IDC_T4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,58,21,
-                    10
-    CONTROL         "",IDC_T5,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,68,21,
-                    10
-    CONTROL         "",IDC_T6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,78,21,
-                    10
-    CONTROL         "",IDC_T7,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,88,21,
-                    10
-    CONTROL         "",IDC_T8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,98,21,
-                    10
-    CONTROL         "",IDC_T9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,108,21,
-                    10
+    CONTROL         "",IDC_T1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,28,
+                    21,10
+    CONTROL         "",IDC_T2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,38,
+                    21,10
+    CONTROL         "",IDC_T3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,48,
+                    21,10
+    CONTROL         "",IDC_T4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,58,
+                    21,10
+    CONTROL         "",IDC_T5,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,68,
+                    21,10
+    CONTROL         "",IDC_T6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,78,
+                    21,10
+    CONTROL         "",IDC_T7,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,88,
+                    21,10
+    CONTROL         "",IDC_T8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,98,
+                    21,10
+    CONTROL         "",IDC_T9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,108,
+                    21,10
     CONTROL         "",IDC_T10,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,118,
                     21,10
     CONTROL         "",IDC_T11,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,128,
                     21,10
     CONTROL         "",IDC_T12,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,138,
                     21,10
-    CONTROL         "",IDC_L1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,28,21,
-                    10
-    CONTROL         "",IDC_L2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,38,21,
-                    10
-    CONTROL         "",IDC_L3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,48,21,
-                    10
-    CONTROL         "",IDC_L4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,58,21,
-                    10
-    CONTROL         "",IDC_L5,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,68,21,
-                    10
-    CONTROL         "",IDC_L6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,78,21,
-                    10
-    CONTROL         "",IDC_L7,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,88,21,
-                    10
-    CONTROL         "",IDC_L8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,98,21,
-                    10
-    CONTROL         "",IDC_L9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,108,21,
-                    10
+    CONTROL         "",IDC_L1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,28,
+                    21,10
+    CONTROL         "",IDC_L2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,38,
+                    21,10
+    CONTROL         "",IDC_L3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,48,
+                    21,10
+    CONTROL         "",IDC_L4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,58,
+                    21,10
+    CONTROL         "",IDC_L5,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,68,
+                    21,10
+    CONTROL         "",IDC_L6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,78,
+                    21,10
+    CONTROL         "",IDC_L7,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,88,
+                    21,10
+    CONTROL         "",IDC_L8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,98,
+                    21,10
+    CONTROL         "",IDC_L9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,108,
+                    21,10
     CONTROL         "",IDC_L10,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,118,
                     21,10
     CONTROL         "",IDC_L11,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,128,
@@ -303,6 +315,29 @@ BEGIN
                     CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Line markers in the message log",IDC_STATIC,14,201,132,
                     10
+END
+
+IDD_OPTIONS4 DIALOGEX 0, 0, 306, 239
+STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Highlight user names",IDC_STATIC,3,6,300,104
+    CONTROL         "Enable highlighting for user names",
+                    IDC_HIGHLIGHTNICKENABLE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,13,20,278,11
+    CONTROL         "Also look in user ids",IDC_HIGHLIGHTNICKUID,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,13,34,278,11
+    EDITTEXT        IDC_HIGHLIGHTNICKPATTERN,11,69,283,35,ES_AUTOHSCROLL
+    LTEXT           "Names to highlight, wildcards like * and ? are allowed, separate multiple entries with spaces",
+                    IDC_STATIC,10,49,284,19
+    GROUPBOX        "Highlight message text",IDC_STATIC,3,120,300,109
+    CONTROL         "Enable highlighting for message text",
+                    IDC_HIGHLIGHTTEXTENABLE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,13,135,278,11
+    EDITTEXT        IDC_HIGHLIGHTTEXTPATTERN,11,187,283,35,ES_AUTOHSCROLL
+    LTEXT           "Words to highlight, wildcards like * and ? are allowed, separate multiple entries with spaces",
+                    IDC_STATIC,10,158,284,23
 END
 
 IDD_COLORCHOOSER DIALOGEX 0, 0, 198, 150
@@ -380,16 +415,6 @@ BEGIN
         HORZGUIDE, 150
         HORZGUIDE, 174
         HORZGUIDE, 212
-    END
-
-    IDD_OPTIONSPOPUP, DIALOG
-    BEGIN
-        VERTGUIDE, 33
-        VERTGUIDE, 157
-        VERTGUIDE, 201
-        HORZGUIDE, 49
-        HORZGUIDE, 81
-        HORZGUIDE, 174
     END
 END
 #endif    // APSTUDIO_INVOKED

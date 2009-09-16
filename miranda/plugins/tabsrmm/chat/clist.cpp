@@ -333,38 +333,3 @@ HANDLE CList_FindRoom(const char* pszModule, const TCHAR* pszRoom)
 	return 0;
 }
 
-int WCCmp(TCHAR* wild, TCHAR* string)
-{
-	TCHAR *cp, *mp;
-	if (wild == NULL || !lstrlen(wild) || string == NULL || !lstrlen(string))
-		return 0;
-
-	while ((*string) && (*wild != '*')) {
-		if ((*wild != *string) && (*wild != '?'))
-			return 0;
-
-		wild++;
-		string++;
-	}
-
-	while (*string) {
-		if (*wild == '*') {
-			if (!*++wild)
-				return 1;
-
-			mp = wild;
-			cp = string + 1;
-		} else if ((*wild == *string) || (*wild == '?')) {
-			wild++;
-			string++;
-		} else {
-			wild = mp;
-			string = cp++;
-		}
-	}
-
-	while (*wild == '*')
-		wild++;
-
-	return !*wild;
-}

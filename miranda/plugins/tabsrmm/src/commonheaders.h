@@ -56,9 +56,6 @@
 #include <commctrl.h>
 #include <uxtheme.h>
 
-#if _MSC_VER >= 1500
-	#include <dwmapi.h>
-#else
 	typedef struct _DWM_THUMBNAIL_PROPERTIES
 	{
 		DWORD dwFlags;
@@ -72,6 +69,7 @@
 	typedef HANDLE HTHUMBNAIL;
 	typedef HTHUMBNAIL* PHTHUMBNAIL;
 
+#ifndef BPPF_ERASE
 	typedef enum _BP_BUFFERFORMAT
 	{
 		BPBF_COMPATIBLEBITMAP,    // Compatible bitmap
@@ -79,6 +77,7 @@
 		BPBF_TOPDOWNDIB,          // Top-down device-independent bitmap
 		BPBF_TOPDOWNMONODIB       // Top-down monochrome device-independent bitmap
 	} BP_BUFFERFORMAT;
+
 
 	typedef struct _BP_PAINTPARAMS
 	{
@@ -88,6 +87,11 @@
 		const BLENDFUNCTION *       pBlendFunction;
 	} BP_PAINTPARAMS, *PBP_PAINTPARAMS;
 
+	#define BPPF_ERASE               1
+	#define BPPF_NOCLIP              2
+	#define BPPF_NONCLIENT           4
+#endif
+
 	typedef struct _DWM_BLURBEHIND
 	{
 		DWORD dwFlags;
@@ -96,16 +100,13 @@
 		BOOL fTransitionOnMaximized;
 	} DWM_BLURBEHIND, *PDWM_BLURBEHIND;
 
-	#define BPPF_ERASE               1
-	#define BPPF_NOCLIP              2
-	#define BPPF_NONCLIENT           4
-
 	#define DWM_BB_ENABLE 1
 
+#ifndef LOCALE_SISO3166CTRYNAME2
 	#define LOCALE_SISO3166CTRYNAME2      0x00000068   // 3 character ISO country name, eg "USA Vista+
 	#define LOCALE_SISO639LANGNAME2       0x00000067   // 3 character ISO abbreviated language name, eg "eng"
-
 #endif
+
 #define WM_DWMCOMPOSITIONCHANGED        0x031E
 #define WM_DWMCOLORIZATIONCOLORCHANGED  0x0320
 
@@ -191,9 +192,9 @@ extern struct LIST_INTERFACE li;
 #include "functions.h"
 #include "typingnotify.h"
 #include "generic_msghandlers.h"
-#include "../chat/chat.h"
 extern 	NEN_OPTIONS	nen_options;
 #endif
+#include "../chat/chat.h"
 
 #include "translator.h"
 #include "themes.h"
@@ -204,6 +205,7 @@ extern 	NEN_OPTIONS	nen_options;
 #include "controls.h"
 #include "infopanel.h"
 #include "sidebar.h"
+#include "../chat/muchighlight.h"
 
 #if !defined(_WIN64) && !defined(_USE_32BIT_TIME_T)
 	#define _USE_32BIT_TIME_T

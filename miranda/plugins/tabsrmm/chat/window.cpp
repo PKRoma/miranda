@@ -1842,6 +1842,21 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 					case 0:
 						break;
 
+					case 20020:	{							// add to highlight...
+						RECT	rc, rcWnd;
+						THighLightEdit the = {THighLightEdit::CMD_ADD, parentdat, ui};
+
+						if(parentdat && ui) {
+							HWND hwnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_ADDHIGHLIGHT), parentdat->dat->pContainer->hwnd, CMUCHighlight::dlgProcAdd, (LPARAM)&the);
+							TranslateDialogDefault(hwnd);
+							GetClientRect(parentdat->pContainer->hwnd, &rcWnd);
+							GetWindowRect(hwnd, &rc);
+
+							SetWindowPos(hwnd, HWND_TOP, (rcWnd.right - (rc.right - rc.left)) / 2, (rcWnd.bottom - (rc.bottom - rc.top)) / 2 , 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+						}
+						break;
+					}
+
 					case ID_MESS:
 						DoEventHookAsync(GetParent(hwnd), parentdat->ptszID, parentdat->pszModule, GC_USER_PRIVMESS, ui->pszUID, NULL, (LPARAM)NULL);
 						break;
@@ -2168,18 +2183,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			}
 			SendDlgItemMessage(hwndDlg, IDOK, BUTTONSETASFLATBTN + 14, 0, 0);
 			{
-				// nicklist
-				int ih;
-				int ih2;
-				int font;
-				int height;
-
-				ih = GetTextPixelSize(_T("AQGglo"), g_Settings.UserListFont, FALSE);
-				ih2 = GetTextPixelSize(_T("AQGglo"), g_Settings.UserListHeadingsFont, FALSE);
-				height = M->GetByte("Chat", "NicklistRowDist", 12);
-				font = ih > ih2 ? ih : ih2;
-
-				SendMessage(GetDlgItem(hwndDlg, IDC_LIST), LB_SETITEMHEIGHT, 0, (LPARAM)height > font ? height : font);
+				SendMessage(GetDlgItem(hwndDlg, IDC_LIST), LB_SETITEMHEIGHT, 0, (LPARAM)g_Settings.iNickListFontHeight);
 				InvalidateRect(GetDlgItem(hwndDlg, IDC_LIST), NULL, TRUE);
 			}
 			SendDlgItemMessage(hwndDlg, IDC_FILTER, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(si->bFilterEnabled ? IDI_FILTER : IDI_FILTER2, si->bFilterEnabled ? (char *)"filter" : (char *)"filter2", 0, 0));
@@ -2263,7 +2267,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			if(dat->bWasDeleted)
 				return(0);
 
-			if (dat->pContainer->hwndActive != hwndDlg || dat->pContainer->hwndStatus == 0 || CMimAPI::m_shutDown)
+			if (dat->pContainer->hwndActive != hwndDlg || dat->pContainer->hwndStatus == 0 || CMimAPI::m_shutDown || dat->szStatusBar[0])
 				break;
 	//TODO: check tooltip module, if not presented, show normal tooltip
 			if (si->pszModule != NULL) {
@@ -2410,19 +2414,8 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 			if (mis->CtlType == ODT_MENU)
 				return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
-			else {
-				int ih = GetTextPixelSize(_T("AQGglo"), g_Settings.UserListFont, FALSE);
-				int ih2 = GetTextPixelSize(_T("AQGglo"), g_Settings.UserListHeadingsFont, FALSE);
-				int font = ih > ih2 ? ih : ih2;
-				int height = M->GetByte("Chat", "NicklistRowDist", 12);
-
-				mis->itemHeight = height > font ? height : font;
-
-				// make sure we have enough space for icon!
-				/*if (g_Settings.ShowContactStatus)
-					mis->itemHeight = (mis->itemHeight > 16) ? mis->itemHeight : 16;*/
-
-			}
+			else
+				mis->itemHeight = g_Settings.iNickListFontHeight;
 			return TRUE;
 		}
 

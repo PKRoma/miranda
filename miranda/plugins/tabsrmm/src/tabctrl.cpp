@@ -85,6 +85,32 @@ int RegisterTabCtrlClass(void)
 	return 0;
 }
 
+static int TabCtrl_TestForCloseButton(const TabControlData *tabdat, HWND hwnd, POINT& pt)
+{
+	TCHITTESTINFO tci = {0};
+	tci.pt.x = pt.x;
+	tci.pt.y = pt.y;
+	int iTab;
+
+	ScreenToClient(hwnd, &tci.pt);
+	iTab = TabCtrl_HitTest(hwnd, &tci);
+	if(iTab != -1) {
+		RECT  rcTab;
+
+		if(tci.flags & TCHT_NOWHERE)
+			return(-1);
+
+		TabCtrl_GetItemRect(hwnd, iTab, &rcTab);
+		rcTab.left = rcTab.right - 18;
+		rcTab.right -= 5;
+		rcTab.bottom -= 4;
+		rcTab.top += 4;
+		if(PtInRect(&rcTab, tci.pt))
+			return(iTab);
+	}
+	return(-1);
+}
+
 /*
  * tabctrl helper function
  * Finds leftmost down item.
@@ -405,6 +431,7 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 				hIcon = dat->hTabIcon;
 		}
 
+
 		if (dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0) || !(dat->pContainer->dwFlagsEx & TCF_FLASHICON)) {
 			DWORD ix = rcItem->left + tabdat->m_xpad - 1;
 			DWORD iy = (rcItem->bottom + rcItem->top - iSize) / 2;
@@ -415,6 +442,17 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 		}
 
 		rcItem->left += (iSize + 2 + tabdat->m_xpad);
+
+		if(tabdat->fCloseButton) {
+			if(tabdat->iHoveredCloseIcon != nItem)
+				CSkin::m_default_bf.SourceConstantAlpha = 150;
+
+			CMimAPI::m_MyAlphaBlend(dc, rcItem->right - 18, (rcItem->bottom + rcItem->top - 16) / 2, 16, 16, CSkin::m_tabCloseHDC,
+									0, 0, 16, 16, CSkin::m_default_bf);
+
+			rcItem->right -= 18;
+			CSkin::m_default_bf.SourceConstantAlpha = 255;
+		}
 
 		if (dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0) || !(dat->pContainer->dwFlagsEx & TCF_FLASHLABEL)) {
 			oldFont = (HFONT)SelectObject(dc, (HFONT)SendMessage(tabdat->hwnd, WM_GETFONT, 0, 0));
@@ -825,9 +863,9 @@ static HRESULT DrawThemesPartWithAero(const TabControlData *tabdat, HDC hDC, int
 
 		FillRect(hDC, prcBox, CSkin::m_BrushBack);
 
-		tabdat->helperItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == 3 ? 240 : 220);
+		tabdat->helperItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == 3 ? 255 : 240);
 		tabdat->helperItem->Render(hDC, prcBox, true);
-		tabdat->helperGlowItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == 3 ? 200 : 150);
+		tabdat->helperGlowItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == 3 ? 220 : 180);
 
 		/*
 		 * glow effect for hot and/or selected tabs
@@ -850,6 +888,17 @@ static HRESULT DrawThemesPartWithAero(const TabControlData *tabdat, HDC hDC, int
 		if(iStateId != PBS_NORMAL)
 			tabdat->helperGlowItem->Render(hDC, prcBox, true);
 
+		/*
+		RECT rcEffect = *prcBox;
+		InflateRect(&rcEffect, -3, 0);
+		if(tabdat->dwStyle & TCS_BOTTOM)
+			rcEffect.bottom -= 2;
+		else
+			rcEffect.top += 2;
+
+		CSkin::ApplyAeroEffect(hDC, prcBox, CSkin::AERO_EFFECT_AREA_TAB_NORMAL |
+							   (tabdat->dwStyle & TCS_BOTTOM ? CSkin::AERO_EFFECT_AREA_TAB_BOTTOM : CSkin::AERO_EFFECT_AREA_TAB_TOP), tabdat->hbp);
+		*/
 	}
 	else {
 		if (tabdat->hTheme != 0)
@@ -1075,6 +1124,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			tabdat->cx = GetSystemMetrics(SM_CXSMICON);
 			tabdat->cy = GetSystemMetrics(SM_CYSMICON);
 			tabdat->fTipActive = FALSE;
+			tabdat->iHoveredCloseIcon = -1;
 			SendMessage(hwnd, EM_THEMECHANGED, 0, 0);
 			OldTabControlClassProc = wcl.lpfnWndProc;
 			return TRUE;
@@ -1147,6 +1197,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 		}
 		case TCM_INSERTITEM:
 		case TCM_DELETEITEM:
+			tabdat->iHoveredCloseIcon = -1;
 			if (!(tabdat->dwStyle & TCS_MULTILINE) || tabdat->dwStyle & TCS_BUTTONS) {
 				LRESULT result;
 				RECT rc;
@@ -1186,9 +1237,8 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 
 			GetCursorPos(&pt);
 			SendMessage(GetParent(hwnd), msg, wParam, lParam);
-			if (abs(pt.x - ptMouseT.x) < 4  && abs(pt.y - ptMouseT.y) < 4) {
+			if (abs(pt.x - ptMouseT.x) < 4  && abs(pt.y - ptMouseT.y) < 4)
 				return 1;
-			}
 			ptMouseT = pt;
 			if (tabdat->fTipActive) {
 				KillTimer(hwnd, TIMERID_HOVER_T);
@@ -1318,6 +1368,13 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 					}
 				}
 			}
+			if(tabdat->fCloseButton) {
+				POINT	pt;
+				GetCursorPos(&pt);
+
+				if(TabCtrl_TestForCloseButton(tabdat, hwnd, pt) != -1)
+					return(TRUE);
+			}
 		}
 		break;
 
@@ -1340,6 +1397,15 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 				tci.pt.y = (short)HIWORD(GetMessagePos());
 				ScreenToClient(hwnd, &tci.pt);
 				ImageList_DragMove(tci.pt.x, tci.pt.y);
+			}
+			if(tabdat->fCloseButton) {
+				POINT	pt;
+
+				GetCursorPos(&pt);
+				int iOldHovered = tabdat->iHoveredCloseIcon;
+				tabdat->iHoveredCloseIcon = TabCtrl_TestForCloseButton(tabdat, hwnd, pt);
+				if(tabdat->iHoveredCloseIcon != iOldHovered)
+					InvalidateRect(hwnd, NULL, FALSE);
 			}
 		}
 		break;
@@ -1367,6 +1433,14 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 					ImageList_Destroy(tabdat->himlDrag);
 					tabdat->himlDrag = 0;
 				}
+			}
+			if(tabdat->fCloseButton) {
+				POINT	pt;
+
+				GetCursorPos(&pt);
+				int iItem = TabCtrl_TestForCloseButton(tabdat, hwnd, pt);
+				if(iItem != -1)
+					SendMessage(GetParent(hwnd), DM_CLOSETABATMOUSE, 0, (LPARAM)&pt);
 			}
 		}
 		break;
@@ -1400,6 +1474,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 				break;
 
 			tabdat->fAeroTabs = isAero ? TRUE : FALSE;
+			tabdat->fCloseButton = tabdat->pContainer ? (tabdat->pContainer->dwFlagsEx & TCF_CLOSEBUTTON ? TRUE : FALSE) : FALSE;
 
 			tabdat->helperDat = 0;
 
@@ -1446,7 +1521,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			 */
 
 			if(CMimAPI::m_haveBufferedPaint)
-				hpb = CSkin::InitiateBufferedPaint(hdcreal, rctPage, hdc);
+				hpb = tabdat->hbp = CSkin::InitiateBufferedPaint(hdcreal, rctPage, hdc);
 			else {
 				hdc = CreateCompatibleDC(hdcreal);
 				bmpMem = tabdat->fAeroTabs ? CSkin::CreateAeroCompatibleBitmap(rctPage, hdcreal) : CreateCompatibleBitmap(hdcreal, cx, cy);

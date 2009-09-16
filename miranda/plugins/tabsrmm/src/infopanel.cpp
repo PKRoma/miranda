@@ -256,9 +256,6 @@ void CInfoPanel::renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero) 
 			::FillRect(hdc, &rcBlack, CSkin::m_BrushBack);
 			rc.bottom -= 2;
 			CSkin::ApplyAeroEffect(hdc, &rc, CSkin::AERO_EFFECT_AREA_INFOPANEL);
-			rc.top = rc.bottom - 1;
-			rc.left--; rc.right++;
-			//::DrawEdge(hdc, &rc, BDR_SUNKENOUTER, BF_RECT);
 		}
 		else {
 			if(PluginConfig.m_WinVerMajor >= 5) {

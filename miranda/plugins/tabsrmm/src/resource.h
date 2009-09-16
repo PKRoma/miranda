@@ -545,6 +545,7 @@
 #define IDC_FLASHLABEL                  1490
 #define IDC_STATIC_VISIBILTY            1491
 #define IDC_BUTTONTABS                  1492
+#define IDC_CLOSEBUTTONONTABS			1493
 #define IDC_TXT_TITLE1                  1617
 #define IDC_TXT_TITLE2                  1618
 #define IDC_TXT_TITLE4                  1620

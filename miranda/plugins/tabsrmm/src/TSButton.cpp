@@ -791,6 +791,8 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			RECT rc;
 
 			if(bct->sitem) {
+				if(bct->sitem->testCloseButton() != -1)
+					return(TRUE);
 				bct->stateId = PBS_PRESSED;
 				InvalidateRect(bct->hwnd, NULL, TRUE);
 				bct->sitem->activateSession();
@@ -812,7 +814,12 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 		case WM_LBUTTONUP: {
 			RECT rc;
 			int  showClick = 0;
-
+			if (bct->sitem) {
+				if(bct->sitem->testCloseButton() != -1) {
+					SendMessage(bct->sitem->getDat()->hwnd, WM_CLOSE, 1, 0);
+					return(TRUE);
+				}
+			}
 			if (bct->pushBtn) {
 				if (bct->pbState) bct->pbState = 0;
 				else bct->pbState = 1;
@@ -849,6 +856,18 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			}
 			// Call timer, used to start cheesy TrackMouseEvent faker
 			SetTimer(hwndDlg, BUTTON_POLLID, BUTTON_POLLDELAY, NULL);
+			if(bct->sitem) {
+				if(bct->sitem->testCloseButton() != -1) {
+					if(bct->sitem->m_sideBar->getHoveredClose() != bct->sitem) {
+						bct->sitem->m_sideBar->setHoveredClose(bct->sitem);
+						InvalidateRect(hwndDlg, 0, FALSE);
+					}
+				}
+				else {
+					bct->sitem->m_sideBar->setHoveredClose(0);
+					InvalidateRect(hwndDlg, 0, FALSE);
+				}
+			}
 			break;
 		case WM_TIMER: { // use a timer to check if they have did a mouseout
 			if (wParam == BUTTON_POLLID) {
@@ -859,6 +878,10 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 				if (!PtInRect(&rc, pt)) { // mouse must be gone, trigger mouse leave
 					PostMessage(hwndDlg, WM_MOUSELEAVE, 0, 0L);
 					KillTimer(hwndDlg, BUTTON_POLLID);
+					if(bct->sitem) {
+						bct->sitem->m_sideBar->setHoveredClose(0);
+						InvalidateRect(hwndDlg, 0, FALSE);
+					}
 				}
 			}
 			break;

@@ -1723,6 +1723,14 @@ static INT_PTR CALLBACK GroupOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				if (CMimAPI::m_pfnEnableThemeDialogTexture)
 					CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
+				tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPTIONS4), hwnd, CMUCHighlight::dlgProc);
+				tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_MUC_HIGHLIGHT));
+				TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 3, &tci);
+				MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
+				ShowWindow((HWND)tci.lParam, oPage == 3 ? SW_SHOW : SW_HIDE);
+				if (CMimAPI::m_pfnEnableThemeDialogTexture)
+					CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+
 				TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage);
 			}
 			else

@@ -70,16 +70,17 @@ int GetRichTextLength(HWND hwnd)
 	return (int) SendMessage(hwnd, EM_GETTEXTLENGTHEX, (WPARAM)&gtl, 0);
 }
 
-TCHAR* RemoveFormatting(const TCHAR* pszWord)
+TCHAR* RemoveFormatting(const TCHAR* pszWord, bool fToLower)
 {
-	static TCHAR szTemp[10000];
-	int i = 0;
+	static TCHAR szTemp[20000];
+	size_t i = 0;
 	int j = 0;
-
-	if (pszWord == 0 || lstrlen(pszWord) == 0)
+	if (pszWord == 0)
 		return NULL;
 
-	while (j < 9999 && i <= lstrlen(pszWord)) {
+	size_t wordlen = lstrlen(pszWord);
+
+	while (j < 19999 && i <= wordlen) {
 		if (pszWord[i] == '%') {
 			switch (pszWord[i+1]) {
 				case '%':
@@ -107,18 +108,23 @@ TCHAR* RemoveFormatting(const TCHAR* pszWord)
 					break;
 
 				default:
-					szTemp[j] = pszWord[i];
+					if(fToLower)
+						szTemp[j] = _totlower(pszWord[i]);
+					else
+						szTemp[j] = pszWord[i];
 					j++;
 					i++;
 					break;
 			}
 		} else {
-			szTemp[j] = pszWord[i];
+			if(fToLower)
+				szTemp[j] = _totlower(pszWord[i]);
+			else
+				szTemp[j] = pszWord[i];
 			j++;
 			i++;
 		}
 	}
-
 	return (TCHAR*) &szTemp;
 }
 
@@ -304,61 +310,61 @@ static BOOL DoPopup(SESSION_INFO* si, GCEVENT* gce, struct _MessageWindowData* d
 			return 0;
 		}
 passed:
+		int iNewEvent = iEvent;
+		COLORREF clr = 0;
 
-		switch (iEvent) {
-			case GC_EVENT_MESSAGE | GC_EVENT_HIGHLIGHT :
-				ShowPopup(si->hContact, si, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE), si->pszModule, si->ptszName, aFonts[16].color, TranslateT("%s%s says:%s %s"), bbStart, gce->ptszNick, bbEnd, RemoveFormatting(gce->ptszText));
-				break;
-			case GC_EVENT_ACTION | GC_EVENT_HIGHLIGHT :
-				ShowPopup(si->hContact, si, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE), si->pszModule, si->ptszName, aFonts[16].color, _T("%s %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
-				break;
+		if((iNewEvent & GC_EVENT_HIGHLIGHT)) {
+			clr = aFonts[16].color;
+			iNewEvent &= ~GC_EVENT_HIGHLIGHT;
+		}
+		switch (iNewEvent) {
 			case GC_EVENT_MESSAGE :
-				ShowPopup(si->hContact, si, hIcons[ICON_MESSAGE], si->pszModule, si->ptszName, aFonts[9].color, TranslateT("%s%s says:%s %s"), bbStart, gce->ptszNick, bbEnd, RemoveFormatting(gce->ptszText));
+				ShowPopup(si->hContact, si, hIcons[ICON_MESSAGE], si->pszModule, si->ptszName, clr ? clr : aFonts[9].color, TranslateT("%s%s says:%s %s"), bbStart, gce->ptszNick, bbEnd, RemoveFormatting(gce->ptszText));
 				break;
 			case GC_EVENT_ACTION:
-				ShowPopup(si->hContact, si, hIcons[ICON_ACTION], si->pszModule, si->ptszName, aFonts[15].color, _T("%s %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
+				ShowPopup(si->hContact, si, hIcons[ICON_ACTION], si->pszModule, si->ptszName, clr ? clr : aFonts[15].color, _T("%s %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 				break;
 			case GC_EVENT_JOIN:
-				ShowPopup(si->hContact, si, hIcons[ICON_JOIN], si->pszModule, si->ptszName, aFonts[3].color, TranslateT("%s has joined"), gce->ptszNick);
+				ShowPopup(si->hContact, si, hIcons[ICON_JOIN], si->pszModule, si->ptszName, clr ? clr : aFonts[3].color, TranslateT("%s has joined"), gce->ptszNick);
 				break;
 			case GC_EVENT_PART:
 				if (!gce->pszText)
-					ShowPopup(si->hContact, si, hIcons[ICON_PART], si->pszModule, si->ptszName, aFonts[4].color, TranslateT("%s has left"), gce->ptszNick);
+					ShowPopup(si->hContact, si, hIcons[ICON_PART], si->pszModule, si->ptszName, clr ? clr : aFonts[4].color, TranslateT("%s has left"), gce->ptszNick);
 				else
-					ShowPopup(si->hContact, si, hIcons[ICON_PART], si->pszModule, si->ptszName, aFonts[4].color, TranslateT("%s has left (%s)"), gce->ptszNick, RemoveFormatting(gce->ptszText));
+					ShowPopup(si->hContact, si, hIcons[ICON_PART], si->pszModule, si->ptszName, clr ? clr : aFonts[4].color, TranslateT("%s has left (%s)"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 				break;
 			case GC_EVENT_QUIT:
 				if (!gce->pszText)
-					ShowPopup(si->hContact, si, hIcons[ICON_QUIT], si->pszModule, si->ptszName, aFonts[5].color, TranslateT("%s has disconnected"), gce->ptszNick);
+					ShowPopup(si->hContact, si, hIcons[ICON_QUIT], si->pszModule, si->ptszName, clr ? clr : aFonts[5].color, TranslateT("%s has disconnected"), gce->ptszNick);
 				else
-					ShowPopup(si->hContact, si, hIcons[ICON_QUIT], si->pszModule, si->ptszName, aFonts[5].color, TranslateT("%s has disconnected (%s)"), gce->ptszNick, RemoveFormatting(gce->ptszText));
+					ShowPopup(si->hContact, si, hIcons[ICON_QUIT], si->pszModule, si->ptszName, clr ? clr : aFonts[5].color, TranslateT("%s has disconnected (%s)"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 				break;
 			case GC_EVENT_NICK:
-				ShowPopup(si->hContact, si, hIcons[ICON_NICK], si->pszModule, si->ptszName, aFonts[7].color, TranslateT("%s is now known as %s"), gce->ptszNick, gce->ptszText);
+				ShowPopup(si->hContact, si, hIcons[ICON_NICK], si->pszModule, si->ptszName, clr ? clr : aFonts[7].color, TranslateT("%s is now known as %s"), gce->ptszNick, gce->ptszText);
 				break;
 			case GC_EVENT_KICK:
 				if (!gce->pszText)
-					ShowPopup(si->hContact, si, hIcons[ICON_KICK], si->pszModule, si->ptszName, aFonts[6].color, TranslateT("%s kicked %s"), (char *)gce->pszStatus, gce->ptszNick);
+					ShowPopup(si->hContact, si, hIcons[ICON_KICK], si->pszModule, si->ptszName, clr ? clr : aFonts[6].color, TranslateT("%s kicked %s"), (char *)gce->pszStatus, gce->ptszNick);
 				else
-					ShowPopup(si->hContact, si, hIcons[ICON_KICK], si->pszModule, si->ptszName, aFonts[6].color, TranslateT("%s kicked %s (%s)"), (char *)gce->pszStatus, gce->ptszNick, RemoveFormatting(gce->ptszText));
+					ShowPopup(si->hContact, si, hIcons[ICON_KICK], si->pszModule, si->ptszName, clr ? clr : aFonts[6].color, TranslateT("%s kicked %s (%s)"), (char *)gce->pszStatus, gce->ptszNick, RemoveFormatting(gce->ptszText));
 				break;
 			case GC_EVENT_NOTICE:
-				ShowPopup(si->hContact, si, hIcons[ICON_NOTICE], si->pszModule, si->ptszName, aFonts[8].color, TranslateT("Notice from %s: %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
+				ShowPopup(si->hContact, si, hIcons[ICON_NOTICE], si->pszModule, si->ptszName, clr ? clr : aFonts[8].color, TranslateT("Notice from %s: %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 				break;
 			case GC_EVENT_TOPIC:
 				if (!gce->ptszNick)
-					ShowPopup(si->hContact, si, hIcons[ICON_TOPIC], si->pszModule, si->ptszName, aFonts[11].color, TranslateT("The topic is \'%s\'"), RemoveFormatting(gce->ptszText));
+					ShowPopup(si->hContact, si, hIcons[ICON_TOPIC], si->pszModule, si->ptszName, clr ? clr : aFonts[11].color, TranslateT("The topic is \'%s\'"), RemoveFormatting(gce->ptszText));
 				else
-					ShowPopup(si->hContact, si, hIcons[ICON_TOPIC], si->pszModule, si->ptszName, aFonts[11].color, TranslateT("The topic is \'%s\' (set by %s)"), RemoveFormatting(gce->ptszText), gce->ptszNick);
+					ShowPopup(si->hContact, si, hIcons[ICON_TOPIC], si->pszModule, si->ptszName, clr ? clr : aFonts[11].color, TranslateT("The topic is \'%s\' (set by %s)"), RemoveFormatting(gce->ptszText), gce->ptszNick);
 				break;
 			case GC_EVENT_INFORMATION:
-				ShowPopup(si->hContact, si, hIcons[ICON_INFO], si->pszModule, si->ptszName, aFonts[12].color, _T("%s"), RemoveFormatting(gce->ptszText));
+				ShowPopup(si->hContact, si, hIcons[ICON_INFO], si->pszModule, si->ptszName, clr ? clr : aFonts[12].color, _T("%s"), RemoveFormatting(gce->ptszText));
 				break;
 			case GC_EVENT_ADDSTATUS:
-				ShowPopup(si->hContact, si, hIcons[ICON_ADDSTATUS], si->pszModule, si->ptszName, aFonts[13].color, TranslateT("%s enables \'%s\' status for %s"), gce->ptszText, (char *)gce->pszStatus, gce->ptszNick);
+				ShowPopup(si->hContact, si, hIcons[ICON_ADDSTATUS], si->pszModule, si->ptszName, clr ? clr : aFonts[13].color, TranslateT("%s enables \'%s\' status for %s"), gce->ptszText, (char *)gce->pszStatus, gce->ptszNick);
 				break;
 			case GC_EVENT_REMOVESTATUS:
-				ShowPopup(si->hContact, si, hIcons[ICON_REMSTATUS], si->pszModule, si->ptszName, aFonts[14].color, TranslateT("%s disables \'%s\' status for %s"), gce->ptszText, (char *)gce->pszStatus, gce->ptszNick);
+				ShowPopup(si->hContact, si, hIcons[ICON_REMSTATUS], si->pszModule, si->ptszName, clr ? clr : aFonts[14].color, TranslateT("%s disables \'%s\' status for %s"), gce->ptszText, (char *)gce->pszStatus, gce->ptszNick);
 				break;
 		}
 	}
@@ -677,87 +683,6 @@ TCHAR* my_strstri(const TCHAR* s1, const TCHAR* s2)
 }
 
 /*
- * check if message must be highlighted in the message history display
- */
-
-BOOL IsHighlighted(SESSION_INFO* si, const TCHAR* pszText)
-{
-	if (g_Settings.HighlightEnabled && g_Settings.pszHighlightWords && pszText && si->pMe) {
-		TCHAR* p1 = g_Settings.pszHighlightWords;
-		TCHAR* p2 = NULL;
-		const TCHAR* p3 = pszText;
-		static TCHAR szWord1[1000];
-		static TCHAR szWord2[1000];
-		static TCHAR szTrimString[] = _T(":,.!?;\'>)");
-
-		// compare word for word
-		while (*p1 != '\0') {
-			// find the next/first word in the highlight word string
-			// skip 'spaces' be4 the word
-			while (*p1 == ' ' && *p1 != '\0')
-				p1 += 1;
-
-			//find the end of the word
-			p2 = _tcschr(p1, ' ');
-			if (!p2)
-				p2 = _tcschr(p1, '\0');
-			if (p1 == p2)
-				return FALSE;
-
-			// copy the word into szWord1
-			lstrcpyn(szWord1, p1, p2 - p1 > 998 ? 999 : p2 - p1 + 1);
-			p1 = p2;
-
-			// replace %m with the users nickname
-			p2 = _tcschr(szWord1, '%');
-			if (p2 && p2[1] == 'm') {
-				TCHAR szTemp[50];
-
-				p2[1] = 's';
-				lstrcpyn(szTemp, szWord1, SIZEOF(szTemp));
-				mir_sntprintf(szWord1, SIZEOF(szWord1), szTemp, si->pMe->pszNick);
-			}
-
-			// time to get the next/first word in the incoming text string
-			while (*p3 != '\0') {
-				// skip 'spaces' be4 the word
-				while (*p3 == ' ' && *p3 != '\0')
-					p3 += 1;
-
-				//find the end of the word
-				p2 = (TCHAR *)_tcschr(p3, ' ');
-				if (!p2)
-					p2 = (TCHAR *)_tcschr(p3, '\0');
-
-
-				if (p3 != p2) {
-					// eliminate ending character if needed
-					if (p2 - p3 > 1 && _tcschr(szTrimString, p2[-1]))
-						p2 -= 1;
-
-					// copy the word into szWord2 and remove formatting
-					lstrcpyn(szWord2, p3, p2 - p3 > 998 ? 999 : p2 - p3 + 1);
-
-					// reset the pointer if it was touched because of an ending character
-					if (*p2 != '\0' && *p2 != ' ')
-						p2 += 1;
-					p3 = p2;
-
-					CharLower(szWord1);
-					CharLower(szWord2);
-
-					// compare the words, using wildcards
-					if (WCCmp(szWord1, RemoveFormatting(szWord2)))
-						return TRUE;
-				}
-			}
-			p3 = pszText;
-		}
-	}
-	return FALSE;
-}
-
-/*
  * log the event to the log file
  * allows selective logging of wanted events
  */
@@ -1015,6 +940,13 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 			AppendMenu(*hMenu, dwState | MF_CHECKED | MF_STRING, gcmi.Item[i].dwID, ptszDescr);
 
 		mir_free(ptszDescr);
+	}
+
+	if (iIndex == 0) {
+		AppendMenu(*hMenu, MF_SEPARATOR, 0, 0);
+		pos = GetMenuItemCount(*hMenu);
+		InsertMenu(*hMenu, pos, MF_BYPOSITION, (UINT_PTR)20020, CTranslator::get(CTranslator::GEN_MUC_MENU_ADDTOHIGHLIGHT));
+		InsertMenu(*hMenu, pos, MF_BYPOSITION, (UINT_PTR)20021, CTranslator::get(CTranslator::GEN_MUC_MENU_EDITHIGHLIGHTLIST));
 	}
 
 	if (iIndex == 1 && si->iType != GCW_SERVER && !(si->dwFlags && GC_UNICODE)) {

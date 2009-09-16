@@ -41,7 +41,7 @@ extern 			StatusIconListNode *status_icon_list;
 bool	 	CMenuBar::m_buttonsInit = false;
 HHOOK		CMenuBar::m_hHook = 0;
 TBBUTTON 	CMenuBar::m_TbButtons[8] = {0};
-CMenuBar	*CMenuBar::m_Owner = 0;
+CMenuBar*	CMenuBar::m_Owner = 0;
 HBITMAP		CMenuBar::m_MimIcon = 0;
 int			CMenuBar::m_MimIconRefCount = 0;
 
@@ -54,8 +54,8 @@ CMenuBar::CMenuBar(HWND hwndParent, const ContainerWindowData *pContainer)
 	m_pContainer = const_cast<ContainerWindowData *>(pContainer);
 
 	if(m_MimIcon == 0) {
-		HDC	hdc = ::GetDC(m_pContainer->hwnd);
-		HICON hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
+		HDC		hdc = ::GetDC(m_pContainer->hwnd);
+		HICON 	hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
 
 		HDC hdcTemp = ::CreateCompatibleDC(hdc);
 
@@ -64,6 +64,7 @@ CMenuBar::CMenuBar(HWND hwndParent, const ContainerWindowData *pContainer)
 		HBITMAP hbmOld = (HBITMAP)::SelectObject(hdcTemp, m_MimIcon);
 		::DrawIconEx(hdcTemp, 0, 0, hIcon, 16, 16, 0, 0, DI_NORMAL);
 		::SelectObject(hdcTemp, hbmOld);
+
 		::DeleteDC(hdcTemp);
 		::ReleaseDC(m_pContainer->hwnd, hdc);
 	}

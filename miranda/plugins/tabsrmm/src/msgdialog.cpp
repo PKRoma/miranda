@@ -1188,8 +1188,11 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				CSkin::SkinDrawBG(hwnd, dat->pContainer->hwnd, dat->pContainer, &rc, dc);
 			else {
 				if(M->isAero()) {
-					if(GetDlgCtrlID(hwnd) == IDC_PANELSPLITTER)
-						FillRect(dc, &rc, CSkin::m_BrushBack);
+					if(GetDlgCtrlID(hwnd) == IDC_PANELSPLITTER) {
+						EndPaint(hwnd, &ps);
+						return(0);
+						//FillRect(dc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH)); // CSkin::m_BrushBack);
+					}
 					else if(GetDlgCtrlID(hwnd) == IDC_SPLITTER || GetDlgCtrlID(hwnd) == IDC_SPLITTERY) {
 						rc.bottom--;
 						FillRect(dc, &rc, GetSysColorBrush(COLOR_3DDKSHADOW));

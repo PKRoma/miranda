@@ -62,7 +62,7 @@ TSideBarLayout CSideBar::m_layouts[CSideBar::NR_LAYOUTS] = {
 	}
 };
 
-CSideBarButton::CSideBarButton(const _MessageWindowData *dat, const CSideBar *sideBar)
+CSideBarButton::CSideBarButton(const _MessageWindowData *dat, CSideBar *sideBar)
 {
 	m_dat = dat;
 	m_id = reinterpret_cast<UINT>(dat->hContact);								// set the control id
@@ -70,7 +70,7 @@ CSideBarButton::CSideBarButton(const _MessageWindowData *dat, const CSideBar *si
 	_create();
 }
 
-CSideBarButton::CSideBarButton(const UINT id, const CSideBar *sideBar)
+CSideBarButton::CSideBarButton(const UINT id, CSideBar *sideBar)
 {
 	m_dat = 0;
 	m_id = id;
@@ -264,6 +264,18 @@ void CSideBarButton::renderIconAndNick(const HDC hdc, const RECT *rcItem) const
 		}
 
 		rc.left += (iSize + 7);
+
+		if(m_sideBar->getContainer()->dwFlagsEx & TCF_CLOSEBUTTON) {
+			if(m_sideBar->getHoveredClose() != this)
+				CSkin::m_default_bf.SourceConstantAlpha = 150;
+
+			CMimAPI::m_MyAlphaBlend(hdc, rc.right - 20, (rc.bottom + rc.top - 16) / 2, 16, 16, CSkin::m_tabCloseHDC,
+									0, 0, 16, 16, CSkin::m_default_bf);
+
+			rc.right -= 19;
+			CSkin::m_default_bf.SourceConstantAlpha = 255;
+		}
+
 		SetBkMode(hdc, TRANSPARENT);
 
 		if (m_dat->mayFlashTab == FALSE || (m_dat->mayFlashTab == TRUE && m_dat->bTabFlash != 0) || !(pContainer->dwFlagsEx & TCF_FLASHLABEL)) {
@@ -283,6 +295,30 @@ void CSideBarButton::renderIconAndNick(const HDC hdc, const RECT *rcItem) const
 	}
 }
 
+int CSideBarButton::testCloseButton() const
+{
+	if(m_sideBar->getContainer()->dwFlagsEx & TCF_CLOSEBUTTON) {
+		POINT pt;
+		GetCursorPos(&pt);
+		ScreenToClient(m_hwnd, &pt);
+		RECT rc;
+
+		GetClientRect(m_hwnd, &rc);
+		if(getLayout()->dwFlags & CSideBar::SIDEBARLAYOUT_VERTICALORIENTATION) {
+			rc.bottom = rc.top + 18; rc.top += 2;
+			rc.left += 2; rc.right -= 2;
+			if(PtInRect(&rc, pt))
+				return(1);
+		}
+		else {
+			rc.bottom -= 4; rc.top += 4;
+			rc.right -= 3; rc.left = rc.right - 16;
+			if(PtInRect(&rc, pt))
+				return(1);
+		}
+	}
+	return(-1);
+}
 /**
  * call back from the button window procedure. Activate my session
  */

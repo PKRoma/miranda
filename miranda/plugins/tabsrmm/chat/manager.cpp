@@ -92,6 +92,7 @@ SESSION_INFO* SM_AddSession(const TCHAR* pszID, const char* pszModule)
 			node->next = m_WndList;
 			m_WndList = node;
 		}
+		node->Highlight = g_Settings.Highlight;
 		return node;
 	}
 	return NULL;
@@ -271,7 +272,7 @@ HICON SM_GetStatusIcon(SESSION_INFO* si, USERINFO* ui, char *szIndicator)
 	return hIcons[ICON_STATUS0];
 }
 
-BOOL SM_AddEventToAllMatchingUID(GCEVENT * gce)
+BOOL SM_AddEventToAllMatchingUID(GCEVENT * gce, BOOL bIsHighLight)
 {
 	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
 	int bManyFix = 0;
@@ -285,7 +286,7 @@ BOOL SM_AddEventToAllMatchingUID(GCEVENT * gce)
 					} else if (pTemp->hWnd && pTemp->bInitDone) {
 						SendMessage(pTemp->hWnd, GC_REDRAWLOG2, 0, 0);
 					}
-					DoSoundsFlashPopupTrayStuff(pTemp, gce, FALSE, bManyFix);
+					DoSoundsFlashPopupTrayStuff(pTemp, gce, bIsHighLight, bManyFix);
 					bManyFix ++;
 					if ((gce->dwFlags & GCEF_ADDTOLOG) && g_Settings.LoggingEnabled)
 						LogToFile(pTemp, gce);

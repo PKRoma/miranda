@@ -90,8 +90,8 @@ void CGlobals::Reload()
 	m_panelHeight = (DWORD)M->GetDword("panelheight", 51);
 	m_MUCpanelHeight = M->GetDword("Chat", "panelheight", 30);
 	m_IdleDetect = (int)M->GetByte("detectidle", 1);
-	m_smcxicon = 16;//GetSystemMetrics(SM_CXSMICON);
-	m_smcyicon = 16;//GetSystemMetrics(SM_CYSMICON);
+	m_smcxicon = 16;
+	m_smcyicon = 16;
 	m_PasteAndSend = (int)M->GetByte("pasteandsend", 1);
 	m_szNoStatus = const_cast<TCHAR *>(CTranslator::get(CTranslator::GEN_NO_STATUS));
 	m_LangPackCP = ServiceExists(MS_LANGPACK_GETCODEPAGE) ? CallService(MS_LANGPACK_GETCODEPAGE, 0, 0) : CP_ACP;
@@ -99,10 +99,8 @@ void CGlobals::Reload()
 	m_visualMessageSizeIndicator = M->GetByte("msgsizebar", 0);
 	m_autoSplit = M->GetByte("autosplit", 0);
 	m_FlashOnMTN = M->GetByte(SRMSGMOD, SRMSGSET_SHOWTYPINGWINFLASH, SRMSGDEFSET_SHOWTYPINGWINFLASH);
-	if(m_MenuBar == 0) {
+	if(m_MenuBar == 0)
 		m_MenuBar = ::LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENUBAR));
-		CallService(MS_LANGPACK_TRANSLATEMENU, WPARAM(m_MenuBar), 0);
-	}
 
 	m_SendLaterAvail = M->GetByte("sendLaterAvail", 0);
 	m_ncm.cbSize = sizeof(NONCLIENTMETRICS);
@@ -114,11 +112,8 @@ void CGlobals::Reload()
 
 const HMENU CGlobals::getMenuBar()
 {
-	if(m_MenuBar == 0) {
+	if(m_MenuBar == 0)
 		m_MenuBar = ::LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENUBAR));
-		CallService(MS_LANGPACK_TRANSLATEMENU, WPARAM(m_MenuBar), 0);
-	}
-
 	return(m_MenuBar);
 }
 

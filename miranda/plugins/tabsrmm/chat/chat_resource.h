@@ -10,6 +10,8 @@
 #define IDD_OPTIONSPOPUP                405
 #define IDD_COLORCHOOSER                406
 #define IDD_OPTIONS3                    407
+#define IDD_OPTIONS4                    408
+#define IDD_ADDHIGHLIGHT                409
 #define IDC_CHAT_LOG                    1005
 #define IDC_SPLITTERX                   1006
 #define IDC_SMILEY                      1007
@@ -28,7 +30,8 @@
 #define IDC_CHAT_SPIN2                  1029
 #define IDC_CHAT_SPIN3                  1030
 #define IDC_CHAT_SPIN4                  1031
-#define IDC_HIGHLIGHTWORDS              1040
+#define IDC_PANELNICK                   1032
+#define IDC_PANELUIN                    1033
 #define IDC_INSTAMP                     1041
 #define IDC_OUTSTAMP                    1043
 #define IDC_TIMESTAMP                   1046
@@ -43,7 +46,6 @@
 #define IDC_TEXT                        1064
 #define IDC_BKG                         1065
 #define IDC_TIMEOUT                     1067
-#define IDC_HIGHLIGHT                   1068
 #define IDC_TEXTO                       1069
 #define IDC_LOGGING                     1069
 #define IDC_COLORTEXT                   1070
@@ -60,6 +62,16 @@
 #define IDC_TRAYONLYFORINACTIVE         1086
 #define IDC_NOPOPUPSFORCLOSEDWINDOWS    1087
 #define IDC_LOGICONTYPE                 1088
+#define IDC_HIGHLIGHTNICKENABLE         1089
+#define IDC_HIGHLIGHTNICKUID            1090
+#define IDC_HIGHLIGHTNICKPATTERN        1091
+#define IDC_HIGHLIGHTTEXTENABLE         1092
+#define IDC_COMBO1                      1092
+#define IDC_ADDHIGHLIGHTNAME            1092
+#define IDC_HIGHLIGHTTEXTPATTERN        1093
+#define IDC_ADDHIGHLIGHTTITLE           1093
+#define IDC_ADDHIGHLIGHTEXPLAIN         1094
+#define IDC_ADDHIGHLIGHTEDITLIST        1095
 #define IDC_CHAT_BOLD                   1106
 #define IDC_ITALICS                     1107
 #define IDC_CHAT_UNDERLINE              1108
@@ -76,6 +88,7 @@
 #define IDC_9                           1208
 #define IDC_10                          1209
 #define IDC_11                          1210
+#define IDC_PANELSPLITTER               1216
 #define IDC_CHAT_TOGGLESIDEBAR          1277
 #define IDC_P1                          1300
 #define IDC_P2                          1301
@@ -112,6 +125,7 @@
 #define IDC_L9                          1508
 #define IDC_L10                         1509
 #define IDC_L11                         1510
+#define IDC_WHITERECT                   1600
 #define ID_MESS                         40001
 #define ID_NEW                          40002
 #define ID_CURR                         40003
@@ -132,20 +146,13 @@
 #define ID_SEARCH_WIKIPEDIA             40028
 #define ID_WIKIPEDIA_                   40029
 
-#ifndef IDC_PANELNICK
-	#define IDC_PANELNICK                   1032
-	#define IDC_PANELUIN                    1033
-	#define IDC_PANELSPLITTER               1216
-#endif
-
-
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        163
 #define _APS_NEXT_COMMAND_VALUE         40030
-#define _APS_NEXT_CONTROL_VALUE         1089
+#define _APS_NEXT_CONTROL_VALUE         1096
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

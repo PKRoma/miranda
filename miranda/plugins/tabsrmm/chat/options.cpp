@@ -891,7 +891,7 @@ int FontServiceFontsChanged(WPARAM wParam, LPARAM lParam)
 
 
 static UINT _o2chatcontrols[] = { IDC_CHAT_SPIN2, IDC_LIMIT, IDC_CHAT_SPIN4, IDC_LOGTIMESTAMP, IDC_TIMESTAMP,
-								  IDC_OUTSTAMP, IDC_FONTCHOOSE, IDC_LOGGING, IDC_LOGDIRECTORY, IDC_INSTAMP, IDC_HIGHLIGHT, IDC_HIGHLIGHTWORDS, IDC_CHAT_SPIN2, IDC_CHAT_SPIN3, IDC_NICKROW2, IDC_LOGLIMIT,
+								  IDC_OUTSTAMP, IDC_FONTCHOOSE, IDC_LOGGING, IDC_LOGDIRECTORY, IDC_INSTAMP, IDC_CHAT_SPIN2, IDC_CHAT_SPIN3, IDC_NICKROW2, IDC_LOGLIMIT,
 								  IDC_STATIC110, IDC_STATIC112, 0};
 
 static UINT _o3chatcontrols[] = {0};
@@ -910,13 +910,10 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN2, UDM_SETPOS, 0, MAKELONG(DBGetContactSettingWord(NULL, "Chat", "LogLimit", 100), 0));
 				SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN3, UDM_SETRANGE, 0, MAKELONG(255, 10));
 				SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN3, UDM_SETPOS, 0, MAKELONG(M->GetByte("Chat", "NicklistRowDist", 12), 0));
-				SetDlgItemText(hwndDlg, IDC_HIGHLIGHTWORDS, g_Settings.pszHighlightWords);
 				SetDlgItemText(hwndDlg, IDC_LOGTIMESTAMP, g_Settings.pszTimeStampLog);
 				SetDlgItemText(hwndDlg, IDC_TIMESTAMP, g_Settings.pszTimeStamp);
 				SetDlgItemText(hwndDlg, IDC_OUTSTAMP, g_Settings.pszOutgoingNick);
 				SetDlgItemText(hwndDlg, IDC_INSTAMP, g_Settings.pszIncomingNick);
-				CheckDlgButton(hwndDlg, IDC_HIGHLIGHT, g_Settings.HighlightEnabled);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_HIGHLIGHTWORDS), g_Settings.HighlightEnabled ? TRUE : FALSE);
 				CheckDlgButton(hwndDlg, IDC_LOGGING, g_Settings.LoggingEnabled);
 				SetDlgItemText(hwndDlg, IDC_LOGDIRECTORY, g_Settings.pszLogDir);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), g_Settings.LoggingEnabled ? TRUE : FALSE);
@@ -976,7 +973,6 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 					|| LOWORD(wParam) == IDC_TIMESTAMP
 					|| LOWORD(wParam) == IDC_LOGLIMIT
 					|| LOWORD(wParam) == IDC_NICKROW2
-					|| LOWORD(wParam) == IDC_HIGHLIGHTWORDS
 					|| LOWORD(wParam) == IDC_LOGDIRECTORY
 					|| LOWORD(wParam) == IDC_LIMIT
 					|| LOWORD(wParam) == IDC_LOGTIMESTAMP)
@@ -1013,9 +1009,6 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 					break;
 				}
 
-				case IDC_HIGHLIGHT:
-					EnableWindow(GetDlgItem(hwndDlg, IDC_HIGHLIGHTWORDS), IsDlgButtonChecked(hwndDlg, IDC_HIGHLIGHT) == BST_CHECKED ? TRUE : FALSE);
-					break;
 				case IDC_LOGGING:
 					if (PluginConfig.m_chat_enabled) {
 						EnableWindow(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED ? TRUE : FALSE);
@@ -1055,22 +1048,6 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 					iLen = SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN4, UDM_GETPOS, 0, 0);
 					DBWriteContactSettingWord(NULL, "Chat", "LoggingLimit", (WORD)iLen);
 
-					iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_HIGHLIGHTWORDS));
-					if (iLen > 0) {
-						TCHAR *ptszText = (TCHAR *)malloc((iLen + 2) * sizeof(TCHAR));
-						if (ptszText) {
-							GetDlgItemText(hwndDlg, IDC_HIGHLIGHTWORDS, ptszText, iLen + 1);
-							p2 = _tcschr(ptszText, (TCHAR)',');
-							while (p2) {
-								*p2 = (TCHAR)' ';
-								p2 = _tcschr(ptszText, ',');
-							}
-							M->WriteTString(NULL, "Chat", "HighlightWords", ptszText);
-							free(ptszText);
-						}
-					} else
-						DBDeleteContactSetting(NULL, "Chat", "HighlightWords");
-
 					iLen = SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN3, UDM_GETPOS, 0, 0);
 					if (iLen > 0)
 						M->WriteByte("Chat", "NicklistRowDist", (BYTE)iLen);
@@ -1104,9 +1081,6 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 						GetDlgItemTextA(hwndDlg, IDC_OUTSTAMP, pszText, iLen + 1);
 						DBWriteContactSettingString(NULL, "Chat", "HeaderOutgoing", pszText);
 					} else DBDeleteContactSetting(NULL, "Chat", "HeaderOutgoing");
-
-					g_Settings.HighlightEnabled = IsDlgButtonChecked(hwndDlg, IDC_HIGHLIGHT) == BST_CHECKED ? TRUE : FALSE;
-					M->WriteByte("Chat", "HighlightEnabled", (BYTE)g_Settings.HighlightEnabled);
 
 					iLen = SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN2, UDM_GETPOS, 0, 0);
 					DBWriteContactSettingWord(NULL, "Chat", "LogLimit", (WORD)iLen);
@@ -1335,7 +1309,6 @@ void LoadGlobalSettings(void)
 	InitSetting(&g_Settings.pszTimeStampLog, "LogTimestamp", _T("[%d %b %y %H:%M]"));
 	InitSetting(&g_Settings.pszIncomingNick, "HeaderIncoming", _T("%n:"));
 	InitSetting(&g_Settings.pszOutgoingNick, "HeaderOutgoing", _T("%n:"));
-	InitSetting(&g_Settings.pszHighlightWords, "HighlightWords", _T("%m"));
 
 	DBVARIANT dbv;
 
@@ -1349,15 +1322,26 @@ void LoadGlobalSettings(void)
 
 	g_Settings.LogIndentEnabled = (M->GetByte("Chat", "LogIndentEnabled", 1) != 0) ? TRUE : FALSE;
 
-	if (g_Settings.UserListFont)
+
+	// nicklist
+
+	if(g_Settings.UserListFont) {
 		DeleteObject(g_Settings.UserListFont);
+		DeleteObject(g_Settings.UserListHeadingsFont);
+	}
+
 	LoadMsgDlgFont(FONTSECTION_CHAT, 18, &lf, NULL, CHAT_FONTMODULE);
 	g_Settings.UserListFont = CreateFontIndirect(&lf);
 
-	if (g_Settings.UserListHeadingsFont)
-		DeleteObject(g_Settings.UserListHeadingsFont);
 	LoadMsgDlgFont(FONTSECTION_CHAT, 19, &lf, NULL, CHAT_FONTMODULE);
 	g_Settings.UserListHeadingsFont = CreateFontIndirect(&lf);
+
+	int ih;
+	int ih2;
+
+	ih = GetTextPixelSize(_T("AQGglo"), g_Settings.UserListFont, FALSE);
+	ih2 = GetTextPixelSize(_T("AQGglo"), g_Settings.UserListHeadingsFont, FALSE);
+	g_Settings.iNickListFontHeight = max(M->GetByte("Chat", "NicklistRowDist", 12), (ih > ih2 ? ih : ih2));
 
 	for (i = 0; i < 7; i++) {
 		mir_snprintf(szBuf, 20, "NickColor%d", i);
@@ -1376,13 +1360,14 @@ static void FreeGlobalSettings(void)
 	mir_free(g_Settings.pszTimeStampLog);
 	mir_free(g_Settings.pszIncomingNick);
 	mir_free(g_Settings.pszOutgoingNick);
-	mir_free(g_Settings.pszHighlightWords);
-	if (g_Settings.UserListFont)
+	if(g_Settings.UserListFont) {
 		DeleteObject(g_Settings.UserListFont);
-	if (g_Settings.UserListHeadingsFont)
 		DeleteObject(g_Settings.UserListHeadingsFont);
+	}
 	if (g_Settings.SelectionBGBrush)
 		DeleteObject(g_Settings.SelectionBGBrush);
+
+	delete g_Settings.Highlight;
 }
 
 int OptionsInit(void)
@@ -1399,11 +1384,10 @@ int OptionsInit(void)
 	lf.lfWeight = FW_BOLD;
 	ZeroMemory(&g_Settings, sizeof(struct GlobalLogSettings_t));
 	g_Settings.NameFont = CreateFontIndirect(&lf);
-	g_Settings.UserListFont = NULL;
-	g_Settings.UserListHeadingsFont = NULL;
 	g_Settings.iSplitterX = DBGetContactSettingWord(NULL, "Chat", "SplitterX", 105);
 	g_Settings.iSplitterY = DBGetContactSettingWord(NULL, "Chat", "splitY", 50);
 	LoadGlobalSettings();
+	g_Settings.Highlight = new CMUCHighlight();
 	SkinAddNewSoundEx("ChatMessage", "Chat", TranslateA("Incoming message"));
 	SkinAddNewSoundEx("ChatHighlight", "Chat", TranslateA("Message is highlighted"));
 	SkinAddNewSoundEx("ChatAction", "Chat", TranslateA("User has performed an action"));

@@ -92,7 +92,8 @@ public:
 		return(-1);
 	}
 public:
-	static HHOOK	m_hHook;
+	static 		HHOOK	  m_hHook;
+	static		HBITMAP   m_MimIcon;
 
 private:
 	HWND		m_hwndRebar;
@@ -119,7 +120,6 @@ private:
 	static 		TBBUTTON m_TbButtons[8];
 	static		bool m_buttonsInit;
 	static		CMenuBar *m_Owner;
-	static		HBITMAP   m_MimIcon;
 	static		int		  m_MimIconRefCount;
 private:
 	LONG_PTR	customDrawWorker(NMCUSTOMDRAW *nm);
