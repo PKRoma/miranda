@@ -507,7 +507,7 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 	#ifndef __ITaskbarList3_INTERFACE_DEFINED__
 	#define __ITaskbarList3_INTERFACE_DEFINED__
 		/* interface ITaskbarList3 */
-		
+
 		typedef
 			enum TBPFLAG
 		{	
@@ -529,22 +529,31 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 		DECLARE_INTERFACE_( ITaskbarList3, ITaskbarList2 )
 		{
 			// IUnknown methods
-			STDMETHOD (QueryInterface)(THIS_ REFIID riid, void **ppv) PURE;
-			STDMETHOD_(ULONG, AddRef) ( THIS ) PURE;
-			STDMETHOD_(ULONG, Release) ( THIS ) PURE;
+			STDMETHOD (QueryInterface)       (THIS_ REFIID riid, void **ppv) PURE;
+			STDMETHOD_(ULONG, AddRef)        (THIS ) PURE;
+			STDMETHOD_(ULONG, Release)       (THIS ) PURE;
 
-			STDMETHOD (SetProgressValue)(THIS_ HWND hwnd, ULONGLONG ullCompleted, ULONGLONG ullTotal) PURE;
-			STDMETHOD (SetProgressState)(THIS_ HWND hwnd, TBPFLAG tbpFlags) PURE;
-			STDMETHOD (RegisterTab)( THIS_ HWND hwndTab,HWND hwndMDI) PURE;
-			STDMETHOD (UnregisterTab)( THIS_ HWND hwndTab) PURE;
-			STDMETHOD (SetTabOrder)( THIS_ HWND hwndTab, HWND hwndInsertBefore) PURE;
-			STDMETHOD (SetTabActive)( THIS_ HWND hwndTab, HWND hwndMDI, DWORD dwReserved) PURE;
-			STDMETHOD (ThumbBarAddButtons)( THIS_ HWND hwnd, UINT cButtons, LPTHUMBBUTTON pButton) PURE;
-			STDMETHOD (ThumbBarUpdateButtons)( THIS_ HWND hwnd, UINT cButtons, LPTHUMBBUTTON pButton) PURE;
-			STDMETHOD (ThumbBarSetImageList)( THIS_ HWND hwnd, HIMAGELIST himl) PURE;
-			STDMETHOD (SetOverlayIcon)( THIS_ HWND hwnd, HICON hIcon, LPCWSTR pszDescription) PURE;
-			STDMETHOD (SetThumbnailTooltip)( THIS_ HWND hwnd, LPCWSTR pszTip) PURE;
-			STDMETHOD (SetThumbnailClip)( THIS_ HWND hwnd, RECT *prcClip) PURE;
+			// overloaded ITaskbarList2 members
+			STDMETHOD (HrInit)               (THIS ) PURE;
+			STDMETHOD (AddTab)               (THIS_ HWND hwnd) PURE;
+			STDMETHOD (DeleteTab)            (THIS_ HWND hwnd) PURE;
+			STDMETHOD (ActivateTab)          (THIS_ HWND hwnd) PURE;
+			STDMETHOD (SetActiveAlt)         (THIS_ HWND hwnd) PURE;
+			STDMETHOD (MarkFullscreenWindow) (THIS_ HWND hwnd, int fFullscreen) PURE;
+
+			// ITaskbarList3 members
+			STDMETHOD (SetProgressValue)     (THIS_ HWND hwnd, ULONGLONG ullCompleted, ULONGLONG ullTotal) PURE;
+			STDMETHOD (SetProgressState)     (THIS_ HWND hwnd, TBPFLAG tbpFlags) PURE;
+			STDMETHOD (RegisterTab)          (THIS_ HWND hwndTab,HWND hwndMDI) PURE;
+			STDMETHOD (UnregisterTab)        (THIS_ HWND hwndTab) PURE;
+			STDMETHOD (SetTabOrder)          (THIS_ HWND hwndTab, HWND hwndInsertBefore) PURE;
+			STDMETHOD (SetTabActive)         (THIS_ HWND hwndTab, HWND hwndMDI, DWORD dwReserved) PURE;
+			STDMETHOD (ThumbBarAddButtons)   (THIS_ HWND hwnd, UINT cButtons, LPTHUMBBUTTON pButton) PURE;
+			STDMETHOD (ThumbBarUpdateButtons)(THIS_ HWND hwnd, UINT cButtons, LPTHUMBBUTTON pButton) PURE;
+			STDMETHOD (ThumbBarSetImageList) (THIS_ HWND hwnd, HIMAGELIST himl) PURE;
+			STDMETHOD (SetOverlayIcon)       (THIS_ HWND hwnd, HICON hIcon, LPCWSTR pszDescription) PURE;
+			STDMETHOD (SetThumbnailTooltip)  (THIS_ HWND hwnd, LPCWSTR pszTip) PURE;
+			STDMETHOD (SetThumbnailClip)     (THIS_ HWND hwnd, RECT *prcClip) PURE;
 		};
 
 	#endif 	/* __ITaskbarList3_INTERFACE_DEFINED__ */

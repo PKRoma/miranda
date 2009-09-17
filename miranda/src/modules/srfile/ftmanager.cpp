@@ -458,7 +458,7 @@ static INT_PTR CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 	case M_PRESHUTDOWN:
 		SendMessage(dat->hwndIncoming, M_PRESHUTDOWN, 0, 0);
 		SendMessage(dat->hwndOutgoing, M_PRESHUTDOWN, 0, 0);
-        DestroyWindow(hwnd);
+		DestroyWindow(hwnd);
 		break;
 
 	case WM_CLOSE:
@@ -470,6 +470,8 @@ static INT_PTR CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 		Window_FreeIcon_IcoLib(hwnd);
 		DestroyWindow(dat->hwndIncoming);
 		DestroyWindow(dat->hwndOutgoing);
+		if (dat->pTaskbarInterface)
+			dat->pTaskbarInterface->lpVtbl->Release(dat->pTaskbarInterface);
 		mir_free(dat);
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
 		Utils_SaveWindowPosition(hwnd, NULL, "SRFile", "FtMgrDlg_");
