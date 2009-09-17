@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -41,7 +41,7 @@ extern INT_PTR CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 extern INT_PTR CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
 extern void ReloadExtraIcons( void );
-       
+
 extern struct CluiData g_CluiData;
 extern int    g_nextExtraCacheEntry;
 extern struct ExtraCache *g_ExtraCache;
@@ -53,9 +53,9 @@ struct CheckBoxToStyleEx_t {
     DWORD flag;
     int not;
 } static const checkBoxToStyleEx[] = {
-    {IDC_DISABLEDRAGDROP,CLS_EX_DISABLEDRAGDROP,0}, {IDC_NOTEDITLABELS,CLS_EX_EDITLABELS,1}, 
-    {IDC_SHOWSELALWAYS,CLS_EX_SHOWSELALWAYS,0}, {IDC_TRACKSELECT,CLS_EX_TRACKSELECT,0}, 
-    {IDC_DIVIDERONOFF,CLS_EX_DIVIDERONOFF,0}, {IDC_NOTNOTRANSLUCENTSEL,CLS_EX_NOTRANSLUCENTSEL,1}, 
+    {IDC_DISABLEDRAGDROP,CLS_EX_DISABLEDRAGDROP,0}, {IDC_NOTEDITLABELS,CLS_EX_EDITLABELS,1},
+    {IDC_SHOWSELALWAYS,CLS_EX_SHOWSELALWAYS,0}, {IDC_TRACKSELECT,CLS_EX_TRACKSELECT,0},
+    {IDC_DIVIDERONOFF,CLS_EX_DIVIDERONOFF,0}, {IDC_NOTNOTRANSLUCENTSEL,CLS_EX_NOTRANSLUCENTSEL,1},
     {IDC_NOTNOSMOOTHSCROLLING,CLS_EX_NOSMOOTHSCROLLING,1}
 };
 
@@ -65,7 +65,7 @@ struct CheckBoxToGroupStyleEx_t {
     int not;
 } static const checkBoxToGroupStyleEx[] = {
     {IDC_SHOWGROUPCOUNTS,CLS_EX_SHOWGROUPCOUNTS,0}, {IDC_HIDECOUNTSWHENEMPTY,CLS_EX_HIDECOUNTSWHENEMPTY,0},
-    {IDC_LINEWITHGROUPS,CLS_EX_LINEWITHGROUPS,0}, {IDC_QUICKSEARCHVISONLY,CLS_EX_QUICKSEARCHVISONLY,0}, 
+    {IDC_LINEWITHGROUPS,CLS_EX_LINEWITHGROUPS,0}, {IDC_QUICKSEARCHVISONLY,CLS_EX_QUICKSEARCHVISONLY,0},
     {IDC_SORTGROUPSALPHA,CLS_EX_SORTGROUPSALPHA,0}
 };
 
@@ -395,7 +395,7 @@ void DSP_Apply(DISPLAYPROFILE *p)
     DBWriteContactSettingByte(NULL, "CList", "DontSeparateOffline", (BYTE)g_CluiData.bDontSeparateOffline);
     DBWriteContactSettingDword(NULL, "CLC", "OfflineModes", p->clcOfflineModes);
 
-    DBWriteContactSettingDword(NULL, "CList", "SortOrder", 
+    DBWriteContactSettingDword(NULL, "CList", "SortOrder",
         MAKELONG(MAKEWORD(g_CluiData.sortOrder[0], g_CluiData.sortOrder[1]),
         MAKEWORD(g_CluiData.sortOrder[2], 0)));
 
@@ -512,7 +512,7 @@ static INT_PTR CALLBACK DlgProcDspGroups(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			return TRUE;
 		}
     case WM_COMMAND:
-        if ((LOWORD(wParam) == IDC_ROWHEIGHT || LOWORD(wParam) == IDC_AVATARPADDING || LOWORD(wParam) == IDC_ROWGAP || LOWORD(wParam) == IDC_RIGHTMARGIN || LOWORD(wParam) == IDC_LEFTMARGIN || LOWORD(wParam) == IDC_SMOOTHTIME || LOWORD(wParam) == IDC_GROUPINDENT || LOWORD(wParam) == IDC_GROUPROWHEIGHT) 
+        if ((LOWORD(wParam) == IDC_ROWHEIGHT || LOWORD(wParam) == IDC_AVATARPADDING || LOWORD(wParam) == IDC_ROWGAP || LOWORD(wParam) == IDC_RIGHTMARGIN || LOWORD(wParam) == IDC_LEFTMARGIN || LOWORD(wParam) == IDC_SMOOTHTIME || LOWORD(wParam) == IDC_GROUPINDENT || LOWORD(wParam) == IDC_GROUPROWHEIGHT)
             && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
             return 0;
         SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -685,6 +685,11 @@ static INT_PTR CALLBACK DlgProcDspItems(HWND hwndDlg, UINT msg, WPARAM wParam, L
                 }
                 break;
         }
+        case WM_DESTROY: {
+            HIMAGELIST hIml = TreeView_GetImageList(GetDlgItem(hwndDlg, IDC_HIDEOFFLINEOPTS), TVSIL_STATE);
+            ImageList_Destroy(hIml);
+            break;
+        }
         break;
 	}
 	return FALSE;
@@ -843,7 +848,7 @@ ORDERTREEDATA OrderTreeData[]=
     {EXTRA_ICON_ADV3, _T("Advanced #3"), 5, TRUE, 0},
     {EXTRA_ICON_ADV4, _T("Advanced #4"), 6, TRUE, 0},
 };
- 
+
 static int dragging=0;
 static HANDLE hDragItem=NULL;
 
@@ -854,7 +859,7 @@ static int FillOrderTree(HWND hwndDlg, HWND hwndTree, DISPLAYPROFILE *p)
 	TreeView_DeleteAllItems(hwndTree);
 	tvis.hParent = NULL;
 	tvis.hInsertAfter = TVI_LAST;
-	tvis.item.mask = TVIF_PARAM | TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE;	
+	tvis.item.mask = TVIF_PARAM | TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
 
 	for (i = 0; i < EXICON_COUNT; i++) {
         int iIndex = (int)(p->exIconOrder[i] - 1);
@@ -909,7 +914,7 @@ static INT_PTR CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		{
 			TranslateDialogDefault(hwndDlg);
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_EXTRAORDER), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg,IDC_EXTRAORDER),GWL_STYLE)|TVS_NOHSCROLL);
-			{	
+			{
 				HIMAGELIST himlCheckBoxes;
 				himlCheckBoxes=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,2,2);
 				ImageList_AddIcon(himlCheckBoxes, LoadImage(g_hInst, MAKEINTRESOURCE(IDI_NOTICK), IMAGE_ICON, 16, 16, LR_SHARED));
@@ -951,7 +956,7 @@ static INT_PTR CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
             DISPLAYPROFILE *p = (DISPLAYPROFILE *)lParam;
             if(p) {
                 SaveOrderTree(hwndDlg, GetDlgItem(hwndDlg, IDC_EXTRAORDER), p);
-                   
+
                 p->exIconScale = SendDlgItemMessage(hwndDlg, IDC_EXICONSCALESPIN, UDM_GETPOS, 0, 0);
                 p->exIconScale = (p->exIconScale < 8 || p->exIconScale > 20) ? 16 : p->exIconScale;
 
@@ -961,7 +966,7 @@ static INT_PTR CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                                (IsDlgButtonChecked(hwndDlg, IDC_OVERLAYICONS) ? CLUI_FRAME_OVERLAYICONS : 0) |
                                (IsDlgButtonChecked(hwndDlg, IDC_XSTATUSASSTATUS) ? CLUI_FRAME_USEXSTATUSASSTATUS : 0) |
                                (IsDlgButtonChecked(hwndDlg, IDC_SELECTIVEICONS) ? CLUI_FRAME_SELECTIVEICONS : 0));
-                                
+
                 p->bDimIdle = IsDlgButtonChecked(hwndDlg, IDC_IDLE) ? 1 : 0;
                 p->bCenterStatusIcons = IsDlgButtonChecked(hwndDlg, IDC_STATUSICONSCENTERED) ? 1 : 0;
             }
@@ -978,13 +983,13 @@ static INT_PTR CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                 TreeView_SelectItem(GetDlgItem(hwndDlg,IDC_EXTRAORDER),hDragItem);
                 break;
             case NM_CLICK:
-                {						
+                {
                     TVHITTESTINFO hti;
                     hti.pt.x=(short)LOWORD(GetMessagePos());
                     hti.pt.y=(short)HIWORD(GetMessagePos());
                     ScreenToClient(((LPNMHDR)lParam)->hwndFrom,&hti.pt);
                     if(TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom,&hti))
-                        if(hti.flags&TVHT_ONITEMICON) 
+                        if(hti.flags&TVHT_ONITEMICON)
                         {
                             TVITEMA tvi;
                             tvi.mask=TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
@@ -995,7 +1000,7 @@ static INT_PTR CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                             TreeView_SetItem(((LPNMHDR)lParam)->hwndFrom,&tvi);
                             SendMessage((GetParent(hwndDlg)), PSM_CHANGED, (WPARAM)hwndDlg, 0);
                         }
-    
+
                 }
             }
             break;
@@ -1010,9 +1015,9 @@ static INT_PTR CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
 	case WM_MOUSEMOVE:
 		{
-			if(!dragging) 
+			if(!dragging)
                 break;
-			{	
+			{
 				TVHITTESTINFO hti;
 				hti.pt.x = (short)LOWORD(lParam);
 				hti.pt.y = (short)HIWORD(lParam);
@@ -1026,7 +1031,7 @@ static INT_PTR CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					//TreeView_SetInsertMark(GetDlgItem(hwndDlg,IDC_EXTRAORDER),hti.hItem,1);
 					if (!(hti.flags & TVHT_ABOVE))
 						TreeView_SetInsertMark(GetDlgItem(hwndDlg, IDC_EXTRAORDER), hti.hItem, 1);
-					else 
+					else
 						TreeView_SetInsertMark(GetDlgItem(hwndDlg, IDC_EXTRAORDER), it, 0);
 				}
 				else {
@@ -1034,7 +1039,7 @@ static INT_PTR CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					if(hti.flags & TVHT_BELOW) SendDlgItemMessage(hwndDlg, IDC_EXTRAORDER, WM_VSCROLL, MAKEWPARAM(SB_LINEDOWN, 0), 0);
 					TreeView_SetInsertMark(GetDlgItem(hwndDlg, IDC_EXTRAORDER), NULL, 0);
 				}
-			}	
+			}
 		}
 		break;
 	case WM_LBUTTONUP:
@@ -1043,7 +1048,7 @@ static INT_PTR CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			TreeView_SetInsertMark(GetDlgItem(hwndDlg,IDC_EXTRAORDER),NULL,0);
 			dragging=0;
 			ReleaseCapture();
-			{	
+			{
 				TVHITTESTINFO hti;
 				TVITEM tvi;
 				hti.pt.x=(short)LOWORD(lParam);
@@ -1057,7 +1062,7 @@ static INT_PTR CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				tvi.mask=TVIF_HANDLE|TVIF_PARAM;
 				tvi.hItem=hDragItem;
 				TreeView_GetItem(GetDlgItem(hwndDlg,IDC_EXTRAORDER),&tvi);
-				if(hti.flags&(TVHT_ONITEM|TVHT_ONITEMRIGHT)||(hti.hItem==TVI_FIRST)) 
+				if(hti.flags&(TVHT_ONITEM|TVHT_ONITEMRIGHT)||(hti.hItem==TVI_FIRST))
 				{
 					TVINSERTSTRUCT tvis;
 					TCHAR name[128];
@@ -1066,8 +1071,8 @@ static INT_PTR CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					tvis.item.pszText=name;
 					tvis.item.cchTextMax=sizeof(name);
 					tvis.item.hItem=hDragItem;
-					tvis.item.iImage=tvis.item.iSelectedImage=((ORDERTREEDATA *)tvi.lParam)->Visible;				
-					TreeView_GetItem(GetDlgItem(hwndDlg,IDC_EXTRAORDER),&tvis.item);				
+					tvis.item.iImage=tvis.item.iSelectedImage=((ORDERTREEDATA *)tvi.lParam)->Visible;
+					TreeView_GetItem(GetDlgItem(hwndDlg,IDC_EXTRAORDER),&tvis.item);
 					TreeView_DeleteItem(GetDlgItem(hwndDlg,IDC_EXTRAORDER),hDragItem);
 					tvis.hParent=NULL;
 					tvis.hInsertAfter=hti.hItem;
@@ -1076,7 +1081,13 @@ static INT_PTR CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				}
 			}
 		}
-		break; 
+
+        case WM_DESTROY: {
+            HIMAGELIST hIml = TreeView_GetImageList(GetDlgItem(hwndDlg, IDC_EXTRAORDER), TVSIL_NORMAL);
+            ImageList_Destroy(hIml);
+            break;
+        }
+		break;
 	}
 	return FALSE;
 }
@@ -1254,7 +1265,7 @@ static INT_PTR CALLBACK DlgProcDspProfiles(HWND hwnd, UINT msg, WPARAM wParam, L
                         TCITEM tci;
                         tci.mask = TCIF_PARAM;
                         TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
-                        ShowWindow((HWND)tci.lParam,SW_HIDE);                     
+                        ShowWindow((HWND)tci.lParam,SW_HIDE);
                      }
                   break;
                   case TCN_SELCHANGE:
@@ -1278,7 +1289,7 @@ static INT_PTR CALLBACK DlgProcDspProfiles(HWND hwnd, UINT msg, WPARAM wParam, L
 static INT_PTR CALLBACK TabOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
    static int iInit = TRUE;
-   
+
    switch(msg)
    {
       case WM_INITDIALOG:
@@ -1334,7 +1345,7 @@ static INT_PTR CALLBACK TabOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LP
          iInit = FALSE;
          return FALSE;
       }
-      
+
        case PSM_CHANGED: // used so tabs dont have to call SendMessage(GetParent(GetParent(hwnd)), PSM_CHANGED, 0, 0);
          if(!iInit)
              SendMessage(GetParent(hwnd), PSM_CHANGED, 0, 0);
@@ -1367,7 +1378,7 @@ static INT_PTR CALLBACK TabOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LP
                         TCITEM tci;
                         tci.mask = TCIF_PARAM;
                         TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
-                        ShowWindow((HWND)tci.lParam,SW_HIDE);                     
+                        ShowWindow((HWND)tci.lParam,SW_HIDE);
                      }
                   break;
                   case TCN_SELCHANGE:
@@ -1537,7 +1548,7 @@ static INT_PTR CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam
             }
             break;
         case WM_DESTROY:
-            ImageList_Destroy(TreeView_GetImageList(GetDlgItem(hwndDlg, IDC_GREYOUTOPTS), TVSIL_NORMAL));
+            ImageList_Destroy(TreeView_GetImageList(GetDlgItem(hwndDlg, IDC_GREYOUTOPTS), TVSIL_STATE));
             break;
     }
     return FALSE;
@@ -1552,14 +1563,14 @@ static INT_PTR CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
             opt_clc_bkg_changed = 0;
             TranslateDialogDefault(hwndDlg);
             CheckDlgButton(hwndDlg, IDC_BITMAP, DBGetContactSettingByte(NULL, "CLC", "UseBitmap", CLCDEFAULT_USEBITMAP) ? BST_CHECKED : BST_UNCHECKED);
-            SendMessage(hwndDlg, WM_USER + 10, 0, 0);           
+            SendMessage(hwndDlg, WM_USER + 10, 0, 0);
             SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETDEFAULTCOLOUR, 0, CLCDEFAULT_BKCOLOUR);
-            SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, "CLC", "BkColour", CLCDEFAULT_BKCOLOUR));   
+            SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, "CLC", "BkColour", CLCDEFAULT_BKCOLOUR));
             CheckDlgButton(hwndDlg, IDC_WINCOLOUR, DBGetContactSettingByte(NULL, "CLC", "UseWinColours", 0));
             CheckDlgButton(hwndDlg, IDC_SKINMODE, g_CluiData.bWallpaperMode);
             SendMessage(hwndDlg, WM_USER + 11, 0, 0); {
                 DBVARIANT dbv;
-                
+
                 if (!DBGetContactSettingString(NULL, "CLC", "BkBitmap", &dbv)) {
                     if (ServiceExists(MS_UTILS_PATHTOABSOLUTE)) {
                         char szPath[MAX_PATH];
@@ -1597,7 +1608,7 @@ static INT_PTR CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
         case WM_USER+11:
             {
                 BOOL b = IsDlgButtonChecked(hwndDlg, IDC_WINCOLOUR);
-                EnableWindow(GetDlgItem(hwndDlg, IDC_BKGCOLOUR), !b);           
+                EnableWindow(GetDlgItem(hwndDlg, IDC_BKGCOLOUR), !b);
                 break;
             }
         case WM_COMMAND:
@@ -1651,7 +1662,7 @@ static INT_PTR CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
                                 DBWriteContactSettingByte(NULL, "CLC", "UseWinColours", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_WINCOLOUR));
                             } {
                                 char str[MAX_PATH], strrel[MAX_PATH];
-                                
+
                                 GetDlgItemTextA(hwndDlg, IDC_FILENAME, str, sizeof(str));
                                 if (CallService(MS_UTILS_PATHTORELATIVE, (WPARAM) str, (LPARAM) strrel))
                                     DBWriteContactSettingString(NULL, "CLC", "BkBitmap", strrel);
