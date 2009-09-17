@@ -50,19 +50,26 @@ static const struct virusscannerinfo virusScanners[]={
 
 #define M_UPDATEENABLING   (WM_USER+100)
 #define M_SCANCMDLINESELCHANGE  (WM_USER+101)
+
+#ifndef SHACF_FILESYS_DIRS
+	#define SHACF_FILESYS_DIRS  0x00000020
+#endif
+
 static INT_PTR CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) {
 		case WM_INITDIALOG:
 		{
 			TranslateDialogDefault(hwndDlg);
+
+			if (shAutoComplete)
+				shAutoComplete(GetDlgItem(hwndDlg, IDC_FILEDIR), SHACF_FILESYS_DIRS);
+
 			{
 				TCHAR str[MAX_PATH];
 				GetContactReceivedFilesDir(NULL,str,SIZEOF(str),FALSE);
 				SetDlgItemText(hwndDlg,IDC_FILEDIR,str);
 			}
-
-			if (shAutoComplete) shAutoComplete(GetWindow(GetDlgItem(hwndDlg,IDC_FILEDIR),GW_CHILD),1);
 
             CheckDlgButton(hwndDlg, IDC_AUTOACCEPT, DBGetContactSettingByte(NULL,"SRFile","AutoAccept",0) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_AUTOMIN, DBGetContactSettingByte(NULL,"SRFile","AutoMin",0) ? BST_CHECKED : BST_UNCHECKED);
@@ -73,7 +80,7 @@ static INT_PTR CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				default: CheckDlgButton(hwndDlg, IDC_NOSCANNER, BST_CHECKED); break;
 			}
 			CheckDlgButton(hwndDlg, IDC_WARNBEFOREOPENING, DBGetContactSettingByte(NULL,"SRFile","WarnBeforeOpening",1) ? BST_CHECKED : BST_UNCHECKED);
-			
+
 			{	TCHAR szScanExe[MAX_PATH];
 				int i,iItem;
 				for( i=0; i < SIZEOF(virusScanners); i++ ) {
