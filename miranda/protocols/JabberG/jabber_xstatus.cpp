@@ -1773,9 +1773,11 @@ void CJabberInfoFrame::ReloadFonts()
 	lstrcpyA(fontid.group, "Jabber");
 	lstrcpyA(fontid.name, "Frame title");
 	m_clTitle = CallService(MS_FONT_GET, (WPARAM)&fontid, (LPARAM)&lfFont);
+	DeleteObject(m_hfntTitle);
 	m_hfntTitle = CreateFontIndirect(&lfFont);
 	lstrcpyA(fontid.name, "Frame text");
 	m_clText = CallService(MS_FONT_GET, (WPARAM)&fontid, (LPARAM)&lfFont);
+	DeleteObject(m_hfntText);
 	m_hfntText = CreateFontIndirect(&lfFont);
 
 	ColourID colourid = {0};

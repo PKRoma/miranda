@@ -879,6 +879,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 				dis->rcItem.bottom-FSUI_FONTFRAMEVERT);
 
 			FillRect(dis->hDC, &rc, hbrBack);
+			DeleteObject(hbrBack);
 
 			FrameRect(dis->hDC, &rc, GetSysColorBrush(COLOR_HIGHLIGHT));
 			rc.left += 1;
