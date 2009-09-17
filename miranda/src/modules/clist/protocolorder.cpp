@@ -39,12 +39,12 @@ bool CheckProtocolOrder(void)
     bool changed = false;
     int i, id = 0;
 
-	for (;;) 
+	for (;;)
     {
         // Find account with this id
 	    for (i = 0; i < accounts.getCount(); i++)
-            if (accounts[i]->iOrder == id) break; 
-        
+            if (accounts[i]->iOrder == id) break;
+
         // Account with id not found
         if (i == accounts.getCount())
         {
@@ -61,7 +61,7 @@ bool CheckProtocolOrder(void)
             if (found) changed = true;
             else break;
         }
-        else 
+        else
             ++id;
     }
 
@@ -70,7 +70,7 @@ bool CheckProtocolOrder(void)
         // Remove huge ids
         for (i = 0; i < accounts.getCount(); i++)
         {
-            if (accounts[i]->iOrder >= 1000000) 
+            if (accounts[i]->iOrder >= 1000000)
                 accounts[i]->iOrder = id++;
         }
         changed = true;
@@ -84,7 +84,7 @@ bool CheckProtocolOrder(void)
             bool found = false;
             for (int j = 0; j < accounts.getCount(); j++)
             {
-                if (accounts[j]->iOrder == i) 
+                if (accounts[j]->iOrder == i)
                 {
                     if (found) accounts[j]->iOrder = id++;
                     else found = true;
@@ -107,7 +107,7 @@ int FillTree(HWND hwnd)
 	TVINSERTSTRUCT tvis;
 	tvis.hParent = NULL;
 	tvis.hInsertAfter = TVI_LAST;
-	tvis.item.mask = TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE;	
+	tvis.item.mask = TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
 
 	TreeView_DeleteAllItems(hwnd);
 	if ( accounts.getCount() == 0 )
@@ -119,13 +119,13 @@ int FillTree(HWND hwnd)
 			continue;
 
 		pa = accounts[idx];
-	
+
 		PD = ( ProtocolData* )mir_alloc( sizeof( ProtocolData ));
 		PD->RealName = pa->szModuleName;
 		PD->protopos = pa->iOrder;
         PD->enabled = IsAccountEnabled( pa ) && isProtoSuitable( pa->ppro );
         PD->show = PD->enabled ? pa->bIsVisible : 100;
-				
+
 		tvis.item.lParam = ( LPARAM )PD;
 		tvis.item.pszText = pa->tszAccountName;
 		tvis.item.iImage = tvis.item.iSelectedImage = PD->show;
@@ -140,13 +140,14 @@ INT_PTR CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
     HWND hwndProtoOrder = GetDlgItem(hwndDlg, IDC_PROTOCOLORDER);
 	struct ProtocolOrderData *dat = (ProtocolOrderData*)GetWindowLongPtr(hwndProtoOrder, GWLP_USERDATA);
 
-	switch (msg) 
+	switch (msg)
     {
 	case WM_DESTROY:
+		ImageList_Destroy(TreeView_GetImageList(hwndProtoOrder, TVSIL_NORMAL));
 		mir_free( dat );
 		break;
 
-	case WM_INITDIALOG: 
+	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 		dat = (ProtocolOrderData*)mir_calloc(sizeof(ProtocolOrderData));
 		SetWindowLongPtr(hwndProtoOrder, GWLP_USERDATA, (LONG_PTR)dat);
@@ -164,7 +165,7 @@ INT_PTR CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		return TRUE;
 
 	case WM_COMMAND:
-		if (LOWORD(wParam) == IDC_RESETPROTOCOLDATA && HIWORD(wParam) == BN_CLICKED) 
+		if (LOWORD(wParam) == IDC_RESETPROTOCOLDATA && HIWORD(wParam) == BN_CLICKED)
         {
 			for ( int i = 0; i < accounts.getCount(); i++ )
 				accounts[i]->iOrder = i;
@@ -175,8 +176,8 @@ INT_PTR CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		break;
 
 	case WM_NOTIFY:
-		switch(((LPNMHDR)lParam)->idFrom) {		
-		case 0: 
+		switch(((LPNMHDR)lParam)->idFrom) {
+		case 0:
 			if (((LPNMHDR)lParam)->code == PSN_APPLY ) {
 				int count = 0;
 
@@ -200,7 +201,7 @@ INT_PTR CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
 					tvi.hItem = TreeView_GetNextSibling(hwndProtoOrder, tvi.hItem );
 				}
-				
+
 				WriteDbAccounts();
 				cli.pfnReloadProtoMenus();
 				cli.pfnTrayIconIconsChanged();
@@ -211,7 +212,7 @@ INT_PTR CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
 		case IDC_PROTOCOLORDER:
 			switch (((LPNMHDR)lParam)->code) {
-			case TVN_DELETEITEMA: 
+			case TVN_DELETEITEMA:
 				{
 					NMTREEVIEWA * pnmtv = (NMTREEVIEWA *) lParam;
 					if (pnmtv && pnmtv->itemOld.lParam)
@@ -258,14 +259,14 @@ INT_PTR CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			ClientToScreen(hwndDlg, &hti.pt);
 			ScreenToClient(hwndProtoOrder, &hti.pt);
 			TreeView_HitTest(hwndProtoOrder, &hti);
-			if ( hti.flags & (TVHT_ONITEM|TVHT_ONITEMRIGHT )) 
+			if ( hti.flags & (TVHT_ONITEM|TVHT_ONITEMRIGHT ))
             {
 				HTREEITEM it = hti.hItem;
 				hti.pt.y -= TreeView_GetItemHeight(hwndProtoOrder) / 2;
 				TreeView_HitTest(hwndProtoOrder, &hti);
 				if ( !( hti.flags & TVHT_ABOVE ))
 					TreeView_SetInsertMark(hwndProtoOrder, hti.hItem, 1);
-				else 
+				else
 					TreeView_SetInsertMark(hwndProtoOrder, it, 0);
 			}
 			else {
@@ -283,7 +284,7 @@ INT_PTR CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			TreeView_SetInsertMark(hwndProtoOrder, NULL, 0);
 			dat->dragging = 0;
 			ReleaseCapture();
-		
+
 			hti.pt.x = (short)LOWORD(lParam);
 			hti.pt.y = (short)HIWORD(lParam);
 			ClientToScreen(hwndDlg, &hti.pt);
@@ -295,7 +296,7 @@ INT_PTR CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			tvi.mask = TVIF_HANDLE|TVIF_PARAM;
 			tvi.hItem = dat->hDragItem;
 			TreeView_GetItem(hwndProtoOrder, &tvi);
-			if ( hti.flags & (TVHT_ONITEM | TVHT_ONITEMRIGHT) || (hti.hItem == TVI_FIRST)) 
+			if ( hti.flags & (TVHT_ONITEM | TVHT_ONITEMRIGHT) || (hti.hItem == TVI_FIRST))
             {
 				TVINSERTSTRUCT tvis;
 				TCHAR name[128];
@@ -308,21 +309,21 @@ INT_PTR CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				tvis.item.iImage = tvis.item.iSelectedImage = ((ProtocolData *)tvi.lParam)->show;
 				TreeView_GetItem(hwndProtoOrder, &tvis.item);
 
-				//the pointed lParam will be freed inside TVN_DELETEITEM 
+				//the pointed lParam will be freed inside TVN_DELETEITEM
 				//so lets substitute it with 0
-				lpOldData=(ProtocolData *)tvis.item.lParam; 
-				tvis.item.lParam=0; 
-				TreeView_SetItem(hwndProtoOrder, &tvis.item);               
-				tvis.item.lParam=(LPARAM)lpOldData; 
+				lpOldData=(ProtocolData *)tvis.item.lParam;
+				tvis.item.lParam=0;
+				TreeView_SetItem(hwndProtoOrder, &tvis.item);
+				tvis.item.lParam=(LPARAM)lpOldData;
 
-				//now current item contain lParam=0 we can delete it. the memory will be kept.               
+				//now current item contain lParam=0 we can delete it. the memory will be kept.
 				TreeView_DeleteItem(hwndProtoOrder, dat->hDragItem);
 				tvis.hParent = NULL;
 				tvis.hInsertAfter = hti.hItem;
 				TreeView_SelectItem(hwndProtoOrder, TreeView_InsertItem(hwndProtoOrder, &tvis));
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
 		}	}
-		break; 
+		break;
 	}
 	return FALSE;
 }

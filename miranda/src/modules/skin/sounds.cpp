@@ -121,6 +121,9 @@ INT_PTR CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 {
 	static HWND hwndTree = NULL;
 	switch (msg) {
+	case WM_DESTROY:
+		ImageList_Destroy(TreeView_GetImageList(hwndTree, TVSIL_STATE));
+		break;
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 		hwndTree = GetDlgItem(hwndDlg, IDC_SOUNDTREE);
