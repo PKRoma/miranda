@@ -119,7 +119,7 @@ retry:
 				strncpy(nlhr.szUrl, *parUrl, rlen);
 				strcpy(nlhr.szUrl+rlen, nlhrReply->headers[i].szValue); 
 				*parUrl = nlhr.szUrl;
-	            CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)nlhrReply);
+				CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)nlhrReply);
 				goto retry;
 			}
 		}

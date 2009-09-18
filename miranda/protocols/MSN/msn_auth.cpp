@@ -149,19 +149,19 @@ int CMsnProto::MSN_GetPassportAuth(void)
 
 		tResult = getSslResult(&szPassportHost, szAuthInfo, NULL, status);
 		if (tResult == NULL) 
-        {
+		{
 			if (defaultUrlAllow) 
-            {
+			{
 				strcpy(szPassportHost, defaultPassportUrl);
 				defaultUrlAllow = false;
 				continue;
 			}
 			else 
-            {
+			{
 				retVal = 4;
 				break;
-		    }	
-        }
+			}	
+		}
 
 		switch (status)
 		{
@@ -248,7 +248,8 @@ int CMsnProto::MSN_GetPassportAuth(void)
 				break;
 			}
 			default:
-				if (defaultUrlAllow) {
+				if (defaultUrlAllow) 
+				{
 					strcpy(szPassportHost, defaultPassportUrl);
 					defaultUrlAllow = false;
 				}
@@ -264,8 +265,8 @@ int CMsnProto::MSN_GetPassportAuth(void)
 		{
 			MSN_ShowError(retVal == 3 ? "Your username or password is incorrect" : 
 				"Unable to contact MS Passport servers check proxy/firewall settings");
-		    
-            SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
+			
+			SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
 		}
 	}
 	else
@@ -299,7 +300,7 @@ void hmac_sha1 (mir_sha1_byte_t *md, mir_sha1_byte_t *key, size_t keylen, mir_sh
 	memset(k_opad+keylen, 0x5c, SHA_BLOCKSIZE - keylen);
 
 	for (unsigned i = 0; i < keylen; i++) 
-    {
+	{
 		k_ipad[i] ^= 0x36;
 		k_opad[i] ^= 0x5c;
 	}
@@ -328,15 +329,15 @@ static void derive_key(mir_sha1_byte_t* der, unsigned char* key, size_t keylen, 
 
 	hmac_sha1(hash1, key, keylen, data, datalen);
 	hmac_sha1(hash3, key, keylen, hash1, MIR_SHA1_HASH_SIZE);
-	
+
 	memcpy(buf, hash1, MIR_SHA1_HASH_SIZE);
 	memcpy(buf + MIR_SHA1_HASH_SIZE, data, datalen);
 	hmac_sha1(hash2, key, keylen, buf, buflen);
-		
+
 	memcpy(buf, hash3, MIR_SHA1_HASH_SIZE);
 	memcpy(buf + MIR_SHA1_HASH_SIZE, data, datalen);
 	hmac_sha1(hash4, key, keylen, buf, buflen);
-        
+
 	memcpy(der, hash2, MIR_SHA1_HASH_SIZE);
 	memcpy(der + MIR_SHA1_HASH_SIZE, hash4, 4);
 }
@@ -387,7 +388,7 @@ char* CMsnProto::GenerateLoginBlob(char* challenge)
 	NETLIBBASE64 nlb = { authSecretToken, (int)keylen, key1, (int)key1len };
 	MSN_CallService(MS_NETLIB_BASE64DECODE, 0, LPARAM(&nlb));
 	key1len = nlb.cbDecoded; 
-	
+
 	mir_sha1_byte_t key2[MIR_SHA1_HASH_SIZE+4];
 	mir_sha1_byte_t key3[MIR_SHA1_HASH_SIZE+4];
 
@@ -411,10 +412,10 @@ char* CMsnProto::GenerateLoginBlob(char* challenge)
 	memcpy(p, &userKeyHdr, sizeof(MsgrUsrKeyHdr));
 	((MsgrUsrKeyHdr*)p)->cipherLen = (int)chllen;
 	p += sizeof(MsgrUsrKeyHdr);
-	
+
 	unsigned char iv[8];
-    MSN_CallService(MS_UTILS_GETRANDOM, sizeof(iv), (LPARAM)iv);
-	
+	MSN_CallService(MS_UTILS_GETRANDOM, sizeof(iv), (LPARAM)iv);
+
 	memcpy(p, iv, sizeof(iv));
 	p += sizeof(iv);
 
@@ -422,7 +423,7 @@ char* CMsnProto::GenerateLoginBlob(char* challenge)
 	p += MIR_SHA1_HASH_SIZE;
 
 	des3_context ctxd;
-    memset(&ctxd, 0, sizeof(ctxd));
+	memset(&ctxd, 0, sizeof(ctxd));
 	des3_set_3keys(&ctxd, key3);
 	des3_cbc_encrypt(&ctxd, iv, newchl, p, (int)chllen);
 
@@ -441,7 +442,7 @@ char* CMsnProto::GenerateLoginBlob(char* challenge)
 char* CMsnProto::HotmailLogin(const char* url)
 {
 	unsigned char nonce[24];
-    MSN_CallService(MS_UTILS_GETRANDOM, sizeof(nonce), (LPARAM)nonce);
+	MSN_CallService(MS_UTILS_GETRANDOM, sizeof(nonce), (LPARAM)nonce);
 
 	const size_t hotSecretlen = strlen(hotSecretToken);
 	size_t key1len = Netlib_GetBase64DecodedBufferSize(hotSecretlen);
@@ -453,7 +454,7 @@ char* CMsnProto::HotmailLogin(const char* url)
 
 	static const unsigned char encdata[] = "WS-SecureConversation";
 	const size_t data1len = sizeof(nonce) + sizeof(encdata) - 1;
-	
+
 	unsigned char* data1 = (unsigned char*)alloca(data1len);
 	memcpy(data1, encdata, sizeof(encdata) - 1);
 	memcpy(data1 + sizeof(encdata) - 1, nonce, sizeof(nonce));
@@ -470,7 +471,7 @@ char* CMsnProto::HotmailLogin(const char* url)
 	NETLIBBASE64 nlb1 = { noncenc, (int)noncenclen, nonce, sizeof(nonce) };
 	MSN_CallService(MS_NETLIB_BASE64ENCODE, 0, LPARAM(&nlb1));
 	noncenclen = nlb1.cchEncoded - 1;
-	
+
 	const size_t fnpstlen = strlen(xmlenc) + strlen(url) + 3*noncenclen + 100;
 	char* fnpst = (char*)mir_alloc(fnpstlen);
 
@@ -481,11 +482,11 @@ char* CMsnProto::HotmailLogin(const char* url)
 
 	mir_sha1_byte_t hash[MIR_SHA1_HASH_SIZE];
 	hmac_sha1(hash, key2, sizeof(key2), (mir_sha1_byte_t*)fnpst, sz);
-	
+
 	NETLIBBASE64 nlb2 = { noncenc, (int)noncenclen, hash, sizeof(hash) };
 	MSN_CallService(MS_NETLIB_BASE64ENCODE, 0, LPARAM(&nlb2));
 
-    sz += mir_snprintf(fnpst + sz, fnpstlen - sz, "&hash=");
+	sz += mir_snprintf(fnpst + sz, fnpstlen - sz, "&hash=");
 
 	UrlEncode(noncenc, fnpst + sz, fnpstlen - sz);
 

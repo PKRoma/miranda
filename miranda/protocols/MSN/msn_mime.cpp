@@ -47,7 +47,7 @@ void MimeHeaders::clear(void)
 {
 	for (unsigned i=0; i < mCount; i++) 
 	{
-		MimeHeader& H = mVals[ i ];
+		MimeHeader& H = mVals[i];
 		if (H.flags & 1) mir_free((void*)H.name);
 		if (H.flags & 2) mir_free((void*)H.value);
 	}
@@ -71,7 +71,7 @@ unsigned MimeHeaders::allocSlot(void)
 
 void MimeHeaders::addString(const char* name, const char* szValue, unsigned flags)
 {
-	MimeHeader& H = mVals[ allocSlot() ];
+	MimeHeader& H = mVals[allocSlot()];
 	H.name = name;
 	H.value = szValue; 
 	H.flags = flags;
@@ -79,7 +79,7 @@ void MimeHeaders::addString(const char* name, const char* szValue, unsigned flag
 
 void MimeHeaders::addLong(const char* name, long lValue)
 {
-	MimeHeader& H = mVals[ allocSlot() ];
+	MimeHeader& H = mVals[allocSlot()];
 	H.name = name;
 
 	char szBuffer[ 20 ];
@@ -90,7 +90,7 @@ void MimeHeaders::addLong(const char* name, long lValue)
 
 void MimeHeaders::addULong(const char* name, unsigned lValue)
 {
-	MimeHeader& H = mVals[ allocSlot() ];
+	MimeHeader& H = mVals[allocSlot()];
 	H.name = name;
 
 	char szBuffer[ 20 ];
@@ -101,7 +101,7 @@ void MimeHeaders::addULong(const char* name, unsigned lValue)
 
 void MimeHeaders::addBool(const char* name, bool lValue)
 {
-	MimeHeader& H = mVals[ allocSlot() ];
+	MimeHeader& H = mVals[allocSlot()];
 	H.name = name;
 	H.value = lValue ? "true" : "false"; 
 	H.flags = 0;
@@ -113,8 +113,9 @@ void MimeHeaders::addBool(const char* name, bool lValue)
 size_t MimeHeaders::getLength()
 {
 	size_t iResult = 0;
-	for (unsigned i=0; i < mCount; i++) {
-		MimeHeader& H = mVals[ i ];
+	for (unsigned i=0; i < mCount; i++)
+	{
+		MimeHeader& H = mVals[i];
 		iResult += strlen(H.name) + strlen(H.value) + 4;
 	}
 
@@ -124,8 +125,8 @@ size_t MimeHeaders::getLength()
 char* MimeHeaders::writeToBuffer(char* pDest)
 {
 	for (unsigned i=0; i < mCount; i++) 
-    {
-		MimeHeader& H = mVals[ i ];
+	{
+		MimeHeader& H = mVals[i];
 		pDest += sprintf(pDest, "%s: %s\r\n", H.name, H.value);
 	}
 
@@ -139,9 +140,10 @@ char* MimeHeaders::readFromBuffer(char* parString)
 {
 	clear();
 
-	while (*parString) {
+	while (*parString) 
+	{
 		if (parString[0] == '\r' && parString[1] == '\n') 
-        {
+		{
 			parString += 2;
 			break;
 		}
@@ -155,7 +157,8 @@ char* MimeHeaders::readFromBuffer(char* parString)
 			peol++;
 
 		char* delim = strchr(parString, ':');
-		if (delim == NULL) {
+		if (delim == NULL) 
+		{
 			parString = peol;
 			continue;
 		}
@@ -164,7 +167,7 @@ char* MimeHeaders::readFromBuffer(char* parString)
 		while (*delim == ' ' || *delim == '\t')
 			delim++;
 		
-		MimeHeader& H = mVals[ allocSlot() ];
+		MimeHeader& H = mVals[allocSlot()];
 
 		H.name = parString;
 		H.value = delim;
@@ -179,7 +182,7 @@ char* MimeHeaders::readFromBuffer(char* parString)
 const char* MimeHeaders::find(const char* szFieldName)
 {
 	for (unsigned i=0; i < mCount; i++) 
-    {
+	{
 		MimeHeader& MH = mVals[i];
 		if (_stricmp(MH.name, szFieldName) == 0)
 			return MH.value;
@@ -411,13 +414,14 @@ wchar_t* MimeHeaders::decode(const char* val)
 			sz = utf8toutf16(fld, resp);
 			ssz -= sz; resp += sz;
 		}
-		else {
+		else 
+		{
 			int sz = MultiByteToWideChar(FindCP(cp), 0, fld, -1, resp, (int)ssz);
 			if (sz == 0)
 				sz = MultiByteToWideChar(CP_ACP, 0, fld, -1, resp, (int)ssz);
 			ssz -= --sz; resp += sz;
 		}
- 		p = pe + 2;
+		p = pe + 2;
 	}
 
 	utf8toutf16(p, resp); 
@@ -435,10 +439,10 @@ char* MimeHeaders::decodeMailBody(char* msgBody)
 		char *src = msgBody, *dst = msgBody;
 		while (*src != 0)
 		{
-            if (isspace(*src)) ++src;
-            else *(dst++) = *(src++);
+			if (isspace(*src)) ++src;
+			else *(dst++) = *(src++);
 		}
-        *dst = 0;
+		*dst = 0;
 		res = MSN_Base64Decode(msgBody);
 	}
 	else
@@ -455,7 +459,7 @@ int sttDivideWords(char* parBuffer, int parMinItems, char** parDest)
 {
 	int i;
 	for (i=0; i < parMinItems; i++) 
-    {
+	{
 		parDest[ i ] = parBuffer;
 
 		size_t tWordLen = strcspn(parBuffer, " \t");
@@ -463,7 +467,8 @@ int sttDivideWords(char* parBuffer, int parMinItems, char** parDest)
 			return i;
 
 		parBuffer += tWordLen;
-		if (*parBuffer != '\0') {
+		if (*parBuffer != '\0')
+		{
 			size_t tSpaceLen = strspn(parBuffer, " \t");
 			memset(parBuffer, 0, tSpaceLen);
 			parBuffer += tSpaceLen;
@@ -482,7 +487,7 @@ char* httpParseHeader(char* buf, unsigned& status)
 		*p = 0; p += 2;
 
 		union {
-			char* tWords[ 2 ];
+			char* tWords[2];
 			struct { char *method, *status; } data;
 		};
 

@@ -23,19 +23,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 void replaceStr(char*& dest, const char* src)
 {
 	if (src != NULL) 
-    {
+	{
 		mir_free(dest);
 		dest = mir_strdup(src);
-    }	
+	}	
 }
 
 void replaceStr(wchar_t*& dest, const wchar_t* src)
 {
 	if (src != NULL) 
-    {
+	{
 		mir_free(dest);
 		dest = mir_wstrdup(src);
-    }	
+	}	
 }
 
 static TCHAR* a2tf(const TCHAR* str, bool unicode)
@@ -62,8 +62,9 @@ char* rtrim(char *string)
    char* p = string + strlen(string) - 1;
 
    while (p >= string)
-   {  if (*p != ' ' && *p != '\t' && *p != '\n' && *p != '\r')
-         break;
+   {  
+	   if (*p != ' ' && *p != '\t' && *p != '\n' && *p != '\r')
+		 break;
 
 		*p-- = 0;
    }
@@ -75,8 +76,9 @@ wchar_t* rtrim(wchar_t* string)
    wchar_t* p = string + wcslen(string) - 1;
 
    while (p >= string)
-   {  if (*p != ' ' && *p != '\t' && *p != '\n' && *p != '\r')
-         break;
+   {  
+	   if (*p != ' ' && *p != '\t' && *p != '\n' && *p != '\r')
+		 break;
 
 		*p-- = 0;
    }
@@ -157,19 +159,19 @@ void  UrlDecode(char* str)
 	while(*s)
 	{
 		if (*s == '%') 
-        {
+		{
 			int digit1 = SingleHexToDecimal(s[1]);
 			if (digit1 != -1) 
-            {
+			{
 				int digit2 = SingleHexToDecimal(s[2]);
 				if (digit2 != -1) 
-                {
+				{
 					s += 3;
 					*d++ = (char)((digit1 << 4) | digit2);
 					continue;
-		        }	
-            }	
-        }
+				}	
+			}	
+		}
 		*d++ = *s++;
 	}
 
@@ -184,9 +186,9 @@ void  HtmlDecode(char* str)
 		return;
 
 	for (p=q=str; *p!='\0'; p++,q++) 
-    {
+	{
 		if (*p == '&') 
-        {
+		{
 			if (!strncmp(p, "&amp;", 5)) {	*q = '&'; p += 4; }
 			else if (!strncmp(p, "&apos;", 6)) { *q = '\''; p += 5; }
 			else if (!strncmp(p, "&gt;", 4)) { *q = '>'; p += 3; }
@@ -195,7 +197,7 @@ void  HtmlDecode(char* str)
 			else { *q = *p;	}
 		}
 		else 
-        {
+		{
 			*q = *p;
 		}
 	}
@@ -211,9 +213,9 @@ char*  HtmlEncode(const char* str)
 		return NULL;
 
 	for (c=0,p=(char*)str; *p!='\0'; p++) 
-    {
+	{
 		switch (*p) 
-        {
+		{
 		case '&': c += 5; break;
 		case '\'': c += 6; break;
 		case '>': c += 4; break;
@@ -223,11 +225,11 @@ char*  HtmlEncode(const char* str)
 		}
 	}
 	if ((s=(char*)mir_alloc(c+1)) != NULL) 
-    {
+	{
 		for (p=(char*)str,q=s; *p!='\0'; p++) 
-        {
+		{
 			switch (*p) 
-            {
+			{
 			case '&': strcpy(q, "&amp;"); q += 5; break;
 			case '\'': strcpy(q, "&apos;"); q += 6; break;
 			case '>': strcpy(q, "&gt;"); q += 4; break;

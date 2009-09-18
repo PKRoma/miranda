@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "msn_global.h"
 
-int  ThreadData::contactJoined(HANDLE hContact)
+int ThreadData::contactJoined(HANDLE hContact)
 {
 	for (int i=0; i < mJoinedCount; i++)
 		if (mJoinedContacts[i] == hContact)
@@ -28,16 +28,16 @@ int  ThreadData::contactJoined(HANDLE hContact)
 
 	int ret = ++mJoinedCount;
 	mJoinedContacts = (HANDLE*)mir_realloc(mJoinedContacts, sizeof(HANDLE)*ret);
-	mJoinedContacts[ ret-1 ] = hContact;
+	mJoinedContacts[ret-1] = hContact;
 	return ret;
 }
 
-int  ThreadData::contactLeft(HANDLE hContact)
+int ThreadData::contactLeft(HANDLE hContact)
 {
 	int i;
 
 	for (i=0; i < mJoinedCount; i++)
-		if (mJoinedContacts[ i ] == hContact)
+		if (mJoinedContacts[i] == hContact)
 			break;
 
 	if (i == mJoinedCount)

@@ -93,13 +93,13 @@ PBYTE msn_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, int
 
 	if (tIsSessionClosed)
 	{	
-        *outBufLen = 0;
+		*outBufLen = 0;
 		buf = (PBYTE)mir_alloc(1);
 		*buf = 0;
 	}
 	else if (buf == NULL && len == 0)
 	{	
-        *outBufLen = 1;
+		*outBufLen = 1;
 		buf = (PBYTE)mir_alloc(1);
 		*buf = 0;
 	}

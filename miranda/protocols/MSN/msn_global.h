@@ -323,7 +323,7 @@ struct filetransfer
 	TInfoType	tType;
 	TInfoType	tTypeReq;
 	time_t		ts;
-    clock_t     nNotify;
+	clock_t     nNotify;
 	unsigned	cf;
 
 	unsigned    p2p_sessionid;	// session id
@@ -544,8 +544,10 @@ struct MsnContact
 {
 	char *email;
 	char *invite;
+	HANDLE hContact;
 	int list;
 	int netId;
+	int p2pMsgId;
 
 	~MsnContact() { mir_free(email); mir_free(invite); }
 };
@@ -634,7 +636,7 @@ public:
 	UTFEncoder(const wchar_t* pSrc) :
 		m_body(mir_utf8encodeW(pSrc)) {}
 
-    ~UTFEncoder() {  mir_free(m_body);	}
+	~UTFEncoder() {  mir_free(m_body);	}
 	const char* str() const { return m_body; }
 };
 
@@ -703,8 +705,8 @@ struct chunkedmsg
 
 struct DeleteParam
 {
-    CMsnProto *proto;
-    HANDLE hContact;
+	CMsnProto *proto;
+	HANDLE hContact;
 };
 
 INT_PTR CALLBACK DlgDeleteContactUI(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);

@@ -66,17 +66,17 @@ void MsnInitIcons(void)
 	sid.ptszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
 	sid.pszSection = szSectionName;
-    sid.flags = SIDF_PATH_TCHAR;
+	sid.flags = SIDF_PATH_TCHAR;
 
 	for (unsigned i = 0; i < SIZEOF(iconList); i++) 
-    {
+	{
 		char szSettingName[100];
 		mir_snprintf(szSettingName, sizeof(szSettingName), "MSN_%s", iconList[i].szName);
 		sid.pszName = szSettingName;
 		sid.pszDescription = (char*)iconList[i].szDescr;
 		sid.iDefaultIndex = -iconList[i].defIconID;
 		hIconLibItem[i] = (HANDLE)CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-    }	
+	}	
 }
 
 HICON LoadIconEx(const char* name)
@@ -110,9 +110,9 @@ INT_PTR CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 static INT_PTR CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) 
-    {
+	{
 	case WM_INITDIALOG: 
-    {
+	{
 		TranslateDialogDefault(hwndDlg);
 
 		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
@@ -122,7 +122,7 @@ static INT_PTR CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 		char tBuffer[MAX_PATH];
 		if (!proto->getStaticString(NULL, "Password", tBuffer, sizeof(tBuffer))) 
-        {
+		{
 			MSN_CallService(MS_DB_CRYPT_DECODESTRING, strlen(tBuffer)+1, (LPARAM)tBuffer);
 			tBuffer[16] = 0;
 			SetDlgItemTextA(hwndDlg, IDC_PASSWORD, tBuffer);
@@ -132,7 +132,7 @@ static INT_PTR CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		HWND wnd = GetDlgItem(hwndDlg, IDC_HANDLE2);
 		DBVARIANT dbv;
 		if (!proto->getTString("Nick", &dbv)) 
-        {
+		{
 			SetWindowText(wnd, dbv.ptszVal);
 			MSN_FreeVariant(&dbv);
 		}
@@ -154,7 +154,7 @@ static INT_PTR CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SetDlgItemTextA(hwndDlg, IDC_MAILER_APP, tBuffer);
 
 		if (!proto->msnLoggedIn) 
-        {
+		{
 			EnableWindow(GetDlgItem(hwndDlg, IDC_MANAGEGROUPS), FALSE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_DISABLE_ANOTHER_CONTACTS), FALSE);
 		}
@@ -164,24 +164,24 @@ static INT_PTR CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 	case WM_COMMAND:
 		if (LOWORD(wParam) == IDC_NEWMSNACCOUNTLINK) 
-        {
+		{
 			MSN_CallService(MS_UTILS_OPENURL, 1, (LPARAM)"https://signup.live.com");
 			return TRUE;
 		}
 
 		if (HIWORD(wParam) == EN_CHANGE && (HWND)lParam == GetFocus()) 
-        {
+		{
 			switch(LOWORD(wParam)) 
-            {
+			{
 			case IDC_HANDLE:			case IDC_PASSWORD:			case IDC_LOGINSERVER:
 			case IDC_MSNPORT:			case IDC_YOURHOST:			case IDC_HANDLE2:
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-		    }	
-        }
+			}	
+		}
 
 		if (HIWORD(wParam) == BN_CLICKED)
 			switch(LOWORD(wParam)) 
-            {
+			{
 			case IDC_SENDFONTINFO:
 			case IDC_DISABLE_ANOTHER_CONTACTS:
 			case IDC_AWAY_AS_BRB:
@@ -204,7 +204,7 @@ static INT_PTR CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				break;
 
 			case IDC_RUN_APP_ON_HOTMAIL: 
-            {
+			{
 				BOOL tIsChosen = IsDlgButtonChecked(hwndDlg, IDC_RUN_APP_ON_HOTMAIL);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_MAILER_APP), tIsChosen);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_ENTER_MAILER_APP), tIsChosen);
@@ -213,7 +213,7 @@ static INT_PTR CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			}
 
 			case IDC_ENTER_MAILER_APP: 
-            {
+			{
 				HWND tEditField = GetDlgItem(hwndDlg, IDC_MAILER_APP);
 
 				char szFile[MAX_PATH + 2];
@@ -222,19 +222,19 @@ static INT_PTR CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				size_t tSelectLen = 0;
 
 				if (szFile[0] == '\"') 
-                {
+				{
 					char* p = strchr(szFile+1, '\"');
 					if (p != NULL) 
-                    {
+					{
 						*p = '\0';
 						memmove(szFile, szFile+1, strlen(szFile));
 						tSelectLen += 2;
 						goto LBL_Continue;
-				    }	
-                }
+					}	
+				}
 
 				{	
-                    char* p = strchr(szFile, ' ');
+					char* p = strchr(szFile, ' ');
 					if (p != NULL) *p = '\0';
 				}
 LBL_Continue:
@@ -250,7 +250,7 @@ LBL_Continue:
 					break;
 
 				if (strchr(szFile, ' ') != NULL) 
-                {
+				{
 					char tmpBuf[MAX_PATH + 2];
 					mir_snprintf(tmpBuf, sizeof(tmpBuf), "\"%s\"", szFile);
 					strcpy(szFile, tmpBuf);
@@ -259,14 +259,14 @@ LBL_Continue:
 				SendMessage(tEditField, EM_SETSEL, 0, tSelectLen);
 				SendMessageA(tEditField, EM_REPLACESEL, TRUE, LPARAM(szFile));
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-		    }	
-        }
+			}	
+		}
 
 		break;
 
 	case WM_NOTIFY:
 		if (((LPNMHDR)lParam)->code == (UINT)PSN_APPLY) 
-        {
+		{
 			bool reconnectRequired = false;
 			TCHAR screenStr[MAX_PATH];
 			char  password[100], szEmail[MSN_MAX_EMAIL_LEN];
@@ -276,7 +276,7 @@ LBL_Continue:
 
 			GetDlgItemTextA(hwndDlg, IDC_HANDLE, szEmail, sizeof(szEmail));
 			if (strcmp(szEmail, proto->MyOptions.szEmail)) 
-            {
+			{
 				reconnectRequired = true;
 				strcpy(proto->MyOptions.szEmail, szEmail);
 				proto->setString(NULL, "e-mail", szEmail);
@@ -285,32 +285,32 @@ LBL_Continue:
 			GetDlgItemTextA(hwndDlg, IDC_PASSWORD, password, sizeof(password));
 			MSN_CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(password),(LPARAM)password);
 			if (!proto->getString(NULL, "Password", &dbv)) 
-            {
+			{
 				if (strcmp(password, dbv.pszVal)) 
-                {
+				{
 					reconnectRequired = true;
 					proto->setString(NULL, "Password", password);
 				}
 				MSN_FreeVariant(&dbv);
 			}
 			else 
-            {
+			{
 				reconnectRequired = true;
 				proto->setString(NULL, "Password", password);
 			}
 
 			GetDlgItemText(hwndDlg, IDC_HANDLE2, screenStr, SIZEOF(screenStr));
 			if	(!proto->getTString("Nick", &dbv)) 
-            {
+			{
 				if (_tcscmp(dbv.ptszVal, screenStr))
 					proto->MSN_SendNickname(screenStr);
 				MSN_FreeVariant(&dbv);
 			}
-            else
-            {
+			else
+			{
 				if (screenStr[0])
 					proto->MSN_SendNickname(screenStr);
-            }
+			}
 
 			BYTE mblsnd = IsDlgButtonChecked(hwndDlg, IDC_MOBILESEND) == BST_CHECKED;
 			if (mblsnd != proto->getByte("MobileAllowed", 0))
@@ -321,7 +321,7 @@ LBL_Continue:
 
 			unsigned tValue = IsDlgButtonChecked(hwndDlg, IDC_DISABLE_ANOTHER_CONTACTS);
 			if (tValue != proto->msnOtherContactsBlocked && proto->msnLoggedIn) 
-            {
+			{
 				proto->msnOtherContactsBlocked = tValue;
 				proto->msnNsThread->sendPacket("BLP", tValue ? "BL" : "AL");
 				proto->MSN_ABUpdateAttr(NULL, "MSN.IM.BLP", tValue ? "0" : "1");
@@ -364,7 +364,7 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			
 			CheckDlgButton(hwndDlg, IDC_USEGATEWAY, proto->MyOptions.UseGateway);
 			if (!proto->getString(NULL, "LoginServer", &dbv)) 
-            {
+			{
 				SetDlgItemTextA(hwndDlg, IDC_LOGINSERVER, dbv.pszVal);
 				MSN_FreeVariant(&dbv);
 			}
@@ -406,10 +406,10 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) 
-        {
+		{
 		case IDC_RESETSERVER:
 			if (IsDlgButtonChecked(hwndDlg, IDC_USEGATEWAY)) 
-            {
+			{
 				SetDlgItemTextA(hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_GATEWAY);
 				SetDlgItemInt(hwndDlg, IDC_MSNPORT, MSN_DEFAULT_GATEWAY_PORT, FALSE);
 			}
@@ -444,7 +444,7 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 					break;
 
 				case IDC_USEGATEWAY: 
-                {
+				{
 					CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 					bool tValue = !IsDlgButtonChecked(hwndDlg, IDC_USEGATEWAY);
 
@@ -454,9 +454,9 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 						SetDlgItemInt(hwndDlg, IDC_MSNPORT, MSN_DEFAULT_GATEWAY_PORT, FALSE);
 					}
 					else 
-                    {
+					{
 						if (!proto->getString(NULL, "LoginServer", &dbv)) 
-                        {
+						{
 							SetWindowTextA(tWindow, dbv.pszVal);
 							MSN_FreeVariant(&dbv);
 						}
@@ -473,7 +473,7 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 
 	case WM_NOTIFY:
 		if (((LPNMHDR)lParam)->code == (UINT)PSN_APPLY) 
-        {
+		{
 			bool restartRequired = false, reconnectRequired = false;
 			char str[MAX_PATH];
 
@@ -509,7 +509,7 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 
 			if (gethst == 0)
 			{
- 				GetDlgItemTextA(hwndDlg, IDC_YOURHOST, str, sizeof(str));
+				GetDlgItemTextA(hwndDlg, IDC_YOURHOST, str, sizeof(str));
 				proto->setString(NULL, "YourHost", str);
 			}
 			else
@@ -527,8 +527,8 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 
 			proto->LoadOptions();
 			return TRUE;
-	    }	
-    }
+		}	
+	}
 
 	return FALSE;
 }
@@ -541,9 +541,9 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts(HWND hwndDlg, UINT msg, WPARAM w
 	static bool bEnabled;
 
 	switch(msg) 
-    {
+	{
 	case WM_INITDIALOG: 
-    {
+	{
 		TranslateDialogDefault(hwndDlg);
 		bEnabled = false;
 
@@ -561,7 +561,7 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts(HWND hwndDlg, UINT msg, WPARAM w
 
 		SetDlgItemInt(hwndDlg, IDC_POPUP_TIMEOUT, proto->MyOptions.PopupTimeoutHotmail, FALSE);
 
-        int disableHotmailPopup = proto->getByte("DisableHotmail", 1);
+		int disableHotmailPopup = proto->getByte("DisableHotmail", 1);
 
 		CheckDlgButton(hwndDlg, IDC_DISABLEHOTMAILPOPUP, disableHotmailPopup);
 		CheckDlgButton(hwndDlg, IDC_DISABLEHOTMAILTRAY,  proto->getByte("DisableHotmailTray", 0));
@@ -575,21 +575,21 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts(HWND hwndDlg, UINT msg, WPARAM w
 		SetDlgItemInt(hwndDlg, IDC_POPUP_TIMEOUT, tTimeout, FALSE);
 		SetDlgItemInt(hwndDlg, IDC_POPUP_TIMEOUT2, proto->getDword("PopupTimeoutOther", tTimeout), FALSE);
 
-        EnableWindow(GetDlgItem(hwndDlg, IDC_POPUP_TIMEOUT),  !disableHotmailPopup);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_POPUP_TIMEOUT),  !disableHotmailPopup);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_POPUP_TIMEOUT2), !disableHotmailPopup);
 
-        bEnabled = true;
+		bEnabled = true;
 		return TRUE;
 	}
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) 
-        {
-        case IDC_DISABLEHOTMAILPOPUP: 
-            {
-			    bool toSet = SendMessage(HWND(lParam), BM_GETCHECK, 0, 0) != BST_CHECKED;
-			    EnableWindow(GetDlgItem(hwndDlg, IDC_POPUP_TIMEOUT), toSet);
-			    EnableWindow(GetDlgItem(hwndDlg, IDC_PREVIEW), toSet);
-		    }
+		{
+		case IDC_DISABLEHOTMAILPOPUP: 
+			{
+				bool toSet = SendMessage(HWND(lParam), BM_GETCHECK, 0, 0) != BST_CHECKED;
+				EnableWindow(GetDlgItem(hwndDlg, IDC_POPUP_TIMEOUT), toSet);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_PREVIEW), toSet);
+			}
 
 		case IDC_DISABLEHOTMAILTRAY: 
 		case IDC_DISABLEHOTMAILCL: 
@@ -642,26 +642,26 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts(HWND hwndDlg, UINT msg, WPARAM w
 
 	case WM_NOTIFY: //Here we have pressed either the OK or the APPLY button.
 		switch(((LPNMHDR)lParam)->idFrom) 
-        {
+		{
 		case 0:
 			switch (((LPNMHDR)lParam)->code) 
-            {
+			{
 			case PSN_RESET: 
-            {
-				    CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-				    proto->LoadOptions();
-				    return TRUE;
+			{
+					CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+					proto->LoadOptions();
+					return TRUE;
 			}
 
 			case PSN_APPLY: 
-            {
+			{
 				CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 				
 				proto->MyOptions.TextColour = SendDlgItemMessage(hwndDlg,IDC_TEXTCOLOUR,CPM_GETCOLOUR,0,0);
 				proto->setDword("TextColour", proto->MyOptions.TextColour);
 
 				proto->MyOptions.BGColour = SendDlgItemMessage(hwndDlg,IDC_BGCOLOUR,CPM_GETCOLOUR,0,0);
-                proto->setDword("BackgroundColour", proto->MyOptions.BGColour);
+				proto->setDword("BackgroundColour", proto->MyOptions.BGColour);
 
 				proto->MyOptions.PopupTimeoutHotmail = GetDlgItemInt(hwndDlg, IDC_POPUP_TIMEOUT, NULL, FALSE);
 				proto->setDword(NULL, "PopupTimeout", proto->MyOptions.PopupTimeoutHotmail);
@@ -680,8 +680,8 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts(HWND hwndDlg, UINT msg, WPARAM w
 				proto->setByte("EnableDeliveryPopup", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_NOTIFY_FIRSTMSG));
 				proto->setByte("EnableSessionPopup", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_NOTIFY_ENDSESSION));
 
-                HANDLE hContact = proto->MSN_HContactFromEmail(proto->MyOptions.szEmail, NULL, false, false);
-                if (hContact) proto->displayEmailCount(hContact);
+				HANDLE hContact = proto->MSN_HContactFromEmail(proto->MyOptions.szEmail, NULL, false, false);
+				if (hContact) proto->displayEmailCount(hContact);
 
 				}
 				return TRUE;
@@ -709,7 +709,7 @@ static INT_PTR CALLBACK DlgProcAccMgrUI(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 			char tBuffer[MAX_PATH];
 			if (!proto->getStaticString(NULL, "Password", tBuffer, sizeof(tBuffer))) 
-            {
+			{
 				MSN_CallService(MS_DB_CRYPT_DECODESTRING, strlen(tBuffer)+1, (LPARAM)tBuffer);
 				tBuffer[16] = 0;
 				SetDlgItemTextA(hwndDlg, IDC_PASSWORD, tBuffer);
@@ -720,7 +720,7 @@ static INT_PTR CALLBACK DlgProcAccMgrUI(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 	case WM_COMMAND:
 		if (LOWORD(wParam) == IDC_NEWMSNACCOUNTLINK) 
-        {
+		{
 			MSN_CallService(MS_UTILS_OPENURL, 1, (LPARAM)"https://signup.live.com");
 			return TRUE;
 		}
@@ -728,7 +728,7 @@ static INT_PTR CALLBACK DlgProcAccMgrUI(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		if (HIWORD(wParam) == EN_CHANGE && (HWND)lParam == GetFocus()) 
 		{
 			switch(LOWORD(wParam)) 
-            {
+			{
 			case IDC_HANDLE:			case IDC_PASSWORD:
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			}
@@ -776,30 +776,30 @@ INT_PTR CALLBACK DlgDeleteContactUI(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		return TRUE;
 
-    case WM_CLOSE:
-        EndDialog(hwndDlg, 0);
-        break;
+	case WM_CLOSE:
+		EndDialog(hwndDlg, 0);
+		break;
 
 	case WM_COMMAND:
 		if (LOWORD(wParam) == IDOK) 
-        {
-            int isBlock = IsDlgButtonChecked(hwndDlg, IDC_REMOVEBLOCK);
-            int isHot = IsDlgButtonChecked(hwndDlg, IDC_REMOVEHOT);
+		{
+			int isBlock = IsDlgButtonChecked(hwndDlg, IDC_REMOVEBLOCK);
+			int isHot = IsDlgButtonChecked(hwndDlg, IDC_REMOVEHOT);
 
-            DeleteParam *param = (DeleteParam*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-       		
-            char szEmail[ MSN_MAX_EMAIL_LEN ];
-        	if (!param->proto->getStaticString(param->hContact, "e-mail", szEmail, sizeof(szEmail))) 
-            {
-                param->proto->MSN_AddUser(param->hContact, szEmail, 0, LIST_FL | (isHot ? LIST_REMOVE : LIST_REMOVENH));
+			DeleteParam *param = (DeleteParam*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+			
+			char szEmail[ MSN_MAX_EMAIL_LEN ];
+			if (!param->proto->getStaticString(param->hContact, "e-mail", szEmail, sizeof(szEmail))) 
+			{
+				param->proto->MSN_AddUser(param->hContact, szEmail, 0, LIST_FL | (isHot ? LIST_REMOVE : LIST_REMOVENH));
 
-                if (isBlock) 
-                {
-		            param->proto->MSN_AddUser(param->hContact, szEmail, 0, LIST_AL | LIST_REMOVE);
-                    param->proto->MSN_AddUser(param->hContact, szEmail, 0, LIST_BL);
-                }
-            }
-            EndDialog(hwndDlg, 1);
+				if (isBlock) 
+				{
+					param->proto->MSN_AddUser(param->hContact, szEmail, 0, LIST_AL | LIST_REMOVE);
+					param->proto->MSN_AddUser(param->hContact, szEmail, 0, LIST_BL);
+				}
+			}
+			EndDialog(hwndDlg, 1);
 		}
 		break;
 	}
@@ -857,15 +857,14 @@ void  CMsnProto::LoadOptions(void)
 {
 	memset(&MyOptions, 0, sizeof(MyOptions));
 
-    char module[128]; 
+	char module[128]; 
 	mir_snprintf(module, sizeof(module), "%s:HotmailNotify", m_szModuleName);
-    if (DBGetContactSettingDword(NULL, module, "TextColour", 0xabcd) != 0xabcd)
-    {
-        setDword("TextColour", DBGetContactSettingDword(NULL, module, "TextColour", GetSysColor(COLOR_WINDOWTEXT)));
-        setDword("BackgroundColour", DBGetContactSettingDword(NULL, module, "BackgroundColour", STYLE_DEFAULTBGCOLOUR));
-        MSN_CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)module);
-    }
-
+	if (DBGetContactSettingDword(NULL, module, "TextColour", 0xabcd) != 0xabcd)
+	{
+		setDword("TextColour", DBGetContactSettingDword(NULL, module, "TextColour", GetSysColor(COLOR_WINDOWTEXT)));
+		setDword("BackgroundColour", DBGetContactSettingDword(NULL, module, "BackgroundColour", STYLE_DEFAULTBGCOLOUR));
+		MSN_CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)module);
+	}
 
 	//PopUp Options
 	MyOptions.BGColour = getDword("BackgroundColour", STYLE_DEFAULTBGCOLOUR);

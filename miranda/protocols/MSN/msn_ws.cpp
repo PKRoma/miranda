@@ -40,7 +40,7 @@ int ThreadData::send(const char data[], size_t datalen)
 	mWaitPeriod = 60;
 
 	if (proto->MyOptions.UseGateway && !(mType == SERVER_FILETRANS || mType == SERVER_P2P_DIRECT)) 
-    {
+	{
 		mGatewayTimeout = 2;
 
 		if (!proto->MyOptions.UseProxy) {
@@ -80,7 +80,7 @@ bool ThreadData::isTimeout(void)
 	if (--mWaitPeriod > 0) return false;
 
 	if (!mIsMainThread && (mJoinedCount <= 1 || mChatID[0] == 0)) 
-    {
+	{
 		if (mJoinedCount == 0 || termPending)
 			res = true;
 		else if (proto->p2p_getThreadSession(mJoinedContacts[0], mType) != NULL)
@@ -98,7 +98,7 @@ bool ThreadData::isTimeout(void)
 			{	
 				msgWinInData.hContact = (HANDLE)MSN_CallService(MS_MC_GETMETACONTACT, (WPARAM)mJoinedContacts[0], 0);
 				if (msgWinInData.hContact != NULL) 
-                {
+				{
 					res = MSN_CallService(MS_MSG_GETWINDOWDATA, (WPARAM)&msgWinInData, (LPARAM)&msgWinData) != 0;
 					res |= (msgWinData.hwndWindow == NULL);
 				}
@@ -122,7 +122,7 @@ bool ThreadData::isTimeout(void)
 		if (!sbsess || termPending) return true;
 
 		if (proto->getByte("EnableSessionPopup", 0)) 
-        {
+		{
 			HANDLE hContact = mJoinedCount ? mJoinedContacts[0] : mInitialContact;
 			proto->MSN_ShowPopup(hContact, TranslateT("Chat session dropped due to inactivity"), 0);
 		}
@@ -290,7 +290,7 @@ int ThreadData::recv_dg(char* data, size_t datalen)
 	for(;;)
 	{
 		if (mReadAheadBuffer != NULL) 
-        {
+		{
 			size_t datasent = mEhoughData - (mReadAheadBufferPtr - mReadAheadBuffer);
 			size_t tBytesToCopy = (datalen >= datasent) ? datasent : datalen;
 
@@ -388,39 +388,39 @@ int ThreadData::recv(char* data, size_t datalen)
 
 LBL_RecvAgain:
 	if (!mIsMainThread && !proto->MyOptions.UseGateway && !proto->MyOptions.UseProxy) 
-    {
+	{
 		mWaitPeriod = 60;
 		NETLIBSELECT nls = { 0 };
 		nls.cbSize = sizeof(nls);
 		nls.dwTimeout = 1000;
 		nls.hReadConns[0] = s;
 
-        for (;;)
-        {
-            int ret = MSN_CallService(MS_NETLIB_SELECT, 0, (LPARAM)&nls);
-	        if (ret < 0) 
-            {
-		        proto->MSN_DebugLog("Connection abortively closed, error %d", WSAGetLastError());
-		        return ret;
-	        }
-	        else if (ret == 0) 
-            {
+		for (;;)
+		{
+			int ret = MSN_CallService(MS_NETLIB_SELECT, 0, (LPARAM)&nls);
+			if (ret < 0) 
+			{
+				proto->MSN_DebugLog("Connection abortively closed, error %d", WSAGetLastError());
+				return ret;
+			}
+			else if (ret == 0) 
+			{
 				if (isTimeout()) return 0;
 			}
-            else
-                break;
-        }
+			else
+				break;
+		}
 	}
 
 	int ret = MSN_CallService(MS_NETLIB_RECV, (WPARAM)s, (LPARAM)&nlb);
 	if (ret == 0) 
-    {
+	{
 		proto->MSN_DebugLog("Connection closed gracefully");
 		return 0;
 	}
 
 	if (ret < 0) 
-    {
+	{
 		proto->MSN_DebugLog("Connection abortively closed, error %d", WSAGetLastError());
 		return ret;
 	}

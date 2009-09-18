@@ -70,7 +70,7 @@ int CMsnProto::MSN_HandleErrors(ThreadData* info, char* cmdString)
 
 	case ERR_AUTHENTICATION_FAILED:
 		if (info->mType != SERVER_SWITCHBOARD) 
-        {
+		{
 			MSN_ShowError("Your username or password is incorrect");
 			SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
 		}
@@ -78,7 +78,7 @@ int CMsnProto::MSN_HandleErrors(ThreadData* info, char* cmdString)
 
 	case ERR_INVALID_LOCALE:
 		if (packetID == tridUrlInbox) 
-        {
+		{
 			tridUrlInbox = -1;
 			return 0;
 		}

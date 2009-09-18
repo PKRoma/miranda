@@ -23,29 +23,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 HANDLE  CMsnProto::MSN_HContactFromEmail(const char* msnEmail, const char* msnNick, bool addIfNeeded, bool temporary)
 {
-	HANDLE hContact = (HANDLE)MSN_CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	while (hContact != NULL)
-	{
-		if (MSN_IsMyContact(hContact)) 
-        {
-			char tEmail[MSN_MAX_EMAIL_LEN];
-			if (!getStaticString(hContact, "e-mail", tEmail, sizeof(tEmail)))
-				if (!_stricmp(msnEmail, tEmail))
-					return hContact;
-		}
-
-		hContact = (HANDLE)MSN_CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
-	}
+	MsnContact *msc = Lists_Get(msnEmail);
+	if (msc) return msc->hContact;
 
 	if (addIfNeeded)
 	{
-		hContact = (HANDLE)MSN_CallService(MS_DB_CONTACT_ADD, 0, 0);
+		HANDLE hContact = (HANDLE)MSN_CallService(MS_DB_CONTACT_ADD, 0, 0);
 		MSN_CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)m_szModuleName);
 		setString(hContact, "e-mail", msnEmail);
 		setStringUtf(hContact, "Nick", (char*)msnNick);
 		if (temporary)
 			DBWriteContactSettingByte(hContact, "CList", "NotOnList", 1);
 
+		Lists_Add(0, NETID_MSN, msnEmail, hContact);
 		return hContact;
 	}
 	return NULL;
@@ -80,10 +70,10 @@ void CMsnProto::MSN_SetContactDb(HANDLE hContact, const char *szEmail)
 			setString(hContact, "MirVer", "SMS");
 		}
 	}
-    if (listId & LIST_LL)
-        setByte(hContact, "LocalList", 1);
-    else
-        deleteSetting(hContact, "LocalList");
+	if (listId & LIST_LL)
+		setByte(hContact, "LocalList", 1);
+	else
+		deleteSetting(hContact, "LocalList");
 
 }
 
@@ -144,11 +134,11 @@ bool CMsnProto::MSN_AddUser(HANDLE hContact, const char* email, int netId, int f
 			char id[MSN_GUID_LEN];
 			if (!getStaticString(hContact, "ID", id, sizeof(id))) 
 			{
-                int netId = Lists_GetNetId(email);
-                if (leaveHotmail)
-                    res = MSN_ABAddRemoveContact(id, netId, false);
-                else
-				    res = MSN_ABAddDelContactGroup(id , NULL, "ABContactDelete");
+				int netId = Lists_GetNetId(email);
+				if (leaveHotmail)
+					res = MSN_ABAddRemoveContact(id, netId, false);
+				else
+					res = MSN_ABAddDelContactGroup(id , NULL, "ABContactDelete");
 				if (res) AddDelUserContList(email, flags, netId, true);
 			}
 		}
@@ -167,7 +157,7 @@ bool CMsnProto::MSN_AddUser(HANDLE hContact, const char* email, int netId, int f
 			else if (netId == NETID_MSN && res1 == 3)
 			{
 				char szContactID[100];
-			    hContact = MSN_HContactFromEmail(email, email, false, false);
+				hContact = MSN_HContactFromEmail(email, email, false, false);
 				if (getStaticString(hContact, "ID", szContactID, sizeof(szContactID)) == 0)
 				{
 					MSN_ABAddRemoveContact(szContactID, netId, true);
@@ -179,15 +169,15 @@ bool CMsnProto::MSN_AddUser(HANDLE hContact, const char* email, int netId, int f
 				res = (res1 == 0);
 
 			if (res)
-            {
+			{
 				AddDelUserContList(email, flags, netId, false);
 
 				char szContactID[100];
 				if (getStaticString(hContact, "ID", szContactID, sizeof(szContactID)) == 0)
 				{
-                    MSN_ABFind("ABFindByContacts", szContactID);
-                }
-            }
+					MSN_ABFind("ABFindByContacts", szContactID);
+				}
+			}
 			else
 			{
 				if (netId == 1 && strstr(email, "@yahoo.com") != 0)
@@ -196,19 +186,19 @@ bool CMsnProto::MSN_AddUser(HANDLE hContact, const char* email, int netId, int f
 			MSN_FreeVariant(&dbv);
 		}
 	}
-    else if (flags == LIST_LL)
-    {
+	else if (flags == LIST_LL)
+	{
 		if (needRemove) 
-            Lists_Remove(LIST_LL, email);
-        else
-            Lists_Add(LIST_LL, NETID_MSN, email);
-    }
+			Lists_Remove(LIST_LL, email);
+		else
+			Lists_Add(LIST_LL, NETID_MSN, email);
+	}
 	else 
 	{
 		if (netId == 0) netId = Lists_GetNetId(email);
 		res = MSN_SharingAddDelMember(email, flags, netId, needRemove ? "DeleteMember" : "AddMember");
 //		if (res || (flags & LIST_RL)) 
-            AddDelUserContList(email, flags, netId, needRemove);
+			AddDelUserContList(email, flags, netId, needRemove);
 		if ((flags & LIST_BL) && !needRemove)
 		{
 			if (hContact == NULL)
@@ -240,19 +230,21 @@ void CMsnProto::MSN_FindYahooUser(const char* email)
 bool CMsnProto::MSN_RefreshContactList(void)
 {
 	Lists_Wipe();
+	Lists_Populate();
+
 	if (!MSN_SharingFindMembership()) return false;
 
-    if (m_iDesiredStatus == ID_STATUS_OFFLINE) return false;
+	if (m_iDesiredStatus == ID_STATUS_OFFLINE) return false;
 
-    if (!MSN_ABFind("ABFindAll", NULL)) return false;
+	if (!MSN_ABFind("ABFindAll", NULL)) return false;
 
 	if (m_iDesiredStatus == ID_STATUS_OFFLINE) return false;
 
-    MSN_CleanupLists();
+	MSN_CleanupLists();
 
 	if (m_iDesiredStatus == ID_STATUS_OFFLINE) return false;
-        
-    msnLoggedIn = true;
+		
+	msnLoggedIn = true;
 
 	MSN_CreateContList();
 	MSN_StoreGetProfile();

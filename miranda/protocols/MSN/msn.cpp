@@ -57,11 +57,11 @@ PLUGININFOEX pluginInfo =
 	"http://miranda-im.org",
 	UNICODE_AWARE,	
 	0,
-    #if defined(_UNICODE)
-    {0x97724af9, 0xf3fb, 0x47d3, {0xa3, 0xbf, 0xea, 0xa9, 0x35, 0xc7, 0x4e, 0x6d}} // {97724AF9-F3FB-47d3-A3BF-EAA935C74E6D}
-    #else
-    {0xf0eddc9, 0xa46a, 0x40de, {0xbe, 0x7a, 0xe5, 0xaa, 0xb9, 0xb6, 0x14, 0x59}} // {0F0EDDC9-A46A-40de-BE7A-E5AAB9B61459}
-    #endif
+	#if defined(_UNICODE)
+	{0x97724af9, 0xf3fb, 0x47d3, {0xa3, 0xbf, 0xea, 0xa9, 0x35, 0xc7, 0x4e, 0x6d}} // {97724AF9-F3FB-47d3-A3BF-EAA935C74E6D}
+	#else
+	{0x0f0eddc9, 0xa46a, 0x40de, {0xbe, 0x7a, 0xe5, 0xaa, 0xb9, 0xb6, 0x14, 0x59}} // {0F0EDDC9-A46A-40de-BE7A-E5AAB9B61459}
+	#endif
 };
 
 int MSN_GCEventHook(WPARAM wParam, LPARAM lParam);
@@ -84,10 +84,10 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvRese
 {
 	if (fdwReason == DLL_PROCESS_ATTACH)
 	{
-        hInst = hinstDLL;
+		hInst = hinstDLL;
 		DisableThreadLibraryCalls(hinstDLL);
 	}
-    return TRUE;
+	return TRUE;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -128,7 +128,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK* link)
 	mir_getMMI(&mmi);
 	mir_getUTFI(&utfi);
 	mir_getMD5I(&md5i);
-    mir_getSHA1I(&sha1i);
+	mir_getSHA1I(&sha1i);
 
 	hMooduleLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
 
@@ -160,7 +160,7 @@ extern "C" int __declspec(dllexport) Unload(void)
 extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 9, 0, 0)) 
-    {
+	{
 		MessageBox(NULL, _T("The MSN protocol plugin cannot be loaded. It requires Miranda IM 0.9.0.0 or later."), _T("MSN Protocol Plugin"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST);
 		return NULL;
 	}

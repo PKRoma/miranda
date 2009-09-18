@@ -209,7 +209,7 @@ char*  MSN_Translate(const char* str)
 
 unsigned MSN_GenRandom(void)
 {
-    unsigned rndnum;
-    MSN_CallService(MS_UTILS_GETRANDOM, sizeof(rndnum), (LPARAM)&rndnum);
-    return rndnum & 0x7FFFFFFF;
+	unsigned rndnum;
+	MSN_CallService(MS_UTILS_GETRANDOM, sizeof(rndnum), (LPARAM)&rndnum);
+	return rndnum & 0x7FFFFFFF;
 }

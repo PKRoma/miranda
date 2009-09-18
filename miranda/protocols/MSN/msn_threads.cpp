@@ -44,7 +44,8 @@ void __cdecl CMsnProto::msn_keepAliveThread(void*)
 				keepFlag = msnNsThread != NULL;
 				if (MyOptions.UseGateway)
 					msnPingTimeout = 45;
-				else {
+				else 
+				{
 					msnPingTimeout = 20;
 					keepFlag = keepFlag && msnNsThread->send("PNG\r\n", 5);
 				}
@@ -58,7 +59,8 @@ void __cdecl CMsnProto::msn_keepAliveThread(void*)
 			default:
 				keepFlag = false;
 				break;
-	}	}
+		}	
+	}
 
 	CloseHandle(hKeepAliveThreadEvt); hKeepAliveThreadEvt = NULL;
 	MSN_DebugLog("Closing keep-alive thread");
@@ -76,7 +78,7 @@ void __cdecl CMsnProto::MSNServerThread(void* arg)
 	tConn.flags = NLOCF_V2;
 	tConn.timeout = 5;
 
- 	char* tPortDelim = strrchr(info->mServer, ':');
+	char* tPortDelim = strrchr(info->mServer, ':');
 	if (tPortDelim != NULL)
 		*tPortDelim = '\0';
 
@@ -120,32 +122,31 @@ void __cdecl CMsnProto::MSNServerThread(void* arg)
 		}	
 	}
 
-    MSN_DebugLog("Thread started: server='%s:%d', type=%d", tConn.szHost, tConn.wPort, info->mType);
+	MSN_DebugLog("Thread started: server='%s:%d', type=%d", tConn.szHost, tConn.wPort, info->mType);
 
 	info->s = (HANDLE)MSN_CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)hNetlibUser, (LPARAM)&tConn);
 	if (info->s == NULL) 
-    {
-        MSN_DebugLog("Connection Failed (%d) server='%s:%d'", WSAGetLastError(), tConn.szHost, tConn.wPort);
+	{
+		MSN_DebugLog("Connection Failed (%d) server='%s:%d'", WSAGetLastError(), tConn.szHost, tConn.wPort);
 
 		switch (info->mType) 
-        {
+		{
 			case SERVER_NOTIFICATION: 
 			case SERVER_DISPATCH:
 				SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER);
 				MSN_GoOffline();
 				msnNsThread = NULL;
 				if (hKeepAliveThreadEvt) 
-                {
+				{
 					msnPingTimeout *= -1;
 					SetEvent(hKeepAliveThreadEvt);
 				}
 				break;
 
 			case SERVER_SWITCHBOARD:
-                if (info->mCaller) msnNsThread->sendPacket("XFR", "SB");
-                break;
+				if (info->mCaller) msnNsThread->sendPacket("XFR", "SB");
+				break;
 		}
-
 		return;
 	}
 
@@ -155,12 +156,12 @@ void __cdecl CMsnProto::MSNServerThread(void* arg)
 	MSN_DebugLog("Connected with handle=%08X", info->s);
 
 	if (info->mType == SERVER_DISPATCH || info->mType == SERVER_NOTIFICATION) 
-    {
+	{
 		info->sendPacket("VER", "MSNP15 MSNP14 CVR0");
 
 		OSVERSIONINFO osvi = {0};
 		osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	    GetVersionEx(&osvi);
+		GetVersionEx(&osvi);
 
 		info->sendPacket("CVR","0x0409 %s %d.%d i386 MSNMSGR %s msmsgs %s",
 			osvi.dwPlatformId >= 2 ? "winnt" : "win", osvi.dwMajorVersion, osvi.dwMinorVersion, 
@@ -168,21 +169,24 @@ void __cdecl CMsnProto::MSNServerThread(void* arg)
 
 		info->sendPacket("USR", "SSO I %s", MyOptions.szEmail);
 	}
-	else if (info->mType == SERVER_SWITCHBOARD) {
+	else if (info->mType == SERVER_SWITCHBOARD)
+	{
 		info->sendPacket(info->mCaller ? "USR" : "ANS", "%s %s", MyOptions.szEmail, info->mCookie);
 	}
 	else if (info->mType == SERVER_FILETRANS && info->mCaller == 0) 
-    {
+	{
 		info->send("VER MSNFTP\r\n", 12);
 	}
 
-	if (info->mIsMainThread) {
+	if (info->mIsMainThread) 
+	{
 		msnNsThread = info;
 	}
 
 	MSN_DebugLog("Entering main recv loop");
 	info->mBytesInData = 0;
-	for (;;) {
+	for (;;) 
+	{
 		int recvResult = info->recv(info->mData + info->mBytesInData, sizeof(info->mData) - info->mBytesInData);
 		if (recvResult == SOCKET_ERROR) {
 			MSN_DebugLog("Connection %08p [%08X] was abortively closed", info->s, GetCurrentThreadId());
@@ -197,7 +201,7 @@ void __cdecl CMsnProto::MSNServerThread(void* arg)
 		info->mBytesInData += recvResult;
 
 		if (info->mCaller == 1 && info->mType == SERVER_FILETRANS) 
-        {
+		{
 			if (MSN_HandleMSNFTP(info, info->mData))
 				break;
 		}
@@ -228,7 +232,7 @@ void __cdecl CMsnProto::MSNServerThread(void* arg)
 					SetEvent(hKeepAliveThreadEvt);
 
 				if (!isalnum(msg[0]) || !isalnum(msg[1]) || !isalnum(msg[2]) || (msg[3] && msg[3]!=' ')) 
-                {
+				{
 					MSN_DebugLog("Invalid command name");
 					continue;
 				}
@@ -250,24 +254,24 @@ void __cdecl CMsnProto::MSNServerThread(void* arg)
 				else 
 					if (MSN_HandleMSNFTP(info, msg))
 						goto LBL_Exit;
-		    }	
-        }
+			}	
+		}
 
 		if (info->mBytesInData == sizeof(info->mData)) 
-        {
+		{
 			MSN_DebugLog("sizeof(data) is too small: the longest line won't fit");
 			break;
-	    }	
-    }
+		}	
+	}
 
 LBL_Exit:
 	if (info->mIsMainThread) 
-    {
+	{
 		MSN_GoOffline();
 		msnNsThread = NULL;
 
 		if (hKeepAliveThreadEvt) 
-        {
+		{
 			msnPingTimeout *= -1;
 			SetEvent(hKeepAliveThreadEvt);
 		}
@@ -293,7 +297,7 @@ void  CMsnProto::MSN_CloseConnections()
 	nls.cbSize = sizeof(nls);
 
 	for (int i=0; i < sttThreads.getCount(); i++) 
-    {
+	{
 		ThreadData* T = &sttThreads[ i ];
 
 		switch (T->mType) 
@@ -305,7 +309,7 @@ void  CMsnProto::MSN_CloseConnections()
 			{
 				nls.hReadConns[0] = T->s;
 				int res = MSN_CallService(MS_NETLIB_SELECTEX, 0, (LPARAM)&nls);
-                if (res >= 0 || nls.hReadStatus[0] == 0)
+				if (res >= 0 || nls.hReadStatus[0] == 0)
 				{
 					T->sendPacket("OUT", NULL);
 					T->termPending = true;
@@ -316,8 +320,8 @@ void  CMsnProto::MSN_CloseConnections()
 		case SERVER_P2P_DIRECT :
 			MSN_CallService(MS_NETLIB_SHUTDOWN, (WPARAM)T->s, 0);
 			break;
-	    }	
-    }
+		}	
+	}
 
 	LeaveCriticalSection(&sttLock);
 }
@@ -365,7 +369,8 @@ ThreadData*  CMsnProto::MSN_GetThreadByContact(HANDLE hContact, TInfoType type)
 	ThreadData* result = NULL;
 	EnterCriticalSection(&sttLock);
 
-	for (int i=0; i < sttThreads.getCount(); i++) {
+	for (int i=0; i < sttThreads.getCount(); i++)
+	{
 		ThreadData* T = &sttThreads[ i ];
 		if (T->mJoinedCount == 0 || T->mJoinedContacts == NULL || T->s == NULL || T->mType != type)
 			continue;
@@ -384,14 +389,14 @@ ThreadData*  CMsnProto::MSN_GetThreadByTimer(UINT timerId)
 	EnterCriticalSection(&sttLock);
 
 	for (int i=0; i < sttThreads.getCount(); i++) 
-    {
+	{
 		ThreadData* T = &sttThreads[ i ];
 		if (T->mType == SERVER_SWITCHBOARD && T->mTimerId == timerId) 
-        {
+		{
 			result = T;
 			break;
-	    }	
-    }
+		}	
+	}
 
 	LeaveCriticalSection(&sttLock);
 	return result;
@@ -403,15 +408,15 @@ ThreadData*  CMsnProto::MSN_GetP2PThreadByContact(HANDLE hContact)
 	EnterCriticalSection(&sttLock);
 
 	for (int i=0; p2pT == NULL && i < sttThreads.getCount(); i++) 
-    {
+	{
 		ThreadData* T = &sttThreads[ i ];
 		if (T->mJoinedCount == 0 || T->mJoinedContacts == NULL)
 			continue;
 
 		if (T->mJoinedContacts[0] == hContact && T->mInitialContact == NULL) 
-        {
+		{
 			switch (T->mType) 
-            {
+			{
 			case SERVER_SWITCHBOARD:
 				sbT = T;
 				break;
@@ -420,11 +425,11 @@ ThreadData*  CMsnProto::MSN_GetP2PThreadByContact(HANDLE hContact)
 				p2pT = T;
 				break;
 
-            default:
-                break;
-	        }	
-        }	
-    }
+			default:
+				break;
+			}	
+		}	
+	}
 
 	LeaveCriticalSection(&sttLock);
 
@@ -436,7 +441,8 @@ void  CMsnProto::MSN_StartP2PTransferByContact(HANDLE hContact)
 {
 	EnterCriticalSection(&sttLock);
 
-	for (int i=0; i < sttThreads.getCount(); i++) {
+	for (int i=0; i < sttThreads.getCount(); i++) 
+	{
 		ThreadData* T = &sttThreads[ i ];
 		if (T->mJoinedCount == 0 || T->mJoinedContacts == NULL)
 			continue;
@@ -456,17 +462,17 @@ ThreadData*  CMsnProto::MSN_GetOtherContactThread(ThreadData* thread)
 	EnterCriticalSection(&sttLock);
 
 	for (int i=0; i < sttThreads.getCount(); i++) 
-    {
+	{
 		ThreadData* T = &sttThreads[ i ];
 		if (T->mJoinedCount == 0 || T->mJoinedContacts == NULL || T->s == NULL)
 			continue;
 
 		if (T != thread && T->mJoinedContacts[0] == thread->mJoinedContacts[0]) 
-        {
+		{
 			result = T;
 			break;
-	    }	
-    }
+		}	
+	}
 
 	LeaveCriticalSection(&sttLock);
 	return result;
@@ -478,14 +484,14 @@ ThreadData*  CMsnProto::MSN_GetUnconnectedThread(HANDLE hContact)
 	EnterCriticalSection(&sttLock);
 
 	for (int i=0; i < sttThreads.getCount(); i++) 
-    {
+	{
 		ThreadData* T = &sttThreads[ i ];
 		if (T->mInitialContact == hContact && T->mType == SERVER_SWITCHBOARD) 
-        {
+		{
 			result = T;
 			break;
-	    }	
-    }
+		}	
+	}
 
 	LeaveCriticalSection(&sttLock);
 	return result;
@@ -523,7 +529,8 @@ int  CMsnProto::MSN_GetActiveThreads(ThreadData** parResult)
 	int tCount = 0;
 	EnterCriticalSection(&sttLock);
 
-	for (int i=0; i < sttThreads.getCount(); i++) {
+	for (int i=0; i < sttThreads.getCount(); i++)
+	{
 		ThreadData* T = &sttThreads[ i ];
 		if (T->mType == SERVER_SWITCHBOARD && T->mJoinedCount != 0 && T->mJoinedContacts != NULL)
 			parResult[ tCount++ ] = T;
@@ -538,12 +545,15 @@ ThreadData*  CMsnProto::MSN_GetThreadByConnection(HANDLE s)
 	ThreadData* tResult = NULL;
 	EnterCriticalSection(&sttLock);
 
-	for (int i=0; i < sttThreads.getCount(); i++) {
+	for (int i=0; i < sttThreads.getCount(); i++) 
+	{
 		ThreadData* T = &sttThreads[ i ];
-		if (T->s == s) {
+		if (T->s == s) 
+		{
 			tResult = T;
 			break;
-	}	}
+		}	
+	}
 
 	LeaveCriticalSection(&sttLock);
 	return tResult;
@@ -554,12 +564,15 @@ ThreadData*  CMsnProto::MSN_GetThreadByPort(WORD wPort)
 	ThreadData* result = NULL;
 	EnterCriticalSection(&sttLock);
 
-	for (int i=0; i < sttThreads.getCount(); i++) {
+	for (int i=0; i < sttThreads.getCount(); i++) 
+	{
 		ThreadData* T = &sttThreads[ i ];
-		if (T->mIncomingPort == wPort) {
+		if (T->mIncomingPort == wPort)
+		{
 			result = T;
 			break;
-	}	}
+		}	
+	}
 
 	LeaveCriticalSection(&sttLock);
 	return result;
@@ -578,16 +591,19 @@ ThreadData::ThreadData()
 
 ThreadData::~ThreadData()
 {
-	if (s != NULL) {
+	if (s != NULL) 
+	{
 		proto->MSN_DebugLog("Closing connection handle %08X", s);
 		Netlib_CloseHandle(s);
 	}
 
-	if (mIncomingBoundPort != NULL) {
+	if (mIncomingBoundPort != NULL)
+	{
 		Netlib_CloseHandle(mIncomingBoundPort);
 	}
 
-	if (mMsnFtp != NULL) {
+	if (mMsnFtp != NULL) 
+	{
 		delete mMsnFtp;
 		mMsnFtp = NULL;
 	}
@@ -614,19 +630,21 @@ ThreadData::~ThreadData()
 	mir_free(mJoinedContacts);
 
 	if (hQueueMutex) WaitForSingleObject(hQueueMutex, INFINITE);
-	while (mFirstQueueItem != NULL) {
+	while (mFirstQueueItem != NULL) 
+	{
 		TQueueItem* QI = mFirstQueueItem;
 		mFirstQueueItem = mFirstQueueItem->next;
 		mir_free(QI);
 		--numQueueItems;
 	}
-	if (hQueueMutex)  {
+	if (hQueueMutex)
+	{
 		ReleaseMutex(hQueueMutex);
 		CloseHandle(hQueueMutex);
 	}
 
-    HANDLE hContact = mInitialContact;
-    mInitialContact = NULL;
+	HANDLE hContact = mInitialContact;
+	mInitialContact = NULL;
 	if (hContact != NULL && mType == SERVER_SWITCHBOARD && 
 		proto->MSN_GetThreadByContact(hContact) == NULL &&
 		proto->MSN_GetUnconnectedThread(hContact) == NULL)
@@ -658,14 +676,16 @@ void ThreadData::getGatewayUrl(char* dest, int destlen, bool isPoll)
 	static const char pollFmtStr[] = "http://%s/gateway/gateway.dll?Action=poll&SessionID=%s";
 	static const char cmdFmtStr[]  = "http://%s/gateway/gateway.dll?SessionID=%s";
 
-	if (mSessionID[0] == 0) {
+	if (mSessionID[0] == 0)
+	{
 		const char* svr = mType == SERVER_NOTIFICATION || mType == SERVER_DISPATCH ? "NS" : "SB";
 		mir_snprintf(dest, destlen, openFmtStr, mGatewayIP, svr, mServer);
 	}
 	else
 		mir_snprintf(dest, destlen, isPoll ? pollFmtStr : cmdFmtStr, mGatewayIP, mSessionID);
 
-	if (!proto->MyOptions.UseProxy) {
+	if (!proto->MyOptions.UseProxy)
+	{
 		char *slash = strchr(dest+7, '/');
 		size_t len = strlen(dest) - (slash - dest) + 1;
 		memmove(dest, slash, len);
@@ -719,9 +739,9 @@ void __cdecl CMsnProto::ThreadStub(void* arg)
 	MSN_DebugLog("Leaving thread %08X (%08X)", GetCurrentThreadId(), info->mFunc);
 
 	EnterCriticalSection(&sttLock);
-    sttThreads.LIST<ThreadData>::remove(info);
+	sttThreads.LIST<ThreadData>::remove(info);
 	LeaveCriticalSection(&sttLock);
-    delete info;
+	delete info;
 }
 
 void ThreadData::startThread(MsnThreadFunc parFunc, CMsnProto *prt)
@@ -749,12 +769,13 @@ HReadBuffer::HReadBuffer(ThreadData* T, int iStart)
 
 HReadBuffer::~HReadBuffer()
 {
-    if (totalDataSize > startOffset) {
+	if (totalDataSize > startOffset)
+	{
 		memmove(buffer, buffer + startOffset, (totalDataSize -= startOffset));
-	    owner->mBytesInData = (int)totalDataSize;
-    }
-    else
-        owner->mBytesInData = 0;
+		owner->mBytesInData = (int)totalDataSize;
+	}
+	else
+		owner->mBytesInData = 0;
 }
 
 BYTE* HReadBuffer::surelyRead(size_t parBytes)
@@ -763,14 +784,15 @@ BYTE* HReadBuffer::surelyRead(size_t parBytes)
 
 	if ((startOffset + parBytes) > bufferSize)
 	{
-        if (totalDataSize > startOffset) 
+		if (totalDataSize > startOffset) 
 			memmove(buffer, buffer + startOffset, (totalDataSize -= startOffset));
 		else
 			totalDataSize = 0;
 
 		startOffset = 0;
 
-		if (parBytes > bufferSize) {
+		if (parBytes > bufferSize) 
+		{
 //			MSN_DebugLog("HReadBuffer::surelyRead: not enough memory, %d %d %d", parBytes, bufferSize, startOffset);
 			return NULL;
 		}

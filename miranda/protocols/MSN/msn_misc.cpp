@@ -47,16 +47,16 @@ static LONG WINAPI MyInterlockedIncrement95(PLONG pVal)
 //there's a possible hole here if too many people call this at the same time, but that doesn't happen
 static LONG WINAPI MyInterlockedIncrementInit(PLONG pVal)
 {
-    DWORD ver = GetVersion();
-    if ((ver & 0x80000000) && LOWORD(ver) == 0x0004)
-    {
-        InitializeCriticalSection(&csInterlocked95);
-        MyInterlockedIncrement = MyInterlockedIncrement95;
-    }
-    else
-        MyInterlockedIncrement = (pIncrementFunc*)InterlockedIncrement;
+	DWORD ver = GetVersion();
+	if ((ver & 0x80000000) && LOWORD(ver) == 0x0004)
+	{
+		InitializeCriticalSection(&csInterlocked95);
+		MyInterlockedIncrement = MyInterlockedIncrement95;
+	}
+	else
+		MyInterlockedIncrement = (pIncrementFunc*)InterlockedIncrement;
 
-    return MyInterlockedIncrement(pVal);
+	return MyInterlockedIncrement(pVal);
 }
 
 #endif
@@ -83,7 +83,7 @@ const char*  CMsnProto::MirandaStatusToMSN(int status)
 WORD  CMsnProto::MSNStatusToMiranda(const char *status)
 {
 	switch((*(PDWORD)status&0x00FFFFFF) | 0x20000000) 
-    {
+	{
 		case ' LDI': return ID_STATUS_ONLINE;
 		case ' NLN': return ID_STATUS_ONLINE;
 		case ' YWA': return MyOptions.AwayAsBrb ? ID_STATUS_NA : ID_STATUS_AWAY;
@@ -93,19 +93,19 @@ WORD  CMsnProto::MSNStatusToMiranda(const char *status)
 		case ' NUL': return ID_STATUS_OUTTOLUNCH;
 		case ' NDH': return ID_STATUS_INVISIBLE;
 		default: return ID_STATUS_OFFLINE;
-    }	
+	}	
 }
 
 char**  CMsnProto::GetStatusMsgLoc(int status)
 {
 	static const int modes[MSN_NUM_MODES] = 
-    {
+	{
 		ID_STATUS_ONLINE,
 		ID_STATUS_AWAY,
 		ID_STATUS_DND, 
 		ID_STATUS_NA,
 		ID_STATUS_OCCUPIED,
-        ID_STATUS_FREECHAT,
+		ID_STATUS_FREECHAT,
 		ID_STATUS_INVISIBLE,
 		ID_STATUS_ONTHEPHONE,
 		ID_STATUS_OUTTOLUNCH, 
@@ -124,18 +124,18 @@ void  CMsnProto::MSN_AddAuthRequest(const char *email, const char *nick, const c
 {
 	//blob is: UIN=0(DWORD), hContact(DWORD), nick(ASCIIZ), ""(ASCIIZ), ""(ASCIIZ), email(ASCIIZ), ""(ASCIIZ)
 
-    HANDLE hContact = MSN_HContactFromEmail(email, nick, true, false);
-    char *reasona = mir_utf8decodeA(reason);
+	HANDLE hContact = MSN_HContactFromEmail(email, nick, true, false);
+	char *reasona = mir_utf8decodeA(reason);
 
 	CCSDATA ccs = { 0 };
 	PROTORECVEVENT pre = { 0 };
 
-    pre.timestamp = (DWORD)time(NULL);
-    pre.lParam = sizeof(DWORD) * 2 + strlen(nick) + strlen(email) + 5 + (reasona ? strlen(reasona) : 0);
+	pre.timestamp = (DWORD)time(NULL);
+	pre.lParam = sizeof(DWORD) * 2 + strlen(nick) + strlen(email) + 5 + (reasona ? strlen(reasona) : 0);
 
 	ccs.szProtoService = PSR_AUTH;
-    ccs.hContact = hContact;
-    ccs.lParam = (LPARAM)&pre;
+	ccs.hContact = hContact;
+	ccs.lParam = (LPARAM)&pre;
 
 	PBYTE pCurBlob = (PBYTE)alloca(pre.lParam);
 	pre.szMessage = (char*)pCurBlob;
@@ -146,12 +146,12 @@ void  CMsnProto::MSN_AddAuthRequest(const char *email, const char *nick, const c
 	*pCurBlob = '\0'; pCurBlob++;	   //firstName
 	*pCurBlob = '\0'; pCurBlob++;	   //lastName
 	strcpy((char*)pCurBlob, email); pCurBlob += strlen(email)+1;
-    if (reasona) strcpy((char*)pCurBlob, reasona);
-    else *pCurBlob = '\0';         	   //reason
+	if (reasona) strcpy((char*)pCurBlob, reasona);
+	else *pCurBlob = '\0';         	   //reason
 
 	MSN_CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
 
-    mir_free(reasona);
+	mir_free(reasona);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -175,23 +175,23 @@ void CMsnProto::InitCustomFolders(void)
 {
 	if (InitCstFldRan) return; 
 
-    {
-	    char folder[MAX_PATH];
+	{
+		char folder[MAX_PATH];
 
-        char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
-        mir_snprintf(folder, SIZEOF(folder), "%s\\%s", tmpPath, m_szModuleName);
-	    hMSNAvatarsFolder = FoldersRegisterCustomPath(m_szModuleName, "Avatars", folder);
-        mir_free(tmpPath);
-    }
+		char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
+		mir_snprintf(folder, SIZEOF(folder), "%s\\%s", tmpPath, m_szModuleName);
+		hMSNAvatarsFolder = FoldersRegisterCustomPath(m_szModuleName, "Avatars", folder);
+		mir_free(tmpPath);
+	}
 
-    {
-	    char folder[MAX_PATH];
+	{
+		char folder[MAX_PATH];
 
-        char *tmpPath = Utils_ReplaceVars("%miranda_userdata%");
-        mir_snprintf(folder, SIZEOF(folder), "%s\\%s\\CustomSmiley", tmpPath, m_szModuleName);
-	    hCustomSmileyFolder = FoldersRegisterCustomPath(m_szModuleName, "Custom Smiley", folder);
-        mir_free(tmpPath);
-    }
+		char *tmpPath = Utils_ReplaceVars("%miranda_userdata%");
+		mir_snprintf(folder, SIZEOF(folder), "%s\\%s\\CustomSmiley", tmpPath, m_szModuleName);
+		hCustomSmileyFolder = FoldersRegisterCustomPath(m_szModuleName, "Custom Smiley", folder);
+		mir_free(tmpPath);
+	}
 
 	InitCstFldRan = true;
 }
@@ -230,9 +230,9 @@ void  CMsnProto::MSN_GetAvatarFileName(HANDLE hContact, char* pszDest, size_t cb
 	char* path = (char*)alloca(cbLen);
 	if (hMSNAvatarsFolder == NULL || FoldersGetCustomPath(hMSNAvatarsFolder, path, (int)cbLen, ""))
 	{
-        char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
-        tPathLen = mir_snprintf(pszDest, cbLen,"%s\\%s", tmpPath, m_szModuleName);
-        mir_free(tmpPath);
+		char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
+		tPathLen = mir_snprintf(pszDest, cbLen,"%s\\%s", tmpPath, m_szModuleName);
+		mir_free(tmpPath);
 	}
 	else {
 		strcpy(pszDest, path);
@@ -303,18 +303,18 @@ void  CMsnProto::MSN_GetCustomSmileyFileName(HANDLE hContact, char* pszDest, siz
 	char* path = (char*)alloca(cbLen);
 	if (hCustomSmileyFolder == NULL || FoldersGetCustomPath(hCustomSmileyFolder, path, (int)cbLen, "")) 
 	{
-        char *tmpPath = Utils_ReplaceVars("%miranda_userdata%");
+		char *tmpPath = Utils_ReplaceVars("%miranda_userdata%");
 		tPathLen = mir_snprintf(pszDest, cbLen, "%s\\%s\\CustomSmiley", tmpPath, m_szModuleName);
-        mir_free(tmpPath);
+		mir_free(tmpPath);
 	}
 	else 
-    {
+	{
 		strcpy(pszDest, path);
 		tPathLen = strlen(pszDest);
 	}
 
 	if (hContact != NULL) 
-    {
+	{
 		char szEmail[MSN_MAX_EMAIL_LEN];
 		if (getStaticString(hContact, "e-mail", szEmail, sizeof(szEmail)))
 			_ltoa((long)hContact, szEmail, 10);
@@ -359,24 +359,24 @@ void CMsnProto::MSN_GoOffline(void)
 	MsgQueue_Clear();
 	clearCachedMsg();
 
-    if (!Miranda_Terminated())
+	if (!Miranda_Terminated())
 	{
 		int msnOldStatus = m_iStatus; m_iStatus = m_iDesiredStatus = ID_STATUS_OFFLINE; 
 		SendBroadcast(NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)msnOldStatus, ID_STATUS_OFFLINE);
 
-        HANDLE hContact = (HANDLE)MSN_CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-        while (hContact != NULL)
-        {
-	        if (MSN_IsMyContact(hContact))
-		        if (ID_STATUS_OFFLINE != getWord(hContact, "Status", ID_STATUS_OFFLINE)) 
-                {
-			        setWord(hContact, "Status", ID_STATUS_OFFLINE);
-			        setDword(hContact, "IdleTS", 0);
-		        }
+		int count = -1;
+		for (;;)
+		{
+			MsnContact *msc = Lists_GetNext(count);
+			if (msc == NULL) break;
 
-	        hContact = (HANDLE)MSN_CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
-        }
-    }
+			if (ID_STATUS_OFFLINE != getWord(msc->hContact, "Status", ID_STATUS_OFFLINE)) 
+			{
+				setWord(msc->hContact, "Status", ID_STATUS_OFFLINE);
+				setDword(msc->hContact, "IdleTS", 0);
+			}
+		}
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -553,7 +553,7 @@ void  CMsnProto::MSN_SendStatusMessage(const char* msg)
 	if (!msnLoggedIn)
 		return;
 
-    char* msgEnc = HtmlEncode(msg ? msg : "");
+	char* msgEnc = HtmlEncode(msg ? msg : "");
 
 	size_t sz;
 	char  szMsg[2048];
@@ -671,7 +671,7 @@ void  CMsnProto::MSN_SetServerStatus(int newStatus)
 	const char* szStatusName = MirandaStatusToMSN(newStatus );
 
 	if (newStatus != ID_STATUS_OFFLINE) 
-    {
+	{
 		char szMsnObject[1000];
 		if (!ServiceExists(MS_AV_SETMYAVATAR) || 
 			 getStaticString(NULL, "PictObject", szMsnObject, sizeof(szMsnObject)))
@@ -750,7 +750,7 @@ void CMsnProto::MSN_ShowError(const char* msgtext, ...)
 	TCHAR   tBuffer[4096];
 	va_list tArgs;
 
-    TCHAR *buf = (TCHAR*)MSN_CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)msgtext);
+	TCHAR *buf = (TCHAR*)MSN_CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)msgtext);
 
 	va_start(tArgs, msgtext);
 	mir_vsntprintf(tBuffer, SIZEOF(tBuffer), buf, tArgs);
@@ -767,51 +767,51 @@ void CMsnProto::MSN_ShowError(const char* msgtext, ...)
 LRESULT CALLBACK NullWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) 
-    {
+	{
 	case WM_COMMAND: 
-        {
-		    PopupData* tData = (PopupData*)PUGetPluginData(hWnd);
-		    if (tData != NULL)
-		    {
-			    if (tData->flags & MSN_HOTMAIL_POPUP)
-			    {
-                    HANDLE hContact = tData->proto->MSN_HContactFromEmail(tData->proto->MyOptions.szEmail, NULL, false, false);
-                    if (hContact) CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM) 1);
-				    if (tData->flags & MSN_ALLOW_ENTER)
-					    tData->proto->MsnInvokeMyURL(true, tData->url);
-			    }
-			    else
-			    {
-				    if (tData->url != NULL)
-					    MSN_CallService(MS_UTILS_OPENURL, 1, (LPARAM)tData->url);
-			    }
-		    }
-		    PUDeletePopUp(hWnd);
-	    }
+		{
+			PopupData* tData = (PopupData*)PUGetPluginData(hWnd);
+			if (tData != NULL)
+			{
+				if (tData->flags & MSN_HOTMAIL_POPUP)
+				{
+					HANDLE hContact = tData->proto->MSN_HContactFromEmail(tData->proto->MyOptions.szEmail, NULL, false, false);
+					if (hContact) CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM) 1);
+					if (tData->flags & MSN_ALLOW_ENTER)
+						tData->proto->MsnInvokeMyURL(true, tData->url);
+				}
+				else
+				{
+					if (tData->url != NULL)
+						MSN_CallService(MS_UTILS_OPENURL, 1, (LPARAM)tData->url);
+				}
+			}
+			PUDeletePopUp(hWnd);
+		}
 		break;
 
 	case WM_CONTEXTMENU:
-        {
-		    PopupData* tData = (PopupData*)PUGetPluginData(hWnd);
-		    if (tData != NULL && tData->flags & MSN_HOTMAIL_POPUP)
-		    {
-                HANDLE hContact = tData->proto->MSN_HContactFromEmail(tData->proto->MyOptions.szEmail, NULL, false, false);
-                if (hContact) CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM) 1);
-		    }
-		    PUDeletePopUp(hWnd);
-        }
+		{
+			PopupData* tData = (PopupData*)PUGetPluginData(hWnd);
+			if (tData != NULL && tData->flags & MSN_HOTMAIL_POPUP)
+			{
+				HANDLE hContact = tData->proto->MSN_HContactFromEmail(tData->proto->MyOptions.szEmail, NULL, false, false);
+				if (hContact) CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM) 1);
+			}
+			PUDeletePopUp(hWnd);
+		}
 		break;
 
 	case UM_FREEPLUGINDATA:	
-        {
-		    PopupData* tData = (PopupData*)PUGetPluginData(hWnd);
-		    if (tData != NULL && tData != (PopupData*)CALLSERVICE_NOTFOUND)
-		    {
-			    CallService(MS_SKIN2_RELEASEICON, (WPARAM)tData->hIcon, 0);
-			    mir_free(tData->url);
-			    mir_free(tData);
-		    }
-	    }
+		{
+			PopupData* tData = (PopupData*)PUGetPluginData(hWnd);
+			if (tData != NULL && tData != (PopupData*)CALLSERVICE_NOTFOUND)
+			{
+				CallService(MS_SKIN2_RELEASEICON, (WPARAM)tData->hIcon, 0);
+				mir_free(tData->url);
+				mir_free(tData);
+			}
+		}
 		break;
 	}
 
@@ -895,7 +895,7 @@ filetransfer::filetransfer(CMsnProto* prt)
 	memset(this, 0, sizeof(filetransfer));
 	fileId = -1;
 	std.cbSize = sizeof(std);
-    std.flags = PFTS_TCHAR;
+	std.flags = PFTS_TCHAR;
 	proto = prt;
 
 	hLockHandle = CreateMutex(NULL, FALSE, NULL);
@@ -963,7 +963,7 @@ int filetransfer::create(void)
 int filetransfer::openNext(void)
 {
 	if (fileId != -1) 
-    {
+	{
 		close();
 		fileId = -1;
 		++std.currentFileNumber;
@@ -980,12 +980,12 @@ int filetransfer::openNext(void)
 	}
 
 	if (std.ptszFiles && std.ptszFiles[cf]) 
-    {
+	{
 		bCompleted = false;
 		replaceStr(std.tszCurrentFile, std.ptszFiles[cf]);
 		fileId = _topen(std.tszCurrentFile, _O_BINARY | _O_RDONLY, _S_IREAD);
 		if (fileId != -1) 
-        {
+		{
 			std.currentFileSize = _filelengthi64(fileId);
 			std.currentFileProgress = 0;
 			
@@ -1255,66 +1255,66 @@ bool SetupIeProxy(HANDLE hNetlib, bool secur)
 		return false;
 
 	char host[256] = "";
-    int port = 0;
-    DWORD tValueLen, enabled = 0;
+	int port = 0;
+	DWORD tValueLen, enabled = 0;
 
-    tValueLen = sizeof(enabled);
+	tValueLen = sizeof(enabled);
 	int tResult = RegQueryValueExA(hSettings, "ProxyEnable", NULL, NULL, (BYTE*)&enabled, &tValueLen);
-    enabled = enabled && tResult == ERROR_SUCCESS;
+	enabled = enabled && tResult == ERROR_SUCCESS;
 
-    tValueLen = SIZEOF(host);
-    tResult = RegQueryValueExA(hSettings, "ProxyServer", NULL, NULL, (BYTE*)host, &tValueLen);
-    enabled = enabled && tResult == ERROR_SUCCESS;
+	tValueLen = SIZEOF(host);
+	tResult = RegQueryValueExA(hSettings, "ProxyServer", NULL, NULL, (BYTE*)host, &tValueLen);
+	enabled = enabled && tResult == ERROR_SUCCESS;
 
-    RegCloseKey(hSettings);
+	RegCloseKey(hSettings);
 
-    if (enabled)
-    {
-        const char *token = secur ? "https=" : "http=";
-        char* tDelim = strstr(host, token);
-        if (tDelim != NULL)
-        {
-	        tDelim += strlen(token);
-	        memmove(host, tDelim, strlen(tDelim)+1);
+	if (enabled)
+	{
+		const char *token = secur ? "https=" : "http=";
+		char* tDelim = strstr(host, token);
+		if (tDelim != NULL)
+		{
+			tDelim += strlen(token);
+			memmove(host, tDelim, strlen(tDelim)+1);
 
-	        tDelim = strchr(host, ';');
-	        if (tDelim != NULL) *tDelim = '\0';
-        }
+			tDelim = strchr(host, ';');
+			if (tDelim != NULL) *tDelim = '\0';
+		}
 
-        tDelim = strchr(host, ':');
-        if (tDelim != NULL) 
-        {
-	        *tDelim = 0;
-	        port = atol(tDelim+1);
-        }
+		tDelim = strchr(host, ':');
+		if (tDelim != NULL) 
+		{
+			*tDelim = 0;
+			port = atol(tDelim+1);
+		}
 
-        rtrim(host);
+		rtrim(host);
 
-        enabled = (host[0] != 0);
-    }
+		enabled = (host[0] != 0);
+	}
 
-    NETLIBUSERSETTINGS nls = {0};
-    nls.cbSize = sizeof(nls);
-    MSN_CallService(MS_NETLIB_GETUSERSETTINGS, WPARAM(hNetlib), LPARAM(&nls));
+	NETLIBUSERSETTINGS nls = {0};
+	nls.cbSize = sizeof(nls);
+	MSN_CallService(MS_NETLIB_GETUSERSETTINGS, WPARAM(hNetlib), LPARAM(&nls));
 
-    if (enabled)
-    {
-        nls.szProxyServer = host;
-        nls.wProxyPort = port ? port : 443;
-        nls.proxyType = secur ? PROXYTYPE_HTTPS : PROXYTYPE_HTTP;
-        nls.dnsThroughProxy = TRUE;
-    }
-    else
-    {
-        nls.szProxyServer = NEWSTR_ALLOCA(nls.szProxyServer);
-    }
+	if (enabled)
+	{
+		nls.szProxyServer = host;
+		nls.wProxyPort = port ? port : 443;
+		nls.proxyType = secur ? PROXYTYPE_HTTPS : PROXYTYPE_HTTP;
+		nls.dnsThroughProxy = TRUE;
+	}
+	else
+	{
+		nls.szProxyServer = NEWSTR_ALLOCA(nls.szProxyServer);
+	}
 
-    nls.useProxy = enabled != 0;
-    nls.szIncomingPorts = NEWSTR_ALLOCA(nls.szIncomingPorts);
+	nls.useProxy = enabled != 0;
+	nls.szIncomingPorts = NEWSTR_ALLOCA(nls.szIncomingPorts);
 	nls.szOutgoingPorts = NEWSTR_ALLOCA(nls.szOutgoingPorts);
 	nls.szProxyAuthPassword = NEWSTR_ALLOCA(nls.szProxyAuthPassword);
 	nls.szProxyAuthUser = NEWSTR_ALLOCA(nls.szProxyAuthUser);
 	MSN_CallService(MS_NETLIB_SETUSERSETTINGS, WPARAM(hNetlib), LPARAM(&nls));
 
-    return enabled != 0;
+	return enabled != 0;
 }
