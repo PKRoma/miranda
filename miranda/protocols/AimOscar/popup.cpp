@@ -35,7 +35,7 @@ struct CAimPopupData
 LRESULT CALLBACK PopupWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch(message) 
-    {
+	{
 	case WM_COMMAND:
 		if (HIWORD(wParam) == STN_CLICKED)
 		{
@@ -63,32 +63,32 @@ LRESULT CALLBACK PopupWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 
 void CAimProto::ShowPopup(const char* msg, int flags, char* url)
 {
-    POPUPDATAT ppd = {0};
+	POPUPDATAT ppd = {0};
 
-    mir_sntprintf(ppd.lptzContactName, SIZEOF(ppd.lptzContactName), TranslateT("%s Protocol"), m_tszUserName);
+	mir_sntprintf(ppd.lptzContactName, SIZEOF(ppd.lptzContactName), TranslateT("%s Protocol"), m_tszUserName);
 
 	if (flags & ERROR_POPUP) 
-    {
-        if (flags & TCHAR_POPUP)
-        {
-            char* errmsg = mir_t2a((TCHAR*)msg);
-            LOG(errmsg);
-            mir_free(errmsg);
-        }
-        else
-            LOG(msg);
-    }
+	{
+		if (flags & TCHAR_POPUP)
+		{
+			char* errmsg = mir_t2a((TCHAR*)msg);
+			LOG(errmsg);
+			mir_free(errmsg);
+		}
+		else
+			LOG(msg);
+	}
 
-    TCHAR *msgt = (flags & TCHAR_POPUP) ? mir_tstrdup((TCHAR*)msg) : mir_a2t(msg);
-    mir_sntprintf(ppd.lptzText, SIZEOF(ppd.lptzText), _T("%s"), TranslateTS(msgt));
-    mir_free(msgt);
+	TCHAR *msgt = (flags & TCHAR_POPUP) ? mir_tstrdup((TCHAR*)msg) : mir_a2t(msg);
+	mir_sntprintf(ppd.lptzText, SIZEOF(ppd.lptzText), _T("%s"), TranslateTS(msgt));
+	mir_free(msgt);
 
-    if (!ServiceExists(MS_POPUP_ADDPOPUPT))
+	if (!ServiceExists(MS_POPUP_ADDPOPUPT))
 	{	
 		if (flags & MAIL_POPUP)
 		{
-            size_t len = _tcslen(ppd.lptzText);
-            mir_sntprintf(&ppd.lptzText[len], SIZEOF(ppd.lptzText) - len, _T(" %s"), TranslateT("Open mail account?"));
+			size_t len = _tcslen(ppd.lptzText);
+			mir_sntprintf(&ppd.lptzText[len], SIZEOF(ppd.lptzText) - len, _T(" %s"), TranslateT("Open mail account?"));
 			if (MessageBox(NULL, ppd.lptzText, ppd.lptzContactName, MB_YESNO | MB_ICONINFORMATION) == IDYES)
 				execute_cmd(url);
 		}
@@ -97,18 +97,18 @@ void CAimProto::ShowPopup(const char* msg, int flags, char* url)
 			MessageBox(NULL, ppd.lptzText, ppd.lptzContactName, MB_OK | MB_ICONINFORMATION);
 		}
 	}
-    else
-    {
-	    ppd.PluginWindowProc = PopupWindowProc;
-	    ppd.lchIcon = LoadIconEx("aim");
-	    if (flags & MAIL_POPUP)
-	    {
-		    ppd.PluginData = new CAimPopupData(this, url);
-		    ppd.iSeconds = -1;
-	    } 
-	    else 
-            ppd.PluginData = new CAimPopupData(this, NULL);
+	else
+	{
+		ppd.PluginWindowProc = PopupWindowProc;
+		ppd.lchIcon = LoadIconEx("aim");
+		if (flags & MAIL_POPUP)
+		{
+			ppd.PluginData = new CAimPopupData(this, url);
+			ppd.iSeconds = -1;
+		} 
+		else 
+			ppd.PluginData = new CAimPopupData(this, NULL);
 
-	    CallService(MS_POPUP_ADDPOPUPT, (WPARAM)&ppd, 0);	
-    }
+		CallService(MS_POPUP_ADDPOPUPT, (WPARAM)&ppd, 0);	
+	}
 }

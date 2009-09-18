@@ -36,21 +36,21 @@ TCHAR* get_dir(TCHAR* path);
 
 struct aimString
 {
-    union
-    {
-        char* szString;
-        wchar_t* wszString;
-    };
-    size_t size;
-    bool unicode;
+	union
+	{
+		char* szString;
+		wchar_t* wszString;
+	};
+	size_t size;
+	bool unicode;
 
-    aimString(char* str);
-    ~aimString() { mir_free(szString); }
+	aimString(char* str);
+	~aimString() { mir_free(szString); }
 
-    bool isUnicode(void) { return unicode; }
-    unsigned short getSize(void) { return (unsigned short)size; }
-    unsigned short getTermSize(void) { return (unsigned short)(size + (unicode ? sizeof(wchar_t) : sizeof(char))); }
-    char* getBuf(void) { return szString; }  
+	bool isUnicode(void) { return unicode; }
+	unsigned short getSize(void) { return (unsigned short)size; }
+	unsigned short getTermSize(void) { return (unsigned short)(size + (unicode ? sizeof(wchar_t) : sizeof(char))); }
+	char* getBuf(void) { return szString; }  
 };
 
 #endif

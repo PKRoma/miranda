@@ -82,10 +82,10 @@ void InitIcons(void)
 	sid.cx = sid.cy = 16;
 	sid.pszName = szSettingName;
 	sid.pszSection = szSectionName;
-    sid.flags = SIDF_PATH_TCHAR;
+	sid.flags = SIDF_PATH_TCHAR;
 
 	for (int i = 0; i < SIZEOF(iconList); i++) 
-    {
+	{
 		mir_snprintf(szSettingName, sizeof(szSettingName), "AIM_%s", iconList[i].szName);
 
 		if (iconList[i].szSection)
@@ -134,17 +134,17 @@ static HANDLE hExtraAT, hExtraES;
 
 static const char* extra_AT_icon_name[5] =
 {
-    "uconfirm",
-    "confirm",
-    "icq",
-    "aol",
-    "admin",
+	"uconfirm",
+	"confirm",
+	"icq",
+	"aol",
+	"admin",
 };
 
 static const char* extra_ES_icon_name[2] =
 {
-    "bot",
-    "hiptop",
+	"bot",
+	"hiptop",
 };
 
 static HANDLE extra_AT_icon_handle[5];
@@ -154,19 +154,19 @@ static void load_extra_icons(void)
 {
 	if (!ServiceExists(MS_CLIST_EXTRA_ADD_ICON)) return;
 
-    unsigned i;
+	unsigned i;
 
-    for (i = 0; i < SIZEOF(extra_AT_icon_handle); ++i)
-    {
-        extra_AT_icon_handle[i] = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)LoadIconEx(extra_AT_icon_name[i]), 0);
-	    ReleaseIconEx(extra_AT_icon_name[i]);
-    }
+	for (i = 0; i < SIZEOF(extra_AT_icon_handle); ++i)
+	{
+		extra_AT_icon_handle[i] = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)LoadIconEx(extra_AT_icon_name[i]), 0);
+		ReleaseIconEx(extra_AT_icon_name[i]);
+	}
 
-    for (i = 0; i < SIZEOF(extra_ES_icon_handle); ++i)
-    {
-        extra_ES_icon_handle[i] = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)LoadIconEx(extra_ES_icon_name[i]), 0);
-	    ReleaseIconEx(extra_ES_icon_name[i]);
-    }
+	for (i = 0; i < SIZEOF(extra_ES_icon_handle); ++i)
+	{
+		extra_ES_icon_handle[i] = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)LoadIconEx(extra_ES_icon_name[i]), 0);
+		ReleaseIconEx(extra_ES_icon_name[i]);
+	}
 }
 
 static void set_extra_icon(HANDLE hContact, HANDLE hImage, int column_type)
@@ -180,60 +180,60 @@ static void set_extra_icon(HANDLE hContact, HANDLE hImage, int column_type)
 
 static void clear_AT_icon(HANDLE hContact)
 {
-    if (hExtraAT)
-        ExtraIcon_SetIcon(hExtraAT, hContact, (char*)NULL);
-    else
-	    set_extra_icon(hContact, (HANDLE)-1, EXTRA_ICON_ADV2);
+	if (hExtraAT)
+		ExtraIcon_SetIcon(hExtraAT, hContact, (char*)NULL);
+	else
+		set_extra_icon(hContact, (HANDLE)-1, EXTRA_ICON_ADV2);
 }
 
 static void clear_ES_icon(HANDLE hContact)
 {
-    if (hExtraES)
-        ExtraIcon_SetIcon(hExtraES, hContact, (char*)NULL);
-    else
-	    set_extra_icon(hContact, (HANDLE)-1, EXTRA_ICON_ADV3);
+	if (hExtraES)
+		ExtraIcon_SetIcon(hExtraES, hContact, (char*)NULL);
+	else
+		set_extra_icon(hContact, (HANDLE)-1, EXTRA_ICON_ADV3);
 }
 
 static void set_AT_icon(CAimProto* ppro, HANDLE hContact)
 {
-    if (ppro->getByte(hContact, "ChatRoom", 0)) return;
+	if (ppro->getByte(hContact, "ChatRoom", 0)) return;
 
-    unsigned i = ppro->getByte(hContact, AIM_KEY_AC, 0) - 1;
+	unsigned i = ppro->getByte(hContact, AIM_KEY_AC, 0) - 1;
 
-    if (hExtraAT)
-    {
-        if (i < 5)
-        {
-	        char name[64];
-	        mir_snprintf(name, sizeof(name), "AIM_%s", extra_AT_icon_name[i]);
-            ExtraIcon_SetIcon(hExtraAT, hContact, name);
-        }
-        else
-            ExtraIcon_SetIcon(hExtraAT, hContact, (char*)NULL);
-    }
-    else
-	    set_extra_icon(hContact, i < 5 ? extra_AT_icon_handle[i] : (HANDLE)-1, EXTRA_ICON_ADV2);
+	if (hExtraAT)
+	{
+		if (i < 5)
+		{
+			char name[64];
+			mir_snprintf(name, sizeof(name), "AIM_%s", extra_AT_icon_name[i]);
+			ExtraIcon_SetIcon(hExtraAT, hContact, name);
+		}
+		else
+			ExtraIcon_SetIcon(hExtraAT, hContact, (char*)NULL);
+	}
+	else
+		set_extra_icon(hContact, i < 5 ? extra_AT_icon_handle[i] : (HANDLE)-1, EXTRA_ICON_ADV2);
 }
 
 static void set_ES_icon(CAimProto* ppro, HANDLE hContact)
 {
-    if (ppro->getByte(hContact, "ChatRoom", 0)) return;
+	if (ppro->getByte(hContact, "ChatRoom", 0)) return;
 
-    unsigned i = ppro->getByte(hContact, AIM_KEY_ET, 0) - 1;
+	unsigned i = ppro->getByte(hContact, AIM_KEY_ET, 0) - 1;
 
-    if (hExtraES)
-    {
-        if (i < 2)
-        {
-	        char name[64];
-	        mir_snprintf(name, sizeof(name), "AIM_%s", extra_ES_icon_name[i]);
-            ExtraIcon_SetIcon(hExtraES, hContact, name);
-        }
-        else
-            ExtraIcon_SetIcon(hExtraES, hContact, (char*)NULL);
-    }
-    else
-	    set_extra_icon(hContact, i < 2 ? extra_ES_icon_handle[i] : (HANDLE)-1, EXTRA_ICON_ADV3);
+	if (hExtraES)
+	{
+		if (i < 2)
+		{
+			char name[64];
+			mir_snprintf(name, sizeof(name), "AIM_%s", extra_ES_icon_name[i]);
+			ExtraIcon_SetIcon(hExtraES, hContact, name);
+		}
+		else
+			ExtraIcon_SetIcon(hExtraES, hContact, (char*)NULL);
+	}
+	else
+		set_extra_icon(hContact, i < 2 ? extra_ES_icon_handle[i] : (HANDLE)-1, EXTRA_ICON_ADV3);
 }
 
 void set_contact_icon(CAimProto* ppro, HANDLE hContact)
@@ -252,19 +252,19 @@ static int OnExtraIconsApply(WPARAM wParam, LPARAM /*lParam*/)
 {
 	if (!ServiceExists(MS_CLIST_EXTRA_SET_ICON)) return 0;
 
-    HANDLE hContact = (HANDLE)wParam;
+	HANDLE hContact = (HANDLE)wParam;
 
-    CAimProto *ppro = NULL;
-    for (int i = 0; i < g_Instances.getCount(); ++i)
-    {
-        if (g_Instances[i].is_my_contact(hContact))
-        {
-            ppro = &g_Instances[i];
-            break;
-        }
-    }
+	CAimProto *ppro = NULL;
+	for (int i = 0; i < g_Instances.getCount(); ++i)
+	{
+		if (g_Instances[i].is_my_contact(hContact))
+		{
+			ppro = &g_Instances[i];
+			break;
+		}
+	}
 
-    if (ppro) set_contact_icon(ppro, hContact);
+	if (ppro) set_contact_icon(ppro, hContact);
 
 	return 0;
 }
@@ -277,7 +277,7 @@ void remove_AT_icons(CAimProto* ppro)
 	while (hContact)
 	{
 		if (ppro->is_my_contact(hContact) && !ppro->getByte(hContact, "ChatRoom", 0)) 
-            clear_AT_icon(hContact);
+			clear_AT_icon(hContact);
 
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
@@ -291,7 +291,7 @@ void remove_ES_icons(CAimProto* ppro)
 	while (hContact)
 	{
 		if (ppro->is_my_contact(hContact) && !ppro->getByte(hContact, "ChatRoom", 0)) 
-            clear_ES_icon(hContact);
+			clear_ES_icon(hContact);
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 }
@@ -302,9 +302,9 @@ void add_AT_icons(CAimProto* ppro)
 	while (hContact)
 	{
 		if (ppro->is_my_contact(hContact)) 
-            set_AT_icon(ppro, hContact);
+			set_AT_icon(ppro, hContact);
 
-        hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 }
 
@@ -314,28 +314,28 @@ void add_ES_icons(CAimProto* ppro)
 	while (hContact)
 	{
 		if (ppro->is_my_contact(hContact)) 
-            set_ES_icon(ppro, hContact);
+			set_ES_icon(ppro, hContact);
 
-        hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 }
 
 void InitExtraIcons(void)
 {
-    hExtraAT = ExtraIcon_Register("aimaccounttype", "AIM Account Type", "AIM_aol");
-    hExtraES = ExtraIcon_Register("aimextstatus", "AIM Extended Status", "AIM_hiptop");
+	hExtraAT = ExtraIcon_Register("aimaccounttype", "AIM Account Type", "AIM_aol");
+	hExtraES = ExtraIcon_Register("aimextstatus", "AIM Extended Status", "AIM_hiptop");
 
-    if (hExtraAT == NULL)
-    {
-        hListRebuld = HookEvent(ME_CLIST_EXTRA_LIST_REBUILD, OnExtraIconsRebuild);
-	    hIconApply  = HookEvent(ME_CLIST_EXTRA_IMAGE_APPLY,  OnExtraIconsApply);
-    }
+	if (hExtraAT == NULL)
+	{
+		hListRebuld = HookEvent(ME_CLIST_EXTRA_LIST_REBUILD, OnExtraIconsRebuild);
+		hIconApply  = HookEvent(ME_CLIST_EXTRA_IMAGE_APPLY,  OnExtraIconsApply);
+	}
 }
 
 void DestroyExtraIcons(void)
 {
-    UnhookEvent(hIconApply);
-    UnhookEvent(hListRebuld);
+	UnhookEvent(hIconApply);
+	UnhookEvent(hListRebuld);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -350,7 +350,7 @@ HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT *,const R
 
 void InitThemeSupport(void)
 {
-    if (!IsWinVerXPPlus()) return;
+	if (!IsWinVerXPPlus()) return;
 
 	themeAPIHandle = GetModuleHandleA("uxtheme");
 	if (themeAPIHandle)
@@ -363,7 +363,7 @@ void InitThemeSupport(void)
 
 void DestroyThemeSupport(void)
 {
-    DestroyExtraIcons();
+	DestroyExtraIcons();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -371,14 +371,14 @@ void DestroyThemeSupport(void)
 
 int CAimProto::OnPreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
 {
-    HANDLE hContact = (HANDLE)wParam;
-    bool isChatRoom = getByte(hContact, "ChatRoom", 0) != 0;
+	HANDLE hContact = (HANDLE)wParam;
+	bool isChatRoom = getByte(hContact, "ChatRoom", 0) != 0;
 
 	CLISTMENUITEM mi;
 	ZeroMemory(&mi,sizeof(mi));
 	mi.cbSize = sizeof(mi);
 
-    //see if we should add the html away message context menu items
+	//see if we should add the html away message context menu items
 	mi.flags = CMIM_FLAGS | CMIF_NOTOFFLINE;
 	if (getWord(hContact, AIM_KEY_ST, ID_STATUS_OFFLINE) != ID_STATUS_AWAY || isChatRoom)
 		mi.flags |= CMIF_HIDDEN;
@@ -390,35 +390,35 @@ int CAimProto::OnPreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
 		mi.flags |= CMIF_HIDDEN;
 	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hAddToServerListContextMenuItem,(LPARAM)&mi);
 
-    DBVARIANT dbv;
+	DBVARIANT dbv;
 	if (!getString(hContact, AIM_KEY_SN, &dbv)) 
-    {
-        mi.flags = CMIM_NAME | CMIM_FLAGS;
-        switch(pd_mode)
-        {
-        case 1:
-            mi.pszName = LPGEN("&Block");
-            break;
+	{
+		mi.flags = CMIM_NAME | CMIM_FLAGS;
+		switch(pd_mode)
+		{
+		case 1:
+			mi.pszName = LPGEN("&Block");
+			break;
 
-        case 2:
-            mi.pszName = LPGEN("&Unblock");
-            break;
+		case 2:
+			mi.pszName = LPGEN("&Unblock");
+			break;
 
-        case 3:
-            mi.pszName = (char*)(allow_list.find_id(dbv.pszVal) ? LPGEN("&Block") : LPGEN("&Unblock"));
-            break;
+		case 3:
+			mi.pszName = (char*)(allow_list.find_id(dbv.pszVal) ? LPGEN("&Block") : LPGEN("&Unblock"));
+			break;
 
-        case 4:
-            mi.pszName = (char*)(block_list.find_id(dbv.pszVal) ? LPGEN("&Unblock") : LPGEN("&Block"));
-            break;
+		case 4:
+			mi.pszName = (char*)(block_list.find_id(dbv.pszVal) ? LPGEN("&Unblock") : LPGEN("&Block"));
+			break;
 
-        default:
-            mi.pszName = LPGEN("&Block");
-		    mi.flags |= CMIF_HIDDEN;
-            break;
-        }
+		default:
+			mi.pszName = LPGEN("&Block");
+			mi.flags |= CMIF_HIDDEN;
+			break;
+		}
 
-	    CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hBlockContextMenuItem, (LPARAM)&mi);
+		CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hBlockContextMenuItem, (LPARAM)&mi);
 		DBFreeVariant(&dbv);
 	}
    
@@ -466,7 +466,7 @@ void CAimProto::InitMenus(void)
 	mi.pszPopupName=NULL;
 	mi.popupPosition=0;
 
-    mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/GetHTMLAwayMsg");
+	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/GetHTMLAwayMsg");
 	CreateProtoService("/GetHTMLAwayMsg",&CAimProto::GetHTMLAwayMsg);
 	mi.position=-2000006000;
 	mi.icolibItem = GetIconHandle("away");
@@ -490,7 +490,7 @@ void CAimProto::InitMenus(void)
 	mi.flags=CMIF_NOTONLINE|CMIF_HIDDEN|CMIF_ICONFROMICOLIB;
 	hAddToServerListContextMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 
-    mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/BlockCommand");
+	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/BlockCommand");
 	CreateProtoService("/BlockCommand",&CAimProto::BlockBuddy);
 	mi.position=-2000005060;
 	mi.icolibItem = GetIconHandle("block");
@@ -501,12 +501,12 @@ void CAimProto::InitMenus(void)
 
 void CAimProto::RemoveMenus(void)
 {
-    for (unsigned i=0; i<4; ++i)
-        CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)hMainMenu[i], 0);
+	for (unsigned i=0; i<4; ++i)
+		CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)hMainMenu[i], 0);
    CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)hMenuRoot, 0);
 
-    CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hHTMLAwayContextMenuItem, 0);
-    CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hReadProfileMenuItem, 0);
-    CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hAddToServerListContextMenuItem, 0);
-    CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hBlockContextMenuItem, 0);
+	CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hHTMLAwayContextMenuItem, 0);
+	CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hReadProfileMenuItem, 0);
+	CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hAddToServerListContextMenuItem, 0);
+	CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hBlockContextMenuItem, 0);
 }

@@ -22,11 +22,11 @@ char**  CAimProto::getStatusMsgLoc( int status )
 {
 	static const int modes[] = {
 		ID_STATUS_ONLINE,
-        ID_STATUS_AWAY,
+		ID_STATUS_AWAY,
 		ID_STATUS_DND, 
 		ID_STATUS_NA,
 		ID_STATUS_OCCUPIED, 
-        ID_STATUS_FREECHAT,
+		ID_STATUS_FREECHAT,
 		ID_STATUS_INVISIBLE,
 		ID_STATUS_ONTHEPHONE,
 		ID_STATUS_OUTTOLUNCH, 
@@ -51,54 +51,51 @@ int CAimProto::aim_set_away(HANDLE hServerConn,unsigned short &seqno,const char 
 		msg_size = strlen(html_msg);
 	}
 
-    aimString str(html_msg);
-    const char *charset = str.isUnicode() ? AIM_MSG_TYPE_UNICODE : AIM_MSG_TYPE;
-    const unsigned short charset_len = (unsigned short)strlen(charset);
+	aimString str(html_msg);
+	const char *charset = str.isUnicode() ? AIM_MSG_TYPE_UNICODE : AIM_MSG_TYPE;
+	const unsigned short charset_len = (unsigned short)strlen(charset);
 
-    const char* msg = str.getBuf();
-    const unsigned short msg_len = str.getSize();
+	const char* msg = str.getBuf();
+	const unsigned short msg_len = str.getSize();
 
 	char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*2+charset_len+msg_len);
 
-    aim_writesnac(0x02,0x04,offset,buf);
-    aim_writetlv(0x03,charset_len,charset,offset,buf);
-    aim_writetlv(0x04,(unsigned short)msg_len,msg,offset,buf);
-    
-    mir_free(html_msg);
+	aim_writesnac(0x02,0x04,offset,buf);
+	aim_writetlv(0x03,charset_len,charset,offset,buf);
+	aim_writetlv(0x04,(unsigned short)msg_len,msg,offset,buf);
+	
+	mir_free(html_msg);
 
-    return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
 int CAimProto::aim_set_statusmsg(HANDLE hServerConn,unsigned short &seqno,const char *msg)//user info
 {
-    size_t msg_size =_strlens(msg);
+	size_t msg_size =_strlens(msg);
 
-    unsigned short msgoffset=0;
-    char* msgbuf=(char*)alloca(10+msg_size);
+	unsigned short msgoffset=0;
+	char* msgbuf=(char*)alloca(10+msg_size);
 
-    if (msg_size)
-    {
-        char* msgb=(char*)alloca(4+msg_size);
-        msgb[0]=(unsigned char)(msg_size >> 8);
-        msgb[1]=(unsigned char)(msg_size & 0xff);
-        memcpy(&msgb[2],msg,msg_size);
-        msgb[msg_size+2]=0;
-        msgb[msg_size+3]=0;
-        
-        aim_writebartid(2,4,(unsigned short)(msg_size+4),msgb,msgoffset,msgbuf);
-    }
-    else
-        aim_writebartid(2,0,0,NULL,msgoffset,msgbuf);
+	if (msg_size)
+	{
+		char* msgb=(char*)alloca(4+msg_size);
+		msgb[0]=(unsigned char)(msg_size >> 8);
+		msgb[1]=(unsigned char)(msg_size & 0xff);
+		memcpy(&msgb[2],msg,msg_size);
+		msgb[msg_size+2]=0;
+		msgb[msg_size+3]=0;
+		
+		aim_writebartid(2,4,(unsigned short)(msg_size+4),msgb,msgoffset,msgbuf);
+	}
+	else
+		aim_writebartid(2,0,0,NULL,msgoffset,msgbuf);
 
 	unsigned short offset=0;
 	char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE+msgoffset+8);
-    aim_writesnac(0x01,0x1e,offset,buf);
-    aim_writetlv(0x1d,msgoffset,msgbuf,offset,buf);
-    
-    if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
-	    return 0;
-    else
-	    return -1;
+	aim_writesnac(0x01,0x1e,offset,buf);
+	aim_writetlv(0x1d,msgoffset,msgbuf,offset,buf);
+	
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
 int CAimProto::aim_query_away_message(HANDLE hServerConn,unsigned short &seqno,const char* sn)

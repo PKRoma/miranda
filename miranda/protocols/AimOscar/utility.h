@@ -35,32 +35,32 @@ inline const char* secure_cap_str(char* ver) { return (*(int*)ver == 0xDEC0FE5A)
 
 struct BdListItem
 {
-    char* name;
-    unsigned short item_id;
+	char* name;
+	unsigned short item_id;
 
-    BdListItem() { name = NULL; item_id = 0; }
-    BdListItem(const char* snt, unsigned short id) { name = mir_strdup(snt); item_id = id; }
-    ~BdListItem() { mir_free(name); }
+	BdListItem() { name = NULL; item_id = 0; }
+	BdListItem(const char* snt, unsigned short id) { name = mir_strdup(snt); item_id = id; }
+	~BdListItem() { mir_free(name); }
 };
 
 struct BdList : public OBJLIST<BdListItem>
 {
-    BdList() : OBJLIST<BdListItem>(5) {}
+	BdList() : OBJLIST<BdListItem>(5) {}
 
-    void add(const char* snt, unsigned short id)
-    { insert(new BdListItem(snt, id)); }
+	void add(const char* snt, unsigned short id)
+	{ insert(new BdListItem(snt, id)); }
 
-    unsigned short add(const char* snt)
-    { 
-        unsigned short id = get_free_id();
-        insert(new BdListItem(snt, id));
-        return id;
-    }
+	unsigned short add(const char* snt)
+	{ 
+		unsigned short id = get_free_id();
+		insert(new BdListItem(snt, id));
+		return id;
+	}
 
-    unsigned short get_free_id(void);
-    unsigned short find_id(const char* name);
-    char* find_name(unsigned short id);
-    void remove_by_id(unsigned short id);
+	unsigned short get_free_id(void);
+	unsigned short find_id(const char* name);
+	char* find_name(unsigned short id);
+	void remove_by_id(unsigned short id);
 };
 
 #endif
