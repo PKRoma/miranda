@@ -494,7 +494,6 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM )
 							char *szMirver = mir_t2a(szTmp);
 							clmi.hIcon = (HICON)CallService( "Fingerprint/GetClientIcon", (WPARAM)szMirver, 0 );
 							mir_free( szMirver );
-							DestroyIcon(clmi.hIcon);
 						}
 						mir_sntprintf(szTmp, SIZEOF(szTmp), _T("%s [%s, %d]"),
 							item->resource[i].resourceName,
@@ -502,6 +501,7 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM )
 							item->resource[i].priority);
 						clmi.ptszName = szTmp;
 						CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_phMenuResourceItems[i], ( LPARAM )&clmi );
+						DestroyIcon(clmi.hIcon);
 					}
 					else sttEnableMenuItem( m_phMenuResourceItems[i], FALSE );
 				}
