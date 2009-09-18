@@ -739,13 +739,11 @@ void CMsnProto::sttProcessRemove(char* buf, size_t len)
 			mir_snprintf(szEmail, sizeof(szEmail), "%s@%s", szCont, szDom);
 			Lists_Remove(listId, szEmail);
 
-			listId = Lists_GetMask(szEmail);
-
-			if ((listId & (LIST_RL | LIST_FL)) == 0) 
+			MsnContact* msc = Lists_Get(szEmail);
+			if (msc == NULL || (msc->list & (LIST_RL | LIST_FL | LIST_LL)) == 0) 
 			{
-				HANDLE hContact = MSN_HContactFromEmail(szEmail, NULL, false, false);
-				if (strcmp(szEmail, MyOptions.szEmail))
-					MSN_CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+				if (msc->hContact && strcmp(szEmail, MyOptions.szEmail))
+					MSN_CallService(MS_DB_CONTACT_DELETE, (WPARAM)msc->hContact, 0);
 			}
 
 			cont = ezxml_next(cont);

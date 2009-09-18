@@ -416,7 +416,16 @@ static void SaveListItem(HANDLE hContact, const char* szEmail, int list, int iPr
 		return;
 
 	if (iNewValue == 0)
+	{
+		if (list & LIST_FL)
+		{
+			DeleteParam param = { proto, hContact };
+			DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_DELETECONTACT), NULL, DlgDeleteContactUI, (LPARAM)&param);
+			return;
+		}
+
 		list |= LIST_REMOVE;
+	}
 
 	proto->MSN_AddUser(hContact, szEmail, proto->Lists_GetNetId(szEmail), list);
 }
@@ -470,7 +479,11 @@ static void SaveSettings(HANDLE hItem, HWND hwndList, CMsnProto* proto)
 				else
 				{
 					if (!IsHContactInfo(hItem))
+					{
 						MSN_CallService(MS_DB_CONTACT_DELETE, (WPARAM)hItem, 0);
+						MsnContact* msc = proto->Lists_Get(szEmail);
+						if (msc) msc->hContact = NULL; 
+					}
 				}
 			}
 		}
@@ -550,6 +563,7 @@ INT_PTR CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			HWND hwndList = GetDlgItem(hwndDlg, IDC_LIST);
 			SaveSettings(NULL, hwndList, proto);
 			SendMessage(hwndList, CLM_AUTOREBUILD, 0, 0);
+			EnableWindow(hwndList, proto->msnLoggedIn);
 		}
 		else if (nmc->hdr.idFrom == IDC_LIST)
 		{

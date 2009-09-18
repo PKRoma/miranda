@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 HANDLE  CMsnProto::MSN_HContactFromEmail(const char* msnEmail, const char* msnNick, bool addIfNeeded, bool temporary)
 {
 	MsnContact *msc = Lists_Get(msnEmail);
-	if (msc) return msc->hContact;
+	if (msc && msc->hContact) return msc->hContact;
 
 	if (addIfNeeded)
 	{
