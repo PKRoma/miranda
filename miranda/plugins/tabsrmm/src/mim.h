@@ -91,6 +91,9 @@ public:
 
 		LRESULT fi_version = CallService(MS_IMG_GETIFVERSION, 0, 0);
 		CallService(MS_IMG_GETINTERFACE, fi_version, (LPARAM)&FIF);
+
+		::QueryPerformanceFrequency((LARGE_INTEGER *)&m_tFreq);
+		m_dFreq = (double)(1.0f / m_tFreq);
 	}
 
 	~CMimAPI() {
@@ -144,10 +147,6 @@ public:
 	size_t TSAPI 	pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut, const TCHAR *szBase = 0) const;
 	size_t TSAPI	pathToRelative(const TCHAR *pSrc, TCHAR *pOut, const TCHAR *szBase = 0) const;
 
-	/*
-	 * for backwards compatiblity still needed (not everything path-related is unicode
-	*/
-
 	const TCHAR  *getDataPath() const { return(m_szProfilePath); }
 	const TCHAR  *getSkinPath() const { return(m_szSkinsPath); }
 	const TCHAR  *getSavedAvatarPath() const { return(m_szSavedAvatarsPath); }
@@ -156,6 +155,15 @@ public:
 	const TCHAR* TSAPI  getUserDir();
 	void		 TSAPI  configureCustomFolders();
 	INT_PTR		 TSAPI  foldersPathChanged();
+
+	void				startTimer();
+	void				stopTimer(const char *szMsg = 0);
+	void				timerMsg(const char *szMsg);
+	__int64				getTimerStart() const { return(m_tStart); }
+	__int64				getTimerStop() const { return(m_tStop); }
+	__int64				getTicks() const { return(m_tStop - m_tStart); }
+	double				getFreq() const { return(m_dFreq); }
+	double				getMsec() const { return(1000 * ((double)(m_tStop - m_tStart) * m_dFreq)); }
 
 	const bool  isVSAPIState() const { return m_VsAPI; }
 	/**
@@ -253,6 +261,9 @@ private:
 	bool		m_isAero;
 	bool		m_isVsThemed;
 	HANDLE		m_hDataPath, m_hSkinsPath, m_hAvatarsPath, m_hChatLogsPath;
+	__int64		m_tStart, m_tStop, m_tFreq;
+	double		m_dFreq;
+	char		m_timerMsg[256];
 
 	void	InitAPI();
 	void	GetUTFI();
@@ -261,6 +272,19 @@ private:
 private:
 	static TCHAR	m_userDir[MAX_PATH + 1];
 };
+
+inline void CMimAPI::startTimer()
+{
+	::QueryPerformanceCounter((LARGE_INTEGER *)&m_tStart);
+}
+
+inline void CMimAPI::stopTimer(const char *szMsg)
+{
+	::QueryPerformanceCounter((LARGE_INTEGER *)&m_tStop);
+
+	if(szMsg)
+		timerMsg(szMsg);
+}
 
 extern  CMimAPI		*M;
 

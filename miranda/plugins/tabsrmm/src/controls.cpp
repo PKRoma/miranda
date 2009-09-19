@@ -47,8 +47,6 @@ int			CMenuBar::m_MimIconRefCount = 0;
 
 CMenuBar::CMenuBar(HWND hwndParent, const ContainerWindowData *pContainer)
 {
-	//REBARINFO RebarInfo;
-	//REBARBANDINFO RebarBandInfo;
 	RECT Rc;
 
 	m_pContainer = const_cast<ContainerWindowData *>(pContainer);
@@ -71,20 +69,6 @@ CMenuBar::CMenuBar(HWND hwndParent, const ContainerWindowData *pContainer)
 
 	m_MimIconRefCount++;
 
-	//m_hwndRebar = ::CreateWindowEx(WS_EX_TOOLWINDOW, REBARCLASSNAME, NULL, WS_CHILD|WS_VISIBLE|WS_CLIPSIBLINGS|WS_CLIPCHILDREN|RBS_AUTOSIZE|/*RBS_BANDBORDERS|*/RBS_DBLCLKTOGGLE,
-	//							   0, 0, 0, 0, hwndParent, NULL, g_hInst, NULL);
-
-	/*RebarInfo.cbSize = 	sizeof(REBARINFO);
-	RebarInfo.fMask = 	0;
-	RebarInfo.himl = 	(HIMAGELIST)NULL;
-
-	::SendMessage(m_hwndRebar, RB_SETBARINFO, 0, (LPARAM)&RebarInfo);
-
-	RebarBandInfo.cbSize = sizeof(REBARBANDINFO);
-	RebarBandInfo.fMask  = RBBIM_CHILD|RBBIM_CHILDSIZE|RBBIM_SIZE|RBBIM_STYLE|RBBIM_IDEALSIZE;
-	RebarBandInfo.fStyle = RBBS_FIXEDBMP|RBBS_TOPALIGN|RBBS_NOGRIPPER;//|RBBS_GRIPPERALWAYS;
-	RebarBandInfo.hbmBack = 0;
-	RebarBandInfo.clrBack = GetSysColor(COLOR_3DFACE);*/
 	m_hwndToolbar = ::CreateWindowEx(WS_EX_TOOLWINDOW, TOOLBARCLASSNAME, NULL, WS_CHILD|WS_CLIPCHILDREN|WS_CLIPSIBLINGS|WS_VISIBLE|TBSTYLE_FLAT|TBSTYLE_TRANSPARENT|TBSTYLE_LIST|/*CCS_NOPARENTALIGN|*/CCS_NODIVIDER|CCS_TOP,
 								   0, 0, 0, 0, hwndParent, NULL, g_hInst, NULL);
 
@@ -164,14 +148,6 @@ CMenuBar::CMenuBar(HWND hwndParent, const ContainerWindowData *pContainer)
 
 	::SendMessage(m_hwndToolbar, TB_ADDBITMAP, 1, (LPARAM)&tb);
 
-	/*RebarBandInfo.lpText     = NULL;
-	RebarBandInfo.hwndChild  = m_hwndToolbar;
-	RebarBandInfo.cxMinChild = 10;
-	RebarBandInfo.cyMinChild = m_size_y;
-	RebarBandInfo.cx         = 2000;
-
-	::SendMessage(m_hwndRebar, RB_INSERTBAND, (WPARAM)-1, (LPARAM)&RebarBandInfo);
-	*/
 	m_activeMenu = 0;
 	m_activeID = 0;
 	m_isAero = M->isAero();

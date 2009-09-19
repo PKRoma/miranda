@@ -142,6 +142,8 @@ const SIZE& CSideBarButton::measureItem()
 		::GetTextExtentPoint32(dc, tszLabel, lstrlen(tszLabel), &sz);
 
 		sz.cx += 28;
+		if(m_dat->pContainer->dwFlagsEx & TCF_CLOSEBUTTON)
+			sz.cx += 20;
 
 		m_sz.cy = sz.cx;
 
@@ -234,7 +236,7 @@ void CSideBarButton::renderIconAndNick(const HDC hdc, const RECT *rcItem) const
 	DWORD	dwTextFlags = DT_SINGLELINE | DT_VCENTER;
 	int		stateId = m_buttonControl->stateId;
 	int		iSize = 16;
-	const ContainerWindowData *pContainer = m_sideBar->getContainer();
+	const 	ContainerWindowData *pContainer = m_sideBar->getContainer();
 
 	if(m_dat && pContainer) {
 		if (m_dat->dwFlags & MWF_ERRORSTATE)
@@ -265,6 +267,9 @@ void CSideBarButton::renderIconAndNick(const HDC hdc, const RECT *rcItem) const
 
 		rc.left += (iSize + 7);
 
+		/*
+		 * draw the close button if enabled
+		 */
 		if(m_sideBar->getContainer()->dwFlagsEx & TCF_CLOSEBUTTON) {
 			if(m_sideBar->getHoveredClose() != this)
 				CSkin::m_default_bf.SourceConstantAlpha = 150;
@@ -285,10 +290,6 @@ void CSideBarButton::renderIconAndNick(const HDC hdc, const RECT *rcItem) const
 			else {
 				::SetTextColor(hdc, (stateId == PBS_PRESSED || m_sideBar->getActiveItem() == this) ? ::GetSysColor(COLOR_BTNHIGHLIGHT) :
 						   ::GetSysColor(COLOR_BTNTEXT));
-				//if(M->isVSThemed())
-					//M->m_pfnDrawThemeText(m_buttonControl->hThemeButton, hdc, 1, stateId == PBS_PRESSED ? 3 : (stateId == PBS_HOT ? 2 : 1),
-					//					  m_dat->newtitle, lstrlen(m_dat->newtitle), dwTextFlags, 0, &rc);
-				//else
 				::DrawText(hdc, m_dat->newtitle, lstrlen(m_dat->newtitle), &rc, dwTextFlags);
 			}
 		}
@@ -773,7 +774,7 @@ void CSideBar::Layout(const RECT *rc, bool fOnlyCalc)
 		::GetClientRect(m_pContainer->hwnd, &rcContainer);
 
 		::SetWindowPos(m_up->getHwnd(), 0, m_pContainer->tBorder_outer_left, m_pContainer->tBorder_outer_top + m_pContainer->MenuBar->getHeight(),
-					   m_elementWidth + 4, 14, dwFlags | SWP_SHOWWINDOW);
+					   m_elementWidth + 4, 12, dwFlags | SWP_SHOWWINDOW);
 		::SetWindowPos(m_down->getHwnd(), 0, m_pContainer->tBorder_outer_left, (rcContainer.bottom - 14 - m_pContainer->statusBarHeight - 1),
 					   m_elementWidth + 4, 14, dwFlags | SWP_SHOWWINDOW);
 		::EnableWindow(m_up->getHwnd(), topEnabled);
@@ -890,7 +891,13 @@ LRESULT CALLBACK CSideBar::wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 				HANDLE  hbp;
 
 				hbp = CMimAPI::m_pfnBeginBufferedPaint(hdc, &rc, BPBF_TOPDOWNDIB, 0, &hdcMem);
-				::FillRect(hdcMem, &rc, CSkin::m_BrushBack);
+				HBRUSH brOld = (HBRUSH)::SelectObject(hdcMem, CSkin::m_BrushBack);
+				HPEN   hPen = ::CreatePen(PS_SOLID, 1, ::GetSysColor(COLOR_3DDKSHADOW));
+				HPEN   penOld = (HPEN)::SelectObject(hdcMem, hPen);
+				::Rectangle(hdcMem, 0, 0, rc.right, rc.bottom);
+				::SelectObject(hdcMem, penOld);
+				::SelectObject(hdcMem, brOld);
+				::DeleteObject(hPen);
 				CSkin::FinalizeBufferedPaint(hbp, &rc);
 			}
 			else
@@ -938,6 +945,7 @@ void __fastcall CSideBar::m_DefaultBackgroundRenderer(const HDC hdc, const RECT 
 
 	if(M->isAero()) {
 		if(id == IDC_SIDEBARUP || id == IDC_SIDEBARDOWN) {
+			::FillRect(hdc, const_cast<RECT *>(rc), CSkin::m_BrushBack);
 			::InflateRect(const_cast<RECT *>(rc), -2, 0);
 			if(stateId == PBS_HOT || stateId == PBS_PRESSED)
 				DrawAlpha(hdc, const_cast<RECT *>(rc), 0xf0f0f0, 75, 0x000000, 0, 9,

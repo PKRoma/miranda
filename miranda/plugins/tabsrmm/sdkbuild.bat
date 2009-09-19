@@ -1,9 +1,14 @@
 @echo off
 
-rem build tabSRMM with msbuild.exe from Windows SDK
-rem requires a properly installed Windows SDK (Version 6 or later)
+echo *                                              * 
+echo ------------------------------------------------
+echo build tabSRMM with vcbuild.exe from Windows SDK
+echo requires a Windows PSDK (Version 7 or later)
+echo must be run from the SDK cmd shell with properly 
+echo configured environment.
+echo ------------------------------------------------
+echo *                                              *
 
-msbuild.exe tabsrmm_9.sln /t:rebuild /p:Configuration="Release Unicode" /p:Platform="Win32"
-msbuild.exe tabsrmm_9.sln /t:rebuild /p:Configuration="Release Unicode" /p:Platform="x64"
-msbuild.exe tabsrmm_9.sln /t:rebuild /p:Configuration="Release" /p:Platform="Win32"
-
+vcbuild.exe tabsrmm_9.vcproj "Release Unicode" /platform:Win32
+vcbuild.exe tabsrmm_9.vcproj "Release Unicode" /platform:x64
+vcbuild.exe tabsrmm_9.vcproj "Release" /platform:Win32

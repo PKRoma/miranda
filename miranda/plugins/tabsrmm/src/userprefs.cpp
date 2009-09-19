@@ -225,8 +225,10 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				mtzp.dwFlags = MIM_TZ_PLF_CB;
 				CallService(MS_TZ_PREPARELIST, (WPARAM)0, (LPARAM)&mtzp);
 			}
-			else
+			else {
 				SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_ADDSTRING, 0, (LPARAM)CTranslator::getOpt(CTranslator::OPT_UPREFS_NOTZSVC));
+				SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_SETCURSEL, 0, 0);
+			}
 
 			ShowWindow(hwndDlg, SW_SHOW);
 			CheckDlgButton(hwndDlg, IDC_NOAUTOCLOSE, M->GetByte(hContact, "NoAutoClose", 0));

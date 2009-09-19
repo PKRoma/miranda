@@ -17,8 +17,8 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}.Debug Unicode|Win32.ActiveCfg = Debug Unicode|Win32
 		{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}.Debug Unicode|Win32.Build.0 = Debug Unicode|Win32
-		{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}.Debug Unicode|x64.ActiveCfg = Debug Unicode|Win32
-		{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}.Debug Unicode|x64.Build.0 = Debug Unicode|Win32
+		{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}.Debug Unicode|x64.ActiveCfg = Debug Unicode|x64
+		{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}.Debug Unicode|x64.Build.0 = Debug Unicode|x64
 		{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}.Debug|Win32.ActiveCfg = Debug|Win32
 		{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}.Debug|Win32.Build.0 = Debug|Win32
 		{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}.Debug|x64.ActiveCfg = Debug|Win32

@@ -34,7 +34,7 @@
 
 #include "../src/commonheaders.h"
 
-#define __HLT_PERFSTATS 1
+// #define __HLT_PERFSTATS 1
 
 void CMUCHighlight::cleanup()
 {
@@ -43,8 +43,7 @@ void CMUCHighlight::cleanup()
 	if(m_TextPatternString)
 		mir_free(m_TextPatternString);
 
-	//m_NickPatterns.clear();
-	//m_TextPatterns.clear();
+	m_TextPatternString = m_NickPatternString = 0;
 
 	if(m_NickPatterns)
 		mir_free(m_NickPatterns);
@@ -101,7 +100,7 @@ void CMUCHighlight::tokenize(TCHAR *tszString, TCHAR**& patterns, UINT& nr)
 
 	while(*p) {
 		if(*p == ' ') {
-			*p++;
+			p++;
 			while(*p && _istspace(*p))
 				p++;
 			if(*p)
@@ -136,30 +135,20 @@ int CMUCHighlight::match(const GCEVENT *pgce, const SESSION_INFO *psi, DWORD dwF
 	if(pgce == 0)
 		return(0);
 
-#ifdef __HLT_PERFSTATS
-	__int64 lFreq, lStart, lStop;
-	::QueryPerformanceFrequency((LARGE_INTEGER *)&lFreq);
-	double frequency = 1.0 / (double)lFreq;
-#endif
-
-	int		words = 0;
-	//size_t	patterns = m_TextPatterns.size();
-	size_t	patterns = m_iTextPatterns;
-
 	if((m_dwFlags & MATCH_TEXT) && (dwFlags & MATCH_TEXT) && m_iTextPatterns > 0) {
 #ifdef __HLT_PERFSTATS
-		::QueryPerformanceCounter((LARGE_INTEGER *)&lStart);
+		int		words = 0;
+		M->startTimer();
 #endif
 		TCHAR	*tszCleaned = ::RemoveFormatting(pgce->ptszText, true);
-		register TCHAR	*p = tszCleaned;
-		register TCHAR  *p1;
-		UINT	 i = 0;
+		TCHAR	*p = tszCleaned;
+		TCHAR  	*p1;
+		UINT	i = 0;
 
 		TCHAR	*tszMe = mir_tstrdup(psi->pMe->pszNick);
 		_tcslwr(tszMe);
-		words = 0;
 
-		while(p) {
+		while(p && !result) {
 			while(*p && (*p == ' ' || *p == ',' || *p == '.' || *p == ':' || *p == ';' || *p == '?' || *p == '!'))
 				p++;
 
@@ -186,26 +175,28 @@ int CMUCHighlight::match(const GCEVENT *pgce, const SESSION_INFO *psi, DWORD dwF
 				}
 				else
 					p = 0;
+#ifdef __HLT_PERFSTATS
 				words++;
+#endif
 			}
 			else
-				break;
-
-			if(result)
 				break;
 		}
 
 #ifdef __HLT_PERFSTATS
-		::QueryPerformanceCounter((LARGE_INTEGER *)&lStop);
+		M->stopTimer(0);
 		if(psi && psi->dat) {
-			mir_sntprintf(psi->dat->szStatusBar, 100, _T("PERF text match: %d ticks = %f msec (%d words, %d patterns)"), (int)(lStop - lStart), 1000 * ((double)(lStop - lStart) * frequency), words, patterns);
+			mir_sntprintf(psi->dat->szStatusBar, 100, _T("PERF text match: %d ticks = %f msec (%d words, %d patterns)"), (int)M->getTicks(), M->getMsec(), words, m_iTextPatterns);
 			if(psi->dat->pContainer->hwndStatus)
 				::SendMessage(psi->dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM)psi->dat->szStatusBar);
 		}
 #endif
 		mir_free(tszMe);
-
 	}
+
+	/*
+	 * optinally, match the nickname against the list of nicks to highlight
+	 */
 	if((m_dwFlags & MATCH_NICKNAME) && (dwFlags & MATCH_NICKNAME) && pgce->ptszNick && m_iNickPatterns > 0) {
 
 		for(UINT i = 0; i < m_iNickPatterns && !nResult; i++) {

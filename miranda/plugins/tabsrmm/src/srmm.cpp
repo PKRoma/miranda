@@ -56,7 +56,7 @@ PLUGININFOEX pluginInfo = {
 #ifdef __GNUWIN32__
 	"TabSRMM (MINGW32)",
 #else
-#ifdef _WIN64_
+#ifdef _WIN64
 	"TabSRMM (x64, Unicode)",
 #else
 #ifdef _UNICODE

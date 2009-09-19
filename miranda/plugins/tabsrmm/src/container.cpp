@@ -665,8 +665,8 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			ws = GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_EXSTYLE);
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_EXSTYLE, ws | WS_EX_CONTROLPARENT);
 
-			TabCtrl_SetPadding(GetDlgItem(hwndDlg, IDC_MSGTABS), M->GetByte("x-pad", 3),  M->GetByte("y-pad", 3) +
-							   ((pContainer->dwFlags & CNT_TABSBOTTOM) ? 1 : 0));
+			TabCtrl_SetPadding(GetDlgItem(hwndDlg, IDC_MSGTABS), M->GetByte("x-pad", 3) + (pContainer->dwFlagsEx & TCF_CLOSEBUTTON ? 6 : 0),
+							   M->GetByte("y-pad", 3) + ((pContainer->dwFlags & CNT_TABSBOTTOM) ? 1 : 0));
 
 			TabCtrl_SetImageList(GetDlgItem(hwndDlg, IDC_MSGTABS), PluginConfig.g_hImageList);
 
@@ -2159,18 +2159,6 @@ buttons_done:
 				CallService(MS_FAVATAR_DESTROY, (WPARAM)&fa, 0);
 			}
 			ZeroMemory((void *)&item, sizeof(item));
-			/*
-			for (i = 0; i < TabCtrl_GetItemCount(hwndTab); i++) {
-				item.mask = TCIF_PARAM;
-				TabCtrl_GetItem(hwndTab, i, &item);
-				if (IsWindow((HWND)item.lParam)) {
-					struct _MessageWindowData *mwdat = (struct _MessageWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
-					if (mwdat && mwdat->bActualHistory)
-						M->WriteDword(mwdat->hContact, SRMSGMOD_T, "messagecount", CMimAPI::m_shutDown ? 0:(DWORD)mwdat->messageCount);
-					DestroyWindow((HWND)item.lParam);
-				}
-			}
-			*/
 			KillTimer(hwndDlg, TIMERID_HEARTBEAT);
 			pContainer->hwnd = 0;
 			pContainer->hwndActive = 0;

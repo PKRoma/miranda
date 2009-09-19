@@ -2084,41 +2084,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			dat->Panel->renderBG(hdcMem, rc, &SkinItems[ID_EXTBKINFOPANELBG], fAero);
 
 			/*
-			 * draw the logo
-			 */
-
-			/*
-			if(fInfoPanel && PluginConfig.hbmLogo) {
-				BITMAP 	bm = {0};
-				HDC		hdcImage = CreateCompatibleDC(hdc);
-				HBITMAP hbmOld, hbmNew = 0;
-				bool	fFree = false;
-
-				GetObject(PluginConfig.hbmLogo, sizeof(bm), &bm);
-
-				LONG height = dat->Panel->getHeight() >= 50 ? bm.bmHeight : dat->Panel->getHeight() - 2;
-				double aspect = (double)height / (double)bm.bmHeight;
-				LONG width = (LONG)((double)bm.bmWidth * aspect);
-
-				if(height != bm.bmHeight) {
-					hbmNew = CSkin::ResizeBitmap(PluginConfig.hbmLogo, width, height, fFree);
-					hbmOld = (HBITMAP)SelectObject(hdcImage, hbmNew);
-					CMimAPI::m_MyAlphaBlend(hdcMem, 4, 1, width, height, hdcImage, 0, 0, width, height, CSkin::m_default_bf);
-				}
-				else {
-					hbmOld = (HBITMAP)SelectObject(hdcImage, PluginConfig.hbmLogo);
-					//CSkin::MY_AlphaBlend(hdcMem, 4, 1, width, height, bm.bmWidth, bm.bmHeight, hdcImage);
-					CMimAPI::m_MyAlphaBlend(hdcMem, 4, 1, width, height, hdcImage, 0, 0, bm.bmWidth, bm.bmHeight, CSkin::m_default_bf);
-				}
-				SelectObject(hdcImage, hbmOld);
-				if(hbmNew && fFree)
-					DeleteObject(hbmNew);
-				DeleteDC(hdcImage);
-			}
-			*/
-			/*
 			 * draw aero related stuff
 			*/
+
 			if(fAero || (M->isVSThemed() && !CSkin::m_skinEnabled))
 				CSkin::RenderToolbarBG(dat, hdcMem, rcClient);
 			/*
@@ -2475,11 +2443,13 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							//MAD: tabulation mod
 							if(msg == WM_KEYDOWN && wp == VK_TAB) {
 								if(PluginConfig.m_AllowTab) {
-									SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)"\t");
+									if(((NMHDR *)lParam)->idFrom == IDC_MESSAGE)
+										SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)"\t");
 									((MSGFILTER *) lParam)->msg = WM_NULL;
 									((MSGFILTER *) lParam)->wParam = 0;
 									((MSGFILTER *) lParam)->lParam = 0;
-									SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+									if(((NMHDR *)lParam)->idFrom != IDC_MESSAGE)
+										SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 									return(_dlgReturn(hwndDlg, 1));
 								}
 								else {
@@ -3423,10 +3393,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					PostMessage(hwndDlg, DM_FORCESCROLL, 0, 0);
 				}
 			}
-			//if(M->isAero()) {   FIXME maybe
-			//	dat->pContainer->dwOldAeroBottom = dat->pContainer->dwOldAeroTop = 0;
-			//	SetAeroMargins(dat->pContainer);
-			//}
 			return 0;
 		}
 		case DM_CHECKSIZE:

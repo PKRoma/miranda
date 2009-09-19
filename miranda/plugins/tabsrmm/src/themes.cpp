@@ -66,7 +66,9 @@ ButtonSet 	g_ButtonSet = {0};
 
 int CSkin::m_bAvatarBorderType = 0;
 
-BLENDFUNCTION CSkin::m_default_bf = {0};
+BLENDFUNCTION CSkin::m_default_bf = {0};				// a global blend function, used in various places
+														// when you use it, reset SourceConstantAlpha to 255 and
+														// the blending mode to AC_SRC_ALPHA.
 
 bool CSkin::m_bClipBorder = false, CSkin::m_DisableScrollbars = false,
 	 CSkin::m_skinEnabled = false, CSkin::m_frameSkins = false;
@@ -657,6 +659,8 @@ void __forceinline gradientVertical(UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UCHA
  *
  * @param hdc    HDC: target device context
  * @param rc     RECT *: client rectangle inside the target DC.
+ * @param fIgnoreGlyph: bool: will ignore any glyph item. Set it to true when
+ * 						using this function from _outside_ a skin
  */
 void __fastcall CImageItem::Render(const HDC hdc, const RECT *rc, bool fIgnoreGlyph) const
 {
@@ -1093,10 +1097,6 @@ void CSkin::setFileName()
 	else
 		m_tszFileName[0] = 0;
 
-	/*
-	 * ANSI filename is kept for compatibility reasons. will go away at some time
-	 */
-
 	m_fLoadOnStartup = M->GetByte("useskin", 0) ? true : false;
 }
 /**
@@ -1122,6 +1122,12 @@ void CSkin::Init()
 	initAeroEffect();
 }
 
+/**
+ * throws a warning to close all message windows before a skin can
+ * be loaded. user can cancel it
+ * @return: bool: true if windows were closed (or none was open) -> skin can be loaded
+ *
+ */
 bool CSkin::warnToClose() const
 {
 	if (::pFirstContainer) {
@@ -1605,6 +1611,8 @@ create_it:
  * It reads and initializes all static values for the skin. Afterwards
  * it calls ReadItems() to read additional skin information like image items,
  * buttons and icons.
+ *
+ *
  */
 void CSkin::Load()
 {
@@ -1837,6 +1845,16 @@ void CSkin::LoadItems()
 	g_ButtonSet.right = GetPrivateProfileInt(_T("ButtonArea"), _T("right"), 0, m_tszFileName);
 }
 
+/**
+ * setup and cache the bitmap for the close button on tabs and switch bar
+ * buttons.
+ * re-created when:
+ * ) theme changes
+ * ) icons change (via ico lib service)
+ *
+ * TODO: in skinned mode, use skinned button elements instead of visual
+ * styles.
+ */
 void CSkin::setupTabCloseBitmap()
 {
 	if(m_tabCloseHDC) {
@@ -1884,6 +1902,17 @@ void CSkin::setupTabCloseBitmap()
 }
 /**
  * load and setup some images which are used to draw tabs in aero mode
+ * there is one image for tabs (it is flipped vertically for bottom tabs)
+ * and one image for the glowing effect on tabs (also flipped for bottom
+ * tabs).
+ *
+ * the 3rd image acts as background for switch bar buttons
+ *
+ * this is executed when:
+ * ) dwm mode changes
+ * ) aero effect is changed by the user
+ * ) glow colorization is changed by user's request
+ * this is Viata+ only code, never gets executed on XP or lower
  */
 void CSkin::setupAeroSkins()
 {
@@ -2125,7 +2154,7 @@ void CSkin::SkinDrawBGFromDC(HWND hwndClient, HWND hwnd, HDC hdcSrc, RECT *rcCli
 	::BitBlt(hdcTarget, rcClient->left, rcClient->top, width, height, hdcSrc, pt.x, pt.y, SRCCOPY);
 }
 
-/*
+/**
  * draw transparent avatar image. Get around crappy image rescaling quality of the
  * AlphaBlend() API.
  *
@@ -2153,11 +2182,9 @@ void CSkin::MY_AlphaBlend(HDC hdcDraw, DWORD left, DWORD top,  int width, int he
 	DeleteDC(hdcTemp);
 }
 
-/*
+/**
  * draw an icon "dimmed" (small amount of transparency applied)
 */
-
-static BLENDFUNCTION bf_t = {0};
 
 void CSkin::DrawDimmedIcon(HDC hdc, LONG left, LONG top, LONG dx, LONG dy, HICON hIcon, BYTE alpha)
 {
@@ -2167,13 +2194,14 @@ void CSkin::DrawDimmedIcon(HDC hdc, LONG left, LONG top, LONG dx, LONG dy, HICON
 	hbmOld = (HBITMAP)SelectObject(dcMem, hbm);
 	BitBlt(dcMem, 0, 0, dx, dx, hdc, left, top, SRCCOPY);
 	DrawIconEx(dcMem, 0, 0, hIcon, dx, dy, 0, 0, DI_NORMAL);
-	bf_t.SourceConstantAlpha = alpha;
+	m_default_bf.SourceConstantAlpha = alpha;
 	if (CMimAPI::m_MyAlphaBlend)
-		CMimAPI::m_MyAlphaBlend(hdc, left, top, dx, dy, dcMem, 0, 0, dx, dy, bf_t);
+		CMimAPI::m_MyAlphaBlend(hdc, left, top, dx, dy, dcMem, 0, 0, dx, dy, m_default_bf);
 	else {
 		SetStretchBltMode(hdc, HALFTONE);
 		StretchBlt(hdc, left, top, dx, dy, dcMem, 0, 0, dx, dy, SRCCOPY);
 	}
+	m_default_bf.SourceConstantAlpha = 255;
 	SelectObject(dcMem, hbmOld);
 	DeleteObject(hbm);
 	DeleteDC(dcMem);
@@ -2676,6 +2704,11 @@ void CSkin::setAeroEffect(LRESULT effect)
 	M->WriteByte(SRMSGMOD_T, "aerostyle", m_aeroEffect);
 }
 
+/**
+ * extract the aero skin images from the DLL and store them in
+ * the private data folder.
+ * runs at every startup
+ */
 void CSkin::extractSkinsAndLogo() const
 {
 	TCHAR	szFilename[MAX_PATH];

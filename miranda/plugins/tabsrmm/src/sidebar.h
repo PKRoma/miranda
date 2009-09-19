@@ -78,10 +78,7 @@ public:
 	const SIZE&					getSize() const { return(m_sz); }
 	const SIZE&					measureItem();
 	LONG  						getHeight() const { return(m_sz.cy); }
-	void						setLayout(const TSideBarLayout *newLayout)
-	{
-		m_sideBarLayout = newLayout;
-	}
+	void						setLayout(const TSideBarLayout *newLayout);
 	const TSideBarLayout*		getLayout() const { return(m_sideBarLayout); }
 
 public:
@@ -211,5 +208,10 @@ private:
 	static void __fastcall  m_DefaultBackgroundRenderer(const HDC hdc, const RECT *rc, const CSideBarButton *item);
 	static void __fastcall  m_DefaultContentRenderer(const HDC hdc, const RECT *rc, const CSideBarButton *item);
 };
+
+inline void	CSideBarButton::setLayout(const TSideBarLayout *newLayout)
+{
+	m_sideBarLayout = newLayout;
+}
 
 #endif

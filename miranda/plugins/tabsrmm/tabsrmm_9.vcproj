@@ -147,9 +147,12 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="../../include; ../include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
+				ExceptionHandling="2"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
+				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"
+				EnableEnhancedInstructionSet="1"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
@@ -234,7 +237,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Release_Unicode/srmm.tlb"
+				TypeLibraryName=".\Release Unicode/srmm.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -342,7 +345,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="3"
-				TypeLibraryName=".\Release_Unicode/srmm.tlb"
+				TypeLibraryName=".\Release Unicode/srmm.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -356,7 +359,9 @@
 				StringPooling="true"
 				ExceptionHandling="1"
 				RuntimeLibrary="0"
+				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"
+				EnableEnhancedInstructionSet="0"
 				FloatingPointModel="1"
 				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="2"
@@ -569,10 +574,11 @@
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
-				ExceptionHandling="1"
+				ExceptionHandling="2"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"
+				EnableEnhancedInstructionSet="1"
 				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
@@ -662,7 +668,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Debug_Unicode/srmm.tlb"
+				TypeLibraryName=".\Debug Unicode/srmm.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -760,7 +766,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="3"
-				TypeLibraryName=".\Debug_Unicode/srmm.tlb"
+				TypeLibraryName=".\Debug Unicode/srmm.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -769,9 +775,12 @@
 				AdditionalIncludeDirectories="../../include; ../include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="false"
+				ExceptionHandling="2"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
+				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"
+				EnableEnhancedInstructionSet="1"
 				FloatingPointModel="0"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
@@ -1609,10 +1618,20 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Debug|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Release Unicode|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+							FavorSizeOrSpeed="1"
+							UsePrecompiledHeader="0"
 							PrecompiledHeaderThrough="../src/commonheaders.h"
 						/>
 					</FileConfiguration>
@@ -1621,6 +1640,8 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+							FavorSizeOrSpeed="1"
+							UsePrecompiledHeader="0"
 							PrecompiledHeaderThrough="../src/commonheaders.h"
 						/>
 					</FileConfiguration>
@@ -1633,11 +1654,27 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug Unicode|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
 							PrecompiledHeaderThrough="../src/commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
 						/>
 					</FileConfiguration>
 				</File>

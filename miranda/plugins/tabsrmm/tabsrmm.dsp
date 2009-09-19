@@ -224,6 +224,7 @@ DEP_CPP_CLIST=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -241,9 +242,7 @@ DEP_CPP_CLIST=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_CLIST=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -302,6 +301,7 @@ DEP_CPP_COLOR=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -319,9 +319,7 @@ DEP_CPP_COLOR=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_COLOR=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -380,6 +378,7 @@ DEP_CPP_LOG_C=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -397,9 +396,7 @@ DEP_CPP_LOG_C=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_LOG_C=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -458,6 +455,7 @@ DEP_CPP_MAIN_=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -475,9 +473,7 @@ DEP_CPP_MAIN_=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MAIN_=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -536,6 +532,7 @@ DEP_CPP_MANAG=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -553,9 +550,7 @@ DEP_CPP_MANAG=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MANAG=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -614,6 +609,7 @@ DEP_CPP_MESSA=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -631,23 +627,97 @@ DEP_CPP_MESSA=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MESSA=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\chat\muchighlight.cpp
+DEP_CPP_MUCHI=\
+	"..\..\include\m_acc.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
+	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\API\m_buttonbar.h"\
+	".\API\m_cln_skinedit.h"\
+	".\API\m_fingerprint.h"\
+	".\API\m_flash.h"\
+	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
+	".\API\m_ieview.h"\
+	".\API\m_mathmodule.h"\
+	".\API\m_metacontacts.h"\
+	".\API\m_msg_buttonsbar.h"\
+	".\API\m_nudge.h"\
+	".\API\m_popup.h"\
+	".\API\m_smileyadd.h"\
+	".\API\m_spellchecker.h"\
+	".\API\m_toptoolbar.h"\
+	".\API\m_updater.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
+	".\src\commonheaders.h"\
+	".\src\controls.h"\
+	".\src\functions.h"\
+	".\src\generic_msghandlers.h"\
+	".\src\globals.h"\
+	".\src\infopanel.h"\
+	".\src\mim.h"\
+	".\src\msgdlgutils.h"\
+	".\src\msgs.h"\
+	".\src\nen.h"\
+	".\src\sendqueue.h"\
+	".\src\sidebar.h"\
+	".\src\taskbar.h"\
+	".\src\templates.h"\
+	".\src\themes.h"\
+	".\src\translator.h"\
+	".\src\typingnotify.h"\
+	{$(INCLUDE)}"uxtheme.h"\
+	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-# ADD CPP /Yu"../src/commonheaders.h"
+# ADD CPP /O2
+# SUBTRACT CPP /YX /Yc /Yu
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+# ADD CPP /O2
+# SUBTRACT CPP /YX /Yc /Yu
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
@@ -713,6 +783,7 @@ DEP_CPP_OPTIO=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -730,9 +801,7 @@ DEP_CPP_OPTIO=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_OPTIO=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -791,6 +860,7 @@ DEP_CPP_SERVI=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -808,9 +878,7 @@ DEP_CPP_SERVI=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_SERVI=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -869,6 +937,7 @@ DEP_CPP_TOOLS=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -886,9 +955,7 @@ DEP_CPP_TOOLS=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_TOOLS=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -947,6 +1014,7 @@ DEP_CPP_WINDO=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -964,10 +1032,8 @@ DEP_CPP_WINDO=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_WINDO=\
-	".\om.h"\
-	".\xtheme.h"\
+	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -1091,6 +1157,7 @@ DEP_CPP_BUTTO=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -1108,9 +1175,7 @@ DEP_CPP_BUTTO=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_BUTTO=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1168,6 +1233,7 @@ DEP_CPP_CONTA=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -1185,9 +1251,7 @@ DEP_CPP_CONTA=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_CONTA=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1245,6 +1309,7 @@ DEP_CPP_CONTAI=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -1262,9 +1327,7 @@ DEP_CPP_CONTAI=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_CONTAI=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1322,6 +1385,7 @@ DEP_CPP_CONTR=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -1339,9 +1403,7 @@ DEP_CPP_CONTR=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_CONTR=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1400,6 +1462,7 @@ DEP_CPP_EVENT=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -1417,9 +1480,7 @@ DEP_CPP_EVENT=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_EVENT=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1477,6 +1538,7 @@ DEP_CPP_FORMA=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -1494,9 +1556,7 @@ DEP_CPP_FORMA=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_FORMA=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
@@ -1555,6 +1615,7 @@ DEP_CPP_GENER=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -1572,9 +1633,7 @@ DEP_CPP_GENER=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_GENER=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1632,6 +1691,7 @@ DEP_CPP_GLOBA=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -1649,9 +1709,7 @@ DEP_CPP_GLOBA=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_GLOBA=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1709,6 +1767,7 @@ DEP_CPP_HOTKE=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -1726,9 +1785,7 @@ DEP_CPP_HOTKE=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_HOTKE=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1786,6 +1843,7 @@ DEP_CPP_IMAGE=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -1804,9 +1862,7 @@ DEP_CPP_IMAGE=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_IMAGE=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
@@ -1865,6 +1921,7 @@ DEP_CPP_INFOP=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -1882,9 +1939,7 @@ DEP_CPP_INFOP=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_INFOP=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1942,6 +1997,7 @@ DEP_CPP_MIM_C=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -1959,9 +2015,7 @@ DEP_CPP_MIM_C=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MIM_C=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2019,6 +2073,7 @@ DEP_CPP_MODPL=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -2036,9 +2091,7 @@ DEP_CPP_MODPL=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MODPL=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -2097,6 +2150,7 @@ DEP_CPP_MSGDI=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -2114,9 +2168,7 @@ DEP_CPP_MSGDI=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MSGDI=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2174,6 +2226,7 @@ DEP_CPP_MSGDL=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -2191,9 +2244,7 @@ DEP_CPP_MSGDL=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MSGDL=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2251,6 +2302,7 @@ DEP_CPP_MSGLO=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -2268,9 +2320,7 @@ DEP_CPP_MSGLO=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MSGLO=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2329,6 +2379,7 @@ DEP_CPP_MSGOP=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -2346,9 +2397,7 @@ DEP_CPP_MSGOP=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MSGOP=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2406,6 +2455,7 @@ DEP_CPP_MSGOPT=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -2423,9 +2473,7 @@ DEP_CPP_MSGOPT=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MSGOPT=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -2484,6 +2532,7 @@ DEP_CPP_MSGS_=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -2501,9 +2550,7 @@ DEP_CPP_MSGS_=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_MSGS_=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2561,6 +2608,7 @@ DEP_CPP_SELEC=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -2578,9 +2626,7 @@ DEP_CPP_SELEC=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_SELEC=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2638,6 +2684,7 @@ DEP_CPP_SENDQ=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -2655,9 +2702,7 @@ DEP_CPP_SENDQ=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_SENDQ=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2715,6 +2760,7 @@ DEP_CPP_SIDEB=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -2732,9 +2778,7 @@ DEP_CPP_SIDEB=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_SIDEB=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2792,6 +2836,7 @@ DEP_CPP_SRMM_=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -2809,9 +2854,7 @@ DEP_CPP_SRMM_=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_SRMM_=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yc"commonheaders.h"
 # End Source File
@@ -2870,6 +2913,7 @@ DEP_CPP_TABCT=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -2887,9 +2931,7 @@ DEP_CPP_TABCT=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_TABCT=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2947,6 +2989,7 @@ DEP_CPP_TASKB=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -2964,9 +3007,7 @@ DEP_CPP_TASKB=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_TASKB=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3024,6 +3065,7 @@ DEP_CPP_TEMPL=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -3041,9 +3083,7 @@ DEP_CPP_TEMPL=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_TEMPL=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3101,6 +3141,7 @@ DEP_CPP_THEME=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -3118,9 +3159,7 @@ DEP_CPP_THEME=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_THEME=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3178,6 +3217,7 @@ DEP_CPP_THEMES=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -3195,9 +3235,7 @@ DEP_CPP_THEMES=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_THEMES=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3255,6 +3293,7 @@ DEP_CPP_TRANS=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -3272,9 +3311,7 @@ DEP_CPP_TRANS=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_TRANS=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3332,6 +3369,7 @@ DEP_CPP_TRAYI=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -3349,9 +3387,7 @@ DEP_CPP_TRAYI=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_TRAYI=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3409,6 +3445,7 @@ DEP_CPP_TSBUT=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -3426,9 +3463,7 @@ DEP_CPP_TSBUT=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_TSBUT=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3486,6 +3521,7 @@ DEP_CPP_TYPIN=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -3503,9 +3539,7 @@ DEP_CPP_TYPIN=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_TYPIN=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3563,6 +3597,7 @@ DEP_CPP_USERP=\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
 	".\src\commonheaders.h"\
 	".\src\controls.h"\
 	".\src\functions.h"\
@@ -3580,9 +3615,7 @@ DEP_CPP_USERP=\
 	".\src\themes.h"\
 	".\src\translator.h"\
 	".\src\typingnotify.h"\
-	
-NODEP_CPP_USERP=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # End Group
