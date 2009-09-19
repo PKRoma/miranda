@@ -30,8 +30,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //#include <SCHNLSP.H>
 
-static HMODULE     g_hSchannel;
+static HMODULE g_hSchannel;
 static PSecurityFunctionTableA g_pSSPI;
+static HANDLE g_hSslMutex; 
 
 typedef enum
 {
@@ -108,24 +109,32 @@ static void ReportSslError(SECURITY_STATUS scRet)
 
 static int SSL_library_init(void)
 {
-	INIT_SECURITY_INTERFACE_A pInitSecurityInterface;
+	if (g_pSSPI) return 1;
 
-	if (g_hSchannel) return 1;
+	int res = 0;
+	WaitForSingleObject(g_hSslMutex, INFINITE); 
 
-	g_hSchannel = LoadLibraryA("schannel.dll");
-	if (g_hSchannel == NULL) return 0;
+	if (g_hSchannel == NULL)
+	{
+		g_hSchannel = LoadLibraryA("schannel.dll");
+		if (g_hSchannel)
+		{
+			INIT_SECURITY_INTERFACE_A pInitSecurityInterface;
+			pInitSecurityInterface = (INIT_SECURITY_INTERFACE_A)GetProcAddress(g_hSchannel, SECURITY_ENTRYPOINT_ANSIA);
+			if (pInitSecurityInterface != NULL) 
+				g_pSSPI = pInitSecurityInterface();
 
-	pInitSecurityInterface = (INIT_SECURITY_INTERFACE_A)GetProcAddress(g_hSchannel, SECURITY_ENTRYPOINT_ANSIA);
-	if (pInitSecurityInterface != NULL) 
-		g_pSSPI = pInitSecurityInterface();
-
-	if (g_pSSPI == NULL) {
-		FreeLibrary(g_hSchannel);
-		g_hSchannel = NULL;
-		return 0;
+			res = g_pSSPI != NULL;
+			if (!res) 
+			{
+				FreeLibrary(g_hSchannel);
+				g_hSchannel = NULL;
+			}
+		}
 	}
 
-	return 1;
+	ReleaseMutex(g_hSslMutex);
+	return res;
 }
 
 static BOOL AcquireCredentials(SslHandle *ssl, BOOL verify, BOOL chkname)
@@ -848,9 +857,11 @@ static INT_PTR GetSslApi(WPARAM, LPARAM lParam)
 int LoadSslModule(void)
 {
 	CreateServiceFunction(MS_SYSTEM_GET_SI, GetSslApi);
+	g_hSslMutex = CreateMutex(NULL, FALSE, NULL); 
     return 0;
 }
 
 void UnloadSslModule(void)
 {
+	CloseHandle(g_hSslMutex);
 }
