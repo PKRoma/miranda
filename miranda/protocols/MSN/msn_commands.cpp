@@ -374,7 +374,7 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 		UrlDecode(nick);
 	}
 	stripBBCode(nick);
-
+	stripColorCode(nick);
 
 	char* msg = (char*)alloca(msgBytes+1);
 
@@ -769,6 +769,7 @@ void CMsnProto::sttProcessStatusMessage(char* buf, unsigned len, HANDLE hContact
 	if (*szStatMsg)
 	{
 		stripBBCode((char*)szStatMsg);
+		stripColorCode((char*)szStatMsg);
 		DBWriteContactSettingStringUtf(hContact, "CList", "StatusMsg", szStatMsg);
 	}
 	else
@@ -1243,6 +1244,7 @@ LBL_InvalidCommand:
 
 			UrlDecode(data.userNick);
 			stripBBCode(data.userNick);
+			stripColorCode(data.userNick);
 
 			WORD lastStatus = ID_STATUS_OFFLINE;
 			HANDLE hContact = MSN_HContactFromEmail(data.userEmail, NULL, false, false);
@@ -1347,6 +1349,7 @@ LBL_InvalidCommand:
 
 			UrlDecode(data.userEmail); UrlDecode(data.userNick);
 			stripBBCode(data.userNick);
+			stripColorCode(data.userNick);
 			HANDLE hContact = MSN_HContactFromEmail(data.userEmail, data.userNick, true, true);
 			if (tNumTokens == 3)
 				setDword(hContact, "FlagBits", strtoul(data.flags, NULL, 10));
@@ -1503,6 +1506,7 @@ LBL_InvalidCommand:
 			UrlDecode(data.newServer); UrlDecode(data.callerEmail);
 			UrlDecode(data.callerNick);
 			stripBBCode(data.callerNick);
+			stripColorCode(data.callerNick);
 
 			if (strcmp(data.security, "CKI")) {
 				MSN_DebugLog("Unknown security package in RNG command: %s", data.security);

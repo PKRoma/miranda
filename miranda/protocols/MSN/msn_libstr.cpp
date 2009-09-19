@@ -296,3 +296,58 @@ void stripBBCode(char* src)
 	*pd = 0;
 }
 
+void stripColorCode(char* src)
+{
+	bool tag = false; 
+	unsigned char* ps = (unsigned char*)src;
+	unsigned char* pd = (unsigned char*)src;
+
+	while (*ps != 0)
+	{
+		if (ps[0] == 0xc2 && ps[1] == 0xb7)
+		{
+			char ch = ps[2];
+			switch (ch)
+			{
+			case '#':
+			case '&':
+			case '\'':
+			case '@':
+			case '0':
+				ps += 3;
+				continue;
+
+			case '$':
+				if (isdigit(ps[3]))
+				{
+					ps += 3;
+					if (ps[0] == '1' && isdigit(ps[1]))
+					{
+						ps += 2;
+						if (ps[0] == ',' && isdigit(ps[1]))
+						{
+							ps += 2;
+							if (ps[0] == '1' && isdigit(ps[1]))
+								ps += 2;
+						}
+					}
+					else
+						++ps;
+					continue;
+				}
+				else if (ps[3] == '#')
+				{
+					ps += 4;
+					for (int i=0; i<6; ++i)
+						if (isxdigit(*ps)) ++ps;
+						else break;
+					continue;
+				}
+				break;
+			}
+		}
+		*(pd++) = *(ps++);
+	}
+	*pd = 0;
+}
+
