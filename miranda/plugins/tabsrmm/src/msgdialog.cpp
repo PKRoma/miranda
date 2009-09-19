@@ -2013,7 +2013,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			return(1);
 
 		case WM_NCPAINT: {
-			if (CSkin::m_skinEnabled)
+			//if (CSkin::m_skinEnabled)
 				return 0;
 			break;
 		}

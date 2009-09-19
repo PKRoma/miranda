@@ -2494,6 +2494,7 @@ void CSkin::RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &
 
 		bool	 fAero = M->isAero();
 		COLORREF clr1, clr2;
+		BYTE	 bAlphaOffset = 0;
 
 		RECT 	rc, rcToolbar;;
 		POINT	pt;
@@ -2539,9 +2540,14 @@ void CSkin::RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &
 		dat->pContainer->oldhbmToolbarBG = (HBITMAP)SelectObject(dat->pContainer->cachedToolbarDC, dat->pContainer->hbmToolbarBG);
 
 		if(fAero) {
-			clr1 = m_pCurrentAeroEffect ? m_pCurrentAeroEffect->m_clrToolbar : 0xf0f0f0;
-			clr2 = m_pCurrentAeroEffect ? m_pCurrentAeroEffect->m_clrToolbar2 : m_dwmColorRGB;
-			::DrawAlpha(hdc, &rcToolbar, clr1, 40, clr2, 0, 9, 31, 4, 0);
+			clr1 = PluginConfig.m_tbBackgroundHigh ? PluginConfig.m_tbBackgroundHigh :
+					(m_pCurrentAeroEffect ? m_pCurrentAeroEffect->m_clrToolbar : 0xf0f0f0);
+			clr2 = PluginConfig.m_tbBackgroundLow ? PluginConfig.m_tbBackgroundLow :
+					(m_pCurrentAeroEffect ? m_pCurrentAeroEffect->m_clrToolbar2 : m_dwmColorRGB);
+
+			bAlphaOffset = PluginConfig.m_tbBackgroundHigh ? 40 : 0;
+
+			::DrawAlpha(hdc, &rcToolbar, clr1, 45 + bAlphaOffset, clr2, 0, 9, 31, 4, 0);
 		} else
 			CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, hdc, PluginConfig.m_bIsVista ? 12 : 6,  PluginConfig.m_bIsVista ? 2 : 1,
 											  &rcToolbar, &rcToolbar);
@@ -2552,7 +2558,7 @@ void CSkin::RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &
 
 		if(fAero) {
 			::FillRect(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, GetSysColorBrush(COLOR_3DFACE));
-			::DrawAlpha(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, clr1, 55, clr2, 0, 9, 31, 4, 0);
+			::DrawAlpha(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, clr1, 55 + bAlphaOffset, clr2, 0, 9, 31, 4, 0);
 		} else
 			CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, dat->pContainer->cachedToolbarDC, PluginConfig.m_bIsVista ? 12 : 6,  PluginConfig.m_bIsVista ? 2 : 1,
 											  &rcCachedToolbar, &rcCachedToolbar);

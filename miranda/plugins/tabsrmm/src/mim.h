@@ -172,6 +172,7 @@ public:
 	 * @return bool: true if aero active, false otherwise
 	 */
 	const bool  isAero() const { return(m_isAero); }
+	const bool  isDwmActive() const { return(m_DwmActive); }
 
 	/**
 	 * Refresh Aero status.
@@ -181,19 +182,7 @@ public:
 	 *
 	 * @return
 	 */
-	bool		getAeroState()
-	{
-		BOOL result = FALSE;
-		m_isAero = false;
-#if defined(_UNICODE)
-		if(IsWinVerVistaPlus()) {
-			m_isAero = (CSkin::m_skinEnabled == false) && GetByte("useAero", 1) && CSkin::m_fAeroSkinsValid &&
-				((m_pfnDwmIsCompositionEnabled && (m_pfnDwmIsCompositionEnabled(&result) == S_OK) && result) ? true : false);
-		}
-#endif
-		m_isVsThemed = (m_VsAPI && m_pfnIsThemeActive && m_pfnIsThemeActive());
-		return(m_isAero);
-	}
+	bool		getAeroState();
 	/**
 	 * return status of visual styles theming engine (Windows XP+)
 	 *
@@ -259,6 +248,7 @@ private:
 	HMODULE		m_hUxTheme, m_hDwmApi;
 	bool		m_VsAPI;
 	bool		m_isAero;
+	bool		m_DwmActive;
 	bool		m_isVsThemed;
 	HANDLE		m_hDataPath, m_hSkinsPath, m_hAvatarsPath, m_hChatLogsPath;
 	__int64		m_tStart, m_tStop, m_tFreq;

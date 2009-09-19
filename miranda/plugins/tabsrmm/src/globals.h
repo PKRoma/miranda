@@ -142,6 +142,7 @@ public:
 	HMENU		m_MenuBar;
 	COLORREF	m_ipBackgroundGradient;
 	COLORREF	m_ipBackgroundGradientHigh;
+	COLORREF	m_tbBackgroundHigh, m_tbBackgroundLow;
 	BOOL		m_SendLaterAvail;
 };
 

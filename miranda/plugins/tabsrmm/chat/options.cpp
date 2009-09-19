@@ -24,12 +24,15 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
+ * This code is based on and still contains large parts of the the
+ * original chat module for Miranda IM, written and copyrighted
+ * by Joergen Persson in 2005.
+ *
  * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
- * The main option pages, which appear under Options->Message sessions in
- * Miranda.
+ * group chat options and generic font handling
  *
  */
 
@@ -55,11 +58,12 @@ extern HMODULE          g_hIconDLL;
 
 extern HIMAGELIST       CreateStateImageList();
 
-HANDLE			g_hOptions = NULL;
+HANDLE					g_hOptions = NULL;
 
 
 #define FONTF_BOLD   1
 #define FONTF_ITALIC 2
+
 struct FontOptionsList {
 	TCHAR*   szDescr;
 	COLORREF defColour;
@@ -72,10 +76,33 @@ struct FontOptionsList {
 	char     size;
 };
 
+struct ColorOptionsList {
+	int			order;
+	TCHAR*		tszGroup;
+	TCHAR*		tszName;
+	char*		szSetting;
+	COLORREF 	def;
+};
+
+static ColorOptionsList _clrs[] = {
+	0, LPGENT("TabSRMM"), LPGENT("Log background"), SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR,
+	1, LPGENT("TabSRMM/Common colors"), LPGENT("Input area background"), "inputbg", SRMSGDEFSET_BKGCOLOUR,
+	0, LPGENT("TabSRMM/Single Messaging"), LPGENT("Outgoing background"), "outbg", SRMSGDEFSET_BKGOUTCOLOUR,
+	1, LPGENT("TabSRMM/Single Messaging"), LPGENT("Incoming background"), "inbg", SRMSGDEFSET_BKGINCOLOUR,
+	2, LPGENT("TabSRMM/Single Messaging"), LPGENT("Status background"), "statbg", SRMSGDEFSET_BKGCOLOUR,
+	3, LPGENT("TabSRMM/Single Messaging"), LPGENT("Incoming background(old)"), "oldinbg", SRMSGDEFSET_BKGINCOLOUR,
+	4, LPGENT("TabSRMM/Single Messaging"), LPGENT("Outgoing background(old)"), "oldoutbg", SRMSGDEFSET_BKGOUTCOLOUR,
+	5, LPGENT("TabSRMM/Single Messaging"), LPGENT("Horizontal Grid Lines"), "hgrid", RGB(224, 224, 224),
+	0, LPGENT("TabSRMM/Info Panel"), LPGENT("Panel background low"), "ipfieldsbg", 0xff000000 | COLOR_HOTLIGHT,
+	1, LPGENT("TabSRMM/Info Panel"), LPGENT("Panel background high"), "ipfieldsbgHigh", 0xff000000 | COLOR_3DFACE,
+	2, LPGENT("TabSRMM/Common colors"), LPGENT("Toolbar background high (Aero mode only)"), "tbBgHigh", 0,
+	3, LPGENT("TabSRMM/Common colors"), LPGENT("Toolbar background low (Aero mode only)"), "tbBgLow", 0,
+};
+
 extern LOGFONT lfDefault;
 
 //remember to put these in the Translate( ) template file too
-static struct FontOptionsList CHAT_fontOptionsList[] = {
+static FontOptionsList CHAT_fontOptionsList[] = {
 	{LPGENT("Timestamp"), RGB(50, 50, 240), lfDefault.lfFaceName, DEFAULT_CHARSET, 0, -12},
 	{LPGENT("Others nicknames"), RGB(0, 0, 192), lfDefault.lfFaceName, DEFAULT_CHARSET, FONTF_BOLD, -12},
 	{LPGENT("Your nickname"), RGB(0, 0, 192), lfDefault.lfFaceName, DEFAULT_CHARSET, FONTF_BOLD, -12},
@@ -100,7 +127,7 @@ static struct FontOptionsList CHAT_fontOptionsList[] = {
 
 const int msgDlgFontCount = SIZEOF(CHAT_fontOptionsList);
 
-static struct FontOptionsList IM_fontOptionsList[] = {
+static FontOptionsList IM_fontOptionsList[] = {
 	{LPGENT(">> Outgoing messages"), RGB(50, 50, 50), lfDefault.lfFaceName, DEFAULT_CHARSET, 0, -12},
 	{LPGENT(">> Outgoing misc events"), RGB(50, 50, 50), lfDefault.lfFaceName, DEFAULT_CHARSET, 0, -12},
 	{LPGENT("<< Incoming messages"), RGB(50, 50, 50), lfDefault.lfFaceName, DEFAULT_CHARSET, 0, -12},
@@ -125,7 +152,7 @@ static struct FontOptionsList IM_fontOptionsList[] = {
 	{LPGENT("* Symbols (outgoing)"), RGB(50, 50, 50), _T("Webdings"), SYMBOL_CHARSET, 0, -12},
 };
 
-static struct FontOptionsList IP_fontOptionsList[] = {
+static FontOptionsList IP_fontOptionsList[] = {
 	{LPGENT("Nickname"), RGB(0, 0, 0), lfDefault.lfFaceName, DEFAULT_CHARSET, 0, -12},
 	{LPGENT("UIN"), RGB(0, 0, 0), lfDefault.lfFaceName, DEFAULT_CHARSET, 0, -12},
 	{LPGENT("Status"), RGB(0, 0, 0), lfDefault.lfFaceName, DEFAULT_CHARSET, 0, -12},
@@ -134,7 +161,7 @@ static struct FontOptionsList IP_fontOptionsList[] = {
 	{LPGENT("Window caption (skinned mode)"), RGB(255, 255, 255), lfDefault.lfFaceName, DEFAULT_CHARSET, 0, -12},
 };
 
-static struct FontOptionsList *fontOptionsList = IM_fontOptionsList;
+static FontOptionsList *fontOptionsList = IM_fontOptionsList;
 static int fontCount = MSGDLGFONTCOUNT;
 
 struct branch_t {
@@ -517,7 +544,6 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading1, branch1, SIZEOF(branch1), 0x0000);
 				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading2, branch2, SIZEOF(branch2), 0x0000);
 
-				//SendMessage(hwndDlg, OPT_FIXHEADINGS, 0, 0);
 				{
 					TCHAR* pszGroup = NULL;
 					InitSetting(&pszGroup, "AddToGroup", _T("Chat rooms"));
@@ -533,10 +559,6 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 			}
 			break;
 
-		/*case OPT_FIXHEADINGS:
-			CheckHeading(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading1);
-			CheckHeading(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading2);
-			break;*/
 		case WM_COMMAND:
 			if ((LOWORD(wParam) == IDC_GROUP)
 					&& (HIWORD(wParam) != EN_CHANGE || (HWND)lParam != GetFocus()))	return 0;
@@ -720,58 +742,23 @@ void RegisterFontServiceFonts() {
 
 	strncpy(cid.dbSettingsGroup, FONTMODULE, SIZEOF(fid.dbSettingsGroup));
 
-	cid.order = 0;
- 	_tcsncpy(cid.group, _T("TabSRMM"), SIZEOF(fid.group));
- 	_tcsncpy(cid.name, _T("Log Background"), SIZEOF(cid.name));
- 	strncpy(cid.setting, (SRMSGSET_BKGCOLOUR), SIZEOF(cid.setting));
- 	cid.defcolour = SRMSGDEFSET_BKGCOLOUR;
- 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
+	/*
+	 * static colors (info panel, tool bar background etc...)
+	 */
 
- 	cid.order = 1;
- 	_tcsncpy(cid.name, _T("Input area background"), SIZEOF(cid.name));
- 	strncpy(cid.setting, "inputbg", SIZEOF(cid.setting));
- 	cid.defcolour = SRMSGDEFSET_BKGCOLOUR;
-	CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
+	for(i = 0; i < (sizeof(_clrs) / sizeof(_clrs[0])); i++) {
+		cid.order = _clrs[i].order;
+		_tcsncpy(cid.group, _clrs[i].tszGroup, SIZEOF(fid.group));
+	 	_tcsncpy(cid.name, _clrs[i].tszName, SIZEOF(cid.name));
+	 	strncpy(cid.setting, _clrs[i].szSetting, SIZEOF(cid.setting));
+	 	if(_clrs[i].def & 0xff000000)
+	 		cid.defcolour = GetSysColor(_clrs[i].def & 0x000000ff);
+	 	else
+	 		cid.defcolour = _clrs[i].def;
+	 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
+	}
 
-	cid.order = 0;
-	_tcsncpy(cid.group, _T("TabSRMM/Single Messaging"), SIZEOF(fid.group));
-	_tcsncpy(cid.name, _T("Outgoing background"), SIZEOF(cid.name));
-	strncpy(cid.setting, "outbg", SIZEOF(cid.setting));
-	cid.defcolour = SRMSGDEFSET_BKGOUTCOLOUR;
-	CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
-
- 	cid.order = 1;
- 	_tcsncpy(cid.name, _T("Incoming background"), SIZEOF(cid.name));
- 	strncpy(cid.setting, "inbg", SIZEOF(cid.setting));
- 	cid.defcolour = SRMSGDEFSET_BKGINCOLOUR;
- 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
-
- 	cid.order = 2;
- 	_tcsncpy(cid.name, _T("Status background"), SIZEOF(cid.name));
- 	strncpy(cid.setting, "statbg", SIZEOF(cid.setting));
- 	cid.defcolour = SRMSGDEFSET_BKGCOLOUR;
- 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
-
-	cid.order = 3;
-	_tcsncpy(cid.name, _T("Incoming background(old)"), SIZEOF(cid.name));
-	strncpy(cid.setting, "oldinbg", SIZEOF(cid.setting));
-	cid.defcolour = SRMSGDEFSET_BKGINCOLOUR;
-	CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
-
-	cid.order = 4;
-	_tcsncpy(cid.name, _T("Outgoing background(old)"), SIZEOF(cid.name));
-	strncpy(cid.setting, "oldoutbg", SIZEOF(cid.setting));
-	cid.defcolour = SRMSGDEFSET_BKGOUTCOLOUR;
-	CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
-
-	cid.order = 5;
-	_tcsncpy(cid.name, _T("Horizontal Grid Lines"), SIZEOF(cid.name));
-	strncpy(cid.setting, "hgrid", SIZEOF(cid.setting));
-	cid.defcolour = RGB(224, 224, 224);
-	CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
-
-
-	fontOptionsList=IP_fontOptionsList;
+	fontOptionsList = IP_fontOptionsList;
 	fid.flags = FIDF_DEFAULTVALID|FIDF_ALLOWEFFECTS;
 	//fid.flags|=FIDF_SAVEPOINTSIZE;
 	_tcsncpy(fid.group, _T("TabSRMM/Info Panel"), SIZEOF(fid.group));
@@ -797,19 +784,8 @@ void RegisterFontServiceFonts() {
 			}
 		CallService(MS_FONT_REGISTERT, (WPARAM)&fid, 0);
 		}
-	cid.order=0;
-	_tcsncpy(cid.group, _T("TabSRMM/Info Panel"), SIZEOF(fid.group));
-	_tcsncpy(cid.name, _T("Panel background low"), SIZEOF(cid.name));
-	strncpy(cid.setting, "ipfieldsbg", SIZEOF(cid.setting));
-	cid.defcolour = GetSysColor(COLOR_HOTLIGHT);
-	CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
 
-	_tcsncpy(cid.name, _T("Panel background high"), SIZEOF(cid.name));
-	strncpy(cid.setting, "ipfieldsbgHigh", SIZEOF(cid.setting));
-	cid.defcolour = GetSysColor(COLOR_3DFACE);
-	CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
-
-	fontOptionsList=CHAT_fontOptionsList;
+	fontOptionsList = CHAT_fontOptionsList;
 	fid.flags&=~FIDF_SAVEPOINTSIZE;
 	_tcsncpy(fid.group, _T("TabSRMM/Group Chats"), SIZEOF(fid.group));
 	_tcsncpy(fid.backgroundGroup, _T("TabSRMM"), SIZEOF(fid.backgroundGroup));

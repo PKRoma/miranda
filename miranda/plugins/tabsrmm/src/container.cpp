@@ -839,7 +839,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			//SetAeroMargins(pContainer);  FIXME maybe
 			pContainer->SideBar->scrollIntoView();
 
-			if(!M->isAero()) {					// aero mode uses buffered paint, no forced redraw needed
+			if(!M->isDwmActive()) {					// aero mode uses buffered paint, no forced redraw needed
 				RedrawWindow(hwndTab, NULL, NULL, RDW_INVALIDATE | (pContainer->bSizingLoop ? RDW_ERASE : 0));
 				RedrawWindow(hwndDlg, NULL, NULL, (bSkinned ? RDW_FRAME : 0) | RDW_INVALIDATE | ((pContainer->bSizingLoop || wParam == SIZE_RESTORED ) ? RDW_ERASE : 0));
 			}

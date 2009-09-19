@@ -283,7 +283,9 @@ LONG_PTR CMenuBar::customDrawWorker(NMCUSTOMDRAW *nm)
 				if(fMustDraw) {
 					if(nmtb->nmcd.dwItemSpec == 0) {
 						m_hdcDraw = ::CreateCompatibleDC(nmtb->nmcd.hdc);
+						//m_rcItem = nmtb->nmcd.rc;
 						::GetClientRect(m_hwndToolbar, &m_rcItem);
+						m_rcItem.bottom -= 4;
 						m_hbmDraw = CSkin::CreateAeroCompatibleBitmap(m_rcItem, nmtb->nmcd.hdc);
 						m_hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(m_hdcDraw, m_hbmDraw));
 						m_hTheme = M->isAero() || M->isVSThemed() ? CMimAPI::m_pfnOpenThemeData(m_hwndToolbar, L"REBAR") : 0;

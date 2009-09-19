@@ -686,7 +686,7 @@ BOOL BB_SetButtonsPos(HWND hwnd, struct _MessageWindowData *dat)
 			if (!showToolbar) {
 				ShowWindow(hwndBtn, SW_HIDE);
 				DeferWindowPos(hdwp, hwndBtn , NULL, lwidth, splitterY - iOff,
-							   0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_NOCOPYBITS);
+							   0, 0, SWP_NOZORDER | SWP_NOSIZE);// | SWP_NOCOPYBITS);
 				if (IsWindowVisible(hwndBtn) || (cbd->bDummy && !(cbd->bAutoHidden || cbd->bHidden)))
 					lwidth += cbd->iButtonWidth + gap;
 				if (!IsWindowEnabled(hwndBtn) && !IsWindowVisible(hwndBtn) && !cbd->bAutoHidden)
@@ -711,7 +711,7 @@ BOOL BB_SetButtonsPos(HWND hwnd, struct _MessageWindowData *dat)
 				}
 			}
 			DeferWindowPos(hdwp, hwndBtn , NULL, lwidth, splitterY - iOff,
-						   0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_NOCOPYBITS);
+						   0, 0, SWP_NOZORDER | SWP_NOSIZE);// SWP_NOCOPYBITS);
 			if (IsWindowVisible(hwndBtn) || (cbd->bDummy && !(cbd->bAutoHidden || cbd->bHidden)))
 				lwidth += cbd->iButtonWidth + gap;
 		}
@@ -734,7 +734,7 @@ BOOL BB_SetButtonsPos(HWND hwnd, struct _MessageWindowData *dat)
 				if (IsWindowVisible(hwndBtn) || (cbd->bDummy && !(cbd->bAutoHidden || cbd->bHidden)))
 					rwidth += cbd->iButtonWidth + gap;
 				DeferWindowPos(hdwp, hwndBtn , NULL, rect.right - foravatar - rwidth + gap, splitterY - iOff,
-							   0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_NOCOPYBITS);
+							   0, 0, SWP_NOZORDER | SWP_NOSIZE);// SWP_NOCOPYBITS);
 				if (!IsWindowEnabled(hwndBtn) && !IsWindowVisible(hwndBtn) && !cbd->bAutoHidden)
 					cbd->bAutoHidden = 1;
 				continue;
@@ -760,7 +760,7 @@ BOOL BB_SetButtonsPos(HWND hwnd, struct _MessageWindowData *dat)
 			if (IsWindowVisible(hwndBtn) || (cbd->bDummy && !(cbd->bAutoHidden || cbd->bHidden)))
 				rwidth += cbd->iButtonWidth + gap;
 			DeferWindowPos(hdwp, hwndBtn , NULL, rect.right - foravatar - rwidth + gap, splitterY - iOff,
-						   0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_NOCOPYBITS);
+						   0, 0, SWP_NOZORDER | SWP_NOSIZE);// SWP_NOCOPYBITS);
 		}
 	}
 

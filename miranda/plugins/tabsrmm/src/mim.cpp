@@ -427,6 +427,21 @@ void CMimAPI::InitPaths()
 	m_szSkinsPath[MAX_PATH - 1] = m_szSavedAvatarsPath[MAX_PATH - 1] = 0;
 }
 
+bool CMimAPI::getAeroState()
+{
+	BOOL result = FALSE;
+	m_isAero = m_DwmActive = false;
+#if defined(_UNICODE)
+	if(IsWinVerVistaPlus()) {
+		m_DwmActive = (m_pfnDwmIsCompositionEnabled && (m_pfnDwmIsCompositionEnabled(&result) == S_OK) && result) ? true : false;
+		m_isAero = (CSkin::m_skinEnabled == false) && GetByte("useAero", 1) && CSkin::m_fAeroSkinsValid && m_DwmActive;
+
+	}
+#endif
+	m_isVsThemed = (m_VsAPI && m_pfnIsThemeActive && m_pfnIsThemeActive());
+	return(m_isAero);
+}
+
 /**
  * Initialize various Win32 API functions which are not common to all versions of Windows.
  * We have to work with functions pointers here.
