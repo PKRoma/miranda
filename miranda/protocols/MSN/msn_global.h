@@ -160,6 +160,7 @@ void        HtmlDecode(char* str);
 char*       HtmlEncode(const char* str);
 bool		txtParseParam (const char* szData, const char* presearch, const char* start, const char* finish, char* param, const int size);
 void		stripBBCode(char* src);
+void		stripColorCode(char* src);
 char*		MSN_Base64Decode(const char* str);
 
 void     	UrlDecode(char* str);
@@ -321,7 +322,7 @@ struct filetransfer
 	TInfoType	tType;
 	TInfoType	tTypeReq;
 	time_t		ts;
-    clock_t     nNotify;
+	clock_t     nNotify;
 	unsigned	cf;
 
 	unsigned    p2p_sessionid;	// session id
@@ -702,8 +703,8 @@ struct chunkedmsg
 
 struct DeleteParam
 {
-    CMsnProto *proto;
-    HANDLE hContact;
+	CMsnProto *proto;
+	HANDLE hContact;
 };
 
 INT_PTR CALLBACK DlgDeleteContactUI(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
