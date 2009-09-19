@@ -160,6 +160,7 @@ void        HtmlDecode(char* str);
 char*       HtmlEncode(const char* str);
 bool		txtParseParam (const char* szData, const char* presearch, const char* start, const char* finish, char* param, const int size);
 void		stripBBCode(char* src);
+void		stripColorCode(char* src);
 char*		MSN_Base64Decode(const char* str);
 
 void     	UrlDecode(char* str);
@@ -636,7 +637,7 @@ public:
 	UTFEncoder(const wchar_t* pSrc) :
 		m_body(mir_utf8encodeW(pSrc)) {}
 
-	~UTFEncoder() {  mir_free(m_body);	}
+    ~UTFEncoder() {  mir_free(m_body);	}
 	const char* str() const { return m_body; }
 };
 
