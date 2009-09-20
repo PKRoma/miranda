@@ -348,7 +348,13 @@ DWORD_PTR __cdecl CAimProto::GetCaps(int type, HANDLE hContact)
 
 HICON __cdecl CAimProto::GetIcon(int iconIndex)
 {
-	return (LOWORD(iconIndex) == PLI_PROTOCOL) ? CopyIcon(LoadIconEx("aim")) : 0;
+	if (LOWORD(iconIndex) == PLI_PROTOCOL)
+	{
+		HICON hIcon =  CopyIcon(LoadIconEx("aim"));
+		ReleaseIconEx("aim");
+		return hIcon;
+	}
+	return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
