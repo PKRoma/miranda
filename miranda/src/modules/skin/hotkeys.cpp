@@ -705,24 +705,24 @@ static void sttBuildHotkeyList(HWND hwndList, TCHAR *section)
 	}
 }
 
-static void sttOptionsStartEdit(HWND hwndDlg)
+static void sttOptionsStartEdit(HWND hwndDlg, HWND hwndHotkey)
 {
 	LVITEM lvi;
 	THotkeyItem *item;
-	int iItem = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), -1, LVNI_SELECTED);
+	int iItem = ListView_GetNextItem(hwndHotkey, -1, LVNI_SELECTED);
 	if (iItem < 0) return;
 
 	lvi.mask = LVIF_PARAM;
 	lvi.iItem = iItem;
-	ListView_GetItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), &lvi);
+	ListView_GetItem(hwndHotkey, &lvi);
 
 	if (item = (THotkeyItem *)lvi.lParam) {
 		RECT rc;
-		ListView_GetSubItemRect(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), iItem, COL_KEY, LVIR_BOUNDS, &rc);
-		MapWindowPoints(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), hwndDlg, (LPPOINT)&rc, 2);
+		ListView_GetSubItemRect(hwndHotkey, iItem, COL_KEY, LVIR_BOUNDS, &rc);
+		MapWindowPoints(hwndHotkey, hwndDlg, (LPPOINT)&rc, 2);
 		SendDlgItemMessage(hwndDlg, IDC_HOTKEY, HKM_SETHOTKEY, MAKELONG(LOBYTE(item->OptHotkey), HIBYTE(item->OptHotkey)), 0);
 
-		SetWindowPos(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), HWND_BOTTOM, 0, 0, 0, 0, SWP_SHOWWINDOW|SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE);
+		SetWindowPos(hwndHotkey, HWND_BOTTOM, 0, 0, 0, 0, SWP_SHOWWINDOW|SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE);
 		SetWindowPos(GetDlgItem(hwndDlg, IDC_HOTKEY), HWND_TOP, rc.left, rc.top, rc.right-rc.left, rc.bottom-rc.top, SWP_SHOWWINDOW);
 		RedrawWindow(GetDlgItem(hwndDlg, IDC_HOTKEY), NULL, NULL, RDW_INVALIDATE);
 
@@ -745,6 +745,8 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 	static int colWidth = 0;
 	static WORD currentLanguage = 0;
 
+	HWND hwndHotkey = GetDlgItem(hwndDlg, IDC_LV_HOTKEYS);
+
 	switch (msg) {
 	case WM_INITDIALOG:
 	{
@@ -757,33 +759,38 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 		TranslateDialogDefault(hwndDlg);
 
-		sttHotkeyEditCreate(GetDlgItem(hwndDlg, IDC_HOTKEY));
+		sttHotkeyEditCreate(hwndHotkey);
 
-		hIml = ImageList_Create(16, 16, ILC_MASK + ( IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16 ), 3, 1);
-		ImageList_AddIcon(hIml, (HICON)LoadSkinnedIcon(SKINICON_OTHER_WINDOWS));
-		ImageList_AddIcon(hIml, (HICON)LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
-		ImageList_AddIcon(hIml, (HICON)LoadSkinnedIcon(SKINICON_OTHER_WINDOW));
-		ImageList_AddIcon(hIml, (HICON)LoadSkinnedIcon(SKINICON_OTHER_ADDCONTACT));
-		ImageList_AddIcon(hIml, (HICON)LoadSkinnedIcon(SKINICON_OTHER_DELETE));
-		ImageList_AddIcon(hIml, (HICON)LoadSkinnedIcon(SKINICON_OTHER_UNDO));
-		ListView_SetImageList(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), hIml, LVSIL_SMALL);
+		hIml = ImageList_Create(16, 16, ILC_MASK + (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 3, 1);
+		ImageList_AddIcon_IconLibLoaded(hIml, SKINICON_OTHER_WINDOWS);
+		ImageList_AddIcon_IconLibLoaded(hIml, SKINICON_OTHER_MIRANDA); 
+		ImageList_AddIcon_IconLibLoaded(hIml, SKINICON_OTHER_WINDOW);
+		ImageList_AddIcon_IconLibLoaded(hIml, SKINICON_OTHER_ADDCONTACT);
+		ImageList_AddIcon_IconLibLoaded(hIml, SKINICON_OTHER_DELETE);
+		ImageList_AddIcon_IconLibLoaded(hIml, SKINICON_OTHER_UNDO);
 
-		ListView_SetExtendedListViewStyle(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), LVS_EX_CHECKBOXES|LVS_EX_SUBITEMIMAGES|LVS_EX_FULLROWSELECT|LVS_EX_DOUBLEBUFFER);
+		// This is added to use for drawing operation only
+		ImageList_AddIcon_IconLibLoaded(hIml, SKINICON_OTHER_GROUPOPEN);
+		ImageList_AddIcon_IconLibLoaded(hIml, SKINICON_OTHER_GROUPSHUT);
 
-		GetClientRect(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), &rc);
+		ListView_SetImageList(hwndHotkey, hIml, LVSIL_SMALL);
+
+		ListView_SetExtendedListViewStyle(hwndHotkey, LVS_EX_CHECKBOXES|LVS_EX_SUBITEMIMAGES|LVS_EX_FULLROWSELECT|LVS_EX_DOUBLEBUFFER);
+
+		GetClientRect(hwndHotkey, &rc);
 		colWidth = (rc.right - GetSystemMetrics(SM_CXHTHUMB) - 3*GetSystemMetrics(SM_CXSMICON) - 5)/2;
 
 		lvc.mask = LVCF_WIDTH;
 		lvc.cx = colWidth;
-		ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), COL_NAME, &lvc);
+		ListView_InsertColumn(hwndHotkey, COL_NAME, &lvc);
 		lvc.cx = GetSystemMetrics(SM_CXSMICON);
-		ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), COL_TYPE, &lvc);
+		ListView_InsertColumn(hwndHotkey, COL_TYPE, &lvc);
 		lvc.cx = colWidth;
-		ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), COL_KEY, &lvc);
+		ListView_InsertColumn(hwndHotkey, COL_KEY, &lvc);
 		lvc.cx = GetSystemMetrics(SM_CXSMICON);
-		ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), COL_RESET, &lvc);
+		ListView_InsertColumn(hwndHotkey, COL_RESET, &lvc);
 		lvc.cx = GetSystemMetrics(SM_CXSMICON);
-		ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), COL_ADDREMOVE, &lvc);
+		ListView_InsertColumn(hwndHotkey, COL_ADDREMOVE, &lvc);
 
 		for (i = 0; i < hotkeys.getCount(); i++) {
 			THotkeyItem *item = hotkeys[i];
@@ -796,13 +803,13 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 		}
 
 		currentLanguage = LOWORD(GetKeyboardLayout(0));
-		sttBuildHotkeyList(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), NULL);
+		sttBuildHotkeyList(hwndHotkey, NULL);
 		SetTimer(hwndDlg, 1024, 1000, NULL);
 
 		initialized = TRUE;
 
 		{	/* load group states */
-			int count = ListView_GetItemCount(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS));
+			int count = ListView_GetItemCount(hwndHotkey);
 			TCHAR buf[128];
 			LVITEM lvi = {0};
 			lvi.pszText = buf;
@@ -812,25 +819,19 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 				lvi.mask = LVIF_PARAM;
 				lvi.iSubItem = 0;
-				ListView_GetItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), &lvi);
+				ListView_GetItem(hwndHotkey, &lvi);
 				if (lvi.lParam) continue;
 
 				lvi.mask = LVIF_TEXT;
 				lvi.iSubItem = 1;
-				ListView_GetItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), &lvi);
+				ListView_GetItem(hwndHotkey, &lvi);
 
-				#ifdef _UNICODE
-				szSetting = mir_u2a(lvi.pszText);
-				#else
-				szSetting = lvi.pszText;
-				#endif
+				szSetting = mir_t2a(lvi.pszText);
 
-				ListView_SetCheckState(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), lvi.iItem,
+				ListView_SetCheckState(hwndHotkey, lvi.iItem,
 					DBGetContactSettingByte(NULL, DBMODULENAME "UI", szSetting, TRUE));
 
-				#ifdef _UNICODE
 				mir_free(szSetting);
-				#endif
 			}
 		}
 
@@ -841,7 +842,7 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 	case WM_DESTROY:
 	{
-		int count = ListView_GetItemCount(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS));
+		int count = ListView_GetItemCount(hwndHotkey);
 		TCHAR buf[128];
 		LVITEM lvi = {0};
 
@@ -856,25 +857,19 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 			lvi.mask = LVIF_PARAM;
 			lvi.iSubItem = 0;
-			ListView_GetItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), &lvi);
+			ListView_GetItem(hwndHotkey, &lvi);
 			if (lvi.lParam) continue;
 
 			lvi.mask = LVIF_TEXT;
 			lvi.iSubItem = 1;
-			ListView_GetItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), &lvi);
+			ListView_GetItem(hwndHotkey, &lvi);
 
-			#ifdef _UNICODE
-				szSetting = mir_u2a(lvi.pszText);
-			#else
-				szSetting = lvi.pszText;
-			#endif
+			szSetting = mir_t2a(lvi.pszText);
 
 			DBWriteContactSettingByte(NULL, DBMODULENAME "UI", szSetting,
-				(BYTE) ListView_GetCheckState(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), lvi.iItem));
+				(BYTE) ListView_GetCheckState(hwndHotkey, lvi.iItem));
 
-			#ifdef _UNICODE
-				mir_free(szSetting);
-			#endif
+			mir_free(szSetting);
 		}
 		break;
 	}
@@ -890,13 +885,13 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 		newLanguage = LOWORD(GetKeyboardLayout(0));
 		if (newLanguage == currentLanguage) break;
 
-		count = ListView_GetItemCount(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS));
+		count = ListView_GetItemCount(hwndHotkey);
 		lvi.mask = LVIF_PARAM;
 		for (lvi.iItem = 0; lvi.iItem < count; ++lvi.iItem) {
-			ListView_GetItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), &lvi);
+			ListView_GetItem(hwndHotkey, &lvi);
 			if (!lvi.lParam) continue;
 
-			sttOptionsSetupItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), lvi.iItem, (THotkeyItem *)lvi.lParam);
+			sttOptionsSetupItem(hwndHotkey, lvi.iItem, (THotkeyItem *)lvi.lParam);
 		}
 
 		currentLanguage = newLanguage;
@@ -908,14 +903,14 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 		int count;
 		LVITEM lvi = {0};
 
-		count = ListView_GetItemCount(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS));
+		count = ListView_GetItemCount(hwndHotkey);
 		lvi.mask = LVIF_PARAM;
 		for (lvi.iItem = 0; lvi.iItem < count; ++lvi.iItem) {
-			ListView_GetItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), &lvi);
+			ListView_GetItem(hwndHotkey, &lvi);
 			if (!lvi.lParam) continue;
 
 			if (((THotkeyItem *)lvi.lParam)->UnregisterHotkey) {
-				ListView_DeleteItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), lvi.iItem);
+				ListView_DeleteItem(hwndHotkey, lvi.iItem);
 				--lvi.iItem;
 				--count;
 			}
@@ -931,21 +926,23 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 		int width = (lpdis->rcItem.right - lpdis->rcItem.left - prefix) / 3;
 		rc.left += 5;
 
+		HIMAGELIST hIml = ListView_GetImageList(hwndHotkey, LVSIL_SMALL);
+
 		if (lpdis->CtlID == IDC_CANVAS2) {
 			sttOptionsDrawTextChunk(lpdis->hDC, TranslateT("Scope:"), &rc);
 
 			rc.left = prefix + width * 0;
-			DrawIconEx(lpdis->hDC, rc.left, (rc.top+rc.bottom-16)/2, LoadSkinnedIcon(SKINICON_OTHER_WINDOWS), 16, 16, 0, NULL, DI_NORMAL);
+			ImageList_Draw(hIml, 0, lpdis->hDC, rc.left, (rc.top+rc.bottom-16)/2, ILD_TRANSPARENT);
 			rc.left += 20;
 			sttOptionsDrawTextChunk(lpdis->hDC, TranslateT("System"), &rc);
 
 			rc.left = prefix + width * 1;
-			DrawIconEx(lpdis->hDC, rc.left, (rc.top+rc.bottom-16)/2, LoadSkinnedIcon(SKINICON_OTHER_MIRANDA), 16, 16, 0, NULL, DI_NORMAL);
+			ImageList_Draw(hIml, 1, lpdis->hDC, rc.left, (rc.top+rc.bottom-16)/2, ILD_TRANSPARENT);
 			rc.left += 20;
 			sttOptionsDrawTextChunk(lpdis->hDC, TranslateT("Miranda"), &rc);
 
 			rc.left = prefix + width * 2;
-			DrawIconEx(lpdis->hDC, rc.left, (rc.top+rc.bottom-16)/2, LoadSkinnedIcon(SKINICON_OTHER_WINDOW), 16, 16, 0, NULL, DI_NORMAL);
+			ImageList_Draw(hIml, 2, lpdis->hDC, rc.left, (rc.top+rc.bottom-16)/2, ILD_TRANSPARENT);
 			rc.left += 20;
 			sttOptionsDrawTextChunk(lpdis->hDC, TranslateT("Window"), &rc);
 
@@ -957,17 +954,17 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 			rc.left += 10;
 
 			rc.left = prefix + width * 0;
-			DrawIconEx(lpdis->hDC, rc.left, (rc.top+rc.bottom-16)/2, LoadSkinnedIcon(SKINICON_OTHER_UNDO), 16, 16, 0, NULL, DI_NORMAL);
+			ImageList_Draw(hIml, 5, lpdis->hDC, rc.left, (rc.top+rc.bottom-16)/2, ILD_TRANSPARENT);
 			rc.left += 20;
 			sttOptionsDrawTextChunk(lpdis->hDC, TranslateT("Undo"), &rc);
 
 			rc.left = prefix + width * 1;
-			DrawIconEx(lpdis->hDC, rc.left, (rc.top+rc.bottom-16)/2, LoadSkinnedIcon(SKINICON_OTHER_ADDCONTACT), 16, 16, 0, NULL, DI_NORMAL);
+			ImageList_Draw(hIml, 3, lpdis->hDC, rc.left, (rc.top+rc.bottom-16)/2, ILD_TRANSPARENT);
 			rc.left += 20;
 			sttOptionsDrawTextChunk(lpdis->hDC, TranslateT("Add binding"), &rc);
 
 			rc.left = prefix + width * 2;
-			DrawIconEx(lpdis->hDC, rc.left, (rc.top+rc.bottom-16)/2, LoadSkinnedIcon(SKINICON_OTHER_DELETE), 16, 16, 0, NULL, DI_NORMAL);
+			ImageList_Draw(hIml, 4, lpdis->hDC, rc.left, (rc.top+rc.bottom-16)/2, ILD_TRANSPARENT);
 			rc.left += 20;
 			sttOptionsDrawTextChunk(lpdis->hDC, TranslateT("Remove"), &rc);
 
@@ -984,18 +981,18 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 			WORD wHotkey = (WORD)SendDlgItemMessage(hwndDlg, IDC_HOTKEY, HKM_GETHOTKEY, 0, 0);
 
 			ShowWindow(GetDlgItem(hwndDlg, IDC_HOTKEY), SW_HIDE);
-			SetFocus(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS));
+			SetFocus(hwndHotkey);
 			if ( !wHotkey || (wHotkey == VK_ESCAPE) || (HIWORD(wParam) != 0 ))
 				break;
 
 			lvi.mask = LVIF_PARAM;
-			lvi.iItem = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), -1, LVNI_SELECTED);
+			lvi.iItem = ListView_GetNextItem(hwndHotkey, -1, LVNI_SELECTED);
 			if (lvi.iItem >= 0) {
-				ListView_GetItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), &lvi);
+				ListView_GetItem(hwndHotkey, &lvi);
 				if (item = (THotkeyItem *)lvi.lParam) {
 					item->OptHotkey = wHotkey;
 
-					sttOptionsSetupItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), lvi.iItem, item);
+					sttOptionsSetupItem(hwndHotkey, lvi.iItem, item);
 					sttOptionsSetChanged(item);
 					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 		}	}	}
@@ -1009,7 +1006,7 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 			LVITEM lvi = {0};
 			THotkeyItem *item = NULL;
 
-			lvi.iItem = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), -1, LVNI_SELECTED);
+			lvi.iItem = ListView_GetNextItem(hwndHotkey, -1, LVNI_SELECTED);
 			if (lvi.iItem < 0) return FALSE;
 
 			lvi.mask = LVIF_PARAM;
@@ -1056,7 +1053,7 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 				switch (TrackPopupMenu(hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL)) {
 				case MI_CHANGE:
-					sttOptionsStartEdit(hwndDlg);
+					sttOptionsStartEdit(hwndDlg, hwndHotkey);
 					break;
 				case MI_SYSTEM:
 					item->OptType = HKT_GLOBAL;
@@ -1119,7 +1116,7 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 				if (lpnmhdr->code == PSN_APPLY)
 				{
 					LVITEM lvi = {0};
-					int count = ListView_GetItemCount(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS));
+					int count = ListView_GetItemCount(hwndHotkey);
 
 					for (i = 0; i < hotkeys.getCount(); i++)
 						sttOptionsSaveItem(hotkeys[i]);
@@ -1128,7 +1125,7 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 					lvi.iSubItem = COL_RESET;
 					lvi.iImage = -1;
 					for (lvi.iItem = 0; lvi.iItem < count; ++lvi.iItem)
-						ListView_SetItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), &lvi);
+						ListView_SetItem(hwndHotkey, &lvi);
 				}
 
 				sttRegisterHotkeys();
@@ -1203,7 +1200,7 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 						}
 					} 
 					else if (param->wVKey == VK_F2)
-						sttOptionsStartEdit(hwndDlg);
+						sttOptionsStartEdit(hwndDlg, hwndHotkey);
 
 					break;
 				}
@@ -1216,7 +1213,7 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 					ListView_GetItem(lpnmhdr->hwndFrom, &lvi);
 
 					if (lvi.lParam)
-						sttOptionsStartEdit(hwndDlg);
+						sttOptionsStartEdit(hwndDlg, hwndHotkey);
 					else
 						ListView_SetCheckState(lpnmhdr->hwndFrom, lvi.iItem, !ListView_GetCheckState(lpnmhdr->hwndFrom, lvi.iItem));
 					break;
@@ -1311,11 +1308,10 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 								if (param->iSubItem == 0) {
 									rc.left += 3;
-									DrawIconEx(param->nmcd.hdc, rc.left, (rc.top+rc.bottom-16)/2,
-										LoadSkinnedIcon(
-											ListView_GetCheckState(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), lvi.iItem) ?
-												SKINICON_OTHER_GROUPOPEN : SKINICON_OTHER_GROUPSHUT),
-										16, 16, 0, NULL, DI_NORMAL);
+									HIMAGELIST hIml = ListView_GetImageList(hwndHotkey, LVSIL_SMALL);
+									ImageList_Draw(hIml, 
+										ListView_GetCheckState(hwndHotkey, lvi.iItem) ? 6 : 7, 
+										param->nmcd.hdc, rc.left, (rc.top+rc.bottom-16)/2, ILD_TRANSPARENT);
 									rc.left += 18;
 									hfnt = ( HFONT )SelectObject(param->nmcd.hdc, (HFONT)SendMessage(GetParent(hwndDlg), PSM_GETBOLDFONT, 0, 0));
 									DrawText(param->nmcd.hdc, buf, -1, &rc, DT_LEFT|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER);
