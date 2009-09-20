@@ -771,8 +771,11 @@ int __cdecl CMsnProto::GetInfo(HANDLE hContact, int infoType)
 HICON __cdecl CMsnProto::GetIcon(int iconIndex)
 {
 	if (LOWORD(iconIndex) == PLI_PROTOCOL)
-		return CopyIcon(LoadIconEx("main"));
-
+	{
+		HICON hIcon =  CopyIcon(LoadIconEx("main"));
+		ReleaseIconEx("main");
+		return hIcon;
+	}
 	return NULL;
 }
 
