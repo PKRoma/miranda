@@ -957,7 +957,7 @@ static void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, 
 		if (bBody) {
 			if(PluginConfig.m_bIsVista) {
 				rcItem->right += 2;							// hide right tab sheet shadow (only draw the actual border line)
-				rcItem->bottom += 2;
+				rcItem->bottom += 1;
 			}
 			DrawThemesPart(tabdat, pDC, 9, 0, rcItem);	// TABP_PANE id = 9
 		} else {
@@ -1060,7 +1060,6 @@ static void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, 
 
 		if(PluginConfig.m_bIsVista)	{								// hide right tab sheet shadow (only draw the actual border line)
 			rcItem->right += 2;
-			rcItem->bottom += 2;
 		}
 
 		tempItem.Render(pDC, rcItem, true);

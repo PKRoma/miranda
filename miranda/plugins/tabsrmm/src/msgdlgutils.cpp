@@ -791,8 +791,10 @@ int GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
 					}
 				}
 				if (!PluginConfig.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndPanelPic) {
-					dat->hwndPanelPicParent =CreateWindowEx(WS_EX_TOPMOST, _T("Static"), _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, hwndDlg, (HMENU)0, NULL, NULL);
-					dat->hwndPanelPic = CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, dat->hwndPanelPicParent, (HMENU)0, NULL, NULL);
+					dat->hwndPanelPicParent =CreateWindowEx(WS_EX_TOPMOST, _T("Static"), _T(""), SS_OWNERDRAW | WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, hwndDlg, (HMENU)6000, NULL, NULL);
+					dat->hwndPanelPic = CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, dat->hwndPanelPicParent, (HMENU)7000, NULL, NULL);
+					if(dat->hwndPanelPic)
+						SendMessage(dat->hwndPanelPic, AVATAR_SETAEROCOMPATDRAWING, 0, TRUE);
 				}
 				if ((hbm && hbm != PluginConfig.g_hbmUnknown) || (fa.hWindow != NULL))
 					dat->showInfoPic = 1;
@@ -2039,7 +2041,40 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		DeleteObject(col);
 		return TRUE;
 	}
+	/*
+	 * parent window of the infopanel ACC control
+	 */
+	else if (dis->hwndItem == dat->hwndPanelPicParent) {
+		if(M->isAero() && CMimAPI::m_haveBufferedPaint) {
+			HDC		hdc, hdcMem;
+			HBITMAP hbm, hbmOld;
+			LONG	cx = dis->rcItem.right - dis->rcItem.left;
+			LONG	cy = dis->rcItem.bottom - dis->rcItem.top;
 
+			dis->rcItem.left -= 3; dis->rcItem.right += 3;
+			hdc = CreateCompatibleDC(dis->hDC);
+			hbm = CSkin::CreateAeroCompatibleBitmap(dis->rcItem, dis->hDC);
+			hbmOld = (HBITMAP)SelectObject(hdc, hbm);
+
+			if(CSkin::m_pCurrentAeroEffect == 0)
+				FillRect(hdc, &dis->rcItem, (HBRUSH)GetStockObject(BLACK_BRUSH));
+			else {
+				if(CSkin::m_pCurrentAeroEffect->m_finalAlpha == 0)
+					CSkin::ApplyAeroEffect(hdc, &dis->rcItem, CSkin::AERO_EFFECT_AREA_INFOPANEL, 0);
+				else
+					CSkin::ApplyAeroEffect(hdc, &dis->rcItem, CSkin::AERO_EFFECT_AREA_INFOPANEL, 0);
+			}
+			BitBlt(dis->hDC, 0, 0, cx, cy, hdc, 0, 0, SRCCOPY);
+			SelectObject(hdc, hbmOld);
+			DeleteObject(hbm);
+			DeleteDC(hdc);
+		}
+		else {
+			dis->rcItem.left -= 3; dis->rcItem.right += 3;
+			dat->Panel->renderBG(dis->hDC, dis->rcItem, &SkinItems[ID_EXTBKINFOPANELBG], false);
+		}
+		return(TRUE);
+	}
 	else if ((dis->hwndItem == GetDlgItem(hwndDlg, IDC_CONTACTPIC) && (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown) && dat->showPic) || (dis->hwndItem == hwndDlg && dat->Panel->isActive() && (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown))) {
 		HBRUSH hOldBrush;
 		BITMAP bminfo;
@@ -2078,8 +2113,8 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 						dat->hwndPanelPicParent = 0;
 					}
 					if (!PluginConfig.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndPanelPic) {
-						dat->hwndPanelPicParent =CreateWindowEx(WS_EX_TOPMOST, _T("Static"), _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, hwndDlg, (HMENU)0, NULL, NULL);
-						dat->hwndPanelPic = CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, dat->hwndPanelPicParent, (HMENU)0, NULL, NULL);
+						dat->hwndPanelPicParent =CreateWindowEx(WS_EX_TOPMOST, _T("Static"), _T(""), SS_OWNERDRAW | WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, hwndDlg, (HMENU)6000, NULL, NULL);
+						dat->hwndPanelPic = CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, dat->hwndPanelPicParent, (HMENU)7000, NULL, NULL);
 						SendMessage(dat->hwndPanelPic, AVATAR_SETCONTACT, (WPARAM)0, (LPARAM)dat->hContact);
 					}
 				} else {
@@ -2256,6 +2291,8 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 					}
 				}
 				if(dat->hwndPanelPic) {
+					SendMessage(dat->hwndPanelPic, AVATAR_SETAEROCOMPATDRAWING, 0, fAero ? TRUE : FALSE);
+
 					SetWindowPos(dat->hwndPanelPicParent, HWND_TOP, rcClient.left + rcFrame.left + border_off, rcClient.top + rcFrame.top + border_off,
 								 rb.max_width, rb.max_height, SWP_SHOWWINDOW);
 
