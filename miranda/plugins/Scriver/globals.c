@@ -126,7 +126,9 @@ void LoadGlobalIcons() {
 		ImageList_SetOverlayImage(g_dat->hHelperIconList, overlayIcon, 1);
 	}
 	for (i=0; i<IDI_FOODNETWORK - IDI_GOOGLE + 1; i++) {
-		ImageList_AddIcon(g_dat->hSearchEngineIconList, LoadImage(g_hInst,MAKEINTRESOURCE(IDI_GOOGLE + i),IMAGE_ICON,0,0,LR_SHARED));
+		HICON hIcon = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_GOOGLE + i), IMAGE_ICON, 0, 0, 0);
+		ImageList_AddIcon(g_dat->hSearchEngineIconList, hIcon);
+		DestroyIcon(hIcon);
 	}
 }
 
