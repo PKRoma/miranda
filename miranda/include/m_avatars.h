@@ -102,6 +102,7 @@ struct CacheNode {
 #define AVDRQ_DONTRESIZEIFSMALLER      0x0100        // don't resize images that are smaller then the draw area
 #define AVDRQ_FORCEFASTALPHA           0x0200        // force rendering with simple AlphaBlend (will use FI_Resample otherwise)
 #define AVDRQ_FORCEALPHA               0x0400        // force with simple AlphaBlend (may use StretchBlt otherwise)
+#define AVDRQ_AERO					   0x0800		 // draw on aero surface
 
 // request to draw a contacts picture. See MS_AV_DRAWAVATAR service description
 

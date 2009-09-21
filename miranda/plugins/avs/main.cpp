@@ -2292,6 +2292,7 @@ void InternalDrawAvatar(AVATARDRAWREQUEST *r, HBITMAP hbm, LONG bmWidth, LONG bm
 	// create the region for the avatar border - use the same region for clipping, if needed.
 
 	oldRgn = CreateRectRgn(0,0,1,1);
+
 	if (GetClipRgn(r->hTargetDC, oldRgn) != 1)
 	{
 		DeleteObject(oldRgn);
@@ -2308,18 +2309,19 @@ void InternalDrawAvatar(AVATARDRAWREQUEST *r, HBITMAP hbm, LONG bmWidth, LONG bm
 	bf.SourceConstantAlpha = r->alpha > 0 ? r->alpha : 255;
 	bf.AlphaFormat = dwFlags & AVS_PREMULTIPLIED ? AC_SRC_ALPHA : 0;
 
-	SetStretchBltMode(r->hTargetDC, HALFTONE);
-	if (r->dwFlags & AVDRQ_FORCEFASTALPHA)
-	{
+	if(!(r->dwFlags & AVDRQ_AERO))
+		SetStretchBltMode(r->hTargetDC, HALFTONE);
+	//else
+	//	FillRect(r->hTargetDC, &r->rcDraw, (HBRUSH)GetStockObject(BLACK_BRUSH));
+
+	if (r->dwFlags & AVDRQ_FORCEFASTALPHA && !(r->dwFlags & AVDRQ_AERO)) {
 		AlphaBlend(
 			r->hTargetDC, r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, newWidth, newHeight,
 			hdcAvatar, 0, 0, bmWidth, bmHeight, bf);
-	} else
-		if(bf.SourceConstantAlpha == 255 && bf.AlphaFormat == 0 && !(r->dwFlags & AVDRQ_FORCEALPHA))
-		{
+	} else {
+		if(bf.SourceConstantAlpha == 255 && bf.AlphaFormat == 0 && !(r->dwFlags & AVDRQ_FORCEALPHA) && !(r->dwFlags & AVDRQ_AERO)) {
 			StretchBlt(r->hTargetDC, r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, newWidth, newHeight, hdcAvatar, 0, 0, bmWidth, bmHeight, SRCCOPY);
-		} else
-		{
+		} else {
 			/*
 			* get around SUCKY AlphaBlend() rescaling quality...
 			*/
@@ -2356,6 +2358,7 @@ void InternalDrawAvatar(AVATARDRAWREQUEST *r, HBITMAP hbm, LONG bmWidth, LONG bm
 
 		SelectObject(hdcAvatar, hbmMem);
 		DeleteDC(hdcAvatar);
+	}
 }
 
 INT_PTR DrawAvatarPicture(WPARAM wParam, LPARAM lParam)
