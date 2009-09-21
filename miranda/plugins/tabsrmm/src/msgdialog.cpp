@@ -622,7 +622,6 @@ void SetDialogToType(HWND hwndDlg)
 
 	if (!PluginConfig.g_FlashAvatarAvail) {
 		EnableWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), FALSE);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_PANELPIC), FALSE);
 	}
 
 	ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLESIDEBAR), dat->pContainer->SideBar->isActive() ? SW_SHOW : SW_HIDE);
@@ -1351,7 +1350,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 	BOOL bBottomToolbar = dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR ? 1 : 0;
 
 	int 	panelHeight = dat->Panel->getHeight() + 1;
-	int 	panelWidth = (dat->panelWidth != -1 ? dat->panelWidth + 2 : 0);
 	int 	s_offset = 0;
 	bool 	fInfoPanel = dat->Panel->isActive();
 	bool	fErrorState = (dat->dwFlags & MWF_ERRORSTATE) ? true : false;
@@ -1410,57 +1408,12 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 				}
 			}
 			return RD_ANCHORX_WIDTH | RD_ANCHORY_HEIGHT;
-		case IDC_PANELPIC:
-			urc->rcItem.top = 1;
-			urc->rcItem.left = urc->rcItem.right - (panelWidth > 0 ? panelWidth - 2 : panelHeight + 2);
-			urc->rcItem.bottom = urc->rcItem.top + (panelHeight - 3);
-
-			//Bolshevik: resizes avatar control
-			if( dat->hwndPanelPic ) //if Panel control was created?
- 				SetWindowPos(dat->hwndPanelPic, HWND_TOP, 1, 1,  //resizes it
- 				urc->rcItem.right-urc->rcItem.left-2,
- 				urc->rcItem.bottom-urc->rcItem.top-2, SWP_SHOWWINDOW);
-			//Bolshevik_
-			if (PluginConfig.g_FlashAvatarAvail) {
-				RECT rc = { urc->rcItem.left,  urc->rcItem.top, urc->rcItem.right, urc->rcItem.bottom };
-				if (fInfoPanel) {
-					FLASHAVATAR fa = {0};
-
-					fa.hContact = dat->hContact;
-					fa.id = 25367;
-					fa.cProto = dat->szProto;
-					CallService(MS_FAVATAR_RESIZE, (WPARAM)&fa, (LPARAM)&rc);
-				}
-			}
-			return RD_ANCHORX_RIGHT | RD_ANCHORY_TOP;
-		case IDC_PANELSTATUS: {
-			urc->rcItem.right = urc->dlgNewSize.cx - panelWidth;
-			urc->rcItem.left = urc->dlgNewSize.cx - panelWidth - dat->panelStatusCX;
-			urc->rcItem.bottom = panelHeight - 1;
-			urc->rcItem.top = urc->rcItem.bottom - dat->ipFieldHeight;
-			return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
-		}
-		case IDC_PANELNICK: {
-			RECT	rcStatus;
-			GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), &rcStatus);
-			urc->rcItem.left = panelHeight <= CInfoPanel::LEFT_OFFSET_LOGO ? panelHeight : CInfoPanel::LEFT_OFFSET_LOGO;
-			urc->rcItem.right = urc->dlgNewSize.cx - panelWidth - (panelHeight <= CInfoPanel::DEGRADE_THRESHOLD ? (rcStatus.right - rcStatus.left) + 3 : 0);
-			urc->rcItem.bottom = panelHeight - 3 - (panelHeight > CInfoPanel::DEGRADE_THRESHOLD ? dat->ipFieldHeight : 0) - 1;;
-			return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
-		}
-		case IDC_PANELUIN: {
-			urc->rcItem.left = panelHeight <= CInfoPanel::LEFT_OFFSET_LOGO ? panelHeight : CInfoPanel::LEFT_OFFSET_LOGO;
-			urc->rcItem.right = urc->dlgNewSize.cx - (panelWidth + 2) - dat->panelStatusCX;
-			urc->rcItem.bottom = panelHeight - 1;
-			urc->rcItem.top = urc->rcItem.bottom - dat->ipFieldHeight;
-			return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
-		}
 		case IDC_CONTACTPIC:{
 			RECT rc;
 			GetClientRect(GetDlgItem(hwndDlg, IDC_MESSAGE), &rc);
 			urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
 			urc->rcItem.left = urc->rcItem.right - (dat->pic.cx + 2);
-			if ((urc->rcItem.bottom - urc->rcItem.top) < (dat->pic.cy + 2) && dat->showPic) {
+			if ((urc->rcItem.bottom - urc->rcItem.top) < (dat->pic.cy/* + 2*/) && dat->showPic) {
 				urc->rcItem.top = urc->rcItem.bottom - dat->pic.cy;
 				dat->fMustOffset = TRUE;
 			} else
@@ -1856,7 +1809,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			OldMessageEditProc = (WNDPROC) SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MESSAGE), GWLP_WNDPROC, (LONG_PTR) MessageEditSubclassProc);
 
 			OldAvatarWndProc = (WNDPROC) SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CONTACTPIC), GWLP_WNDPROC, (LONG_PTR) AvatarSubclassProc);
-			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_PANELPIC), GWLP_WNDPROC, (LONG_PTR) AvatarSubclassProc);
 
 			OldSplitterProc = (WNDPROC) SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWLP_WNDPROC, (LONG_PTR) SplitterSubclassProc);
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), GWLP_WNDPROC, (LONG_PTR) SplitterSubclassProc);
@@ -2113,7 +2065,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			RECT rc;
 			int saved = 0;
 			HBITMAP hbm = ((dat->Panel->isActive()) && PluginConfig.m_AvatarMode != 5) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
-			RECT rcPanelBottom;
 
 			if (IsIconic(hwndDlg))
 				break;
@@ -2125,10 +2076,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			urd.lpTemplate = MAKEINTRESOURCEA(IDD_MSGSPLITNEW);
 			urd.pfnResizer = MessageDialogResize;
 
-			if (dat->ipFieldHeight == 0) {
-				GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELUIN), &rcPanelBottom);
-				dat->ipFieldHeight = rcPanelBottom.bottom - rcPanelBottom.top;
-			}
+			if (dat->ipFieldHeight == 0)
+				dat->ipFieldHeight = CInfoPanel::m_ipConfig.height2;
 
 			if (dat->uMinHeight > 0 && HIWORD(lParam) >= dat->uMinHeight) {
 				if (dat->splitterY > HIWORD(lParam) - DPISCALEY(MINLOGHEIGHT)) {
@@ -2148,6 +2097,51 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			GetClientRect(hwndDlg, &rc);
 			CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM) & urd);
 			BB_SetButtonsPos(hwndDlg,dat);
+
+			/*
+			 * size info panel fields
+			 */
+
+			LONG	cx = rc.right;
+			LONG	panelHeight = dat->Panel->getHeight();
+			LONG 	panelWidth = (dat->panelWidth != -1 ? dat->panelWidth + 2 : 0);
+
+			rc.top = 1;
+			rc.left = cx - (panelWidth > 0 ? panelWidth - 2 : panelHeight + 2);
+			rc.bottom = rc.top + (panelHeight - 3);
+			rc.right = cx;
+			rc.left--; rc.bottom++;
+
+			if (PluginConfig.g_FlashAvatarAvail) {
+				RECT rc1 = { rc.left,  rc.top, rc.right, rc.bottom };
+				if (dat->Panel->isActive()) {
+					FLASHAVATAR fa = {0};
+
+					fa.hContact = dat->hContact;
+					fa.id = 25367;
+					fa.cProto = dat->szProto;
+					CallService(MS_FAVATAR_RESIZE, (WPARAM)&fa, (LPARAM)&rc1);
+				}
+			}
+			dat->rcPic = rc;
+
+			rc.right = cx - panelWidth;
+			rc.left = cx - panelWidth - dat->panelStatusCX;
+			rc.bottom = panelHeight - 2;
+			rc.top = rc.bottom - dat->ipFieldHeight;
+			dat->rcStatus = rc;
+
+			rc.left = panelHeight <= CInfoPanel::LEFT_OFFSET_LOGO ? panelHeight : CInfoPanel::LEFT_OFFSET_LOGO;
+			rc.right = cx - dat->panelWidth - (panelHeight <= CInfoPanel::DEGRADE_THRESHOLD ? (dat->rcStatus.right - dat->rcStatus.left) + 3 : 0);
+			rc.bottom = panelHeight - (panelHeight >= CInfoPanel::DEGRADE_THRESHOLD ? dat->ipFieldHeight : 0) - 1;;
+			rc.top = 1;
+			dat->rcNick = rc;
+
+			rc.left = panelHeight <= CInfoPanel::LEFT_OFFSET_LOGO ? panelHeight : CInfoPanel::LEFT_OFFSET_LOGO;
+			rc.right = cx - (dat->panelWidth + 2) - dat->panelStatusCX;
+			rc.bottom = panelHeight - 2;
+			rc.top = rc.bottom - dat->ipFieldHeight;
+			dat->rcUIN = rc;
 
 			if (GetDlgItem(hwndDlg, IDC_CLIST) != 0) {
 				RECT rc, rcClient, rcLog;
@@ -2876,9 +2870,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					bottomtoolbarH = 22;
 				//
 				if (dat->splitterY < (DPISCALEY_S(MINSPLITTERY) + 5 + bottomtoolbarH)) {	// min splitter size
-					/*dat->splitterY = oldSplitterY;
-					dat->dynaSplitter = oldDynaSplitter;
-					DM_RecalcPictureSize(hwndDlg, dat); */
 					dat->splitterY = (DPISCALEY_S(MINSPLITTERY) + 5 + bottomtoolbarH);
 					dat->dynaSplitter = dat->splitterY - DPISCALEY(34);
 					DM_RecalcPictureSize(dat);
@@ -3155,14 +3146,13 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			if (wParam >= TIMERID_AWAYMSG && wParam <= TIMERID_AWAYMSG + 2) {
 				POINT pt;
-				RECT rc, rcNick;
 
 				KillTimer(hwndDlg, wParam);
 				dat->dwFlagsEx &= ~MWF_SHOW_AWAYMSGTIMER;
 				GetCursorPos(&pt);
-				GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), &rc);
-				GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELNICK), &rcNick);
-				if (wParam == TIMERID_AWAYMSG + 2 && PtInRect(&rc, pt) && pt.x >= rc.right - 20) {
+				ScreenToClient(hwndDlg, &pt);
+
+				if (wParam == TIMERID_AWAYMSG + 2 && PtInRect(&dat->rcStatus, pt) && pt.x >= dat->rcStatus.right - 20) {
 					DBVARIANT dbv = {0};
 
 					if (!M->GetTString(dat->hContact, dat->szProto, "MirVer", &dbv)) {
@@ -3171,9 +3161,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					} else
 						SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_PANELSTATUS + 1,
 									(LPARAM)CTranslator::get(CTranslator::GEN_MSG_UNKNOWNCLIENT));
-				} else if (wParam == TIMERID_AWAYMSG && PtInRect(&rc, pt)) {
+				} else if (wParam == TIMERID_AWAYMSG && PtInRect(&dat->rcStatus, pt)) {
 					SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, 0, 0);
-				} else if (wParam == (TIMERID_AWAYMSG + 1) && PtInRect(&rcNick, pt) && dat->xStatus > 0) {
+				} else if (wParam == (TIMERID_AWAYMSG + 1) && PtInRect(&dat->rcNick, pt) && dat->xStatus > 0) {
 					TCHAR szBuffer[1025];
 					DBVARIANT dbv;
 					mir_sntprintf(szBuffer, safe_sizeof(szBuffer), CTranslator::get(CTranslator::GEN_MSG_NOXSTATUSMSG));
@@ -3445,12 +3435,10 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			int iSelection;
 			HMENU subMenu;
 			int isHandled;
-			RECT rcPicture, rcPanelPicture, rcPanelNick;
+			RECT rcPicture, rcPanelNick = {0};
 			int menuID = 0;
 
 			GetWindowRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), &rcPicture);
-			GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELPIC), &rcPanelPicture);
-			GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELNICK), &rcPanelNick);
 			rcPanelNick.left = rcPanelNick.right - 30;
 			GetCursorPos(&pt);
 
@@ -4472,35 +4460,6 @@ quote_from_last:
 		case WM_NEXTDLGCTL:
 			if (dat->dwFlags & MWF_WASBACKGROUNDCREATE)
 				return 1;
-			/*
-			if (!LOWORD(lParam)) {
-				if (wParam == 0) {      // next ctrl to get the focus
-					if (GetNextDlgTabItem(hwndDlg, GetFocus(), FALSE) == GetDlgItem(hwndDlg, IDC_MESSAGE)) {
-						SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
-						return 1;
-					}
-					if (GetNextDlgTabItem(hwndDlg, GetFocus(), FALSE) == GetDlgItem(hwndDlg, IDC_LOG)) {
-						SetFocus(GetDlgItem(hwndDlg, IDC_LOG));
-						return 1;
-					}
-				} else {
-					if (GetNextDlgTabItem(hwndDlg, GetFocus(), TRUE) == GetDlgItem(hwndDlg, IDC_MESSAGE)) {
-						SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
-						return 1;
-					}
-					if (GetNextDlgTabItem(hwndDlg, GetFocus(), TRUE) == GetDlgItem(hwndDlg, IDC_LOG)) {
-						SetFocus(GetDlgItem(hwndDlg, IDC_LOG));
-						return 1;
-					}
-				}
-			} else {
-				if ((HWND)wParam == GetDlgItem(hwndDlg, IDC_MESSAGE)) {
-					SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
-					return 1;
-				}
-			}
-			return 0;
-			*/
 			break;
 			/*
 			 * save the contents of the log as rtf file
@@ -4606,7 +4565,6 @@ quote_from_last:
 			dat->panelWidth = -1;				// force new size calculations
 			ShowPicture(dat, TRUE);
 			if (dat->Panel->isActive()) {
-				InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELPIC), NULL, TRUE);
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
 			}
 			return 0;
@@ -4895,16 +4853,15 @@ quote_from_last:
 				fa.cProto = dat->szProto;
 				CallService(MS_FAVATAR_DESTROY, (WPARAM)&fa, 0);
 			}
-			//MAD
+
 			if(dat->hwndContactPic)
-				{
-					DestroyWindow(dat->hwndContactPic);
-				}
-			if(dat->hwndPanelPic)
-				{
-					DestroyWindow(dat->hwndPanelPic);
-				}
-			//
+				DestroyWindow(dat->hwndContactPic);
+
+			if(dat->hwndPanelPic) {
+				DestroyWindow(dat->hwndPanelPic);
+				DestroyWindow(dat->hwndPanelPicParent);
+			}
+
 			if (!dat->bWasDeleted) {
 				TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING, 0);
 				AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 1, PluginConfig.g_hMenuRecent, dat->codePage);
@@ -5005,7 +4962,6 @@ quote_from_last:
 
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWLP_WNDPROC, (LONG_PTR) OldSplitterProc);
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CONTACTPIC), GWLP_WNDPROC, (LONG_PTR) OldAvatarWndProc);
-			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_PANELPIC), GWLP_WNDPROC, (LONG_PTR) OldAvatarWndProc);
 
 			/* remove temporary contacts... */
 

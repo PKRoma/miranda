@@ -1390,7 +1390,6 @@ static int AvatarChanged(WPARAM wParam, LPARAM lParam)
 			if (dat->showPic == 0 || dat->showInfoPic == 0)
 				GetAvatarVisibility(hwnd, dat);
 			if(dat->hwndPanelPic) {
-				ShowWindow(GetDlgItem(dat->hwnd, IDC_PANELPIC), SW_SHOW);
 				dat->panelWidth = -1;				// force new size calculations (not for flash avatars)
 				SendMessage(dat->hwnd, WM_SIZE, 0, 1);
 			}

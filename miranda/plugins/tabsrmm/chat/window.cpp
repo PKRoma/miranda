@@ -386,7 +386,6 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct _MessageWindowData *dat,
 	BB_SetButtonsPos(hwndDlg,dat);
 }
 
-
 /*
  * initialize button bar, set all the icons and ensure proper button state
  */
@@ -415,11 +414,6 @@ static void	InitButtons(HWND hwndDlg, SESSION_INFO* si)
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CHANMGR), pInfo->bChanMgr);
 	}
 }
-
-static UINT _toolbarCtrls[] = { IDC_SMILEYBTN, IDC_CHAT_BOLD, IDC_CHAT_UNDERLINE, IDC_ITALICS, IDC_COLOR, IDC_BKGCOLOR,
-								IDC_CHAT_HISTORY, IDC_SHOWNICKLIST, IDC_FILTER, IDC_CHANMGR, IDOK, IDC_CHAT_CLOSE, 0
-							  };
-
 
 static void Chat_ResizeIeView(const _MessageWindowData *dat)
 {
@@ -500,19 +494,6 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 			urc->rcItem.bottom = panelHeight;
 			urc->rcItem.top = panelHeight - 2;
 			return RD_ANCHORX_WIDTH | RD_ANCHORY_TOP;
-		case IDC_PANELNICK: {
-			urc->rcItem.left = panelHeight <= CInfoPanel::LEFT_OFFSET_LOGO ? panelHeight : CInfoPanel::LEFT_OFFSET_LOGO;
-			urc->rcItem.right = urc->dlgNewSize.cx;
-			urc->rcItem.bottom = (panelHeight > CInfoPanel::DEGRADE_THRESHOLD ? urc->rcItem.top + dat->ipFieldHeight : panelHeight - 1);
-			return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
-		}
-		case IDC_PANELUIN: {
-			urc->rcItem.left = panelHeight <= CInfoPanel::LEFT_OFFSET_LOGO ? panelHeight : CInfoPanel::LEFT_OFFSET_LOGO;
-			urc->rcItem.right = urc->dlgNewSize.cx;
-			urc->rcItem.bottom = panelHeight - 1;
-			urc->rcItem.top = dat->ipFieldHeight + 1;;
-			return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
-		}
 		case IDC_CHAT_LOG:
 			urc->rcItem.top = 0;
 			urc->rcItem.left = 0;
@@ -2146,17 +2127,18 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			}
 
 		case GC_SETWNDPROPS: {
-			HICON hIcon;
+			//HICON hIcon;
 			COLORREF colour = M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
 			InitButtons(hwndDlg, si);
 			ConfigureSmileyButton(hwndDlg, dat);
+			/*
 			hIcon = si->wStatus == ID_STATUS_ONLINE ? MM_FindModule(si->pszModule)->hOnlineIcon : MM_FindModule(si->pszModule)->hOfflineIcon;
 			// stupid hack to make icons show. I dunno why this is needed currently
 			if (!hIcon) {
 				MM_IconsChanged();
 				hIcon = si->wStatus == ID_STATUS_ONLINE ? MM_FindModule(si->pszModule)->hOnlineIcon : MM_FindModule(si->pszModule)->hOfflineIcon;
 			}
-
+			*/
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETBKGNDCOLOR, 0, colour);
 
 			{ //messagebox
@@ -2320,7 +2302,10 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			break;
 
 		case WM_SIZE: {
-			UTILRESIZEDIALOG urd;
+			UTILRESIZEDIALOG 	urd;
+			RECT				rc;
+			int 				panelHeight = dat->Panel->getHeight() + 1;
+			LONG				cx;
 
 			if (dat->ipFieldHeight == 0)
 				dat->ipFieldHeight = CInfoPanel::m_ipConfig.height1;
@@ -2339,6 +2324,21 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM)&urd);
 			//mad
 			BB_SetButtonsPos(hwndDlg,dat);
+
+			GetClientRect(hwndDlg, &rc);
+			cx = rc.right;
+
+			rc.left = panelHeight <= CInfoPanel::LEFT_OFFSET_LOGO ? panelHeight : CInfoPanel::LEFT_OFFSET_LOGO;
+			rc.right = cx;
+			rc.bottom = (panelHeight > CInfoPanel::DEGRADE_THRESHOLD ? rc.top + dat->ipFieldHeight : panelHeight - 1);
+			rc.top = 1;
+			dat->rcNick = rc;
+
+			rc.left = panelHeight <= CInfoPanel::LEFT_OFFSET_LOGO ? panelHeight : CInfoPanel::LEFT_OFFSET_LOGO;
+			rc.right = cx;
+			rc.bottom = panelHeight - 2;
+			rc.top = rc.bottom - dat->ipFieldHeight;
+			dat->rcUIN = rc;
 
 			if (dat->hwndIEView || dat->hwndHPP)
 				Chat_ResizeIeView(dat);
@@ -3467,6 +3467,7 @@ LABEL_SHOWWINDOW:
 
 			GetClientRect(hwndDlg, &rc);
 			dat->Panel->renderBG(hdcMem, rc, &SkinItems[ID_EXTBKINFOPANELBG], fAero);
+
 
 			dat->Panel->renderContent(hdcMem);
 

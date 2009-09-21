@@ -108,6 +108,7 @@ private:
 	bool		m_isAero;
 	bool		m_mustAutoHide;
 	LONG		m_size_y;
+	WNDPROC		m_oldWndProc;
 	/*
 	 * for custom drawing
 	 */
@@ -129,7 +130,8 @@ private:
 	void 		TSAPI obtainHook();
 	void		TSAPI releaseHook();
 
-	static LRESULT CALLBACK MessageHook(int nCode, WPARAM wParam, LPARAM lParam);
+	static 		LRESULT CALLBACK wndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);		// subclassing for the toolbar control
+	static 		LRESULT CALLBACK MessageHook(int nCode, WPARAM wParam, LPARAM lParam);				// message hook (only active when modal menus are active)
 };
 
 #endif /* __CONTROLS_H */

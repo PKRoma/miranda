@@ -329,17 +329,17 @@ static CSkinItem _defInfoPanel = {
 	CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, 0
 };
 
-static BYTE __forceinline percent_to_byte(UINT32 percent)
+static BYTE __inline percent_to_byte(UINT32 percent)
 {
 	return(BYTE)((FLOAT)(((FLOAT) percent) / 100) * 255);
 }
 
-static COLORREF __forceinline revcolref(COLORREF colref)
+static COLORREF __inline revcolref(COLORREF colref)
 {
 	return RGB(GetBValue(colref), GetGValue(colref), GetRValue(colref));
 }
 
-static DWORD __forceinline argb_from_cola(COLORREF col, UINT32 alpha)
+static DWORD __inline argb_from_cola(COLORREF col, UINT32 alpha)
 {
 	return((BYTE) percent_to_byte(alpha) << 24 | col);
 }
@@ -598,7 +598,7 @@ void __stdcall DrawAlpha(HDC hDC, PRECT rc, DWORD clr_base, int alpha, DWORD clr
 	DeleteDC(hdc);
 }
 
-void __forceinline gradientHorizontal(UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UCHAR *ubBlueFinal, ULONG ulBitmapWidth, UCHAR ubRed, UCHAR ubGreen, UCHAR ubBlue, UCHAR ubRed2, UCHAR ubGreen2, UCHAR ubBlue2, DWORD FLG_GRADIENT, BOOL transparent, UINT32 x, UCHAR *ubAlpha)
+void __inline gradientHorizontal(UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UCHAR *ubBlueFinal, ULONG ulBitmapWidth, UCHAR ubRed, UCHAR ubGreen, UCHAR ubBlue, UCHAR ubRed2, UCHAR ubGreen2, UCHAR ubBlue2, DWORD FLG_GRADIENT, BOOL transparent, UINT32 x, UCHAR *ubAlpha)
 {
 	FLOAT fSolidMulti, fInvSolidMulti;
 
@@ -626,7 +626,7 @@ void __forceinline gradientHorizontal(UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UC
 	}
 }
 
-void __forceinline gradientVertical(UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UCHAR *ubBlueFinal, ULONG ulBitmapHeight, UCHAR ubRed, UCHAR ubGreen, UCHAR ubBlue, UCHAR ubRed2, UCHAR ubGreen2, UCHAR ubBlue2, DWORD FLG_GRADIENT, BOOL transparent, UINT32 y, UCHAR *ubAlpha)
+void __inline gradientVertical(UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UCHAR *ubBlueFinal, ULONG ulBitmapHeight, UCHAR ubRed, UCHAR ubGreen, UCHAR ubBlue, UCHAR ubRed2, UCHAR ubGreen2, UCHAR ubBlue2, DWORD FLG_GRADIENT, BOOL transparent, UINT32 y, UCHAR *ubAlpha)
 {
 	FLOAT fSolidMulti, fInvSolidMulti;
 
@@ -1119,7 +1119,6 @@ void CSkin::Init()
 
 	setFileName();
 	m_aeroEffect = M->GetByte("aerostyle", 0);
-	initAeroEffect();
 }
 
 /**
@@ -2076,6 +2075,8 @@ void CSkin::setupAeroSkins()
 
 		m_switchBarItem->setAlphaFormat(AC_SRC_ALPHA, 255);
 		m_switchBarItem->setMetrics(bm.bmWidth, bm.bmHeight);
+
+		initAeroEffect();
 	}
 }
 
@@ -2463,13 +2464,12 @@ HBITMAP CSkin::CreateAeroCompatibleBitmap(const RECT &rc, HDC dc)
 void CSkin::MapClientToParent(HWND hwndClient, HWND hwndParent, RECT &rc)
 {
 	POINT pt;
-	::GetWindowRect(hwndClient, &rc);
 
 	LONG  cx = rc.right - rc.left;
 	LONG  cy = rc.bottom - rc.top;
-
 	pt.x = rc.left; pt.y = rc.top;
 
+	::ClientToScreen(hwndClient, &pt);
 	::ScreenToClient(hwndParent, &pt);
 
 	rc.top = pt.y;
@@ -2530,14 +2530,19 @@ void CSkin::RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &
 		LONG cx = rcToolbar.right - rcToolbar.left;
 		LONG cy = rcToolbar.bottom - rcToolbar.top;
 
-		if(dat->pContainer->cachedToolbarDC) {
-			SelectObject(dat->pContainer->cachedToolbarDC, dat->pContainer->oldhbmToolbarBG);
-			DeleteObject(dat->pContainer->hbmToolbarBG);
-			DeleteDC(dat->pContainer->cachedToolbarDC);
+		if(dat->pContainer->cachedToolbarDC == 0)
+			dat->pContainer->cachedToolbarDC = ::CreateCompatibleDC(hdc);
+
+		if(dat->pContainer->szOldToolbarSize.cx != cx || dat->pContainer->szOldToolbarSize.cy != cy) {
+			if(dat->pContainer->oldhbmToolbarBG) {
+				::SelectObject(dat->pContainer->cachedToolbarDC, dat->pContainer->oldhbmToolbarBG);
+				::DeleteObject(dat->pContainer->hbmToolbarBG);
+			}
+			dat->pContainer->hbmToolbarBG = ::CreateCompatibleBitmap(hdc, cx, cy);
+			dat->pContainer->oldhbmToolbarBG = (HBITMAP)::SelectObject(dat->pContainer->cachedToolbarDC, dat->pContainer->hbmToolbarBG);
 		}
-		dat->pContainer->cachedToolbarDC = CreateCompatibleDC(hdc);
-		dat->pContainer->hbmToolbarBG = CreateCompatibleBitmap(hdc, cx, cy);
-		dat->pContainer->oldhbmToolbarBG = (HBITMAP)SelectObject(dat->pContainer->cachedToolbarDC, dat->pContainer->hbmToolbarBG);
+		dat->pContainer->szOldToolbarSize.cx = cx;
+		dat->pContainer->szOldToolbarSize.cy = cy;
 
 		if(fAero) {
 			clr1 = PluginConfig.m_tbBackgroundHigh ? PluginConfig.m_tbBackgroundHigh :
@@ -2546,7 +2551,6 @@ void CSkin::RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &
 					(m_pCurrentAeroEffect ? m_pCurrentAeroEffect->m_clrToolbar2 : m_dwmColorRGB);
 
 			bAlphaOffset = PluginConfig.m_tbBackgroundHigh ? 40 : 0;
-
 			::DrawAlpha(hdc, &rcToolbar, clr1, 45 + bAlphaOffset, clr2, 0, 9, 31, 4, 0);
 		} else
 			CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, hdc, PluginConfig.m_bIsVista ? 12 : 6,  PluginConfig.m_bIsVista ? 2 : 1,
@@ -2662,7 +2666,7 @@ void CSkin::initAeroEffect()
 		::DeleteObject(m_BrushBack);
 		m_BrushBack = 0;
 	}
-	if(m_aeroEffect >= 0 && m_aeroEffect < AERO_EFFECT_LAST) {
+	if(m_aeroEffect > AERO_EFFECT_NONE && m_aeroEffect < AERO_EFFECT_LAST) {
 		m_currentAeroEffect = m_aeroEffects[m_aeroEffect];
 		m_pCurrentAeroEffect = &m_currentAeroEffect;
 		m_glowSize = m_pCurrentAeroEffect->m_glowSize;

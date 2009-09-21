@@ -133,12 +133,14 @@ typedef struct  MODULE_INFO_TYPE
 	BOOL		bAckMsg;
 	int			nColorCount;
 	COLORREF*	crColors;
+	/*
 	HICON		hOnlineIcon;
 	HICON		hOfflineIcon;
 	HICON		hOnlineTalkIcon;
 	HICON		hOfflineTalkIcon;
 	int			OnlineIconIndex;
 	int			OfflineIconIndex;
+	*/
 	int			iMaxText;
 	DWORD		idleTimeStamp;
 	DWORD		lastIdleCheck;

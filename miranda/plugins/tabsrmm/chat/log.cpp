@@ -42,22 +42,19 @@
 #include <mbstring.h>
 #include <shlwapi.h>
 
-//#include "../m_MathModule.h"
-
-
 /*
  * The code for streaming the text is to a large extent copied from
  * the srmm module and then modified to fit the chat module.
  */
 
 extern FONTINFO	aFonts[OPTIONS_FONTCOUNT];
-extern HICON		hIcons[30];
+extern HICON	hIcons[30];
 
-static PBYTE		pLogIconBmpBits[14];
-static int			logIconBmpSize[ SIZEOF(pLogIconBmpBits)];
+static PBYTE	pLogIconBmpBits[14];
+static int		logIconBmpSize[ SIZEOF(pLogIconBmpBits)];
 
-static int			logPixelSY = 0;
-static int			logPixelSX = 0;
+static int		logPixelSY = 0;
+static int		logPixelSX = 0;
 static char		*szDivider = "\\strike----------------------------------------------------------------------------\\strike0";
 static char		CHAT_rtfFontsGlobal[OPTIONS_FONTCOUNT + 2][RTFCACHELINESIZE];
 static char		*CHAT_rtffonts = 0;

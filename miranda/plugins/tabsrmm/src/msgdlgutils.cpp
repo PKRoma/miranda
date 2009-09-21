@@ -346,12 +346,12 @@ void CalcDynamicAvatarSize(_MessageWindowData *dat, BITMAP *bminfo)
 
 	//MaD: by changing dat->iButtonBarReallyNeeds to dat->iButtonBarNeeds
 	//	   we can change resize priority to buttons, if needed...
-	if (((rc.right) - (int)picProjectedWidth) > (dat->iButtonBarReallyNeeds) && !PluginConfig.m_AlwaysFullToolbarWidth)
+	if (((rc.right) - (int)picProjectedWidth) > (dat->iButtonBarReallyNeeds) && !PluginConfig.m_AlwaysFullToolbarWidth && bToolBar)
 		dat->iRealAvatarHeight = dat->dynaSplitter + 3 /*4 */ + (dat->showUIElements ? DPISCALEY(28):DPISCALEY(2));
 	else
-		dat->iRealAvatarHeight = dat->dynaSplitter +DPISCALEY(4);
+		dat->iRealAvatarHeight = dat->dynaSplitter + DPISCALEY(6);
 	//mad
-	dat->iRealAvatarHeight-=((bBottomToolBar&&bToolBar)? DPISCALEY(24):0);
+	dat->iRealAvatarHeight-=((bBottomToolBar&&bToolBar)? DPISCALEY(22):0);
 
 	if (PluginConfig.m_LimitStaticAvatarHeight > 0)
 		dat->iRealAvatarHeight = min(dat->iRealAvatarHeight, PluginConfig.m_LimitStaticAvatarHeight);
@@ -780,16 +780,19 @@ int GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
 					fa.cProto = dat->szProto;
 					fa.id = 25367;
 					fa.hContact = dat->hContact;
-					fa.hParentWindow = GetDlgItem(hwndDlg, IDC_PANELPIC);
+					fa.hParentWindow = hwndDlg;
 
 					CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
 					if (fa.hWindow != NULL&&dat->hwndPanelPic) {
 						DestroyWindow(dat->hwndPanelPic);
 						dat->hwndPanelPic = NULL;
+						DestroyWindow(dat->hwndPanelPicParent);
+						dat->hwndPanelPicParent = 0;
 					}
 				}
 				if (!PluginConfig.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndPanelPic) {
-					dat->hwndPanelPic =CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, GetDlgItem(hwndDlg, IDC_PANELPIC), (HMENU)0, NULL, NULL);
+					dat->hwndPanelPicParent =CreateWindowEx(WS_EX_TOPMOST, _T("Static"), _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, hwndDlg, (HMENU)0, NULL, NULL);
+					dat->hwndPanelPic = CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, dat->hwndPanelPicParent, (HMENU)0, NULL, NULL);
 				}
 				if ((hbm && hbm != PluginConfig.g_hbmUnknown) || (fa.hWindow != NULL))
 					dat->showInfoPic = 1;
@@ -975,7 +978,7 @@ void AdjustBottomAvatarDisplay(_MessageWindowData *dat)
 			CallService(MS_FAVATAR_GETINFO, (WPARAM)&fa, 0);
 			if (fa.hWindow) {
 				dat->hwndFlash = fa.hWindow;
-				SetParent(dat->hwndFlash, GetDlgItem(dat->hwnd, fInfoPanel ? IDC_PANELPIC : IDC_CONTACTPIC));
+				SetParent(dat->hwndFlash, fInfoPanel ? dat->hwnd : GetDlgItem(dat->hwnd, IDC_CONTACTPIC));
 			}
 			fa.hContact = 0;
 			fa.hWindow = 0;
@@ -1056,7 +1059,6 @@ void FlashOnClist(HWND hwndDlg, struct _MessageWindowData *dat, HANDLE hEvent, D
 		if (nen_options.bTraySupport == TRUE && PluginConfig.m_WinVerMajor >= 5)
 			return;
 	}
-
 	if (hEvent == 0)
 		return;
 
@@ -2038,7 +2040,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		return TRUE;
 	}
 
-	else if ((dis->hwndItem == GetDlgItem(hwndDlg, IDC_CONTACTPIC) && (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown) && dat->showPic) || (dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELPIC) && dat->Panel->isActive() && (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown))) {
+	else if ((dis->hwndItem == GetDlgItem(hwndDlg, IDC_CONTACTPIC) && (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown) && dat->showPic) || (dis->hwndItem == hwndDlg && dat->Panel->isActive() && (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown))) {
 		HBRUSH hOldBrush;
 		BITMAP bminfo;
 		double dAspect = 0, dNewWidth = 0, dNewHeight = 0;
@@ -2046,7 +2048,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		RECT rc, rcClient, rcFrame;
 		HDC hdcDraw;
 		HBITMAP hbmDraw, hbmOld;
-		BOOL bPanelPic = dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELPIC);
+		BOOL bPanelPic = dis->hwndItem == hwndDlg;
 		DWORD aceFlags = 0;
 		BYTE borderType = CSkin::m_bAvatarBorderType;
 		HPEN hPenBorder = 0, hPenOld = 0;
@@ -2066,19 +2068,20 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 				EnableWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), fa.hWindow != 0);
 			} else {
 				fa.hContact = dat->hContact;
-				fa.hParentWindow = GetDlgItem(hwndDlg, fInfoPanel ? IDC_PANELPIC : IDC_CONTACTPIC);
+				fa.hParentWindow = fInfoPanel ? hwndDlg : GetDlgItem(hwndDlg, IDC_CONTACTPIC);
 				CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
 				if (fInfoPanel) {
 					if (fa.hWindow != NULL&&dat->hwndPanelPic) {
 						DestroyWindow(dat->hwndPanelPic);
+						DestroyWindow(dat->hwndPanelPicParent);
 						dat->hwndPanelPic = NULL;
+						dat->hwndPanelPicParent = 0;
 					}
 					if (!PluginConfig.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndPanelPic) {
-						dat->hwndPanelPic =CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, GetDlgItem(hwndDlg, IDC_PANELPIC), (HMENU)0, NULL, NULL);
+						dat->hwndPanelPicParent =CreateWindowEx(WS_EX_TOPMOST, _T("Static"), _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, hwndDlg, (HMENU)0, NULL, NULL);
+						dat->hwndPanelPic = CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, dat->hwndPanelPicParent, (HMENU)0, NULL, NULL);
 						SendMessage(dat->hwndPanelPic, AVATAR_SETCONTACT, (WPARAM)0, (LPARAM)dat->hContact);
 					}
-					if(dat->hwndPanelPic)
-						ShowWindow(GetDlgItem(hwndDlg, IDC_PANELPIC), SW_SHOW);
 				} else {
 					if (fa.hWindow != NULL&&dat->hwndContactPic) {
 						DestroyWindow(dat->hwndContactPic);
@@ -2089,7 +2092,6 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 						SendMessage(dat->hwndContactPic, AVATAR_SETCONTACT, (WPARAM)0, (LPARAM)dat->hContact);
 					}
 				}
-				EnableWindow(GetDlgItem(hwndDlg, fInfoPanel ? IDC_PANELPIC : IDC_CONTACTPIC), fa.hWindow != 0);
 				dat->hwndFlash = fa.hWindow;
 			}
 			if (fa.hWindow != 0) {
@@ -2126,8 +2128,8 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		GetClientRect(hwndDlg, &rc);
 		if(bPanelPic) {
 			rcClient = dis->rcItem;
-			cx = rcClient.right - rcClient.left;
-			cy = rcClient.bottom - rcClient.top;
+			cx = (rcClient.right - rcClient.left) + 1;
+			cy = (rcClient.bottom - rcClient.top) + 1;
 		} else {
 			GetClientRect(dis->hwndItem, &rcClient);
 			cx = rcClient.right;
@@ -2185,24 +2187,20 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		hOldBrush = (HBRUSH)SelectObject(hdcDraw, fAero ? (HBRUSH)GetStockObject(HOLLOW_BRUSH) : GetSysColorBrush(COLOR_3DFACE));
 		rcFrame = rcClient;
 
-
-		if (CSkin::m_skinEnabled) {
-			if(!bPanelPic)
-				CSkin::SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &rcFrame, hdcDraw);
-		} else {
-			if(!bPanelPic) {
-				FillRect(hdcDraw, &rcFrame, GetSysColorBrush(COLOR_3DFACE));
-				if(fAero)
-					::DrawAlpha(hdcDraw, &rcFrame, 0xf0f0f0, 40, CSkin::m_dwmColorRGB, 0, 9, 31, 4, 0);
-			}
-		}
 		if (borderType == 1)
 			borderType = aceFlags & AVS_PREMULTIPLIED ? 2 : 3;
 
 		if (!bPanelPic) {
 			top = (cy - dat->pic.cy) / 2;
+			RECT rcEdge = {0, top, dat->pic.cx, top + dat->pic.cy};
+			if (CSkin::m_skinEnabled)
+				CSkin::SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &rcEdge, hdcDraw);
+			else {
+				FillRect(hdcDraw, &rcFrame, (HBRUSH)GetStockObject(WHITE_BRUSH));
+				if(fAero)
+					::DrawAlpha(hdcDraw, &rcFrame, 0xf0f0f0, 40, CSkin::m_dwmColorRGB, 0, 9, 31, 4, 0);
+			}
 			if (borderType) {
-				RECT rcEdge = {0, top, dat->pic.cx, top + dat->pic.cy};
 				if (borderType == 2)
 					DrawEdge(hdcDraw, &rcEdge, BDR_SUNKENINNER, BF_RECT);
 				else if (borderType == 3)
@@ -2218,28 +2216,33 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 			HBITMAP hbmAvatar = bPanelPic ? (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown) : ((fInfoPanel && PluginConfig.m_AvatarMode != 5) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown));
 			HBITMAP hbmMem = 0;
 			if (bPanelPic) {
-				LONG width_off = borderType ? 0 : 2;
-				LONG height_off = 0;
+				bool	bBorder = (borderType && !fAero);
+				LONG 	height_off = 0;
+				LONG	border_off = bBorder ? 1 : 0;
 
 				ResizeBitmap rb;
 				rb.size = sizeof(rb);
 				rb.fit = RESIZEBITMAP_STRETCH;
-				rb.max_height = dNewHeight + width_off;
-				rb.max_width = dNewWidth + width_off;
+				rb.max_height = (int)(dNewHeight - (bBorder ? 2 : 0));
+				rb.max_width = (int)(dNewWidth - (bBorder ? 2 : 0));
 				rb.hBmp = hbmAvatar;
 
 				HBITMAP hbmNew = (HBITMAP)CallService("IMG/ResizeBitmap", (WPARAM)&rb, 0);
 				hbmMem = (HBITMAP)SelectObject(hdcMem, hbmNew);
 
-				//rcFrame = rcClient;
-				GetClientRect(dis->hwndItem, &rcFrame);
-				rcFrame.left = rcFrame.right - ((LONG)dNewWidth + 2);
-				rcFrame.bottom = rcFrame.top + (LONG)dNewHeight + 2;
-				if ((rcClient.top + rcFrame.bottom) < rcClient.bottom) {
-					height_off = (rcClient.bottom - ((LONG)dNewHeight + 2)) / 2;
-					rcFrame.top += height_off;
-					rcFrame.bottom += height_off;
-				}
+				rcFrame.left = rcFrame.top = 0;
+				rcFrame.right = (rcClient.right - rcClient.left);
+				rcFrame.bottom = (rcClient.bottom - rcClient.top);
+
+				rcFrame.left = rcFrame.right - (LONG)dNewWidth;
+				rcFrame.bottom = (LONG)dNewHeight;
+
+				height_off = ((rcClient.bottom - rcClient.top) - (rb.max_height + (bBorder ? 2 : 0))) / 2;
+				rcFrame.top += height_off;
+				rcFrame.bottom += height_off;
+
+				OffsetRect(&rcClient, -2, 0);
+
 				if(!fAero) {
 					if (borderType == 2)
 						DrawEdge(hdcDraw, &rcFrame, BDR_SUNKENINNER, BF_RECT);
@@ -2252,14 +2255,23 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 						SelectClipRgn(dis->hDC, clipRgn);
 					}
 				}
-				if(CMimAPI::m_MyAlphaBlend) {
-					CMimAPI::m_MyAlphaBlend(dis->hDC, rcClient.left + rcFrame.left + (borderType ? 1 : 0), rcClient.top + height_off + (borderType ? 1 : 0),
-									  (int)dNewWidth + width_off, (int)dNewHeight + width_off, hdcMem, 0, 0,
-									  (int)dNewWidth + width_off, (int)dNewHeight + width_off, CSkin::m_default_bf);
-				}
-				else
-					CSkin::MY_AlphaBlend(dis->hDC, rcClient.left + rcFrame.left + (borderType ? 1 : 0), rcClient.top + height_off + (borderType ? 1 : 0), (int)dNewWidth + width_off, (int)dNewHeight + width_off, (int)dNewWidth + width_off, (int)dNewHeight + width_off, hdcMem);
+				if(dat->hwndPanelPic) {
+					SetWindowPos(dat->hwndPanelPicParent, HWND_TOP, rcClient.left + rcFrame.left + border_off, rcClient.top + rcFrame.top + border_off,
+								 rb.max_width, rb.max_height, SWP_SHOWWINDOW);
 
+					SetWindowPos(dat->hwndPanelPic, HWND_TOP, 0, 0,
+								 rb.max_width, rb.max_height, SWP_SHOWWINDOW);
+				}
+				else {
+					if(CMimAPI::m_MyAlphaBlend) {
+						CMimAPI::m_MyAlphaBlend(dis->hDC, rcClient.left + rcFrame.left + border_off, rcClient.top + rcFrame.top + border_off,
+												rb.max_width, rb.max_height, hdcMem, 0, 0,
+												rb.max_width, rb.max_height, CSkin::m_default_bf);
+					}
+					else
+						CSkin::MY_AlphaBlend(dis->hDC, rcClient.left + rcFrame.left + border_off, rcClient.top + rcFrame.top + border_off,
+											 rb.max_width, rb.max_height, rb.max_width, rb.max_height, hdcMem);
+				}
 				SelectObject(hdcMem, hbmMem);
 				//DeleteObject(hbmMem);
 				DeleteDC(hdcMem);
@@ -2272,9 +2284,11 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 
 				SetStretchBltMode(hdcDraw, HALFTONE);
 				if (aceFlags & AVS_PREMULTIPLIED)
-					CSkin::MY_AlphaBlend(hdcDraw, xy_off, top + xy_off, (int)dNewWidth + width_off, iMaxHeight + width_off, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
+					CSkin::MY_AlphaBlend(hdcDraw, xy_off, top + xy_off, (int)dNewWidth + width_off,
+										 iMaxHeight + width_off, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
 				else
-					StretchBlt(hdcDraw, xy_off, top + xy_off, (int)dNewWidth + width_off, iMaxHeight + width_off, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+					StretchBlt(hdcDraw, xy_off, top + xy_off, (int)dNewWidth + width_off,
+							   iMaxHeight + width_off, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
 				SelectObject(hdcMem, hbmMem);
 				DeleteObject(hbmMem);
 				DeleteDC(hdcMem);
@@ -2715,13 +2729,4 @@ void MTH_updateMathWindow(const _MessageWindowData *dat)
 	cWinPlace.length = sizeof(WINDOWPLACEMENT);
 	GetWindowPlacement(dat->pContainer->hwnd, &cWinPlace);
 	return;
-}
-
-bool IsContainerMinimized(const ContainerWindowData *pContainer)
-{
-	if(pContainer) {
-		if(IsIconic(pContainer->hwnd) || (PluginConfig.m_HideOnClose && !IsWindowVisible(pContainer->hwnd)))
-			return(true);
-	}
-	return(false);
 }

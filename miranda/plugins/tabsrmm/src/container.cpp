@@ -1519,6 +1519,7 @@ buttons_done:
 			}
 			return 0;
 		}
+
 		case WM_TIMER:
 			if (wParam == TIMERID_HEARTBEAT) {
 				int i;
@@ -1547,7 +1548,7 @@ buttons_done:
 				dat = (struct _MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 				if(dat && dat->bType == SESSIONTYPE_IM) {
 					if ((dat->idle || dat->timezone != -1) && pContainer->hwndActive && IsWindow(pContainer->hwndActive))
-						InvalidateRect(GetDlgItem(pContainer->hwndActive, IDC_PANELUIN), NULL, FALSE);
+						dat->Panel->Invalidate();
 				}
 				else if(dat)
 					SendMessage(dat->hwnd, GC_UPDATESTATUSBAR, 0, 0);

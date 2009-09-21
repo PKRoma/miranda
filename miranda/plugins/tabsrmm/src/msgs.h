@@ -198,7 +198,6 @@ typedef struct _settextex {
 #define AVATARMODE_DYNAMIC 0
 
 #define MSGDLGFONTCOUNT 22
-#define IPFONTCOUNT 6
 #define CHATFONTCOUNT 19
 
 #define TMPL_MSGIN 0
@@ -287,6 +286,7 @@ struct ContainerWindowData {
 	DWORD	dwOldAeroLeft, dwOldAeroRight;
 	HDC		cachedToolbarDC;
 	HBITMAP hbmToolbarBG, oldhbmToolbarBG;
+	SIZE	szOldToolbarSize;
 	SIZE    oldSize, preSIZE;
 	CTaskbarInteract *TaskBar;
 	CMenuBar		 *MenuBar;
@@ -339,13 +339,14 @@ struct _MessageWindowData {
 	BOOL    mayFlashTab;
 	BOOL    bTabFlash;
 	HWND    hwndIEView, hwndFlash, hwndIWebBrowserControl, hwndHPP;
-	HWND	hwndContactPic, hwndPanelPic; //Bolshevik: avatar control handlers
+	HWND	hwndContactPic, hwndPanelPic, hwndPanelPicParent;
 	UINT    messageCount;  //MAD
 	UINT	bbLSideWidth;  //MAD
 	UINT	bbRSideWidth;    //MAD
 	struct StatusIconListNode *pSINod;
 	PVOID   si;
 
+	RECT	rcNick, rcUIN, rcStatus, rcPic;
 	HANDLE  hDbEventFirst, hDbEventLast;
 	int     sendMode;
 	int     splitterY, originalSplitterY, dynaSplitter, savedSplitter, savedSplitY, savedDynaSplit;

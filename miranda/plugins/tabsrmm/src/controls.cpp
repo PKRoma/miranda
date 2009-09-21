@@ -138,7 +138,7 @@ CMenuBar::CMenuBar(HWND hwndParent, const ContainerWindowData *pContainer)
 
 	::SendMessage(m_hwndToolbar, TB_ADDBUTTONS, sizeof(m_TbButtons)/sizeof(TBBUTTON), (LPARAM)m_TbButtons);
 	::SendMessage(m_hwndToolbar, TB_SETWINDOWTHEME, 0, (LPARAM)L"REBAR");
-	m_size_y = HIWORD(SendMessage(m_hwndToolbar, TB_GETBUTTONSIZE, 0, 0));
+	m_size_y = HIWORD(::SendMessage(m_hwndToolbar, TB_GETBUTTONSIZE, 0, 0));
 
 	::GetWindowRect(m_hwndToolbar, &Rc);
 
@@ -155,12 +155,17 @@ CMenuBar::CMenuBar(HWND hwndParent, const ContainerWindowData *pContainer)
 	m_activeSubMenu = 0;
 	m_fTracking = false;
 	m_isContactMenu = m_isMainMenu = false;
+
+	m_oldWndProc = (WNDPROC)::GetWindowLongPtr(m_hwndToolbar, GWLP_WNDPROC);
+	::SetWindowLongPtr(m_hwndToolbar, GWLP_USERDATA, (UINT_PTR)this);
+	::SetWindowLongPtr(m_hwndToolbar, GWLP_WNDPROC, (UINT_PTR)wndProc);
 }
 
 CMenuBar::~CMenuBar()
 {
+	::SetWindowLongPtr(m_hwndToolbar, GWLP_WNDPROC, (UINT_PTR)m_oldWndProc);
+	::SetWindowLongPtr(m_hwndToolbar, GWLP_USERDATA, 0);
 	::DestroyWindow(m_hwndToolbar);
-	//::DestroyWindow(m_hwndRebar);
 	releaseHook();
 	m_MimIconRefCount--;
 	if(m_MimIconRefCount == 0) {
@@ -192,7 +197,7 @@ void CMenuBar::obtainHook()
 void CMenuBar::releaseHook()
 {
 	if(m_hHook) {
-		UnhookWindowsHookEx(m_hHook);
+		::UnhookWindowsHookEx(m_hHook);
 		m_hHook = 0;
 	}
 }
@@ -203,7 +208,7 @@ void CMenuBar::releaseHook()
  */
 LONG CMenuBar::getHeight() const
 {
-	return((m_pContainer->dwFlags & CNT_NOMENUBAR) ? 0 : m_size_y/* + 2*/);
+	return((m_pContainer->dwFlags & CNT_NOMENUBAR) ? 0 : m_size_y);
 }
 
 /**
@@ -254,14 +259,38 @@ LONG_PTR CMenuBar::processMsg(const UINT msg, const WPARAM wParam, const LPARAM 
 		if (m_pContainer->dwFlags & CNT_NOTITLE) {
 			POINT	pt;
 
-			GetCursorPos(&pt);
-			return SendMessage(m_pContainer->hwnd, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, MAKELPARAM(pt.x, pt.y));
+			::GetCursorPos(&pt);
+			return ::SendMessage(m_pContainer->hwnd, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, MAKELPARAM(pt.x, pt.y));
 		}
 	}
 	return(-1);
 }
+
 /**
- * Implements NM_CUSTOMDRAW for the rebar
+ * subclass the toolbar control to handle some keyboard events and improve
+ * keyboard navigation
+ */
+
+LRESULT CALLBACK CMenuBar::wndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	CMenuBar *menuBar = reinterpret_cast<CMenuBar *>(::GetWindowLongPtr(hWnd, GWLP_USERDATA));
+
+	switch(msg) {
+		case WM_SYSKEYUP: {
+			if(wParam == VK_MENU) {
+				menuBar->Cancel();
+				return(0);
+			}
+			break;
+		}
+		default:
+			break;
+	}
+	return(::CallWindowProc(menuBar->m_oldWndProc, hWnd, msg, wParam, lParam));
+}
+
+/**
+ * Implements NM_CUSTOMDRAW for the toolbar
  *
  * @param nm     NMCUSTOMDRAW *: sent via NM_CUSTOMDRAW message
  *
@@ -335,8 +364,8 @@ LONG_PTR CMenuBar::customDrawWorker(NMCUSTOMDRAW *nm)
 						fDraw = !CSkin::DrawItem(m_hdcDraw, &nmtb->nmcd.rc, item);
 					}
 					if(fDraw) {
-						COLORREF clr = GetSysColor(COLOR_HOTLIGHT);
-						COLORREF clrRev = clr; //RGB(GetBValue(clr), GetGValue(clr), GetRValue(clr));
+						COLORREF clr = ::GetSysColor(COLOR_HOTLIGHT);
+						COLORREF clrRev = clr;
 						if(uState & CDIS_MARKED || uState & CDIS_CHECKED) {
 							::DrawAlpha(m_hdcDraw, &nmtb->nmcd.rc, clrRev, 80, clrRev, 0, 9,
 										31, 4, 0);
@@ -593,20 +622,15 @@ LRESULT CALLBACK CMenuBar::MessageHook(int nCode, WPARAM wParam, LPARAM lParam)
 	if (nCode < 0)
         return(::CallNextHookEx(m_hHook, nCode,	wParam, lParam));
 
-	MSG *pMsg = reinterpret_cast<MSG *>(lParam);
+	MSG 	*pMsg = reinterpret_cast<MSG *>(lParam);
+	bool	fCancel = false;
 
 	if(nCode == MSGF_MENU) {
 		switch(pMsg->message) {
 			case WM_KEYDOWN:
 				switch(pMsg->wParam) {
 					case VK_ESCAPE: {
-						int iIndex = m_Owner->idToIndex(m_Owner->m_activeID);
-						if(iIndex != -1)
-							::SendMessage(m_Owner->m_hwndToolbar, TB_SETHOTITEM, (WPARAM)iIndex, 0);
-						::SetFocus(m_Owner->m_hwndToolbar);
-						::SendMessage(m_Owner->m_hwndToolbar, TB_SETSTATE, (WPARAM)m_Owner->m_activeID, TBSTATE_ENABLED | TBSTATE_PRESSED);
-						m_Owner->cancel(0);
-						m_Owner->m_fTracking = false;
+						fCancel = true;
 						break;
 					}
 					default:
@@ -614,20 +638,18 @@ LRESULT CALLBACK CMenuBar::MessageHook(int nCode, WPARAM wParam, LPARAM lParam)
 				}
 				break;
 
-			case WM_NOTIFY: {
-				break;;
-			}
-
-			case WM_MENUSELECT:
+			case WM_SYSKEYUP:
+				if(pMsg->wParam == VK_MENU)
+					fCancel = true;
 				break;
 
 			case WM_LBUTTONDOWN: {
 				POINT	pt;
 
-				GetCursorPos(&pt);
-				if(MenuItemFromPoint(0, m_Owner->m_activeMenu, pt) >= 0) 			// inside menu
+				::GetCursorPos(&pt);
+				if(::MenuItemFromPoint(0, m_Owner->m_activeMenu, pt) >= 0) 			// inside menu
 					break;
-				if(m_Owner->m_activeSubMenu && MenuItemFromPoint(0, m_Owner->m_activeSubMenu, pt) >= 0)
+				if(m_Owner->m_activeSubMenu && ::MenuItemFromPoint(0, m_Owner->m_activeSubMenu, pt) >= 0)
 					break;
 				else {																// anywhere else, cancel the menu
 					::CallNextHookEx(m_hHook, nCode, wParam, lParam);
@@ -641,14 +663,23 @@ LRESULT CALLBACK CMenuBar::MessageHook(int nCode, WPARAM wParam, LPARAM lParam)
 			case WM_MOUSEMOVE: {
 				POINT pt;
 
-				GetCursorPos(&pt);
-				ScreenToClient(m_Owner->m_hwndToolbar, &pt);
+				::GetCursorPos(&pt);
+				::ScreenToClient(m_Owner->m_hwndToolbar, &pt);
 				LPARAM newPos = MAKELONG(pt.x, pt.y);
 				::SendMessage(m_Owner->m_hwndToolbar, pMsg->message, pMsg->wParam, newPos);
 				break;
 			}
 			default:
 				break;
+		}
+		if(fCancel) {
+			int iIndex = m_Owner->idToIndex(m_Owner->m_activeID);
+			if(iIndex != -1)
+				::SendMessage(m_Owner->m_hwndToolbar, TB_SETHOTITEM, (WPARAM)iIndex, 0);
+			::SetFocus(m_Owner->m_hwndToolbar);
+			::SendMessage(m_Owner->m_hwndToolbar, TB_SETSTATE, (WPARAM)m_Owner->m_activeID, TBSTATE_ENABLED | TBSTATE_PRESSED);
+			m_Owner->cancel(0);
+			m_Owner->m_fTracking = false;
 		}
 	}
 	return(::CallNextHookEx(m_hHook, nCode, wParam, lParam));
@@ -712,21 +743,21 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 			break;
 		}
 		case WM_PAINT: {
-			PAINTSTRUCT ps;
-			TCHAR szText[1024];
-			int i;
-			RECT itemRect;
-			HICON hIcon;
-			LONG height, width;
-			HDC hdc = BeginPaint(hWnd, &ps);
-			HFONT hFontOld = 0;
-			UINT nParts = SendMessage(hWnd, SB_GETPARTS, 0, 0);
-			LRESULT result;
-			RECT rcClient;
-			HDC hdcMem;
-			HBITMAP hbm, hbmOld;
-			HANDLE hbp = 0;
-			CSkinItem *item = &SkinItems[ID_EXTBKSTATUSBARPANEL];
+			PAINTSTRUCT 	ps;
+			TCHAR 			szText[1024];
+			int 			i;
+			RECT 			itemRect;
+			HICON 			hIcon;
+			LONG 			height, width;
+			HDC 			hdc = BeginPaint(hWnd, &ps);
+			HFONT 			hFontOld = 0;
+			UINT 			nParts = SendMessage(hWnd, SB_GETPARTS, 0, 0);
+			LRESULT 		result;
+			RECT 			rcClient;
+			HDC 			hdcMem;
+			HBITMAP 		hbm, hbmOld;
+			HANDLE 			hbp = 0;
+			CSkinItem *		item = &SkinItems[ID_EXTBKSTATUSBARPANEL];
 
 			BOOL	fAero = M->isAero();
 			HANDLE  hTheme = fAero ? CMimAPI::m_pfnOpenThemeData(hWnd, L"ButtonStyle") : 0;

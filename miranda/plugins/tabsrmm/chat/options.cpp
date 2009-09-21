@@ -600,7 +600,6 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 										SendDlgItemMessageA(hwndDlg, IDC_CHECKBOXES, TVM_SETITEMA, 0, (LPARAM)&tvi);
 									}
 								}
-								//PostMessage(hwndDlg, OPT_FIXHEADINGS, 0, 0);
 								SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 							}
 						}

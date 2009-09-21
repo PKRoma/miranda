@@ -970,6 +970,7 @@ MODULEINFO* MM_AddModule(const char* pszModule)
 	return FALSE;
 }
 
+/*
 void MM_IconsChanged(void)
 {
 	MODULEINFO *pTemp = m_ModList, *pLast = NULL;
@@ -983,7 +984,6 @@ void MM_IconsChanged(void)
 		if (pTemp->hOfflineTalkIcon)
 			DestroyIcon(pTemp->hOfflineTalkIcon);
 
-		/*
 		pTemp->hOfflineIcon = ImageList_GetIcon(hIconsList, pTemp->OfflineIconIndex, ILD_TRANSPARENT);
 		pTemp->hOnlineIcon = ImageList_GetIcon(hIconsList, pTemp->OnlineIconIndex, ILD_TRANSPARENT);
 
@@ -992,12 +992,14 @@ void MM_IconsChanged(void)
 
 		pTemp->hOfflineTalkIcon = ImageList_GetIcon(hIconsList, pTemp->OfflineIconIndex, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(1));
 		ImageList_ReplaceIcon(hIconsList, pTemp->OfflineIconIndex+1, pTemp->hOfflineTalkIcon);
-		*/
+
 		pLast = pTemp;
 		pTemp = pTemp->next;
 	}
 	return;
 }
+*/
+
 void MM_FontsChanged(void)
 {
 	MODULEINFO *pTemp = m_ModList;
@@ -1045,6 +1047,7 @@ BOOL MM_RemoveAll(void)
 		mir_free(m_ModList->pszHeader);
 		mir_free(m_ModList->crColors);
 
+		/*
 		if (m_ModList->hOfflineIcon)
 			DestroyIcon(m_ModList->hOfflineIcon);
 		if (m_ModList->hOnlineIcon)
@@ -1053,7 +1056,7 @@ BOOL MM_RemoveAll(void)
 			DestroyIcon(m_ModList->hOnlineTalkIcon);
 		if (m_ModList->hOfflineTalkIcon)
 			DestroyIcon(m_ModList->hOfflineTalkIcon);
-
+		*/
 		mir_free(m_ModList);
 		m_ModList = pLast;
 	}

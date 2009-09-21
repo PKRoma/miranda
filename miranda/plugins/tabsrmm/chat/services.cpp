@@ -119,7 +119,7 @@ int Chat_IconsChanged(WPARAM wParam, LPARAM lParam)
 
 	LoadLogIcons();
 	LoadMsgLogBitmaps();
-	MM_IconsChanged();
+	//MM_IconsChanged();
 	SM_BroadcastMessage(NULL, GC_SETWNDPROPS, 0, 0, FALSE);
 	return 0;
 }

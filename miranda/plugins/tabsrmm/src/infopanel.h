@@ -39,6 +39,8 @@
  * this is global for all panels
  */
 
+#define IPFONTCOUNT 6						// # of fonts needed for the info panel
+
 struct InfoPanelConfig {
 	HFONT       hFonts[IPFONTCOUNT];
 	COLORREF    clrs[IPFONTCOUNT];
@@ -54,7 +56,7 @@ class CInfoPanel
 {
 public:
 	enum {
-		DEGRADE_THRESHOLD = 39,					// defines the height at which the infopanel will do the transition from 1 to 2 lines
+		DEGRADE_THRESHOLD = 37,					// defines the height at which the infopanel will do the transition from 1 to 2 lines
 		LEFT_OFFSET_LOGO = 3
 	};
 	CInfoPanel(_MessageWindowData *dat)

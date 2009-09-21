@@ -851,14 +851,14 @@ static HRESULT DrawThemesPartWithAero(const TabControlData *tabdat, HDC hDC, int
 
 	if(tabdat->fAeroTabs) {
 		int iState = (iStateId == PBS_NORMAL || iStateId == PBS_HOT) ? 2 : 1;
-		if(tabdat->dwStyle & TCS_BOTTOM && iStateId == 3)
-			prcBox->top += 2;
+		if(tabdat->dwStyle & TCS_BOTTOM)// && iStateId == 3)
+			prcBox->top += (iStateId == 3 ? 2 : 1);
 
 
 		if(!(tabdat->dwStyle & TCS_BOTTOM)) {
 			OffsetRect(prcBox, 0, 1);
 			if(iStateId != 3)
-				prcBox->bottom += 2;
+				prcBox->bottom += 1;
 		}
 
 		FillRect(hDC, prcBox, CSkin::m_BrushBack);
@@ -955,8 +955,10 @@ static void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, 
 	//FillRect(pDC, rcItem, GetSysColorBrush(COLOR_3DFACE));
 	if (!bBottom) {
 		if (bBody) {
-			if(PluginConfig.m_bIsVista)
+			if(PluginConfig.m_bIsVista) {
 				rcItem->right += 2;							// hide right tab sheet shadow (only draw the actual border line)
+				rcItem->bottom += 2;
+			}
 			DrawThemesPart(tabdat, pDC, 9, 0, rcItem);	// TABP_PANE id = 9
 		} else {
 			int iStateId = bSel ? 3 : (bHot ? 2 : 1);                       // leftmost item has different part id
@@ -1056,8 +1058,10 @@ static void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, 
 		CImageItem tempItem(10, 10, 10, 10, hdcTemp, 0, IMAGE_FLAG_DIVIDED | IMAGE_FILLSOLID,
 							GetSysColorBrush(COLOR_3DFACE), 255, 30, 80, 50, 100);
 
-		if(PluginConfig.m_bIsVista)									// hide right tab sheet shadow (only draw the actual border line)
+		if(PluginConfig.m_bIsVista)	{								// hide right tab sheet shadow (only draw the actual border line)
 			rcItem->right += 2;
+			rcItem->bottom += 2;
+		}
 
 		tempItem.Render(pDC, rcItem, true);
 		tempItem.Clear();

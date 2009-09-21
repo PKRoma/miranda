@@ -140,13 +140,6 @@ void CInfoPanel::setHeight(LONG newHeight, bool fBroadcast)
 
 void CInfoPanel::Configure() const
 {
-	if(!m_isChat) {
-		::ShowWindow(GetDlgItem(m_dat->hwnd, IDC_PANELSTATUS), SW_HIDE);
-		::ShowWindow(GetDlgItem(m_dat->hwnd, IDC_PANELPIC), SW_HIDE);
-	}
-
-	::ShowWindow(GetDlgItem(m_dat->hwnd, IDC_PANELUIN), SW_HIDE);
-	::ShowWindow(GetDlgItem(m_dat->hwnd, IDC_PANELNICK), SW_HIDE);
 	::ShowWindow(GetDlgItem(m_dat->hwnd, IDC_PANELSPLITTER), m_active ? SW_SHOW : SW_HIDE);
 }
 
@@ -154,9 +147,6 @@ void CInfoPanel::showHideControls(const UINT showCmd) const
 {
 	if(m_isChat)
 		::ShowWindow(GetDlgItem(m_dat->hwnd, IDC_PANELSPLITTER), showCmd);
-	else {
-		::ShowWindow(GetDlgItem(m_dat->hwnd, IDC_PANELPIC), showCmd);
-	}
 }
 
 void CInfoPanel::showHide() const
@@ -168,7 +158,9 @@ void CInfoPanel::showHide() const
 	if(!m_isChat) {
 		if(!m_active && m_dat->hwndPanelPic) {
 			::DestroyWindow(m_dat->hwndPanelPic);
-			m_dat->hwndPanelPic=NULL;
+			m_dat->hwndPanelPic = NULL;
+			::DestroyWindow(m_dat->hwndPanelPicParent);
+			m_dat->hwndPanelPicParent = NULL;
 		}
 		//
 		m_dat->iRealAvatarHeight = 0;
@@ -186,10 +178,6 @@ void CInfoPanel::showHide() const
 			Configure();
 			InvalidateRect(hwndDlg, NULL, FALSE);
 		}
-		::ShowWindow(GetDlgItem(m_dat->hwnd, IDC_PANELSTATUS), SW_HIDE);
-		::ShowWindow(GetDlgItem(m_dat->hwnd, IDC_PANELUIN), SW_HIDE);
-		::ShowWindow(GetDlgItem(m_dat->hwnd, IDC_PANELNICK), SW_HIDE);
-		::ShowWindow(GetDlgItem(m_dat->hwnd, IDC_PANELPIC), SW_HIDE);
 		::ShowWindow(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), m_active ? SW_SHOW : SW_HIDE);
 		::SendMessage(hwndDlg, WM_SIZE, 0, 0);
 		::InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
@@ -206,8 +194,6 @@ void CInfoPanel::showHide() const
 			::InvalidateRect(hwndDlg, NULL, FALSE);
 		}
 
-		::ShowWindow(GetDlgItem(m_dat->hwnd, IDC_PANELUIN), SW_HIDE);
-		::ShowWindow(GetDlgItem(m_dat->hwnd, IDC_PANELNICK), SW_HIDE);
 		::SendMessage(hwndDlg, WM_SIZE, 0, 0);
 		::SetAeroMargins(m_dat->pContainer);
 		if(M->isAero())
@@ -289,16 +275,16 @@ void CInfoPanel::renderContent(const HDC hdc)
 		if(!m_isChat) {
 			RECT rc;
 
-			CSkin::MapClientToParent(GetDlgItem(m_dat->hwnd, IDC_PANELNICK), m_dat->hwnd, rc);
+			rc = m_dat->rcNick;
 			if(m_height >= DEGRADE_THRESHOLD) {
-				rc.top -= 2; rc.bottom += 6;
+				rc.top -= 2;// rc.bottom += 6;
 			}
 			RenderIPNickname(hdc, rc);
 			if(m_height >= DEGRADE_THRESHOLD) {
-				CSkin::MapClientToParent(GetDlgItem(m_dat->hwnd, IDC_PANELUIN), m_dat->hwnd, rc);
+				rc = m_dat->rcUIN;
 				RenderIPUIN(hdc, rc);
 			}
-			CSkin::MapClientToParent(GetDlgItem(m_dat->hwnd, IDC_PANELSTATUS), m_dat->hwnd, rc);
+			rc = m_dat->rcStatus;
 			RenderIPStatus(hdc, rc);
 
 			/*
@@ -307,22 +293,22 @@ void CInfoPanel::renderContent(const HDC hdc)
 
 			DRAWITEMSTRUCT dis = {0};
 
-			::ShowWindow(GetDlgItem(m_dat->hwnd, IDC_PANELPIC), SW_HIDE);
-			CSkin::MapClientToParent(GetDlgItem(m_dat->hwnd, IDC_PANELPIC), m_dat->hwnd, dis.rcItem);
+			dis.rcItem = m_dat->rcPic;
 			dis.hDC = hdc;
-			dis.hwndItem = GetDlgItem(m_dat->hwnd, IDC_PANELPIC);
+			dis.hwndItem = m_dat->hwnd;
 			if(::MsgWindowDrawHandler(0, (LPARAM)&dis, m_dat->hwnd, m_dat) == 0)
 				::PostMessage(m_dat->hwnd, WM_SIZE, 0, 1);
 		}
 		else {
 			RECT rc;
-			CSkin::MapClientToParent(GetDlgItem(m_dat->hwnd, IDC_PANELNICK), m_dat->hwnd, rc);
-			if(m_height >= DEGRADE_THRESHOLD) {
+			rc = m_dat->rcNick;
+
+			if(m_height >= DEGRADE_THRESHOLD)
 				rc.top -= 2; rc.bottom -= 2;
-			}
+
 			Chat_RenderIPNickname(hdc, rc);
 			if(m_height >= DEGRADE_THRESHOLD) {
-				CSkin::MapClientToParent(GetDlgItem(m_dat->hwnd, IDC_PANELUIN), m_dat->hwnd, rc);
+				rc = m_dat->rcUIN;
 				Chat_RenderIPSecondLine(hdc, rc);
 			}
 		}
@@ -514,7 +500,8 @@ void CInfoPanel::RenderIPStatus(const HDC hdc, RECT& rcItem)
 
 	if(m_dat->panelStatusCX != oldPanelStatusCX) {
 		SendMessage(m_dat->hwnd, WM_SIZE, 0, 0);
-		CSkin::MapClientToParent(GetDlgItem(m_dat->hwnd, IDC_PANELSTATUS), m_dat->hwnd, rcItem);
+		//CSkin::MapClientToParent(GetDlgItem(m_dat->hwnd, IDC_PANELSTATUS), m_dat->hwnd, rcItem);
+		rcItem = m_dat->rcStatus;
 	}
 
 	SetBkMode(hdc, TRANSPARENT);
@@ -661,28 +648,26 @@ void CInfoPanel::trackMouse(POINT& pt) const
 	if(!m_active)
 		return;
 
-	RECT rc, rcNick;;
+	POINT ptMouse = pt;
+	ScreenToClient(m_dat->hwnd, &ptMouse);
 
-	GetWindowRect(GetDlgItem(m_dat->hwnd, IDC_PANELSTATUS), &rc);
-	GetWindowRect(GetDlgItem(m_dat->hwnd, IDC_PANELNICK), &rcNick);
-	if (PtInRect(&rc, pt)) {
+	if (PtInRect(&m_dat->rcStatus, ptMouse)) {
 		if (!(m_dat->dwFlagsEx & MWF_SHOW_AWAYMSGTIMER)) {
-			if (m_dat->hClientIcon && pt.x >= rc.right - 20)
+			if (m_dat->hClientIcon && pt.x >= m_dat->rcStatus.right - 20)
 				SetTimer(m_dat->hwnd, TIMERID_AWAYMSG + 2, 500, 0);
 			else
 				SetTimer(m_dat->hwnd, TIMERID_AWAYMSG, 1000, 0);
 			m_dat->dwFlagsEx |= MWF_SHOW_AWAYMSGTIMER;
 		}
 		return;
-	} else if (PtInRect(&rcNick, pt)) {
+	} else if (PtInRect(&m_dat->rcNick, ptMouse)) {
 		if (!(m_dat->dwFlagsEx & MWF_SHOW_AWAYMSGTIMER)) {
 			SetTimer(m_dat->hwnd, TIMERID_AWAYMSG + 1, 1000, 0);
 			m_dat->dwFlagsEx |= MWF_SHOW_AWAYMSGTIMER;
 		}
 		return;
 	} else if (IsWindowVisible(m_dat->hwndTip)) {
-		GetWindowRect(GetDlgItem(m_dat->hwnd, IDC_PANELSTATUS), &rc);
-		if (!PtInRect(&rc, pt))
+		if (!PtInRect(&m_dat->rcStatus, ptMouse))
 			SendMessage(m_dat->hwndTip, TTM_TRACKACTIVATE, FALSE, 0);
 	}
 }
@@ -691,16 +676,32 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 {
 	if (m_dat->hwndTip) {
 		RECT 	rc;
+		bool	fMapped = false;
+		POINT	pt;
 		TCHAR 	szTitle[256];
 		HWND	hwndDlg = m_dat->hwnd;
 
-		if (ctrlId == 0)
-			ctrlId = IDC_PANELSTATUS;
-
-		if (ctrlId == IDC_PANELSTATUS + 1)
-			::GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), &rc);
-		else
+		if (ctrlId == 0) {
+			rc = m_dat->rcStatus;
+		}
+		else if(ctrlId == IDC_PANELNICK) {
+			rc = m_dat->rcNick;
+		}
+		else if(ctrlId == IDC_PANELSTATUS + 1) {
+			rc = m_dat->rcStatus;
+		}
+		else {
+			fMapped = true;
 			::GetWindowRect(GetDlgItem(hwndDlg, ctrlId), &rc);
+		}
+
+		if(!fMapped) {
+			pt.x = rc.left;
+			pt.y = rc.bottom;
+			::ClientToScreen(m_dat->hwnd, &pt);
+			rc.left = pt.x;
+			rc.bottom = pt.y;
+		}
 		::SendMessage(m_dat->hwndTip, TTM_TRACKPOSITION, 0, (LPARAM)MAKELONG(rc.left, rc.bottom));
 		if (lParam)
 			m_dat->ti.lpszText = reinterpret_cast<TCHAR *>(lParam);

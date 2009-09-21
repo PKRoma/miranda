@@ -101,7 +101,6 @@
 #define IDC_CHKACTR_DISMISS             1026
 #define IDC_CHKACTR_OPEN                1028
 #define IDC_CONTACTPIC                  1029
-#define IDC_PANELPIC                    1030
 #define IDC_ST_ENTERMSG                 1031
 #define IDC_PANELNICK                   1032
 #define IDC_CHKWINDOWCHECK              1032

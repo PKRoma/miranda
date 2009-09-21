@@ -341,7 +341,7 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 					if (hWnd && dat) {
 						LoadTimeZone(hWnd, dat);
-						InvalidateRect(GetDlgItem(hWnd, IDC_PANELUIN), NULL, FALSE);
+						dat->Panel->Invalidate();
 					}
 
 					bAvatarVisible = (BYTE)SendDlgItemMessage(hwndDlg, IDC_SHOWAVATAR, CB_GETCURSEL, 0, 0);
