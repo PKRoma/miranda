@@ -992,6 +992,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 						if (hIcon != NULL) {
 							DrawIconEx(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - g_IconHeight) >> 1, hIcon,
 								g_IconWidth, g_IconHeight, 0, NULL, DI_NORMAL);
+							IconLib_ReleaseIcon(hIcon,0);
 						}
 
 					}
