@@ -44,21 +44,32 @@ CRITICAL_SECTION	cs;
 void RegisterFonts( void );
 
 static HANDLE
-	hServiceRegister = NULL,
+   hServiceRegister = NULL,
    hServiceNewChat = NULL,
    hServiceAddEvent = NULL,
    hServiceGetAddEventPtr = NULL,
    hServiceGetInfo = NULL,
    hServiceGetCount = NULL,
-	hEventPrebuildMenu = NULL,
-	hEventDoubleclicked = NULL,
+   hEventPrebuildMenu = NULL,
+   hEventDoubleclicked = NULL,
    hEventJoinChat = NULL,
-	hEventLeaveChat = NULL;
+   hEventLeaveChat = NULL;
+
+#ifdef _WIN64 
+
+#define SIZEOF_STRUCT_GCREGISTER_V1 40
+#define SIZEOF_STRUCT_GCWINDOW_V1	48
+#define SIZEOF_STRUCT_GCEVENT_V1	76
+#define SIZEOF_STRUCT_GCEVENT_V2	80
+
+#else
 
 #define SIZEOF_STRUCT_GCREGISTER_V1 28
 #define SIZEOF_STRUCT_GCWINDOW_V1	32
 #define SIZEOF_STRUCT_GCEVENT_V1	44
 #define SIZEOF_STRUCT_GCEVENT_V2	48
+
+#endif
 
 void ShowRoom(SESSION_INFO* si, WPARAM wp, BOOL bSetForeground)
 {
@@ -210,15 +221,15 @@ static int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 		CLISTMENUITEM mi = { 0 };
 		mi.cbSize = sizeof(mi);
 		mi.position = -2000090001;
-		mi.flags = CMIF_DEFAULT;
-		mi.hIcon = LoadSkinnedIcon( SKINICON_CHAT_JOIN );
+		mi.flags = CMIF_DEFAULT | CMIF_ICONFROMICOLIB;
+		mi.hIcon = LoadSkinnedIconHandle( SKINICON_CHAT_JOIN );
 		mi.pszName = LPGEN("&Join");
 		mi.pszService = "GChat/JoinChat";
 		hJoinMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 
 		mi.position = -2000090000;
-		mi.hIcon = LoadSkinnedIcon( SKINICON_CHAT_LEAVE );
-		mi.flags = CMIF_NOTOFFLINE;
+		mi.hIcon = LoadSkinnedIconHandle( SKINICON_CHAT_LEAVE );
+		mi.flags = CMIF_NOTOFFLINE | CMIF_ICONFROMICOLIB;
 		mi.pszName = LPGEN("&Leave");
 		mi.pszService = "GChat/LeaveChat";
 		hLeaveMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
@@ -308,7 +319,7 @@ static INT_PTR Service_Register(WPARAM wParam, LPARAM lParam)
 	if ( gcr == NULL)
 		return GC_REGISTER_ERROR;
 
-	if ( gcr->cbSize != SIZEOF_STRUCT_GCREGISTER_V1 )
+	if (gcr->cbSize != SIZEOF_STRUCT_GCREGISTER_V1)
 		return GC_REGISTER_WRONGVER;
 
 	#ifndef _UNICODE
