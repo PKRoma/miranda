@@ -216,7 +216,7 @@ static int UpdateNotifyReleaseDataValid(UpdateNotifyReleaseData *d) {
 }
 
 static void UpdateNotifyFreeReleaseData(UpdateNotifyReleaseData *d) {
-    if (!UpdateNotifyReleaseDataValid(d)) 
+    if (!d) 
         return;
     if (d->szVersionPublic) mir_free(d->szVersionPublic);
     if (d->szVersionReal) mir_free(d->szVersionReal);
