@@ -1030,7 +1030,7 @@ void DM_UpdateTitle(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 			dat->hwndFlash = fa.hWindow;
 			if (dat->hwndFlash) {
 				bool isInfoPanel = dat->Panel->isActive();
-				SetParent(dat->hwndFlash, isInfoPanel ? hwndDlg : GetDlgItem(hwndDlg, IDC_CONTACTPIC));
+				SetParent(dat->hwndFlash, isInfoPanel ? dat->hwndPanelPicParent : GetDlgItem(hwndDlg, IDC_CONTACTPIC));
 			}
 		}
 	}

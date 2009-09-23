@@ -560,7 +560,7 @@ void CMenuBar::updateState(const HMENU hMenu) const
 
 void CMenuBar::configureMenu() const
 {
-	_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(m_pContainer->hwndActive, GWLP_USERDATA);
+	_MessageWindowData *dat = (_MessageWindowData *)::GetWindowLongPtr(m_pContainer->hwndActive, GWLP_USERDATA);
 
 	BOOL fDisable = FALSE;
 
@@ -572,7 +572,7 @@ void CMenuBar::configureMenu() const
 		::SendMessage(m_hwndToolbar, TB_SETSTATE, 105, fChat ? TBSTATE_HIDDEN : TBSTATE_ENABLED);
 
 		if (dat->bType == SESSIONTYPE_IM)
-			EnableWindow(GetDlgItem(dat->hwnd, IDC_TIME), fDisable ? FALSE : TRUE);
+			::EnableWindow(GetDlgItem(dat->hwnd, IDC_TIME), fDisable ? FALSE : TRUE);
 	}
 }
 
@@ -672,6 +672,9 @@ LRESULT CALLBACK CMenuBar::MessageHook(int nCode, WPARAM wParam, LPARAM lParam)
 			default:
 				break;
 		}
+		/*
+		 * some key event requested to cancel the menu
+		 */
 		if(fCancel) {
 			int iIndex = m_Owner->idToIndex(m_Owner->m_activeID);
 			if(iIndex != -1)

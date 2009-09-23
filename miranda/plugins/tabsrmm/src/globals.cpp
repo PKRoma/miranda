@@ -114,6 +114,17 @@ void CGlobals::Reload()
 	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &m_ncm, 0);
 }
 
+void CGlobals::reloadAdv()
+{
+	g_bDisableAniAvatars=M->GetByte("adv_DisableAniAvatars", 0);
+	g_bSoundOnTyping = M->GetByte("adv_soundontyping", 0);
+
+	if(g_bSoundOnTyping && m_TypingSoundAdded == false) {
+		SkinAddNewSoundEx("SoundOnTyping", Translate("Other"), Translate("TABSRMM: Typing"));
+		m_TypingSoundAdded = true;
+	}
+}
+
 const HMENU CGlobals::getMenuBar()
 {
 	if(m_MenuBar == 0) {

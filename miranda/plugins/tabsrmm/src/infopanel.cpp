@@ -159,8 +159,11 @@ void CInfoPanel::showHide() const
 		if(!m_active && m_dat->hwndPanelPic) {
 			::DestroyWindow(m_dat->hwndPanelPic);
 			m_dat->hwndPanelPic = NULL;
+		}
+		if(!m_active && m_dat->hwndPanelPicParent) {
 			::DestroyWindow(m_dat->hwndPanelPicParent);
 			m_dat->hwndPanelPicParent = NULL;
+			//_DebugTraceA("panel pic parent destroyed");
 		}
 		//
 		m_dat->iRealAvatarHeight = 0;
@@ -638,7 +641,7 @@ void CInfoPanel::Invalidate() const
 {
 	RECT	rc;
 
-	GetClientRect(m_dat->hwnd, &rc);
+	::GetClientRect(m_dat->hwnd, &rc);
 	rc.bottom = m_height;
 	::InvalidateRect(m_dat->hwnd, &rc, FALSE);
 }

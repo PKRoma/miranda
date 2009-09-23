@@ -64,8 +64,8 @@ ButtonSet 	g_ButtonSet = {0};
  * initialize static class data
 */
 
-int CSkin::m_bAvatarBorderType = 0;
-
+int 		  CSkin::m_bAvatarBorderType = 0;
+COLORREF	  CSkin::m_avatarBorderClr = 0;
 BLENDFUNCTION CSkin::m_default_bf = {0};				// a global blend function, used in various places
 														// when you use it, reset SourceConstantAlpha to 255 and
 														// the blending mode to AC_SRC_ALPHA.
@@ -1111,6 +1111,9 @@ void CSkin::Init()
 	m_fLoadOnStartup = false;
 	m_skinEnabled = m_frameSkins = false;
 	m_bAvatarBorderType = (BYTE)M->GetByte("avbordertype", 0);
+	if(m_bAvatarBorderType > 2)
+		m_bAvatarBorderType = 0;
+	m_avatarBorderClr = (COLORREF)M->GetDword("avborderclr", 0);
 
 	m_SkinItems[ID_EXTBKINFOPANELBG] = _defInfoPanel;
 	/*
@@ -1226,6 +1229,9 @@ void CSkin::Unload()
 	::FreeTabConfig();
 	::ReloadTabConfig();
 	m_bAvatarBorderType = (BYTE)M->GetByte("avbordertype", 0);
+	if(m_bAvatarBorderType > 2)
+		m_bAvatarBorderType = 0;
+	m_avatarBorderClr = (COLORREF)M->GetDword("avborderclr", 0);
 }
 
 void CSkin::LoadIcon(const TCHAR *szSection, const TCHAR *name, HICON *hIcon)
@@ -1624,6 +1630,8 @@ void CSkin::Load()
 	}
 
 	m_bAvatarBorderType = (BYTE)M->GetByte("avbordertype", 0);
+	if(m_bAvatarBorderType > 2)
+		m_bAvatarBorderType = 0;
 
 	m_fHaveGlyph = false;
 
@@ -1691,7 +1699,7 @@ void CSkin::Load()
 			}
 
 			GetPrivateProfileString(_T("Avatars"), _T("BorderColor"), _T("000000"), buffer, 20, m_tszFileName);
-			M->WriteDword(SRMSGMOD_T, "avborderclr", HexStringToLong(buffer));
+			m_avatarBorderClr = (COLORREF)HexStringToLong(buffer);
 
 			LoadIcon(_T("Global"), _T("CloseGlyph"), &CSkin::m_closeIcon);
 			LoadIcon(_T("Global"), _T("MaximizeGlyph"), &CSkin::m_maxIcon);
@@ -2499,9 +2507,9 @@ void CSkin::RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &
 		RECT 	rc, rcToolbar;;
 		POINT	pt;
 		if(!(dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR)) {
-			GetWindowRect(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_CHAT ? IDC_CHAT_LOG : IDC_LOG), &rc);
+			::GetWindowRect(::GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_CHAT ? IDC_CHAT_LOG : IDC_LOG), &rc);
 			pt.y = rc.bottom + 0;
-			ScreenToClient(dat->hwnd, &pt);
+			::ScreenToClient(dat->hwnd, &pt);
 			rcToolbar.top = pt.y;
 			rcToolbar.left = 0;
 			rcToolbar.right = rcWindow.right;
@@ -2509,17 +2517,23 @@ void CSkin::RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &
 			if(dat->bType == SESSIONTYPE_IM) {
 				if(dat->dwFlags & MWF_ERRORSTATE)
 					rcToolbar.top += ERRORPANEL_HEIGHT;
-				if(dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED)
+				if(dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED || dat->bNotOnList) {
 					rcToolbar.top += 20;
+					RECT	rcAdd;
+					rcAdd.left = 0; rcAdd.right = rcToolbar.right - rcToolbar.left;
+					rcAdd.bottom = rcToolbar.top - 1;
+					rcAdd.top = rcAdd.bottom - 20;
+					::DrawEdge(hdc, &rcAdd, BDR_RAISEDINNER | BDR_RAISEDOUTER, BF_RECT | BF_SOFT | BF_FLAT);
+				}
 			}
 
-			GetWindowRect(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_CHAT ? IDC_CHAT_MESSAGE : IDC_MESSAGE), &rc);
+			::GetWindowRect(::GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_CHAT ? IDC_CHAT_MESSAGE : IDC_MESSAGE), &rc);
 			pt.y = rc.top - 2;
-			ScreenToClient(dat->hwnd, &pt);
+			::ScreenToClient(dat->hwnd, &pt);
 			rcToolbar.bottom = pt.y;
 		}
 		else {
-			GetWindowRect(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_CHAT ? IDC_CHAT_MESSAGE : IDC_MESSAGE), &rc);
+			GetWindowRect(::GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_CHAT ? IDC_CHAT_MESSAGE : IDC_MESSAGE), &rc);
 			pt.y = rc.bottom - (dat->bType == SESSIONTYPE_IM ? 2 : 0);;
 			ScreenToClient(dat->hwnd, &pt);
 			rcToolbar.top = pt.y + 1;
@@ -2561,7 +2575,7 @@ void CSkin::RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &
 		rcCachedToolbar.bottom = cy;
 
 		if(fAero) {
-			::FillRect(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, GetSysColorBrush(COLOR_3DFACE));
+			::FillRect(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, ::GetSysColorBrush(COLOR_3DFACE));
 			::DrawAlpha(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, clr1, 55 + bAlphaOffset, clr2, 0, 9, 31, 4, 0);
 		} else
 			CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, dat->pContainer->cachedToolbarDC, PluginConfig.m_bIsVista ? 12 : 6,  PluginConfig.m_bIsVista ? 2 : 1,

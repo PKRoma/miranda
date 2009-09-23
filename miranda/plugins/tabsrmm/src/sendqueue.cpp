@@ -74,38 +74,6 @@ char *SendQueue::MsgServiceName(const HANDLE hContact = 0, const _MessageWindowD
 
 #define MS_INITIAL_DELAY 500
 
-/**
- * thread function to handle sending to multiple contacts
- *
- * @param param  (int) index of the send queue item holding the send job information
- *
- * @return 0 when finished
- */
-static unsigned __stdcall WINAPI DoMultiSend(LPVOID param)
-{
-	int		iIndex = (int)param;
-	SendJob *job = sendQueue->getJobByIndex(iIndex);
-	HWND	hwndOwner = job->hwndOwner;
-	DWORD	dwDelay = MS_INITIAL_DELAY;               // start with 1sec delay...
-	DWORD	dwDelayAdd = 0;
-	struct	_MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndOwner, GWLP_USERDATA);
-	int		i;
-
-	for (i = 0; i < job->sendCount; i++) {
-		job->hSendId[i] = (HANDLE) CallContactService(job->hContact[i], SendQueue::MsgServiceName(job->hContact[i], dat, job->dwFlags), (dat->sendMode & SMODE_FORCEANSI) ? (job->dwFlags & ~PREF_UNICODE) : job->dwFlags, (LPARAM) job->sendBuffer);
-		SetTimer(job->hwndOwner, TIMERID_MULTISEND_BASE + (iIndex * SENDJOBS_MAX_SENDS) + i, PluginConfig.m_MsgTimeout, NULL);
-		Sleep((50 * i) + dwDelay + dwDelayAdd);
-		if (i > 2)
-			dwDelayAdd = 500;
-		if (i > 8)
-			dwDelayAdd = 1000;
-		if (i > 14)
-			dwDelayAdd = 1500;
-	}
-	SendMessage(hwndOwner, DM_MULTISENDTHREADCOMPLETE, 0, 0);
-	return 0;
-}
-
 /*
  * searches the queue for a message belonging to the given contact which has been marked
  * as "failed" by either the ACKRESULT_FAILED or a timeout handler
@@ -118,7 +86,7 @@ int SendQueue::findNextFailed(const _MessageWindowData *dat) const
 		int i;
 
 		for (i = 0; i < NR_SENDJOBS; i++) {
-			if (m_jobs[i].hOwner == dat->hContact && m_jobs[i].sendCount > 0 && m_jobs[i].iStatus == SQ_ERROR)
+			if (m_jobs[i].hOwner == dat->hContact && m_jobs[i].iStatus == SQ_ERROR)
 				return i;
 		}
 		return -1;
@@ -155,7 +123,7 @@ int SendQueue::addTo(_MessageWindowData *dat, const int iLen, int dwFlags)
 	 * find a free entry in the send queue...
 	 */
 	for (i = 0; i < NR_SENDJOBS; i++) {
-		if (m_jobs[i].hOwner != 0 || m_jobs[i].sendCount != 0 || m_jobs[i].iStatus != 0) {
+		if (m_jobs[i].hOwner != 0 || m_jobs[i].iStatus != 0) {
 			// this entry is used, check if it's orphaned and can be removed...
 			if (m_jobs[i].hwndOwner && IsWindow(m_jobs[i].hwndOwner))           // window exists, do not reuse it
 				continue;
@@ -245,7 +213,7 @@ static void DoSplitSendW(LPVOID param)
 	int     iLen, iCur = 0, iSavedCur = 0, i;
 	BOOL    fSplitting = TRUE;
 	char    szServiceName[100], *svcName;
-	HANDLE  hContact = job->hContact[0];
+	HANDLE  hContact = job->hOwner;
 	DWORD   dwFlags = job->dwFlags;
 	int     chunkSize = job->chunkSize / 2;
 	char    *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
@@ -297,7 +265,7 @@ static void DoSplitSendW(LPVOID param)
 			*wszSaved = 0;
 			id = SendChunkW(wszTemp, hContact, svcName, dwFlags);
 			if (!fFirstSend) {
-				job->hSendId[0] = (HANDLE)id;
+				job->hSendId = (HANDLE)id;
 				fFirstSend = TRUE;
 				PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_SPLITSENDACK, (WPARAM)param, 0);
 			}
@@ -311,7 +279,7 @@ static void DoSplitSendW(LPVOID param)
 		else {
 			id = SendChunkW(wszTemp, hContact, svcName, dwFlags);
 			if (!fFirstSend) {
-				job->hSendId[0] = (HANDLE)id;
+				job->hSendId = (HANDLE)id;
 				fFirstSend = TRUE;
 				PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_SPLITSENDACK, (WPARAM)param, 0);
 			}
@@ -333,7 +301,7 @@ static void DoSplitSendA(LPVOID param)
 	int     iLen, iCur = 0, iSavedCur = 0, i;
 	BOOL    fSplitting = TRUE;
 	char    *svcName;
-	HANDLE  hContact = job->hContact[0];
+	HANDLE  hContact = job->hOwner;
 	DWORD   dwFlags = job->dwFlags;
 	int     chunkSize = job->chunkSize;
 
@@ -370,7 +338,7 @@ static void DoSplitSendA(LPVOID param)
 			*szSaved = 0;
 			id = SendChunkA(szTemp, hContact, PSS_MESSAGE, dwFlags);
 			if (!fFirstSend) {
-				job->hSendId[0] = (HANDLE)id;
+				job->hSendId = (HANDLE)id;
 				fFirstSend = TRUE;
 				PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_SPLITSENDACK, (WPARAM)param, 0);
 			}
@@ -384,7 +352,7 @@ static void DoSplitSendA(LPVOID param)
 		else {
 			id = SendChunkA(szTemp, hContact, PSS_MESSAGE, dwFlags);
 			if (!fFirstSend) {
-				job->hSendId[0] = (HANDLE)id;
+				job->hSendId = (HANDLE)id;
 				fFirstSend = TRUE;
 				PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_SPLITSENDACK, (WPARAM)param, 0);
 			}
@@ -399,10 +367,10 @@ int SendQueue::sendQueued(_MessageWindowData *dat, const int iEntry)
 {
 	HWND	hwndDlg = dat->hwnd;
 
-	if (dat->sendMode & SMODE_MULTIPLE) {            // implement multiple later...
-		HANDLE hContact, hItem;
-		m_jobs[iEntry].sendCount = 0;
+	if (dat->sendMode & SMODE_MULTIPLE) {
+		HANDLE hContact;
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+		/*
 		do {
 			hItem = (HANDLE) SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM) hContact, 0);
 			if (hItem && SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_GETCHECKMARK, (WPARAM) hItem, 0)) {
@@ -412,18 +380,14 @@ int SendQueue::sendQueued(_MessageWindowData *dat, const int iEntry)
 			}
 		}
 		while (hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0));
-		if (m_jobs[iEntry].sendCount == 0) {
-			logError(dat, -1, CTranslator::get(CTranslator::GEN_SQ_MULTISEND_NO_CONTACTS));
-			return 0;
-		}
-
-		if (m_jobs[iEntry].sendCount > 1)             // disable queuing more messages in multisend mode...
-			EnableSending(dat, FALSE);
+		*/
 		m_jobs[iEntry].hOwner = dat->hContact;
 		m_jobs[iEntry].iStatus = SQ_INPROGRESS;
 		m_jobs[iEntry].hwndOwner = hwndDlg;
-		m_jobs[iEntry].iAcksNeeded = m_jobs[iEntry].sendCount;
-		dat->hMultiSendThread = (HANDLE)mir_forkthreadex(DoMultiSend, (LPVOID)iEntry, 0, NULL);
+		//dat->hMultiSendThread = (HANDLE)mir_forkthreadex(DoMultiSend, (LPVOID)iEntry, 0, NULL);
+		logError(dat, iEntry, CTranslator::get(CTranslator::GEN_SQ_MULTISEND_NO_SERVICE));
+		sendQueue->clearJob(iEntry);
+		return(0);
 	}
 	else {
 		if (dat->hContact == NULL)
@@ -466,8 +430,6 @@ int SendQueue::sendQueued(_MessageWindowData *dat, const int iEntry)
 			if (!fSplit)
 				goto send_unsplitted;
 
-			m_jobs[iEntry].sendCount = 1;
-			m_jobs[iEntry].hContact[0] = dat->hContact;
 			m_jobs[iEntry].hOwner = dat->hContact;
 			m_jobs[iEntry].hwndOwner = hwndDlg;
 			m_jobs[iEntry].iStatus = SQ_INPROGRESS;
@@ -492,8 +454,6 @@ int SendQueue::sendQueued(_MessageWindowData *dat, const int iEntry)
 
 send_unsplitted:
 
-			m_jobs[iEntry].sendCount = 1;
-			m_jobs[iEntry].hContact[0] = dat->hContact;
 			m_jobs[iEntry].hOwner = dat->hContact;
 			m_jobs[iEntry].hwndOwner = hwndDlg;
 			m_jobs[iEntry].iStatus = SQ_INPROGRESS;
@@ -503,12 +463,12 @@ send_unsplitted:
 				clearJob(iEntry);
 				return(0);
 			}
-			m_jobs[iEntry].hSendId[0] = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact, dat, m_jobs[iEntry].dwFlags), (dat->sendMode & SMODE_FORCEANSI) ? (m_jobs[iEntry].dwFlags & ~PREF_UNICODE) : m_jobs[iEntry].dwFlags, (LPARAM) m_jobs[iEntry].sendBuffer);
+			m_jobs[iEntry].hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact, dat, m_jobs[iEntry].dwFlags), (dat->sendMode & SMODE_FORCEANSI) ? (m_jobs[iEntry].dwFlags & ~PREF_UNICODE) : m_jobs[iEntry].dwFlags, (LPARAM) m_jobs[iEntry].sendBuffer);
 
 			if (dat->sendMode & SMODE_NOACK) {              // fake the ack if we are not interested in receiving real acks
 				ACKDATA ack = {0};
 				ack.hContact = dat->hContact;
-				ack.hProcess = m_jobs[iEntry].hSendId[0];
+				ack.hProcess = m_jobs[iEntry].hSendId;
 				ack.type = ACKTYPE_MESSAGE;
 				ack.result = ACKRESULT_SUCCESS;
 				SendMessage(hwndDlg, HM_EVENTSENT, (WPARAM)MAKELONG(iEntry, 0), (LPARAM)&ack);
@@ -537,14 +497,12 @@ void SendQueue::clearJob(const int iIndex)
 {
 	m_jobs[iIndex].hOwner = 0;
 	m_jobs[iIndex].hwndOwner = 0;
-	m_jobs[iIndex].sendCount = 0;
 	m_jobs[iIndex].iStatus = 0;
 	m_jobs[iIndex].iAcksNeeded = 0;
 	m_jobs[iIndex].dwFlags = 0;
 	m_jobs[iIndex].chunkSize = 0;
 	m_jobs[iIndex].dwTime = 0;
-	ZeroMemory(m_jobs[iIndex].hContact, sizeof(HANDLE) * SENDJOBS_MAX_SENDS);
-	ZeroMemory(m_jobs[iIndex].hSendId, sizeof(HANDLE) * SENDJOBS_MAX_SENDS);
+	m_jobs[iIndex].hSendId = 0;
 }
 
 /*
@@ -656,7 +614,7 @@ void SendQueue::showErrorControls(_MessageWindowData *dat, const int showCmd) co
 
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
 	DM_ScrollToBottom(dat, 0, 1);
-	if (m_jobs[0].sendCount > 1)
+	if (m_jobs[0].hOwner != 0)
 		EnableSending(dat, TRUE);
 	SetAeroMargins(dat->pContainer);
 }
@@ -803,13 +761,13 @@ int SendQueue::ackMessage(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 	ACKDATA				*ack = (ACKDATA *) lParam;
 	DBEVENTINFO			dbei = { 0};
 	HANDLE				hNewEvent;
-	int					i, iFound = SendQueue::NR_SENDJOBS, iNextFailed;
+	int					iFound = SendQueue::NR_SENDJOBS, iNextFailed;
 	ContainerWindowData *m_pContainer = 0;
 	if (dat)
 		m_pContainer = dat->pContainer;
 
 	iFound = (int)(LOWORD(wParam));
-	i = (int)(HIWORD(wParam));
+	//i = (int)(HIWORD(wParam));
 
 	if (m_jobs[iFound].iStatus == SQ_ERROR) {      // received ack for a job which is already in error state...
 		if (dat) {                        // window still open
@@ -836,24 +794,15 @@ int SendQueue::ackMessage(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 			 */
 			if (!nen_options.iNoSounds && !(m_pContainer->dwFlags & CNT_NOSOUND))
 				SkinPlaySound("SendError");
-			if (m_jobs[iFound].sendCount > 1) {        // multisend is different...
-				TCHAR szErrMsg[256];
-				TCHAR *tszProto = mir_a2t(dat->szProto);
-				mir_sntprintf(szErrMsg, safe_sizeof(szErrMsg), CTranslator::get(CTranslator::GEN_SQ_MULTISENDERROR), tszProto);
-				logError(dat, -1, szErrMsg);
-				mir_free(tszProto);
-				goto verify;
-			}
-			else {
-				TCHAR *szAckMsg = mir_a2t((char *)ack->lParam);
-				mir_sntprintf(m_jobs[iFound].szErrorMsg, safe_sizeof(m_jobs[iFound].szErrorMsg),
-							 CTranslator::get(CTranslator::GEN_MSG_DELIVERYFAILURE), szAckMsg);
-				m_jobs[iFound].iStatus = SQ_ERROR;
-				mir_free(szAckMsg);
-				KillTimer(dat->hwnd, TIMERID_MSGSEND + iFound);
-				if (!(dat->dwFlags & MWF_ERRORSTATE))
-					handleError(dat, iFound);
-			}
+
+			TCHAR *szAckMsg = mir_a2t((char *)ack->lParam);
+			mir_sntprintf(m_jobs[iFound].szErrorMsg, safe_sizeof(m_jobs[iFound].szErrorMsg),
+						 CTranslator::get(CTranslator::GEN_MSG_DELIVERYFAILURE), szAckMsg);
+			m_jobs[iFound].iStatus = SQ_ERROR;
+			mir_free(szAckMsg);
+			KillTimer(dat->hwnd, TIMERID_MSGSEND + iFound);
+			if (!(dat->dwFlags & MWF_ERRORSTATE))
+				handleError(dat, iFound);
 			return 0;
 		}
 		else {
@@ -867,7 +816,7 @@ inform_and_discard:
 	dbei.cbSize = sizeof(dbei);
 	dbei.eventType = EVENTTYPE_MESSAGE;
 	dbei.flags = DBEF_SENT;
-	dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) m_jobs[iFound].hContact[i], 0);
+	dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) m_jobs[iFound].hOwner, 0);
 	dbei.timestamp = time(NULL);
 	dbei.cbBlob = lstrlenA(m_jobs[iFound].sendBuffer) + 1;
 
@@ -885,40 +834,25 @@ inform_and_discard:
 		dbei.flags |= DBEF_UTF;
 #endif
 	dbei.pBlob = (PBYTE) m_jobs[iFound].sendBuffer;
-	hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) m_jobs[iFound].hContact[i], (LPARAM) & dbei);
+	hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) m_jobs[iFound].hOwner, (LPARAM) & dbei);
 
 	if (m_pContainer) {
 		if (!nen_options.iNoSounds && !(m_pContainer->dwFlags & CNT_NOSOUND))
 			SkinPlaySound("SendMsg");
 	}
 
-/*
- * if this is a multisend job, AND the ack was from a different contact (not the session "owner" hContact)
- * then we print a small message telling the user that the message has been delivered to *foo*
- */
-
-	if (dat) {
-		if (m_jobs[iFound].hContact[i] != m_jobs[iFound].hOwner) {
-			TCHAR szErrMsg[256];
-			TCHAR *szReceiver = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)m_jobs[iFound].hContact[i], GCDNF_TCHAR);
-			mir_sntprintf(szErrMsg, safe_sizeof(szErrMsg), CTranslator::get(CTranslator::GEN_SQ_MULTISEND_SUCCESS), szReceiver);
-			logError(dat, -1, szErrMsg);
-		}
-	}
-
-	if (dat && (m_jobs[iFound].hContact[i] == dat->hContact)) {
+	if (dat && (m_jobs[iFound].hOwner == dat->hContact)) {
 		if (dat->hDbEventFirst == NULL) {
 			dat->hDbEventFirst = hNewEvent;
 			SendMessage(dat->hwnd, DM_REMAKELOG, 0, 0);
 		}
 	}
-verify:
-	m_jobs[iFound].hSendId[i] = NULL;
-	m_jobs[iFound].hContact[i] = NULL;
+
+	m_jobs[iFound].hSendId = NULL;
 	m_jobs[iFound].iAcksNeeded--;
 
 	if (m_jobs[iFound].iAcksNeeded == 0) {              // everything sent
-		if (m_jobs[iFound].sendCount > 1 && dat)
+		if (m_jobs[iFound].hOwner != 0 && dat)
 			EnableSending(dat, TRUE);
 		clearJob(iFound);
 		if (dat) {

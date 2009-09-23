@@ -106,8 +106,8 @@ the development phase. I cannot name you all here, because it's just too many.
 * All other members of the Miranda community,  who helped with hunting down
   sometimes hard to find, bugs, and for suggesting features.
 
-* "Mad" for the madmod patch which added a number of new features to the
-  plugin.
+* "Mad Cluster" for the madmod patch which added a number of useful and often
+   requested new features to the plugin.
 
 * Joergen Persson for the original MUC ("multiuser chat") module for
   Miranda IM. Large parts of tabSRMM's multiuser chat integration are based
@@ -117,6 +117,7 @@ the development phase. I cannot name you all here, because it's just too many.
 License: GPL
 ------------
 
-Contact me at: mailto: silvercircle _at_ gmail _dot_ com
-		       ICQ:    7769309
-               MSN:    silvercircle _at_ gmail _dot_ com
+Contact me at: mailto: 		  silvercircle _at_ gmail _dot_ com
+			   GTalk/Jabber:  silvercircle _at_ gmail _dot_ com
+		       ICQ:    		  7769309
+               MSN:    		  silvercircle _at_ gmail _dot_ com

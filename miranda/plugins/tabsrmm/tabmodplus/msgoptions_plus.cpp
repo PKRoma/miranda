@@ -29,6 +29,7 @@
  * $Id$
  *
  * implements the "advanced tweak" option page
+ *
  * originally developed by Mad Cluster for the tabSRMM "MADMOD" patch in
  * May 2008.
  *
@@ -37,7 +38,7 @@
 #include "../src/commonheaders.h"
 
 extern HINSTANCE	hinstance;
-extern BOOL			g_bIMGtagButton, g_bClientInStatusBar;
+extern BOOL			g_bIMGtagButton;
 extern HIMAGELIST	g_himlOptions, CreateStateImageList();
 
 static BOOL bOptionsInit;
@@ -127,6 +128,7 @@ INT_PTR CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lPar
 							M->WriteByte(SRMSGMOD_T, "historysize", (BYTE)SendDlgItemMessage(hwndDlg, IDC_HISTORYSIZESPIN, UDM_GETPOS, 0, 0));
 							if(M->getAeroState() != fOldAeroState)
 								SendMessage(PluginConfig.g_hwndHotkeyHandler, WM_DWMCOMPOSITIONCHANGED, 0, 0);	// simulate aero state change
+							PluginConfig.reloadAdv();
 							return TRUE;
 						}
 					}
@@ -195,7 +197,7 @@ INT_PTR CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lPar
 				i++;
 			}
 			g_bIMGtagButton = M->GetByte("adv_IMGtagButton",0 );
-			g_bClientInStatusBar = M->GetByte("adv_ClientIconInStatusBar", 0);
+			PluginConfig.g_bClientInStatusBar = M->GetByte("adv_ClientIconInStatusBar", 0);
 
 			SendDlgItemMessage(hwndDlg, IDC_TIMEOUTSPIN, UDM_SETRANGE, 0, MAKELONG(300, SRMSGSET_MSGTIMEOUT_MIN / 1000));
 			SendDlgItemMessage(hwndDlg, IDC_TIMEOUTSPIN, UDM_SETPOS, 0, PluginConfig.m_MsgTimeout / 1000);

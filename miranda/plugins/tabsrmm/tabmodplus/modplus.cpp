@@ -31,6 +31,18 @@
  * implements features of the tabSRMM "MADMOD" patch, developed by
  * Mad Cluster in May 2008
  *
+ * the "mad mod" patch added the following features:
+ *
+ * ) typing sounds
+ * ) support for animated avatars through ACC (avs)
+ * ) a fully customizable tool bar providing services useable by external plugins
+ *   to add and change buttons
+ * ) toolbar on the bottom
+ * ) image tag button
+ * ) client icon in status bar
+ * ) close tab/window on send and the "hide container feature"
+ * ) bug fixes
+ *
  */
 
 #include "../src/commonheaders.h"
@@ -42,7 +54,6 @@ int     g_bStartup=0;
 BOOL    bWOpened=FALSE;
 
 BOOL    g_bIMGtagButton;
-BOOL    g_bClientInStatusBar;
 
 static char* getMirVer(HANDLE hContact)
 {
@@ -124,7 +135,7 @@ static int GetContactHandle(WPARAM wparam,LPARAM lParam)
 {
 	MessageWindowEventData *MWeventdata = (MessageWindowEventData*)lParam;
 
-	if ( !g_bClientInStatusBar )
+	if (!PluginConfig.g_bClientInStatusBar )
 		return (0);
 	if ( MWeventdata->uType == MSG_WINDOW_EVT_OPENING&&MWeventdata->hContact ) {
 		bWOpened=TRUE;
@@ -288,7 +299,7 @@ int ModPlus_Init(WPARAM wparam,LPARAM lparam)
 	g_bStartup=1;
 
 	g_bIMGtagButton = M->GetByte("adv_IMGtagButton", 0);
-	g_bClientInStatusBar = M->GetByte("adv_ClientIconInStatusBar", 0);
+	PluginConfig.g_bClientInStatusBar = M->GetByte("adv_ClientIconInStatusBar", 0);
 
 	hEventDbWindowEvent = HookEvent(ME_MSG_WINDOWEVENT, GetContactHandle);
 
@@ -298,7 +309,7 @@ int ModPlus_Init(WPARAM wparam,LPARAM lparam)
 		hEventCBInit=HookEvent(ME_MSG_TOOLBARLOADED,RegisterCustomButton);
 	}
 
-	if ( g_bClientInStatusBar&&ServiceExists(MS_MSG_ADDICON) ) {
+	if (PluginConfig.g_bClientInStatusBar&&ServiceExists(MS_MSG_ADDICON) ) {
 		StatusIconData sid = {0};
 		sid.cbSize = sizeof(sid);
 		sid.szModule = (char *)"tabmodplus";

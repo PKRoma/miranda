@@ -46,8 +46,7 @@ $Id$
 #define	SENDJOBS_MAX_SENDS 100
 
 struct SendJob {
-	HANDLE  hContact[SENDJOBS_MAX_SENDS];
-	HANDLE  hSendId[SENDJOBS_MAX_SENDS];
+	HANDLE  hSendId;
 	char    *sendBuffer;
 	int     dwLen;        // actual buffer length (checked for reallocs()
 	int     sendCount;

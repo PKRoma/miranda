@@ -42,7 +42,7 @@ REOLECallback *mREOLECallback;
 NEN_OPTIONS nen_options;
 extern PLUGININFOEX pluginInfo;
 //mad
-extern	BOOL newapi, g_bClientInStatusBar;
+extern	BOOL newapi;
 extern	HANDLE hHookToolBarLoadedEvt;
 //
 
@@ -292,7 +292,7 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
 {
 	ACKDATA *pAck = (ACKDATA *) lParam;
 	HWND hwndDlg = 0;
-	int i, j, iFound = SendQueue::NR_SENDJOBS;
+	int i = 0, j, iFound = SendQueue::NR_SENDJOBS;
 
 	if (lParam == 0)
 		return 0;
@@ -301,18 +301,16 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
 
 	if (pAck->type == ACKTYPE_MESSAGE) {
 		for (j = 0; j < SendQueue::NR_SENDJOBS; j++) {
-			for (i = 0; i < jobs[j].sendCount; i++) {
-				if (pAck->hProcess == jobs[j].hSendId[i] && pAck->hContact == jobs[j].hContact[i]) {
-					_MessageWindowData *dat = jobs[j].hwndOwner ? (_MessageWindowData *)GetWindowLongPtr(jobs[j].hwndOwner, GWLP_USERDATA) : NULL;
-					if (dat) {
-						if (dat->hContact == jobs[j].hOwner) {
-							iFound = j;
-							break;
-						}
-					} else {      // ack message w/o an open window...
-						sendQueue->ackMessage(NULL, (WPARAM)MAKELONG(j, i), lParam);
-						return 0;
+			if (pAck->hProcess == jobs[j].hSendId && pAck->hContact == jobs[j].hOwner) {
+				_MessageWindowData *dat = jobs[j].hwndOwner ? (_MessageWindowData *)GetWindowLongPtr(jobs[j].hwndOwner, GWLP_USERDATA) : NULL;
+				if (dat) {
+					if (dat->hContact == jobs[j].hOwner) {
+						iFound = j;
+						break;
 					}
+				} else {      // ack message w/o an open window...
+					sendQueue->ackMessage(NULL, (WPARAM)MAKELONG(j, i), lParam);
+					return 0;
 				}
 			}
 			if (iFound == SendQueue::NR_SENDJOBS)          // no mathing entry found in this queue entry.. continue
@@ -937,7 +935,7 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
 			PostMessage(hwnd, DM_UPDATETITLE, 0, 1);
 		else if (!strcmp(cws->szSetting, "MirVer")) {
 			PostMessage(hwnd, DM_CLIENTCHANGED, 0, 0);
-			if(g_bClientInStatusBar)
+			if(PluginConfig.g_bClientInStatusBar)
 				ChangeClientIconInStatusBar(wParam,0);
 		}
 		else if (strstr("StatusMsg,StatusDescr,XStatusMsg,XStatusName,YMsg", cws->szSetting))
@@ -1144,7 +1142,6 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	} else
 		M->WriteByte(SRMSGMOD_T, "ieview_installed", 0);
    //MAD
-	PluginConfig.g_bDisableAniAvatars=M->GetByte("adv_DisableAniAvatars", 0);
 	PluginConfig.g_iButtonsBarGap=M->GetByte("ButtonsBarGap", 1);
 	//
 	PluginConfig.m_hwndClist = (HWND)CallService(MS_CLUI_GETHWND, 0, 0);
@@ -1514,9 +1511,7 @@ tzdone:
 	SkinAddNewSoundEx("AlertMsg", Translate("Messages"), Translate("Incoming (New Session)"));
 	SkinAddNewSoundEx("SendMsg", Translate("Messages"), Translate("Outgoing"));
 	SkinAddNewSoundEx("SendError", Translate("Messages"), Translate("Error sending message"));
-	//MAD: sound on typing...
-	if(PluginConfig.g_bSoundOnTyping = M->GetByte("adv_soundontyping", 0))
-		SkinAddNewSoundEx("SoundOnTyping", Translate("Other"), Translate("TABSRMM: Typing"));
+
 	//
 	PluginConfig.hCurSplitNS = LoadCursor(NULL, IDC_SIZENS);
 	PluginConfig.hCurSplitWE = LoadCursor(NULL, IDC_SIZEWE);
@@ -1527,6 +1522,7 @@ tzdone:
 	LoadTSButtonModule();
 	RegisterTabCtrlClass();
 	PluginConfig.Reload();
+	PluginConfig.reloadAdv();
 	PluginConfig.dwThreadID = GetCurrentThreadId();
 
 	ReloadTabConfig();

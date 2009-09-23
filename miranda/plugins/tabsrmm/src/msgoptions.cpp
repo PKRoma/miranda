@@ -234,17 +234,13 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1,
 							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_NONE));
 			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1,
-							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_AUTO));
-			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1,
-							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_SUNKEN));
-			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1,
 							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_1PIXEL));
 			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1,
 							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_ROUNDED));
 
-			SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETCOLOUR, 0, M->GetDword("avborderclr", RGB(0, 0, 0)));
+			SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETCOLOUR, 0, CSkin::m_avatarBorderClr);
 
-			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_SETCURSEL, (WPARAM)M->GetByte("avbordertype", 0), 0);
+			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_SETCURSEL, (WPARAM)CSkin::m_bAvatarBorderType, 0);
 
 			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1,
 							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_GLOBALLY_ON));
@@ -378,8 +374,12 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							M->WriteByte(SRMSGMOD_T, "avbordertype", (BYTE) SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_GETCURSEL, 0, 0));
 							M->WriteDword(SRMSGMOD_T, "avborderclr", SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0));
 
-							if(!CSkin::m_skinEnabled)
+							if(!CSkin::m_skinEnabled) {
 								CSkin::m_bAvatarBorderType = (BYTE)M->GetByte("avbordertype", 0);
+								if(CSkin::m_bAvatarBorderType > 2)
+									CSkin::m_bAvatarBorderType = 0;
+								CSkin::m_avatarBorderClr = (COLORREF)SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0);
+							}
 
 							M->WriteByte(SRMSGMOD_T, "avatarmode", avMode);
 							M->WriteByte(SRMSGMOD_T, "ownavatarmode", (BYTE) SendDlgItemMessage(hwndDlg, IDC_OWNAVATARMODE, CB_GETCURSEL, 0, 0));

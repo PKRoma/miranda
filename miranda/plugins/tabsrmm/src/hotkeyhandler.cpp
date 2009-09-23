@@ -625,12 +625,12 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			ACKDATA ack = {0};
 			struct SendJob *job = sendQueue->getJobByIndex((int)wParam);
 
-			ack.hContact = job->hContact[0];
-			ack.hProcess = job->hSendId[0];
+			ack.hContact = job->hOwner;
+			ack.hProcess = job->hSendId;
 			ack.type = ACKTYPE_MESSAGE;
 			ack.result = ACKRESULT_SUCCESS;
 
-			if (job->hOwner && job->iAcksNeeded && job->hContact[0] && job->iStatus == SendQueue::SQ_INPROGRESS) {
+			if (job->hOwner && job->iAcksNeeded && job->hOwner && job->iStatus == SendQueue::SQ_INPROGRESS) {
 				if (IsWindow(job->hwndOwner))
 					::SendMessage(job->hwndOwner, HM_EVENTSENT, (WPARAM)MAKELONG(wParam, 0), (LPARAM)&ack);
 				else

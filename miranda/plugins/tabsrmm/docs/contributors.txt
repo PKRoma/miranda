@@ -15,7 +15,8 @@
 * Angeli-Ka contributed the icons for the default proxal icon pack.
 
 * Code for advanced typing notifications written by Bio for the
-  original typing notify plugin.
+  original typing notify plugin. This was integrated by the MadMod
+  patch in 2008.
   
 * Some code of the New Event Notify plugin was merged to add internal
   event notification functionality into tabSRMM.

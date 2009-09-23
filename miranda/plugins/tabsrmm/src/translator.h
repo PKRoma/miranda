@@ -197,7 +197,9 @@ public:
 		GEN_MUC_HIGHLIGHT_ADD									= 154,
 		GEN_MUC_HIGHLIGHT_EDIT									= 155,
 		GEN_MUC_MENU_EDITHIGHLIGHTLIST							= 156,
-		STR_LAST 												= 157
+		GEN_MSG_CONTACT_NOT_ON_LIST								= 157,
+		GEN_SQ_MULTISEND_NO_SERVICE								= 158,
+		STR_LAST 												= 159
 	};
 
 	enum {

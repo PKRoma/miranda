@@ -43,6 +43,7 @@ public:
 			::DestroyMenu(m_MenuBar);
 	}
 	void		Reload();
+	void		reloadAdv();
 
 	const HMENU getMenuBar();
 
@@ -144,6 +145,10 @@ public:
 	COLORREF	m_ipBackgroundGradientHigh;
 	COLORREF	m_tbBackgroundHigh, m_tbBackgroundLow;
 	BOOL		m_SendLaterAvail;
+	BYTE		g_bClientInStatusBar;
+
+private:
+	bool		m_TypingSoundAdded;
 };
 
 extern	CGlobals	PluginConfig;

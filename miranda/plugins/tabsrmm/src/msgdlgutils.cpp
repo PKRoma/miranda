@@ -760,7 +760,7 @@ int GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
 			} else
 				dat->showPic = (dat->hOwnPic && dat->hOwnPic != PluginConfig.g_hbmUnknown) ? 1 : 0;
 
-			if (!PluginConfig.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndContactPic)
+			if (!PluginConfig.g_bDisableAniAvatars && fa.hWindow == NULL && !dat->hwndContactPic)
 				dat->hwndContactPic =CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, GetDlgItem(hwndDlg, IDC_CONTACTPIC), (HMENU)0, NULL, NULL);
 
 		}
@@ -777,21 +777,26 @@ int GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
 				HBITMAP hbm = ((dat->ace && !(dat->ace->dwFlags & AVS_HIDEONCLIST)) ? dat->ace->hbmPic : 0);
 
 				if (PluginConfig.g_FlashAvatarAvail) {
+					if(dat->hwndPanelPicParent == 0) {
+						dat->hwndPanelPicParent = CreateWindowEx(WS_EX_TOPMOST, _T("Static"), _T(""), SS_OWNERDRAW | WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, hwndDlg, (HMENU)6000, NULL, NULL);
+						//_DebugTraceA("panel pic parent created 1");
+					}
 					fa.cProto = dat->szProto;
 					fa.id = 25367;
 					fa.hContact = dat->hContact;
-					fa.hParentWindow = hwndDlg;
+					fa.hParentWindow = dat->hwndPanelPicParent;
 
 					CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
-					if (fa.hWindow != NULL&&dat->hwndPanelPic) {
+					if (fa.hWindow != NULL && dat->hwndPanelPic) {
 						DestroyWindow(dat->hwndPanelPic);
 						dat->hwndPanelPic = NULL;
-						DestroyWindow(dat->hwndPanelPicParent);
-						dat->hwndPanelPicParent = 0;
 					}
 				}
-				if (!PluginConfig.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndPanelPic) {
-					dat->hwndPanelPicParent =CreateWindowEx(WS_EX_TOPMOST, _T("Static"), _T(""), SS_OWNERDRAW | WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, hwndDlg, (HMENU)6000, NULL, NULL);
+				if (!PluginConfig.g_bDisableAniAvatars && fa.hWindow == NULL && !dat->hwndPanelPic) {
+					if(dat->hwndPanelPicParent == 0) {
+						dat->hwndPanelPicParent =CreateWindowEx(WS_EX_TOPMOST, _T("Static"), _T(""), SS_OWNERDRAW | WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, hwndDlg, (HMENU)6000, NULL, NULL);
+						//_DebugTraceA("panel pic parent created 2");
+					}
 					dat->hwndPanelPic = CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, dat->hwndPanelPicParent, (HMENU)7000, NULL, NULL);
 					if(dat->hwndPanelPic)
 						SendMessage(dat->hwndPanelPic, AVATAR_SETAEROCOMPATDRAWING, 0, TRUE);
@@ -980,7 +985,7 @@ void AdjustBottomAvatarDisplay(_MessageWindowData *dat)
 			CallService(MS_FAVATAR_GETINFO, (WPARAM)&fa, 0);
 			if (fa.hWindow) {
 				dat->hwndFlash = fa.hWindow;
-				SetParent(dat->hwndFlash, fInfoPanel ? dat->hwnd : GetDlgItem(dat->hwnd, IDC_CONTACTPIC));
+				SetParent(dat->hwndFlash, fInfoPanel ? dat->hwndPanelPicParent : GetDlgItem(dat->hwnd, IDC_CONTACTPIC));
 			}
 			fa.hContact = 0;
 			fa.hWindow = 0;
@@ -1695,8 +1700,6 @@ void SwitchMessageLog(HWND hwndDlg, struct _MessageWindowData *dat, int iMode)
 			dat->oldIEViewProc = wndProc;
 		}
 	}
-//MAD_
-
 }
 
 void FindFirstEvent(_MessageWindowData *dat)
@@ -2045,24 +2048,28 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 	 * parent window of the infopanel ACC control
 	 */
 	else if (dis->hwndItem == dat->hwndPanelPicParent) {
-		if(M->isAero() && CMimAPI::m_haveBufferedPaint) {
-			HDC		hdc, hdcMem;
-			HBITMAP hbm, hbmOld;
-			LONG	cx = dis->rcItem.right - dis->rcItem.left;
-			LONG	cy = dis->rcItem.bottom - dis->rcItem.top;
+		RECT 	rc = dis->rcItem;
 
-			dis->rcItem.left -= 3; dis->rcItem.right += 3;
+		if(fAero) {
+			HDC		hdc;
+			HBITMAP hbm, hbmOld;
+			LONG	cx = rc.right - rc.left;
+			LONG	cy = rc.bottom - rc.top;
+
+			rc.left -= 3; rc.right += 3;
 			hdc = CreateCompatibleDC(dis->hDC);
-			hbm = CSkin::CreateAeroCompatibleBitmap(dis->rcItem, dis->hDC);
+			hbm = CSkin::CreateAeroCompatibleBitmap(rc, dis->hDC);
 			hbmOld = (HBITMAP)SelectObject(hdc, hbm);
 
 			if(CSkin::m_pCurrentAeroEffect == 0)
-				FillRect(hdc, &dis->rcItem, (HBRUSH)GetStockObject(BLACK_BRUSH));
+				FillRect(hdc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
 			else {
 				if(CSkin::m_pCurrentAeroEffect->m_finalAlpha == 0)
-					CSkin::ApplyAeroEffect(hdc, &dis->rcItem, CSkin::AERO_EFFECT_AREA_INFOPANEL, 0);
-				else
-					CSkin::ApplyAeroEffect(hdc, &dis->rcItem, CSkin::AERO_EFFECT_AREA_INFOPANEL, 0);
+					CSkin::ApplyAeroEffect(hdc, &rc, CSkin::AERO_EFFECT_AREA_INFOPANEL, 0);
+				else {
+					FillRect(hdc, &rc, CSkin::m_BrushBack);
+					CSkin::ApplyAeroEffect(hdc, &rc, CSkin::AERO_EFFECT_AREA_INFOPANEL, 0);
+				}
 			}
 			BitBlt(dis->hDC, 0, 0, cx, cy, hdc, 0, 0, SRCCOPY);
 			SelectObject(hdc, hbmOld);
@@ -2070,8 +2077,27 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 			DeleteDC(hdc);
 		}
 		else {
-			dis->rcItem.left -= 3; dis->rcItem.right += 3;
-			dat->Panel->renderBG(dis->hDC, dis->rcItem, &SkinItems[ID_EXTBKINFOPANELBG], false);
+			rc.left -= 3; rc.right += 3;
+			dat->Panel->renderBG(dis->hDC, rc, &SkinItems[ID_EXTBKINFOPANELBG], false);
+		}
+		if(CSkin::m_bAvatarBorderType == 1) {
+			HRGN clipRgn = 0;
+
+			if(dat->hwndPanelPic) {
+				RECT	rcPic;
+				GetClientRect(dat->hwndPanelPic, &rcPic);
+				LONG ix = ((dis->rcItem.right - dis->rcItem.left) - rcPic.right) / 2 - 1;
+				LONG iy = ((dis->rcItem.bottom - dis->rcItem.top) - rcPic.bottom) / 2 - 1;
+
+				clipRgn = CreateRectRgn(ix, iy, ix + rcPic.right + 2, iy + rcPic.bottom + 2);
+			}
+			else
+				clipRgn = CreateRectRgn(dis->rcItem.left, dis->rcItem.top, dis->rcItem.right,
+										dis->rcItem.bottom);
+			HBRUSH hbr = CreateSolidBrush(CSkin::m_avatarBorderClr);
+			FrameRgn(dis->hDC, clipRgn, hbr, 1, 1);
+			DeleteObject(hbr);
+			DeleteObject(clipRgn);
 		}
 		return(TRUE);
 	}
@@ -2085,7 +2111,6 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		HBITMAP hbmDraw, hbmOld;
 		BOOL bPanelPic = dis->hwndItem == hwndDlg;
 		DWORD aceFlags = 0;
-		BYTE borderType = CSkin::m_bAvatarBorderType;
 		HPEN hPenBorder = 0, hPenOld = 0;
 		HRGN clipRgn = 0;
 		int  iRad = PluginConfig.m_WinVerMajor >= 5 ? 4 : 6;
@@ -2102,27 +2127,28 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 				CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), fa.hWindow != 0);
 			} else {
+				if(fInfoPanel && dat->hwndPanelPicParent == 0) {
+					dat->hwndPanelPicParent = CreateWindowEx(WS_EX_TOPMOST, _T("Static"), _T(""), SS_OWNERDRAW | WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, hwndDlg, (HMENU)6000, NULL, NULL);
+					//_DebugTraceA("panl pic parent created 4");
+				}
 				fa.hContact = dat->hContact;
-				fa.hParentWindow = fInfoPanel ? hwndDlg : GetDlgItem(hwndDlg, IDC_CONTACTPIC);
+				fa.hParentWindow = fInfoPanel ? dat->hwndPanelPicParent : GetDlgItem(hwndDlg, IDC_CONTACTPIC);
 				CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
 				if (fInfoPanel) {
 					if (fa.hWindow != NULL&&dat->hwndPanelPic) {
 						DestroyWindow(dat->hwndPanelPic);
-						DestroyWindow(dat->hwndPanelPicParent);
 						dat->hwndPanelPic = NULL;
-						dat->hwndPanelPicParent = 0;
 					}
-					if (!PluginConfig.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndPanelPic) {
-						dat->hwndPanelPicParent =CreateWindowEx(WS_EX_TOPMOST, _T("Static"), _T(""), SS_OWNERDRAW | WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, hwndDlg, (HMENU)6000, NULL, NULL);
+					if (!PluginConfig.g_bDisableAniAvatars && fa.hWindow == 0 && dat->hwndPanelPic == 0) {
 						dat->hwndPanelPic = CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, dat->hwndPanelPicParent, (HMENU)7000, NULL, NULL);
 						SendMessage(dat->hwndPanelPic, AVATAR_SETCONTACT, (WPARAM)0, (LPARAM)dat->hContact);
 					}
 				} else {
-					if (fa.hWindow != NULL&&dat->hwndContactPic) {
+					if (fa.hWindow != NULL && dat->hwndContactPic) {
 						DestroyWindow(dat->hwndContactPic);
 						dat->hwndContactPic = NULL;
 					}
-					if (!PluginConfig.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndContactPic) {
+					if(!PluginConfig.g_bDisableAniAvatars && fa.hWindow == 0 && dat->hwndContactPic == 0) {
 						dat->hwndContactPic =CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, GetDlgItem(hwndDlg, IDC_CONTACTPIC), (HMENU)0, NULL, NULL);
 						SendMessage(dat->hwndContactPic, AVATAR_SETCONTACT, (WPARAM)0, (LPARAM)dat->hContact);
 					}
@@ -2163,7 +2189,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		GetClientRect(hwndDlg, &rc);
 		if(bPanelPic) {
 			rcClient = dis->rcItem;
-			cx = (rcClient.right - rcClient.left) + 1;
+			cx = (rcClient.right - rcClient.left);
 			cy = (rcClient.bottom - rcClient.top) + 1;
 		} else {
 			GetClientRect(dis->hwndItem, &rcClient);
@@ -2177,21 +2203,21 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		if (bPanelPic) {
 			if (bminfo.bmHeight > bminfo.bmWidth) {
 				if (bminfo.bmHeight > 0)
-					dAspect = (double)(cy - 2) / (double)bminfo.bmHeight;
+					dAspect = (double)(cy /*- 2*/) / (double)bminfo.bmHeight;
 				else
 					dAspect = 1.0;
 				dNewWidth = (double)bminfo.bmWidth * dAspect;
-				dNewHeight = cy - 2;
+				dNewHeight = cy;// - 2;
 			} else {
 				if (bminfo.bmWidth > 0)
-					dAspect = (double)(cy - 2) / (double)bminfo.bmWidth;
+					dAspect = (double)(cy /*- 2*/) / (double)bminfo.bmWidth;
 				else
 					dAspect = 1.0;
 				dNewHeight = (double)bminfo.bmHeight * dAspect;
-				dNewWidth = cy - 2;
+				dNewWidth = cy;// - 2;
 			}
 			if (dat->panelWidth == -1) {
-				dat->panelWidth = (int)dNewWidth + 2;
+				dat->panelWidth = (int)dNewWidth;// + 2;
 				return(0);
 			}
 		} else {
@@ -2206,10 +2232,13 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 			iMaxHeight = dat->iRealAvatarHeight;
 		}
 
-		if (flashAvatar)
+		if (flashAvatar) {
+			SetWindowPos(dat->hwndPanelPicParent, HWND_TOP, rcClient.left, rcClient.top,
+						 (int)dNewWidth, (int)dNewHeight, SWP_SHOWWINDOW | SWP_NOCOPYBITS);
 			return TRUE;
+		}
 
-		hPenBorder = CreatePen(PS_SOLID, 1, (COLORREF)M->GetDword("avborderclr", RGB(0, 0, 0)));
+		hPenBorder = CreatePen(PS_SOLID, 1, CSkin::m_avatarBorderClr);
 
 		hdcDraw = CreateCompatibleDC(dis->hDC);
 		hbmDraw = CreateCompatibleBitmap(dis->hDC, cx, cy);
@@ -2222,25 +2251,20 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		hOldBrush = (HBRUSH)SelectObject(hdcDraw, fAero ? (HBRUSH)GetStockObject(HOLLOW_BRUSH) : GetSysColorBrush(COLOR_3DFACE));
 		rcFrame = rcClient;
 
-		if (borderType == 1)
-			borderType = aceFlags & AVS_PREMULTIPLIED ? 2 : 3;
-
 		if (!bPanelPic) {
 			top = (cy - dat->pic.cy) / 2;
 			RECT rcEdge = {0, top, dat->pic.cx, top + dat->pic.cy};
 			if (CSkin::m_skinEnabled)
 				CSkin::SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &rcEdge, hdcDraw);
 			else {
-				FillRect(hdcDraw, &rcFrame, (HBRUSH)GetStockObject(WHITE_BRUSH));
+				FillRect(hdcDraw, &rcFrame, GetSysColorBrush(COLOR_3DFACE));
 				if(fAero)
 					::DrawAlpha(hdcDraw, &rcFrame, 0xf0f0f0, 40, CSkin::m_dwmColorRGB, 0, 9, 31, 4, 0);
 			}
-			if (borderType) {
-				if (borderType == 2)
-					DrawEdge(hdcDraw, &rcEdge, BDR_SUNKENINNER, BF_RECT);
-				else if (borderType == 3)
+			if (CSkin::m_bAvatarBorderType) {
+				if (CSkin::m_bAvatarBorderType == 1)
 					Rectangle(hdcDraw, rcEdge.left, rcEdge.top, rcEdge.right, rcEdge.bottom);
-				else if (borderType == 4) {
+				else if (CSkin::m_bAvatarBorderType == 2) {
 					clipRgn = CreateRoundRectRgn(rcEdge.left, rcEdge.top, rcEdge.right + 1, rcEdge.bottom + 1, iRad, iRad);
 					SelectClipRgn(hdcDraw, clipRgn);
 				}
@@ -2251,7 +2275,11 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 			HBITMAP hbmAvatar = bPanelPic ? (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown) : ((fInfoPanel && PluginConfig.m_AvatarMode != 5) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown));
 			HBITMAP hbmMem = 0;
 			if (bPanelPic) {
-				bool	bBorder = (borderType && !fAero);
+				bool	bBorder = CSkin::m_bAvatarBorderType ? true : false;
+
+				if(dat->hwndPanelPicParent && bBorder && CSkin::m_bAvatarBorderType != 1)
+					bBorder = false;
+
 				LONG 	height_off = 0;
 				LONG	border_off = bBorder ? 1 : 0;
 
@@ -2272,19 +2300,20 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 				rcFrame.left = rcFrame.right - (LONG)dNewWidth;
 				rcFrame.bottom = (LONG)dNewHeight;
 
-				height_off = ((rcClient.bottom - rcClient.top) - (rb.max_height + (bBorder ? 2 : 0))) / 2;
+				height_off = ((cy) - (rb.max_height + (bBorder ? 2 : 0))) / 2;
 				rcFrame.top += height_off;
 				rcFrame.bottom += height_off;
 
-				OffsetRect(&rcClient, -2, 0);
+				//_DebugTraceA("Panel picture metrics: %d, %d - %f, %f - %d, %d (%d)", cx, cy, dNewWidth, dNewHeight, rcFrame.left, rcFrame.top, dat->panelWidth);
 
-				if(!fAero) {
-					if (borderType == 2)
-						DrawEdge(hdcDraw, &rcFrame, BDR_SUNKENINNER, BF_RECT);
-					else if (borderType == 3)
+				if(!dat->hwndPanelPicParent)
+					OffsetRect(&rcClient, -2, 0);
+
+				if(dat->hwndPanelPicParent == 0) {
+					if (CSkin::m_bAvatarBorderType == 1)
 						clipRgn = CreateRectRgn(rcClient.left + rcFrame.left, rcClient.top + rcFrame.top, rcClient.left + rcFrame.right,
 												rcClient.top + rcFrame.bottom);
-					else if (borderType == 4) {
+					else if (CSkin::m_bAvatarBorderType == 2) {
 						clipRgn = CreateRoundRectRgn(rcClient.left + rcFrame.left, rcClient.top + rcFrame.top, rcClient.left + rcFrame.right + 1,
 													 rcClient.top + rcFrame.bottom + 1, iRad, iRad);
 						SelectClipRgn(dis->hDC, clipRgn);
@@ -2292,12 +2321,8 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 				}
 				if(dat->hwndPanelPic) {
 					SendMessage(dat->hwndPanelPic, AVATAR_SETAEROCOMPATDRAWING, 0, fAero ? TRUE : FALSE);
-
-					SetWindowPos(dat->hwndPanelPicParent, HWND_TOP, rcClient.left + rcFrame.left + border_off, rcClient.top + rcFrame.top + border_off,
-								 rb.max_width, rb.max_height, SWP_SHOWWINDOW);
-
-					SetWindowPos(dat->hwndPanelPic, HWND_TOP, 0, 0,
-								 rb.max_width, rb.max_height, SWP_SHOWWINDOW);
+					SetWindowPos(dat->hwndPanelPic, HWND_TOP, rcFrame.left + border_off, rcFrame.top + border_off,
+								 rb.max_width, rb.max_height, SWP_SHOWWINDOW | SWP_ASYNCWINDOWPOS | SWP_DEFERERASE | SWP_NOSENDCHANGING);
 				}
 				else {
 					if(CMimAPI::m_MyAlphaBlend) {
@@ -2316,8 +2341,8 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 					DeleteObject(hbmNew);
 			} else {
 				hbmMem = (HBITMAP)SelectObject(hdcMem, hbmAvatar);
-				LONG xy_off = borderType ? 1 : 0;
-				LONG width_off = borderType ? 0 : 2;
+				LONG xy_off = CSkin::m_bAvatarBorderType ? 1 : 0;
+				LONG width_off = CSkin::m_bAvatarBorderType ? 0 : 2;
 
 				SetStretchBltMode(hdcDraw, HALFTONE);
 				if (aceFlags & AVS_PREMULTIPLIED)
@@ -2331,7 +2356,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 				DeleteDC(hdcMem);
 			}
 			if (clipRgn) {
-				HBRUSH hbr = CreateSolidBrush((COLORREF)M->GetDword("avborderclr", RGB(0, 0, 0)));
+				HBRUSH hbr = CreateSolidBrush(CSkin::m_avatarBorderClr);
 				if(bPanelPic)
 					FrameRgn(dis->hDC, clipRgn, hbr, 1, 1);
 				else
@@ -2343,15 +2368,12 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		SelectObject(hdcDraw, hPenOld);
 		SelectObject(hdcDraw, hOldBrush);
 		DeleteObject(hPenBorder);
-		//if(bPanelPic)
-		//	BitBlt(dis->hDC, dis->rcItem.left, dis->rcItem.top, cx, cy, hdcDraw, 0, 0, SRCCOPY);
 		if(!bPanelPic)
 			BitBlt(dis->hDC, 0, 0, cx, cy, hdcDraw, 0, 0, SRCCOPY);
 		SelectObject(hdcDraw, hbmOld);
 		DeleteObject(hbmDraw);
 		DeleteDC(hdcDraw);
 		return TRUE;
-
 	} else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_STATICTEXT) || dis->hwndItem == GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT)) {
 		TCHAR szWindowText[256];
 		if (CSkin::m_skinEnabled) {

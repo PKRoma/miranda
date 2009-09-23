@@ -195,6 +195,8 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Add user to highlight list"),				/* GEN_MUC_HIGHLIGHT_ADD */
 	LPGENT("Edit user highlight list"),					/* GEN_MUC_HIGHLIGHT_EDIT */
 	LPGENT("Edit Highlist List..."), 					/* GEN_MUC_MENU_EDITHIGHLIGHTLIST */
+	LPGENT("Contact not on list. You may add it..."),	/* GEN_MSG_CONTACT_NOT_ON_LIST */
+	LPGENT("Multisend service not found."),				/* GEN_SQ_MULTISEND_NO_SERVICE */
 };
 
 /*
@@ -223,10 +225,10 @@ TCHAR* CTranslator::m_OptStrings[OPT_LAST] = {
 	LPGENT(""), 					/* OPT_AERO_EFFECT_CARBON */
 	LPGENT(""), 								/* OPT_AERO_EFFECT_SOLID */
 	LPGENT("No border"),											/* OPT_GEN_NONE */
-	LPGENT("Automatic"),											/* OPT_GEN_AUTO */
-	LPGENT("Sunken"),												/* OPT_GEN_SUNKEN */
+	LPGENT(""),											/* OPT_GEN_AUTO */
+	LPGENT(""),												/* OPT_GEN_SUNKEN */
 	LPGENT("1 pixel, solid"),										/* OPT_GEN_1PIXEL */
-	LPGENT("Rounded border"),										/* OPT_GEN_ROUNDED */
+	LPGENT("Rounded (only for internal avatar drawing)"),	/* OPT_GEN_ROUNDED */
 	LPGENT("Globally on"),											/* OPT_GEN_GLOBALLY ON */
 	LPGENT("On, if present"),										/* OPT_GEN_ON_IF_PRESENT */
 	LPGENT("Globally OFF"),											/* OPT_GEN_GLOBALLY_OFF */
@@ -308,7 +310,7 @@ TCHAR* CTranslator::m_translated[STR_LAST];
 TCHAR* CTranslator::m_OptTranslated[OPT_LAST];
 
 LISTOPTIONSGROUP CTranslator::m_lvGroupsModPlus[] = {
-	0, LPGENT("Message window tweaks (changing any of them requires a restart)"),
+	0, LPGENT("Message window tweaks"),
 	0, LPGENT("General tweaks"),
 	0, NULL
 };
@@ -316,13 +318,13 @@ LISTOPTIONSGROUP CTranslator::m_lvGroupsModPlus[] = {
 LISTOPTIONSITEM CTranslator::m_lvItemsModPlus[] = {
 	0, LPGENT("Enable image tag button (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_IMGtagButton", 0,
 	0, LPGENT("Show client icon in status bar (fingerprint plugin required) (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_ClientIconInStatusBar", 0,
-	0, LPGENT("Enable typing sounds (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_soundontyping", 0,
-	0, LPGENT("Disable animated GIF avatars (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_DisableAniAvatars", 0,
+	0, LPGENT("Enable typing sounds"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_soundontyping", 0,
+	0, LPGENT("Disable animated GIF avatars (will not affect already open message windows)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_DisableAniAvatars", 0,
 	0, LPGENT("Enable fix for nicklist scroll bar"), 1, LOI_TYPE_SETTING, (UINT_PTR)"adv_ScrollBarFix", 0,
 	0, LPGENT("Close current tab on send"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_AutoClose_2", 0,
 	0, LPGENT("Enable icon pack version check (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_IconpackWarning", 0,
 	0, LPGENT("Disable error popups on sending failures"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_noErrorPopups", 1,
-	0, LPGENT("Use Aero Glass for the message window (Vista+)(experimental, use with care)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"useAero", 0,
+	0, LPGENT("Use Aero Glass for the message window (Vista+)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"useAero", 1,
 	0, NULL, 0, 0, 0, 0
 };
 

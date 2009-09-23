@@ -740,6 +740,10 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 		}
 
 		case WM_CHAR: {
+			if(mwdat->fkeyProcessed) {
+				mwdat->fkeyProcessed = false;
+				return(0);
+			}
 			BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
 			BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 			BOOL isMenu = GetKeyState(VK_MENU) & 0x8000;
