@@ -31,8 +31,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define UN_CURRENTVERSIONFND "UpdateNotifyCurrentVersionFound"
 #define UN_NOTIFYALPHA       "UpdateNotifyNotifyAlpha"
 #define UN_NOTIFYALPHA_DEF   0
-#define UN_CUSTOMURL         "UpdateNotifyCustomURL"
-#define UN_URL               "http://update.miranda-im.org/update.php"
+#define UN_CUSTOMXMLURL      "UpdateNotifyCustomXMLURL"
+#define UN_URLXML            "http://update.miranda-im.org/update.xml"
 #define UN_MINCHECKTIME      60*60 /* Check no more than once an hour */
 #define UN_DEFAULTCHECKTIME  60*48*60 /* Default to check once every 48 hours */
 #define UN_FIRSTCHECK        15 /* First check 15 seconds after startup */
@@ -48,11 +48,19 @@ typedef struct {
 	DWORD reqTime;
 } UpdateNotifyData;
 
+typedef struct {
+    char *szVersionPublic;
+    char *szVersionReal;
+    char *szDownload;
+    char *szNotes;
+} UpdateNotifyReleaseData;
+
 static BOOL bModuleInitialized = FALSE;
 static HANDLE hNetlibUser = 0, hHookModules, hHookPreShutdown;
 static UINT updateTimerId;
 static HANDLE dwUpdateThreadID = 0;
 static HWND hwndUpdateDlg = 0, hwndManualUpdateDlg = 0;
+static XML_API xun;
 
 static int UpdateNotifyOptInit(WPARAM wParam, LPARAM lParam);
 static INT_PTR UpdateNotifyMenuCommand(WPARAM wParam, LPARAM lParam);
@@ -103,6 +111,7 @@ int LoadUpdateNotifyModule(void) {
 	hHookPreShutdown = HookEvent(ME_SYSTEM_PRESHUTDOWN, UpdateNotifyPreShutdown);
 	HookEvent(ME_OPT_INITIALISE, UpdateNotifyOptInit);
 	updateTimerId = SetTimer(NULL, 0, 1000*UN_FIRSTCHECK, UpdateNotifyTimerCheck);
+    mir_getXI(&xun);
 	return 0;
 }
 
@@ -186,13 +195,57 @@ static VOID CALLBACK UpdateNotifyTimerCheck(HWND, UINT, UINT_PTR, DWORD)
 	}
 }
 
+static DWORD UpdateNotifyMakeVersion(char *str) {
+    DWORD a1,a2,a3,a4;
+    if (!str)
+        return 0;
+    sscanf(str, "%u.%u.%u.%u", &a1, &a2, &a3, &a4);
+    return PLUGIN_MAKE_VERSION(a1, a2, a3, a4);
+}
+
+static int UpdateNotifyIsNewer(DWORD dwCurrent, DWORD dwTest) {
+    if (dwTest>dwCurrent) 
+        return 1;
+    return 0;
+}
+
+static int UpdateNotifyReleaseDataValid(UpdateNotifyReleaseData *d) {
+    if (d&&d->szVersionPublic&&d->szVersionReal&&d->szDownload&&d->szNotes)
+        return 1;
+    return 0;
+}
+
+static void UpdateNotifyFreeReleaseData(UpdateNotifyReleaseData *d) {
+    if (!UpdateNotifyReleaseDataValid(d)) 
+        return;
+    if (d->szVersionPublic) mir_free(d->szVersionPublic);
+    if (d->szVersionReal) mir_free(d->szVersionReal);
+    if (d->szDownload) mir_free(d->szDownload);
+    if (d->szNotes) mir_free(d->szNotes);
+}
+
+static void UpdateNotifyReleaseLogUpdate(UpdateNotifyReleaseData *d) {
+    if (!UpdateNotifyReleaseDataValid(d)) 
+        return;
+    Netlib_Logf(hNetlibUser, "Latest version of Miranda IM: %s", d->szVersionPublic);
+}
+
+static void UpdateNotifyReleaseCopyData(UpdateNotifyReleaseData *d, UpdateNotifyData *und) {
+    if (!UpdateNotifyReleaseDataValid(d)||!und) 
+        return;
+    mir_snprintf(und->version, sizeof(und->version), "%s", d->szVersionPublic);
+    mir_snprintf(und->versionReal, sizeof(und->versionReal), "%s", d->szVersionReal);
+    mir_snprintf(und->notesUrl, sizeof(und->notesUrl), "%s", d->szNotes);
+    mir_snprintf(und->downloadUrl, sizeof(und->downloadUrl), "%s", d->szDownload);
+}
+
 static int UpdateNotifyMakeRequest(UpdateNotifyData *und) {
 	NETLIBHTTPREQUEST req;
 	NETLIBHTTPREQUEST *resp;
 	NETLIBHTTPHEADER headers[1];
 	DWORD dwVersion;
 	char szVersion[32], szUrl[256], szVersionText[128];
-	int isUnicode, isAlpha, isAlphaBuild, isX64 = 0;
+	int isUnicode, isAlphaCheck;
 	DBVARIANT dbv;
 	
 	if (!und) 
@@ -206,75 +259,140 @@ static int UpdateNotifyMakeRequest(UpdateNotifyData *und) {
 	DBWriteContactSettingDword(NULL, UN_MOD, UN_LASTCHECK, und->reqTime);
 	CallService(MS_SYSTEM_GETVERSIONTEXT, sizeof(szVersionText), (LPARAM)szVersionText);
 	isUnicode = strstr(szVersionText, "Unicode") != NULL ? 1 : 0;
-	isAlpha = DBGetContactSettingByte(NULL, UN_MOD, UN_NOTIFYALPHA, UN_NOTIFYALPHA_DEF);
-	isAlphaBuild = strstr(szVersionText, "alpha") != NULL ? 1 : 0;
+	isAlphaCheck = DBGetContactSettingByte(NULL, UN_MOD, UN_NOTIFYALPHA, UN_NOTIFYALPHA_DEF);
 	dwVersion = CallService(MS_SYSTEM_GETVERSION, 0, 0);
-    #ifdef _WIN64
-    isX64 = 1;
-    #endif
 	mir_snprintf(szVersion, sizeof(szVersion), "%d.%d.%d.%d",
 		HIBYTE(HIWORD(dwVersion)), LOBYTE(HIWORD(dwVersion)),
 		HIBYTE(LOWORD(dwVersion)), LOBYTE(LOWORD(dwVersion)));
-	if (!DBGetContactSettingString(NULL, UN_MOD, UN_CUSTOMURL, &dbv)) {
-		mir_snprintf(szUrl, sizeof(szUrl), "%s?version=%s&unicode=%d&alpha=%d&alphaBuild=%d&x64=%d", dbv.pszVal?dbv.pszVal:UN_URL, szVersion, isUnicode, isAlpha, isAlphaBuild, isX64);
+	if (!DBGetContactSettingString(NULL, UN_MOD, UN_CUSTOMXMLURL, &dbv)) {
+		mir_snprintf(szUrl, sizeof(szUrl), "%s", dbv.pszVal?dbv.pszVal:UN_URLXML);
 		DBFreeVariant(&dbv);
 	}
-	else mir_snprintf(szUrl, sizeof(szUrl), "%s?version=%s&unicode=%d&alpha=%d&alphaBuild=%d&x64=%d", UN_URL, szVersion, isUnicode, isAlpha, isAlphaBuild, isX64);
-
+	else mir_snprintf(szUrl, sizeof(szUrl), "%s", UN_URLXML);
 	ZeroMemory(&req, sizeof(req));
 	req.cbSize = sizeof(req);
 	req.requestType = REQUEST_GET;
 	req.szUrl = szUrl;
 	req.flags = 0;
 	headers[0].szName = "User-Agent";
-	headers[0].szValue = "MirandaUpdate/0.3";
+	headers[0].szValue = "MirandaUpdate/0.4";
 	req.headersCount = 1;
 	req.headers = headers;
 	resp = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)hNetlibUser, (LPARAM)&req);
 	if (resp) {
-		if (resp->resultCode==200) {
-			int i;
+		if (resp->resultCode==200&&resp->dataLength>0) {
+			//int i;
 			int resUpdate = 0;
-			
-			for (i=0; i<resp->headersCount; i++ ) {
-				if (strcmp(resp->headers[i].szName, "X-Miranda-Update")==0) {
-					resUpdate = resp->headers[i].szValue&&strcmp(resp->headers[i].szValue,"true")==0?1:0;
-					if (resUpdate) {
-						Netlib_Logf(hNetlibUser, "A new update is available for %s", szVersion);
-					}
-				}
-				else if (strcmp(resp->headers[i].szName, "X-Miranda-Version")==0&&resp->headers[i].szValue) {
-					Netlib_Logf(hNetlibUser, "Server version (%s)", resp->headers[i].szValue);
-					mir_snprintf(und->version, sizeof(und->version), "%s", resp->headers[i].szValue);
-				}
-				else if (strcmp(resp->headers[i].szName, "X-Miranda-Version-Complete")==0&&resp->headers[i].szValue) {
-					Netlib_Logf(hNetlibUser, "Server version complete (%s)", resp->headers[i].szValue);
-					mir_snprintf(und->versionReal, sizeof(und->versionReal), "%s", resp->headers[i].szValue);
-				}
-				else if (strcmp(resp->headers[i].szName, "X-Miranda-Notes-URL")==0&&resp->headers[i].szValue) {
-					Netlib_Logf(hNetlibUser, "Notes url found (%s)", resp->headers[i].szValue);
-					mir_snprintf(und->notesUrl, sizeof(und->notesUrl), "%s", resp->headers[i].szValue);
-				}
-				else if (strcmp(resp->headers[i].szName, "X-Miranda-Download-URL")==0&&resp->headers[i].szValue) {
-					Netlib_Logf(hNetlibUser, "Download url found (%s)", resp->headers[i].szValue);
-					mir_snprintf(und->downloadUrl, sizeof(und->downloadUrl), "%s", resp->headers[i].szValue);
-				}
-				else if (strcmp(resp->headers[i].szName, "X-Miranda-UN-New-URL")==0&&resp->headers[i].szValue) {
-					Netlib_Logf(hNetlibUser, "Update URL has changed (%s)", resp->headers[i].szValue);
-					DBWriteContactSettingString(NULL, UN_MOD, UN_CUSTOMURL, resp->headers[i].szValue);
-				}
-				else if (strcmp(resp->headers[i].szName, "X-Miranda-Ping-Period")==0) {
-					DWORD dwPingPeriod = atoi(resp->headers[i].szValue);
-
-					if (dwPingPeriod>UN_MINCHECKTIME) {
-						Netlib_Logf(hNetlibUser, "Next update check in %d hours", dwPingPeriod/3600);
-						DBWriteContactSettingDword(NULL, UN_MOD, UN_SERVERPERIOD, dwPingPeriod);
-					}
-				}
-			}
-			if (resUpdate&&und->version&&und->versionReal&&und->notesUrl&&und->downloadUrl) {
-				und->isNew = 1;
-			}
+            TCHAR *tXml;
+            char *tmp;
+            HXML nodeDoc, n;
+            
+            tXml = mir_a2t(resp->pData);
+            nodeDoc = xun.parseString(tXml, 0, _T("miranda"));
+            if (nodeDoc) {
+                // stable release
+                UpdateNotifyReleaseData rdStable;
+                ZeroMemory(&rdStable, sizeof(rdStable));
+                if ((n = xun.getChildByPath(nodeDoc, _T("releases/releasestable/versionpublic"), 0)) != NULL && xun.getText(n)) {
+                    rdStable.szVersionPublic = t2a(xun.getText(n));
+                }
+                if ((n = xun.getChildByPath(nodeDoc, _T("releases/releasestable/versionreal"), 0)) != NULL && xun.getText(n)) {
+                    rdStable.szVersionReal = t2a(xun.getText(n));
+                }
+                #ifdef _UNICODE
+                if ((n = xun.getChildByPath(nodeDoc, _T("releases/releasestable/downloadunicodeexe"), 0)) != NULL && xun.getText(n)) {
+                    rdStable.szDownload = t2a(xun.getText(n));
+                }
+                #else
+                if ((n = xun.getChildByPath(nodeDoc, _T("releases/releasestable/downloadansiexe"), 0)) != NULL && xun.getText(n)) {
+                    rdStable.szDownload = t2a(xun.getText(n));
+                }
+                #endif
+                if ((n = xun.getChildByPath(nodeDoc, _T("releases/releasestable/notesurl"), 0)) != NULL && xun.getText(n)) {
+                    rdStable.szNotes = t2a(xun.getText(n));
+                }
+                
+                // alpha release
+                UpdateNotifyReleaseData rdAlpha;
+                ZeroMemory(&rdAlpha, sizeof(rdAlpha));
+                if ((n = xun.getChildByPath(nodeDoc, _T("releases/releasealpha/versionpublic"), 0)) != NULL && xun.getText(n)) {
+                    rdAlpha.szVersionPublic = t2a(xun.getText(n));
+                }
+                if ((n = xun.getChildByPath(nodeDoc, _T("releases/releasealpha/versionreal"), 0)) != NULL && xun.getText(n)) {
+                    rdAlpha.szVersionReal = t2a(xun.getText(n));
+                }
+                #ifdef _UNICODE
+                if ((n = xun.getChildByPath(nodeDoc, _T("releases/releasealpha/downloadunicodezip"), 0)) != NULL && xun.getText(n)) {
+                    rdAlpha.szDownload = t2a(xun.getText(n));
+                }
+                #else
+                if ((n = xun.getChildByPath(nodeDoc, _T("releases/releasealpha/downloadansizip"), 0)) != NULL && xun.getText(n)) {
+                    rdAlpha.szDownload = t2a(xun.getText(n));
+                }
+                #endif
+                if ((n = xun.getChildByPath(nodeDoc, _T("releases/releasealpha/notesurl"), 0)) != NULL && xun.getText(n)) {
+                    rdAlpha.szNotes = t2a(xun.getText(n));
+                }
+                
+                if (isAlphaCheck) {
+                    if (!UpdateNotifyReleaseDataValid(&rdAlpha)&&UpdateNotifyReleaseDataValid(&rdStable)) {
+                        UpdateNotifyReleaseLogUpdate(&rdStable);
+                        if (UpdateNotifyIsNewer(dwVersion, UpdateNotifyMakeVersion(rdStable.szVersionReal))) 
+                            resUpdate = 1;
+                        UpdateNotifyReleaseCopyData(&rdStable, und);
+                    }
+                    else if (UpdateNotifyReleaseDataValid(&rdAlpha)&&UpdateNotifyReleaseDataValid(&rdStable)&&
+                            UpdateNotifyIsNewer(UpdateNotifyMakeVersion(rdAlpha.szVersionReal), UpdateNotifyMakeVersion(rdStable.szVersionReal))) {
+                        UpdateNotifyReleaseLogUpdate(&rdStable);
+                        if (UpdateNotifyIsNewer(dwVersion, UpdateNotifyMakeVersion(rdStable.szVersionReal))) 
+                            resUpdate = 1;
+                        UpdateNotifyReleaseCopyData(&rdStable, und);
+                    }
+                    else if (UpdateNotifyReleaseDataValid(&rdAlpha)) {
+                        UpdateNotifyReleaseLogUpdate(&rdAlpha);
+                        if (UpdateNotifyIsNewer(dwVersion, UpdateNotifyMakeVersion(rdAlpha.szVersionReal))) 
+                            resUpdate = 1;
+                        UpdateNotifyReleaseCopyData(&rdAlpha, und);
+                    }
+                }
+                else {
+                    if (UpdateNotifyReleaseDataValid(&rdStable)) {
+                        UpdateNotifyReleaseLogUpdate(&rdStable);
+                        if (UpdateNotifyIsNewer(dwVersion, UpdateNotifyMakeVersion(rdStable.szVersionReal))) 
+                            resUpdate = 1;
+                        UpdateNotifyReleaseCopyData(&rdStable, und);
+                    }
+                }
+              
+                UpdateNotifyFreeReleaseData(&rdStable);
+                UpdateNotifyFreeReleaseData(&rdAlpha);
+                // settings
+                if ((n = xun.getChildByPath(nodeDoc, _T("settings/ping"), 0)) != NULL && xun.getText(n)) {
+                    tmp = t2a(xun.getText(n));
+                    if (tmp) {
+                        int pingval = atoi(tmp);
+                        if ((pingval*60*60)>UN_MINCHECKTIME) {
+                            Netlib_Logf(hNetlibUser, "Next update check in %d hours", pingval);
+                            DBWriteContactSettingDword(NULL, UN_MOD, UN_SERVERPERIOD, pingval*60*60);
+                        }
+                        mir_free(tmp);
+                    }
+                }
+                if ((n = xun.getChildByPath(nodeDoc, _T("settings/updateurl"), 0)) != NULL && xun.getText(n)) {
+                    tmp = t2a(xun.getText(n));
+                    if (tmp) {
+                        Netlib_Logf(hNetlibUser, "Update URL has changed (%s)", tmp);
+                        DBWriteContactSettingString(NULL, UN_MOD, UN_CUSTOMXMLURL, tmp);
+                        mir_free(tmp);
+                    }
+                }
+                if (resUpdate&&und->version&&und->versionReal&&und->notesUrl&&und->downloadUrl) {
+                    Netlib_Logf(hNetlibUser, "A new version of Miranda IM is available: %s", und->version);
+                    und->isNew = 1;
+                }
+            }
+            
+            mir_free(tXml);
 		}
 		else Netlib_Logf(hNetlibUser, "Invalid response code from HTTP request");
 		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)resp);
