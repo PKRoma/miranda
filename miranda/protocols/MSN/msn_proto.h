@@ -499,20 +499,20 @@ struct CMsnProto : public PROTO_INTERFACE
 	/////////////////////////////////////////////////////////////////////////////////////////
 	//	MSN SOAP Address Book
 
-	bool MSN_SharingFindMembership(bool deltas = false);
-	bool MSN_SharingAddDelMember(const char* szEmail, const int listId, const int netId, const char* szMethod);
-	bool MSN_SharingMyProfile(void);
-	bool MSN_ABAdd(void);
-	bool MSN_ABFind(const char* szMethod, const char* szGuid, bool deltas = false);
-	bool MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const char* szMethod);
-	void MSN_ABAddGroup(const char* szGrpName);
-	void MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId);
-	void MSN_ABUpdateNick(const char* szNick, const char* szCntId);
-	void MSN_ABUpdateAttr(const char* szCntId, const char* szAttr, const char* szValue);
-	bool MSN_ABUpdateProperty(const char* szCntId, const char* propName, const char* propValue);
-	bool MSN_ABAddRemoveContact(const char* szCntId, int netId, bool add);
-	unsigned MSN_ABContactAdd(const char* szEmail, const char* szNick, int netId, const char* szInvite, const bool search, const bool retry=false);
-	void MSN_ABUpdateDynamicItem(void);
+	bool MSN_SharingFindMembership(bool deltas = false, bool allowRecurse = true);
+	bool MSN_SharingAddDelMember(const char* szEmail, const int listId, const int netId, const char* szMethod, bool allowRecurse = true);
+	bool MSN_SharingMyProfile(bool allowRecurse = true);
+	bool MSN_ABAdd(bool allowRecurse = true);
+	bool MSN_ABFind(const char* szMethod, const char* szGuid, bool deltas = false, bool allowRecurse = true);
+	bool MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const char* szMethod, bool allowRecurse = true);
+	void MSN_ABAddGroup(const char* szGrpName, bool allowRecurse = true);
+	void MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId, bool allowRecurse = true);
+	void MSN_ABUpdateNick(const char* szNick, const char* szCntId, bool allowRecurse = true);
+	void MSN_ABUpdateAttr(const char* szCntId, const char* szAttr, const char* szValue, bool allowRecurse = true);
+	bool MSN_ABUpdateProperty(const char* szCntId, const char* propName, const char* propValue, bool allowRecurse = true);
+	bool MSN_ABAddRemoveContact(const char* szCntId, int netId, bool add, bool allowRecurse = true);
+	unsigned MSN_ABContactAdd(const char* szEmail, const char* szNick, int netId, const char* szInvite, const bool search, const bool retry=false, bool allowRecurse = true);
+	void MSN_ABUpdateDynamicItem(bool allowRecurse = true);
 
 	ezxml_t abSoapHdr(const char* service, const char* scenario, ezxml_t& tbdy, char*& httphdr);
 	char* GetABHost(const char* service, bool isSharing);
@@ -529,14 +529,14 @@ struct CMsnProto : public PROTO_INTERFACE
 	//	MSN SOAP Roaming Storage
 
 	bool MSN_StoreGetProfile(bool allowRecurse = true);
-	bool MSN_StoreUpdateProfile(const char* szNick, bool lock);
-	bool MSN_StoreCreateProfile(void);
-	bool MSN_StoreShareItem(const char* id);
-	bool MSN_StoreCreateRelationships(void);
-	bool MSN_StoreDeleteRelationships(bool tile);
-	bool MSN_StoreCreateDocument(const char *szName, const char *szMimeType, const char *szPicData);
-	bool MSN_StoreUpdateDocument(const char *szName, const char *szMimeType, const char *szPicData);
-	bool MSN_StoreFindDocuments(void);
+	bool MSN_StoreUpdateProfile(const char* szNick, bool lock, bool allowRecurse = true);
+	bool MSN_StoreCreateProfile(bool allowRecurse = true);
+	bool MSN_StoreShareItem(const char* id, bool allowRecurse = true);
+	bool MSN_StoreCreateRelationships(bool allowRecurse = true);
+	bool MSN_StoreDeleteRelationships(bool tile, bool allowRecurse = true);
+	bool MSN_StoreCreateDocument(const char *szName, const char *szMimeType, const char *szPicData, bool allowRecurse = true);
+	bool MSN_StoreUpdateDocument(const char *szName, const char *szMimeType, const char *szPicData, bool allowRecurse = true);
+	bool MSN_StoreFindDocuments(bool allowRecurse = true);
 
 	ezxml_t storeSoapHdr(const char* service, const char* scenario, ezxml_t& tbdy, char*& httphdr);
 	char* GetStoreHost(const char* service);
