@@ -111,7 +111,7 @@ bool CMsnProto::MSN_StoreCreateProfile(bool allowRecurse)
 	mir_free(reqHdr);
 	free(szData);
 
-	if (tResult != NULL && status == 200)
+	if (tResult != NULL)
 	{
 		if (status == 200)
 		{
