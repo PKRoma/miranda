@@ -224,14 +224,14 @@ void CMsnProto::sttNotificationMessage(char* msgBody, bool isInitial)
 	MimeHeaders tFileInfo;
 	tFileInfo.readFromBuffer(msgBody);
 
-	const char* From = tFileInfo[ "From" ];
-	const char* Subject = tFileInfo[ "Subject" ];
-	const char* Fromaddr = tFileInfo[ "From-Addr" ];
-	const char* MsgDelta = tFileInfo[ "Message-Delta" ];
-	const char* SrcFolder = tFileInfo[ "Src-Folder" ];
-	const char* DestFolder = tFileInfo[ "Dest-Folder" ];
-	const char* InboxUnread = tFileInfo[ "Inbox-Unread" ];
-	const char* FoldersUnread = tFileInfo[ "Folders-Unread" ];
+	const char* From = tFileInfo["From"];
+	const char* Subject = tFileInfo["Subject"];
+	const char* Fromaddr = tFileInfo["From-Addr"];
+	const char* MsgDelta = tFileInfo["Message-Delta"];
+	const char* SrcFolder = tFileInfo["Src-Folder"];
+	const char* DestFolder = tFileInfo["Dest-Folder"];
+	const char* InboxUnread = tFileInfo["Inbox-Unread"];
+	const char* FoldersUnread = tFileInfo["Folders-Unread"];
 	
 	if (InboxUnread != NULL)
 		mUnreadMessages = atol(InboxUnread);
@@ -285,7 +285,7 @@ void CMsnProto::sttNotificationMessage(char* msgBody, bool isInitial)
 	}
 	else 
 	{
-		const char* MailData = tFileInfo[ "Mail-Data" ];
+		const char* MailData = tFileInfo["Mail-Data"];
 		if (MailData != NULL) processMailData((char*)MailData);
 
 		mir_sntprintf(tBuffer, SIZEOF(tBuffer), m_tszUserName);
@@ -331,7 +331,7 @@ void CMsnProto::sttNotificationMessage(char* msgBody, bool isInitial)
 
 		MSN_ShowPopup(tBuffer, tBuffer2, 
 			MSN_ALLOW_ENTER | MSN_ALLOW_MSGBOX | MSN_HOTMAIL_POPUP, 
-			tFileInfo[ "Message-URL" ]);
+			tFileInfo["Message-URL"]);
 	}
 
 	if (!getByte("RunMailerOnHotmail", 0) || !ShowPopUp || isInitial)

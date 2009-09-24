@@ -75,7 +75,7 @@ void CMsnProto::MSN_DeleteServerGroup(LPCSTR szId)
 		MsnContact *msc = Lists_GetNext(count);
 		if (msc == NULL) break;
 
-		char szGroupID[ 100 ];
+		char szGroupID[100];
 		if (!getStaticString(msc->hContact, "GroupID", szGroupID, sizeof(szGroupID))) 
 		{
 			if (strcmp(szGroupID, szId) == 0)

@@ -82,7 +82,7 @@ void MimeHeaders::addLong(const char* name, long lValue)
 	MimeHeader& H = mVals[allocSlot()];
 	H.name = name;
 
-	char szBuffer[ 20 ];
+	char szBuffer[20];
 	_ltoa(lValue, szBuffer, 10);
 	H.value = mir_strdup(szBuffer); 
 	H.flags = 2;
@@ -93,7 +93,7 @@ void MimeHeaders::addULong(const char* name, unsigned lValue)
 	MimeHeader& H = mVals[allocSlot()];
 	H.name = name;
 
-	char szBuffer[ 20 ];
+	char szBuffer[20];
 	_ultoa(lValue, szBuffer, 10);
 	H.value = mir_strdup(szBuffer); 
 	H.flags = 2;
@@ -460,7 +460,7 @@ int sttDivideWords(char* parBuffer, int parMinItems, char** parDest)
 	int i;
 	for (i=0; i < parMinItems; i++) 
 	{
-		parDest[ i ] = parBuffer;
+		parDest[i] = parBuffer;
 
 		size_t tWordLen = strcspn(parBuffer, " \t");
 		if (tWordLen == 0)

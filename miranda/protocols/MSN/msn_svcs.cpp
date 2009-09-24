@@ -238,7 +238,7 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 
 	if (szFileName == NULL)
 	{
-		char tFileName[ MAX_PATH ];
+		char tFileName[MAX_PATH];
 		MSN_GetAvatarFileName(NULL, tFileName, sizeof(tFileName));
 		remove(tFileName);
 		deleteSetting(NULL, "PictObject");
@@ -279,7 +279,7 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 		mir_sha1_append(&sha1ctx, (PBYTE)MyOptions.szEmail, (int)strlen(MyOptions.szEmail));
 		ezxml_set_attr(xmlp, "Creator", MyOptions.szEmail);
 
-		char szFileSize[ 20 ];
+		char szFileSize[20];
 		_ltoa(dwPngSize, szFileSize, 10);
 		mir_sha1_append(&sha1ctx, (PBYTE)"Size", 4);
 		mir_sha1_append(&sha1ctx, (PBYTE)szFileSize, (int)strlen(szFileSize));
@@ -310,7 +310,7 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 		}
 		{
 			char* szBuffer = ezxml_toxml(xmlp, false);
-			char szEncodedBuffer[ 2000 ];
+			char szEncodedBuffer[2000];
 			UrlEncode(szBuffer, szEncodedBuffer, sizeof(szEncodedBuffer));
 			free(szBuffer);
 			ezxml_free(xmlp);
@@ -365,7 +365,7 @@ INT_PTR CMsnProto::SendNudge(WPARAM wParam, LPARAM lParam)
 
 	HANDLE hContact = (HANDLE)wParam;
 
-	char tEmail[ MSN_MAX_EMAIL_LEN ];
+	char tEmail[MSN_MAX_EMAIL_LEN];
 	if (MSN_IsMeByContact(hContact, tEmail)) return 0;
 
 	static const char nudgemsg[] = 
@@ -519,7 +519,7 @@ int CMsnProto::OnContactDeleted(WPARAM wParam, LPARAM lParam)
 	}
 	else
 	{
-		char szEmail[ MSN_MAX_EMAIL_LEN ];
+		char szEmail[MSN_MAX_EMAIL_LEN];
 		if (MSN_IsMeByContact(hContact, szEmail))
 			CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM) 1);
 		
@@ -603,7 +603,7 @@ int CMsnProto::OnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 		if (!MSN_IsMyContact(hContact))
 			return 0;
 
-		char tEmail[ MSN_MAX_EMAIL_LEN ];
+		char tEmail[MSN_MAX_EMAIL_LEN];
 		if (!getStaticString(hContact, "e-mail", tEmail, sizeof(tEmail))) 
 		{
 			bool isBlocked = Lists_IsInList(LIST_BL, tEmail);
@@ -629,7 +629,7 @@ int CMsnProto::OnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 		bool isMe = MSN_IsMeByContact(hContact);
 		if (!isMe || !nickChg)
 		{
-			char szContactID[ 100 ];
+			char szContactID[100];
 			if (!getStaticString(hContact, "ID", szContactID, sizeof(szContactID))) 
 			{
 				if (cws->value.type != DBVT_DELETED) 
@@ -677,7 +677,7 @@ int CMsnProto::OnWindowEvent(WPARAM wParam, LPARAM lParam)
 	if (msgEvData->uType == MSG_WINDOW_EVT_OPENING) {
 		if (!MSN_IsMyContact(msgEvData->hContact)) return 0;
 		
-		char tEmail[ MSN_MAX_EMAIL_LEN ];
+		char tEmail[MSN_MAX_EMAIL_LEN];
 		if (MSN_IsMeByContact(msgEvData->hContact, tEmail)) return 0;
 
 		int netId = Lists_GetNetId(tEmail);

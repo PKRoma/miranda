@@ -217,7 +217,7 @@ void __cdecl CMsnProto::MSNServerThread(void* arg)
 					break;  //wait for full line end
 
 				char msg[sizeof(info->mData)];
-				memcpy(msg, info->mData, peol-info->mData); msg[ peol-info->mData ] = 0;
+				memcpy(msg, info->mData, peol-info->mData); msg[peol-info->mData] = 0;
 
 				if (*++peol != '\n')
 					MSN_DebugLog("Dodgy line ending to command: ignoring");
@@ -298,7 +298,7 @@ void  CMsnProto::MSN_CloseConnections()
 
 	for (int i=0; i < sttThreads.getCount(); i++) 
 	{
-		ThreadData* T = &sttThreads[ i ];
+		ThreadData* T = &sttThreads[i];
 
 		switch (T->mType) 
 		{
@@ -334,7 +334,7 @@ void  CMsnProto::MSN_CloseThreads()
 
 		bool opcon = false;
 		for (int i=0; i < sttThreads.getCount(); i++)
-			opcon |= (sttThreads[ i ].s != NULL);
+			opcon |= (sttThreads[i].s != NULL);
 
 		LeaveCriticalSection(&sttLock);
 		
@@ -347,7 +347,7 @@ void  CMsnProto::MSN_CloseThreads()
 
 	for (int i=0; i < sttThreads.getCount(); i++) 
 	{
-		const ThreadData* T = &sttThreads[ i ];
+		ThreadData* T = &sttThreads[i];
 		
 		if (T->s != NULL)
 			MSN_CallService(MS_NETLIB_SHUTDOWN, (WPARAM)T->s, 0);
@@ -371,7 +371,7 @@ ThreadData*  CMsnProto::MSN_GetThreadByContact(HANDLE hContact, TInfoType type)
 
 	for (int i=0; i < sttThreads.getCount(); i++)
 	{
-		ThreadData* T = &sttThreads[ i ];
+		ThreadData* T = &sttThreads[i];
 		if (T->mJoinedCount == 0 || T->mJoinedContacts == NULL || T->s == NULL || T->mType != type)
 			continue;
 
@@ -390,7 +390,7 @@ ThreadData*  CMsnProto::MSN_GetThreadByTimer(UINT timerId)
 
 	for (int i=0; i < sttThreads.getCount(); i++) 
 	{
-		ThreadData* T = &sttThreads[ i ];
+		ThreadData* T = &sttThreads[i];
 		if (T->mType == SERVER_SWITCHBOARD && T->mTimerId == timerId) 
 		{
 			result = T;
@@ -409,7 +409,7 @@ ThreadData*  CMsnProto::MSN_GetP2PThreadByContact(HANDLE hContact)
 
 	for (int i=0; p2pT == NULL && i < sttThreads.getCount(); i++) 
 	{
-		ThreadData* T = &sttThreads[ i ];
+		ThreadData* T = &sttThreads[i];
 		if (T->mJoinedCount == 0 || T->mJoinedContacts == NULL)
 			continue;
 
@@ -443,7 +443,7 @@ void  CMsnProto::MSN_StartP2PTransferByContact(HANDLE hContact)
 
 	for (int i=0; i < sttThreads.getCount(); i++) 
 	{
-		ThreadData* T = &sttThreads[ i ];
+		ThreadData* T = &sttThreads[i];
 		if (T->mJoinedCount == 0 || T->mJoinedContacts == NULL)
 			continue;
 
@@ -463,7 +463,7 @@ ThreadData*  CMsnProto::MSN_GetOtherContactThread(ThreadData* thread)
 
 	for (int i=0; i < sttThreads.getCount(); i++) 
 	{
-		ThreadData* T = &sttThreads[ i ];
+		ThreadData* T = &sttThreads[i];
 		if (T->mJoinedCount == 0 || T->mJoinedContacts == NULL || T->s == NULL)
 			continue;
 
@@ -485,7 +485,7 @@ ThreadData*  CMsnProto::MSN_GetUnconnectedThread(HANDLE hContact)
 
 	for (int i=0; i < sttThreads.getCount(); i++) 
 	{
-		ThreadData* T = &sttThreads[ i ];
+		ThreadData* T = &sttThreads[i];
 		if (T->mInitialContact == hContact && T->mType == SERVER_SWITCHBOARD) 
 		{
 			result = T;
@@ -531,9 +531,9 @@ int  CMsnProto::MSN_GetActiveThreads(ThreadData** parResult)
 
 	for (int i=0; i < sttThreads.getCount(); i++)
 	{
-		ThreadData* T = &sttThreads[ i ];
+		ThreadData* T = &sttThreads[i];
 		if (T->mType == SERVER_SWITCHBOARD && T->mJoinedCount != 0 && T->mJoinedContacts != NULL)
-			parResult[ tCount++ ] = T;
+			parResult[tCount++] = T;
 	}
 
 	LeaveCriticalSection(&sttLock);
@@ -547,7 +547,7 @@ ThreadData*  CMsnProto::MSN_GetThreadByConnection(HANDLE s)
 
 	for (int i=0; i < sttThreads.getCount(); i++) 
 	{
-		ThreadData* T = &sttThreads[ i ];
+		ThreadData* T = &sttThreads[i];
 		if (T->s == s) 
 		{
 			tResult = T;
@@ -566,7 +566,7 @@ ThreadData*  CMsnProto::MSN_GetThreadByPort(WORD wPort)
 
 	for (int i=0; i < sttThreads.getCount(); i++) 
 	{
-		ThreadData* T = &sttThreads[ i ];
+		ThreadData* T = &sttThreads[i];
 		if (T->mIncomingPort == wPort)
 		{
 			result = T;
@@ -694,7 +694,7 @@ void ThreadData::getGatewayUrl(char* dest, int destlen, bool isPoll)
 
 void ThreadData::processSessionData(const char* str)
 {
-	char tSessionID[40], tGateIP[ 40 ];
+	char tSessionID[40], tGateIP[40];
 
 	char* tDelim = (char*)strchr(str, ';');
 	if (tDelim == NULL)

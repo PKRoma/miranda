@@ -788,7 +788,7 @@ INT_PTR CALLBACK DlgDeleteContactUI(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 			DeleteParam *param = (DeleteParam*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 			
-			char szEmail[ MSN_MAX_EMAIL_LEN ];
+			char szEmail[MSN_MAX_EMAIL_LEN];
 			if (!param->proto->getStaticString(param->hContact, "e-mail", szEmail, sizeof(szEmail))) 
 			{
 				param->proto->MSN_AddUser(param->hContact, szEmail, 0, LIST_FL | (isHot ? LIST_REMOVE : LIST_REMOVENH));

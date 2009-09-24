@@ -159,7 +159,7 @@ struct CMsnProto : public PROTO_INTERFACE
 	int msnPingTimeout;
 	HANDLE hKeepAliveThreadEvt;
 
-	char*    msnModeMsgs[ MSN_NUM_MODES ];
+	char*    msnModeMsgs[MSN_NUM_MODES];
 
 	LISTENINGTOINFO     msnCurrentMedia;
 	MYOPTIONS			MyOptions;
@@ -253,8 +253,8 @@ struct CMsnProto : public PROTO_INTERFACE
 	HANDLE mainMenuRoot;
 	HANDLE hBlockMenuItem;
 	HANDLE hOpenInboxMenuItem;
-	HANDLE menuItems[ 1 ];
-	HANDLE menuItemsAll[ 7 ];
+	HANDLE menuItems[1];
+	HANDLE menuItemsAll[7];
 
 	void MsnInitMenus(void);
 	void MsnUninitMenus(void);
