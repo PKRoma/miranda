@@ -20,6 +20,20 @@ Contents
 
 1. Changes in this version
 --------------------------
+* New in 0.8.7
+Enhancements:
+ - New update notification detection
+
+Bugfixes:
+ - Fixed memory leaks
+ - Fixed possible crash on startup
+ - Jabber: Fixed SASL authentication
+ - MSN: Fixed MSN contact search 
+ - MSN: Disabled server list options when MSN not logged-in
+ - MSN: Added removal of new style for MSN color codes in nicks and status messages
+ - MSN: Fixed infinite loop on authorization failure
+
+
 * New in 0.8.6
 Enhancements:
  - Performance improvements with network logging disabled
