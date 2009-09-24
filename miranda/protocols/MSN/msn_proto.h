@@ -511,7 +511,7 @@ struct CMsnProto : public PROTO_INTERFACE
 	void MSN_ABUpdateAttr(const char* szCntId, const char* szAttr, const char* szValue, bool allowRecurse = true);
 	bool MSN_ABUpdateProperty(const char* szCntId, const char* propName, const char* propValue, bool allowRecurse = true);
 	bool MSN_ABAddRemoveContact(const char* szCntId, int netId, bool add, bool allowRecurse = true);
-	unsigned MSN_ABContactAdd(const char* szEmail, const char* szNick, int netId, const char* szInvite, const bool search, const bool retry=false, bool allowRecurse = true);
+	unsigned MSN_ABContactAdd(const char* szEmail, const char* szNick, int netId, const char* szInvite, bool search, bool retry = false, bool allowRecurse = true);
 	void MSN_ABUpdateDynamicItem(bool allowRecurse = true);
 
 	ezxml_t abSoapHdr(const char* service, const char* scenario, ezxml_t& tbdy, char*& httphdr);
