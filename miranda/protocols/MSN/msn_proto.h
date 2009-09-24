@@ -30,15 +30,15 @@ typedef INT_PTR (__cdecl CMsnProto::*MsnServiceFuncParam)(WPARAM, LPARAM, LPARAM
 
 struct CMsnProto : public PROTO_INTERFACE
 {
-		CMsnProto(const char*, const TCHAR*);
-		~CMsnProto();
+	CMsnProto(const char*, const TCHAR*);
+	~CMsnProto();
 
-		__inline void* operator new(size_t size)
-		{	return calloc(1, size);
-		}
-		__inline void operator delete(void* p)
-		{	free(p);
-		}
+	__inline void* operator new(size_t size)
+	{	return calloc(1, size);
+	}
+	__inline void operator delete(void* p)
+	{	free(p);
+	}
 
 	//====================================================================================
 	// PROTO_INTERFACE
