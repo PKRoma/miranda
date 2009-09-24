@@ -259,7 +259,8 @@ void __cdecl CMsnProto::msnftp_sendFileThread(void* arg)
 
 	MSN_DebugLog("Waiting for an incoming connection to '%s'...", info->mServer);
 
-	switch(WaitForSingleObject(info->hWaitEvent, 60000)) {
+	switch(WaitForSingleObject(info->hWaitEvent, 60000)) 
+	{
 	case WAIT_TIMEOUT:
 	case WAIT_FAILED:
 		MSN_DebugLog("Incoming connection timed out, closing file transfer");
@@ -305,7 +306,8 @@ void __cdecl CMsnProto::msnftp_sendFileThread(void* arg)
 
 				MSN_DebugLog("RECV:%s", msg);
 
-				if (!isalnum(msg[0]) || !isalnum(msg[1]) || !isalnum(msg[2]) || (msg[3] && msg[3]!=' ')) {
+				if (!isalnum(msg[0]) || !isalnum(msg[1]) || !isalnum(msg[2]) || (msg[3] && msg[3]!=' ')) 
+				{
 					MSN_DebugLog("Invalid command name");
 					continue;
 				}
@@ -358,6 +360,7 @@ void CMsnProto::msnftp_startFileSend(ThreadData* info, const char* Invcommand, c
 		"Request-Data: IP-Address:\r\n\r\n",
 		sb ? "ACCEPT" : "CANCEL",
 		Invcookie, MyConnection.GetMyExtIPStr(), nlb.wExPort, MSN_GenRandom());
+
 	info->sendPacket("MSG", "N %d\r\n%s", nBytes, command);
 
 	if (sb) 
