@@ -110,7 +110,7 @@ char* CMsnProto::GetABHost(const char* service, bool isSharing)
 }
 
 
-bool CMsnProto::MSN_ABAdd(void)
+bool CMsnProto::MSN_ABAdd(bool allowRecurse)
 {
 	char* reqHdr;
 	ezxml_t tbdy, node;
@@ -151,10 +151,10 @@ bool CMsnProto::MSN_ABAdd(void)
 		if (status == 500)
 		{
 			const char* szErr = ezxml_txt(getSoapFault(xmlm, true));
-			if (strcmp(szErr, "PassportAuthFail") == 0)
+			if (strcmp(szErr, "PassportAuthFail") == 0 && allowRecurse)
 			{
 				MSN_GetPassportAuth();
-				status = MSN_ABAdd() ? 200 : 500;
+				status = MSN_ABAdd(false) ? 200 : 500;
 			}
 		}
 		ezxml_free(xmlm);
@@ -167,7 +167,7 @@ bool CMsnProto::MSN_ABAdd(void)
 }
 
 
-bool CMsnProto::MSN_SharingFindMembership(bool deltas)
+bool CMsnProto::MSN_SharingFindMembership(bool deltas, bool allowRecurse)
 {
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -317,10 +317,10 @@ bool CMsnProto::MSN_SharingFindMembership(bool deltas)
 				MSN_ABAdd();
 				status = 200;
 			}
-			else if (strcmp(szErr, "PassportAuthFail") == 0)
+			else if (strcmp(szErr, "PassportAuthFail") == 0 && allowRecurse)
 			{
 				MSN_GetPassportAuth();
-				status = MSN_SharingFindMembership() ? 200 : 500;
+				status = MSN_SharingFindMembership(false) ? 200 : 500;
 			}
 		}
 		ezxml_free(xmlm);
@@ -332,7 +332,7 @@ bool CMsnProto::MSN_SharingFindMembership(bool deltas)
 }
 
 // AddMember, DeleteMember
-bool CMsnProto::MSN_SharingAddDelMember(const char* szEmail, const int listId, const int netId, const char* szMethod)
+bool CMsnProto::MSN_SharingAddDelMember(const char* szEmail, const int listId, const int netId, const char* szMethod, bool allowRecurse)
 {
 	const char* szRole;
 	if (listId & LIST_AL) szRole = "Allow";
@@ -434,10 +434,10 @@ bool CMsnProto::MSN_SharingAddDelMember(const char* szEmail, const int listId, c
 		if (status == 500)
 		{
 			const char* szErr = ezxml_txt(getSoapFault(xmlm, true));
-			if (strcmp(szErr, "PassportAuthFail") == 0)
+			if (strcmp(szErr, "PassportAuthFail") == 0 && allowRecurse)
 			{
 				MSN_GetPassportAuth();
-				status = MSN_SharingAddDelMember(szEmail, listId, netId, szMethod) ? 200 : 500;
+				status = MSN_SharingAddDelMember(szEmail, listId, netId, szMethod, false) ? 200 : 500;
 			}
 		}
 		ezxml_free(xmlm);
@@ -449,7 +449,7 @@ bool CMsnProto::MSN_SharingAddDelMember(const char* szEmail, const int listId, c
 	return status == 200;
 }
 
-bool CMsnProto::MSN_SharingMyProfile(void)
+bool CMsnProto::MSN_SharingMyProfile(bool allowRecurse)
 {
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -510,6 +510,18 @@ bool CMsnProto::MSN_SharingMyProfile(void)
 	mir_free(reqHdr);
 	free(szData);
 
+	ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
+	if (status == 500)
+	{
+		const char* szErr = ezxml_txt(getSoapFault(xmlm, true));
+		if (strcmp(szErr, "PassportAuthFail") == 0 && allowRecurse)
+		{
+			MSN_GetPassportAuth();
+			MSN_SharingMyProfile(false);
+		}
+	}
+	ezxml_free(xmlm);
+
 	mir_free(tResult);
 	mir_free(abUrl);
 
@@ -524,7 +536,7 @@ void CMsnProto::SetAbParam(HANDLE hContact, const char *name, const char *par)
 }
 
 //		"ABFindAll", "ABFindByContacts", "ABFindContactsPaged"
-bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid, bool deltas)
+bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid, bool deltas, bool allowRecurse)
 {
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -839,10 +851,10 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid, bool deltas
 		else if (status == 500)
 		{
 			const char* szErr = ezxml_txt(getSoapFault(xmlm, true));
-			if (strcmp(szErr, "PassportAuthFail") == 0)
+			if (strcmp(szErr, "PassportAuthFail") == 0 && allowRecurse)
 			{
 				MSN_GetPassportAuth();
-				status = MSN_ABFind(szMethod, szGuid) ? 200 : 500;
+				status = MSN_ABFind(szMethod, szGuid, false) ? 200 : 500;
 			}
 		}
 		ezxml_free(xmlm);
@@ -855,7 +867,7 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid, bool deltas
 
 
 //		"ABGroupContactAdd" : "ABGroupContactDelete", "ABGroupDelete", "ABContactDelete"
-bool CMsnProto::MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const char* szMethod)
+bool CMsnProto::MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const char* szMethod, bool allowRecurse)
 {
 	char* reqHdr;
 	ezxml_t tbdy, node;
@@ -902,10 +914,10 @@ bool CMsnProto::MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpI
 		if (status == 500)
 		{
 			const char* szErr = ezxml_txt(getSoapFault(xmlm, true));
-			if (strcmp(szErr, "PassportAuthFail") == 0)
+			if (strcmp(szErr, "PassportAuthFail") == 0 && allowRecurse)
 			{
 				MSN_GetPassportAuth();
-				status = MSN_ABAddDelContactGroup(szCntId, szGrpId, szMethod) ? 200 : 500;
+				status = MSN_ABAddDelContactGroup(szCntId, szGrpId, szMethod, false) ? 200 : 500;
 			}
 		}
 		ezxml_free(xmlm);
@@ -916,7 +928,7 @@ bool CMsnProto::MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpI
 	return status == 200;
 }
 
-void CMsnProto::MSN_ABAddGroup(const char* szGrpName)
+void CMsnProto::MSN_ABAddGroup(const char* szGrpName, bool allowRecurse)
 {
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -972,10 +984,10 @@ void CMsnProto::MSN_ABAddGroup(const char* szGrpName)
 		else if (status == 500)
 		{
 			const char* szErr = ezxml_txt(getSoapFault(xmlm, true));
-			if (strcmp(szErr, "PassportAuthFail") == 0)
+			if (strcmp(szErr, "PassportAuthFail") == 0 && allowRecurse)
 			{
 				MSN_GetPassportAuth();
-				MSN_ABAddGroup(szGrpName);
+				MSN_ABAddGroup(szGrpName, false);
 			}
 		}
 		ezxml_free(xmlm);
@@ -985,7 +997,7 @@ void CMsnProto::MSN_ABAddGroup(const char* szGrpName)
 }
 
 
-void CMsnProto::MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId)
+void CMsnProto::MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId, bool allowRecurse)
 {
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -1027,10 +1039,10 @@ void CMsnProto::MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId)
 		if (status == 500)
 		{
 			const char* szErr = ezxml_txt(getSoapFault(xmlm, true));
-			if (strcmp(szErr, "PassportAuthFail") == 0)
+			if (strcmp(szErr, "PassportAuthFail") == 0 && allowRecurse)
 			{
 				MSN_GetPassportAuth();
-				MSN_ABRenameGroup(szGrpName, szGrpId);
+				MSN_ABRenameGroup(szGrpName, szGrpId, false);
 			}
 		}
 		ezxml_free(xmlm);
@@ -1040,7 +1052,7 @@ void CMsnProto::MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId)
 }
 
 
-bool CMsnProto::MSN_ABAddRemoveContact(const char* szCntId, int netId, bool add)
+bool CMsnProto::MSN_ABAddRemoveContact(const char* szCntId, int netId, bool add, bool allowRecurse)
 {
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -1120,10 +1132,10 @@ bool CMsnProto::MSN_ABAddRemoveContact(const char* szCntId, int netId, bool add)
 		if (status == 500)
 		{
 			const char* szErr = ezxml_txt(getSoapFault(xmlm, true));
-			if (strcmp(szErr, "PassportAuthFail") == 0)
+			if (strcmp(szErr, "PassportAuthFail") == 0 && allowRecurse)
 			{
 				MSN_GetPassportAuth();
-				if (MSN_ABAddRemoveContact(szCntId, netId, add))
+				if (MSN_ABAddRemoveContact(szCntId, netId, add, false))
 					status = 200;
 			}
 		}
@@ -1136,7 +1148,7 @@ bool CMsnProto::MSN_ABAddRemoveContact(const char* szCntId, int netId, bool add)
 }
 
 
-bool CMsnProto::MSN_ABUpdateProperty(const char* szCntId, const char* propName, const char* propValue)
+bool CMsnProto::MSN_ABUpdateProperty(const char* szCntId, const char* propName, const char* propValue, bool allowRecurse)
 {
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -1191,10 +1203,10 @@ bool CMsnProto::MSN_ABUpdateProperty(const char* szCntId, const char* propName, 
 		if (status == 500)
 		{
 			const char* szErr = ezxml_txt(getSoapFault(xmlm, true));
-			if (strcmp(szErr, "PassportAuthFail") == 0)
+			if (strcmp(szErr, "PassportAuthFail") == 0 && allowRecurse)
 			{
 				MSN_GetPassportAuth();
-				if (MSN_ABUpdateProperty(szCntId, propName, propValue))
+				if (MSN_ABUpdateProperty(szCntId, propName, propValue, false))
 					status = 200;
 			}
 		}
@@ -1207,7 +1219,7 @@ bool CMsnProto::MSN_ABUpdateProperty(const char* szCntId, const char* propName, 
 }
 
 
-void CMsnProto::MSN_ABUpdateAttr(const char* szCntId, const char* szAttr, const char* szValue)
+void CMsnProto::MSN_ABUpdateAttr(const char* szCntId, const char* szAttr, const char* szValue, bool allowRecurse)
 {
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -1262,10 +1274,10 @@ void CMsnProto::MSN_ABUpdateAttr(const char* szCntId, const char* szAttr, const 
 		if (status == 500)
 		{
 			const char* szErr = ezxml_txt(getSoapFault(xmlm, true));
-			if (strcmp(szErr, "PassportAuthFail") == 0)
+			if (strcmp(szErr, "PassportAuthFail") == 0 && allowRecurse)
 			{
 				MSN_GetPassportAuth();
-				MSN_ABUpdateAttr(szCntId, szAttr, szValue);
+				MSN_ABUpdateAttr(szCntId, szAttr, szValue, false);
 			}
 		}
 		ezxml_free(xmlm);
@@ -1275,7 +1287,7 @@ void CMsnProto::MSN_ABUpdateAttr(const char* szCntId, const char* szAttr, const 
 }
 
 
-void CMsnProto::MSN_ABUpdateNick(const char* szNick, const char* szCntId)
+void CMsnProto::MSN_ABUpdateNick(const char* szNick, const char* szCntId, bool allowRecurse)
 {
 	if (szCntId != NULL)
 		MSN_ABUpdateAttr(szCntId, "AB.NickName", szNick);
@@ -1284,7 +1296,7 @@ void CMsnProto::MSN_ABUpdateNick(const char* szNick, const char* szCntId)
 }
 
 
-unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, int netId, const char* szInvite, const bool search, const bool retry)
+unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, int netId, const char* szInvite, bool search, bool retry, bool allowRecurse)
 {
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -1437,10 +1449,10 @@ unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, in
 					setString(hContact, "ID", szContId);
 				}
 			}
-			else if (strcmp(szErr, "PassportAuthFail") == 0)
+			else if (strcmp(szErr, "PassportAuthFail") == 0 && allowRecurse)
 			{
 				MSN_GetPassportAuth();
-				status = MSN_ABContactAdd(szEmail, szNick, netId, NULL, search, retry);
+				status = MSN_ABContactAdd(szEmail, szNick, netId, NULL, search, retry, false);
 			}
 			else
 			{
@@ -1456,7 +1468,7 @@ unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, in
 }
 
 
-void CMsnProto::MSN_ABUpdateDynamicItem(void)
+void CMsnProto::MSN_ABUpdateDynamicItem(bool allowRecurse)
 {
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -1542,10 +1554,10 @@ void CMsnProto::MSN_ABUpdateDynamicItem(void)
 		if (status == 500)
 		{
 			const char* szErr = ezxml_txt(getSoapFault(xmlm, true));
-			if (strcmp(szErr, "PassportAuthFail") == 0)
+			if (strcmp(szErr, "PassportAuthFail") == 0 && allowRecurse)
 			{
 				MSN_GetPassportAuth();
-				MSN_ABUpdateDynamicItem();
+				MSN_ABUpdateDynamicItem(false);
 			}
 		}
 		ezxml_free(xmlm);
