@@ -306,6 +306,7 @@ static INT_PTR CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 		DestroyWindow(hwndDlg);
 		break;
 	case WM_DESTROY:
+		ImageList_Destroy(TreeView_GetImageList(GetDlgItem(hwndDlg, IDC_FILTER), TVSIL_STATE));
 		logOptions.hwndOpts=NULL;
 		break;
 	}
