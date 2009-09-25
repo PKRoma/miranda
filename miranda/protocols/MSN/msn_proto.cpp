@@ -287,9 +287,9 @@ HANDLE CMsnProto::AddToListByEmail(const char *email, DWORD flags)
 	{
 		if (msnLoggedIn) 
 		{
-			int netId = Lists_GetNetId(email);
-			if (netId == NETID_UNKNOWN)
-				netId = strncmp(email, "tel:", 4) == 0 ? NETID_MOB : NETID_MSN;
+//			int netId = Lists_GetNetId(email);
+//			if (netId == NETID_UNKNOWN)
+			int netId = strncmp(email, "tel:", 4) == 0 ? NETID_MOB : NETID_MSN;
 			if (MSN_AddUser(hContact, email, netId, LIST_FL))
 			{
 				MSN_AddUser(hContact, email, netId, LIST_PL + LIST_REMOVE);

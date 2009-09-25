@@ -124,6 +124,8 @@ int CMsnProto::Lists_Add(int list, int netId, const char* email, HANDLE hContact
 		if (list & LIST_FL) p->netId = netId;
 		if (invite) replaceStr(p->invite, invite);
 		if (hContact) p->hContact = hContact;
+		if ((list & LIST_FL) && netId != NETID_UNKNOWN)
+			p->netId = netId;
 	}
 	int result = p->list;
 
