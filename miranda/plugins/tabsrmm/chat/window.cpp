@@ -487,7 +487,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 		EnableWindow(GetDlgItem(hwndDlg, IDC_FILTER), FALSE);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_CHANMGR), FALSE);
 	}
-	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_TOGGLESIDEBAR), dat->pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
+	//ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_TOGGLESIDEBAR), dat->pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
 
 	switch (urc->wId) {
 		case IDC_PANELSPLITTER:
@@ -543,10 +543,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 			urc->rcItem.right = urc->dlgNewSize.cx;
 			urc->rcItem.top = (bToolbar&&!bBottomToolbar) ? urc->dlgNewSize.cy - si->iSplitterY : urc->dlgNewSize.cy - si->iSplitterY;
 			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY + DPISCALEY(2)) : (urc->dlgNewSize.cy - si->iSplitterY + DPISCALEY(2));
-			//if (dat->pContainer->dwFlags & CNT_SIDEBAR)
-			//	urc->rcItem.left = 7;
-			//else
-				urc->rcItem.left = 0;
+			urc->rcItem.left = 0;
 			urc->rcItem.bottom++;
 			urc->rcItem.top++;
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_CUSTOM;
@@ -557,8 +554,6 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 			urc->rcItem.bottom = urc->dlgNewSize.cy; // - 1 ;
 			msgBottom = urc->rcItem.bottom;
 			msgTop = urc->rcItem.top;
-			if (dat->pContainer->dwFlags & CNT_SIDEBAR)
-				urc->rcItem.left += 6;
 			//mad
 			if (bBottomToolbar&&bToolbar)
 				urc->rcItem.bottom -= DPISCALEY(24);
@@ -572,13 +567,6 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 					urc->rcItem.bottom -= item->MARGIN_BOTTOM;
 				}
 			}
-			return RD_ANCHORX_CUSTOM | RD_ANCHORY_CUSTOM;
-
-		case IDC_CHAT_TOGGLESIDEBAR:
-			urc->rcItem.right = 6;
-			urc->rcItem.left = 0;
-			urc->rcItem.bottom = msgBottom;
-			urc->rcItem.top = msgTop;
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_CUSTOM;
 	}
 	return RD_ANCHORX_LEFT | RD_ANCHORY_TOP;
@@ -2018,13 +2006,13 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			int mask;
 			struct NewMessageWindowLParam *newData = (struct NewMessageWindowLParam *) lParam;
 			struct _MessageWindowData *dat;
-			SESSION_INFO * psi = (SESSION_INFO*)newData->hdbEvent;
+			SESSION_INFO *psi = (SESSION_INFO*)newData->hdbEvent;
 			RECT rc;
 
 			dat = (struct _MessageWindowData *)malloc(sizeof(struct _MessageWindowData));
 			ZeroMemory(dat, sizeof(struct _MessageWindowData));
 			si = psi;
-			dat->si = (void *)psi;
+			dat->si = psi;
 			dat->hContact = psi->hContact;
 			dat->szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)psi->hContact, 0);
 			dat->bType = SESSIONTYPE_CHAT;
@@ -2093,10 +2081,15 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			DM_ThemeChanged(dat);
 			SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), EM_HIDESELECTION, TRUE, 0);
 
+			CreateWindowEx(0, _T("TSButtonClass"), _T(""), WS_CHILD | WS_VISIBLE | WS_TABSTOP, 0, 0, 6, DPISCALEY(20),
+					hwndDlg, (HMENU)IDC_CHAT_TOGGLESIDEBAR, g_hInst, NULL);
+
 			GetMyNick(dat);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BUTTONSETASFLATBTN + 10, 0, PluginConfig.m_bIsXP);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BUTTONSETASFLATBTN + 12, 0, (LPARAM)dat->pContainer);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BUTTONSETASFLATBTN, 0, 0);
+			SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BUTTONSETASTOOLBARBUTTON, 0, 1);
+			SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Expand or collapse the side bar"), 1);
 
 			dat->hwndIEView = dat->hwndHPP = 0;
 
@@ -2813,6 +2806,10 @@ LABEL_SHOWWINDOW:
 							case TABSRMM_HK_TOGGLEINFOPANEL:
 								dat->Panel->setActive(dat->Panel->isActive() ? FALSE : TRUE);
 								dat->Panel->showHide();
+								return(_dlgReturn(hwndDlg, 1));
+							case TABSRMM_HK_TOGGLESIDEBAR:
+								if(dat->pContainer->SideBar->isActive())
+									SendMessage(hwndDlg, WM_COMMAND, IDC_CHAT_TOGGLESIDEBAR, 0);
 								return(_dlgReturn(hwndDlg, 1));
 							default:
 								break;
@@ -3800,7 +3797,7 @@ LABEL_SHOWWINDOW:
 
 		case WM_DWMCOMPOSITIONCHANGED:
 			BB_RefreshTheme(dat);
-			dat->pContainer->dwOldAeroBottom = dat->pContainer->dwOldAeroTop = 0;
+			ZeroMemory(&dat->pContainer->mOld, sizeof(MARGINS));
 			break;
 
 		case DM_ACTIVATEME:
@@ -3809,7 +3806,7 @@ LABEL_SHOWWINDOW:
 
 		case WM_NCDESTROY:
 			if (dat) {
-				dat->pContainer->dwOldAeroBottom = dat->pContainer->dwOldAeroTop = 0;
+				ZeroMemory(&dat->pContainer->mOld, sizeof(MARGINS));
 				PostMessage(dat->pContainer->hwnd, WM_SIZE, 0, 1);
 				delete dat->Panel;
 				if(dat->pContainer->dwFlags & CNT_SIDEBAR)

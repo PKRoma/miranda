@@ -71,6 +71,7 @@ static struct _tooltips {
 } tooltips[] = {
 	IDC_ADD, _T("Add this contact permanently to your contact list"),
 	IDC_CANCELADD, _T("Do not add this contact permanently"),
+	IDC_TOGGLESIDEBAR, _T("Expand or collapse the side bar"),
 	-1, NULL
 };
 
@@ -618,10 +619,9 @@ void TSAPI SetDialogToType(HWND hwndDlg)
 	if (!PluginConfig.g_FlashAvatarAvail)
 		EnableWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), FALSE);
 
-	ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLESIDEBAR), dat->pContainer->SideBar->isActive() ? SW_SHOW : SW_HIDE);
+	//ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLESIDEBAR), dat->pContainer->SideBar->isActive() ? SW_SHOW : SW_HIDE);
 
 	// info panel stuff
-	dat->Panel->showHideControls(dat->Panel->isActive() ? SW_SHOW : SW_HIDE);
 	dat->Panel->Configure();
 }
 
@@ -1435,8 +1435,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			if (dat->showPic)
 				urc->rcItem.right -= dat->pic.cx + 2;
 			urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
-			if (dat->pContainer->dwFlags & CNT_SIDEBAR)
-				urc->rcItem.left += 6;
 			if (PluginConfig.m_visualMessageSizeIndicator)
 				urc->rcItem.bottom -= DPISCALEY(2);
 			//mad
@@ -1462,12 +1460,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			urc->rcItem.right -= dat->multiSplitterX;
 			urc->rcItem.bottom = iClistOffset;
 			return RD_ANCHORX_RIGHT | RD_ANCHORY_CUSTOM;
-		case IDC_TOGGLESIDEBAR:
-			urc->rcItem.right = 6;
-			urc->rcItem.left = 0;
-			urc->rcItem.bottom = msgBottom;
-			urc->rcItem.top = msgTop;
-			return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
 		case IDC_LOGFROZENTEXT:
 			urc->rcItem.right = urc->dlgNewSize.cx - 50;
 			urc->rcItem.bottom = msgTop - (bBottomToolbar ? 0 : 28);
@@ -1485,6 +1477,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			urc->rcItem.right = urc->dlgNewSize.cx - 4;
 			urc->rcItem.left = urc->rcItem.right - 20;
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_BOTTOM;
+		case IDC_TOGGLESIDEBAR:
+			return RD_ANCHORX_CUSTOM | RD_ANCHORY_CUSTOM;
 		case IDC_RETRY:
 		case IDC_CANCELSEND:
 		case IDC_MSGSENDLATER:
@@ -1596,6 +1590,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			GetContactUIN(dat);
 			GetClientIcon(dat);
 
+			CreateWindowEx(0, _T("TSButtonClass"), _T(""), WS_CHILD | WS_VISIBLE | WS_TABSTOP, 0, 0, 6, DPISCALEY(20),
+					hwndDlg, (HMENU)IDC_TOGGLESIDEBAR, g_hInst, NULL);
 			dat->showUIElements = m_pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
 			dat->sendMode |= M->GetByte(dat->hContact, "forceansi", 0) ? SMODE_FORCEANSI : 0;
 			dat->sendMode |= dat->hContact == 0 ? SMODE_MULTIPLE : 0;
@@ -1740,6 +1736,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			SendDlgItemMessage(hwndDlg, IDC_TOGGLESIDEBAR, BUTTONSETASFLATBTN, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_TOGGLESIDEBAR, BUTTONSETASFLATBTN + 10, 0, isThemed ? 1 : 0);
 			SendDlgItemMessage(hwndDlg, IDC_TOGGLESIDEBAR, BUTTONSETASFLATBTN + 12, 0, (LPARAM)m_pContainer);
+			SendDlgItemMessage(hwndDlg, IDC_TOGGLESIDEBAR, BUTTONSETASTOOLBARBUTTON, 0, 1);
 
 			TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING, 0);
 
@@ -2314,6 +2311,10 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 										return(_dlgReturn(hwndDlg, 1));
 									case TABSRMM_HK_CLEARLOG:
 										ClearLog(dat);
+										return(_dlgReturn(hwndDlg, 1));
+									case TABSRMM_HK_TOGGLESIDEBAR:
+										if(dat->pContainer->SideBar->isActive())
+											SendMessage(hwndDlg, WM_COMMAND, IDC_TOGGLESIDEBAR, 0);
 										return(_dlgReturn(hwndDlg, 1));
 									default:
 										break;
@@ -5023,11 +5024,11 @@ quote_from_last:
 			break;
 		case WM_DWMCOMPOSITIONCHANGED:
 			BB_RefreshTheme(dat);
-			m_pContainer->dwOldAeroBottom = m_pContainer->dwOldAeroTop = 0;
+			ZeroMemory(&m_pContainer->mOld, sizeof(MARGINS));
 			break;
 		case WM_NCDESTROY:
 			if (dat) {
-				dat->pContainer->dwOldAeroBottom = dat->pContainer->dwOldAeroTop = 0;
+				ZeroMemory(&m_pContainer->mOld, sizeof(MARGINS));
 				PostMessage(dat->pContainer->hwnd, WM_SIZE, 0, 1);
 				if(m_pContainer->dwFlags & CNT_SIDEBAR)
 					m_pContainer->SideBar->removeSession(dat);

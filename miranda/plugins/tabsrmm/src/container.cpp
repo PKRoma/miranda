@@ -81,6 +81,7 @@ void SetAeroMargins(ContainerWindowData *pContainer)
 		_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 		RECT	rcWnd;
 		POINT	pt;
+		LONG	sbar_left = 0, sbar_right = 0;
 
 		if(dat) {
 			if(dat->bType == SESSIONTYPE_IM) {
@@ -110,22 +111,22 @@ void SetAeroMargins(ContainerWindowData *pContainer)
 			pt.x = rcWnd.left;
 			if(!pContainer->SideBar->isActive())
 				pt.y = rcWnd.bottom + ((pContainer->iChilds > 1 || !(pContainer->dwFlags & CNT_HIDETABS)) ? pContainer->tBorder : 0);
-			else
+			else {
 				pt.y = rcWnd.bottom;
+				sbar_left = (pContainer->SideBar->getFlags() & CSideBar::SIDEBARORIENTATION_LEFT ? pContainer->SideBar->getWidth() : 0);
+				sbar_right = (pContainer->SideBar->getFlags() & CSideBar::SIDEBARORIENTATION_RIGHT ? pContainer->SideBar->getWidth() : 0);
+			}
 			ScreenToClient(pContainer->hwnd, &pt);
 			GetClientRect(pContainer->hwnd, &rcWnd);
 			m.cyBottomHeight = (rcWnd.bottom - pt.y);
 
 			m.cxLeftWidth = pContainer->tBorder_outer_left;
 			m.cxRightWidth = pContainer->tBorder_outer_right;
-			m.cxLeftWidth += pContainer->SideBar->getWidth();
+			m.cxLeftWidth += sbar_left;
+			m.cxRightWidth += sbar_right;
 
-			if(m.cyTopHeight != pContainer->dwOldAeroTop || m.cyBottomHeight != pContainer->dwOldAeroBottom ||
-			   m.cxLeftWidth != pContainer->dwOldAeroLeft) {
-
-				pContainer->dwOldAeroTop = m.cyTopHeight;
-				pContainer->dwOldAeroBottom = m.cyBottomHeight;
-				pContainer->dwOldAeroLeft = m.cxLeftWidth;
+			if(memcmp(&m, &pContainer->mOld, sizeof(MARGINS)) != 0) {
+				pContainer->mOld = m;
 				CMimAPI::m_pfnDwmExtendFrameIntoClientArea(pContainer->hwnd, &m);
 			}
 		}
@@ -755,7 +756,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			int i = 0;
 			TCITEM item = {0};
 			POINT pt = {0};
-			DWORD sbarWidth;
+			LONG sbarWidth, sbarWidth_left;
 			BOOL  sizeChanged = FALSE;
 
 			if (IsIconic(hwndDlg)) {
@@ -788,18 +789,21 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			pContainer->MenuBar->Show((pContainer->dwFlags & CNT_NOMENUBAR) ? SW_HIDE : SW_SHOW);
 
 			sbarWidth = pContainer->SideBar->getWidth();
+			sbarWidth_left = pContainer->SideBar->getFlags() & CSideBar::SIDEBARORIENTATION_LEFT ? sbarWidth : 0;
+
 			if (lParam) {
 				DWORD	dwSWPFlags = SWP_NOACTIVATE|SWP_NOZORDER|SWP_DEFERERASE | SWP_NOCOPYBITS;// | SWP_NOSENDCHANGING */ | SWP_ASYNCWINDOWPOS;
-
 				if (pContainer->dwFlags & CNT_TABSBOTTOM)
-					SetWindowPos(hwndTab, 0, pContainer->tBorder_outer_left + sbarWidth, pContainer->tBorder_outer_top + rebarHeight, (rcClient.right - rcClient.left) - (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right + sbarWidth), (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom) - rebarHeight,
-								 dwSWPFlags);
+					SetWindowPos(hwndTab, 0, pContainer->tBorder_outer_left + sbarWidth_left, pContainer->tBorder_outer_top + rebarHeight,
+								 (rcClient.right - rcClient.left) - (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right + sbarWidth),
+								 (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom) - rebarHeight, dwSWPFlags);
 				else
-					SetWindowPos(hwndTab, 0, pContainer->tBorder_outer_left + sbarWidth, pContainer->tBorder_outer_top + rebarHeight, (rcClient.right - rcClient.left) - (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right + sbarWidth), (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom) - rebarHeight,
-								 dwSWPFlags);
+					SetWindowPos(hwndTab, 0, pContainer->tBorder_outer_left + sbarWidth_left, pContainer->tBorder_outer_top + rebarHeight,
+								 (rcClient.right - rcClient.left) - (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right + sbarWidth),
+								 (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom) - rebarHeight, dwSWPFlags);
 			}
 
-			pContainer->SideBar->resizeScrollWnd(pContainer->tBorder_outer_left,
+			pContainer->SideBar->resizeScrollWnd(sbarWidth_left ? pContainer->tBorder_outer_left : rcClient.right - pContainer->tBorder_outer_right - (sbarWidth - 2),
 												 pContainer->tBorder_outer_top + rebarHeight,
 												 0,
 												 (rcClient.bottom - rcClient.top) - pContainer->statusBarHeight - (pContainer->tBorder_outer_top + pContainer->tBorder_outer_bottom) - rebarHeight);
@@ -1575,7 +1579,7 @@ buttons_done:
 					break;
 				case SC_RESTORE:
 					pContainer->oldSize.cx = pContainer->oldSize.cy = 0;
-					pContainer->dwOldAeroBottom = pContainer->dwOldAeroTop = 0;
+					ZeroMemory(&pContainer->mOld, sizeof(MARGINS));
 					break;
 				case SC_MINIMIZE:
 					break;

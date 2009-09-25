@@ -143,12 +143,6 @@ void CInfoPanel::Configure() const
 	::ShowWindow(GetDlgItem(m_dat->hwnd, IDC_PANELSPLITTER), m_active ? SW_SHOW : SW_HIDE);
 }
 
-void CInfoPanel::showHideControls(const UINT showCmd) const
-{
-	if(m_isChat)
-		::ShowWindow(GetDlgItem(m_dat->hwnd, IDC_PANELSPLITTER), showCmd);
-}
-
 void CInfoPanel::showHide() const
 {
 	HBITMAP hbm = (m_active && PluginConfig.m_AvatarMode != 5) ? m_dat->hOwnPic : (m_dat->ace ? m_dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
@@ -170,7 +164,6 @@ void CInfoPanel::showHide() const
 		::AdjustBottomAvatarDisplay(m_dat);
 		::GetObject(hbm, sizeof(bm), &bm);
 		::CalcDynamicAvatarSize(m_dat, &bm);
-		showHideControls(SW_HIDE);
 
 		if (m_active) {
 			if(m_dat->hwndContactPic)	{
@@ -265,14 +258,15 @@ void CInfoPanel::renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero) 
 				}
 			}
 			else
-				FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
+				::FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
 		}
 	}
 }
 
 /**
  * render the content of the info panel. The target area is derived from the
- * position of the invisible text fields.
+ * precalculated RECT structures in _MessageWindowData (calculated in the
+ * message window's WM_SIZE handler).
  *
  * @param hdc HDC: target device context
  */
@@ -455,6 +449,11 @@ void CInfoPanel::RenderIPUIN(const HDC hdc, RECT& rcItem)
 		SelectObject(hdc, hOldFont);
 }
 
+/**
+ * Render the info panel status field. Usually in the 2nd line, right aligned
+ * @param hdc    : target device context
+ * @param rcItem : target rectangle (_MessageWindowData::rcStatus)
+ */
 void CInfoPanel::RenderIPStatus(const HDC hdc, RECT& rcItem)
 {
 	char		*szProto = m_dat->bIsMeta ? m_dat->szMetaProto : m_dat->szProto;
@@ -613,7 +612,11 @@ void CInfoPanel::Chat_RenderIPNickname(const HDC hdc, RECT& rcItem)
 	if (hOldFont)
 		SelectObject(hdc, hOldFont);
 }
-
+/**
+ * Draw 2nd line of text in the info panel.
+ * @param hdc	 : target device context
+ * @param rcItem : target rectangle
+ */
 void CInfoPanel::Chat_RenderIPSecondLine(const HDC hdc, RECT& rcItem)
 {
 	HFONT 	hOldFont = 0;
@@ -644,7 +647,9 @@ void CInfoPanel::Chat_RenderIPSecondLine(const HDC hdc, RECT& rcItem)
 	if(hOldFont)
 		::SelectObject(hdc, hOldFont);
 }
-
+/**
+ * Invalidate the info panel rectangle
+ */
 void CInfoPanel::Invalidate() const
 {
 	RECT	rc;
@@ -654,35 +659,44 @@ void CInfoPanel::Invalidate() const
 	::InvalidateRect(m_dat->hwnd, &rc, FALSE);
 }
 
+/**
+ * track mouse movements inside the panel. Needed for tooltip activation
+ * @param pt : mouse coordinates (screen)
+ */
 void CInfoPanel::trackMouse(POINT& pt) const
 {
 	if(!m_active)
 		return;
 
 	POINT ptMouse = pt;
-	ScreenToClient(m_dat->hwnd, &ptMouse);
+	::ScreenToClient(m_dat->hwnd, &ptMouse);
 
-	if (PtInRect(&m_dat->rcStatus, ptMouse)) {
+	if (::PtInRect(&m_dat->rcStatus, ptMouse)) {
 		if (!(m_dat->dwFlagsEx & MWF_SHOW_AWAYMSGTIMER)) {
 			if (m_dat->hClientIcon && pt.x >= m_dat->rcStatus.right - 20)
-				SetTimer(m_dat->hwnd, TIMERID_AWAYMSG + 2, 500, 0);
+				::SetTimer(m_dat->hwnd, TIMERID_AWAYMSG + 2, 500, 0);
 			else
-				SetTimer(m_dat->hwnd, TIMERID_AWAYMSG, 1000, 0);
+				::SetTimer(m_dat->hwnd, TIMERID_AWAYMSG, 1000, 0);
 			m_dat->dwFlagsEx |= MWF_SHOW_AWAYMSGTIMER;
 		}
 		return;
-	} else if (PtInRect(&m_dat->rcNick, ptMouse)) {
+	} else if (::PtInRect(&m_dat->rcNick, ptMouse)) {
 		if (!(m_dat->dwFlagsEx & MWF_SHOW_AWAYMSGTIMER)) {
-			SetTimer(m_dat->hwnd, TIMERID_AWAYMSG + 1, 1000, 0);
+			::SetTimer(m_dat->hwnd, TIMERID_AWAYMSG + 1, 1000, 0);
 			m_dat->dwFlagsEx |= MWF_SHOW_AWAYMSGTIMER;
 		}
 		return;
-	} else if (IsWindowVisible(m_dat->hwndTip)) {
-		if (!PtInRect(&m_dat->rcStatus, ptMouse))
+	} else if (::IsWindowVisible(m_dat->hwndTip)) {
+		if (!::PtInRect(&m_dat->rcStatus, ptMouse))
 			SendMessage(m_dat->hwndTip, TTM_TRACKACTIVATE, FALSE, 0);
 	}
 }
 
+/**
+ * activate a tooltip for a given info panel field
+ * @param ctrlId : control id
+ * @param lParam : typically a TCHAR * for the tooltip text
+ */
 void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 {
 	if (m_dat->hwndTip) {
@@ -788,6 +802,9 @@ INT_PTR CALLBACK CInfoPanel::ConfigDlgProcStub(HWND hwnd, UINT msg, WPARAM wPara
 	return(FALSE);
 }
 
+/**
+ * dialog procedure for the info panel config popup
+ */
 INT_PTR CALLBACK CInfoPanel::ConfigDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) {
@@ -971,16 +988,21 @@ INT_PTR CALLBACK CInfoPanel::ConfigDlgProc(HWND hwnd, UINT msg, WPARAM wParam, L
 	return(FALSE);
 }
 
+/**
+ * invoke info panel config popup dialog
+ * @param pt : mouse coordinates (screen)
+ * @return   : always 0
+ */
 int CInfoPanel::invokeConfigDialog(const POINT& pt)
 {
 	RECT 	rc;
 	POINT	ptTest = pt;
 
-	GetWindowRect(m_dat->hwnd, &rc);
+	::GetWindowRect(m_dat->hwnd, &rc);
 	rc.bottom = rc.top + m_height;
 	rc.right -= m_dat->panelWidth;
 
-	if(!PtInRect(&rc, ptTest))
+	if(!::PtInRect(&rc, ptTest))
 		return(0);
 
 	if(m_hwndConfig == 0) {

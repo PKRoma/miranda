@@ -771,10 +771,6 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			bct->focus = 0;
 			InvalidateRect(bct->hwnd, NULL, TRUE);
 			break;
-			/*
-		case WM_WINDOWPOSCHANGED:
-			InvalidateRect(bct->hwnd, NULL, TRUE);
-			break;*/
 		case WM_ENABLE: { // windows tells us to enable/disable
 			bct->stateId = wParam ? PBS_NORMAL : PBS_DISABLED;
 			InvalidateRect(bct->hwnd, NULL, TRUE);

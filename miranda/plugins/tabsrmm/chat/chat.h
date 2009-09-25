@@ -201,7 +201,7 @@ typedef struct  USERINFO_TYPE
 }
 	USERINFO;
 
-typedef struct SESSION_INFO_TYPE
+struct SESSION_INFO
 {
 	HWND        hWnd;
 
@@ -257,8 +257,8 @@ typedef struct SESSION_INFO_TYPE
 	struct         ContainerWindowData *pContainer;
 	struct		   _MessageWindowData *dat;
 	int            wasTrimmed;
-	struct SESSION_INFO_TYPE *next;
-}	SESSION_INFO;
+	SESSION_INFO*  next;
+};
 
 typedef struct
 {

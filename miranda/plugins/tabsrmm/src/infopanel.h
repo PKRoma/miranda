@@ -86,7 +86,6 @@ public:
 	void			TSAPI		saveHeight					(bool fFlush = false);
 
 	void 			TSAPI		Configure					() const;
-	void 			TSAPI		showHideControls			(const UINT showCmd) const;
 	void 			TSAPI		showHide					() const;
 	bool 			TSAPI		getVisibility				();
 	void 			TSAPI		renderBG					(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero) const;

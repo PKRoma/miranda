@@ -282,8 +282,7 @@ struct ContainerWindowData {
 	RECT    rcSaved;
 	DWORD   exFlags;
 	BOOL	fPrivateThemeChanged;
-	DWORD	dwOldAeroTop, dwOldAeroBottom;
-	DWORD	dwOldAeroLeft, dwOldAeroRight;
+	MARGINS mOld;
 	HDC		cachedToolbarDC;
 	HBITMAP hbmToolbarBG, oldhbmToolbarBG;
 	SIZE	szOldToolbarSize;
@@ -344,7 +343,7 @@ struct _MessageWindowData {
 	UINT	bbLSideWidth;  //MAD
 	UINT	bbRSideWidth;    //MAD
 	struct StatusIconListNode *pSINod;
-	PVOID   si;
+	SESSION_INFO   *si;
 
 	RECT	rcNick, rcUIN, rcStatus, rcPic;
 	HANDLE  hDbEventFirst, hDbEventLast;
@@ -1084,6 +1083,7 @@ typedef struct {
 #define TABSRMM_HK_CLEARLOG 24
 #define TABSRMM_HK_EDITNOTES 25
 #define TABSRMM_HK_TOGGLESENDLATER 26
+#define TABSRMM_HK_TOGGLESIDEBAR 27
 
 #define TABSRMM_HK_SECTION_IM "Message windows - IM"
 #define TABSRMM_HK_SECTION_GENERIC "Message windows - all"

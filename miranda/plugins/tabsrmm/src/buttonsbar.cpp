@@ -649,10 +649,13 @@ BOOL BB_SetButtonsPos(HWND hwnd, struct _MessageWindowData *dat)
 	BOOL bBottomToolbar = dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR ? 1 : 0;
 	int tempL = dat->bbLSideWidth;
 	int tempR = dat->bbRSideWidth;
-	HDWP hdwp = BeginDeferWindowPos(LButtonsList->realCount + RButtonsList->realCount);
+	HDWP hdwp = BeginDeferWindowPos(LButtonsList->realCount + RButtonsList->realCount + 1);
+	HWND hwndToggleSideBar = GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_TOGGLESIDEBAR : IDC_CHAT_TOGGLESIDEBAR);
 
 	if (!dat || !IsWindowVisible(hwnd))
 		return 0;
+
+	ShowWindow(hwndToggleSideBar, (showToolbar && dat->pContainer->SideBar->isActive()) ? SW_SHOW : SW_HIDE);
 
 	EnterCriticalSection(&ToolBarCS);
 
@@ -675,6 +678,12 @@ BOOL BB_SetButtonsPos(HWND hwnd, struct _MessageWindowData *dat)
 
 	if (bNeedResort)
 		qsort(LButtonsList->items, LButtonsList->realCount, sizeof(BBButton *), sstSortButtons);
+
+	if((dat->pContainer->dwFlags & CNT_SIDEBAR) && (dat->pContainer->SideBar->getFlags() & CSideBar::SIDEBARORIENTATION_LEFT)) {
+		DeferWindowPos(hdwp, hwndToggleSideBar , NULL, 4, 2 + splitterY - iOff,
+					   0, 0, SWP_NOZORDER | SWP_NOSIZE);// | SWP_NOCOPYBITS);
+		lwidth += 10;
+	}
 
 	for (i = 0; i < LButtonsList->realCount; i++) {
 		CustomButtonData* cbd = (CustomButtonData *)LButtonsList->items[i];
@@ -720,6 +729,12 @@ BOOL BB_SetButtonsPos(HWND hwnd, struct _MessageWindowData *dat)
 	if (bNeedResort) {
 		qsort(RButtonsList->items, RButtonsList->realCount, sizeof(CustomButtonData *), sstSortButtons);
 		bNeedResort = FALSE;
+	}
+
+	if((dat->pContainer->dwFlags & CNT_SIDEBAR) && (dat->pContainer->SideBar->getFlags() & CSideBar::SIDEBARORIENTATION_RIGHT)) {
+		DeferWindowPos(hdwp, hwndToggleSideBar , NULL, rect.right - foravatar - 8, 2 + splitterY - iOff,
+					   0, 0, SWP_NOZORDER | SWP_NOSIZE);// | SWP_NOCOPYBITS);
+		rwidth += 12;
 	}
 
 	for (i = 0; i < RButtonsList->realCount; i++) {

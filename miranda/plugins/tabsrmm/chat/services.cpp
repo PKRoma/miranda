@@ -552,7 +552,7 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
 	if(pContainer->dwFlags & CNT_SIDEBAR) {
 		_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(hwndNew, GWLP_USERDATA);
 		if(dat)
-			pContainer->SideBar->addSession(dat);
+			pContainer->SideBar->addSession(dat, pContainer->iTabIndex);
 	}
 	SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
 	// if the container is minimized, then pop it up...
@@ -736,7 +736,7 @@ INT_PTR Service_AddEvent(WPARAM wParam, LPARAM lParam)
 			if (!gce->bIsMe && gce->pDest->pszID && gce->pszText) {
 				if (si) {
 					//if (IsHighlighted(si, gce->ptszText))
-						bIsHighlighted = si->Highlight->match(gce, si);
+						bIsHighlighted = si->Highlight->match(gce, 0);
 				}
 			}
 		}

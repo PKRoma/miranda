@@ -61,7 +61,7 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Tabs at the top"),							/* CNT_OPT_TABSTOP */
 	LPGENT("Tabs at the bottom"),						/* CNT_OPT_TABSBOTTOM */
 	LPGENT("Switch bar on the left side"),				/* CNT_OPT_TABSLEFT */
-	LPGENT("Switch bar on the right side (UNIMPLEMENTED)"), /* CNT_OPT_TABSRIGHT */
+	LPGENT("Switch bar on the right side"), 			/* CNT_OPT_TABSRIGHT */
 	LPGENT("Configure container options for: %s"),		/* CNT_OPT_HEADERBAR */
 	LPGENT("&File"), 									/* GEN_MENUBAR_FILE */
 	LPGENT("&View"),									/* GEN_MENUBAR_VIEW */

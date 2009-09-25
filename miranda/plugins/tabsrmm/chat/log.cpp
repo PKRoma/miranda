@@ -993,7 +993,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 	SCROLLINFO scroll;
 	WPARAM wp;
 	HWND hwndRich;
-	struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	_MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	if (hwndDlg == 0 || lin == 0 || si == 0 || dat == 0)
 		return;
