@@ -274,7 +274,7 @@ bool CMsnProto::MSN_SharingFindMembership(bool deltas, bool allowRecurse)
 							}
 							anot = ezxml_next(anot);
 						}
-						if (!deleted) Lists_Add(lstId, NETID_MSN, szEmail, NULL, szInvite); else Lists_Remove(lstId, szEmail);
+						if (!deleted) Lists_Add(lstId, NETID_MSN, szEmail, szInvite); else Lists_Remove(lstId, szEmail);
 					}
 					else if (strcmp(szType, "Phone") == 0)
 					{
@@ -302,7 +302,7 @@ bool CMsnProto::MSN_SharingFindMembership(bool deltas, bool allowRecurse)
 							anot = ezxml_next(anot);
 						}
 
-						if (!deleted) Lists_Add(lstId, netId, szEmail, NULL, szInvite);  else Lists_Remove(lstId, szEmail);
+						if (!deleted) Lists_Add(lstId, netId, szEmail, szInvite);  else Lists_Remove(lstId, szEmail);
 					}
 					memb = ezxml_next(memb);
 				}
