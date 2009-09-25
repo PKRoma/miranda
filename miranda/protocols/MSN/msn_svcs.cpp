@@ -531,6 +531,9 @@ int CMsnProto::OnContactDeleted(WPARAM wParam, LPARAM lParam)
 			{
 				DeleteParam param = { this, hContact };
 				DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_DELETECONTACT), NULL, DlgDeleteContactUI, (LPARAM)&param);
+
+				MsnContact* msc = Lists_Get(szEmail);
+				if (msc) msc->hContact = NULL; 
 			}
 			if (Lists_IsInList(LIST_LL, szEmail))
 			{
