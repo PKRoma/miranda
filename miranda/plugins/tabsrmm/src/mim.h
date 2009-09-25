@@ -109,70 +109,80 @@ public:
 	 * database functions
 	 */
 
-	DWORD FASTCALL GetDword(const HANDLE hContact, const char *szModule, const char *szSetting, DWORD uDefault) const;
-	DWORD FASTCALL GetDword(const char *szModule, const char *szSetting, DWORD uDefault) const;
-	DWORD FASTCALL GetDword(const char *szSetting, DWORD uDefault) const;
-	DWORD FASTCALL GetDword(const HANDLE hContact, const char *szSetting, DWORD uDefault) const;
+	DWORD FASTCALL 		GetDword						(const HANDLE hContact, const char *szModule, const char *szSetting, DWORD uDefault) const;
 
-	int FASTCALL GetByte(const HANDLE hContact, const char *szModule, const char *szSetting, int uDefault) const;
-	int FASTCALL GetByte(const char *szModule, const char *szSetting, int uDefault) const;
-	int FASTCALL GetByte(const char *szSetting, int uDefault) const;
-	int FASTCALL GetByte(const HANDLE hContact, const char *szSetting, int uDefault) const;
+	DWORD FASTCALL 		GetDword						(const char *szModule, const char *szSetting, DWORD uDefault) const;
+	DWORD FASTCALL 		GetDword						(const char *szSetting, DWORD uDefault) const;
+	DWORD FASTCALL 		GetDword						(const HANDLE hContact, const char *szSetting, DWORD uDefault) const;
 
-	INT_PTR FASTCALL GetTString(const HANDLE hContact, const char *szModule, const char *szSetting, DBVARIANT *dbv) const;
-	INT_PTR FASTCALL GetString(const HANDLE hContact, const char *szModule, const char *szSetting, DBVARIANT *dbv) const;
+	int FASTCALL 		GetByte							(const HANDLE hContact, const char *szModule, const char *szSetting, int uDefault) const;
+	int FASTCALL 		GetByte							(const char *szModule, const char *szSetting, int uDefault) const;
+	int FASTCALL 		GetByte							(const char *szSetting, int uDefault) const;
+	int FASTCALL 		GetByte							(const HANDLE hContact, const char *szSetting, int uDefault) const;
 
-	INT_PTR FASTCALL WriteDword(const HANDLE hContact, const char *szModule, const char *szSetting, DWORD value) const;
-	INT_PTR FASTCALL WriteDword(const char *szModule, const char *szSetting, DWORD value) const;
+	INT_PTR FASTCALL 	GetTString						(const HANDLE hContact, const char *szModule, const char *szSetting, DBVARIANT *dbv) const;
+	INT_PTR FASTCALL 	GetString						(const HANDLE hContact, const char *szModule, const char *szSetting, DBVARIANT *dbv) const;
 
-	INT_PTR FASTCALL WriteByte(const HANDLE hContact, const char *szModule, const char *szSetting, BYTE value) const;
-	INT_PTR FASTCALL WriteByte(const char *szModule, const char *szSetting, BYTE value) const;
+	INT_PTR FASTCALL 	WriteDword						(const HANDLE hContact, const char *szModule, const char *szSetting, DWORD value) const;
+	INT_PTR FASTCALL 	WriteDword						(const char *szModule, const char *szSetting, DWORD value) const;
 
-	INT_PTR FASTCALL WriteTString(const HANDLE hContact, const char *szModule, const char *szSetting, const TCHAR *st) const;
+	INT_PTR FASTCALL 	WriteByte						(const HANDLE hContact, const char *szModule, const char *szSetting, BYTE value) const;
+	INT_PTR FASTCALL 	WriteByte						(const char *szModule, const char *szSetting, BYTE value) const;
 
-	char* FASTCALL utf8_decode(char* str, wchar_t** ucs2) const;
-	char* FASTCALL utf8_decodecp(char* str, int codepage, wchar_t** ucs2) const;
-	char* FASTCALL utf8_encode(const char* src) const;
-	char* FASTCALL utf8_encodecp(const char* src, int codepage) const;
-	char* FASTCALL utf8_encodeW(const wchar_t* src) const;
-	char* FASTCALL utf8_encodeT(const TCHAR* src) const;
-	TCHAR* FASTCALL utf8_decodeT(const char* src) const;
-	wchar_t* FASTCALL utf8_decodeW(const char* str) const;
+	INT_PTR FASTCALL 	WriteTString					(const HANDLE hContact, const char *szModule, const char *szSetting, const TCHAR *st) const;
+
+	/*
+	 * utf helpers
+	 */
+
+	char* FASTCALL 		utf8_decode						(char* str, wchar_t** ucs2) const;
+	char* FASTCALL 		utf8_decodecp					(char* str, int codepage, wchar_t** ucs2) const;
+	char* FASTCALL 		utf8_encode						(const char* src) const;
+	char* FASTCALL 		utf8_encodecp					(const char* src, int codepage) const;
+	char* FASTCALL 		utf8_encodeW					(const wchar_t* src) const;
+	char* FASTCALL 		utf8_encodeT					(const TCHAR* src) const;
+	TCHAR* FASTCALL 	utf8_decodeT					(const char* src) const;
+	wchar_t* FASTCALL 	utf8_decodeW					(const char* str) const;
 
 	/*
 	 * path utilities
 	 */
 
-	int TSAPI 		pathIsAbsolute(const TCHAR *path) const;
-	size_t TSAPI 	pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut, const TCHAR *szBase = 0) const;
-	size_t TSAPI	pathToRelative(const TCHAR *pSrc, TCHAR *pOut, const TCHAR *szBase = 0) const;
+	int TSAPI 			pathIsAbsolute					(const TCHAR *path) const;
+	size_t TSAPI 		pathToAbsolute					(const TCHAR *pSrc, TCHAR *pOut, const TCHAR *szBase = 0) const;
+	size_t TSAPI		pathToRelative					(const TCHAR *pSrc, TCHAR *pOut, const TCHAR *szBase = 0) const;
 
-	const TCHAR  *getDataPath() const { return(m_szProfilePath); }
-	const TCHAR  *getSkinPath() const { return(m_szSkinsPath); }
-	const TCHAR  *getSavedAvatarPath() const { return(m_szSavedAvatarsPath); }
-	const TCHAR  *getChatLogPath() const { return(m_szChatLogsPath); }
+	const TCHAR* 		getDataPath() const 			{ return(m_szProfilePath); }
+	const TCHAR* 		getSkinPath() const 			{ return(m_szSkinsPath); }
+	const TCHAR* 		getSavedAvatarPath() const 		{ return(m_szSavedAvatarsPath); }
+	const TCHAR* 		getChatLogPath() const 			{ return(m_szChatLogsPath); }
+	const bool	 		haveFoldersPlugin() const 		{ return(m_haveFolders); }
 
 	const TCHAR* TSAPI  getUserDir();
 	void		 TSAPI  configureCustomFolders();
 	INT_PTR		 TSAPI  foldersPathChanged();
 
 	void				startTimer();
-	void				stopTimer(const char *szMsg = 0);
-	void				timerMsg(const char *szMsg);
-	__int64				getTimerStart() const { return(m_tStart); }
-	__int64				getTimerStop() const { return(m_tStop); }
-	__int64				getTicks() const { return(m_tStop - m_tStart); }
-	double				getFreq() const { return(m_dFreq); }
-	double				getMsec() const { return(1000 * ((double)(m_tStop - m_tStart) * m_dFreq)); }
+	void				stopTimer						(const char *szMsg = 0);
+	void				timerMsg						(const char *szMsg);
+	__int64				getTimerStart() const 			{ return(m_tStart); }
+	__int64				getTimerStop() const 			{ return(m_tStop); }
+	__int64				getTicks() const 				{ return(m_tStop - m_tStart); }
+	double				getFreq() const 				{ return(m_dFreq); }
+	double				getMsec() const 				{ return(1000 * ((double)(m_tStop - m_tStart) * m_dFreq)); }
 
-	const bool  isVSAPIState() const { return m_VsAPI; }
+	/*
+	 * os dependant stuff (aero, visual styles etc.)
+	 */
+
+	const bool  		isVSAPIState() const { return m_VsAPI; }
 	/**
 	 * return status of Vista Aero
 	 *
 	 * @return bool: true if aero active, false otherwise
 	 */
-	const bool  isAero() const { return(m_isAero); }
-	const bool  isDwmActive() const { return(m_DwmActive); }
+	const bool  		isAero() const 					{ return(m_isAero); }
+	const bool  		isDwmActive() const 			{ return(m_DwmActive); }
 
 	/**
 	 * Refresh Aero status.
@@ -182,13 +192,13 @@ public:
 	 *
 	 * @return
 	 */
-	bool		getAeroState();
+	bool				getAeroState();
 	/**
 	 * return status of visual styles theming engine (Windows XP+)
 	 *
 	 * @return bool: themes are enabled
 	 */
-	bool		isVSThemed()
+	bool				isVSThemed()
 	{
 		return(m_isVsThemed);
 	}
@@ -196,14 +206,14 @@ public:
 	 * window lists
 	 */
 
-	void		TSAPI BroadcastMessage(UINT msg, WPARAM wParam, LPARAM lParam);
-	void		TSAPI BroadcastMessageAsync(UINT msg, WPARAM wParam, LPARAM lParam);
-	INT_PTR		TSAPI AddWindow(HWND hWnd, HANDLE h);
-	INT_PTR		TSAPI RemoveWindow(HWND hWnd);
-	HWND		TSAPI FindWindow(HANDLE h) const;
+	void		TSAPI 	BroadcastMessage				(UINT msg, WPARAM wParam, LPARAM lParam);
+	void		TSAPI 	BroadcastMessageAsync			(UINT msg, WPARAM wParam, LPARAM lParam);
+	INT_PTR		TSAPI 	AddWindow						(HWND hWnd, HANDLE h);
+	INT_PTR		TSAPI 	RemoveWindow					(HWND hWnd);
+	HWND		TSAPI 	FindWindow						(HANDLE h) const;
 
-	static		int FoldersPathChanged(WPARAM wParam, LPARAM lParam);
-	static 		const TCHAR* StriStr(const TCHAR *szString, const TCHAR *szSearchFor);
+	static	int 										FoldersPathChanged(WPARAM wParam, LPARAM lParam);		// hook subscriber for folders plugin
+	static 	const TCHAR* TSAPI 							StriStr(const TCHAR *szString, const TCHAR *szSearchFor);
 
 public:
 	HANDLE 		m_hMessageWindowList;
@@ -254,6 +264,7 @@ private:
 	__int64		m_tStart, m_tStop, m_tFreq;
 	double		m_dFreq;
 	char		m_timerMsg[256];
+	bool		m_haveFolders;
 
 	void	InitAPI();
 	void	GetUTFI();

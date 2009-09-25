@@ -61,14 +61,20 @@ struct SendJob {
 	DWORD   dwTime;
 };
 
-struct SendLaterJob {
-	HANDLE	hContact;
-	HANDLE  hOrigContact;								// owner of that job
+class SendLaterJob {
+public:
+	SendLaterJob();
+	~SendLaterJob();
+	char	szId[20];									// database key name (time stamp of original send)
+	HANDLE	hContact;									// original contact where the message has been assigned
+	HANDLE  hTargetContact;								// *real* contact (can be different for metacontacts, e.g).
 	HANDLE	hProcess;									// returned from the protocols sending service. needed to find it in the ACK handler
-	DWORD	dwOriginalId;								// the id of the message (also it's database key name)
-	DWORD	dwTime;										// time at which the delivery was initiated. used to handle timeouts
-	char	*sendBuffer;
+	time_t	lastSent;									// time at which the delivery was initiated. used to handle timeouts
+	char	*sendBuffer;								// utf-8 send buffer
+	PBYTE	pBuf;										// conventional send buffer (for non-utf8 protocols)
 	DWORD	dwFlags;
+	int		iSendCount;									// # of times we tried to send it...
+	bool	fSuccess;
 };
 
 class SendQueue {
@@ -101,30 +107,30 @@ public:
 
 	SendJob *getJobByIndex(const int index) { return(&m_jobs[index]); }
 
-	void 	clearJob				(const int index);
-	int 	findNextFailed			(const _MessageWindowData *dat) const;
-	void 	handleError				(_MessageWindowData *dat, const int iEntry) const;
-	int 	addTo					(_MessageWindowData *dat, const int iLen, int dwFlags);
-	int 	sendQueued				(_MessageWindowData *dat, const int iEntry);
-	void 	checkQueue 		 		(const _MessageWindowData *dat) const;
-	void 	logError				(const _MessageWindowData *dat, int iSendJobIndex,
-									 const TCHAR *szErrMsg) const;
-	void 	recallFailed			(const _MessageWindowData *dat, int iEntry) const;
-	void 	showErrorControls		(_MessageWindowData *dat, const int showCmd) const;
-	int 	ackMessage				(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
-	int		sendLater				(int iIndex, _MessageWindowData *dat);
+	void 	TSAPI clearJob					(const int index);
+	int 	TSAPI findNextFailed			(const _MessageWindowData *dat) const;
+	void 	TSAPI handleError				(_MessageWindowData *dat, const int iEntry) const;
+	int 	TSAPI addTo						(_MessageWindowData *dat, const int iLen, int dwFlags);
+	int 	TSAPI sendQueued				(_MessageWindowData *dat, const int iEntry);
+	void 	TSAPI checkQueue 		 		(const _MessageWindowData *dat) const;
+	void 	TSAPI logError					(const _MessageWindowData *dat, int iSendJobIndex,
+											 const TCHAR *szErrMsg) const;
+	void 	TSAPI recallFailed				(const _MessageWindowData *dat, int iEntry) const;
+	void 	TSAPI showErrorControls			(_MessageWindowData *dat, const int showCmd) const;
+	int 	TSAPI ackMessage				(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
+	int		TSAPI sendLater					(int iIndex, _MessageWindowData *dat, bool fAddHeader = true, HANDLE hContact = 0);
 	/*
 	 * static members
 	 */
 #if defined(_UNICODE)
-	static	int RTL_Detect				(const wchar_t *pszwText);
+	static	int TSAPI RTL_Detect				(const wchar_t *pszwText);
 #endif
-	static	char *MsgServiceName		(const HANDLE hContact, const _MessageWindowData *dat, int isUnicode);
-	static  int  GetProtoIconFromList	(const char *szProto, int iStatus);
-	static  LRESULT WarnPendingJobs		(unsigned int uNrMessages);
-	static	void NotifyDeliveryFailure	(const _MessageWindowData *dat);
-	static	void UpdateSaveAndSendButton(_MessageWindowData *dat);
-	static	void EnableSending			(const _MessageWindowData *dat, const int iMode);
+	static	char* TSAPI MsgServiceName			(const HANDLE hContact, const _MessageWindowData *dat, int isUnicode);
+	static  int   TSAPI GetProtoIconFromList	(const char *szProto, int iStatus);
+	static  LRESULT TSAPI WarnPendingJobs		(unsigned int uNrMessages);
+	static	void  TSAPI NotifyDeliveryFailure	(const _MessageWindowData *dat);
+	static	void  TSAPI UpdateSaveAndSendButton	(_MessageWindowData *dat);
+	static	void  TSAPI EnableSending			(const _MessageWindowData *dat, const int iMode);
 private:
 	SendJob		m_jobs[NR_SENDJOBS];
 	int			m_currentIndex;
@@ -132,10 +138,8 @@ private:
 
 extern SendQueue *sendQueue;
 
-int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild);
-void ShowMultipleControls	(const HWND hwndDlg, const UINT * controls, int cControls, int state);
-void HandleIconFeedback(_MessageWindowData *dat, HICON iIcon);
-
-#define TIMERID_MULTISEND_BASE (TIMERID_MSGSEND + SendQueue::NR_SENDJOBS)
+int  TSAPI ActivateExistingTab	(ContainerWindowData *pContainer, HWND hwndChild);
+void TSAPI ShowMultipleControls	(const HWND hwndDlg, const UINT * controls, int cControls, int state);
+void TSAPI HandleIconFeedback		(_MessageWindowData *dat, HICON iIcon);
 
 #endif /* __SENDQUEUE_H */

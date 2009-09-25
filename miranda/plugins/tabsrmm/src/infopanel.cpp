@@ -251,6 +251,10 @@ void CInfoPanel::renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero) 
 				if(CSkin::m_skinEnabled) {
 					rc.bottom -= 2;
 					CSkin::SkinDrawBG(m_dat->hwnd, m_dat->pContainer->hwnd, m_dat->pContainer, &rc, hdc);
+					item = &SkinItems[ID_EXTBKINFOPANELBG];
+					if(item->IGNORED)
+						item = &SkinItems[ID_EXTBKINFOPANEL];
+					CSkin::DrawItem(hdc, &rc, item);
 				} else {
 					rc.bottom -= 2;
 					::DrawAlpha(hdc, &rc, PluginConfig.m_ipBackgroundGradient, 100, PluginConfig.m_ipBackgroundGradientHigh, 0, 17,
@@ -337,6 +341,7 @@ void CInfoPanel::RenderIPNickname(const HDC hdc, RECT& rcItem)
 	CSkinItem*	item = &SkinItems[ID_EXTBKINFOPANEL];
 	TCHAR*		szTextToShow = 0;
 	bool		fShowUin = false;
+	COLORREF	clr = 0;
 
 	if(m_height < DEGRADE_THRESHOLD) {
 		szTextToShow = m_dat->uin;
@@ -364,11 +369,11 @@ void CInfoPanel::RenderIPNickname(const HDC hdc, RECT& rcItem)
 		if (m_ipConfig.isValid) {
 			if(fShowUin) {
 				hOldFont = (HFONT)SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_UIN]);
-				SetTextColor(hdc, m_ipConfig.clrs[IPFONTID_UIN]);
+				clr = m_ipConfig.clrs[IPFONTID_UIN];
 			}
 			else {
 				hOldFont = (HFONT)SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_NICK]);
-				SetTextColor(hdc, m_ipConfig.clrs[IPFONTID_NICK]);
+				clr = m_ipConfig.clrs[IPFONTID_NICK];
 			}
 		}
 
@@ -384,10 +389,10 @@ void CInfoPanel::RenderIPNickname(const HDC hdc, RECT& rcItem)
 			dtFlagsNick = DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_NOPREFIX;
 			if ((m_szNick.cx + sStatusMsg.cx + 6) < (rcItem.right - rcItem.left) || (rcItem.bottom - rcItem.top) < (2 * sMask.cy))
 				dtFlagsNick |= DT_VCENTER;
-			CSkin::RenderText(hdc, m_dat->hThemeIP, szTextToShow, &rcItem, dtFlagsNick, CSkin::m_glowSize);
+			CSkin::RenderText(hdc, m_dat->hThemeIP, szTextToShow, &rcItem, dtFlagsNick, CSkin::m_glowSize, clr);
 			if (m_ipConfig.isValid) {
 				SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_STATUS]);
-				SetTextColor(hdc, m_ipConfig.clrs[IPFONTID_STATUS]);
+				clr = m_ipConfig.clrs[IPFONTID_STATUS];
 			}
 			rcItem.left += (m_szNick.cx + 10);
 
@@ -400,9 +405,9 @@ void CInfoPanel::RenderIPNickname(const HDC hdc, RECT& rcItem)
 
 			rcItem.right -= 3;
 			if (rcItem.left + 30 < rcItem.right)
-				CSkin::RenderText(hdc, m_dat->hThemeIP, szStatusMsg, &rcItem, dtFlags, CSkin::m_glowSize);
+				CSkin::RenderText(hdc, m_dat->hThemeIP, szStatusMsg, &rcItem, dtFlags, CSkin::m_glowSize, clr);
 		} else
-			CSkin::RenderText(hdc, m_dat->hThemeIP, szTextToShow, &rcItem, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX, CSkin::m_glowSize);
+			CSkin::RenderText(hdc, m_dat->hThemeIP, szTextToShow, &rcItem, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX, CSkin::m_glowSize, clr);
 
 		if (hOldFont)
 			SelectObject(hdc, hOldFont);
@@ -423,13 +428,14 @@ void CInfoPanel::RenderIPUIN(const HDC hdc, RECT& rcItem)
 	HFONT 		hOldFont = 0;
 	CSkinItem*	item = &SkinItems[ID_EXTBKINFOPANEL];
 	TCHAR		*tszUin = m_dat->uin;
+	COLORREF	clr = 0;
 
 	SetBkMode(hdc, TRANSPARENT);
 
 	rcItem.left += 2;
 	if (config) {
 		hOldFont = (HFONT)SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_UIN]);
-		SetTextColor(hdc, m_ipConfig.clrs[IPFONTID_UIN]);
+		clr = m_ipConfig.clrs[IPFONTID_UIN];
 	}
 	if (m_dat->uin[0]) {
 		SIZE sUIN;
@@ -439,10 +445,10 @@ void CInfoPanel::RenderIPUIN(const HDC hdc, RECT& rcItem)
 			int i_mins = (diff - i_hrs * 3600) / 60;
 			mir_sntprintf(szBuf, safe_sizeof(szBuf), _T("%s    Idle: %dh,%02dm"), tszUin, i_hrs, i_mins);
 			GetTextExtentPoint32(hdc, szBuf, lstrlen(szBuf), &sUIN);
-			CSkin::RenderText(hdc, m_dat->hThemeIP, szBuf, &rcItem, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize);
+			CSkin::RenderText(hdc, m_dat->hThemeIP, szBuf, &rcItem, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize, clr);
 		} else {
 			GetTextExtentPoint32(hdc, tszUin, lstrlen(tszUin), &sUIN);
-			CSkin::RenderText(hdc, m_dat->hThemeIP, tszUin, &rcItem, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize);
+			CSkin::RenderText(hdc, m_dat->hThemeIP, tszUin, &rcItem, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize, clr);
 		}
 	}
 	if (hOldFont)
@@ -462,6 +468,7 @@ void CInfoPanel::RenderIPStatus(const HDC hdc, RECT& rcItem)
 	TCHAR 		szResult[80];
 	int 		base_hour;
 	TCHAR 		symbolic_time[3];
+	COLORREF	clr = 0;
 
 	szResult[0] = 0;
 
@@ -518,13 +525,13 @@ void CInfoPanel::RenderIPStatus(const HDC hdc, RECT& rcItem)
 		base_hour = base_hour > 11 ? base_hour - 12 : base_hour;
 		symbolic_time[0] = (TCHAR)(0xB7 + base_hour);
 		symbolic_time[1] = 0;
-		CSkin::RenderText(hdc, m_dat->hThemeIP, symbolic_time, &rcItem, DT_SINGLELINE | DT_VCENTER);
+		CSkin::RenderText(hdc, m_dat->hThemeIP, symbolic_time, &rcItem, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize, 0);
 		if (config) {
 			oldFont = (HFONT)SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_TIME]);
-			SetTextColor(hdc, m_ipConfig.clrs[IPFONTID_TIME]);
+			clr = m_ipConfig.clrs[IPFONTID_TIME];
 		}
 		rcItem.left += 16;
-		CSkin::RenderText(hdc, m_dat->hThemeIP, szResult, &rcItem, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize);
+		CSkin::RenderText(hdc, m_dat->hThemeIP, szResult, &rcItem, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize, clr);
 		SelectObject(hdc, oldFont);
 		rc.left += (sTime.cx + 20);
 	}
@@ -535,18 +542,18 @@ void CInfoPanel::RenderIPStatus(const HDC hdc, RECT& rcItem)
 	if (m_dat->szStatus[0]) {
 		if (config) {
 			SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_STATUS]);
-			SetTextColor(hdc, m_ipConfig.clrs[IPFONTID_STATUS]);
+			clr = m_ipConfig.clrs[IPFONTID_STATUS];
 		}
-		CSkin::RenderText(hdc, m_dat->hThemeIP, m_dat->szStatus, &rc, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize);
+		CSkin::RenderText(hdc, m_dat->hThemeIP, m_dat->szStatus, &rc, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize, clr);
 	}
 	if (szFinalProto) {
 		rc.left = rc.right - sProto.cx - 3 - (m_dat->hClientIcon ? 20 : 0);
 		if (config) {
 			SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_PROTO]);
-			SetTextColor(hdc, m_ipConfig.clrs[IPFONTID_PROTO]);
+			clr = m_ipConfig.clrs[IPFONTID_PROTO];
 		} else
-			SetTextColor(hdc, GetSysColor(COLOR_HOTLIGHT));
-		CSkin::RenderText(hdc, m_dat->hThemeIP, szFinalProto, &rc, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize);
+			clr = ::GetSysColor(COLOR_HOTLIGHT);
+		CSkin::RenderText(hdc, m_dat->hThemeIP, szFinalProto, &rc, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize, clr);
 	}
 
 	if (m_dat->hClientIcon)
@@ -581,25 +588,25 @@ void CInfoPanel::Chat_RenderIPNickname(const HDC hdc, RECT& rcItem)
 					  CTranslator::get(CTranslator::GEN_MUC_NO_TOPIC));
 
 		hOldFont = (HFONT)::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_UIN]);
-		::SetTextColor(hdc, m_ipConfig.clrs[IPFONTID_UIN]);
-		CSkin::RenderText(hdc, m_dat->hThemeIP, tszText, &rcItem, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | DT_VCENTER, CSkin::m_glowSize);
+		CSkin::RenderText(hdc, m_dat->hThemeIP, tszText, &rcItem, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | DT_VCENTER,
+						  CSkin::m_glowSize, m_ipConfig.clrs[IPFONTID_UIN]);
 	} else {
 
 		hOldFont = (HFONT)::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_NICK]);
-		::SetTextColor(hdc, m_ipConfig.clrs[IPFONTID_NICK]);
 		::GetTextExtentPoint32(hdc, m_dat->szNickname, lstrlen(m_dat->szNickname), &m_szNick);
-		CSkin::RenderText(hdc, m_dat->hThemeIP, m_dat->szNickname, &rcItem, DT_SINGLELINE | DT_NOPREFIX | DT_VCENTER, CSkin::m_glowSize);
+		CSkin::RenderText(hdc, m_dat->hThemeIP, m_dat->szNickname, &rcItem, DT_SINGLELINE | DT_NOPREFIX | DT_VCENTER,
+						  CSkin::m_glowSize, m_ipConfig.clrs[IPFONTID_NICK]);
 		rcItem.left += (m_szNick.cx + 4);
 
 		::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_STATUS]);
-		::SetTextColor(hdc, m_ipConfig.clrs[IPFONTID_STATUS]);
 		if(si->ptszStatusbarText) {
 			TCHAR *pTmp = _tcschr(si->ptszStatusbarText, ']');
 			pTmp += 2;
 			TCHAR tszTemp[30];
 			if(si->ptszStatusbarText[0] == '[' && pTmp > si->ptszStatusbarText && ((pTmp - si->ptszStatusbarText) < (size_t)30)) {
 				mir_sntprintf(tszTemp, pTmp - si->ptszStatusbarText, _T("%s"), si->ptszStatusbarText);
-				CSkin::RenderText(hdc, m_dat->hThemeIP, tszTemp, &rcItem, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | DT_VCENTER, CSkin::m_glowSize);
+				CSkin::RenderText(hdc, m_dat->hThemeIP, tszTemp, &rcItem, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | DT_VCENTER,
+								  CSkin::m_glowSize, m_ipConfig.clrs[IPFONTID_STATUS]);
 			}
 		}
 	}
@@ -612,6 +619,7 @@ void CInfoPanel::Chat_RenderIPSecondLine(const HDC hdc, RECT& rcItem)
 	HFONT 	hOldFont = 0;
 	SIZE	szTitle;
 	TCHAR	szPrefix[100];
+	COLORREF clr = 0;
 
 	SESSION_INFO	*si = reinterpret_cast<SESSION_INFO *>(m_dat->si);
 
@@ -619,19 +627,19 @@ void CInfoPanel::Chat_RenderIPSecondLine(const HDC hdc, RECT& rcItem)
 		return;
 
 	hOldFont = (HFONT)::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_UIN]);
-	::SetTextColor(hdc, m_ipConfig.clrs[IPFONTID_UIN]);
+	clr = m_ipConfig.clrs[IPFONTID_UIN];
 
 	const TCHAR *szTopicTitle = CTranslator::get(CTranslator::GEN_MUC_TOPIC_IS);
 	mir_sntprintf(szPrefix, 100, szTopicTitle, _T(""));
 	::GetTextExtentPoint32(hdc, szPrefix, lstrlen(szPrefix), &szTitle);
-
-	CSkin::RenderText(hdc, m_dat->hThemeIP, szPrefix, &rcItem, DT_SINGLELINE | DT_NOPREFIX | DT_TOP, CSkin::m_glowSize);
+	rcItem.right -= 3;
+	CSkin::RenderText(hdc, m_dat->hThemeIP, szPrefix, &rcItem, DT_SINGLELINE | DT_NOPREFIX | DT_TOP, CSkin::m_glowSize, clr);
 	rcItem.left += (szTitle.cx + 4);
 
 	if(si->ptszTopic && lstrlen(si->ptszTopic) > 1)
-		CSkin::RenderText(hdc, m_dat->hThemeIP, si->ptszTopic, &rcItem, DT_WORDBREAK | DT_END_ELLIPSIS | DT_NOPREFIX | DT_TOP, CSkin::m_glowSize);
+		CSkin::RenderText(hdc, m_dat->hThemeIP, si->ptszTopic, &rcItem, DT_WORDBREAK | DT_END_ELLIPSIS | DT_NOPREFIX | DT_TOP, CSkin::m_glowSize, clr);
 	else
-		CSkin::RenderText(hdc, m_dat->hThemeIP, CTranslator::get(CTranslator::GEN_MUC_NO_TOPIC), &rcItem, DT_TOP| DT_SINGLELINE | DT_NOPREFIX, CSkin::m_glowSize);
+		CSkin::RenderText(hdc, m_dat->hThemeIP, CTranslator::get(CTranslator::GEN_MUC_NO_TOPIC), &rcItem, DT_TOP| DT_SINGLELINE | DT_NOPREFIX, CSkin::m_glowSize, clr);
 
 	if(hOldFont)
 		::SelectObject(hdc, hOldFont);

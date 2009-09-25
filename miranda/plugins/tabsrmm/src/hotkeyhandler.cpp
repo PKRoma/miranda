@@ -77,9 +77,11 @@ std::vector<HANDLE> sendLaterContactList;
 std::vector<SendLaterJob *> sendLaterJobList;
 
 typedef std::vector<SendLaterJob *>::iterator SendLaterJobIterator;
+int SendLater_SendIt(SendLaterJob *job);
 
 #define SENDLATER_AGE_THRESHOLD (86400 * 3)				// 3 days, older messages will be removed from the db.
 #define SENDLATER_RESEND_THRESHOLD 180					// timeouted messages should be resent after that many seconds
+#define SENDLATER_PROCESS_INTERVAL 50					// process the list of waiting job every this many seconds
 
 LRESULT ProcessHotkeysByMsgFilter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR ctrlId)
 {
@@ -193,6 +195,8 @@ static void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle)
 	}           //if
 }
 
+static time_t t_last_sendlater_processed = 0;
+
 INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static POINT ptLast;
@@ -214,12 +218,14 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				_hotkeydescs[i].pszDescription = Translate(_hotkeydescs[i].pszDescription);
 				CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&_hotkeydescs[i]);
 			}
+			t_last_sendlater_processed = time(0);
+
 			sendLaterContactList.clear();
 
 			WM_TASKBARCREATED = RegisterWindowMessageA("TaskbarCreated");
 			ShowWindow(hwndDlg, SW_HIDE);
 			hSvcHotkeyProcessor = CreateServiceFunction(MS_TABMSG_HOTKEYPROCESS, HotkeyProcessor);
-			SetTimer(hwndDlg, TIMERID_SENDLATER, 60000, NULL);
+			SetTimer(hwndDlg, TIMERID_SENDLATER, 10000, NULL);
 			return TRUE;
 		case WM_LBUTTONDOWN:
 			iMousedown = 1;
@@ -610,6 +616,7 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
 			M->getAeroState();
 			Skin->setupTabCloseBitmap();
+			CSkin::initAeroEffect();
 			PluginConfig.m_ncm.cbSize = sizeof(NONCLIENTMETRICS);
 			SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &PluginConfig.m_ncm, 0);
 			FreeTabConfig();
@@ -656,10 +663,6 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			break;
 		}
 
-		case DM_REMOVEFROMSENDLATER:
-			SendLater_Remove((HANDLE)wParam);
-			return(0);
-
 		case WM_ACTIVATE:
 			if (LOWORD(wParam) != WA_ACTIVE)
 				SetWindowPos(hwndDlg, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
@@ -669,14 +672,32 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			return 0;
 
 		case WM_TIMER:
-			if(wParam == TIMERID_SENDLATER && PluginConfig.m_SendLaterAvail) {
-				std::vector<HANDLE>::iterator it = sendLaterContactList.begin();
-				DWORD  now = time(0);
+			if(wParam == TIMERID_SENDLATER) {
+				ContainerWindowData *pContainer = pFirstContainer;
+				while(pContainer) {
+					SendMessage(pContainer->hwnd, WM_TIMER, TIMERID_HEARTBEAT, 0);
+					pContainer = pContainer->pNextContainer;
+				}
+				if(PluginConfig.m_SendLaterAvail && (time(0) - t_last_sendlater_processed) > SENDLATER_PROCESS_INTERVAL) {
+					time_t now;
+					t_last_sendlater_processed = now = time(0);
 
-				while(it != sendLaterContactList.end()) {
-					SendLater_Process(*it);
-					break;
-					it++;
+					if(!sendLaterContactList.empty()) {
+						std::vector<HANDLE>::iterator it = sendLaterContactList.begin();
+						while(it != sendLaterContactList.end()) {
+							SendLater_Process(*it);
+							it++;
+						}
+						sendLaterContactList.clear();
+					}
+
+					if(!sendLaterJobList.empty()) {
+						SendLaterJobIterator job = sendLaterJobList.begin();
+						while(job != sendLaterJobList.end()) {
+							SendLater_SendIt(*job);
+							job++;
+						}
+					}
 				}
 			}
 			break;
@@ -703,6 +724,7 @@ void SendLater_Add(const HANDLE hContact)
 
 	if(sendLaterContactList.empty()) {
 		sendLaterContactList.push_back(hContact);
+		t_last_sendlater_processed = 0;								// force processing at next tick
 		return;
 	}
 
@@ -718,20 +740,7 @@ void SendLater_Add(const HANDLE hContact)
 		it++;
 	}
 	sendLaterContactList.push_back(hContact);
-}
-
-static void SendLater_Remove(const HANDLE hContact)
-{
-	std::vector<HANDLE>::iterator it = sendLaterContactList.begin();
-
-	while(it != sendLaterContactList.end()) {
-		if(*it == hContact) {
-			//_DebugTraceA("%d deleted from list", hContact);
-			sendLaterContactList.erase(it);
-			return;
-		}
-		it++;
-	}
+	t_last_sendlater_processed = 0;								// force processing at next tick
 }
 
 #if defined(_UNICODE)
@@ -740,79 +749,116 @@ static void SendLater_Remove(const HANDLE hContact)
 	#define U_PREF_UNICODE 0
 #endif
 
-static int SendLater_SendIt(const char *szSetting, LPARAM lParam)
+static int SendLater_AddJob(const char *szSetting, LPARAM lParam)
 {
-	HANDLE 	hContact = (HANDLE)lParam;
-	HANDLE  hOrigContact = hContact;
-	DWORD 	dwTimeStamp;
-	DWORD 	now = time(0);
-	TCHAR   *msgToSend = 0;
-	bool	fResend = false;;
+	HANDLE 		hContact = (HANDLE)lParam;
+	DBVARIANT 	dbv = {0};
 
 	if(!szSetting || !strcmp(szSetting, "count") || lstrlenA(szSetting) < 8)
 		return(0);
 
-	sscanf(szSetting, "%d", &dwTimeStamp);
+	if(szSetting[0] != 'S' && szSetting[0] != 'M')
+		return(0);
 
-	std::vector<SendLaterJob *>::const_iterator it = sendLaterJobList.begin();
+	SendLaterJobIterator it = sendLaterJobList.begin();
 
-	//_DebugTraceA("checking for %d", hContact);
-
-	if(!sendLaterJobList.empty()) {
-		while(it != sendLaterJobList.end()) {
-			if((*it)->hOrigContact == hOrigContact && (*it)->dwOriginalId == dwTimeStamp) {
-				if((*it)->dwTime < (now - SENDLATER_RESEND_THRESHOLD)) {
-					//_DebugTraceA("the message %d for %d is already in the list and ready for resend", dwTimeStamp, hContact);
-					(*it)->dwTime = now;
-					fResend = true;
-					hOrigContact = (*it)->hOrigContact;
-					hContact = hOrigContact;
-					dwTimeStamp = (*it)->dwOriginalId;
-					mir_free((*it)->sendBuffer);
-					(*it)->sendBuffer = 0;
-					break;
-				}
-				else {
-					//_DebugTraceA("the message %d for %d is already in the list and NOT ready for resend", dwTimeStamp, hContact);
-					return(0);
-				}
-			}
-			it++;
-		}
-	}
-
-	if(!fResend) {
-		if(dwTimeStamp > now || dwTimeStamp < (now - SENDLATER_AGE_THRESHOLD)) {
-			// most likely invalid, remove it
+	while(it != sendLaterJobList.end()) {
+		if((*it)->hContact == hContact && !strcmp((*it)->szId, szSetting)) {
+			//_DebugTraceA("%s for %d is already on the job list.", szSetting, hContact);
 			return(0);
 		}
+		it++;
 	}
 
-	char	*szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-	DWORD   dwFlags = 0;
-	DBVARIANT dbv = {0};
+	SendLaterJob *job = new SendLaterJob;
 
-	bool	fIsMeta = (PluginConfig.g_MetaContactsAvail && !strcmp(szProto, PluginConfig.szMetaName)) ? true : false;
+	strncpy(job->szId, szSetting, 19);
+	job->szId[19] = 0;
+	job->hContact = hContact;
+
+	if(0 == DBGetContactSettingString(hContact, "SendLater", szSetting, &dbv)) {
+		char	*szAnsi = 0;
+		wchar_t *szWchar = 0;
+		UINT	required = 0;
+
+		int iLen = lstrlenA(dbv.pszVal);
+		job->sendBuffer = reinterpret_cast<char *>(mir_alloc(iLen + 1));
+		strncpy(job->sendBuffer, dbv.pszVal, iLen);
+		job->sendBuffer[iLen] = 0;
+
+		/*
+		 * construct conventional send buffer
+		 */
+
+		szAnsi = M->utf8_decodecp(dbv.pszVal, CP_ACP, &szWchar);
+		iLen = lstrlenA(szAnsi);
+		if(szWchar)
+			required = iLen + 1 + ((lstrlenW(szWchar) + 1) * sizeof(wchar_t));
+		else
+			required = iLen + 1;
+
+		job->pBuf = (PBYTE)mir_calloc(required);
+
+		strncpy((char *)job->pBuf, szAnsi, iLen);
+		job->pBuf[iLen] = 0;
+		if(szWchar)
+			wcsncpy((wchar_t *)&job->pBuf[iLen + 1], szWchar, lstrlenW(szWchar));
+
+		DBFreeVariant(&dbv);
+		mir_free(szWchar);
+	}
+	else {
+		delete job;
+		return(0);
+	}
+
+	sendLaterJobList.push_back(job);
+
+	return(0);
+}
+
+static int SendLater_SendIt(SendLaterJob *job)
+{
+	HANDLE hContact = job->hContact;
+	time_t now = time(0);
+
+	if(job->lastSent > now)
+		return(0);											// this one is frozen, don't process it now.
+
+	if(job->iSendCount == 5) {
+		job->iSendCount = 0;
+		job->lastSent = now + 3600;							// after 5 unsuccessful resends, freeze it for an hour
+		return(0);
+	}
+
+	if(job->iSendCount > 0 && (now - job->lastSent < SENDLATER_RESEND_THRESHOLD)) {
+		//_DebugTraceA("Send it: message %s for %s RESEND but not old enough", job->szId, (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0));
+		return(0);											// this one was sent, but probably failed. Resend it after a while
+	}
+
+	char*		szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+	DWORD   	dwFlags = 0;
+	DBVARIANT 	dbv = {0};
+
+	bool		fIsMeta = (PluginConfig.g_MetaContactsAvail && !strcmp(szProto, PluginConfig.szMetaName)) ? true : false;
 
 	if(fIsMeta) {
 		hContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)hContact, 0);
 		szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 	}
 
-	if(!hContact || szProto == 0) {
-		//_DebugTraceA("contact handle or protocol invalid", szSetting);
+	if(!hContact || szProto == 0)
 		return(0);
-	}
 
 	WORD wMyStatus = (WORD)CallProtoService(szProto, PS_GETSTATUS, 0, 0);
 	WORD wContactStatus = DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
 
-	if(!(wMyStatus == ID_STATUS_ONLINE || wMyStatus == ID_STATUS_FREECHAT)) {
-		//_DebugTraceA("My status does not allow to send a queued message");
-		return(0);
+	if(job->szId[0] == 'S') {
+		if(!(wMyStatus == ID_STATUS_ONLINE || wMyStatus == ID_STATUS_FREECHAT)) {
+			return(0);
+		}
 	}
 	if(wContactStatus == ID_STATUS_OFFLINE) {
-		//_DebugTraceA("Contact is not online, sending not possible");
 		return(0);
 	}
 
@@ -820,61 +866,15 @@ static int SendLater_SendIt(const char *szSetting, LPARAM lParam)
 
 	char *svcName = SendQueue::MsgServiceName(hContact, 0, dwFlags);
 
-	if(0 == DBGetContactSettingString(hOrigContact, "SendLater", szSetting, &dbv)) {
-		TCHAR tszTimestamp[30], tszHeader[150];
+	job->lastSent = now;
+	job->iSendCount++;
+	job->hTargetContact = hContact;
 
-		TCHAR *formatTime = _T("%Y.%m.%d - %H:%M");
-		_tcsftime(tszTimestamp, 30, formatTime, _localtime32((__time32_t *)&dwTimeStamp));
-		tszTimestamp[29] = 0;
-
-		mir_sntprintf(tszHeader, safe_sizeof(tszHeader), CTranslator::get(CTranslator::GEN_SQ_SENDLATER_HEADER), tszTimestamp);
-
-		TCHAR *msg = M->utf8_decodeT((char *)dbv.pszVal);
-		mir_free(dbv.pszVal);
-
-		UINT memRequired = (lstrlen(tszHeader) + lstrlen(msg) + 4) * sizeof(TCHAR);
-
-		TCHAR *finalMsg = (TCHAR *)malloc(memRequired);
-		mir_sntprintf(finalMsg, memRequired, _T("%s%s"), tszHeader, msg);
-
-		mir_free(msg);
-
-		/*
-		 * construct the message for sending
-		 */
-
-		if(dwFlags & PREF_UTF)
-			msgToSend = reinterpret_cast<TCHAR *>(M->utf8_encodeT(finalMsg));
-#if defined(_UNICODE)
-		else if(dwFlags & PREF_UNICODE) {
-			int iLength = lstrlen(finalMsg);
-			memRequired = (lstrlen(finalMsg) + 3) * (sizeof(TCHAR) + 1);
-			msgToSend = (TCHAR *)mir_alloc(memRequired);
-			mir_sntprintf(msgToSend, lstrlen(finalMsg), _T("%s"), finalMsg);
-			WideCharToMultiByte(0, 0, finalMsg, iLength, (char *)&msgToSend[iLength + 1], iLength, 0, 0);
-		}
-#endif
-		else
-			msgToSend = reinterpret_cast<TCHAR *>(mir_tstrdup(finalMsg));
-
-		SendLaterJob *job = 0;
-
-		if(fResend)
-			job = *it;
-		else
-			job = new SendLaterJob;
-
-		job->dwOriginalId = dwTimeStamp;
-		job->dwTime = now;
-		job->hContact = hContact;
-		job->hProcess = (HANDLE)CallContactService(hContact, svcName, (WPARAM)dwFlags, (LPARAM)msgToSend);
-		job->hOrigContact = hOrigContact;
-		job->dwFlags = dwFlags;
-		job->sendBuffer = reinterpret_cast<char *>(msgToSend);
-		if(!fResend)
-			sendLaterJobList.push_back(job);
-
-		free(finalMsg);
+	if(dwFlags & PREF_UTF) {
+		job->hProcess = (HANDLE)CallContactService(hContact, svcName, dwFlags, (LPARAM)job->sendBuffer);
+	}
+	else {
+		job->hProcess = (HANDLE)CallContactService(hContact, svcName, dwFlags, (LPARAM)job->pBuf);
 	}
 	return(0);
 }
@@ -890,7 +890,7 @@ static void SendLater_Process(const HANDLE hContact)
 	if(iCount) {
 		DBCONTACTENUMSETTINGS ces = {0};
 
-		ces.pfnEnumProc = SendLater_SendIt;
+		ces.pfnEnumProc = SendLater_AddJob;
 		ces.szModule = "SendLater";
 		ces.lParam = (LPARAM)hContact;
 
@@ -906,38 +906,21 @@ HANDLE SendLater_ProcessAck(const ACKDATA *ack)
 	SendLaterJobIterator it = sendLaterJobList.begin();
 
 	while(it != sendLaterJobList.end()) {
-		if((*it)->hProcess == ack->hProcess) {
-			char	szSetting[50];
-			mir_snprintf(szSetting, 50, "%d", (*it)->dwOriginalId);
-			DBDeleteContactSetting((*it)->hOrigContact, "SendLater", szSetting);
-			int iCount = M->GetDword((*it)->hOrigContact, "SendLater", "count", 0);
-			if(iCount)
-				iCount--;
-			M->WriteDword((*it)->hOrigContact, "SendLater", "count", iCount);
-
-			if(iCount == 0)
-				SendLater_Remove((*it)->hOrigContact);
-
+		if((*it)->hProcess == ack->hProcess && (*it)->hTargetContact == ack->hContact) {
 			DBEVENTINFO dbei = {0};
 			dbei.cbSize = sizeof(dbei);
 			dbei.eventType = EVENTTYPE_MESSAGE;
 			dbei.flags = DBEF_SENT;
-			dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)((*it)->hOrigContact), 0);
+			dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)((*it)->hContact), 0);
 			dbei.timestamp = time(NULL);
 			dbei.cbBlob = lstrlenA((*it)->sendBuffer) + 1;
 
 #if defined( _UNICODE )
-			if ((*it)->dwFlags & PREF_UNICODE)
-				dbei.cbBlob *= sizeof(TCHAR) + 1;
-			if ((*it)->dwFlags & PREF_RTL)
-				dbei.flags |= DBEF_RTL;
-			if ((*it)->dwFlags & PREF_UTF)
-				dbei.flags |= DBEF_UTF;
+			dbei.flags |= DBEF_UTF;
 #endif
 			dbei.pBlob = (PBYTE)((*it)->sendBuffer);
-			HANDLE hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM)((*it)->hOrigContact), (LPARAM)&dbei);
-
-			mir_free((*it)->sendBuffer);
+			HANDLE hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM)((*it)->hContact), (LPARAM)&dbei);
+			(*it)->fSuccess = true;
 			delete *it;
 			sendLaterJobList.erase(it);
 			return(ack->hProcess);
@@ -955,6 +938,8 @@ void SendLater_ClearAll()
 	SendLaterJobIterator it = sendLaterJobList.begin();
 
 	while(it != sendLaterJobList.end()) {
+		mir_free((*it)->sendBuffer);
+		mir_free((*it)->pBuf);
 		delete *it;
 		it++;
 	}

@@ -72,8 +72,6 @@ char *SendQueue::MsgServiceName(const HANDLE hContact = 0, const _MessageWindowD
 	return pss_msg;
 }
 
-#define MS_INITIAL_DELAY 500
-
 /*
  * searches the queue for a message belonging to the given contact which has been marked
  * as "failed" by either the ACKRESULT_FAILED or a timeout handler
@@ -890,18 +888,20 @@ LRESULT SendQueue::WarnPendingJobs(unsigned int uNrMessages)
  * adds the contact to the list of contacts that have queued messages
  *
  * @param iJobIndex int: index of the send job
+ * 		  dat: Message window data
+ * 		  fAddHeader: add the "message was sent delayed" header (default = true)
+ * 		  hContact  : contact to which the job should be added (default = hOwner of the send job)
  *
  * @return the index on success, -1 on failure
  */
-int SendQueue::sendLater(int iJobIndex, _MessageWindowData *dat)
+int SendQueue::sendLater(int iJobIndex, _MessageWindowData *dat, bool fAddHeader, HANDLE hContact)
 {
-	bool  fAvail = false;
+	bool  fAvail = PluginConfig.m_SendLaterAvail ? true : false;
+
 	const TCHAR *szNote = 0;
 
-	if(IsUtfSendAvailable(dat->bIsMeta ? dat->hSubContact : dat->hContact)) {
+	if(fAvail)
 		szNote = CTranslator::get(CTranslator::GEN_SQ_QUEUED_MESSAGE);
-		fAvail = PluginConfig.m_SendLaterAvail ? true : false;
-	}
 	else
 		szNote = CTranslator::get(CTranslator::GEN_SQ_QUEUING_NOT_AVAIL);
 
@@ -930,21 +930,65 @@ int SendQueue::sendLater(int iJobIndex, _MessageWindowData *dat)
 		return(0);
 
 	if(iJobIndex >= 0 && iJobIndex < NR_SENDJOBS) {
-		SendJob *job = &m_jobs[iJobIndex];
-		char	szKeyName[20];
+		SendJob*	job = &m_jobs[iJobIndex];
+		char		szKeyName[20];
+		TCHAR 		tszTimestamp[30], tszHeader[150];
+		time_t 		now = time(0);
 
-		mir_snprintf(szKeyName, 20, "%d", time(0));
-		if(job->dwFlags & PREF_UTF || !(job->dwFlags & PREF_UNICODE))
-			DBWriteContactSettingString(job->hOwner, "SendLater", szKeyName, job->sendBuffer);
-		else
-			M->WriteTString(job->hOwner, "SendLater", szKeyName, reinterpret_cast<TCHAR *>(job->sendBuffer));
+		TCHAR *formatTime = _T("%Y.%m.%d - %H:%M");
+		_tcsftime(tszTimestamp, 30, formatTime, _localtime32((__time32_t *)&now));
+		tszTimestamp[29] = 0;
+		mir_snprintf(szKeyName, 20, "S%d", now);
 
-		int iCount = M->GetDword(job->hOwner, "SendLater", "count", 0);
+		mir_sntprintf(tszHeader, safe_sizeof(tszHeader), CTranslator::get(CTranslator::GEN_SQ_SENDLATER_HEADER), tszTimestamp);
+
+		if(job->dwFlags & PREF_UTF || !(job->dwFlags & PREF_UNICODE)) {
+			char *utf_header = M->utf8_encodeT(tszHeader);
+			UINT required = lstrlenA(utf_header) + lstrlenA(job->sendBuffer) + 10;
+			char *tszMsg = reinterpret_cast<char *>(mir_alloc(required));
+
+			mir_snprintf(tszMsg, required, "%s%s", fAddHeader ? utf_header : "", job->sendBuffer);
+			DBWriteContactSettingString(hContact ? hContact : job->hOwner, "SendLater", szKeyName, tszMsg);
+			mir_free(utf_header);
+			mir_free(tszMsg);
+		}
+		else if(job->dwFlags & PREF_UNICODE) {
+			int iLen = lstrlenA(job->sendBuffer);
+			wchar_t *wszMsg = (wchar_t *)&job->sendBuffer[iLen + 1];
+
+			UINT required = sizeof(TCHAR) * (lstrlen(tszHeader) + lstrlenW(wszMsg) + 10);
+
+			TCHAR *tszMsg = reinterpret_cast<TCHAR *>(mir_alloc(required));
+			mir_sntprintf(tszMsg, required, _T("%s%s"), fAddHeader ? tszHeader : _T(""), wszMsg);
+			char *utf = M->utf8_encodeT(tszMsg);
+			DBWriteContactSettingString(hContact ? hContact : job->hOwner, "SendLater", szKeyName, utf);
+			mir_free(utf);
+			mir_free(tszMsg);
+		}
+		int iCount = M->GetDword(hContact ? hContact : job->hOwner, "SendLater", "count", 0);
 		iCount++;
-		M->WriteDword(job->hOwner, "SendLater", "count", iCount);
-		SendLater_Add(job->hOwner);
+		M->WriteDword(hContact ? hContact : job->hOwner, "SendLater", "count", iCount);
+		SendLater_Add(hContact ? hContact : job->hOwner);
 		return(iJobIndex);
 	}
 	return(-1);
 }
 
+SendLaterJob::SendLaterJob()
+{
+	ZeroMemory(this, sizeof(SendLaterJob));
+	fSuccess = false;
+}
+SendLaterJob::~SendLaterJob()
+{
+	if(fSuccess) {
+		mir_free(sendBuffer);
+		mir_free(pBuf);
+
+		DBDeleteContactSetting(hContact, "SendLater", szId);
+		int iCount = M->GetDword(hContact, "SendLater", "count", 0);
+		if(iCount)
+			iCount--;
+		M->WriteDword(hContact, "SendLater", "count", iCount);
+	}
+}

@@ -381,12 +381,11 @@ LONG_PTR CMenuBar::customDrawWorker(NMCUSTOMDRAW *nm)
 					}
 
 					if(szText) {
-						if(CSkin::m_skinEnabled)
-							::SetTextColor(m_hdcDraw, CSkin::m_DefaultFontColor);
-						else
-							::SetTextColor(m_hdcDraw, (uState & (CDIS_SELECTED | CDIS_HOT | CDIS_MARKED)) ? ::GetSysColor(COLOR_HIGHLIGHTTEXT) : ::GetSysColor(COLOR_BTNTEXT));
+						COLORREF clr = CSkin::m_skinEnabled ? CSkin::m_DefaultFontColor :
+										((uState & (CDIS_SELECTED | CDIS_HOT | CDIS_MARKED)) ? ::GetSysColor(COLOR_HIGHLIGHTTEXT) : ::GetSysColor(COLOR_BTNTEXT));
 						::SetBkMode(m_hdcDraw, TRANSPARENT);
-						CSkin::RenderText(m_hdcDraw, m_hTheme, szText, &nmtb->nmcd.rc, DT_SINGLELINE | DT_VCENTER | DT_CENTER);
+						CSkin::RenderText(m_hdcDraw, m_hTheme, szText, &nmtb->nmcd.rc, DT_SINGLELINE | DT_VCENTER | DT_CENTER,
+										  CSkin::m_glowSize, clr);
 					}
 					if(iIndex == 0) {
 						::DrawIconEx(m_hdcDraw, (nmtb->nmcd.rc.left + nmtb->nmcd.rc.right) / 2 - 8,
@@ -761,9 +760,10 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 			HBITMAP 		hbm, hbmOld;
 			HANDLE 			hbp = 0;
 			CSkinItem *		item = &SkinItems[ID_EXTBKSTATUSBARPANEL];
+			COLORREF		clr = 0;
 
-			BOOL	fAero = M->isAero();
-			HANDLE  hTheme = fAero ? CMimAPI::m_pfnOpenThemeData(hWnd, L"ButtonStyle") : 0;
+			BOOL			fAero = M->isAero();
+			HANDLE  		hTheme = fAero ? CMimAPI::m_pfnOpenThemeData(hWnd, L"ButtonStyle") : 0;
 
 			GetClientRect(hWnd, &rcClient);
 
@@ -776,8 +776,9 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 			}
 
 			SetBkMode(hdcMem, TRANSPARENT);
-			if(CSkin::m_skinEnabled)
-				SetTextColor(hdcMem, CSkin::m_DefaultFontColor);
+
+			clr = CSkin::m_skinEnabled ? CSkin::m_DefaultFontColor : GetSysColor(COLOR_BTNTEXT);
+
 			hFontOld = (HFONT)SelectObject(hdcMem, GetStockObject(DEFAULT_GUI_FONT));
 
 			if (pContainer && CSkin::m_skinEnabled)
@@ -812,7 +813,8 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 						if (LOWORD(result) > 1) {				// we have a text
 							DrawIconEx(hdcMem, itemRect.left + 3, (height / 2 - 8) + itemRect.top, hIcon, 16, 16, 0, 0, DI_NORMAL);
 							itemRect.left += 20;
-							CSkin::RenderText(hdcMem, hTheme, szText, &itemRect, DT_VCENTER | DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX, CSkin::m_glowSize);
+							CSkin::RenderText(hdcMem, hTheme, szText, &itemRect, DT_VCENTER | DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX,
+											  CSkin::m_glowSize, clr);
 						}
 						else
 							DrawIconEx(hdcMem, itemRect.left + 3, (height / 2 - 8) + itemRect.top, hIcon, 16, 16, 0, 0, DI_NORMAL);
@@ -820,8 +822,8 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 					else {
 						itemRect.left += 2;
 						itemRect.right -= 2;
-						DrawText(hdcMem, szText, lstrlen(szText), &itemRect, DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX);
-						CSkin::RenderText(hdcMem, hTheme, szText, &itemRect, DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, CSkin::m_glowSize);
+						CSkin::RenderText(hdcMem, hTheme, szText, &itemRect, DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX,
+										  CSkin::m_glowSize, clr);
 					}
 				}
 			}

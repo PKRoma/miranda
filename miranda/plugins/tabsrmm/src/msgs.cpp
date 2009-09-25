@@ -1573,7 +1573,7 @@ STDMETHODIMP REOLECallback::GetNewStorage(LPSTORAGE FAR *lplpstg)
  * hwnd of a message dialog window)
  */
 
-int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
+int TSAPI ActivateExistingTab(ContainerWindowData *pContainer, HWND hwndChild)
 {
 	struct _MessageWindowData *dat = 0;
 	NMHDR nmhdr;

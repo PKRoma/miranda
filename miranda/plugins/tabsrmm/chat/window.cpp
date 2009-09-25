@@ -2134,7 +2134,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			//HICON hIcon;
 			COLORREF colour = M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
 			InitButtons(hwndDlg, si);
-			ConfigureSmileyButton(hwndDlg, dat);
+			ConfigureSmileyButton(dat);
 			/*
 			hIcon = si->wStatus == ID_STATUS_ONLINE ? MM_FindModule(si->pszModule)->hOnlineIcon : MM_FindModule(si->pszModule)->hOfflineIcon;
 			// stupid hack to make icons show. I dunno why this is needed currently
@@ -2334,14 +2334,14 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 			rc.left = panelHeight <= CInfoPanel::LEFT_OFFSET_LOGO ? panelHeight : CInfoPanel::LEFT_OFFSET_LOGO;
 			rc.right = cx;
-			rc.bottom = (panelHeight > CInfoPanel::DEGRADE_THRESHOLD ? rc.top + dat->ipFieldHeight : panelHeight - 1);
 			rc.top = 1;
+			rc.bottom = (panelHeight > CInfoPanel::DEGRADE_THRESHOLD ? rc.top + dat->ipFieldHeight - 2 : panelHeight - 1);
 			dat->rcNick = rc;
 
 			rc.left = panelHeight <= CInfoPanel::LEFT_OFFSET_LOGO ? panelHeight : CInfoPanel::LEFT_OFFSET_LOGO;
 			rc.right = cx;
 			rc.bottom = panelHeight - 2;
-			rc.top = rc.bottom - dat->ipFieldHeight;
+			rc.top = dat->rcNick.bottom + 1;
 			dat->rcUIN = rc;
 
 			if (dat->hwndIEView || dat->hwndHPP)
@@ -2778,9 +2778,10 @@ LABEL_SHOWWINDOW:
 					message.wParam = wp;
 
 					if(msg == WM_SYSKEYUP) {
-						UINT ctrlId = 0;
-						if(wp == VK_MENU)
-							dat->pContainer->MenuBar->autoShow();
+						if(wp == VK_MENU) {
+							if(!dat->fkeyProcessed)
+								dat->pContainer->MenuBar->autoShow();
+						}
 						return(_dlgReturn(hwndDlg, 0));
 					}
 
@@ -3789,7 +3790,7 @@ LABEL_SHOWWINDOW:
 			break;
 
 		case DM_SMILEYOPTIONSCHANGED:
-			ConfigureSmileyButton(hwndDlg, dat);
+			ConfigureSmileyButton(dat);
 			SendMessage(hwndDlg, GC_REDRAWLOG, 0, 1);
 			break;
 

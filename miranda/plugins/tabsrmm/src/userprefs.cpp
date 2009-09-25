@@ -340,7 +340,7 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					}
 
 					if (hWnd && dat) {
-						LoadTimeZone(hWnd, dat);
+						LoadTimeZone(dat);
 						dat->Panel->Invalidate();
 					}
 
@@ -638,7 +638,7 @@ INT_PTR CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							SetDialogToType(hwnd);
 							if(dwActionToTake & UPREF_ACTION_SWITCHLOGVIEWER) {
 								unsigned int mode = GetIEViewMode(hwndDlg, dat->hContact);
-								SwitchMessageLog(hwnd, dat, mode);
+								SwitchMessageLog(dat, mode);
 							}
 							LoadLocalFlags(hwnd, dat);
 							if((dat->dwFlags & MWF_LOG_ALL) != dwOldFlags) {

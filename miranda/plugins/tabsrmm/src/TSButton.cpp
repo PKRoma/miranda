@@ -81,7 +81,7 @@ int LoadTSButtonModule(void)
 
 #define MGPROC(x) GetProcAddress(themeAPIHandle,x)
 
-static void DestroyTheme(MButtonCtrl *ctl)
+static void TSAPI DestroyTheme(MButtonCtrl *ctl)
 {
 	if (M->isVSAPIState()) {
 		if (ctl->hThemeButton) {
@@ -95,7 +95,7 @@ static void DestroyTheme(MButtonCtrl *ctl)
 	}
 }
 
-static void LoadTheme(MButtonCtrl *ctl)
+static void TSAPI LoadTheme(MButtonCtrl *ctl)
 {
 	if (M->isVSAPIState()) {
 		DestroyTheme(ctl);
@@ -105,7 +105,7 @@ static void LoadTheme(MButtonCtrl *ctl)
 	}
 }
 
-static int TBStateConvert2Flat(int state)
+int TSAPI TBStateConvert2Flat(int state)
 {
 	switch (state) {
 		case PBS_NORMAL:
@@ -130,7 +130,7 @@ static int TBStateConvert2Flat(int state)
  *
  * @return int: state item id
  */
-static int RBStateConvert2Flat(int state)
+int TSAPI RBStateConvert2Flat(int state)
 {
 	switch (state) {
 		case PBS_NORMAL:

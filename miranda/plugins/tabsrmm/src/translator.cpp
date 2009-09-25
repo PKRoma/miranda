@@ -324,7 +324,7 @@ LISTOPTIONSITEM CTranslator::m_lvItemsModPlus[] = {
 	0, LPGENT("Close current tab on send"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_AutoClose_2", 0,
 	0, LPGENT("Enable icon pack version check (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_IconpackWarning", 0,
 	0, LPGENT("Disable error popups on sending failures"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_noErrorPopups", 1,
-	0, LPGENT("Use Aero Glass for the message window (Vista+)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"useAero", 1,
+	0, LPGENT("Use Aero Glass for the message window (Vista+)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"useAero", 0,
 	0, NULL, 0, 0, 0, 0
 };
 

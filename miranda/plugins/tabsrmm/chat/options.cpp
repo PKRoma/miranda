@@ -858,6 +858,7 @@ int FontServiceFontsChanged(WPARAM wParam, LPARAM lParam)
 	}
 
 	PluginConfig.Reload();
+	CSkin::initAeroEffect();
 	CacheMsgLogIcons();
 	CacheLogFonts();
 	M->BroadcastMessage(DM_OPTIONSAPPLIED, 1, 0);

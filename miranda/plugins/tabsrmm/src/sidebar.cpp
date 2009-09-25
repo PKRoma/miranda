@@ -35,9 +35,10 @@
 #include "commonheaders.h"
 
 extern void GetIconSize(HICON hIcon, int* sizeX, int* sizeY);
+extern int TSAPI TBStateConvert2Flat(int state);
+extern int TSAPI RBStateConvert2Flat(int state);
 
-HBITMAP CSideBar::m_hbmBackground = 0;
-UINT	CSideBar::m_hbmRefCount = 0;
+HBITMAP CSideBar::m_BGhbm = 0;
 
 TSideBarLayout CSideBar::m_layouts[CSideBar::NR_LAYOUTS] = {
 	{
@@ -284,14 +285,18 @@ void CSideBarButton::renderIconAndNick(const HDC hdc, const RECT *rcItem) const
 		SetBkMode(hdc, TRANSPARENT);
 
 		if (m_dat->mayFlashTab == FALSE || (m_dat->mayFlashTab == TRUE && m_dat->bTabFlash != 0) || !(pContainer->dwFlagsEx & TCF_FLASHLABEL)) {
+			bool  	 fIsActive = (m_sideBar->getActiveItem() == this ? true : false);
+			COLORREF clr = 0;
 			dwTextFlags |= DT_WORD_ELLIPSIS;
-			if(M->isAero())
-				CSkin::RenderText(hdc, m_buttonControl->hThemeButton, m_dat->newtitle, &rc, dwTextFlags, 7);
-			else {
-				::SetTextColor(hdc, (stateId == PBS_PRESSED || m_sideBar->getActiveItem() == this) ? ::GetSysColor(COLOR_BTNHIGHLIGHT) :
-						   ::GetSysColor(COLOR_BTNTEXT));
-				::DrawText(hdc, m_dat->newtitle, lstrlen(m_dat->newtitle), &rc, dwTextFlags);
-			}
+
+			if (fIsActive || stateId == PBS_PRESSED)
+				clr = PluginConfig.tabConfig.colors[1];
+			else if (stateId == PBS_HOT)
+				clr = PluginConfig.tabConfig.colors[3];
+			else
+				clr = PluginConfig.tabConfig.colors[0];
+
+			CSkin::RenderText(hdc, m_buttonControl->hThemeButton, m_dat->newtitle, &rc, dwTextFlags, CSkin::m_glowSize, clr);
 		}
 	}
 }
@@ -336,31 +341,12 @@ CSideBar::CSideBar(ContainerWindowData *pContainer)
 	m_hwndScrollWnd = 0;
 	m_buttonlist.clear();
 	m_activeItem = 0;
+	m_isVisible = true;
+
+	if(m_BGhbm == 0)
+		initBG(pContainer->hwnd);
 
 	Init(true);
-
-	if(m_hbmBackground == 0) {
-		HDC		hdcWnd = ::GetDC(m_pContainer->hwnd);
-		HDC		hdcMem = ::CreateCompatibleDC(hdcWnd);
-		RECT    rc = {0, 0, 350, 150};
-		HBITMAP hbm = CSkin::CreateAeroCompatibleBitmap(rc, hdcWnd);
-		HBITMAP hbmOld = (HBITMAP)::SelectObject(hdcMem, hbm);
-
-		::DrawAlpha(hdcMem, &rc, 0x333333, 255, 0xf0f0f0, 0, GRADIENT_ACTIVE | GRADIENT_RL, 31, 7, 0);
-
-		::SelectObject(hdcMem, hbmOld);
-		::DeleteDC(hdcMem);
-		::ReleaseDC(m_pContainer->hwnd, hdcWnd);
-		FIBITMAP *fib = FIF->FI_CreateDIBFromHBITMAP(hbm);
-		FIBITMAP *fib_new = FIF->FI_RotateClassic(fib, 90.0f);
-
-		m_hbmBackground = FIF->FI_CreateHBITMAPFromDIB(fib_new);
-		FIF->FI_Unload(fib);
-		FIF->FI_Unload(fib_new);
-
-		::DeleteObject(hbm);
-	}
-	m_hbmRefCount++;
 }
 
 CSideBar::~CSideBar()
@@ -368,11 +354,6 @@ CSideBar::~CSideBar()
 	destroyScroller();
 	m_buttonlist.clear();
 
-	m_hbmRefCount--;
-	if(m_hbmRefCount == 0) {
-		::DeleteObject(m_hbmBackground);
-		m_hbmBackground = 0;
-	}
 	if(m_hwndScrollWnd)
 		::DestroyWindow(m_hwndScrollWnd);
 }
@@ -396,8 +377,8 @@ void CSideBar::Init(const bool fForce)
 			m_hwndScrollWnd = ::CreateWindowEx(0, _T("SideBarClass"), _T(""), WS_CLIPCHILDREN | WS_CLIPSIBLINGS |  WS_VISIBLE | WS_CHILD,
 											   0, 0, m_width, 40, m_pContainer->hwnd, reinterpret_cast<HMENU>(5000), g_hInst, this);
 
-		m_isVisible = m_isActive ? m_isVisible : true;
 		m_isActive = true;
+		m_isVisible = m_isActive ? m_isVisible : true;
 		createScroller();
 		m_elementHeight = m_currentLayout->height;
 		m_elementWidth = m_currentLayout->width;
@@ -774,7 +755,7 @@ void CSideBar::Layout(const RECT *rc, bool fOnlyCalc)
 		::GetClientRect(m_pContainer->hwnd, &rcContainer);
 
 		::SetWindowPos(m_up->getHwnd(), 0, m_pContainer->tBorder_outer_left, m_pContainer->tBorder_outer_top + m_pContainer->MenuBar->getHeight(),
-					   m_elementWidth + 4, 12, dwFlags | SWP_SHOWWINDOW);
+					   m_elementWidth + 4, 14, dwFlags | SWP_SHOWWINDOW);
 		::SetWindowPos(m_down->getHwnd(), 0, m_pContainer->tBorder_outer_left, (rcContainer.bottom - 14 - m_pContainer->statusBarHeight - 1),
 					   m_elementWidth + 4, 14, dwFlags | SWP_SHOWWINDOW);
 		::EnableWindow(m_up->getHwnd(), topEnabled);
@@ -848,16 +829,75 @@ std::vector<CSideBarButton *>::iterator CSideBar::findSession(const HANDLE hCont
 	return(m_buttonlist.end());
 }
 
+/**
+ * create the background image for the side bar. For performance reasons, this
+ * is pregenerated, because the huge vertical gradients would significantly slow
+ * down the painting process.
+ */
+
+void CSideBar::initBG(const HWND hwnd)
+{
+	RECT	rc = {0, 0, 800, 150};
+	HBITMAP hbmOld;
+	bool	fAero = M->isAero();
+
+	if(m_BGhbm)
+		::DeleteObject(m_BGhbm);
+
+	HDC hdc = ::GetDC(hwnd);
+	HDC hdcMem = ::CreateCompatibleDC(hdc);
+
+	m_BGhbm = CSkin::CreateAeroCompatibleBitmap(rc, hdcMem);
+	hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(hdcMem, m_BGhbm));
+
+	::FillRect(hdcMem, &rc, CSkin::m_BrushBack);
+	if(fAero)
+		CSkin::ApplyAeroEffect(hdcMem, &rc, CSkin::AERO_EFFECT_AREA_SIDEBAR_LEFT);
+	else if(M->isVSThemed()) {
+		HANDLE hTheme = (PluginConfig.m_bIsVista ? CMimAPI::m_pfnOpenThemeData(PluginConfig.g_hwndHotkeyHandler, L"STARTPANEL") :
+						 CMimAPI::m_pfnOpenThemeData(PluginConfig.g_hwndHotkeyHandler, L"REBAR"));
+		CMimAPI::m_pfnDrawThemeBackground(hTheme, hdcMem, PluginConfig.m_bIsVista ? 12 : 6,  PluginConfig.m_bIsVista ? 2 : 1,
+										  &rc, &rc);
+		CMimAPI::m_pfnCloseThemeData(hTheme);
+	}
+
+	::SelectObject(hdcMem, hbmOld);
+	::DeleteDC(hdcMem);
+
+	FIBITMAP *fib = FIF->FI_CreateDIBFromHBITMAP(m_BGhbm);
+	FIBITMAP *fib_rotated = FIF->FI_RotateClassic(fib, -90.0f);
+
+	hbmOld = FIF->FI_CreateHBITMAPFromDIB(fib_rotated);
+
+	FIF->FI_Unload(fib);
+	FIF->FI_Unload(fib_rotated);
+
+	::DeleteObject(m_BGhbm);
+	m_BGhbm = hbmOld;
+	if(fAero)
+		CImageItem::PreMultiply(m_BGhbm, 1);
+}
+
+/**
+ * clears the cached background bitmap. It will automatically be recreated
+ * when the a container is about to open.
+ *
+ * this is called whenenver a skin is loaded or unloaded to allow a refresh
+ * of that bitmap.
+ */
+
+void CSideBar::unInitBG()
+{
+	if(m_BGhbm) {
+		::DeleteObject(m_BGhbm);
+		m_BGhbm = 0;
+	}
+}
+
 void CSideBar::processScrollerButtons(UINT commandID)
 {
 	if(!m_isActive || m_down == 0)
 		return;
-
-	/*if (commandID == IDC_SIDEBARUP)
-		m_firstButton = m_firstButton > 0 ? --m_firstButton : 0;
-	else
-	 	m_firstButton += IsWindowEnabled(m_down->getHwnd()) ? 1 : 0;
-	 	*/
 
 	if(commandID == IDC_SIDEBARDOWN && ::IsWindowEnabled(m_down->getHwnd()))
 		m_firstVisibleOffset += 10;
@@ -885,23 +925,44 @@ LRESULT CALLBACK CSideBar::wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 		case WM_ERASEBKGND: {
 			HDC hdc = (HDC)wParam;
 			RECT rc;
-			GetClientRect(hwnd, &rc);
-			if (M->isAero()) {
-				HDC		hdcMem;
-				HANDLE  hbp;
+			::GetClientRect(hwnd, &rc);
+			if (CSkin::m_skinEnabled)
+				CSkin::SkinDrawBG(hwnd, m_pContainer->hwnd, m_pContainer, &rc, hdc);
+			else if (M->isAero() || M->isVSThemed()) {
+				HDC		hdcMem, hdcBG;
+				HANDLE  hbp = 0;
+				HBITMAP hbm, hbmOld, hbmOldBG;
 
-				hbp = CMimAPI::m_pfnBeginBufferedPaint(hdc, &rc, BPBF_TOPDOWNDIB, 0, &hdcMem);
-				HBRUSH brOld = (HBRUSH)::SelectObject(hdcMem, CSkin::m_BrushBack);
-				HPEN   hPen = ::CreatePen(PS_SOLID, 1, ::GetSysColor(COLOR_3DDKSHADOW));
-				HPEN   penOld = (HPEN)::SelectObject(hdcMem, hPen);
-				::Rectangle(hdcMem, 0, 0, rc.right, rc.bottom);
-				::SelectObject(hdcMem, penOld);
-				::SelectObject(hdcMem, brOld);
-				::DeleteObject(hPen);
-				CSkin::FinalizeBufferedPaint(hbp, &rc);
+				if(CMimAPI::m_haveBufferedPaint)
+					hbp = CSkin::InitiateBufferedPaint(hdc, rc, hdcMem);
+				else {
+					hdcMem = ::CreateCompatibleDC(hdc);
+					hbm =  CSkin::CreateAeroCompatibleBitmap(rc, hdcMem);
+					hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(hdcMem, hbm));
+				}
+
+				::FillRect(hdcMem, &rc, CSkin::m_BrushBack);
+				hdcBG = ::CreateCompatibleDC(hdcMem);
+				hbmOldBG = reinterpret_cast<HBITMAP>(::SelectObject(hdcBG, m_BGhbm));
+				if(M->isAero())
+					CMimAPI::m_MyAlphaBlend(hdcMem, 0, 0, rc.right, rc.bottom, hdcBG, 0, 0, 150, 800, CSkin::m_default_bf);
+				else {
+					::SetStretchBltMode(hdcMem, HALFTONE);
+					::StretchBlt(hdcMem, 0, 0, rc.right, rc.bottom, hdcBG, 0, 0, 150, 800, SRCCOPY);
+				}
+				::SelectObject(hdcBG, hbmOldBG);
+				::DeleteDC(hdcBG);
+				if(hbp)
+					CSkin::FinalizeBufferedPaint(hbp, &rc);
+				else {
+					BitBlt(hdc, 0, 0, rc.right, rc.bottom, hdcMem, 0, 0, SRCCOPY);
+					SelectObject(hdcMem, hbmOld);
+					DeleteObject(hbm);
+					DeleteDC(hdcMem);
+				}
 			}
 			else
-				::FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
+				::FillRect(hdc, &rc, ::GetSysColorBrush(COLOR_3DFACE));
 			return(1);
 		}
 		default:
@@ -943,10 +1004,16 @@ void __fastcall CSideBar::m_DefaultBackgroundRenderer(const HDC hdc, const RECT 
 	int		stateId = item->m_buttonControl->stateId;
 	bool	fIsActiveItem = (item->m_sideBar->getActiveItem() == item);
 
-	if(M->isAero()) {
+	if(CSkin::m_skinEnabled) {
+		int 	id = stateId == PBS_PRESSED || fIsActiveItem ? ID_EXTBKBUTTONSPRESSED : (stateId == PBS_HOT ? ID_EXTBKBUTTONSMOUSEOVER : ID_EXTBKBUTTONSNPRESSED);
+		CSkinItem *item = &SkinItems[id];
+
+		CSkin::DrawItem(hdc, rc, item);
+	}
+	else if(M->isAero()) {
 		if(id == IDC_SIDEBARUP || id == IDC_SIDEBARDOWN) {
 			::FillRect(hdc, const_cast<RECT *>(rc), CSkin::m_BrushBack);
-			::InflateRect(const_cast<RECT *>(rc), -2, 0);
+			//::InflateRect(const_cast<RECT *>(rc), -2, 0);
 			if(stateId == PBS_HOT || stateId == PBS_PRESSED)
 				DrawAlpha(hdc, const_cast<RECT *>(rc), 0xf0f0f0, 75, 0x000000, 0, 9,
 						  31, 4, 0);
@@ -955,6 +1022,7 @@ void __fastcall CSideBar::m_DefaultBackgroundRenderer(const HDC hdc, const RECT 
 						  31, 4, 0);
 		}
 		else {
+			CSkin::ApplyAeroEffect(hdc, rc, CSkin::AERO_EFFECT_AREA_INFOPANEL, 0);
 			CSkin::m_switchBarItem->setAlphaFormat(AC_SRC_ALPHA,
 												   (stateId == PBS_HOT && !fIsActiveItem) ? 250 : (fIsActiveItem || stateId == PBS_PRESSED ? 250 : 200));
 			CSkin::m_switchBarItem->Render(hdc, rc, true);
@@ -988,17 +1056,29 @@ void __fastcall CSideBar::m_DefaultBackgroundRenderer(const HDC hdc, const RECT 
 	}
 	else if(M->isVSThemed()) {
 		RECT *rcDraw = const_cast<RECT *>(rc);
-		if(!(id == IDC_SIDEBARUP || id == IDC_SIDEBARDOWN)) {
-			HBRUSH br = (stateId == PBS_HOT && !fIsActiveItem) ? ::GetSysColorBrush(COLOR_BTNSHADOW) : (fIsActiveItem || stateId == PBS_PRESSED ? ::GetSysColorBrush(COLOR_HOTLIGHT) : ::GetSysColorBrush(COLOR_BTNHIGHLIGHT));
-			::FillRect(hdc, rc, br);
-			::DrawEdge(hdc, rcDraw, (stateId == PBS_HOT && !fIsActiveItem) ? EDGE_ETCHED : (fIsActiveItem || stateId == PBS_PRESSED) ? EDGE_BUMP : EDGE_ETCHED, BF_RECT | BF_SOFT | BF_FLAT);
-		}
-		else {
+		if(id == IDC_SIDEBARUP || id == IDC_SIDEBARDOWN) {
 			::FillRect(hdc, rc, stateId == PBS_HOT ? ::GetSysColorBrush(COLOR_HOTLIGHT) : ::GetSysColorBrush(COLOR_3DFACE));
 			::InflateRect(rcDraw, -2, 0);
 			::DrawEdge(hdc, rcDraw, EDGE_ETCHED, BF_SOFT|BF_RECT|BF_FLAT);
 		}
+		else {
+			if(stateId == PBS_HOT && !fIsActiveItem)
+				::FillRect(hdc, rcDraw, ::GetSysColorBrush(COLOR_3DFACE));
+			else {
+				::SetStretchBltMode(hdc, HALFTONE);
+				::StretchBlt(hdc, 0, 0, rcDraw->right, rcDraw->bottom, item->getDat()->pContainer->cachedToolbarDC,
+							 2, 2, rcDraw->right, 20, SRCCOPY);
+			}
+			if(CMimAPI::m_pfnIsThemeBackgroundPartiallyTransparent(item->m_buttonControl->hThemeToolbar, TP_BUTTON, stateId))
+				CMimAPI::m_pfnDrawThemeParentBackground(item->getHwnd(), hdc, rcDraw);
 
+			stateId = fIsActiveItem ? PBS_PRESSED : PBS_HOT;
+
+			if(M->isAero() || PluginConfig.m_WinVerMajor >= 6)
+				CMimAPI::m_pfnDrawThemeBackground(item->m_buttonControl->hThemeToolbar, hdc, 8, RBStateConvert2Flat(stateId), rcDraw, rcDraw);
+			else
+				CMimAPI::m_pfnDrawThemeBackground(item->m_buttonControl->hThemeToolbar, hdc, TP_BUTTON, TBStateConvert2Flat(stateId), rcDraw, rcDraw);
+		}
 	}
 	else {
 		RECT *rcDraw = const_cast<RECT *>(rc);

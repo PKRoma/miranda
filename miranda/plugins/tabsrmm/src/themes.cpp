@@ -131,7 +131,8 @@ AeroEffect  CSkin::m_aeroEffects[AERO_EFFECT_LAST] = {
 		8,											/* glow size (0 means no glowing text, colors can be used) */
 		0,											/* background color (black = transparency) */
 		0xf0f0f0,									/* toolbar first color (if 0, use custom gradient color) */
-		0 											/* toolbar 2nd gradient color (0 = use aero theme color, -1 = use custom gradient color  */
+		0, 											/* toolbar 2nd gradient color (0 = use aero theme color, -1 = use custom gradient color  */
+		AeroEffectCallback_Milk
 	},
 	{
 		_T("Carbon"),
@@ -145,7 +146,8 @@ AeroEffect  CSkin::m_aeroEffects[AERO_EFFECT_LAST] = {
 		8,
 		0,
 		0xf0f0f0,
-		0
+		0,
+		AeroEffectCallback_Carbon
 	},
 	{
 		_T("Opaque, colored text"),
@@ -159,7 +161,8 @@ AeroEffect  CSkin::m_aeroEffects[AERO_EFFECT_LAST] = {
 		0,
 		0,
 		0xf0f0f0,
-		0
+		0,
+		AeroEffectCallback_Solid
 	},
 	{
 		_T("Silver shadow"),
@@ -173,7 +176,8 @@ AeroEffect  CSkin::m_aeroEffects[AERO_EFFECT_LAST] = {
 		0,
 		0xc0c0c0,
 		0xf0f0f0,
-		0x707070
+		0x707070,
+		AeroEffectCallback_Solid
 	},
 	{
 		_T("Custom (use own gradient colors)"),
@@ -187,7 +191,8 @@ AeroEffect  CSkin::m_aeroEffects[AERO_EFFECT_LAST] = {
 		0,
 		0xc0c0c0,
 		-1,
-		-1
+		-1,
+		AeroEffectCallback_Solid
 	}
 };
 
@@ -326,7 +331,7 @@ static CSkinItem _defInfoPanel = {
 	_T("InfoPanelBackground"), "TSKIN_INFOPANELBG", ID_EXTBKINFOPANELBG,
 	8, CLCDEFAULT_CORNER,
 	0xf0f0f0, 0x62caff, 0, CLCDEFAULT_TEXTCOLOR, 255, CLCDEFAULT_MRGN_LEFT,
-	CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, 0
+	CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, 1
 };
 
 static BYTE __inline percent_to_byte(UINT32 percent)
@@ -1090,7 +1095,8 @@ void CSkin::setFileName()
 {
 	DBVARIANT dbv;
 	if(0 == M->GetTString(0, SRMSGMOD_T, "ContainerSkin", &dbv)) {
-		M->pathToAbsolute(dbv.ptszVal, m_tszFileName, M->getUserDir());
+		const TCHAR *tszBase = M->haveFoldersPlugin() ? M->getSkinPath() : M->getUserDir();
+		M->pathToAbsolute(dbv.ptszVal, m_tszFileName, tszBase);
 		m_tszFileName[MAX_PATH - 1] = 0;
 		DBFreeVariant(&dbv);
 	}
@@ -1122,6 +1128,7 @@ void CSkin::Init()
 
 	setFileName();
 	m_aeroEffect = M->GetByte("aerostyle", 0);
+	initAeroEffect();
 }
 
 /**
@@ -1232,6 +1239,8 @@ void CSkin::Unload()
 	if(m_bAvatarBorderType > 2)
 		m_bAvatarBorderType = 0;
 	m_avatarBorderClr = (COLORREF)M->GetDword("avborderclr", 0);
+
+	CSideBar::unInitBG();
 }
 
 void CSkin::LoadIcon(const TCHAR *szSection, const TCHAR *name, HICON *hIcon)
@@ -1696,6 +1705,7 @@ void CSkin::Load()
 			if (j > 0) {
 				m_skinEnabled = true;
 				M->getAeroState();		// refresh aero state (set to false when a skin is successfully loaded and active)
+				CSideBar::unInitBG();
 			}
 
 			GetPrivateProfileString(_T("Avatars"), _T("BorderColor"), _T("000000"), buffer, 20, m_tszFileName);
@@ -2083,8 +2093,6 @@ void CSkin::setupAeroSkins()
 
 		m_switchBarItem->setAlphaFormat(AC_SRC_ALPHA, 255);
 		m_switchBarItem->setMetrics(bm.bmWidth, bm.bmHeight);
-
-		initAeroEffect();
 	}
 }
 
@@ -2354,27 +2362,31 @@ DWORD __fastcall CSkin::HexStringToLong(const TCHAR *szSource)
  *
  * @return
  */
-#if defined(_UNICODE)
-int CSkin::RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags, const int iGlowSize)
+int CSkin::RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags, const int iGlowSize, COLORREF clr)
 {
-	if(M->isAero() && iGlowSize > 0) {
+#if defined(_UNICODE)
+	if(PluginConfig.m_bIsVista && !CSkin::m_skinEnabled && hTheme) {
 		DTTOPTS dto = {0};
 		dto.dwSize = sizeof(dto);
-		dto.dwFlags = DTT_COMPOSITED|DTT_GLOWSIZE;
-		dto.iGlowSize = iGlowSize;
+		if(iGlowSize) {
+			dto.iGlowSize = iGlowSize;
+			dto.dwFlags = DTT_COMPOSITED|DTT_GLOWSIZE;
+		}
+		else {
+			dto.dwFlags = DTT_TEXTCOLOR|DTT_COMPOSITED;
+			dto.crText = clr;
+		}
 		dto.iBorderSize = 10;
 		return(CMimAPI::m_pfnDrawThemeTextEx(hTheme, hdc, BP_PUSHBUTTON, PBS_NORMAL, szText, -1, dtFlags, rc, &dto));
 	}
 	else {
-		return(::DrawText(hdc, szText, -1, rc, dtFlags));
-	}
-}
-#else
-int CSkin::RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags, const int iGlowSize)
-{
-	return(::DrawText(hdc, szText, -1, rc, dtFlags));
-}
 #endif
+		::SetTextColor(hdc, clr);
+		return(::DrawText(hdc, szText, -1, rc, dtFlags));
+#if defined(_UNICODE)
+	}
+#endif
+}
 
 /**
  * Resize a bitmap using image service. The function does not care about the image aspect ratio.
@@ -2627,50 +2639,56 @@ void CSkin::FinalizeBufferedPaint(HANDLE hbp, RECT *rc)
 
 void CSkin::ApplyAeroEffect(const HDC hdc, const RECT *rc, int iEffectArea, HANDLE hbp)
 {
-	if(m_pCurrentAeroEffect == 0)
+	if(m_pCurrentAeroEffect == 0 || m_aeroEffect == AERO_EFFECT_NONE)
 		return;
 
-	switch(m_aeroEffect) {
-		case AERO_EFFECT_NONE:
-			return;
+	if(m_pCurrentAeroEffect->pfnEffectRenderer)
+		m_pCurrentAeroEffect->pfnEffectRenderer(hdc, rc, iEffectArea);
+}
 
-		case AERO_EFFECT_MILK: {
-			if(iEffectArea < 0x1000) {
-				int 	alpha = (iEffectArea == AERO_EFFECT_AREA_INFOPANEL) ? m_pCurrentAeroEffect->m_baseAlpha : 40;
-				if(iEffectArea == AERO_EFFECT_AREA_MENUBAR)
-					alpha = 90;
-				BYTE 	color2_trans = (iEffectArea == AERO_EFFECT_AREA_MENUBAR) ? 0 : 1;
-				DWORD   corner = (iEffectArea == AERO_EFFECT_AREA_INFOPANEL) ? m_pCurrentAeroEffect->m_cornerRadius : 6;
+/** aero effect callbacks
+ *
+ */
 
-				DrawAlpha(hdc, const_cast<RECT *>(rc), m_pCurrentAeroEffect->m_baseColor, alpha, m_pCurrentAeroEffect->m_gradientColor,
-						  color2_trans, m_pCurrentAeroEffect->m_gradientType, m_pCurrentAeroEffect->m_cornerType, corner, 0);
-			}
-			break;
-		}
+void CSkin::AeroEffectCallback_Milk(const HDC hdc, const RECT *rc, int iEffectArea)
+{
+	if(iEffectArea < 0x1000) {
+		int 	alpha = (iEffectArea == AERO_EFFECT_AREA_INFOPANEL) ? m_pCurrentAeroEffect->m_baseAlpha : 40;
+		if(iEffectArea == AERO_EFFECT_AREA_MENUBAR)
+			alpha = 90;
+		BYTE 	color2_trans = (iEffectArea == AERO_EFFECT_AREA_MENUBAR) ? 0 : 1;
+		DWORD   corner = (iEffectArea == AERO_EFFECT_AREA_INFOPANEL) ? m_pCurrentAeroEffect->m_cornerRadius : 6;
 
-		case AERO_EFFECT_CARBON:
-			if(iEffectArea < 0x1000)
-				DrawAlpha(hdc, const_cast<RECT *>(rc), m_pCurrentAeroEffect->m_baseColor, m_pCurrentAeroEffect->m_baseAlpha,
-						  m_pCurrentAeroEffect->m_gradientColor, 0, m_pCurrentAeroEffect->m_gradientType,
-						  m_pCurrentAeroEffect->m_cornerType, m_pCurrentAeroEffect->m_cornerRadius, 0);
-			break;
+		DrawAlpha(hdc, const_cast<RECT *>(rc), m_pCurrentAeroEffect->m_baseColor, alpha, m_pCurrentAeroEffect->m_gradientColor,
+				  color2_trans, m_pCurrentAeroEffect->m_gradientType, m_pCurrentAeroEffect->m_cornerType, corner, 0);
+	}
+}
 
-		case AERO_EFFECT_SOLID:
-		case AERO_EFFECT_WHITE:
-		case AERO_EFFECT_CUSTOM:
-			if(iEffectArea < 0x1000)
-				DrawAlpha(hdc, const_cast<RECT *>(rc), m_pCurrentAeroEffect->m_baseColor, m_pCurrentAeroEffect->m_baseAlpha,
-						  m_pCurrentAeroEffect->m_gradientColor, 0, m_pCurrentAeroEffect->m_gradientType,
-						  m_pCurrentAeroEffect->m_cornerType, m_pCurrentAeroEffect->m_cornerRadius, 0);
-			else {
-				BYTE	bGradient = (iEffectArea & AERO_EFFECT_AREA_TAB_BOTTOM ? GRADIENT_BT : GRADIENT_TB) + 1;
-				DrawAlpha(hdc, const_cast<RECT *>(rc), m_pCurrentAeroEffect->m_baseColor, 70,
-						  m_pCurrentAeroEffect->m_gradientColor, 1, bGradient,
-						  m_pCurrentAeroEffect->m_cornerType, m_pCurrentAeroEffect->m_cornerRadius, 0);
-			}
-			break;
-		default:
-			break;
+void CSkin::AeroEffectCallback_Carbon(const HDC hdc, const RECT *rc, int iEffectArea)
+{
+	if(iEffectArea < 0x1000)
+		DrawAlpha(hdc, const_cast<RECT *>(rc), m_pCurrentAeroEffect->m_baseColor, m_pCurrentAeroEffect->m_baseAlpha,
+				  m_pCurrentAeroEffect->m_gradientColor, 0, m_pCurrentAeroEffect->m_gradientType,
+				  m_pCurrentAeroEffect->m_cornerType, m_pCurrentAeroEffect->m_cornerRadius, 0);
+}
+
+void CSkin::AeroEffectCallback_Solid(const HDC hdc, const RECT *rc, int iEffectArea)
+{
+	if(iEffectArea < 0x1000) {
+		if(iEffectArea == AERO_EFFECT_AREA_SIDEBAR_LEFT)
+			::DrawAlpha(hdc, const_cast<RECT *>(rc), m_pCurrentAeroEffect->m_baseColor, m_pCurrentAeroEffect->m_baseAlpha,
+						m_pCurrentAeroEffect->m_gradientColor, 0, GRADIENT_TB + 1,
+						0, 2, 0);
+		else
+			::DrawAlpha(hdc, const_cast<RECT *>(rc), m_pCurrentAeroEffect->m_baseColor, m_pCurrentAeroEffect->m_baseAlpha,
+						m_pCurrentAeroEffect->m_gradientColor, 0, m_pCurrentAeroEffect->m_gradientType,
+						m_pCurrentAeroEffect->m_cornerType, m_pCurrentAeroEffect->m_cornerRadius, 0);
+	}
+	else {
+		BYTE	bGradient = (iEffectArea & AERO_EFFECT_AREA_TAB_BOTTOM ? GRADIENT_BT : GRADIENT_TB) + 1;
+		::DrawAlpha(hdc, const_cast<RECT *>(rc), m_pCurrentAeroEffect->m_baseColor, 70,
+				  m_pCurrentAeroEffect->m_gradientColor, 1, bGradient,
+				  m_pCurrentAeroEffect->m_cornerType, m_pCurrentAeroEffect->m_cornerRadius, 0);
 	}
 }
 
@@ -2707,6 +2725,9 @@ void CSkin::initAeroEffect()
 	}
 
 	ContainerWindowData *pContainer = pFirstContainer;
+
+	if(pContainer)
+		CSideBar::initBG(pContainer->hwnd);
 
 	while (pContainer) {
 		InvalidateRect(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), NULL, TRUE);

@@ -255,7 +255,7 @@ static void ShowPopupMenu(_MessageWindowData *dat, int idFrom, HWND hwndFrom, PO
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
 				break;
 			case ID_EDITOR_PASTEANDSENDIMMEDIATELY:
-				HandlePasteAndSend(hwndDlg, dat);
+				HandlePasteAndSend(dat);
 				break;
 		}
 	}
@@ -551,14 +551,14 @@ static void AddToFileListA(char ***pppFiles, int *totalCount, const TCHAR* szFil
 	}
 }
 
-void ShowMultipleControls(HWND hwndDlg, const UINT *controls, int cControls, int state)
+void TSAPI ShowMultipleControls(HWND hwndDlg, const UINT *controls, int cControls, int state)
 {
 	int i;
 	for (i = 0; i < cControls; i++)
 		ShowWindow(GetDlgItem(hwndDlg, controls[i]), state);
 }
 
-void SetDialogToType(HWND hwndDlg)
+void TSAPI SetDialogToType(HWND hwndDlg)
 {
 	struct _MessageWindowData *dat;
 	int showToolbar = 0;
@@ -597,7 +597,7 @@ void SetDialogToType(HWND hwndDlg)
 	if (!dat->SendFormat)
 		ShowMultipleControls(hwndDlg, &formatControls[1], 5, SW_HIDE);
 
-	ConfigureSmileyButton(hwndDlg, dat);
+	ConfigureSmileyButton(dat);
 
 	if (dat->pContainer->hwndActive == hwndDlg)
 		UpdateReadChars(dat);
@@ -1593,7 +1593,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			} else
 				dat->wStatus = ID_STATUS_OFFLINE;
 
-			GetContactUIN(hwndDlg, dat);
+			GetContactUIN(dat);
 			GetClientIcon(dat);
 
 			dat->showUIElements = m_pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
@@ -1669,7 +1669,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			 * consider per-contact message setting overrides
 			 */
 
-			LoadOverrideTheme(hwndDlg, dat);
+			LoadOverrideTheme(dat);
 			if (M->GetDword(dat->hContact, "mwmask", 0)) {
 
 				if (dat->hContact)
@@ -1699,7 +1699,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			dat->Panel->getVisibility();
 
 			dat->dwFlagsEx |= M->GetByte(dat->hContact, "splitoverride", 0) ? MWF_SHOW_SPLITTEROVERRIDE : 0;
-			SetMessageLog(hwndDlg, dat);
+			SetMessageLog(dat);
 			dat->panelWidth = -1;
 			if (dat->hContact) {
 				dat->codePage = M->GetDword(dat->hContact, "ANSIcodepage", CP_ACP);
@@ -1806,7 +1806,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				GetCachedStatusMsg(dat);
 			}
 			dat->stats.started = time(NULL);
- 			LoadContactAvatar(hwndDlg, dat);
+ 			LoadContactAvatar(dat);
 			SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
 			LoadOwnAvatar(dat);
 
@@ -2151,8 +2151,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			dat->Panel->Invalidate();
 
-			if (wParam == 0 && lParam == 0 && CSkin::m_skinEnabled)
-				RedrawWindow(hwndDlg, NULL, NULL, RDW_UPDATENOW | RDW_NOCHILDREN | RDW_INVALIDATE);
+			//if (wParam == 0 && lParam == 0 && CSkin::m_skinEnabled)
+			//	RedrawWindow(hwndDlg, NULL, NULL, RDW_UPDATENOW | RDW_NOCHILDREN | RDW_INVALIDATE);
 			break;
 		}
 
@@ -2192,11 +2192,10 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							if(msg == WM_SYSKEYUP) {
 								UINT ctrlId = 0;
 
-								//m_pContainer->MenuBar->processAccelerator((TCHAR)wp, ctrlId);
-								//_DebugTraceA("checking menu hotkeys with result %d", wp);
-								//if(m_pContainer->MenuBar->idToIndex(ctrlId) != -1)
-								if(wp == VK_MENU)
-									m_pContainer->MenuBar->autoShow();
+								if(wp == VK_MENU) {
+									if(!dat->fkeyProcessed)
+										m_pContainer->MenuBar->autoShow();
+								}
 								return(_dlgReturn(hwndDlg, 0));
 							}
 
@@ -2288,7 +2287,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 								mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)&message, (LPARAM)Translate(TABSRMM_HK_SECTION_GENERIC));
 								switch(mim_hotkey_check) {
 									case TABSRMM_HK_PASTEANDSEND:
-										HandlePasteAndSend(hwndDlg, dat);
+										HandlePasteAndSend(dat);
 										return(_dlgReturn(hwndDlg, 1));
 									case TABSRMM_HK_HISTORY:
 										SendMessage(hwndDlg, WM_COMMAND, IDC_HISTORY, 0);
@@ -2705,7 +2704,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 
 			if (lParam == 1) {
-				GetSendFormat(hwndDlg, dat, 1);
+				GetSendFormat(dat, 1);
 				SetDialogToType(hwndDlg);
 			}
 
@@ -2796,7 +2795,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		}
 
 		case DM_UPDATEPICLAYOUT:
-			LoadContactAvatar(hwndDlg, dat);
+			LoadContactAvatar(dat);
 			SendMessage(hwndDlg, WM_SIZE, 0, 0);
 			return 0;
 
@@ -3663,9 +3662,10 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				}
 				case IDC_QUOTE: {
 					CHARRANGE sel;
-					TCHAR *szQuoted, *szText;
-					char *szFromStream = NULL;
-					HANDLE hDBEvent = 0;
+					TCHAR* 	szQuoted, *szText;
+					char*	szFromStream = NULL;
+					HANDLE 	hDBEvent = 0;
+					int		iCharsPerLine = M->GetDword("quoteLineLength", 64);
 #ifdef _UNICODE
 					TCHAR *szConverted;
 					int iAlloced = 0;
@@ -3692,7 +3692,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						}
 
 						if (selected != NULL) {
-							szQuoted = QuoteText(selected, 64, 0);
+							szQuoted = QuoteText(selected, iCharsPerLine, 0);
 #if defined(_UNICODE)
 							SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szQuoted);
 #else
@@ -3749,7 +3749,7 @@ quote_from_last:
 #endif
 						}
 #ifdef _UNICODE
-						szQuoted = QuoteText(szConverted, 64, 0);
+						szQuoted = QuoteText(szConverted, iCharsPerLine, 0);
 						SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szQuoted);
 #else
 						szQuoted = QuoteText(szText, 64, 0);
@@ -3768,7 +3768,7 @@ quote_from_last:
 						szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_LOG), dat, SF_TEXT | SF_USECODEPAGE | SFF_SELECTION);
 						converted = M->utf8_decodeW(szFromStream);
 						FilterEventMarkers(converted);
-						szQuoted = QuoteText(converted, 64, 0);
+						szQuoted = QuoteText(converted, iCharsPerLine, 0);
 						SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szQuoted);
 						free(szQuoted);
 						mir_free(converted);
@@ -4041,7 +4041,7 @@ quote_from_last:
 						}
 						iNewIEView = GetIEViewMode(hwndDlg, dat->hContact);
 						if (iNewIEView != iOldIEView)
-							SwitchMessageLog(hwndDlg, dat, iNewIEView);
+							SwitchMessageLog(dat, iNewIEView);
 					}
 					break;
 				}
@@ -4549,7 +4549,7 @@ quote_from_last:
 				SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 			break;
 		case DM_SMILEYOPTIONSCHANGED:
-			ConfigureSmileyButton(hwndDlg, dat);
+			ConfigureSmileyButton(dat);
 			SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 			break;
 		case DM_PROTOAVATARCHANGED:

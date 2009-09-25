@@ -82,10 +82,10 @@ static void BTN_StockAction(ButtonItem *item, HWND hwndDlg, struct _MessageWindo
 				if (dat) {
 					if (IsDlgButtonChecked(hwndDlg, IDC_SBAR_TOGGLEFORMAT) == BST_UNCHECKED) {
 						dat->SendFormat = 0;
-						GetSendFormat(hwndDlg, dat, 0);
+						GetSendFormat(dat, 0);
 					} else {
 						dat->SendFormat = SENDFORMAT_BBCODE;
-						GetSendFormat(hwndDlg, dat, 0);
+						GetSendFormat(dat, 0);
 					}
 				}
 				break;
@@ -637,12 +637,12 @@ void DM_OptionsApplied(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 		LoadLocalFlags(hwndDlg, dat);
 
 	if (!(dat->dwFlags & MWF_SHOW_PRIVATETHEME))
-		LoadThemeDefaults(hwndDlg, dat);
+		LoadThemeDefaults(dat);
 
 	if (dat->hContact) {
 		dat->dwIsFavoritOrRecent = MAKELONG((WORD)DBGetContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 0),
 											(WORD)M->GetDword(dat->hContact, "isRecent", 0));
-		LoadTimeZone(hwndDlg, dat);
+		LoadTimeZone(dat);
 	}
 
 	if (dat->hContact && dat->szProto != NULL && dat->bIsMeta) {
@@ -663,7 +663,7 @@ void DM_OptionsApplied(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(0, 0));
 	SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(3, 3));
 
-	GetSendFormat(hwndDlg, dat, 1);
+	GetSendFormat(dat, 1);
 	SetDialogToType(hwndDlg);
 	SendMessage(hwndDlg, DM_CONFIGURETOOLBAR, 0, 0);
 
@@ -878,7 +878,7 @@ void DM_UpdateTitle(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 		TCHAR fulluin[256];
 		if (dat->szProto) {
 
-			GetContactUIN(hwndDlg, dat);
+			GetContactUIN(dat);
 
 			if (dat->bIsMeta) {
 				szOldMetaProto = dat->szMetaProto;

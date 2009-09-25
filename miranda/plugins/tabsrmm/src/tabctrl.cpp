@@ -371,22 +371,24 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 		dat = (struct _MessageWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
 
 	if (dat) {
-		HICON hIcon;
-		HBRUSH bg;
-		HFONT oldFont;
-		DWORD dwStyle = tabdat->dwStyle;
-		BOOL bFill = ((dwStyle & TCS_BUTTONS && !CSkin::m_skinEnabled) && (tabdat->m_VisualStyles == FALSE));
-		int oldMode = 0;
+		HICON 	 hIcon;
+		COLORREF clr = 0;
+		HBRUSH 	 bg;
+		HFONT 	 oldFont;
+		DWORD 	 dwStyle = tabdat->dwStyle;
+		BOOL 	 bFill = ((dwStyle & TCS_BUTTONS && !CSkin::m_skinEnabled) && (tabdat->m_VisualStyles == FALSE));
+		int 	 oldMode = 0;
+
 		InflateRect(rcItem, -1, -1);
 
 		if (nHint & HINT_ACTIVE_ITEM)
-			SetTextColor(dc, PluginConfig.tabConfig.colors[1]);
+			clr = PluginConfig.tabConfig.colors[1];
 		else if (dat->mayFlashTab == TRUE)
-			SetTextColor(dc, PluginConfig.tabConfig.colors[2]);
+			clr = PluginConfig.tabConfig.colors[2];
 		else if (nHint & HINT_HOTTRACK)
-			SetTextColor(dc, PluginConfig.tabConfig.colors[3]);
+			clr = PluginConfig.tabConfig.colors[3];
 		else
-			SetTextColor(dc, PluginConfig.tabConfig.colors[0]);
+			clr = PluginConfig.tabConfig.colors[0];
 
 		oldMode = SetBkMode(dc, TRANSPARENT);
 
@@ -460,16 +462,7 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 				rcItem->right -= tabdat->m_xpad;
 				dwTextFlags |= DT_WORD_ELLIPSIS;
 			}
-#if defined(_UNICODE)
-			if(M->isAero())
-				CSkin::RenderText(dc, dwStyle & TCS_BUTTONS ? tabdat->hThemeButton : tabdat->hTheme, dat->newtitle, rcItem, dwTextFlags, CSkin::m_glowSize);
-			else if (tabdat->m_VisualStyles == FALSE || tabdat->m_moderntabs || CSkin::m_skinEnabled)
-				DrawText(dc, dat->newtitle, (int)(lstrlen(dat->newtitle)), rcItem, dwTextFlags);
-			else
-				M->m_pfnDrawThemeText(dwStyle & TCS_BUTTONS ? tabdat->hThemeButton : tabdat->hTheme, dc, 1, nHint & HINT_ACTIVE_ITEM ? 3 : (nHint & HINT_HOTTRACK ? 2 : 1), dat->newtitle, (int)(lstrlen(dat->newtitle)), dwTextFlags, 0, rcItem);
-#else
-			DrawText(dc, dat->newtitle, lstrlen(dat->newtitle), rcItem, dwTextFlags);
-#endif
+			CSkin::RenderText(dc, dwStyle & TCS_BUTTONS ? tabdat->hThemeButton : tabdat->hTheme, dat->newtitle, rcItem, dwTextFlags, CSkin::m_glowSize, clr);
 			SelectObject(dc, oldFont);
 		}
 		if (oldMode)

@@ -36,8 +36,8 @@
 #include "commonheaders.h"
 extern PLUGININFOEX pluginInfo;
 
-CGlobals PluginConfig;
-CGlobals *pConfig = &PluginConfig;
+CGlobals 	PluginConfig;
+CGlobals*	pConfig = &PluginConfig;
 
 void CGlobals::Reload()
 {
@@ -110,7 +110,6 @@ void CGlobals::Reload()
 	m_ipBackgroundGradientHigh = M->GetDword(FONTMODULE, "ipfieldsbgHigh", GetSysColor(COLOR_3DSHADOW));
 	m_tbBackgroundHigh = M->GetDword(FONTMODULE, "tbBgHigh", 0);
 	m_tbBackgroundLow = M->GetDword(FONTMODULE, "tbBgLow", 0);
-	CSkin::initAeroEffect();
 	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &m_ncm, 0);
 }
 

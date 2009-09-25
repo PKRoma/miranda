@@ -71,18 +71,19 @@ typedef struct {
 #define BUTTONSETASSIDEBARBUTTON (BUTTONSETASFLATBTN + 22)
 
 struct AeroEffect {
-	TCHAR	tszName[40];
-	DWORD	m_baseColor;
-	DWORD	m_gradientColor;
-	BYTE	m_baseAlpha;
-	BYTE	m_finalAlpha;
-	BYTE	m_cornerType;
-	BYTE	m_gradientType;
-	DWORD	m_cornerRadius;
-	DWORD	m_glowSize;
-	COLORREF m_clrBack;
-	COLORREF m_clrToolbar;
-	COLORREF m_clrToolbar2;
+	TCHAR		tszName[40];
+	DWORD		m_baseColor;
+	DWORD		m_gradientColor;
+	BYTE		m_baseAlpha;
+	BYTE		m_finalAlpha;
+	BYTE		m_cornerType;
+	BYTE		m_gradientType;
+	DWORD		m_cornerRadius;
+	DWORD		m_glowSize;
+	COLORREF	m_clrBack;
+	COLORREF 	m_clrToolbar;
+	COLORREF 	m_clrToolbar2;
+	void 		(TSAPI	*pfnEffectRenderer)(const HDC hdc, const RECT *rc, int iEffectArea);
 };
 /**
  * CImageItem implementes image-based skin items. These items are loaded
@@ -223,6 +224,8 @@ public:
 		AERO_EFFECT_AREA_TAB_ACTIVE = 3,
 		AERO_EFFECT_AREA_TAB_HOVER = 4,
 		AERO_EFFECT_AREA_TAB_NORMAL = 5,
+		AERO_EFFECT_AREA_SIDEBAR_LEFT = 6,
+		AERO_EFFECT_AREA_SIDEBAR_RIGHT = 7,
 		AERO_EFFECT_AREA_TAB_TOP = 0x1000,
 		AERO_EFFECT_AREA_TAB_BOTTOM = 0x2000
 	};
@@ -290,10 +293,7 @@ public:
 	static UINT TSAPI		DrawRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
 	static UINT TSAPI		NcCalcRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
 	static HBITMAP TSAPI 	CreateAeroCompatibleBitmap(const RECT &rc, HDC dc);
-#if defined(_UNICODE)
-	static int TSAPI		RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags, const int iGlowSize = DEFAULT_GLOW_SIZE);
-#endif
-	static int 	TSAPI		RenderText(HDC hdc, HANDLE hTheme, const char *szText, RECT *rc, DWORD dtFlags, const int iGlowSize = DEFAULT_GLOW_SIZE);
+	static int TSAPI		RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags, const int iGlowSize = DEFAULT_GLOW_SIZE, COLORREF clr = 0);
 	static void TSAPI		MapClientToParent(HWND hwndClient, HWND hwndParent, RECT &rc);
 	static void TSAPI		RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &rcWindow);
 	static HBITMAP TSAPI	ResizeBitmap(HBITMAP hBmpSrc, LONG width, LONG height, bool &mustFree);
@@ -340,7 +340,7 @@ public:
 	static DWORD		m_glowSize;
 	static HBRUSH		m_BrushBack;
 
-	static COLORREF	m_dwmColorRGB;
+	static COLORREF		m_dwmColorRGB;
 
 	static CImageItem *m_switchBarItem,	*m_tabTop, *m_tabBottom, *m_tabGlowTop,	*m_tabGlowBottom;
 	static bool			m_fAeroSkinsValid;
@@ -357,6 +357,11 @@ private:
 	ICONDESCW		*m_skinIcons;
 	int				m_nrSkinIcons;
 	DWORD			m_dwmColor;
+
+private:
+	static	void TSAPI AeroEffectCallback_Milk(const HDC hdc, const RECT *rc, int iEffectArea);
+	static	void TSAPI AeroEffectCallback_Carbon(const HDC hdc, const RECT *rc, int iEffectArea);
+	static	void TSAPI AeroEffectCallback_Solid(const HDC hdc, const RECT *rc, int iEffectArea);
 };
 
 /*

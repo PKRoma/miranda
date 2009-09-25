@@ -74,7 +74,6 @@ void        HandleMenuEntryFromhContact(int iSelection);
 
 BOOL 		IsUtfSendAvailable(HANDLE hContact);
 void 		DM_NotifyTyping(_MessageWindowData *dat, int mode);
-int         ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild);
 HWND        CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hContact, int isSend, const char *pszInitialText, BOOL bActivateTAb, BOOL bPopupContainer, BOOL bWantPopup, HANDLE hdbEvent);
 int         GetProtoIconFromList(const char *szProto, int iStatus);
 static void CreateImageList(BOOL bInitial);
@@ -84,7 +83,6 @@ void        LoadMsgAreaBackground();
 int         MY_GetContactDisplayNameW(HANDLE hContact, wchar_t *szwBuf, unsigned int size, const char *szProto, UINT codePage);
 struct      ContainerWindowData *FindMatchingContainer(const TCHAR *szName, HANDLE hContact);
 struct      ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE hContactFrom);
-int         CutContactName(TCHAR *oldname, TCHAR *newname, unsigned int size);
 struct      ContainerWindowData *FindContainerByName(const TCHAR *name);
 int         GetTabIndexFromHWND(HWND hwndTab, HWND hwnd);
 int			GetTabItemFromMouse(HWND hwndTab, POINT *pt);

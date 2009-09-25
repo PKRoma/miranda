@@ -703,7 +703,6 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				SendMessage(hwndDlg, DM_RESTOREWINDOWPOS, 0, 0);
 				ShowWindow(hwndDlg, SW_SHOWNORMAL);
 			}
-			SetTimer(hwndDlg, TIMERID_HEARTBEAT, TIMEOUT_HEARTBEAT, NULL);
 
 			/*
 			 * prevent ugly back background being visible while tabbed clients are created
@@ -1238,14 +1237,6 @@ buttons_done:
 					pContainer->preSIZE.cx = pContainer->preSIZE.cy = 0;
 					pContainer->oldDCSize.cx = pContainer->oldDCSize.cy = 0;
 
-					pItem = pContainer->buttonItems;
-					while (pItem) {
-						if (pItem->dwFlags & BUTTON_ISSIDEBAR)
-							ShowWindow(GetDlgItem(hwndDlg, pItem->uId), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
-						else
-							ShowWindow(GetDlgItem(hwndDlg, pItem->uId), SW_SHOW);
-						pItem = pItem->nextItem;
-					}
 					PostMessage(hwndDlg, WM_SIZE, 0, 1);
 					break;
 
@@ -2160,7 +2151,6 @@ buttons_done:
 				CallService(MS_FAVATAR_DESTROY, (WPARAM)&fa, 0);
 			}
 			ZeroMemory((void *)&item, sizeof(item));
-			KillTimer(hwndDlg, TIMERID_HEARTBEAT);
 			pContainer->hwnd = 0;
 			pContainer->hwndActive = 0;
 			pContainer->hMenuContext = 0;
@@ -2466,7 +2456,7 @@ int GetTabItemFromMouse(HWND hwndTab, POINT *pt)
  * size = max length of target string
  */
 
-int CutContactName(TCHAR *oldname, TCHAR *newname, unsigned int size)
+int TSAPI CutContactName(const TCHAR *oldname, TCHAR *newname, unsigned int size)
 {
 	int cutMax = PluginConfig.m_CutContactNameTo;
 

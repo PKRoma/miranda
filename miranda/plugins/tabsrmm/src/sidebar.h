@@ -64,22 +64,22 @@ public:
 	CSideBarButton(const _MessageWindowData *dat, CSideBar *sideBar);
 	~CSideBarButton();
 
-	void 						RenderThis(const HDC hdc) const;
-	void 						renderIconAndNick(const HDC hdc, const RECT *rcItem) const;
-	const HWND					getHwnd() const { return(m_hwnd); }
-	const UINT					getID() const { return(m_id); }
-	const HANDLE				getContactHandle() const { return(m_dat->hContact); }
-	const _MessageWindowData*	getDat() const { return(m_dat); }
+	LONG  						getHeight() const 			{ return(m_sz.cy); }
+	const SIZE&					getSize() const 			{ return(m_sz); }
+	const bool					isTopAligned() const 		{ return(m_isTopAligned); }
+	const HWND					getHwnd() const 			{ return(m_hwnd); }
+	const UINT					getID() const 				{ return(m_id); }
+	const HANDLE				getContactHandle() const 	{ return(m_dat->hContact); }
+	const _MessageWindowData*	getDat() const 				{ return(m_dat); }
+	const TSideBarLayout*		getLayout() const 			{ return(m_sideBarLayout); }
 
+	void 						RenderThis					(const HDC hdc) const;
+	void 						renderIconAndNick			(const HDC hdc, const RECT *rcItem) const;
 	int							testCloseButton() const;
-	const bool					isTopAligned() const { return(m_isTopAligned); }
 	void 						Show(const int showCmd) const;
 	void						activateSession() const;
-	const SIZE&					getSize() const { return(m_sz); }
 	const SIZE&					measureItem();
-	LONG  						getHeight() const { return(m_sz.cy); }
 	void						setLayout(const TSideBarLayout *newLayout);
-	const TSideBarLayout*		getLayout() const { return(m_sideBarLayout); }
 
 public:
 	CSideBar* 					m_sideBar;
@@ -121,26 +121,32 @@ public:
 		SIDEBARLAYOUT_VERTICALORIENTATION = 64
 	};
 
+	enum {
+		SIDEBAR_GAP = 2									// gap between sidebar container window and content tab sheet border
+	};
+
 	CSideBar(ContainerWindowData *pContainer);
 	~CSideBar();
 
-	void		TSAPI			Init(const bool fForce = false);
-	void		TSAPI			addSession(const _MessageWindowData *dat, int position = -1);
-	HRESULT		TSAPI			removeSession(const _MessageWindowData *dat);
-	void		TSAPI			updateSession(const _MessageWindowData *dat);
+	void		TSAPI			Init						(const bool fForce = false);
+	void		TSAPI			addSession					(const _MessageWindowData *dat, int position = -1);
+	HRESULT		TSAPI			removeSession				(const _MessageWindowData *dat);
+	void		TSAPI			updateSession				(const _MessageWindowData *dat);
 
-	const LONG 					getWidth() const { return( m_isVisible ? m_width : 0); }
-	const ContainerWindowData*	getContainer() const { return(m_pContainer); }
-	void		TSAPI			Layout(const RECT *rc = 0, bool fOnlyCalc = false);
-	const bool					isActive() const { return(m_isActive); }
-	const bool					isVisible() const { return(m_isVisible); }
-	void		TSAPI			setVisible(bool fNewVisibility);
-	void 		TSAPI			showAll(int showCmd);
-	void		TSAPI			processScrollerButtons(UINT cmd);
-	const CSideBarButton* 		getActiveItem() const { return(m_activeItem); }
-	bool						isSkinnedContainer() const { return(CSkin::m_skinEnabled ? true : false); }
-	const UINT					getLayoutId() const { return(m_uLayout); }
-	const CSideBarButton* TSAPI	setActiveItem(const CSideBarButton *newItem)
+	void		TSAPI			processScrollerButtons		(UINT cmd);
+	void		TSAPI			Layout						(const RECT *rc = 0, bool fOnlyCalc = false);
+	void		TSAPI			setVisible					(bool fNewVisibility);
+	void 		TSAPI			showAll						(int showCmd);
+
+	const LONG 					getWidth() const 			{ return( m_isVisible ? m_width + SIDEBAR_GAP : 0); }
+	const ContainerWindowData*	getContainer() const 		{ return(m_pContainer); }
+	const bool					isActive() const 			{ return(m_isActive); }
+	const bool					isVisible() const 			{ return(m_isVisible); }
+	const CSideBarButton* 		getActiveItem() const 		{ return(m_activeItem); }
+	bool						isSkinnedContainer() const 	{ return(CSkin::m_skinEnabled ? true : false); }
+	const UINT					getLayoutId() const 		{ return(m_uLayout); }
+
+	const CSideBarButton* 		setActiveItem				(const CSideBarButton *newItem)
 	{
 		CSideBarButton *oldItem = m_activeItem;
 		m_activeItem = const_cast<CSideBarButton *>(newItem);
@@ -154,29 +160,29 @@ public:
 	{
 		m_hoveredClose = item;
 	}
-	const CSideBarButton*				getHoveredClose() const { return(m_hoveredClose); }
+	HWND								getScrollWnd() const 			{ return(m_hwndScrollWnd); }
+	const CSideBarButton*				getHoveredClose() const 		{ return(m_hoveredClose); }
+	const CSideBarButton* TSAPI 		setActiveItem					(const _MessageWindowData *dat);
 
-	const CSideBarButton* TSAPI 		setActiveItem(const _MessageWindowData *dat);
-
-	static HBITMAP						m_hbmBackground;
-
-	static const TSideBarLayout* 		getLayouts(int& uLayoutCount)
+	static const TSideBarLayout* 		getLayouts						(int& uLayoutCount)
 	{
 		uLayoutCount = NR_LAYOUTS;
 		return(m_layouts);
 	}
-	void				TSAPI			scrollIntoView(const CSideBarButton *item = 0);
-	void				TSAPI			resizeScrollWnd(LONG x, LONG y, LONG width, LONG height) const;
-	HWND								getScrollWnd() const { return(m_hwndScrollWnd); }
-	static LRESULT CALLBACK 			wndProcStub(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	void				TSAPI			scrollIntoView					(const CSideBarButton *item = 0);
+	void				TSAPI			resizeScrollWnd					(LONG x, LONG y, LONG width, LONG height) const;
+	static LRESULT CALLBACK 			wndProcStub						(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static void			TSAPI			initBG							(const HWND hwnd);
+	static void			TSAPI			unInitBG						();
+
 private:
 	void				TSAPI			createScroller();
 	void				TSAPI			destroyScroller();
 	void				TSAPI			populateAll();
 	void				TSAPI			removeAll();
 	void				TSAPI			Invalidate();
-	std::vector<CSideBarButton *>::iterator findSession(const _MessageWindowData *dat);
-	std::vector<CSideBarButton *>::iterator findSession(const HANDLE hContact);
+	ButtonIterator 		TSAPI			findSession						(const _MessageWindowData *dat);
+	ButtonIterator		TSAPI			findSession						(const HANDLE hContact);
 
 	LRESULT CALLBACK					wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -198,13 +204,15 @@ private:
 	bool								m_isVisible;							// visible aswell (not collapsed)
 	TSideBarLayout*						m_currentLayout;						// the layout in use. will be passed to new button items
 	UINT								m_uLayout;								// layout id number, currently in use
+
+	static HBITMAP						m_BGhbm;
+
 private:
 	/*
 	 * layouts. m_layouts[] is static and contains layout descriptions
 	 * renderer functions are static aswell
 	 */
 	static					TSideBarLayout 	m_layouts[NR_LAYOUTS];
-	static					UINT			m_hbmRefCount;
 	static void __fastcall  m_DefaultBackgroundRenderer(const HDC hdc, const RECT *rc, const CSideBarButton *item);
 	static void __fastcall  m_DefaultContentRenderer(const HDC hdc, const RECT *rc, const CSideBarButton *item);
 };

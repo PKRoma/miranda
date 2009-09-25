@@ -42,9 +42,6 @@ extern      LOGFONTA logfonts[MSGDLGFONTCOUNT + 2];
 extern      COLORREF fontcolors[MSGDLGFONTCOUNT + 2];
 extern      TemplateSet LTR_Active, RTL_Active;
 
-void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, int state);
-
-
 static struct RTFColorTable _rtf_ctable[] = {
 	_T("red"), RGB(255, 0, 0), 0, ID_FONT_RED,
 	_T("blue"), RGB(0, 0, 255), 0, ID_FONT_BLUE,
@@ -84,7 +81,7 @@ static int g_status_events[] = {
 static int g_status_events_size = 0;
 #define MAX_REGS(_A_) ( sizeof(_A_) / sizeof(_A_[0]) )
 
-BOOL IsStatusEvent(int eventType)
+BOOL TSAPI IsStatusEvent(int eventType)
 {
 	int i;
 
@@ -137,7 +134,7 @@ void RTF_ColorAdd(const TCHAR *tszColname, size_t length)
  * contacts db record (if so, the container will try to open the tab at the saved position later)
  */
 
-void RearrangeTab(HWND hwndDlg, struct _MessageWindowData *dat, int iMode, BOOL fSavePos)
+void TSAPI RearrangeTab(HWND hwndDlg, const _MessageWindowData *dat, int iMode, BOOL fSavePos)
 {
 	TCITEM item = {0};
 	HWND hwndTab = GetParent(hwndDlg);
@@ -291,7 +288,7 @@ static void SaveAvatarToFile(_MessageWindowData *dat, HBITMAP hbm, int isOwnPic)
  * store flashing state into bState
  */
 
-void FlashTab(struct _MessageWindowData *dat, HWND hwndTab, int iTabindex, BOOL *bState, BOOL mode, HICON origImage)
+void TSAPI FlashTab(struct _MessageWindowData *dat, HWND hwndTab, int iTabindex, BOOL *bState, BOOL mode, HICON origImage)
 {
 	TCITEM item;
 
@@ -313,7 +310,7 @@ void FlashTab(struct _MessageWindowData *dat, HWND hwndTab, int iTabindex, BOOL 
  * for the avatar w/o disturbing the toolbar too much.
  */
 
-void CalcDynamicAvatarSize(_MessageWindowData *dat, BITMAP *bminfo)
+void TSAPI CalcDynamicAvatarSize(_MessageWindowData *dat, BITMAP *bminfo)
 {
 	RECT rc;
 	double aspect = 0, newWidth = 0, picAspect = 0;
@@ -375,7 +372,7 @@ void CalcDynamicAvatarSize(_MessageWindowData *dat, BITMAP *bminfo)
  + returns TRUE if the contact is handled by the MetaContacts protocol
  */
 
-int IsMetaContact(const _MessageWindowData *dat)
+int TSAPI IsMetaContact(const _MessageWindowData *dat)
 {
 	if (dat->hContact == 0 || dat->szProto == NULL)
 		return 0;
@@ -388,7 +385,7 @@ int IsMetaContact(const _MessageWindowData *dat)
  * "most online" protocol, unless a specific protocol is forced
  */
 
-char *GetCurrentMetaContactProto(_MessageWindowData *dat)
+char* TSAPI GetCurrentMetaContactProto(_MessageWindowData *dat)
 {
 	dat->hSubContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)dat->hContact, 0);
 	if (dat->hSubContact) {
@@ -402,7 +399,7 @@ char *GetCurrentMetaContactProto(_MessageWindowData *dat)
 		return dat->szProto;
 }
 
-void WriteStatsOnClose(_MessageWindowData *dat)
+void TSAPI WriteStatsOnClose(_MessageWindowData *dat)
 {
 	DBEVENTINFO dbei;
 	char buffer[450];
@@ -429,7 +426,7 @@ void WriteStatsOnClose(_MessageWindowData *dat)
 	}
 }
 
-int MsgWindowUpdateMenu(_MessageWindowData *dat, HMENU submenu, int menuID)
+int TSAPI MsgWindowUpdateMenu(_MessageWindowData *dat, HMENU submenu, int menuID)
 {
 	HWND	hwndDlg = dat->hwnd;
 	bool 	fInfoPanel = dat->Panel->isActive();
@@ -482,7 +479,7 @@ int MsgWindowUpdateMenu(_MessageWindowData *dat, HMENU submenu, int menuID)
 	return 0;
 }
 
-int MsgWindowMenuHandler(_MessageWindowData *dat, int selection, int menuId)
+int TSAPI MsgWindowMenuHandler(_MessageWindowData *dat, int selection, int menuId)
 {
 	if(dat == 0)
 		return(0);
@@ -629,7 +626,7 @@ int MsgWindowMenuHandler(_MessageWindowData *dat, int selection, int menuId)
  * and various indicators (caps lock, num lock, insert mode).
  */
 
-void UpdateReadChars(const _MessageWindowData *dat)
+void TSAPI UpdateReadChars(const _MessageWindowData *dat)
 {
 
 	if(dat && (dat->pContainer->hwndStatus && dat->pContainer->hwndActive == dat->hwnd)) {
@@ -677,7 +674,7 @@ void UpdateReadChars(const _MessageWindowData *dat)
  * update all status bar fields and force a redraw of the status bar.
  */
 
-void UpdateStatusBar(const _MessageWindowData *dat)
+void TSAPI UpdateStatusBar(const _MessageWindowData *dat)
 {
 	if (dat && dat->pContainer->hwndStatus && dat->pContainer->hwndActive == dat->hwnd) {
 		if (dat->bType == SESSIONTYPE_IM) {
@@ -706,7 +703,7 @@ void UpdateStatusBar(const _MessageWindowData *dat)
  * MTN handler.
  */
 
-void HandleIconFeedback(_MessageWindowData *dat, HICON iIcon)
+void TSAPI HandleIconFeedback(_MessageWindowData *dat, HICON iIcon)
 {
 	TCITEM item = {0};
 	HICON iOldIcon = dat->hTabIcon;
@@ -732,7 +729,7 @@ void HandleIconFeedback(_MessageWindowData *dat, HICON iIcon)
  * and local mode
  */
 
-int GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
+int TSAPI GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
 {
 	BYTE bAvatarMode = PluginConfig.m_AvatarMode;
 	BYTE bOwnAvatarMode = PluginConfig.m_OwnAvatarMode;
@@ -887,13 +884,13 @@ int GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
  * checks, if there is a valid smileypack installed for the given protocol
  */
 
-int CheckValidSmileyPack(char *szProto, HANDLE hContact, HICON *hButtonIcon)
+int TSAPI CheckValidSmileyPack(const char *szProto, HANDLE hContact, HICON *hButtonIcon)
 {
 	SMADD_INFO2 smainfo = {0};
 
 	if (PluginConfig.g_SmileyAddAvail) {
 		smainfo.cbSize = sizeof(smainfo);
-		smainfo.Protocolname = szProto;
+		smainfo.Protocolname = const_cast<char *>(szProto);
 		smainfo.hContact = hContact;
 		CallService(MS_SMILEYADD_GETINFO2, 0, (LPARAM)&smainfo);
 		if (hButtonIcon)
@@ -907,7 +904,7 @@ int CheckValidSmileyPack(char *szProto, HANDLE hContact, HICON *hButtonIcon)
  * return value MUST be free()'d by caller.
  */
 
-TCHAR *QuoteText(TCHAR *text, int charsPerLine, int removeExistingQuotes)
+TCHAR* TSAPI QuoteText(const TCHAR *text, int charsPerLine, int removeExistingQuotes)
 {
 	int inChar, outChar, lineChar;
 	int justDoneLineBreak, bufSize;
@@ -968,7 +965,7 @@ TCHAR *QuoteText(TCHAR *text, int charsPerLine, int removeExistingQuotes)
 }
 
 
-void AdjustBottomAvatarDisplay(_MessageWindowData *dat)
+void TSAPI AdjustBottomAvatarDisplay(_MessageWindowData *dat)
 {
 	if(dat) {
 		bool fInfoPanel = dat->Panel->isActive();
@@ -1020,7 +1017,7 @@ void AdjustBottomAvatarDisplay(_MessageWindowData *dat)
 	}
 }
 
-void ShowPicture(_MessageWindowData *dat, BOOL showNewPic)
+void TSAPI ShowPicture(_MessageWindowData *dat, BOOL showNewPic)
 {
 	DBVARIANT 	dbv = {0};
 	RECT 		rc;
@@ -1056,7 +1053,7 @@ void ShowPicture(_MessageWindowData *dat, BOOL showNewPic)
 	SendMessage(dat->pContainer->hwnd, DM_REPORTMINHEIGHT, (WPARAM) hwndDlg, (LPARAM) dat->uMinHeight);
 }
 
-void FlashOnClist(HWND hwndDlg, struct _MessageWindowData *dat, HANDLE hEvent, DBEVENTINFO *dbei)
+void TSAPI FlashOnClist(HWND hwndDlg, struct _MessageWindowData *dat, HANDLE hEvent, DBEVENTINFO *dbei)
 {
 	CLISTEVENT cle;
 
@@ -1117,7 +1114,7 @@ static DWORD CALLBACK Message_StreamCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, 
  * UNICODE version returns UTF-8 encoded string.
  */
 
-char * Message_GetFromStream(HWND hwndRtf, struct _MessageWindowData* dat, DWORD dwPassedFlags)
+char* TSAPI Message_GetFromStream(HWND hwndRtf, const _MessageWindowData* dat, DWORD dwPassedFlags)
 {
 	EDITSTREAM stream;
 	char *pszText = NULL;
@@ -1202,7 +1199,7 @@ int RTFColorToIndex(int iCol)
  * tags and return plain text
  */
 
-BOOL DoRtfToTags(TCHAR * pszText, struct _MessageWindowData *dat)
+BOOL TSAPI DoRtfToTags(TCHAR * pszText, const _MessageWindowData *dat)
 {
 	TCHAR * p1;
 	BOOL bJustRemovedRTF = TRUE;
@@ -1439,7 +1436,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct _MessageWindowData *dat)
  * trims the output from DoRtfToTags(), removes trailing newlines and whitespaces...
  */
 
-void DoTrimMessage(TCHAR *msg)
+void TSAPI DoTrimMessage(TCHAR *msg)
 {
 	size_t iLen = lstrlen(msg);
 	size_t i = iLen;
@@ -1457,7 +1454,7 @@ void DoTrimMessage(TCHAR *msg)
  * so restoring a message from the input history will also restore its formatting
  */
 
-void SaveInputHistory(HWND hwndDlg, struct _MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
+void TSAPI SaveInputHistory(HWND hwndDlg, _MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
 	int iLength = 0, iStreamLength = 0;
 	int oldTop = 0;
@@ -1512,7 +1509,7 @@ void SaveInputHistory(HWND hwndDlg, struct _MessageWindowData *dat, WPARAM wPara
  * respects metacontacts and uses the current protocol if the contact is a MC
  */
 
-void GetContactUIN(HWND hwndDlg, struct _MessageWindowData *dat)
+void TSAPI GetContactUIN(_MessageWindowData *dat)
 {
 	CONTACTINFO ci;
 
@@ -1566,7 +1563,7 @@ void GetContactUIN(HWND hwndDlg, struct _MessageWindowData *dat)
 static int g_IEViewAvail = -1;
 static int g_HPPAvail = -1;
 
-unsigned int GetIEViewMode(HWND hwndDlg, HANDLE hContact)
+UINT TSAPI GetIEViewMode(HWND hwndDlg, HANDLE hContact)
 {
 	int iWantIEView = 0, iWantHPP = 0;
 
@@ -1606,7 +1603,7 @@ static void CheckAndDestroyHPP(struct _MessageWindowData *dat)
 	}
 }
 
-void CheckAndDestroyIEView(struct _MessageWindowData *dat)
+void TSAPI CheckAndDestroyIEView(_MessageWindowData *dat)
 {
 	if (dat->hwndIEView) {
 		IEVIEWWINDOW ieWindow;
@@ -1623,8 +1620,9 @@ void CheckAndDestroyIEView(struct _MessageWindowData *dat)
 	}
 }
 
-void SetMessageLog(HWND hwndDlg, struct _MessageWindowData *dat)
+void TSAPI SetMessageLog(_MessageWindowData *dat)
 {
+	HWND		 hwndDlg = dat->hwnd;
 	unsigned int iLogMode = GetIEViewMode(hwndDlg, dat->hContact);
 
 	if (iLogMode == WANT_IEVIEW_LOG && dat->hwndIEView == 0) {
@@ -1675,15 +1673,17 @@ void SetMessageLog(HWND hwndDlg, struct _MessageWindowData *dat)
 	}
 }
 
-void SwitchMessageLog(HWND hwndDlg, struct _MessageWindowData *dat, int iMode)
+void TSAPI SwitchMessageLog(_MessageWindowData *dat, int iMode)
 {
+	HWND hwndDlg = dat->hwnd;
+
 	if (iMode) {           // switch from rtf to IEview or hpp
 		SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
 		EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), FALSE);
 		ShowWindow(GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
-		SetMessageLog(hwndDlg, dat);
+		SetMessageLog(dat);
 	} else                    // switch from IEView or hpp to rtf
-		SetMessageLog(hwndDlg, dat);
+		SetMessageLog(dat);
 
 	SetDialogToType(hwndDlg);
 	SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
@@ -1702,7 +1702,7 @@ void SwitchMessageLog(HWND hwndDlg, struct _MessageWindowData *dat, int iMode)
 	}
 }
 
-void FindFirstEvent(_MessageWindowData *dat)
+void TSAPI FindFirstEvent(_MessageWindowData *dat)
 {
 	int historyMode = (int)M->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_LOADHISTORY, -1);
 	if (historyMode == -1)
@@ -1767,7 +1767,7 @@ void FindFirstEvent(_MessageWindowData *dat)
 	}
 }
 
-void SaveSplitter(_MessageWindowData *dat)
+void TSAPI SaveSplitter(_MessageWindowData *dat)
 {
 	/*
 	 * group chats save their normal splitter position independently
@@ -1789,7 +1789,7 @@ void SaveSplitter(_MessageWindowData *dat)
 	}
 }
 
-void LoadSplitter(_MessageWindowData *dat)
+void TSAPI LoadSplitter(_MessageWindowData *dat)
 {
 	if (!(dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE))
 		if(dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS)
@@ -1803,7 +1803,7 @@ void LoadSplitter(_MessageWindowData *dat)
 		dat->splitterY = 150;
 }
 
-void PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd)
+void TSAPI PlayIncomingSound(const ContainerWindowData *pContainer, HWND hwnd)
 {
 	int iPlay = 0;
 	DWORD dwFlags = pContainer->dwFlags;
@@ -1831,7 +1831,7 @@ void PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd)
  * if mode == 0, int only configures the buttons and does not change send format
  */
 
-void GetSendFormat(HWND hwndDlg, struct _MessageWindowData *dat, int mode)
+void TSAPI GetSendFormat(_MessageWindowData *dat, int mode)
 {
 	UINT controls[5] = {IDC_FONTBOLD, IDC_FONTITALIC, IDC_FONTUNDERLINE,IDC_FONTSTRIKEOUT, IDC_FONTFACE};
 	int i;
@@ -1844,8 +1844,8 @@ void GetSendFormat(HWND hwndDlg, struct _MessageWindowData *dat, int mode)
 			dat->SendFormat = PluginConfig.m_SendFormat ? 1 : 0;
 	}
 	for (i = 0; i < 5; i++) {
-		EnableWindow(GetDlgItem(hwndDlg, controls[i]), dat->SendFormat != 0 ? TRUE : FALSE);
-		ShowWindow(GetDlgItem(hwndDlg, controls[i]), (dat->SendFormat != 0 /*&& !(dat->pContainer->dwFlags & CNT_HIDETOOLBAR)*/ )? SW_SHOW : SW_HIDE);
+		EnableWindow(GetDlgItem(dat->hwnd, controls[i]), dat->SendFormat != 0 ? TRUE : FALSE);
+		ShowWindow(GetDlgItem(dat->hwnd, controls[i]), (dat->SendFormat != 0 /*&& !(dat->pContainer->dwFlags & CNT_HIDETOOLBAR)*/ )? SW_SHOW : SW_HIDE);
 	}
 	return;
 }
@@ -1854,7 +1854,7 @@ void GetSendFormat(HWND hwndDlg, struct _MessageWindowData *dat, int mode)
  * get 2-digit locale id from current keyboard layout
  */
 
-void GetLocaleID(struct _MessageWindowData *dat, TCHAR *szKLName)
+void TSAPI GetLocaleID(_MessageWindowData *dat, const TCHAR *szKLName)
 {
 	TCHAR szLI[20], *stopped = NULL;
 	USHORT langID;
@@ -1901,7 +1901,7 @@ void GetLocaleID(struct _MessageWindowData *dat, TCHAR *szKLName)
 	}
 }
 
-void LoadContactAvatar(HWND hwndDlg, struct _MessageWindowData *dat)
+void TSAPI LoadContactAvatar(_MessageWindowData *dat)
 {
 	if (ServiceExists(MS_AV_GETAVATARBITMAP) && dat)
 		dat->ace = (AVATARCACHEENTRY *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->hContact, 0);
@@ -1916,17 +1916,17 @@ void LoadContactAvatar(HWND hwndDlg, struct _MessageWindowData *dat)
 			AdjustBottomAvatarDisplay(dat);
 			GetObject(dat->ace->hbmPic, sizeof(bm), &bm);
 			CalcDynamicAvatarSize(dat, &bm);
-			PostMessage(hwndDlg, WM_SIZE, 0, 0);
+			PostMessage(dat->hwnd, WM_SIZE, 0, 0);
 		} else if (dat->ace == NULL) {
 			AdjustBottomAvatarDisplay(dat);
 			GetObject(PluginConfig.g_hbmUnknown, sizeof(bm), &bm);
 			CalcDynamicAvatarSize(dat, &bm);
-			PostMessage(hwndDlg, WM_SIZE, 0, 0);
+			PostMessage(dat->hwnd, WM_SIZE, 0, 0);
 		}
 	}
 }
 
-void LoadOwnAvatar(_MessageWindowData *dat)
+void TSAPI LoadOwnAvatar(_MessageWindowData *dat)
 {
 	AVATARCACHEENTRY *ace = NULL;
 
@@ -1951,7 +1951,7 @@ void LoadOwnAvatar(_MessageWindowData *dat)
 	}
 }
 
-void LoadTimeZone(HWND hwndDlg, struct _MessageWindowData *dat)
+void TSAPI LoadTimeZone(_MessageWindowData *dat)
 {
 	if(ServiceExists("CLN/GetTimeOffset")) {
 		dat->timezone = 1;
@@ -1971,16 +1971,16 @@ void LoadTimeZone(HWND hwndDlg, struct _MessageWindowData *dat)
  * paste contents of the clipboard into the message input area and send it immediately
  */
 
-void HandlePasteAndSend(HWND hwndDlg, struct _MessageWindowData *dat)
+void TSAPI HandlePasteAndSend(const _MessageWindowData *dat)
 {
 	if (!PluginConfig.m_PasteAndSend) {
-		SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)CTranslator::get(CTranslator::GEN_WARNING_PASTEANDSEND_DISABLED));
+		SendMessage(dat->hwnd, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)CTranslator::get(CTranslator::GEN_WARNING_PASTEANDSEND_DISABLED));
 		return;                                     // feature disabled
 	}
 
-	SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_PASTESPECIAL, CF_TEXT, 0);
-	if (GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) > 0)
-		SendMessage(hwndDlg, WM_COMMAND, IDOK, 0);
+	SendMessage(GetDlgItem(dat->hwnd, IDC_MESSAGE), EM_PASTESPECIAL, CF_TEXT, 0);
+	if (GetWindowTextLengthA(GetDlgItem(dat->hwnd, IDC_MESSAGE)) > 0)
+		SendMessage(dat->hwnd, WM_COMMAND, IDOK, 0);
 }
 
 /*
@@ -1988,7 +1988,7 @@ void HandlePasteAndSend(HWND hwndDlg, struct _MessageWindowData *dat)
  * and the color formatting menu
  */
 
-int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _MessageWindowData *dat)
+int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, _MessageWindowData *dat)
 {
 	LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
 
@@ -2116,6 +2116,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 		int  iRad = PluginConfig.m_WinVerMajor >= 5 ? 4 : 6;
 		BOOL flashAvatar = FALSE;
 		bool fInfoPanel = dat->Panel->isActive();
+		COLORREF clr2 = 0;
 
 		if (PluginConfig.g_FlashAvatarAvail && (!bPanelPic || (bPanelPic && dat->showInfoPic == 1))) {
 			FLASHAVATAR fa = {0};
@@ -2172,7 +2173,8 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 			else {
 				if (dat->panelWidth) {
 					dat->panelWidth = -1;
-					SendMessage(hwndDlg, WM_SIZE, 0, 0);
+					if(!CSkin::m_skinEnabled)
+						SendMessage(hwndDlg, WM_SIZE, 0, 0);
 				}
 				return TRUE;
 			}
@@ -2217,7 +2219,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 				dNewWidth = cy;// - 2;
 			}
 			if (dat->panelWidth == -1) {
-				dat->panelWidth = (int)dNewWidth;// + 2;
+				dat->panelWidth = (int)dNewWidth;
 				return(0);
 			}
 		} else {
@@ -2238,13 +2240,9 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 			return TRUE;
 		}
 
-		hPenBorder = CreatePen(PS_SOLID, 1, CSkin::m_avatarBorderClr);
-
 		hdcDraw = CreateCompatibleDC(dis->hDC);
 		hbmDraw = CreateCompatibleBitmap(dis->hDC, cx, cy);
 		hbmOld = (HBITMAP)SelectObject(hdcDraw, hbmDraw);
-
-		hPenOld = (HPEN)SelectObject(hdcDraw, hPenBorder);
 
 		bool	fAero = M->isAero();
 
@@ -2257,17 +2255,30 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 			if (CSkin::m_skinEnabled)
 				CSkin::SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &rcEdge, hdcDraw);
 			else {
-				FillRect(hdcDraw, &rcFrame, GetSysColorBrush(COLOR_3DFACE));
-				if(fAero)
-					::DrawAlpha(hdcDraw, &rcFrame, 0xf0f0f0, 40, CSkin::m_dwmColorRGB, 0, 9, 31, 4, 0);
-			}
-			if (CSkin::m_bAvatarBorderType) {
-				if (CSkin::m_bAvatarBorderType == 1)
-					Rectangle(hdcDraw, rcEdge.left, rcEdge.top, rcEdge.right, rcEdge.bottom);
-				else if (CSkin::m_bAvatarBorderType == 2) {
-					clipRgn = CreateRoundRectRgn(rcEdge.left, rcEdge.top, rcEdge.right + 1, rcEdge.bottom + 1, iRad, iRad);
-					SelectClipRgn(hdcDraw, clipRgn);
+				if(fAero && CSkin::m_pCurrentAeroEffect) {
+					COLORREF clr = PluginConfig.m_tbBackgroundHigh ? PluginConfig.m_tbBackgroundHigh :
+									(CSkin::m_pCurrentAeroEffect ? CSkin::m_pCurrentAeroEffect->m_clrToolbar : 0xf0f0f0);
+
+					clr2 = PluginConfig.m_tbBackgroundLow ? PluginConfig.m_tbBackgroundLow :
+							(CSkin::m_pCurrentAeroEffect ? CSkin::m_pCurrentAeroEffect->m_clrToolbar2 : CSkin::m_dwmColorRGB);
+
+					HBRUSH br = CreateSolidBrush(clr);
+					FillRect(hdcDraw, &rcFrame, br);
+					DeleteObject(br);
+					//	::DrawAlpha(hdcDraw, &rcFrame, 0xf0f0f0, 40, CSkin::m_dwmColorRGB, 0, 9, 31, 4, 0);
 				}
+				else
+					FillRect(hdcDraw, &rcFrame, GetSysColorBrush(COLOR_3DFACE));
+			}
+
+			hPenBorder = CreatePen(PS_SOLID, 1, clr2 ? clr2 : CSkin::m_avatarBorderClr);
+			hPenOld = (HPEN)SelectObject(hdcDraw, hPenBorder);
+
+			if (CSkin::m_bAvatarBorderType == 1 || CSkin::m_bAvatarBorderType == 0)
+				Rectangle(hdcDraw, rcEdge.left, rcEdge.top, rcEdge.right, rcEdge.bottom);
+			else if (CSkin::m_bAvatarBorderType == 2) {
+				clipRgn = CreateRoundRectRgn(rcEdge.left, rcEdge.top, rcEdge.right + 1, rcEdge.bottom + 1, iRad, iRad);
+				SelectClipRgn(hdcDraw, clipRgn);
 			}
 		}
 		if ((((fInfoPanel && PluginConfig.m_AvatarMode != 5) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown)) && dat->showPic) || bPanelPic) {
@@ -2341,8 +2352,8 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 					DeleteObject(hbmNew);
 			} else {
 				hbmMem = (HBITMAP)SelectObject(hdcMem, hbmAvatar);
-				LONG xy_off = CSkin::m_bAvatarBorderType ? 1 : 0;
-				LONG width_off = CSkin::m_bAvatarBorderType ? 0 : 2;
+				LONG xy_off = 1; //CSkin::m_bAvatarBorderType ? 1 : 0;
+				LONG width_off = 0; //= CSkin::m_bAvatarBorderType ? 0 : 2;
 
 				SetStretchBltMode(hdcDraw, HALFTONE);
 				if (aceFlags & AVS_PREMULTIPLIED)
@@ -2400,7 +2411,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _Mes
 	return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
 }
 
-void LoadThemeDefaults(HWND hwndDlg, struct _MessageWindowData *dat)
+void TSAPI LoadThemeDefaults(_MessageWindowData *dat)
 {
 	int i;
 	char szTemp[40];
@@ -2428,7 +2439,7 @@ void LoadThemeDefaults(HWND hwndDlg, struct _MessageWindowData *dat)
 	dat->theme.rtfFonts = NULL;
 }
 
-void LoadOverrideTheme(HWND hwndDlg, struct _MessageWindowData *dat)
+void TSAPI LoadOverrideTheme(_MessageWindowData *dat)
 {
 	BOOL bReadTemplates = ((dat->pContainer->ltr_templates == NULL) || (dat->pContainer->rtl_templates == NULL) ||
 						   (dat->pContainer->logFonts == NULL) || (dat->pContainer->fontColors == NULL));
@@ -2436,7 +2447,7 @@ void LoadOverrideTheme(HWND hwndDlg, struct _MessageWindowData *dat)
 	if (lstrlen(dat->pContainer->szAbsThemeFile) > 1) {
 		if (PathFileExists(dat->pContainer->szAbsThemeFile)) {
 			if (CheckThemeVersion(dat->pContainer->szAbsThemeFile) == 0) {
-				LoadThemeDefaults(hwndDlg, dat);
+				LoadThemeDefaults(dat);
 				return;
 			}
 			if (dat->pContainer->ltr_templates == NULL) {
@@ -2468,26 +2479,13 @@ void LoadOverrideTheme(HWND hwndDlg, struct _MessageWindowData *dat)
 			return;
 		}
 	}
-	LoadThemeDefaults(hwndDlg, dat);
+	LoadThemeDefaults(dat);
 }
 
-void SaveMessageLogFlags(HWND hwndDlg, struct _MessageWindowData *dat)
-{
-	/*
-	char szBuf[100];
-
-	if (!(dat->dwFlags & MWF_SHOW_PRIVATETHEME))
-		DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
-	else {
-		if (PathFileExistsA(dat->pContainer->szThemeFile))
-			WritePrivateProfileStringA("Message Log", "DWFlags", _itoa(dat->dwFlags & MWF_LOG_ALL, szBuf, 10), dat->pContainer->szThemeFile);
-	}
-	*/
-}
-
-void ConfigureSmileyButton(HWND hwndDlg, struct _MessageWindowData *dat)
+void TSAPI ConfigureSmileyButton(_MessageWindowData *dat)
 {
 	HICON hButtonIcon = 0;
+	HWND  hwndDlg = dat->hwnd;
 	int nrSmileys = 0;
   	int showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
 	int iItemID = IDC_SMILEYBTN;
@@ -2516,7 +2514,7 @@ void ConfigureSmileyButton(HWND hwndDlg, struct _MessageWindowData *dat)
 	EnableWindow(GetDlgItem(hwndDlg, iItemID), dat->doSmileys ? TRUE : FALSE);
 }
 
-HICON GetXStatusIcon(struct _MessageWindowData *dat)
+HICON TSAPI GetXStatusIcon(const _MessageWindowData *dat)
 {
 	char szServiceName[128];
 	char *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
@@ -2528,7 +2526,7 @@ HICON GetXStatusIcon(struct _MessageWindowData *dat)
 	return 0;
 }
 
-LRESULT GetSendButtonState(HWND hwnd)
+LRESULT TSAPI GetSendButtonState(HWND hwnd)
 {
 	HWND hwndIDok=GetDlgItem(hwnd, IDOK);
 
@@ -2538,7 +2536,7 @@ LRESULT GetSendButtonState(HWND hwnd)
 		return 0;
 }
 
-void EnableSendButton(const _MessageWindowData *dat, int iMode)
+void TSAPI EnableSendButton(const _MessageWindowData *dat, int iMode)
 {
 	HWND hwndOK;
 	SendMessage(GetDlgItem(dat->hwnd, IDOK), BUTTONSETASFLATBTN + 14, iMode, 0);
@@ -2550,7 +2548,7 @@ void EnableSendButton(const _MessageWindowData *dat, int iMode)
 		SendMessage(hwndOK, BUTTONSETASFLATBTN + 14, iMode, 0);
 }
 
-void SendNudge(const _MessageWindowData *dat)
+void TSAPI SendNudge(const _MessageWindowData *dat)
 {
 	char *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 	char szServiceName[128];
@@ -2564,7 +2562,7 @@ void SendNudge(const _MessageWindowData *dat)
 					(LPARAM)CTranslator::get(CTranslator::GEN_WARNING_NUDGE_DISABLED));
 }
 
-void GetClientIcon(_MessageWindowData *dat)
+void TSAPI GetClientIcon(_MessageWindowData *dat)
 {
 	DBVARIANT dbv = {0};
 
@@ -2580,7 +2578,7 @@ void GetClientIcon(_MessageWindowData *dat)
 		}
 	}
 }
-void GetMaxMessageLength(_MessageWindowData *dat)
+void TSAPI GetMaxMessageLength(_MessageWindowData *dat)
 {
 	HANDLE hContact;
 	char   *szProto;
@@ -2619,7 +2617,7 @@ void GetMaxMessageLength(_MessageWindowData *dat)
  * but if not available, custom messages like xStatus can be used.
  */
 
-void GetCachedStatusMsg(_MessageWindowData *dat)
+void TSAPI GetCachedStatusMsg(_MessageWindowData *dat)
 {
 	DBVARIANT dbv = {0};
 	HANDLE hContact;
@@ -2677,7 +2675,7 @@ void GetCachedStatusMsg(_MessageWindowData *dat)
  * taken and modified from core services
  */
 
-void GetMyNick(_MessageWindowData *dat)
+void TSAPI GetMyNick(_MessageWindowData *dat)
 {
 	CONTACTINFO ci;
 
@@ -2719,7 +2717,7 @@ void GetMyNick(_MessageWindowData *dat)
  * used to find out whether we need to configure the message input box for bidirectional mode
  */
 
-int FindRTLLocale(struct _MessageWindowData *dat)
+int TSAPI FindRTLLocale(struct _MessageWindowData *dat)
 {
 	HKL layouts[20];
 	int i, result = 0;
@@ -2742,7 +2740,7 @@ int FindRTLLocale(struct _MessageWindowData *dat)
 	return result;
 }
 
-HICON MY_GetContactIcon(_MessageWindowData *dat)
+HICON TSAPI MY_GetContactIcon(const _MessageWindowData *dat)
 {
 	if (dat->bIsMeta)
 		return CopyIcon(LoadSkinnedProtoIcon(dat->szMetaProto, dat->wMetaStatus));
@@ -2756,7 +2754,7 @@ HICON MY_GetContactIcon(_MessageWindowData *dat)
 	return CopyIcon(LoadSkinnedProtoIcon(dat->szProto, dat->wStatus));
 }
 
-static void MTH_updatePreview(const _MessageWindowData *dat)
+static void TSAPI MTH_updatePreview(const _MessageWindowData *dat)
 {
 	TMathWindowInfo mathWndInfo;
 	HWND hwndEdit = GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE);
@@ -2776,7 +2774,7 @@ static void MTH_updatePreview(const _MessageWindowData *dat)
 	free(thestr);
 }
 
-void MTH_updateMathWindow(const _MessageWindowData *dat)
+void TSAPI MTH_updateMathWindow(const _MessageWindowData *dat)
 {
 	WINDOWPLACEMENT cWinPlace;
 

@@ -155,7 +155,7 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 			dat->ltr_templates = &LTR_Active;
 			dat->rtl_templates = &RTL_Active;
-			LoadOverrideTheme(hwndDlg, dat);
+			LoadOverrideTheme(dat);
 			/*
 			* set hContact to the first found contact so that we can use the Preview window properly
 			* also, set other parameters needed by the streaming function to display events
@@ -173,7 +173,7 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			}
 			dat->dwFlags = M->GetDword("mwflags", MWF_LOG_DEFAULT);
 			mir_sntprintf(dat->szNickname, 80, _T("%s"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, GCDNF_TCHAR));
-			GetContactUIN(hwndDlg, dat);
+			GetContactUIN(dat);
 
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR) dat);
 			ShowWindow(hwndDlg, SW_SHOW);

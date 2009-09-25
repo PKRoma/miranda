@@ -1,27 +1,35 @@
 /*
-
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2003 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-$Id$
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ *
+ */
 
 #ifndef _MSGDLGUTILS_H
 #define _MSGDLGUTILS_H
@@ -29,72 +37,62 @@ $Id$
 #define WANT_IEVIEW_LOG 1
 #define WANT_HPP_LOG 2
 
-void        CalcDynamicAvatarSize(_MessageWindowData *dat, BITMAP *bminfo);
-int         IsMetaContact(const _MessageWindowData *dat);
-char        *GetCurrentMetaContactProto(_MessageWindowData *dat);
-void        WriteStatsOnClose(_MessageWindowData *dat);
-int         MsgWindowUpdateMenu(_MessageWindowData *dat, HMENU submenu, int menuID);
-int         MsgWindowMenuHandler(_MessageWindowData *dat, int selection, int menuId);
-int         GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat);
-void        UpdateStatusBar(const _MessageWindowData *dat);
-void        UpdateStatusBarTooltips(HWND hwndDlg, struct _MessageWindowData *dat, int iSecIMStatus);
-void        SetSelftypingIcon(HWND dlg, struct _MessageWindowData *dat, int iMode);
-int         CheckValidSmileyPack(char *szProto, HANDLE hContact, HICON *hButtonIcon);
-TCHAR       *QuoteText(TCHAR *text,int charsPerLine,int removeExistingQuotes);
-void        UpdateReadChars(const _MessageWindowData *dat);
-void        ShowPicture(_MessageWindowData *dat, BOOL showNewPic);
-void        AdjustBottomAvatarDisplay(_MessageWindowData *dat);
-void        SetDialogToType(HWND hwndDlg);
-void        FlashOnClist(HWND hwndDlg, struct _MessageWindowData *dat, HANDLE hEvent, DBEVENTINFO *dbei);
-char        *Message_GetFromStream(HWND hwndDlg, struct _MessageWindowData* dat, DWORD dwPassedFlags);
-BOOL        DoRtfToTags(TCHAR * pszText, struct _MessageWindowData *dat);
-void        DoTrimMessage(TCHAR *msg);
-void        SaveInputHistory(HWND hwndDlg, struct _MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
-void        GetContactUIN(HWND hwndDlg, struct _MessageWindowData *dat);
-void        SetMessageLog(HWND hwndDlg, struct _MessageWindowData *dat);
-void        SwitchMessageLog(HWND hwndDlg, struct _MessageWindowData *dat, int iMode);
-unsigned int GetIEViewMode(HWND hwndDlg, HANDLE hContact);
-void        FindFirstEvent(_MessageWindowData *dat);
-void        SaveSplitter(_MessageWindowData *dat);
-void        LoadSplitter(_MessageWindowData *dat);
-void        PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd);
-void        SwitchMessageLog(HWND hwndDlg, struct _MessageWindowData *dat, int iMode);
-void        GetSendFormat(HWND hwndDlg, struct _MessageWindowData *dat, int mode);
-void        GetLocaleID(_MessageWindowData *dat, TCHAR *szKLName);
-void        LoadOwnAvatar(_MessageWindowData *dat);
-void        LoadContactAvatar(HWND hwndDlg, struct _MessageWindowData *dat);
-BYTE        GetInfoPanelSetting(const _MessageWindowData *dat);
-void        LoadPanelHeight(_MessageWindowData *dat);
-void        LoadTimeZone(HWND hwndDlg, struct _MessageWindowData *dat);
-void        HandlePasteAndSend(HWND hwndDlg, struct _MessageWindowData *dat);
-int         MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct _MessageWindowData *dat);
-void        LoadOverrideTheme(HWND hwndDlg, struct _MessageWindowData *dat);
-void        LoadThemeDefaults(HWND hwndDlg, struct _MessageWindowData *dat);
-void        SaveMessageLogFlags(HWND hwndDlg, struct _MessageWindowData *dat);
-void        ConfigureSmileyButton(HWND hwndDlg, struct _MessageWindowData *dat);
-int         CutContactName(TCHAR *szold, TCHAR *sznew, unsigned int size);
-void        SendNudge(const _MessageWindowData *dat);
-void        EnableSendButton(const _MessageWindowData *dat, int iMode);
-LRESULT     GetSendButtonState(HWND hwnd);
-HICON       GetXStatusIcon(struct _MessageWindowData *dat);
-void        FlashTab(struct _MessageWindowData *dat, HWND hwndTab, int iTabindex, BOOL *bState, BOOL mode, HICON origImage);
-void        GetClientIcon(_MessageWindowData *dat);
-void        GetMaxMessageLength(_MessageWindowData *dat);
-void        RearrangeTab(HWND hwndDlg, struct _MessageWindowData *dat, int iMode, BOOL fSavePos);
-void        GetCachedStatusMsg(_MessageWindowData *dat);
-size_t      MY_pathToRelative(const char *pSrc, char *pOut);
-size_t      MY_pathToAbsolute(const char *pSrc, char *pOut);
-void        GetRealIEViewWindow(HWND hwndDlg, struct _MessageWindowData *dat);
-BOOL        IsStatusEvent(int eventType);
-void        GetMyNick(_MessageWindowData *dat);
-int         FindRTLLocale(struct _MessageWindowData *dat);
-HICON       MY_GetContactIcon(struct _MessageWindowData *dat);
-void 		CheckAndDestroyIEView(struct _MessageWindowData *dat);
-bool		IsContainerMinimized(const ContainerWindowData *pContainer);
+void  	TSAPI CalcDynamicAvatarSize			(_MessageWindowData *dat, BITMAP *bminfo);
+int   	TSAPI IsMetaContact					(const _MessageWindowData *dat);
+char* 	TSAPI GetCurrentMetaContactProto	(_MessageWindowData *dat);
+void	TSAPI WriteStatsOnClose				(_MessageWindowData *dat);
+int		TSAPI MsgWindowUpdateMenu			(_MessageWindowData *dat, HMENU submenu, int menuID);
+int		TSAPI MsgWindowMenuHandler			(_MessageWindowData *dat, int selection, int menuId);
+int  	TSAPI GetAvatarVisibility			(HWND hwndDlg, _MessageWindowData *dat);
+void 	TSAPI UpdateStatusBar				(const _MessageWindowData *dat);
+int		TSAPI CheckValidSmileyPack			(const char *szProto, HANDLE hContact, HICON *hButtonIcon);
+TCHAR*	TSAPI QuoteText						(const TCHAR *text, int charsPerLine, int removeExistingQuotes);
+void	TSAPI UpdateReadChars				(const _MessageWindowData *dat);
+void	TSAPI ShowPicture					(_MessageWindowData *dat, BOOL showNewPic);
+void	TSAPI AdjustBottomAvatarDisplay		(_MessageWindowData *dat);
+void	TSAPI SetDialogToType				(HWND hwndDlg);
+void	TSAPI FlashOnClist					(HWND hwndDlg, _MessageWindowData *dat, HANDLE hEvent, DBEVENTINFO *dbei);
+char*	TSAPI Message_GetFromStream			(HWND hwndDlg, const _MessageWindowData* dat, DWORD dwPassedFlags);
+BOOL	TSAPI DoRtfToTags					(TCHAR * pszText, const _MessageWindowData *dat);
+void	TSAPI DoTrimMessage					(TCHAR *msg);
+void	TSAPI SaveInputHistory				(HWND hwndDlg, struct _MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
+void	TSAPI GetContactUIN					(_MessageWindowData *dat);
+void	TSAPI SetMessageLog					(_MessageWindowData *dat);
+void	TSAPI SwitchMessageLog				(_MessageWindowData *dat, int iMode);
+UINT	TSAPI GetIEViewMode					(HWND hwndDlg, HANDLE hContact);
+void	TSAPI FindFirstEvent				(_MessageWindowData *dat);
+void	TSAPI SaveSplitter					(_MessageWindowData *dat);
+void	TSAPI LoadSplitter					(_MessageWindowData *dat);
+void	TSAPI PlayIncomingSound				(const struct ContainerWindowData *pContainer, HWND hwnd);
+void	TSAPI GetSendFormat					(_MessageWindowData *dat, int mode);
+void	TSAPI GetLocaleID					(_MessageWindowData *dat, const TCHAR *szKLName);
+void	TSAPI LoadOwnAvatar					(_MessageWindowData *dat);
+void	TSAPI LoadContactAvatar				(_MessageWindowData *dat);
+void	TSAPI LoadTimeZone					(_MessageWindowData *dat);
+void	TSAPI HandlePasteAndSend			(const _MessageWindowData *dat);
+int		TSAPI MsgWindowDrawHandler			(WPARAM wParam, LPARAM lParam, HWND hwndDlg, _MessageWindowData *dat);
+void	TSAPI LoadOverrideTheme				(_MessageWindowData *dat);
+void	TSAPI LoadThemeDefaults				(_MessageWindowData *dat);
+void	TSAPI ConfigureSmileyButton			(_MessageWindowData *dat);
+int     TSAPI CutContactName				(const TCHAR *szold, TCHAR *sznew, unsigned int size);
+void	TSAPI SendNudge						(const _MessageWindowData *dat);
+void	TSAPI EnableSendButton				(const _MessageWindowData *dat, int iMode);
+LRESULT TSAPI GetSendButtonState			(HWND hwnd);
+HICON	TSAPI GetXStatusIcon				(const _MessageWindowData *dat);
+void	TSAPI FlashTab						(_MessageWindowData *dat, HWND hwndTab, int iTabindex, BOOL *bState, BOOL mode, HICON origImage);
+void	TSAPI GetClientIcon					(_MessageWindowData *dat);
+void	TSAPI GetMaxMessageLength			(_MessageWindowData *dat);
+void	TSAPI RearrangeTab					(HWND hwndDlg, const _MessageWindowData *dat, int iMode, BOOL fSavePos);
+void	TSAPI GetCachedStatusMsg			(_MessageWindowData *dat);
+BOOL	TSAPI IsStatusEvent					(int eventType);
+void	TSAPI GetMyNick						(_MessageWindowData *dat);
+int		TSAPI FindRTLLocale					(_MessageWindowData *dat);
+HICON	TSAPI MY_GetContactIcon				(const _MessageWindowData *dat);
+void	TSAPI CheckAndDestroyIEView			(_MessageWindowData *dat);
 
 // mathmod
 
-void        MTH_updateMathWindow(const _MessageWindowData *dat);
+void	TSAPI MTH_updateMathWindow			(const _MessageWindowData *dat);
 
 extern INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
