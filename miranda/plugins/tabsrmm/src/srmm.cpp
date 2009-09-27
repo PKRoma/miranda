@@ -66,7 +66,7 @@ PLUGININFOEX pluginInfo = {
 #endif
 #endif
 #endif
-	PLUGIN_MAKE_VERSION(3, 0, 0, 8),
+	PLUGIN_MAKE_VERSION(3, 0, 0, 9),
 	"Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
 	"The Miranda developers team and contributors",
 	"silvercircle _at_ gmail _dot_ com",
@@ -91,8 +91,8 @@ extern "C" __declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD miranda
 {
 	CMimAPI::m_MimVersion = mirandaVersion;
 
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 9, 0, 0)) {
-		MessageBox(0, _T("This version of tabSRMM requires Miranda 0.9.0 or later. The plugin cannot be loaded."), _T("tabSRMM"), MB_OK | MB_ICONERROR);
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 2, 0)) {
+		MessageBox(0, _T("This version of tabSRMM requires Miranda 0.8.2 or later. The plugin cannot be loaded."), _T("tabSRMM"), MB_OK | MB_ICONERROR);
 		return NULL;
 	}
 	return &pluginInfo;
@@ -246,10 +246,32 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
 			{
-				char str[64];
+				char 			str[64];
+				TCHAR			tStr[80];
+				char 			szVersion[512], *found = NULL, buildstr[50] = "";
+				UINT 			build_nr = 0;
+				DWORD 			v = pluginInfo.version;
 
 				mir_snprintf(str, sizeof(str), Translate("Built %s %s"), __DATE__, __TIME__);
 				SetDlgItemTextA(hwndDlg, IDC_BUILDTIME, str);
+
+				CallService(MS_SYSTEM_GETVERSIONTEXT, 500, (LPARAM)szVersion);
+				if ((found = strchr(szVersion, '#')) != NULL) {
+					build_nr = atoi(found + 1);
+					mir_snprintf(buildstr, 50, "[Build #%d]", build_nr);
+				}
+				TCHAR	*szBuildstr = mir_a2t(buildstr);
+	#if defined(_UNICODE)
+				mir_sntprintf(tStr, safe_sizeof(tStr), _T("TabSRMM\n%s %d.%d.%d.%d (Unicode) %s"),
+							 TranslateT("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)),
+							 szBuildstr);
+	#else
+				mir_snprintf(tStr, safe_sizeof(tStr), "TabSRMM\n%s %d.%d.%d.%d %s",
+							 TranslateT("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)),
+							 szBuildstr);
+	#endif
+				SetDlgItemText(hwndDlg, IDC_HEADERBAR, tStr);
+				mir_free(szBuildstr);
 			}
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)PluginConfig.g_iconContainer);
 			return TRUE;
@@ -274,112 +296,8 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				return (INT_PTR)GetStockObject(WHITE_BRUSH);
 			}
 			break;
-		case WM_PAINT: {
-			PAINTSTRUCT 	ps;
-			HDC 			hdc = BeginPaint(hwndDlg, &ps);
-			RECT			rcClient;
-			HDC				hdcMem = CreateCompatibleDC(hdc);
-			bool			fAero = M->isAero(), fFree = false;
-			GetClientRect(hwndDlg, &rcClient);
-			LONG			cx = rcClient.right;
-			LONG			cy = rcClient.bottom;
-			HBITMAP			hbm = fAero ? CSkin::CreateAeroCompatibleBitmap(rcClient, hdc) : CreateCompatibleBitmap(hdc, rcClient.right, rcClient.bottom);;
-			HBITMAP			hbmOld = reinterpret_cast<HBITMAP>(SelectObject(hdcMem, hbm));
-			DWORD 			v = pluginInfo.version;
-			TCHAR			str[80];
-
-			char 			szVersion[512], *found = NULL, buildstr[50] = "";
-			UINT 			build_nr = 0;
-			SIZE 			sz;
-
-			if(fAero) {
-				MARGINS m;
-				m.cxLeftWidth = m.cxRightWidth = 0;
-				m.cyBottomHeight = 0;
-				m.cyTopHeight = 50;
-				if(CMimAPI::m_pfnDwmExtendFrameIntoClientArea)
-					CMimAPI::m_pfnDwmExtendFrameIntoClientArea(hwndDlg, &m);
-			}
-
-			FillRect(hdcMem, &rcClient, reinterpret_cast<HBRUSH>(GetStockObject(WHITE_BRUSH)));
-			rcClient.bottom = 50;
-			if(fAero) {
-				FillRect(hdcMem, &rcClient, CSkin::m_BrushBack);
-				CSkin::ApplyAeroEffect(hdcMem, &rcClient, CSkin::AERO_EFFECT_AREA_INFOPANEL);
-			}
-			else if(PluginConfig.m_WinVerMajor >= 5) {
-				CSkinItem *item = &SkinItems[ID_EXTBKINFOPANELBG];
-				DrawAlpha(hdcMem, &rcClient, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
-						  item->CORNER, item->BORDERSTYLE, 0);
-			}
-			if(PluginConfig.hbmLogo) {
-				HBITMAP bmpLogo = CSkin::ResizeBitmap(PluginConfig.hbmLogo, 48, 48, fFree);
-
-				HDC		hdcBmp = CreateCompatibleDC(hdc);
-				HBITMAP hbmOldLogo = reinterpret_cast<HBITMAP>(SelectObject(hdcBmp, bmpLogo));
-				CMimAPI::m_MyAlphaBlend(hdcMem, 3, 1, 48, 48, hdcBmp, 0, 0, 48, 48, CSkin::m_default_bf);
-				SelectObject(hdcBmp, hbmOldLogo);
-				DeleteDC(hdcBmp);
-				if(fFree)
-					DeleteObject(bmpLogo);
-				rcClient.left = 60;
-			}
-
-			HFONT hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_COPYRIGHT, WM_GETFONT, 0, 0);
-			LOGFONT lf = {0};
-
-			GetObject(hFont, sizeof(lf), &lf);
-			lf.lfHeight = (int)(lf.lfHeight * 1.3);
-			lf.lfWeight = FW_BOLD;
-			HFONT hFontBig = CreateFontIndirect(&lf);
-
-			HFONT hFontOld = reinterpret_cast<HFONT>(SelectObject(hdcMem, hFontBig));
-
-			rcClient.top = 1;
-			rcClient.bottom = 48;
-
-			GetTextExtentPoint32(hdcMem, _T("M"), 1, &sz);
-			SetBkMode(hdcMem, TRANSPARENT);
-
-			HANDLE hTheme = CMimAPI::m_pfnOpenThemeData ? CMimAPI::m_pfnOpenThemeData(hwndDlg, L"BUTTON") : 0;
-			CSkin::RenderText(hdcMem, hTheme, _T("TabSRMM"), &rcClient, DT_SINGLELINE);
-
-			SelectObject(hdcMem, hFont);
-			DeleteObject(hFontBig);
-
-			rcClient.top += (sz.cy + 5);
-
-			CallService(MS_SYSTEM_GETVERSIONTEXT, 500, (LPARAM)szVersion);
-			if ((found = strchr(szVersion, '#')) != NULL) {
-				build_nr = atoi(found + 1);
-				mir_snprintf(buildstr, 50, "[Build #%d]", build_nr);
-			}
-			TCHAR	*szBuildstr = mir_a2t(buildstr);
-#if defined(_UNICODE)
-			mir_sntprintf(str, safe_sizeof(str), _T("%s %d.%d.%d.%d (Unicode) %s"),
-						 TranslateT("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)),
-						 szBuildstr);
-#else
-			mir_snprintf(str, safe_sizeof(str), "%s %d.%d.%d.%d %s",
-						 TranslateT("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)),
-						 szBuildstr);
-#endif
-			CSkin::RenderText(hdcMem, hTheme, str, &rcClient, DT_SINGLELINE);
-
-			mir_free(szBuildstr);
-
-			if(hTheme)
-				CMimAPI::m_pfnCloseThemeData(hTheme);
-
-			BitBlt(hdc, 0, 0, cx, cy, hdcMem, 0, 0, SRCCOPY);
-			SelectObject(hdcMem, hbmOld);
-			SelectObject(hdcMem, hFontOld);
-			DeleteObject(hbm);
-			DeleteDC(hdcMem);
-			EndPaint(hwndDlg, &ps);
-			return(0);
-		}
-		break;
+		default:
+			break;
 	}
 	return FALSE;
 }

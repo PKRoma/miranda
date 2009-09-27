@@ -68,7 +68,7 @@ static void ReloadGlobalContainerSettings(bool fForceReconfig)
  * @param mode       int: bit #0 set/clear, any bit from 16-31 indicates that dwFlagsEx should be affected
  * @param fForceResize
  */
-void ApplyContainerSetting(ContainerWindowData *pContainer, DWORD flags, UINT mode, bool fForceResize)
+void TSAPI ApplyContainerSetting(ContainerWindowData *pContainer, DWORD flags, UINT mode, bool fForceResize)
 {
 	DWORD dwOld = pContainer->dwFlags;
 	bool  isEx = (mode & 0xffff0000) ? true : false;
@@ -182,7 +182,8 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			TranslateDialogDefault(hwndDlg);
 			mir_sntprintf(szNewTitle, SIZEOF(szNewTitle), _T("\t%s"), pContainer->szName);
 			SetWindowText(hwndDlg, CTranslator::get(CTranslator::CNT_OPT_TITLE));
-
+			mir_sntprintf(szNewTitle, SIZEOF(szNewTitle), CTranslator::get(CTranslator::CNT_OPT_HEADERBAR), pContainer->szName);
+			SetDlgItemText(hwndDlg, IDC_HEADERBAR, szNewTitle);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_O_HIDETITLE), CSkin::m_frameSkins ? FALSE : TRUE);
 			CheckDlgButton(hwndDlg, IDC_CNTPRIVATE, !(pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS));
 			EnableWindow(GetDlgItem(hwndDlg, IDC_TITLEFORMAT), IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE));
@@ -264,82 +265,6 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), TRUE);
 			}
 			break;
-		case WM_PAINT: {
-			PAINTSTRUCT 	ps;
-			HDC 			hdc = BeginPaint(hwndDlg, &ps);
-			RECT			rcClient;
-			HDC				hdcMem = CreateCompatibleDC(hdc);
-			bool			fAero = M->isAero(), fFree = false;
-			GetClientRect(hwndDlg, &rcClient);
-			LONG			cx = rcClient.right;
-			LONG			cy = rcClient.bottom;
-			HBITMAP			hbm = fAero ? CSkin::CreateAeroCompatibleBitmap(rcClient, hdc) : CreateCompatibleBitmap(hdc, rcClient.right, rcClient.bottom);;
-			HBITMAP			hbmOld = reinterpret_cast<HBITMAP>(SelectObject(hdcMem, hbm));
-
-			if(fAero) {
-				MARGINS m;
-				m.cxLeftWidth = m.cxRightWidth = 0;
-				m.cyBottomHeight = 0;
-				m.cyTopHeight = 40;
-				if(CMimAPI::m_pfnDwmExtendFrameIntoClientArea)
-					CMimAPI::m_pfnDwmExtendFrameIntoClientArea(hwndDlg, &m);
-			}
-
-			FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
-			rcClient.bottom = 40;
-			if(fAero) {
-				FillRect(hdcMem, &rcClient, CSkin::m_BrushBack);
-				CSkin::ApplyAeroEffect(hdcMem, &rcClient, CSkin::AERO_EFFECT_AREA_INFOPANEL);
-			}
-			else if(PluginConfig.m_WinVerMajor >= 5) {
-				CSkinItem *item = &SkinItems[ID_EXTBKINFOPANELBG];
-				DrawAlpha(hdcMem, &rcClient, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
-						  item->CORNER, item->BORDERSTYLE, 0);
-			}
-			if(PluginConfig.hbmLogo) {
-				HBITMAP bmpLogo = CSkin::ResizeBitmap(PluginConfig.hbmLogo, 38, 38, fFree);
-
-				HDC		hdcBmp = CreateCompatibleDC(hdc);
-				HBITMAP hbmOldLogo = reinterpret_cast<HBITMAP>(SelectObject(hdcBmp, bmpLogo));
-				CMimAPI::m_MyAlphaBlend(hdcMem, 3, 1, 38, 38, hdcBmp, 0, 0, 38, 38, CSkin::m_default_bf);
-				SelectObject(hdcBmp, hbmOldLogo);
-				DeleteDC(hdcBmp);
-				if(fFree)
-					DeleteObject(bmpLogo);
-				rcClient.left = 60;
-			}
-
-			HFONT hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_SELECTTHEME, WM_GETFONT, 0, 0);
-			LOGFONT lf = {0};
-
-			GetObject(hFont, sizeof(lf), &lf);
-			lf.lfHeight = (int)(lf.lfHeight * 1.3);
-			lf.lfWeight = FW_BOLD;
-			hFont = CreateFontIndirect(&lf);
-
-			SetBkMode(hdcMem, TRANSPARENT);
-			HFONT hFontOld = reinterpret_cast<HFONT>(SelectObject(hdcMem, hFont));
-			if(pContainer) {
-				rcClient.top = 10;
-				rcClient.bottom = 30;
-				TCHAR	szText[200];
-
-				mir_sntprintf(szText, 200, CTranslator::get(CTranslator::CNT_OPT_HEADERBAR), TranslateTS(pContainer->szName));
-				HANDLE hTheme = CMimAPI::m_pfnOpenThemeData ? CMimAPI::m_pfnOpenThemeData(hwndDlg, L"BUTTON") : 0;
-				CSkin::RenderText(hdcMem, hTheme, szText, &rcClient, DT_SINGLELINE|DT_VCENTER);
-				if(hTheme)
-					CMimAPI::m_pfnCloseThemeData(hTheme);
-			}
-
-			BitBlt(hdc, 0, 0, cx, cy, hdcMem, 0, 0, SRCCOPY);
-			SelectObject(hdcMem, hbmOld);
-			SelectObject(hdcMem, hFontOld);
-			DeleteObject(hbm);
-			DeleteObject(hFont);
-			DeleteDC(hdcMem);
-			EndPaint(hwndDlg, &ps);
-			return(0);
-		}
 		case WM_NOTIFY:
 			if (wParam == IDC_SECTIONTREE && ((LPNMHDR)lParam)->code == TVN_SELCHANGED) {
 				NMTREEVIEW *pmtv = (NMTREEVIEW *)lParam;

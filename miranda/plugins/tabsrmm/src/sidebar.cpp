@@ -388,7 +388,7 @@ void CSideBar::Init(const bool fForce)
 
 	if(m_pContainer->dwFlags & CNT_SIDEBAR) {
 		if(m_hwndScrollWnd == 0)
-			m_hwndScrollWnd = ::CreateWindowEx(0, _T("SideBarClass"), _T(""), WS_CLIPCHILDREN | WS_CLIPSIBLINGS |  WS_VISIBLE | WS_CHILD,
+			m_hwndScrollWnd = ::CreateWindowEx(0, _T("TS_SideBarClass"), _T(""), WS_CLIPCHILDREN | WS_CLIPSIBLINGS |  WS_VISIBLE | WS_CHILD,
 											   0, 0, m_width, 40, m_pContainer->hwnd, reinterpret_cast<HMENU>(5000), g_hInst, this);
 
 		m_isActive = true;
@@ -555,6 +555,9 @@ void CSideBar::addSession(const _MessageWindowData *dat, int position)
 		ButtonIterator it = m_buttonlist.begin() + position;
 		m_buttonlist.insert(it, item);
 	}
+	SendDlgItemMessage(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_TOGGLESIDEBAR : IDC_CHAT_TOGGLESIDEBAR, BM_SETIMAGE, IMAGE_ICON,
+					   (LPARAM)(m_dwFlags & SIDEBARORIENTATION_LEFT ? PluginConfig.g_buttonBarIcons[25] : PluginConfig.g_buttonBarIcons[28]));
+
 	Invalidate();
 }
 

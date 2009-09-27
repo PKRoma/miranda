@@ -1,28 +1,37 @@
 /*
-
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2009 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-$Id$
-
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * Plugin configuration variables and functions. Implemented as a class
+ * though there will always be only a single instance.
+ *
+ */
 
 #ifndef __GLOBALS_H
 #define __GLOBALS_H
@@ -32,6 +41,22 @@ typedef     BOOL (WINAPI *pfnSetMenuInfo )( HMENU hmenu, LPCMENUINFO lpcmi );
 class CGlobals
 {
 public:
+	enum {
+		H_MS_MSG_SENDMESSAGE 		= 0,
+		H_MS_MSG_SENDMESSAGEW 		= 1,
+		H_MS_MSG_FORWARDMESSAGE 	= 2,
+		H_MS_MSG_GETWINDOWAPI 		= 3,
+		H_MS_MSG_GETWINDOWCLASS 	= 4,
+		H_MS_MSG_GETWINDOWDATA 		= 5,
+		H_MS_MSG_READMESSAGE 		= 6,
+		H_MS_MSG_TYPINGMESSAGE 		= 7,
+		H_MS_MSG_MOD_MESSAGEDIALOGOPENED = 8,
+		H_MS_TABMSG_SETUSERPREFS 	= 9,
+		H_MS_TABMSG_TRAYSUPPORT 	= 10,
+		H_MSG_MOD_GETWINDOWFLAGS 	= 11,
+		SERVICE_LAST 				= 12
+	};
+
 	CGlobals()
 	{
 		::ZeroMemory(this, sizeof(CGlobals));
@@ -42,22 +67,26 @@ public:
 		if(m_MenuBar)
 			::DestroyMenu(m_MenuBar);
 	}
-	void		Reload();
 	void		reloadAdv();
+	void		reloadSystemStartup();
+	void		reloadSystemModulesChanged();
+	void		reloadSettings();
+
+	void		hookSystemEvents();
+	void		hookPluginEvents();
 
 	const HMENU getMenuBar();
 
 	HWND        g_hwndHotkeyHandler;
 	HICON       g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus;
+	HICON		g_iconOverlayDisabled, g_iconOverlayEnabled;
 	HCURSOR     hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
 	HBITMAP     g_hbmUnknown;
 	int         g_MetaContactsAvail, g_SmileyAddAvail, g_WantIEView, g_PopupAvail, g_PopupWAvail, g_WantHPP;
 	int         g_FlashAvatarAvail;
 	HIMAGELIST  g_hImageList;
-	HICON       g_IconMsgEvent, g_IconTypingEvent, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
+	HICON       g_IconMsgEvent, g_IconTypingEvent, g_IconFileEvent, g_IconSend;
 	HICON       g_IconFolder, g_IconChecked, g_IconUnchecked;
-	HICON       g_pulldownGlyph;
-	int         g_nrProtos;
 	HMENU       g_hMenuContext, g_hMenuContainer, g_hMenuEncoding, g_hMenuTrayUnread;
 	HMENU       g_hMenuFavorites, g_hMenuRecent, g_hMenuTrayContext;
 	HICON       g_buttonBarIcons[NR_BUTTONBARICONS];
@@ -101,7 +130,7 @@ public:
 	BOOL		m_HideOnClose;
 	BOOL		g_bSoundOnTyping;
 	BOOL		m_AllowTab;
-	BOOL		m_AllowOfflineMultisend;
+	BYTE		m_AllowOfflineMultisend;
 	BOOL		g_bDisableAniAvatars;
 	HBITMAP     m_hbmMsgArea;
 	BYTE		g_iButtonsBarGap;
@@ -118,7 +147,6 @@ public:
 	WINDOWPLACEMENT m_GlobalContainerWpos;
 	HANDLE      hLastOpenedContact;
 	int         m_IdleDetect;
-	int         m_DoStatusMsg;
 	int         m_smcxicon, m_smcyicon;
 	DWORD       local_gmt_diff;
 	int         m_PasteAndSend;
@@ -137,8 +165,7 @@ public:
 	int         rtf_ctablesize;
 	DWORD       dwThreadID;
 	char        szMetaName[256];
-	HBITMAP		hbmLogo;
-	HANDLE 		m_hMessageWindowList;
+	HANDLE 		m_hMessageWindowList, hUserPrefsWindowList;
 	bool		m_chat_enabled;
 	HMENU		m_MenuBar;
 	COLORREF	m_ipBackgroundGradient;
@@ -147,8 +174,26 @@ public:
 	BOOL		m_SendLaterAvail;
 	BYTE		g_bClientInStatusBar;
 
+	HANDLE		hSvc[SERVICE_LAST];
+	HANDLE		m_event_MsgWin, m_event_MsgPopup;
+	HANDLE		m_hMenuItem;
+
+	static HANDLE		m_event_FoldersChanged;
 private:
-	bool		m_TypingSoundAdded;
+	bool				m_TypingSoundAdded;
+	static HANDLE		m_event_ModulesLoaded, m_event_PrebuildMenu, m_event_SettingChanged;
+	static HANDLE		m_event_ContactDeleted, m_event_Dispatch, m_event_EventAdded;
+	static HANDLE		m_event_IconsChanged, m_event_TypingEvent, m_event_ProtoAck, m_event_PreShutdown, m_event_OkToExit;
+	static HANDLE		m_event_IcoLibChanged, m_event_AvatarChanged, m_event_MyAvatarChanged, m_event_FontsChanged;
+	static HANDLE		m_event_SmileyAdd, m_event_IEView;
+
+private:
+	static	int		ModulesLoaded(WPARAM wParam, LPARAM lParam);
+	static	int 	DBSettingChanged(WPARAM wParam, LPARAM lParam);
+	static  int 	DBContactDeleted(WPARAM wParam, LPARAM lParam);
+	static	int 	PreshutdownSendRecv(WPARAM wParam, LPARAM lParam);
+	static	int 	OkToExit(WPARAM wParam, LPARAM lParam);
+	static  void 	RestoreUnreadMessageAlerts(void);
 };
 
 extern	CGlobals	PluginConfig;

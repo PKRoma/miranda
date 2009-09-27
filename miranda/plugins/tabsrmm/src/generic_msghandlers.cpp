@@ -106,7 +106,7 @@ static struct SIDEBARITEM sbarItems[] = {
 	0, 0, 0, 0, 0, _T(""), NULL, NULL, _T("")
 };
 
-int BTN_GetStockItem(ButtonItem *item, const TCHAR *szName)
+int TSAPI BTN_GetStockItem(ButtonItem *item, const TCHAR *szName)
 {
 	int i = 0;
 
@@ -150,7 +150,7 @@ int BTN_GetStockItem(ButtonItem *item, const TCHAR *szName)
 * set the states of defined database action buttons (only if button is a toggle)
 */
 
-void DM_SetDBButtonStates(HWND hwndChild, struct _MessageWindowData *dat)
+void TSAPI DM_SetDBButtonStates(HWND hwndChild, struct _MessageWindowData *dat)
 {
 	ButtonItem *buttonItem = dat->pContainer->buttonItems;
 	HANDLE hContact = dat->hContact, hFinalContact = 0;
@@ -213,7 +213,7 @@ void DM_SetDBButtonStates(HWND hwndChild, struct _MessageWindowData *dat)
 	}
 }
 
-LRESULT DM_ScrollToBottom(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
+LRESULT TSAPI DM_ScrollToBottom(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
 	SCROLLINFO si = { 0 };
 
@@ -273,7 +273,7 @@ static unsigned __stdcall LoadKLThread(LPVOID vParam)
 	return(0);
 }
 
-LRESULT DM_LoadLocale(_MessageWindowData *dat)
+LRESULT TSAPI DM_LoadLocale(_MessageWindowData *dat)
 {
 	/*
 	* set locale if saved to contact
@@ -306,7 +306,7 @@ LRESULT DM_LoadLocale(_MessageWindowData *dat)
 	return 0;
 }
 
-LRESULT __stdcall DM_RecalcPictureSize(_MessageWindowData *dat)
+LRESULT TSAPI DM_RecalcPictureSize(_MessageWindowData *dat)
 {
 	BITMAP bminfo;
 	HBITMAP hbm;
@@ -325,7 +325,7 @@ LRESULT __stdcall DM_RecalcPictureSize(_MessageWindowData *dat)
 	return 0;
 }
 
-LRESULT DM_UpdateLastMessage(const _MessageWindowData *dat)
+LRESULT TSAPI DM_UpdateLastMessage(const _MessageWindowData *dat)
 {
 	if (dat) {
 		if (dat->pContainer->hwndStatus == 0)
@@ -376,7 +376,7 @@ LRESULT DM_UpdateLastMessage(const _MessageWindowData *dat)
 * save current keyboard layout for the given contact
 */
 
-LRESULT DM_SaveLocale(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
+LRESULT TSAPI DM_SaveLocale(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
 	if (dat) {
 		if (PluginConfig.m_AutoLocaleSupport && dat->hContact && dat->pContainer->hwndActive == dat->hwnd) {
@@ -399,7 +399,7 @@ LRESULT DM_SaveLocale(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 * it filters out the invisible event boundary markers from the text copied to the clipboard.
 */
 
-LRESULT DM_WMCopyHandler(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lParam)
+LRESULT TSAPI DM_WMCopyHandler(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lParam)
 {
 	LRESULT result = CallWindowProc(oldWndProc, hwnd, WM_COPY, wParam, lParam);
 
@@ -439,7 +439,7 @@ LRESULT DM_WMCopyHandler(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lP
 * create embedded contact list control
 */
 
-HWND DM_CreateClist(HWND hwndParent, struct _MessageWindowData *dat)
+HWND TSAPI DM_CreateClist(HWND hwndParent, struct _MessageWindowData *dat)
 {
 	HWND hwndClist = CreateWindowExA(0, "CListControl", "", WS_TABSTOP | WS_VISIBLE | WS_CHILD | 0x248, 184, 0, 30, 30, hwndParent, (HMENU)IDC_CLIST, g_hInst, NULL);
 
@@ -472,7 +472,7 @@ HWND DM_CreateClist(HWND hwndParent, struct _MessageWindowData *dat)
 	return hwndClist;
 }
 
-LRESULT DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct _MessageWindowData *mwdat, WPARAM wParam, LPARAM lParam)
+LRESULT TSAPI DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct _MessageWindowData *mwdat, WPARAM wParam, LPARAM lParam)
 {
 	RECT rc, rc1;
 	POINT pt;
@@ -528,7 +528,7 @@ LRESULT DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct _MessageWindowDa
 	return 1;
 }
 
-void DM_FreeTheme(_MessageWindowData *dat)
+void TSAPI DM_FreeTheme(_MessageWindowData *dat)
 {
 	if(dat) {
 		if (CMimAPI::m_pfnCloseThemeData) {
@@ -548,7 +548,7 @@ void DM_FreeTheme(_MessageWindowData *dat)
 	}
 }
 
-LRESULT DM_ThemeChanged(_MessageWindowData *dat)
+LRESULT TSAPI DM_ThemeChanged(_MessageWindowData *dat)
 {
 	CSkinItem *item_log = &SkinItems[ID_EXTBKHISTORY];
 	CSkinItem *item_msg = &SkinItems[ID_EXTBKINPUTAREA];
@@ -581,7 +581,7 @@ LRESULT DM_ThemeChanged(_MessageWindowData *dat)
 	return 0;
 }
 
-void DM_NotifyTyping(struct _MessageWindowData *dat, int mode)
+void TSAPI DM_NotifyTyping(struct _MessageWindowData *dat, int mode)
 {
 	DWORD protoStatus;
 	DWORD protoCaps;
@@ -624,7 +624,7 @@ void DM_NotifyTyping(struct _MessageWindowData *dat, int mode)
 	}
 }
 
-void DM_OptionsApplied(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
+void TSAPI DM_OptionsApplied(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
 	if(dat == 0)
 		return;
@@ -759,11 +759,14 @@ void DM_OptionsApplied(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 	if (!lParam)
 		SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 
+	ShowWindow(dat->hwndPanelPicParent, PluginConfig.g_bDisableAniAvatars ? SW_HIDE : SW_SHOW);
+	EnableWindow(dat->hwndPanelPicParent, PluginConfig.g_bDisableAniAvatars ? FALSE : TRUE);
+
 	SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
 }
 
 
-void DM_Typing(_MessageWindowData *dat)
+void TSAPI DM_Typing(_MessageWindowData *dat)
 {
 	if(dat == 0)
 		return;
@@ -842,7 +845,145 @@ void DM_Typing(_MessageWindowData *dat)
 	}
 }
 
-void DM_UpdateTitle(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
+void TSAPI DM_EventAdded(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
+{
+	ContainerWindowData *m_pContainer = dat->pContainer;
+	DBEVENTINFO 		dbei = {0};
+	DWORD 				dwTimestamp = 0;
+	BOOL  				fIsStatusChangeEvent = FALSE, fIsNotifyEvent = FALSE;
+	HWND				hwndDlg = dat->hwnd, hwndContainer = m_pContainer->hwnd, hwndTab = GetParent(dat->hwnd);
+
+	dbei.cbSize = sizeof(dbei);
+	dbei.cbBlob = 0;
+
+	CallService(MS_DB_EVENT_GET, lParam, (LPARAM) & dbei);
+	if (dat->hDbEventFirst == NULL)
+		dat->hDbEventFirst = (HANDLE) lParam;
+
+	fIsStatusChangeEvent = IsStatusEvent(dbei.eventType);
+	fIsNotifyEvent = (dbei.eventType == EVENTTYPE_MESSAGE || dbei.eventType == EVENTTYPE_FILE);
+
+	if (!fIsStatusChangeEvent) {
+		int heFlags = HistoryEvents_GetFlags(dbei.eventType);
+		if (heFlags != -1 && !(heFlags & HISTORYEVENTS_FLAG_DEFAULT) && !(heFlags & HISTORYEVENTS_FLAG_FLASH_MSG_WINDOW))
+			fIsStatusChangeEvent = TRUE;
+	}
+
+	if (dbei.eventType == EVENTTYPE_MESSAGE && (dbei.flags & DBEF_READ))
+		return;
+
+	if (DbEventIsShown(dat, &dbei)) {
+		if (dbei.eventType == EVENTTYPE_MESSAGE && m_pContainer->hwndStatus && !(dbei.flags & (DBEF_SENT))) {
+			dat->lastMessage = dbei.timestamp;
+			PostMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
+		}
+		/*
+		* set the message log divider to mark new (maybe unseen) messages, if the container has
+		* been minimized or in the background.
+		*/
+		if (!(dbei.flags & DBEF_SENT) && !fIsStatusChangeEvent) {
+
+			if (PluginConfig.m_DividersUsePopupConfig && PluginConfig.m_UseDividers) {
+				if (!MessageWindowOpened((WPARAM)dat->hContact, 0))
+					SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
+			} else if (PluginConfig.m_UseDividers) {
+				if ((GetForegroundWindow() != hwndContainer || GetActiveWindow() != hwndContainer))
+					SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
+				else {
+					if (m_pContainer->hwndActive != hwndDlg)
+						SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
+				}
+			}
+			tabSRMM_ShowPopup(wParam, lParam, dbei.eventType, m_pContainer->fHidden ? 0 : 1, m_pContainer, hwndDlg, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat);
+			if(IsWindowVisible(m_pContainer->hwnd))
+				m_pContainer->fHidden = false;
+		}
+
+		if ((HANDLE) lParam != dat->hDbEventFirst) {
+			HANDLE nextEvent = (HANDLE) CallService(MS_DB_EVENT_FINDNEXT, lParam, 0);
+			if (PluginConfig.m_FixFutureTimestamps || nextEvent == 0) {
+				if (!(dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED))
+					SendMessage(hwndDlg, DM_APPENDTOLOG, lParam, 0);
+				else {
+					TCHAR szBuf[100];
+
+					if (dat->iNextQueuedEvent >= dat->iEventQueueSize) {
+						dat->hQueuedEvents = (HANDLE *)realloc(dat->hQueuedEvents, (dat->iEventQueueSize + 10) * sizeof(HANDLE));
+						dat->iEventQueueSize += 10;
+					}
+					dat->hQueuedEvents[dat->iNextQueuedEvent++] = (HANDLE)lParam;
+					mir_sntprintf(szBuf, safe_sizeof(szBuf), CTranslator::get(CTranslator::GEN_MSG_LOGFROZENQUEUED),
+								  dat->iNextQueuedEvent);
+					SetDlgItemText(hwndDlg, IDC_LOGFROZENTEXT, szBuf);
+					RedrawWindow(GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT), NULL, NULL, RDW_INVALIDATE);
+				}
+				if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & DBEF_SENT)) {
+					dat->stats.iReceived++;
+					dat->stats.iReceivedBytes += dat->stats.lastReceivedChars;
+				}
+			} else
+				SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
+		} else
+			SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
+
+		// handle tab flashing
+
+		if ((TabCtrl_GetCurSel(hwndTab) != dat->iTabID) && !(dbei.flags & DBEF_SENT) && !fIsStatusChangeEvent) {
+			switch (dbei.eventType) {
+				case EVENTTYPE_MESSAGE:
+					dat->iFlashIcon = PluginConfig.g_IconMsgEvent;
+					break;
+				case EVENTTYPE_FILE:
+					dat->iFlashIcon = PluginConfig.g_IconFileEvent;
+					break;
+				default:
+					dat->iFlashIcon = PluginConfig.g_IconMsgEvent;
+					break;
+			}
+			SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
+			dat->mayFlashTab = TRUE;
+		}
+		/*
+		* try to flash the contact list...
+		*/
+
+		FlashOnClist(hwndDlg, dat, (HANDLE)lParam, &dbei);
+		/*
+		* autoswitch tab if option is set AND container is minimized (otherwise, we never autoswitch)
+		* never switch for status changes...
+		*/
+		if (!(dbei.flags & DBEF_SENT) && !fIsStatusChangeEvent) {
+			if(PluginConfig.m_AutoSwitchTabs && m_pContainer->hwndActive != hwndDlg) {
+				if ((IsIconic(hwndContainer) && !IsZoomed(hwndContainer)) || (PluginConfig.m_HideOnClose && !IsWindowVisible(m_pContainer->hwnd))) {
+					int iItem = GetTabIndexFromHWND(GetParent(hwndDlg), hwndDlg);
+					if (iItem >= 0) {
+						TabCtrl_SetCurSel(GetParent(hwndDlg), iItem);
+						ShowWindow(m_pContainer->hwndActive, SW_HIDE);
+						m_pContainer->hwndActive = hwndDlg;
+						SendMessage(hwndContainer, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
+						m_pContainer->dwFlags |= CNT_DEFERREDTABSELECT;
+					}
+				}
+			}
+		}
+		/*
+		* flash window if it is not focused
+		*/
+		if ((GetActiveWindow() != hwndContainer || GetForegroundWindow() != hwndContainer) && !(dbei.flags & DBEF_SENT) && !fIsStatusChangeEvent) {
+			if (!(m_pContainer->dwFlags & CNT_NOFLASH))
+				FlashContainer(m_pContainer, 1, 0);
+			SendMessage(hwndContainer, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
+			m_pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
+		}
+		/*
+		* play a sound
+		*/
+		if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & (DBEF_SENT)))
+			PostMessage(hwndDlg, DM_PLAYINCOMINGSOUND, 0, 0);
+	}
+}
+
+void TSAPI DM_UpdateTitle(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
 	TCHAR 					newtitle[128];
 	char*					szProto = 0, *szOldMetaProto = 0;
@@ -1204,11 +1345,14 @@ static INT_PTR SI_ModifyStatusIcon(WPARAM wParam, LPARAM lParam)
 
 void DrawStatusIcons(struct _MessageWindowData *dat, HDC hDC, RECT r, int gap)
 {
-	struct StatusIconListNode *current = status_icon_list;
-	HICON hIcon = NULL;
-	char buff[256];
-	int flags;
-	int x = r.left;
+	StatusIconListNode*	current = status_icon_list;
+	HICON 				hIcon = NULL;
+	char 				buff[256];
+	int 				flags;
+	int 				x = r.left;
+	LONG 				cx_icon = PluginConfig.m_smcxicon;
+	LONG				cy_icon = PluginConfig.m_smcyicon;
+
 	SetBkMode(hDC, TRANSPARENT);
 	while (current) {
 		if (current->sid.flags&MBF_OWNERSTATE) {
@@ -1235,7 +1379,7 @@ void DrawStatusIcons(struct _MessageWindowData *dat, HDC hDC, RECT r, int gap)
 				hIcon = current->sid.hIcon;
 
 			if (flags & MBF_DISABLED && current->sid.hIconDisabled == (HICON)0)
-				CSkin::DrawDimmedIcon(hDC, x, (r.top + r.bottom - PluginConfig.m_smcxicon) >> 1, PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, hIcon, 50);
+				CSkin::DrawDimmedIcon(hDC, x, (r.top + r.bottom - cx_icon) >> 1, cx_icon, cy_icon, hIcon, 50);
 			else
 				DrawIconEx(hDC, x, (r.top + r.bottom - 16) >> 1, hIcon, 16, 16, 0, NULL, DI_NORMAL);
 
@@ -1243,15 +1387,28 @@ void DrawStatusIcons(struct _MessageWindowData *dat, HDC hDC, RECT r, int gap)
 		}
 		current = current->next;
 	}
-	DrawIconEx(hDC, x, (r.top + r.bottom - 16) >> 1, dat->pContainer->dwFlags & CNT_NOSOUND ? PluginConfig.g_buttonBarIcons[23] : PluginConfig.g_buttonBarIcons[22], PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, 0, NULL, DI_NORMAL);
-	x += PluginConfig.m_smcxicon + gap;
-	if (dat->bType == SESSIONTYPE_IM)
-		DrawIconEx(hDC, x, (r.top + r.bottom - PluginConfig.m_smcxicon) >> 1, M->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, M->GetByte(SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)) ? PluginConfig.g_buttonBarIcons[12] : PluginConfig.g_buttonBarIcons[13], PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, 0, NULL, DI_NORMAL);
+	DrawIconEx(hDC, x, (r.top + r.bottom - 16) >> 1, PluginConfig.g_buttonBarIcons[ICON_DEFAULT_SOUNDS],
+			   cx_icon, cy_icon, 0, NULL, DI_NORMAL);
+
+	if(dat->pContainer->dwFlags & CNT_NOSOUND)
+		DrawIconEx(hDC, x, (r.top + r.bottom - 16) >> 1, PluginConfig.g_iconOverlayDisabled,
+				   cx_icon, cy_icon, 0, NULL, DI_NORMAL);
+
+	x += (cx_icon + gap);
+
+	if (dat->bType == SESSIONTYPE_IM) {
+		DrawIconEx(hDC, x, (r.top + r.bottom - cx_icon) >> 1,
+				   PluginConfig.g_buttonBarIcons[12], cx_icon, cy_icon, 0, NULL, DI_NORMAL);
+		if(!(M->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, M->GetByte(SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW))))
+			DrawIconEx(hDC, x, (r.top + r.bottom - cx_icon) >> 1,
+					   PluginConfig.g_iconOverlayDisabled, cx_icon, cy_icon, 0, NULL, DI_NORMAL);
+	}
 	else
-		CSkin::DrawDimmedIcon(hDC, x, (r.top + r.bottom - PluginConfig.m_smcxicon) >> 1, PluginConfig.m_smcxicon, PluginConfig.m_smcyicon,
-					   M->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, M->GetByte(SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)) ? PluginConfig.g_buttonBarIcons[12] : PluginConfig.g_buttonBarIcons[13], 50);
-	x += PluginConfig.m_smcxicon + gap;
-	DrawIconEx(hDC, x, (r.top + r.bottom - PluginConfig.m_smcxicon) >> 1, PluginConfig.g_sideBarIcons[3], PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, 0, NULL, DI_NORMAL);
+		CSkin::DrawDimmedIcon(hDC, x, (r.top + r.bottom - cx_icon) >> 1, cx_icon, cy_icon,
+					   PluginConfig.g_buttonBarIcons[12], 50);
+
+	x += (cx_icon + gap);
+	DrawIconEx(hDC, x, (r.top + r.bottom - cx_icon) >> 1, PluginConfig.g_sideBarIcons[0], cx_icon, cy_icon, 0, NULL, DI_NORMAL);
 }
 
 void SI_CheckStatusIconClick(struct _MessageWindowData *dat, HWND hwndFrom, POINT pt, RECT r, int gap, int code)

@@ -269,6 +269,7 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION |
 CAPTION "   "
 FONT 8, "MS Shell Dlg"
 BEGIN
+	CONTROL         "",IDC_HEADERBAR,"MHeaderbarCtrl",WS_TABSTOP,0,0,354,24
     LTEXT           "",IDC_STATIC,0,25,354,197
     CONTROL         "",IDC_SECTIONTREE,"SysTreeView32",TVS_DISABLEDRAGDROP | 
                     TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS | TVS_TRACKSELECT | 
@@ -816,10 +817,11 @@ EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "About tabSRMM"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
+	CONTROL         "",IDC_HEADERBAR,"MHeaderbarCtrl",WS_TABSTOP,0,0,228,30
     DEFPUSHBUTTON   "OK",IDOK,168,123,55,14
     CTEXT           "Copyright © 2004-2009 by the Miranda IM project. More  \ndetailed copyright information can be found in the included README file.\n\nThis software is distributed and licensed under the terms of the GNU General Public License V2 or any later version.",
                     IDC_COPYRIGHT,5,39,217,47
-    CTEXT           "build time",IDC_BUILDTIME,37,105,150,11
+    CTEXT           "",IDC_BUILDTIME,37,105,150,11
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,117,228,1
     CONTROL         "Support and latest version information",IDC_SUPPORT,
                     "Hyperlink",WS_TABSTOP | 0x1,18,91,192,12
@@ -1315,11 +1317,10 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_IMGOPEN             ICON    DISCARDABLE     "tabmodplus/icons/imgopen.ico"
-IDI_TREEVIEWEXPAND      ICON    DISCARDABLE     "res/expand.ico"
-IDI_TREEVIEWCHECKED     ICON    DISCARDABLE     "res/checked.ico"
-IDI_TREEVIEWUNCHECKED   ICON    DISCARDABLE     "res/unchecked.ico"
 IDI_ENABLED             ICON    DISCARDABLE     "res/res_TN/popup.ico"
 IDI_DISABLED            ICON    DISCARDABLE     "res/res_TN/popup_no.ico"
+IDI_FEATURE_ENABLED		ICON	DISCARDABLE		"res/overlay_enabled.ico"
+IDI_FEATURE_DISABLED	ICON	DISCARDABLE		"res/overlay_disabled.ico"
 IDI_IMGCLOSE            ICON    DISCARDABLE     "tabmodplus/icons/imgclose.ico"
 #endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
@@ -1473,7 +1474,6 @@ END
 // SKIN_GLYPH
 //
 
-IDR_SKIN_LOGO           SKIN_GLYPH MOVEABLE PURE "res\\SKIN\\logo.png"
 IDR_SKIN_AERO           SKIN_GLYPH MOVEABLE PURE "res\\SKIN\\tabskin_aero.png"
 IDR_SKIN_AERO_GLOW      SKIN_GLYPH MOVEABLE PURE "res\\SKIN\\tabskin_aero_glow.png"
 IDR_SKIN_AERO_SWITCHBAR SKIN_GLYPH MOVEABLE PURE "res\\SKIN\\tabskin_aero_button.png"

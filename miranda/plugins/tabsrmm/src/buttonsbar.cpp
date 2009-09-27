@@ -198,7 +198,7 @@ void CB_DestroyButton(HWND hwndDlg, struct _MessageWindowData *dat, DWORD dwButt
 			dat->bbRSideWidth -= rc.right;
 
 		DestroyWindow(hwndBtn);
-		BB_SetButtonsPos(hwndDlg, dat);
+		BB_SetButtonsPos(dat);
 	}
 }
 
@@ -530,7 +530,7 @@ void BB_UpdateIcons(HWND hdlg, struct _MessageWindowData *dat)
 	}
 }
 
-void BB_InitDlgButtons(HWND hdlg, struct _MessageWindowData *dat)
+void TSAPI BB_InitDlgButtons(_MessageWindowData *dat)
 {
 	RECT rect;
 	int i;
@@ -545,6 +545,8 @@ void BB_InitDlgButtons(HWND hdlg, struct _MessageWindowData *dat)
 	int cx = 0, cy = 0;
 	int lcount = LButtonsList->realCount;
 	int rcount = RButtonsList->realCount;
+	HWND hdlg = dat->hwnd;
+
 	if (dat == 0 || hdlg == 0) {return;}
 	if (CSkin::m_skinEnabled && !SkinItems[ID_EXTBKBUTTONSNPRESSED].IGNORED &&
 			!SkinItems[ID_EXTBKBUTTONSPRESSED].IGNORED && !SkinItems[ID_EXTBKBUTTONSMOUSEOVER].IGNORED) {
@@ -634,23 +636,24 @@ void BB_InitDlgButtons(HWND hdlg, struct _MessageWindowData *dat)
 	dat->bbRSideWidth = rwidth;
 }
 
-BOOL BB_SetButtonsPos(HWND hwnd, struct _MessageWindowData *dat)
+BOOL TSAPI BB_SetButtonsPos(_MessageWindowData *dat)
 {
-	RECT rect;
-	int i;
-	HWND hwndBtn = NULL;
-	int lwidth = 0, rwidth = 0;
-	RECT rcSplitter;
-	POINT ptSplitter;
-	int splitterY, iOff;
-	BYTE gap = DPISCALEX(PluginConfig.g_iButtonsBarGap);
-	int foravatar = 0;
-	BOOL showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
-	BOOL bBottomToolbar = dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR ? 1 : 0;
-	int tempL = dat->bbLSideWidth;
-	int tempR = dat->bbRSideWidth;
-	HDWP hdwp = BeginDeferWindowPos(LButtonsList->realCount + RButtonsList->realCount + 1);
-	HWND hwndToggleSideBar = GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_TOGGLESIDEBAR : IDC_CHAT_TOGGLESIDEBAR);
+	RECT 			rect;
+	int 			i;
+	HWND 			hwndBtn = 0;
+	int 			lwidth = 0, rwidth = 0;
+	RECT 			rcSplitter;
+	POINT 			ptSplitter;
+	int 			splitterY, iOff;
+	BYTE 			gap = DPISCALEX(PluginConfig.g_iButtonsBarGap);
+	int 			foravatar = 0;
+	BOOL 			showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
+	BOOL 			bBottomToolbar = dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR ? 1 : 0;
+	int 			tempL = dat->bbLSideWidth;
+	int 			tempR = dat->bbRSideWidth;
+	HWND 			hwnd = dat->hwnd;
+	HDWP 			hdwp = BeginDeferWindowPos(LButtonsList->realCount + RButtonsList->realCount + 1);
+	HWND 			hwndToggleSideBar = GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_TOGGLESIDEBAR : IDC_CHAT_TOGGLESIDEBAR);
 
 	if (!dat || !IsWindowVisible(hwnd))
 		return 0;
@@ -683,6 +686,7 @@ BOOL BB_SetButtonsPos(HWND hwnd, struct _MessageWindowData *dat)
 		DeferWindowPos(hdwp, hwndToggleSideBar , NULL, 4, 2 + splitterY - iOff,
 					   0, 0, SWP_NOZORDER | SWP_NOSIZE);// | SWP_NOCOPYBITS);
 		lwidth += 10;
+		tempL -= 10;
 	}
 
 	for (i = 0; i < LButtonsList->realCount; i++) {
@@ -732,9 +736,10 @@ BOOL BB_SetButtonsPos(HWND hwnd, struct _MessageWindowData *dat)
 	}
 
 	if((dat->pContainer->dwFlags & CNT_SIDEBAR) && (dat->pContainer->SideBar->getFlags() & CSideBar::SIDEBARORIENTATION_RIGHT)) {
-		DeferWindowPos(hdwp, hwndToggleSideBar , NULL, rect.right - foravatar - 8, 2 + splitterY - iOff,
+		DeferWindowPos(hdwp, hwndToggleSideBar , NULL, rect.right - foravatar - 10, 2 + splitterY - iOff,
 					   0, 0, SWP_NOZORDER | SWP_NOSIZE);// | SWP_NOCOPYBITS);
 		rwidth += 12;
+		tempR -= 12;
 	}
 
 	for (i = 0; i < RButtonsList->realCount; i++) {
@@ -784,7 +789,7 @@ BOOL BB_SetButtonsPos(HWND hwnd, struct _MessageWindowData *dat)
 	return (EndDeferWindowPos(hdwp));
 }
 
-void BB_CustomButtonClick(struct _MessageWindowData *dat, DWORD idFrom, HWND hwndFrom, BOOL code)
+void TSAPI BB_CustomButtonClick(struct _MessageWindowData *dat, DWORD idFrom, HWND hwndFrom, BOOL code)
 {
 	RECT rc;
 	int i;
@@ -1073,7 +1078,7 @@ void CB_InitDefaultButtons()
 	bbd.dwButtonID = IDC_SHOWNICKLIST;
 	bbd.dwDefPos = 22;
 	bbd.iButtonWidth = 22;
-	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[21];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[20];
 	bbd.ptszTooltip = _T("Toggle nick list");
 
 	CB_AddButton(0, (LPARAM)&bbd);

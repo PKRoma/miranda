@@ -47,7 +47,13 @@ static BLENDFUNCTION bf_buttonglyph;
 static HDC hdc_buttonglyph = 0;
 static HBITMAP hbm_buttonglyph, hbm_buttonglyph_old;
 
-int UnloadTSButtonModule(WPARAM wParam, LPARAM lParam)
+// Used for our own cheap TrackMouseEvent
+#define BUTTON_POLLID       100
+#define BUTTON_POLLDELAY    50
+
+#define MGPROC(x) GetProcAddress(themeAPIHandle,x)
+
+int TSAPI UnloadTSButtonModule()
 {
 	DeleteCriticalSection(&csTips);
 	if (hdc_buttonglyph) {
@@ -58,7 +64,7 @@ int UnloadTSButtonModule(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int LoadTSButtonModule(void)
+int TSAPI LoadTSButtonModule(void)
 {
 	WNDCLASSEX wc;
 
@@ -74,12 +80,6 @@ int LoadTSButtonModule(void)
 	InitializeCriticalSection(&csTips);
 	return 0;
 }
-
-// Used for our own cheap TrackMouseEvent
-#define BUTTON_POLLID       100
-#define BUTTON_POLLDELAY    50
-
-#define MGPROC(x) GetProcAddress(themeAPIHandle,x)
 
 static void TSAPI DestroyTheme(MButtonCtrl *ctl)
 {
@@ -465,11 +465,16 @@ bg_done:
 			if (ctl->dimmed && PluginConfig.m_IdleDetect)
 				CSkin::DrawDimmedIcon(hdcMem, ix, iy, PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, hIconNew, 180);
 			else {
-				if (ctl->stateId != PBS_DISABLED || CMimAPI::m_MyAlphaBlend == 0)
+				if (ctl->stateId != PBS_DISABLED || CMimAPI::m_MyAlphaBlend == 0) {
 					DrawIconEx(hdcMem, ix, iy, hIconNew, 16, 16, 0, 0, DI_NORMAL);
+					if(ctl->overlay)
+						DrawIconEx(hdcMem, ix, iy, ctl->overlay, 16, 16, 0, 0, DI_NORMAL);
+				}
 				else {
 					BitBlt(hdc_buttonglyph, 0, 0, 16, 16, hdcMem, ix, iy, SRCCOPY);
 					DrawIconEx(hdc_buttonglyph, 0, 0, hIconNew, 16, 16, 0, 0, DI_NORMAL);
+					if(ctl->overlay)
+						DrawIconEx(hdc_buttonglyph, 0, 0, ctl->overlay, 16, 16, 0, 0, DI_NORMAL);
  					CMimAPI::m_MyAlphaBlend(hdcMem, ix, iy, PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, hdc_buttonglyph, 0, 0, 16, 16, bf_buttonglyph);
 				}
 			}
@@ -526,23 +531,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			ZeroMemory(bct, sizeof(MButtonCtrl));
 			bct->hwnd = hwndDlg;
 			bct->stateId = PBS_NORMAL;
-			bct->focus = 0;
 			bct->hFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
-			bct->arrow = NULL;
-			bct->defbutton = 0;
-			bct->hIcon = bct->hIconPrivate = NULL;
-			bct->hBitmap = NULL;
-			bct->pushBtn = 0;
-			bct->pbState = 0;
-			bct->hThemeButton = NULL;
-			bct->hThemeToolbar = NULL;
-			bct->cHot = 0;
-			bct->flatBtn = 0;
-			bct->bThemed = bct->bTitleButton = FALSE;
-			bct->dimmed = 0;
-			bct->pContainer = NULL;
-			bct->item = 0;
-			bct->sitem = 0;
 			LoadTheme(bct);
 			SetWindowLongPtr(hwndDlg, 0, (LONG_PTR)bct);
 			if (((CREATESTRUCTA *)lParam)->lpszName) SetWindowTextA(hwndDlg, ((CREATESTRUCTA *)lParam)->lpszName);
@@ -737,6 +726,9 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			break;
 		case BUTTONSETASSIDEBARBUTTON:
 			bct->sitem = reinterpret_cast<CSideBarButton *>(lParam);
+			break;
+		case BUTTONSETOVERLAYICON:
+			bct->overlay = (HICON)lParam;
 			break;
 		case BUTTONADDTOOLTIP: {
 			TOOLINFO ti;

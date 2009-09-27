@@ -857,7 +857,7 @@ int FontServiceFontsChanged(WPARAM wParam, LPARAM lParam)
 		SM_BroadcastMessage(NULL, GC_SETWNDPROPS, 0, 0, TRUE);
 	}
 
-	PluginConfig.Reload();
+	PluginConfig.reloadSettings();
 	CSkin::initAeroEffect();
 	CacheMsgLogIcons();
 	CacheLogFonts();
@@ -1093,7 +1093,7 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 					SM_BroadcastMessage(NULL, GC_SETWNDPROPS, 0, 0, TRUE);
 				}
 
-				PluginConfig.Reload();
+				PluginConfig.reloadSettings();
 				CacheMsgLogIcons();
 				CacheLogFonts();
 				return TRUE;

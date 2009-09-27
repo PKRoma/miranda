@@ -53,14 +53,14 @@ CMenuBar::CMenuBar(HWND hwndParent, const ContainerWindowData *pContainer)
 
 	if(m_MimIcon == 0) {
 		HDC		hdc = ::GetDC(m_pContainer->hwnd);
-		HICON 	hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
+		HANDLE 	hIcon = LoadSkinnedIconHandle(SKINICON_OTHER_MIRANDA);
 
 		HDC hdcTemp = ::CreateCompatibleDC(hdc);
 
 		RECT rc = {0,0,16,16};
 		m_MimIcon = CSkin::CreateAeroCompatibleBitmap(rc, hdcTemp);
 		HBITMAP hbmOld = (HBITMAP)::SelectObject(hdcTemp, m_MimIcon);
-		::DrawIconEx(hdcTemp, 0, 0, hIcon, 16, 16, 0, 0, DI_NORMAL);
+		::DrawIconEx(hdcTemp, 0, 0, (HICON)hIcon, 16, 16, 0, 0, DI_NORMAL);
 		::SelectObject(hdcTemp, hbmOld);
 
 		::DeleteDC(hdcTemp);

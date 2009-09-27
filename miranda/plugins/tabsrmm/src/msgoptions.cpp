@@ -150,7 +150,7 @@ static BYTE MsgDlgGetFontDefaultCharset(const char* szFont)
 }
 #endif
 
-void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour, char *szModule)
+void TSAPI LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour, char *szModule)
 {
 #ifdef _UNICODE
 	LOGFONT lfResult;
@@ -409,7 +409,7 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 									//pMim->WriteByte(SRMSGMOD_T, (char *)defaultItems[i].lParam, (BYTE)((item.state >> 12) == 2 ? 1 : 0));
 								i++;
 							}
-							PluginConfig.Reload();
+							PluginConfig.reloadSettings();
 							M->BroadcastMessage(DM_OPTIONSAPPLIED, 1, 0);
 							return TRUE;
 						}
@@ -659,7 +659,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 								M->WriteDword(SRMSGMOD_T, "maxhist", (DWORD)SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_GETPOS, 0, 0));
 							else
 								M->WriteDword(SRMSGMOD_T, "maxhist", 0);
-							PluginConfig.Reload();
+							PluginConfig.reloadSettings();
 							M->BroadcastMessage(DM_OPTIONSAPPLIED, 1, 0);
 							return TRUE;
 						}
@@ -831,7 +831,7 @@ static INT_PTR CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam
 							M->WriteByte(SRMSGMOD, "ShowTypingBalloon", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_NOTIFYBALLOON));
 							M->WriteByte(SRMSGMOD, "ShowTypingPopup",(BYTE) IsDlgButtonChecked(hwndDlg, IDC_NOTIFYPOPUP));
 							M->WriteByte(SRMSGMOD_T, "MTN_PopupMode", (BYTE)SendDlgItemMessage(hwndDlg, IDC_MTN_POPUPMODE, CB_GETCURSEL, 0, 0));
-							PluginConfig.Reload();
+							PluginConfig.reloadSettings();
 						}
 					}
 					break;
@@ -985,7 +985,7 @@ static INT_PTR CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 
 							PluginConfig.m_EscapeCloses = (int)SendDlgItemMessage(hwndDlg, IDC_ESCMODE, CB_GETCURSEL, 0, 0);
 							M->WriteByte(SRMSGMOD_T, "escmode", (BYTE)PluginConfig.m_EscapeCloses);
-							PluginConfig.Reload();
+							PluginConfig.reloadSettings();
 							M->BroadcastMessage(DM_OPTIONSAPPLIED, 0, 0);
 							return TRUE;
 						}
@@ -1428,7 +1428,7 @@ static INT_PTR CALLBACK DlgProcTabSrmmModernOptions(HWND hwndDlg, UINT msg, WPAR
 								M->WriteByte(SRMSGMOD_T, "singlewinmode", 0);
 								break;
 							}
-							PluginConfig.Reload();
+							PluginConfig.reloadSettings();
 							M->BroadcastMessage(DM_OPTIONSAPPLIED, 1, 0);
 							return TRUE;
 						}
@@ -1471,7 +1471,7 @@ static int ModernOptInitialise(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int InitOptions(void)
+int TSAPI InitOptions(void)
 {
 	HookEvent(ME_OPT_INITIALISE, OptInitialise);
 	HookEvent(ME_MODERNOPT_INITIALIZE, ModernOptInitialise);
@@ -2088,7 +2088,7 @@ static INT_PTR CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, L
  * get the default format string for the window (container) title bar.
  */
 
-void GetDefaultContainerTitleFormat()
+void TSAPI GetDefaultContainerTitleFormat()
 {
 	DBVARIANT dbv = {0};
 #if defined(_UNICODE)

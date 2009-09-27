@@ -49,7 +49,7 @@ extern TemplateSet 	LTR_Active, RTL_Active;
  * *lf = pointer to a LOGFONT structure which will receive the font definition
  * *colour = pointer to a COLORREF which will receive the color of the font definition
 */
-static void LoadLogfontFromINI(int i, char *szKey, LOGFONTA *lf, COLORREF *colour, const char *szIniFilename)
+static void TSAPI LoadLogfontFromINI(int i, char *szKey, LOGFONTA *lf, COLORREF *colour, const char *szIniFilename)
 {
 	int style;
 	char bSize;
@@ -108,7 +108,7 @@ static struct _tagFontBlocks {
 	NULL, 0, 0, NULL
 };
 
-int CheckThemeVersion(const TCHAR *szIniFilename)
+int TSAPI CheckThemeVersion(const TCHAR *szIniFilename)
 {
 	int cookie = GetPrivateProfileInt(_T("TabSRMM Theme"), _T("Cookie"), 0, szIniFilename);
 	int version = GetPrivateProfileInt(_T("TabSRMM Theme"), _T("Version"), 0, szIniFilename);
@@ -118,7 +118,7 @@ int CheckThemeVersion(const TCHAR *szIniFilename)
 	return 0;
 }
 
-void WriteThemeToINI(const TCHAR *szIniFilenameT, struct _MessageWindowData *dat)
+void TSAPI WriteThemeToINI(const TCHAR *szIniFilenameT, struct _MessageWindowData *dat)
 {
 	int i, n = 0;
 	DBVARIANT dbv;
@@ -218,7 +218,7 @@ void WriteThemeToINI(const TCHAR *szIniFilenameT, struct _MessageWindowData *dat
 #endif
 }
 
-void ReadThemeFromINI(const TCHAR *szIniFilenameT, struct _MessageWindowData *dat, int noAdvanced, DWORD dwFlags)
+void TSAPI ReadThemeFromINI(const TCHAR *szIniFilenameT, struct _MessageWindowData *dat, int noAdvanced, DWORD dwFlags)
 {
 	char szBuf[512], szTemp[100], szAppname[100];
 	int i, n = 0;
@@ -424,7 +424,7 @@ void ReadThemeFromINI(const TCHAR *szIniFilenameT, struct _MessageWindowData *da
  * iMode = 0 - GetOpenFilename, otherwise, GetSaveAs...
  */
 
-const TCHAR *GetThemeFileName(int iMode)
+const TCHAR* TSAPI GetThemeFileName(int iMode)
 {
 	static TCHAR szFilename[MAX_PATH];
 	OPENFILENAME ofn = {0};

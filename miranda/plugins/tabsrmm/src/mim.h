@@ -214,7 +214,11 @@ public:
 
 	static	int 										FoldersPathChanged(WPARAM wParam, LPARAM lParam);		// hook subscriber for folders plugin
 	static 	const TCHAR* TSAPI 							StriStr(const TCHAR *szString, const TCHAR *szSearchFor);
-
+	static	int											TypingMessage(WPARAM wParam, LPARAM lParam);
+	static	int											ProtoAck(WPARAM wParam, LPARAM lParam);
+	static	int											PrebuildContactMenu(WPARAM wParam, LPARAM lParam);
+	static 	int											DispatchNewEvent(WPARAM wParam, LPARAM lParam);
+	static	int											MessageEventAdded(WPARAM wParam, LPARAM lParam);
 public:
 	HANDLE 		m_hMessageWindowList;
 	/*

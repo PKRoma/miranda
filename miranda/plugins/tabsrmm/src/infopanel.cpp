@@ -155,9 +155,7 @@ void CInfoPanel::showHide() const
 			m_dat->hwndPanelPic = NULL;
 		}
 		if(!m_active && m_dat->hwndPanelPicParent) {
-			::DestroyWindow(m_dat->hwndPanelPicParent);
-			m_dat->hwndPanelPicParent = NULL;
-			//_DebugTraceA("panel pic parent destroyed");
+			::ShowWindow(m_dat->hwndPanelPicParent, SW_HIDE);
 		}
 		//
 		m_dat->iRealAvatarHeight = 0;

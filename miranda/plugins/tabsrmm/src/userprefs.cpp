@@ -435,7 +435,7 @@ static struct _checkboxes {
  * ignore temporary bits.
  */
 
-int LoadLocalFlags(HWND hwnd, struct _MessageWindowData *dat)
+int TSAPI LoadLocalFlags(HWND hwnd, struct _MessageWindowData *dat)
 {
 	int		i = 0;
 	DWORD	dwMask = M->GetDword(dat->hContact, "mwmask", 0);
@@ -560,7 +560,7 @@ INT_PTR CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			hContact = (HANDLE)lParam;
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)hContact);
 
-			WindowList_Add(hUserPrefsWindowList, hwndDlg, hContact);
+			WindowList_Add(PluginConfig.hUserPrefsWindowList, hwndDlg, hContact);
 			TranslateDialogDefault(hwndDlg);
 
 			GetClientRect(hwndDlg, &rcClient);
@@ -665,7 +665,7 @@ INT_PTR CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			break;
 		}
 		case WM_DESTROY:
-			WindowList_Remove(hUserPrefsWindowList, hwndDlg);
+			WindowList_Remove(PluginConfig.hUserPrefsWindowList, hwndDlg);
 			break;
 	}
 	return FALSE;

@@ -85,14 +85,13 @@ int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundC
 	rc.top = rc.left = 0;
 	rc.right = bih.biWidth;
 	rc.bottom = bih.biHeight;
-	theIcon->hdc = GetDC(NULL);
+	theIcon->hdc = GetDC(0);
 	theIcon->hBmp = CreateCompatibleBitmap(theIcon->hdc, bih.biWidth, bih.biHeight);
 	theIcon->hdcMem = CreateCompatibleDC(theIcon->hdc);
 	theIcon->hoBmp = (HBITMAP)SelectObject(theIcon->hdcMem, theIcon->hBmp);
 	FillRect(theIcon->hdcMem, &rc, theIcon->hBkgBrush);
 	DrawIconEx(theIcon->hdcMem, 0, 0, hIcon, bih.biWidth, bih.biHeight, 0, NULL, DI_NORMAL);
 	SelectObject(theIcon->hdcMem, theIcon->hoBmp);
-
 	return TRUE;
 }
 

@@ -101,7 +101,7 @@ static unsigned __stdcall TrayAnimThread(LPVOID vParam)
 	return 0;
 }
 
-void CreateTrayMenus(int mode)
+void TSAPI CreateTrayMenus(int mode)
 {
 	if (mode) {
 		mir_sntprintf(g_eventName, 100, _T("tsr_evt_%d"), GetCurrentThreadId());
@@ -153,7 +153,7 @@ void CreateTrayMenus(int mode)
  * create a system tray icon, create all necessary submenus
  */
 
-void CreateSystrayIcon(int create)
+void TSAPI CreateSystrayIcon(int create)
 {
 	NOTIFYICONDATA nim;
 
@@ -215,7 +215,7 @@ static void GetTrayWindowRect(LPRECT lprect)
  * mode = 1 - restore the original icon
  */
 
-void FlashTrayIcon(HICON hIcon)
+void TSAPI FlashTrayIcon(HICON hIcon)
 {
 	NOTIFYICONDATA nim;
 
@@ -234,7 +234,7 @@ void FlashTrayIcon(HICON hIcon)
 	}
 }
 
-void RemoveBalloonTip()
+void TSAPI RemoveBalloonTip()
 {
 	NOTIFYICONDATA nim;
 
@@ -261,7 +261,7 @@ void RemoveBalloonTip()
  * is deleted, if necessary.
  */
 
-void AddContactToFavorites(HANDLE hContact, TCHAR *szNickname, char *szProto, TCHAR *szStatus, WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu, UINT codePage)
+void TSAPI AddContactToFavorites(HANDLE hContact, TCHAR *szNickname, char *szProto, TCHAR *szStatus, WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu, UINT codePage)
 {
 	MENUITEMINFO	mii = {0};
 	TCHAR			szMenuEntry[80];
@@ -358,7 +358,7 @@ typedef struct _recentEntry {
 	HANDLE hContact;
 } RCENTRY;
 
-void LoadFavoritesAndRecent()
+void TSAPI LoadFavoritesAndRecent()
 {
 	RCENTRY	*recentEntries, rceTemp;
 	DWORD	dwRecent;

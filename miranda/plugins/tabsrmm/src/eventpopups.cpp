@@ -64,7 +64,7 @@ static void CheckForRemoveMask()
 }
 
 
-int NEN_ReadOptions(NEN_OPTIONS *options)
+int TSAPI NEN_ReadOptions(NEN_OPTIONS *options)
 {
 	options->bPreview = (BOOL)M->GetByte(MODULE, OPT_PREVIEW, TRUE);
 	options->bDefaultColorMsg = (BOOL)M->GetByte(MODULE, OPT_COLDEFAULT_MESSAGE, FALSE);
@@ -99,7 +99,7 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
 	return 0;
 }
 
-int NEN_WriteOptions(NEN_OPTIONS *options)
+int TSAPI NEN_WriteOptions(NEN_OPTIONS *options)
 {
 	M->WriteByte(MODULE, OPT_PREVIEW, (BYTE)options->bPreview);
 	M->WriteByte(MODULE, OPT_COLDEFAULT_MESSAGE, (BYTE)options->bDefaultColorMsg);
@@ -735,7 +735,7 @@ static int PopupShowT(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
 	return 0;
 }
 
-static int PopupPreview(NEN_OPTIONS *pluginOptions)
+static int TSAPI PopupPreview(NEN_OPTIONS *pluginOptions)
 {
 	PopupShowT(pluginOptions, NULL, NULL, EVENTTYPE_MESSAGE);
 
@@ -817,7 +817,7 @@ static int tabSRMM_ShowBalloon(WPARAM wParam, LPARAM lParam, UINT eventType)
  * updates the menu entry...
  * bForced is used to only update the status, nickname etc. and does NOT update the unread count
  */
-void UpdateTrayMenuState(struct _MessageWindowData *dat, BOOL bForced)
+void TSAPI UpdateTrayMenuState(struct _MessageWindowData *dat, BOOL bForced)
 {
 	MENUITEMINFO	mii = {0};
 	TCHAR			szMenuEntry[80];
@@ -852,7 +852,7 @@ void UpdateTrayMenuState(struct _MessageWindowData *dat, BOOL bForced)
  * if we want tray support, add the contact to the list of unread sessions in the tray menu
  */
 
-int UpdateTrayMenu(const _MessageWindowData *dat, WORD wStatus, const char *szProto, const TCHAR *szStatus, HANDLE hContact, DWORD fromEvent)
+int TSAPI UpdateTrayMenu(const _MessageWindowData *dat, WORD wStatus, const char *szProto, const TCHAR *szStatus, HANDLE hContact, DWORD fromEvent)
 {
 	if (PluginConfig.g_hMenuTrayUnread != 0 && hContact != 0 && szProto != NULL) {
 		TCHAR			szMenuEntry[80], *tszFinalProto = NULL;
@@ -991,7 +991,7 @@ passed:
  * remove all popups for hContact, but only if the mask matches the current "mode"
  */
 
-void DeletePopupsForContact(HANDLE hContact, DWORD dwMask)
+void TSAPI DeletePopupsForContact(HANDLE hContact, DWORD dwMask)
 {
 	int i = 0;
 

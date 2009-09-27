@@ -37,12 +37,11 @@
 #include "sendqueue.h"
 #pragma hdrstop
 
-extern SESSION_INFO *m_WndList;
-extern ButtonSet g_ButtonSet;
+extern SESSION_INFO*	m_WndList;
+extern ButtonSet 		g_ButtonSet;
 
 extern INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 const TCHAR *NewTitle(const _MessageWindowData *dat, const TCHAR *szFormat);
@@ -51,8 +50,6 @@ ContainerWindowData *pFirstContainer = 0;        // the linked list of struct Co
 ContainerWindowData *pLastActiveContainer = NULL;
 
 static 	WNDPROC OldContainerWndProc = 0;
-
-static BOOL	CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 static int ServiceParamsOK(ButtonItem *item, WPARAM *wParam, LPARAM *lParam, HANDLE hContact)
 {
@@ -74,7 +71,7 @@ static int ServiceParamsOK(ButtonItem *item, WPARAM *wParam, LPARAM *lParam, HAN
  * and outer margins.
  */
 
-void SetAeroMargins(ContainerWindowData *pContainer)
+void TSAPI SetAeroMargins(ContainerWindowData *pContainer)
 {
 	if(M->isAero() && pContainer && !CSkin::m_skinEnabled) {
 		MARGINS	m;
@@ -144,7 +141,7 @@ void SetAeroMargins(ContainerWindowData *pContainer)
  * pointer and for removing the struct from the linked list.
  */
 
-struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE hContactFrom) {
+struct ContainerWindowData* TSAPI CreateContainer(const TCHAR *name, int iTemp, HANDLE hContactFrom) {
 	DBVARIANT dbv;
 	char szCounter[10];
 #if defined (_UNICODE)
@@ -666,8 +663,13 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			ws = GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_EXSTYLE);
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_EXSTYLE, ws | WS_EX_CONTROLPARENT);
 
-			TabCtrl_SetPadding(GetDlgItem(hwndDlg, IDC_MSGTABS), M->GetByte("x-pad", 3) + (pContainer->dwFlagsEx & TCF_CLOSEBUTTON ? 6 : 0),
-							   M->GetByte("y-pad", 3) + ((pContainer->dwFlags & CNT_TABSBOTTOM) ? 1 : 0));
+			LONG x_pad = M->GetByte("x-pad", 3) + (pContainer->dwFlagsEx & TCF_CLOSEBUTTON ? 6 : 0);
+			LONG y_pad = M->GetByte("y-pad", 3) + ((pContainer->dwFlags & CNT_TABSBOTTOM) ? 1 : 0);
+
+			if(pContainer->dwFlagsEx & TCF_FLAT)
+				y_pad += 1; //(pContainer->dwFlags & CNT_TABSBOTTOM ? 1 : 2);
+
+			TabCtrl_SetPadding(GetDlgItem(hwndDlg, IDC_MSGTABS), x_pad, y_pad);
 
 			TabCtrl_SetImageList(GetDlgItem(hwndDlg, IDC_MSGTABS), PluginConfig.g_hImageList);
 
@@ -2395,7 +2397,7 @@ buttons_done:
  * really happen, but who knows... ;) )
  */
 
-int GetTabIndexFromHWND(HWND hwndTab, HWND hwnd)
+int TSAPI GetTabIndexFromHWND(HWND hwndTab, HWND hwnd)
 {
 	TCITEM item;
 	int i = 0;
@@ -2420,7 +2422,7 @@ int GetTabIndexFromHWND(HWND hwndTab, HWND hwnd)
  * message window.
  */
 
-int ActivateTabFromHWND(HWND hwndTab, HWND hwnd)
+int TSAPI ActivateTabFromHWND(HWND hwndTab, HWND hwnd)
 {
 	NMHDR nmhdr;
 
@@ -2441,7 +2443,7 @@ int ActivateTabFromHWND(HWND hwndTab, HWND hwnd)
  * pt: mouse coordinates, obtained from GetCursorPos()
  */
 
-int GetTabItemFromMouse(HWND hwndTab, POINT *pt)
+int TSAPI GetTabItemFromMouse(HWND hwndTab, POINT *pt)
 {
 	TCHITTESTINFO tch;
 
@@ -2481,7 +2483,7 @@ int TSAPI CutContactName(const TCHAR *oldname, TCHAR *newname, unsigned int size
  * functions for handling the linked list of struct ContainerWindowData *foo
  */
 
-static struct ContainerWindowData *AppendToContainerList(struct ContainerWindowData *pContainer) {
+static struct ContainerWindowData* TSAPI AppendToContainerList(struct ContainerWindowData *pContainer) {
 	struct ContainerWindowData *pCurrent = 0;
 
 	if (!pFirstContainer) {
@@ -2498,7 +2500,7 @@ static struct ContainerWindowData *AppendToContainerList(struct ContainerWindowD
 	}
 }
 
-struct ContainerWindowData *FindContainerByName(const TCHAR *name) {
+struct ContainerWindowData* TSAPI FindContainerByName(const TCHAR *name) {
 	struct ContainerWindowData *pCurrent = pFirstContainer;
 
 	if (name == NULL || lstrlen(name) == 0)
@@ -2517,7 +2519,7 @@ struct ContainerWindowData *FindContainerByName(const TCHAR *name) {
 	return NULL;
 }
 
-static struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindowData *pContainer) {
+static struct ContainerWindowData* TSAPI RemoveContainerFromList(struct ContainerWindowData *pContainer) {
 	struct ContainerWindowData *pCurrent = pFirstContainer;
 
 	if (pContainer == pFirstContainer) {
@@ -2552,7 +2554,7 @@ static struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindo
  * rc is the RECT obtained by GetClientRect(hwndTab)
  */
 
-void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc)
+void TSAPI AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc)
 {
 	HWND hwndTab = GetDlgItem(pContainer->hwnd, IDC_MSGTABS);
 	RECT rcTab, rcTabOrig;
@@ -2614,7 +2616,7 @@ void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc)
  * if none is assigned, return the name of the default container
  */
 
-int GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLen)
+int TSAPI GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLen)
 {
 	DBVARIANT dbv;
 
@@ -2655,7 +2657,7 @@ int GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLen)
 	return 0;
 }
 
-void DeleteContainer(int iIndex) {
+void TSAPI DeleteContainer(int iIndex) {
 	DBVARIANT dbv;
 	char szIndex[10], szSetting[CONTAINER_NAMELEN + 30];
 #if defined (_UNICODE)
@@ -2704,7 +2706,7 @@ void DeleteContainer(int iIndex) {
 	}
 }
 
-void RenameContainer(int iIndex, const TCHAR *szNew) {
+void TSAPI RenameContainer(int iIndex, const TCHAR *szNew) {
 	DBVARIANT dbv;
 #if defined (_UNICODE)
 	char *szKey = "TAB_ContainersW";
@@ -2742,7 +2744,7 @@ void RenameContainer(int iIndex, const TCHAR *szNew) {
 	}
 }
 
-HMENU BuildContainerMenu()
+HMENU TSAPI BuildContainerMenu()
 {
 #if defined (_UNICODE)
 	char *szKey = "TAB_ContainersW";
@@ -2787,7 +2789,7 @@ HMENU BuildContainerMenu()
 	return hMenu;
 }
 
-HMENU BuildMCProtocolMenu(HWND hwndDlg) {
+HMENU TSAPI BuildMCProtocolMenu(HWND hwndDlg) {
 	HMENU 		hMCContextMenu = 0, hMCSubForce = 0, hMCSubDefault = 0, hMenu = 0;
 	DBVARIANT 	dbv;
 	int 		iNumProtos = 0, i = 0, iDefaultProtoByNum = 0;
@@ -2859,7 +2861,7 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg) {
  * iMode == 0: turn off flashing
  */
 
-void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iCount) {
+void TSAPI FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iCount) {
 	FLASHWINFO fwi;
 
 	if (CMimAPI::m_MyFlashWindowEx == NULL)
@@ -2888,7 +2890,7 @@ void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iCoun
 	CMimAPI::m_MyFlashWindowEx(&fwi);
 }
 
-void ReflashContainer(struct ContainerWindowData *pContainer) {
+void TSAPI ReflashContainer(struct ContainerWindowData *pContainer) {
 	DWORD dwStartTime = pContainer->dwFlashingStarted;
 
 	if (GetForegroundWindow() == pContainer->hwnd || GetActiveWindow() == pContainer->hwnd)       // dont care about active windows
@@ -2919,7 +2921,7 @@ void ReflashContainer(struct ContainerWindowData *pContainer) {
  * broadcasts a message to all child windows (tabs/sessions)
  */
 
-void BroadCastContainer(const ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam, BYTE bType) {
+void TSAPI BroadCastContainer(const ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam, BYTE bType) {
 	int i;
 	TCITEM item;
 
@@ -2943,7 +2945,7 @@ void BroadCastContainer(const ContainerWindowData *pContainer, UINT message, WPA
 	}
 }
 
-void BroadCastAllContainerS(UINT message, WPARAM wParam, LPARAM lParam, bool fIgnorePrivate, BYTE iType)
+void TSAPI BroadCastAllContainerS(UINT message, WPARAM wParam, LPARAM lParam, bool fIgnorePrivate, BYTE iType)
 {
 	const ContainerWindowData *p = pFirstContainer;
 

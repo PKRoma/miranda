@@ -1111,5 +1111,18 @@ typedef struct _tagSKINDesc {
 #define SKIN_NR_ELEMENTS 6
 #define SKIN_VERSION	 2
 
+/*
+ * icon defintions (index into g_buttonBarIcons)
+ */
+
+#define ICON_DEFAULT_MTN 				13
+#define ICON_DEFAULT_SOUNDS 			22
+#define ICON_DEFAULT_PULLDOWN			16
+#define ICON_DEFAULT_LEFT				25
+#define ICON_DEFAULT_RIGHT				28
+#define ICON_DEFAULT_UP					26
+
+
+
 #endif
 

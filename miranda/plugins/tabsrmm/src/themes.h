@@ -62,6 +62,7 @@ typedef struct {
 	TCHAR	cHot;
 	int     flatBtn;
 	int     dimmed;
+	HICON	overlay;
 	struct ContainerWindowData *pContainer;
 	ButtonItem *item;
 	CSideBarButton *sitem;
@@ -69,6 +70,7 @@ typedef struct {
 
 #define BUTTONSETASTOOLBARBUTTON (BUTTONSETASFLATBTN + 21)
 #define BUTTONSETASSIDEBARBUTTON (BUTTONSETASFLATBTN + 22)
+#define BUTTONSETOVERLAYICON	 (BUTTONSETASFLATBTN + 23)
 
 struct AeroEffect {
 	TCHAR		tszName[40];

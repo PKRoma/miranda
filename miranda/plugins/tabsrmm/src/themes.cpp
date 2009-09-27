@@ -70,50 +70,50 @@ BLENDFUNCTION CSkin::m_default_bf = {0};				// a global blend function, used in 
 														// when you use it, reset SourceConstantAlpha to 255 and
 														// the blending mode to AC_SRC_ALPHA.
 
-bool CSkin::m_bClipBorder = false, CSkin::m_DisableScrollbars = false,
-	 CSkin::m_skinEnabled = false, CSkin::m_frameSkins = false;
+bool 			CSkin::m_bClipBorder = false, CSkin::m_DisableScrollbars = false,
+				CSkin::m_skinEnabled = false, CSkin::m_frameSkins = false;
 
-char CSkin::m_SkinnedFrame_left = 0, CSkin::m_SkinnedFrame_right = 0,
-	 CSkin::m_SkinnedFrame_bottom = 0, CSkin::m_SkinnedFrame_caption = 0;
+char 			CSkin::m_SkinnedFrame_left = 0, CSkin::m_SkinnedFrame_right = 0,
+				CSkin::m_SkinnedFrame_bottom = 0, CSkin::m_SkinnedFrame_caption = 0;
 
-char CSkin::m_realSkinnedFrame_left = 0;
-char CSkin::m_realSkinnedFrame_right = 0;
-char CSkin::m_realSkinnedFrame_bottom = 0;
-char CSkin::m_realSkinnedFrame_caption = 0;
+char 			CSkin::m_realSkinnedFrame_left = 0;
+char 			CSkin::m_realSkinnedFrame_right = 0;
+char 			CSkin::m_realSkinnedFrame_bottom = 0;
+char 			CSkin::m_realSkinnedFrame_caption = 0;
 
-int CSkin::m_titleBarLeftOff = 0, CSkin::m_titleButtonTopOff = 0, CSkin::m_captionOffset = 0, CSkin::m_captionPadding = 0,
-	CSkin::m_titleBarRightOff = 0, CSkin::m_sidebarTopOffset = 0, CSkin::m_sidebarBottomOffset = 0, CSkin::m_bRoundedCorner = 0;
+int 			CSkin::m_titleBarLeftOff = 0, CSkin::m_titleButtonTopOff = 0, CSkin::m_captionOffset = 0, CSkin::m_captionPadding = 0,
+				CSkin::m_titleBarRightOff = 0, CSkin::m_sidebarTopOffset = 0, CSkin::m_sidebarBottomOffset = 0, CSkin::m_bRoundedCorner = 0;
 
-CImageItem* CSkin::m_switchBarItem = 0,
-		   *CSkin::m_tabTop = 0,
-		   *CSkin::m_tabBottom = 0,
-	       *CSkin::m_tabGlowTop = 0,
-	       *CSkin::m_tabGlowBottom = 0;
+CImageItem* 	CSkin::m_switchBarItem = 0,
+			   *CSkin::m_tabTop = 0,
+			   *CSkin::m_tabBottom = 0,
+			   *CSkin::m_tabGlowTop = 0,
+			   *CSkin::m_tabGlowBottom = 0;
 
-bool CSkin::m_fAeroSkinsValid = false;
+bool 			CSkin::m_fAeroSkinsValid = false;
 
-SIZE CSkin::m_titleBarButtonSize = {0};
+SIZE 			CSkin::m_titleBarButtonSize = {0};
 
-COLORREF CSkin::m_ContainerColorKey = 0, CSkin::m_dwmColorRGB = 0, CSkin::m_DefaultFontColor = 0;
-HBRUSH 	 CSkin::m_ContainerColorKeyBrush = 0, CSkin::m_MenuBGBrush = 0;
+COLORREF 		CSkin::m_ContainerColorKey = 0, CSkin::m_dwmColorRGB = 0, CSkin::m_DefaultFontColor = 0;
+HBRUSH 	 		CSkin::m_ContainerColorKeyBrush = 0, CSkin::m_MenuBGBrush = 0;
 
-HPEN 	CSkin::m_SkinLightShadowPen = 0, CSkin::m_SkinDarkShadowPen = 0;
+HPEN 			CSkin::m_SkinLightShadowPen = 0, CSkin::m_SkinDarkShadowPen = 0;
 
-HICON	CSkin::m_closeIcon = 0, CSkin::m_maxIcon = 0, CSkin::m_minIcon = 0;
+HICON			CSkin::m_closeIcon = 0, CSkin::m_maxIcon = 0, CSkin::m_minIcon = 0;
 
-UINT 	CSkin::m_aeroEffect = 0;
-DWORD 	CSkin::m_glowSize = 0;
-HBRUSH  CSkin::m_BrushBack = 0;
+UINT 			CSkin::m_aeroEffect = 0;
+DWORD 			CSkin::m_glowSize = 0;
+HBRUSH  		CSkin::m_BrushBack = 0;
 
-HBITMAP CSkin::m_tabCloseBitmap = 0, CSkin::m_tabCloseOldBitmap = 0;
-HDC		CSkin::m_tabCloseHDC = 0;
+HBITMAP 		CSkin::m_tabCloseBitmap = 0, CSkin::m_tabCloseOldBitmap = 0;
+HDC				CSkin::m_tabCloseHDC = 0;
 
 /*
  * aero effects
  */
 
-AeroEffect  CSkin::m_currentAeroEffect;
-AeroEffect* CSkin::m_pCurrentAeroEffect = 0;
+AeroEffect  	CSkin::m_currentAeroEffect;
+AeroEffect* 	CSkin::m_pCurrentAeroEffect = 0;
 
 AeroEffect  CSkin::m_aeroEffects[AERO_EFFECT_LAST] = {
 	{
@@ -350,8 +350,8 @@ static DWORD __inline argb_from_cola(COLORREF col, UINT32 alpha)
 }
 
 
-void __stdcall DrawAlpha(HDC hDC, PRECT rc, DWORD clr_base, int alpha, DWORD clr_dest, BYTE clr_dest_trans, BYTE bGradient,
-			   BYTE bCorner, DWORD dwRadius, CImageItem *imageItem)
+void TSAPI  DrawAlpha(HDC hDC, PRECT rc, DWORD clr_base, int alpha, DWORD clr_dest, BYTE clr_dest_trans, BYTE bGradient,
+					  BYTE bCorner, DWORD dwRadius, CImageItem *imageItem)
 {
 	HBRUSH BrMask;
 	HBRUSH holdbrush;
@@ -1128,7 +1128,6 @@ void CSkin::Init()
 
 	setFileName();
 	m_aeroEffect = M->GetByte("aerostyle", 0);
-	initAeroEffect();
 }
 
 /**
@@ -2368,7 +2367,7 @@ int CSkin::RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWO
 	if(PluginConfig.m_bIsVista && !CSkin::m_skinEnabled && hTheme) {
 		DTTOPTS dto = {0};
 		dto.dwSize = sizeof(dto);
-		if(iGlowSize) {
+		if(iGlowSize && M->isAero()) {
 			dto.iGlowSize = iGlowSize;
 			dto.dwFlags = DTT_COMPOSITED|DTT_GLOWSIZE;
 		}
@@ -2798,47 +2797,6 @@ void CSkin::extractSkinsAndLogo() const
 	catch(CRTException& ex) {
 		ex.display();
 		m_fAeroSkinsValid = false;
-	}
-
-	/*
-	 * load the logo
-	 */
-	if(PluginConfig.hbmLogo) {
-		::DeleteObject(PluginConfig.hbmLogo);
-		PluginConfig.hbmLogo = 0;
-	}
-
-	try {
-		mir_sntprintf(szFilename, MAX_PATH, _T("%slogo.png"), tszBasePath);
-		if(!PathFileExists(szFilename)) {
-			HRSRC	hRes;
-			HGLOBAL hResource;
-			char	*pData = NULL;
-
-			hRes = FindResource(g_hInst, MAKEINTRESOURCE(IDR_SKIN_LOGO), _T("SKIN_GLYPH"));
-			if(hRes) {
-				hResource = LoadResource(g_hInst, hRes);
-				if(hResource) {
-					DWORD written = 0, dwSize;
-					HANDLE hFile;
-
-					pData = (char *)LockResource(hResource);
-					dwSize = SizeofResource(g_hInst, hRes);
-					if((hFile = CreateFile(szFilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)) != INVALID_HANDLE_VALUE) {
-						WriteFile(hFile, (void *)pData, dwSize, &written, NULL);
-						CloseHandle(hFile);
-					}
-					else
-						throw(CRTException("Error while extracting the logo", szFilename));
-				}
-			}
-		}
-		PluginConfig.hbmLogo = ::IMG_LoadLogo(szFilename);
-	}
-	catch(CRTException& ex) {
-		ex.display();
-		PluginConfig.hbmLogo = 0;
-		return;
 	}
 }
 

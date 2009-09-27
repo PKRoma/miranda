@@ -367,7 +367,7 @@ void CMimAPI::configureCustomFolders()
 		m_hSkinsPath = (HANDLE)FoldersRegisterCustomPathT("TabSRMM", "Skins root", const_cast<TCHAR *>(getSkinPath()));
 		m_hAvatarsPath = (HANDLE)FoldersRegisterCustomPathT("TabSRMM", "Saved Avatars", const_cast<TCHAR *>(getSavedAvatarPath()));
 		m_hChatLogsPath = (HANDLE)FoldersRegisterCustomPathT("TabSRMM", "Group chat logs root", const_cast<TCHAR *>(getChatLogPath()));
-		HookEvent(ME_FOLDERS_PATH_CHANGED, CMimAPI::FoldersPathChanged);
+		CGlobals::m_event_FoldersChanged = HookEvent(ME_FOLDERS_PATH_CHANGED, CMimAPI::FoldersPathChanged);
 		m_haveFolders = true;
 	}
 	else
@@ -518,6 +518,407 @@ void CMimAPI::InitAPI()
 		m_haveBufferedPaint = false;
 }
 
+/**
+ * hook subscriber function for incoming message typing events
+ */
+
+int CMimAPI::TypingMessage(WPARAM wParam, LPARAM lParam)
+{
+	HWND	hwnd = 0;
+	int		issplit = 1, foundWin = 0, preTyping = 0;
+	struct	ContainerWindowData *pContainer = NULL;
+	BOOL	fShowOnClist = TRUE;
+
+	if ((hwnd = M->FindWindow((HANDLE) wParam)) && M->GetByte(SRMSGMOD, SRMSGSET_SHOWTYPING, SRMSGDEFSET_SHOWTYPING))
+		preTyping = SendMessage(hwnd, DM_TYPING, 0, lParam);
+
+	if (hwnd && IsWindowVisible(hwnd))
+		foundWin = MessageWindowOpened(0, (LPARAM)hwnd);
+	else
+		foundWin = 0;
+
+
+	if(hwnd) {
+		SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
+		if(pContainer == NULL)
+			return 0;					// should never happen
+	}
+
+	if(M->GetByte(SRMSGMOD, SRMSGSET_SHOWTYPINGCLIST, SRMSGDEFSET_SHOWTYPINGCLIST)) {
+		if(!hwnd && !M->GetByte(SRMSGMOD, SRMSGSET_SHOWTYPINGNOWINOPEN, 1))
+			fShowOnClist = FALSE;
+		if(hwnd && !M->GetByte(SRMSGMOD, SRMSGSET_SHOWTYPINGWINOPEN, 1))
+			fShowOnClist = FALSE;
+	}
+	else
+		fShowOnClist = FALSE;
+
+	if((!foundWin || !(pContainer->dwFlags&CNT_NOSOUND)) && preTyping != (lParam != 0)){
+		if (lParam)
+			SkinPlaySound("TNStart");
+		else
+			SkinPlaySound("TNStop");
+	}
+
+	if(M->GetByte(SRMSGMOD, "ShowTypingPopup", 0)) {
+		BOOL	fShow = FALSE;
+		int		iMode = M->GetByte("MTN_PopupMode", 0);
+
+		switch(iMode) {
+			case 0:
+				fShow = TRUE;
+				break;
+			case 1:
+				if(!foundWin || !(pContainer && pContainer->hwndActive == hwnd && GetForegroundWindow() == pContainer->hwnd))
+					fShow = TRUE;
+				break;
+			case 2:
+				if(hwnd == 0)
+					fShow = TRUE;
+				else {
+					if(PluginConfig.m_HideOnClose) {
+						struct	ContainerWindowData *pContainer = 0;
+						SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
+						if(pContainer && pContainer->fHidden)
+							fShow = TRUE;
+					}
+				}
+				break;
+		}
+		if(fShow)
+			TN_TypingMessage(wParam, lParam);
+	}
+
+	if ((int) lParam) {
+		TCHAR szTip[256];
+
+		_sntprintf(szTip, SIZEOF(szTip), CTranslator::get(CTranslator::GEN_MTN_STARTWITHNICK), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCDNF_TCHAR));
+		if (fShowOnClist && ServiceExists(MS_CLIST_SYSTRAY_NOTIFY) && M->GetByte(SRMSGMOD, "ShowTypingBalloon", 0)) {
+			MIRANDASYSTRAYNOTIFY tn;
+			tn.szProto = NULL;
+			tn.cbSize = sizeof(tn);
+			tn.tszInfoTitle = const_cast<TCHAR *>(CTranslator::get(CTranslator::GEN_MTN_TTITLE));
+			tn.tszInfo = szTip;
+#ifdef UNICODE
+			tn.dwInfoFlags = NIIF_INFO | NIIF_INTERN_UNICODE;
+#else
+			tn.dwInfoFlags = NIIF_INFO;
+#endif
+			tn.uTimeout = 1000 * 4;
+			CallService(MS_CLIST_SYSTRAY_NOTIFY, 0, (LPARAM) & tn);
+		}
+		if(fShowOnClist) {
+			CLISTEVENT cle;
+
+			ZeroMemory(&cle, sizeof(cle));
+			cle.cbSize = sizeof(cle);
+			cle.hContact = (HANDLE) wParam;
+			cle.hDbEvent = (HANDLE) 1;
+			cle.flags = CLEF_ONLYAFEW | CLEF_TCHAR;
+			cle.hIcon = PluginConfig.g_buttonBarIcons[5];
+			cle.pszService = "SRMsg/TypingMessage";
+			cle.ptszTooltip = szTip;
+			CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
+			CallServiceSync(MS_CLIST_ADDEVENT, wParam, (LPARAM) & cle);
+		}
+	}
+	return 0;
+}
+
+/**
+ * this is the global ack dispatcher. It handles both ACKTYPE_MESSAGE and ACKTYPE_AVATAR events
+ * for ACKTYPE_MESSAGE it searches the corresponding send job in the queue and, if found, dispatches
+ * it to the owners window
+ *
+ * ACKTYPE_AVATAR no longer handled here, because we have avs services now.
+ */
+
+int CMimAPI::ProtoAck(WPARAM wParam, LPARAM lParam)
+{
+	ACKDATA *pAck = (ACKDATA *) lParam;
+	HWND hwndDlg = 0;
+	int i = 0, j, iFound = SendQueue::NR_SENDJOBS;
+
+	if (lParam == 0)
+		return 0;
+
+	SendJob *jobs = sendQueue->getJobByIndex(0);
+
+	if (pAck->type == ACKTYPE_MESSAGE) {
+		for (j = 0; j < SendQueue::NR_SENDJOBS; j++) {
+			if (pAck->hProcess == jobs[j].hSendId && pAck->hContact == jobs[j].hOwner) {
+				_MessageWindowData *dat = jobs[j].hwndOwner ? (_MessageWindowData *)GetWindowLongPtr(jobs[j].hwndOwner, GWLP_USERDATA) : NULL;
+				if (dat) {
+					if (dat->hContact == jobs[j].hOwner) {
+						iFound = j;
+						break;
+					}
+				} else {      // ack message w/o an open window...
+					sendQueue->ackMessage(NULL, (WPARAM)MAKELONG(j, i), lParam);
+					return 0;
+				}
+			}
+			if (iFound == SendQueue::NR_SENDJOBS)          // no mathing entry found in this queue entry.. continue
+				continue;
+			else
+				break;
+		}
+		if (iFound == SendQueue::NR_SENDJOBS) {             // no matching send info found in the queue
+			SendLater_ProcessAck(pAck);											   //
+			return 0;									   // try to find the process handle in the list of open send later jobs
+		} else {                                  // the job was found
+			SendMessage(jobs[iFound].hwndOwner, HM_EVENTSENT, (WPARAM)MAKELONG(iFound, i), lParam);
+			return 0;
+		}
+	}
+	return 0;
+}
+
+int CMimAPI::PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
+{
+	HANDLE hContact = (HANDLE)wParam;
+	if ( hContact ) {
+		char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+
+		CLISTMENUITEM clmi = {0};
+		clmi.cbSize = sizeof( CLISTMENUITEM );
+		clmi.flags = CMIM_FLAGS | CMIF_DEFAULT | CMIF_HIDDEN;
+
+		if ( szProto ) {
+			// leave this menu item hidden for chats
+			if ( !M->GetByte(hContact, szProto, "ChatRoom", 0 ))
+				if ( CallProtoService( szProto, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND )
+					clmi.flags &= ~CMIF_HIDDEN;
+		}
+
+		CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )PluginConfig.m_hMenuItem, ( LPARAM )&clmi );
+	}
+	return 0;
+}
+
+/**
+ * this handler is called first in the message window chain - it will handle events for which a message window
+ * is already open. if not, it will do nothing and the 2nd handler (MessageEventAdded) will perform all
+ * the needed actions.
+ *
+ * this handler POSTs the event to the message window procedure - so it is fast and can exit quickly which will
+ * improve the overall responsiveness when receiving messages.
+ */
+
+int CMimAPI::DispatchNewEvent(WPARAM wParam, LPARAM lParam)
+{
+	if (wParam) {
+		HWND h = M->FindWindow((HANDLE)wParam);
+		if (h)
+			PostMessage(h, HM_DBEVENTADDED, wParam, lParam);            // was SENDMESSAGE !!! XXX
+	}
+	return 0;
+}
+
+/**
+ * Message event added is called when a new message is added to the database
+ * if no session is open for the contact, this function will determine if and how a new message
+ * session (tab) must be created.
+ *
+ * if a session is already created, it just does nothing and DispatchNewEvent() will take care.
+ */
+
+int CMimAPI::MessageEventAdded(WPARAM wParam, LPARAM lParam)
+{
+	HWND hwnd;
+	CLISTEVENT cle;
+	DBEVENTINFO dbei;
+	UINT mesCount=0;
+	BYTE bAutoPopup = FALSE, bAutoCreate = FALSE, bAutoContainer = FALSE, bAllowAutoCreate = 0;
+	struct ContainerWindowData *pContainer = 0;
+	TCHAR szName[CONTAINER_NAMELEN + 1];
+	DWORD dwStatusMask = 0;
+	struct _MessageWindowData *mwdat=NULL;
+
+	ZeroMemory(&dbei, sizeof(dbei));
+	dbei.cbSize = sizeof(dbei);
+	dbei.cbBlob = 0;
+	CallService(MS_DB_EVENT_GET, lParam, (LPARAM) & dbei);
+
+	hwnd = M->FindWindow((HANDLE) wParam);
+	//mad:mod for actual history
+	if (hwnd) {
+		mwdat = (struct _MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		if (mwdat && mwdat->bActualHistory)
+			mwdat->messageCount++;
+	//mad_
+	}
+
+	if (dbei.flags & DBEF_SENT || !(dbei.eventType == EVENTTYPE_MESSAGE || dbei.eventType == EVENTTYPE_FILE) || dbei.flags & DBEF_READ)
+		return 0;
+
+	CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
+		//MaD: hide on close mod, simulating standard behavior for hidden container
+	if (hwnd) {
+		struct ContainerWindowData *pTargetContainer = 0;
+		WINDOWPLACEMENT wp={0};
+		wp.length = sizeof(wp);
+		SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM)&pTargetContainer);
+
+		if(pTargetContainer && PluginConfig.m_HideOnClose && !IsWindowVisible(pTargetContainer->hwnd))	{
+			GetWindowPlacement(pTargetContainer->hwnd, &wp);
+			GetContainerNameForContact((HANDLE) wParam, szName, CONTAINER_NAMELEN);
+
+			bAutoPopup = M->GetByte(SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP);
+			bAutoCreate = M->GetByte("autotabs", 1);
+			bAutoContainer = M->GetByte("autocontainer", 1);
+			dwStatusMask = M->GetDword("autopopupmask", -1);
+
+			bAllowAutoCreate = FALSE;
+
+			if (bAutoPopup || bAutoCreate) {
+				BOOL bActivate = TRUE, bPopup = TRUE;
+				if(bAutoPopup) {
+					if(wp.showCmd == SW_SHOWMAXIMIZED)
+						ShowWindow(pTargetContainer->hwnd, SW_SHOWMAXIMIZED);
+					else
+						ShowWindow(pTargetContainer->hwnd, SW_SHOWNOACTIVATE);
+					return 0;
+				}
+				else {
+					bActivate = FALSE;
+					bPopup = (BOOL) M->GetByte("cpopup", 0);
+					pContainer = FindContainerByName(szName);
+					if (pContainer != NULL) {
+						if(bAutoContainer) {
+							ShowWindow(pTargetContainer->hwnd, SW_SHOWMINNOACTIVE);
+							return 0;
+						}
+						else goto nowindowcreate;
+					}
+					else {
+						if(bAutoContainer) {
+							ShowWindow(pTargetContainer->hwnd, SW_SHOWMINNOACTIVE);
+							return 0;
+						}
+					}
+				}
+			}
+		}
+		else
+			return 0;
+	} else {
+		if(dbei.eventType == EVENTTYPE_FILE)
+			goto nowindowcreate;
+	}
+
+	/*
+	 * if no window is open, we are not interested in anything else but unread message events
+	 */
+
+	/* new message */
+	if (!nen_options.iNoSounds)
+		SkinPlaySound("AlertMsg");
+
+	if (nen_options.iNoAutoPopup)
+		goto nowindowcreate;
+
+	//MAD
+	if (M->GetByte((HANDLE) wParam, "ActualHistory", 0)) {
+		mesCount = M->GetDword((HANDLE)wParam, SRMSGMOD_T, "messagecount", 0);
+		M->WriteDword((HANDLE) wParam, SRMSGMOD_T, "messagecount", (DWORD)mesCount++);
+	}
+	//
+
+	GetContainerNameForContact((HANDLE) wParam, szName, CONTAINER_NAMELEN);
+
+	bAutoPopup = M->GetByte(SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP);
+	bAutoCreate = M->GetByte("autotabs", 1);
+	bAutoContainer = M->GetByte("autocontainer", 1);
+	dwStatusMask = M->GetDword("autopopupmask", -1);
+
+	bAllowAutoCreate = FALSE;
+
+	if (dwStatusMask == -1)
+		bAllowAutoCreate = TRUE;
+	else {
+		char *szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)wParam, 0);
+		DWORD dwStatus = 0;
+
+		if (PluginConfig.g_MetaContactsAvail && szProto && !strcmp(szProto, (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0))) {
+			HANDLE hSubconttact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, wParam, 0);
+
+			szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hSubconttact, 0);
+		}
+		if (szProto) {
+			dwStatus = (DWORD)CallProtoService(szProto, PS_GETSTATUS, 0, 0);
+			if (dwStatus == 0 || dwStatus <= ID_STATUS_OFFLINE || ((1 << (dwStatus - ID_STATUS_ONLINE)) & dwStatusMask))           // should never happen, but...
+				bAllowAutoCreate = TRUE;
+		}
+	}
+	if (bAllowAutoCreate && (bAutoPopup || bAutoCreate)) {
+		BOOL bActivate = TRUE, bPopup = TRUE;
+		if (bAutoPopup) {
+			bActivate = bPopup = TRUE;
+			if ((pContainer = FindContainerByName(szName)) == NULL)
+				pContainer = CreateContainer(szName, FALSE, (HANDLE)wParam);
+			CreateNewTabForContact(pContainer, (HANDLE) wParam, 0, NULL, bActivate, bPopup, FALSE, 0);
+			return 0;
+		} else {
+			bActivate = FALSE;
+			bPopup = (BOOL) M->GetByte("cpopup", 0);
+			pContainer = FindContainerByName(szName);
+			if (pContainer != NULL) {
+				if ((IsIconic(pContainer->hwnd)) && PluginConfig.m_AutoSwitchTabs) {
+					bActivate = TRUE;
+					pContainer->dwFlags |= CNT_DEFERREDTABSELECT;
+				}
+				if (M->GetByte("limittabs", 0) &&  !_tcsncmp(pContainer->szName, _T("default"), 6)) {
+					if ((pContainer = FindMatchingContainer(_T("default"), (HANDLE)wParam)) != NULL) {
+						CreateNewTabForContact(pContainer, (HANDLE) wParam, 0, NULL, bActivate, bPopup, TRUE, (HANDLE)lParam);
+						return 0;
+					} else if (bAutoContainer) {
+						pContainer = CreateContainer(szName, CNT_CREATEFLAG_MINIMIZED, (HANDLE)wParam);         // 2 means create minimized, don't popup...
+						CreateNewTabForContact(pContainer, (HANDLE) wParam,  0, NULL, bActivate, bPopup, TRUE, (HANDLE)lParam);
+						SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
+						return 0;
+					}
+				} else {
+					CreateNewTabForContact(pContainer, (HANDLE) wParam, 0, NULL, bActivate, bPopup, TRUE, (HANDLE)lParam);
+					return 0;
+				}
+
+			} else {
+				if (bAutoContainer) {
+					pContainer = CreateContainer(szName, CNT_CREATEFLAG_MINIMIZED, (HANDLE)wParam);         // 2 means create minimized, don't popup...
+					CreateNewTabForContact(pContainer, (HANDLE) wParam,  0, NULL, bActivate, bPopup, TRUE, (HANDLE)lParam);
+					SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
+					return 0;
+				}
+			}
+		}
+	}
+
+	/*
+	 * for tray support, we add the event to the tray menu. otherwise we send it back to
+	 * the contact list for flashing
+	 */
+nowindowcreate:
+	if (!(dbei.flags & DBEF_READ)) {
+		UpdateTrayMenu(0, 0, dbei.szModule, NULL, (HANDLE)wParam, 1);
+		if (!nen_options.bTraySupport || PluginConfig.m_WinVerMajor < 5) {
+			TCHAR toolTip[256], *contactName;
+			ZeroMemory(&cle, sizeof(cle));
+			cle.cbSize = sizeof(cle);
+			cle.hContact = (HANDLE) wParam;
+			cle.hDbEvent = (HANDLE) lParam;
+			cle.flags = CLEF_TCHAR;
+			cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+			cle.pszService = "SRMsg/ReadMessage";
+			contactName = (TCHAR*) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCDNF_TCHAR);
+			mir_sntprintf(toolTip, SIZEOF(toolTip), CTranslator::get(CTranslator::GEN_MSG_TTITLE), contactName);
+			cle.ptszTooltip = toolTip;
+			CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
+		}
+		tabSRMM_ShowPopup(wParam, lParam, dbei.eventType, 0, 0, 0, dbei.szModule, 0);
+	}
+	return 0;
+}
+
 CMimAPI *M = 0;
 FI_INTERFACE *FIF = 0;
-

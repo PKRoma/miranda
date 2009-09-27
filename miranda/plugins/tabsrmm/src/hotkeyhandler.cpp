@@ -78,7 +78,7 @@ std::vector<HANDLE> sendLaterContactList;
 std::vector<SendLaterJob *> sendLaterJobList;
 
 typedef std::vector<SendLaterJob *>::iterator SendLaterJobIterator;
-int SendLater_SendIt(SendLaterJob *job);
+int TSAPI SendLater_SendIt(SendLaterJob *job);
 
 #define SENDLATER_AGE_THRESHOLD (86400 * 3)				// 3 days, older messages will be removed from the db.
 #define SENDLATER_RESEND_THRESHOLD 180					// timeouted messages should be resent after that many seconds
@@ -109,7 +109,7 @@ static INT_PTR HotkeyProcessor(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-void HandleMenuEntryFromhContact(int iSelection)
+void TSAPI HandleMenuEntryFromhContact(int iSelection)
 {
 	HWND hWnd = M->FindWindow((HANDLE)iSelection);
 	SESSION_INFO *si = NULL;
@@ -586,6 +586,9 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			bool fNewAero = M->getAeroState();					// refresh dwm state
 			SendMessage(hwndDlg, WM_THEMECHANGED, 0, 0);
 			ContainerWindowData *pContainer = pFirstContainer;
+			CSideBar::unInitBG();
+			if(pContainer)
+				CSideBar::initBG(pContainer->hwnd);
 
 			while (pContainer) {
 				if(fNewAero)
@@ -716,7 +719,7 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
  * send later functions
  */
 
-void SendLater_Add(const HANDLE hContact)
+void TSAPI SendLater_Add(const HANDLE hContact)
 {
 	if(!PluginConfig.m_SendLaterAvail)
 		return;
@@ -818,7 +821,7 @@ static int SendLater_AddJob(const char *szSetting, LPARAM lParam)
 	return(0);
 }
 
-static int SendLater_SendIt(SendLaterJob *job)
+static int TSAPI SendLater_SendIt(SendLaterJob *job)
 {
 	HANDLE hContact = job->hContact;
 	time_t now = time(0);
@@ -884,7 +887,7 @@ static int SendLater_SendIt(SendLaterJob *job)
  *
  * @param hContact HANDLE: contact's handle
  */
-static void SendLater_Process(const HANDLE hContact)
+static void TSAPI SendLater_Process(const HANDLE hContact)
 {
 	int iCount = M->GetDword(hContact, "SendLater", "count", 0);
 
@@ -899,7 +902,7 @@ static void SendLater_Process(const HANDLE hContact)
 	}
 }
 
-HANDLE SendLater_ProcessAck(const ACKDATA *ack)
+HANDLE TSAPI SendLater_ProcessAck(const ACKDATA *ack)
 {
 	if(sendLaterJobList.empty())
 		return(0);
@@ -931,7 +934,7 @@ HANDLE SendLater_ProcessAck(const ACKDATA *ack)
 	return(0);
 }
 
-void SendLater_ClearAll()
+void TSAPI SendLater_ClearAll()
 {
 	if(sendLaterJobList.empty())
 		return;

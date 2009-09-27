@@ -21,6 +21,8 @@
 #define IDR_SKIN_LOGO                   20
 #define IDI_IMGOPEN                     102
 #define IDI_IMGCLOSE                    103
+#define IDI_FEATURE_DISABLED			104
+#define IDI_FEATURE_ENABLED				105
 #define IDR_CONTEXT                     180
 #define IDM_PASTEFORMATTED              181
 #define IDM_CUT                         182
@@ -57,12 +59,6 @@
 #define IDD_OPTIONSDIALOG               311
 #define IDD_SKINTABDIALOG               312
 #define IDD_OPT_SKIN                    313
-#define IDI_TREEVIEWEXPAND              320
-#define IDI_TREEVIEWCHECKED             321
-#define IDI_TREEVIEWUNCHECKED           322
-#define IDI_VISIBLE                     324
-#define IDI_BLOCKED                     325
-#define IDI_STATUSDEPEND                326
 #define IDD_OPTIONS_PLUS                333
 #define IDC_UNLOAD                      1000
 #define IDC_READNEXT                    1000
@@ -477,6 +473,7 @@
 #define IDC_AEROGLOW                    1395
 #define IDC_SUPPORT                     1396
 #define IDC_SHOWAVATAR                  1396
+#define IDC_HEADERBAR					2397
 #define IDC_QHTM                        1399
 #define IDC_TSLABEL_ACTIVE              1400
 #define IDC_TSLABEL_INACTIVE            1401

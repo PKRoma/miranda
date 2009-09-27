@@ -152,7 +152,7 @@ static void TrimMessage(TCHAR *msg)
 		msg[i+1] = '\0';
 }
 
-void CacheLogFonts()
+void TSAPI CacheLogFonts()
 {
 	int i;
 	HDC hdc = GetDC(NULL);
@@ -232,16 +232,7 @@ void FreeLogFonts()
 		DeleteObject(CInfoPanel::m_ipConfig.bkgBrush);
 }
 
-/*
-#define RTFPICTHEADERMAXSIZE   78
-*/
-
-/*
- * cache copies of all our msg log icons with 3 background colors to speed up the
- * process of inserting icons into the RichEdit control.
- */
-
-void CacheMsgLogIcons()
+void TSAPI CacheMsgLogIcons()
 {
 	Logicons[0] = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
 	Logicons[1] = LoadSkinnedIcon(SKINICON_EVENT_URL);
@@ -257,7 +248,7 @@ void CacheMsgLogIcons()
  * service calls while building the message log
  */
 
-void PreTranslateDates()
+void TSAPI PreTranslateDates()
 {
 	int i;
 	TCHAR *szTemp;
@@ -272,7 +263,7 @@ void PreTranslateDates()
 	}
 }
 
-static int GetColorIndex(char *rtffont)
+static int TSAPI GetColorIndex(char *rtffont)
 {
 	char *p;
 
@@ -617,7 +608,7 @@ static char *CreateRTFTail(struct _MessageWindowData *dat)
 	return buffer;
 }
 
-int DbEventIsShown(struct _MessageWindowData *dat, DBEVENTINFO * dbei)
+int TSAPI DbEventIsShown(struct _MessageWindowData *dat, DBEVENTINFO * dbei)
 {
 	int heFlags;
 
@@ -1360,7 +1351,7 @@ static void SetupLogFormatting(struct _MessageWindowData *dat)
 	}
 }
 
-void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, DBEVENTINFO *dbei_s)
+void TSAPI StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, DBEVENTINFO *dbei_s)
 {
 	EDITSTREAM stream = { 0 };
 	struct LogStreamData streamData = {	0 };
@@ -1726,7 +1717,7 @@ static BOOL CALLBACK LangAddCallback(LPTSTR str)
 	return TRUE;
 }
 
-void BuildCodePageList()
+void TSAPI BuildCodePageList()
 {
 	PluginConfig.g_hMenuEncoding = CreateMenu();
 	AppendMenu(PluginConfig.g_hMenuEncoding, MF_STRING, 500, CTranslator::get(CTranslator::GEN_LOG_USEDEFAULTCP));

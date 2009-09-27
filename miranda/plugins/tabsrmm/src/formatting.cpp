@@ -44,8 +44,6 @@
 
 extern RTFColorTable *rtf_ctable;
 extern void RTF_ColorAdd(const TCHAR *tszColname, size_t length);
-extern int  haveMathMod;
-extern TCHAR *mathModDelimiter;
 extern unsigned int g_ctable_size;
 
 
@@ -111,14 +109,15 @@ const TCHAR *FormatRaw(_MessageWindowData *dat, const TCHAR *msg, int flags, BOO
 	TCHAR 	endmarker;
 	DWORD	dwFlags = dat->dwFlags;
 	message.assign(msg);
+	int		haveMathMod = PluginConfig.m_MathModAvail;
+	TCHAR*	mathModDelimiter = PluginConfig.m_MathModStartDelimiter;
 
 
-
-	if (haveMathMod && mathModDelimiter && message.find(mathModDelimiter) != message.npos)
+	if (haveMathMod && mathModDelimiter[0] && message.find(mathModDelimiter) != message.npos)
 		return(message.c_str());
 
 	if(dwFlags & MWF_LOG_BBCODE) {
-		if (haveMathMod && mathModDelimiter) {
+		if (haveMathMod && mathModDelimiter[0]) {
 			INT_PTR mark = 0;
 			int      nrDelims = 0;
 			while ((mark = message.find(mathModDelimiter, mark)) != message.npos) {

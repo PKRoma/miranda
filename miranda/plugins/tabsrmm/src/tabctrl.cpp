@@ -48,7 +48,7 @@ extern void GetIconSize(HICON hIcon, int* sizeX, int* sizeY);
  * register the new tab control as a window class (TSTabCtrlClass)
  */
 
-int RegisterTabCtrlClass(void)
+int TSAPI RegisterTabCtrlClass(void)
 {
 	WNDCLASSEXA wc;
 	WNDCLASSEX wce;
@@ -75,7 +75,7 @@ int RegisterTabCtrlClass(void)
 
 	ZeroMemory(&wce, sizeof(wce));
 	wce.cbSize         = sizeof(wce);
-	wce.lpszClassName  = _T("SideBarClass");
+	wce.lpszClassName  = _T("TS_SideBarClass");
 	wce.lpfnWndProc    = CSideBar::wndProcStub;;
 	wce.hCursor        = LoadCursor(NULL, IDC_ARROW);
 	wce.cbWndExtra     = sizeof(void*);
@@ -101,8 +101,14 @@ static int TabCtrl_TestForCloseButton(const TabControlData *tabdat, HWND hwnd, P
 			return(-1);
 
 		TabCtrl_GetItemRect(hwnd, iTab, &rcTab);
-		rcTab.left = rcTab.right - 18;
-		rcTab.right -= 5;
+		if(tabdat->dwStyle & TCS_BUTTONS) {
+			rcTab.right -= 1;
+			rcTab.left = rcTab.right - 18;
+		}
+		else {
+			rcTab.left = rcTab.right - 18;
+			rcTab.right -= 5;
+		}
 		rcTab.bottom -= 4;
 		rcTab.top += 4;
 		if(PtInRect(&rcTab, tci.pt))
@@ -449,7 +455,7 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 			if(tabdat->iHoveredCloseIcon != nItem)
 				CSkin::m_default_bf.SourceConstantAlpha = 150;
 
-			CMimAPI::m_MyAlphaBlend(dc, rcItem->right - 18, (rcItem->bottom + rcItem->top - 16) / 2, 16, 16, CSkin::m_tabCloseHDC,
+			CMimAPI::m_MyAlphaBlend(dc, rcItem->right - 20, (rcItem->bottom + rcItem->top - 16) / 2, 16, 16, CSkin::m_tabCloseHDC,
 									0, 0, 16, 16, CSkin::m_default_bf);
 
 			rcItem->right -= 18;
@@ -495,11 +501,33 @@ static void DrawItemRect(struct TabControlData *tabdat, HDC dc, RECT *rcItem, in
 			// draw frame controls for button or bottom tabs
 			if (dwStyle & TCS_BOTTOM)
 				rcItem->top++;
-			else
-				rcItem->bottom--;
+			//else
+			//	rcItem->bottom--;
 
 			rcItem->right += 6;
-			if (bClassicDraw) {
+			if(tabdat->fAeroTabs) {
+				InflateRect(rcItem, 2, 0);
+				FillRect(dc, rcItem, CSkin::m_BrushBack);
+				//CSkin::ApplyAeroEffect(dc, rcItem, CSkin::AERO_EFFECT_AREA_TAB_NORMAL |
+				//					   (dwStyle & TCS_BOTTOM ? CSkin::AERO_EFFECT_AREA_TAB_BOTTOM : CSkin::AERO_EFFECT_AREA_TAB_TOP), 0);
+
+				CSkin::m_switchBarItem->setAlphaFormat(AC_SRC_ALPHA, nHint & HINT_ACTIVE_ITEM ? 255 : 200);
+				CSkin::m_switchBarItem->Render(dc, rcItem, true);
+
+
+				if(nHint & HINT_ACTIVE_ITEM || nHint & HINT_HOTTRACK) {
+					RECT rcGlow = *rcItem;
+
+					if(dwStyle & TCS_BOTTOM)
+						rcGlow.top += 2;
+					else
+						rcGlow.bottom -= 2;
+
+					tabdat->helperGlowItem->setAlphaFormat(AC_SRC_ALPHA, nHint & HINT_ACTIVE_ITEM ? 200 : 150);
+					tabdat->helperGlowItem->Render(dc, &rcGlow, true);
+				}
+			}
+			else if(bClassicDraw) {
 				if (CSkin::m_skinEnabled) {
 					CSkinItem *item = nHint & HINT_ACTIVE_ITEM ? &SkinItems[ID_EXTBKBUTTONSPRESSED] : (nHint & HINT_HOTTRACK ? &SkinItems[ID_EXTBKBUTTONSMOUSEOVER] : &SkinItems[ID_EXTBKBUTTONSNPRESSED]);
 
@@ -1832,7 +1860,7 @@ skip_tabs:
  * load the tab control configuration data (colors, fonts, flags...
  */
 
-void ReloadTabConfig()
+void TSAPI ReloadTabConfig()
 {
 	NONCLIENTMETRICS nclim;
 	int i = 0;
@@ -1867,7 +1895,7 @@ void ReloadTabConfig()
 	PluginConfig.tabConfig.m_hPenStyledDark = CreatePen(PS_SOLID, 1, PluginConfig.tabConfig.colors[9]);
 }
 
-void FreeTabConfig()
+void TSAPI FreeTabConfig()
 {
 	if(PluginConfig.tabConfig.m_hPenItemShadow)
 		DeleteObject(PluginConfig.tabConfig.m_hPenItemShadow);

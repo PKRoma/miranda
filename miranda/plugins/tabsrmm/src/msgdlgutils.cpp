@@ -99,7 +99,7 @@ BOOL TSAPI IsStatusEvent(int eventType)
  * init default color table. the table may grow when using custom colors via bbcodes
  */
 
-void RTF_CTableInit()
+void TSAPI RTF_CTableInit()
 {
 	int iSize = sizeof(struct RTFColorTable) * RTF_CTABLE_DEFSIZE;
 
@@ -774,10 +774,6 @@ int TSAPI GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
 				HBITMAP hbm = ((dat->ace && !(dat->ace->dwFlags & AVS_HIDEONCLIST)) ? dat->ace->hbmPic : 0);
 
 				if (PluginConfig.g_FlashAvatarAvail) {
-					if(dat->hwndPanelPicParent == 0) {
-						dat->hwndPanelPicParent = CreateWindowEx(WS_EX_TOPMOST, _T("Static"), _T(""), SS_OWNERDRAW | WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, hwndDlg, (HMENU)6000, NULL, NULL);
-						//_DebugTraceA("panel pic parent created 1");
-					}
 					fa.cProto = dat->szProto;
 					fa.id = 25367;
 					fa.hContact = dat->hContact;
@@ -787,13 +783,11 @@ int TSAPI GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
 					if (fa.hWindow != NULL && dat->hwndPanelPic) {
 						DestroyWindow(dat->hwndPanelPic);
 						dat->hwndPanelPic = NULL;
+						ShowWindow(dat->hwndPanelPicParent, SW_SHOW);
+						EnableWindow(dat->hwndPanelPicParent, TRUE);
 					}
 				}
 				if (!PluginConfig.g_bDisableAniAvatars && fa.hWindow == NULL && !dat->hwndPanelPic) {
-					if(dat->hwndPanelPicParent == 0) {
-						dat->hwndPanelPicParent =CreateWindowEx(WS_EX_TOPMOST, _T("Static"), _T(""), SS_OWNERDRAW | WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, hwndDlg, (HMENU)6000, NULL, NULL);
-						//_DebugTraceA("panel pic parent created 2");
-					}
 					dat->hwndPanelPic = CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, dat->hwndPanelPicParent, (HMENU)7000, NULL, NULL);
 					if(dat->hwndPanelPic)
 						SendMessage(dat->hwndPanelPic, AVATAR_SETAEROCOMPATDRAWING, 0, TRUE);
@@ -2050,6 +2044,9 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, _Mess
 	else if (dis->hwndItem == dat->hwndPanelPicParent) {
 		RECT 	rc = dis->rcItem;
 
+		if(!IsWindowEnabled(dat->hwndPanelPicParent))
+			return(TRUE);
+
 		if(fAero) {
 			HDC		hdc;
 			HBITMAP hbm, hbmOld;
@@ -2128,10 +2125,6 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, _Mess
 				CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), fa.hWindow != 0);
 			} else {
-				if(fInfoPanel && dat->hwndPanelPicParent == 0) {
-					dat->hwndPanelPicParent = CreateWindowEx(WS_EX_TOPMOST, _T("Static"), _T(""), SS_OWNERDRAW | WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, hwndDlg, (HMENU)6000, NULL, NULL);
-					//_DebugTraceA("panl pic parent created 4");
-				}
 				fa.hContact = dat->hContact;
 				fa.hParentWindow = fInfoPanel ? dat->hwndPanelPicParent : GetDlgItem(hwndDlg, IDC_CONTACTPIC);
 				CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
@@ -2288,7 +2281,7 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, _Mess
 			if (bPanelPic) {
 				bool	bBorder = CSkin::m_bAvatarBorderType ? true : false;
 
-				if(dat->hwndPanelPicParent && bBorder && CSkin::m_bAvatarBorderType != 1)
+				if(dat->hwndPanelPic && bBorder && CSkin::m_bAvatarBorderType != 1)
 					bBorder = false;
 
 				LONG 	height_off = 0;
@@ -2317,10 +2310,10 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, _Mess
 
 				//_DebugTraceA("Panel picture metrics: %d, %d - %f, %f - %d, %d (%d)", cx, cy, dNewWidth, dNewHeight, rcFrame.left, rcFrame.top, dat->panelWidth);
 
-				if(!dat->hwndPanelPicParent)
+				if(!dat->hwndPanelPic)
 					OffsetRect(&rcClient, -2, 0);
 
-				if(dat->hwndPanelPicParent == 0) {
+				if(dat->hwndPanelPic == 0) {
 					if (CSkin::m_bAvatarBorderType == 1)
 						clipRgn = CreateRectRgn(rcClient.left + rcFrame.left, rcClient.top + rcFrame.top, rcClient.left + rcFrame.right,
 												rcClient.top + rcFrame.bottom);

@@ -106,7 +106,7 @@ int Chat_ModulesLoaded(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int Chat_PreShutdown(WPARAM wParam, LPARAM lParam)
+int Chat_PreShutdown()
 {
 	SM_RemoveAll();
 	MM_RemoveAll();
@@ -907,6 +907,9 @@ void DestroyServiceFunctions(void)
 	DestroyServiceFunction(hServiceGetInfo);
 	DestroyServiceFunction(hServiceGetCount);
 	DestroyServiceFunction(hEventDoubleclicked);
+	DestroyServiceFunction(hEventPrebuildMenu);
+	DestroyServiceFunction(hEventJoinChat);
+	DestroyServiceFunction(hEventLeaveChat);
 }
 
 void CreateHookableEvents(void)

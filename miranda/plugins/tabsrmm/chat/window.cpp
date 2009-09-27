@@ -46,7 +46,6 @@
 // externs...
 extern LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern HRESULT(WINAPI *MyCloseThemeData)(HANDLE);
-extern HANDLE g_hEvent_MsgPopup;
 extern REOLECallback *mREOLECallback;
 
 int g_cLinesPerPage=0;
@@ -383,7 +382,7 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct _MessageWindowData *dat,
 		InvalidateRect(hwndTab, NULL, FALSE);
 	if(dat->pContainer->dwFlags & CNT_SIDEBAR)
 		dat->pContainer->SideBar->setActiveItem(dat);
-	BB_SetButtonsPos(hwndDlg,dat);
+	BB_SetButtonsPos(dat);
 }
 
 /*
@@ -395,14 +394,12 @@ static void	InitButtons(HWND hwndDlg, SESSION_INFO* si)
 	BOOL isFlat = M->GetByte("tbflat", 1);
 	BOOL isThemed = PluginConfig.m_bIsXP;
 	MODULEINFO *pInfo = si ? MM_FindModule(si->pszModule) : NULL;
-	BOOL bNicklistEnabled = si ? si->bNicklistEnabled : FALSE;
 	BOOL bFilterEnabled = si ? si->bFilterEnabled : FALSE;
 
 	int i = 0;
 
-	SendDlgItemMessage(hwndDlg, IDC_SHOWNICKLIST, BM_SETIMAGE, IMAGE_ICON, bNicklistEnabled ? (LPARAM)PluginConfig.g_buttonBarIcons[36] : (LPARAM)PluginConfig.g_buttonBarIcons[35]);
-	SendDlgItemMessage(hwndDlg, IDC_FILTER, BM_SETIMAGE, IMAGE_ICON, bFilterEnabled ? (LPARAM)PluginConfig.g_buttonBarIcons[34] : (LPARAM)PluginConfig.g_buttonBarIcons[33]);
-	SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BM_SETIMAGE, IMAGE_ICON, (LPARAM)PluginConfig.g_buttonBarIcons[25]);
+	SendDlgItemMessage(hwndDlg, IDC_SHOWNICKLIST, BM_SETIMAGE, IMAGE_ICON, (LPARAM)PluginConfig.g_buttonBarIcons[35]);
+	SendDlgItemMessage(hwndDlg, IDC_FILTER, BM_SETIMAGE, IMAGE_ICON, (LPARAM)PluginConfig.g_buttonBarIcons[33]);
 
 	if (pInfo) {
 		EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_BOLD), pInfo->bBold);
@@ -634,7 +631,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				mwpd.hMenu = hSubMenu;
 				mwpd.selection = 0;
 				mwpd.pt = pt;
-				NotifyEventHooks(g_hEvent_MsgPopup, 0, (LPARAM)&mwpd);
+				NotifyEventHooks(PluginConfig.m_event_MsgPopup, 0, (LPARAM)&mwpd);
 			}
 
 			iSelection = TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, GetParent(hwnd), NULL);
@@ -643,7 +640,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				// Second notification
 				mwpd.selection = iSelection;
 				mwpd.uType = MSG_WINDOWPOPUP_SELECTED;
-				NotifyEventHooks(g_hEvent_MsgPopup, 0, (LPARAM)&mwpd);
+				NotifyEventHooks(PluginConfig.m_event_MsgPopup, 0, (LPARAM)&mwpd);
 			}
 
 			switch (iSelection) {
@@ -2046,7 +2043,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			//MAD
 			PluginConfig.g_NickListScrollBarFix = M->GetByte("adv_ScrollBarFix", 1);
 
-			BB_InitDlgButtons(hwndDlg,dat);
+			BB_InitDlgButtons(dat);
 			//TODO: unify "change font color" button behavior in IM and Chat windows
 			SendMessage(GetDlgItem(hwndDlg,IDC_COLOR), BUTTONSETASPUSHBTN, 0, 0);
 			//
@@ -2105,7 +2102,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			PostMessage(hwndDlg, GC_UPDATENICKLIST, 0, 0);
 			dat->pContainer->hwndActive = hwndDlg;
 			//mad
-			BB_SetButtonsPos(hwndDlg,dat);
+			BB_SetButtonsPos(dat);
 			TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN, 0);
 		}
 		break;
@@ -2121,7 +2118,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 		case DM_LOADBUTTONBARICONS: {
 			BB_UpdateIcons(hwndDlg, dat);
 			return 0;
-			}
+		}
 
 		case GC_SETWNDPROPS: {
 			//HICON hIcon;
@@ -2165,7 +2162,8 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				SendMessage(GetDlgItem(hwndDlg, IDC_LIST), LB_SETITEMHEIGHT, 0, (LPARAM)g_Settings.iNickListFontHeight);
 				InvalidateRect(GetDlgItem(hwndDlg, IDC_LIST), NULL, TRUE);
 			}
-			SendDlgItemMessage(hwndDlg, IDC_FILTER, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(si->bFilterEnabled ? IDI_FILTER : IDI_FILTER2, si->bFilterEnabled ? (char *)"filter" : (char *)"filter2", 0, 0));
+			SendDlgItemMessage(hwndDlg, IDC_FILTER, BUTTONSETOVERLAYICON, 0,
+							   (LPARAM)(si->bFilterEnabled ? PluginConfig.g_iconOverlayEnabled : PluginConfig.g_iconOverlayDisabled));
 			SendMessage(hwndDlg, WM_SIZE, 0, 0);
 			SendMessage(hwndDlg, GC_REDRAWLOG2, 0, 0);
 		}
@@ -2320,7 +2318,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			urd.pfnResizer = RoomWndResize;
 			CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM)&urd);
 			//mad
-			BB_SetButtonsPos(hwndDlg,dat);
+			BB_SetButtonsPos(dat);
 
 			GetClientRect(hwndDlg, &rc);
 			cx = rc.right;
@@ -3232,7 +3230,6 @@ LABEL_SHOWWINDOW:
 
 					si->bNicklistEnabled = !si->bNicklistEnabled;
 
-					SendDlgItemMessage(hwndDlg, IDC_SHOWNICKLIST, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(si->bNicklistEnabled ? IDI_HIDENICKLIST : IDI_SHOWNICKLIST, si->bNicklistEnabled ? (char *)"hidenicklist" : (char *)"shownicklist", 0, 0));
 					SendMessage(hwndDlg, WM_SIZE, 0, 0);
 					if (CSkin::m_skinEnabled)
 						InvalidateRect(hwndDlg, NULL, TRUE);
@@ -3317,7 +3314,10 @@ LABEL_SHOWWINDOW:
 						si->bFilterEnabled = 0;
 					} else
 						si->bFilterEnabled = !si->bFilterEnabled;
-					SendDlgItemMessage(hwndDlg, IDC_FILTER, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(si->bFilterEnabled ? IDI_FILTER : IDI_FILTER2, si->bFilterEnabled ? (char *)"filter" : (char *)"filter2", 0, 0));
+
+					SendDlgItemMessage(hwndDlg, IDC_FILTER, BUTTONSETOVERLAYICON, 0,
+									   (LPARAM)(si->bFilterEnabled ? PluginConfig.g_iconOverlayEnabled : PluginConfig.g_iconOverlayDisabled));
+
 					if (si->bFilterEnabled && M->GetByte("Chat", "RightClickFilter", 0) == 0) {
 						SendMessage(hwndDlg, GC_SHOWFILTERMENU, 0, 0);
 						break;
@@ -3769,9 +3769,9 @@ LABEL_SHOWWINDOW:
 			if(lParam)
 				CB_ChangeButton(hwndDlg,dat,(CustomButtonData*)lParam);
 			else
-				BB_InitDlgButtons(hwndDlg,dat);
+				BB_InitDlgButtons(dat);
 
-			BB_SetButtonsPos(hwndDlg, dat);
+			BB_SetButtonsPos(dat);
 			}break;
 
 		case DM_CBDESTROY:{
