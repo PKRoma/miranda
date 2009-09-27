@@ -15,9 +15,9 @@ struct CAimProto : public PROTO_INTERFACE
 	~CAimProto();
 
 	__inline void* operator new( size_t size )
-	{	return calloc( 1, size ); }
+	{ return calloc( 1, size ); }
 	__inline void operator delete( void* p )
-	{	free( p ); }
+	{ free( p ); }
 
 	//====================================================================================
 	// PROTO_INTERFACE

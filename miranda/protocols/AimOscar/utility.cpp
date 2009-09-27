@@ -96,7 +96,7 @@ void CAimProto::start_connection(void *arg)
 		if (login_url == NULL) login_url = mir_strdup(use_ssl ? AIM_DEFAULT_SERVER : AIM_DEFAULT_SERVER_NS);
 
 		unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
-		hServerConn = aim_connect(dbv.pszVal, port, use_ssl);
+		hServerConn = aim_connect(login_url, port, use_ssl);
 
 		mir_free(login_url);
 
