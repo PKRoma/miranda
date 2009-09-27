@@ -185,6 +185,8 @@ struct CAimProto : public PROTO_INTERFACE
 	unsigned short pd_info_id;
 	char pd_mode;
 
+	// prefernces
+	unsigned short pref1_id;
 	unsigned long pref1_flags;
 
 	BdList allow_list;

@@ -706,13 +706,15 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
 		case 0x0005: //prefernces record
 			if (group_id == 0)
 			{
+				pref1_id = item_id;
+
 				const int tlv_base = offset + name_length + 10; 
 				for (int tlv_offset = 0; tlv_offset < tlv_size; )
 				{
 					TLV tlv(snac.val(tlv_base + tlv_offset));
 
-					if(tlv.cmp(0x00c9))
-						pref1_flags = tlv.ubyte();
+					if (tlv.cmp(0x00c9))
+						pref1_flags = tlv.ulong();
 
 					tlv_offset += TLV_HEADER_SIZE + tlv.len();
 				}

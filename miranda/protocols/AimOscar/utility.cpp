@@ -90,14 +90,15 @@ void CAimProto::start_connection(void *arg)
 			return;
 		}
 
-		int dbkey = getString(AIM_KEY_HN, &dbv);
-		if (dbkey) dbv.pszVal = (char*)(getByte(AIM_KEY_DSSL, 0) ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER);
+		bool use_ssl = !getByte(AIM_KEY_DSSL, 0);
 
-		hServerConn = NULL;
+		char* login_url = getSetting(NULL, AIM_KEY_HN);
+		if (login_url == NULL) login_url = mir_strdup(use_ssl ? AIM_DEFAULT_SERVER : AIM_DEFAULT_SERVER_NS);
+
 		unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
-		hServerConn = aim_connect(dbv.pszVal, port, !getByte(AIM_KEY_DSSL, 0));
+		hServerConn = aim_connect(dbv.pszVal, port, use_ssl);
 
-		if (!dbkey) DBFreeVariant(&dbv);
+		mir_free(login_url);
 
 		if (hServerConn)
 			aim_connection_authorization();

@@ -454,14 +454,42 @@ int CAimProto::aim_mod_buddy(HANDLE hServerConn, unsigned short &seqno, const ch
 	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
+int CAimProto::aim_set_pd_info(HANDLE hServerConn, unsigned short &seqno)
+{
+	unsigned short offset=0;
+	char buf[SNAC_SIZE+TLV_HEADER_SIZE*3+20];
+	unsigned short req = 0x09;
+	if (pd_info_id == 0)
+	{
+		pd_info_id = get_random();
+		req = 0x08;
+	}
+	aim_writesnac(0x13,req,offset,buf);                             // SSI Edit/Add
+	aim_writeshort(0,offset,buf);                                   // name length
+	aim_writeshort(0,offset,buf);                                   // group id (root)
+	aim_writeshort(pd_info_id,offset,buf);                          // buddy id
+	aim_writeshort(0x4,offset,buf);                                 // pd info id
+	aim_writeshort(0x15,offset,buf);                                // size
+	aim_writetlvchar(0xca,pd_mode,offset,buf);                      // pd mode
+	aim_writetlvlong(0xcb,0xffffffff,offset,buf);                   // pd mask
+	aim_writetlvlong(0xcc,pd_flags,offset,buf);                     // pd flags
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
+}
+
 int CAimProto::aim_ssi_update_preferences(HANDLE hServerConn, unsigned short &seqno)
 {
 	unsigned short offset = 0;
 	char buf[SNAC_SIZE+TLV_HEADER_SIZE*2+18];
-	aim_writesnac(0x13,0x09,offset,buf);                            // SSI Edit
+	unsigned short req = 0x09;
+	if (pref1_id == 0)
+	{
+		pref1_id = get_random();
+		req = 0x08;
+	}
+	aim_writesnac(0x13,req,offset,buf);                             // SSI Edit/Add
 	aim_writeshort(0,offset,buf);									// group name length
 	aim_writeshort(0,offset,buf);									// group id (root)
-	aim_writeshort(1,offset,buf);                                   // buddy id
+	aim_writeshort(pref1_id,offset,buf);                            // buddy id
 	aim_writeshort(5,offset,buf);                                   // buddy type: Presence
 	aim_writeshort(TLV_HEADER_SIZE*2+8,offset,buf);					// length of extra data
 	aim_writetlvlong(0xc9,pref1_flags,offset,buf);					// Update Buddy preferences 1
@@ -689,28 +717,6 @@ int CAimProto::aim_search_by_email(HANDLE hServerConn,unsigned short &seqno, con
 	char* buf= (char*)alloca(SNAC_SIZE+em_length);
 	aim_writesnac(0x0a,0x02,offset,buf);	                        // Email search
 	aim_writegeneric(em_length,email,offset,buf);
-	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
-}
-
-int CAimProto::aim_set_pd_info(HANDLE hServerConn, unsigned short &seqno)
-{
-	unsigned short offset=0;
-	char buf[SNAC_SIZE+TLV_HEADER_SIZE*3+20];
-	unsigned short req = 0x09;
-	if (pd_info_id == 0)
-	{
-		pd_info_id = get_random();
-		req = 0x08;
-	}
-	aim_writesnac(0x13,req,offset,buf);                             // SSI Edit/Add
-	aim_writeshort(0,offset,buf);                                   // name length
-	aim_writeshort(0,offset,buf);                                   // group id
-	aim_writeshort(pd_info_id,offset,buf);                          // buddy id
-	aim_writeshort(0x4,offset,buf);                                 // pd info id
-	aim_writeshort(0x15,offset,buf);                                // size
-	aim_writetlvchar(0xca,pd_mode,offset,buf);                      // pd mode
-	aim_writetlvlong(0xcb,0xffffffff,offset,buf);                   // pd mask
-	aim_writetlvlong(0xcc,pd_flags,offset,buf);                     // pd flags
 	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
