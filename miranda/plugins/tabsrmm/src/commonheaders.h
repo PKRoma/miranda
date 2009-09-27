@@ -189,7 +189,6 @@ extern struct LIST_INTERFACE li;
 
 #include "msgdlgutils.h"
 
-#include "../chat/chat.h"
 #include "msgs.h"
 #ifndef __CPP_LEAN
 #include "nen.h"
@@ -198,6 +197,7 @@ extern struct LIST_INTERFACE li;
 #include "generic_msghandlers.h"
 extern 	NEN_OPTIONS	nen_options;
 #endif
+#include "../chat/chat.h"
 
 #include "translator.h"
 #include "themes.h"

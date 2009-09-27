@@ -135,7 +135,7 @@ int CMUCHighlight::match(const GCEVENT *pgce, const SESSION_INFO *psi, DWORD dwF
 	if(pgce == 0)
 		return(0);
 
-	if((m_dwFlags & MATCH_TEXT) && (dwFlags & MATCH_TEXT) && m_iTextPatterns > 0) {
+	if((m_dwFlags & MATCH_TEXT) && (dwFlags & MATCH_TEXT) && m_iTextPatterns > 0 && psi) {
 #ifdef __HLT_PERFSTATS
 		int		words = 0;
 		M->startTimer();

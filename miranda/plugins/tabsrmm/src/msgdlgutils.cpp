@@ -2044,7 +2044,7 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, _Mess
 	else if (dis->hwndItem == dat->hwndPanelPicParent) {
 		RECT 	rc = dis->rcItem;
 
-		if(!IsWindowEnabled(dat->hwndPanelPicParent))
+		if(!IsWindowEnabled(dat->hwndPanelPicParent) || !dat->Panel->isActive())
 			return(TRUE);
 
 		if(fAero) {

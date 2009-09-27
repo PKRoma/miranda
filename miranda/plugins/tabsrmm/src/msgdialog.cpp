@@ -2099,7 +2099,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					CallService(MS_FAVATAR_RESIZE, (WPARAM)&fa, (LPARAM)&rc1);
 				}
 			}
-			if(dat->hwndPanelPic) {
+			if(dat->hwndPanelPic || dat->hwndFlash) {
 				SetWindowPos(dat->hwndPanelPicParent, HWND_TOP, rc.left - 2, rc.top, rc.right - rc.left, (rc.bottom - rc.top) + 1,
 							 0);
 				ShowWindow(dat->hwndPanelPicParent, dat->panelWidth == -1 ? SW_HIDE : SW_SHOW);

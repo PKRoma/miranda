@@ -312,6 +312,8 @@ struct MessageWindowTheme {
 	char *rtfFonts;
 };
 
+struct SESSIONINFO_TYPE;
+
 struct _MessageWindowData {
 	UINT	cbSize;
 	BYTE    bType;
@@ -343,7 +345,7 @@ struct _MessageWindowData {
 	UINT	bbLSideWidth;  //MAD
 	UINT	bbRSideWidth;    //MAD
 	struct StatusIconListNode *pSINod;
-	SESSION_INFO   *si;
+	SESSIONINFO_TYPE* si;
 
 	RECT	rcNick, rcUIN, rcStatus, rcPic;
 	HANDLE  hDbEventFirst, hDbEventLast;

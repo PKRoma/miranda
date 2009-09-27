@@ -736,7 +736,7 @@ INT_PTR Service_AddEvent(WPARAM wParam, LPARAM lParam)
 			if (!gce->bIsMe && gce->pDest->pszID && gce->pszText) {
 				if (si) {
 					//if (IsHighlighted(si, gce->ptszText))
-						bIsHighlighted = si->Highlight->match(gce, 0);
+						bIsHighlighted = si->Highlight->match(gce, si, CMUCHighlight::MATCH_TEXT | CMUCHighlight::MATCH_NICKNAME);
 				}
 			}
 		}

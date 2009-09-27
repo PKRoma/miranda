@@ -150,13 +150,7 @@ void CInfoPanel::showHide() const
 	HWND	hwndDlg = m_dat->hwnd;
 
 	if(!m_isChat) {
-		if(!m_active && m_dat->hwndPanelPic) {
-			::DestroyWindow(m_dat->hwndPanelPic);
-			m_dat->hwndPanelPic = NULL;
-		}
-		if(!m_active && m_dat->hwndPanelPicParent) {
-			::ShowWindow(m_dat->hwndPanelPicParent, SW_HIDE);
-		}
+		::ShowWindow(m_dat->hwndPanelPicParent, m_active && (m_dat->hwndPanelPic || m_dat->hwndFlash) ? SW_SHOW : SW_HIDE);
 		//
 		m_dat->iRealAvatarHeight = 0;
 		::AdjustBottomAvatarDisplay(m_dat);
