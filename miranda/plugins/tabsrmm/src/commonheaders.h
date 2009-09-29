@@ -187,9 +187,8 @@ extern struct LIST_INTERFACE li;
 #include "../API/m_updater.h"
 #include "../API/m_smileyadd.h"
 
-#include "msgdlgutils.h"
-
 #include "msgs.h"
+#include "msgdlgutils.h"
 #ifndef __CPP_LEAN
 #include "nen.h"
 #include "functions.h"

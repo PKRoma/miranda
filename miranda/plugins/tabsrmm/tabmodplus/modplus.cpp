@@ -47,8 +47,7 @@
 
 #include "../src/commonheaders.h"
 
-static  HANDLE  hEventCBButtonPressed,hEventCBInit, hEventDbWindowEvent, hEventDbOptionsInit, hEventDbPluginsLoaded,
-hIcon1,hIcon0,hib1,hib0 ;
+static  HANDLE  hEventCBButtonPressed,hEventCBInit, hEventDbWindowEvent, hEventDbOptionsInit, hEventDbPluginsLoaded;
 
 int     g_bStartup=0;
 BOOL    bWOpened=FALSE;
@@ -147,12 +146,12 @@ static int GetContactHandle(WPARAM wparam,LPARAM lParam)
 static int RegisterCustomButton(WPARAM wParam,LPARAM lParam)
 {
 	if ( ServiceExists(MS_BB_ADDBUTTON) ) {
-		BBButton bbd={0};
-		bbd.cbSize=sizeof(BBButton);
-		bbd.bbbFlags=BBBF_ISIMBUTTON|BBBF_ISLSIDEBUTTON|BBBF_ISPUSHBUTTON;
-		bbd.dwButtonID=1;
-		bbd.dwDefPos=200;
-		bbd.hIcon=hib0;
+		BBButton bbd = {0};
+		bbd.cbSize = sizeof(BBButton);
+		bbd.bbbFlags = BBBF_ISIMBUTTON|BBBF_ISLSIDEBUTTON|BBBF_ISPUSHBUTTON;
+		bbd.dwButtonID = 1;
+		bbd.dwDefPos =200;
+		bbd.hIcon = (HANDLE)PluginConfig.g_buttonBarIcons[3];
 		bbd.pszModuleName = (char *)"Tabmodplus";
 		bbd.ptszTooltip = (TCHAR *)_T("Insert [img] tag / surround selected text with [img][/img]");
 
@@ -248,7 +247,7 @@ static int CustomButtonPressed(WPARAM wParam,LPARAM lParam)
 				_sntprintf(pszFormatedText,6*sizeof(TCHAR),_T("%s"),_T("[img]"));
 
 				bbd.ptszTooltip = (TCHAR *)_T("Insert [/img] tag");
-				bbd.hIcon=hib1;
+				bbd.hIcon = (HANDLE)PluginConfig.g_buttonBarIcons[3];
 				CallService(MS_BB_SETBUTTONSTATE, wParam, (LPARAM)&bbd);
 
 			}break;
@@ -260,7 +259,7 @@ static int CustomButtonPressed(WPARAM wParam,LPARAM lParam)
 				_sntprintf(pszFormatedText,7*sizeof(TCHAR),_T("%s"),_T("[/img]"));
 
 				bbd.ptszTooltip = (TCHAR *)_T("Insert [img] tag / surround selected text with [img][/img]");
-				bbd.hIcon=hib0;
+				bbd.hIcon = (HANDLE)PluginConfig.g_buttonBarIcons[3];
 				CallService(MS_BB_SETBUTTONSTATE, wParam, (LPARAM)&bbd);
 
 			}break;
@@ -277,19 +276,6 @@ static int CustomButtonPressed(WPARAM wParam,LPARAM lParam)
 	if ( pszFormatedText ) mir_free(pszFormatedText);
 	return (1);
 
-}
-
-int AddIcon(HICON icon, char *name, char *description)
-{
-	SKINICONDESC sid = {0};
-	sid.cbSize = sizeof(SKINICONDESC);
-	sid.pszSection = "TabSRMM/Toolbar";
-	sid.cx = sid.cy = 16;
-	sid.pszDescription = description;
-	sid.pszName = name;
-	sid.hDefaultIcon = icon;
-
-	return (CallService(MS_SKIN2_ADDICON, 0, (LPARAM) &sid));
 }
 
 #define MBF_OWNERSTATE        0x04
@@ -319,11 +305,6 @@ int ModPlus_Init(WPARAM wparam,LPARAM lparam)
 		sid.hIcon = sid.hIconDisabled = 0;
 		CallService(MS_MSG_ADDICON, 0, (LPARAM)&sid);
 	}
-
-	hIcon1     = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_IMGCLOSE));
-	hIcon0     = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_IMGOPEN));
-	hib1        =(HANDLE)AddIcon((HICON)hIcon1, (char *)"tabmodplus1", (char *)"[/img]");
-	hib0        =(HANDLE)AddIcon((HICON)hIcon0, (char *)"tabmodplus0", (char *)"[img]");
-	g_bStartup=0;
+	g_bStartup = 0;
 	return (0);
 }

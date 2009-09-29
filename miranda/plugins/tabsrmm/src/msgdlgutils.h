@@ -55,7 +55,7 @@ void	TSAPI FlashOnClist					(HWND hwndDlg, _MessageWindowData *dat, HANDLE hEven
 char*	TSAPI Message_GetFromStream			(HWND hwndDlg, const _MessageWindowData* dat, DWORD dwPassedFlags);
 BOOL	TSAPI DoRtfToTags					(TCHAR * pszText, const _MessageWindowData *dat);
 void	TSAPI DoTrimMessage					(TCHAR *msg);
-void	TSAPI SaveInputHistory				(HWND hwndDlg, struct _MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
+void	TSAPI SaveInputHistory				(HWND hwndDlg, _MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
 void	TSAPI GetContactUIN					(_MessageWindowData *dat);
 void	TSAPI SetMessageLog					(_MessageWindowData *dat);
 void	TSAPI SwitchMessageLog				(_MessageWindowData *dat, int iMode);
@@ -63,7 +63,7 @@ UINT	TSAPI GetIEViewMode					(HWND hwndDlg, HANDLE hContact);
 void	TSAPI FindFirstEvent				(_MessageWindowData *dat);
 void	TSAPI SaveSplitter					(_MessageWindowData *dat);
 void	TSAPI LoadSplitter					(_MessageWindowData *dat);
-void	TSAPI PlayIncomingSound				(const struct ContainerWindowData *pContainer, HWND hwnd);
+void	TSAPI PlayIncomingSound				(const ContainerWindowData *pContainer, HWND hwnd);
 void	TSAPI GetSendFormat					(_MessageWindowData *dat, int mode);
 void	TSAPI GetLocaleID					(_MessageWindowData *dat, const TCHAR *szKLName);
 void	TSAPI LoadOwnAvatar					(_MessageWindowData *dat);

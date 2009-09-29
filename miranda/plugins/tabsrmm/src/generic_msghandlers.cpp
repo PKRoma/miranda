@@ -439,15 +439,16 @@ LRESULT TSAPI DM_WMCopyHandler(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPA
 * create embedded contact list control
 */
 
-HWND TSAPI DM_CreateClist(HWND hwndParent, struct _MessageWindowData *dat)
+HWND TSAPI DM_CreateClist(const _MessageWindowData *dat)
 {
-	HWND hwndClist = CreateWindowExA(0, "CListControl", "", WS_TABSTOP | WS_VISIBLE | WS_CHILD | 0x248, 184, 0, 30, 30, hwndParent, (HMENU)IDC_CLIST, g_hInst, NULL);
+	HWND hwndClist = CreateWindowExA(0, "CListControl", "", WS_TABSTOP | WS_VISIBLE | WS_CHILD | 0x248,
+									 184, 0, 30, 30, dat->hwnd, (HMENU)IDC_CLIST, g_hInst, NULL);
 
 	//MAD: fix for little bug, when following code didn't work (another hack :) )
 	HANDLE hItem;
 	SendMessage(hwndClist, WM_TIMER, 14, 0);
 	//
-	hItem = (HANDLE) SendDlgItemMessage(hwndParent, IDC_CLIST, CLM_FINDCONTACT, (WPARAM) dat->hContact, 0);
+	hItem = (HANDLE) SendMessage(hwndClist, CLM_FINDCONTACT, (WPARAM) dat->hContact, 0);
 
 	SetWindowLongPtr(hwndClist, GWL_EXSTYLE, GetWindowLongPtr(hwndClist, GWL_EXSTYLE) & ~CLS_EX_TRACKSELECT);
 	SetWindowLongPtr(hwndClist, GWL_EXSTYLE, GetWindowLongPtr(hwndClist, GWL_EXSTYLE) | (CLS_EX_NOSMOOTHSCROLLING | CLS_EX_NOTRANSLUCENTSEL));
@@ -843,6 +844,97 @@ void TSAPI DM_Typing(_MessageWindowData *dat)
 			dat->showTyping = 1;
 		}
 	}
+}
+
+/**
+ * sync splitter position for all open sessions.
+ * This cares about private / per container / MUC <> IM splitter syncing and everything.
+ * called from IM and MUC windows via DM_SPLITTERGLOBALEVENT
+ */
+int TSAPI DM_SplitterGlobalEvent(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
+{
+	RECT 	rcWin;
+	short 	newMessagePos;
+	LONG	newPos;
+	_MessageWindowData 	*srcDat = PluginConfig.lastSPlitterPos.pSrcDat;
+	ContainerWindowData *srcCnt = PluginConfig.lastSPlitterPos.pSrcContainer;
+	bool				fCntGlobal = ((dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS) ? true : false);
+
+	GetWindowRect(dat->hwnd, &rcWin);
+
+	if(wParam == 0 && lParam == 0) {
+		if((dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE) && dat != srcDat)
+			return(0);
+
+		if(srcDat->bType == dat->bType)
+			newPos = PluginConfig.lastSPlitterPos.pos;
+		else if(srcDat->bType == SESSIONTYPE_IM && dat->bType == SESSIONTYPE_CHAT)
+			newPos = PluginConfig.lastSPlitterPos.pos + PluginConfig.lastSPlitterPos.off_im;
+		else if(srcDat->bType == SESSIONTYPE_CHAT && dat->bType == SESSIONTYPE_IM)
+			newPos = PluginConfig.lastSPlitterPos.pos + PluginConfig.lastSPlitterPos.off_im;
+
+		if(dat == srcDat) {
+			if(dat->bType == SESSIONTYPE_IM) {
+				dat->pContainer->splitterPos = dat->splitterY;
+				if(fCntGlobal) {
+					SaveSplitter(dat);
+					if(PluginConfig.lastSPlitterPos.bSync)
+						g_Settings.iSplitterY = dat->splitterY - DPISCALEY_S(23);
+				}
+			}
+			if(dat->bType == SESSIONTYPE_CHAT) {
+				SESSION_INFO *si = dat->si;
+				if(si) {
+					dat->pContainer->splitterPos = si->iSplitterY + DPISCALEY_S(23);
+					if(fCntGlobal) {
+						g_Settings.iSplitterY = si->iSplitterY;
+						if(PluginConfig.lastSPlitterPos.bSync)
+							M->WriteDword(SRMSGMOD_T, "splitsplity", (DWORD)si->iSplitterY + DPISCALEY_S(23));
+					}
+				}
+			}
+			return(0);
+		}
+
+		if(!fCntGlobal && dat->pContainer != srcCnt)
+			return(0);
+		if(!(srcCnt->dwPrivateFlags & CNT_GLOBALSETTINGS) && dat->pContainer != srcCnt)
+			return(0);
+
+		if(!PluginConfig.lastSPlitterPos.bSync && dat->bType != srcDat->bType)
+			return(0);
+
+		/*
+		 * for inactive sessions, delay the splitter repositioning until they become
+		 * active (faster, avoid redraw/resize problems for minimized windows)
+		 */
+		if (IsIconic(dat->pContainer->hwnd) || dat->pContainer->hwndActive != dat->hwnd) {
+			dat->dwFlagsEx |= MWF_EX_DELAYEDSPLITTER;
+			dat->wParam = newPos;
+			dat->lParam = PluginConfig.lastSPlitterPos.lParam;
+			return(0);
+		}
+	}
+	else
+		newPos = wParam;
+
+	newMessagePos = (short)rcWin.bottom - (short)newPos;
+
+	if(dat->bType == SESSIONTYPE_IM) {
+		LoadSplitter(dat);
+		AdjustBottomAvatarDisplay(dat);
+		DM_RecalcPictureSize(dat);
+		SendMessage(dat->hwnd, WM_SIZE, 0, 0);
+		DM_ScrollToBottom(dat, 1,1);
+	}
+	else {
+		SESSION_INFO *si = dat->si;
+		if(si) {
+			si->iSplitterY = g_Settings.iSplitterY;
+			SendMessage(dat->hwnd, WM_SIZE, 0, 0);
+		}
+	}
+	return(0);
 }
 
 void TSAPI DM_EventAdded(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
@@ -1339,7 +1431,6 @@ static INT_PTR SI_ModifyStatusIcon(WPARAM wParam, LPARAM lParam)
 		}
 		current = current->next;
 	}
-
 	return 1;
 }
 
@@ -1390,18 +1481,17 @@ void DrawStatusIcons(struct _MessageWindowData *dat, HDC hDC, RECT r, int gap)
 	DrawIconEx(hDC, x, (r.top + r.bottom - 16) >> 1, PluginConfig.g_buttonBarIcons[ICON_DEFAULT_SOUNDS],
 			   cx_icon, cy_icon, 0, NULL, DI_NORMAL);
 
-	if(dat->pContainer->dwFlags & CNT_NOSOUND)
-		DrawIconEx(hDC, x, (r.top + r.bottom - 16) >> 1, PluginConfig.g_iconOverlayDisabled,
-				   cx_icon, cy_icon, 0, NULL, DI_NORMAL);
+	DrawIconEx(hDC, x, (r.top + r.bottom - 16) >> 1, dat->pContainer->dwFlags & CNT_NOSOUND ?
+			   PluginConfig.g_iconOverlayDisabled : PluginConfig.g_iconOverlayEnabled,
+			   cx_icon, cy_icon, 0, NULL, DI_NORMAL);
 
 	x += (cx_icon + gap);
 
 	if (dat->bType == SESSIONTYPE_IM) {
 		DrawIconEx(hDC, x, (r.top + r.bottom - cx_icon) >> 1,
 				   PluginConfig.g_buttonBarIcons[12], cx_icon, cy_icon, 0, NULL, DI_NORMAL);
-		if(!(M->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, M->GetByte(SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW))))
-			DrawIconEx(hDC, x, (r.top + r.bottom - cx_icon) >> 1,
-					   PluginConfig.g_iconOverlayDisabled, cx_icon, cy_icon, 0, NULL, DI_NORMAL);
+		DrawIconEx(hDC, x, (r.top + r.bottom - cx_icon) >> 1, M->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, M->GetByte(SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)) ?
+				   PluginConfig.g_iconOverlayEnabled : PluginConfig.g_iconOverlayDisabled, cx_icon, cy_icon, 0, NULL, DI_NORMAL);
 	}
 	else
 		CSkin::DrawDimmedIcon(hDC, x, (r.top + r.bottom - cx_icon) >> 1, cx_icon, cy_icon,

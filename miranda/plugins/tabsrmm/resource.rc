@@ -1223,9 +1223,6 @@ BEGIN
         MENUITEM "Set and Save for all Sessions", 
                                                 ID_SPLITTERCONTEXT_SAVEGLOBALFORALLSESSIONS
 
-        MENUITEM "Set and save for this container", 
-                                                ID_SPLITTERCONTEXT_SAVEFORCONTAINER
-
         MENUITEM "Set and Save for this Contact only", 
                                                 ID_SPLITTERCONTEXT_SAVEFORTHISCONTACTONLY
 
@@ -1316,12 +1313,10 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_IMGOPEN             ICON    DISCARDABLE     "tabmodplus/icons/imgopen.ico"
 IDI_ENABLED             ICON    DISCARDABLE     "res/res_TN/popup.ico"
 IDI_DISABLED            ICON    DISCARDABLE     "res/res_TN/popup_no.ico"
 IDI_FEATURE_ENABLED		ICON	DISCARDABLE		"res/overlay_enabled.ico"
 IDI_FEATURE_DISABLED	ICON	DISCARDABLE		"res/overlay_disabled.ico"
-IDI_IMGCLOSE            ICON    DISCARDABLE     "tabmodplus/icons/imgclose.ico"
 #endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 

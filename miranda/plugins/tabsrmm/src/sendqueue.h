@@ -69,12 +69,13 @@ public:
 	HANDLE	hContact;									// original contact where the message has been assigned
 	HANDLE  hTargetContact;								// *real* contact (can be different for metacontacts, e.g).
 	HANDLE	hProcess;									// returned from the protocols sending service. needed to find it in the ACK handler
+	time_t	created;									// job was created at this time (important to kill jobs, that are too old)
 	time_t	lastSent;									// time at which the delivery was initiated. used to handle timeouts
 	char	*sendBuffer;								// utf-8 send buffer
 	PBYTE	pBuf;										// conventional send buffer (for non-utf8 protocols)
 	DWORD	dwFlags;
 	int		iSendCount;									// # of times we tried to send it...
-	bool	fSuccess;
+	bool	fSuccess, fFailed;
 };
 
 class SendQueue {
@@ -118,7 +119,7 @@ public:
 	void 	TSAPI recallFailed				(const _MessageWindowData *dat, int iEntry) const;
 	void 	TSAPI showErrorControls			(_MessageWindowData *dat, const int showCmd) const;
 	int 	TSAPI ackMessage				(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
-	int		TSAPI sendLater					(int iIndex, _MessageWindowData *dat, bool fAddHeader = true, HANDLE hContact = 0);
+	int		TSAPI sendLater					(int iIndex, _MessageWindowData *dat, HANDLE hContact = 0, bool fIsSendLater = true);
 	/*
 	 * static members
 	 */

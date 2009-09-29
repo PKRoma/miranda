@@ -165,7 +165,7 @@ public:
 			m_bStretch = IMAGE_STRETCH_B;
 	}
 
-	void	TSAPI	Free();
+	void			Free();
 	CImageItem*		getNextItem() const { return(m_nextItem); }
 	void			setNextItem(CImageItem *item) { m_nextItem = item; }
 	HBITMAP			getHbm() const { return(m_hbm); }
@@ -280,9 +280,9 @@ public:
 	bool					warnToClose() const;
 	COLORREF				getColorKey() const { return(m_ContainerColorKey); }
 
-	void	TSAPI			setupAeroSkins();
-	void 	TSAPI			extractSkinsAndLogo() const;
-	void	TSAPI			setupTabCloseBitmap();
+	void					setupAeroSkins();
+	void 					extractSkinsAndLogo() const;
+	void					setupTabCloseBitmap();
 
 	/*
 	 * static member functions
@@ -334,7 +334,7 @@ public:
 	 * controls the aero effect. Set by initAeroEffect()
 	 */
 
-	static UINT		m_aeroEffect;											// effect id, initAeroEffect() is using it to set
+	static UINT			m_aeroEffect;										// effect id, initAeroEffect() is using it to set
 																			// the parameters below.
 	static AeroEffect	m_aeroEffects[AERO_EFFECT_LAST];
 	static AeroEffect	m_currentAeroEffect;

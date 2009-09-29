@@ -36,6 +36,15 @@
 #ifndef __GLOBALS_H
 #define __GLOBALS_H
 
+struct TSplitterBroadCast {
+	ContainerWindowData *pSrcContainer;
+	_MessageWindowData  *pSrcDat;
+	LONG				pos, pos_chat;
+	LONG				off_chat, off_im;
+	LPARAM				lParam;
+	BYTE				bSync;
+};
+
 typedef     BOOL (WINAPI *pfnSetMenuInfo )( HMENU hmenu, LPCMENUINFO lpcmi );
 
 class CGlobals
@@ -173,11 +182,10 @@ public:
 	COLORREF	m_tbBackgroundHigh, m_tbBackgroundLow;
 	BOOL		m_SendLaterAvail;
 	BYTE		g_bClientInStatusBar;
-
 	HANDLE		hSvc[SERVICE_LAST];
 	HANDLE		m_event_MsgWin, m_event_MsgPopup;
 	HANDLE		m_hMenuItem;
-
+	TSplitterBroadCast lastSPlitterPos;
 	static HANDLE		m_event_FoldersChanged;
 private:
 	bool				m_TypingSoundAdded;

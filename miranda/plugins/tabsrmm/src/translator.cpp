@@ -144,7 +144,7 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Multisend: successfully sent to: %s"), 		/* GEN_SQ_MULTISEND_SUCCESS */
 	LPGENT("Message successfully queued for later delivery.\nIt will be sent as soon as possible and a popup will inform you about the result."), /* GEN_SQ_QUEUED_MESSAGE */
 	LPGENT("The send later feature is not available on this protocol."), /* GEN_SQ_QUEUING_NOT_AVAIL */
-	LPGENT("This message was sent delayed. Original timestamp %s\n\n"),  /* GEN_SQ_SENDLATER_HEADER */
+	LPGENT("\n(Sent delayed. Original timestamp %s)"),  /* GEN_SQ_SENDLATER_HEADER */
 	LPGENT("Session list.\nClick left for a list of open sessions.\nClick right to access favorites and quickly configure message window behavior"), /* CNT_SBAR_SLIST */
 	LPGENT("Character Encoding"),						/* GEN_MSG_ENCODING */
 	LPGENT("A message failed to send successfully."),   /* GEN_MSG_FAILEDSEND */
@@ -196,7 +196,7 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Edit user highlight list"),					/* GEN_MUC_HIGHLIGHT_EDIT */
 	LPGENT("Edit Highlist List..."), 					/* GEN_MUC_MENU_EDITHIGHLIGHTLIST */
 	LPGENT("Contact not on list. You may add it..."),	/* GEN_MSG_CONTACT_NOT_ON_LIST */
-	LPGENT("Multisend service not found."),				/* GEN_SQ_MULTISEND_NO_SERVICE */
+	LPGENT("A send later job completed successfully.\nThe original message: %s"), /* GEN_SQ_SENDLATER_SUCCESS_POPUP */
 };
 
 /*
@@ -311,7 +311,7 @@ TCHAR* CTranslator::m_OptTranslated[OPT_LAST];
 
 LISTOPTIONSGROUP CTranslator::m_lvGroupsModPlus[] = {
 	0, LPGENT("Message window tweaks"),
-	0, LPGENT("General tweaks"),
+	0, LPGENT("Error feedback"),
 	0, NULL
 };
 
@@ -324,6 +324,7 @@ LISTOPTIONSITEM CTranslator::m_lvItemsModPlus[] = {
 	0, LPGENT("Close current tab on send"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_AutoClose_2", 0,
 	0, LPGENT("Enable icon pack version check (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_IconpackWarning", 0,
 	0, LPGENT("Disable error popups on sending failures"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_noErrorPopups", 1,
+	0, LPGENT("Disable popups for send later and multisend jobs"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_noSendLaterPopups", 1,
 	0, LPGENT("Use Aero Glass for the message window (Vista+)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"useAero", 0,
 	0, NULL, 0, 0, 0, 0
 };

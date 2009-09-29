@@ -1248,18 +1248,14 @@ BOOL TSAPI DoRtfToTags(TCHAR * pszText, const _MessageWindowData *dat)
 					} else if (p1 == _tcsstr(p1, _T("\\highlight"))) { //background color
 						TCHAR szTemp[20];
 						int iCol = _ttoi(p1 + 10);
-						//int iInd = RTFColorToIndex(pIndex, iCol, dat);
 						bJustRemovedRTF = TRUE;
 
 						_sntprintf(szTemp, 20, _T("%d"), iCol);
 						iRemoveChars = 10 + lstrlen(szTemp);
-						//if(bTextHasStarted || iInd >= 0)
-						//	_snprintf(InsertThis, sizeof(InsertThis), ( iInd >= 0 ) ? _T("%%f%02u") : _T("%%F"), iInd);
 					} else if (p1 == _tcsstr(p1, _T("\\par"))) { // newline
 						bTextHasStarted = TRUE;
 						bJustRemovedRTF = TRUE;
 						iRemoveChars = 4;
-						//_sntprintf(InsertThis, sizeof(InsertThis), _T("\n"));
 					} else if (p1 == _tcsstr(p1, _T("\\line"))) { // soft line break;
 						bTextHasStarted = TRUE;
 						bJustRemovedRTF = TRUE;
@@ -2099,21 +2095,21 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, _Mess
 		return(TRUE);
 	}
 	else if ((dis->hwndItem == GetDlgItem(hwndDlg, IDC_CONTACTPIC) && (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown) && dat->showPic) || (dis->hwndItem == hwndDlg && dat->Panel->isActive() && (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown))) {
-		HBRUSH hOldBrush;
-		BITMAP bminfo;
-		double dAspect = 0, dNewWidth = 0, dNewHeight = 0;
-		DWORD iMaxHeight = 0, top, cx, cy;
-		RECT rc, rcClient, rcFrame;
-		HDC hdcDraw;
-		HBITMAP hbmDraw, hbmOld;
-		BOOL bPanelPic = dis->hwndItem == hwndDlg;
-		DWORD aceFlags = 0;
-		HPEN hPenBorder = 0, hPenOld = 0;
-		HRGN clipRgn = 0;
-		int  iRad = PluginConfig.m_WinVerMajor >= 5 ? 4 : 6;
-		BOOL flashAvatar = FALSE;
-		bool fInfoPanel = dat->Panel->isActive();
-		COLORREF clr2 = 0;
+		HBRUSH 		hOldBrush;
+		BITMAP 		bminfo;
+		double 		dAspect = 0, dNewWidth = 0, dNewHeight = 0;
+		DWORD 		iMaxHeight = 0, top, cx, cy;
+		RECT 		rc, rcClient, rcFrame;
+		HDC 		hdcDraw;
+		HBITMAP 	hbmDraw, hbmOld;
+		BOOL 		bPanelPic = dis->hwndItem == hwndDlg;
+		DWORD 		aceFlags = 0;
+		HPEN 		hPenBorder = 0, hPenOld = 0;
+		HRGN 		clipRgn = 0;
+		int  		iRad = PluginConfig.m_WinVerMajor >= 5 ? 4 : 6;
+		BOOL 		flashAvatar = FALSE;
+		bool 		fInfoPanel = dat->Panel->isActive();
+		COLORREF 	clr2 = 0;
 
 		if (PluginConfig.g_FlashAvatarAvail && (!bPanelPic || (bPanelPic && dat->showInfoPic == 1))) {
 			FLASHAVATAR fa = {0};

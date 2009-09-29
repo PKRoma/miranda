@@ -34,7 +34,7 @@
 
 void 	TSAPI		DM_SetDBButtonStates	(HWND hwndChild, struct _MessageWindowData *dat);
 int 	TSAPI		BTN_GetStockItem		(ButtonItem *item, const TCHAR *szName);
-HWND 	TSAPI		DM_CreateClist			(HWND hwndParent, struct _MessageWindowData *dat);
+HWND 	TSAPI		DM_CreateClist			(const _MessageWindowData *dat);
 
 void 	TSAPI		DM_OptionsApplied		(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
 void 	TSAPI		DM_UpdateTitle			(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
@@ -49,7 +49,7 @@ LRESULT TSAPI		DM_ThemeChanged			(_MessageWindowData *dat);
 void	TSAPI		DM_Typing				(_MessageWindowData *dat);
 void	TSAPI		DM_FreeTheme			(_MessageWindowData *dat);
 void	TSAPI		DM_NotifyTyping			(_MessageWindowData *dat, int mode);
-
+int 	TSAPI 		DM_SplitterGlobalEvent	(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
 void 	TSAPI		BB_InitDlgButtons		(_MessageWindowData *dat);
 
 BOOL 	TSAPI		BB_SetButtonsPos		(_MessageWindowData *dat);

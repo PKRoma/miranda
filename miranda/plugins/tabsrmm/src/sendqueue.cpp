@@ -366,24 +366,19 @@ int SendQueue::sendQueued(_MessageWindowData *dat, const int iEntry)
 	HWND	hwndDlg = dat->hwnd;
 
 	if (dat->sendMode & SMODE_MULTIPLE) {
-		HANDLE hContact;
+		HANDLE hContact, hItem;
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-		/*
-		do {
-			hItem = (HANDLE) SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM) hContact, 0);
-			if (hItem && SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_GETCHECKMARK, (WPARAM) hItem, 0)) {
-				m_jobs[iEntry].sendCount++;
-				m_jobs[iEntry].hContact[m_jobs[iEntry].sendCount - 1] = hContact;
-				m_jobs[iEntry].hSendId[m_jobs[iEntry].sendCount - 1] = 0;
-			}
-		}
-		while (hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0));
-		*/
+
 		m_jobs[iEntry].hOwner = dat->hContact;
 		m_jobs[iEntry].iStatus = SQ_INPROGRESS;
 		m_jobs[iEntry].hwndOwner = hwndDlg;
-		//dat->hMultiSendThread = (HANDLE)mir_forkthreadex(DoMultiSend, (LPVOID)iEntry, 0, NULL);
-		logError(dat, iEntry, CTranslator::get(CTranslator::GEN_SQ_MULTISEND_NO_SERVICE));
+
+		do {
+			hItem = (HANDLE) SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM) hContact, 0);
+			if (hItem && SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_GETCHECKMARK, (WPARAM) hItem, 0))
+				sendLater(iEntry, 0, hContact, false);
+		}
+		while (hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0));
 		sendQueue->clearJob(iEntry);
 		return(0);
 	}
@@ -894,40 +889,42 @@ LRESULT SendQueue::WarnPendingJobs(unsigned int uNrMessages)
  *
  * @return the index on success, -1 on failure
  */
-int SendQueue::sendLater(int iJobIndex, _MessageWindowData *dat, bool fAddHeader, HANDLE hContact)
+int SendQueue::sendLater(int iJobIndex, _MessageWindowData *dat, HANDLE hContact, bool fIsSendLater)
 {
 	bool  fAvail = PluginConfig.m_SendLaterAvail ? true : false;
 
 	const TCHAR *szNote = 0;
 
-	if(fAvail)
-		szNote = CTranslator::get(CTranslator::GEN_SQ_QUEUED_MESSAGE);
-	else
-		szNote = CTranslator::get(CTranslator::GEN_SQ_QUEUING_NOT_AVAIL);
+	if(fIsSendLater && dat) {
+		if(fAvail)
+			szNote = CTranslator::get(CTranslator::GEN_SQ_QUEUED_MESSAGE);
+		else
+			szNote = CTranslator::get(CTranslator::GEN_SQ_QUEUING_NOT_AVAIL);
 
-	char  *utfText = M->utf8_encodeT(szNote);
-	DBEVENTINFO dbei;
-	dbei.cbSize = sizeof(dbei);
-	dbei.eventType = EVENTTYPE_MESSAGE;
-	dbei.flags = DBEF_SENT | DBEF_UTF;
-	dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
-	dbei.timestamp = time(NULL);
-	dbei.cbBlob = lstrlenA(utfText) + 1;
-	dbei.pBlob = (PBYTE) utfText;
-	StreamInEvents(dat->hwnd,  0, 1, 1, &dbei);
-	if (dat->hDbEventFirst == NULL)
-		SendMessage(dat->hwnd, DM_REMAKELOG, 0, 0);
-	SaveInputHistory(dat->hwnd, dat, 0, 0);
-	EnableSendButton(dat, FALSE);
-	if (dat->pContainer->hwndActive == dat->hwnd)
-		UpdateReadChars(dat);
-	SendDlgItemMessage(dat->hwnd, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) PluginConfig.g_buttonBarIcons[6]);
-	SendDlgItemMessage(dat->hwnd, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM)pszIDCSAVE_close, 0);
-	dat->dwFlags &= ~MWF_SAVEBTN_SAV;
-	mir_free(utfText);
+		char  *utfText = M->utf8_encodeT(szNote);
+		DBEVENTINFO dbei;
+		dbei.cbSize = sizeof(dbei);
+		dbei.eventType = EVENTTYPE_MESSAGE;
+		dbei.flags = DBEF_SENT | DBEF_UTF;
+		dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
+		dbei.timestamp = time(NULL);
+		dbei.cbBlob = lstrlenA(utfText) + 1;
+		dbei.pBlob = (PBYTE) utfText;
+		StreamInEvents(dat->hwnd,  0, 1, 1, &dbei);
+		if (dat->hDbEventFirst == NULL)
+			SendMessage(dat->hwnd, DM_REMAKELOG, 0, 0);
+		SaveInputHistory(dat->hwnd, dat, 0, 0);
+		EnableSendButton(dat, FALSE);
+		if (dat->pContainer->hwndActive == dat->hwnd)
+			UpdateReadChars(dat);
+		SendDlgItemMessage(dat->hwnd, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) PluginConfig.g_buttonBarIcons[6]);
+		SendDlgItemMessage(dat->hwnd, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM)pszIDCSAVE_close, 0);
+		dat->dwFlags &= ~MWF_SAVEBTN_SAV;
+		mir_free(utfText);
 
-	if(!fAvail)
-		return(0);
+		if(!fAvail)
+			return(0);
+	}
 
 	if(iJobIndex >= 0 && iJobIndex < NR_SENDJOBS) {
 		SendJob*	job = &m_jobs[iJobIndex];
@@ -935,20 +932,29 @@ int SendQueue::sendLater(int iJobIndex, _MessageWindowData *dat, bool fAddHeader
 		TCHAR 		tszTimestamp[30], tszHeader[150];
 		time_t 		now = time(0);
 
-		TCHAR *formatTime = _T("%Y.%m.%d - %H:%M");
-		_tcsftime(tszTimestamp, 30, formatTime, _localtime32((__time32_t *)&now));
-		tszTimestamp[29] = 0;
-		mir_snprintf(szKeyName, 20, "S%d", now);
-
-		mir_sntprintf(tszHeader, safe_sizeof(tszHeader), CTranslator::get(CTranslator::GEN_SQ_SENDLATER_HEADER), tszTimestamp);
+		if(fIsSendLater) {
+			TCHAR *formatTime = _T("%Y.%m.%d - %H:%M");
+			_tcsftime(tszTimestamp, 30, formatTime, _localtime32((__time32_t *)&now));
+			tszTimestamp[29] = 0;
+			mir_snprintf(szKeyName, 20, "S%d", now);
+			mir_sntprintf(tszHeader, safe_sizeof(tszHeader), CTranslator::get(CTranslator::GEN_SQ_SENDLATER_HEADER), tszTimestamp);
+		}
+		else
+			mir_sntprintf(tszHeader, safe_sizeof(tszHeader), _T("M%d|"), time(0));
 
 		if(job->dwFlags & PREF_UTF || !(job->dwFlags & PREF_UNICODE)) {
 			char *utf_header = M->utf8_encodeT(tszHeader);
 			UINT required = lstrlenA(utf_header) + lstrlenA(job->sendBuffer) + 10;
 			char *tszMsg = reinterpret_cast<char *>(mir_alloc(required));
 
-			mir_snprintf(tszMsg, required, "%s%s", fAddHeader ? utf_header : "", job->sendBuffer);
-			DBWriteContactSettingString(hContact ? hContact : job->hOwner, "SendLater", szKeyName, tszMsg);
+			if(fIsSendLater) {
+				mir_snprintf(tszMsg, required, "%s%s", job->sendBuffer, utf_header);
+				DBWriteContactSettingString(hContact ? hContact : job->hOwner, "SendLater", szKeyName, tszMsg);
+			}
+			else {
+				mir_snprintf(tszMsg, required, "%s%s", utf_header, job->sendBuffer);
+				SendLater_AddJob(tszMsg, (LPARAM)hContact);
+			}
 			mir_free(utf_header);
 			mir_free(tszMsg);
 		}
@@ -959,16 +965,24 @@ int SendQueue::sendLater(int iJobIndex, _MessageWindowData *dat, bool fAddHeader
 			UINT required = sizeof(TCHAR) * (lstrlen(tszHeader) + lstrlenW(wszMsg) + 10);
 
 			TCHAR *tszMsg = reinterpret_cast<TCHAR *>(mir_alloc(required));
-			mir_sntprintf(tszMsg, required, _T("%s%s"), fAddHeader ? tszHeader : _T(""), wszMsg);
+			if(fIsSendLater)
+				mir_sntprintf(tszMsg, required, _T("%s%s"), wszMsg, tszHeader);
+			else
+				mir_sntprintf(tszMsg, required, _T("%s%s"), tszHeader, wszMsg);
 			char *utf = M->utf8_encodeT(tszMsg);
-			DBWriteContactSettingString(hContact ? hContact : job->hOwner, "SendLater", szKeyName, utf);
+			if(fIsSendLater)
+				DBWriteContactSettingString(hContact ? hContact : job->hOwner, "SendLater", szKeyName, utf);
+			else
+				SendLater_AddJob(utf, (LPARAM)hContact);
 			mir_free(utf);
 			mir_free(tszMsg);
 		}
-		int iCount = M->GetDword(hContact ? hContact : job->hOwner, "SendLater", "count", 0);
-		iCount++;
-		M->WriteDword(hContact ? hContact : job->hOwner, "SendLater", "count", iCount);
-		SendLater_Add(hContact ? hContact : job->hOwner);
+		if(fIsSendLater) {
+			int iCount = M->GetDword(hContact ? hContact : job->hOwner, "SendLater", "count", 0);
+			iCount++;
+			M->WriteDword(hContact ? hContact : job->hOwner, "SendLater", "count", iCount);
+			SendLater_Add(hContact ? hContact : job->hOwner);
+		}
 		return(iJobIndex);
 	}
 	return(-1);
@@ -981,14 +995,38 @@ SendLaterJob::SendLaterJob()
 }
 SendLaterJob::~SendLaterJob()
 {
-	if(fSuccess) {
+	if(fSuccess || fFailed) {
+		POPUPDATAT ppd = {0};
+
+		if(!M->GetByte("adv_noSendLaterPopups", 0)) {
+
+			if (PluginConfig.g_PopupAvail) {
+				TCHAR	*tszName = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR);
+
+				ZeroMemory((void *)&ppd, sizeof(ppd));
+				ppd.lchContact = hContact;
+				ppd.cbSize = sizeof(ppd);
+				mir_sntprintf(ppd.lptzContactName, MAX_CONTACTNAME, _T("%s"), tszName ? tszName : CTranslator::get(CTranslator::GEN_UNKNOWN_CONTACT));
+				if(fSuccess && szId[0] == 'S') {
+#if defined(_UNICODE)
+					TCHAR *msgPreview = GetPreviewWithEllipsis(reinterpret_cast<TCHAR *>(&pBuf[lstrlenA((char *)pBuf) + 1]), 100);
+#else
+					TCHAR *msgPreview = GetPreviewWithEllipsis(reinterpret_cast<TCHAR *>(pBuf), 100);
+#endif
+					mir_sntprintf(ppd.lptzText, MAX_SECONDLINE, CTranslator::get(CTranslator::GEN_SQ_SENDLATER_SUCCESS_POPUP),
+								  msgPreview);
+					mir_free(msgPreview);
+				}
+				ppd.colorText = fFailed ? M->GetByte("adv_PopupText_failedjob", RGB(255, 245, 225)) : M->GetByte("adv_PopupText_successjob", RGB(255, 245, 225));
+				ppd.colorBack = fFailed ? M->GetByte("adv_PopupBG_failedjob", RGB(191, 0, 0)) : M->GetByte("adv_PopupBG_successjob", RGB(0, 121, 0));
+				ppd.PluginWindowProc = (WNDPROC)PopupDlgProcError;
+				ppd.lchIcon = PluginConfig.g_iconErr;
+				ppd.PluginData = (void *)hContact;
+				ppd.iSeconds = -1;
+				CallService(MS_POPUP_ADDPOPUPW, (WPARAM)&ppd, 0);
+			}
+		}
 		mir_free(sendBuffer);
 		mir_free(pBuf);
-
-		DBDeleteContactSetting(hContact, "SendLater", szId);
-		int iCount = M->GetDword(hContact, "SendLater", "count", 0);
-		if(iCount)
-			iCount--;
-		M->WriteDword(hContact, "SendLater", "count", iCount);
 	}
 }

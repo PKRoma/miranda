@@ -632,7 +632,6 @@ tzdone:
 	Skin = new CSkin();
 	InitOptions();
 
-	PluginConfig.hookSystemEvents();
 	InitAPI();
 
 	PluginConfig.reloadSystemStartup();
@@ -980,11 +979,11 @@ static ICONDESC _toolbaricons[] = {
 	"tabSRMM_history", LPGEN("Show History"), &PluginConfig.g_buttonBarIcons[1], -IDI_HISTORY, 1,
 	"tabSRMM_mlog", LPGEN("Message Log Options"), &PluginConfig.g_buttonBarIcons[2], -IDI_MSGLOGOPT, 1,
 	"tabSRMM_add", LPGEN("Add contact"), &PluginConfig.g_buttonBarIcons[0], -IDI_ADDCONTACT, 1,
-	"tabSRMM_multi", LPGEN("Multisend indicator"), &PluginConfig.g_buttonBarIcons[3], -IDI_MULTISEND, 1,
+	"tabSRMM_multi", LPGEN("Image tag"), &PluginConfig.g_buttonBarIcons[3], -IDI_IMAGETAG, 1,
 	"tabSRMM_quote", LPGEN("Quote text"), &PluginConfig.g_buttonBarIcons[8], -IDI_QUOTE, 1,
 	"tabSRMM_save", LPGEN("Save and close"), &PluginConfig.g_buttonBarIcons[7], -IDI_SAVE, 1,
 	"tabSRMM_send", LPGEN("Send message"), &PluginConfig.g_buttonBarIcons[9], -IDI_SEND, 1,
-	"tabSRMM_avatar", LPGEN("Avatar menu"), &PluginConfig.g_buttonBarIcons[10], -IDI_CONTACTPIC, 1,
+	"tabSRMM_avatar", LPGEN("Edit user notes"), &PluginConfig.g_buttonBarIcons[10], -IDI_CONTACTPIC, 1,
 	"tabSRMM_close", LPGEN("Close"), &PluginConfig.g_buttonBarIcons[6], -IDI_CLOSEMSGDLG, 1,
 	"tabSRMM_usermenu", LPGEN("User menu"), &PluginConfig.g_buttonBarIcons[4], -IDI_USERMENU, 1,
 	NULL, NULL, NULL, 0, 0
@@ -1024,8 +1023,6 @@ static ICONDESC _deficons[] = {
 	"tabSRMM_Rightarrow", LPGEN("Right Arrow"), &PluginConfig.g_buttonBarIcons[ICON_DEFAULT_RIGHT], -IDI_RIGHTARROW, 1,
 	"tabSRMM_Pulluparrow", LPGEN("Up Arrow"), &PluginConfig.g_buttonBarIcons[ICON_DEFAULT_UP], -IDI_PULLUPARROW, 1,
 	"tabSRMM_sb_slist", LPGEN("Session List"), &PluginConfig.g_sideBarIcons[0], -IDI_SESSIONLIST, 1,
-	"tabSRMM_sb_Favorites", LPGEN("Favorite Contacts"), &PluginConfig.g_sideBarIcons[1], -IDI_FAVLIST, 1,
-	"tabSRMM_sb_Recent", LPGEN("Recent Sessions"), &PluginConfig.g_sideBarIcons[2], -IDI_RECENTLIST, 1,
 	NULL, NULL, NULL, 0, 0
 };
 static ICONDESC _trayIcon[] = {

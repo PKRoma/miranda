@@ -490,3 +490,40 @@ const TCHAR *DoubleAmpersands(TCHAR *pszText)
 	_tcscpy(pszText, text.c_str());
 	return pszText;
 }
+
+/**
+ * Get a preview of the text with an ellipsis appended (...)
+ * caller must free the return value
+ * @param szText	source text
+ * @param iMaxLen	max length of the preview
+ * @return
+ */
+TCHAR* TSAPI GetPreviewWithEllipsis(TCHAR *szText, size_t iMaxLen)
+{
+	size_t   uRequired;
+	TCHAR*	 p = 0, cSaved;
+	bool	 fEllipsis = false;
+
+	if(_tcslen(szText) <= iMaxLen)
+		uRequired = _tcslen(szText) + 4;
+	else {
+		TCHAR *p = &szText[iMaxLen - 1];
+		fEllipsis = true;
+
+		while(p >= szText && *p != ' ')
+			p--;
+		if(p == szText)
+			p = szText + iMaxLen - 1;
+
+		cSaved = *p;
+		*p = 0;
+		uRequired = (p - szText) + 6;
+	}
+	TCHAR *szResult = reinterpret_cast<TCHAR *>(mir_alloc(uRequired * sizeof(TCHAR)));
+	mir_sntprintf(szResult, uRequired, fEllipsis ? _T("%s...") : _T("%s"), szText);
+
+	if(p)
+		*p = cSaved;
+
+	return(szResult);
+}

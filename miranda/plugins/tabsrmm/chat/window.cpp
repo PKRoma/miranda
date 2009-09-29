@@ -354,7 +354,7 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct _MessageWindowData *dat,
 		if (dat->dwFlagsEx & MWF_EX_DELAYEDSPLITTER) {
 			dat->dwFlagsEx &= ~MWF_EX_DELAYEDSPLITTER;
 			ShowWindow(dat->pContainer->hwnd, SW_RESTORE);
-			PostMessage(hwndDlg, DM_SPLITTERMOVEDGLOBAL, dat->wParam, dat->lParam);
+			PostMessage(hwndDlg, DM_SPLITTERGLOBALEVENT, dat->wParam, dat->lParam);
 			PostMessage(hwndDlg, WM_SIZE, 0, 0);
 			dat->wParam = dat->lParam = 0;
 		}
@@ -585,6 +585,16 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 	Parentsi = (SESSION_INFO *)mwdat->si;
 
 	dat = (MESSAGESUBDATA *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+
+	if(mwdat->fkeyProcessed && (msg == WM_KEYUP)) {
+		GetKeyboardState(mwdat->kstate);
+		if(mwdat->kstate[VK_CONTROL] & 0x80 || mwdat->kstate[VK_SHIFT] & 0x80)
+			return(0);
+		else {
+			mwdat->fkeyProcessed = false;
+			return(0);
+		}
+	}
 	switch (msg) {
 		case WM_NCCALCSIZE:
 			return(CSkin::NcCalcRichEditFrame(hwnd, mwdat, ID_EXTBKINPUTAREA, msg, wParam, lParam, OldMessageProc));
@@ -725,10 +735,6 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 		}
 
 		case WM_CHAR: {
-			if(mwdat->fkeyProcessed) {
-				mwdat->fkeyProcessed = false;
-				return(0);
-			}
 			BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
 			BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 			BOOL isMenu = GetKeyState(VK_MENU) & 0x8000;
@@ -2026,8 +2032,12 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			psi->dat = dat;
 			if(dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS)
 				psi->iSplitterY = g_Settings.iSplitterY;
-			else
-				psi->iSplitterY = dat->pContainer->splitterPos - DPISCALEY_S(23);
+			else {
+				if(M->GetByte("Chat", "SyncSplitter", 0))
+					psi->iSplitterY = dat->pContainer->splitterPos - DPISCALEY_S(23);
+				else
+					psi->iSplitterY = g_Settings.iSplitterY;
+			}
 
 			dat->fInsertMode = FALSE;
 
@@ -2692,27 +2702,9 @@ LABEL_SHOWWINDOW:
 		}
 		break;
 
-		case DM_SPLITTERMOVEDGLOBAL_NOSYNC_CHAT:
-			return 0;
-
-		case DM_SPLITTERMOVEDGLOBAL_NOSYNC_IM:
-		case DM_SPLITTERMOVEDGLOBAL: {
-			short newMessagePos;
-			RECT rcWin, rcClient;
-
-			if (IsIconic(dat->pContainer->hwnd) || dat->pContainer->hwndActive != hwndDlg) {
-				dat->dwFlagsEx |= MWF_EX_DELAYEDSPLITTER;
-				dat->wParam = wParam;
-				dat->lParam = lParam;
-				return 0;
-			}
-			GetWindowRect(hwndDlg, &rcWin);
-			GetClientRect(hwndDlg, &rcClient);
-			newMessagePos = (short)rcWin.bottom - (short)wParam;
-
-			SendMessage(hwndDlg, DM_SPLITTERMOVED, newMessagePos + lParam / 2, (LPARAM)GetDlgItem(hwndDlg, IDC_SPLITTERY));
-			//PostMessage(hwndDlg, DM_DELAYEDSCROLL, 0, 1);
-			return 0;
+		case DM_SPLITTERGLOBALEVENT: {
+			DM_SplitterGlobalEvent(dat, wParam, lParam);
+			return(0);
 		}
 
 		case GC_SHOWCOLORCHOOSER: {
@@ -3843,7 +3835,6 @@ LABEL_SHOWWINDOW:
 			DBWriteContactSettingWord(NULL, "Chat", "SplitterX", (WORD)g_Settings.iSplitterX);
 			if(!(dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS))
 				DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
-			SaveSplitter(dat);
 
 			DM_FreeTheme(dat);
 

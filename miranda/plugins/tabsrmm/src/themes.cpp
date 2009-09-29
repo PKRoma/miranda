@@ -1624,8 +1624,6 @@ create_it:
  * It reads and initializes all static values for the skin. Afterwards
  * it calls ReadItems() to read additional skin information like image items,
  * buttons and icons.
- *
- *
  */
 void CSkin::Load()
 {
@@ -1928,7 +1926,6 @@ void CSkin::setupTabCloseBitmap()
  * ) dwm mode changes
  * ) aero effect is changed by the user
  * ) glow colorization is changed by user's request
- * this is Viata+ only code, never gets executed on XP or lower
  */
 void CSkin::setupAeroSkins()
 {
@@ -2011,7 +2008,7 @@ void CSkin::setupAeroSkins()
 		CImageItem::PreMultiply(hbm, 1);
 
 		GetObject(hbm, sizeof(bm), &bm);
-		m_tabTop = new CImageItem(2, 4, 2, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
+		m_tabTop = new CImageItem(2, 5, 2, 5, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
 								  0, 255, 30, 80, 50, 100);
 
 		m_tabTop->setAlphaFormat(AC_SRC_ALPHA, 255);
@@ -2032,7 +2029,7 @@ void CSkin::setupAeroSkins()
 		FIF->FI_Unload(fib);
 
 		GetObject(hbm, sizeof(bm), &bm);
-		m_tabBottom = new CImageItem(2, 4, 2, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
+		m_tabBottom = new CImageItem(2, 5, 2, 5, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
 									 0, 255, 30, 80, 50, 100);
 
 		m_tabBottom->setAlphaFormat(AC_SRC_ALPHA, 255);
@@ -2049,7 +2046,7 @@ void CSkin::setupAeroSkins()
 		CImageItem::PreMultiply(hbm, 1);
 
 		GetObject(hbm, sizeof(bm), &bm);
-		m_tabGlowTop = new CImageItem(2, 4, 2, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
+		m_tabGlowTop = new CImageItem(2, 5, 2, 5, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
 									  0, 255, 30, 80, 50, 100);
 
 		m_tabGlowTop->setAlphaFormat(AC_SRC_ALPHA, 255);
@@ -2063,7 +2060,7 @@ void CSkin::setupAeroSkins()
 		FIF->FI_Unload(fib);
 
 		GetObject(hbm, sizeof(bm), &bm);
-		m_tabGlowBottom = new CImageItem(2, 4, 2, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
+		m_tabGlowBottom = new CImageItem(2, 5, 2, 5, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
  										 0, 255, 30, 80, 50, 100);
 
 		m_tabGlowBottom->setAlphaFormat(AC_SRC_ALPHA, 255);
@@ -2087,7 +2084,7 @@ void CSkin::setupAeroSkins()
 
 		GetObject(hbm, sizeof(bm), &bm);
 
-		m_switchBarItem = new CImageItem(3, 4, 3, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
+		m_switchBarItem = new CImageItem(3, 5, 3, 5, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
  										 0, 255, 30, 80, 50, 100);
 
 		m_switchBarItem->setAlphaFormat(AC_SRC_ALPHA, 255);
@@ -2204,15 +2201,18 @@ void CSkin::MY_AlphaBlend(HDC hdcDraw, DWORD left, DWORD top,  int width, int he
 
 void CSkin::DrawDimmedIcon(HDC hdc, LONG left, LONG top, LONG dx, LONG dy, HICON hIcon, BYTE alpha)
 {
-	HDC dcMem = CreateCompatibleDC(hdc);
-	HBITMAP hbm = CreateCompatibleBitmap(hdc, dx, dy), hbmOld = 0;
+	HDC dcMem = ::CreateCompatibleDC(hdc);
+	HBITMAP hbm = ::CreateCompatibleBitmap(hdc, dx, dy), hbmOld = 0;
 
-	hbmOld = (HBITMAP)SelectObject(dcMem, hbm);
-	BitBlt(dcMem, 0, 0, dx, dx, hdc, left, top, SRCCOPY);
-	DrawIconEx(dcMem, 0, 0, hIcon, dx, dy, 0, 0, DI_NORMAL);
+	hbmOld = (HBITMAP)::SelectObject(dcMem, hbm);
+	::DrawIconEx(dcMem, 0, 0, hIcon, dx, dy, 0, 0, DI_NORMAL);
 	m_default_bf.SourceConstantAlpha = alpha;
-	if (CMimAPI::m_MyAlphaBlend)
+	if (CMimAPI::m_MyAlphaBlend) {
+		HBITMAP hbm = (HBITMAP)SelectObject(dcMem, hbmOld);
+		CImageItem::PreMultiply(hbm, 1);						// for AlphaBlend()...
+		hbmOld = (HBITMAP)SelectObject(dcMem, hbm);
 		CMimAPI::m_MyAlphaBlend(hdc, left, top, dx, dy, dcMem, 0, 0, dx, dy, m_default_bf);
+	}
 	else {
 		SetStretchBltMode(hdc, HALFTONE);
 		StretchBlt(hdc, left, top, dx, dy, dcMem, 0, 0, dx, dy, SRCCOPY);
@@ -2781,7 +2781,7 @@ void CSkin::extractSkinsAndLogo() const
 						char 	*pData = (char *)LockResource(hResource);
 						DWORD	dwSize = SizeofResource(g_hInst, hRes), written = 0;
 						mir_sntprintf(szFilename, MAX_PATH, _T("%s%s"), tszBasePath, my_default_skin[i].tszName);
-						if(PathFileExists(szFilename) && M->GetByte("keepCustomAeroSkins", 0))
+						if(PathFileExists(szFilename) && M->GetByte("keepCustomAeroSkins", 1))
 							continue;
 						if((hFile = CreateFile(szFilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)) != INVALID_HANDLE_VALUE) {
 							WriteFile(hFile, (void *)pData, dwSize, &written, NULL);

@@ -457,7 +457,7 @@ static void MsgWindowUpdateState(_MessageWindowData *dat, UINT msg)
 		if (dat->dwFlagsEx & MWF_EX_DELAYEDSPLITTER) {
 			dat->dwFlagsEx &= ~MWF_EX_DELAYEDSPLITTER;
 			ShowWindow(dat->pContainer->hwnd, SW_RESTORE);
-			PostMessage(hwndDlg, DM_SPLITTERMOVEDGLOBAL, dat->wParam, dat->lParam);
+			PostMessage(hwndDlg, DM_SPLITTERGLOBALEVENT, dat->wParam, dat->lParam);
 			dat->wParam = dat->lParam = 0;
 		}
 		if (dat->dwFlagsEx & MWF_EX_AVATARCHANGED) {
@@ -674,7 +674,6 @@ static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			}
 			break;
 		}
-
 		case WM_KEYDOWN:
 			if(!isCtrl && !isAlt&&!isShift)
 			{
@@ -731,6 +730,19 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 	HWND hwndParent = GetParent(hwnd);
 	struct _MessageWindowData *mwdat = (struct _MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 
+	/*
+	 * prevent the rich edit from switching text direction or keyboard layout when
+	 * using hotkeys with ctrl-shift or alt-shift modifiers
+	 */
+	if(mwdat->fkeyProcessed && (msg == WM_KEYUP)) {
+		GetKeyboardState(mwdat->kstate);
+		if(mwdat->kstate[VK_CONTROL] & 0x80 || mwdat->kstate[VK_SHIFT] & 0x80)
+			return(0);
+		else {
+			mwdat->fkeyProcessed = false;
+			return(0);
+		}
+	}
 	switch (msg) {
 		case WM_NCCALCSIZE:
 			return(CSkin::NcCalcRichEditFrame(hwnd, mwdat, ID_EXTBKINPUTAREA, msg, wParam, lParam, OldMessageEditProc));
@@ -740,10 +752,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			SendMessage(hwndParent, WM_DROPFILES, (WPARAM)wParam, (LPARAM)lParam);
 			break;
 		case WM_CHAR: {
-			if(mwdat->fkeyProcessed) {
-				mwdat->fkeyProcessed = false;
-				return(0);
-			}
 			BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 			BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
 			BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
@@ -815,13 +823,10 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			}
 			return CallWindowProc(OldMessageEditProc, hwnd, msg, wParam, lParam);
 		}
-		case WM_KEYUP:
-			break;
 		case WM_KEYDOWN: {
 			BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 			BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
 			BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
-
 			//MAD: sound on typing..
   			if(PluginConfig.g_bSoundOnTyping&&!isAlt&&!(mwdat->pContainer->dwFlags&CNT_NOSOUND)&&wParam == VK_DELETE)
   				SkinPlaySound("SoundOnTyping");
@@ -1243,7 +1248,6 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 					}
 					case ID_SPLITTERCONTEXT_SETPOSITIONFORTHISSESSION:
 						break;
-					case ID_SPLITTERCONTEXT_SAVEFORCONTAINER:
 					case ID_SPLITTERCONTEXT_SAVEGLOBALFORALLSESSIONS: {
 
 						RECT rcWin;
@@ -1251,63 +1255,20 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 						DWORD dwOff_IM = 0, dwOff_CHAT = 0;
 						bool  fCntGlobal = (dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS) ? true : false;
 
-						if (bSync) {
-							if (dat->bType == SESSIONTYPE_IM) {
-								dwOff_IM = 0;
-								dwOff_CHAT = -(2 + (PluginConfig.g_DPIscaleY > 1.0 ? 1 : 0));
-							} else if (dat->bType == SESSIONTYPE_CHAT) {
-								dwOff_CHAT = 0;
-								dwOff_IM = 2 + (PluginConfig.g_DPIscaleY > 1.0 ? 1 : 0);
-							}
-						}
+						dwOff_CHAT = -(2 + (PluginConfig.g_DPIscaleY > 1.0 ? 1 : 0));
+						dwOff_IM = 2 + (PluginConfig.g_DPIscaleY > 1.0 ? 1 : 0);
+
 						GetWindowRect(hwndParent, &rcWin);
+						PluginConfig.lastSPlitterPos.pSrcDat = dat;
+						PluginConfig.lastSPlitterPos.pSrcContainer = dat->pContainer;
+						PluginConfig.lastSPlitterPos.lParam = rc.bottom;
+						PluginConfig.lastSPlitterPos.pos = rcWin.bottom - HIWORD(messagePos);
+						PluginConfig.lastSPlitterPos.pos_chat = rcWin.bottom - (short)HIWORD(messagePos) + rc.bottom / 2;
+						PluginConfig.lastSPlitterPos.off_chat = dwOff_CHAT;
+						PluginConfig.lastSPlitterPos.off_im = dwOff_IM;
+						PluginConfig.lastSPlitterPos.bSync = bSync;
 
-						if (dat->bType == SESSIONTYPE_IM || bSync) {
-							dat->dwFlagsEx &= ~(MWF_SHOW_SPLITTEROVERRIDE);
-							M->WriteByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0);
-							if(bSync) {
-								if(fCntGlobal)
-									BroadCastAllContainerS(DM_SPLITTERMOVEDGLOBAL,  rcWin.bottom - HIWORD(messagePos) + dwOff_IM, rc.bottom, true);
-								else
-									BroadCastContainer(dat->pContainer, DM_SPLITTERMOVEDGLOBAL, rcWin.bottom - HIWORD(messagePos) + dwOff_IM, rc.bottom);
-							} else {
-								/*
-								 * this message is ignored by group chat tabs
-								 */
-								if(dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS)
-									BroadCastAllContainerS(DM_SPLITTERMOVEDGLOBAL_NOSYNC_CHAT,  rcWin.bottom - HIWORD(messagePos) + dwOff_IM, rc.bottom, true);
-								else
-									BroadCastContainer(dat->pContainer, DM_SPLITTERMOVEDGLOBAL_NOSYNC_CHAT,  rcWin.bottom - HIWORD(messagePos) + dwOff_IM, rc.bottom);
-							}
-							if (bSync && fCntGlobal) {
-								g_Settings.iSplitterY = dat->splitterY - DPISCALEY_S(23);
-								DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
-							}
-							if(!fCntGlobal)
-								dat->pContainer->splitterPos = dat->splitterY;
-						}
-						if ((dat->bType == SESSIONTYPE_CHAT || bSync) && PluginConfig.m_chat_enabled) {
-							UINT msg = bSync ? DM_SPLITTERMOVEDGLOBAL : DM_SPLITTERMOVEDGLOBAL_NOSYNC_IM;
-
-							if(fCntGlobal) {
-								BroadCastAllContainerS(DM_SAVESIZE, 0, 0, true, SESSIONTYPE_CHAT);
-								BroadCastAllContainerS(msg, rcWin.bottom - (short)HIWORD(messagePos) + rc.bottom / 2 + dwOff_CHAT, (LPARAM)rc.bottom, true, SESSIONTYPE_CHAT);
-								BroadCastAllContainerS(WM_SIZE, 0, 0, true, SESSIONTYPE_CHAT);
-								DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
-							}
-							else {
-								BroadCastContainer(dat->pContainer, DM_SAVESIZE, 0, 0, SESSIONTYPE_CHAT);
-								BroadCastContainer(dat->pContainer, msg, rcWin.bottom - (short)HIWORD(messagePos) + rc.bottom / 2 + dwOff_CHAT, (LPARAM)rc.bottom, SESSIONTYPE_CHAT);
-								BroadCastContainer(dat->pContainer, WM_SIZE, 0, 0, SESSIONTYPE_CHAT);
-							}
-
-							if (bSync && fCntGlobal)
-								M->WriteDword(SRMSGMOD_T, "splitsplity", (DWORD)g_Settings.iSplitterY + DPISCALEY_S(23));
-							if (!fCntGlobal && bSync)
-								dat->pContainer->splitterPos = g_Settings.iSplitterY + DPISCALEY_S(23);
-
-							RedrawWindow(hwndParent, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
-						}
+						M->BroadcastMessage(DM_SPLITTERGLOBALEVENT, 0, 0);
 						break;
 					}
 					default:
@@ -1320,7 +1281,6 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 							dat->splitterY =si->iSplitterY + DPISCALEY(22);
 						}
 						SendMessage(hwndParent, WM_SIZE, 0, 0);
-						//SendMessage(hwndParent, DM_SPLITTERMOVEDGLOBAL, dat->savedSplitter, (LPARAM) hwnd);
 						DM_ScrollToBottom(dat, 0, 1);
 						break;
 				}
@@ -1373,7 +1333,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 				urc->rcItem.right -= (dat->multiSplitterX + 3);
 			urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
 			if (!showToolbar||bBottomToolbar)
-				urc->rcItem.bottom += 23;
+				urc->rcItem.bottom += 21;
 			if (fInfoPanel)
 				urc->rcItem.top += panelHeight;
 			urc->rcItem.bottom += 3;
@@ -2195,7 +2155,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 							if(msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN) {
 								LRESULT mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)&message, (LPARAM)Translate(TABSRMM_HK_SECTION_IM));
-
+								if(mim_hotkey_check)
+									dat->fkeyProcessed = true;
 								switch(mim_hotkey_check) {
 									case TABSRMM_HK_SETUSERPREFS:
 										CallService(MS_TABMSG_SETUSERPREFS, (WPARAM)dat->hContact, 0);
@@ -2220,7 +2181,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 										return(_dlgReturn(hwndDlg, 1));
 									case TABSRMM_HK_TOGGLESENDLATER:
 										dat->sendMode ^= SMODE_SENDLATER;
-										RedrawWindow(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, NULL, RDW_INVALIDATE|RDW_FRAME|RDW_UPDATENOW);
+										SetWindowPos(GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, 0, 0, 0, SWP_DRAWFRAME|SWP_FRAMECHANGED|SWP_NOZORDER|
+													 SWP_NOMOVE|SWP_NOSIZE|SWP_NOCOPYBITS);
 										return(_dlgReturn(hwndDlg, 1));
 									case TABSRMM_HK_TOGGLERTL:
 									{
@@ -2252,33 +2214,33 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 									}
 									case TABSRMM_HK_TOGGLEMULTISEND:
 									{
-										if(ServiceExists("Multisend/Send")) {
-											HWND hwndEdit = GetDlgItem(hwndDlg, IDC_MESSAGE);
+										HWND hwndEdit = GetDlgItem(hwndDlg, IDC_MESSAGE);
 
-											dat->sendMode ^= SMODE_MULTIPLE;
-											if (dat->sendMode & SMODE_MULTIPLE) {
-												HWND hwndClist = DM_CreateClist(hwndDlg, dat);
-											} else {
-												if (IsWindow(GetDlgItem(hwndDlg, IDC_CLIST)))
-													DestroyWindow(GetDlgItem(hwndDlg, IDC_CLIST));
-											}
-											SetWindowPos(hwndEdit, 0, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE);
-											SendMessage(hwndDlg, WM_SIZE, 0, 0);
-											RedrawWindow(hwndEdit, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW | RDW_ERASE);
-											DM_ScrollToBottom(dat, 0, 0);
-											ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
-											ShowWindow(GetDlgItem(hwndDlg, IDC_CLIST), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
-											if (dat->sendMode & SMODE_MULTIPLE)
-												SetFocus(GetDlgItem(hwndDlg, IDC_CLIST));
-											else
-												SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
-											return(_dlgReturn(hwndDlg, 1));
+										dat->sendMode ^= SMODE_MULTIPLE;
+										if (dat->sendMode & SMODE_MULTIPLE) {
+											HWND hwndClist = DM_CreateClist(dat);
+										} else {
+											if (IsWindow(GetDlgItem(hwndDlg, IDC_CLIST)))
+												DestroyWindow(GetDlgItem(hwndDlg, IDC_CLIST));
 										}
+										SetWindowPos(hwndEdit, 0, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE);
+										SendMessage(hwndDlg, WM_SIZE, 0, 0);
+										RedrawWindow(hwndEdit, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW | RDW_ERASE);
+										DM_ScrollToBottom(dat, 0, 0);
+										ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
+										ShowWindow(GetDlgItem(hwndDlg, IDC_CLIST), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
+										if (dat->sendMode & SMODE_MULTIPLE)
+											SetFocus(GetDlgItem(hwndDlg, IDC_CLIST));
+										else
+											SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+										return(_dlgReturn(hwndDlg, 1));
 									}
 									default:
 										break;
 								}
 								mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)&message, (LPARAM)Translate(TABSRMM_HK_SECTION_GENERIC));
+								if(mim_hotkey_check)
+									dat->fkeyProcessed = true;
 								switch(mim_hotkey_check) {
 									case TABSRMM_HK_PASTEANDSEND:
 										HandlePasteAndSend(dat);
@@ -2797,31 +2759,11 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			SendMessage(hwndDlg, WM_SIZE, 0, 0);
 			return 0;
 
-		case DM_SPLITTERMOVEDGLOBAL_NOSYNC_IM:
+		case DM_SPLITTERGLOBALEVENT: {
+			DM_SplitterGlobalEvent(dat, wParam, lParam);
 			return(0);
+		}
 
-		case DM_SPLITTERMOVEDGLOBAL_NOSYNC_CHAT:
-		case DM_SPLITTERMOVEDGLOBAL:
-			if (!(dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE)) {
-				short newMessagePos;
-				RECT rcWin, rcClient;
-
-				if (IsIconic(m_pContainer->hwnd) || m_pContainer->hwndActive != hwndDlg) {
-					dat->dwFlagsEx |= MWF_EX_DELAYEDSPLITTER;
-					dat->wParam = wParam;
-					dat->lParam = lParam;
-					return 0;
-				}
-				GetWindowRect(hwndDlg, &rcWin);
-				GetClientRect(hwndDlg, &rcClient);
-				newMessagePos = (short)rcWin.bottom - (short)wParam;
-
-				//SendMessage(hwndDlg, DM_SAVESIZE, 0, 0);
-				SendMessage(hwndDlg, DM_SPLITTERMOVED, newMessagePos + lParam / 2, (LPARAM)GetDlgItem(hwndDlg, IDC_SPLITTER));
-				SaveSplitter(dat);
-				PostMessage(hwndDlg, DM_DELAYEDSCROLL, 0, 1);
-			}
-			return 0;
 		case DM_SPLITTERMOVED: {
 			POINT pt;
 			RECT rc;
@@ -3954,7 +3896,7 @@ quote_from_last:
 
 					GetWindowRect(GetDlgItem(hwndDlg, IDOK), &rc);
 					CheckMenuItem(submenu, ID_SENDMENU_SENDTOMULTIPLEUSERS, MF_BYCOMMAND | (dat->sendMode & SMODE_MULTIPLE ? MF_CHECKED : MF_UNCHECKED));
-					EnableMenuItem(submenu, ID_SENDMENU_SENDTOMULTIPLEUSERS, MF_BYCOMMAND | (ServiceExists("Multisend/Send") ? MF_ENABLED : MF_GRAYED));
+					//EnableMenuItem(submenu, ID_SENDMENU_SENDTOMULTIPLEUSERS, MF_BYCOMMAND | (ServiceExists("Multisend/Send") ? MF_ENABLED : MF_GRAYED));
 					CheckMenuItem(submenu, ID_SENDMENU_SENDDEFAULT, MF_BYCOMMAND | (dat->sendMode == 0 ? MF_CHECKED : MF_UNCHECKED));
 					CheckMenuItem(submenu, ID_SENDMENU_SENDTOCONTAINER, MF_BYCOMMAND | (dat->sendMode & SMODE_CONTAINER ? MF_CHECKED : MF_UNCHECKED));
 					CheckMenuItem(submenu, ID_SENDMENU_FORCEANSISEND, MF_BYCOMMAND | (dat->sendMode & SMODE_FORCEANSI ? MF_CHECKED : MF_UNCHECKED));
@@ -3976,7 +3918,7 @@ quote_from_last:
 						case ID_SENDMENU_SENDTOMULTIPLEUSERS:
 							dat->sendMode ^= SMODE_MULTIPLE;
 							if (dat->sendMode & SMODE_MULTIPLE) {
-								HWND hwndClist = DM_CreateClist(hwndDlg, dat);;
+								HWND hwndClist = DM_CreateClist(dat);;
 							}
 							break;
 						case ID_SENDMENU_SENDNUDGE:
@@ -4006,11 +3948,13 @@ quote_from_last:
 					M->WriteByte(dat->hContact, SRMSGMOD_T, "forceansi", (BYTE)(dat->sendMode & SMODE_FORCEANSI ? 1 : 0));
 					SetWindowPos(GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE);
 					if (dat->sendMode & SMODE_MULTIPLE || dat->sendMode & SMODE_CONTAINER)
-						RedrawWindow(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW | RDW_ERASE);
+						SetWindowPos(GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, 0, 0, 0, SWP_DRAWFRAME|SWP_FRAMECHANGED|SWP_NOZORDER|
+									 SWP_NOMOVE|SWP_NOSIZE|SWP_NOCOPYBITS);
 					else {
 						if (IsWindow(GetDlgItem(hwndDlg, IDC_CLIST)))
 							DestroyWindow(GetDlgItem(hwndDlg, IDC_CLIST));
-						RedrawWindow(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW | RDW_ERASE);
+						SetWindowPos(GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, 0, 0, 0, SWP_DRAWFRAME|SWP_FRAMECHANGED|SWP_NOZORDER|
+									 SWP_NOMOVE|SWP_NOSIZE|SWP_NOCOPYBITS);
 					}
 					SendMessage(hwndContainer, DM_QUERYCLIENTAREA, 0, (LPARAM)&rc);
 					SendMessage(hwndDlg, WM_SIZE, 0, 0);
@@ -4082,8 +4026,10 @@ quote_from_last:
 						SendMessage(hwndDlg, WM_SIZE, 0, 0);
 						DM_ScrollToBottom(dat, 0, 1);
 					}
+					SetWindowPos(GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, 0, 0, 0, SWP_DRAWFRAME|SWP_FRAMECHANGED|SWP_NOZORDER|
+								 SWP_NOMOVE|SWP_NOSIZE|SWP_NOCOPYBITS);
+					break;
 				}
-				break;
 				case IDM_CLEAR:
 					ClearLog(dat);
 					break;
@@ -4803,7 +4749,6 @@ quote_from_last:
 
 			if (!dat->bWasDeleted) {
 				SendMessage(hwndDlg, DM_SAVEPERCONTACT, 0, 0);
-				SaveSplitter(dat);
 				if (!dat->stats.bWritten) {
 					WriteStatsOnClose(dat);
 					dat->stats.bWritten = TRUE;
@@ -4838,7 +4783,6 @@ quote_from_last:
 				item.mask = TCIF_PARAM;
 
 				i = GetTabIndexFromHWND(hwndTab, hwndDlg);
-				//_DebugTraceA("destroy window %d", hwndDlg);
 				if (i >= 0) {
 					SendMessage(hwndTab, WM_USER + 100, 0, 0);                      // remove tooltip
 					TabCtrl_DeleteItem(hwndTab, i);

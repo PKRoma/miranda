@@ -39,7 +39,9 @@
  * global prototypes
  */
 
-TCHAR *FilterEventMarkers(TCHAR *wszText);
+TCHAR*				FilterEventMarkers			(TCHAR *wszText);
+TCHAR* 		TSAPI 	GetPreviewWithEllipsis		(TCHAR *szText, size_t iMaxLen);
+
 #if defined(_UNICODE)
 	char  *FilterEventMarkers(char *wszText);
 #endif
@@ -189,6 +191,7 @@ void		TSAPI	SendLater_Add				(const HANDLE hContact);
 void		TSAPI	SendLater_Process			(const HANDLE hContact);
 HANDLE		TSAPI	SendLater_ProcessAck		(const ACKDATA *ack);
 void		TSAPI	SendLater_ClearAll			();
-int			TSAPI	SendLater_SendIt(const char *szSetting, LPARAM lParam);
+int			TSAPI	SendLater_SendIt			(const char *szSetting, LPARAM lParam);
+int 		_cdecl	SendLater_AddJob			(const char *szSetting, LPARAM lParam);
 
 #endif /* _TABSRMM_FUNCTIONS_H */

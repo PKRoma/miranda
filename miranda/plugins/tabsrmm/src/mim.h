@@ -148,9 +148,9 @@ public:
 	 * path utilities
 	 */
 
-	int TSAPI 			pathIsAbsolute					(const TCHAR *path) const;
-	size_t TSAPI 		pathToAbsolute					(const TCHAR *pSrc, TCHAR *pOut, const TCHAR *szBase = 0) const;
-	size_t TSAPI		pathToRelative					(const TCHAR *pSrc, TCHAR *pOut, const TCHAR *szBase = 0) const;
+	int  				pathIsAbsolute					(const TCHAR *path) const;
+	size_t 		 		pathToAbsolute					(const TCHAR *pSrc, TCHAR *pOut, const TCHAR *szBase = 0) const;
+	size_t 				pathToRelative					(const TCHAR *pSrc, TCHAR *pOut, const TCHAR *szBase = 0) const;
 
 	const TCHAR* 		getDataPath() const 			{ return(m_szProfilePath); }
 	const TCHAR* 		getSkinPath() const 			{ return(m_szSkinsPath); }
@@ -158,9 +158,9 @@ public:
 	const TCHAR* 		getChatLogPath() const 			{ return(m_szChatLogsPath); }
 	const bool	 		haveFoldersPlugin() const 		{ return(m_haveFolders); }
 
-	const TCHAR* TSAPI  getUserDir();
-	void		 TSAPI  configureCustomFolders();
-	INT_PTR		 TSAPI  foldersPathChanged();
+	const TCHAR* 		getUserDir();
+	void		  		configureCustomFolders();
+	INT_PTR		  		foldersPathChanged();
 
 	void				startTimer();
 	void				stopTimer						(const char *szMsg = 0);
@@ -206,11 +206,11 @@ public:
 	 * window lists
 	 */
 
-	void		TSAPI 	BroadcastMessage				(UINT msg, WPARAM wParam, LPARAM lParam);
-	void		TSAPI 	BroadcastMessageAsync			(UINT msg, WPARAM wParam, LPARAM lParam);
-	INT_PTR		TSAPI 	AddWindow						(HWND hWnd, HANDLE h);
-	INT_PTR		TSAPI 	RemoveWindow					(HWND hWnd);
-	HWND		TSAPI 	FindWindow						(HANDLE h) const;
+	void			 	BroadcastMessage				(UINT msg, WPARAM wParam, LPARAM lParam);
+	void			 	BroadcastMessageAsync			(UINT msg, WPARAM wParam, LPARAM lParam);
+	INT_PTR			 	AddWindow						(HWND hWnd, HANDLE h);
+	INT_PTR		 		RemoveWindow					(HWND hWnd);
+	HWND		 		FindWindow						(HANDLE h) const;
 
 	static	int 										FoldersPathChanged(WPARAM wParam, LPARAM lParam);		// hook subscriber for folders plugin
 	static 	const TCHAR* TSAPI 							StriStr(const TCHAR *szString, const TCHAR *szSearchFor);

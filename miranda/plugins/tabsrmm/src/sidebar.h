@@ -128,15 +128,15 @@ public:
 	CSideBar(ContainerWindowData *pContainer);
 	~CSideBar();
 
-	void		TSAPI			Init						(const bool fForce = false);
-	void		TSAPI			addSession					(const _MessageWindowData *dat, int position = -1);
-	HRESULT		TSAPI			removeSession				(const _MessageWindowData *dat);
-	void		TSAPI			updateSession				(const _MessageWindowData *dat);
+	void						Init						(const bool fForce = false);
+	void						addSession					(const _MessageWindowData *dat, int position = -1);
+	HRESULT						removeSession				(const _MessageWindowData *dat);
+	void						updateSession				(const _MessageWindowData *dat);
 
-	void		TSAPI			processScrollerButtons		(UINT cmd);
-	void		TSAPI			Layout						(const RECT *rc = 0, bool fOnlyCalc = false);
-	void		TSAPI			setVisible					(bool fNewVisibility);
-	void 		TSAPI			showAll						(int showCmd);
+	void						processScrollerButtons		(UINT cmd);
+	void						Layout						(const RECT *rc = 0, bool fOnlyCalc = false);
+	void						setVisible					(bool fNewVisibility);
+	void 						showAll						(int showCmd);
 
 	const LONG 					getWidth() const 			{ return(m_isVisible ? m_width + SIDEBAR_GAP : 0); }
 	const DWORD					getFlags() const			{ return(m_dwFlags); }
@@ -167,27 +167,27 @@ public:
 	}
 	HWND								getScrollWnd() const 			{ return(m_hwndScrollWnd); }
 	const CSideBarButton*				getHoveredClose() const 		{ return(m_hoveredClose); }
-	const CSideBarButton* TSAPI 		setActiveItem					(const _MessageWindowData *dat);
+	const CSideBarButton* 		 		setActiveItem					(const _MessageWindowData *dat);
 
 	static const TSideBarLayout* 		getLayouts						(int& uLayoutCount)
 	{
 		uLayoutCount = NR_LAYOUTS;
 		return(m_layouts);
 	}
-	void				TSAPI			scrollIntoView					(const CSideBarButton *item = 0);
-	void				TSAPI			resizeScrollWnd					(LONG x, LONG y, LONG width, LONG height) const;
+	void								scrollIntoView					(const CSideBarButton *item = 0);
+	void								resizeScrollWnd					(LONG x, LONG y, LONG width, LONG height) const;
 	static LRESULT CALLBACK 			wndProcStub						(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	static void			TSAPI			initBG							(const HWND hwnd);
-	static void			TSAPI			unInitBG						();
+	static void							initBG							(const HWND hwnd);
+	static void							unInitBG						();
 
 private:
-	void				TSAPI			createScroller();
-	void				TSAPI			destroyScroller();
-	void				TSAPI			populateAll();
-	void				TSAPI			removeAll();
-	void				TSAPI			Invalidate();
-	ButtonIterator 		TSAPI			findSession						(const _MessageWindowData *dat);
-	ButtonIterator		TSAPI			findSession						(const HANDLE hContact);
+	void								createScroller();
+	void								destroyScroller();
+	void								populateAll();
+	void								removeAll();
+	void								Invalidate();
+	ButtonIterator 						findSession						(const _MessageWindowData *dat);
+	ButtonIterator						findSession						(const HANDLE hContact);
 
 	LRESULT CALLBACK					wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 

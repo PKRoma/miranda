@@ -1,25 +1,35 @@
 /*
-
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2003 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ *
+ */
 
 #ifndef _MSGS_H
 #define _MSGS_H
@@ -229,7 +239,7 @@ struct TitleBtn {
 
 #define NR_LOGICONS 8
 #define NR_BUTTONBARICONS 37//MaD: 29
-#define NR_SIDEBARICONS 10
+#define NR_SIDEBARICONS 2
 
 class CTaskbarInteract;
 class CMenuBar;
@@ -237,7 +247,7 @@ class CInfoPanel;
 class CSideBar;
 
 struct ContainerWindowData {
-	struct  ContainerWindowData *pNextContainer;
+	ContainerWindowData *pNextContainer;
 	TCHAR   szName[CONTAINER_NAMELEN + 4];		// container name
 	HWND    hwndActive;		// active message window
 	HWND    hwnd;				// the container handle
@@ -344,6 +354,7 @@ struct _MessageWindowData {
 	UINT    messageCount;  //MAD
 	UINT	bbLSideWidth;  //MAD
 	UINT	bbRSideWidth;    //MAD
+	BYTE	kstate[256];
 	struct StatusIconListNode *pSINod;
 	SESSIONINFO_TYPE* si;
 
@@ -652,7 +663,7 @@ struct NewMessageWindowLParam {
 #define DM_MYAVATARCHANGED	 (WM_USER+86)
 #define DM_PRINTCLIENT		 (WM_USER+87)
 #define DM_IEVIEWOPTIONSCHANGED (WM_USER+88)
-#define DM_SPLITTERMOVEDGLOBAL (WM_USER+89)
+#define DM_SPLITTERGLOBALEVENT (WM_USER + 89)
 #define DM_DOCREATETAB_CHAT    (WM_USER+90)
 #define DM_CLIENTCHANGED       (WM_USER+91)
 #define DM_PLAYINCOMINGSOUND   (WM_USER+92)
@@ -660,9 +671,8 @@ struct NewMessageWindowLParam {
 #define DM_REMOVEPOPUPS        (WM_USER+94)
 #define DM_BBNEEDUPDATE        (WM_USER+96)
 #define DM_CBDESTROY	       (WM_USER+97)
-#define DM_SPLITTERMOVEDGLOBAL_NOSYNC_CHAT (WM_USER+98)
-#define DM_SPLITTERMOVEDGLOBAL_NOSYNC_IM (WM_USER+99)
-
+//#define DM_SPLITTERMOVEDGLOBAL_NOSYNC_CHAT (WM_USER+98)
+//#define DM_SPLITTERMOVEDGLOBAL_NOSYNC_IM (WM_USER+99)
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
 #define DM_SCROLLIEVIEW		 (WM_USER+102)
