@@ -477,6 +477,8 @@
 #define IDC_HEADERBAR                   1734
 #define IDC_LV_LEGEND                   1735
 #define IDC_ADDHDR                      1736
+#define IDC_ENABLEBETA                  1737
+#define IDC_ENABLESTABLE                1738
 #define IDC_EFFECT_COLOUR_TEXT1         1853
 #define IDC_EFFECT_COLOUR_SPIN1         1854
 #define IDC_EFFECT_COLOUR_TEXT2         11803
@@ -512,7 +514,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        320
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1737
+#define _APS_NEXT_CONTROL_VALUE         1739
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
