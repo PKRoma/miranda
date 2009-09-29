@@ -262,7 +262,7 @@ static int UpdateNotifyMakeRequest(UpdateNotifyData *und) {
 	NETLIBHTTPREQUEST *resp;
 	NETLIBHTTPHEADER headers[1];
 	DWORD dwVersion;
-	char szVersion[32], szUrl[256], szVersionText[128];
+	char szVersion[32], szUrl[256], szVersionText[128], szUserAgent[64];
 	int isUnicode, isAlphaCheck, isBetaCheck;
 	DBVARIANT dbv;
 	
@@ -294,7 +294,14 @@ static int UpdateNotifyMakeRequest(UpdateNotifyData *und) {
 	req.szUrl = szUrl;
 	req.flags = 0;
 	headers[0].szName = "User-Agent";
-	headers[0].szValue = "MirandaUpdate/0.4";
+	headers[0].szValue = szUserAgent;
+    #ifdef _WIN64
+    mir_snprintf(szUserAgent, sizeof(szUserAgent), "Miranda/%s (x64)", szVersion);
+    #elif defined(_UNICODE)
+    mir_snprintf(szUserAgent, sizeof(szUserAgent), "Miranda/%s (Unicode)", szVersion);
+    #else
+    mir_snprintf(szUserAgent, sizeof(szUserAgent), "Miranda/%s (ANSI)", szVersion);
+    #endif
 	req.headersCount = 1;
 	req.headers = headers;
 	resp = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)hNetlibUser, (LPARAM)&req);
