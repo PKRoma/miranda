@@ -183,7 +183,7 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
 			for (i = 0; i <= TMPL_ERRMSG; i++) {
-				SendDlgItemMessageA(hwndDlg, IDC_TEMPLATELIST, LB_ADDSTRING, 0, (LPARAM)TemplateNames[i]);
+				SendDlgItemMessageA(hwndDlg, IDC_TEMPLATELIST, LB_ADDSTRING, 0, (LPARAM)Translate(TemplateNames[i]));
 				SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_SETITEMDATA, i, (LPARAM)i);
 			}
 			EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_MODIFY), FALSE);
@@ -331,9 +331,8 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				else
 					SetTextColor(dis->hDC, GetSysColor(COLOR_WINDOWTEXT));
 			}
-			{
-				TextOutA(dis->hDC, dis->rcItem.left, dis->rcItem.top, TemplateNames[iItem], lstrlenA(TemplateNames[iItem]));
-			}
+			char *pszName = Translate(TemplateNames[iItem]);
+			TextOutA(dis->hDC, dis->rcItem.left, dis->rcItem.top, pszName, lstrlenA(pszName));
 			return(TRUE);
 		}
 		case DM_UPDATETEMPLATEPREVIEW: {
