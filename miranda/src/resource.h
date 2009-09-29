@@ -349,7 +349,6 @@
 #define IDC_TIMEFORMAT                  1469
 #define IDC_FILENAMEBROWSE              1470
 #define IDC_SHOWTHISDLGATSTART          1471
-#define IDC_DUMPPROXY2                  1473
 #define IDC_DUMPSSL                     1473
 #define IDC_FILEDIRBROWSE               1475
 #define IDC_SCANCMDLINEBROWSE           1476
@@ -401,10 +400,7 @@
 #define IDC_TXT_TITLE2                  1593
 #define IDC_TXT_TITLE3                  1594
 #define IDC_TXT_TITLE4                  1595
-#define IDC_TXT_TITLE5                  1596
 #define IDC_TXT_TITLE6                  1597
-#define IDC_TXT_TITLE7                  1598
-#define IDC_TXT_TITLE8                  1599
 #define IDC_PREVIEWSMALL                1600
 #define IDC_PREVIEWGENERAL              1601
 #define IDC_PREVIEWHEADER               1602
@@ -448,6 +444,7 @@
 #define IDC_ENABLEUPDATES               1700
 #define IDC_ENABLEALPHA                 1701
 #define IDC_RESETMENU                   1702
+#define IDC_ENABLEBETA                  1703
 #define IDC_KEYWORD_FILTER              1704
 #define IDC_FILTER                      1706
 #define IDC_PATH                        1707
@@ -477,6 +474,7 @@
 #define IDC_HEADERBAR                   1734
 #define IDC_LV_LEGEND                   1735
 #define IDC_ADDHDR                      1736
+#define IDC_ENABLESTABLE                1738
 #define IDC_EFFECT_COLOUR_TEXT1         1853
 #define IDC_EFFECT_COLOUR_SPIN1         1854
 #define IDC_EFFECT_COLOUR_TEXT2         11803
@@ -512,7 +510,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        320
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1737
+#define _APS_NEXT_CONTROL_VALUE         1739
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
