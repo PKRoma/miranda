@@ -61,10 +61,12 @@ CLEAN :
 	-@erase "$(INTDIR)\msgoptions.obj"
 	-@erase "$(INTDIR)\msgoptions_plus.obj"
 	-@erase "$(INTDIR)\msgs.obj"
+	-@erase "$(INTDIR)\muchighlight.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\selectcontainer.obj"
 	-@erase "$(INTDIR)\sendqueue.obj"
 	-@erase "$(INTDIR)\services.obj"
+	-@erase "$(INTDIR)\sidebar.obj"
 	-@erase "$(INTDIR)\srmm.obj"
 	-@erase "$(INTDIR)\srmm.pch"
 	-@erase "$(INTDIR)\tabctrl.obj"
@@ -74,6 +76,7 @@ CLEAN :
 	-@erase "$(INTDIR)\themeio.obj"
 	-@erase "$(INTDIR)\themes.obj"
 	-@erase "$(INTDIR)\tools.obj"
+	-@erase "$(INTDIR)\translator.obj"
 	-@erase "$(INTDIR)\trayicon.obj"
 	-@erase "$(INTDIR)\TSButton.obj"
 	-@erase "$(INTDIR)\typingnotify.obj"
@@ -138,6 +141,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\manager.obj" \
 	"$(INTDIR)\message.obj" \
+	"$(INTDIR)\muchighlight.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\tools.obj" \
@@ -163,12 +167,14 @@ LINK32_OBJS= \
 	"$(INTDIR)\msgs.obj" \
 	"$(INTDIR)\selectcontainer.obj" \
 	"$(INTDIR)\sendqueue.obj" \
+	"$(INTDIR)\sidebar.obj" \
 	"$(INTDIR)\srmm.obj" \
 	"$(INTDIR)\tabctrl.obj" \
 	"$(INTDIR)\taskbar.obj" \
 	"$(INTDIR)\templates.obj" \
 	"$(INTDIR)\themeio.obj" \
 	"$(INTDIR)\themes.obj" \
+	"$(INTDIR)\translator.obj" \
 	"$(INTDIR)\trayicon.obj" \
 	"$(INTDIR)\TSButton.obj" \
 	"$(INTDIR)\typingnotify.obj" \
@@ -214,10 +220,12 @@ CLEAN :
 	-@erase "$(INTDIR)\msgoptions.obj"
 	-@erase "$(INTDIR)\msgoptions_plus.obj"
 	-@erase "$(INTDIR)\msgs.obj"
+	-@erase "$(INTDIR)\muchighlight.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\selectcontainer.obj"
 	-@erase "$(INTDIR)\sendqueue.obj"
 	-@erase "$(INTDIR)\services.obj"
+	-@erase "$(INTDIR)\sidebar.obj"
 	-@erase "$(INTDIR)\srmm.obj"
 	-@erase "$(INTDIR)\srmm.pch"
 	-@erase "$(INTDIR)\tabctrl.obj"
@@ -226,6 +234,7 @@ CLEAN :
 	-@erase "$(INTDIR)\themeio.obj"
 	-@erase "$(INTDIR)\themes.obj"
 	-@erase "$(INTDIR)\tools.obj"
+	-@erase "$(INTDIR)\translator.obj"
 	-@erase "$(INTDIR)\trayicon.obj"
 	-@erase "$(INTDIR)\TSButton.obj"
 	-@erase "$(INTDIR)\typingnotify.obj"
@@ -290,6 +299,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\manager.obj" \
 	"$(INTDIR)\message.obj" \
+	"$(INTDIR)\muchighlight.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\tools.obj" \
@@ -315,12 +325,14 @@ LINK32_OBJS= \
 	"$(INTDIR)\msgs.obj" \
 	"$(INTDIR)\selectcontainer.obj" \
 	"$(INTDIR)\sendqueue.obj" \
+	"$(INTDIR)\sidebar.obj" \
 	"$(INTDIR)\srmm.obj" \
 	"$(INTDIR)\tabctrl.obj" \
 	"$(INTDIR)\taskbar.obj" \
 	"$(INTDIR)\templates.obj" \
 	"$(INTDIR)\themeio.obj" \
 	"$(INTDIR)\themes.obj" \
+	"$(INTDIR)\translator.obj" \
 	"$(INTDIR)\trayicon.obj" \
 	"$(INTDIR)\TSButton.obj" \
 	"$(INTDIR)\typingnotify.obj" \
@@ -366,10 +378,12 @@ CLEAN :
 	-@erase "$(INTDIR)\msgoptions.obj"
 	-@erase "$(INTDIR)\msgoptions_plus.obj"
 	-@erase "$(INTDIR)\msgs.obj"
+	-@erase "$(INTDIR)\muchighlight.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\selectcontainer.obj"
 	-@erase "$(INTDIR)\sendqueue.obj"
 	-@erase "$(INTDIR)\services.obj"
+	-@erase "$(INTDIR)\sidebar.obj"
 	-@erase "$(INTDIR)\srmm.obj"
 	-@erase "$(INTDIR)\srmm.pch"
 	-@erase "$(INTDIR)\tabctrl.obj"
@@ -379,6 +393,7 @@ CLEAN :
 	-@erase "$(INTDIR)\themeio.obj"
 	-@erase "$(INTDIR)\themes.obj"
 	-@erase "$(INTDIR)\tools.obj"
+	-@erase "$(INTDIR)\translator.obj"
 	-@erase "$(INTDIR)\trayicon.obj"
 	-@erase "$(INTDIR)\TSButton.obj"
 	-@erase "$(INTDIR)\typingnotify.obj"
@@ -442,6 +457,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\manager.obj" \
 	"$(INTDIR)\message.obj" \
+	"$(INTDIR)\muchighlight.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\tools.obj" \
@@ -467,12 +483,14 @@ LINK32_OBJS= \
 	"$(INTDIR)\msgs.obj" \
 	"$(INTDIR)\selectcontainer.obj" \
 	"$(INTDIR)\sendqueue.obj" \
+	"$(INTDIR)\sidebar.obj" \
 	"$(INTDIR)\srmm.obj" \
 	"$(INTDIR)\tabctrl.obj" \
 	"$(INTDIR)\taskbar.obj" \
 	"$(INTDIR)\templates.obj" \
 	"$(INTDIR)\themeio.obj" \
 	"$(INTDIR)\themes.obj" \
+	"$(INTDIR)\translator.obj" \
 	"$(INTDIR)\trayicon.obj" \
 	"$(INTDIR)\TSButton.obj" \
 	"$(INTDIR)\typingnotify.obj" \
@@ -518,10 +536,12 @@ CLEAN :
 	-@erase "$(INTDIR)\msgoptions.obj"
 	-@erase "$(INTDIR)\msgoptions_plus.obj"
 	-@erase "$(INTDIR)\msgs.obj"
+	-@erase "$(INTDIR)\muchighlight.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\selectcontainer.obj"
 	-@erase "$(INTDIR)\sendqueue.obj"
 	-@erase "$(INTDIR)\services.obj"
+	-@erase "$(INTDIR)\sidebar.obj"
 	-@erase "$(INTDIR)\srmm.obj"
 	-@erase "$(INTDIR)\tabctrl.obj"
 	-@erase "$(INTDIR)\tabsrmm.pch"
@@ -531,6 +551,7 @@ CLEAN :
 	-@erase "$(INTDIR)\themeio.obj"
 	-@erase "$(INTDIR)\themes.obj"
 	-@erase "$(INTDIR)\tools.obj"
+	-@erase "$(INTDIR)\translator.obj"
 	-@erase "$(INTDIR)\trayicon.obj"
 	-@erase "$(INTDIR)\TSButton.obj"
 	-@erase "$(INTDIR)\typingnotify.obj"
@@ -596,6 +617,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\manager.obj" \
 	"$(INTDIR)\message.obj" \
+	"$(INTDIR)\muchighlight.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\tools.obj" \
@@ -621,12 +643,14 @@ LINK32_OBJS= \
 	"$(INTDIR)\msgs.obj" \
 	"$(INTDIR)\selectcontainer.obj" \
 	"$(INTDIR)\sendqueue.obj" \
+	"$(INTDIR)\sidebar.obj" \
 	"$(INTDIR)\srmm.obj" \
 	"$(INTDIR)\tabctrl.obj" \
 	"$(INTDIR)\taskbar.obj" \
 	"$(INTDIR)\templates.obj" \
 	"$(INTDIR)\themeio.obj" \
 	"$(INTDIR)\themes.obj" \
+	"$(INTDIR)\translator.obj" \
 	"$(INTDIR)\trayicon.obj" \
 	"$(INTDIR)\TSButton.obj" \
 	"$(INTDIR)\typingnotify.obj" \
@@ -908,6 +932,50 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 CPP_SWITCHES=/nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\tabsrmm.pch" /Yu"../src/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\message.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\tabsrmm.pch"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
+
+SOURCE=.\chat\muchighlight.cpp
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
+
+"$(INTDIR)\muchighlight.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O2 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
+
+"$(INTDIR)\muchighlight.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O2 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
+
+"$(INTDIR)\muchighlight.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+CPP_SWITCHES=/nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
+
+"$(INTDIR)\muchighlight.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -1369,6 +1437,12 @@ SOURCE=.\src\sendqueue.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
+SOURCE=.\src\sidebar.cpp
+
+"$(INTDIR)\sidebar.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
 SOURCE=.\src\srmm.cpp
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1440,6 +1514,12 @@ SOURCE=.\src\themeio.cpp
 SOURCE=.\src\themes.cpp
 
 "$(INTDIR)\themes.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\src\translator.cpp
+
+"$(INTDIR)\translator.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
