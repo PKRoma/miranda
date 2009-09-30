@@ -1059,7 +1059,10 @@ static int MO_RegisterIcon( PMO_IntMenuItem pmi, void* )
 
 		// remove '&'
 		char* start = buf;
-		while ( start = strchr( start, '&' )) {
+		while ( start ) {
+			if (( start = strchr( start, '&' )) == NULL )
+				break;
+
 			memmove(start,start+1,strlen(start+1)+1);
 			if (*start!='\0') start++;
 			else break;
