@@ -22,6 +22,17 @@ Contents
 --------------------------
 * New in 0.8.7
 Enhancements:
+ - Added new update notification options
+
+Bugfixes:
+ - Fixed possible crash in contact list menus
+ - AIM: Fixed setting user preferences
+ - Jabber: Fix for ANSI version of Jabber
+ - Yahoo: Minor options text changes
+ 
+
+* New in 0.8.7
+Enhancements:
  - New update notification detection
 
 Bugfixes:
