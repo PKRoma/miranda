@@ -263,7 +263,7 @@ CListDlg::CListDlg(CIrcProto *_pro) :
 	m_status( this, IDC_TEXT ),
 	m_filter( this, IDC_FILTER_STRING )
 {
-	m_list.OnDoubleClick = m_Join.OnClick = Callback( this, &CListDlg::OnJoin );
+	m_list2.OnDoubleClick = m_list.OnDoubleClick = m_Join.OnClick = Callback( this, &CListDlg::OnJoin );
 	m_list.OnColumnClick = Callback( this, &CListDlg::List_OnColumnClick );
 }
 
