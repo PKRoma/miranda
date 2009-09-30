@@ -529,6 +529,8 @@ LBL_FatalError:
 			#if defined( _UNICODE )
 				bytesParsed = ( root ) ? utfLen( str, bytesParsed ) : 0;
 				mir_free(str);
+			#else
+				bytesParsed = ( root ) ? bytesParsed : 0;
 			#endif
 
 			Log( "bytesParsed = %d", bytesParsed );
