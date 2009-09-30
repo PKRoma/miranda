@@ -47,7 +47,7 @@ BEGIN
 	CONTROL         "Show Avatars",IDC_SHOW_AVATARS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,114,140,10 					
 
-	CONTROL         "AutoLogin to Yahoo ",IDC_MAIL_AUTOLOGIN,"Button",
+	CONTROL         "AutoLogin to Yahoo Website(s)",IDC_MAIL_AUTOLOGIN,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,124,120,10 					
 
 	CONTROL         "Display Yahoo notifications", IDC_DISABLEYAHOOMAIL,"Button",
