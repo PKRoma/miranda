@@ -81,6 +81,17 @@ static const struct CheckBoxValues_t offlineValues[] = {
     {MODEF_OFFLINE,_T("Offline")}, {PF2_ONLINE,_T("Online")}, {PF2_SHORTAWAY,_T("Away")}, {PF2_LONGAWAY,_T("NA")}, {PF2_LIGHTDND,_T("Occupied")}, {PF2_HEAVYDND,_T("DND")}, {PF2_FREECHAT,_T("Free for chat")}, {PF2_INVISIBLE,_T("Invisible")}, {PF2_OUTTOLUNCH,_T("Out to lunch")}, {PF2_ONTHEPHONE,_T("On the phone")}
 };
 
+static HIMAGELIST himlCheckBoxes = 0;
+
+static void CreateStateImageList()
+{
+	himlCheckBoxes=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,2,2);
+	ImageList_AddIcon(himlCheckBoxes, LoadImage(g_hInst, MAKEINTRESOURCE(IDI_NOTICK), IMAGE_ICON, 16, 16, LR_SHARED));
+	ImageList_AddIcon(himlCheckBoxes, LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TICK), IMAGE_ICON, 16, 16, LR_SHARED));
+	ImageList_AddIcon(himlCheckBoxes, LoadImage(g_hInst, MAKEINTRESOURCE(IDI_NOTICK), IMAGE_ICON, 16, 16, LR_SHARED));
+}
+
+
 static UINT sortCtrlIDs[] = {IDC_SORTPRIMARY, IDC_SORTTHEN, IDC_SORTFINALLY, 0};
 
 static void FillCheckBoxTree(HWND hwndTree, const struct CheckBoxValues_t *values, int nValues, DWORD style)
@@ -95,7 +106,7 @@ static void FillCheckBoxTree(HWND hwndTree, const struct CheckBoxValues_t *value
 		tvis.item.lParam = values[i].style;
 		tvis.item.pszText = TranslateTS(values[i].szDescr);
 		tvis.item.stateMask = TVIS_STATEIMAGEMASK;
-		tvis.item.state = INDEXTOSTATEIMAGEMASK((style & tvis.item.lParam) != 0 ? 2 : 1);
+		tvis.item.state = INDEXTOSTATEIMAGEMASK((style & tvis.item.lParam) != 0 ? 1 : 2);
 		TreeView_InsertItem(hwndTree, &tvis);
 	}
 }
@@ -109,7 +120,7 @@ static DWORD MakeCheckBoxTreeFlags(HWND hwndTree)
     tvi.hItem = TreeView_GetRoot(hwndTree);
     while (tvi.hItem) {
         TreeView_GetItem(hwndTree, &tvi);
-        if (((tvi.state & TVIS_STATEIMAGEMASK) >> 12 == 2))
+        if (((tvi.state & TVIS_STATEIMAGEMASK) >> 12 == 1))
             flags |= tvi.lParam;
         tvi.hItem = TreeView_GetNextSibling(hwndTree, tvi.hItem);
     }
@@ -599,9 +610,14 @@ static INT_PTR CALLBACK DlgProcDspItems(HWND hwndDlg, UINT msg, WPARAM wParam, L
 	case WM_INITDIALOG:
 		{
             int i = 0;
+            HIMAGELIST himlOld;
 
             TranslateDialogDefault(hwndDlg);
-            SetWindowLong(GetDlgItem(hwndDlg, IDC_HIDEOFFLINEOPTS), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_HIDEOFFLINEOPTS), GWL_STYLE) | TVS_NOHSCROLL | TVS_CHECKBOXES);
+            if(himlCheckBoxes == 0)
+            	CreateStateImageList();
+
+            himlOld = TreeView_SetImageList(GetDlgItem(hwndDlg, IDC_HIDEOFFLINEOPTS), himlCheckBoxes, TVSIL_STATE);
+            ImageList_Destroy(himlOld);
 
             for(i = 0; sortCtrlIDs[i] != 0; i++) {
                 SendDlgItemMessage(hwndDlg, sortCtrlIDs[i], CB_INSERTSTRING, -1, (LPARAM)TranslateT("Nothing"));
@@ -686,8 +702,6 @@ static INT_PTR CALLBACK DlgProcDspItems(HWND hwndDlg, UINT msg, WPARAM wParam, L
                 break;
         }
         case WM_DESTROY: {
-            HIMAGELIST hIml = TreeView_GetImageList(GetDlgItem(hwndDlg, IDC_HIDEOFFLINEOPTS), TVSIL_STATE);
-            ImageList_Destroy(hIml);
             break;
         }
         break;
@@ -915,10 +929,9 @@ static INT_PTR CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			TranslateDialogDefault(hwndDlg);
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_EXTRAORDER), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg,IDC_EXTRAORDER),GWL_STYLE)|TVS_NOHSCROLL);
 			{
-				HIMAGELIST himlCheckBoxes;
-				himlCheckBoxes=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,2,2);
-				ImageList_AddIcon(himlCheckBoxes, LoadImage(g_hInst, MAKEINTRESOURCE(IDI_NOTICK), IMAGE_ICON, 16, 16, LR_SHARED));
-                ImageList_AddIcon(himlCheckBoxes, LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TICK), IMAGE_ICON, 16, 16, LR_SHARED));
+				if(himlCheckBoxes == 0) {
+					CreateStateImageList();
+				}
 				TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_EXTRAORDER), himlCheckBoxes, TVSIL_NORMAL);
 			}
 			return TRUE;
@@ -1081,10 +1094,7 @@ static INT_PTR CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				}
 			}
 		}
-
         case WM_DESTROY: {
-            HIMAGELIST hIml = TreeView_GetImageList(GetDlgItem(hwndDlg, IDC_EXTRAORDER), TVSIL_NORMAL);
-            ImageList_Destroy(hIml);
             break;
         }
 		break;
