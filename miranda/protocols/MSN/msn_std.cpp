@@ -141,7 +141,7 @@ void CMsnProto::setWord(HANDLE hContact, const char* name, WORD value)
 
 void CMsnProto::CreateProtoService(const char* szService, MsnServiceFunc serviceProc)
 {
-	char str[ MAXMODULELABELLENGTH ];
+	char str[MAXMODULELABELLENGTH];
 
 	mir_snprintf(str, sizeof(str), "%s%s", m_szModuleName, szService);
 	::CreateServiceFunctionObj(str, (MIRANDASERVICEOBJ)*(void**)&serviceProc, this);
@@ -149,14 +149,14 @@ void CMsnProto::CreateProtoService(const char* szService, MsnServiceFunc service
 
 void CMsnProto::CreateProtoServiceParam(const char* szService, MsnServiceFuncParam serviceProc, LPARAM lParam)
 {
-	char str[ MAXMODULELABELLENGTH ];
+	char str[MAXMODULELABELLENGTH];
 	mir_snprintf(str, sizeof(str), "%s%s", m_szModuleName, szService);
 	::CreateServiceFunctionObjParam(str, (MIRANDASERVICEOBJPARAM)*(void**)&serviceProc, this, lParam);
 }
 
 HANDLE CMsnProto::CreateProtoEvent(const char* szService)
 {
-	char str[ MAXMODULELABELLENGTH ];
+	char str[MAXMODULELABELLENGTH];
 	mir_snprintf(str, sizeof(str), "%s%s", m_szModuleName, szService);
 	return ::CreateHookableEvent(str);
 }
@@ -186,7 +186,7 @@ int  CMsnProto::SendBroadcast(HANDLE hContact, int type, int result, HANDLE hPro
 
 
 #if !defined(_DEBUG)
-int  MSN_CallService(const char* szSvcName, WPARAM wParam, LPARAM lParam)
+INT_PTR MSN_CallService(const char* szSvcName, WPARAM wParam, LPARAM lParam)
 {
 	return CallService(szSvcName, wParam, lParam);
 }
@@ -209,7 +209,7 @@ char*  MSN_Translate(const char* str)
 
 unsigned MSN_GenRandom(void)
 {
-    unsigned rndnum;
-    MSN_CallService(MS_UTILS_GETRANDOM, sizeof(rndnum), (LPARAM)&rndnum);
-    return rndnum & 0x7FFFFFFF;
+	unsigned rndnum;
+	MSN_CallService(MS_UTILS_GETRANDOM, sizeof(rndnum), (LPARAM)&rndnum);
+	return rndnum & 0x7FFFFFFF;
 }
