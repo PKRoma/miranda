@@ -858,8 +858,8 @@ INT_PTR CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		else if ((wParam & 0xFFF0) == SC_MOVE) {
 			RECT  rc;
 			GetWindowRect(hwndDlg, &rc);
-			dat->mouseLBDownPos.x = ((LONG) lParam << 16 >> 16) - rc.left;
-			dat->mouseLBDownPos.y = ((LONG) lParam >> 16) - rc.top;
+			dat->mouseLBDownPos.x = LOWORD(lParam) - rc.left;
+			dat->mouseLBDownPos.y = HIWORD(lParam) - rc.top;
 		} else if (wParam == IDM_TOPMOST) {
             HMENU hMenu = GetSystemMenu(hwndDlg, FALSE);
             if (dat->bTopmost)  {
@@ -1282,8 +1282,8 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			int tabId;
 			MessageWindowTabData *mwtd;
 			TCHITTESTINFO thinfo;
-			thinfo.pt.x = (lParam<<16)>>16;
-			thinfo.pt.y = lParam>>16;
+			thinfo.pt.x = LOWORD(lParam);
+			thinfo.pt.y = HIWORD(lParam);
 			tabId = TabCtrl_HitTest(hwnd, &thinfo);
 			if (tabId >= 0) {
 				tci.mask = TCIF_PARAM;
@@ -1314,8 +1314,8 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			if (!dat->bDragging) {
 				TCHITTESTINFO thinfo;
 				FILETIME ft;
-				thinfo.pt.x = (lParam<<16)>>16;
-				thinfo.pt.y = lParam>>16;
+				thinfo.pt.x = LOWORD(lParam);
+				thinfo.pt.y = HIWORD(lParam);
 				dat->srcTab = TabCtrl_HitTest(hwnd, &thinfo);
 				GetSystemTimeAsFileTime(&ft);
 				if (dat->srcTab >=0 ) {
@@ -1335,8 +1335,8 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case WM_LBUTTONUP:
 			if (dat->bDragging) {
 				TCHITTESTINFO thinfo;
-				thinfo.pt.x = (lParam<<16)>>16;
-				thinfo.pt.y = lParam>>16;
+				thinfo.pt.x = LOWORD(lParam);
+				thinfo.pt.y = HIWORD(lParam);
 				if (dat->bDragged) {
 					ImageList_DragLeave(GetDesktopWindow());
 					ImageList_EndDrag();
@@ -1439,8 +1439,8 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					RECT rect;
 					int atTop = (GetWindowLong(hwnd, GWL_STYLE) & TCS_BOTTOM) == 0;
 					TabCtrl_GetItemRect(hwnd, dat->srcTab, &rect);
-					pt.x = (lParam<<16)>>16;
-					pt.y = lParam>>16;
+					pt.x = LOWORD(lParam);
+					pt.y = HIWORD(lParam);
 					ImageList_GetImageInfo(g_dat->hButtonIconList, 0, &info);
 					rect.left = rect.right - (info.rcImage.right - info.rcImage.left) - 6;
 					if (!atTop) {
@@ -1487,8 +1487,8 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					FILETIME ft;
 					TCHITTESTINFO thinfo;
 					GetSystemTimeAsFileTime(&ft);
-					thinfo.pt.x = (lParam<<16)>>16;
-					thinfo.pt.y = lParam>>16;
+					thinfo.pt.x = LOWORD(lParam);
+					thinfo.pt.y = HIWORD(lParam);
 					if (!dat->bDragged) {
 						if ((abs(thinfo.pt.x-dat->mouseLBDownPos.x)<3 && abs(thinfo.pt.y-dat->mouseLBDownPos.y)<3)
 							|| (ft.dwLowDateTime - dat->lastClickTime) < 10*1000*150)
