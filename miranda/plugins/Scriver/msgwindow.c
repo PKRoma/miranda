@@ -1300,8 +1300,8 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			TCHITTESTINFO thinfo;
 			int tabId;
-			thinfo.pt.x = (lParam<<16)>>16;
-			thinfo.pt.y = lParam>>16;
+			thinfo.pt.x = LOWORD(lParam);
+			thinfo.pt.y = HIWORD(lParam);
 			tabId = TabCtrl_HitTest(hwnd, &thinfo);
 			if (tabId >=0 && tabId == dat->srcTab) {
 				SendMessage(GetChildFromTab(hwnd, tabId)->hwnd, WM_CLOSE, 0, 0);
