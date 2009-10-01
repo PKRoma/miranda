@@ -307,7 +307,7 @@ void CJabberProto::GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen 
 			str[ sizeof(str)-1 ] = 0;
 			JFreeVariant( &dbv );
 		}
-		else _ltoa(( long )hContact, str, 10 );
+		else _i64toa(( LONG_PTR )hContact, str, 10 );
 
 		char* hash = JabberSha1( str );
 		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s.%s", hash, szFileType );

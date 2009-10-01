@@ -154,7 +154,7 @@ CPrivacyList* GetSelectedList(HWND hDlg)
 	if ( nCurSel == LB_ERR )
 		return NULL;
 
-	int nItemData = SendDlgItemMessage( hDlg, IDC_LB_LISTS, LB_GETITEMDATA, nCurSel, 0 );
+	LRESULT nItemData = SendDlgItemMessage( hDlg, IDC_LB_LISTS, LB_GETITEMDATA, nCurSel, 0 );
 	if ( nItemData == LB_ERR || nItemData == 0 )
 		return NULL;
 
@@ -167,7 +167,7 @@ CPrivacyListRule* GetSelectedRule(HWND hDlg)
 	if ( nCurSel == LB_ERR)
 		return NULL;
 
-	int nItemData = SendDlgItemMessage( hDlg, IDC_PL_RULES_LIST, LB_GETITEMDATA, nCurSel, 0 );
+	LRESULT nItemData = SendDlgItemMessage( hDlg, IDC_PL_RULES_LIST, LB_GETITEMDATA, nCurSel, 0 );
 	if ( nItemData == LB_ERR || nItemData == 0 )
 		return NULL;
 
@@ -1376,7 +1376,7 @@ void CJabberDlgPrivacyLists::CListFilter(HWND)
 bool CJabberDlgPrivacyLists::CListIsGroup(HANDLE hGroup)
 {
 	char idstr[33];
-	_itoa((int)hGroup-1, idstr, 10);
+	_i64toa((INT_PTR)hGroup-1, idstr, 10);
 
 	DBVARIANT dbv;
 	bool result = DBGetContactSettingTString(NULL, "CListGroups", idstr, &dbv) == 0;
@@ -1842,7 +1842,7 @@ void CJabberDlgPrivacyLists::lbLists_OnSelChange(CCtrlListBox *)
 	if ( nCurSel == LB_ERR )
 		return;
 
-	int nErr = SendDlgItemMessage( m_hwnd, IDC_LB_LISTS, LB_GETITEMDATA, nCurSel, 0 );
+	LRESULT nErr = SendDlgItemMessage( m_hwnd, IDC_LB_LISTS, LB_GETITEMDATA, nCurSel, 0 );
 	if ( nErr == LB_ERR )
 		return;
 	if ( nErr == 0 )
