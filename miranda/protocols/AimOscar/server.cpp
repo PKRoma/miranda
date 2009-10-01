@@ -812,8 +812,22 @@ void CAimProto::modify_ssi_list(SNAC &snac, int &offset)
 				{
 					TLV tlv(snac.val(tlv_base + tlv_offset));
 
-					if(tlv.cmp(0x00c9))
+					if (tlv.cmp(0x00c9))
 						pref1_flags = tlv.ulong();
+					else if (tlv.cmp(0x00d6))
+						pref1_set_flags = tlv.ulong();
+					else if (tlv.cmp(0x00d7))
+					{
+						mir_free(pref2_flags);
+						pref2_flags = tlv.dup();
+						pref2_len = tlv.len();
+					}
+					else if (tlv.cmp(0x00d8))
+					{
+						mir_free(pref2_set_flags);
+						pref2_set_flags = tlv.dup();
+						pref2_set_len = tlv.len();
+					}
 
 					tlv_offset += TLV_HEADER_SIZE + tlv.len();
 				}
