@@ -100,6 +100,11 @@ void CAimProto::start_connection(void *arg)
 
 		mir_free(login_url);
 
+		pref1_flags = 0x77ffff;
+		pref1_set_flags = 0x77ffff;
+		mir_free(pref2_flags); pref2_flags = NULL; pref2_len = 0;
+		mir_free(pref2_set_flags); pref2_set_flags = NULL; pref2_set_len = 0;
+
 		if (hServerConn)
 			aim_connection_authorization();
 		else 

@@ -188,6 +188,11 @@ struct CAimProto : public PROTO_INTERFACE
 	// prefernces
 	unsigned short pref1_id;
 	unsigned long pref1_flags;
+	unsigned long pref1_set_flags;
+	unsigned long pref2_len;
+	unsigned long pref2_set_len;
+	char *pref2_flags;
+	char *pref2_set_flags;
 
 	BdList allow_list;
 	BdList block_list;

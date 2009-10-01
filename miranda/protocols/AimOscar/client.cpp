@@ -491,8 +491,18 @@ int CAimProto::aim_ssi_update_preferences(HANDLE hServerConn, unsigned short &se
 	aim_writeshort(0,offset,buf);									// group id (root)
 	aim_writeshort(pref1_id,offset,buf);                            // buddy id
 	aim_writeshort(5,offset,buf);                                   // buddy type: Presence
-	aim_writeshort(TLV_HEADER_SIZE*2+8,offset,buf);					// length of extra data
+
+	unsigned short tlv_len = TLV_HEADER_SIZE * 2 + 8;
+	if (pref2_len) tlv_len += TLV_HEADER_SIZE + pref2_len;
+	if (pref2_set_len) tlv_len += TLV_HEADER_SIZE + pref2_set_len;
+
+	aim_writeshort(tlv_len,offset,buf);								// length of extra data
 	aim_writetlvlong(0xc9,pref1_flags,offset,buf);					// Update Buddy preferences 1
+	aim_writetlvlong(0xd6,pref1_set_flags,offset,buf);				// Update Buddy preferences 1
+	if (pref2_len) 
+		aim_writetlv(0xd7,pref2_len,pref2_flags,offset,buf);		// Update Buddy preferences 2
+	if (pref2_set_len) 
+		aim_writetlv(0xd8,pref2_set_len,pref2_set_flags,offset,buf);// Update Buddy preferences 2
 	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
