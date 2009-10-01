@@ -20,7 +20,7 @@ Contents
 
 1. Changes in this version
 --------------------------
-* New in 0.8.7
+* New in 0.8.8
 Enhancements:
  - Added new update notification options
 
