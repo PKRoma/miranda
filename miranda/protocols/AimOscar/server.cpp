@@ -715,6 +715,20 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
 
 					if (tlv.cmp(0x00c9))
 						pref1_flags = tlv.ulong();
+					else if (tlv.cmp(0x00d6))
+						pref1_set_flags = tlv.ulong();
+					else if (tlv.cmp(0x00d7))
+					{
+						mir_free(pref2_flags);
+						pref2_flags = tlv.dup();
+						pref2_len = tlv.len();
+					}
+					else if (tlv.cmp(0x00d8))
+					{
+						mir_free(pref2_set_flags);
+						pref2_set_flags = tlv.dup();
+						pref2_set_len = tlv.len();
+					}
 
 					tlv_offset += TLV_HEADER_SIZE + tlv.len();
 				}
@@ -791,13 +805,15 @@ void CAimProto::modify_ssi_list(SNAC &snac, int &offset)
 		case 0x0005: //prefernces record
 			if (group_id == 0)
 			{
+				pref1_id = item_id;
+
 				const int tlv_base = offset + name_length + 10; 
 				for (int tlv_offset = 0; tlv_offset < tlv_size; )
 				{
 					TLV tlv(snac.val(tlv_base + tlv_offset));
 
 					if(tlv.cmp(0x00c9))
-						pref1_flags = tlv.ubyte();
+						pref1_flags = tlv.ulong();
 
 					tlv_offset += TLV_HEADER_SIZE + tlv.len();
 				}

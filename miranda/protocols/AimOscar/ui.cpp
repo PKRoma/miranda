@@ -854,7 +854,7 @@ static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				SetDlgItemInt(hwndDlg, IDC_PN, AIM_DEFAULT_PORT, FALSE);
 			}
 
-			if ((LOWORD(wParam) == IDC_SN || LOWORD(wParam) == IDC_NK || LOWORD(wParam) == IDC_PW || LOWORD(wParam) == IDC_HN)
+			if ((LOWORD(wParam) == IDC_SN || LOWORD(wParam) == IDC_PN || LOWORD(wParam) == IDC_NK || LOWORD(wParam) == IDC_PW || LOWORD(wParam) == IDC_HN)
 				&& (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
 				return 0;
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
