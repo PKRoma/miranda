@@ -317,7 +317,7 @@ void  CMsnProto::MSN_GetCustomSmileyFileName(HANDLE hContact, char* pszDest, siz
 	{
 		char szEmail[MSN_MAX_EMAIL_LEN];
 		if (getStaticString(hContact, "e-mail", szEmail, sizeof(szEmail)))
-			_ltoa((long)hContact, szEmail, 10);
+			_ui64toa((UINT_PTR)hContact, szEmail, 10);
 		
 		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s", szEmail);
 	}

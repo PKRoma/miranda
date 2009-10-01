@@ -177,7 +177,7 @@ int			MSN_GetImageFormat(void* buf, const char** ext);
 #if defined(_DEBUG)
 #define MSN_CallService CallService
 #else
-int         MSN_CallService(const char* szSvcName, WPARAM wParam, LPARAM lParam);
+INT_PTR     MSN_CallService(const char* szSvcName, WPARAM wParam, LPARAM lParam);
 #endif
 
 void        MSN_EnableMenuItems(bool);

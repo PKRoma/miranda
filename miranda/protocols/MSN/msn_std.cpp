@@ -186,7 +186,7 @@ int  CMsnProto::SendBroadcast(HANDLE hContact, int type, int result, HANDLE hPro
 
 
 #if !defined(_DEBUG)
-int  MSN_CallService(const char* szSvcName, WPARAM wParam, LPARAM lParam)
+INT_PTR MSN_CallService(const char* szSvcName, WPARAM wParam, LPARAM lParam)
 {
 	return CallService(szSvcName, wParam, lParam);
 }
