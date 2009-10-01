@@ -858,8 +858,8 @@ INT_PTR CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		else if ((wParam & 0xFFF0) == SC_MOVE) {
 			RECT  rc;
 			GetWindowRect(hwndDlg, &rc);
-			dat->mouseLBDownPos.x = ((LONG) lParam << 16 >> 16) - rc.left;
-			dat->mouseLBDownPos.y = ((LONG) lParam >> 16) - rc.top;
+			dat->mouseLBDownPos.x = LOWORD(lParam) - rc.left;
+			dat->mouseLBDownPos.y = HIWORD(lParam) - rc.top;
 		} else if (wParam == IDM_TOPMOST) {
             HMENU hMenu = GetSystemMenu(hwndDlg, FALSE);
             if (dat->bTopmost)  {
@@ -1314,8 +1314,8 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			if (!dat->bDragging) {
 				TCHITTESTINFO thinfo;
 				FILETIME ft;
-				thinfo.pt.x = (lParam<<16)>>16;
-				thinfo.pt.y = lParam>>16;
+				thinfo.pt.x = LOWORD(lParam);
+				thinfo.pt.y = HIWORD(lParam);
 				dat->srcTab = TabCtrl_HitTest(hwnd, &thinfo);
 				GetSystemTimeAsFileTime(&ft);
 				if (dat->srcTab >=0 ) {

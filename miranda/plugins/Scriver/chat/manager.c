@@ -245,9 +245,9 @@ char SM_GetStatusIndicator(SESSION_INFO* si, USERINFO * ui)
 	ti = TM_FindStatus(si->pStatuses, TM_WordToString(si->pStatuses, ui->Status));
 	if (ti)
 	{
-		if ((int)ti->hIcon < STATUSICONCOUNT)
+		if ((INT_PTR)ti->hIcon < STATUSICONCOUNT)
 		{
-			int id = si->iStatusCount - (int)ti->hIcon - 1;
+			INT_PTR id = si->iStatusCount - (INT_PTR)ti->hIcon - 1;
 			if (id == 0)
 				return '\0';
 			if (id == 1)
@@ -276,9 +276,9 @@ HICON SM_GetStatusIcon(SESSION_INFO* si, USERINFO * ui)
 	ti = TM_FindStatus(si->pStatuses, TM_WordToString(si->pStatuses, ui->Status));
 	if (ti)
 	{
-		if ((int)ti->hIcon < STATUSICONCOUNT)
+		if ((INT_PTR)ti->hIcon < STATUSICONCOUNT)
 		{
-			int id = si->iStatusCount - (int)ti->hIcon - 1;
+			INT_PTR id = si->iStatusCount - (INT_PTR)ti->hIcon - 1;
 			if (id == 0)
 				return hIcons[ICON_STATUS0];
 			if (id == 1)
@@ -958,7 +958,7 @@ STATUSINFO * TM_AddStatus(STATUSINFO** ppStatusList, const TCHAR* pszStatus, int
 		ZeroMemory(node, sizeof(STATUSINFO));
 		replaceStr( &node->pszGroup, pszStatus );
 		node->hIcon = (HICON)(*iCount);
-		while ((int)node->hIcon > STATUSICONCOUNT - 1)
+		while ((INT_PTR)node->hIcon > STATUSICONCOUNT - 1)
 			node->hIcon--;
 
 		if (*ppStatusList == NULL) // list is empty
@@ -1045,7 +1045,7 @@ BOOL TM_RemoveAll (STATUSINFO** ppStatusList)
 	{
 		STATUSINFO *pLast = ppStatusList[0]->next;
 		mir_free(ppStatusList[0]->pszGroup);
-		if ((int)ppStatusList[0]->hIcon > 10)
+		if ((INT_PTR)ppStatusList[0]->hIcon > 10)
 			DestroyIcon(ppStatusList[0]->hIcon);
 		mir_free(*ppStatusList);
 		*ppStatusList = pLast;
