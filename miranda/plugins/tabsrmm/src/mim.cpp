@@ -671,6 +671,46 @@ int CMimAPI::ProtoAck(WPARAM wParam, LPARAM lParam)
 			return 0;
 		}
 	}
+	else if(pAck->type == ACKTYPE_STATUS) {
+		/*
+		if (pAck->hContact != 0 && (PluginConfig.m_LogStatusChanges != 0)) {
+			WORD				wStatus, wOldStatus;
+			CContactCache*		c = PluginConfig.getContactCache(pAck->hContact);
+
+			c->updateState();
+			wStatus = c->getStatus();
+			wOldStatus = c->getOldStatus();
+
+			if (pAck->hContact != 0 && wOldStatus != (WORD)-1) {          // log status changes to message log
+				DBEVENTINFO 	dbei;
+				TCHAR 			buffer[450];
+				HANDLE 			hNewEvent;
+
+				wStatus = DBGetContactSettingWord(pAck->hContact, pAck->szModule, "Status", ID_STATUS_OFFLINE);
+
+				TCHAR*	szOldStatus = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)wOldStatus, GCMDF_TCHAR);
+				TCHAR*	szNewStatus = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)wStatus, GCMDF_TCHAR);
+
+				if (pAck->szModule != NULL) {
+					if (wStatus == ID_STATUS_OFFLINE)
+						mir_sntprintf(buffer, safe_sizeof(buffer), CTranslator::get(CTranslator::GEN_MSG_SIGNEDOFF));
+					else if (wOldStatus == ID_STATUS_OFFLINE)
+						mir_sntprintf(buffer, safe_sizeof(buffer), CTranslator::get(CTranslator::GEN_MSG_SIGNEDON), szNewStatus);
+					else
+						mir_sntprintf(buffer, safe_sizeof(buffer), CTranslator::get(CTranslator::GEN_MSG_CHANGEDSTATUS), szOldStatus, szNewStatus);
+				}
+				dbei.pBlob = (PBYTE)M->utf8_encodeT(buffer);
+				dbei.cbBlob = lstrlenA((char *)dbei.pBlob) + 1;
+				dbei.flags = DBEF_UTF | DBEF_READ;
+				dbei.cbSize = sizeof(dbei);
+				dbei.eventType = EVENTTYPE_STATUSCHANGE;
+				dbei.timestamp = time(NULL);
+				dbei.szModule = const_cast<char *>(pAck->szModule);
+				hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) pAck->hContact, (LPARAM) & dbei);
+			}
+		}
+		*/
+	}
 	return 0;
 }
 
@@ -741,13 +781,6 @@ int CMimAPI::MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	CallService(MS_DB_EVENT_GET, lParam, (LPARAM) & dbei);
 
 	hwnd = M->FindWindow((HANDLE) wParam);
-	//mad:mod for actual history
-	if (hwnd) {
-		mwdat = (struct _MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-		if (mwdat && mwdat->bActualHistory)
-			mwdat->messageCount++;
-	//mad_
-	}
 
 	if (dbei.flags & DBEF_SENT || !(dbei.eventType == EVENTTYPE_MESSAGE || dbei.eventType == EVENTTYPE_FILE) || dbei.flags & DBEF_READ)
 		return 0;

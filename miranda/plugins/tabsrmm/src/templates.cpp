@@ -172,8 +172,11 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				dat->szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0);
 			}
 			dat->dwFlags = M->GetDword("mwflags", MWF_LOG_DEFAULT);
-			mir_sntprintf(dat->szNickname, 80, _T("%s"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, GCDNF_TCHAR));
-			GetContactUIN(dat);
+
+			dat->cache = PluginConfig.getContactCache(dat->hContact);
+			dat->cache->updateState();
+			dat->cache->updateUIN();
+			GetMYUIN(dat);
 
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR) dat);
 			ShowWindow(hwndDlg, SW_SHOW);

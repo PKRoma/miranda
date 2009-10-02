@@ -38,7 +38,6 @@
 #define WANT_HPP_LOG 2
 
 void  	TSAPI CalcDynamicAvatarSize			(_MessageWindowData *dat, BITMAP *bminfo);
-int   	TSAPI IsMetaContact					(const _MessageWindowData *dat);
 char* 	TSAPI GetCurrentMetaContactProto	(_MessageWindowData *dat);
 void	TSAPI WriteStatsOnClose				(_MessageWindowData *dat);
 int		TSAPI MsgWindowUpdateMenu			(_MessageWindowData *dat, HMENU submenu, int menuID);
@@ -56,7 +55,7 @@ char*	TSAPI Message_GetFromStream			(HWND hwndDlg, const _MessageWindowData* dat
 BOOL	TSAPI DoRtfToTags					(TCHAR * pszText, const _MessageWindowData *dat);
 void	TSAPI DoTrimMessage					(TCHAR *msg);
 void	TSAPI SaveInputHistory				(HWND hwndDlg, _MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
-void	TSAPI GetContactUIN					(_MessageWindowData *dat);
+void	TSAPI GetMYUIN						(_MessageWindowData *dat);
 void	TSAPI SetMessageLog					(_MessageWindowData *dat);
 void	TSAPI SwitchMessageLog				(_MessageWindowData *dat, int iMode);
 UINT	TSAPI GetIEViewMode					(HWND hwndDlg, HANDLE hContact);
@@ -89,7 +88,7 @@ void	TSAPI GetMyNick						(_MessageWindowData *dat);
 int		TSAPI FindRTLLocale					(_MessageWindowData *dat);
 HICON	TSAPI MY_GetContactIcon				(const _MessageWindowData *dat);
 void	TSAPI CheckAndDestroyIEView			(_MessageWindowData *dat);
-
+void 	TSAPI KbdState						(_MessageWindowData *dat, BOOL& isShift, BOOL& isControl, BOOL& isAlt);
 // mathmod
 
 void	TSAPI MTH_updateMathWindow			(const _MessageWindowData *dat);

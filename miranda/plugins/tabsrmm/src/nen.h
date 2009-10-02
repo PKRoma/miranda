@@ -38,7 +38,7 @@ Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyr
 
 #define MODULE "tabSRMM_NEN"
 
-int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOpen, struct ContainerWindowData *pContainer, HWND hwndChild, char *szProto, struct _MessageWindowData *dat);
+int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOpen, struct ContainerWindowData *pContainer, HWND hwndChild, const char *szProto, struct _MessageWindowData *dat);
 
 
 #define DEFAULT_COLBACK RGB(255,255,128)
@@ -131,17 +131,17 @@ typedef struct {
 } EVENT_DATAT;
 
 typedef struct {
-    UINT eventType;
-    HANDLE hContact;
+    UINT 		eventType;
+    HANDLE 		hContact;
     NEN_OPTIONS *pluginOptions;
 	POPUPDATAT* pud;
-	HWND hWnd;
-	long iSeconds;
-    TCHAR szHeader[256];
-    int  nrMerged;
+	HWND 		hWnd;
+	long 		iSeconds;
+    TCHAR 		szHeader[256];
+    int  		nrMerged;
     EVENT_DATAT *eventData;
-    int  nrEventsAlloced;
-    int  iActionTaken;
+    int  		nrEventsAlloced;
+    int  		iActionTaken;
 } PLUGIN_DATAT;
 
 #define NR_MERGED 5

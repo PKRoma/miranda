@@ -209,19 +209,10 @@ static void SaveAvatarToFile(_MessageWindowData *dat, HBITMAP hbm, int isOwnPic)
 
 	mir_sntprintf(szTimestamp, 100, _T("%04u %02u %02u_%02u%02u"), lt->tm_year + 1900, lt->tm_mon, lt->tm_mday, lt->tm_hour, lt->tm_min);
 
-#if defined(_UNICODE)
-	TCHAR *szMetaProto = mir_a2u(dat->szMetaProto);
-	TCHAR *szProto = mir_a2u(dat->szProto);
-#else
-	TCHAR *szMetaProto = dat->szMetaProto;
-	TCHAR *szProto = dat->szProto;
-#endif
-	mir_sntprintf(szFinalPath, MAX_PATH, _T("%s\\%s"), M->getSavedAvatarPath(), dat->bIsMeta ? szMetaProto : szProto);
+	TCHAR *szProto = mir_a2t(dat->cache->getActiveProto());
 
-#if defined(_UNICODE)
+	mir_sntprintf(szFinalPath, MAX_PATH, _T("%s\\%s"), M->getSavedAvatarPath(), szProto);
 	mir_free(szProto);
-	mir_free(szMetaProto);
-#endif
 
 	if (CreateDirectory(szFinalPath, 0) == 0) {
 		if (GetLastError() != ERROR_ALREADY_EXISTS) {
@@ -233,7 +224,7 @@ static void SaveAvatarToFile(_MessageWindowData *dat, HBITMAP hbm, int isOwnPic)
 	if (isOwnPic)
 		mir_sntprintf(szBaseName, MAX_PATH,_T("My Avatar_%s"), szTimestamp);
 	else
-		mir_sntprintf(szBaseName, MAX_PATH, _T("%s_%s"), dat->szNickname, szTimestamp);
+		mir_sntprintf(szBaseName, MAX_PATH, _T("%s_%s"), dat->cache->getNick(), szTimestamp);
 
 	mir_sntprintf(szFinalFilename, MAX_PATH, _T("%s.png"), szBaseName);
 	ofn.lpstrDefExt = _T("png");
@@ -368,39 +359,9 @@ void TSAPI CalcDynamicAvatarSize(_MessageWindowData *dat, BITMAP *bminfo)
 	dat->pic.cx = (int)newWidth + 2;
 }
 
-/*
- + returns TRUE if the contact is handled by the MetaContacts protocol
- */
-
-int TSAPI IsMetaContact(const _MessageWindowData *dat)
-{
-	if (dat->hContact == 0 || dat->szProto == NULL)
-		return 0;
-
-	return (PluginConfig.g_MetaContactsAvail && !strcmp(dat->szProto, PluginConfig.szMetaName));
-}
-
-/*
- * retrieve the current (active) protocol of a given metacontact. Usually, this is the
- * "most online" protocol, unless a specific protocol is forced
- */
-
-char* TSAPI GetCurrentMetaContactProto(_MessageWindowData *dat)
-{
-	dat->hSubContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)dat->hContact, 0);
-	if (dat->hSubContact) {
-		dat->szMetaProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hSubContact, 0);
-		if (dat->szMetaProto)
-			dat->wMetaStatus = DBGetContactSettingWord(dat->hSubContact, dat->szMetaProto, "Status", ID_STATUS_OFFLINE);
-		else
-			dat->wMetaStatus = ID_STATUS_OFFLINE;
-		return dat->szMetaProto;
-	} else
-		return dat->szProto;
-}
-
 void TSAPI WriteStatsOnClose(_MessageWindowData *dat)
 {
+	/*
 	DBEVENTINFO dbei;
 	char buffer[450];
 	HANDLE hNewEvent;
@@ -424,6 +385,7 @@ void TSAPI WriteStatsOnClose(_MessageWindowData *dat)
 			SendMessage(dat->hwnd, DM_REMAKELOG, 0, 0);
 		}
 	}
+	*/
 }
 
 int TSAPI MsgWindowUpdateMenu(_MessageWindowData *dat, HMENU submenu, int menuID)
@@ -459,7 +421,7 @@ int TSAPI MsgWindowUpdateMenu(_MessageWindowData *dat, HMENU submenu, int menuID
 			EnableMenuItem(submenu, 0, MF_BYPOSITION | MF_ENABLED);
 		} else {
 			EnableMenuItem(submenu, 0, MF_BYPOSITION | MF_GRAYED);
-			EnableMenuItem(submenu, ID_PICMENU_SETTINGS, MF_BYCOMMAND | ((ServiceExists(MS_AV_SETMYAVATAR) && CallService(MS_AV_CANSETMYAVATAR, (WPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto), 0)) ? MF_ENABLED : MF_GRAYED));
+			EnableMenuItem(submenu, ID_PICMENU_SETTINGS, MF_BYCOMMAND | ((ServiceExists(MS_AV_SETMYAVATAR) && CallService(MS_AV_CANSETMYAVATAR, (WPARAM)(dat->cache->getActiveProto()), 0)) ? MF_ENABLED : MF_GRAYED));
 			szText = const_cast<TCHAR *>(CTranslator::get(CTranslator::GEN_AVATAR_SETOWN));
 		}
 		mii.dwTypeData = szText;
@@ -559,8 +521,8 @@ int TSAPI MsgWindowMenuHandler(_MessageWindowData *dat, int selection, int menuI
 					CallService(MS_AV_CONTACTOPTIONS, (WPARAM)dat->hContact, 0);
 				else if (menuId == MENU_PICMENU) {
 					if (dat->Panel->isActive()) {
-						if (ServiceExists(MS_AV_SETMYAVATAR) && CallService(MS_AV_CANSETMYAVATAR, (WPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto), 0))
-							CallService(MS_AV_SETMYAVATAR, (WPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto), 0);
+						if (ServiceExists(MS_AV_SETMYAVATAR) && CallService(MS_AV_CANSETMYAVATAR, (WPARAM)(dat->cache->getActiveProto()), 0))
+							CallService(MS_AV_SETMYAVATAR, (WPARAM)(dat->cache->getActiveProto()), 0);
 					} else
 						CallService(MS_AV_CONTACTOPTIONS, (WPARAM)dat->hContact, 0);
 				}
@@ -1053,7 +1015,7 @@ void TSAPI FlashOnClist(HWND hwndDlg, struct _MessageWindowData *dat, HANDLE hEv
 
 	dat->dwTickLastEvent = GetTickCount();
 	if ((GetForegroundWindow() != dat->pContainer->hwnd || dat->pContainer->hwndActive != hwndDlg) && !(dbei->flags & DBEF_SENT) && dbei->eventType == EVENTTYPE_MESSAGE) {
-		UpdateTrayMenu(dat, (WORD)(dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->hContact, 0L);
+		UpdateTrayMenu(dat, (WORD)(dat->cache->getActiveStatus()), dat->cache->getActiveProto(), dat->szStatus, dat->hContact, 0L);
 		if (nen_options.bTraySupport == TRUE && PluginConfig.m_WinVerMajor >= 5)
 			return;
 	}
@@ -1499,39 +1461,18 @@ void TSAPI SaveInputHistory(HWND hwndDlg, _MessageWindowData *dat, WPARAM wParam
  * respects metacontacts and uses the current protocol if the contact is a MC
  */
 
-void TSAPI GetContactUIN(_MessageWindowData *dat)
+void TSAPI GetMYUIN(_MessageWindowData *dat)
 {
 	CONTACTINFO ci;
-
 	ZeroMemory((void *)&ci, sizeof(ci));
 
-	if (dat->bIsMeta) {
-		ci.hContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)dat->hContact, 0);
-		ci.szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)ci.hContact, 0);
-	} else {
-		ci.hContact = dat->hContact;
-		ci.szProto = dat->szProto;
-	}
-	ci.cbSize = sizeof(ci);
-	ci.dwFlag = CNF_DISPLAYUID | CNF_TCHAR;
-	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
-		switch (ci.type) {
-			case CNFT_ASCIIZ:
-				mir_sntprintf(dat->uin, safe_sizeof(dat->uin), _T("%s"), reinterpret_cast<TCHAR *>(ci.pszVal));
-				mir_free((void *)ci.pszVal);
-				break;
-			case CNFT_DWORD:
-				mir_sntprintf(dat->uin, safe_sizeof(dat->uin), _T("%u"), ci.dVal);
-				break;
-			default:
-				dat->uin[0] = 0;
-				break;
-		}
-	} else
-		dat->uin[0] = 0;
+	/*
+	 * get my uin
+	 */
 
-	// get own uin...
+	ci.cbSize = sizeof(ci);
 	ci.hContact = 0;
+	ci.szProto = const_cast<char *>(dat->cache->getActiveProto());
 
 	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
 		switch (ci.type) {
@@ -1543,7 +1484,7 @@ void TSAPI GetContactUIN(_MessageWindowData *dat)
 				mir_sntprintf(dat->myUin, safe_sizeof(dat->myUin), _T("%u"), ci.dVal);
 				break;
 			default:
-				dat->uin[0] = 0;
+				dat->myUin[0] = 0;
 				break;
 		}
 	} else
@@ -1699,6 +1640,10 @@ void TSAPI FindFirstEvent(_MessageWindowData *dat)
 		historyMode = (int)M->GetByte(SRMSGMOD, SRMSGSET_LOADHISTORY, SRMSGDEFSET_LOADHISTORY);
 
 	dat->hDbEventFirst = (HANDLE) CallService(MS_DB_EVENT_FINDFIRSTUNREAD, (WPARAM) dat->hContact, 0);
+
+	if(dat->bActualHistory)
+		historyMode = LOADHISTORY_COUNT;
+
 	switch (historyMode) {
 		case LOADHISTORY_COUNT: {
 			int i;
@@ -1707,8 +1652,9 @@ void TSAPI FindFirstEvent(_MessageWindowData *dat)
 			dbei.cbSize = sizeof(dbei);
 			//MAD: ability to load only current session's history
 			if (dat->bActualHistory)
-				i=dat->messageCount;
-			else i = DBGetContactSettingWord(NULL, SRMSGMOD, SRMSGSET_LOADCOUNT, SRMSGDEFSET_LOADCOUNT);
+				i = dat->cache->getSessionMsgCount();
+			else
+				i = DBGetContactSettingWord(NULL, SRMSGMOD, SRMSGSET_LOADCOUNT, SRMSGDEFSET_LOADCOUNT);
 			//
 			for (; i > 0; i--) {
 				if (dat->hDbEventFirst == NULL)
@@ -1921,7 +1867,7 @@ void TSAPI LoadOwnAvatar(_MessageWindowData *dat)
 	AVATARCACHEENTRY *ace = NULL;
 
 	if (ServiceExists(MS_AV_GETMYAVATAR))
-		ace = (AVATARCACHEENTRY *)CallService(MS_AV_GETMYAVATAR, 0, (LPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto));
+		ace = (AVATARCACHEENTRY *)CallService(MS_AV_GETMYAVATAR, 0, (LPARAM)(dat->cache->getActiveProto()));
 
 	if (ace) {
 		dat->hOwnPic = ace->hbmPic;
@@ -2481,7 +2427,7 @@ void TSAPI ConfigureSmileyButton(_MessageWindowData *dat)
 
 	if (PluginConfig.g_SmileyAddAvail) {
 
-		nrSmileys = CheckValidSmileyPack(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->hSubContact : dat->hContact, &hButtonIcon);
+		nrSmileys = CheckValidSmileyPack(dat->cache->getActiveProto(), dat->cache->getActiveContact(), &hButtonIcon);
 
 		dat->doSmileys = 1;
 
@@ -2506,12 +2452,11 @@ void TSAPI ConfigureSmileyButton(_MessageWindowData *dat)
 HICON TSAPI GetXStatusIcon(const _MessageWindowData *dat)
 {
 	char szServiceName[128];
-	char *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 
-	mir_snprintf(szServiceName, 128, "%s/GetXStatusIcon", szProto);
+	mir_snprintf(szServiceName, 128, "%s/GetXStatusIcon", dat->cache->getActiveProto());
 
 	if (ServiceExists(szServiceName) && dat->xStatus > 0 && dat->xStatus <= 32)
-		return (HICON)(CallProtoService(szProto, "/GetXStatusIcon", dat->xStatus, 0));
+		return (HICON)(CallProtoService(dat->cache->getActiveProto(), "/GetXStatusIcon", dat->xStatus, 0));
 	return 0;
 }
 
@@ -2539,13 +2484,11 @@ void TSAPI EnableSendButton(const _MessageWindowData *dat, int iMode)
 
 void TSAPI SendNudge(const _MessageWindowData *dat)
 {
-	char *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 	char szServiceName[128];
-	HANDLE hContact = dat->bIsMeta ? dat->hSubContact : dat->hContact;
 
-	mir_snprintf(szServiceName, 128, "%s/SendNudge", szProto);
+	mir_snprintf(szServiceName, 128, "%s/SendNudge", dat->cache->getActiveProto());
 	if (ServiceExists(szServiceName) && ServiceExists(MS_NUDGE_SEND))
-		CallService(MS_NUDGE_SEND, (WPARAM)hContact, 0);
+		CallService(MS_NUDGE_SEND, (WPARAM)dat->cache->getActiveContact(), 0);
 	else
 		SendMessage(dat->hwnd, DM_ACTIVATETOOLTIP, IDC_MESSAGE,
 					(LPARAM)CTranslator::get(CTranslator::GEN_WARNING_NUDGE_DISABLED));
@@ -2569,14 +2512,11 @@ void TSAPI GetClientIcon(_MessageWindowData *dat)
 }
 void TSAPI GetMaxMessageLength(_MessageWindowData *dat)
 {
-	HANDLE hContact;
-	char   *szProto;
+	HANDLE 	hContact;
+	const 	char*		szProto;
 
-	if (dat->bIsMeta)
-		GetCurrentMetaContactProto(dat);
-
-	hContact = dat->bIsMeta ? dat->hSubContact : dat->hContact;
-	szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
+	hContact = dat->cache->getActiveContact();
+	szProto = dat->cache->getActiveProto();
 
 	if (dat->szProto) {
 		int nMax;
@@ -2671,14 +2611,14 @@ void TSAPI GetMyNick(_MessageWindowData *dat)
 	ZeroMemory(&ci, sizeof(ci));
 	ci.cbSize = sizeof(ci);
 	ci.hContact = NULL;
-	ci.szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
+	ci.szProto = const_cast<char *>(dat->cache->getActiveProto());
 	ci.dwFlag = CNF_TCHAR | CNF_NICK;
 
 	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM)&ci)) {
 		if (ci.type == CNFT_ASCIIZ) {
 			if (lstrlen(reinterpret_cast<TCHAR *>(ci.pszVal)) < 1 || !_tcscmp(reinterpret_cast<TCHAR *>(ci.pszVal),
 																			  CTranslator::get(CTranslator::GEN_UNKNOWN_CONTACT))) {
-				mir_sntprintf(dat->szNickname, safe_sizeof(dat->szNickname), _T("%s"), dat->uin);
+				mir_sntprintf(dat->szMyNickname, safe_sizeof(dat->szMyNickname), _T("%s"), dat->cache->getUIN());
 				if (ci.pszVal) {
 					mir_free(ci.pszVal);
 					ci.pszVal = NULL;
@@ -2731,8 +2671,10 @@ int TSAPI FindRTLLocale(struct _MessageWindowData *dat)
 
 HICON TSAPI MY_GetContactIcon(const _MessageWindowData *dat)
 {
-	if (dat->bIsMeta)
-		return CopyIcon(LoadSkinnedProtoIcon(dat->szMetaProto, dat->wMetaStatus));
+	/*
+	if (dat->bIsMeta) {
+		return(LoadSkinnedProtoIcon(dat->cache->getMetaProto(), dat->cache->getMetaStatus()));
+	}
 
 	if (ServiceExists(MS_CLIST_GETCONTACTICON) && ServiceExists(MS_CLIST_GETICONSIMAGELIST)) {
 		HIMAGELIST iml = (HIMAGELIST)CallService(MS_CLIST_GETICONSIMAGELIST, 0, 0);
@@ -2740,7 +2682,8 @@ HICON TSAPI MY_GetContactIcon(const _MessageWindowData *dat)
 		if (iml && index >= 0)
 			return ImageList_GetIcon(iml, index, ILD_NORMAL);
 	}
-	return CopyIcon(LoadSkinnedProtoIcon(dat->szProto, dat->wStatus));
+	*/
+	return(LoadSkinnedProtoIcon(dat->cache->getActiveProto(), dat->cache->getActiveStatus()));
 }
 
 static void TSAPI MTH_updatePreview(const _MessageWindowData *dat)
@@ -2775,4 +2718,12 @@ void TSAPI MTH_updateMathWindow(const _MessageWindowData *dat)
 	cWinPlace.length = sizeof(WINDOWPLACEMENT);
 	GetWindowPlacement(dat->pContainer->hwnd, &cWinPlace);
 	return;
+}
+
+void TSAPI KbdState(_MessageWindowData *dat, BOOL& isShift, BOOL& isControl, BOOL& isAlt)
+{
+	GetKeyboardState(dat->kstate);
+	isShift = (dat->kstate[VK_SHIFT] & 0x80);
+	isControl = (dat->kstate[VK_CONTROL] & 0x80);
+	isAlt = (dat->kstate[VK_MENU] & 0x80);
 }

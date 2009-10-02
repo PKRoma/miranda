@@ -58,10 +58,65 @@ HANDLE		CGlobals::m_event_IconsChanged = 0, CGlobals::m_event_TypingEvent = 0, C
 HANDLE		CGlobals::m_event_PreShutdown = 0, CGlobals::m_event_OkToExit = 0;
 HANDLE		CGlobals::m_event_IcoLibChanged = 0, CGlobals::m_event_AvatarChanged = 0, CGlobals::m_event_MyAvatarChanged = 0, CGlobals::m_event_FontsChanged = 0;
 HANDLE		CGlobals::m_event_SmileyAdd = 0, CGlobals::m_event_IEView = 0, CGlobals::m_event_FoldersChanged = 0;
+HANDLE 		CGlobals::m_event_ME_MC_SUBCONTACTSCHANGED = 0, CGlobals::m_event_ME_MC_FORCESEND = 0, CGlobals::m_event_ME_MC_UNFORCESEND = 0;
 
 extern 		HANDLE 	hHookButtonPressedEvt;
 extern		HANDLE 	hHookToolBarLoadedEvt;
 
+#if defined(_UNICODE)
+#if defined(_WIN64)
+	static char szCurrentVersion[30];
+	static char *szVersionUrl = "http://download.miranda.or.at/tabsrmm/3/version.txt";
+	static char *szUpdateUrl = "http://download.miranda.or.at/tabsrmm/3/tabsrmm_x64.zip";
+	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3699";
+	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3699";
+#else
+	static char szCurrentVersion[30];
+	static char *szVersionUrl = "http://download.miranda.or.at/tabsrmm/3/version.txt";
+	static char *szUpdateUrl = "http://download.miranda.or.at/tabsrmm/3/tabsrmmW.zip";
+	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3699";
+	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3699";
+#endif
+#else
+	static char szCurrentVersion[30];
+	static char *szVersionUrl = "http://download.miranda.or.at/tabsrmm/3/version.txt";
+	static char *szUpdateUrl = "http://download.miranda.or.at/tabsrmm/3/tabsrmm.zip";
+	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3698";
+	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3698";
+#endif
+	static char *szPrefix = "tabsrmm ";
+
+
+void CGlobals::RegisterWithUpdater()
+{
+	Update 		upd = {0};
+
+ 	if (!ServiceExists(MS_UPDATE_REGISTER))
+ 		return;
+
+ 	upd.cbSize = sizeof(upd);
+ 	upd.szComponentName = pluginInfo.shortName;
+ 	upd.pbVersion = (BYTE *)/*CreateVersionStringPlugin*/CreateVersionString(pluginInfo.version, szCurrentVersion);
+ 	upd.cpbVersion = (int)(strlen((char *)upd.pbVersion));
+	upd.szVersionURL = szFLVersionUrl;
+	upd.szUpdateURL = szFLUpdateurl;
+#if defined(_UNICODE)
+	upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">tabSRMM Unicode 2.0 ";
+#else
+	upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">tabSRMM 2.0 ";
+#endif
+	upd.cpbVersionPrefix = (int)(strlen((char *)upd.pbVersionPrefix));
+
+ 	upd.szBetaUpdateURL = szUpdateUrl;
+ 	upd.szBetaVersionURL = szVersionUrl;
+	upd.pbVersion = (unsigned char *)szCurrentVersion;
+	upd.cpbVersion = lstrlenA(szCurrentVersion);
+ 	upd.pbBetaVersionPrefix = (BYTE *)szPrefix;
+ 	upd.cpbBetaVersionPrefix = (int)(strlen((char *)upd.pbBetaVersionPrefix));
+ 	upd.szBetaChangelogURL   ="http://miranda.radicaled.ru/public/tabsrmm/chglogeng.txt";
+
+ 	CallService(MS_UPDATE_REGISTER, 0, (LPARAM)&upd);
+}
 /**
  * reload system values. These are read ONCE and are not allowed to change
  * without a restart
@@ -347,39 +402,9 @@ int CGlobals::ModulesLoaded(WPARAM wParam, LPARAM lParam)
 	int 				i;
 	MENUITEMINFOA 		mii = {0};
 	HMENU 				submenu;
-	static Update 		upd = {0};
 	CLISTMENUITEM 		mi = { 0 };
 
-#if defined(_UNICODE)
-#if defined(_WIN64)
-	static char szCurrentVersion[30];
-	static char *szVersionUrl = "http://download.miranda.or.at/tabsrmm/3/version.txt";
-	static char *szUpdateUrl = "http://download.miranda.or.at/tabsrmm/2/tabsrmmW.zip";
-	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3699";
-	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3699";
-#else
-	static char szCurrentVersion[30];
-	static char *szVersionUrl = "http://download.miranda.or.at/tabsrmm/3/version.txt";
-	static char *szUpdateUrl = "http://download.miranda.or.at/tabsrmm/2/tabsrmmW.zip";
-	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3699";
-	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3699";
-#endif
-#else
-	static char szCurrentVersion[30];
-	static char *szVersionUrl = "http://download.miranda.or.at/tabsrmm/2/version.txt";
-	static char *szUpdateUrl = "http://download.miranda.or.at/tabsrmm/2/tabsrmm.zip";
-	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3698";
-	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3698";
-#endif
-	static char *szPrefix = "tabsrmm ";
-
-	UnhookEvent(m_event_ModulesLoaded);
-
-	m_event_SettingChanged 	= HookEvent(ME_DB_CONTACT_SETTINGCHANGED, DBSettingChanged);
-	m_event_ContactDeleted 	= HookEvent(ME_DB_CONTACT_DELETED, DBContactDeleted);
-
-	m_event_Dispatch 		= HookEvent(ME_DB_EVENT_ADDED, CMimAPI::DispatchNewEvent);
-	m_event_EventAdded 		= HookEvent(ME_DB_EVENT_ADDED, CMimAPI::MessageEventAdded);
+	::UnhookEvent(m_event_ModulesLoaded);
 
 	M->configureCustomFolders();
 
@@ -397,11 +422,11 @@ int CGlobals::ModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 	PluginConfig.reloadSystemModulesChanged();
 
-	BuildContainerMenu();
+	::BuildContainerMenu();
 
-	CB_InitDefaultButtons();
-	ModPlus_Init(wParam, lParam);
-	NotifyEventHooks(hHookToolBarLoadedEvt, (WPARAM)0, (LPARAM)0);
+	::CB_InitDefaultButtons();
+	::ModPlus_Init(wParam, lParam);
+	::NotifyEventHooks(hHookToolBarLoadedEvt, (WPARAM)0, (LPARAM)0);
 	//
 
 	if (M->GetByte("avatarmode", -1) == -1)
@@ -409,9 +434,9 @@ int CGlobals::ModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 	PluginConfig.g_hwndHotkeyHandler = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_HOTKEYSLAVE), 0, HotkeyHandlerDlgProc);
 
-	CreateTrayMenus(TRUE);
+	::CreateTrayMenus(TRUE);
 	if (nen_options.bTraySupport)
-		CreateSystrayIcon(TRUE);
+		::CreateSystrayIcon(TRUE);
 
 	mi.cbSize = sizeof(mi);
 	mi.position = -500050005;
@@ -421,35 +446,12 @@ int CGlobals::ModulesLoaded(WPARAM wParam, LPARAM lParam)
 	mi.pszService = MS_TABMSG_SETUSERPREFS;
 	PluginConfig.m_UserMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 
-	PreTranslateDates();
+	::PreTranslateDates();
 	PluginConfig.m_hFontWebdings = CreateFontA(-16, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, SYMBOL_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FF_DONTCARE | DEFAULT_PITCH, "Wingdings");
 
 	RestoreUnreadMessageAlerts();
-	// updater plugin support
 
- 	upd.cbSize = sizeof(upd);
- 	upd.szComponentName = pluginInfo.shortName;
- 	upd.pbVersion = (BYTE *)/*CreateVersionStringPlugin*/CreateVersionString(pluginInfo.version, szCurrentVersion);
- 	upd.cpbVersion = (int)(strlen((char *)upd.pbVersion));
-	upd.szVersionURL = szFLVersionUrl;
-	upd.szUpdateURL = szFLUpdateurl;
-#if defined(_UNICODE)
-	upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">tabSRMM Unicode 2.0 ";
-#else
-	upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">tabSRMM 2.0 ";
-#endif
-	upd.cpbVersionPrefix = (int)(strlen((char *)upd.pbVersionPrefix));
-
- 	upd.szBetaUpdateURL = szUpdateUrl;
- 	upd.szBetaVersionURL = szVersionUrl;
-	upd.pbVersion = (unsigned char *)szCurrentVersion;
-	upd.cpbVersion = lstrlenA(szCurrentVersion);
- 	upd.pbBetaVersionPrefix = (BYTE *)szPrefix;
- 	upd.cpbBetaVersionPrefix = (int)(strlen((char *)upd.pbBetaVersionPrefix));
- 	upd.szBetaChangelogURL   ="http://miranda.radicaled.ru/public/tabsrmm/chglogeng.txt";
-
- 	if (ServiceExists(MS_UPDATE_REGISTER))
- 		CallService(MS_UPDATE_REGISTER, 0, (LPARAM)&upd);
+	RegisterWithUpdater();
 
 	::RegisterFontServiceFonts();
 	::CacheLogFonts();
@@ -457,6 +459,16 @@ int CGlobals::ModulesLoaded(WPARAM wParam, LPARAM lParam)
 	if(PluginConfig.g_PopupWAvail||PluginConfig.g_PopupAvail)
 		TN_ModuleInit();
 
+	m_event_SettingChanged 	= HookEvent(ME_DB_CONTACT_SETTINGCHANGED, DBSettingChanged);
+	m_event_ContactDeleted 	= HookEvent(ME_DB_CONTACT_DELETED, DBContactDeleted);
+
+	m_event_Dispatch 		= HookEvent(ME_DB_EVENT_ADDED, CMimAPI::DispatchNewEvent);
+	m_event_EventAdded 		= HookEvent(ME_DB_EVENT_ADDED, CMimAPI::MessageEventAdded);
+	if(PluginConfig.g_MetaContactsAvail) {
+		m_event_ME_MC_SUBCONTACTSCHANGED = HookEvent(ME_MC_SUBCONTACTSCHANGED, MetaContactEvent);
+		m_event_ME_MC_FORCESEND			 = HookEvent(ME_MC_FORCESEND, MetaContactEvent);
+		m_event_ME_MC_UNFORCESEND		 = HookEvent(ME_MC_UNFORCESEND, MetaContactEvent);
+	}
 	return 0;
 }
 
@@ -469,52 +481,68 @@ int CGlobals::ModulesLoaded(WPARAM wParam, LPARAM lParam)
 int CGlobals::DBSettingChanged(WPARAM wParam, LPARAM lParam)
 {
 	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;
-	char *szProto = NULL;
+	const char 	*szProto = NULL;
+	const char  *setting = cws->szSetting;
+	HWND		hwnd = 0;
+	CContactCache* c = 0;
+	bool		fChanged = false;
 
-	HWND hwnd = M->FindWindow((HANDLE)wParam);
+	if(wParam) {
+		hwnd = M->FindWindow((HANDLE)wParam);
+		c = PluginConfig.getContactCache((HANDLE)wParam);
+		fChanged = c->updateStatus();
+		if(!strcmp(setting, "MyHandle") || !strcmp(setting, "Nick")) {
+			fChanged = true;
+			c->updateNick();
+		}
+	}
 
 	if (hwnd == 0 && wParam != 0) {     // we are not interested in this event if there is no open message window/tab
-		szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
+		szProto = c->getProto();
 		if (lstrcmpA(cws->szModule, "CList") && (szProto == NULL || lstrcmpA(cws->szModule, szProto)))
 			return 0;                       // filter out settings we aren't interested in...
 		if (DBGetContactSettingWord((HANDLE)wParam, SRMSGMOD_T, "isFavorite", 0))
-			AddContactToFavorites((HANDLE)wParam, NULL, szProto, NULL, 0, 0, 0, PluginConfig.g_hMenuFavorites, M->GetDword((HANDLE)wParam, "ANSIcodepage", PluginConfig.m_LangPackCP));
+			AddContactToFavorites((HANDLE)wParam, NULL, szProto, NULL, 0, 0, 0, PluginConfig.g_hMenuFavorites);
 		if (M->GetDword((HANDLE)wParam, "isRecent", 0))
-			AddContactToFavorites((HANDLE)wParam, NULL, szProto, NULL, 0, 0, 0, PluginConfig.g_hMenuRecent, M->GetDword((HANDLE)wParam, "ANSIcodepage", PluginConfig.m_LangPackCP));
+			AddContactToFavorites((HANDLE)wParam, NULL, szProto, NULL, 0, 0, 0, PluginConfig.g_hMenuRecent);
 		return 0;       // for the hContact.
 	}
 
-	if (wParam == 0 && strstr("Nick,yahoo_id", cws->szSetting)) {
+	if (wParam == 0 && strstr("Nick,yahoo_id", setting)) {
 		M->BroadcastMessage(DM_OWNNICKCHANGED, 0, (LPARAM)cws->szModule);
 		return 0;
 	}
 
-	szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
+	if(c)
+		szProto = c->getProto();
 
 	if (lstrcmpA(cws->szModule, "CList") && (szProto == NULL || lstrcmpA(cws->szModule, szProto)))
 		return 0;
 
-	// metacontacts support
-
-	if (!lstrcmpA(cws->szModule, PluginConfig.szMetaName) && !lstrcmpA(cws->szSetting, "Nick"))      // filter out this setting to avoid infinite loops while trying to obtain the most online contact
+	if (!lstrcmpA(cws->szModule, PluginConfig.szMetaName) && !lstrcmpA(setting, "Nick"))      // filter out this setting to avoid infinite loops while trying to obtain the most online contact
 		return 0;
 
 	if (hwnd) {
-		if (strstr("MyHandle,Status,Nick,ApparentMode,Default,ForceSend,IdleTS,XStatusId,display_uid", cws->szSetting)) {
-			if (!strcmp(cws->szSetting, "XStatusId"))
+		if (strstr("IdleTS,XStatusId,display_uid", setting)) {
+			if (!strcmp(setting, "XStatusId"))
 				PostMessage(hwnd, DM_UPDATESTATUSMSG, 0, 0);
-			PostMessage(hwnd, DM_UPDATETITLE, 0, 0);
-			if (!strcmp(cws->szSetting, "StatusMsg"))
-				PostMessage(hwnd, DM_UPDATESTATUSMSG, 0, 0);
-		} else if (lstrlenA(cws->szSetting) > 6 && lstrlenA(cws->szSetting) < 9 && !strncmp(cws->szSetting, "Status", 6))
-			PostMessage(hwnd, DM_UPDATETITLE, 0, 1);
-		else if (!strcmp(cws->szSetting, "MirVer")) {
+		}
+		else if (lstrlenA(setting) > 6 && lstrlenA(setting) < 9 && !strncmp(setting, "Status", 6)) {
+			fChanged = true;
+			if(c) {
+				c->updateMeta();
+				c->updateUIN();
+			}
+		}
+		else if (!strcmp(setting, "MirVer")) {
 			PostMessage(hwnd, DM_CLIENTCHANGED, 0, 0);
 			if(PluginConfig.g_bClientInStatusBar)
 				ChangeClientIconInStatusBar(wParam,0);
 		}
-		else if (strstr("StatusMsg,StatusDescr,XStatusMsg,XStatusName,YMsg", cws->szSetting))
+		else if (strstr("StatusMsg,StatusDescr,XStatusMsg,XStatusName,YMsg", setting))
 			PostMessage(hwnd, DM_UPDATESTATUSMSG, 0, 0);
+		if(fChanged)
+			PostMessage(hwnd, DM_UPDATETITLE, 0, 1);
 	}
 	return 0;
 }
@@ -537,6 +565,27 @@ int CGlobals::DBContactDeleted(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+/**
+ * Handle events from metacontacts protocol. Basically, just update
+ * our contact cache and, if a message window exists, tell it to update
+ * relevant information.
+ */
+int CGlobals::MetaContactEvent(WPARAM wParam, LPARAM lParam)
+{
+	if(wParam) {
+		CContactCache *c = PluginConfig.getContactCache((HANDLE)wParam);
+		if(c)
+			c->updateMeta();
+
+		HWND	hwnd = M->FindWindow((HANDLE)wParam);
+		if(hwnd && c) {
+			c->updateUIN();								// only do this for open windows, not needed normally
+			::PostMessage(hwnd, DM_UPDATETITLE, 0, 0);
+		}
+	}
+	return(0);
+}
+
 int CGlobals::PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 {
 	HANDLE 	hContact;
@@ -545,14 +594,14 @@ int CGlobals::PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 	if (PluginConfig.m_chat_enabled)
 		::Chat_PreShutdown();
 
-	TN_ModuleDeInit();
+	::TN_ModuleDeInit();
 
 	while(pFirstContainer){
 		//MaD: fix for correct closing hidden contacts
 		if (PluginConfig.m_HideOnClose)
 			PluginConfig.m_HideOnClose = FALSE;
 		//
-		SendMessage(pFirstContainer->hwnd, WM_CLOSE, 0, 1);
+		::SendMessage(pFirstContainer->hwnd, WM_CLOSE, 0, 1);
 	}
 
 	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
@@ -575,12 +624,12 @@ int CGlobals::PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 	DestroyHookableEvent(PluginConfig.m_event_MsgWin);
 	DestroyHookableEvent(PluginConfig.m_event_MsgPopup);
 
-	NEN_WriteOptions(&nen_options);
-	DestroyWindow(PluginConfig.g_hwndHotkeyHandler);
+	::NEN_WriteOptions(&nen_options);
+	::DestroyWindow(PluginConfig.g_hwndHotkeyHandler);
 
-	UnregisterClass(_T("TSStatusBarClass"), g_hInst);
-	UnregisterClass(_T("SideBarClass"), g_hInst);
-	UnregisterClassA("TSTabCtrlClass", g_hInst);
+	::UnregisterClass(_T("TSStatusBarClass"), g_hInst);
+	::UnregisterClass(_T("SideBarClass"), g_hInst);
+	::UnregisterClassA("TSTabCtrlClass", g_hInst);
 	return 0;
 }
 
@@ -613,12 +662,17 @@ int CGlobals::OkToExit(WPARAM wParam, LPARAM lParam)
 	if(m_event_FoldersChanged)
 		UnhookEvent(m_event_FoldersChanged);
 
+	if(m_event_ME_MC_FORCESEND) {
+		UnhookEvent(m_event_ME_MC_FORCESEND);
+		UnhookEvent(m_event_ME_MC_SUBCONTACTSCHANGED);
+		UnhookEvent(m_event_ME_MC_UNFORCESEND);
+	}
 	::ModPlus_PreShutdown(wParam, lParam);
 	::SendLater_ClearAll();
 	return 0;
 }
 
-/*
+/**
  * used on startup to restore flashing tray icon if one or more messages are
  * still "unread"
  */
@@ -664,5 +718,192 @@ void CGlobals::RestoreUnreadMessageAlerts(void)
 			hDbEvent = (HANDLE) CallService(MS_DB_EVENT_FINDNEXT, (WPARAM) hDbEvent, 0);
 		}
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+	}
+}
+
+/**
+ * retrieve contact cache entry for the given contact. It _never_ returns zero, for a hContact
+ * 0, it retrieves a dummy object.
+ * Non-existing cache entries are created on demand.
+ *
+ * @param 	hContact:			contact handle
+ * @return	CContactCache*		pointer to the cache entry for this contact
+ */
+CContactCache* CGlobals::getContactCache(const HANDLE hContact)
+{
+	ContactCacheIterator it = m_ContactCache.find(hContact);
+	if(it == m_ContactCache.end()) {
+		CContactCache* _c = new CContactCache(hContact);
+		std::pair<std::map<HANDLE, CContactCache *>::iterator, bool> it1 = m_ContactCache.insert(std::pair<HANDLE, CContactCache *>(hContact, _c));
+		it = it1.first;
+		return((*it).second);
+	}
+	else
+		return((*it).second);
+}
+
+CContactCache::CContactCache(const HANDLE hContact)
+{
+	PROTOACCOUNT*	acc = 0;
+
+	m_hContact = hContact;
+	m_hSubContact = 0;
+	m_szProto = m_szMetaProto = 0;
+	m_szAccount = 0;
+	m_wOldStatus = m_wStatus = m_wMetaStatus = ID_STATUS_OFFLINE;
+	m_idleTS = 0;
+	m_Valid = false;
+	m_szUIN[0] = 0;
+	m_stats = 0;
+
+	if(hContact) {
+		m_szProto = reinterpret_cast<char *>(::CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)m_hContact, 0));
+		acc = reinterpret_cast<PROTOACCOUNT *>(::CallService(MS_PROTO_GETACCOUNT, (WPARAM)0, (LPARAM)m_szProto));
+		if(acc && acc->tszAccountName)
+			m_szAccount = acc->tszAccountName;
+
+		m_Valid = (m_szProto != 0 && m_szAccount != 0) ? true : false;
+		if(m_Valid) {
+			m_isMeta = (PluginConfig.g_MetaContactsAvail && !strcmp(m_szProto, PluginConfig.szMetaName)) ? true : false;
+			if(m_isMeta)
+				updateMeta();
+			updateState();
+		}
+		else {
+			m_szProto = C_INVALID_PROTO;
+			m_szAccount = C_INVALID_ACCOUNT;
+			m_isMeta = false;
+		}
+	}
+}
+
+void CContactCache::updateState()
+{
+	updateNick();
+	updateStatus();
+}
+
+/**
+ * update private copy of the nick name. Use contact list name cache
+ */
+void CContactCache::updateNick()
+{
+	if(m_Valid) {
+		TCHAR	*tszNick = reinterpret_cast<TCHAR *>(::CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)m_hContact, GCDNF_TCHAR));
+		mir_sntprintf(m_szNick, 80, tszNick ? tszNick : _T("<undef>"));
+	}
+}
+
+/**
+ * update status mode
+ * @return	bool: true if status mode has changed, false if not.
+ */
+bool CContactCache::updateStatus()
+{
+	if(m_Valid) {
+		m_wOldStatus = m_wStatus;
+		m_wStatus = (WORD)DBGetContactSettingWord(m_hContact, m_szProto, "Status", ID_STATUS_OFFLINE);
+
+		return(m_wOldStatus != m_wStatus);
+	}
+	else
+		return(false);
+}
+
+/**
+ * update meta (subcontact and -protocol) status. This runs when the
+ * MC protocol fires one of its events OR when a relevant database value changes
+ * in the master contact.
+ */
+void CContactCache::updateMeta()
+{
+	if(m_Valid) {
+		m_hSubContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)m_hContact, 0);
+		if (m_hSubContact) {
+			m_szMetaProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)m_hSubContact, 0);
+			if (m_szMetaProto) {
+				PROTOACCOUNT *acc = reinterpret_cast<PROTOACCOUNT *>(::CallService(MS_PROTO_GETACCOUNT, (WPARAM)0, (LPARAM)m_szMetaProto));
+				if(acc && acc->tszAccountName)
+					m_szAccount = acc->tszAccountName;
+				m_wMetaStatus = DBGetContactSettingWord(m_hSubContact, m_szMetaProto, "Status", ID_STATUS_OFFLINE);
+			}
+			else
+				m_wMetaStatus = ID_STATUS_OFFLINE;
+		}
+	}
+}
+
+/**
+ * obtain the UIN. This is only maintained for open message windows
+ * it also run when the subcontact for a MC changes.
+ */
+void CContactCache::updateUIN()
+{
+	if(m_Valid) {
+		CONTACTINFO ci;
+		ZeroMemory((void *)&ci, sizeof(ci));
+
+		ci.hContact = getActiveContact();
+		ci.szProto = const_cast<char *>(getActiveProto());
+		ci.cbSize = sizeof(ci);
+
+		ci.dwFlag = CNF_DISPLAYUID | CNF_TCHAR;
+		if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
+			switch (ci.type) {
+				case CNFT_ASCIIZ:
+					mir_sntprintf(m_szUIN, safe_sizeof(m_szUIN), _T("%s"), reinterpret_cast<TCHAR *>(ci.pszVal));
+					mir_free((void *)ci.pszVal);
+					break;
+				case CNFT_DWORD:
+					mir_sntprintf(m_szUIN, safe_sizeof(m_szUIN), _T("%u"), ci.dVal);
+					break;
+				default:
+					m_szUIN[0] = 0;
+					break;
+			}
+		} else
+			m_szUIN[0] = 0;
+	}
+	else
+		m_szUIN[0] = 0;
+}
+
+void CContactCache::updateStats(int iType, size_t value)
+{
+	if(m_stats == 0)
+		allocStats();
+
+	switch(iType) {
+		case TSessionStats::UPDATE_WITH_LAST_RCV:
+			if(m_stats->lastReceivedChars) {
+				m_stats->iReceived++;
+				m_stats->messageCount++;
+			}
+			else
+				return;
+			m_stats->iReceivedBytes += m_stats->lastReceivedChars;
+			m_stats->lastReceivedChars = 0;
+			break;
+		case TSessionStats::INIT_TIMER:
+			m_stats->started = time(0);
+			return;
+		case TSessionStats::SET_LAST_RCV:
+			m_stats->lastReceivedChars = (unsigned int)value;
+			return;
+		case TSessionStats::BYTES_SENT:
+			m_stats->iSent++;
+			m_stats->messageCount++;
+			m_stats->iSentBytes += (unsigned int)value;
+			break;
+	}
+	//_DebugTraceW(_T("%s stats dump: %d (%d bytes) in, %d (%d bytes) out, total count: %d"), m_szNick, m_stats->iReceived, m_stats->iReceivedBytes,
+	//			 m_stats->iSent, m_stats->iSentBytes, m_stats->messageCount);
+}
+
+void CContactCache::allocStats()
+{
+	if(m_stats == 0) {
+		m_stats = new TSessionStats;
+		::ZeroMemory(m_stats, sizeof(TSessionStats));
 	}
 }

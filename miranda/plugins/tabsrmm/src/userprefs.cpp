@@ -300,8 +300,7 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 						M->WriteDword(hContact, SRMSGMOD_T, "ANSIcodepage", (DWORD)newCodePage);
 						if (hWnd && dat) {
 							dat->codePage = newCodePage;
-							dat->wOldStatus = 0;
-							SendMessage(hWnd, DM_UPDATETITLE, 0, 0);
+							SendMessage(hWnd, DM_UPDATETITLE, 0, 1);
 						}
 					}
 					if ((IsDlgButtonChecked(hwndDlg, IDC_FORCEANSI) ? 1 : 0) != M->GetByte(hContact, "forceansi", 0)) {
@@ -314,7 +313,7 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 #endif
 					if (IsDlgButtonChecked(hwndDlg, IDC_ISFAVORITE)) {
 						if (!DBGetContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", 0))
-							AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, PluginConfig.g_hMenuFavorites, newCodePage);
+							AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, PluginConfig.g_hMenuFavorites);
 					} else
 						DeleteMenu(PluginConfig.g_hMenuFavorites, (UINT_PTR)hContact, MF_BYCOMMAND);
 

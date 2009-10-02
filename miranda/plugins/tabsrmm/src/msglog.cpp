@@ -124,16 +124,6 @@ __forceinline char *GetRTFFont(DWORD dwIndex)
 	return rtfFonts + (dwIndex * RTFCACHELINESIZE);
 }
 
-int safe_wcslen(wchar_t *msg, int chars)
-{
-	int i;
-
-	for (i = 0; i < chars; i++) {
-		if (msg[i] == (WCHAR)0)
-			return i;
-	}
-	return 0;
-}
 /*
  * remove any empty line at the end of a message to avoid some RichEdit "issues" with
  * the highlight code (individual background colors).
@@ -677,13 +667,13 @@ static char *Template_CreateRTFFromDbEvent(struct _MessageWindowData *dat, HANDL
 		}
 	}
 
+	if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & (DBEF_SENT | DBEF_READ)))
+		dat->cache->updateStats(TSessionStats::SET_LAST_RCV, lstrlenA((char *) dbei.pBlob));
+
 	if (dbei.eventType != EVENTTYPE_MESSAGE && dbei.eventType != EVENTTYPE_FILE	&& !IsStatusEvent(dbei.eventType))
 		heFlags = HistoryEvents_GetFlags(dbei.eventType);
 	if (heFlags & HISTORYEVENTS_FLAG_DEFAULT)
 		heFlags = -1;
-
-	if (dbei.eventType == EVENTTYPE_MESSAGE && !isSent)
-		dat->stats.lastReceivedChars = lstrlenA((char *) dbei.pBlob);
 
 	if (heFlags != -1)
 		rtfMessage = HistoryEvents_GetRichText(hDbEvent, &dbei);
@@ -699,7 +689,6 @@ static char *Template_CreateRTFFromDbEvent(struct _MessageWindowData *dat, HANDL
 		mir_free(msg);
 	}
 
-	dat->stats.lastReceivedChars = 0;
 	fIsStatusChangeEvent = (heFlags != -1 || IsStatusEvent(dbei.eventType));
 
 	if (dat->isAutoRTL & 2) {                                     // means: last \\par was deleted to avoid new line at end of log
@@ -715,7 +704,7 @@ static char *Template_CreateRTFFromDbEvent(struct _MessageWindowData *dat, HANDL
 
 	dwEffectiveFlags = dat->dwFlags;
 
-	dat->isHistory = (dbei.timestamp < (DWORD)dat->stats.started && (dbei.flags & DBEF_READ || dbei.flags & DBEF_SENT));
+	dat->isHistory = (dbei.timestamp < dat->cache->getSessionStart() && (dbei.flags & DBEF_READ || dbei.flags & DBEF_SENT));
 	iFontIDOffset = dat->isHistory ? 8 : 0;     // offset into the font table for either history (old) or new events... (# of fonts per configuration set)
 	isSent = (dbei.flags & DBEF_SENT);
 
@@ -1085,7 +1074,7 @@ static char *Template_CreateRTFFromDbEvent(struct _MessageWindowData *dat, HANDL
 				case 'U':            // UIN
 					if (!skipFont)
 						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", GetRTFFont(isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset));
-					AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", isSent ? dat->myUin : dat->uin);
+					AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", isSent ? dat->myUin : dat->cache->getUIN());
 					break;
 				case 'e':           // error message
 #if defined(_UNICODE)
@@ -1471,7 +1460,7 @@ void TSAPI StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAp
 	if (dat->szMicroLf[0] == 0)
 		SetupLogFormatting(dat);
 
-	szYourName = dat->szNickname;
+	szYourName = const_cast<TCHAR *>(dat->cache->getNick());
 	szMyName = dat->szMyNickname;
 
 	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_HIDESELECTION, TRUE, 0);
@@ -1656,8 +1645,8 @@ static void ReplaceIcons(HWND hwndDlg, struct _MessageWindowData *dat, LONG star
 
 		smadd.cbSize = sizeof(smadd);
 		smadd.hwndRichEditControl = GetDlgItem(hwndDlg, IDC_LOG);
-		smadd.Protocolname = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
-		smadd.hContact = dat->bIsMeta ? dat->hSubContact : dat->hContact;
+		smadd.Protocolname = const_cast<char *>(dat->cache->getActiveProto());
+		smadd.hContact = dat->cache->getActiveContact();
 		smadd.flags = isSent ? SAFLRE_OUTGOING : 0;
 
 		if (startAt > 0)

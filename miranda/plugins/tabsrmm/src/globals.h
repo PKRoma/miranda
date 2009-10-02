@@ -36,6 +36,9 @@
 #ifndef __GLOBALS_H
 #define __GLOBALS_H
 
+#define C_INVALID_PROTO "<proto error>"
+#define C_INVALID_ACCOUNT _T("<account error>")
+
 struct TSplitterBroadCast {
 	ContainerWindowData *pSrcContainer;
 	_MessageWindowData  *pSrcDat;
@@ -45,7 +48,78 @@ struct TSplitterBroadCast {
 	BYTE				bSync;
 };
 
-typedef     BOOL (WINAPI *pfnSetMenuInfo )( HMENU hmenu, LPCMENUINFO lpcmi );
+struct TSessionStats {
+	enum {
+		BYTES_RECEIVED 		= 1,
+		BYTES_SENT 			= 2,
+		FAILURE				= 3,
+		UPDATE_WITH_LAST_RCV= 4,
+		SET_LAST_RCV		= 5,
+		INIT_TIMER			= 6,
+	};
+
+	time_t 			started;
+	unsigned int 	iSent, iReceived, iSentBytes, iReceivedBytes;
+	unsigned int	messageCount;
+	unsigned int 	iFailures;
+	unsigned int 	lastReceivedChars;
+	BOOL 			bWritten;
+};
+
+class CContactCache {
+public:
+	CContactCache									() {}
+	CContactCache									(const HANDLE hContact);
+	~CContactCache									()
+	{
+		if(m_stats)
+			delete m_stats;
+	}
+	const	WORD			getStatus				() const { return(m_wStatus); }
+	const	WORD			getMetaStatus			() const { return(m_wMetaStatus); }
+	const	WORD			getActiveStatus			() const { return(m_isMeta ? m_wMetaStatus : m_wStatus); }
+	const	WORD			getOldStatus			() const { return(m_wOldStatus); }
+	const	TCHAR*			getNick					() const { return(m_szNick); }
+	const	HANDLE			getContact				() const { return(m_hContact); }
+	const	HANDLE			getActiveContact		() const { return(m_isMeta ? (m_hSubContact ? m_hSubContact : m_hContact) : m_hContact); }
+	const	DWORD			getIdleTS				() const { return(m_idleTS); }
+	const	char*			getProto				() const { return(m_szProto); }
+	const	char*			getMetaProto			() const { return(m_szMetaProto ? m_szMetaProto : C_INVALID_PROTO); }
+	const	char*			getActiveProto			() const { return(m_isMeta ? (m_szMetaProto ? m_szMetaProto : m_szProto) : m_szProto); }
+	bool					isMeta					() const { return(m_isMeta); }
+	const TCHAR*			getRealAccount			() const { return(m_szAccount ? m_szAccount : C_INVALID_ACCOUNT); }
+	const TCHAR*			getUIN					() const { return(m_szUIN); }
+
+	void					updateStats				(int iType, size_t value = 0);
+	const DWORD				getSessionStart			() const { return(m_stats->started); }
+	const int				getSessionMsgCount		() const { return((int)m_stats->messageCount) ; }
+	void					updateState				();
+	bool					updateStatus			();
+	void					updateNick				();
+	void					updateMeta				();
+	void					updateUIN				();
+
+private:
+	void					allocStats				();
+
+private:
+	HANDLE			m_hContact;
+	HANDLE			m_hSubContact;
+	WORD			m_wStatus, m_wMetaStatus;
+	WORD			m_wOldStatus;
+	char*			m_szProto, *m_szMetaProto;
+	TCHAR*			m_szAccount;
+	TCHAR			m_szNick[80], m_szUIN[80];
+	DWORD			m_idleTS;
+	bool			m_isMeta;
+	bool			m_Valid;
+	TSessionStats* 	m_stats;
+};
+
+typedef std::map<HANDLE, CContactCache *> ContactCache;
+typedef std::map<HANDLE, CContactCache *>::iterator ContactCacheIterator;
+
+typedef BOOL (WINAPI *pfnSetMenuInfo )( HMENU hmenu, LPCMENUINFO lpcmi );
 
 class CGlobals
 {
@@ -68,13 +142,22 @@ public:
 
 	CGlobals()
 	{
-		::ZeroMemory(this, sizeof(CGlobals));
+		//::ZeroMemory(this, sizeof(CGlobals));
+		m_ContactCache.clear();
 	}
 
 	~CGlobals()
 	{
 		if(m_MenuBar)
 			::DestroyMenu(m_MenuBar);
+
+		ContactCacheIterator it;
+
+		while(m_ContactCache.size()) {
+			it = m_ContactCache.begin();
+			delete ((*it).second);
+			m_ContactCache.erase(it);
+		}
 	}
 	void		reloadAdv();
 	void		reloadSystemStartup();
@@ -85,6 +168,7 @@ public:
 	void		hookPluginEvents();
 
 	const HMENU getMenuBar();
+	CContactCache*						getContactCache(const HANDLE hContact);
 
 	HWND        g_hwndHotkeyHandler;
 	HICON       g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus;
@@ -131,7 +215,6 @@ public:
 	int         m_TrayFlashes;
 	int         m_TrayFlashState;
 	BOOL        m_SuperQuiet;
-	HANDLE      m_TipOwner;
 	HANDLE      m_UserMenuItem;
 	double		g_DPIscaleX;
 	double		g_DPIscaleY;
@@ -187,6 +270,10 @@ public:
 	HANDLE		m_hMenuItem;
 	TSplitterBroadCast lastSPlitterPos;
 	static HANDLE		m_event_FoldersChanged;
+
+private:
+	ContactCache			m_ContactCache;
+
 private:
 	bool				m_TypingSoundAdded;
 	static HANDLE		m_event_ModulesLoaded, m_event_PrebuildMenu, m_event_SettingChanged;
@@ -194,14 +281,17 @@ private:
 	static HANDLE		m_event_IconsChanged, m_event_TypingEvent, m_event_ProtoAck, m_event_PreShutdown, m_event_OkToExit;
 	static HANDLE		m_event_IcoLibChanged, m_event_AvatarChanged, m_event_MyAvatarChanged, m_event_FontsChanged;
 	static HANDLE		m_event_SmileyAdd, m_event_IEView;
+	static HANDLE 		m_event_ME_MC_SUBCONTACTSCHANGED, m_event_ME_MC_FORCESEND, m_event_ME_MC_UNFORCESEND;
 
 private:
 	static	int		ModulesLoaded(WPARAM wParam, LPARAM lParam);
 	static	int 	DBSettingChanged(WPARAM wParam, LPARAM lParam);
 	static  int 	DBContactDeleted(WPARAM wParam, LPARAM lParam);
 	static	int 	PreshutdownSendRecv(WPARAM wParam, LPARAM lParam);
+	static 	int		MetaContactEvent(WPARAM wParam, LPARAM lParam);
 	static	int 	OkToExit(WPARAM wParam, LPARAM lParam);
 	static  void 	RestoreUnreadMessageAlerts(void);
+	static  void	RegisterWithUpdater();
 };
 
 extern	CGlobals	PluginConfig;

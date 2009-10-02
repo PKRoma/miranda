@@ -245,6 +245,7 @@ class CTaskbarInteract;
 class CMenuBar;
 class CInfoPanel;
 class CSideBar;
+class CContactCache;
 
 struct ContainerWindowData {
 	ContainerWindowData *pNextContainer;
@@ -303,14 +304,6 @@ struct ContainerWindowData {
 };
 
 #define STICK_ICON_MSG 10
-struct MessageSessionStats {
-	time_t started;
-	unsigned int iSent, iReceived, iSentBytes, iReceivedBytes;
-	unsigned int iFailures;
-	unsigned int lastReceivedChars;
-	BOOL bWritten;
-};
-
 struct MessageWindowTheme {
 	COLORREF inbg, outbg, bg, oldinbg, oldoutbg, statbg, inputbg;
 	COLORREF hgrid;
@@ -331,27 +324,22 @@ struct _MessageWindowData {
 	HWND    hwnd;
 	DWORD   dwFlags;
 	DWORD   dwFlagsEx;
-	HANDLE  hContact, hSubContact;
+	HANDLE  hContact;
 	char    *szProto;
-	char    *szMetaProto;
-	TCHAR	szAccount[128];
-	TCHAR   szNickname[130];
 	TCHAR 	szMyNickname[130];
 	TCHAR	szStatusBar[100];
 	TCHAR   newtitle[130];        // tab title...
 	TCHAR   statusMsg[1025];
 	TCHAR	szStatus[50];
-	WORD    wStatus, wMetaStatus;
+	WORD    wStatus;
 	char    *sendBuffer;
 	int     iSendBufferSize;
-	struct  MessageSessionStats stats;
 	HICON   hTabIcon, hTabStatusIcon, hXStatusIcon, hClientIcon;
 	HICON   iFlashIcon;
 	BOOL    mayFlashTab;
 	BOOL    bTabFlash;
 	HWND    hwndIEView, hwndFlash, hwndIWebBrowserControl, hwndHPP;
 	HWND	hwndContactPic, hwndPanelPic, hwndPanelPicParent;
-	UINT    messageCount;  //MAD
 	UINT	bbLSideWidth;  //MAD
 	UINT	bbRSideWidth;    //MAD
 	BYTE	kstate[256];
@@ -379,8 +367,6 @@ struct _MessageWindowData {
 	BOOL    fMustOffset;
 	UINT    uMinHeight;
 	BOOL    isHistory;
-	WORD    wOldStatus;
-	int     iOldHash;
 	struct  InputHistory *history;
 	int     iHistoryCurrent, iHistoryTop, iHistorySize;
 	int     doSmileys;
@@ -393,10 +379,9 @@ struct _MessageWindowData {
 	DWORD   dwLastActivity;
 	int     iOpenJobs;
 	int     iCurrentQueueError;
-	HANDLE  hMultiSendThread;
 	BOOL    bIsMeta;
 	HANDLE  hFlashingEvent;
-	TCHAR   uin[80], myUin[80];
+	TCHAR   myUin[80];
 	BOOL    bNotOnList;
 	int     SendFormat;
 	DWORD   dwIsFavoritOrRecent;
@@ -408,7 +393,6 @@ struct _MessageWindowData {
 	LCID    lcid;
 	TCHAR   lcID[10];
 	int     panelWidth;
-	WORD    wApparentMode;
 	DWORD   idle;
 	HWND    hwndTip;
 	TOOLINFO ti;
@@ -437,6 +421,7 @@ struct _MessageWindowData {
 	bool	fkeyProcessed;
 	bool	fEditNotesActive;
 	CInfoPanel *Panel;
+	CContactCache *cache;
 	DWORD	iSplitterSaved;
 	BYTE    bWasDeleted;
 	BOOL	bActualHistory;
@@ -646,7 +631,7 @@ struct NewMessageWindowLParam {
 #define DM_CHECKAUTOCLOSE    (WM_USER+66)
 #define DM_UPDATEMETACONTACTINFO (WM_USER+67)
 #define DM_SETICON           (WM_USER+68)
-#define DM_MULTISENDTHREADCOMPLETE (WM_USER+69)
+//#define DM_MULTISENDTHREADCOMPLETE (WM_USER+69)
 #define DM_CHECKQUEUEFORCLOSE (WM_USER+70)
 #define DM_QUERYSTATUS       (WM_USER+71)
 #define DM_SETPARENTDIALOG   (WM_USER+72)
@@ -1096,6 +1081,9 @@ typedef struct {
 #define TABSRMM_HK_EDITNOTES 25
 #define TABSRMM_HK_TOGGLESENDLATER 26
 #define TABSRMM_HK_TOGGLESIDEBAR 27
+#define TABSRMM_HK_CHANNELMGR	 28
+#define TABSRMM_HK_FILTERTOGGLE  29
+#define TABSRMM_HK_LISTTOGGLE	 30
 
 #define TABSRMM_HK_SECTION_IM "Message windows - IM"
 #define TABSRMM_HK_SECTION_GENERIC "Message windows - all"

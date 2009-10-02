@@ -67,7 +67,7 @@ static HOTKEYDESC _hotkeydescs[] = {
 	0, "tabsrmm_quote", "Quote message", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT, 'Q'), TABSRMM_HK_QUOTEMSG,
 	0, "tabsrmm_sendlater", "Toggle send later", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_ALT, 'S'), TABSRMM_HK_TOGGLESENDLATER,
 
-	0, "tabsrmm_send", "Send message", TABSRMM_HK_SECTION_GENERIC, 0, HOTKEYCODE(HOTKEYF_ALT, 'S'), TABSRMM_HK_SEND,
+	0, "tabsrmm_send", "Send message", TABSRMM_HK_SECTION_GENERIC, 0, 0, TABSRMM_HK_SEND,
 	0, "tabsrmm_emot", "Smiley selector", TABSRMM_HK_SECTION_GENERIC, 0, HOTKEYCODE(HOTKEYF_ALT, 'E'), TABSRMM_HK_EMOTICONS,
 	0, "tabsrmm_hist", "Show message history", TABSRMM_HK_SECTION_GENERIC, 0, HOTKEYCODE(HOTKEYF_ALT, 'H'), TABSRMM_HK_HISTORY,
 	0, "tabsrmm_umenu", "Show user menu", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT, 'D'), TABSRMM_HK_USERMENU,
@@ -77,8 +77,12 @@ static HOTKEYDESC _hotkeydescs[] = {
 	0, "tabsrmm_rtl", "Toggle text direction", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT|HOTKEYF_CONTROL, 'B'), TABSRMM_HK_TOGGLERTL,
 	0, "tabsrmm_msend", "Toggle multi send", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT|HOTKEYF_CONTROL, 'M'), TABSRMM_HK_TOGGLEMULTISEND,
 	0, "tabsrmm_clearlog", "Clear message log", TABSRMM_HK_SECTION_GENERIC, 0, HOTKEYCODE(HOTKEYF_CONTROL, 'L'), TABSRMM_HK_CLEARLOG,
-	0, "tabsrmm_notes", "Edit user notes", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_ALT, 'N'), TABSRMM_HK_EDITNOTES,
-	0, "tabsrmm_sbar", "Collapse side bar", TABSRMM_HK_SECTION_GENERIC, 0, HOTKEYCODE(0, VK_F9), TABSRMM_HK_TOGGLESIDEBAR
+	0, "tabsrmm_notes", "Edit user notes", TABSRMM_HK_SECTION_IM, 0, HOTKEYCODE(HOTKEYF_SHIFT | HOTKEYF_CONTROL, 'N'), TABSRMM_HK_EDITNOTES,
+	0, "tabsrmm_sbar", "Collapse side bar", TABSRMM_HK_SECTION_GENERIC, 0, HOTKEYCODE(0, VK_F9), TABSRMM_HK_TOGGLESIDEBAR,
+	0, "tabsrmm_muc_cmgr", "Channel manager", TABSRMM_HK_SECTION_GC, 0, HOTKEYCODE(HOTKEYF_SHIFT | HOTKEYF_CONTROL, 'C'), TABSRMM_HK_CHANNELMGR,
+	0, "tabsrmm_muc_filter", "Toggle filter", TABSRMM_HK_SECTION_GC, 0, HOTKEYCODE(HOTKEYF_SHIFT | HOTKEYF_CONTROL, 'F'), TABSRMM_HK_FILTERTOGGLE,
+	0, "tabsrmm_muc_filter", "Toggle nick list", TABSRMM_HK_SECTION_GC, 0, HOTKEYCODE(HOTKEYF_SHIFT | HOTKEYF_CONTROL, 'N'), TABSRMM_HK_LISTTOGGLE
+
 };
 
 std::vector<HANDLE> sendLaterContactList;
@@ -313,7 +317,6 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 						hIcon = dis->itemData & 0x10000000 ? hIcons[ICON_HIGHLIGHT] : PluginConfig.g_IconMsgEvent;
 					else if (dat != NULL) {
 						hIcon = MY_GetContactIcon(dat);
-						fNeedFree = TRUE;
 						idle = dat->idle;
 					} else
 						hIcon = PluginConfig.g_iconContainer;
@@ -336,8 +339,6 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 						POINT pt;
 						GetCursorPos(&pt);
 						if (PluginConfig.m_WinVerMajor < 5)
-							break;
-						if (PluginConfig.m_TipOwner != 0)
 							break;
 						if (wParam == 100)
 							SetForegroundWindow(hwndDlg);
@@ -464,14 +465,6 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 							PostMessage(hwndDlg, WM_NULL, 0, 0);
 						break;
 					}
-					case NIN_BALLOONUSERCLICK: {
-						HandleMenuEntryFromhContact((int)PluginConfig.m_TipOwner);
-						break;
-					}
-					case NIN_BALLOONHIDE:
-					case NIN_BALLOONTIMEOUT:
-						PluginConfig.m_TipOwner = 0;
-						break;
 					default:
 						break;
 				}
@@ -895,8 +888,12 @@ int _cdecl SendLater_AddJob(const char *szSetting, LPARAM lParam)
  */
 static int TSAPI SendLater_SendIt(SendLaterJob *job)
 {
-	HANDLE hContact = job->hContact;
-	time_t now = time(0);
+	HANDLE 		hContact = job->hContact;
+	time_t 		now = time(0);
+	DWORD   	dwFlags = 0;
+	DBVARIANT 	dbv = {0};
+	const char* szProto = 0;
+
 
 	if(job->fSuccess || job->fFailed || job->lastSent > now)
 		return(0);											// this one is frozen or done (will be removed soon), don't process it now.
@@ -917,22 +914,18 @@ static int TSAPI SendLater_SendIt(SendLaterJob *job)
 		return(0);											// this one was sent, but probably failed. Resend it after a while
 	}
 
-	char*		szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-	DWORD   	dwFlags = 0;
-	DBVARIANT 	dbv = {0};
+	CContactCache *c = PluginConfig.getContactCache(hContact);
+	if(!c)
+		return(0);
 
-	bool		fIsMeta = (PluginConfig.g_MetaContactsAvail && !strcmp(szProto, PluginConfig.szMetaName)) ? true : false;
-
-	if(fIsMeta) {
-		hContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)hContact, 0);
-		szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-	}
+	hContact = c->getActiveContact();
+	szProto = c->getActiveProto();
 
 	if(!hContact || szProto == 0)
 		return(0);
 
 	WORD wMyStatus = (WORD)CallProtoService(szProto, PS_GETSTATUS, 0, 0);
-	WORD wContactStatus = DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
+	WORD wContactStatus = c->getActiveStatus();
 
 	if(job->szId[0] == 'S') {
 		if(!(wMyStatus == ID_STATUS_ONLINE || wMyStatus == ID_STATUS_FREECHAT)) {

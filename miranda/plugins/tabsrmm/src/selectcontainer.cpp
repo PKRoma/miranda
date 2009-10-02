@@ -55,7 +55,7 @@ INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			if (lParam) {
 				struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
 				if (dat) {
-					mir_sntprintf(szNewTitle, safe_sizeof(szNewTitle), CTranslator::get(CTranslator::CNT_SELECT_FOR), dat->szNickname);
+					mir_sntprintf(szNewTitle, safe_sizeof(szNewTitle), CTranslator::get(CTranslator::CNT_SELECT_FOR), dat->cache->getNick());
 					SetWindowText(hwndDlg, szNewTitle);
 				}
 			}

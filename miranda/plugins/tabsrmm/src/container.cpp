@@ -963,13 +963,13 @@ panel_found:
 				 * tooltips
 				 */
 				case TTN_GETDISPINFO: {
-					POINT pt;
-					int   iItem;
-					TCITEM item;
-					NMTTDISPINFO *nmtt = (NMTTDISPINFO *) lParam;
-					struct _MessageWindowData *cdat = 0;
-					TCHAR *contactName = 0;
-					TCHAR szTtitle[256];
+					POINT 			pt;
+					int   			iItem;
+					TCITEM 			item;
+					NMTTDISPINFO*	nmtt = (NMTTDISPINFO *) lParam;
+					_MessageWindowData *cdat = 0;
+					const TCHAR*	contactName = 0;
+					TCHAR 			szTtitle[256];
 
 					if (pContainer->hwndTip == 0)
 						break;
@@ -983,7 +983,7 @@ panel_found:
 					if (item.lParam) {
 						cdat = (struct _MessageWindowData *) GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
 						if (cdat) {
-							contactName = cdat->szNickname;
+							contactName = cdat->cache->getNick();
 							if (contactName) {
 								if (cdat->szProto) {
 									nmtt->hinst = NULL;
@@ -2804,7 +2804,7 @@ HMENU TSAPI BuildMCProtocolMenu(HWND hwndDlg) {
 	if (dat == NULL)
 		return (HMENU) 0;
 
-	if (!IsMetaContact(dat))
+	if (!dat->cache->isMeta())
 		return (HMENU) 0;
 
 	hMenu = CreatePopupMenu();

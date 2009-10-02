@@ -57,7 +57,6 @@ int			TSAPI	UpdateTrayMenu				(const _MessageWindowData *dat, WORD wStatus, cons
 												 const TCHAR *szStatus, HANDLE hContact, DWORD fromEvent);
 static int  TSAPI	PopupPreview				(NEN_OPTIONS *pluginOptions);
 void        TSAPI	DeletePopupsForContact		(HANDLE hContact, DWORD dwMask);
-void        TSAPI	RemoveBalloonTip			();
 
 /*
  * tray stuff
@@ -67,8 +66,8 @@ void		TSAPI	CreateSystrayIcon			(int create);
 void		TSAPI	FlashTrayIcon				(HICON hIcon);
 void		TSAPI	UpdateTrayMenuState			(_MessageWindowData *dat, BOOL bForced);
 void        TSAPI	LoadFavoritesAndRecent		();
-void        TSAPI	AddContactToFavorites		(HANDLE hContact, TCHAR *szNickname, char *szProto, TCHAR *szStatus,
-												 WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu, UINT codePage);
+void        TSAPI	AddContactToFavorites		(HANDLE hContact, const TCHAR *szNickname, const char *szProto, TCHAR *szStatus,
+												 WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu);
 void        TSAPI	CreateTrayMenus				(int mode);
 void        TSAPI	HandleMenuEntryFromhContact	(int iSelection);
 

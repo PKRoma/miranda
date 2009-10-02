@@ -122,7 +122,10 @@
 #include <limits.h>
 #include <ctype.h>
 #include <string>
+#include <iostream>
+#include <utility>
 #include <vector>
+#include <map>
 #include <assert.h>
 
 #include "resource.h"

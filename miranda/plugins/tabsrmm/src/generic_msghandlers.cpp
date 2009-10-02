@@ -335,7 +335,7 @@ LRESULT TSAPI DM_UpdateLastMessage(const _MessageWindowData *dat)
 		if (dat->showTyping) {
 			TCHAR szBuf[80];
 
-			mir_sntprintf(szBuf, safe_sizeof(szBuf), CTranslator::get(CTranslator::GEN_MTN_STARTWITHNICK), dat->szNickname);
+			mir_sntprintf(szBuf, safe_sizeof(szBuf), CTranslator::get(CTranslator::GEN_MTN_STARTWITHNICK), dat->cache->getNick());
 			SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM) szBuf);
 			SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) PluginConfig.g_buttonBarIcons[5]);
 			return 0;
@@ -359,7 +359,7 @@ LRESULT TSAPI DM_UpdateLastMessage(const _MessageWindowData *dat)
 			if (dat->pContainer->dwFlags & CNT_UINSTATUSBAR) {
 				TCHAR fmt[100];
 				TCHAR *uidName = _T("UIN");
-				mir_sntprintf(fmt, safe_sizeof(fmt), _T("%s: %s"), uidName, dat->uin);
+				mir_sntprintf(fmt, safe_sizeof(fmt), _T("%s: %s"), uidName, dat->cache->getUIN());
 				SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM)fmt);
 			} else {
 				TCHAR fmt[100];
@@ -790,7 +790,7 @@ void TSAPI DM_Typing(_MessageWindowData *dat)
 			dat->nTypeSecs = 10;
 
 			mir_sntprintf(dat->szStatusBar, safe_sizeof(dat->szStatusBar),
-						  CTranslator::get(CTranslator::GEN_MTN_STOPPED), dat->szNickname);
+						  CTranslator::get(CTranslator::GEN_MTN_STOPPED), dat->cache->getNick());
 			if(hwndStatus && dat->pContainer->hwndActive == hwndDlg)
 				SendMessage(hwndStatus, SB_SETTEXT, 0, (LPARAM) dat->szStatusBar);
 
@@ -815,7 +815,7 @@ void TSAPI DM_Typing(_MessageWindowData *dat)
 	}
 	else {
 		if (dat->nTypeSecs > 0) {
-			mir_sntprintf(dat->szStatusBar, safe_sizeof(dat->szStatusBar), CTranslator::get(CTranslator::GEN_MTN_STARTWITHNICK), dat->szNickname);
+			mir_sntprintf(dat->szStatusBar, safe_sizeof(dat->szStatusBar), CTranslator::get(CTranslator::GEN_MTN_STARTWITHNICK), dat->cache->getNick());
 
 			dat->nTypeSecs--;
 			if (hwndStatus && dat->pContainer->hwndActive == hwndDlg) {
@@ -986,10 +986,11 @@ void TSAPI DM_EventAdded(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 						SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
 				}
 			}
-			tabSRMM_ShowPopup(wParam, lParam, dbei.eventType, m_pContainer->fHidden ? 0 : 1, m_pContainer, hwndDlg, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat);
+			tabSRMM_ShowPopup(wParam, lParam, dbei.eventType, m_pContainer->fHidden ? 0 : 1, m_pContainer, hwndDlg, dat->cache->getActiveProto(), dat);
 			if(IsWindowVisible(m_pContainer->hwnd))
 				m_pContainer->fHidden = false;
 		}
+		dat->cache->updateStats(TSessionStats::UPDATE_WITH_LAST_RCV, 0);
 
 		if ((HANDLE) lParam != dat->hDbEventFirst) {
 			HANDLE nextEvent = (HANDLE) CallService(MS_DB_EVENT_FINDNEXT, lParam, 0);
@@ -1008,10 +1009,6 @@ void TSAPI DM_EventAdded(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 								  dat->iNextQueuedEvent);
 					SetDlgItemText(hwndDlg, IDC_LOGFROZENTEXT, szBuf);
 					RedrawWindow(GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT), NULL, NULL, RDW_INVALIDATE);
-				}
-				if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & DBEF_SENT)) {
-					dat->stats.iReceived++;
-					dat->stats.iReceivedBytes += dat->stats.lastReceivedChars;
 				}
 			} else
 				SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
@@ -1078,16 +1075,11 @@ void TSAPI DM_EventAdded(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 void TSAPI DM_UpdateTitle(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
 	TCHAR 					newtitle[128];
-	char*					szProto = 0, *szOldMetaProto = 0;
 	TCHAR*					pszNewTitleEnd;
 	TCHAR 					newcontactname[128];
-	TCHAR*					temp;
 	TCITEM 					item;
-	int    					iHash = 0;
-	WORD 					wOldApparentMode;
 	DWORD 					dwOldIdle = dat->idle;
-	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) wParam;
-	char*					szActProto = 0;
+	const char*				szActProto = 0;
 	HANDLE 					hActContact = 0;
 	BYTE 					oldXStatus = dat->xStatus;
 
@@ -1097,7 +1089,6 @@ void TSAPI DM_UpdateTitle(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 	ContainerWindowData*	m_pContainer = dat->pContainer;
 
 	ZeroMemory((void *)newcontactname,  sizeof(newcontactname));
-	dat->szNickname[0] = 0;
 	dat->szStatus[0] = 0;
 
 	pszNewTitleEnd = _T("Message Session");
@@ -1107,43 +1098,29 @@ void TSAPI DM_UpdateTitle(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 
 	ZeroMemory((void *)&item, sizeof(item));
 	if (dat->hContact) {
-		int iHasName;
-		TCHAR fulluin[256];
+		int 			iHasName;
+		TCHAR 			fulluin[256];
+		const TCHAR*	szNick = dat->cache->getNick();
+
 		if (dat->szProto) {
 
-			GetContactUIN(dat);
+			szActProto = dat->cache->getActiveProto();
+			hActContact = dat->hContact;
 
-			if (dat->bIsMeta) {
-				szOldMetaProto = dat->szMetaProto;
-				szProto = GetCurrentMetaContactProto(dat);
-			}
-			szActProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
-			hActContact = /* dat->bIsMeta ? dat->hSubContact :*/ dat->hContact;
-
-			mir_sntprintf(dat->szNickname, 80, _T("%s"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hActContact, GCDNF_TCHAR));
-			iHasName = (int)dat->uin[0];        // dat->uin[0] == 0 if there is no valid UIN
-			dat->idle = M->GetDword(dat->hContact, dat->szProto, "IdleTS", 0);
+			iHasName = (dat->cache->getUIN()[0] != 0);
+			dat->idle = dat->cache->getIdleTS();
 			dat->dwFlagsEx =  dat->idle ? dat->dwFlagsEx | MWF_SHOW_ISIDLE : dat->dwFlagsEx & ~MWF_SHOW_ISIDLE;
 			dat->xStatus = M->GetByte(hActContact, szActProto, "XStatusId", 0);
 
-			/*
-			 * cut nickname on tabs...
-			 */
-			temp = dat->szNickname;
-			while (*temp)
-				iHash += (*(temp++) * (int)(temp - dat->szNickname + 1));
-
-			dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
+			dat->wStatus = dat->cache->getStatus();
 			mir_sntprintf(dat->szStatus, safe_sizeof(dat->szStatus), _T("%s"), (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, GCMDF_TCHAR));
-			wOldApparentMode = dat->wApparentMode;
-			dat->wApparentMode = DBGetContactSettingWord(hActContact, szActProto, "ApparentMode", 0);
 
-			if (iHash != dat->iOldHash || dat->wStatus != dat->wOldStatus || dat->xStatus != oldXStatus || lParam != 0) {
+			if (dat->xStatus != oldXStatus || lParam != 0) {
 				if (PluginConfig.m_CutContactNameOnTabs)
-					CutContactName(dat->szNickname, newcontactname, safe_sizeof(newcontactname));
+					CutContactName(szNick, newcontactname, safe_sizeof(newcontactname));
 				else
-					lstrcpyn(newcontactname, dat->szNickname, safe_sizeof(newcontactname));
-				//Mad: to fix tab width for nicknames with ampersands
+					lstrcpyn(newcontactname, szNick, safe_sizeof(newcontactname));
+
 				DoubleAmpersands(newcontactname);
 
 				if (lstrlen(newcontactname) != 0 && dat->szStatus != NULL) {
@@ -1160,68 +1137,18 @@ void TSAPI DM_UpdateTitle(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 			if (dat->bIsMeta)
 				mir_sntprintf(fulluin, safe_sizeof(fulluin),
 							  CTranslator::get(CTranslator::GEN_MSG_UINCOPY),
-							  iHasName ? dat->uin : CTranslator::get(CTranslator::GEN_MSG_NOUIN));
+							  iHasName ? dat->cache->getUIN() : CTranslator::get(CTranslator::GEN_MSG_NOUIN));
 			else
 				mir_sntprintf(fulluin, safe_sizeof(fulluin),
 							  CTranslator::get(CTranslator::GEN_MSG_UINCOPY_NOMC),
-							  iHasName ? dat->uin : CTranslator::get(CTranslator::GEN_MSG_NOUIN));
+							  iHasName ? dat->cache->getUIN() : CTranslator::get(CTranslator::GEN_MSG_NOUIN));
 
 			SendMessage(GetDlgItem(hwndDlg, IDC_NAME), BUTTONADDTOOLTIP, /*iHasName ?*/ (WPARAM)fulluin /*: (WPARAM)_T("")*/, 0);
 		}
 	} else
 		lstrcpyn(newtitle, pszNewTitleEnd, safe_sizeof(newtitle));
 
-	if (dat->xStatus != oldXStatus || dat->idle != dwOldIdle || iHash != dat->iOldHash || dat->wApparentMode != wOldApparentMode || dat->wStatus != dat->wOldStatus || lParam != 0 || (dat->bIsMeta && dat->szMetaProto != szOldMetaProto)) {
-		if (dat->hContact != 0 &&(PluginConfig.m_LogStatusChanges != 0)&& dat->dwFlags & MWF_LOG_STATUSCHANGES) {
-			if (dat->wStatus != dat->wOldStatus && dat->hContact != 0 && dat->wOldStatus != (WORD) - 1 && !(dat->dwFlags & MWF_INITMODE)) {          // log status changes to message log
-				DBEVENTINFO dbei;
-				TCHAR buffer[450];
-				HANDLE hNewEvent;
-
-				TCHAR *szOldStatus = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)dat->wOldStatus, GCMDF_TCHAR);
-				TCHAR *szNewStatus = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)dat->wStatus, GCMDF_TCHAR);
-
-				if (dat->szProto != NULL) {
-					if (dat->wStatus == ID_STATUS_OFFLINE)
-						mir_sntprintf(buffer, safe_sizeof(buffer), CTranslator::get(CTranslator::GEN_MSG_SIGNEDOFF));
-					else if (dat->wOldStatus == ID_STATUS_OFFLINE)
-						mir_sntprintf(buffer, safe_sizeof(buffer), CTranslator::get(CTranslator::GEN_MSG_SIGNEDON), szNewStatus);
-					else
-						mir_sntprintf(buffer, safe_sizeof(buffer), CTranslator::get(CTranslator::GEN_MSG_CHANGEDSTATUS), szOldStatus, szNewStatus);
-				}
-#if defined(_UNICODE)
-				dbei.pBlob = (PBYTE)M->utf8_encodeW(buffer);
-				dbei.cbBlob = lstrlenA((char *)dbei.pBlob) + 1;
-				dbei.flags = DBEF_UTF | DBEF_READ;
-#else
-				dbei.cbBlob = lstrlenA(buffer) + 1;
-				dbei.pBlob = (PBYTE)buffer;
-				dbei.flags = DBEF_READ;
-#endif
-				dbei.cbSize = sizeof(dbei);
-				dbei.eventType = EVENTTYPE_STATUSCHANGE;
-				dbei.timestamp = time(NULL);
-				dbei.szModule = dat->szProto;
-				hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) dat->hContact, (LPARAM) & dbei);
-				if (dat->hDbEventFirst == NULL) {
-					dat->hDbEventFirst = hNewEvent;
-					SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
-				}
-#if defined(_UNICODE)
-				mir_free((void *)dbei.pBlob);
-#endif
-			}
-		}
-
-		/*
-		 * update readable account name (the subcontact may have changed
-		 */
-
-		if(dat->bIsMeta) {
-			PROTOACCOUNT *acc = (PROTOACCOUNT *)CallService(MS_PROTO_GETACCOUNT, (WPARAM)0, (LPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto));
-			if(acc && acc->tszAccountName)
-				mir_sntprintf(dat->szAccount, 128, acc->tszAccountName);
-		}
+	if (dat->xStatus != oldXStatus || dat->idle != dwOldIdle || lParam != 0) {
 
 		if (item.mask & TCIF_TEXT) {
 			item.pszText = newtitle;
@@ -1234,18 +1161,17 @@ void TSAPI DM_UpdateTitle(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 			if(m_pContainer->dwFlags & CNT_SIDEBAR)
 				m_pContainer->SideBar->updateSession(dat);
 		}
-		if (m_pContainer->hwndActive == hwndDlg && (dat->iOldHash != iHash || dat->wOldStatus != dat->wStatus || dat->xStatus != oldXStatus))
+		if (m_pContainer->hwndActive == hwndDlg && (dat->xStatus != oldXStatus || lParam))
 			SendMessage(hwndContainer, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
-
-		dat->iOldHash = iHash;
-		dat->wOldStatus = dat->wStatus;
 
 		UpdateTrayMenuState(dat, TRUE);
 		if (LOWORD(dat->dwIsFavoritOrRecent))
-			AddContactToFavorites(dat->hContact, dat->szNickname, szActProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 0, PluginConfig.g_hMenuFavorites, dat->codePage);
+			AddContactToFavorites(dat->hContact, dat->cache->getNick(), szActProto, dat->szStatus, dat->wStatus,
+								  LoadSkinnedProtoIcon(dat->cache->getActiveProto(), dat->cache->getActiveStatus()), 0, PluginConfig.g_hMenuFavorites);
 		if (M->GetDword(dat->hContact, "isRecent", 0)) {
 			dat->dwIsFavoritOrRecent |= 0x00010000;
-			AddContactToFavorites(dat->hContact, dat->szNickname, szActProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 0, PluginConfig.g_hMenuRecent, dat->codePage);
+			AddContactToFavorites(dat->hContact, dat->cache->getNick(), szActProto, dat->szStatus, dat->wStatus,
+								  LoadSkinnedProtoIcon(dat->cache->getActiveProto(), dat->cache->getActiveStatus()), 0, PluginConfig.g_hMenuRecent);
 		} else
 			dat->dwIsFavoritOrRecent &= 0x0000ffff;
 

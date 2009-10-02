@@ -114,7 +114,7 @@ int SendQueue::addTo(_MessageWindowData *dat, const int iLen, int dwFlags)
 	int iFound = NR_SENDJOBS;
 
 	if (m_currentIndex >= NR_SENDJOBS) {
-		_DebugMessage(dat->hwnd, dat, "Send queue full");
+		_DebugPopup(dat->hContact, _T("Send queue full"));
 		return 0;
 	}
 	/*
@@ -136,7 +136,7 @@ int SendQueue::addTo(_MessageWindowData *dat, const int iLen, int dwFlags)
 	}
 entry_found:
 	if (iFound == NR_SENDJOBS) {
-		_DebugMessage(dat->hwnd, dat, "Send queue full");
+		_DebugPopup(dat->hContact, _T("Send queue full"));
 		return 0;
 	}
 	iLength = iLen;
@@ -386,10 +386,10 @@ int SendQueue::sendQueued(_MessageWindowData *dat, const int iEntry)
 		if (dat->hContact == NULL)
 			return 0;  //never happens
 
-		if (dat->sendMode & SMODE_FORCEANSI && M->GetByte(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "UnicodeSend", 1))
-			M->WriteByte(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "UnicodeSend", 0);
-		else if (!(dat->sendMode & SMODE_FORCEANSI) && !M->GetByte(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "UnicodeSend", 0))
-			M->WriteByte(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "UnicodeSend", 1);
+		if (dat->sendMode & SMODE_FORCEANSI && M->GetByte(dat->cache->getActiveContact(), dat->cache->getActiveProto(), "UnicodeSend", 1))
+			M->WriteByte(dat->cache->getActiveContact(), dat->cache->getActiveProto(), "UnicodeSend", 0);
+		else if (!(dat->sendMode & SMODE_FORCEANSI) && !M->GetByte(dat->cache->getActiveContact(), dat->cache->getActiveProto(), "UnicodeSend", 0))
+			M->WriteByte(dat->cache->getActiveContact(), dat->cache->getActiveProto(), "UnicodeSend", 1);
 
 		if (M->GetByte("autosplit", 0) && !(dat->sendMode & SMODE_SENDLATER)) {
 			BOOL    fSplit = FALSE;
@@ -708,7 +708,7 @@ void SendQueue::NotifyDeliveryFailure(const _MessageWindowData *dat)
 	if (CallService(MS_POPUP_QUERY, PUQS_GETSTATUS, 0) == 1) {
 		ZeroMemory((void *)&ppd, sizeof(ppd));
 		ppd.lchContact = dat->hContact;
-		mir_sntprintf(ppd.lptzContactName, MAX_CONTACTNAME, _T("%s"), dat->szNickname);
+		mir_sntprintf(ppd.lptzContactName, MAX_CONTACTNAME, _T("%s"), dat->cache->getNick());
 		mir_sntprintf(ppd.lptzText, MAX_SECONDLINE, _T("%s"), CTranslator::get(CTranslator::GEN_SQ_DELIVERYFAILED));
 		ppd.colorText = RGB(255, 245, 225);
 		ppd.colorBack = RGB(191, 0, 0);
@@ -813,9 +813,12 @@ inform_and_discard:
 	dbei.timestamp = time(NULL);
 	dbei.cbBlob = lstrlenA(m_jobs[iFound].sendBuffer) + 1;
 
-	if (dat) {
-		dat->stats.iSentBytes += (dbei.cbBlob - 1);
-		dat->stats.iSent++;
+	if (dat)
+		dat->cache->updateStats(TSessionStats::BYTES_SENT, dbei.cbBlob - 1);
+	else {
+		CContactCache *c = PluginConfig.getContactCache(m_jobs[iFound].hOwner);
+		if(c)
+			c->updateStats(TSessionStats::BYTES_SENT, dbei.cbBlob - 1);
 	}
 
 #if defined( _UNICODE )

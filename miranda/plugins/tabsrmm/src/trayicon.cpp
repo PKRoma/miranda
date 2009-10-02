@@ -234,19 +234,6 @@ void TSAPI FlashTrayIcon(HICON hIcon)
 	}
 }
 
-void TSAPI RemoveBalloonTip()
-{
-	NOTIFYICONDATA nim;
-
-	nim.cbSize = sizeof(nim);
-	nim.hWnd = PluginConfig.g_hwndHotkeyHandler;
-	nim.uID = 100;
-	nim.uFlags = NIF_INFO;
-	nim.szInfo[0] = 0;
-	Shell_NotifyIcon(NIM_MODIFY, &nim);
-	PluginConfig.m_TipOwner = (HANDLE)0;
-}
-
 /*
  * add a contact to recent or favorites menu
  * mode = 1, add
@@ -261,7 +248,7 @@ void TSAPI RemoveBalloonTip()
  * is deleted, if necessary.
  */
 
-void TSAPI AddContactToFavorites(HANDLE hContact, TCHAR *szNickname, char *szProto, TCHAR *szStatus, WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu, UINT codePage)
+void TSAPI AddContactToFavorites(HANDLE hContact, const TCHAR *szNickname, const char *szProto, TCHAR *szStatus, WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu)
 {
 	MENUITEMINFO	mii = {0};
 	TCHAR			szMenuEntry[80];
@@ -368,7 +355,7 @@ void TSAPI LoadFavoritesAndRecent()
 	if (recentEntries != NULL) {
 		while (hContact != 0) {
 			if (DBGetContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", 0))
-				AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, PluginConfig.g_hMenuFavorites, M->GetDword(hContact, "ANSIcodepage", PluginConfig.m_LangPackCP));
+				AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, PluginConfig.g_hMenuFavorites);
 			if ((dwRecent = M->GetDword(hContact, "isRecent", 0)) != 0 && iIndex < nen_options.wMaxRecent) {
 				recentEntries[iIndex].dwTimestamp = dwRecent;
 				recentEntries[iIndex++].hContact = hContact;
@@ -390,7 +377,7 @@ void TSAPI LoadFavoritesAndRecent()
 			}
 		}
 		for (i = 0; i < iIndex; i++)
-			AddContactToFavorites(recentEntries[i].hContact, NULL, NULL, NULL, 0, 0, 1, PluginConfig.g_hMenuRecent, M->GetDword(recentEntries[i].hContact, "ANSIcodepage", PluginConfig.m_LangPackCP));
+			AddContactToFavorites(recentEntries[i].hContact, NULL, NULL, NULL, 0, 0, 1, PluginConfig.g_hMenuRecent);
 
 		delete[] recentEntries;
 	}

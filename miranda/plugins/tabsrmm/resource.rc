@@ -151,6 +151,7 @@ BEGIN
     CONTROL         "Use the message log color theme for group chat popups",
                     IDC_MUC_LOGCOLORS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     12,225,263,12
+    LTEXT           "No compatible popup plugin was found. The event notification\nsystem is not available.",IDC_NOPOPUPAVAIL,6,30,303,109
 END
 
 IDD_HOTKEYSLAVE DIALOGEX 0, 0, 38, 11
@@ -1115,19 +1116,6 @@ BEGIN
     END
     POPUP "Protomenu"
     BEGIN
-        POPUP "Message Log Display"
-        BEGIN
-            MENUITEM "Use global Setting for this Contact", 
-                                                    ID_IEVIEWSETTING_USEGLOBAL
-
-            MENUITEM "Use IEView Plugin",           ID_IEVIEWSETTING_FORCEIEVIEW
-
-            MENUITEM "Use History++ Plugin",        ID_MESSAGELOGDISPLAY_USEHISTORY
-
-            MENUITEM "Use Default Message Log",     ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG
-
-        END
-        MENUITEM SEPARATOR
         POPUP "Splitter Position"
         BEGIN
             MENUITEM "Global",                      ID_MODE_GLOBAL

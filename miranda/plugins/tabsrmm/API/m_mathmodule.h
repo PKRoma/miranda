@@ -170,9 +170,6 @@ typedef struct
 // lparam=handle
 // result=0
 
-// todo: umbenennen in MTH_Set_ResizeWindowHandle, zusaetzlich MTH_Set_ToolboxEditHandle erstellen, dann keine SRMM-Abhaengigkeit mehr.
-// damit ResizeWindows selbst entscheiden koennen, was sie tun, kann man auch ein miranda-event "MTH_preview_resized" einrichten.
-
 #define MTH_GET_PREVIEW_HEIGHT "Math/getPreviewHeight"
 // returns the height of the whole preview-window (including system-menu-bar)
 // consider this when maximizing a window to that preview-window is hooked on top or bottom

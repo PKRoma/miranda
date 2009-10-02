@@ -260,7 +260,7 @@ ok:
 			SMADD_BATCHPARSERES *smbpr;
 
 			smbp.cbSize = sizeof(smbp);
-			smbp.Protocolname = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
+			smbp.Protocolname = dat->cache->getActiveProto();
 			smbp.flag = SAFL_TCHAR | SAFL_PATH | (isSent ? SAFL_OUTGOING : 0);
 			smbp.str = (TCHAR *)smcode.c_str();
 			smbp.hContact = dat->hContact;
@@ -309,18 +309,20 @@ const TCHAR *NewTitle(const _MessageWindowData *dat, const TCHAR *szFormat)
 
 		switch (title[curpos]) {
 			case 'n': {
-				if (dat->szNickname)
-					title.insert(tempmark + 2, dat->szNickname);
+				const	TCHAR *tszNick = dat->cache->getNick();
+				if (tszNick[0])
+					title.insert(tempmark + 2, tszNick);
 				title.erase(tempmark, 2);
-				curpos = tempmark + lstrlen(dat->szNickname);
+				curpos = tempmark + lstrlen(tszNick);
 				break;
 			}
 			case 'p':
 			case 'a': {
-				if (dat->szAccount)
-					title.insert(tempmark + 2, dat->szAccount);
+				const	TCHAR *szAcc = dat->cache->getRealAccount();
+				if (szAcc)
+					title.insert(tempmark + 2, szAcc);
 				title.erase(tempmark, 2);
-				curpos = tempmark + lstrlen(dat->szAccount);
+				curpos = tempmark + lstrlen(szAcc);
 				break;
 			}
 			case 's': {
@@ -331,10 +333,11 @@ const TCHAR *NewTitle(const _MessageWindowData *dat, const TCHAR *szFormat)
 				break;
 			}
 			case 'u': {
-				if (dat->uin[0])
-					title.insert(tempmark + 2, dat->uin);
+				const TCHAR	*szUIN = dat->cache->getUIN();
+				if (szUIN[0])
+					title.insert(tempmark + 2, szUIN);
 				title.erase(tempmark, 2);
-				curpos = tempmark + lstrlen(dat->uin);
+				curpos = tempmark + lstrlen(szUIN);
 				break;
 			}
 			case 'c': {
@@ -344,7 +347,7 @@ const TCHAR *NewTitle(const _MessageWindowData *dat, const TCHAR *szFormat)
 				break;
 			}
 			case 'o': {
-				char	*szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
+				const char	*szProto = dat->cache->getActiveProto();
 				if (szProto) {
 #if defined(_UNICODE)
 					MultiByteToWideChar(CP_ACP, 0, szProto, -1, szTemp, 500);

@@ -323,17 +323,17 @@ void CInfoPanel::renderContent(const HDC hdc)
  */
 void CInfoPanel::RenderIPNickname(const HDC hdc, RECT& rcItem)
 {
-	TCHAR 		*szStatusMsg = NULL;
-	CSkinItem*	item = &SkinItems[ID_EXTBKINFOPANEL];
-	TCHAR*		szTextToShow = 0;
-	bool		fShowUin = false;
-	COLORREF	clr = 0;
+	TCHAR*			szStatusMsg = NULL;
+	CSkinItem*		item = &SkinItems[ID_EXTBKINFOPANEL];
+	const TCHAR* 	szTextToShow = 0;
+	bool			fShowUin = false;
+	COLORREF		clr = 0;
 
 	if(m_height < DEGRADE_THRESHOLD) {
-		szTextToShow = m_dat->uin;
+		szTextToShow = m_dat->cache->getUIN();
 		fShowUin = true;
 	} else
-		szTextToShow = m_dat->szNickname;
+		szTextToShow = m_dat->cache->getNick();
 
 	szStatusMsg = m_dat->statusMsg;
 
@@ -413,7 +413,7 @@ void CInfoPanel::RenderIPUIN(const HDC hdc, RECT& rcItem)
 	BOOL 		config = m_ipConfig.isValid;
 	HFONT 		hOldFont = 0;
 	CSkinItem*	item = &SkinItems[ID_EXTBKINFOPANEL];
-	TCHAR		*tszUin = m_dat->uin;
+	const TCHAR* tszUin = m_dat->cache->getUIN();
 	COLORREF	clr = 0;
 
 	SetBkMode(hdc, TRANSPARENT);
@@ -423,7 +423,7 @@ void CInfoPanel::RenderIPUIN(const HDC hdc, RECT& rcItem)
 		hOldFont = (HFONT)SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_UIN]);
 		clr = m_ipConfig.clrs[IPFONTID_UIN];
 	}
-	if (m_dat->uin[0]) {
+	if (tszUin[0]) {
 		SIZE sUIN;
 		if (m_dat->idle) {
 			time_t diff = time(NULL) - m_dat->idle;
@@ -448,14 +448,14 @@ void CInfoPanel::RenderIPUIN(const HDC hdc, RECT& rcItem)
  */
 void CInfoPanel::RenderIPStatus(const HDC hdc, RECT& rcItem)
 {
-	char		*szProto = m_dat->bIsMeta ? m_dat->szMetaProto : m_dat->szProto;
+	const char* szProto = m_dat->cache->getActiveProto();
 	SIZE		sProto = {0}, sStatus = {0}, sTime = {0};
 	DWORD		oldPanelStatusCX = m_dat->panelStatusCX;
 	RECT		rc;
 	HFONT		hOldFont = 0;
 	BOOL		config = m_ipConfig.isValid;
 	CSkinItem 	*item = &SkinItems[ID_EXTBKINFOPANEL];
-	TCHAR   	*szFinalProto = NULL;
+	const TCHAR *szFinalProto = NULL;
 	TCHAR 		szResult[80];
 	int 		base_hour;
 	TCHAR 		symbolic_time[3];
@@ -469,14 +469,7 @@ void CInfoPanel::RenderIPStatus(const HDC hdc, RECT& rcItem)
 	/*
 	 * figure out final account name
 	 */
-	if(m_dat->bIsMeta) {
-		PROTOACCOUNT *acc = (PROTOACCOUNT *)CallService(MS_PROTO_GETACCOUNT, (WPARAM)0,
-														(LPARAM)(m_dat->bIsMeta ? m_dat->szMetaProto : m_dat->szProto));
-		if(acc && acc->tszAccountName)
-			szFinalProto = acc->tszAccountName;
-	}
-	else
-		szFinalProto = m_dat->szAccount;
+	szFinalProto = m_dat->cache->getRealAccount();
 
 	if (szFinalProto) {
 		if (config)
@@ -584,8 +577,8 @@ void CInfoPanel::Chat_RenderIPNickname(const HDC hdc, RECT& rcItem)
 	} else {
 
 		hOldFont = (HFONT)::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_NICK]);
-		::GetTextExtentPoint32(hdc, m_dat->szNickname, lstrlen(m_dat->szNickname), &m_szNick);
-		CSkin::RenderText(hdc, m_dat->hThemeIP, m_dat->szNickname, &rcItem, DT_SINGLELINE | DT_NOPREFIX | DT_VCENTER,
+		::GetTextExtentPoint32(hdc, m_dat->cache->getNick(), lstrlen(m_dat->cache->getNick()), &m_szNick);
+		CSkin::RenderText(hdc, m_dat->hThemeIP, m_dat->cache->getNick(), &rcItem, DT_SINGLELINE | DT_NOPREFIX | DT_VCENTER,
 						  CSkin::m_glowSize, m_ipConfig.clrs[IPFONTID_NICK]);
 		rcItem.left += (m_szNick.cx + 4);
 
@@ -735,9 +728,9 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 			case IDC_PANELNICK: {
 				DBVARIANT dbv;
 
-				if (!M->GetTString(m_dat->bIsMeta ? m_dat->hSubContact : m_dat->hContact, m_dat->bIsMeta ? m_dat->szMetaProto : m_dat->szProto, "XStatusName", &dbv)) {
+				if (!M->GetTString(m_dat->cache->getActiveContact(), m_dat->cache->getActiveProto(), "XStatusName", &dbv)) {
 					if (lstrlen(dbv.ptszVal) > 1) {
-						_sntprintf(szTitle, safe_sizeof(szTitle), CTranslator::get(CTranslator::GEN_IP_TIP_XSTATUS), m_dat->szNickname, dbv.ptszVal);
+						_sntprintf(szTitle, safe_sizeof(szTitle), CTranslator::get(CTranslator::GEN_IP_TIP_XSTATUS), m_dat->cache->getNick(), dbv.ptszVal);
 						szTitle[safe_sizeof(szTitle) - 1] = 0;
 						::DBFreeVariant(&dbv);
 						break;
@@ -745,19 +738,19 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 					::DBFreeVariant(&dbv);
 				}
 				if (m_dat->xStatus > 0 && m_dat->xStatus <= 32) {
-					_sntprintf(szTitle, safe_sizeof(szTitle), CTranslator::get(CTranslator::GEN_IP_TIP_XSTATUS), m_dat->szNickname, xStatusDescr[m_dat->xStatus - 1]);
+					_sntprintf(szTitle, safe_sizeof(szTitle), CTranslator::get(CTranslator::GEN_IP_TIP_XSTATUS), m_dat->cache->getNick(), xStatusDescr[m_dat->xStatus - 1]);
 					szTitle[safe_sizeof(szTitle) - 1] = 0;
 				} else
 					return;
 				break;
 			}
 			case IDC_PANELSTATUS + 1: {
-				_sntprintf(szTitle, safe_sizeof(szTitle), CTranslator::get(CTranslator::GEN_IP_TIP_CLIENT), m_dat->szNickname);
+				_sntprintf(szTitle, safe_sizeof(szTitle), CTranslator::get(CTranslator::GEN_IP_TIP_CLIENT), m_dat->cache->getNick());
 				szTitle[safe_sizeof(szTitle) - 1] = 0;
 				break;
 			}
 			case IDC_PANELSTATUS: {
-				mir_sntprintf(szTitle, safe_sizeof(szTitle), CTranslator::get(CTranslator::GEN_IP_TIP_STATUSMSG), m_dat->szNickname, m_dat->szStatus);
+				mir_sntprintf(szTitle, safe_sizeof(szTitle), CTranslator::get(CTranslator::GEN_IP_TIP_STATUSMSG), m_dat->cache->getNick(), m_dat->szStatus);
 				break;
 			}
 			default:

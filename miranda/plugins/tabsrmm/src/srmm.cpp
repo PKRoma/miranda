@@ -34,6 +34,8 @@
 
 #include "commonheaders.h"
 
+#include "version.h"
+
 extern int 	LoadSendRecvMessageModule(void);
 extern int 	SplitmsgShutdown(void);
 extern void LogErrorMessage(HWND hwndDlg, struct _MessageWindowData *dat, int i, TCHAR *szMsg);
@@ -66,8 +68,8 @@ PLUGININFOEX pluginInfo = {
 #endif
 #endif
 #endif
-	PLUGIN_MAKE_VERSION(3, 0, 0, 9),
-	"Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
+	PLUGIN_MAKE_VERSION(_VER_MAJOR, _VER_MINOR, _VER_REVISION, _VER_BUILD),
+	"IM and group chat module for Miranda IM.",
 	"The Miranda developers team and contributors",
 	"silvercircle _at_ gmail _dot_ com",
 	"2000-2009 Miranda Project and contributors. See readme.txt for more.",
@@ -92,7 +94,7 @@ extern "C" __declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD miranda
 	CMimAPI::m_MimVersion = mirandaVersion;
 
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 2, 0)) {
-		MessageBox(0, _T("This version of tabSRMM requires Miranda 0.8.2 or later. The plugin cannot be loaded."), _T("tabSRMM"), MB_OK | MB_ICONERROR);
+		MessageBox(0, _T("This version of tabSRMM requires Miranda 0.8.5 or later. The plugin cannot be loaded."), _T("tabSRMM"), MB_OK | MB_ICONERROR);
 		return NULL;
 	}
 	return &pluginInfo;
@@ -300,20 +302,4 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			break;
 	}
 	return FALSE;
-}
-
-#define _DBG_STR_LENGTH_MAX 2048
-
-int _DebugMessage(HWND hwndDlg, struct _MessageWindowData *dat, const char *fmt, ...)
-{
-	va_list va;
-	char            szDebug[_DBG_STR_LENGTH_MAX];
-
-	va_start(va, fmt);
-	_vsnprintf(szDebug, _DBG_STR_LENGTH_MAX, fmt, va);
-	szDebug[_DBG_STR_LENGTH_MAX - 1] = '\0';
-
-
-	// LogErrorMessage(hwndDlg, dat, -1, szDebug);
-	return 0;
 }
