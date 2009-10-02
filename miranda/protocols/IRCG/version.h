@@ -1,6 +1,6 @@
-#define __FILEVERSION_STRING        0,8,2,0
-#define __VERSION_STRING            "0.8.2.0"
-#define __VERSION_DWORD             0x00080200
+#define __FILEVERSION_STRING        0,8,3,0
+#define __VERSION_STRING            "0.8.3.0"
+#define __VERSION_DWORD             0x00080300
 
 #define __DESC	                  "IRC protocol for Miranda IM"
 #define __AUTHOR                 "Miranda team"
