@@ -932,7 +932,10 @@ void CJabberProto::OnProcessProceed( HXML node, ThreadData* info )
 
 	if ( !lstrcmp( type, _T("urn:ietf:params:xml:ns:xmpp-tls" ))) {
 		Log("Starting TLS...");
-		if (!JCallService( MS_NETLIB_STARTSSL, ( WPARAM )info->s, 0)) {
+		NETLIBSSL ssl = {0};
+		ssl.cbSize = sizeof(ssl);
+		ssl.host = info->server;
+		if (!JCallService( MS_NETLIB_STARTSSL, ( WPARAM )info->s, ( LPARAM )&ssl)) {
 			Log( "SSL initialization failed" );
 			SetStatus(ID_STATUS_OFFLINE);
 		}
