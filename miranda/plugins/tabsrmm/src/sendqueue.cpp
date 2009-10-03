@@ -816,7 +816,7 @@ inform_and_discard:
 	if (dat)
 		dat->cache->updateStats(TSessionStats::BYTES_SENT, dbei.cbBlob - 1);
 	else {
-		CContactCache *c = PluginConfig.getContactCache(m_jobs[iFound].hOwner);
+		CContactCache *c = CGlobals::getContactCache(m_jobs[iFound].hOwner);
 		if(c)
 			c->updateStats(TSessionStats::BYTES_SENT, dbei.cbBlob - 1);
 	}

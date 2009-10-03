@@ -173,7 +173,7 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			}
 			dat->dwFlags = M->GetDword("mwflags", MWF_LOG_DEFAULT);
 
-			dat->cache = PluginConfig.getContactCache(dat->hContact);
+			dat->cache = CGlobals::getContactCache(dat->hContact);
 			dat->cache->updateState();
 			dat->cache->updateUIN();
 			GetMYUIN(dat);

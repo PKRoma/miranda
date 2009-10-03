@@ -554,7 +554,7 @@ LRESULT TSAPI DM_ThemeChanged(_MessageWindowData *dat)
 	CSkinItem *item_log = &SkinItems[ID_EXTBKHISTORY];
 	CSkinItem *item_msg = &SkinItems[ID_EXTBKINPUTAREA];
 
-	dat->bFlatMsgLog = M->GetByte("flatlog", 1);
+	dat->bFlatMsgLog = M->GetByte("flatlog", 0);
 
 	HWND	hwnd = dat->hwnd;
 

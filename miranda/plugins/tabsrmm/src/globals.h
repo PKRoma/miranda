@@ -68,12 +68,17 @@ struct TSessionStats {
 
 class CContactCache {
 public:
+
 	CContactCache									() {}
 	CContactCache									(const HANDLE hContact);
 	~CContactCache									()
 	{
 		if(m_stats)
 			delete m_stats;
+	}
+	void	inc										()
+	{
+		m_accessCount++;
 	}
 	const	WORD			getStatus				() const { return(m_wStatus); }
 	const	WORD			getMetaStatus			() const { return(m_wMetaStatus); }
@@ -103,6 +108,7 @@ private:
 	void					allocStats				();
 
 private:
+	size_t			m_accessCount;
 	HANDLE			m_hContact;
 	HANDLE			m_hSubContact;
 	WORD			m_wStatus, m_wMetaStatus;
@@ -116,8 +122,10 @@ private:
 	TSessionStats* 	m_stats;
 };
 
-typedef std::map<HANDLE, CContactCache *> ContactCache;
-typedef std::map<HANDLE, CContactCache *>::iterator ContactCacheIterator;
+struct TCCache {
+	HANDLE			hContact;
+	CContactCache 	*c;
+};
 
 typedef BOOL (WINAPI *pfnSetMenuInfo )( HMENU hmenu, LPCMENUINFO lpcmi );
 
@@ -142,22 +150,25 @@ public:
 
 	CGlobals()
 	{
-		//::ZeroMemory(this, sizeof(CGlobals));
-		m_ContactCache.clear();
+		::ZeroMemory(this, sizeof(CGlobals));
+		m_cCacheSizeAlloced = 10;
+		m_cCacheSize = 0;
+		m_cCache = (TCCache *)malloc(sizeof(TCCache) * m_cCacheSizeAlloced);
+		::ZeroMemory(m_cCache, sizeof(TCCache) * m_cCacheSizeAlloced);
 	}
 
 	~CGlobals()
 	{
+		size_t 	i;
+
 		if(m_MenuBar)
 			::DestroyMenu(m_MenuBar);
 
-		ContactCacheIterator it;
-
-		while(m_ContactCache.size()) {
-			it = m_ContactCache.begin();
-			delete ((*it).second);
-			m_ContactCache.erase(it);
+		for(i = 0; i < m_cCacheSize; i++) {
+			if(m_cCache[i].c)
+				delete m_cCache[i].c;
 		}
+		free(m_cCache);
 	}
 	void		reloadAdv();
 	void		reloadSystemStartup();
@@ -168,7 +179,6 @@ public:
 	void		hookPluginEvents();
 
 	const HMENU getMenuBar();
-	CContactCache*						getContactCache(const HANDLE hContact);
 
 	HWND        g_hwndHotkeyHandler;
 	HICON       g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus;
@@ -270,9 +280,7 @@ public:
 	HANDLE		m_hMenuItem;
 	TSplitterBroadCast lastSPlitterPos;
 	static HANDLE		m_event_FoldersChanged;
-
-private:
-	ContactCache			m_ContactCache;
+	static  CContactCache*	getContactCache(const HANDLE hContact);
 
 private:
 	bool				m_TypingSoundAdded;
@@ -282,6 +290,10 @@ private:
 	static HANDLE		m_event_IcoLibChanged, m_event_AvatarChanged, m_event_MyAvatarChanged, m_event_FontsChanged;
 	static HANDLE		m_event_SmileyAdd, m_event_IEView;
 	static HANDLE 		m_event_ME_MC_SUBCONTACTSCHANGED, m_event_ME_MC_FORCESEND, m_event_ME_MC_UNFORCESEND;
+
+	static TCCache*		m_cCache;
+	static size_t		m_cCacheSize, m_cCacheSizeAlloced;
+
 
 private:
 	static	int		ModulesLoaded(WPARAM wParam, LPARAM lParam);

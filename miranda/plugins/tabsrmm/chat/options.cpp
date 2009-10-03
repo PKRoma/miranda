@@ -1243,7 +1243,7 @@ void LoadGlobalSettings(void)
 	g_Settings.OpenInDefault = (BOOL)M->GetByte("Chat", "DefaultContainer", 1);
 	g_Settings.FlashWindow = (BOOL)M->GetByte("Chat", "FlashWindow", 0);
 	g_Settings.FlashWindowHightlight = (BOOL)M->GetByte("Chat", "FlashWindowHighlight", 0);
-	g_Settings.HighlightEnabled = (BOOL)M->GetByte("Chat", "HighlightEnabled", 1);
+	g_Settings.HighlightEnabled = (BOOL)M->GetDword("Chat", "HighlightEnabled", 1);
 	g_Settings.crUserListColor = (BOOL)M->GetDword(CHAT_FONTMODULE, "Font18Col", RGB(0, 0, 0));
 	g_Settings.crUserListBGColor = (BOOL)M->GetDword("Chat", "ColorNicklistBG", SRMSGDEFSET_BKGCOLOUR);
 	g_Settings.crUserListHeadingsColor = (BOOL)M->GetDword(CHAT_FONTMODULE, "Font19Col", RGB(170, 170, 170));

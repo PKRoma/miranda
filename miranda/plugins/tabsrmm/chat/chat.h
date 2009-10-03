@@ -44,13 +44,6 @@
 
 #include "m_stdhdr.h"
 
-#ifdef _MSC_VER
-#ifndef NDEBUG
-#include <crtdbg.h>
-#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
-#endif
-#endif
-
 //defines
 #define OPTIONS_FONTCOUNT 20
 #define GC_UPDATETITLE			(WM_USER+100)

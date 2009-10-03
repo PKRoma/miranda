@@ -1473,7 +1473,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 	hwndTab = GetParent(hwndDlg);
 
 	if (dat == 0) {
-		if (dat == NULL && (msg == WM_ACTIVATE || msg == WM_SETFOCUS))
+		if (msg == WM_ACTIVATE || msg == WM_SETFOCUS)
 			return 0;
 	} else {
 		m_pContainer = dat->pContainer;
@@ -1523,7 +1523,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			dat->hContact = newData->hContact;
 
-			dat->cache = PluginConfig.getContactCache(dat->hContact);
+			dat->cache = CGlobals::getContactCache(dat->hContact);
 			dat->cache->updateState();
 
 			M->AddWindow(hwndDlg, dat->hContact);

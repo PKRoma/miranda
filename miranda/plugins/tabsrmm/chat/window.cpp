@@ -1942,7 +1942,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			dat->bType = SESSIONTYPE_CHAT;
 			dat->Panel = new CInfoPanel(dat);
 
-			dat->cache = PluginConfig.getContactCache(dat->hContact);
+			dat->cache = CGlobals::getContactCache(dat->hContact);
 			dat->cache->updateState();
 			dat->cache->updateUIN();
 

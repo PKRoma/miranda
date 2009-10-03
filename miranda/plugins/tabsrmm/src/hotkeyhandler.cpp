@@ -914,7 +914,7 @@ static int TSAPI SendLater_SendIt(SendLaterJob *job)
 		return(0);											// this one was sent, but probably failed. Resend it after a while
 	}
 
-	CContactCache *c = PluginConfig.getContactCache(hContact);
+	CContactCache *c = CGlobals::getContactCache(hContact);
 	if(!c)
 		return(0);
 

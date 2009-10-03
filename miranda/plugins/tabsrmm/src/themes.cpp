@@ -1127,7 +1127,7 @@ void CSkin::Init()
 	 */
 
 	setFileName();
-	m_aeroEffect = M->GetByte("aerostyle", 0);
+	m_aeroEffect = M->GetByte("aerostyle", AERO_EFFECT_MILK);
 }
 
 /**

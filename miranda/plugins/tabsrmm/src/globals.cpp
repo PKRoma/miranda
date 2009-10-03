@@ -60,6 +60,9 @@ HANDLE		CGlobals::m_event_IcoLibChanged = 0, CGlobals::m_event_AvatarChanged = 0
 HANDLE		CGlobals::m_event_SmileyAdd = 0, CGlobals::m_event_IEView = 0, CGlobals::m_event_FoldersChanged = 0;
 HANDLE 		CGlobals::m_event_ME_MC_SUBCONTACTSCHANGED = 0, CGlobals::m_event_ME_MC_FORCESEND = 0, CGlobals::m_event_ME_MC_UNFORCESEND = 0;
 
+TCCache*	CGlobals::m_cCache = 0;
+size_t		CGlobals::m_cCacheSize = 0, CGlobals::m_cCacheSizeAlloced = 0;
+
 extern 		HANDLE 	hHookButtonPressedEvt;
 extern		HANDLE 	hHookToolBarLoadedEvt;
 
@@ -316,8 +319,8 @@ void CGlobals::reloadSettings()
 	m_FixFutureTimestamps = 			(int)M->GetByte("do_fft", 1);
 	m_RTLDefault = 						(int)M->GetByte("rtldefault", 0);
 	m_TabAppearance = 					(int)M->GetDword("tabconfig", TCF_FLASHICON | TCF_SINGLEROWTABCONTROL);
-	m_panelHeight = 					(DWORD)M->GetDword("panelheight", 51);
-	m_MUCpanelHeight = 					M->GetDword("Chat", "panelheight", 30);
+	m_panelHeight = 					(DWORD)M->GetDword("panelheight", CInfoPanel::DEGRADE_THRESHOLD);
+	m_MUCpanelHeight = 					M->GetDword("Chat", "panelheight", CInfoPanel::DEGRADE_THRESHOLD);
 	m_IdleDetect = 						(int)M->GetByte("detectidle", 1);
 	m_smcxicon = 16;
 	m_smcyicon = 16;
@@ -334,8 +337,8 @@ void CGlobals::reloadSettings()
 	}
 
 	m_SendLaterAvail = 					M->GetByte("sendLaterAvail", 0);
-	m_ipBackgroundGradient = 			M->GetDword(FONTMODULE, "ipfieldsbg", GetSysColor(COLOR_3DSHADOW));
-	m_ipBackgroundGradientHigh = 		M->GetDword(FONTMODULE, "ipfieldsbgHigh", GetSysColor(COLOR_3DSHADOW));
+	m_ipBackgroundGradient = 			M->GetDword(FONTMODULE, "ipfieldsbg", 0x62caff);
+	m_ipBackgroundGradientHigh = 		M->GetDword(FONTMODULE, "ipfieldsbgHigh", 0xf0f0f0);
 	m_tbBackgroundHigh = 				M->GetDword(FONTMODULE, "tbBgHigh", 0);
 	m_tbBackgroundLow = 				M->GetDword(FONTMODULE, "tbBgLow", 0);
 }
@@ -487,40 +490,36 @@ int CGlobals::DBSettingChanged(WPARAM wParam, LPARAM lParam)
 	CContactCache* c = 0;
 	bool		fChanged = false;
 
-	if(wParam) {
+	if(wParam)
 		hwnd = M->FindWindow((HANDLE)wParam);
-		c = PluginConfig.getContactCache((HANDLE)wParam);
-		fChanged = c->updateStatus();
-		if(!strcmp(setting, "MyHandle") || !strcmp(setting, "Nick")) {
-			fChanged = true;
-			c->updateNick();
-		}
-	}
 
 	if (hwnd == 0 && wParam != 0) {     // we are not interested in this event if there is no open message window/tab
-		szProto = c->getProto();
-		if (lstrcmpA(cws->szModule, "CList") && (szProto == NULL || lstrcmpA(cws->szModule, szProto)))
-			return 0;                       // filter out settings we aren't interested in...
-		if (DBGetContactSettingWord((HANDLE)wParam, SRMSGMOD_T, "isFavorite", 0))
-			AddContactToFavorites((HANDLE)wParam, NULL, szProto, NULL, 0, 0, 0, PluginConfig.g_hMenuFavorites);
-		if (M->GetDword((HANDLE)wParam, "isRecent", 0))
-			AddContactToFavorites((HANDLE)wParam, NULL, szProto, NULL, 0, 0, 0, PluginConfig.g_hMenuRecent);
-		return 0;       // for the hContact.
+		if(!strcmp(setting, "Status") || !strcmp(setting, "MyHandle") || !strcmp(setting, "Nick")) {
+			c = CGlobals::getContactCache((HANDLE)wParam);
+			if(c) {
+				fChanged = c->updateStatus();
+				c->updateNick();
+			}
+		}
+		return(0);
 	}
 
 	if (wParam == 0 && strstr("Nick,yahoo_id", setting)) {
 		M->BroadcastMessage(DM_OWNNICKCHANGED, 0, (LPARAM)cws->szModule);
-		return 0;
+		return(0);
 	}
 
-	if(c)
-		szProto = c->getProto();
+	if(wParam) {
+		c = CGlobals::getContactCache((HANDLE)wParam);
+		if(c)
+			szProto = c->getProto();
+	}
 
 	if (lstrcmpA(cws->szModule, "CList") && (szProto == NULL || lstrcmpA(cws->szModule, szProto)))
-		return 0;
+		return(0);
 
 	if (!lstrcmpA(cws->szModule, PluginConfig.szMetaName) && !lstrcmpA(setting, "Nick"))      // filter out this setting to avoid infinite loops while trying to obtain the most online contact
-		return 0;
+		return(0);
 
 	if (hwnd) {
 		if (strstr("IdleTS,XStatusId,display_uid", setting)) {
@@ -544,7 +543,7 @@ int CGlobals::DBSettingChanged(WPARAM wParam, LPARAM lParam)
 		if(fChanged)
 			PostMessage(hwnd, DM_UPDATETITLE, 0, 1);
 	}
-	return 0;
+	return(0);
 }
 
 /**
@@ -573,7 +572,7 @@ int CGlobals::DBContactDeleted(WPARAM wParam, LPARAM lParam)
 int CGlobals::MetaContactEvent(WPARAM wParam, LPARAM lParam)
 {
 	if(wParam) {
-		CContactCache *c = PluginConfig.getContactCache((HANDLE)wParam);
+		CContactCache *c = CGlobals::getContactCache((HANDLE)wParam);
 		if(c)
 			c->updateMeta();
 
@@ -731,15 +730,23 @@ void CGlobals::RestoreUnreadMessageAlerts(void)
  */
 CContactCache* CGlobals::getContactCache(const HANDLE hContact)
 {
-	ContactCacheIterator it = m_ContactCache.find(hContact);
-	if(it == m_ContactCache.end()) {
-		CContactCache* _c = new CContactCache(hContact);
-		std::pair<std::map<HANDLE, CContactCache *>::iterator, bool> it1 = m_ContactCache.insert(std::pair<HANDLE, CContactCache *>(hContact, _c));
-		it = it1.first;
-		return((*it).second);
+	size_t i, free = 0;
+
+	for(i = 0; i < m_cCacheSize; i++) {
+		if(m_cCache[i].hContact == hContact) {
+			m_cCache[i].c->inc();
+			return(m_cCache[i].c);
+		}
 	}
-	else
-		return((*it).second);
+
+	CContactCache *c = new CContactCache(hContact);
+	m_cCache[m_cCacheSize].hContact = hContact;
+	m_cCache[m_cCacheSize++].c = c;
+	if(m_cCacheSize == m_cCacheSizeAlloced) {
+		m_cCacheSizeAlloced += 10;
+		m_cCache = (TCCache *)realloc(m_cCache, m_cCacheSizeAlloced * sizeof(TCCache));
+	}
+	return(c);
 }
 
 CContactCache::CContactCache(const HANDLE hContact)
@@ -755,6 +762,7 @@ CContactCache::CContactCache(const HANDLE hContact)
 	m_Valid = false;
 	m_szUIN[0] = 0;
 	m_stats = 0;
+	m_accessCount = 0;
 
 	if(hContact) {
 		m_szProto = reinterpret_cast<char *>(::CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)m_hContact, 0));
@@ -790,7 +798,7 @@ void CContactCache::updateNick()
 {
 	if(m_Valid) {
 		TCHAR	*tszNick = reinterpret_cast<TCHAR *>(::CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)m_hContact, GCDNF_TCHAR));
-		mir_sntprintf(m_szNick, 80, tszNick ? tszNick : _T("<undef>"));
+		mir_sntprintf(m_szNick, 80, _T("%s"), tszNick ? tszNick : _T("<undef>"));
 	}
 }
 

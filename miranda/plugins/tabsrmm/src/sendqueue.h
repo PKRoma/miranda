@@ -95,8 +95,6 @@ public:
 
 	void	inc() { m_currentIndex++; }
 	void	dec() { m_currentIndex--; }
-	void	operator++() { m_currentIndex++; }
-	void	operator--() { m_currentIndex--; }
 
 	~SendQueue()
 	{

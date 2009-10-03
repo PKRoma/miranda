@@ -448,7 +448,6 @@ int SplitmsgShutdown(void)
 	DestroyCursor(PluginConfig.hCurSplitWE);
 	DeleteObject(PluginConfig.m_hFontWebdings);
 	FreeLibrary(GetModuleHandleA("riched20"));
-	FreeLibrary(GetModuleHandleA("user32"));
 	if (g_hIconDLL)
 		FreeLibrary(g_hIconDLL);
 
@@ -624,6 +623,8 @@ int LoadSendRecvMessageModule(void)
 	}
 tzdone:
 
+	LoadLibrary(_T("riched20"));
+	OleInitialize(NULL);
 	mREOLECallback = new REOLECallback;
 	ZeroMemory((void *)&nen_options, sizeof(nen_options));
 	M->m_hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);

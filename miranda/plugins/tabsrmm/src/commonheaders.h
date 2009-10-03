@@ -122,10 +122,7 @@
 #include <limits.h>
 #include <ctype.h>
 #include <string>
-#include <iostream>
-#include <utility>
 #include <vector>
-#include <map>
 #include <assert.h>
 
 #include "resource.h"
@@ -193,12 +190,12 @@ extern struct LIST_INTERFACE li;
 #include "msgs.h"
 #include "msgdlgutils.h"
 #ifndef __CPP_LEAN
-#include "nen.h"
-#include "functions.h"
 #include "typingnotify.h"
 #include "generic_msghandlers.h"
-extern 	NEN_OPTIONS	nen_options;
 #endif
+#include "nen.h"
+extern 	NEN_OPTIONS	nen_options;
+#include "functions.h"
 #include "../chat/chat.h"
 
 #include "translator.h"
