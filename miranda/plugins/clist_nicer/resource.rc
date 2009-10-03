@@ -10,13 +10,12 @@
 #include <windows.h>
 #include <winres.h>
 #include <statusmodes.h>
-#include <VERSION>
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -229,21 +228,21 @@ IDD_OPT_DSPITEMS DIALOGEX 0, 0, 227, 205
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Contact List Sorting",IDC_STATIC,1,0,142,86,WS_GROUP
+    GROUPBOX        "Contact List Sorting",IDC_STATIC,1,0,142,97,WS_GROUP
     LTEXT           "First by",IDC_STATIC,5,15,57,9
     COMBOBOX        IDC_SORTPRIMARY,65,12,73,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Then by",IDC_STATIC,5,29,57,9
     COMBOBOX        IDC_SORTTHEN,65,27,73,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Finally by",IDC_STATIC,5,43,57,9
     COMBOBOX        IDC_SORTFINALLY,65,42,73,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Move events to the top of list or group",IDC_EVENTSONTOP,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,61,130,10
+    CONTROL         "Move events to the top of list\nor group",IDC_EVENTSONTOP,
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,5,61,130,16
     CONTROL         "Do not separate offline contacts",IDC_DONTSEPARATE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,72,130,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,80,132,10
     LTEXT           "Hide as offline",IDC_STATIC,151,1,73,8
-    CONTROL         "Tree1",IDC_HIDEOFFLINEOPTS,"SysTreeView32",TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | TVS_NONEVENHEIGHT |TVS_CHECKBOXES | TVS_HASBUTTONS | WS_BORDER | WS_HSCROLL | WS_TABSTOP,147,11,77,74
-    LTEXT           "Right align contacts",IDC_STATIC,5,92,130,10
-    COMBOBOX        IDC_CLISTALIGN,147,90,77,56,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Tree1",IDC_HIDEOFFLINEOPTS,"SysTreeView32",TVS_HASBUTTONS | TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | TVS_CHECKBOXES | TVS_NONEVENHEIGHT | WS_BORDER | WS_HSCROLL | WS_TABSTOP,147,11,77,85
+    LTEXT           "Right align contacts",IDC_STATIC,5,104,130,10
+    COMBOBOX        IDC_CLISTALIGN,147,102,77,56,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_OPT_DSPADVANCED DIALOGEX 0, 0, 227, 205
@@ -356,9 +355,9 @@ BEGIN
     LTEXT           "Active opacity:",IDC_STATIC12,11,206,75,8
     CONTROL         "Slider2",IDC_TRANSACTIVE,"msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,93,206,34,11
     LTEXT           "000%",IDC_ACTIVEPERC,130,207,24,8,SS_NOPREFIX
-    CONTROL         "Fade contact list in/out",IDC_FADEINOUT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,163,190,135,10
+    CONTROL         "Fade contact list in/out",IDC_FADEINOUT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,190,139,10
     CONTROL         "Fully transparent (like TweakUI)",IDC_FULLTRANSPARENT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,163,205,135,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,205,139,10
 END
 
 IDD_OPT_CLC DIALOGEX 0, 0, 305, 226
@@ -405,12 +404,12 @@ BEGIN
     CONTROL         "Use background image",IDC_BITMAP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,57,282,10
     EDITTEXT        IDC_FILENAME,22,71,184,12,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_BROWSE,208,72,15,11
-    CONTROL         "Stretch to width",IDC_STRETCHH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,86,104,10
-    CONTROL         "Stretch to height",IDC_STRETCHV,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,130,86,164,10
-    CONTROL         "Tile horizontally",IDC_TILEH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,100,104,10
-    CONTROL         "Tile vertically",IDC_TILEV,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,130,100,164,10
-    CONTROL         "Scroll with text",IDC_SCROLL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,113,104,10
-    CONTROL         "Stretch proportionally",IDC_PROPORTIONAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,130,113,164,10
+    CONTROL         "Stretch to width",IDC_STRETCHH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,86,117,10
+    CONTROL         "Stretch to height",IDC_STRETCHV,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,144,86,153,10
+    CONTROL         "Tile horizontally",IDC_TILEH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,100,118,10
+    CONTROL         "Tile vertically",IDC_TILEV,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,143,100,156,10
+    CONTROL         "Scroll with text",IDC_SCROLL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,113,115,10
+    CONTROL         "Stretch proportionally",IDC_PROPORTIONAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,143,113,155,10
     CONTROL         "Use these settings to skin the entire background",IDC_SKINMODE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,132,282,11
     LTEXT           "If you enable this, the background settings will affect the entire contact list frame.",IDC_STATIC,23,145,270,28
@@ -766,7 +765,7 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Englisch (USA) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

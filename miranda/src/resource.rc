@@ -137,14 +137,14 @@ BEGIN
     LTEXT           "This will erase all history and settings for this contact!",IDC_STATIC,7,18,239,14
 END
 
-IDD_OPT_CONTACT DIALOGEX 0, 0, 199, 144
+IDD_OPT_CONTACT DIALOGEX 0, 0, 199, 147
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Contact Display Options",IDC_STATIC,13,7,176,127
-    LTEXT           "Instead of displaying contacts by their nickname, drag to choose another order:",IDC_STATIC,19,17,165,23
-    CONTROL         "Tree1",IDC_NAMEORDER,"SysTreeView32",TVS_NOTOOLTIPS | TVS_FULLROWSELECT | WS_BORDER | WS_TABSTOP,19,43,164,86
+    GROUPBOX        "Contact Display Options",IDC_STATIC,13,7,176,133
+    LTEXT           "Instead of displaying contacts by their nickname, drag to choose another order:",IDC_STATIC,19,17,165,27
+    CONTROL         "Tree1",IDC_NAMEORDER,"SysTreeView32",TVS_NOTOOLTIPS | TVS_FULLROWSELECT | WS_BORDER | WS_HSCROLL | WS_TABSTOP,19,48,164,86
 END
 
 IDD_PROFILEMANAGER DIALOGEX 0, 0, 400, 211
@@ -786,7 +786,7 @@ BEGIN
     COMBOBOX        IDC_NETLIBUSERS,0,1,231,110,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Logging...",IDC_LOGOPTIONS,241,1,60,13
     GROUPBOX        "Outgoing Connections",IDC_STATIC12,0,18,313,148
-    CONTROL         "Use proxy server",IDC_USEPROXY,"Button",BS_3STATE | WS_TABSTOP,7,29,90,9
+    CONTROL         "Use proxy server",IDC_USEPROXY,"Button",BS_3STATE | WS_TABSTOP,7,29,159,9
     LTEXT           "Type:",IDC_STATIC21,19,43,57,8,WS_DISABLED
     COMBOBOX        IDC_PROXYTYPE,80,40,86,62,CBS_DROPDOWNLIST | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Host:",IDC_STATIC22,19,58,57,8,WS_DISABLED
@@ -800,7 +800,7 @@ BEGIN
     LTEXT           "Password:",IDC_STATIC32,177,87,49,8,WS_DISABLED
     EDITTEXT        IDC_PROXYPASS,232,85,74,12,ES_PASSWORD | ES_AUTOHSCROLL | WS_DISABLED
     CONTROL         "Use NTLM authentication",IDC_PROXYAUTHNTLM,"Button",BS_3STATE | WS_DISABLED | WS_TABSTOP,32,101,154,10
-    CONTROL         "Resolve hostnames through proxy",IDC_PROXYDNS,"Button",BS_3STATE | WS_DISABLED | WS_TABSTOP,20,115,154,10
+    CONTROL         "Resolve hostnames through proxy",IDC_PROXYDNS,"Button",BS_3STATE | WS_DISABLED | WS_TABSTOP,20,115,202,10
     CONTROL         "Port Range:",IDC_SPECIFYPORTSO,"Button",BS_3STATE | BS_TOP | BS_MULTILINE | WS_TABSTOP,7,130,72,9
     EDITTEXT        IDC_PORTSRANGEO,80,129,142,12,ES_AUTOHSCROLL | WS_DISABLED
     LTEXT           "Example: 1050-1070, 2000-2010, 2500",IDC_STATIC54,80,144,196,8,WS_DISABLED
@@ -870,10 +870,10 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,131,251,9
     LTEXT           "minute(s)",IDC_STATIC,91,61,76,9
     RTEXT           "for",IDC_STATIC,12,59,41,9
-    COMBOBOX        IDC_AASTATUS,128,146,64,50,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Change my status mode to:",IDC_AASHORTIDLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,147,101,11
+    COMBOBOX        IDC_AASTATUS,161,146,64,50,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Change my status mode to:",IDC_AASHORTIDLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,147,132,11
     CONTROL         "Do not set status back to online when returning from idle",IDC_IDLESTATUSLOCK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,35,164,246,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,35,164,254,10
     GROUPBOX        "Idle Options",IDC_STATIC,3,3,304,182
 END
 
@@ -890,7 +890,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    LTEXT           "Please complete the following form to create a new user profile",IDC_STATIC,7,7,231,10
+    LTEXT           "Please complete the following form to create a new user profile",IDC_STATIC,7,7,231,16
     EDITTEXT        IDC_PROFILENAME,67,27,75,12,ES_AUTOHSCROLL
     COMBOBOX        IDC_PROFILEDRIVERS,67,72,75,56,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Profile",IDC_STATIC,20,28,40,9
@@ -1051,16 +1051,12 @@ EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Update Notification Options",IDC_STATIC,2,0,265,94
-    CONTROL         "Automatically check for new versions of Miranda IM",
-                    IDC_ENABLEUPDATES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    11,13,237,10
+    CONTROL         "Automatically check for new versions of Miranda IM",IDC_ENABLEUPDATES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,13,237,10
     LTEXT           "Check for updates for the following:",IDC_STATIC,12,32,230,8
-    CONTROL         "Stable releases",IDC_ENABLESTABLE,"Button",
-                    BS_AUTORADIOBUTTON | WS_TABSTOP,25,46,230,10
-    CONTROL         "Preview releases (beta)",IDC_ENABLEBETA,"Button",
-                    BS_AUTORADIOBUTTON | WS_TABSTOP,25,61,230,10
-    CONTROL         "Development releases (alpha)",IDC_ENABLEALPHA,"Button",
-                    BS_AUTORADIOBUTTON | WS_TABSTOP,25,76,230,10
+    CONTROL         "Stable releases",IDC_ENABLESTABLE,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,25,46,230,10
+    CONTROL         "Preview releases (beta)",IDC_ENABLEBETA,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,25,61,230,10
+    CONTROL         "Development releases (alpha)",IDC_ENABLEALPHA,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,25,76,230,10
 END
 
 IDD_OPT_KEYBINDINGS DIALOGEX 0, 0, 316, 251
@@ -1344,7 +1340,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 192
         TOPMARGIN, 7
-        BOTTOMMARGIN, 137
+        BOTTOMMARGIN, 140
     END
 
     IDD_FINDADD, DIALOG

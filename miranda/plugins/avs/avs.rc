@@ -43,7 +43,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_CLIPSIBLINGS
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "Try to draw avatar background transparent (for images without transparency)",IDC_MAKE_TRANSPARENT_BKG,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,17,269,12
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,17,278,12
     LTEXT           "Num of points to define bkg:",IDC_BKG_NUM_POINTS_L,33,31,135,11
     EDITTEXT        IDC_BKG_NUM_POINTS,173,30,36,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_BKG_NUM_POINTS_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,209,30,11,12
@@ -63,8 +63,8 @@ BEGIN
     CONTROL         "When setting avatars, always make them square",IDC_SET_MAKE_SQUARE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,17,281,11
     CONTROL         "Try to draw own avatar background transparent (for images without transparency)",IDC_MAKE_MY_AVATARS_TRANSP,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,34,281,10
-    LTEXT           "This uses the same additional options as in ""Contact Avatars"" tab",IDC_STATIC,20,46,257,13
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,7,30,289,16
+    LTEXT           "This uses the same additional options as in ""Contact Avatars"" tab",IDC_STATIC,17,50,257,13
 END
 
 IDD_OPENSUBCLASS DIALOGEX 0, 0, 246, 18
