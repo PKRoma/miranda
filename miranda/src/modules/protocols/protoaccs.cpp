@@ -200,7 +200,7 @@ static int InitializeStaticAccounts( WPARAM, LPARAM )
 
 	for ( int i = 0; i < accounts.getCount(); i++ ) {
 		PROTOACCOUNT* pa = accounts[i];
-		if ( !pa->ppro || !IsAccountEnabled( pa ))
+		if ( !pa->ppro || !Proto_IsAccountEnabled( pa ))
 			continue;
 
 		pa->ppro->OnEvent( EV_PROTO_ONLOAD, 0, 0 );
@@ -220,7 +220,7 @@ static int UninitializeStaticAccounts( WPARAM, LPARAM )
 {
 	for ( int i = 0; i < accounts.getCount(); i++ ) {
 		PROTOACCOUNT* pa = accounts[i];
-		if ( !pa->ppro || !IsAccountEnabled( pa ))
+		if ( !pa->ppro || !Proto_IsAccountEnabled( pa ))
 			continue;
 
 		pa->ppro->OnEvent( EV_PROTO_ONREADYTOEXIT, 0, 0 );
@@ -241,7 +241,7 @@ int LoadAccountsModule( void )
 		if ( pa->ppro )
 			continue;
 
-		if (!IsAccountEnabled( pa )) {
+		if (!Proto_IsAccountEnabled( pa )) {
 			pa->type = PROTOTYPE_DISPROTO;
 			continue;
 		}

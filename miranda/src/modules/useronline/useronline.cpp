@@ -86,7 +86,7 @@ static int UserOnlineModulesLoaded(WPARAM, LPARAM)
 {
 	// reset the counter
 	for ( int j = 0; j < accounts.getCount(); j++ )
-		if ( IsAccountEnabled( accounts[j] )) db_dword_set( NULL, "UserOnline", accounts[j]->szModuleName, GetTickCount());
+		if ( Proto_IsAccountEnabled( accounts[j] )) db_dword_set( NULL, "UserOnline", accounts[j]->szModuleName, GetTickCount());
 
 	return 0;
 }
@@ -99,7 +99,7 @@ static int UserOnlineAccountsChanged( WPARAM eventCode, LPARAM lParam )
 	case PRAC_ADDED:
 	case PRAC_CHECKED:
 		// reset the counter
-		if ( IsAccountEnabled( pa ))
+		if ( Proto_IsAccountEnabled( pa ))
 			db_dword_set( NULL, "UserOnline", pa->szModuleName, GetTickCount());
 		break;
 	}

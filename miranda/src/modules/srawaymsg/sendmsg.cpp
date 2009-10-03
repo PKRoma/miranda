@@ -163,8 +163,8 @@ void ChangeAllProtoMessages(char *szProto, int statusMode,char *msg)
 		int i;
 		for( i=0; i < accounts.getCount(); i++ ) {
 			PROTOACCOUNT* pa = accounts[i];
-            if (!IsAccountEnabled(pa)) continue;
-			if ( (CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0 ) & PF1_MODEMSGSEND) && !DBGetContactSettingByte(NULL, pa->szModuleName, "LockMainStatus", 0))
+			if (!Proto_IsAccountEnabled( pa )) continue;
+			if ( (CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0 ) & PF1_MODEMSGSEND) && !Proto_IsAccountLocked( pa ))
 				CallProtoService( pa->szModuleName, PS_SETAWAYMSG, statusMode, ( LPARAM )msg );
 		}
 	}
@@ -521,9 +521,9 @@ static int AwayMsgSendAccountsChanged(WPARAM, LPARAM)
 {
 	protoModeMsgFlags = 0;
 	for (int i=0; i < accounts.getCount(); i++) {
-        if (!IsAccountEnabled(accounts[i])) continue;
+		if (!Proto_IsAccountEnabled(accounts[i])) continue;
 		protoModeMsgFlags |= CallProtoService(accounts[i]->szModuleName, PS_GETCAPS, PFLAGNUM_3, 0);
-    }
+	}
 
 	return 0;
 }

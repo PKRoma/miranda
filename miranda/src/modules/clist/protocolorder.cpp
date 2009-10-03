@@ -123,8 +123,8 @@ int FillTree(HWND hwnd)
 		PD = ( ProtocolData* )mir_alloc( sizeof( ProtocolData ));
 		PD->RealName = pa->szModuleName;
 		PD->protopos = pa->iOrder;
-        PD->enabled = IsAccountEnabled( pa ) && isProtoSuitable( pa->ppro );
-        PD->show = PD->enabled ? pa->bIsVisible : 100;
+		PD->enabled = Proto_IsAccountEnabled( pa ) && isProtoSuitable( pa->ppro );
+		PD->show = PD->enabled ? pa->bIsVisible : 100;
 
 		tvis.item.lParam = ( LPARAM )PD;
 		tvis.item.pszText = pa->tszAccountName;

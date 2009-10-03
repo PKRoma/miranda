@@ -382,10 +382,27 @@ __inline static PROTOACCOUNT* ProtoGetAccount( const char* accName )
 //lParam=0
 #define MS_PROTO_SHOWACCMGR "Protos/ShowAccountManager" 
 
+//determines if an account is enabled or not
+//wParam = 0
+//lParam = (LPARAM)(PROTOACCOUNT*)
+//Returns 1 if an account is valid and enabled, 0 otherwise
+#define MS_PROTO_ISACCOUNTENABLED "Proto/IsAccountEnabled"
+
 __inline static int IsAccountEnabled( const PROTOACCOUNT* pa )
 {
+#if MIRANDA_VER < 0x0900
 	return pa && (( pa->bIsEnabled && !pa->bDynDisabled ) || pa->bOldProto );
+#else
+  return (int)CallService( MS_PROTO_ISACCOUNTENABLED, 0, (LPARAM)pa );
+#endif
 }
+
+//determines if an account is locked or not
+//wParam = 0
+//lParam = (LPARAM)(char*)szAccountName
+//Returns 1 if an account is locked and not supposed to change status, 0 otherwise
+#define MS_PROTO_ISACCOUNTLOCKED "Proto/IsAccountLocked"
+
 
 //gets the account associated with a contact
 //wParam=(WPARAM)(HANDLE)hContact
