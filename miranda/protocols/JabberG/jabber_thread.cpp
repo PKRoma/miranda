@@ -70,14 +70,14 @@ struct JabberPasswordDlgParam
 
 static INT_PTR CALLBACK JabberPasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	JabberPasswordDlgParam* param = (JabberPasswordDlgParam*)GetWindowLong( hwndDlg, GWL_USERDATA );
+	JabberPasswordDlgParam* param = (JabberPasswordDlgParam*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
 		{	
 			param = (JabberPasswordDlgParam*)lParam;
-			SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 
 			TCHAR text[128];
 			mir_sntprintf( text, SIZEOF(text), _T("%s %s"), TranslateT( "Enter password for" ), ( TCHAR* )param->ptszJid );
@@ -934,7 +934,10 @@ void CJabberProto::OnProcessProceed( HXML node, ThreadData* info )
 
 	if ( !lstrcmp( type, _T("urn:ietf:params:xml:ns:xmpp-tls" ))) {
 		Log("Starting TLS...");
-		if (!JCallService( MS_NETLIB_STARTSSL, ( WPARAM )info->s, 0)) {
+		NETLIBSSL ssl = {0};
+		ssl.cbSize = sizeof(ssl);
+		ssl.host = info->server;
+		if (!JCallService( MS_NETLIB_STARTSSL, ( WPARAM )info->s, ( LPARAM )&ssl)) {
 			Log( "SSL initialization failed" );
 			SetStatus(ID_STATUS_OFFLINE);
 		}
