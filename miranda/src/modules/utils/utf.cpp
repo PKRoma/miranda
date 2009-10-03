@@ -66,7 +66,7 @@ static char* Ucs2toUtf8( const wchar_t* in, char* out )
 {
 	const wchar_t* s = in;
 	BYTE* d = ( BYTE* )out;
-    int U;
+    unsigned U;
 
 	while( *s ) {
 		U = *s++;
@@ -75,13 +75,13 @@ static char* Ucs2toUtf8( const wchar_t* in, char* out )
 			*d++ = ( BYTE )U;
 		}
 		else if ( U < 0x800 ) {
-			*d++ = 0xC0 + (( U >> 6 ) & 0x3F );
-			*d++ = 0x80 + ( U & 0x003F );
+			*d++ = 0xC0 | (( U >> 6 ) & 0x3F );
+			*d++ = 0x80 | ( U & 0x003F );
 		}
 		else {
-			*d++ = 0xE0 + ( U >> 12 );
-			*d++ = 0x80 + (( U >> 6 ) & 0x3F );
-			*d++ = 0x80 + ( U & 0x3F );
+			*d++ = 0xE0 | ( U >> 12 );
+			*d++ = 0x80 | (( U >> 6 ) & 0x3F );
+			*d++ = 0x80 | ( U & 0x3F );
 	}	}
 
 	*d = 0;
@@ -120,7 +120,7 @@ char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 )
 		__except( EXCEPTION_EXECUTE_HANDLER )
 		{
 			tempBuf = NULL;
-			needs_free = false;
+			needs_free = true;
 		}
 	}
 
