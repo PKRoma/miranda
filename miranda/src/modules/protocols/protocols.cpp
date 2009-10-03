@@ -506,6 +506,9 @@ int LoadProtocolsModule(void)
 	CreateServiceFunction( MS_PROTO_ENUMACCOUNTS,     Proto_EnumAccounts     );
 	CreateServiceFunction( MS_PROTO_GETACCOUNT,       srvProto_GetAccount    );
 
+	CreateServiceFunction( MS_PROTO_ISACCOUNTENABLED, srvProto_IsAccountEnabled );
+	CreateServiceFunction( MS_PROTO_ISACCOUNTLOCKED,  srvProto_IsAccountLocked );
+
 	return LoadProtoOptions();
 }
 
