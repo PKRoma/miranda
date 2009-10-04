@@ -239,10 +239,14 @@ void CGlobals::reloadSystemModulesChanged()
 	g_MetaContactsAvail = (ServiceExists(MS_MC_GETDEFAULTCONTACT) ? 1 : 0);
 
 
-	if(g_MetaContactsAvail)
+	if(g_MetaContactsAvail) {
 		mir_snprintf(szMetaName, 256, "%s", (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0));
-	else
+		bMetaEnabled = M->GetByte(0, szMetaName, "Enabled", 0);
+	}
+	else {
 		szMetaName[0] = 0;
+		bMetaEnabled = 0;
+	}
 
 	g_PopupAvail = (ServiceExists(MS_POPUP_ADDPOPUPEX) ? 1 : 0);
 
@@ -518,10 +522,20 @@ int CGlobals::DBSettingChanged(WPARAM wParam, LPARAM lParam)
 	if (lstrcmpA(cws->szModule, "CList") && (szProto == NULL || lstrcmpA(cws->szModule, szProto)))
 		return(0);
 
-	if (!lstrcmpA(cws->szModule, PluginConfig.szMetaName) && !lstrcmpA(setting, "Nick"))      // filter out this setting to avoid infinite loops while trying to obtain the most online contact
-		return(0);
+	if (PluginConfig.g_MetaContactsAvail && !lstrcmpA(cws->szModule, PluginConfig.szMetaName)) {
+		if(wParam != 0 && !lstrcmpA(setting, "Nick"))      // filter out this setting to avoid infinite loops while trying to obtain the most online contact
+			return(0);
+		if(wParam == 0 && !lstrcmpA(setting, "Enabled")) { 		// catch the disabled meta contacts
+			PluginConfig.bMetaEnabled = M->GetByte(0, PluginConfig.szMetaName, "Enabled", 0);
+			cacheUpdateMetaChanged();
+		}
+	}
 
 	if (hwnd) {
+		if(c) {
+			fChanged = c->updateStatus();
+			c->updateNick();
+		}
 		if (strstr("IdleTS,XStatusId,display_uid", setting)) {
 			if (!strcmp(setting, "XStatusId"))
 				PostMessage(hwnd, DM_UPDATESTATUSMSG, 0, 0);
@@ -730,7 +744,7 @@ void CGlobals::RestoreUnreadMessageAlerts(void)
  */
 CContactCache* CGlobals::getContactCache(const HANDLE hContact)
 {
-	size_t i, free = 0;
+	size_t i;
 
 	for(i = 0; i < m_cCacheSize; i++) {
 		if(m_cCache[i].hContact == hContact) {
@@ -743,175 +757,26 @@ CContactCache* CGlobals::getContactCache(const HANDLE hContact)
 	m_cCache[m_cCacheSize].hContact = hContact;
 	m_cCache[m_cCacheSize++].c = c;
 	if(m_cCacheSize == m_cCacheSizeAlloced) {
-		m_cCacheSizeAlloced += 10;
+		m_cCacheSizeAlloced += 50;
 		m_cCache = (TCCache *)realloc(m_cCache, m_cCacheSizeAlloced * sizeof(TCCache));
 	}
 	return(c);
 }
 
-CContactCache::CContactCache(const HANDLE hContact)
-{
-	PROTOACCOUNT*	acc = 0;
-
-	m_hContact = hContact;
-	m_hSubContact = 0;
-	m_szProto = m_szMetaProto = 0;
-	m_szAccount = 0;
-	m_wOldStatus = m_wStatus = m_wMetaStatus = ID_STATUS_OFFLINE;
-	m_idleTS = 0;
-	m_Valid = false;
-	m_szUIN[0] = 0;
-	m_stats = 0;
-	m_accessCount = 0;
-
-	if(hContact) {
-		m_szProto = reinterpret_cast<char *>(::CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)m_hContact, 0));
-		acc = reinterpret_cast<PROTOACCOUNT *>(::CallService(MS_PROTO_GETACCOUNT, (WPARAM)0, (LPARAM)m_szProto));
-		if(acc && acc->tszAccountName)
-			m_szAccount = acc->tszAccountName;
-
-		m_Valid = (m_szProto != 0 && m_szAccount != 0) ? true : false;
-		if(m_Valid) {
-			m_isMeta = (PluginConfig.g_MetaContactsAvail && !strcmp(m_szProto, PluginConfig.szMetaName)) ? true : false;
-			if(m_isMeta)
-				updateMeta();
-			updateState();
-		}
-		else {
-			m_szProto = C_INVALID_PROTO;
-			m_szAccount = C_INVALID_ACCOUNT;
-			m_isMeta = false;
-		}
-	}
-}
-
-void CContactCache::updateState()
-{
-	updateNick();
-	updateStatus();
-}
-
 /**
- * update private copy of the nick name. Use contact list name cache
+ * when the state of the meta contacts protocol changes from enabled to disabled
+ * (or vice versa), this updates the contact cache
+ *
+ * it is ONLY called from the DBSettingChanged() event handler when the relevant
+ * database value is touched.
  */
-void CContactCache::updateNick()
+void CGlobals::cacheUpdateMetaChanged()
 {
-	if(m_Valid) {
-		TCHAR	*tszNick = reinterpret_cast<TCHAR *>(::CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)m_hContact, GCDNF_TCHAR));
-		mir_sntprintf(m_szNick, 80, _T("%s"), tszNick ? tszNick : _T("<undef>"));
-	}
-}
+	size_t 			i;
+	CContactCache* 	c;
 
-/**
- * update status mode
- * @return	bool: true if status mode has changed, false if not.
- */
-bool CContactCache::updateStatus()
-{
-	if(m_Valid) {
-		m_wOldStatus = m_wStatus;
-		m_wStatus = (WORD)DBGetContactSettingWord(m_hContact, m_szProto, "Status", ID_STATUS_OFFLINE);
+	for(i = 0; i < m_cCacheSize; i++) {
+		c = m_cCache[i].c;
 
-		return(m_wOldStatus != m_wStatus);
-	}
-	else
-		return(false);
-}
-
-/**
- * update meta (subcontact and -protocol) status. This runs when the
- * MC protocol fires one of its events OR when a relevant database value changes
- * in the master contact.
- */
-void CContactCache::updateMeta()
-{
-	if(m_Valid) {
-		m_hSubContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)m_hContact, 0);
-		if (m_hSubContact) {
-			m_szMetaProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)m_hSubContact, 0);
-			if (m_szMetaProto) {
-				PROTOACCOUNT *acc = reinterpret_cast<PROTOACCOUNT *>(::CallService(MS_PROTO_GETACCOUNT, (WPARAM)0, (LPARAM)m_szMetaProto));
-				if(acc && acc->tszAccountName)
-					m_szAccount = acc->tszAccountName;
-				m_wMetaStatus = DBGetContactSettingWord(m_hSubContact, m_szMetaProto, "Status", ID_STATUS_OFFLINE);
-			}
-			else
-				m_wMetaStatus = ID_STATUS_OFFLINE;
-		}
-	}
-}
-
-/**
- * obtain the UIN. This is only maintained for open message windows
- * it also run when the subcontact for a MC changes.
- */
-void CContactCache::updateUIN()
-{
-	if(m_Valid) {
-		CONTACTINFO ci;
-		ZeroMemory((void *)&ci, sizeof(ci));
-
-		ci.hContact = getActiveContact();
-		ci.szProto = const_cast<char *>(getActiveProto());
-		ci.cbSize = sizeof(ci);
-
-		ci.dwFlag = CNF_DISPLAYUID | CNF_TCHAR;
-		if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
-			switch (ci.type) {
-				case CNFT_ASCIIZ:
-					mir_sntprintf(m_szUIN, safe_sizeof(m_szUIN), _T("%s"), reinterpret_cast<TCHAR *>(ci.pszVal));
-					mir_free((void *)ci.pszVal);
-					break;
-				case CNFT_DWORD:
-					mir_sntprintf(m_szUIN, safe_sizeof(m_szUIN), _T("%u"), ci.dVal);
-					break;
-				default:
-					m_szUIN[0] = 0;
-					break;
-			}
-		} else
-			m_szUIN[0] = 0;
-	}
-	else
-		m_szUIN[0] = 0;
-}
-
-void CContactCache::updateStats(int iType, size_t value)
-{
-	if(m_stats == 0)
-		allocStats();
-
-	switch(iType) {
-		case TSessionStats::UPDATE_WITH_LAST_RCV:
-			if(m_stats->lastReceivedChars) {
-				m_stats->iReceived++;
-				m_stats->messageCount++;
-			}
-			else
-				return;
-			m_stats->iReceivedBytes += m_stats->lastReceivedChars;
-			m_stats->lastReceivedChars = 0;
-			break;
-		case TSessionStats::INIT_TIMER:
-			m_stats->started = time(0);
-			return;
-		case TSessionStats::SET_LAST_RCV:
-			m_stats->lastReceivedChars = (unsigned int)value;
-			return;
-		case TSessionStats::BYTES_SENT:
-			m_stats->iSent++;
-			m_stats->messageCount++;
-			m_stats->iSentBytes += (unsigned int)value;
-			break;
-	}
-	//_DebugTraceW(_T("%s stats dump: %d (%d bytes) in, %d (%d bytes) out, total count: %d"), m_szNick, m_stats->iReceived, m_stats->iReceivedBytes,
-	//			 m_stats->iSent, m_stats->iSentBytes, m_stats->messageCount);
-}
-
-void CContactCache::allocStats()
-{
-	if(m_stats == 0) {
-		m_stats = new TSessionStats;
-		::ZeroMemory(m_stats, sizeof(TSessionStats));
 	}
 }

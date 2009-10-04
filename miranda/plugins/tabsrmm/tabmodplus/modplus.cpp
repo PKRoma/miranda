@@ -151,7 +151,7 @@ static int RegisterCustomButton(WPARAM wParam,LPARAM lParam)
 		bbd.bbbFlags = BBBF_ISIMBUTTON|BBBF_ISLSIDEBUTTON|BBBF_ISPUSHBUTTON;
 		bbd.dwButtonID = 1;
 		bbd.dwDefPos =200;
-		bbd.hIcon = (HANDLE)PluginConfig.g_buttonBarIcons[3];
+		bbd.hIcon = PluginConfig.g_buttonBarIconHandles[3];
 		bbd.pszModuleName = (char *)"Tabmodplus";
 		bbd.ptszTooltip = (TCHAR *)_T("Insert [img] tag / surround selected text with [img][/img]");
 

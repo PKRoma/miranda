@@ -160,7 +160,7 @@ entry_found:
 
 	HWND	hwndDlg = dat->hwnd;
 
-	::SaveInputHistory(hwndDlg, dat, 0, 0);
+	dat->cache->saveHistory(0, 0);
 	::SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
 	::EnableSendButton(dat, FALSE);
 	::SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
@@ -916,7 +916,7 @@ int SendQueue::sendLater(int iJobIndex, _MessageWindowData *dat, HANDLE hContact
 		StreamInEvents(dat->hwnd,  0, 1, 1, &dbei);
 		if (dat->hDbEventFirst == NULL)
 			SendMessage(dat->hwnd, DM_REMAKELOG, 0, 0);
-		SaveInputHistory(dat->hwnd, dat, 0, 0);
+		dat->cache->saveHistory(0, 0);
 		EnableSendButton(dat, FALSE);
 		if (dat->pContainer->hwndActive == dat->hwnd)
 			UpdateReadChars(dat);

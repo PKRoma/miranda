@@ -129,8 +129,6 @@ typedef struct _settextex {
 #define MSGERROR_RETRY	    1
 #define MSGERROR_SENDLATER  2
 
-#define HISTORY_INITIAL_ALLOCSIZE 300
-
 #define CONTAINER_NAMELEN 25
 #define TITLE_FORMATLEN 50
 
@@ -367,8 +365,6 @@ struct _MessageWindowData {
 	BOOL    fMustOffset;
 	UINT    uMinHeight;
 	BOOL    isHistory;
-	struct  InputHistory *history;
-	int     iHistoryCurrent, iHistoryTop, iHistorySize;
 	int     doSmileys;
 	UINT    codePage;
 	HICON   hSmileyIcon;
@@ -463,11 +459,6 @@ typedef struct _tag_ICONDESCW {
 	INT_PTR uId;           // icon ID
 	BOOL    bForceSmall;   // true: force 16x16
 } ICONDESCW;
-
-struct InputHistory {
-	TCHAR   *szText;
-	int     lLen;
-};
 
 // menu IDS
 
@@ -631,7 +622,7 @@ struct NewMessageWindowLParam {
 #define DM_CHECKAUTOCLOSE    (WM_USER+66)
 #define DM_UPDATEMETACONTACTINFO (WM_USER+67)
 #define DM_SETICON           (WM_USER+68)
-//#define DM_MULTISENDTHREADCOMPLETE (WM_USER+69)
+#define DM_CLOSEIFMETA		 (WM_USER+69)
 #define DM_CHECKQUEUEFORCLOSE (WM_USER+70)
 #define DM_QUERYSTATUS       (WM_USER+71)
 #define DM_SETPARENTDIALOG   (WM_USER+72)

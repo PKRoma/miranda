@@ -36,9 +36,6 @@
 #ifndef __GLOBALS_H
 #define __GLOBALS_H
 
-#define C_INVALID_PROTO "<proto error>"
-#define C_INVALID_ACCOUNT _T("<account error>")
-
 struct TSplitterBroadCast {
 	ContainerWindowData *pSrcContainer;
 	_MessageWindowData  *pSrcDat;
@@ -46,85 +43,6 @@ struct TSplitterBroadCast {
 	LONG				off_chat, off_im;
 	LPARAM				lParam;
 	BYTE				bSync;
-};
-
-struct TSessionStats {
-	enum {
-		BYTES_RECEIVED 		= 1,
-		BYTES_SENT 			= 2,
-		FAILURE				= 3,
-		UPDATE_WITH_LAST_RCV= 4,
-		SET_LAST_RCV		= 5,
-		INIT_TIMER			= 6,
-	};
-
-	time_t 			started;
-	unsigned int 	iSent, iReceived, iSentBytes, iReceivedBytes;
-	unsigned int	messageCount;
-	unsigned int 	iFailures;
-	unsigned int 	lastReceivedChars;
-	BOOL 			bWritten;
-};
-
-class CContactCache {
-public:
-
-	CContactCache									() {}
-	CContactCache									(const HANDLE hContact);
-	~CContactCache									()
-	{
-		if(m_stats)
-			delete m_stats;
-	}
-	void	inc										()
-	{
-		m_accessCount++;
-	}
-	const	WORD			getStatus				() const { return(m_wStatus); }
-	const	WORD			getMetaStatus			() const { return(m_wMetaStatus); }
-	const	WORD			getActiveStatus			() const { return(m_isMeta ? m_wMetaStatus : m_wStatus); }
-	const	WORD			getOldStatus			() const { return(m_wOldStatus); }
-	const	TCHAR*			getNick					() const { return(m_szNick); }
-	const	HANDLE			getContact				() const { return(m_hContact); }
-	const	HANDLE			getActiveContact		() const { return(m_isMeta ? (m_hSubContact ? m_hSubContact : m_hContact) : m_hContact); }
-	const	DWORD			getIdleTS				() const { return(m_idleTS); }
-	const	char*			getProto				() const { return(m_szProto); }
-	const	char*			getMetaProto			() const { return(m_szMetaProto ? m_szMetaProto : C_INVALID_PROTO); }
-	const	char*			getActiveProto			() const { return(m_isMeta ? (m_szMetaProto ? m_szMetaProto : m_szProto) : m_szProto); }
-	bool					isMeta					() const { return(m_isMeta); }
-	const TCHAR*			getRealAccount			() const { return(m_szAccount ? m_szAccount : C_INVALID_ACCOUNT); }
-	const TCHAR*			getUIN					() const { return(m_szUIN); }
-
-	void					updateStats				(int iType, size_t value = 0);
-	const DWORD				getSessionStart			() const { return(m_stats->started); }
-	const int				getSessionMsgCount		() const { return((int)m_stats->messageCount) ; }
-	void					updateState				();
-	bool					updateStatus			();
-	void					updateNick				();
-	void					updateMeta				();
-	void					updateUIN				();
-
-private:
-	void					allocStats				();
-
-private:
-	size_t			m_accessCount;
-	HANDLE			m_hContact;
-	HANDLE			m_hSubContact;
-	WORD			m_wStatus, m_wMetaStatus;
-	WORD			m_wOldStatus;
-	char*			m_szProto, *m_szMetaProto;
-	TCHAR*			m_szAccount;
-	TCHAR			m_szNick[80], m_szUIN[80];
-	DWORD			m_idleTS;
-	bool			m_isMeta;
-	bool			m_Valid;
-	TSessionStats* 	m_stats;
-};
-
-struct TCCache {
-	HANDLE			hContact;
-	CContactCache 	*c;
 };
 
 typedef BOOL (WINAPI *pfnSetMenuInfo )( HMENU hmenu, LPCMENUINFO lpcmi );
@@ -151,7 +69,7 @@ public:
 	CGlobals()
 	{
 		::ZeroMemory(this, sizeof(CGlobals));
-		m_cCacheSizeAlloced = 10;
+		m_cCacheSizeAlloced = 200;
 		m_cCacheSize = 0;
 		m_cCache = (TCCache *)malloc(sizeof(TCCache) * m_cCacheSizeAlloced);
 		::ZeroMemory(m_cCache, sizeof(TCCache) * m_cCacheSizeAlloced);
@@ -247,7 +165,6 @@ public:
 	DWORD       m_GlobalContainerFlags, m_GlobalContainerFlagsEx;
 	DWORD       m_GlobalContainerTrans;
 	WINDOWPLACEMENT m_GlobalContainerWpos;
-	HANDLE      hLastOpenedContact;
 	int         m_IdleDetect;
 	int         m_smcxicon, m_smcyicon;
 	DWORD       local_gmt_diff;
@@ -267,6 +184,7 @@ public:
 	int         rtf_ctablesize;
 	DWORD       dwThreadID;
 	char        szMetaName[256];
+	BYTE		bMetaEnabled;
 	HANDLE 		m_hMessageWindowList, hUserPrefsWindowList;
 	bool		m_chat_enabled;
 	HMENU		m_MenuBar;
@@ -281,6 +199,7 @@ public:
 	TSplitterBroadCast lastSPlitterPos;
 	static HANDLE		m_event_FoldersChanged;
 	static  CContactCache*	getContactCache(const HANDLE hContact);
+	static	void			cacheUpdateMetaChanged();
 
 private:
 	bool				m_TypingSoundAdded;

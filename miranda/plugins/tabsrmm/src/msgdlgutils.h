@@ -54,7 +54,6 @@ void	TSAPI FlashOnClist					(HWND hwndDlg, _MessageWindowData *dat, HANDLE hEven
 char*	TSAPI Message_GetFromStream			(HWND hwndDlg, const _MessageWindowData* dat, DWORD dwPassedFlags);
 BOOL	TSAPI DoRtfToTags					(TCHAR * pszText, const _MessageWindowData *dat);
 void	TSAPI DoTrimMessage					(TCHAR *msg);
-void	TSAPI SaveInputHistory				(HWND hwndDlg, _MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
 void	TSAPI GetMYUIN						(_MessageWindowData *dat);
 void	TSAPI SetMessageLog					(_MessageWindowData *dat);
 void	TSAPI SwitchMessageLog				(_MessageWindowData *dat, int iMode);

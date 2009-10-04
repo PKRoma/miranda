@@ -32,10 +32,7 @@
  *
  */
 
-#define __CPP_LEAN
-
 #include "commonheaders.h"
-
 #include <string>
 
 #define MWF_LOG_BBCODE 1
@@ -347,19 +344,11 @@ const TCHAR *NewTitle(const _MessageWindowData *dat, const TCHAR *szFormat)
 				break;
 			}
 			case 'o': {
-				const char	*szProto = dat->cache->getActiveProto();
-				if (szProto) {
-#if defined(_UNICODE)
-					MultiByteToWideChar(CP_ACP, 0, szProto, -1, szTemp, 500);
-					title.insert(tempmark + 2, szTemp);
-#else
-					_snprintf(szTemp, 512, "%s", szProto);
-					szTemp[511] = 0;
-					title.insert(tempmark + 2, szTemp);
-#endif
-				}
+				const TCHAR* szProto = dat->cache->getActiveProtoT();
+				if (szProto)
+					title.insert(tempmark + 2, szProto);
 				title.erase(tempmark, 2);
-				curpos = tempmark + lstrlen(szTemp);
+				curpos = tempmark + (szProto ? lstrlen(szProto) : 0);
 				break;
 			}
 			case 'x': {

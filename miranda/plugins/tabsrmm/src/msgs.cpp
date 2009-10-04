@@ -35,29 +35,22 @@
 
 #include "commonheaders.h"
 #pragma hdrstop
-#include "sendqueue.h"
 
-REOLECallback *mREOLECallback;
-
-NEN_OPTIONS nen_options;
+REOLECallback*		mREOLECallback;
+NEN_OPTIONS 		nen_options;
 extern PLUGININFOEX pluginInfo;
-//mad
-extern	BOOL newapi;
-extern	HANDLE hHookToolBarLoadedEvt;
-//
+extern HANDLE 		hHookToolBarLoadedEvt;
+static HANDLE 		hUserPrefsWindowLis = 0;
+HMODULE 			g_hIconDLL = 0;
 
 static void 	UnloadIcons();
 
-static HANDLE hUserPrefsWindowLis = 0;
-
-extern      INT_PTR CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern      struct MsgLogIcon msgLogIcons[NR_LOGICONS * 3];
-extern      struct RTFColorTable *rtf_ctable;
-extern		const TCHAR *DoubleAmpersands(TCHAR *pszText);
-extern 		int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
-extern		void DeleteCachedIcon(struct MsgLogIcon *theIcon);
-
-HMODULE g_hIconDLL = 0;
+extern INT_PTR 	CALLBACK 		DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern struct 	MsgLogIcon 		msgLogIcons[NR_LOGICONS * 3];
+extern struct 	RTFColorTable*	rtf_ctable;
+extern const  	TCHAR*			DoubleAmpersands(TCHAR *pszText);
+extern int 		CacheIconToBMP	(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
+extern void 	DeleteCachedIcon(struct MsgLogIcon *theIcon);
 
 int     Chat_IconsChanged(WPARAM wp, LPARAM lp);
 void    Chat_AddIcons(void);
@@ -335,17 +328,7 @@ INT_PTR SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 		ActivateExistingTab(pContainer, hwnd);
 	} else {
 		TCHAR szName[CONTAINER_NAMELEN + 1];
-		/*
-		 * attempt to fix "double tabs" opened by MS_MSG_SENDMESSAGE
-		 * strange problem, maybe related to the window list service in miranda?
-		 */
-		if (M->GetByte("trayfix", 0)) {
-			if (PluginConfig.hLastOpenedContact == (HANDLE)wParam) {
-				//LeaveCriticalSection(&cs_sessions);
-				return 0;
-			}
-		}
-		PluginConfig.hLastOpenedContact = (HANDLE)wParam;
+
 		GetContainerNameForContact((HANDLE) wParam, szName, CONTAINER_NAMELEN);
 		pContainer = FindContainerByName(szName);
 		if (pContainer == NULL)
@@ -398,8 +381,7 @@ INT_PTR SendMessageCommand(WPARAM wParam, LPARAM lParam)
 
 	if (hwnd = M->FindWindow((HANDLE) wParam)) {
 		if (lParam) {
-			HWND hEdit;
-			hEdit = GetDlgItem(hwnd, IDC_MESSAGE);
+			HWND hEdit = GetDlgItem(hwnd, IDC_MESSAGE);
 			SendMessage(hEdit, EM_SETSEL, -1, SendMessage(hEdit, WM_GETTEXTLENGTH, 0, 0));
 			SendMessageA(hEdit, EM_REPLACESEL, FALSE, (LPARAM)(char *) lParam);
 		}
@@ -407,17 +389,6 @@ INT_PTR SendMessageCommand(WPARAM wParam, LPARAM lParam)
 		ActivateExistingTab(pContainer, hwnd);
 	} else {
 		TCHAR szName[CONTAINER_NAMELEN + 1];
-		/*
-		 * attempt to fix "double tabs" opened by MS_MSG_SENDMESSAGE
-		 * strange problem, maybe related to the window list service in miranda?
-		 */
-		if (M->GetByte("trayfix", 0)) {
-			if (PluginConfig.hLastOpenedContact == (HANDLE)wParam) {
-				//LeaveCriticalSection(&cs_sessions);
-				return 0;
-			}
-		}
-		PluginConfig.hLastOpenedContact = (HANDLE)wParam;
 		GetContainerNameForContact((HANDLE) wParam, szName, CONTAINER_NAMELEN);
 		pContainer = FindContainerByName(szName);
 		if (pContainer == NULL)
@@ -623,7 +594,7 @@ int LoadSendRecvMessageModule(void)
 	}
 tzdone:
 
-	LoadLibrary(_T("riched20"));
+	LoadLibraryA("riched20");
 	OleInitialize(NULL);
 	mREOLECallback = new REOLECallback;
 	ZeroMemory((void *)&nen_options, sizeof(nen_options));

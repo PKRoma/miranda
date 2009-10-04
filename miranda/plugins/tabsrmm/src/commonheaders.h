@@ -189,15 +189,14 @@ extern struct LIST_INTERFACE li;
 
 #include "msgs.h"
 #include "msgdlgutils.h"
-#ifndef __CPP_LEAN
 #include "typingnotify.h"
 #include "generic_msghandlers.h"
-#endif
 #include "nen.h"
 extern 	NEN_OPTIONS	nen_options;
 #include "functions.h"
 #include "../chat/chat.h"
 
+#include "contactcache.h"
 #include "translator.h"
 #include "themes.h"
 #include "globals.h"

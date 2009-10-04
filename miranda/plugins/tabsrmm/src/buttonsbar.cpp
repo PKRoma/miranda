@@ -232,7 +232,6 @@ void CB_ReInitCustomButtons()
 
 	for (i = 0; i < RButtonsList->realCount; i++) {
 		CustomButtonData* cbd = (CustomButtonData *)RButtonsList->items[i];
-		//GetButtonSettings(NULL,cbd);
 		if (cbd->opFlags&BBSF_NTBSWAPED || cbd->opFlags&BBSF_NTBDESTRUCT) {
 			cbd->opFlags ^= BBSF_NTBSWAPED;
 

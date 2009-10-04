@@ -874,45 +874,9 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 
 			if (isCtrl && !isAlt && !isShift) {
 				if (!isShift && (wParam == VK_UP || wParam == VK_DOWN)) {          // input history scrolling (ctrl-up / down)
-					SETTEXTEX stx = {ST_DEFAULT, CP_UTF8};
-
 					SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
-					if (mwdat) {
-						if (mwdat->history != NULL && mwdat->history[0].szText != NULL) {     // at least one entry needs to be alloced, otherwise we get a nice infinite loop ;)
-							if (mwdat->dwFlags & MWF_NEEDHISTORYSAVE) {
-								mwdat->iHistoryCurrent = mwdat->iHistoryTop;
-								if (GetWindowTextLengthA(hwnd) > 0)
-									SaveInputHistory(hwndParent, mwdat, (WPARAM)mwdat->iHistorySize, 0);
-								else
-									mwdat->history[mwdat->iHistorySize].szText[0] = (TCHAR)'\0';
-							}
-							if (wParam == VK_UP) {
-								if (mwdat->iHistoryCurrent == 0)
-									break;
-								mwdat->iHistoryCurrent--;
-							} else {
-								mwdat->iHistoryCurrent++;
-								if (mwdat->iHistoryCurrent > mwdat->iHistoryTop)
-									mwdat->iHistoryCurrent = mwdat->iHistoryTop;
-							}
-							if (mwdat->iHistoryCurrent == mwdat->iHistoryTop) {
-								if (mwdat->history[mwdat->iHistorySize].szText != NULL) {           // replace the temp buffer
-									SetWindowText(hwnd, _T(""));
-									SendMessage(hwnd, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM) mwdat->history[mwdat->iHistorySize].szText);
-									SendMessage(hwnd, EM_SETSEL, (WPARAM) - 1, (LPARAM) - 1);
-								}
-							} else {
-								if (mwdat->history[mwdat->iHistoryCurrent].szText != NULL) {
-									SetWindowText(hwnd, _T(""));
-									SendMessage(hwnd, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM) mwdat->history[mwdat->iHistoryCurrent].szText);
-									SendMessage(hwnd, EM_SETSEL, (WPARAM) - 1, (LPARAM) - 1);
-								} else
-									SetWindowText(hwnd, _T(""));
-							}
-							SendMessage(hwndParent, WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hwnd), EN_CHANGE), (LPARAM) hwnd);
-							mwdat->dwFlags &= ~MWF_NEEDHISTORYSAVE;
-						}
-					}
+					if (mwdat)
+						mwdat->cache->inputHistoryEvent(wParam);
 					return 0;
 				}
 			}
@@ -995,15 +959,13 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 		case WM_SETFOCUS:
 		case WM_KILLFOCUS:
 			break;
-		case WM_INPUTLANGCHANGEREQUEST: {
+		case WM_INPUTLANGCHANGEREQUEST:
 			return CallWindowProc(OldMessageEditProc, hwnd, WM_INPUTLANGCHANGEREQUEST, wParam, lParam);
-		}
 		case WM_INPUTLANGCHANGE:
 			if (PluginConfig.m_AutoLocaleSupport && GetFocus() == hwnd && mwdat->pContainer->hwndActive == hwndParent && GetForegroundWindow() == mwdat->pContainer->hwnd && GetActiveWindow() == mwdat->pContainer->hwnd) {
 				DM_SaveLocale(mwdat, wParam, lParam);
 				SendMessage(hwnd, EM_SETLANGOPTIONS, 0, (LPARAM) SendMessage(hwnd, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
 			}
-			//return CallWindowProc(OldMessageEditProc, hwnd, WM_INPUTLANGCHANGE, wParam, lParam);
 			return 1;
 
 		case WM_ERASEBKGND: {
@@ -1525,7 +1487,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			dat->cache = CGlobals::getContactCache(dat->hContact);
 			dat->cache->updateState();
-
+			dat->cache->setWindowData(hwndDlg, dat);
 			M->AddWindow(hwndDlg, dat->hContact);
 			BroadCastContainer(m_pContainer, DM_REFRESHTABINDEX, 0, 0);
 			dat->szProto = const_cast<char *>(dat->cache->getProto());
@@ -1555,19 +1517,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			dat->rtl_templates = &RTL_Active;
 			// input history stuff (initialise it..)
 
-			dat->iHistorySize = M->GetByte("historysize", 15);
-			if (dat->iHistorySize < 10)
-				dat->iHistorySize = 10;
-			dat->history = (InputHistory *)malloc(sizeof(InputHistory) * (dat->iHistorySize + 1));
-			dat->iHistoryCurrent = 0;
-			dat->iHistoryTop = 0;
-			if (dat->history)
-				ZeroMemory(dat->history, sizeof(InputHistory) * dat->iHistorySize);
 			dat->hQueuedEvents = (HANDLE *)malloc(sizeof(HANDLE) * EVENT_QUEUE_SIZE);
 			dat->iEventQueueSize = EVENT_QUEUE_SIZE;
 			dat->iCurrentQueueError = -1;
-			dat->history[dat->iHistorySize].szText = (TCHAR *)malloc((HISTORY_INITIAL_ALLOCSIZE + 1) * sizeof(TCHAR));
-			dat->history[dat->iHistorySize].lLen = HISTORY_INITIAL_ALLOCSIZE;
 
 			/*
 			 * message history limit
@@ -2031,7 +1983,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			if(dat->hwndPanelPic || dat->hwndFlash) {
 				SetWindowPos(dat->hwndPanelPicParent, HWND_TOP, rc.left - 2, rc.top, rc.right - rc.left, (rc.bottom - rc.top) + 1,
 							 0);
-				ShowWindow(dat->hwndPanelPicParent, dat->panelWidth == -1 ? SW_HIDE : SW_SHOW);
+				ShowWindow(dat->hwndPanelPicParent, (dat->panelWidth == -1) || !dat->Panel->isActive() ? SW_HIDE : SW_SHOW);
 			}
 
 			dat->rcPic = rc;
@@ -4608,15 +4560,6 @@ quote_from_last:
 				free(dat->hHistoryEvents);
 			{
 				int i;
-				// input history stuff (free everything)
-				if (dat->history) {
-					for (i = 0; i <= dat->iHistorySize; i++) {
-						if (dat->history[i].szText != NULL) {
-							free(dat->history[i].szText);
-						}
-					}
-					free(dat->history);
-				}
 				/*
 				 * search the sendqueue for unfinished send jobs and free them. Leave unsent
 				 * messages in the queue as they can be acked later
@@ -4705,9 +4648,6 @@ quote_from_last:
 			}
 			TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE, 0);
 
-			if (dat->hContact == PluginConfig.hLastOpenedContact)
-				PluginConfig.hLastOpenedContact = 0;
-
 			/*
 			 * clean up IEView and H++ log windows
 			 */
@@ -4745,6 +4685,7 @@ quote_from_last:
 				PostMessage(dat->pContainer->hwnd, WM_SIZE, 0, 1);
 				if(m_pContainer->dwFlags & CNT_SIDEBAR)
 					m_pContainer->SideBar->removeSession(dat);
+				dat->cache->setWindowData();
 				delete dat->Panel;
 				free(dat);
 			}

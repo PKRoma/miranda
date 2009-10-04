@@ -1401,62 +1401,6 @@ void TSAPI DoTrimMessage(TCHAR *msg)
 }
 
 /*
- * saves message to the input history.
- * its using streamout in UTF8 format - no unicode "issues" and all RTF formatting is saved aswell,
- * so restoring a message from the input history will also restore its formatting
- */
-
-void TSAPI SaveInputHistory(HWND hwndDlg, _MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
-{
-	int iLength = 0, iStreamLength = 0;
-	int oldTop = 0;
-	char *szFromStream = NULL;
-
-	if (wParam) {
-		oldTop = dat->iHistoryTop;
-		dat->iHistoryTop = (int)wParam;
-	}
-
-	szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, (CP_UTF8 << 16) | (SF_RTFNOOBJS | SFF_PLAINRTF | SF_USECODEPAGE));
-
-	iLength = iStreamLength = (lstrlenA(szFromStream) + 1);
-
-	if (iLength > 0 && dat->history != NULL) {
-		if ((dat->iHistoryTop == dat->iHistorySize) && oldTop == 0) {         // shift the stack down...
-			struct InputHistory ihTemp = dat->history[0];
-			dat->iHistoryTop--;
-			MoveMemory((void *)&dat->history[0], (void *)&dat->history[1], (dat->iHistorySize - 1) * sizeof(struct InputHistory));
-			dat->history[dat->iHistoryTop] = ihTemp;
-		}
-		if (iLength > dat->history[dat->iHistoryTop].lLen) {
-			if (dat->history[dat->iHistoryTop].szText == NULL) {
-				if (iLength < HISTORY_INITIAL_ALLOCSIZE)
-					iLength = HISTORY_INITIAL_ALLOCSIZE;
-				dat->history[dat->iHistoryTop].szText = (TCHAR *)malloc(iLength);
-				dat->history[dat->iHistoryTop].lLen = iLength;
-			} else {
-				if (iLength > dat->history[dat->iHistoryTop].lLen) {
-					dat->history[dat->iHistoryTop].szText = (TCHAR *)realloc(dat->history[dat->iHistoryTop].szText, iLength);
-					dat->history[dat->iHistoryTop].lLen = iLength;
-				}
-			}
-		}
-		CopyMemory(dat->history[dat->iHistoryTop].szText, szFromStream, iStreamLength);
-		if (!oldTop) {
-			if (dat->iHistoryTop < dat->iHistorySize) {
-				dat->iHistoryTop++;
-				dat->iHistoryCurrent = dat->iHistoryTop;
-			}
-		}
-	}
-	if (szFromStream)
-		free(szFromStream);
-
-	if (oldTop)
-		dat->iHistoryTop = oldTop;
-}
-
-/*
  * retrieve both buddys and my own UIN for a message session and store them in the message window *dat
  * respects metacontacts and uses the current protocol if the contact is a MC
  */

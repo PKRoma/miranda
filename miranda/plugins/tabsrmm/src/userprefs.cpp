@@ -224,6 +224,8 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				mtzp.hWnd = GetDlgItem(hwndDlg, IDC_TIMEZONE);
 				mtzp.dwFlags = MIM_TZ_PLF_CB;
 				CallService(MS_TZ_PREPARELIST, (WPARAM)0, (LPARAM)&mtzp);
+				if(SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_GETCURSEL, 0, 0) == CB_ERR)
+					SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_SETCURSEL, 0, 0);
 			}
 			else {
 				SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_ADDSTRING, 0, (LPARAM)CTranslator::getOpt(CTranslator::OPT_UPREFS_NOTZSVC));
