@@ -109,6 +109,14 @@ void CIcqProto::handleExtensionError(BYTE *buf, WORD wPackLen)
 
 							NetLog_Server("Full info request error 0x%02x received", wErrorCode);
 						}
+            else if (wSubType == META_SET_PASSWORD_REQ)
+            { // failed to change user password, report to UI
+              BroadcastAck(NULL, ACKTYPE_SETINFO, ACKRESULT_FAILED, (HANDLE)wCookie, 0);
+
+              NetLog_Server("Meta change password request failed, error 0x%02x", wErrorCode);
+            }
+            else
+              NetLog_Server("Meta request error 0x%02x received", wErrorCode);
 					}
 					else 
 						NetLog_Server("Meta request error 0x%02x received", wErrorCode);
