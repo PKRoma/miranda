@@ -355,7 +355,7 @@ INT_PTR NetlibShutdown(WPARAM wParam, LPARAM)
 			case NLH_CONNECTION:
 				{
 					struct NetlibConnection* nlc = (struct NetlibConnection*)wParam;
-		            si.shutdown(nlc->hSsl);
+            		if (nlc->hSsl) si.shutdown(nlc->hSsl);
                     s = nlc->s;
 				}
 				break;
