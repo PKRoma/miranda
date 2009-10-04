@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 #include "statusicon.h"
+#include "infobar.h"
 
 #define TIMERID_MSGSEND      0
 #define TIMERID_FLASHWND     1
@@ -269,9 +270,9 @@ static void SetDialogToType(HWND hwndDlg)
 	ParentWindowData *pdat = dat->parent;
 
 	if (pdat->flags2 & SMF2_SHOWINFOBAR) {
-		ShowWindow(GetDlgItem(hwndDlg, IDC_INFOBAR), SW_SHOW);
+		ShowWindow(dat->infobarData->hWnd, SW_SHOW);
 	} else {
-		ShowWindow(GetDlgItem(hwndDlg, IDC_INFOBAR), SW_HIDE);
+		ShowWindow(dat->infobarData->hWnd, SW_HIDE);
 	}
 	if (dat->windowData.hContact) {
 		ShowToolbarControls(hwndDlg, SIZEOF(buttonControls), buttonControls, g_dat->buttonVisibility, showToolbar ? SW_SHOW : SW_HIDE);
@@ -637,7 +638,7 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 	logY = infobarHeight;
 	logH = h-hSplitterPos-toolbarHeight - infobarHeight;
 	hdwp = BeginDeferWindowPos(15);
-	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_INFOBAR), 0, 0, 0, w, infobarHeight, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, dat->infobarData->hWnd, 0, 0, 0, w, infobarHeight, SWP_NOZORDER);
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_LOG), 0, 0, logY, w, logH, SWP_NOZORDER);
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, h - hSplitterPos + SPLITTER_HEIGHT + 1, w - avatarWidth, hSplitterPos - SPLITTER_HEIGHT, SWP_NOZORDER);
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_AVATAR), 0, w-avatarWidth + 1, h - (avatarHeight + avatarWidth) / 2 + 1, avatarWidth - 1, avatarWidth - 1, SWP_NOZORDER);
@@ -681,7 +682,11 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 		RedrawWindow(GetDlgItem(hwndDlg, IDC_LOG), NULL, NULL, RDW_INVALIDATE);
 	}
 	RedrawWindow(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, NULL, RDW_INVALIDATE);
-	RedrawWindow(GetDlgItem(hwndDlg, IDC_INFOBAR), NULL, NULL, RDW_INVALIDATE);
+	
+	SendMessage(dat->infobarData->hWnd, WM_SIZE, 0, 0);
+	RedrawWindow(dat->infobarData->hWnd, NULL, NULL, RDW_INVALIDATE);
+	RedrawWindow(GetDlgItem(dat->infobarData->hWnd, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
+
 	RedrawWindow(GetDlgItem(hwndDlg, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
 }
 
@@ -703,7 +708,11 @@ static void UpdateReadChars(HWND hwndDlg, struct MessageWindowData * dat)
 void ShowAvatar(HWND hwndDlg, struct MessageWindowData *dat) {
 	dat->avatarPic = (dat->ace != NULL && (dat->ace->dwFlags & AVS_HIDEONCLIST) == 0) ? dat->ace->hbmPic : NULL;
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
-	RedrawWindow(GetDlgItem(hwndDlg, IDC_INFOBAR), NULL, NULL, RDW_INVALIDATE);
+	
+	SendMessage(dat->infobarData->hWnd, WM_SIZE, 0, 0);
+	RedrawWindow(dat->infobarData->hWnd, NULL, NULL, RDW_INVALIDATE);
+	RedrawWindow(GetDlgItem(dat->infobarData->hWnd, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
+	
 	RedrawWindow(GetDlgItem(hwndDlg, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
 }
 
@@ -930,12 +939,12 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETLANGOPTIONS, 0, (LPARAM) SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETLANGOPTIONS, 0, 0) & ~(IMF_AUTOKEYBOARD | IMF_AUTOFONTSIZEADJUST));
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(0,0));
+			/* duh, how come we didnt use this from the start? */
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
 
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETLANGOPTIONS, 0, (LPARAM) SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback2);
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_KEYEVENTS | ENM_CHANGE | ENM_REQUESTRESIZE);
-			/* duh, how come we didnt use this from the start? */
 			if (dat->windowData.hContact) {
 				if (dat->szProto) {
 					int nMax;
@@ -949,7 +958,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			SubclassLogEdit(GetDlgItem(hwndDlg, IDC_LOG));
 			SubclassMessageEdit(GetDlgItem(hwndDlg, IDC_MESSAGE));
 			OldSplitterProc = (WNDPROC) SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWLP_WNDPROC, (LONG_PTR) SplitterSubclassProc);
-			OldInfobarProc = (WNDPROC) SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_INFOBAR), GWLP_WNDPROC, (LONG_PTR) InfobarSubclassProc);
+			dat->infobarData = CreateInfoBar(hwndDlg);
 			if (dat->flags & SMF_USEIEVIEW) {
 				IEVIEWWINDOW ieWindow;
 				ieWindow.cbSize = sizeof(IEVIEWWINDOW);
@@ -1327,6 +1336,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				SendMessage(hwndDlg, DM_UPDATETITLEBAR, 0, 0);
 				SendMessage(hwndDlg, DM_UPDATETABCONTROL, 0, 0);
 				ShowAvatar(hwndDlg, dat);
+				UpdateInfoBar(dat->infobarData);
 			}
 			break;
 		}
@@ -1400,6 +1410,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			SendMessage(hwndDlg, DM_UPDATETABCONTROL, 0, 0);
 			SendMessage(hwndDlg, DM_UPDATESTATUSBAR, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_REQUESTRESIZE, 0, 0);
+			UpdateInfoBar(dat->infobarData);
 			break;
 		}
     case DM_USERNAMETOCLIP:
@@ -2297,68 +2308,12 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						return TRUE;
 					case WM_RBUTTONDOWN:
 					case WM_LBUTTONUP:
-						{
-							TEXTRANGE tr;
-							CHARRANGE sel;
-							char* pszUrl;
-
-							SendMessage(pNmhdr->hwndFrom, EM_EXGETSEL, 0, (LPARAM) & sel);
-							if (sel.cpMin != sel.cpMax)
-								break;
-							tr.chrg = ((ENLINK *) lParam)->chrg;
-							tr.lpstrText = mir_alloc(sizeof(TCHAR)*(tr.chrg.cpMax - tr.chrg.cpMin + 8));
-							SendMessage(pNmhdr->hwndFrom, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
-							if (_tcschr(tr.lpstrText, _T('@')) != NULL && _tcschr(tr.lpstrText, _T(':')) == NULL && _tcschr(tr.lpstrText, _T('/')) == NULL) {
-								MoveMemory(tr.lpstrText + sizeof(TCHAR) * 7, tr.lpstrText, sizeof(TCHAR)*(tr.chrg.cpMax - tr.chrg.cpMin + 1));
-								CopyMemory(tr.lpstrText, _T("mailto:"), sizeof(TCHAR) * 7);
-							}
-							pszUrl = t2a( (const TCHAR *)tr.lpstrText );
-							if (((ENLINK *) lParam)->msg == WM_RBUTTONDOWN) {
-								HMENU hMenu, hSubMenu;
-								POINT pt;
-
-								hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT));
-								hSubMenu = GetSubMenu(hMenu, 1);
-								CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
-								pt.x = (short) LOWORD(((ENLINK *) lParam)->lParam);
-								pt.y = (short) HIWORD(((ENLINK *) lParam)->lParam);
-								ClientToScreen(((NMHDR *) lParam)->hwndFrom, &pt);
-								switch (TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL)) {
-								case IDM_OPENLINK:
-									CallService(MS_UTILS_OPENURL, 1, (LPARAM) pszUrl);
-									break;
-								case IDM_COPYLINK:
-									{
-										HGLOBAL hData;
-										if (!OpenClipboard(hwndDlg))
-											break;
-										EmptyClipboard();
-										hData = GlobalAlloc(GMEM_MOVEABLE, sizeof(TCHAR)*(lstrlen(tr.lpstrText) + 1));
-										lstrcpy(GlobalLock(hData), tr.lpstrText);
-										GlobalUnlock(hData);
-									#if defined( _UNICODE )
-										SetClipboardData(CF_UNICODETEXT, hData);
-									#else
-										SetClipboardData(CF_TEXT, hData);
-									 #endif
-										CloseClipboard();
-										break;
-									}
-								}
-								DestroyMenu(hMenu);
-								mir_free(tr.lpstrText);
-								mir_free(pszUrl);
-								SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
-								return TRUE;
-							}
-							CallService(MS_UTILS_OPENURL, 1, (LPARAM) pszUrl);
-							SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
-							mir_free(tr.lpstrText);
-							mir_free(pszUrl);
-							break;
+						if (HandleLinkClick(g_hInst, hwndDlg, GetDlgItem(hwndDlg, IDC_MESSAGE),(ENLINK*)lParam)) {
+							SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
+							return TRUE;
 						}
+						break;
 					}
-					break;
 				}
 				break;
 			case IDC_MESSAGE:

@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <richedit.h>
 #include <richole.h>
 #include "sendqueue.h"
+#include "infobar.h"
 #define MSGERROR_CANCEL	0
 #define MSGERROR_RETRY	1
 #define MSGERROR_DONE	2
@@ -146,6 +147,7 @@ struct MessageWindowData
 	HICON   statusIcon;
 	HICON   statusIconOverlay;
 	CommonWindowData windowData;
+	InfobarWindowData* infobarData;
 };
 
 

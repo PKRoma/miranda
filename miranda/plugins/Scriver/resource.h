@@ -2,6 +2,7 @@
 #define IDD_MSG                         101
 #define IDD_MSGSENDERROR                102
 #define IDD_CONFIRM_SENDALL             103
+#define IDD_INFOBAR                     104
 #define IDD_OPT_MSGDLG                  111
 #define IDD_OPT_MSGLOG                  112
 #define IDD_OPT_MSGTYPE                 114
@@ -124,6 +125,8 @@
 #define IDC_SMILEYS                     1081
 #define IDC_REMEMBER					1082
 #define IDC_AUTORESIZE                  1083
+#define IDC_INFOBAR_NAME				1090
+#define IDC_INFOBAR_STATUS				1091
 #define IDC_STMSGLOGGROUP               1442
 #define IDC_ERRORTEXT                   1596
 #define IDC_MSGTEXT                     1597

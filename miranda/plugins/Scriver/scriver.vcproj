@@ -337,6 +337,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\infobar.c"
+				>
+			</File>
+			<File
 				RelativePath=".\input.c">
 			</File>
 			<File
@@ -496,37 +500,6 @@
 			</File>
 			<File
 				RelativePath="msgwindow.c">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="richutil.c">
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
@@ -946,6 +919,10 @@
 				RelativePath="globals.h">
 			</File>
 			<File
+				RelativePath=".\infobar.h"
+				>
+			</File>
+			<File
 				RelativePath=".\input.h">
 			</File>
 			<File
@@ -956,9 +933,6 @@
 			</File>
 			<File
 				RelativePath="resource.h">
-			</File>
-			<File
-				RelativePath="richutil.h">
 			</File>
 			<File
 				RelativePath=".\sendqueue.h">

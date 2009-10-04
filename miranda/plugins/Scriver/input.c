@@ -387,3 +387,62 @@ void RegisterKeyBindings() {
 	desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL | HOTKEYF_SHIFT, VK_INSERT);
 	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
 }
+
+BOOL HandleLinkClick(HINSTANCE hInstance, HWND hwndDlg, HWND hwndFocus, ENLINK *lParam) {
+	TEXTRANGE tr;
+	CHARRANGE sel;
+	char* pszUrl;
+	BOOL bOpenLink = TRUE;
+	SendMessage(lParam->nmhdr.hwndFrom, EM_EXGETSEL, 0, (LPARAM) & sel);
+	if (sel.cpMin != sel.cpMax)
+		return FALSE;
+	tr.chrg = lParam->chrg;
+	tr.lpstrText = mir_alloc(sizeof(TCHAR)*(tr.chrg.cpMax - tr.chrg.cpMin + 8));
+	SendMessage(lParam->nmhdr.hwndFrom, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
+	if (_tcschr(tr.lpstrText, _T('@')) != NULL && _tcschr(tr.lpstrText, _T(':')) == NULL && _tcschr(tr.lpstrText, _T('/')) == NULL) {
+		MoveMemory(tr.lpstrText + sizeof(TCHAR) * 7, tr.lpstrText, sizeof(TCHAR)*(tr.chrg.cpMax - tr.chrg.cpMin + 1));
+		CopyMemory(tr.lpstrText, _T("mailto:"), sizeof(TCHAR) * 7);
+	}
+	pszUrl = t2a( (const TCHAR *)tr.lpstrText );
+	if (((ENLINK *) lParam)->msg == WM_RBUTTONDOWN) {
+		HMENU hMenu, hSubMenu;
+		POINT pt;
+		bOpenLink = FALSE;
+		hMenu = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_CONTEXT));
+		hSubMenu = GetSubMenu(hMenu, 1);
+		CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
+		pt.x = (short) LOWORD(((ENLINK *) lParam)->lParam);
+		pt.y = (short) HIWORD(((ENLINK *) lParam)->lParam);
+		ClientToScreen(((NMHDR *) lParam)->hwndFrom, &pt);
+		switch (TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL)) {
+		case IDM_OPENLINK:
+			bOpenLink = TRUE;
+			break;
+		case IDM_COPYLINK:
+			{
+				HGLOBAL hData;
+				if (!OpenClipboard(hwndDlg))
+					break;
+				EmptyClipboard();
+				hData = GlobalAlloc(GMEM_MOVEABLE, sizeof(TCHAR)*(lstrlen(tr.lpstrText) + 1));
+				lstrcpy(GlobalLock(hData), tr.lpstrText);
+				GlobalUnlock(hData);
+			#if defined( _UNICODE )
+				SetClipboardData(CF_UNICODETEXT, hData);
+			#else
+				SetClipboardData(CF_TEXT, hData);
+			 #endif
+				CloseClipboard();
+				break;
+			}
+		}
+		DestroyMenu(hMenu);
+	}
+	if (bOpenLink) {
+		CallService(MS_UTILS_OPENURL, 1, (LPARAM) pszUrl);
+	}
+	SetFocus(hwndFocus);
+	mir_free(tr.lpstrText);
+	mir_free(pszUrl);
+	return TRUE;
+}
