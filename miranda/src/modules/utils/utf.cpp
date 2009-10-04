@@ -292,7 +292,7 @@ char* Utf8DecodeCP(char* str, int codepage, wchar_t** ucs2)
 	
 	Utf8toUcs2(str, len, tempBuf, destlen); 
 	tempBuf[destlen] = 0;
-	WideCharToMultiByte(codepage, 0, tempBuf, -1, str, len, "?", NULL);
+	WideCharToMultiByte(codepage, 0, tempBuf, -1, str, len + 1, "?", NULL);
 
 	if (ucs2)
 		*ucs2 = tempBuf;
@@ -360,8 +360,7 @@ char* Utf8EncodeCP(const char* src, int codepage)
 		needs_free = true;
 	}
 
-	len = MultiByteToWideChar(codepage, 0, src, -1, tempBuf, len);
-	tempBuf[len] = 0;
+	len = MultiByteToWideChar(codepage, 0, src, -1, tempBuf, len + 1);
 
 	int destlen = Ucs2toUtf8Len(tempBuf, len);
 	if (destlen >= 0)
