@@ -250,11 +250,11 @@ int SetRichTextEncoded(HWND hwnd, const char *text, int codepage) {
 	TCHAR *textToSet;
 	SETTEXTEX  st;
 	st.flags = ST_DEFAULT;
-	st.codepage = codepage;
 	#ifdef _UNICODE
 		st.codepage = 1200;
 		textToSet = mir_utf8decodeW(text);
 	#else
+    	st.codepage = codepage;
 		textToSet = (char *)text;
 	#endif
 	SendMessage(hwnd, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)textToSet);

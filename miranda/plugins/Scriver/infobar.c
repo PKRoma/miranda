@@ -26,56 +26,60 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern HINSTANCE g_hInst;
 
-
-void UpdateInfoBar(InfobarWindowData* idat) {
+void SetupInfobar(InfobarWindowData* idat) {
 	HWND hwnd = idat->hWnd;
 	struct MessageWindowData *dat = idat->mwd;
-		{
-			TCHAR *szContactName = GetNickname(dat->windowData.hContact, dat->szProto);
-			TCHAR *szContactStatusMsg = DBGetStringT(dat->windowData.hContact, "CList", "StatusMsg");
-			SETTEXTEX  st;
-			st.flags = ST_DEFAULT;
-#ifdef _UNICODE
-			st.codepage = 1200;
-#else
-			st.codepage = CP_ACP;
-#endif
-			SendMessage(GetDlgItem(hwnd, IDC_INFOBAR_NAME), EM_SETTEXTEX, (WPARAM) &st, (LPARAM)szContactName);
-			SendMessage(GetDlgItem(hwnd, IDC_INFOBAR_STATUS), EM_SETTEXTEX, (WPARAM) &st, (LPARAM)L"I wwewewew w ew ewe  sd ada dadasdad  adfsdfsdfsdfsdf  f sdf sdf sdfdfdsfsdf  fggdfgdfgdfgdfg  gdfgdfgdg  am looking at www.onet.pl");
-		}
-		{
-			CHARFORMAT2 cf2 = {0};
-			LOGFONT lf;
-			DWORD colour = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_INFOBARBKGCOLOUR, SRMSGDEFSET_INFOBARBKGCOLOUR);
-			SendDlgItemMessage(hwnd, IDC_INFOBAR_NAME, EM_SETBKGNDCOLOR, 0, colour);
-			colour = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_INFOBARBKGCOLOUR, SRMSGDEFSET_INFOBARBKGCOLOUR);
-			SendDlgItemMessage(hwnd, IDC_INFOBAR_STATUS, EM_SETBKGNDCOLOR, 0, colour);
-			//InvalidateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, FALSE);
-			LoadMsgDlgFont(MSGFONTID_INFOBAR_NAME, &lf, &colour);
-			cf2.dwMask = CFM_COLOR | CFM_FACE | CFM_CHARSET | CFM_SIZE | CFM_WEIGHT | CFM_BOLD | CFM_ITALIC;
-			cf2.cbSize = sizeof(cf2);
-			cf2.crTextColor = colour;
-			cf2.bCharSet = lf.lfCharSet;
-			_tcsncpy(cf2.szFaceName, lf.lfFaceName, LF_FACESIZE);
-			cf2.dwEffects = ((lf.lfWeight >= FW_BOLD) ? CFE_BOLD : 0) | (lf.lfItalic ? CFE_ITALIC : 0);
-			cf2.wWeight = (WORD)lf.lfWeight;
-			cf2.bPitchAndFamily = lf.lfPitchAndFamily;
-			cf2.yHeight = abs(lf.lfHeight) * 15;
-			SendDlgItemMessageA(hwnd, IDC_INFOBAR_NAME, EM_SETCHARFORMAT, 0, (LPARAM)&cf2);
+    CHARFORMAT2 cf2 = {0};
+    LOGFONT lf;
+    DWORD colour = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_INFOBARBKGCOLOUR, SRMSGDEFSET_INFOBARBKGCOLOUR);
+    SendDlgItemMessage(hwnd, IDC_INFOBAR_NAME, EM_SETBKGNDCOLOR, 0, colour);
+    colour = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_INFOBARBKGCOLOUR, SRMSGDEFSET_INFOBARBKGCOLOUR);
+    SendDlgItemMessage(hwnd, IDC_INFOBAR_STATUS, EM_SETBKGNDCOLOR, 0, colour);
+    //InvalidateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, FALSE);
+    LoadMsgDlgFont(MSGFONTID_INFOBAR_NAME, &lf, &colour);
+    cf2.dwMask = CFM_COLOR | CFM_FACE | CFM_CHARSET | CFM_SIZE | CFM_WEIGHT | CFM_BOLD | CFM_ITALIC;
+    cf2.cbSize = sizeof(cf2);
+    cf2.crTextColor = colour;
+    cf2.bCharSet = lf.lfCharSet;
+    _tcsncpy(cf2.szFaceName, lf.lfFaceName, LF_FACESIZE);
+    cf2.dwEffects = ((lf.lfWeight >= FW_BOLD) ? CFE_BOLD : 0) | (lf.lfItalic ? CFE_ITALIC : 0);
+    cf2.wWeight = (WORD)lf.lfWeight;
+    cf2.bPitchAndFamily = lf.lfPitchAndFamily;
+    cf2.yHeight = abs(lf.lfHeight) * 15;
+    SendDlgItemMessageA(hwnd, IDC_INFOBAR_NAME, EM_SETCHARFORMAT, 0, (LPARAM)&cf2);
 
-			LoadMsgDlgFont(MSGFONTID_INFOBAR_STATUS, &lf, &colour);
-			cf2.dwMask = CFM_COLOR | CFM_FACE | CFM_CHARSET | CFM_SIZE | CFM_WEIGHT | CFM_BOLD | CFM_ITALIC;
-			cf2.cbSize = sizeof(cf2);
-			cf2.crTextColor = colour;
-			cf2.bCharSet = lf.lfCharSet;
-			_tcsncpy(cf2.szFaceName, lf.lfFaceName, LF_FACESIZE);
-			cf2.dwEffects = ((lf.lfWeight >= FW_BOLD) ? CFE_BOLD : 0) | (lf.lfItalic ? CFE_ITALIC : 0);
-			cf2.wWeight = (WORD)lf.lfWeight;
-			cf2.bPitchAndFamily = lf.lfPitchAndFamily;
-			cf2.yHeight = abs(lf.lfHeight) * 15;
-			SendDlgItemMessageA(hwnd, IDC_INFOBAR_STATUS, EM_SETCHARFORMAT, 0, (LPARAM)&cf2);
-		
-		}
+    LoadMsgDlgFont(MSGFONTID_INFOBAR_STATUS, &lf, &colour);
+    cf2.dwMask = CFM_COLOR | CFM_FACE | CFM_CHARSET | CFM_SIZE | CFM_WEIGHT | CFM_BOLD | CFM_ITALIC;
+    cf2.cbSize = sizeof(cf2);
+    cf2.crTextColor = colour;
+    cf2.bCharSet = lf.lfCharSet;
+    _tcsncpy(cf2.szFaceName, lf.lfFaceName, LF_FACESIZE);
+    cf2.dwEffects = ((lf.lfWeight >= FW_BOLD) ? CFE_BOLD : 0) | (lf.lfItalic ? CFE_ITALIC : 0);
+    cf2.wWeight = (WORD)lf.lfWeight;
+    cf2.bPitchAndFamily = lf.lfPitchAndFamily;
+    cf2.yHeight = abs(lf.lfHeight) * 15;
+    SendDlgItemMessageA(hwnd, IDC_INFOBAR_STATUS, EM_SETCHARFORMAT, 0, (LPARAM)&cf2);
+
+    RefreshInfobar(idat);
+}
+
+void RefreshInfobar(InfobarWindowData* idat) {
+	HWND hwnd = idat->hWnd;
+	struct MessageWindowData *dat = idat->mwd;
+    TCHAR *szContactName = GetNickname(dat->windowData.hContact, dat->szProto);
+    TCHAR *szContactStatusMsg = DBGetStringT(dat->windowData.hContact, "CList", "StatusMsg");
+    SETTEXTEX  st;
+    st.flags = ST_DEFAULT;
+#ifdef _UNICODE
+    st.codepage = 1200;
+#else
+    st.codepage = CP_ACP;
+#endif
+    SendMessage(GetDlgItem(hwnd, IDC_INFOBAR_NAME), EM_SETTEXTEX, (WPARAM) &st, (LPARAM)szContactName);
+    SendMessage(GetDlgItem(hwnd, IDC_INFOBAR_STATUS), EM_SETTEXTEX, (WPARAM) &st, (LPARAM)szContactStatusMsg);
+	SendMessage(hwnd, WM_SIZE, 0, 0);
+	RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
+	RedrawWindow(GetDlgItem(hwnd, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
 }
 
 static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -85,11 +89,12 @@ static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 	switch (msg) {
 	case WM_INITDIALOG:
 		idat = (InfobarWindowData *) lParam;
+        idat->hWnd = hwnd;
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)idat);
 		SendDlgItemMessage(hwnd, IDC_INFOBAR_NAME, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
 		SendDlgItemMessage(hwnd, IDC_INFOBAR_STATUS, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
 		SendDlgItemMessage(hwnd, IDC_INFOBAR_STATUS, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_LINK | ENM_KEYEVENTS);
-		UpdateInfoBar(idat);
+		SetupInfobar(idat);
 		return TRUE;
 
 	case WM_SIZE:
@@ -200,17 +205,18 @@ static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 			}
 			return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
 		}
-
+	case WM_LBUTTONDOWN:
+		SendMessage(idat->mwd->hwnd, WM_LBUTTONDOWN, wParam, lParam);
+		return TRUE;
 	}
 	return FALSE;
 }
 
-InfobarWindowData *CreateInfoBar(HWND hParent)
+InfobarWindowData *CreateInfobar(HWND hParent, struct MessageWindowData *dat)
 {
-	struct MessageWindowData *dat = (struct MessageWindowData *) GetWindowLongPtr(hParent, GWLP_USERDATA);
 	InfobarWindowData *idat = (InfobarWindowData *) mir_alloc(sizeof(InfobarWindowData));
 	idat->mwd = dat;
-	idat->hWnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_INFOBAR), hParent, InfobarWndProc, (LPARAM)idat);
+	CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_INFOBAR), hParent, InfobarWndProc, (LPARAM)idat);
 	SetWindowPos(idat->hWnd, HWND_TOP, 0, 0, 0, 0, SWP_HIDEWINDOW | SWP_NOSIZE | SWP_NOREPOSITION);
 	return idat;
 }

@@ -30,7 +30,8 @@ typedef struct InfobarWindowDataStruct
 	HWND    hWnd;
 } InfobarWindowData;
 
-InfobarWindowData *CreateInfoBar(HWND hParent);
-void UpdateInfoBar(InfobarWindowData* idat);
+InfobarWindowData *CreateInfobar(HWND hParent, struct MessageWindowData *dat);
+void SetupInfobar(InfobarWindowData* idat);
+void RefreshInfobar(InfobarWindowData* idat);
 
 #endif

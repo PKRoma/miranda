@@ -42,7 +42,7 @@ extern HINSTANCE g_hInst;
 
 static void UpdateReadChars(HWND hwndDlg, struct MessageWindowData * dat);
 
-static WNDPROC OldMessageEditProc, OldSplitterProc, OldLogEditProc, OldInfobarProc;
+static WNDPROC OldMessageEditProc, OldSplitterProc, OldLogEditProc;
 static TCHAR *buttonNames[] = {_T("Quote"), _T("Smiley"), _T("Add Contact"), _T("User Menu"), _T("User Details"), _T("History"), _T("Close"), _T("Send")};
 static const UINT buttonControls[] = { IDC_QUOTE, IDC_SMILEYS, IDC_ADD, IDC_USERMENU, IDC_DETAILS, IDC_HISTORY, IDCANCEL, IDOK};
 static char buttonAlignment[] = { 0, 0, 0, 1, 1, 1, 1, 1};
@@ -549,19 +549,6 @@ static LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 	return CallWindowProc(OldSplitterProc, hwnd, msg, wParam, lParam);
 }
 
-static LRESULT CALLBACK InfobarSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	switch (msg) {
-		case WM_NCHITTEST:
-		  return HTCLIENT;
-		case WM_RBUTTONDOWN:
-		case WM_RBUTTONUP:
-		case WM_CONTEXTMENU:
-			return 0;
-	}
-	return CallWindowProc(OldInfobarProc, hwnd, msg, wParam, lParam);
-}
-
 static void SubclassMessageEdit(HWND hwnd) {
 	OldMessageEditProc = (WNDPROC) SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR) MessageEditSubclassProc);
 	SendMessage(hwnd, EM_SUBCLASSED, 0, 0);
@@ -682,10 +669,8 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 		RedrawWindow(GetDlgItem(hwndDlg, IDC_LOG), NULL, NULL, RDW_INVALIDATE);
 	}
 	RedrawWindow(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, NULL, RDW_INVALIDATE);
-	
-	SendMessage(dat->infobarData->hWnd, WM_SIZE, 0, 0);
-	RedrawWindow(dat->infobarData->hWnd, NULL, NULL, RDW_INVALIDATE);
-	RedrawWindow(GetDlgItem(dat->infobarData->hWnd, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
+
+    RefreshInfobar(dat->infobarData);
 
 	RedrawWindow(GetDlgItem(hwndDlg, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
 }
@@ -709,9 +694,7 @@ void ShowAvatar(HWND hwndDlg, struct MessageWindowData *dat) {
 	dat->avatarPic = (dat->ace != NULL && (dat->ace->dwFlags & AVS_HIDEONCLIST) == 0) ? dat->ace->hbmPic : NULL;
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
 	
-	SendMessage(dat->infobarData->hWnd, WM_SIZE, 0, 0);
-	RedrawWindow(dat->infobarData->hWnd, NULL, NULL, RDW_INVALIDATE);
-	RedrawWindow(GetDlgItem(dat->infobarData->hWnd, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
+    RefreshInfobar(dat->infobarData);
 	
 	RedrawWindow(GetDlgItem(hwndDlg, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
 }
@@ -958,7 +941,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			SubclassLogEdit(GetDlgItem(hwndDlg, IDC_LOG));
 			SubclassMessageEdit(GetDlgItem(hwndDlg, IDC_MESSAGE));
 			OldSplitterProc = (WNDPROC) SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWLP_WNDPROC, (LONG_PTR) SplitterSubclassProc);
-			dat->infobarData = CreateInfoBar(hwndDlg);
+			dat->infobarData = CreateInfobar(hwndDlg, dat);
 			if (dat->flags & SMF_USEIEVIEW) {
 				IEVIEWWINDOW ieWindow;
 				ieWindow.cbSize = sizeof(IEVIEWWINDOW);
@@ -1336,7 +1319,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				SendMessage(hwndDlg, DM_UPDATETITLEBAR, 0, 0);
 				SendMessage(hwndDlg, DM_UPDATETABCONTROL, 0, 0);
 				ShowAvatar(hwndDlg, dat);
-				UpdateInfoBar(dat->infobarData);
+				SetupInfobar(dat->infobarData);
 			}
 			break;
 		}
@@ -1410,7 +1393,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			SendMessage(hwndDlg, DM_UPDATETABCONTROL, 0, 0);
 			SendMessage(hwndDlg, DM_UPDATESTATUSBAR, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_REQUESTRESIZE, 0, 0);
-			UpdateInfoBar(dat->infobarData);
+			SetupInfobar(dat->infobarData);
 			break;
 		}
     case DM_USERNAMETOCLIP:
