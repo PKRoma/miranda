@@ -41,8 +41,6 @@
 #define HISTORY_INITIAL_ALLOCSIZE 300
 
 
-#endif /* __CONTACTCACHE_H */
-
 struct TInputHistory {
 	TCHAR*	szText;
 	size_t	lLen;
@@ -73,21 +71,10 @@ public:
 	CContactCache									(const HANDLE hContact);
 	~CContactCache									()
 	{
-		int i;
-
-		if(m_stats)
-			delete m_stats;
-
-		if (m_history) {
-			for (i = 0; i <= m_iHistorySize; i++) {
-				if (m_history[i].szText != 0) {
-					free(m_history[i].szText);
-				}
-			}
-			free(m_history);
-		}
+		releaseAlloced();
 	}
 	void					inc						() { m_accessCount++; }
+	const	bool			isValid					() const { return(m_Valid); }
 	const	WORD			getStatus				() const { return(m_wStatus); }
 	const	WORD			getMetaStatus			() const { return(m_wMetaStatus); }
 	const	WORD			getActiveStatus			() const { return(m_isMeta ? m_wMetaStatus : m_wStatus); }
@@ -106,16 +93,20 @@ public:
 	const TCHAR*			getRealAccount			() const { return(m_szAccount ? m_szAccount : C_INVALID_ACCOUNT); }
 	const TCHAR*			getUIN					() const { return(m_szUIN); }
 	const HWND				getWindowData			(_MessageWindowData*& dat) const { dat = m_dat; return(m_hwnd); }
+	const HWND				getHwnd					() const { return(m_hwnd); }
 
 	void					updateStats				(int iType, size_t value = 0);
 	const DWORD				getSessionStart			() const { return(m_stats->started); }
 	const int				getSessionMsgCount		() const { return((int)m_stats->messageCount) ; }
 	void					updateState				();
 	bool					updateStatus			();
-	void					updateNick				();
+	bool					updateNick				();
 	void					updateMeta				();
 	void					updateUIN				();
 	void					setWindowData			(const HWND hwnd = 0, _MessageWindowData *dat = 0);
+	void					resetMeta				();
+	void					closeWindow				();
+	void					deletedHandler			();
 
 	/*
 	 * input history
@@ -127,6 +118,7 @@ private:
 	void					allocStats				();
 	void					initPhaseTwo			();
 	void					allocHistory			();
+	void					releaseAlloced			();
 
 private:
 	size_t				m_accessCount;
@@ -153,3 +145,4 @@ struct TCCache {
 	CContactCache 	*c;
 };
 
+#endif /* __CONTACTCACHE_H */

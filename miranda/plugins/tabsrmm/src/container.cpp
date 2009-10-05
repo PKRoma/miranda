@@ -273,7 +273,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				szWindowText[511] = 0;
 				hOldFont = (HFONT)SelectObject(dcMem, PluginConfig.hFontCaption);
 				GetTextMetrics(dcMem, &tm);
-				SetTextColor(dcMem, CInfoPanel::m_ipConfig.isValid ? CInfoPanel::m_ipConfig.clrs[IPFONTCOUNT - 1] : GetSysColor(COLOR_CAPTIONTEXT));
+				SetTextColor(dcMem, CInfoPanel::m_ipConfig.clrs[IPFONTCOUNT - 1]);
 				SetBkMode(dcMem, TRANSPARENT);
 				rcText.left =20 + CSkin::m_SkinnedFrame_left + CSkin::m_bClipBorder + CSkin::m_titleBarLeftOff;//26;
 				rcText.right = rcWindow.right - 3 * CSkin::m_titleBarButtonSize.cx - 11 - CSkin::m_titleBarRightOff;

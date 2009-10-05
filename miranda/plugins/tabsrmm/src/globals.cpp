@@ -66,6 +66,12 @@ size_t		CGlobals::m_cCacheSize = 0, CGlobals::m_cCacheSizeAlloced = 0;
 extern 		HANDLE 	hHookButtonPressedEvt;
 extern		HANDLE 	hHookToolBarLoadedEvt;
 
+EXCEPTION_RECORD CGlobals::m_exRecord = {0};
+CONTEXT		 	 CGlobals::m_exCtx = {0};
+LRESULT			 CGlobals::m_exLastResult = 0;
+char			 CGlobals::m_exSzFile[MAX_PATH] = "\0";
+int				 CGlobals::m_exLine = 0;
+
 #if defined(_UNICODE)
 #if defined(_WIN64)
 	static char szCurrentVersion[30];
@@ -97,26 +103,26 @@ void CGlobals::RegisterWithUpdater()
  	if (!ServiceExists(MS_UPDATE_REGISTER))
  		return;
 
- 	upd.cbSize = sizeof(upd);
- 	upd.szComponentName = pluginInfo.shortName;
- 	upd.pbVersion = (BYTE *)/*CreateVersionStringPlugin*/CreateVersionString(pluginInfo.version, szCurrentVersion);
- 	upd.cpbVersion = (int)(strlen((char *)upd.pbVersion));
-	upd.szVersionURL = szFLVersionUrl;
-	upd.szUpdateURL = szFLUpdateurl;
+ 	upd.cbSize 				=	sizeof(upd);
+ 	upd.szComponentName 	=	pluginInfo.shortName;
+ 	upd.pbVersion 			=	(BYTE *)CreateVersionString(pluginInfo.version, szCurrentVersion);
+ 	upd.cpbVersion 			=	(int)(strlen((char *)upd.pbVersion));
+	upd.szVersionURL 		=	szFLVersionUrl;
+	upd.szUpdateURL 		=	szFLUpdateurl;
 #if defined(_UNICODE)
-	upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">tabSRMM Unicode 2.0 ";
+	upd.pbVersionPrefix 	= 	(BYTE *)"<span class=\"fileNameHeader\">tabSRMM Unicode 2.0 ";
 #else
-	upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">tabSRMM 2.0 ";
+	upd.pbVersionPrefix 	= 	(BYTE *)"<span class=\"fileNameHeader\">tabSRMM 2.0 ";
 #endif
-	upd.cpbVersionPrefix = (int)(strlen((char *)upd.pbVersionPrefix));
+	upd.cpbVersionPrefix 	= 	(int)(strlen((char *)upd.pbVersionPrefix));
 
- 	upd.szBetaUpdateURL = szUpdateUrl;
- 	upd.szBetaVersionURL = szVersionUrl;
-	upd.pbVersion = (unsigned char *)szCurrentVersion;
-	upd.cpbVersion = lstrlenA(szCurrentVersion);
- 	upd.pbBetaVersionPrefix = (BYTE *)szPrefix;
- 	upd.cpbBetaVersionPrefix = (int)(strlen((char *)upd.pbBetaVersionPrefix));
- 	upd.szBetaChangelogURL   ="http://miranda.radicaled.ru/public/tabsrmm/chglogeng.txt";
+ 	upd.szBetaUpdateURL 	=	szUpdateUrl;
+ 	upd.szBetaVersionURL 	=	szVersionUrl;
+	upd.pbVersion 			=	(unsigned char *)szCurrentVersion;
+	upd.cpbVersion 			= 	lstrlenA(szCurrentVersion);
+ 	upd.pbBetaVersionPrefix	= 	(BYTE *)szPrefix;
+ 	upd.cpbBetaVersionPrefix= 	(int)(strlen((char *)upd.pbBetaVersionPrefix));
+ 	upd.szBetaChangelogURL  =	"http://miranda.radicaled.ru/public/tabsrmm/chglogeng.txt";
 
  	CallService(MS_UPDATE_REGISTER, 0, (LPARAM)&upd);
 }
@@ -389,15 +395,6 @@ void CGlobals::hookSystemEvents()
 	m_event_IcoLibChanged 	= 	HookEvent(ME_SKIN2_ICONSCHANGED, ::IcoLibIconsChanged);
 	m_event_AvatarChanged 	= 	HookEvent(ME_AV_AVATARCHANGED, ::AvatarChanged);
 	m_event_MyAvatarChanged = 	HookEvent(ME_AV_MYAVATARCHANGED, ::MyAvatarChanged);
-	m_event_FontsChanged 	= 	HookEvent(ME_FONT_RELOAD, ::FontServiceFontsChanged);
-}
-
-/**
- * hook events provided by plugins. This must be run in the ModulesLoaded handler
- */
-void CGlobals::hookPluginEvents()
-{
-
 }
 
 /**
@@ -476,6 +473,7 @@ int CGlobals::ModulesLoaded(WPARAM wParam, LPARAM lParam)
 		m_event_ME_MC_FORCESEND			 = HookEvent(ME_MC_FORCESEND, MetaContactEvent);
 		m_event_ME_MC_UNFORCESEND		 = HookEvent(ME_MC_UNFORCESEND, MetaContactEvent);
 	}
+	m_event_FontsChanged 	= 	HookEvent(ME_FONT_RELOAD, ::FontServiceFontsChanged);
 	return 0;
 }
 
@@ -492,7 +490,7 @@ int CGlobals::DBSettingChanged(WPARAM wParam, LPARAM lParam)
 	const char  *setting = cws->szSetting;
 	HWND		hwnd = 0;
 	CContactCache* c = 0;
-	bool		fChanged = false;
+	bool		fChanged = false, fNickChanged = false;
 
 	if(wParam)
 		hwnd = M->FindWindow((HANDLE)wParam);
@@ -503,6 +501,8 @@ int CGlobals::DBSettingChanged(WPARAM wParam, LPARAM lParam)
 			if(c) {
 				fChanged = c->updateStatus();
 				c->updateNick();
+				//if(fChanged)
+				//	PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_LOGSTATUSCHANGE, 0, (LPARAM)c);
 			}
 		}
 		return(0);
@@ -519,22 +519,25 @@ int CGlobals::DBSettingChanged(WPARAM wParam, LPARAM lParam)
 			szProto = c->getProto();
 	}
 
+	if(wParam == 0 && !lstrcmpA(setting, "Enabled")) {
+		if(PluginConfig.g_MetaContactsAvail && !lstrcmpA(cws->szModule, PluginConfig.szMetaName)) { 		// catch the disabled meta contacts
+			PluginConfig.bMetaEnabled = M->GetByte(0, PluginConfig.szMetaName, "Enabled", 0);
+			cacheUpdateMetaChanged();
+		}
+	}
+
 	if (lstrcmpA(cws->szModule, "CList") && (szProto == NULL || lstrcmpA(cws->szModule, szProto)))
 		return(0);
 
 	if (PluginConfig.g_MetaContactsAvail && !lstrcmpA(cws->szModule, PluginConfig.szMetaName)) {
 		if(wParam != 0 && !lstrcmpA(setting, "Nick"))      // filter out this setting to avoid infinite loops while trying to obtain the most online contact
 			return(0);
-		if(wParam == 0 && !lstrcmpA(setting, "Enabled")) { 		// catch the disabled meta contacts
-			PluginConfig.bMetaEnabled = M->GetByte(0, PluginConfig.szMetaName, "Enabled", 0);
-			cacheUpdateMetaChanged();
-		}
 	}
 
 	if (hwnd) {
 		if(c) {
 			fChanged = c->updateStatus();
-			c->updateNick();
+			fNickChanged = c->updateNick();
 		}
 		if (strstr("IdleTS,XStatusId,display_uid", setting)) {
 			if (!strcmp(setting, "XStatusId"))
@@ -554,8 +557,10 @@ int CGlobals::DBSettingChanged(WPARAM wParam, LPARAM lParam)
 		}
 		else if (strstr("StatusMsg,StatusDescr,XStatusMsg,XStatusName,YMsg", setting))
 			PostMessage(hwnd, DM_UPDATESTATUSMSG, 0, 0);
-		if(fChanged)
+		if(fChanged | fNickChanged)
 			PostMessage(hwnd, DM_UPDATETITLE, 0, 1);
+		if(fChanged)
+			PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_LOGSTATUSCHANGE, 0, (LPARAM)c);
 	}
 	return(0);
 }
@@ -566,14 +571,10 @@ int CGlobals::DBSettingChanged(WPARAM wParam, LPARAM lParam)
 
 int CGlobals::DBContactDeleted(WPARAM wParam, LPARAM lParam)
 {
-	HWND hwnd;
-
-	if (hwnd = M->FindWindow((HANDLE) wParam)) {
-		struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-
-		if (dat)
-			dat->bWasDeleted = 1;				// indicate a deleted contact. The WM_CLOSE handler will "fast close" the session and skip housekeeping.
-		SendMessage(hwnd, WM_CLOSE, 0, 1);
+	if(wParam) {
+		CContactCache *c = CGlobals::getContactCache((HANDLE)wParam);
+		if(c)
+			c->deletedHandler();
 	}
 	return 0;
 }
@@ -587,13 +588,12 @@ int CGlobals::MetaContactEvent(WPARAM wParam, LPARAM lParam)
 {
 	if(wParam) {
 		CContactCache *c = CGlobals::getContactCache((HANDLE)wParam);
-		if(c)
+		if(c) {
 			c->updateMeta();
-
-		HWND	hwnd = M->FindWindow((HANDLE)wParam);
-		if(hwnd && c) {
-			c->updateUIN();								// only do this for open windows, not needed normally
-			::PostMessage(hwnd, DM_UPDATETITLE, 0, 0);
+			if(c->getHwnd()) {
+				c->updateUIN();								// only do this for open windows, not needed normally
+				::PostMessage(c->getHwnd(), DM_UPDATETITLE, 0, 0);
+			}
 		}
 	}
 	return(0);
@@ -763,6 +763,57 @@ CContactCache* CGlobals::getContactCache(const HANDLE hContact)
 	return(c);
 }
 
+void CGlobals::logStatusChange(const CContactCache *c)
+{
+	if(c == 0)
+		return;
+
+	HANDLE	hContact = c->getContact();
+
+	bool	fGlobal = PluginConfig.m_LogStatusChanges ? true : false;
+	DWORD	dwMask = M->GetDword(hContact, SRMSGMOD_T, "mwmask", 0);
+	DWORD	dwFlags = M->GetDword(hContact, SRMSGMOD_T, "mwflags", 0);
+
+	bool	fLocal = ((dwMask & MWF_LOG_STATUSCHANGES) ? (dwFlags & MWF_LOG_STATUSCHANGES ? true : false) : false);
+
+	if(fGlobal || fLocal) {
+		/*
+		 * don't log them if WE are logging off
+		 */
+		if(CallProtoService(c->getProto(), PS_GETSTATUS, 0, 0) == ID_STATUS_OFFLINE)
+			return;
+
+		WORD	wStatus, wOldStatus;
+
+		wStatus = c->getStatus();
+		wOldStatus = c->getOldStatus();
+
+		DBEVENTINFO 	dbei;
+		TCHAR 			buffer[450];
+		HANDLE 			hNewEvent;
+
+		TCHAR*	szOldStatus = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)wOldStatus, GCMDF_TCHAR);
+		TCHAR*	szNewStatus = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)wStatus, GCMDF_TCHAR);
+
+		if (c->isValid()) {
+			if (wStatus == ID_STATUS_OFFLINE)
+				mir_sntprintf(buffer, safe_sizeof(buffer), CTranslator::get(CTranslator::GEN_MSG_SIGNEDOFF));
+			else if (wOldStatus == ID_STATUS_OFFLINE)
+				mir_sntprintf(buffer, safe_sizeof(buffer), CTranslator::get(CTranslator::GEN_MSG_SIGNEDON), szNewStatus);
+			else
+				mir_sntprintf(buffer, safe_sizeof(buffer), CTranslator::get(CTranslator::GEN_MSG_CHANGEDSTATUS), szOldStatus, szNewStatus);
+		}
+		dbei.pBlob = (PBYTE)M->utf8_encodeT(buffer);
+		dbei.cbBlob = lstrlenA((char *)dbei.pBlob) + 1;
+		dbei.flags = DBEF_UTF | DBEF_READ;
+		dbei.cbSize = sizeof(dbei);
+		dbei.eventType = EVENTTYPE_STATUSCHANGE;
+		dbei.timestamp = time(NULL);
+		dbei.szModule = const_cast<char *>(c->getProto());
+		hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) hContact, (LPARAM) & dbei);
+	}
+}
+
 /**
  * when the state of the meta contacts protocol changes from enabled to disabled
  * (or vice versa), this updates the contact cache
@@ -774,9 +825,94 @@ void CGlobals::cacheUpdateMetaChanged()
 {
 	size_t 			i;
 	CContactCache* 	c;
+	bool			fMetaActive = (PluginConfig.g_MetaContactsAvail && PluginConfig.bMetaEnabled) ? true : false;
 
 	for(i = 0; i < m_cCacheSize; i++) {
 		c = m_cCache[i].c;
-
+		if(c->isMeta() && PluginConfig.bMetaEnabled == false) {
+			c->closeWindow();
+			c->resetMeta();
+		}
+		/*
+		 * meta contacts are enabled, but current contact is a subcontact - > close window
+		 */
+		if(fMetaActive && M->GetByte(c->getContact(), PluginConfig.szMetaName, "IsSubcontact", 0))
+			c->closeWindow();
+		/*
+		 * reset meta contact information, if metacontacts protocol became avail
+		 */
+		if(fMetaActive && !strcmp(c->getProto(), PluginConfig.szMetaName))
+			c->resetMeta();
 	}
+}
+
+void CGlobals::Ex_CopyEditToClipboard(HWND hWnd)
+{
+	SendMessage(hWnd, EM_SETSEL, 0, 65535L);
+	SendMessage(hWnd, WM_COPY, 0 , 0);
+	SendMessage(hWnd, EM_SETSEL, 0, 0);
+}
+
+INT_PTR CALLBACK CGlobals::Ex_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	WORD wNotifyCode, wID;
+
+	switch(uMsg) {
+		case WM_INITDIALOG: {
+				char szBuffer[2048];
+#ifdef _WIN64
+				sprintf(szBuffer,
+						"Exception %16.16X at address %16.16X occured in %s at line %d.\r\n\r\nEAX=%16.16X EBX=%16.16X ECX=%16.16X\r\nEDX=%16.16X ESI=%16.16X EDI=%16.16X\r\nEBP=%16.16X ESP=%16.16X EIP=%16.16X",
+						m_exRecord.ExceptionCode, m_exRecord.ExceptionAddress, m_exSzFile, m_exLine,
+						m_exCtx.Rax,m_exCtx.Rbx, m_exCtx.Rcx, m_exCtx.Rdx,
+						m_exCtx.Rsi, m_exCtx.Rdi, m_exCtx.Rbp, m_exCtx.Rsp, m_exCtx.Rip);
+#else
+				sprintf(szBuffer,
+						"Exception %8.8X at address %8.8X occured in %s at line %d.\r\n\r\nEAX=%8.8X EBX=%8.8X ECX=%8.8X\r\nEDX=%8.8X ESI=%8.8X EDI=%8.8X\r\nEBP=%8.8X ESP=%8.8X EIP=%8.8X",
+						m_exRecord.ExceptionCode, m_exRecord.ExceptionAddress, m_exSzFile, m_exLine,
+						m_exCtx.Eax,m_exCtx.Ebx, m_exCtx.Ecx, m_exCtx.Edx,
+						m_exCtx.Esi, m_exCtx.Edi, m_exCtx.Ebp, m_exCtx.Esp, m_exCtx.Eip);
+#endif
+				SetDlgItemTextA(hwndDlg, IDC_EXCEPTION_DETAILS, szBuffer);
+				SetFocus(GetDlgItem(hwndDlg, IDC_EXCEPTION_DETAILS));
+				SendDlgItemMessage(hwndDlg, IDC_EXCEPTION_DETAILS, WM_SETFONT, (WPARAM)GetStockObject(ANSI_FIXED_FONT), 0);
+			}
+			break;
+
+		case WM_COMMAND:
+			wNotifyCode = HIWORD(wParam);
+			wID = LOWORD(wParam);
+			if (wNotifyCode == BN_CLICKED)
+			{
+				if (wID == IDOK || wID == IDCANCEL)
+					EndDialog(hwndDlg, wID);
+
+				if (wID == IDC_COPY_EXCEPTION)
+					Ex_CopyEditToClipboard(GetDlgItem(hwndDlg, IDC_EXCEPTION_DETAILS));
+			}
+
+			break;
+	}
+	return FALSE;
+}
+
+void CGlobals::Ex_Handler()
+{
+	if (m_exLastResult == IDCANCEL)
+		ExitProcess(1);
+}
+
+int CGlobals::Ex_ShowDialog(EXCEPTION_POINTERS *ep, const char *szFile, int line)
+{
+	char	szDrive[MAX_PATH], szDir[MAX_PATH], szName[MAX_PATH], szExt[MAX_PATH];
+
+	_splitpath(szFile, szDrive, szDir, szName, szExt);
+	memcpy(&m_exRecord, ep->ExceptionRecord, sizeof(EXCEPTION_RECORD));
+	memcpy(&m_exCtx, ep->ContextRecord, sizeof(CONTEXT));
+
+	_snprintf(m_exSzFile, MAX_PATH, "%s%s", szName, szExt);
+	m_exLine = line;
+	m_exLastResult = DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_EXCEPTION), 0, CGlobals::Ex_DlgProc, 0);
+
+	return 1;
 }

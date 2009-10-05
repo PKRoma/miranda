@@ -197,6 +197,11 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Edit Highlist List..."), 					/* GEN_MUC_MENU_EDITHIGHLIGHTLIST */
 	LPGENT("Contact not on list. You may add it..."),	/* GEN_MSG_CONTACT_NOT_ON_LIST */
 	LPGENT("A send later job completed successfully.\nThe original message: %s"), /* GEN_SQ_SENDLATER_SUCCESS_POPUP */
+
+	LPGENT("Copy To Clipboard"),						/* GEN_IP_MENU_COPY */
+	LPGENT("Open User Details..."),						/* GEN_IP_MENU_USER_DETAILS */
+	LPGENT("Messaging Settings..."),					/* GEN_IP_MENU_MSGPREFS */
+	LPGENT("Room Settings..."),							/* GEN_IP_MENU_ROOMPREFS */
 };
 
 /*

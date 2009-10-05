@@ -159,7 +159,7 @@ nothing_open:
 	}
 }
 
-static void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle)
+void TSAPI DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle)
 {
 	int cx = PluginConfig.m_smcxicon;
 	int cy = PluginConfig.m_smcyicon;
@@ -651,6 +651,9 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			}
 			return 0;
 		}
+		case DM_LOGSTATUSCHANGE:
+			CGlobals::logStatusChange(reinterpret_cast<CContactCache *>(lParam));
+			return(0);
 		case WM_POWERBROADCAST:
 		case WM_DISPLAYCHANGE: {
 			struct ContainerWindowData *pContainer = pFirstContainer;

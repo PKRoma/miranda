@@ -2287,6 +2287,10 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, _Mess
 				   PluginConfig.g_iconErr, 16, 16, 0, 0, DI_NORMAL);
 		return TRUE;
 	}
+	else if (dis->CtlType == ODT_MENU && dat->Panel->isHovered()) {
+		DrawMenuItem(dis, (HICON)dis->itemData, 0);
+		return(TRUE);
+	}
 	return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
 }
 
@@ -2442,14 +2446,13 @@ void TSAPI GetClientIcon(_MessageWindowData *dat)
 {
 	DBVARIANT dbv = {0};
 
-	if (dat->hClientIcon) {
+	if(dat->hClientIcon)
 		DestroyIcon(dat->hClientIcon);
-		dat->hClientIcon = 0;
-	}
 
+	dat->hClientIcon = 0;
 	if (ServiceExists(MS_FP_GETCLIENTICON)) {
-		if (!DBGetContactSettingString(dat->hContact, dat->szProto, "MirVer", &dbv)) {
-			dat->hClientIcon = (HICON)CallService(MS_FP_GETCLIENTICON, (WPARAM)dbv.pszVal, 0);
+		if (!DBGetContactSettingString(dat->cache->getActiveContact(), dat->cache->getActiveProto(), "MirVer", &dbv)) {
+			dat->hClientIcon = (HICON)CallService(MS_FP_GETCLIENTICON, (WPARAM)dbv.pszVal, 1);
 			DBFreeVariant(&dbv);
 		}
 	}

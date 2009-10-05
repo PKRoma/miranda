@@ -524,102 +524,105 @@ void CMimAPI::InitAPI()
 
 int CMimAPI::TypingMessage(WPARAM wParam, LPARAM lParam)
 {
-	HWND	hwnd = 0;
-	int		issplit = 1, foundWin = 0, preTyping = 0;
-	struct	ContainerWindowData *pContainer = NULL;
-	BOOL	fShowOnClist = TRUE;
+	HWND			hwnd = 0;
+	int				issplit = 1, foundWin = 0, preTyping = 0;
+	struct			ContainerWindowData *pContainer = NULL;
+	BOOL			fShowOnClist = TRUE;
 
-	if ((hwnd = M->FindWindow((HANDLE) wParam)) && M->GetByte(SRMSGMOD, SRMSGSET_SHOWTYPING, SRMSGDEFSET_SHOWTYPING))
-		preTyping = SendMessage(hwnd, DM_TYPING, 0, lParam);
+	if(wParam) {
 
-	if (hwnd && IsWindowVisible(hwnd))
-		foundWin = MessageWindowOpened(0, (LPARAM)hwnd);
-	else
-		foundWin = 0;
+		if ((hwnd = M->FindWindow((HANDLE) wParam)) && M->GetByte(SRMSGMOD, SRMSGSET_SHOWTYPING, SRMSGDEFSET_SHOWTYPING))
+			preTyping = SendMessage(hwnd, DM_TYPING, 0, lParam);
 
-
-	if(hwnd) {
-		SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
-		if(pContainer == NULL)
-			return 0;					// should never happen
-	}
-
-	if(M->GetByte(SRMSGMOD, SRMSGSET_SHOWTYPINGCLIST, SRMSGDEFSET_SHOWTYPINGCLIST)) {
-		if(!hwnd && !M->GetByte(SRMSGMOD, SRMSGSET_SHOWTYPINGNOWINOPEN, 1))
-			fShowOnClist = FALSE;
-		if(hwnd && !M->GetByte(SRMSGMOD, SRMSGSET_SHOWTYPINGWINOPEN, 1))
-			fShowOnClist = FALSE;
-	}
-	else
-		fShowOnClist = FALSE;
-
-	if((!foundWin || !(pContainer->dwFlags&CNT_NOSOUND)) && preTyping != (lParam != 0)){
-		if (lParam)
-			SkinPlaySound("TNStart");
+		if (hwnd && IsWindowVisible(hwnd))
+			foundWin = MessageWindowOpened(0, (LPARAM)hwnd);
 		else
-			SkinPlaySound("TNStop");
-	}
+			foundWin = 0;
 
-	if(M->GetByte(SRMSGMOD, "ShowTypingPopup", 0)) {
-		BOOL	fShow = FALSE;
-		int		iMode = M->GetByte("MTN_PopupMode", 0);
 
-		switch(iMode) {
-			case 0:
-				fShow = TRUE;
-				break;
-			case 1:
-				if(!foundWin || !(pContainer && pContainer->hwndActive == hwnd && GetForegroundWindow() == pContainer->hwnd))
+		if(hwnd) {
+			SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
+			if(pContainer == NULL)
+				return 0;					// should never happen
+		}
+
+		if(M->GetByte(SRMSGMOD, SRMSGSET_SHOWTYPINGCLIST, SRMSGDEFSET_SHOWTYPINGCLIST)) {
+			if(!hwnd && !M->GetByte(SRMSGMOD, SRMSGSET_SHOWTYPINGNOWINOPEN, 1))
+				fShowOnClist = FALSE;
+			if(hwnd && !M->GetByte(SRMSGMOD, SRMSGSET_SHOWTYPINGWINOPEN, 1))
+				fShowOnClist = FALSE;
+		}
+		else
+			fShowOnClist = FALSE;
+
+		if((!foundWin || !(pContainer->dwFlags&CNT_NOSOUND)) && preTyping != (lParam != 0)){
+			if (lParam)
+				SkinPlaySound("TNStart");
+			else
+				SkinPlaySound("TNStop");
+		}
+
+		if(M->GetByte(SRMSGMOD, "ShowTypingPopup", 0)) {
+			BOOL	fShow = FALSE;
+			int		iMode = M->GetByte("MTN_PopupMode", 0);
+
+			switch(iMode) {
+				case 0:
 					fShow = TRUE;
-				break;
-			case 2:
-				if(hwnd == 0)
-					fShow = TRUE;
-				else {
-					if(PluginConfig.m_HideOnClose) {
-						struct	ContainerWindowData *pContainer = 0;
-						SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
-						if(pContainer && pContainer->fHidden)
-							fShow = TRUE;
+					break;
+				case 1:
+					if(!foundWin || !(pContainer && pContainer->hwndActive == hwnd && GetForegroundWindow() == pContainer->hwnd))
+						fShow = TRUE;
+					break;
+				case 2:
+					if(hwnd == 0)
+						fShow = TRUE;
+					else {
+						if(PluginConfig.m_HideOnClose) {
+							struct	ContainerWindowData *pContainer = 0;
+							SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
+							if(pContainer && pContainer->fHidden)
+								fShow = TRUE;
+						}
 					}
-				}
-				break;
+					break;
+			}
+			if(fShow)
+				TN_TypingMessage(wParam, lParam);
 		}
-		if(fShow)
-			TN_TypingMessage(wParam, lParam);
-	}
 
-	if ((int) lParam) {
-		TCHAR szTip[256];
+		if ((int) lParam) {
+			TCHAR szTip[256];
 
-		_sntprintf(szTip, SIZEOF(szTip), CTranslator::get(CTranslator::GEN_MTN_STARTWITHNICK), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCDNF_TCHAR));
-		if (fShowOnClist && ServiceExists(MS_CLIST_SYSTRAY_NOTIFY) && M->GetByte(SRMSGMOD, "ShowTypingBalloon", 0)) {
-			MIRANDASYSTRAYNOTIFY tn;
-			tn.szProto = NULL;
-			tn.cbSize = sizeof(tn);
-			tn.tszInfoTitle = const_cast<TCHAR *>(CTranslator::get(CTranslator::GEN_MTN_TTITLE));
-			tn.tszInfo = szTip;
-#ifdef UNICODE
-			tn.dwInfoFlags = NIIF_INFO | NIIF_INTERN_UNICODE;
-#else
-			tn.dwInfoFlags = NIIF_INFO;
-#endif
-			tn.uTimeout = 1000 * 4;
-			CallService(MS_CLIST_SYSTRAY_NOTIFY, 0, (LPARAM) & tn);
-		}
-		if(fShowOnClist) {
-			CLISTEVENT cle;
+			_sntprintf(szTip, SIZEOF(szTip), CTranslator::get(CTranslator::GEN_MTN_STARTWITHNICK), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCDNF_TCHAR));
+			if (fShowOnClist && ServiceExists(MS_CLIST_SYSTRAY_NOTIFY) && M->GetByte(SRMSGMOD, "ShowTypingBalloon", 0)) {
+				MIRANDASYSTRAYNOTIFY tn;
+				tn.szProto = NULL;
+				tn.cbSize = sizeof(tn);
+				tn.tszInfoTitle = const_cast<TCHAR *>(CTranslator::get(CTranslator::GEN_MTN_TTITLE));
+				tn.tszInfo = szTip;
+	#ifdef UNICODE
+				tn.dwInfoFlags = NIIF_INFO | NIIF_INTERN_UNICODE;
+	#else
+				tn.dwInfoFlags = NIIF_INFO;
+	#endif
+				tn.uTimeout = 1000 * 4;
+				CallService(MS_CLIST_SYSTRAY_NOTIFY, 0, (LPARAM) & tn);
+			}
+			if(fShowOnClist) {
+				CLISTEVENT cle;
 
-			ZeroMemory(&cle, sizeof(cle));
-			cle.cbSize = sizeof(cle);
-			cle.hContact = (HANDLE) wParam;
-			cle.hDbEvent = (HANDLE) 1;
-			cle.flags = CLEF_ONLYAFEW | CLEF_TCHAR;
-			cle.hIcon = PluginConfig.g_buttonBarIcons[5];
-			cle.pszService = "SRMsg/TypingMessage";
-			cle.ptszTooltip = szTip;
-			CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
-			CallServiceSync(MS_CLIST_ADDEVENT, wParam, (LPARAM) & cle);
+				ZeroMemory(&cle, sizeof(cle));
+				cle.cbSize = sizeof(cle);
+				cle.hContact = (HANDLE) wParam;
+				cle.hDbEvent = (HANDLE) 1;
+				cle.flags = CLEF_ONLYAFEW | CLEF_TCHAR;
+				cle.hIcon = PluginConfig.g_buttonBarIcons[5];
+				cle.pszService = "SRMsg/TypingMessage";
+				cle.ptszTooltip = szTip;
+				CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
+				CallServiceSync(MS_CLIST_ADDEVENT, wParam, (LPARAM) & cle);
+			}
 		}
 	}
 	return 0;
@@ -670,46 +673,6 @@ int CMimAPI::ProtoAck(WPARAM wParam, LPARAM lParam)
 			SendMessage(jobs[iFound].hwndOwner, HM_EVENTSENT, (WPARAM)MAKELONG(iFound, i), lParam);
 			return 0;
 		}
-	}
-	else if(pAck->type == ACKTYPE_STATUS) {
-		/*
-		if (pAck->hContact != 0 && (PluginConfig.m_LogStatusChanges != 0)) {
-			WORD				wStatus, wOldStatus;
-			CContactCache*		c = PluginConfig.getContactCache(pAck->hContact);
-
-			c->updateState();
-			wStatus = c->getStatus();
-			wOldStatus = c->getOldStatus();
-
-			if (pAck->hContact != 0 && wOldStatus != (WORD)-1) {          // log status changes to message log
-				DBEVENTINFO 	dbei;
-				TCHAR 			buffer[450];
-				HANDLE 			hNewEvent;
-
-				wStatus = DBGetContactSettingWord(pAck->hContact, pAck->szModule, "Status", ID_STATUS_OFFLINE);
-
-				TCHAR*	szOldStatus = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)wOldStatus, GCMDF_TCHAR);
-				TCHAR*	szNewStatus = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)wStatus, GCMDF_TCHAR);
-
-				if (pAck->szModule != NULL) {
-					if (wStatus == ID_STATUS_OFFLINE)
-						mir_sntprintf(buffer, safe_sizeof(buffer), CTranslator::get(CTranslator::GEN_MSG_SIGNEDOFF));
-					else if (wOldStatus == ID_STATUS_OFFLINE)
-						mir_sntprintf(buffer, safe_sizeof(buffer), CTranslator::get(CTranslator::GEN_MSG_SIGNEDON), szNewStatus);
-					else
-						mir_sntprintf(buffer, safe_sizeof(buffer), CTranslator::get(CTranslator::GEN_MSG_CHANGEDSTATUS), szOldStatus, szNewStatus);
-				}
-				dbei.pBlob = (PBYTE)M->utf8_encodeT(buffer);
-				dbei.cbBlob = lstrlenA((char *)dbei.pBlob) + 1;
-				dbei.flags = DBEF_UTF | DBEF_READ;
-				dbei.cbSize = sizeof(dbei);
-				dbei.eventType = EVENTTYPE_STATUSCHANGE;
-				dbei.timestamp = time(NULL);
-				dbei.szModule = const_cast<char *>(pAck->szModule);
-				hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) pAck->hContact, (LPARAM) & dbei);
-			}
-		}
-		*/
 	}
 	return 0;
 }

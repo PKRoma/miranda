@@ -39,6 +39,143 @@
 extern RECT	  			rcLastStatusBarClick;
 extern RTFColorTable*	rtf_ctable;
 
+/**
+ * generic command handler for message windows.
+ * used in various places (context menus, info panel menus etc.)
+ */
+
+LRESULT TSAPI DM_CmdHandler(_MessageWindowData *dat)
+{
+	return(0);
+}
+
+/**
+ * initialize rich edit control (log and edit control) for both MUC and
+ * standard IM session windows.
+ */
+void TSAPI DM_InitRichEdit(_MessageWindowData *dat)
+
+{
+	char*				szStreamOut = NULL;
+	SETTEXTEX 			stx = {ST_DEFAULT, CP_UTF8};
+	COLORREF 			colour = M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
+	COLORREF 			inputcharcolor;
+	CHARFORMAT2A 		cf2;
+	LOGFONTA 			lf;
+	int 				i = 0;
+	bool				fIsChat = ((dat->bType == SESSIONTYPE_CHAT) ? true : false);
+	HWND				hwndLog = GetDlgItem(dat->hwnd, !fIsChat ? IDC_LOG : IDC_CHAT_LOG);
+	HWND				hwndEdit= GetDlgItem(dat->hwnd, !fIsChat ? IDC_MESSAGE : IDC_CHAT_MESSAGE);
+	HWND				hwndDlg = dat->hwnd;
+
+	ZeroMemory(&cf2, sizeof(CHARFORMAT2A));
+
+	dat->inputbg = fIsChat ? M->GetDword(FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR) : dat->theme.inputbg;
+
+	if(!fIsChat) {
+		if (GetWindowTextLengthA(hwndEdit) > 0)
+			szStreamOut = Message_GetFromStream(hwndEdit, dat, (CP_UTF8 << 16) | (SF_RTFNOOBJS | SFF_PLAINRTF | SF_USECODEPAGE));
+	}
+
+	SendMessage(hwndLog, EM_SETBKGNDCOLOR, 0, colour);
+	SendMessage(hwndEdit, EM_SETBKGNDCOLOR, 0, dat->inputbg);
+
+	if(fIsChat)
+		LoadLogfont(MSGFONTID_MESSAGEAREA, &lf, &inputcharcolor, FONTMODULE);
+	else {
+		lf = dat->theme.logFonts[MSGFONTID_MESSAGEAREA];
+		inputcharcolor = dat->theme.fontColors[MSGFONTID_MESSAGEAREA];
+	}
+	/*
+	 * correct the input area text color to avoid a color from the table of usable bbcode colors
+	 */
+	if(!fIsChat) {
+		for (i = 0; i < PluginConfig.rtf_ctablesize; i++) {
+			if (rtf_ctable[i].clr == inputcharcolor)
+				inputcharcolor = RGB(GetRValue(inputcharcolor), GetGValue(inputcharcolor), GetBValue(inputcharcolor) == 0 ? GetBValue(inputcharcolor) + 1 : GetBValue(inputcharcolor) - 1);
+		}
+	}
+	if(fIsChat) {
+		cf2.dwMask = CFM_COLOR | CFM_FACE | CFM_CHARSET | CFM_SIZE | CFM_WEIGHT | CFM_ITALIC | CFM_BACKCOLOR;
+		cf2.cbSize = sizeof(cf2);
+		cf2.crTextColor = inputcharcolor;
+		cf2.bCharSet = lf.lfCharSet;
+		cf2.crBackColor = dat->inputbg;
+		strncpy(cf2.szFaceName, lf.lfFaceName, LF_FACESIZE);
+		cf2.dwEffects = 0;
+		cf2.wWeight = (WORD)lf.lfWeight;
+		cf2.bPitchAndFamily = lf.lfPitchAndFamily;
+		cf2.yHeight = abs(lf.lfHeight) * 15;
+		SetWindowText(hwndEdit, _T(""));
+		SendMessage(hwndEdit, EM_SETCHARFORMAT, 0, (LPARAM)&cf2);
+	}
+	else {
+		cf2.dwMask = CFM_COLOR | CFM_FACE | CFM_CHARSET | CFM_SIZE | CFM_WEIGHT | CFM_BOLD | CFM_ITALIC;
+		cf2.cbSize = sizeof(cf2);
+		cf2.crTextColor = inputcharcolor;
+		cf2.bCharSet = lf.lfCharSet;
+		strncpy(cf2.szFaceName, lf.lfFaceName, LF_FACESIZE);
+		cf2.dwEffects = ((lf.lfWeight >= FW_BOLD) ? CFE_BOLD : 0) | (lf.lfItalic ? CFE_ITALIC : 0)|(lf.lfUnderline ? CFE_UNDERLINE : 0)|(lf.lfStrikeOut ? CFE_STRIKEOUT : 0);
+		cf2.wWeight = (WORD)lf.lfWeight;
+		cf2.bPitchAndFamily = lf.lfPitchAndFamily;
+		cf2.yHeight = abs(lf.lfHeight) * 15;
+		SendMessageA(hwndEdit, EM_SETCHARFORMAT, 0, (LPARAM)&cf2);
+	}
+
+	/*
+	 * setup the rich edit control(s)
+	 * LOG is always set to RTL, because this is needed for proper bidirectional operation later.
+	 * The real text direction is then enforced by the streaming code which adds appropiate paragraph
+	 * and textflow formatting commands to the
+	 */
+
+	_PARAFORMAT2 pf2 = {0};
+
+	pf2.cbSize = sizeof(pf2);
+
+	pf2.wEffects = PFE_RTLPARA;
+	pf2.dwMask = PFM_RTLPARA;
+	if (FindRTLLocale(dat))
+		SendMessage(hwndEdit, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
+	if (!(dat->dwFlags & MWF_LOG_RTL)) {
+		pf2.wEffects = 0;
+		SendMessage(hwndEdit, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
+	}
+	SendMessage(hwndEdit, EM_SETLANGOPTIONS, 0, (LPARAM) SendMessage(hwndEdit, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
+	pf2.wEffects = PFE_RTLPARA;
+	pf2.dwMask |= PFM_OFFSET;
+	if (dat->dwFlags & MWF_INITMODE) {
+		pf2.dwMask |= (PFM_RIGHTINDENT | PFM_OFFSETINDENT);
+		pf2.dxStartIndent = 30;
+		pf2.dxRightIndent = 30;
+	}
+	pf2.dxOffset = dat->theme.left_indent + 30;
+	if(!fIsChat) {
+		SetWindowText(hwndLog, _T(""));
+		SendMessage(hwndLog, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
+		SendMessage(hwndLog, EM_SETLANGOPTIONS, 0, (LPARAM) SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
+	}
+
+	/*
+	 * set the scrollbars etc to RTL/LTR (only for manual RTL mode)
+	 */
+
+	if(!fIsChat) {
+		if (dat->dwFlags & MWF_LOG_RTL) {
+			SetWindowLongPtr(hwndEdit, GWL_EXSTYLE, GetWindowLongPtr(hwndEdit, GWL_EXSTYLE) | WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR);
+			SetWindowLongPtr(hwndLog, GWL_EXSTYLE, GetWindowLongPtr(hwndLog, GWL_EXSTYLE) | WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR);
+		} else {
+			SetWindowLongPtr(hwndEdit, GWL_EXSTYLE, GetWindowLongPtr(hwndEdit, GWL_EXSTYLE) &~(WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
+			SetWindowLongPtr(hwndLog, GWL_EXSTYLE, GetWindowLongPtr(hwndLog, GWL_EXSTYLE) &~(WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
+		}
+		SetWindowText(hwndEdit, _T(""));
+	}
+	if (szStreamOut != NULL) {
+		SendMessage(hwndEdit, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szStreamOut);
+		free(szStreamOut);
+	}
+}
+
 /*
 * action and callback procedures for the stock button objects
 */
@@ -496,6 +633,14 @@ LRESULT TSAPI DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct _MessageWi
 			return 0;
 		}
 	}
+	if (mwdat->bType == SESSIONTYPE_CHAT) {					// scroll nick list by just hovering it
+		RECT	rcNicklist;
+		GetWindowRect(GetDlgItem(mwdat->hwnd, IDC_LIST), &rcNicklist);
+		if (PtInRect(&rcNicklist, pt)) {
+			SendMessage(GetDlgItem(mwdat->hwnd, IDC_LIST), WM_MOUSEWHEEL, wParam, lParam);
+			return(0);
+		}
+	}
 	if (mwdat->hwndIEView)
 		GetWindowRect(mwdat->hwndIEView, &rc);
 	else if (mwdat->hwndHPP)
@@ -668,92 +813,7 @@ void TSAPI DM_OptionsApplied(_MessageWindowData *dat, WPARAM wParam, LPARAM lPar
 	SetDialogToType(hwndDlg);
 	SendMessage(hwndDlg, DM_CONFIGURETOOLBAR, 0, 0);
 
-	{
-		char *szStreamOut = NULL;
-		SETTEXTEX stx = {ST_DEFAULT, CP_UTF8};
-		COLORREF colour = M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
-		COLORREF inputcharcolor;
-		CHARFORMAT2A cf2;
-		LOGFONTA lf;
-		int i = 0;
-
-		ZeroMemory(&cf2, sizeof(CHARFORMAT2A));
-		dat->inputbg = dat->theme.inputbg;
-		if (GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) > 0)
-			szStreamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, (CP_UTF8 << 16) | (SF_RTFNOOBJS | SFF_PLAINRTF | SF_USECODEPAGE));
-
-		SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETBKGNDCOLOR, 0, colour);
-		SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETBKGNDCOLOR, 0, dat->inputbg);
-		lf = dat->theme.logFonts[MSGFONTID_MESSAGEAREA];
-		inputcharcolor = dat->theme.fontColors[MSGFONTID_MESSAGEAREA];
-		/*
-		 * correct the input area text color to avoid a color from the table of usable bbcode colors
-		 */
-		for (i = 0; i < PluginConfig.rtf_ctablesize; i++) {
-			if (rtf_ctable[i].clr == inputcharcolor)
-				inputcharcolor = RGB(GetRValue(inputcharcolor), GetGValue(inputcharcolor), GetBValue(inputcharcolor) == 0 ? GetBValue(inputcharcolor) + 1 : GetBValue(inputcharcolor) - 1);
-		}
-		cf2.dwMask = CFM_COLOR | CFM_FACE | CFM_CHARSET | CFM_SIZE | CFM_WEIGHT | CFM_BOLD | CFM_ITALIC;
-		cf2.cbSize = sizeof(cf2);
-		cf2.crTextColor = inputcharcolor;
-		cf2.bCharSet = lf.lfCharSet;
-		strncpy(cf2.szFaceName, lf.lfFaceName, LF_FACESIZE);
-		cf2.dwEffects = ((lf.lfWeight >= FW_BOLD) ? CFE_BOLD : 0) | (lf.lfItalic ? CFE_ITALIC : 0)|(lf.lfUnderline ? CFE_UNDERLINE : 0)|(lf.lfStrikeOut ? CFE_STRIKEOUT : 0);
-		cf2.wWeight = (WORD)lf.lfWeight;
-		cf2.bPitchAndFamily = lf.lfPitchAndFamily;
-		cf2.yHeight = abs(lf.lfHeight) * 15;
-		SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, 0, (LPARAM)&cf2);
-
-		/*
-		 * setup the rich edit control(s)
-		 * LOG is always set to RTL, because this is needed for proper bidirectional operation later.
-		 * The real text direction is then enforced by the streaming code which adds appropiate paragraph
-		 * and textflow formatting commands to the
-		 */
-		{
-			_PARAFORMAT2 pf2;
-			ZeroMemory((void *)&pf2, sizeof(pf2));
-			pf2.cbSize = sizeof(pf2);
-
-			pf2.wEffects = PFE_RTLPARA;// dat->dwFlags & MWF_LOG_RTL ? PFE_RTLPARA : 0;
-			pf2.dwMask = PFM_RTLPARA;
-			if (FindRTLLocale(dat))
-				SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
-			if (!(dat->dwFlags & MWF_LOG_RTL)) {
-				pf2.wEffects = 0;
-				SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
-			}
-			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETLANGOPTIONS, 0, (LPARAM) SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
-			pf2.wEffects = PFE_RTLPARA;
-			pf2.dwMask |= PFM_OFFSET;
-			if (dat->dwFlags & MWF_INITMODE) {
-				pf2.dwMask |= (PFM_RIGHTINDENT | PFM_OFFSETINDENT);
-				pf2.dxStartIndent = 30;
-				pf2.dxRightIndent = 30;
-			}
-			pf2.dxOffset = dat->theme.left_indent + 30;
-			SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
-			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
-			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETLANGOPTIONS, 0, (LPARAM) SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
-		}
-
-		/*
-		 * set the scrollbars etc to RTL/LTR (only for manual RTL mode)
-		 */
-
-		if (dat->dwFlags & MWF_LOG_RTL) {
-			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE) | WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR);
-			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE) | WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR);
-		} else {
-			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE) &~(WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
-			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE) &~(WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
-		}
-		SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
-		if (szStreamOut != NULL) {
-			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szStreamOut);
-			free(szStreamOut);
-		}
-	}
+	DM_InitRichEdit(dat);
 	if (hwndDlg == m_pContainer->hwndActive)
 		SendMessage(m_pContainer->hwnd, WM_SIZE, 0, 0);
 	InvalidateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, FALSE);

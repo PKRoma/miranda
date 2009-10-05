@@ -94,7 +94,6 @@ public:
 	void		reloadSettings();
 
 	void		hookSystemEvents();
-	void		hookPluginEvents();
 
 	const HMENU getMenuBar();
 
@@ -196,11 +195,17 @@ public:
 	HANDLE		hSvc[SERVICE_LAST];
 	HANDLE		m_event_MsgWin, m_event_MsgPopup;
 	HANDLE		m_hMenuItem;
-	TSplitterBroadCast lastSPlitterPos;
-	static HANDLE		m_event_FoldersChanged;
+
+	TSplitterBroadCast 		lastSPlitterPos;
+	static HANDLE			m_event_FoldersChanged;
 	static  CContactCache*	getContactCache(const HANDLE hContact);
 	static	void			cacheUpdateMetaChanged();
+	static  void 			logStatusChange(const CContactCache *c);
 
+	static  void 			 Ex_CopyEditToClipboard(HWND hWnd);
+	static  void 			 Ex_Handler();
+	static 	int				 Ex_ShowDialog(EXCEPTION_POINTERS *ep, const char *szFile, int line);
+	static  INT_PTR CALLBACK Ex_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 private:
 	bool				m_TypingSoundAdded;
 	static HANDLE		m_event_ModulesLoaded, m_event_PrebuildMenu, m_event_SettingChanged;
@@ -213,7 +218,11 @@ private:
 	static TCCache*		m_cCache;
 	static size_t		m_cCacheSize, m_cCacheSizeAlloced;
 
-
+	static EXCEPTION_RECORD m_exRecord;
+	static CONTEXT			m_exCtx;
+	static LRESULT			m_exLastResult;
+	static char				m_exSzFile[MAX_PATH];
+	static int				m_exLine;
 private:
 	static	int		ModulesLoaded(WPARAM wParam, LPARAM lParam);
 	static	int 	DBSettingChanged(WPARAM wParam, LPARAM lParam);

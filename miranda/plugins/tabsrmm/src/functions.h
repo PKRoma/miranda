@@ -192,5 +192,6 @@ HANDLE		TSAPI	SendLater_ProcessAck		(const ACKDATA *ack);
 void		TSAPI	SendLater_ClearAll			();
 int			TSAPI	SendLater_SendIt			(const char *szSetting, LPARAM lParam);
 int 		_cdecl	SendLater_AddJob			(const char *szSetting, LPARAM lParam);
+void 		TSAPI	DrawMenuItem				(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle);
 
 #endif /* _TABSRMM_FUNCTIONS_H */

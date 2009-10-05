@@ -199,7 +199,11 @@ public:
 		GEN_MUC_MENU_EDITHIGHLIGHTLIST							= 156,
 		GEN_MSG_CONTACT_NOT_ON_LIST								= 157,
 		GEN_SQ_SENDLATER_SUCCESS_POPUP							= 158,
-		STR_LAST 												= 159
+		GEN_IP_MENU_COPY										= 159,
+		GEN_IP_MENU_USER_DETAILS								= 160,
+		GEN_IP_MENU_MSGPREFS									= 161,
+		GEN_IP_MENU_ROOMPREFS									= 162,
+		STR_LAST 												= 163
 	};
 
 	enum {

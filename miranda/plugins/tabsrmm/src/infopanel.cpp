@@ -108,7 +108,6 @@ void CInfoPanel::saveHeight(bool fFlush)
 		}
 		else
 			M->WriteDword(m_dat->hContact, SRMSGMOD_T, "panelheight", MAKELONG(m_height, 0xffff));
-
 	}
 }
 
@@ -211,6 +210,24 @@ bool CInfoPanel::getVisibility()
 	return(m_active);
 }
 
+void CInfoPanel::mapRealRect(const RECT& rcSrc, RECT& rcDest, const SIZE& sz)
+{
+	rcDest.left = rcSrc.left;
+	rcDest.right = rcDest.left + sz.cx;
+	rcDest.top = rcSrc.top + (((rcSrc.bottom - rcSrc.top) - sz.cy) / 2);
+	rcDest.bottom = rcDest.top + sz.cy;
+}
+
+HFONT CInfoPanel::setUnderlinedFont(const HDC hdc, HFONT hFontOrig)
+{
+	LOGFONT lf;
+
+	::GetObject(hFontOrig, sizeof(lf), &lf);
+	lf.lfUnderline = 1;
+
+	HFONT hFontNew = ::CreateFontIndirect(&lf);
+	return((HFONT)::SelectObject(hdc, hFontNew));
+}
 /**
  * Render the info panel background.
  *
@@ -337,30 +354,28 @@ void CInfoPanel::RenderIPNickname(const HDC hdc, RECT& rcItem)
 
 	szStatusMsg = m_dat->statusMsg;
 
-	SetBkMode(hdc, TRANSPARENT);
+	::SetBkMode(hdc, TRANSPARENT);
 
 	rcItem.left += 2;
 	if (szTextToShow[0]) {
 		HFONT hOldFont = 0;
 		HICON xIcon = 0;
 
-		xIcon = GetXStatusIcon(m_dat);
+		xIcon = ::GetXStatusIcon(m_dat);
 
 		if (xIcon) {
-			DrawIconEx(hdc, rcItem.left, (rcItem.bottom + rcItem.top - PluginConfig.m_smcyicon) / 2, xIcon, PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
-			DestroyIcon(xIcon);
+			::DrawIconEx(hdc, rcItem.left, (rcItem.bottom + rcItem.top - PluginConfig.m_smcyicon) / 2, xIcon, PluginConfig.m_smcxicon, PluginConfig.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
+			::DestroyIcon(xIcon);
 			rcItem.left += 21;
 		}
 
-		if (m_ipConfig.isValid) {
-			if(fShowUin) {
-				hOldFont = (HFONT)SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_UIN]);
-				clr = m_ipConfig.clrs[IPFONTID_UIN];
-			}
-			else {
-				hOldFont = (HFONT)SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_NICK]);
-				clr = m_ipConfig.clrs[IPFONTID_NICK];
-			}
+		if(fShowUin) {
+			hOldFont = (HFONT)::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_UIN]);
+			clr = m_ipConfig.clrs[IPFONTID_UIN];
+		}
+		else {
+			hOldFont = (HFONT)::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_NICK]);
+			clr = m_ipConfig.clrs[IPFONTID_NICK];
 		}
 
 		m_szNick.cx = m_szNick.cy = 0;
@@ -369,21 +384,28 @@ void CInfoPanel::RenderIPNickname(const HDC hdc, RECT& rcItem)
 			SIZE sStatusMsg, sMask;
 			DWORD dtFlags, dtFlagsNick;
 
-			GetTextExtentPoint32(hdc, szTextToShow, lstrlen(szTextToShow), &m_szNick);
-			GetTextExtentPoint32(hdc, _T("A"), 1, &sMask);
-			GetTextExtentPoint32(hdc, szStatusMsg, lstrlen(szStatusMsg), &sStatusMsg);
+			::GetTextExtentPoint32(hdc, szTextToShow, lstrlen(szTextToShow), &m_szNick);
+			::GetTextExtentPoint32(hdc, _T("A"), 1, &sMask);
+			::GetTextExtentPoint32(hdc, szStatusMsg, lstrlen(szStatusMsg), &sStatusMsg);
 			dtFlagsNick = DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_NOPREFIX;
 			if ((m_szNick.cx + sStatusMsg.cx + 6) < (rcItem.right - rcItem.left) || (rcItem.bottom - rcItem.top) < (2 * sMask.cy))
 				dtFlagsNick |= DT_VCENTER;
+			mapRealRect(rcItem, m_rcNick, m_szNick);
+
+			if(m_hoverFlags & HOVER_NICK)
+				setUnderlinedFont(hdc, fShowUin ? m_ipConfig.hFonts[IPFONTID_UIN] : m_ipConfig.hFonts[IPFONTID_NICK]);
+
 			CSkin::RenderText(hdc, m_dat->hThemeIP, szTextToShow, &rcItem, dtFlagsNick, CSkin::m_glowSize, clr);
-			if (m_ipConfig.isValid) {
-				SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_STATUS]);
-				clr = m_ipConfig.clrs[IPFONTID_STATUS];
-			}
+
+			HFONT hFont = (HFONT)::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_STATUS]);
+			if(m_hoverFlags & HOVER_NICK)
+				::DeleteObject(hFont);
+
+			clr = m_ipConfig.clrs[IPFONTID_STATUS];
+
 			rcItem.left += (m_szNick.cx + 10);
 
 			if (!(dtFlagsNick & DT_VCENTER))
-				//if(dis->rcItem.bottom - dis->rcItem.top >= 2 * sStatusMsg.cy)
 				dtFlags = DT_WORDBREAK | DT_END_ELLIPSIS | DT_NOPREFIX;
 			else
 				dtFlags = DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | DT_VCENTER;
@@ -392,11 +414,17 @@ void CInfoPanel::RenderIPNickname(const HDC hdc, RECT& rcItem)
 			rcItem.right -= 3;
 			if (rcItem.left + 30 < rcItem.right)
 				CSkin::RenderText(hdc, m_dat->hThemeIP, szStatusMsg, &rcItem, dtFlags, CSkin::m_glowSize, clr);
-		} else
+		} else {
+			GetTextExtentPoint32(hdc, szTextToShow, lstrlen(szTextToShow), &m_szNick);
+			mapRealRect(rcItem, m_rcNick, m_szNick);
+			if(m_hoverFlags & HOVER_NICK)
+				setUnderlinedFont(hdc, fShowUin ? m_ipConfig.hFonts[IPFONTID_UIN] : m_ipConfig.hFonts[IPFONTID_NICK]);
 			CSkin::RenderText(hdc, m_dat->hThemeIP, szTextToShow, &rcItem, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX, CSkin::m_glowSize, clr);
-
+			if(m_hoverFlags & HOVER_NICK)
+				::DeleteObject(::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_UIN]));
+		}
 		if (hOldFont)
-			SelectObject(hdc, hOldFont);
+			::SelectObject(hdc, hOldFont);
 	}
 }
 
@@ -410,19 +438,21 @@ void CInfoPanel::RenderIPNickname(const HDC hdc, RECT& rcItem)
 void CInfoPanel::RenderIPUIN(const HDC hdc, RECT& rcItem)
 {
 	TCHAR		szBuf[256];
-	BOOL 		config = m_ipConfig.isValid;
 	HFONT 		hOldFont = 0;
 	CSkinItem*	item = &SkinItems[ID_EXTBKINFOPANEL];
 	const TCHAR* tszUin = m_dat->cache->getUIN();
 	COLORREF	clr = 0;
 
-	SetBkMode(hdc, TRANSPARENT);
+	::SetBkMode(hdc, TRANSPARENT);
 
 	rcItem.left += 2;
-	if (config) {
-		hOldFont = (HFONT)SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_UIN]);
-		clr = m_ipConfig.clrs[IPFONTID_UIN];
-	}
+
+	if(m_hoverFlags & HOVER_UIN)
+		hOldFont = setUnderlinedFont(hdc, m_ipConfig.hFonts[IPFONTID_UIN]);
+	else
+		hOldFont = (HFONT)::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_UIN]);
+	clr = m_ipConfig.clrs[IPFONTID_UIN];
+
 	if (tszUin[0]) {
 		SIZE sUIN;
 		if (m_dat->idle) {
@@ -430,15 +460,20 @@ void CInfoPanel::RenderIPUIN(const HDC hdc, RECT& rcItem)
 			int i_hrs = diff / 3600;
 			int i_mins = (diff - i_hrs * 3600) / 60;
 			mir_sntprintf(szBuf, safe_sizeof(szBuf), _T("%s    Idle: %dh,%02dm"), tszUin, i_hrs, i_mins);
-			GetTextExtentPoint32(hdc, szBuf, lstrlen(szBuf), &sUIN);
+			::GetTextExtentPoint32(hdc, szBuf, lstrlen(szBuf), &sUIN);
+			mapRealRect(rcItem, m_rcUIN, sUIN);
 			CSkin::RenderText(hdc, m_dat->hThemeIP, szBuf, &rcItem, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize, clr);
 		} else {
-			GetTextExtentPoint32(hdc, tszUin, lstrlen(tszUin), &sUIN);
+			::GetTextExtentPoint32(hdc, tszUin, lstrlen(tszUin), &sUIN);
+			mapRealRect(rcItem, m_rcUIN, sUIN);
 			CSkin::RenderText(hdc, m_dat->hThemeIP, tszUin, &rcItem, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize, clr);
 		}
 	}
+	if(m_hoverFlags & HOVER_UIN)
+		::DeleteObject(::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_UIN]));
+
 	if (hOldFont)
-		SelectObject(hdc, hOldFont);
+		::SelectObject(hdc, hOldFont);
 }
 
 /**
@@ -453,7 +488,6 @@ void CInfoPanel::RenderIPStatus(const HDC hdc, RECT& rcItem)
 	DWORD		oldPanelStatusCX = m_dat->panelStatusCX;
 	RECT		rc;
 	HFONT		hOldFont = 0;
-	BOOL		config = m_ipConfig.isValid;
 	CSkinItem 	*item = &SkinItems[ID_EXTBKINFOPANEL];
 	const TCHAR *szFinalProto = NULL;
 	TCHAR 		szResult[80];
@@ -472,8 +506,7 @@ void CInfoPanel::RenderIPStatus(const HDC hdc, RECT& rcItem)
 	szFinalProto = m_dat->cache->getRealAccount();
 
 	if (szFinalProto) {
-		if (config)
-			SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_PROTO]);
+		SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_PROTO]);
 		GetTextExtentPoint32(hdc, szFinalProto, lstrlen(szFinalProto), &sProto);
 	}
 
@@ -510,40 +543,37 @@ void CInfoPanel::RenderIPStatus(const HDC hdc, RECT& rcItem)
 		symbolic_time[0] = (TCHAR)(0xB7 + base_hour);
 		symbolic_time[1] = 0;
 		CSkin::RenderText(hdc, m_dat->hThemeIP, symbolic_time, &rcItem, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize, 0);
-		if (config) {
-			oldFont = (HFONT)SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_TIME]);
-			clr = m_ipConfig.clrs[IPFONTID_TIME];
-		}
+		oldFont = (HFONT)SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_TIME]);
+		clr = m_ipConfig.clrs[IPFONTID_TIME];
 		rcItem.left += 16;
 		CSkin::RenderText(hdc, m_dat->hThemeIP, szResult, &rcItem, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize, clr);
 		SelectObject(hdc, oldFont);
 		rc.left += (sTime.cx + 20);
 	}
 
-	if (config)
-		hOldFont = (HFONT)SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_STATUS]);
+	hOldFont = (HFONT)SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_STATUS]);
 
 	if (m_dat->szStatus[0]) {
-		if (config) {
-			SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_STATUS]);
-			clr = m_ipConfig.clrs[IPFONTID_STATUS];
-		}
+		SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_STATUS]);
+		clr = m_ipConfig.clrs[IPFONTID_STATUS];
+		mapRealRect(rc, m_rcStatus, sStatus);
+		if(m_hoverFlags & HOVER_STATUS)
+			setUnderlinedFont(hdc, m_ipConfig.hFonts[IPFONTID_STATUS]);
 		CSkin::RenderText(hdc, m_dat->hThemeIP, m_dat->szStatus, &rc, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize, clr);
+		if(m_hoverFlags & HOVER_STATUS)
+			::DeleteObject(::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_STATUS]));
 	}
 	if (szFinalProto) {
 		rc.left = rc.right - sProto.cx - 3 - (m_dat->hClientIcon ? 20 : 0);
-		if (config) {
-			SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_PROTO]);
-			clr = m_ipConfig.clrs[IPFONTID_PROTO];
-		} else
-			clr = ::GetSysColor(COLOR_HOTLIGHT);
+		SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_PROTO]);
+		clr = m_ipConfig.clrs[IPFONTID_PROTO];
 		CSkin::RenderText(hdc, m_dat->hThemeIP, szFinalProto, &rc, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize, clr);
 	}
 
 	if (m_dat->hClientIcon)
 		DrawIconEx(hdc, rc.right - 19, (rc.bottom + rc.top - 16) / 2, m_dat->hClientIcon, 16, 16, 0, 0, DI_NORMAL);
 
-	if (config && hOldFont)
+	if (hOldFont)
 		SelectObject(hdc, hOldFont);
 }
 
@@ -575,11 +605,21 @@ void CInfoPanel::Chat_RenderIPNickname(const HDC hdc, RECT& rcItem)
 		CSkin::RenderText(hdc, m_dat->hThemeIP, tszText, &rcItem, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | DT_VCENTER,
 						  CSkin::m_glowSize, m_ipConfig.clrs[IPFONTID_UIN]);
 	} else {
+		const TCHAR	*tszNick = m_dat->cache->getNick();
 
 		hOldFont = (HFONT)::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_NICK]);
-		::GetTextExtentPoint32(hdc, m_dat->cache->getNick(), lstrlen(m_dat->cache->getNick()), &m_szNick);
-		CSkin::RenderText(hdc, m_dat->hThemeIP, m_dat->cache->getNick(), &rcItem, DT_SINGLELINE | DT_NOPREFIX | DT_VCENTER,
+		::GetTextExtentPoint32(hdc, tszNick, lstrlen(tszNick), &m_szNick);
+		mapRealRect(rcItem, m_rcNick, m_szNick);
+
+		if(m_hoverFlags & HOVER_NICK)
+			setUnderlinedFont(hdc, m_ipConfig.hFonts[IPFONTID_NICK]);
+
+		CSkin::RenderText(hdc, m_dat->hThemeIP, tszNick, &rcItem, DT_SINGLELINE | DT_NOPREFIX | DT_VCENTER,
 						  CSkin::m_glowSize, m_ipConfig.clrs[IPFONTID_NICK]);
+
+		if(m_hoverFlags & HOVER_NICK)
+			::DeleteObject(::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_NICK]));
+
 		rcItem.left += (m_szNick.cx + 4);
 
 		::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_STATUS]);
@@ -595,7 +635,7 @@ void CInfoPanel::Chat_RenderIPNickname(const HDC hdc, RECT& rcItem)
 		}
 	}
 	if (hOldFont)
-		SelectObject(hdc, hOldFont);
+		::SelectObject(hdc, hOldFont);
 }
 /**
  * Draw 2nd line of text in the info panel.
@@ -620,10 +660,14 @@ void CInfoPanel::Chat_RenderIPSecondLine(const HDC hdc, RECT& rcItem)
 	const TCHAR *szTopicTitle = CTranslator::get(CTranslator::GEN_MUC_TOPIC_IS);
 	mir_sntprintf(szPrefix, 100, szTopicTitle, _T(""));
 	::GetTextExtentPoint32(hdc, szPrefix, lstrlen(szPrefix), &szTitle);
+	mapRealRect(rcItem, m_rcUIN, szTitle);
+	if(m_hoverFlags & HOVER_UIN)
+		setUnderlinedFont(hdc, m_ipConfig.hFonts[IPFONTID_UIN]);
 	rcItem.right -= 3;
 	CSkin::RenderText(hdc, m_dat->hThemeIP, szPrefix, &rcItem, DT_SINGLELINE | DT_NOPREFIX | DT_TOP, CSkin::m_glowSize, clr);
 	rcItem.left += (szTitle.cx + 4);
-
+	if(m_hoverFlags & HOVER_UIN)
+		::DeleteObject(::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_UIN]));
 	if(si->ptszTopic && lstrlen(si->ptszTopic) > 1)
 		CSkin::RenderText(hdc, m_dat->hThemeIP, si->ptszTopic, &rcItem, DT_WORDBREAK | DT_END_ELLIPSIS | DT_NOPREFIX | DT_TOP, CSkin::m_glowSize, clr);
 	else
@@ -645,10 +689,78 @@ void CInfoPanel::Invalidate() const
 }
 
 /**
+ * build the left click contextual menu for the info panel
+ * @return HMENU: menu handle for the fully prepared menu
+ */
+HMENU CInfoPanel::constructContextualMenu() const
+{
+	MENUITEMINFO mii = {0};
+
+	mii.cbSize 	= sizeof(mii);
+	mii.fMask 	= MIIM_DATA | MIIM_ID | MIIM_BITMAP | MIIM_STRING;
+	mii.hbmpItem = HBMMENU_CALLBACK;
+
+	HMENU m = ::CreatePopupMenu();
+
+	if(m_hoverFlags & HOVER_NICK) {
+		mii.wID = CMD_IP_USERDETAILS;
+		mii.dwTypeData = const_cast<TCHAR *>(CTranslator::get(CTranslator::GEN_IP_MENU_USER_DETAILS));
+		mii.cch = lstrlen(mii.dwTypeData) + 1;
+		mii.dwItemData = (ULONG)LoadSkinnedIcon(SKINICON_OTHER_USERDETAILS);
+		::InsertMenuItem(m, 0, TRUE, &mii);
+		if(!m_isChat) {
+			mii.dwTypeData = const_cast<TCHAR *>(CTranslator::get(CTranslator::GEN_IP_MENU_MSGPREFS));
+			mii.cch = lstrlen(mii.dwTypeData) + 1;
+			mii.dwItemData = (ULONG)PluginConfig.g_iconContainer;
+			mii.wID = CMD_IP_USERPREFS;
+			::InsertMenuItem(m, 1, TRUE, &mii);
+		}
+		else
+			::AppendMenu(m, MF_STRING, CMD_IP_ROOMPREFS, CTranslator::get(CTranslator::GEN_IP_MENU_ROOMPREFS));
+	}
+	else
+		::AppendMenu(m, MF_STRING, 0, _T("More To Come..."));
+
+	::AppendMenu(m, MF_SEPARATOR, 1000, 0);
+	mii.wID = 1000;
+	mii.dwTypeData = const_cast<TCHAR *>(CTranslator::get(CTranslator::GEN_IP_MENU_COPY));
+	mii.cch = lstrlen(mii.dwTypeData) + 1;
+	::AppendMenu(m, MF_STRING, 1000, CTranslator::get(CTranslator::GEN_IP_MENU_COPY));
+
+	return(m);
+}
+
+/**
+ * handle mouse clicks on the info panel.
+ *
+ * @param pt: mouse cursor pos
+ */
+void CInfoPanel::handleClick(const POINT& pt)
+{
+	if(!m_active || m_hoverFlags == 0)
+		return;
+
+	if(!m_isChat) {
+		::KillTimer(m_dat->hwnd, TIMERID_AWAYMSG);
+		::KillTimer(m_dat->hwnd, TIMERID_AWAYMSG + 1);
+		::SendMessage(m_dat->hwndTip, TTM_TRACKACTIVATE, FALSE, 0);
+		m_dat->dwFlagsEx &= ~MWF_SHOW_AWAYMSGTIMER;
+	}
+	HMENU m = constructContextualMenu();
+	//LRESULT r = ::TrackPopupMenu(m, TPM_RETURNCMD, pt.x, pt.y, 0, m_dat->hwnd, NULL);
+
+	::DM_CmdHandler(m_dat);
+	::DestroyMenu(m);
+	m_hoverFlags = 0;
+	Invalidate();
+}
+/**
  * track mouse movements inside the panel. Needed for tooltip activation
+ * and to hover the info panel fields.
+ *
  * @param pt : mouse coordinates (screen)
  */
-void CInfoPanel::trackMouse(POINT& pt) const
+void CInfoPanel::trackMouse(POINT& pt)
 {
 	if(!m_active)
 		return;
@@ -656,25 +768,39 @@ void CInfoPanel::trackMouse(POINT& pt) const
 	POINT ptMouse = pt;
 	::ScreenToClient(m_dat->hwnd, &ptMouse);
 
-	if (::PtInRect(&m_dat->rcStatus, ptMouse)) {
+	DWORD dwOldHovering = m_hoverFlags;
+	m_hoverFlags = 0;
+
+	if (!m_isChat && ::PtInRect(&m_rcStatus, ptMouse)) {
+		m_hoverFlags |= HOVER_STATUS;
+		::SetCursor(LoadCursor(0, IDC_HAND));
 		if (!(m_dat->dwFlagsEx & MWF_SHOW_AWAYMSGTIMER)) {
-			if (m_dat->hClientIcon && pt.x >= m_dat->rcStatus.right - 20)
-				::SetTimer(m_dat->hwnd, TIMERID_AWAYMSG + 2, 500, 0);
-			else
-				::SetTimer(m_dat->hwnd, TIMERID_AWAYMSG, 1000, 0);
+			::SetTimer(m_dat->hwnd, TIMERID_AWAYMSG, 1000, 0);
 			m_dat->dwFlagsEx |= MWF_SHOW_AWAYMSGTIMER;
 		}
-		return;
-	} else if (::PtInRect(&m_dat->rcNick, ptMouse)) {
-		if (!(m_dat->dwFlagsEx & MWF_SHOW_AWAYMSGTIMER)) {
-			::SetTimer(m_dat->hwnd, TIMERID_AWAYMSG + 1, 1000, 0);
-			m_dat->dwFlagsEx |= MWF_SHOW_AWAYMSGTIMER;
+	}
+	else if (::PtInRect(&m_rcUIN, ptMouse)) {
+		::SetCursor(LoadCursor(0, IDC_HAND));
+		m_hoverFlags |= HOVER_UIN;
+	}
+	else if (::PtInRect(&m_rcNick, ptMouse)) {
+		m_hoverFlags |= HOVER_NICK;
+		::SetCursor(LoadCursor(0, IDC_HAND));
+		if(!m_isChat) {
+			if (!(m_dat->dwFlagsEx & MWF_SHOW_AWAYMSGTIMER)) {
+				::SetTimer(m_dat->hwnd, TIMERID_AWAYMSG + 1, 1000, 0);
+				m_dat->dwFlagsEx |= MWF_SHOW_AWAYMSGTIMER;
+			}
 		}
-		return;
 	} else if (::IsWindowVisible(m_dat->hwndTip)) {
 		if (!::PtInRect(&m_dat->rcStatus, ptMouse))
 			SendMessage(m_dat->hwndTip, TTM_TRACKACTIVATE, FALSE, 0);
 	}
+
+	if(dwOldHovering != m_hoverFlags)
+		Invalidate();
+	if(m_hoverFlags == 0)
+		m_dat->dwFlagsEx &= ~MWF_SHOW_AWAYMSGTIMER;
 }
 
 /**
@@ -690,9 +816,11 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 		POINT	pt;
 		TCHAR 	szTitle[256];
 		HWND	hwndDlg = m_dat->hwnd;
+		TCHAR	tszFinalTip[1024];
 
 		if (ctrlId == 0) {
 			rc = m_dat->rcStatus;
+			ctrlId = IDC_PANELSTATUS;
 		}
 		else if(ctrlId == IDC_PANELNICK) {
 			rc = m_dat->rcNick;
@@ -716,10 +844,16 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 		if (lParam)
 			m_dat->ti.lpszText = reinterpret_cast<TCHAR *>(lParam);
 		else {
-			if (lstrlen(m_dat->statusMsg) > 0)
-				m_dat->ti.lpszText = m_dat->statusMsg;
-			else
-				m_dat->ti.lpszText = PluginConfig.m_szNoStatus;
+			DBVARIANT 	dbv = {0};
+
+			BOOL fClient = M->GetTString(m_dat->cache->getActiveContact(), m_dat->cache->getActiveProto(), "MirVer", &dbv);
+
+			mir_sntprintf(tszFinalTip, 1024, _T("%s%s%s"), m_dat->statusMsg[0] ? m_dat->statusMsg : PluginConfig.m_szNoStatus,
+						  !fClient ? _T("\n\nClient: ") : _T(""), !fClient ? dbv.ptszVal : _T(""));
+
+			if(!fClient)
+				::DBFreeVariant(&dbv);
+			m_dat->ti.lpszText = tszFinalTip;
 		}
 		::SendMessage(m_dat->hwndTip, TTM_UPDATETIPTEXT, 0, (LPARAM)&m_dat->ti);
 		::SendMessage(m_dat->hwndTip, TTM_SETMAXTIPWIDTH, 0, 350);
@@ -744,13 +878,9 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 					return;
 				break;
 			}
-			case IDC_PANELSTATUS + 1: {
-				_sntprintf(szTitle, safe_sizeof(szTitle), CTranslator::get(CTranslator::GEN_IP_TIP_CLIENT), m_dat->cache->getNick());
-				szTitle[safe_sizeof(szTitle) - 1] = 0;
-				break;
-			}
 			case IDC_PANELSTATUS: {
 				mir_sntprintf(szTitle, safe_sizeof(szTitle), CTranslator::get(CTranslator::GEN_IP_TIP_STATUSMSG), m_dat->cache->getNick(), m_dat->szStatus);
+
 				break;
 			}
 			default:

@@ -30,6 +30,9 @@
  *
  * contact cache implementation
  *
+ * the contact cache provides various services to the message window(s)
+ * it also abstracts meta contacts.
+ *
  */
 
 #include "commonheaders.h"
@@ -37,12 +40,9 @@
 
 CContactCache::CContactCache(const HANDLE hContact)
 {
-	PROTOACCOUNT*	acc = 0;
-
 	m_hContact = hContact;
 	m_hSubContact = 0;
 	m_szProto = m_szMetaProto = 0;
-	m_szAccount = 0;
 	m_wOldStatus = m_wStatus = m_wMetaStatus = ID_STATUS_OFFLINE;
 	m_idleTS = 0;
 	m_Valid = false;
@@ -59,19 +59,27 @@ CContactCache::CContactCache(const HANDLE hContact)
 #else
 		m_tszProto = m_szProto;
 #endif
-		acc = reinterpret_cast<PROTOACCOUNT *>(::CallService(MS_PROTO_GETACCOUNT, (WPARAM)0, (LPARAM)m_szProto));
-		if(acc && acc->tszAccountName)
-			m_szAccount = acc->tszAccountName;
-
 		initPhaseTwo();
 	}
 }
 
+/**
+ * 2nd part of the object initialization that must be callable during the
+ * object's lifetime (not only on construction).
+ */
 void CContactCache::initPhaseTwo()
 {
+	PROTOACCOUNT*	acc = 0;
+
+	acc = reinterpret_cast<PROTOACCOUNT *>(::CallService(MS_PROTO_GETACCOUNT, (WPARAM)0, (LPARAM)m_szProto));
+	if(acc && acc->tszAccountName)
+		m_szAccount = acc->tszAccountName;
+	else
+		m_szAccount = 0;
+
 	m_Valid = (m_szProto != 0 && m_szAccount != 0) ? true : false;
 	if(m_Valid) {
-		m_isMeta = (PluginConfig.g_MetaContactsAvail && !strcmp(m_szProto, PluginConfig.szMetaName)) ? true : false;
+		m_isMeta = (PluginConfig.bMetaEnabled && !strcmp(m_szProto, PluginConfig.szMetaName)) ? true : false;
 		if(m_isMeta)
 			updateMeta();
 		updateState();
@@ -84,6 +92,29 @@ void CContactCache::initPhaseTwo()
 	}
 }
 
+/**
+ * reset meta contact information. Used when meta contacts are disabled
+ * on user's request.
+ */
+void CContactCache::resetMeta()
+{
+	m_isMeta = false;
+	m_szMetaProto = 0;
+	m_hSubContact = 0;
+	m_tszMetaProto[0] = 0;
+	initPhaseTwo();
+}
+
+/**
+ * if the contact has an open message window, close it.
+ * window procedure will use setWindowData() to reset m_hwnd to 0.
+ */
+void CContactCache::closeWindow()
+{
+	if(m_hwnd)
+		::SendMessage(m_hwnd, WM_CLOSE, 1, 2);
+}
+
 void CContactCache::updateState()
 {
 	updateNick();
@@ -93,12 +124,17 @@ void CContactCache::updateState()
 /**
  * update private copy of the nick name. Use contact list name cache
  */
-void CContactCache::updateNick()
+bool CContactCache::updateNick()
 {
+	bool	fChanged = false;
+
 	if(m_Valid) {
 		TCHAR	*tszNick = reinterpret_cast<TCHAR *>(::CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)m_hContact, GCDNF_TCHAR));
+		if(tszNick)
+			fChanged = (_tcscmp(m_szNick, tszNick) ? true : false);
 		mir_sntprintf(m_szNick, 80, _T("%s"), tszNick ? tszNick : _T("<undef>"));
 	}
+	return(fChanged);
 }
 
 /**
@@ -127,6 +163,7 @@ void CContactCache::updateMeta()
 	if(m_Valid) {
 		HANDLE hSubContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)m_hContact, 0);
 		if (hSubContact && hSubContact != m_hSubContact) {
+			m_hSubContact = hSubContact;
 			m_szMetaProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)m_hSubContact, 0);
 			if (m_szMetaProto) {
 				PROTOACCOUNT *acc = reinterpret_cast<PROTOACCOUNT *>(::CallService(MS_PROTO_GETACCOUNT, (WPARAM)0, (LPARAM)m_szMetaProto));
@@ -223,6 +260,13 @@ void CContactCache::allocStats()
 	}
 }
 
+/**
+ * set the window data for this contact. The window procedure of the message
+ * dialog will use this in WM_INITDIALOG and WM_DESTROY.
+ *
+ * @param hwnd:		window handle
+ * @param dat:		_MessageWindowData - window data structure
+ */
 void CContactCache::setWindowData(const HWND hwnd, _MessageWindowData *dat)
 {
 	m_hwnd = hwnd;
@@ -354,4 +398,41 @@ void CContactCache::allocHistory()
 		ZeroMemory(m_history, sizeof(TInputHistory) * m_iHistorySize);
 	m_history[m_iHistorySize].szText = (TCHAR *)malloc((HISTORY_INITIAL_ALLOCSIZE + 1) * sizeof(TCHAR));
 	m_history[m_iHistorySize].lLen = HISTORY_INITIAL_ALLOCSIZE;
+}
+
+/**
+ * release additional memory resources
+ */
+void CContactCache::releaseAlloced()
+{
+	int i;
+
+	if(m_stats) {
+		delete m_stats;
+		m_stats = 0;
+	}
+
+	if (m_history) {
+		for (i = 0; i <= m_iHistorySize; i++) {
+			if (m_history[i].szText != 0) {
+				free(m_history[i].szText);
+			}
+		}
+		free(m_history);
+		m_history = 0;
+	}
+}
+
+/**
+ * when a contact is deleted, mark it as invalid in the cache and release
+ * all memory it has allocated.
+ */
+void CContactCache::deletedHandler()
+{
+	m_Valid = false;
+	if(m_hwnd)
+		::SendMessage(m_hwnd, WM_CLOSE, 1, 2);
+
+	releaseAlloced();
+	m_hContact = (HANDLE)-1;
 }

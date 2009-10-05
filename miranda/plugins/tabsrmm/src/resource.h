@@ -60,6 +60,9 @@
 #define IDD_SKINTABDIALOG               312
 #define IDD_OPT_SKIN                    313
 #define IDD_OPTIONS_PLUS                333
+#define IDD_EXCEPTION					400
+#define IDC_EXCEPTION_DETAILS			1000
+#define IDC_COPY_EXCEPTION				1001
 #define IDC_UNLOAD                      1000
 #define IDC_READNEXT                    1000
 #define IDC_MINIMIZE                    1000

@@ -28,6 +28,22 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 // Dialog
 //
 
+IDD_EXCEPTION DIALOG DISCARDABLE  0, 0, 370, 131
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "TabSRMM exception"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    EDITTEXT        IDC_EXCEPTION_DETAILS,7,18,356,60,ES_MULTILINE | 
+                    ES_READONLY
+    DEFPUSHBUTTON   "Copy to clipboard",IDC_COPY_EXCEPTION,108,114,80,14
+    PUSHBUTTON      "Continue",IDOK,196,114,80,14
+    PUSHBUTTON      "Exit Miranda",IDCANCEL,284,114,80,14
+    LTEXT           "An application error has occurred:",IDC_STATIC,7,5,256,
+                    9
+    LTEXT           "Although the exception was caught and you may continue working with Mranda, you should restart the program as soon as possible. The exception may have damaged internal data structures and can have a serious impact on stability.",
+                    IDC_STATIC,7,83,352,26
+END
+
 IDD_INFOPANEL DIALOGEX 0, 0, 282, 176
 STYLE DS_FIXEDSYS | WS_CHILD | WS_BORDER
 EXSTYLE WS_EX_CONTROLPARENT
@@ -85,7 +101,7 @@ BEGIN
                     WS_TABSTOP | 0x1,11,210,158,9
     PUSHBUTTON      "Revert to (safe) defaults",IDC_PLUS_REVERT,180,207,111,
                     14
-    CONTROL         "",IDC_PLUS_CHECKTREE,"SysTreeView32", /*TVS_HASBUTTONS | */
+    CONTROL         "",IDC_PLUS_CHECKTREE,"SysTreeView32",
                     TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | 
                     WS_TABSTOP,6,8,294,137
 END
@@ -134,9 +150,8 @@ BEGIN
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
                     UDS_ARROWKEYS,199,196,11,13
     PUSHBUTTON      "Preview",IDC_PREVIEW,261,178,48,46
-    CONTROL         "",IDC_EVENTOPTIONS,"SysTreeView32",/* TVS_HASBUTTONS | */
-                    TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | 
-                    WS_TABSTOP,6,8,303,109
+    CONTROL         "",IDC_EVENTOPTIONS,"SysTreeView32",TVS_DISABLEDRAGDROP | 
+                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,303,109
     CONTROL         "",IDC_COLTEXT_MUC,"ColourPicker",WS_TABSTOP,56,211,24,
                     13
     CONTROL         "",IDC_COLBACK_MUC,"ColourPicker",WS_TABSTOP,92,211,24,
@@ -151,7 +166,8 @@ BEGIN
     CONTROL         "Use the message log color theme for group chat popups",
                     IDC_MUC_LOGCOLORS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     12,225,263,12
-    LTEXT           "No compatible popup plugin was found. The event notification\nsystem is not available.",IDC_NOPOPUPAVAIL,6,30,303,109
+    LTEXT           "No compatible popup plugin was found. The event notification\nsystem is not available.",
+                    IDC_NOPOPUPAVAIL,6,30,303,109
 END
 
 IDD_HOTKEYSLAVE DIALOGEX 0, 0, 38, 11
@@ -270,7 +286,7 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION |
 CAPTION "   "
 FONT 8, "MS Shell Dlg"
 BEGIN
-	CONTROL         "",IDC_HEADERBAR,"MHeaderbarCtrl",WS_TABSTOP,0,0,354,24
+    CONTROL         "",IDC_HEADERBAR,"MHeaderbarCtrl",WS_TABSTOP,0,0,354,24
     LTEXT           "",IDC_STATIC,0,25,354,197
     CONTROL         "",IDC_SECTIONTREE,"SysTreeView32",TVS_DISABLEDRAGDROP | 
                     TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS | TVS_TRACKSELECT | 
@@ -410,9 +426,8 @@ BEGIN
     LTEXT           "Send text formatting:",IDC_STATIC,9,211,132,11
     COMBOBOX        IDC_SENDFORMATTING,143,209,74,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    CONTROL         "",IDC_WINDOWOPTIONS,"SysTreeView32",/* TVS_HASBUTTONS | */
-                    TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | 
-                    WS_TABSTOP,6,8,294,76
+    CONTROL         "",IDC_WINDOWOPTIONS,"SysTreeView32",TVS_DISABLEDRAGDROP | 
+                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,76
     CONTROL         "Try to keep original size",IDC_PRESERVEAVATARSIZE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,187,98,105,9
     CONTROL         "Help on this",IDC_HELP_GENERAL,"Hyperlink",WS_TABSTOP | 
@@ -466,9 +481,8 @@ BEGIN
                     UDS_NOTHOUSANDS | UDS_HOTTRACK | WS_DISABLED,200,209,10,
                     14
     LTEXT           "Events",IDC_STATIC,215,212,82,8
-    CONTROL         "",IDC_LOGOPTIONS,"SysTreeView32",/* TVS_HASBUTTONS | */
-                    TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | 
-                    WS_TABSTOP,6,8,294,95
+    CONTROL         "",IDC_LOGOPTIONS,"SysTreeView32",TVS_DISABLEDRAGDROP | 
+                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,95
     LTEXT           "minutes old",IDC_STMINSOLD,215,200,83,8,WS_DISABLED
     GROUPBOX        "Global message log display",IDC_STMSGLOGGROUP3,149,107,
                     147,29
@@ -529,9 +543,9 @@ BEGIN
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
                     UDS_ARROWKEYS,191,208,11,13
     LTEXT           "characters",IDC_STATIC,208,210,88,9
-    CONTROL         "",IDC_TABMSGOPTIONS,"SysTreeView32",/* TVS_HASBUTTONS | */
-                    TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | 
-                    WS_HSCROLL | WS_TABSTOP,6,8,294,135
+    CONTROL         "",IDC_TABMSGOPTIONS,"SysTreeView32",TVS_DISABLEDRAGDROP | 
+                    TVS_SHOWSELALWAYS | WS_BORDER | WS_HSCROLL | WS_TABSTOP,
+                    6,8,294,135
     LTEXT           "ESC key behavior",IDC_STATIC,38,161,135,9
     COMBOBOX        IDC_ESCMODE,36,172,227,46,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
@@ -560,8 +574,8 @@ STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_TOOLBARTREE,"SysTreeView32",TVS_SHOWSELALWAYS | 
-                    TVS_NOTOOLTIPS | /*TVS_CHECKBOXES |*/ TVS_FULLROWSELECT | 
-                    WS_TABSTOP,16,23,116,178,WS_EX_CLIENTEDGE
+                    TVS_NOTOOLTIPS | TVS_FULLROWSELECT | WS_TABSTOP,16,23,
+                    116,178,WS_EX_CLIENTEDGE
     CONTROL         "Show this button in regular window",IDC_IMCHECK,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,144,51,155,10
     CONTROL         "Show this button in chat window",IDC_CHATCHECK,"Button",
@@ -818,7 +832,7 @@ EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "About tabSRMM"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-	CONTROL         "",IDC_HEADERBAR,"MHeaderbarCtrl",WS_TABSTOP,0,0,228,30
+    CONTROL         "",IDC_HEADERBAR,"MHeaderbarCtrl",WS_TABSTOP,0,0,228,30
     DEFPUSHBUTTON   "OK",IDOK,168,123,55,14
     CTEXT           "Copyright © 2004-2009 by the Miranda IM project. More  \ndetailed copyright information can be found in the included README file.\n\nThis software is distributed and licensed under the terms of the GNU General Public License V2 or any later version.",
                     IDC_COPYRIGHT,5,39,217,47
@@ -1301,10 +1315,10 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
+IDI_FEATURE_DISABLED    ICON    DISCARDABLE     "res/overlay_disabled.ico"
 IDI_ENABLED             ICON    DISCARDABLE     "res/res_TN/popup.ico"
 IDI_DISABLED            ICON    DISCARDABLE     "res/res_TN/popup_no.ico"
-IDI_FEATURE_ENABLED		ICON	DISCARDABLE		"res/overlay_enabled.ico"
-IDI_FEATURE_DISABLED	ICON	DISCARDABLE		"res/overlay_disabled.ico"
+IDI_FEATURE_ENABLED     ICON    DISCARDABLE     "res/overlay_enabled.ico"
 #endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 

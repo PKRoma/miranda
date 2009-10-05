@@ -272,13 +272,14 @@ static BOOL IsStringValidLink(TCHAR* pszText)
  * container window
  */
 
-static void Chat_UpdateWindowState(HWND hwndDlg, struct _MessageWindowData *dat, UINT msg)
+static void Chat_UpdateWindowState(_MessageWindowData *dat, UINT msg)
 {
-	HWND hwndTab = GetParent(hwndDlg);
-	SESSION_INFO *si = (SESSION_INFO *)dat->si;
-
 	if (dat == NULL)
 		return;
+
+	HWND hwndDlg = dat->hwnd;
+	HWND hwndTab = GetParent(hwndDlg);
+	SESSION_INFO *si = (SESSION_INFO *)dat->si;
 
 	if (msg == WM_ACTIVATE) {
 		if (dat->pContainer->dwFlags & CNT_TRANSPARENCY && CMimAPI::m_pSetLayeredWindowAttributes != NULL && !CSkin::m_skinEnabled) {
@@ -1799,14 +1800,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 			pt.y = HIWORD(lParam);
 			GetClientRect(hwnd, &clientRect);
 			bInClient = PtInRect(&clientRect, pt);
- /*
-			//Mouse capturing/releasing
-			if (bInClient && GetCapture() != hwnd)
-				SetCapture(hwnd);
-			else if (!bInClient)
-				SetCapture(NULL);
-  */
-			if (bInClient) {
+ 			if (bInClient) {
 				//hit test item under mouse
 				struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 				SESSION_INFO *parentdat = (SESSION_INFO *)dat->si;
@@ -2043,7 +2037,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			if (CMimAPI::m_shutDown)
 				break;
 
-			Chat_UpdateWindowState(hwndDlg, dat, WM_SETFOCUS);
+			Chat_UpdateWindowState(dat, WM_SETFOCUS);
 			SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
 			return 1;
 
@@ -2057,17 +2051,12 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			COLORREF colour = M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
 			InitButtons(hwndDlg, si);
 			ConfigureSmileyButton(dat);
-			/*
-			hIcon = si->wStatus == ID_STATUS_ONLINE ? MM_FindModule(si->pszModule)->hOnlineIcon : MM_FindModule(si->pszModule)->hOfflineIcon;
-			// stupid hack to make icons show. I dunno why this is needed currently
-			if (!hIcon) {
-				MM_IconsChanged();
-				hIcon = si->wStatus == ID_STATUS_ONLINE ? MM_FindModule(si->pszModule)->hOnlineIcon : MM_FindModule(si->pszModule)->hOfflineIcon;
-			}
-			*/
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETBKGNDCOLOR, 0, colour);
 
-			{ //messagebox
+			DM_InitRichEdit(dat);
+
+			/*
+			{
 				COLORREF	    crFore;
 				LOGFONTA        lf;
 				CHARFORMAT2A    cf2;
@@ -2089,6 +2078,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETBKGNDCOLOR, 0, (LPARAM)crB);
 				SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETCHARFORMAT, 0, (LPARAM)&cf2);
 			}
+			*/
 			SendDlgItemMessage(hwndDlg, IDOK, BUTTONSETASFLATBTN + 14, 0, 0);
 			{
 				SendMessage(GetDlgItem(hwndDlg, IDC_LIST), LB_SETITEMHEIGHT, 0, (LPARAM)g_Settings.iNickListFontHeight);
@@ -2335,8 +2325,14 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 		case WM_MEASUREITEM: {
 			MEASUREITEMSTRUCT *mis = (MEASUREITEMSTRUCT *) lParam;
 
-			if (mis->CtlType == ODT_MENU)
+			if (mis->CtlType == ODT_MENU) {
+				if(dat->Panel->isHovered()) {
+					mis->itemHeight = 0;
+					mis->itemWidth  = 6;
+					return(TRUE);
+				}
 				return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
+			}
 			else
 				mis->itemHeight = g_Settings.iNickListFontHeight;
 			return TRUE;
@@ -2345,8 +2341,13 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 		case WM_DRAWITEM: {
 			DRAWITEMSTRUCT *dis = (DRAWITEMSTRUCT *) lParam;
 
-			if (dis->CtlType == ODT_MENU)
+			if (dis->CtlType == ODT_MENU) {
+				if(dat->Panel->isHovered()) {
+					DrawMenuItem(dis, (HICON)dis->itemData, 0);
+					return(TRUE);
+				}
 				return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
+			}
 			else {
 				if (dis->CtlID == IDC_LIST) {
 					HFONT  hFont, hOldFont;
@@ -2661,7 +2662,7 @@ LABEL_SHOWWINDOW:
 
 			//fall through
 		case WM_MOUSEACTIVATE:
-			Chat_UpdateWindowState(hwndDlg, dat, WM_ACTIVATE);
+			Chat_UpdateWindowState(dat, WM_ACTIVATE);
 			return 1;
 
 		case WM_NOTIFY: {
@@ -2689,9 +2690,15 @@ LABEL_SHOWWINDOW:
 						return(_dlgReturn(hwndDlg, 0));
 					}
 
+					if(msg == WM_MOUSEMOVE) {
+						POINT	pt;
+						GetCursorPos(&pt);
+						dat->Panel->trackMouse(pt);
+						break;
+					}
 					if(msg == WM_KEYDOWN) {
 						if (wp == VK_INSERT && isShift) {
-							SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), EM_PASTESPECIAL, 0, 0);
+							SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), EM_PASTESPECIAL, CF_TEXT, 0);
 							((MSGFILTER *) lParam)->msg = WM_NULL;
 							((MSGFILTER *) lParam)->wParam = 0;
 							((MSGFILTER *) lParam)->lParam = 0;
@@ -2699,7 +2706,7 @@ LABEL_SHOWWINDOW:
 						}
 						if (isCtrl && !isShift && !isMenu) {
 							if (wp == 'V') {
-								SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), EM_PASTESPECIAL, 0, 0);
+								SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), EM_PASTESPECIAL, CF_TEXT, 0);
 								((MSGFILTER *) lParam)->msg = WM_NULL;
 								((MSGFILTER *) lParam)->wParam = 0;
 								((MSGFILTER *) lParam)->lParam = 0;
@@ -3058,24 +3065,34 @@ LABEL_SHOWWINDOW:
 			POINT tmp; //+ Protogenes
 			POINTS cur; //+ Protogenes
 			GetCursorPos(&tmp); //+ Protogenes
-			cur.x = (SHORT)tmp.x; //+ Protogenes
-			cur.y = (SHORT)tmp.y; //+ Protogenes
-
-			SendMessage(dat->pContainer->hwnd, WM_NCLBUTTONDOWN, HTCAPTION, *((LPARAM*)(&cur))); //+ Protogenes
+			if(!dat->Panel->isHovered()) {
+				cur.x = (SHORT)tmp.x; //+ Protogenes
+				cur.y = (SHORT)tmp.y; //+ Protogenes
+				SendMessage(dat->pContainer->hwnd, WM_NCLBUTTONDOWN, HTCAPTION, *((LPARAM*)(&cur))); //+ Protogenes
+			}
+			break;
 		}
-		break;
 
 		case WM_LBUTTONUP: {
 			POINT tmp; //+ Protogenes
 			POINTS cur; //+ Protogenes
 			GetCursorPos(&tmp); //+ Protogenes
-			cur.x = (SHORT)tmp.x; //+ Protogenes
-			cur.y = (SHORT)tmp.y; //+ Protogenes
-
-			SendMessage(dat->pContainer->hwnd, WM_NCLBUTTONUP, HTCAPTION, *((LPARAM*)(&cur))); //+ Protogenes
+			if(dat->Panel->isHovered())
+				dat->Panel->handleClick(tmp);
+			else {
+				cur.x = (SHORT)tmp.x; //+ Protogenes
+				cur.y = (SHORT)tmp.y; //+ Protogenes
+				SendMessage(dat->pContainer->hwnd, WM_NCLBUTTONUP, HTCAPTION, *((LPARAM*)(&cur))); //+ Protogenes
+			}
+			break;
 		}
-		break;
 
+		case WM_MOUSEMOVE: {
+			POINT pt;
+			GetCursorPos(&pt);
+			dat->Panel->trackMouse(pt);
+			break;
+		}
 		case WM_APPCOMMAND: {
 			DWORD cmd = GET_APPCOMMAND_LPARAM(lParam);
 			if (cmd == APPCOMMAND_BROWSER_BACKWARD || cmd == APPCOMMAND_BROWSER_FORWARD) {

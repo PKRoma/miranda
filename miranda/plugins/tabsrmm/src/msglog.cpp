@@ -164,35 +164,33 @@ void TSAPI CacheLogFonts()
 	 * cache/create the info panel fonts
 	 */
 
-	CInfoPanel::m_ipConfig.isValid = 1;
+	COLORREF clr;
+	LOGFONTA lf;
 
-	if (CInfoPanel::m_ipConfig.isValid) {
-		COLORREF clr;
-		LOGFONTA lf;
-
-		for (i = 0; i < IPFONTCOUNT; i++) {
-			if (CInfoPanel::m_ipConfig.hFonts[i])
-				DeleteObject(CInfoPanel::m_ipConfig.hFonts[i]);
-			LoadLogfont(i + 100, &lf, &clr, FONTMODULE);
-			//lf.lfHeight =-MulDiv(lf.lfHeight, logPixelSY, 72);
-			CInfoPanel::m_ipConfig.hFonts[i] = CreateFontIndirectA(&lf);
-			CInfoPanel::m_ipConfig.clrs[i] = clr;
-		}
-
-		HDC 	hdc = GetDC(PluginConfig.g_hwndHotkeyHandler);
-		HFONT 	hOldFont = (HFONT)SelectObject(hdc, CInfoPanel::m_ipConfig.hFonts[IPFONTID_NICK]);
-		SIZE  	sz;
-
-		GetTextExtentPoint32(hdc, _T("WMA"), 3, &sz);
-		CInfoPanel::m_ipConfig.height1 = sz.cy;
-		SelectObject(hdc, CInfoPanel::m_ipConfig.hFonts[IPFONTID_UIN]);
-		GetTextExtentPoint32(hdc, _T("WMA"), 3, &sz);
-		CInfoPanel::m_ipConfig.height2 = sz.cy;
-
-		SelectObject(hdc, hOldFont);
-		ReleaseDC(PluginConfig.g_hwndHotkeyHandler, hdc);
-		PluginConfig.hFontCaption = CInfoPanel::m_ipConfig.hFonts[IPFONTCOUNT - 1];
+	for (i = 0; i < IPFONTCOUNT; i++) {
+		if (CInfoPanel::m_ipConfig.hFonts[i])
+			DeleteObject(CInfoPanel::m_ipConfig.hFonts[i]);
+		LoadLogfont(i + 100, &lf, &clr, FONTMODULE);
+		//lf.lfHeight =-MulDiv(lf.lfHeight, logPixelSY, 72);
+		lf.lfUnderline = 0;
+		CInfoPanel::m_ipConfig.hFonts[i] = CreateFontIndirectA(&lf);
+		CInfoPanel::m_ipConfig.clrs[i] = clr;
 	}
+
+	hdc = GetDC(PluginConfig.g_hwndHotkeyHandler);
+
+	HFONT 	hOldFont = (HFONT)SelectObject(hdc, CInfoPanel::m_ipConfig.hFonts[IPFONTID_NICK]);
+	SIZE  	sz;
+
+	GetTextExtentPoint32(hdc, _T("WMA"), 3, &sz);
+	CInfoPanel::m_ipConfig.height1 = sz.cy;
+	SelectObject(hdc, CInfoPanel::m_ipConfig.hFonts[IPFONTID_UIN]);
+	GetTextExtentPoint32(hdc, _T("WMA"), 3, &sz);
+	CInfoPanel::m_ipConfig.height2 = sz.cy;
+
+	SelectObject(hdc, hOldFont);
+	ReleaseDC(PluginConfig.g_hwndHotkeyHandler, hdc);
+	PluginConfig.hFontCaption = CInfoPanel::m_ipConfig.hFonts[IPFONTCOUNT - 1];
 
 	if (CInfoPanel::m_ipConfig.bkgBrush)
 		DeleteObject(CInfoPanel::m_ipConfig.bkgBrush);
