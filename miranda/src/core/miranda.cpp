@@ -787,12 +787,16 @@ INT_PTR GetListInterface(WPARAM, LPARAM lParam)
 	if ( li == NULL )
 		return 1;
 
-	if (li->cbSize == LIST_INTERFACE_V2_SIZE) {
+	switch(li->cbSize) {
+	case LIST_INTERFACE_V3_SIZE:
+		li->List_Copy      = List_Copy;
+		li->List_ObjCopy   = List_ObjCopy;
+
+	case LIST_INTERFACE_V2_SIZE:
 		li->List_InsertPtr = List_InsertPtr;
 		li->List_RemovePtr = List_RemovePtr;
-	}
 
-	if (li->cbSize == LIST_INTERFACE_V1_SIZE || li->cbSize == LIST_INTERFACE_V2_SIZE) {
+	case LIST_INTERFACE_V1_SIZE:
 		li->List_Create   = List_Create;
 		li->List_Destroy  = List_Destroy;
 		li->List_Find     = List_Find;

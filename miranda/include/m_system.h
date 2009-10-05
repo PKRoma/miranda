@@ -224,6 +224,7 @@ wParam=0, lParam = (LPARAM)LIST_INTERFACE*
 
 #define LIST_INTERFACE_V1_SIZE  (sizeof(size_t)+7*sizeof(void*))
 #define LIST_INTERFACE_V2_SIZE  (sizeof(size_t)+9*sizeof(void*))
+#define LIST_INTERFACE_V3_SIZE  (sizeof(size_t)+11*sizeof(void*))
 
 typedef int ( *FSortFunc )( void*, void* );
 
@@ -242,11 +243,11 @@ struct LIST_INTERFACE
 {
 	size_t    cbSize;
 
-    SortedList* ( *List_Create )( int, int );
+	SortedList* ( *List_Create )( int, int );
 	void        ( *List_Destroy )( SortedList* );
 
 	void* ( *List_Find )( SortedList*, void* );
-	int	  ( *List_GetIndex )( SortedList*, void*, int* );
+	int   ( *List_GetIndex )( SortedList*, void*, int* );
 	int   ( *List_Insert )( SortedList*, void*, int );
 	int   ( *List_Remove )( SortedList*, int );
 	int   ( *List_IndexOf )( SortedList*, void* );
@@ -254,6 +255,11 @@ struct LIST_INTERFACE
 	#if MIRANDA_VER >= 0x0600
 	int   ( *List_InsertPtr)( SortedList* list, void* p );
 	int   ( *List_RemovePtr)( SortedList* list, void* p );
+	#endif
+
+	#if MIRANDA_VER >= 0x0900
+	void  ( *List_Copy )( SortedList* src, SortedList* dst, size_t );
+	void  ( *List_ObjCopy )( SortedList* src, SortedList* dst, size_t );
 	#endif
 };
 
@@ -309,7 +315,7 @@ extern struct UTF8_INTERFACE utfi;
 
 #define mir_utf8decode(A,B)     utfi.utf8_decode(A,B)
 #define mir_utf8decodecp(A,B,C) utfi.utf8_decodecp(A,B,C)
-#define mir_utf8decodeW(A)		utfi.utf8_decodeW(A)
+#define mir_utf8decodeW(A)	     utfi.utf8_decodeW(A)
 #define mir_utf8encode(A)       utfi.utf8_encode(A)
 #define mir_utf8encodecp(A,B)   utfi.utf8_encodecp(A,B)
 #define mir_utf8encodeW(A)      utfi.utf8_encodeW(A)

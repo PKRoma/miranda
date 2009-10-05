@@ -44,7 +44,7 @@ template<class T> struct LIST
 
 	#if defined( _STATIC )
 	    __inline LIST( const LIST& x )
-	    {	items = NULL;
+	    {	 items = NULL;
 		    List_Copy(( SortedList* )&x, ( SortedList* )this, sizeof( T ));
 	    }
 
@@ -63,6 +63,11 @@ template<class T> struct LIST
 		__inline int insert( T* p )          { return List_InsertPtr(( SortedList* )this, p ); }
 		__inline int remove( T* p )          { return List_RemovePtr(( SortedList* )this, p ); }
 	#else
+	    __inline LIST( const LIST& x )
+	    {	 items = NULL;
+		    li.List_Copy(( SortedList* )&x, ( SortedList* )this, sizeof( T ));
+	    }
+
 		__inline int getIndex( T* p ) const
 		{	int idx;
 			return ( !li.List_GetIndex(( SortedList* )this, p, &idx )) ? -1 : idx;
@@ -93,18 +98,25 @@ template<class T> struct OBJLIST : public LIST<T>
 		LIST<T>( aincr, afunc )
 		{}
 
-	#if defined( _STATIC )
-	__inline OBJLIST( const OBJLIST& x )
+	__inline OBJLIST( const OBJLIST& x ) : 
+		LIST<T>( x.increment, x.sortFunc )
 		{	items = NULL;
-			List_ObjCopy(( SortedList* )&x, ( SortedList* )this, sizeof( T ));
+			#if defined( _STATIC )
+				List_ObjCopy(( SortedList* )&x, ( SortedList* )this, sizeof( T ));
+			#else
+				li.List_ObjCopy(( SortedList* )&x, ( SortedList* )this, sizeof( T ));
+			#endif
 		}
 
 	__inline OBJLIST& operator=( const OBJLIST& x )
 		{	destroy();
-			List_ObjCopy(( SortedList* )&x, ( SortedList* )this, sizeof( T ));
+			#if defined( _STATIC )
+				List_ObjCopy(( SortedList* )&x, ( SortedList* )this, sizeof( T ));
+			#else
+				li.List_ObjCopy(( SortedList* )&x, ( SortedList* )this, sizeof( T ));
+			#endif
 			return *this;
 		}
-	#endif
 
 	~OBJLIST()
 	{
