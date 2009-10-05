@@ -21,9 +21,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-#include <shlobj.h>
-#include <Shlwapi.h>
-#pragma comment(lib, "shlwapi.lib")
 #include "file.h"
 
 #define MAX_MRU_DIRS    5

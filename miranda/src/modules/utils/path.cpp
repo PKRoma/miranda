@@ -21,9 +21,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-#include <Shlwapi.h>
-#pragma comment(lib, "shlwapi.lib")
-
 #include "../srfile/file.h"
 
 static char szMirandaPath[MAX_PATH];
@@ -245,6 +242,35 @@ int InitPathUtilsW(void)
 }
 #endif
 
+TCHAR *GetContactID(HANDLE hContact)
+{
+	TCHAR *theValue = {0};
+	char *szProto = ( char* )CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+	if (DBGetContactSettingByte(hContact, szProto, "ChatRoom", 0) == 1) {
+		DBVARIANT dbv;
+		if (!DBGetContactSettingTString(hContact, szProto, "ChatRoomID", &dbv)) {
+			theValue = (TCHAR *)mir_tstrdup(dbv.ptszVal);
+			DBFreeVariant(&dbv);
+			return theValue;
+		}	}
+	else {
+		CONTACTINFO ci = {0};
+		ci.cbSize = sizeof(ci);
+		ci.hContact = hContact;
+		ci.szProto = szProto;
+		ci.dwFlag = CNF_UNIQUEID | CNF_TCHAR;
+		if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
+			switch (ci.type) {
+			case CNFT_ASCIIZ:
+				return (TCHAR *)ci.pszVal;
+				break;
+			case CNFT_DWORD:
+				return _itot(ci.dVal, (TCHAR *)mir_alloc(sizeof(TCHAR)*32), 10);
+				break;
+			}	}	}
+	return NULL;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Variables parser
 
@@ -261,6 +287,13 @@ static __forceinline char *mir_a2x(char *, char *s) { return mir_strdup(s); }
 static __forceinline char *GetContactNickX(char *, HANDLE hContact)
 {
 	return mir_strdup((char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0));
+}
+static __forceinline char *GetContactIDX(char *, HANDLE hContact)
+{
+	TCHAR *id = GetContactID(hContact);
+	char* res = mir_t2a(id);
+	mir_free(id);
+	return res;
 }
 static __forceinline char *GetEnvironmentVariableX(char *variable)
 {
@@ -280,7 +313,8 @@ static __forceinline char *GetModulePathX(char *, HMODULE hModule)
 {
 	char result[MAX_PATH];
 	GetModuleFileNameA(hModule, result, sizeof(result));
-	PathRemoveFileSpecA(result);
+	char* str = strrchr(result, '\\');
+	if (str) *str = 0;
 	return mir_strdup(result);
 }
 static __forceinline char *GetUserNameX(char *)
@@ -305,6 +339,10 @@ static __forceinline TCHAR *GetContactNickX(TCHAR *, HANDLE hContact)
 {
 	return mir_tstrdup((TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
 }
+static __forceinline TCHAR *GetContactIDX(TCHAR *, HANDLE hContact)
+{
+	return GetContactID(hContact);
+}
 static __forceinline TCHAR *GetEnvironmentVariableX(TCHAR *variable)
 {
 	TCHAR result[512];
@@ -322,8 +360,9 @@ static __forceinline TCHAR *SHGetSpecialFolderPathX(int iCSIDL, TCHAR* var)
 static __forceinline TCHAR *GetModulePathX(TCHAR *, HMODULE hModule)
 {
 	TCHAR result[MAX_PATH];
-	GetModuleFileName(hModule, result, sizeof(result));
-	PathRemoveFileSpec(result);
+	GetModuleFileName(hModule, result, SIZEOF(result));
+	TCHAR* str = _tcsrchr(result, '\\');
+	if (str) *str = 0;
 	return mir_tstrdup(result);
 }
 static __forceinline TCHAR *GetUserNameX(TCHAR *)
@@ -349,31 +388,9 @@ XCHAR *GetInternalVariable(XCHAR *key, size_t keyLength, HANDLE hContact)
 			theValue = GetContactNickX(key, hContact);
 		else if (!_xcscmp(theKey, XSTR(key, "proto")))
 			theValue = mir_a2x(key, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact,0));
-		else if (!_xcscmp(theKey, XSTR(key, "userid"))) {
-			char *szProto = ( char* )CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-			if (DBGetContactSettingByte(hContact, szProto, "ChatRoom", 0) == 1) {
-				DBVARIANT dbv;
-				if (!DBGetContactSettingTString(hContact, szProto, "ChatRoomID", &dbv)) {
-					theValue = (XCHAR *)mir_tstrdup(dbv.ptszVal);
-					DBFreeVariant(&dbv);
+		else if (!_xcscmp(theKey, XSTR(key, "userid"))) 
+			theValue = GetContactIDX(key, hContact);
 				}
-			}
-			else {
-				CONTACTINFO ci = {0};
-				ci.cbSize = sizeof(ci);
-				ci.hContact = hContact;
-				ci.szProto = szProto;
-				ci.dwFlag = CNF_UNIQUEID;
-				if (sizeof(XCHAR) == sizeof(WCHAR)) ci.dwFlag |= CNF_UNICODE;
-				if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
-					switch (ci.type) {
-					case CNFT_ASCIIZ:
-						theValue = (XCHAR *)ci.pszVal;
-						break;
-					case CNFT_DWORD:
-						theValue = _itox(key, ci.dVal);
-						break;
-	}	}	}	}	}
 
 	if (!theValue) {
 		if (!_xcscmp(theKey, XSTR(key, "miranda_path")))
