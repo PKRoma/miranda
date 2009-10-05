@@ -1085,12 +1085,6 @@ char* TWinErrorCode::getText()
 		int tBytes = 0;
 		mErrorText = (char*)mir_alloc(256);
 
-		if (mErrorCode >= 12000 && mErrorCode < 12500)
-			tBytes = FormatMessageA(
-				FORMAT_MESSAGE_FROM_HMODULE,
-				GetModuleHandleA("WININET.DLL"),
-				mErrorCode, LANG_NEUTRAL, mErrorText, 256, NULL);
-
 		if (tBytes == 0)
 			tBytes = FormatMessageA(
 				FORMAT_MESSAGE_FROM_SYSTEM, NULL,
