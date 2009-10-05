@@ -258,7 +258,7 @@ Section Uninstall
   Delete "$INSTDIR\license.txt"
   Delete "$INSTDIR\contributors.txt"
   Delete "$INSTDIR\readme.txt"
-  Delete "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}
+  Delete "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}"
   Delete "$INSTDIR\uninstall.exe"
   RMDir "$INSTDIR"
 
