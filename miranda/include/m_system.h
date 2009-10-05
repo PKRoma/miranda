@@ -257,7 +257,7 @@ struct LIST_INTERFACE
 	int   ( *List_RemovePtr)( SortedList* list, void* p );
 	#endif
 
-	#if MIRANDA_VER >= 0x0900
+	#if MIRANDA_VER >= 0x0800
 	void  ( *List_Copy )( SortedList* src, SortedList* dst, size_t );
 	void  ( *List_ObjCopy )( SortedList* src, SortedList* dst, size_t );
 	#endif
