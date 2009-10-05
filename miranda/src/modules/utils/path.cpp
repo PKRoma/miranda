@@ -21,8 +21,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-#include <Shlwapi.h>
-#pragma comment(lib, "shlwapi.lib")
+//#include <Shlwapi.h>
+//#pragma comment(lib, "shlwapi.lib")
 
 #include "../srfile/file.h"
 
@@ -316,7 +316,8 @@ static __forceinline char *GetModulePathX(char *, HMODULE hModule)
 {
 	char result[MAX_PATH];
 	GetModuleFileNameA(hModule, result, sizeof(result));
-	PathRemoveFileSpecA(result);
+	char* str = strrchr(result, '\\');
+	if (str) *str = 0;
 	return mir_strdup(result);
 }
 static __forceinline char *GetUserNameX(char *)
@@ -362,8 +363,9 @@ static __forceinline TCHAR *SHGetSpecialFolderPathX(int iCSIDL, TCHAR* var)
 static __forceinline TCHAR *GetModulePathX(TCHAR *, HMODULE hModule)
 {
 	TCHAR result[MAX_PATH];
-	GetModuleFileName(hModule, result, sizeof(result));
-	PathRemoveFileSpec(result);
+	GetModuleFileName(hModule, result, SIZEOF(result));
+	TCHAR* str = _tcsrchr(result, '\\');
+	if (str) *str = 0;
 	return mir_tstrdup(result);
 }
 static __forceinline TCHAR *GetUserNameX(TCHAR *)
