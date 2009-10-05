@@ -50,13 +50,13 @@ struct SslHandle
 	CredHandle hCreds;
 
 	BYTE *pbRecDataBuf;
-	DWORD cbRecDataBuf;
-	DWORD sbRecDataBuf;
+	int cbRecDataBuf;
+	int sbRecDataBuf;
 
 	BYTE *pbIoBuffer;
-	DWORD cbIoBuffer;
-	DWORD sbIoBuffer;
-	
+	int cbIoBuffer;
+	int sbIoBuffer;
+
 	SocketState state; 
 };
 
@@ -552,6 +552,26 @@ void NetlibSslShutdown(SslHandle *ssl)
 	}
 }
 
+static int NetlibSslReadSetResult(SslHandle *ssl, char *buf, int num, int peek) 
+{
+	if (ssl->cbRecDataBuf == 0)
+	{
+		return (ssl->state == sockClosed ? 0: SOCKET_ERROR);
+	}
+
+	int bytes = min(num, ssl->cbRecDataBuf);
+	int rbytes = ssl->cbRecDataBuf - bytes;
+
+	CopyMemory(buf, ssl->pbRecDataBuf, bytes);
+	if (!peek) 
+	{
+		MoveMemory(ssl->pbRecDataBuf, ((char*)ssl->pbRecDataBuf)+bytes, rbytes);
+		ssl->cbRecDataBuf = rbytes;
+	}
+
+	return bytes;
+}
+
 int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 {
 	SECURITY_STATUS scRet;
@@ -568,25 +588,9 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 
 	if (num == 0) return 0;
 
-	if (ssl->state != sockOpen || (ssl->cbRecDataBuf != 0 && (!peek || ssl->cbRecDataBuf >= (DWORD)num)))
+	if (ssl->state != sockOpen || (ssl->cbRecDataBuf != 0 && (!peek || ssl->cbRecDataBuf >= num)))
 	{
-getdata:
-		if (ssl->cbRecDataBuf == 0)
-		{
-			return (ssl->state == sockClosed ? 0: SOCKET_ERROR);
-		}
-
-		DWORD bytes = min((DWORD)num, ssl->cbRecDataBuf);
-		DWORD rbytes = ssl->cbRecDataBuf - bytes;
-
-		CopyMemory(buf, ssl->pbRecDataBuf, bytes);
-		if (!peek) 
-		{
-			MoveMemory(ssl->pbRecDataBuf, ((char*)ssl->pbRecDataBuf)+bytes, rbytes);
-			ssl->cbRecDataBuf = rbytes;
-		}
-
-		return bytes;
+		return NetlibSslReadSetResult(ssl, buf, num, peek);
 	}
 
 	scRet = SEC_E_OK;
@@ -612,10 +616,11 @@ getdata:
 				if (cbData == SOCKET_ERROR) 
 				{
 					ssl->state = sockError;
-					goto getdata;
+					return NetlibSslReadSetResult(ssl, buf, num, peek);
 				}
 				
-				if (cbData == 0 && ssl->cbRecDataBuf) goto getdata;
+				if (cbData == 0 && ssl->cbRecDataBuf) 
+					return NetlibSslReadSetResult(ssl, buf, num, peek);
 			}
 
 			cbData = recv(ssl->s, (char*)ssl->pbIoBuffer + ssl->cbIoBuffer, ssl->sbIoBuffer - ssl->cbIoBuffer, 0);
@@ -623,7 +628,7 @@ getdata:
 			{
 				Netlib_Logf(NULL, "SSL failure recieving data (%d)", WSAGetLastError());
 				ssl->state = sockError;
-				goto getdata;
+				return NetlibSslReadSetResult(ssl, buf, num, peek);
 			}
 			
 			if (cbData == 0) 
@@ -632,14 +637,14 @@ getdata:
 				if (peek && ssl->cbRecDataBuf)
 				{
 					ssl->state = sockClosed;
-					goto getdata;
+					return NetlibSslReadSetResult(ssl, buf, num, peek);
 				}
 
 				// Server disconnected.
 				if (ssl->cbIoBuffer) 
 				{
 					ssl->state = sockError;
-					goto getdata;
+					return NetlibSslReadSetResult(ssl, buf, num, peek);
 				}
 				
 				return 0;
@@ -679,7 +684,7 @@ getdata:
 		{
 			ReportSslError(scRet);
 			ssl->state = sockError;
-			goto getdata;
+			return NetlibSslReadSetResult(ssl, buf, num, peek);
 		}
 
 		// Locate data and (optional) extra buffers.
@@ -706,7 +711,7 @@ getdata:
 			
 			if (rbytes > 0) 
 			{
-				DWORD nbytes = ssl->cbRecDataBuf + rbytes;
+				int nbytes = ssl->cbRecDataBuf + rbytes;
 				if (ssl->sbRecDataBuf < nbytes) 
 				{
 					ssl->sbRecDataBuf = nbytes;
@@ -718,7 +723,7 @@ getdata:
 
 			if (peek)
 			{
-				resNum = bytes = min((DWORD)num, ssl->cbRecDataBuf);
+				resNum = bytes = min(num, ssl->cbRecDataBuf);
 				CopyMemory(buf, ssl->pbRecDataBuf, bytes);
 			}
 			else
@@ -744,7 +749,7 @@ getdata:
 		{
 			Netlib_Logf(NULL, "SSL Server signaled SSL Shutdown");
 			ssl->state = sockClosed;
-			goto getdata;
+			return NetlibSslReadSetResult(ssl, buf, num, peek);
 		}
 
 		if (scRet == SEC_I_RENEGOTIATE)
@@ -756,7 +761,7 @@ getdata:
 			if (scRet != SEC_E_OK) 
 			{
 				ssl->state = sockError;
-				goto getdata;
+				return NetlibSslReadSetResult(ssl, buf, num, peek);
 			}
 		}
 	}
@@ -846,8 +851,8 @@ static INT_PTR GetSslApi(WPARAM, LPARAM lParam)
 
 	si->connect  = (HSSL (__cdecl *)(SOCKET,const char *,int))NetlibSslConnect;
 	si->pending  = (BOOL (__cdecl *)(HSSL))NetlibSslPending;
-	si->read     = (int (__cdecl *)(HSSL,char *,int,int))NetlibSslRead;
-	si->write    = (int (__cdecl *)(HSSL,const char *,int))NetlibSslWrite;
+	si->read     = (int  (__cdecl *)(HSSL,char *,int,int))NetlibSslRead;
+	si->write    = (int  (__cdecl *)(HSSL,const char *,int))NetlibSslWrite;
 	si->shutdown = (void (__cdecl *)(HSSL))NetlibSslShutdown;
 	si->sfree    = (void (__cdecl *)(HSSL))NetlibSslFree;
 
