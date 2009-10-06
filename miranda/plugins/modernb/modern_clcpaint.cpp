@@ -561,7 +561,7 @@ void  CLCPaint::_FillParam( MASKPARAM * lpParam, DWORD dwParamHash, const char* 
 {
     lpParam->bMaskParamFlag = MPF_EQUAL|MPF_HASHED;
     lpParam->dwId = dwParamHash;
-    if ( !dwValueHash && szValue ) lpParam->dwValueHash = mod_CalcHash( szValue );
+    if ( !dwValueHash && szValue && szValue[0] ) lpParam->dwValueHash = mod_CalcHash( szValue );
     else lpParam->dwValueHash = dwValueHash;
     if ( szValue ) lpParam->szValue = strdupn( szValue, strlen( szValue ) );
     else lpParam->szValue = NULL;
