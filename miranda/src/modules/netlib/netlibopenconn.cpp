@@ -99,13 +99,11 @@ BOOL RecvUntilTimeout(struct NetlibConnection *nlc,char *buf,int len,int flags,D
 			return FALSE;
 		}
 		nReceived = NLRecv(nlc, buf, len, flags);
-		if (nReceived <= 0)
-			break;
+		if (nReceived <= 0) return FALSE;
 
 		buf += nReceived;
 		len -= nReceived;
-		if ( !len )
-			return TRUE;
+		if (len <= 0) return TRUE;
 	}
 	SetLastError( ERROR_TIMEOUT );
 	return FALSE;
@@ -378,17 +376,17 @@ static int my_connect(NetlibConnection *nlc, NETLIBOPENCONNECTION * nloc)
 	if ( dwTimeout == 0 )
 		dwTimeout += 60;
 
-    // this is for XP SP2 where there is a default connection attempt limit of 10/second
-    if (connectionTimeout)
-    {
-	    WaitForSingleObject(hConnectionOpenMutex, 10000);
-	    waitdiff = GetTickCount() - g_LastConnectionTick;
-	    if (waitdiff < connectionTimeout) SleepEx(connectionTimeout, TRUE);
-	    g_LastConnectionTick = GetTickCount();
-	    ReleaseMutex(hConnectionOpenMutex);
-    }
+	// this is for XP SP2 where there is a default connection attempt limit of 10/second
+	if (connectionTimeout)
+	{
+		WaitForSingleObject(hConnectionOpenMutex, 10000);
+		waitdiff = GetTickCount() - g_LastConnectionTick;
+		if (waitdiff < connectionTimeout) SleepEx(connectionTimeout, TRUE);
+		g_LastConnectionTick = GetTickCount();
+		ReleaseMutex(hConnectionOpenMutex);
+	}
 
-    // might of died in between the wait
+	// might of died in between the wait
 	if ( Miranda_Terminated() )  {
 		rc=SOCKET_ERROR;
 		lasterr=ERROR_TIMEOUT;
@@ -396,15 +394,15 @@ static int my_connect(NetlibConnection *nlc, NETLIBOPENCONNECTION * nloc)
 	}
 
 retry:
-    nlc->s=socket(AF_INET,nloc->flags & NLOCF_UDP ? SOCK_DGRAM : SOCK_STREAM, 0);
-    if (nlc->s == INVALID_SOCKET) return SOCKET_ERROR;
+	nlc->s=socket(AF_INET,nloc->flags & NLOCF_UDP ? SOCK_DGRAM : SOCK_STREAM, 0);
+	if (nlc->s == INVALID_SOCKET) return SOCKET_ERROR;
 
-    // return the socket to non blocking
+	// return the socket to non blocking
 	if ( ioctlsocket(nlc->s, FIONBIO, &notblocking) != 0 ) return SOCKET_ERROR;
 
-    if (nlc->nlu->settings.specifyOutgoingPorts && nlc->nlu->settings.szOutgoingPorts) 
+	if (nlc->nlu->settings.specifyOutgoingPorts && nlc->nlu->settings.szOutgoingPorts) 
 	{
-        if (!BindSocketToPort(nlc->nlu->settings.szOutgoingPorts, nlc->s, &nlc->nlu->inportnum))
+		if (!BindSocketToPort(nlc->nlu->settings.szOutgoingPorts, nlc->s, &nlc->nlu->inportnum))
 			Netlib_Logf(nlc->nlu,"Netlib connect: Not enough ports for outgoing connections specified");
 	} 
 
@@ -445,11 +443,11 @@ retry:
 				int len=sizeof(lasterr);
 				rc=SOCKET_ERROR;
 				getsockopt(nlc->s,SOL_SOCKET,SO_ERROR,(char*)&lasterr,&len);
-                if (lasterr == WSAEADDRINUSE && ++retrycnt <= 2) 
-                {
-                    closesocket(nlc->s);
-                    goto retry;
-                }
+				if (lasterr == WSAEADDRINUSE && ++retrycnt <= 2) 
+				{
+					closesocket(nlc->s);
+					goto retry;
+				}
 			}
 			goto unblock;
 		} else if ( Miranda_Terminated() ) {
@@ -480,15 +478,15 @@ INT_PTR NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	NETLIBOPENCONNECTION *nloc=(NETLIBOPENCONNECTION*)lParam;
 	struct NetlibUser *nlu=(struct NetlibUser*)wParam;
 	struct NetlibConnection *nlc;
-    
+
 	Netlib_Logf(nlu,"Connecting to %s:%d (Flags %x)....", nloc->szHost, nloc->wPort, nloc->flags);
 
 	EnterCriticalSection(&csNetlibUser);
-    if(iUPnPCleanup==0) {
-        forkthread(NetlibUPnPCleanup, 0, NULL);
-        iUPnPCleanup = 1;
-    }
-    LeaveCriticalSection(&csNetlibUser);
+	if(iUPnPCleanup==0) {
+		forkthread(NetlibUPnPCleanup, 0, NULL);
+		iUPnPCleanup = 1;
+	}
+	LeaveCriticalSection(&csNetlibUser);
 	if(GetNetlibHandleType(nlu)!=NLH_USER || !(nlu->user.flags&NUF_OUTGOING) || nloc==NULL 
 		|| !(nloc->cbSize==NETLIBOPENCONNECTION_V1_SIZE||nloc->cbSize==sizeof(NETLIBOPENCONNECTION)) || nloc->szHost==NULL || nloc->wPort==0) {
 		SetLastError(ERROR_INVALID_PARAMETER);
@@ -498,7 +496,7 @@ INT_PTR NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	nlc->handleType=NLH_CONNECTION;
 	nlc->nlu=nlu;
 
-    InitializeCriticalSection(&nlc->csHttpSequenceNums);
+	InitializeCriticalSection(&nlc->csHttpSequenceNums);
 	nlc->hOkToCloseEvent=CreateEvent(NULL,TRUE,TRUE,NULL);
 	nlc->dontCloseNow=0;
 	NetlibInitializeNestedCS(&nlc->ncsSend);
@@ -525,7 +523,7 @@ INT_PTR NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 
 	if(nlu->settings.useProxy
 	   && !((nloc->flags & (NLOCF_HTTP | NLOCF_SSL)) == NLOCF_HTTP
-	        && (nlu->settings.proxyType==PROXYTYPE_HTTP || nlu->settings.proxyType==PROXYTYPE_HTTPS)))
+			&& (nlu->settings.proxyType==PROXYTYPE_HTTP || nlu->settings.proxyType==PROXYTYPE_HTTPS)))
 	{
 		if(!WaitUntilWritable(nlc->s,30000)) {
 			FreePartiallyInitedConnection(nlc);
@@ -565,7 +563,7 @@ INT_PTR NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 						nlc->sinProxy.sin_port=htons((short)nloc->wPort);
 						nlc->sinProxy.sin_addr.S_un.S_addr=DnsLookup(nlu,nloc->szHost);
 						if(nlc->sinProxy.sin_addr.S_un.S_addr==0 || my_connect(nlc, nloc)==SOCKET_ERROR) 
-                        {
+						{
 							if(nlc->sinProxy.sin_addr.S_un.S_addr)
 								Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"connect",WSAGetLastError());
 							FreePartiallyInitedConnection(nlc);
@@ -589,7 +587,7 @@ INT_PTR NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	{
 		Netlib_Logf(nlu,"(%d) Connected to %s:%d, Starting SSL negotiation",nlc->s,nloc->szHost,nloc->wPort);
 
-        nlc->hSsl = si.connect(nlc->s, nloc->szHost, nlu->settings.validateSSL);
+		nlc->hSsl = si.connect(nlc->s, nloc->szHost, nlu->settings.validateSSL);
 		if (nlc->hSsl == NULL)
 		{
 			Netlib_Logf(nlu,"(%d) Failure to negotiate SSL connection",nlc->s);
@@ -606,9 +604,9 @@ INT_PTR NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 INT_PTR NetlibStartSsl(WPARAM wParam,LPARAM lParam)
 {
 	struct NetlibConnection *nlc = (struct NetlibConnection*)wParam;
-    NETLIBSSL *sp = (NETLIBSSL*)lParam;
+	NETLIBSSL *sp = (NETLIBSSL*)lParam;
 
-    nlc->hSsl = si.connect(nlc->s, sp ? sp->host : nlc->szHost, nlc->nlu->settings.validateSSL);
+	nlc->hSsl = si.connect(nlc->s, sp ? sp->host : nlc->szHost, nlc->nlu->settings.validateSSL);
 
 	if (nlc->hSsl == NULL)
 		Netlib_Logf(nlc->nlu,"(%d) Failure to negotiate SSL connection",nlc->s);
