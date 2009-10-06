@@ -42,7 +42,7 @@ void __cdecl CYahooProto::search_simplethread(void *snsearch)
 
 	PROTOSEARCHRESULT psr = { 0 };
 	psr.cbSize = sizeof(psr);
-	psr.nick = strdup(nick);
+	psr.nick = strlwr(strdup(nick));
 	psr.reserved[0] = YAHOO_IM_YAHOO;
 
 	SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
@@ -162,7 +162,7 @@ void __cdecl CYahooProto::searchadv_thread(void *pHWND)
 
 	PROTOSEARCHRESULT psr = { 0 };
 	psr.cbSize = sizeof(psr);
-	psr.nick = searchid;
+	psr.nick = strlwr(searchid);
 
 	int pid = SendDlgItemMessage(hwndDlg , IDC_SEARCH_PROTOCOL, CB_GETCURSEL, 0, 0);
 	switch (pid){
