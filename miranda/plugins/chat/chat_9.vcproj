@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="chat"
 	ProjectGUID="{268BD296-8DD3-4715-A386-CF120398EC98}"
 	RootNamespace="chat"
@@ -81,6 +81,7 @@
 				AdditionalOptions="/DLL"
 				AdditionalDependencies="shlwapi.lib Version.lib"
 				SuppressStartupBanner="true"
+				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				GenerateDebugInformation="true"
 				GenerateMapFile="false"
 				MapFileName=""
@@ -176,6 +177,7 @@
 				AdditionalOptions="/DLL"
 				AdditionalDependencies="shlwapi.lib Version.lib"
 				SuppressStartupBanner="true"
+				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				GenerateDebugInformation="true"
 				GenerateMapFile="false"
 				MapFileName=""
@@ -273,6 +275,7 @@
 				AdditionalOptions="/DLL"
 				AdditionalDependencies="Version.lib shlwapi.lib "
 				SuppressStartupBanner="true"
+				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
 				GenerateMapFile="false"
@@ -370,6 +373,7 @@
 				AdditionalOptions="/DLL"
 				AdditionalDependencies="Version.lib shlwapi.lib "
 				SuppressStartupBanner="true"
+				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
 				GenerateMapFile="false"
@@ -679,6 +683,7 @@
 				AdditionalOptions="/DLL"
 				AdditionalDependencies="shlwapi.lib Version.lib"
 				SuppressStartupBanner="true"
+				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				GenerateDebugInformation="true"
 				GenerateMapFile="false"
 				MapFileName=""
@@ -788,6 +793,7 @@
 				AdditionalOptions="/DLL"
 				AdditionalDependencies="shlwapi.lib Version.lib"
 				SuppressStartupBanner="true"
+				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				GenerateDebugInformation="true"
 				GenerateMapFile="false"
 				MapFileName=""
@@ -1598,10 +1604,6 @@
 			<Filter
 				Name="Other"
 				>
-				<File
-					RelativePath="AggressiveOptimize.h"
-					>
-				</File>
 				<File
 					RelativePath="m_smileyadd.h"
 					>

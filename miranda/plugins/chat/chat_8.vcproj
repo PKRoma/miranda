@@ -829,28 +829,12 @@
 				>
 			</File>
 			<File
-				RelativePath="m_chat.h"
-				>
-			</File>
-			<File
 				RelativePath="richutil.h"
 				>
 			</File>
 			<Filter
 				Name="Other"
 				>
-				<File
-					RelativePath="AggressiveOptimize.h"
-					>
-				</File>
-				<File
-					RelativePath="IcoLib.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\include\m_popup.h"
-					>
-				</File>
 				<File
 					RelativePath="m_smileyadd.h"
 					>
