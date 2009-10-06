@@ -2641,7 +2641,7 @@ int TSAPI GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLe
 #else
 	if (M->GetTString(hContact, SRMSGMOD_T, "container", &dbv)) {
 #endif
-		_tcsncpy(szName, _T("default"), iNameLen);
+		_tcsncpy(szName, TranslateT("default"), iNameLen);
 		return 0;
 	}
 	if (dbv.type == DBVT_ASCIIZ || dbv.type == DBVT_WCHAR) {

@@ -194,7 +194,7 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Highlight User..."),						/* GEN_MUC_MENU_ADDTOHIGHLIGHT */
 	LPGENT("Add user to highlight list"),				/* GEN_MUC_HIGHLIGHT_ADD */
 	LPGENT("Edit user highlight list"),					/* GEN_MUC_HIGHLIGHT_EDIT */
-	LPGENT("Edit Highlist List..."), 					/* GEN_MUC_MENU_EDITHIGHLIGHTLIST */
+	LPGENT("Edit Highlight List..."), 					/* GEN_MUC_MENU_EDITHIGHLIGHTLIST */
 	LPGENT("Contact not on list. You may add it..."),	/* GEN_MSG_CONTACT_NOT_ON_LIST */
 	LPGENT("A send later job completed successfully.\nThe original message: %s"), /* GEN_SQ_SENDLATER_SUCCESS_POPUP */
 
