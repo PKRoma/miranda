@@ -969,15 +969,7 @@
 				>
 			</File>
 			<File
-				RelativePath="clist.h"
-				>
-			</File>
-			<File
 				RelativePath="commonheaders.h"
-				>
-			</File>
-			<File
-				RelativePath="forkthread.h"
 				>
 			</File>
 			<File
@@ -994,10 +986,6 @@
 				>
 			</File>
 			<File
-				RelativePath="res\delete.ico"
-				>
-			</File>
-			<File
 				RelativePath="res\dragcopy.cur"
 				>
 			</File>
@@ -1007,10 +995,6 @@
 			</File>
 			<File
 				RelativePath="res\hyperlin.cur"
-				>
-			</File>
-			<File
-				RelativePath="res\rename.ico"
 				>
 			</File>
 			<File
