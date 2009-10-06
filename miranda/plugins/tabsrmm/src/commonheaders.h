@@ -206,6 +206,7 @@ extern 	NEN_OPTIONS	nen_options;
 #include "controls.h"
 #include "infopanel.h"
 #include "sidebar.h"
+#include  "utils.h"
 #include "../chat/muchighlight.h"
 
 #if !defined(_WIN64) && !defined(_USE_32BIT_TIME_T)

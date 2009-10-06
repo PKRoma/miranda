@@ -906,6 +906,8 @@ void CSideBar::initBG(const HWND hwnd)
 	m_BGhbm = hbmOld;
 	if(fAero)
 		CImageItem::PreMultiply(m_BGhbm, 1);
+
+	::ReleaseDC(hwnd, hdc);
 }
 
 /**

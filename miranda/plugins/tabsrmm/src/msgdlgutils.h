@@ -44,7 +44,7 @@ int		TSAPI MsgWindowUpdateMenu			(_MessageWindowData *dat, HMENU submenu, int me
 int		TSAPI MsgWindowMenuHandler			(_MessageWindowData *dat, int selection, int menuId);
 int  	TSAPI GetAvatarVisibility			(HWND hwndDlg, _MessageWindowData *dat);
 void 	TSAPI UpdateStatusBar				(const _MessageWindowData *dat);
-int		TSAPI CheckValidSmileyPack			(const char *szProto, HANDLE hContact, HICON *hButtonIcon);
+int		TSAPI CheckValidSmileyPack			(const char *szProto, HANDLE hContact);
 TCHAR*	TSAPI QuoteText						(const TCHAR *text, int charsPerLine, int removeExistingQuotes);
 void	TSAPI UpdateReadChars				(const _MessageWindowData *dat);
 void	TSAPI ShowPicture					(_MessageWindowData *dat, BOOL showNewPic);
@@ -84,7 +84,6 @@ void	TSAPI RearrangeTab					(HWND hwndDlg, const _MessageWindowData *dat, int iM
 void	TSAPI GetCachedStatusMsg			(_MessageWindowData *dat);
 BOOL	TSAPI IsStatusEvent					(int eventType);
 void	TSAPI GetMyNick						(_MessageWindowData *dat);
-int		TSAPI FindRTLLocale					(_MessageWindowData *dat);
 HICON	TSAPI MY_GetContactIcon				(const _MessageWindowData *dat);
 void	TSAPI CheckAndDestroyIEView			(_MessageWindowData *dat);
 void 	TSAPI KbdState						(_MessageWindowData *dat, BOOL& isShift, BOOL& isControl, BOOL& isAlt);
@@ -94,12 +93,5 @@ void	TSAPI MTH_updateMathWindow			(const _MessageWindowData *dat);
 
 extern INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
-struct RTFColorTable {
-    TCHAR szName[10];
-    COLORREF clr;
-    int index;
-    int menuid;
-};
 
 #endif

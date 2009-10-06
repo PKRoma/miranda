@@ -3153,9 +3153,10 @@ LABEL_SHOWWINDOW:
 					return FALSE;
 
 				case IDOK: {
-					char*  pszRtf;
-					TCHAR* ptszText/*, *p1*/;
-					MODULEINFO *mi;
+					char*  		pszRtf;
+					TCHAR* 		ptszText/*, *p1*/;
+					MODULEINFO*	mi;
+					bool		fSound = true;
 
 					if (GetSendButtonState(hwndDlg) == PBS_DISABLED)
 						break;
@@ -3174,10 +3175,16 @@ LABEL_SHOWWINDOW:
 
 					EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
 
+					if(ptszText[0] == '/' || si->iType == GCW_SERVER)
+						fSound = false;
 					DoEventHookAsync(hwndDlg, si->ptszID, si->pszModule, GC_USER_MESSAGE, NULL, ptszText, (LPARAM)NULL);
 					mi->idleTimeStamp = time(0);
 					mi->lastIdleCheck = 0;
 					SM_BroadcastMessage(si->pszModule, GC_UPDATESTATUSBAR, 0, 1, TRUE);
+					if (dat && dat->pContainer) {
+						if (fSound && !nen_options.iNoSounds && !(dat->pContainer->dwFlags & CNT_NOSOUND))
+							SkinPlaySound("ChatSent");
+					}
 					mir_free(pszRtf);
 #if defined( _UNICODE )
 					mir_free(ptszText);

@@ -37,7 +37,6 @@
 #include "commonheaders.h"
 
 extern RECT	  			rcLastStatusBarClick;
-extern RTFColorTable*	rtf_ctable;
 
 /**
  * generic command handler for message windows.
@@ -90,8 +89,8 @@ void TSAPI DM_InitRichEdit(_MessageWindowData *dat)
 	 * correct the input area text color to avoid a color from the table of usable bbcode colors
 	 */
 	if(!fIsChat) {
-		for (i = 0; i < PluginConfig.rtf_ctablesize; i++) {
-			if (rtf_ctable[i].clr == inputcharcolor)
+		for (i = 0; i < Utils::rtf_ctable_size; i++) {
+			if (Utils::rtf_ctable[i].clr == inputcharcolor)
 				inputcharcolor = RGB(GetRValue(inputcharcolor), GetGValue(inputcharcolor), GetBValue(inputcharcolor) == 0 ? GetBValue(inputcharcolor) + 1 : GetBValue(inputcharcolor) - 1);
 		}
 	}
@@ -135,7 +134,7 @@ void TSAPI DM_InitRichEdit(_MessageWindowData *dat)
 
 	pf2.wEffects = PFE_RTLPARA;
 	pf2.dwMask = PFM_RTLPARA;
-	if (FindRTLLocale(dat))
+	if (Utils::FindRTLLocale(dat))
 		SendMessage(hwndEdit, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
 	if (!(dat->dwFlags & MWF_LOG_RTL)) {
 		pf2.wEffects = 0;
@@ -552,7 +551,7 @@ LRESULT TSAPI DM_WMCopyHandler(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPA
 			TCHAR *tszText = (TCHAR *)malloc((lstrlen((TCHAR *)hClip) + 2) * sizeof(TCHAR));
 
 			lstrcpy(tszText, (TCHAR *)hClip);
-			FilterEventMarkers(tszText);
+			Utils::FilterEventMarkers(tszText);
 			EmptyClipboard();
 
 			hgbl = GlobalAlloc(GMEM_MOVEABLE, (lstrlen(tszText) + 1) * sizeof(TCHAR));
@@ -1181,7 +1180,7 @@ void TSAPI DM_UpdateTitle(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 				else
 					lstrcpyn(newcontactname, szNick, safe_sizeof(newcontactname));
 
-				DoubleAmpersands(newcontactname);
+				Utils::DoubleAmpersands(newcontactname);
 
 				if (lstrlen(newcontactname) != 0 && dat->szStatus != NULL) {
 					if (PluginConfig.m_StatusOnTabs)

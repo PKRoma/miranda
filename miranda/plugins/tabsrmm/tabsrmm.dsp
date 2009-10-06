@@ -1521,85 +1521,6 @@ NODEP_CPP_EVENT=\
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\formatting.cpp
-DEP_CPP_FORMA=\
-	"..\..\include\m_acc.h"\
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
-	"..\..\include\m_freeimage.h"\
-	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_history.h"\
-	"..\..\include\m_hotkeys.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_imgsrvc.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\API\m_buttonbar.h"\
-	".\API\m_cln_skinedit.h"\
-	".\API\m_fingerprint.h"\
-	".\API\m_flash.h"\
-	".\API\m_folders.h"\
-	".\API\m_historyevents.h"\
-	".\API\m_ieview.h"\
-	".\API\m_mathmodule.h"\
-	".\API\m_metacontacts.h"\
-	".\API\m_msg_buttonsbar.h"\
-	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
-	".\API\m_smileyadd.h"\
-	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
-	".\API\m_updater.h"\
-	".\chat\chat.h"\
-	".\chat\chatprototypes.h"\
-	".\chat\muchighlight.h"\
-	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
-	
-NODEP_CPP_FORMA=\
-	".\xtheme.h"\
-	
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\generic_msghandlers.cpp
 DEP_CPP_GENER=\
 	"..\..\include\m_acc.h"\
@@ -3710,6 +3631,10 @@ NODEP_CPP_USERP=\
 	".\xtheme.h"\
 	
 # End Source File
+# Begin Source File
+
+SOURCE=.\src\utils.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -3793,6 +3718,10 @@ SOURCE=.\src\translator.h
 # Begin Source File
 
 SOURCE=.\src\typingnotify.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\utils.h
 # End Source File
 # Begin Source File
 

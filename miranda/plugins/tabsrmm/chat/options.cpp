@@ -1365,6 +1365,7 @@ int OptionsInit(void)
 	LoadGlobalSettings();
 	g_Settings.Highlight = new CMUCHighlight();
 	SkinAddNewSoundEx("ChatMessage", "Chat", TranslateA("Incoming message"));
+	SkinAddNewSoundEx("ChatSent", "Chat", TranslateA("Outgoing message"));
 	SkinAddNewSoundEx("ChatHighlight", "Chat", TranslateA("Message is highlighted"));
 	SkinAddNewSoundEx("ChatAction", "Chat", TranslateA("User has performed an action"));
 	SkinAddNewSoundEx("ChatJoin", "Chat", TranslateA("User has joined"));

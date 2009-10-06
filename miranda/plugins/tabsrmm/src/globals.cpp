@@ -337,7 +337,6 @@ void CGlobals::reloadSettings()
 	m_PasteAndSend = 					(int)M->GetByte("pasteandsend", 1);
 	m_szNoStatus = 						const_cast<TCHAR *>(CTranslator::get(CTranslator::GEN_NO_STATUS));
 	m_LangPackCP = 						ServiceExists(MS_LANGPACK_GETCODEPAGE) ? CallService(MS_LANGPACK_GETCODEPAGE, 0, 0) : CP_ACP;
-	m_SmileyButtonOverride = 			(BYTE)M->GetByte("smbutton_override", 1);
 	m_visualMessageSizeIndicator = 		M->GetByte("msgsizebar", 0);
 	m_autoSplit = 						M->GetByte("autosplit", 0);
 	m_FlashOnMTN = 						M->GetByte(SRMSGMOD, SRMSGSET_SHOWTYPINGWINFLASH, SRMSGDEFSET_SHOWTYPINGWINFLASH);
@@ -411,6 +410,8 @@ int CGlobals::ModulesLoaded(WPARAM wParam, LPARAM lParam)
 	::UnhookEvent(m_event_ModulesLoaded);
 
 	M->configureCustomFolders();
+
+	Skin->Init(true);
 
 	for (i = 0; i < NR_BUTTONBARICONS; i++)
 		PluginConfig.g_buttonBarIcons[i] = 0;

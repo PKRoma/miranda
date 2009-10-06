@@ -203,7 +203,8 @@ public:
 		GEN_IP_MENU_USER_DETAILS								= 160,
 		GEN_IP_MENU_MSGPREFS									= 161,
 		GEN_IP_MENU_ROOMPREFS									= 162,
-		STR_LAST 												= 163
+		GEN_IP_MENU_HISTORY										= 163,
+		STR_LAST 												= 164
 	};
 
 	enum {

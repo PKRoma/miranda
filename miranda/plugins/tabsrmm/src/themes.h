@@ -241,17 +241,14 @@ public:
 		m_default_bf.SourceConstantAlpha = 255;
 		m_default_bf.AlphaFormat = AC_SRC_ALPHA;
 		m_default_bf.BlendOp = AC_SRC_OVER;
-		Init();
-
-		if(m_fLoadOnStartup)
-			Load();								// load skin on init if this is checked
 	}
+
 	~CSkin()
 	{
 		Unload();
 	}
 
-	void			Init();
+	void			Init(bool fStartup = false);
 	void			Load();
 	void			Unload();
 	void			setFileName();

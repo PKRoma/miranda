@@ -28,7 +28,7 @@
  *
  * $Id$
  *
- * some text utility functions for message formatting (bbcode translation etc.)
+ * generic utility functions
  *
  */
 
@@ -39,10 +39,8 @@
 #define MWF_LOG_TEXTFORMAT 0x2000000
 #define MSGDLGFONTCOUNT 22
 
-extern RTFColorTable *rtf_ctable;
-extern void RTF_ColorAdd(const TCHAR *tszColname, size_t length);
-extern unsigned int g_ctable_size;
-
+int				Utils::rtf_ctable_size = 0;
+TRTFColorTable* Utils::rtf_ctable = 0;
 
 /*
  * old code (textformat plugin dealing directly in the edit control - not the best solution, but the author
@@ -56,13 +54,8 @@ static TCHAR *formatting_strings_begin[] = { _T("b1 "), _T("i1 "), _T("u1 "),
 static TCHAR *formatting_strings_end[] = { _T("b0 "), _T("i0 "), _T("u0 "), _T("s0 "), _T("c0 ") };
 
 #define NR_CODES 5
-/*
- * this translates formatting tags into rtf sequences...
- * flags: loword = words only for simple  * /_ formatting
- *        hiword = bbcode support (strip bbcodes if 0)
- */
 
-TCHAR *FilterEventMarkers(TCHAR *wszText)
+TCHAR* Utils::FilterEventMarkers(TCHAR *wszText)
 {
 	tstring text(wszText);
 	INT_PTR beginmark = 0, endmark = 0;
@@ -97,7 +90,12 @@ TCHAR *FilterEventMarkers(TCHAR *wszText)
 	return wszText;
 }
 
-const TCHAR *FormatRaw(_MessageWindowData *dat, const TCHAR *msg, int flags, BOOL isSent)
+/**
+ * this translates formatting tags into rtf sequences...
+ * flags: loword = words only for simple  * /_ formatting
+ *        hiword = bbcode support (strip bbcodes if 0)
+ */
+const TCHAR* Utils::FormatRaw(_MessageWindowData *dat, const TCHAR *msg, int flags, BOOL isSent)
 {
 	bool 	clr_was_added = false, was_added;
 	static 	tstring message(msg);
@@ -146,9 +144,9 @@ const TCHAR *FormatRaw(_MessageWindowData *dat, const TCHAR *msg, int flags, BOO
 					tstring colorname = message.substr(beginmark + 7, 8);
 search_again:
 					bool  clr_found = false;
-					unsigned int ii = 0;
+					int ii = 0;
 					TCHAR szTemp[5];
-					for (ii = 0; ii < g_ctable_size; ii++) {
+					for (ii = 0; ii < rtf_ctable_size; ii++) {
 						if (!_tcsnicmp((TCHAR *)colorname.c_str(), rtf_ctable[ii].szName, lstrlen(rtf_ctable[ii].szName))) {
 							closing = beginmark + 7 + lstrlen(rtf_ctable[ii].szName);
 							if (endmark != message.npos) {
@@ -277,12 +275,11 @@ ok:
 	return(message.c_str());
 }
 
-/*
+/**
  * format the title bar string for IM chat sessions using placeholders.
  * the caller must free() the returned string
  */
-
-const TCHAR *NewTitle(const _MessageWindowData *dat, const TCHAR *szFormat)
+const TCHAR* Utils::FormatTitleBar(const _MessageWindowData *dat, const TCHAR *szFormat)
 {
 	TCHAR *szResult = 0;
 	INT_PTR length = 0;
@@ -420,7 +417,7 @@ const TCHAR *NewTitle(const _MessageWindowData *dat, const TCHAR *szFormat)
 }
 
 #if defined(_UNICODE)
-char *FilterEventMarkers(char *szText)
+char* Utils::FilterEventMarkers(char *szText)
 {
 	std::string text(szText);
 	INT_PTR beginmark = 0, endmark = 0;
@@ -454,17 +451,7 @@ char *FilterEventMarkers(char *szText)
 }
 #endif
 
-// __T() not defined by MingW32
-
-#ifdef __GNUC__
-	#if defined(UNICODE)
-		#define __T(x) L ## x
-	#else
-		#define __T(x) x
-	#endif
-#endif
-
-const TCHAR *DoubleAmpersands(TCHAR *pszText)
+const TCHAR* Utils::DoubleAmpersands(TCHAR *pszText)
 {
 	tstring text(pszText);
 
@@ -490,7 +477,7 @@ const TCHAR *DoubleAmpersands(TCHAR *pszText)
  * @param iMaxLen	max length of the preview
  * @return
  */
-TCHAR* TSAPI GetPreviewWithEllipsis(TCHAR *szText, size_t iMaxLen)
+TCHAR* Utils::GetPreviewWithEllipsis(TCHAR *szText, size_t iMaxLen)
 {
 	size_t   uRequired;
 	TCHAR*	 p = 0, cSaved;
@@ -519,3 +506,117 @@ TCHAR* TSAPI GetPreviewWithEllipsis(TCHAR *szText, size_t iMaxLen)
 
 	return(szResult);
 }
+
+/*
+ * returns != 0 when one of the installed keyboard layouts belongs to an rtl language
+ * used to find out whether we need to configure the message input box for bidirectional mode
+ */
+
+int Utils::FindRTLLocale(_MessageWindowData *dat)
+{
+	HKL layouts[20];
+	int i, result = 0;
+	LCID lcid;
+	WORD wCtype2[5];
+
+	if (dat->iHaveRTLLang == 0) {
+		ZeroMemory(layouts, 20 * sizeof(HKL));
+		GetKeyboardLayoutList(20, layouts);
+		for (i = 0; i < 20 && layouts[i]; i++) {
+			lcid = MAKELCID(LOWORD(layouts[i]), 0);
+			GetStringTypeA(lcid, CT_CTYPE2, "הצü", 3, wCtype2);
+			if (wCtype2[0] == C2_RIGHTTOLEFT || wCtype2[1] == C2_RIGHTTOLEFT || wCtype2[2] == C2_RIGHTTOLEFT)
+				result = 1;
+		}
+		dat->iHaveRTLLang = (result ? 1 : -1);
+	} else
+		result = dat->iHaveRTLLang == 1 ? 1 : 0;
+
+	return result;
+}
+
+/*
+ * init default color table. the table may grow when using custom colors via bbcodes
+ */
+
+void Utils::RTF_CTableInit()
+{
+	int iSize = sizeof(TRTFColorTable) * RTF_CTABLE_DEFSIZE;
+
+	rtf_ctable = (TRTFColorTable *)malloc(iSize);
+	ZeroMemory(rtf_ctable, iSize);
+	CopyMemory(rtf_ctable, _rtf_ctable, iSize);
+	rtf_ctable_size = RTF_CTABLE_DEFSIZE;
+}
+
+/*
+ * add a color to the global rtf color table
+ */
+
+void Utils::RTF_ColorAdd(const TCHAR *tszColname, size_t length)
+{
+	TCHAR *stopped;
+	COLORREF clr;
+
+	rtf_ctable_size++;
+	rtf_ctable = (TRTFColorTable *)realloc(rtf_ctable, sizeof(TRTFColorTable) * rtf_ctable_size);
+	clr = _tcstol(tszColname, &stopped, 16);
+	mir_sntprintf(rtf_ctable[rtf_ctable_size - 1].szName, length + 1, _T("%06x"), clr);
+	rtf_ctable[rtf_ctable_size - 1].menuid = rtf_ctable[rtf_ctable_size - 1].index = 0;
+
+	clr = _tcstol(tszColname, &stopped, 16);
+	rtf_ctable[rtf_ctable_size - 1].clr = (RGB(GetBValue(clr), GetGValue(clr), GetRValue(clr)));
+}
+
+void Utils::CreateColorMap(TCHAR *Text)
+{
+	TCHAR * pszText = Text;
+	TCHAR * p1;
+	TCHAR * p2;
+	TCHAR * pEnd;
+	int iIndex = 1, i = 0;
+	COLORREF default_color;
+
+	static const TCHAR *lpszFmt = _T("\\red%[^ \x5b\\]\\green%[^ \x5b\\]\\blue%[^ \x5b;];");
+	TCHAR szRed[10], szGreen[10], szBlue[10];
+
+	p1 = _tcsstr(pszText, _T("\\colortbl"));
+	if (!p1)
+		return;
+
+	pEnd = _tcschr(p1, '}');
+
+	p2 = _tcsstr(p1, _T("\\red"));
+
+	for (i = 0; i < RTF_CTABLE_DEFSIZE; i++)
+		rtf_ctable[i].index = 0;
+
+	default_color = (COLORREF)M->GetDword(FONTMODULE, "Font16Col", 0);
+
+	while (p2 && p2 < pEnd) {
+		if (_stscanf(p2, lpszFmt, &szRed, &szGreen, &szBlue) > 0) {
+			int i;
+			for (i = 0; i < RTF_CTABLE_DEFSIZE; i++) {
+				if (rtf_ctable[i].clr == RGB(_ttoi(szRed), _ttoi(szGreen), _ttoi(szBlue)))
+					rtf_ctable[i].index = iIndex;
+			}
+		}
+		iIndex++;
+		p1 = p2;
+		p1 ++;
+
+		p2 = _tcsstr(p1, _T("\\red"));
+	}
+	return ;
+}
+
+int Utils::RTFColorToIndex(int iCol)
+{
+	int i = 0;
+	for (i = 0; i < RTF_CTABLE_DEFSIZE; i++) {
+		if (rtf_ctable[i].index == iCol)
+			return i + 1;
+	}
+	return 0;
+}
+

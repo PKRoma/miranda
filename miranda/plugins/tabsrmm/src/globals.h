@@ -180,7 +180,6 @@ public:
 	BOOL        m_visualMessageSizeIndicator;
 	BOOL        m_autoSplit;
 	BOOL		m_FlashOnMTN;
-	int         rtf_ctablesize;
 	DWORD       dwThreadID;
 	char        szMetaName[256];
 	BYTE		bMetaEnabled;

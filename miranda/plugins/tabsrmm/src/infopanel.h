@@ -48,6 +48,7 @@
 #define CMD_IP_USERDETAILS					20000
 #define CMD_IP_USERPREFS					20001
 #define CMD_IP_ROOMPREFS					20002
+#define CMD_IP_HISTORY						20003
 
 struct InfoPanelConfig {
 	HFONT       hFonts[IPFONTCOUNT];
@@ -110,21 +111,8 @@ public:
 	void						handleClick					(const POINT& pt);
 	void						showTip						(UINT ctrlId, const LPARAM lParam) const;
 	int							invokeConfigDialog			(const POINT& pt);
-	void						dismissConfig				(bool fForced = false)
-	{
-		if(m_hwndConfig == 0)
-			return;
+	void						dismissConfig				(bool fForced = false);
 
-		POINT pt;
-		RECT  rc;
-
-		::GetCursorPos(&pt);
-		::GetWindowRect(m_hwndConfig, &rc);
-		if(fForced || !PtInRect(&rc, pt)) {
-			SendMessage(m_hwndConfig, WM_CLOSE, 1, 1);
-			m_hwndConfig = 0;
-		}
-	}
 public:
 	static						InfoPanelConfig m_ipConfig;
 
@@ -137,6 +125,7 @@ private:
 	void 						Chat_RenderIPNickname		(const HDC hdc, RECT& rcItem);
 	void 						Chat_RenderIPSecondLine		(const HDC hdc, RECT& rcItem);
 	HMENU						constructContextualMenu		() const;
+	void						addMenuItem					(const HMENU& m, MENUITEMINFO& mii, HICON hIcon, const TCHAR *szText, UINT uID, UINT pos) const;
 	INT_PTR	CALLBACK			ConfigDlgProc				(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static INT_PTR CALLBACK	 	ConfigDlgProcStub			(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 

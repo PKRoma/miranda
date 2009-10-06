@@ -247,7 +247,6 @@ static int CustomButtonPressed(WPARAM wParam,LPARAM lParam)
 				_sntprintf(pszFormatedText,6*sizeof(TCHAR),_T("%s"),_T("[img]"));
 
 				bbd.ptszTooltip = (TCHAR *)_T("Insert [/img] tag");
-				bbd.hIcon = (HANDLE)PluginConfig.g_buttonBarIcons[3];
 				CallService(MS_BB_SETBUTTONSTATE, wParam, (LPARAM)&bbd);
 
 			}break;
@@ -259,7 +258,6 @@ static int CustomButtonPressed(WPARAM wParam,LPARAM lParam)
 				_sntprintf(pszFormatedText,7*sizeof(TCHAR),_T("%s"),_T("[/img]"));
 
 				bbd.ptszTooltip = (TCHAR *)_T("Insert [img] tag / surround selected text with [img][/img]");
-				bbd.hIcon = (HANDLE)PluginConfig.g_buttonBarIcons[3];
 				CallService(MS_BB_SETBUTTONSTATE, wParam, (LPARAM)&bbd);
 
 			}break;

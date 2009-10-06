@@ -206,8 +206,10 @@ void CB_ChangeButton(HWND hwndDlg, struct _MessageWindowData *dat, CustomButtonD
 {
 	HWND hwndBtn = GetDlgItem(hwndDlg, cbd->dwButtonCID);
 	if (hwndBtn) {
-		if (cbd->hIcon)SendMessage(hwndBtn, BM_SETIMAGE, IMAGE_ICON, (LPARAM)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)cbd->hIcon));
-		if (cbd->ptszTooltip)SendMessage(hwndBtn, BUTTONADDTOOLTIP, (WPARAM)TranslateTS(cbd->ptszTooltip), 0);
+		if (cbd->hIcon)
+			SendMessage(hwndBtn, BM_SETIMAGE, IMAGE_ICON, (LPARAM)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)cbd->hIcon));
+		if (cbd->ptszTooltip)
+			SendMessage(hwndBtn, BUTTONADDTOOLTIP, (WPARAM)TranslateTS(cbd->ptszTooltip), 0);
 		SendMessage(hwndBtn, BUTTONSETASFLATBTN + 12, 0, (LPARAM)dat->pContainer);
 	}
 }
@@ -523,7 +525,6 @@ void BB_UpdateIcons(HWND hdlg, struct _MessageWindowData *dat)
 
 			if (hwndBtn && cbd->hIcon)
 				SendMessage(hwndBtn, BM_SETIMAGE, IMAGE_ICON, (LPARAM)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)cbd->hIcon));
-
 		}
 
 	}
@@ -576,8 +577,10 @@ void TSAPI BB_InitDlgButtons(_MessageWindowData *dat)
 			if (!cbd->bDummy && hwndBtn) {
 				SendMessage(hwndBtn, BUTTONSETASFLATBTN, 0, isFlat ? 0 : 1);
 				SendMessage(hwndBtn, BUTTONSETASFLATBTN + 10, 0, isThemed ? 1 : 0);
-				if (cbd->hIcon)SendMessage(hwndBtn, BM_SETIMAGE, IMAGE_ICON, (LPARAM)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)cbd->hIcon));
-				if (cbd->ptszTooltip)SendMessage(hwndBtn, BUTTONADDTOOLTIP, (WPARAM)TranslateTS(cbd->ptszTooltip), 0);
+				if (cbd->hIcon)
+					SendMessage(hwndBtn, BM_SETIMAGE, IMAGE_ICON, (LPARAM)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)cbd->hIcon));
+				if (cbd->ptszTooltip)
+					SendMessage(hwndBtn, BUTTONADDTOOLTIP, (WPARAM)TranslateTS(cbd->ptszTooltip), 0);
 				SendMessage(hwndBtn, BUTTONSETASFLATBTN + 12, 0, (LPARAM)dat->pContainer);
 				SendMessage(hwndBtn, BUTTONSETASTOOLBARBUTTON, 0, 1);
 
@@ -612,8 +615,10 @@ void TSAPI BB_InitDlgButtons(_MessageWindowData *dat)
 			if (!cbd->bDummy && hwndBtn) {
 				SendMessage(hwndBtn, BUTTONSETASFLATBTN, 0, isFlat ? 0 : 1);
 				SendMessage(hwndBtn, BUTTONSETASFLATBTN + 10, 0, isThemed ? 1 : 0);
-				if (cbd->hIcon)SendMessage(hwndBtn, BM_SETIMAGE, IMAGE_ICON, (LPARAM)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)cbd->hIcon));
-				if (cbd->ptszTooltip)SendMessage(hwndBtn, BUTTONADDTOOLTIP, (WPARAM)TranslateTS(cbd->ptszTooltip), 0);
+				if (cbd->hIcon)
+					SendMessage(hwndBtn, BM_SETIMAGE, IMAGE_ICON, (LPARAM)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)cbd->hIcon));
+				if (cbd->ptszTooltip)
+					SendMessage(hwndBtn, BUTTONADDTOOLTIP, (WPARAM)TranslateTS(cbd->ptszTooltip), 0);
 				SendMessage(hwndBtn, BUTTONSETASFLATBTN + 12, 0, (LPARAM)dat->pContainer);
 				SendMessage(hwndBtn, BUTTONSETASTOOLBARBUTTON, 0, 1);
 
@@ -921,7 +926,7 @@ void CB_InitDefaultButtons()
 	bbd.bbbFlags = BBBF_ISIMBUTTON | BBBF_ISLSIDEBUTTON | BBBF_ISARROWBUTTON | BBBF_CREATEBYID;
 	bbd.dwButtonID = IDC_NAME;
 	bbd.dwDefPos = 20;
-	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[9];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[20];
 	bbd.ptszTooltip = _T("Info button");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -931,7 +936,7 @@ void CB_InitDefaultButtons()
 		bbd.dwButtonID = IDC_SMILEYBTN;
 		bbd.iButtonWidth = 0;
 		bbd.dwDefPos = 30;
-		bbd.hIcon = PluginConfig.g_buttonBarIconHandles[10];
+		bbd.hIcon = PluginConfig.g_buttonBarIconHandles[9];
 		bbd.ptszTooltip = _T("Insert Emoticon");
 		CB_AddButton(0, (LPARAM)&bbd);
 	}
@@ -939,7 +944,7 @@ void CB_InitDefaultButtons()
 	bbd.bbbFlags = BBBF_ISIMBUTTON | BBBF_ISCHATBUTTON | BBBF_ISLSIDEBUTTON | BBBF_ISPUSHBUTTON | BBBF_CANBEHIDDEN | BBBF_CREATEBYID;
 	bbd.dwButtonID = IDC_FONTBOLD;
 	bbd.dwDefPos = 40;
-	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[11];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[10];
 	bbd.ptszTooltip = _T("Bold text");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -947,7 +952,7 @@ void CB_InitDefaultButtons()
 	bbd.bbbFlags = BBBF_ISIMBUTTON | BBBF_ISCHATBUTTON | BBBF_ISLSIDEBUTTON | BBBF_ISPUSHBUTTON | BBBF_CANBEHIDDEN | BBBF_CREATEBYID;
 	bbd.dwButtonID = IDC_FONTITALIC;
 	bbd.dwDefPos = 50;
-	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[12];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[11];
 	bbd.ptszTooltip = _T("Italic text");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -955,7 +960,7 @@ void CB_InitDefaultButtons()
 	bbd.bbbFlags = BBBF_ISIMBUTTON | BBBF_ISCHATBUTTON | BBBF_ISLSIDEBUTTON | BBBF_ISPUSHBUTTON | BBBF_CANBEHIDDEN | BBBF_CREATEBYID;
 	bbd.dwButtonID = IDC_FONTUNDERLINE;
 	bbd.dwDefPos = 60;
-	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[13];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[12];
 	bbd.ptszTooltip = _T("Underlined text");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -963,7 +968,7 @@ void CB_InitDefaultButtons()
 	bbd.bbbFlags = BBBF_ISIMBUTTON | BBBF_ISLSIDEBUTTON | BBBF_ISPUSHBUTTON | BBBF_CANBEHIDDEN | BBBF_CREATEBYID;
 	bbd.dwButtonID = IDC_FONTSTRIKEOUT;
 	bbd.dwDefPos = 70;
-	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[16];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[15];
 	bbd.ptszTooltip = _T("Strike-through text");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -971,7 +976,7 @@ void CB_InitDefaultButtons()
 	bbd.bbbFlags = BBBF_ISIMBUTTON | BBBF_ISCHATBUTTON | BBBF_ISLSIDEBUTTON | BBBF_CANBEHIDDEN | BBBF_CREATEBYID;
 	bbd.dwButtonID = IDC_FONTFACE;
 	bbd.dwDefPos = 80;
-	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[15];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[14];
 	bbd.ptszTooltip = _T("Select font color");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -1008,7 +1013,7 @@ void CB_InitDefaultButtons()
 	bbd.dwButtonID = IDC_TIME;
 	bbd.dwDefPos = 40;
 	bbd.iButtonWidth = 0;
-	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[1];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[2];
 	bbd.ptszTooltip = _T("Message Log Options");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -1067,7 +1072,7 @@ void CB_InitDefaultButtons()
 	bbd.pszModuleName = "Tabsrmm";
 	bbd.dwDefPos = 81;
 	bbd.iButtonWidth = 22;
-	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[17];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[16];
 	bbd.ptszTooltip = _T("Change background color");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -1077,7 +1082,7 @@ void CB_InitDefaultButtons()
 	bbd.dwButtonID = IDC_SHOWNICKLIST;
 	bbd.dwDefPos = 22;
 	bbd.iButtonWidth = 22;
-	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[20];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[19];
 	bbd.ptszTooltip = _T("Toggle nick list");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -1086,7 +1091,7 @@ void CB_InitDefaultButtons()
 	bbd.dwButtonID = IDC_FILTER;
 	bbd.dwDefPos = 24;
 	bbd.iButtonWidth = 22;
-	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[19];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[18];
 	bbd.ptszTooltip = _T("Event filter - right click to setup, left click to activate/deactivate");
 
 	CB_AddButton(0, (LPARAM)&bbd);
@@ -1095,7 +1100,7 @@ void CB_InitDefaultButtons()
 	bbd.dwButtonID = IDC_CHANMGR;
 	bbd.dwDefPos = 33;
 	bbd.iButtonWidth = 22;
-	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[18];
+	bbd.hIcon = PluginConfig.g_buttonBarIconHandles[17];
 	bbd.ptszTooltip = _T("Channel manager");
 
 	CB_AddButton(0, (LPARAM)&bbd);

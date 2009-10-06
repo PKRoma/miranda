@@ -34,7 +34,6 @@
  */
 
 #include "commonheaders.h"
-#include "sendqueue.h"
 #pragma hdrstop
 
 extern SESSION_INFO*	m_WndList;
@@ -43,8 +42,6 @@ extern ButtonSet 		g_ButtonSet;
 extern INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
-const TCHAR *NewTitle(const _MessageWindowData *dat, const TCHAR *szFormat);
 
 ContainerWindowData *pFirstContainer = 0;        // the linked list of struct ContainerWindowData
 ContainerWindowData *pLastActiveContainer = NULL;
@@ -1508,7 +1505,7 @@ buttons_done:
 			}
 			if (dat) {
 				SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM)(dat->hXStatusIcon ? dat->hXStatusIcon : dat->hTabStatusIcon));
-				szNewTitle = NewTitle(dat, pContainer->szTitleFormat);
+				szNewTitle = Utils::FormatTitleBar(dat, pContainer->szTitleFormat);
 				if (szNewTitle) {
 					SetWindowText(hwndDlg, szNewTitle);
 					free((void *)szNewTitle);
@@ -2944,18 +2941,3 @@ void TSAPI BroadCastContainer(const ContainerWindowData *pContainer, UINT messag
 		}
 	}
 }
-
-void TSAPI BroadCastAllContainerS(UINT message, WPARAM wParam, LPARAM lParam, bool fIgnorePrivate, BYTE iType)
-{
-	const ContainerWindowData *p = pFirstContainer;
-
-	while(p) {
-		if(!(p->dwPrivateFlags & CNT_GLOBALSETTINGS) && fIgnorePrivate) {
-			p = p->pNextContainer;
-			continue;
-		}
-		BroadCastContainer(p, message, wParam, lParam, iType);
-		p = p->pNextContainer;
-	}
-}
-

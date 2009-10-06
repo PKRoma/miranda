@@ -962,8 +962,6 @@ static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* 
 #define BUDDYPOUNCE_SERVICENAME "BuddyPounce/AddToPounce"
 #define IDC_TBFIRSTUID 10000            // first uId for custom buttons
 
-#define RTF_CTABLE_DEFSIZE 8
-
 #include "templates.h"
 
 struct StatusIconListNode {

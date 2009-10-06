@@ -688,6 +688,15 @@ void CInfoPanel::Invalidate() const
 	::InvalidateRect(m_dat->hwnd, &rc, FALSE);
 }
 
+void CInfoPanel::addMenuItem(const HMENU& m, MENUITEMINFO& mii, HICON hIcon, const TCHAR *szText, UINT uID, UINT pos) const
+{
+	mii.wID = uID;
+	mii.dwItemData = (ULONG_PTR)hIcon;
+	mii.dwTypeData = const_cast<TCHAR *>(szText);
+	mii.cch = lstrlen(mii.dwTypeData) + 1;
+
+	::InsertMenuItem(m, pos, TRUE, &mii);
+}
 /**
  * build the left click contextual menu for the info panel
  * @return HMENU: menu handle for the fully prepared menu
@@ -703,18 +712,13 @@ HMENU CInfoPanel::constructContextualMenu() const
 	HMENU m = ::CreatePopupMenu();
 
 	if(m_hoverFlags & HOVER_NICK) {
-		mii.wID = CMD_IP_USERDETAILS;
-		mii.dwTypeData = const_cast<TCHAR *>(CTranslator::get(CTranslator::GEN_IP_MENU_USER_DETAILS));
-		mii.cch = lstrlen(mii.dwTypeData) + 1;
-		mii.dwItemData = (ULONG)LoadSkinnedIcon(SKINICON_OTHER_USERDETAILS);
-		::InsertMenuItem(m, 0, TRUE, &mii);
-		if(!m_isChat) {
-			mii.dwTypeData = const_cast<TCHAR *>(CTranslator::get(CTranslator::GEN_IP_MENU_MSGPREFS));
-			mii.cch = lstrlen(mii.dwTypeData) + 1;
-			mii.dwItemData = (ULONG)PluginConfig.g_iconContainer;
-			mii.wID = CMD_IP_USERPREFS;
-			::InsertMenuItem(m, 1, TRUE, &mii);
-		}
+		addMenuItem(m, mii, ::LoadSkinnedIcon(SKINICON_OTHER_USERDETAILS), CTranslator::get(CTranslator::GEN_IP_MENU_USER_DETAILS),
+					CMD_IP_USERDETAILS, 0);
+		addMenuItem(m, mii, ::LoadSkinnedIcon(SKINICON_OTHER_HISTORY), CTranslator::get(CTranslator::GEN_IP_MENU_HISTORY),
+					CMD_IP_HISTORY, 0);
+		if(!m_isChat)
+			addMenuItem(m, mii, PluginConfig.g_iconContainer, CTranslator::get(CTranslator::GEN_IP_MENU_MSGPREFS),
+						CMD_IP_USERPREFS, 1);
 		else
 			::AppendMenu(m, MF_STRING, CMD_IP_ROOMPREFS, CTranslator::get(CTranslator::GEN_IP_MENU_ROOMPREFS));
 	}
@@ -722,9 +726,6 @@ HMENU CInfoPanel::constructContextualMenu() const
 		::AppendMenu(m, MF_STRING, 0, _T("More To Come..."));
 
 	::AppendMenu(m, MF_SEPARATOR, 1000, 0);
-	mii.wID = 1000;
-	mii.dwTypeData = const_cast<TCHAR *>(CTranslator::get(CTranslator::GEN_IP_MENU_COPY));
-	mii.cch = lstrlen(mii.dwTypeData) + 1;
 	::AppendMenu(m, MF_STRING, 1000, CTranslator::get(CTranslator::GEN_IP_MENU_COPY));
 
 	return(m);
@@ -1143,3 +1144,18 @@ int CInfoPanel::invokeConfigDialog(const POINT& pt)
 	return(0);
 }
 
+void CInfoPanel::dismissConfig(bool fForced)
+{
+	if(m_hwndConfig == 0)
+		return;
+
+	POINT pt;
+	RECT  rc;
+
+	::GetCursorPos(&pt);
+	::GetWindowRect(m_hwndConfig, &rc);
+	if(fForced || !PtInRect(&rc, pt)) {
+		SendMessage(m_hwndConfig, WM_CLOSE, 1, 1);
+		m_hwndConfig = 0;
+	}
+}

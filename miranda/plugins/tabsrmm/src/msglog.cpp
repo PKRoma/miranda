@@ -33,19 +33,14 @@
  */
 
 #include "commonheaders.h"
-#pragma hdrstop
-#include <ctype.h>
-#include <malloc.h>
 #include <mbstring.h>
-#include <time.h>
-#include <locale.h>
-//#include "m_MathModule.h"
 
-extern      void ReleaseRichEditOle(IRichEditOle *ole);
-extern      struct RTFColorTable *rtf_ctable;
-extern      void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hBm);
-extern 		int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
-extern		void DeleteCachedIcon(struct MsgLogIcon *theIcon);
+#pragma hdrstop
+
+extern      void 	ReleaseRichEditOle(IRichEditOle *ole);
+extern      void 	ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hBm);
+extern 		int 	CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
+extern		void 	DeleteCachedIcon(struct MsgLogIcon *theIcon);
 
 struct CPTABLE cpTable[] = {
 	{ 874,	_T("Thai")	 },
@@ -81,8 +76,6 @@ static time_t today;
 int g_groupBreak = TRUE;
 static TCHAR *szMyName = NULL;
 static TCHAR *szYourName = NULL;
-
-const TCHAR *FormatRaw(_MessageWindowData *dat, const TCHAR *msg, int flags, BOOL isSent);
 
 static int logPixelSY;
 static TCHAR szToday[22], szYesterday[22];
@@ -531,8 +524,8 @@ static void Build_RTF_Header(char **buffer, int *bufferEnd, int *bufferAlloced, 
 
 	// bbcode colors...
 
-	for (i = 0; i < PluginConfig.rtf_ctablesize; i++)
-		AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(rtf_ctable[i].clr), GetGValue(rtf_ctable[i].clr), GetBValue(rtf_ctable[i].clr));
+	for (i = 0; i < Utils::rtf_ctable_size; i++)
+		AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(Utils::rtf_ctable[i].clr), GetGValue(Utils::rtf_ctable[i].clr), GetBValue(Utils::rtf_ctable[i].clr));
 
 	/*
 	 * paragraph header
@@ -683,7 +676,7 @@ static char *Template_CreateRTFFromDbEvent(struct _MessageWindowData *dat, HANDL
 			return NULL;
 		}
 		TrimMessage(msg);
-		formatted = const_cast<TCHAR *>(FormatRaw(dat, msg, dwFormattingParams, isSent));
+		formatted = const_cast<TCHAR *>(Utils::FormatRaw(dat, msg, dwFormattingParams, isSent));
 		mir_free(msg);
 	}
 
@@ -1584,8 +1577,8 @@ static void ReplaceIcons(HWND hwndDlg, struct _MessageWindowData *dat, LONG star
 			SendMessageA(hwndrtf, EM_REPLACESEL, FALSE, (LPARAM)"");
 			length = (unsigned int)atol(&trbuffer[7]);
 			index = atol(&trbuffer[14]);
-			if (length > 0 && length < 20000 && index >= RTF_CTABLE_DEFSIZE && index < PluginConfig.rtf_ctablesize) {
-				cf2.crTextColor = rtf_ctable[index].clr;
+			if (length > 0 && length < 20000 && index >= RTF_CTABLE_DEFSIZE && index < Utils::rtf_ctable_size) {
+				cf2.crTextColor = Utils::rtf_ctable[index].clr;
 				cr.cpMin = fi.chrgText.cpMin;
 				cr.cpMax = cr.cpMin + length;
 				SendMessage(hwndrtf, EM_EXSETSEL, 0, (LPARAM)&cr);

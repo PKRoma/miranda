@@ -47,8 +47,6 @@ static void 	UnloadIcons();
 
 extern INT_PTR 	CALLBACK 		DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern struct 	MsgLogIcon 		msgLogIcons[NR_LOGICONS * 3];
-extern struct 	RTFColorTable*	rtf_ctable;
-extern const  	TCHAR*			DoubleAmpersands(TCHAR *pszText);
 extern int 		CacheIconToBMP	(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
 extern void 	DeleteCachedIcon(struct MsgLogIcon *theIcon);
 
@@ -435,8 +433,8 @@ int SplitmsgShutdown(void)
 	UnloadIcons();
 	FreeTabConfig();
 
-	if (rtf_ctable)
-		free(rtf_ctable);
+	if (Utils::rtf_ctable)
+		free(Utils::rtf_ctable);
 
 	UnloadTSButtonModule();
 
@@ -601,7 +599,7 @@ tzdone:
 	M->m_hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
 	PluginConfig.hUserPrefsWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
 	sendQueue = new SendQueue;
-	Skin = new CSkin();
+	Skin = new CSkin;
 	InitOptions();
 
 	InitAPI();
@@ -743,7 +741,7 @@ HWND TSAPI CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE
 			newcontactname[127] = 0;
 		}
 		//Mad: to fix tab width for nicknames with ampersands
-		DoubleAmpersands(newcontactname);
+		Utils::DoubleAmpersands(newcontactname);
 	} else
 		lstrcpyn(newcontactname, _T("_U_"), safe_sizeof(newcontactname));
 
@@ -948,16 +946,13 @@ int TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned in
  */
 
 static ICONDESC _toolbaricons[] = {
-	"tabSRMM_history", LPGEN("Show History"), &PluginConfig.g_buttonBarIcons[1], -IDI_HISTORY, 1,
 	"tabSRMM_mlog", LPGEN("Message Log Options"), &PluginConfig.g_buttonBarIcons[2], -IDI_MSGLOGOPT, 1,
-	"tabSRMM_add", LPGEN("Add contact"), &PluginConfig.g_buttonBarIcons[0], -IDI_ADDCONTACT, 1,
 	"tabSRMM_multi", LPGEN("Image tag"), &PluginConfig.g_buttonBarIcons[3], -IDI_IMAGETAG, 1,
 	"tabSRMM_quote", LPGEN("Quote text"), &PluginConfig.g_buttonBarIcons[8], -IDI_QUOTE, 1,
 	"tabSRMM_save", LPGEN("Save and close"), &PluginConfig.g_buttonBarIcons[7], -IDI_SAVE, 1,
 	"tabSRMM_send", LPGEN("Send message"), &PluginConfig.g_buttonBarIcons[9], -IDI_SEND, 1,
 	"tabSRMM_avatar", LPGEN("Edit user notes"), &PluginConfig.g_buttonBarIcons[10], -IDI_CONTACTPIC, 1,
 	"tabSRMM_close", LPGEN("Close"), &PluginConfig.g_buttonBarIcons[6], -IDI_CLOSEMSGDLG, 1,
-	"tabSRMM_usermenu", LPGEN("User menu"), &PluginConfig.g_buttonBarIcons[4], -IDI_USERMENU, 1,
 	NULL, NULL, NULL, 0, 0
 };
 
@@ -1058,7 +1053,7 @@ static int TSAPI SetupIconLibConfig()
 {
 	SKINICONDESC sid = { 0 };
 	char szFilename[MAX_PATH];
-	int i = 0,j = 0, version = 0, n = 0;
+	int i = 0, j = 2, version = 0, n = 0;
 
 	strncpy(szFilename, "icons\\tabsrmm_icons.dll", MAX_PATH);
 	g_hIconDLL = LoadLibraryA(szFilename);
@@ -1132,6 +1127,12 @@ static int TSAPI LoadFromIconLib()
 		}
 		n++;
 	}
+	PluginConfig.g_buttonBarIcons[0] = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)"core_main_8");
+	PluginConfig.g_buttonBarIcons[1] = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)"core_main_10");
+	PluginConfig.g_buttonBarIconHandles[0] = (HICON)CallService(MS_SKIN2_GETICONHANDLE, 0, (LPARAM)"core_main_10");
+	PluginConfig.g_buttonBarIconHandles[1] = (HICON)CallService(MS_SKIN2_GETICONHANDLE, 0, (LPARAM)"core_main_8");
+	PluginConfig.g_buttonBarIconHandles[20] = (HICON)CallService(MS_SKIN2_GETICONHANDLE, 0, (LPARAM)"core_main_9");
+
 	PluginConfig.g_buttonBarIcons[5] = PluginConfig.g_buttonBarIcons[12] = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)"core_main_23");
 	PluginConfig.g_IconChecked = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)"core_main_19");
 	PluginConfig.g_IconUnchecked = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)"core_main_20");

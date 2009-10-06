@@ -36,7 +36,6 @@
 #pragma hdrstop
 
 extern TemplateSet RTL_Active, LTR_Active;
-extern struct RTFColorTable *rtf_ctable;
 
 static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb);
 
@@ -138,8 +137,13 @@ BOOL TSAPI IsUtfSendAvailable(HANDLE hContact)
 	return (CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_4, 0) & PF4_IMSENDUTF) ? TRUE : FALSE;
 }
 
-// pt in screen coords
-
+/**
+ * show a modified context menu for the richedit control(s)
+ * @param dat			message window data
+ * @param idFrom		dlg ctrl id
+ * @param hwndFrom		src window handle
+ * @param pt			mouse pointer position
+ */
 static void ShowPopupMenu(_MessageWindowData *dat, int idFrom, HWND hwndFrom, POINT pt)
 {
 	HMENU 		hMenu, hSubMenu;
@@ -609,9 +613,6 @@ void TSAPI SetDialogToType(HWND hwndDlg)
 	if (!PluginConfig.g_FlashAvatarAvail)
 		EnableWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), FALSE);
 
-	//ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLESIDEBAR), dat->pContainer->SideBar->isActive() ? SW_SHOW : SW_HIDE);
-
-	// info panel stuff
 	dat->Panel->Configure();
 }
 
@@ -1459,8 +1460,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			}
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR) dat);
 
-			if (rtf_ctable == NULL)
-				RTF_CTableInit();
+			if (Utils::rtf_ctable == 0)
+				Utils::RTF_CTableInit();
 
 			dat->dwFlags |= MWF_INITMODE;
 
@@ -2419,7 +2420,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 												else
 													streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_LOG), dat, (CP_UTF8 << 16) | (SF_TEXT | SFF_SELECTION | SF_USECODEPAGE));
 												if (streamOut) {
-													FilterEventMarkers(streamOut);
+													Utils::FilterEventMarkers(streamOut);
 													SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)streamOut);
 													free(streamOut);
 												}
@@ -3474,7 +3475,7 @@ quote_from_last:
 						wchar_t *converted = 0;
 						szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_LOG), dat, SF_TEXT | SF_USECODEPAGE | SFF_SELECTION);
 						converted = M->utf8_decodeW(szFromStream);
-						FilterEventMarkers(converted);
+						Utils::FilterEventMarkers(converted);
 						szQuoted = QuoteText(converted, iCharsPerLine, 0);
 						SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szQuoted);
 						free(szQuoted);
@@ -3482,7 +3483,7 @@ quote_from_last:
 						free(szFromStream);
 #else
 						szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_LOG), dat, SF_TEXT | SFF_SELECTION);
-						FilterEventMarkers(szFromStream);
+						Utils::FilterEventMarkers(szFromStream);
 						szQuoted = QuoteText(szFromStream, 64, 0);
 						SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_REPLACESEL, TRUE, (LPARAM)szQuoted);
 						free(szQuoted);
@@ -3563,16 +3564,16 @@ quote_from_last:
 					if (iSelection == ID_FONT_DEFAULTCOLOR) {
 						int i = 0;
 						cf.crTextColor = M->GetDword(FONTMODULE, "Font16Col", 0);
-						for (i = 0; i < PluginConfig.rtf_ctablesize; i++) {
-							if (rtf_ctable[i].clr == cf.crTextColor)
+						for (i = 0; i < Utils::rtf_ctable_size; i++) {
+							if (Utils::rtf_ctable[i].clr == cf.crTextColor)
 								cf.crTextColor = RGB(GetRValue(cf.crTextColor), GetGValue(cf.crTextColor), GetBValue(cf.crTextColor) == 0 ? GetBValue(cf.crTextColor) + 1 : GetBValue(cf.crTextColor) - 1);
 						}
 						SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
 						break;
 					}
 					for (i = 0; i < RTF_CTABLE_DEFSIZE; i++) {
-						if (rtf_ctable[i].menuid == iSelection) {
-							cf.crTextColor = rtf_ctable[i].clr;
+						if (Utils::rtf_ctable[i].menuid == iSelection) {
+							cf.crTextColor = Utils::rtf_ctable[i].clr;
 							SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
 						}
 					}
@@ -3603,11 +3604,10 @@ quote_from_last:
 
 				case IDC_SMILEYBTN:
 					if (dat->doSmileys && PluginConfig.g_SmileyAddAvail) {
-						HICON hButtonIcon = 0;
 						RECT rc;
 						HANDLE hContact = dat->cache->getActiveContact();
 
-						if (CheckValidSmileyPack(dat->cache->getActiveProto(), hContact, &hButtonIcon) != 0) {
+						if (CheckValidSmileyPack(dat->cache->getActiveProto(), hContact) != 0) {
 							SMADD_SHOWSEL3 smaddInfo = {0};
 
 							if (lParam == 0)
@@ -3625,8 +3625,6 @@ quote_from_last:
 							smaddInfo.hwndParent = hwndContainer;
 							smaddInfo.hContact = hContact;
 							CallService(MS_SMILEYADD_SHOWSELECTION, (WPARAM)hwndContainer, (LPARAM) &smaddInfo);
-							if (hButtonIcon != 0)
-								DestroyIcon(hButtonIcon);
 						}
 					}
 					break;

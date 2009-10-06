@@ -1109,7 +1109,7 @@ void CSkin::setFileName()
  * initialize the skin object
  */
 
-void CSkin::Init()
+void CSkin::Init(bool fStartup)
 {
 	m_ImageItems = 0;
 	ZeroMemory(this, sizeof(CSkin));
@@ -1128,6 +1128,8 @@ void CSkin::Init()
 
 	setFileName();
 	m_aeroEffect = M->GetByte("aerostyle", AERO_EFFECT_MILK);
+	if(m_fLoadOnStartup && fStartup)
+		Load();
 }
 
 /**

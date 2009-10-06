@@ -42,21 +42,6 @@ extern      LOGFONTA logfonts[MSGDLGFONTCOUNT + 2];
 extern      COLORREF fontcolors[MSGDLGFONTCOUNT + 2];
 extern      TemplateSet LTR_Active, RTL_Active;
 
-static struct RTFColorTable _rtf_ctable[] = {
-	_T("red"), RGB(255, 0, 0), 0, ID_FONT_RED,
-	_T("blue"), RGB(0, 0, 255), 0, ID_FONT_BLUE,
-	_T("green"), RGB(0, 255, 0), 0, ID_FONT_GREEN,
-	_T("magenta"), RGB(255, 0, 255), 0, ID_FONT_MAGENTA,
-	_T("yellow"), RGB(255, 255, 0), 0, ID_FONT_YELLOW,
-	_T("cyan"), RGB(0, 255, 255), 0, ID_FONT_CYAN,
-	_T("black"), 0, 0, ID_FONT_BLACK,
-	_T("white"), RGB(255, 255, 255), 0, ID_FONT_WHITE,
-	_T(""), 0, 0, 0
-};
-
-struct RTFColorTable *rtf_ctable = 0;
-unsigned int g_ctable_size;
-
 #ifndef SHVIEW_THUMBNAIL
 #define SHVIEW_THUMBNAIL 0x702D
 #endif
@@ -93,40 +78,6 @@ BOOL TSAPI IsStatusEvent(int eventType)
 			return TRUE;
 	}
 	return FALSE;
-}
-
-/*
- * init default color table. the table may grow when using custom colors via bbcodes
- */
-
-void TSAPI RTF_CTableInit()
-{
-	int iSize = sizeof(struct RTFColorTable) * RTF_CTABLE_DEFSIZE;
-
-	rtf_ctable = (struct RTFColorTable *) malloc(iSize);
-	ZeroMemory(rtf_ctable, iSize);
-	CopyMemory(rtf_ctable, _rtf_ctable, iSize);
-	PluginConfig.rtf_ctablesize = g_ctable_size = RTF_CTABLE_DEFSIZE;
-}
-
-/*
- * add a color to the global rtf color table
- */
-
-void RTF_ColorAdd(const TCHAR *tszColname, size_t length)
-{
-	TCHAR *stopped;
-	COLORREF clr;
-
-	PluginConfig.rtf_ctablesize++;
-	g_ctable_size++;
-	rtf_ctable = (struct RTFColorTable *)realloc(rtf_ctable, sizeof(struct RTFColorTable) * g_ctable_size);
-	clr = _tcstol(tszColname, &stopped, 16);
-	mir_sntprintf(rtf_ctable[g_ctable_size - 1].szName, length + 1, _T("%06x"), clr);
-	rtf_ctable[g_ctable_size - 1].menuid = rtf_ctable[g_ctable_size - 1].index = 0;
-
-	clr = _tcstol(tszColname, &stopped, 16);
-	rtf_ctable[g_ctable_size - 1].clr = (RGB(GetBValue(clr), GetGValue(clr), GetRValue(clr)));
 }
 
 /*
@@ -840,7 +791,7 @@ int TSAPI GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
  * checks, if there is a valid smileypack installed for the given protocol
  */
 
-int TSAPI CheckValidSmileyPack(const char *szProto, HANDLE hContact, HICON *hButtonIcon)
+int TSAPI CheckValidSmileyPack(const char *szProto, HANDLE hContact)
 {
 	SMADD_INFO2 smainfo = {0};
 
@@ -849,8 +800,8 @@ int TSAPI CheckValidSmileyPack(const char *szProto, HANDLE hContact, HICON *hBut
 		smainfo.Protocolname = const_cast<char *>(szProto);
 		smainfo.hContact = hContact;
 		CallService(MS_SMILEYADD_GETINFO2, 0, (LPARAM)&smainfo);
-		if (hButtonIcon)
-			*hButtonIcon = smainfo.ButtonIcon;
+		if(smainfo.ButtonIcon)
+			DestroyIcon(smainfo.ButtonIcon);
 		return smainfo.NumberOfVisibleSmileys;
 	} else
 		return 0;
@@ -1098,58 +1049,6 @@ char* TSAPI Message_GetFromStream(HWND hwndRtf, const _MessageWindowData* dat, D
 	return pszText; // pszText contains the text
 }
 
-static void CreateColorMap(TCHAR *Text)
-{
-	TCHAR * pszText = Text;
-	TCHAR * p1;
-	TCHAR * p2;
-	TCHAR * pEnd;
-	int iIndex = 1, i = 0;
-	COLORREF default_color;
-
-	static const TCHAR *lpszFmt = _T("\\red%[^ \x5b\\]\\green%[^ \x5b\\]\\blue%[^ \x5b;];");
-	TCHAR szRed[10], szGreen[10], szBlue[10];
-
-	p1 = _tcsstr(pszText, _T("\\colortbl"));
-	if (!p1)
-		return;
-
-	pEnd = _tcschr(p1, '}');
-
-	p2 = _tcsstr(p1, _T("\\red"));
-
-	for (i = 0; i < RTF_CTABLE_DEFSIZE; i++)
-		rtf_ctable[i].index = 0;
-
-	default_color = (COLORREF)M->GetDword(FONTMODULE, "Font16Col", 0);
-
-	while (p2 && p2 < pEnd) {
-		if (_stscanf(p2, lpszFmt, &szRed, &szGreen, &szBlue) > 0) {
-			int i;
-			for (i = 0; i < RTF_CTABLE_DEFSIZE; i++) {
-				if (rtf_ctable[i].clr == RGB(_ttoi(szRed), _ttoi(szGreen), _ttoi(szBlue)))
-					rtf_ctable[i].index = iIndex;
-			}
-		}
-		iIndex++;
-		p1 = p2;
-		p1 ++;
-
-		p2 = _tcsstr(p1, _T("\\red"));
-	}
-	return ;
-}
-
-int RTFColorToIndex(int iCol)
-{
-	int i = 0;
-	for (i = 0; i < RTF_CTABLE_DEFSIZE; i++) {
-		if (rtf_ctable[i].index == iCol)
-			return i + 1;
-	}
-	return 0;
-}
-
 /*
  * convert rich edit code to bbcode (if wanted). Otherwise, strip all RTF formatting
  * tags and return plain text
@@ -1178,7 +1077,7 @@ BOOL TSAPI DoRtfToTags(TCHAR * pszText, const _MessageWindowData *dat)
 	// create an index of colors in the module and map them to
 	// corresponding colors in the RTF color table
 
-	CreateColorMap(pszText);
+	Utils::CreateColorMap(pszText);
 	// scan the file for rtf commands and remove or parse them
 	inColor = 0;
 	p1 = _tcsstr(pszText, _T("\\pard"));
@@ -1199,13 +1098,13 @@ BOOL TSAPI DoRtfToTags(TCHAR * pszText, const _MessageWindowData *dat)
 					if (p1 == _tcsstr(p1, _T("\\cf"))) { // foreground color
 						TCHAR szTemp[20];
 						int iCol = _ttoi(p1 + 3);
-						int iInd = RTFColorToIndex(iCol);
+						int iInd = Utils::RTFColorToIndex(iCol);
 						bJustRemovedRTF = TRUE;
 
 						_sntprintf(szTemp, 20, _T("%d"), iCol);
 						iRemoveChars = 3 + lstrlen(szTemp);
 						if (bTextHasStarted || iCol)
-							_sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), (iInd > 0) ? (inColor ? _T("[/color][color=%s]") : _T("[color=%s]")) : (inColor ? _T("[/color]") : _T("")), rtf_ctable[iInd - 1].szName);
+							_sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), (iInd > 0) ? (inColor ? _T("[/color][color=%s]") : _T("[color=%s]")) : (inColor ? _T("[/color]") : _T("")), Utils::rtf_ctable[iInd - 1].szName);
 						inColor = iInd > 0 ? 1 : 0;
 					} else if (p1 == _tcsstr(p1, _T("\\highlight"))) { //background color
 						TCHAR szTemp[20];
@@ -1763,7 +1662,7 @@ void TSAPI GetLocaleID(_MessageWindowData *dat, const TCHAR *szKLName)
 	pf2.cbSize = sizeof(pf2);
 	pf2.dwMask = PFM_RTLPARA;
 	SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_GETPARAFORMAT, 0, (LPARAM)&pf2);
-	if (FindRTLLocale(dat) && fLocaleNotSet) {
+	if (Utils::FindRTLLocale(dat) && fLocaleNotSet) {
 		if (wCtype2[0] == C2_RIGHTTOLEFT || wCtype2[1] == C2_RIGHTTOLEFT || wCtype2[2] == C2_RIGHTTOLEFT) {
 			ZeroMemory(&pf2, sizeof(pf2));
 			pf2.dwMask = PFM_RTLPARA;
@@ -2367,27 +2266,14 @@ void TSAPI LoadOverrideTheme(_MessageWindowData *dat)
 
 void TSAPI ConfigureSmileyButton(_MessageWindowData *dat)
 {
-	HICON hButtonIcon = 0;
 	HWND  hwndDlg = dat->hwnd;
 	int nrSmileys = 0;
   	int showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
 	int iItemID = IDC_SMILEYBTN;
 
 	if (PluginConfig.g_SmileyAddAvail) {
-
-		nrSmileys = CheckValidSmileyPack(dat->cache->getActiveProto(), dat->cache->getActiveContact(), &hButtonIcon);
-
+		nrSmileys = CheckValidSmileyPack(dat->cache->getActiveProto(), dat->cache->getActiveContact());
 		dat->doSmileys = 1;
-
-		if (hButtonIcon == 0 || PluginConfig.m_SmileyButtonOverride) {
-			dat->hSmileyIcon = 0;
-			SendDlgItemMessage(hwndDlg, iItemID, BM_SETIMAGE, IMAGE_ICON, (LPARAM) PluginConfig.g_buttonBarIcons[11]);
-			if (hButtonIcon)
-				DestroyIcon(hButtonIcon);
-		} else {
-			SendDlgItemMessage(hwndDlg, iItemID, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hButtonIcon);
-			dat->hSmileyIcon = hButtonIcon;
-		}
 	}
 
 	if (nrSmileys == 0 || dat->hContact == 0)
@@ -2586,34 +2472,6 @@ void TSAPI GetMyNick(_MessageWindowData *dat)
 		_tcsncpy(dat->szMyNickname, _T("<undef>"), 110);                    // same here
 	if (ci.pszVal)
 		mir_free(ci.pszVal);
-}
-
-/*
- * returns != 0 when one of the installed keyboard layouts belongs to an rtl language
- * used to find out whether we need to configure the message input box for bidirectional mode
- */
-
-int TSAPI FindRTLLocale(struct _MessageWindowData *dat)
-{
-	HKL layouts[20];
-	int i, result = 0;
-	LCID lcid;
-	WORD wCtype2[5];
-
-	if (dat->iHaveRTLLang == 0) {
-		ZeroMemory(layouts, 20 * sizeof(HKL));
-		GetKeyboardLayoutList(20, layouts);
-		for (i = 0; i < 20 && layouts[i]; i++) {
-			lcid = MAKELCID(LOWORD(layouts[i]), 0);
-			GetStringTypeA(lcid, CT_CTYPE2, "הצü", 3, wCtype2);
-			if (wCtype2[0] == C2_RIGHTTOLEFT || wCtype2[1] == C2_RIGHTTOLEFT || wCtype2[2] == C2_RIGHTTOLEFT)
-				result = 1;
-		}
-		dat->iHaveRTLLang = (result ? 1 : -1);
-	} else
-		result = dat->iHaveRTLLang == 1 ? 1 : 0;
-
-	return result;
 }
 
 HICON TSAPI MY_GetContactIcon(const _MessageWindowData *dat)

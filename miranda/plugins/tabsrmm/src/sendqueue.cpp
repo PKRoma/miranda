@@ -1012,9 +1012,9 @@ SendLaterJob::~SendLaterJob()
 				mir_sntprintf(ppd.lptzContactName, MAX_CONTACTNAME, _T("%s"), tszName ? tszName : CTranslator::get(CTranslator::GEN_UNKNOWN_CONTACT));
 				if(fSuccess && szId[0] == 'S') {
 #if defined(_UNICODE)
-					TCHAR *msgPreview = GetPreviewWithEllipsis(reinterpret_cast<TCHAR *>(&pBuf[lstrlenA((char *)pBuf) + 1]), 100);
+					TCHAR *msgPreview = Utils::GetPreviewWithEllipsis(reinterpret_cast<TCHAR *>(&pBuf[lstrlenA((char *)pBuf) + 1]), 100);
 #else
-					TCHAR *msgPreview = GetPreviewWithEllipsis(reinterpret_cast<TCHAR *>(pBuf), 100);
+					TCHAR *msgPreview = Utils::GetPreviewWithEllipsis(reinterpret_cast<TCHAR *>(pBuf), 100);
 #endif
 					mir_sntprintf(ppd.lptzText, MAX_SECONDLINE, CTranslator::get(CTranslator::GEN_SQ_SENDLATER_SUCCESS_POPUP),
 								  msgPreview);

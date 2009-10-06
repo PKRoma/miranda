@@ -36,18 +36,6 @@
 #define _TABSRMM_FUNCTIONS_H
 
 /*
- * global prototypes
- */
-
-TCHAR*				FilterEventMarkers			(TCHAR *wszText);
-TCHAR* 		TSAPI 	GetPreviewWithEllipsis		(TCHAR *szText, size_t iMaxLen);
-
-#if defined(_UNICODE)
-	char  *FilterEventMarkers(char *wszText);
-#endif
-const TCHAR *DoubleAmpersands(TCHAR *pszText);
-
-/*
  * nen / event popup stuff
  */
 
@@ -102,7 +90,6 @@ void		TSAPI	BuildCodePageList			();
 void		TSAPI	PreTranslateDates			();
 void		TSAPI	ApplyContainerSetting		(ContainerWindowData *pContainer, DWORD flags, UINT mode, bool fForceResize);
 void		TSAPI	BroadCastContainer			(const ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam, BYTE iType = 0);
-void		TSAPI	BroadCastAllContainerS		(UINT message, WPARAM wParam, LPARAM lParam, bool fIgnorePrivate = false, BYTE iType = 0);
 void		TSAPI	GetDefaultContainerTitleFormat();
 INT_PTR     MessageWindowOpened(WPARAM wParam, LPARAM lParam);
 void		TSAPI	SetAeroMargins				(ContainerWindowData *pContainer);
