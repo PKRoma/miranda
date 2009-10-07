@@ -699,6 +699,7 @@ void CYahooProto::ext_buddy_added(char *myid, char *who, char *group, int status
 		break;
 
 	case 1:  /* invalid ID? */
+	case 3:  /* invalid ID  */
 		if (hContact != NULL) {
 			ShowPopup( "Invalid Contact", "The id you tried to add is invalid.", NULL);
 			/* Make it TEMP first, we don't want to send any extra packets for FALSE ids */
