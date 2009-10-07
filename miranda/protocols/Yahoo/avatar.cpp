@@ -481,7 +481,7 @@ void CYahooProto::ext_got_picture_update(const char *me, const char *who, int bu
 {
 	HANDLE 	hContact = 0;
 
-	LOG(("ext_yahoo_got_picture_update for %s buddy_icon: %d", who, buddy_icon));
+	LOG(("ext_got_picture_update for %s buddy_icon: %d", who, buddy_icon));
 
 	hContact = getbuddyH(who);
 	if (hContact == NULL) {
