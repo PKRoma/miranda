@@ -1118,7 +1118,7 @@ static VOID CALLBACK sttRebuildInfoFrameApcProc( DWORD_PTR param )
 	{
 		ppro->m_pInfoFrame->RemoveInfoItem("$/PEP");
 		ppro->m_pInfoFrame->RemoveInfoItem("$/Transports");
-		ppro->m_pInfoFrame->UpdateInfoItem("$/JID", LoadSkinnedIconHandle(SKINICON_OTHER_USERDETAILS), _T("Offline"));
+		ppro->m_pInfoFrame->UpdateInfoItem("$/JID", LoadSkinnedIconHandle(SKINICON_OTHER_USERDETAILS), TranslateT("Offline"));
 	} else
 	{
 		ppro->m_pInfoFrame->UpdateInfoItem("$/JID", LoadSkinnedIconHandle(SKINICON_OTHER_USERDETAILS), ppro->m_szJabberJID);
