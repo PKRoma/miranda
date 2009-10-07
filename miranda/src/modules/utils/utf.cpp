@@ -309,18 +309,15 @@ char* Utf8Decode(char* str, wchar_t** ucs2)
 
 wchar_t* Utf8DecodeUcs2(const char* str)
 {
-	size_t len;
-	wchar_t* ucs2;
-
 	if (str == NULL)
 		return NULL;
 
-	len = strlen(str);
+	int len = (int)strlen(str);
 
 	int destlen = Utf8toUcs2Len(str, len);
 	if (destlen < 0) return NULL;
 
-	ucs2 = (wchar_t*)mir_alloc((destlen + 1) * sizeof(wchar_t));
+	wchar_t* ucs2 = (wchar_t*)mir_alloc((destlen + 1) * sizeof(wchar_t));
 	if (ucs2 == NULL) return NULL;
 
 	if (Utf8toUcs2(str, len, ucs2, destlen) >= 0)
@@ -392,7 +389,7 @@ char* Utf8EncodeUcs2(const wchar_t* src)
 	if (src == NULL)
 		return NULL;
 
-	size_t len = wcslen(src);
+	int len = (int)wcslen(src);
 
 	int destlen = Ucs2toUtf8Len(src, len);
 	if (destlen < 0) return NULL;
