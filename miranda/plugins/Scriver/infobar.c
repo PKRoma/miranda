@@ -84,14 +84,17 @@ void RefreshInfobar(InfobarWindowData* idat) {
 
 static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	static BOOL bWasCopy;
 	InfobarWindowData* idat = (InfobarWindowData *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	if (!idat && msg!=WM_INITDIALOG) return FALSE;
 	switch (msg) {
 	case WM_INITDIALOG:
+		bWasCopy = FALSE;
 		idat = (InfobarWindowData *) lParam;
         idat->hWnd = hwnd;
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)idat);
 		SendDlgItemMessage(hwnd, IDC_INFOBAR_NAME, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
+		SendDlgItemMessage(hwnd, IDC_INFOBAR_NAME, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_LINK | ENM_KEYEVENTS);
 		SendDlgItemMessage(hwnd, IDC_INFOBAR_STATUS, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
 		SendDlgItemMessage(hwnd, IDC_INFOBAR_STATUS, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_LINK | ENM_KEYEVENTS);
 		SetupInfobar(idat);
@@ -136,27 +139,52 @@ static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 		return (INT_PTR)g_dat->hInfobarBrush;
 	
 	case WM_NOTIFY:
-		{
-			LPNMHDR pNmhdr = (LPNMHDR)lParam;
-			switch (pNmhdr->idFrom) {
-			case IDC_INFOBAR_NAME:
-			case IDC_INFOBAR_STATUS:
-				switch (pNmhdr->code) {
-				case EN_LINK:
-					switch (((ENLINK *) lParam)->msg) {
-					case WM_RBUTTONDOWN:
-					case WM_LBUTTONUP:
+	{
+		LPNMHDR pNmhdr = (LPNMHDR)lParam;
+		switch (pNmhdr->idFrom) {
+		case IDC_INFOBAR_NAME:
+		case IDC_INFOBAR_STATUS:
+			switch (pNmhdr->code) {
+			case EN_MSGFILTER:
+				switch (((MSGFILTER *) lParam)->msg) {
+				case WM_CHAR:
+					SetFocus(GetDlgItem(GetParent(hwnd), IDC_MESSAGE));
+					SendMessage(GetDlgItem(GetParent(hwnd), IDC_MESSAGE), ((MSGFILTER *) lParam)->msg, ((MSGFILTER *) lParam)->wParam, ((MSGFILTER *) lParam)->lParam);
+					SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
+					return TRUE;
+				case WM_LBUTTONUP:
+				{
+					CHARRANGE sel;
+					SendDlgItemMessage(hwnd, pNmhdr->idFrom, EM_EXGETSEL, 0, (LPARAM) &sel);
+					bWasCopy = FALSE;
+					if (sel.cpMin != sel.cpMax) {
+						SendDlgItemMessage(hwnd, pNmhdr->idFrom, WM_COPY, 0, 0);
+						sel.cpMin = sel.cpMax ;
+						SendDlgItemMessage(hwnd, pNmhdr->idFrom, EM_EXSETSEL, 0, (LPARAM) & sel);
+						SetFocus(GetDlgItem(GetParent(hwnd), IDC_MESSAGE));
+						bWasCopy = TRUE;
+					}
+				}
+			}
+			break;
+			case EN_LINK:
+				switch (((ENLINK *) lParam)->msg) {
+				case WM_RBUTTONDOWN:
+				case WM_LBUTTONUP:
+					if (!bWasCopy) {
 						if (HandleLinkClick(g_hInst, hwnd, GetDlgItem(GetParent(hwnd), IDC_MESSAGE),(ENLINK*)lParam)) {
 							SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
 							return TRUE;
 						}
-						break;
 					}
+					bWasCopy = FALSE;
+					break;
 				}
-				break;
 			}
 			break;
 		}
+		break;
+	}
 	case WM_DRAWITEM:
 		{
 			LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
