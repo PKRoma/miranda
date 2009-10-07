@@ -235,11 +235,9 @@ public:
 	static PGTBCR 	m_pfnGetThemeBackgroundContentRect;
 	static ETDT 	m_pfnEnableThemeDialogTexture;
 	static PSLWA 	m_pSetLayeredWindowAttributes;
-	static PULW		m_pUpdateLayeredWindow;
 	static PFWEX	m_MyFlashWindowEx;
 	static PAB		m_MyAlphaBlend;
 	static PGF		m_MyGradientFill;
-	static SMI		m_fnSetMenuInfo;
 	static DEFICA	m_pfnDwmExtendFrameIntoClientArea;
 	static DICE		m_pfnDwmIsCompositionEnabled;
 	static MMFW		m_pfnMonitorFromWindow;

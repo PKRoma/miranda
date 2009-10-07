@@ -354,7 +354,7 @@ void TSAPI LoadFavoritesAndRecent()
 	recentEntries = new RCENTRY[nen_options.wMaxRecent + 1];
 	if (recentEntries != NULL) {
 		while (hContact != 0) {
-			if (DBGetContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", 0))
+			if (M->GetByte(hContact, SRMSGMOD_T, "isFavorite", 0))
 				AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, PluginConfig.g_hMenuFavorites);
 			if ((dwRecent = M->GetDword(hContact, "isRecent", 0)) != 0 && iIndex < nen_options.wMaxRecent) {
 				recentEntries[iIndex].dwTimestamp = dwRecent;

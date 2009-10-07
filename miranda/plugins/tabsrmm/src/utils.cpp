@@ -335,9 +335,10 @@ const TCHAR* Utils::FormatTitleBar(const _MessageWindowData *dat, const TCHAR *s
 				break;
 			}
 			case 'c': {
-				title.insert(tempmark + 2, dat->pContainer->szName);
+				TCHAR	*c = (!_tcscmp(dat->pContainer->szName, _T("default")) ? TranslateTS(dat->pContainer->szName) : dat->pContainer->szName);
+				title.insert(tempmark + 2, c);
 				title.erase(tempmark, 2);
-				curpos = tempmark + lstrlen(dat->pContainer->szName);
+				curpos = tempmark + lstrlen(c);
 				break;
 			}
 			case 'o': {

@@ -150,16 +150,16 @@ AeroEffect  CSkin::m_aeroEffects[AERO_EFFECT_LAST] = {
 		AeroEffectCallback_Carbon
 	},
 	{
-		_T("Opaque, colored text"),
-		0x808080,
-		0x222222,
-		100,
-		20,
+		_T("Semi transparent, custom colors"),
+		0xffffff,
+		0x444444,
+		60,
 		0,
+		CORNER_ALL,
 		GRADIENT_TB + 1,
-		1,
+		8,
 		0,
-		0,
+		0x0,
 		0xf0f0f0,
 		0,
 		AeroEffectCallback_Solid
@@ -1905,7 +1905,7 @@ void CSkin::setupTabCloseBitmap()
 		::FillRect(m_tabCloseHDC, &rc, ::GetSysColorBrush(COLOR_3DFACE));
 		::DrawFrameControl(m_tabCloseHDC, &rc, DFC_BUTTON, DFCS_BUTTONPUSH | DFCS_MONO);
 	}
-	::DrawIconEx(m_tabCloseHDC, 2, 2, PluginConfig.g_buttonBarIcons[6], 16, 16, 0, 0, DI_NORMAL);
+	::DrawIconEx(m_tabCloseHDC, 2, 2, PluginConfig.g_buttonBarIcons[ICON_BUTTON_CANCEL], 16, 16, 0, 0, DI_NORMAL);
 	::SelectObject(m_tabCloseHDC, m_tabCloseOldBitmap);
 
 	HBITMAP hbmTemp = ResizeBitmap(m_tabCloseBitmap, 16, 16, fFree);
@@ -2363,6 +2363,9 @@ DWORD __fastcall CSkin::HexStringToLong(const TCHAR *szSource)
  *
  * @return
  */
+
+static POINT ptShadow = {2,2};
+
 int CSkin::RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags, const int iGlowSize, COLORREF clr)
 {
 #if defined(_UNICODE)
@@ -2374,8 +2377,13 @@ int CSkin::RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWO
 			dto.dwFlags = DTT_COMPOSITED|DTT_GLOWSIZE;
 		}
 		else {
-			dto.dwFlags = DTT_TEXTCOLOR|DTT_COMPOSITED;
+			dto.dwFlags = DTT_TEXTCOLOR|DTT_COMPOSITED;//|DTT_SHADOWTYPE|DTT_SHADOWOFFSET|DTT_SHADOWCOLOR|DTT_BORDERSIZE|DTT_BORDERCOLOR;
 			dto.crText = clr;
+			/*dto.crShadow = 0;
+			dto.iTextShadowType = TST_CONTINUOUS;
+			dto.fApplyOverlay = FALSE;
+			dto.ptShadowOffset = ptShadow;
+			dto.crBorder = 0;*/
 		}
 		dto.iBorderSize = 10;
 		return(CMimAPI::m_pfnDrawThemeTextEx(hTheme, hdc, BP_PUSHBUTTON, PBS_NORMAL, szText, -1, dtFlags, rc, &dto));
@@ -2712,10 +2720,11 @@ void CSkin::initAeroEffect()
 		else if(m_pCurrentAeroEffect->m_clrToolbar2 == 0)
 			m_pCurrentAeroEffect->m_clrToolbar2 = m_dwmColorRGB;
 
-		if(m_aeroEffect == AERO_EFFECT_CUSTOM) {
+		if(m_aeroEffect == AERO_EFFECT_CUSTOM || m_aeroEffect == AERO_EFFECT_SOLID) {
 			m_pCurrentAeroEffect->m_baseColor = PluginConfig.m_ipBackgroundGradientHigh;
 			m_pCurrentAeroEffect->m_gradientColor = PluginConfig.m_ipBackgroundGradient;
-			m_pCurrentAeroEffect->m_clrBack = PluginConfig.m_ipBackgroundGradientHigh;
+			if(m_aeroEffect == AERO_EFFECT_CUSTOM)
+				m_pCurrentAeroEffect->m_clrBack = PluginConfig.m_ipBackgroundGradientHigh;
 		}
 
 		m_BrushBack = ::CreateSolidBrush(m_pCurrentAeroEffect->m_clrBack);
@@ -2755,7 +2764,7 @@ void CSkin::setAeroEffect(LRESULT effect)
  * the private data folder.
  * runs at every startup
  */
-void CSkin::extractSkinsAndLogo() const
+void CSkin::extractSkinsAndLogo(bool fForceOverwrite) const
 {
 	TCHAR	szFilename[MAX_PATH];
 	TCHAR 	tszBasePath[MAX_PATH];
@@ -2783,8 +2792,10 @@ void CSkin::extractSkinsAndLogo() const
 						char 	*pData = (char *)LockResource(hResource);
 						DWORD	dwSize = SizeofResource(g_hInst, hRes), written = 0;
 						mir_sntprintf(szFilename, MAX_PATH, _T("%s%s"), tszBasePath, my_default_skin[i].tszName);
-						if(PathFileExists(szFilename) && M->GetByte("keepCustomAeroSkins", 1))
-							continue;
+						if(!fForceOverwrite) {
+							if(PathFileExists(szFilename) && M->GetByte("keepCustomAeroSkins", 1))
+								continue;
+						}
 						if((hFile = CreateFile(szFilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)) != INVALID_HANDLE_VALUE) {
 							WriteFile(hFile, (void *)pData, dwSize, &written, NULL);
 							CloseHandle(hFile);

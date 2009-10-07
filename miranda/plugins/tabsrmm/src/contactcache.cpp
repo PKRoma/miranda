@@ -51,6 +51,7 @@ CContactCache::CContactCache(const HANDLE hContact)
 	m_accessCount = 0;
 	m_history = 0;
 	m_iHistoryCurrent = m_iHistorySize = m_iHistoryTop = 0;
+	m_next = 0;
 
 	if(hContact) {
 		m_szProto = reinterpret_cast<char *>(::CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)m_hContact, 0));
@@ -83,6 +84,7 @@ void CContactCache::initPhaseTwo()
 		if(m_isMeta)
 			updateMeta();
 		updateState();
+		updateFavorite();
 	}
 	else {
 		m_szProto = C_INVALID_PROTO;
@@ -123,6 +125,8 @@ void CContactCache::updateState()
 
 /**
  * update private copy of the nick name. Use contact list name cache
+ *
+ * @return bool: true if nick has changed.
  */
 bool CContactCache::updateNick()
 {
@@ -435,4 +439,15 @@ void CContactCache::deletedHandler()
 
 	releaseAlloced();
 	m_hContact = (HANDLE)-1;
+}
+
+/**
+ * udpate favorite or recent state. runs when user manually adds
+ * or removes a user from that list or when database setting is
+ * changed from elsewhere
+ */
+void CContactCache::updateFavorite()
+{
+	m_isFavorite = M->GetByte(m_hContact, SRMSGMOD_T, "isFavorite", 0) ? true : false;
+	m_isRecent = M->GetDword(m_hContact, "isRecent", 0) ? true : false;
 }

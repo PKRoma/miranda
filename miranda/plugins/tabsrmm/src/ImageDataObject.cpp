@@ -35,7 +35,7 @@
  */
 
 #include "commonheaders.h"
-#include "ImageDataObject.h"
+#include "../include/ImageDataObject.h"
 
 extern void ReleaseRichEditOle(IRichEditOle *ole)
 {

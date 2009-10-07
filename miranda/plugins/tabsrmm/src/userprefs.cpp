@@ -314,12 +314,12 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					newCodePage = CP_ACP;
 #endif
 					if (IsDlgButtonChecked(hwndDlg, IDC_ISFAVORITE)) {
-						if (!DBGetContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", 0))
+						if (!M->GetByte(hContact, SRMSGMOD_T, "isFavorite", 0))
 							AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, PluginConfig.g_hMenuFavorites);
 					} else
 						DeleteMenu(PluginConfig.g_hMenuFavorites, (UINT_PTR)hContact, MF_BYCOMMAND);
 
-					DBWriteContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", (WORD)(IsDlgButtonChecked(hwndDlg, IDC_ISFAVORITE) ? 1 : 0));
+					M->WriteByte(hContact, SRMSGMOD_T, "isFavorite", (WORD)(IsDlgButtonChecked(hwndDlg, IDC_ISFAVORITE) ? 1 : 0));
 					M->WriteByte(hContact, SRMSGMOD_T, "splitoverride", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_PRIVATESPLITTER) ? 1 : 0));
 
 					M->WriteByte(hContact, TEMPLATES_MODULE, "enabled", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_TEMPLOVERRIDE)));

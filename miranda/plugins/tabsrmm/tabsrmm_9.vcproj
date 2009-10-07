@@ -1939,87 +1939,87 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\contactcache.h"
+				RelativePath=".\include\contactcache.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\controls.h"
+				RelativePath=".\include\controls.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\functions.h"
+				RelativePath=".\include\functions.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\generic_msghandlers.h"
+				RelativePath=".\include\generic_msghandlers.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\globals.h"
+				RelativePath=".\include\globals.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ImageDataObject.h"
+				RelativePath=".\include\ImageDataObject.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\infopanel.h"
+				RelativePath=".\include\infopanel.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\mim.h"
+				RelativePath=".\include\mim.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\msgdlgutils.h"
+				RelativePath=".\include\msgdlgutils.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\msgs.h"
+				RelativePath=".\include\msgs.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\nen.h"
+				RelativePath=".\include\nen.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\resource.h"
+				RelativePath=".\include\resource.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\sendqueue.h"
+				RelativePath=".\include\sendqueue.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\sidebar.h"
+				RelativePath=".\include\sidebar.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\taskbar.h"
+				RelativePath=".\include\taskbar.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\templates.h"
+				RelativePath=".\include\templates.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\themes.h"
+				RelativePath=".\include\themes.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\translator.h"
+				RelativePath=".\include\translator.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\typingnotify.h"
+				RelativePath=".\include\typingnotify.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\utils.h"
+				RelativePath=".\include\utils.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\version.h"
+				RelativePath=".\include\version.h"
 				>
 			</File>
 			<Filter

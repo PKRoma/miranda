@@ -147,7 +147,7 @@ int TN_TypingMessage(WPARAM wParam, LPARAM lParam)
 					break;
 			}
 
-		ppd.lchIcon = notyping ? PluginConfig.g_buttonBarIcons[13] : PluginConfig.g_buttonBarIcons[5];
+		ppd.lchIcon = PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING];
 		ppd.lchContact = (HANDLE) wParam;
 		ppd.PluginWindowProc = (WNDPROC) PopupDlgProc;
 		ppd.PluginData = NULL;
@@ -358,7 +358,7 @@ static INT_PTR CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 									break;
 							}
 
-						ppd.lchIcon = notyping ? PluginConfig.g_buttonBarIcons[13] : PluginConfig.g_buttonBarIcons[5];
+						ppd.lchIcon = PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING];
 						ppd.lchContact = (HANDLE) wParam;
 						ppd.PluginWindowProc = NULL;
 						ppd.PluginData = NULL;

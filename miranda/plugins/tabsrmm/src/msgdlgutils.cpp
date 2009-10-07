@@ -592,7 +592,7 @@ void TSAPI UpdateStatusBar(const _MessageWindowData *dat)
 	if (dat && dat->pContainer->hwndStatus && dat->pContainer->hwndActive == dat->hwnd) {
 		if (dat->bType == SESSIONTYPE_IM) {
 			if(dat->szStatusBar[0]) {
-				SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)PluginConfig.g_buttonBarIcons[5]);
+				SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING]);
 				SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM)dat->szStatusBar);
 			}
 			else {
@@ -2308,7 +2308,7 @@ void TSAPI EnableSendButton(const _MessageWindowData *dat, int iMode)
 {
 	HWND hwndOK;
 	SendMessage(GetDlgItem(dat->hwnd, IDOK), BUTTONSETASFLATBTN + 14, iMode, 0);
-	SendMessage(GetDlgItem(dat->hwnd, IDC_PIC), BUTTONSETASFLATBTN + 14, dat->fEditNotesActive ? TRUE : !iMode, 0);
+	SendMessage(GetDlgItem(dat->hwnd, IDC_PIC), BUTTONSETASFLATBTN + 14, dat->fEditNotesActive ? TRUE : (!iMode && dat->iOpenJobs == 0) ? TRUE : FALSE, 0);
 
 	hwndOK = GetDlgItem(GetParent(GetParent(dat->hwnd)), IDOK);
 

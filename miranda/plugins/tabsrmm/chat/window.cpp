@@ -37,7 +37,6 @@
  */
 
 #include "../src/commonheaders.h"
-#include "../src/resource.h"
 
 #include <tom.h>
 
@@ -398,9 +397,6 @@ static void	InitButtons(HWND hwndDlg, SESSION_INFO* si)
 	BOOL bFilterEnabled = si ? si->bFilterEnabled : FALSE;
 
 	int i = 0;
-
-	SendDlgItemMessage(hwndDlg, IDC_SHOWNICKLIST, BM_SETIMAGE, IMAGE_ICON, (LPARAM)PluginConfig.g_buttonBarIcons[35]);
-	SendDlgItemMessage(hwndDlg, IDC_FILTER, BM_SETIMAGE, IMAGE_ICON, (LPARAM)PluginConfig.g_buttonBarIcons[33]);
 
 	if (pInfo) {
 		EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_BOLD), pInfo->bBold);
@@ -2054,31 +2050,6 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETBKGNDCOLOR, 0, colour);
 
 			DM_InitRichEdit(dat);
-
-			/*
-			{
-				COLORREF	    crFore;
-				LOGFONTA        lf;
-				CHARFORMAT2A    cf2;
-				COLORREF crB = M->GetDword(FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR);
-
-				ZeroMemory(&cf2, sizeof(CHARFORMAT2A));
-				LoadLogfont(MSGFONTID_MESSAGEAREA, &lf, &crFore, FONTMODULE);
-				cf2.dwMask = CFM_COLOR | CFM_FACE | CFM_CHARSET | CFM_SIZE | CFM_WEIGHT | CFM_ITALIC | CFM_BACKCOLOR;
-				cf2.cbSize = sizeof(cf2);
-				cf2.crTextColor = crFore;
-				cf2.bCharSet = lf.lfCharSet;
-				cf2.crBackColor = crB;
-				strncpy(cf2.szFaceName, lf.lfFaceName, LF_FACESIZE);
-				cf2.dwEffects = 0;
-				cf2.wWeight = 0;
-				cf2.bPitchAndFamily = lf.lfPitchAndFamily;
-				cf2.yHeight = abs(lf.lfHeight) * 15;
-				SetDlgItemText(hwndDlg, IDC_CHAT_MESSAGE, _T(""));
-				SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETBKGNDCOLOR, 0, (LPARAM)crB);
-				SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETCHARFORMAT, 0, (LPARAM)&cf2);
-			}
-			*/
 			SendDlgItemMessage(hwndDlg, IDOK, BUTTONSETASFLATBTN + 14, 0, 0);
 			{
 				SendMessage(GetDlgItem(hwndDlg, IDC_LIST), LB_SETITEMHEIGHT, 0, (LPARAM)g_Settings.iNickListFontHeight);
@@ -2192,13 +2163,15 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 						else if(diff > 59) {
 							DWORD hours = diff / 60;
 							DWORD minutes = diff % 60;
-							mir_sntprintf(mi->tszIdleMsg, 30, TranslateT(", %d %s, %d %s idle"), hours, hours > 1 ? TranslateT("hours") : TranslateT("hour"),
-										   minutes, minutes > 1 ? TranslateT("minutes") : TranslateT("minute"));
+							mir_sntprintf(mi->tszIdleMsg, 30, CTranslator::get(CTranslator::MUC_SBAR_IDLEFORMAT), hours, hours > 1 ?
+										  CTranslator::get(CTranslator::GEN_STRING_HOURS) : CTranslator::get(CTranslator::GEN_STRING_HOUR),
+										  minutes, minutes > 1 ? CTranslator::get(CTranslator::GEN_STRING_MINUTES) : CTranslator::get(CTranslator::GEN_STRING_MINUTE));
 						}
 						else
-							mir_sntprintf(mi->tszIdleMsg, 30, TranslateT(", %d %s idle"), diff, diff > 1 ? TranslateT("minutes") : TranslateT("minute"));
+							mir_sntprintf(mi->tszIdleMsg, 30, CTranslator::get(CTranslator::MUC_SBAR_IDLEFORMAT_SHORT),
+										  diff, diff > 1 ? CTranslator::get(CTranslator::GEN_STRING_MINUTES) : CTranslator::get(CTranslator::GEN_STRING_MINUTE));
 					}
-					mir_sntprintf(szFinalStatusBarText, SIZEOF(szFinalStatusBarText), TranslateT("%s on %s%s"), dat->szMyNickname, mi->ptszModDispName, mi->tszIdleMsg);
+					mir_sntprintf(szFinalStatusBarText, SIZEOF(szFinalStatusBarText), CTranslator::get(CTranslator::MUC_SBAR_ON_SERVER), dat->szMyNickname, mi->ptszModDispName, mi->tszIdleMsg);
 				} else {
 					if (si->ptszStatusbarText)
 						mir_sntprintf(szFinalStatusBarText, SIZEOF(szFinalStatusBarText), _T("%s %s"), mi->ptszModDispName, si->ptszStatusbarText);

@@ -66,8 +66,8 @@ static struct _buttonicons {
 	int id;
 	HICON *pIcon;
 } buttonicons[] = {
-	IDC_ADD, &PluginConfig.g_buttonBarIcons[0],
-	IDC_CANCELADD, &PluginConfig.g_buttonBarIcons[6],
+	IDC_ADD, &PluginConfig.g_buttonBarIcons[ICON_BUTTON_ADD],
+	IDC_CANCELADD, &PluginConfig.g_buttonBarIcons[ICON_BUTTON_CANCEL],
 	-1, NULL
 };
 
@@ -1987,7 +1987,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			rc.right = cx - panelWidth;
 			rc.left = cx - panelWidth - dat->panelStatusCX;
-			rc.bottom = panelHeight - 2;
+			rc.bottom = panelHeight - 3;
 			rc.top = rc.bottom - dat->ipFieldHeight;
 			dat->rcStatus = rc;
 
@@ -1999,7 +1999,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			rc.left = panelHeight <= CInfoPanel::LEFT_OFFSET_LOGO ? panelHeight : CInfoPanel::LEFT_OFFSET_LOGO;
 			rc.right = cx - (dat->panelWidth + 2) - dat->panelStatusCX;
-			rc.bottom = panelHeight - 2;
+			rc.bottom = panelHeight - 3;
 			rc.top = rc.bottom - dat->ipFieldHeight;
 			dat->rcUIN = rc;
 
@@ -3733,25 +3733,24 @@ quote_from_last:
 					HMENU submenu = GetSubMenu(m_pContainer->hMenuContext, 9);
 					GetWindowRect(GetDlgItem(hwndDlg, IDC_NAME), &rc);
 
-					EnableMenuItem(submenu, ID_FAVORITES_ADDCONTACTTOFAVORITES, LOWORD(dat->dwIsFavoritOrRecent) == 0 ? MF_ENABLED : MF_GRAYED);
-					EnableMenuItem(submenu, ID_FAVORITES_REMOVECONTACTFROMFAVORITES, LOWORD(dat->dwIsFavoritOrRecent) == 0 ? MF_GRAYED : MF_ENABLED);
+					EnableMenuItem(submenu, ID_FAVORITES_ADDCONTACTTOFAVORITES, !dat->cache->isFavorite() ? MF_ENABLED : MF_GRAYED);
+					EnableMenuItem(submenu, ID_FAVORITES_REMOVECONTACTFROMFAVORITES, !dat->cache->isFavorite() ? MF_GRAYED : MF_ENABLED);
 
 					iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
 
 					switch(iSelection) {
 						case ID_FAVORITES_ADDCONTACTTOFAVORITES:
-							DBWriteContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 1);
-							dat->dwIsFavoritOrRecent |= 0x00000001;
+							DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "isFavorite", 1);
 							AddContactToFavorites(dat->hContact, dat->cache->getNick(), dat->cache->getActiveProto(), dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->cache->getActiveProto(), dat->cache->getActiveStatus()), 1, PluginConfig.g_hMenuFavorites);
 							break;
 						case ID_FAVORITES_REMOVECONTACTFROMFAVORITES:
-							DBWriteContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 0);
-							dat->dwIsFavoritOrRecent &= 0xffff0000;
+							DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "isFavorite", 0);
 							DeleteMenu(PluginConfig.g_hMenuFavorites, (UINT_PTR)dat->hContact, MF_BYCOMMAND);
 							break;
 						default:
 							break;
 					}
+					dat->cache->updateFavorite();
 					break;
 				}
 				case IDC_SENDMENU: {

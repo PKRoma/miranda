@@ -162,7 +162,6 @@ entry_found:
 
 	dat->cache->saveHistory(0, 0);
 	::SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
-	::EnableSendButton(dat, FALSE);
 	::SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 
 	UpdateSaveAndSendButton(dat);
@@ -658,13 +657,13 @@ void SendQueue::UpdateSaveAndSendButton(_MessageWindowData *dat)
 
 		if (len) {          // looks complex but avoids flickering on the button while typing.
 			if (!(dat->dwFlags & MWF_SAVEBTN_SAV)) {
-				SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) PluginConfig.g_buttonBarIcons[7]);
+				SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) PluginConfig.g_buttonBarIcons[ICON_BUTTON_SAVE]);
 				SendDlgItemMessage(hwndDlg, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM) pszIDCSAVE_save, 0);
 				dat->dwFlags |= MWF_SAVEBTN_SAV;
 			}
 		}
 		else {
-			SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) PluginConfig.g_buttonBarIcons[6]);
+			SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) PluginConfig.g_buttonBarIcons[ICON_BUTTON_CANCEL]);
 			SendDlgItemMessage(hwndDlg, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM) pszIDCSAVE_close, 0);
 			dat->dwFlags &= ~MWF_SAVEBTN_SAV;
 		}
@@ -848,8 +847,8 @@ inform_and_discard:
 	m_jobs[iFound].iAcksNeeded--;
 
 	if (m_jobs[iFound].iAcksNeeded == 0) {              // everything sent
-		if (m_jobs[iFound].hOwner != 0 && dat)
-			EnableSending(dat, TRUE);
+		//if (m_jobs[iFound].hOwner != 0 && dat)
+		//	EnableSending(dat, TRUE);
 		clearJob(iFound);
 		if (dat) {
 			KillTimer(dat->hwnd, TIMERID_MSGSEND + iFound);
@@ -920,7 +919,7 @@ int SendQueue::sendLater(int iJobIndex, _MessageWindowData *dat, HANDLE hContact
 		EnableSendButton(dat, FALSE);
 		if (dat->pContainer->hwndActive == dat->hwnd)
 			UpdateReadChars(dat);
-		SendDlgItemMessage(dat->hwnd, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) PluginConfig.g_buttonBarIcons[6]);
+		SendDlgItemMessage(dat->hwnd, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) PluginConfig.g_buttonBarIcons[ICON_BUTTON_CANCEL]);
 		SendDlgItemMessage(dat->hwnd, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM)pszIDCSAVE_close, 0);
 		dat->dwFlags &= ~MWF_SAVEBTN_SAV;
 		mir_free(utfText);

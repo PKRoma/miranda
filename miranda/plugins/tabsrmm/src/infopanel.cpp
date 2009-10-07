@@ -240,10 +240,10 @@ void CInfoPanel::renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero) 
 {
 	if(m_active) {
 
-		rc.bottom = m_height + 2;
+		rc.bottom = m_height + 1;
 		if(fAero) {
 			RECT	rcBlack = rc;
-			rcBlack.bottom = m_height + 2; // + 30;
+			rcBlack.bottom = m_height + 1; // + 2;
 			::FillRect(hdc, &rcBlack, CSkin::m_BrushBack);
 			rc.bottom -= 2;
 			CSkin::ApplyAeroEffect(hdc, &rc, CSkin::AERO_EFFECT_AREA_INFOPANEL);
@@ -748,7 +748,7 @@ void CInfoPanel::handleClick(const POINT& pt)
 		m_dat->dwFlagsEx &= ~MWF_SHOW_AWAYMSGTIMER;
 	}
 	HMENU m = constructContextualMenu();
-	//LRESULT r = ::TrackPopupMenu(m, TPM_RETURNCMD, pt.x, pt.y, 0, m_dat->hwnd, NULL);
+	LRESULT r = ::TrackPopupMenu(m, TPM_RETURNCMD, pt.x, pt.y, 0, m_dat->hwnd, NULL);
 
 	::DM_CmdHandler(m_dat);
 	::DestroyMenu(m);

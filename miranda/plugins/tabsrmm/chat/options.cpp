@@ -1358,7 +1358,7 @@ int OptionsInit(void)
 	lf.lfUnderline = lf.lfItalic = lf.lfStrikeOut = 0;
 	lf.lfHeight = -17;
 	lf.lfWeight = FW_BOLD;
-	ZeroMemory(&g_Settings, sizeof(struct GlobalLogSettings_t));
+	ZeroMemory(&g_Settings, sizeof(TMUCSettings));
 	g_Settings.NameFont = CreateFontIndirect(&lf);
 	g_Settings.iSplitterX = DBGetContactSettingWord(NULL, "Chat", "SplitterX", 105);
 	g_Settings.iSplitterY = DBGetContactSettingWord(NULL, "Chat", "splitY", 50);

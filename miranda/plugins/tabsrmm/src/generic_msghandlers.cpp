@@ -473,7 +473,7 @@ LRESULT TSAPI DM_UpdateLastMessage(const _MessageWindowData *dat)
 
 			mir_sntprintf(szBuf, safe_sizeof(szBuf), CTranslator::get(CTranslator::GEN_MTN_STARTWITHNICK), dat->cache->getNick());
 			SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM) szBuf);
-			SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) PluginConfig.g_buttonBarIcons[5]);
+			SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING]);
 			return 0;
 		}
 		if (dat->lastMessage || dat->pContainer->dwFlags & CNT_UINSTATUSBAR) {
@@ -784,11 +784,7 @@ void TSAPI DM_OptionsApplied(_MessageWindowData *dat, WPARAM wParam, LPARAM lPar
 	if (!(dat->dwFlags & MWF_SHOW_PRIVATETHEME))
 		LoadThemeDefaults(dat);
 
-	if (dat->hContact) {
-		dat->dwIsFavoritOrRecent = MAKELONG((WORD)DBGetContactSettingWord(dat->hContact, SRMSGMOD_T, "isFavorite", 0),
-											(WORD)M->GetDword(dat->hContact, "isRecent", 0));
-		LoadTimeZone(dat);
-	}
+	LoadTimeZone(dat);
 
 	if (dat->hContact && dat->szProto != NULL && dat->bIsMeta) {
 		DWORD dwForcedContactNum = 0;
@@ -879,7 +875,7 @@ void TSAPI DM_Typing(_MessageWindowData *dat)
 			dat->nTypeSecs--;
 			if (hwndStatus && dat->pContainer->hwndActive == hwndDlg) {
 				SendMessage(hwndStatus, SB_SETTEXT, 0, (LPARAM) dat->szStatusBar);
-				SendMessage(hwndStatus, SB_SETICON, 0, (LPARAM) PluginConfig.g_buttonBarIcons[5]);
+				SendMessage(hwndStatus, SB_SETICON, 0, (LPARAM) PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING]);
 			}
 			if (IsIconic(hwndContainer) || GetForegroundWindow() != hwndContainer || GetActiveWindow() != hwndContainer) {
 				SetWindowText(hwndContainer, dat->szStatusBar);
@@ -899,7 +895,7 @@ void TSAPI DM_Typing(_MessageWindowData *dat)
 				}
 			}
 			if ((GetForegroundWindow() != hwndContainer) || (dat->pContainer->hwndStatus == 0))
-				SendMessage(hwndContainer, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) PluginConfig.g_buttonBarIcons[5]);
+				SendMessage(hwndContainer, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING]);
 			dat->showTyping = 1;
 		}
 	}
@@ -1224,15 +1220,13 @@ void TSAPI DM_UpdateTitle(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 			SendMessage(hwndContainer, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
 
 		UpdateTrayMenuState(dat, TRUE);
-		if (LOWORD(dat->dwIsFavoritOrRecent))
+		if (dat->cache->isFavorite())
 			AddContactToFavorites(dat->hContact, dat->cache->getNick(), szActProto, dat->szStatus, dat->wStatus,
 								  LoadSkinnedProtoIcon(dat->cache->getActiveProto(), dat->cache->getActiveStatus()), 0, PluginConfig.g_hMenuFavorites);
-		if (M->GetDword(dat->hContact, "isRecent", 0)) {
-			dat->dwIsFavoritOrRecent |= 0x00010000;
+		if (dat->cache->isRecent()) {
 			AddContactToFavorites(dat->hContact, dat->cache->getNick(), szActProto, dat->szStatus, dat->wStatus,
 								  LoadSkinnedProtoIcon(dat->cache->getActiveProto(), dat->cache->getActiveStatus()), 0, PluginConfig.g_hMenuRecent);
-		} else
-			dat->dwIsFavoritOrRecent &= 0x0000ffff;
+		}
 
 		dat->Panel->Invalidate();
 
@@ -1474,13 +1468,13 @@ void DrawStatusIcons(struct _MessageWindowData *dat, HDC hDC, RECT r, int gap)
 
 	if (dat->bType == SESSIONTYPE_IM) {
 		DrawIconEx(hDC, x, (r.top + r.bottom - cx_icon) >> 1,
-				   PluginConfig.g_buttonBarIcons[12], cx_icon, cy_icon, 0, NULL, DI_NORMAL);
+				   PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING], cx_icon, cy_icon, 0, NULL, DI_NORMAL);
 		DrawIconEx(hDC, x, (r.top + r.bottom - cx_icon) >> 1, M->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, M->GetByte(SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)) ?
 				   PluginConfig.g_iconOverlayEnabled : PluginConfig.g_iconOverlayDisabled, cx_icon, cy_icon, 0, NULL, DI_NORMAL);
 	}
 	else
 		CSkin::DrawDimmedIcon(hDC, x, (r.top + r.bottom - cx_icon) >> 1, cx_icon, cy_icon,
-					   PluginConfig.g_buttonBarIcons[12], 50);
+					   PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING], 50);
 
 	x += (cx_icon + gap);
 	DrawIconEx(hDC, x, (r.top + r.bottom - cx_icon) >> 1, PluginConfig.g_sideBarIcons[0], cx_icon, cy_icon, 0, NULL, DI_NORMAL);

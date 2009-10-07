@@ -69,24 +69,19 @@ public:
 	CGlobals()
 	{
 		::ZeroMemory(this, sizeof(CGlobals));
-		m_cCacheSizeAlloced = 200;
-		m_cCacheSize = 0;
-		m_cCache = (TCCache *)malloc(sizeof(TCCache) * m_cCacheSizeAlloced);
-		::ZeroMemory(m_cCache, sizeof(TCCache) * m_cCacheSizeAlloced);
 	}
 
 	~CGlobals()
 	{
-		size_t 	i;
-
 		if(m_MenuBar)
 			::DestroyMenu(m_MenuBar);
 
-		for(i = 0; i < m_cCacheSize; i++) {
-			if(m_cCache[i].c)
-				delete m_cCache[i].c;
+		CContactCache* c = m_cCache, *cTemp;
+		while(c) {
+			cTemp = c->m_next;
+			delete c;
+			c = cTemp;
 		}
-		free(m_cCache);
 	}
 	void		reloadAdv();
 	void		reloadSystemStartup();
@@ -214,8 +209,7 @@ private:
 	static HANDLE		m_event_SmileyAdd, m_event_IEView;
 	static HANDLE 		m_event_ME_MC_SUBCONTACTSCHANGED, m_event_ME_MC_FORCESEND, m_event_ME_MC_UNFORCESEND;
 
-	static TCCache*		m_cCache;
-	static size_t		m_cCacheSize, m_cCacheSizeAlloced;
+	static CContactCache*	m_cCache;
 
 	static EXCEPTION_RECORD m_exRecord;
 	static CONTEXT			m_exCtx;

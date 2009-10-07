@@ -90,6 +90,8 @@ public:
 	const	char*			getActiveProto			() const { return(m_isMeta ? (m_szMetaProto ? m_szMetaProto : m_szProto) : m_szProto); }
 	const	TCHAR*			getActiveProtoT			() const { return(m_isMeta ? (m_szMetaProto ? m_tszMetaProto : m_tszProto) : m_tszProto); }
 	bool					isMeta					() const { return(m_isMeta); }
+	bool					isFavorite				() const { return(m_isFavorite); }
+	bool					isRecent				() const { return(m_isRecent); }
 	const TCHAR*			getRealAccount			() const { return(m_szAccount ? m_szAccount : C_INVALID_ACCOUNT); }
 	const TCHAR*			getUIN					() const { return(m_szUIN); }
 	const HWND				getWindowData			(_MessageWindowData*& dat) const { dat = m_dat; return(m_hwnd); }
@@ -107,12 +109,16 @@ public:
 	void					resetMeta				();
 	void					closeWindow				();
 	void					deletedHandler			();
+	void					updateFavorite			();
 
 	/*
 	 * input history
 	 */
 	void 					saveHistory				(WPARAM wParam, LPARAM lParam);
 	void					inputHistoryEvent		(WPARAM wParam);
+
+	HANDLE				m_hContact;
+	CContactCache*		m_next;
 
 private:
 	void					allocStats				();
@@ -122,7 +128,6 @@ private:
 
 private:
 	size_t				m_accessCount;
-	HANDLE				m_hContact;
 	HANDLE				m_hSubContact;
 	WORD				m_wStatus, m_wMetaStatus;
 	WORD				m_wOldStatus;
@@ -133,6 +138,8 @@ private:
 	DWORD				m_idleTS;
 	bool				m_isMeta;
 	bool				m_Valid;
+	bool				m_isFavorite;
+	bool				m_isRecent;
 	HWND				m_hwnd;
 	int     			m_iHistoryCurrent, m_iHistoryTop, m_iHistorySize;
 	_MessageWindowData*	m_dat;

@@ -48,11 +48,9 @@ PDTPB  	CMimAPI::m_pfnDrawThemeParentBackground = 0;
 PGTBCR 	CMimAPI::m_pfnGetThemeBackgroundContentRect = 0;
 ETDT 	CMimAPI::m_pfnEnableThemeDialogTexture = 0;
 PSLWA 	CMimAPI::m_pSetLayeredWindowAttributes = 0;
-PULW	CMimAPI::m_pUpdateLayeredWindow = 0;
 PFWEX	CMimAPI::m_MyFlashWindowEx = 0;
 PAB		CMimAPI::m_MyAlphaBlend = 0;
 PGF		CMimAPI::m_MyGradientFill = 0;
-SMI		CMimAPI::m_fnSetMenuInfo = 0;
 DEFICA	CMimAPI::m_pfnDwmExtendFrameIntoClientArea = 0;
 DICE	CMimAPI::m_pfnDwmIsCompositionEnabled = 0;
 MMFW	CMimAPI::m_pfnMonitorFromWindow = 0;
@@ -456,11 +454,9 @@ void CMimAPI::InitAPI()
 
 	HMODULE hDLL = GetModuleHandleA("user32");
 	m_pSetLayeredWindowAttributes = (PSLWA) GetProcAddress(hDLL, "SetLayeredWindowAttributes");
-	m_pUpdateLayeredWindow = (PULW) GetProcAddress(hDLL, "UpdateLayeredWindow");
 	m_MyFlashWindowEx = (PFWEX) GetProcAddress(hDLL, "FlashWindowEx");
 	m_MyAlphaBlend = (PAB) GetProcAddress(GetModuleHandleA("msimg32"), "AlphaBlend");
 	m_MyGradientFill = (PGF) GetProcAddress(GetModuleHandleA("msimg32"), "GradientFill");
-	m_fnSetMenuInfo = (SMI)GetProcAddress(GetModuleHandleA("USER32.DLL"), "SetMenuInfo");
 
 	m_pfnMonitorFromWindow = (MMFW)GetProcAddress(GetModuleHandleA("USER32"), "MonitorFromWindow");
 	m_pfnGetMonitorInfoA = (GMIA)GetProcAddress(GetModuleHandleA("USER32"), "GetMonitorInfoA");
@@ -617,7 +613,7 @@ int CMimAPI::TypingMessage(WPARAM wParam, LPARAM lParam)
 				cle.hContact = (HANDLE) wParam;
 				cle.hDbEvent = (HANDLE) 1;
 				cle.flags = CLEF_ONLYAFEW | CLEF_TCHAR;
-				cle.hIcon = PluginConfig.g_buttonBarIcons[5];
+				cle.hIcon = PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING];
 				cle.pszService = "SRMsg/TypingMessage";
 				cle.ptszTooltip = szTip;
 				CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);

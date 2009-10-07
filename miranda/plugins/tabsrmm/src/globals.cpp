@@ -60,8 +60,7 @@ HANDLE		CGlobals::m_event_IcoLibChanged = 0, CGlobals::m_event_AvatarChanged = 0
 HANDLE		CGlobals::m_event_SmileyAdd = 0, CGlobals::m_event_IEView = 0, CGlobals::m_event_FoldersChanged = 0;
 HANDLE 		CGlobals::m_event_ME_MC_SUBCONTACTSCHANGED = 0, CGlobals::m_event_ME_MC_FORCESEND = 0, CGlobals::m_event_ME_MC_UNFORCESEND = 0;
 
-TCCache*	CGlobals::m_cCache = 0;
-size_t		CGlobals::m_cCacheSize = 0, CGlobals::m_cCacheSizeAlloced = 0;
+CContactCache* CGlobals::m_cCache = 0;
 
 extern 		HANDLE 	hHookButtonPressedEvt;
 extern		HANDLE 	hHookToolBarLoadedEvt;
@@ -412,6 +411,7 @@ int CGlobals::ModulesLoaded(WPARAM wParam, LPARAM lParam)
 	M->configureCustomFolders();
 
 	Skin->Init(true);
+	CSkin::initAeroEffect();
 
 	for (i = 0; i < NR_BUTTONBARICONS; i++)
 		PluginConfig.g_buttonBarIcons[i] = 0;
@@ -497,13 +497,13 @@ int CGlobals::DBSettingChanged(WPARAM wParam, LPARAM lParam)
 		hwnd = M->FindWindow((HANDLE)wParam);
 
 	if (hwnd == 0 && wParam != 0) {     // we are not interested in this event if there is no open message window/tab
-		if(!strcmp(setting, "Status") || !strcmp(setting, "MyHandle") || !strcmp(setting, "Nick")) {
+		if(!strcmp(setting, "Status") || !strcmp(setting, "MyHandle") || !strcmp(setting, "Nick") || !strcmp(cws->szModule, SRMSGMOD_T)) {
 			c = CGlobals::getContactCache((HANDLE)wParam);
 			if(c) {
 				fChanged = c->updateStatus();
 				c->updateNick();
-				//if(fChanged)
-				//	PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_LOGSTATUSCHANGE, 0, (LPARAM)c);
+				if(!strcmp(setting, "isFavorite") || !strcmp(setting, "isRecent"))
+					c->updateFavorite();
 			}
 		}
 		return(0);
@@ -516,8 +516,13 @@ int CGlobals::DBSettingChanged(WPARAM wParam, LPARAM lParam)
 
 	if(wParam) {
 		c = CGlobals::getContactCache((HANDLE)wParam);
-		if(c)
+		if(c) {
 			szProto = c->getProto();
+			if(!strcmp(cws->szModule, SRMSGMOD_T)) {					// catch own relevant settings
+				if(!strcmp(setting, "isFavorite") || !strcmp(setting, "isRecent"))
+					c->updateFavorite();
+			}
+		}
 	}
 
 	if(wParam == 0 && !lstrcmpA(setting, "Enabled")) {
@@ -743,25 +748,28 @@ void CGlobals::RestoreUnreadMessageAlerts(void)
  * @param 	hContact:			contact handle
  * @return	CContactCache*		pointer to the cache entry for this contact
  */
+
 CContactCache* CGlobals::getContactCache(const HANDLE hContact)
 {
-	size_t i;
+	CContactCache *c = m_cCache, *cTemp;
 
-	for(i = 0; i < m_cCacheSize; i++) {
-		if(m_cCache[i].hContact == hContact) {
-			m_cCache[i].c->inc();
-			return(m_cCache[i].c);
+	cTemp = c;
+
+	while(c) {
+		cTemp = c;
+		if(c->m_hContact == hContact) {
+			c->inc();
+			return(c);
 		}
+		c = c->m_next;
 	}
-
-	CContactCache *c = new CContactCache(hContact);
-	m_cCache[m_cCacheSize].hContact = hContact;
-	m_cCache[m_cCacheSize++].c = c;
-	if(m_cCacheSize == m_cCacheSizeAlloced) {
-		m_cCacheSizeAlloced += 50;
-		m_cCache = (TCCache *)realloc(m_cCache, m_cCacheSizeAlloced * sizeof(TCCache));
+	CContactCache* _c = new CContactCache(hContact);
+	if(cTemp) {
+		cTemp->m_next = _c;
+		return(_c);
 	}
-	return(c);
+	m_cCache = _c;
+	return(_c);
 }
 
 void CGlobals::logStatusChange(const CContactCache *c)
@@ -824,26 +832,26 @@ void CGlobals::logStatusChange(const CContactCache *c)
  */
 void CGlobals::cacheUpdateMetaChanged()
 {
-	size_t 			i;
-	CContactCache* 	c;
+	CContactCache* 	c = m_cCache;
 	bool			fMetaActive = (PluginConfig.g_MetaContactsAvail && PluginConfig.bMetaEnabled) ? true : false;
 
-	for(i = 0; i < m_cCacheSize; i++) {
-		c = m_cCache[i].c;
+	while(c) {
 		if(c->isMeta() && PluginConfig.bMetaEnabled == false) {
 			c->closeWindow();
 			c->resetMeta();
 		}
-		/*
-		 * meta contacts are enabled, but current contact is a subcontact - > close window
-		 */
+
+		// meta contacts are enabled, but current contact is a subcontact - > close window
+
 		if(fMetaActive && M->GetByte(c->getContact(), PluginConfig.szMetaName, "IsSubcontact", 0))
 			c->closeWindow();
-		/*
-		 * reset meta contact information, if metacontacts protocol became avail
-		 */
+
+		// reset meta contact information, if metacontacts protocol became avail
+
 		if(fMetaActive && !strcmp(c->getProto(), PluginConfig.szMetaName))
 			c->resetMeta();
+
+		c = c->m_next;
 	}
 }
 

@@ -381,7 +381,7 @@ bg_done:
 			rcContent.right = rcContent.left;
 
 			DrawIconEx(hdcMem, rcClient.right - 15, (rcClient.bottom - rcClient.top) / 2 - (PluginConfig.m_smcyicon / 2),
-					   PluginConfig.g_buttonBarIcons[16], 16, 16, 0, 0, DI_NORMAL);
+					   PluginConfig.g_buttonBarIcons[ICON_DEFAULT_PULLDOWN], 16, 16, 0, 0, DI_NORMAL);
 			if (!ctl->flatBtn)
 				DrawEdge(hdcMem, &rcContent, EDGE_BUMP, BF_LEFT);
 			else if (ctl->pContainer && CSkin::m_skinEnabled) {

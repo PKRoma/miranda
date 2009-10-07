@@ -605,7 +605,6 @@ tzdone:
 	InitAPI();
 
 	PluginConfig.reloadSystemStartup();
-	CSkin::initAeroEffect();
 	ReloadTabConfig();
 	NEN_ReadOptions(&nen_options);
 

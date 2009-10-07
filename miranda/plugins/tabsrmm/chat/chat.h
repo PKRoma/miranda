@@ -267,7 +267,7 @@ typedef struct
 }
 	LOGSTREAMDATA;
 
-struct GlobalLogSettings_t {
+struct TMUCSettings {
 	HICON       hIconOverlay;
 	BOOL        ShowTime;
 	BOOL        ShowTimeIfChanged;
@@ -329,7 +329,8 @@ struct GlobalLogSettings_t {
 	BOOL		ContactStatusFirst;
 	CMUCHighlight* Highlight;
 };
-extern struct GlobalLogSettings_t g_Settings;
+
+extern TMUCSettings g_Settings;
 
 typedef struct{
 	MODULEINFO*   pModule;

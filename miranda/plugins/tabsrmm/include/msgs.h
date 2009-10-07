@@ -380,7 +380,6 @@ struct _MessageWindowData {
 	TCHAR   myUin[80];
 	BOOL    bNotOnList;
 	int     SendFormat;
-	DWORD   dwIsFavoritOrRecent;
 	TemplateSet *ltr_templates, *rtl_templates;
 	HANDLE  *hQueuedEvents;
 	int     iNextQueuedEvent;
@@ -1104,14 +1103,16 @@ typedef struct _tagSKINDesc {
  * icon defintions (index into g_buttonBarIcons)
  */
 
-#define ICON_DEFAULT_MTN 				13
 #define ICON_DEFAULT_SOUNDS 			22
 #define ICON_DEFAULT_PULLDOWN			16
 #define ICON_DEFAULT_LEFT				25
 #define ICON_DEFAULT_RIGHT				28
 #define ICON_DEFAULT_UP					26
+#define ICON_DEFAULT_TYPING				5
 
-
+#define ICON_BUTTON_ADD					0
+#define ICON_BUTTON_CANCEL				6
+#define ICON_BUTTON_SAVE				7
 
 #endif
 

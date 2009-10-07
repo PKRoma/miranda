@@ -59,6 +59,13 @@
 #define TSAPI __stdcall
 #define FASTCALL __fastcall
 
+	/*
+	 * text shadow types (DrawThemeTextEx() / Vista+ uxtheme)
+	 */
+	#define TST_NONE			0
+	#define TST_SINGLE			1
+	#define TST_CONTINUOUS		2
+
 	typedef struct _DWM_THUMBNAIL_PROPERTIES
 	{
 		DWORD dwFlags;
@@ -125,7 +132,7 @@
 #include <vector>
 #include <assert.h>
 
-#include "resource.h"
+#include "../include/resource.h"
 
 #ifdef _MSC_VER
 #ifdef WM_THEMECHANGED
@@ -187,26 +194,26 @@ extern struct LIST_INTERFACE li;
 #include "../API/m_updater.h"
 #include "../API/m_smileyadd.h"
 
-#include "msgs.h"
-#include "msgdlgutils.h"
-#include "typingnotify.h"
-#include "generic_msghandlers.h"
-#include "nen.h"
+#include "../include/msgs.h"
+#include "../include/msgdlgutils.h"
+#include "../include/typingnotify.h"
+#include "../include/generic_msghandlers.h"
+#include "../include/nen.h"
 extern 	NEN_OPTIONS	nen_options;
-#include "functions.h"
+#include "../include/functions.h"
 #include "../chat/chat.h"
 
-#include "contactcache.h"
-#include "translator.h"
-#include "themes.h"
-#include "globals.h"
-#include "mim.h"
-#include "sendqueue.h"
-#include "taskbar.h"
-#include "controls.h"
-#include "infopanel.h"
-#include "sidebar.h"
-#include  "utils.h"
+#include "../include/contactcache.h"
+#include "../include/translator.h"
+#include "../include/themes.h"
+#include "../include/globals.h"
+#include "../include/mim.h"
+#include "../include/sendqueue.h"
+#include "../include/taskbar.h"
+#include "../include/controls.h"
+#include "../include/infopanel.h"
+#include "../include/sidebar.h"
+#include  "../include/utils.h"
 #include "../chat/muchighlight.h"
 
 #if !defined(_WIN64) && !defined(_USE_32BIT_TIME_T)

@@ -556,7 +556,7 @@ void CSideBar::addSession(const _MessageWindowData *dat, int position)
 		m_buttonlist.insert(it, item);
 	}
 	SendDlgItemMessage(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_TOGGLESIDEBAR : IDC_CHAT_TOGGLESIDEBAR, BM_SETIMAGE, IMAGE_ICON,
-					   (LPARAM)(m_dwFlags & SIDEBARORIENTATION_LEFT ? PluginConfig.g_buttonBarIcons[25] : PluginConfig.g_buttonBarIcons[28]));
+					   (LPARAM)(m_dwFlags & SIDEBARORIENTATION_LEFT ? PluginConfig.g_buttonBarIcons[ICON_DEFAULT_LEFT] : PluginConfig.g_buttonBarIcons[ICON_DEFAULT_RIGHT]));
 
 	Invalidate();
 }

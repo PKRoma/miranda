@@ -2095,7 +2095,7 @@ buttons_done:
 		}
 		case DM_SETICON: {
 			HICON hIconMsg = PluginConfig.g_IconMsgEvent;
-			if ((HICON)lParam == PluginConfig.g_buttonBarIcons[5]) {              // always set typing icon, but don't save it...
+			if ((HICON)lParam == PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING]) {              // always set typing icon, but don't save it...
 				SendMessage(hwndDlg, WM_SETICON, wParam, lParam);
 				break;
 			}
@@ -2641,7 +2641,7 @@ int TSAPI GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLe
 #else
 	if (M->GetTString(hContact, SRMSGMOD_T, "container", &dbv)) {
 #endif
-		_tcsncpy(szName, TranslateT("default"), iNameLen);
+		_tcsncpy(szName, _T("default"), iNameLen);
 		return 0;
 	}
 	if (dbv.type == DBVT_ASCIIZ || dbv.type == DBVT_WCHAR) {

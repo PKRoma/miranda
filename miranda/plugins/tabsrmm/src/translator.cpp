@@ -203,6 +203,14 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Messaging Settings..."),					/* GEN_IP_MENU_MSGPREFS */
 	LPGENT("Room Settings..."),							/* GEN_IP_MENU_ROOMPREFS */
 	LPGENT("Open History..."),							/* GEN_IP_MENU_HISTORY */
+
+	LPGENT("hour"),										/* GEN_STRING_HOUR */
+	LPGENT("hours"),									/* GEN_STRING_HOURS */
+	LPGENT("minute"),									/* GEN_STRING_MINUTE */
+	LPGENT("minutes"),									/* GEN_STRING_MINUTES */
+	LPGENT(", %d %s, %d %s idle"),						/* MUC_SBAR_IDLEFORMAT */
+	LPGENT("%s on %s%s"),								/* MUC_SBAR_ON_SERVER */
+	LPGENT(", %d %s idle"),								/* MUC_SBAR_IDLEFORMAT_SHORT */
 };
 
 /*
@@ -242,7 +250,7 @@ TCHAR* CTranslator::m_OptStrings[OPT_LAST] = {
 	LPGENT("Don't show them"),										/* OPT_GEN_DONT_SHOW */
 	LPGENT("Window layout tweaks"), 								/* OPT_TAB_LAYOUTTWEAKS */
 	LPGENT("Load and apply"),										/* OPT_TAB_SKINLOAD */
-	LPGENT("Set panel visibilty for this %s"),						/* OPT_IPANEL_VISIBILTY_TITLE */
+	LPGENT("Set panel visibility for this %s"),						/* OPT_IPANEL_VISIBILTY_TITLE */
 	LPGENT("contact"), 												/* OPT_IPANEL_VISIBILTY_IM */
 	LPGENT("chat room"),											/* OPT_IPANEL_VISIBILTY_CHAT */
 	LPGENT("Do not synchronize the panel height with IM windows"),  /* OPT_IPANEL_SYNC_TITLE_IM */

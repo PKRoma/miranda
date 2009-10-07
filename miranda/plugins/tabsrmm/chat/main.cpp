@@ -45,7 +45,7 @@ FONTINFO	aFonts[OPTIONS_FONTCOUNT];
 HICON		hIcons[30];
 HBRUSH		hListBkgBrush = NULL;
 
-struct GlobalLogSettings_t g_Settings;
+TMUCSettings g_Settings;
 
 TCHAR		*pszActiveWndID = 0;
 char		*pszActiveWndModule = 0;

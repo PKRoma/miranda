@@ -204,7 +204,14 @@ public:
 		GEN_IP_MENU_MSGPREFS									= 161,
 		GEN_IP_MENU_ROOMPREFS									= 162,
 		GEN_IP_MENU_HISTORY										= 163,
-		STR_LAST 												= 164
+		GEN_STRING_HOUR											= 164,
+		GEN_STRING_HOURS										= 165,
+		GEN_STRING_MINUTE										= 166,
+		GEN_STRING_MINUTES										= 167,
+		MUC_SBAR_IDLEFORMAT										= 168,
+		MUC_SBAR_ON_SERVER										= 169,
+		MUC_SBAR_IDLEFORMAT_SHORT								= 170,
+		STR_LAST 												= 171
 	};
 
 	enum {
