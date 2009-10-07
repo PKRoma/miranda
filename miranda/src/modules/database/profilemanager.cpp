@@ -100,8 +100,8 @@ static int findProfiles(TCHAR * szProfileDir, ENUMPROFILECALLBACK callback, LPAR
 
 static LRESULT CALLBACK ProfileNameValidate(HWND edit, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	if ( msg==WM_CHAR ) {
-		if ( strchr(".?/\\#' ",(char)wParam&0xFF) != 0 )
+	if ( msg == WM_CHAR ) {
+		if ( _tcschr( _T(".?/\\#' "), (TCHAR)wParam) != 0 )
 			return 0;
 		PostMessage(GetParent(edit),WM_INPUTCHANGED,0,0);
 	}
