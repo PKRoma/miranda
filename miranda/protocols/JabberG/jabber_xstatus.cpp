@@ -1596,7 +1596,7 @@ CJabberInfoFrame::CJabberInfoFrame(CJabberProto *proto):
 	m_nextTooltipId = 0;
 	m_hhkFontsChanged = 0;
 
-	if (ServiceExists(MS_CLIST_FRAMES_ADDFRAME))
+	if (!proto->m_options.DisableFrame && ServiceExists(MS_CLIST_FRAMES_ADDFRAME))
 	{
 		InitClass();
 

@@ -184,6 +184,7 @@ struct CJabberOptions
 	CMOption<BYTE> BsOnlyIBB;
 	CMOption<BYTE> BsProxyManual;
 	CMOption<BYTE> Disable3920auth;
+	CMOption<BYTE> DisableFrame;
 	CMOption<BYTE> EnableAvatars;
 	CMOption<BYTE> EnableRemoteControl;
 	CMOption<BYTE> EnableServerXMPPPing;
@@ -234,6 +235,7 @@ struct CJabberOptions
 		BsOnlyIBB(proto, "BsOnlyIBB", FALSE),
 		BsProxyManual(proto, "BsProxyManual", FALSE),
 		Disable3920auth(proto, "Disable3920auth", 0),
+		DisableFrame(proto, "DisableFrame", 0),
 		EnableAvatars(proto, "EnableAvatars", TRUE),
 		EnableRemoteControl(proto, "EnableRemoteControl", FALSE),
 		EnableServerXMPPPing(proto, "EnableServerXMPPPing", FALSE),

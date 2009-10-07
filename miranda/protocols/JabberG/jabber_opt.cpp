@@ -819,6 +819,7 @@ public:
 		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Automatically add contact when accept authorization"), m_proto->m_options.AutoAdd);
 		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Automatically accept authorization requests"), m_proto->m_options.AutoAcceptAuthorization);
 		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Fix incorrect timestamps in incoming messages"), m_proto->m_options.FixIncorrectTimestamps);
+		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Disable frame"), m_proto->m_options.DisableFrame);
 		
 		m_otvOptions.AddOption(LPGENT("Security") _T("/") LPGENT("Show information about operating system in version replies"), m_proto->m_options.ShowOSVersion);
 		m_otvOptions.AddOption(LPGENT("Security") _T("/") LPGENT("Accept only in band incoming filetransfers (don't disclose own IP)"), m_proto->m_options.BsOnlyIBB);
