@@ -2725,10 +2725,6 @@ LBL_FAILED:
 	yahoo_packet_hash(pack, 1, sn);
 	yahoo_packet_hash(pack, 0, sn);
 	
-	/* yahoo_packet_hash(pack, 277, "v=1&n=11nh9j9k4vpm8&l=64d0xxtsqqt/o&p=m270ar7013000000&jb=33|47|&r=bt&lg=us&intl=us&np=1; path=/; domain=.yahoo.com");
-	 yahoo_packet_hash(pack, 278, "z=xUvdFBxaEeFBfOaVlmk3RSXNDMxBjU2MjQyNjFPNTE-&a=QAE&sk=DAAWDRZBoXexNr&d=c2wBTXpRMkFUSXhOVE0xTVRZNE1qWS0BYQFRQUUBenoBeFV2ZEZCZ1dBAXRpcAFNSVlVN0Q-; path=/; domain=.yahoo.com");
-	 yahoo_packet_hash(pack, 307, "VATg29jzHSXlp_2LL7J4Fw--");*/
-	
 	yahoo_packet_hash(pack, 277, yd->cookie_y);
 	yahoo_packet_hash(pack, 278, yd->cookie_t);
 	yahoo_packet_hash(pack, 307, (const char *)magic_hash);
@@ -2739,19 +2735,7 @@ LBL_FAILED:
 	yahoo_packet_hash(pack, 2, sn);
 	yahoo_packet_hash(pack, 2, "1");
 	
-	//yss = yd->server_settings;
-	
-	//snprintf(z, sizeof(z), "%d", yss->pic_cksum);
-	//yahoo_packet_hash(pack, 192, z);// avatar support yet (EXPERIMENTAL)
-	//yahoo_packet_hash(pack, 192, "-1");// no avatar support yet
-	//yahoo_packet_hash(pack, 2, "1");
-
-	//yahoo_packet_hash(pack, 244, "2097087");   // Yahoo 8.0
-	
-	
-	//yahoo_packet_hash(pack, 135, "8.1.0.209");  // Yahoo 8.0
-	yahoo_packet_hash(pack, 135, "9.0.0.2152"); 
-	/////yahoo_packet_hash(pack, 148, "300");  // ???
+	yahoo_packet_hash(pack, 135, "9.0.0.2162"); 
 
 	yahoo_send_packet(yid, pack, 0);
 	yahoo_packet_free(pack);
