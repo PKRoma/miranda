@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "richutil.h"
 
 extern HINSTANCE g_hInst;
+static WNDPROC OldInfobarEditProc;
 
 void SetupInfobar(InfobarWindowData* idat) {
 	HWND hwnd = idat->hWnd;
@@ -81,7 +82,22 @@ void RefreshInfobar(InfobarWindowData* idat) {
 	RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
 	RedrawWindow(GetDlgItem(hwnd, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
 }
+/*
+static LRESULT CALLBACK InfobarEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	return CallWindowProc(OldInfobarEditProc, hwnd, msg, wParam, lParam);
+}
 
+static void SubclassInfobarEdit(HWND hwnd) {
+	OldInfobarEditProc = (WNDPROC) SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR) InfobarEditSubclassProc);
+	SendMessage(hwnd, EM_SUBCLASSED, 0, 0);
+}
+
+static void UnsubclassInfobarEdit(HWND hwnd) {
+	SendMessage(hwnd, EM_UNSUBCLASSED, 0, 0);
+	SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR) OldInfobarEditProc);
+}
+*/
 static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static BOOL bWasCopy;
@@ -138,6 +154,10 @@ static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
       //SetBkColor((HDC)wParam,GetSysColor(COLOR_WINDOW));
 		return (INT_PTR)g_dat->hInfobarBrush;
 	
+	case WM_DROPFILES:
+		SendMessage(GetParent(hwnd), WM_DROPFILES, wParam, lParam);
+		return FALSE;	
+	
 	case WM_NOTIFY:
 	{
 		LPNMHDR pNmhdr = (LPNMHDR)lParam;
@@ -185,6 +205,7 @@ static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 		}
 		break;
 	}
+
 	case WM_DRAWITEM:
 		{
 			LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
