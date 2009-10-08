@@ -88,6 +88,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_smileyadd.h"
 #include "m_metacontacts.h"
 #include "m_historyevents.h"
+#include "richutil.h"
 
 #ifndef IMF_AUTOFONTSIZEADJUST
 #define IMF_AUTOFONTSIZEADJUST	0x0010
@@ -111,7 +112,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern HWND SM_FindWindowByContact(HANDLE hContact);
 
-#define SPLITTER_HEIGHT   3
+#define SPLITTER_HEIGHT   4
 #define TOOLBAR_HEIGHT   24
 #define INFO_BAR_HEIGHT  51
 #define INFO_BAR_INNER_HEIGHT (INFO_BAR_HEIGHT - 3)

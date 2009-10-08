@@ -577,6 +577,7 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 	int infobarHeight = INFO_BAR_INNER_HEIGHT;
 	int avatarWidth = 0, avatarHeight = 0;
 	int toolbarWidth = w;
+	int messageEditWidth = w - 2;
 	int logY, logH;
 
 	if (!(pdat->flags2 & SMF2_SHOWINFOBAR)) {
@@ -602,21 +603,21 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 	}
 	if (!(pdat->flags2 & SMF2_SHOWINFOBAR)) {
 		if (dat->avatarPic && (g_dat->flags&SMF_AVATAR)) {
-			avatarWidth = BOTTOM_RIGHT_AVATAR_HEIGHT + 2;
-			avatarHeight = toolbarHeight + hSplitterPos;
-			if (avatarHeight < BOTTOM_RIGHT_AVATAR_HEIGHT + 2) {
-				avatarHeight = BOTTOM_RIGHT_AVATAR_HEIGHT + 2;
-				hSplitterPos = avatarHeight - toolbarHeight;
+			avatarWidth = BOTTOM_RIGHT_AVATAR_HEIGHT;
+			avatarHeight = toolbarHeight + hSplitterPos - 2;
+			if (avatarHeight < BOTTOM_RIGHT_AVATAR_HEIGHT) {
+				avatarHeight = BOTTOM_RIGHT_AVATAR_HEIGHT;
+				hSplitterPos = avatarHeight - toolbarHeight + 2;
 			}
 			avatarWidth = avatarHeight;
 			if (avatarWidth > BOTTOM_RIGHT_AVATAR_HEIGHT && avatarWidth > w/3) {
 				avatarWidth = w /3;
 			}
-			if ((toolbarWidth - avatarWidth) < dat->toolbarSize.cx) {
-				avatarWidth = toolbarWidth - dat->toolbarSize.cx;
-			//	avatarHeight = avatarWidth;
+			if ((toolbarWidth - avatarWidth - 2) < dat->toolbarSize.cx) {
+				avatarWidth = toolbarWidth - dat->toolbarSize.cx - 2;
 			}
-			toolbarWidth -= avatarWidth;
+			toolbarWidth -= avatarWidth + 2;
+			messageEditWidth -= avatarWidth + 1;
 		}
 	}
 
@@ -626,11 +627,11 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 	logH = h-hSplitterPos-toolbarHeight - infobarHeight;
 	hdwp = BeginDeferWindowPos(15);
 	hdwp = DeferWindowPos(hdwp, dat->infobarData->hWnd, 0, 0, 0, w, infobarHeight, SWP_NOZORDER);
-	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_LOG), 0, 0, logY, w, logH, SWP_NOZORDER);
-	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, h - hSplitterPos + SPLITTER_HEIGHT + 1, w - avatarWidth, hSplitterPos - SPLITTER_HEIGHT, SWP_NOZORDER);
-	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_AVATAR), 0, w-avatarWidth + 1, h - (avatarHeight + avatarWidth) / 2 + 1, avatarWidth - 1, avatarWidth - 1, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_LOG), 0, 1, logY, w-2, logH, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 1, h - hSplitterPos + SPLITTER_HEIGHT, messageEditWidth, hSplitterPos - SPLITTER_HEIGHT - 1, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_AVATAR), 0, w-avatarWidth - 1, h - (avatarHeight + avatarWidth) / 2 - 1, avatarWidth, avatarWidth, SWP_NOZORDER);
 	
-	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_SPLITTER), 0, 0, h - hSplitterPos-1, toolbarWidth, SPLITTER_HEIGHT + 1, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_SPLITTER), 0, 0, h - hSplitterPos-1, toolbarWidth, SPLITTER_HEIGHT, SWP_NOZORDER);
 	hdwp = ResizeToolbar(hwndDlg, hdwp, toolbarWidth, h - hSplitterPos - toolbarHeight + 1, toolbarHeight, SIZEOF(buttonControls),
 					buttonControls, buttonWidth, buttonSpacing, buttonAlignment, g_dat->buttonVisibility);
 
@@ -940,6 +941,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_LIMITTEXT, (WPARAM) sizeof(TCHAR) * 0x7FFFFFFF, 0);
 			SubclassLogEdit(GetDlgItem(hwndDlg, IDC_LOG));
 			SubclassMessageEdit(GetDlgItem(hwndDlg, IDC_MESSAGE));
+			RichUtil_SubClass(GetDlgItem(hwndDlg, IDC_MESSAGE));
+			RichUtil_SubClass(GetDlgItem(hwndDlg, IDC_LOG));
 			OldSplitterProc = (WNDPROC) SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWLP_WNDPROC, (LONG_PTR) SplitterSubclassProc);
 			dat->infobarData = CreateInfobar(hwndDlg, dat);
 			if (dat->flags & SMF_USEIEVIEW) {

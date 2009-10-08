@@ -750,6 +750,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\richutil.c"
+				>
+			</File>
+			<File
 				RelativePath=".\sendqueue.c"
 				>
 			</File>
@@ -1208,6 +1212,10 @@
 			</File>
 			<File
 				RelativePath="resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\richutil.h"
 				>
 			</File>
 			<File

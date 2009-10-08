@@ -595,6 +595,7 @@ int OnUnloadModule(void)
 	FreeMsgLogIcons();
 	FreeLibrary(GetModuleHandleA("riched20.dll"));
 	OleUninitialize();
+	RichUtil_Unload();
 	FreeGlobals();
 	return 0;
 }
@@ -621,6 +622,7 @@ int OnLoadModule(void) {
 		}
 	}
 	InitGlobals();
+	RichUtil_Load();
 	OleInitialize(NULL);
 	InitREOleCallback();
 	InitStatusIcons();
