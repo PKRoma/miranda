@@ -40,6 +40,7 @@ CLEAN :
 	-@erase "$(INTDIR)\cmdlist.obj"
 	-@erase "$(INTDIR)\colorchooser.obj"
 	-@erase "$(INTDIR)\globals.obj"
+	-@erase "$(INTDIR)\infobar.obj"
 	-@erase "$(INTDIR)\input.obj"
 	-@erase "$(INTDIR)\log.obj"
 	-@erase "$(INTDIR)\main.obj"
@@ -53,6 +54,7 @@ CLEAN :
 	-@erase "$(INTDIR)\msgwindow.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\resource.res"
+	-@erase "$(INTDIR)\richutil.obj"
 	-@erase "$(INTDIR)\sendqueue.obj"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\srmm.obj"
@@ -115,6 +117,7 @@ LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.li
 LINK32_OBJS= \
 	"$(INTDIR)\cmdlist.obj" \
 	"$(INTDIR)\globals.obj" \
+	"$(INTDIR)\infobar.obj" \
 	"$(INTDIR)\input.obj" \
 	"$(INTDIR)\msgdialog.obj" \
 	"$(INTDIR)\msglog.obj" \
@@ -122,6 +125,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\msgs.obj" \
 	"$(INTDIR)\msgtimedout.obj" \
 	"$(INTDIR)\msgwindow.obj" \
+	"$(INTDIR)\richutil.obj" \
 	"$(INTDIR)\sendqueue.obj" \
 	"$(INTDIR)\srmm.obj" \
 	"$(INTDIR)\statusicon.obj" \
@@ -156,6 +160,7 @@ CLEAN :
 	-@erase "$(INTDIR)\cmdlist.obj"
 	-@erase "$(INTDIR)\colorchooser.obj"
 	-@erase "$(INTDIR)\globals.obj"
+	-@erase "$(INTDIR)\infobar.obj"
 	-@erase "$(INTDIR)\input.obj"
 	-@erase "$(INTDIR)\log.obj"
 	-@erase "$(INTDIR)\main.obj"
@@ -169,6 +174,7 @@ CLEAN :
 	-@erase "$(INTDIR)\msgwindow.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\resource.res"
+	-@erase "$(INTDIR)\richutil.obj"
 	-@erase "$(INTDIR)\sendqueue.obj"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\srmm.obj"
@@ -232,6 +238,7 @@ LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.li
 LINK32_OBJS= \
 	"$(INTDIR)\cmdlist.obj" \
 	"$(INTDIR)\globals.obj" \
+	"$(INTDIR)\infobar.obj" \
 	"$(INTDIR)\input.obj" \
 	"$(INTDIR)\msgdialog.obj" \
 	"$(INTDIR)\msglog.obj" \
@@ -239,6 +246,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\msgs.obj" \
 	"$(INTDIR)\msgtimedout.obj" \
 	"$(INTDIR)\msgwindow.obj" \
+	"$(INTDIR)\richutil.obj" \
 	"$(INTDIR)\sendqueue.obj" \
 	"$(INTDIR)\srmm.obj" \
 	"$(INTDIR)\statusicon.obj" \
@@ -273,6 +281,7 @@ CLEAN :
 	-@erase "$(INTDIR)\cmdlist.obj"
 	-@erase "$(INTDIR)\colorchooser.obj"
 	-@erase "$(INTDIR)\globals.obj"
+	-@erase "$(INTDIR)\infobar.obj"
 	-@erase "$(INTDIR)\input.obj"
 	-@erase "$(INTDIR)\log.obj"
 	-@erase "$(INTDIR)\main.obj"
@@ -286,6 +295,7 @@ CLEAN :
 	-@erase "$(INTDIR)\msgwindow.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\resource.res"
+	-@erase "$(INTDIR)\richutil.obj"
 	-@erase "$(INTDIR)\sendqueue.obj"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\srmm.obj"
@@ -348,6 +358,7 @@ LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.li
 LINK32_OBJS= \
 	"$(INTDIR)\cmdlist.obj" \
 	"$(INTDIR)\globals.obj" \
+	"$(INTDIR)\infobar.obj" \
 	"$(INTDIR)\input.obj" \
 	"$(INTDIR)\msgdialog.obj" \
 	"$(INTDIR)\msglog.obj" \
@@ -355,6 +366,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\msgs.obj" \
 	"$(INTDIR)\msgtimedout.obj" \
 	"$(INTDIR)\msgwindow.obj" \
+	"$(INTDIR)\richutil.obj" \
 	"$(INTDIR)\sendqueue.obj" \
 	"$(INTDIR)\srmm.obj" \
 	"$(INTDIR)\statusicon.obj" \
@@ -389,6 +401,7 @@ CLEAN :
 	-@erase "$(INTDIR)\cmdlist.obj"
 	-@erase "$(INTDIR)\colorchooser.obj"
 	-@erase "$(INTDIR)\globals.obj"
+	-@erase "$(INTDIR)\infobar.obj"
 	-@erase "$(INTDIR)\input.obj"
 	-@erase "$(INTDIR)\log.obj"
 	-@erase "$(INTDIR)\main.obj"
@@ -402,6 +415,7 @@ CLEAN :
 	-@erase "$(INTDIR)\msgwindow.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\resource.res"
+	-@erase "$(INTDIR)\richutil.obj"
 	-@erase "$(INTDIR)\sendqueue.obj"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\srmm.obj"
@@ -465,6 +479,7 @@ LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.li
 LINK32_OBJS= \
 	"$(INTDIR)\cmdlist.obj" \
 	"$(INTDIR)\globals.obj" \
+	"$(INTDIR)\infobar.obj" \
 	"$(INTDIR)\input.obj" \
 	"$(INTDIR)\msgdialog.obj" \
 	"$(INTDIR)\msglog.obj" \
@@ -472,6 +487,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\msgs.obj" \
 	"$(INTDIR)\msgtimedout.obj" \
 	"$(INTDIR)\msgwindow.obj" \
+	"$(INTDIR)\richutil.obj" \
 	"$(INTDIR)\sendqueue.obj" \
 	"$(INTDIR)\srmm.obj" \
 	"$(INTDIR)\statusicon.obj" \
@@ -516,6 +532,11 @@ SOURCE=.\globals.c
 "$(INTDIR)\globals.obj" : $(SOURCE) "$(INTDIR)"
 
 
+SOURCE=.\infobar.c
+
+"$(INTDIR)\infobar.obj" : $(SOURCE) "$(INTDIR)"
+
+
 SOURCE=.\input.c
 
 "$(INTDIR)\input.obj" : $(SOURCE) "$(INTDIR)"
@@ -549,6 +570,11 @@ SOURCE=.\msgtimedout.c
 SOURCE=.\msgwindow.c
 
 "$(INTDIR)\msgwindow.obj" : $(SOURCE) "$(INTDIR)"
+
+
+SOURCE=.\richutil.c
+
+"$(INTDIR)\richutil.obj" : $(SOURCE) "$(INTDIR)"
 
 
 SOURCE=.\sendqueue.c

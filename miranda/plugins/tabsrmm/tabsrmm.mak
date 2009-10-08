@@ -27,6 +27,10 @@ NULL=
 NULL=nul
 !ENDIF 
 
+CPP=cl.exe
+MTL=midl.exe
+RSC=rc.exe
+
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
 OUTDIR=.\Debug
@@ -39,11 +43,11 @@ CLEAN :
 	-@erase "$(INTDIR)\buttonsbar.obj"
 	-@erase "$(INTDIR)\clist.obj"
 	-@erase "$(INTDIR)\colorchooser.obj"
+	-@erase "$(INTDIR)\contactcache.obj"
 	-@erase "$(INTDIR)\container.obj"
 	-@erase "$(INTDIR)\containeroptions.obj"
 	-@erase "$(INTDIR)\controls.obj"
 	-@erase "$(INTDIR)\eventpopups.obj"
-	-@erase "$(INTDIR)\formatting.obj"
 	-@erase "$(INTDIR)\generic_msghandlers.obj"
 	-@erase "$(INTDIR)\globals.obj"
 	-@erase "$(INTDIR)\hotkeyhandler.obj"
@@ -81,6 +85,7 @@ CLEAN :
 	-@erase "$(INTDIR)\TSButton.obj"
 	-@erase "$(INTDIR)\typingnotify.obj"
 	-@erase "$(INTDIR)\userprefs.obj"
+	-@erase "$(INTDIR)\utils.obj"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\window.obj"
 	-@erase "$(OUTDIR)\srmm.exp"
@@ -91,42 +96,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
-RSC=rc.exe
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\tabsrmm_private.res" /d "_DEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\tabsrmm.bsc" 
@@ -147,11 +118,11 @@ LINK32_OBJS= \
 	"$(INTDIR)\tools.obj" \
 	"$(INTDIR)\window.obj" \
 	"$(INTDIR)\buttonsbar.obj" \
+	"$(INTDIR)\contactcache.obj" \
 	"$(INTDIR)\container.obj" \
 	"$(INTDIR)\containeroptions.obj" \
 	"$(INTDIR)\controls.obj" \
 	"$(INTDIR)\eventpopups.obj" \
-	"$(INTDIR)\formatting.obj" \
 	"$(INTDIR)\generic_msghandlers.obj" \
 	"$(INTDIR)\globals.obj" \
 	"$(INTDIR)\hotkeyhandler.obj" \
@@ -179,6 +150,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\TSButton.obj" \
 	"$(INTDIR)\typingnotify.obj" \
 	"$(INTDIR)\userprefs.obj" \
+	"$(INTDIR)\utils.obj" \
 	"$(INTDIR)\tabsrmm_private.res"
 
 "..\..\Bin\Debug\Plugins\tabsrmm.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -198,11 +170,11 @@ CLEAN :
 	-@erase "$(INTDIR)\buttonsbar.obj"
 	-@erase "$(INTDIR)\clist.obj"
 	-@erase "$(INTDIR)\colorchooser.obj"
+	-@erase "$(INTDIR)\contactcache.obj"
 	-@erase "$(INTDIR)\container.obj"
 	-@erase "$(INTDIR)\containeroptions.obj"
 	-@erase "$(INTDIR)\controls.obj"
 	-@erase "$(INTDIR)\eventpopups.obj"
-	-@erase "$(INTDIR)\formatting.obj"
 	-@erase "$(INTDIR)\generic_msghandlers.obj"
 	-@erase "$(INTDIR)\globals.obj"
 	-@erase "$(INTDIR)\hotkeyhandler.obj"
@@ -239,6 +211,7 @@ CLEAN :
 	-@erase "$(INTDIR)\TSButton.obj"
 	-@erase "$(INTDIR)\typingnotify.obj"
 	-@erase "$(INTDIR)\userprefs.obj"
+	-@erase "$(INTDIR)\utils.obj"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\window.obj"
 	-@erase "$(OUTDIR)\srmm.exp"
@@ -249,42 +222,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
-RSC=rc.exe
 RSC_PROJ=/l 0x809 /fo".\tabsrmm_private.res" /d "NDEBUG" /d "UNICODE" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\tabsrmm.bsc" 
@@ -305,11 +244,11 @@ LINK32_OBJS= \
 	"$(INTDIR)\tools.obj" \
 	"$(INTDIR)\window.obj" \
 	"$(INTDIR)\buttonsbar.obj" \
+	"$(INTDIR)\contactcache.obj" \
 	"$(INTDIR)\container.obj" \
 	"$(INTDIR)\containeroptions.obj" \
 	"$(INTDIR)\controls.obj" \
 	"$(INTDIR)\eventpopups.obj" \
-	"$(INTDIR)\formatting.obj" \
 	"$(INTDIR)\generic_msghandlers.obj" \
 	"$(INTDIR)\globals.obj" \
 	"$(INTDIR)\hotkeyhandler.obj" \
@@ -337,6 +276,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\TSButton.obj" \
 	"$(INTDIR)\typingnotify.obj" \
 	"$(INTDIR)\userprefs.obj" \
+	"$(INTDIR)\utils.obj" \
 	".\tabsrmm_private.res"
 
 "..\..\Bin\Release Unicode\Plugins\tabsrmm.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -356,11 +296,11 @@ CLEAN :
 	-@erase "$(INTDIR)\buttonsbar.obj"
 	-@erase "$(INTDIR)\clist.obj"
 	-@erase "$(INTDIR)\colorchooser.obj"
+	-@erase "$(INTDIR)\contactcache.obj"
 	-@erase "$(INTDIR)\container.obj"
 	-@erase "$(INTDIR)\containeroptions.obj"
 	-@erase "$(INTDIR)\controls.obj"
 	-@erase "$(INTDIR)\eventpopups.obj"
-	-@erase "$(INTDIR)\formatting.obj"
 	-@erase "$(INTDIR)\generic_msghandlers.obj"
 	-@erase "$(INTDIR)\globals.obj"
 	-@erase "$(INTDIR)\hotkeyhandler.obj"
@@ -398,6 +338,7 @@ CLEAN :
 	-@erase "$(INTDIR)\TSButton.obj"
 	-@erase "$(INTDIR)\typingnotify.obj"
 	-@erase "$(INTDIR)\userprefs.obj"
+	-@erase "$(INTDIR)\utils.obj"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\window.obj"
 	-@erase "$(OUTDIR)\srmm.exp"
@@ -407,42 +348,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
-RSC=rc.exe
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\tabsrmm_private.res" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\tabsrmm.bsc" 
@@ -463,11 +370,11 @@ LINK32_OBJS= \
 	"$(INTDIR)\tools.obj" \
 	"$(INTDIR)\window.obj" \
 	"$(INTDIR)\buttonsbar.obj" \
+	"$(INTDIR)\contactcache.obj" \
 	"$(INTDIR)\container.obj" \
 	"$(INTDIR)\containeroptions.obj" \
 	"$(INTDIR)\controls.obj" \
 	"$(INTDIR)\eventpopups.obj" \
-	"$(INTDIR)\formatting.obj" \
 	"$(INTDIR)\generic_msghandlers.obj" \
 	"$(INTDIR)\globals.obj" \
 	"$(INTDIR)\hotkeyhandler.obj" \
@@ -495,6 +402,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\TSButton.obj" \
 	"$(INTDIR)\typingnotify.obj" \
 	"$(INTDIR)\userprefs.obj" \
+	"$(INTDIR)\utils.obj" \
 	"$(INTDIR)\tabsrmm_private.res"
 
 "..\..\Bin\Release\Plugins\tabsrmm.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -514,11 +422,11 @@ CLEAN :
 	-@erase "$(INTDIR)\buttonsbar.obj"
 	-@erase "$(INTDIR)\clist.obj"
 	-@erase "$(INTDIR)\colorchooser.obj"
+	-@erase "$(INTDIR)\contactcache.obj"
 	-@erase "$(INTDIR)\container.obj"
 	-@erase "$(INTDIR)\containeroptions.obj"
 	-@erase "$(INTDIR)\controls.obj"
 	-@erase "$(INTDIR)\eventpopups.obj"
-	-@erase "$(INTDIR)\formatting.obj"
 	-@erase "$(INTDIR)\generic_msghandlers.obj"
 	-@erase "$(INTDIR)\globals.obj"
 	-@erase "$(INTDIR)\hotkeyhandler.obj"
@@ -556,6 +464,7 @@ CLEAN :
 	-@erase "$(INTDIR)\TSButton.obj"
 	-@erase "$(INTDIR)\typingnotify.obj"
 	-@erase "$(INTDIR)\userprefs.obj"
+	-@erase "$(INTDIR)\utils.obj"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\window.obj"
 	-@erase "$(OUTDIR)\srmm.exp"
@@ -567,8 +476,69 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\tabsrmm_private.res" /d "_DEBUG" /d "UNICODE" 
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\tabsrmm.bsc" 
+BSC32_SBRS= \
+	
+LINK32=link.exe
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /base:"0x6a540000" /stack:0xfa00 /subsystem:windows /dll /incremental:no /pdb:"$(OUTDIR)\tabsrmm.pdb" /map:"$(INTDIR)\tabsrmm.map" /debug /machine:IX86 /out:"..\..\Bin\Debug Unicode\Plugins\tabsrmm.dll" /implib:"$(OUTDIR)\srmm.lib" /pdbtype:sept 
+LINK32_OBJS= \
+	"$(INTDIR)\clist.obj" \
+	"$(INTDIR)\colorchooser.obj" \
+	"$(INTDIR)\log.obj" \
+	"$(INTDIR)\main.obj" \
+	"$(INTDIR)\manager.obj" \
+	"$(INTDIR)\message.obj" \
+	"$(INTDIR)\muchighlight.obj" \
+	"$(INTDIR)\options.obj" \
+	"$(INTDIR)\services.obj" \
+	"$(INTDIR)\tools.obj" \
+	"$(INTDIR)\window.obj" \
+	"$(INTDIR)\buttonsbar.obj" \
+	"$(INTDIR)\contactcache.obj" \
+	"$(INTDIR)\container.obj" \
+	"$(INTDIR)\containeroptions.obj" \
+	"$(INTDIR)\controls.obj" \
+	"$(INTDIR)\eventpopups.obj" \
+	"$(INTDIR)\generic_msghandlers.obj" \
+	"$(INTDIR)\globals.obj" \
+	"$(INTDIR)\hotkeyhandler.obj" \
+	"$(INTDIR)\ImageDataObject.obj" \
+	"$(INTDIR)\infopanel.obj" \
+	"$(INTDIR)\mim.obj" \
+	"$(INTDIR)\modplus.obj" \
+	"$(INTDIR)\msgdialog.obj" \
+	"$(INTDIR)\msgdlgutils.obj" \
+	"$(INTDIR)\msglog.obj" \
+	"$(INTDIR)\msgoptions.obj" \
+	"$(INTDIR)\msgoptions_plus.obj" \
+	"$(INTDIR)\msgs.obj" \
+	"$(INTDIR)\selectcontainer.obj" \
+	"$(INTDIR)\sendqueue.obj" \
+	"$(INTDIR)\sidebar.obj" \
+	"$(INTDIR)\srmm.obj" \
+	"$(INTDIR)\tabctrl.obj" \
+	"$(INTDIR)\taskbar.obj" \
+	"$(INTDIR)\templates.obj" \
+	"$(INTDIR)\themeio.obj" \
+	"$(INTDIR)\themes.obj" \
+	"$(INTDIR)\translator.obj" \
+	"$(INTDIR)\trayicon.obj" \
+	"$(INTDIR)\TSButton.obj" \
+	"$(INTDIR)\typingnotify.obj" \
+	"$(INTDIR)\userprefs.obj" \
+	"$(INTDIR)\utils.obj" \
+	"$(INTDIR)\tabsrmm_private.res"
+
+"..\..\Bin\Debug Unicode\Plugins\tabsrmm.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+    $(LINK32) @<<
+  $(LINK32_FLAGS) $(LINK32_OBJS)
+<<
+
+!ENDIF 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -599,70 +569,6 @@ CPP_PROJ=/nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /D "WIN32" /D 
    $(CPP) @<<
    $(CPP_PROJ) $< 
 <<
-
-MTL=midl.exe
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
-RSC=rc.exe
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\tabsrmm_private.res" /d "_DEBUG" /d "UNICODE" 
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\tabsrmm.bsc" 
-BSC32_SBRS= \
-	
-LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /base:"0x6a540000" /stack:0xfa00 /subsystem:windows /dll /incremental:no /pdb:"$(OUTDIR)\tabsrmm.pdb" /map:"$(INTDIR)\tabsrmm.map" /debug /machine:IX86 /out:"..\..\Bin\Debug Unicode\Plugins\tabsrmm.dll" /implib:"$(OUTDIR)\srmm.lib" /pdbtype:sept 
-LINK32_OBJS= \
-	"$(INTDIR)\clist.obj" \
-	"$(INTDIR)\colorchooser.obj" \
-	"$(INTDIR)\log.obj" \
-	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\manager.obj" \
-	"$(INTDIR)\message.obj" \
-	"$(INTDIR)\muchighlight.obj" \
-	"$(INTDIR)\options.obj" \
-	"$(INTDIR)\services.obj" \
-	"$(INTDIR)\tools.obj" \
-	"$(INTDIR)\window.obj" \
-	"$(INTDIR)\buttonsbar.obj" \
-	"$(INTDIR)\container.obj" \
-	"$(INTDIR)\containeroptions.obj" \
-	"$(INTDIR)\controls.obj" \
-	"$(INTDIR)\eventpopups.obj" \
-	"$(INTDIR)\formatting.obj" \
-	"$(INTDIR)\generic_msghandlers.obj" \
-	"$(INTDIR)\globals.obj" \
-	"$(INTDIR)\hotkeyhandler.obj" \
-	"$(INTDIR)\ImageDataObject.obj" \
-	"$(INTDIR)\infopanel.obj" \
-	"$(INTDIR)\mim.obj" \
-	"$(INTDIR)\modplus.obj" \
-	"$(INTDIR)\msgdialog.obj" \
-	"$(INTDIR)\msgdlgutils.obj" \
-	"$(INTDIR)\msglog.obj" \
-	"$(INTDIR)\msgoptions.obj" \
-	"$(INTDIR)\msgoptions_plus.obj" \
-	"$(INTDIR)\msgs.obj" \
-	"$(INTDIR)\selectcontainer.obj" \
-	"$(INTDIR)\sendqueue.obj" \
-	"$(INTDIR)\sidebar.obj" \
-	"$(INTDIR)\srmm.obj" \
-	"$(INTDIR)\tabctrl.obj" \
-	"$(INTDIR)\taskbar.obj" \
-	"$(INTDIR)\templates.obj" \
-	"$(INTDIR)\themeio.obj" \
-	"$(INTDIR)\themes.obj" \
-	"$(INTDIR)\translator.obj" \
-	"$(INTDIR)\trayicon.obj" \
-	"$(INTDIR)\TSButton.obj" \
-	"$(INTDIR)\typingnotify.obj" \
-	"$(INTDIR)\userprefs.obj" \
-	"$(INTDIR)\tabsrmm_private.res"
-
-"..\..\Bin\Debug Unicode\Plugins\tabsrmm.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
-    $(LINK32) @<<
-  $(LINK32_FLAGS) $(LINK32_OBJS)
-<<
-
-!ENDIF 
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
@@ -1165,6 +1071,12 @@ SOURCE=.\src\buttonsbar.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
+SOURCE=.\src\contactcache.cpp
+
+"$(INTDIR)\contactcache.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
 SOURCE=.\src\container.cpp
 
 "$(INTDIR)\container.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
@@ -1188,50 +1100,6 @@ SOURCE=.\src\eventpopups.cpp
 "$(INTDIR)\eventpopups.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-
-SOURCE=.\src\formatting.cpp
-
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
-
-"$(INTDIR)\formatting.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
-
-"$(INTDIR)\formatting.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
-
-"$(INTDIR)\formatting.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-CPP_SWITCHES=/nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
-
-"$(INTDIR)\formatting.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ENDIF 
 
 SOURCE=.\src\generic_msghandlers.cpp
 
@@ -1544,6 +1412,12 @@ SOURCE=.\src\typingnotify.cpp
 SOURCE=.\src\userprefs.cpp
 
 "$(INTDIR)\userprefs.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\src\utils.cpp
+
+"$(INTDIR)\utils.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
