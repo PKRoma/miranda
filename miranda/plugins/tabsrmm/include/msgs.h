@@ -130,7 +130,7 @@ typedef struct _settextex {
 #define MSGERROR_SENDLATER  2
 
 #define CONTAINER_NAMELEN 25
-#define TITLE_FORMATLEN 50
+#define TITLE_FORMATLEN 30
 
 #define MWF_SAVEBTN_SAV 2
 
@@ -179,7 +179,7 @@ typedef struct _settextex {
 
 #define MWF_SHOW_URLEVENTS 1
 #define MWF_SHOW_FILEEVENTS 2
-#define MWF_SHOW_PRIVATETHEME 4
+//#define MWF_SHOW_PRIVATETHEME 4
 //#define MWF_SHOW_EMPTYLINEFIX 8
 //#define MWF_SHOW_MICROLF 16
 //#define MWF_SHOW_MARKFOLLOWUPTS 32
@@ -245,6 +245,32 @@ class CInfoPanel;
 class CSideBar;
 class CContactCache;
 
+#define STICK_ICON_MSG 10
+struct MessageWindowTheme {
+	COLORREF 	inbg, outbg, bg, oldinbg, oldoutbg, statbg, inputbg;
+	COLORREF 	hgrid;
+	COLORREF 	custom_colors[5];
+	DWORD 		dwFlags;
+	DWORD 		left_indent, right_indent;
+	LOGFONTA*	logFonts;
+	COLORREF*	fontColors;
+	char*		rtfFonts;
+	bool		isPrivate;
+};
+
+struct TContainerSettings {
+	bool	fPrivate;
+	DWORD	dwFlags;
+	DWORD	dwFlagsEx;
+	DWORD	dwTransparency;
+	DWORD	panelheight;
+	DWORD	splitterPos;
+	TCHAR	szTitleFormat[TITLE_FORMATLEN + 2];
+	WORD	avatarMode;
+	WORD	ownAvatarMode;
+	BYTE	reserved[12];
+};
+
 struct ContainerWindowData {
 	ContainerWindowData *pNextContainer;
 	TCHAR   szName[CONTAINER_NAMELEN + 4];		// container name
@@ -257,9 +283,8 @@ struct ContainerWindowData {
 	HMENU   hMenuContext;
 	HWND    hwndTip;			// tab - tooltips...
 	BOOL    bDontSmartClose;      // if set, do not search and select the next possible tab after closing one.
-	DWORD   dwFlags, dwPrivateFlags;
-	DWORD   dwFlagsEx, dwPrivateFlagsEx;
-	LONG	panelHeight, splitterPos;
+	DWORD   dwFlags;
+	DWORD   dwFlagsEx;
 	UINT    uChildMinHeight;
 	DWORD   dwTransparency;
 	int     tBorder;
@@ -273,12 +298,8 @@ struct ContainerWindowData {
 	DWORD   dwFlashingStarted;
 	HWND    hWndOptions;
 	BOOL    bSizingLoop;
-	TCHAR   szTitleFormat[TITLE_FORMATLEN + 2];
 	TCHAR   szRelThemeFile[MAX_PATH], szAbsThemeFile[MAX_PATH];
 	TemplateSet *ltr_templates, *rtl_templates;
-	LOGFONTA *logFonts;
-	COLORREF *fontColors;
-	char    *rtfFonts;
 	HDC     cachedDC;
 	HBITMAP cachedHBM, oldHBM;
 	SIZE    oldDCSize;
@@ -296,21 +317,12 @@ struct ContainerWindowData {
 	HBITMAP hbmToolbarBG, oldhbmToolbarBG;
 	SIZE	szOldToolbarSize;
 	SIZE    oldSize, preSIZE;
-	CTaskbarInteract *TaskBar;
-	CMenuBar		 *MenuBar;
-	CSideBar		 *SideBar;
-};
-
-#define STICK_ICON_MSG 10
-struct MessageWindowTheme {
-	COLORREF inbg, outbg, bg, oldinbg, oldoutbg, statbg, inputbg;
-	COLORREF hgrid;
-	COLORREF custom_colors[5];
-	DWORD dwFlags;
-	DWORD left_indent, right_indent;
-	LOGFONTA *logFonts;
-	COLORREF *fontColors;
-	char *rtfFonts;
+	WORD	avatarMode, ownAvatarMode;
+	MessageWindowTheme 	theme;
+	TContainerSettings* settings;
+	CTaskbarInteract*	TaskBar;
+	CMenuBar*			MenuBar;
+	CSideBar*			SideBar;
 };
 
 struct SESSIONINFO_TYPE;
@@ -380,7 +392,6 @@ struct _MessageWindowData {
 	TCHAR   myUin[80];
 	BOOL    bNotOnList;
 	int     SendFormat;
-	TemplateSet *ltr_templates, *rtl_templates;
 	HANDLE  *hQueuedEvents;
 	int     iNextQueuedEvent;
 #define EVENT_QUEUE_SIZE 10
@@ -395,7 +406,6 @@ struct _MessageWindowData {
 	DWORD   panelStatusCX;
 	BYTE    xStatus;
 	COLORREF inputbg;
-	struct  MessageWindowTheme theme;
 	struct  avatarCacheEntry *ace, *ownAce;
 	HANDLE  *hHistoryEvents;
 	int     maxHistory, curHistory;
@@ -513,7 +523,7 @@ struct NewMessageWindowLParam {
 #define CNT_FLASHALWAYS 0x80
 #define CNT_TRANSPARENCY 0x100
 #define CNT_TITLE_PRIVATE 0x200
-#define CNT_GLOBALSETTINGS 0x400
+//#define CNT_GLOBALSETTINGS 0x400
 #define CNT_GLOBALSIZE 0x800
 #define CNT_INFOPANEL 0x1000
 #define CNT_NOSOUND 0x2000
@@ -536,7 +546,7 @@ struct NewMessageWindowLParam {
 #define CNT_UINSTATUSBAR 0x40000000
 #define CNT_VERTICALMAX 0x80000000
 
-#define CNT_FLAGS_DEFAULT (CNT_DONTREPORT | CNT_DONTREPORTUNFOCUSED | CNT_ALWAYSREPORTINACTIVE | CNT_HIDETABS | CNT_GLOBALSETTINGS | CNT_NEWCONTAINERFLAGS | CNT_NOMENUBAR | CNT_INFOPANEL)
+#define CNT_FLAGS_DEFAULT (CNT_DONTREPORT | CNT_DONTREPORTUNFOCUSED | CNT_ALWAYSREPORTINACTIVE | CNT_HIDETABS | CNT_NEWCONTAINERFLAGS | CNT_NOMENUBAR | CNT_INFOPANEL)
 #define CNT_TRANS_DEFAULT 0x00ff00ff
 
 #define CNT_FLAGSEX_DEFAULT (TCF_FLASHICON)
@@ -587,7 +597,7 @@ struct NewMessageWindowLParam {
 #define DM_QUERYCONTAINERHWND    (WM_USER+32)
 #define DM_CALCMINHEIGHT     (WM_USER+33)       // msgdialog asked to recalculate its minimum height
 #define DM_REPORTMINHEIGHT   (WM_USER+34)       // msg dialog reports its minimum height to the container
-#define DM_QUERYMINHEIGHT    (WM_USER+35)       // container queries msg dialog about minimum height
+//#define DM_QUERYMINHEIGHT    (WM_USER+35)       // container queries msg dialog about minimum height
 #define DM_SAVESIZE          (WM_USER+36)
 #define DM_CHECKSIZE         (WM_USER+37)
 #define DM_SAVEPERCONTACT    (WM_USER+38)
@@ -612,10 +622,10 @@ struct NewMessageWindowLParam {
 #define DM_LOADBUTTONBARICONS (WM_USER+57)
 #define DM_ACTIVATETOOLTIP   (WM_USER+58)
 #define DM_UINTOCLIPBOARD   (WM_USER+59)
-#define DM_SPLITTEREMERGENCY (WM_USER+60)
+//#define DM_SPLITTEREMERGENCY (WM_USER+60)
 #define DM_SENDMESSAGECOMMAND (WM_USER+61)
 #define DM_FORCEDREMAKELOG   (WM_USER+62)
-#define DM_QUERYFLAGS        (WM_USER+63)
+//#define DM_QUERYFLAGS        (WM_USER+63)
 #define DM_STATUSBARCHANGED  (WM_USER+64)
 #define DM_SAVEMESSAGELOG    (WM_USER+65)
 #define DM_CHECKAUTOCLOSE    (WM_USER+66)
@@ -623,7 +633,7 @@ struct NewMessageWindowLParam {
 #define DM_SETICON           (WM_USER+68)
 #define DM_CLOSEIFMETA		 (WM_USER+69)
 #define DM_CHECKQUEUEFORCLOSE (WM_USER+70)
-#define DM_QUERYSTATUS       (WM_USER+71)
+//#define DM_QUERYSTATUS       (WM_USER+71)
 #define DM_SETPARENTDIALOG   (WM_USER+72)
 #define DM_HANDLECLISTEVENT  (WM_USER+73)
 #define DM_TRAYICONNOTIFY    (WM_USER+74)

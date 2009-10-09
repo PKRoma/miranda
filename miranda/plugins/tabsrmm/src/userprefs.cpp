@@ -446,8 +446,8 @@ int TSAPI LoadLocalFlags(HWND hwnd, struct _MessageWindowData *dat)
 
 	if(dat) {
 		dat->dwFlags &= ~MWF_LOG_ALL;
-		if(dat->dwFlags & MWF_SHOW_PRIVATETHEME)
-			dat->dwFlags |= (dat->theme.dwFlags & MWF_LOG_ALL);
+		if(dat->pContainer->theme.isPrivate)
+			dat->dwFlags |= (dat->pContainer->theme.dwFlags & MWF_LOG_ALL);
 		else
 			dat->dwFlags |= (dwGlobal & MWF_LOG_ALL);
 		while(checkboxes[i].uId) {

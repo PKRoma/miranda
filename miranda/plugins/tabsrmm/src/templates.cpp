@@ -132,7 +132,7 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 	*/
 	if (dat) {
 		teInfo = (TemplateEditorInfo *)dat->pContainer;
-		tSet = teInfo->rtl ? dat->rtl_templates : dat->ltr_templates;
+		tSet = teInfo->rtl ? dat->pContainer->rtl_templates : dat->pContainer->ltr_templates;
 	}
 
 	switch (msg) {
@@ -153,9 +153,7 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			teInfo->rtl = teNew->rtl;
 			teInfo->hwndParent = teNew->hwndParent;
 
-			dat->ltr_templates = &LTR_Active;
-			dat->rtl_templates = &RTL_Active;
-			LoadOverrideTheme(dat);
+			LoadOverrideTheme(dat->pContainer);
 			/*
 			* set hContact to the first found contact so that we can use the Preview window properly
 			* also, set other parameters needed by the streaming function to display events
@@ -171,11 +169,12 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				dat->hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, 0, 0);
 				dat->szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0);
 			}
-			dat->dwFlags = M->GetDword("mwflags", MWF_LOG_DEFAULT);
+			dat->dwFlags = dat->pContainer->theme.dwFlags;
 
 			dat->cache = CGlobals::getContactCache(dat->hContact);
 			dat->cache->updateState();
 			dat->cache->updateUIN();
+			dat->cache->updateStats(TSessionStats::INIT_TIMER);
 			GetMYUIN(dat);
 
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR) dat);

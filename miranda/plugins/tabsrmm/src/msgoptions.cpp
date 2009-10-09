@@ -187,7 +187,6 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			BOOL translated;
 			TVINSERTSTRUCT tvi = {0};
 			int i = 0;
-			BYTE avMode;
 
 			DWORD dwFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
 
@@ -241,38 +240,6 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETCOLOUR, 0, CSkin::m_avatarBorderClr);
 
 			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_SETCURSEL, (WPARAM)CSkin::m_bAvatarBorderType, 0);
-
-			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1,
-							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_GLOBALLY_ON));
-			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1,
-							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_ON_IF_PRESENT));
-			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1,
-							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_GLOBALLY_OFF));
-			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1,
-							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_ON_ALWAYS_BOTTOM));
-
-			SendDlgItemMessage(hwndDlg, IDC_OWNAVATARMODE, CB_INSERTSTRING, -1,
-							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_ON_IF_PRESENT));
-			SendDlgItemMessage(hwndDlg, IDC_OWNAVATARMODE, CB_INSERTSTRING, -1,
-							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_DONT_SHOW));
-
-			switch (M->GetByte("avatarmode", 0)) {
-				case 5:
-					avMode = 3;
-					break;
-				case 4:
-					avMode = 2;
-					break;
-				case 3:
-				case 2:
-				case 1:
-					avMode = 1;
-					break;
-				case 0:
-					avMode = 0;
-			}
-			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_SETCURSEL, (WPARAM)avMode, 0);
-			SendDlgItemMessage(hwndDlg, IDC_OWNAVATARMODE, CB_SETCURSEL, (WPARAM)M->GetByte("ownavatarmode", 0), 0);
 
 			SetDlgItemInt(hwndDlg, IDC_MAXAVATARHEIGHT, M->GetDword("avatarheight", 100), FALSE);
 			CheckDlgButton(hwndDlg, IDC_PRESERVEAVATARSIZE, M->GetByte("dontscaleavatars", 0) ? BST_CHECKED : BST_UNCHECKED);
@@ -352,25 +319,10 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				case 0:
 					switch (((LPNMHDR) lParam)->code) {
 						case PSN_APPLY: {
-							//DWORD dwFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
 							BOOL translated;
 							TVITEM item = {0};
 							int i = 0;
-							BYTE avMode;
 
-							switch (SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_GETCURSEL, 0, 0)) {
-								case 0:
-									avMode = 0;
-									break;
-								case 1:
-									avMode = 3;
-									break;
-								case 2:
-									avMode = 4;
-									break;
-								case 3:
-									avMode = 5;
-							}
 							M->WriteByte(SRMSGMOD_T, "avbordertype", (BYTE) SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_GETCURSEL, 0, 0));
 							M->WriteDword(SRMSGMOD_T, "avborderclr", SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0));
 
@@ -381,10 +333,6 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 								CSkin::m_avatarBorderClr = (COLORREF)SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0);
 							}
 
-							M->WriteByte(SRMSGMOD_T, "avatarmode", avMode);
-							M->WriteByte(SRMSGMOD_T, "ownavatarmode", (BYTE) SendDlgItemMessage(hwndDlg, IDC_OWNAVATARMODE, CB_GETCURSEL, 0, 0));
-
-							//pMim->WriteDword(SRMSGMOD_T, "mwflags", dwFlags);
 							M->WriteDword(SRMSGMOD_T, "avatarheight", GetDlgItemInt(hwndDlg, IDC_MAXAVATARHEIGHT, &translated, FALSE));
 
 							M->WriteDword(SRMSGMOD_T, "tabautoclose", GetDlgItemInt(hwndDlg, IDC_AUTOCLOSETABTIME, &translated, FALSE));

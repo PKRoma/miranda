@@ -605,6 +605,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);          // set options...
 			pContainer->dwFlags |= dwCreateFlags;
 
+			LoadOverrideTheme(pContainer);
 			ws = GetWindowLongPtr(hwndTab, GWL_STYLE);
 			if(pContainer->dwFlagsEx & TCF_FLAT)
 				ws |= TCS_BUTTONS;
@@ -1505,7 +1506,7 @@ buttons_done:
 			}
 			if (dat) {
 				SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM)(dat->hXStatusIcon ? dat->hXStatusIcon : dat->hTabStatusIcon));
-				szNewTitle = Utils::FormatTitleBar(dat, pContainer->szTitleFormat);
+				szNewTitle = Utils::FormatTitleBar(dat, pContainer->settings->szTitleFormat);
 				if (szNewTitle) {
 					SetWindowText(hwndDlg, szNewTitle);
 					free((void *)szNewTitle);
@@ -1796,14 +1797,10 @@ buttons_done:
 			return TRUE;
 		}
 		case DM_OPTIONSAPPLIED: {
-			DWORD dwLocalFlags = 0, dwLocalFlagsEx;
-			DWORD dwLocalTrans = 0;
-			char szCname[40];
-			int overridePerContact = 1;
-			TCHAR szTitleFormat[200];
-			TCHAR *szThemeName = NULL;
-			DBVARIANT dbv = {0};
-			DBVARIANT dbv1 = {0};
+			char 		szCname[40];
+			TCHAR 		szTitleFormat[200];
+			TCHAR*		szThemeName = NULL;
+			DBVARIANT 	dbv = {0};
 
 #if defined (_UNICODE)
 			char *szSetting = "CNTW_";
@@ -1813,98 +1810,26 @@ buttons_done:
 			szTitleFormat[0] = 0;
 
 			if (pContainer->isCloned && pContainer->hContactFrom != 0) {
-				mir_snprintf(szCname, 40, "%s_Flags", szSetting);
-				dwLocalFlags = M->GetDword(pContainer->hContactFrom, szCname, 0xffffffff);
+				if(pContainer->settings == 0)
+					pContainer->settings = (TContainerSettings *)malloc(sizeof(TContainerSettings));
 
-				mir_snprintf(szCname, 40, "%s_FlagsEx", szSetting);
-				dwLocalFlagsEx = M->GetDword(pContainer->hContactFrom, szCname, 0xffffffff);
+				CopyMemory((void *)pContainer->settings, (void *)&PluginConfig.globalContainerSettings, sizeof(TContainerSettings));
+				Utils::ReadContainerSettingsFromDB(pContainer->hContactFrom, pContainer->settings);
 
-				mir_snprintf(szCname, 40, "%s_panel", szSetting);
-				pContainer->panelHeight = M->GetDword(pContainer->hContactFrom, szCname, PluginConfig.m_panelHeight);
-
-				mir_snprintf(szCname, 40, "%s_split", szSetting);
-				pContainer->splitterPos = M->GetDword(pContainer->hContactFrom, szCname, 60);
-
-				mir_snprintf(szCname, 40, "%s_Trans", szSetting);
-				dwLocalTrans = M->GetDword(pContainer->hContactFrom, szCname, 0xffffffff);
-				mir_snprintf(szCname, 40, "%s_titleformat", szSetting);
-
-				if(0 == M->GetTString(pContainer->hContactFrom, SRMSGMOD_T, szCname, &dbv1)) {
-					mir_sntprintf(szTitleFormat, 200, _T("%s"), dbv1.ptszVal);
-					DBFreeVariant(&dbv1);
-				}
 				pContainer->szRelThemeFile[0] = pContainer->szAbsThemeFile[0] = 0;
 				mir_snprintf(szCname, 40, "%s_theme", szSetting);
 				if (!M->GetTString(pContainer->hContactFrom, SRMSGMOD_T, szCname, &dbv))
 					szThemeName = dbv.ptszVal;
-				if (dwLocalFlags == 0xffffffff || dwLocalTrans == 0xffffffff)
-					overridePerContact = 1;
-				else
-					overridePerContact = 0;
 			}
-			if (overridePerContact) {
-				mir_snprintf(szCname, 40, "%s%d_Flags", szSetting, pContainer->iContainerIndex);
-				dwLocalFlags = M->GetDword(szCname, 0xffffffff);
-				mir_snprintf(szCname, 40, "%s%d_FlagsEx", szSetting, pContainer->iContainerIndex);
-				dwLocalFlagsEx = M->GetDword(szCname, 0xffffffff);
-				mir_snprintf(szCname, 40, "%s%d_Trans", szSetting, pContainer->iContainerIndex);
-				dwLocalTrans = M->GetDword(szCname, 0xffffffff);
-
-				mir_snprintf(szCname, 40, "%s%d_panel", szSetting, pContainer->iContainerIndex);
-				pContainer->panelHeight = M->GetDword(szCname, PluginConfig.m_panelHeight);
-
-				mir_snprintf(szCname, 40, "%s%d_split", szSetting, pContainer->iContainerIndex);
-				pContainer->splitterPos = M->GetDword(szCname, 60);
-
-				if (!szTitleFormat[0]) {
-					mir_snprintf(szCname, 40, "%s%d_titleformat", szSetting, pContainer->iContainerIndex);
-					if(0 == M->GetTString(pContainer->hContactFrom, SRMSGMOD_T, szCname, &dbv1)) {
-						mir_sntprintf(szTitleFormat, 200, _T("%s"), dbv1.ptszVal);
-						DBFreeVariant(&dbv1);
-					}
-				}
+			else {
+				Utils::ReadPrivateContainerSettings(pContainer);
 				if (szThemeName == NULL) {
 					mir_snprintf(szCname, 40, "%s%d_theme", szSetting, pContainer->iContainerIndex);
 					if (!M->GetTString(NULL, SRMSGMOD_T, szCname, &dbv))
 						szThemeName = dbv.ptszVal;
 				}
 			}
-			if (dwLocalFlags == 0xffffffff) {
-				pContainer->dwFlags = pContainer->dwPrivateFlags = PluginConfig.m_GlobalContainerFlags;
-				pContainer->dwPrivateFlags |= (CNT_GLOBALSETTINGS);
-				pContainer->dwFlagsEx = pContainer->dwPrivateFlagsEx = PluginConfig.m_GlobalContainerFlagsEx;
-			}
-			else {
-				if (!(dwLocalFlags & CNT_NEWCONTAINERFLAGS)) {
-					dwLocalFlags = CNT_FLAGS_DEFAULT;
-					dwLocalFlagsEx = CNT_FLAGSEX_DEFAULT;
-				}
-				pContainer->dwPrivateFlags = dwLocalFlags;
-				pContainer->dwPrivateFlagsEx = dwLocalFlagsEx;
-				pContainer->dwFlags = dwLocalFlags & CNT_GLOBALSETTINGS ? PluginConfig.m_GlobalContainerFlags : dwLocalFlags;
-				pContainer->dwFlagsEx = dwLocalFlags & CNT_GLOBALSETTINGS ? PluginConfig.m_GlobalContainerFlagsEx : dwLocalFlagsEx;
-			}
-
-			if (dwLocalTrans == 0xffffffff)
-				pContainer->dwTransparency = PluginConfig.m_GlobalContainerTrans;
-			else
-				pContainer->dwTransparency = pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS ? PluginConfig.m_GlobalContainerTrans : dwLocalTrans;
-
-			if (LOWORD(pContainer->dwTransparency) < 50)
-				pContainer->dwTransparency = MAKELONG(50, (WORD)HIWORD(pContainer->dwTransparency));
-			if (HIWORD(pContainer->dwTransparency) < 50)
-				pContainer->dwTransparency = MAKELONG((WORD)LOWORD(pContainer->dwTransparency), 50);
-
-			if (pContainer->dwFlags & CNT_TITLE_PRIVATE) {
-				if (szTitleFormat[0])
-					_tcsncpy(pContainer->szTitleFormat, szTitleFormat, TITLE_FORMATLEN);
-				else
-					_tcsncpy(pContainer->szTitleFormat, PluginConfig.szDefaultTitleFormat, TITLE_FORMATLEN);
-			}
-			else
-				_tcsncpy(pContainer->szTitleFormat, PluginConfig.szDefaultTitleFormat, TITLE_FORMATLEN);
-
-			pContainer->szTitleFormat[TITLE_FORMATLEN - 1] = 0;
+			Utils::SettingsToContainer(pContainer);
 
 			if (szThemeName != NULL) {
 				M->pathToAbsolute(szThemeName, pContainer->szAbsThemeFile);
@@ -1915,10 +1840,6 @@ buttons_done:
 				pContainer->szAbsThemeFile[0] = pContainer->szRelThemeFile[0] = 0;
 
 			pContainer->ltr_templates = pContainer->rtl_templates = 0;
-			pContainer->logFonts = 0;
-			pContainer->fontColors = 0;
-			pContainer->rtfFonts = 0;
-			// container theme
 			break;
 		}
 		case DM_STATUSBARCHANGED: {
@@ -2090,9 +2011,6 @@ buttons_done:
 		case DM_REPORTMINHEIGHT:
 			pContainer->uChildMinHeight = ((UINT) lParam > pContainer->uChildMinHeight) ? (UINT) lParam : pContainer->uChildMinHeight;
 			return 0;
-		case WM_CONTEXTMENU: {
-			break;
-		}
 		case DM_SETICON: {
 			HICON hIconMsg = PluginConfig.g_IconMsgEvent;
 			if ((HICON)lParam == PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING]) {              // always set typing icon, but don't save it...
@@ -2162,16 +2080,13 @@ buttons_done:
 				DestroyWindow(pContainer->hwndStatus);
 
 			// free private theme...
-			if (pContainer->ltr_templates)
+			if(pContainer->theme.isPrivate) {
 				free(pContainer->ltr_templates);
-			if (pContainer->rtl_templates)
 				free(pContainer->rtl_templates);
-			if (pContainer->logFonts)
-				free(pContainer->logFonts);
-			if (pContainer->fontColors)
-				free(pContainer->fontColors);
-			if (pContainer->rtfFonts)
-				free(pContainer->rtfFonts);
+				free(pContainer->theme.logFonts);
+				free(pContainer->theme.fontColors);
+				free(pContainer->theme.rtfFonts);
+			}
 
 			if (pContainer->hwndTip)
 				DestroyWindow(pContainer->hwndTip);
@@ -2202,6 +2117,8 @@ buttons_done:
 			if (pContainer) {
 				delete pContainer->MenuBar;
 				delete pContainer->SideBar;
+				if(pContainer->settings != &PluginConfig.globalContainerSettings)
+					free(pContainer->settings);
 				free(pContainer);
 			}
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
@@ -2305,19 +2222,7 @@ buttons_done:
 					for (i = 0; i < TabCtrl_GetItemCount(hwndTab); i++) {
 						if (TabCtrl_GetItem(hwndTab, i, &item)) {
 							SendMessage((HWND)item.lParam, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
-							_snprintf(szCName, 40, "%s_Flags", szSetting);
-							M->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->dwPrivateFlags);
-							_snprintf(szCName, 40, "%s_Trans", szSetting);
-							M->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->dwTransparency);
-
-							_snprintf(szCName, 40, "%s_FlagsEx", szSetting);
-							M->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->dwPrivateFlagsEx);
-
-							_snprintf(szCName, 40, "%s_panel", szSetting);
-							M->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->panelHeight);
-
-							_snprintf(szCName, 40, "%s_split", szSetting);
-							M->WriteDword(hContact, SRMSGMOD_T, szCName, pContainer->splitterPos);
+							Utils::WriteContainerSettingsToDB(hContact, pContainer->settings);
 
 							mir_snprintf(szCName, 40, "%s_theme", szSetting);
 							if (lstrlen(pContainer->szRelThemeFile) > 1) {
@@ -2332,31 +2237,14 @@ buttons_done:
 								pContainer->fPrivateThemeChanged = FALSE;
 							}
 
-							if (pContainer->dwFlags & CNT_TITLE_PRIVATE) {
-								mir_snprintf(szCName, 40, "%s_titleformat", szSetting);
-								M->WriteTString(hContact, SRMSGMOD_T, szCName, pContainer->szTitleFormat);
-							}
 						}
 					}
 				}
 				else {
 					pContainer->dwFlags &= ~(CNT_DEFERREDCONFIGURE | CNT_CREATE_MINIMIZED | CNT_DEFERREDSIZEREQUEST | CNT_CREATE_CLONED);
-					_snprintf(szCName, 40, "%s%d_Flags", szSetting, pContainer->iContainerIndex);
-					M->WriteDword(SRMSGMOD_T, szCName, pContainer->dwPrivateFlags);
-					_snprintf(szCName, 40, "%s%d_FlagsEx", szSetting, pContainer->iContainerIndex);
-					M->WriteDword(SRMSGMOD_T, szCName, pContainer->dwPrivateFlagsEx);
-					_snprintf(szCName, 40, "%s%d_Trans", szSetting, pContainer->iContainerIndex);
-					M->WriteDword(SRMSGMOD_T, szCName, pContainer->dwTransparency);
-
-					_snprintf(szCName, 40, "%s%d_panel", szSetting, pContainer->iContainerIndex);
-					M->WriteDword(SRMSGMOD_T, szCName, pContainer->panelHeight);
-
-					_snprintf(szCName, 40, "%s%d_split", szSetting, pContainer->iContainerIndex);
-					M->WriteDword(SRMSGMOD_T, szCName, pContainer->splitterPos);
-
-					if (pContainer->dwFlags & CNT_TITLE_PRIVATE) {
-						mir_snprintf(szCName, 40, "%s%d_titleformat", szSetting, pContainer->iContainerIndex);
-						M->WriteTString(NULL, SRMSGMOD_T, szCName, pContainer->szTitleFormat);
+					if(pContainer->settings->fPrivate) {
+						_snprintf(szCName, 40, "%s%d_Blob", szSetting, pContainer->iContainerIndex);
+						Utils::WriteContainerSettingsToDB(0, pContainer->settings, szCName);
 					}
 					mir_snprintf(szCName, 40, "%s%d_theme", szSetting, pContainer->iContainerIndex);
 					if (lstrlen(pContainer->szRelThemeFile) > 1) {

@@ -211,7 +211,8 @@ public:
 		MUC_SBAR_IDLEFORMAT										= 168,
 		MUC_SBAR_ON_SERVER										= 169,
 		MUC_SBAR_IDLEFORMAT_SHORT								= 170,
-		STR_LAST 												= 171
+		CNT_OPT_TITLE_AVATARS									= 171,
+		STR_LAST 												= 172
 	};
 
 	enum {

@@ -116,7 +116,6 @@
 #define IDC_COLTEXT_MUC                 1043
 #define IDC_COLBACK_MUC                 1044
 #define IDC_SHOWNAMES                   1047
-#define IDC_MSGINDICATOR                1050
 #define IDC_CHKDEFAULTCOL_OTHERS        1050
 #define IDC_COLBACK_OTHERS              1051
 #define IDC_CLOSEONREPLY                1052
@@ -545,6 +544,8 @@
 #define IDC_STATIC_VISIBILTY            1491
 #define IDC_BUTTONTABS                  1492
 #define IDC_CLOSEBUTTONONTABS			1493
+#define IDC_O_STATIC_AVATAR				1501
+#define IDC_O_STATIC_OWNAVATAR			1502
 #define IDC_TXT_TITLE1                  1617
 #define IDC_TXT_TITLE2                  1618
 #define IDC_TXT_TITLE4                  1620

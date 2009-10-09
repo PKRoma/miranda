@@ -48,6 +48,7 @@ public:
 		m_TextPatternString = m_NickPatternString = 0;
 		m_NickPatterns = m_TextPatterns = 0;
 		m_iNickPatterns = m_iTextPatterns = 0;
+		m_dwFlags = 0;
 		init();
 	}
 
@@ -59,7 +60,7 @@ public:
 	void                                    init        ();
 	void                                    cleanup     ();
 	int                                 	match       (const GCEVENT *pgce, const SESSION_INFO *psi,
-														 DWORD dwFlags = MATCH_NICKNAME, const TCHAR *tszAdditional = 0);
+														 DWORD dwFlags, const TCHAR *tszAdditional);
 
 	static INT_PTR CALLBACK                	dlgProc     (HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);		   // option page dlg proc
 	static INT_PTR CALLBACK                	dlgProcAdd  (HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);		   // for the "add to" dialog

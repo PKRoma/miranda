@@ -34,7 +34,7 @@
 
 #include "../src/commonheaders.h"
 
-// #define __HLT_PERFSTATS 1
+#define __HLT_PERFSTATS 1
 
 void CMUCHighlight::cleanup()
 {
@@ -135,7 +135,7 @@ int CMUCHighlight::match(const GCEVENT *pgce, const SESSION_INFO *psi, DWORD dwF
 	if(pgce == 0)
 		return(0);
 
-	if((m_dwFlags & MATCH_TEXT) && (dwFlags & MATCH_TEXT) && m_iTextPatterns > 0 && psi) {
+	if((m_dwFlags & MATCH_TEXT) && (dwFlags & MATCH_TEXT) && m_iTextPatterns > 0 && psi != 0) {
 #ifdef __HLT_PERFSTATS
 		int		words = 0;
 		M->startTimer();
@@ -145,8 +145,9 @@ int CMUCHighlight::match(const GCEVENT *pgce, const SESSION_INFO *psi, DWORD dwF
 		TCHAR  	*p1;
 		UINT	i = 0;
 
-		TCHAR	*tszMe = mir_tstrdup(psi->pMe->pszNick);
-		_tcslwr(tszMe);
+		TCHAR	*tszMe = ((psi && psi->pMe) ? mir_tstrdup(psi->pMe->pszNick) : 0);
+		if(tszMe)
+			_tcslwr(tszMe);
 
 		while(p && !result) {
 			while(*p && (*p == ' ' || *p == ',' || *p == '.' || *p == ':' || *p == ';' || *p == '?' || *p == '!'))
@@ -163,7 +164,7 @@ int CMUCHighlight::match(const GCEVENT *pgce, const SESSION_INFO *psi, DWORD dwF
 					p1 = 0;
 
 				for(i = 0; i < m_iTextPatterns && !result; i++) {
-					if(*(m_TextPatterns[i]) == '%' && *((m_TextPatterns[i]) + 1)  == 'm') {
+					if(*(m_TextPatterns[i]) == '%' && *((m_TextPatterns[i]) + 1)  == 'm' && tszMe) {
 						result = wildmatch(tszMe, p) ? MATCH_TEXT : 0;
 					} else
 						result = wildmatch(m_TextPatterns[i], p) ? MATCH_TEXT : 0;

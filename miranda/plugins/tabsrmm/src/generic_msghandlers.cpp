@@ -69,7 +69,7 @@ void TSAPI DM_InitRichEdit(_MessageWindowData *dat)
 
 	ZeroMemory(&cf2, sizeof(CHARFORMAT2A));
 
-	dat->inputbg = fIsChat ? M->GetDword(FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR) : dat->theme.inputbg;
+	dat->inputbg = fIsChat ? M->GetDword(FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR) : dat->pContainer->theme.inputbg;
 
 	if(!fIsChat) {
 		if (GetWindowTextLengthA(hwndEdit) > 0)
@@ -82,8 +82,8 @@ void TSAPI DM_InitRichEdit(_MessageWindowData *dat)
 	if(fIsChat)
 		LoadLogfont(MSGFONTID_MESSAGEAREA, &lf, &inputcharcolor, FONTMODULE);
 	else {
-		lf = dat->theme.logFonts[MSGFONTID_MESSAGEAREA];
-		inputcharcolor = dat->theme.fontColors[MSGFONTID_MESSAGEAREA];
+		lf = dat->pContainer->theme.logFonts[MSGFONTID_MESSAGEAREA];
+		inputcharcolor = dat->pContainer->theme.fontColors[MSGFONTID_MESSAGEAREA];
 	}
 	/*
 	 * correct the input area text color to avoid a color from the table of usable bbcode colors
@@ -148,7 +148,7 @@ void TSAPI DM_InitRichEdit(_MessageWindowData *dat)
 		pf2.dxStartIndent = 30;
 		pf2.dxRightIndent = 30;
 	}
-	pf2.dxOffset = dat->theme.left_indent + 30;
+	pf2.dxOffset = dat->pContainer->theme.left_indent + 30;
 	if(!fIsChat) {
 		SetWindowText(hwndLog, _T(""));
 		SendMessage(hwndLog, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
@@ -448,7 +448,7 @@ LRESULT TSAPI DM_RecalcPictureSize(_MessageWindowData *dat)
 	HBITMAP hbm;
 
 	if (dat) {
-		hbm = ((dat->Panel->isActive()) && PluginConfig.m_AvatarMode != 5) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
+		hbm = ((dat->Panel->isActive()) && dat->pContainer->avatarMode != 3) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
 
 		if (hbm == 0) {
 			dat->pic.cy = dat->pic.cx = 60;
@@ -781,8 +781,8 @@ void TSAPI DM_OptionsApplied(_MessageWindowData *dat, WPARAM wParam, LPARAM lPar
 	if (wParam == 1)      // 1 means, the message came from message log options page, so reload the defaults...
 		LoadLocalFlags(hwndDlg, dat);
 
-	if (!(dat->dwFlags & MWF_SHOW_PRIVATETHEME))
-		LoadThemeDefaults(dat);
+	if (!(dat->pContainer->theme.isPrivate))
+		LoadThemeDefaults(dat->pContainer);
 
 	LoadTimeZone(dat);
 
@@ -913,7 +913,7 @@ int TSAPI DM_SplitterGlobalEvent(_MessageWindowData *dat, WPARAM wParam, LPARAM 
 	LONG	newPos;
 	_MessageWindowData 	*srcDat = PluginConfig.lastSPlitterPos.pSrcDat;
 	ContainerWindowData *srcCnt = PluginConfig.lastSPlitterPos.pSrcContainer;
-	bool				fCntGlobal = ((dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS) ? true : false);
+	bool				fCntGlobal = (!dat->pContainer->settings->fPrivate ? true : false);
 
 	GetWindowRect(dat->hwnd, &rcWin);
 
@@ -930,7 +930,7 @@ int TSAPI DM_SplitterGlobalEvent(_MessageWindowData *dat, WPARAM wParam, LPARAM 
 
 		if(dat == srcDat) {
 			if(dat->bType == SESSIONTYPE_IM) {
-				dat->pContainer->splitterPos = dat->splitterY;
+				dat->pContainer->settings->splitterPos = dat->splitterY;
 				if(fCntGlobal) {
 					SaveSplitter(dat);
 					if(PluginConfig.lastSPlitterPos.bSync)
@@ -940,7 +940,7 @@ int TSAPI DM_SplitterGlobalEvent(_MessageWindowData *dat, WPARAM wParam, LPARAM 
 			if(dat->bType == SESSIONTYPE_CHAT) {
 				SESSION_INFO *si = dat->si;
 				if(si) {
-					dat->pContainer->splitterPos = si->iSplitterY + DPISCALEY_S(23);
+					dat->pContainer->settings->splitterPos = si->iSplitterY + DPISCALEY_S(23);
 					if(fCntGlobal) {
 						g_Settings.iSplitterY = si->iSplitterY;
 						if(PluginConfig.lastSPlitterPos.bSync)
@@ -953,7 +953,7 @@ int TSAPI DM_SplitterGlobalEvent(_MessageWindowData *dat, WPARAM wParam, LPARAM 
 
 		if(!fCntGlobal && dat->pContainer != srcCnt)
 			return(0);
-		if(!(srcCnt->dwPrivateFlags & CNT_GLOBALSETTINGS) && dat->pContainer != srcCnt)
+		if(srcCnt->settings->fPrivate && dat->pContainer != srcCnt)
 			return(0);
 
 		if(!PluginConfig.lastSPlitterPos.bSync && dat->bType != srcDat->bType)

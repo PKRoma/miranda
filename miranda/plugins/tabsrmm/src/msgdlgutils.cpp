@@ -580,6 +580,8 @@ void TSAPI UpdateReadChars(const _MessageWindowData *dat)
 
 		mir_sntprintf(buf, safe_sizeof(buf), _T("%s%s %d/%d"), szIndicators, dat->lcID, dat->iOpenJobs, len);
 		SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 1, (LPARAM) buf);
+		if(PluginConfig.m_visualMessageSizeIndicator)
+			InvalidateRect(dat->pContainer->hwndStatus, NULL, FALSE);
 	}
 }
 
@@ -644,14 +646,14 @@ void TSAPI HandleIconFeedback(_MessageWindowData *dat, HICON iIcon)
 
 int TSAPI GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
 {
-	BYTE bAvatarMode = PluginConfig.m_AvatarMode;
-	BYTE bOwnAvatarMode = PluginConfig.m_OwnAvatarMode;
+	BYTE bAvatarMode = dat->pContainer->avatarMode;
+	BYTE bOwnAvatarMode = dat->pContainer->ownAvatarMode;
 	char hideOverride = (char)M->GetByte(dat->hContact, "hideavatar", -1);
 	// infopanel visible, consider own avatar display
 
 	dat->showPic = 0;
 
-	if (dat->Panel->isActive() && bAvatarMode != 5) {
+	if (dat->Panel->isActive() && bAvatarMode != 3) {
 		if (bOwnAvatarMode)
 			dat->showPic = FALSE;
 		else {
@@ -675,14 +677,13 @@ int TSAPI GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
 
 		}
 		switch (bAvatarMode) {
-			case 0:
-			case 1:
-				dat->showInfoPic = 1;
-				break;
-			case 4:
+			case 2:
 				dat->showInfoPic = 0;
 				break;
-			case 3: {
+			case 0:
+				dat->showInfoPic = 1;
+				break;
+			case 1: {
 				FLASHAVATAR fa = {0};
 				HBITMAP hbm = ((dat->ace && !(dat->ace->dwFlags & AVS_HIDEONCLIST)) ? dat->ace->hbmPic : 0);
 
@@ -738,12 +739,10 @@ int TSAPI GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
 			case 0:             // globally on
 				dat->showPic = 1;
 				break;
-			case 4:             // globally OFF
+			case 2:             // globally OFF
 				dat->showPic = 0;
 				break;
-			case 5:
 			case 3:             // on, if present
-			case 2:
 			case 1: {
 				FLASHAVATAR fa = {0};
 				HBITMAP hbm = (dat->ace && !(dat->ace->dwFlags & AVS_HIDEONCLIST)) ? dat->ace->hbmPic : 0;
@@ -876,7 +875,7 @@ void TSAPI AdjustBottomAvatarDisplay(_MessageWindowData *dat)
 {
 	if(dat) {
 		bool fInfoPanel = dat->Panel->isActive();
-		HBITMAP hbm = (fInfoPanel && PluginConfig.m_AvatarMode != 5) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
+		HBITMAP hbm = (fInfoPanel && dat->pContainer->avatarMode != 3) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
 		HWND	hwndDlg = dat->hwnd;
 
 		if (PluginConfig.g_FlashAvatarAvail) {
@@ -934,7 +933,7 @@ void TSAPI ShowPicture(_MessageWindowData *dat, BOOL showNewPic)
 		dat->pic.cy = dat->pic.cx = DPISCALEY(60);
 
 	if (showNewPic) {
-		if (dat->Panel->isActive() && PluginConfig.m_AvatarMode != 5) {
+		if (dat->Panel->isActive() && dat->pContainer->avatarMode != 3) {
 			if (!dat->hwndPanelPic) {
 				dat->panelWidth = -1;
 				InvalidateRect(dat->hwnd, NULL, TRUE);
@@ -1071,8 +1070,8 @@ BOOL TSAPI DoRtfToTags(TCHAR * pszText, const _MessageWindowData *dat)
 	 * font
 	 */
 
-	lf = dat->theme.logFonts[MSGFONTID_MESSAGEAREA];
-	color = dat->theme.fontColors[MSGFONTID_MESSAGEAREA];
+	lf = dat->pContainer->theme.logFonts[MSGFONTID_MESSAGEAREA];
+	color = dat->pContainer->theme.fontColors[MSGFONTID_MESSAGEAREA];
 
 	// create an index of colors in the module and map them to
 	// corresponding colors in the RTF color table
@@ -1561,8 +1560,8 @@ void TSAPI SaveSplitter(_MessageWindowData *dat)
 	if (dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE)
 		M->WriteDword(dat->hContact, SRMSGMOD_T, "splitsplity", dat->splitterY);
 	else {
-		if(!(dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS))
-			dat->pContainer->splitterPos = dat->splitterY;
+		if(dat->pContainer->settings->fPrivate)
+			dat->pContainer->settings->splitterPos = dat->splitterY;
 		else
 			M->WriteDword(SRMSGMOD_T, "splitsplity", dat->splitterY);
 	}
@@ -1571,10 +1570,10 @@ void TSAPI SaveSplitter(_MessageWindowData *dat)
 void TSAPI LoadSplitter(_MessageWindowData *dat)
 {
 	if (!(dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE))
-		if(dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS)
+		if(!dat->pContainer->settings->fPrivate)
 			dat->splitterY = (int)M->GetDword("splitsplity", (DWORD) 60);
 		else
-			dat->splitterY = dat->pContainer->splitterPos;
+			dat->splitterY = dat->pContainer->settings->splitterPos;
 	else
 		dat->splitterY = (int)M->GetDword(dat->hContact, "splitsplity", M->GetDword("splitsplity", (DWORD) 70));
 
@@ -1687,7 +1686,7 @@ void TSAPI LoadContactAvatar(_MessageWindowData *dat)
 	else if (dat)
 		dat->ace = NULL;
 
-	if (dat && (!(dat->Panel->isActive()) || PluginConfig.m_AvatarMode == 5)) {
+	if (dat && (!(dat->Panel->isActive()) || dat->pContainer->avatarMode == 3)) {
 		BITMAP bm;
 		dat->iRealAvatarHeight = 0;
 
@@ -1719,7 +1718,7 @@ void TSAPI LoadOwnAvatar(_MessageWindowData *dat)
 		dat->hOwnPic = PluginConfig.g_hbmUnknown;
 		dat->ownAce = NULL;
 	}
-	if (dat->Panel->isActive() && PluginConfig.m_AvatarMode != 5) {
+	if (dat->Panel->isActive() && dat->pContainer->avatarMode != 3) {
 		BITMAP bm;
 
 		dat->iRealAvatarHeight = 0;
@@ -1957,13 +1956,13 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, _Mess
 				return TRUE;
 			}
 		} else  {
-			if (!fInfoPanel || PluginConfig.m_AvatarMode == 5) {
+			if (!fInfoPanel || dat->pContainer->avatarMode == 3) {
 				if (dat->ace)
 					aceFlags = dat->ace->dwFlags;
 			} else if (dat->ownAce)
 				aceFlags = dat->ownAce->dwFlags;
 
-			GetObject((fInfoPanel && PluginConfig.m_AvatarMode != 5) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown), sizeof(bminfo), &bminfo);
+			GetObject((fInfoPanel && dat->pContainer->avatarMode != 3) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown), sizeof(bminfo), &bminfo);
 		}
 
 		GetClientRect(hwndDlg, &rc);
@@ -2059,9 +2058,9 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, _Mess
 				SelectClipRgn(hdcDraw, clipRgn);
 			}
 		}
-		if ((((fInfoPanel && PluginConfig.m_AvatarMode != 5) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown)) && dat->showPic) || bPanelPic) {
+		if ((((fInfoPanel && dat->pContainer->avatarMode != 3) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown)) && dat->showPic) || bPanelPic) {
 			HDC hdcMem = CreateCompatibleDC(dis->hDC);
-			HBITMAP hbmAvatar = bPanelPic ? (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown) : ((fInfoPanel && PluginConfig.m_AvatarMode != 5) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown));
+			HBITMAP hbmAvatar = bPanelPic ? (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown) : ((fInfoPanel && dat->pContainer->avatarMode != 3) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown));
 			HBITMAP hbmMem = 0;
 			if (bPanelPic) {
 				bool	bBorder = CSkin::m_bAvatarBorderType ? true : false;
@@ -2092,8 +2091,6 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, _Mess
 				height_off = ((cy) - (rb.max_height + (bBorder ? 2 : 0))) / 2;
 				rcFrame.top += height_off;
 				rcFrame.bottom += height_off;
-
-				//_DebugTraceA("Panel picture metrics: %d, %d - %f, %f - %d, %d (%d)", cx, cy, dNewWidth, dNewHeight, rcFrame.left, rcFrame.top, dat->panelWidth);
 
 				if(!dat->hwndPanelPic)
 					OffsetRect(&rcClient, -2, 0);
@@ -2193,75 +2190,74 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, _Mess
 	return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
 }
 
-void TSAPI LoadThemeDefaults(_MessageWindowData *dat)
+void TSAPI LoadThemeDefaults(ContainerWindowData *pContainer)
 {
-	int i;
-	char szTemp[40];
-	COLORREF colour;
-	dat->theme.statbg = PluginConfig.crStatus;
-	dat->theme.oldinbg = PluginConfig.crOldIncoming;
-	dat->theme.oldoutbg = PluginConfig.crOldOutgoing;
-	dat->theme.inbg = PluginConfig.crIncoming;
-	dat->theme.outbg = PluginConfig.crOutgoing;
-	dat->theme.bg = PluginConfig.crDefault;
-	dat->theme.hgrid = M->GetDword(FONTMODULE, "hgrid", RGB(224, 224, 224));
-	dat->theme.left_indent = M->GetDword("IndentAmount", 20) * 15;
-	dat->theme.right_indent = M->GetDword("RightIndent", 20) * 15;
-	dat->theme.inputbg = M->GetDword(FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR);
+	int 		i;
+	char 		szTemp[40];
+	COLORREF 	colour;
+	ZeroMemory(&pContainer->theme, sizeof(MessageWindowTheme));
+
+	pContainer->theme.statbg = PluginConfig.crStatus;
+	pContainer->theme.oldinbg = PluginConfig.crOldIncoming;
+	pContainer->theme.oldoutbg = PluginConfig.crOldOutgoing;
+	pContainer->theme.inbg = PluginConfig.crIncoming;
+	pContainer->theme.outbg = PluginConfig.crOutgoing;
+	pContainer->theme.bg = PluginConfig.crDefault;
+	pContainer->theme.hgrid = M->GetDword(FONTMODULE, "hgrid", RGB(224, 224, 224));
+	pContainer->theme.left_indent = M->GetDword("IndentAmount", 20) * 15;
+	pContainer->theme.right_indent = M->GetDword("RightIndent", 20) * 15;
+	pContainer->theme.inputbg = M->GetDword(FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR);
 
 	for (i = 1; i <= 5; i++) {
 		_snprintf(szTemp, 10, "cc%d", i);
 		colour = M->GetDword(szTemp, RGB(224, 224, 224));
 		if (colour == 0)
 			colour = RGB(1, 1, 1);
-		dat->theme.custom_colors[i - 1] = colour;
+		pContainer->theme.custom_colors[i - 1] = colour;
 	}
-	dat->theme.logFonts = logfonts;
-	dat->theme.fontColors = fontcolors;
-	dat->theme.rtfFonts = NULL;
+	pContainer->theme.logFonts = logfonts;
+	pContainer->theme.fontColors = fontcolors;
+	pContainer->theme.rtfFonts = NULL;
+	pContainer->ltr_templates = &LTR_Active;
+	pContainer->rtl_templates = &RTL_Active;
+	pContainer->theme.dwFlags = (M->GetDword("mwflags", MWF_LOG_DEFAULT) & MWF_LOG_ALL);
+	pContainer->theme.isPrivate = false;
 }
 
-void TSAPI LoadOverrideTheme(_MessageWindowData *dat)
+void TSAPI LoadOverrideTheme(ContainerWindowData *pContainer)
 {
-	BOOL bReadTemplates = ((dat->pContainer->ltr_templates == NULL) || (dat->pContainer->rtl_templates == NULL) ||
-						   (dat->pContainer->logFonts == NULL) || (dat->pContainer->fontColors == NULL));
+	ZeroMemory(&pContainer->theme, sizeof(MessageWindowTheme));
 
-	if (lstrlen(dat->pContainer->szAbsThemeFile) > 1) {
-		if (PathFileExists(dat->pContainer->szAbsThemeFile)) {
-			if (CheckThemeVersion(dat->pContainer->szAbsThemeFile) == 0) {
-				LoadThemeDefaults(dat);
+	BOOL bReadTemplates = TRUE; //((pContainer->ltr_templates == NULL) || (pContainer->rtl_templates == NULL) ||
+								   //(pContainer->logFonts == NULL) || (pContainer->fontColors == NULL));
+
+	if (lstrlen(pContainer->szAbsThemeFile) > 1) {
+		if (PathFileExists(pContainer->szAbsThemeFile)) {
+			if (CheckThemeVersion(pContainer->szAbsThemeFile) == 0) {
+				LoadThemeDefaults(pContainer);
 				return;
 			}
-			if (dat->pContainer->ltr_templates == NULL) {
-				dat->pContainer->ltr_templates = (TemplateSet *)malloc(sizeof(TemplateSet));
-				CopyMemory(dat->pContainer->ltr_templates, &LTR_Active, sizeof(TemplateSet));
+			if (pContainer->ltr_templates == NULL) {
+				pContainer->ltr_templates = (TemplateSet *)malloc(sizeof(TemplateSet));
+				CopyMemory(pContainer->ltr_templates, &LTR_Active, sizeof(TemplateSet));
 			}
-			if (dat->pContainer->rtl_templates == NULL) {
-				dat->pContainer->rtl_templates = (TemplateSet *)malloc(sizeof(TemplateSet));
-				CopyMemory(dat->pContainer->rtl_templates, &RTL_Active, sizeof(TemplateSet));
+			if (pContainer->rtl_templates == NULL) {
+				pContainer->rtl_templates = (TemplateSet *)malloc(sizeof(TemplateSet));
+				CopyMemory(pContainer->rtl_templates, &RTL_Active, sizeof(TemplateSet));
 			}
 
-			if (dat->pContainer->logFonts == NULL)
-				dat->pContainer->logFonts = (LOGFONTA *)malloc(sizeof(LOGFONTA) * (MSGDLGFONTCOUNT + 2));
-			if (dat->pContainer->fontColors == NULL)
-				dat->pContainer->fontColors = (COLORREF *)malloc(sizeof(COLORREF) * (MSGDLGFONTCOUNT + 2));
-			if (dat->pContainer->rtfFonts == NULL)
-				dat->pContainer->rtfFonts = (char *)malloc((MSGDLGFONTCOUNT + 2) * RTFCACHELINESIZE);
+			pContainer->theme.logFonts = (LOGFONTA *)malloc(sizeof(LOGFONTA) * (MSGDLGFONTCOUNT + 2));
+			pContainer->theme.fontColors = (COLORREF *)malloc(sizeof(COLORREF) * (MSGDLGFONTCOUNT + 2));
+			pContainer->theme.rtfFonts = (char *)malloc((MSGDLGFONTCOUNT + 2) * RTFCACHELINESIZE);
 
-			dat->ltr_templates = dat->pContainer->ltr_templates;
-			dat->rtl_templates = dat->pContainer->rtl_templates;
-			dat->theme.logFonts = dat->pContainer->logFonts;
-			dat->theme.fontColors = dat->pContainer->fontColors;
-			dat->theme.rtfFonts = dat->pContainer->rtfFonts;
-			ReadThemeFromINI(dat->pContainer->szAbsThemeFile, dat, bReadTemplates ? 0 : 1, THEME_READ_ALL);
-			dat->dwFlags = dat->theme.dwFlags;
-			dat->theme.left_indent *= 15;
-			dat->theme.right_indent *= 15;
-			dat->dwFlags |= MWF_SHOW_PRIVATETHEME;
+			ReadThemeFromINI(pContainer->szAbsThemeFile, pContainer, bReadTemplates ? 0 : 1, THEME_READ_ALL);
+			pContainer->theme.left_indent *= 15;
+			pContainer->theme.right_indent *= 15;
+			pContainer->theme.isPrivate = true;
 			return;
 		}
 	}
-	LoadThemeDefaults(dat);
+	LoadThemeDefaults(pContainer);
 }
 
 void TSAPI ConfigureSmileyButton(_MessageWindowData *dat)
@@ -2476,18 +2472,6 @@ void TSAPI GetMyNick(_MessageWindowData *dat)
 
 HICON TSAPI MY_GetContactIcon(const _MessageWindowData *dat)
 {
-	/*
-	if (dat->bIsMeta) {
-		return(LoadSkinnedProtoIcon(dat->cache->getMetaProto(), dat->cache->getMetaStatus()));
-	}
-
-	if (ServiceExists(MS_CLIST_GETCONTACTICON) && ServiceExists(MS_CLIST_GETICONSIMAGELIST)) {
-		HIMAGELIST iml = (HIMAGELIST)CallService(MS_CLIST_GETICONSIMAGELIST, 0, 0);
-		int index = CallService(MS_CLIST_GETCONTACTICON, (WPARAM)dat->hContact, 0);
-		if (iml && index >= 0)
-			return ImageList_GetIcon(iml, index, ILD_NORMAL);
-	}
-	*/
 	return(LoadSkinnedProtoIcon(dat->cache->getActiveProto(), dat->cache->getActiveStatus()));
 }
 

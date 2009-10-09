@@ -137,7 +137,7 @@ CMenuBar::CMenuBar(HWND hwndParent, const ContainerWindowData *pContainer)
 	}
 
 	::SendMessage(m_hwndToolbar, TB_ADDBUTTONS, sizeof(m_TbButtons)/sizeof(TBBUTTON), (LPARAM)m_TbButtons);
-	::SendMessage(m_hwndToolbar, TB_SETWINDOWTHEME, 0, (LPARAM)L"REBAR");
+
 	m_size_y = HIWORD(::SendMessage(m_hwndToolbar, TB_GETBUTTONSIZE, 0, 0));
 
 	::GetWindowRect(m_hwndToolbar, &Rc);
@@ -693,7 +693,7 @@ LRESULT CALLBACK CMenuBar::MessageHook(int nCode, WPARAM wParam, LPARAM lParam)
 
 static 	int 	tooltip_active = FALSE;
 static 	POINT 	ptMouse = {0};
-RECT 	rcLastStatusBarClick;						// remembers click (down event) point for status bar clicks
+RECT 			rcLastStatusBarClick;		// remembers click (down event) point for status bar clicks
 
 LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -710,6 +710,9 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 			CREATESTRUCT *cs = (CREATESTRUCT *)lParam;
 			LRESULT ret;
 			HWND hwndParent = GetParent(hWnd);
+			/*
+			 * dirty trick to get rid of that annoying sizing gripper
+			 */
 			SetWindowLongPtr(hwndParent, GWL_STYLE, GetWindowLongPtr(hwndParent, GWL_STYLE) & ~WS_THICKFRAME);
 			SetWindowLongPtr(hwndParent, GWL_EXSTYLE, GetWindowLongPtr(hwndParent, GWL_EXSTYLE) & ~WS_EX_APPWINDOW);
 			cs->style &= ~SBARS_SIZEGRIP;
@@ -718,10 +721,7 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 			SetWindowLongPtr(hwndParent, GWL_EXSTYLE, GetWindowLongPtr(hwndParent, GWL_EXSTYLE) | WS_EX_APPWINDOW);
 			return ret;
 		}
-		case WM_COMMAND:
-			if (LOWORD(wParam) == 1001)
-				SendMessage(GetParent(hWnd), DM_SESSIONLIST, 0, 0);
-			break;
+
 		case WM_NCHITTEST: {
 			RECT r;
 			POINT pt;
@@ -739,11 +739,10 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 				return HTTRANSPARENT;
 			break;
 		}
-		case WM_ERASEBKGND: {
-			//if ((pContainer && pContainer->bSkinned) || M->isAero())
-				return 1;
-			break;
-		}
+
+		case WM_ERASEBKGND:
+			return 1;
+
 		case WM_PAINT: {
 			PAINTSTRUCT 	ps;
 			TCHAR 			szText[1024];
@@ -786,9 +785,12 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 			else if(fAero) {
 				FillRect(hdcMem, &rcClient, CSkin::m_BrushBack);
 				CSkin::ApplyAeroEffect(hdcMem, &rcClient, CSkin::AERO_EFFECT_AREA_STATUSBAR);
-			} else
+			} else {
 				FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
-
+				RECT rcFrame = rcClient;
+				InflateRect(&rcFrame, -1, -1);
+				DrawEdge(hdcMem, &rcClient, BDR_RAISEDINNER | BDR_SUNKENOUTER, BF_RECT);
+			}
 			for (i = 0; i < (int)nParts; i++) {
 				SendMessage(hWnd, SB_GETRECT, (WPARAM)i, (LPARAM)&itemRect);
 				if (!item->IGNORED && !fAero && pContainer && CSkin::m_skinEnabled)
@@ -796,6 +798,56 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 
 				if (i == 0)
 					itemRect.left += 2;
+
+				/*
+				 * draw visual message length indicator in the leftmost status bar field
+				 */
+
+				if (PluginConfig.m_visualMessageSizeIndicator && i == 0) {
+					_MessageWindowData* dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+
+					if(dat && dat->bType == SESSIONTYPE_IM) {
+						HBRUSH 	br = CreateSolidBrush(RGB(0, 255, 0));
+						HBRUSH 	brOld = (HBRUSH)SelectObject(hdcMem, br);
+						RECT	rc = itemRect;
+
+						rc.top = rc.bottom - 3;
+						rc.left = 0;
+
+						if (!PluginConfig.m_autoSplit) {
+							float fMax = (float)dat->nMax;
+							float uPercent = (float)dat->textLen / ((fMax / (float)100.0) ? (fMax / (float)100.0) : (float)75.0);
+							float fx = ((float)rc.right / (float)100.0) * uPercent;
+
+							rc.right = (LONG)fx;
+							FillRect(hdcMem, &rc, br);
+						} else {
+							float baselen = (dat->textLen <= dat->nMax) ? (float)dat->textLen : (float)dat->nMax;
+							float fMax = (float)dat->nMax;
+							float uPercent = baselen / ((fMax / (float)100.0) ? (fMax / (float)100.0) : (float)75.0);
+							float fx;
+							LONG  width = rc.right - rc.left;
+							if (dat->textLen >= dat->nMax)
+								rc.right = rc.right / 3;
+							fx = ((float)rc.right / (float)100.0) * uPercent;
+							rc.right = (LONG)fx;
+							FillRect(hdcMem, &rc, br);
+							if (dat->textLen >= dat->nMax) {
+								SelectObject(hdcMem, brOld);
+								DeleteObject(br);
+								br = CreateSolidBrush(RGB(255, 0, 0));
+								brOld = (HBRUSH)SelectObject(hdcMem, br);
+								rc.left = width / 3;
+								rc.right = width;
+								uPercent = (float)dat->textLen / (float)200.0;
+								fx = ((float)(rc.right - rc.left) / (float)100.0) * uPercent;
+								rc.right = rc.left + (LONG)fx;
+								FillRect(hdcMem, &rc, br);
+							}
+						}
+						DeleteObject(br);
+					}
+				}
 
 				height = itemRect.bottom - itemRect.top;
 				width = itemRect.right - itemRect.left;
@@ -844,6 +896,10 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 			return 0;
 		}
 
+		/*
+		 * tell status bar to update the part layout (re-calculate part widths)
+		 * needed when an icon is added to or removed from the icon area
+		 */
 		case WM_USER + 101: {
 			struct _MessageWindowData *dat = (struct _MessageWindowData *)lParam;
 			RECT rcs;
@@ -1069,6 +1125,7 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 				}
 			}
 			break;
+
 		case WM_DESTROY:
 			KillTimer(hWnd, TIMERID_HOVER);
 	}

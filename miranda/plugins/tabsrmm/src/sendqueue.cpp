@@ -668,8 +668,6 @@ void SendQueue::UpdateSaveAndSendButton(_MessageWindowData *dat)
 			dat->dwFlags &= ~MWF_SAVEBTN_SAV;
 		}
 		dat->textLen = len;
-		if (PluginConfig.m_visualMessageSizeIndicator)
-			InvalidateRect(GetDlgItem(hwndDlg, IDC_MSGINDICATOR), NULL, FALSE);
 	}
 }
 

@@ -621,3 +621,71 @@ int Utils::RTFColorToIndex(int iCol)
 	return 0;
 }
 
+/**
+ * read a blob from db into the container settings structure
+ * @param hContact:	contact handle (0 = read global)
+ * @param cs		TContainerSettings* target structure
+ * @return			0 on success, 1 failure (blob does not exist OR is not a valid private setting structure
+ */
+int Utils::ReadContainerSettingsFromDB(const HANDLE hContact, TContainerSettings *cs, const char *szKey)
+{
+	DBVARIANT 	dbv = {0};
+
+	CopyMemory(cs, &PluginConfig.globalContainerSettings, sizeof(TContainerSettings));
+
+	if(0 == DBGetContactSetting(hContact, SRMSGMOD_T, szKey ? szKey : CNT_KEYNAME, &dbv)) {
+		if(dbv.type == DBVT_BLOB && dbv.cpbVal > 0 && dbv.cpbVal <= sizeof(TContainerSettings)) {
+			::CopyMemory((void *)cs, (void *)dbv.pbVal, dbv.cpbVal);
+			::DBFreeVariant(&dbv);
+			if(hContact == 0 && szKey == 0)
+				cs->fPrivate = false;
+			return(0);
+		}
+		cs->fPrivate = false;
+		DBFreeVariant(&dbv);
+		return(1);
+	}
+	else {
+		cs->fPrivate = false;
+		return(1);
+	}
+}
+
+int Utils::WriteContainerSettingsToDB(const HANDLE hContact, TContainerSettings *cs, const char *szKey)
+{
+	DBWriteContactSettingBlob(hContact, SRMSGMOD_T, szKey ? szKey : CNT_KEYNAME, cs, sizeof(TContainerSettings));
+	return(0);
+}
+
+void Utils::SettingsToContainer(ContainerWindowData *pContainer)
+{
+	pContainer->dwFlags 		= pContainer->settings->dwFlags;
+	pContainer->dwFlagsEx 		= pContainer->settings->dwFlagsEx;
+	pContainer->dwTransparency 	= pContainer->settings->dwTransparency;
+	pContainer->avatarMode 		= pContainer->settings->avatarMode;
+	pContainer->ownAvatarMode 	= pContainer->settings->ownAvatarMode;
+}
+
+void Utils::ContainerToSettings(ContainerWindowData *pContainer)
+{
+	pContainer->settings->dwFlags			= pContainer->dwFlags;
+	pContainer->settings->dwFlagsEx			= pContainer->dwFlagsEx;
+	pContainer->settings->dwTransparency	= pContainer->dwTransparency;	pContainer->settings->avatarMode		= pContainer->avatarMode;	pContainer->settings->ownAvatarMode		= pContainer->ownAvatarMode;
+}
+
+void Utils::ReadPrivateContainerSettings(ContainerWindowData *pContainer, bool fForce)
+{
+	char	szCname[50];
+	TContainerSettings csTemp = {0};
+
+	mir_snprintf(szCname, 40, "%s%d_Blob", CNT_BASEKEYNAME, pContainer->iContainerIndex);
+	Utils::ReadContainerSettingsFromDB(0, &csTemp, szCname);
+	if(csTemp.fPrivate || fForce) {
+		if(pContainer->settings == 0 || pContainer->settings == &PluginConfig.globalContainerSettings)
+			pContainer->settings = (TContainerSettings *)malloc(sizeof(TContainerSettings));
+		CopyMemory((void *)pContainer->settings, (void *)&csTemp, sizeof(TContainerSettings));
+		pContainer->settings->fPrivate = true;
+	}
+	else
+		pContainer->settings = &PluginConfig.globalContainerSettings;
+}

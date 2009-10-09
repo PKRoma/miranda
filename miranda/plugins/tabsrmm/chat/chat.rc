@@ -32,9 +32,8 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_SPLITTERX,"Static",SS_ENHMETAFILE,172,23,10,73
     CONTROL         "",IDC_SPLITTERY,"Static",SS_ENHMETAFILE,0,132,251,6
-    CONTROL         "",IDC_CHAT_MESSAGE,RICHEDIT_CLASS, ES_MULTILINE |
-                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN |
-                    WS_VSCROLL | WS_TABSTOP, 0,128,127,12,WS_EX_STATICEDGE
+    CONTROL         "",IDC_CHAT_MESSAGE,RICHEDIT_CLASS,WS_VSCROLL |
+                    WS_TABSTOP | 0x1144,0,128,127,12,WS_EX_STATICEDGE
     CONTROL         "",IDC_CHAT_LOG,RICHEDIT_CLASS,WS_VSCROLL | 0x844,8,23,
                     164,72,WS_EX_STATICEDGE
     LISTBOX         IDC_LIST,182,23,69,73,LBS_MULTIPLESEL | 
@@ -50,8 +49,7 @@ STYLE DS_FIXEDSYS | WS_CHILD | WS_BORDER
 FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "",IDC_STATIC,0,0,211,97
-    LTEXT           "",IDC_ADDHIGHLIGHTTITLE,7,3,
-                    201,12,SS_CENTERIMAGE
+    LTEXT           "",IDC_ADDHIGHLIGHTTITLE,7,3,201,12,SS_CENTERIMAGE
     COMBOBOX        IDC_ADDHIGHLIGHTNAME,17,24,178,17,CBS_DROPDOWN | 
                     CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "You can add the user by user name or his id. Wildcards are allowed and recommended.",
@@ -61,36 +59,36 @@ BEGIN
     EDITTEXT        IDC_ADDHIGHLIGHTEDITLIST,9,18,192,47,ES_AUTOHSCROLL
 END
 
-IDD_FILTER DIALOGEX 0, 0, 201, 126
+IDD_FILTER DIALOG DISCARDABLE  0, 0, 201, 126
 STYLE DS_FIXEDSYS | WS_CHILD | WS_BORDER
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
-    LTEXT           "",IDC_STATIC,0,13,201,111
+    LTEXT           "",IDC_STATIC,0,0,201,124
     LTEXT           "  Show these events",IDC_TEXTO,1,0,91,13,SS_CENTERIMAGE
     CONTROL         "Actions",IDC_1,"Button",BS_AUTO3STATE | WS_TABSTOP,3,13,
-                    82,10
+                    99,10
     CONTROL         "Messages",IDC_2,"Button",BS_AUTO3STATE | WS_TABSTOP,3,
-                    23,82,10
+                    23,99,10
     CONTROL         "Nick changes",IDC_3,"Button",BS_AUTO3STATE | WS_TABSTOP,
-                    3,33,82,10
+                    3,33,99,10
     CONTROL         "Users joining",IDC_4,"Button",BS_AUTO3STATE | 
-                    WS_TABSTOP,3,43,82,10
+                    WS_TABSTOP,3,43,99,10
     CONTROL         "Users leaving",IDC_5,"Button",BS_AUTO3STATE | 
-                    WS_TABSTOP,3,53,82,10
+                    WS_TABSTOP,3,53,99,10
     CONTROL         "Topic changes",IDC_6,"Button",BS_AUTO3STATE | 
-                    WS_TABSTOP,3,63,82,10
+                    WS_TABSTOP,3,63,99,10
     CONTROL         "Status changes",IDC_7,"Button",BS_AUTO3STATE | 
-                    WS_TABSTOP,3,73,82,10
+                    WS_TABSTOP,3,73,99,10
     CONTROL         "Information",IDC_8,"Button",BS_AUTO3STATE | WS_TABSTOP,
-                    3,83,82,10
+                    3,83,99,10
     CONTROL         "Disconnects",IDC_9,"Button",BS_AUTO3STATE | WS_TABSTOP,
-                    3,93,82,10
+                    3,93,99,10
     CONTROL         "User kicks",IDC_10,"Button",BS_AUTO3STATE | WS_TABSTOP,
-                    3,103,82,10
+                    3,103,99,10
     CONTROL         "Notices",IDC_11,"Button",BS_AUTO3STATE | WS_TABSTOP,3,
                     113,82,10
-    LTEXT           "Popup",IDC_TEXTO2,102,0,23,13,SS_CENTERIMAGE
-    LTEXT           "Tray",IDC_TEXTO3,170,0,18,13,SS_CENTERIMAGE
+    CTEXT           "Popup",IDC_TEXTO2,96,0,34,13,SS_CENTERIMAGE
+    CTEXT           "Tray",IDC_TEXTO3,161,0,30,13,SS_CENTERIMAGE
     CONTROL         "",IDC_P1,"Button",BS_AUTO3STATE | WS_TABSTOP,110,13,21,
                     10
     CONTROL         "",IDC_P2,"Button",BS_AUTO3STATE | WS_TABSTOP,110,23,21,

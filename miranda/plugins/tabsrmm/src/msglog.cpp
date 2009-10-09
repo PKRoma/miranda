@@ -473,9 +473,12 @@ static int AppendToBufferWithRTF(int mode, char **buffer, int *cbBufferEnd, int 
 
 static void Build_RTF_Header(char **buffer, int *bufferEnd, int *bufferAlloced, struct _MessageWindowData *dat)
 {
-	COLORREF colour;
-	int      i;
-	char     szTemp[30];
+	COLORREF 		colour;
+	int      		i;
+	char     		szTemp[30];
+	LOGFONTA*		logFonts = dat->pContainer->theme.logFonts;
+	COLORREF*		fontColors = dat->pContainer->theme.fontColors;
+	MessageWindowTheme *theme = &dat->pContainer->theme;
 
 	// rtl
 	if (dat->dwFlags & MWF_LOG_RTL)
@@ -484,12 +487,12 @@ static void Build_RTF_Header(char **buffer, int *bufferEnd, int *bufferAlloced, 
 		AppendToBuffer(buffer, bufferEnd, bufferAlloced, "{\\rtf1\\ansi\\deff0{\\fonttbl");
 
 	for (i = 0; i < MSGDLGFONTCOUNT; i++)
-		AppendToBuffer(buffer, bufferEnd, bufferAlloced, "{\\f%u\\fnil\\fcharset%u %s;}", i, dat->theme.logFonts[i].lfCharSet, dat->theme.logFonts[i].lfFaceName);
-	AppendToBuffer(buffer, bufferEnd, bufferAlloced, "{\\f%u\\fnil\\fcharset%u %s;}", MSGDLGFONTCOUNT, dat->theme.logFonts[i].lfCharSet, "Arial");
+		AppendToBuffer(buffer, bufferEnd, bufferAlloced, "{\\f%u\\fnil\\fcharset%u %s;}", i, logFonts[i].lfCharSet, logFonts[i].lfFaceName);
+	AppendToBuffer(buffer, bufferEnd, bufferAlloced, "{\\f%u\\fnil\\fcharset%u %s;}", MSGDLGFONTCOUNT, logFonts[i].lfCharSet, "Arial");
 
 	AppendToBuffer(buffer, bufferEnd, bufferAlloced, "}{\\colortbl ");
 	for (i = 0; i < MSGDLGFONTCOUNT; i++)
-		AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(dat->theme.fontColors[i]), GetGValue(dat->theme.fontColors[i]), GetBValue(dat->theme.fontColors[i]));
+		AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(fontColors[i]), GetGValue(fontColors[i]), GetBValue(fontColors[i]));
 	if (GetSysColorBrush(COLOR_HOTLIGHT) == NULL)
 		colour = RGB(0, 0, 255);
 	else
@@ -497,26 +500,26 @@ static void Build_RTF_Header(char **buffer, int *bufferEnd, int *bufferAlloced, 
 	AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
 
 	/* OnO: Create incoming and outcoming colours */
-	colour = dat->theme.inbg;
+	colour = theme->inbg;
 	AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
-	colour = dat->theme.outbg;
+	colour = theme->outbg;
 	AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
-	colour = dat->theme.bg;
+	colour = theme->bg;
 	AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
-	colour = dat->theme.hgrid;
+	colour = theme->hgrid;
 	AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
-	colour = dat->theme.oldinbg;
+	colour = theme->oldinbg;
 	AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
-	colour = dat->theme.oldoutbg;
+	colour = theme->oldoutbg;
 	AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
-	colour = dat->theme.statbg;
+	colour = theme->statbg;
 	AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
 
 	// custom template colors...
 
 	for (i = 1; i <= 5; i++) {
 		_snprintf(szTemp, 10, "cc%d", i);
-		colour = dat->theme.custom_colors[i - 1];
+		colour = theme->custom_colors[i - 1];
 		if (colour == 0)
 			colour = RGB(1, 1, 1);
 		AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
@@ -763,7 +766,7 @@ static char *Template_CreateRTFFromDbEvent(struct _MessageWindowData *dat, HANDL
 		_tzset();
 		event_time = *localtime(&final_time);
 	}
-	this_templateset = dbei.flags & DBEF_RTL ? dat->rtl_templates : dat->ltr_templates;
+	this_templateset = dbei.flags & DBEF_RTL ? dat->pContainer->rtl_templates : dat->pContainer->ltr_templates;
 
 	if (fIsStatusChangeEvent)
 		szTemplate = this_templateset->szTemplates[TMPL_STATUSCHG];
@@ -1368,7 +1371,7 @@ void TSAPI StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAp
 	}
 	*/
 
-	rtfFonts = dat->theme.rtfFonts ? dat->theme.rtfFonts : &(rtfFontsGlobal[0][0]);
+	rtfFonts = dat->pContainer->theme.rtfFonts ? dat->pContainer->theme.rtfFonts : &(rtfFontsGlobal[0][0]);
 	now = time(NULL);
 
 	tm_now = *localtime(&now);
@@ -1498,9 +1501,10 @@ void TSAPI StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAp
 
 	if (dat->isAutoRTL & 1) {
 		if (dat->dwFlags & MWF_LOG_INDIVIDUALBKG)
- 			SendMessage(hwndrtf, EM_SETBKGNDCOLOR, 0, LOWORD(dat->iLastEventType) & DBEF_SENT ? (fAppend?dat->theme.outbg:dat->theme.oldoutbg) : (fAppend?dat->theme.inbg:dat->theme.oldinbg));
+ 			SendMessage(hwndrtf, EM_SETBKGNDCOLOR, 0, LOWORD(dat->iLastEventType) & DBEF_SENT ? (fAppend?dat->pContainer->theme.outbg : dat->pContainer->theme.oldoutbg) :
+						(fAppend?dat->pContainer->theme.inbg : dat->pContainer->theme.oldinbg));
 		else
-			SendMessage(hwndrtf, EM_SETBKGNDCOLOR, 0, dat->theme.bg);
+			SendMessage(hwndrtf, EM_SETBKGNDCOLOR, 0, dat->pContainer->theme.bg);
 	}
 
 	if (!(dat->isAutoRTL & 1)) {
@@ -1613,7 +1617,8 @@ static void ReplaceIcons(HWND hwndDlg, struct _MessageWindowData *dat, LONG star
 			}
 			bDirection = trbuffer[1];
 			SendMessage(hwndrtf, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
-			crDefault = cf2.crBackColor == 0 ? (dat->dwFlags & MWF_LOG_INDIVIDUALBKG ? (bDirection == '>' ? (fAppend?dat->theme.outbg:dat->theme.oldoutbg) : (fAppend?dat->theme.inbg:dat->theme.oldinbg)) : dat->theme.bg) : cf2.crBackColor;
+			crDefault = cf2.crBackColor == 0 ? (dat->dwFlags & MWF_LOG_INDIVIDUALBKG ? (bDirection == '>' ? (fAppend ? dat->pContainer->theme.outbg : dat->pContainer->theme.oldoutbg) :
+						(fAppend ? dat->pContainer->theme.inbg : dat->pContainer->theme.oldinbg)) : dat->pContainer->theme.bg) : cf2.crBackColor;
 			CacheIconToBMP(&theIcon, Logicons[bIconIndex], crDefault, dwScale, dwScale);
 			ImageDataInsertBitmap(ole, theIcon.hBmp);
 			DeleteCachedIcon(&theIcon);

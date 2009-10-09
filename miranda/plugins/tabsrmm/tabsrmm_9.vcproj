@@ -1605,6 +1605,7 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							FavorSizeOrSpeed="1"
+							ExceptionHandling="1"
 							UsePrecompiledHeader="0"
 							PrecompiledHeaderThrough="../src/commonheaders.h"
 						/>

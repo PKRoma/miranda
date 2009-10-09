@@ -45,16 +45,13 @@ static void ReloadGlobalContainerSettings(bool fForceReconfig)
 	struct ContainerWindowData *pC = pFirstContainer;
 
 	while (pC) {
-		if (pC->dwPrivateFlags & CNT_GLOBALSETTINGS) {
-			DWORD dwOld = pC->dwFlags;
-			pC->dwFlags = PluginConfig.m_GlobalContainerFlags;
-			pC->dwFlagsEx = PluginConfig.m_GlobalContainerFlagsEx;
+		if (!pC->settings->fPrivate) {
+			Utils::SettingsToContainer(pC);
 			if(fForceReconfig)
 				SendMessage(pC->hwnd, DM_CONFIGURECONTAINER, 0, 0);
 			else
 				SendMessage(pC->hwnd, WM_SIZE, 0, 1);
-			if ((dwOld & CNT_INFOPANEL) != (pC->dwFlags & CNT_INFOPANEL))
-				BroadCastContainer(pC, DM_SETINFOPANEL, 0, 0);
+			BroadCastContainer(pC, DM_SETINFOPANEL, 0, 0);
 		}
 		pC = pC->pNextContainer;
 	}
@@ -74,25 +71,19 @@ void TSAPI ApplyContainerSetting(ContainerWindowData *pContainer, DWORD flags, U
 	bool  isEx = (mode & 0xffff0000) ? true : false;
 	bool  set = (mode & 0x01) ? true : false;
 
-	if (pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS) {
-		if(isEx) {
-			PluginConfig.m_GlobalContainerFlagsEx = (set ? PluginConfig.m_GlobalContainerFlagsEx | flags : PluginConfig.m_GlobalContainerFlagsEx & ~flags);
-			pContainer->dwFlagsEx = PluginConfig.m_GlobalContainerFlagsEx;
-			M->WriteDword(SRMSGMOD_T, "containerflagsEx", PluginConfig.m_GlobalContainerFlagsEx);
-		}
-		else {
-			PluginConfig.m_GlobalContainerFlags = (set ? PluginConfig.m_GlobalContainerFlags | flags : PluginConfig.m_GlobalContainerFlags & ~flags);
-			pContainer->dwFlags = PluginConfig.m_GlobalContainerFlags;
-			M->WriteDword(SRMSGMOD_T, "containerflags", PluginConfig.m_GlobalContainerFlags);
-		}
+	if (!pContainer->settings->fPrivate) {
+		if(!isEx)
+			pContainer->dwFlags = (set ? pContainer->dwFlags | flags : pContainer->dwFlags & ~flags);
+		else
+			pContainer->dwFlagsEx = (set ? pContainer->dwFlagsEx | flags : pContainer->dwFlagsEx & ~flags);
 
+		Utils::ContainerToSettings(pContainer);
 		if (flags & CNT_INFOPANEL)
 			BroadCastContainer(pContainer, DM_SETINFOPANEL, 0, 0);
 		if (flags & CNT_SIDEBAR) {
 			struct ContainerWindowData *pC = pFirstContainer;
 			while (pC) {
-				if (pC->dwPrivateFlags & CNT_GLOBALSETTINGS) {
-					pC->dwFlags = PluginConfig.m_GlobalContainerFlags;
+				if (!pC->settings->fPrivate) {
 					SendMessage(pC->hwnd, WM_COMMAND, IDC_TOGGLESIDEBAR, 0);
 				}
 				pC = pC->pNextContainer;
@@ -102,14 +93,11 @@ void TSAPI ApplyContainerSetting(ContainerWindowData *pContainer, DWORD flags, U
 			ReloadGlobalContainerSettings(fForceResize);
 	}
 	else {
-		if(!isEx) {
-			pContainer->dwPrivateFlags = (set ? pContainer->dwPrivateFlags | flags : pContainer->dwPrivateFlags & ~flags);
-			pContainer->dwFlags = pContainer->dwPrivateFlags;
-		}
-		else {
-			pContainer->dwPrivateFlagsEx = (set ? pContainer->dwPrivateFlagsEx | flags : pContainer->dwPrivateFlagsEx & ~flags);
-			pContainer->dwFlagsEx = pContainer->dwPrivateFlagsEx;
-		}
+		if(!isEx)
+			pContainer->dwFlags = (set ? pContainer->dwFlags | flags : pContainer->dwFlags & ~flags);
+		else
+			pContainer->dwFlagsEx = (set ? pContainer->dwFlagsEx | flags : pContainer->dwFlagsEx & ~flags);
+		Utils::ContainerToSettings(pContainer);
 		if (flags & CNT_SIDEBAR)
 			SendMessage(pContainer->hwnd, WM_COMMAND, IDC_TOGGLESIDEBAR, 0);
 		else
@@ -124,7 +112,7 @@ void TSAPI ApplyContainerSetting(ContainerWindowData *pContainer, DWORD flags, U
 	BroadCastContainer(pContainer, DM_BBNEEDUPDATE, 0, 0);
 }
 
-#define NR_O_PAGES 8
+#define NR_O_PAGES 9
 #define NR_O_OPTIONSPERPAGE 10
 
 static struct _tagPages {
@@ -140,6 +128,7 @@ static struct _tagPages {
 	{ CTranslator::CNT_OPT_TITLE_TITLEBAR, CTranslator::STR_LAST, IDC_O_HIDETITLE, IDC_STATICICON, IDC_USEPRIVATETITLE, IDC_TITLEFORMAT, 0, 0, 0, 0, 0, 0},
 	{ CTranslator::CNT_OPT_TITLE_THEME, CTranslator::CNT_OPT_DESC_THEME, IDC_THEME, IDC_SELECTTHEME, IDC_USEGLOBALSIZE, IDC_SAVESIZEASGLOBAL, IDC_LABEL_PRIVATETHEME, 0, 0, 0, 0, 0},
 	{ CTranslator::CNT_OPT_TITLE_TRANS, CTranslator::CNT_OPT_DESC_TRANS, IDC_TRANSPARENCY, IDC_TRANSPARENCY_ACTIVE, IDC_TRANSPARENCY_INACTIVE, IDC_TLABEL_ACTIVE, IDC_TLABEL_INACTIVE, IDC_TSLABEL_ACTIVE, IDC_TSLABEL_INACTIVE,0, 0, 0},
+	{ CTranslator::CNT_OPT_TITLE_AVATARS, CTranslator::STR_LAST, IDC_O_STATIC_AVATAR, IDC_O_STATIC_OWNAVATAR, IDC_AVATARMODE, IDC_OWNAVATARMODE, 0, 0, 0, 0, 0, 0},
 };
 
 static void ShowPage(HWND hwndDlg, int iPage, BOOL fShow)
@@ -168,8 +157,6 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 		case WM_INITDIALOG: {
 			TCHAR 			szNewTitle[128];
 			ContainerWindowData *pContainer = 0;
-			DWORD 			dwFlags = 0;
-			DWORD 			dwTemp[3];
 			int   			i, j;
 			TVINSERTSTRUCT 	tvis = {0};
 			HTREEITEM 		hItem;
@@ -185,29 +172,40 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			mir_sntprintf(szNewTitle, SIZEOF(szNewTitle), CTranslator::get(CTranslator::CNT_OPT_HEADERBAR), pContainer->szName);
 			SetDlgItemText(hwndDlg, IDC_HEADERBAR, szNewTitle);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_O_HIDETITLE), CSkin::m_frameSkins ? FALSE : TRUE);
-			CheckDlgButton(hwndDlg, IDC_CNTPRIVATE, !(pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS));
+			CheckDlgButton(hwndDlg, IDC_CNTPRIVATE, pContainer->settings->fPrivate ? BST_CHECKED : BST_UNCHECKED);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_TITLEFORMAT), IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE));
-
-			dwTemp[0] = (pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS ? PluginConfig.m_GlobalContainerFlags : pContainer->dwPrivateFlags);
-			dwTemp[1] = pContainer->dwTransparency;
-			dwTemp[2] = (pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS ? PluginConfig.m_GlobalContainerFlagsEx : pContainer->dwPrivateFlagsEx);
 
 			SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::get(CTranslator::CNT_OPT_TABSTOP));
 			SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::get(CTranslator::CNT_OPT_TABSBOTTOM));
 			SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::get(CTranslator::CNT_OPT_TABSLEFT));
 			SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::get(CTranslator::CNT_OPT_TABSRIGHT));
 
+			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1,
+							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_GLOBALLY_ON));
+			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1,
+							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_ON_IF_PRESENT));
+			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1,
+							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_GLOBALLY_OFF));
+			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1,
+							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_ON_ALWAYS_BOTTOM));
+
+			SendDlgItemMessage(hwndDlg, IDC_OWNAVATARMODE, CB_INSERTSTRING, -1,
+							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_ON_IF_PRESENT));
+			SendDlgItemMessage(hwndDlg, IDC_OWNAVATARMODE, CB_INSERTSTRING, -1,
+							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_DONT_SHOW));
+
 			for(i = 0; i < nr_layouts; i++)
 				SendDlgItemMessage(hwndDlg, IDC_SBARLAYOUT, CB_INSERTSTRING, -1, (LPARAM)TranslateTS(sblayouts[i].szName));
 
 			/* bits 24 - 31 of dwFlagsEx hold the side bar layout id */
-			SendDlgItemMessage(hwndDlg, IDC_SBARLAYOUT, CB_SETCURSEL, (WPARAM)((dwTemp[2] & 0xff000000) >> 24), 0);
+			SendDlgItemMessage(hwndDlg, IDC_SBARLAYOUT, CB_SETCURSEL, (WPARAM)((pContainer->settings->dwFlagsEx & 0xff000000) >> 24), 0);
 
-			SendMessage(hwndDlg, DM_SC_INITDIALOG, (WPARAM)0, (LPARAM)dwTemp);
+
+			SendMessage(hwndDlg, DM_SC_INITDIALOG, (WPARAM)0, (LPARAM)pContainer->settings);
 			CheckDlgButton(hwndDlg, IDC_USEPRIVATETITLE, pContainer->dwFlags & CNT_TITLE_PRIVATE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_TITLEFORMAT), IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE));
 			SendDlgItemMessage(hwndDlg, IDC_TITLEFORMAT, EM_LIMITTEXT, TITLE_FORMATLEN - 1, 0);
-			SetDlgItemText(hwndDlg, IDC_TITLEFORMAT, pContainer->szTitleFormat);
+			SetDlgItemText(hwndDlg, IDC_TITLEFORMAT, pContainer->settings->szTitleFormat);
 			SetDlgItemText(hwndDlg, IDC_THEME, pContainer->szRelThemeFile);
 			for (i = 0; i < NR_O_PAGES; i++) {
 				tvis.hParent = NULL;
@@ -276,20 +274,23 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
 				case IDC_CNTPRIVATE: {
-					DWORD dwTemp[3];
 
-					if (IsDlgButtonChecked(hwndDlg, IDC_CNTPRIVATE)) {
-						dwTemp[0] = pContainer->dwPrivateFlags;
-						dwTemp[1] = pContainer->dwTransparency;
-						dwTemp[2] = pContainer->dwPrivateFlagsEx;
-						SendMessage(hwndDlg, DM_SC_INITDIALOG, 0, (LPARAM)dwTemp);
+					if(IsDlgButtonChecked(hwndDlg, IDC_CNTPRIVATE)) {
+						Utils::ReadPrivateContainerSettings(pContainer, true);
+						pContainer->settings->fPrivate = true;
 					}
 					else {
-						dwTemp[2] = PluginConfig.m_GlobalContainerFlagsEx;
-						dwTemp[0] = PluginConfig.m_GlobalContainerFlags;
-						dwTemp[1] = pContainer->dwTransparency;
-						SendMessage(hwndDlg, DM_SC_INITDIALOG, 0, (LPARAM)dwTemp);
+						if(pContainer->settings != &PluginConfig.globalContainerSettings) {
+							char szCname[40];
+							mir_snprintf(szCname, 40, "%s%d_Blob", CNT_BASEKEYNAME, pContainer->iContainerIndex);
+							pContainer->settings->fPrivate = false;
+							DBWriteContactSettingBlob(0, SRMSGMOD_T, szCname, pContainer->settings, sizeof(TContainerSettings));
+							free(pContainer->settings);
+						}
+						pContainer->settings = &PluginConfig.globalContainerSettings;
+						pContainer->settings->fPrivate = false;
 					}
+					SendMessage(hwndDlg, DM_SC_INITDIALOG, 0, (LPARAM)pContainer->settings);
 					goto do_apply;
 				}
 				case IDC_TRANSPARENCY: {
@@ -332,36 +333,21 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				}
 				case IDOK:
 				case IDC_APPLY: {
-					DWORD 	dwNewFlags[2], dwNewTrans = 0;
 
-					SendMessage(hwndDlg, DM_SC_BUILDLIST, 0, (LPARAM)dwNewFlags);
+					SendMessage(hwndDlg, DM_SC_BUILDLIST, 0, (LPARAM)pContainer->settings);
 
-					dwNewTrans = MAKELONG((WORD)SendDlgItemMessage(hwndDlg, IDC_TRANSPARENCY_ACTIVE, TBM_GETPOS, 0, 0), (WORD)SendDlgItemMessage(hwndDlg, IDC_TRANSPARENCY_INACTIVE, TBM_GETPOS, 0, 0));
+					pContainer->settings->dwTransparency = MAKELONG((WORD)SendDlgItemMessage(hwndDlg, IDC_TRANSPARENCY_ACTIVE, TBM_GETPOS, 0, 0),
+							(WORD)SendDlgItemMessage(hwndDlg, IDC_TRANSPARENCY_INACTIVE, TBM_GETPOS, 0, 0));
 
-					if (IsDlgButtonChecked(hwndDlg, IDC_CNTPRIVATE)) {
-						pContainer->dwPrivateFlags = pContainer->dwFlags = (dwNewFlags[0] & ~CNT_GLOBALSETTINGS);
-						pContainer->dwPrivateFlagsEx = pContainer->dwFlagsEx = dwNewFlags[1];
-					}
-					else {
-						PluginConfig.m_GlobalContainerFlags = dwNewFlags[0];
-						PluginConfig.m_GlobalContainerFlagsEx = dwNewFlags[1];
-						pContainer->dwPrivateFlags |= CNT_GLOBALSETTINGS;
-						M->WriteDword(SRMSGMOD_T, "containerflags", dwNewFlags[0]);
-						M->WriteDword(SRMSGMOD_T, "containerflagsEx", dwNewFlags[1]);
-						if (IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENCY)) {
-							PluginConfig.m_GlobalContainerTrans = dwNewTrans;
-							M->WriteDword(SRMSGMOD_T, "containertrans", dwNewTrans);
-						}
-					}
-					if (IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENCY))
-						pContainer->dwTransparency = dwNewTrans;
+					pContainer->settings->avatarMode = (WORD)SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_GETCURSEL, 0, 0);
+					pContainer->settings->ownAvatarMode = (WORD)SendDlgItemMessage(hwndDlg, IDC_OWNAVATARMODE, CB_GETCURSEL, 0, 0);
 
-					if (dwNewFlags[0] & CNT_TITLE_PRIVATE) {
-						GetDlgItemText(hwndDlg, IDC_TITLEFORMAT, pContainer->szTitleFormat, TITLE_FORMATLEN);
-						pContainer->szTitleFormat[TITLE_FORMATLEN - 1] = 0;
+					if (pContainer->settings->dwFlags & CNT_TITLE_PRIVATE) {
+						GetDlgItemText(hwndDlg, IDC_TITLEFORMAT, pContainer->settings->szTitleFormat, TITLE_FORMATLEN);
+						pContainer->settings->szTitleFormat[TITLE_FORMATLEN - 1] = 0;
 					}
 					else
-						_tcsncpy(pContainer->szTitleFormat, PluginConfig.szDefaultTitleFormat, TITLE_FORMATLEN);
+						_tcsncpy(pContainer->settings->szTitleFormat, PluginConfig.szDefaultTitleFormat, TITLE_FORMATLEN);
 
 					pContainer->szRelThemeFile[0] = pContainer->szAbsThemeFile[0] = 0;
 
@@ -384,6 +370,8 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 						pContainer->szRelThemeFile[0] = 0;
 						pContainer->fPrivateThemeChanged = TRUE;
 					}
+
+					Utils::SettingsToContainer(pContainer);
 
 					if (!IsDlgButtonChecked(hwndDlg, IDC_CNTPRIVATE))
 						ReloadGlobalContainerSettings(true);
@@ -417,11 +405,11 @@ do_apply:
 			}
 			break;
 		case DM_SC_INITDIALOG: {
-			DWORD *dwTemp = (DWORD *)lParam;
+			TContainerSettings* cs = (TContainerSettings *)lParam;
 
-			DWORD dwFlags = dwTemp[0];
-			DWORD dwTransparency = dwTemp[1];
-			DWORD dwFlagsEx = dwTemp[2];
+			DWORD dwFlags = cs->dwFlags;
+			DWORD dwTransparency = cs->dwTransparency;
+			DWORD dwFlagsEx = cs->dwFlagsEx;
 			char szBuf[20];
 			int  isTrans;
 			BOOL fAllowTrans = FALSE;
@@ -493,11 +481,15 @@ do_apply:
 			EnableWindow(GetDlgItem(hwndDlg, IDC_DONTREPORTUNFOCUSED2), nen_options.bWindowCheck == 0);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_ALWAYSPOPUPSINACTIVE), nen_options.bWindowCheck == 0);
 
+			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_SETCURSEL, (WPARAM)cs->avatarMode, 0);
+			SendDlgItemMessage(hwndDlg, IDC_OWNAVATARMODE, CB_SETCURSEL, (WPARAM)cs->ownAvatarMode, 0);
+
 			ShowWindow(GetDlgItem(hwndDlg, IDC_O_EXPLAINGLOBALNOTIFY), nen_options.bWindowCheck ? SW_SHOW : SW_HIDE);
 			break;
 		}
 		case DM_SC_BUILDLIST: {
-			DWORD dwNewFlags = 0, *dwOut = (DWORD *)lParam, dwNewFlagsEx = 0;
+			DWORD dwNewFlags = 0, dwNewFlagsEx = 0;
+			TContainerSettings* cs = (TContainerSettings *)lParam;
 
 			dwNewFlags = (IsDlgButtonChecked(hwndDlg, IDC_O_HIDETITLE) ? CNT_NOTITLE : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_O_DONTREPORT) ? CNT_DONTREPORT : 0) |
@@ -547,8 +539,8 @@ do_apply:
 			if (IsDlgButtonChecked(hwndDlg, IDC_O_FLASHDEFAULT))
 				dwNewFlags &= ~(CNT_FLASHALWAYS | CNT_NOFLASH);
 
-			dwOut[0] = dwNewFlags;
-			dwOut[1] = dwNewFlagsEx;
+			cs->dwFlags = dwNewFlags;
+			cs->dwFlagsEx = dwNewFlagsEx;
 			break;
 		}
 		case WM_DESTROY: {

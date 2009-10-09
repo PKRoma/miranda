@@ -149,7 +149,7 @@ const TCHAR* TSAPI	GetThemeFileName			(int iMode);
 void 		TSAPI	LoadLogfontFromINI			(int i, char *szKey, LOGFONTA *lf, COLORREF *colour, const char *szIniFilename);
 int			TSAPI	CheckThemeVersion			(const TCHAR *szIniFilename);
 void		TSAPI	WriteThemeToINI				(const TCHAR *szIniFilename, _MessageWindowData *dat);
-void		TSAPI	ReadThemeFromINI			(const TCHAR *szIniFilename, _MessageWindowData *dat, int noAdvanced, DWORD dwFlags);
+void		TSAPI	ReadThemeFromINI			(const TCHAR *szIniFilename, ContainerWindowData *dat, int noAdvanced, DWORD dwFlags);
 
 // compatibility
 

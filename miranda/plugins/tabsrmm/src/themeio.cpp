@@ -184,13 +184,13 @@ void TSAPI WriteThemeToINI(const TCHAR *szIniFilenameT, struct _MessageWindowDat
 		if (dat == 0)
 			encoded = M->utf8_encodeW(LTR_Active.szTemplates[i]);
 		else
-			encoded = M->utf8_encodeW(dat->ltr_templates->szTemplates[i]);
+			encoded = M->utf8_encodeW(dat->pContainer->ltr_templates->szTemplates[i]);
 		WritePrivateProfileStringA("Templates", TemplateNames[i], encoded, szIniFilename);
 		mir_free(encoded);
 		if (dat == 0)
 			encoded = M->utf8_encodeW(RTL_Active.szTemplates[i]);
 		else
-			encoded = M->utf8_encodeW(dat->rtl_templates->szTemplates[i]);
+			encoded = M->utf8_encodeW(dat->pContainer->rtl_templates->szTemplates[i]);
 		WritePrivateProfileStringA("RTLTemplates", TemplateNames[i], encoded, szIniFilename);
 		mir_free(encoded);
 #else
@@ -208,7 +208,7 @@ void TSAPI WriteThemeToINI(const TCHAR *szIniFilenameT, struct _MessageWindowDat
 		if (dat == 0)
 			WritePrivateProfileStringA("Custom Colors", szTemp, _itoa(M->GetDword(szTemp, 0), szBuf, 10), szIniFilename);
 		else
-			WritePrivateProfileStringA("Custom Colors", szTemp, _itoa(dat->theme.custom_colors[i], szBuf, 10), szIniFilename);
+			WritePrivateProfileStringA("Custom Colors", szTemp, _itoa(dat->pContainer->theme.custom_colors[i], szBuf, 10), szIniFilename);
 	}
 	for (i = 0; i <= 7; i++)
 		WritePrivateProfileStringA("Nick Colors", _itoa(i, szBuf, 10), _itoa(g_Settings.nickColors[i], szTemp, 10), szIniFilename);
@@ -218,7 +218,7 @@ void TSAPI WriteThemeToINI(const TCHAR *szIniFilenameT, struct _MessageWindowDat
 #endif
 }
 
-void TSAPI ReadThemeFromINI(const TCHAR *szIniFilenameT, struct _MessageWindowData *dat, int noAdvanced, DWORD dwFlags)
+void TSAPI ReadThemeFromINI(const TCHAR *szIniFilenameT, ContainerWindowData *dat, int noAdvanced, DWORD dwFlags)
 {
 	char szBuf[512], szTemp[100], szAppname[100];
 	int i, n = 0;

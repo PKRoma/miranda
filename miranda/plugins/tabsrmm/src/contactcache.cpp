@@ -43,6 +43,8 @@ CContactCache::CContactCache(const HANDLE hContact)
 	m_hContact = hContact;
 	m_hSubContact = 0;
 	m_szProto = m_szMetaProto = 0;
+	m_tszProto = 0;
+	m_tszMetaProto[0] = 0;
 	m_wOldStatus = m_wStatus = m_wMetaStatus = ID_STATUS_OFFLINE;
 	m_idleTS = 0;
 	m_Valid = false;
@@ -56,11 +58,20 @@ CContactCache::CContactCache(const HANDLE hContact)
 	if(hContact) {
 		m_szProto = reinterpret_cast<char *>(::CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)m_hContact, 0));
 #if defined(_UNICODE)
-		m_tszProto = mir_a2t(m_szProto);
+		if(m_szProto)
+			m_tszProto = mir_a2t(m_szProto);
 #else
-		m_tszProto = m_szProto;
+		if(m_szProto)
+			m_tszProto = m_szProto;
 #endif
 		initPhaseTwo();
+	}
+	else {
+		m_szProto = C_INVALID_PROTO;
+		m_tszProto = C_INVALID_PROTO_T;
+		m_szAccount = C_INVALID_ACCOUNT;
+		m_isMeta = false;
+		m_Valid = false;
 	}
 }
 
@@ -72,11 +83,12 @@ void CContactCache::initPhaseTwo()
 {
 	PROTOACCOUNT*	acc = 0;
 
-	acc = reinterpret_cast<PROTOACCOUNT *>(::CallService(MS_PROTO_GETACCOUNT, (WPARAM)0, (LPARAM)m_szProto));
-	if(acc && acc->tszAccountName)
-		m_szAccount = acc->tszAccountName;
-	else
-		m_szAccount = 0;
+	m_szAccount = 0;
+	if(m_szProto) {
+		acc = reinterpret_cast<PROTOACCOUNT *>(::CallService(MS_PROTO_GETACCOUNT, (WPARAM)0, (LPARAM)m_szProto));
+		if(acc && acc->tszAccountName)
+			m_szAccount = acc->tszAccountName;
+	}
 
 	m_Valid = (m_szProto != 0 && m_szAccount != 0) ? true : false;
 	if(m_Valid) {

@@ -39,6 +39,18 @@ extern PLUGININFOEX pluginInfo;
 CGlobals 	PluginConfig;
 CGlobals*	pConfig = &PluginConfig;
 
+static TContainerSettings _cnt_default = {
+		false,
+		CNT_FLAGS_DEFAULT,
+		CNT_FLAGSEX_DEFAULT,
+		255,
+		CInfoPanel::DEGRADE_THRESHOLD,
+		60,
+		_T("%n (%s"),
+		1,
+		0
+};
+
 int 		Chat_PreShutdown();
 int 		Chat_ModulesLoaded(WPARAM wp, LPARAM lp);
 int			AvatarChanged(WPARAM wParam, LPARAM lParam);
@@ -282,13 +294,6 @@ void CGlobals::reloadSettings()
 	m_ncm.cbSize = sizeof(NONCLIENTMETRICS);
 	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &m_ncm, 0);
 
-	m_GlobalContainerFlags = 			M->GetDword("containerflags", CNT_FLAGS_DEFAULT);
-	m_GlobalContainerFlagsEx = 			M->GetDword("containerflagsEx", CNT_FLAGSEX_DEFAULT);
-
-	if (!(m_GlobalContainerFlags & CNT_NEWCONTAINERFLAGS))
-		m_GlobalContainerFlags = CNT_FLAGS_DEFAULT;
-	m_GlobalContainerTrans = 			M->GetDword("containertrans", CNT_TRANS_DEFAULT);
-
 	DWORD dwFlags = 					M->GetDword("mwflags", MWF_LOG_DEFAULT);
 
 	m_SendOnShiftEnter = 				(int)M->GetByte("sendonshiftenter", 0);
@@ -313,12 +318,6 @@ void CGlobals::reloadSettings()
 	m_AllowTab =						(int) M->GetByte("tabmode", 0);
 
 	m_WarnOnClose = 					(int)M->GetByte("warnonexit", 0);
-	m_AvatarMode = 						(int)M->GetByte("avatarmode", 0);
-
-	if (m_AvatarMode == 1 || m_AvatarMode == 2)
-		m_AvatarMode = 3;
-
-	m_OwnAvatarMode = 					(int)M->GetByte("ownavatarmode", 0);
 	m_FlashOnClist = 					(int)M->GetByte("flashcl", 0);
 	m_TabAutoClose = 					(int)M->GetDword("tabautoclose", 0);
 	m_AlwaysFullToolbarWidth = 			(int)M->GetByte("alwaysfulltoolbar", 1);
@@ -349,6 +348,10 @@ void CGlobals::reloadSettings()
 	m_ipBackgroundGradientHigh = 		M->GetDword(FONTMODULE, "ipfieldsbgHigh", 0xf0f0f0);
 	m_tbBackgroundHigh = 				M->GetDword(FONTMODULE, "tbBgHigh", 0);
 	m_tbBackgroundLow = 				M->GetDword(FONTMODULE, "tbBgLow", 0);
+
+	::CopyMemory(&globalContainerSettings, &_cnt_default, sizeof(TContainerSettings));
+	Utils::ReadContainerSettingsFromDB(0, &globalContainerSettings);
+	globalContainerSettings.fPrivate = false;
 }
 
 /**
@@ -688,6 +691,12 @@ int CGlobals::OkToExit(WPARAM wParam, LPARAM lParam)
 	}
 	::ModPlus_PreShutdown(wParam, lParam);
 	::SendLater_ClearAll();
+	PluginConfig.globalContainerSettings.fPrivate = false;
+#if defined(_UNICODE)
+	::DBWriteContactSettingBlob(0, SRMSGMOD_T, CNT_KEYNAME, &PluginConfig.globalContainerSettings, sizeof(TContainerSettings));
+#else
+	::DBWriteContactSettingBlob(0, SRMSGMOD_T, CNT_KEYNAME, &PluginConfig.globalContainerSettings, sizeof(TContainerSettings));
+#endif
 	return 0;
 }
 

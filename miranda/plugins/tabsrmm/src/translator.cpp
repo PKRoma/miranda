@@ -211,6 +211,7 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT(", %d %s, %d %s idle"),						/* MUC_SBAR_IDLEFORMAT */
 	LPGENT("%s on %s%s"),								/* MUC_SBAR_ON_SERVER */
 	LPGENT(", %d %s idle"),								/* MUC_SBAR_IDLEFORMAT_SHORT */
+	LPGENT("Contact avatars"),							/* CNT_OPT_TITLE_AVATARS */
 };
 
 /*
@@ -318,7 +319,6 @@ TCHAR* CTranslator::m_OptStrings[OPT_LAST] = {
 	LPGENT("Log formatting"),										/* OPT_TABS_MUC_LOG */
 	LPGENT("Events and filters"),									/* OPT_TABS_MUC_EVENTS */
 	LPGENT("Highlighting"),											/* OPT_TABS_MUC_HIGHLIGHT */
-
 };
 TCHAR* CTranslator::m_translated[STR_LAST];
 TCHAR* CTranslator::m_OptTranslated[OPT_LAST];

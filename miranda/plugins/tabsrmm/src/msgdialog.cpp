@@ -162,6 +162,7 @@ static void ShowPopupMenu(_MessageWindowData *dat, int idFrom, HWND hwndFrom, PO
 		EnableMenuItem(hSubMenu, IDM_PASTEFORMATTED, MF_BYCOMMAND | (dat->SendFormat != 0 ? MF_ENABLED : MF_GRAYED));
 		EnableMenuItem(hSubMenu, ID_EDITOR_PASTEANDSENDIMMEDIATELY, MF_BYCOMMAND | (PluginConfig.m_PasteAndSend ? MF_ENABLED : MF_GRAYED));
 		CheckMenuItem(hSubMenu, ID_EDITOR_SHOWMESSAGELENGTHINDICATOR, MF_BYCOMMAND | (PluginConfig.m_visualMessageSizeIndicator ? MF_CHECKED : MF_UNCHECKED));
+		EnableMenuItem(hSubMenu, ID_EDITOR_SHOWMESSAGELENGTHINDICATOR, MF_BYCOMMAND | (dat->pContainer->hwndStatus ? MF_ENABLED : MF_GRAYED));
 	}
 	CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
 	SendMessage(hwndFrom, EM_EXGETSEL, 0, (LPARAM) & sel);
@@ -254,6 +255,8 @@ static void ShowPopupMenu(_MessageWindowData *dat, int idFrom, HWND hwndFrom, PO
 				M->WriteByte(SRMSGMOD_T, "msgsizebar", (BYTE)PluginConfig.m_visualMessageSizeIndicator);
 				M->BroadcastMessage(DM_CONFIGURETOOLBAR, 0, 0);
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
+				if(dat->pContainer->hwndStatus)
+					RedrawWindow(dat->pContainer->hwndStatus, 0, 0, RDW_INVALIDATE | RDW_UPDATENOW);
 				break;
 			case ID_EDITOR_PASTEANDSENDIMMEDIATELY:
 				HandlePasteAndSend(dat);
@@ -1019,70 +1022,6 @@ static LRESULT CALLBACK AvatarSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, L
 	return CallWindowProc(OldAvatarWndProc, hwnd, msg, wParam, lParam);
 }
 
-static LRESULT CALLBACK MsgIndicatorSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
-
-	switch (msg) {
-		case WM_PAINT: {
-			RECT rc;
-			PAINTSTRUCT ps;
-			HDC dc = BeginPaint(hwnd, &ps);
-
-			GetClientRect(hwnd, &rc);
-
-			if (dat && CSkin::m_skinEnabled) {
-				HPEN hPenOld = (HPEN)SelectObject(dc, CSkin::m_SkinLightShadowPen);
-				Rectangle(dc, 0, 0, rc.right, 2);
-				//SkinDrawBG(hwnd, dat->pContainer->hwnd, dat->pContainer, &rc, dc);
-				SelectObject(dc, hPenOld);
-			} else if (PluginConfig.m_visualMessageSizeIndicator)
-				FillRect(dc, &rc, GetSysColorBrush(COLOR_3DHIGHLIGHT));
-
-			if (PluginConfig.m_visualMessageSizeIndicator) {
-				HBRUSH br = CreateSolidBrush(RGB(0, 255, 0));
-				HBRUSH brOld = (HBRUSH)SelectObject(dc, br);
-				if (!PluginConfig.m_autoSplit) {
-					float fMax = (float)dat->nMax;
-					float uPercent = (float)dat->textLen / ((fMax / (float)100.0) ? (fMax / (float)100.0) : (float)75.0);
-					float fx = ((float)rc.right / (float)100.0) * uPercent;
-
-					rc.right = (LONG)fx;
-					FillRect(dc, &rc, br);
-				} else {
-					float baselen = (dat->textLen <= dat->nMax) ? (float)dat->textLen : (float)dat->nMax;
-					float fMax = (float)dat->nMax;
-					float uPercent = baselen / ((fMax / (float)100.0) ? (fMax / (float)100.0) : (float)75.0);
-					float fx;
-					LONG  width = rc.right;
-					if (dat->textLen >= dat->nMax)
-						rc.right = rc.right / 3;
-					fx = ((float)rc.right / (float)100.0) * uPercent;
-					rc.right = (LONG)fx;
-					FillRect(dc, &rc, br);
-					if (dat->textLen >= dat->nMax) {
-						SelectObject(dc, brOld);
-						DeleteObject(br);
-						br = CreateSolidBrush(RGB(255, 0, 0));
-						brOld = (HBRUSH)SelectObject(dc, br);
-						rc.left = width / 3;
-						rc.right = width;
-						uPercent = (float)dat->textLen / (float)200.0;
-						fx = ((float)(rc.right - rc.left) / (float)100.0) * uPercent;
-						rc.right = rc.left + (LONG)fx;
-						FillRect(dc, &rc, br);
-					}
-				}
-				SelectObject(dc, brOld);
-				DeleteObject(br);
-			}
-			EndPaint(hwnd, &ps);
-			return 0;
-		}
-	}
-	return CallWindowProc(OldSplitterProc, hwnd, msg, wParam, lParam);
-}
-
 LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndParent = GetParent(hwnd);
@@ -1205,7 +1144,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 						RECT rcWin;
 						BYTE bSync = M->GetByte("Chat", "SyncSplitter", 0);
 						DWORD dwOff_IM = 0, dwOff_CHAT = 0;
-						bool  fCntGlobal = (dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS) ? true : false;
+						bool  fCntGlobal = (!dat->pContainer->settings->fPrivate ? true : false);
 
 						dwOff_CHAT = -(2 + (PluginConfig.g_DPIscaleY > 1.0 ? 1 : 0));
 						dwOff_IM = 2 + (PluginConfig.g_DPIscaleY > 1.0 ? 1 : 0);
@@ -1345,9 +1284,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			if (dat->showPic)
 				urc->rcItem.right -= dat->pic.cx + 2;
 			urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
-			if (PluginConfig.m_visualMessageSizeIndicator)
-				urc->rcItem.bottom -= DPISCALEY(2);
-			//mad
 			if (bBottomToolbar&&showToolbar)
 				urc->rcItem.bottom -= DPISCALEY(22);
 			//
@@ -1404,19 +1340,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 				urc->rcItem.top = msgTop - 45 - (bBottomToolbar ? 0 : 28) - ((dat->bNotOnList || dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED) ? 20 : 0);
 			}
 			return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
-		case IDC_MSGINDICATOR:
-			urc->rcItem.right = urc->dlgNewSize.cx;
-			if (dat->showPic)
-				urc->rcItem.right -= dat->pic.cx + 2;
-			if (dat->pContainer->dwFlags & CNT_SIDEBAR)
-				urc->rcItem.left += 9;
- 			if (bBottomToolbar&&showToolbar) {
-				urc->rcItem.bottom -= DPISCALEY(23);
-				urc->rcItem.top -= DPISCALEY(22);
-			}
-			OffsetRect(&urc->rcItem, 0, -1);
-			ShowWindow(GetDlgItem(hwndDlg, IDC_MSGINDICATOR), PluginConfig.m_visualMessageSizeIndicator ? SW_SHOW : SW_HIDE);
-			return RD_ANCHORX_CUSTOM | RD_ANCHORY_BOTTOM;
 	}
 	return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
 }
@@ -1510,10 +1433,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			dat->sendMode |= dat->hContact == 0 ? SMODE_MULTIPLE : 0;
 			dat->sendMode |= M->GetByte(dat->hContact, "no_ack", 0) ? SMODE_NOACK : 0;
 
-			dat->ltr_templates = &LTR_Active;
-			dat->rtl_templates = &RTL_Active;
-			// input history stuff (initialise it..)
-
 			dat->hQueuedEvents = (HANDLE *)malloc(sizeof(HANDLE) * EVENT_QUEUE_SIZE);
 			dat->iEventQueueSize = EVENT_QUEUE_SIZE;
 			dat->iCurrentQueueError = -1;
@@ -1546,13 +1465,11 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 
 			// load log option flags...
-			dat->dwFlags = (M->GetDword("mwflags", MWF_LOG_DEFAULT) & MWF_LOG_ALL);
-
+			dat->dwFlags = dat->pContainer->theme.dwFlags;
 			/*
 			 * consider per-contact message setting overrides
 			 */
 
-			LoadOverrideTheme(dat);
 			if (M->GetDword(dat->hContact, "mwmask", 0)) {
 				if (dat->hContact)
 					LoadLocalFlags(hwndDlg, dat);
@@ -1671,7 +1588,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			OldSplitterProc = (WNDPROC) SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWLP_WNDPROC, (LONG_PTR) SplitterSubclassProc);
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), GWLP_WNDPROC, (LONG_PTR) SplitterSubclassProc);
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWLP_WNDPROC, (LONG_PTR) SplitterSubclassProc);
-			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MSGINDICATOR), GWLP_WNDPROC, (LONG_PTR) MsgIndicatorSubclassProc);
 
 			/*
 			 * load old messages from history (if wanted...)
@@ -1918,7 +1834,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			BITMAP bminfo;
 			RECT rc;
 			int saved = 0;
-			HBITMAP hbm = ((dat->Panel->isActive()) && PluginConfig.m_AvatarMode != 5) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
+			HBITMAP hbm = ((dat->Panel->isActive()) && m_pContainer->avatarMode != 3) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
 
 			if (IsIconic(hwndDlg))
 				break;
@@ -2997,18 +2913,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				*phContact = dat->hContact;
 			return 0;
 		}
-		case DM_QUERYSTATUS: {
-			WORD *wStatus = (WORD *) lParam;
-			if (wStatus)
-				*wStatus = dat->cache->getActiveStatus();
-			return 0;
-		}
-		case DM_QUERYFLAGS: {
-			DWORD *dwFlags = (DWORD *) lParam;
-			if (dwFlags)
-				*dwFlags = dat->dwFlags;
-			return 0;
-		}
 		case DM_CALCMINHEIGHT: {
 			UINT height = 0;
 
@@ -3025,13 +2929,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			if (!(m_pContainer->dwFlags & CNT_NOMENUBAR))
 				height += PluginConfig.m_ncm.iMenuHeight;
 			dat->uMinHeight = height;
-			return 0;
-		}
-		case DM_QUERYMINHEIGHT: {
-			UINT *puMinHeight = (UINT *) lParam;
-
-			if (puMinHeight)
-				*puMinHeight = dat->uMinHeight;
 			return 0;
 		}
 		case DM_UPDATELASTMESSAGE:
@@ -4094,12 +3991,13 @@ quote_from_last:
 						if(SrcDat->bType != SESSIONTYPE_IM && M->GetByte("syncAllPanels", 0) == 0)
 							return(0);
 
-						if(!(dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS) && SrcDat->pContainer != dat->pContainer)
+						if(dat->pContainer->settings->fPrivate && SrcDat->pContainer != dat->pContainer)
 							return(0);
 						dat->panelWidth = -1;
 						dat->Panel->setHeight((LONG)lParam);
 					}
 				}
+				SendMessage(hwndDlg, WM_SIZE, 0, 0);
 			}
 			return(0);
 
@@ -4264,10 +4162,6 @@ quote_from_last:
 				return 0;
 			PlayIncomingSound(m_pContainer, hwndDlg);
 			return 0;
-		case DM_SPLITTEREMERGENCY:
-			dat->splitterY = 150;
-			SendMessage(hwndDlg, WM_SIZE, 0, 0);
-			break;
 		case DM_REFRESHTABINDEX:
 			dat->iTabID = GetTabIndexFromHWND(GetParent(hwndDlg), hwndDlg);
 			return 0;
@@ -4599,7 +4493,6 @@ quote_from_last:
 
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), GWLP_WNDPROC, (LONG_PTR) OldSplitterProc);
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWLP_WNDPROC, (LONG_PTR) OldSplitterProc);
-			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MSGINDICATOR), GWLP_WNDPROC, (LONG_PTR) OldSplitterProc);
 
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWLP_WNDPROC, (LONG_PTR) OldSplitterProc);
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CONTACTPIC), GWLP_WNDPROC, (LONG_PTR) OldAvatarWndProc);

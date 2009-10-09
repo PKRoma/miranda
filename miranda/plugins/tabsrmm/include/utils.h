@@ -37,6 +37,14 @@
 
 #define RTF_CTABLE_DEFSIZE 8
 
+#if defined(_UNICODE)
+	#define		CNT_KEYNAME "CNTW_Def"
+	#define CNT_BASEKEYNAME "CNTW_"
+#else
+	#define		CNT_KEYNAME "CNT_Def"
+	#define CNT_BASEKEYNAME "CNT_"
+#endif
+
 struct TRTFColorTable {
     TCHAR 		szName[10];
     COLORREF 	clr;
@@ -72,7 +80,11 @@ public:
 	static	void 				TSAPI RTF_ColorAdd					(const TCHAR *tszColname, size_t length);
 	static	void 				TSAPI CreateColorMap				(TCHAR *Text);
 	static	int 				TSAPI RTFColorToIndex				(int iCol);
-
+	static	int					TSAPI ReadContainerSettingsFromDB	(const HANDLE hContact, TContainerSettings *cs, const char *szKey = 0);
+	static	int 				TSAPI WriteContainerSettingsToDB	(const HANDLE hContact, TContainerSettings *cs, const char *szKey = 0);
+	static  void 				TSAPI SettingsToContainer			(ContainerWindowData *pContainer);
+	static	void 				TSAPI ContainerToSettings			(ContainerWindowData *pContainer);
+	static	void 				TSAPI ReadPrivateContainerSettings	(ContainerWindowData *pContainer, bool fForce = false);
 public:
 	static	TRTFColorTable*		rtf_ctable;
 	static	int					rtf_ctable_size;

@@ -59,8 +59,8 @@ void CInfoPanel::loadHeight()
 	m_height = M->GetDword(m_dat->hContact, "panelheight", -1);
 
 	if(m_height == -1 || HIWORD(m_height) == 0) {
-		if(!(m_dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS))
-			m_height = m_dat->pContainer->panelHeight;
+		if(m_dat->pContainer->settings->fPrivate)
+			m_height = m_dat->pContainer->settings->panelheight;
 		else
 			m_height = bSync ? m_defaultHeight : (m_isChat ? m_defaultMUCHeight : m_defaultHeight);
 		m_fPrivateHeight = false;
@@ -86,8 +86,8 @@ void CInfoPanel::saveHeight(bool fFlush)
 	if (m_height < 110 && m_height >= MIN_PANELHEIGHT) {          // only save valid panel splitter positions
 		if(!m_fPrivateHeight) {
 			if(!m_isChat || bSync) {
-				if(!(m_dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS))
-					m_dat->pContainer->panelHeight = m_height;
+				if(m_dat->pContainer->settings->fPrivate)
+					m_dat->pContainer->settings->panelheight = m_height;
 				else {
 					PluginConfig.m_panelHeight = m_height;
 					m_defaultHeight = m_height;
@@ -96,8 +96,8 @@ void CInfoPanel::saveHeight(bool fFlush)
 				}
 			}
 			else if(m_isChat && !bSync) {
-				if(!(m_dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS))
-					m_dat->pContainer->panelHeight = m_height;
+				if(m_dat->pContainer->settings->fPrivate)
+					m_dat->pContainer->settings->panelheight = m_height;
 				else {
 					PluginConfig.m_MUCpanelHeight = m_height;
 					m_defaultMUCHeight = m_height;
@@ -128,7 +128,7 @@ void CInfoPanel::setHeight(LONG newHeight, bool fBroadcast)
 
 	if(fBroadcast) {
 		if(!m_fPrivateHeight) {
-			if(m_dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS)
+			if(!m_dat->pContainer->settings->fPrivate)
 				M->BroadcastMessage(DM_SETINFOPANEL, (WPARAM)m_dat, (LPARAM)newHeight);
 			else
 				::BroadCastContainer(m_dat->pContainer, DM_SETINFOPANEL, (WPARAM)m_dat, (LPARAM)newHeight);
@@ -144,7 +144,7 @@ void CInfoPanel::Configure() const
 
 void CInfoPanel::showHide() const
 {
-	HBITMAP hbm = (m_active && PluginConfig.m_AvatarMode != 5) ? m_dat->hOwnPic : (m_dat->ace ? m_dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
+	HBITMAP hbm = (m_active && m_dat->pContainer->avatarMode != 3) ? m_dat->hOwnPic : (m_dat->ace ? m_dat->ace->hbmPic : PluginConfig.g_hbmUnknown);
 	BITMAP 	bm;
 	HWND	hwndDlg = m_dat->hwnd;
 
@@ -950,7 +950,7 @@ INT_PTR CALLBACK CInfoPanel::ConfigDlgProc(HWND hwnd, UINT msg, WPARAM wParam, L
 
 			::CheckDlgButton(hwnd, IDC_NOSYNC, M->GetByte("syncAllPanels", 0) ? BST_UNCHECKED : BST_CHECKED);
 
-			::ShowWindow(GetDlgItem(hwnd, IDC_IPCONFIG_PRIVATECONTAINER), m_dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS ? SW_HIDE : SW_SHOW);
+			::ShowWindow(GetDlgItem(hwnd, IDC_IPCONFIG_PRIVATECONTAINER), m_dat->pContainer->settings->fPrivate ? SW_SHOW : SW_HIDE);
 
 			if(!m_isChat) {
 				v = M->GetByte(m_dat->hContact, SRMSGMOD_T, "hideavatar", -1);
@@ -1064,12 +1064,12 @@ INT_PTR CALLBACK CInfoPanel::ConfigDlgProc(HWND hwnd, UINT msg, WPARAM wParam, L
 					M->WriteByte(SRMSGMOD_T, "syncAllPanels", ::IsDlgButtonChecked(hwnd, IDC_NOSYNC) ? 0 : 1);
 					if(!IsDlgButtonChecked(hwnd, IDC_NOSYNC)) {
 						loadHeight();
-						if(m_dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS)
+						if(!m_dat->pContainer->settings->fPrivate)
 							M->BroadcastMessage(DM_SETINFOPANEL, (WPARAM)m_dat, (LPARAM)m_defaultHeight);
 						else
 							::BroadCastContainer(m_dat->pContainer, DM_SETINFOPANEL, (WPARAM)m_dat, (LPARAM)m_defaultHeight);
 					} else {
-						if(m_dat->pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS)
+						if(!m_dat->pContainer->settings->fPrivate)
 							M->BroadcastMessage(DM_SETINFOPANEL, (WPARAM)m_dat, 0);
 						else
 							::BroadCastContainer(m_dat->pContainer,DM_SETINFOPANEL, (WPARAM)m_dat, 0);

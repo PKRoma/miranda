@@ -289,14 +289,9 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			break;
 		case WM_CTLCOLOREDIT:
 		case WM_CTLCOLORSTATIC:
-			if ((HWND)lParam == GetDlgItem(hwndDlg, IDC_BUILDTIME)
-					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_COPYRIGHT)
-					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_SUPPORT)) {
-				SetTextColor((HDC)wParam, RGB(0, 0, 0));
-				SetBkColor((HDC)wParam, RGB(255, 255, 255));
-				return (INT_PTR)GetStockObject(WHITE_BRUSH);
-			}
-			break;
+			SetTextColor((HDC)wParam, RGB(60, 60, 150));
+			SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
+			return (INT_PTR)GetSysColorBrush(COLOR_WINDOW);
 		default:
 			break;
 	}

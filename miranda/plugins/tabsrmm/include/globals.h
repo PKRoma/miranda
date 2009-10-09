@@ -122,7 +122,6 @@ public:
 	int         m_MsgTimeout;
 	int         m_EscapeCloses;
 	int         m_WarnOnClose;
-	int         m_AvatarMode, m_OwnAvatarMode;
 	int         m_FlashOnClist;
 	int         m_TabAutoClose;
 	int         m_AlwaysFullToolbarWidth;
@@ -156,8 +155,6 @@ public:
 	struct      myTabCtrl tabConfig;
 	int         m_panelHeight, m_MUCpanelHeight;
 	TCHAR       szDefaultTitleFormat[256];
-	DWORD       m_GlobalContainerFlags, m_GlobalContainerFlagsEx;
-	DWORD       m_GlobalContainerTrans;
 	WINDOWPLACEMENT m_GlobalContainerWpos;
 	int         m_IdleDetect;
 	int         m_smcxicon, m_smcyicon;
@@ -191,15 +188,17 @@ public:
 	HANDLE		m_hMenuItem;
 
 	TSplitterBroadCast 		lastSPlitterPos;
-	static HANDLE			m_event_FoldersChanged;
-	static  CContactCache*	getContactCache(const HANDLE hContact);
-	static	void			cacheUpdateMetaChanged();
-	static  void 			logStatusChange(const CContactCache *c);
+	TContainerSettings		globalContainerSettings;
 
-	static  void 			 Ex_CopyEditToClipboard(HWND hWnd);
-	static  void 			 Ex_Handler();
-	static 	int				 Ex_ShowDialog(EXCEPTION_POINTERS *ep, const char *szFile, int line);
-	static  INT_PTR CALLBACK Ex_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static HANDLE					m_event_FoldersChanged;
+	static  CContactCache*			getContactCache(const HANDLE hContact);
+	static	void					cacheUpdateMetaChanged();
+	static  void 					logStatusChange(const CContactCache *c);
+
+	static  void 			 		Ex_CopyEditToClipboard(HWND hWnd);
+	static  void 			 		Ex_Handler();
+	static 	int				 		Ex_ShowDialog(EXCEPTION_POINTERS *ep, const char *szFile, int line);
+	static  INT_PTR CALLBACK 		Ex_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 private:
 	bool				m_TypingSoundAdded;
 	static HANDLE		m_event_ModulesLoaded, m_event_PrebuildMenu, m_event_SettingChanged;
