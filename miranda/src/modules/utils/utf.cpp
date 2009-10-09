@@ -95,8 +95,10 @@ static char* Ucs2toUtf8( const wchar_t* in, char* out )
 char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 )
 {
 	size_t len; 
-    bool needs_free = false;
+	bool needs_free = false;
 	wchar_t* tempBuf = NULL;
+	if ( ucs2 )
+		*ucs2 = NULL;
 
 	if ( str == NULL )
 		return NULL;
