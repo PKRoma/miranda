@@ -251,7 +251,7 @@ static int RenameGroupWithMove(int groupId, const TCHAR *szName, int move)
 	_itoa(groupId, idstr, 10);
 	if (DBGetContactSettingTString(NULL, "CListGroups", idstr, &dbv))
 		return 1;
-	str[0] = dbv.pszVal[0];
+	str[0] = dbv.pszVal[0] & 0x7F;
 	lstrcpyn(oldName, dbv.ptszVal + 1, SIZEOF(oldName));
 	DBFreeVariant(&dbv);
 	lstrcpyn(str + 1, szName, SIZEOF(str) - 1);

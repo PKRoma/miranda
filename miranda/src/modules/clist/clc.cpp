@@ -424,15 +424,15 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 					szFullName[nameLen] = '\\';
 				}
 
-				if ( dbcws->value.type == DBVT_ASCIIZ )
-				#if defined( UNICODE )
-				{	WCHAR* wszGrpName = a2u(dbcws->value.pszVal+1);
-					eq = !lstrcmp( szFullName, wszGrpName );
-					mir_free( wszGrpName );
+				if ( dbcws->value.type == DBVT_ASCIIZ ) {
+					#if defined( UNICODE )
+						WCHAR* wszGrpName = a2u(dbcws->value.pszVal+1);
+						eq = !lstrcmp( szFullName, wszGrpName );
+						mir_free( wszGrpName );
+					#else
+						eq = !lstrcmp( szFullName, dbcws->value.pszVal+1 );
+					#endif
 				}
-				#else
-					eq = !lstrcmp( szFullName, dbcws->value.pszVal+1 );
-				#endif
 				else {
 					char* szGrpName = NEWSTR_ALLOCA(dbcws->value.pszVal+1);
 					#if defined( UNICODE )
@@ -440,7 +440,6 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 						Utf8Decode(szGrpName, &wszGrpName );
 						eq = !lstrcmp( szFullName, wszGrpName );
 						mir_free( wszGrpName );
-
 					#else
 						Utf8Decode(szGrpName, NULL);
 						eq = !lstrcmp( szFullName, szGrpName );
