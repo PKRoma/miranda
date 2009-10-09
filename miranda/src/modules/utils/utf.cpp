@@ -249,18 +249,18 @@ int Utf8toUcs2(const char *src, int srclen, wchar_t *dst, int dstlen)
 char* Utf8DecodeCP(char* str, int codepage, wchar_t** ucs2)
 {
 	int len; 
-    bool needs_free = false;
+	bool needs_free = false;
 	wchar_t* tempBuf = NULL;
+	if ( ucs2 )
+		*ucs2 = NULL;
 
-	if (str == NULL) 
+	if (str == NULL)
 		return NULL;
 
 	len = (int)strlen(str);
 
-	if (len < 2) 
-	{
-		if (ucs2 != NULL) 
-		{
+	if (len < 2) {
+		if (ucs2 != NULL) {
 			*ucs2 = tempBuf = (wchar_t*)mir_alloc((len + 1) * sizeof(wchar_t));
 			MultiByteToWideChar(codepage, 0, str, len, tempBuf, len);
 			tempBuf[len] = 0;
@@ -269,10 +269,10 @@ char* Utf8DecodeCP(char* str, int codepage, wchar_t** ucs2)
 	}
 
 	int destlen = Utf8toUcs2Len(str, len);
-	if (destlen < 0) return NULL;
+	if (destlen < 0)
+		return NULL;
 
-	if (ucs2 == NULL) 
-	{
+	if (ucs2 == NULL) {
 		__try
 		{
 			tempBuf = (wchar_t*)alloca((destlen + 1) * sizeof(wchar_t));
@@ -284,12 +284,12 @@ char* Utf8DecodeCP(char* str, int codepage, wchar_t** ucs2)
 		}
 	}
 
-	if (tempBuf == NULL)
-	{
+	if ( tempBuf == NULL ) {
 		tempBuf = (wchar_t*)mir_alloc((destlen + 1) * sizeof(wchar_t));
-		if (tempBuf == NULL) return NULL;
+		if ( tempBuf == NULL )
+			return NULL;
 	}
-	
+
 	Utf8toUcs2(str, len, tempBuf, destlen); 
 	tempBuf[destlen] = 0;
 	WideCharToMultiByte(codepage, 0, tempBuf, -1, str, len + 1, "?", NULL);
