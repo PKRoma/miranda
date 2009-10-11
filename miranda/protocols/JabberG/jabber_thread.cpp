@@ -459,6 +459,7 @@ LBL_FatalError:
 				SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )TranslateT( "Error: Cannot connect to the server" ));
 			}
 			mir_free( buffer );
+			info->close();
 			Log( "Thread ended, SSL connection failed" );
 			goto LBL_FatalError;
 	}	}
