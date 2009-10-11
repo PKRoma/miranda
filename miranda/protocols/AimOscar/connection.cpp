@@ -45,7 +45,11 @@ HANDLE CAimProto::aim_connect(const char* server, unsigned short port, bool use_
 		NETLIBSSL ssl = {0};
 		ssl.cbSize = sizeof(ssl);
 		ssl.host = host;
-		CallService(MS_NETLIB_STARTSSL, (WPARAM)con, (LPARAM)&ssl);
+		if (!CallService(MS_NETLIB_STARTSSL, (WPARAM)con, (LPARAM)&ssl))
+		{
+			Netlib_CloseHandle(con);
+			con = NULL;
+		}
 	}
 	return con;
 }
