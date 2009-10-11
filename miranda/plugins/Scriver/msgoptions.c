@@ -81,8 +81,8 @@ static fontOptionsList[] = {
 	{LPGENT("Notices"), RGB(90, 90, 160), _T("Arial"), 0, -12, LPGENT("Incoming background")},
 	{LPGENT("Outgoing URL"), RGB(0, 0, 255), _T("Arial"), 0, -12, LPGENT("Outgoing background")},
 	{LPGENT("Incoming URL"), RGB(0, 0, 255), _T("Arial"), 0, -12, LPGENT("Incoming background")},
-	{LPGENT("Infobar contact name"), RGB(0, 0, 0), _T("Arial"), FONTF_BOLD, -16, LPGENT("Infobar background")},
-	{LPGENT("Infobar status message"), RGB(50, 50, 50), _T("Arial"), FONTF_ITALIC, -10, LPGENT("Infobar background")}
+	{LPGENT("Infobar contact name"), RGB(0, 0, 0), _T("Arial"), FONTF_BOLD, -19, LPGENT("Infobar background")},
+	{LPGENT("Infobar status message"), RGB(50, 50, 50), _T("Arial"), FONTF_ITALIC, -11, LPGENT("Infobar background")}
 };
 
 int fontOptionsListSize = SIZEOF(fontOptionsList);
@@ -92,15 +92,15 @@ struct ColourOptionsList
 	TCHAR *szName;
 	char *szSettingName;
 	COLORREF defColour;
-	BOOL isWindowColor;
+	int systemColor;
 }
 
 static colourOptionsList[] = {
-	{LPGENT("Background"), SRMSGSET_BKGCOLOUR, TRUE},
-	{LPGENT("Input area background"), SRMSGSET_INPUTBKGCOLOUR, TRUE},
-	{LPGENT("Incoming background"), SRMSGSET_INCOMINGBKGCOLOUR, TRUE},
-	{LPGENT("Outgoing background"), SRMSGSET_OUTGOINGBKGCOLOUR, TRUE},
-	{LPGENT("Infobar background"), SRMSGSET_INFOBARBKGCOLOUR, RGB(130, 140, 170)},
+	{LPGENT("Background"), SRMSGSET_BKGCOLOUR, 0, COLOR_WINDOW},
+	{LPGENT("Input area background"), SRMSGSET_INPUTBKGCOLOUR, 0, COLOR_WINDOW},
+	{LPGENT("Incoming background"), SRMSGSET_INCOMINGBKGCOLOUR, 0, COLOR_WINDOW},
+	{LPGENT("Outgoing background"), SRMSGSET_OUTGOINGBKGCOLOUR, 0, COLOR_WINDOW},
+	{LPGENT("Infobar background"), SRMSGSET_INFOBARBKGCOLOUR, 0, COLOR_3DLIGHT},
 };
 
 
@@ -217,8 +217,8 @@ void RegisterFontServiceFonts() {
 	for (i = 0; i < SIZEOF(colourOptionsList); i++) {
 		cid.order = i;
 		_tcsncpy(cid.name, colourOptionsList[i].szName, SIZEOF(cid.name));
-		if (colourOptionsList[i].isWindowColor) {
-			cid.defcolour = GetSysColor(COLOR_WINDOW);
+		if (colourOptionsList[i].systemColor != -1) {
+			cid.defcolour = GetSysColor(colourOptionsList[i].systemColor);
 		} else {
 			cid.defcolour = colourOptionsList[i].defColour;
 		}

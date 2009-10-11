@@ -34,9 +34,7 @@ void SetupInfobar(InfobarWindowData* idat) {
     LOGFONT lf;
     DWORD colour = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_INFOBARBKGCOLOUR, SRMSGDEFSET_INFOBARBKGCOLOUR);
     SendDlgItemMessage(hwnd, IDC_INFOBAR_NAME, EM_SETBKGNDCOLOR, 0, colour);
-    colour = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_INFOBARBKGCOLOUR, SRMSGDEFSET_INFOBARBKGCOLOUR);
     SendDlgItemMessage(hwnd, IDC_INFOBAR_STATUS, EM_SETBKGNDCOLOR, 0, colour);
-    //InvalidateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, FALSE);
     LoadMsgDlgFont(MSGFONTID_INFOBAR_NAME, &lf, &colour);
     cf2.dwMask = CFM_COLOR | CFM_FACE | CFM_CHARSET | CFM_SIZE | CFM_WEIGHT | CFM_BOLD | CFM_ITALIC;
     cf2.cbSize = sizeof(cf2);
@@ -79,7 +77,8 @@ void RefreshInfobar(InfobarWindowData* idat) {
     SendMessage(GetDlgItem(hwnd, IDC_INFOBAR_NAME), EM_SETTEXTEX, (WPARAM) &st, (LPARAM)szContactName);
     SendMessage(GetDlgItem(hwnd, IDC_INFOBAR_STATUS), EM_SETTEXTEX, (WPARAM) &st, (LPARAM)szContactStatusMsg);
 	SendMessage(hwnd, WM_SIZE, 0, 0);
-	RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
+	InvalidateRect(hwnd, NULL, TRUE);
+	//RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
 	RedrawWindow(GetDlgItem(hwnd, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
 	mir_free(szContactStatusMsg);
 	mir_free(szContactName);
@@ -170,8 +169,7 @@ static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 			case EN_MSGFILTER:
 				switch (((MSGFILTER *) lParam)->msg) {
 				case WM_CHAR:
-					SetFocus(GetDlgItem(GetParent(hwnd), IDC_MESSAGE));
-					SendMessage(GetDlgItem(GetParent(hwnd), IDC_MESSAGE), ((MSGFILTER *) lParam)->msg, ((MSGFILTER *) lParam)->wParam, ((MSGFILTER *) lParam)->lParam);
+					SendMessage(GetParent(hwnd), ((MSGFILTER *) lParam)->msg, ((MSGFILTER *) lParam)->wParam, ((MSGFILTER *) lParam)->lParam);
 					SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
 					return TRUE;
 				case WM_LBUTTONUP:
@@ -183,9 +181,9 @@ static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 						SendDlgItemMessage(hwnd, pNmhdr->idFrom, WM_COPY, 0, 0);
 						sel.cpMin = sel.cpMax ;
 						SendDlgItemMessage(hwnd, pNmhdr->idFrom, EM_EXSETSEL, 0, (LPARAM) & sel);
-						SetFocus(GetDlgItem(GetParent(hwnd), IDC_MESSAGE));
 						bWasCopy = TRUE;
 					}
+					SetFocus(GetParent(hwnd));
 				}
 			}
 			break;
@@ -259,6 +257,16 @@ static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 	case WM_LBUTTONDOWN:
 		SendMessage(idat->mwd->hwnd, WM_LBUTTONDOWN, wParam, lParam);
 		return TRUE;
+	case WM_RBUTTONUP:
+		{
+			POINT pt;
+			HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) idat->mwd->windowData.hContact, 0);
+			GetCursorPos(&pt);
+			TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, GetParent(hwnd), NULL);
+			DestroyMenu(hMenu);
+		}
+		break;
+
 	}
 	return FALSE;
 }
@@ -268,6 +276,7 @@ InfobarWindowData *CreateInfobar(HWND hParent, struct MessageWindowData *dat)
 	InfobarWindowData *idat = (InfobarWindowData *) mir_alloc(sizeof(InfobarWindowData));
 	idat->mwd = dat;
 	CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_INFOBAR), hParent, InfobarWndProc, (LPARAM)idat);
+	RichUtil_SubClass(idat->hWnd);
 	SetWindowPos(idat->hWnd, HWND_TOP, 0, 0, 0, 0, SWP_HIDEWINDOW | SWP_NOSIZE | SWP_NOREPOSITION);
 	return idat;
 }

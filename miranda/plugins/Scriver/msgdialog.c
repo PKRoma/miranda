@@ -626,7 +626,7 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 	logY = infobarHeight;
 	logH = h-hSplitterPos-toolbarHeight - infobarHeight;
 	hdwp = BeginDeferWindowPos(15);
-	hdwp = DeferWindowPos(hdwp, dat->infobarData->hWnd, 0, 0, 0, w, infobarHeight, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, dat->infobarData->hWnd, 0, 1, 1, w - 2, infobarHeight - 3, SWP_NOZORDER);
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_LOG), 0, 1, logY, w-2, logH, SWP_NOZORDER);
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 1, h - hSplitterPos + SPLITTER_HEIGHT, messageEditWidth, hSplitterPos - SPLITTER_HEIGHT - 1, SWP_NOZORDER);
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_AVATAR), 0, w-avatarWidth - 1, h - (avatarHeight + avatarWidth) / 2 - 1, avatarWidth, avatarWidth, SWP_NOZORDER);
@@ -1903,81 +1903,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
 				if (dis->hwndItem == (HWND)hToolbarMenu) {
 					return DrawMenuItem(wParam, lParam);
-				} else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_INFOBAR)) {
-					RECT rect;
-					HPEN pen;
-					HBRUSH brush;
-					HDC hdcMem = CreateCompatibleDC(dis->hDC);
-					int avatarWidth = 0;
-					int avatarHeight = 0;
-					int itemWidth = dis->rcItem.right - dis->rcItem.left + 1;
-					int itemHeight = dis->rcItem.bottom - dis->rcItem.top + 1;
-					HBITMAP hbmMem = CreateCompatibleBitmap(dis->hDC, itemWidth, itemHeight);
-					int iconWidth = 32;//GetSystemMetrics(SM_CXSMICON);
-					int iconHeight = 32;//GetSystemMetrics(SM_CYSMICON);
-					TCHAR *szContactName = GetNickname(dat->windowData.hContact, dat->szProto);
-					TCHAR *szContactStatusMsg = DBGetStringT(dat->windowData.hContact, "CList", "StatusMsg");
-					HFONT hOldFont = SelectObject(hdcMem, g_dat->hContactNameFont);
-					hbmMem = (HBITMAP) SelectObject(hdcMem, hbmMem);
-
-					rect.top = 0;
-					rect.left = 0;
-					rect.right = itemWidth - 1;
-					rect.bottom = itemHeight - 1;
-					//FillRect(hdcMem, &rect, g_dat->hInfobarBrush);
-					pen = SelectObject(hdcMem, g_dat->hInfobarPen);
-					brush = SelectObject(hdcMem, g_dat->hInfobarBrush);
-					Rectangle(hdcMem, rect.left, rect.top, rect.right, rect.bottom);
-
-					SetBkMode(hdcMem, TRANSPARENT);
-					if (dat->statusIcon != NULL) {
-				//		DrawIconEx(hdcMem, 3, rect.top + 10, dat->statusIcon, iconWidth, iconHeight, 0, NULL, DI_NORMAL);
-					}
-					if (dat->avatarPic && (g_dat->flags&SMF_AVATAR)) {
-						BITMAP bminfo;
-						GetObject(dat->avatarPic, sizeof(bminfo), &bminfo);
-						if ( bminfo.bmWidth != 0 && bminfo.bmHeight != 0 ) {
-							AVATARDRAWREQUEST adr;
-							avatarHeight = INFO_BAR_AVATAR_HEIGHT;
-							avatarWidth = bminfo.bmWidth * avatarHeight / bminfo.bmHeight;
-							if (avatarWidth > INFO_BAR_AVATAR_HEIGHT) {
-								avatarWidth = INFO_BAR_AVATAR_HEIGHT;
-								avatarHeight = bminfo.bmHeight * avatarWidth / bminfo.bmWidth;
-							}
-							ZeroMemory(&adr, sizeof(adr));
-							adr.cbSize = sizeof (AVATARDRAWREQUEST);
-							adr.hContact = dat->windowData.hContact;
-							adr.hTargetDC = hdcMem;
-							adr.rcDraw.left = itemWidth - avatarWidth - 2;
-							adr.rcDraw.top = 1;
-							adr.rcDraw.right = itemWidth - 2;
-							adr.rcDraw.bottom = avatarHeight - 1;
-							adr.dwFlags = 0;//AVDRQ_DRAWBORDER | AVDRQ_HIDEBORDERONTRANSPARENCY;
-
-							CallService(MS_AV_DRAWAVATAR, (WPARAM)0, (LPARAM)&adr);
-						}
-					}
-					rect.left = 15; //iconWidth
-					rect.top = rect.top + 2 * itemHeight / 10;
-					rect.right = itemWidth - avatarWidth - 1 ;
-					SetTextColor(hdcMem, g_dat->contactNameColour);
-					DrawText(hdcMem, szContactName, lstrlen(szContactName), &rect, DT_END_ELLIPSIS | DT_LEFT | DT_SINGLELINE | DT_TOP | DT_NOPREFIX);
-					rect.top = rect.top + 4 * itemHeight / 10;
-					SelectObject(hdcMem, g_dat->hContactStatusFont);
-					SetTextColor(hdcMem, g_dat->contactStatusColour);
-					DrawText(hdcMem, szContactStatusMsg, lstrlen(szContactStatusMsg), &rect, DT_END_ELLIPSIS | DT_LEFT | DT_SINGLELINE | DT_TOP | DT_NOPREFIX);
-					SelectObject(hdcMem, hOldFont);
-					SelectObject(hdcMem, brush);
-					SelectObject(hdcMem, pen);
-
-					mir_free(szContactStatusMsg);
-					mir_free(szContactName);
-
-					BitBlt(dis->hDC, 0, 0, itemWidth, itemHeight, hdcMem, 0, 0, SRCCOPY);
-					hbmMem = (HBITMAP) SelectObject(hdcMem, hbmMem);
-					DeleteObject(hbmMem);
-					DeleteDC(hdcMem);
-					return TRUE;
 				} else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_AVATAR)) {
 					RECT rect;
 					HDC hdcMem = CreateCompatibleDC(dis->hDC);
@@ -2123,8 +2048,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			{
 				if(GetKeyState(VK_SHIFT) & 0x8000) {    // copy user name
 					SendMessage(hwndDlg, DM_USERNAMETOCLIP, 0, 0);
-				}
-				else {
+				} else {
 					RECT rc;
 					HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) dat->windowData.hContact, 0);
 					GetWindowRect(GetDlgItem(hwndDlg, LOWORD(wParam)), &rc);
@@ -2325,6 +2249,10 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				}
 			}
 		}
+		break;
+	case WM_CHAR:
+		SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+		SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), msg, wParam, lParam);
 		break;
 	case WM_DESTROY:
 		NotifyLocalWinEvent(dat->windowData.hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING);

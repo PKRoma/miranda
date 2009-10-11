@@ -219,16 +219,12 @@ void LoadInfobarFonts()
 	if (g_dat->hInfobarBrush != NULL) {
 		DeleteObject(g_dat->hInfobarBrush);
 	}
-	if (g_dat->hInfobarPen != NULL) {
-		DeleteObject(g_dat->hInfobarPen);
-	}
 	LoadMsgDlgFont(MSGFONTID_INFOBAR_NAME, &lf, &g_dat->contactNameColour);
 	g_dat->hContactNameFont = CreateFontIndirect(&lf);
 	LoadMsgDlgFont(MSGFONTID_INFOBAR_STATUS, &lf, &g_dat->contactStatusColour);
 	g_dat->hContactStatusFont = CreateFontIndirect(&lf);
 	ibColour = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_INFOBARBKGCOLOUR, SRMSGDEFSET_INFOBARBKGCOLOUR);
 	g_dat->hInfobarBrush = CreateSolidBrush(ibColour);
-	g_dat->hInfobarPen = CreatePen(PS_SOLID, 0, FindBorderColour(ibColour));
 }
 
 void InitGlobals() {
@@ -269,9 +265,6 @@ void FreeGlobals() {
 		}
 		if (g_dat->hInfobarBrush != NULL) {
 			DeleteObject(g_dat->hInfobarBrush);
-		}
-		if (g_dat->hInfobarPen != NULL) {
-			DeleteObject(g_dat->hInfobarPen);
 		}
 		if (g_dat->draftList != NULL) tcmdlist_free(g_dat->draftList);
 		ReleaseGlobalIcons();
