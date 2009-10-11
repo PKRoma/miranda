@@ -81,6 +81,8 @@ void RefreshInfobar(InfobarWindowData* idat) {
 	SendMessage(hwnd, WM_SIZE, 0, 0);
 	RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
 	RedrawWindow(GetDlgItem(hwnd, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
+	mir_free(szContactStatusMsg);
+	mir_free(szContactName);
 }
 /*
 static LRESULT CALLBACK InfobarEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
