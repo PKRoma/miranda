@@ -590,7 +590,7 @@ INT_PTR NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 		nlc->hSsl = si.connect(nlc->s, nloc->szHost, nlu->settings.validateSSL);
 		if (nlc->hSsl == NULL)
 		{
-			Netlib_Logf(nlu,"(%d) Failure to negotiate SSL connection",nlc->s);
+			Netlib_Logf(nlu,"(%d %s) Failure to negotiate SSL connection",nlc->s,nloc->szHost);
 			FreePartiallyInitedConnection(nlc);
 			return 0;
 		}
@@ -609,7 +609,7 @@ INT_PTR NetlibStartSsl(WPARAM wParam,LPARAM lParam)
 	nlc->hSsl = si.connect(nlc->s, sp ? sp->host : nlc->szHost, nlc->nlu->settings.validateSSL);
 
 	if (nlc->hSsl == NULL)
-		Netlib_Logf(nlc->nlu,"(%d) Failure to negotiate SSL connection",nlc->s);
+		Netlib_Logf(nlc->nlu,"(%d %s) Failure to negotiate SSL connection",nlc->s, sp ? sp->host : nlc->szHost);
 
 	return nlc->hSsl != NULL;
 }

@@ -111,10 +111,10 @@ static int SSL_library_init(void)
 {
 	if (g_pSSPI) return 1;
 
-	int res = 0;
 	WaitForSingleObject(g_hSslMutex, INFINITE); 
 
-	if (g_hSchannel == NULL)
+	int res = g_pSSPI != NULL;
+	if (!res)
 	{
 		g_hSchannel = LoadLibraryA("schannel.dll");
 		if (g_hSchannel)
