@@ -49,6 +49,7 @@ public:
 		m_NickPatterns = m_TextPatterns = 0;
 		m_iNickPatterns = m_iTextPatterns = 0;
 		m_dwFlags = 0;
+		m_Valid = true;
 		init();
 	}
 
@@ -60,7 +61,7 @@ public:
 	void                                    init        ();
 	void                                    cleanup     ();
 	int                                 	match       (const GCEVENT *pgce, const SESSION_INFO *psi,
-														 DWORD dwFlags, const TCHAR *tszAdditional);
+														 DWORD dwFlags = MATCH_NICKNAME);
 
 	static INT_PTR CALLBACK                	dlgProc     (HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);		   // option page dlg proc
 	static INT_PTR CALLBACK                	dlgProcAdd  (HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);		   // for the "add to" dialog
@@ -75,6 +76,7 @@ private:
 	UINT									m_iTextPatterns;
 	TCHAR*                                 	m_NickPatternString;
 	TCHAR*                                 	m_TextPatternString;
+	bool									m_Valid;
 };
 
 struct THighLightEdit

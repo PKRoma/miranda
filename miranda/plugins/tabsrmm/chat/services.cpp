@@ -711,14 +711,16 @@ INT_PTR Service_AddEvent(WPARAM wParam, LPARAM lParam)
 		}
 		case GC_EVENT_ADDSTATUS:
 			SM_GiveStatus(gce->pDest->ptszID, gce->pDest->pszModule, gce->ptszUID, gce->ptszStatus);
-			if (!gce->bIsMe)
-				bIsHighlighted = g_Settings.Highlight->match(gce, 0, CMUCHighlight::MATCH_NICKNAME, 0);
+			if (!gce->bIsMe) {
+				bIsHighlighted = g_Settings.Highlight->match(gce, 0, CMUCHighlight::MATCH_NICKNAME);
+			}
 			break;
 
 		case GC_EVENT_REMOVESTATUS:
 			SM_TakeStatus(gce->pDest->ptszID, gce->pDest->pszModule, gce->ptszUID, gce->ptszStatus);
-			if (!gce->bIsMe)
-				bIsHighlighted = g_Settings.Highlight->match(gce, 0, CMUCHighlight::MATCH_NICKNAME, 0);
+			if (!gce->bIsMe) {
+				bIsHighlighted = g_Settings.Highlight->match(gce, 0, CMUCHighlight::MATCH_NICKNAME);
+			}
 			break;
 
 		case GC_EVENT_MESSAGE:
@@ -734,33 +736,34 @@ INT_PTR Service_AddEvent(WPARAM wParam, LPARAM lParam)
 			}
 #endif
 			if (!gce->bIsMe && gce->pDest->pszID && gce->pszText) {
-				if (si) {
-					//if (IsHighlighted(si, gce->ptszText))
-						bIsHighlighted = si->Highlight->match(gce, si, CMUCHighlight::MATCH_TEXT | CMUCHighlight::MATCH_NICKNAME, 0);
-				}
+				if (si)
+					bIsHighlighted = si->Highlight->match(gce, si, CMUCHighlight::MATCH_TEXT | CMUCHighlight::MATCH_NICKNAME);
 			}
 		}
 		break;
 
 		case GC_EVENT_NICK:
 			SM_ChangeNick(gce->pDest->ptszID, gce->pDest->pszModule, gce);
-			if (!gce->bIsMe)
-				bIsHighlighted = g_Settings.Highlight->match(gce, 0, CMUCHighlight::MATCH_NICKNAME, 0);
+			if (!gce->bIsMe) {
+				bIsHighlighted = g_Settings.Highlight->match(gce, 0, CMUCHighlight::MATCH_NICKNAME);
+			}
 
 			break;
 
 		case GC_EVENT_JOIN:
 			AddUser(gce);
-			if (!gce->bIsMe)
-				bIsHighlighted = g_Settings.Highlight->match(gce, 0, CMUCHighlight::MATCH_NICKNAME, 0);
+			if (!gce->bIsMe) {
+				bIsHighlighted = g_Settings.Highlight->match(gce, 0, CMUCHighlight::MATCH_NICKNAME);
+			}
 			break;
 
 		case GC_EVENT_PART:
 		case GC_EVENT_QUIT:
 		case GC_EVENT_KICK:
 			bRemoveFlag = TRUE;
-			if (!gce->bIsMe)
-				bIsHighlighted = g_Settings.Highlight->match(gce, 0, CMUCHighlight::MATCH_NICKNAME, 0);
+			if (!gce->bIsMe) {
+				bIsHighlighted = g_Settings.Highlight->match(gce, 0, CMUCHighlight::MATCH_NICKNAME);
+			}
 			break;
 	}
 

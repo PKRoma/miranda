@@ -51,19 +51,6 @@ static TContainerSettings _cnt_default = {
 		0
 };
 
-int 		Chat_PreShutdown();
-int 		Chat_ModulesLoaded(WPARAM wp, LPARAM lp);
-int			AvatarChanged(WPARAM wParam, LPARAM lParam);
-int			MyAvatarChanged(WPARAM wParam, LPARAM lParam);
-int 		IcoLibIconsChanged(WPARAM wParam, LPARAM lParam);
-int 		FontServiceFontsChanged(WPARAM wParam, LPARAM lParam);
-int 		SmileyAddOptionsChanged(WPARAM wParam, LPARAM lParam);
-int 		IEViewOptionsChanged(WPARAM wParam, LPARAM lParam);
-void 		RegisterFontServiceFonts();
-int 		ModPlus_PreShutdown(WPARAM wparam, LPARAM lparam);
-int 		ModPlus_Init(WPARAM wparam, LPARAM lparam);
-INT_PTR 	CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
 HANDLE		CGlobals::m_event_ModulesLoaded = 0, CGlobals::m_event_PrebuildMenu = 0, CGlobals::m_event_SettingChanged = 0;
 HANDLE		CGlobals::m_event_ContactDeleted = 0, CGlobals::m_event_Dispatch = 0, CGlobals::m_event_EventAdded = 0;
 HANDLE		CGlobals::m_event_IconsChanged = 0, CGlobals::m_event_TypingEvent = 0, CGlobals::m_event_ProtoAck = 0;
@@ -154,6 +141,7 @@ void CGlobals::reloadSystemStartup()
 
 	::LoadTSButtonModule();
 	::RegisterTabCtrlClass();
+	CTip::registerClass();
 
 	dwThreadID = 						GetCurrentThreadId();
 
@@ -652,6 +640,7 @@ int CGlobals::PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 	::UnregisterClass(_T("TSStatusBarClass"), g_hInst);
 	::UnregisterClass(_T("SideBarClass"), g_hInst);
 	::UnregisterClassA("TSTabCtrlClass", g_hInst);
+	::UnregisterClass(_T("RichEditTipClass"), g_hInst);
 	return 0;
 }
 

@@ -560,6 +560,10 @@ int LoadSendRecvMessageModule(void)
 	int 					nOffset = 0;
 	INITCOMMONCONTROLSEX 	icex;
 
+	if(FIF == 0) {
+		MessageBox(0, _T("The image service plugin was not found. TabSRMM is disabled"), _T("TabSRMM fatal error"), MB_OK);
+		return(1);
+	}
 	icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
 	icex.dwICC   = ICC_COOL_CLASSES | ICC_BAR_CLASSES | ICC_LISTVIEW_CLASSES;;
 	InitCommonControlsEx(&icex);

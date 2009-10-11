@@ -35,6 +35,20 @@
 #ifndef _TABSRMM_FUNCTIONS_H
 #define _TABSRMM_FUNCTIONS_H
 
+int 				Chat_PreShutdown			();
+int 				Chat_ModulesLoaded			(WPARAM wp, LPARAM lp);
+int					AvatarChanged				(WPARAM wParam, LPARAM lParam);
+int					MyAvatarChanged				(WPARAM wParam, LPARAM lParam);
+int 				IcoLibIconsChanged			(WPARAM wParam, LPARAM lParam);
+int 				FontServiceFontsChanged		(WPARAM wParam, LPARAM lParam);
+int 				SmileyAddOptionsChanged		(WPARAM wParam, LPARAM lParam);
+int 				IEViewOptionsChanged		(WPARAM wParam, LPARAM lParam);
+void 				RegisterFontServiceFonts	();
+int 				ModPlus_PreShutdown			(WPARAM wparam, LPARAM lparam);
+int 				ModPlus_Init				(WPARAM wparam, LPARAM lparam);
+INT_PTR CALLBACK 	HotkeyHandlerDlgProc		(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+
+
 /*
  * nen / event popup stuff
  */
@@ -180,5 +194,14 @@ void		TSAPI	SendLater_ClearAll			();
 int			TSAPI	SendLater_SendIt			(const char *szSetting, LPARAM lParam);
 int 		_cdecl	SendLater_AddJob			(const char *szSetting, LPARAM lParam);
 void 		TSAPI	DrawMenuItem				(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle);
+
+/*
+ * dialog procedures
+ */
+
+INT_PTR 	CALLBACK SelectContainerDlgProc		(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR 	CALLBACK DlgProcContainerOptions	(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR 	CALLBACK DlgProcAbout				(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+
 
 #endif /* _TABSRMM_FUNCTIONS_H */

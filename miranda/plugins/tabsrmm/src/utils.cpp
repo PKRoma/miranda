@@ -689,3 +689,37 @@ void Utils::ReadPrivateContainerSettings(ContainerWindowData *pContainer, bool f
 	else
 		pContainer->settings = &PluginConfig.globalContainerSettings;
 }
+
+/*
+ * stream function to write the contents of the message log to an rtf file
+ */
+
+DWORD CALLBACK Utils::StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
+{
+	HANDLE hFile;
+	TCHAR *szFilename = (TCHAR *)dwCookie;
+	if ((hFile = CreateFile(szFilename, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE) {
+		SetFilePointer(hFile, 0, NULL, FILE_END);
+		WriteFile(hFile, pbBuff, cb, (DWORD *)pcb, NULL);
+		*pcb = cb;
+		CloseHandle(hFile);
+		return 0;
+	}
+	return 1;
+}
+
+/**
+ * generic command dispatcher
+ * used in various places (context menus, info panel menus etc.)
+ */
+
+LRESULT Utils::CmdDispatcher(UINT uType, HWND hwndDlg, UINT cmd, WPARAM wParam, LPARAM lParam, _MessageWindowData *dat, ContainerWindowData *pContainer)
+{
+	switch(uType) {
+		case CMD_CONTAINER:
+			if(pContainer && hwndDlg) {
+				return(DM_ContainerCmdHandler(pContainer, cmd, wParam, lParam));
+			}
+	}
+	return(0);
+}

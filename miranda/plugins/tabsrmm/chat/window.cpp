@@ -1158,8 +1158,9 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			if (PluginConfig.m_AutoLocaleSupport && GetFocus() == hwnd && mwdat->pContainer->hwndActive == hwndParent && GetForegroundWindow() == mwdat->pContainer->hwnd && GetActiveWindow() == mwdat->pContainer->hwnd) {
 				DM_SaveLocale(mwdat, wParam, lParam);
 				SendMessage(hwnd, EM_SETLANGOPTIONS, 0, (LPARAM) SendMessage(hwnd, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
+				return 1;
 			}
-			return 1;
+			break;
 
 		case WM_ERASEBKGND: {
 			return(CSkin::m_skinEnabled ? 0 : 1);
@@ -2685,7 +2686,7 @@ LABEL_SHOWWINDOW:
 					}
 					if(msg == WM_KEYDOWN) {
 						if (wp == VK_INSERT && isShift) {
-							SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), EM_PASTESPECIAL, CF_TEXT, 0);
+							SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), EM_PASTESPECIAL, 0, 0);
 							((MSGFILTER *) lParam)->msg = WM_NULL;
 							((MSGFILTER *) lParam)->wParam = 0;
 							((MSGFILTER *) lParam)->lParam = 0;
@@ -2693,7 +2694,7 @@ LABEL_SHOWWINDOW:
 						}
 						if (isCtrl && !isShift && !isMenu) {
 							if (wp == 'V') {
-								SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), EM_PASTESPECIAL, CF_TEXT, 0);
+								SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), EM_PASTESPECIAL, 0, 0);
 								((MSGFILTER *) lParam)->msg = WM_NULL;
 								((MSGFILTER *) lParam)->wParam = 0;
 								((MSGFILTER *) lParam)->lParam = 0;

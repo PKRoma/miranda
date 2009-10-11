@@ -67,6 +67,11 @@ static TRTFColorTable _rtf_ctable[] = {
 class Utils {
 
 public:
+	enum {
+		CMD_CONTAINER = 1,
+		CMD_MSGDIALOG = 2,
+		CMD_INFOPANEL = 4,
+	};
 	static	int					TSAPI FindRTLLocale					(_MessageWindowData *dat);
 	static  TCHAR* 				TSAPI GetPreviewWithEllipsis		(TCHAR *szText, size_t iMaxLen);
 	static	TCHAR* 				TSAPI FilterEventMarkers			(TCHAR *wszText);
@@ -85,6 +90,64 @@ public:
 	static  void 				TSAPI SettingsToContainer			(ContainerWindowData *pContainer);
 	static	void 				TSAPI ContainerToSettings			(ContainerWindowData *pContainer);
 	static	void 				TSAPI ReadPrivateContainerSettings	(ContainerWindowData *pContainer, bool fForce = false);
+	static	DWORD 		CALLBACK 	  StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb);
+	static	LRESULT				TSAPI CmdDispatcher					(UINT uType, HWND hwndDlg, UINT cmd, WPARAM wParam, LPARAM lParam, _MessageWindowData *dat = 0,
+																	 ContainerWindowData *pContainer = 0);
+
+	template<typename T> static size_t TSAPI CopyToClipBoard(const T* _t, const HWND hwndOwner)
+	{
+		HGLOBAL	hData;
+
+		if (!OpenClipboard(hwndOwner) || _t == 0)
+			return(0);
+
+		size_t _s = sizeof(_t[0]);
+		size_t  s = _s * (lstrlen(_t) + 1);
+
+		EmptyClipboard();
+		hData = ::GlobalAlloc(GMEM_MOVEABLE, s);
+
+		CopyMemory((void *)GlobalLock(hData), (void *)_t, s);
+		GlobalUnlock(hData);
+		SetClipboardData(_s == 1 ? CF_TEXT : CF_UNICODETEXT, hData);
+		CloseClipboard();
+		GlobalFree(hData);
+		return(s);
+	}
+
+	template<typename T> static void AddToFileList(T ***pppFiles, int *totalCount, const TCHAR* szFilename)
+	{
+		size_t _s = sizeof(T);
+
+		*pppFiles = (T**)mir_realloc(*pppFiles, (++*totalCount + 1) * sizeof(T*));
+		(*pppFiles)[*totalCount] = NULL;
+
+		if(_s == 1)
+			(*pppFiles)[*totalCount-1] = reinterpret_cast<T *>(mir_t2a(szFilename));
+		else
+			(*pppFiles)[*totalCount-1] = reinterpret_cast<T *>(mir_tstrdup(szFilename));
+
+		if (GetFileAttributes(szFilename) & FILE_ATTRIBUTE_DIRECTORY) {
+			WIN32_FIND_DATA fd;
+			HANDLE hFind;
+			TCHAR szPath[MAX_PATH];
+
+			lstrcpy(szPath, szFilename);
+			lstrcat(szPath, _T("\\*"));
+			if ((hFind = FindFirstFile(szPath, &fd)) != INVALID_HANDLE_VALUE) {
+				do {
+					if (!lstrcmp(fd.cFileName, _T(".")) || !lstrcmp(fd.cFileName, _T("..")))
+						continue;
+					lstrcpy(szPath, szFilename);
+					lstrcat(szPath, _T("\\"));
+					lstrcat(szPath, fd.cFileName);
+					AddToFileList(pppFiles, totalCount, szPath);
+				} while (FindNextFile(hFind, &fd));
+				FindClose(hFind);
+			}
+		}
+	}
+
 public:
 	static	TRTFColorTable*		rtf_ctable;
 	static	int					rtf_ctable_size;

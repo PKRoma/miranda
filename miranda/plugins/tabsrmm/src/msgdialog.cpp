@@ -35,14 +35,13 @@
 #include "commonheaders.h"
 #pragma hdrstop
 
-extern TemplateSet RTL_Active, LTR_Active;
+#define MS_HTTPSERVER_ADDFILENAME "HTTPServer/AddFileName"
 
-static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb);
-
-const TCHAR *pszIDCSAVE_close = 0, *pszIDCSAVE_save = 0;
+extern 	TemplateSet RTL_Active, LTR_Active;
+const 	TCHAR*		pszIDCSAVE_close = 0, *pszIDCSAVE_save = 0;
 
 static  WNDPROC OldMessageEditProc=0, OldAvatarWndProc=0, OldMessageLogProc=0;
-WNDPROC OldIEViewProc = 0, OldHppProc = 0;
+		WNDPROC OldIEViewProc = 0, OldHppProc = 0;
 
 WNDPROC OldSplitterProc = 0;
 
@@ -475,84 +474,6 @@ static void MsgWindowUpdateState(_MessageWindowData *dat, UINT msg)
 	}
 }
 
-// drop files onto message input area...
-
-static void AddToFileListT(TCHAR ***pppFiles, int *totalCount, const TCHAR* szFilename)
-{
-	*pppFiles = (TCHAR**)realloc(*pppFiles, (++*totalCount + 1) * sizeof(TCHAR*));
-	(*pppFiles)[*totalCount] = NULL;
-	(*pppFiles)[*totalCount-1] = _tcsdup(szFilename);
-
-	if (GetFileAttributes(szFilename) & FILE_ATTRIBUTE_DIRECTORY) {
-		WIN32_FIND_DATA fd;
-		HANDLE hFind;
-		TCHAR szPath[MAX_PATH];
-
-		lstrcpy(szPath, szFilename);
-		lstrcat(szPath, _T("\\*"));
-		if ((hFind = FindFirstFile(szPath, &fd)) != INVALID_HANDLE_VALUE) {
-			do {
-				if (!lstrcmp(fd.cFileName, _T(".")) || !lstrcmp(fd.cFileName, _T(".."))) continue;
-				lstrcpy(szPath, szFilename);
-				lstrcat(szPath, _T("\\"));
-				lstrcat(szPath, fd.cFileName);
-				AddToFileListT(pppFiles, totalCount, szPath);
-			} while (FindNextFile(hFind, &fd));
-			FindClose(hFind);
-		}
-	}
-}
-
-/**
- * compatibility with 0.8.x. TODO can go away somedays..
- *
- * @param pppFiles
- * @param totalCount
- * @param szFilename
- */
-static void AddToFileListA(char ***pppFiles, int *totalCount, const TCHAR* szFilename)
-{
-	*pppFiles = (char**)realloc(*pppFiles, (++*totalCount + 1) * sizeof(char*));
-	(*pppFiles)[*totalCount] = NULL;
-
-#if defined( _UNICODE )
-{
-	TCHAR tszShortName[ MAX_PATH ];
-	char  szShortName[ MAX_PATH ];
-	BOOL  bIsDefaultCharUsed = FALSE;
-	WideCharToMultiByte(CP_ACP, 0, szFilename, -1, szShortName, sizeof(szShortName), NULL, &bIsDefaultCharUsed);
-	if (bIsDefaultCharUsed) {
-		if (GetShortPathName(szFilename, tszShortName, SIZEOF(tszShortName)) == 0)
-			WideCharToMultiByte(CP_ACP, 0, szFilename, -1, szShortName, sizeof(szShortName), NULL, NULL);
-		else
-			WideCharToMultiByte(CP_ACP, 0, tszShortName, -1, szShortName, sizeof(szShortName), NULL, NULL);
-	}
-	(*pppFiles)[*totalCount-1] = _strdup(szShortName);
-}
-#else
-	(*pppFiles)[*totalCount-1] = _strdup(szFilename);
-#endif
-
-	if (GetFileAttributes(szFilename) & FILE_ATTRIBUTE_DIRECTORY) {
-		WIN32_FIND_DATA fd;
-		HANDLE hFind;
-		TCHAR szPath[MAX_PATH];
-
-		lstrcpy(szPath, szFilename);
-		lstrcat(szPath, _T("\\*"));
-		if ((hFind = FindFirstFile(szPath, &fd)) != INVALID_HANDLE_VALUE) {
-			do {
-				if (!lstrcmp(fd.cFileName, _T(".")) || !lstrcmp(fd.cFileName, _T(".."))) continue;
-				lstrcpy(szPath, szFilename);
-				lstrcat(szPath, _T("\\"));
-				lstrcat(szPath, fd.cFileName);
-				AddToFileListA(pppFiles, totalCount, szPath);
-			} while (FindNextFile(hFind, &fd));
-			FindClose(hFind);
-		}
-	}
-}
-
 void TSAPI ShowMultipleControls(HWND hwndDlg, const UINT *controls, int cControls, int state)
 {
 	int i;
@@ -965,12 +886,12 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			if (PluginConfig.m_AutoLocaleSupport && GetFocus() == hwnd && mwdat->pContainer->hwndActive == hwndParent && GetForegroundWindow() == mwdat->pContainer->hwnd && GetActiveWindow() == mwdat->pContainer->hwnd) {
 				DM_SaveLocale(mwdat, wParam, lParam);
 				SendMessage(hwnd, EM_SETLANGOPTIONS, 0, (LPARAM) SendMessage(hwnd, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
+				return(1);
 			}
-			return 1;
+			break;
 
-		case WM_ERASEBKGND: {
+		case WM_ERASEBKGND:
 			return(CSkin::m_skinEnabled ? 0 : 1);
-		}
 
 		/*
 		 * sent by smileyadd when the smiley selection window dies
@@ -2133,7 +2054,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							}
 							if (msg == WM_KEYDOWN) {
 								if (wp == VK_INSERT && isShift) {
-									SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_PASTESPECIAL, CF_TEXT, 0);
+									SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_PASTESPECIAL, 0, 0);
 									_clrMsgFilter(lParam);
 									return(_dlgReturn(hwndDlg, 1));
 								}
@@ -2146,7 +2067,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 								}
 								if (isCtrl && !isShift && !isAlt) {
 									if (wp == 'V') {
-										SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_PASTESPECIAL, CF_TEXT, 0);
+										SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_PASTESPECIAL, 0, 0);
 										_clrMsgFilter(lParam);
 										return(_dlgReturn(hwndDlg, 1));
 									}
@@ -3951,26 +3872,8 @@ quote_from_last:
 			return 0;
 
 		case DM_UINTOCLIPBOARD: {
-			HGLOBAL hData;
-
-			if (dat->hContact) {
-				if (!OpenClipboard(hwndDlg))
-					break;
-				if (lstrlen(dat->cache->getUIN()) == 0)
-					break;
-
-				char *szUin = mir_t2a(dat->cache->getUIN());
-
-				EmptyClipboard();
-				hData = GlobalAlloc(GMEM_MOVEABLE, (lstrlen(dat->cache->getUIN()) + 1));
-
-				lstrcpyA((char *)GlobalLock(hData), szUin);
-				GlobalUnlock(hData);
-				SetClipboardData(CF_TEXT, hData);
-				CloseClipboard();
-				GlobalFree(hData);
-				mir_free(szUin);
-			}
+			if (dat->hContact)
+				Utils::CopyToClipBoard(dat->cache->getUIN(), hwndDlg);
 			return 0;
 		}
 		/*
@@ -4066,7 +3969,7 @@ quote_from_last:
 				if (GetSaveFileName(&ofn)) {
 					stream.dwCookie = (DWORD_PTR)szFilename;
 					stream.dwError = 0;
-					stream.pfnCallback = StreamOut;
+					stream.pfnCallback = Utils::StreamOut;
 					SendDlgItemMessage(hwndDlg, IDC_LOG, EM_STREAMOUT, SF_RTF | SF_USECODEPAGE, (LPARAM) & stream);
 				}
 			}
@@ -4223,14 +4126,12 @@ quote_from_last:
 					TCHAR** ppFiles = NULL;
 					for (i = 0; i < fileCount; i++) {
 						DragQueryFile(hDrop, i, szFilename, SIZEOF(szFilename));
-						AddToFileListT(&ppFiles, &totalCount, szFilename);
+						Utils::AddToFileList(&ppFiles, &totalCount, szFilename);
 					}
 
 					if (!not_sending) {
 						CallService(MS_FILE_SENDSPECIFICFILEST, (WPARAM)dat->hContact, (LPARAM)ppFiles);
 					} else {
-	#define MS_HTTPSERVER_ADDFILENAME "HTTPServer/AddFileName"
-
 						if (ServiceExists(MS_HTTPSERVER_ADDFILENAME)) {
 							char *szHTTPText;
 							int i;
@@ -4245,8 +4146,8 @@ quote_from_last:
 							SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 						}
 					}
-					for (i = 0;ppFiles[i];i++) free(ppFiles[i]);
-					free(ppFiles);
+					for (i = 0;ppFiles[i];i++) mir_free(ppFiles[i]);
+					mir_free(ppFiles);
 				}
 				else {
 					TCHAR szFilename[MAX_PATH];
@@ -4255,14 +4156,12 @@ quote_from_last:
 					char** ppFiles = NULL;
 					for (i = 0; i < fileCount; i++) {
 						DragQueryFile(hDrop, i, szFilename, SIZEOF(szFilename));
-						AddToFileListA(&ppFiles, &totalCount, szFilename);
+						Utils::AddToFileList(&ppFiles, &totalCount, szFilename);
 					}
 
 					if (!not_sending) {
 						CallService(MS_FILE_SENDSPECIFICFILES, (WPARAM)dat->hContact, (LPARAM)ppFiles);
 					} else {
-	#define MS_HTTPSERVER_ADDFILENAME "HTTPServer/AddFileName"
-
 						if (ServiceExists(MS_HTTPSERVER_ADDFILENAME)) {
 							char *szHTTPText;
 							int i;
@@ -4277,8 +4176,8 @@ quote_from_last:
 						}
 					}
 					for (i = 0;ppFiles[i];i++)
-						free(ppFiles[i]);
-					free(ppFiles);
+						mir_free(ppFiles[i]);
+					mir_free(ppFiles);
 				}
 			}
 		}
@@ -4499,12 +4398,6 @@ quote_from_last:
 
 			/* remove temporary contacts... */
 
-			if (dat->cache->isValid() && !dat->fIsReattach && dat->hContact && M->GetByte("deletetemp", 0)) {
-				if (M->GetByte(dat->hContact, "CList", "NotOnList", 0)) {
-					CallService(MS_DB_CONTACT_DELETE, (WPARAM)dat->hContact, 0);
-				}
-			}
-
 			{
 				HFONT hFont;
 				TCITEM item;
@@ -4565,6 +4458,11 @@ quote_from_last:
 				if(m_pContainer->dwFlags & CNT_SIDEBAR)
 					m_pContainer->SideBar->removeSession(dat);
 				dat->cache->setWindowData();
+				if (dat->cache->isValid() && !dat->fIsReattach && dat->hContact && M->GetByte("deletetemp", 0)) {
+					if (M->GetByte(dat->hContact, "CList", "NotOnList", 0)) {
+						CallService(MS_DB_CONTACT_DELETE, (WPARAM)dat->hContact, 0);
+					}
+				}
 				delete dat->Panel;
 				free(dat);
 			}
@@ -4573,22 +4471,3 @@ quote_from_last:
 	}
 	return FALSE;
 }
-
-/*
- * stream function to write the contents of the message log to an rtf file
- */
-
-static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
-{
-	HANDLE hFile;
-	TCHAR *szFilename = (TCHAR *)dwCookie;
-	if ((hFile = CreateFile(szFilename, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE) {
-		SetFilePointer(hFile, 0, NULL, FILE_END);
-		WriteFile(hFile, pbBuff, cb, (DWORD *)pcb, NULL);
-		*pcb = cb;
-		CloseHandle(hFile);
-		return 0;
-	}
-	return 1;
-}
-

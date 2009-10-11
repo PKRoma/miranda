@@ -39,10 +39,6 @@
 extern SESSION_INFO*	m_WndList;
 extern ButtonSet 		g_ButtonSet;
 
-extern INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
 ContainerWindowData *pFirstContainer = 0;        // the linked list of struct ContainerWindowData
 ContainerWindowData *pLastActiveContainer = NULL;
 
@@ -1247,134 +1243,15 @@ buttons_done:
 				}
 				case IDC_SIDEBARDOWN:
 				case IDC_SIDEBARUP: {
-
+					HWND hwnd = GetFocus();
 					pContainer->SideBar->processScrollerButtons(LOWORD(wParam));
-					if(lParam)
-						SetFocus(GetDlgItem(pContainer->hwndActive, lParam));
+					//if(lParam)
+						//SetFocus(GetDlgItem(pContainer->hwndActive, lParam));
+					SetFocus(hwnd);
 					break;
 				}
-				case IDC_CLOSE:
-					SendMessage(hwndDlg, WM_SYSCOMMAND, SC_CLOSE, 0);
-					break;
-				case IDC_MINIMIZE:
-					PostMessage(hwndDlg, WM_SYSCOMMAND, SC_MINIMIZE, 0);
-					break;
-				case IDC_MAXIMIZE:
-					SendMessage(hwndDlg, WM_SYSCOMMAND, IsZoomed(hwndDlg) ? SC_RESTORE : SC_MAXIMIZE, 0);
-					break;
-				case IDOK:
-					SendMessage(pContainer->hwndActive, WM_COMMAND, wParam, lParam);      // pass the IDOK command to the active child - fixes the "enter not working
-					break;
-				case ID_FILE_SAVEMESSAGELOGAS:
-					SendMessage(pContainer->hwndActive, DM_SAVEMESSAGELOG, 0, 0);
-					break;
-				case ID_FILE_CLOSEMESSAGESESSION:
-					PostMessage(pContainer->hwndActive, WM_CLOSE, 0, 1);
-					break;
-				case ID_FILE_CLOSE:
-					PostMessage(hwndDlg, WM_CLOSE, 0, 1);
-					break;
-				case ID_VIEW_SHOWSTATUSBAR:
-					ApplyContainerSetting(pContainer, CNT_NOSTATUSBAR, pContainer->dwFlags & CNT_NOSTATUSBAR ? 0 : 1, true);
-					break;
-				case ID_VIEW_VERTICALMAXIMIZE:
-					ApplyContainerSetting(pContainer, CNT_VERTICALMAX, pContainer->dwFlags & CNT_VERTICALMAX ? 0 : 1, false);
-					break;
-				case ID_VIEW_BOTTOMTOOLBAR:
-					ApplyContainerSetting(pContainer, CNT_BOTTOMTOOLBAR, pContainer->dwFlags & CNT_BOTTOMTOOLBAR ? 0 : 1, false);
-					M->BroadcastMessage(DM_CONFIGURETOOLBAR, 0, 1);
-					return 0;
-				case ID_VIEW_SHOWTOOLBAR:
-					ApplyContainerSetting(pContainer, CNT_HIDETOOLBAR, pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1, false);
-					M->BroadcastMessage(DM_CONFIGURETOOLBAR, 0, 1);
-					return 0;
-				case ID_VIEW_SHOWMENUBAR:
-					ApplyContainerSetting(pContainer, CNT_NOMENUBAR, pContainer->dwFlags & CNT_NOMENUBAR ? 0 : 1, true);
-					break;
-				case ID_VIEW_SHOWTITLEBAR:
-					ApplyContainerSetting(pContainer, CNT_NOTITLE, pContainer->dwFlags & CNT_NOTITLE ? 0 : 1, true);
-					break;
-				case ID_VIEW_TABSATBOTTOM:
-					ApplyContainerSetting(pContainer, CNT_TABSBOTTOM, pContainer->dwFlags & CNT_TABSBOTTOM ? 0 : 1, false);
-					break;
-				case ID_TITLEBAR_USESTATICCONTAINERICON:
-					ApplyContainerSetting(pContainer, CNT_STATICICON, pContainer->dwFlags & CNT_STATICICON ? 0 : 1, false);
-					break;
-				case ID_VIEW_SHOWMULTISENDCONTACTLIST:
-					SendMessage(pContainer->hwndActive, WM_COMMAND, MAKEWPARAM(IDC_SENDMENU, ID_SENDMENU_SENDTOMULTIPLEUSERS), 0);
-					break;
-				case ID_VIEW_STAYONTOP:
-					SendMessage(hwndDlg, WM_SYSCOMMAND, IDM_STAYONTOP, 0);
-					break;
-				case ID_CONTAINER_CONTAINEROPTIONS:
-					SendMessage(hwndDlg, WM_SYSCOMMAND, IDM_MOREOPTIONS, 0);
-					break;
-				case ID_EVENTPOPUPS_DISABLEALLEVENTPOPUPS:
-					ApplyContainerSetting(pContainer, (CNT_DONTREPORT | CNT_DONTREPORTUNFOCUSED | CNT_ALWAYSREPORTINACTIVE), 0, false);
-					return 0;
-				case ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISMINIMIZED:
-					ApplyContainerSetting(pContainer, CNT_DONTREPORT, pContainer->dwFlags & CNT_DONTREPORT ? 0 : 1, false);
-					return 0;
-				case ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISUNFOCUSED:
-					ApplyContainerSetting(pContainer, CNT_DONTREPORTUNFOCUSED, pContainer->dwFlags & CNT_DONTREPORTUNFOCUSED ? 0 : 1, false);
-					return 0;
-				case ID_EVENTPOPUPS_SHOWPOPUPSFORALLINACTIVESESSIONS:
-					ApplyContainerSetting(pContainer, CNT_ALWAYSREPORTINACTIVE, pContainer->dwFlags & CNT_ALWAYSREPORTINACTIVE ? 0 : 1, false);
-					return 0;
-				case ID_WINDOWFLASHING_DISABLEFLASHING:
-					ApplyContainerSetting(pContainer, CNT_NOFLASH, 1, false);
-					ApplyContainerSetting(pContainer, CNT_FLASHALWAYS, 0, false);
-					return 0;
-				case ID_WINDOWFLASHING_FLASHUNTILFOCUSED:
-					ApplyContainerSetting(pContainer, CNT_NOFLASH, 0, false);
-					ApplyContainerSetting(pContainer, CNT_FLASHALWAYS, 1, false);
-					return 0;
-				case ID_WINDOWFLASHING_USEDEFAULTVALUES:
-					ApplyContainerSetting(pContainer, (CNT_NOFLASH | CNT_FLASHALWAYS), 0, false);
-					return 0;
-				case ID_OPTIONS_SAVECURRENTWINDOWPOSITIONASDEFAULT: {
-					WINDOWPLACEMENT wp = {0};
-
-					wp.length = sizeof(wp);
-					if (GetWindowPlacement(hwndDlg, &wp)) {
-						M->WriteDword(SRMSGMOD_T, "splitx", wp.rcNormalPosition.left);
-						M->WriteDword(SRMSGMOD_T, "splity", wp.rcNormalPosition.top);
-						M->WriteDword(SRMSGMOD_T, "splitwidth", wp.rcNormalPosition.right - wp.rcNormalPosition.left);
-						M->WriteDword(SRMSGMOD_T, "splitheight", wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
-					}
-					return 0;
-				}
-				case ID_VIEW_INFOPANEL: {
-					_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
-					if(dat) {
-						RECT	rc;
-						POINT	pt;
-						GetWindowRect(pContainer->hwndActive, &rc);
-						pt.x = rc.left + 10;
-						pt.y = rc.top + dat->Panel->getHeight() - 10;
-						dat->Panel->invokeConfigDialog(pt);
-					}
-					return(0);
-				}
-				/*
-				 * commands from the message log popup will be routed to the
-				 * message log menu handler
-				 */
-				case ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS:
-				case ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS:
-				case ID_MESSAGELOGSETTINGS_FORTHISCONTACT:
-				case ID_MESSAGELOGSETTINGS_GLOBAL: {
-					struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
-
-					if(dat) {
-						MsgWindowMenuHandler(dat, (int)LOWORD(wParam), MENU_LOGMENU);
-						return 0;
-					}
-					break;
-				}
-				case ID_HELP_ABOUTTABSRMM:
-					CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_ABOUT), 0, DlgProcAbout, 0);
-					break;
+				default:
+					Utils::CmdDispatcher(Utils::CMD_CONTAINER, hwndDlg, LOWORD(wParam), wParam, lParam, 0, pContainer);
 			}
 			if (pContainer->dwFlags != dwOldFlags)
 				SendMessage(hwndDlg, DM_CONFIGURECONTAINER, 0, 0);
@@ -1400,9 +1277,6 @@ buttons_done:
 				SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
 			}
 			pContainer->bSizingLoop = FALSE;
-			//if(M->isAero())  FIXME maybe
-				//SetAeroMargins(pContainer);
-				//InvalidateRect(hwndDlg, NULL, FALSE);
 			break;
 		}
 		case WM_GETMINMAXINFO: {
@@ -1851,7 +1725,7 @@ buttons_done:
 			RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
 			if (pContainer->hwndStatus != 0 && pContainer->hwndActive != 0)
 				PostMessage(pContainer->hwndActive, DM_STATUSBARCHANGED, 0, 0);
-			break;
+			return(0);
 		}
 		case DM_CONFIGURECONTAINER: {
 			DWORD ws, wsold, ex = 0, exold = 0;
@@ -1949,7 +1823,7 @@ buttons_done:
 			}
 			SendMessage(hwndDlg, WM_SIZE, 0, 1);
 			BroadCastContainer(pContainer, DM_CONFIGURETOOLBAR, 0, 1);
-			break;
+			return(0);
 		}
 		/*
 		 * search the first and most recent unread events in all client tabs...
@@ -1983,7 +1857,7 @@ buttons_done:
 					}
 				}
 			}
-			break;
+			return(0);
 		}
 		/*
 		 * search tab with either next or most recent unread message and select it
@@ -2003,14 +1877,14 @@ buttons_done:
 				TabCtrl_SetCurSel(hwndTab, ri.iMostRecent);
 				SendMessage(hwndDlg, WM_NOTIFY, 0, (LPARAM) &nmhdr);
 			}
-			break;
+			return(0);
 		}
 		/*
 		 * msg dialog children are required to report their minimum height requirements
 		 */
 		case DM_REPORTMINHEIGHT:
 			pContainer->uChildMinHeight = ((UINT) lParam > pContainer->uChildMinHeight) ? (UINT) lParam : pContainer->uChildMinHeight;
-			return 0;
+			return(0);
 		case DM_SETICON: {
 			HICON hIconMsg = PluginConfig.g_IconMsgEvent;
 			if ((HICON)lParam == PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING]) {              // always set typing icon, but don't save it...
@@ -2026,7 +1900,7 @@ buttons_done:
 			//break;          // don't overwrite the new message indicator flag
 			SendMessage(hwndDlg, WM_SETICON, wParam, lParam);
 			pContainer->hIcon = (lParam == (LPARAM)hIconMsg) ? STICK_ICON_MSG : 0;
-			break;
+			return(0);
 		}
 		case WM_DRAWITEM: {
 			int cx = PluginConfig.m_smcxicon;
@@ -2052,11 +1926,7 @@ buttons_done:
 			else
 				CopyRect(rc, &pContainer->rcSaved);
 			AdjustTabClientRect(pContainer, rc);
-			return 0;
-		}
-		case DM_SESSIONLIST: {
-			SendMessage(PluginConfig.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, WM_LBUTTONUP);
-			break;
+			return(0);
 		}
 		case WM_DESTROY: {
 			int i = 0;

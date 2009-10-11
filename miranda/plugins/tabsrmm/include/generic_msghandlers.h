@@ -56,4 +56,4 @@ BOOL 	TSAPI		BB_SetButtonsPos		(_MessageWindowData *dat);
 void 	TSAPI		BB_CustomButtonClick	(_MessageWindowData *dat,DWORD idFrom ,HWND hwndFrom, BOOL code) ;
 void	TSAPI		DM_EventAdded			(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
 void 	TSAPI		DM_InitRichEdit			(_MessageWindowData *dat);
-LRESULT TSAPI 		DM_CmdHandler			(_MessageWindowData *dat);
+LRESULT TSAPI 		DM_ContainerCmdHandler	(ContainerWindowData *pContainer, UINT cmd, WPARAM wParam, LPARAM lParam);

@@ -43,6 +43,7 @@ TCHAR *xStatusDescr[] = {	_T("Angry"), _T("Duck"), _T("Tired"), _T("Party"), _T(
 
 
 InfoPanelConfig CInfoPanel::m_ipConfig = {0};
+WNDPROC CTip::m_OldMessageEditProc = 0;
 
 void CInfoPanel::setActive(const int newActive)
 {
@@ -236,11 +237,12 @@ HFONT CInfoPanel::setUnderlinedFont(const HDC hdc, HFONT hFontOrig)
  * @param item   CSkinItem *: The item to render in non-aero mode
  * @param fAero  bool: aero active
  */
-void CInfoPanel::renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero) const
+void CInfoPanel::renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero, bool fAutoCalc) const
 {
 	if(m_active) {
 
-		rc.bottom = m_height + 1;
+		if(fAutoCalc)
+			rc.bottom = m_height + 1;
 		if(fAero) {
 			RECT	rcBlack = rc;
 			rcBlack.bottom = m_height + 1; // + 2;
@@ -261,9 +263,11 @@ void CInfoPanel::renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero) 
 					rc.bottom -= 2;
 					::DrawAlpha(hdc, &rc, PluginConfig.m_ipBackgroundGradient, 100, PluginConfig.m_ipBackgroundGradientHigh, 0, 17,
 							  31, 8, 0);
-					rc.top = rc.bottom - 1;
-					rc.left--; rc.right++;
-					::DrawEdge(hdc, &rc, BDR_SUNKENOUTER, BF_RECT);
+					if(fAutoCalc) {
+						rc.top = rc.bottom - 1;
+						rc.left--; rc.right++;
+						::DrawEdge(hdc, &rc, BDR_SUNKENOUTER, BF_RECT);
+					}
 				}
 			}
 			else
@@ -750,7 +754,7 @@ void CInfoPanel::handleClick(const POINT& pt)
 	HMENU m = constructContextualMenu();
 	LRESULT r = ::TrackPopupMenu(m, TPM_RETURNCMD, pt.x, pt.y, 0, m_dat->hwnd, NULL);
 
-	::DM_CmdHandler(m_dat);
+	//::DM_CmdHandler(m_dat);
 	::DestroyMenu(m);
 	m_hoverFlags = 0;
 	Invalidate();
@@ -855,38 +859,16 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 			if(!fClient)
 				::DBFreeVariant(&dbv);
 			m_dat->ti.lpszText = tszFinalTip;
+			POINT pt;
+			RECT  rc = {0, 0, 400, 600};
+			GetCursorPos(&pt);
+			CTip *tip = new CTip(m_dat->hwnd, m_dat->hContact, tszFinalTip, this);
+			tip->show(rc, pt, m_dat->hTabIcon, m_dat->szStatus);
+			return;
 		}
 		::SendMessage(m_dat->hwndTip, TTM_UPDATETIPTEXT, 0, (LPARAM)&m_dat->ti);
 		::SendMessage(m_dat->hwndTip, TTM_SETMAXTIPWIDTH, 0, 350);
 
-		switch (ctrlId) {
-			case IDC_PANELNICK: {
-				DBVARIANT dbv;
-
-				if (!M->GetTString(m_dat->cache->getActiveContact(), m_dat->cache->getActiveProto(), "XStatusName", &dbv)) {
-					if (lstrlen(dbv.ptszVal) > 1) {
-						_sntprintf(szTitle, safe_sizeof(szTitle), CTranslator::get(CTranslator::GEN_IP_TIP_XSTATUS), m_dat->cache->getNick(), dbv.ptszVal);
-						szTitle[safe_sizeof(szTitle) - 1] = 0;
-						::DBFreeVariant(&dbv);
-						break;
-					}
-					::DBFreeVariant(&dbv);
-				}
-				if (m_dat->xStatus > 0 && m_dat->xStatus <= 32) {
-					_sntprintf(szTitle, safe_sizeof(szTitle), CTranslator::get(CTranslator::GEN_IP_TIP_XSTATUS), m_dat->cache->getNick(), xStatusDescr[m_dat->xStatus - 1]);
-					szTitle[safe_sizeof(szTitle) - 1] = 0;
-				} else
-					return;
-				break;
-			}
-			case IDC_PANELSTATUS: {
-				mir_sntprintf(szTitle, safe_sizeof(szTitle), CTranslator::get(CTranslator::GEN_IP_TIP_STATUSMSG), m_dat->cache->getNick(), m_dat->szStatus);
-
-				break;
-			}
-			default:
-				_sntprintf(szTitle, safe_sizeof(szTitle), CTranslator::get(CTranslator::GEN_IP_TIP_TITLE));
-		}
 		::SendMessage(m_dat->hwndTip, TTM_SETTITLE, 1, (LPARAM)szTitle);
 		::SendMessage(m_dat->hwndTip, TTM_TRACKACTIVATE, TRUE, (LPARAM)&m_dat->ti);
 	}
@@ -1158,4 +1140,261 @@ void CInfoPanel::dismissConfig(bool fForced)
 		SendMessage(m_hwndConfig, WM_CLOSE, 1, 1);
 		m_hwndConfig = 0;
 	}
+}
+
+CTip::CTip(const HWND hwndParent, const HANDLE hContact, const TCHAR *pszText, const CInfoPanel* panel)
+{
+	m_hwnd = ::CreateWindowEx(WS_EX_TOOLWINDOW, _T("RichEditTipClass"), _T(""), (M->isAero() ? WS_THICKFRAME : WS_BORDER)|WS_POPUPWINDOW|WS_TABSTOP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
+							  0, 0, 40, 40, 0, 0, g_hInst, this);
+
+	m_hRich = ::CreateWindowEx(WS_EX_TRANSPARENT, RICHEDIT_CLASS, _T(""), WS_CHILD | ES_MULTILINE | ES_AUTOVSCROLL | ES_NOHIDESEL | ES_READONLY | WS_VSCROLL | WS_TABSTOP,
+			  0, 0, 40, 40, m_hwnd, reinterpret_cast<HMENU>(1000), g_hInst, NULL);
+
+	::SendMessage(m_hRich, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
+	::SendMessage(m_hRich, EM_SETEVENTMASK, 0, ENM_LINK);
+	::SendMessage(m_hRich, WM_SETFONT, (WPARAM)CInfoPanel::m_ipConfig.hFonts[IPFONTID_STATUS], 0);
+
+	m_hContact = hContact;
+	if(pszText)
+		m_pszText = mir_tstrdup(pszText);
+	else
+		m_pszText = 0;
+	m_panel = panel;
+	m_hwndParent = hwndParent;
+	m_OldMessageEditProc = (WNDPROC)SetWindowLongPtr(m_hRich, GWLP_WNDPROC, (LONG_PTR)RichEditProc);
+}
+
+void CTip::show(const RECT& rc, POINT& pt, const HICON hIcon, const TCHAR *szTitle)
+{
+	HDC			hdc = ::GetDC(m_hwnd);
+	FORMATRANGE fr = {0};
+	RECT		rcPage = {0, 0, 0, 0};
+	RECT		rcParent;
+
+	int xBorder, yBorder;
+
+	xBorder = M->isAero() ? GetSystemMetrics(SM_CXSIZEFRAME) : 1;
+	yBorder = M->isAero() ? GetSystemMetrics(SM_CYSIZEFRAME) : 1;
+
+	m_hIcon = hIcon;
+	m_szTitle = szTitle;
+
+	::SetWindowText(m_hRich, m_pszText);
+	::GetWindowRect(m_hwndParent, &rcParent);
+	if(pt.x + rc.right > rcParent.right)
+		pt.x = rcParent.right - rc.right - 5;
+
+	m_rcRich = rc;
+
+	m_rcRich.bottom = 550;
+	m_rcRich.left = LEFT_BORDER; m_rcRich.top = TOP_BORDER;
+	m_rcRich.right -= (LEFT_BORDER + RIGHT_BORDER);
+
+	m_rcRich.right = m_rcRich.left + (15 * (m_rcRich.right - m_rcRich.left));
+	m_rcRich.bottom = m_rcRich.top + (15 * (m_rcRich.bottom - m_rcRich.top));
+
+	fr.hdc = hdc;
+	fr.hdcTarget = hdc;
+	fr.rc = m_rcRich;
+	fr.rcPage = rcPage;
+	fr.chrg.cpMax = -1;
+	fr.chrg.cpMin = 0;
+	LRESULT lr = ::SendMessage(m_hRich, EM_FORMATRANGE, 0, (LPARAM)&fr);
+	m_szRich.cx = (fr.rc.right - fr.rc.left) / 15;
+	m_szRich.cy = 3 + ((fr.rc.bottom - fr.rc.top) / 15);
+
+	m_rcRich.right = m_rcRich.left + m_szRich.cx;
+	m_rcRich.bottom = m_rcRich.top + m_szRich.cy;
+
+	::SendMessage(m_hRich, EM_FORMATRANGE, 0, (LPARAM)NULL);
+
+	::SetWindowPos(m_hwnd, HWND_TOP, pt.x - 5, pt.y - 5, m_szRich.cx + LEFT_BORDER + RIGHT_BORDER + 2 * xBorder,
+				   m_szRich.cy + TOP_BORDER + BOTTOM_BORDER + 2 * yBorder, SWP_NOACTIVATE|SWP_SHOWWINDOW);
+
+	::SetWindowPos(m_hRich, 0, LEFT_BORDER, TOP_BORDER, m_szRich.cx, m_szRich.cy, SWP_SHOWWINDOW);
+	::ReleaseDC(m_hwnd, hdc);
+}
+
+void CTip::registerClass()
+{
+	WNDCLASSEX wc;
+
+	ZeroMemory(&wc, sizeof(wc));
+	wc.cbSize         = sizeof(wc);
+	wc.lpszClassName  = _T("RichEditTipClass");
+	wc.lpfnWndProc    = (WNDPROC)CTip::WndProcStub;
+	wc.hCursor        = LoadCursor(NULL, IDC_ARROW);
+	wc.cbWndExtra     = sizeof(CTip *);
+	wc.hbrBackground  = 0;
+	wc.style          = CS_GLOBALCLASS | CS_DBLCLKS | CS_PARENTDC;
+	RegisterClassEx(&wc);
+}
+
+INT_PTR CALLBACK CTip::RichEditProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch(msg) {
+		case WM_SETCURSOR:
+			::HideCaret(hwnd);
+			break;
+	}
+	return(::CallWindowProc(m_OldMessageEditProc, hwnd, msg, wParam, lParam));
+}
+
+INT_PTR CALLBACK CTip::WndProcStub(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	CTip *tip = reinterpret_cast<CTip *>(::GetWindowLongPtr(hwnd, GWLP_USERDATA));
+
+	if(tip)
+		return(tip->WndProc(hwnd, msg, wParam, lParam));
+
+	switch(msg) {
+		case WM_CREATE: {
+			CREATESTRUCT *cs = reinterpret_cast<CREATESTRUCT *>(lParam);
+			::SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(cs->lpCreateParams));
+		}
+		default:
+			break;
+	}
+	return(::DefWindowProc(hwnd, msg, wParam, lParam));
+}
+
+/**
+ * the window procedure for the tooltip window.
+ */
+INT_PTR CALLBACK CTip::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch(msg) {
+		//case WM_MOUSEMOVE:
+		case WM_ACTIVATE:
+		case WM_SETCURSOR:
+			::KillTimer(hwnd, 1000);
+			::SetTimer(hwnd, 1000, 200, 0);
+			break;
+
+		case WM_NCHITTEST:
+			return(HTCLIENT);
+
+		case WM_ERASEBKGND: {
+			HDC 		hdc = (HDC) wParam;
+			RECT 		rc;
+			TCHAR		szTitle[128];
+			COLORREF	clr = CInfoPanel::m_ipConfig.clrs[IPFONTID_NICK];
+			GetClientRect(hwnd, &rc);
+			CContactCache* c = CGlobals::getContactCache(m_hContact);
+			RECT		rcText = {20, 0, rc.right, TOP_BORDER};
+
+			mir_sntprintf(szTitle, 128, m_szTitle ? _T("%s (%s)") : _T("%s%s"), c->getNick(), m_szTitle ? m_szTitle : _T(""));
+
+			if(M->isAero()) {
+				HDC			hdcMem;
+				HANDLE 		hbp = 0;
+				COLORREF 	clr2 = PluginConfig.m_tbBackgroundHigh ? PluginConfig.m_tbBackgroundHigh :
+							(CSkin::m_pCurrentAeroEffect ? CSkin::m_pCurrentAeroEffect->m_clrToolbar : CSkin::m_dwmColorRGB);
+				HANDLE hTheme = CMimAPI::m_pfnOpenThemeData(m_hwnd, L"BUTTON");
+
+				hbp = CSkin::InitiateBufferedPaint(hdc, rc, hdcMem);
+
+				HFONT  hOldFont = reinterpret_cast<HFONT>(::SelectObject(hdcMem, CInfoPanel::m_ipConfig.hFonts[IPFONTID_NICK]));
+
+				::FillRect(hdcMem, &rc, reinterpret_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH)));
+				::DrawAlpha(hdcMem, &m_rcRich, clr2, 80, clr2, 0, 9, 0, 1, 0);
+				CSkin::ApplyAeroEffect(hdcMem, &rc, CSkin::AERO_EFFECT_WHITE, 0);
+				if(m_hIcon)
+					::DrawIconEx(hdcMem, 2, 4, m_hIcon, 16, 16, 0, 0, DI_NORMAL);
+
+				CSkin::RenderText(hdcMem, hTheme, szTitle, &rcText, DT_SINGLELINE|DT_END_ELLIPSIS|DT_VCENTER, CSkin::m_glowSize, clr);
+				::SelectObject(hdcMem, hOldFont);
+				CSkin::FinalizeBufferedPaint(hbp, &rc);
+				MARGINS m;
+
+				m.cxLeftWidth = LEFT_BORDER;
+				m.cxRightWidth = RIGHT_BORDER;
+				m.cyTopHeight = TOP_BORDER;
+				m.cyBottomHeight = BOTTOM_BORDER;
+				CMimAPI::m_pfnDwmExtendFrameIntoClientArea(m_hwnd, &m);
+				CMimAPI::m_pfnCloseThemeData(hTheme);
+			}
+			else {
+				if(m_panel) {
+					HFONT  hOldFont = reinterpret_cast<HFONT>(::SelectObject(hdc, CInfoPanel::m_ipConfig.hFonts[IPFONTID_NICK]));
+
+					::SetBkMode(hdc, TRANSPARENT);
+					rc.bottom += 2;
+					rc.left -= 4;rc.right += 4;
+					m_panel->renderBG(hdc, rc, &SkinItems[ID_EXTBKINFOPANELBG], false, false);
+					if(m_hIcon)
+						::DrawIconEx(hdc, 2, 4, m_hIcon, 16, 16, 0, 0, DI_NORMAL);
+					CSkin::RenderText(hdc, 0, szTitle, &rcText, DT_SINGLELINE|DT_END_ELLIPSIS|DT_VCENTER, CSkin::m_glowSize, clr);
+					::SelectObject(hdc, hOldFont);
+				}
+			}
+			return(1);
+		}
+
+		case WM_NOTIFY: {
+			switch (((NMHDR *) lParam)->code) {
+				case EN_LINK:
+					::SetFocus(m_hRich);
+					switch (((ENLINK *) lParam)->msg) {
+						case WM_LBUTTONUP:
+							TEXTRANGE tr;
+							CHARRANGE sel;
+
+							::SendMessage(m_hRich, EM_EXGETSEL, 0, (LPARAM) & sel);
+							if (sel.cpMin != sel.cpMax)
+								break;
+							tr.chrg = ((ENLINK *) lParam)->chrg;
+							tr.lpstrText = (TCHAR *)mir_alloc(sizeof(TCHAR) * (tr.chrg.cpMax - tr.chrg.cpMin + 8));
+							::SendMessage(m_hRich, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
+							if (_tcschr(tr.lpstrText, '@') != NULL && _tcschr(tr.lpstrText, ':') == NULL && _tcschr(tr.lpstrText, '/') == NULL) {
+								::MoveMemory(tr.lpstrText + 7, tr.lpstrText, sizeof(TCHAR) * (tr.chrg.cpMax - tr.chrg.cpMin + 1));
+								::CopyMemory(tr.lpstrText, _T("mailto:"), 7);
+							}
+							char *szUrl = mir_t2a(tr.lpstrText);
+							CallService(MS_UTILS_OPENURL, 1, (LPARAM)szUrl);
+							mir_free(szUrl);
+							mir_free(tr.lpstrText);
+							::DestroyWindow(hwnd);
+							break;
+					}
+					break;
+				default:
+					break;
+			}
+			break;
+		}
+
+		case WM_COMMAND: {
+			if((HWND)lParam == m_hRich && HIWORD(wParam) == EN_SETFOCUS)
+				::HideCaret(m_hRich);
+			break;
+		}
+
+		case WM_TIMER:
+			if(wParam == 1000) {
+				POINT	pt;
+				RECT	rc;
+
+				::KillTimer(hwnd, 1000);
+				::GetCursorPos(&pt);
+				::GetWindowRect(hwnd, &rc);
+				if(!PtInRect(&rc, pt))
+					::DestroyWindow(hwnd);
+				else
+					break;
+				if(::GetActiveWindow() != hwnd)
+					::DestroyWindow(hwnd);
+			}
+			break;
+
+		case WM_DESTROY:
+			::SetWindowLongPtr(m_hRich, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(m_OldMessageEditProc));
+			break;
+
+		case WM_NCDESTROY: {
+			::SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
+			delete this;
+		}
+	}
+	return(::DefWindowProc(hwnd, msg, wParam, lParam));
 }

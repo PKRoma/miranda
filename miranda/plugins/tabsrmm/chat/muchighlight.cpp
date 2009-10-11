@@ -57,6 +57,7 @@ void CMUCHighlight::cleanup()
 void CMUCHighlight::init()
 {
 	DBVARIANT dbv = {0};
+	char *p = 0;
 
 	if(m_fInitialized)
 		cleanup();							// clean up first, if we were already initialized
@@ -73,14 +74,13 @@ void CMUCHighlight::init()
 
 	m_dwFlags = M->GetDword("Chat", "HighlightEnabled", MATCH_TEXT);
 
-	tokenize(m_TextPatternString, m_TextPatterns, m_iTextPatterns);
-	tokenize(m_NickPatternString, m_NickPatterns, m_iNickPatterns);
-
-	/*for(int i = 0; i < m_iTextPatterns; i++)
-		_DebugTraceW(_T("textpattern: %s %c, %c"), m_TextPatterns[i], *(m_TextPatterns[i]), *((m_TextPatterns[i] + 1)));
-
-	for(i = 0; i < m_iNickPatterns; i++)
-		_DebugTraceW(_T("NICKpattern: %s"), m_NickPatterns[i]);*/
+	__try {
+		tokenize(m_TextPatternString, m_TextPatterns, m_iTextPatterns);
+		tokenize(m_NickPatternString, m_NickPatterns, m_iNickPatterns);
+	}
+	__except (CGlobals::Ex_ShowDialog(GetExceptionInformation(), __FILE__, __LINE__)) {
+		m_Valid = false;
+	}
 }
 
 void CMUCHighlight::tokenize(TCHAR *tszString, TCHAR**& patterns, UINT& nr)
@@ -128,92 +128,93 @@ void CMUCHighlight::tokenize(TCHAR *tszString, TCHAR**& patterns, UINT& nr)
 	}
 }
 
-int CMUCHighlight::match(const GCEVENT *pgce, const SESSION_INFO *psi, DWORD dwFlags, const TCHAR *tszAdditonal)
+int CMUCHighlight::match(const GCEVENT *pgce, const SESSION_INFO *psi, DWORD dwFlags)
 {
 	int 			result = 0, nResult = 0;
 
-	if(pgce == 0)
+	if(pgce == 0 || m_Valid == false)
 		return(0);
 
-	if((m_dwFlags & MATCH_TEXT) && (dwFlags & MATCH_TEXT) && m_iTextPatterns > 0 && psi != 0) {
-#ifdef __HLT_PERFSTATS
-		int		words = 0;
-		M->startTimer();
-#endif
-		TCHAR	*tszCleaned = ::RemoveFormatting(pgce->ptszText, true);
-		TCHAR	*p = tszCleaned;
-		TCHAR  	*p1;
-		UINT	i = 0;
+	__try {
+		if((m_dwFlags & MATCH_TEXT) && (dwFlags & MATCH_TEXT) && m_iTextPatterns > 0 && psi != 0) {
+	#ifdef __HLT_PERFSTATS
+			int		words = 0;
+			M->startTimer();
+	#endif
+			TCHAR	*tszCleaned = ::RemoveFormatting(pgce->ptszText, true);
+			TCHAR	*p = tszCleaned;
+			TCHAR  	*p1;
+			UINT	i = 0;
 
-		TCHAR	*tszMe = ((psi && psi->pMe) ? mir_tstrdup(psi->pMe->pszNick) : 0);
-		if(tszMe)
-			_tcslwr(tszMe);
+			TCHAR	*tszMe = ((psi && psi->pMe) ? mir_tstrdup(psi->pMe->pszNick) : 0);
+			if(tszMe)
+				_tcslwr(tszMe);
 
-		while(p && !result) {
-			while(*p && (*p == ' ' || *p == ',' || *p == '.' || *p == ':' || *p == ';' || *p == '?' || *p == '!'))
-				p++;
+			while(p && !result) {
+				while(*p && (*p == ' ' || *p == ',' || *p == '.' || *p == ':' || *p == ';' || *p == '?' || *p == '!'))
+					p++;
 
-			if(*p) {
-				p1 = p;
-				while(*p1 && *p1 != ' ' && *p1 != ',' && *p1 != '.' && *p1 != ':' && *p1 != ';' && *p1 != '?' && *p1 != '!')
-					p1++;
+				if(*p) {
+					p1 = p;
+					while(*p1 && *p1 != ' ' && *p1 != ',' && *p1 != '.' && *p1 != ':' && *p1 != ';' && *p1 != '?' && *p1 != '!')
+						p1++;
 
-				if(*p1)
-					*p1 = 0;
-				else
-					p1 = 0;
+					if(*p1)
+						*p1 = 0;
+					else
+						p1 = 0;
 
-				for(i = 0; i < m_iTextPatterns && !result; i++) {
-					if(*(m_TextPatterns[i]) == '%' && *((m_TextPatterns[i]) + 1)  == 'm' && tszMe) {
-						result = wildmatch(tszMe, p) ? MATCH_TEXT : 0;
-					} else
-						result = wildmatch(m_TextPatterns[i], p) ? MATCH_TEXT : 0;
+					for(i = 0; i < m_iTextPatterns && !result; i++) {
+						if(*(m_TextPatterns[i]) == '%' && *((m_TextPatterns[i]) + 1)  == 'm' && tszMe) {
+							result = wildmatch(tszMe, p) ? MATCH_TEXT : 0;
+						} else
+							result = wildmatch(m_TextPatterns[i], p) ? MATCH_TEXT : 0;
+					}
+
+					if(p1) {
+						*p1 = ' ';
+						p = p1 + 1;
+					}
+					else
+						p = 0;
+	#ifdef __HLT_PERFSTATS
+					words++;
+	#endif
 				}
-
-				if(p1) {
-					*p1 = ' ';
-					p = p1 + 1;
-				}
 				else
-					p = 0;
-#ifdef __HLT_PERFSTATS
-				words++;
-#endif
+					break;
 			}
-			else
-				break;
+
+	#ifdef __HLT_PERFSTATS
+			M->stopTimer(0);
+			if(psi && psi->dat) {
+				mir_sntprintf(psi->dat->szStatusBar, 100, _T("PERF text match: %d ticks = %f msec (%d words, %d patterns)"), (int)M->getTicks(), M->getMsec(), words, m_iTextPatterns);
+				if(psi->dat->pContainer->hwndStatus)
+					::SendMessage(psi->dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM)psi->dat->szStatusBar);
+			}
+	#endif
+			mir_free(tszMe);
 		}
 
-#ifdef __HLT_PERFSTATS
-		M->stopTimer(0);
-		if(psi && psi->dat) {
-			mir_sntprintf(psi->dat->szStatusBar, 100, _T("PERF text match: %d ticks = %f msec (%d words, %d patterns)"), (int)M->getTicks(), M->getMsec(), words, m_iTextPatterns);
-			if(psi->dat->pContainer->hwndStatus)
-				::SendMessage(psi->dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM)psi->dat->szStatusBar);
+		/*
+		 * optinally, match the nickname against the list of nicks to highlight
+		 */
+		if((m_dwFlags & MATCH_NICKNAME) && (dwFlags & MATCH_NICKNAME) && pgce->ptszNick && m_iNickPatterns > 0) {
+			for(UINT i = 0; i < m_iNickPatterns && !nResult; i++) {
+				if(pgce->ptszNick)
+					nResult = wildmatch(m_NickPatterns[i], pgce->ptszNick) ? MATCH_NICKNAME : 0;
+				if((m_dwFlags & MATCH_UIN) && pgce->ptszUserInfo)
+					nResult = wildmatch(m_NickPatterns[i], pgce->ptszUserInfo) ? MATCH_NICKNAME : 0;
+			}
 		}
-#endif
-		mir_free(tszMe);
+
+		return(result | nResult);
 	}
-
-	/*
-	 * optinally, match the nickname against the list of nicks to highlight
-	 */
-	if((m_dwFlags & MATCH_NICKNAME) && (dwFlags & MATCH_NICKNAME) && pgce->ptszNick && m_iNickPatterns > 0) {
-
-		for(UINT i = 0; i < m_iNickPatterns && !nResult; i++) {
-			nResult = wildmatch(m_NickPatterns[i], pgce->ptszNick) ? MATCH_NICKNAME : 0;
-			if(tszAdditonal) {
-				nResult = wildmatch(m_NickPatterns[i], tszAdditonal) ? MATCH_NICKNAME : 0;
-				//_DebugTraceW(_T("match %s against additional: %s (%d)"), *it, tszAdditonal, nResult);
-			}
-			if((m_dwFlags & MATCH_UIN) && pgce->ptszUserInfo) {
-				nResult = wildmatch(m_NickPatterns[i], pgce->ptszUserInfo) ? MATCH_NICKNAME : 0;
-				//_DebugTraceW(_T("match %s against UID: %s (%d)"), *it, pgce->ptszUserInfo, nResult);
-			}
-		}
+	__except(CGlobals::Ex_ShowDialog(GetExceptionInformation(), __FILE__, __LINE__)) {
+		m_Valid = false;
+		return(0);
 	}
-
-	return(result | nResult);
+	return(0);
 }
 
 int CMUCHighlight::wildmatch(const TCHAR *pattern, const TCHAR *tszString) {

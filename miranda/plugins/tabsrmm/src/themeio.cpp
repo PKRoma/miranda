@@ -198,8 +198,8 @@ void TSAPI WriteThemeToINI(const TCHAR *szIniFilenameT, struct _MessageWindowDat
 			WritePrivateProfileStringA("Templates", TemplateNames[i], LTR_Active.szTemplates[i], szIniFilename);
 			WritePrivateProfileStringA("RTLTemplates", TemplateNames[i], RTL_Active.szTemplates[i], szIniFilename);
 		} else {
-			WritePrivateProfileStringA("Templates", TemplateNames[i], dat->ltr_templates->szTemplates[i], szIniFilename);
-			WritePrivateProfileStringA("RTLTemplates", TemplateNames[i], dat->rtl_templates->szTemplates[i], szIniFilename);
+			WritePrivateProfileStringA("Templates", TemplateNames[i], dat->pContainer->ltr_templates->szTemplates[i], szIniFilename);
+			WritePrivateProfileStringA("RTLTemplates", TemplateNames[i], dat->pContainer->rtl_templates->szTemplates[i], szIniFilename);
 		}
 #endif
 	}

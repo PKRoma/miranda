@@ -60,6 +60,47 @@ struct InfoPanelConfig {
 
 extern TCHAR *xStatusDescr[];
 
+class CTip
+{
+public:
+	enum {
+		TOP_BORDER		= 25,
+		LEFT_BORDER		= 2,
+		RIGHT_BORDER	= 2,
+		BOTTOM_BORDER	= 1
+	};
+
+	CTip													(const HWND hwndParent, const HANDLE hContact, const TCHAR *pszText = 0, const CInfoPanel *panel = 0);
+	~CTip()
+	{
+		if(m_pszText)
+			mir_free(m_pszText);
+	}
+	void						show						(const RECT& rc, POINT& pt, const HICON hIcon = 0, const TCHAR *szTitle = 0);
+
+	static void					registerClass				();
+private:
+
+	INT_PTR	CALLBACK			WndProc						(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK	 	WndProcStub					(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK 	RichEditProc				(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+	HWND						m_hwnd;
+	HWND						m_hRich;
+	HWND						m_hwndParent;
+	HANDLE						m_hContact;
+	TCHAR*						m_pszText;
+	SIZE						m_szRich;
+	RECT						m_rcRich;
+	const CInfoPanel*			m_panel;
+	HICON						m_hIcon;
+	const TCHAR*				m_szTitle;
+
+private:
+	static	WNDPROC				m_OldMessageEditProc;
+
+};
+
 class CInfoPanel
 {
 public:
@@ -104,7 +145,7 @@ public:
 	void 						Configure					() const;
 	void 						showHide					() const;
 	bool 						getVisibility				();
-	void 						renderBG					(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero) const;
+	void 						renderBG					(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero, bool fAutoCalc = true) const;
 	void 						renderContent				(const HDC hdcMem);
 	void 						Invalidate					() const;
 	void 						trackMouse					(POINT& pt);
