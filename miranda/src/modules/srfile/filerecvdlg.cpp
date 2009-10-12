@@ -201,7 +201,7 @@ void GetReceivedFilesDir(TCHAR *szDir,int cchDir)
 		mir_sntprintf( szTemp, SIZEOF(szTemp), _T("%%miranda_path%%\\%s"), TranslateT("Received Files"));
 
 	patchDir( szTemp, SIZEOF(szTemp));
-	RemoveInvalidFilenameChars(szTemp);
+	RemoveInvalidPathChars(szTemp);
 	lstrcpyn( szDir, szTemp, cchDir );
 }
 
