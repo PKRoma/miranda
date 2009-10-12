@@ -42,11 +42,6 @@
 int				Utils::rtf_ctable_size = 0;
 TRTFColorTable* Utils::rtf_ctable = 0;
 
-/*
- * old code (textformat plugin dealing directly in the edit control - not the best solution, but the author
- * had no other choice as srmm never had an api for this...
- */
-
 static TCHAR *w_bbcodes_begin[] = { _T("[b]"), _T("[i]"), _T("[u]"), _T("[s]"), _T("[color=") };
 static TCHAR *w_bbcodes_end[] = { _T("[/b]"), _T("[/i]"), _T("[/u]"), _T("[/s]"), _T("[/color]") };
 
@@ -661,7 +656,6 @@ void Utils::SettingsToContainer(ContainerWindowData *pContainer)
 {
 	pContainer->dwFlags 		= pContainer->settings->dwFlags;
 	pContainer->dwFlagsEx 		= pContainer->settings->dwFlagsEx;
-	pContainer->dwTransparency 	= pContainer->settings->dwTransparency;
 	pContainer->avatarMode 		= pContainer->settings->avatarMode;
 	pContainer->ownAvatarMode 	= pContainer->settings->ownAvatarMode;
 }
@@ -670,7 +664,8 @@ void Utils::ContainerToSettings(ContainerWindowData *pContainer)
 {
 	pContainer->settings->dwFlags			= pContainer->dwFlags;
 	pContainer->settings->dwFlagsEx			= pContainer->dwFlagsEx;
-	pContainer->settings->dwTransparency	= pContainer->dwTransparency;	pContainer->settings->avatarMode		= pContainer->avatarMode;	pContainer->settings->ownAvatarMode		= pContainer->ownAvatarMode;
+	pContainer->settings->avatarMode		= pContainer->avatarMode;
+	pContainer->settings->ownAvatarMode		= pContainer->ownAvatarMode;
 }
 
 void Utils::ReadPrivateContainerSettings(ContainerWindowData *pContainer, bool fForce)
@@ -717,9 +712,12 @@ LRESULT Utils::CmdDispatcher(UINT uType, HWND hwndDlg, UINT cmd, WPARAM wParam, 
 {
 	switch(uType) {
 		case CMD_CONTAINER:
-			if(pContainer && hwndDlg) {
+			if(pContainer && hwndDlg)
 				return(DM_ContainerCmdHandler(pContainer, cmd, wParam, lParam));
-			}
+			break;
+		case CMD_MSGDIALOG:
+			if(pContainer && hwndDlg && dat)
+				return(DM_MsgWindowCmdHandler(hwndDlg, pContainer, dat, cmd, wParam, lParam));
 	}
 	return(0);
 }

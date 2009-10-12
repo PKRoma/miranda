@@ -958,19 +958,20 @@ passed:
 	return 0;
 }
 
-/*
+/**
  * remove all popups for hContact, but only if the mask matches the current "mode"
  */
 
 void TSAPI DeletePopupsForContact(HANDLE hContact, DWORD dwMask)
 {
 	int i = 0;
-	const PLUGIN_DATAT* _T = 0;
+	PLUGIN_DATAT* _T = 0;
 
 	if (!(dwMask & nen_options.dwRemoveMask) || nen_options.iDisable || !PluginConfig.g_PopupAvail)
 		return;
 
-	while ((_T = PU_GetByContact(hContact)) != 0) {
+	while ((_T = const_cast<PLUGIN_DATAT *>(PU_GetByContact(hContact))) != 0) {
+		_T->hContact = 0;									// make sure, it never "comes back"
 		if (_T->hWnd != 0 && IsWindow(_T->hWnd))
 			PUDeletePopUp(_T->hWnd);
 	}

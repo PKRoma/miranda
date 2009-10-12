@@ -1536,7 +1536,7 @@ buttons_done:
 				BOOL fTransAllowed = !bSkinned || PluginConfig.m_bIsVista;
 
 				if (pContainer->dwFlags & CNT_TRANSPARENCY && CMimAPI::m_pSetLayeredWindowAttributes != NULL && fTransAllowed) {
-					CMimAPI::m_pSetLayeredWindowAttributes(hwndDlg, Skin->getColorKey(), (BYTE)HIWORD(pContainer->dwTransparency), (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
+					CMimAPI::m_pSetLayeredWindowAttributes(hwndDlg, Skin->getColorKey(), (BYTE)HIWORD(pContainer->settings->dwTransparency), (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 				}
 			}
 			pContainer->hwndSaved = 0;
@@ -1573,7 +1573,7 @@ buttons_done:
 			}
 
 			if (pContainer->dwFlags & CNT_TRANSPARENCY && CMimAPI::m_pSetLayeredWindowAttributes != NULL && fTransAllowed) {
-				DWORD trans = LOWORD(pContainer->dwTransparency);
+				DWORD trans = LOWORD(pContainer->settings->dwTransparency);
 				CMimAPI::m_pSetLayeredWindowAttributes(hwndDlg, Skin->getColorKey(), (BYTE)trans, (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 			}
 			if (pContainer->dwFlags & CNT_NEED_UPDATETITLE) {
@@ -1713,6 +1713,10 @@ buttons_done:
 			else
 				pContainer->szAbsThemeFile[0] = pContainer->szRelThemeFile[0] = 0;
 
+			if(!(pContainer->dwFlags & CNT_TITLE_PRIVATE)) {
+				_tcsncpy(pContainer->settings->szTitleFormat, PluginConfig.szDefaultTitleFormat, TITLE_FORMATLEN);
+				pContainer->settings->szTitleFormat[TITLE_FORMATLEN - 1] = 0;
+			}
 			pContainer->ltr_templates = pContainer->rtl_templates = 0;
 			break;
 		}
@@ -1762,7 +1766,7 @@ buttons_done:
 
 				SetWindowLongPtr(hwndDlg, GWL_EXSTYLE, ex);
 				if (pContainer->dwFlags & CNT_TRANSPARENCY && fTransAllowed) {
-					DWORD trans = LOWORD(pContainer->dwTransparency);
+					DWORD trans = LOWORD(pContainer->settings->dwTransparency);
 					CMimAPI::m_pSetLayeredWindowAttributes(hwndDlg, Skin->getColorKey(), (BYTE)trans, (/* pContainer->bSkinned ? LWA_COLORKEY : */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 				}
 			}

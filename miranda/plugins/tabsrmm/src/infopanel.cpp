@@ -759,6 +759,29 @@ void CInfoPanel::handleClick(const POINT& pt)
 	m_hoverFlags = 0;
 	Invalidate();
 }
+
+/**
+ * peforms a hit test on the given position. returns 0, if cursor is NOT
+ * inside any of the 3 relevant hovering areas.
+ *
+ * @param pt	POINT (in screen coordinates)
+ * @return		Hit test result or 0 if none applies.
+ */
+int CInfoPanel::hitTest(POINT pt)
+{
+	int	result = HTNIRVANA;
+
+	::ScreenToClient(m_dat->hwnd, &pt);
+
+	if(::PtInRect(&m_rcStatus, pt))
+		result = HTSTATUS;
+	else if(::PtInRect(&m_rcNick, pt))
+		result = HTNICK;
+	else if(::PtInRect(&m_rcUIN, pt))
+		result = HTUIN;
+
+	return(result);
+}
 /**
  * track mouse movements inside the panel. Needed for tooltip activation
  * and to hover the info panel fields.
@@ -771,37 +794,37 @@ void CInfoPanel::trackMouse(POINT& pt)
 		return;
 
 	POINT ptMouse = pt;
-	::ScreenToClient(m_dat->hwnd, &ptMouse);
+
+	int result = hitTest(pt);
 
 	DWORD dwOldHovering = m_hoverFlags;
 	m_hoverFlags = 0;
 
-	if (!m_isChat && ::PtInRect(&m_rcStatus, ptMouse)) {
-		m_hoverFlags |= HOVER_STATUS;
-		::SetCursor(LoadCursor(0, IDC_HAND));
+	switch(result) {
+		case HTSTATUS:
+			if(!m_isChat) {
+				m_hoverFlags |= HOVER_STATUS;
+				::SetCursor(LoadCursor(0, IDC_HAND));
+			}
+			break;
+
+		case HTNICK:
+			m_hoverFlags |= HOVER_NICK;
+			::SetCursor(LoadCursor(0, IDC_HAND));
+			break;
+
+		case HTUIN:
+			::SetCursor(LoadCursor(0, IDC_HAND));
+			m_hoverFlags |= HOVER_UIN;
+			break;
+	}
+
+	if(m_hoverFlags) {
 		if (!(m_dat->dwFlagsEx & MWF_SHOW_AWAYMSGTIMER)) {
 			::SetTimer(m_dat->hwnd, TIMERID_AWAYMSG, 1000, 0);
 			m_dat->dwFlagsEx |= MWF_SHOW_AWAYMSGTIMER;
 		}
 	}
-	else if (::PtInRect(&m_rcUIN, ptMouse)) {
-		::SetCursor(LoadCursor(0, IDC_HAND));
-		m_hoverFlags |= HOVER_UIN;
-	}
-	else if (::PtInRect(&m_rcNick, ptMouse)) {
-		m_hoverFlags |= HOVER_NICK;
-		::SetCursor(LoadCursor(0, IDC_HAND));
-		if(!m_isChat) {
-			if (!(m_dat->dwFlagsEx & MWF_SHOW_AWAYMSGTIMER)) {
-				::SetTimer(m_dat->hwnd, TIMERID_AWAYMSG + 1, 1000, 0);
-				m_dat->dwFlagsEx |= MWF_SHOW_AWAYMSGTIMER;
-			}
-		}
-	} else if (::IsWindowVisible(m_dat->hwndTip)) {
-		if (!::PtInRect(&m_dat->rcStatus, ptMouse))
-			SendMessage(m_dat->hwndTip, TTM_TRACKACTIVATE, FALSE, 0);
-	}
-
 	if(dwOldHovering != m_hoverFlags)
 		Invalidate();
 	if(m_hoverFlags == 0)

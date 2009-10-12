@@ -85,7 +85,7 @@ static void _clrMsgFilter(LPARAM lParam)
 	m->wParam = 0;
 }
 
-static void ClearLog(_MessageWindowData *dat)
+void ClearLog(_MessageWindowData *dat)
 {
 	if(dat) {
 		if (dat->hwndIEView || dat->hwndHPP) {
@@ -363,7 +363,7 @@ static void MsgWindowUpdateState(_MessageWindowData *dat, UINT msg)
 
 		if (msg == WM_ACTIVATE) {
 			if (dat->pContainer->dwFlags & CNT_TRANSPARENCY && CMimAPI::m_pSetLayeredWindowAttributes != NULL) {
-				DWORD trans = LOWORD(dat->pContainer->dwTransparency);
+				DWORD trans = LOWORD(dat->pContainer->settings->dwTransparency);
 				CMimAPI::m_pSetLayeredWindowAttributes(dat->pContainer->hwnd, 0, (BYTE)trans, (dat->pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 			}
 		}
@@ -2685,26 +2685,14 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			 * of SENDJOBS_MAX_SENDS)
 			 */
 
-			if (wParam >= TIMERID_AWAYMSG && wParam <= TIMERID_AWAYMSG + 1) {
+			if (wParam >= TIMERID_AWAYMSG) {
 				POINT pt;
 
 				KillTimer(hwndDlg, wParam);
 				GetCursorPos(&pt);
-				ScreenToClient(hwndDlg, &pt);
 
-				if (wParam == TIMERID_AWAYMSG && PtInRect(&dat->rcStatus, pt)) {
+				if (wParam == TIMERID_AWAYMSG && dat->Panel->hitTest(pt) != CInfoPanel::HTNIRVANA)
 					SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, 0, 0);
-				} else if (wParam == (TIMERID_AWAYMSG + 1) && PtInRect(&dat->rcNick, pt) && dat->xStatus > 0) {
-					TCHAR szBuffer[1025];
-					DBVARIANT dbv;
-					mir_sntprintf(szBuffer, safe_sizeof(szBuffer), CTranslator::get(CTranslator::GEN_MSG_NOXSTATUSMSG));
-					if (!M->GetTString(dat->cache->getActiveContact(), dat->cache->getActiveProto(), "XStatusMsg", &dbv)) {
-						if (lstrlen(dbv.ptszVal) > 2)
-							mir_sntprintf(szBuffer, safe_sizeof(szBuffer), _T("%s"), dbv.ptszVal);
-						DBFreeVariant(&dbv);
-					}
-					SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_PANELNICK, (LPARAM)szBuffer);
-				}
 				else
 					dat->dwFlagsEx &= ~MWF_SHOW_AWAYMSGTIMER;
 				break;
@@ -3311,339 +3299,7 @@ quote_from_last:
 					SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 					break;
 				}
-				case IDC_FONTBOLD:
-				case IDC_FONTITALIC:
-				case IDC_FONTUNDERLINE:
-				case IDC_FONTSTRIKEOUT:	{
-					CHARFORMAT2 cf, cfOld;
-					int cmd = LOWORD(wParam);
-					BOOL isBold, isItalic, isUnderline, isStrikeout;
 
-					if (dat->SendFormat == 0)           // dont use formatting if disabled
-						break;
-
-					ZeroMemory(&cf, sizeof(CHARFORMAT2));
-					ZeroMemory(&cfOld, sizeof(CHARFORMAT2));
-					cfOld.cbSize = cf.cbSize = sizeof(CHARFORMAT2);
-					cfOld.dwMask = CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE | CFM_STRIKEOUT;
-					SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
-					isBold = (cfOld.dwEffects & CFE_BOLD) && (cfOld.dwMask & CFM_BOLD);
-					isItalic = (cfOld.dwEffects & CFE_ITALIC) && (cfOld.dwMask & CFM_ITALIC);
-					isUnderline = (cfOld.dwEffects & CFE_UNDERLINE) && (cfOld.dwMask & CFM_UNDERLINE);
-					isStrikeout = (cfOld.dwEffects & CFM_STRIKEOUT) && (cfOld.dwMask & CFM_STRIKEOUT);
-
-					if (cmd == IDC_FONTBOLD && !IsWindowEnabled(GetDlgItem(hwndDlg, IDC_FONTBOLD)))
-						break;
-					if (cmd == IDC_FONTITALIC && !IsWindowEnabled(GetDlgItem(hwndDlg, IDC_FONTITALIC)))
-						break;
-					if (cmd == IDC_FONTUNDERLINE && !IsWindowEnabled(GetDlgItem(hwndDlg, IDC_FONTUNDERLINE)))
-						break;
-					if (cmd == IDC_FONTSTRIKEOUT && !IsWindowEnabled(GetDlgItem(hwndDlg, IDC_FONTSTRIKEOUT)))
-						break;
-					if (cmd == IDC_FONTBOLD) {
-						cf.dwEffects = isBold ? 0 : CFE_BOLD;
-						cf.dwMask = CFM_BOLD;
-						CheckDlgButton(hwndDlg, IDC_FONTBOLD, !isBold);
-					} else if (cmd == IDC_FONTITALIC) {
-						cf.dwEffects = isItalic ? 0 : CFE_ITALIC;
-						cf.dwMask = CFM_ITALIC;
-						CheckDlgButton(hwndDlg, IDC_FONTITALIC, !isItalic);
-					} else if (cmd == IDC_FONTUNDERLINE) {
-						cf.dwEffects = isUnderline ? 0 : CFE_UNDERLINE;
-						cf.dwMask = CFM_UNDERLINE;
-						CheckDlgButton(hwndDlg, IDC_FONTUNDERLINE, !isUnderline);
-					} else if (cmd == IDC_FONTSTRIKEOUT) {
-						cf.dwEffects = isStrikeout ? 0 : CFM_STRIKEOUT;
-						cf.dwMask = CFM_STRIKEOUT;
-						CheckDlgButton(hwndDlg, IDC_FONTSTRIKEOUT, !isStrikeout);
-					}
-					SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
-					break;
-				}
-				case IDC_FONTFACE: {
-					HMENU submenu = GetSubMenu(m_pContainer->hMenuContext, 7);
-					RECT rc;
-					int iSelection, i;
-					CHARFORMAT2 cf;
-
-					ZeroMemory(&cf, sizeof(CHARFORMAT2));
-					cf.cbSize = sizeof(CHARFORMAT2);
-					cf.dwMask = CFM_COLOR;
-					cf.dwEffects = 0;
-
-					GetWindowRect(GetDlgItem(hwndDlg, IDC_FONTFACE), &rc);
-					iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
-					if (iSelection == ID_FONT_CLEARALLFORMATTING) {
-						cf.dwMask = CFM_BOLD | CFM_COLOR | CFM_ITALIC | CFM_UNDERLINE | CFM_STRIKEOUT;
-						cf.crTextColor = M->GetDword(FONTMODULE, "Font16Col", 0);
-						SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
-						break;
-					}
-					if (iSelection == ID_FONT_DEFAULTCOLOR) {
-						int i = 0;
-						cf.crTextColor = M->GetDword(FONTMODULE, "Font16Col", 0);
-						for (i = 0; i < Utils::rtf_ctable_size; i++) {
-							if (Utils::rtf_ctable[i].clr == cf.crTextColor)
-								cf.crTextColor = RGB(GetRValue(cf.crTextColor), GetGValue(cf.crTextColor), GetBValue(cf.crTextColor) == 0 ? GetBValue(cf.crTextColor) + 1 : GetBValue(cf.crTextColor) - 1);
-						}
-						SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
-						break;
-					}
-					for (i = 0; i < RTF_CTABLE_DEFSIZE; i++) {
-						if (Utils::rtf_ctable[i].menuid == iSelection) {
-							cf.crTextColor = Utils::rtf_ctable[i].clr;
-							SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
-						}
-					}
-					break;
-				}
-
-				case IDCANCEL: {
-					ShowWindow(hwndContainer, SW_MINIMIZE);
-					return FALSE;
-				}
-
-				case IDC_SAVE:
-					SendMessage(hwndDlg, WM_CLOSE, 1, 0);
-					break;
-
-				case IDC_NAME: {
-					if (GetKeyState(VK_SHIFT) & 0x8000)   // copy UIN
-						SendMessage(hwndDlg, DM_UINTOCLIPBOARD, 0, 0);
-					else {
-						CallService(MS_USERINFO_SHOWDIALOG, (WPARAM) (dat->cache->getActiveContact()), 0);
-					}
-					break;
-				}
-
-				case IDC_HISTORY:
-					CallService(MS_HISTORY_SHOWCONTACTHISTORY, (WPARAM) dat->hContact, 0);
-					break;
-
-				case IDC_SMILEYBTN:
-					if (dat->doSmileys && PluginConfig.g_SmileyAddAvail) {
-						RECT rc;
-						HANDLE hContact = dat->cache->getActiveContact();
-
-						if (CheckValidSmileyPack(dat->cache->getActiveProto(), hContact) != 0) {
-							SMADD_SHOWSEL3 smaddInfo = {0};
-
-							if (lParam == 0)
-								GetWindowRect(GetDlgItem(hwndDlg, IDC_SMILEYBTN), &rc);
-							else
-								GetWindowRect((HWND)lParam, &rc);
-							smaddInfo.cbSize = sizeof(SMADD_SHOWSEL3);
-							smaddInfo.hwndTarget = GetDlgItem(hwndDlg, IDC_MESSAGE);
-							smaddInfo.targetMessage = EM_REPLACESEL;
-							smaddInfo.targetWParam = TRUE;
-							smaddInfo.Protocolname = const_cast<char *>(dat->cache->getActiveProto());
-							smaddInfo.Direction = 0;
-							smaddInfo.xPosition = rc.left;
-							smaddInfo.yPosition = rc.top + 24;
-							smaddInfo.hwndParent = hwndContainer;
-							smaddInfo.hContact = hContact;
-							CallService(MS_SMILEYADD_SHOWSELECTION, (WPARAM)hwndContainer, (LPARAM) &smaddInfo);
-						}
-					}
-					break;
-				case IDC_TIME: {
-					RECT rc;
-					HMENU submenu = GetSubMenu(m_pContainer->hMenuContext, 2);
-					int iSelection, isHandled;
-					DWORD dwOldFlags = dat->dwFlags;
-					DWORD dwOldEventIsShown = dat->dwFlagsEx;
-
-					MsgWindowUpdateMenu(dat, submenu, MENU_LOGMENU);
-
-					GetWindowRect(GetDlgItem(hwndDlg, IDC_TIME), &rc);
-
-					iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
-					isHandled = MsgWindowMenuHandler(dat, iSelection, MENU_LOGMENU);
-
-					break;
-				}
-				case IDC_PROTOMENU: {
-					RECT rc;
-					HMENU submenu = GetSubMenu(m_pContainer->hMenuContext, 4);
-					int iSelection;
-					int iOldGlobalSendFormat = PluginConfig.m_SendFormat;
-
-					if (dat->hContact) {
-						int iLocalFormat = M->GetDword(dat->hContact, "sendformat", 0);
-						int iNewLocalFormat = iLocalFormat;
-
-						GetWindowRect(GetDlgItem(hwndDlg, IDC_PROTOCOL), &rc);
-
-						CheckMenuItem(submenu, ID_MODE_GLOBAL, MF_BYCOMMAND | (!(dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE) ? MF_CHECKED : MF_UNCHECKED));
-						CheckMenuItem(submenu, ID_MODE_PRIVATE, MF_BYCOMMAND | (dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE ? MF_CHECKED : MF_UNCHECKED));
-
-						/*
-						 * formatting menu..
-						 */
-
-						CheckMenuItem(submenu, ID_GLOBAL_BBCODE, MF_BYCOMMAND | ((PluginConfig.m_SendFormat) ? MF_CHECKED : MF_UNCHECKED));
-						CheckMenuItem(submenu, ID_GLOBAL_OFF, MF_BYCOMMAND | ((PluginConfig.m_SendFormat == SENDFORMAT_NONE) ? MF_CHECKED : MF_UNCHECKED));
-
-						CheckMenuItem(submenu, ID_THISCONTACT_GLOBALSETTING, MF_BYCOMMAND | ((iLocalFormat == SENDFORMAT_NONE) ? MF_CHECKED : MF_UNCHECKED));
-						CheckMenuItem(submenu, ID_THISCONTACT_BBCODE, MF_BYCOMMAND | ((iLocalFormat > 0) ? MF_CHECKED : MF_UNCHECKED));
-						CheckMenuItem(submenu, ID_THISCONTACT_OFF, MF_BYCOMMAND | ((iLocalFormat == -1) ? MF_CHECKED : MF_UNCHECKED));
-
-						iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
-						switch (iSelection) {
-							case ID_MODE_GLOBAL:
-								dat->dwFlagsEx &= ~(MWF_SHOW_SPLITTEROVERRIDE);
-								M->WriteByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0);
-								LoadSplitter(dat);
-								AdjustBottomAvatarDisplay(dat);
-								DM_RecalcPictureSize(dat);
-								SendMessage(hwndDlg, WM_SIZE, 0, 0);
-								break;
-							case ID_MODE_PRIVATE:
-								dat->dwFlagsEx |= MWF_SHOW_SPLITTEROVERRIDE;
-								M->WriteByte(dat->hContact, SRMSGMOD_T, "splitoverride", 1);
-								LoadSplitter(dat);
-								AdjustBottomAvatarDisplay(dat);
-								DM_RecalcPictureSize(dat);
-								SendMessage(hwndDlg, WM_SIZE, 0, 0);
-								break;
-							case ID_GLOBAL_BBCODE:
-								PluginConfig.m_SendFormat = SENDFORMAT_BBCODE;
-								break;
-							case ID_GLOBAL_OFF:
-								PluginConfig.m_SendFormat = SENDFORMAT_NONE;
-								break;
-							case ID_THISCONTACT_GLOBALSETTING:
-								iNewLocalFormat = 0;
-								break;
-							case ID_THISCONTACT_BBCODE:
-								iNewLocalFormat = SENDFORMAT_BBCODE;
-								break;
-							case ID_THISCONTACT_OFF:
-								iNewLocalFormat = -1;
-								break;
-						}
-						if (iNewLocalFormat == 0)
-							DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "sendformat");
-						else if (iNewLocalFormat != iLocalFormat)
-							M->WriteDword(dat->hContact, SRMSGMOD_T, "sendformat", iNewLocalFormat);
-
-						if (PluginConfig.m_SendFormat != iOldGlobalSendFormat)
-							M->WriteByte(SRMSGMOD_T, "sendformat", (BYTE)PluginConfig.m_SendFormat);
-						if (iNewLocalFormat != iLocalFormat || PluginConfig.m_SendFormat != iOldGlobalSendFormat) {
-							dat->SendFormat = M->GetDword(dat->hContact, "sendformat", PluginConfig.m_SendFormat);
-							if (dat->SendFormat == -1)          // per contact override to disable it..
-								dat->SendFormat = 0;
-							M->BroadcastMessage(DM_CONFIGURETOOLBAR, 0, 1);
-						}
-					}
-					break;
-				}
-				case IDC_TOGGLETOOLBAR:
-					if (lParam == 1)
-						ApplyContainerSetting(m_pContainer, CNT_NOMENUBAR, m_pContainer->dwFlags & CNT_NOMENUBAR ? 0 : 1, true);
-					else
-						ApplyContainerSetting(m_pContainer, CNT_HIDETOOLBAR, m_pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1, true);
-					break;
-				case IDC_INFOPANELMENU: {
-					RECT 	rc;
-					int 	iSelection;
-
-					HMENU submenu = GetSubMenu(m_pContainer->hMenuContext, 9);
-					GetWindowRect(GetDlgItem(hwndDlg, IDC_NAME), &rc);
-
-					EnableMenuItem(submenu, ID_FAVORITES_ADDCONTACTTOFAVORITES, !dat->cache->isFavorite() ? MF_ENABLED : MF_GRAYED);
-					EnableMenuItem(submenu, ID_FAVORITES_REMOVECONTACTFROMFAVORITES, !dat->cache->isFavorite() ? MF_GRAYED : MF_ENABLED);
-
-					iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
-
-					switch(iSelection) {
-						case ID_FAVORITES_ADDCONTACTTOFAVORITES:
-							DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "isFavorite", 1);
-							AddContactToFavorites(dat->hContact, dat->cache->getNick(), dat->cache->getActiveProto(), dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->cache->getActiveProto(), dat->cache->getActiveStatus()), 1, PluginConfig.g_hMenuFavorites);
-							break;
-						case ID_FAVORITES_REMOVECONTACTFROMFAVORITES:
-							DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "isFavorite", 0);
-							DeleteMenu(PluginConfig.g_hMenuFavorites, (UINT_PTR)dat->hContact, MF_BYCOMMAND);
-							break;
-						default:
-							break;
-					}
-					dat->cache->updateFavorite();
-					break;
-				}
-				case IDC_SENDMENU: {
-					RECT rc;
-					HMENU submenu = GetSubMenu(m_pContainer->hMenuContext, 3);
-					int iSelection;
-
-					GetWindowRect(GetDlgItem(hwndDlg, IDOK), &rc);
-					CheckMenuItem(submenu, ID_SENDMENU_SENDTOMULTIPLEUSERS, MF_BYCOMMAND | (dat->sendMode & SMODE_MULTIPLE ? MF_CHECKED : MF_UNCHECKED));
-					CheckMenuItem(submenu, ID_SENDMENU_SENDDEFAULT, MF_BYCOMMAND | (dat->sendMode == 0 ? MF_CHECKED : MF_UNCHECKED));
-					CheckMenuItem(submenu, ID_SENDMENU_SENDTOCONTAINER, MF_BYCOMMAND | (dat->sendMode & SMODE_CONTAINER ? MF_CHECKED : MF_UNCHECKED));
-					CheckMenuItem(submenu, ID_SENDMENU_FORCEANSISEND, MF_BYCOMMAND | (dat->sendMode & SMODE_FORCEANSI ? MF_CHECKED : MF_UNCHECKED));
-					CheckMenuItem(submenu, ID_SENDMENU_SENDLATER, MF_BYCOMMAND | (dat->sendMode & SMODE_SENDLATER ? MF_CHECKED : MF_UNCHECKED));
-					CheckMenuItem(submenu, ID_SENDMENU_SENDWITHOUTTIMEOUTS, MF_BYCOMMAND | (dat->sendMode & SMODE_NOACK ? MF_CHECKED : MF_UNCHECKED));
-					{
-						const char *szFinalProto = dat->cache->getActiveProto();
-						char szServiceName[128];
-
-						mir_snprintf(szServiceName, 128, "%s/SendNudge", szFinalProto);
-						EnableMenuItem(submenu, ID_SENDMENU_SENDNUDGE, MF_BYCOMMAND | ((ServiceExists(szServiceName) && ServiceExists(MS_NUDGE_SEND)) ? MF_ENABLED : MF_GRAYED));
-					}
-					if (lParam)
-						iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
-					else
-						iSelection = HIWORD(wParam);
-
-					switch (iSelection) {
-						case ID_SENDMENU_SENDTOMULTIPLEUSERS:
-							dat->sendMode ^= SMODE_MULTIPLE;
-							if (dat->sendMode & SMODE_MULTIPLE) {
-								HWND hwndClist = DM_CreateClist(dat);;
-							}
-							break;
-						case ID_SENDMENU_SENDNUDGE:
-							SendNudge(dat);
-							break;
-						case ID_SENDMENU_SENDDEFAULT:
-							dat->sendMode = 0;
-							break;
-						case ID_SENDMENU_SENDTOCONTAINER:
-							dat->sendMode ^= SMODE_CONTAINER;
-							break;
-						case ID_SENDMENU_FORCEANSISEND:
-							dat->sendMode ^= SMODE_FORCEANSI;
-							break;
-						case ID_SENDMENU_SENDLATER:
-							dat->sendMode ^= SMODE_SENDLATER;
-							break;
-						case ID_SENDMENU_SENDWITHOUTTIMEOUTS:
-							dat->sendMode ^= SMODE_NOACK;
-							if (dat->sendMode & SMODE_NOACK)
-								M->WriteByte(dat->hContact, SRMSGMOD_T, "no_ack", 1);
-							else
-								DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "no_ack");
-							break;
-					}
-					M->WriteByte(dat->hContact, SRMSGMOD_T, "no_ack", (BYTE)(dat->sendMode & SMODE_NOACK ? 1 : 0));
-					M->WriteByte(dat->hContact, SRMSGMOD_T, "forceansi", (BYTE)(dat->sendMode & SMODE_FORCEANSI ? 1 : 0));
-					SetWindowPos(GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE);
-					if (dat->sendMode & SMODE_MULTIPLE || dat->sendMode & SMODE_CONTAINER)
-						SetWindowPos(GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, 0, 0, 0, SWP_DRAWFRAME|SWP_FRAMECHANGED|SWP_NOZORDER|
-									 SWP_NOMOVE|SWP_NOSIZE|SWP_NOCOPYBITS);
-					else {
-						if (IsWindow(GetDlgItem(hwndDlg, IDC_CLIST)))
-							DestroyWindow(GetDlgItem(hwndDlg, IDC_CLIST));
-						SetWindowPos(GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, 0, 0, 0, SWP_DRAWFRAME|SWP_FRAMECHANGED|SWP_NOZORDER|
-									 SWP_NOMOVE|SWP_NOSIZE|SWP_NOCOPYBITS);
-					}
-					SendMessage(hwndContainer, DM_QUERYCLIENTAREA, 0, (LPARAM)&rc);
-					SendMessage(hwndDlg, WM_SIZE, 0, 0);
-					DM_ScrollToBottom(dat, 1, 1);
-					ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
-					ShowWindow(GetDlgItem(hwndDlg, IDC_CLIST), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
-					break;
-				}
 				case IDC_ADD: {
 					ADDCONTACTSTRUCT acs = { 0};
 
@@ -3667,91 +3323,7 @@ quote_from_last:
 						ShowWindow(GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT), SW_HIDE);
 					SendMessage(hwndDlg, WM_SIZE, 0, 0);
 					break;
-				case IDC_TOGGLESIDEBAR: {
-					SendMessage(m_pContainer->hwnd, WM_COMMAND, IDC_TOGGLESIDEBAR, 0);
-					break;
-				}
-				case IDC_PIC: {
-					RECT rc;
-					GetClientRect(hwndDlg, &rc);
 
-					dat->fEditNotesActive = !dat->fEditNotesActive;
-					if(dat->fEditNotesActive) {
-						int iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
-						if(iLen != 0) {
-							SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)CTranslator::get(CTranslator::GEN_MSG_NO_EDIT_NOTES));
-							dat->fEditNotesActive = false;
-							break;
-						}
-						dat->iSplitterSaved = dat->splitterY;
-
-						dat->splitterY = rc.bottom / 2;
-						SendMessage(hwndDlg, WM_SIZE, 1, 1);
-
-						DBVARIANT dbv = {0};
-
-						if(0 == M->GetTString(dat->hContact, "UserInfo", "MyNotes", &dbv)) {
-							SetDlgItemText(hwndDlg, IDC_MESSAGE, dbv.ptszVal);
-							mir_free(dbv.ptszVal);
-						}
-						SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_PIC, (LPARAM)CTranslator::get(CTranslator::GEN_MSG_EDIT_NOTES_TIP));
-					}
-					else {
-						int iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
-
-						TCHAR *buf = (TCHAR *)mir_alloc((iLen + 2) * sizeof(TCHAR));
-						GetDlgItemText(hwndDlg, IDC_MESSAGE, buf, iLen + 1);
-						M->WriteTString(dat->hContact, "UserInfo", "MyNotes", buf);
-						SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
-						dat->splitterY = dat->iSplitterSaved;
-						SendMessage(hwndDlg, WM_SIZE, 0, 0);
-						DM_ScrollToBottom(dat, 0, 1);
-					}
-					SetWindowPos(GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, 0, 0, 0, SWP_DRAWFRAME|SWP_FRAMECHANGED|SWP_NOZORDER|
-								 SWP_NOMOVE|SWP_NOSIZE|SWP_NOCOPYBITS);
-					break;
-				}
-				case IDM_CLEAR:
-					ClearLog(dat);
-					break;
-				case IDC_PROTOCOL:	{
-					RECT rc;
-					int  iSel = 0;
-
-					HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) dat->hContact, 0);
-					if(lParam == 0)
-						GetWindowRect(GetDlgItem(hwndDlg, IDC_PROTOCOL/*IDC_NAME*/), &rc);
-					else
-						GetWindowRect((HWND)lParam, &rc);
-					iSel = TrackPopupMenu(hMenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
-
-					if(iSel)
-						CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(iSel), MPCF_CONTACTMENU), (LPARAM) dat->hContact);
-
-					DestroyMenu(hMenu);
-					break;
-				}
-// error control
-				case IDC_CANCELSEND:
-					SendMessage(hwndDlg, DM_ERRORDECIDED, MSGERROR_CANCEL, 0);
-					break;
-				case IDC_RETRY:
-					SendMessage(hwndDlg, DM_ERRORDECIDED, MSGERROR_RETRY, 0);
-					break;
-				case IDC_MSGSENDLATER:
-					SendMessage(hwndDlg, DM_ERRORDECIDED, MSGERROR_SENDLATER, 0);
-					break;
-				case IDC_SELFTYPING:
-					if (dat->hContact) {
-						int iCurrentTypingMode = M->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, M->GetByte(SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW));
-
-						if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON && iCurrentTypingMode) {
-							DM_NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
-							dat->nTypeMode = PROTOTYPE_SELFTYPING_OFF;
-						}
-						M->WriteByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, (BYTE)!iCurrentTypingMode);
-					}
-					break;
 				case IDC_MESSAGE:
 					if (PluginConfig.m_MathModAvail && HIWORD(wParam) == EN_CHANGE)
 						MTH_updateMathWindow(dat);
@@ -3777,6 +3349,10 @@ quote_from_last:
 							}
 						}
 					}
+					break;
+				default:
+					Utils::CmdDispatcher(Utils::CMD_MSGDIALOG, hwndDlg, LOWORD(wParam), wParam, lParam, dat, m_pContainer);
+					break;
 			}
 			break;
 		case WM_CONTEXTMENU: {

@@ -113,7 +113,12 @@ public:
 		HOVER_STATUS 	= 2,
 		HOVER_UIN 		= 4
 	};
-
+	enum {
+		HTNICK			= 1,
+		HTUIN			= 2,
+		HTSTATUS		= 3,
+		HTNIRVANA		= 0
+	};
 	CInfoPanel(_MessageWindowData *dat)
 	{
 		if(dat) {
@@ -149,6 +154,7 @@ public:
 	void 						renderContent				(const HDC hdcMem);
 	void 						Invalidate					() const;
 	void 						trackMouse					(POINT& pt);
+	int							hitTest						(POINT  pt);
 	void						handleClick					(const POINT& pt);
 	void						showTip						(UINT ctrlId, const LPARAM lParam) const;
 	int							invokeConfigDialog			(const POINT& pt);

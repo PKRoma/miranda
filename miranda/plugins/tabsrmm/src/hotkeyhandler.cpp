@@ -38,7 +38,6 @@
 
     c) send later job management. The send later queue is also used for
        multisend.
- *
  */
 
 #include "commonheaders.h"

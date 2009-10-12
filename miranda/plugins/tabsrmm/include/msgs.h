@@ -286,7 +286,6 @@ struct ContainerWindowData {
 	DWORD   dwFlags;
 	DWORD   dwFlagsEx;
 	UINT    uChildMinHeight;
-	DWORD   dwTransparency;
 	int     tBorder;
 	int	    tBorder_outer_left, tBorder_outer_right, tBorder_outer_top, tBorder_outer_bottom;
 	HANDLE  hContactFrom;
