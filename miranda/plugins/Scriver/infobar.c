@@ -29,7 +29,6 @@ static WNDPROC OldInfobarEditProc;
 
 void SetupInfobar(InfobarWindowData* idat) {
 	HWND hwnd = idat->hWnd;
-	struct MessageWindowData *dat = idat->mwd;
     CHARFORMAT2 cf2 = {0};
     LOGFONT lf;
     DWORD colour = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_INFOBARBKGCOLOUR, SRMSGDEFSET_INFOBARBKGCOLOUR);
@@ -83,22 +82,7 @@ void RefreshInfobar(InfobarWindowData* idat) {
 	mir_free(szContactStatusMsg);
 	mir_free(szContactName);
 }
-/*
-static LRESULT CALLBACK InfobarEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	return CallWindowProc(OldInfobarEditProc, hwnd, msg, wParam, lParam);
-}
 
-static void SubclassInfobarEdit(HWND hwnd) {
-	OldInfobarEditProc = (WNDPROC) SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR) InfobarEditSubclassProc);
-	SendMessage(hwnd, EM_SUBCLASSED, 0, 0);
-}
-
-static void UnsubclassInfobarEdit(HWND hwnd) {
-	SendMessage(hwnd, EM_UNSUBCLASSED, 0, 0);
-	SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR) OldInfobarEditProc);
-}
-*/
 static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static BOOL bWasCopy;
@@ -144,8 +128,7 @@ static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 				
 				hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, IDC_INFOBAR_NAME), 0, 15, 0, dlgWidth - avatarWidth - 2 - 15, dlgHeight/2, SWP_NOZORDER);
 				hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, IDC_INFOBAR_STATUS), 0, 15, dlgHeight/2, dlgWidth - avatarWidth - 2 - 15, dlgHeight/2, SWP_NOZORDER);
-				hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, IDC_AVATAR), 0, dlgWidth - avatarWidth - 2, 1, avatarWidth, avatarHeight, SWP_NOZORDER);
-				//MessageDialogResize(hwndDlg, dat, dlgWidth, dlgHeight);
+				hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, IDC_AVATAR), 0, dlgWidth - avatarWidth - 2, (dlgHeight - avatarHeight) / 2, avatarWidth, (dlgHeight + avatarHeight - 2) / 2, SWP_NOZORDER);
 				EndDeferWindowPos(hdwp);
 			}
 			return TRUE;
@@ -212,8 +195,6 @@ static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 			if (dis->hwndItem == GetDlgItem(hwnd, IDC_AVATAR)) {
 				RECT rect;
 				HDC hdcMem = CreateCompatibleDC(dis->hDC);
-				int avatarWidth = 0;
-				int avatarHeight = 0;
 				int itemWidth = dis->rcItem.right - dis->rcItem.left + 1;
 				int itemHeight = dis->rcItem.bottom - dis->rcItem.top + 1;
 				HBITMAP hbmMem = CreateCompatibleBitmap(dis->hDC, itemWidth, itemHeight);
@@ -228,8 +209,8 @@ static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 					GetObject(idat->mwd->avatarPic, sizeof(bminfo), &bminfo);
 					if ( bminfo.bmWidth != 0 && bminfo.bmHeight != 0 ) {
 						AVATARDRAWREQUEST adr;
-						avatarHeight = itemHeight;
-						avatarWidth = bminfo.bmWidth * avatarHeight / bminfo.bmHeight;
+						int avatarHeight = itemHeight;
+						int avatarWidth = bminfo.bmWidth * avatarHeight / bminfo.bmHeight;
 						if (avatarWidth > itemWidth) {
 							avatarWidth = itemWidth;
 							avatarHeight = bminfo.bmHeight * avatarWidth / bminfo.bmWidth;
