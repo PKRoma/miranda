@@ -816,14 +816,6 @@ static struct {
 	NULL, NULL, NULL, 0, 0
 };
 
-HBITMAP IMG_LoadLogo(const TCHAR *szFilename)
-{
-	HBITMAP hbm = (HBITMAP)CallService(MS_IMG_LOAD, (LPARAM)szFilename, IMGL_TCHAR);
-	if(hbm)
-		CImageItem::PreMultiply(hbm, 1);
-	return(hbm);
-}
-
 void CImageItem::Create(const TCHAR *szImageFile)
 {
 	HBITMAP hbm = ::LoadPNG(szImageFile);
@@ -2241,12 +2233,6 @@ UINT CSkin::NcCalcRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT
 	if (mwdat && CSkin::m_skinEnabled && !mwdat->bFlatMsgLog) {
 		CSkinItem *item = &SkinItems[skinID];
 		if (!item->IGNORED) {
-			/*
-				nccp->rgrc[0].left += item->MARGIN_LEFT;
-				nccp->rgrc[0].right -= item->MARGIN_RIGHT;
-				nccp->rgrc[0].bottom -= item->MARGIN_BOTTOM;
-				nccp->rgrc[0].top += item->MARGIN_TOP;
-			*/
 			return WVR_REDRAW;
 		}
 	}

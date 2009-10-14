@@ -623,6 +623,8 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 								} else
 									M->WriteTString(NULL, "Chat", "AddToGroup", _T(""));
 
+								g_Settings.hGroup = 0;
+
 								if (pszText)
 									free(pszText);
 
@@ -1362,6 +1364,7 @@ int OptionsInit(void)
 	g_Settings.NameFont = CreateFontIndirect(&lf);
 	g_Settings.iSplitterX = DBGetContactSettingWord(NULL, "Chat", "SplitterX", 105);
 	g_Settings.iSplitterY = DBGetContactSettingWord(NULL, "Chat", "splitY", 50);
+	g_Settings.hGroup = 0;
 	LoadGlobalSettings();
 	g_Settings.Highlight = new CMUCHighlight();
 	SkinAddNewSoundEx("ChatMessage", "Chat", TranslateA("Incoming message"));

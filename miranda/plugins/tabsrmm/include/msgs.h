@@ -45,6 +45,12 @@
  * required for MingW32 compatibility
  */
 
+#if defined(_UNICODE)
+	#define CF_TEXTT CF_UNICODETEXT
+#else
+	#define CF_TEXTT CF_TEXT
+#endif
+
 #ifdef __GNUWIN32__
 #define COLOR_HOTLIGHT 26
 #if !defined(SB_SETICON)
@@ -909,20 +915,6 @@ struct SIDEBARITEM {
 	void (*pfnCallback)(ButtonItem *item, HWND hwndDlg, struct _MessageWindowData *dat, HWND hwndItem);
 	TCHAR   *tszTip;
 };
-
-#if defined(_UNICODE)
-static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* fmt, ...)
-{
-	va_list va;
-	int len;
-
-	va_start(va, fmt);
-	len = _vsnwprintf(buffer, count - 1, fmt, va);
-	va_end(va);
-	buffer[count-1] = 0;
-	return len;
-}
-#endif
 
 #define FONTF_BOLD   1
 #define FONTF_ITALIC 2

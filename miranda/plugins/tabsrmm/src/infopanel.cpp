@@ -55,7 +55,7 @@ void CInfoPanel::setActive(const int newActive)
  */
 void CInfoPanel::loadHeight()
 {
-	BYTE bSync = M->GetByte("syncAllPanels", 0);
+	BYTE bSync = M->GetByte("syncAllPanels", 0);			// sync muc <> im panels
 
 	m_height = M->GetDword(m_dat->hContact, "panelheight", -1);
 
@@ -71,8 +71,8 @@ void CInfoPanel::loadHeight()
 		m_height &= 0x0000ffff;
 	}
 
-	if (m_height <= 0 || m_height > 120)
-		m_height = 52;
+	if (m_height <= 0 || m_height > 120)				// ensure, corrupted values don't stand a chance
+		m_height = DEGRADE_THRESHOLD;					// standard height for 2 lines
 }
 
 /**
@@ -219,6 +219,12 @@ void CInfoPanel::mapRealRect(const RECT& rcSrc, RECT& rcDest, const SIZE& sz)
 	rcDest.bottom = rcDest.top + sz.cy;
 }
 
+/**
+ * create an underlined version of the original font and select it
+ * in the given device context
+ *
+ * returns the previosuly selected font
+ */
 HFONT CInfoPanel::setUnderlinedFont(const HDC hdc, HFONT hFontOrig)
 {
 	LOGFONT lf;
@@ -245,10 +251,14 @@ void CInfoPanel::renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero, 
 			rc.bottom = m_height + 1;
 		if(fAero) {
 			RECT	rcBlack = rc;
-			rcBlack.bottom = m_height + 1; // + 2;
-			::FillRect(hdc, &rcBlack, CSkin::m_BrushBack);
 			rc.bottom -= 2;
+			::FillRect(hdc, &rc, CSkin::m_BrushBack);
 			CSkin::ApplyAeroEffect(hdc, &rc, CSkin::AERO_EFFECT_AREA_INFOPANEL);
+			rcBlack.top = rc.bottom;// + 1;
+			rcBlack.bottom = rcBlack.top + 2;
+			if(CSkin::m_pCurrentAeroEffect && CSkin::m_pCurrentAeroEffect->m_clrBack != 0)
+				::DrawAlpha(hdc, &rcBlack, CSkin::m_pCurrentAeroEffect->m_clrBack, 90, CSkin::m_pCurrentAeroEffect->m_clrBack, 0,
+							0, 0, 1, 0);
 		}
 		else {
 			if(PluginConfig.m_WinVerMajor >= 5) {
@@ -748,7 +758,6 @@ void CInfoPanel::handleClick(const POINT& pt)
 	if(!m_isChat) {
 		::KillTimer(m_dat->hwnd, TIMERID_AWAYMSG);
 		::KillTimer(m_dat->hwnd, TIMERID_AWAYMSG + 1);
-		::SendMessage(m_dat->hwndTip, TTM_TRACKACTIVATE, FALSE, 0);
 		m_dat->dwFlagsEx &= ~MWF_SHOW_AWAYMSGTIMER;
 	}
 	HMENU m = constructContextualMenu();
@@ -832,7 +841,7 @@ void CInfoPanel::trackMouse(POINT& pt)
 }
 
 /**
- * activate a tooltip for a given info panel field
+ * activate a tooltip
  * @param ctrlId : control id
  * @param lParam : typically a TCHAR * for the tooltip text
  */
@@ -840,34 +849,12 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 {
 	if (m_dat->hwndTip) {
 		RECT 	rc;
-		bool	fMapped = false;
-		POINT	pt;
 		TCHAR 	szTitle[256];
 		HWND	hwndDlg = m_dat->hwnd;
 		TCHAR	tszFinalTip[1024];
 
-		if (ctrlId == 0) {
-			rc = m_dat->rcStatus;
-			ctrlId = IDC_PANELSTATUS;
-		}
-		else if(ctrlId == IDC_PANELNICK) {
-			rc = m_dat->rcNick;
-		}
-		else if(ctrlId == IDC_PANELSTATUS + 1) {
-			rc = m_dat->rcStatus;
-		}
-		else {
-			fMapped = true;
-			::GetWindowRect(GetDlgItem(hwndDlg, ctrlId), &rc);
-		}
+		::GetWindowRect(GetDlgItem(hwndDlg, ctrlId), &rc);
 
-		if(!fMapped) {
-			pt.x = rc.left;
-			pt.y = rc.bottom;
-			::ClientToScreen(m_dat->hwnd, &pt);
-			rc.left = pt.x;
-			rc.bottom = pt.y;
-		}
 		::SendMessage(m_dat->hwndTip, TTM_TRACKPOSITION, 0, (LPARAM)MAKELONG(rc.left, rc.bottom));
 		if (lParam)
 			m_dat->ti.lpszText = reinterpret_cast<TCHAR *>(lParam);
@@ -889,6 +876,7 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 			tip->show(rc, pt, m_dat->hTabIcon, m_dat->szStatus);
 			return;
 		}
+		mir_sntprintf(szTitle, safe_sizeof(szTitle), CTranslator::get(CTranslator::GEN_IP_TIP_TITLE));
 		::SendMessage(m_dat->hwndTip, TTM_UPDATETIPTEXT, 0, (LPARAM)&m_dat->ti);
 		::SendMessage(m_dat->hwndTip, TTM_SETMAXTIPWIDTH, 0, 350);
 
@@ -1149,6 +1137,11 @@ int CInfoPanel::invokeConfigDialog(const POINT& pt)
 	return(0);
 }
 
+/**
+ * remove the info panel configuration dialog
+ * @param fForced: bool, if true, dismiss it under any circumstances, even
+ * with the pointer still inside the dialog.
+ */
 void CInfoPanel::dismissConfig(bool fForced)
 {
 	if(m_hwndConfig == 0)
@@ -1165,13 +1158,21 @@ void CInfoPanel::dismissConfig(bool fForced)
 	}
 }
 
+/**
+ * construct a richedit tooltip object.
+ *
+ * @param hwndParent		HWND    owner (used only for position calculation)
+ * @param hContact			HANDLE  contact handle
+ * @param pszText			TCHAR*  the content of the rich edit control
+ * @param panel			CInfoPanel* the panel which owns it
+ */
 CTip::CTip(const HWND hwndParent, const HANDLE hContact, const TCHAR *pszText, const CInfoPanel* panel)
 {
 	m_hwnd = ::CreateWindowEx(WS_EX_TOOLWINDOW, _T("RichEditTipClass"), _T(""), (M->isAero() ? WS_THICKFRAME : WS_BORDER)|WS_POPUPWINDOW|WS_TABSTOP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
 							  0, 0, 40, 40, 0, 0, g_hInst, this);
 
 	m_hRich = ::CreateWindowEx(WS_EX_TRANSPARENT, RICHEDIT_CLASS, _T(""), WS_CHILD | ES_MULTILINE | ES_AUTOVSCROLL | ES_NOHIDESEL | ES_READONLY | WS_VSCROLL | WS_TABSTOP,
-			  0, 0, 40, 40, m_hwnd, reinterpret_cast<HMENU>(1000), g_hInst, NULL);
+							   0, 0, 40, 40, m_hwnd, reinterpret_cast<HMENU>(1000), g_hInst, NULL);
 
 	::SendMessage(m_hRich, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
 	::SendMessage(m_hRich, EM_SETEVENTMASK, 0, ENM_LINK);
@@ -1187,6 +1188,17 @@ CTip::CTip(const HWND hwndParent, const HANDLE hContact, const TCHAR *pszText, c
 	m_OldMessageEditProc = (WNDPROC)SetWindowLongPtr(m_hRich, GWLP_WNDPROC, (LONG_PTR)RichEditProc);
 }
 
+/**
+ * Show the tooltip at the given position (the position can be adjusted to keep it on screen and
+ * inside its parent window.
+ *
+ * it will auto-adjust the size (height only) of the richedit control to fit the m_pszText
+ *
+ * @param rc			dimensions of the tip (left and top should be 0)
+ * @param pt			point in screen coordinates
+ * @param hIcon			optional icon to display in the tip header
+ * @param szTitle		optional title to display in the tip header
+ */
 void CTip::show(const RECT& rc, POINT& pt, const HICON hIcon, const TCHAR *szTitle)
 {
 	HDC			hdc = ::GetDC(m_hwnd);
@@ -1229,7 +1241,7 @@ void CTip::show(const RECT& rc, POINT& pt, const HICON hIcon, const TCHAR *szTit
 	m_rcRich.right = m_rcRich.left + m_szRich.cx;
 	m_rcRich.bottom = m_rcRich.top + m_szRich.cy;
 
-	::SendMessage(m_hRich, EM_FORMATRANGE, 0, (LPARAM)NULL);
+	::SendMessage(m_hRich, EM_FORMATRANGE, 0, (LPARAM)NULL);			// required, clear cached painting data in the richedit
 
 	::SetWindowPos(m_hwnd, HWND_TOP, pt.x - 5, pt.y - 5, m_szRich.cx + LEFT_BORDER + RIGHT_BORDER + 2 * xBorder,
 				   m_szRich.cy + TOP_BORDER + BOTTOM_BORDER + 2 * yBorder, SWP_NOACTIVATE|SWP_SHOWWINDOW);
@@ -1238,6 +1250,9 @@ void CTip::show(const RECT& rc, POINT& pt, const HICON hIcon, const TCHAR *szTit
 	::ReleaseDC(m_hwnd, hdc);
 }
 
+/**
+ * register richedit tooltip window class
+ */
 void CTip::registerClass()
 {
 	WNDCLASSEX wc;
@@ -1253,16 +1268,38 @@ void CTip::registerClass()
 	RegisterClassEx(&wc);
 }
 
+/**
+ * subclass the rich edit control inside the tip. Needed to hide the blinking
+ * caret.
+ * (static class function)
+ */
 INT_PTR CALLBACK CTip::RichEditProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) {
 		case WM_SETCURSOR:
 			::HideCaret(hwnd);
 			break;
+
+		case WM_ERASEBKGND:
+			return(1);
+
+		case WM_NCCALCSIZE:
+			SetWindowLongPtr(hwnd, GWL_STYLE, GetWindowLongPtr(hwnd, GWL_STYLE) & ~WS_VSCROLL);
+			EnableScrollBar(hwnd, SB_VERT, ESB_DISABLE_BOTH);
+			ShowScrollBar(hwnd, SB_VERT, FALSE);
+			break;
+
+		case WM_VSCROLL:
+			return(0);
 	}
 	return(::CallWindowProc(m_OldMessageEditProc, hwnd, msg, wParam, lParam));
 }
 
+/**
+ * stub for the tip control window procedure. Just handle WM_CREATE and set the
+ * this pointer.
+ * (static class function)
+ */
 INT_PTR CALLBACK CTip::WndProcStub(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	CTip *tip = reinterpret_cast<CTip *>(::GetWindowLongPtr(hwnd, GWLP_USERDATA));
@@ -1305,51 +1342,30 @@ INT_PTR CALLBACK CTip::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 			GetClientRect(hwnd, &rc);
 			CContactCache* c = CGlobals::getContactCache(m_hContact);
 			RECT		rcText = {20, 0, rc.right, TOP_BORDER};
+			LONG		cx = rc.right;
+			LONG		cy = rc.bottom;
 
 			mir_sntprintf(szTitle, 128, m_szTitle ? _T("%s (%s)") : _T("%s%s"), c->getNick(), m_szTitle ? m_szTitle : _T(""));
 
-			if(M->isAero()) {
-				HDC			hdcMem;
-				HANDLE 		hbp = 0;
-				COLORREF 	clr2 = PluginConfig.m_tbBackgroundHigh ? PluginConfig.m_tbBackgroundHigh :
-							(CSkin::m_pCurrentAeroEffect ? CSkin::m_pCurrentAeroEffect->m_clrToolbar : CSkin::m_dwmColorRGB);
-				HANDLE hTheme = CMimAPI::m_pfnOpenThemeData(m_hwnd, L"BUTTON");
+			if(m_panel) {
+				HDC 	hdcMem 	= ::CreateCompatibleDC(hdc);
+				HBITMAP hbm		= ::CreateCompatibleBitmap(hdc, cx, cy);
+				HBITMAP hbmOld  = 	reinterpret_cast<HBITMAP>(::SelectObject(hdcMem, hbm));
+				HFONT  	hOldFont = 	reinterpret_cast<HFONT>(::SelectObject(hdcMem, CInfoPanel::m_ipConfig.hFonts[IPFONTID_NICK]));
 
-				hbp = CSkin::InitiateBufferedPaint(hdc, rc, hdcMem);
 
-				HFONT  hOldFont = reinterpret_cast<HFONT>(::SelectObject(hdcMem, CInfoPanel::m_ipConfig.hFonts[IPFONTID_NICK]));
-
-				::FillRect(hdcMem, &rc, reinterpret_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH)));
-				::DrawAlpha(hdcMem, &m_rcRich, clr2, 80, clr2, 0, 9, 0, 1, 0);
-				CSkin::ApplyAeroEffect(hdcMem, &rc, CSkin::AERO_EFFECT_WHITE, 0);
+				::SetBkMode(hdcMem, TRANSPARENT);
+				rc.bottom += 2;
+				rc.left -= 4;rc.right += 4;
+				m_panel->renderBG(hdcMem, rc, &SkinItems[ID_EXTBKINFOPANELBG], false, false);
 				if(m_hIcon)
 					::DrawIconEx(hdcMem, 2, 4, m_hIcon, 16, 16, 0, 0, DI_NORMAL);
-
-				CSkin::RenderText(hdcMem, hTheme, szTitle, &rcText, DT_SINGLELINE|DT_END_ELLIPSIS|DT_VCENTER, CSkin::m_glowSize, clr);
+				CSkin::RenderText(hdcMem, 0, szTitle, &rcText, DT_SINGLELINE|DT_END_ELLIPSIS|DT_VCENTER, CSkin::m_glowSize, clr);
 				::SelectObject(hdcMem, hOldFont);
-				CSkin::FinalizeBufferedPaint(hbp, &rc);
-				MARGINS m;
-
-				m.cxLeftWidth = LEFT_BORDER;
-				m.cxRightWidth = RIGHT_BORDER;
-				m.cyTopHeight = TOP_BORDER;
-				m.cyBottomHeight = BOTTOM_BORDER;
-				CMimAPI::m_pfnDwmExtendFrameIntoClientArea(m_hwnd, &m);
-				CMimAPI::m_pfnCloseThemeData(hTheme);
-			}
-			else {
-				if(m_panel) {
-					HFONT  hOldFont = reinterpret_cast<HFONT>(::SelectObject(hdc, CInfoPanel::m_ipConfig.hFonts[IPFONTID_NICK]));
-
-					::SetBkMode(hdc, TRANSPARENT);
-					rc.bottom += 2;
-					rc.left -= 4;rc.right += 4;
-					m_panel->renderBG(hdc, rc, &SkinItems[ID_EXTBKINFOPANELBG], false, false);
-					if(m_hIcon)
-						::DrawIconEx(hdc, 2, 4, m_hIcon, 16, 16, 0, 0, DI_NORMAL);
-					CSkin::RenderText(hdc, 0, szTitle, &rcText, DT_SINGLELINE|DT_END_ELLIPSIS|DT_VCENTER, CSkin::m_glowSize, clr);
-					::SelectObject(hdc, hOldFont);
-				}
+				::BitBlt(hdc, 0, 0, cx, cy, hdcMem, 0, 0, SRCCOPY);
+				::SelectObject(hdcMem, hbmOld);
+				::DeleteObject(hbm);
+				::DeleteDC(hdcMem);
 			}
 			return(1);
 		}

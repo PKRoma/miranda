@@ -85,19 +85,19 @@ private:
 	static INT_PTR CALLBACK	 	WndProcStub					(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static INT_PTR CALLBACK 	RichEditProc				(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-	HWND						m_hwnd;
-	HWND						m_hRich;
-	HWND						m_hwndParent;
-	HANDLE						m_hContact;
-	TCHAR*						m_pszText;
-	SIZE						m_szRich;
-	RECT						m_rcRich;
-	const CInfoPanel*			m_panel;
-	HICON						m_hIcon;
-	const TCHAR*				m_szTitle;
+	HWND						m_hwnd;						// our window handle
+	HWND						m_hRich;					// handle of the rich edit child
+	HWND						m_hwndParent;				// parent window (used for position calculations and to send notifications)
+	HANDLE						m_hContact;					// contact handle
+	TCHAR*						m_pszText;					// the richedit text
+	SIZE						m_szRich;					// size of the richedit control (height auto-calculated to make it fit the text)
+	RECT						m_rcRich;					// adjusted rectangle for the richedit control (client coordinates)
+	const CInfoPanel*			m_panel;					// the info panel parent (if any)
+	HICON						m_hIcon;					// optional icon to show in the title line
+	const TCHAR*				m_szTitle;					// optional text to show in the title
 
 private:
-	static	WNDPROC				m_OldMessageEditProc;
+	static	WNDPROC				m_OldMessageEditProc;		// stores original richedit wnd proc
 
 };
 

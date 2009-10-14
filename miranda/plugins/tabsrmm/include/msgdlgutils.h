@@ -87,6 +87,8 @@ void	TSAPI GetMyNick						(_MessageWindowData *dat);
 HICON	TSAPI MY_GetContactIcon				(const _MessageWindowData *dat);
 void	TSAPI CheckAndDestroyIEView			(_MessageWindowData *dat);
 void 	TSAPI KbdState						(_MessageWindowData *dat, BOOL& isShift, BOOL& isControl, BOOL& isAlt);
+void 	TSAPI ClearLog						(_MessageWindowData *dat);
+
 // mathmod
 
 void	TSAPI MTH_updateMathWindow			(const _MessageWindowData *dat);

@@ -1087,6 +1087,7 @@ panel_found:
 		}
 
 		case WM_COMMAND: {
+
 			bool fProcessContactMenu = pContainer->MenuBar->isContactMenu();
 			bool fProcessMainMenu = pContainer->MenuBar->isMainMenu();
 			pContainer->MenuBar->Cancel();

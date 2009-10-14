@@ -380,9 +380,9 @@ void TSAPI ReadThemeFromINI(const TCHAR *szIniFilenameT, ContainerWindowData *da
 						DBWriteContactSettingStringUtf(NULL, TEMPLATES_MODULE, TemplateNames[i], szTemplateBuffer);
 					decoded = M->utf8_decodeW(szTemplateBuffer);
 					if (dat == 0)
-						mir_snprintfW(LTR_Active.szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
+						mir_sntprintf(LTR_Active.szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
 					else
-						mir_snprintfW(dat->ltr_templates->szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
+						mir_sntprintf(dat->ltr_templates->szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
 					mir_free(decoded);
 				}
 
@@ -393,9 +393,9 @@ void TSAPI ReadThemeFromINI(const TCHAR *szIniFilenameT, ContainerWindowData *da
 						DBWriteContactSettingStringUtf(NULL, RTLTEMPLATES_MODULE, TemplateNames[i], szTemplateBuffer);
 					decoded = M->utf8_decodeW(szTemplateBuffer);
 					if (dat == 0)
-						mir_snprintfW(RTL_Active.szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
+						mir_sntprintf(RTL_Active.szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
 					else
-						mir_snprintfW(dat->rtl_templates->szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
+						mir_sntprintf(dat->rtl_templates->szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
 					mir_free(decoded);
 				}
 #else

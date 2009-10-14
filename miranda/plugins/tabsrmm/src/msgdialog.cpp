@@ -70,12 +70,6 @@ static struct _buttonicons {
 	-1, NULL
 };
 
-static LRESULT _dlgReturn(HWND hWnd, LRESULT result)
-{
-	SetWindowLongPtr(hWnd, DWLP_MSGRESULT, result);
-	return(result);
-}
-
 static void _clrMsgFilter(LPARAM lParam)
 {
 	MSGFILTER *m = reinterpret_cast<MSGFILTER *>(lParam);
@@ -83,28 +77,6 @@ static void _clrMsgFilter(LPARAM lParam)
 	m->msg = 0;
 	m->lParam = 0;
 	m->wParam = 0;
-}
-
-void ClearLog(_MessageWindowData *dat)
-{
-	if(dat) {
-		if (dat->hwndIEView || dat->hwndHPP) {
-			IEVIEWEVENT event;
-			event.cbSize = sizeof(IEVIEWEVENT);
-			event.iType = IEE_CLEAR_LOG;
-			event.dwFlags = (dat->dwFlags & MWF_LOG_RTL) ? IEEF_RTL : 0;
-			event.hContact = dat->hContact;
-			if (dat->hwndIEView) {
-				event.hwnd = dat->hwndIEView;
-				CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
-			} else {
-				event.hwnd = dat->hwndHPP;
-				CallService(MS_HPP_EG_EVENT, 0, (LPARAM)&event);
-			}
-		}
-		SetDlgItemText(dat->hwnd, IDC_LOG, _T(""));
-		dat->hDbEventFirst = NULL;
-	}
 }
 
 static BOOL IsStringValidLinkA(char* pszText)
@@ -228,7 +200,7 @@ static void ShowPopupMenu(_MessageWindowData *dat, int idFrom, HWND hwndFrom, PO
 			case IDM_PASTE:
 			case IDM_PASTEFORMATTED:
 				if (idFrom == IDC_MESSAGE)
-					SendMessage(hwndFrom, EM_PASTESPECIAL, (iSelection == IDM_PASTE) ? CF_TEXT : 0, 0);
+					SendMessage(hwndFrom, EM_PASTESPECIAL, (iSelection == IDM_PASTE) ? CF_TEXTT : 0, 0);
 				break;
 			case IDM_COPYALL:
 				SendMessage(hwndFrom, EM_EXSETSEL, 0, (LPARAM) & all);
@@ -1716,8 +1688,15 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					}
 				}
 			}
-			else
+			else {
 				FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
+				if(M->isAero()) {
+					LONG temp = rcClient.bottom;
+					rcClient.bottom = 120;
+					FillRect(hdcMem, &rcClient, (HBRUSH)GetStockObject(BLACK_BRUSH));
+					rcClient.bottom = temp;
+				}
+			}
 
 			/*
 			 * draw the (new) infopanel background. Use the gradient from the statusitem.
@@ -1989,45 +1968,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 									default:
 										break;
 								}
-								mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)&message, (LPARAM)Translate(TABSRMM_HK_SECTION_GENERIC));
-								if(mim_hotkey_check)
+								if(DM_GenericHotkeysCheck(&message, dat)) {
 									dat->fkeyProcessed = true;
-								switch(mim_hotkey_check) {
-									case TABSRMM_HK_PASTEANDSEND:
-										HandlePasteAndSend(dat);
-										return(_dlgReturn(hwndDlg, 1));
-									case TABSRMM_HK_HISTORY:
-										SendMessage(hwndDlg, WM_COMMAND, IDC_HISTORY, 0);
-										return(_dlgReturn(hwndDlg, 1));
-									case TABSRMM_HK_CONTAINEROPTIONS:
-										if (m_pContainer->hWndOptions == 0)
-											CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), hwndContainer, DlgProcContainerOptions, (LPARAM)m_pContainer);
-										return(_dlgReturn(hwndDlg, 1));
-									case TABSRMM_HK_SEND:
-										if (!(GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_STYLE) & ES_READONLY)) {
-											PostMessage(hwndDlg, WM_COMMAND, IDOK, 0);
-											return(_dlgReturn(hwndDlg, 1));
-										}
-										break;
-									case TABSRMM_HK_TOGGLEINFOPANEL:
-										dat->Panel->setActive(dat->Panel->isActive() ? FALSE : TRUE);
-										dat->Panel->showHide();
-										return(_dlgReturn(hwndDlg, 1));
-									case TABSRMM_HK_EMOTICONS:
-										SendMessage(hwndDlg, WM_COMMAND, IDC_SMILEYBTN, 0);
-										return(_dlgReturn(hwndDlg, 1));
-									case TABSRMM_HK_TOGGLETOOLBAR:
-										SendMessage(hwndDlg, WM_COMMAND, IDC_TOGGLETOOLBAR, 0);
-										return(_dlgReturn(hwndDlg, 1));
-									case TABSRMM_HK_CLEARLOG:
-										ClearLog(dat);
-										return(_dlgReturn(hwndDlg, 1));
-									case TABSRMM_HK_TOGGLESIDEBAR:
-										if(dat->pContainer->SideBar->isActive())
-											SendMessage(hwndDlg, WM_COMMAND, IDC_TOGGLESIDEBAR, 0);
-										return(_dlgReturn(hwndDlg, 1));
-									default:
-										break;
+									return(_dlgReturn(hwndDlg, 1));
 								}
 							}
 							if (wp == VK_BROWSER_BACK || wp == VK_BROWSER_FORWARD)
@@ -2053,8 +1996,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 								}
 							}
 							if (msg == WM_KEYDOWN) {
-								if (wp == VK_INSERT && isShift) {
-									SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_PASTESPECIAL, 0, 0);
+								if ((wp == VK_INSERT && isShift && !isCtrl) || (wp == 'V' && isCtrl && !isShift && !isAlt)) {
+									SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_PASTESPECIAL, CF_TEXTT, 0);
 									_clrMsgFilter(lParam);
 									return(_dlgReturn(hwndDlg, 1));
 								}
@@ -2066,11 +2009,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 									}
 								}
 								if (isCtrl && !isShift && !isAlt) {
-									if (wp == 'V') {
-										SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_PASTESPECIAL, 0, 0);
-										_clrMsgFilter(lParam);
-										return(_dlgReturn(hwndDlg, 1));
-									}
 									if (wp == VK_TAB) {
 										SendMessage(hwndDlg, DM_SELECTTAB, DM_SELECT_NEXT, 0);
 										_clrMsgFilter(lParam);
@@ -2685,7 +2623,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			 * of SENDJOBS_MAX_SENDS)
 			 */
 
-			if (wParam >= TIMERID_AWAYMSG) {
+			if (wParam == TIMERID_AWAYMSG) {
 				POINT pt;
 
 				KillTimer(hwndDlg, wParam);

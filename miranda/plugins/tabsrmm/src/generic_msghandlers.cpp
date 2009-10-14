@@ -37,7 +37,57 @@
 #include "commonheaders.h"
 
 extern RECT	  			rcLastStatusBarClick;
-void 					ClearLog(_MessageWindowData *dat);
+
+/**
+ * checks generic hotkeys valid for both IM and MUC sessions
+ *
+ * returns 1 for handled hotkeys, 0 otherwise.
+ */
+LRESULT TSAPI DM_GenericHotkeysCheck(MSG *message, _MessageWindowData *dat)
+{
+	LRESULT mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)message, (LPARAM)Translate(TABSRMM_HK_SECTION_GENERIC));
+	HWND	hwndDlg = dat->hwnd;
+
+	switch(mim_hotkey_check) {
+		case TABSRMM_HK_PASTEANDSEND:
+			HandlePasteAndSend(dat);
+			return(1);
+		case TABSRMM_HK_HISTORY:
+			SendMessage(hwndDlg, WM_COMMAND, IDC_HISTORY, 0);
+			return(1);
+		case TABSRMM_HK_CONTAINEROPTIONS:
+			if (dat->pContainer->hWndOptions == 0)
+				CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), dat->pContainer->hwnd,
+								  DlgProcContainerOptions, (LPARAM)dat->pContainer);
+			return(1);
+		case TABSRMM_HK_SEND:
+			if (!(GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_STYLE) & ES_READONLY)) {
+				PostMessage(hwndDlg, WM_COMMAND, IDOK, 0);
+				return(1);
+			}
+			break;
+		case TABSRMM_HK_TOGGLEINFOPANEL:
+			dat->Panel->setActive(dat->Panel->isActive() ? FALSE : TRUE);
+			dat->Panel->showHide();
+			return(1);
+		case TABSRMM_HK_EMOTICONS:
+			SendMessage(hwndDlg, WM_COMMAND, IDC_SMILEYBTN, 0);
+			return(1);
+		case TABSRMM_HK_TOGGLETOOLBAR:
+			SendMessage(hwndDlg, WM_COMMAND, IDC_TOGGLETOOLBAR, 0);
+			return(1);
+		case TABSRMM_HK_CLEARLOG:
+			ClearLog(dat);
+			return(1);
+		case TABSRMM_HK_TOGGLESIDEBAR:
+			if(dat->pContainer->SideBar->isActive())
+				SendMessage(hwndDlg, WM_COMMAND, IDC_TOGGLESIDEBAR, 0);
+			return(1);
+		default:
+			break;
+	}
+	return(0);
+}
 
 LRESULT TSAPI DM_MsgWindowCmdHandler(HWND hwndDlg, ContainerWindowData *m_pContainer, _MessageWindowData *dat, UINT cmd, WPARAM wParam, LPARAM lParam)
 {

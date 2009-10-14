@@ -58,3 +58,4 @@ void	TSAPI		DM_EventAdded			(_MessageWindowData *dat, WPARAM wParam, LPARAM lPar
 void 	TSAPI		DM_InitRichEdit			(_MessageWindowData *dat);
 LRESULT TSAPI 		DM_ContainerCmdHandler	(ContainerWindowData *pContainer, UINT cmd, WPARAM wParam, LPARAM lParam);
 LRESULT TSAPI		DM_MsgWindowCmdHandler	(HWND hwndDlg, ContainerWindowData *pContainer, _MessageWindowData *dat, UINT cmd, WPARAM wParam, LPARAM lParam);
+LRESULT TSAPI		DM_GenericHotkeysCheck	(MSG *message, _MessageWindowData *dat);

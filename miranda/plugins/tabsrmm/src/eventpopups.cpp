@@ -52,23 +52,6 @@ static std::vector<PLUGIN_DATAT *> PopupList;
 
 BOOL        bWmNotify = TRUE;
 
-static const PLUGIN_DATAT* PU_RemoveFromList(const PLUGIN_DATAT *_T)
-{
-	const PLUGIN_DATAT* pdTemp = 0;
-
-	if(PopupList.size()) {
-		PopupListIterator it = PopupList.begin();
-		while(it != PopupList.end()) {
-			if((*it) == _T) {
-				PopupList.erase(it);
-				return(pdTemp);
-			}
-			it++;
-		}
-	}
-	return(0);
-}
-
 static const PLUGIN_DATAT* PU_GetByContact(const HANDLE hContact)
 {
 	if(PopupList.size()) {
@@ -472,6 +455,7 @@ static BOOL CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
 			break;
 		case UM_FREEPLUGINDATA:
 			pdata->hContact = 0;								// mark as removeable
+			pdata->hWnd = 0;
 			return TRUE;
 		case UM_INITPOPUP:
 			pdata->hWnd = hWnd;
@@ -757,16 +741,15 @@ static int PopupShowT(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
 	pdata->nrEventsAlloced = NR_MERGED;
 	pdata->nrMerged = 1;
 
-	PopupList.push_back(pdata);
-
 	// fix for broken popups -- process failures
 	if (CallService(MS_POPUP_ADDPOPUPT, (WPARAM)&pud, 0) < 0) {
 		// failed to display, perform cleanup
-		PU_RemoveFromList(pdata);
 		if (pdata->eventData)
 			free(pdata->eventData);
 		free(pdata);
 	}
+	else
+		PopupList.push_back(pdata);
 
 	if (dbe.pBlob)
 		free(dbe.pBlob);

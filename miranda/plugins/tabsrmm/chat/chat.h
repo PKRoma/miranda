@@ -327,6 +327,7 @@ struct TMUCSettings {
 	BOOL		DoubleClick4Privat;
 	BOOL		ShowContactStatus;
 	BOOL		ContactStatusFirst;
+	HANDLE		hGroup;
 	CMUCHighlight* Highlight;
 };
 

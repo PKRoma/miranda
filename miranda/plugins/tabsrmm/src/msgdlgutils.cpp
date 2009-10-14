@@ -1756,8 +1756,8 @@ void TSAPI HandlePasteAndSend(const _MessageWindowData *dat)
 		return;                                     // feature disabled
 	}
 
-	SendMessage(GetDlgItem(dat->hwnd, IDC_MESSAGE), EM_PASTESPECIAL, CF_TEXT, 0);
-	if (GetWindowTextLengthA(GetDlgItem(dat->hwnd, IDC_MESSAGE)) > 0)
+	SendMessage(GetDlgItem(dat->hwnd, IDC_MESSAGE), EM_PASTESPECIAL, CF_TEXTT, 0);
+	if (GetWindowTextLengthA(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE)) > 0)
 		SendMessage(dat->hwnd, WM_COMMAND, IDOK, 0);
 }
 
@@ -2515,4 +2515,41 @@ void TSAPI KbdState(_MessageWindowData *dat, BOOL& isShift, BOOL& isControl, BOO
 	isShift = (dat->kstate[VK_SHIFT] & 0x80);
 	isControl = (dat->kstate[VK_CONTROL] & 0x80);
 	isAlt = (dat->kstate[VK_MENU] & 0x80);
+}
+
+void TSAPI ClearLog(_MessageWindowData *dat)
+{
+	if(dat && dat->bType == SESSIONTYPE_IM) {
+		if (dat->hwndIEView || dat->hwndHPP) {
+			IEVIEWEVENT event;
+			event.cbSize = sizeof(IEVIEWEVENT);
+			event.iType = IEE_CLEAR_LOG;
+			event.dwFlags = (dat->dwFlags & MWF_LOG_RTL) ? IEEF_RTL : 0;
+			event.hContact = dat->hContact;
+			if (dat->hwndIEView) {
+				event.hwnd = dat->hwndIEView;
+				CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
+			} else {
+				event.hwnd = dat->hwndHPP;
+				CallService(MS_HPP_EG_EVENT, 0, (LPARAM)&event);
+			}
+		}
+		SetDlgItemText(dat->hwnd, IDC_LOG, _T(""));
+		dat->hDbEventFirst = NULL;
+	}
+	else if(dat && dat->bType == SESSIONTYPE_CHAT && dat->si) {
+		SESSION_INFO* si = reinterpret_cast<SESSION_INFO *>(dat->si);
+		SESSION_INFO* s = SM_FindSession(si->ptszID, si->pszModule);
+		if (s) {
+			SetDlgItemText(dat->hwnd, IDC_CHAT_LOG, _T(""));
+			LM_RemoveAll(&s->pLog, &s->pLogEnd);
+			s->iEventCount = 0;
+			s->LastTime = 0;
+			si->iEventCount = 0;
+			si->LastTime = 0;
+			si->pLog = s->pLog;
+			si->pLogEnd = s->pLogEnd;
+			PostMessage(dat->hwnd, WM_MOUSEACTIVATE, 0, 0);
+		}
+	}
 }

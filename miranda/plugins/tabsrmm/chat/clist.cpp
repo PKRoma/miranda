@@ -40,6 +40,30 @@ char *szChatIconString = "chaticon";
 
 extern HANDLE hJoinMenuItem, hLeaveMenuItem;
 
+static HANDLE Clist_GroupExists(TCHAR *tszGroup)
+{
+	unsigned int i = 0;
+	TCHAR*		 _t = 0;
+	char		 str[10];
+	INT_PTR		 result = 0;
+	DBVARIANT	 dbv = {0};
+	int			 match;
+
+	do {
+		i++;
+		_itoa(i, str, 10);
+		result = M->GetTString(0, "CListGroups", str, &dbv);
+		if(!result) {
+			match = _tcscmp(tszGroup, &dbv.ptszVal[1]);
+			DBFreeVariant(&dbv);
+			if(!match)
+				return((HANDLE)(i + 1));
+		}
+	}
+	while(result == 0);
+	return(0);
+}
+
 HANDLE CList_AddRoom(const char* pszModule, const TCHAR* pszRoom, const TCHAR* pszDisplayName, int iType)
 {
 	HANDLE hContact = CList_FindRoom(pszModule, pszRoom);
@@ -57,36 +81,9 @@ HANDLE CList_AddRoom(const char* pszModule, const TCHAR* pszRoom, const TCHAR* p
 		CList_CreateGroup(pszGroup);
 
 	if (hContact) {   //contact exist, make sure it is in the right group
-		DBVARIANT dbv;
-		DBVARIANT dbv2;
-		char str[50];
-		int i;
-
-		if (pszGroup[0]) {
-			for (i = 0;; i++) {
-				_itoa(i, str, 10);
-				if (M->GetTString(NULL, "CListGroups", str, &dbv)) {
-					M->WriteTString(hContact, "CList", "Group", pszGroup);
-					goto END_GROUPLOOP;
-				}
-
-				if (!M->GetTString(hContact, "CList", "Group", &dbv2)) {
-					if (dbv.ptszVal[0] != '\0' && dbv2.ptszVal[0] != '\0' && !lstrcmpi(dbv.ptszVal + 1, dbv2.ptszVal)) {
-						DBFreeVariant(&dbv);
-						DBFreeVariant(&dbv2);
-						goto END_GROUPLOOP;
-					}
-					DBFreeVariant(&dbv2);
-				}
-				DBFreeVariant(&dbv);
-			}
-		}
-
-END_GROUPLOOP:
+		CallService(MS_CLIST_CONTACTCHANGEGROUP, (WPARAM)hContact, (LPARAM)g_Settings.hGroup);
 		DBWriteContactSettingWord(hContact, pszModule, "Status", ID_STATUS_OFFLINE);
 		M->WriteTString(hContact, pszModule, "Nick", pszDisplayName);
-		//if (iType != GCW_SERVER)
-		//	DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
 		return hContact;
 	}
 
@@ -96,10 +93,12 @@ END_GROUPLOOP:
 		return NULL;
 
 	CallService(MS_PROTO_ADDTOCONTACT, (WPARAM) hContact, (LPARAM) pszModule);
-	if (pszGroup && lstrlen(pszGroup) > 0)
-		M->WriteTString(hContact, "CList", "Group", pszGroup);
+	if (pszGroup && lstrlen(pszGroup) > 0) {
+		CallService(MS_CLIST_CONTACTCHANGEGROUP, (WPARAM)hContact, (LPARAM)g_Settings.hGroup);
+	}
 	else
 		DBDeleteContactSetting(hContact, "CList", "Group");
+
 	M->WriteTString(hContact, pszModule, "Nick", pszDisplayName);
 	M->WriteTString(hContact, pszModule, "ChatRoomID", pszRoom);
 	M->WriteByte(hContact, pszModule, "ChatRoom", (BYTE)iType);
@@ -251,32 +250,19 @@ INT_PTR CList_PrebuildContactMenuSvc(WPARAM wParam, LPARAM lParam)
 
 void CList_CreateGroup(TCHAR* group)
 {
-	int i;
-	char str[50];
-	TCHAR name[256];
-	DBVARIANT dbv;
-
 	if (!group)
 		return;
 
-	for (i = 0;; i++) {
-		_itoa(i, str, 10);
-		if (M->GetTString(NULL, "CListGroups", str, &dbv))
-			break;
+	g_Settings.hGroup = Clist_GroupExists(group);
 
-		if (dbv.pszVal[0] != '\0' && !lstrcmpi(dbv.ptszVal + 1, group)) {
-			DBFreeVariant(&dbv);
-			return;
+	if(g_Settings.hGroup == 0) {
+		g_Settings.hGroup = (HANDLE)CallService(MS_CLIST_GROUPCREATE, 0, (LPARAM)group);
+
+		if(g_Settings.hGroup) {
+			CallService(MS_CLUI_GROUPADDED, (WPARAM)g_Settings.hGroup, 0);
+			CallService(MS_CLIST_GROUPSETEXPANDED, (WPARAM)g_Settings.hGroup, 0);
 		}
-
-		DBFreeVariant(&dbv);
 	}
-
-	name[0] = 1 | GROUPF_EXPANDED;
-	_tcsncpy(name + 1, group, SIZEOF(name) - 1);
-	name[ lstrlen(group) + 1] = '\0';
-	M->WriteTString(NULL, "CListGroups", str, name);
-	CallService(MS_CLUI_GROUPADDED, i + 1, 0);
 }
 
 BOOL CList_AddEvent(HANDLE hContact, HICON Icon, HANDLE event, int type, TCHAR* fmt, ...)

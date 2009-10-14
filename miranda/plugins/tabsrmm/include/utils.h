@@ -105,14 +105,14 @@ public:
 		size_t  s = _s * (lstrlen(_t) + 1);
 
 		EmptyClipboard();
-		hData = ::GlobalAlloc(GMEM_MOVEABLE, s);
+		hData = ::GlobalAlloc(GMEM_MOVEABLE | GMEM_SHARE, s);
 
 		CopyMemory((void *)GlobalLock(hData), (void *)_t, s);
 		GlobalUnlock(hData);
-		SetClipboardData(_s == 1 ? CF_TEXT : CF_UNICODETEXT, hData);
+		SetClipboardData(CF_TEXTT, hData);
 		CloseClipboard();
-		GlobalFree(hData);
 		return(s);
+
 	}
 
 	template<typename T> static void AddToFileList(T ***pppFiles, int *totalCount, const TCHAR* szFilename)
@@ -152,5 +152,7 @@ public:
 	static	TRTFColorTable*		rtf_ctable;
 	static	int					rtf_ctable_size;
 };
+
+LRESULT TSAPI		_dlgReturn(HWND hWnd, LRESULT result);
 
 #endif /* __UTILS_H */

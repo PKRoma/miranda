@@ -77,28 +77,9 @@ typedef struct
 static const CLSID IID_ITextDocument= { 0x8CC497C0,0xA1DF,0x11CE, { 0x80,0x98, 0x00,0xAA, 0x00,0x47,0xBE,0x5D} };
 extern WNDPROC OldIEViewProc, OldHppProc;
 
-static LRESULT _dlgReturn(HWND hWnd, LRESULT result)
-{
-	SetWindowLongPtr(hWnd, DWLP_MSGRESULT, result);
-	return(result);
-}
-
 static void Chat_ClearLog(const _MessageWindowData *dat)
 {
 	if(dat && dat->si) {
-		SESSION_INFO* si = reinterpret_cast<SESSION_INFO *>(dat->si);
-		SESSION_INFO* s = SM_FindSession(si->ptszID, si->pszModule);
-		if (s) {
-			SetDlgItemText(dat->hwnd, IDC_CHAT_LOG, _T(""));
-			LM_RemoveAll(&s->pLog, &s->pLogEnd);
-			s->iEventCount = 0;
-			s->LastTime = 0;
-			si->iEventCount = 0;
-			si->LastTime = 0;
-			si->pLog = s->pLog;
-			si->pLogEnd = s->pLogEnd;
-			PostMessage(dat->hwnd, WM_MOUSEACTIVATE, 0, 0);
-		}
 	}
 }
 
@@ -605,6 +586,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			return 0;
 
 		case WM_CONTEXTMENU: {
+			MODULEINFO* mi = MM_FindModule(Parentsi->pszModule);
 			HMENU hMenu, hSubMenu;
 			CHARRANGE sel, all = { 0, -1};
 			int iSelection;
@@ -619,7 +601,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			RemoveMenu(hSubMenu, 9, MF_BYPOSITION);
 			RemoveMenu(hSubMenu, 8, MF_BYPOSITION);
 			RemoveMenu(hSubMenu, 4, MF_BYPOSITION);
-			EnableMenuItem(hSubMenu, IDM_PASTEFORMATTED, MF_BYCOMMAND | (mwdat->SendFormat != 0 ? MF_ENABLED : MF_GRAYED));
+			EnableMenuItem(hSubMenu, IDM_PASTEFORMATTED, MF_BYCOMMAND | ((mi && mi->bBold) ? MF_ENABLED : MF_GRAYED));
 			CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
 
 			SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM) & sel);
@@ -628,27 +610,21 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				if (idFrom == IDC_CHAT_MESSAGE)
 					EnableMenuItem(hSubMenu, IDM_CUT, MF_BYCOMMAND | MF_GRAYED);
 			}
-			if (idFrom == IDC_CHAT_MESSAGE) {
-				// First notification
-				mwpd.cbSize = sizeof(mwpd);
-				mwpd.uType = MSG_WINDOWPOPUP_SHOWING;
-				mwpd.uFlags = (idFrom == IDC_LOG ? MSG_WINDOWPOPUP_LOG : MSG_WINDOWPOPUP_INPUT);
-				mwpd.hContact = mwdat->hContact;
-				mwpd.hwnd = hwnd;
-				mwpd.hMenu = hSubMenu;
-				mwpd.selection = 0;
-				mwpd.pt = pt;
-				NotifyEventHooks(PluginConfig.m_event_MsgPopup, 0, (LPARAM)&mwpd);
-			}
+			mwpd.cbSize = sizeof(mwpd);
+			mwpd.uType = MSG_WINDOWPOPUP_SHOWING;
+			mwpd.uFlags = (idFrom == IDC_LOG ? MSG_WINDOWPOPUP_LOG : MSG_WINDOWPOPUP_INPUT);
+			mwpd.hContact = mwdat->hContact;
+			mwpd.hwnd = hwnd;
+			mwpd.hMenu = hSubMenu;
+			mwpd.selection = 0;
+			mwpd.pt = pt;
+			NotifyEventHooks(PluginConfig.m_event_MsgPopup, 0, (LPARAM)&mwpd);
 
 			iSelection = TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, GetParent(hwnd), NULL);
 
-			if (idFrom == IDC_CHAT_MESSAGE) {
-				// Second notification
-				mwpd.selection = iSelection;
-				mwpd.uType = MSG_WINDOWPOPUP_SELECTED;
-				NotifyEventHooks(PluginConfig.m_event_MsgPopup, 0, (LPARAM)&mwpd);
-			}
+			mwpd.selection = iSelection;
+			mwpd.uType = MSG_WINDOWPOPUP_SELECTED;
+			NotifyEventHooks(PluginConfig.m_event_MsgPopup, 0, (LPARAM)&mwpd);
 
 			switch (iSelection) {
 				case IDM_COPY:
@@ -660,7 +636,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				case IDM_PASTE:
 				case IDM_PASTEFORMATTED:
 					if (idFrom == IDC_CHAT_MESSAGE)
-						SendMessage(hwnd, EM_PASTESPECIAL, (iSelection == IDM_PASTE) ? CF_TEXT : 0, 0);
+						SendMessage(hwnd, EM_PASTESPECIAL, (iSelection == IDM_PASTE) ? CF_TEXTT : 0, 0);
 					break;
 				case IDM_COPYALL:
 					SendMessage(hwnd, EM_EXSETSEL, 0, (LPARAM) & all);
@@ -2685,21 +2661,12 @@ LABEL_SHOWWINDOW:
 						break;
 					}
 					if(msg == WM_KEYDOWN) {
-						if (wp == VK_INSERT && isShift) {
-							SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), EM_PASTESPECIAL, 0, 0);
+						if ((wp == VK_INSERT && isShift && !isCtrl && !isMenu) || (wp == 'V' && !isShift && !isMenu && isCtrl)) {
+							SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), EM_PASTESPECIAL, CF_TEXTT, 0);
 							((MSGFILTER *) lParam)->msg = WM_NULL;
 							((MSGFILTER *) lParam)->wParam = 0;
 							((MSGFILTER *) lParam)->lParam = 0;
 							return(_dlgReturn(hwndDlg, 1));
-						}
-						if (isCtrl && !isShift && !isMenu) {
-							if (wp == 'V') {
-								SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), EM_PASTESPECIAL, 0, 0);
-								((MSGFILTER *) lParam)->msg = WM_NULL;
-								((MSGFILTER *) lParam)->wParam = 0;
-								((MSGFILTER *) lParam)->lParam = 0;
-								return(_dlgReturn(hwndDlg, 1));
-							}
 						}
 					}
 
@@ -2707,45 +2674,11 @@ LABEL_SHOWWINDOW:
 						dat->pContainer->MenuBar->Cancel();
 
 					if (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN) {
-						LRESULT mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)&message, (LPARAM)Translate(TABSRMM_HK_SECTION_GENERIC));
 
-						switch(mim_hotkey_check) {
-							case TABSRMM_HK_SEND:
-								if (!(GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), GWL_STYLE) & ES_READONLY)) {
-									PostMessage(hwndDlg, WM_COMMAND, IDOK, 0);
-									return(_dlgReturn(hwndDlg, 1));
-								}
-								break;
-							case TABSRMM_HK_HISTORY:
-								SendMessage(hwndDlg, WM_COMMAND, IDC_CHAT_HISTORY, 0);
-								return(_dlgReturn(hwndDlg, 1));
-							case TABSRMM_HK_EMOTICONS:
-								SendMessage(hwndDlg, WM_COMMAND, IDC_SMILEYBTN, 0);
-								return(_dlgReturn(hwndDlg, 1));
-							case TABSRMM_HK_TOGGLETOOLBAR:
-								SendMessage(hwndDlg, WM_COMMAND, IDC_TOGGLETOOLBAR, 0);
-								return(_dlgReturn(hwndDlg, 1));
-							case TABSRMM_HK_CLEARLOG:
-								Chat_ClearLog(dat);
-								return(_dlgReturn(hwndDlg, 1));
-							case TABSRMM_HK_TOGGLEINFOPANEL:
-								dat->Panel->setActive(dat->Panel->isActive() ? FALSE : TRUE);
-								dat->Panel->showHide();
-								return(_dlgReturn(hwndDlg, 1));
-							case TABSRMM_HK_CONTAINEROPTIONS:
-								if (dat->pContainer->hWndOptions == 0)
-									CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CONTAINEROPTIONS), dat->pContainer->hwnd,
-													  DlgProcContainerOptions, (LPARAM)dat->pContainer);
-								return(_dlgReturn(hwndDlg, 1));
-							case TABSRMM_HK_TOGGLESIDEBAR:
-								if(dat->pContainer->SideBar->isActive())
-									SendMessage(hwndDlg, WM_COMMAND, IDC_CHAT_TOGGLESIDEBAR, 0);
-								return(_dlgReturn(hwndDlg, 1));
-							default:
-								break;
-						}
+						if(DM_GenericHotkeysCheck(&message, dat))
+							return(_dlgReturn(hwndDlg, 1));
 
-						mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)&message, (LPARAM)Translate(TABSRMM_HK_SECTION_GC));
+						LRESULT mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)&message, (LPARAM)Translate(TABSRMM_HK_SECTION_GC));
 						switch(mim_hotkey_check) {								// nothing (yet) FIXME
 							case TABSRMM_HK_CHANNELMGR:
 								SendMessage(hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_CHANMGR, BN_CLICKED), 0);
@@ -3423,8 +3356,15 @@ LABEL_SHOWWINDOW:
 					}
 				}
 			}
-			else
+			else {
 				FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
+				if(M->isAero()) {
+					LONG temp = rcClient.bottom;
+					rcClient.bottom = 120;
+					FillRect(hdcMem, &rcClient, (HBRUSH)GetStockObject(BLACK_BRUSH));
+					rcClient.bottom = temp;
+				}
+			}
 
 			GetClientRect(hwndDlg, &rc);
 			dat->Panel->renderBG(hdcMem, rc, &SkinItems[ID_EXTBKINFOPANELBG], fAero);
