@@ -59,4 +59,5 @@ extern void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced
 extern int MeasureMenuItem(WPARAM wParam, LPARAM lParam);
 extern int DrawMenuItem(WPARAM wParam, LPARAM lParam);
 extern void SetSearchEngineIcons(HMENU hMenu, HIMAGELIST hImageList);
+extern void GetContactUniqueId(struct MessageWindowData *dat, char *buf, int maxlen);
 #endif

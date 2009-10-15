@@ -500,3 +500,24 @@ void SetSearchEngineIcons(HMENU hMenu, HIMAGELIST hImageList) {
 		SetMenuItemInfo(hMenu, IDM_SEARCH_GOOGLE + i, FALSE, &minfo);
 	}
 }
+
+void GetContactUniqueId(struct MessageWindowData *dat, char *buf, int maxlen) {
+	CONTACTINFO ci;
+	ZeroMemory(&ci, sizeof(ci));
+    ci.cbSize = sizeof(ci);
+    ci.hContact = dat->windowData.hContact;
+    ci.szProto = dat->szProto;
+    ci.dwFlag = CNF_UNIQUEID;
+	buf[0] = 0;
+    if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
+        switch (ci.type) {
+            case CNFT_ASCIIZ:
+                mir_snprintf(buf, maxlen, "%s", ci.pszVal);
+                miranda_sys_free(ci.pszVal);
+                break;
+            case CNFT_DWORD:
+                mir_snprintf(buf, maxlen, "%u", ci.dVal);
+                break;
+        }
+    }
+}

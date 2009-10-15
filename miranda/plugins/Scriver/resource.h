@@ -171,7 +171,7 @@
 #define IDC_CHAT_LIMITTEXT2				1643
 #define IDC_INFOBAR						1644
 #define IDC_AVATAR						1645
-
+#define IDC_XSTATUSICON                 1646
 #define IDM_CUT                         40000
 #define IDM_COPY                        40001
 #define IDM_PASTE                       40002
@@ -190,7 +190,7 @@
 #define IDM_SEARCH_GOOGLE               40080
 #define IDM_SEARCH_YAHOO				40081
 #define IDM_SEARCH_WIKIPEDIA            40082
-#define IDM_SEARCH_FOODNETWORK        40083
+#define IDM_SEARCH_FOODNETWORK          40083
 /* chat.dll resources */
 
 #define IDC_CHAT_LOG                         5005

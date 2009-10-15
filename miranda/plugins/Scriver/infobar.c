@@ -83,6 +83,18 @@ void RefreshInfobar(InfobarWindowData* idat) {
 	mir_free(szContactName);
 }
 
+
+static HICON GetExtraStatuses(InfobarWindowData* idat) {
+    BYTE bXStatus = DBGetContactSettingByte(idat->mwd->windowData.hContact, idat->mwd->szProto, "XStatusId", 0);
+    logInfo("%s bXStatus = %d",idat->mwd->szProto,  bXStatus);
+    if (bXStatus > 0) {
+        HICON hIcon = (HICON) CallProtoService(idat->mwd->szProto, "/GetXStatusIcon", bXStatus, LR_SHARED);
+        logInfo("bXStatus = %d hIcon = %d", bXStatus, hIcon);
+        return hIcon;
+    }
+    return NULL;
+}
+
 static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static BOOL bWasCopy;
@@ -124,10 +136,10 @@ static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 						}
 					}
 				}
-				hdwp = BeginDeferWindowPos(3);
-				
-				hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, IDC_INFOBAR_NAME), 0, 15, 0, dlgWidth - avatarWidth - 2 - 15, dlgHeight/2, SWP_NOZORDER);
-				hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, IDC_INFOBAR_STATUS), 0, 15, dlgHeight/2, dlgWidth - avatarWidth - 2 - 15, dlgHeight/2, SWP_NOZORDER);
+				hdwp = BeginDeferWindowPos(4);
+				hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, IDC_XSTATUSICON), 0, dlgWidth - avatarWidth - 2 - 16, dlgHeight/4 - 8, 16, 16, SWP_NOZORDER);
+				hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, IDC_INFOBAR_NAME), 0, 16, 0, dlgWidth - avatarWidth - 2 - 32, dlgHeight/2, SWP_NOZORDER);
+				hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, IDC_INFOBAR_STATUS), 0, 16, dlgHeight/2, dlgWidth - avatarWidth - 2 - 32, dlgHeight/2, SWP_NOZORDER);
 				hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, IDC_AVATAR), 0, dlgWidth - avatarWidth - 2, (dlgHeight - avatarHeight) / 2, avatarWidth, (dlgHeight + avatarHeight - 2) / 2, SWP_NOZORDER);
 				EndDeferWindowPos(hdwp);
 			}
@@ -227,6 +239,13 @@ static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 						CallService(MS_AV_DRAWAVATAR, (WPARAM)0, (LPARAM)&adr);
 					}
 				}
+                {
+                    HICON hIcon = GetExtraStatuses(idat);
+                    if (hIcon != NULL) {
+                        SendDlgItemMessage(hwnd, IDC_XSTATUSICON, STM_SETICON, hIcon, 0);
+                  //      DrawIconEx(hdcMem, 0, 0, hIcon, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0, NULL, DI_NORMAL);
+                    }
+                }
 				BitBlt(dis->hDC, 0, 0, itemWidth, itemHeight, hdcMem, 0, 0, SRCCOPY);
 				hbmMem = (HBITMAP) SelectObject(hdcMem, hbmMem);
 				DeleteObject(hbmMem);
