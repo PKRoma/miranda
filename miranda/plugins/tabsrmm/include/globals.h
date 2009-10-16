@@ -139,7 +139,6 @@ public:
 	HANDLE      m_UserMenuItem;
 	double		g_DPIscaleX;
 	double		g_DPIscaleY;
-	BOOL		g_NickListScrollBarFix;
 	BOOL		m_HideOnClose;
 	BOOL		g_bSoundOnTyping;
 	BOOL		m_AllowTab;
@@ -183,6 +182,7 @@ public:
 	COLORREF	m_tbBackgroundHigh, m_tbBackgroundLow;
 	BOOL		m_SendLaterAvail;
 	BYTE		g_bClientInStatusBar;
+	BYTE		m_dontUseDefaultKbd;
 	HANDLE		hSvc[SERVICE_LAST];
 	HANDLE		m_event_MsgWin, m_event_MsgPopup;
 	HANDLE		m_hMenuItem;

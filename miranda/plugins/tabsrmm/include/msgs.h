@@ -344,7 +344,6 @@ struct _MessageWindowData {
 	TCHAR 	szMyNickname[130];
 	TCHAR	szStatusBar[100];
 	TCHAR   newtitle[130];        // tab title...
-	TCHAR   statusMsg[1025];
 	TCHAR	szStatus[50];
 	WORD    wStatus;
 	char    *sendBuffer;
@@ -409,7 +408,6 @@ struct _MessageWindowData {
 	TOOLINFO ti;
 	DWORD   timezone, timediff;
 	DWORD   panelStatusCX;
-	BYTE    xStatus;
 	COLORREF inputbg;
 	struct  avatarCacheEntry *ace, *ownAce;
 	HANDLE  *hHistoryEvents;
@@ -435,6 +433,7 @@ struct _MessageWindowData {
 	DWORD	iSplitterSaved;
 	BYTE    bWasDeleted;
 	BOOL	bActualHistory;
+	POINT	ptTipActivation;
 };
 
 #define MESSAGE_WINDOW_DATA_SIZE offsetof(_MessageWindowData, hdbEventFirst);

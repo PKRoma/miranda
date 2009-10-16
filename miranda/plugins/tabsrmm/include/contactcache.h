@@ -90,10 +90,16 @@ public:
 	const	char*			getActiveProto			() const { return(m_isMeta ? (m_szMetaProto ? m_szMetaProto : m_szProto) : m_szProto); }
 	const	TCHAR*			getActiveProtoT			() const { return(m_isMeta ? (m_szMetaProto ? m_tszMetaProto : m_tszProto) : m_tszProto); }
 	bool					isMeta					() const { return(m_isMeta); }
+	bool					isSubContact			() const { return(m_isSubcontact); }
+	const	HANDLE			getMasterContact		() const { return(m_hMasterContact); }
 	bool					isFavorite				() const { return(m_isFavorite); }
 	bool					isRecent				() const { return(m_isRecent); }
 	const TCHAR*			getRealAccount			() const { return(m_szAccount ? m_szAccount : C_INVALID_ACCOUNT); }
 	const TCHAR*			getUIN					() const { return(m_szUIN); }
+	const TCHAR*			getStatusMsg			() const { return(m_szStatusMsg); }
+	const TCHAR*			getXStatusMsg			() const { return(m_xStatusMsg); }
+	const TCHAR*			getListeningInfo		() const { return(m_ListeningInfo); }
+	BYTE					getXStatusId			() const { return(m_xStatus); }
 	const HWND				getWindowData			(_MessageWindowData*& dat) const { dat = m_dat; return(m_hwnd); }
 	const HWND				getHwnd					() const { return(m_hwnd); }
 
@@ -105,11 +111,13 @@ public:
 	bool					updateNick				();
 	void					updateMeta				();
 	void					updateUIN				();
+	void					updateStatusMsg			(const char *szKey = 0);
 	void					setWindowData			(const HWND hwnd = 0, _MessageWindowData *dat = 0);
 	void					resetMeta				();
 	void					closeWindow				();
 	void					deletedHandler			();
 	void					updateFavorite			();
+	void					setMasterContact		(const HANDLE hContact) {m_hMasterContact = hContact; }
 
 	/*
 	 * input history
@@ -129,14 +137,17 @@ private:
 private:
 	size_t				m_accessCount;
 	HANDLE				m_hSubContact;
+	HANDLE				m_hMasterContact;
 	WORD				m_wStatus, m_wMetaStatus;
 	WORD				m_wOldStatus;
 	char*				m_szProto, *m_szMetaProto;
 	TCHAR*				m_tszProto, m_tszMetaProto[40];
 	TCHAR*				m_szAccount;
 	TCHAR				m_szNick[80], m_szUIN[80];
+	TCHAR*				m_szStatusMsg, *m_xStatusMsg, *m_ListeningInfo;
+	BYTE				m_xStatus;
 	DWORD				m_idleTS;
-	bool				m_isMeta;
+	bool				m_isMeta, m_isSubcontact;
 	bool				m_Valid;
 	bool				m_isFavorite;
 	bool				m_isRecent;

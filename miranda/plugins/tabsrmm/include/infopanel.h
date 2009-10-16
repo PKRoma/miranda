@@ -89,7 +89,7 @@ private:
 	HWND						m_hRich;					// handle of the rich edit child
 	HWND						m_hwndParent;				// parent window (used for position calculations and to send notifications)
 	HANDLE						m_hContact;					// contact handle
-	TCHAR*						m_pszText;					// the richedit text
+	char*						m_pszText;					// the richedit text
 	SIZE						m_szRich;					// size of the richedit control (height auto-calculated to make it fit the text)
 	RECT						m_rcRich;					// adjusted rectangle for the richedit control (client coordinates)
 	const CInfoPanel*			m_panel;					// the info panel parent (if any)
@@ -171,6 +171,7 @@ private:
 	void 						RenderIPStatus				(const HDC hdc, RECT& rcItem);
 	void 						Chat_RenderIPNickname		(const HDC hdc, RECT& rcItem);
 	void 						Chat_RenderIPSecondLine		(const HDC hdc, RECT& rcItem);
+	LRESULT						cmdHandler					(UINT cmd);
 	HMENU						constructContextualMenu		() const;
 	void						addMenuItem					(const HMENU& m, MENUITEMINFO& mii, HICON hIcon, const TCHAR *szText, UINT uID, UINT pos) const;
 	INT_PTR	CALLBACK			ConfigDlgProc				(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);

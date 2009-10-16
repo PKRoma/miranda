@@ -349,6 +349,7 @@ void CGlobals::reloadAdv()
 {
 	g_bDisableAniAvatars=				M->GetByte("adv_DisableAniAvatars", 0);
 	g_bSoundOnTyping = 					M->GetByte("adv_soundontyping", 0);
+	m_dontUseDefaultKbd=				M->GetByte("adv_leaveKeyboardAlone", 1);
 
 	if(g_bSoundOnTyping && m_TypingSoundAdded == false) {
 		SkinAddNewSoundEx("SoundOnTyping", Translate("Other"), Translate("TABSRMM: Typing"));
@@ -482,14 +483,14 @@ int CGlobals::DBSettingChanged(WPARAM wParam, LPARAM lParam)
 	const char  *setting = cws->szSetting;
 	HWND		hwnd = 0;
 	CContactCache* c = 0;
-	bool		fChanged = false, fNickChanged = false;
+	bool		fChanged = false, fNickChanged = false, fExtendedStatusChange = false;
 
-	if(wParam)
-		hwnd = M->FindWindow((HANDLE)wParam);
+	hwnd = M->FindWindow((HANDLE)wParam);
 
 	if (hwnd == 0 && wParam != 0) {     // we are not interested in this event if there is no open message window/tab
 		if(!strcmp(setting, "Status") || !strcmp(setting, "MyHandle") || !strcmp(setting, "Nick") || !strcmp(cws->szModule, SRMSGMOD_T)) {
-			c = CGlobals::getContactCache((HANDLE)wParam);
+			if(!c)
+				c = CGlobals::getContactCache((HANDLE)wParam);
 			if(c) {
 				fChanged = c->updateStatus();
 				c->updateNick();
@@ -500,7 +501,7 @@ int CGlobals::DBSettingChanged(WPARAM wParam, LPARAM lParam)
 		return(0);
 	}
 
-	if (wParam == 0 && strstr("Nick,yahoo_id", setting)) {
+	if (wParam == 0 && !strcmp("Nick", setting)) {
 		M->BroadcastMessage(DM_OWNNICKCHANGED, 0, (LPARAM)cws->szModule);
 		return(0);
 	}
@@ -536,11 +537,7 @@ int CGlobals::DBSettingChanged(WPARAM wParam, LPARAM lParam)
 			fChanged = c->updateStatus();
 			fNickChanged = c->updateNick();
 		}
-		if (strstr("IdleTS,XStatusId,display_uid", setting)) {
-			if (!strcmp(setting, "XStatusId"))
-				PostMessage(hwnd, DM_UPDATESTATUSMSG, 0, 0);
-		}
-		else if (lstrlenA(setting) > 6 && lstrlenA(setting) < 9 && !strncmp(setting, "Status", 6)) {
+		if (lstrlenA(setting) > 6 && lstrlenA(setting) < 9 && !strncmp(setting, "Status", 6)) {
 			fChanged = true;
 			if(c) {
 				c->updateMeta();
@@ -552,10 +549,16 @@ int CGlobals::DBSettingChanged(WPARAM wParam, LPARAM lParam)
 			if(PluginConfig.g_bClientInStatusBar)
 				ChangeClientIconInStatusBar(wParam,0);
 		}
-		else if (strstr("StatusMsg,StatusDescr,XStatusMsg,XStatusName,YMsg", setting))
-			PostMessage(hwnd, DM_UPDATESTATUSMSG, 0, 0);
-		if(fChanged | fNickChanged)
+		else if(lstrlenA(setting) > 6 && strstr("StatusMsg,XStatusMsg,XStatusName,XStatusId,ListeningTo", setting)) {
+			if(c) {
+				c->updateStatusMsg(setting);
+				fExtendedStatusChange = true;
+			}
+		}
+		if(fChanged || fNickChanged || fExtendedStatusChange)
 			PostMessage(hwnd, DM_UPDATETITLE, 0, 1);
+		if(fExtendedStatusChange)
+			PostMessage(hwnd, DM_UPDATESTATUSMSG, 0, 0);
 		if(fChanged)
 			PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_LOGSTATUSCHANGE, 0, (LPARAM)c);
 	}
@@ -841,7 +844,7 @@ void CGlobals::cacheUpdateMetaChanged()
 
 		// meta contacts are enabled, but current contact is a subcontact - > close window
 
-		if(fMetaActive && M->GetByte(c->getContact(), PluginConfig.szMetaName, "IsSubcontact", 0))
+		if(fMetaActive && c->isSubContact())
 			c->closeWindow();
 
 		// reset meta contact information, if metacontacts protocol became avail

@@ -38,6 +38,49 @@
 
 extern RECT	  			rcLastStatusBarClick;
 
+
+/**
+ * checks if the balloon tooltip can be dismissed (usually called by
+ * WM_MOUSEMOVE events
+ */
+
+void TSAPI DM_DismissTip(_MessageWindowData *dat, const POINT& pt)
+{
+	RECT rc;
+
+	if(!IsWindowVisible(dat->hwndTip))
+		return;
+
+	GetWindowRect(dat->hwndTip, &rc);
+	if(PtInRect(&rc, pt))
+		return;
+
+	if(abs(pt.x - dat->ptTipActivation.x) > 5 || abs(pt.y - dat->ptTipActivation.y) > 5) {
+		KillTimer(dat->hwnd, TIMERID_TOOLTIP);
+		SendMessage(dat->hwndTip, TTM_TRACKACTIVATE, FALSE, 0);
+		dat->ptTipActivation.x = dat->ptTipActivation.y = 0;
+	}
+}
+
+/**
+ * initialize the balloon tooltip for message window notifications
+ */
+void TSAPI DM_InitTip(_MessageWindowData *dat)
+{
+	dat->hwndTip = CreateWindowEx(0, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_NOPREFIX | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT,
+								  CW_USEDEFAULT, CW_USEDEFAULT, dat->hwnd, NULL, g_hInst, (LPVOID) NULL);
+
+	ZeroMemory((void *)&dat->ti, sizeof(dat->ti));
+	dat->ti.cbSize = sizeof(dat->ti);
+	dat->ti.lpszText = PluginConfig.m_szNoStatus;
+	dat->ti.hinst = g_hInst;
+	dat->ti.hwnd = dat->hwnd;
+	dat->ti.uFlags = TTF_TRACK | TTF_IDISHWND | TTF_TRANSPARENT;
+	dat->ti.uId = (UINT_PTR)dat->hwnd;
+	SendMessageA(dat->hwndTip, TTM_ADDTOOLA, 0, (LPARAM)&dat->ti);
+	SetWindowPos(dat->hwndTip, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOZORDER);
+}
+
 /**
  * checks generic hotkeys valid for both IM and MUC sessions
  *
@@ -242,8 +285,7 @@ LRESULT TSAPI DM_MsgWindowCmdHandler(HWND hwndDlg, ContainerWindowData *m_pConta
 
 			iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
 			isHandled = MsgWindowMenuHandler(dat, iSelection, MENU_LOGMENU);
-
-			break;
+			return(isHandled);
 		}
 		case IDC_PROTOMENU: {
 			RECT rc;
@@ -1020,7 +1062,6 @@ LRESULT TSAPI DM_LoadLocale(_MessageWindowData *dat)
 	/*
 	* set locale if saved to contact
 	*/
-
 	if (dat) {
 		if (dat->dwFlags & MWF_WASBACKGROUNDCREATE)
 			return 0;
@@ -1036,11 +1077,17 @@ LRESULT TSAPI DM_LoadLocale(_MessageWindowData *dat)
 				DBFreeVariant(&dbv);
 				CloseHandle((HANDLE)mir_forkthreadex(LoadKLThread, reinterpret_cast<void *>(dat->hContact), 16000, NULL));
 			} else {
-				TCHAR	szBuf[20];
+				if(!PluginConfig.m_dontUseDefaultKbd) {
+					TCHAR	szBuf[20];
 
-				GetLocaleInfo(LOCALE_SYSTEM_DEFAULT, LOCALE_ILANGUAGE, szBuf, 20);
-				mir_sntprintf(szKLName, KL_NAMELENGTH, _T("0000%s"), szBuf);
-				M->WriteTString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
+					GetLocaleInfo(LOCALE_SYSTEM_DEFAULT, LOCALE_ILANGUAGE, szBuf, 20);
+					mir_sntprintf(szKLName, KL_NAMELENGTH, _T("0000%s"), szBuf);
+					M->WriteTString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
+				}
+				else {
+					GetKeyboardLayoutName(szKLName);
+					M->WriteTString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
+				}
 				CloseHandle((HANDLE)mir_forkthreadex(LoadKLThread, reinterpret_cast<void *>(dat->hContact), 16000, NULL));
 			}
 		}
@@ -1100,8 +1147,7 @@ LRESULT TSAPI DM_UpdateLastMessage(const _MessageWindowData *dat)
 			}
 			if (dat->pContainer->dwFlags & CNT_UINSTATUSBAR) {
 				TCHAR fmt[100];
-				TCHAR *uidName = _T("UIN");
-				mir_sntprintf(fmt, safe_sizeof(fmt), _T("%s: %s"), uidName, dat->cache->getUIN());
+				mir_sntprintf(fmt, safe_sizeof(fmt), _T("UID: %s"), dat->cache->getUIN());
 				SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM)fmt);
 			} else {
 				TCHAR fmt[100];
@@ -1742,7 +1788,6 @@ void TSAPI DM_UpdateTitle(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 	DWORD 					dwOldIdle = dat->idle;
 	const char*				szActProto = 0;
 	HANDLE 					hActContact = 0;
-	BYTE 					oldXStatus = dat->xStatus;
 
 	HWND 					hwndDlg = dat->hwnd;
 	HWND					hwndTab = GetParent(hwndDlg);
@@ -1771,12 +1816,11 @@ void TSAPI DM_UpdateTitle(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 			iHasName = (dat->cache->getUIN()[0] != 0);
 			dat->idle = dat->cache->getIdleTS();
 			dat->dwFlagsEx =  dat->idle ? dat->dwFlagsEx | MWF_SHOW_ISIDLE : dat->dwFlagsEx & ~MWF_SHOW_ISIDLE;
-			dat->xStatus = M->GetByte(hActContact, szActProto, "XStatusId", 0);
 
 			dat->wStatus = dat->cache->getStatus();
 			mir_sntprintf(dat->szStatus, safe_sizeof(dat->szStatus), _T("%s"), (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, GCMDF_TCHAR));
 
-			if (dat->xStatus != oldXStatus || lParam != 0) {
+			if (lParam != 0) {
 				if (PluginConfig.m_CutContactNameOnTabs)
 					CutContactName(szNick, newcontactname, safe_sizeof(newcontactname));
 				else
@@ -1809,7 +1853,7 @@ void TSAPI DM_UpdateTitle(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 	} else
 		lstrcpyn(newtitle, pszNewTitleEnd, safe_sizeof(newtitle));
 
-	if (dat->xStatus != oldXStatus || dat->idle != dwOldIdle || lParam != 0) {
+	if (dat->idle != dwOldIdle || lParam != 0) {
 
 		if (item.mask & TCIF_TEXT) {
 			item.pszText = newtitle;
@@ -1822,7 +1866,7 @@ void TSAPI DM_UpdateTitle(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 			if(m_pContainer->dwFlags & CNT_SIDEBAR)
 				m_pContainer->SideBar->updateSession(dat);
 		}
-		if (m_pContainer->hwndActive == hwndDlg && (dat->xStatus != oldXStatus || lParam))
+		if (m_pContainer->hwndActive == hwndDlg && lParam)
 			SendMessage(hwndContainer, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
 
 		UpdateTrayMenuState(dat, TRUE);

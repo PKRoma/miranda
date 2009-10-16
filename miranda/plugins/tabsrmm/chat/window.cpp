@@ -1499,16 +1499,16 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 		//MAD: attemp to fix weird bug, when combobox with hidden vscroll
 		//can't be scrolled with mouse-wheel.
 		case WM_NCCALCSIZE: {
-		   if (CSkin::m_DisableScrollbars && PluginConfig.g_NickListScrollBarFix) {
-			RECT lpRect;
-			LONG itemHeight;
+			if (CSkin::m_DisableScrollbars) {
+				RECT lpRect;
+				LONG itemHeight;
 
-			GetClientRect (hwnd, &lpRect);
-			itemHeight = SendMessage(hwnd, LB_GETITEMHEIGHT, 0, 0);
-			g_cLinesPerPage = (lpRect.bottom - lpRect.top) /itemHeight	;
-			 }
-			return(CSkin::NcCalcRichEditFrame(hwnd, mwdat, ID_EXTBKUSERLIST, msg, wParam, lParam, OldNicklistProc));
+				GetClientRect (hwnd, &lpRect);
+				itemHeight = SendMessage(hwnd, LB_GETITEMHEIGHT, 0, 0);
+				g_cLinesPerPage = (lpRect.bottom - lpRect.top) /itemHeight	;
 			}
+			return(CSkin::NcCalcRichEditFrame(hwnd, mwdat, ID_EXTBKUSERLIST, msg, wParam, lParam, OldNicklistProc));
+		}
 		 //
 		case WM_NCPAINT:
 			return(CSkin::DrawRichEditFrame(hwnd, mwdat, ID_EXTBKUSERLIST, msg, wParam, lParam, OldNicklistProc));
@@ -1542,8 +1542,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 		//MAD
 		case WM_MOUSEWHEEL: {
-			if (CSkin::m_DisableScrollbars && PluginConfig.g_NickListScrollBarFix)
-				{
+			if (CSkin::m_DisableScrollbars)	{
 				UINT uScroll;
 				int dLines;
 				short zDelta=(short)HIWORD(wParam);
@@ -1569,14 +1568,15 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 					if (dLines > 0) {
 						SendMessage(hwnd, WM_VSCROLL, SB_LINEUP, 0);
 						dLines--;
-						} else {
-							SendMessage(hwnd, WM_VSCROLL, SB_LINEDOWN, 0);
-							dLines++;
-						}
+					} else {
+						SendMessage(hwnd, WM_VSCROLL, SB_LINEDOWN, 0);
+						dLines++;
 					}
-				return 0;
 				}
-			}break;
+				return 0;
+			}
+			break;
+		}
 //MAD_
 		case WM_KEYDOWN:
 			if (wParam == 0x57 && GetKeyState(VK_CONTROL) & 0x8000) { // ctrl-w (close window)
@@ -1956,10 +1956,10 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			BroadCastContainer(dat->pContainer, DM_REFRESHTABINDEX, 0, 0);
 
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETOLECALLBACK, 0, (LPARAM) mREOLECallback);
-			//MAD
-			PluginConfig.g_NickListScrollBarFix = M->GetByte("adv_ScrollBarFix", 1);
 
 			BB_InitDlgButtons(dat);
+			DM_InitTip(dat);
+
 			SendMessage(GetDlgItem(hwndDlg,IDC_COLOR), BUTTONSETASPUSHBTN, 0, 0);
 
 			OldSplitterProc = (WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTERX), GWLP_WNDPROC, (LONG_PTR)SplitterSubclassProc);
@@ -2657,6 +2657,7 @@ LABEL_SHOWWINDOW:
 					if(msg == WM_MOUSEMOVE) {
 						POINT	pt;
 						GetCursorPos(&pt);
+						DM_DismissTip(dat, pt);
 						dat->Panel->trackMouse(pt);
 						break;
 					}
@@ -2675,10 +2676,14 @@ LABEL_SHOWWINDOW:
 
 					if (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN) {
 
-						if(DM_GenericHotkeysCheck(&message, dat))
+						if(DM_GenericHotkeysCheck(&message, dat)) {
+							dat->fkeyProcessed = true;
 							return(_dlgReturn(hwndDlg, 1));
+						}
 
 						LRESULT mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)&message, (LPARAM)Translate(TABSRMM_HK_SECTION_GC));
+						if(mim_hotkey_check)
+							dat->fkeyProcessed = true;
 						switch(mim_hotkey_check) {								// nothing (yet) FIXME
 							case TABSRMM_HK_CHANNELMGR:
 								SendMessage(hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_CHANMGR, BN_CLICKED), 0);
@@ -3011,6 +3016,7 @@ LABEL_SHOWWINDOW:
 		case WM_MOUSEMOVE: {
 			POINT pt;
 			GetCursorPos(&pt);
+			DM_DismissTip(dat, pt);
 			dat->Panel->trackMouse(pt);
 			break;
 		}
@@ -3703,6 +3709,14 @@ LABEL_SHOWWINDOW:
 			ActivateExistingTab(dat->pContainer, hwndDlg);
 			return 0;
 
+		case DM_ACTIVATETOOLTIP: {
+			if (IsIconic(dat->pContainer->hwnd) || dat->pContainer->hwndActive != hwndDlg)
+				break;
+
+			dat->Panel->showTip(wParam, lParam);
+			break;
+		}
+
 		case WM_NCDESTROY:
 			if (dat) {
 				ZeroMemory(&dat->pContainer->mOld, sizeof(MARGINS));
@@ -3750,6 +3764,9 @@ LABEL_SHOWWINDOW:
 
 			if (dat->hSmileyIcon)
 				DestroyIcon(dat->hSmileyIcon);
+
+			if (dat->hwndTip)
+				DestroyWindow(dat->hwndTip);
 
 			if (hCurHyperlinkHand)
  						DestroyCursor(hCurHyperlinkHand);

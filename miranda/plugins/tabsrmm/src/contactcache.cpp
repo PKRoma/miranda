@@ -40,20 +40,11 @@
 
 CContactCache::CContactCache(const HANDLE hContact)
 {
+	ZeroMemory(this, sizeof(CContactCache));
+
+	m_Valid = m_isMeta = false;
 	m_hContact = hContact;
-	m_hSubContact = 0;
-	m_szProto = m_szMetaProto = 0;
-	m_tszProto = 0;
-	m_tszMetaProto[0] = 0;
 	m_wOldStatus = m_wStatus = m_wMetaStatus = ID_STATUS_OFFLINE;
-	m_idleTS = 0;
-	m_Valid = false;
-	m_szUIN[0] = 0;
-	m_stats = 0;
-	m_accessCount = 0;
-	m_history = 0;
-	m_iHistoryCurrent = m_iHistorySize = m_iHistoryTop = 0;
-	m_next = 0;
 
 	if(hContact) {
 		m_szProto = reinterpret_cast<char *>(::CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)m_hContact, 0));
@@ -92,9 +83,25 @@ void CContactCache::initPhaseTwo()
 
 	m_Valid = (m_szProto != 0 && m_szAccount != 0) ? true : false;
 	if(m_Valid) {
+		m_isSubcontact = (M->GetByte(m_hContact, PluginConfig.szMetaName, "IsSubcontact", 0) ? true : false);
 		m_isMeta = (PluginConfig.bMetaEnabled && !strcmp(m_szProto, PluginConfig.szMetaName)) ? true : false;
-		if(m_isMeta)
+		if(m_isMeta) {
+			/*
+			int 	i = 0;
+			char 	buf[20];
+			HANDLE	h;
+			do {
+				mir_snprintf(buf, 20, "Handle%d", i);
+				if((h = reinterpret_cast<HANDLE>(M->GetDword(m_hContact, m_szProto, buf, 0))) == 0)
+					break;
+				CContactCache* _c = CGlobals::getContactCache(h);
+				if(_c)
+					_c->setMasterContact(m_hContact);
+				i++;
+			} while(true);
+			*/
 			updateMeta();
+		}
 		updateState();
 		updateFavorite();
 	}
@@ -278,7 +285,8 @@ void CContactCache::allocStats()
 
 /**
  * set the window data for this contact. The window procedure of the message
- * dialog will use this in WM_INITDIALOG and WM_DESTROY.
+ * dialog will use this in WM_INITDIALOG and WM_DESTROY to tell the cache
+ * that a message window is open for this contact.
  *
  * @param hwnd:		window handle
  * @param dat:		_MessageWindowData - window data structure
@@ -289,12 +297,23 @@ void CContactCache::setWindowData(const HWND hwnd, _MessageWindowData *dat)
 	m_dat = dat;
 	if(hwnd && dat && m_history == 0)
 		allocHistory();
+	if(hwnd)
+		updateStatusMsg();
+	else {
+		/* release memory - not needed when window isn't open */
+		if(m_szStatusMsg)
+			mir_free(m_szStatusMsg);
+		if(m_ListeningInfo)
+			mir_free(m_ListeningInfo);
+		if(m_xStatusMsg)
+			mir_free(m_xStatusMsg);
+	}
+
 }
 
 /**
  * saves message to the input history.
- * its using streamout in UTF8 format - no unicode "issues" and all RTF formatting is saved aswell,
- * so restoring a message from the input history will also restore its formatting
+ * it's using streamout in UTF8 format - no unicode "issues" and all RTF formatting is saved to the history.
  */
 
 void CContactCache::saveHistory(WPARAM wParam, LPARAM lParam)
@@ -462,4 +481,66 @@ void CContactCache::updateFavorite()
 {
 	m_isFavorite = M->GetByte(m_hContact, SRMSGMOD_T, "isFavorite", 0) ? true : false;
 	m_isRecent = M->GetDword(m_hContact, "isRecent", 0) ? true : false;
+}
+
+/**
+ * update all or only the given status message information from the database
+ *
+ * @param szKey: char* database key name or 0 to reload all messages
+ */
+void CContactCache::updateStatusMsg(const char *szKey)
+{
+	DBVARIANT 	dbv = {0};
+	BYTE 		bStatusMsgValid = 0;
+	INT_PTR		res = 0;
+
+	if(!m_Valid)
+		return;
+
+	if(szKey == 0 || (szKey && !strcmp("StatusMsg", szKey))) {
+		if(m_szStatusMsg)
+			mir_free(m_szStatusMsg);
+		m_szStatusMsg = 0;
+		res = M->GetTString(m_hContact, "CList", "StatusMsg", &dbv);
+		if(res == 0) {
+			m_szStatusMsg = (lstrlen(dbv.ptszVal) > 0 ? mir_tstrdup(dbv.ptszVal) : 0);
+			DBFreeVariant(&dbv);
+		}
+	}
+	if(szKey == 0 || (szKey && !strcmp("ListeningTo", szKey))) {
+		if(m_ListeningInfo)
+			mir_free(m_ListeningInfo);
+		m_ListeningInfo = 0;
+		res = M->GetTString(m_hContact, m_szProto, "ListeningTo", &dbv);
+		if(res == 0) {
+			m_ListeningInfo = (lstrlen(dbv.ptszVal) > 0 ? mir_tstrdup(dbv.ptszVal) : 0);
+			DBFreeVariant(&dbv);
+		}
+	}
+	if(szKey == 0 || (szKey && !strcmp("XStatusMsg", szKey))) {
+		if(m_xStatusMsg)
+			mir_free(m_xStatusMsg);
+		m_xStatusMsg = 0;
+		res = M->GetTString(m_hContact, m_szProto, "XStatusMsg", &dbv);
+		if(res == 0) {
+			m_xStatusMsg = (lstrlen(dbv.ptszVal) > 0 ? mir_tstrdup(dbv.ptszVal) : 0);
+			DBFreeVariant(&dbv);
+		}
+	}
+	m_xStatus = M->GetByte(m_hContact, m_szProto, "XStatusId", 0);
+
+	/*
+	if (bStatusMsgValid > STATUSMSG_XSTATUSNAME) {
+		int j = 0, i, iLen;
+		iLen = lstrlen(dbv.ptszVal);
+		for (i = 0; i < iLen && j < 1024; i++) {
+			if (dbv.ptszVal[i] == (TCHAR)0x0d)
+				continue;
+			dat->statusMsg[j] = dbv.ptszVal[i] == (TCHAR)0x0a ? (TCHAR)' ' : dbv.ptszVal[i];
+			j++;
+		}
+		dat->statusMsg[j] = (TCHAR)0;
+		mir_free(dbv.ptszVal);
+	}
+	*/
 }

@@ -350,11 +350,10 @@ void CInfoPanel::renderContent(const HDC hdc)
  * @param hdc    HDC: target DC for drawing
  *
  * @param rcItem RECT &: target rectangle
- * @param dat    _MessageWindowData*: message window information structure
  */
 void CInfoPanel::RenderIPNickname(const HDC hdc, RECT& rcItem)
 {
-	TCHAR*			szStatusMsg = NULL;
+	const TCHAR*	szStatusMsg = NULL;
 	CSkinItem*		item = &SkinItems[ID_EXTBKINFOPANEL];
 	const TCHAR* 	szTextToShow = 0;
 	bool			fShowUin = false;
@@ -366,7 +365,7 @@ void CInfoPanel::RenderIPNickname(const HDC hdc, RECT& rcItem)
 	} else
 		szTextToShow = m_dat->cache->getNick();
 
-	szStatusMsg = m_dat->statusMsg;
+	szStatusMsg = m_dat->cache->getStatusMsg();
 
 	::SetBkMode(hdc, TRANSPARENT);
 
@@ -394,7 +393,7 @@ void CInfoPanel::RenderIPNickname(const HDC hdc, RECT& rcItem)
 
 		m_szNick.cx = m_szNick.cy = 0;
 
-		if (szStatusMsg && szStatusMsg[0]) {
+		if (szStatusMsg) {
 			SIZE sStatusMsg, sMask;
 			DWORD dtFlags, dtFlagsNick;
 
@@ -447,7 +446,6 @@ void CInfoPanel::RenderIPNickname(const HDC hdc, RECT& rcItem)
  *
  * @param hdc    HDC: device context for drawing.
  * @param rcItem RECT &: target rectangle for drawing
- * @param dat    _MessageWindowData *: the message session structure
  */
 void CInfoPanel::RenderIPUIN(const HDC hdc, RECT& rcItem)
 {
@@ -493,7 +491,6 @@ void CInfoPanel::RenderIPUIN(const HDC hdc, RECT& rcItem)
 /**
  * Render the info panel status field. Usually in the 2nd line, right aligned
  * @param hdc    : target device context
- * @param rcItem : target rectangle (_MessageWindowData::rcStatus)
  */
 void CInfoPanel::RenderIPStatus(const HDC hdc, RECT& rcItem)
 {
@@ -727,12 +724,12 @@ HMENU CInfoPanel::constructContextualMenu() const
 
 	if(m_hoverFlags & HOVER_NICK) {
 		addMenuItem(m, mii, ::LoadSkinnedIcon(SKINICON_OTHER_USERDETAILS), CTranslator::get(CTranslator::GEN_IP_MENU_USER_DETAILS),
-					CMD_IP_USERDETAILS, 0);
+					IDC_NAME, 0);
 		addMenuItem(m, mii, ::LoadSkinnedIcon(SKINICON_OTHER_HISTORY), CTranslator::get(CTranslator::GEN_IP_MENU_HISTORY),
-					CMD_IP_HISTORY, 0);
+					IDC_HISTORY, 0);
 		if(!m_isChat)
 			addMenuItem(m, mii, PluginConfig.g_iconContainer, CTranslator::get(CTranslator::GEN_IP_MENU_MSGPREFS),
-						CMD_IP_USERPREFS, 1);
+						ID_MESSAGELOGSETTINGS_FORTHISCONTACT, 1);
 		else
 			::AppendMenu(m, MF_STRING, CMD_IP_ROOMPREFS, CTranslator::get(CTranslator::GEN_IP_MENU_ROOMPREFS));
 	}
@@ -743,6 +740,20 @@ HMENU CInfoPanel::constructContextualMenu() const
 	::AppendMenu(m, MF_STRING, 1000, CTranslator::get(CTranslator::GEN_IP_MENU_COPY));
 
 	return(m);
+}
+
+/**
+ * process internal menu commands from info panel fields
+ * if this does not handle the selected command, Utils::CmdDispatcher() will be called
+ * to chain the command through message window command handlers.
+ *
+ * @param cmd		command id
+ * @return			1 if command was processed, 0 otherwise
+ */
+
+LRESULT CInfoPanel::cmdHandler(UINT cmd)
+{
+	return(0);				// not handled
 }
 
 /**
@@ -763,7 +774,8 @@ void CInfoPanel::handleClick(const POINT& pt)
 	HMENU m = constructContextualMenu();
 	LRESULT r = ::TrackPopupMenu(m, TPM_RETURNCMD, pt.x, pt.y, 0, m_dat->hwnd, NULL);
 
-	//::DM_CmdHandler(m_dat);
+	if(cmdHandler(r) == 0)
+		::Utils::CmdDispatcher(Utils::CMD_INFOPANEL, m_dat->hwnd, r, 0, 0, m_dat, m_dat->pContainer);
 	::DestroyMenu(m);
 	m_hoverFlags = 0;
 	Invalidate();
@@ -778,18 +790,16 @@ void CInfoPanel::handleClick(const POINT& pt)
  */
 int CInfoPanel::hitTest(POINT pt)
 {
-	int	result = HTNIRVANA;
-
 	::ScreenToClient(m_dat->hwnd, &pt);
 
-	if(::PtInRect(&m_rcStatus, pt))
-		result = HTSTATUS;
+	if(!m_isChat && ::PtInRect(&m_rcStatus, pt))
+		return(HTSTATUS);
 	else if(::PtInRect(&m_rcNick, pt))
-		result = HTNICK;
+		return(HTNICK);
 	else if(::PtInRect(&m_rcUIN, pt))
-		result = HTUIN;
+		return(HTUIN);
 
-	return(result);
+	return(HTNIRVANA);
 }
 /**
  * track mouse movements inside the panel. Needed for tooltip activation
@@ -811,10 +821,8 @@ void CInfoPanel::trackMouse(POINT& pt)
 
 	switch(result) {
 		case HTSTATUS:
-			if(!m_isChat) {
-				m_hoverFlags |= HOVER_STATUS;
-				::SetCursor(LoadCursor(0, IDC_HAND));
-			}
+			m_hoverFlags |= HOVER_STATUS;
+			::SetCursor(LoadCursor(0, IDC_HAND));
 			break;
 
 		case HTNICK:
@@ -851,7 +859,6 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 		RECT 	rc;
 		TCHAR 	szTitle[256];
 		HWND	hwndDlg = m_dat->hwnd;
-		TCHAR	tszFinalTip[1024];
 
 		::GetWindowRect(GetDlgItem(hwndDlg, ctrlId), &rc);
 
@@ -859,20 +866,67 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 		if (lParam)
 			m_dat->ti.lpszText = reinterpret_cast<TCHAR *>(lParam);
 		else {
+			TCHAR		temp[1024];
+			tstring 	str;
 			DBVARIANT 	dbv = {0};
+			size_t		pos;
+			BYTE		xStatus = 0;
 
-			BOOL fClient = M->GetTString(m_dat->cache->getActiveContact(), m_dat->cache->getActiveProto(), "MirVer", &dbv);
+			/* TODO make this stuff translatable */
 
-			mir_sntprintf(tszFinalTip, 1024, _T("%s%s%s"), m_dat->statusMsg[0] ? m_dat->statusMsg : PluginConfig.m_szNoStatus,
-						  !fClient ? _T("\n\nClient: ") : _T(""), !fClient ? dbv.ptszVal : _T(""));
+			mir_sntprintf(temp, 1024, _T("{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u"), 0, 0, 0, 30*15);
+			str.assign(temp);
 
-			if(!fClient)
+			mir_sntprintf(temp, 1024, _T("\\tab \\ul\\b Status message:\\ul0\\b0 \\par %s"),
+						  m_dat->cache->getStatusMsg() ? m_dat->cache->getStatusMsg() : CTranslator::get(CTranslator::GEN_NO_STATUS));
+			str.append(temp);
+
+			if(xStatus = m_dat->cache->getXStatusId()) {
+				TCHAR	*tszXStatusName = 0;
+				if(0 == M->GetTString(m_dat->cache->getContact(), m_dat->cache->getProto(), "XStatusName", &dbv))
+					tszXStatusName = dbv.ptszVal;
+				else if(xStatus > 0 && xStatus <= 31)
+					tszXStatusName = xStatusDescr[xStatus - 1];
+
+				if(tszXStatusName) {
+					mir_sntprintf(temp, 1024, _T("\\par\\par\\tab \\ul\\b Extended status information:\\ul0\\b0 \\par "));
+					str.append(temp);
+					mir_sntprintf(temp, 1024, _T("%s%s%s"), tszXStatusName, m_dat->cache->getXStatusMsg() ? _T(" / ") : _T(""),
+								  m_dat->cache->getXStatusMsg() ? m_dat->cache->getXStatusMsg() : _T(""));
+					str.append(temp);
+					if(dbv.ptszVal)
+						mir_free(dbv.ptszVal);
+				}
+			}
+
+			if(m_dat->cache->getListeningInfo()) {
+				mir_sntprintf(temp, 1024, _T("\\par\\par\\tab \\ul\\b Listening to:\\ul0\\b0 \\par %s"), m_dat->cache->getListeningInfo());
+				str.append(temp);
+			}
+
+			if(0 == M->GetTString(m_dat->cache->getActiveContact(), m_dat->cache->getActiveProto(), "MirVer", &dbv)) {
+				mir_sntprintf(temp, 1024, _T("\\par\\par\\ul\\b Client:\\ul0\\b0  %s"), dbv.pszVal);
 				::DBFreeVariant(&dbv);
-			m_dat->ti.lpszText = tszFinalTip;
+				str.append(temp);
+			}
+			str.append(_T("}"));
+
+			/*
+			 * convert line breaks to rtf
+			 */
+			while((pos = str.find(_T("\r\n"))) != str.npos) {
+				str.erase(pos, 2);
+				str.insert(pos, _T("\\line "));
+			}
+			while((pos = str.find(_T("\n"))) != str.npos) {
+				str.erase(pos, 1);
+				str.insert(pos, _T("\\line "));
+			}
+
 			POINT pt;
 			RECT  rc = {0, 0, 400, 600};
 			GetCursorPos(&pt);
-			CTip *tip = new CTip(m_dat->hwnd, m_dat->hContact, tszFinalTip, this);
+			CTip *tip = new CTip(m_dat->hwnd, m_dat->hContact, str.c_str(), this);
 			tip->show(rc, pt, m_dat->hTabIcon, m_dat->szStatus);
 			return;
 		}
@@ -882,6 +936,7 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 
 		::SendMessage(m_dat->hwndTip, TTM_SETTITLE, 1, (LPARAM)szTitle);
 		::SendMessage(m_dat->hwndTip, TTM_TRACKACTIVATE, TRUE, (LPARAM)&m_dat->ti);
+		::GetCursorPos(&m_dat->ptTipActivation);
 	}
 }
 
@@ -1168,7 +1223,7 @@ void CInfoPanel::dismissConfig(bool fForced)
  */
 CTip::CTip(const HWND hwndParent, const HANDLE hContact, const TCHAR *pszText, const CInfoPanel* panel)
 {
-	m_hwnd = ::CreateWindowEx(WS_EX_TOOLWINDOW, _T("RichEditTipClass"), _T(""), (M->isAero() ? WS_THICKFRAME : WS_BORDER)|WS_POPUPWINDOW|WS_TABSTOP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
+	m_hwnd = ::CreateWindowEx(WS_EX_LAYERED|WS_EX_TOOLWINDOW, _T("RichEditTipClass"), _T(""), (M->isAero() ? WS_THICKFRAME : WS_BORDER)|WS_POPUPWINDOW|WS_TABSTOP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
 							  0, 0, 40, 40, 0, 0, g_hInst, this);
 
 	m_hRich = ::CreateWindowEx(WS_EX_TRANSPARENT, RICHEDIT_CLASS, _T(""), WS_CHILD | ES_MULTILINE | ES_AUTOVSCROLL | ES_NOHIDESEL | ES_READONLY | WS_VSCROLL | WS_TABSTOP,
@@ -1180,7 +1235,7 @@ CTip::CTip(const HWND hwndParent, const HANDLE hContact, const TCHAR *pszText, c
 
 	m_hContact = hContact;
 	if(pszText)
-		m_pszText = mir_tstrdup(pszText);
+		m_pszText = M->utf8_encodeT(pszText);
 	else
 		m_pszText = 0;
 	m_panel = panel;
@@ -1205,6 +1260,7 @@ void CTip::show(const RECT& rc, POINT& pt, const HICON hIcon, const TCHAR *szTit
 	FORMATRANGE fr = {0};
 	RECT		rcPage = {0, 0, 0, 0};
 	RECT		rcParent;
+	SETTEXTEX	stx = {ST_SELECTION, CP_UTF8};
 
 	int xBorder, yBorder;
 
@@ -1214,7 +1270,26 @@ void CTip::show(const RECT& rc, POINT& pt, const HICON hIcon, const TCHAR *szTit
 	m_hIcon = hIcon;
 	m_szTitle = szTitle;
 
-	::SetWindowText(m_hRich, m_pszText);
+	::SendMessage(m_hRich, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)m_pszText);
+
+	if (PluginConfig.g_SmileyAddAvail) {
+		SMADD_RICHEDIT3 smadd;
+		CContactCache* c = CGlobals::getContactCache(m_hContact);
+		::SendMessage(m_hRich, EM_SETBKGNDCOLOR, 0, (LPARAM)PluginConfig.m_ipBackgroundGradientHigh);
+		if(c) {
+			ZeroMemory(&smadd, sizeof(smadd));
+
+			smadd.cbSize = sizeof(smadd);
+			smadd.hwndRichEditControl = m_hRich;
+			smadd.Protocolname = const_cast<char *>(c->getActiveProto());
+			smadd.hContact = c->getActiveContact();
+			smadd.flags = 0;
+			smadd.rangeToReplace = NULL;
+			smadd.disableRedraw = TRUE;
+			CallService(MS_SMILEYADD_REPLACESMILEYS, TABSRMM_SMILEYADD_BKGCOLORMODE, (LPARAM)&smadd);
+		}
+	}
+
 	::GetWindowRect(m_hwndParent, &rcParent);
 	if(pt.x + rc.right > rcParent.right)
 		pt.x = rcParent.right - rc.right - 5;
@@ -1236,7 +1311,7 @@ void CTip::show(const RECT& rc, POINT& pt, const HICON hIcon, const TCHAR *szTit
 	fr.chrg.cpMin = 0;
 	LRESULT lr = ::SendMessage(m_hRich, EM_FORMATRANGE, 0, (LPARAM)&fr);
 	m_szRich.cx = (fr.rc.right - fr.rc.left) / 15;
-	m_szRich.cy = 3 + ((fr.rc.bottom - fr.rc.top) / 15);
+	m_szRich.cy = ((fr.rc.bottom - fr.rc.top) / 15);
 
 	m_rcRich.right = m_rcRich.left + m_szRich.cx;
 	m_rcRich.bottom = m_rcRich.top + m_szRich.cy;
@@ -1247,6 +1322,9 @@ void CTip::show(const RECT& rc, POINT& pt, const HICON hIcon, const TCHAR *szTit
 				   m_szRich.cy + TOP_BORDER + BOTTOM_BORDER + 2 * yBorder, SWP_NOACTIVATE|SWP_SHOWWINDOW);
 
 	::SetWindowPos(m_hRich, 0, LEFT_BORDER, TOP_BORDER, m_szRich.cx, m_szRich.cy, SWP_SHOWWINDOW);
+
+	if(CMimAPI::m_pSetLayeredWindowAttributes)
+		CMimAPI::m_pSetLayeredWindowAttributes(m_hwnd, 0, (BYTE)230, LWA_ALPHA);
 	::ReleaseDC(m_hwnd, hdc);
 }
 
@@ -1270,8 +1348,7 @@ void CTip::registerClass()
 
 /**
  * subclass the rich edit control inside the tip. Needed to hide the blinking
- * caret.
- * (static class function)
+ * caret and prevent all scrolling actions.
  */
 INT_PTR CALLBACK CTip::RichEditProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -1298,7 +1375,6 @@ INT_PTR CALLBACK CTip::RichEditProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 /**
  * stub for the tip control window procedure. Just handle WM_CREATE and set the
  * this pointer.
- * (static class function)
  */
 INT_PTR CALLBACK CTip::WndProcStub(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -1324,13 +1400,13 @@ INT_PTR CALLBACK CTip::WndProcStub(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 INT_PTR CALLBACK CTip::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) {
-		//case WM_MOUSEMOVE:
 		case WM_ACTIVATE:
 		case WM_SETCURSOR:
 			::KillTimer(hwnd, 1000);
 			::SetTimer(hwnd, 1000, 200, 0);
 			break;
 
+			/* prevent resizing */
 		case WM_NCHITTEST:
 			return(HTCLIENT);
 
@@ -1357,7 +1433,10 @@ INT_PTR CALLBACK CTip::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 				::SetBkMode(hdcMem, TRANSPARENT);
 				rc.bottom += 2;
 				rc.left -= 4;rc.right += 4;
-				m_panel->renderBG(hdcMem, rc, &SkinItems[ID_EXTBKINFOPANELBG], false, false);
+				HBRUSH br = ::CreateSolidBrush(PluginConfig.m_ipBackgroundGradientHigh);
+				::FillRect(hdcMem, &rc, br);
+				//m_panel->renderBG(hdcMem, rc, &SkinItems[ID_EXTBKINFOPANELBG], false, false);
+				::DeleteObject(br);
 				if(m_hIcon)
 					::DrawIconEx(hdcMem, 2, 4, m_hIcon, 16, 16, 0, 0, DI_NORMAL);
 				CSkin::RenderText(hdcMem, 0, szTitle, &rcText, DT_SINGLELINE|DT_END_ELLIPSIS|DT_VCENTER, CSkin::m_glowSize, clr);

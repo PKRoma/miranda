@@ -1621,10 +1621,8 @@ void TSAPI GetSendFormat(_MessageWindowData *dat, int mode)
 		else if (dat->SendFormat == 0)
 			dat->SendFormat = PluginConfig.m_SendFormat ? 1 : 0;
 	}
-	for (i = 0; i < 5; i++) {
+	for (i = 0; i < 5; i++)
 		EnableWindow(GetDlgItem(dat->hwnd, controls[i]), dat->SendFormat != 0 ? TRUE : FALSE);
-		ShowWindow(GetDlgItem(dat->hwnd, controls[i]), (dat->SendFormat != 0 /*&& !(dat->pContainer->dwFlags & CNT_HIDETOOLBAR)*/ )? SW_SHOW : SW_HIDE);
-	}
 	return;
 }
 
@@ -1751,13 +1749,15 @@ void TSAPI LoadTimeZone(_MessageWindowData *dat)
 
 void TSAPI HandlePasteAndSend(const _MessageWindowData *dat)
 {
+	UINT ctrlID = dat->bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE;
+
 	if (!PluginConfig.m_PasteAndSend) {
-		SendMessage(dat->hwnd, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)CTranslator::get(CTranslator::GEN_WARNING_PASTEANDSEND_DISABLED));
+		SendMessage(dat->hwnd, DM_ACTIVATETOOLTIP, ctrlID, (LPARAM)CTranslator::get(CTranslator::GEN_WARNING_PASTEANDSEND_DISABLED));
 		return;                                     // feature disabled
 	}
 
-	SendMessage(GetDlgItem(dat->hwnd, IDC_MESSAGE), EM_PASTESPECIAL, CF_TEXTT, 0);
-	if (GetWindowTextLengthA(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE)) > 0)
+	SendMessage(GetDlgItem(dat->hwnd, ctrlID), EM_PASTESPECIAL, CF_TEXTT, 0);
+	if (GetWindowTextLengthA(GetDlgItem(dat->hwnd, ctrlID)) > 0)
 		SendMessage(dat->hwnd, WM_COMMAND, IDOK, 0);
 }
 
@@ -2137,6 +2137,7 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, _Mess
 				else
 					StretchBlt(hdcDraw, xy_off, top + xy_off, (int)dNewWidth + width_off,
 							   iMaxHeight + width_off, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+				//_DebugTraceA("metrics: %d, %d %d, %d", (int)dNewWidth + width_off, iMaxHeight + width_off,  bminfo.bmWidth, bminfo.bmHeight);
 				SelectObject(hdcMem, hbmMem);
 				DeleteObject(hbmMem);
 				DeleteDC(hdcMem);
@@ -2282,11 +2283,12 @@ void TSAPI ConfigureSmileyButton(_MessageWindowData *dat)
 HICON TSAPI GetXStatusIcon(const _MessageWindowData *dat)
 {
 	char szServiceName[128];
+	BYTE xStatus = dat->cache->getXStatusId();
 
 	mir_snprintf(szServiceName, 128, "%s/GetXStatusIcon", dat->cache->getActiveProto());
 
-	if (ServiceExists(szServiceName) && dat->xStatus > 0 && dat->xStatus <= 32)
-		return (HICON)(CallProtoService(dat->cache->getActiveProto(), "/GetXStatusIcon", dat->xStatus, 0));
+	if (ServiceExists(szServiceName) && xStatus > 0 && xStatus <= 32)
+		return (HICON)(CallProtoService(dat->cache->getActiveProto(), "/GetXStatusIcon", xStatus, 0));
 	return 0;
 }
 
@@ -2364,75 +2366,6 @@ void TSAPI GetMaxMessageLength(_MessageWindowData *dat)
 	}
 }
 
-#define STATUSMSG_XSTATUSNAME 1
-#define STATUSMSG_CLIST 2
-#define STATUSMSG_YIM 3
-#define STATUSMSG_GG 4
-#define STATUSMSG_XSTATUS 5
-
-/*
- * read status message from the database. Standard clist status message has priority,
- * but if not available, custom messages like xStatus can be used.
- */
-
-void TSAPI GetCachedStatusMsg(_MessageWindowData *dat)
-{
-	DBVARIANT dbv = {0};
-	HANDLE hContact;
-	BYTE bStatusMsgValid = 0;
-	char *szProto = dat ? dat->szProto : NULL;
-
-	if (dat == NULL)
-		return;
-
-	dat->statusMsg[0] = 0;
-
-	hContact = dat->hContact;
-
-	if (!M->GetTString(hContact, "CList", "StatusMsg", &dbv) && lstrlen(dbv.ptszVal) > 1)
-		bStatusMsgValid = STATUSMSG_CLIST;
-	else {
-		if (szProto) {
-			if (!M->GetTString(hContact, szProto, "YMsg", &dbv) && lstrlen(dbv.ptszVal) > 1)
-				bStatusMsgValid = STATUSMSG_YIM;
-			else if (!M->GetTString(hContact, szProto, "StatusDescr", &dbv) && lstrlen(dbv.ptszVal) > 1)
-				bStatusMsgValid = STATUSMSG_GG;
-			else if (!M->GetTString(hContact, szProto, "XStatusMsg", &dbv) && lstrlen(dbv.ptszVal) > 1)
-				bStatusMsgValid = STATUSMSG_XSTATUS;
-		}
-	}
-	if (bStatusMsgValid == 0) {     // no status msg, consider xstatus name (if available)
-		if (!M->GetTString(hContact, szProto, "XStatusName", &dbv) && lstrlen(dbv.ptszVal) > 1) {
-			bStatusMsgValid = STATUSMSG_XSTATUSNAME;
-			mir_sntprintf(dat->statusMsg, safe_sizeof(dat->statusMsg), _T("%s"), dbv.ptszVal);
-			mir_free(dbv.ptszVal);
-		} else {
-			BYTE bXStatus = M->GetByte(hContact, szProto, "XStatusId", 0);
-			if (bXStatus > 0 && bXStatus <= 31) {
-				mir_sntprintf(dat->statusMsg, safe_sizeof(dat->statusMsg), _T("%s"), xStatusDescr[bXStatus]);
-				bStatusMsgValid = STATUSMSG_XSTATUSNAME;
-			}
-		}
-	}
-	if (bStatusMsgValid > STATUSMSG_XSTATUSNAME) {
-		int j = 0, i, iLen;
-		iLen = lstrlen(dbv.ptszVal);
-		for (i = 0; i < iLen && j < 1024; i++) {
-			if (dbv.ptszVal[i] == (TCHAR)0x0d)
-				continue;
-			dat->statusMsg[j] = dbv.ptszVal[i] == (TCHAR)0x0a ? (TCHAR)' ' : dbv.ptszVal[i];
-			j++;
-		}
-		dat->statusMsg[j] = (TCHAR)0;
-		mir_free(dbv.ptszVal);
-	}
-}
-
-/*
- * path utilities (make various paths relative to *PROFILE* directory, not miranda directory.
- * taken and modified from core services
- */
-
 void TSAPI GetMyNick(_MessageWindowData *dat)
 {
 	CONTACTINFO ci;
@@ -2509,6 +2442,9 @@ void TSAPI MTH_updateMathWindow(const _MessageWindowData *dat)
 	return;
 }
 
+/**
+ * read keyboard state and return the state of the modifier keys
+ */
 void TSAPI KbdState(_MessageWindowData *dat, BOOL& isShift, BOOL& isControl, BOOL& isAlt)
 {
 	GetKeyboardState(dat->kstate);
@@ -2517,6 +2453,10 @@ void TSAPI KbdState(_MessageWindowData *dat, BOOL& isShift, BOOL& isControl, BOO
 	isAlt = (dat->kstate[VK_MENU] & 0x80);
 }
 
+/**
+ * clear the message log
+ * code needs to distuingish between IM and MUC sessions.
+ */
 void TSAPI ClearLog(_MessageWindowData *dat)
 {
 	if(dat && dat->bType == SESSIONTYPE_IM) {

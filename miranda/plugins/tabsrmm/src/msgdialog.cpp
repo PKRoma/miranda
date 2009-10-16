@@ -1376,18 +1376,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			if (dwLocalSmAdd != 0xffffffff)
 				dat->doSmileys = dwLocalSmAdd;
 
-			dat->hwndTip = CreateWindowEx(0, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_NOPREFIX | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT,
-										  CW_USEDEFAULT, CW_USEDEFAULT, hwndDlg, NULL, g_hInst, (LPVOID) NULL);
-
-			ZeroMemory((void *)&dat->ti, sizeof(dat->ti));
-			dat->ti.cbSize = sizeof(dat->ti);
-			dat->ti.lpszText = PluginConfig.m_szNoStatus;
-			dat->ti.hinst = g_hInst;
-			dat->ti.hwnd = hwndDlg;
-			dat->ti.uFlags = TTF_TRACK | TTF_IDISHWND | TTF_TRANSPARENT;
-			dat->ti.uId = (UINT_PTR)hwndDlg;
-			SendMessageA(dat->hwndTip, TTM_ADDTOOLA, 0, (LPARAM)&dat->ti);
-
+			DM_InitTip(dat);
 			dat->Panel->getVisibility();
 
 			dat->dwFlagsEx |= M->GetByte(dat->hContact, "splitoverride", 0) ? MWF_SHOW_SPLITTEROVERRIDE : 0;
@@ -1490,7 +1479,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			if (dat->hContact) {
 				FindFirstEvent(dat);
 				GetMaxMessageLength(dat);
-				GetCachedStatusMsg(dat);
 			}
 
  			LoadContactAvatar(dat);
@@ -1559,7 +1547,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				OldMessageLogProc = wndClass.lpfnWndProc;
 				SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_LOG), GWLP_WNDPROC, (LONG_PTR) MessageLogSubclassProc);
 			}
-			SetWindowPos(dat->hwndTip, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOZORDER);
 			SetWindowPos(hwndDlg, 0, rc.left, rc.top, (rc.right - rc.left), (rc.bottom - rc.top), newData->iActivate ? 0 : SWP_NOZORDER | SWP_NOACTIVATE);
 			LoadSplitter(dat);
 			ShowPicture(dat, TRUE);
@@ -2213,6 +2200,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 									POINT	pt;
 									HCURSOR hCur = GetCursor();
 									GetCursorPos(&pt);
+									DM_DismissTip(dat, pt);
 									dat->Panel->trackMouse(pt);
 									if (hCur == LoadCursor(NULL, IDC_SIZENS) || hCur == LoadCursor(NULL, IDC_SIZEWE)
 											|| hCur == LoadCursor(NULL, IDC_SIZENESW) || hCur == LoadCursor(NULL, IDC_SIZENWSE))
@@ -2370,8 +2358,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		}
 
 		case DM_UPDATESTATUSMSG:
-			GetCachedStatusMsg(dat);
-			InvalidateRect(hwndDlg, NULL, FALSE);
+			dat->Panel->Invalidate();
 			return 0;
 		case DM_OWNNICKCHANGED:
 			GetMyNick(dat);
@@ -2617,12 +2604,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			return(0);
 		case WM_TIMER:
 			/*
-			 * timer id for message timeouts is composed like:
-			 * for single message sends: basevalue (TIMERID_MSGSEND) + send queue index
-			 * for multisend: each send entry (hContact/hSendID pair) has its own timer starting at TIMERID_MSGSEND + NR_SENDJOBS in blocks
-			 * of SENDJOBS_MAX_SENDS)
+			 * timer to control info panel hovering
 			 */
-
 			if (wParam == TIMERID_AWAYMSG) {
 				POINT pt;
 
@@ -2635,6 +2618,10 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					dat->dwFlagsEx &= ~MWF_SHOW_AWAYMSGTIMER;
 				break;
 			}
+			/*
+			 * timer id for message timeouts is composed like:
+			 * for single message sends: basevalue (TIMERID_MSGSEND) + send queue index
+			 */
 			if (wParam >= TIMERID_MSGSEND) {
 				int iIndex = wParam - TIMERID_MSGSEND;
 
@@ -2923,6 +2910,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		case WM_MOUSEMOVE: {
 			POINT pt;
 			GetCursorPos(&pt);
+			DM_DismissTip(dat, pt);
 			dat->Panel->trackMouse(pt);
 			break;
 		}
@@ -2952,15 +2940,14 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			if (!dat)
 				break;
-			//mad
-				if(LOWORD(wParam)>=MIN_CBUTTONID&&LOWORD(wParam)<=MAX_CBUTTONID){
-					BB_CustomButtonClick(dat,LOWORD(wParam) ,GetDlgItem(hwndDlg,LOWORD(wParam)),0);
+			// custom button handling
+			if(LOWORD(wParam)>=MIN_CBUTTONID&&LOWORD(wParam)<=MAX_CBUTTONID) {
+				BB_CustomButtonClick(dat,LOWORD(wParam) ,GetDlgItem(hwndDlg,LOWORD(wParam)),0);
 				break;
-				}
-			//
-			switch (LOWORD(wParam)) {
-					case IDOK: {
+			}
 
+			switch (LOWORD(wParam)) {
+				case IDOK: {
 					if(dat->fEditNotesActive) {
 						SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_PIC, (LPARAM)CTranslator::get(CTranslator::GEN_MSG_EDIT_NOTES_TIP));
 						return(0);
@@ -3386,8 +3373,7 @@ quote_from_last:
 			return 0;
 
 		case DM_UINTOCLIPBOARD: {
-			if (dat->hContact)
-				Utils::CopyToClipBoard(dat->cache->getUIN(), hwndDlg);
+			Utils::CopyToClipBoard(const_cast<TCHAR *>(dat->cache->getUIN()), hwndDlg);
 			return 0;
 		}
 		/*

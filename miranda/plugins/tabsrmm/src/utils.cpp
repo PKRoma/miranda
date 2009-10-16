@@ -352,8 +352,9 @@ const TCHAR* Utils::FormatTitleBar(const _MessageWindowData *dat, const TCHAR *s
 			}
 			case 'x': {
 				TCHAR *szFinalStatus = NULL;
+				BYTE  xStatus = dat->cache->getXStatusId();
 
-				if (dat->wStatus != ID_STATUS_OFFLINE && dat->xStatus > 0 && dat->xStatus <= 31) {
+				if (dat->wStatus != ID_STATUS_OFFLINE && xStatus > 0 && xStatus <= 31) {
 					DBVARIANT dbv = {0};
 
 					if (!M->GetTString(dat->hContact, (char *)dat->szProto, "XStatusName", &dbv)) {
@@ -364,8 +365,8 @@ const TCHAR* Utils::FormatTitleBar(const _MessageWindowData *dat, const TCHAR *s
 						curpos = tempmark + lstrlen(szTemp);
 					}
 					else {
-						title.insert(tempmark + 2, xStatusDescr[dat->xStatus - 1]);
-						curpos = tempmark + lstrlen(xStatusDescr[dat->xStatus - 1]);
+						title.insert(tempmark + 2, xStatusDescr[xStatus - 1]);
+						curpos = tempmark + lstrlen(xStatusDescr[xStatus - 1]);
 					}
 				}
 				title.erase(tempmark, 2);
@@ -373,8 +374,9 @@ const TCHAR* Utils::FormatTitleBar(const _MessageWindowData *dat, const TCHAR *s
 			}
 			case 'm': {
 				TCHAR *szFinalStatus = NULL;
+				BYTE  xStatus = dat->cache->getXStatusId();
 
-				if (dat->wStatus != ID_STATUS_OFFLINE && dat->xStatus > 0 && dat->xStatus <= 31) {
+				if (dat->wStatus != ID_STATUS_OFFLINE && xStatus > 0 && xStatus <= 31) {
 					DBVARIANT dbv = {0};
 
 					if (!M->GetTString(dat->hContact, (char *)dat->szProto, "XStatusName", &dbv)) {
@@ -383,7 +385,7 @@ const TCHAR* Utils::FormatTitleBar(const _MessageWindowData *dat, const TCHAR *s
 						DBFreeVariant(&dbv);
 						title.insert(tempmark + 2, szTemp);
 					} else
-						szFinalStatus = xStatusDescr[dat->xStatus - 1];
+						szFinalStatus = xStatusDescr[xStatus - 1];
 				} else
 					szFinalStatus = (TCHAR *)(dat->szStatus && dat->szStatus[0] ? dat->szStatus : _T("(undef)"));
 
@@ -396,9 +398,9 @@ const TCHAR* Utils::FormatTitleBar(const _MessageWindowData *dat, const TCHAR *s
 				break;
 			}
 			case 't':
-				if(dat->statusMsg[0]) {
-					title.insert(tempmark + 2, dat->statusMsg);
-					curpos = tempmark + lstrlen(dat->statusMsg);
+				if(dat->cache->getStatusMsg()) {
+					title.insert(tempmark + 2, dat->cache->getStatusMsg());
+					curpos = tempmark + lstrlen(dat->cache->getStatusMsg());
 				}
 				title.erase(tempmark, 2);
 				break;
@@ -724,6 +726,12 @@ LRESULT Utils::CmdDispatcher(UINT uType, HWND hwndDlg, UINT cmd, WPARAM wParam, 
 		case CMD_MSGDIALOG:
 			if(pContainer && hwndDlg && dat)
 				return(DM_MsgWindowCmdHandler(hwndDlg, pContainer, dat, cmd, wParam, lParam));
+			break;
+		case CMD_INFOPANEL:
+			if(MsgWindowMenuHandler(dat, cmd, MENU_LOGMENU) == 0) {
+				return(DM_MsgWindowCmdHandler(hwndDlg, pContainer, dat, cmd, wParam, lParam));
+			}
+			break;
 	}
 	return(0);
 }

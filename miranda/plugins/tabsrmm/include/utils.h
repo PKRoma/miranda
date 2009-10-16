@@ -94,25 +94,23 @@ public:
 	static	LRESULT				TSAPI CmdDispatcher					(UINT uType, HWND hwndDlg, UINT cmd, WPARAM wParam, LPARAM lParam, _MessageWindowData *dat = 0,
 																	 ContainerWindowData *pContainer = 0);
 
-	template<typename T> static size_t TSAPI CopyToClipBoard(const T* _t, const HWND hwndOwner)
+	template<typename T> static size_t TSAPI CopyToClipBoard(T* _t, const HWND hwndOwner)
 	{
 		HGLOBAL	hData;
 
 		if (!OpenClipboard(hwndOwner) || _t == 0)
 			return(0);
 
-		size_t _s = sizeof(_t[0]);
-		size_t  s = _s * (lstrlen(_t) + 1);
-
+		size_t _s = sizeof(T);
+		size_t  s = _s * ((_s == 1 ? lstrlenA(reinterpret_cast<char *>(_t)) : lstrlenW(reinterpret_cast<wchar_t*>(_t))) + 1);
 		EmptyClipboard();
 		hData = ::GlobalAlloc(GMEM_MOVEABLE | GMEM_SHARE, s);
 
 		CopyMemory((void *)GlobalLock(hData), (void *)_t, s);
 		GlobalUnlock(hData);
-		SetClipboardData(CF_TEXTT, hData);
+		SetClipboardData(_s == 1 ? CF_TEXT : CF_UNICODETEXT, hData);
 		CloseClipboard();
 		return(s);
-
 	}
 
 	template<typename T> static void AddToFileList(T ***pppFiles, int *totalCount, const TCHAR* szFilename)

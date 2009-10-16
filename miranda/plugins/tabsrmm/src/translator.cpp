@@ -130,9 +130,9 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Today"),									/* GEN_LOG_TODAY */
 	LPGENT("Yesterday"),								/* GEN_LOG_YESTERDAY */
 	LPGENT("Use default codepage"),						/* GEN_LOG_USEDEFAAULTCP */
-	LPGENT("UIN: %s (SHIFT click -> copy to clipboard)\nClick for User's Details\nRight click for MetaContact control\nClick dropdown to add or remove user from your favorites."), /* GEN_MSG_UINCOPY */
-	LPGENT("No UIN"),									/* GEN_MSG_NOUIN */
-	LPGENT("UIN: %s (SHIFT click -> copy to clipboard)\nClick for User's Details\nClick dropdown to change this contact's favorite status."), /* GEN_MSG_UINCOPY_NO_MC */
+	LPGENT("UID: %s (SHIFT click -> copy to clipboard)\nClick for User's Details\nRight click for MetaContact control\nClick dropdown to add or remove user from your favorites."), /* GEN_MSG_UINCOPY */
+	LPGENT("No UID"),									/* GEN_MSG_NOUIN */
+	LPGENT("UID: %s (SHIFT click -> copy to clipboard)\nClick for User's Details\nClick dropdown to change this contact's favorite status."), /* GEN_MSG_UINCOPY_NO_MC */
 	LPGENT("signed off."),								/* GEN_MSG_SIGNEDOFF */
 	LPGENT("signed on and is now %s."),					/* GEN_MSG_SIGNEDON */
 	LPGENT("changed status from %s to %s."), 			/* GEN_MSG_CHANGEDSTATUS */
@@ -334,12 +334,12 @@ LISTOPTIONSITEM CTranslator::m_lvItemsModPlus[] = {
 	0, LPGENT("Show client icon in status bar (fingerprint plugin required) (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_ClientIconInStatusBar", 0,
 	0, LPGENT("Enable typing sounds"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_soundontyping", 0,
 	0, LPGENT("Disable animated GIF avatars (will not affect already open message windows)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_DisableAniAvatars", 0,
-	0, LPGENT("Enable fix for nicklist scroll bar"), 1, LOI_TYPE_SETTING, (UINT_PTR)"adv_ScrollBarFix", 0,
 	0, LPGENT("Close current tab on send"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_AutoClose_2", 0,
 	0, LPGENT("Enable icon pack version check (*)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"adv_IconpackWarning", 0,
 	0, LPGENT("Disable error popups on sending failures"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_noErrorPopups", 1,
 	0, LPGENT("Disable popups for send later and multisend jobs"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_noSendLaterPopups", 1,
 	0, LPGENT("Use Aero Glass for the message window (Vista+)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"useAero", 0,
+	0, LPGENT("Automatic keyboard layout: Do not load the system default for new contacts"), 1, LOI_TYPE_SETTING, (UINT_PTR)"adv_leaveKeyboardAlone", 0,
 	0, NULL, 0, 0, 0, 0
 };
 
