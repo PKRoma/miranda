@@ -86,7 +86,7 @@ void RefreshInfobar(InfobarWindowData* idat) {
     SendDlgItemMessage(hwnd, IDC_INFOBAR_STATUS, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)szContactStatusMsg);
     hIcon = SendDlgItemMessage(hwnd, IDC_XSTATUSICON, STM_SETICON, hIcon, 0);
     if (hIcon) {
-            DestroyIcon(hIcon);
+        DestroyIcon(hIcon);
     }
 	SendMessage(hwnd, WM_SIZE, 0, 0);
 	InvalidateRect(hwnd, NULL, TRUE);
@@ -147,8 +147,7 @@ static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 			return TRUE;
 		}
 	case WM_CTLCOLORDLG:
-      //SetTextColor((HDC)wParam,RGB(60,60,150));
-      //SetBkColor((HDC)wParam,GetSysColor(COLOR_WINDOW));
+    case WM_CTLCOLORSTATIC:
 		return (INT_PTR)g_dat->hInfobarBrush;
 	
 	case WM_DROPFILES:
