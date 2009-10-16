@@ -61,11 +61,20 @@ void SetupInfobar(InfobarWindowData* idat) {
     RefreshInfobar(idat);
 }
 
+static HICON GetExtraStatusIcon(InfobarWindowData* idat) {
+    BYTE bXStatus = DBGetContactSettingByte(idat->mwd->windowData.hContact, idat->mwd->szProto, "XStatusId", 0);
+    if (bXStatus > 0) {
+        return (HICON) CallProtoService(idat->mwd->szProto, "/GetXStatusIcon", bXStatus, 0);
+    }
+    return NULL;
+}
+
 void RefreshInfobar(InfobarWindowData* idat) {
 	HWND hwnd = idat->hWnd;
 	struct MessageWindowData *dat = idat->mwd;
     TCHAR *szContactName = GetNickname(dat->windowData.hContact, dat->szProto);
     TCHAR *szContactStatusMsg = DBGetStringT(dat->windowData.hContact, "CList", "StatusMsg");
+    HICON hIcon = GetExtraStatusIcon(idat);
     SETTEXTEX  st;
     st.flags = ST_DEFAULT;
 #ifdef _UNICODE
@@ -73,26 +82,18 @@ void RefreshInfobar(InfobarWindowData* idat) {
 #else
     st.codepage = CP_ACP;
 #endif
-    SendMessage(GetDlgItem(hwnd, IDC_INFOBAR_NAME), EM_SETTEXTEX, (WPARAM) &st, (LPARAM)szContactName);
-    SendMessage(GetDlgItem(hwnd, IDC_INFOBAR_STATUS), EM_SETTEXTEX, (WPARAM) &st, (LPARAM)szContactStatusMsg);
+    SendDlgItemMessage(hwnd, IDC_INFOBAR_NAME, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)szContactName);
+    SendDlgItemMessage(hwnd, IDC_INFOBAR_STATUS, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)szContactStatusMsg);
+    hIcon = SendDlgItemMessage(hwnd, IDC_XSTATUSICON, STM_SETICON, hIcon, 0);
+    if (hIcon) {
+            DestroyIcon(hIcon);
+    }
 	SendMessage(hwnd, WM_SIZE, 0, 0);
 	InvalidateRect(hwnd, NULL, TRUE);
 	//RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
 	RedrawWindow(GetDlgItem(hwnd, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
 	mir_free(szContactStatusMsg);
 	mir_free(szContactName);
-}
-
-
-static HICON GetExtraStatuses(InfobarWindowData* idat) {
-    BYTE bXStatus = DBGetContactSettingByte(idat->mwd->windowData.hContact, idat->mwd->szProto, "XStatusId", 0);
-    logInfo("%s bXStatus = %d",idat->mwd->szProto,  bXStatus);
-    if (bXStatus > 0) {
-        HICON hIcon = (HICON) CallProtoService(idat->mwd->szProto, "/GetXStatusIcon", bXStatus, LR_SHARED);
-        logInfo("bXStatus = %d hIcon = %d", bXStatus, hIcon);
-        return hIcon;
-    }
-    return NULL;
 }
 
 static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -239,13 +240,6 @@ static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 						CallService(MS_AV_DRAWAVATAR, (WPARAM)0, (LPARAM)&adr);
 					}
 				}
-                {
-                    HICON hIcon = GetExtraStatuses(idat);
-                    if (hIcon != NULL) {
-                        SendDlgItemMessage(hwnd, IDC_XSTATUSICON, STM_SETICON, hIcon, 0);
-                  //      DrawIconEx(hdcMem, 0, 0, hIcon, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0, NULL, DI_NORMAL);
-                    }
-                }
 				BitBlt(dis->hDC, 0, 0, itemWidth, itemHeight, hdcMem, 0, 0, SRCCOPY);
 				hbmMem = (HBITMAP) SelectObject(hdcMem, hbmMem);
 				DeleteObject(hbmMem);
