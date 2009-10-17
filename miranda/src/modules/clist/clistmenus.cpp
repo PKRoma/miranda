@@ -232,7 +232,22 @@ static INT_PTR AddMainMenuItem(WPARAM, LPARAM lParam)
 	}
 
 	PMO_IntMenuItem pimi = MO_AddNewMenuItem( hMainMenuObject, &tmi );
-	MO_SetOptionsMenuItem( pimi, OPT_MENUITEMSETUNIQNAME, ( INT_PTR )mi->pszService );
+
+	char* name;
+	bool needFree = false;
+
+	if (mi->pszService)
+		name = mi->pszService;
+	else if (mi->flags & CMIF_UNICODE) {
+		name = mir_t2a( mi->ptszName );
+		needFree = true;
+	}
+	else
+		name = mi->pszName;
+
+	MO_SetOptionsMenuItem( pimi, OPT_MENUITEMSETUNIQNAME, ( INT_PTR )name );
+	if (needFree) mir_free(name);
+
 	return ( INT_PTR )pimi;
 }
 
