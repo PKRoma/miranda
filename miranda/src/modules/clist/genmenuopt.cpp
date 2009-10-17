@@ -623,18 +623,15 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 					iod = ( MenuItemOptData * )tvi.lParam;
 
-					if ( iod->name && _tcsstr(iod->name, STR_SEPARATOR ))
+					if ( iod->name && _tcsstr(iod->name, STR_SEPARATOR))
 						break;
 
 					SetDlgItemText(hwndDlg,IDC_GENMENU_CUSTOMNAME,iod->name);
-					{
-						TCHAR* p = a2t(iod->uniqname );
-						if ( p ) {
-							SetDlgItemText( hwndDlg, IDC_GENMENU_SERVICE, p );
-							mir_free( p );
-					}	}
 
-					EnableWindow(GetDlgItem(hwndDlg,IDC_GENMENU_DEFAULT), lstrcmp( iod->name, iod->defname) != 0 );
+					if ((iod->pimi->mi.flags & CMIF_ROOTHANDLE) == 0 && iod->uniqname)
+						SetDlgItemTextA(hwndDlg, IDC_GENMENU_SERVICE, iod->uniqname);
+
+					EnableWindow(GetDlgItem(hwndDlg,IDC_GENMENU_DEFAULT), lstrcmp(iod->name, iod->defname) != 0);
 					EnableWindow(GetDlgItem(hwndDlg,IDC_GENMENU_SET),TRUE);
 					EnableWindow(GetDlgItem(hwndDlg,IDC_GENMENU_CUSTOMNAME),TRUE);
 					break;

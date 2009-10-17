@@ -851,15 +851,14 @@ void GetMenuItemName( PMO_IntMenuItem pMenuItem, char* pszDest, size_t cbDestSiz
 {
 	if ( pMenuItem->UniqName )
 		mir_snprintf( pszDest, cbDestSize, "{%s}", pMenuItem->UniqName );
-	else {
-		#if defined( _UNICODE )
-			char* name = u2a( pMenuItem->mi.ptszName );
-			mir_snprintf( pszDest, cbDestSize, "{%s}", name );
-			mir_free(name);
-		#else
-			mir_snprintf( pszDest, cbDestSize, "{%s}", pMenuItem->mi.pszName );
-		#endif
-}	}
+	else if (pMenuItem->mi.flags & CMIF_UNICODE) {
+		char* name = mir_t2a( pMenuItem->mi.ptszName );
+		mir_snprintf( pszDest, cbDestSize, "{%s}", name );
+		mir_free(name);
+	}
+	else
+		mir_snprintf( pszDest, cbDestSize, "{%s}", pMenuItem->mi.pszName );
+}
 
 HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *param)
 {
