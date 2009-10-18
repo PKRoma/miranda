@@ -134,9 +134,9 @@ void CIcqProto::InitAvatars()
 		{ // check if it does make sense
 			char szPath[MAX_PATH];
 
-            char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
+			char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
 			null_snprintf(szPath, MAX_PATH, "%s\\%s\\", tmpPath, m_szModuleName);
-            mir_free(tmpPath);
+			mir_free(tmpPath);
 
 			hAvatarsFolder = FoldersRegisterCustomPath(m_szModuleName, "Avatars Cache", szPath);
 		}
@@ -1052,7 +1052,7 @@ void __cdecl CIcqProto::AvatarThread(avatarthreadstartinfo *atsi)
 #endif
 				if (GetTickCount() > wLastKeepAlive)
 				{ // limit frequency (HACK: on some systems select() does not work well)
-					if (getSettingByte(NULL, "KeepAlive", 0))
+					if (getSettingByte(NULL, "KeepAlive", DEFAULT_KEEPALIVE_ENABLED))
 					{ // send keep-alive packet
 						icq_packet packet;
 

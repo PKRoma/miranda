@@ -36,14 +36,16 @@
 
 #include "icqoscar.h"
 
-void CIcqProto::handlePingChannel(unsigned char* buf, WORD datalen)
+
+void CIcqProto::handlePingChannel(BYTE *buf, WORD datalen)
 {
 	NetLog_Server("Warning: Ignoring server packet on PING channel");
 }
 
-void __cdecl CIcqProto::KeepAliveThread(void* arg)
+
+void __cdecl CIcqProto::KeepAliveThread(void *arg)
 {
-	serverthread_info* info = (serverthread_info*)arg;
+	serverthread_info *info = (serverthread_info*)arg;
 	icq_packet packet;
 	DWORD dwInterval = getSettingDword(NULL, "KeepAliveInterval", KEEPALIVE_INTERVAL);
 
@@ -77,16 +79,18 @@ void __cdecl CIcqProto::KeepAliveThread(void* arg)
 	info->hKeepAliveEvent = NULL;
 }
 
-void CIcqProto::StartKeepAlive(serverthread_info* info)
+
+void CIcqProto::StartKeepAlive(serverthread_info *info)
 {
 	if (info->hKeepAliveEvent) // start only once
 		return;
 
-	if (getSettingByte(NULL, "KeepAlive", 0))
-		info->hKeepAliveThread = ForkThreadEx( &CIcqProto::KeepAliveThread, info );
+	if (getSettingByte(NULL, "KeepAlive", DEFAULT_KEEPALIVE_ENABLED))
+		info->hKeepAliveThread = ForkThreadEx(&CIcqProto::KeepAliveThread, info);
 }
 
-void CIcqProto::StopKeepAlive(serverthread_info* info)
+
+void CIcqProto::StopKeepAlive(serverthread_info *info)
 {	// finish keep alive thread
 	if (info->hKeepAliveEvent)
 	{
