@@ -365,7 +365,7 @@ static INT_PTR SetGroupFlags(WPARAM wParam, LPARAM lParam)
 		return 1;
 	flags = LOWORD(lParam) & HIWORD(lParam);
 	oldval = dbv.pszVal[0];
-	newval = dbv.pszVal[0] = (dbv.pszVal[0] & ~HIWORD(lParam)) | flags;
+	newval = dbv.pszVal[0] = ((oldval & ~HIWORD(lParam)) | flags) & 0x7f;
 	DBWriteContactSettingStringUtf(NULL, "CListGroups", idstr, dbv.pszVal);
 	DBFreeVariant(&dbv);
 	if ((oldval & GROUPF_HIDEOFFLINE) != (newval & GROUPF_HIDEOFFLINE))
