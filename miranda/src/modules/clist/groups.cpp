@@ -530,6 +530,22 @@ static INT_PTR BuildGroupMenu(WPARAM, LPARAM)
 
 int InitGroupServices(void)
 {
+	for (int i = 0; ; i++) 
+	{
+		char str[32];
+		_itoa(i, str, 10);
+
+		DBVARIANT dbv;
+		if (DBGetContactSettingStringUtf(NULL, "CListGroups", str, &dbv))
+			break;
+		if (dbv.pszVal[0] & 0x80)
+		{
+			dbv.pszVal[0] &= 0x7f;
+			DBWriteContactSettingStringUtf(NULL, "CListGroups", str, dbv.pszVal);
+		}
+		DBFreeVariant(&dbv);
+	}
+
 	CreateServiceFunction(MS_CLIST_GROUPCREATE, CreateGroup);
 	CreateServiceFunction(MS_CLIST_GROUPDELETE, DeleteGroup);
 	CreateServiceFunction(MS_CLIST_GROUPRENAME, RenameGroup);
@@ -541,5 +557,6 @@ int InitGroupServices(void)
 	CreateServiceFunction(MS_CLIST_GROUPBUILDMENU, BuildGroupMenu);
 
 	hGroupChangeEvent = CreateHookableEvent( ME_CLIST_GROUPCHANGE );
+
 	return 0;
 }
