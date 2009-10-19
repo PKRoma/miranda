@@ -27,6 +27,7 @@ typedef struct InfobarWindowDataStruct
 {
 	struct MessageWindowData *mwd;
 	HWND    hWnd;
+	HWND	hXStatusTip;
 } InfobarWindowData;
 
 InfobarWindowData *CreateInfobar(HWND hParent, struct MessageWindowData *dat);

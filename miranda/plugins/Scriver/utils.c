@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <winsock.h>
 #include <m_netlib.h>
 
+extern HANDLE			g_hInst;
 
 static unsigned hookNum = 0;
 static unsigned serviceNum = 0;
@@ -521,3 +522,46 @@ void GetContactUniqueId(struct MessageWindowData *dat, char *buf, int maxlen) {
         }
     }
 }
+
+HWND CreateToolTip(HWND hwndParent, LPTSTR ptszText, LPTSTR ptszTitle, RECT* rect)
+{
+	TOOLINFO ti = { 0 };
+	HWND hwndTT;
+	hwndTT = CreateWindowEx(WS_EX_TOPMOST,
+		TOOLTIPS_CLASS, NULL,
+		WS_POPUP | TTS_NOPREFIX,		
+		CW_USEDEFAULT, CW_USEDEFAULT,
+		CW_USEDEFAULT, CW_USEDEFAULT,
+		hwndParent, NULL, g_hInst, NULL);
+
+	SetWindowPos(hwndTT, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+	ti.cbSize = sizeof(TOOLINFO);
+	ti.uFlags = TTF_SUBCLASS | TTF_CENTERTIP;
+	ti.hwnd = hwndParent;
+	ti.hinst = g_hInst;
+	ti.lpszText = ptszText;
+	ti.rect = *rect;
+	SendMessage(hwndTT, TTM_ADDTOOL, 0, (LPARAM) (LPTOOLINFO) &ti);
+	SendMessage(hwndTT, TTM_SETTITLE, TTI_NONE, (LPARAM)ptszTitle);
+	return hwndTT;
+} 
+
+void SetToolTipText(HWND hwndParent, HWND hwndTT, LPTSTR ptszText, LPTSTR ptszTitle) {
+	TOOLINFO ti = { 0 };
+	ti.cbSize = sizeof(TOOLINFO);
+	ti.hinst = g_hInst;
+	ti.hwnd = hwndParent;
+	ti.lpszText = ptszText;
+	SendMessage(hwndTT, TTM_UPDATETIPTEXT, 0, (LPARAM) (LPTOOLINFO) &ti);
+	SendMessage(hwndTT, TTM_SETTITLE, TTI_NONE, (LPARAM)ptszTitle);
+}
+
+void SetToolTipRect(HWND hwndParent, HWND hwndTT, RECT* rect)
+{
+	TOOLINFO ti = { 0 };
+	ti.cbSize = sizeof(TOOLINFO);
+	ti.hinst = g_hInst;
+	ti.hwnd = hwndParent;
+	ti.rect = *rect;
+	SendMessage(hwndTT, TTM_NEWTOOLRECT, 0, (LPARAM) (LPTOOLINFO) &ti);
+} 

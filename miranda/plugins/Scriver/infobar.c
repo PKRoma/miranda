@@ -25,7 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "richutil.h"
 
 extern HINSTANCE g_hInst;
-static WNDPROC OldInfobarEditProc;
 
 void SetupInfobar(InfobarWindowData* idat) {
 	HWND hwnd = idat->hWnd;
@@ -74,8 +73,15 @@ void RefreshInfobar(InfobarWindowData* idat) {
 	struct MessageWindowData *dat = idat->mwd;
     TCHAR *szContactName = GetNickname(dat->windowData.hContact, dat->szProto);
     TCHAR *szContactStatusMsg = DBGetStringT(dat->windowData.hContact, "CList", "StatusMsg");
+    TCHAR *szXStatusName = DBGetStringT(idat->mwd->windowData.hContact, idat->mwd->szProto, "XStatusName");
+	TCHAR *szXStatusMsg = DBGetStringT(idat->mwd->windowData.hContact, idat->mwd->szProto, "XStatusMsg");
     HICON hIcon = GetExtraStatusIcon(idat);
-    SETTEXTEX  st;
+	TCHAR szText[2048];
+	SETTEXTEX st;
+	if ( szXStatusMsg && *szXStatusMsg )
+		mir_sntprintf(szText, 2047, _T("%s (%s)"), TranslateTS(szXStatusName), szXStatusMsg);
+	else
+		mir_sntprintf(szText, 2047, _T("%s"), TranslateTS(szXStatusName));
     st.flags = ST_DEFAULT;
 #ifdef _UNICODE
     st.codepage = 1200;
@@ -84,16 +90,19 @@ void RefreshInfobar(InfobarWindowData* idat) {
 #endif
     SendDlgItemMessage(hwnd, IDC_INFOBAR_NAME, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)szContactName);
     SendDlgItemMessage(hwnd, IDC_INFOBAR_STATUS, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)szContactStatusMsg);
-    hIcon = SendDlgItemMessage(hwnd, IDC_XSTATUSICON, STM_SETICON, hIcon, 0);
+    hIcon = (HICON)SendDlgItemMessage(hwnd, IDC_XSTATUSICON, STM_SETICON, (WPARAM)hIcon, 0);
     if (hIcon) {
         DestroyIcon(hIcon);
     }
+	SetToolTipText(hwnd, idat->hXStatusTip, szText, NULL);
 	SendMessage(hwnd, WM_SIZE, 0, 0);
 	InvalidateRect(hwnd, NULL, TRUE);
 	//RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
 	RedrawWindow(GetDlgItem(hwnd, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
 	mir_free(szContactStatusMsg);
 	mir_free(szContactName);
+	mir_free(szXStatusName);
+	mir_free(szXStatusMsg);
 }
 
 static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -103,15 +112,19 @@ static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 	if (!idat && msg!=WM_INITDIALOG) return FALSE;
 	switch (msg) {
 	case WM_INITDIALOG:
-		bWasCopy = FALSE;
-		idat = (InfobarWindowData *) lParam;
-        idat->hWnd = hwnd;
-		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)idat);
-		SendDlgItemMessage(hwnd, IDC_INFOBAR_NAME, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
-		SendDlgItemMessage(hwnd, IDC_INFOBAR_NAME, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_LINK | ENM_KEYEVENTS);
-		SendDlgItemMessage(hwnd, IDC_INFOBAR_STATUS, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
-		SendDlgItemMessage(hwnd, IDC_INFOBAR_STATUS, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_LINK | ENM_KEYEVENTS);
-		SetupInfobar(idat);
+		{
+			RECT rect = {0};
+			bWasCopy = FALSE;
+			idat = (InfobarWindowData *) lParam;
+			idat->hWnd = hwnd;
+			idat->hXStatusTip = CreateToolTip(hwnd, NULL, NULL, &rect);
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)idat);
+			SendDlgItemMessage(hwnd, IDC_INFOBAR_NAME, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
+			SendDlgItemMessage(hwnd, IDC_INFOBAR_NAME, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_LINK | ENM_KEYEVENTS);
+			SendDlgItemMessage(hwnd, IDC_INFOBAR_STATUS, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
+			SendDlgItemMessage(hwnd, IDC_INFOBAR_STATUS, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_LINK | ENM_KEYEVENTS);
+			SetupInfobar(idat);
+		}
 		return TRUE;
 
 	case WM_SIZE:
@@ -138,10 +151,15 @@ static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 					}
 				}
 				hdwp = BeginDeferWindowPos(4);
-				hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, IDC_XSTATUSICON), 0, dlgWidth - avatarWidth - 2 - 16, dlgHeight/4 - 8, 16, 16, SWP_NOZORDER);
 				hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, IDC_INFOBAR_NAME), 0, 16, 0, dlgWidth - avatarWidth - 2 - 32, dlgHeight/2, SWP_NOZORDER);
 				hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, IDC_INFOBAR_STATUS), 0, 16, dlgHeight/2, dlgWidth - avatarWidth - 2 - 32, dlgHeight/2, SWP_NOZORDER);
 				hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, IDC_AVATAR), 0, dlgWidth - avatarWidth - 2, (dlgHeight - avatarHeight) / 2, avatarWidth, (dlgHeight + avatarHeight - 2) / 2, SWP_NOZORDER);
+				hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, IDC_XSTATUSICON), 0, dlgWidth - avatarWidth - 2 - 16, dlgHeight/4 - 8, 16, 16, SWP_NOZORDER);
+				rc.left = dlgWidth - avatarWidth - 2 - 16; 
+				rc.top = dlgHeight/4 - 8;
+				rc.bottom = rc.top + 20;
+				rc.right = rc.left + 16;
+				SetToolTipRect(hwnd, idat->hXStatusTip, &rc);
 				EndDeferWindowPos(hdwp);
 			}
 			return TRUE;
@@ -259,7 +277,11 @@ static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 			DestroyMenu(hMenu);
 		}
 		break;
-
+	case WM_DESTROY:
+		if (idat->hXStatusTip != NULL) {
+			DestroyWindow(idat->hXStatusTip);
+			idat->hXStatusTip = NULL;
+		}
 	}
 	return FALSE;
 }
@@ -268,7 +290,7 @@ InfobarWindowData *CreateInfobar(HWND hParent, struct MessageWindowData *dat)
 {
 	InfobarWindowData *idat = (InfobarWindowData *) mir_alloc(sizeof(InfobarWindowData));
 	idat->mwd = dat;
-	CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_INFOBAR), hParent, InfobarWndProc, (LPARAM)idat);
+	idat->hWnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_INFOBAR), hParent, InfobarWndProc, (LPARAM)idat);
 	RichUtil_SubClass(idat->hWnd);
 	SetWindowPos(idat->hWnd, HWND_TOP, 0, 0, 0, 0, SWP_HIDEWINDOW | SWP_NOSIZE | SWP_NOREPOSITION);
 	return idat;
