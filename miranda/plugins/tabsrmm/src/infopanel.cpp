@@ -867,7 +867,6 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 			m_dat->ti.lpszText = reinterpret_cast<TCHAR *>(lParam);
 		else {
 			TCHAR		temp[1024];
-			tstring 	str;
 			DBVARIANT 	dbv = {0};
 			size_t		pos;
 			BYTE		xStatus = 0;
@@ -875,11 +874,12 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 			/* TODO make this stuff translatable */
 
 			mir_sntprintf(temp, 1024, _T("{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u"), 0, 0, 0, 30*15);
-			str.assign(temp);
+
+			tstring *str = new tstring(temp);
 
 			mir_sntprintf(temp, 1024, _T("\\tab \\ul\\b Status message:\\ul0\\b0 \\par %s"),
 						  m_dat->cache->getStatusMsg() ? m_dat->cache->getStatusMsg() : CTranslator::get(CTranslator::GEN_NO_STATUS));
-			str.append(temp);
+			str->append(temp);
 
 			if(xStatus = m_dat->cache->getXStatusId()) {
 				TCHAR	*tszXStatusName = 0;
@@ -889,11 +889,10 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 					tszXStatusName = xStatusDescr[xStatus - 1];
 
 				if(tszXStatusName) {
-					mir_sntprintf(temp, 1024, _T("\\par\\par\\tab \\ul\\b Extended status information:\\ul0\\b0 \\par "));
-					str.append(temp);
+					str->append(_T("\\par\\par\\tab \\ul\\b Extended status information:\\ul0\\b0 \\par "));
 					mir_sntprintf(temp, 1024, _T("%s%s%s"), tszXStatusName, m_dat->cache->getXStatusMsg() ? _T(" / ") : _T(""),
 								  m_dat->cache->getXStatusMsg() ? m_dat->cache->getXStatusMsg() : _T(""));
-					str.append(temp);
+					str->append(temp);
 					if(dbv.ptszVal)
 						mir_free(dbv.ptszVal);
 				}
@@ -901,32 +900,35 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 
 			if(m_dat->cache->getListeningInfo()) {
 				mir_sntprintf(temp, 1024, _T("\\par\\par\\tab \\ul\\b Listening to:\\ul0\\b0 \\par %s"), m_dat->cache->getListeningInfo());
-				str.append(temp);
+				str->append(temp);
 			}
 
 			if(0 == M->GetTString(m_dat->cache->getActiveContact(), m_dat->cache->getActiveProto(), "MirVer", &dbv)) {
-				mir_sntprintf(temp, 1024, _T("\\par\\par\\ul\\b Client:\\ul0\\b0  %s"), dbv.pszVal);
+				mir_sntprintf(temp, 1024, _T("\\par\\par\\ul\\b Client:\\ul0\\b0  %s"), dbv.ptszVal);
 				::DBFreeVariant(&dbv);
-				str.append(temp);
+				str->append(temp);
 			}
-			str.append(_T("}"));
+			str->append(_T("}"));
 
 			/*
 			 * convert line breaks to rtf
 			 */
+			/*
 			while((pos = str.find(_T("\r\n"))) != str.npos) {
 				str.erase(pos, 2);
 				str.insert(pos, _T("\\line "));
 			}
-			while((pos = str.find(_T("\n"))) != str.npos) {
-				str.erase(pos, 1);
-				str.insert(pos, _T("\\line "));
+			*/
+			while((pos = str->find(_T("\n"))) != str->npos) {
+				str->erase(pos, 1);
+				str->insert(pos, _T("\\line "));
 			}
 
 			POINT pt;
 			RECT  rc = {0, 0, 400, 600};
 			GetCursorPos(&pt);
-			CTip *tip = new CTip(m_dat->hwnd, m_dat->hContact, str.c_str(), this);
+			CTip *tip = new CTip(m_dat->hwnd, m_dat->hContact, str->c_str(), this);
+			delete str;
 			tip->show(rc, pt, m_dat->hTabIcon, m_dat->szStatus);
 			return;
 		}
@@ -1263,6 +1265,7 @@ void CTip::show(const RECT& rc, POINT& pt, const HICON hIcon, const TCHAR *szTit
 	SETTEXTEX	stx = {ST_SELECTION, CP_UTF8};
 
 	int xBorder, yBorder;
+	m_leftWidth = (m_panel->getDat()->hClientIcon || m_panel->getDat()->hXStatusIcon ? LEFT_BAR_WIDTH : 0);
 
 	xBorder = M->isAero() ? GetSystemMetrics(SM_CXSIZEFRAME) : 1;
 	yBorder = M->isAero() ? GetSystemMetrics(SM_CYSIZEFRAME) : 1;
@@ -1270,6 +1273,7 @@ void CTip::show(const RECT& rc, POINT& pt, const HICON hIcon, const TCHAR *szTit
 	m_hIcon = hIcon;
 	m_szTitle = szTitle;
 
+	::SendMessage(m_hRich, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(4, 4));
 	::SendMessage(m_hRich, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)m_pszText);
 
 	if (PluginConfig.g_SmileyAddAvail) {
@@ -1297,10 +1301,10 @@ void CTip::show(const RECT& rc, POINT& pt, const HICON hIcon, const TCHAR *szTit
 	m_rcRich = rc;
 
 	m_rcRich.bottom = 550;
-	m_rcRich.left = LEFT_BORDER; m_rcRich.top = TOP_BORDER;
-	m_rcRich.right -= (LEFT_BORDER + RIGHT_BORDER);
+	m_rcRich.left = LEFT_BORDER + m_leftWidth; m_rcRich.top = TOP_BORDER;
+	m_rcRich.right -= (LEFT_BORDER + RIGHT_BORDER + m_leftWidth);
 
-	m_rcRich.right = m_rcRich.left + (15 * (m_rcRich.right - m_rcRich.left));
+	m_rcRich.right = m_rcRich.left + (15 * (m_rcRich.right - m_rcRich.left)) - 8 * 15;
 	m_rcRich.bottom = m_rcRich.top + (15 * (m_rcRich.bottom - m_rcRich.top));
 
 	fr.hdc = hdc;
@@ -1311,20 +1315,20 @@ void CTip::show(const RECT& rc, POINT& pt, const HICON hIcon, const TCHAR *szTit
 	fr.chrg.cpMin = 0;
 	LRESULT lr = ::SendMessage(m_hRich, EM_FORMATRANGE, 0, (LPARAM)&fr);
 	m_szRich.cx = (fr.rc.right - fr.rc.left) / 15;
-	m_szRich.cy = ((fr.rc.bottom - fr.rc.top) / 15);
+	m_szRich.cy = ((fr.rc.bottom - fr.rc.top) / 15) + 3;
 
 	m_rcRich.right = m_rcRich.left + m_szRich.cx;
 	m_rcRich.bottom = m_rcRich.top + m_szRich.cy;
 
 	::SendMessage(m_hRich, EM_FORMATRANGE, 0, (LPARAM)NULL);			// required, clear cached painting data in the richedit
 
-	::SetWindowPos(m_hwnd, HWND_TOP, pt.x - 5, pt.y - 5, m_szRich.cx + LEFT_BORDER + RIGHT_BORDER + 2 * xBorder,
+	::SetWindowPos(m_hwnd, HWND_TOP, pt.x - 5, pt.y - 5, m_szRich.cx + m_leftWidth + LEFT_BORDER + RIGHT_BORDER + 2 * xBorder,
 				   m_szRich.cy + TOP_BORDER + BOTTOM_BORDER + 2 * yBorder, SWP_NOACTIVATE|SWP_SHOWWINDOW);
 
-	::SetWindowPos(m_hRich, 0, LEFT_BORDER, TOP_BORDER, m_szRich.cx, m_szRich.cy, SWP_SHOWWINDOW);
+	::SetWindowPos(m_hRich, 0, LEFT_BORDER + m_leftWidth, TOP_BORDER, m_szRich.cx, m_szRich.cy, SWP_SHOWWINDOW);
 
 	if(CMimAPI::m_pSetLayeredWindowAttributes)
-		CMimAPI::m_pSetLayeredWindowAttributes(m_hwnd, 0, (BYTE)230, LWA_ALPHA);
+		CMimAPI::m_pSetLayeredWindowAttributes(m_hwnd, 0, (BYTE)255, LWA_ALPHA);
 	::ReleaseDC(m_hwnd, hdc);
 }
 
@@ -1417,15 +1421,16 @@ INT_PTR CALLBACK CTip::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 			COLORREF	clr = CInfoPanel::m_ipConfig.clrs[IPFONTID_NICK];
 			GetClientRect(hwnd, &rc);
 			CContactCache* c = CGlobals::getContactCache(m_hContact);
-			RECT		rcText = {20, 0, rc.right, TOP_BORDER};
+			RECT		rcText = {0, 0, rc.right, TOP_BORDER};
 			LONG		cx = rc.right;
 			LONG		cy = rc.bottom;
+			HANDLE		hTheme = 0;
 
 			mir_sntprintf(szTitle, 128, m_szTitle ? _T("%s (%s)") : _T("%s%s"), c->getNick(), m_szTitle ? m_szTitle : _T(""));
 
 			if(m_panel) {
 				HDC 	hdcMem 	= ::CreateCompatibleDC(hdc);
-				HBITMAP hbm		= ::CreateCompatibleBitmap(hdc, cx, cy);
+				HBITMAP hbm		= ::CSkin::CreateAeroCompatibleBitmap(rc, hdc);
 				HBITMAP hbmOld  = 	reinterpret_cast<HBITMAP>(::SelectObject(hdcMem, hbm));
 				HFONT  	hOldFont = 	reinterpret_cast<HFONT>(::SelectObject(hdcMem, CInfoPanel::m_ipConfig.hFonts[IPFONTID_NICK]));
 
@@ -1434,12 +1439,40 @@ INT_PTR CALLBACK CTip::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 				rc.bottom += 2;
 				rc.left -= 4;rc.right += 4;
 				HBRUSH br = ::CreateSolidBrush(PluginConfig.m_ipBackgroundGradientHigh);
-				::FillRect(hdcMem, &rc, br);
-				//m_panel->renderBG(hdcMem, rc, &SkinItems[ID_EXTBKINFOPANELBG], false, false);
+				if(M->isAero()) {
+					::FillRect(hdcMem, &rc, (HBRUSH)::GetStockObject(BLACK_BRUSH));
+					CSkin::ApplyAeroEffect(hdcMem, &rcText, CSkin::AERO_EFFECT_AREA_MENUBAR, 0);
+					::FillRect(hdcMem, &m_rcRich, br);
+
+					hTheme = CMimAPI::m_pfnOpenThemeData(m_hwnd, L"BUTTON");
+					MARGINS m;
+					m.cxLeftWidth = LEFT_BORDER + m_leftWidth;
+					m.cxRightWidth = RIGHT_BORDER;
+					m.cyBottomHeight = BOTTOM_BORDER;
+					m.cyTopHeight = TOP_BORDER;
+					CMimAPI::m_pfnDwmExtendFrameIntoClientArea(m_hwnd, &m);
+				}
+				else
+					::FillRect(hdcMem, &rc, br);
 				::DeleteObject(br);
-				if(m_hIcon)
-					::DrawIconEx(hdcMem, 2, 4, m_hIcon, 16, 16, 0, 0, DI_NORMAL);
-				CSkin::RenderText(hdcMem, 0, szTitle, &rcText, DT_SINGLELINE|DT_END_ELLIPSIS|DT_VCENTER, CSkin::m_glowSize, clr);
+				rcText.left = 20;
+
+				LONG dy = 4;
+
+				if(m_hIcon) {
+					::DrawIconEx(hdcMem, 2, dy, m_hIcon, 16, 16, 0, 0, DI_NORMAL);
+					dy = TOP_BORDER + 4;
+				}
+				if(m_panel->getDat()->hXStatusIcon) {
+					::DrawIconEx(hdcMem, 2, dy, m_panel->getDat()->hXStatusIcon, 16, 16, 0, 0, DI_NORMAL);
+					dy += 18;
+				}
+				if(m_panel->getDat()->hClientIcon)
+					::DrawIconEx(hdcMem, 2, dy, m_panel->getDat()->hClientIcon, 16, 16, 0, 0, DI_NORMAL);
+
+				CSkin::RenderText(hdcMem, hTheme, szTitle, &rcText, DT_SINGLELINE|DT_END_ELLIPSIS|DT_VCENTER, CSkin::m_glowSize, clr);
+				if(hTheme)
+					CMimAPI::m_pfnCloseThemeData(hTheme);
 				::SelectObject(hdcMem, hOldFont);
 				::BitBlt(hdc, 0, 0, cx, cy, hdcMem, 0, 0, SRCCOPY);
 				::SelectObject(hdcMem, hbmOld);

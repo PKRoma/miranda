@@ -1129,6 +1129,9 @@ LRESULT TSAPI DM_UpdateLastMessage(const _MessageWindowData *dat)
 			SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM) PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING]);
 			return 0;
 		}
+		else
+			SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, 0);
+
 		if (dat->lastMessage || dat->pContainer->dwFlags & CNT_UINSTATUSBAR) {
 			DBTIMETOSTRINGT dbtts;
 			TCHAR date[64], time[64];
@@ -1494,7 +1497,7 @@ void TSAPI DM_Typing(_MessageWindowData *dat)
 		} else {
 			struct _MessageWindowData *dat_active = NULL;
 			dat->showTyping = 2;
-			dat->nTypeSecs = 10;
+			dat->nTypeSecs = 86400;
 
 			mir_sntprintf(dat->szStatusBar, safe_sizeof(dat->szStatusBar),
 						  CTranslator::get(CTranslator::GEN_MTN_STOPPED), dat->cache->getNick());
@@ -1674,6 +1677,9 @@ void TSAPI DM_EventAdded(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 	if (DbEventIsShown(dat, &dbei)) {
 		if (dbei.eventType == EVENTTYPE_MESSAGE && m_pContainer->hwndStatus && !(dbei.flags & (DBEF_SENT))) {
 			dat->lastMessage = dbei.timestamp;
+			dat->szStatusBar[0] = 0;
+			dat->nTypeSecs = 0;
+			dat->showTyping = 0;
 			PostMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
 		}
 		/*

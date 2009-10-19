@@ -763,6 +763,10 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 
 			BOOL			fAero = M->isAero();
 			HANDLE  		hTheme = fAero ? CMimAPI::m_pfnOpenThemeData(hWnd, L"ButtonStyle") : 0;
+			_MessageWindowData* dat = 0;
+
+			if(pContainer)
+				dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 
 			GetClientRect(hWnd, &rcClient);
 
@@ -804,7 +808,6 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 				 */
 
 				if (PluginConfig.m_visualMessageSizeIndicator && i == 0) {
-					_MessageWindowData* dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 
 					if(dat && dat->bType == SESSIONTYPE_IM) {
 						HBRUSH 	br = CreateSolidBrush(RGB(0, 255, 0));
@@ -864,6 +867,10 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 					if (hIcon) {
 						if (LOWORD(result) > 1) {				// we have a text
 							DrawIconEx(hdcMem, itemRect.left + 3, (height / 2 - 8) + itemRect.top, hIcon, 16, 16, 0, 0, DI_NORMAL);
+							if(dat) {
+								if(dat->showTyping == 2)
+									DrawIconEx(hdcMem, itemRect.left + 3, (height / 2 - 8) + itemRect.top, PluginConfig.g_iconOverlayEnabled, 16, 16, 0, 0, DI_NORMAL);
+							}
 							itemRect.left += 20;
 							CSkin::RenderText(hdcMem, hTheme, szText, &itemRect, DT_VCENTER | DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX,
 											  CSkin::m_glowSize, clr);

@@ -67,7 +67,8 @@ public:
 		TOP_BORDER		= 25,
 		LEFT_BORDER		= 2,
 		RIGHT_BORDER	= 2,
-		BOTTOM_BORDER	= 1
+		BOTTOM_BORDER	= 1,
+		LEFT_BAR_WIDTH	= 20
 	};
 
 	CTip													(const HWND hwndParent, const HANDLE hContact, const TCHAR *pszText = 0, const CInfoPanel *panel = 0);
@@ -95,6 +96,7 @@ private:
 	const CInfoPanel*			m_panel;					// the info panel parent (if any)
 	HICON						m_hIcon;					// optional icon to show in the title line
 	const TCHAR*				m_szTitle;					// optional text to show in the title
+	int							m_leftWidth;
 
 private:
 	static	WNDPROC				m_OldMessageEditProc;		// stores original richedit wnd proc
@@ -143,6 +145,7 @@ public:
 	bool						isActive					() const { return(m_active); }
 	bool						isPrivateHeight				() const { return(m_fPrivateHeight); }
 	DWORD						isHovered					() const { return(m_active ? m_hoverFlags : 0); }
+	const _MessageWindowData*	getDat						() const { return(m_dat); }
 	void						setActive					(const int newActive);
 	void						loadHeight					();
 	void						saveHeight					(bool fFlush = false);
@@ -187,7 +190,6 @@ private:
 	HWND				m_hwndConfig;										// window handle of the config dialog window
 	HFONT				m_configDlgFont, m_configDlgBoldFont;
 	SIZE				m_szNick;											// rectangle where the nick has been rendered,
-																			// used for hovering and showing tooltips
 	/*
 	 * these are used to store rectangles important to mouse tracking.
 	 */

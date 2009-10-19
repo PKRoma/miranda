@@ -265,7 +265,7 @@ void CList_CreateGroup(TCHAR* group)
 	}
 }
 
-BOOL CList_AddEvent(HANDLE hContact, HICON Icon, HANDLE event, int type, TCHAR* fmt, ...)
+BOOL CList_AddEvent(HANDLE hContact, HICON Icon, HANDLE event, int type, const TCHAR* fmt, ...)
 {
 	CLISTEVENT cle;
 	va_list marker;

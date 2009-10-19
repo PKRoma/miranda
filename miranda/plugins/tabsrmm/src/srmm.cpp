@@ -264,11 +264,11 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				TCHAR	*szBuildstr = mir_a2t(buildstr);
 	#if defined(_UNICODE)
 				mir_sntprintf(tStr, safe_sizeof(tStr), _T("TabSRMM\n%s %d.%d.%d.%d (Unicode) %s"),
-							 TranslateT("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)),
+							 _T("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)),
 							 szBuildstr);
 	#else
 				mir_snprintf(tStr, safe_sizeof(tStr), "TabSRMM\n%s %d.%d.%d.%d %s",
-							 TranslateT("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)),
+							 _T("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)),
 							 szBuildstr);
 	#endif
 				SetDlgItemText(hwndDlg, IDC_HEADERBAR, tStr);

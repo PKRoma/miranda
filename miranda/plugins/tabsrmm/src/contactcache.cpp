@@ -46,6 +46,8 @@ CContactCache::CContactCache(const HANDLE hContact)
 	m_hContact = hContact;
 	m_wOldStatus = m_wStatus = m_wMetaStatus = ID_STATUS_OFFLINE;
 
+	m_szStatusMsg = m_ListeningInfo = m_xStatusMsg = 0;
+
 	if(hContact) {
 		m_szProto = reinterpret_cast<char *>(::CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)m_hContact, 0));
 #if defined(_UNICODE)
@@ -83,8 +85,8 @@ void CContactCache::initPhaseTwo()
 
 	m_Valid = (m_szProto != 0 && m_szAccount != 0) ? true : false;
 	if(m_Valid) {
-		m_isSubcontact = (M->GetByte(m_hContact, PluginConfig.szMetaName, "IsSubcontact", 0) ? true : false);
 		m_isMeta = (PluginConfig.bMetaEnabled && !strcmp(m_szProto, PluginConfig.szMetaName)) ? true : false;
+		m_isSubcontact = (M->GetByte(m_hContact, PluginConfig.szMetaName, "IsSubcontact", 0) ? true : false);
 		if(m_isMeta) {
 			/*
 			int 	i = 0;
@@ -301,12 +303,18 @@ void CContactCache::setWindowData(const HWND hwnd, _MessageWindowData *dat)
 		updateStatusMsg();
 	else {
 		/* release memory - not needed when window isn't open */
-		if(m_szStatusMsg)
+		if(m_szStatusMsg) {
 			mir_free(m_szStatusMsg);
-		if(m_ListeningInfo)
+			m_szStatusMsg = 0;
+		}
+		if(m_ListeningInfo) {
 			mir_free(m_ListeningInfo);
-		if(m_xStatusMsg)
+			m_ListeningInfo = 0;
+		}
+		if(m_xStatusMsg) {
 			mir_free(m_xStatusMsg);
+			m_xStatusMsg = 0;
+		}
 	}
 
 }

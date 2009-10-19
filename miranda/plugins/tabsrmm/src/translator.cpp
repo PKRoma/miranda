@@ -98,7 +98,7 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Window size and theme"),					/* CNT_OPT_TITLE_THEME */
 	LPGENT("Transparency"),								/* CNT_OPT_TITLE_TRANS */
 	LPGENT("Choose your options for the tabbed user interface. Not all options can be applied to open windows. You may need to close and re-open them."), /* CNT_OPT_DESC_TABS */
-	LPGENT("Select, in which cases you want to see event notifications for this message container. These options are disabled when you are using one of the \"simple\" notifications modes"), /*CNT_OPT_DESC_NOTIFY */
+	LPGENT("Select, when you want to see event notifications (popups) for this window. The settings apply to all tabs within this window."), /*CNT_OPT_DESC_NOTIFY */
 	LPGENT("You can select a private theme (.tabsrmm file) for this container which will then override the default message log theme. You will have to close and re-open all message windows after changing this option."), /* CNT_OPT_DESC_THEME */
 	LPGENT("This feature requires Windows 2000 or later and is not available when custom container skins are in use"), /* CNT_OPT_DESC_TRANS */
 	LPGENT("Message"),									/* GEN_POPUPS_MESSAGE */
@@ -119,7 +119,7 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("The file exists. Do you want to overwrite it?"), /* GEN_MSG_SAVE_FILE_EXISTS */
 	LPGENT("Topic is: %s"),								/* GEN_MUC_TOPIC_IS */
 	LPGENT("no topic set."), 							/* GEN_MUC_NO_TOPIC */
-	LPGENT("%s has stopped typing."),					/* GEN_MTN_STOPPED */
+	LPGENT("%s has entered text."),						/* GEN_MTN_STOPPED */
 	LPGENT("Contact Picture Settings..."),				/* GEN_AVATAR_SETTINGS */
 	LPGENT("Set Your Avatar..."),						/* GEN_AVATAR_SETOWN */
 	LPGENT("Do you want to also read message templates from the theme?\nCaution: This will overwrite the stored template set which may affect the look of your message window significantly.\nSelect cancel to not load anything at all."), /* GEN_WARNING_LOADTEMPLATES */
@@ -212,6 +212,42 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("%s on %s%s"),								/* MUC_SBAR_ON_SERVER */
 	LPGENT(", %d %s idle"),								/* MUC_SBAR_IDLEFORMAT_SHORT */
 	LPGENT("Contact avatars"),							/* CNT_OPT_TITLE_AVATARS */
+
+	/*
+	 * MUC tray icon notifications
+	 */
+
+	LPGENT("%s wants your attention in %s"),			/* GEN_MUC_TRAY_HILIGHT */
+	LPGENT("%s speaks in %s"),							/* GEN_MUC_TRAY_MSG */
+	LPGENT("%s has joined %s"),							/* GEN_MUC_TRAY_JOINED */
+	LPGENT("%s has left %s"),							/* GEN_MUC_TRAY_LEFT */
+	LPGENT("%s has disconnected"),						/* GEN_MUC_TRAY_QUIT */
+	LPGENT("%s is now known as %s"),					/* GEN_MUC_TRAY_NICK */
+	LPGENT("%s kicked %s from %s"),						/* GEN_MUC_TRAY_KICK */
+	LPGENT("Notice from %s"),							/* GEN_MUC_TRAY_NOTICE */
+	LPGENT("Topic change in %s"),						/* GEN_MUC_TRAY_TOPIC */
+	LPGENT("Information in %s"),						/* GEN_MUC_TRAY_INFO */
+	LPGENT("%s enables \'%s\' status for %s in %s"),	/* GEN_MUC_TRAY_STATUS_ON */
+	LPGENT("%s disables \'%s\' status for %s in %s"),	/* GEN_MUC_TRAY_STATUS_OFF */
+
+	/*
+	 * muc popups and disk logging
+	 */
+
+	LPGENT("%s%s says:%s %s"),							/* GEN_MUC_POPUP_MSG */
+	LPGENT("%s has joined"),							/* GEN_MUC_POPUP_JOINED */
+	LPGENT("%s has left"),								/* GEN_MUC_POPUP_LEFT */
+	LPGENT("%s has left (%s)"),							/* GEN_MUC_POPUP_LEFT1 */
+	LPGENT("%s has disconnected"),						/* GEN_MUC_POPUP_QUIT */
+	LPGENT("%s has disconnected (%s)"),					/* GEN_MUC_POPUP_QUIT1 */
+	LPGENT("%s is now known as %s"),					/* GEN_MUC_POPUP_NICK */
+	LPGENT("%s kicked %s"),								/* GEN_MUC_POPUP_KICK */
+	LPGENT("%s kicked %s (%s)"),						/* GEN_MUC_POPUP_KICK1 */
+	LPGENT("Notice from %s: %s"),						/* GEN_MUC_POPUP_NOTICE */
+	LPGENT("The topic is \'%s\'"),						/* GEN_MUC_POPUP_TOPIC */
+	LPGENT("The topic is \'%s\' (set by %s)"),			/* GEN_MUC_POPUP_TOPIC1 */
+	LPGENT("%s enables \'%s\' status for %s"),			/* GEN_MUC_POPUP_STATUS_ON */
+	LPGENT("%s disables \'%s\' status for %s"),			/* GEN_MUC_POPUP_STATUS_OFF */
 };
 
 /*

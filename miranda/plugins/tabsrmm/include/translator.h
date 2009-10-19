@@ -212,7 +212,34 @@ public:
 		MUC_SBAR_ON_SERVER										= 169,
 		MUC_SBAR_IDLEFORMAT_SHORT								= 170,
 		CNT_OPT_TITLE_AVATARS									= 171,
-		STR_LAST 												= 172
+		GEN_MUC_TRAY_HILIGHT									= 172,
+		GEN_MUC_TRAY_MSG										= 173,
+		GEN_MUC_TRAY_JOINED										= 174,
+		GEN_MUC_TRAY_LEFT										= 175,
+		GEN_MUC_TRAY_QUIT										= 176,
+		GEN_MUC_TRAY_NICK										= 177,
+		GEN_MUC_TRAY_KICK										= 178,
+		GEN_MUC_TRAY_NOTICE										= 179,
+		GEN_MUC_TRAY_TOPIC										= 180,
+		GEN_MUC_TRAY_INFO										= 181,
+		GEN_MUC_TRAY_STATUS_ON									= 182,
+		GEN_MUC_TRAY_STATUS_OFF									= 183,
+
+		GEN_MUC_POPUP_MSG										= 184,
+		GEN_MUC_POPUP_JOINED									= 185,
+		GEN_MUC_POPUP_LEFT										= 186,
+		GEN_MUC_POPUP_LEFT1										= 187,
+		GEN_MUC_POPUP_QUIT										= 188,
+		GEN_MUC_POPUP_QUIT1										= 189,
+		GEN_MUC_POPUP_NICK										= 190,
+		GEN_MUC_POPUP_KICK										= 191,
+		GEN_MUC_POPUP_KICK1										= 192,
+		GEN_MUC_POPUP_NOTICE									= 193,
+		GEN_MUC_POPUP_TOPIC										= 194,
+		GEN_MUC_POPUP_TOPIC1									= 195,
+		GEN_MUC_POPUP_STATUS_ON									= 196,
+		GEN_MUC_POPUP_STATUS_OFF								= 197,
+		STR_LAST 												= 198
 	};
 
 	enum {
