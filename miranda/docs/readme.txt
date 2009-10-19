@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
-
-                          http://www.miranda-im.org
+                   
+                             www.miranda-im.org
 
 
 Contents
@@ -20,6 +20,18 @@ Contents
 
 1. Changes in this version
 --------------------------
+* New in 0.8.8
+Bugfixes:
+ - Fix for entering cyrillic chars into the profile manager
+ - Translation fixes
+ - Fixed SSL connection failure handling
+ - Fixed potential buffer overflow issue
+ - ICQ: Fixed keep-alive option default value
+ - Jabber: Fixed certificate validation for TLS connection 
+ - MSN: Fixed issue in MSN chats with unicode characters
+ - Yahoo: Fix for Yahoo search
+
+
 * New in 0.8.8
 Enhancements:
  - Added new update notification options
