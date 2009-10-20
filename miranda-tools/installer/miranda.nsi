@@ -214,6 +214,7 @@ SubSection /e "Options" pOptions
     CreateShortCut  "$SMPROGRAMS\Miranda IM\Miranda IM.lnk" "$INSTDIR\miranda32.exe"
     CreateShortCut  "$SMPROGRAMS\Miranda IM\Database Tool.lnk" "$INSTDIR\dbtool.exe"
     WriteINIStr     "$SMPROGRAMS\Miranda IM\Homepage.url" "InternetShortcut" "URL" "http://www.miranda-im.org/"
+    WriteINIStr     "$SMPROGRAMS\Miranda IM\Get More Addons.url" "InternetShortcut" "URL" "http://addons.miranda-im.org/"
   SectionEnd
 
   Section "Install Desktop Shortcut" pSCDesktop
