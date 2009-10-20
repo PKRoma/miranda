@@ -42,54 +42,54 @@ static struct CountryListEntry countries[]={
 	{93  ,"Afghanistan"},
 	{355 ,"Albania"},
 	{213 ,"Algeria"},
-	{684 ,"American Samoa"},
 	{376 ,"Andorra"},
 	{244 ,"Angola"},
-	{101 ,"Anguilla"},
-	{102 ,"Antigua and Barbuda"},
-	{5902,"Antilles"},
+	{1264,"Anguilla"},	/* change county code to NANP (from 101) */
+	{1268,"Antigua and Barbuda"},	/* change county code to NANP (from 1021) */
+//	{5902,"Antilles"},	/* removed: it is not a country, it's a group of islands from diffrent countrys (all are includet in the list)*/
 	{54  ,"Argentina"},
 	{374 ,"Armenia"},
 	{297 ,"Aruba"},
 	{247 ,"Ascension Island"},
-	{61  ,"Australia"},
+	{61   ,"Australia"},
+	{6720 ,"Australia, Antarctic Territory"},	/* added country code 672(0)*/
+	{614  ,"Australia, Christmas Island"},	/* rename (from Christmas Island) and change to official county code 61(4) (from 672) */
+	{61891,"Australia, Cocos (Keeling) Islands"},	/* rename and change to official county code 61(891) (from 6102) */
+	{6723 ,"Australia, Norfolk Island"},	/* rename (from Norfolk Island) and change to official county code 672(3) (from 6722) */
 	{43  ,"Austria"},
 	{994 ,"Azerbaijan"},
-	{103 ,"Bahamas"},
+	{1242,"Bahamas"},	/* change county code to NANP (from 103) */
 	{973 ,"Bahrain"},
 	{880 ,"Bangladesh"},
-	{104 ,"Barbados"},
-	{120 ,"Barbuda"},
+	{1246,"Barbados"},	/* change county code to NANP (from 103) */
+//	{120 ,"Barbuda"},	/* removed: it is not a country and no spetial island, see Antigua and Barbuda*/
 	{375 ,"Belarus"},
 	{32  ,"Belgium"},
 	{501 ,"Belize"},
 	{229 ,"Benin"},
 	{105 ,"Bermuda"},
+	{1441,"Bermuda"},	/* change county code to NANP (from 105) */
 	{975 ,"Bhutan"},
 	{591 ,"Bolivia"},
 	{387 ,"Bosnia and Herzegovina"},
 	{267 ,"Botswana"},
 	{55  ,"Brazil"},
-	{106 ,"British Virgin Islands"},
 	{673 ,"Brunei"},
 	{359 ,"Bulgaria"},
 	{226 ,"Burkina Faso"},
 	{257 ,"Burundi"},
 	{855 ,"Cambodia"},
 	{237 ,"Cameroon"},
-	{107 ,"Canada"},
-	{178 ,"Canary Islands"},
+	{1002,"Canada"},	/* change county code to NANP (from 107 to virtual 1(002) -> reflect NANP*/
 	{238 ,"Cape Verde Islands"},
-	{108 ,"Cayman Islands"},
+	{1345,"Cayman Islands"},	/* change county code to NANP (from 108) */
 	{236 ,"Central African Republic"},
 	{235 ,"Chad"},
 	{56  ,"Chile, Republic of"},
 	{86  ,"China"},
-	{672 ,"Christmas Island"},
-	{6101,"Cocos-Keeling Islands"},
-	{6102,"Cocos (Keeling) Islands"},
+//	{6101,"Cocos-Keeling Islands"},	/* removed (dobble): see Australia, Cocos (Keeling) Islands */
 	{57  ,"Colombia"},
-	{2691,"Comoros"},
+	{269 ,"Comoros"},	/* change county code (from 2691) */
 	{243 ,"Congo, Democratic Republic of (Zaire)"},
 	{242 ,"Congo, Republic of the"},
 	{682 ,"Cook Islands"},
@@ -97,13 +97,13 @@ static struct CountryListEntry countries[]={
 	{225 ,"Cote d'Ivoire (Ivory Coast)"},
 	{385 ,"Croatia"},
 	{53  ,"Cuba"},
-	{357 ,"Cyprus"},
+	{357 ,"Greek, Republic of South Cyprus"},	/* rename coz Turkey, Republic of Northern Cyprus */
 	{420 ,"Czech Republic"},
 	{45  ,"Denmark"},
 	{246 ,"Diego Garcia"},
 	{253 ,"Djibouti"},
-	{109 ,"Dominica"},
-	{110 ,"Dominican Republic"},
+	{1767,"Dominica"},	/* change county code to NANP (from 109) */
+	{1809,"Dominican Republic"},	/* change county code to NANP 809, 829, 849 (from 110) */
 	{593 ,"Ecuador"},
 	{20  ,"Egypt"},
 	{503 ,"El Salvador"},
@@ -111,6 +111,7 @@ static struct CountryListEntry countries[]={
 	{291 ,"Eritrea"},
 	{372 ,"Estonia"},
 	{251 ,"Ethiopia"},
+	{3883,"Europ"},	/* add county code  +388 3 official European Telephony Numbering Space*/
 	{298 ,"Faeroe Islands"},
 	{500 ,"Falkland Islands"},
 	{679 ,"Fiji"},
@@ -127,9 +128,9 @@ static struct CountryListEntry countries[]={
 	{350 ,"Gibraltar"},
 	{30  ,"Greece"},
 	{299 ,"Greenland"},
-	{111 ,"Grenada"},
+	{1473,"Grenada"},	/* change county code to NANP (from 111) */
 	{590 ,"Guadeloupe"},
-	{671 ,"Guam, US Territory of"},
+	{1671,"Guam, US Territory of"},	/* change county code to NANP (from 671) */
 	{502 ,"Guatemala"},
 	{224 ,"Guinea"},
 	{245 ,"Guinea-Bissau"},
@@ -146,7 +147,7 @@ static struct CountryListEntry countries[]={
 	{353 ,"Ireland"},
 	{972 ,"Israel"},
 	{39  ,"Italy"},
-	{112 ,"Jamaica"},
+	{1876,"Jamaica"},	/* change county code to NANP (from 112) */
 	{81  ,"Japan"},
 	{962 ,"Jordan"},
 	{705 ,"Kazakhstan"},
@@ -155,18 +156,18 @@ static struct CountryListEntry countries[]={
 	{850 ,"Korea, North"},
 	{82  ,"Korea, South"},
 	{965 ,"Kuwait"},
-	{706 ,"Kyrgyzstan"},
+	{996 ,"Kyrgyzstan"},	/* change county code (from 706) */
 	{856 ,"Laos"},
 	{371 ,"Latvia"},
 	{961 ,"Lebanon"},
 	{266 ,"Lesotho"},
 	{231 ,"Liberia"},
 	{218 ,"Libyan Arab Jamahiriya"},
-	{4101,"Liechtenstein"},
+	{423 ,"Liechtenstein"},	/* change county code (from 4101) */
 	{370 ,"Lithuania"},
 	{352 ,"Luxembourg"},
 	{853 ,"Macau"},
-	{389 ,"Macedonia (F.Y.R.O.M.)"},
+	{389 ,"Macedonia, Republic of"},	/* rename coz war */
 	{261 ,"Madagascar"},
 	{265 ,"Malawi"},
 	{60  ,"Malaysia"},
@@ -177,13 +178,13 @@ static struct CountryListEntry countries[]={
 	{596 ,"Martinique"},
 	{222 ,"Mauritania"},
 	{230 ,"Mauritius"},
-	{269 ,"Mayotte Island"},
+	{262 ,"Mayotte Island"},	/* change county code coz bug (from 269) */
 	{52  ,"Mexico"},
 	{691 ,"Micronesia, Federated States of"},
 	{373 ,"Moldova, Republic of"},
 	{377 ,"Monaco"},
 	{976 ,"Mongolia"},
-	{113 ,"Montserrat"},
+	{1664,"Montserrat"},	/* change county code to NANP (from 113) */
 	{212 ,"Morocco"},
 	{258 ,"Mozambique"},
 	{95  ,"Myanmar"},
@@ -191,15 +192,20 @@ static struct CountryListEntry countries[]={
 	{674 ,"Nauru"},
 	{977 ,"Nepal"},
 	{31  ,"Netherlands"},
-	{599 ,"Netherlands Antilles"},
-	{114 ,"Nevis"},
+	{599  ,"Netherlands Antilles"},	/* dissolved 2010 */
+	{5995 ,"St. Maarten"},	/* add new country in 2010 (from Netherlands Antilles) */
+	{5999 ,"Curacao"},	/* add new country in 2010 (from Netherlands Antilles) */
+	{5997 ,"Netherlands (Bonaire Island)"},	/* add new Part of Netherlands in 2010 (from Netherlands Antilles) */
+	{59946,"Netherlands (Saba Island)"},	/* add new Part of Netherlands in 2010 (from Netherlands Antilles) */
+	{59938,"Netherlands (St. Eustatius Island)"},	/* add new Part of Netherlands in 2010 (from Netherlands Antilles) */
+	//	{114 ,"Nevis"},	/* removed: it is not a country, it's part of Saint Kitts and Nevis*/
 	{687 ,"New Caledonia"},
 	{64  ,"New Zealand"},
 	{505 ,"Nicaragua"},
 	{227 ,"Niger"},
 	{234 ,"Nigeria"},
 	{683 ,"Niue"},
-	{6722,"Norfolk Island"},
+	{1670,"Northern Mariana Islands, US Territory of"},	/* added NANP */
 	{47  ,"Norway"},
 	{968 ,"Oman"},
 	{92  ,"Pakistan"},
@@ -211,20 +217,22 @@ static struct CountryListEntry countries[]={
 	{63  ,"Philippines"},
 	{48  ,"Poland"},
 	{351 ,"Portugal"},
-	{121 ,"Puerto Rico"},
+	{1939,"Puerto Rico"},	/* change county code to NANP 939, 787 (from 121) */
 	{974 ,"Qatar"},
 	{262 ,"Reunion Island"},
 	{40  ,"Romania"},
-	{6701,"Rota Island"},
+//	{6701,"Rota Island"},	/* removed: it is not a country it is part of Northern Mariana Islands, US Territory of */
 	{7   ,"Russia"},
 	{250 ,"Rwanda"},
+	{1684,"Samoa (USA)"},	/* rename (from American Samoa) change county code to NANP (from 684) */
+	{685 ,"Samoa, Western"},	/* rename (from Western Samoa) */
 	{290 ,"Saint Helena"},
-	{115 ,"Saint Kitts"},
-	{1141,"Saint Kitts and Nevis"},
-	{122 ,"Saint Lucia"},
+//	{115 ,"Saint Kitts"},	/* removed: it is not a country it is part of Saint Kitts and Nevis*/
+	{1869,"Saint Kitts and Nevis"},	/* change county code to NANP (from 1141) */
+	{1758,"Saint Lucia"},	/* change county code to NANP (from 122) */
 	{508 ,"Saint Pierre and Miquelon"},
-	{116 ,"Saint Vincent and the Grenadines"},
-	{670 ,"Saipan Island"},
+	{1784,"Saint Vincent and the Grenadines"},	/* change county code to NANP (from 116) */
+//	{670 ,"Saipan Island"},	/* removed: it is not a country it is part of Northern Mariana Islands, US Territory of */
 	{378 ,"San Marino"},
 	{239 ,"Sao Tome and Principe"},
 	{966 ,"Saudi Arabia"},
@@ -239,6 +247,7 @@ static struct CountryListEntry countries[]={
 	{252 ,"Somalia"},
 	{27  ,"South Africa"},
 	{34  ,"Spain"},
+	{3492,"Spain, Canary Islands"},	/*rename and change county code to 34(92) spain + canary code*/
 	{94  ,"Sri Lanka"},
 	{249 ,"Sudan"},
 	{597 ,"Suriname"},
@@ -247,18 +256,20 @@ static struct CountryListEntry countries[]={
 	{41  ,"Switzerland"},
 	{963 ,"Syrian Arab Republic"},
 	{886 ,"Taiwan"},
-	{708 ,"Tajikistan"},
+	{992 ,"Tajikistan"},	/* change county code (from 708) */
 	{255 ,"Tanzania"},
 	{66  ,"Thailand"},
-	{6702,"Tinian Island"},
+//	{6702,"Tinian Island"},	/* removed: it is not a country it is part of Northern Mariana Islands, US Territory of */
+	{670 ,"Timor, East"},	/* added (is part off Northern Mariana Islands but not US Territory*/
 	{228 ,"Togo"},
 	{690 ,"Tokelau"},
 	{676 ,"Tonga"},
-	{117 ,"Trinidad and Tobago"},
+	{1868,"Trinidad and Tobago"},	/* change county code to NANP (from 1141) */
 	{216 ,"Tunisia"},
-	{90  ,"Turkey"},
-	{709 ,"Turkmenistan"},
-	{118 ,"Turks and Caicos Islands"},
+	{90   ,"Turkey"},
+	{90392,"Turkey, Republic of Northern Cyprus"},	/* added (is diffrent from Greek part)*/
+	{993 ,"Turkmenistan"},	/* change county code (from 709) */
+	{1649,"Turks and Caicos Islands"},	/* change county code to NANP (from 118) */
 	{688 ,"Tuvalu"},
 	{256 ,"Uganda"},
 	{380 ,"Ukraine"},
@@ -266,19 +277,20 @@ static struct CountryListEntry countries[]={
 	{44  ,"United Kingdom"},
 	{598 ,"Uruguay"},
 	{1   ,"USA"},
-	{711 ,"Uzbekistan"},
+	{998 ,"Uzbekistan"},	/* change county code (from 711) */
 	{678 ,"Vanuatu"},
 	{379 ,"Vatican City"},
 	{58  ,"Venezuela"},
 	{84  ,"Vietnam"},
-	{123 ,"Virgin Islands (USA)"},
+	{1284,"Virgin Islands (UK)"},	/* change county code to NANP (from 105) - rename coz Virgin Islands (USA) */
+	{1340,"Virgin Islands (USA)"},	/* change county code to NANP (from 123) */
 	{441 ,"Wales"},
 	{681 ,"Wallis and Futuna Islands"},
-	{685 ,"Western Samoa"},
 	{967 ,"Yemen"},
-	{381 ,"Yugoslavia"},
-	{3811,"Yugoslavia - Serbia"},
-	{382 ,"Yugoslavia - Montenegro"},
+	{38  ,"Yugoslavia"},	/* addet for old values like birth-country */
+	{381 ,"Serbia, Republic of"},	/* rename need (from Yugoslavia)*/
+	{383 ,"Kosovo, Republic of"},	/*change country code (from 3811),  rename need (from Yugoslavia - Serbia) */
+	{382 ,"Montenegro, Republic of"},	/* rename need (from Yugoslavia - Montenegro) */
 	{260 ,"Zambia"},
 	{263 ,"Zimbabwe"},
 };
