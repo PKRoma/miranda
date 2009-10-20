@@ -153,6 +153,7 @@ void  CMsnProto::Lists_Populate(void)
 	HANDLE hContact = (HANDLE)MSN_CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	while (hContact != NULL)
 	{
+		HANDLE hContactN = (HANDLE)MSN_CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 		if (MSN_IsMyContact(hContact)) 
 		{
 			char szEmail[MSN_MAX_EMAIL_LEN];
@@ -167,8 +168,7 @@ void  CMsnProto::Lists_Populate(void)
 			else
 				MSN_CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
 		}
-
-		hContact = (HANDLE)MSN_CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+		hContact = hContactN;
 	}
 }
 

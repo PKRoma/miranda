@@ -223,7 +223,7 @@ int CMsnProto::MSN_GCEventHook(WPARAM, LPARAM lParam)
 			break;
 		}
 		case GC_USER_MESSAGE:
-			if (gch->pszText && strlen(gch->pszText) > 0) 
+			if (gch->ptszText && gch->ptszText[0]) 
 			{
 				bool isOffline;
 				ThreadData* thread = MSN_StartSB(hChatContact, isOffline);
