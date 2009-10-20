@@ -46,7 +46,7 @@ static struct CountryListEntry countries[]={
 	{244 ,"Angola"},
 	{1264,"Anguilla"},	/* change county code to NANP (from 101) */
 	{1268,"Antigua and Barbuda"},	/* change county code to NANP (from 1021) */
-//	{5902,"Antilles"},	/* removed: it is not a country, it's a group of islands from diffrent countrys (all are includet in the list)*/
+//	{5902,"Antilles"},	/* removed: it is not a country, it's a group of islands from diffrent countries (all are included in the list)*/
 	{54  ,"Argentina"},
 	{374 ,"Armenia"},
 	{297 ,"Aruba"},
@@ -62,12 +62,11 @@ static struct CountryListEntry countries[]={
 	{973 ,"Bahrain"},
 	{880 ,"Bangladesh"},
 	{1246,"Barbados"},	/* change county code to NANP (from 103) */
-//	{120 ,"Barbuda"},	/* removed: it is not a country and no spetial island, see Antigua and Barbuda*/
+//	{120 ,"Barbuda"},	/* removed: it is not a country and no special island, see Antigua and Barbuda*/
 	{375 ,"Belarus"},
 	{32  ,"Belgium"},
 	{501 ,"Belize"},
 	{229 ,"Benin"},
-	{105 ,"Bermuda"},
 	{1441,"Bermuda"},	/* change county code to NANP (from 105) */
 	{975 ,"Bhutan"},
 	{591 ,"Bolivia"},
@@ -87,7 +86,7 @@ static struct CountryListEntry countries[]={
 	{235 ,"Chad"},
 	{56  ,"Chile, Republic of"},
 	{86  ,"China"},
-//	{6101,"Cocos-Keeling Islands"},	/* removed (dobble): see Australia, Cocos (Keeling) Islands */
+//	{6101,"Cocos-Keeling Islands"},	/* removed (double): see Australia, Cocos (Keeling) Islands */
 	{57  ,"Colombia"},
 	{269 ,"Comoros"},	/* change county code (from 2691) */
 	{243 ,"Congo, Democratic Republic of (Zaire)"},
@@ -111,7 +110,7 @@ static struct CountryListEntry countries[]={
 	{291 ,"Eritrea"},
 	{372 ,"Estonia"},
 	{251 ,"Ethiopia"},
-	{3883,"Europ"},	/* add county code  +388 3 official European Telephony Numbering Space*/
+	{3883,"Europe"},	/* add county code  +388 3 official European Telephony Numbering Space*/
 	{298 ,"Faeroe Islands"},
 	{500 ,"Falkland Islands"},
 	{679 ,"Fiji"},
@@ -287,7 +286,7 @@ static struct CountryListEntry countries[]={
 	{441 ,"Wales"},
 	{681 ,"Wallis and Futuna Islands"},
 	{967 ,"Yemen"},
-	{38  ,"Yugoslavia"},	/* addet for old values like birth-country */
+	{38  ,"Yugoslavia"},	/* added for old values like birth-country */
 	{381 ,"Serbia, Republic of"},	/* rename need (from Yugoslavia)*/
 	{383 ,"Kosovo, Republic of"},	/*change country code (from 3811),  rename need (from Yugoslavia - Serbia) */
 	{382 ,"Montenegro, Republic of"},	/* rename need (from Yugoslavia - Montenegro) */
