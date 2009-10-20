@@ -554,7 +554,7 @@ INT_PTR CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 	switch(msg) {
 		case WM_INITDIALOG: {
-			TCITEM tci;
+			TCITEM tci = {0};
 			RECT rcClient;
 			TCHAR szBuffer[180];
 
@@ -571,11 +571,12 @@ INT_PTR CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 			SetWindowText(hwndDlg, szBuffer);
 
+			tci.cchTextMax = 100;
 			tci.mask = TCIF_PARAM | TCIF_TEXT;
 			tci.lParam = (LPARAM)CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_USERPREFS), hwndDlg, DlgProcUserPrefs, (LPARAM)hContact);
 			tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_UPREFS_GENERIC));
 			TabCtrl_InsertItem(GetDlgItem(hwndDlg, IDC_OPTIONSTAB), 0, &tci);
-			MoveWindow((HWND)tci.lParam, 5, 32, rcClient.right - 10, rcClient.bottom - 80, 1);
+			MoveWindow((HWND)tci.lParam, 6, DPISCALEY(32), rcClient.right - 12, rcClient.bottom - DPISCALEY(80), 1);
 			ShowWindow((HWND)tci.lParam, SW_SHOW);
 			if (CMimAPI::m_pfnEnableThemeDialogTexture)
 				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
@@ -584,7 +585,7 @@ INT_PTR CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			tci.lParam = (LPARAM)CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_USERPREFS1), hwndDlg, DlgProcUserPrefsLogOptions, (LPARAM)hContact);
 			tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_UPREFS_MSGLOG));
 			TabCtrl_InsertItem(GetDlgItem(hwndDlg, IDC_OPTIONSTAB), 1, &tci);
-			MoveWindow((HWND)tci.lParam, 5, 32, rcClient.right - 10, rcClient.bottom - 80, 1);
+			MoveWindow((HWND)tci.lParam, 6, DPISCALEY(32), rcClient.right - 12, rcClient.bottom - DPISCALEY(80), 1);
 			ShowWindow((HWND)tci.lParam, SW_HIDE);
 			if (CMimAPI::m_pfnEnableThemeDialogTexture)
 				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);

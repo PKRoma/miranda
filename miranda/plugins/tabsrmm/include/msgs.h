@@ -598,13 +598,13 @@ struct NewMessageWindowLParam {
 #define DM_QUERYPENDING      (WM_USER+29)
 #define DM_UPDATEPICLAYOUT   (WM_USER+30)
 #define DM_QUERYCONTAINER    (WM_USER+31)
-#define DM_QUERYCONTAINERHWND    (WM_USER+32)
+// #define DM_QUERYCONTAINERHWND    (WM_USER+32)
 #define DM_CALCMINHEIGHT     (WM_USER+33)       // msgdialog asked to recalculate its minimum height
 #define DM_REPORTMINHEIGHT   (WM_USER+34)       // msg dialog reports its minimum height to the container
 //#define DM_QUERYMINHEIGHT    (WM_USER+35)       // container queries msg dialog about minimum height
 #define DM_SAVESIZE          (WM_USER+36)
 #define DM_CHECKSIZE         (WM_USER+37)
-#define DM_SAVEPERCONTACT    (WM_USER+38)
+// #define DM_SAVEPERCONTACT    (WM_USER+38)
 #define DM_CONTAINERSELECTED (WM_USER+39)
 #define DM_CONFIGURECONTAINER (WM_USER+40)
 #define DM_QUERYHCONTACT    (WM_USER+41)

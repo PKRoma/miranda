@@ -7,7 +7,6 @@
 #define IDOK2                           2
 #define IDD_USERPREFS1                  3
 #define IDD_TABCONFIG                   4
-#define IDD_VARIABLEHELP                5
 #define IDD_ABOUT                       7
 #define IDD_INFOPANEL                   8
 #define IDC_TESTVALUE                   10
@@ -56,7 +55,6 @@
 #define IDD_OPT_TOOLBAR                 304
 #define IDR_MENUBAR                     308
 #define IDD_CHOOSESTATUSMODES           310
-#define IDD_OPTIONSDIALOG               311
 #define IDD_SKINTABDIALOG               312
 #define IDD_OPT_SKIN                    313
 #define IDD_OPTIONS_PLUS                333
@@ -66,6 +64,7 @@
 #define IDC_UNLOAD                      1000
 #define IDC_READNEXT                    1000
 #define IDC_MINIMIZE                    1000
+#define IDC_OPTIONSTAB					2111
 #define IDC_RELOADSKIN                  1001
 #define IDC_APPLY                       1001
 #define IDC_MAXIMIZE                    1001
@@ -415,7 +414,6 @@
 #define IDC_USEKBDHOOK                  1328
 #define IDC_STATIC111                   1329
 #define IDC_TAB1                        1330
-#define IDC_OPTIONSTAB                  1331
 #define IDC_ALWAYSFULLWIDTHTOOLBAR      1335
 #define IDC_FORMATWHOLEWORDSONLY        1337
 #define IDC_STATUSGROUP                 1338

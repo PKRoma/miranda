@@ -165,13 +165,13 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 			dat->hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 			dat->szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0);
-			while(dat->szProto == 0) {
-				dat->hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, 0, 0);
+			while(dat->szProto == 0 && dat->hContact != 0) {
+				dat->hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)dat->hContact, 0);
 				dat->szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0);
 			}
 			dat->dwFlags = dat->pContainer->theme.dwFlags;
 
-			dat->cache = CGlobals::getContactCache(dat->hContact);
+			dat->cache = CContactCache::getContactCache(dat->hContact);
 			dat->cache->updateState();
 			dat->cache->updateUIN();
 			dat->cache->updateStats(TSessionStats::INIT_TIMER);
@@ -389,84 +389,3 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 	}
 	return(FALSE);
 }
-
-/*
-INT_PTR CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	switch (msg) {
-		case WM_INITDIALOG: {
-			int i = 1;
-			char szHeader[2048];
-			SETTEXTEX stx = {ST_SELECTION, PluginConfig.m_LangPackCP};
-			RECT rc;
-
-			SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
-			SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_SETEVENTMASK, 0, ENM_LINK);
-
-			if (lParam == 0) {
-				mir_snprintf(szHeader, 256, var_helptxt[0], 40*15, 40*15, 40*15);
-				while (var_helptxt[i] != NULL) {
-					mir_snprintf(szHeader, 2040, "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u %s\\par}", 60*15, 60*15, 5*15, 60*15, Translate(var_helptxt[i++]));
-					SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szHeader);
-				}
-				SetWindowText(hwndDlg, CTranslator::getOpt(CTranslator::OPT_TEMP_HELPTITLE));
-			} else {
-			}
-			GetWindowRect(hwndDlg, &rc);
-			if (lParam == 0)
-				MoveWindow(hwndDlg, 0, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
-			ShowWindow(hwndDlg, SW_SHOWNOACTIVATE);
-			helpActive = 1;
-			return(TRUE);
-		}
-		case WM_NOTIFY:
-			switch (((NMHDR *) lParam)->idFrom) {
-				case IDC_HELPTEXT:
-					switch (((NMHDR *) lParam)->code) {
-						case EN_LINK:
-							switch (((ENLINK *) lParam)->msg) {
-								case WM_SETCURSOR:
-									SetCursor(PluginConfig.hCurHyperlinkHand);
-									SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
-									return(TRUE);
-								case WM_LBUTTONUP: {
-									TEXTRANGE tr;
-									CHARRANGE sel;
-									HWND hwdText = GetDlgItem(hwndDlg, IDC_HELPTEXT);
-									SendMessage(hwdText, EM_EXGETSEL, 0, (LPARAM) & sel);
-									if (sel.cpMin != sel.cpMax)
-										break;
-
-									tr.chrg = ((ENLINK *) lParam)->chrg;
-									tr.lpstrText = (TCHAR *)calloc(sizeof(TCHAR), tr.chrg.cpMax - tr.chrg.cpMin + 8);
-									SendMessage(hwdText, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
-#ifdef _UNICODE
-									{
-										char* p = mir_t2a(tr.lpstrText);
-										CallService(MS_UTILS_OPENURL, 1, (LPARAM) p);
-										mir_free(p);
-									}
-#else
-									CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
-#endif
-									SetFocus(hwdText);
-									free(tr.lpstrText);
-									break;
-								}
-							}
-							break;
-					}
-			}
-			break;
-
-		case WM_COMMAND:
-			if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-				DestroyWindow(hwndDlg);
-			break;
-		case WM_DESTROY:
-			helpActive = 0;
-			break;
-	}
-	return(FALSE);
-}
-*/

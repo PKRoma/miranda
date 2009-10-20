@@ -76,7 +76,7 @@ public:
 		if(m_MenuBar)
 			::DestroyMenu(m_MenuBar);
 
-		CContactCache* c = m_cCache, *cTemp;
+		CContactCache* c = CContactCache::m_cCache, *cTemp;
 		while(c) {
 			cTemp = c->m_next;
 			delete c;
@@ -191,7 +191,6 @@ public:
 	TContainerSettings		globalContainerSettings;
 
 	static HANDLE					m_event_FoldersChanged;
-	static  CContactCache*			getContactCache(const HANDLE hContact);
 	static	void					cacheUpdateMetaChanged();
 	static  void 					logStatusChange(const CContactCache *c);
 
@@ -207,8 +206,6 @@ private:
 	static HANDLE		m_event_IcoLibChanged, m_event_AvatarChanged, m_event_MyAvatarChanged, m_event_FontsChanged;
 	static HANDLE		m_event_SmileyAdd, m_event_IEView;
 	static HANDLE 		m_event_ME_MC_SUBCONTACTSCHANGED, m_event_ME_MC_FORCESEND, m_event_ME_MC_UNFORCESEND;
-
-	static CContactCache*	m_cCache;
 
 	static EXCEPTION_RECORD m_exRecord;
 	static CONTEXT			m_exCtx;

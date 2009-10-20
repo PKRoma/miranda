@@ -165,6 +165,7 @@ public:
 
 public:
 	static						InfoPanelConfig m_ipConfig;
+	static int	 				setPanelHandler				(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
 
 private:
 	void						mapRealRect					(const RECT& rcSrc, RECT& rcDest, const SIZE& sz);

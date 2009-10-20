@@ -124,8 +124,11 @@ public:
 	void 					saveHistory				(WPARAM wParam, LPARAM lParam);
 	void					inputHistoryEvent		(WPARAM wParam);
 
-	HANDLE				m_hContact;
-	CContactCache*		m_next;
+	HANDLE					m_hContact;
+	CContactCache*			m_next;
+
+	static					CContactCache* m_cCache;
+	static  CContactCache*	getContactCache(const HANDLE hContact);
 
 private:
 	void					allocStats				();

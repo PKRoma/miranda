@@ -59,8 +59,6 @@ HANDLE		CGlobals::m_event_IcoLibChanged = 0, CGlobals::m_event_AvatarChanged = 0
 HANDLE		CGlobals::m_event_SmileyAdd = 0, CGlobals::m_event_IEView = 0, CGlobals::m_event_FoldersChanged = 0;
 HANDLE 		CGlobals::m_event_ME_MC_SUBCONTACTSCHANGED = 0, CGlobals::m_event_ME_MC_FORCESEND = 0, CGlobals::m_event_ME_MC_UNFORCESEND = 0;
 
-CContactCache* CGlobals::m_cCache = 0;
-
 extern 		HANDLE 	hHookButtonPressedEvt;
 extern		HANDLE 	hHookToolBarLoadedEvt;
 
@@ -489,7 +487,7 @@ int CGlobals::DBSettingChanged(WPARAM wParam, LPARAM lParam)
 
 	if (hwnd == 0 && wParam != 0) {     // we are not interested in this event if there is no open message window/tab
 		if(!strcmp(setting, "Status") || !strcmp(setting, "MyHandle") || !strcmp(setting, "Nick") || !strcmp(cws->szModule, SRMSGMOD_T)) {
-			c = CGlobals::getContactCache((HANDLE)wParam);
+			c = CContactCache::getContactCache((HANDLE)wParam);
 			if(c) {
 				fChanged = c->updateStatus();
 				if(strcmp(setting, "Status"))
@@ -507,7 +505,7 @@ int CGlobals::DBSettingChanged(WPARAM wParam, LPARAM lParam)
 	}
 
 	if(wParam) {
-		c = CGlobals::getContactCache((HANDLE)wParam);
+		c = CContactCache::getContactCache((HANDLE)wParam);
 		if(c) {
 			szProto = c->getProto();
 			if(!strcmp(cws->szModule, SRMSGMOD_T)) {					// catch own relevant settings
@@ -582,7 +580,7 @@ int CGlobals::DBSettingChanged(WPARAM wParam, LPARAM lParam)
 int CGlobals::DBContactDeleted(WPARAM wParam, LPARAM lParam)
 {
 	if(wParam) {
-		CContactCache *c = CGlobals::getContactCache((HANDLE)wParam);
+		CContactCache *c = CContactCache::getContactCache((HANDLE)wParam);
 		if(c)
 			c->deletedHandler();
 	}
@@ -597,7 +595,7 @@ int CGlobals::DBContactDeleted(WPARAM wParam, LPARAM lParam)
 int CGlobals::MetaContactEvent(WPARAM wParam, LPARAM lParam)
 {
 	if(wParam) {
-		CContactCache *c = CGlobals::getContactCache((HANDLE)wParam);
+		CContactCache *c = CContactCache::getContactCache((HANDLE)wParam);
 		if(c) {
 			c->updateMeta();
 			if(c->getHwnd()) {
@@ -751,38 +749,6 @@ void CGlobals::RestoreUnreadMessageAlerts(void)
 	}
 }
 
-/**
- * retrieve contact cache entry for the given contact. It _never_ returns zero, for a hContact
- * 0, it retrieves a dummy object.
- * Non-existing cache entries are created on demand.
- *
- * @param 	hContact:			contact handle
- * @return	CContactCache*		pointer to the cache entry for this contact
- */
-
-CContactCache* CGlobals::getContactCache(const HANDLE hContact)
-{
-	CContactCache *c = m_cCache, *cTemp;
-
-	cTemp = c;
-
-	while(c) {
-		cTemp = c;
-		if(c->m_hContact == hContact) {
-			c->inc();
-			return(c);
-		}
-		c = c->m_next;
-	}
-	CContactCache* _c = new CContactCache(hContact);
-	if(cTemp) {
-		cTemp->m_next = _c;
-		return(_c);
-	}
-	m_cCache = _c;
-	return(_c);
-}
-
 void CGlobals::logStatusChange(const CContactCache *c)
 {
 	if(c == 0)
@@ -843,7 +809,7 @@ void CGlobals::logStatusChange(const CContactCache *c)
  */
 void CGlobals::cacheUpdateMetaChanged()
 {
-	CContactCache* 	c = m_cCache;
+	CContactCache* 	c = CContactCache::m_cCache;
 	bool			fMetaActive = (PluginConfig.g_MetaContactsAvail && PluginConfig.bMetaEnabled) ? true : false;
 
 	while(c) {

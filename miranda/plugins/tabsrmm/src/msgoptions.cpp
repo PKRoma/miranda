@@ -49,9 +49,6 @@ extern		INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 extern		INT_PTR CALLBACK DlgProcOptions3(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 INT_PTR CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-static INT_PTR CALLBACK GroupOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-static INT_PTR CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 struct FontOptionsList {
 	COLORREF defColour;
@@ -179,6 +176,124 @@ void TSAPI LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour, char *szModule)
 }
 
 HIMAGELIST g_himlOptions;
+
+static HWND hwndTabConfig = 0;
+
+static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg) {
+		case WM_INITDIALOG: {
+			DBVARIANT dbv;
+			static UINT _ctrls[] = { IDC_SKINFILENAME, IDC_SELECTSKINFILE, IDC_USESKIN, IDC_UNLOAD, IDC_RELOADSKIN,
+									 IDC_SKIN_LOADFONTS, IDC_SKIN_LOADTEMPLATES, 0
+								   };
+
+			BYTE loadMode = M->GetByte("skin_loadmode", 0);
+			TranslateDialogDefault(hwndDlg);
+
+			CheckDlgButton(hwndDlg, IDC_USESKIN, M->GetByte("useskin", 0) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_SKIN_LOADFONTS, loadMode & THEME_READ_FONTS);
+			CheckDlgButton(hwndDlg, IDC_SKIN_LOADTEMPLATES, loadMode & THEME_READ_TEMPLATES);
+
+			if (!M->GetTString(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
+				if (lstrlen(dbv.ptszVal) > 4)
+					SetDlgItemText(hwndDlg, IDC_SKINFILENAME, dbv.ptszVal);
+				DBFreeVariant(&dbv);
+			} else
+				SetDlgItemText(hwndDlg, IDC_SKINFILENAME, _T(""));
+
+			if (PluginConfig.m_WinVerMajor < 5) {
+				int i = 0;
+
+				EnableWindow(hwndDlg, FALSE);
+				ShowWindow(GetDlgItem(hwndDlg, IDC_SKIN_WIN9XWARN), SW_SHOW);
+				while (_ctrls[i] != 0)
+					ShowWindow(GetDlgItem(hwndDlg, _ctrls[i++]), SW_HIDE);
+			}
+
+			return TRUE;
+		}
+		case WM_COMMAND:
+			switch (LOWORD(wParam)) {
+				case IDC_USESKIN:
+					M->WriteByte(SRMSGMOD_T, "useskin", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_USESKIN) ? 1 : 0));
+					break;
+				case IDC_SKIN_LOADFONTS: {
+					BYTE loadMode = M->GetByte("skin_loadmode", 0);
+					loadMode = IsDlgButtonChecked(hwndDlg, IDC_SKIN_LOADFONTS) ? loadMode | THEME_READ_FONTS : loadMode & ~THEME_READ_FONTS;
+					M->WriteByte(SRMSGMOD_T, "skin_loadmode", loadMode);
+					break;
+				}
+				case IDC_SKIN_LOADTEMPLATES: {
+					BYTE loadMode = M->GetByte("skin_loadmode", 0);
+					loadMode = IsDlgButtonChecked(hwndDlg, IDC_SKIN_LOADTEMPLATES) ? loadMode | THEME_READ_TEMPLATES : loadMode & ~THEME_READ_TEMPLATES;
+					M->WriteByte(SRMSGMOD_T, "skin_loadmode", loadMode);
+					break;
+				}
+				case IDC_UNLOAD:
+					Skin->Unload();
+					SendMessage(hwndTabConfig, WM_USER + 100, 0, 0);
+					break;
+				case IDC_SELECTSKINFILE: {
+					OPENFILENAME ofn = {0};
+					TCHAR str[MAX_PATH] = _T("*.tsk"), final_path[MAX_PATH], initDir[MAX_PATH];
+
+					mir_sntprintf(initDir, MAX_PATH, _T("%s"), M->getSkinPath());
+
+					ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+					ofn.hwndOwner = hwndDlg;
+					ofn.hInstance = NULL;
+					ofn.lpstrFilter = _T("*.tsk");
+					ofn.lpstrFile = str;
+					ofn.lpstrInitialDir = initDir;
+					ofn.Flags = OFN_FILEMUSTEXIST;
+					ofn.nMaxFile = safe_sizeof(str);
+					ofn.nMaxFileTitle = MAX_PATH;
+					ofn.lpstrDefExt = _T("");
+					if (!GetOpenFileName(&ofn))
+						break;
+					M->pathToRelative(str, final_path, M->getUserDir());
+					if (PathFileExists(str)) {
+						int skinChanged = 0;
+						DBVARIANT dbv = {0};
+
+						if (!DBGetContactSettingString(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
+							if (_tcscmp(dbv.ptszVal, final_path))
+								skinChanged = TRUE;
+							DBFreeVariant(&dbv);
+						} else
+							skinChanged = TRUE;
+
+						M->WriteTString(NULL, SRMSGMOD_T, "ContainerSkin", final_path);
+						M->WriteByte(SRMSGMOD_T, "skin_changed", (BYTE)skinChanged);
+						SetDlgItemText(hwndDlg, IDC_SKINFILENAME, final_path);
+					}
+					break;
+				}
+				case IDC_RELOADSKIN:
+					Skin->setFileName();
+					Skin->Load();
+					SendMessage(hwndTabConfig, WM_USER + 100, 0, 0);
+					break;
+			}
+			if ((LOWORD(wParam) == IDC_SKINFILE || LOWORD(wParam) == IDC_SKINFILENAME)
+					&& (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
+				return 0;
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			break;
+		case WM_NOTIFY:
+			switch (((LPNMHDR) lParam)->idFrom) {
+				case 0:
+					switch (((LPNMHDR) lParam)->code) {
+						case PSN_APPLY:
+							return TRUE;
+					}
+					break;
+			}
+			break;
+	}
+	return FALSE;
+}
 
 static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -1069,39 +1184,95 @@ static int OptInitialise(WPARAM wParam, LPARAM lParam)
 	odp.cbSize = sizeof(odp);
 	odp.position = 910000000;
 	odp.hInstance = g_hInst;
-	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONSDIALOG);
-	odp.pszTitle = LPGEN("Message Sessions");
-	odp.pfnDlgProc = OptionsDlgProc;
-	odp.pszGroup = NULL;//Translate("Message Sessions");
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGDLG);
+	odp.ptszTitle = LPGENT("Message Sessions");
+	odp.pfnDlgProc = DlgProcOptions;
+	odp.ptszGroup = NULL;
 	odp.nIDBottomSimpleControl = 0;
-	odp.flags = ODPF_BOLDGROUPS;
+	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
+	odp.ptszTab = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_GENERAL));
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
-	odp.pszGroup = LPGEN("Message Sessions");
-	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONSDIALOG);
-	odp.pszTitle = LPGEN("Group Chats");
-	odp.pfnDlgProc = GroupOptionsDlgProc;
-	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
+	odp.ptszTab     = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_TABS));
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_TABBEDMSG);
+	odp.pfnDlgProc  = DlgProcTabbedOptions;
+	CallService(MS_OPT_ADDPAGE, wParam,(LPARAM)&odp);
 
-	odp.pszGroup = LPGEN("Message Sessions");
+	odp.ptszTab     =  const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_CONTAINERS));
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CONTAINERS);
+	odp.pfnDlgProc  = DlgProcContainerSettings;
+	CallService(MS_OPT_ADDPAGE, wParam,(LPARAM)&odp);
+
+	odp.ptszTab     =  const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_LOG));
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGLOG);
+	odp.pfnDlgProc  = DlgProcLogOptions;
+	CallService(MS_OPT_ADDPAGE, wParam,(LPARAM)&odp);
+
+	odp.ptszTab     =  const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_TOOLBAR));
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_TOOLBAR);
+	odp.pfnDlgProc  = DlgProcToolBar;
+	CallService(MS_OPT_ADDPAGE, wParam,(LPARAM)&odp);
+
+	odp.ptszTab     =  const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_ADVANCED));
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONS_PLUS);
+	odp.pfnDlgProc  = PlusOptionsProc;
+	CallService(MS_OPT_ADDPAGE, wParam,(LPARAM)&odp);
+
+
+	odp.ptszGroup = LPGENT("Message Sessions");
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGTYPE);
-	odp.pszTitle = LPGEN("Typing Notify");
+	odp.ptszTitle = LPGENT("Typing Notify");
 	odp.pfnDlgProc = DlgProcTypeOptions;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_POPUP_OPT);
-	odp.pszTitle = LPGEN("Event notifications");
+	odp.ptszTitle = LPGENT("Event notifications");
 	odp.pfnDlgProc = DlgProcPopupOpts;
 	odp.nIDBottomSimpleControl = 0;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
 
-	odp.pszTemplate = MAKEINTRESOURCEA(IDD_SKINTABDIALOG);
-	odp.pszTitle = LPGEN("Message window skin");
-	odp.pfnDlgProc = SkinOptionsDlgProc;
+
+
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_SKIN);
+	odp.ptszTitle = LPGENT("Message window skin");
+	odp.ptszTab = 	const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TAB_SKINLOAD));
+	odp.pfnDlgProc = DlgProcSkinOpts;
 	odp.nIDBottomSimpleControl = 0;
-	odp.pszGroup = LPGEN("Customize");
+	odp.ptszGroup = LPGENT("Customize");
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
 
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_TABCONFIG);
+	odp.ptszTab = 	  const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TAB_LAYOUTTWEAKS));
+	odp.pfnDlgProc = DlgProcTabConfig;
+	odp.nIDBottomSimpleControl = 0;
+	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
+
+	/* group chats */
+
+	odp.ptszGroup = 	LPGENT("Message Sessions");
+	odp.pszTemplate = 	MAKEINTRESOURCEA(IDD_OPTIONS1);
+	odp.ptszTitle = 	LPGENT("Group Chats");
+	odp.ptszTab = 		const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_MUC_SETTINGS));
+	odp.pfnDlgProc = DlgProcOptions1;
+	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
+
+	odp.pszTemplate = 	MAKEINTRESOURCEA(IDD_OPTIONS2);
+	odp.ptszTab =		const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_MUC_LOG));
+	odp.pfnDlgProc = 	DlgProcOptions2;
+	odp.nIDBottomSimpleControl = 0;
+	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
+
+	odp.pszTemplate = 	MAKEINTRESOURCEA(IDD_OPTIONS3);
+	odp.ptszTab = 		const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_MUC_EVENTS));
+	odp.pfnDlgProc = 	DlgProcOptions3;
+	odp.nIDBottomSimpleControl = 0;
+	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
+
+	odp.pszTemplate = 	MAKEINTRESOURCEA(IDD_OPTIONS4);
+	odp.ptszTab = 		const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_MUC_HIGHLIGHT));
+	odp.pfnDlgProc = 	CMUCHighlight::dlgProc;
+	odp.nIDBottomSimpleControl = 0;
+	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 	return 0;
 }
 
@@ -1494,543 +1665,6 @@ INT_PTR CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, 
 	}
 	return FALSE;
 }
-
-/*
- * main options dialog. creates and manages the tabbed option pages
- */
-
-static INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	static int iInit = TRUE;
-
-	switch (msg) {
-		case WM_INITDIALOG: {
-			TCITEM tci;
-			RECT rcClient;
-			int oPage = M->GetByte("opage", 0);
-
-			GetClientRect(hwnd, &rcClient);
-			iInit = TRUE;
-			tci.mask = TCIF_PARAM | TCIF_TEXT;
-			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPT_MSGDLG), hwnd, DlgProcOptions);
-			tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_GENERAL));
-			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 0, &tci);
-			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
-			ShowWindow((HWND)tci.lParam, oPage == 0 ? SW_SHOW : SW_HIDE);
-			if (CMimAPI::m_pfnEnableThemeDialogTexture)
-				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
-
-			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPT_TABBEDMSG), hwnd, DlgProcTabbedOptions);
-			tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_TABS));
-			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 1, &tci);
-			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
-			ShowWindow((HWND)tci.lParam, oPage == 1 ? SW_SHOW : SW_HIDE);
-			if (CMimAPI::m_pfnEnableThemeDialogTexture)
-				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
-
-			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPT_CONTAINERS), hwnd, DlgProcContainerSettings);
-			tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_CONTAINERS));
-			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 2, &tci);
-			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
-			ShowWindow((HWND)tci.lParam, oPage == 2 ? SW_SHOW : SW_HIDE);
-			if (CMimAPI::m_pfnEnableThemeDialogTexture)
-				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
-
-			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPT_MSGLOG), hwnd, DlgProcLogOptions);
-			tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_LOG));
-			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 3, &tci);
-			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
-			ShowWindow((HWND)tci.lParam, oPage == 3 ? SW_SHOW : SW_HIDE);
-			if (CMimAPI::m_pfnEnableThemeDialogTexture)
-				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
-
-			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPT_TOOLBAR), hwnd, DlgProcToolBar);
-			tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_TOOLBAR));
-			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 4, &tci);
-			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
-			ShowWindow((HWND)tci.lParam, oPage == 4 ? SW_SHOW : SW_HIDE);
-			if (CMimAPI::m_pfnEnableThemeDialogTexture)
-				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
-
-			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPTIONS_PLUS), hwnd, PlusOptionsProc);
-			tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_ADVANCED));
-			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 5, &tci);
-			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
-			ShowWindow((HWND)tci.lParam, oPage == 5 ? SW_SHOW : SW_HIDE);
-			if (CMimAPI::m_pfnEnableThemeDialogTexture)
-				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
-
-			TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage);
-			iInit = FALSE;
-			return FALSE;
-		}
-
-		case PSM_CHANGED: // used so tabs dont have to call SendMessage(GetParent(GetParent(hwnd)), PSM_CHANGED, 0, 0);
-			if (!iInit)
-				SendMessage(GetParent(hwnd), PSM_CHANGED, 0, 0);
-			break;
-		case WM_NOTIFY:
-			switch (((LPNMHDR)lParam)->idFrom) {
-				case 0:
-					switch (((LPNMHDR)lParam)->code) {
-						case PSN_APPLY: {
-							TCITEM tci;
-							int i, count;
-							tci.mask = TCIF_PARAM;
-							count = TabCtrl_GetItemCount(GetDlgItem(hwnd, IDC_OPTIONSTAB));
-							for (i = 0;i < count;i++) {
-								TabCtrl_GetItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), i, &tci);
-								SendMessage((HWND)tci.lParam, WM_NOTIFY, 0, lParam);
-							}
-						}break;
-						case PSN_RESET: {
-							TCITEM tci;
-							int i, count;
-							tci.mask = TCIF_PARAM;
-							count = TabCtrl_GetItemCount(GetDlgItem(hwnd, IDC_OPTIONSTAB));
-							for (i = 0;i < count;i++) {
-								TabCtrl_GetItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), i, &tci);
-								SendMessage((HWND)tci.lParam, WM_NOTIFY, 0, lParam);
-								}
-							}break;
-					}
-					break;
-				case IDC_OPTIONSTAB:
-					switch (((LPNMHDR)lParam)->code) {
-						case TCN_SELCHANGING: {
-							TCITEM tci;
-							tci.mask = TCIF_PARAM;
-							TabCtrl_GetItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)), &tci);
-							ShowWindow((HWND)tci.lParam, SW_HIDE);
-						}
-						break;
-						case TCN_SELCHANGE: {
-							TCITEM tci;
-							tci.mask = TCIF_PARAM;
-							TabCtrl_GetItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)), &tci);
-							ShowWindow((HWND)tci.lParam, SW_SHOW);
-							M->WriteByte(SRMSGMOD_T, "opage", (BYTE)TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)));
-						}
-						break;
-					}
-					break;
-
-			}
-			break;
-	}
-	return FALSE;
-}
-
-
-/*
- * parent dialog for the group chat option pages
- */
-
-static INT_PTR CALLBACK GroupOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	static int iInit = TRUE;
-
-	switch (msg) {
-		case WM_INITDIALOG: {
-			TCITEM tci;
-			RECT rcClient;
-			int oPage = M->GetByte("opage_g", 0);
-
-			GetClientRect(hwnd, &rcClient);
-			iInit = TRUE;
-			tci.mask = TCIF_PARAM | TCIF_TEXT;
-
-			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPTIONS1), hwnd, DlgProcOptions1);
-			tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_MUC_SETTINGS));
-			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 0, &tci);
-			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
-
-			if(PluginConfig.m_chat_enabled)
-				ShowWindow((HWND)tci.lParam, oPage == 0 ? SW_SHOW : SW_HIDE);
-			else
-				ShowWindow((HWND)tci.lParam, SW_SHOW);
-
-			if (CMimAPI::m_pfnEnableThemeDialogTexture)
-				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
-
-
-			if(PluginConfig.m_chat_enabled) {
-				tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPTIONS2), hwnd, DlgProcOptions2);
-				tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_MUC_LOG));
-				TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 1, &tci);
-				MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
-				ShowWindow((HWND)tci.lParam, oPage == 1 ? SW_SHOW : SW_HIDE);
-				if (CMimAPI::m_pfnEnableThemeDialogTexture)
-					CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
-
-				tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPTIONS3), hwnd, DlgProcOptions3);
-				tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_MUC_EVENTS));
-				TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 2, &tci);
-				MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
-				ShowWindow((HWND)tci.lParam, oPage == 2 ? SW_SHOW : SW_HIDE);
-				if (CMimAPI::m_pfnEnableThemeDialogTexture)
-					CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
-
-				tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPTIONS4), hwnd, CMUCHighlight::dlgProc);
-				tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TABS_MUC_HIGHLIGHT));
-				TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 3, &tci);
-				MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
-				ShowWindow((HWND)tci.lParam, oPage == 3 ? SW_SHOW : SW_HIDE);
-				if (CMimAPI::m_pfnEnableThemeDialogTexture)
-					CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
-
-				TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage);
-			}
-			else
-				TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), 0);
-
-			iInit = FALSE;
-			return FALSE;
-		}
-
-		case PSM_CHANGED: // used so tabs dont have to call SendMessage(GetParent(GetParent(hwnd)), PSM_CHANGED, 0, 0);
-			if (!iInit)
-				SendMessage(GetParent(hwnd), PSM_CHANGED, 0, 0);
-			break;
-		case WM_NOTIFY:
-			switch (((LPNMHDR)lParam)->idFrom) {
-				case 0:
-					switch (((LPNMHDR)lParam)->code) {
-						case PSN_APPLY: {
-							TCITEM tci;
-							int i, count;
-							tci.mask = TCIF_PARAM;
-							count = TabCtrl_GetItemCount(GetDlgItem(hwnd, IDC_OPTIONSTAB));
-							for (i = 0;i < count;i++) {
-								TabCtrl_GetItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), i, &tci);
-								SendMessage((HWND)tci.lParam, WM_NOTIFY, 0, lParam);
-							}
-						}
-						break;
-					}
-					break;
-				case IDC_OPTIONSTAB:
-					switch (((LPNMHDR)lParam)->code) {
-						case TCN_SELCHANGING: {
-							TCITEM tci;
-							tci.mask = TCIF_PARAM;
-							TabCtrl_GetItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)), &tci);
-							ShowWindow((HWND)tci.lParam, SW_HIDE);
-						}
-						break;
-						case TCN_SELCHANGE: {
-							TCITEM tci;
-							tci.mask = TCIF_PARAM;
-							TabCtrl_GetItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)), &tci);
-							ShowWindow((HWND)tci.lParam, SW_SHOW);
-							M->WriteByte(SRMSGMOD_T, "opage_g", (BYTE)TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)));
-						}
-						break;
-					}
-					break;
-
-			}
-			break;
-	}
-	return FALSE;
-}
-
-static HWND hwndTabConfig = 0;
-
-static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	switch (msg) {
-		case WM_INITDIALOG: {
-			DBVARIANT dbv;
-			static UINT _ctrls[] = { IDC_SKINFILENAME, IDC_SELECTSKINFILE, IDC_USESKIN, IDC_UNLOAD, IDC_RELOADSKIN,
-									 IDC_SKIN_LOADFONTS, IDC_SKIN_LOADTEMPLATES, 0
-								   };
-
-			BYTE loadMode = M->GetByte("skin_loadmode", 0);
-			TranslateDialogDefault(hwndDlg);
-
-			CheckDlgButton(hwndDlg, IDC_USESKIN, M->GetByte("useskin", 0) ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_SKIN_LOADFONTS, loadMode & THEME_READ_FONTS);
-			CheckDlgButton(hwndDlg, IDC_SKIN_LOADTEMPLATES, loadMode & THEME_READ_TEMPLATES);
-
-			if (!M->GetTString(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
-				if (lstrlen(dbv.ptszVal) > 4)
-					SetDlgItemText(hwndDlg, IDC_SKINFILENAME, dbv.ptszVal);
-				DBFreeVariant(&dbv);
-			} else
-				SetDlgItemText(hwndDlg, IDC_SKINFILENAME, _T(""));
-
-			if (PluginConfig.m_WinVerMajor < 5) {
-				int i = 0;
-
-				EnableWindow(hwndDlg, FALSE);
-				ShowWindow(GetDlgItem(hwndDlg, IDC_SKIN_WIN9XWARN), SW_SHOW);
-				while (_ctrls[i] != 0)
-					ShowWindow(GetDlgItem(hwndDlg, _ctrls[i++]), SW_HIDE);
-			}
-
-			return TRUE;
-		}
-		case WM_COMMAND:
-			switch (LOWORD(wParam)) {
-				case IDC_USESKIN:
-					M->WriteByte(SRMSGMOD_T, "useskin", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_USESKIN) ? 1 : 0));
-					break;
-				case IDC_SKIN_LOADFONTS: {
-					BYTE loadMode = M->GetByte("skin_loadmode", 0);
-					loadMode = IsDlgButtonChecked(hwndDlg, IDC_SKIN_LOADFONTS) ? loadMode | THEME_READ_FONTS : loadMode & ~THEME_READ_FONTS;
-					M->WriteByte(SRMSGMOD_T, "skin_loadmode", loadMode);
-					break;
-				}
-				case IDC_SKIN_LOADTEMPLATES: {
-					BYTE loadMode = M->GetByte("skin_loadmode", 0);
-					loadMode = IsDlgButtonChecked(hwndDlg, IDC_SKIN_LOADTEMPLATES) ? loadMode | THEME_READ_TEMPLATES : loadMode & ~THEME_READ_TEMPLATES;
-					M->WriteByte(SRMSGMOD_T, "skin_loadmode", loadMode);
-					break;
-				}
-				case IDC_UNLOAD:
-					Skin->Unload();
-					SendMessage(hwndTabConfig, WM_USER + 100, 0, 0);
-					break;
-				case IDC_SELECTSKINFILE: {
-					OPENFILENAME ofn = {0};
-					TCHAR str[MAX_PATH] = _T("*.tsk"), final_path[MAX_PATH], initDir[MAX_PATH];
-
-					mir_sntprintf(initDir, MAX_PATH, _T("%s"), M->getSkinPath());
-
-					ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
-					ofn.hwndOwner = hwndDlg;
-					ofn.hInstance = NULL;
-					ofn.lpstrFilter = _T("*.tsk");
-					ofn.lpstrFile = str;
-					ofn.lpstrInitialDir = initDir;
-					ofn.Flags = OFN_FILEMUSTEXIST;
-					ofn.nMaxFile = safe_sizeof(str);
-					ofn.nMaxFileTitle = MAX_PATH;
-					ofn.lpstrDefExt = _T("");
-					if (!GetOpenFileName(&ofn))
-						break;
-					M->pathToRelative(str, final_path, M->getUserDir());
-					if (PathFileExists(str)) {
-						int skinChanged = 0;
-						DBVARIANT dbv = {0};
-
-						if (!DBGetContactSettingString(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
-							if (_tcscmp(dbv.ptszVal, final_path))
-								skinChanged = TRUE;
-							DBFreeVariant(&dbv);
-						} else
-							skinChanged = TRUE;
-
-						M->WriteTString(NULL, SRMSGMOD_T, "ContainerSkin", final_path);
-						M->WriteByte(SRMSGMOD_T, "skin_changed", (BYTE)skinChanged);
-						SetDlgItemText(hwndDlg, IDC_SKINFILENAME, final_path);
-					}
-					break;
-				}
-				case IDC_RELOADSKIN:
-					Skin->setFileName();
-					Skin->Load();
-					SendMessage(hwndTabConfig, WM_USER + 100, 0, 0);
-					break;
-			}
-			if ((LOWORD(wParam) == IDC_SKINFILE || LOWORD(wParam) == IDC_SKINFILENAME)
-					&& (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
-				return 0;
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-			break;
-		case WM_NOTIFY:
-			switch (((LPNMHDR) lParam)->idFrom) {
-				case 0:
-					switch (((LPNMHDR) lParam)->code) {
-						case PSN_APPLY:
-							return TRUE;
-					}
-					break;
-			}
-			break;
-	}
-	return FALSE;
-}
-
-static INT_PTR CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	static int iInit = TRUE;
-	static HWND hwndSkinEdit = 0;
-
-	switch (msg) {
-		case WM_INITDIALOG: {
-			TCITEM tci;
-			RECT rcClient;
-			int oPage = M->GetByte("skin_opage", 0);
-			SKINDESCRIPTION sd;
-			HWND hwndFirstPage;
-
-			GetClientRect(hwnd, &rcClient);
-			iInit = TRUE;
-			tci.mask = TCIF_PARAM | TCIF_TEXT;
-			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPT_SKIN), hwnd, DlgProcSkinOpts);
-			hwndFirstPage = (HWND)tci.lParam;
-
-			tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TAB_SKINLOAD));
-			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 0, &tci);
-			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
-			ShowWindow((HWND)tci.lParam, SW_HIDE);
-			if (CMimAPI::m_pfnEnableThemeDialogTexture)
-				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
-
-			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_TABCONFIG), hwnd, DlgProcTabConfig);
-			hwndTabConfig = (HWND)tci.lParam;
-
-			tci.pszText = const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TAB_LAYOUTTWEAKS));
-
-			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 1, &tci);
-			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
-			ShowWindow((HWND)tci.lParam, SW_HIDE);
-			if (CMimAPI::m_pfnEnableThemeDialogTexture)
-				CMimAPI::m_pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
-
-			if (0 && PluginConfig.m_WinVerMajor >= 5) {
-				if (ServiceExists(MS_CLNSE_INVOKE)) {
-
-					ZeroMemory(&sd, sizeof(sd));
-					sd.cbSize = sizeof(sd);
-					sd.StatusItems = &SkinItems[0];
-					sd.hWndParent = hwnd;
-					sd.hWndTab = GetDlgItem(hwnd, IDC_OPTIONSTAB);
-					sd.pfnSaveCompleteStruct = 0;
-					sd.lastItem = ID_EXTBK_LAST;
-					sd.firstItem = 0;
-					sd.pfnClcOptionsChanged = 0;
-					sd.hwndCLUI = 0;
-					hwndSkinEdit = (HWND)CallService(MS_CLNSE_INVOKE, 0, (LPARAM) & sd);
-				}
-
-				if (hwndSkinEdit) {
-					ShowWindow(hwndSkinEdit, SW_HIDE);
-					ShowWindow(sd.hwndImageEdit, SW_HIDE);
-					TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage);
-					if (CMimAPI::m_pfnEnableThemeDialogTexture) {
-						CMimAPI::m_pfnEnableThemeDialogTexture(hwndSkinEdit, ETDT_ENABLETAB);
-						CMimAPI::m_pfnEnableThemeDialogTexture(sd.hwndImageEdit, ETDT_ENABLETAB);
-					}
-				}
-				{
-					TCITEM item = {0};
-					int iTabs = TabCtrl_GetItemCount(GetDlgItem(hwnd, IDC_OPTIONSTAB));
-
-					if (oPage >= iTabs)
-						oPage = iTabs - 1;
-
-					item.mask = TCIF_PARAM;
-					TabCtrl_GetItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage, &item);
-					ShowWindow((HWND)item.lParam, SW_SHOW);
-					TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage);
-				}
-			} else {
-				TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), 0);
-				ShowWindow(hwndFirstPage, SW_SHOW);
-			}
-			iInit = FALSE;
-			return FALSE;
-		}
-
-		case PSM_CHANGED: // used so tabs dont have to call SendMessage(GetParent(GetParent(hwnd)), PSM_CHANGED, 0, 0);
-			if (!iInit)
-				SendMessage(GetParent(hwnd), PSM_CHANGED, 0, 0);
-			break;
-		case WM_COMMAND:
-			switch (LOWORD(wParam)) {
-				case IDC_EXPORT: {
-					char str[MAX_PATH] = "*.clist";
-					OPENFILENAMEA ofn = {0};
-					ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
-					ofn.hwndOwner = hwnd;
-					ofn.hInstance = NULL;
-					ofn.lpstrFilter = "*.clist";
-					ofn.lpstrFile = str;
-					ofn.Flags = OFN_HIDEREADONLY;
-					ofn.nMaxFile = sizeof(str);
-					ofn.nMaxFileTitle = MAX_PATH;
-					ofn.lpstrDefExt = "clist";
-					if (!GetSaveFileNameA(&ofn))
-						break;
-					//extbk_export(str);
-					break;
-				}
-				case IDC_IMPORT: {
-					char str[MAX_PATH] = "*.clist";
-					OPENFILENAMEA ofn = {0};
-
-					ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
-					ofn.hwndOwner = hwnd;
-					ofn.hInstance = NULL;
-					ofn.lpstrFilter = "*.clist";
-					ofn.lpstrFile = str;
-					ofn.Flags = OFN_FILEMUSTEXIST;
-					ofn.nMaxFile = sizeof(str);
-					ofn.nMaxFileTitle = MAX_PATH;
-					ofn.lpstrDefExt = "";
-					if (!GetOpenFileNameA(&ofn))
-						break;
-					//extbk_import(str, hwndSkinEdit);
-					SendMessage(hwndSkinEdit, WM_USER + 101, 0, 0);
-					break;
-				}
-			}
-			break;
-		case WM_NOTIFY:
-			switch (((LPNMHDR)lParam)->idFrom) {
-				case 0:
-					switch (((LPNMHDR)lParam)->code) {
-						case PSN_APPLY: {
-							TCITEM tci;
-							int i, count;
-							tci.mask = TCIF_PARAM;
-							count = TabCtrl_GetItemCount(GetDlgItem(hwnd, IDC_OPTIONSTAB));
-							for (i = 0;i < count;i++) {
-								TabCtrl_GetItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), i, &tci);
-								SendMessage((HWND)tci.lParam, WM_NOTIFY, 0, lParam);
-							}
-						}
-						break;
-					}
-					break;
-				case IDC_OPTIONSTAB:
-					switch (((LPNMHDR)lParam)->code) {
-						case TCN_SELCHANGING: {
-							TCITEM tci;
-							tci.mask = TCIF_PARAM;
-							TabCtrl_GetItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)), &tci);
-							ShowWindow((HWND)tci.lParam, SW_HIDE);
-						}
-						break;
-						case TCN_SELCHANGE: {
-							TCITEM tci;
-							tci.mask = TCIF_PARAM;
-							TabCtrl_GetItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)), &tci);
-							ShowWindow((HWND)tci.lParam, SW_SHOW);
-							M->WriteByte(SRMSGMOD_T, "skin_opage", (BYTE)(TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB))));
-							EnableWindow(GetDlgItem(hwnd, IDC_EXPORT), TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)) != 0);
-							EnableWindow(GetDlgItem(hwnd, IDC_IMPORT), TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)) != 0);
-						}
-						break;
-					}
-					break;
-
-			}
-			break;
-		case WM_DESTROY:
-			hwndSkinEdit = 0;
-			break;
-	}
-	return FALSE;
-}
-
-/*
- * reload options which may change during M is running and put them in our global option
- * struct to minimize the number of DB reads...
- */
 
 /*
  * get the default format string for the window (container) title bar.

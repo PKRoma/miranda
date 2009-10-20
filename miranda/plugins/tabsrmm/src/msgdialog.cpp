@@ -1298,7 +1298,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			dat->hContact = newData->hContact;
 
-			dat->cache = CGlobals::getContactCache(dat->hContact);
+			dat->cache = CContactCache::getContactCache(dat->hContact);
 			dat->cache->updateState();
 			dat->cache->setWindowData(hwndDlg, dat);
 			M->AddWindow(hwndDlg, dat->hContact);
@@ -2562,8 +2562,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			}
 			return 0;
 		}
-		case DM_DELAYEDSCROLL:
-			return DM_ScrollToBottom(dat, wParam, lParam);
 		case DM_FORCESCROLL: {
 			SCROLLINFO *psi = (SCROLLINFO *)lParam;
 			POINT *ppt = (POINT *)wParam;
@@ -2735,18 +2733,14 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				*pc = m_pContainer;
 			return 0;
 		}
-		case DM_QUERYCONTAINERHWND: {
-			HWND *pHwnd = (HWND *) lParam;
-			if (pHwnd)
-				*pHwnd = hwndContainer;
-			return 0;
-		}
+
 		case DM_QUERYHCONTACT: {
 			HANDLE *phContact = (HANDLE *) lParam;
 			if (phContact)
 				*phContact = dat->hContact;
 			return 0;
 		}
+
 		case DM_CALCMINHEIGHT: {
 			UINT height = 0;
 
@@ -2765,9 +2759,11 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			dat->uMinHeight = height;
 			return 0;
 		}
+
 		case DM_UPDATELASTMESSAGE:
 			DM_UpdateLastMessage(dat);
 			return 0;
+
 		case DM_SAVESIZE: {
 			RECT rcClient;
 
@@ -2813,29 +2809,14 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			SendMessage(hwndContainer, DM_QUERYPENDING, wParam, lParam);
 			return 0;
 
-		case WM_LBUTTONDBLCLK:
-			if(dat->Panel->isActive()) {
-				POINT	pt;
-				RECT	rc;
-
-				GetClientRect(hwndDlg, &rc);
-				rc.bottom = dat->Panel->getHeight();
-				GetCursorPos(&pt);
-				ScreenToClient(hwndDlg, &pt);
-			}
-			SendMessage(hwndContainer, WM_SYSCOMMAND, SC_MINIMIZE, 0);
-			break;
-
 		case WM_LBUTTONDOWN: {
 			POINT tmp; //+ Protogenes
 			POINTS cur; //+ Protogenes
 			GetCursorPos(&tmp); //+ Protogenes
 			cur.x = (SHORT)tmp.x; //+ Protogenes
 			cur.y = (SHORT)tmp.y; //+ Protogenes
-			if(!dat->Panel->isHovered()) {
-				SendMessage(dat->hwndTip, TTM_TRACKACTIVATE, FALSE, 0);
+			if(!dat->Panel->isHovered())
 				SendMessage(hwndContainer, WM_NCLBUTTONDOWN, HTCAPTION, *((LPARAM*)(&cur))); //+ Protogenes
-			}
 			break;
 		}
 		case WM_LBUTTONUP: {
@@ -3335,9 +3316,6 @@ quote_from_last:
 			sendQueue->ackMessage(dat, wParam, lParam);
 			return 0;
 
-		case DM_SAVEPERCONTACT:
-			M->WriteDword(SRMSGMOD, "multisplit", dat->multiSplitterX);
-			break;
 		case DM_ACTIVATEME:
 			ActivateExistingTab(m_pContainer, hwndDlg);
 			return 0;
@@ -3380,28 +3358,7 @@ quote_from_last:
 		 * broadcasted when GLOBAL info panel setting changes
 		 */
 		case DM_SETINFOPANEL:
-			if(wParam == 0 && lParam == 0) {
-				dat->Panel->getVisibility();
-				dat->Panel->loadHeight();
-				dat->Panel->showHide();
-			}
-			else {
-				_MessageWindowData *SrcDat = (_MessageWindowData *)wParam;
-				if(lParam == 0)
-					dat->Panel->loadHeight();
-				else {
-					if(SrcDat && lParam && dat != SrcDat && !dat->Panel->isPrivateHeight()) {
-						if(SrcDat->bType != SESSIONTYPE_IM && M->GetByte("syncAllPanels", 0) == 0)
-							return(0);
-
-						if(dat->pContainer->settings->fPrivate && SrcDat->pContainer != dat->pContainer)
-							return(0);
-						dat->panelWidth = -1;
-						dat->Panel->setHeight((LONG)lParam);
-					}
-				}
-				SendMessage(hwndDlg, WM_SIZE, 0, 0);
-			}
+			CInfoPanel::setPanelHandler(dat, wParam, lParam);
 			return(0);
 
 			/*
@@ -3886,7 +3843,7 @@ quote_from_last:
 			M->RemoveWindow(hwndDlg);
 
 			if (dat->cache->isValid()) {
-				SendMessage(hwndDlg, DM_SAVEPERCONTACT, 0, 0);
+				M->WriteDword(SRMSGMOD, "multisplit", dat->multiSplitterX);
 				WriteStatsOnClose(dat);
 			}
 

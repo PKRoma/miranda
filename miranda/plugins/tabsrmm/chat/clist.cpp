@@ -75,15 +75,22 @@ HANDLE CList_AddRoom(const char* pszModule, const TCHAR* pszRoom, const TCHAR* p
 		if (lstrlen(dbv.ptszVal) > 0)
 			lstrcpyn(pszGroup, dbv.ptszVal, 50);
 		DBFreeVariant(&dbv);
-	} else lstrcpyn(pszGroup, _T("Chat rooms"), 50);
+	} else
+		lstrcpyn(pszGroup, _T("Chat rooms"), 50);
 
 	if (pszGroup[0])
 		CList_CreateGroup(pszGroup);
 
 	if (hContact) {   //contact exist, make sure it is in the right group
-		CallService(MS_CLIST_CONTACTCHANGEGROUP, (WPARAM)hContact, (LPARAM)g_Settings.hGroup);
-		DBWriteContactSettingWord(hContact, pszModule, "Status", ID_STATUS_OFFLINE);
-		M->WriteTString(hContact, pszModule, "Nick", pszDisplayName);
+		/*
+		if(M->GetTString(hContact, "CList", "Group", &dbv)) {
+			CallService(MS_CLIST_CONTACTCHANGEGROUP, (WPARAM)hContact, (LPARAM)g_Settings.hGroup);
+			DBWriteContactSettingWord(hContact, pszModule, "Status", ID_STATUS_OFFLINE);
+			M->WriteTString(hContact, pszModule, "Nick", pszDisplayName);
+		}
+		else
+			DBFreeVariant(&dbv);
+			*/
 		return hContact;
 	}
 
@@ -93,9 +100,8 @@ HANDLE CList_AddRoom(const char* pszModule, const TCHAR* pszRoom, const TCHAR* p
 		return NULL;
 
 	CallService(MS_PROTO_ADDTOCONTACT, (WPARAM) hContact, (LPARAM) pszModule);
-	if (pszGroup && lstrlen(pszGroup) > 0) {
+	if (pszGroup && lstrlen(pszGroup) > 0)
 		CallService(MS_CLIST_CONTACTCHANGEGROUP, (WPARAM)hContact, (LPARAM)g_Settings.hGroup);
-	}
 	else
 		DBDeleteContactSetting(hContact, "CList", "Group");
 

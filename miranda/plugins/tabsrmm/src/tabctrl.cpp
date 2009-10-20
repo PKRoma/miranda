@@ -1934,13 +1934,16 @@ void TSAPI FreeTabConfig()
  * options dialog for setting up tab options
  */
 
+static bool tconfig_init = false;
+
 INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 		case WM_INITDIALOG: {
+			tconfig_init = false;
 			TranslateDialogDefault(hwndDlg);
 			SendMessage(hwndDlg, WM_USER + 100, 0, 0);
-			ShowWindow(hwndDlg, SW_SHOWNORMAL);
+			tconfig_init = true;
 			return TRUE;
 		}
 		case WM_USER + 100: {
@@ -2051,6 +2054,18 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			break;
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
+				case IDC_TABWIDTH:
+				case IDC_TABPADDING:
+				case IDC_HTABPADDING:
+				case IDC_TABBORDER:
+				case IDC_TABBORDEROUTER:
+				case IDC_TABBORDEROUTERBOTTOM:
+				case IDC_TABBORDEROUTERRIGHT:
+				case IDC_TABBORDEROUTERTOP:
+					if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
+						return TRUE;
+					break;
+
 				case IDC_LABELUSEWINCOLORS:
 				case IDC_BKGUSEWINCOLORS2: {
 					int i = 0;
@@ -2067,7 +2082,12 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				}
 				break;
 			}
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			if(tconfig_init)
+				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			break;
+
+		case WM_DESTROY:
+			tconfig_init = false;
 	}
 	return FALSE;
 }

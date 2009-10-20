@@ -37,6 +37,7 @@
 
 #include "commonheaders.h"
 
+CContactCache* CContactCache::m_cCache = 0;
 
 CContactCache::CContactCache(const HANDLE hContact)
 {
@@ -551,4 +552,36 @@ void CContactCache::updateStatusMsg(const char *szKey)
 		mir_free(dbv.ptszVal);
 	}
 	*/
+}
+
+/**
+ * retrieve contact cache entry for the given contact. It _never_ returns zero, for a hContact
+ * 0, it retrieves a dummy object.
+ * Non-existing cache entries are created on demand.
+ *
+ * @param 	hContact:			contact handle
+ * @return	CContactCache*		pointer to the cache entry for this contact
+ */
+
+CContactCache* CContactCache::getContactCache(const HANDLE hContact)
+{
+	CContactCache *c = m_cCache, *cTemp;
+
+	cTemp = c;
+
+	while(c) {
+		cTemp = c;
+		if(c->m_hContact == hContact) {
+			c->inc();
+			return(c);
+		}
+		c = c->m_next;
+	}
+	CContactCache* _c = new CContactCache(hContact);
+	if(cTemp) {
+		cTemp->m_next = _c;
+		return(_c);
+	}
+	m_cCache = _c;
+	return(_c);
 }

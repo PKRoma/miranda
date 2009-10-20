@@ -1923,7 +1923,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			dat->bType = SESSIONTYPE_CHAT;
 			dat->Panel = new CInfoPanel(dat);
 
-			dat->cache = CGlobals::getContactCache(dat->hContact);
+			dat->cache = CContactCache::getContactCache(dat->hContact);
 			dat->cache->updateState();
 			dat->cache->updateUIN();
 
@@ -3395,28 +3395,7 @@ LABEL_SHOWWINDOW:
 		}
 
 		case DM_SETINFOPANEL:
-			if(wParam == 0 && lParam == 0) {
-				dat->Panel->getVisibility();
-				dat->Panel->loadHeight();
-				dat->Panel->showHide();
-			}
-			else {
-				_MessageWindowData *SrcDat = (_MessageWindowData *)wParam;
-				if(lParam == 0)
-					dat->Panel->loadHeight();
-				else {
-					if(SrcDat && lParam && dat != SrcDat && !dat->Panel->isPrivateHeight()) {
-						if(SrcDat->bType != SESSIONTYPE_CHAT && M->GetByte("syncAllPanels", 0) == 0)
-							return(0);
-
-						if((dat->pContainer->settings->fPrivate) && SrcDat->pContainer != dat->pContainer)
-							return(0);
-
-						dat->panelWidth = -1;
-						dat->Panel->setHeight((LONG)lParam);
-					}
-				}
-			}
+			CInfoPanel::setPanelHandler(dat, wParam, lParam);
 			return(0);
 
 		case WM_GETMINMAXINFO: {
@@ -3471,15 +3450,6 @@ LABEL_SHOWWINDOW:
 		case WM_LBUTTONDBLCLK: {
 			if (LOWORD(lParam) < 30)
 				PostMessage(hwndDlg, GC_SCROLLTOBOTTOM, 0, 0);
-			if (GetKeyState(VK_CONTROL) & 0x8000) {
-				SendMessage(dat->pContainer->hwnd, WM_CLOSE, 1, 0);
-				break;
-			}
-			if (GetKeyState(VK_SHIFT) & 0x8000 && !CSkin::m_frameSkins) {
-				SendMessage(dat->pContainer->hwnd, WM_SYSCOMMAND, IDM_NOTITLE, 0);
-				break;
-			}
-			SendMessage(dat->pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
 			break;
 		}
 

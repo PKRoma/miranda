@@ -1577,7 +1577,7 @@ void TSAPI LoadSplitter(_MessageWindowData *dat)
 	else
 		dat->splitterY = (int)M->GetDword(dat->hContact, "splitsplity", M->GetDword("splitsplity", (DWORD) 70));
 
-	if (dat->splitterY < DPISCALEY_S(MINSPLITTERY) || dat->splitterY < 0)
+	if (dat->splitterY < MINSPLITTERY || dat->splitterY < 0)
 		dat->splitterY = 150;
 }
 

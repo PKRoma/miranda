@@ -999,11 +999,6 @@ void TSAPI DM_SetDBButtonStates(HWND hwndChild, struct _MessageWindowData *dat)
 
 LRESULT TSAPI DM_ScrollToBottom(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
-	SCROLLINFO si = { 0 };
-
-	if (dat == 0)
-		return(0);
-
 	if (dat) {
 
 		if (dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED)
@@ -1020,6 +1015,14 @@ LRESULT TSAPI DM_ScrollToBottom(_MessageWindowData *dat, WPARAM wParam, LPARAM l
 			return 0;
 		} else {
 			HWND hwnd = GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_LOG : IDC_CHAT_LOG);
+			/*SCROLLINFO scroll = {0};
+
+			scroll.cbSize = sizeof(SCROLLINFO);
+			scroll.fMask = SIF_RANGE | SIF_POS | SIF_PAGE;
+			GetScrollInfo(hwnd, SB_VERT, &scroll);
+
+			if(!((UINT)scroll.nPos >= (UINT)scroll.nMax - scroll.nPage - 5 || scroll.nMax - scroll.nMin - scroll.nPage < 50))
+				return(0);*/
 
 			if (lParam)
 				SendMessage(hwnd, WM_SIZE, 0, 0);
@@ -1680,6 +1683,7 @@ void TSAPI DM_EventAdded(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 			dat->szStatusBar[0] = 0;
 			dat->nTypeSecs = 0;
 			dat->showTyping = 0;
+			HandleIconFeedback(dat, (HICON)-1);
 			PostMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
 		}
 		/*

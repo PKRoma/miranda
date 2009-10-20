@@ -45,6 +45,33 @@ TCHAR *xStatusDescr[] = {	_T("Angry"), _T("Duck"), _T("Tired"), _T("Party"), _T(
 InfoPanelConfig CInfoPanel::m_ipConfig = {0};
 WNDPROC CTip::m_OldMessageEditProc = 0;
 
+int CInfoPanel::setPanelHandler(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
+{
+	if(wParam == 0 && lParam == 0) {
+		dat->Panel->getVisibility();
+		dat->Panel->loadHeight();
+		dat->Panel->showHide();
+	}
+	else {
+		_MessageWindowData *SrcDat = (_MessageWindowData *)wParam;
+		if(lParam == 0)
+			dat->Panel->loadHeight();
+		else {
+			if(SrcDat && lParam && dat != SrcDat && !dat->Panel->isPrivateHeight()) {
+				if(SrcDat->bType != dat->bType && M->GetByte("syncAllPanels", 0) == 0)
+					return(0);
+
+				if(dat->pContainer->settings->fPrivate && SrcDat->pContainer != dat->pContainer)
+					return(0);
+				dat->panelWidth = -1;
+				dat->Panel->setHeight((LONG)lParam);
+			}
+		}
+		SendMessage(dat->hwnd, WM_SIZE, 0, 0);
+	}
+	return(0);
+}
+
 void CInfoPanel::setActive(const int newActive)
 {
 	m_active = newActive ? true : false;
@@ -1225,7 +1252,7 @@ void CInfoPanel::dismissConfig(bool fForced)
  */
 CTip::CTip(const HWND hwndParent, const HANDLE hContact, const TCHAR *pszText, const CInfoPanel* panel)
 {
-	m_hwnd = ::CreateWindowEx(WS_EX_LAYERED|WS_EX_TOOLWINDOW, _T("RichEditTipClass"), _T(""), (M->isAero() ? WS_THICKFRAME : WS_BORDER)|WS_POPUPWINDOW|WS_TABSTOP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
+	m_hwnd = ::CreateWindowEx(WS_EX_TOOLWINDOW, _T("RichEditTipClass"), _T(""), (M->isAero() ? WS_THICKFRAME : WS_BORDER)|WS_POPUPWINDOW|WS_TABSTOP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
 							  0, 0, 40, 40, 0, 0, g_hInst, this);
 
 	m_hRich = ::CreateWindowEx(WS_EX_TRANSPARENT, RICHEDIT_CLASS, _T(""), WS_CHILD | ES_MULTILINE | ES_AUTOVSCROLL | ES_NOHIDESEL | ES_READONLY | WS_VSCROLL | WS_TABSTOP,
@@ -1263,6 +1290,7 @@ void CTip::show(const RECT& rc, POINT& pt, const HICON hIcon, const TCHAR *szTit
 	RECT		rcPage = {0, 0, 0, 0};
 	RECT		rcParent;
 	SETTEXTEX	stx = {ST_SELECTION, CP_UTF8};
+	int			twips = (int)(15.0f / PluginConfig.g_DPIscaleY);
 
 	int xBorder, yBorder;
 	m_leftWidth = (m_panel->getDat()->hClientIcon || m_panel->getDat()->hXStatusIcon ? LEFT_BAR_WIDTH : 0);
@@ -1278,7 +1306,7 @@ void CTip::show(const RECT& rc, POINT& pt, const HICON hIcon, const TCHAR *szTit
 
 	if (PluginConfig.g_SmileyAddAvail) {
 		SMADD_RICHEDIT3 smadd;
-		CContactCache* c = CGlobals::getContactCache(m_hContact);
+		CContactCache* c = CContactCache::getContactCache(m_hContact);
 		::SendMessage(m_hRich, EM_SETBKGNDCOLOR, 0, (LPARAM)PluginConfig.m_ipBackgroundGradientHigh);
 		if(c) {
 			ZeroMemory(&smadd, sizeof(smadd));
@@ -1304,8 +1332,8 @@ void CTip::show(const RECT& rc, POINT& pt, const HICON hIcon, const TCHAR *szTit
 	m_rcRich.left = LEFT_BORDER + m_leftWidth; m_rcRich.top = TOP_BORDER;
 	m_rcRich.right -= (LEFT_BORDER + RIGHT_BORDER + m_leftWidth);
 
-	m_rcRich.right = m_rcRich.left + (15 * (m_rcRich.right - m_rcRich.left)) - 8 * 15;
-	m_rcRich.bottom = m_rcRich.top + (15 * (m_rcRich.bottom - m_rcRich.top));
+	m_rcRich.right = m_rcRich.left + (twips * (m_rcRich.right - m_rcRich.left)) - 8 * twips;
+	m_rcRich.bottom = m_rcRich.top + (twips * (m_rcRich.bottom - m_rcRich.top));
 
 	fr.hdc = hdc;
 	fr.hdcTarget = hdc;
@@ -1314,8 +1342,8 @@ void CTip::show(const RECT& rc, POINT& pt, const HICON hIcon, const TCHAR *szTit
 	fr.chrg.cpMax = -1;
 	fr.chrg.cpMin = 0;
 	LRESULT lr = ::SendMessage(m_hRich, EM_FORMATRANGE, 0, (LPARAM)&fr);
-	m_szRich.cx = (fr.rc.right - fr.rc.left) / 15;
-	m_szRich.cy = ((fr.rc.bottom - fr.rc.top) / 15) + 3;
+	m_szRich.cx = (fr.rc.right - fr.rc.left) / twips;
+	m_szRich.cy = ((fr.rc.bottom - fr.rc.top) / twips) + 3;
 
 	m_rcRich.right = m_rcRich.left + m_szRich.cx;
 	m_rcRich.bottom = m_rcRich.top + m_szRich.cy;
@@ -1327,8 +1355,6 @@ void CTip::show(const RECT& rc, POINT& pt, const HICON hIcon, const TCHAR *szTit
 
 	::SetWindowPos(m_hRich, 0, LEFT_BORDER + m_leftWidth, TOP_BORDER, m_szRich.cx, m_szRich.cy, SWP_SHOWWINDOW);
 
-	if(CMimAPI::m_pSetLayeredWindowAttributes)
-		CMimAPI::m_pSetLayeredWindowAttributes(m_hwnd, 0, (BYTE)255, LWA_ALPHA);
 	::ReleaseDC(m_hwnd, hdc);
 }
 
@@ -1420,7 +1446,7 @@ INT_PTR CALLBACK CTip::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 			TCHAR		szTitle[128];
 			COLORREF	clr = CInfoPanel::m_ipConfig.clrs[IPFONTID_NICK];
 			GetClientRect(hwnd, &rc);
-			CContactCache* c = CGlobals::getContactCache(m_hContact);
+			CContactCache* c = CContactCache::getContactCache(m_hContact);
 			RECT		rcText = {0, 0, rc.right, TOP_BORDER};
 			LONG		cx = rc.right;
 			LONG		cy = rc.bottom;
@@ -1452,8 +1478,11 @@ INT_PTR CALLBACK CTip::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 					m.cyTopHeight = TOP_BORDER;
 					CMimAPI::m_pfnDwmExtendFrameIntoClientArea(m_hwnd, &m);
 				}
-				else
+				else {
 					::FillRect(hdcMem, &rc, br);
+					::DrawAlpha(hdcMem, &rcText, PluginConfig.m_ipBackgroundGradientHigh, 100, PluginConfig.m_ipBackgroundGradient,
+								0, GRADIENT_TB + 1, 0, 2, 0);
+				}
 				::DeleteObject(br);
 				rcText.left = 20;
 
