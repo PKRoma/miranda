@@ -126,6 +126,7 @@ Section "Miranda IM"
   File "${MIM_BUILD_DIR}\zlib.dll"
   File "${MIM_BUILD_SRC}\docs\contributors.txt"
   File "${MIM_BUILD_SRC}\docs\readme.txt"
+  File "${MIM_BUILD_SRC}\docs\changelog.txt"
   File "${MIM_BUILD_SRC}\docs\license.txt"
   
   ${If} $INST_UPGRADE = 0
@@ -258,6 +259,7 @@ Section Uninstall
   Delete "$INSTDIR\license.txt"
   Delete "$INSTDIR\contributors.txt"
   Delete "$INSTDIR\readme.txt"
+  Delete "$INSTDIR\changelog.txt"
   Delete "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}"
   Delete "$INSTDIR\uninstall.exe"
   RMDir "$INSTDIR"
