@@ -562,10 +562,10 @@ static int NetlibSslReadSetResult(SslHandle *ssl, char *buf, int num, int peek)
 	int bytes = min(num, ssl->cbRecDataBuf);
 	int rbytes = ssl->cbRecDataBuf - bytes;
 
-	CopyMemory(buf, ssl->pbRecDataBuf, bytes);
+	memcpy(buf, ssl->pbRecDataBuf, bytes);
 	if (!peek) 
 	{
-		MoveMemory(ssl->pbRecDataBuf, ((char*)ssl->pbRecDataBuf)+bytes, rbytes);
+		memmove(ssl->pbRecDataBuf, ssl->pbRecDataBuf + bytes, rbytes);
 		ssl->cbRecDataBuf = rbytes;
 	}
 
@@ -586,7 +586,7 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 
 	if (ssl == NULL) return SOCKET_ERROR;
 
-	if (num == 0) return 0;
+	if (num <= 0) return 0;
 
 	if (ssl->state != sockOpen || (ssl->cbRecDataBuf != 0 && (!peek || ssl->cbRecDataBuf >= num)))
 	{
@@ -717,7 +717,7 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 					ssl->sbRecDataBuf = nbytes;
 					ssl->pbRecDataBuf = (PUCHAR)mir_realloc(ssl->pbRecDataBuf, nbytes);
 				}
-				CopyMemory(ssl->pbRecDataBuf + ssl->cbRecDataBuf, (char*)pDataBuffer->pvBuffer+bytes, rbytes);
+				memcpy(ssl->pbRecDataBuf + ssl->cbRecDataBuf, (char*)pDataBuffer->pvBuffer + bytes, rbytes);
 				ssl->cbRecDataBuf = nbytes;
 			}
 
