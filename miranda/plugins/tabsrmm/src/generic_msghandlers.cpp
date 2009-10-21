@@ -56,7 +56,6 @@ void TSAPI DM_DismissTip(_MessageWindowData *dat, const POINT& pt)
 		return;
 
 	if(abs(pt.x - dat->ptTipActivation.x) > 5 || abs(pt.y - dat->ptTipActivation.y) > 5) {
-		KillTimer(dat->hwnd, TIMERID_TOOLTIP);
 		SendMessage(dat->hwndTip, TTM_TRACKACTIVATE, FALSE, 0);
 		dat->ptTipActivation.x = dat->ptTipActivation.y = 0;
 	}

@@ -80,35 +80,35 @@ END
 IDD_OPTIONS_PLUS DIALOGEX 0, 0, 303, 226
 STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Advanced tweaks",IDC_STATIC,3,0,300,224
+    CONTROL         "",IDC_PLUS_CHECKTREE,"SysTreeView32",
+                    TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER |
+                    WS_TABSTOP,6,9,294,136
     LTEXT           "Message send timeout",IDC_STATIC,11,155,161,11
-    EDITTEXT        IDC_SECONDS,192,152,25,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_SECONDS,187,152,35,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_TIMEOUTSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,216,153,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,226,153,
                     11,11
-    LTEXT           "seconds.",IDC_STATIC,233,154,36,8
-    LTEXT           "Input history size",IDC_STATIC,11,169,165,10
-    EDITTEXT        IDC_HISTORYSIZE,192,167,25,12,ES_AUTOHSCROLL
+    LTEXT           "seconds.",IDC_STATIC,243,154,36,8
+    LTEXT           "Input history size",IDC_STATIC,11,168,162,10
+    EDITTEXT        IDC_HISTORYSIZE,187,167,35,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_HISTORYSIZESPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,215,166,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,225,166,
                     11,13
-    LTEXT           "entries",IDC_STATIC,233,169,28,10
+    LTEXT           "entries",IDC_STATIC,243,169,28,10
     LTEXT           "Options marked with an asterisk (*) will only take effect after Miranda has been restarted.",
                     IDC_STATIC,11,188,283,18
     CONTROL         "More about advanced tweaks",IDC_PLUS_HELP,"Hyperlink",
                     WS_TABSTOP | 0x1,11,210,158,9
     PUSHBUTTON      "Revert to (safe) defaults",IDC_PLUS_REVERT,180,207,111,
                     14
-    CONTROL         "",IDC_PLUS_CHECKTREE,"SysTreeView32",
-                    TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | 
-                    WS_TABSTOP,6,8,294,137
 END
 
-IDD_POPUP_OPT DIALOGEX DISCARDABLE  0, 0, 314, 241
+IDD_POPUP_OPT DIALOGEX 0, 0, 314, 241
 STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Event notify options",IDC_STATIC,3,0,310,157
     CONTROL         "Limit message preview to",IDC_LIMITPREVIEW,"Button",
@@ -218,10 +218,10 @@ BEGIN
     CONTROL         "",IDC_MSGTABS,"TSTabCtrlClass",0xc048,31,7,5,5
 END
 
-IDD_USERPREFS DIALOGEX DISCARDABLE  0, 0, 286, 265
-STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+IDD_USERPREFS DIALOGEX 0, 0, 286, 265
+STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CAPTION
 CAPTION "Dialog"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Message log view mode",IDC_STATIC,4,11,274,33
     COMBOBOX        IDC_IEVIEWMODE,8,25,114,46,CBS_DROPDOWNLIST | WS_VSCROLL | 
@@ -271,11 +271,11 @@ BEGIN
     LTEXT           "Events",IDC_STATIC,218,186,38,8
 END
 
-IDD_CONTAINEROPTIONS DIALOGEX DISCARDABLE  0, 0, 354, 224
+IDD_CONTAINEROPTIONS DIALOGEX 0, 0, 354, 224
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | 
     WS_SYSMENU
 CAPTION "   "
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_HEADERBAR,"MHeaderbarCtrl",WS_TABSTOP,0,0,354,24
     LTEXT           "",IDC_STATIC,0,24,354,197
@@ -383,11 +383,13 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_OPT_MSGDLG DIALOGEX DISCARDABLE  0, 0, 303, 226
+IDD_OPT_MSGDLG DIALOGEX 0, 0, 303, 226
 STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Message window options",IDC_STATIC,3,0,300,112
+    CONTROL         "",IDC_WINDOWOPTIONS,"SysTreeView32",TVS_DISABLEDRAGDROP |
+                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,9,294,100
     GROUPBOX        "Avatar options (size and scaling only for bottom avatar display)",
                     IDC_STATIC,3,117,300,42
     LTEXT           "Max. height",IDC_STATIC,10,129,50,10
@@ -418,8 +420,6 @@ BEGIN
     LTEXT           "Send text formatting:",IDC_STATIC,9,211,132,11
     COMBOBOX        IDC_SENDFORMATTING,143,209,74,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    CONTROL         "",IDC_WINDOWOPTIONS,"SysTreeView32",TVS_DISABLEDRAGDROP | 
-                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,101
     CONTROL         "Try to keep original size",IDC_PRESERVEAVATARSIZE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,187,128,105,9
     CONTROL         "Help on this",IDC_HELP_GENERAL,"Hyperlink",WS_TABSTOP | 
@@ -431,6 +431,8 @@ STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Options",IDC_STATIC,3,0,300,106
+    CONTROL         "",IDC_LOGOPTIONS,"SysTreeView32",TVS_DISABLEDRAGDROP |
+                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,9,294,94
     GROUPBOX        "Indent values",IDC_STMSGLOGGROUP2,3,107,145,29
     LTEXT           "Left/Right",IDC_STATIC,10,119,46,11
     EDITTEXT        IDC_INDENTAMOUNT,60,117,29,12,ES_AUTOHSCROLL
@@ -473,8 +475,6 @@ BEGIN
                     UDS_NOTHOUSANDS | UDS_HOTTRACK | WS_DISABLED,200,209,10,
                     14
     LTEXT           "Events",IDC_STATIC,215,212,82,8
-    CONTROL         "",IDC_LOGOPTIONS,"SysTreeView32",TVS_DISABLEDRAGDROP | 
-                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,95
     LTEXT           "minutes old",IDC_STMINSOLD,215,200,83,8,WS_DISABLED
     GROUPBOX        "Global message log display",IDC_STMSGLOGGROUP3,149,107,
                     147,29
@@ -525,6 +525,9 @@ STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Tab options",IDC_STATIC,3,0,300,147
+    CONTROL         "",IDC_TABMSGOPTIONS,"SysTreeView32",TVS_DISABLEDRAGDROP |
+                    TVS_SHOWSELALWAYS | WS_BORDER | WS_HSCROLL | WS_TABSTOP,
+                    6,9,294,134
     GROUPBOX        "Miscellaneous options",IDC_STATIC,3,149,300,75
     PUSHBUTTON      "Setup status modes for automatic tab creation...",
                     IDC_SETUPAUTOCREATEMODES,35,189,228,14
@@ -535,9 +538,6 @@ BEGIN
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
                     UDS_ARROWKEYS,191,208,11,13
     LTEXT           "characters",IDC_STATIC,208,210,88,9
-    CONTROL         "",IDC_TABMSGOPTIONS,"SysTreeView32",TVS_DISABLEDRAGDROP | 
-                    TVS_SHOWSELALWAYS | WS_BORDER | WS_HSCROLL | WS_TABSTOP,
-                    6,8,294,135
     LTEXT           "ESC key behavior",IDC_STATIC,38,161,135,9
     COMBOBOX        IDC_ESCMODE,36,172,227,46,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
@@ -583,9 +583,9 @@ BEGIN
     PUSHBUTTON      "Insert Separator",IDC_SEPARATOR,144,142,86,14
 END
 
-IDD_OPT_CONTAINERS DIALOGEX DISCARDABLE  0, 0, 303, 226
+IDD_OPT_CONTAINERS DIALOGEX 0, 0, 303, 226
 STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "To set container options, please use the container settings dialog. It is available by:\n1. choosing ""container settings"" from the system menu of a container.\n2. right clicking the tab or the button bar in any message window.",
                     IDC_STATIC,7,2,298,25
@@ -679,10 +679,10 @@ BEGIN
     LTEXT           "",IDC_INFO2,6,143,290,10
 END
 
-IDD_TEMPLATEEDIT DIALOGEX DISCARDABLE  0, 0, 368, 231
+IDD_TEMPLATEEDIT DIALOGEX 0, 0, 368, 231
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Templates",IDC_STATIC,3,4,108,94
     LISTBOX         IDC_TEMPLATELIST,8,14,97,81,LBS_OWNERDRAWVARIABLE | 
@@ -712,9 +712,9 @@ BEGIN
                     90,15
 END
 
-IDD_TABCONFIG DIALOGEX DISCARDABLE  0, 0, 303, 226
+IDD_TABCONFIG DIALOGEX 0, 0, 303, 226
 STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Tab label colors",IDC_STATIC,6,10,144,80
     CONTROL         "Use windows colors",IDC_LABELUSEWINCOLORS,"Button",
@@ -811,7 +811,7 @@ STYLE DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP |
     WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "About tabSRMM"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "",IDC_STATIC,0,30,228,110,NOT WS_GROUP
     CONTROL         "",IDC_HEADERBAR,"MHeaderbarCtrl",WS_TABSTOP,0,0,228,30
@@ -857,10 +857,10 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,201,296,71,16
 END
 
-IDD_USERPREFS1 DIALOGEX 0, 0, 286, 265
-STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+IDD_USERPREFS1 DIALOG DISCARDABLE  0, 0, 286, 265
+STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CAPTION
 CAPTION "Dialog"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Icons",IDC_STATIC,8,36,266,42
     CONTROL         "Event type icons in the message log",
@@ -880,18 +880,18 @@ BEGIN
                     BS_AUTO3STATE | WS_TABSTOP,147,97,121,11
     CONTROL         "Use contacts local time",IDC_UPREFS_LOCALTIME,"Button",
                     BS_AUTO3STATE | WS_TABSTOP,147,110,121,11
-    GROUPBOX        "Format",IDC_STATIC,8,134,266,53
+    GROUPBOX        "Format",IDC_STATIC,8,132,266,53
     CONTROL         "Indent message body",IDC_UPREFS_INDENT,"Button",
-                    BS_AUTO3STATE | WS_TABSTOP,15,144,121,11
+                    BS_AUTO3STATE | WS_TABSTOP,15,142,121,11
     CONTROL         "Display grid lines",IDC_UPREFS_GRID,"Button",
-                    BS_AUTO3STATE | WS_TABSTOP,15,157,121,11
+                    BS_AUTO3STATE | WS_TABSTOP,15,155,121,11
     CONTROL         "Message grouping",IDC_UPREFS_GROUPING,"Button",
-                    BS_AUTO3STATE | WS_TABSTOP,147,144,121,11
+                    BS_AUTO3STATE | WS_TABSTOP,147,142,121,11
     CONTROL         "Support BBCODE",IDC_UPREFS_BBCODE,"Button",
-                    BS_AUTO3STATE | WS_TABSTOP,147,157,121,11
+                    BS_AUTO3STATE | WS_TABSTOP,147,155,121,11
     CONTROL         "Use different background colors for incoming and outgoing messages",
                     IDC_UPREFS_MULTIPLEBG,"Button",BS_AUTO3STATE | 
-                    WS_TABSTOP,15,171,257,11
+                    WS_TABSTOP,15,169,257,11
     GROUPBOX        "Misc",IDC_STATIC,8,186,266,52
     CONTROL         "RTL is default text direction",IDC_UPREFS_RTL,"Button",
                     BS_AUTO3STATE | WS_TABSTOP,15,196,248,11
@@ -906,85 +906,6 @@ BEGIN
                     IDC_UPREFS_NORMALTEMPLATES,"Button",BS_AUTO3STATE | 
                     WS_TABSTOP,15,224,248,11
 END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO MOVEABLE PURE 
-BEGIN
-    IDD_HOTKEYSLAVE, DIALOG
-    BEGIN
-        RIGHTMARGIN, 37
-    END
-
-    IDD_CHOOSESTATUSMODES, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 219
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 147
-    END
-
-    IDD_USERPREFS, DIALOG
-    BEGIN
-        RIGHTMARGIN, 278
-        TOPMARGIN, 3
-    END
-
-    IDD_CONTAINEROPTIONS, DIALOG
-    BEGIN
-        LEFTMARGIN, 1
-        BOTTOMMARGIN, 217
-    END
-
-    IDD_OPT_TOOLBAR, DIALOG
-    BEGIN
-        VERTGUIDE, 144
-    END
-
-    IDD_OPT_TYPINGNOTIFYPOPUP, DIALOG
-    BEGIN
-        RIGHTMARGIN, 315
-        BOTTOMMARGIN, 167
-    END
-
-    IDD_TEMPLATEEDIT, DIALOG
-    BEGIN
-        BOTTOMMARGIN, 228
-    END
-
-    IDD_TABCONFIG, DIALOG
-    BEGIN
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 223
-    END
-
-    IDD_VARIABLEHELP, DIALOG
-    BEGIN
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 231
-    END
-
-    IDD_ABOUT, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 195
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 96
-    END
-
-    IDD_USERPREFS_FRAME, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 283
-        TOPMARGIN, 7
-    END
-END
-#endif    // APSTUDIO_INVOKED
 
 
 /////////////////////////////////////////////////////////////////////////////

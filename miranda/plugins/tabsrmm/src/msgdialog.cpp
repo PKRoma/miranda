@@ -975,7 +975,6 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 					if(GetDlgCtrlID(hwnd) == IDC_PANELSPLITTER) {
 						EndPaint(hwnd, &ps);
 						return(0);
-						//FillRect(dc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH)); // CSkin::m_BrushBack);
 					}
 					else if(GetDlgCtrlID(hwnd) == IDC_SPLITTER || GetDlgCtrlID(hwnd) == IDC_SPLITTERY) {
 						rc.bottom--;
@@ -988,11 +987,6 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				}
 				else
 					FillRect(dc, &rc, GetSysColorBrush(COLOR_3DFACE));
-
-				if(hwnd == GetDlgItem(hwndParent, IDC_PANELSPLITTER) && !M->isAero()) {
-					rc.bottom--; rc.left--; rc.right++;
-					DrawEdge(dc, &rc, BDR_SUNKENOUTER, BF_RECT);
-				}
 			}
 			EndPaint(hwnd, &ps);
 			return 0;
@@ -1598,6 +1592,10 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			dat->dwFlags &= ~MWF_INITMODE;
 			//MAD_
 			TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN, 0);
+
+			if(PluginConfig.g_bClientInStatusBar)
+				ChangeClientIconInStatusBar(dat);
+
 			/*
 			 * show a popup if wanted...
 			 */
@@ -3509,6 +3507,8 @@ quote_from_last:
 			GetClientIcon(dat);
 			if (dat->hClientIcon && dat->Panel->isActive())
 				InvalidateRect(hwndDlg, NULL, TRUE);
+			if(PluginConfig.g_bClientInStatusBar)
+				ChangeClientIconInStatusBar(dat);
 			return 0;
 		}
 		case DM_REMOVEPOPUPS:

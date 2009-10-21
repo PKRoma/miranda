@@ -367,7 +367,7 @@ LISTOPTIONSGROUP CTranslator::m_lvGroupsModPlus[] = {
 
 LISTOPTIONSITEM CTranslator::m_lvItemsModPlus[] = {
 	0, LPGENT("Enable image tag button (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_IMGtagButton", 0,
-	0, LPGENT("Show client icon in status bar (fingerprint plugin required) (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_ClientIconInStatusBar", 0,
+	0, LPGENT("Show client icon in status bar (fingerprint plugin required)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_ClientIconInStatusBar", 0,
 	0, LPGENT("Enable typing sounds"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_soundontyping", 0,
 	0, LPGENT("Disable animated GIF avatars (will not affect already open message windows)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_DisableAniAvatars", 0,
 	0, LPGENT("Close current tab on send"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_AutoClose_2", 0,
@@ -439,7 +439,7 @@ LISTOPTIONSITEM CTranslator::m_lvItemsMsg[] = {
 	//mad_
 	0, LPGENT("Always flash contact list and tray icon for new messages"), 0, LOI_TYPE_SETTING, (UINT_PTR)"flashcl", 0,
 	0, LPGENT("Delete temporary contacts on close"), 0, LOI_TYPE_SETTING, (UINT_PTR)"deletetemp", 0,
-	0, LPGENT("Allow PASTE AND SEND feature (Ctrl-D)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"pasteandsend", 1,
+	0, LPGENT("Enable \"Paste and send\" feature"), 1, LOI_TYPE_SETTING, (UINT_PTR)"pasteandsend", 1,
 	0, LPGENT("Automatically split long messages (experimental, use with care)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autosplit", 2,
 	0, NULL, 0, 0, 0, 0
 };

@@ -30,7 +30,7 @@ $Id$
 #define TIMERID_MSGSEND      100
 #define TIMERID_TYPE         3
 #define TIMERID_AWAYMSG      4
-#define TIMERID_TOOLTIP		 5
+//#define TIMERID_TOOLTIP		 5
 #define TIMEOUT_TYPEOFF      10000      // send type off after 10 seconds of inactivity
 #define SB_CHAR_WIDTH        45
 

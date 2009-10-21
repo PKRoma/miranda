@@ -47,10 +47,9 @@
 
 #include "../src/commonheaders.h"
 
-static  HANDLE  hEventCBButtonPressed,hEventCBInit, hEventDbWindowEvent, hEventDbOptionsInit, hEventDbPluginsLoaded;
+static  HANDLE  hEventCBButtonPressed,hEventCBInit, hEventDbOptionsInit, hEventDbPluginsLoaded;
 
 int     g_bStartup=0;
-BOOL    bWOpened=FALSE;
 
 BOOL    g_bIMGtagButton;
 
@@ -84,34 +83,27 @@ static TCHAR* getMenuEntry(int i)  {
 	return (msg);
 }
 
-int ChangeClientIconInStatusBar(WPARAM wparam,LPARAM lparam)
+int ChangeClientIconInStatusBar(const _MessageWindowData *dat)
 {
-	HICON 		hIcon = NULL;
-	char		*msg = getMirVer((HANDLE)wparam);
+	if(!ServiceExists(MS_FP_GETCLIENTICON))
+		return(S_FALSE);
+
+	char		*msg = getMirVer(dat->hContact);
 
 	if ( !msg )
-		return (1);
+		return (S_FALSE);
 
-	hIcon = (HICON)CallService(MS_FP_GETCLIENTICON,(WPARAM)msg,(LPARAM)1);
+	StatusIconData sid = {0};
 
-	if ( !hIcon ) {
-		if(msg)
-			mir_free(msg);
-		return (1);
-	}
-
-	if ( ServiceExists(MS_MSG_MODIFYICON) ) {
-		StatusIconData sid = {0};
-		sid.cbSize = sizeof(sid);
-		sid.szModule = (char *)"tabmodplus";
-		sid.hIcon=sid.hIconDisabled=hIcon;
-		sid.dwId = 1;
-		sid.szTooltip=msg;
-		sid.flags=MBF_OWNERSTATE;
-		CallService(MS_MSG_MODIFYICON,(WPARAM)wparam, (LPARAM)&sid);
-	}
+	sid.cbSize = sizeof(sid);
+	sid.szModule = (char *)"tabmodplus";
+	sid.hIcon = sid.hIconDisabled = dat->hClientIcon;
+	sid.dwId = 1;
+	sid.szTooltip = msg;
+	sid.flags = MBF_OWNERSTATE;
+	CallService(MS_MSG_MODIFYICON,(WPARAM)dat->hContact, (LPARAM)&sid);
 	mir_free(msg);
-	return (0);
+	return (S_OK);
 }
 
 
@@ -124,22 +116,6 @@ int ModPlus_PreShutdown(WPARAM wparam, LPARAM lparam)
 	UnhookEvent(hEventDbPluginsLoaded);
 	UnhookEvent(hEventDbOptionsInit);
 
-	UnhookEvent(hEventDbWindowEvent);
-
-	return (0);
-}
-
-
-static int GetContactHandle(WPARAM wparam,LPARAM lParam)
-{
-	MessageWindowEventData *MWeventdata = (MessageWindowEventData*)lParam;
-
-	if (!PluginConfig.g_bClientInStatusBar )
-		return (0);
-	if ( MWeventdata->uType == MSG_WINDOW_EVT_OPENING&&MWeventdata->hContact ) {
-		bWOpened=TRUE;
-		ChangeClientIconInStatusBar((WPARAM)MWeventdata->hContact,0);
-	}
 	return (0);
 }
 
@@ -283,10 +259,6 @@ int ModPlus_Init(WPARAM wparam,LPARAM lparam)
 	g_bStartup=1;
 
 	g_bIMGtagButton = M->GetByte("adv_IMGtagButton", 0);
-	PluginConfig.g_bClientInStatusBar = M->GetByte("adv_ClientIconInStatusBar", 0);
-
-	hEventDbWindowEvent = HookEvent(ME_MSG_WINDOWEVENT, GetContactHandle);
-
 
 	if ( g_bIMGtagButton ) {
 		hEventCBButtonPressed=HookEvent(ME_MSG_BUTTONPRESSED,CustomButtonPressed);

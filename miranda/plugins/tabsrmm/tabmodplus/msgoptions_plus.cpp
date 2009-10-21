@@ -41,10 +41,6 @@ extern HINSTANCE	hinstance;
 extern BOOL			g_bIMGtagButton;
 extern HIMAGELIST	g_himlOptions, CreateStateImageList();
 
-static BOOL bOptionsInit;
-
-HWND g_opHdlg;
-
 INT_PTR CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
 {
 	switch(msg)	{

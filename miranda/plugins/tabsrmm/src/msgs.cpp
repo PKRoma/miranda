@@ -257,11 +257,9 @@ static INT_PTR ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 
 	hwndExisting = M->FindWindow(hContact);
 
-	if (hwndExisting != 0) {
-		SendMessage(hwndExisting, DM_QUERYCONTAINER, 0, (LPARAM) &pContainer);          // ask the message window about its parent...
-		if (pContainer != NULL)
-			ActivateExistingTab(pContainer, hwndExisting);
-	} else {
+	if (hwndExisting != 0)
+		SendMessage(hwndExisting, DM_ACTIVATEME, 0, 0);
+	else {
 		TCHAR szName[CONTAINER_NAMELEN + 1];
 		GetContainerNameForContact(hContact, szName, CONTAINER_NAMELEN);
 		pContainer = FindContainerByName(szName);
@@ -322,8 +320,7 @@ INT_PTR SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 			SendMessage(hEdit, EM_SETSEL, -1, SendMessage(hEdit, WM_GETTEXTLENGTH, 0, 0));
 			SendMessage(hEdit, EM_REPLACESEL, FALSE, (LPARAM)(TCHAR *) lParam);
 		}
-		SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM) &pContainer);          // ask the message window about its parent...
-		ActivateExistingTab(pContainer, hwnd);
+		SendMessage(hwnd, DM_ACTIVATEME, 0, (LPARAM) 0);
 	} else {
 		TCHAR szName[CONTAINER_NAMELEN + 1];
 
@@ -383,8 +380,7 @@ INT_PTR SendMessageCommand(WPARAM wParam, LPARAM lParam)
 			SendMessage(hEdit, EM_SETSEL, -1, SendMessage(hEdit, WM_GETTEXTLENGTH, 0, 0));
 			SendMessageA(hEdit, EM_REPLACESEL, FALSE, (LPARAM)(char *) lParam);
 		}
-		SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM) &pContainer);          // ask the message window about its parent...
-		ActivateExistingTab(pContainer, hwnd);
+		SendMessage(hwnd, DM_ACTIVATEME, 0, 0);          // ask the message window about its parent...
 	} else {
 		TCHAR szName[CONTAINER_NAMELEN + 1];
 		GetContainerNameForContact((HANDLE) wParam, szName, CONTAINER_NAMELEN);

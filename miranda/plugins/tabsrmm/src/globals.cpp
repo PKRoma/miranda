@@ -348,6 +348,7 @@ void CGlobals::reloadAdv()
 	g_bDisableAniAvatars=				M->GetByte("adv_DisableAniAvatars", 0);
 	g_bSoundOnTyping = 					M->GetByte("adv_soundontyping", 0);
 	m_dontUseDefaultKbd=				M->GetByte("adv_leaveKeyboardAlone", 1);
+	g_bClientInStatusBar = 				M->GetByte("adv_ClientIconInStatusBar", 0);
 
 	if(g_bSoundOnTyping && m_TypingSoundAdded == false) {
 		SkinAddNewSoundEx("SoundOnTyping", Translate("Other"), Translate("TABSRMM: Typing"));
@@ -542,11 +543,8 @@ int CGlobals::DBSettingChanged(WPARAM wParam, LPARAM lParam)
 				c->updateUIN();
 			}
 		}
-		else if (!strcmp(setting, "MirVer")) {
+		else if (!strcmp(setting, "MirVer"))
 			PostMessage(hwnd, DM_CLIENTCHANGED, 0, 0);
-			if(PluginConfig.g_bClientInStatusBar)
-				ChangeClientIconInStatusBar(wParam,0);
-		}
 		else if(lstrlenA(setting) > 6 && strstr("StatusMsg,XStatusMsg,XStatusName,XStatusId,ListeningTo", setting)) {
 			if(c) {
 				c->updateStatusMsg(setting);

@@ -179,7 +179,7 @@ int			TN_TypingMessage					(WPARAM wParam, LPARAM lParam);
 
 // mod plus
 
-int			ChangeClientIconInStatusBar			(WPARAM wparam, LPARAM lparam);
+int			ChangeClientIconInStatusBar			(const _MessageWindowData *dat);
 
 // hotkeys
 

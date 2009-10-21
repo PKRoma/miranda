@@ -66,50 +66,50 @@ BEGIN
     LTEXT           "",IDC_STATIC,0,0,201,124
     LTEXT           "  Show these events",IDC_TEXTO,1,0,91,13,SS_CENTERIMAGE
     CONTROL         "Actions",IDC_1,"Button",BS_AUTO3STATE | WS_TABSTOP,3,13,
-                    99,10
+                    114,10
     CONTROL         "Messages",IDC_2,"Button",BS_AUTO3STATE | WS_TABSTOP,3,
-                    23,99,10
+                    23,114,10
     CONTROL         "Nick changes",IDC_3,"Button",BS_AUTO3STATE | WS_TABSTOP,
-                    3,33,99,10
+                    3,33,114,10
     CONTROL         "Users joining",IDC_4,"Button",BS_AUTO3STATE | 
-                    WS_TABSTOP,3,43,99,10
+                    WS_TABSTOP,3,43,114,10
     CONTROL         "Users leaving",IDC_5,"Button",BS_AUTO3STATE | 
-                    WS_TABSTOP,3,53,99,10
+                    WS_TABSTOP,3,53,114,10
     CONTROL         "Topic changes",IDC_6,"Button",BS_AUTO3STATE | 
-                    WS_TABSTOP,3,63,99,10
+                    WS_TABSTOP,3,63,114,10
     CONTROL         "Status changes",IDC_7,"Button",BS_AUTO3STATE | 
-                    WS_TABSTOP,3,73,99,10
+                    WS_TABSTOP,3,73,114,10
     CONTROL         "Information",IDC_8,"Button",BS_AUTO3STATE | WS_TABSTOP,
-                    3,83,99,10
+                    3,83,114,10
     CONTROL         "Disconnects",IDC_9,"Button",BS_AUTO3STATE | WS_TABSTOP,
-                    3,93,99,10
+                    3,93,114,10
     CONTROL         "User kicks",IDC_10,"Button",BS_AUTO3STATE | WS_TABSTOP,
-                    3,103,99,10
+                    3,103,114,10
     CONTROL         "Notices",IDC_11,"Button",BS_AUTO3STATE | WS_TABSTOP,3,
                     113,82,10
-    CTEXT           "Popup",IDC_TEXTO2,96,0,34,13,SS_CENTERIMAGE
-    CTEXT           "Tray",IDC_TEXTO3,161,0,30,13,SS_CENTERIMAGE
-    CONTROL         "",IDC_P1,"Button",BS_AUTO3STATE | WS_TABSTOP,110,13,21,
+    CTEXT           "Popup",IDC_TEXTO2,105,0,43,13,SS_CENTERIMAGE
+    CTEXT           "Tray",IDC_TEXTO3,159,0,34,13,SS_CENTERIMAGE
+    CONTROL         "",IDC_P1,"Button",BS_AUTO3STATE | WS_TABSTOP,123,13,21,
                     10
-    CONTROL         "",IDC_P2,"Button",BS_AUTO3STATE | WS_TABSTOP,110,23,21,
+    CONTROL         "",IDC_P2,"Button",BS_AUTO3STATE | WS_TABSTOP,123,23,21,
                     10
-    CONTROL         "",IDC_P3,"Button",BS_AUTO3STATE | WS_TABSTOP,110,33,21,
+    CONTROL         "",IDC_P3,"Button",BS_AUTO3STATE | WS_TABSTOP,123,33,21,
                     10
-    CONTROL         "",IDC_P4,"Button",BS_AUTO3STATE | WS_TABSTOP,110,43,21,
+    CONTROL         "",IDC_P4,"Button",BS_AUTO3STATE | WS_TABSTOP,123,43,21,
                     10
-    CONTROL         "",IDC_P5,"Button",BS_AUTO3STATE | WS_TABSTOP,110,53,21,
+    CONTROL         "",IDC_P5,"Button",BS_AUTO3STATE | WS_TABSTOP,123,53,21,
                     10
-    CONTROL         "",IDC_P6,"Button",BS_AUTO3STATE | WS_TABSTOP,110,63,21,
+    CONTROL         "",IDC_P6,"Button",BS_AUTO3STATE | WS_TABSTOP,123,63,21,
                     10
-    CONTROL         "",IDC_P7,"Button",BS_AUTO3STATE | WS_TABSTOP,110,73,21,
+    CONTROL         "",IDC_P7,"Button",BS_AUTO3STATE | WS_TABSTOP,123,73,21,
                     10
-    CONTROL         "",IDC_P8,"Button",BS_AUTO3STATE | WS_TABSTOP,110,83,21,
+    CONTROL         "",IDC_P8,"Button",BS_AUTO3STATE | WS_TABSTOP,123,83,21,
                     10
-    CONTROL         "",IDC_P9,"Button",BS_AUTO3STATE | WS_TABSTOP,110,93,21,
+    CONTROL         "",IDC_P9,"Button",BS_AUTO3STATE | WS_TABSTOP,123,93,21,
                     10
-    CONTROL         "",IDC_P10,"Button",BS_AUTO3STATE | WS_TABSTOP,110,103,
+    CONTROL         "",IDC_P10,"Button",BS_AUTO3STATE | WS_TABSTOP,123,103,
                     21,10
-    CONTROL         "",IDC_P11,"Button",BS_AUTO3STATE | WS_TABSTOP,110,113,
+    CONTROL         "",IDC_P11,"Button",BS_AUTO3STATE | WS_TABSTOP,123,113,
                     21,10
     CONTROL         "",IDC_T1,"Button",BS_AUTO3STATE | WS_TABSTOP,173,13,21,
                     10
@@ -143,7 +143,7 @@ BEGIN
     GROUPBOX        "Options",IDC_STATIC,3,0,300,229
     CONTROL         "",IDC_CHECKBOXES,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_DISABLEDRAGDROP | TVS_FULLROWSELECT | WS_BORDER | 
-                    WS_TABSTOP,6,26,294,177
+                    WS_TABSTOP,6,9,294,177
     LTEXT           "Add new rooms to group:",IDC_STATIC_ADD,10,213,132,8
     EDITTEXT        IDC_GROUP,152,210,50,14,ES_AUTOHSCROLL
     LTEXT           "Chat integration is disabled. You can enable it here, and then you to NEED RESTART Miranda after making this change.\n\nYou MUST disable the standard chat plugin when you enable the group chat support here. Otherwise no group chat at all may work.",
