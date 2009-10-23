@@ -628,7 +628,7 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 					SetDlgItemText(hwndDlg,IDC_GENMENU_CUSTOMNAME,iod->name);
 
-					if ((iod->pimi->mi.flags & CMIF_ROOTHANDLE) == 0 && iod->uniqname)
+					if (iod->pimi->submenu.first == NULL && iod->uniqname)
 						SetDlgItemTextA(hwndDlg, IDC_GENMENU_SERVICE, iod->uniqname);
 
 					EnableWindow(GetDlgItem(hwndDlg,IDC_GENMENU_DEFAULT), lstrcmp(iod->name, iod->defname) != 0);
