@@ -70,12 +70,26 @@ void* _GetResourceTable(IMAGE_DOS_HEADER* pDosHeader)
 
 	if (pPE->Signature != IMAGE_NT_SIGNATURE)
 		return NULL;
-	if (pPE->FileHeader.SizeOfOptionalHeader < sizeof(IMAGE_OPTIONAL_HEADER))
+	if (pPE->FileHeader.SizeOfOptionalHeader < 2)
 		return NULL;
 
 	// The DataDirectory is an array of 16 structures. 
 	// Each array entry has a predefined meaning for what it refers to.
-	return _RelativeVirtualAddresstoPtr(pDosHeader, pPE->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_RESOURCE].VirtualAddress);
+
+	switch (pPE->OptionalHeader.Magic)
+	{
+	case IMAGE_NT_OPTIONAL_HDR32_MAGIC:
+		if (pPE->FileHeader.SizeOfOptionalHeader >= sizeof(IMAGE_OPTIONAL_HEADER32))
+			return _RelativeVirtualAddresstoPtr(pDosHeader, ((PIMAGE_NT_HEADERS32)pPE)->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_RESOURCE].VirtualAddress);
+		break;
+
+	case IMAGE_NT_OPTIONAL_HDR64_MAGIC:
+		if (pPE->FileHeader.SizeOfOptionalHeader >= sizeof(IMAGE_OPTIONAL_HEADER64))
+			return _RelativeVirtualAddresstoPtr(pDosHeader, ((PIMAGE_NT_HEADERS64)pPE)->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_RESOURCE].VirtualAddress);
+		break;
+	}
+
+	return NULL;
 }
 
 IMAGE_RESOURCE_DIRECTORY_ENTRY* _FindResourceBase(void* prt, int resType, int* pCount)
