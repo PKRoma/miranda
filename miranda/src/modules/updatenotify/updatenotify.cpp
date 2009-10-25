@@ -306,7 +306,7 @@ static int UpdateNotifyMakeRequest(UpdateNotifyData *und) {
 	req.headers = headers;
 	resp = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)hNetlibUser, (LPARAM)&req);
 	if (resp) {
-		if (resp->resultCode==200&&resp->dataLength>0) {
+		if (resp->resultCode == 200 && resp->dataLength > 0) {
 			//int i;
 			int resUpdate = 0;
             TCHAR *tXml;
@@ -488,8 +488,8 @@ static int UpdateNotifyMakeRequest(UpdateNotifyData *und) {
                     Netlib_Logf(hNetlibUser, "A new version of Miranda IM is available: %s", und->version);
                     und->isNew = 1;
                 }
+				xun.destroyNode(nodeDoc);
             }
-            
             mir_free(tXml);
 		}
 		else Netlib_Logf(hNetlibUser, "Invalid response code from HTTP request");
