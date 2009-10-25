@@ -140,6 +140,10 @@ bool CMsnProto::MSN_AddUser(HANDLE hContact, const char* email, int netId, int f
 				else
 					res = MSN_ABAddDelContactGroup(id , NULL, "ABContactDelete");
 				if (res) AddDelUserContList(email, flags, netId, true);
+
+				deleteSetting(hContact, "GroupID");
+				deleteSetting(hContact, "ID");
+				MSN_RemoveEmptyGroups();
 			}
 		}
 		else 
