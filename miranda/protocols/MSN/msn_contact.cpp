@@ -27,7 +27,7 @@ HANDLE  CMsnProto::MSN_HContactFromEmail(const char* msnEmail, const char* msnNi
 	while (hContact != NULL)
 	{
 		if (MSN_IsMyContact(hContact)) 
-        {
+		{
 			char tEmail[MSN_MAX_EMAIL_LEN];
 			if (!getStaticString(hContact, "e-mail", tEmail, sizeof(tEmail)))
 				if (!_stricmp(msnEmail, tEmail))
@@ -80,10 +80,10 @@ void CMsnProto::MSN_SetContactDb(HANDLE hContact, const char *szEmail)
 			setString(hContact, "MirVer", "SMS");
 		}
 	}
-    if (listId & LIST_LL)
-        setByte(hContact, "LocalList", 1);
-    else
-        deleteSetting(hContact, "LocalList");
+	if (listId & LIST_LL)
+		setByte(hContact, "LocalList", 1);
+	else
+		deleteSetting(hContact, "LocalList");
 
 }
 
@@ -144,12 +144,16 @@ bool CMsnProto::MSN_AddUser(HANDLE hContact, const char* email, int netId, int f
 			char id[MSN_GUID_LEN];
 			if (!getStaticString(hContact, "ID", id, sizeof(id))) 
 			{
-                int netId = Lists_GetNetId(email);
-                if (leaveHotmail)
-                    res = MSN_ABAddRemoveContact(id, netId, false);
-                else
-				    res = MSN_ABAddDelContactGroup(id , NULL, "ABContactDelete");
+				int netId = Lists_GetNetId(email);
+				if (leaveHotmail)
+					res = MSN_ABAddRemoveContact(id, netId, false);
+				else
+					res = MSN_ABAddDelContactGroup(id , NULL, "ABContactDelete");
 				if (res) AddDelUserContList(email, flags, netId, true);
+				
+				deleteSetting(hContact, "GroupID");
+				deleteSetting(hContact, "ID");
+				MSN_RemoveEmptyGroups();
 			}
 		}
 		else 
@@ -167,7 +171,7 @@ bool CMsnProto::MSN_AddUser(HANDLE hContact, const char* email, int netId, int f
 			else if (netId == NETID_MSN && res1 == 3)
 			{
 				char szContactID[100];
-			    hContact = MSN_HContactFromEmail(email, email, false, false);
+				hContact = MSN_HContactFromEmail(email, email, false, false);
 				if (getStaticString(hContact, "ID", szContactID, sizeof(szContactID)) == 0)
 				{
 					MSN_ABAddRemoveContact(szContactID, netId, true);
@@ -179,15 +183,22 @@ bool CMsnProto::MSN_AddUser(HANDLE hContact, const char* email, int netId, int f
 				res = (res1 == 0);
 
 			if (res)
-            {
+			{
 				AddDelUserContList(email, flags, netId, false);
+
+				DBVARIANT dbv;
+				if (!DBGetContactSettingStringUtf(hContact, "CList", "Group", &dbv)) 
+				{
+					MSN_MoveContactToGroup(hContact, dbv.pszVal);
+					MSN_FreeVariant(&dbv);
+				}
 
 				char szContactID[100];
 				if (getStaticString(hContact, "ID", szContactID, sizeof(szContactID)) == 0)
 				{
-                    MSN_ABFind("ABFindByContacts", szContactID);
-                }
-            }
+					MSN_ABFind("ABFindByContacts", szContactID);
+				}
+			}
 			else
 			{
 				if (netId == 1 && strstr(email, "@yahoo.com") != 0)
@@ -196,19 +207,19 @@ bool CMsnProto::MSN_AddUser(HANDLE hContact, const char* email, int netId, int f
 			MSN_FreeVariant(&dbv);
 		}
 	}
-    else if (flags == LIST_LL)
-    {
+	else if (flags == LIST_LL)
+	{
 		if (needRemove) 
-            Lists_Remove(LIST_LL, email);
-        else
-            Lists_Add(LIST_LL, NETID_MSN, email);
-    }
+			Lists_Remove(LIST_LL, email);
+		else
+			Lists_Add(LIST_LL, NETID_MSN, email);
+	}
 	else 
 	{
 		if (netId == 0) netId = Lists_GetNetId(email);
 		res = MSN_SharingAddDelMember(email, flags, netId, needRemove ? "DeleteMember" : "AddMember");
 //		if (res || (flags & LIST_RL)) 
-            AddDelUserContList(email, flags, netId, needRemove);
+			AddDelUserContList(email, flags, netId, needRemove);
 		if ((flags & LIST_BL) && !needRemove)
 		{
 			if (hContact == NULL)
@@ -242,17 +253,17 @@ bool CMsnProto::MSN_RefreshContactList(void)
 	Lists_Wipe();
 	if (!MSN_SharingFindMembership()) return false;
 
-    if (m_iDesiredStatus == ID_STATUS_OFFLINE) return false;
+	if (m_iDesiredStatus == ID_STATUS_OFFLINE) return false;
 
-    if (!MSN_ABFind("ABFindAll", NULL)) return false;
+	if (!MSN_ABFind("ABFindAll", NULL)) return false;
 
 	if (m_iDesiredStatus == ID_STATUS_OFFLINE) return false;
 
-    MSN_CleanupLists();
+	MSN_CleanupLists();
 
 	if (m_iDesiredStatus == ID_STATUS_OFFLINE) return false;
-        
-    msnLoggedIn = true;
+
+	msnLoggedIn = true;
 
 	MSN_CreateContList();
 	MSN_StoreGetProfile();
