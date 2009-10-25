@@ -282,6 +282,7 @@ static LRESULT CALLBACK InfobarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 			DestroyWindow(idat->hXStatusTip);
 			idat->hXStatusTip = NULL;
 		}
+		mir_free(idat);
 	}
 	return FALSE;
 }

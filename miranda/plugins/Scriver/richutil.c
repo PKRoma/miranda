@@ -44,8 +44,6 @@ static SortedList sListInt;
 static int RichUtil_CmpVal(void *p1, void *p2) {
 	TRichUtil *tp1 = (TRichUtil*)p1;
 	TRichUtil *tp2 = (TRichUtil*)p2;
-	if (tp1->hwnd==tp2->hwnd)
-		return 0;
 	return (int)((INT_PTR)tp1->hwnd-(INT_PTR)tp2->hwnd);
 }
 
@@ -214,8 +212,8 @@ static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			}
 			EnterCriticalSection(&csRich);
 			li.List_Remove(&sListInt, idx);
-			LeaveCriticalSection(&csRich);
 			mir_free(ru);
+			LeaveCriticalSection(&csRich);
 			return ret;
 		}
 	}
