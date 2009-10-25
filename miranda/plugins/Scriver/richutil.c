@@ -204,7 +204,7 @@ static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		case WM_ENABLE:
 			RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE|RDW_NOCHILDREN|RDW_UPDATENOW|RDW_FRAME);
 			break;
-		case WM_DESTROY:
+		case WM_NCDESTROY:
 		{
 			LRESULT ret = CallWindowProc(ru->origProc, hwnd, msg, wParam, lParam);
 
@@ -215,7 +215,7 @@ static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			EnterCriticalSection(&csRich);
 			li.List_Remove(&sListInt, idx);
 			LeaveCriticalSection(&csRich);
-			if (ru) mir_free(ru);
+			mir_free(ru);
 			return ret;
 		}
 	}
