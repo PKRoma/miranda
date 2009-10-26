@@ -172,7 +172,7 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
     
     if (nodprof && !reqfd) szProfile[0] = 0;
 
-	if (!found)
+	if (!reqfd && !found)
 	{
 		REPLACEVARSDATA dat = {0};
 		dat.cbSize = sizeof(dat);
